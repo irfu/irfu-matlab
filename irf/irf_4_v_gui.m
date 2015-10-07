@@ -422,7 +422,7 @@ axis(hca,[xl(1) xl(2) 0 1]);
 irf_legend(hca,sc_label(ud),[1, 1.1],'color','cluster');
 irf_zoom(hca,'y');irf_timeaxis(hca)
 irf_pl_tx(ud.h(2),ud.var1,ud.var2,ud.var3,ud.var4,ud.var_col,ud.dt);
-ylabel(ud.h(2),ud.var_label);%(ud.variable_str,ud.var_col));
+ylabel(ud.h(2),var_label(ud.variable_str,ud.var_col));
 end
 
 
