@@ -1,17 +1,20 @@
 function m_update(varargin)
 % LOCAL.M_UPDATE update index information in MMS directory
 %
-%    LOCAL.M_UPDATE update index for all datasets
-% 
-%    LOCAL.M_UPDATE(datasetName) only update index of dataset "datasetName" 
+%    LOCAL.M_UPDATE update index for all datasets for all MMS spacecraft
 %
-%    LOCAL.M_UPDATE(..,'datadirectory',dataDir) look for data in directory
+%    LOCAL.M_UPDATE(.., 'scId', [1,2,3]) only update the specified MMS
+%    spacecraft. Any combination (1, 2, 3 and/or 4) or a single spacecraft.
+%
+%    LOCAL.M_UPDATE(.., 'datasetName',{'edp', 'fpi'}) only update the
+%    specified instrument data sets. In this case "edp" and "fpi".
+%
+%    LOCAL.M_UPDATE(..,'dataDirectory',dataDir) look for data in directory
 %    "dataDir". The default data directory is /data/mms unless set by
-%    environment variable $DATA_PATH_ROOT.
+%    users environment variable $DATA_PATH_ROOT.
 %
 % See also:
 %	LOCAL.C_UPDATE (similar function but for Cluster)
-
 
 %% Check inputs
 inArg = verify_input(varargin);
@@ -51,9 +54,9 @@ for iSc = inArg.scId
       irf.log('warning', [dataSet ': no data files']);
       index = [];
     else
-      % FIXME: Remove cdf files already processed. (ie. load old index and
-      % compare).
-      
+      % Remove old cdf files already processed, (ie compare with old index).
+      %% FIXME: remove comment when old_index is done and loaded.
+%      listFiles = listFiles(~ismember(listFiles, {old_index.filename}));
       % Pre allocate struct output
       index(1:length(listFiles)) = struct('filename',[],'tstart',[],'tstop',[]);
       ind = 1; % ind used to keep track of which index is written.
@@ -106,9 +109,9 @@ for iSc = inArg.scId
       % Remove unused index(), which was preallocated for speed.
       index = index(arrayfun(@(s) ~isempty(s.filename), index));
     end
-    % save index, FIXME: store somewhere good.
-    eval(['index_' dataSet '=index;']);
-    dirsave(dataSet,['index_' dataSet]);
+    %% save index, FIXME: store somewhere good.
+%     eval(['index_' dataSet '=index;']);
+%     dirsave(dataSet,['index_' dataSet]);
   end
 end
 
@@ -121,7 +124,9 @@ cd(oldPwd);
     p.CaseSensitive = false; % match regardless of case. 
     % Default values
     default.scId = 1:4; % All four MMS spacecrafts
-    default.dataSet = ['edp']; % FIXME: EDP data only for now...
+    default.dataSet = {'afg', 'asp1', 'asp2', 'aspoc', 'dfg', 'dsp', ...
+      'edi', 'edp', 'epd-eis', 'feeps', 'fields', 'fpi', 'hpca', 'mec', ...
+      'scm', 'sdp'}; % All instruments
     dataPathRoot = getenv('DATA_PATH_ROOT');
     if isempty(dataPathRoot)
       dataPathRoot = [filesep,'data',filesep,'mms']; % default MMS path at IRFU
@@ -131,9 +136,7 @@ cd(oldPwd);
     validScId = @(x) assert(all(ismember(x,[1,2,3,4])) && ...
       length(x)==length(unique(x)) && length(x)<=4, ...
       'scId should be valid: 1, 2, 3 and/or 4.');
-    validDataSet = @(x) assert(all(ismember(x, {'afg', 'asp1', 'asp2',...
-      'aspoc', 'dfg', 'dsp', 'edi', 'edp', 'epd-eis', 'feeps', 'fields',...
-      'fpi', 'hpca', 'mec', 'scm', 'sdp'})) && numel(x)==numel(unique(x)), ...
+    validDataSet = @(x) assert(all(ismember(x, default.dataSet)) && numel(x)==numel(unique(x)), ...
       'datasetName should be valid MMS instruments.');
     validDatadirectory = @(x) assert(isdir(x), ...
       'DataDirectory should be a directory on your system.');
