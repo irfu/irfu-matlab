@@ -23,7 +23,7 @@ classdef test_irf_time < matlab.unittest.TestCase
 			tint=[tEpoch tEpoch+rand(1000,1)*2*365*24*3600]; % random length intervals up to 2 year
 			s1=irf_time(tint,'tint>utc');
 			tt=irf_time(s1,'utc>tint');
-			testCase.verifyEqual(tint,tt,'AbsTol',2e-9); % 2ns precision
+			testCase.verifyEqual(tint,tt,'AbsTol',3e-7); % 0.3 us precision (epoch)
 		end
 		function test_different_UTC_formats(testCase)
 			tDateArray = now - 365*500*rand(1000,1);
