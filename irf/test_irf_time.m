@@ -18,12 +18,12 @@ classdef test_irf_time < matlab.unittest.TestCase
 		end
 		function test_tint_to_UTC_to_tint(testCase)
 			% 1000 random tint>utc>tint
-			tDateArray = now - 365*500*rand(1000,1);
+			tDateArray = now - 365*100*rand(1000,1); % Epoch (sign int32) has a limit of 136 years
 			tEpoch=irf_time(tDateArray,'date>epoch');
 			tint=[tEpoch tEpoch+rand(1000,1)*2*365*24*3600]; % random length intervals up to 2 year
 			s1=irf_time(tint,'tint>utc');
 			tt=irf_time(s1,'utc>tint');
-			testCase.verifyEqual(tint,tt,'AbsTol',2e-9); % 2ns precision
+			testCase.verifyEqual(tint,tt,'AbsTol',3e-7); % 0.3 us precision (epoch)
 		end
 		function test_different_UTC_formats(testCase)
 			tDateArray = now - 365*500*rand(1000,1);

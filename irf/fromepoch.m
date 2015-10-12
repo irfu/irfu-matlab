@@ -26,18 +26,21 @@ function full_time = fromepoch(second)
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
 
-% Offset by 0.1 seconds to avoid rounding problems in 
-% Matlab versions prior to R2009a (7.8)
-% See http://www.mathworks.com/support/bugreports/485847
-t = datevec(epoch2date(fix(double(second(:)))+0.1));
-t(:,6)=fix(t(:,6));
+if(verLessThan('matlab','8.4'))
+  % Offset by 0.1 seconds to avoid rounding problems in
+  % Matlab versions prior to R2009a (7.8)
+  % See http://www.mathworks.com/support/bugreports/485847
+  t = datevec(epoch2date(fix(double(second(:)))+0.1));
+  t(:,6)=fix(t(:,6));
+  % correct fractions of second. This preserves double-precision accuracy
+  % using isdat epoch (1970-01-01) rather than matlab epoch (year 0).
+  % Resulting accuracy ~1e-6 sec for year 2004.
+  t(:,6) = t(:,6) + double(second(:)) - fix(double(second(:)));
+  full_time = t;
+else
+  % Use built in Matlab function (as of Matlab 8.4, R2014b)
+  t = datetime(second,'ConvertFrom','posixtime');
+  full_time=[t.Year, t.Month, t.Day, t.Hour, t.Minute, t.Second];
+end
 
-% correct fractions of second. This preserves double-precision accuracy
-% using isdat epoch (1970-01-01) rather than matlab epoch (year 0).
-% Resulting accuracy ~1e-6 sec for year 2004.
-t(:,6) = t(:,6) + double(second(:)) - fix(double(second(:))); 
-
-full_time = t;
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+end
