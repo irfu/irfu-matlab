@@ -1,5 +1,5 @@
 function [hout,hcb] = irf_spectrogram(varargin)
-%function hout = irf_spectrogram(h,t,Pxx,F,dt,dF)
+%function [hout,hcb] = irf_spectrogram(h,t,Pxx,F,dt,dF)
 %IRF_SPECTROGRAM  plot spectrogram
 %
 % [h, hcb] = irf_spectrogram(h,specrec,'option1','option2',..)
