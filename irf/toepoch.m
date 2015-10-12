@@ -34,7 +34,14 @@ end
 if(verLessThan('matlab','8.4'))
   for year=unique(x(:,1))'
     daym=[0 31 28 31 30 31 30 31 31 30 31 30 31];
-    if rem(year,4)==0, daym(3)=29; end  % works up to 2100
+    if (rem(year,4)==0)
+      daym(3) = 29; % Leap years: every four years, except;
+      if rem(year,100)==0 && rem(year,400)~=0
+        % Not leap years: every even century not evenly divisable with 400.
+        % ie. 1700, 1800, 1900, 2100, 2200
+        daym(3) = 28;
+      end
+    end
     days=cumsum(daym(1:12))';
     ind=find(years==year);
     hours(ind,1)=(days(x(ind,2))+(x(ind,3)-1))*24+x(ind,4);
