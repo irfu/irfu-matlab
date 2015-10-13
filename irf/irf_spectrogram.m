@@ -281,6 +281,7 @@ for comp=1:min(length(h),ncomp)
     if isa(h(comp),'handle'), hcb = colorbar(h(comp)); % HG2
     else hcb = colorbar('peer',h(comp));
     end
+    drawnow
 		posAx = get(h(comp),'Position'); 
 		posCb = get(hcb,'Position');
 		set(hcb,'TickDir','out','Position',...
