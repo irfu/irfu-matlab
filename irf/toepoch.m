@@ -34,7 +34,7 @@ end
 if(verLessThan('matlab','8.4'))
   for year=unique(x(:,1))'
     daym=[0 31 28 31 30 31 30 31 31 30 31 30 31];
-    if leapyear(year), daym(3) = 29; end
+    if leap_year(year), daym(3) = 29; end
     days = cumsum(daym(1:12))';
     ind = find(years==year);
     hours(ind,1) = (days(x(ind,2))+(x(ind,3)-1))*24+x(ind,4);
@@ -43,7 +43,7 @@ if(verLessThan('matlab','8.4'))
     diff_yr = year - 1970;
     if(diff_yr>0)
       for i = 1:diff_yr
-        if leapyear(1969+i)
+        if leap_year(1969+i)
             yr_sec = yr_sec + 31622400;
         else
             yr_sec = yr_sec + 31536000;
@@ -51,7 +51,7 @@ if(verLessThan('matlab','8.4'))
       end
     elseif(diff_yr<0)
       for i = -1:-1:diff_yr
-        if leapyear(1970+i)
+        if leap_year(1970+i)
           yr_sec = yr_sec - 31622400;
         else
           yr_sec = yr_sec - 31536000;
@@ -65,4 +65,14 @@ else
   secs = posixtime(datetime(x));
 end
 
+% Help function
+function leap = leap_year(year)
+  leap = false(size(year)); % Assume no leap years
+  indLeap = rem(year,4)==0;
+  leap(indLeap) = true; % Assume these are leap years.
+  indLeap = rem(year,100)==0 && rem(year,400)~=0;
+  leap(indLeap) = false; % Not leap years: every even century not evenly divisable with 400, ie. 1700, 1800, 1900, 2100, 2200
 end
+
+end
+
