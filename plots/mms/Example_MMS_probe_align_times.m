@@ -47,11 +47,9 @@ if (endtime1(ii)-starttime1(ii) > 0.2)
     tint = irf.tint(strcat(starttime1(ii).utc,'/',endtime1(ii).utc));
     [power,freq,wavenumber] = mms.fk_powerspectrum(SCpot, Bxyz, zphase, tint, ic, probecomb);
 
-    freq = freq*1e-3; % covert from Hz to kHz
-
     h=irf_plot(1,'newfigure');
     h(1)=irf_panel('disprel');
-    pcolor(h(1),wavenumber,freq,log10(power))
+    pcolor(h(1),wavenumber,freq*1e-3,log10(power))
     shading(h(1),'flat')
     ylabel(h(1),'f (kHz)','fontsize',20);
     xlabel(h(1),'k_{||} (m^{-1})','fontsize',20);
@@ -76,11 +74,9 @@ if (endtime3(ii)-starttime3(ii) > 0.2)
     tint = irf.tint(strcat(starttime3(ii).utc,'/',endtime3(ii).utc));
     [power,freq,wavenumber] = mms.fk_powerspectrum(SCpot, Bxyz, zphase, tint, ic, probecomb);
 
-    freq = freq*1e-3; % covert from Hz to kHz
-
     h=irf_plot(1,'newfigure');
     h(1)=irf_panel('disprel');
-    pcolor(h(1),wavenumber,freq,log10(power))
+    pcolor(h(1),wavenumber,freq*1e-3,log10(power))
     shading(h(1),'flat')
     ylabel(h(1),'f (kHz)','fontsize',20);
     xlabel(h(1),'k_{||} (m^{-1})','fontsize',20);
