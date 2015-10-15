@@ -6,10 +6,6 @@ function h = mms4_pl_eb(Tint)
 %Tint = irf.tint('2015-05-24T02:10:00Z/2015-05-24T02:30:00Z');
 
 %% Load data
-%load /data/mms/irfu/mmsR.mat
-%epoTmp = EpochTT(R.time);
-%gsmR1 = [epoTmp.epochUnix R.gsmR1];
-%gsmR1(isnan(gsmR1(:,4)),:) = [];
 tic
 for scId = 1:4
   fprintf('Loading MMS%d\n',scId);
@@ -22,9 +18,9 @@ for scId = 1:4
 end
 fprintf('Data loaded\n');
 if ~isempty(R1), gseR = [R1.time.epochUnix double(R1.data(:,1:3))];
-elseif ~isempty(R1), gseR = [R2.time.epochUnix double(R2.data(:,1:3))];
-elseif ~isempty(R1), gseR = [R3.time.epochUnix double(R3.data(:,1:3))];
-elseif ~isempty(R1), gseR = [R4.time.epochUnix double(R4.data(:,1:3))];
+elseif ~isempty(R2), gseR = [R2.time.epochUnix double(R2.data(:,1:3))];
+elseif ~isempty(R3), gseR = [R3.time.epochUnix double(R3.data(:,1:3))];
+elseif ~isempty(R4), gseR = [R4.time.epochUnix double(R4.data(:,1:3))];
 else gseR = [];
 end
 toc
