@@ -8,6 +8,8 @@ function res = get_data(varStr, Tint, mmsId)
 %  varStr is one of:
 %  EPHEMERIS:
 %     R_gse, R_gsm, V_gse, V_gsm
+%  FPI IONS:
+%     Vi_gse_fpi_brst
 %
 % Example:
 %   Tint = irf.tint('2015-09-21T00:00:00Z/2015-09-21T17:00:00Z');
@@ -31,7 +33,8 @@ elseif Tint.stop-Tint.start<=0,
   irf.log('critical',errS); error(errS)
 end
 
-vars = {'R_gse','R_gsm','V_gse','V_gsm'}; % XXX THESE MUST BE THE SAME VARS AS BELOW
+vars = {'R_gse','R_gsm','V_gse','V_gsm',...
+  'Vi_gse_fpi_brst'}; % XXX THESE MUST BE THE SAME VARS AS BELOW
 if isempty(intersect(varStr,vars)),
   errS = ['variable not recognized: ' varStr];
   irf.log('critical',errS);
@@ -117,9 +120,19 @@ switch varStr
       if isempty(dTmp), continue, end
       
       dTmp.data = double(dTmp.data);
-      dTmpR = dTmp.resample(res.time,'spline'); 
+      dTmpR = dTmp.resample(res.time,'spline');
       res.([cS vC mmsIdS]) = dTmpR.data; 
-    end 
+    end
+  case 'Vi_gse_fpi_brst'
+    datasetName = ['mms' mmsIdS '_fpi_brst_l1b_dis-moms'];
+    rX = mms.db_get_ts(datasetName,['mms' mmsIdS '_dis_bulkX'],Tint);
+    rY = mms.db_get_ts(datasetName,['mms' mmsIdS '_dis_bulkY'],Tint);
+    rZ = mms.db_get_ts(datasetName,['mms' mmsIdS '_dis_bulkZ'],Tint);
+    res = irf.ts_vec_xyz(rX.time, [rX.data rY.data rZ.data]);
+    res.coordinateSystem = 'gse';
+    res.name = [varStr '_' mmsIdS];
+    res.units = rX.units;
+    res.siConversion = rX.siConversion;
   otherwise, error('should not be here')
 end
 
