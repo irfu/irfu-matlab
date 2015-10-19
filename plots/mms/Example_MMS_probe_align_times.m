@@ -54,6 +54,19 @@ if (endtime1(ii)-starttime1(ii) > 0.2)
     ylabel(h(1),'f (kHz)','fontsize',20);
     xlabel(h(1),'k_{||} (m^{-1})','fontsize',20);
     set(h(1),'fontsize',20)
+    
+    %Overplot phase speed estimate
+    vph = mms.estimate_phase_speed(power,freq,wavenumber);
+    kfit = [0.0001:0.0001:0.1];
+    ffit = abs(vph/(2*pi)*kfit);
+    if(vph < 0);
+        kfit = -kfit;
+    end
+    hold(h(1),'on');
+    plot(h(1),kfit,ffit*1e-3,'linewidth',3,'color','r')
+    hold(h(1),'off');
+    irf_legend(h(1),strcat('v = ',num2str(vph(1)/1000),'km s^{-1}'),[0.6 0.9],'fontsize',20,'color','r')
+    
     c=colorbar;
     ylabel(c,'log_{10} P(f,k)/P_{max}','fontsize',20);
     set(c,'fontsize',20)
@@ -81,6 +94,19 @@ if (endtime3(ii)-starttime3(ii) > 0.2)
     ylabel(h(1),'f (kHz)','fontsize',20);
     xlabel(h(1),'k_{||} (m^{-1})','fontsize',20);
     set(h(1),'fontsize',20)
+    
+    %Overplot phase speed estimate
+    vph = mms.estimate_phase_speed(power,freq,wavenumber);
+    kfit = [0.0001:0.0001:0.1];
+    ffit = abs(vph/(2*pi)*kfit);
+    if(vph < 0);
+        kfit = -kfit;
+    end
+        hold(h(1),'on');
+    plot(h(1),kfit,ffit*1e-3,'linewidth',3,'color','r')
+    hold(h(1),'off');
+    irf_legend(h(1),strcat('v = ',num2str(vph(1)/1000),'km s^{-1}'),[0.6 0.9],'fontsize',20,'color','r')
+    
     c=colorbar;
     ylabel(c,'log_{10} P(f,k)/P_{max}','fontsize',20);
     set(c,'fontsize',20)
