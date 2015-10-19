@@ -19,7 +19,8 @@ cl_s = header12(2);
 if ~any(cl_s=='1234'), error('TT HEader must start with C1..4'), end
 
 Out = struct('time',[],'psdBpeak',[],'ellipticity',[],'thetaK',[],...
-  'gseR',[],'mlt',[],'mLat',[],'header',TT.Header{1});
+  'gseR',[],'mlt',[],'mLat',[],...
+  'header',TT.Header{1},'created',irf_time(now,'date>utc'));
 
 oldPwd = pwd;
 for ievent=1:numel(TT),
