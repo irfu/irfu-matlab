@@ -65,10 +65,37 @@ classdef mms_local_file_db < mms_file_db
       function list_ancillary()
         fileDir = [obj.dbRoot filesep C{2} filesep C{1} filesep C{3}];
         if exist(fileDir,'dir')~=7, return, end
-        filePref = [upper(C{1}) '_' upper(C{3})];
-        listing = dir([fileDir filesep filePref '*.V*']);
-        if isempty(listing), return, end
-        arrayfun(@(x) add2list(x.name), listing)
+        filePref = [upper(C{1}) '_' upper(C{3}) '_'];
+        if(~isempty(tint) && ...
+            ismember(upper(C{3}),{'DEFATT','DEFEPH','DEFERR'}) && ...
+            tint.stop.ttns-tint.start.ttns<int64(86400000000000))
+          % Tint is set and less than one day. Speed up by only listing and
+          % reading files +/- 5 days from this interval. (Ancillary files
+          % defatt, defeph, deferr cover at most 3 days)).
+          t_start = irf_time(tint.start.ttns-int64(86400000000000*5), 'ttns>doy');
+          t_stop = irf_time(tint.stop.ttns+int64(86400000000000*5), 'ttns>doy');
+          if(t_start(1)==t_stop(1))
+            % Same year
+            DOY = t_start(2):t_stop(2);
+            YYYY = t_start(1)*ones(size(DOY));
+          else
+            DOY = t_start(2):366; % Assume maximum, ie leap year
+            YYYY = t_start(1)*ones(size(DOY));
+            DOY = [DOY, 1:t_stop(2)];
+            YYYY = [YYYY, t_stop(1)*ones(1,length(DOY)-length(YYYY))];
+          end
+          for ii=1:length(DOY)
+            listing = dir([fileDir, filesep, filePref, ...
+              sprintf('%04d%03d', YYYY(ii), DOY(ii)), '*.V*']);
+            if isempty(listing), continue, end
+            arrayfun(@(x) add2list(x.name), listing)
+          end
+         else
+          irf.log('warning','THIS MAY TAKE SOME TIME')
+          listing = dir([fileDir filesep filePref '*.V*']);
+          if isempty(listing), return, end
+          arrayfun(@(x) add2list(x.name), listing)
+         end
  
         function add2list(name)
           [~,fName,fExt] = fileparts(name);
