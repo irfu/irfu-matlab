@@ -45,18 +45,18 @@ for ii=[1:length(starttime1)];
     
 if (endtime1(ii)-starttime1(ii) > 0.2)
     tint = irf.tint(strcat(starttime1(ii).utc,'/',endtime1(ii).utc));
-    [power,freq,wavenumber] = mms.fk_powerspectrum(SCpot, Bxyz, zphase, tint, ic, probecomb);
+    [fkpower,freq,wavenumber] = mms.fk_powerspectrum(SCpot, Bxyz, zphase, tint, ic, probecomb);
 
     h=irf_plot(1,'newfigure');
     h(1)=irf_panel('disprel');
-    pcolor(h(1),wavenumber,freq*1e-3,log10(power))
+    pcolor(h(1),wavenumber,freq*1e-3,log10(fkpower))
     shading(h(1),'flat')
     ylabel(h(1),'f (kHz)','fontsize',20);
     xlabel(h(1),'k_{||} (m^{-1})','fontsize',20);
     set(h(1),'fontsize',20)
     
     %Overplot phase speed estimate
-    vph = mms.estimate_phase_speed(power,freq,wavenumber);
+    vph = mms.estimate_phase_speed(fkpower,freq,wavenumber);
     kfit = [0.0001:0.0001:0.1];
     ffit = abs(vph/(2*pi)*kfit);
     if(vph < 0);
@@ -85,18 +85,18 @@ for ii=[1:length(starttime3)];
     
 if (endtime3(ii)-starttime3(ii) > 0.2)
     tint = irf.tint(strcat(starttime3(ii).utc,'/',endtime3(ii).utc));
-    [power,freq,wavenumber] = mms.fk_powerspectrum(SCpot, Bxyz, zphase, tint, ic, probecomb);
+    [fkpower,freq,wavenumber] = mms.fk_powerspectrum(SCpot, Bxyz, zphase, tint, ic, probecomb);
 
     h=irf_plot(1,'newfigure');
     h(1)=irf_panel('disprel');
-    pcolor(h(1),wavenumber,freq*1e-3,log10(power))
+    pcolor(h(1),wavenumber,freq*1e-3,log10(fkpower))
     shading(h(1),'flat')
     ylabel(h(1),'f (kHz)','fontsize',20);
     xlabel(h(1),'k_{||} (m^{-1})','fontsize',20);
     set(h(1),'fontsize',20)
     
     %Overplot phase speed estimate
-    vph = mms.estimate_phase_speed(power,freq,wavenumber);
+    vph = mms.estimate_phase_speed(fkpower,freq,wavenumber);
     kfit = [0.0001:0.0001:0.1];
     ffit = abs(vph/(2*pi)*kfit);
     if(vph < 0);

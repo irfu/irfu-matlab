@@ -1,4 +1,4 @@
-function [power,freq,wavenumber] = fk_powerspectrum(SCpot, Bxyz, zphase, trange, MMSnum, probecomb) 
+function [fkpower,freq,wavenumber] = fk_powerspectrum(SCpot, Bxyz, zphase, trange, MMSnum, probecomb) 
 %
 % [power,freq,wavenumber] = mms.fk_powerspectrum(SCpot,Bxyz,zphase,trange,SCnum,probecomb) 
 %
@@ -94,7 +94,7 @@ W1c.t = times;
 W2c.p = {W2c.p{1,1}(idx,:)};
 W2c.t = times;
 
-Power = 0.5*(cell2mat(W1c.p).*conj(cell2mat(W1c.p)) + cell2mat(W2c.p).*conj(cell2mat(W2c.p)));
+fkPower = 0.5*(cell2mat(W1c.p).*conj(cell2mat(W1c.p)) + cell2mat(W2c.p).*conj(cell2mat(W2c.p)));
 
 numf = 200;
 cav = 256;
@@ -110,7 +110,7 @@ Powerav = zeros(N+1,numf);
 
 for m = [1:1:N+1]
     c34x(m,:) = irf.nanmean(W1c.p{1,1}([posav(m)-cav/2+1:posav(m)+cav/2],:).*conj(W2c.p{1,1}([posav(m)-cav/2+1:posav(m)+cav/2],:)));
-    Powerav(m,:) = irf.nansum(Power([posav(m)-cav/2+1:posav(m)+cav/2],:));
+    Powerav(m,:) = irf.nansum(fkPower([posav(m)-cav/2+1:posav(m)+cav/2],:));
 end
 
 cross34x = W1c;
@@ -150,7 +150,7 @@ disprel(find(disprel < 1.0e-3)) = 1e-3;
 
 wavenumber = kvec;
 freq = cross34x.f;
-power = disprel';
+fkpower = disprel';
 
 end
 

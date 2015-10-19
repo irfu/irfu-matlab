@@ -1,4 +1,4 @@
-function vph = estimate_phase_speed(power,freq,wavenumber) 
+function vph = estimate_phase_speed(fkpower,freq,wavenumber) 
 %
 % Simple function to estimate the phase speed from the frequency wave
 % number power spectrum. Fits f = v k/2 pi to the power spectrum.
@@ -21,7 +21,7 @@ function vph = estimate_phase_speed(power,freq,wavenumber)
 % Remove spurious points; specifically at large k. 
 kmax = 2.0*max(wavenumber)/3.0;
 fmin = 100;
-powertemp = power;
+powertemp = fkpower;
 rmk = find(abs(wavenumber) > kmax);
 rmf = find(freq < fmin);
 powertemp(:,rmk) = 0.0;
