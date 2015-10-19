@@ -66,8 +66,10 @@ end
 timeVec       = irf_time(t,'vector');
 % Use Matlab built in modified juliandates (and keep only days as before)
 % Note: This does not take leap second into account.
-mjd           = floor(mjuliandate(timeVec(:,[1 2 3])));
-Tzero         = (mjd -51544.5)/36525.0;
+dayStartEpoch = irf_time([timeVec(:,[1 2 3]) timeVec(:,1)*[0 0 0]],'vector>epoch');
+mjdRefEpoch   = irf_time([2000 1 1 0 0 0],'vector>epoch');
+mjd2000       = floor((dayStartEpoch - mjdRefEpoch)/86400);
+Tzero         = (mjd2000-0.5)/36525.0;
 UT            = timeVec(:,4)+timeVec(:,5)/60+timeVec(:,6)/3600;
 
 switch lower(flag)
