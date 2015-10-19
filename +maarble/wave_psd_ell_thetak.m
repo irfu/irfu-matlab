@@ -13,13 +13,13 @@ function Out = wave_psd_ell_thetak(TT)
 %    thetaK          - wave normal angle (deg) at wave peak
 %    gseR, mlt, mLat - position
 
-Out = struct('time',[],'psdBpeak',[],'ellipticity',[],'thetaK',[],...
-  'gseR',[],'mlt',[],'mLat',[]);
-
 header12 = TT.Header{1}(1:2);
 if header12(1) ~= 'C', error('TT HEader must start with C'), end
 cl_s = header12(2);
 if ~any(cl_s=='1234'), error('TT HEader must start with C1..4'), end
+
+Out = struct('time',[],'psdBpeak',[],'ellipticity',[],'thetaK',[],...
+  'gseR',[],'mlt',[],'mLat',[],'header',TT.Header{1});
 
 oldPwd = pwd;
 for ievent=1:numel(TT),
