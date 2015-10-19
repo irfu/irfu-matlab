@@ -119,12 +119,12 @@ classdef mms_sdp_dmgr < handle
       if( ~isempty(DATAC.(param)) )
         % Error, Warning or Notice for replacing the data variable?
         if(~any(strcmp(param,{'hk_101', 'hk_105', 'hk_10e', 'defatt'})))
-          % Only multiple HK files are allowed for now..
+          % Only multiple HK/Defatt files are allowed for now..
           errStr = ['replacing existing variable (' param ') with new data'];
           irf.log('critical', errStr);
           error('MATLAB:MMS_SDP_DMGR:INPUT', errStr);
         else
-          % Warn about multiple HK files of same type.
+          % Warn about multiple files of same type.
           irf.log('warning',['Multiple files for (' param ' detected. Will try to sort them by time.']);
         end
       end
@@ -1039,33 +1039,22 @@ classdef mms_sdp_dmgr < handle
         irf.log('critical',errStr); error(errStr);
       end
       
-      MMS_CONST = DATAC.CONST;
-      switch DATAC.procId
-        case {MMS_CONST.SDCProc.scpot,MMS_CONST.SDCProc.sitl, MMS_CONST.SDCProc.ql}
-          Hk_101 = DATAC.hk_101;
-          if isempty(Hk_101)
-            errStr='Bad HK_101 input, cannot proceed.';
-            irf.log('critical',errStr); error(errStr);
-          end
-          
-          [dcephase, dcephase_flag] = mms_sdp_phase_2(Hk_101, Dce.time);
-          DATAC.phase = struct('data',dcephase,'bitmask',dcephase_flag);
-          
-        case {MMS_CONST.SDCProc.l2pre,MMS_CONST.SDCProc.l2a}
-          Defatt = DATAC.defatt;
-          if isempty(Defatt)
-            errStr='Bad DEFATT input, cannot proceed.';
-            irf.log('critical',errStr); error(errStr);
-          end
-          
-          phaseTS = mms_defatt_phase(Defatt,Dce.time);
-          dcephase_flag = zeros(size(phaseTS.data)); % FIXME BETTER FLAG & BITMASKING!
-          DATAC.phase = struct('data', phaseTS.data, ...
-            'bitmask', dcephase_flag);
-          
-        otherwise
-          errStr = 'unrecognized procId';
-          irf.log('critical', errStr); error(errStr)
+      % Begin trying to use DEFATT
+      Defatt = DATAC.defatt;
+      if(~isempty(Defatt))
+        % Defatt was set, use it for phase.
+        phaseTS = mms_defatt_phase(Defatt, Dce.time);
+        dcephase_flag = zeros(size(phaseTS.data)); % FIXME BETTER FLAG & BITMASKING!
+        DATAC.phase = struct('data', phaseTS.data, 'bitmask', dcephase_flag);
+      else
+        % No defatt was set, try to use HK 101 sunpulses for phase
+        Hk_101 = DATAC.hk_101;
+        if(isempty(Hk_101))
+          errStr='No DEFATT and bad HK_101 input, cannot proceed.';
+          irf.log('critical',errStr); error(errStr);
+        end
+        [dcephase, dcephase_flag] = mms_sdp_phase_2(Hk_101, Dce.time);
+        DATAC.phase = struct('data',dcephase,'bitmask',dcephase_flag);
       end
       res = DATAC.phase;
     end
