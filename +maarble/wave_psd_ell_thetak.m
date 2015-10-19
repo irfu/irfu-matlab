@@ -1,9 +1,20 @@
-function [ampBtotal,elltotal,thetaKtotal]=wave_psd_ell_thetak(TT)
+function Out = wave_psd_ell_thetak(TT)
 %MAARBLE.WAVE_PSD_ELL_THETAK  Extract PSD, ELL, thetaK for a TT
 %
-% [ampBtotal,elltotal,thetaKtotal]=wave_psd_ell_thetak(TT)
+% Out = wave_psd_ell_thetak(TT)
+%
+% TT is a MAARBLE TimeTable containing frequency limits for a banded
+% wave element in entry description
+%
+% Out is a structure having the following fileds:
+%    time            - time vector
+%    psdBpeak        - PSD B at wave peak
+%    ellipticity     - ellipticity at wave peak
+%    thetaK          - wave normal angle (deg) at wave peak
+%    gseR, mlt, mLat - position
 
-ampBtotal = []; elltotal = []; thetaKtotal = []; 
+Out = struct('time',[],'psdBpeak',[],'ellipticity',[],'thetaK',[],...
+  'gseR',[],'mlt',[],'mLat',[]);
 
 header12 = TT.Header{1}(1:2);
 if header12(1) ~= 'C', error('TT HEader must start with C'), end
@@ -115,16 +126,8 @@ for ievent=1:numel(TT),
       end
     end
     
-    %% Construct ebsp
-    
-    [outTime, idxPC35] = irf_tlim(ebspPC35.t.data,tint);
-    BBssPC35 = double(ebspPC35.bb_xxyyzzss.data(idxPC35,:,4));
-    
-    [inTime, idxPC12] = irf_tlim(ebspPC12.t.data, tint + 30*[-1 1]); % 30 sec on each side for PC12 for propoper averaging
-    BBssPC12 = double(ebspPC12.bb_xxyyzzss.data(idxPC12,:,4));
-    BBssPC12av = AverageData(BBssPC12,inTime,outTime);
-    BBss = [BBssPC35, BBssPC12av]; % combined BBss for PC12 & 35
-    
+    %% Combine PC12  &  PC35
+    % Frequency limits
     f = [tocolumn(ebspPC35.f.data); tocolumn(ebspPC12.f.data)];
     lowerFreqBound = str2double(TT.Description{ievent}{1});
     upperFreqBound = str2double(TT.Description{ievent}{2});
@@ -132,8 +135,14 @@ for ievent=1:numel(TT),
     upperidx = find(abs(f-upperFreqBound)<.001);
     idxFreq = loweridx:upperidx;
     
+    [outTime, idxPC35] = irf_tlim(ebspPC35.t.data,tint);
+    BBssPC35 = double(ebspPC35.bb_xxyyzzss.data(idxPC35,:,4));
+    [inTime, idxPC12] = irf_tlim(ebspPC12.t.data, tint + 30*[-1 1]); % 30 sec on each side for PC12 for propoper averaging
+    BBssPC12 = double(ebspPC12.bb_xxyyzzss.data(idxPC12,:,4));
+    BBssPC12av = AverageData(BBssPC12,inTime,outTime);
+    BBss = [BBssPC35, BBssPC12av]; % combined BBss for PC12 & 35
     BBss=BBss(:,idxFreq);
-    [ampBpeak,idxPeakTmp]=max(BBss,[],2);
+    [psdBpeak,idxPeakTmp]=max(BBss,[],2);
     idxPeak = ((1:size(BBss,1))'-1)*size(BBss,2)+idxPeakTmp;
     
     ellPC35 = double(ebspPC35.ellipticity.data(idxPC35,:));
@@ -141,7 +150,7 @@ for ievent=1:numel(TT),
     ellPC12 = AverageData(ellPC12,inTime,outTime);
     ell = [ellPC35, ellPC12]; % combined ellipticity for PC12 & 35
     ell = ell(:,idxFreq);
-    ellpeak = ell(idxPeak);
+    ellPeak = ell(idxPeak);
     
     ktPC12=double(ebspPC12.k_tp.data(idxPC12,:,1));
     ktPC35=double(ebspPC35.k_tp.data(idxPC35,:,1));
@@ -149,15 +158,26 @@ for ievent=1:numel(TT),
     thetaK = [ktPC35, ktPC12];
     thetaK=thetaK(:,idxFreq);
     thetaKpeak=thetaK(idxPeak);
-      
-    ampBtotal = [ampBtotal;ampBpeak]; %#ok<AGROW>
-    elltotal = [elltotal;ellpeak]; %#ok<AGROW>
-    thetaKtotal = [thetaKtotal;thetaKpeak]; %#ok<AGROW>
+    
+    % Mag coordinates
+    gseR = irf_resamp(gseR,outTime);
+    smR = irf.geocentric_coordinate_transformation(gseR,'gse>sm');
+    [azimuth,elevation,~] = cart2sph(smR(:,2),smR(:,3),smR(:,4));
+    mLat = elevation*180/pi;
+    mlt = mod(azimuth*180/pi+180,360)/360*24;
+    
+    % Save output
+    Out.time = [Out.time; outTime];
+    Out.psdBpeak = [Out.psdBpeak; psdBpeak];
+    Out.ellipticity = [Out.ellipticity; ellPeak];
+    Out.thetaK = [Out.thetaK; thetaKpeak];
+    Out.gseR = [Out.gseR; gseR];
+    Out.mlt = [Out.mlt; mlt];
+    Out.mLat = [Out.mLat; mLat];
 end
-
 cd (oldPwd)
-
 end
+
 function out = AverageData(data,x,y,avWindow,flagSerial)
 % average data with time x to time y using window
 dtx = median(diff(x)); dty = median(diff(y));
