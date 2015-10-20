@@ -21,31 +21,83 @@ if ~any(cl_s=='1234'), error('TT HEader must start with C1..4'), end
 Out = struct('time',[],'psdBpeak',[],'ellipticity',[],'thetaK',[],...
   'gseR',[],'mlt',[],'mLat',[],...
   'header',TT.Header{1},'created',irf_time(now,'date>utc'));
-
+fprintf('Table : %s\n',Out.header);
 oldPwd = pwd;
 for ievent=1:numel(TT),
-    fprintf('Event #%d (%d) : %s',ievent,numel(TT),...
+    fprintf('Event #%d (out of %d) : %s\n',ievent,numel(TT),...
       irf_disp_iso_range(TT.TimeInterval(ievent,:),1));
     tint = TT.TimeInterval(ievent,:);
     tintDl = tint + 300*[-1 1]; %5 minutes are included in the timetable on either side of the EMIC wave
-    gseR = c_caa_var_get(['sc_r_xyz_gse__C' cl_s '_CP_AUX_POSGSE_1M'],...
+    gseR = local.c_read(['R' cl_s],tintDl);
+    if isempty(gseR) || size(gseR,1)<=3
+      gseR = c_caa_var_get(['sc_r_xyz_gse__C' cl_s '_CP_AUX_POSGSE_1M'],...
         'mat','tint',tintDl);
-    
+    end
     if size(gseR,1)<=3, continue, end
     indexDir = ['/data/caa/MAARBLE/WaveDatabase/ULF/Cluster/C' cl_s '/PC12/CDF'];
     cd(indexDir);
     d = dir(['C' cl_s '*.cdf']);
-    m=0;
-    i=1;
+    m=0; i=1;
     while i <= length(d) && m == 0,
       tend = d(i).name(45:59);
       tenddate = datenum(tend,'yyyymmdd_HHMMSS');
-      if tenddate > epoch2date(tintDl(1)),
-        m=i;
-      end
+      if tenddate > epoch2date(tintDl(1)), m=i; end
       i=i+1;
     end
-    fname=d(m).name;
+    get_ebsp(d(m).name)
+    
+    %% Combine PC12  &  PC35
+    % Frequency limits
+    f = [tocolumn(ebspPC35.f.data); tocolumn(ebspPC12.f.data)];
+    lowerFreqBound = str2double(TT.Description{ievent}{1});
+    upperFreqBound = str2double(TT.Description{ievent}{2});
+    loweridx = find(abs(f-lowerFreqBound)<.001);
+    upperidx = find(abs(f-upperFreqBound)<.001);
+    idxFreq = loweridx:upperidx;
+    
+    [outTime, idxPC35] = irf_tlim(ebspPC35.t.data,tint);
+    BBssPC35 = double(ebspPC35.bb_xxyyzzss.data(idxPC35,:,4));
+    [inTime, idxPC12] = irf_tlim(ebspPC12.t.data, tint + 30*[-1 1]); % 30 sec on each side for PC12 for propoper averaging
+    BBssPC12 = double(ebspPC12.bb_xxyyzzss.data(idxPC12,:,4));
+    BBssPC12av = AverageData(BBssPC12,inTime,outTime);
+    BBss = [BBssPC35, BBssPC12av]; % combined BBss for PC12 & 35
+    BBss=BBss(:,idxFreq);
+    [psdBpeak,idxPeakTmp]=max(BBss,[],2);
+    idxPeak = ((1:size(BBss,1))'-1)*size(BBss,2)+idxPeakTmp;
+    
+    ellPC35 = double(ebspPC35.ellipticity.data(idxPC35,:));
+    ellPC12 = double(ebspPC12.ellipticity.data(idxPC12,:));
+    ellPC12 = AverageData(ellPC12,inTime,outTime);
+    ell = [ellPC35, ellPC12]; % combined ellipticity for PC12 & 35
+    ell = ell(:,idxFreq)'; % transpose to get the idx right
+    ellPeak = ell(idxPeak);
+    
+    ktPC12=double(ebspPC12.k_tp.data(idxPC12,:,1));
+    ktPC35=double(ebspPC35.k_tp.data(idxPC35,:,1));
+    ktPC12 = AverageData(ktPC12,inTime,outTime);
+    thetaK = [ktPC35, ktPC12];
+    thetaK=thetaK(:,idxFreq)'; % transpose to get the idx right
+    thetaKpeak=thetaK(idxPeak);
+    
+    % Mag coordinates
+    gseR = irf_resamp(gseR,outTime);
+    smR = irf.geocentric_coordinate_transformation(gseR,'gse>sm');
+    [azimuth,elevation,~] = cart2sph(smR(:,2),smR(:,3),smR(:,4));
+    mLat = elevation*180/pi;
+    mlt = mod(azimuth*180/pi+180,360)/360*24;
+    
+    % Save output
+    Out.time = [Out.time; outTime];
+    Out.psdBpeak = [Out.psdBpeak; psdBpeak];
+    Out.ellipticity = [Out.ellipticity; ellPeak];
+    Out.thetaK = [Out.thetaK; thetaKpeak];
+    Out.gseR = [Out.gseR; gseR];
+    Out.mlt = [Out.mlt; mlt];
+    Out.mLat = [Out.mLat; mLat];
+end
+cd (oldPwd)
+
+  function get_ebsp(fname)
     dobj=dataobj(fname);
     indexDir2 = ['/data/caa/MAARBLE/WaveDatabase/ULF/Cluster/C' cl_s '/PC35/CDF'];
     cd(indexDir2);
@@ -126,57 +178,7 @@ for ievent=1:numel(TT),
         end
       end
     end
-    
-    %% Combine PC12  &  PC35
-    % Frequency limits
-    f = [tocolumn(ebspPC35.f.data); tocolumn(ebspPC12.f.data)];
-    lowerFreqBound = str2double(TT.Description{ievent}{1});
-    upperFreqBound = str2double(TT.Description{ievent}{2});
-    loweridx = find(abs(f-lowerFreqBound)<.001);
-    upperidx = find(abs(f-upperFreqBound)<.001);
-    idxFreq = loweridx:upperidx;
-    
-    [outTime, idxPC35] = irf_tlim(ebspPC35.t.data,tint);
-    BBssPC35 = double(ebspPC35.bb_xxyyzzss.data(idxPC35,:,4));
-    [inTime, idxPC12] = irf_tlim(ebspPC12.t.data, tint + 30*[-1 1]); % 30 sec on each side for PC12 for propoper averaging
-    BBssPC12 = double(ebspPC12.bb_xxyyzzss.data(idxPC12,:,4));
-    BBssPC12av = AverageData(BBssPC12,inTime,outTime);
-    BBss = [BBssPC35, BBssPC12av]; % combined BBss for PC12 & 35
-    BBss=BBss(:,idxFreq);
-    [psdBpeak,idxPeakTmp]=max(BBss,[],2);
-    idxPeak = ((1:size(BBss,1))'-1)*size(BBss,2)+idxPeakTmp;
-    
-    ellPC35 = double(ebspPC35.ellipticity.data(idxPC35,:));
-    ellPC12 = double(ebspPC12.ellipticity.data(idxPC12,:));
-    ellPC12 = AverageData(ellPC12,inTime,outTime);
-    ell = [ellPC35, ellPC12]; % combined ellipticity for PC12 & 35
-    ell = ell(:,idxFreq);
-    ellPeak = ell(idxPeak);
-    
-    ktPC12=double(ebspPC12.k_tp.data(idxPC12,:,1));
-    ktPC35=double(ebspPC35.k_tp.data(idxPC35,:,1));
-    ktPC12 = AverageData(ktPC12,inTime,outTime);
-    thetaK = [ktPC35, ktPC12];
-    thetaK=thetaK(:,idxFreq);
-    thetaKpeak=thetaK(idxPeak);
-    
-    % Mag coordinates
-    gseR = irf_resamp(gseR,outTime);
-    smR = irf.geocentric_coordinate_transformation(gseR,'gse>sm');
-    [azimuth,elevation,~] = cart2sph(smR(:,2),smR(:,3),smR(:,4));
-    mLat = elevation*180/pi;
-    mlt = mod(azimuth*180/pi+180,360)/360*24;
-    
-    % Save output
-    Out.time = [Out.time; outTime];
-    Out.psdBpeak = [Out.psdBpeak; psdBpeak];
-    Out.ellipticity = [Out.ellipticity; ellPeak];
-    Out.thetaK = [Out.thetaK; thetaKpeak];
-    Out.gseR = [Out.gseR; gseR];
-    Out.mlt = [Out.mlt; mlt];
-    Out.mLat = [Out.mLat; mLat];
-end
-cd (oldPwd)
+  end
 end
 
 function out = AverageData(data,x,y,avWindow,flagSerial)
