@@ -64,12 +64,10 @@ else
 end
 
 timeVec       = irf_time(t,'vector');
-% Use Matlab built in modified juliandates (and keep only days as before)
-% Note: This does not take leap second into account.
 dayStartEpoch = irf_time([timeVec(:,[1 2 3]) timeVec(:,1)*[0 0 0]],'vector>epoch');
-mjdRefEpoch   = irf_time([2000 1 1 0 0 0],'vector>epoch');
-mjd2000       = floor((dayStartEpoch - mjdRefEpoch)/86400);
-Tzero         = (mjd2000-0.5)/36525.0;
+mjdRefEpoch   = irf_time([2000 1 1 12 0 0],'vector>epoch');
+% Tzero is time measured in Julian centuries from 2000-01-01 12:00 UT to the previous midnight
+Tzero         = (dayStartEpoch - mjdRefEpoch)/3600/24/36525.0; 
 UT            = timeVec(:,4)+timeVec(:,5)/60+timeVec(:,6)/3600;
 
 switch lower(flag)
