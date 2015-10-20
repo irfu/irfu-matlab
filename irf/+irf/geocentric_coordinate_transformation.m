@@ -45,7 +45,7 @@ function out=geocentric_coordinate_transformation(inp,flag)
 % 2000 January 1, 11:58:55.816 UTC.
 % ThoNi; This is exactly what we have in EpochTT(int64(0)).
 % ThoNi; therefor: D = double(EpochTT.ttns)/(10^9*86400); or D = EpochTT.tts / 86400;
-% ThoNi; and D0 = (EpochTT.ttns-10^9*12*3600)/(10^9*86400); or D0 = (EpochTT.tts - 12*3600)/86400;
+% ThoNi; and D0 = floor(EpochTT.tts/86400)-0.5;
 %
 %% Alterative for T2, src aa.usno.navy.mil/faq/docs/SunApprox.php
 % compute D, the number of days and fraction (+/-) from the epoch referred
