@@ -8,38 +8,54 @@ function Out = wave_psd_ell_thetak(TT)
 %
 % Out is a structure having the following fileds:
 %    time            - time vector
+%    fPeak           - peak frequency
 %    psdBpeak        - PSD B at wave peak
 %    ellipticity     - ellipticity at wave peak
 %    thetaK          - wave normal angle (deg) at wave peak
 %    gseR, mlt, mLat - position
 
-header12 = TT.Header{1}(1:2);
-if header12(1) ~= 'C', error('TT HEader must start with C'), end
-cl_s = header12(2);
-if ~any(cl_s=='1234'), error('TT HEader must start with C1..4'), end
+ULF_PATH = '/data/caa/MAARBLE/WaveDatabase/ULF/';
 
-Out = struct('time',[],'psdBpeak',[],'ellipticity',[],'thetaK',[],...
+chk_input()
+if ~isempty(th_s) % load THEMIS positions 1min resolution
+  Rth = load('/data/caalocal/THEMIS/mRth',['Rth' lower(th_s)]);
+end 
+
+Out = struct('time',[],'fPeak',[],'psdBpeak',[],'ellipticity',[],'thetaK',[],...
   'gseR',[],'mlt',[],'mLat',[],...
   'header',TT.Header{1},'created',irf_time(now,'date>utc'));
-fprintf('Table : %s\n',Out.header);
+
 oldPwd = pwd;
 for ievent=1:numel(TT),
     fprintf('Event #%d (out of %d) : %s\n',ievent,numel(TT),...
       irf_disp_iso_range(TT.TimeInterval(ievent,:),1));
+    lowerFreqBound = str2double(TT.Description{ievent}{1});
+    upperFreqBound = str2double(TT.Description{ievent}{2});
+    flagSkipPC12 = false; flagSkipPC35 = false; 
+    if upperFreqBound<=0.1, flagSkipPC12 = true; end
+    if lowerFreqBound>=0.1, flagSkipPC35 = true; end
+    
     tint = TT.TimeInterval(ievent,:);
     tintDl = tint + 300*[-1 1]; %5 minutes are included in the timetable on either side of the EMIC wave
-    gseR = local.c_read(['R' cl_s],tintDl);
-    if isempty(gseR) || size(gseR,1)<=3
-      gseR = c_caa_var_get(['sc_r_xyz_gse__C' cl_s '_CP_AUX_POSGSE_1M'],...
-        'mat','tint',tintDl);
+    if isempty(th_s) % Cluster
+      gseR = local.c_read(['R' cl_s],tintDl);
+      if isempty(gseR) || size(gseR,1)<=3
+        gseR = c_caa_var_get(['sc_r_xyz_gse__C' cl_s '_CP_AUX_POSGSE_1M'],...
+          'mat','tint',tintDl);
+      end
+      if size(gseR,1)<=3, continue, end
+      indexDir = [ULF_PATH 'Cluster/C' cl_s '/PC12/CDF'];
+    else % THEMIS
+      gseR = irf_tlim(Rth.(['Rth' lower(th_s)]),tintDl);
+      indexDir = [ULF_PATH 'THEMIS/TH' th_s '/PC12/CDF'];
     end
-    if size(gseR,1)<=3, continue, end
-    indexDir = ['/data/caa/MAARBLE/WaveDatabase/ULF/Cluster/C' cl_s '/PC12/CDF'];
     cd(indexDir);
     d = dir(['C' cl_s '*.cdf']);
     m=0; i=1;
     while i <= length(d) && m == 0,
-      tend = d(i).name(45:59);
+      if isempty(th_s), tend = d(i).name(45:59);
+      else tend = d(i).name(49:63);
+      end
       tenddate = datenum(tend,'yyyymmdd_HHMMSS');
       if tenddate > epoch2date(tintDl(1)), m=i; end
       i=i+1;
@@ -48,34 +64,35 @@ for ievent=1:numel(TT),
     
     %% Combine PC12  &  PC35
     % Frequency limits
-    f = [tocolumn(ebspPC35.f.data); tocolumn(ebspPC12.f.data)];
-    lowerFreqBound = str2double(TT.Description{ievent}{1});
-    upperFreqBound = str2double(TT.Description{ievent}{2});
-    loweridx = find(abs(f-lowerFreqBound)<.001);
-    upperidx = find(abs(f-upperFreqBound)<.001);
+    freq = [tocolumn(ebspPC35.f.data); tocolumn(ebspPC12.f.data)];
+    loweridx = find(abs(freq-lowerFreqBound)<.001);
+    upperidx = find(abs(freq-upperFreqBound)<.001);
     idxFreq = loweridx:upperidx;
     
     [outTime, idxPC35] = irf_tlim(ebspPC35.t.data,tint);
     BBssPC35 = double(ebspPC35.bb_xxyyzzss.data(idxPC35,:,4));
-    [inTime, idxPC12] = irf_tlim(ebspPC12.t.data, tint + 30*[-1 1]); % 30 sec on each side for PC12 for propoper averaging
-    BBssPC12 = double(ebspPC12.bb_xxyyzzss.data(idxPC12,:,4));
-    BBssPC12av = AverageData(BBssPC12,inTime,outTime);
-    BBss = [BBssPC35, BBssPC12av]; % combined BBss for PC12 & 35
+    ellPC35  = double(ebspPC35.ellipticity.data(idxPC35,:));
+    ktPC35   = double(ebspPC35.k_tp.data(idxPC35,:,1));
+    if flagSkipPC12, BBss = BBssPC35; ell = ellPC35; thetaK = ktPC35;
+    else
+      [inTime, idxPC12] = irf_tlim(ebspPC12.t.data, tint + 30*[-1 1]); % 30 sec on each side for PC12 for propoper averaging
+      if isempty(idxPC12), error('No PC12 data'), end
+      BBssPC12 = double(ebspPC12.bb_xxyyzzss.data(idxPC12,:,4));
+      BBssPC12av = AverageData(BBssPC12,inTime,outTime);
+      BBss = [BBssPC35, BBssPC12av]; % combined BBss for PC12 & 35
+      ellPC12 = double(ebspPC12.ellipticity.data(idxPC12,:));
+      ellPC12 = AverageData(ellPC12,inTime,outTime);
+      ell = [ellPC35, ellPC12]; % combined ellipticity for PC12 & 35
+      ktPC12=double(ebspPC12.k_tp.data(idxPC12,:,1));
+      ktPC12 = AverageData(ktPC12,inTime,outTime);
+      thetaK = [ktPC35, ktPC12]; % combined thetaK for PC12 & 35
+    end
     BBss=BBss(:,idxFreq);
     [psdBpeak,idxPeakTmp]=max(BBss,[],2);
+    fPeak = double(freq(idxFreq(1)-1+idxPeakTmp));
     idxPeak = ((1:size(BBss,1))'-1)*size(BBss,2)+idxPeakTmp;
-    
-    ellPC35 = double(ebspPC35.ellipticity.data(idxPC35,:));
-    ellPC12 = double(ebspPC12.ellipticity.data(idxPC12,:));
-    ellPC12 = AverageData(ellPC12,inTime,outTime);
-    ell = [ellPC35, ellPC12]; % combined ellipticity for PC12 & 35
     ell = ell(:,idxFreq)'; % transpose to get the idx right
     ellPeak = ell(idxPeak);
-    
-    ktPC12=double(ebspPC12.k_tp.data(idxPC12,:,1));
-    ktPC35=double(ebspPC35.k_tp.data(idxPC35,:,1));
-    ktPC12 = AverageData(ktPC12,inTime,outTime);
-    thetaK = [ktPC35, ktPC12];
     thetaK=thetaK(:,idxFreq)'; % transpose to get the idx right
     thetaKpeak=thetaK(idxPeak);
     
@@ -88,6 +105,7 @@ for ievent=1:numel(TT),
     
     % Save output
     Out.time = [Out.time; outTime];
+    Out.fPeak = [Out.fPeak; fPeak];
     Out.psdBpeak = [Out.psdBpeak; psdBpeak];
     Out.ellipticity = [Out.ellipticity; ellPeak];
     Out.thetaK = [Out.thetaK; thetaKpeak];
@@ -97,9 +115,27 @@ for ievent=1:numel(TT),
 end
 cd (oldPwd)
 
+  function chk_input()
+    header = TT.Header{1};
+    fprintf('Table : %s\n',header);
+    if header(1) ~= 'C', error('TT Header must start with C'), end
+    cl_s = header(2); th_s = '';
+    if cl_s=='C' % THEMIS
+      if header(4)~= 'T' || header(5)~= 'H'
+        error('TT Header must start with CC_TH')
+      end
+      th_s = header(6);
+      if ~any(th_s=='ABCDE')
+        error('TT THEMIS header must start with CC_THA..E')
+      end
+    elseif ~any(cl_s=='1234'), error('TT Cluster header must start with C1..4')
+    end
+  end
   function get_ebsp(fname)
     dobj=dataobj(fname);
-    indexDir2 = ['/data/caa/MAARBLE/WaveDatabase/ULF/Cluster/C' cl_s '/PC35/CDF'];
+    if isempty(th_s), indexDir2 = [ULF_PATH 'Cluster/C' cl_s '/PC35/CDF'];
+    else indexDir2 = [ULF_PATH 'THEMIS/TH' th_s '/PC35/CDF'];
+    end
     cd(indexDir2);
     iSep=strfind(fname,'__');
     productName = fname(1:iSep-1);
