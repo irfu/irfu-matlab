@@ -1,10 +1,13 @@
-function out=geocentric_coordinate_transformation(inp,flag)
+function out=geocentric_coordinate_transformation(inp,flag,Hapgood)
 % IRF.GEOCENTRIC_COORDINATE_TRANSFORMATION 
 %   coordinate transformation GEO/GEI/GSE/GSM/SM/MAG
 %
-%	[out]=IRF.GEOCENTRIC_COORDINATE_TRANSFORMATION(inp,'coord1>coord2')
+%	[out]=IRF.GEOCENTRIC_COORDINATE_TRANSFORMATION(inp,'coord1>coord2',[Hapgood])
 %		where coord1 and coord2 can be geo/gei/gse/gsm/sm/mag
 %		inp can be matrix with 1st column is time, 2-4th columns are x,y,z.
+%       [Hapgood] - boolean indicator if original Hapgood sources should be
+%       used for angle computations or if updated USNO-AA sources should be
+%       used. Default = true, meaning original Hapgood sources.
 %   inp can be TSeries of vector data.
 %
 % [out]=IRF.GEOCENTRIC_COORDINATE_TRANSFORMATION(inp,'coord2')
@@ -21,54 +24,14 @@ function out=geocentric_coordinate_transformation(inp,flag)
 %
 % Ref: Hapgood 1997 (corrected version of Hapgood 1992)
 % Planet. Space Sci.. Vol. 40, No. 5. pp. 71l-717, 1992
-
-%% Alternative for T1, src: aa.usno.navy.mil/faq/docs/GAST.php (Last modified: 2011/06/14T14:04)
-% Greenwich mean sidereal time (GMST), in hours (24.0h = 360.0 deg).
-% GMST = 6.697374558 + 0.06570982441908*D0 + 1.00273790935*H + 0.000026*T^2
-% where;
-% Let JD be the Julian date of the time of interest. Let JD0 be the Julian
-% date of the previous midnight (0h) UT (the value of JD0 will end in .5
-% exactly), and let H be the hours of UT elapsed since that time. Thus we
-% have JD = JD0 + H/24. For both of these Julian dates, compute the number
-% of days and fraction (+ or -) from 2000 January 1, 12h UT, Julian date
-% 2451545.0:
-% D = JD - 2451545.0;
-% D0 = JD0 - 2451545.0;
-% T = D/36525; % is the number of centuries since the year 2000; thus the
-% last term can be omitted in most applications. It will be necessary to
-% reduce GMST to the range 0h to 24h.
-% ThoNi; In other words, GMST = rem(GMST,24);
-% ThoNi; and theta = (360/24)*GMST; % Convert hours to degrees.
-% The epoch designated "J2000.0" is specified as Julian date 2451545.0 TT,
-% or 2000 January 1, 12h TT.
-% This epoch can also be expressed as 2000 January 1, 11:59:27.816 TAI or
-% 2000 January 1, 11:58:55.816 UTC.
-% ThoNi; This is exactly what we have in EpochTT(int64(0)).
-% ThoNi; therefor: D = double(EpochTT.ttns)/(10^9*86400);
-% ThoNi; or simply: D = EpochTT.tts / 86400; % Julian date from J2000.
-% ThoNi; and D0 = floor(EpochTT.tts/86400)-0.5;
-% ThoNi; and H = 24*(JD-JD0) = 24*(D-D0);
 %
-%% Alterative for T2, src aa.usno.navy.mil/faq/docs/SunApprox.php (Last modified: 2012/11/06T14:12)
-% compute D, the number of days and fraction (+/-) from the epoch referred
-% to as "J2000.0", which is 2000 January 1.5, Julian date 2451545.0:
-% D = JD - 2451545.0;
-% ThoNi; Same as above: D = EpochTT.tts/86400;
-% where JD is the Julian date of interest. Then compute
-% Mean anomaly of the Sun:
-% M = 357.529 + 0.98560028 * D;
-% Mean longitude of the Sun:
-% q = 280.459 + 0.98564736 * D;
-% Geocentric apparent ecliptic longitude
-% of the Sun (adjusted for aberration):
-% L = q + 1.915*sind(M) + 0.020*sind(2*M);
-% where all the constants (therefore M, q, and L) are in degrees
-% The mean obliquity of the ecliptic, in degrees:
-% e = 23.439 - 0.00000036 * D;
-%
-%% End of Alternative
+% Or USNO-AA 2011 & 2012
 
 persistent dipoleDirectionGSE
+
+% Optional input argument, "Hapgood" indicating if orginial Hapgood ref.
+% should be used for computing angles or modern USNO-AA.
+if(nargin==2), Hapgood = true; end % Default to old method.
 
 isInpTSeries = isa(inp,'TSeries');
 
@@ -101,20 +64,30 @@ if strcmpi(refSystIn,refSystOut),
 end
 
 if isInpTSeries
-	t = inp.time.epochUnix;
-	inpTs = inp;
-	inp = double(inp.data);
+  t = inp.time.epochUnix;
+  tts = inp.time.tts; % Terrestial Time (seconds since J2000)
+  inpTs = inp;
+  inp = double(inp.data);
 else
-	t=inp(:,1);
-	inp(:,1) = [];
+  t=inp(:,1);
+  tmpTT = EpochUnix(t);
+  tts = tmpTT.tts; % Terrestial Time (seconds since J2000)
+  inp(:,1) = [];
 end
 
-timeVec       = irf_time(t,'vector');
-dayStartEpoch = irf_time([timeVec(:,[1 2 3]) timeVec(:,1)*[0 0 0]],'vector>epoch');
-mjdRefEpoch   = irf_time([2000 1 1 12 0 0],'vector>epoch');
-% Tzero is time measured in Julian centuries from 2000-01-01 12:00 UT to the previous midnight
-Tzero         = (dayStartEpoch - mjdRefEpoch)/3600/24/36525.0; 
-UT            = timeVec(:,4)+timeVec(:,5)/60+timeVec(:,6)/3600;
+if(Hapgood)
+  timeVec       = irf_time(t,'vector');
+  dayStartEpoch = irf_time([timeVec(:,[1 2 3]) timeVec(:,1)*[0 0 0]],'vector>epoch');
+  mjdRefEpoch   = irf_time([2000 1 1 12 0 0],'vector>epoch');
+  % Tzero is time measured in Julian centuries from 2000-01-01 12:00 UT to the previous midnight
+  Tzero         = (dayStartEpoch - mjdRefEpoch)/3600/24/36525.0;
+  UT            = timeVec(:,4)+timeVec(:,5)/60+timeVec(:,6)/3600;
+else
+  D_J2000 = tts / 86400; % Julian date (of req. time) from J2000
+  D0_J2000 = floor(tts/86400) - 0.5; % Julian date (of preceeding midnight of req. time) from J2000
+  T_J2000 = D_J2000/36525; % Julian centuries (of req. time) since J2000
+  H_J2000 = 24*(D_J2000 - D0_J2000); % Hours in the of req. time (since midnight).
+end
 
 switch lower(flag)
 	case 'gse>gsm', tInd = 3;
@@ -174,15 +147,35 @@ end
 	function Tout=T(tInd)		
 		for j=numel(tInd):-1:1
 			tNum=tInd(j);
-			if     tNum == 1 || tNum == -1 % T1
-				theta = 100.461 + 36000.770*Tzero + 15.04107*UT;
+			if( tNum == 1 || tNum == -1) % T1
+				if(Hapgood)
+					theta = 100.461 + 36000.770*Tzero + 15.04107*UT;
+				else
+					% Source: United States Naval Observatory, Astronomical Applications Dept.
+					% http://aa.usno.navy.mil/faq/docs/GAST.php
+					% Last modified: 2011/06/14T14:04
+					GMST = 6.697374558 + 0.06570982441908*D0_J2000 + ...
+					  1.00273790935*H_J2000 + 0.000026*(T_J2000).^2;
+					GMST = rem(GMST,24); % Interval 0->24 hours
+					theta = (360/24)*GMST; % Convert to degree.
+				end
 				T = triang(theta*sign(tNum),3); % invert if tInd=-1
-			elseif tNum == 2 || tNum == -2 % T2
-				eps = 23.439 - 0.013*Tzero;
+			elseif( tNum == 2 || tNum == -2) % T2
+				if(Hapgood)
+					eps = 23.439 - 0.013*Tzero;
+					M = 357.528+35999.050*Tzero+0.04107*UT; % Suns mean anomaly
+					L = 280.460+36000.772*Tzero+0.04107*UT; % Suns mean longitude
+					lSun = L + (1.915-0.0048*Tzero).*sind(M)+0.020*sind(2*M);
+				else
+					% Source: United States Naval Observatory, Astronomical Applications Dept.
+					% http://aa.usno.navy.mil/faq/docs/SunApprox.php
+					% Last modified: 2012/11/06T14:12
+					eps = 23.439 - 0.00000036 * D_J2000;
+					M = 357.529 + 0.98560028 * D_J2000;
+					L = 280.459 + 0.98564736 * D_J2000;
+					lSun = L + 1.915*sind(M) + 0.020*sind(2*M);
+				end
 				Ttemp1 = triang(eps,1);
-				M = 357.528+35999.050*Tzero+0.04107*UT; % Suns mean anomaly
-				L = 280.460+36000.772*Tzero+0.04107*UT; % Suns mean longitude
-				lSun = L + (1.915-0.0048*Tzero).*sind(M)+0.020*sind(2*M);
 				Ttemp2 = triang(lSun,3);
 				T = mult(Ttemp2,Ttemp1);
 				if tNum==-2, 
