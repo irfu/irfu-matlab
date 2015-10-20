@@ -22,7 +22,7 @@ function out=geocentric_coordinate_transformation(inp,flag)
 % Ref: Hapgood 1997 (corrected version of Hapgood 1992)
 % Planet. Space Sci.. Vol. 40, No. 5. pp. 71l-717, 1992
 
-%% Alternative for T1, src: aa.usno.navy.mil/faq/docs/GAST.php
+%% Alternative for T1, src: aa.usno.navy.mil/faq/docs/GAST.php (Last modified: 2011/06/14T14:04)
 % Greenwich mean sidereal time (GMST), in hours (24.0h = 360.0 deg).
 % GMST = 6.697374558 + 0.06570982441908*D0 + 1.00273790935*H + 0.000026*T^2
 % where;
@@ -44,14 +44,16 @@ function out=geocentric_coordinate_transformation(inp,flag)
 % This epoch can also be expressed as 2000 January 1, 11:59:27.816 TAI or
 % 2000 January 1, 11:58:55.816 UTC.
 % ThoNi; This is exactly what we have in EpochTT(int64(0)).
-% ThoNi; therefor: D = double(EpochTT.ttns)/(10^9*86400); or D = EpochTT.tts / 86400;
+% ThoNi; therefor: D = double(EpochTT.ttns)/(10^9*86400);
+% ThoNi; or simply: D = EpochTT.tts / 86400; % Julian date from J2000.
 % ThoNi; and D0 = floor(EpochTT.tts/86400)-0.5;
+% ThoNi; and H = 24*(JD-JD0) = 24*(D-D0);
 %
-%% Alterative for T2, src aa.usno.navy.mil/faq/docs/SunApprox.php
+%% Alterative for T2, src aa.usno.navy.mil/faq/docs/SunApprox.php (Last modified: 2012/11/06T14:12)
 % compute D, the number of days and fraction (+/-) from the epoch referred
 % to as "J2000.0", which is 2000 January 1.5, Julian date 2451545.0:
 % D = JD - 2451545.0;
-% ThoNi; Same as above: D = double(EpochTT.ttns)/(10^9*86400);
+% ThoNi; Same as above: D = EpochTT.tts/86400;
 % where JD is the Julian date of interest. Then compute
 % Mean anomaly of the Sun:
 % M = 357.529 + 0.98560028 * D;
@@ -60,7 +62,7 @@ function out=geocentric_coordinate_transformation(inp,flag)
 % Geocentric apparent ecliptic longitude
 % of the Sun (adjusted for aberration):
 % L = q + 1.915*sind(M) + 0.020*sind(2*M);
-% where all the constants (therefore g, q, and L) are in degrees
+% where all the constants (therefore M, q, and L) are in degrees
 % The mean obliquity of the ecliptic, in degrees:
 % e = 23.439 - 0.00000036 * D;
 %
