@@ -1,12 +1,13 @@
 function [hout,hcb] = irf_spectrogram(varargin)
-%function hout = irf_spectrogram(h,t,Pxx,F,dt,dF)
+%function [hout,hcb] = irf_spectrogram(h,t,Pxx,F,dt,dF)
 %IRF_SPECTROGRAM  plot spectrogram
 %
-% [h] = irf_spectrogram([h],specrec,'option1','option2',..)
-% [h] = irf_spectrogram([h],t,Pxx,[f],[dt],[df])
+% [h, hcb] = irf_spectrogram(h,specrec,'option1','option2',..)
+% [h, hcb] = irf_spectrogram(h,t,Pxx,[f],[dt],[df])
 %
 % Input:
 %          h - axis handle
+%          hcb - colorbar handle
 %    specrec - structure including spectra
 %              specrec.t  - time vector
 %              specrec.f - frequency vector (can be also matrix the size specrec.p)
@@ -280,6 +281,7 @@ for comp=1:min(length(h),ncomp)
     if isa(h(comp),'handle'), hcb = colorbar(h(comp)); % HG2
     else hcb = colorbar('peer',h(comp));
     end
+    drawnow
 		posAx = get(h(comp),'Position'); 
 		posCb = get(hcb,'Position');
 		set(hcb,'TickDir','out','Position',...
