@@ -22,6 +22,50 @@ function out=geocentric_coordinate_transformation(inp,flag)
 % Ref: Hapgood 1997 (corrected version of Hapgood 1992)
 % Planet. Space Sci.. Vol. 40, No. 5. pp. 71l-717, 1992
 
+%% Alternative for T1, src: aa.usno.navy.mil/faq/docs/GAST.php
+% Greenwich mean sidereal time (GMST), in hours (24.0h = 360.0 deg).
+% GMST = 6.697374558 + 0.06570982441908*D0 + 1.00273790935*H + 0.000026*T^2
+% where;
+% Let JD be the Julian date of the time of interest. Let JD0 be the Julian
+% date of the previous midnight (0h) UT (the value of JD0 will end in .5
+% exactly), and let H be the hours of UT elapsed since that time. Thus we
+% have JD = JD0 + H/24. For both of these Julian dates, compute the number
+% of days and fraction (+ or -) from 2000 January 1, 12h UT, Julian date
+% 2451545.0:
+% D = JD - 2451545.0;
+% D0 = JD0 - 2451545.0;
+% T = D/36525; % is the number of centuries since the year 2000; thus the
+% last term can be omitted in most applications. It will be necessary to
+% reduce GMST to the range 0h to 24h.
+% ThoNi; In other words, GMST = rem(GMST,24);
+% ThoNi; and theta = (360/24)*GMST; % Convert hours to degrees.
+% The epoch designated "J2000.0" is specified as Julian date 2451545.0 TT,
+% or 2000 January 1, 12h TT.
+% This epoch can also be expressed as 2000 January 1, 11:59:27.816 TAI or
+% 2000 January 1, 11:58:55.816 UTC.
+% ThoNi; This is exactly what we have in EpochTT(int64(0)).
+% ThoNi; therefor: D = double(EpochTT.ttns)/(10^9*86400); or D = EpochTT.tts / 86400;
+% ThoNi; and D0 = (EpochTT.ttns-10^9*12*3600)/(10^9*86400); or D0 = (EpochTT.tts - 12*3600)/86400;
+%
+%% Alterative for T2, src aa.usno.navy.mil/faq/docs/SunApprox.php
+% compute D, the number of days and fraction (+/-) from the epoch referred
+% to as "J2000.0", which is 2000 January 1.5, Julian date 2451545.0:
+% D = JD - 2451545.0;
+% ThoNi; Same as above: D = double(EpochTT.ttns)/(10^9*86400);
+% where JD is the Julian date of interest. Then compute
+% Mean anomaly of the Sun:
+% M = 357.529 + 0.98560028 * D;
+% Mean longitude of the Sun:
+% q = 280.459 + 0.98564736 * D;
+% Geocentric apparent ecliptic longitude
+% of the Sun (adjusted for aberration):
+% L = q + 1.915*sind(M) + 0.020*sind(2*M);
+% where all the constants (therefore g, q, and L) are in degrees
+% The mean obliquity of the ecliptic, in degrees:
+% e = 23.439 - 0.00000036 * D;
+%
+%% End of Alternative
+
 persistent dipoleDirectionGSE
 
 isInpTSeries = isa(inp,'TSeries');
