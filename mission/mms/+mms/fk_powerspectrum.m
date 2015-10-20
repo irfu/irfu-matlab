@@ -43,15 +43,23 @@ probe = probecomb;
 
 zphase = zphase.tlim(ts2l);
 
+norepeat = ones(length(zphase.time),1);
 nph = length(zphase.data);
-for ii=[2:nph];
-    if(zphase.data(ii) < zphase.data(ii-1));
-        zphase.data(ii:end) = zphase.data(ii:end)+double(360.0);
+for ii=[2:nph]
+    if(zphase.time(ii) > zphase.time(ii-1));
+        if(zphase.data(ii) < zphase.data(ii-1));
+            zphase.data(ii:end) = zphase.data(ii:end)+double(360.0);
+        end
+    else 
+        norepeat(ii) = 0;
     end
 end
 
+zphasetime = zphase.time(find(norepeat == 1));
+zphasedata = zphase.data(find(norepeat == 1));
 
-zphase = TSeries(zphase.time,zphase.data,'to',1);
+zphase = TSeries(zphasetime,zphasedata,'to',1);
+
 zphase = zphase.resample(SCpot);
 Bxyz = Bxyz.resample(SCpot);
 
