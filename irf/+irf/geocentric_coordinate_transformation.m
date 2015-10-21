@@ -36,31 +36,32 @@ if(nargin==2), Hapgood = true; end % Default to old method.
 isInpTSeries = isa(inp,'TSeries');
 
 if strfind(flag,'>') % if input and output reference frames are the same return input
-	refSystIn  = flag(1:strfind(flag,'>')-1);
-	refSystOut = flag(strfind(flag,'>')+1:end);
+  refSystIn  = flag(1:strfind(flag,'>')-1);
+  refSystOut = flag(strfind(flag,'>')+1:end);
 else
-	refSystOut = lower(flag);
-end
-if isInpTSeries 
-	refSystInVariable = lower(inp.coordinateSystem);
-	refSystInVariable = refSystInVariable(1:strfind(refSystInVariable,'>')-1);
-	if isempty(refSystInVariable) && isempty(refSystIn)
-		errStr = 'input reference frame undefined';
-		irf.log('critical',errStr);error(errStr);
-	end
-	if ~isempty(refSystInVariable) && ~isempty(refSystIn) && ~strcmpi(refSystInVariable,refSystIn)
-		errStr = 'input reference frame as defined in variable and input flag differs';
-		irf.log('critical',errStr);error(errStr);
-	end
-	if isempty(refSystIn)
-		refSystIn = lower(refSystInVariable);
-	end
-	flag = [refSystIn '>' refSystOut];
+  refSystIn = [];
+  refSystOut = lower(flag);
 end
 
-if strcmpi(refSystIn,refSystOut),
-	out=inp;
-	return
+if isInpTSeries
+  refSystInternal = lower(inp.coordinateSystem);
+  if isempty(refSystIn) && isempty(refSystInternal)
+    errStr = 'input reference frame undefined';
+    irf.log('critical',errStr); error(errStr);
+  end
+  if ~isempty(refSystInternal) && ~isempty(refSystIn) && ~strcmpi(refSystInternal,refSystIn)
+    errStr = 'input reference frame as defined in variable and input flag differs';
+    irf.log('critical',errStr); error(errStr);
+  end
+  if isempty(refSystIn)
+    refSystIn = lower(refSystInternal);
+  end
+  flag = [refSystIn '>' refSystOut];
+end
+
+if strcmpi(refSystIn,refSystOut)
+  out = inp;
+  return
 end
 
 if isInpTSeries
@@ -279,9 +280,12 @@ if isInpTSeries,
 	outData = out;
 	out = inpTs;
 	out.data = outData;
-	if isfield(out.userData,'COORDINATE_SYSTEM')
-		out.userData.COORDINATE_SYSTEM = upper(refSystOut);
-	end
+    if isfield(out.userData,'COORDINATE_SYSTEM')
+      out.userData.COORDINATE_SYSTEM = upper(refSystOut);
+    end
+    if(~isempty(inpTs.coordinateSystem))
+      out.coordinateSystem = upper(refSystOut);
+    end
 else
 	out = [t out];
 end
