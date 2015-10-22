@@ -23,6 +23,7 @@ for mmsId = 1:4
     v = vars(i);
     Gei = mms.db_get_variable(vPref, v, tint);    
     Gei_ts = TSeries(EpochTT(Gei.time), Gei.data, 'vec_xyz');
+    Gei_ts.coordinateSystem = 'gei';
     gse_ts = irf.geocentric_coordinate_transformation(Gei_ts,'gei>gse',false);
     gsm_ts = irf.geocentric_coordinate_transformation(Gei_ts,'gei>gsm',false);
     vC = upper(v);
