@@ -168,6 +168,7 @@ if strcmp(flag_do,'check'), % Check if interpolation or average
 		
 		if length(x(:,1))/(x(end,1) - x(1,1)) > 2*sfy
 			flag_do='average';
+			irf.log('warning','Using averages in irf_resamp.');
 		else
 			flag_do='interpolation';
 		end
