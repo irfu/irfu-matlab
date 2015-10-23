@@ -21,7 +21,8 @@ dist1 = squeeze(irf.nanmean(disttemp.data,1));
 dangle = 180/16;
 phi = dangle*[0:31]+dangle/2;
 theta = dangle*[0:15]+dangle/2;
-energy = logspace(log10(10),log10(26000),32);
+[~,energy] = hist([log10(10),log10(30e3)],32);
+energy = 10.^energy;
 
 x = -cosd(phi')*sind(theta);
 y = -sind(phi')*sind(theta);
