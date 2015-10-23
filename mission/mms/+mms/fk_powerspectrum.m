@@ -1,4 +1,4 @@
-function [fkpower,freq,wavenumber] = fk_powerspectrum(SCpot, Bxyz, zphase, trange, MMSnum, probecomb) 
+function [fkpower,freq,wavenumber] = fk_powerspectrum(varargin) 
 %
 % [power,freq,wavenumber] = mms.fk_powerspectrum(SCpot,Bxyz,zphase,trange,SCnum,probecomb) 
 %
@@ -18,12 +18,13 @@ function [fkpower,freq,wavenumber] = fk_powerspectrum(SCpot, Bxyz, zphase, trang
 %                   B should be closely aligned with one probe pair over this time. 
 %                   See mms.probe_align_times
 %       zphase -    Spacecraft phase (zphase). Obtained from ancillary_defatt.
-%       MMSnum -    Spacecraft number: 1-4.
 %       probecomb - Probe combination to use (1 or 3). 1 for B aligned with
 %                   probes 1 and 2. 3 for B aligned with probes 3 and 4.
+%       cav -       Number of points in timeseries used to estimate phase.
+%                   Optional parameter. Default is cav = 128;
 %
 % Output: 
-%       power      - array of powers as a function of frequency and
+%       fkpower    - array of powers as a function of frequency and
 %                    wavenumber. Power is normalized to the maximum value.
 %       freq       - array of frequencies f in Hz.
 %       wavenumber - array of wavenumbers k in m^{-1}. Positive values are
@@ -33,25 +34,47 @@ function [fkpower,freq,wavenumber] = fk_powerspectrum(SCpot, Bxyz, zphase, trang
 % Directions and speeds are consistent with expectations based on time
 % delays.
 
-ts2=trange;
+if (numel(varargin) < 5),
+    help mms.fk_powerspectrum;
+    return;
+end
+
+SCpot = varargin{1};
+Bxyz = varargin{2};
+zphase = varargin{3};
+
+ts2=varargin{4};
 ts2l = ts2+[-1 1];
 SCpot = SCpot.tlim(ts2l);
 Bxyz = Bxyz.tlim(ts2l);
 
-ic = MMSnum;
-probe = probecomb;
+probe = varargin{5};
+
+if (numel(varargin)==5);
+    cav = 128;
+else 
+    cav = varargin{6};
+end
 
 zphase = zphase.tlim(ts2l);
 
+norepeat = ones(length(zphase.time),1);
 nph = length(zphase.data);
-for ii=[2:nph];
-    if(zphase.data(ii) < zphase.data(ii-1));
-        zphase.data(ii:end) = zphase.data(ii:end)+double(360.0);
+for ii=[2:nph]
+    if(zphase.time(ii) > zphase.time(ii-1));
+        if(zphase.data(ii) < zphase.data(ii-1));
+            zphase.data(ii:end) = zphase.data(ii:end)+double(360.0);
+        end
+    else 
+        norepeat(ii) = 0;
     end
 end
 
+zphasetime = zphase.time(find(norepeat == 1));
+zphasedata = zphase.data(find(norepeat == 1));
 
-zphase = TSeries(zphase.time,zphase.data,'to',1);
+zphase = TSeries(zphasetime,zphasedata,'to',1);
+
 zphase = zphase.resample(SCpot);
 Bxyz = Bxyz.resample(SCpot);
 
@@ -97,7 +120,6 @@ W2c.t = times;
 fkPower = 0.5*(cell2mat(W1c.p).*conj(cell2mat(W1c.p)) + cell2mat(W2c.p).*conj(cell2mat(W2c.p)));
 
 numf = 200;
-cav = 256;
 N = floor(L/cav)-1;
 posav = cav/2 + [0:1:N]*cav;
 avtimes = times(posav);
