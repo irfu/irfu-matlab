@@ -57,13 +57,9 @@ z1 = pos_Re_gsm(3);
 x0 = x1;
 y0 = sqrt(y1^2+z1^2);
 
-theta = -pi/1.2:0.00001:pi/1.2;
+d2 = @(theta) r0^2*(2./(1+cos(theta))).^(2*alpha) - 2*r0*(2./(1+cos(theta))).^(alpha).*(x0*cos(theta) + y0*sin(theta)) + x0^2 + y0^2;
 
-d2 = r0^2*(2./(1+cos(theta))).^(2*alpha) - 2*r0*(2./(1+cos(theta))).^(alpha).*(x0*cos(theta) + y0*sin(theta)) + x0^2 + y0^2;
-
-[minval,minpos] = min(d2);
-
-thetamin = theta(minpos);
+[thetamin,minval] = fminbnd(d2,-pi/1.2,pi/1.2);
 mindist = sqrt(minval);
 
 %calculate the direction to the spacecraft normal to the magnetopause
