@@ -1,6 +1,6 @@
 function [fkpower,freq,wavenumber] = fk_powerspectrum(varargin) 
 %
-% [power,freq,wavenumber] = mms.fk_powerspectrum(SCpot,Bxyz,zphase,trange,SCnum,probecomb) 
+% [fkpower,freq,wavenumber] = mms.fk_powerspectrum(SCpot,Bxyz,zphase,trange,SCnum,probecomb) 
 %
 % Function to calculate the frequency-wave number power spectrum using
 % MMS's four spin plane probes. Follows the same procedure as
