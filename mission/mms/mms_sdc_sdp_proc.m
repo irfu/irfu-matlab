@@ -2,7 +2,7 @@ function mms_sdc_sdp_proc( procName, varargin)
 % MMS_SDC_SDP_PROC main starting point for MMS SDC processing.
 %	MMS_SDC_SDP_PROC('processingType', '/pathTo/input/file1.cdf', ...
 %   '/pathTo/input/file2.cdf', ...); will start the MMS processing for
-%   processing types "ql", "sitl" and "scpot" which is to be performed at
+%   processing types "ql" and "scpot" which is to be performed at
 %   SDC. If not all needed cdf files are provided, but all required cdf 
 %   required cdf files are only some parts of the processing can occur. 
 %
@@ -11,11 +11,6 @@ function mms_sdc_sdp_proc( procName, varargin)
 %		mms_sdc_sdp_proc('ql',...
 %         '/path/mms2_edp_fast_dce_20150410_v0.0.1.cdf, ...
 %         '/path/mms2_edp_fast_dcv_20150410_v0.0.0.cdf', ...
-%         '/path/mm2_fields_hk_101_20150410_v0.0.2.cdf');
-%	Only partial scientist in the loop ("sitl") processing, with only the
-%	required cdf files as input, (note for full sitl include DCV).
-%       mms_sdc_sdp_proc('sitl',...
-%         '/path/mms2_edp_fast_dce_20150410_v0.0.1.cdf, ...
 %         '/path/mm2_fields_hk_101_20150410_v0.0.2.cdf');
 %
 % 	See also MMS_SDC_SDP_INIT, MMS_SDP_DMGR.
@@ -322,7 +317,7 @@ switch procId
       update_header(src_fileData) % Update header with file info.
     end
     
-  case {MMS_CONST.SDCProc.sitl, MMS_CONST.SDCProc.ql, MMS_CONST.SDCProc.l2pre}
+  case {MMS_CONST.SDCProc.ql, MMS_CONST.SDCProc.l2pre}
     if(~isempty(HK_10E_File))
       irf.log('notice', [procName ' proc using: ' HK_10E_File]);
       src_fileData = load_file(HK_10E_File,'hk_10e');

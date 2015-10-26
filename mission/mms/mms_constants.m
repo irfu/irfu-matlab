@@ -57,12 +57,13 @@ MMS_CONST.Samplerate.comm_128 = 128; % Commissioning "Boom deployment" phase
 MMS_CONST.Samplerate.brst = 8192; % Or 1024? TM mode burst
 
 % SDC process names
-MMS_CONST.SDCProcs = {'sitl','ql','scpot','l2pre','l2a'};
-MMS_CONST.SDCProc.sitl  = 1; % Number must corrspond to position in the list
-MMS_CONST.SDCProc.ql    = 2;
-MMS_CONST.SDCProc.scpot = 3;
-MMS_CONST.SDCProc.l2pre = 4;
-MMS_CONST.SDCProc.l2a   = 5;
+MMS_CONST.SDCProcs = {'ql','scpot','l2pre','l2a','l1adc','l2adc'};
+MMS_CONST.SDCProc.ql    = 1; % Number must corrspond to position in the list
+MMS_CONST.SDCProc.scpot = 2;
+MMS_CONST.SDCProc.l2pre = 3;
+MMS_CONST.SDCProc.l2a   = 4;
+MMS_CONST.SDCProc.l1adc = 5; % ADC data (type of brst)
+MMS_CONST.SDCProc.l2adc = 6;
 
 % Limits used in processing
 MMS_CONST.Limit.LOW_DENSITY_SATURATION = -100; % Probe stuck and below limit.
@@ -86,7 +87,6 @@ MMS_CONST.Error = -Inf; % Indicates error in computation
 % Major new Software version, X
 % New Calibration version, Y
 MMS_CONST.Version = struct(...
-  MMS_CONST.SDCProcs{MMS_CONST.SDCProc.sitl},  struct('X', 0, 'Y', 4), ...
   MMS_CONST.SDCProcs{MMS_CONST.SDCProc.ql},    struct('X', 0, 'Y', 4), ...
   MMS_CONST.SDCProcs{MMS_CONST.SDCProc.scpot}, struct('X', 0, 'Y', 2), ...
   MMS_CONST.SDCProcs{MMS_CONST.SDCProc.l2pre}, struct('X', 0, 'Y', 3), ...

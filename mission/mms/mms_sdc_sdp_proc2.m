@@ -152,14 +152,14 @@ switch procId
  
   case {MMS_CONST.SDCProc.l2pre}
     % L2Pre process with L2A file as input
-    if isempty(L2Pre_File)
-      errStr = ['missing required input for ' procName ': L2Pre_File'];
+    if isempty(L2A_File)
+      errStr = ['missing required input for ' procName ': L2A_File'];
       irf.log('critical',errStr)
       error('Matlab:MMS_SDC_SDP_PROC:Input', errStr)
     end
 
-    irf.log('notice', [procName ' proc using: ' L2Pre_File]);
-    src_fileData = load_file(L2Pre_File,'l2pre');
+    irf.log('notice', [procName ' proc using: ' L2A_File]);
+    src_fileData = load_file(L2A_File,'l2a');
     update_header(src_fileData) % Update header with file info.
 
   otherwise
