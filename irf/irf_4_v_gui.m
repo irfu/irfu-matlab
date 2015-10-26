@@ -34,6 +34,7 @@ elseif nargin==1
     action = varargin{1};
     ud.flag_first_call = 0;
 else
+    ud = [];
     ud.flag_first_call = 1;
     figure;
     if(nargin>=2 && nargin<=4)
