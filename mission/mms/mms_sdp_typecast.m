@@ -17,7 +17,7 @@ function [out] = mms_sdp_typecast(dataName, data)
 %  .fillval - ISTP standard fillvalue for corresponding class (used when writing cdf)
 %
 % DataName: "epoch", "bitmask", "quality", "dce", "adc_offset", "scpot",
-%  "phase", "spinfits" and "label".
+%  "phase", "delta_offset", "spinfits" and "label".
 %
 % See also: MMS_SDP_CDFWRITE
 
@@ -62,7 +62,7 @@ switch(lower(dataName))
       out.matlab  = 'int16';
       out.fillval = int16(-32768);
     end
-  case {'dce', 'adc_offset', 'scpot', 'phase', 'spinfits'}
+  case {'dce', 'adc_offset', 'scpot', 'phase', 'spinfits', 'delta_offset'}
     if(~isempty(data))
       out = single(data);
     else

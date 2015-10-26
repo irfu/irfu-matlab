@@ -130,8 +130,8 @@ switch procId
         update_header(src_fileData); % Update header with file info.
       end
       %% Second special case, brst QL (use L2A from previously processed Fast).
-      if(regexpi(DCE_File,'_brst_') && procId==MMS_CONST.SDCProc.ql)
-        if(~isempty(L2A_File))
+      if(regexpi(DCE_File,'_brst_'))
+        if(procId==MMS_CONST.SDCProc.ql && ~isempty(L2A_File))
           irf.log('notice', [procName ' proc using: ' L2A_File]);
           src_fileData = load_file(L2A_File,'l2a');
           update_header(src_fileData); % Update header with file info.
