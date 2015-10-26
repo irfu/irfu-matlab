@@ -37,7 +37,7 @@ elseif nargin == 2, % IRF_MAGNETOPAUSE(model, time)
     t=Dp;
     tint=t + [-2 2]*3600;
     if isempty(dpbz) || t<dpbz(1,1) || t>dpbz(end,1),
-        dpbz=irf_get_data(tint,'P,bzgsm,bx,bygsm','omni');
+        dpbz=irf_get_data(tint,'P,bzgsm,bx,bygsm,Ma','omni');
     end
     if isempty(dpbz), % no OMNI data, return empty 
         return
@@ -79,7 +79,7 @@ switch lower(model)
 %  rstandoff=rmp*(1+1.1*((gamma-1)*M^2+2)/((gamma+1)*(M^2-1)))
         [xmp,~] = irf_magnetosphere('mp_shue1998',Dp,Bz);
         gamma=5/3;
-        M=4;
+        M=dpbz_t(6);
         rmp=xmp(1);
         rstandoff=rmp*(1+1.1*((gamma-1)*M^2+2)/((gamma+1)*(M^2-1)));
         x=rstandoff:-0.5:-100;
