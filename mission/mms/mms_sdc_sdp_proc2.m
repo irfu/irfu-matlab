@@ -107,9 +107,8 @@ switch procId
       % Go looking for DEFATT to match tint.
       mms.db_init('local_file_db', ENVIR.DATA_PATH_ROOT); % Setup mms database
       list = mms.db_list_files(['mms',HdrInfo.scIdStr,'_ancillary_defatt'],tint);
-      % Did store and read information for phase
-      if(isempty(list))
-        % If no DEFATT was found, use HK 101 files.
+      if(isempty(list) || list(1).start >= tint.start || list(end).stop <= tint.stop)
+        % If no DEFATT was found or it did not cover all of tint, use HK 101 files.
         if(~isempty(HK_101_File))
           fileSplit = strsplit(HK_101_File,':');
           for iFile=1:size(fileSplit,2)
