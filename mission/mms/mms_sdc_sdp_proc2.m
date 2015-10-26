@@ -21,15 +21,11 @@ if isempty(MMS_CONST), MMS_CONST = mms_constants(); end
 HK_101_File = ''; % HK with sunpulse, etc.
 HK_105_File = ''; % HK with sweep status etc.
 HK_10E_File = ''; % HK with bias guard settings etc.
-HK_101_File2 = ''; % Second HK 101 file, when processing over midnight.
-HK_105_File2 = ''; % Same corresponding HK 105
-HK_10E_File2 = ''; % Same corresponding HK 10E
 ACE_File = '';
 DCV_File = '';
 DCE_File = '';
 L2A_File = ''; % L2A file, contain offsets from fast/slow to be used by brst and for L2Pre process.
-DEFATT_File = ''; % Defatt file used for l2pre
-DEFATT_File2 = ''; % Second defatt file, when processing over defatt file crossing.
+DEFATT_File = ''; % Defatt file used for l2pre or reprocessing of QL.
 HdrInfo = [];
 
 parse_input(procName, varargin{:});
@@ -54,39 +50,30 @@ end
 % DCE, HK_101, HK_105 and HK_10E files to already be loaded into memory.
 
 switch procId
-  case {MMS_CONST.SDCProc.scpot, MMS_CONST.SDCProc.ql, MMS_CONST.SDCProc.l2pre}
+  case {MMS_CONST.SDCProc.scpot, MMS_CONST.SDCProc.ql, MMS_CONST.SDCProc.l2a}
     if(~isempty(HK_10E_File))
-      irf.log('notice', [procName ' proc using: ' HK_10E_File]);
-      src_fileData = load_file(HK_10E_File,'hk_10e');
-      update_header(src_fileData); % Update header with file info.
-    end
-    if(~isempty(HK_10E_File2))
-      irf.log('notice', [procName ' proc using: ' HK_10E_File2]);
-      src_fileData = load_file(HK_10E_File2,'hk_10e');
-      update_header(src_fileData); % Update header with file info.
+      fileSplit = strsplit(HK_10E_File,':');
+      for iFile=1:size(fileSplit,2)
+        irf.log('notice', [procName ' proc using: ' fileSplit{iFile}]);
+        src_fileData = load_file(fileSplit{iFile},'hk_10e');
+        update_header(src_fileData); % Update header with file info.
+      end
     end
     if(~isempty(HK_105_File))
-      irf.log('notice', [procName ' proc using: ' HK_105_File]);
-      src_fileData = load_file(HK_105_File,'hk_105');
-      update_header(src_fileData); % Update header with file info.
+      fileSplit = strsplit(HK_105_File,':');
+      for iFile=1:size(fileSplit,2)
+        irf.log('notice', [procName ' proc using: ' fileSplit{iFile}]);
+        src_fileData = load_file(fileSplit{iFile},'hk_105');
+        update_header(src_fileData); % Update header with file info.
+      end
     end
-    if(~isempty(HK_105_File2))
-      irf.log('notice', [procName ' proc using: ' HK_105_File2]);
-      src_fileData = load_file(HK_105_File2,'hk_105');
-      update_header(src_fileData); % Update header with file info.
-    end
-    
-    % Phase information, somewhat special case.
+    %% Phase information, somewhat special case.
     if(~isempty(DEFATT_File))
       % Defatt was sent as argument, use these
-      irf.log('notice', [procName ' proc using: ' DEFATT_File]);
-      [dataTmp,src_fileData] = mms_load_ancillary(DEFATT_File,'defatt');
-      Dmgr.set_param('defatt', dataTmp);
-      update_header(src_fileData); % Update header with file info.
-      % Defatt file 2 => phase
-      if ~isempty(DEFATT_File2)
-        irf.log('notice', [procName ' proc using: ' DEFATT_File2]);
-        [dataTmp,src_fileData] = mms_load_ancillary(DEFATT_File2,'defatt');
+      fileSplit = strsplit(DEFATT_File,':');
+      for iFile=1:size(fileSplit,2)
+        irf.log('notice', [procName ' proc using: ' fileSplit{iFile}]);
+        [dataTmp,src_fileData] = mms_load_ancillary(fileSplit{iFile},'defatt');
         Dmgr.set_param('defatt', dataTmp);
         update_header(src_fileData); % Update header with file info.
       end
@@ -124,18 +111,16 @@ switch procId
       if(isempty(list))
         % If no DEFATT was found, use HK 101 files.
         if(~isempty(HK_101_File))
-          irf.log('notice', [procName ' proc using: ' HK_101_File]);
-          src_fileData = load_file(HK_101_File,'hk_101');
-          update_header(src_fileData) % Update header with file info.
+          fileSplit = strsplit(HK_101_File,':');
+          for iFile=1:size(fileSplit,2)
+            irf.log('notice', [procName ' proc using: ' fileSplit{iFile}]);
+            src_fileData = load_file(fileSplit{iFile},'hk_101');
+            update_header(src_fileData) % Update header with file info.
+          end
         else
           % Should not be here!
           errStr = 'No DEFATT was found and no HK 101 identified in arguments.';
           irf.log('critical',errStr); error(errStr);
-        end
-        if(~isempty(HK_101_File2))
-          irf.log('notice', [procName ' proc using: ' HK_101_File2]);
-          src_fileData = load_file(HK_101_File2,'hk_101');
-          update_header(src_fileData) % Update header with file info.
         end
       end
       for ii=1:length(list)
@@ -144,6 +129,16 @@ switch procId
           list(ii).name], 'defatt');
         Dmgr.set_param('defatt', dataTmp);
         update_header(src_fileData); % Update header with file info.
+      end
+      %% Second special case, brst QL (use L2A from previously processed Fast).
+      if(regexpi(DCE_File,'_brst_') && procId==MMS_CONST.SDCProc.ql)
+        if(~isempty(L2A_File))
+          irf.log('notice', [procName ' proc using: ' L2A_File]);
+          src_fileData = load_file(L2A_File,'l2a');
+          update_header(src_fileData); % Update header with file info.
+        else
+          irf.log('warning',[procName ' but no L2A file from Fast Q/L.']);
+        end
       end
       % Go on with DCE (already read).
       Dmgr.set_param('dce',dce_obj);
@@ -156,8 +151,8 @@ switch procId
       update_header(src_fileData) % Update header with file info.
     end
  
-  case {MMS_CONST.SDCProc.l2a}
-    % L2A process with L2Pre file as input
+  case {MMS_CONST.SDCProc.l2pre}
+    % L2Pre process with L2A file as input
     if isempty(L2Pre_File)
       errStr = ['missing required input for ' procName ': L2Pre_File'];
       irf.log('critical',errStr)
@@ -278,7 +273,6 @@ end
           errStr = ['Multiple HK_101 files in input (',HK_101_File,' and ',varargin{j},')'];
           irf.log('critical', errStr);  error(errStr);
         end
-        % It is the HK_101 file
         HK_101_File = varargin{j};
         irf.log('notice', ['HK_101 input file: ', HK_101_File]);
       elseif regexpi(fileIn, '_10e_') % 10E, mmsX_fields_hk_l1b_10e_20150410_v0.0.1.cdf
@@ -286,7 +280,6 @@ end
           errStr = ['Multiple HK_10E files in input (',HK_10E_File,' and ',varargin{j},')'];
           irf.log('critical', errStr); error(errStr);
         end
-        % It is the HK_10E file
         HK_10E_File = varargin{j};
         irf.log('notice', ['HK_10E input file: ', HK_10E_File]);
       elseif regexpi(fileIn, '_105_') % 105, mmsX_fields_hk_l1b_105_20150410_v0.0.1.cdf
@@ -294,7 +287,6 @@ end
           errStr = ['Multiple HK_105 files in input (',HK_10E_File,' and ',varargin{j},')'];
           irf.log('critical', errStr); error(errStr);
         end
-        % It is the HK_105 file
         HK_105_File = varargin{j};
         irf.log('notice', ['HK_105 input file: ', HK_105_File]);
       elseif regexpi(fileIn, '_dcv\d{0,3}_') % _dcv_ or _dcv32_ or _dcv128_
@@ -319,7 +311,6 @@ end
         ACE_File = varargin{j};
         irf.log('notice', ['ACE input file: ', ACE_File]);
       elseif regexpi(fileIn, '_l2a_') % L2A file (produced by QL Fast/slow)
-        %% FIXME: VERIFY NAME (l2a or l2pre or something new...)
         if ~isempty(L2A_File)
           errStr = ['Multiple L2A files in input (',L2A_File,' and ',varargin{j},')'];
           irf.log('critical', errStr); error(errStr);
@@ -338,27 +329,7 @@ end
         irf.log('critical', errStr); error(errStr);
       end
     end % End for j=1:nargin-1
-    
-    %% Split multiple HK/Defatt files, sent separated by a single colon ":"
-    % Useful when processing data covering midnight. Same filetype should
-    % not be sent in multiple arguments.
-    filePart = strsplit(HK_101_File,':');
-    if(size(filePart,2)==2), HK_101_File2 = filePart{2}; end
-    HK_101_File = filePart{1}; % If it was empty, this will still be empty.
-    
-    filePart = strsplit(HK_105_File,':');
-    if(size(filePart,2)==2), HK_105_File2 = filePart{2}; end
-    HK_105_File = filePart{1};
-    
-    filePart = strsplit(HK_10E_File,':');
-    if(size(filePart,2)==2), HK_10E_File2 = filePart{2}; end
-    HK_10E_File = filePart{1};
-
-    filePart = strsplit(DEFATT_File,':');
-    if(size(filePart,2)==2), DEFATT_File2 = filePart{2}; end
-    DEFATT_File = filePart{1};
-
-  end
+  end % End parse_input
 
   function [filenameData] = load_file(fullFilename, dataType)
     [~, fileName, ~] = fileparts(fullFilename);
