@@ -55,8 +55,16 @@ for iSc = inArg.scId
       index = [];
     else
       % Remove old cdf files already processed, (ie compare with old index).
-      %% FIXME: remove comment when old_index is done and loaded.
-%      listFiles = listFiles(~ismember(listFiles, {old_index.filename}));
+      if(exist('irfu_index.mat','file'))
+        old_index = load('irfu_index','-mat','index');
+        % Some old files found.
+        old_index = old_index.index;
+        listFiles = listFiles(~ismember(listFiles, {old_index.filename}));
+        old = true;
+      else
+        old = false;
+      end
+      irf.log('warning',['Found ',num2str(length(listFiles)),' new files, will add these to index.']);
       % Pre allocate struct output
       index(1:length(listFiles)) = struct('filename',[],'tstart',[],'tstop',[]);
       ind = 1; % ind used to keep track of which index is written.
@@ -81,11 +89,17 @@ for iSc = inArg.scId
           irf.log('critical', errStr); warning(errStr); % Should perhaps be error()...
           continue; % Try with next file
         end;
+        % Some files have zero records written to epoch. Warn and move on.
+        if(fileInfo.Variables{1,3} == 0)
+          errStr = ['Empty primary Epoch in cdf file: ', listFiles{ii}];
+          irf.log('warning', errStr);
+          continue; % Try with next file
+        end
         try
           epoch = spdfcdfread(listFiles{ii}, 'Variable', fileInfo.Variables{1,1}, 'KeepEpochAsIs', true);
         catch
           errStr = ['Cannot read first variable from file: ', listFiles{ii}];
-          irf.log('warning', errStr); warning(errStr); % Should perhaps be error()...
+          irf.log('critical', errStr); %warning(errStr); % Should perhaps be error()...
           continue; % Try with next file...
         end
         % All files are not always monotonically increasing in time, so sort
@@ -95,8 +109,8 @@ for iSc = inArg.scId
         epoch = epoch(epoch.tlim(validEpoch));
         if(length(epoch)<2)
           % Don't bother with invalid files.
-          warnStr = ['TT2000 variable did not contain any valid time interval for file: ', listFiles{ii}];
-          irf.log('warning', warnStr); warning(warnStr);
+          errStr = ['TT2000 variable did not contain any valid time interval for file: ', listFiles{ii}];
+          irf.log('warning', errStr); critical(errStr);
           continue;
         end
         % When we reach this nothing has gone wrong so store file name and
@@ -109,9 +123,22 @@ for iSc = inArg.scId
       % Remove unused index(), which was preallocated for speed.
       index = index(arrayfun(@(s) ~isempty(s.filename), index));
     end
-    %% save index, FIXME: store somewhere good.
-%     eval(['index_' dataSet '=index;']);
-%     dirsave(dataSet,['index_' dataSet]);
+    % Combine old and new index list.
+    if(old)
+      % An old index was read.
+      if(~isempty(index))
+        % Some new files was found.
+        new_index = [old_index, index];
+        % Sort the combined list by filename.
+        [~, ind_sort] = sort({new_index.filename});
+        index = new_index(ind_sort);
+      else
+        % Only old index, no new files.
+        index = old_index;
+      end
+    end
+    % save irfu_index.mat
+    save([pwd,filesep,'irfu_index'],'index');
   end
 end
 
