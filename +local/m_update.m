@@ -110,7 +110,7 @@ for iSc = inArg.scId
         if(length(epoch)<2)
           % Don't bother with invalid files.
           errStr = ['TT2000 variable did not contain any valid time interval for file: ', listFiles{ii}];
-          irf.log('warning', errStr); critical(errStr);
+          irf.log('critical', errStr); %warning(errStr);
           continue;
         end
         % When we reach this nothing has gone wrong so store file name and
