@@ -17,7 +17,7 @@ classdef mms_sdp_dmgr < handle
     hk_101 = [];      % src HK_101 file
     hk_105 = [];      % src HK_105 file
     hk_10e = [];      % src HK_10E file
-    l2pre = [];       % src L2Pre file
+    l2a = [];         % src L2A file
     phase = [];       % comp phase
     probe2sc_pot = [];% comp probe to sc potential
     sc_pot = [];      % comp sc potential
@@ -359,41 +359,13 @@ classdef mms_sdp_dmgr < handle
           DATAC.(param) = dataObj;
           check_monoton_timeincrease(DATAC.(param).time);
           
-        case('l2pre')
-          % L2Pre, contain dce data, spinfits, etc. for L2a processing.
-          DATAC.(param) = [];
-          DATAC.(param).dataObj = dataObj;
-          % Split up the various parts (spinfits, dce data [e12, e34, e56],
-          % dce bitmask [e12, e34, e56], phase, adc offset from the l2pre file to
-          % their expected locations in DATAC. (so that remaining processing can
-          % use same syntax).
-          varPre = ['mms', num2str(DATAC.scId), '_edp_dce'];
-          varPre2 = '_spinfit_'; varPre3 = '_adc_offset';
-          DATAC.spinfits = []; DATAC.adc_off = [];
-          sdpPair = {'e12', 'e34'};
-          for iPair=1:numel(sdpPair)
-            DATAC.spinfits.sfit.(sdpPair{iPair}) = ...
-              dataObj.data.([varPre, varPre2, sdpPair{iPair}]).data(:,2:end);
-            DATAC.spinfits.sdev.(sdpPair{iPair}) = ...
-              dataObj.data.([varPre, varPre2, sdpPair{iPair}]).data(:,1);
-            DATAC.adc_off.(sdpPair{iPair}) = ...
-              dataObj.data.([varPre, varPre3]).data(:,1);
+        case('l2a')
+          load_l2a();
+          if(DATAC.procId==MMS_CONST.SDCProc.l2pre)
+            % Do full L2Pre processing on L2A data.
+          else
+            % Simply load l2a, (Fast data/offset to be used by Brst QL).
           end
-          x = getdep(dataObj,[varPre, varPre2, sdpPair{iPair}]);
-          DATAC.spinfits.time = x.DEPEND_O.data;
-          check_monoton_timeincrease(DATAC.spinfits.time, 'L2Pre spinfits');
-          sensors = {'e12', 'e34', 'e56'};
-          DATAC.dce = [];
-          x = getdep(dataObj,[varPre, '_data']);
-          DATAC.dce.time = x.DEPEND_O.data;
-          check_monoton_timeincrease(DATAC.dce.time, 'L2Pre dce');
-          for iPair=1:numel(sensors);
-            DATAC.dce.(sensors{iPair}).data = ...
-              dataObj.data.([varPre, '_data']).data(:,iPair);
-            DATAC.dce.(sensors{iPair}).bitmask = ...
-              dataObj.data.([varPre, '_bitmask']).data(:,iPair);
-          end
-          DATAC.phase.data = dataObj.data.([varPre, '_phase']).data;
           
         otherwise
           % Not yet implemented.
@@ -867,6 +839,44 @@ classdef mms_sdp_dmgr < handle
         end
       end
       
+      function load_l2a()
+        % L2A, contain dce data, spinfits, etc. for L2Pre processing or
+        % Fast data/offsets to be used by Brst QL processing.
+        DATAC.(param) = [];
+        DATAC.(param).dataObj = dataObj;
+        % Split up the various parts (spinfits [sdev, e12, e34], dce data
+        % [e12, e34, e56], dce bitmask [e12, e34, e56], phase, adc & delta 
+        % offsets).
+        varPre = ['mms', num2str(DATAC.scId), '_edp_dce'];
+        varPre2='_spinfit_'; varPre3='_adc_offset'; varPre4='_delta_offset';
+        sdpPair = {'e12', 'e34'};
+        for iPair=1:numel(sdpPair)
+          DATAC.(param).spinfits.sfit.(sdpPair{iPair}) = ...
+            dataObj.data.([varPre, varPre2, sdpPair{iPair}]).data(:,2:end);
+          DATAC.(param).spinfits.sdev.(sdpPair{iPair}) = ...
+            dataObj.data.([varPre, varPre2, sdpPair{iPair}]).data(:,1);
+          DATAC.(param).adc_off.(sdpPair{iPair}) = ...
+            dataObj.data.([varPre, varPre3]).data(:,1);
+        end
+        x = getdep(dataObj,[varPre, varPre2, sdpPair{iPair}]);
+        DATAC.(param).spinfits.time = x.DEPEND_O.data;
+        check_monoton_timeincrease(DATAC.(param).spinfits.time, 'L2A spinfits');
+        sensors = {'e12', 'e34', 'e56'};
+        DATAC.(param).dce = [];
+        x = getdep(dataObj,[varPre, '_data']);
+        DATAC.(param).dce.time = x.DEPEND_O.data;
+        check_monoton_timeincrease(DATAC.(param).dce.time, 'L2A dce');
+        for iPair=1:numel(sensors);
+          DATAC.(param).dce.(sensors{iPair}).data = ...
+            dataObj.data.([varPre, '_data']).data(:,iPair);
+          DATAC.(param).dce.(sensors{iPair}).bitmask = ...
+            dataObj.data.([varPre, '_bitmask']).data(:,iPair);
+        end
+        DATAC.(param).phase.data = dataObj.data.([varPre, '_phase']).data;
+        DATAC.(param).delta_off = complex(dataObj.data.([varPre, varPre4]).data(1),...
+          dataObj.data.([varPre, varPre4]).data(2));
+      end
+
 %       function res = are_probes_enabled
 %         % Use FILLVAL of each sensor to determine if probes are enabled or not.
 %         % Returns logical of size correspondig to sensor.
@@ -1008,6 +1018,16 @@ classdef mms_sdp_dmgr < handle
     function res = get.delta_off(DATAC)
       if ~isempty(DATAC.delta_off), res = DATAC.delta_off; return, end
       
+      % QL brst should use delta offset from Fast L2A file
+      if(DATAC.tmMode == DATAC.CONST.TmMode.brst)
+        if(~isempty(DATAC.l2a.delta_off))
+          res = DATAC.l2a.delta_off; return;
+        else
+          irf.log('warning','Burst but no L2a (fast) delta offsets loaded.');
+        end
+      end
+
+      % Otherwise compute it..
       Spinfits = DATAC.spinfits;
       if isempty(Spinfits)
         errStr='Bad SPINFITS input, cannot proceed.';

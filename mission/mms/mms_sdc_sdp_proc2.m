@@ -230,40 +230,44 @@ end
       end
 
       if regexpi(fileIn,'_dce')
-        % This argument is the dce file, (l1b raw, l2a/pre dce2d or similar)
-        % Use this file to get TMmode directly from filename, and if comm.
-        % data also sample rate. And also initialize the Dmgr.
-        tmModeStr = fileIn(10:13); % mmsX_edp_[TMmode]_
-        [~,tmMode] = intersect( MMS_CONST.TmModes, tmModeStr);
-        if isempty(tmMode)
-          errStr = ['Unrecognized tmMode (',tmModeStr,'), must be one of: '...
-            mms_constants2string('TmModes')];
-          irf.log('critical', errStr);  error(errStr);
-        end
-        if (tmMode==MMS_CONST.TmMode.comm)
-          % Special case, Commissioning data, identify samplerate.
-          irf.log('notice',...
-            'Commissioning data, trying to identify samplerate from filename.');
-          if regexpi(fileIn, '_dc[ev]8_') % _dcv8_ or _dce8_
-            samplerate = MMS_CONST.Samplerate.comm_8;
-          elseif regexpi(fileIn, '_dc[ev]32_') % _dcv32_ or _dce32_
-            samplerate = MMS_CONST.Samplerate.comm_32;
-          elseif regexpi(fileIn, '_dc[ev]64_') % _dcv64_ or _dce64_
-            samplerate = MMS_CONST.Samplerate.comm_64;
-          elseif regexpi(fileIn, '_dc[ev]128_') % _dcv128_ or _dce128_
-            samplerate = MMS_CONST.Samplerate.comm_128;
-          else
-            % Possibly try to look at "dt" from Epoch inside of file? For
-            % now just default to first TmMode (slow).
-            irf.log('warning',...
-              ['Unknown samplerate for Commissioning data from file: ',fileIn]);
-            irf.log('warning', ['Defaulting samplerate to ',...
-              MMS_CONST.Samplerate.(MMS_CONST.TmModes{1})]);
-            samplerate = MMS_CONST.Samplerate.(MMS_CONST.TmModes{1});
-          end
-          Dmgr = mms_sdp_dmgr(str2double(HdrInfo.scIdStr), procId, tmMode, samplerate);
+        if( procId == MMS_CONST.SDCProc.ql && ~isempty(regexpi(fileIn,'_l2a_')) )
+          % L2A file (from fast mode) for QL Brst process.
         else
-          Dmgr = mms_sdp_dmgr(str2double(HdrInfo.scIdStr), procId, tmMode);
+          % This argument is the dce file, (l1b raw, l2a/pre dce2d or similar)
+          % Use this file to get TMmode directly from filename, and if comm.
+          % data also sample rate. And also initialize the Dmgr.
+          tmModeStr = fileIn(10:13); % mmsX_edp_[TMmode]_
+          [~,tmMode] = intersect( MMS_CONST.TmModes, tmModeStr);
+          if isempty(tmMode)
+            errStr = ['Unrecognized tmMode (',tmModeStr,'), must be one of: '...
+              mms_constants2string('TmModes')];
+            irf.log('critical', errStr);  error(errStr);
+          end
+          if (tmMode==MMS_CONST.TmMode.comm)
+            % Special case, Commissioning data, identify samplerate.
+            irf.log('notice',...
+              'Commissioning data, trying to identify samplerate from filename.');
+            if regexpi(fileIn, '_dc[ev]8_') % _dcv8_ or _dce8_
+              samplerate = MMS_CONST.Samplerate.comm_8;
+            elseif regexpi(fileIn, '_dc[ev]32_') % _dcv32_ or _dce32_
+              samplerate = MMS_CONST.Samplerate.comm_32;
+            elseif regexpi(fileIn, '_dc[ev]64_') % _dcv64_ or _dce64_
+              samplerate = MMS_CONST.Samplerate.comm_64;
+            elseif regexpi(fileIn, '_dc[ev]128_') % _dcv128_ or _dce128_
+              samplerate = MMS_CONST.Samplerate.comm_128;
+            else
+              % Possibly try to look at "dt" from Epoch inside of file? For
+              % now just default to first TmMode (slow).
+              irf.log('warning',...
+                ['Unknown samplerate for Commissioning data from file: ',fileIn]);
+              irf.log('warning', ['Defaulting samplerate to ',...
+                MMS_CONST.Samplerate.(MMS_CONST.TmModes{1})]);
+              samplerate = MMS_CONST.Samplerate.(MMS_CONST.TmModes{1});
+            end
+            Dmgr = mms_sdp_dmgr(str2double(HdrInfo.scIdStr), procId, tmMode, samplerate);
+          else
+            Dmgr = mms_sdp_dmgr(str2double(HdrInfo.scIdStr), procId, tmMode);
+          end
         end
       end
 

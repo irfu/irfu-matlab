@@ -194,7 +194,7 @@ switch procId
     dcedata = mms_sdp_typecast('dce',[dce.e12.data, dce.e34.data, dce.e56.data]);
     adcdata = mms_sdp_typecast('adc_offset',[adc_off.(sdpPair{1}), adc_off.(sdpPair{2})]);
     phasedata = mms_sdp_typecast('phase',phase.data);
-    deltadata = mms_sdp_typecast('delta_offset',[real(delta_off); imag(delta_off)]);
+    deltadata = mms_sdp_typecast('delta_offset',[real(delta_off), imag(delta_off)]);
     % Bitmask, defined as CDF_UINT1 (uint8 in Matlab)
     bitmask = mms_sdp_typecast('bitmask',[dce.e12.bitmask, dce.e34.bitmask, dce.e56.bitmask]);
     quality = mms_sdp_typecast('quality',mms_sdp_bitmask2quality('e',uint16(bitmask(:,1))));
