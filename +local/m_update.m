@@ -61,6 +61,9 @@ for iSc = 1:numel(inArg.scId)
         old_index = load('irfu_index','-mat','index');
         % Some old files found.
         old_index = old_index.index;
+        % Keep only files which are still present.
+        old_index = old_index(ismember({old_index.filename},listFiles));
+        % Identify new files to process.
         listFiles = listFiles(~ismember(listFiles, {old_index.filename}));
         old = true;
       else
