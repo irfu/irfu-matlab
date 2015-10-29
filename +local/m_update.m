@@ -3,8 +3,9 @@ function m_update(varargin)
 %
 %    LOCAL.M_UPDATE update index for all datasets for all MMS spacecraft
 %
-%    LOCAL.M_UPDATE(.., 'scId', [1,2,3]) only update the specified MMS
-%    spacecraft. Any combination (1, 2, 3 and/or 4) or a single spacecraft.
+%    LOCAL.M_UPDATE(.., 'scId', {'1', '2', '3'}) only update the specified
+%    MMS spacecraft. Any combination ('1', '2', '3' and/or '4') or a single
+%    spacecraft.
 %
 %    LOCAL.M_UPDATE(.., 'datasetName',{'edp', 'fpi'}) only update the
 %    specified instrument data sets. In this case "edp" and "fpi".
@@ -29,13 +30,14 @@ validEpoch = irf.tint('2010-01-01T00:00:00.000000000', ...
 oldPwd = pwd; % Keep old path.
 
 % Go through each s/c to be indexed
-for iSc = inArg.scId
+for iSc = 1:numel(inArg.scId)
   % Go through all the datasets to be indexed
   for iDataSet = 1:numel(inArg.datasetName)
     dataSet = inArg.datasetName{iDataSet};
-    irf.log('warning',['Indexing data set: ' dataSet]);
-    newPath = [inArg.datadirectory, filesep, ...
-        num2str(inArg.scId(iSc),'mms%i'), filesep, dataSet];
+    irf.log('warning',['Indexing data set: ' dataSet ' on MMS',...
+      inArg.scId{iSc}]);
+    newPath = [inArg.datadirectory, filesep, 'mms', inArg.scId{iSc}, ...
+      filesep, dataSet];
     if(~isdir(newPath))
       errStr = ['Not a path: ', newPath];
       irf.log('critical', errStr); error(errStr);
@@ -150,7 +152,7 @@ cd(oldPwd);
     p = inputParser;
     p.CaseSensitive = false; % match regardless of case. 
     % Default values
-    default.scId = 1:4; % All four MMS spacecrafts
+    default.scId = {'1','2','3','4'}; % All four MMS spacecrafts
     default.dataSet = {'afg', 'asp1', 'asp2', 'aspoc', 'dfg', 'dsp', ...
       'edi', 'edp', 'epd-eis', 'feeps', 'fields', 'fpi', 'hpca', 'mec', ...
       'scm', 'sdp'}; % All instruments
@@ -160,9 +162,9 @@ cd(oldPwd);
     end;
     default.dataPathRoot = dataPathRoot;
     % Validation functions
-    validScId = @(x) assert(all(ismember(x,[1,2,3,4])) && ...
-      length(x)==length(unique(x)) && length(x)<=4, ...
-      'scId should be valid: 1, 2, 3 and/or 4.');
+    validScId = @(x) assert(all(ismember(x,{'1','2','3','4'})) && ...
+      numel(x)==numel(unique(x)) && numel(x)<=4, ...
+      'scId should be valid: {"1", "2", "3", "4"}.');
     validDataSet = @(x) assert(all(ismember(x, default.dataSet)) && numel(x)==numel(unique(x)), ...
       'datasetName should be valid MMS instruments.');
     validDatadirectory = @(x) assert(isdir(x), ...
