@@ -85,7 +85,7 @@ for iSc = inArg.scId
         % always be the first if it it ISTP compliant).
         % KeepEpochAsIs is to ensure it is kept as TT2000 (int64).
         if(~strcmp(fileInfo.Variables{1,4}, 'tt2000'))
-          errStr = 'Unexpected first variable, not ISTP compliant cdf file';
+          errStr = ['Unexpected first variable, not ISTP compliant cdf file: ' listFiles{ii}];
           irf.log('critical', errStr); warning(errStr); % Should perhaps be error()...
           continue; % Try with next file
         end;
