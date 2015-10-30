@@ -22,6 +22,7 @@ HK_101_File = ''; % HK with sunpulse, etc.
 HK_105_File = ''; % HK with sweep status etc.
 HK_10E_File = ''; % HK with bias guard settings etc.
 ACE_File = '';
+ASPOC_File = '';
 DCV_File = '';
 DCE_File = '';
 L2A_File = ''; % L2A file, contain offsets from fast/slow to be used by brst and for L2Pre process.
@@ -67,45 +68,28 @@ switch procId
         update_header(src_fileData); % Update header with file info.
       end
     end
-    %% Phase information, somewhat special case.
-    if(~isempty(DEFATT_File))
-      % Defatt was sent as argument, use these
-      fileSplit = strsplit(DEFATT_File,':');
-      for iFile=1:size(fileSplit,2)
-        irf.log('notice', [procName ' proc using: ' fileSplit{iFile}]);
-        [dataTmp,src_fileData] = mms_load_ancillary(fileSplit{iFile},'defatt');
-        Dmgr.set_param('defatt', dataTmp);
-        update_header(src_fileData); % Update header with file info.
-      end
-      % Process DCE file as well.
-      if isempty(DCE_File)
-        errStr = ['missing required input for ' procName ': DCE_File'];
-        irf.log('critical',errStr);
-        error('Matlab:MMS_SDC_SDP_PROC:Input', errStr);
-      end
-      irf.log('notice', [procName ' proc using: ' DCE_File]);
-      src_fileData = load_file(DCE_File,'dce');
-      update_header(src_fileData) % Update header with file info.
-    else
-      % NO defatt as argument. Begin by loading the DCE to get information
-      % about which times we process. Then go looking for DEFATT matching
-      % this time. If DEFATT is then found, use this, else use the less
-      % acurate HK 101 sunpulses sent as argument for phase computation.
-      if isempty(DCE_File)
-        errStr = ['missing required input for ' procName ': DCE_File'];
-        irf.log('critical',errStr);  error(errStr);
-      end
-      irf.log('notice', [procName ' proc using: ' DCE_File]);
-      dce_obj = dataobj(DCE_File);
-      [~,tmpName, ~] = fileparts(DCE_File);
-      update_header(mms_fields_file_info(tmpName)); % Update header with file info.
-      tint = EpochTT(sort(dce_obj.data.Epoch.data));
-      % Keep only valid times (well after end of mission).
-      tint(tint.tlim(irf.tint('2015-01-01T00:00:00.000000000Z/2040-12-31T23:59:59.999999999Z')));
-      % Create a time interval for start and stop of dce epoch times.
-      tint = irf.tint(tint.start, tint.stop);
+
+    %% PHASE and ASPOC information, somewhat special case.
+    % Begin by loading the DCE file in order to get time interval of
+    % interest, then if no DEFATT was sent go looking for it. If no DEFATT
+    % is found, use HK 101. Similar for ASPOC, if no input was sent go look
+    % for it. If no ASPOC is found, simply skip it.
+    if isempty(DCE_File)
+      errStr = ['missing required input for ' procName ': DCE_File'];
+      irf.log('critical',errStr);  error(errStr);
+    end
+    irf.log('notice', [procName ' proc using: ' DCE_File]);
+    dce_obj = dataobj(DCE_File);
+    [~,tmpName, ~] = fileparts(DCE_File);
+    update_header(mms_fields_file_info(tmpName)); % Update header with file info.
+    tint = EpochTT(sort(dce_obj.data.Epoch.data));
+    % Keep only valid times (well after end of mission).
+    tint(tint.tlim(irf.tint('2015-01-01T00:00:00.000000000Z/2040-12-31T23:59:59.999999999Z')));
+    % Create a time interval for start and stop of dce epoch times.
+    tint = irf.tint(tint.start, tint.stop);
+    mms.db_init('local_file_db', ENVIR.DATA_PATH_ROOT); % Setup mms database
+    if(isempty(DEFATT_File))
       % Go looking for DEFATT to match tint.
-      mms.db_init('local_file_db', ENVIR.DATA_PATH_ROOT); % Setup mms database
       list = mms.db_list_files(['mms',HdrInfo.scIdStr,'_ancillary_defatt'],tint);
       if(isempty(list) || list(1).start >= tint.start || list(end).stop <= tint.stop)
         % If no DEFATT was found or it did not cover all of tint, use HK 101 files.
@@ -121,27 +105,55 @@ switch procId
           errStr = 'No DEFATT was found and no HK 101 identified in arguments.';
           irf.log('critical',errStr); error(errStr);
         end
-      end
-      for ii=1:length(list)
-        irf.log('notice', [procName ' proc using: ',list(ii).name]);
-        [dataTmp, src_fileData] = mms_load_ancillary([list(ii).path, filesep, ...
-          list(ii).name], 'defatt');
-        Dmgr.set_param('defatt', dataTmp);
-        update_header(src_fileData); % Update header with file info.
-      end
-      %% Second special case, brst QL (use L2A from previously processed Fast).
-      if(regexpi(DCE_File,'_brst_'))
-        if(procId==MMS_CONST.SDCProc.ql && ~isempty(L2A_File))
-          irf.log('notice', [procName ' proc using: ' L2A_File]);
-          src_fileData = load_file(L2A_File,'l2a');
+      else
+        for ii=1:length(list)
+          irf.log('notice', [procName ' proc using: ',list(ii).name]);
+          [dataTmp, src_fileData] = mms_load_ancillary([list(ii).path, filesep, ...
+            list(ii).name], 'defatt');
+          Dmgr.set_param('defatt', dataTmp);
           update_header(src_fileData); % Update header with file info.
-        else
-          irf.log('warning',[procName ' but no L2A file from Fast Q/L.']);
         end
       end
-      % Go on with DCE (already read).
-      Dmgr.set_param('dce',dce_obj);
     end
+    % Similar for ASPOC.
+    if(isempty(ASPOC_File))
+      % Go looking for ASPOC to match tint.
+      list = mms.db_list_files(['mms',HdrInfo.scIdStr,'_aspoc_srvy_l2'],tint);
+      if(isempty(list) || list(1).start >= tint.start || list(end).stop <= tint.stop)
+        % If no ASPOC was found or it did not cover all of tint. Simply
+        % issue warning.
+        irf.log('warning','No ASPOC files located or sent in input.');
+      else
+        for ii=1:length(list)
+          irf.log('notice', [procName ' proc using: ',list(ii).name]);
+          src_fileData = load_file([list(ii).path, filesep, list(ii).name],...
+            'aspoc');
+          update_header(src_fileData); % Update header with file info.
+        end
+      end
+    else
+      % Load input specified ASPOC
+      fileSplit = strsplit(ASPOC_File,':');
+      for iFile=1:size(fileSplit,2)
+        irf.log('notice', [procName ' proc using: ' fileSplit{iFile}]);
+        src_fileData = load_file(fileSplit{iFile},'aspoc');
+        update_header(src_fileData) % Update header with file info.
+      end
+    end
+
+    %% Second type of special case, brst QL (use L2A from previously processed Fast).
+    if(regexpi(DCE_File,'_brst_'))
+      if(procId==MMS_CONST.SDCProc.ql && ~isempty(L2A_File))
+        irf.log('notice', [procName ' proc using: ' L2A_File]);
+        src_fileData = load_file(L2A_File,'l2a');
+        update_header(src_fileData); % Update header with file info.
+      else
+        irf.log('warning',[procName ' but no L2A file from Fast Q/L.']);
+      end
+    end
+
+    % Go on with the DCE file.
+    Dmgr.set_param('dce',dce_obj);
 
     if ~isempty(DCV_File)
       % Separate DCV file (during commissioning)
@@ -230,8 +242,9 @@ end
       end
 
       if regexpi(fileIn,'_dce')
-        if( procId == MMS_CONST.SDCProc.ql && ~isempty(regexpi(fileIn,'_l2a_')) )
-          % L2A file (from fast mode) for QL Brst process.
+        if( (procId == MMS_CONST.SDCProc.l2a || procId == MMS_CONST.SDCProc.ql) ...
+            && ~isempty(regexpi(fileIn,'_l2a_')) )
+          % L2A file (from fast mode) for "QL Brst" or "L2A Brst" process.
         else
           % This argument is the dce file, (l1b raw, l2a/pre dce2d or similar)
           % Use this file to get TMmode directly from filename, and if comm.
@@ -326,6 +339,13 @@ end
         end
         DEFATT_File = varargin{j};
         irf.log('notice', ['DEFATT input file: ', DEFATT_File]);
+      elseif regexpi(fileIn, '_aspoc_') % ASPOC
+        if ~isempty(ASPOC_File)
+          errStr = ['Multiple ASPOC files in input (',ASPOC_File,' and ',varargin{j},')'];
+          irf.log('critical', errStr); error(errStr);
+        end
+        ASPOC_File = varargin{j};
+        irf.log('notice',['ASPOC input file: ',ASPOC_File]);
       else
         % Unidentified input argument
         errStr = ['MMS_SDC_SDP_PROC unrecognized input file: ',varargin{j}];
