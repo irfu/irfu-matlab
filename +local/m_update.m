@@ -33,6 +33,7 @@ oldPwd = pwd; % Keep old path.
 for iSc = 1:numel(inArg.scId)
   % Go through all the datasets to be indexed
   for iDataSet = 1:numel(inArg.datasetName)
+    clear index listFiles old_index
     dataSet = inArg.datasetName{iDataSet};
     irf.log('warning',['Indexing data set: ' dataSet ' on MMS',...
       inArg.scId{iSc}]);
