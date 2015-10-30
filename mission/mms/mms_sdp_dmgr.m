@@ -8,6 +8,7 @@ classdef mms_sdp_dmgr < handle
   
   properties (SetAccess = protected )
     adc_off = [];     % comp ADC offsets
+    aspoc = [];       % src ASPOC file
     dce = [];         % src DCE file
     dce_xyz_dsl = []; % comp E-field xyz DSL-coord
     dcv = [];         % src DCV file
@@ -156,6 +157,7 @@ classdef mms_sdp_dmgr < handle
           %apply_transfer_function()
           v_from_e_and_v()
           chk_bias_guard()
+          chk_aspoc_on()
           chk_sweep_on()
           chk_sdp_v_vals()
           sensors = {'e12','e34','e56'};
@@ -367,6 +369,27 @@ classdef mms_sdp_dmgr < handle
             % Simply load l2a, (Fast data/offset to be used by Brst QL).
           end
           
+        case('aspoc')
+          % ASPOC, have an adverse impact on E-field mesurements.
+          vPfx = sprintf('mms%d_asp_status',DATAC.scId);
+          if(isempty(DATAC.(param)))
+            % first hk_101 file
+            DATAC.(param).dataObj = dataObj;
+            x = getdep(dataObj,vPfx);
+            time = x.DEPEND_O.data;
+            check_monoton_timeincrease(time, param);
+            DATAC.(param).status = get_ts(dataObj, vPfx); % TSeries
+          else
+            % Second aspoc file
+            DATAC.(param).dataObj2 = dataObj; % Store dataObj.
+            x = getdep(dataObj,vPfx);
+            time = x.DEPEND_O.data;
+            check_monoton_timeincrease(time, param);
+            status2 = get_ts(dataObj, vPfx); % TSeries
+            % Combine the two into one, based on unique timestamps.
+            DATAC.(param).status = combine(DATAC.(param).status, status2);
+          end
+
         otherwise
           % Not yet implemented.
           errStr = [' unknown parameter (' param ')'];
@@ -636,6 +659,43 @@ classdef mms_sdp_dmgr < handle
         end % for iSen
       end
       
+      function chk_aspoc_on()
+        % Check if aspoc is on if yes, set bit in both V and E bitmask
+        if isempty(DATAC.dce)
+          irf.log('warning','Empty DCE, cannot proceed')
+          return
+        end
+        if(~isempty(DATAC.aspoc))
+          % ASPOC file was loaded
+          irf.log('notice','Checking for ASPOC ON status.');
+          % Interpolate previous status on/off (4th column) and extrapolate
+          % to match DCE measurement timestamps
+          ind_ON = interp1(double(DATAC.aspoc.status.time.epoch), ...
+            double(DATAC.aspoc.status.data(:,4)), double(DATAC.dce.time),...
+            'previous', 'extrap');
+          if(any(ind_ON))
+            irf.log('warning','ASPOC was turned on for some period.');
+            % Turned on for at least one measurement, set bitmask for all
+            % DCV & DCE
+            bits = MMS_CONST.Bitmask.ASPOC_RUNNING;
+            for iSen = 1:2:numel(sensors)
+              senA = sensors{iSen};  senB = sensors{iSen+1};
+              senE = ['e' senA(2) senB(2)]; % E-field sensor
+              % Add value to the bitmask, leaving other bits untouched.
+              DATAC.dcv.(senA).bitmask(ind_ON) = ...
+                bitor(DATAC.dcv.(senA).bitmask(ind_ON), bits);
+              DATAC.dcv.(senB).bitmask(ind_ON) = ...
+                bitor(DATAC.dcv.(senB).bitmask(ind_ON), bits);
+              DATAC.dce.(senE).bitmask(ind_ON) = ...
+                bitor(DATAC.dce.(senE).bitmask(ind_ON), bits);
+            end
+          end
+        else
+          % Else just issue a notice (ASPOC is not to be expected for QL).
+          irf.log('notice','Empty ASPOC, cannot set bitmask for it.');
+        end
+      end % CHK_ASPOC_ON
+
       function chk_sdp_v_vals()
         % check if probe-to-spacecraft potentials  averaged over one spin for
         % all probes are similar (within TBD %, or V).
