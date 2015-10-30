@@ -400,14 +400,14 @@ classdef TSeries
       %ABS Magnitude
       if obj.tensorOrder~=1, error('Not yet implemented'); end
       switch obj.basis
-        case {'xy','xyz'}, data = sqrt( sum(abs(obj.data).^2, 2) ); 
-        case {'rtp','rlp','rp'}, data = abs(obj.r.data);
+        case {'xy','xyz'}, Tmpdata = sqrt( sum(abs(obj.data).^2, 2) );
+        case {'rtp','rlp','rp'}, Tmpdata = abs(obj.r.data);
         case 'rpz' % cylindrical
-          data = sqrt(abs(obj.r.data).^2 + abs(obj.z.data).^2);
+          Tmpdata = sqrt(abs(obj.r.data).^2 + abs(obj.z.data).^2);
         otherwise
           error('Unknown representation'); % should not be here
       end
-      obj.data_ = data; Ts = obj;
+      obj.data_ = Tmpdata; Ts = obj;
       Ts.tensorOrder_=0; Ts.tensorBasis_ = ''; Ts.representation{2} = [];
       if ~isempty(obj.name), Ts.name = sprintf('|%s|',obj.name); end
     end
@@ -416,14 +416,14 @@ classdef TSeries
       %ABS2 Magnitude squared
       if obj.tensorOrder~=1, error('Not yet implemented'); end
       switch obj.basis
-        case {'xy','xyz'}, data = sum(abs(obj.data).^2, 2); 
-        case {'rtp','rlp','rp'}, data = abs(obj.r.data).^2;
+        case {'xy','xyz'}, Tmpdata = sum(abs(obj.data).^2, 2);
+        case {'rtp','rlp','rp'}, Tmpdata = abs(obj.r.data).^2;
         case 'rpz' % cylindrical
-          data = abs(obj.r.data).^2 + abs(obj.z.data).^2;
+          Tmpdata = abs(obj.r.data).^2 + abs(obj.z.data).^2;
         otherwise
           error('Unknown representation'); % should not be here
       end
-      obj.data_ = data; Ts = obj;
+      obj.data_ = Tmpdata; Ts = obj;
       Ts.tensorOrder_=0; Ts.tensorBasis_ = ''; Ts.representation{2} = [];
       if ~isempty(obj.name), Ts.name = sprintf('|%s|^2',obj.name); end
       if ~isempty(obj.units), Ts.units = sprintf('(%s)^2',obj.units); end
@@ -792,6 +792,34 @@ classdef TSeries
       end
     end
     
+    function Ts = combine(obj,obj1)
+      % Combine two time series, with different times but same data type &
+      % representation into a single timeseries sorted by unique timestamps
+      % (EpochTT values). Note: It will keep userData, name, units,
+      % coordinateSystem and siConversion from "obj".
+      if ~isa(obj1,'TSeries') || ~isa(obj,'TSeries')
+        error('TSeries inputs are expected')
+      elseif obj.tensorOrder~=obj1.tensorOrder
+        error('Inputs must have the same tensor order');
+      elseif obj.tensorBasis_ ~= obj1.tensorBasis_
+        error('Inputs must have the same tensor basis, use transform()');
+      end
+      Tmptime = [obj.time.epoch; obj1.time.epoch];
+      Tmpdata = [obj.data; obj1.data];
+      [srt_time, srt] = sort(Tmptime);
+      [Tmptime, usrt] = unique(srt_time);
+      Tmpdata = Tmpdata(srt(usrt),:);
+      Ts = TSeries(EpochTT(Tmptime), Tmpdata); % Combined TSeries
+      % Perhaps fix a better combination of metadata, for now keep "obj".
+      Ts.name = obj.name;
+      Ts.units = obj.units;
+      Ts.siConversion = obj.siConversion;
+      Ts.userData = obj.userData;
+      if(~isempty(obj.coordinateSystem))
+        Ts.coordinateSystem = obj.coordinateSystem;
+      end
+    end
+
     function Ts = resample(obj,NewTime,varargin)
       % RESAMPLE  Resample TSeries to a new timeline
       %
@@ -828,8 +856,8 @@ classdef TSeries
       Ts = Ts.transform(basis);
       
       function resample_(TsTmp)
-        tData = TsTmp.time - TsTmp.time(1); data = double(TsTmp.data);
-        newData = irf_resamp([tData data],NewTime-TsTmp.time(1),varargin{:});
+        tData = TsTmp.time - TsTmp.time(1); dataTmp = double(TsTmp.data);
+        newData = irf_resamp([tData dataTmp],NewTime-TsTmp.time(1),varargin{:});
         Ts = TsTmp; Ts.t_ = NewTime; Ts.data_ = newData(:,2:end);
       end
     end %RESAMPLE
