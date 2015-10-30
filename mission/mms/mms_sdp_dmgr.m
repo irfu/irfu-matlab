@@ -670,8 +670,9 @@ classdef mms_sdp_dmgr < handle
           irf.log('notice','Checking for ASPOC ON status.');
           % Interpolate previous status on/off (4th column) and extrapolate
           % to match DCE measurement timestamps
+          tmpStatus = DATAC.aspoc.status.data(:,4) > 0;
           ind_ON = interp1(double(DATAC.aspoc.status.time.epoch), ...
-            double(DATAC.aspoc.status.data(:,4)), double(DATAC.dce.time),...
+            double(tmpStatus), double(DATAC.dce.time),...
             'previous', 'extrap');
           if(any(ind_ON))
             irf.log('warning','ASPOC was turned on for some period.');
