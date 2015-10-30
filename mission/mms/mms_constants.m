@@ -57,13 +57,13 @@ MMS_CONST.Samplerate.comm_128 = 128; % Commissioning "Boom deployment" phase
 MMS_CONST.Samplerate.brst = 8192; % Or 1024? TM mode burst
 
 % SDC process names
-MMS_CONST.SDCProcs = {'ql','scpot','l2pre','l2a','l1adc','l2adc'};
+MMS_CONST.SDCProcs = {'ql','scpot','l2pre','l2a','l1ace','l2ace'};
 MMS_CONST.SDCProc.ql    = 1; % Number must corrspond to position in the list
 MMS_CONST.SDCProc.scpot = 2;
 MMS_CONST.SDCProc.l2pre = 3;
 MMS_CONST.SDCProc.l2a   = 4;
-MMS_CONST.SDCProc.l1adc = 5; % ADC data (type of brst)
-MMS_CONST.SDCProc.l2adc = 6;
+MMS_CONST.SDCProc.l1ace = 5; % ACE data (type of brst)
+MMS_CONST.SDCProc.l2ace = 6;
 
 % Limits used in processing
 MMS_CONST.Limit.LOW_DENSITY_SATURATION = -100; % Probe stuck and below limit.
@@ -72,12 +72,13 @@ MMS_CONST.Limit.DCE_DCV_DISCREPANCY = 0.28; % Max discrepancy DCE{12,34}=(DCV{1,
 
 
 % Bitmask values; 2^(bit_number - 1):
-MMS_CONST.Bitmask.SIGNAL_OFF               =  uint16(1);       % Bit 1
-MMS_CONST.Bitmask.BAD_BIAS                 =  uint16(2);       % Bit 2
-MMS_CONST.Bitmask.PROBE_SATURATION         =  uint16(4);       % Bit 3
-MMS_CONST.Bitmask.LOW_DENSITY_SATURATION   =  uint16(8);       % Bit 4
-MMS_CONST.Bitmask.SWEEP_DATA               =  uint16(16);      % Bit 5
-MMS_CONST.Bitmask.ADP_SHADOW               =  uint16(32);      % Bit 6
+MMS_CONST.Bitmask.SIGNAL_OFF             = mms_sdp_typecast('bitmask',1);  % Bit 1
+MMS_CONST.Bitmask.BAD_BIAS               = mms_sdp_typecast('bitmask',2);  % Bit 2
+MMS_CONST.Bitmask.PROBE_SATURATION       = mms_sdp_typecast('bitmask',4);  % Bit 3
+MMS_CONST.Bitmask.LOW_DENSITY_SATURATION = mms_sdp_typecast('bitmask',8);  % Bit 4
+MMS_CONST.Bitmask.SWEEP_DATA             = mms_sdp_typecast('bitmask',16); % Bit 5
+MMS_CONST.Bitmask.ADP_SHADOW             = mms_sdp_typecast('bitmask',32); % Bit 6
+MMS_CONST.Bitmask.ASPOC_RUNNING          = mms_sdp_typecast('bitmask',64); % Bit 7
 
 MMS_CONST.Error = -Inf; % Indicates error in computation
 
@@ -90,7 +91,9 @@ MMS_CONST.Version = struct(...
   MMS_CONST.SDCProcs{MMS_CONST.SDCProc.ql},    struct('X', 0, 'Y', 4), ...
   MMS_CONST.SDCProcs{MMS_CONST.SDCProc.scpot}, struct('X', 0, 'Y', 2), ...
   MMS_CONST.SDCProcs{MMS_CONST.SDCProc.l2pre}, struct('X', 0, 'Y', 3), ...
-  MMS_CONST.SDCProcs{MMS_CONST.SDCProc.l2a},   struct('X', 0, 'Y', 1));
+  MMS_CONST.SDCProcs{MMS_CONST.SDCProc.l2a},   struct('X', 0, 'Y', 1), ...
+  MMS_CONST.SDCProcs{MMS_CONST.SDCProc.l1ace}, struct('X', 0, 'Y', 0), ...
+  MMS_CONST.SDCProcs{MMS_CONST.SDCProc.l2ace}, struct('X', 0, 'Y', 0));
 % Version Notes Y, for us. Not written to CDF files.
 % Y - 0, initial release
 % Y - 1, ADP shadow removal, use of irf_filt in scpot calculation.
