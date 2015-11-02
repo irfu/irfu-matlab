@@ -23,6 +23,7 @@ HK_105_File = ''; % HK with sweep status etc.
 HK_10E_File = ''; % HK with bias guard settings etc.
 ACE_File = '';
 ASPOC_File = '';
+DFG_File = ''; % B-field, L2Pre
 DCV_File = '';
 DCE_File = '';
 L2A_File = ''; % L2A file, contain offsets from fast/slow to be used by brst and for L2Pre process.
@@ -164,6 +165,15 @@ switch procId
  
   case {MMS_CONST.SDCProc.l2pre}
     % L2Pre process with L2A file as input
+    if isempty(DFG_File)
+      errStr = ['missing required input for ' procName ': DFG_File'];
+      irf.log('critical',errStr)
+      error('Matlab:MMS_SDC_SDP_PROC:Input', errStr)
+    end
+    irf.log('notice',[procName ' proc using: ' DFG_File]);
+    src_fileData = load_file(DFG_File,'dfg');
+    update_header(src_fileData) % Update header with file info.
+
     if isempty(L2A_File)
       errStr = ['missing required input for ' procName ': L2A_File'];
       irf.log('critical',errStr)
@@ -346,6 +356,13 @@ end
         end
         ASPOC_File = varargin{j};
         irf.log('notice',['ASPOC input file: ',ASPOC_File]);
+      elseif regexpi(fileIn, '_dfg_') % DFG - B-field
+        if ~isempty(DFG_File)
+          errStr = ['Multiple DFG files in input (',DFG_File,' and ',varargin{j},')'];
+          irf.log('critical', errStr); error(errStr);
+        end
+        DFG_File = varargin{j};
+        irf.log('notice',['DFG input file: ',DFG_File]);
       else
         % Unidentified input argument
         errStr = ['MMS_SDC_SDP_PROC unrecognized input file: ',varargin{j}];

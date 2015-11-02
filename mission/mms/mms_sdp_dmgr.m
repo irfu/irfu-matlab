@@ -15,6 +15,7 @@ classdef mms_sdp_dmgr < handle
     defatt = [];      % src DEFATT file
     defeph = [];      % src DEFEPH file
     delta_off = [];   % comp delta offsets
+    dfg = [];         % src DFG file
     hk_101 = [];      % src HK_101 file
     hk_105 = [];      % src HK_105 file
     hk_10e = [];      % src HK_10E file
@@ -179,6 +180,27 @@ classdef mms_sdp_dmgr < handle
           apply_nom_amp_corr() % AFTER all V values was calculated but before most processing.
           sensors = {'e12','e34'};
           corr_adp_spikes()
+          
+        case('dfg')
+          % DFG - Dual fluxgate magn. B-field.
+          vPfx = sprintf('mms%d_dfg_srvy_l2pre_bcs',DATAC.scId); %% FIXME: USE CORRECT COORDINATES.
+          if(isempty(DATAC.(param)))
+            % first DFG file
+            DATAC.(param).dataObj = dataObj;
+            x = getdep(dataObj,vPfx);
+            time = x.DEPEND_O.data;
+            check_monoton_timeincrease(time, param);
+            DATAC.(param).B_bcs = get_ts(dataObj, vPfx); % TSeries
+          else
+            % Second DFG file
+            DATAC.(param).dataObj2 = dataObj; % Store dataObj.
+            x = getdep(dataObj,vPfx);
+            time = x.DEPEND_O.data;
+            check_monoton_timeincrease(time, param);
+            B_bcs = get_ts(dataObj, vPfx); % TSeries
+            % Combine the two into one, based on unique timestamps.
+            DATAC.(param).B_bcs = combine(DATAC.(param).B_bcs, B_bcs);
+          end
           
         case('hk_101')
           % HK 101, contains sunpulses.
@@ -365,6 +387,7 @@ classdef mms_sdp_dmgr < handle
           load_l2a();
           if(DATAC.procId==MMS_CONST.SDCProc.l2pre)
             % Do full L2Pre processing on L2A data.
+            
           else
             % Simply load l2a, (Fast data/offset to be used by Brst QL).
           end
