@@ -1067,7 +1067,7 @@ classdef mms_sdp_dmgr < handle
           Etmp.(sdpProbes{iProbe}) - Adc_off.(sdpProbes{iProbe});
       end
       MMS_CONST = DATAC.CONST;
-      bitmask = uint16(bitor(Dce.e12.bitmask,Dce.e34.bitmask));
+      bitmask = mms_sdp_typecast('bitmask',bitor(Dce.e12.bitmask,Dce.e34.bitmask));
       Etmp.e12 = mask_bits(Etmp.e12, bitmask, MMS_CONST.Bitmask.SWEEP_DATA);
       Etmp.e34 = mask_bits(Etmp.e34, bitmask, MMS_CONST.Bitmask.SWEEP_DATA);   
       dE = mms_sdp_despin(Etmp.e12, Etmp.e34, Phase.data, deltaOff);
