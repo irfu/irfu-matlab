@@ -48,19 +48,19 @@ switch(lower(dataName))
     end
   case 'bitmask'
     if(~isempty(data))
+      out = uint16(data);
+    else
+      out.cdf     = 'cdf_uint2';
+      out.matlab  = 'uint16';
+      out.fillval = uint16(65535);
+    end
+  case 'quality'
+    if(~isempty(data))
       out = uint8(data);
     else
       out.cdf     = 'cdf_uint1';
       out.matlab  = 'uint8';
       out.fillval = uint8(255);
-    end
-  case 'quality'
-    if(~isempty(data))
-      out = int16(data);
-    else
-      out.cdf     = 'cdf_int2';
-      out.matlab  = 'int16';
-      out.fillval = int16(-32768);
     end
   case {'dce', 'adc_offset', 'scpot', 'phase', 'spinfits', 'delta_offset'}
     if(~isempty(data))
