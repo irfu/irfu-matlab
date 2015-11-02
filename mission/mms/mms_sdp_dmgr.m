@@ -183,23 +183,23 @@ classdef mms_sdp_dmgr < handle
           
         case('dfg')
           % DFG - Dual fluxgate magn. B-field.
-          vPfx = sprintf('mms%d_dfg_srvy_l2pre_bcs',DATAC.scId); %% FIXME: USE CORRECT COORDINATES.
+          vPfx = sprintf('mms%d_dfg_srvy_l2pre_dmpa',DATAC.scId);
           if(isempty(DATAC.(param)))
             % first DFG file
             DATAC.(param).dataObj = dataObj;
             x = getdep(dataObj,vPfx);
             time = x.DEPEND_O.data;
             check_monoton_timeincrease(time, param);
-            DATAC.(param).B_bcs = get_ts(dataObj, vPfx); % TSeries
+            DATAC.(param).B_dmpa = get_ts(dataObj, vPfx); % TSeries
           else
             % Second DFG file
             DATAC.(param).dataObj2 = dataObj; % Store dataObj.
             x = getdep(dataObj,vPfx);
             time = x.DEPEND_O.data;
             check_monoton_timeincrease(time, param);
-            B_bcs = get_ts(dataObj, vPfx); % TSeries
+            B_dmpa = get_ts(dataObj, vPfx); % TSeries
             % Combine the two into one, based on unique timestamps.
-            DATAC.(param).B_bcs = combine(DATAC.(param).B_bcs, B_bcs);
+            DATAC.(param).B_dmpa = combine(DATAC.(param).B_dmpa, B_dmpa);
           end
           
         case('hk_101')
@@ -387,6 +387,26 @@ classdef mms_sdp_dmgr < handle
           load_l2a();
           if(DATAC.procId==MMS_CONST.SDCProc.l2pre)
             % Do full L2Pre processing on L2A data.
+            %% FIXME: MOVE TO PROPER SUBFUNCTIONS.
+            DATAC.l2a.adp = DATAC.l2a.dce.e56.data;
+            % DESPIN, using L2A data (offsets, phase etc).
+            sdpProbes = fieldnames(DATAC.l2a.adc_off); % default {'e12', 'e34'}
+            Etmp = struct('e12',DATAC.l2a.dce.e12.data,'e34',DATAC.l2a.dce.e34.data);
+            for iProbe=1:numel(sdpProbes)
+              % Remove ADC offset
+              Etmp.(sdpProbes{iProbe}) = ...
+                Etmp.(sdpProbes{iProbe}) - DATAC.l2a.adc_off.(sdpProbes{iProbe});
+            end
+            MMS_CONST = DATAC.CONST;
+            bitmask = mms_sdp_typecast('bitmask',bitor(DATAC.l2a.dce.e12.bitmask,DATAC.l2a.dce.e34.bitmask));
+            Etmp.e12 = mask_bits(Etmp.e12, bitmask, MMS_CONST.Bitmask.SWEEP_DATA);
+            Etmp.e34 = mask_bits(Etmp.e34, bitmask, MMS_CONST.Bitmask.SWEEP_DATA);
+            dE = mms_sdp_despin(Etmp.e12, Etmp.e34, DATAC.l2a.phase.data, DATAC.l2a.delta_off);
+            % Comppute DCE Z from E.B = 0, if > 10 deg.
+            dEz = irf_edb(TSeries(EpochTT(DATAC.l2a.dce.time),dE,'vec_xy'), DATAC.dfg.B_dmpa, 10, 'E.B=0');
+            DATAC.l2a.dsl = struct('data',[dEz.data],...
+              'bitmask',bitmask);
+            
             
           else
             % Simply load l2a, (Fast data/offset to be used by Brst QL).
