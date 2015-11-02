@@ -23,8 +23,14 @@ end
 
 
 function quality = comp_quality(bitmask)
-  % Assume Good data to begin with.
-  quality = 3*ones(size(bitmask),'uint16');
+  % Assume Good data to begin with. And use the same type as bitmask at
+  % first (for bitand comparison to work).
+  quality = 3*ones(size(bitmask), ...
+    getfield(mms_sdp_typecast('bitmask'),'matlab'));
+  % Set quality to 2 (caution)
+  bits_2 = MMS_CONST.Bitmask.ASPOC_RUNNING;
+  ind_2 = logical(bitand(bitmask, bits_2));
+  quality(ind_2) = 2;
   % Set quality to 1 (bad)
   bits_1 = MMS_CONST.Bitmask.BAD_BIAS + ...
     MMS_CONST.Bitmask.LOW_DENSITY_SATURATION + ...
@@ -37,6 +43,8 @@ function quality = comp_quality(bitmask)
     MMS_CONST.Bitmask.PROBE_SATURATION);
   ind_0 = logical(bitand(bitmask, bits_0));
   quality(ind_0) = 0;
+  % Recast to proper quality datatype.
+  quality = mms_sdp_typecast('quality', quality);
 end
 
 end
