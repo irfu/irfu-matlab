@@ -811,22 +811,26 @@ classdef TSeries
       end
       if isa(NewTime,'TSeries'), NewTime = NewTime.time; end
       if NewTime == obj.time, Ts = obj; return, end 
-      
-      if obj.tensorOrder~=1, error('Not yet implemented'); end
-      
-      % For non-cartesian bases, in order to do a proper inte/extrapolarion
-      % we first transform into cartesian basis, resample, and then
-      % transform back to teh original basis
-      basis = obj.BASIS{obj.tensorBasis_};
-      switch basis
-        case {'xy','xyz'}, resample_(obj); return 
-        case {'rtp','rlp','rpz'}, resample_(obj.transform('xyz'));
-        case 'rp', resample_(obj.transform('xy'));
-        otherwise
-          error('Unknown representation'); % should not be here
+            
+      if obj.tensorOrder==0, 
+          resample_(obj);
+      elseif obj.tensorOrder==1,       
+          % For non-cartesian bases, in order to do a proper inte/extrapolarion
+          % we first transform into cartesian basis, resample, and then
+          % transform back to teh original basis
+          basis = obj.BASIS{obj.tensorBasis_};
+          switch basis
+            case {'xy','xyz'}, resample_(obj); return 
+            case {'rtp','rlp','rpz'}, resample_(obj.transform('xyz'));
+            case 'rp', resample_(obj.transform('xy'));
+            otherwise
+              error('Unknown representation'); % should not be here
+          end
+          Ts = Ts.transform(basis);
+      else
+          error('Not yet implemented'); 
       end
-      Ts = Ts.transform(basis);
-      
+           
       function resample_(TsTmp)
         tData = TsTmp.time - TsTmp.time(1); data = double(TsTmp.data);
         newData = irf_resamp([tData data],NewTime-TsTmp.time(1),varargin{:});
