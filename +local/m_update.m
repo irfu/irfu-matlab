@@ -70,6 +70,7 @@ for iSc = 1:numel(inArg.scId)
       else
         old = false;
       end
+      listFiles = remove_corrupted_cdf(listFiles);
       irf.log('warning',['Found ',num2str(length(listFiles)),' new files, will add these to index.']);
       % Pre allocate struct output
       index(1:length(listFiles)) = struct('filename',[],'tstart',[],'tstop',[]);
@@ -188,6 +189,17 @@ cd(oldPwd);
     addOptional(p, 'datadirectory', default.dataPathRoot, validDatadirectory);
     parse(p, tmpVarargin{:});
     inputArg = p.Results;
+  end
+
+  function listFiles = remove_corrupted_cdf(listFiles)
+    % Do not try to read files which are corrupted as this result in
+    % problem reading the next files to follow...
+    %in bash: cdfdump /data/mms/mms1/asp1/srvy/sitl/beam/2015/08/mms1_asp1_srvy_sitl_beam_20150831_v1.0.1.cdf | less
+    % Dumping cdf from "/data/mms/mms1/asp1/srvy/sitl/beam/2015/08/mms1_asp1_srvy_sitl_beam_20150831_v1.0.1.cdf"...
+    % Program failed for file: /data/mms/mms1/asp1/srvy/sitl/beam/2015/08/mms1_asp1_srvy_sitl_beam_20150831_v1.0.1.cdf at 1.0...
+    % CORRUPTED_V3_CDF: Version 3 CDF is corrupted. (/data/mms/mms1/asp1/srvy/sitl/beam/2015/08/mms1_asp1_srvy_sitl_beam_20150831_v1.0.1.cdf)
+    corrupted = './srvy/sitl/beam/2015/08/mms1_asp1_srvy_sitl_beam_20150831_v1.0.1.cdf';
+    listFiles = listFiles(~ismember(listFiles, corrupted));
   end
 
 end
