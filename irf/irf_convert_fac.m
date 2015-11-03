@@ -30,7 +30,10 @@ function [out]=irf_convert_fac(inp,B0,r)
 % Note: all input parameters must be in the same coordinate system 
 
 % Begin temporary fix to convert TS format to older format (Must include spacecraft position)
-if isa(inp,'TSeries'), 
+
+isinpTS = isa(inp,'TSeries');
+if isinpTS, 
+    inptemp = inp;
     ttemp = inp.time.epochUnix;
     datatemp = double(inp.data);
     inp = [ttemp, double(datatemp)];
@@ -86,6 +89,10 @@ if iscell(inp)
 			error('all inputs must have the same time axis')
 		end
 		out{j}=calculate_out(inp{j});
+        if isinpTS,
+            inptemp.data =  out(:,[2:4]);
+            out = inptemp;
+        end
 	end
 else
 	if isempty(inp)  % return the transformation matrix instead
@@ -96,6 +103,10 @@ else
     out.rotMatrix(:,3,:) = Rpar(:,2:4);
   else
     out=calculate_out(inp);
+        if isinpTS,
+            inptemp.data =  out(:,[2:4]);
+            out = inptemp;
+        end
   end
 end
 
