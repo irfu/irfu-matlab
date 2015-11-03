@@ -101,8 +101,8 @@ classdef mms_db < handle
          case 2, res.data = res.data(idxSort, :);
          case 3, res.data = res.data(idxSort, :, :);
          case 4, res.data = res.data(idxSort, :, :, :);
-         case 5, res.data = res.data(idxSort, :, :, :, :, :);
-         case 6, res.data = res.data(idxSort, :, :, :, :, :, :);
+         case 5, res.data = res.data(idxSort, :, :, :, :);
+         case 6, res.data = res.data(idxSort, :, :, :, :, :);
          otherwise
            errStr = 'Cannot handle more than 6 dimensions.';
            irf.log('critical', errStr);
