@@ -138,7 +138,7 @@ START_VARIABLE      = P_quality__CXXX_CP_EFW_L3_P
   FIELDNAM          = "Spacecraft potential measurement quality flag (4=best)"
   SI_CONVERSION     = "1>unitless"
   UNITS             = "unitless"
-  FILLVAL           = 0
+  FILLVAL           = -1
   SIGNIFICANT_DIGITS= 1
   LABLAXIS          = "Quality"
   DEPEND_0          = time_tags__CXXX_CP_EFW_L3_P
