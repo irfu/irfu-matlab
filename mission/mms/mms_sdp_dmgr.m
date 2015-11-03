@@ -402,8 +402,10 @@ classdef mms_sdp_dmgr < handle
             Etmp.e12 = mask_bits(Etmp.e12, bitmask, MMS_CONST.Bitmask.SWEEP_DATA);
             Etmp.e34 = mask_bits(Etmp.e34, bitmask, MMS_CONST.Bitmask.SWEEP_DATA);
             dE = mms_sdp_despin(Etmp.e12, Etmp.e34, DATAC.l2a.phase.data, DATAC.l2a.delta_off);
-            % Comppute DCE Z from E.B = 0, if > 10 deg.
-            dEz = irf_edb(TSeries(EpochTT(DATAC.l2a.dce.time),dE,'vec_xy'), DATAC.dfg.B_dmpa, 10, 'E.B=0');
+            % Compute DCE Z from E.B = 0, if >10 deg and if abs(B_z)> 1 nT.
+            B_tmp = DATAC.dfg.B_dmpa;
+            B_tmp.data((abs(B_tmp.z.data) <= 1), :) = NaN;
+            dEz = irf_edb(TSeries(EpochTT(DATAC.l2a.dce.time),dE,'vec_xy'), B_tmp, 10, 'E.B=0');
             DATAC.l2a.dsl = struct('data',[dEz.data],...
               'bitmask',bitmask);
             
@@ -981,7 +983,7 @@ classdef mms_sdp_dmgr < handle
         DATAC.(param).phase.data = dataObj.data.([varPre, '_phase']).data;
         DATAC.(param).delta_off = complex(dataObj.data.([varPre, varPre4]).data(1),...
           dataObj.data.([varPre, varPre4]).data(2));
-      end
+      end % load_l2a
 
 %       function res = are_probes_enabled
 %         % Use FILLVAL of each sensor to determine if probes are enabled or not.
