@@ -96,7 +96,18 @@ classdef mms_db < handle
          irf.log('warning',sprintf('Discarded %d data points',nDuplicate))
        end
        [res.DEPEND_0.data,idxSort] = sort(res.DEPEND_0.data);
-       res.data = res.data(idxSort, :); % All columns.
+       nd = ndims(res.data);
+       switch nd
+         case 2, res.data = res.data(idxSort, :);
+         case 3, res.data = res.data(idxSort, :, :);
+         case 4, res.data = res.data(idxSort, :, :, :);
+         case 5, res.data = res.data(idxSort, :, :, :, :, :);
+         case 6, res.data = res.data(idxSort, :, :, :, :, :, :);
+         otherwise
+           errStr = 'Cannot handle more than 6 dimensions.';
+           irf.log('critical', errStr);
+           error(errStr);
+       end
        function res = comp_struct(s1,s2)
        % Compare structures
          narginchk(2,2), res = false;
