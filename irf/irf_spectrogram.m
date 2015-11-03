@@ -282,11 +282,12 @@ for comp=1:min(length(h),ncomp)
     else hcb = colorbar('peer',h(comp));
     end
     drawnow
-		posAx = get(h(comp),'Position'); 
 		posCb = get(hcb,'Position');
+    posAx = get(h(comp),'Position');
+    drawnow
 		set(hcb,'TickDir','out','Position',...
 			[posCb(1) posCb(2)+posCb(4)*0.05 posCb(3)*.75 posCb(4)*0.9])
-		set(h(comp),'Position',posAx)
+		set(h(comp),'Position',[posAx(1) posAx(2) (posCb(1)-posAx(1))*0.97 posAx(4)])
 		ylabel(hcb,specrec.p_label);
         if fitColorbarLabel
             irf_colorbar_fit_label_height(hcb);
