@@ -33,11 +33,12 @@ end
 if nargin == 1, % use default solar wind values
     Dp=2;
     Bx=0;By=0;Bz=0;
+    M=4;
 elseif nargin == 2, % IRF_MAGNETOPAUSE(model, time)
     t=Dp;
     tint=t + [-2 2]*3600;
     if isempty(dpbz) || t<dpbz(1,1) || t>dpbz(end,1),
-        dpbz=irf_get_data(tint,'P,bzgsm,bx,bygsm','omni');
+        dpbz=irf_get_data(tint,'P,bzgsm,bx,bygsm,Ma','omni');
     end
     if isempty(dpbz), % no OMNI data, return empty 
         return
@@ -47,12 +48,13 @@ elseif nargin == 2, % IRF_MAGNETOPAUSE(model, time)
         Bz=dpbz_t(3);
         Bx=dpbz_t(4);
         By=dpbz_t(5);
+        M=dpbz_t(6);
         if isnan(Dp) || isnan(Bz) || isempty(Dp) || isempty(Bz)
             return
         end
     end
 elseif nargin==3, % specified Dp and Bz
-    Bx=0;By=0;
+    Bx=0;By=0;M=4;
 end
 omni.Dp=Dp;omni.Bz=Bz;omni.Bx=Bx;omni.By=By;
 
@@ -79,7 +81,6 @@ switch lower(model)
 %  rstandoff=rmp*(1+1.1*((gamma-1)*M^2+2)/((gamma+1)*(M^2-1)))
         [xmp,~] = irf_magnetosphere('mp_shue1998',Dp,Bz);
         gamma=5/3;
-        M=4;
         rmp=xmp(1);
         rstandoff=rmp*(1+1.1*((gamma-1)*M^2+2)/((gamma+1)*(M^2-1)));
         x=rstandoff:-0.5:-100;

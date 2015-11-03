@@ -1,4 +1,4 @@
-function vph = estimate_phase_speed(fkpower,freq,wavenumber) 
+function vph = estimate_phase_speed(varargin) 
 %
 % Simple function to estimate the phase speed from the frequency wave
 % number power spectrum. Fits f = v k/2 pi to the power spectrum.
@@ -7,20 +7,35 @@ function vph = estimate_phase_speed(fkpower,freq,wavenumber)
 % See also mms.fk_powerspectrum.m and mms.probe_align_times.m.
 % Written by D. B. Graham
 %
-% vph = mms.estimate_phase_speed(power,freq,wavenumber)
+% vph = mms.estimate_phase_speed(fkpower,freq,wavenumber,[fmin])
 % Inputs: (Uses output from mms.fk_powerspectrum.m)
 %   power - 2D array of powers
 %   freq - 1D array of frequencies
 %   wavenumber - 1D array of wavenumbers
+%   fmin - Set low frequency threshold of points used to estimate the
+%   speed. Optional parameter; default is 100 Hz.
 %
 % Output:
 %   vph - estimated phase speed by fitting linear dispersion relation to
 %         data.
 
+if (numel(varargin) < 3),
+    help mms.estimate_phase_speed;
+    return;
+end
+
+fkpower = varargin{1};
+freq = varargin{2};
+wavenumber = varargin{3};
+
+if (numel(varargin)==3);
+    fmin = 100;
+else 
+    fmin = varargin{4};
+end
 
 % Remove spurious points; specifically at large k. 
 kmax = 2.0*max(wavenumber)/3.0;
-fmin = 100;
 powertemp = fkpower;
 rmk = find(abs(wavenumber) > kmax);
 rmf = find(freq < fmin);
