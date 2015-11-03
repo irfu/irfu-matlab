@@ -90,19 +90,27 @@ for iSc = 1:numel(inArg.scId)
         % series in one single file, but the primary time variable SHOULD
         % always be the first if it it ISTP compliant).
         % KeepEpochAsIs is to ensure it is kept as TT2000 (int64).
-        if(~strcmp(fileInfo.Variables{1,4}, 'tt2000'))
-          errStr = ['Unexpected first variable, not ISTP compliant cdf file: ' listFiles{ii}];
+        EpochId = 1; % Assume it is first variable.
+        if(~strcmp(fileInfo.Variables{EpochId,4}, 'tt2000'))
+          errStr = ['Not ISTP compliant cdf file: ' listFiles{ii}, '. Trying to locate main Epoch.'];
           irf.log('critical', errStr); warning(errStr); % Should perhaps be error()...
-          continue; % Try with next file
-        end;
+          %continue; % Try with next file
+          EpochId = strcmp(fileInfo.Variables(:,1),'Epoch');
+          EpochId = find(EpochId,1,'first'); % First Epoch match, if any..
+          if(isempty(EpochId))
+            errStr = 'No Epoch was identified. Skipping this file.';
+            irf.log('critical', errStr); warning(errStr);
+            continue
+          end
+        end
         % Some files have zero records written to epoch. Warn and move on.
-        if(fileInfo.Variables{1,3} == 0)
+        if(fileInfo.Variables{EpochId,3} == 0)
           errStr = ['Empty primary Epoch in cdf file: ', listFiles{ii}];
           irf.log('warning', errStr);
           continue; % Try with next file
         end
         try
-          epoch = spdfcdfread(listFiles{ii}, 'Variable', fileInfo.Variables{1,1}, 'KeepEpochAsIs', true);
+          epoch = spdfcdfread(listFiles{ii}, 'Variable', fileInfo.Variables{EpochId,1}, 'KeepEpochAsIs', true);
         catch
           errStr = ['Cannot read first variable from file: ', listFiles{ii}];
           irf.log('critical', errStr); %warning(errStr); % Should perhaps be error()...
