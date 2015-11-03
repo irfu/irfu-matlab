@@ -12,7 +12,7 @@ mms.db_init('local_file_db','/data/mms');
 %disti = mms.variable2ts(get_variable(tmpDataObj,'mms1_dis_brstSkyMap_dist'));
 
 tint = irf.tint('2015-09-19T10:04:00.000000Z/2015-09-19T10:04:50.000000Z');
-
+%%
 tic;
 c_eval('diste = mms.db_get_ts(''mms?_fpi_brst_l1b_des-dist'',''mms?_des_brstSkyMap_dist'',tint);',ic);
 toc
@@ -75,18 +75,14 @@ Vperq = dot(Rperpy,V.data,2);
 Vfac = TSeries(V.time,[Vperp Vperq Vpar],'to',1);
 
 % Electron moments
-tmpDataObj = dataobj('data/mms1_fpi_brst_l1b_des-moms_20150919100000_v0.2.0.cdf');
-ne = mms.variable2ts(get_variable(tmpDataObj,'mms1_des_numberDensity'));
-c_eval('ne=mms.db_get_ts(''mms?_fpi_brst_l1b_des-moms'',''mms?_des_numberDensity'',tint);',ic);
+dsStr = sprintf('mms%d_fpi_brst_l1b_des-moms',ic);
+ne=mms.db_get_ts(dsStr,sprintf('mms%d_des_numberDensity',ic),tint);
 dtmoments = ne.time(2)-ne.time(1);
 fsmoments = 1/dtmoments;
 ne = irf_filt(ne,0,fsmoments/4,fsmoments,3);
-TeX = mms.variable2ts(get_variable(tmpDataObj,'mms1_des_TempXX'));
-TeY = mms.variable2ts(get_variable(tmpDataObj,'mms1_des_TempYY'));
-TeZ = mms.variable2ts(get_variable(tmpDataObj,'mms1_des_TempZZ'));
-c_eval('TeX=mms.db_get_ts(''mms?_fpi_brst_l1b_des-moms'',''mms?_des_TempXX'',tint);',ic);
-c_eval('TeY=mms.db_get_ts(''mms?_fpi_brst_l1b_des-moms'',''mms?_des_TempYY'',tint);',ic);
-c_eval('TeZ=mms.db_get_ts(''mms?_fpi_brst_l1b_des-moms'',''mms?_des_TempZZ'',tint);',ic);
+TeX = mms.db_get_ts(dsStr,sprintf('mms%d_des_TempXX',ic),tint);
+TeY = mms.db_get_ts(dsStr,sprintf('mms%d_des_TempYY',ic),tint);
+TeZ = mms.db_get_ts(dsStr,sprintf('mms%d_des_TempZZ',ic),tint);
 Te = TSeries(TeX.time,[TeX.data TeY.data TeZ.data],'to',1);
 Te = irf_filt(Te,0,fsmoments/4,fsmoments,3);
 
@@ -198,8 +194,8 @@ specparperp.p_label={'(f_{par}+f_{apar})/(2 f_{perp})'};
 specparperp.f_label={''};
 specparperp.f = single(energy);
 
-
-h=irf_plot(7,'newfigure');
+%%
+h=irf_figure(540+ic,7);
 
 Bxyz = Bxyz.tlim(tint);
 h(1)=irf_panel('Bxyz');
@@ -273,6 +269,7 @@ irf_plot_axis_align(h(1:7));
 irf_zoom(h(1:7),'x',tint);
 set(h(1:7),'fontsize',12);
 
+irf_colormap('poynting')
 
 %set(gcf, 'InvertHardCopy', 'off');
 %set(gcf,'paperpositionmode','auto') % to get the same on paper as on screen
