@@ -486,43 +486,48 @@ classdef TSeries
       else l = obj.t_.length();
       end
     end
-    
-    function obj = plus(obj,inp)
-			% PLUS add constant to all data samples
+       
+    function Ts = plus(obj,obj1)
+      % PLUS Addition of TS with TS/scalars.
 			%
-			% PLUS(TS,constant)
-			% TS + constant
+			%   TS.PLUS(TS)  
+      %   TS + TS
+      %
+			%   TS.PLUS(constant)
+			%   TS + constant              
+			%   - Constant can be also an object of the same size 
+      %     as each data sample.
 			%
-			% Constant can be also an object of the same size as each data
-			% sample.
-			%
-			% Examples:
-			%   TS2 = TS1 + 0.1;
-			%   TS2 = TS1 + [1 2 4];  % if TS1,TS2 are vector time series
-      if isnumeric(inp) 
-        if numel(inp) == 1
-          obj.data_ = obj.data_ + inp;
+			%   Examples:
+      %     TS3 = TS1 + TS2;
+			%     TS2 = TS1 + 0.1;
+			%     TS2 = TS1 + [1 2 4];  % if TS1,TS2 are vector time series
+      [ST,I] = dbstack; % see if plus() was called from within minus()
+      if numel(ST)>1 && strcmp(ST(2).name,'TSeries.minus')
+            operationStr = 'Minus'; operationSymbol = '-';
+      else, operationStr = 'Plus';  operationSymbol = '+';
+      end
+          
+      if isnumeric(obj) && isa(obj1,'TSeries')
+        Ts = plus(obj1,obj);        
+      end
+      if isnumeric(obj1)
+        Ts = obj;
+        if numel(obj1) == 1
+          Ts.data_ = Ts.data_ + obj1;
         else
-          sizeInp = size(inp);
-          sizeObj = size(obj.data);
+          sizeInp = size(obj1);
+          sizeObj = size(Ts.data);
           if isequal(sizeInp,sizeObj)
-						obj.data_ = obj.data_ + inp;
-					elseif numel(sizeInp) == numel(sizeObj) ...
-							&& sizeInp(1) == 1  ...
-							&& all(sizeInp(2:end) == sizeObj(2:end))
-						obj.data_ = obj.data_ + repmat(inp,[sizeObj(1) ones(1,numel(sizeInp)-1)]);
-					else
-						error('Plus not defined');
+            Ts.data_ = Ts.data_ + obj1;
+          elseif numel(sizeInp) == numel(sizeObj) ...   % same dimensions
+            && sizeInp(1) == 1  ...                     % one row in obj1
+            && all(sizeInp(2:end) == sizeObj(2:end))    % otherwise same number of elements
+            Ts.data_ = Ts.data_ + repmat(obj1,[sizeObj(1) ones(1,numel(sizeInp)-1)]);
+          else
+            error([operationStr ' not defined']);
           end
         end
-      else
-        error('Plus not defined');
-      end
-    end
-    
-    function Ts = minus(obj,obj1)
-      if isnumeric(obj1)
-        Ts = obj + (-1*obj1);
       elseif isa(obj,'TSeries') && isa(obj1,'TSeries')
         if obj.time~=obj1.time
           error('Input TS objects have different timelines, use resample()')
@@ -530,10 +535,10 @@ classdef TSeries
           error('Input TS objects have different units')
         end
         Ts = obj;
-        Ts.data_ = obj.data - obj1.data;
+        Ts.data_ = obj.data + obj1.data;
         update_name()
-      else
-        error('Minus not defined');
+      else        
+        error([operationStr ' not defined']);
       end
       function update_name()
         if ~isempty(obj.name) || ~isempty(obj1.name)
@@ -543,10 +548,29 @@ classdef TSeries
           if ~isa(obj1,'TSeries') || isempty(obj1.name), s1 = 'untitled';
           else s1 = obj1.name;
           end
-          Ts.name = sprintf('%s-%s)',s,s1);
+          Ts.name = sprintf(['(%s' operationSymbol '%s)'],s,s1);                              
         end
         Ts.userData = [];
       end
+    end
+    
+    function Ts = minus(obj,obj1)
+      % MINUS Subtraction of TS with TS/scalars.
+			%
+			%   TS.MINUS(TS)      
+      %   TS - TS
+      %
+			%   TS.MINUS(constant)
+			%   TS - constant              
+			%   - Constant can be also an object of the same size 
+      %     as each data sample.
+			%
+			%   Examples:
+      %     TS3 = TS1 - TS2;
+			%     TS2 = TS1 - 0.1;
+			%     TS2 = TS1 - [1 2 4];  % if TS1,TS2 are vector time series
+      
+      Ts = plus(obj,(-1)*obj1);
     end
     
     function Ts = dot(obj,obj1)
