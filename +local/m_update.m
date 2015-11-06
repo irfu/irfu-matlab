@@ -37,15 +37,28 @@ for iSc = 1:numel(inArg.scId)
     dataSet = inArg.datasetName{iDataSet};
     irf.log('warning',['Indexing data set: ' dataSet ' on MMS',...
       inArg.scId{iSc}]);
-    newPath = [inArg.datadirectory, filesep, 'mms', inArg.scId{iSc}, ...
-      filesep, dataSet];
+    if(ismember(dataSet,{'defatt','defeph'}))
+      ancillary = true;
+      % ANCILLARY (ASCII) data
+      newPath = [inArg.datadirectory, filesep, 'ancillary', filesep, 'mms',...
+        inArg.scId{iSc}, filesep, dataSet];
+    else
+      ancillary = false;
+      % SCIENCE (CDF) data
+      newPath = [inArg.datadirectory, filesep, 'mms', inArg.scId{iSc}, ...
+        filesep, dataSet];
+    end
     if(~isdir(newPath))
       errStr = ['Not a path: ', newPath];
       irf.log('critical', errStr); error(errStr);
     end
     cd(newPath);
-    % Locate all mms cdf files for given instrument(-s)
-    [unixErr, listFiles] = unix('find . -name ''*mms*.cdf'' | sort');
+    % Locate all MMS files for given dataSet
+    if(ancillary)
+      [unixErr, listFiles] = unix('find . -name ''*MMS*'' | sort');
+    else
+      [unixErr, listFiles] = unix('find . -name ''*mms*.cdf'' | sort');
+    end
     if(unixErr)
       errStr = 'Error when trying to list files';
       irf.log('critical', errStr); error(errStr);
@@ -57,7 +70,7 @@ for iSc = 1:numel(inArg.scId)
       irf.log('warning', [dataSet ': no data files']);
       index = [];
     else
-      % Remove old cdf files already processed, (ie compare with old index).
+      % Remove old files already processed, (ie compare with old index).
       if(exist('irfu_index.mat','file'))
         old_index = load('irfu_index','-mat','index');
         % Some old files found.
@@ -70,7 +83,6 @@ for iSc = 1:numel(inArg.scId)
       else
         old = false;
       end
-      listFiles = remove_corrupted_cdf(listFiles);
       irf.log('warning',['Found ',num2str(length(listFiles)),' new files, will add these to index.']);
       % Pre allocate struct output
       index(1:length(listFiles)) = struct('filename',[],'tstart',[],'tstop',[]);
@@ -78,66 +90,105 @@ for iSc = 1:numel(inArg.scId)
       for ii = 1:length(listFiles)
         % One extra "\n" may result in an empty listFiles cell.
         if(isempty(listFiles{ii})), continue; end
-        % Get file information from the cdf file
-        try
-          fileInfo = spdfcdfinfo(listFiles{ii});
-        catch
-          errStr = ['Cannot get file information from: ', listFiles{ii}];
-          irf.log('warning', errStr); warning(errStr); % Should perhaps be error()..
-          continue; % Try with next file...
-        end
-        % Use the fact that the primary epoch variable MUST always be the
-        % first variable written to file (files can have many different time
-        % series in one single file, but the primary time variable SHOULD
-        % always be the first if it it ISTP compliant).
-        % KeepEpochAsIs is to ensure it is kept as TT2000 (int64).
-        EpochId = 1; % Assume it is first variable.
-        if(~strcmp(fileInfo.Variables{EpochId,4}, 'tt2000'))
-          errStr = ['Not ISTP compliant cdf file: ' listFiles{ii}, '. Trying to locate main Epoch.'];
-          irf.log('critical', errStr); warning(errStr); % Should perhaps be error()...
-          %continue; % Try with next file
-          EpochId = strcmp(fileInfo.Variables(:,1),'Epoch');
-          EpochId = find(EpochId,1,'first'); % First Epoch match, if any..
-          if(isempty(EpochId))
-            errStr = 'No Epoch was identified. Skipping this file.';
-            irf.log('critical', errStr); warning(errStr);
-            continue
+        % Try to read start from file..
+        if(ancillary)
+          cmd = sprintf('grep COMMENT -A1 %s | tail -n1 | awk ''{print $1}''',...
+            listFiles{ii});
+          [unixErr, startTime] = unix(cmd);
+          if(unixErr)
+            errStr = ['Error when trying to get start time from file: ', listFiles{ii}];
+            irf.log('critical', errStr); continue;
+          else
+            % Try to read stop time
+            cmd = sprintf('tail -n2 %s | head -n1 | awk ''{print $1}''',...
+              listFiles{ii});
+            [unixErr, stopTime] = unix(cmd);
+            if(unixErr)
+              errStr = ['Error when trying to get stop time from file: ', listFiles{ii}];
+              irf.log('critical', errStr); continue;
+            else
+              % Convert startTime and stopTime to tt2000 int64.
+              sss = [irf_time([str2double(startTime(1:4)), str2double(startTime(6:8)); ...
+                str2double(stopTime(1:4)), str2double(stopTime(6:8))], ...
+                'doy>utc_yyyy-mm-dd'), ['T'; 'T'] ];
+              if length(startTime) == 19
+                % predatt (time string end with "hh:mm:ss\n") add remaining .mmmuuunnnZ
+                sss = [sss, [startTime(10:17); stopTime(10:17)], ['.000000000Z';'.000000000Z']]; %#ok<AGROW>
+              else
+                % defatt, depeph etc (time string end with "hh:mm:ss.mmm\n" add remaining uuunnnZ
+                sss = [sss, [startTime(10:21); stopTime(10:21)], ['000000Z';'000000Z']]; %#ok<AGROW>
+              end
+              epoch = EpochTT(sss);
+              % When this point is reached without error, store result.
+              index(ind).filename = listFiles{ii};
+              index(ind).tstart = epoch.start.ttns;
+              index(ind).tstop = epoch.stop.ttns;
+              ind = ind + 1;
+            end
           end
-        end
-        % Some files have zero records written to epoch. Warn and move on.
-        if(fileInfo.Variables{EpochId,3} == 0)
-          errStr = ['Empty primary Epoch in cdf file: ', listFiles{ii}];
-          irf.log('warning', errStr);
-          continue; % Try with next file
-        end
-        try
-          epoch = spdfcdfread(listFiles{ii}, 'Variable', fileInfo.Variables{EpochId,1}, 'KeepEpochAsIs', true);
-        catch
-          errStr = ['Cannot read first variable from file: ', listFiles{ii}];
-          irf.log('critical', errStr); %warning(errStr); % Should perhaps be error()...
-          continue; % Try with next file...
-        end
-        % All files are not always monotonically increasing in time, so sort
-        % the time, run unique to ensure dubblets are removed as well.
-        epoch = EpochTT(unique(sort(epoch)));
-        % Keep only epoch times within valid epoch interval.
-        epoch = epoch(epoch.tlim(validEpoch));
-        if(length(epoch)<2)
-          % Don't bother with invalid files.
-          errStr = ['TT2000 variable did not contain any valid time interval for file: ', listFiles{ii}];
-          irf.log('critical', errStr); %warning(errStr);
-          continue;
-        end
-        % When we reach this nothing has gone wrong so store file name and
-        % interval.
-        index(ind).filename = listFiles{ii};
-        index(ind).tstart = epoch(1).epoch;
-        index(ind).tstop = epoch(end).epoch;
-        ind = ind + 1;
-      end
-      % Remove unused index(), which was preallocated for speed.
-      index = index(arrayfun(@(s) ~isempty(s.filename), index));
-    end
+        else
+          listFiles = remove_corrupted_cdf(listFiles);
+          % Get file information from the cdf file
+          try
+            fileInfo = spdfcdfinfo(listFiles{ii});
+          catch
+            errStr = ['Cannot get file information from: ', listFiles{ii}];
+            irf.log('warning', errStr); warning(errStr); % Should perhaps be error()..
+            continue; % Try with next file...
+          end
+          % Use the fact that the primary epoch variable MUST always be the
+          % first variable written to file (files can have many different time
+          % series in one single file, but the primary time variable SHOULD
+          % always be the first if it it ISTP compliant).
+          % KeepEpochAsIs is to ensure it is kept as TT2000 (int64).
+          EpochId = 1; % Assume it is first variable.
+          if(~strcmp(fileInfo.Variables{EpochId,4}, 'tt2000'))
+            errStr = ['Not ISTP compliant cdf file: ' listFiles{ii}, '. Trying to locate main Epoch.'];
+            irf.log('critical', errStr); warning(errStr); % Should perhaps be error()...
+            %continue; % Try with next file
+            EpochId = strcmp(fileInfo.Variables(:,1),'Epoch');
+            EpochId = find(EpochId,1,'first'); % First Epoch match, if any..
+            if(isempty(EpochId))
+              errStr = 'No Epoch was identified. Skipping this file.';
+              irf.log('critical', errStr); warning(errStr);
+              continue
+            end
+          end
+          % Some files have zero records written to epoch. Warn and move on.
+          if(fileInfo.Variables{EpochId,3} == 0)
+            errStr = ['Empty primary Epoch in cdf file: ', listFiles{ii}];
+            irf.log('warning', errStr);
+            continue; % Try with next file
+          end
+          try
+            epoch = spdfcdfread(listFiles{ii}, 'Variable', fileInfo.Variables{EpochId,1}, 'KeepEpochAsIs', true);
+          catch
+            errStr = ['Cannot read first variable from file: ', listFiles{ii}];
+            irf.log('critical', errStr); %warning(errStr); % Should perhaps be error()...
+            continue; % Try with next file...
+          end
+          % All files are not always monotonically increasing in time, so sort
+          % the time, run unique to ensure dubblets are removed as well.
+          epoch = EpochTT(unique(sort(epoch)));
+          % Keep only epoch times within valid epoch interval.
+          epoch = epoch(epoch.tlim(validEpoch));
+          if(length(epoch)<2)
+            % Don't bother with invalid files.
+            errStr = ['TT2000 variable did not contain any valid time interval for file: ', listFiles{ii}];
+            irf.log('critical', errStr); %warning(errStr);
+            continue;
+          end
+          % When we reach this nothing has gone wrong so store file name and
+          % interval.
+          index(ind).filename = listFiles{ii};
+          index(ind).tstart = epoch.start.epoch;
+          index(ind).tstop = epoch.stop.epoch;
+          ind = ind + 1;
+        end % if ancillary
+      end % for ii = 1:length(listFiles)
+    end % if isempty(listFiles)
+    % Remove unused index(), which was preallocated for speed.
+    index = index(arrayfun(@(s) ~isempty(s.filename), index));
     % Combine old and new index list.
     if(old)
       % An old index was read.
@@ -154,8 +205,8 @@ for iSc = 1:numel(inArg.scId)
     end
     % save irfu_index.mat
     save([pwd,filesep,'irfu_index'],'index');
-  end
-end
+  end % for iDataSet
+end % for iSc
 
 % Move back to old path.
 cd(oldPwd);
@@ -168,7 +219,7 @@ cd(oldPwd);
     default.scId = {'1','2','3','4'}; % All four MMS spacecrafts
     default.dataSet = {'afg', 'asp1', 'asp2', 'aspoc', 'dfg', 'dsp', ...
       'edi', 'edp', 'epd-eis', 'feeps', 'fields', 'fpi', 'hpca', 'mec', ...
-      'scm', 'sdp'}; % All instruments
+      'scm', 'sdp', 'defatt', 'defeph'}; % All instruments as well as defatt & defeph
     dataPathRoot = getenv('DATA_PATH_ROOT');
     if isempty(dataPathRoot)
       dataPathRoot = [filesep,'data',filesep,'mms']; % default MMS path at IRFU
