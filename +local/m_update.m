@@ -92,10 +92,15 @@ for iSc = 1:numel(inArg.scId)
         if(isempty(listFiles{ii})), continue; end
         % Try to read start from file..
         if(ancillary)
-          cmd = sprintf('grep COMMENT -A1 %s | tail -n1 | awk ''{print $1}''',...
-            listFiles{ii});
+          if(strcmp(dataSet,'defatt'))
+            cmd = sprintf('grep COMMENT -A1 %s | tail -n1 | awk ''{print $1}''',...
+              listFiles{ii});
+          elseif(strcmp(dataSet,'defeph'))
+            cmd = sprintf('grep Km/Sec -A1 %s | tail -n1 | awk ''{print $1}''',...
+              listFiles{ii});
+          end
           [unixErr, startTime] = unix(cmd);
-          if(unixErr)
+          if(unixErr || isempty(startTime))
             errStr = ['Error when trying to get start time from file: ', listFiles{ii}];
             irf.log('critical', errStr); continue;
           else
@@ -103,7 +108,7 @@ for iSc = 1:numel(inArg.scId)
             cmd = sprintf('tail -n2 %s | head -n1 | awk ''{print $1}''',...
               listFiles{ii});
             [unixErr, stopTime] = unix(cmd);
-            if(unixErr)
+            if(unixErr || isempty(stopTime))
               errStr = ['Error when trying to get stop time from file: ', listFiles{ii}];
               irf.log('critical', errStr); continue;
             else
