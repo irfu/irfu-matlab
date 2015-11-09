@@ -6117,85 +6117,75 @@ plan="yes" sdesc ="TBD">
 	</operation>
 <operation start="2012-09-04T06:42:20Z" dt="140" c4="yes" plan="yes" sdesc="bad_bias">
         <desc>Bias current stepping (slow sweeps) on P34.</desc>
-        </operation>
+	</operation>
 <operation start="2012-09-04T06:44:40Z" dt="140" c2="yes" plan="yes" sdesc="bad_bias">
         <desc>Bias current stepping (slow sweeps) on P34.</desc>
-        </operation>
+	</operation>
 <operation start="2012-09-04T06:44:40Z" dt="1946" c4="yes" plan="yes" sdesc="bad_bias">
         <desc>P3 bias current test.</desc>
         </operation>
 <operation start="2012-09-04T06:47:00Z" dt="1786" c2="yes" plan="yes" sdesc="bad_bias">
         <desc>P2 and P4 bias current test.</desc>
-</operation>
+	</operation>
 <operation start="2012-09-04T06:47:00Z" dt="1786" c2="yes" plan="yes" sdesc="bad_bias">
         <desc>P2 and P4 bias current test.</desc>
-</operation>
-
+	</operation>
 <operation start="2012-09-10T16:48:00Z" dt="720" c1="yes" c4="yes" plan="yes" sdesc="bad_bias">
         <desc>WBD interference test (guard stepping).</desc> 
-               <res><link href="aie120817a.txt">Anders 120817</link>
-                </res>
-        </operation>
-
-<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2012-10-14T02:13:30Z" dt="-1" plan="yes" sdesc ="info">
-                <desc>Guard voltage changed to -2 V on all working probes for a week.
-		</desc>
-                <res>
-                </res>
-        </operation>
-
-<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2012-10-20T21:11:30Z" dt="-1" plan="yes" sdesc ="info">
-                <desc>Guard voltage changed to -8 V on all working probes for a week.
-		</desc>
-                <res>
-                </res>
-        </operation>
-
-<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2012-10-27T16:12:30Z" dt="-1" plan="yes" sdesc ="info">
-                <desc>Guard voltage changed to -4 V on all working probes permanently.
-		</desc>
-                <res>
-                </res>
+        <res><link href="aie120817a.txt">Anders 120817</link>
+        </res>
+	</operation>
+<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2012-10-14T02:13:30Z" dt="604800" plan="yes" sdesc="info">
+        <desc>Guard voltage changed to -2 V on all working probes for a week.</desc>
+        <res></res>
+	</operation>
+<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2012-10-20T21:11:30Z" dt="604800" plan="yes" sdesc="info">
+        <desc>Guard voltage changed to -8 V on all working probes for a week.</desc>
+        <res></res>
+	</operation>
+<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2012-10-27T16:12:30Z" dt="-1" plan="yes" sdesc="info">
+        <desc>Guard voltage changed to -4 V on all working probes permanently.</desc>
+        <res></res>
         </operation>
 <operation start="2013-07-01T14:43:44Z" dt="-1" c4="yes" plan="no" sdesc="no_p4">
 	<desc>Probe 4 effectively lost from this time.</desc>
-</operation>
+	</operation>
 <operation start="2014-10-03T06:20:20Z" dt="32916" c2="yes" plan="no" sdesc="bad_data">
 	<desc>EFW reset with launch default values.</desc>
 	<res><link href="pal20150923.txt">Per-Arne 150923</link></res>
-</operation>
+	</operation>
 <operation start="2014-10-07T21:03:00Z" dt="268620" c2="yes" plan="no" sdesc="bad_data">
 	<desc>DWP problem causing bad or no EFW telemetry.</desc>
 	<res><link href="pal20150923_2.txt">Per-Arne 150923</link></res>
-</operation>
+	</operation>
 <operation start="2014-10-15T23:54:00Z" dt="54360" c2="yes" plan="no" sdesc="bad_data">
 	<desc>Probes saturated, possibly due to low density.</desc>
 	<res><link href="pal20150923_3.txt">Per-Arne 150923</link></res>
-</operation>
+	</operation>
 <operation start="2014-10-23T15:11:00Z" dt="159240" c3="yes" plan="no" sdesc="bad_data">
 	<desc>Bad EFW data after incorrect startup.</desc>
 	<res><link href="pal20150923_4.txt">Per-Arne 150923</link></res>
-</operation>
+	</operation>
 <operation start="2014-10-25T00:53:00Z" dt="41832" c2="yes" plan="no" sdesc="bad_data">
 	<desc>Probes saturated, possibly due to low density.</desc>
 	<res><link href="pal20150923_5.txt">Per-Arne 150923</link></res>
-</operation>
+	</operation>
 <operation start="2014-10-31T09:46:08Z" dt="49944" c4="yes" plan="no" sdesc="bad_data">
 	<desc>DWP problem causing bad EFW data.</desc>
 	<res><link href="pal20150923_6.txt">Per-Arne 150923</link></res>
-</operation>
+	</operation>
 <operation start="2014-11-01T15:05:20Z" dt="78788" c2="yes" plan="no" sdesc="bad_data">
 	<desc>Probes saturated, possibly due to low density, followed by DWP problem.</desc>
 	<res><link href="pal20150923_7.txt">Per-Arne 150923</link></res>
-</operation>
+	</operation>
 <operation start="2014-11-03T20:58:17Z" dt="-1" c3="yes" plan="no" sdesc="no_p2">
 	<desc>Probe 2 effectively lost from this time.</desc>
-</operation>
+	</operation>
 <operation start="2014-11-15T08:36:00Z" dt="64500" c1="yes" plan="no" sdesc="bad_data">
 	<desc>Bad EFW data after spontaneous EFW reset.</desc>
 	<res><link href="pal20150923_7.txt">Per-Arne 150923</link></res>
-</operation>
+	</operation>
 <operation start="2015-02-17T07:36:30Z" dt="-1" c4="yes" plan="no" sdesc="no_p3">
 	<desc>Probe 3 effectively lost from this time.</desc>
-</operation>
+	</operation>
 </table>
