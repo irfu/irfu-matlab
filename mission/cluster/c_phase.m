@@ -22,7 +22,7 @@ SPIN_PERIOD_MAX = 4.3;
 SPIN_PERIOD_MIN = 3.6;
 SPIN_PERIOD_NOMINAL = 4; % rpm
 DT_MAX = 2*SPIN_PERIOD_MAX; % allow extrapolation for max DT_MAX seconds
-SPIN_GAP_MAX = 900; % max gap in phase we tolerate
+SPIN_GAP_MAX = 1200; % max gap in phase we tolerate
 MAX_SPIN_PERIOD_CHANGE = SPIN_PERIOD_NOMINAL*0.001;
 ERR_PHA_MAX = 0.5; % Error in phase (deg) from fitting
 
