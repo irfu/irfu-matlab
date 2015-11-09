@@ -1,0 +1,36 @@
+ Problems seen when looking through the summary plots for 2015
+=============================================================
+
+1a) Processing bugs fixed
+========================
+
+Short maneuvre causing shadow wake detection to fail was fixed by
+whictching to processing the times before and after a maneuvre separately
+Example: C1, 2015-03-09T09:19:26Z
+
+
+1b) Plotting bugs fixed
+=======================
+
+
+1c) Data problems fixed
+=======================
+
+
+2a) Software bugs to be fixed
+=============================
+
+2b) Data problems to be fixed/investigated
+==========================================
+
+
+3) Major data problems
+======================
+
+4) Ignored
+==========
+
+
+5) Unclassified
+===============
+
