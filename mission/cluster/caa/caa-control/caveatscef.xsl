@@ -12,7 +12,9 @@ Valid parameter clusterno: values 1-4
 
 Uses exslt date & time and dynamic functions. Works with xsltproc.
 
-Copyright 2011 Jan Karlsson
+Copyright 2011-15 Jan Karlsson
+
+Updated to exclude infinity (-1) stop time items
 
 $Id$
  -->
@@ -51,7 +53,7 @@ START_META     =   GENERATION_DATE
    ENTRY       =   <xsl:value-of select="substring(date:date-time(),1,19)"/>Z
 END_META       =   GENERATION_DATE
 START_META     =   FILE_CAVEATS
-   ENTRY       =   "Cluster <xsl:value-of select="$clusterno"/>. TBD and Infinity stop time: 2020-01-01T00:00:00Z"
+   ENTRY       =   "Cluster <xsl:value-of select="$clusterno"/>. TBD stop time: 2020-01-01T00:00:00Z"
 END_META       =   FILE_CAVEATS
 !
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -75,12 +77,14 @@ DATA_UNTIL = "END_OF_DATA"
 	<xsl:variable name="clnobool" select="dyn:evaluate(concat('@c',$clusterno))"/>
 	<xsl:if test="starts-with($clnobool,'yes')">
 		<xsl:variable name="dt" select="@dt"/>
-		<xsl:value-of select="@start"/>/<xsl:choose>
-			<xsl:when test="$dt = -1">2020-01-01T00:00:00Z</xsl:when>   <!-- Infinity -->
-			<xsl:when test="$dt = -157">2020-01-01T00:00:00Z</xsl:when> <!-- TBD -->
-			<xsl:otherwise><xsl:value-of select="date:add(@start,concat('PT',$dt,'S'))"/></xsl:otherwise>
-		</xsl:choose>,"<xsl:value-of select="@sdesc"/>","<xsl:apply-templates select="@plan"/>","<xsl:value-of select="translate(translate(child::desc,'&#x9;&#xa;',''),'&#x22;',&quot;&#x27;&quot;)"/>" $
-</xsl:if>
+		<xsl:if test="$dt != -1">
+			<xsl:value-of select="@start"/>/<xsl:choose>
+			<!--	<xsl:when test="$dt = -1">2020-01-01T00:00:00Z</xsl:when>        Infinity removed -->
+				<xsl:when test="$dt = -157">2020-01-01T00:00:00Z</xsl:when> <!-- TBD -->
+				<xsl:otherwise><xsl:value-of select="date:add(@start,concat('PT',$dt,'S'))"/></xsl:otherwise>
+			</xsl:choose>,"<xsl:value-of select="@sdesc"/>","<xsl:apply-templates select="@plan"/>","<xsl:value-of select="translate(translate(child::desc,'&#x9;&#xa;',''),'&#x22;',&quot;&#x27;&quot;)"/>" $
+</xsl:if> <!-- Not indented to not f**k up result file -->
+	</xsl:if>
 </xsl:template>
 
 </xsl:stylesheet>
