@@ -129,6 +129,7 @@ switch varStr
     end
     datasetName = ['mms' mmsIdS '_fpi_brst_l1b_' vS '-moms'];
     rX = mms.db_get_ts(datasetName,['mms' mmsIdS '_' vS '_bulkX'],Tint);
+    if isempty(rX), return, end
     rY = mms.db_get_ts(datasetName,['mms' mmsIdS '_' vS '_bulkY'],Tint);
     rZ = mms.db_get_ts(datasetName,['mms' mmsIdS '_' vS '_bulkZ'],Tint);
     res = irf.ts_vec_xyz(rX.time, [rX.data rY.data rZ.data]);

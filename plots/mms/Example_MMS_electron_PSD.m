@@ -9,6 +9,8 @@ mms.db_init('local_file_db','/data/mms');
 tint = irf.tint('2015-09-19T10:05:32.900000Z/2015-09-19T10:05:33.000000Z'); % Time interval to average over
 tintl = tint+[-1 1];
 
+%%
+
 c_eval('disttemp = mms.db_get_ts(''mms?_fpi_brst_l1b_des-dist'',''mms?_des_brstSkyMap_dist'',tint);',ic);
 % This is rather slow so the data can be read locally using these commands:
 % tmpDataObj = dataobj('data/mms1_fpi_brst_l1b_des-dist_20150919100500_v0.2.0.cdf');

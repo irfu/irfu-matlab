@@ -1,9 +1,10 @@
-function res = c_phase(time,phase_2)
+function [res, tInts] = c_phase(time,phase_2)
 %C_PHASE  compute spin phase from PHASE_2
 %
-% PHA = C_PHASE(TIME,PHASE_2)
+% [PHA, T_INTS] = C_PHASE(TIME,PHASE_2)
 %
 % NaNs are returned when phase cannot be computed
+% T_INTS contains time intervals with constant spin rate
 %
 % See also: MMS_DEFATT_PHASE
 
@@ -21,13 +22,13 @@ SPIN_PERIOD_MAX = 4.3;
 SPIN_PERIOD_MIN = 3.6;
 SPIN_PERIOD_NOMINAL = 4; % rpm
 DT_MAX = 2*SPIN_PERIOD_MAX; % allow extrapolation for max DT_MAX seconds
-SPIN_GAP_MAX = 900; % max gap in phase we tolerate
+SPIN_GAP_MAX = 1200; % max gap in phase we tolerate
 MAX_SPIN_PERIOD_CHANGE = SPIN_PERIOD_NOMINAL*0.001;
 ERR_PHA_MAX = 0.5; % Error in phase (deg) from fitting
 
 %% Prepare
 verify_input();
-
+tInts = []; % Output
 t0 = phaInp(1,1); tPhase_2 = phaInp(:,1) - t0; targetTime = time - t0;
 tPhase_2(tPhase_2<targetTime(1)-DT_MAX/2|tPhase_2>targetTime(end)+DT_MAX/2)=[];
 
@@ -61,8 +62,9 @@ while tStart<targetTime(end)
     end  
   else % All good
     polyfit_phase()
-    irf_log('proc',sprintf('Spin period %.2f sec (%s -- %s)',...
+    irf_log('proc',sprintf('Spin period %.4f sec (%s -- %s)',...
       spinPeriod,epoch2iso(tStart+t0), epoch2iso(tStop+t0)))
+    tInts = [tInts; tStart+t0 tStop+t0]; %#ok<AGROW>
   end
   iLastOkPoint = find(iOutTmp,1,'last'); 
   tStart = tStop; tStep = targetTime(end) - tStart;

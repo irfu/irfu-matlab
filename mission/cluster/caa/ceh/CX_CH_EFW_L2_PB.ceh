@@ -39,6 +39,7 @@ START_META     =   DATASET_CAVEATS
    ENTRY       =   "Bit 13: Whisper operating."
    ENTRY       =   "Bit 14: Saturation due to high bias current."
    ENTRY       =   "Bit 15: N/A."
+   ENTRY       =   "Bit 16: Saturation due to probe shadow."
 END_META       =   DATASET_CAVEATS
 START_META     =   TIME_RESOLUTION
    ENTRY       =   0.0022222
