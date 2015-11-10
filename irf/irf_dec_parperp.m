@@ -25,6 +25,7 @@ function [apar,aperp,alpha]=irf_dec_parperp(b0,a,flagspinplane)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Begin temporary fix to convert TS format to older format
+rtrnTS = 0;
 if isa(b0,'TSeries'), 
     ttemp = b0.time.epochUnix;
     datatemp = double(b0.data);
@@ -34,6 +35,7 @@ if isa(a,'TSeries'),
     ttemp = a.time.epochUnix;
     datatemp = double(a.data);
     a = [ttemp, datatemp];
+    rtrnTS = 1;
 end
 % End of temporary fix
 
@@ -60,4 +62,10 @@ else
     apar(:,2) = a(:,2).*b0(:,2) + a(:,3).*b0(:,3);
     aperp(:,2) = a(:,2).*b0(:,3) - a(:,3).*b0(:,2);
 end
+
+if rtrnTS,
+    apar = TSeries(EpochUnix(apar(:,1)),apar(:,2),'to',0);
+    aperp = TSeries(EpochUnix(aperp(:,1)),aperp(:,[2:end]),'to',1);
+end
+
 return
