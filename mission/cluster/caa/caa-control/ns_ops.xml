@@ -5297,7 +5297,7 @@ Effect on the CAA processing:
                     <link href="http://http://www.acse.shef.ac.uk/wec-ops/old_mail/msg00059.html">Colette 100913</link>
                 </res>
         </operation>
-<operation c4="yes" start="2010-08-17T03:30:99Z" dt="48600" plan="no" sdesc="info">
+<operation c4="yes" start="2010-08-17T03:30:00Z" dt="48600" plan="no" sdesc="info">
         <desc>No data (LX or HX). Reason unknown.</desc>
     </operation>
         <operation c3="yes" start="2010-08-20T05:14:36Z" dt="304200" plan="no" sdesc="no_tm">
