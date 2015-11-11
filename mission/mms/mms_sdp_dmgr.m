@@ -1128,7 +1128,7 @@ classdef mms_sdp_dmgr < handle
       
       % QL brst should use delta offset from Fast L2A file
       if(DATAC.tmMode == DATAC.CONST.TmMode.brst)
-        if(~isempty(DATAC.l2a.delta_off))
+        if(isfield(DATAC.l2a,'delta_off'))
           res = DATAC.l2a.delta_off; return;
         else
           irf.log('warning','Burst but no L2a (fast) delta offsets loaded.');
