@@ -20,6 +20,8 @@ function status = caa_export_cef(lev,caa_vs,cl_id,QUALITY,DATA_VERSION,sp,st,dt)
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
 
+global c_ct
+
 status = 0;
 
 % This must be changed when we do any major changes to our processing software
@@ -37,11 +39,8 @@ end
 if cl_id<=0 || cl_id>4, error('CL_ID must be 1..4'), end
 if lev<1 || lev>3, error('LEV must be 1,2 or 3'), end
 
-DATASET_DESCRIPTION_PREFIX = '';
 EOR_MARKER = '$';
 FILL_VAL = -1.0E9;
-PROCESSING_LEVEL='Calibrated';
-
 
 old_pwd = pwd;
 
@@ -182,14 +181,10 @@ for dd = 1:length(dirs)
          vs = irf_ssub(vs, probe_pairs(1));
       end
    elseif strcmp(caa_vs, 'P')
-      if ~exist('c_ct','var')
-         global c_ct % includes aspoc active values
-      end
       if isempty(c_ct)
-         c_ctl('load_aspoc_active', [c_ctl('get', 5, 'data_path') '/caa-control']);
-         global c_ct
+         c_ctl('load_aspoc_active', [c_ctl(5,'data_path') '/caa-control']);
       end
-      ASPOC = c_ct{1,cl_id}.aspoc;
+      ASPOC = c_ctl(cl_id,'aspoc');
 
       if lev == 2
           pvar = 'P?';
@@ -380,15 +375,10 @@ for dd = 1:length(dirs)
        end
    elseif strcmp(caa_vs, 'PB')
        if lev==2
-         if ~exist('c_ct','var')
-            global c_ct % includes aspoc active values
-         end
          if isempty(c_ct)
-            c_ctl('load_aspoc_active', [c_ctl('get', 5, 'data_path') '/caa-control']);
-%            c_ctl('load_aspoc_active');
-            global c_ct
+            c_ctl('load_aspoc_active', [c_ctl(5,'data_path') '/caa-control']);
          end
-         ASPOC = c_ct{1,cl_id}.aspoc;
+         ASPOC = c_ctl(cl_id,'aspoc');
 
          % Export empty file if TM, BB or EB data exist
         % Check for TM data
@@ -491,13 +481,8 @@ for dd = 1:length(dirs)
        end
    elseif strcmp(caa_vs, 'BB')
        if lev==2
-         if ~exist('c_ct','var')
-            global c_ct % includes aspoc active values
-         end
          if isempty(c_ct)
-            c_ctl('load_bad_ib', [c_ctl('get', 5, 'data_path') '/caa-control'])
-%            c_ctl('load_bad_ib');
-            global c_ct
+            c_ctl('load_bad_ib', [c_ctl(5,'data_path') '/caa-control'])
          end
 
          % Export empty file if TM, PB or EB data exist. Ex 110227205958we.03
@@ -579,13 +564,8 @@ for dd = 1:length(dirs)
        end
    elseif strcmp(caa_vs, 'EB')
        if lev==2
-         if ~exist('c_ct','var')
-            global c_ct % includes aspoc active values
-         end
          if isempty(c_ct)
-            c_ctl('load_bad_ib', [c_ctl('get', 5, 'data_path') '/caa-control'])
-%            c_ctl('load_bad_ib');
-            global c_ct
+            c_ctl('load_bad_ib', [c_ctl(5,'data_path') '/caa-control'])
          end
 
          % Export empty file if TM, PB or BB data exist. Ex 110227205958we.03
@@ -746,14 +726,10 @@ for dd = 1:length(dirs)
        % Check for bad iburst file
 %if 0
         if regexp(caa_vs,'^(P|E|B)B$')   % working on multiple iburst in 24h
-           if ~exist('c_ct','var')
-                global c_ct % includes bad ib files
+           if isempty(c_ctl(cl_id,'badib'))
+                c_ctl('load_bad_ib', [c_ctl(5,'data_path') '/caa-control']);
            end
-           if isempty(c_ct{1,1}.badib)
-                c_ctl('load_bad_ib', [c_ctl('get', 5, 'data_path') '/caa-control']);
-                global c_ct
-           end
-           badiburst = c_ct{1,cl_id}.badib;
+           badiburst = c_ctl(cl_id,'badib');
            tint = irf_tlim(badiburst,t_int_full);
            if ~isempty(tint) % remove iburst
                for i=1:size(tint,1)
