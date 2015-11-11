@@ -103,11 +103,11 @@ else
 		v_size = 2;
 	case 'SFIT'
 		if lev==3
-            % Fake for c_desc only. No data variable in .mat files
+      % Fake for c_desc only. No data variable in .mat files
 			vs = irf_ssub('SFIT?',cl_id);
 			v_size = 4;
             nanfill = -1;
-            pnosfit = 0;
+            probeSfit = 0;
         else
 			disp('not implemented'), cd(old_pwd), return
 		end
@@ -241,29 +241,28 @@ for dd = 1:length(dirs)
       end
    elseif strcmp(caa_vs, 'SFIT') 
           no_p12 = 0; no_p34 = 0;
-          % Load P34
-          [ok,spf34,msg] = c_load('diEs?p34',cl_id);
-          if ~ok || isempty(spf34)
-              no_p34 = 1;
-              irf_log('load',msg)
-          end
-          % Load P12/32
-          if exist('./mEDSI.mat','file')
-              pnosfit = 12;
-              ret=whos('-file','./mEDSI.mat',irf_ssub('diEs?p!',cl_id,pnosfit));
-              if isempty(ret)
-                 pnosfit = 32;
-              end
-              [ok,spfD,msg] = c_load(irf_ssub('diEs?p!',cl_id,pnosfit));
-              if ~ok || isempty(spfD)
-                 no_p12 = 1; % No P12/32 data
-                 irf_log('load',msg)    
-              end
+          if ~exist('./mEDSI.mat','file'), no_p12 = 1; no_p34 = 1;
           else
-              no_p12 = 1;
+            % Load P34
+            [ok,spf34,msg] = c_load('diEs?p34',cl_id);
+            if ~ok || isempty(spf34)
+              irf_log('load',msg)
+              [ok,spf34,msg] = c_load('diELXs?p34',cl_id);
+              if ~ok || isempty(spf34), no_p34 = 1; irf_log('load',msg), end
+            end
+            % Load P12/32
+            probeSfit = 12;
+            ret = whos('-file','./mEDSI.mat',...
+              irf_ssub('diE*s?p!',cl_id,probeSfit));
+            if isempty(ret), probeSfit = 32; end
+            [ok,spfD,msg] = c_load(irf_ssub('diEs?p!',cl_id,probeSfit));
+            if ~ok || isempty(spfD)
+              irf_log('load',msg)
+              [ok,spfD,msg] = c_load(irf_ssub('diELXs?p!',cl_id,probeSfit));
+              if ~ok || isempty(spfD), no_p12 = 1; irf_log('load',msg), end
+            end
           end
-          if no_p12 && no_p34
-             data = [];
+          if no_p12 && no_p34, data = [];
           elseif no_p12
              % save time, NaN(fillval) and p34 spin-fit (B C sdev)
              nanfill = 0;
@@ -521,7 +520,6 @@ for dd = 1:length(dirs)
              fnl=size(finbsc,1);
              found=0;
              for bscix=1:fnl % find BSC data
-%               finbsc{bscix}
                if length(finbsc{bscix})<5
                    continue;
                end
@@ -1011,14 +1009,14 @@ buf = sprintf('%s%s',buf,'   VALUE_TYPE  =   ISO_TIME\n');
 buf = sprintf('%s%s',buf,['   ENTRY       =   ' epoch2iso(date2epoch(nnow)) '\n']);
 buf = sprintf('%s%s',buf,'END_META       =   GENERATION_DATE\n');
 if strcmp(caa_vs, 'SFIT')
-    if pnosfit == 0
+    if probeSfit == 0
         buf = pmeta(buf, 'FILE_CAVEATS', [ 'No data.' dsc.com ]);
     elseif nanfill == 0
         buf = pmeta(buf, 'FILE_CAVEATS', [ 'P34 data only.' dsc.com ]);
     elseif nanfill == 1
-        buf = pmeta(buf, 'FILE_CAVEATS', [ 'P' num2str(pnosfit) ' data only.' dsc.com ]);
+        buf = pmeta(buf, 'FILE_CAVEATS', [ 'P' num2str(probeSfit) ' data only.' dsc.com ]);
     else
-        buf = pmeta(buf, 'FILE_CAVEATS', [ 'P' num2str(pnosfit) ' & P34 data.' dsc.com ]);
+        buf = pmeta(buf, 'FILE_CAVEATS', [ 'P' num2str(probeSfit) ' & P34 data.' dsc.com ]);
     end
 elseif strcmp(caa_vs, 'IB')
     if lev==1
