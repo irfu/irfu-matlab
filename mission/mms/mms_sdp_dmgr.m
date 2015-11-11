@@ -959,12 +959,18 @@ classdef mms_sdp_dmgr < handle
         varPre2='_spinfit_'; varPre3='_adc_offset'; varPre4='_delta_offset';
         sdpPair = {'e12', 'e34'};
         for iPair=1:numel(sdpPair)
-          DATAC.(param).spinfits.sfit.(sdpPair{iPair}) = ...
-            dataObj.data.([varPre, varPre2, sdpPair{iPair}]).data(:,2:end);
-          DATAC.(param).spinfits.sdev.(sdpPair{iPair}) = ...
-            dataObj.data.([varPre, varPre2, sdpPair{iPair}]).data(:,1);
-          DATAC.(param).adc_off.(sdpPair{iPair}) = ...
-            dataObj.data.([varPre, varPre3]).data(:,1);
+          tmp = dataObj.data.([varPre, varPre2, sdpPair{iPair}]).data(:,2:end);
+          % Replace possible FillVal with NaN
+          tmp(tmp==getfield(mms_sdp_typecast('spinfits'),'fillval')) = NaN;
+          DATAC.(param).spinfits.sfit.(sdpPair{iPair}) = tmp;
+          tmp = dataObj.data.([varPre, varPre2, sdpPair{iPair}]).data(:,1);
+          % Replace possible FillVal with NaN
+          tmp(tmp==getfield(mms_sdp_typecast('spinfits'),'fillval')) = NaN;
+          DATAC.(param).spinfits.sdev.(sdpPair{iPair}) = tmp;
+          tmp = dataObj.data.([varPre, varPre3]).data(:,1);
+          % Replace possible FillVal with NaN
+          tmp(tmp==getfield(mms_sdp_typecast('adc_offset'),'fillval')) = NaN;
+          DATAC.(param).adc_off.(sdpPair{iPair}) = tmp;
         end
         x = getdep(dataObj,[varPre, varPre2, sdpPair{iPair}]);
         DATAC.(param).spinfits.time = x.DEPEND_O.data;
@@ -975,12 +981,17 @@ classdef mms_sdp_dmgr < handle
         DATAC.(param).dce.time = x.DEPEND_O.data;
         check_monoton_timeincrease(DATAC.(param).dce.time, 'L2A dce');
         for iPair=1:numel(sensors);
-          DATAC.(param).dce.(sensors{iPair}).data = ...
-            dataObj.data.([varPre, '_data']).data(:,iPair);
-          DATAC.(param).dce.(sensors{iPair}).bitmask = ...
-            dataObj.data.([varPre, '_bitmask']).data(:,iPair);
+          tmp = dataObj.data.([varPre, '_data']).data(:,iPair);
+          % Replace possible FillVal with NaN
+          tmp(tmp==getfield(mms_sdp_typecast('dce'),'fillval')) = NaN;
+          DATAC.(param).dce.(sensors{iPair}).data = tmp;
+          tmp = dataObj.data.([varPre, '_bitmask']).data(:,iPair);
+          tmp(tmp==getfield(mms_sdp_typecast('bitmask'),'fillval')) = NaN;
+          DATAC.(param).dce.(sensors{iPair}).bitmask = tmp;
         end
-        DATAC.(param).phase.data = dataObj.data.([varPre, '_phase']).data;
+        tmp = dataObj.data.([varPre, '_phase']).data;
+        tmp(tmp==getfield(mms_sdp_typecast('phase'),'fillval')) = NaN;
+        DATAC.(param).phase.data = tmp;
         DATAC.(param).delta_off = complex(dataObj.data.([varPre, varPre4]).data(1),...
           dataObj.data.([varPre, varPre4]).data(2));
       end % load_l2a
