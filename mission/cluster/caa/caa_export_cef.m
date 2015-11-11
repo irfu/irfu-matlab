@@ -98,8 +98,6 @@ else
 			disp('not implemented'), cd(old_pwd), return
 		end
 	case 'DER'
-	    vs_DER = sprintf('Dadc%.0fp?', cl_id);
-	    probe_pair_list = [12, 32, 34];
 		v_size = 2;
 	case 'SFIT'
 		if lev==3
@@ -152,7 +150,7 @@ for dd = 1:length(dirs)
 
    % Set up spin fit related information.
    % Probe pair used can vary for each subinterval!
-   if strcmp(caa_vs, 'E')
+   if strcmp(caa_vs, 'E') || strcmp(caa_vs, 'DER')
       [sfit_probe,flag_lx,probeS] = caa_sfit_probe(cl_id);
       irf_log('proc',sprintf('using %s',probeS))
       if lev == 3
@@ -173,13 +171,28 @@ for dd = 1:length(dirs)
 
    % Load data
    if strcmp(caa_vs, 'DER')
-      vs = vs_DER;
-      [ok, data] = c_load(vs,cl_id,'res',probe_pair_list);   % Try loading data for all probe pairs.
-
-      probe_pairs = probe_pair_list(logical(ok));   % Keep list of probe pairs actually loaded.
-      if numel(probe_pairs) > 0
-         vs = irf_ssub(vs, probe_pairs(1));
-      end
+     ppList = [12, 32, 34];
+     [ok, data] = c_load(sprintf('Dadc%dp?', cl_id),cl_id,'res',ppList);   % Try loading data for all probe pairs.
+     [okLX, dataLX] = ...
+       c_load(sprintf('DadcLX%dp?', cl_id),cl_id,'res',ppList);   % Load LX data.
+     idx12 = (ppList==12 | ppList==32) & okLX;
+     idx34 = ppList==34 & okLX;
+     if any(idx12) && ( (flag_lx && (sfit_probe==12|| sfit_probe==32)) ||...
+         ~any((ppList==12 | ppList==32) & ok) )
+       data(idx12) = dataLX(idx12); ok(idx12) = okLX(idx12);
+       ppList(idx12) = ppList(idx12)*10; % Mark LX, e.g. 32->320
+     end
+     if  any(idx34) && ((flag_lx && sfit_probe==34) || ~any(ppList==34 & ok))
+       data(idx34) = dataLX(idx34); ok(idx34) = okLX(idx34);
+       ppList(idx34) = ppList(idx34)*10; % Mark LX, 34->340
+     end
+     clear okLX dataLX
+     ppDER = ppList(logical(ok));   % Keep list of probe pairs actually loaded.
+     if numel(ppDER) > 0
+       if ppDER(1)<100, vs = sprintf('Dadc%dp%d', cl_id,ppDER(1));
+       else vs = sprintf('DadcLX%dp%d', cl_id,ppDER(1)/10);
+       end
+     end
    elseif strcmp(caa_vs, 'P')
       if isempty(c_ct)
          c_ctl('load_aspoc_active', [c_ctl(5,'data_path') '/caa-control']);
@@ -753,11 +766,16 @@ for dd = 1:length(dirs)
    	dsc.valtype = [dsc.valtype, {'INT'}, {'INT'}];
    	dsc.sigdig = [dsc.sigdig, 5, 1];
    	
-   	if length(probe_info) > 2
-   	   probe_str = sprintf('Probe pairs p%s,p%s', probe_info(1:2), probe_info(3:4));
-   	   if length(probe_info) > 4, probe_str = [probe_str ',p' probe_info(5:6)]; end %#ok<AGROW>
-   	else probe_str = sprintf('Probe pair p%s', probe_info);
-   	end
+    probe_str = 'Probe pair';
+    nPp = fix(length(probe_info))/2;
+    for iP=1:nPp
+      if iP==1 && nPp>1, probe_str = [probe_str 's']; end %#ok<AGROW>
+      pS = ['p' probe_info(iP*2 + [-1 0])];
+      if lev == 3 && flag_lx, pS = [pS '(LX)']; end %#ok<AGROW>
+      if iP==1, probe_str = [probe_str ' ' pS]; %#ok<AGROW>
+      else probe_str = [probe_str ',' pS]; %#ok<AGROW>
+      end
+    end
    	com_str = sprintf('%s/%s %s', ...
    	   epoch2iso(t_int(1),1), epoch2iso(t_int(2),1), probe_str);
    	
@@ -857,23 +875,21 @@ for dd = 1:length(dirs)
    elseif strcmp(caa_vs, 'DER')
       if ~(isempty(data1) && isempty(data2))
    
-         if length(probe_pairs) == 1   % Most likely p1 broken, so no 'Dadc?p12' product!
+         if length(ppDER) == 1   % Most likely p1 broken, so no 'Dadc?p12' product!
             single_pair_data = [data1 data2];
             start_time = min( single_pair_data(:,1) );
          else
             start_time = min( min(data1(:,1)), min(data2(:,1)) );
-%            start_time = min( min( [data1(:,1) data2(:,1)] ) );
          end
          timestamp = start_time:4:t_int(2);
          data_out = zeros(length(timestamp), 3) * NaN;
          data_out(:, 1) = timestamp;
          
-         if find(probe_pairs == 12 | probe_pairs == 32)
+         if ~isempty(intersect(ppDER,[12 32 120 320]))
             [ind1, ind2] = irf_find_comm_idx(data_out, data1);
             data_out(ind1, 2) = data1(ind2, 2);
          end
-         
-         if find(probe_pairs == 34)
+         if ~isempty(intersect(ppDER,[34 340]))
             [ind1, ind2] = irf_find_comm_idx(data_out, data2);
             data_out(ind1, 3) = data2(ind2, 2);
          end
@@ -882,10 +898,14 @@ for dd = 1:length(dirs)
          data = data_out;
          
          % Extend description to cover data record for two probe pairs:
-         if length(probe_pairs) > 1
-            adc_str = sprintf('Probe pairs p%i,p%i', probe_pairs);
-         else
-            adc_str = sprintf('Probe pair p%i', probe_pairs);
+         adc_str = 'Probe pair';
+         for iP = 1:length(ppDER)
+           if length(ppDER)>1 && iP==1, adc_str = [adc_str 's']; end %#ok<AGROW>
+           sP = sprintf('p%i', ppDER(iP));
+           if ppDER(iP)>99, sP(end)=''; sP = [sP '(LX)']; end %#ok<AGROW>
+           if iP==1, adc_str = [adc_str ' ' sP]; %#ok<AGROW>
+           else adc_str = [adc_str ',' sP]; %#ok<AGROW>
+           end
          end
          adc_str = sprintf('%s/%s %s', ...
             epoch2iso(t_int(1),1), epoch2iso(t_int(2),1), adc_str);
@@ -951,12 +971,18 @@ if ~isempty(data)
             ibsave=true;
         end 
     end
+    if strcmp(caa_vs, 'DER')
+      % Remove times when both p12/32 and p34 are empty
+      iNan = isnan(data(:,2)) & isnan(data(:,3));
+      data(iNan,:) = [];
+      irf_log('proc',sprintf('Removed %d empty records',sum(iNan)))
+    end
 end
 
 if isempty(data)
   t_int_full = st + [0 dt];
   switch caa_vs
-    case {'E', 'DER'}
+    case {'E', 'DER','SFIT'}
       irf_log('save', sprintf('Saving empty interval %s/%s', ...
         epoch2iso(t_int_full(1),1), epoch2iso(t_int_full(2),1)) )
       v_size = 0;
