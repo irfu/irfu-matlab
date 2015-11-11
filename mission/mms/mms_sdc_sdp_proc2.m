@@ -380,7 +380,9 @@ end
 
   function update_header(src)
     % Update header info
-    if(regexpi(src.filename,'dce')), HdrInfo.startTime = src.startTime; end;
+    if(~isempty(regexpi(src.filename,'dce')) && ~isfield(HdrInfo,'startTime'))
+      HdrInfo.startTime = src.startTime;
+    end;
     % Initialization. Store startTime and first filename as parents_1.
     if(~isfield(HdrInfo,'parents_1'))
       HdrInfo.parents_1 = src.filename;
