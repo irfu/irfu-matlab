@@ -422,43 +422,43 @@ elseif strcmp(quantity,'dies') || strcmp(quantity,'diehxs') || strcmp(quantity,'
 	if ~n_ok, data = []; continue, end
 	
     if flag_lx, lx_str = 'LX'; else lx_str=''; end
-	for pri=1:length(wE)
-		if wE{pri}.corr, ss = 'c'; else ss = ''; end
+	for iPr=1:length(wE)
+		if wE{iPr}.corr, ss = 'c'; else ss = ''; end
 		irf_log('proc',sprintf('Spin fit w%sE%dp%d %s -> diE%ss%dp%d',...
-			ss,cl_id,wE{pri}.probe,lx_str,lx_str,cl_id,wE{pri}.probe))
+			ss,cl_id,wE{iPr}.probe,lx_str,lx_str,cl_id,wE{iPr}.probe))
 
-		aa = c_phase(wE{pri}.e(:,1),pha);
+		aa = c_phase(wE{iPr}.e(:,1),pha);
         if isempty(aa)
             irf_log('proc','Empty phase')
             continue
         end
 		
         if flag_lx, tmode = 'lx'; else tmode = 'hx'; end
-        fsamp = c_efw_fsample(wE{pri}.e,tmode);
+        fsamp = c_efw_fsample(wE{iPr}.e,tmode);
 		if ~fsamp, error('no sampling frequency'),end
 		
 		problems = 'reset|bbias|probesa|probeld|sweep|bdump|nsops|whip';
         if flag_lx
-            ps = sprintf('%d',wE{pri}.probe);
+            ps = sprintf('%d',wE{iPr}.probe);
             nsops_errlist = [caa_str2errid('bad_bias') caa_str2errid('hxonly')...
                 caa_str2errid('bad_lx')...
                 caa_str2errid(['no_p' ps(1)]) caa_str2errid(['no_p' ps(2)])];%#ok<NASGU>
         else 
             nsops_errlist = [caa_str2errid('bad_bias') caa_str2errid('bad_hx')...
-                caa_str2errid(irf_ssub('no_p?',wE{pri}.probe))];%#ok<NASGU>
+                caa_str2errid(irf_ssub('no_p?',wE{iPr}.probe))];%#ok<NASGU>
         end
 		% We remove Whisper only if explicitely asked for this by user
 		if flag_rmwhip && flag_rmwhip_force, problems = [problems '|whip']; end %#ok<AGROW>
 		if flag_rmhbsa, problems = [problems '|hbiassa']; end %#ok<AGROW,NASGU>
-		signal = wE{pri}.e; %#ok<NASGU>
+		signal = wE{iPr}.e; %#ok<NASGU>
 		remove_problems
-		wE{pri}.e = res; %#ok<AGROW,NODEF>
+		wE{iPr}.e = res; %#ok<AGROW,NODEF>
 		clear res signal problems
 		
 		% Check if we have at least 1 spin of data left
-		if length(find(~isnan(wE{pri}.e(:,2)))) < 4*fsamp
-			irf_log('proc',irf_ssub('No p? data after removals',wE{pri}.probe));
-            if p12==wE{pri}.probe;
+		if length(find(~isnan(wE{iPr}.e(:,2)))) < 4*fsamp
+			irf_log('proc',irf_ssub('No p? data after removals',wE{iPr}.probe));
+            if p12==wE{iPr}.probe;
                 p12=[];
             end
 			continue
@@ -469,18 +469,19 @@ elseif strcmp(quantity,'dies') || strcmp(quantity,'diehxs') || strcmp(quantity,'
         if sfit_ver>=0
             irf_log('proc',['using SFIT_VER=' num2str(sfit_ver)])
         else
-            if wE{pri}.probe==32 || wE{pri}.probe==42, sfit_ver = 2;
+            if wE{iPr}.probe==32 || wE{iPr}.probe==42, sfit_ver = 2;
             else sfit_ver = 1;
             end
         end
 
-		sp = c_efw_sfit(wE{pri}.probe,3,10,20,wE{pri}.e(:,1),wE{pri}.e(:,2),aa(:,1),aa(:,2),sfit_ver,tmode);
+		sp = c_efw_sfit(wE{iPr}.probe,3,10,20,wE{iPr}.e(:,1),wE{iPr}.e(:,2),...
+      aa(:,1),aa(:,2),sfit_ver,tmode);
         sfit_ver = sfit_ver_bak;
 		
 		% Check if we have any data left
 		if isempty(sp)
 			irf_log('load',sprintf('No data left after spinfit for C%d p%d',...
-				cl_id,wE{pri}.probe))
+				cl_id,wE{iPr}.probe))
 			continue
 		end
 		
@@ -507,7 +508,7 @@ elseif strcmp(quantity,'dies') || strcmp(quantity,'diehxs') || strcmp(quantity,'
 		if ok
 			if ~isempty(whip)
 				irf_log('proc','blanking Whisper pulses in ADC offsets')
-				if (wE{pri}.probe == 32 || wE{pri}.probe == 42) && size(sp,2) == 10
+				if (wE{iPr}.probe == 32 || wE{iPr}.probe == 42) && size(sp,2) == 10
                     SPCOLS = [4 9 10];
 				else SPCOLS = 4;
 				end
@@ -547,9 +548,9 @@ elseif strcmp(quantity,'dies') || strcmp(quantity,'diehxs') || strcmp(quantity,'
 		adc_off(isnan(adc_off(:,2)),2) = adc_off_mean;
 		% For C4p34, check for DAC problems if date is after 2009-01-01
 		adc_despike=1;
-		if cl_id == 4 && wE{pri}.probe == 34 && adc_off(1,1) > 1230768000
+		if cl_id == 4 && wE{iPr}.probe == 34 && adc_off(1,1) > 1230768000
 			% Check for BADDAC set earlier (i.e. by manual forcing)
-			[ok, badDAC] = c_load(irf_ssub('BADDAC?p!', cl_id,wE{pri}.probe));
+			[ok, badDAC] = c_load(irf_ssub('BADDAC?p!', cl_id,wE{iPr}.probe));
 			if ok && ~isempty(badDAC)
 				irf_log('proc', 'BADDAC set manually')
 				adc_despike=0;
@@ -595,7 +596,7 @@ elseif strcmp(quantity,'dies') || strcmp(quantity,'diehxs') || strcmp(quantity,'
 			
 			% Save problem to file mEFW.mat (not save_file=mEDSI.mat)
 			if ~adc_despike
-				badDACname=irf_ssub('BADDAC?p!',cl_id,wE{pri}.probe);
+				badDACname=irf_ssub('BADDAC?p!',cl_id,wE{iPr}.probe);
 				irf_log('save', [badDACname ' -> mEFW.mat']);
 				eval([badDACname '=badDAC;']);
 				if exist('mEFW.mat','file')
@@ -623,7 +624,7 @@ elseif strcmp(quantity,'dies') || strcmp(quantity,'diehxs') || strcmp(quantity,'
 		adc_off = irf_waverage(adc_off,1/4,nPointsADCOffset); %#ok<NASGU>
 		
 		% Save 2 omega separately
-		if wE{pri}.probe == 32 && size(sp,2) == 10
+		if wE{iPr}.probe == 32 && size(sp,2) == 10
 			% Fill NaNs with zeros and smooth the signal
 			for col = 9:10
 				sp( isnan(sp(:,col)) ,col) = 0;
@@ -632,7 +633,7 @@ elseif strcmp(quantity,'dies') || strcmp(quantity,'diehxs') || strcmp(quantity,'
 		
 			eval(irf_ssub(...
 			['w2W' lx_str '?p!=sp(:,[1 9 10]);save_list=[save_list ''w2W' lx_str '?p! ''];'],...
-			cl_id,wE{pri}.probe));
+			cl_id,wE{iPr}.probe));
 		end
 		
 		sp = sp(:,[1:4 6]);
@@ -641,7 +642,7 @@ elseif strcmp(quantity,'dies') || strcmp(quantity,'diehxs') || strcmp(quantity,'
 		eval(irf_ssub(...
 			['diE' lx_str 's?p!=sp;Dadc' lx_str ...
             '?p!=adc_off;save_list=[save_list ''diE' lx_str 's?p! Dadc' lx_str '?p! ''];'],...
-			cl_id,wE{pri}.probe));
+			cl_id,wE{iPr}.probe));
 		clear tt sp adc_off
 	end
 
