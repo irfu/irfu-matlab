@@ -172,14 +172,15 @@ for dd = 1:length(dirs)
 
    % Load data
    if strcmp(caa_vs, 'DER')
-     ppList = [12, 32, 34];
-     [ok, data] = c_load('Dadc?p!',cl_id,'res',ppList); % Try loading data for all probe pairs.
+     ppList = [12, 32, 34, 42];
+     [ok, data] = c_load('Dadc?p!',cl_id,'res',ppList(1:3)); % Try loading data for all probe pairs.
+     ok(4) = 0; data = [data {[]}]; %#ok<AGROW> % p42 is LX only!
      [okLX, dataLX] = ...
        c_load(sprintf('DadcLX%dp?', cl_id),cl_id,'res',ppList);   % Load LX data.
-     idx12 = (ppList==12 | ppList==32) & okLX;
+     idx12 = (ppList==12 | ppList==32 | ppList==42) & okLX;
      idx34 = ppList==34 & okLX;
-     if any(idx12) && ( (flag_lx && (sfit_probe==12|| sfit_probe==32)) ||...
-         ~any((ppList==12 | ppList==32) & ok) )
+     if any(idx12) && ( (flag_lx && sfit_probe~=34) ||...
+         ~any(sfit_probe~=34 & ok) )
        data(idx12) = dataLX(idx12); ok(idx12) = okLX(idx12);
        ppList(idx12) = ppList(idx12)*10; % Mark LX, e.g. 32->320
      end
@@ -255,30 +256,31 @@ for dd = 1:length(dirs)
      else
        % Load P34
        if sfit_probe==34 && flag_lx
-         [ok,spf34,msg] = c_load('diELXs?p34',cl_id);
-         if ~ok || isempty(spf34), no_p34 = 1; irf_log('load',msg), end
+         [ok,spf34] = c_load('diELXs?p34',cl_id);
+         if ~ok || isempty(spf34), no_p34 = 1; end
        else
-         [ok,spf34,msg] = c_load('diEs?p34',cl_id);
+         [ok,spf34] = c_load('diEs?p34',cl_id);
          if ~ok || isempty(spf34)
-           irf_log('load',msg)
            [ok,spf34,msg] = c_load('diELXs?p34',cl_id);
-           if ~ok || isempty(spf34), no_p34 = 1; irf_log('load',msg), end
+           if ~ok || isempty(spf34), no_p34 = 1; end
          end
        end
        % Load P12/32
        ppOther = 12;
-       ret = whos('-file','./mEDSI.mat',...
-         irf_ssub('diE*s?p!',cl_id,ppOther));
-       if isempty(ret), ppOther = 32; end
+       ret = whos('-file','./mEDSI.mat',irf_ssub('diE*s?p!',cl_id,ppOther));
+       if isempty(ret)
+         ppOther = 32;
+         ret = whos('-file','./mEDSI.mat',irf_ssub('diE*s?p!',cl_id,ppOther));
+         if isempty(ret), ppOther = 42; end
+       end
        if sfit_probe~=34 && flag_lx
-         [ok,spfD,msg] = c_load(irf_ssub('diELXs?p!',cl_id,ppOther));
-         if ~ok || isempty(spfD), no_p12 = 1; irf_log('load',msg), end
+         [ok,spfD] = c_load(irf_ssub('diELXs?p!',cl_id,ppOther));
+         if ~ok || isempty(spfD), no_p12 = 1; irf_log('load'), end
        else
-         [ok,spfD,msg] = c_load(irf_ssub('diEs?p!',cl_id,ppOther));
+         [ok,spfD] = c_load(irf_ssub('diEs?p!',cl_id,ppOther));
          if ~ok || isempty(spfD)
-           irf_log('load',msg)
-           [ok,spfD,msg] = c_load(irf_ssub('diELXs?p!',cl_id,ppOther));
-           if ~ok || isempty(spfD), no_p12 = 1; irf_log('load',msg), end
+           [ok,spfD] = c_load(irf_ssub('diELXs?p!',cl_id,ppOther));
+           if ~ok || isempty(spfD), no_p12 = 1; end
          end
        end
      end % Load data
@@ -674,7 +676,7 @@ for dd = 1:length(dirs)
 
      if strcmp(caa_vs, 'DER')
        % Limit data to both time interval given as input, and time interval read from file.
-       data1 = irf_tlim([data{1:2}], t_int_full);
+       data1 = irf_tlim([data{[1 2 4]}], t_int_full);
        data1 = irf_tlim(data1, t_int);
        data2 = irf_tlim(data{3}, t_int_full);
        data2 = irf_tlim(data2, t_int);
@@ -880,7 +882,7 @@ for dd = 1:length(dirs)
          data_out = zeros(length(timestamp), 3) * NaN;
          data_out(:, 1) = timestamp;
          
-         if ~isempty(intersect(ppDER,[12 32 120 320]))
+         if ~isempty(intersect(ppDER,[12 32 120 320 420]))
             [ind1, ind2] = irf_find_comm_idx(data_out, data1);
             data_out(ind1, 2) = data1(ind2, 2);
          end
