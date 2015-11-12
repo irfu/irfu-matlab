@@ -191,7 +191,8 @@ switch procId
 
     epochTT = dce.time;
     % adcdata & dcedata, defined as CDF_REAL4 (single in Matlab)
-    dcedata = mms_sdp_typecast('dce',[dce.e12.data, dce.e34.data, dce.e56.data]);
+    % NOTE: The minus sign on DCE E56 in order to flip it to the DSL Z direction!
+    dcedata = mms_sdp_typecast('dce',[dce.e12.data, dce.e34.data, -dce.e56.data]);
     adcdata = mms_sdp_typecast('adc_offset',[adc_off.(sdpPair{1}), adc_off.(sdpPair{2})]);
     phasedata = mms_sdp_typecast('phase',phase.data);
     deltadata = mms_sdp_typecast('delta_offset',[real(delta_off), imag(delta_off)]);
