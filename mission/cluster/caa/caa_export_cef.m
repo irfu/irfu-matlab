@@ -54,7 +54,7 @@ end
 end
 ibsave=false;
 badibfound=false;
-result = [];
+result = []; dsc = [];
 result_com = {};
 
 
@@ -62,7 +62,7 @@ if lev==1
 	if strcmp(caa_vs, 'IB')
         vs = irf_ssub('IB?',cl_id);
 		v_size = 8;
-        alldi='';
+        dataInfoAll='';
     elseif regexp(caa_vs,'^P(1|2|3|4|12|32|34)?$')
 		id = str2double(caa_vs(2:end));
 		if id <=4, vs = irf_ssub('P10Hz?p!',cl_id,id);
@@ -173,7 +173,7 @@ for dd = 1:length(dirs)
    % Load data
    if strcmp(caa_vs, 'DER')
      ppList = [12, 32, 34];
-     [ok, data] = c_load(sprintf('Dadc%dp?', cl_id),cl_id,'res',ppList);   % Try loading data for all probe pairs.
+     [ok, data] = c_load('Dadc?p!',cl_id,'res',ppList); % Try loading data for all probe pairs.
      [okLX, dataLX] = ...
        c_load(sprintf('DadcLX%dp?', cl_id),cl_id,'res',ppList);   % Load LX data.
      idx12 = (ppList==12 | ppList==32) & okLX;
@@ -183,7 +183,7 @@ for dd = 1:length(dirs)
        data(idx12) = dataLX(idx12); ok(idx12) = okLX(idx12);
        ppList(idx12) = ppList(idx12)*10; % Mark LX, e.g. 32->320
      end
-     if  any(idx34) && ((flag_lx && sfit_probe==34) || ~any(ppList==34 & ok))
+     if any(idx34) && ((flag_lx && sfit_probe==34) || ~any(ppList==34 & ok))
        data(idx34) = dataLX(idx34); ok(idx34) = okLX(idx34);
        ppList(idx34) = ppList(idx34)*10; % Mark LX, 34->340
      end
@@ -207,14 +207,10 @@ for dd = 1:length(dirs)
       end
 
       [ok,probe_info,msg] = c_load([ pvar '_info'],cl_id);
-      if ~ok || isempty(probe_info)
-         irf_log('load',msg)
-         data = [];
+      if ~ok || isempty(probe_info), data = []; irf_log('load',msg)
       else
          [ok,data,msg] = c_load(pvar,cl_id);
-         if ~ok || isempty(data)
-            irf_log('load',msg)
-            data = [];
+         if ~ok || isempty(data), data = []; irf_log('load',msg)
          else
             % Extend data array to accept probe#, aspoc, bitmask and quality (4 new columns at the end)
             if size(data,1) == 1    % Fix short data
@@ -380,17 +376,15 @@ for dd = 1:length(dirs)
        end
      end
    elseif strcmp(caa_vs, 'IB')
-     ok=0;
      if lev==1
        mfn='./mEFWburstTM.mat'; % For tm
        if exist(mfn,'file')
          r = load(mfn);
-         di = r.(sprintf('ib%d_info',cl_id));
-         if isempty(alldi), alldi=di;
-         else alldi=[alldi ', ' di]; %#ok<AGROW>
+         dataInfo = r.(sprintf('ib%d_info',cl_id));
+         if isempty(dataInfoAll), dataInfoAll=dataInfo;
+         else dataInfoAll=[dataInfoAll ', ' dataInfo]; %#ok<AGROW>
          end
-         data=eval(irf_ssub('r.iburst?',cl_id));
-         ok=1;
+         data = r.(sprintf('iburst%d',cl_id));
        else
          data=[];
        end
@@ -450,14 +444,11 @@ for dd = 1:length(dirs)
          end
 
          pvar='bP?';
-         [ok,probe_info,msg] = c_load([ pvar '_info'],cl_id); %#ok<NASGU>
-         if ~ok || isempty(probe_info) % Check for no IB data
-            data = [];
+         [ok,probe_info] = c_load([ pvar '_info'],cl_id);
+         if ~ok || isempty(probe_info), data = []; % Check for no IB data
          else
             [ok,data,msg] = c_load(pvar,cl_id);
-            if ~ok || isempty(data)
-                irf_log('load',msg)
-                data = [];
+            if ~ok || isempty(data), data = []; irf_log('load',msg)
             else
                 % Extend data array to accept probe#, aspoc, bitmask and quality (4 new columns at the end)
                 if size(data,1) == 1    % Fix short data
@@ -537,7 +528,6 @@ for dd = 1:length(dirs)
              end
          end
          data=[];
-         ok=0;
          mfn='./mEFWburst.mat'; % Read Bx By Bz
          if exist(mfn,'file')
              bsc=load(mfn);
@@ -555,8 +545,7 @@ for dd = 1:length(dirs)
              end
              if found
                irf_log('proc','BSC burst data found');
-               data=eval(['bsc.' finbsc{bscix}]);
-               ok=1;
+               data = bsc.(finbsc{bscix});
                % Extend data array to accept probe#, aspoc, bitmask and quality (4 new columns at the end)
                if size(data,1) == 1    % Fix short data
                    data = [data;[data(1,1)+4 NaN NaN NaN]]; %#ok<AGROW>
@@ -617,7 +606,6 @@ for dd = 1:length(dirs)
              end
          end
          data=[];
-         ok=0;
          mfn='./mEFWburst.mat'; % For E
          if exist(mfn,'file')
              e=load(mfn);
@@ -635,9 +623,12 @@ for dd = 1:length(dirs)
              end
              if found
                irf_log('proc','E burst data found');
-               [ok,probe_info] = c_load([ fine{eix} '_info']); %#ok<ASGLU>
+               [ok,probe_info] = c_load([ fine{eix} '_info']);
+               if ~ok
+                 eS = ['Failed to load ' fine{eix} '_info'];
+                 irf_log('load',eS), error(eS)
+               end
                data = e.(fine{eix});
-               ok=1;
                % Extend data array to accept bitmask and quality (1 new column at the end 1 reused)
                if size(data,1) == 1    % Fix short data
                    data = [data;[data(1,1)+4 NaN NaN NaN]]; %#ok<AGROW>
@@ -658,27 +649,15 @@ for dd = 1:length(dirs)
        end
    else
       [ok,data] = c_load(vs);
+      if ~ok, irf_log('load',['Failed to load ' vs]); end
    end
-   if (all(~ok) || isempty(data))
+   
+   if isempty(data)
         if ~regexp(caa_vs,'^(I|P|E|B)B$') 
             irf_log('load', ['No ' vs]);
         end
         cd(old_pwd)
         continue
-   end
-   try
-      if ~strcmp(caa_vs, 'SFIT') && ~regexp(caa_vs,'^(I|P|E|B)B$') 
-        [ok, d_info] = c_load([vs '_info'],'var');
-      else
-   	    d_info = []; ok = 0;
-      end
-   catch
-      irf_log('load', ['No ' vs '_info']);
-   	  d_info = []; ok = 0;
-   end
-
-   if ~ok || isempty(d_info), dsc = c_desc(vs);
-   else dsc = c_desc(vs,d_info);
    end
    
    % Make subinterval
@@ -748,8 +727,6 @@ for dd = 1:length(dirs)
    
    % Do magic on E-field
    if strcmp(caa_vs,'E') && ~isempty(data)
-   	% We export only X and Y, no need to export zeroes in Ez.
-   	dsc.size(1) = 2;
    	% Remove Ez, which is zero
    	data = data(:, [1:3 5:end]);     % Remove column 4 (Ez data)
    	
@@ -772,11 +749,6 @@ for dd = 1:length(dirs)
 
    	% Identify and flag problem areas in data with bitmask and quality factor:
    	data = caa_identify_problems(data, lev, probe_info, cl_id, bitmask_column, quality_column);
-   	
-   	% Extend variable description to include the new columns bitmask and quality:
-   	dsc.size = [dsc.size, 1, 1];
-   	dsc.valtype = [dsc.valtype, {'INT'}, {'INT'}];
-   	dsc.sigdig = [dsc.sigdig, 5, 1];
    	
     probe_str = 'Probe pair';
     nPp = fix(length(probe_info))/2;
@@ -802,7 +774,6 @@ for dd = 1:length(dirs)
    			Del_caa = c_efw_delta_off(data(1,1),cl_id);
    			if ~isempty(Del_caa)
    				[ok,Delauto] = c_load('D?p12p34',cl_id);
-   %            [Delauto, ok] = caa_get(st, dt, cl_id, 'D?p12p34');
    				if ~ok || isempty(Delauto)
    					irf_log('load',irf_ssub('Cannot load/empty D?p12p34',cl_id))
    				else
@@ -857,6 +828,16 @@ for dd = 1:length(dirs)
       clear Ddsi Damp
     end
    	
+    if lev==2
+      [ok, d_info] = c_load([vs '_info'],'var');
+      if ~ok
+        eS = ['Failed to load ' vs '_info']; irf_log('load',eS), error(eS)
+      end
+      dsc = c_desc(vs,d_info);
+    else
+      dsc = c_desc(vs); 
+    end
+   
     [ok,Del] = c_load('D?p12p34',cl_id); if ~ok, Del = [0 0]; end
     if ~isreal(Del)
       Del = imag(Del);
@@ -885,8 +866,8 @@ for dd = 1:length(dirs)
    	
    % Combine ADC offsets from two probe pairs into one dataset:
    elseif strcmp(caa_vs, 'DER')
-      if ~(isempty(data1) && isempty(data2))
-   
+      if isempty(data1) && isempty(data2), data = [];
+      else
          if length(ppDER) == 1   % Most likely p1 broken, so no 'Dadc?p12' product!
             single_pair_data = [data1 data2];
             start_time = min( single_pair_data(:,1) );
@@ -905,8 +886,6 @@ for dd = 1:length(dirs)
             [ind1, ind2] = irf_find_comm_idx(data_out, data2);
             data_out(ind1, 3) = data2(ind2, 2);
          end
-         
-         clear data;
          data = data_out;
          
          % Extend description to cover data record for two probe pairs:
@@ -923,15 +902,7 @@ for dd = 1:length(dirs)
             epoch2iso(t_int(1),1), epoch2iso(t_int(2),1), adc_str);
          result_com{end+1} = adc_str; %#ok<AGROW>
          irf_log('calb',adc_str)
-         
-         dsc.valtype = [dsc.valtype, {'FLOAT'}];
-         dsc.sigdig = [dsc.sigdig 6];
-         dsc.size = [dsc.size 1];
-         
          clear start_time timestamp ind1 ind2 data_out
-      
-      else % isempty(data1) && isempty(data2)
-         data = [];
       end
    end
    
@@ -954,11 +925,24 @@ for dd = 1:length(dirs)
        end
    end
 end   % for dd = 1:length(dirs)
+cd(old_pwd)
 
 data = result;
-if exist('result_com','var') && ~isempty(result_com), dsc.com = result_com; end
-
-cd(old_pwd)
+if isempty(dsc), dsc = c_desc(vs); end
+switch caa_vs
+  case 'E',
+    % We export only X and Y, no need to export zeroes in Ez.
+   	dsc.size(1) = 2;
+    % Extend variable description to include the new columns bitmask and quality:
+    dsc.size = [dsc.size, 1, 1];
+    dsc.valtype = [dsc.valtype, {'INT'}, {'INT'}];
+    dsc.sigdig = [dsc.sigdig, 5, 1];
+  case 'DER',          
+    dsc.valtype = {'FLOAT', 'FLOAT'};
+    dsc.sigdig = [6 6];
+    dsc.size = [1 1];
+end
+if ~isempty(result_com), dsc.com = result_com; end
 
 % Check for non-monotonic time, and remove data within 2 HK packets (10.4s)
 if ~isempty(data)
@@ -997,7 +981,6 @@ if isempty(data)
     case {'E', 'DER','SFIT'}
       irf_log('save', sprintf('Saving empty interval %s/%s', ...
         epoch2iso(t_int_full(1),1), epoch2iso(t_int_full(2),1)) )
-      v_size = 0;
       dsc.com = '';
     otherwise
       dsc.com = '';
@@ -1060,10 +1043,8 @@ if strcmp(caa_vs, 'SFIT')
     end
 elseif strcmp(caa_vs, 'IB')
     if lev==1
-        if isempty(data)
-            alldi='na';
-        end
-        buf = pmeta(buf, 'FILE_CAVEATS', [ 'Data order: ' alldi ' ' dsc.com ]);
+        if isempty(data), dataInfoAll='na'; end
+        buf = pmeta(buf, 'FILE_CAVEATS', [ 'Data order: ' dataInfoAll ' ' dsc.com ]);
     end
 elseif ~isempty(regexp(caa_vs,'^(P|E|B)B$', 'once')) && ibsave && isempty(data)
         buf = pmeta(buf, 'FILE_CAVEATS', [ 'No iburst ' caa_vs ' data. ' dsc.com ]);    
