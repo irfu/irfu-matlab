@@ -105,7 +105,7 @@ else
 			vs = irf_ssub('SFIT?',cl_id);
 			v_size = 4;
             nanfill = -1;
-            probeSfit = 0;
+            ppOther = 0;
         else
 			disp('not implemented'), cd(old_pwd), return
 		end
@@ -150,23 +150,24 @@ for dd = 1:length(dirs)
 
    % Set up spin fit related information.
    % Probe pair used can vary for each subinterval!
-   if strcmp(caa_vs, 'E') || strcmp(caa_vs, 'DER')
-      [sfit_probe,flag_lx,probeS] = caa_sfit_probe(cl_id);
-      irf_log('proc',sprintf('using %s',probeS))
-      if lev == 3
-          if sfit_probe == 120
-              sfit_probe = 12;
-          elseif sfit_probe == 320
-              sfit_probe = 32;
-          elseif sfit_probe == 340
-              sfit_probe = 34;
-          elseif sfit_probe == 420
-              sfit_probe = 42;
-          end
-          if flag_lx, vs = irf_ssub('diELXs?p!',cl_id,sfit_probe);
-          else vs = irf_ssub('diEs?p!',cl_id,sfit_probe);
-          end
-      end
+   if strcmp(caa_vs, 'E') || strcmp(caa_vs, 'DER') || strcmp(caa_vs, 'SFIT')
+     [sfit_probe,flag_lx,probeS] = caa_sfit_probe(cl_id);
+     if flag_lx, tS = '(LX)'; else tS = ''; end
+     irf_log('proc',sprintf('L3_E probe pair : %s%s',probeS(1:2),tS))
+     if lev == 3
+       switch sfit_probe
+         case 120, sfit_probe = 12;
+         case 320, sfit_probe = 32;
+         case 340, sfit_probe = 34;
+         case 420, sfit_probe = 42;
+         otherwise
+       end
+       if strcmp(caa_vs, 'E')
+         if flag_lx, vs = irf_ssub('diELXs?p!',cl_id,sfit_probe);
+         else vs = irf_ssub('diEs?p!',cl_id,sfit_probe);
+         end
+       end
+     end
    end
 
    % Load data
@@ -253,136 +254,147 @@ for dd = 1:length(dirs)
          end
       end
    elseif strcmp(caa_vs, 'SFIT') 
-          no_p12 = 0; no_p34 = 0;
-          if ~exist('./mEDSI.mat','file'), no_p12 = 1; no_p34 = 1;
-          else
-            % Load P34
-            [ok,spf34,msg] = c_load('diEs?p34',cl_id);
-            if ~ok || isempty(spf34)
-              irf_log('load',msg)
-              [ok,spf34,msg] = c_load('diELXs?p34',cl_id);
-              if ~ok || isempty(spf34), no_p34 = 1; irf_log('load',msg), end
-            end
-            % Load P12/32
-            probeSfit = 12;
-            ret = whos('-file','./mEDSI.mat',...
-              irf_ssub('diE*s?p!',cl_id,probeSfit));
-            if isempty(ret), probeSfit = 32; end
-            [ok,spfD,msg] = c_load(irf_ssub('diEs?p!',cl_id,probeSfit));
-            if ~ok || isempty(spfD)
-              irf_log('load',msg)
-              [ok,spfD,msg] = c_load(irf_ssub('diELXs?p!',cl_id,probeSfit));
-              if ~ok || isempty(spfD), no_p12 = 1; irf_log('load',msg), end
-            end
-          end
-          if no_p12 && no_p34, data = [];
-          elseif no_p12
-             % save time, NaN(fillval) and p34 spin-fit (B C sdev)
-             nanfill = 0;
-             data=[spf34(:,1) NaN(size(spf34,1),3) spf34(:,2:3) spf34(:,5)];
-          elseif no_p34
-             nanfill = 1;
-             % save time, p12/32 spin-fit (B C sdev) and NaN(fillval)  
-             data=[spfD(:,1) spfD(:,2:3) spfD(:,5) NaN(size(spfD,1),3)];
-          else
-             % save time, p12/32 and p34 spin-fit: B C sdev
-             [ok,Del,msg] = c_load('D?p12p34',cl_id);
-             if ~ok || isempty(Del)
-                 irf_log('load',msg)
-                 data = []; continue
-             end;
-             if imag(Del(1)) ~= 0 || imag(Del(2)) ~= 0
-                 irf_log('load','Info: Imaginary delta offset.');
-             end
-             spfD(:,2:3)=spfD(:,2:3)+ones(size(spfD,1),1)*Del;
-             s34=size(spf34(:,1),1);
-             sd=size(spfD(:,1),1);
-             if s34 > sd
-                found=0;
-                for j=1:sd
-                    for i=1:s34
-                        if spf34(i,1) == spfD(j,1)
-                            found=i;
-                            pos=j;
-                            break;
-                        end
-                    end
-                    if found
-                        break;
-                    end
-                end
-                if found
-                   if pos > 1
-                      spf34 = [NaN(pos-1,5);spf34]; %#ok<AGROW>
-                      irf_log('proc','Info: pos>1 sd');
-                   end
-                   spfD = [NaN(found-1,5);spfD]; %#ok<AGROW>
-                   if s34-found-sd >= 0
-                       spfD = [spfD;NaN(s34-found-sd+pos,5)]; %#ok<AGROW>
-                   end
-                else
-                   if spf34(1,1) < spfD(1,1)
-                       spf34 = [spf34;NaN(sd,5)]; %#ok<AGROW>
-                       spfD = [NaN(s34,5);spfD]; %#ok<AGROW>
-                   else
-                       spf34 = [NaN(sd,5);spf34]; %#ok<AGROW>
-                       spfD = [spfD;NaN(s34,5)]; %#ok<AGROW>
-                   end    
-                end
-                data=[spf34(:,1) spfD(:,2:3) spfD(:,5) spf34(:,2:3) spf34(:,5)];
-             elseif s34 < sd
-                found=0;
-                for j=1:s34
-                    for i=1:sd
-                        if spf34(j,1) == spfD(i,1)
-                            found=i;
-                            pos=j;
-                            break;
-                        end
-                    end
-                    if found
-                        break;
-                    end
-                end
-                if found
-                   if pos > 1
-                      spfD = [NaN(pos-1,5);spfD]; %#ok<AGROW>
-                      irf_log('proc','Info: pos>1 s34');
-                   end
-                   spf34 = [NaN(found-1,5);spf34]; %#ok<AGROW>
-                   if sd-found-s34 >= 0
-                       spf34 = [spf34;NaN(sd-found-s34+pos,5)]; %#ok<AGROW>
-                   end
-                else
-                   if spf34(1,1) < spfD(1,1)
-                       spf34 = [spf34;NaN(sd,5)]; %#ok<AGROW>
-                       spfD = [NaN(s34,5);spfD]; %#ok<AGROW>
-                   else
-                       spf34 = [NaN(sd,5);spf34]; %#ok<AGROW>
-                       spfD = [spfD;NaN(s34,5)]; %#ok<AGROW>
-                   end    
-                end
-                data = [spfD(:,1) spfD(:,2:3) spfD(:,5) spf34(:,2:3) spf34(:,5)];
-             else
-                data = [spf34(:,1) spfD(:,2:3) spfD(:,5) spf34(:,2:3) spf34(:,5)];
-             end
-          end
-   elseif strcmp(caa_vs, 'IB')
-       ok=0;
-       if lev==1
-         mfn='./mEFWburstTM.mat'; % For tm
-         if exist(mfn,'file')
-           r = load(mfn);
-           di = r.(sprintf('ib%d_info',cl_id));
-           if isempty(alldi), alldi=di;
-           else alldi=[alldi ', ' di]; %#ok<AGROW>
-           end
-           data=eval(irf_ssub('r.iburst?',cl_id));
-           ok=1;
-         else
-           data=[];
+     no_p12 = 0; no_p34 = 0;
+     if ~exist('./mEDSI.mat','file'), no_p12 = 1; no_p34 = 1;
+     else
+       % Load P34
+       if sfit_probe==34 && flag_lx
+         [ok,spf34,msg] = c_load('diELXs?p34',cl_id);
+         if ~ok || isempty(spf34), no_p34 = 1; irf_log('load',msg), end
+       else
+         [ok,spf34,msg] = c_load('diEs?p34',cl_id);
+         if ~ok || isempty(spf34)
+           irf_log('load',msg)
+           [ok,spf34,msg] = c_load('diELXs?p34',cl_id);
+           if ~ok || isempty(spf34), no_p34 = 1; irf_log('load',msg), end
          end
        end
+       % Load P12/32
+       ppOther = 12;
+       ret = whos('-file','./mEDSI.mat',...
+         irf_ssub('diE*s?p!',cl_id,ppOther));
+       if isempty(ret), ppOther = 32; end
+       if sfit_probe~=34 && flag_lx
+         [ok,spfD,msg] = c_load(irf_ssub('diELXs?p!',cl_id,ppOther));
+         if ~ok || isempty(spfD), no_p12 = 1; irf_log('load',msg), end
+       else
+         [ok,spfD,msg] = c_load(irf_ssub('diEs?p!',cl_id,ppOther));
+         if ~ok || isempty(spfD)
+           irf_log('load',msg)
+           [ok,spfD,msg] = c_load(irf_ssub('diELXs?p!',cl_id,ppOther));
+           if ~ok || isempty(spfD), no_p12 = 1; irf_log('load',msg), end
+         end
+       end
+     end % Load data
+     
+     if no_p12 && no_p34, data = [];
+     elseif no_p12
+       % save time, NaN(fillval) and p34 spin-fit (B C sdev)
+       nanfill = 0;
+       data=[spf34(:,1) NaN(size(spf34,1),3) spf34(:,2:3) spf34(:,5)];
+     elseif no_p34
+       nanfill = 1;
+       % save time, p12/32 spin-fit (B C sdev) and NaN(fillval)
+       data=[spfD(:,1) spfD(:,2:3) spfD(:,5) NaN(size(spfD,1),3)];
+     else
+       % save time, p12/32 and p34 spin-fit: B C sdev
+       [ok,Del,msg] = c_load('D?p12p34',cl_id);
+       if ~ok || isempty(Del)
+         irf_log('load',msg)
+         data = []; continue
+       end;
+       if imag(Del(1)) ~= 0 || imag(Del(2)) ~= 0
+         irf_log('load','Info: Imaginary delta offset.');
+       end
+       spfD(:,2:3)=spfD(:,2:3)+ones(size(spfD,1),1)*Del;
+       s34=size(spf34(:,1),1);
+       sd=size(spfD(:,1),1);
+       if s34 > sd
+         found=0;
+         for j=1:sd
+           for i=1:s34
+             if spf34(i,1) == spfD(j,1)
+               found=i;
+               pos=j;
+               break;
+             end
+           end
+           if found
+             break;
+           end
+         end
+         if found
+           if pos > 1
+             spf34 = [NaN(pos-1,5);spf34]; %#ok<AGROW>
+             irf_log('proc','Info: pos>1 sd');
+           end
+           spfD = [NaN(found-1,5);spfD]; %#ok<AGROW>
+           if s34-found-sd >= 0
+             spfD = [spfD;NaN(s34-found-sd+pos,5)]; %#ok<AGROW>
+           end
+         else
+           if spf34(1,1) < spfD(1,1)
+             spf34 = [spf34;NaN(sd,5)]; %#ok<AGROW>
+             spfD = [NaN(s34,5);spfD]; %#ok<AGROW>
+           else
+             spf34 = [NaN(sd,5);spf34]; %#ok<AGROW>
+             spfD = [spfD;NaN(s34,5)]; %#ok<AGROW>
+           end
+         end
+         data=[spf34(:,1) spfD(:,2:3) spfD(:,5) spf34(:,2:3) spf34(:,5)];
+       elseif s34 < sd
+         found=0;
+         for j=1:s34
+           for i=1:sd
+             if spf34(j,1) == spfD(i,1)
+               found=i;
+               pos=j;
+               break;
+             end
+           end
+           if found
+             break;
+           end
+         end
+         if found
+           if pos > 1
+             spfD = [NaN(pos-1,5);spfD]; %#ok<AGROW>
+             irf_log('proc','Info: pos>1 s34');
+           end
+           spf34 = [NaN(found-1,5);spf34]; %#ok<AGROW>
+           if sd-found-s34 >= 0
+             spf34 = [spf34;NaN(sd-found-s34+pos,5)]; %#ok<AGROW>
+           end
+         else
+           if spf34(1,1) < spfD(1,1)
+             spf34 = [spf34;NaN(sd,5)]; %#ok<AGROW>
+             spfD = [NaN(s34,5);spfD]; %#ok<AGROW>
+           else
+             spf34 = [NaN(sd,5);spf34]; %#ok<AGROW>
+             spfD = [spfD;NaN(s34,5)]; %#ok<AGROW>
+           end
+         end
+         data = [spfD(:,1) spfD(:,2:3) spfD(:,5) spf34(:,2:3) spf34(:,5)];
+       else
+         data = [spf34(:,1) spfD(:,2:3) spfD(:,5) spf34(:,2:3) spf34(:,5)];
+       end
+     end
+   elseif strcmp(caa_vs, 'IB')
+     ok=0;
+     if lev==1
+       mfn='./mEFWburstTM.mat'; % For tm
+       if exist(mfn,'file')
+         r = load(mfn);
+         di = r.(sprintf('ib%d_info',cl_id));
+         if isempty(alldi), alldi=di;
+         else alldi=[alldi ', ' di]; %#ok<AGROW>
+         end
+         data=eval(irf_ssub('r.iburst?',cl_id));
+         ok=1;
+       else
+         data=[];
+       end
+     end
    elseif strcmp(caa_vs, 'PB')
        if lev==2
          if isempty(c_ct)
@@ -990,6 +1002,8 @@ if isempty(data)
     otherwise
       dsc.com = '';
   end
+else
+  irf_log('save', sprintf('Writing %d records',size(data,1)))
 end
 
 
@@ -1035,14 +1049,14 @@ buf = sprintf('%s%s',buf,'   VALUE_TYPE  =   ISO_TIME\n');
 buf = sprintf('%s%s',buf,['   ENTRY       =   ' epoch2iso(date2epoch(nnow)) '\n']);
 buf = sprintf('%s%s',buf,'END_META       =   GENERATION_DATE\n');
 if strcmp(caa_vs, 'SFIT')
-    if probeSfit == 0
+    if ppOther == 0
         buf = pmeta(buf, 'FILE_CAVEATS', [ 'No data.' dsc.com ]);
     elseif nanfill == 0
         buf = pmeta(buf, 'FILE_CAVEATS', [ 'P34 data only.' dsc.com ]);
     elseif nanfill == 1
-        buf = pmeta(buf, 'FILE_CAVEATS', [ 'P' num2str(probeSfit) ' data only.' dsc.com ]);
+        buf = pmeta(buf, 'FILE_CAVEATS', [ 'P' num2str(ppOther) ' data only.' dsc.com ]);
     else
-        buf = pmeta(buf, 'FILE_CAVEATS', [ 'P' num2str(probeSfit) ' & P34 data.' dsc.com ]);
+        buf = pmeta(buf, 'FILE_CAVEATS', [ 'P' num2str(ppOther) ' & P34 data.' dsc.com ]);
     end
 elseif strcmp(caa_vs, 'IB')
     if lev==1
