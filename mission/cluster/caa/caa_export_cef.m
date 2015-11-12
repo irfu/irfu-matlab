@@ -54,7 +54,7 @@ end
 end
 ibsave=false;
 badibfound=false;
-result = []; dsc = [];
+result = []; dsc = []; vs = '';
 result_com = {};
 
 
@@ -297,12 +297,14 @@ for dd = 1:length(dirs)
        [ok,Del,msg] = c_load('D?p12p34',cl_id);
        if ~ok || isempty(Del)
          irf_log('load',msg)
-         data = []; continue
-       end;
-       if imag(Del(1)) ~= 0 || imag(Del(2)) ~= 0
-         irf_log('load','Info: Imaginary delta offset.');
+       else
+         if isreal(Del) % Applied to p12/32
+           spfD(:,2:3)=spfD(:,2:3)+ones(size(spfD,1),1)*Del;
+         else % Applied to p34
+           Del = imag(Del);
+           spf34(:,2:3)=spf34(:,2:3)+ones(size(spf34,1),1)*Del;
+         end
        end
-       spfD(:,2:3)=spfD(:,2:3)+ones(size(spfD,1),1)*Del;
        s34=size(spf34(:,1),1);
        sd=size(spfD(:,1),1);
        if s34 > sd
@@ -928,19 +930,26 @@ end   % for dd = 1:length(dirs)
 cd(old_pwd)
 
 data = result;
-if isempty(dsc), dsc = c_desc(vs); end
-switch caa_vs
-  case 'E',
-    % We export only X and Y, no need to export zeroes in Ez.
-   	dsc.size(1) = 2;
-    % Extend variable description to include the new columns bitmask and quality:
-    dsc.size = [dsc.size, 1, 1];
-    dsc.valtype = [dsc.valtype, {'INT'}, {'INT'}];
-    dsc.sigdig = [dsc.sigdig, 5, 1];
-  case 'DER',          
-    dsc.valtype = {'FLOAT', 'FLOAT'};
-    dsc.sigdig = [6 6];
-    dsc.size = [1 1];
+if isempty(data)
+  t_int_full = st + [0 dt];
+  irf_log('save', sprintf('Saving empty interval %s/%s', ...
+    epoch2iso(t_int_full(1),1), epoch2iso(t_int_full(2),1)) )
+  dsc.com = '';
+else
+  if isempty(dsc), dsc = c_desc(vs); end
+  switch caa_vs
+    case 'E',
+      % We export only X and Y, no need to export zeroes in Ez.
+      dsc.size(1) = 2;
+      % Extend variable description to include the new columns bitmask and quality:
+      dsc.size = [dsc.size, 1, 1];
+      dsc.valtype = [dsc.valtype, {'INT'}, {'INT'}];
+      dsc.sigdig = [dsc.sigdig, 5, 1];
+    case 'DER',
+      dsc.valtype = {'FLOAT', 'FLOAT'};
+      dsc.sigdig = [6 6];
+      dsc.size = [1 1];
+  end
 end
 if ~isempty(result_com), dsc.com = result_com; end
 
@@ -975,21 +984,7 @@ if ~isempty(data)
     end
 end
 
-if isempty(data)
-  t_int_full = st + [0 dt];
-  switch caa_vs
-    case {'E', 'DER','SFIT'}
-      irf_log('save', sprintf('Saving empty interval %s/%s', ...
-        epoch2iso(t_int_full(1),1), epoch2iso(t_int_full(2),1)) )
-      dsc.com = '';
-    otherwise
-      dsc.com = '';
-  end
-else
-  irf_log('save', sprintf('Writing %d records',size(data,1)))
-end
-
-
+irf_log('save', sprintf('Writing %d records',size(data,1)))
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Write to file
 ext_s = '.cef';
