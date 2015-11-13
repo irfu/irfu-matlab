@@ -16,7 +16,9 @@ lprobeList = {'sphere',       @lp_sphere;...
 	            'Cluster',      @lp_Cluster;...
 	            'MMS_SDP',      @lp_MMS_SDP;...
 	            'MMS_ADP',      @lp_MMS_ADP;...
-	            'Solar_Orbiter',@lp_Solar_Orbiter...
+	            'Solar_Orbiter',@lp_Solar_Orbiter;...
+	            'THOR_SDP',     @lp_THOR_SDP;...
+	            'THOR_HFA',     @lp_THOR_HFA...
 	            };
 lprobeNamesList = lprobeList(:,1);
 lprobeLpFunc    = lprobeList(:,2);
@@ -92,6 +94,21 @@ end
 		Lprobe.surface = 'cluster';
 		Lprobe.radiusWire = 0.5e-2;
 		Lprobe.lengthWire = 1;
+	end
+	function Lprobe = lp_THOR_SDP
+		Lprobe = lp.lprobe;
+		Lprobe.name = 'THOR SDP';
+		Lprobe.surface = 'cluster';
+		Lprobe.radiusSphere = 0.04; % 4cm
+		Lprobe.radiusWire = 0.12e-3;
+		Lprobe.lengthWire = 1.75;
+	end
+	function Lprobe = lp_THOR_HFA
+		Lprobe = lp.lprobe;
+		Lprobe.name = 'THOR HFA';
+		Lprobe.surface = 'cluster';
+		Lprobe.radiusWire = 0.02; % TO CHECK
+		Lprobe.lengthWire = 1.25;
 	end
 	function Lprobe = lp_Solar_Orbiter
 		Lprobe = lp.lprobe;
