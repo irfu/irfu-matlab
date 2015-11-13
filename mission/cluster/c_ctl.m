@@ -68,15 +68,15 @@ if ischar(args{1})
 				% use c_ctl only if you want to override the default value
 				def_ct.dsiof = [];
 
-                def_ct.ibias = zeros(256,5,'single');
+        def_ct.ibias = zeros(256,5,'single');
 				def_ct.puck  = zeros(256,5,'single');
 				def_ct.guard = zeros(256,5,'single');
 
-                def_ct.aspoc = [];
+        def_ct.aspoc = NaN;
+        
+        def_ct.badib = NaN;
 
-                def_ct.badib = [];
-
-                c_ct{1} = def_ct;
+        c_ct{1} = def_ct;
 				c_ct{2} = def_ct;
 				c_ct{3} = def_ct;
 				c_ct{4} = def_ct;

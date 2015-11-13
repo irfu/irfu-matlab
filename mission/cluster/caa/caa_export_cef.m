@@ -21,8 +21,6 @@ function [status, nRecExp, data] = caa_export_cef(lev,caa_vs,cl_id,QUALITY,DATA_
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
 
-global c_ct
-
 status = 0;
 
 % This must be changed when we do any major changes to our processing software
@@ -198,10 +196,12 @@ for dd = 1:length(dirs)
        end
      end
    elseif strcmp(caa_vs, 'P')
-      if isempty(c_ct)
-         c_ctl('load_aspoc_active', [c_ctl(5,'data_path') '/caa-control']);
-      end
-      ASPOC = c_ctl(cl_id,'aspoc');
+     ASPOC = c_ctl(cl_id,'aspoc');
+     if isnan(ASPOC)
+       c_ctl('load_aspoc_active', [c_ctl(5,'data_path') '/caa-control']);
+       ASPOC = c_ctl(cl_id,'aspoc');
+     end
+      
 
       if lev == 2
           pvar = 'P?';
@@ -399,10 +399,11 @@ for dd = 1:length(dirs)
      end
    elseif strcmp(caa_vs, 'PB')
        if lev==2
-         if isempty(c_ct)
-            c_ctl('load_aspoc_active', [c_ctl(5,'data_path') '/caa-control']);
-         end
          ASPOC = c_ctl(cl_id,'aspoc');
+         if isnan(ASPOC)
+           c_ctl('load_aspoc_active', [c_ctl(5,'data_path') '/caa-control']);
+           ASPOC = c_ctl(cl_id,'aspoc');
+         end
 
          % Export empty file if TM, BB or EB data exist
         % Check for TM data
@@ -497,10 +498,6 @@ for dd = 1:length(dirs)
        end
    elseif strcmp(caa_vs, 'BB')
        if lev==2
-         if isempty(c_ct)
-            c_ctl('load_bad_ib', [c_ctl(5,'data_path') '/caa-control'])
-         end
-
          % Export empty file if TM, PB or EB data exist. Ex 110227205958we.03
          % Check for TM data
          mfn='./mEFWburstTM.mat'; % For tm
@@ -575,10 +572,6 @@ for dd = 1:length(dirs)
        end
    elseif strcmp(caa_vs, 'EB')
        if lev==2
-         if isempty(c_ct)
-            c_ctl('load_bad_ib', [c_ctl(5,'data_path') '/caa-control'])
-         end
-
          % Export empty file if TM, PB or BB data exist. Ex 110227205958we.03
          % Check for TM data
          mfn='./mEFWburstTM.mat'; % For tm
@@ -709,10 +702,11 @@ for dd = 1:length(dirs)
        end
        % Check for bad iburst file
        if regexp(caa_vs,'^(P|E|B)B$')   % working on multiple iburst in 24h
-         if isempty(c_ctl(cl_id,'badib'))
-           c_ctl('load_bad_ib', [c_ctl(5,'data_path') '/caa-control']);
-         end
          badiburst = c_ctl(cl_id,'badib');
+         if isnan(badiburst)
+           c_ctl('load_bad_ib', [c_ctl(5,'data_path') '/caa-control']);
+           badiburst = c_ctl(cl_id,'badib');
+         end
          tint = irf_tlim(badiburst,t_int_full);
          if ~isempty(tint) % remove iburst
            for i=1:size(tint,1)
