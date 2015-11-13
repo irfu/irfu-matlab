@@ -15,7 +15,7 @@ clean:
         CC_CH_AUX_MAARBLE_G1[1-2]_ULF_PC12.ceh \
         CC_CH_AUX_MAARBLE_G1[1-2]_ULF_PC35.ceh \
         CC_CH_AUX_MAARBLE_G1[1-2]_ULF_FACMATR.ceh \
-	C[1-4]_CP_EFW_L1_*_V00.cef
+	C[1-4]_CP_EFW_*_V00.cef
 
 upload-maarble-irf:
 	ls *.ceh| grep -v CX | grep -v THZ | grep -v GZZ | xargs -I % cp % /data/caa/MAARBLE/Upload/irf/HEADERS/
