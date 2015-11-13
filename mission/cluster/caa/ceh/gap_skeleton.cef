@@ -1,14 +1,14 @@
 !-------------------- CEF ASCII FILE --------------------|
 ! created on __GENERATION_DATE__ UTC
 !--------------------------------------------------------|
-FILE_NAME = "CXXX_CP_EFW_L1_PYYY__20120101_V00.cef"
+FILE_NAME = "CXXX_CP_EFW_YYY__ZZZ_V00.cef"
 FILE_FORMAT_VERSION = "CEF-2.0"
 END_OF_RECORD_MARKER = "$"
 include = "CL_CH_MISSION.ceh"
 include = "CXXX_CH_OBS.ceh"
 include = "CL_CH_EFW_EXP.ceh"
 include = "CXXX_CH_EFW_INST.ceh"
-include = "CXXX_CH_EFW_L1_PYYY.ceh"
+include = "CXXX_CH_EFW_YYY.ceh"
 START_META     =   FILE_TYPE
    ENTRY       =   "cef"
 END_META       =   FILE_TYPE

@@ -1,7 +1,7 @@
-function status = caa_export_cef(lev,caa_vs,cl_id,QUALITY,DATA_VERSION,sp,st,dt) %#ok<INUSL>
+function [status, nRecExp, data] = caa_export_cef(lev,caa_vs,cl_id,QUALITY,DATA_VERSION,sp,st,dt) %#ok<INUSL>
 %CAA_EXPORT_CEF  export data to CAA CEF files
 %
-% STATUS = caa_export(data_level,caa_vs,cl_id,QUALITY,DATA_VERSION,sp,st,dt)
+% [STATUS, NREC] = caa_export(data_level,caa_vs,cl_id,QUALITY,DATA_VERSION,sp,st,dt)
 %
 % CEF file is written to a current directory. Data is supposed to be also 
 % there, if SP is not specified.
@@ -10,6 +10,7 @@ function status = caa_export_cef(lev,caa_vs,cl_id,QUALITY,DATA_VERSION,sp,st,dt)
 % DATA_VERSION - string, for example '01'
 %
 % STATUS = 0 means everything went OK
+% NREC - number of exported records
 %
 % See also C_EXPORT_ASCII
 
@@ -19,8 +20,6 @@ function status = caa_export_cef(lev,caa_vs,cl_id,QUALITY,DATA_VERSION,sp,st,dt)
 % can do whatever you want with this stuff. If we meet some day, and you think
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
-
-global c_ct
 
 status = 0;
 
@@ -177,8 +176,9 @@ for dd = 1:length(dirs)
      ok(4) = 0; data = [data {[]}]; %#ok<AGROW> % p42 is LX only!
      [okLX, dataLX] = ...
        c_load(sprintf('DadcLX%dp?', cl_id),cl_id,'res',ppList);   % Load LX data.
-     idx12 = (ppList==12 | ppList==32 | ppList==42) & okLX;
-     idx34 = ppList==34 & okLX;
+     % Indices where we have LX but no HX data
+     idx12 = (ppList==12 | ppList==32 | ppList==42) & okLX & ~ok;
+     idx34 = ppList==34 & okLX & ~ok;
      if any(idx12) && ( (flag_lx && sfit_probe~=34) ||...
          ~any(sfit_probe~=34 & ok) )
        data(idx12) = dataLX(idx12); ok(idx12) = okLX(idx12);
@@ -196,10 +196,12 @@ for dd = 1:length(dirs)
        end
      end
    elseif strcmp(caa_vs, 'P')
-      if isempty(c_ct)
-         c_ctl('load_aspoc_active', [c_ctl(5,'data_path') '/caa-control']);
-      end
-      ASPOC = c_ctl(cl_id,'aspoc');
+     ASPOC = c_ctl(cl_id,'aspoc');
+     if isnan(ASPOC)
+       c_ctl('load_aspoc_active', [c_ctl(5,'data_path') '/caa-control']);
+       ASPOC = c_ctl(cl_id,'aspoc');
+     end
+      
 
       if lev == 2
           pvar = 'P?';
@@ -261,7 +263,7 @@ for dd = 1:length(dirs)
        else
          [ok,spf34] = c_load('diEs?p34',cl_id);
          if ~ok || isempty(spf34)
-           [ok,spf34,msg] = c_load('diELXs?p34',cl_id);
+           [ok,spf34] = c_load('diELXs?p34',cl_id);
            if ~ok || isempty(spf34), no_p34 = 1; end
          end
        end
@@ -277,7 +279,9 @@ for dd = 1:length(dirs)
          [ok,spfD] = c_load(irf_ssub('diELXs?p!',cl_id,ppOther));
          if ~ok || isempty(spfD), no_p12 = 1; irf_log('load'), end
        else
-         [ok,spfD] = c_load(irf_ssub('diEs?p!',cl_id,ppOther));
+         if ppOther==42, ok = false; % Only LX for p42
+         else [ok,spfD] = c_load(irf_ssub('diEs?p!',cl_id,ppOther));
+         end
          if ~ok || isempty(spfD)
            [ok,spfD] = c_load(irf_ssub('diELXs?p!',cl_id,ppOther));
            if ~ok || isempty(spfD), no_p12 = 1; end
@@ -395,10 +399,11 @@ for dd = 1:length(dirs)
      end
    elseif strcmp(caa_vs, 'PB')
        if lev==2
-         if isempty(c_ct)
-            c_ctl('load_aspoc_active', [c_ctl(5,'data_path') '/caa-control']);
-         end
          ASPOC = c_ctl(cl_id,'aspoc');
+         if isnan(ASPOC)
+           c_ctl('load_aspoc_active', [c_ctl(5,'data_path') '/caa-control']);
+           ASPOC = c_ctl(cl_id,'aspoc');
+         end
 
          % Export empty file if TM, BB or EB data exist
         % Check for TM data
@@ -493,10 +498,6 @@ for dd = 1:length(dirs)
        end
    elseif strcmp(caa_vs, 'BB')
        if lev==2
-         if isempty(c_ct)
-            c_ctl('load_bad_ib', [c_ctl(5,'data_path') '/caa-control'])
-         end
-
          % Export empty file if TM, PB or EB data exist. Ex 110227205958we.03
          % Check for TM data
          mfn='./mEFWburstTM.mat'; % For tm
@@ -571,10 +572,6 @@ for dd = 1:length(dirs)
        end
    elseif strcmp(caa_vs, 'EB')
        if lev==2
-         if isempty(c_ct)
-            c_ctl('load_bad_ib', [c_ctl(5,'data_path') '/caa-control'])
-         end
-
          % Export empty file if TM, PB or BB data exist. Ex 110227205958we.03
          % Check for TM data
          mfn='./mEFWburstTM.mat'; % For tm
@@ -675,9 +672,17 @@ for dd = 1:length(dirs)
        vs, epoch2iso(t_int(1),1), epoch2iso(t_int(2),1)))
 
      if strcmp(caa_vs, 'DER')
+       % Take data in the following order: p12, p32, p42
+       if ~isempty(data{1}), data1 = data{1};
+       elseif  ~isempty(data{2}), data1 = data{2};
+       elseif  ~isempty(data{4}), data1 = data{4};
+       else data1 = [];
+       end
        % Limit data to both time interval given as input, and time interval read from file.
-       data1 = irf_tlim([data{[1 2 4]}], t_int_full);
-       data1 = irf_tlim(data1, t_int);
+       if ~isempty(data1)
+         data1 = irf_tlim(data1, t_int_full);
+         data1 = irf_tlim(data1, t_int);
+       end
        data2 = irf_tlim(data{3}, t_int_full);
        data2 = irf_tlim(data2, t_int);
        if isempty(data1) && isempty(data2)
@@ -697,10 +702,11 @@ for dd = 1:length(dirs)
        end
        % Check for bad iburst file
        if regexp(caa_vs,'^(P|E|B)B$')   % working on multiple iburst in 24h
-         if isempty(c_ctl(cl_id,'badib'))
-           c_ctl('load_bad_ib', [c_ctl(5,'data_path') '/caa-control']);
-         end
          badiburst = c_ctl(cl_id,'badib');
+         if isnan(badiburst)
+           c_ctl('load_bad_ib', [c_ctl(5,'data_path') '/caa-control']);
+           badiburst = c_ctl(cl_id,'badib');
+         end
          tint = irf_tlim(badiburst,t_int_full);
          if ~isempty(tint) % remove iburst
            for i=1:size(tint,1)
@@ -986,7 +992,8 @@ if ~isempty(data)
     end
 end
 
-irf_log('save', sprintf('Writing %d records',size(data,1)))
+nRecExp = size(data,1);
+irf_log('save', sprintf('Writing %d records',nRecExp))
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Write to file
 ext_s = '.cef';
