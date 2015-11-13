@@ -2,21 +2,25 @@ function J=current(Probe,vectorU,rSunAU,factorUV,Plasma)
 % LP.CURRENT calculate current to the probe
 % J=LP.CURRENT(Probe,vectorU,rSunAU,factorUV,Plasma)
 %
-%   Calculates the total probe current to/from a Lanmuir probe
+%   Calculates the total probe current to/from a Langmuir probe
 %   consisting of cylinder/wire and sphere. Return current contributions:
-%			J.probe - total probe current
+%			J.total - total probe current
 %     J.photo - photoeletron current
 %    J.plasma - current of different plasma components
 %
 % Input:
-%  probe.type    - 'spherical','cylindrical','arbitrary'
-%  probe.surface - 'themis','cassini' (one of flags in lp.photocurrent)
-%  probe.cross_section_area - in m2
-%  probe.total_area - in m2
+%  Probe      - describes probe properties (structure or object)
+%   Probe.Area.sunlit - total sunlit area [m^2] 
+%   Probe.Area.sphere - area of the sphere
+%   Probe.Area.wire   - area of the wire 
+%   Probe.surface     - 'themis','cassini' (one of flags in lp.photocurrent)
+%   Probe.areaSunlit  - use this if Area.sunlit not defined
+%   Probe.areaTotal   - use this if Area.sphere and Area.wire are not
+%                       defined, assume in this case sphere
 %  vectorU    - probe potential (can be vector or matrix)
 %  rSunAU     - distance from sun in AU
 %  factorUV   - default is 1
-%  Plasma     - describes plasma components (structure)
+%  Plasma     - describes plasma components (structure or object)
 %    Plasma.q - charge of species in e (the length of this vector corresponds to number of species)
 %    Plasma.m - mass of species in proton masses (0 corresponds to e- mass)
 %    Plasma.n - density of species [cc]
@@ -28,9 +32,15 @@ function J=current(Probe,vectorU,rSunAU,factorUV,Plasma)
 nPlasmaSpecies=numel(Plasma.q);
 J.plasma=cell(nPlasmaSpecies,1);
 
-J.photo = -lp.photocurrent(Probe.Area.sunlit, vectorU, rSunAU,Probe.surfacePhotoemission);
+if isprop(Probe,'Area')
+	areaSunlit = Probe.Area.sunlit;
+else
+	areaSunlit = Probe.areaSunlit;
+end
+
+J.photo = -lp.photocurrent(areaSunlit, vectorU, rSunAU,Probe.surfacePhotoemission);
 J.photo = J.photo .* factorUV;
-J.probe=J.photo; % initialize
+J.total=J.photo; % initialize
 for ii=1:nPlasmaSpecies,
 	% density n
 	q=Plasma.q(ii);
@@ -59,7 +69,7 @@ for ii=1:nPlasmaSpecies,
 	end
 	J_thi = thermal_current(Probe,n,T,m,v,q,vectorU);
 	J.plasma{ii}=-sign(q)*J_thi; % positive current away from probe
-	J.probe=J.probe+J.plasma{ii};
+	J.total=J.total+J.plasma{ii};
 end
 end
 
@@ -120,7 +130,12 @@ indNegativeU = find( vectorU < 0 );
 
 % Spherical body case.
 %%%%%%%%%%%%%%%%%%%%%%
-A = Lprobe.Area.sphere;
+if isprop(Lprobe,'Area')
+	A = Lprobe.Area.sphere;
+else
+	A = Lprobe.areaTotal;
+end
+
 Ip = A*fluxIp;
 
 if q > 0,
@@ -135,25 +150,30 @@ end
 % Cylindrical body case.
 %%%%%%%%%%%%%%%%%%%%%%%%
 
-A = Lprobe.Area.wire;
-Ip = A*fluxIp;
-
-sq         = zeros(size(vectorU));
-%     erfv       = zeros( U_pts, 1 );
-
-sq(indNegativeU) = sqrt( abs(-X(indNegativeU)) );
-sq(indPositiveU) = sqrt( abs(+X(indPositiveU)) );
-erfv = erf( sq );
-
-if q > 0,
-	jThermalWire(indPositiveU) = Ip .* exp(-X(indPositiveU));
-	jThermalWire(indNegativeU) = Ip .* ( (2/sqrt(pi)) .* sq(indNegativeU) ...
-		+ exp(-X(indNegativeU)) .* (1.0 - erfv(indNegativeU)) );
-elseif q < 0,
-	jThermalWire(indNegativeU) = Ip .* exp(X(indNegativeU));
-	jThermalWire(indPositiveU) = Ip .* ( (2.0/sqrt(pi)) .* sq(indPositiveU) ...
-		+ exp(+X(indPositiveU)) .* (1.0 - erfv(indPositiveU)) );
+if isprop(Lprobe,'Area')
+	A = Lprobe.Area.wire;
+	Ip = A*fluxIp;
+	
+	sq         = zeros(size(vectorU));
+	%     erfv       = zeros( U_pts, 1 );
+	
+	sq(indNegativeU) = sqrt( abs(-X(indNegativeU)) );
+	sq(indPositiveU) = sqrt( abs(+X(indPositiveU)) );
+	erfv = erf( sq );
+	
+	if q > 0,
+		jThermalWire(indPositiveU) = Ip .* exp(-X(indPositiveU));
+		jThermalWire(indNegativeU) = Ip .* ( (2/sqrt(pi)) .* sq(indNegativeU) ...
+			+ exp(-X(indNegativeU)) .* (1.0 - erfv(indNegativeU)) );
+	elseif q < 0,
+		jThermalWire(indNegativeU) = Ip .* exp(X(indNegativeU));
+		jThermalWire(indPositiveU) = Ip .* ( (2.0/sqrt(pi)) .* sq(indPositiveU) ...
+			+ exp(+X(indPositiveU)) .* (1.0 - erfv(indPositiveU)) );
+	end
+else
+	jThermalWire=0;
 end
+
 
 jThermal = jThermalSphere + jThermalWire;
 

@@ -63,7 +63,7 @@ classdef ui < handle
 			obj.probeUsed = 2;
 			obj.plasmaUsed = 2;
 			obj.set_plasma_model(obj.plasmaUsed);
-			obj.set_probe_type(  obj.probeUsed);
+			obj.set_probe_model(  obj.probeUsed);
 		end
 		function new_ide(obj)
 			%% initialize figure
@@ -99,7 +99,7 @@ classdef ui < handle
 			popupProbeTxt        = obj.popup_list(obj.ProbeList);
 			popupProbeSurfaceTxt = obj.popup_list(obj.ProbeSurfaceList);
 			inp.probe.type.text                 = uicontrol(uiPar{:},'String','type','style','text',   'Position',[0   230 60   20]);
-			inp.probe.type.value                = uicontrol(uiPar{:},'String',popupProbeTxt,           'Position',[60  230 130  20],'style','popup','Callback',@(src,evt)obj.set_probe_type(src,evt));
+			inp.probe.type.value                = uicontrol(uiPar{:},'String',popupProbeTxt,           'Position',[60  230 130  20],'style','popup','Callback',@(src,evt)obj.set_probe_model(src,evt));
 			inp.probe.surface.text              = uicontrol(uiPar{:},'String','surface',               'Position',[0   210 60   20]);
 			inp.probe.surface.value             = uicontrol(uiPar{:},'String',popupProbeSurfaceTxt,    'Position',[60  210 130  20],'style','popup','Callback',@(src,evt)obj.set_probe_surface(src,evt));
 			inp.probe.surfacePhotoemission.text = uicontrol(uiPar{:},'String','Iph @1AU,UV=1 [uA/m2]', 'Position',[0   190 120 20],'style','text');
@@ -177,6 +177,7 @@ classdef ui < handle
 			obj.UserData      = ud;
 			
 		end
+		
 		function set_plasma_model(obj,varargin)
 			if nargin == 2 && any(strcmpi('user defined',varargin{1})),  %set_plasma_model(obj,'user defined')
 				obj.plasmaUsed = 1;
@@ -231,81 +232,13 @@ classdef ui < handle
 			v = eval(['[' vStr ']'])*1e3; % [km/s] > [m/s]
 			obj.set_user_defined_if_plasma_changes('v',v)
 		end
-		function set_probe_type(obj,varargin)
-			if nargin == 2 && any(strcmpi('user defined',varargin{1})),  %set_probe_type(obj,'user defined')
-				idProbe = 1;
-			elseif nargin == 2 && isnumeric(varargin{1}), %set_probe_type(obj,numberOfProbe)
-				idProbe = varargin{1};
-			elseif nargin == 3, %set_probe_type(obj,hEvent,event)
-				hEvent = varargin{1};
-				idProbe = get(hEvent,'Value');
-			end
-			obj.probeUsed = idProbe;
-			obj.update_probe_area_total_vs_sunlit;
-			obj.set_probe_surface;
-			obj.set_probe_radius_sphere(obj.ProbeList(idProbe).radiusSphere);
-			obj.set_probe_radius_wire(  obj.ProbeList(idProbe).radiusWire);
-			obj.set_probe_length_wire(  obj.ProbeList(idProbe).lengthWire);
-			set(obj.UserData.inp.probe.type.value,'Value',idProbe);
-		end
-		function set_probe_surface(obj,varargin)
-			if nargin == 1,
-				probeParameters = obj.ProbeList(obj.probeUsed);
-				idProbeSurface = find(strcmp(probeParameters.surface,obj.ProbeSurfaceList));
-				if idProbeSurface,
-					obj.set_probe_surface(idProbeSurface);
-				else
-					irf.log('critical',[surface '''' probeParameters.surface ''' is unknown by lp.photocurrent.']);
-				end
-			elseif nargin == 2 && isnumeric(varargin{1}), %set_probe_type(obj,numberOfSurface)
-				obj.probeSurfaceUsed = varargin{1};
-				set(obj.UserData.inp.probe.surface.value,'value',obj.probeSurfaceUsed);
-				set(obj.UserData.inp.probe.surfacePhotoemission.value,...
-					'String',num2str(obj.ProbeSurfacePhotoemission(obj.probeSurfaceUsed)*1e6));
-			elseif nargin == 3, %set_probe_type(obj,hEvent,event)
-				hEvent = varargin{1};
-				idProbeSurface = get(hEvent,'Value');
-				obj.set_probe_surface(idProbeSurface);
-			end
-		end
-		function get_probe_surface(obj)
-			surfacePhotoemissionMicroA = obj.UserData.inp.probe.surfacePhotoemission.value.String; % in cm
-			if isempty(surfacePhotoemissionMicroA), surfacePhotoemissionMicroA = '0'; end
-			surfacePhotoemission = str2double(surfacePhotoemissionMicroA)*1e-6;
-			if surfacePhotoemission ~= obj.ProbeSurfacePhotoemission(obj.probeSurfaceUsed)
-				obj.ProbeSurfacePhotoemission(1) = surfacePhotoemission;
-				obj.set_probe_surface(1);
-			end
-		end
-		function set_probe_radius_sphere(obj,radiusSphere)
-			set(obj.UserData.inp.probe.radiusSphere.value,...
-				'String',num2str( radiusSphere/obj.UserData.inp.probe.radiusSphere.SIconversion,2 ));
-			obj.update_probe_area_total_vs_sunlit;
-		end
-		function get_probe_radius_sphere(obj)
-			radiusSphereCm = get(obj.UserData.inp.probe.radiusSphere.value,'String'); % in cm
-			if isempty(radiusSphereCm), radiusSphereCm = 0; end
-			radiusSphere = str2double(radiusSphereCm)*1e-2;
-			obj.set_user_defined_if_probe_changes('radiusSphere',radiusSphere)
-		end
-		function get_probe_radius_wire(obj)
-			radiusWireCm = get(obj.UserData.inp.probe.radiusWire.value,'String'); % in cm
-			if isempty(radiusWireCm), radiusWireCm = 0; end
-			radiusWire = str2double(radiusWireCm)*1e-2;
-			obj.set_user_defined_if_probe_changes('radiusWire',radiusWire)
-		end
-		function get_probe_length_wire(obj)
-			lengthWireCm = get(obj.UserData.inp.probe.lengthWire.value,'String'); % in cm
-			if isempty(lengthWireCm), lengthWireCm = 0; end
-			lengthWire = str2double(lengthWireCm)*1e-2;
-			obj.set_user_defined_if_probe_changes('lengthWire',lengthWire)
-		end
+		
 		function set_sc_model(obj,varargin)
-			if nargin == 2 && any(strcmpi('user defined',varargin{1})),  %set_plasma_model(obj,'user defined')
+			if nargin == 2 && any(strcmpi('user defined',varargin{1})),  %set_sc_model(obj,'user defined')
 				obj.spacecraftUsed = 1;
 				set(obj.UserData.inp.spacecraft.typeValue,'Value',1);
 				return;
-			elseif nargin == 2 && isnumeric(varargin{1}), %set_plasma_model(obj,numberInPlasmaList)
+			elseif nargin == 2 && isnumeric(varargin{1}), %set_sc_model(obj,numberInSpacecraftList)
 				idSpacecraft = varargin{1};
 			elseif nargin == 3, %set_plasma_type(obj,hEvent,event)
 				hEvent = varargin{1};
@@ -358,6 +291,76 @@ classdef ui < handle
 			obj.InputParameters.vectorUString = vectorUString;
 			obj.InputParameters.vectorU = eval(vectorUString);
 		end
+		
+		function set_probe_model(obj,varargin)
+			if nargin == 2 && any(strcmpi('user defined',varargin{1})),  %set_probe_model(obj,'user defined')
+				idProbe = 1;
+			elseif nargin == 2 && isnumeric(varargin{1}), %set_probe_model(obj,numberOfProbe)
+				idProbe = varargin{1};
+			elseif nargin == 3, %set_probe_model(obj,hEvent,event)
+				hEvent = varargin{1};
+				idProbe = get(hEvent,'Value');
+			end
+			obj.probeUsed = idProbe;
+			obj.update_probe_area_total_vs_sunlit;
+			obj.set_probe_surface;
+			obj.set_probe_radius_sphere(obj.ProbeList(idProbe).radiusSphere);
+			obj.set_probe_radius_wire(  obj.ProbeList(idProbe).radiusWire);
+			obj.set_probe_length_wire(  obj.ProbeList(idProbe).lengthWire);
+			set(obj.UserData.inp.probe.type.value,'Value',idProbe);
+		end
+		function set_probe_surface(obj,varargin)
+			if nargin == 1,
+				probeParameters = obj.ProbeList(obj.probeUsed);
+				idProbeSurface = find(strcmp(probeParameters.surface,obj.ProbeSurfaceList));
+				if idProbeSurface,
+					obj.set_probe_surface(idProbeSurface);
+				else
+					irf.log('critical',[surface '''' probeParameters.surface ''' is unknown by lp.photocurrent.']);
+				end
+			elseif nargin == 2 && isnumeric(varargin{1}), %set_probe_model(obj,numberOfSurface)
+				obj.probeSurfaceUsed = varargin{1};
+				set(obj.UserData.inp.probe.surface.value,'value',obj.probeSurfaceUsed);
+				set(obj.UserData.inp.probe.surfacePhotoemission.value,...
+					'String',num2str(obj.ProbeSurfacePhotoemission(obj.probeSurfaceUsed)*1e6));
+			elseif nargin == 3, %set_probe_model(obj,hEvent,event)
+				hEvent = varargin{1};
+				idProbeSurface = get(hEvent,'Value');
+				obj.set_probe_surface(idProbeSurface);
+			end
+		end
+		function get_probe_surface(obj)
+			surfacePhotoemissionMicroA = obj.UserData.inp.probe.surfacePhotoemission.value.String; % in cm
+			if isempty(surfacePhotoemissionMicroA), surfacePhotoemissionMicroA = '0'; end
+			surfacePhotoemission = str2double(surfacePhotoemissionMicroA)*1e-6;
+			if surfacePhotoemission ~= obj.ProbeSurfacePhotoemission(obj.probeSurfaceUsed)
+				obj.ProbeSurfacePhotoemission(1) = surfacePhotoemission;
+				obj.set_probe_surface(1);
+			end
+		end
+		function set_probe_radius_sphere(obj,radiusSphere)
+			set(obj.UserData.inp.probe.radiusSphere.value,...
+				'String',num2str( radiusSphere/obj.UserData.inp.probe.radiusSphere.SIconversion,2 ));
+			obj.update_probe_area_total_vs_sunlit;
+		end
+		function get_probe_radius_sphere(obj)
+			radiusSphereCm = get(obj.UserData.inp.probe.radiusSphere.value,'String'); % in cm
+			if isempty(radiusSphereCm), radiusSphereCm = 0; end
+			radiusSphere = str2double(radiusSphereCm)*1e-2;
+			obj.set_user_defined_if_probe_changes('radiusSphere',radiusSphere)
+		end
+		function get_probe_radius_wire(obj)
+			radiusWireCm = get(obj.UserData.inp.probe.radiusWire.value,'String'); % in cm
+			if isempty(radiusWireCm), radiusWireCm = 0; end
+			radiusWire = str2double(radiusWireCm)*1e-2;
+			obj.set_user_defined_if_probe_changes('radiusWire',radiusWire)
+		end
+		function get_probe_length_wire(obj)
+			lengthWireCm = get(obj.UserData.inp.probe.lengthWire.value,'String'); % in cm
+			if isempty(lengthWireCm), lengthWireCm = 0; end
+			lengthWire = str2double(lengthWireCm)*1e-2;
+			obj.set_user_defined_if_probe_changes('lengthWire',lengthWire)
+		end
 		function set_probe_radius_wire(obj,radiusWire)
 			set(obj.UserData.inp.probe.radiusWire.value,...
 				'String',num2str(radiusWire/obj.UserData.inp.probe.radiusWire.SIconversion,2));
@@ -376,6 +379,7 @@ classdef ui < handle
 			set(obj.UserData.inp.probe.areaTotalVsSunlit.value,...
 				'String',num2str(obj.ProbeList(obj.probeUsed).Area.totalVsSunlit,3));
 		end
+		
 		function calculate_ui(obj)
 			doModelSpacecraft = obj.UserData.inp.doModelSc.Value;
 			if doModelSpacecraft
@@ -394,23 +398,23 @@ classdef ui < handle
 				obj.InputParameters.factorUV,...
 				obj.PlasmaList(obj.plasmaUsed));
 			obj.Output.J = jProbe;
-			obj.Output.dUdI=gradient(obj.InputParameters.vectorU,obj.Output.J.probe);
+			obj.Output.dUdI=gradient(obj.InputParameters.vectorU,obj.Output.J.total);
 		end
 		function get_probe_and_spacecraft_current(obj)
 			obj.get_probe_current;
 			Upot   = obj.InputParameters.vectorU;
-			jProbe = obj.Output.J.probe;
+			jProbe = obj.Output.J.total;
 			obj.Output.J.sc=lp.current(obj.SpacecraftList(obj.spacecraftUsed),...
 				Upot,...
 				obj.InputParameters.rSunAU,...
 				obj.InputParameters.factorUV,...
 				obj.PlasmaList(obj.plasmaUsed));
-			ud.dUdI.sc=gradient(Upot,obj.Output.J.sc);
+			ud.dUdI.sc=gradient(Upot,obj.Output.J.sc.total);
 			% reduce probe curve to reasonable number of points (derivative does
 			% not change more than 10% between points
 			ind=ones(size(Upot));
 			ilast=1;
-			slopechange=0.2; % how long slope change is allowed
+			slopechange=0.2; % how much slope change is allowed
 			dudi=gradient(Upot,jProbe);
 			for ii=2:numel(Upot)
 				if abs((dudi(ii)-dudi(ilast))/dudi(ilast))<slopechange && Upot(ii)-Upot(ilast)<.4
@@ -521,7 +525,7 @@ classdef ui < handle
 			biasCurrentMicroA = 1e6*biasCurrentA;
 			flagBias = biasCurrentMicroA ~= 0 && biasCurrentA>min(J.probe) && -biasCurrentA<max(J.probe);
 
-			plot(h,vecU, J.probe*1e6,'k');
+			plot(h,vecU, J.total*1e6,'k');
 			set(h,'xlim',[min(vecU) max(vecU)]);
 			grid(h,'on');
 			xlabel(h,'U [V]');
@@ -571,8 +575,8 @@ classdef ui < handle
 					' fcr =' num2str(fcr,3) 'Hz.'];
 			end
 			
-			if min(J.probe)<0 && max(J.probe)>0, % display information on Ufloat
-				Ufloat=interp1(J.probe,vecU,0);    % floating potential
+			if min(J.total)<0 && max(J.total)>0, % display information on Ufloat
+				Ufloat=interp1(J.total,vecU,0);    % floating potential
 				ii=isfinite(vecU);
 				Rfloat=interp1(vecU(ii),dUdI(ii),Ufloat);
 				fcr=1/2/pi/Rfloat/probe.capacitance;
@@ -652,7 +656,7 @@ classdef ui < handle
 				obj.ProbeList(1) = obj.ProbeList(obj.probeUsed);
 				obj.ProbeList(1).(idString) = vector;
 				obj.update_probe_area_total_vs_sunlit;
-				obj.set_probe_type('user defined');
+				obj.set_probe_model('user defined');
 			end
 		end
 		function set_user_defined_if_sc_changes(obj,idString,vector)
