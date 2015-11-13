@@ -1,264 +1,50 @@
 function mms_sdc_sdp_proc( procName, varargin)
-% MMS_SDC_SDP_PROC main starting point for MMS SDC processing.
-%	MMS_SDC_SDP_PROC('processingType', '/pathTo/input/file1.cdf', ...
-%   '/pathTo/input/file2.cdf', ...); will start the MMS processing for
-%   processing types "ql" and "scpot" which is to be performed at
-%   SDC. If not all needed cdf files are provided, but all required cdf 
-%   required cdf files are only some parts of the processing can occur. 
-%
-%	Example:
-%   Full quicklook ("ql") processing, with all needed cdf files as input,
-%		mms_sdc_sdp_proc('ql',...
-%         '/path/mms2_edp_fast_dce_20150410_v0.0.1.cdf, ...
-%         '/path/mms2_edp_fast_dcv_20150410_v0.0.0.cdf', ...
-%         '/path/mm2_fields_hk_101_20150410_v0.0.2.cdf');
+% MMS_SDC_SDP_PROC2 NEW startup function for MMS processing. Rely on DEFATT
+% files for phase calculations, if they are present in the DATA_PATH_ROOT
+% instead of hk 101 sunpulses.
 %
 % 	See also MMS_SDC_SDP_INIT, MMS_SDP_DMGR.
 
-% Store runTime when script was called.
-runTime = datestr(now,'yyyymmddHHMMSS'); % Use this time to ease for SDC to
-% find output file created. An empty file is to be created with its
-% filename being the same as that of the dataproduct created appended with
-% _runTime.txt and placed in ENVIR.LOG_PATH_ROOT.
+% Store runTime when script was called. To ease for SDC, create an empty
+% file with name being the same as output file created and suffix
+% _runTime.txt placed in "($LOG_PATH_ROOT)/mmsX/edp/"
+runTime = datestr(now,'yyyymmddHHMMSS'); 
 
 global ENVIR MMS_CONST;
 
-narginchk(2,6);
-
+% Setup irfu-matlab
 init_matlab_path()
+
+% Load global contants.
+if isempty(MMS_CONST), MMS_CONST = mms_constants(); end
 
 HK_101_File = ''; % HK with sunpulse, etc.
 HK_105_File = ''; % HK with sweep status etc.
 HK_10E_File = ''; % HK with bias guard settings etc.
-HK_101_File2 = ''; % Second HK 101 file, when processing over midnight.
-HK_105_File2 = ''; % Same corresponding HK 105
-HK_10E_File2 = ''; % Same corresponding HK 10E
 ACE_File = '';
+ASPOC_File = '';
+DFG_File = ''; % B-field, L2Pre
 DCV_File = '';
 DCE_File = '';
-DEFATT_File = ''; % Defatt file used for l2pre
-DEFATT_File2 = ''; % Second defatt file, when processing over defatt file crossing.
-L2Pre_File = ''; % L2Pre file (output from L2pre process is input in L2A?)
-HeaderInfo = [];
+L2A_File = ''; % L2A file, contain offsets from fast/slow to be used by brst and for L2Pre process.
+DEFATT_File = ''; % Defatt file used for l2pre or reprocessing of QL.
+HdrInfo = [];
 
-if isempty(MMS_CONST), MMS_CONST = mms_constants(); end
-
-% First argument is and should always be which mode to run.
-% QuickLook, SCPOT or SITL. (Is static in the bash script that starts Matlab)
-if ~ischar(procName)
-    error('Matlab:MMS_SDC_SDP_PROC:Input', ...
-    'MMS_SDC_SDP_PROC first argument must be a string');
-end
-[~,procId] = intersect( MMS_CONST.SDCProcs, lower(procName));
-if isempty(procId)
-  error('Matlab:MMS_SDC_SDP_PROC:Input', ...
-    'MMS_SDC_SDP_PROC first argument must be one of: %s',...
-    mms_constants2string('SDCProcs'));
-end
-procName = upper(procName);
-irf.log('notice', ['Starting process: ', procName]);
-
-%% Process inpit
-for i=1:nargin-1
-    if isempty(varargin{i}), continue, end
-    
-    % Go through each input argument and find if it is a HK_101_File,
-    % DCV_File or DCE_File.
-    if ~ischar(varargin{i})
-      error('Matlab:MMS_SDC_SDP_PROC:Input', ...
-          'MMS_SDC_SDP_PROC input arguments must be strings.');
-    end
-    
-    [pathIn, fileIn, extIn] = fileparts(varargin{i});
-    if any([isempty(pathIn), isempty(fileIn), isempty(extIn)])
-        error('Matlab:MMS_SDC_SDP_PROC', ...
-            ['MMS_SDC_SDP_PROC expecting cdf file (full path), got: ', ...
-            varargin{i}]);
-    end
-      
-    if i==1
-        % Setup log and environment.
-        scNumberStr = fileIn(4);
-        ENVIR = mms_sdc_sdp_init(scNumberStr);
-        scId = str2double(scNumberStr);
-        HeaderInfo.numberStr = scNumberStr;
-        tmModeStr = fileIn(10:13);
-        [~,tmMode] = intersect( MMS_CONST.TmModes, tmModeStr);
-        if isempty(tmMode)
-          errStr = ['Invalid file name: unrecognized tmMode( ' tmModeStr ...
-            '), must be one of: ' mms_constants2string('TmModes')];
-          irf.log('critical', errStr);
-          error(errStr)
-        end
-        if (tmMode==MMS_CONST.TmMode.comm)
-          % Special case, Commissioning data, identify samplerate.
-          irf.log('notice',...
-            'Commissioning data, trying to identify samplerate from filename.');
-          if regexpi(fileIn, '_dc[ev]8_') % _dcv8_ or _dce8_
-            samplerate = MMS_CONST.Samplerate.comm_8;
-          elseif regexpi(fileIn, '_dc[ev]32_') % _dcv32_ or _dce32_
-            samplerate = MMS_CONST.Samplerate.comm_32;
-          elseif regexpi(fileIn, '_dc[ev]64_') % _dcv64_ or _dce64_
-            samplerate = MMS_CONST.Samplerate.comm_64;
-          elseif regexpi(fileIn, '_dc[ev]128_') % _dcv128_ or _dce128_
-            samplerate = MMS_CONST.Samplerate.comm_128;
-          else
-            % Possibly try to look at "dt" from Epoch inside of file? For
-            % now just default to first TmMode (slow).
-            irf.log('warning',...
-              ['Unknown samplerate for Commissioning data from file: ',...
-              fileIn]);
-            irf.log('warning', ['Defaulting samplerate to ',...
-              MMS_CONST.Samplerate.(MMS_CONST.TmModes{1})]);
-            samplerate = MMS_CONST.Samplerate.(MMS_CONST.TmModes{1});
-          end
-          Dmgr = mms_sdp_dmgr(scId, procId, tmMode, samplerate);
-        else
-          Dmgr = mms_sdp_dmgr(scId, procId,tmMode);
-        end
-    else
-        if ~strcmp(HeaderInfo.numberStr, fileIn(4))
-            err_str = ['MMS_SDC_SDP_PROC was called with one file from SC number ',...
-                HeaderInfo.numberStr, ' and one other file from SC number ', ...
-                fileIn(4), '.'];
-            irf.log('critical', err_str);
-            irf.log('critical', ...
-                ['MMS_SDC_SDP_PROC file argument ', varargin{i}, ...
-                ' does not match expected sc numbering. Aborting with error.']);
-            error('Matlab:MMS_SDC_SDP_PROC:Input', err_str);
-        end
-    end
-
-    if regexpi(fileIn, '_101_') % 101, mmsX_fields_hk_l1b_101_20150410_v0.0.1.cdf
-        if ~isempty(HK_101_File)
-            err_str = ['Received multiple HK_101 files in input (',...
-                HK_101_File, ', ', varargin{i} ')'];
-            irf.log('critical', err_str);
-            error('Matlab:MMS_SDC_SDP_PROC:Input', err_str);
-        end
-        % It is the HK_101 file
-        HK_101_File = varargin{i};
-        irf.log('notice', ['HK_101 input file: ', ...
-            HK_101_File]);
-
-    elseif regexpi(fileIn, '_10e_') % 10E, mmsX_fields_hk_l1b_10e_20150410_v0.0.1.cdf
-        if ~isempty(HK_10E_File)
-            err_str = ['Received multiple HK_10E files in input (',...
-                HK_10E_File, ', ', varargin{i} ')'];
-            irf.log('critical', err_str);
-            error('Matlab:MMS_SDC_SDP_PROC:Input', err_str);
-        end
-        % It is the HK_10E file
-        HK_10E_File = varargin{i};
-        irf.log('notice', ['HK_10E input file: ', ...
-            HK_10E_File]);
-
-    elseif regexpi(fileIn, '_105_') % 105, mmsX_fields_hk_l1b_105_20150410_v0.0.1.cdf
-        if ~isempty(HK_105_File)
-            err_str = ['Received multiple HK_105 files in input (',...
-                HK_10E_File, ', ', varargin{i} ')'];
-            irf.log('critical', err_str);
-            error('Matlab:MMS_SDC_SDP_PROC:Input', err_str);
-        end
-        % It is the HK_105 file
-        HK_105_File = varargin{i};
-        irf.log('notice', ['HK_105 input file: ', ...
-            HK_105_File]);
-
-    elseif regexpi(fileIn, '_dcv\d{0,3}_') % _dcv_ or _dcv32_ or _dcv128_
-        if ~isempty(DCV_File)
-            err_str = ['Received multiple DC V files in input (',...
-                DCV_File, ', ', varargin{i} ')'];
-            irf.log('critical', err_str);
-            error('Matlab:MMS_SDC_SDP_PROC:Input', err_str);
-        end
-        DCV_File = varargin{i};
-        irf.log('notice', ['DCV input file: ', DCV_File]);
-        
-    elseif regexpi(fileIn, '_dce\d{0,3}_') % _dce_ or _dce32_ or _dce128_
-        if ~isempty(DCE_File)
-            err_str = ['Received multiple DC E files in input (',...
-                DCE_File, ', ', varargin{i} ')'];
-            irf.log('critical', err_str);
-            error('Matlab:MMS_SDC_SDP_PROC:Input', err_str);
-        end
-        DCE_File = varargin{i};
-        irf.log('notice', ['DCE input file: ', DCE_File]);
-
-    elseif regexpi(fileIn, '_ace_') % _ace_
-        if ~isempty(ACE_File)
-            err_str = ['Received multiple AC E files in input (',...
-                ACE_File, ', ', varargin{i} ')'];
-            irf.log('critical', err_str);
-            error('Matlab:MMS_SDC_SDP_PROC:Input', err_str);
-        end
-        ACE_File = varargin{i};
-        irf.log('notice', ['ACE input file: ', ACE_File]);
-
-    elseif regexpi(fileIn, '_DEFATT_') % DEFATT
-        if ~isempty(DEFATT_File)
-            err_str = ['Received multiple DEFATT files in input (',...
-                DEFATT_File, ', ', varargin{i} ')'];
-            irf.log('critical', err_str);
-            error('Matlab:MMS_SDC_SDP_PROC:Input', err_str);
-        end
-        DEFATT_File = varargin{i};
-        irf.log('notice', ['DEFATT input file: ', DEFATT_File]);
-
-    elseif regexpi(fileIn, '_l2pre_') % L2Pre, used for L2A process.
-        if ~isempty(L2Pre_File)
-            err_str = ['Received multiple L2Pre files in input (',...
-                L2Pre_File, ', ', varargin{i} ')'];
-            irf.log('critical', err_str);
-            error('Matlab:MMS_SDC_SDP_PROC:Input', err_str);
-        end
-        L2Pre_File = varargin{i};
-        irf.log('notice', ['L2Pre input file: ', L2Pre_File]);
-        
-    else
-        % Unidentified input argument
-        err_str = ['MMS_SDC_SDP_PROC unrecognized input file: ',...
-            varargin{i}];
-        irf.log('critical', err_str);
-        error('Matlab:MMS_SDC_SDP_PROC:Input', err_str)
-    end
-end
+parse_input(procName, varargin{:});
 
 % All input arguments read. All files required identified correct?
-% QL, SITL, SCPOT use: hk101, hk10e, hk105, dce and possibly dcv (if not incl. in dce).
-% L2PRE use: defatt, hk10e, hk105, dce and possibly dcv (if not incl. in dce).
-% L2A use: l2pre.
+% QL, SCPOT req: hk101 or DEFATT, hk10e, hk105, dce and possibly dcv (if not incl. in dce).
 if any([(isempty(HK_101_File) && isempty(DEFATT_File)), isempty(DCE_File),...
-    isempty(HK_105_File), isempty(HK_10E_File)]) && isempty(L2Pre_File)
-    irf.log('warning', 'MMS_SDC_SDP_PROC missing some input.');
-    for i=1:nargin-1
-        irf.log('warning',...
-            ['MMS_SDC_SDP_PROC received input argument: ', varargin{i}]);
-    end
-elseif(isempty(DCV_File) && procId~=MMS_CONST.SDCProc.l2a )
+    isempty(HK_105_File), isempty(HK_10E_File)])
+  irf.log('warning', 'MMS_SDC_SDP_PROC missing some input.');
+  for i=1:nargin-1
+    irf.log('warning',['Received input argument: ', varargin{i}]);
+  end
+elseif(isempty(DCV_File) && procId~=MMS_CONST.SDCProc.l2pre )
   irf.log('debug','It appears we are running with the dcv data combined into dce file.');
 end
 
-%% Split possible multiple HK files, separated by one single colon, ie ":"
-% This is useful when processing data covering midnight, but same filetype
-% should not be sent in multiple arguments.
-filePart = strsplit(HK_101_File,':');
-if(size(filePart,2)==2), HK_101_File2 = filePart{2}; end
-HK_101_File = filePart{1}; % If it was empty, this will still be empty.
-
-filePart = strsplit(HK_105_File,':');
-if(size(filePart,2)==2), HK_105_File2 = filePart{2}; end
-HK_105_File = filePart{1};
-
-filePart = strsplit(HK_10E_File,':');
-if(size(filePart,2)==2), HK_10E_File2 = filePart{2}; end
-HK_10E_File = filePart{1};
-
-filePart = strsplit(DEFATT_File,':');
-if(size(filePart,2)==2), DEFATT_File2 = filePart{2}; end
-DEFATT_File = filePart{1};
-
-%% Processing for SCPOT or QL or SITL.
+%% Processing for SCPOT, QL or other products.
 % Load and process identified files in the following order first any of the
 % available files out of "DCE", "HK_10E", "HK_101", "HK_105", then lastly
 % the "DCV".
@@ -266,140 +52,136 @@ DEFATT_File = filePart{1};
 % DCE, HK_101, HK_105 and HK_10E files to already be loaded into memory.
 
 switch procId
-  case MMS_CONST.SDCProc.scpot
+  case {MMS_CONST.SDCProc.scpot, MMS_CONST.SDCProc.ql, MMS_CONST.SDCProc.l2a}
     if(~isempty(HK_10E_File))
-      irf.log('notice', [procName ' proc using: ' HK_10E_File]);
-      src_fileData = load_file(HK_10E_File,'hk_10e');
-      update_header(src_fileData); % Update header with file info.
-    end
-    if(~isempty(HK_10E_File2))
-      irf.log('notice', [procName ' proc using: ' HK_10E_File2]);
-      src_fileData = load_file(HK_10E_File2,'hk_10e');
-      update_header(src_fileData); % Update header with file info.
-    end
-    if(~isempty(HK_105_File))
-      irf.log('notice', [procName ' proc using: ' HK_105_File]);
-      src_fileData = load_file(HK_105_File,'hk_105');
-      update_header(src_fileData); % Update header with file info.
-    end
-    if(~isempty(HK_105_File2))
-      irf.log('notice', [procName ' proc using: ' HK_105_File2]);
-      src_fileData = load_file(HK_105_File2,'hk_105');
-      update_header(src_fileData); % Update header with file info.
-    end
-    if isempty(HK_101_File)
-      errStr = ['missing required input for ' procName ': HK_101_File'];
-      irf.log('critical', errStr);
-      error('Matlab:MMS_SDC_SDP_PROC:Input', errStr);
-    end
-    irf.log('notice', [procName ' proc using: ' HK_101_File]);
-    src_fileData = load_file(HK_101_File,'hk_101');
-    update_header(src_fileData) % Update header with file info.
-    if(~isempty(HK_101_File2))
-      irf.log('notice', [procName ' proc using: ' HK_101_File2]);
-      src_fileData = load_file(HK_101_File2,'hk_101');
-      update_header(src_fileData) % Update header with file info.
-    end
-
-    if isempty(DCE_File)
-      errStr = ['missing required input for ' procName ': DCE_File'];
-      irf.log('critical',errStr);
-      error('Matlab:MMS_SDC_SDP_PROC:Input', errStr);
-    end
-    irf.log('notice', [procName ' proc using: ' DCE_File]);
-    src_fileData = load_file(DCE_File,'dce');
-    update_header(src_fileData); % Update header with file info.
-    
-    if ~isempty(DCV_File)
-      % Separate DCV file
-      irf.log('notice', [procName ' proc using: ' DCV_File]);
-      src_fileData = load_file(DCV_File,'dcv');
-      update_header(src_fileData) % Update header with file info.
-    end
-    
-  case {MMS_CONST.SDCProc.ql, MMS_CONST.SDCProc.l2pre}
-    if(~isempty(HK_10E_File))
-      irf.log('notice', [procName ' proc using: ' HK_10E_File]);
-      src_fileData = load_file(HK_10E_File,'hk_10e');
-      update_header(src_fileData) % Update header with file info.
-    end
-    if(~isempty(HK_10E_File2))
-      irf.log('notice', [procName ' proc using: ' HK_10E_File2]);
-      src_fileData = load_file(HK_10E_File2,'hk_10e');
-      update_header(src_fileData); % Update header with file info.
-    end
-    if(~isempty(HK_105_File))
-      irf.log('notice', [procName ' proc using: ' HK_105_File]);
-      src_fileData = load_file(HK_105_File,'hk_105');
-      update_header(src_fileData); % Update header with file info.
-    end
-    if(~isempty(HK_105_File2))
-      irf.log('notice', [procName ' proc using: ' HK_105_File2]);
-      src_fileData = load_file(HK_105_File2,'hk_105');
-      update_header(src_fileData); % Update header with file info.
-    end
-    % Phase
-    if(procId == MMS_CONST.SDCProc.l2pre)
-      % Defatt file => phase
-      if isempty(DEFATT_File)
-        errStr = ['missing required input for ' procName ': DEFATT_File'];
-        irf.log('critical',errStr)
-        error('Matlab:MMS_SDC_SDP_PROC:Input', errStr)
-      end
-      irf.log('notice', [procName ' proc using: ' DEFATT_File]);
-      [dataTmp,src_fileData] = mms_load_ancillary(DEFATT_File,'defatt');
-      Dmgr.set_param('defatt', dataTmp);
-      update_header(src_fileData); % Update header with file info.
-      % Defatt file 2 => phase
-      if ~isempty(DEFATT_File2)
-        irf.log('notice', [procName ' proc using: ' DEFATT_File2]);
-        [dataTmp,src_fileData] = mms_load_ancillary(DEFATT_File2,'defatt');
-        Dmgr.set_param('defatt', dataTmp);
+      fileSplit = strsplit(HK_10E_File,':');
+      for iFile=1:size(fileSplit,2)
+        irf.log('notice', [procName ' proc using: ' fileSplit{iFile}]);
+        src_fileData = load_file(fileSplit{iFile},'hk_10e');
         update_header(src_fileData); % Update header with file info.
       end
-    else
-      % HK101 file => phase
-      if isempty(HK_101_File)
-        errStr = ['missing required input for ' procName ': HK_101_File'];
-        irf.log('critical',errStr)
-        error('Matlab:MMS_SDC_SDP_PROC:Input', errStr)
+    end
+    if(~isempty(HK_105_File))
+      fileSplit = strsplit(HK_105_File,':');
+      for iFile=1:size(fileSplit,2)
+        irf.log('notice', [procName ' proc using: ' fileSplit{iFile}]);
+        src_fileData = load_file(fileSplit{iFile},'hk_105');
+        update_header(src_fileData); % Update header with file info.
       end
-      irf.log('notice', [procName ' proc using: ' HK_101_File]);
-      src_fileData = load_file(HK_101_File,'hk_101');
-      update_header(src_fileData) % Update header with file info.
-      if(~isempty(HK_101_File2))
-        irf.log('notice', [procName ' proc using: ' HK_101_File2]);
-        src_fileData = load_file(HK_101_File2,'hk_101');
+    end
+
+    %% PHASE and ASPOC information, somewhat special case.
+    % Begin by loading the DCE file in order to get time interval of
+    % interest, then if no DEFATT was sent go looking for it. If no DEFATT
+    % is found, use HK 101. Similar for ASPOC, if no input was sent go look
+    % for it. If no ASPOC is found, simply skip it.
+    if isempty(DCE_File)
+      errStr = ['missing required input for ' procName ': DCE_File'];
+      irf.log('critical',errStr);  error(errStr);
+    end
+    irf.log('notice', [procName ' proc using: ' DCE_File]);
+    dce_obj = dataobj(DCE_File);
+    [~,tmpName, ~] = fileparts(DCE_File);
+    update_header(mms_fields_file_info(tmpName)); % Update header with file info.
+    tint = EpochTT(sort(dce_obj.data.Epoch.data));
+    % Keep only valid times (well after end of mission).
+    tint(tint.tlim(irf.tint('2015-01-01T00:00:00.000000000Z/2040-12-31T23:59:59.999999999Z')));
+    % Create a time interval for start and stop of dce epoch times.
+    tint = irf.tint(tint.start, tint.stop);
+    mms.db_init('local_file_db', ENVIR.DATA_PATH_ROOT); % Setup mms database
+    if(isempty(DEFATT_File))
+      % Go looking for DEFATT to match tint.
+      list = mms.db_list_files(['mms',HdrInfo.scIdStr,'_ancillary_defatt'],tint);
+      if(isempty(list) || list(1).start >= tint.start || list(end).stop <= tint.stop)
+        % If no DEFATT was found or it did not cover all of tint, use HK 101 files.
+        if(~isempty(HK_101_File))
+          fileSplit = strsplit(HK_101_File,':');
+          for iFile=1:size(fileSplit,2)
+            irf.log('notice', [procName ' proc using: ' fileSplit{iFile}]);
+            src_fileData = load_file(fileSplit{iFile},'hk_101');
+            update_header(src_fileData) % Update header with file info.
+          end
+        else
+          % Should not be here!
+          errStr = 'No DEFATT was found and no HK 101 identified in arguments.';
+          irf.log('critical',errStr); error(errStr);
+        end
+      else
+        for ii=1:length(list)
+          irf.log('notice', [procName ' proc using: ',list(ii).name]);
+          [dataTmp, src_fileData] = mms_load_ancillary([list(ii).path, filesep, ...
+            list(ii).name], 'defatt');
+          Dmgr.set_param('defatt', dataTmp);
+          update_header(src_fileData); % Update header with file info.
+        end
+      end
+    end
+    % Similar for ASPOC.
+    if(isempty(ASPOC_File))
+      % Go looking for ASPOC to match tint.
+      list = mms.db_list_files(['mms',HdrInfo.scIdStr,'_aspoc_srvy_l2'],tint);
+      if(isempty(list) || list(1).start >= tint.start || list(end).stop <= tint.stop)
+        % If no ASPOC was found or it did not cover all of tint. Simply
+        % issue warning.
+        irf.log('warning','No ASPOC files located or sent in input.');
+      else
+        for ii=1:length(list)
+          irf.log('notice', [procName ' proc using: ',list(ii).name]);
+          src_fileData = load_file([list(ii).path, filesep, list(ii).name],...
+            'aspoc');
+          update_header(src_fileData); % Update header with file info.
+        end
+      end
+    else
+      % Load input specified ASPOC
+      fileSplit = strsplit(ASPOC_File,':');
+      for iFile=1:size(fileSplit,2)
+        irf.log('notice', [procName ' proc using: ' fileSplit{iFile}]);
+        src_fileData = load_file(fileSplit{iFile},'aspoc');
         update_header(src_fileData) % Update header with file info.
       end
     end
 
-    if isempty(DCE_File)
-      errStr = ['missing required input for ' procName ': DCE_File'];
-      irf.log('critical',errStr);
-      error('Matlab:MMS_SDC_SDP_PROC:Input', errStr);
+    %% Second type of special case, brst QL or L2A (use L2A from previously processed Fast).
+    if(regexpi(DCE_File,'_brst_'))
+      if((procId==MMS_CONST.SDCProc.ql || procId==MMS_CONST.SDCProc.l2a) && ~isempty(L2A_File))
+        irf.log('notice', [procName ' proc using: ' L2A_File]);
+        src_fileData = load_file(L2A_File,'l2a');
+        update_header(src_fileData); % Update header with file info.
+      else
+        irf.log('warning',[procName ' but no L2A file from Fast Q/L.']);
+      end
     end
-    irf.log('notice', [procName ' proc using: ' DCE_File]);
-    src_fileData = load_file(DCE_File,'dce');
-    update_header(src_fileData) % Update header with file info.
+
+    % Go on with the DCE file.
+    Dmgr.set_param('dce',dce_obj);
 
     if ~isempty(DCV_File)
-      % Separate DCV file
+      % Separate DCV file (during commissioning)
       irf.log('notice', [procName ' proc using: ' DCV_File]);
       src_fileData = load_file(DCV_File,'dcv');
       update_header(src_fileData) % Update header with file info.
     end
-    
-  case {MMS_CONST.SDCProc.l2a}
-    % L2A process with L2Pre file as input
-    if isempty(L2Pre_File)
-      errStr = ['missing required input for ' procName ': L2Pre_File'];
+ 
+  case {MMS_CONST.SDCProc.l2pre}
+    % L2Pre process with L2A file as input
+    if isempty(DFG_File)
+      errStr = ['missing required input for ' procName ': DFG_File'];
+      irf.log('critical',errStr)
+      error('Matlab:MMS_SDC_SDP_PROC:Input', errStr)
+    end
+    irf.log('notice',[procName ' proc using: ' DFG_File]);
+    src_fileData = load_file(DFG_File,'dfg');
+    update_header(src_fileData) % Update header with file info.
+
+    if isempty(L2A_File)
+      errStr = ['missing required input for ' procName ': L2A_File'];
       irf.log('critical',errStr)
       error('Matlab:MMS_SDC_SDP_PROC:Input', errStr)
     end
 
-    irf.log('notice', [procName ' proc using: ' L2Pre_File]);
-    src_fileData = load_file(L2Pre_File,'l2pre');
+    irf.log('notice', [procName ' proc using: ' L2A_File]);
+    src_fileData = load_file(L2A_File,'l2a');
     update_header(src_fileData) % Update header with file info.
 
   otherwise
@@ -409,23 +191,20 @@ switch procId
 end
 
 % Write the output
-filename_output = mms_sdp_cdfwrite(HeaderInfo, Dmgr);
+filename_output = mms_sdp_cdfwrite(HdrInfo, Dmgr);
 
 %% Write out filename as empty logfile so it can be easily found by SDC
 % scripts.
 if ~isempty(ENVIR.LOG_PATH_ROOT)
   unix(['touch', ' ', ENVIR.LOG_PATH_ROOT, filesep 'mms', ...
-    HeaderInfo.numberStr, filesep, 'edp', filesep, filename_output, ...
+    HdrInfo.scIdStr, filesep, 'edp', filesep, filename_output, ...
     '_',runTime,'.log']);
 end
 
-  function [filenameData] = load_file(fullFilename, dataType)
-    [~, fileName, ~] = fileparts(fullFilename);
-    filenameData = mms_fields_file_info(fileName);
-    Dmgr.set_param(dataType, fullFilename);
-  end
 
+%% Help functions
   function init_matlab_path()
+    % Setup irfu-matlab and subdirs
     irfPath = [irf('path') filesep];
     irfDirectories = {'irf',...
       ['mission' filesep 'mms'],...
@@ -439,17 +218,179 @@ end
     end
   end
 
+  function parse_input(procName, varargin)
+    % Process input arguments
+    if ~ischar(procName), error('MMS_SDC_SDP_PROC first argument must be a string.'); end
+    [~,procId] = intersect( MMS_CONST.SDCProcs, lower(procName));
+    if isempty(procId)
+      error('MMS_SDC_SDP_PROC first argument must be one of: %s',...
+        mms_constants2string('SDCProcs'));
+    end
+    procName = upper(procName);
+    irf.log('notice', ['Starting process: ', procName]);
+
+    %% Identify each input argument
+    for j=1:nargin-1
+      if isempty(varargin{j}), continue, end
+      if(~ischar(varargin{j})), error('MMS_SDC_SDP_PROC input parameter must be string.'); end
+      [pathIn, fileIn, extIn] = fileparts(varargin{j});
+      if any([isempty(pathIn), isempty(fileIn), isempty(extIn)])
+        error(['Expecting cdf file (full path), got: ', varargin{j}]);
+      end
+  
+      if j==1,
+        % Setup log and environment.
+        HdrInfo.scIdStr = fileIn(4);
+        ENVIR = mms_sdc_sdp_init(HdrInfo.scIdStr);
+      elseif(~strcmp(HdrInfo.scIdStr, fileIn(4)))
+        errStr = ['MMS_SDC_SDP_PROC called using MMS S/C: ', ...
+          HdrInfo.scIdStr, ' and another file from MMS S/C: ', fileIn(4),'.'];
+        irf.log('critical', errStr);
+        irf.log('critical', ['Argument ', varargin{j}, ' did not match ',...
+          'previous s/c ',varargin{j-1},'. Aborting with error.']);
+        error(errStr);
+      end
+
+      if regexpi(fileIn,'_dce')
+        if( (procId == MMS_CONST.SDCProc.l2a || procId == MMS_CONST.SDCProc.ql) ...
+            && ~isempty(regexpi(fileIn,'_l2a_')) )
+          % L2A file (from fast mode) for "QL Brst" or "L2A Brst" process.
+        else
+          % This argument is the dce file, (l1b raw, l2a/pre dce2d or similar)
+          % Use this file to get TMmode directly from filename, and if comm.
+          % data also sample rate. And also initialize the Dmgr.
+          tmModeStr = fileIn(10:13); % mmsX_edp_[TMmode]_
+          [~,tmMode] = intersect( MMS_CONST.TmModes, tmModeStr);
+          if isempty(tmMode)
+            errStr = ['Unrecognized tmMode (',tmModeStr,'), must be one of: '...
+              mms_constants2string('TmModes')];
+            irf.log('critical', errStr);  error(errStr);
+          end
+          if (tmMode==MMS_CONST.TmMode.comm)
+            % Special case, Commissioning data, identify samplerate.
+            irf.log('notice',...
+              'Commissioning data, trying to identify samplerate from filename.');
+            if regexpi(fileIn, '_dc[ev]8_') % _dcv8_ or _dce8_
+              samplerate = MMS_CONST.Samplerate.comm_8;
+            elseif regexpi(fileIn, '_dc[ev]32_') % _dcv32_ or _dce32_
+              samplerate = MMS_CONST.Samplerate.comm_32;
+            elseif regexpi(fileIn, '_dc[ev]64_') % _dcv64_ or _dce64_
+              samplerate = MMS_CONST.Samplerate.comm_64;
+            elseif regexpi(fileIn, '_dc[ev]128_') % _dcv128_ or _dce128_
+              samplerate = MMS_CONST.Samplerate.comm_128;
+            else
+              % Possibly try to look at "dt" from Epoch inside of file? For
+              % now just default to first TmMode (slow).
+              irf.log('warning',...
+                ['Unknown samplerate for Commissioning data from file: ',fileIn]);
+              irf.log('warning', ['Defaulting samplerate to ',...
+                MMS_CONST.Samplerate.(MMS_CONST.TmModes{1})]);
+              samplerate = MMS_CONST.Samplerate.(MMS_CONST.TmModes{1});
+            end
+            Dmgr = mms_sdp_dmgr(str2double(HdrInfo.scIdStr), procId, tmMode, samplerate);
+          else
+            Dmgr = mms_sdp_dmgr(str2double(HdrInfo.scIdStr), procId, tmMode);
+          end
+        end
+      end
+
+      if regexpi(fileIn, '_101_') % 101, mmsX_fields_hk_l1b_101_20150410_v0.0.1.cdf
+        if ~isempty(HK_101_File)
+          errStr = ['Multiple HK_101 files in input (',HK_101_File,' and ',varargin{j},')'];
+          irf.log('critical', errStr);  error(errStr);
+        end
+        HK_101_File = varargin{j};
+        irf.log('notice', ['HK_101 input file: ', HK_101_File]);
+      elseif regexpi(fileIn, '_10e_') % 10E, mmsX_fields_hk_l1b_10e_20150410_v0.0.1.cdf
+        if ~isempty(HK_10E_File)
+          errStr = ['Multiple HK_10E files in input (',HK_10E_File,' and ',varargin{j},')'];
+          irf.log('critical', errStr); error(errStr);
+        end
+        HK_10E_File = varargin{j};
+        irf.log('notice', ['HK_10E input file: ', HK_10E_File]);
+      elseif regexpi(fileIn, '_105_') % 105, mmsX_fields_hk_l1b_105_20150410_v0.0.1.cdf
+        if ~isempty(HK_105_File)
+          errStr = ['Multiple HK_105 files in input (',HK_10E_File,' and ',varargin{j},')'];
+          irf.log('critical', errStr); error(errStr);
+        end
+        HK_105_File = varargin{j};
+        irf.log('notice', ['HK_105 input file: ', HK_105_File]);
+      elseif regexpi(fileIn, '_dcv\d{0,3}_') % _dcv_ or _dcv32_ or _dcv128_
+        if ~isempty(DCV_File)
+          errStr = ['Multiple DC V files in input (',DCV_File,' and ',varargin{j},')'];
+          irf.log('critical', errStr); error(errStr);
+        end
+        DCV_File = varargin{j};
+        irf.log('notice', ['DCV input file: ', DCV_File]);
+      elseif regexpi(fileIn, '_dce\d{0,3}_') % _dce_ or _dce32_ or _dce128_
+        if ~isempty(DCE_File)
+          errStr = ['Multiple DC E files in input (',DCE_File,' and ',varargin{j},')'];
+          irf.log('critical', errStr); error(errStr);
+        end
+        DCE_File = varargin{j};
+        irf.log('notice', ['DCE input file: ', DCE_File]);
+      elseif regexpi(fileIn, '_ace_') % _ace_
+        if ~isempty(ACE_File)
+          errStr = ['Multiple AC E files in input (',ACE_File,' and ',varargin{j},')'];
+          irf.log('critical', errStr); error(errStr);
+        end
+        ACE_File = varargin{j};
+        irf.log('notice', ['ACE input file: ', ACE_File]);
+      elseif regexpi(fileIn, '_l2a_') % L2A file (produced by QL Fast/slow)
+        if ~isempty(L2A_File)
+          errStr = ['Multiple L2A files in input (',L2A_File,' and ',varargin{j},')'];
+          irf.log('critical', errStr); error(errStr);
+        end
+        L2A_File = varargin{j};
+      elseif regexpi(fileIn, '_DEFATT_') % DEFATT
+        if ~isempty(DEFATT_File)
+          errStr = ['Multiple DEFATT files in input (',DEFATT_File,' and ',varargin{j},')'];
+          irf.log('critical', errStr); error(errStr);
+        end
+        DEFATT_File = varargin{j};
+        irf.log('notice', ['DEFATT input file: ', DEFATT_File]);
+      elseif regexpi(fileIn, '_aspoc_') % ASPOC
+        if ~isempty(ASPOC_File)
+          errStr = ['Multiple ASPOC files in input (',ASPOC_File,' and ',varargin{j},')'];
+          irf.log('critical', errStr); error(errStr);
+        end
+        ASPOC_File = varargin{j};
+        irf.log('notice',['ASPOC input file: ',ASPOC_File]);
+      elseif regexpi(fileIn, '_dfg_') % DFG - B-field
+        if ~isempty(DFG_File)
+          errStr = ['Multiple DFG files in input (',DFG_File,' and ',varargin{j},')'];
+          irf.log('critical', errStr); error(errStr);
+        end
+        DFG_File = varargin{j};
+        irf.log('notice',['DFG input file: ',DFG_File]);
+      else
+        % Unidentified input argument
+        errStr = ['MMS_SDC_SDP_PROC unrecognized input file: ',varargin{j}];
+        irf.log('critical', errStr); error(errStr);
+      end
+    end % End for j=1:nargin-1
+  end % End parse_input
+
+  function [filenameData] = load_file(fullFilename, dataType)
+    [~, fileName, ~] = fileparts(fullFilename);
+    filenameData = mms_fields_file_info(fileName);
+    Dmgr.set_param(dataType, fullFilename);
+  end
+
+
   function update_header(src)
     % Update header info
-    if(regexpi(src.filename,'dce')), HeaderInfo.startTime = src.startTime; end;
+    if(~isempty(regexpi(src.filename,'dce')) && ~isfield(HdrInfo,'startTime'))
+      HdrInfo.startTime = src.startTime;
+    end;
     % Initialization. Store startTime and first filename as parents_1.
-    if(~isfield(HeaderInfo,'parents_1'))
-      HeaderInfo.parents_1 = src.filename;
-      HeaderInfo.numberOfSources = 1;
+    if(~isfield(HdrInfo,'parents_1'))
+      HdrInfo.parents_1 = src.filename;
+      HdrInfo.numberOfSources = 1;
     else % Next run.
       % Increase number of sources and new parent information.
-      HeaderInfo.numberOfSources = HeaderInfo.numberOfSources + 1;
-      HeaderInfo.(sprintf('parents_%i', HeaderInfo.numberOfSources)) = ...
+      HdrInfo.numberOfSources = HdrInfo.numberOfSources + 1;
+      HdrInfo.(sprintf('parents_%i', HdrInfo.numberOfSources)) = ...
         src.filename;
     end
   end
