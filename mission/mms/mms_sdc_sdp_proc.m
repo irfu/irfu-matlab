@@ -1,5 +1,5 @@
 function mms_sdc_sdp_proc( procName, varargin)
-% MMS_SDC_SDP_PROC2 NEW startup function for MMS processing. Rely on DEFATT
+% MMS_SDC_SDP_PROC startup function for MMS processing. Rely on DEFATT
 % files for phase calculations, if they are present in the DATA_PATH_ROOT
 % instead of hk 101 sunpulses.
 %
