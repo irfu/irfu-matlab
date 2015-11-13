@@ -1,7 +1,7 @@
-function status = caa_export_cef(lev,caa_vs,cl_id,QUALITY,DATA_VERSION,sp,st,dt) %#ok<INUSL>
+function [status, nRecExp] = caa_export_cef(lev,caa_vs,cl_id,QUALITY,DATA_VERSION,sp,st,dt) %#ok<INUSL>
 %CAA_EXPORT_CEF  export data to CAA CEF files
 %
-% STATUS = caa_export(data_level,caa_vs,cl_id,QUALITY,DATA_VERSION,sp,st,dt)
+% [STATUS, NREC] = caa_export(data_level,caa_vs,cl_id,QUALITY,DATA_VERSION,sp,st,dt)
 %
 % CEF file is written to a current directory. Data is supposed to be also 
 % there, if SP is not specified.
@@ -10,6 +10,7 @@ function status = caa_export_cef(lev,caa_vs,cl_id,QUALITY,DATA_VERSION,sp,st,dt)
 % DATA_VERSION - string, for example '01'
 %
 % STATUS = 0 means everything went OK
+% NREC - number of exported records
 %
 % See also C_EXPORT_ASCII
 
@@ -261,7 +262,7 @@ for dd = 1:length(dirs)
        else
          [ok,spf34] = c_load('diEs?p34',cl_id);
          if ~ok || isempty(spf34)
-           [ok,spf34,msg] = c_load('diELXs?p34',cl_id);
+           [ok,spf34] = c_load('diELXs?p34',cl_id);
            if ~ok || isempty(spf34), no_p34 = 1; end
          end
        end
@@ -277,7 +278,9 @@ for dd = 1:length(dirs)
          [ok,spfD] = c_load(irf_ssub('diELXs?p!',cl_id,ppOther));
          if ~ok || isempty(spfD), no_p12 = 1; irf_log('load'), end
        else
-         [ok,spfD] = c_load(irf_ssub('diEs?p!',cl_id,ppOther));
+         if ppOther==42, ok = false; % Only LX for p42
+         else [ok,spfD] = c_load(irf_ssub('diEs?p!',cl_id,ppOther));
+         end
          if ~ok || isempty(spfD)
            [ok,spfD] = c_load(irf_ssub('diELXs?p!',cl_id,ppOther));
            if ~ok || isempty(spfD), no_p12 = 1; end
@@ -986,7 +989,8 @@ if ~isempty(data)
     end
 end
 
-irf_log('save', sprintf('Writing %d records',size(data,1)))
+nRecExp = size(data,1);
+irf_log('save', sprintf('Writing %d records',nRecExp))
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Write to file
 ext_s = '.cef';
