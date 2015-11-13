@@ -1,4 +1,4 @@
-function [status, nRecExp] = caa_export_cef(lev,caa_vs,cl_id,QUALITY,DATA_VERSION,sp,st,dt) %#ok<INUSL>
+function [status, nRecExp, data] = caa_export_cef(lev,caa_vs,cl_id,QUALITY,DATA_VERSION,sp,st,dt) %#ok<INUSL>
 %CAA_EXPORT_CEF  export data to CAA CEF files
 %
 % [STATUS, NREC] = caa_export(data_level,caa_vs,cl_id,QUALITY,DATA_VERSION,sp,st,dt)
@@ -178,8 +178,9 @@ for dd = 1:length(dirs)
      ok(4) = 0; data = [data {[]}]; %#ok<AGROW> % p42 is LX only!
      [okLX, dataLX] = ...
        c_load(sprintf('DadcLX%dp?', cl_id),cl_id,'res',ppList);   % Load LX data.
-     idx12 = (ppList==12 | ppList==32 | ppList==42) & okLX;
-     idx34 = ppList==34 & okLX;
+     % Indices where we have LX but no HX data
+     idx12 = (ppList==12 | ppList==32 | ppList==42) & okLX & ~ok;
+     idx34 = ppList==34 & okLX & ~ok;
      if any(idx12) && ( (flag_lx && sfit_probe~=34) ||...
          ~any(sfit_probe~=34 & ok) )
        data(idx12) = dataLX(idx12); ok(idx12) = okLX(idx12);
@@ -678,9 +679,17 @@ for dd = 1:length(dirs)
        vs, epoch2iso(t_int(1),1), epoch2iso(t_int(2),1)))
 
      if strcmp(caa_vs, 'DER')
+       % Take data in the following order: p12, p32, p42
+       if ~isempty(data{1}), data1 = data{1};
+       elseif  ~isempty(data{2}), data1 = data{2};
+       elseif  ~isempty(data{4}), data1 = data{4};
+       else data1 = [];
+       end
        % Limit data to both time interval given as input, and time interval read from file.
-       data1 = irf_tlim([data{[1 2 4]}], t_int_full);
-       data1 = irf_tlim(data1, t_int);
+       if ~isempty(data1)
+         data1 = irf_tlim(data1, t_int_full);
+         data1 = irf_tlim(data1, t_int);
+       end
        data2 = irf_tlim(data{3}, t_int_full);
        data2 = irf_tlim(data2, t_int);
        if isempty(data1) && isempty(data2)
