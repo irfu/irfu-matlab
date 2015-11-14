@@ -161,7 +161,6 @@ edgesAz = linspace(0,2*pi,33);
 % Collect data in new distribution function FF
 FF = zeros(32,32); % azimuthal, energy
 for iE = 1:32;
-  2;
   for iAz = 1:32;
     % dist.data has dimensions nT x nE x nAz x nPol
     C = squeeze(nanmean(dist.data(tId,iE,:,:),1));
@@ -179,11 +178,9 @@ end
 % Plot projection plane
 if isempty(ax), fig = figure; ax = axes; axis(ax,'square'); end
 
-e = 1.6022e-19;
-me = 9.1094e-31;
-mp = 1.6726e-27;
-if isDes, m = me; else m = mp; end
-speedTable = sqrt(energyEdges*e*2/m)*1e-3; % km/s
+Units = irf_units; % Use IAU and CODATA values for fundamental constants.
+if isDes, m = Units.me; else m = Units.mp; end
+speedTable = sqrt(energyEdges*Units.e*2/m)*1e-3; % km/s
 rE = speedTable;
 %rE = energyTable;
 plX = rE'*cos(edgesAz+pi);
