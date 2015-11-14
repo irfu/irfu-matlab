@@ -14,15 +14,15 @@ function [ax,hcb] = plot_skymap(varargin)
 %    'vectors' - Nx2 cell array with 1x3 vector in first column and
 %                textlabel in second column, eg. 
 %                vectors = {Bhat,'B';Ehat,'E'}
-%
 %    'flat' - plot a flat skymap (ie. not a sphere)
-%
+%    'log' - plot log10 scale
 
 [ax,args,nargs] = axescheck(varargin{:});
 
 dist = args{1}; args = args(2:end);
 if isempty(dist); irf.log('warning','Empty input.'); return; end
 
+plotLog = 0; fString = 'f (s^3km^{-6})';
 plotSphere = 1;
 have_vectors = 0;
 tId = 1:dist.length;
@@ -56,6 +56,9 @@ while have_options
       have_vectors = 1;
     case 'flat'
       plotSphere = 0;
+    case 'log'
+      plotLog = 1;
+      fString = 'log_{10} f (s^3km^{-6})';
   end
   args = args(l+1:end);
   if isempty(args), break, end  
@@ -72,11 +75,14 @@ Z = -r*cos(THETA);
 % dist.data has dimensions nT x nE x nAz x nPol
 C = squeeze(nanmean(nanmean(dist.data(tId,eId,:,:),2),1))';
 
+
 % Plot skymap
 if isempty(ax), fig = figure; ax = axes; end
-
+if plotLog, fC = log10(C*1e30); % s+3*km-6 
+else fC = (C*1e30); end % s+3*km-6; 
+  
 if plotSphere
-  hs = surf(ax,X,Y,Z,(C*1e30)); % s+3*km-6  
+  hs = surf(ax,X,Y,Z,fC); % 
   axis(ax,'square')
   axis(ax,'equal')
   ax.XLabel.String = 'X';
@@ -86,10 +92,8 @@ if plotSphere
   shading(ax,'flat');
 else % plot flat map
   [~,theta] = hist(theta_edges,16);
-  [~,phi] = hist(phi_edges,32);  
-  %hs = pcolor(ax,phi*180/pi,theta*180/pi,[C(:,17:32) C(:,1:16)]);
-  hs = surf(ax,PHI*180/pi,THETA*180/pi,THETA*0,[C(:,17:32) C(:,1:16)]*1e30);
-  %hs = contourf(theta,phi,C);
+  [~,phi] = hist(phi_edges,32);   
+  hs = surf(ax,PHI*180/pi,THETA*180/pi,THETA*0,[fC(:,17:32) fC(:,1:16)]);  
   ax.XLabel.String = 'Azimuthal angle (deg)';
   ax.YLabel.String = 'Polar angle (deg)';
   shading(ax,'flat');
@@ -99,7 +103,7 @@ else % plot flat map
   ax.Box = 'on';
 end
 hcb = colorbar('peer',ax);
-hcb.YLabel.String = 'f (s^3km^{-6})';
+hcb.YLabel.String = fString;
 titleString = {[irf_time(tint(1).utc,'utc>utc_yyyy-mm-ddTHH:MM:SS.mmm') ' + ' num2str(tint.stop-tint.start) ' s'],['Energy = ' num2str(energyTable(eId),'%.0f') ,' eV']};
 ax.Title.String = titleString;   
 
