@@ -13,6 +13,8 @@ function ScListOutput = default_spacecraft(scNames)
 scList = {'Cluster',       @sc_Cluster;...
           'THEMIS',        @sc_THEMIS;...
           'Solar_Orbiter', @sc_Solar_Orbiter;...
+          'THOR_SDP',      @sc_THOR_SDP;...
+          'THOR_HFA',      @sc_THOR_HFA;...
 					};
 scNamesList = scList(:,1);
 ScFunc      = scList(:,2);
@@ -74,6 +76,31 @@ end
 		Sc.probeRefPotVsSatPot = 0.2;
 		Sc.nProbes = 3;
 		Sc.probeDistanceToSpacecraft = 6;
+	end
+	function Sc = sc_THOR_SDP
+		Sc = lp.spacecraft;
+		Sc.name  = 'THOR SDP';
+		Sc.probe = lp.default_lprobe('THOR_SDP');
+		Sc.surface = 'themis';
+		% 3.7m diameter, 0.7m height 
+		Sc.areaSunlit = pi*(3.7/2)^2; % 10m^2
+		Sc.areaTotal = 2*Sc.areaSunlit+pi*3.7*0.7; % 30m^2
+		Sc.areaSunlitGuard = 0; % TO CHECK
+		Sc.probeRefPotVsSatPot = 0.2;
+		Sc.nProbes = 4;
+		Sc.probeDistanceToSpacecraft = 50;
+	end
+	function Sc = sc_THOR_HFA
+		Sc = lp.spacecraft;
+		Sc.name  = 'THOR HFA';
+		Sc.probe = lp.default_lprobe('THOR_HFA');
+		Sc.surface = 'themis';
+		Sc.areaSunlit = pi*(3.7/2)^2; % 10m^2
+		Sc.areaTotal = 2*Sc.areaSunlit+pi*3.7*0.7; % 30m^2
+		Sc.areaSunlitGuard = 0; % TO CHECK
+		Sc.probeRefPotVsSatPot = 0.2;
+		Sc.nProbes = 6;
+		Sc.probeDistanceToSpacecraft = 1;
 	end
 end
 

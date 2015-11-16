@@ -7,6 +7,7 @@ classdef spacecraft
 		areaSunlit
 		areaSunlitGuard
 		surface
+		surfacePhotoemission = []; % if not specified, obtain from lp.photocurrent
 		probeRefPotVsSatPot
 		probeDistanceToSpacecraft
 		nProbes
@@ -35,6 +36,15 @@ classdef spacecraft
 %     set(data.inp.T_value,'string','100 500');
 
 	methods
+
+		function surfacePhotoemission = get.surfacePhotoemission(Lp)
+			if any(strcmp(Lp.surface,'user defined')) || ~isempty(Lp.surfacePhotoemission)
+				surfacePhotoemission = Lp.surfacePhotoemission;
+			else
+				surfacePhotoemission = lp.photocurrent(1,0,1,Lp.surface);
+			end
+		end
+
 	end
 	
 end
