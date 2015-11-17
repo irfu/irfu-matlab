@@ -7,13 +7,23 @@
 # Updated: 2015/03/20, automatically send mail to mms-ops@irfu.se if error occurs in Matlab.
 #
 # Usage: place script in the same folder as has irfu-matlab as a subfolder, then run
-#  "./script.sh <mmsX_l2pre_filename>", with the following
-#  input arguments: (should have the OptionalDataDescriptor be "_l2pre_").
-#    <mmsX_***_l2pre_filename.cdf> = Filename of DC E pre-processed data to be processed for 'xyz'. Including path and extension.
+#  "./script.sh <mmsX_dce_filename> <mmsX_dcv_filename> <mmsX_101_filename> <mmsX_10e_filename> <mmsX_105_filename>", with the following
+#  input arguments: (order is irrelevant as long as the OptionalDataDescriptor is "_dce_", "_dcv_","_10e_", "_105_" or "_101_").
+#    <mmsX_***_dce_filename.cdf> = Filename of DC E data to be processed for 'xyz'. Including path and extension.
+#    <mmsX_***_dcv_filename.cdf> = Filename of DC V data to be processed for 'xyz'. Including path and extention.
+#    <mmsX_***_105_filename.cdf> = Filename of HK 105 data to be processed for 'xyz'. Including path and extention.
+#    <mmsX_***_10e_filename.cdf> = Filename of HK 10E data (with guard settings) to be processed for 'xyz'. Including path and extention.
+#    <mmsX_aspoc_l2_srvy_***_filename.cdf> = Filename of ASPOC L2 srvy data (with aspoc status) to be processed for 'xyz'. Including path and extention. (optional, if not included script will go looking for it).
+#    <mmsX_DEFATT_***> = Filename of DEFATT data (with phase) to be processed for 'xyz'. Including path and extention. (optional, if not included script will go looking for it)
+#    <mmsX_***_101_filename.cdf> = Filename of HK 101 data (with sunpulse) to be processed for 'xyz'. Including path and extention. (if no DEFATT exist, this will be used otherwise not required)
+#    <mmsX_***_l2a_fast_yyyymmddHHMMSS_vX.Y.Z.cdf> = IF processing Brst mode, include the corresponding L2A DCE2d Fast mode file created previously.
+# if using multiple HK input files, separate these by a colon (:) without additional spaces,
+# ie. two HK 101 data files would be the following
+# <mmsX_***_101_filename.cdf>:<mmsX_***_101_filename2.cdf>
 #  output files created:
-#    <mmsX_***_xyz_yyyymmddHHMMSS_vX.Y.Z.cdf>         = File placed in $DROPBOX_ROOT
+#    <mmsX_***_dce2d_yyyymmddHHMMSS_vX.Y.Z.cdf>         = File placed in $DROPBOX_ROOT
 #    <DATE_IRFU.log>                                  = Logfile of run, placed in $LOG_PATH_ROOT/mmsX/edp/.
-#    <mmsX_***_xyz_yyyymmddHHMMSS_vX.Y.Z_runTime.log> = File to identify output file, as per e-mail of 2013/11/22. Also placed in $LOG_PATH_ROOT/mmsX/edp/.
+#    <mmsX_***_dce2d_yyyymmddHHMMSS_vX.Y.Z_runTime.log> = File to identify output file, as per e-mail of 2013/11/22. Also placed in $LOG_PATH_ROOT/mmsX/edp/.
 #
 #  return code 0, if ok.
 #  return code 166, if error caused by incorrect usage.
@@ -44,8 +54,8 @@ esac
 echo $PROCESS_NAME
 
 # make sure that the correct number of arguments are provided
-if [ ${#} -lt 1 ] || [ ${#} -gt 1 ] ; then
-	echo "ERROR: Wrong number of input parameters: min: 1, max: 1"
+if [ ${#} -lt 3 ] || [ ${#} -gt 8 ] ; then
+	echo "ERROR: Wrong number of input parameters: min: 3, max: 8"
 	exit 166  # SDC-defined error code for "incorrect usage"
 fi
 
@@ -60,4 +70,4 @@ fi
 # if so attach it (8 Bit ASCII encoded) to a mail sent to mms-ops@irfu.se.
 # then exit with 199 (if errors occurred) or with 0 (if no errors).
 
-$MATLAB_EXE $MATLAB_FLAGS -r "try, mms_sdc_sdp_proc('$PROCESS_NAME','$1'), catch ME, logFile=irf.log('log_out'); errStr=[]; for k=1:length(ME.stack), errStr=[errStr,' Error in file: ',ME.stack(k).file,' in function: ',ME.stack(k).name,' at line: ',num2str(ME.stack(k).line),'. ']; end; if(exist(logFile,'file')), unix(['echo ''''Error occured at SDC! Please see the attached log file. Causing error was: ',ME.identifier,' with message: ',ME.message,errStr,''''' | mail -a', logFile,' -s MMS_SDC_Error mms-ops@irfu.se']); else unix(['echo ''''Error occured at SDC. And for some reason no log file was identified, manually log into SDC and have a look! Perhaps the error occured before log file was created. Causing error was: ',ME.identifier,' with message: ',ME.message,errStr,''''' | mail -s MMS_SDC_Error mms-ops@irfu.se']); end; exit(199); end, exit(0)"
+$MATLAB_EXE $MATLAB_FLAGS -r "try, mms_sdc_sdp_proc('$PROCESS_NAME','$1','$2','$3','$4','$5','$6','$7','$8'), catch ME, logFile=irf.log('log_out'); errStr=[]; for k=1:length(ME.stack), errStr=[errStr,' Error in file: ',ME.stack(k).file,' in function: ',ME.stack(k).name,' at line: ',num2str(ME.stack(k).line),'. ']; end; if(exist(logFile,'file')), unix(['echo ''''Error ',ME.identifier,' with message: ',ME.message,errStr,''''' | mail -a', logFile,' -s MMS_SDC_Error mms-ops@irfu.se']); else unix(['echo ''''No log found, error: ',ME.identifier,' with message: ',ME.message,errStr,''''' | mail -s MMS_SDC_Error mms-ops@irfu.se']); end; exit(199); end, exit(0)"
