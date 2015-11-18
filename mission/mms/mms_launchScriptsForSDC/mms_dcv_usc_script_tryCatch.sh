@@ -7,6 +7,7 @@
 # Updated: 2015/03/20, automatically send mail to mms-ops@irfu.se if error occurs in Matlab.
 # Updated: 2015/04/14, add hk_105 as possible input argument.
 # Updated: 2015/08/11, allow for multiple HK files (to be used when processing files crossing midnight).
+# Updated: 2015/11/18, add optional ASPOC L2 srvy as input, remove "(" or ")" from errStr (ie anonumous function error ensure bash can still send mail).
 #
 # Usage: place script in the same folder as has irfu-matlab as a subfolder, then run
 #  "./script.sh <mmsX_dce_filename> <mmsX_dcv_filename> <mmsX_101_filename> <mmsX_10e_filename> <mmsX_105_filename>", with the following
@@ -16,6 +17,7 @@
 #    <mmsX_***_101_filename.cdf> = Filename of HK 101 data (with sunpulse) to be processed for 'xyz'. Including path and extention.
 #    <mmsX_***_105_filename.cdf> = Filename of HK 105 data to be processed for 'xyz'. Including path and extention.
 #    <mmsX_***_10e_filename.cdf> = Filename of HK 10E data (with guard settings) to be processed for 'xyz'. Including path and extention.
+#    <mmsX_***_aspoc_filename.cdf> = Filename of ASPOC L2 srvy data (with aspoc status) to be used in processing for 'xyz'. Including path and extention. (Optional input). 
 # if using multiple HK input files, separate these by a colon (:) without additional spaces,
 # ie. two HK 101 data files would be the following
 # <mmsX_***_101_filename.cdf>:<mmsX_***_101_filename2.cdf>
@@ -53,8 +55,8 @@ esac
 echo $PROCESS_NAME
 
 # make sure that the correct number of arguments are provided
-if [ ${#} -lt 2 ] || [ ${#} -gt 5 ] ; then
-	echo "ERROR: Wrong number of input parameters: min: 2, max: 5"
+if [ ${#} -lt 2 ] || [ ${#} -gt 6 ] ; then
+	echo "ERROR: Wrong number of input parameters: min: 2, max: 6"
 	exit 166  # SDC-defined error code for "incorrect usage"
 fi
 
@@ -69,4 +71,4 @@ fi
 # if so attach it (8 Bit ASCII encoded) to a mail sent to mms-ops@irfu.se.
 # then exit with 199 (if errors occurred) or with 0 (if no errors).
 
-$MATLAB_EXE $MATLAB_FLAGS -r "try, mms_sdc_sdp_proc('$PROCESS_NAME','$1','$2','$3','$4','$5'), catch ME, logFile=irf.log('log_out'); errStr=[]; for k=1:length(ME.stack), errStr=[errStr,' Error in file: ',ME.stack(k).file,' in function: ',ME.stack(k).name,' at line: ',num2str(ME.stack(k).line),'. ']; end; if(exist(logFile,'file')), unix(['echo ''''Error ',ME.identifier,' with message: ',ME.message,errStr,''''' | mail -a', logFile,' -s MMS_SDC_Error mms-ops@irfu.se']); else unix(['echo ''''No log found, error: ',ME.identifier,' with message: ',ME.message,errStr,''''' | mail -s MMS_SDC_Error mms-ops@irfu.se']); end; exit(199); end, exit(0)"
+$MATLAB_EXE $MATLAB_FLAGS -r "try, mms_sdc_sdp_proc('$PROCESS_NAME','$1','$2','$3','$4','$5','$6'), catch ME, logFile=irf.log('log_out'); errStr=[]; for k=1:length(ME.stack), errStr=[errStr,' Error in file: ',ME.stack(k).file,' in function: ',ME.stack(k).name,' at line: ',num2str(ME.stack(k).line),'. ']; end; errStr=strrep(errStr,'(','_'); errStr=strrep(errStr,')','_'); if(exist(logFile,'file')), unix(['echo ''''Error ',ME.identifier,' with message: ',ME.message,errStr,''''' | mail -a', logFile,' -s MMS_SDC_Error mms-ops@irfu.se']); else unix(['echo ''''No log found, error: ',ME.identifier,' with message: ',ME.message,errStr,''''' | mail -s MMS_SDC_Error mms-ops@irfu.se']); end; exit(199); end, exit(0)"
