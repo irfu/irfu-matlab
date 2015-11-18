@@ -5,6 +5,7 @@
 # Date: 2014/03/04
 # Updated: 2015/01/14, change comments to reflect change SDP->EDP and add new input argument HK 10E file.
 # Updated: 2015/03/20, automatically send mail to mms-ops@irfu.se if error occurs in Matlab.
+# Updated: 2015/11/18, add optional ASPOC L2 srvy as input, remove "(" or ")" from errStr (ie anonumous function error ensure bash can still send mail).
 #
 # Usage: place script in the same folder as has irfu-matlab as a subfolder, then run
 #  "./script.sh <mmsX_dce_filename> <mmsX_dcv_filename> <mmsX_101_filename> <mmsX_10e_filename> <mmsX_105_filename>", with the following
@@ -70,4 +71,4 @@ fi
 # if so attach it (8 Bit ASCII encoded) to a mail sent to mms-ops@irfu.se.
 # then exit with 199 (if errors occurred) or with 0 (if no errors).
 
-$MATLAB_EXE $MATLAB_FLAGS -r "try, mms_sdc_sdp_proc('$PROCESS_NAME','$1','$2','$3','$4','$5','$6','$7','$8'), catch ME, logFile=irf.log('log_out'); errStr=[]; for k=1:length(ME.stack), errStr=[errStr,' Error in file: ',ME.stack(k).file,' in function: ',ME.stack(k).name,' at line: ',num2str(ME.stack(k).line),'. ']; end; errStr=strrep(errStr,'(','_'); errStr=strrep(errStr,')','_'); if(exist(logFile,'file')), unix(['echo ''''Error ',ME.identifier,' with message: ',ME.message,errStr,''''' | mail -a', logFile,' -s MMS_SDC_Error mms-ops@irfu.se']); else unix(['echo ''''No log found, error: ',ME.identifier,' with message: ',ME.message,errStr,''''' | mail -s MMS_SDC_Error mms-ops@irfu.se']); end; exit(199); end, exit(0)"
+$MATLAB_EXE $MATLAB_FLAGS -r "try, mms_sdc_sdp_proc('$PROCESS_NAME','$1','$2','$3','$4','$5','$6','$7','$8'), catch ME, logFile=irf.log('log_out'); errStr=[]; for k=1:length(ME.stack), errStr=[errStr,' Error in file: ',ME.stack(k).file,' in function: ',ME.stack(k).name,' at line: ',num2str(ME.stack(k).line),'. ']; end; errStr=strrep(errStr,'(','_'); errStr=strrep(errStr,')','_'); mess=strrep(ME.message,'(','_'); mess=strrep(mess,')','_'); iden=strrep(ME.identifier,'(','_'); iden=strrep(iden,')','_'); if(exist(logFile,'file')), unix(['echo ''''Error ',iden,' with message: ',mess,errStr,''''' | mail -a', logFile,' -s MMS_SDC_Error mms-ops@irfu.se']); else unix(['echo ''''No log found, error: ',iden,' with message: ',mess,errStr,''''' | mail -s MMS_SDC_Error mms-ops@irfu.se']); end; exit(199); end, exit(0)"
