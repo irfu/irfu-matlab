@@ -120,8 +120,8 @@ classdef mms_sdp_dmgr < handle
       
       if( ~isempty(DATAC.(param)) )
         % Error, Warning or Notice for replacing the data variable?
-        if(~any(strcmp(param,{'hk_101', 'hk_105', 'hk_10e', 'defatt'})))
-          % Only multiple HK/Defatt files are allowed for now..
+        if(~any(strcmp(param,{'hk_101', 'hk_105', 'hk_10e', 'defatt', 'aspoc'})))
+          % Only multiple HK/Defatt/aspoc files are allowed for now..
           errStr = ['replacing existing variable (' param ') with new data'];
           irf.log('critical', errStr);
           error('MATLAB:MMS_SDP_DMGR:INPUT', errStr);

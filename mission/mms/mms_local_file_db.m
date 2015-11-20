@@ -128,7 +128,12 @@ classdef mms_local_file_db < mms_file_db
               if length(out) == 19, sss = [sss out(10:17) '.000000000Z']; % ie. predatt (time string end with "hh:mm:ss\n") add remaining .mmmuuunnnZ
               else sss = [sss out(10:21) '000000Z']; % defatt, depeph etc (time string end with "hh:mm:ss.mmm\n" add remaining uuunnnZ
               end
-              epoch = EpochTT(sss);
+              try
+                epoch = EpochTT(sss);
+              catch ME
+                errStr = ['Error reading times for ancillary file: ', e.name, ' got: ', sss];
+                irf.log('critical', errStr); rethrow(ME);
+              end
             end
           end % ADD_SS
         end % ADD2LIST
