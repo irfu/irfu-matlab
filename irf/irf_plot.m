@@ -241,7 +241,7 @@ elseif flag_subplot==1, % Separate subplot for each component
     grid(hca,'on');
     set(hca,'tag',tag); set(hca,'userdata',ud); % restore
     zoom_in_if_necessary(hca);
-    set_ylabel(hca,x);
+    set_ylabel(hca,x, ipl);
   end
   firstTimeStamp = time(~isnan(time)); firstTimeStamp = firstTimeStamp(1);
   
@@ -420,44 +420,52 @@ if nargout==0, clear c; end
     else marker_cur = marker;
     end
   end
-  function hLabel = set_ylabel(ax,inp)
+  function hLabel = set_ylabel(ax,inp,plot_ind)
     switch flag_subplot
       case {0,2}
         if isa(inp,'TSeries')
-					if isfield(inp.userData,'LABLAXIS')
-						lab = [inp.userData.LABLAXIS ' [' inp.units ']' ];
-						hLabel = ylabel(ax,lab);
-					else
-						hLabel = ylabel(ax,inp.name,'Interpreter','none');
-					end
-				elseif ~isempty(var_desc{1}) && isfield(var_desc{1},'size')
-					lab = cell(1,length(var_desc{1}.size));
-					for iVar = 1:length(var_desc{1}.size)
-						lab{iVar} = [var_desc{1}.labels{iVar} '[' ...
-							var_desc{1}.units{iVar} '] sc' var_desc{1}.cl_id];
-					end
-					hLabel = ylabel(ax,lab);
+          if isfield(inp.userData,'LABLAXIS')
+            lab = [inp.userData.LABLAXIS ' [' inp.units ']' ];
+            hLabel = ylabel(ax,lab);
+          else
+            hLabel = ylabel(ax,inp.name,'Interpreter','none');
+          end
+        elseif ~isempty(var_desc{1}) && isfield(var_desc{1},'size')
+          lab = cell(1,length(var_desc{1}.size));
+          for iVar = 1:length(var_desc{1}.size)
+            lab{iVar} = [var_desc{1}.labels{iVar} '[' ...
+              var_desc{1}.units{iVar} '] sc' var_desc{1}.cl_id];
+          end
+          hLabel = ylabel(ax,lab);
         end
-			case 1
-				if ~isempty(var_desc) && ~isempty(var_desc{1})
-					scu = cumsum(var_desc{1}.size);
-					isz = find( scu == min(scu(ipl<=scu)) );
-					sz = var_desc{1}.size(isz); % Size of a data vector
-					if sz == 1 % Scalar data
-						lab = [var_desc{1}.labels{isz} ' ['...
-							var_desc{1}.units{isz} '] sc' var_desc{1}.cl_id];
-					else % Vector data
-						% Vector component
-						if isz==1, comp = ipl;
-						else comp = ipl -scu(isz-1);
-						end
-						lab = [var_desc{1}.labels{isz} ...
-							'_{' var_desc{1}.col_labels{isz}{comp} '} ['...
-							var_desc{1}.units{isz} '] sc' var_desc{1}.cl_id ];
-					end
-					hLabel = ylabel(ax,lab);
-				end
-			otherwise, error('not implemented')
+      case 1
+        if isa(inp, 'TSeries')
+          % LABL_PTR_1 used for MMS multidimesional varaibles
+          if isfield(inp.userData,'LABL_PTR_1') && plot_ind <= size(inp.userData.LABL_PTR_1.data,1)
+            lab = [inp.userData.LABL_PTR_1.data(plot_ind,:) ' [' inp.units ']' ];
+            hLabel = ylabel(ax,lab,'Interpreter','none');
+          else
+            hLabel = ylabel(ax,inp.name,'Interpreter','none');
+          end
+        elseif ~isempty(var_desc) && ~isempty(var_desc{1})
+          scu = cumsum(var_desc{1}.size);
+          isz = find( scu == min(scu(ipl<=scu)) );
+          sz = var_desc{1}.size(isz); % Size of a data vector
+          if sz == 1 % Scalar data
+            lab = [var_desc{1}.labels{isz} ' ['...
+              var_desc{1}.units{isz} '] sc' var_desc{1}.cl_id];
+          else % Vector data
+            % Vector component
+            if isz==1, comp = ipl;
+            else comp = ipl -scu(isz-1);
+            end
+            lab = [var_desc{1}.labels{isz} ...
+              '_{' var_desc{1}.col_labels{isz}{comp} '} ['...
+              var_desc{1}.units{isz} '] sc' var_desc{1}.cl_id ];
+          end
+          hLabel = ylabel(ax,lab);
+        end
+      otherwise, error('not implemented')
     end
   end
   function check_input_options()
