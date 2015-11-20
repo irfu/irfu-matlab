@@ -882,7 +882,13 @@ for dd = 1:length(dirs)
             single_pair_data = [data1 data2];
             start_time = min( single_pair_data(:,1) );
          else
-            start_time = min( min(data1(:,1)), min(data2(:,1)) );
+            if isempty(data1)
+                start_time = min(data2(:,1));
+            elseif isempty(data2)
+                start_time = min(data1(:,1));
+            else
+                start_time = min( min(data1(:,1)), min(data2(:,1)) );
+            end
          end
          timestamp = start_time:4:t_int(2);
          data_out = zeros(length(timestamp), 3) * NaN;
