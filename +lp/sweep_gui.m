@@ -290,43 +290,41 @@ switch action,
         grid(h(1),'on');
         xlabel(h(1),'U [V]');
         ylabel(h(1),'I [\mu A]');
-        if ud.flag_use_sc, % add probe potential wrt s/c and plasma
-            hold(h(1),'on');
-            plot(h(1),Ubias,Ibias*1e6,'k','linewidth',0.5);
-            plot(h(1),Uprobe2plasma,Ibias*1e6,'r.','linewidth',1.5);
-            plot(h(1),Uprobe2sc,Ibias*1e6,'b','linewidth',1.5);
-            plot(h(1),Uprobe2sc,Jprobephotoreturn*1e6,'color',[0 0.5 0],'linewidth',1.5);
-            plot(h(1),Usatsweep,Ibias*1e6,'color',[0.5 0 0.5],'linewidth',1);
-            irf_legend(h(1),'probe to plasma',[1 1.01],'color','r');
-            irf_legend(h(1),'probe to reference',[1 1.05],'color','k');
-            irf_legend(h(1),'probe to spacecraft (bias)',[0.02 1.01],'color','b');
-            irf_legend(h(1),'probe photo e- to s/c',[0.02 1.05],'color',[0 0.5 0]);
-            irf_legend(h(1),'Satellite potential',[0.98 0.03],'color',[0.5 0 0.5]);         
-            axis(h(1),'auto x');
-            if ud.probe.bias_current ~= 0 && -ud.probe.bias_current>min(Ibias) && -ud.probe.bias_current<max(Ibias), % draw bias current line
-                plot(h(1),[Uprobe2sc(1) Uprobe2plasma(end)],ud.probe.bias_current.*[-1 -1].*1e6,'k-.','linewidth',0.5);
-                text(Uprobe2sc(1),ud.probe.bias_current*(-1)*1e6,'bias','parent',h(1),'horizontalalignment','left','verticalalignment','bottom');
-                flag_add_bias_point_values=1;
-            end
-            hold(h(1),'off');
-        else % add photoelectron and photoelectron currents
-            hold(h(1),'on');
-            plot(h(1),Upot,J_photo*1e6,'r','linewidth',0.5);
-            irf_legend(h(1),'    total',      [0.98 0.03],'color','k');
-            irf_legend(h(1),' photoelectrons',[0.98 0.08],'color','r');
-            clr=[0.5 0 0; 0 0.5 0; 0 0 0.5];
-            for ii=1:length(J_plasma),
-                plot(h(1),Upot,J_plasma{ii}*1e6,'linewidth',.5,'color',clr(:,ii));
-                irf_legend(h(1),['plasma ' num2str(ii)],[0.98 0.08+ii*0.05],'color',clr(:,ii));
-            end
-            if ud.probe.bias_current ~= 0 && -ud.probe.bias_current>min(J_probe) && -ud.probe.bias_current<max(J_probe), % draw bias current line
-                plot(h(1),[Upot(1) Upot(end)],ud.probe.bias_current.*[-1 -1].*1e6,'k-.','linewidth',0.5);
-                text(Upot(1),ud.probe.bias_current*(-1)*1e6,'-bias','parent',h(1),'horizontalalignment','left','verticalalignment','bottom');
-                flag_add_bias_point_values=1;
-            end
-            hold(h(1),'off');            
-        end
-        
+				hold(h(1),'on');
+				if ud.flag_use_sc, % add probe potential wrt s/c and plasma
+					plot(h(1),Ubias,Ibias*1e6,'k','linewidth',0.5);
+					plot(h(1),Uprobe2plasma,Ibias*1e6,'r.','linewidth',1.5);
+					plot(h(1),Uprobe2sc,Ibias*1e6,'b','linewidth',1.5);
+					plot(h(1),Uprobe2sc,Jprobephotoreturn*1e6,'color',[0 0.5 0],'linewidth',1.5);
+					plot(h(1),Usatsweep,Ibias*1e6,'color',[0.5 0 0.5],'linewidth',1);
+					irf_legend(h(1),'probe to plasma',[1 1.01],'color','r');
+					irf_legend(h(1),'probe to reference',[1 1.05],'color','k');
+					irf_legend(h(1),'probe to spacecraft (bias)',[0.02 1.01],'color','b');
+					irf_legend(h(1),'probe photo e- to s/c',[0.02 1.05],'color',[0 0.5 0]);
+					irf_legend(h(1),'Satellite potential',[0.98 0.03],'color',[0.5 0 0.5]);
+					axis(h(1),'auto x');
+					if ud.probe.bias_current ~= 0 && -ud.probe.bias_current>min(Ibias) && -ud.probe.bias_current<max(Ibias), % draw bias current line
+						plot(h(1),[Uprobe2sc(1) Uprobe2plasma(end)],ud.probe.bias_current.*[-1 -1].*1e6,'k-.','linewidth',0.5);
+						text(Uprobe2sc(1),ud.probe.bias_current*(-1)*1e6,'bias','parent',h(1),'horizontalalignment','left','verticalalignment','bottom');
+						flag_add_bias_point_values=1;
+					end
+				else % add photoelectron and photoelectron currents
+					plot(h(1),Upot,J_photo*1e6,'r','linewidth',0.5);
+					irf_legend(h(1),'    total',      [0.98 0.03],'color','k');
+					irf_legend(h(1),' photoelectrons',[0.98 0.08],'color','r');
+					clr=[0.5 0 0; 0 0.5 0; 0 0 0.5];
+					for ii=1:length(J_plasma),
+						plot(h(1),Upot,J_plasma{ii}*1e6,'linewidth',.5,'color',clr(:,ii));
+						irf_legend(h(1),['plasma ' num2str(ii)],[0.98 0.08+ii*0.05],'color',clr(:,ii));
+					end
+					if ud.probe.bias_current ~= 0 && -ud.probe.bias_current>min(J_probe) && -ud.probe.bias_current<max(J_probe), % draw bias current line
+						plot(h(1),[Upot(1) Upot(end)],ud.probe.bias_current.*[-1 -1].*1e6,'k-.','linewidth',0.5);
+						text(Upot(1),ud.probe.bias_current*(-1)*1e6,'-bias','parent',h(1),'horizontalalignment','left','verticalalignment','bottom');
+						flag_add_bias_point_values=1;
+					end
+				end
+				hold(h(1),'off');
+				
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         % INFORMATION PANEL
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
