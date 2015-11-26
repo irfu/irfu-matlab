@@ -29,8 +29,13 @@ function J=current(Probe,vectorU,rSunAU,factorUV,Plasma)
 %
 % See also: LP.PHOTOCURRENT, LP.THERMAL_CURRENT
 
-nPlasmaSpecies=numel(Plasma.q);
-J.plasma=cell(nPlasmaSpecies,1);
+if isempty(Plasma), % calculate only photocurrent
+    nPlasmaSpecies=0;
+else
+    nPlasmaSpecies=numel(Plasma.q);
+    J.plasma=cell(nPlasmaSpecies,1);
+%    plasma.TK=plasma.T*Units.e/Units.kB;
+end
 
 if isprop(Probe,'Area')
 	areaSunlit = Probe.Area.sunlit;
