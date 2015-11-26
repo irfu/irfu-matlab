@@ -29,10 +29,10 @@ function [J_probe, J_photo, J_plasma]=probe_current(probe,U_probe,R_sun,UV_facto
 Units=irf_units;
 
 if isempty(plasma), % calculate only photocurrent
-    n_of_species=0;
+    nSpecies=0;
 else
-    n_of_species=numel(plasma.q);
-    J_plasma=cell(n_of_species,1);
+    nSpecies=numel(plasma.q);
+    J_plasma=cell(nSpecies,1);
     plasma.TK=plasma.T*Units.e/Units.kB;
 end
 if strcmpi(probe.type,'spherical'), probe_type=1;end
@@ -42,23 +42,23 @@ if strcmpi(probe.type,'arbitrary'), probe_type=1;end
 J_photo = -lp.photocurrent(probe.cross_section_area, U_probe, R_sun,probe.surface);
 J_photo = J_photo .* UV_factor;
 J_probe=J_photo; % initialize
-for ii=1:n_of_species,
+for ii=1:nSpecies,
     % density n
     q=plasma.q(ii);
-    if numel(plasma.n)<n_of_species && ii > numel(plasma.n)
+    if numel(plasma.n)<nSpecies && ii > numel(plasma.n)
         n=plasma.n(end);
     else
         n=plasma.n(ii);
     end
     n=n*1e6; % to get density from cc to m3
     % temperature T
-    if numel(plasma.TK)<n_of_species && ii > numel(plasma.TK)
+    if numel(plasma.TK)<nSpecies && ii > numel(plasma.TK)
         T=plasma.TK(end);
     else
         T=plasma.TK(ii);
     end
     % mass m
-    if numel(plasma.m)<n_of_species && ii > numel(plasma.m)
+    if numel(plasma.m)<nSpecies && ii > numel(plasma.m)
         m=plasma.m(end);
     else
         m=plasma.m(ii);
@@ -69,7 +69,7 @@ for ii=1:n_of_species,
         m=Units.mp*m;
     end
     % velocity with respect to media
-    if numel(plasma.vsc)<n_of_species && ii > numel(plasma.vsc)
+    if numel(plasma.vsc)<nSpecies && ii > numel(plasma.vsc)
         vsc=plasma.vsc(end);
     else
         vsc=plasma.vsc(ii);
