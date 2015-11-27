@@ -64,6 +64,7 @@ classdef ui < handle
 			obj.plasmaUsed = 2;
 			obj.set_plasma_model(obj.plasmaUsed);
 			obj.set_probe_model(  obj.probeUsed);
+			obj.get_u_interval;
 		end
 		function new_ide(obj)
 			%% initialize figure
@@ -284,12 +285,18 @@ classdef ui < handle
 		end
 		function get_u_interval(obj)
 			vectorUString = get(obj.UserData.inp.vectorUValue,'String'); % in cm
+			obj.InputParameters.vectorUonlyMinMaxGiven = false;
 			if isempty(vectorUString),
 				vectorUString = '-5:10';
-				set(obj.UserData.inp.vectorUValue,'String',vectorUString)
+				set(obj.UserData.inp.vectorUValue,'String',vectorUString);
 			end
 			obj.InputParameters.vectorUString = vectorUString;
-			obj.InputParameters.vectorU = eval(vectorUString);
+			obj.InputParameters.vectorU = eval(['[' vectorUString ']']);
+			if numel(obj.InputParameters.vectorU) == 2, % only min and max are given
+				obj.InputParameters.vectorU = obj.InputParameters.vectorU(1)*[1 0.75 0.5 0.25 0] +...
+					obj.InputParameters.vectorU(2)*[0 0.25 0.5 0.75 1];
+				obj.InputParameters.vectorUonlyMinMaxGiven = true;
+			end
 		end
 		
 		function set_probe_model(obj,varargin)
@@ -392,17 +399,59 @@ classdef ui < handle
 		function get_probe_current(obj)
 			ProbeToUse = obj.ProbeList(obj.probeUsed);
 			ProbeToUse.surfacePhotoemission = obj.ProbeSurfacePhotoemission(obj.probeSurfaceUsed);
-			jProbe = lp.current(ProbeToUse,...
-				obj.InputParameters.vectorU,...
-				obj.InputParameters.rSunAU,...
-				obj.InputParameters.factorUV,...
-				obj.PlasmaList(obj.plasmaUsed));
+			slopeChangeMax=1.3; % how big maximum relative slope change is allowed
+ 			slopeChangeMin=1+(slopeChangeMax-1)/4;
+			vecU = obj.InputParameters.vectorU;
+			doIterationToFindUI = true;
+			while doIterationToFindUI
+				jProbe = lp.current(ProbeToUse,vecU,...
+					obj.InputParameters.rSunAU,...
+					obj.InputParameters.factorUV,...
+					obj.PlasmaList(obj.plasmaUsed));
+				I = jProbe.total;
+				[U__dUdI,dU,dUdI] = obj.dUdI_(vecU,I);
+				if obj.InputParameters.vectorUonlyMinMaxGiven
+					doIterationToRemoveMins = true;
+					vecUnew = vecU;
+					while doIterationToRemoveMins
+						[U__dUdI,dU,dUdI] = obj.dUdI_(vecUnew,I);
+						slopeChanges = abs(dUdI(2:end)./dUdI(1:end-1));
+						ii = find(slopeChanges<1);
+						slopeChanges(ii) = 1./slopeChanges(ii);
+						iMin = find(slopeChanges < slopeChangeMin)+1; % find points where slope changes little in both directions from the point
+						if any(iMin),
+							vecUnew(iMin(1:2:end)) = [];
+							I(iMin(1:2:end)) =[];
+						else
+							doIterationToRemoveMins = false;
+						end
+					end
+					iMax = find((slopeChanges > slopeChangeMax) & ((dU(1:end-1) > 0.2) & (dU(2:end) > 0.2)));
+					if any(iMax)
+						for j=numel(iMax):-1:1
+							vecUnew = [vecUnew(1:iMax(j)) ...
+								[vecUnew(iMax(j))   vecUnew(iMax(j)+1)]*[0.7 0.3;0.3 0.7]...
+								[vecUnew(iMax(j)+1) vecUnew(iMax(j)+2)]*[0.7 0.3;0.3 0.7]...
+								vecUnew(iMax(j)+2:end)];
+						end
+					end
+					if isempty(iMax)
+						doIterationToFindUI = false;
+					else
+						vecU = vecUnew;
+					end
+				else
+					doIterationToFindUI = false;
+				end
+			end
 			obj.Output.J = jProbe;
-			obj.Output.dUdI=gradient(obj.InputParameters.vectorU,obj.Output.J.total);
+			obj.Output.U = vecU;
+			obj.Output.U__dUdI = U__dUdI;
+			obj.Output.dUdI = dUdI;
 		end
 		function get_probe_and_spacecraft_current(obj)
 			obj.get_probe_current;
-			Upot   = obj.InputParameters.vectorU;
+			Upot   = obj.Output.U;
 			jProbe = obj.Output.J.total;
 			obj.Output.J.sc=lp.current(obj.SpacecraftList(obj.spacecraftUsed),...
 				Upot,...
@@ -412,20 +461,8 @@ classdef ui < handle
 			obj.Output.UI.dUdIsat=gradient(Upot,obj.Output.J.sc.total);
 			% reduce probe curve to reasonable number of points (derivative does
 			% not change more than 10% between points
-			ind=ones(size(Upot));
-			ilast=1;
-			slopechange=0.2; % how much slope change is allowed
-			dudi=gradient(Upot,jProbe);
-			for ii=2:numel(Upot)
-				if abs((dudi(ii)-dudi(ilast))/dudi(ilast))<slopechange && Upot(ii)-Upot(ilast)<.4
-					ind(ii)=NaN;
-				else % keep previous point as last
-					ind(ii-1)=1;
-					ilast=ii-1;
-				end
-			end
-			Ibias = jProbe(ind==1); % bias current to probe measured with respect to sc
-			Ubias = Upot(ind==1);
+			Ibias = jProbe; % bias current to probe measured with respect to sc
+			Ubias = Upot;
 			
 			%
 			Probe = obj.ProbeList(obj.probeUsed);
@@ -496,6 +533,7 @@ classdef ui < handle
 			toppanelPlotType = get(obj.UserData.inp.toppanel.plot,'Value');
 			switch toppanelPlotType
 				case 1 % Nothing
+					cla(obj.Axes.top);
 				case 2 % Probe Resistance
 					obj.plot_resistance;
 					linkaxes([obj.Axes.bottom, obj.Axes.top],'x');
@@ -506,8 +544,12 @@ classdef ui < handle
 		end
 		function plot_resistance(obj)
 			h=obj.Axes.top;
-			vecU = obj.InputParameters.vectorU;
-			dUdI = obj.Output.dUdI;
+			U = obj.Output.U;
+			I = obj.Output.J.total;
+			vecU = (U(1:end-1) + U(2:end) ) / 2;
+			dU = U(2:end) - U(1:end-1);
+			dI = I(2:end) - I(1:end-1);
+			dUdI = dU./dI;
 			plot(h,vecU,dUdI,'k');
 			set(h,'xlim',[min(vecU) max(vecU)]);
 			grid(h,'on');
@@ -527,7 +569,7 @@ classdef ui < handle
 			%info_txt='';
 			h=obj.Axes.bottom;
 			doModelSpacecraft = obj.UserData.inp.doModelSc.Value;
-			vecU = obj.InputParameters.vectorU;
+			vecU = obj.Output.U;
 			J = obj.Output.J;
 			biasCurrentA = obj.InputParameters.biasCurrent;
 			biasCurrentMicroA = 1e6*biasCurrentA;
@@ -580,8 +622,9 @@ classdef ui < handle
 			
 			% Calculate all required values
 			dUdI = obj.Output.dUdI;
-			vecU = obj.InputParameters.vectorU;
-			J = obj.Output.J;
+			U__dUdI = obj.Output.U__dUdI;
+			vecU = obj.Output.U;
+			J    = obj.Output.J;
 			biasCurrentA = obj.InputParameters.biasCurrent;
 			biasCurrentMicroA = 1e6*biasCurrentA;
 			flagBias = biasCurrentMicroA ~= 0 && biasCurrentA>min(J.total) && -biasCurrentA<max(J.total);
@@ -604,8 +647,8 @@ classdef ui < handle
 			
 			if min(J.total)<0 && max(J.total)>0, % display information on Ufloat
 				Ufloat=interp1(J.total,vecU,0);    % floating potential
-				ii=isfinite(vecU);
-				Rfloat=interp1(vecU(ii),dUdI(ii),Ufloat);
+				ii=isfinite(U__dUdI);
+				Rfloat=interp1(U__dUdI(ii),dUdI(ii),Ufloat);
 				fcr=1/2/pi/Rfloat/probe.capacitance;
 				InfoTxt.probeFloat =['Floating probe: U =' num2str(Ufloat,3) 'V,' ...
 					' R = ' num2str(Rfloat,3) ' Ohm,' ...
@@ -739,6 +782,12 @@ classdef ui < handle
 				set(InputGui.(field).value,'String',lp.ui.field_to_vector_string(InputObject,field,SIconversion));
 			end
 			OutputGui = InputGui;
+		end
+		function [U__dUdI,dU,dUdI] = dUdI_(U,I)
+			U__dUdI = (U(1:end-1) + U(2:end) ) / 2;
+			dU = U(2:end) - U(1:end-1);
+			dI = I(2:end) - I(1:end-1);
+			dUdI = dU./dI;
 		end
 	end
 end
