@@ -58,7 +58,25 @@ function Nulls=c_4_null(R1,R2,R3,R4,B1,B2,B3,B4,varargin)
 %   of a null.
 %
 
-nCol=size(B1,2);
+%% Check TSeries
+idR = {R1,R2,R3,R4};
+idB = {B1,B2,B3,B4};
+
+if isa(B1,'TSeries') || isa(R1,'TSeries')
+for i=1:4
+if isa(idR{i},'TSeries')
+    idR{i} = [idR{i}.time.epochUnix double(idR{i}.data)];
+   
+end
+if isa(idB{i},'TSeries')
+    idB{i} =  [idB{i}.time.epochUnix double(idB{i}.data)];
+end
+end
+end
+
+%% Check variables
+
+nCol=size(idB{1,1},2);
 if nCol<4
 	error('You need the time vector for each input [t x y z]')
 end
@@ -84,52 +102,51 @@ else
 end
 
 %% Resample all input vectors to B1 timeline and remove time column
-t = B1(:,1);
-B1(:,1)=[];
+t = idB{1,1}(:,1);
+idB{1,1}(:,1)=[];
 nPoints = numel(t);
-B2 = irf_resamp(B2,t);B2(:,1)=[];
-B3 = irf_resamp(B3,t);B3(:,1)=[];
-B4 = irf_resamp(B4,t);B4(:,1)=[];
-R1 = irf_resamp(R1,t);R1(:,1)=[];
-R2 = irf_resamp(R2,t);R2(:,1)=[];
-R3 = irf_resamp(R3,t);R3(:,1)=[];
-R4 = irf_resamp(R4,t);R4(:,1)=[];
+idB{1,2} = irf_resamp(idB{1,2},t);idB{1,2}(:,1)=[];
+idB{1,3} = irf_resamp(idB{1,3},t);idB{1,3}(:,1)=[];
+idB{1,4} = irf_resamp(idB{1,4},t);idB{1,4}(:,1)=[];
+idR{1,1} = irf_resamp(idR{1,1},t);idR{1,1}(:,1)=[];
+idR{1,2} = irf_resamp(idR{1,2},t);idR{1,2}(:,1)=[];
+idR{1,3} = irf_resamp(idR{1,3},t);idR{1,3}(:,1)=[];
+idR{1,4} = irf_resamp(idR{1,4},t);idR{1,4}(:,1)=[];
 
 %% Calculate 4-s/c measures
-% Check if there's any nulls inside the s/c tetrahedron using Poincare
-% index
-gradB = c_4_grad(R1,R2,R3,R4,B1,B2,B3,B4);
+% Calculates gradB by assuming linarity between the spacecraft
+gradB = c_4_grad(idR{1,1},idR{1,2},idR{1,3},idR{1,4},idB{1,1},idB{1,2},idB{1,3},idB{1,4});
 % remove points with NaN magnetic field data
 badPoints = any(isnan(gradB(:,2:end)),2);
 if any(badPoints)
 	t(badPoints)       = [];
 	nPoints            = numel(t);
 	gradB(badPoints,:) = [];
-	R1(badPoints,:)=[];
-	R2(badPoints,:)=[];
-	R3(badPoints,:)=[];
-	R4(badPoints,:)=[];
-	B1(badPoints,:)=[];
-	B2(badPoints,:)=[];
-	B3(badPoints,:)=[];
-	B4(badPoints,:)=[];
+	idR{1,1}(badPoints,:)=[];
+	idR{1,2}(badPoints,:)=[];
+	idR{1,3}(badPoints,:)=[];
+	idR{1,4}(badPoints,:)=[];
+	idB{1,1}(badPoints,:)=[];
+	idB{1,2}(badPoints,:)=[];
+	idB{1,3}(badPoints,:)=[];
+	idB{1,4}(badPoints,:)=[];
 end
-divB  = c_4_grad(R1,R2,R3,R4,B1,B2,B3,B4,'div');
-curlB = c_4_grad(R1,R2,R3,R4,B1,B2,B3,B4,'curl');
+divB  = c_4_grad(idR{1,1},idR{1,2},idR{1,3},idR{1,4},idB{1,1},idB{1,2},idB{1,3},idB{1,4},'div');
+curlB = c_4_grad(idR{1,1},idR{1,2},idR{1,3},idR{1,4},idB{1,1},idB{1,2},idB{1,3},idB{1,4},'curl');
 j     = curlB./1.0e3.*1e-9./(4*pi*1e-7);
 
 %% Calculate the null position
 dR  = t*[0 0 0];
 dB_AB = t*0;
-B41v = B1-B4;
-B42v = B2-B4;
-B43v = B3-B4;
-B12v = B2-B1;
-B13v = B3-B1;
+B41v = idB{1,1}-idB{1,4};
+B42v = idB{1,2}-idB{1,4};
+B43v = idB{1,3}-idB{1,4};
+B12v = idB{1,2}-idB{1,1};
+B13v = idB{1,3}-idB{1,1};
 
 %Calculates mean position and magnetic field for the spacecraft tetrahedron
-Rmean=0.25.*(R1+R2+R3+R4);
-Bmean=0.25.*(B1+B2+B3+B4);
+Rmean=0.25.*(idR{1,1}+idR{1,2}+idR{1,3}+idR{1,4});
+Bmean=0.25.*(idB{1,1}+idB{1,2}+idB{1,3}+idB{1,4});
 % 1) calculate the distance on null from the center of the four satellites
 
 for i=1:nPoints
@@ -164,12 +181,12 @@ dB_AB(:,1)=1./(max(([l1 l2 l3 l4]),[],2));
 %% Check if box satisfies boxLim conditions and null is within box
 % Calculate the minimum and maximum values for all s/c's in each direction
 % to see the distance among s/c's
-minX = min(([R1(:,1) R2(:,1) R3(:,1) R4(:,1)]),[],2);
-maxX = max(([R1(:,1) R2(:,1) R3(:,1) R4(:,1)]),[],2);
-minY = min(([R1(:,2) R2(:,2) R3(:,2) R4(:,2)]),[],2);
-maxY = max(([R1(:,2) R2(:,2) R3(:,2) R4(:,2)]),[],2);
-minZ = min(([R1(:,3) R2(:,3) R3(:,3) R4(:,3)]),[],2);
-maxZ = max(([R1(:,3) R2(:,3) R3(:,3) R4(:,3)]),[],2);
+minX = min(([idR{1,1}(:,1) idR{1,2}(:,1) idR{1,3}(:,1) idR{1,4}(:,1)]),[],2);
+maxX = max(([idR{1,1}(:,1) idR{1,2}(:,1) idR{1,3}(:,1) idR{1,4}(:,1)]),[],2);
+minY = min(([idR{1,1}(:,2) idR{1,2}(:,2) idR{1,3}(:,2) idR{1,4}(:,2)]),[],2);
+maxY = max(([idR{1,1}(:,2) idR{1,2}(:,2) idR{1,3}(:,2) idR{1,4}(:,2)]),[],2);
+minZ = min(([idR{1,1}(:,3) idR{1,2}(:,3) idR{1,3}(:,3) idR{1,4}(:,3)]),[],2);
+maxZ = max(([idR{1,1}(:,3) idR{1,2}(:,3) idR{1,3}(:,3) idR{1,4}(:,3)]),[],2);
 
 %For each eigenvalue corresponding to the tolerance level (the two errors
 %less or equal to 40%) break out their corresponding time and dR value 
@@ -193,10 +210,10 @@ end
 %Removes nulls not within spacecraft box
 t(~okNulls)       = [];
 gradB(~okNulls,:) = [];
-B1(~okNulls,:)=[];
-B2(~okNulls,:)=[];
-B3(~okNulls,:)=[];
-B4(~okNulls,:)=[];
+idB{1,1}(~okNulls,:)=[];
+idB{1,2}(~okNulls,:)=[];
+idB{1,3}(~okNulls,:)=[];
+idB{1,4}(~okNulls,:)=[];
 dB_AB(~okNulls,:)=[];
 R(~okNulls,:)=[];
 dR(~okNulls,:)=[];
@@ -229,10 +246,10 @@ j(badPoints,:) = [];
 R(badPoints,:)=[];
 dR(badPoints,:)=[];
 dB_AB(badPoints,:)=[];
-B1(badPoints,:)=[];
-B2(badPoints,:)=[];
-B3(badPoints,:)=[];
-B4(badPoints,:)=[];
+idB{1,1}(badPoints,:)=[];
+idB{1,2}(badPoints,:)=[];
+idB{1,3}(badPoints,:)=[];
+idB{1,4}(badPoints,:)=[];
 eigValues(badPoints,:)  = [];
 eigVectors(badPoints,:) = [];
 eigValErr(badPoints,:)  = [];
@@ -282,7 +299,7 @@ Nulls.eigenvectorCorrespondingToSpine=[eigenspine1 eigenspine2 eigenspine3];
 Nulls.error=eigValErr;
 
 %Calculates Poincare index
-index=c_4_poincare_index(B1,B2,B3,B4);
+index=c_4_poincare_index(idB{1,1},idB{1,2},idB{1,3},idB{1,4});
 Nulls.poincareindex       = index;
 
 %Minimum fluctuations
