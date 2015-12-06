@@ -114,7 +114,7 @@ switch varStr
         if isempty(dTmp)
           % Load from QL B
           dTmp = mms.db_get_ts(['mms' mmsIdS '_dfg_srvy_ql'],...
-            ['mms' mmsIdS '_ql_pos_gse' cS],TintTmp);
+            ['mms' mmsIdS '_ql_pos_' cS],TintTmp);
         end
       end
       if isempty(dTmp), continue, end
