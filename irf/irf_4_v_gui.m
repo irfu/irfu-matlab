@@ -20,6 +20,13 @@ function out = irf_4_v_gui(varargin)
 %   The function first tries to load position data from local disk. For
 %   Cluster, data might be downloaded.
 %
+%   Examples:
+%       irf_4_v_gui('B?','mms',3) % Loads position data of MMS from disk.
+%
+%       % First read predicted position data from dfg cdf file.
+%       c_eval('R?=mms.db_get_ts(''mms?_dfg_srvy_ql'',''mms?_ql_pos_gse'',tint);',1:4)
+%       irf_4_v_gui('B?','R?') % Input both field and position
+%
 %   See also: IRF_4_V
 
 persistent ud
