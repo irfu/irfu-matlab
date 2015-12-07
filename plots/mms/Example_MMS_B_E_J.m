@@ -16,7 +16,9 @@ Bxyzav = TSeries(Bxyz1.time,Bxyzav,'to',1);
 
 c_eval('Exyz?=mms.db_get_ts(''mms?_edp_fast_ql_dce2d'',''mms?_edp_dce_xyz_dsl'',Tint);');
 c_eval('Exyz? = Exyz?.resample(Exyz1);',2:4);
-c_eval('Exyz?.data(find(abs(Exyz?.data) > 100)) = NaN;'); %Remove some questionable fields
+%c_eval('Exyz?.data(find(abs(Exyz?.data) > 100)) = NaN;'); %Remove some questionable fields
+c_eval('[Exyz?,~]=irf_edb(Exyz?,Bxyz?,15,''E.B=0'');',[1:4]); % Removes some wake fields
+
 Exyzav = (Exyz1.data+Exyz2.data+Exyz3.data+Exyz4.data)/4;
 Exyzav = TSeries(Exyz1.time,Exyzav,'to',1);
 
@@ -35,7 +37,7 @@ divovercurl = divB;
 divovercurl.data = abs(divovercurl.data)./j.abs.data;
 
 % Transform current density into field-aligned coordinates
-SCpos = [0 1 0];
+SCpos = [1 0 0]; % J_perp1 is closest to X direction
 
 Bmag = Bxyz1.abs.data;
 Rpar = Bxyz1.data./[Bmag Bmag Bmag];
@@ -80,7 +82,6 @@ hca = irf_panel('divovercurl');
 irf_plot(hca,divovercurl);
 ylabel(hca,{'|\nabla . B|','|\nabla \times B|'},'Interpreter','tex');
 irf_legend(hca,'(e)',[0.99 0.98],'color','k')
-set(hca,'yscale','log');
 
 hca = irf_panel('EMMS1');
 irf_plot(hca,Exyzav);
