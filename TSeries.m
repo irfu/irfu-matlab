@@ -833,7 +833,14 @@ classdef TSeries
       [srt_time, srt] = sort(Tmptime);
       [Tmptime, usrt] = unique(srt_time);
       Tmpdata = Tmpdata(srt(usrt),:);
-      Ts = TSeries(EpochTT(Tmptime), Tmpdata); % Combined TSeries
+      if(obj.tensorOrder==0)
+        Ts = TSeries(EpochTT(Tmptime), Tmpdata, ...
+          'tensorOrder', obj.tensorOrder);
+      else
+        Ts = TSeries(EpochTT(Tmptime), Tmpdata, ...
+          'tensorOrder', obj.tensorOrder, ...
+          'tensorBasis', obj.BASIS{obj.tensorBasis_}); % Combined TSeries
+      end
       % Perhaps fix a better combination of metadata, for now keep "obj".
       Ts.name = obj.name;
       Ts.units = obj.units;

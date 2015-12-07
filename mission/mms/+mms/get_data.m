@@ -118,7 +118,7 @@ switch varStr
         end
       end
       if isempty(dTmp), continue, end
-      
+      dTmp = comb_ts(dTmp);
       dTmp.data = double(dTmp.data);
       dTmpR = dTmp.resample(res.time,'spline');
       res.([cS vC mmsIdS]) = dTmpR.data; 
@@ -151,7 +151,9 @@ end
 end %% MAIN
 
 function TsOut = comb_ts(TsIn)
-if ~iscell(TsIn), TsOut = TsIn; return; end
-TsOut = TsIn{1};
-for i=2:numel(TsIn), TsOut.combine(TsIn{i}); end
+ if ~iscell(TsIn), TsOut = TsIn; return; end
+ TsOut = TsIn{1};
+ for i=2:numel(TsIn)
+  TsOut = combine(TsOut, TsIn{i});
+ end
 end
