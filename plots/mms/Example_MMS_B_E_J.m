@@ -4,27 +4,29 @@
 
 mms.db_init('local_file_db','/data/mms');
 
-tint = irf.tint('2015-10-01T06:30:00.00Z/2015-10-01T07:20:00.00Z');
+Tint = irf.tint('2015-10-01T06:30:00.00Z/2015-10-01T07:20:00.00Z');
 
 %%
 ic = 1; %get density from this spacecraft
 
-c_eval('Bxyz?=mms.db_get_ts(''mms?_dfg_srvy_ql'',''mms?_dfg_srvy_dmpa'',tint);');
+c_eval('Bxyz?=mms.db_get_ts(''mms?_dfg_srvy_ql'',''mms?_dfg_srvy_dmpa'',Tint);');
 c_eval('Bxyz? = Bxyz?.resample(Bxyz1);',2:4);
 Bxyzav = (Bxyz1.data+Bxyz2.data+Bxyz3.data+Bxyz4.data)/4;
 Bxyzav = TSeries(Bxyz1.time,Bxyzav,'to',1);
 
-c_eval('Exyz?=mms.db_get_ts(''mms?_edp_fast_ql_dce2d'',''mms?_edp_dce_xyz_dsl'',tint);');
+c_eval('Exyz?=mms.db_get_ts(''mms?_edp_fast_ql_dce2d'',''mms?_edp_dce_xyz_dsl'',Tint);');
 c_eval('Exyz? = Exyz?.resample(Exyz1);',2:4);
-c_eval('Exyz?.data(find(abs(Exyz?.data) > 100)) = NaN;'); %Remove some questionable fields
+%c_eval('Exyz?.data(find(abs(Exyz?.data) > 100)) = NaN;'); %Remove some questionable fields
+c_eval('[Exyz?,~]=irf_edb(Exyz?,Bxyz?,15,''E.B=0'');',[1:4]); % Removes some wake fields
+
 Exyzav = (Exyz1.data+Exyz2.data+Exyz3.data+Exyz4.data)/4;
 Exyzav = TSeries(Exyz1.time,Exyzav,'to',1);
 
-c_eval('ni=mms.db_get_ts(''mms?_fpi_fast_sitl'',''mms?_fpi_DISnumberDensity'',tint);',ic);
+c_eval('ni=mms.db_get_ts(''mms?_fpi_fast_sitl'',''mms?_fpi_DISnumberDensity'',Tint);',ic);
 ni = TSeries(ni.time,ni.data,'to',1);
 ni = ni.resample(Bxyz1);
 
-R  = mms.get_data('R_gse',tint);
+R  = mms.get_data('R_gse',Tint);
 c_eval('Rxyz? = irf.ts_vec_xyz(R.time,R.gseR?);');
 c_eval('Rxyz? = Rxyz?.resample(Bxyz1);');
 
@@ -35,7 +37,7 @@ divovercurl = divB;
 divovercurl.data = abs(divovercurl.data)./j.abs.data;
 
 % Transform current density into field-aligned coordinates
-SCpos = [0 1 0];
+SCpos = [1 0 0]; % J_perp1 is closest to X direction
 
 Bmag = Bxyz1.abs.data;
 Rpar = Bxyz1.data./[Bmag Bmag Bmag];
@@ -50,7 +52,8 @@ jpar = dot(Rpar,j.data,2);
 jperp = dot(Rperpx,j.data,2);
 jperp2 = dot(Rperpy,j.data,2);
 
-jfac = TSeries(j.time,[jperp jperp2 jpar],'to',1);
+jfac = irf.ts_vec_xyz(j.time,[jperp jperp2 jpar]);
+jfac.coordinateSystem = 'FAC';
 
 %%
 h = irf_plot(7,'newfigure');
@@ -79,7 +82,6 @@ hca = irf_panel('divovercurl');
 irf_plot(hca,divovercurl);
 ylabel(hca,{'|\nabla . B|','|\nabla \times B|'},'Interpreter','tex');
 irf_legend(hca,'(e)',[0.99 0.98],'color','k')
-set(hca,'yscale','log');
 
 hca = irf_panel('EMMS1');
 irf_plot(hca,Exyzav);
@@ -107,4 +109,4 @@ irf_legend(hca,'(g)',[0.99 0.98],'color','k')
 title(h(1),strcat('MMS',num2str(ic),'- Current density and fields'));
 
 irf_plot_axis_align(1,h(1:7))
-irf_zoom(h(1:7),'x',tint);
+irf_zoom(h(1:7),'x',Tint);
