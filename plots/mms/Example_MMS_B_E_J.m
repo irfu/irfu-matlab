@@ -4,7 +4,7 @@
 
 mms.db_init('local_file_db','/data/mms');
 
-Tint = irf.Tint('2015-10-01T06:30:00.00Z/2015-10-01T07:20:00.00Z');
+Tint = irf.tint('2015-10-01T06:30:00.00Z/2015-10-01T07:20:00.00Z');
 
 %%
 ic = 1; %get density from this spacecraft
