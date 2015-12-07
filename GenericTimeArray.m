@@ -302,7 +302,7 @@ classdef (Abstract) GenericTimeArray
     function [idxLim,res] = tlimPrivate(obj,inp,mode)
       % Private version of tLim, can be reloaded
       if mode==0
-        idxLim = find((obj.epoch >= inp.epoch(1)) & (obj.epoch < inp.epoch(end)));
+        idxLim = find((obj.epoch >= inp.epoch(1)) & (obj.epoch <= inp.epoch(end)));
       else
         idxLim = find((obj.epoch < inp.epoch(1)) | (obj.epoch > inp.epoch(end)));
       end

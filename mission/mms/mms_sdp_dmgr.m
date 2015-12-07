@@ -769,7 +769,7 @@ classdef mms_sdp_dmgr < handle
             single(double(DATAC.dce.(sen).data) - model.(sen));
           idx = abs(model.(sen))>MODEL_THRESHOLD;
           DATAC.dce.(sen).bitmask(idx) = ...
-            bitand(DATAC.dce.(sen).bitmask(idx), MSK_SHADOW);
+            bitor(DATAC.dce.(sen).bitmask(idx), MSK_SHADOW);
         end
       end
       

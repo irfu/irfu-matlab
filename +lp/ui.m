@@ -659,8 +659,8 @@ classdef ui < handle
 			if flagBias,%flag_add_bias_point_values,
 				biasCurrentA = obj.InputParameters.biasCurrent;
 				Ubias=interp1(J.total,vecU,-biasCurrentA); % floating potential
-				ii=isfinite(vecU);
-				Rbias=interp1(vecU(ii),dUdI(ii),Ubias);
+				ii=isfinite(U__dUdI);
+				Rbias=interp1(U__dUdI(ii),dUdI(ii),Ubias);
 				fcr=1/2/pi/Rbias/probe.capacitance;
 				InfoTxt.probeBias =['Biased probe: U =' num2str(Ubias,3) 'V,' ...
 					' R = ' num2str(Rbias,3) ' Ohm,' ...

@@ -177,11 +177,18 @@ for iSc = 1:numel(inArg.scId)
           epoch = EpochTT(unique(sort(epoch)));
           % Keep only epoch times within valid epoch interval.
           epoch = epoch(epoch.tlim(validEpoch));
-          if(length(epoch)<2)
+          if(isempty(epoch))
             % Don't bother with invalid files.
             errStr = ['TT2000 variable did not contain any valid time interval for file: ', listFiles{ii}];
             irf.log('critical', errStr); %warning(errStr);
             continue;
+          elseif(length(epoch)==1)
+            errStr = ['TT2000 variable only contained one valid timestamp for file: ',listFiles{ii}];
+            irf.log('warning',errStr);
+            tmp_epoch = epoch.epoch;
+            clear epoch
+            epoch.start.epoch = tmp_epoch;
+            epoch.stop.epoch = tmp_epoch;
           end
           % When we reach this nothing has gone wrong so store file name and
           % interval.
@@ -224,7 +231,7 @@ cd(oldPwd);
     default.scId = {'1','2','3','4'}; % All four MMS spacecrafts
     default.dataSet = {'afg', 'asp1', 'asp2', 'aspoc', 'dfg', 'dsp', ...
       'edi', 'edp', 'epd-eis', 'feeps', 'fields', 'fpi', 'hpca', 'mec', ...
-      'scm', 'sdp', 'defatt', 'defeph'}; % All instruments as well as defatt & defeph
+      'scm', 'defatt', 'defeph'}; % All instruments as well as defatt & defeph
     dataPathRoot = getenv('DATA_PATH_ROOT');
     if isempty(dataPathRoot)
       dataPathRoot = [filesep,'data',filesep,'mms']; % default MMS path at IRFU
