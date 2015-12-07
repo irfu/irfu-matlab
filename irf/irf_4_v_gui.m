@@ -10,7 +10,7 @@ function out = irf_4_v_gui(varargin)
 %   
 %   IRF_4_V_GUI('B?','R?') uses variables B1,B2,B3,B4 and R1,R2,R3,R4 in
 %   Workspace. R? is a Nx4 matrix which contains time data (Cluster
-%   format).
+%   format). R? can also be TSeries objects.
 %
 %   IRF_4_V_GUI(B1,B2,B3,B4,R1,R2,R3,R4) Also possible.
 %
@@ -44,7 +44,13 @@ else
         end
         if ischar(varargin{2}) && ~isempty(strfind(varargin{2},'?'))
             ud.pos_str = varargin{2};
-            c_eval('ud.pos?=evalin(''base'',irf_ssub(ud.pos_str,?));');
+            c_eval('R?=evalin(''base'',irf_ssub(ud.pos_str,?));');
+            if isa(R1,'TSeries')
+                ud = r_ts2mat(ud,R1,R2,R3,R4);
+            else
+                c_eval('ud.pos?=R?;',1:4)
+            end
+            
         end
         % Set the rest of parameters if applicable
         ud = set_col_and_sc(ud,varargin{2:end});
@@ -64,10 +70,17 @@ else
         ud.var4 = varargin{4};
         ud.variable_str = [inputname(1) '..' inputname(4)];
         
-        ud.pos1 = varargin{5};
-        ud.pos2 = varargin{6};
-        ud.pos3 = varargin{7};
-        ud.pos4 = varargin{8};
+        R1 = varargin{5};
+        R2 = varargin{6};
+        R3 = varargin{7};
+        R4 = varargin{8};
+        
+        if isa(R1,'TSeries')
+            ud = r_ts2mat(ud,R1,R2,R3,R4);
+        else
+            c_eval('ud.pos?=R?;',1:4)
+        end
+        
         ud = set_col_and_sc(ud,varargin{9:end});
     
     else
@@ -527,9 +540,14 @@ end
 function ud = set_col_and_sc(ud,x1,x2)
 %   sets the values ud.var_col and ud.sc appropriately, the order does not matter.
 
+% Supported spacecraft
+psc = {'mms','cluster'};
+
 if nargin >= 2
     if ischar(x1)
-        ud.sc = x1;
+        if ismember(x1,psc)
+            ud.sc = x1;
+        end
         ud.var_col = 2;
     else
         ud.var_col = x1;
@@ -538,7 +556,9 @@ end
 
 if nargin == 3
     if ischar(x2)
-        ud.sc = x2;
+        if ismember(x2,psc)
+            ud.sc = x2;
+        end
     else
         ud.var_col = x2;
     end
@@ -549,6 +569,12 @@ if nargin == 1
 end
 
 end
+
+% Position TSeries to Matricies
+function ud = r_ts2mat(ud,R1,R2,R3,R4)
+c_eval('ud.pos?=[R?.time.epochUnix,double(R?.data(:,1:3))];',1:4)
+end
+
 
 %% Get position functions
 function ud = get_mms_pos(ud) 
@@ -567,6 +593,10 @@ ud.pos1 = [T,R.gseR1];
 ud.pos2 = [T,R.gseR2];
 ud.pos3 = [T,R.gseR3];
 ud.pos4 = [T,R.gseR4];
+
+if ~is_pos_ok(ud)
+    error('Unable to read MMS position data.')
+end
 
 end
 
@@ -608,7 +638,7 @@ if ~is_pos_ok(ud)
     disp('');
 end
 if ~is_pos_ok(ud)
-    irf.log('warning','!!! Could not obtain position data !!!');
+    irf.log('warning','!!! Could not obtain Cluster position data !!!');
     return
 end
 end
