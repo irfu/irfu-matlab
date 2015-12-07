@@ -64,6 +64,7 @@ classdef ui < handle
 			obj.plasmaUsed = 2;
 			obj.set_plasma_model(obj.plasmaUsed);
 			obj.set_probe_model(  obj.probeUsed);
+			obj.get_u_interval;
 		end
 		function new_ide(obj)
 			%% initialize figure
@@ -284,12 +285,18 @@ classdef ui < handle
 		end
 		function get_u_interval(obj)
 			vectorUString = get(obj.UserData.inp.vectorUValue,'String'); % in cm
+			obj.InputParameters.vectorUonlyMinMaxGiven = false;
 			if isempty(vectorUString),
 				vectorUString = '-5:10';
-				set(obj.UserData.inp.vectorUValue,'String',vectorUString)
+				set(obj.UserData.inp.vectorUValue,'String',vectorUString);
 			end
 			obj.InputParameters.vectorUString = vectorUString;
-			obj.InputParameters.vectorU = eval(vectorUString);
+			obj.InputParameters.vectorU = eval(['[' vectorUString ']']);
+			if numel(obj.InputParameters.vectorU) == 2, % only min and max are given
+				obj.InputParameters.vectorU = obj.InputParameters.vectorU(1)*[1 0.75 0.5 0.25 0] +...
+					obj.InputParameters.vectorU(2)*[0 0.25 0.5 0.75 1];
+				obj.InputParameters.vectorUonlyMinMaxGiven = true;
+			end
 		end
 		
 		function set_probe_model(obj,varargin)
@@ -392,77 +399,109 @@ classdef ui < handle
 		function get_probe_current(obj)
 			ProbeToUse = obj.ProbeList(obj.probeUsed);
 			ProbeToUse.surfacePhotoemission = obj.ProbeSurfacePhotoemission(obj.probeSurfaceUsed);
-			jProbe = lp.current(ProbeToUse,...
-				obj.InputParameters.vectorU,...
-				obj.InputParameters.rSunAU,...
-				obj.InputParameters.factorUV,...
-				obj.PlasmaList(obj.plasmaUsed));
+			slopeChangeMax=1.3; % how big maximum relative slope change is allowed
+ 			slopeChangeMin=1+(slopeChangeMax-1)/4;
+			vecU = obj.InputParameters.vectorU;
+			doIterationToFindUI = true;
+			while doIterationToFindUI
+				jProbe = lp.current(ProbeToUse,vecU,...
+					obj.InputParameters.rSunAU,...
+					obj.InputParameters.factorUV,...
+					obj.PlasmaList(obj.plasmaUsed));
+				I = jProbe.total;
+				[U__dUdI,dU,dUdI] = obj.dUdI_(vecU,I);
+				if obj.InputParameters.vectorUonlyMinMaxGiven
+					doIterationToRemoveMins = true;
+					vecUnew = vecU;
+					while doIterationToRemoveMins
+						[U__dUdI,dU,dUdI] = obj.dUdI_(vecUnew,I);
+						slopeChanges = abs(dUdI(2:end)./dUdI(1:end-1));
+						ii = find(slopeChanges<1);
+						slopeChanges(ii) = 1./slopeChanges(ii);
+						iMin = find(slopeChanges < slopeChangeMin)+1; % find points where slope changes little in both directions from the point
+						if any(iMin),
+							vecUnew(iMin(1:2:end)) = [];
+							I(iMin(1:2:end)) =[];
+						else
+							doIterationToRemoveMins = false;
+						end
+					end
+					iMax = find((slopeChanges > slopeChangeMax) & ((dU(1:end-1) > 0.2) & (dU(2:end) > 0.2)));
+					if any(iMax)
+						for j=numel(iMax):-1:1
+							vecUnew = [vecUnew(1:iMax(j)) ...
+								[vecUnew(iMax(j))   vecUnew(iMax(j)+1)]*[0.7 0.3;0.3 0.7]...
+								[vecUnew(iMax(j)+1) vecUnew(iMax(j)+2)]*[0.7 0.3;0.3 0.7]...
+								vecUnew(iMax(j)+2:end)];
+						end
+					end
+					if isempty(iMax)
+						doIterationToFindUI = false;
+					else
+						vecU = vecUnew;
+					end
+				else
+					doIterationToFindUI = false;
+				end
+			end
 			obj.Output.J = jProbe;
-			obj.Output.dUdI=gradient(obj.InputParameters.vectorU,obj.Output.J.total);
+			obj.Output.U = vecU;
+			obj.Output.U__dUdI = U__dUdI;
+			obj.Output.dUdI = dUdI;
 		end
 		function get_probe_and_spacecraft_current(obj)
 			obj.get_probe_current;
-			Upot   = obj.InputParameters.vectorU;
+			Upot   = obj.Output.U;
 			jProbe = obj.Output.J.total;
 			obj.Output.J.sc=lp.current(obj.SpacecraftList(obj.spacecraftUsed),...
 				Upot,...
 				obj.InputParameters.rSunAU,...
 				obj.InputParameters.factorUV,...
 				obj.PlasmaList(obj.plasmaUsed));
-			ud.dUdI.sc=gradient(Upot,obj.Output.J.sc.total);
+			obj.Output.UI.dUdIsat=gradient(Upot,obj.Output.J.sc.total);
 			% reduce probe curve to reasonable number of points (derivative does
 			% not change more than 10% between points
-			ind=ones(size(Upot));
-			ilast=1;
-			slopechange=0.2; % how much slope change is allowed
-			dudi=gradient(Upot,jProbe);
-			for ii=2:numel(Upot)
-				if abs((dudi(ii)-dudi(ilast))/dudi(ilast))<slopechange && Upot(ii)-Upot(ilast)<.4
-					ind(ii)=NaN;
-				else % keep previous point as last
-					ind(ii-1)=1;
-					ilast=ii-1;
-				end
-			end
-			Ibias = jProbe(ind==1); % bias current to probe measured with respect to sc
-			Ubias = Upot(ind==1);
+			Ibias = jProbe; % bias current to probe measured with respect to sc
+			Ubias = Upot;
 			
 			%
-			antena_guard_area_factor=(ud.probe.cross_section_area+ud.sc.antenna_guard_area/ud.sc.number_of_probes)/ud.probe.cross_section_area;
+			Probe = obj.ProbeList(obj.probeUsed);
+			Sc    = obj.SpacecraftList(obj.spacecraftUsed);
+			antena_guard_area_factor=(Probe.Area.sunlit+Sc.areaSunlitGuard/Sc.nProbes)/Probe.Area.sunlit;
 			Iprobe=Ibias*antena_guard_area_factor;
 			% zero approximation
-			Isat=ud.sc.number_of_probes*Iprobe;
-			Usatsweep=interp1(J_sc,Upot,Isat/5,'nearest'); % floating potential of sc during sweep, assuming of only 1/5 of bias current electrons esacpe to space
+			Isat=Sc.nProbes*Iprobe;
+			Usatsweep=interp1(obj.Output.J.sc.total,Upot,Isat/5,'nearest'); % floating potential of sc during sweep, assuming that only 1/5 of bias current electrons esacpe to space
 			Isat_probe_photoelectrons=Isat*0; % electrons from probes hitting spacecraft
 			Uprobe2plasma=zeros(size(Ibias)); % initialize
 			Uproberefsweep=zeros(size(Ibias)); % initialize
 			Jprobephotoreturn=zeros(size(Ibias)); % initialize
 			FitError=zeros(size(Ibias)); % initialize
-			refpotvec=Ubias(1:4:end)*ud.probe_refpot_as_fraction_of_scpot;
+			refpotvec=Ubias(1:4:end)*Sc.probeRefPotVsSatPot;
 			[probepotgrid,refpotgrid] = meshgrid(Ubias,refpotvec);
-			Jprobephotogrid=lp.probe_current(probe,probepotgrid-refpotgrid,ud.R_sun,ud.UV_factor,[]);
-			Jprobephotoescapingscgrid=lp.probe_current(probe,probepotgrid,ud.R_sun,ud.UV_factor,[]);
-			Jprobeplasmagrid=lp.probe_current(probe,probepotgrid,ud.R_sun,0,ud);
-			Jprobegrid=Jprobeplasmagrid+Jprobephotogrid;
-			Jprobephotoe2scgrid=Jprobephotogrid-Jprobephotoescapingscgrid;
+			Jprobephotogrid=lp.current(Probe,probepotgrid-refpotgrid,obj.InputParameters.rSunAU,obj.InputParameters.factorUV,[]);
+			Jprobephotoescapingscgrid=lp.current(Probe,probepotgrid,obj.InputParameters.rSunAU,obj.InputParameters.factorUV,[]);
+			Jprobeplasmagrid=lp.current(Probe,probepotgrid,obj.InputParameters.rSunAU,0,obj.PlasmaList(obj.plasmaUsed));
+			jProbegrid=Jprobeplasmagrid.total+Jprobephotogrid.total;
+			jProbephotoe2scgrid=Jprobephotogrid.total-Jprobephotoescapingscgrid.total;
 			for ii=1:numel(Iprobe),
 				% plasma current with UV factor zero
 				satpot=Usatsweep(ii);
-				uprobe=interp1(J_probe,Upot,Ibias(ii))+satpot*ud.probe_refpot_as_fraction_of_scpot;
+				uprobe=interp1(jProbe,Upot,Ibias(ii))+satpot*Sc.probeRefPotVsSatPot;
 				ibias=Ibias(ii);
 				jj=1;
 				err=1;
 				while err > .001 && jj<10
-					refpot=satpot*ud.probe_refpot_as_fraction_of_scpot;
+					refpot=satpot*Sc.probeRefPotVsSatPot;
 					if isnan(refpot), break; end
-					uprobe=interp1(interp1(refpotvec,Jprobegrid,refpot,'linear','extrap'),Ubias,ibias);
-					if isnan(uprobe); uprobe=interp1(J_probe,Upot,Ibias(ii))+satpot*ud.probe_refpot_as_fraction_of_scpot;end
-					J_probe_photoe2sc=interp2(probepotgrid,refpotgrid,Jprobephotoe2scgrid,uprobe,refpot);
-					new_Isat_probe_photoelectrons=-J_probe_photoe2sc*antena_guard_area_factor*ud.sc.number_of_probes;
+					uprobe=interp1(interp1(refpotvec,jProbegrid,refpot,'linear','extrap'),Ubias,ibias);
+					if isnan(uprobe); uprobe=interp1(jProbe,Upot,Ibias(ii))+satpot*Sc.probeRefPotVsSatPot;end
+					J_probe_photoe2sc=interp2(probepotgrid,refpotgrid,jProbephotoe2scgrid,uprobe,refpot);
+					new_Isat_probe_photoelectrons=-J_probe_photoe2sc*antena_guard_area_factor*Sc.nProbes;
 					err=abs(new_Isat_probe_photoelectrons-Isat_probe_photoelectrons(ii))/abs(new_Isat_probe_photoelectrons);
 					if isnan(err), err=0; end
 					Isat_probe_photoelectrons(ii)=new_Isat_probe_photoelectrons;
-					satpot=interp1(J_sc,Upot,-Isat(ii)-Isat_probe_photoelectrons(ii));
+					satpot=interp1(obj.Output.J.sc.total,Upot,-Isat(ii)-Isat_probe_photoelectrons(ii));
 					jj=jj+1;
 				end
 				FitError(ii)=err;
@@ -472,14 +511,19 @@ classdef ui < handle
 				Uproberefsweep(ii)=refpot;
 			end
 			
-			Uprobe2sc        =Uprobe2plasma-Usatsweep;
-			Uprobe2refpot    =Uprobe2plasma-Uproberefsweep;
-			dUdI_probe2plasma=gradient(Uprobe2plasma,Ibias);
-			dUdI_probe2sc    =gradient(Uprobe2sc,Ibias);
-			dUdI_probe2refpot=gradient(Uprobe2refpot,Ibias);
-			dUdI             =dUdI_probe2refpot;
-			Upot             =Uprobe2refpot;
-			J_probe          =Ibias;
+			obj.Output.UI.Jprobephotoreturn= Jprobephotoreturn;
+			obj.Output.UI.Ubias            = Ubias;
+			obj.Output.UI.Usatsweep        = Usatsweep;
+			obj.Output.UI.Ibias            = Ibias;
+			obj.Output.UI.Uprobe2plasma    = Uprobe2plasma;
+			obj.Output.UI.Uprobe2sc        = Uprobe2plasma-Usatsweep;
+			obj.Output.UI.Uprobe2refpot    = Uprobe2plasma-Uproberefsweep;
+			obj.Output.UI.dUdI_probe2plasma= gradient(Uprobe2plasma,Ibias);
+			obj.Output.UI.dUdI_probe2sc    = gradient(obj.Output.UI.Uprobe2sc,Ibias);
+			obj.Output.UI.dUdI_probe2refpot= gradient(obj.Output.UI.Uprobe2refpot,Ibias);
+			obj.Output.UI.dUdI             = obj.Output.UI.dUdI_probe2refpot;
+			obj.Output.UI.Upot             = obj.Output.UI.Uprobe2refpot;
+			obj.Output.UI.J_probe          = Ibias;
 		end
 		function plot_ui(obj)
 			% Bottom axes
@@ -489,6 +533,7 @@ classdef ui < handle
 			toppanelPlotType = get(obj.UserData.inp.toppanel.plot,'Value');
 			switch toppanelPlotType
 				case 1 % Nothing
+					cla(obj.Axes.top);
 				case 2 % Probe Resistance
 					obj.plot_resistance;
 					linkaxes([obj.Axes.bottom, obj.Axes.top],'x');
@@ -499,8 +544,12 @@ classdef ui < handle
 		end
 		function plot_resistance(obj)
 			h=obj.Axes.top;
-			vecU = obj.InputParameters.vectorU;
-			dUdI = obj.Output.dUdI;
+			U = obj.Output.U;
+			I = obj.Output.J.total;
+			vecU = (U(1:end-1) + U(2:end) ) / 2;
+			dU = U(2:end) - U(1:end-1);
+			dI = I(2:end) - I(1:end-1);
+			dUdI = dU./dI;
 			plot(h,vecU,dUdI,'k');
 			set(h,'xlim',[min(vecU) max(vecU)]);
 			grid(h,'on');
@@ -519,11 +568,12 @@ classdef ui < handle
 			% plot IU curve
 			%info_txt='';
 			h=obj.Axes.bottom;
-			vecU = obj.InputParameters.vectorU;
+			doModelSpacecraft = obj.UserData.inp.doModelSc.Value;
+			vecU = obj.Output.U;
 			J = obj.Output.J;
 			biasCurrentA = obj.InputParameters.biasCurrent;
 			biasCurrentMicroA = 1e6*biasCurrentA;
-			flagBias = biasCurrentMicroA ~= 0 && biasCurrentA>min(J.probe) && -biasCurrentA<max(J.probe);
+			flagBias = biasCurrentMicroA ~= 0 && biasCurrentA>min(J.total) && -biasCurrentA<max(J.total);
 
 			plot(h,vecU, J.total*1e6,'k');
 			set(h,'xlim',[min(vecU) max(vecU)]);
@@ -533,17 +583,36 @@ classdef ui < handle
 			
 			% Add photoelectron current
 			hold(h,'on');
-			plot(h,vecU,J.photo*1e6,'r','linewidth',0.5);
-			irf_legend(h,'    total',      [0.98 0.03],'color','k');
-			irf_legend(h,' photoelectrons',[0.98 0.08],'color','r');
-			clr=[0.5 0 0; 0 0.5 0; 0 0 0.5];
-			for ii=1:length(J.plasma),
-				plot(h,vecU,J.plasma{ii}*1e6,'linewidth',.5,'color',clr(:,ii));
-				irf_legend(h,['plasma ' num2str(ii)],[0.98 0.08+ii*0.05],'color',clr(:,ii));
-			end
-			if flagBias % draw bias current line
-				plot(h,[vecU(1) vecU(end)],biasCurrentMicroA.*[-1 -1],'k-.','linewidth',0.5);
-				text(vecU(1),-biasCurrentMicroA,'-bias','parent',h,'horizontalalignment','left','verticalalignment','bottom');
+			if doModelSpacecraft
+				plot(h,obj.Output.UI.Ubias,obj.Output.UI.Ibias*1e6,'k','linewidth',0.5);
+				plot(h,obj.Output.UI.Uprobe2plasma,obj.Output.UI.Ibias*1e6,'r.','linewidth',1.5);
+				plot(h,obj.Output.UI.Uprobe2sc,obj.Output.UI.Ibias*1e6,'b','linewidth',1.5);
+				plot(h,obj.Output.UI.Uprobe2sc,obj.Output.UI.Jprobephotoreturn*1e6,'color',[0 0.5 0],'linewidth',1.5);
+				plot(h,obj.Output.UI.Usatsweep,obj.Output.UI.Ibias*1e6,'color',[0.5 0 0.5],'linewidth',1);
+				irf_legend(h,'probe to plasma',[1 1.01],'color','r');
+				irf_legend(h,'probe to reference',[1 1.05],'color','k');
+				irf_legend(h,'probe to spacecraft (bias)',[0.02 1.01],'color','b');
+				irf_legend(h,'probe photo e- to s/c',[0.02 1.05],'color',[0 0.5 0]);
+				irf_legend(h,'Satellite potential',[0.98 0.03],'color',[0.5 0 0.5]);
+				axis(h,'auto x');
+				if flagBias, % draw bias current line
+					plot(h,[obj.Output.UI.Uprobe2sc(1) obj.Output.UI.Uprobe2plasma(end)],biasCurrentMicroA.*[-1 -1],'k-.','linewidth',0.5);
+					text(obj.Output.UI.Uprobe2sc(1),-biasCurrentMicroA,'bias','parent',h,'horizontalalignment','left','verticalalignment','bottom');
+					%flag_add_bias_point_values=1; % TODO
+				end
+			else
+				plot(h,vecU,J.photo*1e6,'r','linewidth',0.5);
+				irf_legend(h,'    total',      [0.98 0.03],'color','k');
+				irf_legend(h,' photoelectrons',[0.98 0.08],'color','r');
+				clr=[0.5 0 0; 0 0.5 0; 0 0 0.5];
+				for ii=1:length(J.plasma),
+					plot(h,vecU,J.plasma{ii}*1e6,'linewidth',.5,'color',clr(:,ii));
+					irf_legend(h,['plasma ' num2str(ii)],[0.98 0.08+ii*0.05],'color',clr(:,ii));
+				end
+				if flagBias % draw bias current line
+					plot(h,[vecU(1) vecU(end)],biasCurrentMicroA.*[-1 -1],'k-.','linewidth',0.5);
+					text(vecU(1),-biasCurrentMicroA,'-bias','parent',h,'horizontalalignment','left','verticalalignment','bottom');
+				end
 			end
 			hold(h,'off');
 			
@@ -553,11 +622,12 @@ classdef ui < handle
 			
 			% Calculate all required values
 			dUdI = obj.Output.dUdI;
-			vecU = obj.InputParameters.vectorU;
-			J = obj.Output.J;
+			U__dUdI = obj.Output.U__dUdI;
+			vecU = obj.Output.U;
+			J    = obj.Output.J;
 			biasCurrentA = obj.InputParameters.biasCurrent;
 			biasCurrentMicroA = 1e6*biasCurrentA;
-			flagBias = biasCurrentMicroA ~= 0 && biasCurrentA>min(J.probe) && -biasCurrentA<max(J.probe);
+			flagBias = biasCurrentMicroA ~= 0 && biasCurrentA>min(J.total) && -biasCurrentA<max(J.total);
 			doModelSpacecraft = obj.UserData.inp.doModelSc.Value;
 			probe = obj.ProbeList(obj.probeUsed);
 
@@ -566,9 +636,9 @@ classdef ui < handle
 			disp(['Rmin=' num2str(Rmin,3) ' Ohm, C=' num2str(probe.capacitance*1e12,3) 'pF, f_{CR}=' num2str(fcr,3) 'Hz.']);
 			InfoTxt = struct();
 			if doModelSpacecraft,
-				InfoTxt.probeToPlasma =['probe to plasma Rmin=' num2str(min(abs(dUdI_probe2plasma)),3) ' Ohm'];
-				InfoTxt.probeToRef    =['probe to reference Rmin=' num2str(min(abs(dUdI)),3) ' Ohm'];
-				InfoTxt.probeToSc     =['probe to spacecraft Rmin=' num2str(min(abs(dUdI_probe2sc)),3) ' Ohm'];
+				InfoTxt.probeToPlasma =['probe to plasma Rmin=' num2str(min(abs(obj.Output.UI.dUdI_probe2plasma)),3) ' Ohm'];
+				InfoTxt.probeToRef    =['probe to reference Rmin=' num2str(min(abs(obj.Output.UI.dUdI)),3) ' Ohm'];
+				InfoTxt.probeToSc     =['probe to spacecraft Rmin=' num2str(min(abs(obj.Output.UI.dUdI_probe2sc)),3) ' Ohm'];
 			else
 				InfoTxt.probe=['Probe at minimum R: R =' num2str(Rmin,3) ' Ohm,'...
 					' C =' num2str(probe.capacitance*1e12,3) 'pF,' ...
@@ -577,8 +647,8 @@ classdef ui < handle
 			
 			if min(J.total)<0 && max(J.total)>0, % display information on Ufloat
 				Ufloat=interp1(J.total,vecU,0);    % floating potential
-				ii=isfinite(vecU);
-				Rfloat=interp1(vecU(ii),dUdI(ii),Ufloat);
+				ii=isfinite(U__dUdI);
+				Rfloat=interp1(U__dUdI(ii),dUdI(ii),Ufloat);
 				fcr=1/2/pi/Rfloat/probe.capacitance;
 				InfoTxt.probeFloat =['Floating probe: U =' num2str(Ufloat,3) 'V,' ...
 					' R = ' num2str(Rfloat,3) ' Ohm,' ...
@@ -588,9 +658,9 @@ classdef ui < handle
 			end
 			if flagBias,%flag_add_bias_point_values,
 				biasCurrentA = obj.InputParameters.biasCurrent;
-				Ubias=interp1(J.probe,vecU,-biasCurrentA); % floating potential
-				ii=isfinite(vecU);
-				Rbias=interp1(vecU(ii),dUdI(ii),Ubias);
+				Ubias=interp1(J.total,vecU,-biasCurrentA); % floating potential
+				ii=isfinite(U__dUdI);
+				Rbias=interp1(U__dUdI(ii),dUdI(ii),Ubias);
 				fcr=1/2/pi/Rbias/probe.capacitance;
 				InfoTxt.probeBias =['Biased probe: U =' num2str(Ubias,3) 'V,' ...
 					' R = ' num2str(Rbias,3) ' Ohm,' ...
@@ -598,15 +668,16 @@ classdef ui < handle
 					' fcr=' num2str(fcr,3) 'Hz.'];
 				disp(['Rbias=' num2str(Rbias,3) ' Ohm, C=' num2str(probe.capacitance*1e12,3) 'pF, fcr=' num2str(fcr,3) 'Hz.']);
 				if doModelSpacecraft,
-					Uscbias=interp1(J_probe,Usatsweep,-ud.probe.bias_current); % floating potential
-					ii=isfinite(Upot);
-					Rscbias=interp1(ud.U_sc(ii),ud.dUdI_sc(ii),Uscbias);
-					fcr=1/2/pi/Rscbias/ud.sc.capacitance;
-					disp(['Spacecraft (biased): Rbias=' num2str(Rbias,3) ' Ohm, C=' num2str(ud.sc.capacitance*1e12,3) 'pF, fcr=' num2str(fcr,3) 'Hz.']);
-					info_txt=[info_txt '\newline Spacecraft (biased): Ubias=' num2str(Uscbias,3)  ', Rbias=' num2str(Rscbias,3) 'Ohm, fcr=' num2str(fcr,3) 'Hz.'];
-					Usp=-interp1(Ibias,Uprobe2sc,-ud.probe.bias_current); % floating potential
+					Uscbias=interp1(J.total,obj.Output.UI.Usatsweep,-biasCurrentA); % floating potential
+					ii=isfinite(vecU);
+					Rscbias=interp1(vecU(ii),obj.Output.UI.dUdIsat(ii),Uscbias);
+					cSat = irf_estimate('capacitance_sphere',sqrt(obj.SpacecraftList(obj.spacecraftUsed).areaTotal/pi));
+					fcr=1/2/pi/Rscbias/cSat;
+					disp(['Spacecraft (biased): Rbias=' num2str(Rbias,3) ' Ohm, C=' num2str(cSat*1e12,3) 'pF, fcr=' num2str(fcr,3) 'Hz.']);
+					InfoTxt.biasedSpacecraft =['Spacecraft (biased): Ubias=' num2str(Uscbias,3)  ', Rbias=' num2str(Rscbias,3) 'Ohm, fcr=' num2str(fcr,3) 'Hz.'];
+					Usp=-interp1(obj.Output.UI.Ibias,obj.Output.UI.Uprobe2sc,-biasCurrentA); % floating potential
 					disp(['Spacecraft to Probe: Usp=' num2str(Usp,3) 'V.']);
-					info_txt=[info_txt '\newline Spacecraft to Probe: Usp=' num2str(Usp,3)  ' V.'];
+					InfoTxt.spacecraftToProbe = ['Spacecraft to Probe: Usp=' num2str(Usp,3)  ' V.'];
 				end
 			end
 			if 0%ud.flag_use_sc && min(ud.I_sc)<0 && max(ud.I_sc)>0, % display information on Ufloat
@@ -711,6 +782,12 @@ classdef ui < handle
 				set(InputGui.(field).value,'String',lp.ui.field_to_vector_string(InputObject,field,SIconversion));
 			end
 			OutputGui = InputGui;
+		end
+		function [U__dUdI,dU,dUdI] = dUdI_(U,I)
+			U__dUdI = (U(1:end-1) + U(2:end) ) / 2;
+			dU = U(2:end) - U(1:end-1);
+			dI = I(2:end) - I(1:end-1);
+			dUdI = dU./dI;
 		end
 	end
 end

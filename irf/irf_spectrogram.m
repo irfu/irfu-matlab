@@ -72,11 +72,7 @@ elseif nargs==3 % irf_spectrogram(t,Pxx,F)
 	end
 	specrec.f = F;
 	specrec.t = t;
-	if length(specrec.t)>1 % assume equidistant times
-		specrec.dt=(specrec.t(2)-specrec.t(1))/2;
-	else
-		specrec.dt=[]; % will be calculated later
-	end
+	specrec.dt=[]; % will be calculated later
 	specrec.df=[];
 elseif	nargs==4 % irf_spectrogram(t,Pxx,F,dt)
     t=args{1};Pxx=args{2};F=args{3};dt=args{4};
@@ -177,10 +173,10 @@ for comp=1:min(length(h),ncomp)
 	pp=specrec.p{comp};
 	if isempty(specrec.df) % if frequency steps are not given
 		fnew=[ff ff];
-		fnew(1)=ff(1)-0.5*(ff(2)-ff(1));
-		fnew(end)=ff(end)+0.5*(ff(end)-ff(end-1));
-		fnew(2:2:end-1)=0.5*(ff(1:end-1)+ff(2:end));
-		fnew(3:2:end-1)=0.5*(ff(1:end-1)+ff(2:end));
+		fnew(:,1)=ff(:,1)-0.5*(ff(:,2)-ff(:,1));
+		fnew(:,end)=ff(:,end)+0.5*(ff(:,end)-ff(:,end-1));
+		fnew(:,2:2:end-1)=0.5*(ff(:,1:end-1)+ff(:,2:end));
+		fnew(:,3:2:end-1)=0.5*(ff(:,1:end-1)+ff(:,2:end));
 		ff=fnew;
 	else                   % if frequency steps are given
 		if isstruct(specrec.df)                % if df is structure df.plus and df.minus should be specified
@@ -234,18 +230,26 @@ for comp=1:min(length(h),ncomp)
 		ttnew(jj*2-1)=tt-dtminus;
 		ttnew(jj*2)=tt+dtplus;
 		tt=ttnew;
-		ppnew=[pp;pp];
-		ppnew(jj*2-1,:)=pp;
-		ppnew(jj*2,:)=NaN;
-		pp=ppnew;
-		if min(size(ff))~= 1, % ff is matrix
-			ffnew=zeros(size(ff).*[2 1]);
-			ffnew(1:2:end,:)=ff;
-			ffnew(2:2:end,:)=ff;
-			ff=ffnew;
-		end
+    else
+  		ttnew=[tt;tt];
+		ttnew(1)=tt(1)-0.5*(tt(2)-tt(1));
+		ttnew(end)=tt(end)+0.5*(tt(end)-tt(end-1));
+		ttnew(2:2:end-1)=0.5*(tt(1:end-1)+tt(2:end));
+        ttnew(3:2:end-1)=0.5*(tt(1:end-1)+tt(2:end));
+		tt=ttnew;
+     
 	end
-	
+    ppnew=[pp;pp];
+    ppnew(1:2:end,:)=pp;
+    ppnew(2:2:end,:)=NaN;
+    pp=ppnew;
+    if min(size(ff))~= 1, % ff is matrix
+        ffnew=zeros(size(ff).*[2 1]);
+        ffnew(1:2:end,:)=ff;
+        ffnew(2:2:end,:)=ff;
+        ff=ffnew;
+    end
+    
 	tag=get(h(comp),'tag'); % keep tag during plotting
 	ud=get(h(comp),'userdata'); % keep tag during plotting
 	if min(size(ff))==1, % frequency is vector

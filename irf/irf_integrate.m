@@ -12,6 +12,13 @@ function xint=irf_integrate(x,tref,time_step)
 %   assumed data gaps, default is that time_step is the smallest value of
 %   all time_steps of the time series
 
+isinpTS = isa(x,'TSeries');
+if isinpTS, 
+    ttemp = x.time.epochUnix;
+    datatemp = double(x.data);
+    x = [ttemp, double(datatemp)];
+end
+
 dt=[0 ; diff(x(:,1))];
 if nargin < 3, % estimate time step
     time_steps=diff(x(:,1));
@@ -41,3 +48,8 @@ if nargin>=2, % other origo for integration
     xint=irf_add(1,xint,-1,xint_ref);
 end
 
+if isinpTS,
+	xintd = xint(:,[2:end]);
+	xintt = irf_time(xint(:,1),'epoch>epochtt');
+    xint = TSeries(xintt,xintd);
+end

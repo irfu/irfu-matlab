@@ -114,7 +114,7 @@ switch varStr
         if isempty(dTmp)
           % Load from QL B
           dTmp = mms.db_get_ts(['mms' mmsIdS '_dfg_srvy_ql'],...
-            ['mms' mmsIdS '_ql_pos_gse' cS],TintTmp);
+            ['mms' mmsIdS '_ql_pos_' cS],TintTmp);
         end
       end
       if isempty(dTmp), continue, end
@@ -130,8 +130,9 @@ switch varStr
     datasetName = ['mms' mmsIdS '_fpi_brst_l1b_' vS '-moms'];
     rX = mms.db_get_ts(datasetName,['mms' mmsIdS '_' vS '_bulkX'],Tint);
     if isempty(rX), return, end
-    rY = mms.db_get_ts(datasetName,['mms' mmsIdS '_' vS '_bulkY'],Tint);
-    rZ = mms.db_get_ts(datasetName,['mms' mmsIdS '_' vS '_bulkZ'],Tint);
+    rX = comb_ts(rX);
+    rY = comb_ts(mms.db_get_ts(datasetName,['mms' mmsIdS '_' vS '_bulkY'],Tint));
+    rZ = comb_ts(mms.db_get_ts(datasetName,['mms' mmsIdS '_' vS '_bulkZ'],Tint));
     res = irf.ts_vec_xyz(rX.time, [rX.data rY.data rZ.data]);
     res.coordinateSystem = 'gse';
     res.name = [varStr '_' mmsIdS];
@@ -148,3 +149,9 @@ end
     end
   end
 end %% MAIN
+
+function TsOut = comb_ts(TsIn)
+if ~iscell(TsIn), TsOut = TsIn; return; end
+TsOut = TsIn{1};
+for i=2:numel(TsIn), TsOut.combine(TsIn{i}); end
+end

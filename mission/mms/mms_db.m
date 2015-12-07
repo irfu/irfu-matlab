@@ -89,7 +89,7 @@ classdef mms_db < handle
        % check for overlapping time records
        [~,idxUnique] = unique(res.DEPEND_0.data); 
        idxDuplicate = setdiff(1:length(res.DEPEND_0.data), idxUnique);
-       res.DEPEND_0.data(idxDuplicate) = []; res.data(idxDuplicate) = [];
+       res.DEPEND_0.data(idxDuplicate) = []; res.data(idxDuplicate,:) = [];
        res.nrec = length(res.DEPEND_0.data); res.DEPEND_0.nrec = res.nrec;
        nDuplicate = length(idxDuplicate);
        if nDuplicate
@@ -192,8 +192,16 @@ classdef mms_db < handle
      res = [];
      v = get_variable(obj,filePrefix,varName,tint);
      if isempty(v), return, end
-     res = mms.variable2ts(v);
-     res = res.tlim(tint);
+     if numel(v)==1
+       res = mms.variable2ts(v);
+       res = res.tlim(tint);
+     else
+       res = cell(1,numel(v));
+       for iV = 1:numel(v)
+         resTmp = mms.variable2ts(v{iV});
+         res{iV} = resTmp.tlim(tint);
+       end
+     end
    end
   end
   

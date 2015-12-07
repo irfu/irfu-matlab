@@ -666,10 +666,14 @@ for dd = 1:length(dirs)
      t_int_full = st + [0 dt];
      [iso_ts,dtint] = caa_read_interval;
      if isempty(iso_ts), t_int = data([1 end],1);
-     else t_int(1) = iso2epoch(iso_ts);	t_int(2) = t_int(1) + dtint;
+     else clear t_int; t_int(1) = iso2epoch(iso_ts); t_int(2) = t_int(1) + dtint;
      end
-     irf_log('save', sprintf('%s : %s -- %s',...
-       vs, epoch2iso(t_int(1),1), epoch2iso(t_int(2),1)))
+     if (size(t_int,1) == 2)
+        irf_log('save', 'No interval or data time found.')
+     else
+        irf_log('save', sprintf('%s : %s -- %s',...
+            vs, epoch2iso(t_int(1),1), epoch2iso(t_int(2),1)))
+     end
 
      if strcmp(caa_vs, 'DER')
        % Take data in the following order: p12, p32, p42
@@ -882,7 +886,13 @@ for dd = 1:length(dirs)
             single_pair_data = [data1 data2];
             start_time = min( single_pair_data(:,1) );
          else
-            start_time = min( min(data1(:,1)), min(data2(:,1)) );
+            if isempty(data1)
+                start_time = min(data2(:,1));
+            elseif isempty(data2)
+                start_time = min(data1(:,1));
+            else
+                start_time = min( min(data1(:,1)), min(data2(:,1)) );
+            end
          end
          timestamp = start_time:4:t_int(2);
          data_out = zeros(length(timestamp), 3) * NaN;
