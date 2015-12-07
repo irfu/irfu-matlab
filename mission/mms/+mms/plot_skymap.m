@@ -126,13 +126,15 @@ while have_vectors
     vecTxt = vectors{1,2};
     [azim,elev,r] = cart2sph(vecHat(1),vecHat(2),vecHat(3));
     if azim<0, azim = azim + 2*pi; end
+    if azim>2*pi, azim = azim - 2*pi; end
     
     plot(ax,azim*180/pi,elev*180/pi+90,'o','linewidth',2,'markersize',12,'color',[0 0 0])
     plot(ax,azim*180/pi,elev*180/pi+90,'o','linewidth',0.5,'markersize',2,'color',[0 0 0],'markerfacecolor',[0 0 0])
     axes(ax); text(azim*180/pi,elev*180/pi+90,['   ' vecTxt],'fontsize',14,'HorizontalAlignment','left')
     
-    [azim,elev,r] = cart2sph(-vecHat(1),-vecHat(2),-vecHat(3));    
-    if azim<2*pi, azim = azim + 2*pi; end    
+    [azim,elev,r] = cart2sph(-vecHat(1),-vecHat(2),-vecHat(3)); 
+    if azim<0, azim = azim + 2*pi; end
+    if azim>2*pi, azim = azim - 2*pi; end
     plot3(ax,azim*180/pi,elev*180/pi+90,0,'o','linewidth',2,'markersize',12,'color',[0 0 0])
     plot3(ax,azim*180/pi,elev*180/pi+90,0,'x','linewidth',2,'markersize',12,'color',[0 0 0])       
     axes(ax); text(azim*180/pi,elev*180/pi+90,['   ' vecTxt],'fontsize',14,'HorizontalAlignment','left')        
