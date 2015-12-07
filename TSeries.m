@@ -884,8 +884,10 @@ classdef TSeries
       end
            
       function resample_(TsTmp)
-        tData = TsTmp.time - TsTmp.time(1); dataTmp = double(TsTmp.data);
-        newData = irf_resamp([tData dataTmp],NewTime-TsTmp.time(1),varargin{:});
+        tData = double(TsTmp.time.ttns - TsTmp.time.start.ttns)/10^9;
+        dataTmp = double(TsTmp.data);
+        newTimeTmp = double(NewTime.ttns - TsTmp.time.start.ttns)/10^9;
+        newData = irf_resamp([tData dataTmp], newTimeTmp, varargin{:});
         Ts = TsTmp; Ts.t_ = NewTime; Ts.data_ = newData(:,2:end);
       end
     end %RESAMPLE
