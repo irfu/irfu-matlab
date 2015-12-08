@@ -11,7 +11,7 @@ mms.db_init('local_file_db','/data/mms');
 %tmpDataObj = dataobj('data/mms1_fpi_brst_l1b_dis-dist_20150919100000_v0.2.0.cdf');
 %disti = mms.variable2ts(get_variable(tmpDataObj,'mms1_dis_brstSkyMap_dist'));
 
-tint = irf.tint('2015-09-19T10:04:00.000000Z/2015-09-19T10:04:50.000000Z');
+tint = irf.tint('2015-09-19T10:04:20.000000Z/2015-09-19T10:04:30.000000Z');
 %%
 tic;
 c_eval('diste = mms.db_get_ts(''mms?_fpi_brst_l1b_des-dist'',''mms?_des_brstSkyMap_dist'',tint);',ic);
@@ -96,6 +96,24 @@ energy = 10.^energy;
 x = -cosd(phi')*sind(theta);
 y = -sind(phi')*sind(theta);
 z = -ones(length(phi),1)*cosd(theta);
+z2 = ones(length(phi),1)*sind(theta);
+solida = dangle*dangle*z2;
+allsolidi = zeros(size(disti.data));
+allsolide = zeros(size(diste.data));
+
+for ii = 1:length(disti.time);
+    for jj=1:length(energy);
+        allsolidi(ii,jj,:,:) = solida;
+    end
+end
+for ii = 1:length(diste.time);
+    for jj=1:length(energy);
+        allsolide(ii,jj,:,:) = solida;
+    end
+end
+
+disti.data = disti.data.*allsolidi;
+diste.data = diste.data.*allsolide;
 
 % Define new PAD arrays
 PSDomni = zeros(length(diste.time),length(energy));
@@ -109,32 +127,39 @@ PSDapartemp = zeros(length(energy),length(phi),length(theta));
 % Electron analysis
 for ii = 1:length(diste.time);
     disttemp = squeeze(diste.data(ii,:,:,:));
-    PSDomni(ii,:) = squeeze(irf.nanmean(irf.nanmean(disttemp,2),3));
+    PSDomni(ii,:) = squeeze(irf.nanmean(irf.nanmean(disttemp,2),3))/(mean(mean(solida)));
     [~,tB] = min(abs(Bvec.time-diste.time(ii)));
     Bvecs = Bvec.data(tB,:);
     thetab = acosd(x*Bvecs(1)+y*Bvecs(2)+z*Bvecs(3));
     pospar = ones(length(phi),length(theta)); 
-    pospar(find(thetab > 15)) = NaN;
+    solidpar = solida;
+    pospar(thetab > 15) = NaN;
+    solidpar(thetab > 15) = NaN;
     posperp = ones(length(phi),length(theta)); 
-    posperp(find(thetab < 82.5)) = NaN;
-    posperp(find(thetab > 97.5)) = NaN;
+    solidperp = solida;
+    posperp(thetab < 82.5) = NaN;
+    posperp(thetab > 97.5) = NaN;
+    solidperp(thetab < 82.5) = NaN;
+    solidperp(thetab > 97.5) = NaN;
     posapar = ones(length(phi),length(theta)); 
-    posapar(find(thetab < 165)) = NaN;    
+    solidapar = solida;
+    posapar(thetab < 165) = NaN; 
+    solidapar(thetab < 165) = NaN;
     for kk = 1:length(energy);
         PSDpartemp(kk,:,:)  = squeeze(disttemp(kk,:,:)).*pospar;
         PSDperptemp(kk,:,:) = squeeze(disttemp(kk,:,:)).*posperp;
         PSDapartemp(kk,:,:) = squeeze(disttemp(kk,:,:)).*posapar;
     end
-    PSDpar(ii,:) =  squeeze(irf.nanmean(irf.nanmean(PSDpartemp,3),2));
-    PSDperp(ii,:) = squeeze(irf.nanmean(irf.nanmean(PSDperptemp,3),2));
-    PSDapar(ii,:) = squeeze(irf.nanmean(irf.nanmean(PSDapartemp,3),2));
+    PSDpar(ii,:) =  squeeze(irf.nanmean(irf.nanmean(PSDpartemp,3),2))/irf.nanmean(irf.nanmean(solidpar));
+    PSDperp(ii,:) = squeeze(irf.nanmean(irf.nanmean(PSDperptemp,3),2))/irf.nanmean(irf.nanmean(solidperp));
+    PSDapar(ii,:) = squeeze(irf.nanmean(irf.nanmean(PSDapartemp,3),2))/irf.nanmean(irf.nanmean(solidapar));
 end
 
 % Ion analysis
 PSDiomni = zeros(length(disti.time),length(energy));
 for ii = 1:length(disti.time);
     disttemp = squeeze(disti.data(ii,:,:,:));
-    PSDiomni(ii,:) = squeeze(irf.nanmean(irf.nanmean(disttemp,2),3));
+    PSDiomni(ii,:) = squeeze(irf.nanmean(irf.nanmean(disttemp,2),3))/(mean(mean(solida)));
 end
 
 energyspec = ones(length(diste.time),1)*energy;
