@@ -29,6 +29,13 @@ energy = 10.^energy;
 x = -cosd(phi')*sind(theta);
 y = -sind(phi')*sind(theta);
 z = -ones(length(phi),1)*cosd(theta);
+z2 = ones(length(phi),1)*sind(theta);
+solida = dangle*dangle*z2;
+allsolide = zeros(size(dist1));
+for jj=1:length(energy);
+        allsolide(jj,:,:) = solida;
+end
+dist1 = dist1.*allsolide;
 
 tid = tint(1);
 c_eval('Bxyz=mms.db_get_ts(''mms?_dfg_srvy_ql'',''mms?_dfg_srvy_dmpa'',tintl);',ic);
@@ -39,12 +46,19 @@ Bvec = Bxyz.data(tB,:)/Bmag(tB)
 %Calculate angles between B and theta and phi
 thetab = acosd(x*Bvec(1)+y*Bvec(2)+z*Bvec(3));
 pospar = ones(length(phi),length(theta)); 
-pospar(find(thetab > 15)) = NaN;
+solidpar = solida;
+pospar(thetab > 15) = NaN;
+solidpar(thetab > 15) = NaN;
 posperp = ones(length(phi),length(theta)); 
-posperp(find(thetab < 82.5)) = NaN;
-posperp(find(thetab > 97.5)) = NaN;
+solidperp = solida;
+posperp(thetab < 82.5) = NaN;
+posperp(thetab > 97.5) = NaN;
+solidperp(thetab < 82.5) = NaN;
+solidperp(thetab > 97.5) = NaN;
 posapar = ones(length(phi),length(theta)); 
-posapar(find(thetab < 165)) = NaN;
+solidapar = solida;
+posapar(thetab < 165) = NaN; 
+solidapar(thetab < 165) = NaN;
 
 distpar = dist1;
 distperp = dist1;
@@ -56,9 +70,9 @@ for ii = 1:length(energy);
     distapar(ii,:,:) = squeeze(dist1(ii,:,:)).*posapar;
 end
 
-distpar =  squeeze(irf.nanmean(irf.nanmean(distpar,3),2))*1e30; %Convert units (s^3 cm^-6 -> s^3 km^-6)
-distperp = squeeze(irf.nanmean(irf.nanmean(distperp,3),2))*1e30;
-distapar = squeeze(irf.nanmean(irf.nanmean(distapar,3),2))*1e30;
+distpar =  squeeze(irf.nanmean(irf.nanmean(distpar,3),2))/irf.nanmean(irf.nanmean(solidpar))*1e30; %Convert units (s^3 cm^-6 -> s^3 km^-6)
+distperp = squeeze(irf.nanmean(irf.nanmean(distperp,3),2))/irf.nanmean(irf.nanmean(solidperp))*1e30;
+distapar = squeeze(irf.nanmean(irf.nanmean(distapar,3),2))/irf.nanmean(irf.nanmean(solidapar))*1e30;
 
 fn=figure;
 set(fn,'Position',[10 10 400 300])
