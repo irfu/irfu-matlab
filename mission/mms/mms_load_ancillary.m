@@ -114,8 +114,8 @@ switch lower(dataType)
     tmpStr = cell2mat(tmpData{1,3});
     dataIN.time = irf_time([irf_time([tmpData{1,1}, tmpData{1,2}],'doy>utc_yyyy-mm-dd'),...
       tmpStr(:,2:end)], 'utc>ttns');
-    dataIN.Quality = tmpData{1,4};
-    dataIN.Scale   = tmpData{1,5};
+    dataIN.quality = tmpData{1,4};
+    dataIN.scale   = tmpData{1,5};
     
   otherwise
 end
