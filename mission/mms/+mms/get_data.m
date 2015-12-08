@@ -34,7 +34,8 @@ elseif Tint.stop-Tint.start<=0,
 end
 
 vars = {'R_gse','R_gsm','V_gse','V_gsm',...
-  'Ve_gse_fpi_brst','Vi_gse_fpi_brst'}; % XXX THESE MUST BE THE SAME VARS AS BELOW
+  'Ve_gse_fpi_brst','Vi_gse_fpi_brst', ...
+  'dfg_ql_srvy', 'afg_ql_srvy'}; % XXX THESE MUST BE THE SAME VARS AS BELOW
 if isempty(intersect(varStr,vars)),
   errS = ['variable not recognized: ' varStr];
   irf.log('critical',errS);
@@ -138,6 +139,23 @@ switch varStr
     res.name = [varStr '_' mmsIdS];
     res.units = rX.units;
     res.siConversion = rX.siConversion;
+  case {'dfg_ql_srvy', 'afg_ql_srvy'} % FIXME: Correct name, and above as well!!
+    instr = varStr(1:3);
+    datasetName = ['mms', mmsIdS, '_', instr, '_srvy_ql'];
+    varName = ['mms', mmsIdS, '_', instr, '_srvy_dmpa'];
+    rTs = mms.db_get_ts(datasetName, varName, Tint);
+    if isempty(rTs), return, end
+    rTs = comb_ts(rTs); % Try to combine multiple results.
+    ind = diff(rTs.time.ttns) <= 122000; % FIXME: what is brst min dt for A/DFG?
+    if( sum(ind) < (length(rTs)-2) )
+      % Remove samples that are too close, but ensure some output if only
+      % two samples with very high sample rate.
+      irf.log('notice',['Removing ',sum(ind), ...
+        ' samples due to overlap AFG/DFG when transitioning between fast/slow mode.']);
+      res = rTs(~ind);
+    else
+      res = rTs;
+    end
   otherwise, error('should not be here')
 end
 
