@@ -833,7 +833,18 @@ classdef TSeries
       Tmpdata = [obj.data; obj1.data];
       [srt_time, srt] = sort(Tmptime);
       [Tmptime, usrt] = unique(srt_time);
-      Tmpdata = Tmpdata(srt(usrt),:);
+      nd = ndims(obj.data);
+      switch nd
+        case 2, Tmpdata = Tmpdata(srt(usrt), :);
+        case 3, Tmpdata = Tmpdata(srt(usrt), :, :);
+        case 4, Tmpdata = Tmpdata(srt(usrt), :, :, :);
+        case 5, Tmpdata = Tmpdata(srt(usrt), :, :, :, :);
+        case 6, Tmpdata = Tmpdata(srt(usrt), :, :, :, :, :);
+        otherwise
+          errStr = 'Cannot handle more than 6 dimensions.';
+          irf.log('critical', errStr);
+          error(errStr);
+      end
       if(obj.tensorOrder==0)
         Ts = TSeries(EpochTT(Tmptime), Tmpdata, ...
           'tensorOrder', obj.tensorOrder);
