@@ -3,7 +3,7 @@ function [dataIN,filenameData] = mms_load_ancillary(fullFilename,dataType)
 %
 % [dataIN,filenameData] = mms_load_ancillary(fullFilename,dataType)
 %
-% dataType is one of : 'defatt','defeph'
+% dataType is one of : 'defatt','defeph','defq'
 
 if(~exist(fullFilename,'file'))
   errStr = ['File not found. ', fullFilename];
@@ -14,8 +14,8 @@ end
 % Return filename (to be stored in CDF GATTRIB Parents)
 filenameData = [];
 [~, filename, fileext] = fileparts(fullFilename);
-filenameData.filename = [filename, fileext]; % DEFATT/DEFEPH has extension
-%'V00', 'V01' etc being the version number, store this as well.
+filenameData.filename = [filename, fileext]; % DEFATT/DEFEPH/DEFQ has
+% extension 'V00', 'V01' etc being the version number, store this as well.
 
 switch lower(dataType)
   case 'defatt'
@@ -48,6 +48,19 @@ switch lower(dataType)
     % (where doy is day of year and mmm is milliseconds),
     % Column 3, 4, 5 is position in X,Y,Z (in some ref.frame, TBC which)
     formatSpec='%f-%f%s %f %f %f %f %f %f %f %*[^\n]';
+  case 'defq'
+    % DEFQ file:
+    % The DEFQ files start with a header, the number of lines with header
+    % is not constant and this files does not contain things like "COMMENT"
+    % for header lines. However the last line contains "". We can identify
+    % number of header lines by looking for this string.
+    headerGrep = 'Scale';
+    
+    % Column 1 time in format yyyy-doy/HH:MM:SS.mmm
+    % (where doy is day of year and mmm is miliseconds.
+    % Column 3 is Quality factor, column 4 is scale.
+    formatSpec='%f-%f%s %*f %f %f %*[^\n]';
+    
   otherwise
     errStr = ['Unknown dataType: ',dataType,' for ancillary data. ', ...
       'Valid values are "defatt" and "defeph".'];
@@ -96,5 +109,13 @@ switch lower(dataType)
     % still TBC)
     dataIN.r = [tmpData{1,5} tmpData{1,6} tmpData{1,7}];
     dataIN.v = [tmpData{1,8} tmpData{1,9} tmpData{1,10}];
+  case 'defq'
+    % Convert time to TT2000 using irf_time
+    tmpStr = cell2mat(tmpData{1,3});
+    dataIN.time = irf_time([irf_time([tmpData{1,1}, tmpData{1,2}],'doy>utc_yyyy-mm-dd'),...
+      tmpStr(:,2:end)], 'utc>ttns');
+    dataIN.Quality = tmpData{1,4};
+    dataIN.Scale   = tmpData{1,5};
+    
   otherwise
 end
