@@ -594,6 +594,7 @@ classdef TSeries
         if ~isnumeric(obj1) || ~isvector(obj1)
           error('Second argument must be a vector or TS')
         end
+        Ts = obj;        
         switch  obj.basis
           case 'xy'
             if length(obj1) ~= 2
