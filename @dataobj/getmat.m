@@ -59,10 +59,10 @@ else
         if isfield(dep_x{d},'DELTA_PLUS') && isfield(dep_x{d},'DELTA_MINUS')
             dep_x{d}.df=struct('plus',dep_x{d}.DELTA_PLUS,'minus',dep_x{d}.DELTA_MINUS);
             if ischar(dep_x{d}.DELTA_PLUS)
-                deltaplus= getv(dobj,dep_x{d}.DELTA_PLUS);
-                deltaminus= getv(dobj,dep_x{d}.DELTA_MINUS);
-                dep_x{d}.df.plus=deltaplus.data(1,:);
-                dep_x{d}.df.minus=deltaminus.data(1,:);
+                deltaplus  = getv(dobj,dep_x{d}.DELTA_PLUS);
+                deltaminus = getv(dobj,dep_x{d}.DELTA_MINUS);
+                dep_x{d}.df.plus = double(deltaplus.data(:,1));
+                dep_x{d}.df.minus= double(deltaminus.data(:,1));
             end
         else
             dep_x{d}.df=[];
@@ -79,7 +79,7 @@ else
         dt=struct('plus',timevar.DELTA_PLUS,'minus',timevar.DELTA_MINUS);
         if ischar(timevar.DELTA_PLUS)
             deltaplus = getv(dobj,timevar.DELTA_PLUS);
-            dt.plus = double(deltaplus.data(1,:))/factor;
+            dt.plus = double(deltaplus.data(1,:))/factor; % TODO check if "(1,:)" is correct order after latest NASA CDF update, see bug #23
         elseif isnumeric(timevar.DELTA_PLUS)
             dt.plus = double(timevar.DELTA_PLUS)/factor;
         end
