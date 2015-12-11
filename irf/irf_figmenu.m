@@ -1,7 +1,6 @@
 function irf_figmenu(action)
-%IRF_FIGMENU   Add to the current figure a menu with some useful commands
+%IRF_FIGMENU   Add to the current figure a menu with useful commands
 %
-% $Id$
 
 if nargin < 1, action = 'initialize'; end
 
@@ -13,8 +12,10 @@ switch lower(action)
 			uimenu(hfigmenu,'Label','&Update time axis','Callback','irf_timeaxis(gca,''date'')','Accelerator','t')
 			uimenu(hfigmenu,'Label','Fit &Y axis','Callback','set(gca,''YLimMode'',''auto'')','Accelerator','y')
 			uimenu(hfigmenu,'Label','&irf_tm','Callback','irf_figmenu(''irf_tm'')','Accelerator','i')
-			uimenu(hfigmenu,'Label','Pointer &Crosshair','Callback','set(gcbf,''pointer'',''fullcrosshair'')')
-			uimenu(hfigmenu,'Label','&Pointer Arrow','Callback','set(gcbf,''pointer'',''arrow'')')
+%			not anymore supported in MATLAB 2015
+%			uimenu(hfigmenu,'Label','Pointer &Crosshair','Callback','set(gcbf,''pointer'',''fullcrosshair'')') %
+%			not needed as long as full cross hair is not supported
+%			uimenu(hfigmenu,'Label','&Pointer Arrow','Callback','set(gcbf,''pointer'',''arrow'')')
 			uimenu(hfigmenu,'Label','&Align axis','Callback','irf_plot_axis_align','Accelerator','a')
 			hmc  = uimenu(hfigmenu,'Label','&Cluster');
 			hmcp = uimenu(hmc,'Label','satellite position','Callback','irf_figmenu(''c_position'')');
