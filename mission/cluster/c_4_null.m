@@ -89,11 +89,11 @@ function Nulls=c_4_null(R1,R2,R3,R4,B1,B2,B3,B4,varargin)
 %
 %   c_4_null(R1,R2,R3,R4,B1,B2,B3,B4,'threshold',thresholdValue,'boxLim',boxLimValue) - Tries to
 %   locate nulls with a set thresholdValue and a set box limit and returns the
-%   output for all null found.
+%   output for all nulls found.
 %
 %   c_4_null(R1,R2,R3,R4,B1,B2,B3,B4,'boxLim',boxLimValue,'strong',currentLim) - Tries to
-%   locate nulls with a set thresholdValue and a set box limit and returns the
-%   output for all null found.
+%   locate nulls with a set box limit and returns the
+%   output for all nulls found that has a current larger than currentLim.
 %% Check TSeries
 idR = {R1,R2,R3,R4};
 idB = {B1,B2,B3,B4};
