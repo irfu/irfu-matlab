@@ -20,9 +20,9 @@ function [PeXXp,PeXYp,PeXZp,PeYYp,PeYZp,PeZZp] = rotate_tensor_fac(varargin)
 
 if nargin == 2;
     Peall = varargin{1};
-    times = Peall.time;
+    Petimes = Peall.time;
     Bback = varargin{2};
-    Ptensor = zeros(length(Peall.time),3,3);
+    Ptensor = zeros(length(Petimes),3,3);
     Ptensor(:,1,1) = Peall.data(:,1);
     Ptensor(:,2,1) = Peall.data(:,2);
     Ptensor(:,3,1) = Peall.data(:,3);
@@ -33,7 +33,7 @@ if nargin == 2;
     Ptensor(:,2,3) = Peall.data(:,5);
     Ptensor(:,3,3) = Peall.data(:,6);
 elseif nargin == 7;
-    times = varargin{1}.time;
+    Petimes = varargin{1}.time;
     Ptensor = zeros(length(varargin{1}.time),3,3);
     Ptensor(:,1,1) = varargin{1}.data;
     Ptensor(:,2,1) = varargin{2}.data;
@@ -51,7 +51,7 @@ else
 end
 
 % Make transformation matrix
-Bback = Bback.resample(times);
+Bback = Bback.resample(Petimes);
 Bmag = Bback.abs.data;
 Rz = Bback.data./([Bmag Bmag Bmag]);
 Rx = [1 0 0];
@@ -61,24 +61,24 @@ Ry = Ry./[Rmag Rmag Rmag];
 Rx = irf_cross(Ry, Rz);
 Rmag = irf_abs(Rx,1);
 Rx = Rx./[Rmag Rmag Rmag];
-Rotmat = zeros(length(times),3,3);
+Rotmat = zeros(length(Petimes),3,3);
 Rotmat(:,1,:) = Rx;
 Rotmat(:,2,:) = Ry;
 Rotmat(:,3,:) = Rz;
 
 
-Ptensorp = zeros(length(times),3,3);
-for ii = 1:length(times);
+Ptensorp = zeros(length(Petimes),3,3);
+for ii = 1:length(Petimes);
     rottemp = squeeze(Rotmat(ii,:,:));
     Ptensorp(ii,:,:) = rottemp*(squeeze(Ptensor(ii,:,:))*transpose(rottemp));
 end
 
-PeXXp = irf.ts_scalar(times,Ptensorp(:,1,1));
-PeXYp = irf.ts_scalar(times,Ptensorp(:,1,2));
-PeXZp = irf.ts_scalar(times,Ptensorp(:,1,3));
-PeYYp = irf.ts_scalar(times,Ptensorp(:,2,2));
-PeYZp = irf.ts_scalar(times,Ptensorp(:,2,3));
-PeZZp = irf.ts_scalar(times,Ptensorp(:,3,3));
+PeXXp = irf.ts_scalar(Petimes,Ptensorp(:,1,1));
+PeXYp = irf.ts_scalar(Petimes,Ptensorp(:,1,2));
+PeXZp = irf.ts_scalar(Petimes,Ptensorp(:,1,3));
+PeYYp = irf.ts_scalar(Petimes,Ptensorp(:,2,2));
+PeYZp = irf.ts_scalar(Petimes,Ptensorp(:,2,3));
+PeZZp = irf.ts_scalar(Petimes,Ptensorp(:,3,3));
 
 end
 
