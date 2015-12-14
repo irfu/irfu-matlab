@@ -115,16 +115,15 @@ end
 irf_log('proc',strcat('Integrating over energy levels ',num2str(min(intenergies)),' to ',num2str(max(intenergies))));
 
 % Define constants
-mi = 1.673e-27;
-me = 9.109e-31;
-qe = 1.602e-19;
-kb = 1.381e-23;
+Units = irf_units; % Use IAU and CODATA values for fundamental constants.
+qe = Units.e;
+kb = Units.kB;
 
 if (particletype(1) == 'e')
-    pmass = me;
+    pmass = Units.me;
     irf_log('proc','Particles are electrons')
 elseif (particletype(1) == 'i')
-    pmass = mi;
+    pmass = Units.mi;
     SCpot.data = -SCpot.data;
     irf_log('proc','Particles are Ions')
 else
