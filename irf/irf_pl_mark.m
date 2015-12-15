@@ -79,7 +79,8 @@ elseif size(color,1)<size(tlim,1)
 end
 
 
-ud=get(gcf,'userdata');
+fig = get(ax,'Parent');
+ud = get(fig,'userdata');
 if isfield(ud,'t_start_epoch'),  tlim=tlim-ud.t_start_epoch;end
 
 
