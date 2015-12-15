@@ -61,8 +61,8 @@ else
             if ischar(dep_x{d}.DELTA_PLUS)
                 deltaplus  = getv(dobj,dep_x{d}.DELTA_PLUS);
                 deltaminus = getv(dobj,dep_x{d}.DELTA_MINUS);
-                dep_x{d}.df.plus = double(deltaplus.data(:,1));
-                dep_x{d}.df.minus= double(deltaminus.data(:,1));
+                dep_x{d}.df.plus = double(deltaplus.data);
+                dep_x{d}.df.minus= double(deltaminus.data);
             end
         else
             dep_x{d}.df=[];
