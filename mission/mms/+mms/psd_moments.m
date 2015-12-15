@@ -123,7 +123,7 @@ if (particletype(1) == 'e')
     pmass = Units.me;
     irf_log('proc','Particles are electrons')
 elseif (particletype(1) == 'i')
-    pmass = Units.mi;
+    pmass = Units.mp;
     SCpot.data = -SCpot.data;
     irf_log('proc','Particles are Ions')
 else
