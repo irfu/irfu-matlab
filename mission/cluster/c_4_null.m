@@ -18,8 +18,7 @@ function Nulls=c_4_null(R1,R2,R3,R4,B1,B2,B3,B4,varargin)
 %
 %     ['strong',currentLim] - returns nulls corresponding with a current
 %     larger than currentLim. Default option is all located nulls are returned.
-%                 Default threshold value is 40%, threshold is given in
-%                 units of percentage.
+%                 
 %     ['threshold',thresholdValue] - returned are only nulls satisfying
 %                 |divB/max(all eigenvalues of gradB)| < thresholdValue.
 %                 thresholdValue is given in units of percentage.If
