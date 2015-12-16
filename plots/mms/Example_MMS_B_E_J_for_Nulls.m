@@ -6,8 +6,9 @@
 %% Set time interval to look in and set the spacecraft that density will be
 % taken from
 ic=1; %Gives number of spacecraft where density is taken for Hall field calculations.
-Tint  = irf.tint('2015-12-10T23:00:00Z/2015-12-11T23:59:59Z');
-
+Tint  = irf.tint('2015-12-10T29:00:00Z/2015-12-11T23:59:59Z');
+boxLim=70;
+currentLim=500E-9;
 %% Load magnetic field and spacecraft positional data
 mms.db_init('local_file_db','/data/mms'); %Point towards the folder with the mms data
 
@@ -19,21 +20,25 @@ c_eval('B? = B?.resample(B1);',2:4);
 
 % Spacecraft Position
 disp('Loading Spacecraft Position');
-R  = mms.get_data('R_gse',Tint);%Cailbrated position toc;
+R  = mms.get_data('R_gse',Tint);%Cailbrated position 
 c_eval('R? =irf.ts_vec_xyz(R.time, R.gseR?);',1:4);
 clear R
 % Checks if there is any position data missing in that case go to predicted
 % spacecraft position
 if isempty(R1) || isempty(R2) || isempty(R3) || isempty(R4) 
+disp('Loading predicted spacecraft position');
 c_eval('R?=mms.db_get_ts(''mms?_dfg_srvy_ql'',''mms?_ql_pos_gse'',Tint);',1:4) %Predicted s/c position
+end
+%If the spacecraft data is still missing for a spacecraft give error
+if isempty(R1) || isempty(R2) || isempty(R3) || isempty(R4) 
+error('Missing spacecraft position from at least one spacecraft');
 else
 c_eval('R? = R?.resample(B1);',1:4);
 end
-
 %% Looks for Nulls and if they are found makes average calculations and Loads electric fields, density and calculates J and JxB with curlometer method
 disp('Looking for Nulls');
 % Assuming GSE and DMPA are the same coordinate system.
-Nulls=c_4_null(R1,R2,R3,R4,B1,B2,B3,B4,'boxLim',70,'strong',500E-9);
+Nulls=c_4_null(R1,R2,R3,R4,B1,B2,B3,B4,'boxLim',boxLim,'strong',currentLim);
 
 if isempty(Nulls.t)
     disp('No Nulls are found')
@@ -51,12 +56,14 @@ Bav=[B1.time.epochUnix double(Bav)];
 c_eval('E?_orig=mms.db_get_ts(''mms?_edp_fast_ql_dce2d'',''mms?_edp_dce_xyz_dsl'',Tint);');
 c_eval('E? = E?_orig.resample(E1_orig);',1:4);
 c_eval('E? = E?.resample(B1);',1:4); %Resampling to B-field due to the index searching later to make smaller filesizes.
+% Calibrating E-field (TO-DO)
 %c_eval('E?.data(find(abs(E?.data) > 100)) = NaN;'); %Remove some questionable fields
 %c_eval('[E?,~]=irf_edb(E?,B?,15,''E.B=0'');',1:4); % Removes some wake fields
+% Average E-field for EdotJ
 Eav = (E1.data+E2.data+E3.data+E4.data)/4;
 Eav=[E1.time.epochUnix double(Eav)];
 
-%Density from spacecraft ic
+%Density from spacecraft ic for Hall field calculation
 c_eval('ni=mms.db_get_ts(''mms?_fpi_fast_sitl'',''mms?_fpi_DISnumberDensity'',Tint);',ic);
 ni = TSeries(ni.time,ni.data,'to',1);
 ni = ni.resample(B1);
@@ -71,7 +78,8 @@ j=[j.time.epochUnix double(j.data)];
 jxB=[jxB.time.epochUnix double(jxB.data)];
 end
 %% Only picks out a smaller time interval around the nulls (to keep filesize small)  
-%If nulls are found pick out interesting time interval to keep the file size small
+%Possibility to pick out interesting time interval to keep the file size small
+if 1
 if isempty(Nulls.t)
     error('No Nulls are found')
 else
@@ -82,6 +90,7 @@ ni=ni(index,:);
 j=j(index,:);
 jxB=jxB(index,:);
 divovercurl=divovercurl(index,:);
+end
 end
 %% Plot data should only be used if nulls are found
 if isempty(Nulls.t)
