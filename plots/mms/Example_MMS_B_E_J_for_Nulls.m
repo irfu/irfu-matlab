@@ -6,7 +6,7 @@
 %% Set time interval to look in and set the spacecraft that density will be
 % taken from
 ic=1; %Gives number of spacecraft where density is taken for Hall field calculations.
-Tint  = irf.tint('2015-12-10T29:00:00Z/2015-12-11T23:59:59Z');
+Tint  = irf.tint('2015-12-10T23:00:00Z/2015-12-11T23:59:59Z');
 boxLim=70;
 currentLim=500E-9;
 %% Load magnetic field and spacecraft positional data
@@ -49,33 +49,45 @@ if 0
     save(filename,'Nulls');
 end
 %% Average calculations. Loads electric fields, density and calculates J and JxB with curlometer method
+disp('Calculates average Bfield')
 Bav = (B1.data+B2.data+B3.data+B4.data)/4;
 Bav=[B1.time.epochUnix double(Bav)];
-
+disp('Loads Electric fields')
 % Electric field
 c_eval('E?_orig=mms.db_get_ts(''mms?_edp_fast_ql_dce2d'',''mms?_edp_dce_xyz_dsl'',Tint);');
 c_eval('E? = E?_orig.resample(E1_orig);',1:4);
 c_eval('E? = E?.resample(B1);',1:4); %Resampling to B-field due to the index searching later to make smaller filesizes.
 % Calibrating E-field (TO-DO)
-%c_eval('E?.data(find(abs(E?.data) > 100)) = NaN;'); %Remove some questionable fields
+%c_eval('E?.data(find(abs(E?.data) > 100)) = NaN;',1:4); %Remove some questionable fields
 %c_eval('[E?,~]=irf_edb(E?,B?,15,''E.B=0'');',1:4); % Removes some wake fields
 % Average E-field for EdotJ
+disp('Calculates average E-fields')
 Eav = (E1.data+E2.data+E3.data+E4.data)/4;
 Eav=[E1.time.epochUnix double(Eav)];
-
+disp(['Loads density from spacecraft',num2str(ic)])
 %Density from spacecraft ic for Hall field calculation
 c_eval('ni=mms.db_get_ts(''mms?_fpi_fast_sitl'',''mms?_fpi_DISnumberDensity'',Tint);',ic);
 ni = TSeries(ni.time,ni.data,'to',1);
 ni = ni.resample(B1);
 ni=[ni.time.epochUnix double(ni.data)];
 
+disp('Calculates current')
 % Assuming GSE and DMPA are the same coordinate system calculates j and jXB.
 [j,divB,B,jxB,divTshear,divPb] = c_4_j('R?','B?');
 divovercurl = divB;
 divovercurl.data = abs(divovercurl.data)./j.abs.data;
 divovercurl=[B1.time.epochUnix double(divovercurl.data)];
+
 j=[j.time.epochUnix double(j.data)];
+
 jxB=[jxB.time.epochUnix double(jxB.data)];
+jxB(:,2:4) = jxB(:,2:4)./[ni(:,2) ni(:,2) ni(:,2)]; 
+jxB(:,2:4) = jxB(:,2:4)./1.6e-19./1000; %Convert to (mV/m)
+jxB((irf_abs(jxB(:,2:4),1) > 100),1:4) = NaN; % Remove some questionable fields
+disp('Calculates EdotJ')
+% Calculates EdotJ
+EdotJ = dot(Eav(:,2:4),j(:,2:4),2)./1000; %J (nA/m^2), E (mV/m), E.J (nW/m^3)
+EdotJ = [Eav(:,1) EdotJ];
 end
 %% Only picks out a smaller time interval around the nulls (to keep filesize small)  
 %Possibility to pick out interesting time interval to keep the file size small
@@ -89,10 +101,11 @@ Eav=Eav(index,:);
 ni=ni(index,:);
 j=j(index,:);
 jxB=jxB(index,:);
+EdotJ=EdotJ(index,:);
 divovercurl=divovercurl(index,:);
 end
 end
-%% Plot data should only be used if nulls are found
+%% Plot data should only be used if nulls are found. Plots are only focused around the intervals of nulls found because of above segment.
 if isempty(Nulls.t)
     error('Could not plot because no nulls have been found') 
 else
@@ -127,16 +140,10 @@ irf_legend(hca,{'E_{x}','E_{y}','E_{z}'},[0.88 0.10])
 grid(hca,'off');
 
 hca = irf_panel('jxB');
-jxB(:,2:4) = jxB(:,2:4)./[ni(:,2) ni(:,2) ni(:,2)]; 
-jxB(:,2:4) = jxB(:,2:4)./1.6e-19./1000; %Convert to (mV/m)
-jxB(abs(jxB(:,2:4)) > 100,1:4) = NaN; % Remove some questionable fields
 irf_plot(hca,jxB);
 ylabel(hca,{'J \times B/n_{e} q_{e}','(mV m^{-1})'},'Interpreter','tex');
 %irf_legend(hca,'(f)',[0.99 0.98],'color','k')
 grid(hca,'off');
-
-EdotJ = dot(Eav(:,2:4),j(:,2:4),2)./1000; %J (nA/m^2), E (mV/m), E.J (nW/m^3)
-EdotJ = [Eav(:,1) EdotJ];
 
 hca = irf_panel('jdotE');
 irf_plot(hca,EdotJ);
