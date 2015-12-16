@@ -83,6 +83,10 @@ switch procId
     dce_obj = dataobj(DCE_File);
     [~,tmpName, ~] = fileparts(DCE_File);
     update_header(mms_fields_file_info(tmpName)); % Update header with file info.
+    if(dce_obj.data.Epoch.nrec==0)
+      errStr='Empty Epoch. Possibly started processing too early..';
+      irf.log('critical',errStr); error(errStr);
+    end
     tint = EpochTT(sort(dce_obj.data.Epoch.data));
     % Keep only valid times (well after end of mission).
     tint(tint.tlim(irf.tint('2015-01-01T00:00:00.000000000Z/2040-12-31T23:59:59.999999999Z')));
