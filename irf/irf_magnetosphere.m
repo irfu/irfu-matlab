@@ -83,7 +83,8 @@ switch lower(model)
         gamma=5/3;
         rmp=xmp(1);
         rstandoff=rmp*(1+1.1*((gamma-1)*M^2+2)/((gamma+1)*(M^2-1)));
-        x=rstandoff:-0.5:-100;
+        %x=rstandoff:-0.5:-100;
+        x=rstandoff-logspace(log10(0.1),log10(100+rstandoff),300)+0.1; % Smaller increments at the subsolar point
         rho=sqrt(0.04*(x-rstandoff).^2-45.3*(x-rstandoff)); % original F/G model adds rstandoff^2=645
         y=rho;
     otherwise
