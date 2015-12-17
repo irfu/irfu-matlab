@@ -79,7 +79,7 @@ divovercurl.data = abs(divovercurl.data)./j.abs.data;
 divovercurl=[B1.time.epochUnix double(divovercurl.data)];
 
 j=[j.time.epochUnix double(j.data)];
-
+j(:,2:4) = j(:,2:4).*1e9;
 jxB=[jxB.time.epochUnix double(jxB.data)];
 jxB(:,2:4) = jxB(:,2:4)./[ni(:,2) ni(:,2) ni(:,2)]; 
 jxB(:,2:4) = jxB(:,2:4)./1.6e-19./1000; %Convert to (mV/m)
@@ -119,7 +119,6 @@ irf_legend(hca,{'B_{x}','B_{y}','B_{z}'},[0.88 0.10])
 grid(h(1),'off');
 
 hca = irf_panel('J');
-j(:,2:4) = j(:,2:4).*1e9;
 irf_plot(hca,j);
 ylabel(hca,{'J_{DMPA}','(nA m^{-2})'},'Interpreter','tex');
 irf_legend(hca,{'J_{x}','J_{y}','J_{z}'},[0.88 0.10])
