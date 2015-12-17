@@ -91,7 +91,7 @@ EdotJ = [Eav(:,1) EdotJ];
 end
 %% Only picks out a smaller time interval around the nulls (to keep filesize small)  
 %Possibility to pick out interesting time interval to keep the file size small
-if 1
+if true
 if isempty(Nulls.t)
     error('No Nulls are found')
 else
