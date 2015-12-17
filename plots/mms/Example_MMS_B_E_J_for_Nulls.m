@@ -95,7 +95,7 @@ if 1
 if isempty(Nulls.t)
     error('No Nulls are found')
 else
-index=find(Bav(:,1)>(Nulls.t(1,1)-0.4) & Bav(:,1)<Nulls.t(end,1)+0.4);
+index=find(Bav(:,1)>(Nulls.t(1,1)-1) & Bav(:,1)<Nulls.t(end,1)+1);
 Bav=Bav(index,:);
 Eav=Eav(index,:);
 ni=ni(index,:);
