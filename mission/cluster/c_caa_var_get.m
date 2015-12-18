@@ -55,6 +55,7 @@ dobjSpecified = false;  % default dataobject is not given as input
 Dataobject = [];        % default dataobject is empty
 args = varargin;        % input argument list
 testDataStreaming = false; % default do not get data by data streaming
+existDataobject = false;
 % returnOutputAsCellArray  - set later in code, if true output should be cell array
 %% Define varName
 if isa(args{1},'dataobj'), % dataobject specified as first input argument
@@ -182,6 +183,7 @@ for iDataset = 1:numel(datasetNameUniqueList)
 	testLocalCaaRepository = false; % default test local CAA directory and not local repository
 	if dobjSpecified
 		isDataReturned = true;
+		existDataobject = true;
 	else
 		if getAllData && ~getFromFile ...
 				&& evalin('caller',['exist(''' dataobjName ''',''var'')'])...
@@ -201,7 +203,6 @@ for iDataset = 1:numel(datasetNameUniqueList)
 				isDataReturned = true;
 				existDataobject = true;
 			else
-				existDataobject = false;
 				irf.log('warning',[dataobjName ' could not be loaded!']);
 				if (getTs || getMat || getCaa || getDobj) && ~getAllData && local.c_read('test')
 					testLocalCaaRepository = true;

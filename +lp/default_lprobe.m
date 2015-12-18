@@ -114,8 +114,10 @@ end
 		Lprobe = lp.lprobe;
 		Lprobe.name = 'Solar Orbiter';
 		Lprobe.surface = 'elgiloy';
-		Lprobe.radiusWire = (0.01887+0.0314)/2/2;
-		Lprobe.lengthWire = 6.1604;
+		% Conical stzer with length 6.077 and diameters 0.038 and 0.019 on ends. 
+		% At the end is a tip cylinder with length 0.038 and diameter 0.019
+		Lprobe.radiusWire = [0.038 0.019]/2;
+		Lprobe.lengthWire = 6.13; % to have the same total area as real antenna
 	end
 
 end

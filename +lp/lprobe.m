@@ -40,7 +40,12 @@ classdef lprobe
 			end
 			if isnumeric(Lp.radiusWire) && ~isempty(Lp.radiusWire) ...
 					&& isnumeric(Lp.lengthWire) && ~isempty(Lp.lengthWire),
-				areaWireSunlit = Lp.radiusWire*Lp.lengthWire;
+				if numel(Lp.radiusWire) <= 2, % wire or stazer
+					areaWireSunlit = mean(Lp.radiusWire)*Lp.lengthWire;
+				else
+					errStr = 'The wire radius should be a numeric vector of length 1 (wire) or 2 (stazer).';
+					irf.log('critical',errStr);error(errStr);
+				end
 				areaWireTotal  = pi*areaWireSunlit;
 			end
 			
@@ -59,12 +64,17 @@ classdef lprobe
 			cSphere  = irf_estimate('capacitance_sphere',Lp.radiusSphere);
 			if isnumeric(Lp.radiusWire) && any(Lp.radiusWire) ...
 					&& isnumeric(Lp.lengthWire) && any(Lp.lengthWire),
-				if Lp.lengthWire > 10*Lp.radiusWire
-					cWire    = irf_estimate('capacitance_wire',  Lp.radiusWire,Lp.lengthWire);
-				elseif Lp.lengthWire > Lp.radiusWire
+				if all(Lp.lengthWire > 10*Lp.radiusWire)
+					if numel(Lp.radiusWire) <= 2,
+						cWire    = irf_estimate('capacitance_wire',  mean(Lp.radiusWire),Lp.lengthWire);
+					else
+						errStr = 'The wire radius should be a numeric vector of length 1 (wire) or 2 (stazer).';
+						irf.log('critical',errStr);error(errStr);
+					end
+				elseif all(Lp.lengthWire > Lp.radiusWire)
 					cWire    = irf_estimate('capacitance_cylinder',  Lp.radiusWire,Lp.lengthWire);
 				else
-					irf.log('critical','estiamte of capacitance for cylinder requires length > radius');
+					irf.log('critical','estimate of capacitance for cylinder requires length > radius');
 					cWire = [];
 				end
 			end

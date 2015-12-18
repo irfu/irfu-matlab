@@ -359,7 +359,7 @@ classdef ui < handle
 		function get_probe_radius_wire(obj)
 			radiusWireCm = get(obj.UserData.inp.probe.radiusWire.value,'String'); % in cm
 			if isempty(radiusWireCm), radiusWireCm = 0; end
-			radiusWire = str2double(radiusWireCm)*1e-2;
+			radiusWire = eval(['[' radiusWireCm ']'])*1e-2;
 			obj.set_user_defined_if_probe_changes('radiusWire',radiusWire)
 		end
 		function get_probe_length_wire(obj)

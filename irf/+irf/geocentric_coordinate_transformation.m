@@ -45,6 +45,10 @@ end
 
 if isInpTSeries
   refSystInternal = lower(inp.coordinateSystem);
+	i = strfind(refSystInternal,'>');
+	if any(i)
+		refSystInternal(i:end) = [];
+	end
   if isempty(refSystIn) && isempty(refSystInternal)
     errStr = 'input reference frame undefined';
     irf.log('critical',errStr); error(errStr);
