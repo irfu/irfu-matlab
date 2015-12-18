@@ -127,7 +127,7 @@ classdef mms_sdp_dmgr < handle
           error('MATLAB:MMS_SDP_DMGR:INPUT', errStr);
         else
           % Warn about multiple files of same type.
-          irf.log('warning',['Multiple files for (' param ' detected. Will try to sort them by time.']);
+          irf.log('warning',['Multiple files for ' param ' detected. Will try to sort them by time.']);
         end
       end
       
