@@ -123,15 +123,21 @@ classdef mms_local_file_db < mms_file_db
                   s,e.path,e.name);
                 [sta,out] = unix(cmd); if sta>0 || isempty(out), return, end
               end
-              sss = [irf_time([str2double(out(1:4)), str2double(out(6:8))],...
-                'doy>utc_yyyy-mm-dd') 'T'];
-              if length(out) == 19, sss = [sss out(10:17) '.000000000Z']; % ie. predatt (time string end with "hh:mm:ss\n") add remaining .mmmuuunnnZ
-              else sss = [sss out(10:21) '000000Z']; % defatt, depeph etc (time string end with "hh:mm:ss.mmm\n" add remaining uuunnnZ
-              end
               try
+                % Split up doy string YYYY-DOYThh:mm:ss.mmmuuunnn
+                % works on YYYY-DOYThh:mm:ss and YYYY-DOY/hh:mm:ss or a
+                % combination of these.
+                doy5 = sscanf(out,'%4d-%3d%c%2d:%2d:%2f');
+                sec = floor(doy5(6));
+                msec = floor((doy5(6)-sec)*10^3);
+                usec = floor(((doy5(6) - sec)*10^3 - msec)*10^3);
+                nsec = floor((((doy5(6) - sec)*10^3 - msec)*10^3 - usec) * 10^3);
+                doy8 = [doy5(1), doy5(2), doy5(4), doy5(5), sec, msec, usec, nsec]; % YYYY, DOY, hh, mm, ss, msec, usec, nsec
+                sss = irf_time(doy8, 'doy8>ttns');
                 epoch = EpochTT(sss);
               catch ME
-                errStr = ['Error reading times for ancillary file: ', e.name, ' got: ', sss];
+                errStr = ['Error reading times for ancillary file: ', ...
+                  e.name, ' got: ', sss, ' from :' out];
                 irf.log('critical', errStr); rethrow(ME);
               end
             end
