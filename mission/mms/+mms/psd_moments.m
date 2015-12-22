@@ -1,4 +1,4 @@
-function particlemoments = psd_moments(varargin)
+function particlemoments = psd_momentsrev1(varargin)
 % PSD_MOMENTS compute moments from the FPI particle phase-space densities 
 %
 % particlemoments = mms.psd_moments(pdist,phi,theta,stepTable,energy0,energy1,SCpot,particle,option,option_value)
@@ -14,7 +14,8 @@ function particlemoments = psd_moments(varargin)
 %   particle - indicate particle type: 'electron' or 'ion'
 % Optional Inputs:
 %   'energyrange' - set energy range in eV to integrate over [E_min E_max].
-%   Not yet implemented because of energy channel switching. 
+%   energy range is applied to energy0 and the same elements are used for energy1 to 
+%   ensure that the same number of points are integrated over. 
 %   'noscpot' - set to 1 to set spacecraft potential to zero. Calculates moments without
 %   correcting for spacecraft potential. 
 %   'enchannels' - set energy channels to integrate over [min max]; min and max
@@ -22,7 +23,7 @@ function particlemoments = psd_moments(varargin)
 %
 % Output: 
 %   psd_moments - structure containing the particle moments: density, bulk
-%   velocity, pressure and temperature (n_psd, V_psd, P_psd, T_psd, and H_psd,
+%   velocity, pressure, temperature, and particle heat flux (n_psd, V_psd, P_psd, T_psd, and H_psd,
 %   respectively) as TSeries'. For temperature and
 %   pressure tensors the order of the columns is XX, XY, XZ, YY, YZ, ZZ.
 %
@@ -89,11 +90,16 @@ intenergies = [1:32];
 while options
     l = 2;
     switch(lower(args{1}))
-        %case 'energyrange'
-            %if numel(args)>1 && isnumeric(args{2})
-            %    Eminmax = args{2};
-            %    irf_log('proc','Using partial energy range')
-            %end
+        case 'energyrange'
+            if numel(args)>1 && isnumeric(args{2})
+                Eminmax = args{2};
+                starte = find(energy0 > Eminmax(1));
+                starte = starte(1);
+                ende = find(energy0 < Eminmax(2));
+                ende = ende(end);
+                intenergies = starte:ende;
+                irf_log('proc','Using partial energy range')
+            end
       	case 'noscpot'
             if numel(args)>1 && args{2};
                 SCpot.data = zeros(size(SCpot.data));
@@ -172,7 +178,7 @@ for nt = 1:length(pdist.time)
     Mpsdmfzz = ones(length(phij),1) * (sind(thetak).* cosd(thetak).^2);
     Mpsdmfxy = cosd(phij).*sind(phij) * (sind(thetak).^3);
     Mpsdmfxz = cosd(phij) * (sind(thetak).^2.*cosd(thetak));
-    Mpsdmfyz= sind(phij) * (sind(thetak).^2.*cosd(thetak));
+    Mpsdmfyz = sind(phij) * (sind(thetak).^2.*cosd(thetak));
    
     for ii = intenergies; 
         deltav = (v2(ii+2) - v2(ii))/2;
