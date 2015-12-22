@@ -2,12 +2,10 @@
 % Curlometer method. 
 % Written by D. B. Graham
 
-mms.db_init('local_file_db','/data/mms');
-
-Tint = irf.tint('2015-10-01T06:30:00.00Z/2015-10-01T07:20:00.00Z');
+Tint = irf.tint('2015-12-13T00:00:00.00Z/2015-12-13T12:00:00.00Z');
 
 %%
-ic = 1; %get density from this spacecraft
+ic = [1:4]; 
 
 c_eval('Bxyz?=mms.db_get_ts(''mms?_dfg_srvy_ql'',''mms?_dfg_srvy_dmpa'',Tint);');
 c_eval('Bxyz? = Bxyz?.resample(Bxyz1);',2:4);
@@ -16,14 +14,14 @@ Bxyzav = TSeries(Bxyz1.time,Bxyzav,'to',1);
 
 c_eval('Exyz?=mms.db_get_ts(''mms?_edp_fast_ql_dce2d'',''mms?_edp_dce_xyz_dsl'',Tint);');
 c_eval('Exyz? = Exyz?.resample(Exyz1);',2:4);
-%c_eval('Exyz?.data(find(abs(Exyz?.data) > 100)) = NaN;'); %Remove some questionable fields
 c_eval('[Exyz?,~]=irf_edb(Exyz?,Bxyz?,15,''E.B=0'');',[1:4]); % Removes some wake fields
 
 Exyzav = (Exyz1.data+Exyz2.data+Exyz3.data+Exyz4.data)/4;
 Exyzav = TSeries(Exyz1.time,Exyzav,'to',1);
 
-c_eval('ni=mms.db_get_ts(''mms?_fpi_fast_sitl'',''mms?_fpi_DISnumberDensity'',Tint);',ic);
-ni = TSeries(ni.time,ni.data,'to',1);
+c_eval('ni?=mms.db_get_ts(''mms?_fpi_fast_sitl'',''mms?_fpi_DISnumberDensity'',Tint);');
+c_eval('ni? = ni?.resample(ni1);',2:4);
+ni = irf.ts_scalar(ni1.time,(ni1.data+ni2.data+ni3.data+ni4.data)/4);
 ni = ni.resample(Bxyz1);
 
 R  = mms.get_data('R_gse',Tint);
@@ -106,7 +104,7 @@ irf_plot(hca,EdotJ);
 ylabel(hca,{'E . J','(nW m^{-3})'},'Interpreter','tex');
 irf_legend(hca,'(g)',[0.99 0.98],'color','k')
 
-title(h(1),strcat('MMS',num2str(ic),'- Current density and fields'));
+title(h(1),'MMS - Current density and fields');
 
 irf_plot_axis_align(1,h(1:7))
 irf_zoom(h(1:7),'x',Tint);
