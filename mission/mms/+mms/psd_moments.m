@@ -1,4 +1,4 @@
-function particlemoments = psd_momentsrev1(varargin)
+function particlemoments = psd_moments(varargin)
 % PSD_MOMENTS compute moments from the FPI particle phase-space densities 
 %
 % particlemoments = mms.psd_moments(pdist,phi,theta,stepTable,energy0,energy1,SCpot,particle,option,option_value)
