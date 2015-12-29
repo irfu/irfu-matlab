@@ -22,7 +22,7 @@ function [bout]=c_fgm_staff_combine(bFgm,bStaff,varargin)
 if nargout==0 && nargin == 0, help c_fgm_staff_combine;return;end
 
 args = varargin;
-if ~isempty(args), have_options = 1; end
+if ~isempty(args), have_options = 1; else have_options = 0; end
 
 %% Default values that can be override by options
 fCut = 1.3; % cut Frequency (Hz)
