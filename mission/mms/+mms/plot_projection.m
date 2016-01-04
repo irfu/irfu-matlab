@@ -163,7 +163,7 @@ FF = zeros(32,32); % azimuthal, energy
 for iE = 1:32;
   for iAz = 1:32;
     % dist.data has dimensions nT x nE x nAz x nPol
-    C = squeeze(nanmean(dist.data(tId,iE,:,:),1));
+    C = squeeze(irf.nanmean(dist.data(tId,iE,:,:),1));
     %C = squeeze(nansum(dist.data(tId,iE,:,:),1));
     C = C.*geoFactorElev.*geoFactorBinSize;    
     C(abs(elevationAngle)>limElevation*pi/180) = NaN;
@@ -171,7 +171,7 @@ for iE = 1:32;
     C(planeAz<edgesAz(iAz)) = NaN;
     C(planeAz>edgesAz(iAz+1)) = NaN;   
     
-    FF(iAz,iE) = nanmean(nanmean(C));
+    FF(iAz,iE) = irf.nanmean(irf.nanmean(C));
   end    
 end
 %%
