@@ -253,7 +253,7 @@ classdef TSeries
         if ~iscell(x)
           msg = 'Representation requires a cell input'; return
         end
-        if sDim~=length(x)
+        if sDim>0 && sDim~=length(x)
           msg = sprintf('Representation requires a cell(%d) input',sDim);
           return
         end
@@ -333,31 +333,31 @@ classdef TSeries
     %Components
     function y = x(obj)
       %access X component
-      y = getComponent(obj,'x'); if isempty(y), error('cannot get X'), end
+      [y,ok] = getComponent(obj,'x'); if ~ok, error('cannot get X'), end
     end
     function y = y(obj)
       %access Y component
-      y = getComponent(obj,'y'); if isempty(y), error('cannot get Y'), end
+      [y,ok] = getComponent(obj,'y'); if ~ok, error('cannot get Y'), end
     end
     function y = z(obj)
       %access Z component
-      y = getComponent(obj,'z'); if isempty(y), error('cannot get Z'), end
+      [y,ok] = getComponent(obj,'z'); if ~ok, error('cannot get Z'), end
     end
     function y = r(obj)
       %access R component
-      y = getComponent(obj,'r'); if isempty(y), error('cannot get R'), end
+      [y,ok] = getComponent(obj,'r'); if ~ok, error('cannot get R'), end
     end
     function y = theta(obj)
       %access T(theta) component
-      y = getComponent(obj,'t'); if isempty(y), error('cannot get THETA'), end
+      [y,ok] = getComponent(obj,'t'); if ~ok, error('cannot get THETA'), end
     end
     function y = phi(obj)
       %access P(phi) component
-      y = getComponent(obj,'p'); if isempty(y), error('cannot get PHI'), end
+      [y,ok] = getComponent(obj,'p'); if ~ok, error('cannot get PHI'), end
     end
     function y = lambda(obj)
       %access L(lambda) component
-      y = getComponent(obj,'l'); if isempty(y), error('cannot get LAMBDA'), end
+      [y,ok] = getComponent(obj,'l'); if ~ok, error('cannot get LAMBDA'), end
     end
     
     function obj = set.coordinateSystem(obj,value)
@@ -502,10 +502,10 @@ classdef TSeries
       %     TS3 = TS1 + TS2;
 			%     TS2 = TS1 + 0.1;
 			%     TS2 = TS1 + [1 2 4];  % if TS1,TS2 are vector time series
-      [ST,I] = dbstack; % see if plus() was called from within minus()
+      [ST,~] = dbstack; % see if plus() was called from within minus()
       if numel(ST)>1 && strcmp(ST(2).name,'TSeries.minus')
             operationStr = 'Minus'; operationSymbol = '-';
-      else, operationStr = 'Plus';  operationSymbol = '+';
+      else operationStr = 'Plus';  operationSymbol = '+';
       end
           
       if isnumeric(obj) && isa(obj1,'TSeries')
@@ -877,12 +877,13 @@ classdef TSeries
       % Resample Ts to timeline of Ts2
       %
       % See also: IRF_RESAMP
+      if isempty(obj), error('Cannot resample empty TSeries'), end
       if ~isa(NewTime,'TSeries') && ~isa(NewTime,'GenericTimeArray')
         error('NewTime must be of TSeries or GenericTimeArray type or derived from it')
       end
       if isa(NewTime,'TSeries'), NewTime = NewTime.time; end
       if NewTime == obj.time, Ts = obj; return, end 
-            
+
       if obj.tensorOrder==0, 
           resample_(obj);
       elseif obj.tensorOrder==1,       
@@ -954,8 +955,8 @@ classdef TSeries
   end
   
   methods (Access=protected)
-    function res = getComponent(obj,comp)
-      res = [];
+    function [res, ok] = getComponent(obj,comp)
+      res = []; ok = false;
       nd = ndims(obj.data_);
       if nd>6, error('we cannot support more than 5 dimensions'), end % we cannot support more than 5 dimensions
       teno = obj.tensorOrder_;
@@ -993,6 +994,7 @@ classdef TSeries
             end
           end
           res = TSeries(args{:}); res.name = sprintf('%s_%s',obj.name,comp);
+          ok = true;
         case 2
           error('not implemented')
         otherwise, error('should no be here')
