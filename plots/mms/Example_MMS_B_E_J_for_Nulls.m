@@ -6,7 +6,7 @@
 %% Set time interval to look in and set the spacecraft that density will be
 % taken from
 ic=1; %Gives number of spacecraft where density is taken for Hall field calculations.
-Tint  = irf.tint('2015-12-12T23:00:00Z/2015-12-13T13:00:00Z');
+Tint  = irf.tint('2016-01-05T20:00:00Z/2016-01-06T15:00:00Z');
 boxLim=70;
 currentLim=500E-9;
 %% Load magnetic field and spacecraft positional data
@@ -42,7 +42,7 @@ Nulls=c_4_null(R1,R2,R3,R4,B1,B2,B3,B4,'boxLim',boxLim,'strong',currentLim);
 
 if isempty(Nulls.t)
     time_int=irf_time(Tint,'tint>utc');
-    errormessage=['No Nulls were found with strong currents between ',time_int]
+    errormessage=['No Nulls were found with strong currents between ',time_int];
     error(errormessage);
 else
 % Possibility to save Null data
@@ -93,6 +93,11 @@ disp('Calculates EdotJ')
 % Calculates EdotJ
 EdotJ = dot(Eav(:,2:4),j(:,2:4),2)./1000; %J (nA/m^2), E (mV/m), E.J (nW/m^3)
 EdotJ = [Eav(:,1) EdotJ];
+
+c_eval('Efield=E?',ic);
+Efield=[Efield.time.epochUnix double(Efield.data)];
+c_eval('Bfield=B?',ic);
+Bfield=[Bfield.time.epochUnix double(Bfield.data)];
 end
 %% Only picks out a smaller time interval around the nulls (to keep filesize small)  
 %Possibility to pick out interesting time interval to keep the file size small
@@ -101,6 +106,8 @@ if isempty(Nulls.t)
     error('No Nulls are found')
 else
 index=find(Bav(:,1)>(Nulls.t(1,1)-1) & Bav(:,1)<Nulls.t(end,1)+1);
+Efield=Efield(index,:);
+Bfield=Bfield(index,:);
 Bav=Bav(index,:);
 Eav=Eav(index,:);
 ni=ni(index,:);
@@ -121,7 +128,7 @@ irf_plot(hca,Bav);
 ylabel(hca,{'B_{DMPA}','(nT)'},'Interpreter','tex');
 irf_legend(hca,{'B_{x}','B_{y}','B_{z}'},[0.88 0.10])
 %irf_legend(hca,'(a)',[0.99 0.98],'color','k')
-grid(h(1),'off');
+grid(hca,'off');
 
 hca = irf_panel('J');
 irf_plot(hca,j);
@@ -132,7 +139,7 @@ grid(hca,'off');
 
 hca = irf_panel('divovercurl');
 irf_plot(hca,divovercurl);
-ylabel(hca,{'|\nabla . B| ','|\nabla \times B|'},'Interpreter','tex');
+ylabel(hca,{'$\frac{|\nabla \cdot \mathbf{B}|} {|\nabla \times \mathbf{B}|}$'},'Interpreter','latex','Fontsize',18);
 %irf_legend(hca,'(e)',[0.99 0.98],'color','k')
 grid(hca,'off');
 
@@ -157,15 +164,69 @@ grid(hca,'off');
 
 title(h(1),strcat('MMS averaged - Current density and fields'));
 tmarks=Nulls.t; %Makes tmarks for all null data points.
+irf_plot_axis_align(1,h);
 irf_pl_mark(h,tmarks,[0.8 0.8 0.8]) %Setting the color lines to grey
-irf_pl_number_subplots(h,[0.05, 0.9]); 
-irf_plot_axis_align(1,h)
+irf_pl_number_subplots(h,[0.99, 0.95]); 
 Tint=[Bav(1,1) Bav(end,1)];
 irf_zoom(h,'x',Tint);
 end
 
+%% Plot data for specific spacecraft given by ic.
+if isempty(Nulls.t)
+    error('Could not plot because no nulls have been found') 
+else
+h = irf_plot(6,'newfigure');
+
+hca = irf_panel('BMMS');
+irf_plot(hca,Bfield);
+ylabel(hca,{'B_{DMPA}','(nT)'},'Interpreter','tex');
+irf_legend(hca,{'B_{x}','B_{y}','B_{z}'},[0.88 0.10])
+%irf_legend(hca,'(a)',[0.99 0.98],'color','k')
+grid(hca,'off');
+
+hca = irf_panel('J');
+irf_plot(hca,j);
+ylabel(hca,{'J_{DMPA}','(nA m^{-2})'},'Interpreter','tex');
+irf_legend(hca,{'J_{x}','J_{y}','J_{z}'},[0.88 0.10])
+%irf_legend(hca,'(c)',[0.99 0.98],'color','k')
+grid(hca,'off');
+
+hca = irf_panel('divovercurl');
+irf_plot(hca,divovercurl);
+ylabel(hca,{'$\frac{|\nabla \cdot \mathbf{B}|} {|\nabla \times \mathbf{B}|}$'},'Interpreter','latex','Fontsize',18);
+%irf_legend(hca,'(e)',[0.99 0.98],'color','k')
+grid(hca,'off');
+
+hca = irf_panel('EMMS');
+irf_plot(hca,Efield);
+ylabel(hca,{'E_{DSL}','(mV m^{-1})'},'Interpreter','tex');
+irf_legend(hca,{'E_{x}','E_{y}','E_{z}'},[0.88 0.10])
+%irf_legend(hca,'(b)',[0.99 0.98],'color','k')
+grid(hca,'off');
+
+hca = irf_panel('jxB');
+irf_plot(hca,jxB);
+ylabel(hca,{'J \times B/n_{e} q_{e}','(mV m^{-1})'},'Interpreter','tex');
+%irf_legend(hca,'(f)',[0.99 0.98],'color','k')
+grid(hca,'off');
+
+hca = irf_panel('jdotE');
+irf_plot(hca,EdotJ);
+ylabel(hca,{'E . J','(nW m^{-3})'},'Interpreter','tex');
+%irf_legend(hca,'(g)',[0.99 0.98],'color','k')
+grid(hca,'off');
+
+title(h(1),strcat(['MMS', num2str(ic)]));
+tmarks=Nulls.t; %Makes tmarks for all null data points.
+irf_plot_axis_align(1,h);
+irf_pl_mark(h,tmarks,[0.8 0.8 0.8]) %Setting the color lines to grey
+irf_pl_number_subplots(h,[0.99, 0.95]); 
+Tint=[Bfield(1,1) Bfield(end,1)];
+irf_zoom(h,'x',Tint);
+end
+
 % 2) from terminal convert to eps file without white margins
-% > epstool --copy --bbox 15DecNullBoring.eps 15DecNullBoring_crop.eps
+% > epstool --copy --bbox Dec22.eps Dec22_crop.eps
 % 3) convert eps file to pdf, result is in Current_crop.pdf
-% > ps2pdf -dEPSFitPage -dEPSCrop -dAutoRotatePages=/None 15DecNullBoring_crop.eps
+% > ps2pdf -dEPSFitPage -dEPSCrop -dAutoRotatePages=/None Dec22_crop.eps
 
