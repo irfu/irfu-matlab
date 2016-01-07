@@ -141,7 +141,9 @@ classdef (Abstract) GenericTimeArray
             'inpus must be subclasses of GenericTimeArray')
       end
       len = obj.length(); len1 = obj1.length();
-			if len==0 && len1==0, res = true; return, end
+      if len==0 && len1==0, res = true; return
+      elseif len==0 || len1==0, res = false; return
+      end
 			
 			objTmp = convert_epoch(obj1,class(obj));
 			if len1==1,
