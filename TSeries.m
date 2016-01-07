@@ -511,31 +511,47 @@ classdef TSeries
       if isnumeric(obj) && isa(obj1,'TSeries')
         Ts = plus(obj1,obj);        
       end
+      
       if isnumeric(obj1)
         Ts = obj;
-        if numel(obj1) == 1
-          Ts.data_ = Ts.data_ + obj1;
+        if isempty(obj) || isempty(obj1)
+          sz = size(Ts.data_); sz(1) = 0; Ts.data_ = zeros(sz);
+          Ts.t_ = Ts.t_([]);
         else
-          sizeInp = size(obj1);
-          sizeObj = size(Ts.data);
-          if isequal(sizeInp,sizeObj)
+          if numel(obj1) == 1
             Ts.data_ = Ts.data_ + obj1;
-          elseif numel(sizeInp) == numel(sizeObj) ...   % same dimensions
-            && sizeInp(1) == 1  ...                     % one row in obj1
-            && all(sizeInp(2:end) == sizeObj(2:end))    % otherwise same number of elements
-            Ts.data_ = Ts.data_ + repmat(obj1,[sizeObj(1) ones(1,numel(sizeInp)-1)]);
           else
-            error([operationStr ' not defined']);
+            sizeInp = size(obj1);
+            sizeObj = size(Ts.data);
+            if isequal(sizeInp,sizeObj)
+              Ts.data_ = Ts.data_ + obj1;
+            elseif numel(sizeInp) == numel(sizeObj) ...   % same dimensions
+                && sizeInp(1) == 1  ...                     % one row in obj1
+                && all(sizeInp(2:end) == sizeObj(2:end))    % otherwise same number of elements
+              Ts.data_ = Ts.data_ + repmat(obj1,[sizeObj(1) ones(1,numel(sizeInp)-1)]);
+            else
+              error([operationStr ' not defined']);
+            end
           end
         end
-      elseif isa(obj,'TSeries') && isa(obj1,'TSeries')
-        if obj.time~=obj1.time
-          error('Input TS objects have different timelines, use resample()')
+      elseif isa(obj,'TSeries') && isa(obj1,'TSeries') 
+        if obj.tensorOrder~=obj1.tensorOrder
+          error('Inputs must have the same tensor order');
+        %elseif obj.tensorBasis_ ~= obj1.tensorBasis_
+        %  error('Inputs must have the same tensor basis, use transform()');
         elseif ~strcmpi(obj.units,obj1.units)
-          error('Input TS objects have different units')
+          error('Inputs must have the same units')
         end
         Ts = obj;
-        Ts.data_ = obj.data + obj1.data;
+        if isempty(obj) || isempty(obj1)
+          sz = size(Ts.data_); sz(1) = 0; Ts.data_ = zeros(sz);
+          Ts.t_ = Ts.t_([]);
+        else
+          if obj.time~=obj1.time
+            error('Input TS objects have different timelines, use resample()')
+          end
+          Ts.data_ = obj.data + obj1.data;
+        end
         update_name()
       else        
         error([operationStr ' not defined']);
