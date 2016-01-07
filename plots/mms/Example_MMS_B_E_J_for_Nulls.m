@@ -6,7 +6,7 @@
 %% Set time interval to look in and set the spacecraft that density will be
 % taken from
 ic=1; %Gives number of spacecraft where density is taken for Hall field calculations.
-Tint  = irf.tint('2015-12-10T23:00:00Z/2015-12-11T23:59:59Z');
+Tint  = irf.tint('2015-12-12T23:00:00Z/2015-12-13T13:00:00Z');
 boxLim=70;
 currentLim=500E-9;
 %% Load magnetic field and spacecraft positional data
@@ -41,7 +41,9 @@ disp('Looking for Nulls');
 Nulls=c_4_null(R1,R2,R3,R4,B1,B2,B3,B4,'boxLim',boxLim,'strong',currentLim);
 
 if isempty(Nulls.t)
-    disp('No Nulls are found')
+    time_int=irf_time(Tint,'tint>utc');
+    errormessage=['No Nulls were found with strong currents between ',time_int]
+    error(errormessage);
 else
 % Possibility to save Null data
 if 0
@@ -49,6 +51,7 @@ if 0
     save(filename,'Nulls');
 end
 %% Average calculations. Loads electric fields, density and calculates J and JxB with curlometer method
+
 disp('Calculates average Bfield')
 Bav = (B1.data+B2.data+B3.data+B4.data)/4;
 Bav=[B1.time.epochUnix double(Bav)];
