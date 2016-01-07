@@ -56,6 +56,8 @@ disp('Loads Electric fields')
 % Electric field
 c_eval('E?_orig=mms.db_get_ts(''mms?_edp_fast_ql_dce2d'',''mms?_edp_dce_xyz_dsl'',Tint);');
 c_eval('E? = E?_orig.resample(E1_orig);',1:4);
+%Removes 1.5 mV/m offset from Ex for all spacecraft
+c_eval('E?.data(:,1) = E?.data(:,1)-1.5;',1:4);
 c_eval('E? = E?.resample(B1);',1:4); %Resampling to B-field due to the index searching later to make smaller filesizes.
 % Calibrating E-field (TO-DO)
 %c_eval('E?.data(find(abs(E?.data) > 100)) = NaN;',1:4); %Remove some questionable fields
