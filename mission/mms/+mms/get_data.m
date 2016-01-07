@@ -34,7 +34,8 @@ elseif Tint.stop-Tint.start<=0,
 end
 
 vars = {'R_gse','R_gsm','V_gse','V_gsm',...
-  'Ve_gse_fpi_brst','Vi_gse_fpi_brst', ...
+  'Vi_gse_fpi_ql','Ve_gse_fpi_brst','Vi_gse_fpi_brst', ...
+  'Ni_fpi_ql','Ni_fpi_brst','Ne_fpi_brst'...
   'dfg_ql_srvy', 'afg_ql_srvy'}; % XXX THESE MUST BE THE SAME VARS AS BELOW
 if isempty(intersect(varStr,vars)),
   errS = ['variable not recognized: ' varStr];
@@ -124,11 +125,15 @@ switch varStr
       dTmpR = dTmp.resample(res.time,'spline');
       res.([cS vC mmsIdS]) = dTmpR.data; 
     end
-  case {'Vi_gse_fpi_brst','Ve_gse_fpi_brst'}
+  case {'Vi_gse_fpi_ql','Vi_gse_fpi_brst','Ve_gse_fpi_brst'}
     if varStr(2)=='i', vS = 'dis';
     else vS = 'des';
     end
-    datasetName = ['mms' mmsIdS '_fpi_brst_l1b_' vS '-moms'];
+    if varStr(12)=='q'
+      datasetName = ['mms' mmsIdS '_fpi_fast_ql_' vS];
+    else
+      datasetName = ['mms' mmsIdS '_fpi_brst_l1b_' vS '-moms'];
+    end
     rX = mms.db_get_ts(datasetName,['mms' mmsIdS '_' vS '_bulkX'],Tint);
     if isempty(rX), return, end
     rX = comb_ts(rX);
@@ -136,6 +141,21 @@ switch varStr
     rZ = comb_ts(mms.db_get_ts(datasetName,['mms' mmsIdS '_' vS '_bulkZ'],Tint));
     res = irf.ts_vec_xyz(rX.time, [rX.data rY.data rZ.data]);
     res.coordinateSystem = 'gse';
+    res.name = [varStr '_' mmsIdS];
+    res.units = rX.units;
+    res.siConversion = rX.siConversion;
+  case {'Ni_fpi_ql','Ni_fpi_brst','Ne_fpi_brst'}
+    if varStr(2)=='i', vS = 'dis';
+    else vS = 'des';
+    end
+    if varStr(8)=='q'
+      datasetName = ['mms' mmsIdS '_fpi_fast_ql_' vS];
+    else
+      datasetName = ['mms' mmsIdS '_fpi_brst_l1b_' vS '-moms'];
+    end
+    rX = mms.db_get_ts(datasetName,['mms' mmsIdS '_' vS '_numberDensity'],Tint);
+    if isempty(rX), return, end
+    res = irf.ts_scalar(rX.time, rX.data);
     res.name = [varStr '_' mmsIdS];
     res.units = rX.units;
     res.siConversion = rX.siConversion;
