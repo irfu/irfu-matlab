@@ -6,7 +6,7 @@
 %% Set time interval to look in and set the spacecraft that density will be
 % taken from
 ic=1; %Gives number of spacecraft where density is taken for Hall field calculations.
-Tint  = irf.tint('2016-01-05T20:00:00Z/2016-01-06T15:00:00Z');
+Tint  = irf.tint('2016-01-06T20:00:00Z/2016-01-07T15:00:00Z');
 boxLim=70;
 currentLim=500E-9;
 %% Load magnetic field and spacecraft positional data
@@ -62,13 +62,18 @@ c_eval('E? = E?_orig.resample(E1_orig);',1:4);
 %Removes 1.5 mV/m offset from Ex for all spacecraft
 c_eval('E?.data(:,1) = E?.data(:,1)-1.5;',1:4);
 c_eval('E? = E?.resample(B1);',1:4); %Resampling to B-field due to the index searching later to make smaller filesizes.
-% Calibrating E-field (TO-DO)
-%c_eval('E?.data(find(abs(E?.data) > 100)) = NaN;',1:4); %Remove some questionable fields
-%c_eval('[E?,~]=irf_edb(E?,B?,15,''E.B=0'');',1:4); % Removes some wake fields
+
 % Average E-field for EdotJ
 disp('Calculates average E-fields')
 Eav = (E1.data+E2.data+E3.data+E4.data)/4;
 Eav=[E1.time.epochUnix double(Eav)];
+
+%Special satellite
+c_eval('Efield=E?;',ic);
+Efield=[Efield.time.epochUnix double(Efield.data)];
+c_eval('Bfield=B?;',ic);
+Bfield=[Bfield.time.epochUnix double(Bfield.data)];
+
 disp(['Loads density from spacecraft',num2str(ic)])
 %Density from spacecraft ic for Hall field calculation
 c_eval('ni=mms.db_get_ts(''mms?_fpi_fast_sitl'',''mms?_fpi_DISnumberDensity'',Tint);',ic);
@@ -93,19 +98,15 @@ disp('Calculates EdotJ')
 % Calculates EdotJ
 EdotJ = dot(Eav(:,2:4),j(:,2:4),2)./1000; %J (nA/m^2), E (mV/m), E.J (nW/m^3)
 EdotJ = [Eav(:,1) EdotJ];
-
-c_eval('Efield=E?',ic);
-Efield=[Efield.time.epochUnix double(Efield.data)];
-c_eval('Bfield=B?',ic);
-Bfield=[Bfield.time.epochUnix double(Bfield.data)];
 end
+
 %% Only picks out a smaller time interval around the nulls (to keep filesize small)  
 %Possibility to pick out interesting time interval to keep the file size small
 if true
 if isempty(Nulls.t)
     error('No Nulls are found')
 else
-index=find(Bav(:,1)>(Nulls.t(1,1)-1) & Bav(:,1)<Nulls.t(end,1)+1);
+index=B1.time(:,1).epochUnix>(Nulls.t(1,1)-1) & B1.time(:,1).epochUnix<Nulls.t(end,1)+1;
 Efield=Efield(index,:);
 Bfield=Bfield(index,:);
 Bav=Bav(index,:);
