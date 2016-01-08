@@ -9,7 +9,7 @@ function TsOut = mms_dsl2gse(TsIn, defatt, direction)
 % Example usage with DEFATT:
 %  tint = irf.tint('2015-05-09T14:00:00Z/2015-05-09T17:59:59Z');
 %  defatt = mms.db_get_variable('mms2_ancillary_defatt','zra',tint);
-%  defatt.zdec = mms.db_get_variable('mms2_ancillary_defatt','zdec',tint);
+%  defatt.zdec = mms.db_get_variable('mms2_ancillary_defatt','zdec',tint).zdec;
 %  gseB = mms_dsl2gse(B_dmpa,defatt)
 %
 % Example usage with SAX:
@@ -28,6 +28,8 @@ if abs(direction)~=1,
   direction = 1; 
   irf.log('warning','using GSE->DSL') 
 end
+
+defatt = mms_removerepeatpnts(defatt);
 
 if isa(defatt,'TSeries')
   errS = 'Not implemented yet';
