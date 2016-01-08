@@ -154,19 +154,41 @@ deltaang = (11.25*pi/180)^2;
 
 phitr = phi.data';
 
+% calculate speed widths associated with each energy channel. These values
+% are currently ad hoc and based on fitting to the fpi moments. Density
+% moments are fitted very well for these parameters. Still testing. 
+energyall = [energy0 energy1];
+energyall = log10(sort(energyall));
+temp0 = 2*energyall(1)-energyall(2);
+temp65 = 2*energyall(64)-energyall(63);
+energyall = [temp0 energyall temp65];
+diffenall = diff(energyall);
+energy0upper = 10.^(log10(energy0)+diffenall(2:2:64)/2);
+energy0lower = 10.^(log10(energy0)-diffenall(1:2:63)/2);
+energy1upper = 10.^(log10(energy1)+diffenall(3:2:65)/2);
+energy1lower = 10.^(log10(energy1)-diffenall(2:2:64)/2);
+v0upper = sqrt(2*qe*energy0upper/pmass);
+v0lower = sqrt(2*qe*energy0lower/pmass);
+v1upper = sqrt(2*qe*energy1upper/pmass);
+v1lower = sqrt(2*qe*energy1lower/pmass);
+deltav0 = (v0upper-v0lower)*2.0;
+deltav1 = (v1upper-v1lower)*2.0;
+deltav0(1) = deltav0(1)*2.7;
+deltav1(1) = deltav1(1)*2.7;
+
 for nt = 1:length(pdist.time)
 	energy = energy0;
+    deltav = deltav0;
 	if stepTable.data(nt), 
         energy = energy1;
+        deltav = deltav1;
     end 
     
     v = real(sqrt(2*qe*(energy-SCpot.data(nt))/pmass));    
     v(energy-SCpot.data(nt)<0) = 0;
         
-    
-    % estimate of dv - incorperate upper and lower energies when available
-    energy = [2*energy(1)-energy(2) energy 2*energy(32)-energy(31)];
-    v2 = sqrt(2*qe*energy/pmass);
+    %energy = [2*energy(1)-energy(2) energy 2*energy(32)-energy(31)];
+    %v2 = sqrt(2*qe*energy/pmass);
     
     phij = phitr(:,nt);
     Mpsd2n = ones(length(phij),1) * sind(thetak);
@@ -181,21 +203,21 @@ for nt = 1:length(pdist.time)
     Mpsdmfyz = sind(phij) * (sind(thetak).^2.*cosd(thetak));
    
     for ii = intenergies; 
-        deltav = (v2(ii+2) - v2(ii))/2;
+        %deltav = (v2(ii+2) - v2(ii))/2;
         tmp = squeeze(pdist.data(nt, ii, :, :));
-        n_psd(nt) = n_psd(nt) + irf.nansum(irf.nansum(tmp .* Mpsd2n, 1), 2) * v(ii)^2 * deltav * deltaang;
-        Vxtemp = irf.nansum(irf.nansum(tmp .* Mpsd2Vx, 1), 2) * v(ii)^3 * deltav * deltaang;
-        Vytemp = irf.nansum(irf.nansum(tmp .* Mpsd2Vy, 1), 2) * v(ii)^3 * deltav * deltaang;
-        Vztemp = irf.nansum(irf.nansum(tmp .* Mpsd2Vz, 1), 2) * v(ii)^3 * deltav * deltaang;
+        n_psd(nt) = n_psd(nt) + irf.nansum(irf.nansum(tmp .* Mpsd2n, 1), 2) * v(ii)^2 * deltav(ii) * deltaang;
+        Vxtemp = irf.nansum(irf.nansum(tmp .* Mpsd2Vx, 1), 2) * v(ii)^3 * deltav(ii) * deltaang;
+        Vytemp = irf.nansum(irf.nansum(tmp .* Mpsd2Vy, 1), 2) * v(ii)^3 * deltav(ii) * deltaang;
+        Vztemp = irf.nansum(irf.nansum(tmp .* Mpsd2Vz, 1), 2) * v(ii)^3 * deltav(ii) * deltaang;
         V_psd(nt, 1) = V_psd(nt, 1) + Vxtemp;
         V_psd(nt, 2) = V_psd(nt, 2) + Vytemp;
         V_psd(nt, 3) = V_psd(nt, 3) + Vztemp;
-        P_psd(nt, 1) = P_psd(nt, 1) + irf.nansum(irf.nansum(tmp .* Mpsdmfxx, 1), 2) * v(ii)^4 * deltav * deltaang;
-        P_psd(nt, 2) = P_psd(nt, 2) + irf.nansum(irf.nansum(tmp .* Mpsdmfxy, 1), 2) * v(ii)^4 * deltav * deltaang;
-        P_psd(nt, 3) = P_psd(nt, 3) + irf.nansum(irf.nansum(tmp .* Mpsdmfxz, 1), 2) * v(ii)^4 * deltav * deltaang;
-        P_psd(nt, 4) = P_psd(nt, 4) + irf.nansum(irf.nansum(tmp .* Mpsdmfyy, 1), 2) * v(ii)^4 * deltav * deltaang;
-        P_psd(nt, 5) = P_psd(nt, 5) + irf.nansum(irf.nansum(tmp .* Mpsdmfyz, 1), 2) * v(ii)^4 * deltav * deltaang;
-        P_psd(nt, 6) = P_psd(nt, 6) + irf.nansum(irf.nansum(tmp .* Mpsdmfzz, 1), 2) * v(ii)^4 * deltav * deltaang;
+        P_psd(nt, 1) = P_psd(nt, 1) + irf.nansum(irf.nansum(tmp .* Mpsdmfxx, 1), 2) * v(ii)^4 * deltav(ii) * deltaang;
+        P_psd(nt, 2) = P_psd(nt, 2) + irf.nansum(irf.nansum(tmp .* Mpsdmfxy, 1), 2) * v(ii)^4 * deltav(ii) * deltaang;
+        P_psd(nt, 3) = P_psd(nt, 3) + irf.nansum(irf.nansum(tmp .* Mpsdmfxz, 1), 2) * v(ii)^4 * deltav(ii) * deltaang;
+        P_psd(nt, 4) = P_psd(nt, 4) + irf.nansum(irf.nansum(tmp .* Mpsdmfyy, 1), 2) * v(ii)^4 * deltav(ii) * deltaang;
+        P_psd(nt, 5) = P_psd(nt, 5) + irf.nansum(irf.nansum(tmp .* Mpsdmfyz, 1), 2) * v(ii)^4 * deltav(ii) * deltaang;
+        P_psd(nt, 6) = P_psd(nt, 6) + irf.nansum(irf.nansum(tmp .* Mpsdmfzz, 1), 2) * v(ii)^4 * deltav(ii) * deltaang;
         H_psd(nt, 1) = H_psd(nt, 1) + Vxtemp * v(ii)^2;
         H_psd(nt, 2) = H_psd(nt, 2) + Vytemp * v(ii)^2;
         H_psd(nt, 3) = H_psd(nt, 3) + Vztemp * v(ii)^2;
