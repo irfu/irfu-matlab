@@ -1,9 +1,13 @@
-% Loads data and calculates nulls that has a BoxLim of 70km and a Current
-% Lim of 500E-9 [nA/m^2 if B is in nT and R is in km].
-%Plots of B, J (curlometer method), E, JxB electric field, and J.E. 
+% A routine that identifies strong magnetic nulls (potential EDR). 
 % Written by Elin Eriksson
+%
+% Loads data and finds nulls that has a BoxLim of 70km and a Current
+% Lim of 500E-9 [nA/m^2 if B is in nT and R is in km].
+%Plots B, J (curlometer method), E, JxB electric field, and J.E as an average 
+%of all spacecraft values and a seperate plot with the same variables where only the E and
+%B are from a specific spacecraft given by the number of ic.
 
-%% Set time interval to look in and set the spacecraft that density will be
+%% Set time interval to look in, the specific spacecraft of interest and set limits for Null method.
 % taken from
 ic=1; %Gives number of spacecraft where density is taken for Hall field calculations.
 Tint  = irf.tint('2016-01-06T20:00:00Z/2016-01-07T15:00:00Z');
