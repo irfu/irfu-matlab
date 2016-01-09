@@ -136,6 +136,9 @@ while options
     switch(lower(args{1}))
         case 'energyrange'
             if numel(args)>1 && isnumeric(args{2}),
+                if isbrstdata==0,
+                    energy0 = energy;
+                end
                 Eminmax = args{2};
                 starte = find(energy0 > Eminmax(1));
                 starte = starte(1);
@@ -178,7 +181,7 @@ elseif (particletype(1) == 'i'),
     irf_log('proc','Particles are Ions')
 else
     particlemoments = NaN;
-    irf_log('proc','Could not identify the particle')
+    irf_log('proc','Could not identify the particle type')
     return;
 end
 
