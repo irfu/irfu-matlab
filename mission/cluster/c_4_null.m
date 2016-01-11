@@ -423,6 +423,24 @@ else
         strongcurrent=(irf_abs(Nulls.j,1)>currentLim);
         if sum(strongcurrent)==0
             disp('No Nulls with strong currents found')
+            Nulls.eigenValues=[];
+            Nulls.eigenVectors=[];
+            Nulls.eigenvectorCorrespondingToSpine=[];
+            Nulls.error=[];
+            Nulls.poincareindex=[];
+            Nulls.dB_AB=[];
+            Nulls.Is.A=[];
+            Nulls.Is.As=[];
+            Nulls.Is.B=[];
+            Nulls.Is.Bs=[];
+            Nulls.Is.X=[];
+            Nulls.Is.O=[];
+            Nulls.Is.unknown=[];
+            Nulls.gradB=[];
+            Nulls.j=[];
+            Nulls.R=[];
+            Nulls.dR=[];
+            Nulls.t=[];
         else
             Nulls.eigenValues=Nulls.eigenValues(strongcurrent,:);
             Nulls.eigenVectors=Nulls.eigenVectors(strongcurrent,:);

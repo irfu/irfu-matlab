@@ -12,6 +12,7 @@ function ScListOutput = default_spacecraft(scNames)
 
 scList = {'Cluster',       @sc_Cluster;...
           'THEMIS',        @sc_THEMIS;...
+          'MMS',           @sc_MMS;...
           'Solar_Orbiter', @sc_Solar_Orbiter;...
           'THOR_SDP',      @sc_THOR_SDP;...
           'THOR_HFA',      @sc_THOR_HFA;...
@@ -64,6 +65,18 @@ end
 		Sc.probeRefPotVsSatPot = 0.2;
 		Sc.nProbes = 4;
 		Sc.probeDistanceToSpacecraft = 30;
+	end
+	function Sc = sc_MMS
+		Sc = lp.spacecraft;
+		Sc.name  = 'MMS';
+		Sc.probe = lp.default_lprobe('Cluster');
+		Sc.surface = 'themis';
+		Sc.areaTotal = 2*pi*3.5^2+3.5*1.2;% diam: 3.5?m, height: 1.2?m
+		Sc.areaSunlit = 3.5*1.2;
+		Sc.areaSunlitGuard = 0.039;
+		Sc.probeRefPotVsSatPot = 0.2;
+		Sc.nProbes = 4;
+		Sc.probeDistanceToSpacecraft = 60;
 	end
 	function Sc = sc_Solar_Orbiter
 		Sc = lp.spacecraft;

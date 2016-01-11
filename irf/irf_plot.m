@@ -361,9 +361,12 @@ elseif flag_subplot==3,  % components of vectors in separate panels
                 end
             else marker_cur = marker;
             end
-            if isa(x{jj},'TSeries'), 
-              time = x{jj}.time.epochUnix; data = x{jj}.data;
-            else time = x{jj}(:,1); data = x{jj}(:,2:end);
+            if isempty(x{jj}), data = [];
+            else
+              if isa(x{jj},'TSeries'),
+                time = x{jj}.time.epochUnix; data = x{jj}.data;
+              else time = x{jj}(:,1); data = x{jj}(:,2:end);
+              end
             end
             if size(data,2)>=ipl
                 if use_color

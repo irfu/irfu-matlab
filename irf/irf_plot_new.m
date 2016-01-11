@@ -2,7 +2,7 @@ function [hax,hl]=irf_plot_new(varargin)
 % [hax,hl]=irf_plot_new(varargin)
 
 %% Check input 
-[ax,args,nargs] = my_axescheck(varargin{:}); 
+[ax,args,nargs] = irf.axescheck(varargin{:}); 
 x=args{1}; args=args(2:end); original_args=args;
 if isempty(x), eS='nothing to plot'; irf.log('critical','eS'),error(eS),end
 
@@ -157,16 +157,4 @@ return % return from main function
     end
   end
 
-end
-
-%% my_axescheck()
-function [ax,args,nargs] = my_axescheck(varargin)
-args = varargin;
-nargs = nargin;
-ax=[];
-if (nargs > 0) && all(ishghandle(args{1},'axes'))
-  ax = args{1};
-  args = args(2:end);
-  nargs = nargs-1;
-end
 end
