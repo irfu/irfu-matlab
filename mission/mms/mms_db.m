@@ -171,8 +171,8 @@ classdef mms_db < handle
 				return;
 			else
 				sql = ['select fileId from VarIndex where varName = "' varName '"'];
-				sql = [sql ' and startTT < ' num2str(endTT)   ];
-				sql = [sql ' and   endTT > ' num2str(startTT) ];
+				sql = [sql ' and startTT <= ' num2str(endTT)   ];
+				sql = [sql ' and   endTT >= ' num2str(startTT) ];
 				rs=obj.sqlQuery(sql);
 				fileIdArray = []; iFile = 1;
 				while rs.next
