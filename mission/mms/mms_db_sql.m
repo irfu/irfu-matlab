@@ -92,6 +92,9 @@ classdef mms_db_sql < handle
 		
 		function add_all_files_to_import_list(obj)
 			% works only in unix or mac
+			% Verify sqlite3 is installed
+			[status, ~] = system('command -v sqlite3 >/dev/null 2>&1 || { exit 100; }');
+		        if(status==100), error('It appears Sqlite3 is not installed/found on your system.'); end
 			system([' find ' obj.databaseDirectory ' -name *cdf -type f | ' ...
 				'sqlite3 ' obj.databaseFile ' ".import /dev/stdin FileListToImport"']);
 		end
