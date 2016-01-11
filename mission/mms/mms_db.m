@@ -1,255 +1,214 @@
 classdef mms_db < handle
-	%MMS_DB handle MMS database of files and variables in SQLITE
-	%   IN DEVELOPMENT, DO NOT USE!!!!
-	
-	properties (Access=protected)
-		connection = [];
-		statement
-		databaseDirectory
-	end
-	
-	properties
-		databaseFile
-	end
-	
-	properties (Dependent = true)
-		isConnected
-	end
-	
-	methods
-		function obj = mdb(fileName)
-			if nargin == 1,
-				[dir,file,ext] = fileparts(fileName);
-				if isempty(dir)
-					dir = pwd;
-				end
-				obj.databaseDirectory = dir;
-				obj.databaseFile = [dir filesep file ext];
-				if ~exist(obj.databaseFile,'file')
-					obj.create_new_database;
-				end
-			end
-		end
-		
-		function create_new_database(obj)
-			sql = ['CREATE TABLE "FileList" ('...
-				'"fileId"	INTEGER, "fileNameFullPath"	TEXT,'...
-				'	PRIMARY KEY(fileId) )'];
-			obj.sqlUpdate(sql);
-			sql = 'CREATE TABLE "FileListToImport" ("fileNameFullPath"	TEXT UNIQUE)';
-			obj.sqlUpdate(sql);
-			sql = ['CREATE TABLE "VarIndex" ('...
-				'"fileId"	INTEGER,"varName"	TEXT,"startTT"	INTEGER,"endTT"	INTEGER)'];
-			obj.sqlUpdate(sql);
-			sql = ['CREATE TABLE "VarNames" ('...
-				'"varId"	INTEGER,"varName"	TEXT UNIQUE,PRIMARY KEY(varId))'];
-			obj.sqlUpdate(sql);
-		end
-		
-		function connect(obj)
-			% CONNECT open connection to database
-			if ~obj.isConnected
-				d = org.sqlite.JDBC;
-				p = java.util.Properties();
-				obj.connection = d.createConnection(...
-					['jdbc:sqlite:' obj.databaseFile],p);
-				obj.statement = obj.connection.createStatement();
-			end
-		end
-		
-		function close(obj)
-			% CLOSE close connection to database
-			obj.connection.close % close connection
-			obj.connection = [];
-		end
-		
-		function value = get.isConnected(obj)
-			if isempty(obj.connection)
-				value = false;
-			else
-				value = true;
-			end
-		end
-		
-		function import_files_from_list(obj)
-			% import all files from FileListToImport
-			while 1
-				sql = 'select * from FileListToImport';
-				rs = obj.sqlQuery(sql);
-				if rs.next
-					fileToImport = char(rs.getString('fileNameFullPath'));
-					irf.log('debug',['Importing ' fileToImport]);
-					obj.import_file(fileToImport);
-					% remove file from FileListToImport
-					sql = ['delete from FileListToImport where fileNameFullPath="' fileToImport '"'];
-					obj.sqlUpdate(sql);
-				else
-					irf.log('warning','All files imported from FileListToImport');
-					break;
-				end
-			end
-		end
-		
-		function add_all_files_to_import_list(obj)
-			% works only in unix or mac
-			system([' find ' obj.databaseDirectory ' -name *cdf -type f | ' ...
-				'sqlite3 ' obj.databaseFile ' ".import /dev/stdin FileListToImport"']);
-		end
-		
-		function import_a_file_from_list(obj)
-			% import one new file from FileListToImport
-			sql = 'select * from FileListToImport LIMIT 1';
-			rs = obj.sqlQuery(sql);
-			while rs.next
-				fileToImport = char(rs.getString('fileNameFullPath'));
-				obj.import_file(fileToImport);
-			end
-			% remove file from FileListToImport
-			sql = ['delete from FileListToImport where fileNameFullPath="' fileToImport '"'];
-			obj.sqlUpdate(sql);
-		end
-		
-		function import_file(obj,fileToImport)
-			% import a file
-			irf.log('notice',['File to import: ' fileToImport]);
-			% check if file is not in db
-			sql = ['select * from FileList ' ...
-				'where fileNameFullPath = "' fileToImport '"'];
-			rs=obj.sqlQuery(sql);
-			while rs.next % file already exist
-				irf.log('warning','File exists!');
-				obj.close;
-				return;
-			end
-			% add file to FileList
-			sql = ['insert into FileList (fileNameFullPath) values ("' fileToImport '")'];
-			obj.sqlUpdate(sql);
-			sql = ['select fileId from FileList where  fileNameFullPath = "' fileToImport '"'];
-			rs=obj.sqlQuery(sql);
-			while rs.next % file already exist
-				fileId = char(rs.getString('fileId'));
-			end
-			%
-			[varNames,startTT,endTT] = obj.get_science_variables(fileToImport);
-			obj.add_var_names(varNames);
-			for iVar = 1:numel(varNames)
-				irf.log('debug',['.. insert into VarIndex: ' varNames{iVar}...
-					' : ' irf_time(EpochTT([startTT(iVar) endTT(iVar)]),'tint>utc')]);
-				sql = ['insert into VarIndex (fileId,varName,startTT,endTT) '...
-					'values (' fileId ',"' varNames{iVar} '",' ...
-					num2str(startTT(iVar)) ',' num2str(endTT(iVar)) ')'];
-				obj.sqlUpdate(sql);
-			end
-		end
-		
-		function add_var_names(obj,varNames)
-			if ischar(varNames), varNames = {varNames};end
-			for iVar = 1:length(varNames)
-				sql = ['insert or ignore into VarNames(varName) values("' varNames{iVar} '")'];
-				obj.sqlUpdate(sql);
-			end
-		end
-		
-		function fileNames = search_files(obj,varName,startTT,endTT)
-			if nargin < 3
-				startTT = int64(0);
-			end
-			if nargin < 4
-				endTT = intmax('int64');
-			end
-			if ~ischar(varName),
-				irf.log('critical','varName should be text string');
-				return;
-			elseif ~isinteger(startTT) && ~isinteger(endTT),
-				irf.log('critical','startTT and endTT should be integers');
-				return;
-			end
-			sql = ['select * from VarNames where varName = "' varName '"'];
-			rs=obj.sqlQuery(sql);
-			if ~rs.next
-				irf.log('warning',['There is no variable with name ' varName '.']);
-				return;
-			else
-				sql = ['select fileId from VarIndex where varName = "' varName '"'];
-				sql = [sql ' and startTT <= ' num2str(endTT)   ];
-				sql = [sql ' and   endTT >= ' num2str(startTT) ];
-				rs=obj.sqlQuery(sql);
-				fileIdArray = []; iFile = 1;
-				while rs.next
-					fileIdArray(iFile) = str2num(rs.getString('fileId')); %#ok<AGROW>
-					irf.log('debug',['fileId = ' num2str(fileIdArray(iFile))]);
-					iFile = iFile + 1;
-				end
-				fileNames = cell(numel(fileIdArray),1);
-				for iFile = 1:numel(fileIdArray)
-					sql = ['select fileNameFullPath from FileList where fileId = ' ...
-						num2str(fileIdArray(iFile))];
-					rs = obj.sqlQuery(sql);
-					if rs.next
-						fileNames{iFile} = char(rs.getString('fileNameFullPath'));
-					end
-				end
-			end
-		end
-		
-		
-		function var(obj,varargin)
-			% VAR seach variable names
-			%  VAR('par1','par2',..)
-			%  finds variable name which contains a text string par1 and par2 and ...
-			sql = 'select * from VarNames ';
-			if nargin > 1,
-				sql = [sql 'where '];
-				for iVar = 1:nargin-1,
-					if ischar(varargin{iVar})
-						if iVar > 1,
-							sql = [sql ' and '];
-						end
-						sql = [sql ' varName like "%' varargin{iVar} '%"'];
-					end
-				end
-			end
-			res=obj.sqlQuery(sql);
-			while res.next
-				disp(char(res.getString('varName')));
-			end
-		end
-		
-		function out = sqlQuery(obj,sql)
-			obj.connect;
-			irf.log('debug',['sqlite> ' sql]);
-			out=obj.statement.executeQuery(sql);
-		end
-		function out = sqlUpdate(obj,sql)
-			obj.connect;
-			irf.log('debug',['sqlite> ' sql]);
-			out=obj.statement.executeUpdate(sql);
-		end
-	end
-	
-	methods (Static)
-		function [varNames,startTT,endTT] = get_science_variables(cdfFileName)
-			%     varNames - cell array of strings
-			%     startTT  - int64
-			%     endTT    - int64
-			irf.log('debug',['Reading: ' cdfFileName]);
-			inf = spdfcdfinfo(cdfFileName);
-			dep = inf.VariableAttributes.DEPEND_0;
-			varNames = dep(:,1);
-			nVar = numel(varNames);
-			[tVarNames,~,IC] = unique(dep(:,2));
-			startTT = ones(nVar,1,'int64');
-			endTT = startTT;
-			% read time variables
-			epoch = spdfcdfread(cdfFileName, ...
-				'Variable', tVarNames, 'KeepEpochAsIs', true);
-			if isinteger(epoch), epoch = {epoch};end % only one time variable
-			for iT = 1:numel(tVarNames)
-				if isempty(epoch{iT}), epoch{iT}=NaN;end
-				startTT(IC==iT) = min(epoch{iT});
-				endTT(IC==iT)   = max(epoch{iT});
-			end
-		end
-	end
-	
+  %MMS_DB Summary of this class goes here
+  %   Detailed explanation goes here
+  
+  properties
+    databases
+  end
+  
+  methods
+    function obj=mms_db()
+      obj.databases = [];
+    end
+    function obj = add_db(obj,dbInp)
+      if ~isa(dbInp,'mms_file_db')
+        error('expecting MMS_FILE_DB input')
+      end
+      if any(arrayfun(@(x) strcmpi(x.id,dbInp.id), obj.databases))
+        irf.log('warning',['Database [' dbInp.id '] already added'])
+        return
+      end
+      obj.databases = [obj.databases dbInp];
+    end
+    
+   function fileList = list_files(obj,filePrefix,tint)
+     fileList =[];
+     if isempty(obj.databases)
+       irf.log('warning','No databases initialized'), return
+     end
+     for iDb = 1:length(obj.databases)
+       fileList = [fileList obj.databases(iDb).list_files(filePrefix,tint)]; %#ok<AGROW>
+     end
+   end
+   
+   function res = get_variable(obj,filePrefix,varName,tint)
+     narginchk(4,4)
+     res = [];
+     
+     fileList = list_files(obj,filePrefix,tint);
+     if isempty(fileList), return, end
+     
+     loadedFiles = obj.load_list(fileList,varName);
+     if numel(loadedFiles)==0, return, end
+     
+     flagDataobj = isa(loadedFiles{1},'dataobj');
+     for iFile = 1:length(loadedFiles)
+       if flagDataobj, append_sci_var(loadedFiles{iFile})
+       else append_ancillary_var(loadedFiles{iFile});
+       end
+     end
+     
+     function append_ancillary_var(ancData)
+       if isempty(ancData), return, end
+       if ~isstruct(ancData) || ~(isfield(ancData,varName) ...
+           && isfield(ancData,'time'))
+         error('Data does not contain %s or time',varName)
+       end
+       time = ancData.time; data = ancData.(varName);
+       if isempty(res), res = struct('time',time,varName,data); return, end
+       res.time = [res.time; time];
+       res.(varName) = [res.(varName); data];
+       % check for overlapping time records and remove duplicates
+       [~, idxSort] = sort(res.time);
+       [res.time, idxUniq] = unique(res.time(idxSort));
+       irf.log('warning',...
+          sprintf('Discarded %d data points',length(idxSort)-length(idxUniq)))
+       res.(varName) = res.(varName)(idxSort(idxUniq),:);
+     end
+     
+     function append_sci_var(sciData)
+       if isempty(sciData), return, end
+       if ~isa(sciData,'dataobj')
+         error('Expecting DATAOBJ input')
+       end
+       v = get_variable(sciData,varName);
+       if isempty(v)
+         irf.log('waring','Empty return from get_variable()')
+         return
+       end
+       if ~isstruct(v) || ~(isfield(v,'data') && isfield(v,'DEPEND_0'))
+         error('Data does not contain DEPEND_0 or DATA')
+       end
+       
+       if isempty(res), res = v; return, end
+       if iscell(res), res = [res {v}]; return, end
+       if ~comp_struct(res,v), res = [{res}, {v}]; return, end
+       
+       res.DEPEND_0.data = [res.DEPEND_0.data; v.DEPEND_0.data];
+       res.data = [res.data; v.data];
+       % check for overlapping time records
+       [~,idxUnique] = unique(res.DEPEND_0.data); 
+       idxDuplicate = setdiff(1:length(res.DEPEND_0.data), idxUnique);
+       res.DEPEND_0.data(idxDuplicate) = [];
+       switch ndims(res.data)
+         case 2, res.data(idxDuplicate, :) = [];
+         case 3, res.data(idxDuplicate, :, :) = [];
+         case 4, res.data(idxDuplicate, :, :, :) = [];
+         case 5, res.data(idxDuplicate, :, :, :, :) = [];
+         case 6, res.data(idxDuplicate, :, :, :, :, :) = [];
+       end
+       res.nrec = length(res.DEPEND_0.data); res.DEPEND_0.nrec = res.nrec;
+       nDuplicate = length(idxDuplicate);
+       if nDuplicate
+         irf.log('warning',sprintf('Discarded %d data points',nDuplicate))
+       end
+       [res.DEPEND_0.data,idxSort] = sort(res.DEPEND_0.data);
+       nd = ndims(res.data);
+       switch nd
+         case 2, res.data = res.data(idxSort, :);
+         case 3, res.data = res.data(idxSort, :, :);
+         case 4, res.data = res.data(idxSort, :, :, :);
+         case 5, res.data = res.data(idxSort, :, :, :, :);
+         case 6, res.data = res.data(idxSort, :, :, :, :, :);
+         otherwise
+           errStr = 'Cannot handle more than 6 dimensions.';
+           irf.log('critical', errStr);
+           error(errStr);
+       end
+       function res = comp_struct(s1,s2)
+       % Compare structures
+         narginchk(2,2), res = false;
+         
+         if ~isstruct(s1) ||  ~isstruct(s2), error('expecting STRUCT input'), end
+         if isempty(s1) && isempty(s2), res = true; return
+         elseif xor(isempty(s1),isempty(s2)), return
+         end
+         
+         fields1 = fields(s1); fields2 = fields(s2);
+         if ~comp_cell(fields1,fields2), return, end
+         
+         for iField=1:length(fields1)
+           f = fields1{iField};
+           % data, nrec and the GlobalAttributes Generation_date,
+           % Logical_file_id and Data_version will almost always differ
+           % between files.
+           ignoreFields = {'data','nrec','Generation_date',...
+             'Logical_file_id','Data_version','Parents'};
+           if ~isempty(intersect(f,ignoreFields)), continue, end
+           if isnumeric(s1.(f)) || ischar(s1.(f))
+             if ~all(all(all(s1.(f)==s2.(f)))), return, end
+           elseif isstruct(s1.(f)), if ~comp_struct(s1.(f),s2.(f)), return, end
+           elseif iscell(s1.(f)), if ~comp_cell(s1.(f),s2.(f)), return, end
+           else
+             error('cannot compare : %s',f)
+           end
+         end
+         res = true;
+       end % COMP_STRUCT
+       function res = comp_cell(c1,c2)
+         %Compare cells
+         narginchk(2,2), res = false;
+         
+         if ~iscell(c1) ||  ~iscell(c2), error('expecting CELL input'), end
+         if isempty(c1) && isempty(c2), res = true; return
+         elseif xor(isempty(c1),isempty(c2)), return
+         end
+         if ~all(size(c1)==size(c2)), return, end
+         
+         [n,m] = size(c1);
+         for iN = 1:n,
+           for iM = 1:m
+             if ischar(c1{iN, iM}) && ischar(c2{iN,iM})
+               if ~strcmp(c1{iN, iM},c2{iN,iM}), return , end
+             elseif iscell(c1{iN, iM}) && iscell(c2{iN,iM})
+               if ~comp_cell(c1{iN, iM},c2{iN,iM}), return , end
+             else
+               irf.log('warining','can only compare chars')
+               res = true; return
+             end
+             
+           end
+         end
+         res = true;
+       end % COMP_CELL
+     end % APPEND_SCI_VAR
+   end % GET_VARIABLE
+   
+   function res = load_list(obj,fileList,mustHaveVar)
+     narginchk(2,3), res = {};
+     if isempty(fileList), return, end
+     if nargin==2, mustHaveVar = ''; end
+     
+     for iFile=1:length(fileList)
+       fileToLoad = fileList(iFile);
+       db = obj.get_db(fileToLoad.dbId);  
+       if isempty(db) || ~db.file_has_var(fileToLoad.name,mustHaveVar)
+         continue
+       end
+       res = [res {db.load_file(fileToLoad.name)}]; %#ok<AGROW>
+     end
+   end
+   
+   function res = get_db(obj,id)
+     idx = arrayfun(@(x) strcmp(x.id,id),obj.databases);
+     res = obj.databases(idx);
+   end
+   
+   function res = get_ts(obj,filePrefix,varName,tint)
+     narginchk(4,4)
+     res = [];
+     v = get_variable(obj,filePrefix,varName,tint);
+     if isempty(v), return, end
+     if numel(v)==1
+       res = mms.variable2ts(v);
+       res = res.tlim(tint);
+     else
+       res = cell(1,numel(v));
+       for iV = 1:numel(v)
+         resTmp = mms.variable2ts(v{iV});
+         res{iV} = resTmp.tlim(tint);
+       end
+     end
+   end
+  end
 end
