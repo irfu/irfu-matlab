@@ -12,10 +12,10 @@ switch lower(action)
 			uimenu(hfigmenu,'Label','&Update time axis','Callback','irf_timeaxis(gca,''date'')','Accelerator','t')
 			uimenu(hfigmenu,'Label','Fit &Y axis','Callback','set(gca,''YLimMode'',''auto'')','Accelerator','y')
 			uimenu(hfigmenu,'Label','&irf_tm','Callback','irf_figmenu(''irf_tm'')','Accelerator','i')
-%			not anymore supported in MATLAB 2015
-%			uimenu(hfigmenu,'Label','Pointer &Crosshair','Callback','set(gcbf,''pointer'',''fullcrosshair'')') %
-%			not needed as long as full cross hair is not supported
-%			uimenu(hfigmenu,'Label','&Pointer Arrow','Callback','set(gcbf,''pointer'',''arrow'')')
+			%			not anymore supported in MATLAB 2015
+			%			uimenu(hfigmenu,'Label','Pointer &Crosshair','Callback','set(gcbf,''pointer'',''fullcrosshair'')') %
+			%			not needed as long as full cross hair is not supported
+			%			uimenu(hfigmenu,'Label','&Pointer Arrow','Callback','set(gcbf,''pointer'',''arrow'')')
 			uimenu(hfigmenu,'Label','&Align axis','Callback','irf_plot_axis_align','Accelerator','a')
 			hmc  = uimenu(hfigmenu,'Label','&Cluster');
 			hmcp = uimenu(hmc,'Label','satellite position','Callback','irf_figmenu(''c_position'')');
@@ -23,12 +23,19 @@ switch lower(action)
 			hmcm = uimenu(hmc,'Label','MVA','Callback','irf_figmenu(''mva'')');
 			
 			hmenu_zoom=uimenu(hfigmenu,'Label','Zoom all panels OFF','Callback','irf_figmenu(''zoomall'')');
+			hmenu_zoom=uimenu(hfigmenu,'Label','Zoom &back','Callback','irf_figmenu(''zoomback'')');
+			hmenu_zoom=uimenu(hfigmenu,'Label','Zoom &whole interval','Callback','irf_figmenu(''zoom_whole_interval'')');
 			set(zoom(gcf),'ActionPostCallback', @adaptiveDateTicks);
+			set(zoom(gcf),'ActionPreCallback', @saveZoomStack);
 			user_data = get(gcf,'userdata');
 			user_data.irf_figmenu=1;
 			user_data.hmenu_zoom=hmenu_zoom;
 			set(gcf,'userdata',user_data);
 		end
+		% reset zoomStack
+		ud = get(gcf,'userdata');
+		ud.zoomStack = [];
+		set(gcf,'userdata',ud);
 	case 'irf_tm'
 		user_data = get(gcf,'userdata');
 		if ~isfield(user_data,'suplot_handles'),
@@ -46,6 +53,24 @@ switch lower(action)
 			set(hmenu_zoom,'label','Zoom all panels OFF');
 			set(zoom(gcf),'ActionPostCallback', @adaptiveDateTicks);
 		end
+	case 'zoomback'
+		ud = get(gcf,'userdata');
+		if ~isfield(ud,'zoomStack') || isempty(ud.zoomStack)
+			return
+		end
+		xlim = ud.zoomStack(end,:);
+		figure_zoom_in(gcf,xlim)
+		ud.zoomStack(end,:)=[];
+		set(gcf,'userdata',ud);
+	case 'zoom_whole_interval'
+		ud = get(gcf,'userdata');
+		if ~isfield(ud,'zoomStack') || isempty(ud.zoomStack)
+			return
+		end
+		xlim = ud.zoomStack(1,:);
+		figure_zoom_in(gcf,xlim)
+		ud.zoomStack=[];
+		set(gcf,'userdata',ud);
 	case 'c_position'
 		xlim=get(gca,'xlim');
 		tStart= getfield(get(gcf,'userdata'),'t_start_epoch');
@@ -79,25 +104,48 @@ switch lower(action)
 		irf_minvar_gui(v);
 end
 
-function adaptiveDateTicks(figureHandle,eventObjectHandle)
-% Resetting x axis to automatic tick mark generation
-hsubplots=irf_plot_get_subplot_handles(figureHandle);
-xlim=get(eventObjectHandle.Axes,'xlim');
-ud=get(gcf,'userdata');
-if isfield(ud,'t_start_epoch'),
-	irf_zoom(hsubplots,'x',xlim+double(ud.t_start_epoch));
-else
-	set(hsubplots,'xlim',xlim);
-end
-for ih=1:numel(hsubplots)
-	h=hsubplots(ih);
-	if h~=eventObjectHandle.Axes,
-		% if not spectrogram do also smart y adjustment
-		if ~isempty(findobj(h,'tag','irf_pl_mark')) || ...
-				~any(~isempty([findobj(h,'Type','surface') ...
-				findobj(h,'Type','patch')]))
-			irf_zoom(h,'y');
+	function adaptiveDateTicks(figureHandle,eventObjectHandle)
+		% Resetting x axis to automatic tick mark generation
+		xlim=get(eventObjectHandle.Axes,'xlim');
+		figure_zoom_in(figureHandle,xlim,eventObjectHandle.Axes);
+	end
+	function saveZoomStack(figureHandle,eventObjectHandle)
+		% save zoom levels for zooming out
+		ud=get(figureHandle,'userdata');
+		xlim=get(eventObjectHandle.Axes,'xlim');
+		if isfield(ud,'zoomStack')
+			ud.zoomStack(end+1,1:2) = xlim;
+		else
+			ud.zoomStack(1,1:2) = xlim;
 		end
+		set(figureHandle,'userdata',ud);
+	end
+	function figure_zoom_in(figureHandle,xlim,varargin)
+		% figure_zoom_in(figureHandle,xlim,[currentAxisHandle])
+		if nargin == 3,
+			currentAxisHandle = varargin{1};
+		else
+			currentAxisHandle = NaN;
+		end
+		ud=get(figureHandle,'userdata');
+		hsubplots=irf_plot_get_subplot_handles(figureHandle);
+		if isfield(ud,'t_start_epoch'),
+			irf_zoom(hsubplots,'x',xlim+double(ud.t_start_epoch));
+		else
+			set(hsubplots,'xlim',xlim);
+		end
+		set(figureHandle,'userdata',ud);
+		for ih=1:numel(hsubplots)
+			h=hsubplots(ih);
+			if h~=currentAxisHandle,
+				% if not spectrogram do also smart y adjustment
+				if ~isempty(findobj(h,'tag','irf_pl_mark')) || ...
+						~any(~isempty([findobj(h,'Type','surface') ...
+						findobj(h,'Type','patch')]))
+					irf_zoom(h,'y');
+				end
+			end
+		end
+		irf_timeaxis(hsubplots);
 	end
 end
-irf_timeaxis(hsubplots);
