@@ -3,7 +3,7 @@ function mms_sdp_pl_delta_off(fileName)
 d = dataobj(fileName);
 mmsId = str2double(d.GlobalAttributes.Source_name{:}(4));
 
-%%
+%
 bitmask = d.data.(sprintf('mms%d_edp_dce_bitmask',mmsId)).data;
 mskAsponOn = bitand(bitmask(:,2),64) > 0;
 mskAsponOn = mskAsponOn | (bitand(bitmask(:,3),64) > 0);
@@ -17,7 +17,7 @@ p12(p12<-1e20) = NaN;
 p34 =  d.data.(sprintf('mms%d_edp_dce_spinfit_e34',mmsId)).data;
 p34(p34<-1e20) = NaN;
 
-%% Resample bitmask
+% Resample bitmask
 spinSize = int64(20000000000);
 mskAsponOnSpin = zeros(size(epochSpin));
 ints = find_on(mskAsponOn);
@@ -27,7 +27,7 @@ for i=1:size(ints,1)
 end
 mskAsponOnSpin=logical(mskAsponOnSpin);
 
-%%
+%
 EpochS = EpochTT(epochSpin);
 Es12 = irf.ts_vec_xy(EpochS,p12(:,3:4));
 Es34 = irf.ts_vec_xy(EpochS,p34(:,3:4));
@@ -127,6 +127,23 @@ print('-dpng',['DeltaOff_' mmsIdS '_' irf_fname(Tint.start.epochUnix)])
 NifpiR = Nifpi.resample(Epoch1min,'median');
 idxHighN = NifpiR.data>5;
 
+clf
+subplot(2,2,1)
+plot_xy(Es12AspocOffR.x.data(idxHighN),EfpiR.x.data(idxHighN));
+title(mmsIdS),ylabel('Ex FPI [mV/m]'), xlabel('SDP 12 [mV/m]')
+subplot(2,2,2)
+plot_xy(Es12AspocOffR.y.data(idxHighN),EfpiR.y.data(idxHighN));
+ylabel('Ey FPI [mV/m]'), xlabel('SDP 12 [mV/m]')
+title([Tint.start.utc(1) ' - ' Tint.stop.utc(1)])
+subplot(2,2,3)
+plot_xy(Es34AspocOffR.x.data(idxHighN),EfpiR.x.data(idxHighN));
+ylabel('Ex FPI [mV/m]'), xlabel('SDP 34 [mV/m]')
+subplot(2,2,4)
+plot_xy(Es34AspocOffR.y.data(idxHighN),EfpiR.y.data(idxHighN));
+ylabel('Ey FPI [mV/m]'), xlabel('SDP 34 [mV/m]')
+
+set(gcf,'paperpositionmode','auto')
+print('-dpng',['ScatterPlot' mmsIdS '_' irf_fname(Tint.start.epochUnix)])
 end
 
 function ints = find_on(mask)
@@ -142,5 +159,32 @@ for i=1:length(idxJump)+1
   if ~mask(iStart), continue, end
   ints = [ ints; iStart iStop]; %#ok<AGROW>
 end
+
+end
+
+function h = plot_xy(x,y)
+
+idx = isnan(x); x(idx) = []; y(idx) = [];
+idx = isnan(y); x(idx) = []; y(idx) = [];
+
+p=polyfit( x,y,1);
+d = polyval(p,x)-y;
+idx = abs(d)<3*std(d); idxOut = abs(d)>=3*std(d); % remove outlyers
+p=polyfit( x(idx),y(idx),1);
+cc=corrcoef(y(idx),x(idx));
+    
+h = plot(x(idx),y(idx),'.',x(idxOut),y(idxOut),'o');
+    
+ax=axis;
+ymax=ax(4);ymin=ax(3);dy=(ymax-ymin)/20;
+ytext=ymax-dy;
+xtext=ax(1)+(ax(2)-ax(1))/20;
+
+hold on
+xp=[min(x) max(x)];
+plot(xp,polyval(p,xp),'k-');
+axis(ax);
+text(xtext,ytext,['slope=' num2str(p(1),3) '  offs=' num2str(p(2),2)]);ytext=ytext-dy;
+text(xtext,ytext,['cc=' num2str(cc(1,2),3)]);
 
 end
