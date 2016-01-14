@@ -42,9 +42,9 @@ if nargin == 0,
 	irf('ceflib');
 	irf('mice');
 	irf('irbem');
-	irf('cdf_leapsecondstable');
 	irf('check_os');
 	irf('matlab');
+	irf('cdf_leapsecondstable');
 	return;
 else
 	if ischar(varargin{1}),
