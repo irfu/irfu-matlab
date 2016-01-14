@@ -54,8 +54,7 @@ if isempty(quality)
     list=mms.db_list_files('mms_ancillary_predq',Tint);
     quality=mms_load_ancillary([list(end).path, filesep, list(end).name], 'predq');
     if isempty(quality)
-        disp('No tetrahedron quality available right now, but still looking for Nulls');
-        Nulls=c_4_null(R1,R2,R3,R4,B1,B2,B3,B4,'boxLim',boxLim,'strong',currentLim);
+        error('No tetrahedron quality available. Cannot reliably search for Nulls');
     else
         quality=irf.ts_scalar(EpochTT(quality.time),quality.quality);
         quality = quality.tlim(Tint); 
