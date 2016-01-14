@@ -16,7 +16,6 @@ boxLim=70;
 currentLim=500E-9;
 tetrahedronQualityLim=0.6;
 %% Load magnetic field and spacecraft positional data
-mms.db_init('local_file_db','/data/mms'); %Point towards the folder with the mms data
 
 % Magnetic Field
 disp('Loading Magnetic fields');
