@@ -236,8 +236,19 @@ classdef mms_db_sql < handle
         % startTT  - int64 (TT2000 values) with corresponding start time
         % endTT    - int64 (TT2000 values) with corresponding end time
         narginchk(1,1); % One file name
+        if(~exist(cdfFileName, 'file'))
+          errStr = ['File not found: ', cdfFileName];
+          irf.log('critical', errStr); error(errStr);
+        end
+        varNames=[]; startTT=[]; endTT=[];
         irf.log('debug',['Reading: ' cdfFileName]);
-        inf = spdfcdfinfo(cdfFileName);
+        try
+          inf = spdfcdfinfo(cdfFileName);
+        catch ME
+          errStr = ['Cannot get file information from: ', cdfFileName];
+          irf.log('warning', errStr); irf.log('warning', ME.message);
+          warning(errStr); return;
+        end
         dep = inf.VariableAttributes.DEPEND_0;
         varNames = dep(:,1);
         nVar = numel(varNames);
@@ -245,8 +256,14 @@ classdef mms_db_sql < handle
         startTT = ones(nVar,1,'int64');
         endTT = startTT;
         % read time variables
-        epoch = spdfcdfread(cdfFileName, 'Variable', tVarNames, ...
-          'KeepEpochAsIs', true);
+        try
+          epoch = spdfcdfread(cdfFileName, 'Variable', tVarNames, ...
+            'KeepEpochAsIs', true);
+        catch ME
+          errStr = ['Cannot read Epochs from file: ', cdfFileName];
+          irf.log('warning', errStr); irf.log('warning', ME.message);
+          warning(errStr); return;
+        end
         if isinteger(epoch), epoch = {epoch}; end % only one time variable
         % Some files have incorrect Epcoh or FillVal (for instance some
         % hk101 sunpulses) so only trust Epochs inside of interval
