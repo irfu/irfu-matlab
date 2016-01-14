@@ -53,9 +53,8 @@ else
   if numel(hcf)>1 || ~isnumeric(hcf)
     error('HF must be a valid figure handle or figure number')
   end
-  if ~ishghandle(hcf,'figure')
-    hcf = figure(hcf); flagReset = true;
-  end
+  if ~ishghandle(hcf,'figure'), flagReset = true; end
+  hcf = figure(hcf);
 end
 
 if nSubplots>=1 && nSubplots<=20,
