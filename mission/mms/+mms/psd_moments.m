@@ -35,8 +35,6 @@ function particlemoments = psd_moments(varargin)
 %   respectively) as TSeries'. For temperature and
 %   pressure tensors the order of the columns is XX, XY, XZ, YY, YZ, ZZ.
 %
-% Still testing but seems to work okej.
-%
 % Notes: 
 % Regarding the spacecraft potential, the best estimate of is -1.2*(probe
 % to spacecraft voltage)+2. Note that in most plasmas the spacecraft
@@ -196,7 +194,7 @@ H_psd = zeros(length(pdist.time), 3);
 
 tic
 
-% angle between theta and phi points is 360/32 = 11.25
+% angle between theta and phi points is 360/32 = 11.25 degrees
 deltaang = (11.25*pi/180)^2;
 
 if isbrstdata,
@@ -213,8 +211,7 @@ else
 end
 
 % Calculate speed widths associated with each energy channel. 
-% Current estimates reproduce the fpi densities well. 
-% Still testing. 
+% Lowest energy channels extended to reproduce fpi moments
 if isbrstdata, % Burst mode energy/speed widths
     energyall = [energy0 energy1];
     energyall = log10(sort(energyall));
@@ -260,9 +257,7 @@ for nt = 1:length(pdist.time);
         
     v = real(sqrt(2*qe*(energy-SCpot.data(nt))/pmass));    
     v(energy-SCpot.data(nt)<0) = 0;
-        
-    %energy = [2*energy(1)-energy(2) energy 2*energy(32)-energy(31)];
-    %v2 = sqrt(2*qe*energy/pmass);
+
     if isbrstdata,
         phij = phitr(:,nt);
     else
@@ -281,7 +276,6 @@ for nt = 1:length(pdist.time);
     Mpsdmfyz = sind(phij) * (sind(thetak).^2.*cosd(thetak));
    
     for ii = intenergies; 
-        %deltav = (v2(ii+2) - v2(ii))/2;
         tmp = squeeze(pdist.data(nt, ii, :, :));
         n_psd(nt) = n_psd(nt) + irf.nansum(irf.nansum(tmp .* Mpsd2n, 1), 2) * v(ii)^2 * deltav(ii) * deltaang;
         Vxtemp = irf.nansum(irf.nansum(tmp .* Mpsd2Vx, 1), 2) * v(ii)^3 * deltav(ii) * deltaang;
@@ -302,8 +296,7 @@ for nt = 1:length(pdist.time);
     end
 end
 toc
-
-    
+   
 % Compute moments in SI units    
 P_psd = pmass*P_psd;
 V_psd = V_psd./[n_psd n_psd n_psd];
@@ -319,7 +312,6 @@ H_psd = pmass/2*H_psd;
 H_psd(:,1) = H_psd(:,1)-(V_psd(:,1).*P_psd(:,1)+V_psd(:,2).*P_psd(:,2)+V_psd(:,3).*P_psd(:,3))-0.5*V_psd(:,1).*Ptrace;
 H_psd(:,2) = H_psd(:,2)-(V_psd(:,1).*P_psd(:,2)+V_psd(:,2).*P_psd(:,4)+V_psd(:,3).*P_psd(:,5))-0.5*V_psd(:,2).*Ptrace;
 H_psd(:,3) = H_psd(:,3)-(V_psd(:,1).*P_psd(:,3)+V_psd(:,2).*P_psd(:,5)+V_psd(:,3).*P_psd(:,6))-0.5*V_psd(:,3).*Ptrace;
-
 
 % Convert to typical units (/cc, km/s, nP, eV, and ergs/s/cm^2).
 n_psd = n_psd/1e6;
