@@ -10,7 +10,7 @@
 %% Set time interval to look in, the specific spacecraft of interest and set limits for Null method.
 % taken from
 ic=1; %Gives number of spacecraft where density is taken for Hall field calculations.
-Tint  = irf.tint('2016-01-12T20:00:00Z/2016-01-13T15:00:00Z');
+Tint  = irf.tint('2016-01-10T20:00:00Z/2016-01-11T15:00:00Z');
 %Tint  = irf.tint('2015-12-10T02:27:50Z/2015-12-29T02:28:00Z');
 boxLim=70;
 currentLim=500E-9;
@@ -52,12 +52,13 @@ end
 quality=mms.db_get_variable('mms_ancillary_defq','quality',Tint);
 if isempty(quality)
     list=mms.db_list_files('mms_ancillary_predq',Tint);
-    quality=mms_load_ancillary([list1(end).path, filesep, list1(end).name], 'predq');
+    quality=mms_load_ancillary([list(end).path, filesep, list(end).name], 'predq');
     if isempty(quality)
         disp('No tetrahedron quality available right now, but still looking for Nulls');
         Nulls=c_4_null(R1,R2,R3,R4,B1,B2,B3,B4,'boxLim',boxLim,'strong',currentLim);
     else
         quality=irf.ts_scalar(EpochTT(quality.time),quality.quality);
+        quality = quality.tlim(Tint); 
         quality=quality.resample(B1);
         tetrahedronBad= quality.data < 0.6;
         % Removes all time steps with bad tetrahedron quality
@@ -76,6 +77,7 @@ if isempty(quality)
     end
 else
     quality=irf.ts_scalar(EpochTT(quality.time),quality.quality);
+    quality = quality.tlim(Tint); 
     quality=quality.resample(B1);
     tetrahedronBad= quality.data < 0.6;
     % Removes all time steps with bad tetrahedron quality
