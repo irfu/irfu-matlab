@@ -3,7 +3,7 @@ function [dataIN,filenameData] = mms_load_ancillary(fullFilename,dataType)
 %
 % [dataIN,filenameData] = mms_load_ancillary(fullFilename,dataType)
 %
-% dataType is one of : 'defatt','defeph','defq'
+% dataType is one of : 'defatt','defeph','defq', 'predq'
 
 if(~exist(fullFilename,'file'))
   errStr = ['File not found. ', fullFilename];
@@ -48,7 +48,7 @@ switch lower(dataType)
     % (where doy is day of year and mmm is milliseconds),
     % Column 3, 4, 5 is position in X,Y,Z (in some ref.frame, TBC which)
     formatSpec='%f-%f%s %f %f %f %f %f %f %f %*[^\n]';
-  case 'defq'
+  case {'defq', 'predq'}
     % DEFQ file:
     % The DEFQ files start with a header, the number of lines with header
     % is not constant and this files does not contain things like "COMMENT"
@@ -109,7 +109,7 @@ switch lower(dataType)
     % still TBC)
     dataIN.r = [tmpData{1,5} tmpData{1,6} tmpData{1,7}];
     dataIN.v = [tmpData{1,8} tmpData{1,9} tmpData{1,10}];
-  case 'defq'
+  case {'defq', 'predq'}
     % Convert time to TT2000 using irf_time
     tmpStr = cell2mat(tmpData{1,3});
     dataIN.time = irf_time([irf_time([tmpData{1,1}, tmpData{1,2}],'doy>utc_yyyy-mm-dd'),...
