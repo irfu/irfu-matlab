@@ -3,7 +3,7 @@ function maneuvers = mms_maneuvers( Tint, fileName )
 %
 % TESTING: DO NOT USE!
 
-maneuvers = [];
+maneuvers = struct('mms1',[],'mms2',[],'mms3',[],'mms4',[]);
 
 % List timeline files
 % /data/mms/ancillary/mms/timeline/mms_timeline_yyyyDOY_yyyyDOY_vXX.xml
@@ -34,10 +34,28 @@ for ii=1:size(inp.node)
   % Start time for Maneuver on MMS4 in format yyyy-doy/HH:MM:SS
   % And input.timeline.node{1}.node{4}.event{1,1}.stoptime.Text
   % being corresponding stoptime in same format.
-
   % Next maneuver is found in test1.timeline.node{1}.node{4}.event{1,2} and
   % so on...
+  for jj=1:length(inp.node{ii}.node)
+    scID = inp.node{ii}.node{jj}.Attributes.id(end);
+    if(~ismember(str2double(scID), [1, 2, 3, 4])), error('UNEXPECTED SC'); end
+    if(jj>4), warning('Something else unexpected..'); end
+    maneuvers.(['mms',scID]) = inp.node{ii}.node{jj};
+    % For each event (maneuver)
+    for kk=1:length(inp.node{ii}.node{jj}.event)
+      % Convert time to TT2000.
+      maneuvers.(['mms',scID]).event{kk}.starttime = convertToTT2000(maneuvers.(['mms',scID]).event{kk}.starttime.Text);
+      maneuvers.(['mms',scID]).event{kk}.stoptime =  convertToTT2000(maneuvers.(['mms',scID]).event{kk}.stoptime.Text);
+    end
+  end
+
 end
 
+end
 
+function epochTT = convertToTT2000(timeStr)
+  % Convert timeStr ("yyyy-doy/hh:mm:ss") to TT2000 (int64).
+  doy = sscanf(timeStr,'%4d-%3d/%2d:%2d:%2d');
+  if(~all(size(doy)==[5, 1])), warning('Unexpected time'); end;
+  epochTT = irf_time([doy(1), doy(2), doy(3), doy(4), doy(5), 0, 0, 0], 'doy8>ttns');
 end
