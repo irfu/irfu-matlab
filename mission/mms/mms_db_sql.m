@@ -206,9 +206,9 @@ classdef mms_db_sql < handle
 				for iVar = 1:nargin-1,
 					if ischar(varargin{iVar})
 						if iVar > 1,
-							sql = [sql ' and '];
+							sql = [sql ' and ']; %#ok<AGROW>
 						end
-						sql = [sql ' varName like "%' varargin{iVar} '%"'];
+						sql = [sql ' varName like "%' varargin{iVar} '%"']; %#ok<AGROW>
 					end
 				end
 			end
@@ -232,6 +232,7 @@ classdef mms_db_sql < handle
 
     methods (Static)
       function [varNames,startTT,endTT] = get_science_variables(cdfFileName)
+        % Get science variable names and duration from "cdfFileName".
         % varNames - cell array of strings with variables
         % startTT  - int64 (TT2000 values) with corresponding start time
         % endTT    - int64 (TT2000 values) with corresponding end time
