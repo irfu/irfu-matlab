@@ -4,8 +4,6 @@
 
 ic = 1; % Spacecraft number
 
-mms.db_init('local_file_db','/data/mms');
-
 tint = irf.tint('2015-09-08T10:29:20.000000Z/2015-09-08T10:29:40.000000Z');
 %%
 

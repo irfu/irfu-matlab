@@ -114,7 +114,7 @@ classdef mms_local_file_db < mms_file_db
             e.start = get_time('start');
             e.stop = get_time('stop');
             function epoch = get_time(s)
-              epoch = [];
+              epoch = []; sss=[];
               cmd = sprintf('grep -m1 -i %s_time %s/%s | awk ''{print $3}''',...
                 s,e.path,e.name);
               [sta,out] = unix(cmd); if sta>0, return, end
@@ -317,6 +317,7 @@ classdef mms_local_file_db < mms_file_db
           'lphase','pra','pdec','pphase'};
         ANC_VARS.defeph = {'r','v'};
         ANC_VARS.defq = {'quality', 'scale'};
+        ANC_VARS.predq = {'quality', 'scale'};
         if ~isempty(intersect(varName,...
             ANC_VARS.(mms_local_file_db.get_anc_type(fileName)))) 
           res = true;

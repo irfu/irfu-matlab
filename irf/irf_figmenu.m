@@ -1,8 +1,9 @@
-function irf_figmenu(action)
+function irf_figmenu(action,x1)
 %IRF_FIGMENU   Add to the current figure a menu with useful commands
 %
 
 if nargin < 1, action = 'initialize'; end
+if nargin < 2, x1 = ''; end % x1 is used when printing figures
 
 switch lower(action)
 	case 'initialize',
@@ -25,11 +26,21 @@ switch lower(action)
 			hmenu_zoom=uimenu(hfigmenu,'Label','Zoom all panels OFF','Callback','irf_figmenu(''zoomall'')');
 			hmenu_zoom=uimenu(hfigmenu,'Label','Zoom &back','Callback','irf_figmenu(''zoomback'')');
 			hmenu_zoom=uimenu(hfigmenu,'Label','Zoom &whole interval','Callback','irf_figmenu(''zoom_whole_interval'')');
+            hmenu_print=uimenu(hfigmenu,'Label','Export figure as...');
 			set(zoom(gcf),'ActionPostCallback', @adaptiveDateTicks);
 			set(zoom(gcf),'ActionPreCallback', @saveZoomStack);
 			user_data = get(gcf,'userdata');
-			user_data.irf_figmenu=1;
-			user_data.hmenu_zoom=hmenu_zoom;
+            user_data.irf_figmenu=1;
+            user_data.hmenu_zoom=hmenu_zoom;
+            
+            fileTypes = {'eps','png'};
+            hmenu_print2 = gobjects(size(fileTypes));
+            for i = 1:length(fileTypes)
+                hmenu_print2(i) = uimenu(hmenu_print,'Label',fileTypes{i});
+            end
+            set(hmenu_print2(1),'Callback','irf_figmenu(''print_fig'',''eps'')')
+            set(hmenu_print2(2),'Callback','irf_figmenu(''print_fig'',''png'')')
+            
 			set(gcf,'userdata',user_data);
 		end
 		% reset zoomStack
@@ -102,6 +113,11 @@ switch lower(action)
 			end
 		end
 		irf_minvar_gui(v);
+    case 'print_fig'
+        fileType = x1;
+        fileName = inputdlg('File name:',['Export as ',fileType,'...'],1,{'fig'});
+        fileName = fileName{1};
+        irf_print_fig(fileName,fileType)
 end
 
 	function adaptiveDateTicks(figureHandle,eventObjectHandle)

@@ -10,11 +10,12 @@
 %% Set time interval to look in, the specific spacecraft of interest and set limits for Null method.
 % taken from
 ic=1; %Gives number of spacecraft where density is taken for Hall field calculations.
-Tint  = irf.tint('2016-01-06T20:00:00Z/2016-01-07T15:00:00Z');
+Tint  = irf.tint('2016-01-10T20:00:00Z/2016-01-11T15:00:00Z');
+%Tint  = irf.tint('2015-12-10T02:27:50Z/2015-12-29T02:28:00Z');
 boxLim=70;
 currentLim=500E-9;
+tetrahedronQualityLim=0.6;
 %% Load magnetic field and spacecraft positional data
-mms.db_init('local_file_db','/data/mms'); %Point towards the folder with the mms data
 
 % Magnetic Field
 disp('Loading Magnetic fields');
@@ -25,7 +26,11 @@ c_eval('B? = B?.resample(B1);',2:4);
 % Spacecraft Position
 disp('Loading Spacecraft Position');
 R  = mms.get_data('R_gse',Tint);%Cailbrated position
-c_eval('R? =irf.ts_vec_xyz(R.time, R.gseR?);',1:4);
+if length(R.gseR1(1,:))==4 || length(R.gseR2(1,:))==4 || length(R.gseR3(1,:))==4 || length(R.gseR4(1,:))==4
+    c_eval('R? =irf.ts_vec_xyz(R.time, R.gseR?(:,2:4));',1:4);
+else
+    c_eval('R? =irf.ts_vec_xyz(R.time, R.gseR?);',1:4);
+end
 clear R
 % Checks if there is any position data missing in that case go to predicted
 % spacecraft position
@@ -40,10 +45,54 @@ else
     c_eval('R? = R?.resample(B1);',1:4);
 end
 %% Looks for Nulls and if they are found makes average calculations and Loads electric fields, density and calculates J and JxB with curlometer method
-disp('Looking for Nulls');
 % Assuming GSE and DMPA are the same coordinate system.
-Nulls=c_4_null(R1,R2,R3,R4,B1,B2,B3,B4,'boxLim',boxLim,'strong',currentLim);
-
+%Quality data comes 2 days late
+% Load quality of tetrahedron
+quality=mms.db_get_variable('mms_ancillary_defq','quality',Tint);
+if isempty(quality)
+    list=mms.db_list_files('mms_ancillary_predq',Tint);
+    quality=mms_load_ancillary([list(end).path, filesep, list(end).name], 'predq');
+    if isempty(quality)
+        error('No tetrahedron quality available. Cannot reliably search for Nulls');
+    else
+        quality=irf.ts_scalar(EpochTT(quality.time),quality.quality);
+        quality = quality.tlim(Tint); 
+        quality=quality.resample(B1);
+        tetrahedronBad= quality.data < 0.6;
+        % Removes all time steps with bad tetrahedron quality
+        c_eval('R?_null = [R?.time.epochUnix double(R?.data)];',1:4);
+        c_eval('B?_null = [B?.time.epochUnix double(B?.data)];',1:4);
+        
+        c_eval('R?_null(tetrahedronBad,:)=[];',1:4);
+        c_eval('B?_null(tetrahedronBad,:)=[];',1:4);
+        
+        if isempty(B1_null) || isempty(B2_null) || isempty(B3_null) || isempty(B4_null)
+            error('Tetrahedron quality is not good enough to search for Nulls');
+        else
+            disp('Looking for Nulls');
+            Nulls=c_4_null(R1_null,R2_null,R3_null,R4_null,B1_null,B2_null,B3_null,B4_null,'boxLim',boxLim,'strong',currentLim);
+        end
+    end
+else
+    quality=irf.ts_scalar(EpochTT(quality.time),quality.quality);
+    quality = quality.tlim(Tint); 
+    quality=quality.resample(B1);
+    tetrahedronBad= quality.data < 0.6;
+    % Removes all time steps with bad tetrahedron quality
+    c_eval('R?_null = [R?.time.epochUnix double(R?.data)];',1:4);
+    c_eval('B?_null = [B?.time.epochUnix double(B?.data)];',1:4);
+    
+    c_eval('R?_null(tetrahedronBad,:)=[];',1:4);
+    c_eval('B?_null(tetrahedronBad,:)=[];',1:4);
+    
+    if isempty(B1_null) || isempty(B2_null) || isempty(B3_null) || isempty(B4_null)
+        error('Tetrahedron quality is not good enough to search for Nulls');
+    else
+        disp('Looking for Nulls');
+        Nulls=c_4_null(R1_null,R2_null,R3_null,R4_null,B1_null,B2_null,B3_null,B4_null,'boxLim',boxLim,'strong',currentLim);
+    end
+end
+%%
 if isempty(Nulls.t)
     time_int=irf_time(Tint,'tint>utc');
     errormessage=['No Nulls were found with strong currents between ',time_int];
@@ -231,7 +280,7 @@ else
 end
 
 % 2) from terminal convert to eps file without white margins
-% > epstool --copy --bbox Dec22.eps Dec22_crop.eps
+% > epstool --copy --bbox Jan11pic10.eps Jan11pic10_crop.eps
 % 3) convert eps file to pdf, result is in Current_crop.pdf
-% > ps2pdf -dEPSFitPage -dEPSCrop -dAutoRotatePages=/None Dec22_crop.eps
+% > ps2pdf -dEPSFitPage -dEPSCrop -dAutoRotatePages=/None Jan11pic10_crop.eps
 

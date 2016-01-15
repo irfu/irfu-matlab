@@ -228,31 +228,42 @@ classdef mms_db_sql < handle
 			irf.log('debug',['sqlite> ' sql]);
 			out=obj.statement.executeUpdate(sql);
 		end
-	end
-	
-	methods (Static)
-		function [varNames,startTT,endTT] = get_science_variables(cdfFileName)
-			%     varNames - cell array of strings
-			%     startTT  - int64
-			%     endTT    - int64
-			irf.log('debug',['Reading: ' cdfFileName]);
-			inf = spdfcdfinfo(cdfFileName);
-			dep = inf.VariableAttributes.DEPEND_0;
-			varNames = dep(:,1);
-			nVar = numel(varNames);
-			[tVarNames,~,IC] = unique(dep(:,2));
-			startTT = ones(nVar,1,'int64');
-			endTT = startTT;
-			% read time variables
-			epoch = spdfcdfread(cdfFileName, ...
-				'Variable', tVarNames, 'KeepEpochAsIs', true);
-			if isinteger(epoch), epoch = {epoch};end % only one time variable
-			for iT = 1:numel(tVarNames)
-				if isempty(epoch{iT}), epoch{iT}=NaN;end
-				startTT(IC==iT) = min(epoch{iT});
-				endTT(IC==iT)   = max(epoch{iT});
-			end
-		end
-	end
-	
+    end
+
+    methods (Static)
+      function [varNames,startTT,endTT] = get_science_variables(cdfFileName)
+        % varNames - cell array of strings with variables
+        % startTT  - int64 (TT2000 values) with corresponding start time
+        % endTT    - int64 (TT2000 values) with corresponding end time
+        narginchk(1,1); % One file name
+        irf.log('debug',['Reading: ' cdfFileName]);
+        inf = spdfcdfinfo(cdfFileName);
+        dep = inf.VariableAttributes.DEPEND_0;
+        varNames = dep(:,1);
+        nVar = numel(varNames);
+        [tVarNames,~,IC] = unique(dep(:,2));
+        startTT = ones(nVar,1,'int64');
+        endTT = startTT;
+        % read time variables
+        epoch = spdfcdfread(cdfFileName, 'Variable', tVarNames, ...
+          'KeepEpochAsIs', true);
+        if isinteger(epoch), epoch = {epoch}; end % only one time variable
+        % Some files have incorrect Epcoh or FillVal (for instance some
+        % hk101 sunpulses) so only trust Epochs inside of interval
+        % 2015-03-12T00:00:00.000000000 to 2040-01-01T00:00:00.000000000
+        % (which is well within MMS mission life but should discard strange
+        % epoch such as 1706-... and other invalid values).
+        validEpoch = irf.tint('2015-03-12T00:00:00.000000000', ...
+          '2040-01-01T00:00:00.000000000');
+        for iT = 1:numel(tVarNames)
+          if isempty(epoch{iT}), epoch{iT} = NaN; end
+          epoch{iT}(epoch{iT}<validEpoch.start.ttns) = NaN; % Note, int64(NaN) = 0.
+          epoch{iT}(epoch{iT}>validEpoch.stop.ttns) = NaN;
+          startTT(IC==iT) = min(epoch{iT});
+          endTT(IC==iT)   = max(epoch{iT});
+        end
+      end % get_science_variables
+
+    end
+
 end
