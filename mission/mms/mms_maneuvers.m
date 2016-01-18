@@ -1,14 +1,27 @@
-function maneuvers = mms_maneuvers( Tint, fileName )
+function maneuvers = mms_maneuvers( Tint )
 % Read Timeline and return maneuvers in the interval Tint
 %
 % TESTING: DO NOT USE!
 
+narginchk(1,1);
 maneuvers = struct('mms1',[],'mms2',[],'mms3',[],'mms4',[]);
 
-% List timeline files
-% /data/mms/ancillary/mms/timeline/mms_timeline_yyyyDOY_yyyyDOY_vXX.xml
+if(~isa(Tint,'GenericTimeArray') || ~all(size(Tint)==[2,1])), error('Unexpected Tint'); end
 
+% List timeline files (can cover up to over 100 days...) The following is a
+% quick fix, should be integrated into mms db list_files.
+% /data/mms/ancillary/mms/timeline/mms_timeline_yyyyDOY_yyyyDOY_vXX.xml
 % In mms_db, filename gives starttime and stoptime.
+dataPath = [filesep, 'data', filesep, 'mms', filesep, 'ancillary', filesep,...
+  'mms', filesep, 'timeline', filesep];
+for jj=0:100 % Begin looking the year and day of Tint start
+  doy = irf_time(Tint.start.ttns - 86400*jj*10^9, 'ttns>doy');
+  list = dir([dataPath, 'mms_timeline_',num2str(doy(1)),num2str(doy(2)),'_*v*.xml']);
+  if(~isempty(list)), break; end
+end
+
+if(isempty(list)), return, end % No results
+fileName = [dataPath, list(end).name]; % Last version to match.
 
 % Use the last file matching start of Tint in order to avoid predicted
 % maneuvers as much as possible..
