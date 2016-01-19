@@ -206,6 +206,7 @@ end
 [~,IndexSize] = sort(currentIntervals(:,2),'descend');
 currentIntervals=currentIntervals(IndexSize,:); %[currentTime currentAbs]
 
+%TODO - still some overlapping between the intervals
 jTemp = [currentIntervals ones(size(currentIntervals,1),1)];
 for ii = 1:size(jTemp,1)
     if jTemp(ii,3)
@@ -216,5 +217,7 @@ end
 
 currentIntervals=currentIntervals(logical(jTemp(:,3)),1);
 currentIntervals=[currentIntervals-30 currentIntervals+30];
-
+%Sorting time from latest to earliest time
+[~,Indextime] = sort(currentIntervals(:,1),'ascend');
+currentIntervals=currentIntervals(Indextime,:);
 end
