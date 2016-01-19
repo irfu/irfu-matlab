@@ -10,7 +10,7 @@
 %% Set time interval to look in, the specific spacecraft of interest and set limits for Null method.
 % taken from
 ic=1; %Gives number of spacecraft where density is taken for Hall field calculations.
-Tint  = irf.tint('2016-01-10T20:00:00Z/2016-01-11T15:00:00Z');
+Tint  = irf.tint('2016-01-13T20:00:00Z/2016-01-14T15:00:00Z');
 %Tint  = irf.tint('2015-12-10T02:27:50Z/2015-12-29T02:28:00Z');
 boxLim=70;
 currentLim=500E-9;
@@ -104,8 +104,7 @@ else
         save(filename,'Nulls');
     end
     %% Average calculations. Loads electric fields, density and calculates J and JxB with curlometer method
-    
-    disp('Calculates average Bfield')
+  disp('Calculates average Bfield')
     Bav = (B1.data+B2.data+B3.data+B4.data)/4;
     Bav=[B1.time.epochUnix double(Bav)];
     disp('Loads Electric fields')
@@ -120,12 +119,21 @@ else
     disp('Calculates average E-fields')
     Eav = (E1.data+E2.data+E3.data+E4.data)/4;
     Eav=[E1.time.epochUnix double(Eav)];
-    
+   
     %Special satellite
     c_eval('Efield=E?;',ic);
     Efield=[Efield.time.epochUnix double(Efield.data)];
     c_eval('Bfield=B?;',ic);
     Bfield=[Bfield.time.epochUnix double(Bfield.data)];
+    
+    %ExB
+   Bmag = irf_abs(Bfield,1);
+  
+   ExB = cross(Efield(:,2:4), Bfield(:,2:4));
+   % EXB/B^2 is the convection velocity (Comes from Ohm's law l.h.s E+VXB=0 => ExB/B^2 =V)
+   ExB = 1e3 *ExB./[Bmag.^2 Bmag.^2 Bmag.^2]; %1E6=1E9/1E3 (m/s) => (km/s) 1E6/1E3=1E3 
+   ExBav = [Bfield(:,1) ExB];
+   
     
     disp(['Loads density from spacecraft',num2str(ic)])
     %Density from spacecraft ic for Hall field calculation
@@ -136,10 +144,8 @@ else
     
     disp('Calculates current')
     % Assuming GSE and DMPA are the same coordinate system calculates j and jXB.
-    [j,divB,B,jxB,divTshear,divPb] = c_4_j('R?','B?');
-    divovercurl = divB;
-    divovercurl.data = abs(divovercurl.data)./j.abs.data;
-    divovercurl=[B1.time.epochUnix double(divovercurl.data)];
+    [j,~,~,jxB,~,~] = c_4_j('R?','B?');
+    
     
     j=[j.time.epochUnix double(j.data)];
     j(:,2:4) = j(:,2:4).*1e9;
@@ -151,6 +157,7 @@ else
     % Calculates EdotJ
     EdotJ = dot(Eav(:,2:4),j(:,2:4),2)./1000; %J (nA/m^2), E (mV/m), E.J (nW/m^3)
     EdotJ = [Eav(:,1) EdotJ];
+
 end
 
 %% Only picks out a smaller time interval around the nulls (to keep filesize small)
@@ -191,9 +198,9 @@ else
     %irf_legend(hca,'(c)',[0.99 0.98],'color','k')
     grid(hca,'off');
     
-    hca = irf_panel('divovercurl');
-    irf_plot(hca,divovercurl);
-    ylabel(hca,{'$\frac{|\nabla \cdot \mathbf{B}|} {|\nabla \times \mathbf{B}|}$'},'Interpreter','latex','Fontsize',18);
+    hca = irf_panel('ExB');
+    irf_plot(hca,ExBav);
+    ylabel(hca,{'ExB', '(km s^{-1})'},'Interpreter','tex');
     %irf_legend(hca,'(e)',[0.99 0.98],'color','k')
     grid(hca,'off');
     
@@ -221,8 +228,8 @@ else
     irf_plot_axis_align(1,h);
     irf_pl_mark(h,tmarks,[0.8 0.8 0.8]) %Setting the color lines to grey
     irf_pl_number_subplots(h,[0.99, 0.95]);
-    Tint=[Bav(1,1) Bav(end,1)];
-    irf_zoom(h,'x',Tint);
+    tint_zoom=[Bav(1,1) Bav(end,1)];
+    irf_zoom(h,'x',tint_zoom);
 end
 
 %% Plot data for specific spacecraft given by ic.
@@ -245,9 +252,9 @@ else
     %irf_legend(hca,'(c)',[0.99 0.98],'color','k')
     grid(hca,'off');
     
-    hca = irf_panel('divovercurl');
-    irf_plot(hca,divovercurl);
-    ylabel(hca,{'$\frac{|\nabla \cdot \mathbf{B}|} {|\nabla \times \mathbf{B}|}$'},'Interpreter','latex','Fontsize',18);
+    hca = irf_panel('ExB');
+    irf_plot(hca,ExBav);
+    ylabel(hca,{'ExB', '(km s^{-1})'},'Interpreter','tex');
     %irf_legend(hca,'(e)',[0.99 0.98],'color','k')
     grid(hca,'off');
     
@@ -275,8 +282,8 @@ else
     irf_plot_axis_align(1,h);
     irf_pl_mark(h,tmarks,[0.8 0.8 0.8]) %Setting the color lines to grey
     irf_pl_number_subplots(h,[0.99, 0.95]);
-    Tint=[Bfield(1,1) Bfield(end,1)];
-    irf_zoom(h,'x',Tint);
+    tint_zoom=[Bfield(1,1) Bfield(end,1)];
+    irf_zoom(h,'x',tint);
 end
 
 % 2) from terminal convert to eps file without white margins

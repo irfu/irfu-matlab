@@ -99,6 +99,7 @@ for j=1:length(h)
 	for jj=1:size(tpoints,1),
 		if tlim(jj,1)==tlim(jj,2) % draw line instead of patch (in this case draw line above everything, therefore "+2" in the next line)
 			hp(j,jj)=line(tpoints(jj,1:2), ypoints(jj,[1 3]), zpoints(jj,[1 3]),'color',color(jj,:),'parent',h(j),pvpairs{:});
+            set(hp(j,jj),'Tag','irf_pl_mark')
 		else % make patch
 			%
 			% transparency yet does not work on spectrograms (work only in
