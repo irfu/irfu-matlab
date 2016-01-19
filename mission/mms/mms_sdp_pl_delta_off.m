@@ -1,4 +1,4 @@
-function mms_sdp_pl_delta_off(fileName)
+function res = mms_sdp_pl_delta_off(fileName)
 
 d = dataobj(fileName);
 mmsId = str2double(d.GlobalAttributes.Source_name{:}(4));
@@ -43,15 +43,20 @@ if isempty(Vfpi)
   Nifpi = []; Efpi = [];
 else
   Nifpi = mms.get_data('Ni_fpi_ql',Tint,mmsId);
+  Vifpi = mms.get_data('Vi_gse_fpi_ql',Tint,mmsId);
   Efpi = irf_e_vxb(Vfpi,B.resample(Vfpi));
 end
+PSP = mms.db_get_ts(sprintf('mms%d_edp_fast_l2_scpot',mmsId),...
+  sprintf('mms%d_edp_psp',mmsId),Tint);
 
 %% resample to 1 min
 epoch1min = fix(Tint.start.epochUnix/60):ceil(Tint.stop.epochUnix/60);
 epoch1min = epoch1min*60;
 Epoch1min = EpochUnix(epoch1min);
 
-
+%if ~isempty(PSP)
+%  PSPR = PSP.resample(Epoch1min,'median');
+%end
 if ~isempty(Es12AspocOff), Es12AspocOffR = Es12AspocOff.resample(Epoch1min,'median');
 else Es12AspocOffR = Es12AspocOff;
 end
@@ -74,9 +79,17 @@ if isempty(DeltaAspocOn), DeltaAspocOnR = DeltaAspocOn;
 else DeltaAspocOnR = DeltaAspocOn.resample(Epoch1min,'median');
 end
 
+idxMSH = [];
+if  ~isempty(Nifpi)
+  NifpiR = Nifpi.resample(Epoch1min,'median');
+  VifpiR = Vifpi.resample(Epoch1min,'median');
+  idxMSH = NifpiR.data>5 & VifpiR.x.data>-200;
+end
+
 %%
 myCols = [[0 0 0];[.3 .3 .3];[0 0 1];[.2 .2 .8]];
-h = irf_figure(93,6);
+
+h = irf_figure(93,8,'reset');
 hca = irf_panel('B');
 irf_plot(hca,B);
 if any(B.abs.data>100), set(hca,'YLim',[-99 99]), end
@@ -89,12 +102,34 @@ ylabel(hca,'Vi [km/s]'), irf_legend(hca,{'X','Y','Z'},[0.95, 0.95])
 hca = irf_panel('Ni');
 irf_plot(hca,Nifpi);
 ylabel(hca,'Ni [cc]')
+%
+ax2 = axes('Position',get(hca,'Position'));
+set(ax2,'XAxisLocation','top','xtick',[]); % remove 'xtick' if xticks required
+set(ax2,    'YAxisLocation','right');
+set(ax2,'Color','none'); % color of axis
+set(ax2,'XColor','r','YColor','r');
+h=irf_plot(ax2,PSP);
 
 hca = irf_panel('Delta_off'); set(hca,'ColorOrder',myCols)
 irf_plot(hca,{DeltaAspocOffR.x,DeltaAspocOnR.x,DeltaAspocOffR.y,DeltaAspocOnR.y},'comp')
-ylabel(hca,'\Delta Off [mV/m]')
+
+hold(hca,'on')
+[~,idxTmp,idxTmp2] = intersect(DeltaAspocOffR.time.epoch,NifpiR.time.epoch(idxMSH));
+DeltaAspocOffRes = DeltaAspocOffR(idxTmp);
+NifpiRes = NifpiR(idxTmp2);
+irf_plot(hca,DeltaAspocOffRes,'.')
+hold(hca,'off')
+ylabel(hca,'Delta [mV/m]')
 set(hca,'YLim',[-1.4 1.4])
 irf_legend(hca,{'X','Y'},[0.95, 0.95])
+
+hca = irf_panel('Ex'); set(hca,'ColorOrder',myCols)
+irf_plot(hca,{Es12AspocOffR.x,Es12AspocOnR.x,...
+  Es34AspocOffR.x,Es34AspocOnR.x},'comp');
+if ~isempty(Efpi)
+  hold(hca,'on'), irf_plot(hca,EfpiR.x,'.'), hold(hca,'off')
+end
+ylabel(hca,'Ex [mV/m]')
 
 hca = irf_panel('Fpi_x'); set(hca,'ColorOrder',myCols)
 if ~isempty(Efpi)
@@ -104,6 +139,14 @@ end
 ylabel(hca,'\Delta FPI x [mV/m]')
 set(hca,'YLim',[-4.9 .9])
 irf_legend(hca,{'12','34'},[0.95, 0.95])
+
+hca = irf_panel('Ey'); set(hca,'ColorOrder',myCols)
+irf_plot(hca,{Es12AspocOffR.y,Es12AspocOnR.y,...
+  Es34AspocOffR.y,Es34AspocOnR.y},'comp');
+if ~isempty(Efpi)
+  hold(hca,'on'), irf_plot(hca,EfpiR.y,'.'), hold(hca,'off')
+end
+ylabel(hca,'Ey [mV/m]')
 
 hca = irf_panel('Fpi_y'); set(hca,'ColorOrder',myCols)
 if ~isempty(Efpi)
@@ -123,32 +166,43 @@ set(gcf,'paperpositionmode','auto')
 print('-dpng',['DeltaOff_' mmsIdS '_' irf_fname(Tint.start.epochUnix)])
 
 %%
-
-NifpiR = Nifpi.resample(Epoch1min,'median');
-idxHighN = NifpiR.data>5;
-
+TintTmp = Es12AspocOffR.time(idxMSH);
+res = struct('tint',EpochUnix(median(TintTmp.epochUnix)),...
+  'p12',[],'p34',[],'delta',DeltaAspocOffRes,'ni', NifpiRes );
+figure(94), clf
 clf
 subplot(2,2,1)
-plot_xy(Es12AspocOffR.x.data(idxHighN),EfpiR.x.data(idxHighN));
+[~,res.p12.x] = plot_xy(Es12AspocOffR.x.data(idxMSH),EfpiR.x.data(idxMSH));
 title(mmsIdS),ylabel('Ex FPI [mV/m]'), xlabel('SDP 12 [mV/m]')
 subplot(2,2,2)
-plot_xy(Es12AspocOffR.y.data(idxHighN),EfpiR.y.data(idxHighN));
+[~,res.p12.y] = plot_xy(Es12AspocOffR.y.data(idxMSH),EfpiR.y.data(idxMSH));
 ylabel('Ey FPI [mV/m]'), xlabel('SDP 12 [mV/m]')
 title([Tint.start.utc(1) ' - ' Tint.stop.utc(1)])
 subplot(2,2,3)
-plot_xy(Es34AspocOffR.x.data(idxHighN),EfpiR.x.data(idxHighN));
+[~,res.p34.x] = plot_xy(Es34AspocOffR.x.data(idxMSH),EfpiR.x.data(idxMSH));
 ylabel('Ex FPI [mV/m]'), xlabel('SDP 34 [mV/m]')
 subplot(2,2,4)
-plot_xy(Es34AspocOffR.y.data(idxHighN),EfpiR.y.data(idxHighN));
+[~,res.p34.y] = plot_xy(Es34AspocOffR.y.data(idxMSH),EfpiR.y.data(idxMSH));
 ylabel('Ey FPI [mV/m]'), xlabel('SDP 34 [mV/m]')
 
 set(gcf,'paperpositionmode','auto')
 print('-dpng',['ScatterPlot' mmsIdS '_' irf_fname(Tint.start.epochUnix)])
+
+%%
+figure(95), clf
+subplot(2,1,1)
+plot_mvregress(Es12AspocOffR.data(idxMSH,:),EfpiR.data(idxMSH,:))
+title([mmsIdS ' ' Tint.start.utc(1) ' - ' Tint.stop.utc(1)])
+ylabel('E FPI [mV/m]'), xlabel('SDP 12 [mV/m]')
+
+subplot(2,1,2)
+plot_mvregress(Es34AspocOffR.data(idxMSH,:),EfpiR.data(idxMSH,:))
+ylabel('E FPI [mV/m]'), xlabel('SDP 34 [mV/m]')
+set(gcf,'paperpositionmode','auto')
+print('-dpng',['ScatterPlotMVREG' mmsIdS '_' irf_fname(Tint.start.epochUnix)])
 end
 
 function ints = find_on(mask)
-
-%%
 
 idxJump = find(diff(mask)~=0);
 
@@ -162,7 +216,7 @@ end
 
 end
 
-function h = plot_xy(x,y)
+function [h,fitParams] = plot_xy(x,y)
 
 idx = isnan(x); x(idx) = []; y(idx) = [];
 idx = isnan(y); x(idx) = []; y(idx) = [];
@@ -172,9 +226,9 @@ d = polyval(p,x)-y;
 idx = abs(d)<3*std(d); idxOut = abs(d)>=3*std(d); % remove outlyers
 p=polyfit( x(idx),y(idx),1);
 cc=corrcoef(y(idx),x(idx));
-    
-h = plot(x(idx),y(idx),'.',x(idxOut),y(idxOut),'o');
-    
+slope = p(1); offs = p(2); corr_coef = cc(1,2);
+
+h = plot(x(idx),y(idx),'.',x(idxOut),y(idxOut),'o');    
 ax=axis;
 ymax=ax(4);ymin=ax(3);dy=(ymax-ymin)/20;
 ytext=ymax-dy;
@@ -184,7 +238,9 @@ hold on
 xp=[min(x) max(x)];
 plot(xp,polyval(p,xp),'k-');
 axis(ax);
-text(xtext,ytext,['slope=' num2str(p(1),3) '  offs=' num2str(p(2),2)]);ytext=ytext-dy;
-text(xtext,ytext,['cc=' num2str(cc(1,2),3)]);
+text(xtext,ytext,...
+  ['slope=' num2str(slope,3) '  offs=' num2str(offs,2)]);ytext=ytext-dy;
+text(xtext,ytext,['cc=' num2str(corr_coef,3)]);
 
+fitParams = struct('slope',slope,'offs',offs,'corrCoef',corr_coef,'range',xp);
 end
