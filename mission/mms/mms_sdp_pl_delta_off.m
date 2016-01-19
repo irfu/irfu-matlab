@@ -102,13 +102,14 @@ ylabel(hca,'Vi [km/s]'), irf_legend(hca,{'X','Y','Z'},[0.95, 0.95])
 hca = irf_panel('Ni');
 irf_plot(hca,Nifpi);
 ylabel(hca,'Ni [cc]')
-%
-ax2 = axes('Position',get(hca,'Position'));
-set(ax2,'XAxisLocation','top','xtick',[]); % remove 'xtick' if xticks required
-set(ax2,    'YAxisLocation','right');
-set(ax2,'Color','none'); % color of axis
-set(ax2,'XColor','r','YColor','r');
-h=irf_plot(ax2,PSP);
+% ScPot
+hca = axes('Position',get(hca,'Position'));
+hl = irf_plot(hca,PSP); set(hl,'Color','b')
+ylabel(hca,'PSP [V]'),xlabel(hca,'')
+set(hca,'XAxisLocation','top','xtick',[]); % remove 'xtick' if xticks required
+set(hca, 'YAxisLocation','right');
+set(hca,'Color','none'); % color of axis
+set(hca,'XColor','b','YColor','b');
 
 hca = irf_panel('Delta_off'); set(hca,'ColorOrder',myCols)
 irf_plot(hca,{DeltaAspocOffR.x,DeltaAspocOnR.x,DeltaAspocOffR.y,DeltaAspocOnR.y},'comp')
