@@ -13,7 +13,7 @@ ic=1; %Gives number of spacecraft where density is taken for Hall field calculat
 currentLim=500E-9;
 intervalStart=irf_time([2015 11 01 00 00 00]);
 
-currentIntervals=mms.strong_current_search_brst(sc,currentLim,intervalStart);
+currentIntervals=mms.strong_current_search_brst(ic,currentLim,intervalStart);
 
 for i=1:length(currentIntervals(:,1))
 Tint  = irf.tint(EpochUnix(currentIntervals(i,1)),EpochUnix(currentIntervals(i,2)));
