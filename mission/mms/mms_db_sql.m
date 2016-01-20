@@ -18,14 +18,17 @@ classdef mms_db_sql < handle
 	
 	methods
 		function obj = mms_db_sql(fileName)
-			javaaddpath([fileparts(which('irf')) filesep 'contrib/java/sqlite-jdbc-3.8.11.2.jar'])
+          javaPath=[irf('path'), filesep, 'contrib', filesep, 'java', filesep];
+          listDir=dir([javaPath, 'sqlite-jdbc*.jar']);
+          if(isempty(listDir)), error('Missing sqlite-jdbc.jar'); end
+          javaaddpath([javaPath, listDir(end).name]);
 			if nargin == 1,
-				[dir,file,ext] = fileparts(fileName);
-				if isempty(dir) || dir == '.'
-					dir = pwd;
+				[dirPath,file,ext] = fileparts(fileName);
+				if isempty(dirPath) || dirPath == '.'
+					dirPath = pwd;
 				end
-				obj.databaseDirectory = dir;
-				obj.databaseFile = [dir filesep file ext];
+				obj.databaseDirectory = dirPath;
+				obj.databaseFile = [dirPath filesep file ext];
 				obj.open_database;
 			end
 		end
@@ -250,7 +253,7 @@ classdef mms_db_sql < handle
 			sql = ['select startTT,endTT from VarIndex where idDataset in ('...
 				'select idDataset from VarNames where varName = "' varName '") order by startTT asc'];
 			rs= obj.sqlQuery(sql);
-			tintArray = int64(zeros(0,2));
+			tintArray = zeros(0,2,'int64');
 			while rs.next
 				tint = sscanf([char(rs.getString('startTT')) ' ' ...
 					char(rs.getString('endTT'))],'%ld %ld');
