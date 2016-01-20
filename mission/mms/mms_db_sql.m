@@ -247,9 +247,22 @@ classdef mms_db_sql < handle
 		end
 		
 		function tintArray = index_var(obj,varName)
-			sql = ['select startTT,endTT from VarIndex where varName="' ...
-				varName '";'];
+			sql = ['select startTT,endTT from VarIndex where idDataset in ('...
+				'select idDataset from VarNames where varName = "' varName '")'];
 			rs= obj.sqlQuery(sql);
+			tintArray = int64(zeros(0,2));
+			while rs.next
+				tint = sscanf([char(rs.getString('startTT')) ' ' ...
+					char(rs.getString('endTT'))],'%ld %ld');
+				tintArray(end+1,:)= tint;
+			end
+			if nargout == 0, % print time intervals
+				nTint = size(tintArray,1);
+				for ii = 1:min(nTint,5),       disp(irf_time(tintArray(ii,:),'tint>utc')); end
+				if nTint>10,                   disp('...'); end
+				for ii = max(5,nTint-5):nTint, disp(irf_time(tintArray(ii,:),'tint>utc')); end
+				clear tintArray;
+			end
 		end
 		
 		function fileNames = search_files(obj,varName,timeInterval)
