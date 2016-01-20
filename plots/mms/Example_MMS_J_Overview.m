@@ -14,7 +14,7 @@ currentLim=500E-9;
 intervalStart=irf_time([2015 11 01 00 00 00]);
 
 currentIntervals=mms.strong_current_search_brst(ic,currentLim,intervalStart);
-
+%%
 for i=1:length(currentIntervals(:,1))
 Tint  = irf.tint(EpochUnix(currentIntervals(i,1)),EpochUnix(currentIntervals(i,2)));
 % Load magnetic field and spacecraft positional data
@@ -110,6 +110,7 @@ end
     irf_legend(hca,{'B_{x}','B_{y}','B_{z}'},[0.88 0.10])
     %irf_legend(hca,'(a)',[0.99 0.98],'color','k')
     grid(hca,'off');
+    set(hca,'xticklabel',[]);
     
     hca = irf_panel('J');
     irf_plot(hca,j);
@@ -117,6 +118,7 @@ end
     irf_legend(hca,{'J_{x}','J_{y}','J_{z}'},[0.88 0.10])
     %irf_legend(hca,'(c)',[0.99 0.98],'color','k')
     grid(hca,'off');
+    set(hca,'xticklabel',[]);
     
     hca = irf_panel('EMMS');
     irf_plot(hca,Efield);
@@ -124,24 +126,25 @@ end
     irf_legend(hca,{'E_{x}','E_{y}','E_{z}'},[0.88 0.10])
     %irf_legend(hca,'(b)',[0.99 0.98],'color','k')
     grid(hca,'off');
+    set(hca,'xticklabel',[]);
     
     hca=irf_panel('iEnSp');
    irf_spectrogram(hca, speciEnSp, 'log', 'donotfitcolorbarlabel');
-   %colorbar(hca,jet)
+   colormap(hca,jet)
    set(hca,'yscale','log');
    set(hca,'ytick',[1e1 1e2 1e3 1e4]);
    %scaxis(hca,[-1, 2])
-   ylabel(hca,'iEnergy [eV]','Interpreter','tex');
+   ylabel(hca,{'E_{i} (eV)'},'Interpreter','tex');
    
    hca=irf_panel('eEnSp');
    irf_spectrogram(hca, speceEnSp, 'log', 'donotfitcolorbarlabel');
-   %colorbar(hca,jet)
+   colormap(hca,jet)
    set(hca,'yscale','log');
    set(hca,'ytick',[1e1 1e2 1e3 1e4]);
    %scaxis(hca,[-1, 2])
-   ylabel(hca,'eEnergy [eV]','Interpreter','tex');
+   ylabel(hca,{'E_{e} (eV)'},'Interpreter','tex');
    
-    title(h(1),strcat(['MMS', num2str(sc)]));
+    title(h(1),strcat(['MMS', num2str(ic)]));
     irf_plot_axis_align(h);
     irf_pl_number_subplots(h,[0.99, 0.95]);
     tint_zoom=[Bfield(1,1) Bfield(end,1)];
