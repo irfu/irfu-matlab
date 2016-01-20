@@ -1,21 +1,23 @@
-function res = mms_sdp_pl_delta_off(Tint)
-
-d = dataobj(fileName);
-mmsId = str2double(d.GlobalAttributes.Source_name{:}(4));
-
+function res = mms_sdp_pl_delta_off(Tint,mmsId)
+%MMS_SDP_PL_DELTA_OFF  Delta offsets and FPI comparison
 %
-bitmask = d.data.(sprintf('mms%d_edp_dce_bitmask',mmsId)).data;
+% res = MMS_SDP_PL_DELTA_OFF(Tint,mmsId)
+
+fPre = sprintf('mms%d_edp_fast_l2a_dce2d',mmsId);
+Bmask = mms.db_get_ts(fPre,...
+  sprintf('mms%d_edp_dce_bitmask',mmsId), Tint);
+bitmask = Bmask.data;
+epochFull = Bmask.time.ttns;
+P12 = mms.db_get_ts(fPre,...
+  sprintf('mms%d_edp_dce_spinfit_e12',mmsId), Tint);
+p12 = P12.data;
+P34 = mms.db_get_ts(fPre,...
+  sprintf('mms%d_edp_dce_spinfit_e34',mmsId), Tint);
+p34 = P34.data;
+epochSpin = P34.time.ttns;
+
 mskAsponOn = bitand(bitmask(:,2),64) > 0;
 mskAsponOn = mskAsponOn | (bitand(bitmask(:,3),64) > 0);
-
-epochSpin = d.data.(sprintf('mms%d_edp_dce_spinfit_epoch',mmsId)).data;
-epochFull = d.data.(sprintf('mms%d_edp_dce_epoch',mmsId)).data;
-%Tint = EpochTT(epochFull([1 end]));
-
-p12 =  d.data.(sprintf('mms%d_edp_dce_spinfit_e12',mmsId)).data;
-p12(p12<-1e20) = NaN;
-p34 =  d.data.(sprintf('mms%d_edp_dce_spinfit_e34',mmsId)).data;
-p34(p34<-1e20) = NaN;
 
 % Resample bitmask
 spinSize = int64(20000000000);
@@ -172,45 +174,48 @@ TintTmp = Es12AspocOffR.time(idxMSH);
 res = struct('tint',EpochUnix(median(TintTmp.epochUnix)),...
   'p12',[],'p34',[],'p1234',[],'delta',DeltaAspocOffRes,'ni', NifpiRes,...
   'psp',PSPRes);
+h = irf_figure(94,4,'reset');
 figure(94), clf
 clf
-subplot(4,2,1)
+nRows = 3;
+subplot(nRows,2,1)
 [~,res.p12.x] = plot_xy(Es12AspocOffR.x.data(idxMSH),EfpiR.x.data(idxMSH));
 title(mmsIdS),ylabel('Ex FPI [mV/m]'), xlabel('SDP 12 [mV/m]')
 
-subplot(4,2,2)
+subplot(nRows,2,2)
 [~,res.p12.y] = plot_xy(Es12AspocOffR.y.data(idxMSH),EfpiR.y.data(idxMSH));
 ylabel('Ey FPI [mV/m]'), xlabel('SDP 12 [mV/m]')
 title([Tint.start.utc(1) ' - ' Tint.stop.utc(1)])
 
-subplot(4,2,3)
+subplot(nRows,2,3)
 [~,res.p34.x] = plot_xy(Es34AspocOffR.x.data(idxMSH),EfpiR.x.data(idxMSH));
 ylabel('Ex FPI [mV/m]'), xlabel('SDP 34 [mV/m]')
 
-subplot(4,2,4)
+subplot(nRows,2,4)
 [~,res.p34.y] = plot_xy(Es34AspocOffR.y.data(idxMSH),EfpiR.y.data(idxMSH));
 ylabel('Ey FPI [mV/m]'), xlabel('SDP 34 [mV/m]')
 
-subplot(4,2,5)
+subplot(nRows,2,5)
 [~,res.p12.xy,residuals] = plot_mvregress(...
   Es12AspocOffR.data(idxMSH,:),EfpiR.data(idxMSH,:));
 ylabel('E FPI [mV/m]'), xlabel('SDP 12 [mV/m]')
 Es12AspocOffResidual1 = irf.ts_vec_xy(Es12AspocOffR.time(idxMSH),residuals(:,1:2));
 
-subplot(4,2,6)
+subplot(nRows,2,6)
 [~,res.p34.xy,residuals] = plot_mvregress(...
   Es34AspocOffR.data(idxMSH,:),EfpiR.data(idxMSH,:));
 ylabel('E FPI [mV/m]'), xlabel('SDP 34 [mV/m]')
 Es34AspocOffResidual1 = irf.ts_vec_xy(Es34AspocOffR.time(idxMSH),residuals(:,1:2));
 
+if 0
 subplot(4,2,7)
 [~,res.p1234,residuals] = plot_mvregress(...
   [Es12AspocOffR.data(idxMSH,:) Es34AspocOffR.data(idxMSH,:)],...
   [EfpiR.data(idxMSH,1:2) EfpiR.data(idxMSH,1:2)]);
 ylabel('E FPI [mV/m]'), xlabel('SDP [mV/m]')
-
 Es12AspocOffResidual2 = irf.ts_vec_xy(Es12AspocOffR.time(idxMSH),residuals(:,1:2));
 Es34AspocOffResidual2 = irf.ts_vec_xy(Es12AspocOffR.time(idxMSH),residuals(:,3:4));
+end
 
 set(gcf,'paperpositionmode','auto')
 print('-dpng',['ScatterPlotNew' mmsIdS '_' irf_fname(Tint.start.epochUnix)])
@@ -255,19 +260,23 @@ irf_plot(hca,PSP), ylabel(hca,'PSP [V]')
 hca = irf_panel('Ex');
 irf_plot(hca,{Efpi.x,Es12AspocOffCorr.x,Es34AspocOffCorr.x},'comp')
 ylabel(hca,'Ex [mV/m]')
+set(hca,'Ylim',9*[-1 1])
 
 myCols = [[0 0 1];[1 0 0];];
 hca = irf_panel('Ex_res'); set(hca,'ColorOrder',myCols)
 irf_plot(hca,{Es12AspocOffResidual.x,Es34AspocOffResidual.x},'comp')
 ylabel(hca,'Ex-res [mV/m]')
+set(hca,'Ylim',1.4*[-1 1])
 
 hca = irf_panel('Ey');
 irf_plot(hca,{Efpi.y,Es12AspocOffCorr.y,Es34AspocOffCorr.y},'comp')
 ylabel(hca,'Ey [mV/m]')
+set(hca,'Ylim',9*[-1 1])
 
 hca = irf_panel('Ey_res');  set(hca,'ColorOrder',myCols)
 irf_plot(hca,{Es12AspocOffResidual.y,Es34AspocOffResidual.y},'comp')
 ylabel(hca,'Ey-res [mV/m]')
+set(hca,'Ylim',1.4*[-1 1])
 
 irf_zoom(h,'x',Tint)
 
@@ -306,7 +315,7 @@ cc=corrcoef(y(idx),x(idx));
 slope = p(1); offs = p(2); corr_coef = cc(1,2);
 
 h = plot(x(idx),y(idx),'.',x(idxOut),y(idxOut),'o');    
-ax=axis;
+ax=axis; set(gca,'YLim',10*[-1 1],'XLim',10*[-1 1])
 ymax=ax(4);ymin=ax(3);dy=(ymax-ymin)/20;
 ytext=ymax-dy;
 xtext=ax(1)+(ax(2)-ax(1))/20;
