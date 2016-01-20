@@ -248,7 +248,7 @@ classdef mms_db_sql < handle
 		
 		function tintArray = index_var(obj,varName)
 			sql = ['select startTT,endTT from VarIndex where idDataset in ('...
-				'select idDataset from VarNames where varName = "' varName '")'];
+				'select idDataset from VarNames where varName = "' varName '") order by startTT asc'];
 			rs= obj.sqlQuery(sql);
 			tintArray = int64(zeros(0,2));
 			while rs.next
@@ -299,6 +299,7 @@ classdef mms_db_sql < handle
 				sql = ['select idFile from VarIndex where idDataset = "' idDatasetList{iDataset} '"'];
 				sql = [sql ' and startTT <= ' num2str(endTT)   ];
 				sql = [sql ' and   endTT >= ' num2str(startTT) ];
+				sql = [sql ' order by startTT asc'];
 				rs=obj.sqlQuery(sql);
 				while rs.next
 					idFileArray(iFile) = str2num(rs.getString('idFile')); %#ok<AGROW>
@@ -373,6 +374,7 @@ classdef mms_db_sql < handle
 			[tVarNames,~,IC] = unique(dep(:,2));
 			% FPI bug fix, removing energy_index and pitch_index from DEPEND_0
 			isGoodTVarName = cellfun(@(x) isempty(strfind(x,'index')),tVarNames);
+			%isGoodTVarName = cellfun(@(x) ~isempty(regexpi(x,'epoch')),tVarNames);
 			% read time variables
 			epoch = spdfcdfread(cdfFileName, ...
 				'Variable', tVarNames(isGoodTVarName), 'KeepEpochAsIs', true);
