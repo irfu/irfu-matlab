@@ -235,5 +235,5 @@ for ii = 1:size(jTemp,1)
 end
 
 currentIntervals=currentIntervals(logical(jTemp(:,3)),1);
-currentIntervals=[currentIntervals-30 currentIntervals+30];
+currentIntervals=[currentIntervals-30 currentIntervals+30 currentIntervals(:,2)];
 end
