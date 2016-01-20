@@ -21,7 +21,8 @@ function currentIntervals=strong_current_search_brst(sc,currentLim,intervalStart
 %
 %   OUTPUT
 %
-%   currentIntervals - [tstart tstop] in epochuniX
+%   currentIntervals - [tstart tstop] in epochuniX starting from the
+%   strongest current to the lowest found.
 %
 %% Check variables
 if nargin ==0
@@ -236,7 +237,4 @@ end
 
 currentIntervals=currentIntervals(logical(jTemp(:,3)),1);
 currentIntervals=[currentIntervals-30 currentIntervals+30];
-%Sorting time from latest to earliest time
-[~,Indextime] = sort(currentIntervals(:,1),'ascend');
-currentIntervals=currentIntervals(Indextime,:);
 end
