@@ -6,6 +6,7 @@ function res = mms_sdp_pl_delta_off(Tint,mmsId)
 fPre = sprintf('mms%d_edp_fast_l2a_dce2d',mmsId);
 Bmask = mms.db_get_ts(fPre,...
   sprintf('mms%d_edp_dce_bitmask',mmsId), Tint);
+if isempty(Bmask), res = []; return, end
 bitmask = Bmask.data;
 epochFull = Bmask.time.ttns;
 P12 = mms.db_get_ts(fPre,...
