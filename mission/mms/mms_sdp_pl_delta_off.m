@@ -245,3 +245,50 @@ text(xtext,ytext,['cc=' num2str(corr_coef,3)]);
 
 fitParams = struct('slope',slope,'offs',offs,'corrCoef',corr_coef,'range',xp);
 end
+
+function [h,fitParams] = plot_mvregress(x,y)
+
+idx = isnan(x(:,1)); x(idx,:) = []; y(idx,:) = [];
+idx = isnan(y(:,1)); x(idx,:) = []; y(idx,:) = [];
+
+n=size(x,1);
+d=size(x,2);
+X = cell(n,1);
+
+for i=1:n
+    X{i} = [eye(d) x(i,1:d)'];
+end
+[beta,Sigma] = mvregress(X,y(:,1:d));
+
+%p=polyfit( x,y,1);
+%d = polyval(p,x)-y;
+%idx = abs(d)<3*std(d); idxOut = abs(d)>=3*std(d); % remove outlyers
+%p=polyfit( x(idx),y(idx),1);
+%cc=corrcoef(y(idx),x(idx));
+slope = beta(end); offs = beta(1:end-1); corr_coef = [];
+
+%%
+%h = plot(x(idx),y(idx),'.',x(idxOut),y(idxOut),'o');    
+cols = 'krgb';
+ax=axis; set(gca,'YLim',10*[-1 1],'XLim',10*[-1 1])
+ax=axis; 
+ymax=ax(4);ymin=ax(3);dy=(ymax-ymin)/20;
+ytext=ymax-dy; xtext=ax(1)+(ax(2)-ax(1))/20;
+
+hold on
+    
+xp = zeros(d,2);
+for i=1:d
+  plot(x(:,i),y(:,i),[cols(i) '.'])
+  if i==1
+    
+    text(xtext,ytext,['slope=' num2str(slope,3)]), ytext=ytext-dy;
+  end
+  text(xtext,ytext,['offs=' num2str(offs(i),2)]), ytext=ytext-dy;
+  p = [slope offs(i)]; xp(i,:)=[min(x(:,i)) max(x(:,i))];
+  plot(xp(i,:),polyval(p,xp(i,:)),[cols(i) '-']);
+end
+hold off
+h = ax;
+fitParams = struct('slope',slope,'offs',offs,'corrCoef',corr_coef,'range',xp);
+end
