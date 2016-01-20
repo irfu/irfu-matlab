@@ -105,7 +105,6 @@ else
         end
     end
 end
-end
 test=1;
 amountStrongCurrent=0;
 for int=1:length(timeIntervalMMS(:,1))
