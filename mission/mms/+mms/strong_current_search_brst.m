@@ -1,4 +1,4 @@
-function currentIntervals=strong_current_search_brst(sc,currentLim,intervalStart)
+function currentIntervals=strong_current_search_brst(sc,currentLim,intervalStart,intervalStop)
 %MMS.STRONG_CURRENT_SEARCH_BRST searches through avaiable brst data for time intervals where abs(j)>currentLim
 %
 %MMS.STRONG_CURRENT_SEARCH_BRST searches through brst (l2pre) data from
@@ -15,7 +15,9 @@ function currentIntervals=strong_current_search_brst(sc,currentLim,intervalStart
 %     currentLim    - Looks for current larger than currentLim. Default is
 %     zero.
 %     intervalStart - gives the time to start the search in the brst data. Default is no specific start.
-%     The time must be given in epoch e.g. irf_time([2015 11 01 00 00 00])
+%     The time must be given in epoch e.g. intervalStart=irf_time([2015 11 01 00 00 00])
+%     intervalStop - gives the time to stop the search in the brst data. Default is no specific stop.
+%     The time must be given in epoch e.g. intervalStop=irf_time([2015 11 01 00 00 00])
 %
 %   OUTPUT
 %
@@ -26,14 +28,21 @@ if nargin ==0
     sc=1;
     currentLim=0;
     Start=false;
+    Stop=false;
 elseif nargin <2
     currentLim=0;
     Start=false;
+    Stop=false;
 elseif nargin <3
     Start=false;
-elseif nargin==3
+    Stop=false;
+elseif nargin<4
     Start=true;
-elseif nargin > 3
+    Stop=false;
+elseif nargin==4
+    Start=true;
+    Stop=true;
+elseif nargin > 4
     error('Too many input values. See usage: help mms.strong_current_search_brst')
 end
 %% Go into correct folder and download index
@@ -69,23 +78,33 @@ end
 i=1;
 % Looks for time intervals with brst data from Nov, 1 2015 and presently
 if Start
-for ii=1:length(indexMat.index)
-    %strcmp
-    if ~isempty(strfind(indexMat.index(ii).filename,'brst/l2pre')) && (EpochTT(indexMat.index(ii).tstart).epochUnix > intervalStart)
-        timeIntervalMMS(i,:)=[indexMat.index(ii).tstart indexMat.index(ii).tstop];
-        i=i+1;
+    if Stop
+        for ii=1:length(indexMat.index)
+            %strcmp
+            if ~isempty(strfind(indexMat.index(ii).filename,'brst/l2pre')) && (EpochTT(indexMat.index(ii).tstart).epochUnix > intervalStart) && (EpochTT(indexMat.index(ii).tstart).epochUnix < intervalStop)
+                timeIntervalMMS(i,:)=[indexMat.index(ii).tstart indexMat.index(ii).tstop];
+                i=i+1;
+            end
+        end
+    else
+        for ii=1:length(indexMat.index)
+            %strcmp
+            if ~isempty(strfind(indexMat.index(ii).filename,'brst/l2pre')) && (EpochTT(indexMat.index(ii).tstart).epochUnix > intervalStart)
+                timeIntervalMMS(i,:)=[indexMat.index(ii).tstart indexMat.index(ii).tstop];
+                i=i+1;
+            end
+        end
     end
-end
 else
     for ii=1:length(indexMat.index)
-    %strcmp
-    if ~isempty(strfind(indexMat.index(ii).filename,'brst/l2pre'))
-        timeIntervalMMS(i,:)=[indexMat.index(ii).tstart indexMat.index(ii).tstop];
-        i=i+1;
-    end
+        %strcmp
+        if ~isempty(strfind(indexMat.index(ii).filename,'brst/l2pre'))
+            timeIntervalMMS(i,:)=[indexMat.index(ii).tstart indexMat.index(ii).tstop];
+            i=i+1;
+        end
     end
 end
-
+end
 test=1;
 amountStrongCurrent=0;
 for int=1:length(timeIntervalMMS(:,1))
@@ -211,7 +230,7 @@ jTemp = [currentIntervals ones(size(currentIntervals,1),1)];
 for ii = 1:size(jTemp,1)
     if jTemp(ii,3)
        jTemp(jTemp(:,1)<jTemp(ii,1)+30 & jTemp(:,1)>jTemp(ii,1)-30,3)=0;
-        jTemp(ii,3)=1;
+       jTemp(ii,3)=1;
     end
 end
 
