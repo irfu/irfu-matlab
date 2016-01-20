@@ -381,7 +381,7 @@ classdef mms_db_sql < handle
 			[tVarNames,~,IC] = unique(dep(:,2));
 			% FPI bug fix, removing energy_index and pitch_index from DEPEND_0
 			%isGoodTVarName = cellfun(@(x) isempty(strfind(x,'index')),tVarNames);
-            isGoodTVarName = cellfun(@(x) any(strcmpi({'tt2000','epoch','cdfepoch'}, ...
+            isGoodTVarName = cellfun(@(x) any(strcmpi({'tt2000','epoch','epoch16'}, ...
               inf.Variables(strcmp(inf.Variables(:,1), x),4))), tVarNames);
 			% read time variables
             try
