@@ -140,13 +140,13 @@ if isempty(quality)
         disp('No tetrahedron quality available right now');
         continue
     else
-        quality=irf.ts_scalar(EpochTT(quality.time),quality.quality);
-    quality = quality.tlim(Tint); 
+    quality=irf.ts_scalar(EpochTT(quality.time),quality.quality);
     quality=quality.resample(B1);
     tetrahedronGood= quality.data > 0.7;
     % Removes all time steps with bad tetrahedron quality
     c_eval('R.C? = R?(tetrahedronGood);',1:4);
     c_eval('B.C? = B?(tetrahedronGood);',1:4);
+    end
     
         if isempty(B1) || isempty(B2) || isempty(B3) || isempty(B4)
             error('Tetrahedron quality is not good enough to use curlometer method');
@@ -163,18 +163,15 @@ if isempty(quality)
                  continue
              end
         end
-    end
+   
 else
     quality=irf.ts_scalar(EpochTT(quality.time),quality.quality);
-    quality = quality.tlim(Tint); 
     quality=quality.resample(B1);
     tetrahedronGood= quality.data > 0.7;
     % Removes all time steps with bad tetrahedron quality
     c_eval('R.C? = R?(tetrahedronGood);',1:4);
     c_eval('B.C? = B?(tetrahedronGood);',1:4);
-    
    
-    
     if isempty(B1) || isempty(B2) || isempty(B3) || isempty(B4)
         error('Tetrahedron quality is not good enough to use curlometer method');
     else
