@@ -281,7 +281,7 @@ classdef mms_db_sql < handle
 					return;
 				end
 				startTT = timeInterval.start.ttns;
-				endTT = timeInterval.end.ttns;
+				endTT = timeInterval.stop.ttns;
 			end
 			if ~ischar(varName),
 				irf.log('critical','varName should be text string');
@@ -297,12 +297,12 @@ classdef mms_db_sql < handle
 			idFileArray = []; iFile = 1;
 			for iDataset = 1:length(idDatasetList)
 				sql = ['select idFile from VarIndex where idDataset = "' idDatasetList{iDataset} '"'];
-				sql = [sql ' and startTT <= ' num2str(endTT)   ];
-				sql = [sql ' and   endTT >= ' num2str(startTT) ];
-				sql = [sql ' order by startTT asc'];
+				sql = [sql ' and startTT <= ' num2str(endTT)   ]; %#ok<AGROW>
+				sql = [sql ' and   endTT >= ' num2str(startTT) ]; %#ok<AGROW>
+				sql = [sql ' order by startTT asc'];              %#ok<AGROW>
 				rs=obj.sqlQuery(sql);
 				while rs.next
-					idFileArray(iFile) = str2num(rs.getString('idFile')); %#ok<AGROW>
+					idFileArray(iFile) = str2double(rs.getString('idFile')); %#ok<AGROW>
 					irf.log('debug',['idFile = ' num2str(idFileArray(iFile))]);
 					iFile = iFile + 1;
 				end
@@ -331,9 +331,9 @@ classdef mms_db_sql < handle
 				for iVar = 1:nargin-1,
 					if ischar(varargin{iVar})
 						if iVar > 1,
-							sql = [sql ' and '];
+							sql = [sql ' and ']; %#ok<AGROW>
 						end
-						sql = [sql ' varName like "%' strrep(varargin{iVar},'*','%') '%"'];
+						sql = [sql ' varName like "%' strrep(varargin{iVar},'*','%') '%"']; %#ok<AGROW>
 					end
 				end
 			end
