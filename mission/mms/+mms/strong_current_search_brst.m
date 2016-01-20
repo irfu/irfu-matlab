@@ -141,26 +141,23 @@ if isempty(quality)
         continue
     else
         quality=irf.ts_scalar(EpochTT(quality.time),quality.quality);
-        quality = quality.tlim(Tint); 
-        quality=quality.resample(B1);
-        tetrahedronBad= quality.data < 0.7;
-        % Removes all time steps with bad tetrahedron quality
-        c_eval('R? = [R?.time.epochUnix double(R?.data)];',1:4);
-        c_eval('B? = [B?.time.epochUnix double(B?.data)];',1:4);
-        
-        c_eval('R?(tetrahedronBad,:)=[];',1:4);
-        c_eval('B?(tetrahedronBad,:)=[];',1:4);
-        
+    quality = quality.tlim(Tint); 
+    quality=quality.resample(B1);
+    tetrahedronGood= quality.data > 0.7;
+    % Removes all time steps with bad tetrahedron quality
+    c_eval('R.C? = R?(tetrahedronGood);',1:4);
+    c_eval('B.C? = B?(tetrahedronGood);',1:4);
+    
         if isempty(B1) || isempty(B2) || isempty(B3) || isempty(B4)
             error('Tetrahedron quality is not good enough to use curlometer method');
         else
             disp('Looking for strong currents in brst data');
-            curlB = c_4_grad(R1,R2,R3,R4,B1,B2,B3,B4,'curl');
-             j     = curlB(:,2:4)./1.0e3.*1e-9./(4*pi*1e-7); %A/m^2 if B in nT and R in km
-             jabs=irf_abs([curlB(:,1) j],1);
+            curlB = c_4_grad(R,B,'curl');
+             j     = curlB.data./1.0e3.*1e-9./(4*pi*1e-7); %A/m^2 if B in nT and R in km
+             jabs=irf_abs([curlB.time.epochUnix j],1);
              strongCurrents=jabs>currentLim;
              if sum(strongCurrents) >= 1
-                 IntervalStrongCurrent=[curlB(strongCurrents,1) jabs];
+                 IntervalStrongCurrent=[curlB.time(strongCurrents).epochUnix jabs(strongCurrents,1)];
              else
                  disp('No strong currents in this interval')
                  continue
