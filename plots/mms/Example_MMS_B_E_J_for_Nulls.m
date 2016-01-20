@@ -56,7 +56,8 @@ if isempty(quality)
         error('No tetrahedron quality available. Cannot reliably search for Nulls');
     else
         quality=irf.ts_scalar(EpochTT(quality.time),quality.quality);
-        quality = quality.tlim(Tint); 
+        timeLim=quality.time>Tint.start & quality.time<Tint.stop;
+        quality = quality(timeLim);
         quality=quality.resample(B1);
         tetrahedronBad= quality.data < 0.6;
         % Removes all time steps with bad tetrahedron quality
@@ -75,7 +76,8 @@ if isempty(quality)
     end
 else
     quality=irf.ts_scalar(EpochTT(quality.time),quality.quality);
-    quality = quality.tlim(Tint); 
+    timeLim=quality.time>Tint.start & quality.time<Tint.stop;
+    quality = quality(timeLim);
     quality=quality.resample(B1);
     tetrahedronBad= quality.data < 0.6;
     % Removes all time steps with bad tetrahedron quality
