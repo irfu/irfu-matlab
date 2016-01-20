@@ -199,7 +199,7 @@ classdef mms_db_sql < handle
 					flagAddDatasetToDb = false;
 					break;
 				end
-				irf.log('warning',['!!!!! ' datasetDb ' and ' dataset ' include the same variables!']);
+				irf.log('warning',['! ' datasetDb ' and ' dataset ' include the same variables!']);
 			end
 			
 			% add dataset and variables if needed and get idDataset
@@ -371,20 +371,28 @@ classdef mms_db_sql < handle
 			end
 			dep = inf.VariableAttributes.DEPEND_0;
 			[tVarNames,~,IC] = unique(dep(:,2));
+			% FPI bug fix, removing energy_index and pitch_index from DEPEND_0
+			isGoodTVarName = cellfun(@(x) isempty(strfind(x,'index')),tVarNames);
 			% read time variables
 			epoch = spdfcdfread(cdfFileName, ...
-				'Variable', tVarNames, 'KeepEpochAsIs', true);
+				'Variable', tVarNames(isGoodTVarName), 'KeepEpochAsIs', true);
 			if isinteger(epoch), epoch = {epoch};end % only one time variable
 			for iT = numel(tVarNames):-1:1
+				if ~isGoodTVarName(iT),
+					irf.log('notice',['Bad time variable: ' tVarNames{iT}]);
+					continue;
+				end
 				out(iT).epochVarName = tVarNames{iT};
 				out(iT).varNames = dep(IC == iT,1);
-				startTT = min(epoch{iT});
-				endTT   = max(epoch{iT});
+				startTT = min(epoch{sum(isGoodTVarName(1:iT))});
+				endTT   = max(epoch{sum(isGoodTVarName(1:iT))});
 				if any(startTT) && any(endTT) && ...
 						(min(startTT,endTT) < int64(479390467184000000)...% '2015-03-12T00:00:00.000000000'
 						||  max(startTT,endTT) > int64(1262260868184000000)),%'2040-01-01T00:00:00.000000000'
 					out(iT).startTT = NaN;
 					out(iT).endTT   = NaN;
+					irf.log('notice',['!!! In file:' cdfFileName]);
+					irf.log('notice',['!!! ' out(iT),varNames ' has startTT = ' startTT ' and endTT = ' endTT]);
 				else
 					out(iT).startTT = startTT;
 					out(iT).endTT   = endTT;
