@@ -363,12 +363,19 @@ classdef mms_db_sql < handle
 			%     startTT  - int64 (TT2000 values) with corresponding start time
 			%     endTT    - int64 (TT2000 values) with corresponding end time
 			narginchk(1,1); % One file name
+            if(~exist(cdfFileName, 'file'))
+              errStr = ['File not found: ', cdfFileName];
+              irf.log('critical', errStr); error(errStr);
+            end
  			irf.log('debug',['Reading: ' cdfFileName]);
 			try
 				inf = spdfcdfinfo(cdfFileName);
-			catch
-				out = [];
-				return;
+            catch ME
+              errStr = ['Cannot get file information from: ', cdfFileName];
+              irf.log('warning', errStr); irf.log('warning', ME.message);
+              warning(errStr);
+              out = [];
+              return;
 			end
 			dep = inf.VariableAttributes.DEPEND_0;
 			[tVarNames,~,IC] = unique(dep(:,2));
@@ -376,8 +383,14 @@ classdef mms_db_sql < handle
 			isGoodTVarName = cellfun(@(x) isempty(strfind(x,'index')),tVarNames);
 			%isGoodTVarName = cellfun(@(x) ~isempty(regexpi(x,'epoch')),tVarNames);
 			% read time variables
-			epoch = spdfcdfread(cdfFileName, ...
+            try
+              epoch = spdfcdfread(cdfFileName, ...
 				'Variable', tVarNames(isGoodTVarName), 'KeepEpochAsIs', true);
+            catch ME
+              errStr = ['Cannot read Epochs from file: ', cdfFileName];
+              irf.log('warning', errStr); irf.log('warning', ME.message);
+              warning(errStr); return;
+            end
 			if isinteger(epoch), epoch = {epoch};end % only one time variable
 			for iT = numel(tVarNames):-1:1
 				if ~isGoodTVarName(iT),
