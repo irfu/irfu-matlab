@@ -3,8 +3,8 @@ function currentIntervals=strong_current_search_brst(sc,currentLim,intervalStart
 %
 %MMS.STRONG_CURRENT_SEARCH_BRST searches through brst (l2pre) data from
 %intervalStart to present looking for time intervals with strong currents.
-% IMPORTANT: This function is designed for data available in folder
-% /data/mms
+% IMPORTANT: This example loads the tetrahedron quality from /data/mms/ancillary so
+% these files are needed if a different harddrive is used than /data/mms. 
 %
 %   currentIntervals=MMS.STRONG_CURRENT_SEARCH_BRST(sc,currentLim,intervalStart)
 %
@@ -114,7 +114,14 @@ for int=1:length(timeIntervalMMS(:,1))
         % Magnetic Field
         disp('Loading Magnetic fields');
         c_eval('B?=mms.db_get_ts(''mms?_dfg_brst_l2pre'',''mms?_dfg_brst_l2pre_gse'',Tint);',1:4);
-        c_eval('B? = B?.resample(B1);',2:4);
+        %Resamples according to the time line where all spacecraft has data
+        timeStart=max([B1.time.start.epochUnix B2.time.start.epochUnix B3.time.start.epochUnix B4.time.start.epochUnix],[],2);
+        timeStart=EpochUnix(timeStart);
+        timeStop=min([B1.time.stop.epochUnix B2.time.stop.epochUnix B3.time.stop.epochUnix B4.time.stop.epochUnix],[],2);
+        timeStop=EpochUnix(timeStop);
+        timeLog=B1.time >= timeStart & B1.time <=timeStop;
+        newTime=B1.time(timeLog,:);
+        c_eval('B? = B?.resample(newTime);',1:4);
         % Spacecraft Position
         disp('Loading Spacecraft Position');
         R  = mms.get_data('R_gse',Tint); %Cailbrated position
@@ -171,7 +178,7 @@ else
     % Removes all time steps with bad tetrahedron quality
     c_eval('R.C? = R?(tetrahedronGood);',1:4);
     c_eval('B.C? = B?(tetrahedronGood);',1:4);
-   
+        
     if isempty(B1) || isempty(B2) || isempty(B3) || isempty(B4)
         error('Tetrahedron quality is not good enough to use curlometer method');
     else

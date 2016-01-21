@@ -22,8 +22,14 @@ Tint  = irf.tint(EpochUnix(currentIntervals(i,1)),EpochUnix(currentIntervals(i,2
 % Magnetic Field
 disp('Loading Magnetic fields');
 c_eval('B?=mms.db_get_ts(''mms?_dfg_brst_l2pre'',''mms?_dfg_brst_l2pre_gse'',Tint);',1:4);
-%c_eval('B?=removerepeatpnts(B?)',[1:4]); %Removes data points with too small a time difference between them which buggs the resample functions
-c_eval('B? = B?.resample(B1);',2:4);
+%Resamples according to the time line where all spacecraft has data
+timeStart=max([B1.time.start.epochUnix B2.time.start.epochUnix B3.time.start.epochUnix B4.time.start.epochUnix],[],2);
+timeStart=EpochUnix(timeStart);
+timeStop=min([B1.time.stop.epochUnix B2.time.stop.epochUnix B3.time.stop.epochUnix B4.time.stop.epochUnix],[],2);
+timeStop=EpochUnix(timeStop);
+timeLog=B1.time >= timeStart & B1.time <=timeStop;
+newTime=B1.time(timeLog,:);
+c_eval('B? = B?.resample(newTime);',1:4);
 
 % Spacecraft Position
 disp('Loading Spacecraft Position');
@@ -52,11 +58,9 @@ end
    
     disp('Loads Electric fields')
     % Electric field
-    c_eval('E?_orig=mms.db_get_ts(''mms?_edp_brst_ql_dce2d'',''mms?_edp_dce_xyz_dsl'',Tint);',ic);
-    c_eval('E? = E?_orig.resample(E1_orig);',ic);
+    c_eval('Efield=mms.db_get_ts(''mms?_edp_brst_ql_dce2d'',''mms?_edp_dce_xyz_dsl'',Tint);',ic);
     %Removes 1.5 mV/m offset from Ex for all spacecraft
-    c_eval('E?.data(:,1) = E?.data(:,1)-1.5;',ic);
-    c_eval('Efield = E?.resample(B1);',ic); %Resampling to B-field due to the index searching later to make smaller filesizes.
+    Efield.data(:,1) = Efield.data(:,1)-1.5;
     
     c_eval('Bfield=B?;',ic);
     

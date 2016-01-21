@@ -1,11 +1,15 @@
 % A routine that identifies strong magnetic nulls (potential EDR).
 % Written by Elin Eriksson
 %
+% IMPORTANT: This example loads the tetrahedron quality from /data/mms/ancillary so
+% these files are needed if a different harddrive is used than /data/mms. 
+%
 % Loads data and finds nulls that has a BoxLim of 70km and a Current
 % Lim of 500E-9 [nA/m^2 if B is in nT and R is in km].
 %Plots B, J (curlometer method), E, JxB electric field, and J.E as an average
 %of all spacecraft values and a seperate plot with the same variables where only the E and
 %B are from a specific spacecraft given by the number of ic.
+
 
 %% Set time interval to look in, the specific spacecraft of interest and set limits for Null method.
 % taken from
@@ -20,8 +24,13 @@ tetrahedronQualityLim=0.6;
 % Magnetic Field
 disp('Loading Magnetic fields');
 c_eval('B?=mms.db_get_ts(''mms?_dfg_srvy_ql'',''mms?_dfg_srvy_dmpa'',Tint);',1:4);
-%c_eval('B?=removerepeatpnts(B?)',[1:4]); %Removes data points with too small a time difference between them which buggs the resample functions
-c_eval('B? = B?.resample(B1);',2:4);
+timeStart=max([B1.time.start.epochUnix B2.time.start.epochUnix B3.time.start.epochUnix B4.time.start.epochUnix],[],2);
+timeStart=EpochUnix(timeStart);
+timeStop=min([B1.time.stop.epochUnix B2.time.stop.epochUnix B3.time.stop.epochUnix B4.time.stop.epochUnix],[],2);
+timeStop=EpochUnix(timeStop);
+timeLog=B1.time >= timeStart & B1.time <=timeStop;
+newTime=B1.time(timeLog,:);
+c_eval('B? = B?.resample(newTime);',1:4);
 
 % Spacecraft Position
 disp('Loading Spacecraft Position');
@@ -57,7 +66,7 @@ if isempty(quality)
     else
         quality=irf.ts_scalar(EpochTT(quality.time),quality.quality);
         quality=quality.resample(B1);
-        tetrahedronBad= quality.data < 0.6;
+        tetrahedronBad= quality.data < 0.7;
         % Removes all time steps with bad tetrahedron quality
         c_eval('R?_null = [R?.time.epochUnix double(R?.data)];',1:4);
         c_eval('B?_null = [B?.time.epochUnix double(B?.data)];',1:4);
@@ -75,7 +84,7 @@ if isempty(quality)
 else
     quality=irf.ts_scalar(EpochTT(quality.time),quality.quality);
     quality=quality.resample(B1);
-    tetrahedronBad= quality.data < 0.6;
+    tetrahedronBad= quality.data < 0.7;
     % Removes all time steps with bad tetrahedron quality
     c_eval('R?_null = [R?.time.epochUnix double(R?.data)];',1:4);
     c_eval('B?_null = [B?.time.epochUnix double(B?.data)];',1:4);
@@ -107,8 +116,15 @@ else
     Bav=[B1.time.epochUnix double(Bav)];
     disp('Loads Electric fields')
     % Electric field
-    c_eval('E?_orig=mms.db_get_ts(''mms?_edp_fast_ql_dce2d'',''mms?_edp_dce_xyz_dsl'',Tint);');
-    c_eval('E? = E?_orig.resample(E1_orig);',1:4);
+    c_eval('E?_orig=mms.db_get_ts(''mms?_edp_fast_ql_dce2d'',''mms?_edp_dce_xyz_dsl'',Tint);',1:4);
+    %Resamples according to the time line where all spacecraft has data
+    timeStartE=max([E1_orig.time.start.epochUnix E2_orig.time.start.epochUnix E3_orig.time.start.epochUnix E4_orig.time.start.epochUnix],[],2);
+    timeStartE=EpochUnix(timeStartE);
+    timeStopE=min([E1_orig.time.stop.epochUnix E2_orig.time.stop.epochUnix E3_orig.time.stop.epochUnix E4_orig.time.stop.epochUnix],[],2);
+    timeStopE=EpochUnix(timeStopE);
+    timeLogE=E1_orig.time >= timeStartE & E1_orig.time <=timeStopE;
+    newTimeE=E1_orig.time(timeLogE,:);
+    c_eval('E? = E?_orig.resample(newTimeE);',1:4);
     %Removes 1.5 mV/m offset from Ex for all spacecraft
     c_eval('E?.data(:,1) = E?.data(:,1)-1.5;',1:4);
     c_eval('E? = E?.resample(B1);',1:4); %Resampling to B-field due to the index searching later to make smaller filesizes.
