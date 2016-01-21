@@ -60,7 +60,7 @@ end
     % Electric field
     c_eval('Efield=mms.db_get_ts(''mms?_edp_brst_ql_dce2d'',''mms?_edp_dce_xyz_dsl'',Tint);',ic);
     %Removes 1.5 mV/m offset from Ex for all spacecraft
-    c_eval('Efield.data(:,1) = Efield.data(:,1)-1.5;',ic);
+    Efield.data(:,1) = Efield.data(:,1)-1.5;
     
     c_eval('Bfield=B?;',ic);
     
