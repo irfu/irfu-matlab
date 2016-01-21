@@ -116,14 +116,14 @@ else
     Bav=[B1.time.epochUnix double(Bav)];
     disp('Loads Electric fields')
     % Electric field
-    c_eval('E?_orig=mms.db_get_ts(''mms?_edp_fast_ql_dce2d'',''mms?_edp_dce_xyz_dsl'',Tint);');
+    c_eval('E?_orig=mms.db_get_ts(''mms?_edp_fast_ql_dce2d'',''mms?_edp_dce_xyz_dsl'',Tint);',1:4);
     %Resamples according to the time line where all spacecraft has data
-    timeStartE=max([E1.time.start.epochUnix E2.time.start.epochUnix E3.time.start.epochUnix E4.time.start.epochUnix],[],2);
+    timeStartE=max([E1_orig.time.start.epochUnix E2_orig.time.start.epochUnix E3_orig.time.start.epochUnix E4_orig.time.start.epochUnix],[],2);
     timeStartE=EpochUnix(timeStartE);
-    timeStopE=min([E1.time.stop.epochUnix E2.time.stop.epochUnix E3.time.stop.epochUnix E4.time.stop.epochUnix],[],2);
+    timeStopE=min([E1_orig.time.stop.epochUnix E2_orig.time.stop.epochUnix E3_orig.time.stop.epochUnix E4_orig.time.stop.epochUnix],[],2);
     timeStopE=EpochUnix(timeStopE);
-    timeLogE=E1.time >= timeStartE & E1.time <=timeStopE;
-    newTimeE=E1.time(timeLogE,:);
+    timeLogE=E1_orig.time >= timeStartE & E1_orig.time <=timeStopE;
+    newTimeE=E1_orig.time(timeLogE,:);
     c_eval('E? = E?_orig.resample(newTimeE);',1:4);
     %Removes 1.5 mV/m offset from Ex for all spacecraft
     c_eval('E?.data(:,1) = E?.data(:,1)-1.5;',1:4);

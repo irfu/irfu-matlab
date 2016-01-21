@@ -58,17 +58,9 @@ end
    
     disp('Loads Electric fields')
     % Electric field
-    c_eval('E?_orig=mms.db_get_ts(''mms?_edp_brst_ql_dce2d'',''mms?_edp_dce_xyz_dsl'',Tint);',ic);
-    timeStartE=max([E1.time.start.epochUnix E2.time.start.epochUnix E3.time.start.epochUnix E4.time.start.epochUnix],[],2);
-    timeStartE=EpochUnix(timeStartE);
-    timeStopE=min([E1.time.stop.epochUnix E2.time.stop.epochUnix E3.time.stop.epochUnix E4.time.stop.epochUnix],[],2);
-    timeStopE=EpochUnix(timeStopE);
-    timeLogE=E1.time >= timeStartE & E1.time <=timeStopE;
-    newTimeE=E1.time(timeLogE,:);
-    c_eval('E? = E?_orig.resample(newTimeE);',1:4);
+    c_eval('Efield=mms.db_get_ts(''mms?_edp_brst_ql_dce2d'',''mms?_edp_dce_xyz_dsl'',Tint);',ic);
     %Removes 1.5 mV/m offset from Ex for all spacecraft
-    c_eval('E?.data(:,1) = E?.data(:,1)-1.5;',ic);
-    c_eval('Efield = E?.resample(B1);',ic); %Resampling to B-field due to the index searching later to make smaller filesizes.
+    c_eval('Efield.data(:,1) = Efield.data(:,1)-1.5;',ic);
     
     c_eval('Bfield=B?;',ic);
     
