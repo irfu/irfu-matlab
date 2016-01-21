@@ -3,6 +3,8 @@
 %
 % IMPORTANT: This example loads the tetrahedron quality from /data/mms/ancillary so
 % these files are needed if a different harddrive is used than /data/mms. 
+% Should also only be used to look at the most current nulls since it
+% allows the use of predq tetrahedron quality.
 %
 % Loads data and finds nulls that has a BoxLim of 70km and a Current
 % Lim of 500E-9 [nA/m^2 if B is in nT and R is in km].
