@@ -25,7 +25,7 @@ classdef mms_db < handle
         return
       end
       obj.databases = [obj.databases dbInp];
-      obj.cacheEnabled = true;
+      obj.cacheEnabled = false;
       obj.cacheTimeout = 600;
     end
     
