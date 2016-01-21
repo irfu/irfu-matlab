@@ -4,6 +4,12 @@ classdef mms_db < handle
   
   properties
     databases
+    cacheEnabled
+    cacheTimeout % db cache timeout in sec
+  end
+  
+  properties (Access = private)
+    cache
   end
   
   methods
@@ -19,6 +25,48 @@ classdef mms_db < handle
         return
       end
       obj.databases = [obj.databases dbInp];
+      obj.cacheEnabled = true;
+      obj.cacheTimeout = 600;
+    end
+    
+    function dobjLoaded = get_from_cache(obj,fileName)
+      dobjLoaded = [];
+      if ~obj.cacheEnabled || isempty(obj.cache), return, end
+      idx = cellfun(@(x) strcmp(fileName,x),obj.cache.names);
+      if ~any(idx), return, end
+      if now() > obj.cache.loaded(idx) + obj.cacheTimeout/86400
+        obj.purge_cache(), return
+      end
+      dobjLoaded = obj.cache.dobj{idx};
+    end
+    
+    function add_to_cache(obj,fileName,dobjLoaded)
+      if ~obj.cacheEnabled, return, end
+      if ~isempty(obj.cache)
+        obj.purge_cache();
+        idx = cellfun(@(x) strcmp(fileName,x),obj.cache.names);
+        if any(idx), return, end % file is already there
+      end
+      if isempty(obj.cache)
+        obj.cache.loaded = now();
+        obj.cache.names = {fileName};
+        obj.cache.dobj = {dobjLoaded};
+      else
+        obj.cache.loaded = [obj.cache.loaded now()];
+        obj.cache.names = [obj.cache.names {fileName}];
+        obj.cache.dobj = [obj.cache.dobj {dobjLoaded}];
+      end
+    end
+    
+    function purge_cache(obj)
+      if ~obj.cacheEnabled, return, end
+      if ~isempty(obj.cache) % purge old entries from cache
+        t0 = now;
+        idx = t0 > obj.cache.loaded + obj.cacheTimeout/86400;
+        obj.cache.loaded(idx) = [];
+        obj.cache.names(idx) = [];
+        obj.cache.dobj(idx) = [];
+      end
     end
     
    function fileList = list_files(obj,filePrefix,tint)
@@ -181,11 +229,16 @@ classdef mms_db < handle
      
      for iFile=1:length(fileList)
        fileToLoad = fileList(iFile);
-       db = obj.get_db(fileToLoad.dbId);  
-       if isempty(db) || ~db.file_has_var(fileToLoad.name,mustHaveVar)
-         continue
+       dobjLoaded = obj.get_from_cache(fileToLoad.name);
+       if isempty(dobjLoaded)
+         db = obj.get_db(fileToLoad.dbId);
+         if isempty(db) || ~db.file_has_var(fileToLoad.name,mustHaveVar)
+           continue
+         end
+         dobjLoaded = db.load_file(fileToLoad.name);
+         obj.add_to_cache(fileToLoad.name,dobjLoaded)
        end
-       res = [res {db.load_file(fileToLoad.name)}]; %#ok<AGROW>
+       res = [res {dobjLoaded}]; %#ok<AGROW>
      end
    end
    
