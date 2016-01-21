@@ -4,8 +4,9 @@ classdef mms_db < handle
   
   properties
     databases
-    cacheEnabled
-    cacheTimeout % db cache timeout in sec
+    cacheEnabled = false
+    cacheTimeout = 600;  % db cache timeout in sec
+    cacheSizeMax = 1024; % db cache max size in mb
   end
   
   properties (Access = private)
@@ -25,8 +26,6 @@ classdef mms_db < handle
         return
       end
       obj.databases = [obj.databases dbInp];
-      obj.cacheEnabled = false;
-      obj.cacheTimeout = 600;
     end
     
     function dobjLoaded = get_from_cache(obj,fileName)
@@ -51,10 +50,36 @@ classdef mms_db < handle
         obj.cache.loaded = now();
         obj.cache.names = {fileName};
         obj.cache.dobj = {dobjLoaded};
-      else
-        obj.cache.loaded = [obj.cache.loaded now()];
-        obj.cache.names = [obj.cache.names {fileName}];
-        obj.cache.dobj = [obj.cache.dobj {dobjLoaded}];
+        return
+      end
+      obj.cache.loaded = [obj.cache.loaded now()];
+      obj.cache.names = [obj.cache.names {fileName}];
+      obj.cache.dobj = [obj.cache.dobj {dobjLoaded}];
+      % check if we did not exceed cacheSizeMax
+      cacheTmp = obj.cache; w = whos('cacheTmp'); t0 = now(); %#ok<NASGU>
+      while w.bytes > obj.cacheSizeMax*1024*1024
+        if length(obj.cache.loaded) == 1, break, end
+        dt = t0 - obj.cache.loaded; idx = dt == max(dt);
+        disp(['purging ' obj.cache.names{idx}])
+        obj.cache.loaded(idx) = [];
+        obj.cache.names(idx) = [];
+        obj.cache.dobj(idx) = [];
+        cacheTmp = obj.cache; %#ok<NASGU>
+        w = whos('cacheTmp');
+      end
+    end
+    
+    function display_cache(obj)
+      % Display cache memory usage and contents
+      if ~obj.cacheEnabled, disp('DB caching disabled'), return, end
+      if isempty(obj.cache), disp('DB cache empty'), return, end
+      cacheTmp = obj.cache; w = whos('cacheTmp'); t0 = now(); %#ok<NASGU>
+      fprintf('DB cache using %.1f MB\n',w.bytes/1024/1024)
+      dt = t0 - obj.cache.loaded;
+      [dt,idx] = sort(dt);
+      for i=1:length(idx)
+        fprintf('%s (expires in %d sec)\n', obj.cache.names{idx(i)},...
+          ceil(obj.cacheTimeout - dt(i)*86400))
       end
     end
     
