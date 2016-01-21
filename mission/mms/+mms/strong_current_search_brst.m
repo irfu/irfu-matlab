@@ -2,11 +2,14 @@ function currentIntervals=strong_current_search_brst(sc,currentLim,intervalStart
 %MMS.STRONG_CURRENT_SEARCH_BRST searches through avaiable brst data for time intervals where abs(j)>currentLim
 %
 %MMS.STRONG_CURRENT_SEARCH_BRST searches through brst (l2pre) data from
-%intervalStart to present looking for time intervals with strong currents.
+%intervalStart until Interval stop looking for time intervals with strong currents.
 % IMPORTANT: This example loads the tetrahedron quality from /data/mms/ancillary so
-% these files are needed if a different harddrive is used than /data/mms. 
+% these files are needed if a different harddrive is used than /data/mms.
+% It also uses the irfu_index.mat from l2pre dfg to get all brst data time
+% intervals available. Currently it will not work for other harddrives than
+% /data/mms.
 %
-%   currentIntervals=MMS.STRONG_CURRENT_SEARCH_BRST(sc,currentLim,intervalStart)
+%   currentIntervals=MMS.STRONG_CURRENT_SEARCH_BRST(sc,currentLim,intervalStart, intervalStop)
 %
 %
 %   INPUT
