@@ -28,6 +28,28 @@ classdef mms_db < handle
       obj.databases = [obj.databases dbInp];
     end
     
+    function set.cacheEnabled(obj,value)
+      if numel(value) ~=1 || ~isa(value,'logical')
+        error('expecting logical value (true/false)')
+      end
+      obj.cacheEnabled = value;
+    end
+    
+    function set.cacheTimeout(obj,value)
+      if numel(value) ~=1 || value<=0
+        error('expecting a positive numerical value (seconds)')
+      end
+      obj.cacheTimeout = value;
+    end
+    
+    function set.cacheSizeMax(obj,value)
+      if numel(value) ~=1 || value<=0
+        error('expecting a positive numerical value (MB)')
+      end
+      if value>10*1024, warning('cache size > 10 GB'), end
+      obj.cacheSizeMax = value;
+    end
+    
     function dobjLoaded = get_from_cache(obj,fileName)
       dobjLoaded = [];
       if ~obj.cacheEnabled || isempty(obj.cache), return, end
