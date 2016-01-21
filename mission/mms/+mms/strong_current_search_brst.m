@@ -140,37 +140,9 @@ for int=1:length(timeIntervalMMS(:,1))
 % Load quality of tetrahedron
 disp('Checks tetrahedron quality');
 quality=mms.db_get_variable('mms_ancillary_defq','quality',Tint);
-if isempty(quality)
-    list=mms.db_list_files('mms_ancillary_predq',Tint);
-    quality=mms_load_ancillary([list(end).path, filesep, list(end).name], 'predq');
-    if isempty(quality)
+if isempty(quality.quality)
         disp('No tetrahedron quality available right now');
         continue
-    else
-    quality=irf.ts_scalar(EpochTT(quality.time),quality.quality);
-    quality=quality.resample(B1);
-    tetrahedronGood= quality.data > 0.7;
-    % Removes all time steps with bad tetrahedron quality
-    c_eval('R.C? = R?(tetrahedronGood);',1:4);
-    c_eval('B.C? = B?(tetrahedronGood);',1:4);
-    end
-    
-        if isempty(B1) || isempty(B2) || isempty(B3) || isempty(B4)
-            error('Tetrahedron quality is not good enough to use curlometer method');
-        else
-            disp('Looking for strong currents in brst data');
-            curlB = c_4_grad(R,B,'curl');
-             j     = curlB.data./1.0e3.*1e-9./(4*pi*1e-7); %A/m^2 if B in nT and R in km
-             jabs=irf_abs([curlB.time.epochUnix j],1);
-             strongCurrents=jabs>currentLim;
-             if sum(strongCurrents) >= 1
-                 IntervalStrongCurrent=[curlB.time(strongCurrents).epochUnix jabs(strongCurrents,1)];
-             else
-                 disp('No strong currents in this interval')
-                 continue
-             end
-        end
-   
 else
     quality=irf.ts_scalar(EpochTT(quality.time),quality.quality);
     quality=quality.resample(B1);
@@ -178,43 +150,42 @@ else
     % Removes all time steps with bad tetrahedron quality
     c_eval('R.C? = R?(tetrahedronGood);',1:4);
     c_eval('B.C? = B?(tetrahedronGood);',1:4);
-        
-    if isempty(B1) || isempty(B2) || isempty(B3) || isempty(B4)
-        error('Tetrahedron quality is not good enough to use curlometer method');
+end
+    
+if isempty(B1) || isempty(B2) || isempty(B3) || isempty(B4)
+    error('Tetrahedron quality is not good enough to use curlometer method');
+else
+    disp('Looking for strong currents in brst data');
+    curlB = c_4_grad(R,B,'curl');
+    j     = curlB.data./1.0e3.*1e-9./(4*pi*1e-7); %A/m^2 if B in nT and R in km
+    jabs=irf_abs([curlB.time.epochUnix j],1);
+    strongCurrents=jabs>currentLim;
+    if sum(strongCurrents) >= 1
+        IntervalStrongCurrent=[curlB.time(strongCurrents).epochUnix jabs(strongCurrents,1)];
     else
-        disp('Looking for strong currents in brst data');
-             curlB = c_4_grad(R,B,'curl');
-             j     = curlB.data./1.0e3.*1e-9./(4*pi*1e-7); %A/m^2 if B in nT and R in km
-             jabs=irf_abs([curlB.time.epochUnix j],1);
-             strongCurrents=jabs>currentLim;
-             if sum(strongCurrents) >= 1
-                 IntervalStrongCurrent=[curlB.time(strongCurrents).epochUnix jabs(strongCurrents,1)];
-             else
-                 disp('No strong currents in this interval')
-                 continue
-             end
-             
-                     
+        disp('No strong currents in this interval')
+        continue
     end
 end
-        if isempty(IntervalStrongCurrent)
-            continue
-        else
-            if test==1
-                
-                currentIntervals=IntervalStrongCurrent;
-                amountStrongCurrent=amountStrongCurrent+1;
-            else
-                disp('Saves the data in structure');
-                
-                currentIntervals(length(currentIntervals(:,1))+1:length(IntervalStrongCurrent(:,1))+length(currentIntervals(:,1)),:)=IntervalStrongCurrent;
- 
-                amountStrongCurrent=amountStrongCurrent+1;
-                
-            end
-            test=test+1;
-          
-        end
+   
+if isempty(IntervalStrongCurrent)
+    continue
+else
+    if test==1
+        
+        currentIntervals=IntervalStrongCurrent;
+        amountStrongCurrent=amountStrongCurrent+1;
+    else
+        disp('Saves the data in structure');
+        
+        currentIntervals(length(currentIntervals(:,1))+1:length(IntervalStrongCurrent(:,1))+length(currentIntervals(:,1)),:)=IntervalStrongCurrent;
+        
+        amountStrongCurrent=amountStrongCurrent+1;
+        
+    end
+    test=test+1;
+    
+end
     catch
         warning('Problem using function.  Move to next interval');
         continue

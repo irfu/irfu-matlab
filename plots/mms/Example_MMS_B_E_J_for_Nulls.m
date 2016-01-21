@@ -58,10 +58,10 @@ end
 %Quality data comes 2 days late
 % Load quality of tetrahedron
 quality=mms.db_get_variable('mms_ancillary_defq','quality',Tint);
-if isempty(quality)
+if isempty(quality.quality)
     list=mms.db_list_files('mms_ancillary_predq',Tint);
     quality=mms_load_ancillary([list(end).path, filesep, list(end).name], 'predq');
-    if isempty(quality)
+    if isempty(quality.quality)
         error('No tetrahedron quality available. Cannot reliably search for Nulls');
     else
         quality=irf.ts_scalar(EpochTT(quality.time),quality.quality);
