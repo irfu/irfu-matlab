@@ -411,7 +411,7 @@ classdef mms_db_sql < handle
 					out(iT).startTT = NaN;
 					out(iT).endTT   = NaN;
 					irf.log('notice',['!!! In file:' cdfFileName]);
-					irf.log('notice',['!!! ' out(iT).epochVarName ' has startTT = ' startTT ' and endTT = ' endTT]);
+					irf.log('notice',['!!! ' out(iT).epochVarName ' has startTT = ' num2str(startTT) ' and endTT = ' num2str(endTT)]);
 				else
 					out(iT).startTT = startTT;
 					out(iT).endTT   = endTT;
