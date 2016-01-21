@@ -18,11 +18,13 @@ currentIntervals=mms.strong_current_search_brst(ic,currentLim,intervalStart);
 for i=1:length(currentIntervals(:,1))
 Tint  = irf.tint(EpochUnix(currentIntervals(i,1)),EpochUnix(currentIntervals(i,2)));
 % Load magnetic field and spacecraft positional data
-
 % Magnetic Field
 disp('Loading Magnetic fields');
 c_eval('B?=mms.db_get_ts(''mms?_dfg_brst_l2pre'',''mms?_dfg_brst_l2pre_gse'',Tint);',1:4);
-%Resamples according to the time line where all spacecraft has data
+if isempty(B1) || isempty(B2) || isempty(B3) || isempty(B4)
+    continue
+else
+%c_eval('B?=removerepeatpnts(B?)',[1:4]); %Removes data points with too small a time difference between them which buggs the resample functions
 timeStart=max([B1.time.start.epochUnix B2.time.start.epochUnix B3.time.start.epochUnix B4.time.start.epochUnix],[],2);
 timeStart=EpochUnix(timeStart);
 timeStop=min([B1.time.stop.epochUnix B2.time.stop.epochUnix B3.time.stop.epochUnix B4.time.stop.epochUnix],[],2);
@@ -30,7 +32,7 @@ timeStop=EpochUnix(timeStop);
 timeLog=B1.time >= timeStart & B1.time <=timeStop;
 newTime=B1.time(timeLog,:);
 c_eval('B? = B?.resample(newTime);',1:4);
-
+end
 % Spacecraft Position
 disp('Loading Spacecraft Position');
 R  = mms.get_data('R_gse',Tint);%Cailbrated position
@@ -59,9 +61,8 @@ end
     disp('Loads Electric fields')
     % Electric field
     c_eval('Efield=mms.db_get_ts(''mms?_edp_brst_ql_dce2d'',''mms?_edp_dce_xyz_dsl'',Tint);',ic);
-    %Removes 1.5 mV/m offset from Ex for all spacecraft
+    %Removes 1.5 mV/m offset from Ex 
     Efield.data(:,1) = Efield.data(:,1)-1.5;
-    
     c_eval('Bfield=B?;',ic);
     
     disp('Load electron fpi data')
@@ -79,8 +80,11 @@ end
     c_eval('iEnSp_mY=mms.db_get_variable(''mms?_fpi_fast_sitl'',''mms?_fpi_iEnergySpectr_mY'',Tint);',ic);
     c_eval('iEnSp_mZ=mms.db_get_variable(''mms?_fpi_fast_sitl'',''mms?_fpi_iEnergySpectr_mZ'',Tint);',ic);
     disp('Makes ion energy omni directional')
-     
-   tmp1 = (iEnSp_pX.data + iEnSp_pY.data + iEnSp_pZ.data + iEnSp_mX.data + iEnSp_mY.data + iEnSp_mZ.data); %/6;
+   if  isempty(eEnSp_pX) || isempty(eEnSp_pY) || isempty(eEnSp_pZ) || isempty(eEnSp_mX) || isempty(eEnSp_mY) || isempty(eEnSp_mZ) || isempty(iEnSp_pX) || isempty(iEnSp_pY) || isempty(iEnSp_pZ) || isempty(iEnSp_mX) || isempty(iEnSp_mY) || isempty(iEnSp_mZ)
+       disp('No fpi data available')
+       continue
+   else
+       tmp1 = (iEnSp_pX.data + iEnSp_pY.data + iEnSp_pZ.data + iEnSp_mX.data + iEnSp_mY.data + iEnSp_mZ.data); %/6;
    [~,energy] = hist([log10(10),log10(30e3)],32);
    energy = 10.^energy;
    speciEnSp = struct('t', irf_time(iEnSp_pX.DEPEND_0.data, 'ttns>epoch'));
@@ -98,12 +102,17 @@ end
    speceEnSp.p_label={'log'};
    speceEnSp.f_label = {'Energy (ev)'};
    speceEnSp.f = single(energy);
+   end
     disp('Calculates current')
     % Assuming GSE and DMPA are the same coordinate system calculates j and jXB.
-    [j,divB,B,jxB,divTshear,divPb] = c_4_j('R?','B?');
+    c_eval('R.C? = R?;',1:4);
+    c_eval('B.C? = B?;',1:4);
+    curlB = c_4_grad(R,B,'curl');
+    j     = curlB.data./1.0e3.*1e-9./(4*pi*1e-7); %A/m^2 if B in nT and R in km
     
-    j=[j.time.epochUnix double(j.data)];
-    j(:,2:4) = j(:,2:4).*1e9;
+    j=[B1.time.epochUnix j];
+    j(:,2:4) = j(:,2:4).*1e9; %nA/m^2
+ 
 
 %% Plot data should only be used if nulls are found. Plots are only focused around the intervals of nulls found because of above segment.
 disp('Plotting figure')    
