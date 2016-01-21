@@ -113,6 +113,7 @@ set(hca,'XAxisLocation','top','xtick',[]); % remove 'xtick' if xticks required
 set(hca, 'YAxisLocation','right');
 set(hca,'Color','none'); % color of axis
 set(hca,'XColor','b','YColor','b');
+irf_zoom(hca,'x',Tint)
 
 hca = irf_panel('Delta_off'); set(hca,'ColorOrder',myCols)
 irf_plot(hca,{DeltaAspocOffR.x,DeltaAspocOnR.x,DeltaAspocOffR.y,DeltaAspocOnR.y},'comp')
