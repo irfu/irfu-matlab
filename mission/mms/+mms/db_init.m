@@ -9,6 +9,8 @@ function db_init(key, val)
 %
 %    mms.db_init('local_file_db_irfu','/data/mms/irfu')
 %    Database with IRFU produced products
+%
+%    mms.db_init('db_cache_enabled',true)
 
 global MMS_DB;
 if isempty(MMS_DB), MMS_DB = mms_db; end
@@ -30,6 +32,22 @@ if nargin==0
     MMS_DB.add_db(localFileDb);
     irf.log('notice','Initialized local_file_irfu_db')
   end
+  cacheEnabled = datastore('mms_db','db_cache_enabled');
+  if ~isempty(cacheEnabled)
+    MMS_DB.cacheEnabled = cacheEnabled;
+    if cacheEnabled, s = 'ON'; else s = 'OFF'; end
+    irf.log('notice',['db_cache: ' s])
+  end
+  cacheTimeout = datastore('mms_db','db_cache_timeout');
+  if ~isempty(cacheTimeout)
+    MMS_DB.cacheTimeout = cacheTimeout;
+    irf.log('notice',sprintf('db_cache_timeout: %d sec',cacheTimeout))
+  end
+  cacheSizeMax = datastore('mms_db','db_cache_size_max');
+  if ~isempty(cacheSizeMax)
+    MMS_DB.cacheSizeMax = cacheSizeMax;
+    irf.log('notice',sprintf('db_cache_size_max: %d MB',cacheSizeMax))
+  end
   return
 end
 
@@ -44,6 +62,15 @@ switch key
     localFileDb = mms_local_file_db(val);
     MMS_DB.add_db(localFileDb);
     datastore('mms_db','local_file_db_irfu_root',val);
+  case 'db_cache_enabled'
+    MMS_DB.cacheEnabled = val;
+    datastore('mms_db',key,val)
+  case 'db_cache_timeout'
+    MMS_DB.cacheTimeout = val;
+    datastore('mms_db',key,val)
+  case 'db_cache_size_max'
+    MMS_DB.cacheSizeMax = val;
+    datastore('mms_db',key,val)
   otherwise
     error('Unrecoglized KEY')
 end
