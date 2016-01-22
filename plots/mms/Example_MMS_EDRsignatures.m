@@ -44,7 +44,7 @@ tic;
 c_eval('Bxyz?=mms.db_get_ts(''mms?_dfg_brst_ql'',''mms?_dfg_brst_dmpa'',tint);',ic);
 c_eval('SCpot?=mms.db_get_ts(''mms?_edp_brst_l2_scpot'',''mms?_edp_psp'',tint);',ic);
 c_eval('SCpot?.data = -SCpot?.data*1.2+2;',ic);
-c_eval('Exyzf? = mms.db_get_ts(''mms?_edp_fast_ql_dce'',''mms?_edp_dce_ql_dsl'',tint);',ic);
+c_eval('Exyzf? = mms.db_get_ts(''mms?_edp_fast_ql_dce'',''mms?_edp_dce_xyz_dsl'',tint);',ic);
 toc;
 
 %% Load electron and ion particle data
