@@ -34,18 +34,18 @@ if nargin==0
   end
   cacheEnabled = datastore('mms_db','db_cache_enabled');
   if ~isempty(cacheEnabled)
-    MMS_DB.cacheEnabled = cacheEnabled;
+    MMS_DB.cache.enabled = cacheEnabled;
     if cacheEnabled, s = 'ON'; else s = 'OFF'; end
     irf.log('notice',['db_cache: ' s])
   end
   cacheTimeout = datastore('mms_db','db_cache_timeout');
   if ~isempty(cacheTimeout)
-    MMS_DB.cacheTimeout = cacheTimeout;
+    MMS_DB.cache.timeout = cache.timeout;
     irf.log('notice',sprintf('db_cache_timeout: %d sec',cacheTimeout))
   end
   cacheSizeMax = datastore('mms_db','db_cache_size_max');
   if ~isempty(cacheSizeMax)
-    MMS_DB.cacheSizeMax = cacheSizeMax;
+    MMS_DB.cache.cacheSizeMax = cacheSizeMax;
     irf.log('notice',sprintf('db_cache_size_max: %d MB',cacheSizeMax))
   end
   return

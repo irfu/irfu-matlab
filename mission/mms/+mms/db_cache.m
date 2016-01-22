@@ -25,7 +25,7 @@ if nargin>0
       val = [];
   end
   if ~isempty(val),
-    MMS_DB.cacheEnabled = val;
+    MMS_DB.cache.enabled = val;
     if nargin<2, flagSave = false;
     else
       if strcmpi(flagSave,'save'), flagSave = true;
@@ -41,8 +41,8 @@ if nargin>0
   end
 end
 
-if MMS_DB.cacheEnabled, disp('DB caching enabled')
+if MMS_DB.cache.enabled, disp('DB caching enabled')
 else disp('DB caching disabled')
 end
 
-if nargout>0, res = MMS_DB.cacheEnabled; end
+if nargout>0, res = MMS_DB.cache.enabled; end
