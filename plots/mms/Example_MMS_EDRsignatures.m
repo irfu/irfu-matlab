@@ -49,43 +49,43 @@ toc;
 
 %% Load electron and ion particle data
 % This way is fastest. Change directory to appropriate cdf here. 
-c_eval('tmpDataObj? = dataobj(''data/mms?_fpi_brst_l1b_des-dist_20151202011414_v1.1.0.cdf'');',ic);
-c_eval('pdiste? = mms.variable2ts(get_variable(tmpDataObj?,''mms?_des_brstSkyMap_dist''));',ic);
-c_eval('energye0? = get_variable(tmpDataObj?,''mms?_des_brstSkyMap_energy0'');',ic);
-c_eval('energye1? = get_variable(tmpDataObj?,''mms?_des_brstSkyMap_energy1'');',ic);
-c_eval('phie? = mms.variable2ts(get_variable(tmpDataObj?,''mms?_des_brstSkyMap_phi''));',ic);
-c_eval('thetae? = get_variable(tmpDataObj?,''mms?_des_brstSkyMap_theta'');',ic);
-c_eval('stepTablee? = mms.variable2ts(get_variable(tmpDataObj?,''mms?_des_stepTable_parity''));',ic);
-
-c_eval('tmpDataObj? = dataobj(''data/mms?_fpi_brst_l1b_dis-dist_20151202011414_v1.1.0.cdf'');',ic);
-c_eval('pdisti? = mms.variable2ts(get_variable(tmpDataObj?,''mms?_dis_brstSkyMap_dist''));',ic);
-c_eval('energyi0? = get_variable(tmpDataObj?,''mms?_dis_brstSkyMap_energy0'');',ic);
-c_eval('energyi1? = get_variable(tmpDataObj?,''mms?_dis_brstSkyMap_energy1'');',ic);
-c_eval('phii? = mms.variable2ts(get_variable(tmpDataObj?,''mms?_dis_brstSkyMap_phi''));',ic);
-c_eval('thetai? = get_variable(tmpDataObj?,''mms?_dis_brstSkyMap_theta'');',ic);
-c_eval('stepTablei? = mms.variable2ts(get_variable(tmpDataObj?,''mms?_dis_stepTable_parity''));',ic);
+% c_eval('tmpDataObj? = dataobj(''data/mms?_fpi_brst_l1b_des-dist_20151119104004_v1.1.0.cdf'');',ic);
+% c_eval('pdiste? = mms.variable2ts(get_variable(tmpDataObj?,''mms?_des_brstSkyMap_dist''));',ic);
+% c_eval('energye0? = get_variable(tmpDataObj?,''mms?_des_brstSkyMap_energy0'');',ic);
+% c_eval('energye1? = get_variable(tmpDataObj?,''mms?_des_brstSkyMap_energy1'');',ic);
+% c_eval('phie? = mms.variable2ts(get_variable(tmpDataObj?,''mms?_des_brstSkyMap_phi''));',ic);
+% c_eval('thetae? = get_variable(tmpDataObj?,''mms?_des_brstSkyMap_theta'');',ic);
+% c_eval('stepTablee? = mms.variable2ts(get_variable(tmpDataObj?,''mms?_des_stepTable_parity''));',ic);
+% 
+% c_eval('tmpDataObj? = dataobj(''data/mms?_fpi_brst_l1b_dis-dist_20151202011414_v1.1.0.cdf'');',ic);
+% c_eval('pdisti? = mms.variable2ts(get_variable(tmpDataObj?,''mms?_dis_brstSkyMap_dist''));',ic);
+% c_eval('energyi0? = get_variable(tmpDataObj?,''mms?_dis_brstSkyMap_energy0'');',ic);
+% c_eval('energyi1? = get_variable(tmpDataObj?,''mms?_dis_brstSkyMap_energy1'');',ic);
+% c_eval('phii? = mms.variable2ts(get_variable(tmpDataObj?,''mms?_dis_brstSkyMap_phi''));',ic);
+% c_eval('thetai? = get_variable(tmpDataObj?,''mms?_dis_brstSkyMap_theta'');',ic);
+% c_eval('stepTablei? = mms.variable2ts(get_variable(tmpDataObj?,''mms?_dis_stepTable_parity''));',ic);
 
 % This way is too slow
-%for ii=1:4;
-%tic;
-%    c_eval('pdiste?=mms.db_get_ts(''mms?_fpi_brst_l1b_des-dist'',''mms?_des_brstSkyMap_dist'',tint);',ii);
-%    c_eval('energye0?=mms.db_get_variable(''mms?_fpi_brst_l1b_des-dist'',''mms?_des_brstSkyMap_energy0'',tint);',ii);
-%    c_eval('energye1?=mms.db_get_variable(''mms?_fpi_brst_l1b_des-dist'',''mms?_des_brstSkyMap_energy1'',tint);',ii);
-%    c_eval('phie?=mms.db_get_ts(''mms?_fpi_brst_l1b_des-dist'',''mms?_des_brstSkyMap_phi'',tint);',ii);
-%    c_eval('thetae?=mms.db_get_variable(''mms?_fpi_brst_l1b_des-dist'',''mms?_des_brstSkyMap_theta'',tint);',ii);
-%    c_eval('stepTablee?=mms.db_get_ts(''mms?_fpi_brst_l1b_des-dist'',''mms?_des_stepTable_parity'',tint);',ii);
-%toc;
-%end
-%for ii=1:4;
-%tic;
-%    c_eval('pdisti?=mms.db_get_ts(''mms?_fpi_brst_l1b_dis-dist'',''mms?_dis_brstSkyMap_dist'',tint);',ii);
-%    c_eval('energyi0?=mms.db_get_variable(''mms?_fpi_brst_l1b_dis-dist'',''mms?_dis_brstSkyMap_energy0'',tint);',ii);
-%    c_eval('energyi1?=mms.db_get_variable(''mms?_fpi_brst_l1b_dis-dist'',''mms?_dis_brstSkyMap_energy1'',tint);',ii);
-%    c_eval('phii?=mms.db_get_ts(''mms?_fpi_brst_l1b_dis-dist'',''mms?_dis_brstSkyMap_phi'',tint);',ii);
-%    c_eval('thetai?=mms.db_get_variable(''mms?_fpi_brst_l1b_dis-dist'',''mms?_dis_brstSkyMap_theta'',tint);',ii);
-%    c_eval('stepTablei?=mms.db_get_ts(''mms?_fpi_brst_l1b_dis-dist'',''mms?_dis_stepTable_parity'',tint);',ii);
-%toc;
-%end
+for ii=1:4;
+tic;
+   c_eval('pdiste?=mms.db_get_ts(''mms?_fpi_brst_l1b_des-dist'',''mms?_des_brstSkyMap_dist'',tint);',ii);
+   c_eval('energye0?=mms.db_get_variable(''mms?_fpi_brst_l1b_des-dist'',''mms?_des_brstSkyMap_energy0'',tint);',ii);
+   c_eval('energye1?=mms.db_get_variable(''mms?_fpi_brst_l1b_des-dist'',''mms?_des_brstSkyMap_energy1'',tint);',ii);
+   c_eval('phie?=mms.db_get_ts(''mms?_fpi_brst_l1b_des-dist'',''mms?_des_brstSkyMap_phi'',tint);',ii);
+   c_eval('thetae?=mms.db_get_variable(''mms?_fpi_brst_l1b_des-dist'',''mms?_des_brstSkyMap_theta'',tint);',ii);
+   c_eval('stepTablee?=mms.db_get_ts(''mms?_fpi_brst_l1b_des-dist'',''mms?_des_stepTable_parity'',tint);',ii);
+toc;
+end
+for ii=1:4;
+tic;
+   c_eval('pdisti?=mms.db_get_ts(''mms?_fpi_brst_l1b_dis-dist'',''mms?_dis_brstSkyMap_dist'',tint);',ii);
+   c_eval('energyi0?=mms.db_get_variable(''mms?_fpi_brst_l1b_dis-dist'',''mms?_dis_brstSkyMap_energy0'',tint);',ii);
+   c_eval('energyi1?=mms.db_get_variable(''mms?_fpi_brst_l1b_dis-dist'',''mms?_dis_brstSkyMap_energy1'',tint);',ii);
+   c_eval('phii?=mms.db_get_ts(''mms?_fpi_brst_l1b_dis-dist'',''mms?_dis_brstSkyMap_phi'',tint);',ii);
+   c_eval('thetai?=mms.db_get_variable(''mms?_fpi_brst_l1b_dis-dist'',''mms?_dis_brstSkyMap_theta'',tint);',ii);
+   c_eval('stepTablei?=mms.db_get_ts(''mms?_fpi_brst_l1b_dis-dist'',''mms?_dis_stepTable_parity'',tint);',ii);
+toc;
+end
 
 %% Compute particle moments and rotate pressure and temperature tensors
 c_eval('emoments? = mms.psd_moments(pdiste?,phie?,thetae?,stepTablee?,energye0?,energye1?,SCpot?,''electron'');',ic);
@@ -123,11 +123,11 @@ c_eval('Temprat? = TSeries(PeXXp?.time,Temprat?);',ic);
 % Compute current density and J.E
 c_eval('ne? = emoments?.n_psd.tlim(tint);',ic);
 c_eval('Uevec? = emoments?.V_psd.tlim(tint);',ic);
-c_eval('Uivec? = imoments?.V_psd.tlim(tint);',ic);
+c_eval('Uivec? = imoments?.V_psd; Uivec? = Uivec?.resample(Uevec?);',ic);
 c_eval('Exyzf? = Exyzf?.resample(Uevec?);',ic);
 c_eval('Jmoms? = irf.ts_vec_xyz(Uevec?.time,1e18*qe*[ne?.data ne?.data ne?.data].*(Uivec?.data-Uevec?.data));',ic); % Current density in nA m^-2
-c_eval('EdotJ = dot(Exyzf?.data,Jmoms?.data,2)/1000;',ic); %J (nA/m^2), E (mV/m), E.J (nW/m^3)
-c_eval('EdotJ = irf.ts_scalar(ne?.time.time,EdotJ);',ic);
+c_eval('EdotJ? = dot(Exyzf?.data,Jmoms?.data,2)/1000;',ic); %J (nA/m^2), E (mV/m), E.J (nW/m^3)
+c_eval('EdotJ? = irf.ts_scalar(ne?.time,EdotJ?);',ic);
 
 % Calculate epsilon and delta parameters
 c_eval('Bxyzf? = Bxyz?.resample(Uevec?);',ic);
