@@ -88,7 +88,7 @@ classdef mms_db_cache<handle
       while w.bytes > obj.cacheSizeMax*1024*1024
         if length(obj.loaded) == 1, break, end
         dt = t0 - obj.loaded; idx = dt == max(dt);
-        disp(['purging ' obj.cache.names{idx}])
+        disp(['purging ' obj.names{idx}])
         obj.loaded(idx) = []; obj.names(idx) = []; obj.data(idx) = [];
         cacheTmp = obj.data; %#ok<NASGU>
         w = whos('cacheTmp');
