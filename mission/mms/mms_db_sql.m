@@ -101,7 +101,7 @@ classdef mms_db_sql < handle
 					irf.log('debug',['Importing ' fileToImport]);
 					status = obj.import_file(fileToImport);
 					if status == 0,
-						irf.log('warning',['Did not succeed to import:',fileToImport]);
+						irf.log('warning',['******** Did not succeed to import:',fileToImport]);
 						someFilesDidNotImport = true;
 					end
 					% remove file from FileListToImport
@@ -392,27 +392,35 @@ classdef mms_db_sql < handle
 			[tVarNames,~,IC] = unique(dep(:,2));
 			% FPI bug fix, removing energy_index and pitch_index from DEPEND_0
 			%isGoodTVarName = cellfun(@(x) isempty(strfind(x,'index')),tVarNames);
-            isGoodTVarName = cellfun(@(x) any(strcmpi({'tt2000','epoch','epoch16'}, ...
-              inf.Variables(strcmp(inf.Variables(:,1), x),4))), tVarNames);
+			indGoodTVarName = 1:numel(tVarNames);
+			iBadTVarName = find(~ismember(tVarNames,inf.Variables(:,1))); % time variable should be under inf.Variables(:,1)
+			if any(iBadTVarName)
+				indGoodTVarName(indGoodTVarName==iBadTVarName) = [];
+				irf.log('notice',['!! bad time variable names in DEPEND_O: ' tVarNames{iBadTVarName}]);
+				tVarNames{iBadTVarName} = [];
+			end
+			isBadTime  = cellfun(@(x) ~any(strcmpi({'tt2000','epoch','epoch16'}, ...
+				inf.Variables(strcmp(inf.Variables(:,1), x),4))), tVarNames(indGoodTVarName));
+			if any(isBadTime)
+				irf.log('notice',['!! no accepted time format for time DEPEND_O variable: ' ...
+					tVarNames{indGoodTVarName(isBadTime)}]);
+				indGoodTVarName(isBadTime) = [];
+			end
 			% read time variables
             try
               epoch = spdfcdfread(cdfFileName, ...
-				'Variable', tVarNames(isGoodTVarName), 'KeepEpochAsIs', true);
+				'Variable', tVarNames(indGoodTVarName), 'KeepEpochAsIs', true);
             catch ME
               errStr = ['Cannot read Epochs from file: ', cdfFileName];
               irf.log('warning', errStr); irf.log('warning', ME.message);
               warning(errStr); return;
             end
 			if isinteger(epoch), epoch = {epoch};end % only one time variable
-			for iT = numel(tVarNames):-1:1
-				if ~isGoodTVarName(iT),
-					irf.log('notice',['Bad time variable: ' tVarNames{iT}]);
-					continue;
-				end
+			for iT = numel(indGoodTVarName):-1:1
 				out(iT).epochVarName = tVarNames{iT};
 				out(iT).varNames = dep(IC == iT,1);
-				startTT = min(epoch{sum(isGoodTVarName(1:iT))});
-				endTT   = max(epoch{sum(isGoodTVarName(1:iT))});
+				startTT = min(epoch{indGoodTVarName(iT)});
+				endTT   = max(epoch{indGoodTVarName(iT)});
 				if any(startTT) && any(endTT) && ...
 						(min(startTT,endTT) < int64(479390467184000000)...% '2015-03-12T00:00:00.000000000'
 						||  max(startTT,endTT) > int64(1262260868184000000)),%'2040-01-01T00:00:00.000000000'

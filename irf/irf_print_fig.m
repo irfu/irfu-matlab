@@ -89,7 +89,7 @@ if(handleInput)
             f = x1;
         case 'axes'
             irf.log('warning','axes input, printing parent')
-            f = x1.Parent;
+            f = x1(1).Parent;
         otherwise
             irf.log('critical','unknown input type')
             return

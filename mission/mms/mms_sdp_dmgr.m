@@ -1060,7 +1060,7 @@ classdef mms_sdp_dmgr < handle
         % Default to zero - probe disabled
         res = zeros(numel(newT), numel(fields));
         if all(diff(enabled.data))==0,
-          ii = newT>enabled.time(1)-dtSampling & newT<=enabled.time(end);
+          ii = newT>(enabled.time(1)-dtSampling) & newT<=(enabled.time(end)+dtSampling);
           for iF=1:numel(fields),
             res(ii,iF) = enabled.data(1,iF);
           end
