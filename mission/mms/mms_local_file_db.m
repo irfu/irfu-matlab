@@ -264,6 +264,12 @@ classdef mms_local_file_db < mms_file_db
            if isempty(vT{3}), return, end, ver.rev = vT{3};
         end
         function entry = add_ss(entry)
+          entryTmp = obj.cache.get_by_key(entry.name);
+          if ~isempty(entryTmp)
+            entry.start = entryTmp.start;
+            entry.stop = entryTmp.stop;
+            return
+          end
           try
             info = spdfcdfinfo([entry.path filesep entry.name]);
           catch
@@ -281,6 +287,10 @@ classdef mms_local_file_db < mms_file_db
           if isempty(data), entry = []; return, end
           entry.start = EpochTT(data(1));
           entry.stop = EpochTT(data(end));
+          % add to cache
+          entryTmp.start = entry.start; entryTmp.stop = entry.stop;
+          entryTmp.vars = info.Variables;
+          obj.cache.add_entry(entry.name, entryTmp);
         end % ADD_SS
       end % ADD2LIST
     end % LIST_FILES
@@ -305,6 +315,12 @@ classdef mms_local_file_db < mms_file_db
     function res = file_has_var(obj,fileName,varName)
       narginchk(3,3)
       res = false; if isempty(varName) || isempty(fileName), return, end
+      
+      entryTmp = obj.cache.get_by_key(fileName);
+      if ~isempty(entryTmp)
+        res = any(cellfun(@(x) strcmp(x,varName), entryTmp.vars(:,1)));
+        return
+      end
       
       p = obj.get_path_to_file(fileName); fullPath = [p filesep fileName];
       if ~exist(fullPath,'file')
