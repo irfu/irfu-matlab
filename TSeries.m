@@ -121,7 +121,14 @@ classdef TSeries
       end
       obj.data_ = data; obj.t_ = t;
       obj.fullDim_ = cell(ndims(data),1);
-      obj.representation = cell(ndims(data),1); iDim = 1;
+      obj.representation = cell(ndims(data),1); iDim = 1; 
+      %obj.representation = cell(ndims(data),1); iDim = 1;
+      % Why is the dimension of represenation set already here? When
+      % picking out a component of a Tensor: T.xy, the data becomes 2D 
+      % (time x T.xy), but the representation should have two 'dimensions':
+      % 'x' and 'y'. This can be solved by resetting representation when
+      % specifying tensor order, since tensor order hase to be specified
+      % before settin representation.
       if ~isempty(obj.t_)
         obj.representation{iDim} = obj.t_; iDim = iDim + 1;
       end
@@ -131,10 +138,28 @@ classdef TSeries
       while ~isempty(args)
         x = args{1}; args(1) = [];
         switch lower(x)
+          case {'tensor_xyz'}
+            if ndims(obj.data_)>3, %#ok<ISMAT>
+              error('irf:TSeries:TSeries:badInputs',...
+                'DATA has more than 3 dimensions (needed for Tensor with order 2)')
+            elseif size(obj.data_,2)~=3
+              error('irf:TSeries:TSeries:badInputs',...
+                'size(DATA,2) must be 3 for xyz tensor')
+            elseif size(obj.data_,3)~=3
+              error('irf:TSeries:TSeries:badInputs',...
+                'size(DATA,3) must be 3 for xyz tensor')  
+            end
+            obj.tensorOrder_ = 2; flagTensorOrderSet = true;
+            [~,iB] = intersect(obj.BASIS,x(8:10));
+            obj.tensorBasis_ = iB; flagTensorBasisSet = true;
+            obj.representation{2} = {x(8), x(9), x(10)}; % 1st dimension, (rows for 2D)
+            obj.fullDim_{2} = true;
+            obj.representation{3} = {x(8), x(9), x(10)}; % 2nd dimension, (cols for 2D)
+            obj.fullDim_{3} = true;
           case {'vec_xyz','vec_rtp','vec_rlp','vec_rpz'}
             if ndims(obj.data_)>2, %#ok<ISMAT>
               error('irf:TSeries:TSeries:badInputs',...
-                'DATA has more than 2 dimentions (needed for 3D vec)')
+                'DATA has more than 2 dimensions (needed for 3D vec)')
             elseif size(obj.data_,2)~=3
               error('irf:TSeries:TSeries:badInputs',...
                 'size(DATA,2) must be 3 for 3D vec')
@@ -185,7 +210,11 @@ classdef TSeries
                 'tensorOrder must be 0<=tensorOrder<=%d',...
                 obj.MAX_TENSOR_ORDER)
             end
-            
+            obj.representation = cell(obj.tensorOrder+1,1); 
+            iDim = 1;
+            if ~isempty(obj.t_)
+              obj.representation{iDim} = obj.t_; iDim = iDim + 1;
+            end
           case {'tb','basis','tensorbasis'}
             if flagTensorBasisSet
               error('irf:TSeries:TSeries:badInputs',...
@@ -212,7 +241,7 @@ classdef TSeries
               error('irf:TSeries:TSeries:badInputs',...
                 'Must specify TensorOrder first')
             end
-            if iDim>ndims(data),
+            if iDim>(obj.tensorOrder+1) %ndims(data),
               error('irf:TSeries:TSeries:badInputs',...
                 'Representation already set for all DATA dimensions')
             end
@@ -358,6 +387,42 @@ classdef TSeries
     function y = lambda(obj)
       %access L(lambda) component
       [y,ok] = getComponent(obj,'l'); if ~ok, error('cannot get LAMBDA'), end
+    end
+    function y = xx(obj)
+      %access X component
+      [y,ok] = getComponent(obj,'xx'); if ~ok, error('cannot get XX'), end
+    end
+    function y = xy(obj)
+      %access X component
+      [y,ok] = getComponent(obj,'xy'); if ~ok, error('cannot get XY'), end
+    end
+    function y = xz(obj)
+      %access X component
+      [y,ok] = getComponent(obj,'xz'); if ~ok, error('cannot get XZ'), end
+    end
+    function y = yx(obj)
+      %access X component
+      [y,ok] = getComponent(obj,'yx'); if ~ok, error('cannot get YX'), end
+    end
+    function y = yy(obj)
+      %access X component
+      [y,ok] = getComponent(obj,'yy'); if ~ok, error('cannot get YY'), end
+    end
+    function y = yz(obj)
+      %access X component
+      [y,ok] = getComponent(obj,'yz'); if ~ok, error('cannot get YZ'), end
+    end
+    function y = zx(obj)
+      %access X component
+      [y,ok] = getComponent(obj,'zx'); if ~ok, error('cannot get ZX'), end
+    end
+    function y = zy(obj)
+      %access X component
+      [y,ok] = getComponent(obj,'zy'); if ~ok, error('cannot get ZX'), end
+    end
+    function y = zz(obj)
+      %access X component
+      [y,ok] = getComponent(obj,'zz'); if ~ok, error('cannot get ZZ'), end
     end
     
     function obj = set.coordinateSystem(obj,value)
@@ -982,7 +1047,7 @@ classdef TSeries
       if length(comp)~=teno, return, end
       basis = obj.BASIS{obj.tensorBasis_};
       if ~any(basis==comp(1)), return
-      elseif length(comp)==2 && ~any(obj.BASIS(obj.tensorBasis_)==comp(2))
+      elseif length(comp)==2 && ~any(char(obj.BASIS(obj.tensorBasis_))==comp(2))
         return
       end
       switch obj.tensorOrder_
@@ -1015,16 +1080,51 @@ classdef TSeries
           res = TSeries(args{:}); res.name = sprintf('%s_%s',obj.name,comp);
           ok = true;
         case 2
-          error('not implemented')
+          iDim = find((~cellfun(@isempty,obj.fullDim_)));
+          iComp1 = find_iComp(comp(1));
+          iComp2 = find_iComp(comp(2));
+          iComp = [iComp1 iComp2];
+          if any(isempty([iComp1 iComp2])), return, end
+          idx = cell(nd,1);
+          indDim = 1;
+          for i = 1:nd
+            idx{i} = 1:size(obj.data_,i);
+            if i==iDim(indDim), idx{i} = iComp(indDim); indDim = indDim+1; end
+          end
+          % XXX: This is ugly, what is a better way of doing this?
+          switch nd
+            case 2, dataNew = obj.data_(idx{1},idx{2});
+            case 3, dataNew = obj.data_(idx{1},idx{2},idx{3});
+            case 4, dataNew = obj.data_(idx{1},idx{2},idx{3},idx{4});
+            case 5, dataNew = obj.data_(idx{1},idx{2},idx{3},idx{4},idx{5});
+            case 6
+              dataNew = obj.data_(idx{1},idx{2},idx{3},idx{4},idx{5},idx{6});
+            otherwise, error('should no be here')
+          end
+          args = {obj.t_,dataNew,'TensorOrder',teno,'TensorBasis',basis};
+          indDim = 1;
+          for i=2:nd
+            if i==iDim(indDim),  args = [args {'repres',{comp(indDim)}}]; indDim = indDim+1;%#ok<AGROW>
+            else args = [args {'repres',{}}]; %#ok<AGROW>
+            end
+          end
+          res = TSeries(args{:}); res.name = sprintf('%s_%s',obj.name,comp);
+          ok = true;
         otherwise, error('should no be here')
       end
       function res = find_iComp(c)
-        rep = obj.representation{iDim}; lRep = length(rep);
+        %rep = obj.representation{iDim}; lRep = length(rep);
+        rep = obj.representation{iDim}; lRep = numel(rep); dimRep = ndims(rep);
+        % if dimRep == 1
         if rep{1}==c, res = 1;
         elseif lRep>1 && rep{2}==c, res = 2;
         elseif lRep>2 && rep{3}==c, res = 3;
         else res = [];
         end
+        %elseif dimRep == 2
+        %  [ind1,ind2] = find(not(cellfun('isempty',strfind(rep,c))));
+        %  res = [ind1 ind2];
+        %end
       end
     end
     
