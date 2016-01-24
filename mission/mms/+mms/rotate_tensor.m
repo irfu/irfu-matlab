@@ -10,8 +10,8 @@ function [PeXXp,PeXYp,PeXZp,PeYYp,PeYZp,PeZZp] = rotate_tensor(varargin)
 % Rotate tensor into user-defined coordinate system
 % [PeXXp,PeXYp,PeXZp,PeYYp,PeYZp,PeZZp] = mms.rotate_tensor(Peall,'rot',xnew,[ynew,znew])
 %
-% Rotate tensor into GSE coordinates
-% [PeXXp,PeXYp,PeXZp,PeYYp,PeYZp,PeZZp] = mms.rotate_tensor(Peall,'gse')
+% Rotate tensor from spacecraft coordinates into GSE coordinates
+% [PeXXp,PeXYp,PeXZp,PeYYp,PeYZp,PeZZp] = mms.rotate_tensor(Peall,'gse',MMSnum)
 %
 %
 % Function to rotate the pressure tensor term into field-aligned coordinates or 
@@ -35,6 +35,7 @@ function [PeXXp,PeXYp,PeXZp,PeYYp,PeYZp,PeZZp] = rotate_tensor(varargin)
 %               y and z directions).
 %       'gse' - Transform tensor into GSE coordinates (not yet
 %           implemented).
+%           * MMSnum - MMS spacecraft number 1--4.
 % Output: 
 %       PeXXp,PeXYp,PeXZp,PeYYp,PeYZp,PeZZp - Pressure or temperature terms in
 %       field-aligned, user-defined, or GSE coordinates
@@ -134,7 +135,30 @@ elseif (rotflag(1) == 'r'),
     Rotmat(:,3,:) = ones(length(Petimes),1)*Rz;    
 elseif (rotflag(1) == 'g'),
     irf_log('proc','Transforming tensor into GSE coordinates.')
-    irf_log('proc','Not yet implemented.')
+    SCnum = varargin{rotflagpos+1};
+	Tint = irf.tint(Petimes.start.utc,Petimes.stop.utc);
+	c_eval('defatt = mms.db_get_variable(''mms?_ancillary_defatt'',''zra'',Tint);',SCnum);
+	c_eval('defatt.zdec = mms.db_get_variable(''mms?_ancillary_defatt'',''zdec'',Tint).zdec;',SCnum);
+    defatt = mms_removerepeatpnts(defatt);
+    
+    % Development of transformation matrix follows modified version of mms_dsl2gse.m
+    ttDefatt = EpochTT(defatt.time);
+    zra = irf.ts_scalar(ttDefatt,defatt.zra);
+    zdec = irf.ts_scalar(ttDefatt,defatt.zdec);
+    zra = zra.resample(Petimes);
+    zdec = zdec.resample(Petimes);
+    [x,y,z] = sph2cart(zra.data*pi/180,zdec.data*pi/180,1);
+    saxTmp = irf.geocentric_coordinate_transformation([Petimes.epochUnix x y z],'gei>gse');
+    spin_axis = saxTmp(:,2:4);
+    Rx = spin_axis(:,1); 
+    Ry = spin_axis(:,2); 
+    Rz = spin_axis(:,3);
+    a = 1./sqrt(Ry.^2+Rz.^2);
+    Rotmat(:,1,:) = [a.*(Ry.^2+Rz.^2) -a.*Rx.*Ry -a.*Rx.*Rz];
+    Rotmat(:,2,:) = [0*a a.*Rz	-a.*Ry];
+    Rotmat(:,3,:) = [Rx	Ry Rz];
+else
+    irf_log('proc','Flag is not recognized.')
     return;
 end
 
