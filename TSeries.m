@@ -983,6 +983,8 @@ classdef TSeries
               error('Unknown representation'); % should not be here
           end
           Ts = Ts.transform(basis);
+      elseif obj.tensorOrder==2;
+          resample_(obj)
       else
           error('Not yet implemented'); 
       end
@@ -991,8 +993,20 @@ classdef TSeries
         tData = double(TsTmp.time.ttns - TsTmp.time.start.ttns)/10^9;
         dataTmp = double(TsTmp.data);
         newTimeTmp = double(NewTime.ttns - TsTmp.time.start.ttns)/10^9;
-        newData = irf_resamp([tData dataTmp], newTimeTmp, varargin{:});
-        Ts = TsTmp; Ts.t_ = NewTime; Ts.data_ = newData(:,2:end);
+        if TsTmp.tensorOrder == 1,
+          newData = irf_resamp([tData dataTmp], newTimeTmp, varargin{:});
+          Ts = TsTmp; Ts.t_ = NewTime; Ts.data_ = newData(:,2:end);
+        elseif TsTmp.tensorOrder == 2, % implemented for 3x3 data
+          newData = nan(size(dataTmp));
+          for ii = 1:size(newData,2)
+            newDataTmp = irf_resamp([tData squeeze(dataTmp(:,ii,:))], newTimeTmp, varargin{:});
+            newData(:,ii,:) = newDataTmp(:,2:end);
+          end          
+          Ts = TsTmp; Ts.t_ = NewTime; Ts.data_ = newData(:,:,:);
+        else
+          error('Not yet implemented');
+        end
+        
       end
     end %RESAMPLE
     
@@ -1112,19 +1126,13 @@ classdef TSeries
           ok = true;
         otherwise, error('should no be here')
       end
-      function res = find_iComp(c)
-        %rep = obj.representation{iDim}; lRep = length(rep);
-        rep = obj.representation{iDim}; lRep = numel(rep); dimRep = ndims(rep);
-        % if dimRep == 1
+      function res = find_iComp(c)        
+        rep = obj.representation{iDim}; lRep = numel(rep);
         if rep{1}==c, res = 1;
         elseif lRep>1 && rep{2}==c, res = 2;
         elseif lRep>2 && rep{3}==c, res = 3;
         else res = [];
-        end
-        %elseif dimRep == 2
-        %  [ind1,ind2] = find(not(cellfun('isempty',strfind(rep,c))));
-        %  res = [ind1 ind2];
-        %end
+        end        
       end
     end
     
