@@ -1,5 +1,6 @@
 function [PeXXp,PeXYp,PeXZp,PeYYp,PeYZp,PeZZp] = rotate_tensor(varargin)
-% MMS.ROTATE_TENSOR compute moments from the FPI particle phase-space densities 
+% MMS.ROTATE_TENSOR rotate pressure or temperature tensor into another
+% coordinate system
 %
 % Examples:
 % Rotate tensor into field-aligned coordinates
@@ -9,7 +10,7 @@ function [PeXXp,PeXYp,PeXZp,PeYYp,PeYZp,PeZZp] = rotate_tensor(varargin)
 % Rotate tensor into user-defined coordinate system
 % [PeXXp,PeXYp,PeXZp,PeYYp,PeYZp,PeZZp] = mms.rotate_tensor(Peall,'rot',xnew,[ynew,znew])
 %
-% Rotate tensor into
+% Rotate tensor into GSE coordinates
 % [PeXXp,PeXYp,PeXZp,PeYYp,PeYZp,PeZZp] = mms.rotate_tensor(Peall,'gse')
 %
 %
@@ -20,7 +21,7 @@ function [PeXXp,PeXYp,PeXZp,PeYYp,PeYZp,PeZZp] = rotate_tensor(varargin)
 % 
 % Written by D. B. Graham.
 %
-% Input: (All data must be in TSeries format)
+% Input: 
 %       PeXX,PeXY,PeXZ,PeYY,PeYZ,PeZZ - Pressure terms or temperature in TSeries 
 %       Peall - TSERIES of all tensor terms with column order PeXX,PeXY,PeXZ,PeYY,PeYZ,PeZZ
 %       'fac' - Transform tensor into field-aligned coordinates. PeZZp is
@@ -33,7 +34,7 @@ function [PeXXp,PeXYp,PeXZp,PeYYp,PeYZp,PeZZp] = rotate_tensor(varargin)
 %               z directions are orthogonal to xnew and closest to the orginal 
 %               y and z directions).
 %       'gse' - Transform tensor into GSE coordinates (not yet
-%           implimented).
+%           implemented).
 % Output: 
 %       PeXXp,PeXYp,PeXZp,PeYYp,PeYZp,PeZZp - Pressure or temperature terms in
 %       field-aligned, user-defined, or GSE coordinates
