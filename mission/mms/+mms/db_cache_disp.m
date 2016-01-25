@@ -3,4 +3,4 @@ function db_cache_disp()
 
 global MMS_DB; if isempty(MMS_DB), mms.db_init(), end
 
-MMS_DB.display_cache
+MMS_DB.cache.disp()

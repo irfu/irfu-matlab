@@ -4,12 +4,6 @@ classdef mms_db < handle
   
   properties
     databases
-    cacheEnabled = false
-    cacheTimeout = 600;  % db cache timeout in sec
-    cacheSizeMax = 1024; % db cache max size in mb
-  end
-  
-  properties (Access = private)
     cache
   end
   
@@ -26,95 +20,10 @@ classdef mms_db < handle
         return
       end
       obj.databases = [obj.databases dbInp];
+      obj.cache = mms_db_cache();
+      obj.cache.enabled = false;
     end
     
-    function set.cacheEnabled(obj,value)
-      if numel(value) ~=1 || ~isa(value,'logical')
-        error('expecting logical value (true/false)')
-      end
-      obj.cacheEnabled = value;
-    end
-    
-    function set.cacheTimeout(obj,value)
-      if numel(value) ~=1 || value<=0
-        error('expecting a positive numerical value (seconds)')
-      end
-      obj.cacheTimeout = value;
-    end
-    
-    function set.cacheSizeMax(obj,value)
-      if numel(value) ~=1 || value<=0
-        error('expecting a positive numerical value (MB)')
-      end
-      if value>10*1024, warning('cache size > 10 GB'), end
-      obj.cacheSizeMax = value;
-    end
-    
-    function dobjLoaded = get_from_cache(obj,fileName)
-      dobjLoaded = [];
-      if ~obj.cacheEnabled || isempty(obj.cache), return, end
-      idx = cellfun(@(x) strcmp(fileName,x),obj.cache.names);
-      if ~any(idx), return, end
-      if now() > obj.cache.loaded(idx) + obj.cacheTimeout/86400
-        obj.purge_cache(), return
-      end
-      dobjLoaded = obj.cache.dobj{idx};
-    end
-    
-    function add_to_cache(obj,fileName,dobjLoaded)
-      if ~obj.cacheEnabled, return, end
-      if ~isempty(obj.cache)
-        obj.purge_cache();
-        idx = cellfun(@(x) strcmp(fileName,x),obj.cache.names);
-        if any(idx), return, end % file is already there
-      end
-      if isempty(obj.cache)
-        obj.cache.loaded = now();
-        obj.cache.names = {fileName};
-        obj.cache.dobj = {dobjLoaded};
-        return
-      end
-      obj.cache.loaded = [obj.cache.loaded now()];
-      obj.cache.names = [obj.cache.names {fileName}];
-      obj.cache.dobj = [obj.cache.dobj {dobjLoaded}];
-      % check if we did not exceed cacheSizeMax
-      cacheTmp = obj.cache; w = whos('cacheTmp'); t0 = now(); %#ok<NASGU>
-      while w.bytes > obj.cacheSizeMax*1024*1024
-        if length(obj.cache.loaded) == 1, break, end
-        dt = t0 - obj.cache.loaded; idx = dt == max(dt);
-        disp(['purging ' obj.cache.names{idx}])
-        obj.cache.loaded(idx) = [];
-        obj.cache.names(idx) = [];
-        obj.cache.dobj(idx) = [];
-        cacheTmp = obj.cache; %#ok<NASGU>
-        w = whos('cacheTmp');
-      end
-    end
-    
-    function display_cache(obj)
-      % Display cache memory usage and contents
-      if ~obj.cacheEnabled, disp('DB caching disabled'), return, end
-      if isempty(obj.cache), disp('DB cache empty'), return, end
-      cacheTmp = obj.cache; w = whos('cacheTmp'); t0 = now(); %#ok<NASGU>
-      fprintf('DB cache using %.1f MB\n',w.bytes/1024/1024)
-      dt = t0 - obj.cache.loaded;
-      [dt,idx] = sort(dt);
-      for i=1:length(idx)
-        fprintf('%s (expires in %d sec)\n', obj.cache.names{idx(i)},...
-          ceil(obj.cacheTimeout - dt(i)*86400))
-      end
-    end
-    
-    function purge_cache(obj)
-      if ~obj.cacheEnabled, return, end
-      if ~isempty(obj.cache) % purge old entries from cache
-        t0 = now;
-        idx = t0 > obj.cache.loaded + obj.cacheTimeout/86400;
-        obj.cache.loaded(idx) = [];
-        obj.cache.names(idx) = [];
-        obj.cache.dobj(idx) = [];
-      end
-    end
     
    function fileList = list_files(obj,filePrefix,tint)
      fileList =[];
@@ -276,14 +185,14 @@ classdef mms_db < handle
      
      for iFile=1:length(fileList)
        fileToLoad = fileList(iFile);
-       dobjLoaded = obj.get_from_cache(fileToLoad.name);
+       dobjLoaded = obj.cache.get_by_key(fileToLoad.name);
        if isempty(dobjLoaded)
          db = obj.get_db(fileToLoad.dbId);
          if isempty(db) || ~db.file_has_var(fileToLoad.name,mustHaveVar)
            continue
          end
          dobjLoaded = db.load_file(fileToLoad.name);
-         obj.add_to_cache(fileToLoad.name,dobjLoaded)
+         obj.cache.add_entry(fileToLoad.name,dobjLoaded)
        end
        res = [res {dobjLoaded}]; %#ok<AGROW>
      end

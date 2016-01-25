@@ -20,6 +20,10 @@ function particlemoments = psd_moments(varargin)
 %   SCpot - TSeries of spacecraft potential (burst and fast). 
 %   (Make sure sign is correct, should be typically positive)
 %   particle - indicate particle type: 'electron' or 'ion'
+%
+%   See Example_MMS_EDRsignatures for example of loading the necessary data 
+%   and running the function.
+%
 % Optional Inputs:
 %   'energyrange' - set energy range in eV to integrate over [E_min E_max].
 %   energy range is applied to energy0 and the same elements are used for energy1 to 
@@ -227,7 +231,7 @@ if isbrstdata, % Burst mode energy/speed widths
     v0lower = sqrt(2*qe*energy0lower/pmass);
     v1upper = sqrt(2*qe*energy1upper/pmass);
     v1lower = sqrt(2*qe*energy1lower/pmass);
-    deltav0 = (v0upper-v0lower)*2.0;
+    deltav0 = (v0upper-v0lower)*2.0; %factor of two is applied because half the energy channels are used in a single sweep
     deltav1 = (v1upper-v1lower)*2.0;
     deltav0(1) = deltav0(1)*2.7;
     deltav1(1) = deltav1(1)*2.7;

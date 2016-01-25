@@ -121,6 +121,7 @@ irf_plot(hca,{DeltaAspocOffR.x,DeltaAspocOnR.x,DeltaAspocOffR.y,DeltaAspocOnR.y}
 hold(hca,'on')
 [~,idxTmp,idxTmp2] = intersect(DeltaAspocOffR.time.epoch,NifpiR.time.epoch(idxMSH));
 DeltaAspocOffRes = DeltaAspocOffR(idxTmp);
+% XXX check if NifpiR exists
 NifpiRes = NifpiR(idxTmp2);
 PSPRes = PSPR(idxTmp2);
 irf_plot(hca,DeltaAspocOffRes,'.')
