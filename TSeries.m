@@ -898,6 +898,20 @@ classdef TSeries
       end
     end
     
+    function Ts = trace(obj)
+      if obj.tensorOrder ~= 2
+        error('Trace only applicable to order 2 tensors')
+      end
+      
+      newData = 0;
+      for ii = 1:size(obj.data,2)
+        newData = newData + squeeze(obj.data(:,ii,ii));
+      end      
+      obj.data_ = newData; Ts = obj;
+      Ts.tensorOrder_=0; Ts.tensorBasis_ = ''; Ts.representation{2} = [];
+      if ~isempty(obj.name), Ts.name = sprintf('trace(%s)',obj.name); end
+    end
+    
     function Ts = combine(obj,obj1)
       % Combine two time series, with different times but same data type &
       % representation into a single timeseries sorted by unique timestamps
