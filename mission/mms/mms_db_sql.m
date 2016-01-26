@@ -24,7 +24,7 @@ classdef mms_db_sql < handle
           javaaddpath([javaPath, listDir(end).name]);
 			if nargin == 1,
 				[dirPath,file,ext] = fileparts(fileName);
-				if isempty(dirPath) || dirPath == '.'
+				if isempty(dirPath) || strcmp(dirPath,'.')
 					dirPath = pwd;
 				end
 				obj.databaseDirectory = dirPath;
@@ -256,6 +256,22 @@ classdef mms_db_sql < handle
 				end
 			end
 		end
+		function	idDatasetList = find_dataset_id(obj,dataset)
+			% find Datasets with name "dataset"
+			idDatasetList = {};iDataset = 1;
+			sql = ['select * from Datasets where dataset = "' dataset '"'];
+			rs=obj.sqlQuery(sql);
+			if ~rs.next
+				irf.log('warning',['There is no dataset with name ' dataset '.']);
+				return;
+			else
+				while true
+					idDatasetList{iDataset} = char(rs.getString('idDataset'));
+					iDataset = iDataset +1 ;
+					if ~rs.next, break; end
+				end
+			end
+		end
 		
 		function tintArray = index_var(obj,varName)
 			sql = ['select startTT,endTT from VarIndex where idDataset in ('...
@@ -273,6 +289,23 @@ classdef mms_db_sql < handle
 				if nTint>10,                   disp('...'); end
 				for ii = max(5,nTint-5):nTint, disp(irf_time(tintArray(ii,:),'tint>utc')); end
 				clear tintArray;
+			end
+		end
+		function res = index.file_has_var(obj,fileName,varName)
+			% find files
+			if ischar(varName), varName={varName};end
+			idFileArray = []; iFile = 1;
+			for iVarname = 1:length(varName)
+				sql = ['select idFile from FileList where fileNameFullPath = "' varName{iVarname} '"'];
+				sql = [sql ' and startTT <= ' num2str(endTT)   ]; %#ok<AGROW>
+				sql = [sql ' and   endTT >= ' num2str(startTT) ]; %#ok<AGROW>
+				sql = [sql ' order by startTT asc'];              %#ok<AGROW>
+				rs=obj.sqlQuery(sql);
+				while rs.next
+					idFileArray(iFile) = str2double(rs.getString('idFile')); %#ok<AGROW>
+					irf.log('debug',['idFile = ' num2str(idFileArray(iFile))]);
+					iFile = iFile + 1;
+				end
 			end
 		end
 		
@@ -303,6 +336,53 @@ classdef mms_db_sql < handle
 			end
 			% find Datasets with varName
 			idDatasetList = find_datasets_with_varname(obj,varName);
+			
+			% find files
+			idFileArray = []; iFile = 1;
+			for iDataset = 1:length(idDatasetList)
+				sql = ['select idFile from VarIndex where idDataset = "' idDatasetList{iDataset} '"'];
+				sql = [sql ' and startTT <= ' num2str(endTT)   ]; %#ok<AGROW>
+				sql = [sql ' and   endTT >= ' num2str(startTT) ]; %#ok<AGROW>
+				sql = [sql ' order by startTT asc'];              %#ok<AGROW>
+				rs=obj.sqlQuery(sql);
+				while rs.next
+					idFileArray(iFile) = str2double(rs.getString('idFile')); %#ok<AGROW>
+					irf.log('debug',['idFile = ' num2str(idFileArray(iFile))]);
+					iFile = iFile + 1;
+				end
+			end
+			
+			% get filenames
+			fileNames = cell(numel(idFileArray),1);
+			for iFile = 1:numel(idFileArray)
+				sql = ['select fileNameFullPath from FileList where idFile = ' ...
+					num2str(idFileArray(iFile))];
+				rs = obj.sqlQuery(sql);
+				if rs.next
+					fileNames{iFile} = char(rs.getString('fileNameFullPath'));
+				end
+			end
+		end
+		
+		function fileNames = search_files_with_dataset(obj,dataset,timeInterval)
+			% SEARCH FILES search files given dataset and time interval
+			%
+			% SEARCH_FILES(obj,dataset,timeInterval)
+			% dataset === filePrefix
+			%  time interval can be UTC string or GenericTimeArray
+			if nargin < 3 || isempty(timeInterval)
+				startTT = int64(0);
+				endTT = intmax('int64');
+			else
+				[startTT,endTT] = mms_db_sql.start_stop_in_ttns(timeInterval);
+			end
+			if ~ischar(dataset),
+				irf.log('critical','dataset should be text string');
+				return;
+			end
+			
+			% find Dataset iDs 
+			idDatasetList = find_dataset_id(obj,dataset);
 			
 			% find files
 			idFileArray = []; iFile = 1;
@@ -433,6 +513,16 @@ classdef mms_db_sql < handle
 					out(iT).endTT   = endTT;
 				end
 			end
+		end
+		function [startTT,endTT] = start_stop_in_ttns(timeInterval)
+			if ischar(timeInterval)
+				timeInterval = irf.tint(timeInterval);
+			elseif ~isa(timeInterval,'GenericTimeArray')
+				irf.log('warning','Time interval in unknown format');
+				return;
+			end
+			startTT = timeInterval.start.ttns;
+			endTT = timeInterval.stop.ttns;
 		end
 	end
 	
