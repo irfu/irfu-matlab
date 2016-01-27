@@ -1,17 +1,17 @@
-function [PeXXp,PeXYp,PeXZp,PeYYp,PeYZp,PeZZp] = rotate_tensor(varargin)
+function Pe = rotate_tensor(varargin)
 % MMS.ROTATE_TENSOR rotate pressure or temperature tensor into another
 % coordinate system
 %
 % Examples:
 % Rotate tensor into field-aligned coordinates
-% [PeXXp,PeXYp,PeXZp,PeYYp,PeYZp,PeZZp] = mms.rotate_tensor(PeXX,PeXY,PeXZ,PeYY,PeYZ,PeZZ,'fac',Bback)
+% [PeXXp,PeXYp,PeXZp,PeYYp,PeYZp,PeZZp] = mms.rotate_tensor(PeXX,PeXY,PeXZ,PeYY,PeYZ,PeZZ,'fac',Bback,['pp'])
 % [PeXXp,PeXYp,PeXZp,PeYYp,PeYZp,PeZZp] = mms.rotate_tensor(Peall,'fac',Bback)
 % 
 % Rotate tensor into user-defined coordinate system
 % [PeXXp,PeXYp,PeXZp,PeYYp,PeYZp,PeZZp] = mms.rotate_tensor(Peall,'rot',xnew,[ynew,znew])
 %
 % Rotate tensor from spacecraft coordinates into GSE coordinates
-% [PeXXp,PeXYp,PeXZp,PeYYp,PeYZp,PeZZp] = mms.rotate_tensor(Peall,'gse',MMSnum)
+% Pe = mms.rotate_tensor(Peall,'gse',MMSnum)
 %
 %
 % Function to rotate the pressure tensor term into field-aligned coordinates or 
@@ -28,17 +28,21 @@ function [PeXXp,PeXYp,PeXZp,PeYYp,PeYZp,PeZZp] = rotate_tensor(varargin)
 %           field-aligned. PeXXp and PeYYp are closest orthogonal components to
 %           the x and y directions
 %           * Bback - Background magnetic field (TSERIES format)
+%           * 'pp' - optional flag to rotate perpendicular components so
+%             P_perp1 = P_perp2
 %       'rot' - Transform tensor into an arbitrary coordinate system
 %           * xnew - new x-direction (required after 'rot')
 %           * ynew, znew - new y and z directions (if not included y and 
 %               z directions are orthogonal to xnew and closest to the orginal 
 %               y and z directions).
-%       'gse' - Transform tensor into GSE coordinates (not yet
-%           implemented).
+%       'gse' - Transform tensor into GSE coordinates 
 %           * MMSnum - MMS spacecraft number 1--4.
+%
 % Output: 
-%       PeXXp,PeXYp,PeXZp,PeYYp,PeYZp,PeZZp - Pressure or temperature terms in
-%       field-aligned, user-defined, or GSE coordinates
+%       Pe - Pressure or temperature terms in
+%       field-aligned, user-defined, or GSE coordinates. Tseries with 3*3 in data.
+%       For 'fac' Pe = [Ppar P12 P13; P12 Pperp1 P23; P13 P23 Pperp2]
+%       For 'rot' and 'gse' Pe = [Pxx Pxy Pxz; Pxy Pyy Pyz; Pxz Pyz Pzz]
 % 
 
 % Check input and load pressure/temperature terms
@@ -77,6 +81,7 @@ else
     return;
 end    
 
+ppeq = 0;
 Rotmat = zeros(length(Petimes),3,3);
 
 if (rotflag(1) == 'f'),
@@ -87,15 +92,22 @@ if (rotflag(1) == 'f'),
     end
     Bback = varargin{rotflagpos+1};
     Bback = Bback.resample(Petimes);
-    Bmag = Bback.abs.data;
-    Rz = Bback.data./([Bmag Bmag Bmag]);
-    Rx = [1 0 0];
-    Ry = irf_cross(Rz,Rx);
+    if (nargin == 4)
+        if (isa(varargin{4},'char') && varargin{4}(1) == 'p'),
+            ppeq = 1;
+        else
+            irf_log('proc','Flag not recognized no additional rotations applied.')
+        end
+    end
+    Bvec = Bback/Bback.abs;
+    Rx = Bvec.data
+    Ry = [1 0 0];
+    Rz = irf_cross(Rx,Ry);
+    Rmag = irf_abs(Rz,1);
+    Rz = Rz./[Rmag Rmag Rmag];
+    Ry = irf_cross(Rz, Rx);
     Rmag = irf_abs(Ry,1);
     Ry = Ry./[Rmag Rmag Rmag];
-    Rx = irf_cross(Ry, Rz);
-    Rmag = irf_abs(Rx,1);
-    Rx = Rx./[Rmag Rmag Rmag];
     Rotmat(:,1,:) = Rx;
     Rotmat(:,2,:) = Ry;
     Rotmat(:,3,:) = Rz;
@@ -168,11 +180,15 @@ for ii = 1:length(Petimes);
     Ptensorp(ii,:,:) = rottemp*(squeeze(Ptensor(ii,:,:))*transpose(rottemp));
 end
 
-PeXXp = irf.ts_scalar(Petimes,Ptensorp(:,1,1));
-PeXYp = irf.ts_scalar(Petimes,Ptensorp(:,1,2));
-PeXZp = irf.ts_scalar(Petimes,Ptensorp(:,1,3));
-PeYYp = irf.ts_scalar(Petimes,Ptensorp(:,2,2));
-PeYZp = irf.ts_scalar(Petimes,Ptensorp(:,2,3));
-PeZZp = irf.ts_scalar(Petimes,Ptensorp(:,3,3));
+if ppeq,
+    irf_log('proc','Rotating tensor so perpendicular diagonal components are equal.')
+    theta = 0.5*atan((Ptensorp(:,3,3)-Ptensorp(:,2,2))./(2*Ptensorp(:,2,3)));
+    for ii = 1:length(Petimes);
+        rottemp = [1 0 0; 0 cos(theta(ii)) sin(theta(ii)); 0 -sin(theta(ii)) cos(theta(ii))];
+        Ptensorp(ii,:,:) = rottemp*(squeeze(Ptensorp(ii,:,:))*transpose(rottemp));
+    end
+end
+
+Pe = TSeries(Petimes,Ptensorp);
 
 end
