@@ -42,7 +42,7 @@ classdef mms_db_sql < handle
 				'CREATE TABLE IF NOT EXISTS "FileListToImport" '...
 				'("directory","dataset","date","version","fileNameFullPath"	TEXT UNIQUE);'...
 				'CREATE TABLE IF NOT EXISTS "VarNames" ('...
-				'"varId"	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,"varName"	TEXT, "idDataset" INTEGER NOT NULL);'...
+				'"idVar"	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,"varName"	TEXT, "idDataset" INTEGER NOT NULL);'...
 				'CREATE TABLE IF NOT EXISTS "Datasets" ('...
 				'"idDataset"	INTEGER NOT NULL,"dataset"	TEXT,"varNames"	TEXT,PRIMARY KEY(idDataset));'...
 				'CREATE TABLE IF NOT EXISTS "VarIndex" ('...
@@ -132,25 +132,40 @@ classdef mms_db_sql < handle
 				]);
 		end
 		
-		function fileInfo = get_file_info(fileName)
-			% GET_FILE_INFO get values of directory, dataset, date, version
-			% fileInfo is structure with fields
-			% 'directory','dataset','date',version'
-			fileInfo = regexp(fileName,'(?<directory>\.\/mms.*)(?<dataset>mms[1-4]?_[\w-]*)_(?<date>20\d\d\d\d\d\d\d*)_(?<version>v[\d\.]*)(.cdf)','names');
-		end
-		
 		function status = import_file(obj,fileToImport)
-			% import a file
+			% import a single file
 			irf.log('notice',['File to import: ' fileToImport]);
 			status = 0;
+			removeOlderVersionFile = false;
 			% check if file is not in db
 			sql = ['select * from FileList ' ...
 				'where fileNameFullPath = "' fileToImport '"'];
 			rs=obj.sqlQuery(sql);
 			while rs.next % file already exist
-				irf.log('warning','File exists!');
-				obj.close;
+				irf.log('warning','File exists, not importing!');
 				return;
+			end
+			% check if files with different version exist 
+			FileInfo = mms_db_sql.get_file_info(fileToImport);
+			sql = ['select idFile,version from FileList ' ...
+				'where directory = "' FileInfo.directory '" '...
+				' and dataset = "' FileInfo.dataset '" '...
+				' and date = "' FileInfo.date '" '...
+				' and version != "' FileInfo.version '" '...
+				];
+			rs=obj.sqlQuery(sql);
+			if rs.next % file with different version exists
+				existingVersion = char(rs.getString('version'));
+				[~,iVersion]=sort({existingVersion,FileInfo.version});
+				if iVersion(1) == 1, % importing newer version
+					irf.log('warning',['File with older version ' existingVersion ' exsists!']);
+					removeOlderVersionFile = true;
+					existingFileID = char(rs.getString('idFile'));
+				else
+					irf.log('warning',['Not importing version ' FileInfo.version ...
+						'because file with higher version ' existingVersion ' exsists!']);
+					return;
+				end
 			end
 			
 			% add fileName to FileList and get idFile
@@ -183,7 +198,7 @@ classdef mms_db_sql < handle
 					'values (' idFile ',"' idDataset '", "NULL", "NULL")'];
                 else
                   irf.log('debug',['.. insert into VarIndex: idDataset=' dataset ...
-					' : ' irf_time(EpochTT([out(iDataset).startTT out(iDataset).endTT]),'tint>utc')]);
+					' : ' irf_time([out(iDataset).startTT out(iDataset).endTT],'tint>utc')]);
 				  sql = ['insert into VarIndex (idFile,idDataset,startTT,endTT) '...
 					'values (' idFile ',"' idDataset '",' ...
 					num2str(out(iDataset).startTT) ',' num2str(out(iDataset).endTT) ')'];
@@ -192,9 +207,16 @@ classdef mms_db_sql < handle
 			end
 			
 			status = 1;
+			
+			if removeOlderVersionFile
+				irf.log('notice',['Deleting information of the file with older version ' existingVersion '!']);
+				obj.sqlUpdate(['delete from VarIndex where idFile = "' existingFileID '"']);
+				obj.sqlUpdate(['delete from FileList where idFile = "' existingFileID '"']);
+			end
 		end
 		
 		function idDataset=add_var_names(obj,dataset,varNames)
+			% ADD_VAR_NAMES add variable names to VarNames table
 			if ischar(varNames), varNames = {varNames};end
 			
 			% Check if dataset with varNames exists
@@ -291,20 +313,19 @@ classdef mms_db_sql < handle
 				clear tintArray;
 			end
 		end
-		function res = index.file_has_var(obj,fileName,varName)
+		function res = file_has_var(obj,fileName,varName)
 			% find files
 			if ischar(varName), varName={varName};end
-			idFileArray = []; iFile = 1;
+			res=true; % default is true
 			for iVarname = 1:length(varName)
-				sql = ['select idFile from FileList where fileNameFullPath = "' varName{iVarname} '"'];
-				sql = [sql ' and startTT <= ' num2str(endTT)   ]; %#ok<AGROW>
-				sql = [sql ' and   endTT >= ' num2str(startTT) ]; %#ok<AGROW>
-				sql = [sql ' order by startTT asc'];              %#ok<AGROW>
+				varString = varName{iVarname};
+				sql = ['select v.idVar from VarNames v where v.varName = "' varString '" and '...
+					'v.idDataset IN (select vind.idDataset from VarIndex vind where vind.idFile='...
+					'(select fl.idFile from FileList fl where fl.fileNameFullPath = "' fileName '"))'];
 				rs=obj.sqlQuery(sql);
-				while rs.next
-					idFileArray(iFile) = str2double(rs.getString('idFile')); %#ok<AGROW>
-					irf.log('debug',['idFile = ' num2str(idFileArray(iFile))]);
-					iFile = iFile + 1;
+				if ~rs.next
+					res = false;
+					return;
 				end
 			end
 		end
@@ -387,16 +408,17 @@ classdef mms_db_sql < handle
 			% find files
 			idFileArray = []; iFile = 1;
 			for iDataset = 1:length(idDatasetList)
-				sql = ['select idFile from VarIndex where idDataset = "' idDatasetList{iDataset} '"'];
-				sql = [sql ' and startTT <= ' num2str(endTT)   ]; %#ok<AGROW>
-				sql = [sql ' and   endTT >= ' num2str(startTT) ]; %#ok<AGROW>
-				sql = [sql ' order by startTT asc'];              %#ok<AGROW>
+				sql = ['select idFile from VarIndex where idDataset = "' idDatasetList{iDataset} '"' ...
+					' and startTT <= ' num2str(endTT) ...
+					' and   endTT >= ' num2str(startTT) ...
+					' order by startTT asc'];
 				rs=obj.sqlQuery(sql);
 				while rs.next
 					idFileArray(iFile) = str2double(rs.getString('idFile')); %#ok<AGROW>
 					irf.log('debug',['idFile = ' num2str(idFileArray(iFile))]);
 					iFile = iFile + 1;
 				end
+				idFileArray = unique(idFileArray);
 			end
 			
 			% get filenames
@@ -482,7 +504,7 @@ classdef mms_db_sql < handle
 			isBadTime  = cellfun(@(x) ~any(strcmpi({'tt2000','epoch','epoch16'}, ...
 				inf.Variables(strcmp(inf.Variables(:,1), x),4))), tVarNames(indGoodTVarName));
 			if any(isBadTime)
-				irf.log('notice',['!! no accepted time format for time DEPEND_O variable: ' ...
+				irf.log('notice',['! not accepted time format for time DEPEND_O variable: ' ...
 					tVarNames{indGoodTVarName(isBadTime)}]);
 				indGoodTVarName(isBadTime) = [];
 			end
@@ -523,6 +545,14 @@ classdef mms_db_sql < handle
 			end
 			startTT = timeInterval.start.ttns;
 			endTT = timeInterval.stop.ttns;
+		end
+		function fileInfo = get_file_info(fileName)
+			% GET_FILE_INFO get values of directory, dataset, date, version
+			% fileInfo is structure with fields
+			% 'directory','dataset','date',version'
+			fileInfo = regexp(fileName,['(?<directory>\.\/mms.*)'...
+				'(?<dataset>mms[1-4]?_[\w-]*)_(?<date>20\d\d\d\d\d\d\d*)'...
+				'_(?<version>v[\d\.]*)(.cdf)'],'names');
 		end
 	end
 	
