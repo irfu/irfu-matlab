@@ -47,6 +47,11 @@ switch scId
        dac.max(4) = -85;  dac.min(4) = -95;
        og.max(4)  = -3.9;  og.min(4) = -4.1;
        ig.max(4)  = -7.9;  ig.min(4) = -8.1;
+    % Bias changed to -110nA on 2016/01/26T18:55:16 but not really bad data
+    timeTmp(5,:) = [2016 01 26 18 55 16];
+       dac.max(5) = -105; dac.min(5) = -115;
+       og.max(5) = -3.9;   og.min(5) = -4.1;
+       ig.max(5) = -7.9;   ig.min(5) = -8.1;
 
   case 2
     % Define new limits for good bias setting on MMS 2
@@ -67,6 +72,11 @@ switch scId
        dac.max(4) = -65; dac.min(4) = -75;
        og.max(4)  = -3.9; og.min(4) = -4.1;
        ig.max(4)  = -7.9; ig.min(4) = -8.1;
+    % Bias changed to -90nA on 2016/01/26T20:55:36 but not really bad data
+    timeTmp(5,:) = [2016 01 26 20 55 36];
+       dac.max(5) = -85; dac.min(5) = -95;
+       og.max(5)  = -3.9; og.min(5) = -4.1;
+       ig.max(5)  = -7.9; ig.min(5) = -8.1;
 
   case 3
     % Define new limits for good bias setting on MMS 3
@@ -87,6 +97,11 @@ switch scId
        dac.max(4) = -85; dac.min(4) = -95;
        og.max(4)  = -3.9; og.min(4) = -4.1;
        ig.max(4)  = -7.9; ig.min(4) = -8.1;
+    % Bias changed to -110nA on 2016/01/26T14:48:17 but not really bad data
+    timeTmp(5,:) = [2016 01 26 14 48 17];
+       dac.max(5) = -105; dac.min(5) = -115;
+       og.max(5)  = -3.9; og.min(5) = -4.1;
+       ig.max(5)  = -7.9; ig.min(5) = -8.1;
 
   case 4
     % Define new limits for good bias setting on MMS 4
@@ -97,6 +112,11 @@ switch scId
         dac.max(2) = -135; dac.min(2) = -145;
         og.max(2)  = -3.9;  og.min(2) = -4.1;
         ig.max(2)  = -7.9;  ig.min(2) = -8.1;
+    % Bias changed to -160nA on 2016/01/26T16:39:44 but not really bad data
+    timeTmp(3,:) = [2016 01 26 16 39 44];
+        dac.max(3) = -155; dac.min(3) = -165;
+        og.max(3)  = -3.9;  og.min(3) = -4.1;
+        ig.max(3)  = -7.9;  ig.min(3) = -8.1;
 
   otherwise
     errStr = 'Invalid scId, only numerical 1, 2, 3 or 4 allowed.';
