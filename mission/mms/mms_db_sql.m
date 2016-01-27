@@ -393,10 +393,10 @@ classdef mms_db_sql < handle
 			% FPI bug fix, removing energy_index and pitch_index from DEPEND_0
 			%isGoodTVarName = cellfun(@(x) isempty(strfind(x,'index')),tVarNames);
 			indGoodTVarName = 1:numel(tVarNames);
-			iBadTVarName = find(~ismember(tVarNames,inf.Variables(:,1))); % time variable should be under inf.Variables(:,1)
+			iBadTVarName = ~ismember(tVarNames,inf.Variables(:,1)); % time variable should be under inf.Variables(:,1)
 			if any(iBadTVarName)
-				indGoodTVarName(indGoodTVarName==iBadTVarName) = [];
 				irf.log('notice',['!! bad time variable names in DEPEND_O: ' tVarNames{iBadTVarName}]);
+				indGoodTVarName(iBadTVarName) = [];
 				tVarNames{iBadTVarName} = [];
 			end
 			isBadTime  = cellfun(@(x) ~any(strcmpi({'tt2000','epoch','epoch16'}, ...
