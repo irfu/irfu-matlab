@@ -263,7 +263,7 @@ classdef mms_db_sql < handle
 				return;
 			else
 				while true
-					idDatasetList{iDataset} = char(rs.getString('idDataset'));
+					idDatasetList{iDataset} = char(rs.getString('idDataset'));  %#ok<AGROW>
 					iDataset = iDataset +1 ;
 					if ~rs.next, break; end
 				end
@@ -288,7 +288,7 @@ classdef mms_db_sql < handle
 				return;
 			else
 				while true
-					idDatasetList{iDataset} = char(rs.getString('idDataset'));
+					idDatasetList{iDataset} = char(rs.getString('idDataset'));  %#ok<AGROW>
 					iDataset = iDataset +1 ;
 					if ~rs.next, break; end
 				end
@@ -303,7 +303,7 @@ classdef mms_db_sql < handle
 			while rs.next
 				tint = sscanf([char(rs.getString('startTT')) ' ' ...
 					char(rs.getString('endTT'))],'%ld %ld');
-				tintArray(end+1,:)= tint;
+				tintArray(end+1,:)= tint;       %#ok<AGROW>
 			end
 			if nargout == 0, % print time intervals
 				nTint = size(tintArray,1);
@@ -319,9 +319,9 @@ classdef mms_db_sql < handle
 			res=true; % default is true
 			for iVarname = 1:length(varName)
 				varString = varName{iVarname};
-				sql = ['select v.idVar from VarNames v where v.varName = "' varString '" and '...
-					'v.idDataset IN (select vind.idDataset from VarIndex vind where vind.idFile='...
-					'(select fl.idFile from FileList fl where fl.fileNameFullPath = "' fileName '"))'];
+				sql = ['select v.idVar from VarNames AS v where v.varName = "' varString '" and '...
+					'v.idDataset IN (select vind.idDataset from VarIndex AS vind where vind.idFile='...
+					'(select fl.idFile from FileList AS fl where fl.fileNameFullPath = "' fileName '"))'];
 				rs=obj.sqlQuery(sql);
 				if ~rs.next
 					res = false;
