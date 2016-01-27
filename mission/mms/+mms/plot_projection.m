@@ -1,8 +1,8 @@
 function [hax,hcb] = plot_projection(varargin)
-%MMS.PLOT_SKYMAP Plots projection.
+%MMS.PLOT_PROJECTION Plots projection.
 %
-% [ax,hcb] = MMS.PLOT_SKYMAP(TSeriesDesDist,'Opt1',OptVal1,...) - plot skymap.
-% MMS.PLOT_SKYMAP(AX,...) - plot in axes AX.
+% [ax,hcb] = MMS.PLOT_PROJECTION(TSeriesDesDist,'Opt1',OptVal1,...) - plot projection.
+% MMS.PLOT_PROJECTION(AX,...) - plot in axes AX.
 %
 % Options:
 %   'tint' - plot data for time interval if tint.length = 2
