@@ -40,7 +40,8 @@ DeltaAspocOff = Es12AspocOff - Es34AspocOff;
 DeltaAspocOn = Es12AspocOn - Es34AspocOn;
 
 %% FPI
-B = mms.get_data('dfg_ql_srvy',Tint,mmsId);
+B = mms.get_data('B_dmpa_srvy',Tint,mmsId);
+if isempty(B), B = mms.get_data('dfg_ql_srvy',Tint,mmsId); end
 Vfpi = mms.get_data('Vi_gse_fpi_ql',Tint,mmsId);
 if isempty(Vfpi)
   res = []; return

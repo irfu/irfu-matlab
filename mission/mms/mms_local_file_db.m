@@ -16,8 +16,11 @@ classdef mms_local_file_db < mms_file_db
       
       obj@mms_file_db(rootPath); obj.dbRoot = rootPath;
       if nargin == 0, return, end
-      if ~ischar(rootPath) || exist(rootPath,'dir')~=7
+      if ~ischar(rootPath)
         errStr = 'rootPath must be a directory path name';
+        irf.log('critical',errStr), error(errStr)
+      elseif exist(rootPath,'dir')~=7
+        errStr = sprintf('DB rootPath (%s) does not esist. Not mounted?',rootPath);
         irf.log('critical',errStr), error(errStr)
       end
     end

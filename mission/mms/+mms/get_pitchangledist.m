@@ -130,6 +130,8 @@ else
 end
 
 z = -ones(lengthphi,1)*cosd(theta);
+
+if 0, % Not including solid angles. Leads to spurious results for Bz around zero. 
 z2 = ones(lengthphi,1)*sind(theta);
 dangle = pi/16;
 solida = dangle*dangle*z2;
@@ -140,9 +142,9 @@ end
 for ii = 1:length(pdist.time);
         allsolid2(ii,:,:,:) = allsolid;
 end
+end
 
-
-pdist.data = pdist.data.*allsolid2;
+%pdist.data = pdist.data.*allsolid2;
 
 anglevec = [15 30 45 60 75 90 105 120 135 150 165 180];
 pitcha = anglevec-7.5;
@@ -157,24 +159,25 @@ for ii = 1:length(pdist.time);
     end
     thetab = acosd(x*Bvec.data(ii,1)+y*Bvec.data(ii,2)+z*Bvec.data(ii,3));
     c_eval('pos? = ones(lengthphi,length(theta));',anglevec); 
-    c_eval('sol? = solida;',anglevec);    
+    %c_eval('sol? = solida;',anglevec);    
     pos15(thetab > 15) = NaN;
-    sol15(thetab > 15) = NaN;
+    %sol15(thetab > 15) = NaN;
     for jj = 2:(length(anglevec)-1)
         c_eval('pos?(thetab < (?-15)) = NaN;',anglevec(jj));
         c_eval('pos?(thetab > ?) = NaN;',anglevec(jj));
-        c_eval('sol?(thetab < (?-15)) = NaN;',anglevec(jj));
-        c_eval('sol?(thetab > ?) = NaN;',anglevec(jj));
+        %c_eval('sol?(thetab < (?-15)) = NaN;',anglevec(jj));
+        %c_eval('sol?(thetab > ?) = NaN;',anglevec(jj));
     end
     pos180(thetab < 165) = NaN;
-    sol180(thetab < 165) = NaN;
+    %sol180(thetab < 165) = NaN;
     
     c_eval('dist? = dist1;',anglevec);
     
     for kk = 1:numechannels;
         c_eval('dist?(kk,:,:)  = squeeze(dist1(kk,:,:)).*pos?;',anglevec);
     end 
-    c_eval('dist? =  squeeze(irf.nanmean(irf.nanmean(dist?,3),2))/irf.nanmean(irf.nanmean(sol?));',anglevec);
+    %c_eval('dist? =  squeeze(irf.nanmean(irf.nanmean(dist?,3),2))/irf.nanmean(irf.nanmean(sol?));',anglevec);
+    c_eval('dist? =  squeeze(irf.nanmean(irf.nanmean(dist?,3),2));',anglevec);
     paddistarr(ii,:,:) = [dist15 dist30 dist45 dist60 dist75 dist90 dist105 dist120 dist135 dist150 dist165 dist180];
 end
 
