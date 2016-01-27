@@ -4,29 +4,24 @@ function Pe = rotate_tensor(varargin)
 %
 % Examples:
 % Rotate tensor into field-aligned coordinates
-% [PeXXp,PeXYp,PeXZp,PeYYp,PeYZp,PeZZp] = mms.rotate_tensor(PeXX,PeXY,PeXZ,PeYY,PeYZ,PeZZ,'fac',Bback,['pp'])
-% [PeXXp,PeXYp,PeXZp,PeYYp,PeYZp,PeZZp] = mms.rotate_tensor(Peall,'fac',Bback)
+% Pe = mms.rotate_tensor(PeXX,PeXY,PeXZ,PeYY,PeYZ,PeZZ,'fac',Bback,['pp'])
+% Pe = mms.rotate_tensor(Peall,'fac',Bback)
 % 
 % Rotate tensor into user-defined coordinate system
-% [PeXXp,PeXYp,PeXZp,PeYYp,PeYZp,PeZZp] = mms.rotate_tensor(Peall,'rot',xnew,[ynew,znew])
+% Pe = mms.rotate_tensor(Peall,'rot',xnew,[ynew,znew])
 %
 % Rotate tensor from spacecraft coordinates into GSE coordinates
 % Pe = mms.rotate_tensor(Peall,'gse',MMSnum)
 %
-%
 % Function to rotate the pressure tensor term into field-aligned coordinates or 
 % another coordinate system. 
-% For rotate into field-aligned coordinates PeZZp is aligned with background magnetic
-% field, PeXXp is closest to the x-direction and PeYYp completes the system.
 % 
 % Written by D. B. Graham.
 %
 % Input: 
 %       PeXX,PeXY,PeXZ,PeYY,PeYZ,PeZZ - Pressure terms or temperature in TSeries 
 %       Peall - TSERIES of all tensor terms with column order PeXX,PeXY,PeXZ,PeYY,PeYZ,PeZZ
-%       'fac' - Transform tensor into field-aligned coordinates. PeZZp is
-%           field-aligned. PeXXp and PeYYp are closest orthogonal components to
-%           the x and y directions
+%       'fac' - Transform tensor into field-aligned coordinates. 
 %           * Bback - Background magnetic field (TSERIES format)
 %           * 'pp' - optional flag to rotate perpendicular components so
 %             P_perp1 = P_perp2
@@ -39,8 +34,8 @@ function Pe = rotate_tensor(varargin)
 %           * MMSnum - MMS spacecraft number 1--4.
 %
 % Output: 
-%       Pe - Pressure or temperature terms in
-%       field-aligned, user-defined, or GSE coordinates. Tseries with 3*3 in data.
+%       Pe - Pressure or temperature terms in field-aligned, user-defined, 
+%       or GSE coordinates. Tseries with 3*3 in data.
 %       For 'fac' Pe = [Ppar P12 P13; P12 Pperp1 P23; P13 P23 Pperp2]
 %       For 'rot' and 'gse' Pe = [Pxx Pxy Pxz; Pxy Pyy Pyz; Pxz Pyz Pzz]
 % 
