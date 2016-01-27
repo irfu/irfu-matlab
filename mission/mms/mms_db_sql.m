@@ -79,7 +79,7 @@ classdef mms_db_sql < handle
 		
 		function import_a_file_from_list(obj)
 			% import one new file from FileListToImport
-			sql = 'select * from FileListToImport LIMIT 1';
+			sql = 'select * from FileListToImport order by rowid desc limit 1';
 			rs = obj.sqlQuery(sql);
 			while rs.next
 				fileToImport = char(rs.getString('fileNameFullPath'));
@@ -94,7 +94,7 @@ classdef mms_db_sql < handle
 			% import all files from FileListToImport
 			someFilesDidNotImport = false;
 			while 1
-				sql = 'select * from FileListToImport';
+				sql = 'select * from FileListToImport order by rowid desc limit 1';
 				rs = obj.sqlQuery(sql);
 				if rs.next
 					fileToImport = char(rs.getString('fileNameFullPath'));
@@ -134,15 +134,18 @@ classdef mms_db_sql < handle
 		
 		function status = import_file(obj,fileToImport)
 			% import a single file
+			% return status = 1 if file is imported sucessully, or it exists or
+			% file with newer version exists. Otherwise return status = 0.
+			%
 			irf.log('notice',['File to import: ' fileToImport]);
-			status = 0;
+			status = 1;
 			removeOlderVersionFile = false;
 			% check if file is not in db
 			sql = ['select * from FileList ' ...
 				'where fileNameFullPath = "' fileToImport '"'];
 			rs=obj.sqlQuery(sql);
 			while rs.next % file already exist
-				irf.log('warning','File exists, not importing!');
+				irf.log('notice','File exists, not importing!');
 				return;
 			end
 			% check if files with different version exist 
@@ -156,17 +159,13 @@ classdef mms_db_sql < handle
 			rs=obj.sqlQuery(sql);
 			if rs.next % file with different version exists
 				existingVersion = char(rs.getString('version'));
-                eVer = get_ver(existingVersion);
-                fVer = get_ver(FileInfo.version);
-				if(fVer.maj>eVer.maj) || ... % Newer major version
-                    (fVer.maj==eVer.maj && fVer.min>eVer.min) || ... % Same major version, newer calibration
-                    (fVer.maj==eVer.maj && fVer.min==eVer.min && fVer.rev>eVer.rev) % Same major and calib. but newer revision, replace file
-                  	irf.log('warning',['File with older version ' existingVersion ' exsists!']);
+				if is_version_larger(FileInfo.version(2:end),existingVersion(2:end))
+					irf.log('notice',['File with older version ' existingVersion ' exsists!']);
 					removeOlderVersionFile = true;
 					existingFileID = char(rs.getString('idFile'));
 				else
-					irf.log('warning',['Not importing version ' FileInfo.version ...
-						'because file with higher version ' existingVersion ' exsists!']);
+					irf.log('notice',['Not importing version ' FileInfo.version ...
+						' because file with newer version ' existingVersion ' exsists!']);
 					return;
 				end
 			end
@@ -209,20 +208,11 @@ classdef mms_db_sql < handle
 				obj.sqlUpdate(sql);
 			end
 			
-			status = 1;
-			
 			if removeOlderVersionFile
 				irf.log('notice',['Deleting information of the file with older version ' existingVersion '!']);
 				obj.sqlUpdate(['delete from VarIndex where idFile = "' existingFileID '"']);
 				obj.sqlUpdate(['delete from FileList where idFile = "' existingFileID '"']);
-            end
-            function ver = get_ver(verS)
-               vT = strsplit(verS,'.');
-               for iTmp=1:length(vT), vT{iTmp} = str2double(vT{iTmp}); end
-               ver = struct('maj',vT{1},'min',0,'rev',0);
-               if isempty(vT{2}), return, end, ver.min = vT{2};
-               if isempty(vT{3}), return, end, ver.rev = vT{3};
-            end
+			end
 		end
 		
 		function idDataset=add_var_names(obj,dataset,varNames)
