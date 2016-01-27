@@ -2,7 +2,7 @@ classdef mms_db_cache<handle
   %MMS_DB_CACHE Caching of files
   
   properties
-    timeout = 600        % db cache timeout in sec
+    timeout = 0          % db cache timeout in sec, off by default
     cacheSizeMax = 1024  % db cache max size in mb
   end
   
@@ -30,7 +30,7 @@ classdef mms_db_cache<handle
     end
     
     function set.enabled(obj,value)
-      if numel(value) ~=1 || ~isa(value,'logical')
+      if numel(value) ~=1 || ~islogical(value)
         error('expecting logical value (true/false)')
       end
       obj.enabled_ = value;
@@ -40,8 +40,8 @@ classdef mms_db_cache<handle
     end
     
     function set.timeout(obj,value)
-      if numel(value) ~=1 || value<=0
-        error('expecting a positive numerical value (seconds)')
+      if numel(value) ~=1 || ~isnumeric(value) || value<0
+        error('expecting a numerical value >=0 (seconds)')
       end
       obj.timeout = value;
     end
@@ -102,21 +102,26 @@ classdef mms_db_cache<handle
       cacheTmp = obj.data; w = whos('cacheTmp'); t0 = now(); %#ok<NASGU>
       fprintf('DB cache using %.1fMB of %dMB \n',...
         w.bytes/1024/1024,obj.cacheSizeMax)
-      fprintf('Timeout : %d sec\nEntries : \n',obj.timeout)
+      if obj.timeout==0, fprintf('Timeout : off sec\nEntries : \n')
+      else
+        fprintf('Timeout : %d sec\nEntries : \n',obj.timeout)
+      end
       dt = t0 - obj.loaded; [dt,idx] = sort(dt);
       for i=1:length(idx)
+        if obj.timeout==0, fprintf('''%s''\n', obj.names{idx(i)})
+        else
         fprintf('''%s'' (expires in %d sec)\n', obj.names{idx(i)},...
           ceil(obj.timeout - dt(i)*86400))
+        end
       end
     end
     
     function purge(obj)
-      if ~obj.enabled, return, end
-      if ~isempty(obj.names) % purge old entries from cache
-        t0 = now;
-        idx = t0 > obj.loaded + obj.timeout/86400;
-        obj.loaded(idx) = []; obj.names(idx) = []; obj.data(idx) = [];
-      end
+      if ~obj.enabled || obj.timeout==0 || isempty(obj.names), return, end
+      % purge old entries from cache
+      t0 = now;
+      idx = t0 > obj.loaded + obj.timeout/86400;
+      obj.loaded(idx) = []; obj.names(idx) = []; obj.data(idx) = [];
     end
   end
   

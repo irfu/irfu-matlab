@@ -11,6 +11,7 @@ function db_init(key, val)
 %    Database with IRFU produced products
 %
 %    mms.db_init('db_cache_enabled',true)
+%    mms.db_init('db_cache_size_max',4096) % set cache to 4GB
 
 global MMS_DB;
 if isempty(MMS_DB), MMS_DB = mms_db; end
