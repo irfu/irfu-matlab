@@ -25,6 +25,8 @@ function Pe = rotate_tensor(varargin)
 %           * Bback - Background magnetic field (TSERIES format)
 %           * 'pp' - optional flag to rotate perpendicular components so
 %             P_perp1 = P_perp2
+%           * 'qq' - optional flag to rotate perpendicular components so
+%             P_perp1 and P_perp2 are most unequal
 %       'rot' - Transform tensor into an arbitrary coordinate system
 %           * xnew - new x-direction (required after 'rot')
 %           * ynew, znew - new y and z directions (if not included y and 
@@ -77,6 +79,7 @@ else
 end    
 
 ppeq = 0;
+qqeq = 0;
 Rotmat = zeros(length(Petimes),3,3);
 
 if (rotflag(1) == 'f'),
@@ -90,12 +93,14 @@ if (rotflag(1) == 'f'),
     if (nargin == 4)
         if (isa(varargin{4},'char') && varargin{4}(1) == 'p'),
             ppeq = 1;
+        elseif (isa(varargin{4},'char') && varargin{4}(1) == 'q'),
+            qqeq = 1;
         else
             irf_log('proc','Flag not recognized no additional rotations applied.')
         end
     end
     Bvec = Bback/Bback.abs;
-    Rx = Bvec.data
+    Rx = Bvec.data;
     Ry = [1 0 0];
     Rz = irf_cross(Rx,Ry);
     Rmag = irf_abs(Rz,1);
@@ -180,6 +185,15 @@ if ppeq,
     theta = 0.5*atan((Ptensorp(:,3,3)-Ptensorp(:,2,2))./(2*Ptensorp(:,2,3)));
     for ii = 1:length(Petimes);
         rottemp = [1 0 0; 0 cos(theta(ii)) sin(theta(ii)); 0 -sin(theta(ii)) cos(theta(ii))];
+        Ptensorp(ii,:,:) = rottemp*(squeeze(Ptensorp(ii,:,:))*transpose(rottemp));
+    end
+end
+
+if qqeq,
+    irf_log('proc','Rotating tensor so perpendicular diagonal components are most unequal.')
+    theta = 0.5*atan((2*Ptensorp(:,2,3))./(Ptensorp(:,3,3)-Ptensorp(:,2,2)));
+    for ii = 1:length(Petimes);
+        rottemp = [1 0 0; 0 cos(theta(ii)) -sin(theta(ii)); 0 sin(theta(ii)) cos(theta(ii))];
         Ptensorp(ii,:,:) = rottemp*(squeeze(Ptensorp(ii,:,:))*transpose(rottemp));
     end
 end
