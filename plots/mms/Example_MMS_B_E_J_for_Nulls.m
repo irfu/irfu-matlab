@@ -19,6 +19,7 @@ Tint  = irf.tint('2016-01-26T20:00:00Z/2016-01-27T15:00:00Z');
 boxLim=70;
 currentLim=500E-9;
 tetrahedronQualityLim=0.6;
+smallInterval=false;
 %% Load magnetic field and spacecraft positional data
 
 % Magnetic Field
@@ -136,7 +137,7 @@ end
 
 %% Only picks out a smaller time interval around the nulls (to keep filesize small)
 %Possibility to pick out interesting time interval to keep the file size small
-if true
+if smallInterval
     if isempty(Nulls.t)
         error('No Nulls are found')
     else
