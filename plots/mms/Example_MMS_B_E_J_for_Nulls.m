@@ -10,7 +10,8 @@
 %of all spacecraft values and a seperate plot with the same variables where only the E and
 %B are from a specific spacecraft given by the number of ic.
 
-
+%To-Do: Fix data gap so that the function looks for more data after the
+%first gap.
 %% Set time interval to look in, the specific spacecraft of interest and set limits for Null method.
 % taken from
 ic=1; %Gives number of spacecraft where density is taken for Hall field calculations.
