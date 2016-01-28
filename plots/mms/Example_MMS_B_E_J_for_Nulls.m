@@ -18,7 +18,6 @@ Tint  = irf.tint('2016-01-26T20:00:00Z/2016-01-27T15:00:00Z');
 %Tint  = irf.tint('2015-12-10T02:27:50Z/2015-12-29T02:28:00Z');
 boxLim=70;
 currentLim=500E-9;
-tetrahedronQualityLim=0.6;
 smallInterval=false;
 %% Load magnetic field and spacecraft positional data
 
@@ -56,9 +55,6 @@ else
 end
 %% Looks for Nulls and if they are found makes average calculations and Loads electric fields, density and calculates J and JxB with curlometer method
 % Assuming GSE and DMPA are the same coordinate system.
-%Quality data comes 2 days late
-% Load quality of tetrahedron
-        % Removes all time steps with bad tetrahedron quality
         c_eval('R?_null = [R?.time.epochUnix double(R?.data)];',1:4);
         c_eval('B?_null = [B?.time.epochUnix double(B?.data)];',1:4);
         
