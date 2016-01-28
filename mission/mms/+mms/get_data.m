@@ -40,7 +40,7 @@ vars = {'R_gse','R_gsm','V_gse','V_gsm',...
   'Vi_gse_fpi_ql','Ve_gse_fpi_brst','Vi_gse_fpi_brst', ...
   'Ni_fpi_ql','Ni_fpi_brst','Ne_fpi_brst',...
   'B_dmpa_srvy','B_gse_srvy','B_gsm_srvy','B_dmpa_brst','B_gse_brst','B_gsm_brst',...
-  'dfg_ql_srvy','afg_ql_srvy'}; % XXX THESE MUST BE THE SAME VARS AS BELOW
+  'dfg_ql_srvy','afg_ql_srvy','tetra_quality'}; % XXX THESE MUST BE THE SAME VARS AS BELOW
 if isempty(intersect(varStr,vars)),
   errS = ['variable not recognized: ' varStr];
   irf.log('critical',errS);
@@ -197,6 +197,21 @@ switch varStr
       res = rTs(~ind);
     else
       res = rTs;
+    end
+  case 'tetra_quality'
+    % Begin looking for Def. quality
+    quality = mms.db_get_variable('mms_ancillary_defq','quality',Tint);
+    if isempty(quality.quality)
+      irf.log('warning', 'Did not find any definite tetrahedra quality. Looking for predicted.');
+      list = mms.db_list_files('mms_ancillary_predq',Tint);
+      if(~isempty(list))
+        % Load the last predicted file to match Tint
+        quality = mms_load_ancillary([list(end).path, filesep, list(end).name], 'predq');
+      end
+    end
+    if(~isempty(quality.quality))
+      rTs = irf.ts_scalar(EpochTT(quality.time), quality.quality);
+      res = rTs.tlim(Tint);
     end
   otherwise, error('should not be here')
 end
