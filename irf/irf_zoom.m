@@ -206,6 +206,8 @@ end
 function zoom_y_auto(h)
 % make more space related auto zoom than Matlab 
 hlines=findall(h,'Type','line');
+hlines = findobj(hlines,'-not','Tag','irf_pl_mark');
+
 ud=get(h,'userdata');
 uf=get(get(h,'parent'),'userdata');
 xzero=0; % reference point

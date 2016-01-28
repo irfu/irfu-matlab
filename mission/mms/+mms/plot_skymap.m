@@ -35,8 +35,7 @@ while have_options
   switch(lower(args{1}))
     case 'energy'
       l = 2;
-      energy = args{2};
-      %energyTable = [1:32];
+      energy = args{2};      
       eId = find(abs(energyTable-energy)==min(abs(energyTable-energy)));
     case 'energylevel'
       l = 2;
@@ -118,9 +117,7 @@ while have_vectors
     quiver3(ax,-scale*vecHat(1),-scale*vecHat(2),-scale*vecHat(3),vecHat(1),vecHat(2),vecHat(3),2*scale,'linewidth',2)
     scale = 1.7;
     axes(ax)
-    text(double(scale*vecHat(1)),double(scale*vecHat(2)),double(scale*vecHat(3)),vecTxt,'fontsize',14)
-    %vectors = vectors(2:end,:);
-    %if isempty(vectors), break, end  
+    text(double(scale*vecHat(1)),double(scale*vecHat(2)),double(scale*vecHat(3)),vecTxt,'fontsize',14)    
   else % plot flat skymap
     vecHat = vectors{1,1}/norm(vectors{1,1});
     vecTxt = vectors{1,2};
@@ -130,24 +127,18 @@ while have_vectors
     
     plot(ax,azim*180/pi,elev*180/pi+90,'o','linewidth',2,'markersize',12,'color',[0 0 0])
     plot(ax,azim*180/pi,elev*180/pi+90,'o','linewidth',0.5,'markersize',2,'color',[0 0 0],'markerfacecolor',[0 0 0])
-    axes(ax); text(azim*180/pi,elev*180/pi+90,['   ' vecTxt],'fontsize',14,'HorizontalAlignment','left')
+    axes(ax); text(double(azim*180/pi),double(elev*180/pi+90),['   ' vecTxt],'fontsize',14,'HorizontalAlignment','left')
     
     [azim,elev,r] = cart2sph(-vecHat(1),-vecHat(2),-vecHat(3)); 
     if azim<0, azim = azim + 2*pi; end
     if azim>2*pi, azim = azim - 2*pi; end
     plot3(ax,azim*180/pi,elev*180/pi+90,0,'o','linewidth',2,'markersize',12,'color',[0 0 0])
     plot3(ax,azim*180/pi,elev*180/pi+90,0,'x','linewidth',2,'markersize',12,'color',[0 0 0])       
-    axes(ax); text(azim*180/pi,elev*180/pi+90,['   ' vecTxt],'fontsize',14,'HorizontalAlignment','left')        
+    axes(ax); text(double(azim*180/pi),double(elev*180/pi+90),['   ' vecTxt],'fontsize',14,'HorizontalAlignment','left')        
   end
   vectors = vectors(2:end,:);
   if isempty(vectors), break, end  
 end
 hold(ax,'off');
 
-end
-
-function energy_level = energy_levels(energy)
-  energy_levels
-  %find () 
-  
 end

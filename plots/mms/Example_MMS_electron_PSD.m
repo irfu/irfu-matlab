@@ -4,8 +4,6 @@
 
 ic = 1; % Spacecraft number
 
-mms.db_init('local_file_db','/data/mms');
-
 tint = irf.tint('2015-09-19T10:05:32.900000Z/2015-09-19T10:05:33.000000Z'); % Time interval to average over
 tintl = tint+[-1 1];
 

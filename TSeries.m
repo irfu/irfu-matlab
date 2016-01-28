@@ -845,28 +845,31 @@ classdef TSeries
       elseif obj.tensorBasis_ ~= obj1.tensorBasis_
         error('Inputs must have the same tensor basis, use transform()');
       end
-      Tmptime = [obj.time.epoch; obj1.time.epoch];
-      Tmpdata = [obj.data; obj1.data];
-      [srt_time, srt] = sort(Tmptime);
-      [Tmptime, usrt] = unique(srt_time);
+      
+      timeClass = class(obj.time);
+      obj1TimeTmp = convert_epoch(obj1.time,timeClass);
+      epochTmp = [obj.time.epoch; obj1TimeTmp.epoch];
+      [srt_time, srt] = sort(epochTmp);
+      [epochTmp, usrt] = unique(srt_time);
+      NewTime = feval(timeClass,epochTmp);
+      
+      dataTmp = [obj.data; obj1.data];
       nd = ndims(obj.data);
       switch nd
-        case 2, Tmpdata = Tmpdata(srt(usrt), :);
-        case 3, Tmpdata = Tmpdata(srt(usrt), :, :);
-        case 4, Tmpdata = Tmpdata(srt(usrt), :, :, :);
-        case 5, Tmpdata = Tmpdata(srt(usrt), :, :, :, :);
-        case 6, Tmpdata = Tmpdata(srt(usrt), :, :, :, :, :);
+        case 2, dataTmp = dataTmp(srt(usrt), :);
+        case 3, dataTmp = dataTmp(srt(usrt), :, :);
+        case 4, dataTmp = dataTmp(srt(usrt), :, :, :);
+        case 5, dataTmp = dataTmp(srt(usrt), :, :, :, :);
+        case 6, dataTmp = dataTmp(srt(usrt), :, :, :, :, :);
         otherwise
           errStr = 'Cannot handle more than 6 dimensions.';
           irf.log('critical', errStr);
           error(errStr);
       end
-      if(obj.tensorOrder==0)
-        Ts = TSeries(EpochTT(Tmptime), Tmpdata, ...
-          'tensorOrder', obj.tensorOrder);
+      if obj.tensorOrder==0
+        Ts = TSeries(NewTime, dataTmp, 'tensorOrder', obj.tensorOrder);
       else
-        Ts = TSeries(EpochTT(Tmptime), Tmpdata, ...
-          'tensorOrder', obj.tensorOrder, ...
+        Ts = TSeries(NewTime, dataTmp, 'tensorOrder', obj.tensorOrder, ...
           'tensorBasis', obj.BASIS{obj.tensorBasis_}); % Combined TSeries
       end
       % Perhaps fix a better combination of metadata, for now keep "obj".

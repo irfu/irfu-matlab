@@ -248,6 +248,9 @@ switch lower(flag)
 			if isa(tInput,'GenericTimeArray') && length(tInput) == 2
 				t1iso=tInput(1).utc(fmt);
 				t2iso=tInput(2).utc(fmt);
+			elseif isa(tInput,'int64')
+				t1iso = irf_time(tInput(:,1),['ttns>utc_' fmt]);
+				t2iso = irf_time(tInput(:,2),['ttns>utc_' fmt]);
 			else
 				t1iso = irf_time(tInput(:,1),['epoch>utc_' fmt]);
 				t2iso = irf_time(tInput(:,2),['epoch>utc_' fmt]);

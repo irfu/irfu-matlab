@@ -3,7 +3,8 @@ classdef TimeTable
 	%
 	% TT=irf.TimeTable	- generate empty time table
 	% TT=irf.TimeTable(tint) - generate time table from matrix tint. 
-	%			1st column start time and 2nd column end times in isdat epoch
+	%			1st column start time and 2nd column end times in isdat epoch 
+	%     or nanoseconds of TT2000 if tint is int64
 	% TT=irf.TimeTable('demo') - generate short example time table
 	% TT=irf.TimeTable('http://..') - load ascii time table from internet link 
 	% TT=irf.TimeTable(filename) - load ascii time table from file
@@ -181,8 +182,13 @@ classdef TimeTable
 			out(1:nHeaderLines)=header;
 			currentLine=nHeaderLines+1;
 			fmt='%s %s %s';
-			tstartIso = irf_time(tint(:,1),'utc');
-			tendIso = irf_time(tint(:,2),'utc');
+			if isa(tint,'int64')
+				tstartIso = irf_time(tint(:,1),'ttns>utc');
+				tendIso = irf_time(tint(:,2),'ttns>utc');
+			else
+				tstartIso = irf_time(tint(:,1),'utc');
+				tendIso = irf_time(tint(:,2),'utc');
+			end
 			for iTT=1:numel(tt)
 				out{currentLine}=sprintf(fmt,tstartIso(iTT,:),...
 					tendIso(iTT,:),comment{iTT});

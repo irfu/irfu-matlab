@@ -4,6 +4,8 @@ classdef mms_db < handle
   
   properties
     databases
+    cache
+		index
   end
   
   methods
@@ -19,10 +21,15 @@ classdef mms_db < handle
         return
       end
       obj.databases = [obj.databases dbInp];
+      obj.cache = mms_db_cache();
+      obj.cache.enabled = false;
+      obj.index.enabled = false;
     end
+    
     
    function fileList = list_files(obj,filePrefix,tint)
      fileList =[];
+		 if nargin==2, tint =[]; end
      if isempty(obj.databases)
        irf.log('warning','No databases initialized'), return
      end
@@ -38,8 +45,8 @@ classdef mms_db < handle
      fileList = list_files(obj,filePrefix,tint);
      if isempty(fileList), return, end
      
-     loadedFiles = obj.load_list(fileList,varName);
-     if numel(loadedFiles)==0, return, end
+		 loadedFiles = obj.load_list(fileList,varName);
+		 if numel(loadedFiles)==0, return, end
      
      flagDataobj = isa(loadedFiles{1},'dataobj');
      for iFile = 1:length(loadedFiles)
@@ -181,11 +188,25 @@ classdef mms_db < handle
      
      for iFile=1:length(fileList)
        fileToLoad = fileList(iFile);
-       db = obj.get_db(fileToLoad.dbId);  
-       if isempty(db) || ~db.file_has_var(fileToLoad.name,mustHaveVar)
-         continue
+			 if mms.db_index
+				 fileNameToLoad = fileToLoad{1};
+			 else
+				 fileNameToLoad = fileToLoad.name;
+			 end
+       dobjLoaded = obj.cache.get_by_key(fileNameToLoad);
+       if isempty(dobjLoaded)
+				 if mms.db_index
+					 db=obj.databases;
+				 else
+					 db = obj.get_db(fileToLoad.dbId);
+				 end
+         if isempty(db) || ~db.file_has_var(fileNameToLoad,mustHaveVar)
+           continue
+         end
+         dobjLoaded = db.load_file(fileNameToLoad);
+         obj.cache.add_entry(fileNameToLoad,dobjLoaded)
        end
-       res = [res {db.load_file(fileToLoad.name)}]; %#ok<AGROW>
+       res = [res {dobjLoaded}]; %#ok<AGROW>
      end
    end
    
