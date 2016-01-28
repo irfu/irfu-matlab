@@ -10,6 +10,8 @@
 %of all spacecraft values and a seperate plot with the same variables where only the E and
 %B are from a specific spacecraft given by the number of ic.
 
+%To-Do: Fix data gap so that the function looks for more data after the
+%first gap.
 %% Set time interval to look in, the specific spacecraft of interest and set limits for Null method.
 % taken from
 ic=1; %Gives number of spacecraft where density is taken for Hall field calculations.
@@ -265,8 +267,8 @@ else
     irf_plot_axis_align(1,h);
     irf_pl_mark(h,tmarks,[0.8 0.8 0.8]) %Setting the color lines to grey
     irf_pl_number_subplots(h,[0.99, 0.95]);
-    Tint=[Bfield(1,1) Bfield(end,1)];
-    irf_zoom(h,'x',Tint);
+    tint_zoom=[Bfield(1,1) Bfield(end,1)];
+    irf_zoom(h,'x',tint_zoom);
 end
 
 % 2) from terminal convert to eps file without white margins
