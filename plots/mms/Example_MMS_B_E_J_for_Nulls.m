@@ -1,10 +1,8 @@
 % A routine that identifies strong magnetic nulls (potential EDR).
 % Written by Elin Eriksson
 %
-% IMPORTANT: This example loads the tetrahedron quality from /data/mms/ancillary so
-% these files are needed if a different harddrive is used than /data/mms. 
-% Should also only be used to look at the most current nulls since it
-% allows the use of predq tetrahedron quality.
+% IMPORTANT: This example does not load the tetrahedron quality since it is
+% not availble for SITL person.
 %
 % Loads data and finds nulls that has a BoxLim of 70km and a Current
 % Lim of 500E-9 [nA/m^2 if B is in nT and R is in km].
@@ -16,7 +14,7 @@
 %% Set time interval to look in, the specific spacecraft of interest and set limits for Null method.
 % taken from
 ic=1; %Gives number of spacecraft where density is taken for Hall field calculations.
-Tint  = irf.tint('2016-01-13T20:00:00Z/2016-01-14T15:00:00Z');
+Tint  = irf.tint('2016-01-26T20:00:00Z/2016-01-27T15:00:00Z');
 %Tint  = irf.tint('2015-12-10T02:27:50Z/2015-12-29T02:28:00Z');
 boxLim=70;
 currentLim=500E-9;
@@ -59,59 +57,19 @@ end
 % Assuming GSE and DMPA are the same coordinate system.
 %Quality data comes 2 days late
 % Load quality of tetrahedron
-quality=mms.db_get_variable('mms_ancillary_defq','quality',Tint);
-if isempty(quality.quality)
-    list=mms.db_list_files('mms_ancillary_predq',Tint);
-    quality=mms_load_ancillary([list(end).path, filesep, list(end).name], 'predq');
-    if isempty(quality.quality)
-        error('No tetrahedron quality available. Cannot reliably search for Nulls');
-    else
-        quality=irf.ts_scalar(EpochTT(quality.time),quality.quality);
-        quality=quality.resample(B1);
-        tetrahedronBad= quality.data < 0.7;
         % Removes all time steps with bad tetrahedron quality
         c_eval('R?_null = [R?.time.epochUnix double(R?.data)];',1:4);
         c_eval('B?_null = [B?.time.epochUnix double(B?.data)];',1:4);
         
-        c_eval('R?_null(tetrahedronBad,:)=[];',1:4);
-        c_eval('B?_null(tetrahedronBad,:)=[];',1:4);
-        
-        if isempty(B1_null) || isempty(B2_null) || isempty(B3_null) || isempty(B4_null)
-            error('Tetrahedron quality is not good enough to search for Nulls');
-        else
-            disp('Looking for Nulls');
+      
             Nulls=c_4_null(R1_null,R2_null,R3_null,R4_null,B1_null,B2_null,B3_null,B4_null,'boxLim',boxLim,'strong',currentLim);
-        end
-    end
-else
-    quality=irf.ts_scalar(EpochTT(quality.time),quality.quality);
-    quality=quality.resample(B1);
-    tetrahedronBad= quality.data < 0.7;
-    % Removes all time steps with bad tetrahedron quality
-    c_eval('R?_null = [R?.time.epochUnix double(R?.data)];',1:4);
-    c_eval('B?_null = [B?.time.epochUnix double(B?.data)];',1:4);
-    
-    c_eval('R?_null(tetrahedronBad,:)=[];',1:4);
-    c_eval('B?_null(tetrahedronBad,:)=[];',1:4);
-    
-    if isempty(B1_null) || isempty(B2_null) || isempty(B3_null) || isempty(B4_null)
-        error('Tetrahedron quality is not good enough to search for Nulls');
-    else
-        disp('Looking for Nulls');
-        Nulls=c_4_null(R1_null,R2_null,R3_null,R4_null,B1_null,B2_null,B3_null,B4_null,'boxLim',boxLim,'strong',currentLim);
-    end
-end
+ 
 %%
 if isempty(Nulls.t)
     time_int=irf_time(Tint,'tint>utc');
     errormessage=['No Nulls were found with strong currents between ',time_int];
     error(errormessage);
 else
-    %% Possibility to save Null data
-    if 0
-        filename ='YearMonthDay_Nulls';
-        save(filename,'Nulls');
-    end
     %% Average calculations. Loads electric fields, density and calculates J and JxB with curlometer method
   disp('Calculates average Bfield')
     Bav = (B1.data+B2.data+B3.data+B4.data)/4;
@@ -191,7 +149,6 @@ if true
         j=j(index,:);
         jxB=jxB(index,:);
         EdotJ=EdotJ(index,:);
-        divovercurl=divovercurl(index,:);
     end
 end
 %% Plot data should only be used if nulls are found. Plots are only focused around the intervals of nulls found because of above segment.
@@ -203,14 +160,14 @@ else
     hca = irf_panel('BMMSav');
     irf_plot(hca,Bav);
     ylabel(hca,{'B_{DMPA}','(nT)'},'Interpreter','tex');
-    irf_legend(hca,{'B_{x}','B_{y}','B_{z}'},[0.88 0.10])
+    irf_legend(hca,{'B_{x}','B_{y}','B_{z}'},[0.88 0.10],'Interpreter','tex')
     %irf_legend(hca,'(a)',[0.99 0.98],'color','k')
     grid(hca,'off');
     
     hca = irf_panel('J');
     irf_plot(hca,j);
     ylabel(hca,{'J_{DMPA}','(nA m^{-2})'},'Interpreter','tex');
-    irf_legend(hca,{'J_{x}','J_{y}','J_{z}'},[0.88 0.10])
+    irf_legend(hca,{'J_{x}','J_{y}','J_{z}'},[0.88 0.10],'Interpreter','tex')
     %irf_legend(hca,'(c)',[0.99 0.98],'color','k')
     grid(hca,'off');
     
@@ -223,7 +180,7 @@ else
     hca = irf_panel('EMMSav');
     irf_plot(hca,Eav);
     ylabel(hca,{'E_{DSL}','(mV m^{-1})'},'Interpreter','tex');
-    irf_legend(hca,{'E_{x}','E_{y}','E_{z}'},[0.88 0.10])
+    irf_legend(hca,{'E_{x}','E_{y}','E_{z}'},[0.88 0.10],'Interpreter','tex')
     %irf_legend(hca,'(b)',[0.99 0.98],'color','k')
     grid(hca,'off');
     
@@ -244,7 +201,7 @@ else
     irf_plot_axis_align(1,h);
     irf_pl_mark(h,tmarks,[0.8 0.8 0.8]) %Setting the color lines to grey
     irf_pl_number_subplots(h,[0.99, 0.95]);
-    tint_zoom=[Bav(1,1) Bav(end,1)];
+    tint_zoom=[Bfield(1,1) Bfield(end,1)];
     irf_zoom(h,'x',tint_zoom);
 end
 
@@ -257,14 +214,14 @@ else
     hca = irf_panel('BMMS');
     irf_plot(hca,Bfield);
     ylabel(hca,{'B_{DMPA}','(nT)'},'Interpreter','tex');
-    irf_legend(hca,{'B_{x}','B_{y}','B_{z}'},[0.88 0.10])
+    irf_legend(hca,{'B_{x}','B_{y}','B_{z}'},[0.88 0.10],'Interpreter','tex')
     %irf_legend(hca,'(a)',[0.99 0.98],'color','k')
     grid(hca,'off');
     
     hca = irf_panel('J');
     irf_plot(hca,j);
     ylabel(hca,{'J_{DMPA}','(nA m^{-2})'},'Interpreter','tex');
-    irf_legend(hca,{'J_{x}','J_{y}','J_{z}'},[0.88 0.10])
+    irf_legend(hca,{'J_{x}','J_{y}','J_{z}'},[0.88 0.10],'Interpreter','tex')
     %irf_legend(hca,'(c)',[0.99 0.98],'color','k')
     grid(hca,'off');
     
@@ -277,7 +234,7 @@ else
     hca = irf_panel('EMMS');
     irf_plot(hca,Efield);
     ylabel(hca,{'E_{DSL}','(mV m^{-1})'},'Interpreter','tex');
-    irf_legend(hca,{'E_{x}','E_{y}','E_{z}'},[0.88 0.10])
+    irf_legend(hca,{'E_{x}','E_{y}','E_{z}'},[0.88 0.10],'Interpreter','tex')
     %irf_legend(hca,'(b)',[0.99 0.98],'color','k')
     grid(hca,'off');
     
@@ -299,7 +256,7 @@ else
     irf_pl_mark(h,tmarks,[0.8 0.8 0.8]) %Setting the color lines to grey
     irf_pl_number_subplots(h,[0.99, 0.95]);
     tint_zoom=[Bfield(1,1) Bfield(end,1)];
-    irf_zoom(h,'x',tint);
+    irf_zoom(h,'x',tint_zoom);
 end
 
 % 2) from terminal convert to eps file without white margins
