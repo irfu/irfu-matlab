@@ -213,8 +213,8 @@ else
     irf_plot_axis_align(1,h);
     irf_pl_mark(h,tmarks,[0.8 0.8 0.8]) %Setting the color lines to grey
     irf_pl_number_subplots(h,[0.99, 0.95]);
-    Tint=[Bav(1,1) Bav(end,1)];
-    irf_zoom(h,'x',Tint);
+    tint_zoom=[Bav(1,1) Bav(end,1)];
+    irf_zoom(h,'x',tint_zoom);
 end
 end
 %% Plot data for specific spacecraft given by ic.
