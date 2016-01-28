@@ -201,7 +201,7 @@ switch varStr
   case 'tetra_quality'
     % Begin looking for Def. quality
     quality = mms.db_get_variable('mms_ancillary_defq','quality',Tint);
-    if isempty(quality.quality)
+    if isempty(quality)
       irf.log('warning', 'Did not find any definite tetrahedra quality. Looking for predicted.');
       list = mms.db_list_files('mms_ancillary_predq',Tint);
       if(~isempty(list))
@@ -209,7 +209,7 @@ switch varStr
         quality = mms_load_ancillary([list(end).path, filesep, list(end).name], 'predq');
       end
     end
-    if(~isempty(quality.quality))
+    if(~isempty(quality))
       rTs = irf.ts_scalar(EpochTT(quality.time), quality.quality);
       res = rTs.tlim(Tint);
     end
