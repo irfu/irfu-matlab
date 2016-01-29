@@ -155,6 +155,7 @@ switch procId
 
   case MMS_CONST.SDCProc.l2a
     % L2A (same as old L2pre)
+    varNameSuffix = [tmModeStr, '_l2a'];
     dataType = [tmModeStr '_' procName '_' DCE_FILE];
     dataDesc = sprintf(...
       'MMS %i dual probe %s (%s), two dimensional electric field. L2A file',...
@@ -201,18 +202,18 @@ switch procId
     bitmask = mms_sdp_typecast('bitmask',[dce.e12.bitmask, dce.e34.bitmask, dce.e56.bitmask]);
     quality = mms_sdp_typecast('quality',mms_sdp_bitmask2quality('e',bitmask(:,1)));
 
-    name.epoch   = [datasetPrefix '_dce_epoch'];
-    name.dce     = [datasetPrefix '_dce_data'];
-    name.phase   = [datasetPrefix '_dce_phase'];
-    name.bitmask = [datasetPrefix '_dce_bitmask'];
-    name.quality = [datasetPrefix '_dce_quality'];
-    name.sfitsEpoch = [datasetPrefix '_dce_spinfit_epoch'];
-    name.adc     = [datasetPrefix '_dce_adc_offset'];
-    name.delta   = [datasetPrefix '_dce_delta_offset'];
-    name.label   = 'LABL_1'; % DCE data
-    name.label2  = 'LABL_2'; % Spinfit coeff. specified further down.
-    name.label3  = 'LABL_3'; % ADC offsets
-    name.label4  = 'LABL_4'; % Delta offsets
+    name.epoch   = [datasetPrefix '_epoch_' varNameSuffix];
+    name.dce     = [datasetPrefix '_dce_' varNameSuffix];
+    name.phase   = [datasetPrefix '_phase_' varNameSuffix];
+    name.bitmask = [datasetPrefix '_bitmask_' varNameSuffix];
+    name.quality = [datasetPrefix '_quality_' varNameSuffix];
+    name.sfitsEpoch = [datasetPrefix '_epoch_spinfit_' varNameSuffix];
+    name.adc     = [datasetPrefix '_adc_offset_' varNameSuffix];
+    name.delta   = [datasetPrefix '_delta_offset_' varNameSuffix];
+    name.label   = [datasetPrefix '_label1_' varNameSuffix]; % DCE data
+    name.label2  = [datasetPrefix '_label2_' varNameSuffix]; % Spinfit coeff. specified further down.
+    name.label3  = [datasetPrefix '_label3_' varNameSuffix]; % ADC offsets
+    name.label4  = [datasetPrefix '_label4_' varNameSuffix]; % Delta offsets
     label        = ['E_12'; 'E_34'; 'E_56'];
     label3       = ['E_12'; 'E_34'];
     label4       = ['real(delta_offset)'; 'imag(delta_offset)'];
@@ -362,7 +363,7 @@ switch procId
     outVars = [outVars {name.label2, label2}];
 
     for iPair=1:numel(sdpPair)
-      name.sfits.(sdpPair{iPair}) = [datasetPrefix '_dce_spinfit_' sdpPair{iPair}];
+      name.sfits.(sdpPair{iPair}) = [datasetPrefix,'_', sdpPair{iPair}, '_spinfit_', varNameSuffix];
       % Update output variables
       outVars = [outVars {...
         name.sfits.(sdpPair{iPair}), [spinfit.sdev.(sdpPair{iPair}), spinfit.sfit.(sdpPair{iPair})]}]; %#ok<AGROW>
