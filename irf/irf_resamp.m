@@ -39,6 +39,7 @@ max_flag=0;
 
 while have_options
 	l = 1;
+  aa = lower(args{1});
 	switch(lower(args{1}))
 		case {'nearest','linear','spline','pchip','cubic','v5cubic'}
 			method = args{1};
@@ -101,37 +102,94 @@ while have_options
 end
 
 % return in case inputs are empty
-if numel(x)==0 || numel(y)==0
+% changed numel(x) == 0 to isempty(x), since it also works on TSeries
+if isempty(x) || isempty(y)
     out=[];
     irf.log('warining','Some of input is empty, returning empty ouput');
     return;
 end
 
-% construct output time axis
-if isstruct(y),
-    if isfield(y,'t'), t=y.t; t=t(:);
-    else
-        msgS = 'Input is structure without time field';
-        irf.log('critical',msgS), error(msgS)
-    end
-elseif size(y,2)==1, t = y(:); % y is only time
-else t = y(:,1); t = t(:);   % first column of y is time
+% Need to check that x and y are given in same or simialr enough format,
+if any(isa(x,'TSeries')) && ~any([isa(y,'TSeries') isa(y,'GenericTimeArray')])
+  error('If X is TSeries, Y must be TSeries or GenericTimeArray.')
+end
+  
+% Check format of input
+xOrig = x; yOrig = y;
+
+% x, old time and data
+if isa(x,'TSeries')
+  flag_output = 'tseries';  
+  oldData = x.data;       
+  oldTime = double(x.time.epoch-x.time(1).epoch)/1e9; % transform from nanoseconds to seconds
+  flag_datatype = class(oldData);
+  flag_timetype = class(oldTime);
+elseif isa(x,'numeric') % old format [time data]
+  flag_output = 'mat';
+  if numel(x) == 1 % only one number
+    oldData = x;
+    oldTime = [];
+  else 
+    oldData = x(:,2:end);   
+    oldTime = x(:,1);       
+  end
+  flag_datatype = class(oldData);
+  flag_timetype = class(oldTime);
+else
+  msgS = 'Cannot recognize input x (old data), it is neither a TSeries nor a numeric array';
+  irf.log('critical',msgS), error(msgS)
 end
 
+% y, new time
+if isa(y,'struct'),
+  if isfield(y,'t'), t=y.t; t=t(:);
+  else
+    msgS = 'Input is structure without time field';
+    irf.log('critical',msgS), error(msgS)
+  end
+elseif isa(y,'TSeries')
+  y = y.time;
+  type_epoch = class(y);
+  t = double(y.time.epoch-x.time(1).epoch)/1e9; % transform from nanoseconds to seconds
+elseif isa(y,'GenericTimeArray')
+  type_epoch = class(y);
+  t = double(y.epoch-x.time(1).epoch)/1e9;  
+elseif isa(y,'numeric')
+  if size(y,2)==1, t = y(:);  % y is only time
+  else t = y(:,1); t = t(:);  % first column of y is time
+  end
+else 
+  msgS = 'Cannot recognize input y (new time), it is neither a TSeries nor a numeric array';
+  irf.log('critical',msgS), error(msgS)
+end
+
+% Make data into double so it's compatible with all subfunctions
+newTime = t;
+%t0 = oldTime(1);
+%oldTime = double(oldTime - t0);
+% oldData = double(oldData);
+%t = double(t-t0);
+
+% Transform all data to double to possibly retransform it the original data
+% type in the end
+%t0 = oldData(1);
+%x = [double(oldTime)-double(t0) double(oldData)];
+%y = [double(t)-double(t0) double(oldData)];
+
+
 % Same timeline - no need to do anything
-if length(x(:,1))==length(t) && all(x(:,1)==t)
+% old data already divided into time and data
+if length(oldTime)==length(t) && all(oldTime==t)
   irf.log('notice','New and old timelines are identical - no resampling needed')
   out = x; 
   return
 end
 
-if size(x,1) == 1,            % if X has only one point, this is a trivial
-                              % case and we return directly
-  if numel(x) == 1,           % there is only one number
-      out = [t (t*0+1)*x];
-  else                        % assume x(1) to be time
-      out = [t (t*0+1)*x(:,2:end)];
-  end
+% if X (oldData) has only one point, this is a trivial case and we 
+% return directly there is only one number
+% the single data point is duplicated into the new timeline
+if numel(oldTime) == 1,       
+  out = construct_output(t,repmat(oldData,numel(t),1,1));
   return
 end
 
@@ -142,8 +200,11 @@ if strcmp(flag_do,'check'), % Check if interpolation or average
 		% to decide interpolation/average
 		
 		% Guess samplings frequency for Y
+    % This becomes problematic when having time in nanoseconds, the
+    % division with dt becomes = 0. The format int64 does not allow for
+    % floating numbers. I make it a double
 		if isempty(sfy)
-			sfy1 = 1/(t(2) - t(1));
+			sfy1 = (1/(t(2) - t(1)));
 			if ndata==2, sfy = sfy1;
 			else
 				not_found = 1; cur = 3; MAXTRY = 10;
@@ -166,7 +227,7 @@ if strcmp(flag_do,'check'), % Check if interpolation or average
 			clear sfy1
 		end
 		
-		if length(x(:,1))/(x(end,1) - x(1,1)) > 2*sfy
+		if length(oldTime(:,1))/(oldTime(end,1) - oldTime(1,1)) > 2*sfy
 			flag_do='average';
 			irf.log('warning','Using averages in irf_resamp.');
 		else
@@ -178,58 +239,119 @@ if strcmp(flag_do,'check'), % Check if interpolation or average
 end
 
 if strcmp(flag_do,'average')
+  oldData = double(oldData);
+  % This part is not made suitable for tensor 2 data
     dt2 = .5/sfy; % Half interval
     if median_flag || max_flag || (exist('irf_average_mx','file')~=3)
         if (~median_flag && ~max_flag), irf.log('warning','cannot find mex file, defaulting to Matlab code.')
         end
-        out = zeros(ndata,size(x,2));
-        out(:,1) = t;
+        newData = zeros(ndata,size(oldData,2),size(oldData,3));
+        %out(:,1) = t;
         for j=1:ndata
-            ii = find(x(:,1) <=  t(j) + dt2 & x(:,1) >  t(j) - dt2);
-            if isempty(ii), out(j,2:end) = NaN;
+            ii = find(oldTime(:,1) <=  t(j) + dt2 & oldTime(:,1) >  t(j) - dt2);
+            %ii
+            if isempty(ii), newData(j,:) = NaN;
             else
                 if thresh % Throw away points above THERESH*STD()
-                    sdev = std(x(ii,2:end));
-                    mm = mean(x(ii,2:end));
+                    sdev = std(oldData(ii,:));
+                    mm = mean(oldData(ii,:));
                     if any(~isnan(sdev))
                         for k=1:length(sdev)
                             if ~isnan(sdev(k))
-                                kk = find( abs( x(ii,k+1) -mm(k) ) <= thresh*sdev(k));
+                                kk = find( abs( oldData(ii,k) -mm(k) ) <= thresh*sdev(k));
                                 %disp(sprintf(...
                                 %	'interval(%d) : disregarding %d 0f %d points',...
                                 %	j, length(ii)-length(kk),length(ii)));
                                 if ~isempty(kk)
-                                    if median_flag, out(j,k+1) = median(x(ii(kk),k+1));
-                                    elseif max_flag, out(j,k+1) = max(x(ii(kk),k+1));
-                                    else out(j,k+1) = mean(x(ii(kk),k+1));
+                                    if median_flag, newData(j,k) = median(oldData(ii(kk),k));
+                                    elseif max_flag, newData(j,k) = max(oldData(ii(kk),k));
+                                    else newData(j,k) = mean(oldData(ii(kk),k));
                                     end
                                 end
-                            else out(j,k+1) = NaN;
+                            else newdata(j,k) = NaN;
                             end
                         end
-                    else out(j,2:end) = NaN;
+                    else newData(j,:) = NaN;
                     end
                 else
-                    if median_flag, out(j,2:end) = median(x(ii,2:end));
-                    elseif max_flag, out(j,2:end) = max(x(ii,2:end));
-                    else out(j,2:end) = mean(x(ii,2:end));
+                    if median_flag, newData(j,:,:) = median(oldData(ii,:,:));
+                    elseif max_flag, newData(j,:,:) = max(oldData(ii,:,:));
+                    else newData(j,:,:) = mean(oldData(ii,:,:));
                     end
                 end
             end
         end
+        out = construct_output(t,newData);
     else
-        if ( (x(1,1) > t(end) + dt2) || (x(end,1) <= t(1) - dt2) )
-            irf.log('warning','Interval mismatch - empty return')
-            out = [];
-        else
-            out = irf_average_mx(x,t,dt2,thresh);
+        if ( (oldTime(1,1) > t(end) + dt2) || (oldTime(end,1) <= t(1) - dt2) )
+            irf.log('warning','Interval mismatch - empty return')           
+            out = construct_output([],[]);
+        else          
+            % input to irf_average_mx needs to be double
+            if strcmp(flag_output,'tseries') && x.tensorOrder == 2 
+              % must divide tensor into vectors
+              tmpData = nan(size(oldData));
+              for ii = 1:size(oldData,2)
+                %irf_resamp([tData squeeze(dataTmp(:,ii,:))], newTimeTmp, varargin{:});
+                % Maybe insert warning here that data is converted to double, if it is 
+                % not already double
+                newTmpData = irf_average_mx([oldTime squeeze(oldData(:,ii,:))],t,double(dt2),thresh);              
+                tmpData(:,ii,:) = newTmpData(:,2:end);
+              end   
+              newData = tmpData;
+              %outTmp = irf_average_mx(oldData,double(t-t(1)),double(dt2),thresh);              
+            else
+              % Maybe insert warning here that data is converted to double, if it is 
+              % not already double
+              %time1 = double(oldTime-oldTime(1));
+              %time2 = double(t-oldTime(1));
+              tmpData = irf_average_mx([oldTime oldData],t,double(dt2),thresh); 
+              %tmpData = irf_average_mx([double(oldTime-oldTime(1)) double(oldData)],double(t-oldTime(1)),double(dt2),thresh); 
+              newData = tmpData(:,2:end);
+            end
+            out = construct_output(t,newData);
         end
     end
 elseif strcmp(flag_do,'interpolation'),
   if nargin < 3 || isempty(method), method = 'linear'; end
 
   % If time series agree, no interpolation is necessary.
-  if size(x,1)==size(y,1), if x(:,1)==y(:,1), out = x; return, end, end
+  if size(oldData,1)==size(t,1), if oldTime==t(:,1), out = construct_output(oldTime,oldData); return, end, end
 
-  out = [t interp1(x(:,1),x(:,2:end),t,method,'extrap')];
+  %out = [t interp1(x(:,1),x(:,2:end),t,method,'extrap')]; 
+  
+  % Maybe insert warning here that data is converted to double, if it is 
+  % not already double
+  out = construct_output(t,interp1(oldTime,oldData,t,method,'extrap'));
 end
+
+function out = construct_output(t,newData)
+  % Instead of checking each time is the input was a TSeries or not, a flag
+  % is defined once, and then this functions called and constructs the
+  % appropriate output.
+  if isempty(t) || isempty(newData)
+    out = [];
+  end
+  if strcmp(flag_do,'average') && ~strcmp(flag_datatype,'double')
+    % data was transformed into double, so nned to transform it back
+    switch flag_datatype
+      case 'single'
+        newData = single(newData);
+      case 'int64'
+        newData = int64(newData);      
+    end
+  end
+  switch flag_output
+    case 'tseries'
+      %switch lower(type_epoch)
+      %  case 'epochtt', genericTime = EpochTT(y.epoch);
+      %  case 'epochunix',  genericTime = EpochUnix(newTime);
+      %end      
+      out = xOrig.clone(y,newData);
+    case 'mat'
+      out = [t newData];
+  end
+
+end % end of construct_output()
+
+end % end of irf_resamp()

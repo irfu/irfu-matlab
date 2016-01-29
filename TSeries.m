@@ -234,7 +234,7 @@ classdef TSeries
               obj.tensorBasis_ = iB; flagTensorBasisSet = true;
             else
               error('irf:TSeries:TSeries:badInputs',...
-                'tensorBais value not recognized')
+                'tensorBasis value not recognized')
             end
           case {'rep','repres','representation'}
             if isempty(obj.tensorOrder_),
@@ -461,6 +461,18 @@ classdef TSeries
       res = isempty(obj.t_);
     end
     
+    function Ts = clone(obj,t,data)
+      % CLONE TSeries.CLONE(t,data)
+      %  Clones a TSeries, but allows to add new time and data.
+      if size(data,1) ~= t.length()
+        error('irf:TSeries:TSeries:badInputs',...
+              'T and DATA must have the same number of records')
+      end
+      Ts = obj;
+      Ts.data_ = data;
+      Ts.t_ = t;
+    end
+      
     function Ts = abs(obj)
       %ABS Magnitude
       if obj.tensorOrder~=1, error('Not yet implemented'); end
@@ -899,6 +911,8 @@ classdef TSeries
     end
     
     function Ts = trace(obj)
+      % TRACE TSeries.trace
+      %   Takes the trace of tensor.
       if obj.tensorOrder ~= 2
         error('Trace only applicable to order 2 tensors')
       end
@@ -1004,22 +1018,23 @@ classdef TSeries
       end
            
       function resample_(TsTmp)
-        tData = double(TsTmp.time.ttns - TsTmp.time.start.ttns)/10^9;
-        dataTmp = double(TsTmp.data);
-        newTimeTmp = double(NewTime.ttns - TsTmp.time.start.ttns)/10^9;
-        if TsTmp.tensorOrder == 1,
-          newData = irf_resamp([tData dataTmp], newTimeTmp, varargin{:});
-          Ts = TsTmp; Ts.t_ = NewTime; Ts.data_ = newData(:,2:end);
-        elseif TsTmp.tensorOrder == 2, % implemented for 3x3 data
-          newData = nan(size(dataTmp));
-          for ii = 1:size(newData,2)
-            newDataTmp = irf_resamp([tData squeeze(dataTmp(:,ii,:))], newTimeTmp, varargin{:});
-            newData(:,ii,:) = newDataTmp(:,2:end);
-          end          
-          Ts = TsTmp; Ts.t_ = NewTime; Ts.data_ = newData(:,:,:);
-        else
-          error('Not yet implemented');
-        end
+        Ts = irf_resamp(TsTmp,NewTime,varargin{:});
+%         tData = double(TsTmp.time.ttns - TsTmp.time.start.ttns)/10^9;
+%         dataTmp = double(TsTmp.data);
+%         newTimeTmp = double(NewTime.ttns - TsTmp.time.start.ttns)/10^9;
+%         if TsTmp.tensorOrder == 1,
+%           newData = irf_resamp([tData dataTmp], newTimeTmp, varargin{:});
+%           Ts = TsTmp; Ts.t_ = NewTime; Ts.data_ = newData(:,2:end);
+%         elseif TsTmp.tensorOrder == 2, % implemented for 3x3 data
+%           newData = nan(size(dataTmp));
+%           for ii = 1:size(newData,2)
+%             newDataTmp = irf_resamp([tData squeeze(dataTmp(:,ii,:))], newTimeTmp, varargin{:});
+%             newData(:,ii,:) = newDataTmp(:,2:end);
+%           end          
+%           Ts = TsTmp; Ts.t_ = NewTime; Ts.data_ = newData(:,:,:);
+%         else
+%           error('Not yet implemented');
+%         end
         
       end
     end %RESAMPLE
