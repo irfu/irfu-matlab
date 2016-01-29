@@ -403,6 +403,7 @@ switch procId
   case MMS_CONST.SDCProc.l2pre
     % L2Pre (new output: ADP separate, and 2d DCE from E12, E34 and 3rd
     % componenet from E*B = 0.)
+    varNameSuffix = [tmModeStr, '_l2pre'];
     dataType = [tmModeStr '_' procName '_' DCE_FILE];
     dataDesc = sprintf(...
     'MMS %i dual probe %s (%s), two dimensional electric field.',...
@@ -425,17 +426,17 @@ switch procId
     % and quality
     quality = mms_sdp_typecast('quality',mms_sdp_bitmask2quality('e',l2pre.dsl.bitmask));
     
-    name.epoch   = [datasetPrefix '_dce_epoch'];
-    name.adp     = [datasetPrefix '_adp'];
-    name.adc     = [datasetPrefix '_dce_adc_offset'];
-    name.delta   = [datasetPrefix '_dce_delta_offset'];
-    name.phase   = [datasetPrefix '_dce_phase'];
-    name.dsl     = [datasetPrefix '_dce_xyz_dsl'];
-    name.bitmask = [datasetPrefix '_dce_bitmask'];
-    name.quality = [datasetPrefix '_dce_quality'];
-    name.label   = 'LABL_1'; % DCE data
-    name.label2  = 'LABL_2'; % ADC offsets
-    name.label3  = 'LABL_3'; % Delta offsets
+    name.epoch   = [datasetPrefix '_epoch_' varNameSuffix];
+    name.adp     = [datasetPrefix '_adp_' varNameSuffix];
+    name.adc     = [datasetPrefix '_adc_offset_' varNameSuffix];
+    name.delta   = [datasetPrefix '_delta_offset_' varNameSuffix];
+    name.phase   = [datasetPrefix '_phase_' varNameSuffix];
+    name.dsl     = [datasetPrefix '_dce_dsl_' varNameSuffix];
+    name.bitmask = [datasetPrefix '_bitmask_' varNameSuffix];
+    name.quality = [datasetPrefix '_quality_' varNameSuffix];
+    name.label   = [datasetPrefix '_label1_' varNameSuffix]; % DCE data
+    name.label2  = [datasetPrefix '_label2_' varNameSuffix]; % ADC offsets
+    name.label3  = [datasetPrefix '_label3_' varNameSuffix]; % Delta offsets
     label        = ['DSL_X'; 'DSL_Y'; 'DSL_Z'];
     label2       = ['E_12'; 'E_34'];
     label3       = ['real(delta_offset)'; 'imag(delta_offset)'];
