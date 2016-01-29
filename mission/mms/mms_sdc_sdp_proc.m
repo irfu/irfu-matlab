@@ -153,9 +153,20 @@ switch procId
         src_fileData = load_file(L2A_File,'l2a');
         update_header(src_fileData); % Update header with file info.
       else
-        irf.log('warning',[procName ' but no L2A file from Fast Q/L.']);
+        irf.log('warning',[procName ' but no L2A file from Fast. Looking for it..']);
+        list = mms.db_list_files(['mms',HdrInfo.scIdStr,'_edp_fast_l2a_dce2d'], tint);
+        if(isempty(list) || list(1).start > tint.start)
+          % If no L2a dce2d was found or it did not cover start of tint.
+          % Simply issue warning.
+          irf.log('warning','No Fast L2a dce2d file located.');
+        else
+          irf.log('notice', [procName ' proc using: ',list(1).name]);
+          src_fileData = load_file([list(1).path, filesep, list(1).name],...
+            'l2a');
+          update_header(src_fileData); % Update header with file info.
+        end
       end
-    end
+    end % If running Brst
 
     % Go on with the DCE file.
     Dmgr.set_param('dce',dce_obj);

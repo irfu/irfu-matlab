@@ -1,6 +1,24 @@
 classdef lprobe
-	%LP.LPROBE Class of Langmuir probes
-	
+	%LP.LPROBE Class of simple Langmuir probes
+	%
+	% Defines either spherical, cylindrical, conical or spherical +
+	% cylindrical/conical probes. Probe belonging to LP.LPROBE is defined
+	% with properties
+	%
+	%  name         - character string
+	%  surface      - character string, see LP.PHOTOCURRENT
+	%  radiusSphere - [m]
+	%  radiusWire   - [m], if two numbers specified then those are ends of cone
+	%  lengthWire   - [m]
+	%  surfacePhotoemission - [A/m^2], if not give obtain from surface type
+	%
+	% Derived properties of Probe are
+	%
+	%  type         - 'sphere','wire' or 'sphere+wire'
+	%  capacitance  - F
+	%  Area         - structure with fields: sphere, wire, total, sunlit,
+	%  totalVsSunlit, sunlitVsTotal
+
 	properties
 		name
 		surface

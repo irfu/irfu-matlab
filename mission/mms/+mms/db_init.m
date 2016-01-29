@@ -11,6 +11,9 @@ function db_init(key, val)
 %    Database with IRFU produced products
 %
 %    mms.db_init('db_cache_enabled',true)
+%    mms.db_init('db_cache_size_max',4096) % set cache to 4GB
+%    mms.db_init('db_index_enabled',true) % enable use of database index
+
 
 global MMS_DB;
 if isempty(MMS_DB), MMS_DB = mms_db; end
@@ -62,6 +65,9 @@ switch key
     localFileDb = mms_local_file_db(val);
     MMS_DB.add_db(localFileDb);
     datastore('mms_db','local_file_db_irfu_root',val);
+  case 'db_index_enabled'
+    MMS_DB.indexEnabled = val;
+    datastore('mms_db',key,val)
   case 'db_cache_enabled'
     MMS_DB.cacheEnabled = val;
     datastore('mms_db',key,val)

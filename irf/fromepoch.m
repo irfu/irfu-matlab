@@ -15,9 +15,6 @@ function full_time = fromepoch(second)
 %     ts = datestr(datenum(fromepoch(0))) returns ts='01-Jan-1970'.
 %
 %   See also: TOEPOCH, EPOCH2ISO, IRF_TIME, DATENUM, DATESTR
-%
-% $Id$
-%
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):
@@ -39,7 +36,7 @@ if(verLessThan('matlab','8.4'))
   full_time = t;
 else
   % Use built in Matlab function (as of Matlab 8.4, R2014b)
-  t = datetime(second,'ConvertFrom','posixtime');
+  t = datetime(second(:),'ConvertFrom','posixtime');
   full_time=[t.Year, t.Month, t.Day, t.Hour, t.Minute, t.Second];
 end
 

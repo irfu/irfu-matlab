@@ -9,7 +9,11 @@ function res = get_data(varStr, Tint, mmsId)
 %  EPHEMERIS:
 %     R_gse, R_gsm, V_gse, V_gsm
 %  FPI IONS:
-%     Vi_gse_fpi_brst, Vi_gse_fpi_brst
+%     Vi_gse_fpi_brst, Vi_gse_fpi_brst, 'Ti_fpi_ql','Ti_fpi_brst',
+%     'Ni_fpi_ql', 'Ni_fpi_brst', 'Ne_fpi_brst'
+%  FGM:
+%     'B_dmpa_srvy','B_gse_srvy','B_gsm_srvy',
+%     'B_dmpa_brst','B_gse_brst','B_gsm_brst'
 %
 % Example:
 %   Tint = irf.tint('2015-09-21T00:00:00Z/2015-09-21T17:00:00Z');
@@ -35,8 +39,10 @@ end
 
 vars = {'R_gse','R_gsm','V_gse','V_gsm',...
   'Vi_gse_fpi_ql','Ve_gse_fpi_brst','Vi_gse_fpi_brst', ...
-  'Ni_fpi_ql','Ni_fpi_brst','Ne_fpi_brst'...
-  'dfg_ql_srvy', 'afg_ql_srvy'}; % XXX THESE MUST BE THE SAME VARS AS BELOW
+  'Ni_fpi_ql','Ni_fpi_brst','Ne_fpi_brst',...
+  'Ti_fpi_ql','Ti_fpi_brst',...
+  'B_dmpa_srvy','B_gse_srvy','B_gsm_srvy','B_dmpa_brst','B_gse_brst','B_gsm_brst',...
+  'dfg_ql_srvy','afg_ql_srvy','tetra_quality'}; % XXX THESE MUST BE THE SAME VARS AS BELOW
 if isempty(intersect(varStr,vars)),
   errS = ['variable not recognized: ' varStr];
   irf.log('critical',errS);
@@ -144,7 +150,7 @@ switch varStr
     res.name = [varStr '_' mmsIdS];
     res.units = rX.units;
     res.siConversion = rX.siConversion;
-  case {'Ni_fpi_ql','Ni_fpi_brst','Ne_fpi_brst'}
+  case {'Ni_fpi_ql','Ni_fpi_brst','Ne_fpi_brst','Ti_fpi_ql','Ti_fpi_brst'}
     if varStr(2)=='i', vS = 'dis';
     else vS = 'des';
     end
@@ -153,12 +159,41 @@ switch varStr
     else
       datasetName = ['mms' mmsIdS '_fpi_brst_l1b_' vS '-moms'];
     end
-    rX = mms.db_get_ts(datasetName,['mms' mmsIdS '_' vS '_numberDensity'],Tint);
+    if varStr(1)=='N' % density
+      rX = mms.db_get_ts(datasetName,...
+        ['mms' mmsIdS '_' vS '_numberDensity'],Tint);
+    else % temperature
+      rX = mms.db_get_ts(datasetName,...
+        ['mms' mmsIdS '_' vS '_TempXX'],Tint);
+      rY = mms.db_get_ts(datasetName,...
+        ['mms' mmsIdS '_' vS '_TempYY'],Tint);
+      rZ = mms.db_get_ts(datasetName,...
+        ['mms' mmsIdS '_' vS '_TempZZ'],Tint);
+      rX.data = rX.data + rY.data + rZ.data;
+    end
     if isempty(rX), return, end
     res = irf.ts_scalar(rX.time, rX.data);
     res.name = [varStr '_' mmsIdS];
     res.units = rX.units;
     res.siConversion = rX.siConversion;
+  case {'B_dmpa_srvy','B_gse_srvy','B_gsm_srvy','B_dmpa_brst','B_gse_brst','B_gsm_brst'}
+    instr = 'dfg';
+    tk = tokenize(varStr,'_'); cS = tk{2}; dLev = tk{3};
+    datasetName = ['mms' mmsIdS '_' instr '_' dLev '_l2pre'];
+    varName = ['mms' mmsIdS '_' instr '_' dLev '_l2pre_' cS];
+    rTs = mms.db_get_ts(datasetName, varName, Tint);
+    if isempty(rTs), return, end
+    if strcmp(dLev,'srvy')
+      ind = diff(rTs.time.ttns) <= 122000; % FIXME: what is brst min dt for A/DFG?
+      if( sum(ind) < (length(rTs)-2) )
+        % Remove samples that are too close, but ensure some output if only
+        % two samples with very high sample rate.
+        irf.log('notice',['Removing ',sum(ind), ...
+          ' samples due to overlap AFG/DFG when transitioning between fast/slow mode.']);
+        res = rTs(~ind);
+      else res = rTs;
+      end
+    end
   case {'dfg_ql_srvy', 'afg_ql_srvy'} % FIXME: Correct name, and above as well!!
     instr = varStr(1:3);
     datasetName = ['mms', mmsIdS, '_', instr, '_srvy_ql'];
@@ -175,6 +210,21 @@ switch varStr
       res = rTs(~ind);
     else
       res = rTs;
+    end
+  case 'tetra_quality'
+    % Begin looking for Def. quality
+    quality = mms.db_get_variable('mms_ancillary_defq','quality',Tint);
+    if isempty(quality)
+      irf.log('warning', 'Did not find any definite tetrahedra quality. Looking for predicted.');
+      list = mms.db_list_files('mms_ancillary_predq',Tint);
+      if(~isempty(list))
+        % Load the last predicted file to match Tint
+        quality = mms_load_ancillary([list(end).path, filesep, list(end).name], 'predq');
+      end
+    end
+    if(~isempty(quality))
+      rTs = irf.ts_scalar(EpochTT(quality.time), quality.quality);
+      res = rTs.tlim(Tint);
     end
   otherwise, error('should not be here')
 end

@@ -16,11 +16,11 @@ setenv('DATA_PATH_ROOT', [outDir filesep 'out'])
 setenv('LOG_PATH_ROOT', [outDir filesep 'log'])
 MMS_CONST=mms_constants;
 
-load /data/mms/irfu/mmsR.mat
-epocRTmp = EpochTT(R.time);
+%load /data/mms/irfu/mmsR.mat
+%epocRTmp = EpochTT(R.time);
 
 %% Define time
-flagComm = 1;
+flagComm = 0;
 %tint = irf.tint('2015-04-16T00:00:00Z/2015-04-16T06:00:00Z');
 %tint = irf.tint('2015-04-16T18:00:00Z/2015-04-16T23:59:59Z');
 %tint = irf.tint('2015-05-15T00:00:00Z/2015-05-15T05:59:59Z');
@@ -28,12 +28,15 @@ flagComm = 1;
 %tint = irf.tint('2015-05-06T12:00:00Z/2015-05-06T17:59:59Z');
 %tint = irf.tint('2015-06-21T00:00:00Z/2015-06-21T05:59:59Z'); 
 %tint = irf.tint('2015-06-22T00:00:00Z/2015-06-22T23:59:59Z'); flagComm = false;
-tint = irf.tint('2015-08-15T13:00:00Z/2015-08-15T13:59:59Z'); flagComm = 2;
-mmsId = 'mms4'; 
+%tint = irf.tint('2015-08-15T13:00:00Z/2015-08-15T13:59:59Z'); flagComm = 2;
+%tint = irf.tint('2015-09-11T09:30:00Z/2015-09-11T09:59:59Z'); flagComm = 2;
+%tint = irf.tint('2015-10-07T11:00:00Z/2015-10-07T13:59:59Z'); flagComm = 2;
+tint = irf.tint('2015-10-16T12:00:00Z/2015-10-16T17:59:59Z'); flagComm = 2;
+%tint = irf.tint('2015-12-18T00:00:00Z/2015-12-18T11:59:59Z'); flagComm = 2;
+mmsId = 'mms2'; 
 
 prf = [data_root filesep mmsId]; utc = tint.start.toUtc(); 
-mo = utc(6:7); yyyy=utc(1:4); day=utc(9:10); hh=utc(12:13); mm=utc(15:16);
-
+mo = utc(6:7); yyyy=utc(1:4); day=utc(9:10); hh=utc(12:13); mm=utc(15:16);%
 li = mms.db_list_files([mmsId '_fields_hk_l1b_101'],tint); if length(li)>1, error('li>1'), end
 HK_101_File = [li.path filesep li.name];
 li = mms.db_list_files([mmsId '_fields_hk_l1b_105'],tint); if length(li)>1, error('li>1'), end
@@ -55,7 +58,7 @@ else
   DCV_File = [];
 end
 
-gsmR = [epocRTmp.epochUnix R.(['gsmR' mmsId(end)])];
+%gseR = [epocRTmp.epochUnix R.(['gseR' mmsId(end)])];
 
 %% Test QL - DMNGR
 irf.log('log_out','screen'), irf.log('notice')
@@ -91,8 +94,7 @@ Dcv = irf.ts_scalar(dcv.time,[dcv.v1.data dcv.v2.data dcv.v3.data dcv.v4.data]);
 %% Summary plot
 E_YLIM = 7;
 
-figure(71), clf
-h = irf_plot(5);
+h = irf_figure(73,6,'reset');
 
 hca = irf_panel('E');
 irf_plot(hca,DceSL)
@@ -101,7 +103,7 @@ irf_plot(hca,{AdcOff12,AdcOff34},'comp')
 ylabel(hca,'E SL [mV/m]')
 title(hca,mmsId), set(hca,'YLim',49*[-1 1])
 
-if 0
+if 1
 hca = irf_panel('Phase');
 irf_plot(hca,Phase)
 ylabel(hca,'Phase [deg]'), set(hca,'YLim',[0 360])
@@ -125,7 +127,7 @@ ylabel(hca,'PPot [V]'), set(hca,'YLim',[-14 0])
 
 %irf_plot_ylabels_align(h), 
 irf_zoom(h,'x',DceDSL.time)
-%add_position(h(end),gsmR), xlabel(h(end),'')
+%add_position(h(end),gseR), xlabel(h(end),'')
 
 %% Delta offsets
 Delta_p12_p34 = double(spinfits.sfit.e12(:,2:3)) - ...
