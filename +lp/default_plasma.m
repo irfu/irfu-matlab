@@ -42,11 +42,11 @@ if iFoundPlasma
 end
 
 % 	properties
-% 		q
-% 		n
-% 		mp
-% 		T
-% 		v
+% 		q  [e]
+% 		n  [m^-3]
+% 		mp [mp] if 0 then e-
+% 		T  [eV]
+% 		v  [m/s]
 % 	end
 
 	function Plasma = p_sw_1AU

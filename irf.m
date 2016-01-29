@@ -118,6 +118,10 @@ switch lower(action)
       ['mission' filesep 'mms' filesep 'mms_testFunctions'],...
 			};
 		strPath = {contribDirectories{:},irfDirectories{:}}; %#ok<CCAT>
+        if ~any(strfind(path, irf('path'))) % irfu-matlab root folder
+          addpath(irfPath);
+          disp(['Added to path: ' irfPath]);
+        end
 		for iPath = 1:numel(strPath)
 			if notOnIrfPath(strPath{iPath}),
 				pathToAdd = [irfPath strPath{iPath}];

@@ -23,7 +23,8 @@ classdef mms_local_file_db < mms_file_db
         errStr = sprintf('DB rootPath (%s) does not esist. Not mounted?',rootPath);
         irf.log('critical',errStr), error(errStr)
       end
-    end
+		end
+
     %% LIST FILES
     function fileList = list_files(obj,filePrefix,tint)
       % fileList = list_files(obj, filePrefix, [tint]);
@@ -34,7 +35,7 @@ classdef mms_local_file_db < mms_file_db
       %  fileList = list_files(MMS_DB, 'mms1_edp_comm_l1b_dce128');
       narginchk(2,3)
       fileList = [];
-      if nargin==3 && ~isa(tint,'GenericTimeArray'),
+      if nargin==3 && (~isempty(tint) && ~isa(tint,'GenericTimeArray')),
         error('Expecting TINT (GenericTimeArray)')
       elseif nargin==2, tint = [];
       end
@@ -51,12 +52,19 @@ classdef mms_local_file_db < mms_file_db
         list_ancillary();
         if isempty(fileList) || isempty(tint), return, end
         pick_ancillary();
-      else
-        if ~isempty(tint), list_sci_tint()
-        else
-          irf.log('warning','THIS MAY TAKE SOME TIME')
-          list_sci()
-        end
+			else
+				if mms.db_index
+					irf.log('notice','Using index');
+					fileList = obj.index.search_files_with_dataset(filePrefix,tint);
+					return
+				else
+					if ~isempty(tint),
+						list_sci_tint()
+					else
+						irf.log('warning','THIS MAY TAKE SOME TIME')
+						list_sci()
+					end
+				end
       end
       % END LIST_FILES
       %% PICK ANCILLARY
@@ -252,20 +260,9 @@ classdef mms_local_file_db < mms_file_db
           error('multiple files with same name'),
         end
         
-        Ver = get_ver(fileList(iSame).ver); fVer = get_ver(fnd.vXYZ);
-        if(fVer.maj>Ver.maj) || ... % Newer major version
-            (fVer.maj==Ver.maj && fVer.min>Ver.min) || ... % Same major version, newer calibration
-            (fVer.maj==Ver.maj && fVer.min==Ver.min && fVer.rev>Ver.rev) % Same major and calib. but newer revision, replace file
-          fileList(iSame) = add_ss(Entry); % replace file
-        %else, older file.
-        end
-        function ver = get_ver(verS)
-           vT = strsplit(verS,'.');
-           for iTmp=1:length(vT), vT{iTmp} = str2double(vT{iTmp}); end
-           ver = struct('maj',vT{1},'min',0,'rev',0);
-           if isempty(vT{2}), return, end, ver.min = vT{2};
-           if isempty(vT{3}), return, end, ver.rev = vT{3};
-        end
+				if is_version_larger(fnd.vXYZ,fileList(iSame).ver)
+					fileList(iSame) = add_ss(Entry); % replace file
+				end
         function entry = add_ss(entry)
           entryTmp = obj.cache.get_by_key(entry.name);
           if ~isempty(entryTmp)
@@ -302,20 +299,26 @@ classdef mms_local_file_db < mms_file_db
       narginchk(2,3)
       
       irf.log('notice',['loading ' fileName])
-      p = obj.get_path_to_file(fileName);
-      
+			if mms.db_index
+				fileNameFullPath = fileName;
+			else
+				p = obj.get_path_to_file(fileName);
+				fileNameFullPath = [p filesep fileName];
+			end
       if mms_local_file_db.is_cdf_file(fileName)
-        res = dataobj([p filesep fileName]);
+        res = dataobj(fileNameFullPath);
         return
       end
       
       % ancillary
-      [res,~] = mms_load_ancillary([p filesep fileName],...
+      [res,~] = mms_load_ancillary(fileNameFullPath,...
         mms_local_file_db.get_anc_type(fileName));
     end % LOAD_FILES
     
     %% FILE_HAS_VAR
     function res = file_has_var(obj,fileName,varName)
+			% checks if fileName includes variable name varName
+			% res = true/false
       narginchk(3,3)
       res = false; if isempty(varName) || isempty(fileName), return, end
       
@@ -324,8 +327,13 @@ classdef mms_local_file_db < mms_file_db
         res = any(cellfun(@(x) strcmp(x,varName), entryTmp.vars(:,1)));
         return
       end
-      
-      p = obj.get_path_to_file(fileName); fullPath = [p filesep fileName];
+			if mms.db_index
+				irf.log('notice','Using index to check if file ok');
+				fullPath = fileName;
+			else
+				p = obj.get_path_to_file(fileName); 
+				fullPath = [p filesep fileName];
+			end
       if ~exist(fullPath,'file')
         irf.log('warning', ['Fies does not exist: ' fullPath])
         return
@@ -344,8 +352,12 @@ classdef mms_local_file_db < mms_file_db
         return
       end
       % cdf
-      info = spdfcdfinfo(fullPath);
-      res = any(cellfun(@(x) strcmp(x,varName), info.Variables(:,1)));
+			if mms.db_index
+				res = obj.index.file_has_var(fileName,varName);
+			else
+				info = spdfcdfinfo(fullPath);
+				res = any(cellfun(@(x) strcmp(x,varName), info.Variables(:,1)));
+			end
     end
   end
   
