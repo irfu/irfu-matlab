@@ -6,7 +6,7 @@
 
 ic = 1; % Spacecraft number
 
-tint = irf.tint('2015-12-30T00:30:00.00Z/2015-12-30T00:30:35.00Z');
+tint = irf.tint('2015-12-30T00:30:00.00Z/2015-12-30T00:30:33.00Z');
 %%
 tic;
 c_eval('diste = mms.db_get_ts(''mms?_fpi_brst_l1b_des-dist'',''mms?_des_brstSkyMap_dist'',tint);',ic);
@@ -154,7 +154,7 @@ ifluxomni = PSDiomni.*energyspeci.^2;
 ifluxomni = ifluxomni/1e6/0.53707; %convert to normal units
 
 specomni=struct('t',diste.time.epochUnix);
-specomni.p = double(PSDomni)*1e30;
+specomni.p = double(PSDomni);
 specomni.p_label={'f_e','(s^{3} km^{-6})'};
 specomni.f_label={''};
 specomni.f = single(energyspec);
@@ -289,9 +289,9 @@ load('caa/cmap.mat');
 colormap(h(5),cmap);
 colormap(h(6),cmap);
 
-load('caa/rgbcmap.mat');
-colormap(h(7),rgbcmap);
-colormap(h(8),rgbcmap);
+%load('rgbcmap.mat');
+%colormap(h(7),rgbcmap);
+%colormap(h(8),rgbcmap);
 
 c_eval('title(h(1),''MMS ?'')',ic);
 
