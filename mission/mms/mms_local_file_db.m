@@ -260,7 +260,7 @@ classdef mms_local_file_db < mms_file_db
           error('multiple files with same name'),
         end
         
-				if is_version_larger(fileList(iSame).ver,fnd.vXYZ)
+				if is_version_larger(fnd.vXYZ,fileList(iSame).ver)
 					fileList(iSame) = add_ss(Entry); % replace file
 				end
         function entry = add_ss(entry)
