@@ -41,11 +41,13 @@ function particlemoments = psd_moments(varargin)
 %
 % Notes: 
 % Regarding the spacecraft potential, the best estimate of is -1.2*(probe
-% to spacecraft voltage)+2. Note that in most plasmas the spacecraft
+% to spacecraft voltage)+MMSoffset. Note that in most plasmas the spacecraft
 % potential is positive. E.g.
-% do = dataobj('data/mms1_edp_brst_l2_scpot_20151202011414_v1.0.0.cdf');
-% SCpot = mms.variable2ts(get_variable(tmpDataObj,'mms?_edp_psp'));
-% SCpot.data = -SCpot.data*1.2+2; 
+% ic = 1,2,3, or 4;
+% c_eval('do = dataobj(''data/mms?_edp_brst_l2_scpot_20151202011414_v1.0.0.cdf'');',ic);
+% c_eval('SCpot = mms.variable2ts(get_variable(tmpDataObj,''mms?_edp_psp''));',ic);
+% offset1 = 1.3; offset2 = 1.5; offset3 = 1.2; offset4 = 0.0; %For v1 data
+% c_eval('SCpot.data = -SCpot.data*1.2+offset?;',ic);
 % Apply correction for input. Correction is not applied in this script. 
 %
 % Currently the heat flux vector does not match with the FPI ion moments. Currently
