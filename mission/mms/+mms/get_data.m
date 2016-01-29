@@ -9,7 +9,8 @@ function res = get_data(varStr, Tint, mmsId)
 %  EPHEMERIS:
 %     R_gse, R_gsm, V_gse, V_gsm
 %  FPI IONS:
-%     Vi_gse_fpi_brst, Vi_gse_fpi_brst
+%     Vi_gse_fpi_brst, Vi_gse_fpi_brst, 'Ti_fpi_ql','Ti_fpi_brst',
+%     'Ni_fpi_ql', 'Ni_fpi_brst', 'Ne_fpi_brst'
 %  FGM:
 %     'B_dmpa_srvy','B_gse_srvy','B_gsm_srvy',
 %     'B_dmpa_brst','B_gse_brst','B_gsm_brst'
@@ -39,6 +40,7 @@ end
 vars = {'R_gse','R_gsm','V_gse','V_gsm',...
   'Vi_gse_fpi_ql','Ve_gse_fpi_brst','Vi_gse_fpi_brst', ...
   'Ni_fpi_ql','Ni_fpi_brst','Ne_fpi_brst',...
+  'Ti_fpi_ql','Ti_fpi_brst',...
   'B_dmpa_srvy','B_gse_srvy','B_gsm_srvy','B_dmpa_brst','B_gse_brst','B_gsm_brst',...
   'dfg_ql_srvy','afg_ql_srvy'}; % XXX THESE MUST BE THE SAME VARS AS BELOW
 if isempty(intersect(varStr,vars)),
@@ -148,7 +150,7 @@ switch varStr
     res.name = [varStr '_' mmsIdS];
     res.units = rX.units;
     res.siConversion = rX.siConversion;
-  case {'Ni_fpi_ql','Ni_fpi_brst','Ne_fpi_brst'}
+  case {'Ni_fpi_ql','Ni_fpi_brst','Ne_fpi_brst','Ti_fpi_ql','Ti_fpi_brst'}
     if varStr(2)=='i', vS = 'dis';
     else vS = 'des';
     end
@@ -157,7 +159,18 @@ switch varStr
     else
       datasetName = ['mms' mmsIdS '_fpi_brst_l1b_' vS '-moms'];
     end
-    rX = mms.db_get_ts(datasetName,['mms' mmsIdS '_' vS '_numberDensity'],Tint);
+    if varStr(1)=='N' % density
+      rX = mms.db_get_ts(datasetName,...
+        ['mms' mmsIdS '_' vS '_numberDensity'],Tint);
+    else % temperature
+      rX = mms.db_get_ts(datasetName,...
+        ['mms' mmsIdS '_' vS '_TempXX'],Tint);
+      rY = mms.db_get_ts(datasetName,...
+        ['mms' mmsIdS '_' vS '_TempYY'],Tint);
+      rZ = mms.db_get_ts(datasetName,...
+        ['mms' mmsIdS '_' vS '_TempZZ'],Tint);
+      rX.data = rX.data + rY.data + rZ.data;
+    end
     if isempty(rX), return, end
     res = irf.ts_scalar(rX.time, rX.data);
     res.name = [varStr '_' mmsIdS];
