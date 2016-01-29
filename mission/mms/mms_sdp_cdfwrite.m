@@ -41,6 +41,7 @@ tmMode = Dmgr.tmMode;
 tmModeStr = MMS_CONST.TmModes{tmMode};
 datasetPrefix = sprintf('mms%i_%s',scId,INST_NAME);
 
+
 % NOTE MOVE TO DROPBOX FOLDER BEFORE TRYING TO WRITE ANYTHING AS
 % CDF MAY TRY TO WRITE TEMPORARY FILES IN THE CURRENT WORKING
 % DIRECTORY WHEN EXECUTING.
@@ -562,7 +563,8 @@ switch procId
 
   case MMS_CONST.SDCProc.scpot
     % ScPot - get data
-    dataType = [tmModeStr '_l2_scpot'];
+    varNameSuffix = [tmModeStr, '_l2'];
+    dataType = [varNameSuffix, '_scpot'];
     dataDesc = sprintf(...
       'MMS %i dual probe %s (%s), Spacecraft potential',...
       scId,procName,tmModeStr);
@@ -592,13 +594,13 @@ switch procId
     bitmask = mms_sdp_typecast('bitmask',sc_pot.bitmask);
     quality = mms_sdp_typecast('quality',mms_sdp_bitmask2quality('e',sc_pot.bitmask));
 
-    name.epoch   = [datasetPrefix '_scpot_epoch']; % Timestamp in TT2000
-    name.scpot   = [datasetPrefix '_scpot']; % Estimated Spacecraft potential
-    name.psp     = [datasetPrefix '_psp']; % Probe to spacecraft potential, averaged
-    name.psp_p   = [datasetPrefix '_dcv']; % Probe to spacecraft potential, indiv probes
-    name.bitmask = [datasetPrefix '_scpot_bitmask']; % Bitmask
-    name.quality = [datasetPrefix '_scpot_quality']; % Quality
-    name.label   = 'LABL_1';
+    name.epoch   = [datasetPrefix '_epoch_' varNameSuffix]; % Timestamp in TT2000
+    name.scpot   = [datasetPrefix '_scpot_' varNameSuffix]; % Estimated Spacecraft potential
+    name.psp     = [datasetPrefix '_psp_' varNameSuffix]; % Probe to spacecraft potential, averaged
+    name.psp_p   = [datasetPrefix '_dcv_' varNameSuffix]; % Probe to spacecraft potential, indiv probes
+    name.bitmask = [datasetPrefix '_bitmask_' varNameSuffix]; % Bitmask
+    name.quality = [datasetPrefix '_quality_' varNameSuffix]; % Quality
+    name.label   = [datasetPrefix '_label1_' varNameSuffix];
     label = ['PSP_P1'; 'PSP_P2'; 'PSP_P3'; 'PSP_P4'; 'PSP_P5'; 'PSP_P6'];
     
     outVars = {name.epoch, epochTT, ...
