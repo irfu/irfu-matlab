@@ -23,10 +23,12 @@ elseif(diffLen > 0)
   verNew(end+1:end+abs(diffLen)) = zeros(1, abs(diffLen));
 end
 res = false; % Assume it is not newer.
-for ii=1:length(verOld) % Loop through each version segment.
-  if(verNew(ii) > verOld(ii))
-    res = true; % It is newer.
-    return % Exit function with result.
+if(verNew(1) > verOld(1)), res = true; return; end
+for ii=2:length(verOld) % Loop through each version segment.
+  if(verNew(ii) > verOld(ii) && all(verOld(1:ii-1) == verNew(1:ii-1)))
+    % Newer subversion and same X. etc.
+    res = true;
+    return
   end
 end
 
