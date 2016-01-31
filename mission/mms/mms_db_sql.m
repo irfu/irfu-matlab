@@ -256,7 +256,7 @@ classdef mms_db_sql < handle
 		function [idDatasetList,DatasetList] = find_datasets_with_varname(obj,varName)
 			% find Datasets with varName
 			idDatasetList = {};iDataset = 1;
-			sql = ['select * from VarNames where varName = "' varName '"'];
+			sql = ['select idDataset from VarNames where varName = "' varName '"'];
 			rs=obj.sqlQuery(sql);
 			if ~rs.next
 				irf.log('warning',['There is no variable with name ' varName '.']);
@@ -281,7 +281,7 @@ classdef mms_db_sql < handle
 		function	idDatasetList = find_dataset_id(obj,dataset)
 			% find Datasets with name "dataset"
 			idDatasetList = {};iDataset = 1;
-			sql = ['select * from Datasets where dataset = "' dataset '"'];
+			sql = ['select idDataset from Datasets where dataset = "' dataset '"'];
 			rs=obj.sqlQuery(sql);
 			if ~rs.next
 				irf.log('warning',['There is no dataset with name ' dataset '.']);
@@ -330,95 +330,80 @@ classdef mms_db_sql < handle
 			end
 		end
 		
-		function fileNames = search_files(obj,varName,timeInterval)
-			% SEARCH FILES search files given variable name and time interval
+		function fileNames = find_files(obj,varargin)
+			% SEARCH FILES search files given variable name and/or dataset and/or time interval
 			%
-			% SEARCH_FILES(obj,varName,timeInterval)
+			% SEARCH_FILES(obj,'varName', variableName,..)
+			% SEARCH_FILES(obj,'dataset', datasetName,..)
+			% SEARCH_FILES(obj,'tint,   , tint,..)
 			%  time interval can be UTC string or GenericTimeArray
-			if nargin < 3
-				startTT = int64(0);
-				endTT = intmax('int64');
-			else
-				if ischar(timeInterval)
-					timeInterval = irf.tint(timeInterval);
-				elseif ~isa(timeInterval,'GenericTimeArray')
-					irf.log('warning','Time interval in unknown format');
-					return;
+%			startTT = int64(0);
+%			endTT = intmax('int64');
+			fileNames = cell(0);
+			searchTint = false;
+			searchVariable = false;
+			searchDataset = false;
+			args = varargin;
+			while numel(args)>=2
+				switch lower(args{1})
+					case {'tint'}
+						timeInterval = args{2};
+						[startTT,endTT] = mms_db_sql.start_stop_in_ttns(timeInterval);
+						searchTint = true;
+					case {'varname','variable'}
+						varName = args{2};
+						if ~ischar(varName),
+							irf.log('critical','varName should be text string');
+							return;
+						end
+						searchVariable = true;
+					case {'dataset','fileprefix'}
+						dataset = args{2};
+						if ~ischar(dataset),
+							irf.log('critical','varName should be text string');
+							return;
+						end
+						searchDataset = true;
+					otherwise
+						irf.log('critical','unrecognized input');
+						return;
 				end
-				startTT = timeInterval.start.ttns;
-				endTT = timeInterval.stop.ttns;
+				args(1:2)=[];
 			end
-			if ~ischar(varName),
-				irf.log('critical','varName should be text string');
-				return;
-			elseif ~isinteger(startTT) && ~isinteger(endTT),
-				irf.log('critical','startTT and endTT should be integers');
-				return;
+			
+			if searchTint
+				sqlTime = [' and startTT <= ' num2str(endTT) ...
+					         ' and   endTT >= ' num2str(startTT) ];
+			else
+				sqlTime = '';
 			end
+			
 			% find Datasets with varName
-			idDatasetList = find_datasets_with_varname(obj,varName);
-			
-			% find files
-			idFileArray = []; iFile = 1;
-			for iDataset = 1:length(idDatasetList)
-				sql = ['select idFile from VarIndex where idDataset = "' idDatasetList{iDataset} '"'];
-				sql = [sql ' and startTT <= ' num2str(endTT)   ]; %#ok<AGROW>
-				sql = [sql ' and   endTT >= ' num2str(startTT) ]; %#ok<AGROW>
-				sql = [sql ' order by startTT asc'];              %#ok<AGROW>
-				rs=obj.sqlQuery(sql);
-				while rs.next
-					idFileArray(iFile) = str2double(rs.getString('idFile')); %#ok<AGROW>
-					irf.log('debug',['idFile = ' num2str(idFileArray(iFile))]);
-					iFile = iFile + 1;
-				end
-			end
-			
-			% get filenames
-			fileNames = cell(numel(idFileArray),1);
-			for iFile = 1:numel(idFileArray)
-				sql = ['select fileNameFullPath from FileList where idFile = ' ...
-					num2str(idFileArray(iFile))];
-				rs = obj.sqlQuery(sql);
-				if rs.next
-					fileNames{iFile} = char(rs.getString('fileNameFullPath'));
-				end
-			end
-		end
-		
-		function fileNames = search_files_with_dataset(obj,dataset,timeInterval)
-			% SEARCH FILES search files given dataset and time interval
-			%
-			% SEARCH_FILES(obj,dataset,timeInterval)
-			% dataset === filePrefix
-			%  time interval can be UTC string or GenericTimeArray
-			if nargin < 3 || isempty(timeInterval)
-				startTT = int64(0);
-				endTT = intmax('int64');
+			if ~searchVariable && ~searchDataset
+				sqlDataset = 'idDataset ';
 			else
-				[startTT,endTT] = mms_db_sql.start_stop_in_ttns(timeInterval);
+				if searchVariable && ~searchDataset
+					idDatasetList = find_datasets_with_varname(obj,varName);
+				elseif ~searchVariable && searchDataset
+					idDatasetList = find_dataset_id(obj,dataset);
+				elseif searchVariable && searchDataset ;
+					idDatasetList = intersect(find_datasets_with_varname(obj,varName),find_dataset_id(obj,dataset));
+				end
+				sqlDataset = 'idDataset IN (';
+				for id =1:numel(idDatasetList)
+					sqlDataset=[sqlDataset '"' idDatasetList{id} '",'];
+				end
+				sqlDataset = [sqlDataset '"")'];
 			end
-			if ~ischar(dataset),
-				irf.log('critical','dataset should be text string');
-				return;
-			end
-			
-			% find Dataset iDs 
-			idDatasetList = find_dataset_id(obj,dataset);
-			
 			% find files
 			idFileArray = []; iFile = 1;
-			for iDataset = 1:length(idDatasetList)
-				sql = ['select idFile from VarIndex where idDataset = "' idDatasetList{iDataset} '"' ...
-					' and startTT <= ' num2str(endTT) ...
-					' and   endTT >= ' num2str(startTT) ...
-					' order by startTT asc'];
-				rs=obj.sqlQuery(sql);
-				while rs.next
-					idFileArray(iFile) = str2double(rs.getString('idFile')); %#ok<AGROW>
-					irf.log('debug',['idFile = ' num2str(idFileArray(iFile))]);
-					iFile = iFile + 1;
-				end
-				idFileArray = unique(idFileArray);
+			sql = ['select idFile from VarIndex where ' sqlDataset sqlTime ...
+				' order by startTT asc'];
+			rs=obj.sqlQuery(sql);
+			while rs.next
+				idFileArray(iFile) = str2double(rs.getString('idFile')); %#ok<AGROW>
+				irf.log('debug',['idFile = ' num2str(idFileArray(iFile))]);
+				iFile = iFile + 1;
 			end
 			
 			% get filenames
@@ -432,8 +417,7 @@ classdef mms_db_sql < handle
 				end
 			end
 		end
-		
-		
+				
 		function var(obj,varargin)
 			% VAR seach variable names
 			%  VAR('par1','par2',..)
@@ -539,12 +523,17 @@ classdef mms_db_sql < handle
 		function [startTT,endTT] = start_stop_in_ttns(timeInterval)
 			if ischar(timeInterval)
 				timeInterval = irf.tint(timeInterval);
-			elseif ~isa(timeInterval,'GenericTimeArray')
+			end
+			if isa(timeInterval,'GenericTimeArray')
+				startTT = timeInterval.start.ttns;
+				endTT = timeInterval.stop.ttns;
+			elseif isinteger(timeInterval)
+				startTT = timeInterval(1);
+				endTT = timeInterval(2);
+			else
 				irf.log('warning','Time interval in unknown format');
 				return;
 			end
-			startTT = timeInterval.start.ttns;
-			endTT = timeInterval.stop.ttns;
 		end
 		function fileInfo = get_file_info(fileName)
 			% GET_FILE_INFO get values of directory, dataset, date, version
