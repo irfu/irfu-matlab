@@ -14,11 +14,8 @@ classdef (Abstract) mms_file_db
     function obj = mms_file_db(id)
       obj.id = id;
       obj.cache = mms_db_cache();
-      if(false)
-        % DO NOT CREATE a file "index_sql" when running on SDC in the
-        % data path for the entire mission (SDC eqivalent of "/data/mms" on
-        % Spis/Brain at IRFU).
-        obj.index = mms_db_sql([id filesep 'index_sql']); %#ok<UNRCH>
+      if exist([id filesep 'index_sql'],'file')
+        obj.index = mms_db_sql([id filesep 'index_sql']);
       else
         obj.index = [];
       end
