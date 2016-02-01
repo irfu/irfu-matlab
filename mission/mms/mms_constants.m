@@ -36,8 +36,8 @@ MMS_CONST.Phaseshift.e12 =  2*pi*150/360; % probe 2 sunward
 MMS_CONST.Phaseshift.e34 =  2*pi* 60/360; % probe 4 sunward
 
 % Nominal Amplitude Correction factor multiplied to DCE data.
-MMS_CONST.NominalAmpCorr.e12 = 1.1;
-MMS_CONST.NominalAmpCorr.e34 = 1.1;
+MMS_CONST.NominalAmpCorr.e12 = 1.25;
+MMS_CONST.NominalAmpCorr.e34 = 1.25;
 MMS_CONST.NominalAmpCorr.e56 = 1.0;
 
 % Telemetry mode
@@ -88,7 +88,7 @@ MMS_CONST.Error = -Inf; % Indicates error in computation
 % Major new Software version, X
 % New Calibration version, Y
 MMS_CONST.Version = struct(...
-  MMS_CONST.SDCProcs{MMS_CONST.SDCProc.ql},    struct('X', 1, 'Y', 0), ...
+  MMS_CONST.SDCProcs{MMS_CONST.SDCProc.ql},    struct('X', 1, 'Y', 1), ...
   MMS_CONST.SDCProcs{MMS_CONST.SDCProc.scpot}, struct('X', 2, 'Y', 0), ...
   MMS_CONST.SDCProcs{MMS_CONST.SDCProc.l2pre}, struct('X', 0, 'Y', 3), ...
   MMS_CONST.SDCProcs{MMS_CONST.SDCProc.l2a},   struct('X', 1, 'Y', 0), ...
@@ -106,6 +106,6 @@ MMS_CONST.Version.Z = 0; % File revision, increased by 1 for each re-run.
 % Each cell corresponds to one version, append like: mods=[mods; {'new text'}];
 MMS_CONST.Version.MODS = {'V.0. Initial release.'};
 MMS_CONST.Version.MODS = [MMS_CONST.Version.MODS; {'V.1. QL (v1.0.z), SCPOT (v1.0.z), L2A (v0.1.z) now uses ASPOC srvy l2 and DEFATT, if these are available. Brst QL uses intermediate L2A file from Fast mode for delta offsets. Bitmask changed to uint16 and Quality to uint8.'}];
-MMS_CONST.Version.MODS = [MMS_CONST.Version.MODS; {'V.2. SCPOT (v2.0.z), L2A (v1.0.z) now uses variable names in accordance with new recommended standard for FIELDS.'}];
+MMS_CONST.Version.MODS = [MMS_CONST.Version.MODS; {'V.2. SCPOT (v2.0.z), L2A (v1.0.z) now uses variable names in accordance with new recommended standard for FIELDS, QL (v1.1.z) applies sunward offset removal. All products change shortening factor to 1.25 on SDP.'}];
 
 end
