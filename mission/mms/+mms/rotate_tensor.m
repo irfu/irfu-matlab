@@ -4,11 +4,13 @@ function Pe = rotate_tensor(varargin)
 %
 % Examples:
 % Rotate tensor into field-aligned coordinates
-% Pe = mms.rotate_tensor(PeXX,PeXY,PeXZ,PeYY,PeYZ,PeZZ,'fac',Bback,['pp'])
+% Pe = mms.rotate_tensor(PeXX,PeXY,PeXZ,PeYY,PeYZ,PeZZ,'fac',Bback)
 % Pe = mms.rotate_tensor(Peall,'fac',Bback)
+% Pe = mms.rotate_tensor(Peall,'fac',Bback,'pp' or 'qq')
 % 
 % Rotate tensor into user-defined coordinate system
-% Pe = mms.rotate_tensor(Peall,'rot',xnew,[ynew,znew])
+% Pe = mms.rotate_tensor(Peall,'rot',xnew)
+% Pe = mms.rotate_tensor(Peall,'rot',xnew,ynew,znew)
 %
 % Rotate tensor from spacecraft coordinates into GSE coordinates
 % Pe = mms.rotate_tensor(Peall,'gse',MMSnum)
@@ -24,9 +26,9 @@ function Pe = rotate_tensor(varargin)
 %       'fac' - Transform tensor into field-aligned coordinates. 
 %           * Bback - Background magnetic field (TSERIES format)
 %           * 'pp' - optional flag to rotate perpendicular components so
-%             P_perp1 = P_perp2
+%             P_perp1 = P_perp2.
 %           * 'qq' - optional flag to rotate perpendicular components so
-%             P_perp1 and P_perp2 are most unequal
+%             P_perp1 and P_perp2 are most unequal, sets P23 to zero
 %       'rot' - Transform tensor into an arbitrary coordinate system
 %           * xnew - new x-direction (required after 'rot')
 %           * ynew, znew - new y and z directions (if not included y and 
