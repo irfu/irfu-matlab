@@ -462,7 +462,8 @@ classdef mms_db_sql < handle
 			narginchk(1,1); % One file name
             if(~exist(cdfFileName, 'file'))
               errStr = ['File not found: ', cdfFileName];
-              irf.log('critical', errStr); error(errStr);
+              irf.log('warning', errStr); warning(errStr);
+	      out = []; return;
             end
  			irf.log('debug',['Reading: ' cdfFileName]);
 			try
@@ -499,7 +500,7 @@ classdef mms_db_sql < handle
             catch ME
               errStr = ['Cannot read Epochs from file: ', cdfFileName];
               irf.log('warning', errStr); irf.log('warning', ME.message);
-              warning(errStr); return;
+              warning(errStr); out=[]; return;
             end
 			if isinteger(epoch), epoch = {epoch};end % only one time variable
 			for iT = numel(indGoodTVarName):-1:1
