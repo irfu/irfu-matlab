@@ -434,6 +434,10 @@ classdef mms_sdp_dmgr < handle
               vPfx = vars{kk}; break
             end
           end
+          if( ~isfield(dataObj.data, vPfx) )
+            irf.log('warning','Unfamiliar ASPOC file(-s)!!');
+            return
+          end
           %vPfx = sprintf('mms%d_asp_status',DATAC.scId);
           if(isempty(DATAC.(param)))
             % first hk_101 file
