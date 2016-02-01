@@ -41,8 +41,11 @@ classdef mms_db < handle
    function res = get_variable(obj,filePrefix,varName,tint)
      narginchk(4,4)
      res = [];
-     
-     fileList = list_files(obj,filePrefix,tint);
+		 if mms.db_index
+			 fileList=obj.databases.index.find_files('fileprefix',filePrefix,'varname',varName,'tint',tint);
+		 else
+			 fileList = list_files(obj,filePrefix,tint);
+		 end
      if isempty(fileList), return, end
      
 		 loadedFiles = obj.load_list(fileList,varName);
