@@ -186,7 +186,7 @@ classdef mms_sdp_dmgr < handle
           if(strcmp('v',dataObj.GlobalAttributes.Data_version{1}(1)))
             dfgVerStr = dataObj.GlobalAttributes.Data_version{1}(2:end);
           else
-            dfgVerStr = dataObj.GlobalAttributes.Data_version{1}(2:end);
+            dfgVerStr = dataObj.GlobalAttributes.Data_version{1}(1:end);
           end
           if( is_version_larger(dfgVerStr,'4.0.-1') )
             % Version 4.0.z or later, new variable names conforming to
