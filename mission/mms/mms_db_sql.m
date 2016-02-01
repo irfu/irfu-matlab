@@ -331,11 +331,11 @@ classdef mms_db_sql < handle
 		end
 		
 		function fileNames = find_files(obj,varargin)
-			% SEARCH FILES search files given variable name and/or dataset and/or time interval
+			% FIND FILES search files given variable name and/or dataset and/or time interval
 			%
-			% SEARCH_FILES(obj,'varName', variableName,..)
-			% SEARCH_FILES(obj,'dataset', datasetName,..)
-			% SEARCH_FILES(obj,'tint,   , tint,..)
+			% FIND_FILES(obj,'varName', variableName,..)
+			% FIND_FILES(obj,'dataset', datasetName,..)
+			% FIND__FILES(obj,'tint,   , tint,..)
 			%  time interval can be UTC string or GenericTimeArray
 %			startTT = int64(0);
 %			endTT = intmax('int64');
@@ -434,10 +434,40 @@ classdef mms_db_sql < handle
 					end
 				end
 			end
+			objName = inputname(1);
 			res=obj.sqlQuery(sql);
 			while res.next
-				disp(char(res.getString('varName')));
+%				disp([char(res.getString('varName'))]);
+				varName = char(res.getString('varName'));
+				linkTxt=mms_db_sql.matlab_link(varName,[objName '.var_attributes(''' varName ''')']);
+				disp(linkTxt{1});
 			end
+		end
+		
+		function var_attributes(obj,varName)
+			fileNameList=obj.find_files('varname',varName);
+			fileName=fileNameList{1};
+			d=spdfcdfinfo(fileName,'varstruct',true);
+			ivar=ismember(d.Variables.Name,varName);
+			varProp=d.Variables;
+			fieldN=fieldnames(varProp);
+			for ii = 1: numel(fieldN)
+				varProp.(fieldN{ii})(~ivar)=[];
+			end
+			disp '------ VARIABLE PROPERTIES -------';
+			disp(varProp);
+			varAttr=d.VariableAttributes;
+			fieldN=fieldnames(varAttr);
+			for ii = 1: numel(fieldN)
+				i=strcmp(varName,varAttr.(fieldN{ii})(:,1));
+				if isempty(i) || ~any(i)
+					varAttr=rmfield(varAttr,fieldN{ii});
+				else
+					varAttr.(fieldN{ii})=varAttr.(fieldN{ii})(i,2);
+				end
+			end
+			disp '------ VARIABLE ATTRIBUTES -------';
+			disp(varAttr);
 		end
 		
 		function out = sqlQuery(obj,sql)
@@ -543,6 +573,25 @@ classdef mms_db_sql < handle
 			fileInfo = regexp(fileName,['(?<directory>\.\/mms.*)'...
 				'(?<dataset>mms[1-4]?_[\w-]*)_(?<date>20\d\d\d\d\d\d\d*)'...
 				'_(?<version>v[\d\.]*)(.cdf)'],'names');
+		end
+		function outStr=matlab_link(linkText,linkCommandText)
+			% MATLAB_LINK returns string with link to matlab text to execute
+			% 
+			% MATLAB_LINK(linkText,linkCommandText)
+			%  linkText can be cell array
+			%  In linkCommandText the '?' is substituted with linkText
+
+			if ischar(linkText)
+				linkText = {linkText};
+			end
+			if iscell(linkText)
+				outStr=cell(size(linkText));
+				for ii = 1:numel(linkText)
+					linkStr = linkText{ii};
+					linkCommandStr = strrep(linkCommandText,'?',linkStr);
+					outStr{ii} = ['<a href="matlab: ' linkCommandStr '">' linkStr '</a>' ];
+				end
+			end
 		end
 	end
 	
