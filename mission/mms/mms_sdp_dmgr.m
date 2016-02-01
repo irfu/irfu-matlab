@@ -183,7 +183,19 @@ classdef mms_sdp_dmgr < handle
           
         case('dfg')
           % DFG - Dual fluxgate magn. B-field.
-          vPfx = sprintf('mms%d_dfg_srvy_l2pre_dmpa',DATAC.scId);
+          if(strcmp('v',dataObj.GlobalAttributes.Data_version{1}(1)))
+            dfgVerStr = dataObj.GlobalAttributes.Data_version{1}(2:end);
+          else
+            dfgVerStr = dataObj.GlobalAttributes.Data_version{1}(2:end);
+          end
+          if( is_version_larger(dfgVerStr,'4.0.-1') )
+            % Version 4.0.z or later, new variable names conforming to
+            % recommended MMS standard.
+            vPfx = sprintf('mms%d_dfg_b_dmpa_srvy_l2pre',DATAC.scId);
+          else
+            % Old versions
+            vPfx = sprintf('mms%d_dfg_srvy_l2pre_dmpa',DATAC.scId);
+          end
           if(isempty(DATAC.(param)))
             % first DFG file
             DATAC.(param).dataObj = dataObj;
@@ -416,7 +428,13 @@ classdef mms_sdp_dmgr < handle
           
         case('aspoc')
           % ASPOC, have an adverse impact on E-field mesurements.
-          vPfx = sprintf('mms%d_asp_status',DATAC.scId);
+          vars = fields(dataObj.data);
+          for kk=1:length(vars)
+            if( ~isempty(strfind(vars{kk},'status')) )
+              vPfx = vars{kk}; break
+            end
+          end
+          %vPfx = sprintf('mms%d_asp_status',DATAC.scId);
           if(isempty(DATAC.(param)))
             % first hk_101 file
             DATAC.(param).dataObj = dataObj;
