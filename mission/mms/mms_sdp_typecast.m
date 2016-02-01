@@ -17,7 +17,7 @@ function [out] = mms_sdp_typecast(dataName, data)
 %  .fillval - ISTP standard fillvalue for corresponding class (used when writing cdf)
 %
 % DataName: "epoch", "bitmask", "quality", "dce", "adc_offset", "scpot",
-%  "phase", "delta_offset", "spinfits" and "label".
+%  "phase", "delta_offset", "spinfits", "tensor_order" and "label".
 %
 % See also: MMS_SDP_CDFWRITE
 
@@ -78,6 +78,14 @@ switch(lower(dataName))
     out.cdf    = 'cdf_char';
     out.matlab = 'char';
     % Labels dont use fillval
+  case 'tensor_order'
+    if(~isempty(data))
+      out = int32(data);
+    else
+      out.cdf     = 'cdf_int4';
+      out.matlab  = 'int32';
+      out.fillval = int32(-2147483648);
+    end
   otherwise
     % Should not be here
     errStr = ['Dataname ',dataName,' is not yet implemented.'];
