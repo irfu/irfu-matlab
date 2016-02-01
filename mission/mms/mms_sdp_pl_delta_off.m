@@ -76,6 +76,9 @@ else
   IonSpc.f_label = 'E [eV]';
   IonSpc.p_label = 'au';
   IonSpc.plot_type = 'log';
+  
+  VHplushpca = mms.db_get_ts([mmsIdS '_hpca_srvy_l1b_moments'],[mmsIdS '_hpca_hplus_ion_bulk_velocity'],Tint);
+  Ehpca = irf_e_vxb(VHplushpca,B.resample(VHplushpca));
 end
 PSP = mms.db_get_ts(sprintf('mms%d_edp_fast_l2_scpot',mmsId),...
   sprintf('mms%d_edp_psp',mmsId),Tint);
@@ -115,11 +118,18 @@ if  ~isempty(Nifpi)
   NifpiR = Nifpi.resample(Epoch1min,'median');
   VifpiR = Vifpi.resample(Epoch1min,'median');
   idxMSH = NifpiR.data>5 & VifpiR.x.data>-200;
+  [~,idxTmp,idxTmp2] = intersect(DeltaAspocOffR.time.epoch,NifpiR.time.epoch(idxMSH));
+  DeltaAspocOffRes = DeltaAspocOffR(idxTmp);
+  % XXX check if NifpiR exists
+  NifpiRes = NifpiR(idxTmp2);
+  PSPRes = PSPR(idxTmp2);
 end
+
+EhpcaR = Ehpca.resample(Epoch1min,'median');
 
 %% Raw data figure
 myCols = [[0 0 0];[.3 .3 .3];[0 0 1];[.2 .2 .8]];
-
+if 0
 h = irf_figure(93,9,'reset');
 cmap = irf_colormap('space'); colormap(cmap)
 
@@ -159,11 +169,6 @@ hca = irf_panel('Delta_off'); set(hca,'ColorOrder',myCols)
 irf_plot(hca,{DeltaAspocOffR.x,DeltaAspocOnR.x,DeltaAspocOffR.y,DeltaAspocOnR.y},'comp')
 
 hold(hca,'on')
-[~,idxTmp,idxTmp2] = intersect(DeltaAspocOffR.time.epoch,NifpiR.time.epoch(idxMSH));
-DeltaAspocOffRes = DeltaAspocOffR(idxTmp);
-% XXX check if NifpiR exists
-NifpiRes = NifpiR(idxTmp2);
-PSPRes = PSPR(idxTmp2);
 irf_plot(hca,DeltaAspocOffRes,'.')
 hold(hca,'off')
 ylabel(hca,'Delta [mV/m]')
@@ -175,6 +180,9 @@ irf_plot(hca,{Es12AspocOffR.x,Es12AspocOnR.x,...
   Es34AspocOffR.x,Es34AspocOnR.x},'comp');
 if ~isempty(Efpi)
   hold(hca,'on'), irf_plot(hca,EfpiR.x,'.'), hold(hca,'off')
+end
+if ~isempty(Ehpca),
+  hold(hca,'on'), irf_plot(hca,EhpcaR.x,'r.'), hold(hca,'off')
 end
 ylabel(hca,'Ex [mV/m]')
 
@@ -192,6 +200,9 @@ irf_plot(hca,{Es12AspocOffR.y,Es12AspocOnR.y,...
   Es34AspocOffR.y,Es34AspocOnR.y},'comp');
 if ~isempty(Efpi)
   hold(hca,'on'), irf_plot(hca,EfpiR.y,'.'), hold(hca,'off')
+end
+if ~isempty(Ehpca),
+  hold(hca,'on'), irf_plot(hca,EhpcaR.y,'r.'), hold(hca,'off')
 end
 ylabel(hca,'Ey [mV/m]')
 
@@ -211,7 +222,7 @@ title(h(1),mmsIdS)
 
 set(gcf,'paperpositionmode','auto')
 irf_print_fig(['Offsets_' mmsIdS '_' irf_fname(Tint.start.epochUnix)],'png')
-
+end
 %% Scatter plots
 Del = delta_off(DeltaAspocOff.data);
 
@@ -268,12 +279,14 @@ subplot(nRows,2,7)
   [EfpiR.x.data(idxMSH); EfpiR.x.data(idxMSH)]); cla
 [offs_x, slope] = comp_off_slope(Es12AspocOffR(idxMSH)-[Del.x Del.y], Es34AspocOffR(idxMSH), EfpiR(idxMSH));
 res.p1234.xy.slope = slope; res.p1234.xy.offs=offs_x;
-ylabel('Ex FPI [mV/m]'), xlabel('SDP [mV/m]')
+ylabel('E FPI [mV/m]'), xlabel('SDP [mV/m]')
 
 subplot(nRows,2,8)
 [~,res.p1234.y] = plot_xy([Es12AspocOffR.data(idxMSH,2)-Del.y; Es34AspocOffR.data(idxMSH,2)],...
-  [EfpiR.y.data(idxMSH); EfpiR.y.data(idxMSH)]);
-ylabel('Ey FPI [mV/m]'), xlabel('SDP [mV/m]')
+  [EfpiR.y.data(idxMSH); EfpiR.y.data(idxMSH)]); cla
+[offs_x, slope] = comp_off_slope(Es12AspocOffR(idxMSH)-[Del.x Del.y], Es34AspocOffR(idxMSH), EhpcaR(idxMSH));
+res.p1234.xy.slope_hpca = slope; res.p1234.xy.offs_hpca=offs_x;
+ylabel('E HPCA H+ [mV/m]'), xlabel('SDP [mV/m]')
 end
 
 set(gcf,'paperpositionmode','auto')
@@ -312,6 +325,14 @@ else
   EfpiTmp = Efpi.resample(Es34AspocOffCorr,'spline');
   Es34AspocOffResidual = Es34AspocOffCorr; 
   Es34AspocOffResidual.data = EfpiTmp.data(:,1:2) - Es34AspocOffCorr.data;
+  if ~isempty(Ehpca)
+  EhpcaTmp = Ehpca.resample(Es12AspocOffCorr,'spline');
+  Es12AspocOffResidualHPCA = Es12AspocOffCorr; 
+  Es12AspocOffResidualHPCA.data = EhpcaTmp.data(:,1:2) - Es12AspocOffCorr.data;
+  EhpcaTmp = Ehpca.resample(Es34AspocOffCorr,'spline');
+  Es34AspocOffResidualHPCA = Es34AspocOffCorr; 
+  Es34AspocOffResidualHPCA.data = EhpcaTmp.data(:,1:2) - Es34AspocOffCorr.data;
+  end
 end
 
 h = irf_figure(95,8,'reset');
@@ -351,6 +372,7 @@ set(hca,'XAxisLocation','top','xtick',[]); % remove 'xtick' if xticks required
 hca = irf_panel('Ex');
 irf_plot(hca,Efpi.x,'m.')
 hold(hca,'on')
+if ~isempty(Ehpca),irf_plot(hca,EhpcaR.x,'r.'),end
 irf_plot(hca,{Es12AspocOffCorr.x,Es34AspocOffCorr.x},'comp')
 hold(hca,'off')
 ylabel(hca,'Ex [mV/m]')
@@ -362,7 +384,8 @@ irf_legend(hca,sprintf('\\alpha=%.2f, \\Delta=%.2f mV/m, DSL=%.2f mV/m',...
 
 %myCols = [[0 0 1];[1 0 0];];
 hca = irf_panel('Ex_res'); %set(hca,'ColorOrder',myCols)
-irf_plot(hca,{Es12AspocOffResidual.x,Es34AspocOffResidual.x},'comp')
+irf_plot(hca,{Es12AspocOffResidual.x,Es34AspocOffResidual.x,...
+  Es12AspocOffResidualHPCA.x,Es34AspocOffResidualHPCA.x},'comp')
 ylabel(hca,'Ex-res [mV/m]')
 set(hca,'Ylim',1.99*[-1 1])
 irf_legend(hca,{'12','34'},[0.95, 0.95])
@@ -370,6 +393,7 @@ irf_legend(hca,{'12','34'},[0.95, 0.95])
 hca = irf_panel('Ey');
 irf_plot(hca,Efpi.y,'m.')
 hold(hca,'on')
+if ~isempty(Ehpca),irf_plot(hca,EhpcaR.y,'r.'),end
 irf_plot(hca,{Es12AspocOffCorr.y,Es34AspocOffCorr.y},'comp')
 hold(hca,'off')
 ylabel(hca,'Ey [mV/m]')
@@ -380,7 +404,8 @@ irf_legend(hca,sprintf('\\alpha=%.2f, \\Delta=%.2f mV/m, DSL=%.2f mV/m',...
   alpha, Del.y, OffDSL.y),[0.05, 0.95])
 
 hca = irf_panel('Ey_res');  %set(hca,'ColorOrder',myCols)
-irf_plot(hca,{Es12AspocOffResidual.y,Es34AspocOffResidual.y},'comp')
+irf_plot(hca,{Es12AspocOffResidual.y,Es34AspocOffResidual.y,...
+  Es12AspocOffResidualHPCA.y,Es34AspocOffResidualHPCA.y},'comp')
 ylabel(hca,'Ey-res [mV/m]')
 set(hca,'Ylim',1.99*[-1 1])
 irf_legend(hca,{'12','34'},[0.95, 0.95])
