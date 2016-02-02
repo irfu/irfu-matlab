@@ -1339,7 +1339,7 @@ classdef mms_sdp_dmgr < handle
       N_TERMS = 3;     % Number of terms to fit, Y = A + B*sin(wt) + C*cos(wt) +..., must be odd.
       MIN_FRAC = 0.20; % Minumum fraction of points required for one fit (minPts = minFraction * fitInterv [s] * samplerate [smpl/s] )
       FIT_EVERY = 5*10^9;   % Fit every X nanoseconds.
-      FIT_INTERV = 20*10^9; % Fit over X nanoseconds interval.
+      FIT_INTERV = double(MMS_CONST.Limit.SPINFIT_INTERV); % Fit over X nanoseconds interval.
       
       sdpPair = {'e12', 'e34'}; time = [];
       Sfit = struct(sdpPair{1}, [],sdpPair{2}, []);

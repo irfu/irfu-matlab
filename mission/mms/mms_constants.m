@@ -69,7 +69,7 @@ MMS_CONST.SDCProc.l2ace = 6;
 MMS_CONST.Limit.LOW_DENSITY_SATURATION = -100; % Probe stuck and below limit.
 MMS_CONST.Limit.DIFF_PROBE_TO_SCPOT_MEDIAN = 1.5; % Probe not used for probe2scpot if moving average is off by this from the mean of all probes moving average, in V.
 MMS_CONST.Limit.DCE_DCV_DISCREPANCY = 0.28; % Max discrepancy DCE{12,34}=(DCV{1,3}-DCV{2,4})/NominalLength, for data with all probes.
-
+MMS_CONST.Limit.SPINFIT_INTERV = int64(20*10^9); % Perform spinfits covering this interval, in [ns].
 
 % Bitmask values; 2^(bit_number - 1):
 MMS_CONST.Bitmask.SIGNAL_OFF             = mms_sdp_typecast('bitmask',1);  % Bit 1
