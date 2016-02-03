@@ -990,11 +990,11 @@ classdef mms_sdp_dmgr < handle
             % Replace possible FillVal with NaN
             tmp(tmp==getfield(mms_sdp_typecast('spinfits'),'fillval')) = NaN;
             DATAC.(param).spinfits.sfit.(sdpPair{iPair}) = tmp;
-            tmp = dataObj.data.([varPre, varPre2, sdpPair{iPair}]).data(:,1);
+            tmp = dataObj.data.([varPre, varPre2, sdpPair{iPair}]).data(:,iPair);
             % Replace possible FillVal with NaN
             tmp(tmp==getfield(mms_sdp_typecast('spinfits'),'fillval')) = NaN;
             DATAC.(param).spinfits.sdev.(sdpPair{iPair}) = tmp;
-            tmp = dataObj.data.([varPre, varPre3]).data(:,1);
+            tmp = dataObj.data.([varPre, varPre3]).data(:,iPair);
             % Replace possible FillVal with NaN
             tmp(tmp==getfield(mms_sdp_typecast('adc_offset'),'fillval')) = NaN;
             DATAC.(param).adc_off.(sdpPair{iPair}) = tmp;
@@ -1038,7 +1038,7 @@ classdef mms_sdp_dmgr < handle
             % Replace possible FillVal with NaN
             tmp(tmp==getfield(mms_sdp_typecast('spinfits'),'fillval')) = NaN;
             DATAC.(param).spinfits.sdev.(sdpPair{iPair}) = tmp;
-            tmp = dataObj.data.([varPre, 'adc_offset_', varSuf]).data(:,1);
+            tmp = dataObj.data.([varPre, 'adc_offset_', varSuf]).data(:,iPair);
             % Replace possible FillVal with NaN
             tmp(tmp==getfield(mms_sdp_typecast('adc_offset'),'fillval')) = NaN;
             DATAC.(param).adc_off.(sdpPair{iPair}) = tmp;
