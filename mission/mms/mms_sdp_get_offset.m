@@ -1,40 +1,64 @@
-function off = mms_sdp_get_offset(scId, procId, Tint)
-% Function to return offsets to be applied to DSL Ex (sunward) and DSL Ey
-% (duskward) in processing of MMS despun electric fields.
+function off = mms_sdp_get_offset(scId, procId, time)
+% Return offsets etc. to be applied in MMS processing (currently only 
+% QL dce2d or Scpot.
+%
 % Example: 
 %   MMS_CONST = mms_constants;
-%   off = mms_sdp_dsl_offset(1, MMS_CONST.SDCProc.ql);
+%   off = mms_sdp_dsl_offset(1, MMS_CONST.SDCProc.ql, dceTime);
 %  returns 
-%   off.ex      - Sunward offset (DSL Ex), for QL dce2d, L2 dce2d products
-%   off.ey      - Duskward offset (DSL Ey), for QL dce2d, L2 dce2d products
-%   off.p2p     - Probe2Plasma potential, for L2 scpot products
-%   off.calFile - Calibration filename used (to be stored in GATTRIB in
-%                 output cdf file).
+%   off.ex         - Sunward offset (DSL Ex), for QL dce2d
+%   off.ey         - Duskward offset (DSL Ey), for QL dce2d
+%   off.p2p        - Probe2Plasma potential, for L2 scpot
+%   off.shortening - Shortening factor, for L2 scpot
+%   off.calFile    - Calibration filename used (to be stored in GATTRIB in
+%                    the resulting cdf file).
 %
-% Note: For now only a fixed value per s/c and for QL dce only.
+% If calibration files are found, offsets will be interpolated with
+% 'previous' and 'extrap'. If failing to read latest calibration file a
+% static value is returned.
 %
 % NOTE: Keep in mind the signs used here and when applying the offsets and
 % scale factors.
 %
 % See also: MMS_SDP_DMGR
 
-narginchk(2,3);
+narginchk(3,3);
 global MMS_CONST ENVIR
 if isempty(MMS_CONST), MMS_CONST = mms_constants(); end
 % ENVIR gets loaded from mms_sdc_sdp_init, should not be empty here.
 if isempty(ENVIR), errStr='Empty ENVIR'; irf.log(errStr); error(errStr); end
+if isa(time,'GenericTime'), time = time.ttns; end
 
-try 
-  calFiles = [ENVIR.CAL_PATH_ROOT, filesep 'mms', scId, filesep 'edp', filesep, ...
-    'mms', scId, '_edp_sdp_', MMS_CONST.SDCProcs{procId},'_v*.txt' ];
+try
+  calPath = [ENVIR.CAL_PATH_ROOT, filesep 'mms', num2str(scId), filesep, ...
+    'edp'];
+  calFiles = [calPath, filesep, 'mms', num2str(scId), ...
+    '_edp_sdp_', MMS_CONST.SDCProcs{procId},'_v*.txt' ];
   list = dir(calFiles);
   if(~isempty(list))
     % Found at least one cal file for EDP_SDP_{SDCProcs}. Use the last
     % version, ie. end of list.
     % Load the txt file
-    [~,off.calFile, ~] = fileparts(list(end));
-    offTmp = load(list(end),'-ascii');
-    % Process it, interp1(,,'extrap');
+    list = list(end);
+    [~, off.calFile, ~] = fileparts(list.name);
+    fmt = '%s\t%f\t%f';
+    fileID = fopen([calPath, filesep, list.name]);
+    C = textscan(fileID, fmt, 'HeaderLines', 1);
+    fclose(fileID);
+    offTime = EpochTT(cell2mat(C{1}));
+    offIntrp = interp1(double(offTime.ttns-offTime.start.ttns), ...
+      [C{2}, C{3}], double(time-offTime.start.ttns), 'previous', 'extrap');
+    switch procId
+      case MMS_CONST.SDCProc.ql
+        off.ex = offIntrp(:,1);
+        off.ey = offIntrp(:,2);
+      case MMS_CONST.SDCProc.scpot
+        off.p2p = offIntrp(:,1);
+        off.shortening = offIntrp(:,2);
+      otherwise
+        errStr = 'Unexpected procId';
+        irf.log('critical',errStr); error(errStr);
+   end
   else
     off = useStaticOffset;
   end
@@ -48,6 +72,9 @@ end
     % Did not locate any calibration offset file or failed to read it, use
     % static offsets instead.
     irf.log('warning', 'Did not locate any CALIBRATION files, using static values');
+    % Default output if nothing matching the requested process.
+    off = struct('ex', 0.0, 'ey', 0.0, 'p2p', 0.0, 'shortening', 1.0, ...
+      'calFile', '20160204 static');
     switch procId
       case MMS_CONST.SDCProc.ql
         switch lower(scId)
@@ -93,12 +120,7 @@ end
         end
       otherwise
         irf.log('critical', 'Process does not yet have offsets. SETTING ALL TO ZERO');
-        off.ex = 0.0;
-        off.ey = 0.0;
-        off.p2p = 0;
     end
-    % Return a static, non empty, string to indicate these values was used.
-    off.calFile = '20160204 static';
   end % useStaticOffset
 
 end

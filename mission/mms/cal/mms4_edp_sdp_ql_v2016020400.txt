@@ -1,0 +1,2 @@
+% UTC time [yyyy-mm-ddThh:mm:ss.mmmuuunnnZ]	DSL-X offset	DSL-Y offset, TAB separated
+2015-03-01T00:00:00.000000000Z	1.32	0.0

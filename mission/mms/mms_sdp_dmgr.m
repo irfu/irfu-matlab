@@ -1201,7 +1201,7 @@ classdef mms_sdp_dmgr < handle
       Etmp.e34 = mask_bits(Etmp.e34, bitmask, MMS_CONST.Bitmask.SWEEP_DATA);   
       dE = mms_sdp_despin(Etmp.e12, Etmp.e34, Phase.data, deltaOff);
       % Get DSL offsets
-      offs = mms_sdp_get_offset(DATAC.scId, DATAC.procId);
+      offs = mms_sdp_get_offset(DATAC.scId, DATAC.procId, Dce.time);
       DATAC.calFile = offs.calFile; % Store name of cal file used.
       dE(:,1) = dE(:,1) - offs.ex; % Remove sunward
       dE(:,2) = dE(:,2) - offs.ey; % and duskward offsets
@@ -1305,7 +1305,7 @@ classdef mms_sdp_dmgr < handle
       end
       
       % Get probe to plasma potential (offs.p2p) for this time interval
-      offs = mms_sdp_get_offset(DATAC.scId, DATAC.procId);
+      offs = mms_sdp_get_offset(DATAC.scId, DATAC.procId, Probe2sc_pot.time);
       DATAC.calFile = offs.calFile; % Store name of cal file used.
       scPot = - Probe2sc_pot.data(:) .* offs.shortening(:) + offs.p2p;
       
