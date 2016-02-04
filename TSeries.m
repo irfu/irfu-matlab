@@ -724,7 +724,7 @@ classdef TSeries
       end
       
       function update_name_units()
-        if ~isempty(obj.name) || ~isempty(obj1.name)
+        if ~isempty(obj.name) || (isa(obj1,'TSeries') && ~isempty(obj1.name))
           if isempty(obj.name), s = 'untitled';
           else s = obj.name;
           end
