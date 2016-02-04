@@ -121,7 +121,7 @@ xOrig = x; yOrig = y;
 if isa(x,'TSeries')
   flag_output = 'tseries';  
   oldData = x.data;       
-  oldTime = double(x.time.epoch-x.time(1).epoch)/1e9; % transform from nanoseconds to seconds
+  oldTime = double(x.time.ttns-x.time(1).ttns)/1e9; % transform from nanoseconds to seconds
   flag_datatype = class(oldData);
   flag_timetype = class(oldTime);
 elseif isa(x,'numeric') % old format [time data]
@@ -150,10 +150,10 @@ if isa(y,'struct'),
 elseif isa(y,'TSeries')
   y = y.time;
   type_epoch = class(y);
-  t = double(y.time.epoch-x.time(1).epoch)/1e9; % transform from nanoseconds to seconds
+  t = double(y.time.ttns-x.time(1).ttns)/1e9; % transform from nanoseconds to seconds
 elseif isa(y,'GenericTimeArray')
   type_epoch = class(y);
-  t = double(y.epoch-x.time(1).epoch)/1e9;  
+  t = double(y.ttns-x.time(1).ttns)/1e9;  
 elseif isa(y,'numeric')
   if size(y,2)==1, t = y(:);  % y is only time
   else t = y(:,1); t = t(:);  % first column of y is time
