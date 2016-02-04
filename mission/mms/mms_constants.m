@@ -106,6 +106,6 @@ MMS_CONST.Version.Z = 0; % File revision, increased by 1 for each re-run.
 % Each cell corresponds to one version, append like: mods=[mods; {'new text'}];
 MMS_CONST.Version.MODS = {'V.0. Initial release.'};
 MMS_CONST.Version.MODS = [MMS_CONST.Version.MODS; {'V.1. QL (v1.0.z), SCPOT (v1.0.z), L2A (v0.1.z) now uses ASPOC srvy l2 and DEFATT, if these are available. Brst QL uses intermediate L2A file from Fast mode for delta offsets. Bitmask changed to uint16 and Quality to uint8.'}];
-MMS_CONST.Version.MODS = [MMS_CONST.Version.MODS; {'V.2. SCPOT (v2.0.z), L2A (v1.0.z) now uses variable names in accordance with new recommended standard for FIELDS, QL (v1.1.z) applies sunward offset removal. All products change shortening factor to 1.25 on SDP.'}];
+MMS_CONST.Version.MODS = [MMS_CONST.Version.MODS; {'V.2. SCPOT (v2.0.z), L2A (v1.0.z) now uses variable names in accordance with new recommended standard for FIELDS, All products change shortening factor to 1.25 on SDP, offsets applied indicated by GlobalAttribute Calibration_file.'}];
 
 end

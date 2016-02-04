@@ -9,6 +9,7 @@ classdef mms_sdp_dmgr < handle
   properties (SetAccess = protected )
     adc_off = [];     % comp ADC offsets
     aspoc = [];       % src ASPOC file
+    calFile = [];     % name of calibration file used
     dce = [];         % src DCE file
     dce_xyz_dsl = []; % comp E-field xyz DSL-coord
     dcv = [];         % src DCV file
@@ -1200,9 +1201,10 @@ classdef mms_sdp_dmgr < handle
       Etmp.e34 = mask_bits(Etmp.e34, bitmask, MMS_CONST.Bitmask.SWEEP_DATA);   
       dE = mms_sdp_despin(Etmp.e12, Etmp.e34, Phase.data, deltaOff);
       % Get DSL offsets
-      dsl_off = mms_sdp_dsl_offset(DATAC.scId, DATAC.procId);
-      dE(:,1) = dE(:,1) - dsl_off.ex; % Remove sunward
-      dE(:,2) = dE(:,2) - dsl_off.ey; % and duskward offsets
+      offs = mms_sdp_get_offset(DATAC.scId, DATAC.procId);
+      DATAC.calFile = offs.calFile; % Store name of cal file used.
+      dE(:,1) = dE(:,1) - offs.ex; % Remove sunward
+      dE(:,2) = dE(:,2) - offs.ey; % and duskward offsets
       % Note, positve E56 correspond to minus DSL-Z direction.
       DATAC.dce_xyz_dsl = struct('time',Dce.time,'data',[dE -Dce.e56.data],...
         'bitmask',bitmask);
@@ -1302,11 +1304,10 @@ classdef mms_sdp_dmgr < handle
         irf.log('critical',errStr); error(errStr);
       end
       
-      % XXX: add a better estimate of the plasma potential
-      plasmaPotential = 1;
-      % XXX: add a better estimate for the shortening factor
-      shorteningFactor = 1.1;
-      scPot = -Probe2sc_pot.data*shorteningFactor + plasmaPotential;
+      % Get probe to plasma potential (offs.p2p) for this time interval
+      offs = mms_sdp_get_offset(DATAC.scId, DATAC.procId);
+      DATAC.calFile = offs.calFile; % Store name of cal file used.
+      scPot = - Probe2sc_pot.data(:) .* offs.shortening(:) + offs.p2p;
       
       DATAC.sc_pot = struct('time',Probe2sc_pot.time,'data',scPot,...
         'bitmask',Probe2sc_pot.bitmask);

@@ -932,10 +932,13 @@ switch procId
 end
 
 %% Write to file.
-% Update GlobalAttributes specific to ql or l2pre.
+% Update GlobalAttributes.
 GATTRIB.Data_type = {dataType}; % 'fast_l1b_dce2d', 'slow_l1b_dce2d' or 'brst_l1b_dce2d'.
 GATTRIB.Logical_source = {[datasetPrefix '_' dataType]}; % ie. mms2_edp_fast_l1b_OptDesc FIXME...
 GATTRIB.Logical_source_description = {dataDesc}; % in full words.
+if(~isempty(Dmgr.calFile))
+  GATTRIB.Calibration_file = {Dmgr.calFile}; % Calibration file used.
+end
 
 % Replace any NaN with correct FILLVAL
 replaceNaN()
@@ -1037,6 +1040,7 @@ cd(oldDir);
     GATTRIB.Data_version = cell(0,1); % Same as version number in filename.
     GATTRIB.Descriptor = {'EDP>Electric Double Probe'};
     GATTRIB.Discipline = {'Space Physics>Magnetospheric Science'};
+    GATTRIB.Calibration_file = cell(0,1); % Name of calibration file used.
     GATTRIB.Generation_date = {datestr(now,'yyyymmdd')};
     GATTRIB.Instrument_type = {'Electric Fields (space)'};
     GATTRIB.Logical_file_id = cell(0,1); % Same as filename without ".cdf".
