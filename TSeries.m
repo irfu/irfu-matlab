@@ -1018,23 +1018,23 @@ classdef TSeries
       end
            
       function resample_(TsTmp)
-        Ts = irf_resamp(TsTmp,NewTime,varargin{:});
-%         tData = double(TsTmp.time.ttns - TsTmp.time.start.ttns)/10^9;
-%         dataTmp = double(TsTmp.data);
-%         newTimeTmp = double(NewTime.ttns - TsTmp.time.start.ttns)/10^9;
-%         if TsTmp.tensorOrder == 1,
-%           newData = irf_resamp([tData dataTmp], newTimeTmp, varargin{:});
-%           Ts = TsTmp; Ts.t_ = NewTime; Ts.data_ = newData(:,2:end);
-%         elseif TsTmp.tensorOrder == 2, % implemented for 3x3 data
-%           newData = nan(size(dataTmp));
-%           for ii = 1:size(newData,2)
-%             newDataTmp = irf_resamp([tData squeeze(dataTmp(:,ii,:))], newTimeTmp, varargin{:});
-%             newData(:,ii,:) = newDataTmp(:,2:end);
-%           end          
-%           Ts = TsTmp; Ts.t_ = NewTime; Ts.data_ = newData(:,:,:);
-%         else
-%           error('Not yet implemented');
-%         end
+        % Ts = irf_resamp(TsTmp,NewTime,varargin{:});
+        tData = double(TsTmp.time.ttns - TsTmp.time.start.ttns)/10^9;
+        dataTmp = double(TsTmp.data);
+        newTimeTmp = double(NewTime.ttns - TsTmp.time.start.ttns)/10^9;
+        if TsTmp.tensorOrder == 1,
+          newData = irf_resamp([tData dataTmp], newTimeTmp, varargin{:});
+          Ts = TsTmp; Ts.t_ = NewTime; Ts.data_ = newData(:,2:end);
+        elseif TsTmp.tensorOrder == 2, % implemented for 3x3 data
+          newData = nan(size(dataTmp));
+          for ii = 1:size(newData,2)
+            newDataTmp = irf_resamp([tData squeeze(dataTmp(:,ii,:))], newTimeTmp, varargin{:});
+            newData(:,ii,:) = newDataTmp(:,2:end);
+          end          
+          Ts = TsTmp; Ts.t_ = NewTime; Ts.data_ = newData(:,:,:);
+        else
+          error('Not yet implemented');
+        end
         
       end
     end %RESAMPLE
