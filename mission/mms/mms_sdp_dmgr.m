@@ -189,7 +189,7 @@ classdef mms_sdp_dmgr < handle
           else
             dfgVerStr = dataObj.GlobalAttributes.Data_version{1}(1:end);
           end
-          if( is_version_larger(dfgVerStr,'4.0.-1') )
+          if( is_version_leq(dfgVerStr,'4.0.0') )
             % Version 4.0.z or later, new variable names conforming to
             % recommended MMS standard.
             vPfx = sprintf('mms%d_dfg_b_dmpa_srvy_l2pre',DATAC.scId);
@@ -979,8 +979,8 @@ classdef mms_sdp_dmgr < handle
         % [e12, e34, e56], dce bitmask [e12, e34, e56], phase, adc & delta 
         % offsets).
         % Check version number, 1.0.z use new variable names, old 0.1.z did
-        % not use. Compare against non-existing version 0.2.z.
-        if( ~is_version_larger(dataObj.GlobalAttributes.Data_version{1}(2:end),'0.2.0') )
+        % not use.
+        if( ~is_version_leq(dataObj.GlobalAttributes.Data_version{1}(2:end),'1.0.0') )
           % Old version, this code segment can be removed when
           % re-processing has occured.
           varPre = ['mms', num2str(DATAC.scId), '_edp_dce'];
@@ -1419,6 +1419,9 @@ classdef mms_sdp_dmgr < handle
     
   end % public Methods
   methods (Static)
+    function delta_off = comp_delta_off(Dcv,sampleRate,MMS_CONST)
+      bits = MMS_CONST.Bitmask.ASPOC_RUNNING;
+    end
     function probe2sc_pot = comp_probe2sc_pot(Dcv,sampleRate,MMS_CONST)
       % Blank sweeps
       sweepBit = MMS_CONST.Bitmask.SWEEP_DATA;
