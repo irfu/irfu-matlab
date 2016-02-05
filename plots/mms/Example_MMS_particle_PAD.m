@@ -177,13 +177,13 @@ speceomni.f_label={''};
 speceomni.f = single(energyspec);
 
 specepadl=struct('t',diste.time.epochUnix);
-specepadl.p = double(paddistemid);
+specepadl.p = double(paddistelow);
 specepadl.p_label={'e log(dEF)','keV/(cm^2 s sr keV)'};
 specepadl.f_label={''};
 specepadl.f = single(thetae);
 
 specepadm=struct('t',diste.time.epochUnix);
-specepadm.p = double(paddistelow);
+specepadm.p = double(paddistemid);
 specepadm.p_label={'e log(dEF)','keV/(cm^2 s sr keV)'};
 specepadm.f_label={''};
 specepadm.f = single(thetae);
@@ -201,13 +201,13 @@ speciomni.f_label={''};
 speciomni.f = single(energyspeci);
 
 specipadl=struct('t',disti.time.epochUnix);
-specipadl.p = double(paddistimid);
+specipadl.p = double(paddistilow);
 specipadl.p_label={'i log(dEF)','keV/(cm^2 s sr keV)'};
 specipadl.f_label={''};
 specipadl.f = single(thetai);
 
 specipadm=struct('t',disti.time.epochUnix);
-specipadm.p = double(paddistilow);
+specipadm.p = double(paddistimid);
 specipadm.p_label={'i log(dEF)','keV/(cm^2 s sr keV)'};
 specipadm.f_label={''};
 specipadm.f = single(thetai);
