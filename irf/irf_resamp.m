@@ -36,6 +36,7 @@ method = '';
 flag_do='check'; % if no method check if interpolate or average
 median_flag=0;
 max_flag=0;
+doReshape = 0;
 
 while have_options
 	l = 1;
@@ -120,10 +121,14 @@ xOrig = x; yOrig = y;
 % x, old time and data
 if isa(x,'TSeries')
   flag_output = 'tseries';  
-  oldData = x.data;       
+  if x.tensorOrder == 2 && ndims(x.data)>2
+    doReshape = 1;
+    sizeData = size(x.data);
+    oldData = reshape(x.data,sizeData(1),1,sizeData(2)*sizeData(3));
+  else
+    oldData = x.data;
+  end  
   oldTime = double(x.time.ttns-x.time(1).ttns)/1e9; % transform from nanoseconds to seconds
-  flag_datatype = class(oldData);
-  flag_timetype = class(oldTime);
 elseif isa(x,'numeric') % old format [time data]
   flag_output = 'mat';
   if numel(x) == 1 % only one number
@@ -132,14 +137,13 @@ elseif isa(x,'numeric') % old format [time data]
   else 
     oldData = x(:,2:end);   
     oldTime = x(:,1);       
-  end
-  flag_datatype = class(oldData);
-  flag_timetype = class(oldTime);
+  end    
 else
   msgS = 'Cannot recognize input x (old data), it is neither a TSeries nor a numeric array';
   irf.log('critical',msgS), error(msgS)
 end
 
+flag_datatype = class(oldData);
 % y, new time
 if isa(y,'struct'),
   if isfield(y,'t'), t=y.t; t=t(:);
@@ -163,20 +167,6 @@ else
   irf.log('critical',msgS), error(msgS)
 end
 
-% Make data into double so it's compatible with all subfunctions
-newTime = t;
-%t0 = oldTime(1);
-%oldTime = double(oldTime - t0);
-% oldData = double(oldData);
-%t = double(t-t0);
-
-% Transform all data to double to possibly retransform it the original data
-% type in the end
-%t0 = oldData(1);
-%x = [double(oldTime)-double(t0) double(oldData)];
-%y = [double(t)-double(t0) double(oldData)];
-
-
 % Same timeline - no need to do anything
 % old data already divided into time and data
 if length(oldTime)==length(t) && all(oldTime==t)
@@ -199,10 +189,7 @@ if strcmp(flag_do,'check'), % Check if interpolation or average
 		% If more than one output time check sampling frequencies
 		% to decide interpolation/average
 		
-		% Guess samplings frequency for Y
-    % This becomes problematic when having time in nanoseconds, the
-    % division with dt becomes = 0. The format int64 does not allow for
-    % floating numbers. I make it a double
+		% Guess samplings frequency for Y   
 		if isempty(sfy)
 			sfy1 = (1/(t(2) - t(1)));
 			if ndata==2, sfy = sfy1;
@@ -210,12 +197,12 @@ if strcmp(flag_do,'check'), % Check if interpolation or average
 				not_found = 1; cur = 3; MAXTRY = 10;
 				while (not_found && cur<=ndata && cur-3<MAXTRY)
 					sfy = 1/(t(cur) - t(cur-1));
-                    if abs(sfy-sfy1)<sfy*0.001
-                        not_found = 0;
-                        sfy = (sfy+sfy1)/2;
-                        break
-                    end
-                    sfy1=sfy;
+            if abs(sfy-sfy1)<sfy*0.001
+                not_found = 0;
+                sfy = (sfy+sfy1)/2;
+                break
+            end
+            sfy1=sfy;
 					cur = cur + 1;
 				end
 				if not_found
@@ -248,8 +235,7 @@ if strcmp(flag_do,'average')
         newData = zeros(ndata,size(oldData,2),size(oldData,3));
         %out(:,1) = t;
         for j=1:ndata
-            ii = find(oldTime(:,1) <=  t(j) + dt2 & oldTime(:,1) >  t(j) - dt2);
-            %ii
+            ii = find(oldTime(:,1) <=  t(j) + dt2 & oldTime(:,1) >  t(j) - dt2);            
             if isempty(ii), newData(j,:) = NaN;
             else
                 if thresh % Throw away points above THERESH*STD()
@@ -288,13 +274,11 @@ if strcmp(flag_do,'average')
             out = construct_output([],[]);
         else          
             % input to irf_average_mx needs to be double
-            if strcmp(flag_output,'tseries') && x.tensorOrder == 2 
+            if 0 %strcmp(flag_output,'tseries') && x.tensorOrder == 2 
               % must divide tensor into vectors
               tmpData = nan(size(oldData));
               for ii = 1:size(oldData,2)
-                %irf_resamp([tData squeeze(dataTmp(:,ii,:))], newTimeTmp, varargin{:});
-                % Maybe insert warning here that data is converted to double, if it is 
-                % not already double
+                %irf_resamp([tData squeeze(dataTmp(:,ii,:))], newTimeTmp, varargin{:});               
                 newTmpData = irf_average_mx([oldTime squeeze(oldData(:,ii,:))],t,double(dt2),thresh);              
                 tmpData(:,ii,:) = newTmpData(:,2:end);
               end   
@@ -313,6 +297,9 @@ if strcmp(flag_do,'average')
         end
     end
 elseif strcmp(flag_do,'interpolation'),
+  if ~any([strcmp(flag_datatype,'double') strcmp(flag_datatype,'single')])
+    oldData = double(oldData);
+  end
   if nargin < 3 || isempty(method), method = 'linear'; end
 
   % If time series agree, no interpolation is necessary.
@@ -332,22 +319,15 @@ function out = construct_output(t,newData)
   if isempty(t) || isempty(newData)
     out = [];
   end
-  if strcmp(flag_do,'average') && ~strcmp(flag_datatype,'double')
-    % data was transformed into double, so nned to transform it back
-    switch flag_datatype
-      case 'single'
-        newData = single(newData);
-      case 'int64'
-        newData = int64(newData);      
-    end
-  end
+  newData = cast(newData,flag_datatype);  
   switch flag_output
-    case 'tseries'
-      %switch lower(type_epoch)
-      %  case 'epochtt', genericTime = EpochTT(y.epoch);
-      %  case 'epochunix',  genericTime = EpochUnix(newTime);
-      %end      
-      out = xOrig.clone(y,newData);
+    case 'tseries'   
+      if doReshape
+        newData = reshape(newData,y.length,sizeData(2),sizeData(3));
+        out = xOrig.clone(y,newData);
+      else
+        out = xOrig.clone(y,newData);
+      end
     case 'mat'
       out = [t newData];
   end
