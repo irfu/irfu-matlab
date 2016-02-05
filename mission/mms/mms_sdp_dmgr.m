@@ -1229,18 +1229,12 @@ classdef mms_sdp_dmgr < handle
         errStr='Bad SPINFITS input, cannot proceed.';
         irf.log('critical',errStr); error(errStr);
       end
-      % Index of times when both pairs have good spinfits, excluding data
-      % gaps and such...
-      ind = and( all( ~isnan( Spinfits.sfit.e12(:,2:3) ), 2), ...
-                 all( ~isnan( Spinfits.sfit.e34(:,2:3) ), 2) );
-      if(any(ind))
-        Delta_p12_p34 = double(Spinfits.sfit.e12(ind,2:3)) - ...
-          double(Spinfits.sfit.e34(ind,2:3));
-        DATAC.delta_off = ...
-          median(Delta_p12_p34(:,1)) + median(Delta_p12_p34(:,2))*1j;
-      else
-        MMS_CONST = DATAC.CONST;
-        DATAC.delta_off = MMS_CONST.Error;
+      MMS_CONST = DATAC.CONST;
+      DATAC.delta_off = mms_sdp_dmgr.comp_delta_off(Spinfits,...
+        DATAC.dce.time, DATAC.dce.e12.bitmask, DATAC.dce.e34.bitmask,...
+        MMS_CONST);
+      
+      if DATAC.delta_off == MMS_CONST.Error;
         irf.log('warning','Delta offset could not be computed.');
       end
       res = DATAC.delta_off;
@@ -1419,10 +1413,75 @@ classdef mms_sdp_dmgr < handle
     
   end % public Methods
   methods (Static)
-    function delta_off = comp_delta_off(Dcv,sampleRate,MMS_CONST)
+    function delta_off = comp_delta_off(Spinfits,...
+        bitmaskTime,bitmaskP12,bitmaskP34,MMS_CONST)
+      %COMP_DELTA_OFF compute delta offsets
+      %
+      % delta = MMS_SDP_DMGR.COMP_DELTA_OFF(Spinfits,...
+      %              bitmaskTime,bitmaskP12,bitmaskP34,MMS_CONST)
+      delta_off = MMS_CONST.Error;
       bits = MMS_CONST.Bitmask.ASPOC_RUNNING;
-    end
+      % ASPOC ON mask
+      mask = bitand(bitmaskP12,bits) > 0;
+      % XXX this will not be nescesary when we will have a reliable ASPOC bit
+      mask = mask | (bitand(bitmaskP34,bits) > 0);
+      
+      % Resample bitmask
+      spinSize = MMS_CONST.Limit.SPINFIT_INTERV;
+      mskAsponOnSpin = zeros(size(Spinfits.time));
+      intsON = find_on();
+      for idxInt=1:size(intsON,1)
+        mskAsponOnSpin((Spinfits.time> bitmaskTime(intsON(1,1))-spinSize/2) & ...
+          (Spinfits.time<= bitmaskTime(intsON(1,2))+spinSize/2)) = 1;
+      end
+      mskAsponOnSpin = logical(mskAsponOnSpin);
+      if all(mskAsponOnSpin)
+        irf.log('warning',...
+          'No Spinfits with ASPOC OFF, using data with ASPOC ON')
+        Es12AspocOff =  Spinfits.sfit.e12(:,2:3);
+        Es34AspocOff =  Spinfits.sfit.e34(:,2:3);
+      else
+        Es12AspocOff =  Spinfits.sfit.e12(~mskAsponOnSpin,2:3);
+        Es34AspocOff =  Spinfits.sfit.e34(~mskAsponOnSpin,2:3);
+      end
+      if isempty(Es12AspocOff) || isempty(Es34AspocOff)
+        irf.log('warning','No data to compute Delta_Off')
+        return
+      end
+      Delta_p12_p34 = Es12AspocOff - Es34AspocOff;
+      delta_off = del_my(Delta_p12_p34(:,1)) ...
+           + del_my(Delta_p12_p34(:,2))*1j;
+             
+      function [y,z] = del_my(x)
+        y = MMS_CONST.Error; z = MMS_CONST.Error;
+        % compute delta disregarding outlyers
+        STD_OFF = 1; % disregard points above this threhsould
+        xTmp = x(~isnan(x));
+        if isempty(x), return; end
+        y = median(xTmp); z = std(xTmp);
+        xTmp(abs(xTmp -y)>STD_OFF*z) = [];
+        if isempty(xTmp), return, end
+        y = median(xTmp); z = std(xTmp);
+      end % DEL_MY
+      function ints = find_on()
+        % find intervals when mask is set
+        idxJump = find(diff(mask)~=0);
+        ints = []; iStop = [];
+        for idxJmp=1:length(idxJump)+1
+          if isempty(iStop), iStart = 1; else iStart = iStop + 1; end
+          if idxJmp==length(idxJump)+1, iStop = length(mask); 
+          else iStop = idxJump(idxJmp); 
+          end
+          if ~mask(iStart), continue, end
+          ints = [ ints; iStart iStop]; %#ok<AGROW>
+        end 
+      end % FIND_ON
+    end % COMP_DELTA_OFF
     function probe2sc_pot = comp_probe2sc_pot(Dcv,sampleRate,MMS_CONST)
+      % COMP_PROBE2SC_POT  compute probe to SC potential
+      %
+      % p2sc_pot = MMS_SDP_DMGR.COMP_PROBE2SC_POT(Dcv,sampleRate,MMS_CONST)
+      
       % Blank sweeps
       sweepBit = MMS_CONST.Bitmask.SWEEP_DATA;
       Dcv.v1.data = mask_bits(Dcv.v1.data, Dcv.v1.bitmask, sweepBit);
