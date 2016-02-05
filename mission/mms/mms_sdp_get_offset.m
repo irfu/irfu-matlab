@@ -60,15 +60,14 @@ try
     if(~any(ind)), ind = true; end % Sanity check if time was incorrect...
     % Use only the last of the preceeding offset values for the entire data
     % interval.
-    ind(~ind) = [];
-    offIntrp = [C{2}(ind(end)), C{3}(ind(end))];
+    offIntrp = [C{2}(ind), C{3}(ind)];
     switch procId
       case {MMS_CONST.SDCProc.ql, MMS_CONST.SDCProc.l2pre}
-        off.ex = offIntrp(:,1);
-        off.ey = offIntrp(:,2);
+        off.ex = offIntrp(end,1);
+        off.ey = offIntrp(end,2);
       case MMS_CONST.SDCProc.scpot
-        off.p2p = offIntrp(:,1);
-        off.shortening = offIntrp(:,2);
+        off.p2p = offIntrp(end,1);
+        off.shortening = offIntrp(end,2);
    end
   else
     off = useStaticOffset;
