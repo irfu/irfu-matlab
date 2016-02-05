@@ -46,8 +46,11 @@ try
     C = textscan(fileID, fmt, 'HeaderLines', 1);
     fclose(fileID);
     offTime = EpochTT(cell2mat(C{1}));
-    offIntrp = interp1(double(offTime.ttns-offTime.start.ttns), ...
-      [C{2}, C{3}], double(time-offTime.start.ttns), 'previous', 'extrap');
+    ind = offTime.ttns <= time(1); % Preceeding offsets only.
+    if(~any(ind)), ind = 1; end % Sanity check if time was incorrect...
+    % Use only the last of the preceeding offset values for the entire data
+    % interval.
+    offIntrp = [C{2}(ind(end)), C{3}(ind(end))];
     switch procId
       case MMS_CONST.SDCProc.ql
         off.ex = offIntrp(:,1);
