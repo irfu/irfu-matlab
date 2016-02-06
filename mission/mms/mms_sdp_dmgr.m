@@ -415,6 +415,10 @@ classdef mms_sdp_dmgr < handle
             Etmp.e12 = mask_bits(Etmp.e12, bitmask, MMS_CONST.Bitmask.SWEEP_DATA);
             Etmp.e34 = mask_bits(Etmp.e34, bitmask, MMS_CONST.Bitmask.SWEEP_DATA);
             dE = mms_sdp_despin(Etmp.e12, Etmp.e34, DATAC.l2a.phase.data, DATAC.l2a.delta_off);
+            offs = mms_sdp_get_offset(DATAC.scId, DATAC.procId, DATAC.l2a.dce.time);
+            DATAC.calFile = offs.calFile; % Store name of cal file used.
+            dE(:,1) = dE(:,1) - offs.ex; % Remove sunward
+            dE(:,2) = dE(:,2) - offs.ey; % and duskward offsets
             % Compute DCE Z from E.B = 0, if >10 deg and if abs(B_z)> 1 nT.
             B_tmp = DATAC.dfg.B_dmpa;
             B_tmp.data((abs(B_tmp.z.data) <= 1), :) = NaN;
