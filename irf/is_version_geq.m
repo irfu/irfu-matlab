@@ -1,5 +1,7 @@
-function res = is_version_leq(newVersionString,oldVersionString)
-% res = is_version_larger(newVersionString,oldVersionString)
+function res = is_version_geq(newVersionString,oldVersionString)
+%IS_VERSION_GEQ  Is version greater of equal
+%
+% res = IS_VERSION_GEQ(newVersionString,oldVersionString)
 % compares version in format X.Y.Z (or an arbitrary number of elements 
 % each separated by a single ".").
 %
@@ -7,6 +9,7 @@ function res = is_version_leq(newVersionString,oldVersionString)
 % highest priority given to first element X, if X is the same in both then
 % it compares values of Y, etc.
 %
+% See also: IS_VERSION_LARGER
 
 verNew = get_ver(newVersionString);
 verOld = get_ver(oldVersionString);

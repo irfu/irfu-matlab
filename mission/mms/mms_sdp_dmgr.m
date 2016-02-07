@@ -189,7 +189,7 @@ classdef mms_sdp_dmgr < handle
           else
             dfgVerStr = dataObj.GlobalAttributes.Data_version{1}(1:end);
           end
-          if( is_version_leq(dfgVerStr,'4.0.0') )
+          if( is_version_geq(dfgVerStr,'4.0.0') )
             % Version 4.0.z or later, new variable names conforming to
             % recommended MMS standard.
             vPfx = sprintf('mms%d_dfg_b_dmpa_srvy_l2pre',DATAC.scId);
@@ -984,7 +984,7 @@ classdef mms_sdp_dmgr < handle
         % offsets).
         % Check version number, 1.0.z use new variable names, old 0.1.z did
         % not use.
-        if( ~is_version_leq(dataObj.GlobalAttributes.Data_version{1}(2:end),'1.0.0') )
+        if( ~is_version_geq(dataObj.GlobalAttributes.Data_version{1}(2:end),'1.0.0') )
           % Old version, this code segment can be removed when
           % re-processing has occured.
           varPre = ['mms', num2str(DATAC.scId), '_edp_dce'];
