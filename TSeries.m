@@ -1018,24 +1018,36 @@ classdef TSeries
       end
            
       function resample_(TsTmp)
-        % Ts = irf_resamp(TsTmp,NewTime,varargin{:});
-        tData = double(TsTmp.time.ttns - TsTmp.time.start.ttns)/10^9;
-        dataTmp = double(TsTmp.data);
-        newTimeTmp = double(NewTime.ttns - TsTmp.time.start.ttns)/10^9;
-        if TsTmp.tensorOrder == 1,
-          newData = irf_resamp([tData dataTmp], newTimeTmp, varargin{:});
-          Ts = TsTmp; Ts.t_ = NewTime; Ts.data_ = newData(:,2:end);
-        elseif TsTmp.tensorOrder == 2, % implemented for 3x3 data
-          newData = nan(size(dataTmp));
-          for ii = 1:size(newData,2)
-            newDataTmp = irf_resamp([tData squeeze(dataTmp(:,ii,:))], newTimeTmp, varargin{:});
-            newData(:,ii,:) = newDataTmp(:,2:end);
-          end          
-          Ts = TsTmp; Ts.t_ = NewTime; Ts.data_ = newData(:,:,:);
+        if 1
+          disp('Passing directly to irf_resamp')
+          Ts = irf_resamp(TsTmp,NewTime,varargin{:});
         else
-          error('Not yet implemented');
-        end
-        
+          tData = double(TsTmp.time.ttns - TsTmp.time.start.ttns)/10^9;
+          dataTmp = double(TsTmp.data);
+          newTimeTmp = double(NewTime.ttns - TsTmp.time.start.ttns)/10^9;
+          origDataSize = size(dataTmp);
+
+          % reshape data so it can be directly inserted into irf_resamp
+          dataTmpReshaped = reshape(dataTmp,[origDataSize(1) prod(origDataSize(2:end))]);
+          newDataTmpReshaped = irf_resamp([tData squeeze(dataTmpReshaped)], newTimeTmp, varargin{:});
+          newDataReshaped = squeeze(newDataTmpReshaped(:,2:end)); % take away time column
+          newData = reshape(newDataReshaped,[length(newTimeTmp) origDataSize(2:end)]); % shape back to original dimensions
+          Ts = TsTmp; Ts.t_ = NewTime; Ts.data_ = newData;     
+
+  %           if ndims(dataTmp) == 3,
+  %             newData = nan(numel(newTimeTmp),size(dataTmp,2),size(dataTmp,3));
+  %             for ii = 1:size(newData,2)
+  %               newDataTmp = irf_resamp([tData squeeze(dataTmp(:,ii,:))], newTimeTmp, varargin{:});
+  %               newData(:,ii,:) = newDataTmp(:,2:end);
+  %             end          
+  %             Ts = TsTmp; Ts.t_ = NewTime; Ts.data_ = newData(:,:,:);
+  %           elseif ndims(dataTmp) < 3
+  %             newData = irf_resamp([tData dataTmp], newTimeTmp, varargin{:});
+  %             Ts = TsTmp; Ts.t_ = NewTime; Ts.data_ = newData(:,2:end);     
+  %           else 
+  %             error('Not yet implemented')
+  %           end
+        end       
       end
     end %RESAMPLE
     
