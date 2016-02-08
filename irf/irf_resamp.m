@@ -113,6 +113,8 @@ end
 % Need to check that x and y are given in same or similar enough format,
 if any(isa(x,'TSeries')) && ~any([isa(y,'TSeries') isa(y,'GenericTimeArray')])
   error('If X is TSeries, Y must be TSeries or GenericTimeArray.')
+elseif isa(x,'numeric') && any([isa(y,'TSeries') isa(y,'GenericTimeArray')])
+  error('If X is numeric, Y must be numeric.')
 end
   
 % Check format of input
@@ -178,8 +180,9 @@ end
 % If X (oldData) has only one point, this is a trivial case and we 
 % return directly there is only one number
 % the single data point is duplicated into the new timeline
-if numel(oldTime) == 1,       
-  out = construct_output(t,repmat(oldData,numel(t),1,1));
+if numel(oldData) == 1,       
+  repData = repmat(oldData,[numel(t),origDataSize]);
+  out = construct_output(t,repData);
   return
 end
 
