@@ -9,6 +9,7 @@ classdef mms_sdp_dmgr < handle
   properties (SetAccess = protected )
     adc_off = [];     % comp ADC offsets
     aspoc = [];       % src ASPOC file
+    calFile = [];     % name of calibration file used
     dce = [];         % src DCE file
     dce_xyz_dsl = []; % comp E-field xyz DSL-coord
     dcv = [];         % src DCV file
@@ -183,7 +184,19 @@ classdef mms_sdp_dmgr < handle
           
         case('dfg')
           % DFG - Dual fluxgate magn. B-field.
-          vPfx = sprintf('mms%d_dfg_srvy_l2pre_dmpa',DATAC.scId);
+          if(strcmp('v',dataObj.GlobalAttributes.Data_version{1}(1)))
+            dfgVerStr = dataObj.GlobalAttributes.Data_version{1}(2:end);
+          else
+            dfgVerStr = dataObj.GlobalAttributes.Data_version{1}(1:end);
+          end
+          if( is_version_larger(dfgVerStr,'4.0.-1') )
+            % Version 4.0.z or later, new variable names conforming to
+            % recommended MMS standard.
+            vPfx = sprintf('mms%d_dfg_b_dmpa_srvy_l2pre',DATAC.scId);
+          else
+            % Old versions
+            vPfx = sprintf('mms%d_dfg_srvy_l2pre_dmpa',DATAC.scId);
+          end
           if(isempty(DATAC.(param)))
             % first DFG file
             DATAC.(param).dataObj = dataObj;
@@ -416,7 +429,17 @@ classdef mms_sdp_dmgr < handle
           
         case('aspoc')
           % ASPOC, have an adverse impact on E-field mesurements.
-          vPfx = sprintf('mms%d_asp_status',DATAC.scId);
+          vars = fields(dataObj.data);
+          for kk=1:length(vars)
+            if( ~isempty(strfind(vars{kk},'status')) )
+              vPfx = vars{kk}; break
+            end
+          end
+          if( ~isfield(dataObj.data, vPfx) )
+            irf.log('warning','Unfamiliar ASPOC file(-s)!!');
+            return
+          end
+          %vPfx = sprintf('mms%d_asp_status',DATAC.scId);
           if(isempty(DATAC.(param)))
             % first hk_101 file
             DATAC.(param).dataObj = dataObj;
@@ -955,45 +978,95 @@ classdef mms_sdp_dmgr < handle
         % Split up the various parts (spinfits [sdev, e12, e34], dce data
         % [e12, e34, e56], dce bitmask [e12, e34, e56], phase, adc & delta 
         % offsets).
-        varPre = ['mms', num2str(DATAC.scId), '_edp_dce'];
-        varPre2='_spinfit_'; varPre3='_adc_offset'; varPre4='_delta_offset';
-        sdpPair = {'e12', 'e34'};
-        for iPair=1:numel(sdpPair)
-          tmp = dataObj.data.([varPre, varPre2, sdpPair{iPair}]).data(:,2:end);
-          % Replace possible FillVal with NaN
-          tmp(tmp==getfield(mms_sdp_typecast('spinfits'),'fillval')) = NaN;
-          DATAC.(param).spinfits.sfit.(sdpPair{iPair}) = tmp;
-          tmp = dataObj.data.([varPre, varPre2, sdpPair{iPair}]).data(:,1);
-          % Replace possible FillVal with NaN
-          tmp(tmp==getfield(mms_sdp_typecast('spinfits'),'fillval')) = NaN;
-          DATAC.(param).spinfits.sdev.(sdpPair{iPair}) = tmp;
-          tmp = dataObj.data.([varPre, varPre3]).data(:,1);
-          % Replace possible FillVal with NaN
-          tmp(tmp==getfield(mms_sdp_typecast('adc_offset'),'fillval')) = NaN;
-          DATAC.(param).adc_off.(sdpPair{iPair}) = tmp;
+        % Check version number, 1.0.z use new variable names, old 0.1.z did
+        % not use. Compare against non-existing version 0.2.z.
+        if( ~is_version_larger(dataObj.GlobalAttributes.Data_version{1}(2:end),'0.2.0') )
+          % Old version, this code segment can be removed when
+          % re-processing has occured.
+          varPre = ['mms', num2str(DATAC.scId), '_edp_dce'];
+          varPre2='_spinfit_'; varPre3='_adc_offset'; varPre4='_delta_offset';
+          sdpPair = {'e12', 'e34'};
+          for iPair=1:numel(sdpPair)
+            tmp = dataObj.data.([varPre, varPre2, sdpPair{iPair}]).data(:,2:end);
+            % Replace possible FillVal with NaN
+            tmp(tmp==getfield(mms_sdp_typecast('spinfits'),'fillval')) = NaN;
+            DATAC.(param).spinfits.sfit.(sdpPair{iPair}) = tmp;
+            tmp = dataObj.data.([varPre, varPre2, sdpPair{iPair}]).data(:,iPair);
+            % Replace possible FillVal with NaN
+            tmp(tmp==getfield(mms_sdp_typecast('spinfits'),'fillval')) = NaN;
+            DATAC.(param).spinfits.sdev.(sdpPair{iPair}) = tmp;
+            tmp = dataObj.data.([varPre, varPre3]).data(:,iPair);
+            % Replace possible FillVal with NaN
+            tmp(tmp==getfield(mms_sdp_typecast('adc_offset'),'fillval')) = NaN;
+            DATAC.(param).adc_off.(sdpPair{iPair}) = tmp;
+          end
+          x = getdep(dataObj,[varPre, varPre2, sdpPair{iPair}]);
+          DATAC.(param).spinfits.time = x.DEPEND_O.data;
+          check_monoton_timeincrease(DATAC.(param).spinfits.time, 'L2A spinfits');
+          sensors = {'e12', 'e34', 'e56'};
+          DATAC.(param).dce = [];
+          x = getdep(dataObj,[varPre, '_data']);
+          DATAC.(param).dce.time = x.DEPEND_O.data;
+          check_monoton_timeincrease(DATAC.(param).dce.time, 'L2A dce');
+          for iPair=1:numel(sensors);
+            tmp = dataObj.data.([varPre, '_data']).data(:,iPair);
+            % Replace possible FillVal with NaN
+            tmp(tmp==getfield(mms_sdp_typecast('dce'),'fillval')) = NaN;
+            DATAC.(param).dce.(sensors{iPair}).data = tmp;
+            tmp = dataObj.data.([varPre, '_bitmask']).data(:,iPair);
+            tmp(tmp==getfield(mms_sdp_typecast('bitmask'),'fillval')) = NaN;
+            DATAC.(param).dce.(sensors{iPair}).bitmask = tmp;
+          end
+          tmp = dataObj.data.([varPre, '_phase']).data;
+          tmp(tmp==getfield(mms_sdp_typecast('phase'),'fillval')) = NaN;
+          DATAC.(param).phase.data = tmp;
+          DATAC.(param).delta_off = complex(dataObj.data.([varPre, varPre4]).data(1),...
+            dataObj.data.([varPre, varPre4]).data(2));
+        else
+          % New version, new variable names.. This piece of code should be
+          % kept after all reprocessing is completed.
+          varPre = ['mms', num2str(DATAC.scId), '_edp_'];
+          typePos = strfind(dataObj.GlobalAttributes.Data_type{1},'_');
+          varSuf = dataObj.GlobalAttributes.Data_type{1}(1:typePos(2)-1);
+          varPre2='_spinfit_'; varPre4='delta_offset_';
+          sdpPair = {'e12', 'e34'};
+          for iPair=1:numel(sdpPair)
+            tmp = dataObj.data.([varPre, sdpPair{iPair}, varPre2, varSuf]).data;
+            % Replace possible FillVal with NaN
+            tmp(tmp==getfield(mms_sdp_typecast('spinfits'),'fillval')) = NaN;
+            DATAC.(param).spinfits.sfit.(sdpPair{iPair}) = tmp;
+            tmp = dataObj.data.([varPre, 'sdev', varPre2, varSuf]).data(:,iPair);
+            % Replace possible FillVal with NaN
+            tmp(tmp==getfield(mms_sdp_typecast('spinfits'),'fillval')) = NaN;
+            DATAC.(param).spinfits.sdev.(sdpPair{iPair}) = tmp;
+            tmp = dataObj.data.([varPre, 'adc_offset_', varSuf]).data(:,iPair);
+            % Replace possible FillVal with NaN
+            tmp(tmp==getfield(mms_sdp_typecast('adc_offset'),'fillval')) = NaN;
+            DATAC.(param).adc_off.(sdpPair{iPair}) = tmp;
+          end
+          x = getdep(dataObj,[varPre, sdpPair{iPair}, varPre2, varSuf]);
+          DATAC.(param).spinfits.time = x.DEPEND_O.data;
+          check_monoton_timeincrease(DATAC.(param).spinfits.time, 'L2A spinfits');
+          sensors = {'e12', 'e34', 'e56'};
+          DATAC.(param).dce = [];
+          x = getdep(dataObj,[varPre, 'dce_', varSuf]);
+          DATAC.(param).dce.time = x.DEPEND_O.data;
+          check_monoton_timeincrease(DATAC.(param).dce.time, 'L2A dce');
+          for iPair=1:numel(sensors);
+            tmp = dataObj.data.([varPre, 'dce_', varSuf]).data(:,iPair);
+            % Replace possible FillVal with NaN
+            tmp(tmp==getfield(mms_sdp_typecast('dce'),'fillval')) = NaN;
+            DATAC.(param).dce.(sensors{iPair}).data = tmp;
+            tmp = dataObj.data.([varPre, 'bitmask_', varSuf]).data(:,iPair);
+            tmp(tmp==getfield(mms_sdp_typecast('bitmask'),'fillval')) = NaN;
+            DATAC.(param).dce.(sensors{iPair}).bitmask = tmp;
+          end
+          tmp = dataObj.data.([varPre, 'phase_', varSuf]).data;
+          tmp(tmp==getfield(mms_sdp_typecast('phase'),'fillval')) = NaN;
+          DATAC.(param).phase.data = tmp;
+          DATAC.(param).delta_off = complex(dataObj.data.([varPre, varPre4, varSuf]).data(1),...
+            dataObj.data.([varPre, varPre4, varSuf]).data(2));
         end
-        x = getdep(dataObj,[varPre, varPre2, sdpPair{iPair}]);
-        DATAC.(param).spinfits.time = x.DEPEND_O.data;
-        check_monoton_timeincrease(DATAC.(param).spinfits.time, 'L2A spinfits');
-        sensors = {'e12', 'e34', 'e56'};
-        DATAC.(param).dce = [];
-        x = getdep(dataObj,[varPre, '_data']);
-        DATAC.(param).dce.time = x.DEPEND_O.data;
-        check_monoton_timeincrease(DATAC.(param).dce.time, 'L2A dce');
-        for iPair=1:numel(sensors);
-          tmp = dataObj.data.([varPre, '_data']).data(:,iPair);
-          % Replace possible FillVal with NaN
-          tmp(tmp==getfield(mms_sdp_typecast('dce'),'fillval')) = NaN;
-          DATAC.(param).dce.(sensors{iPair}).data = tmp;
-          tmp = dataObj.data.([varPre, '_bitmask']).data(:,iPair);
-          tmp(tmp==getfield(mms_sdp_typecast('bitmask'),'fillval')) = NaN;
-          DATAC.(param).dce.(sensors{iPair}).bitmask = tmp;
-        end
-        tmp = dataObj.data.([varPre, '_phase']).data;
-        tmp(tmp==getfield(mms_sdp_typecast('phase'),'fillval')) = NaN;
-        DATAC.(param).phase.data = tmp;
-        DATAC.(param).delta_off = complex(dataObj.data.([varPre, varPre4]).data(1),...
-          dataObj.data.([varPre, varPre4]).data(2));
       end % load_l2a
 
 %       function res = are_probes_enabled
@@ -1127,7 +1200,11 @@ classdef mms_sdp_dmgr < handle
       Etmp.e12 = mask_bits(Etmp.e12, bitmask, MMS_CONST.Bitmask.SWEEP_DATA);
       Etmp.e34 = mask_bits(Etmp.e34, bitmask, MMS_CONST.Bitmask.SWEEP_DATA);   
       dE = mms_sdp_despin(Etmp.e12, Etmp.e34, Phase.data, deltaOff);
-      % FIXME: apply DSL offsets here
+      % Get DSL offsets
+      offs = mms_sdp_get_offset(DATAC.scId, DATAC.procId, Dce.time);
+      DATAC.calFile = offs.calFile; % Store name of cal file used.
+      dE(:,1) = dE(:,1) - offs.ex; % Remove sunward
+      dE(:,2) = dE(:,2) - offs.ey; % and duskward offsets
       % Note, positve E56 correspond to minus DSL-Z direction.
       DATAC.dce_xyz_dsl = struct('time',Dce.time,'data',[dE -Dce.e56.data],...
         'bitmask',bitmask);
@@ -1227,11 +1304,10 @@ classdef mms_sdp_dmgr < handle
         irf.log('critical',errStr); error(errStr);
       end
       
-      % XXX: add a better estimate of the plasma potential
-      plasmaPotential = 1;
-      % XXX: add a better estimate for the shortening factor
-      shorteningFactor = 1.1;
-      scPot = -Probe2sc_pot.data*shorteningFactor + plasmaPotential;
+      % Get probe to plasma potential (offs.p2p) for this time interval
+      offs = mms_sdp_get_offset(DATAC.scId, DATAC.procId, Probe2sc_pot.time);
+      DATAC.calFile = offs.calFile; % Store name of cal file used.
+      scPot = - Probe2sc_pot.data(:) .* offs.shortening(:) + offs.p2p;
       
       DATAC.sc_pot = struct('time',Probe2sc_pot.time,'data',scPot,...
         'bitmask',Probe2sc_pot.bitmask);
@@ -1264,7 +1340,7 @@ classdef mms_sdp_dmgr < handle
       N_TERMS = 3;     % Number of terms to fit, Y = A + B*sin(wt) + C*cos(wt) +..., must be odd.
       MIN_FRAC = 0.20; % Minumum fraction of points required for one fit (minPts = minFraction * fitInterv [s] * samplerate [smpl/s] )
       FIT_EVERY = 5*10^9;   % Fit every X nanoseconds.
-      FIT_INTERV = 20*10^9; % Fit over X nanoseconds interval.
+      FIT_INTERV = double(MMS_CONST.Limit.SPINFIT_INTERV); % Fit over X nanoseconds interval.
       
       sdpPair = {'e12', 'e34'}; time = [];
       Sfit = struct(sdpPair{1}, [],sdpPair{2}, []);
