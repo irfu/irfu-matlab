@@ -29,6 +29,14 @@ function [paddist,theta,energy,tint] = get_pitchangledist(varargin)
 % Written by D. B. Graham
 %
 
+tic;
+
+anglevec = [15 30 45 60 75 90 105 120 135 150 165 180];
+pitcha = anglevec-7.5;
+numechannels = 32;
+lengthphi = 32;
+lengththeta = 16;
+
 % Input check
 rtrnTS = 1;
 if (nargin == 2 || nargin==3),
@@ -89,18 +97,22 @@ end
 
 B = B.resample(pdist);
 Bvec = B/B.abs;
+Bvecx = repmat(Bvec.data(:,1),1,numechannels,lengthphi,lengththeta);
+Bvecy = repmat(Bvec.data(:,2),1,numechannels,lengthphi,lengththeta);
+Bvecz = repmat(Bvec.data(:,3),1,numechannels,lengthphi,lengththeta);
+
 
 if(rtrnTS == 0),
     [~,tintpos] = min(abs(pdist.time-tint));
     tint = pdist.time(tintpos);
-    Bvec = TSeries(Bvec.time(tintpos),Bvec.data(tintpos,:));
+    Bvecx = ones(32,32,16)*Bvec.data(tintpos,1);
+    Bvecy = ones(32,32,16)*Bvec.data(tintpos,2);
+    Bvecz = ones(32,32,16)*Bvec.data(tintpos,3);
     pdist = TSeries(pdist.time(tintpos),pdist.data(tintpos,:,:,:));
     if(noangles == 0),
         stepTable = TSeries(stepTable.time(tintpos),stepTable.data(tintpos));
     end
 end
-
-numechannels = 32;
 
 if noangles,
     % Define angles
@@ -109,17 +121,25 @@ if noangles,
     theta = dangle*[0:15]+dangle/2;
     x = -cosd(phi')*sind(theta);
     y = -sind(phi')*sind(theta);
+    z = -ones(lengthphi,1)*cosd(theta);
+    x = repmat(x,1,1,length(pdist.time));
+    y = repmat(y,1,1,length(pdist.time));
+    z = repmat(z,1,1,length(pdist.time));
+    x = permute(x,[3 1 2]);
+    y = permute(y,[3 1 2]);
+    z = permute(z,[3 1 2]);
     [~,energy] = hist([log10(10),log10(30e3)],32);
     energy = 10.^energy;
     energy = ones(length(pdist.time),1)*energy;
-    lengthphi = 32;
 else
-    lengthphi = length(phi.data(1,:));
-    xt = zeros(length(pdist.time),lengthphi,length(theta));
-    yt = zeros(length(pdist.time),lengthphi,length(theta));
+    x = zeros(length(pdist.time),lengthphi,lengththeta);
+    y = zeros(length(pdist.time),lengthphi,lengththeta);
+    z = zeros(length(pdist.time),lengthphi,lengththeta);
+
     for ii = 1:length(pdist.time);
-        xt(ii,:,:) = -cosd(phi.data(ii,:)')*sind(theta);
-        yt(ii,:,:) = -sind(phi.data(ii,:)')*sind(theta);
+        x(ii,:,:) = -cosd(phi.data(ii,:)')*sind(theta);
+        y(ii,:,:) = -sind(phi.data(ii,:)')*sind(theta);
+        z(ii,:,:) = -ones(lengthphi,1)*cosd(theta);
     end
     energy = ones(length(pdist.time),1)*energy0;
     for ii = 1:length(pdist.time);
@@ -129,57 +149,25 @@ else
     end
 end
 
-z = -ones(lengthphi,1)*cosd(theta);
+xt = repmat(x,1,1,1,32);
+xt = squeeze(permute(xt,[1 4 2 3]));
+yt = repmat(y,1,1,1,32);
+yt = squeeze(permute(yt,[1 4 2 3]));
+zt = repmat(z,1,1,1,32);
+zt = squeeze(permute(zt,[1 4 2 3]));
 
-if 0, % Not including solid angles. Leads to spurious results for Bz around zero. 
-z2 = ones(lengthphi,1)*sind(theta);
-dangle = pi/16;
-solida = dangle*dangle*z2;
+thetab = acosd(xt.*Bvecx+yt.*Bvecy+zt.*Bvecz);
 
-for jj=1:numechannels;
-    allsolid(jj,:,:) = solida;
-end
-for ii = 1:length(pdist.time);
-        allsolid2(ii,:,:,:) = allsolid;
-end
-end
+c_eval('dist? = pdist.data;',anglevec);
+dist15(thetab > 15) = NaN;
+for jj = 2:(length(anglevec)-1)
+	c_eval('dist?(thetab < (?-15)) = NaN;',anglevec(jj));
+	c_eval('dist?(thetab > ?) = NaN;',anglevec(jj));
+end 
+dist180(thetab < 165) = NaN;
+c_eval('dist? =  squeeze(irf.nanmean(irf.nanmean(dist?,4),3));',anglevec);
 
-%pdist.data = pdist.data.*allsolid2;
-
-anglevec = [15 30 45 60 75 90 105 120 135 150 165 180];
-pitcha = anglevec-7.5;
-
-paddistarr = zeros(length(pdist.time),32,12);
-
-for ii = 1:length(pdist.time);
-    dist1 = squeeze(pdist.data(ii,:,:,:));
-    if(noangles == 0),
-        x = squeeze(xt(ii,:,:));
-        y = squeeze(yt(ii,:,:));
-    end
-    thetab = acosd(x*Bvec.data(ii,1)+y*Bvec.data(ii,2)+z*Bvec.data(ii,3));
-    c_eval('pos? = ones(lengthphi,length(theta));',anglevec); 
-    %c_eval('sol? = solida;',anglevec);    
-    pos15(thetab > 15) = NaN;
-    %sol15(thetab > 15) = NaN;
-    for jj = 2:(length(anglevec)-1)
-        c_eval('pos?(thetab < (?-15)) = NaN;',anglevec(jj));
-        c_eval('pos?(thetab > ?) = NaN;',anglevec(jj));
-        %c_eval('sol?(thetab < (?-15)) = NaN;',anglevec(jj));
-        %c_eval('sol?(thetab > ?) = NaN;',anglevec(jj));
-    end
-    pos180(thetab < 165) = NaN;
-    %sol180(thetab < 165) = NaN;
-    
-    c_eval('dist? = dist1;',anglevec);
-    
-    for kk = 1:numechannels;
-        c_eval('dist?(kk,:,:)  = squeeze(dist1(kk,:,:)).*pos?;',anglevec);
-    end 
-    %c_eval('dist? =  squeeze(irf.nanmean(irf.nanmean(dist?,3),2))/irf.nanmean(irf.nanmean(sol?));',anglevec);
-    c_eval('dist? =  squeeze(irf.nanmean(irf.nanmean(dist?,3),2));',anglevec);
-    paddistarr(ii,:,:) = [dist15 dist30 dist45 dist60 dist75 dist90 dist105 dist120 dist135 dist150 dist165 dist180];
-end
+paddistarr = cat(3,dist15,dist30,dist45,dist60,dist75,dist90,dist105,dist120,dist135,dist150,dist165,dist180);
 
 if rtrnTS,
     paddist = TSeries(pdist.time,paddistarr);
@@ -189,5 +177,6 @@ else
 end
 
 theta = pitcha;
+toc;
 
 end
