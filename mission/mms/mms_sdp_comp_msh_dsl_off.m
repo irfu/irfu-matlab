@@ -45,7 +45,10 @@ for mmsId = 1:4
     EpochS = EpochTT(epochSpin);
     Es34 = irf.ts_vec_xy(EpochS,p34(:,3:4));
     Es34AspocOff =  Es34(~mskAsponOnSpin);
-    
+    if isempty(Es34AspocOff)
+      irf.log('warning','No data w/o ASPOC, using all data')
+      Es34AspocOff = Es34;
+    end
     if ~isempty(Es34AspocOff),
       Es34AspocOffR = Es34AspocOff.resample(Epoch20s,'median');
     else Es34AspocOffR = [];
