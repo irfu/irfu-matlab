@@ -23,6 +23,7 @@ function Pe = rotate_tensor(varargin)
 % Input: 
 %       PeXX,PeXY,PeXZ,PeYY,PeYZ,PeZZ - Pressure terms or temperature in TSeries 
 %       Peall - TSERIES of all tensor terms with column order PeXX,PeXY,PeXZ,PeYY,PeYZ,PeZZ
+%               OR 3x3 data with [PeXX,PeXY,PeXZ;PeYX,PeYY,PeyZ;PeZX,PeZY,PeZZ] 
 %       'fac' - Transform tensor into field-aligned coordinates. 
 %           * Bback - Background magnetic field (TSERIES format)
 %           * 'pp' - optional flag to rotate perpendicular components so
@@ -50,16 +51,20 @@ if isa(varargin{2},'char'),
     rotflagpos = 2;
     Peall = varargin{1};
     Petimes = Peall.time;
-    Ptensor = zeros(length(Petimes),3,3);
-    Ptensor(:,1,1) = Peall.data(:,1);
-    Ptensor(:,2,1) = Peall.data(:,2);
-    Ptensor(:,3,1) = Peall.data(:,3);
-    Ptensor(:,1,2) = Peall.data(:,2);
-    Ptensor(:,2,2) = Peall.data(:,4);
-    Ptensor(:,3,2) = Peall.data(:,5);
-    Ptensor(:,1,3) = Peall.data(:,3);
-    Ptensor(:,2,3) = Peall.data(:,5);
-    Ptensor(:,3,3) = Peall.data(:,6);
+    if ndims(Peall.data) == 3
+      Ptensor = Peall.data;      
+    else
+      Ptensor = zeros(length(Petimes),3,3);
+      Ptensor(:,1,1) = Peall.data(:,1);
+      Ptensor(:,2,1) = Peall.data(:,2);
+      Ptensor(:,3,1) = Peall.data(:,3);
+      Ptensor(:,1,2) = Peall.data(:,2);
+      Ptensor(:,2,2) = Peall.data(:,4);
+      Ptensor(:,3,2) = Peall.data(:,5);
+      Ptensor(:,1,3) = Peall.data(:,3);
+      Ptensor(:,2,3) = Peall.data(:,5);
+      Ptensor(:,3,3) = Peall.data(:,6);
+    end
 elseif isa(varargin{7},'char'),
     rotflag = varargin{7};
     rotflagpos = 7;
