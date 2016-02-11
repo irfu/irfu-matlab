@@ -254,6 +254,10 @@ classdef mms_edp_Sweep < handle
           p = polyfit(biasRes(ind80:ind70),voltage(ind80:ind70),1);
           tmp.impedance = 1000*p(1);
         end
+        if ind70-ind80 < 1
+          p = polyfit(biasRes(ind70:ind80),voltage(ind70:ind80),1);
+          tmp.impedance = 1000*p(1);
+        end
       end
 
     end % analyze
