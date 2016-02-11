@@ -3,7 +3,7 @@ function res = mms_sdp_comp_msh_dsl_off(Tint)
 %
 % res = MMS_SDP_COMP_MSH_DSL_OFF(Tint,mmsId)
 
-res = [];
+res = struct('c1',[],'c2',[],'c3',[],'c4',[],'tint',Tint);
 
 %%
 epoch1min = fix(Tint.start.epochUnix/60)*60:20:ceil(Tint.stop.epochUnix/60)*60;
@@ -15,6 +15,7 @@ E34 = struct('c1',[],'c2',[],'c3',[],'c4',[]);
 EFPI = E34;
 
 for mmsId = 1:4
+  mmsIdS = sprintf('c%d',mmsId);
   fPre = sprintf('mms%d_edp_fast_l2a_dce2d',mmsId);
   Bmask = mms.db_get_ts(fPre,...
     sprintf('mms%d_edp_dce_bitmask',mmsId), Tint);
@@ -45,7 +46,6 @@ for mmsId = 1:4
     Es34 = irf.ts_vec_xy(EpochS,p34(:,3:4));
     Es34AspocOff =  Es34(~mskAsponOnSpin);
     
-    mmsIdS = sprintf('c%d',mmsId);
     if ~isempty(Es34AspocOff),
       Es34AspocOffR = Es34AspocOff.resample(Epoch20s,'median');
     else Es34AspocOffR = [];
@@ -101,7 +101,7 @@ for mmsId = 1:4
   end
   Off.(mmsIdS) = offTmp;
 end
-res = Off;
+res = Off; res.tint = Tint;
 
 %% Validation figure
 mmsColors=[0 0 0; 1 0 0 ; 0 0.5 0 ; 0 0 1];
@@ -214,3 +214,19 @@ title(h(1),'MSH DSL Offsets')
 
 set(gcf,'paperpositionmode','auto')
 irf_print_fig(['SH_DSL_OFF_' irf_fname(Tint.start.epochUnix)],'png')
+
+end
+
+function ints = find_on(mask)
+
+idxJump = find(diff(mask)~=0);
+
+ints = []; iStop = [];
+for i=1:length(idxJump)+1
+  if isempty(iStop), iStart = 1; else iStart = iStop + 1; end
+  if i==length(idxJump)+1, iStop = length(mask); else iStop = idxJump(i); end
+  if ~mask(iStart), continue, end
+  ints = [ ints; iStart iStop]; %#ok<AGROW>
+end
+
+end
