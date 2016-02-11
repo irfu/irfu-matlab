@@ -613,6 +613,10 @@ classdef mms_edp_Sweep < handle
       legend(h1(2),['p',num2str(prb1)],['p',num2str(prb2)])
       imp1 = impedance1(ind_impedance); medi1 = median(imp1(isfinite(imp1)));
       imp2 = impedance2(ind_impedance); medi2 = median(imp2(isfinite(imp2)));
+      n1 = obj.pTable(1,iSweep);
+      n2 = n1 - 1 + 2 * mod(n1,2);
+      obj.(['p' num2str(n1)])(obj.pTable(2,iSweep)).impedance = medi1;
+      obj.(['p' num2str(n2)])(obj.pTable(2,iSweep)).impedance = medi2;
       if doPhase
         if plotev
           ylabel(h1(3),{'V',['[' getunits(obj.sweep,[obj.scId '_edp_sweeps']) ']']});
