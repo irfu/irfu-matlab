@@ -333,6 +333,9 @@ elseif flag_subplot==2, % Separate subplot for each variable
     
 elseif flag_subplot==3,  % components of vectors in separate panels
     if isstruct(x), error('cannot plot spectra in COMP mode'), end
+    if all(cellfun(@isempty,x))
+      irf.log('warning','all inputs are empty'), return
+    end
     % t_start_epoch is saved in figures user_data variable
     if isa(x{1},'TSeries')
       ts = t_start_epoch(x{1}.time.epochUnix);
