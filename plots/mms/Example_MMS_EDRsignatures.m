@@ -47,7 +47,8 @@ c_eval('Bxyz?=mms.db_get_ts(''mms?_dfg_brst_ql'',''mms?_dfg_brst_dmpa'',tint);',
 c_eval('SCpot?=mms.db_get_ts(''mms?_edp_brst_l2_scpot'',''mms?_edp_psp'',tint);',ic);
 offset1 = 1.3; offset2 = 1.5; offset3 = 1.2; offset4 = 0.0; %For v1 data
 c_eval('SCpot?.data = -SCpot?.data*1.2+offset?;',ic);
-c_eval('Exyzf? = mms.db_get_ts(''mms?_edp_fast_ql_dce'',''mms?_edp_dce_ql_dsl'',tint);',ic);
+%c_eval('Exyzf? = mms.db_get_ts(''mms?_edp_fast_ql_dce'',''mms?_edp_dce_ql_dsl'',tint);',ic);
+c_eval('E? = mms.db_get_ts(''mms?_edp_fast_ql_dce2d'',''mms?_edp_dce_xyz_dsl'',Tint);',ic);
 toc;
 
 %% Load electron and ion particle data
@@ -131,7 +132,7 @@ c_eval('Me? = irf.ts_scalar(Tet?.time,Me?);',ic);
 c_eval('ne? = emoments?.n_psd.tlim(tint);',ic);
 c_eval('Uevec? = emoments?.V_psd.tlim(tint);',ic);
 c_eval('Uivec? = imoments?.V_psd; Uivec? = Uivec?.resample(Uevec?);',ic);
-c_eval('Exyzf? = Exyzf?.resample(Uevec?);',ic);
+c_eval('Exyzf? = E?.resample(Uevec?);',ic);
 c_eval('Jmoms? = irf.ts_vec_xyz(Uevec?.time,1e18*qe*[ne?.data ne?.data ne?.data].*(Uivec?.data-Uevec?.data));',ic); % Current density in nA m^-2
 c_eval('EdotJ? = dot(Exyzf?.data,Jmoms?.data,2)/1000;',ic); %J (nA/m^2), E (mV/m), E.J (nW/m^3)
 c_eval('EdotJ? = irf.ts_scalar(ne?.time,EdotJ?);',ic);
