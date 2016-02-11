@@ -79,12 +79,17 @@ end
 		Sc.probeDistanceToSpacecraft = 60;
 	end
 	function Sc = sc_Solar_Orbiter
+		% SHIELD : front face 2.5 x 2.5 x 0.29 m (+ cut corner for SWA-protons alpha), rear face : 2.43 x 2.43 m
+		% SC Body : 1.68 x 1.68 x 1.8 m
+		% Solar Arrays : 3.85 x 1.2 x 0.025 m
+		% HGA : 0.55m (radius) and 0.22m (depth) + HGA mast : 1.42m (length) x 0.14m (width)
+		% BOOM : 4 m long, 0.025 radius
 		Sc = lp.spacecraft;
 		Sc.name  = 'Solar Orbiter';
 		Sc.probe = lp.default_lprobe('Solar_Orbiter');
 		Sc.surface = 'solar cells';
-		Sc.areaTotal = 10;
-		Sc.areaSunlit = 3;
+		Sc.areaTotal = 26;
+		Sc.areaSunlit = 6.25;
 		Sc.areaSunlitGuard = 0;
 		Sc.probeRefPotVsSatPot = 0.2;
 		Sc.nProbes = 3;
