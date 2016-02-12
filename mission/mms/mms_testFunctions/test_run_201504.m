@@ -15,6 +15,8 @@ setenv('DROPBOX_ROOT', [outDir filesep 'out'])
 setenv('DATA_PATH_ROOT', [outDir filesep 'out'])
 setenv('LOG_PATH_ROOT', [outDir filesep 'log'])
 MMS_CONST=mms_constants;
+global ENVIR
+ENVIR.CAL_PATH_ROOT='/Users/yuri/devel/irfu-matlab/mission/mms/cal';
 
 %load /data/mms/irfu/mmsR.mat
 %epocRTmp = EpochTT(R.time);
@@ -31,7 +33,7 @@ flagComm = 0;
 %tint = irf.tint('2015-08-15T13:00:00Z/2015-08-15T13:59:59Z'); flagComm = 2;
 %tint = irf.tint('2015-09-11T09:30:00Z/2015-09-11T09:59:59Z'); flagComm = 2;
 %tint = irf.tint('2015-10-07T11:00:00Z/2015-10-07T13:59:59Z'); flagComm = 2;
-tint = irf.tint('2015-10-16T12:00:00Z/2015-10-16T17:59:59Z'); flagComm = 2;
+tint = irf.tint('2015-10-16T05:02:34Z/2015-10-16T16:34:04Z'); flagComm = 2;
 %tint = irf.tint('2015-12-18T00:00:00Z/2015-12-18T11:59:59Z'); flagComm = 2;
 mmsId = 'mms2'; 
 
@@ -43,6 +45,8 @@ li = mms.db_list_files([mmsId '_fields_hk_l1b_105'],tint); if length(li)>1, erro
 HK_105_File = [li.path filesep li.name];
 li = mms.db_list_files([mmsId '_fields_hk_l1b_10e'],tint); if length(li)>1, error('li>1'), end
 HK_10E_File = [li.path filesep li.name];
+li = mms.db_list_files([mmsId '_aspoc_srvy_l2'],tint); if length(li)>1, error('li>1'), end
+ASPOC_File = [li.path filesep li.name];
 if flagComm==1
   DCE_File  = [prf '/edp/comm/l1b/dce128/' yyyy '/' mo '/' mmsId ...
     '_edp_comm_l1b_dce128_' yyyy mo day hh mm '00_v0.8.0.cdf'];
@@ -69,6 +73,7 @@ Dmgr = mms_sdp_dmgr(scId,procId,tmMode,samplerate);
 Dmgr.set_param('hk_10e',HK_10E_File);
 Dmgr.set_param('hk_105',HK_105_File);
 Dmgr.set_param('hk_101',HK_101_File);
+Dmgr.set_param('aspoc',ASPOC_File);
 Dmgr.set_param('dce',DCE_File);
 if ~isempty(DCV_File),Dmgr.set_param('dcv',DCV_File); end
 % Process
@@ -94,7 +99,7 @@ Dcv = irf.ts_scalar(dcv.time,[dcv.v1.data dcv.v2.data dcv.v3.data dcv.v4.data]);
 %% Summary plot
 E_YLIM = 7;
 
-h = irf_figure(73,6,'reset');
+h = irf_figure(73,5,'reset');
 
 hca = irf_panel('E');
 irf_plot(hca,DceSL)
@@ -103,7 +108,7 @@ irf_plot(hca,{AdcOff12,AdcOff34},'comp')
 ylabel(hca,'E SL [mV/m]')
 title(hca,mmsId), set(hca,'YLim',49*[-1 1])
 
-if 1
+if 0
 hca = irf_panel('Phase');
 irf_plot(hca,Phase)
 ylabel(hca,'Phase [deg]'), set(hca,'YLim',[0 360])
@@ -124,6 +129,7 @@ ylabel(hca,'P2ScPot [V]'), set(hca,'YLim',[-14 0])
 hca = irf_panel('Vs');
 irf_plot(hca,Dcv)
 ylabel(hca,'PPot [V]'), set(hca,'YLim',[-14 0])
+irf_legend(hca,{'P1','P2','P3','P4'},[0.9,0.02])
 
 %irf_plot_ylabels_align(h), 
 irf_zoom(h,'x',DceDSL.time)
