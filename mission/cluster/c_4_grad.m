@@ -100,7 +100,7 @@ if nargin==2 || nargin==3, % input is in form 'R?' and 'B?'
 				if isa(B.(id),'TSeries')
 					doOutputTSeries = true;
 					Bunits = B.(id).units;
-					B.(id) = [B.(id).time.epochUnix B.(id).data];
+					B.(id) = [B.(id).time.epochUnix double(B.(id).data)]; % TODO fix proper time handling
 				end
 			end
 		end		

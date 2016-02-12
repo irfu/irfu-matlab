@@ -37,8 +37,8 @@ else
     ud.LABL_PTR_1.dim(1) = 3;
     ud.VALIDMIN(4) = []; ud.VALIDMAX(4) = [];
     siConversion = '1.0e-9>T';
-  elseif ~isempty(regexp(v.name,'^mms[1-4]_pos_gs(e|m)$', 'once'))
-    data = data(:,1:3); % strip Btot
+  elseif ~isempty(regexp(v.name,'^mms[1-4]_?(ql_)pos_gs(e|m)$', 'once'))
+    data = data(:,1:3); % strip Rtot
     varType = 'vec_xyz';
     ud.LABL_PTR_1.data = ud.LABL_PTR_1.data(1:3,:);
     ud.LABL_PTR_1.dim(1) = 3;

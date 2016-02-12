@@ -36,8 +36,8 @@ MMS_CONST.Phaseshift.e12 =  2*pi*150/360; % probe 2 sunward
 MMS_CONST.Phaseshift.e34 =  2*pi* 60/360; % probe 4 sunward
 
 % Nominal Amplitude Correction factor multiplied to DCE data.
-MMS_CONST.NominalAmpCorr.e12 = 1.1;
-MMS_CONST.NominalAmpCorr.e34 = 1.1;
+MMS_CONST.NominalAmpCorr.e12 = 1.25;
+MMS_CONST.NominalAmpCorr.e34 = 1.25;
 MMS_CONST.NominalAmpCorr.e56 = 1.0;
 
 % Telemetry mode
@@ -69,7 +69,7 @@ MMS_CONST.SDCProc.l2ace = 6;
 MMS_CONST.Limit.LOW_DENSITY_SATURATION = -100; % Probe stuck and below limit.
 MMS_CONST.Limit.DIFF_PROBE_TO_SCPOT_MEDIAN = 1.5; % Probe not used for probe2scpot if moving average is off by this from the mean of all probes moving average, in V.
 MMS_CONST.Limit.DCE_DCV_DISCREPANCY = 0.28; % Max discrepancy DCE{12,34}=(DCV{1,3}-DCV{2,4})/NominalLength, for data with all probes.
-
+MMS_CONST.Limit.SPINFIT_INTERV = int64(20*10^9); % Perform spinfits covering this interval, in [ns].
 
 % Bitmask values; 2^(bit_number - 1):
 MMS_CONST.Bitmask.SIGNAL_OFF             = mms_sdp_typecast('bitmask',1);  % Bit 1
@@ -88,10 +88,10 @@ MMS_CONST.Error = -Inf; % Indicates error in computation
 % Major new Software version, X
 % New Calibration version, Y
 MMS_CONST.Version = struct(...
-  MMS_CONST.SDCProcs{MMS_CONST.SDCProc.ql},    struct('X', 1, 'Y', 0), ...
-  MMS_CONST.SDCProcs{MMS_CONST.SDCProc.scpot}, struct('X', 1, 'Y', 0), ...
-  MMS_CONST.SDCProcs{MMS_CONST.SDCProc.l2pre}, struct('X', 0, 'Y', 3), ...
-  MMS_CONST.SDCProcs{MMS_CONST.SDCProc.l2a},   struct('X', 0, 'Y', 1), ...
+  MMS_CONST.SDCProcs{MMS_CONST.SDCProc.ql},    struct('X', 1, 'Y', 1), ...
+  MMS_CONST.SDCProcs{MMS_CONST.SDCProc.scpot}, struct('X', 2, 'Y', 0), ...
+  MMS_CONST.SDCProcs{MMS_CONST.SDCProc.l2pre}, struct('X', 0, 'Y', 0), ...
+  MMS_CONST.SDCProcs{MMS_CONST.SDCProc.l2a},   struct('X', 1, 'Y', 0), ...
   MMS_CONST.SDCProcs{MMS_CONST.SDCProc.l1ace}, struct('X', 0, 'Y', 0), ...
   MMS_CONST.SDCProcs{MMS_CONST.SDCProc.l2ace}, struct('X', 0, 'Y', 0));
 % Version Notes Y, for us. Not written to CDF files.
@@ -106,5 +106,6 @@ MMS_CONST.Version.Z = 0; % File revision, increased by 1 for each re-run.
 % Each cell corresponds to one version, append like: mods=[mods; {'new text'}];
 MMS_CONST.Version.MODS = {'V.0. Initial release.'};
 MMS_CONST.Version.MODS = [MMS_CONST.Version.MODS; {'V.1. QL (v1.0.z), SCPOT (v1.0.z), L2A (v0.1.z) now uses ASPOC srvy l2 and DEFATT, if these are available. Brst QL uses intermediate L2A file from Fast mode for delta offsets. Bitmask changed to uint16 and Quality to uint8.'}];
+MMS_CONST.Version.MODS = [MMS_CONST.Version.MODS; {'V.2. SCPOT (v2.0.z), L2A (v1.0.z) now uses variable names in accordance with new recommended standard for FIELDS, All products change shortening factor to 1.25 on SDP, offsets applied indicated by GlobalAttribute Calibration_file.'}];
 
 end

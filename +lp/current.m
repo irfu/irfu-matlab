@@ -9,7 +9,7 @@ function J=current(Probe,vectorU,rSunAU,factorUV,Plasma)
 %    J.plasma - current of different plasma components
 %
 % Input:
-%  Probe      - describes probe properties (structure or object)
+%  Probe      - describes probe properties (structure or LP.LPROBE object)
 %   Probe.Area.sunlit - total sunlit area [m^2] 
 %   Probe.Area.sphere - area of the sphere
 %   Probe.Area.wire   - area of the wire 
@@ -20,17 +20,22 @@ function J=current(Probe,vectorU,rSunAU,factorUV,Plasma)
 %  vectorU    - probe potential (can be vector or matrix)
 %  rSunAU     - distance from sun in AU
 %  factorUV   - default is 1
-%  Plasma     - describes plasma components (structure or object)
-%    Plasma.q - charge of species in e (the length of this vector corresponds to number of species)
-%    Plasma.m - mass of species in proton masses (0 corresponds to e- mass)
-%    Plasma.n - density of species [cc]
-%    Plasma.T - temperature [eV]
-%    Plasma.v - velocity of probe wrt. mmedia [m/s]
+%  Plasma     - describes plasma components (structure or LP.PLASMA object)
+%    Plasma.qe - charge of species in e (the length of this vector corresponds to number of species)
+%    Plasma.m  - mass of species in kg
+%    Plasma.n  - density of species [cc]
+%    Plasma.T  - temperature [eV]
+%    Plasma.v  - velocity of probe wrt. media, zero if not given. [m/s]
 %
 % See also: LP.PHOTOCURRENT, LP.THERMAL_CURRENT
 
-nPlasmaSpecies=numel(Plasma.q);
-J.plasma=cell(nPlasmaSpecies,1);
+if isempty(Plasma), % calculate only photocurrent
+    nPlasmaSpecies=0;
+else
+    nPlasmaSpecies=numel(Plasma.qe);
+    J.plasma=cell(nPlasmaSpecies,1);
+%    plasma.TK=plasma.T*Units.e/Units.kB;
+end
 
 if isprop(Probe,'Area')
 	areaSunlit = Probe.Area.sunlit;
@@ -43,7 +48,7 @@ J.photo = J.photo .* factorUV;
 J.total=J.photo; % initialize
 for ii=1:nPlasmaSpecies,
 	% density n
-	q=Plasma.q(ii);
+	q=Plasma.qe(ii);
 	if numel(Plasma.n)<nPlasmaSpecies && ii > numel(Plasma.n)
 		n=Plasma.n(end);
 	else
@@ -67,8 +72,7 @@ for ii=1:nPlasmaSpecies,
 	else
 		v=Plasma.v(ii);
 	end
-	J_thi = thermal_current(Probe,n,T,m,v,q,vectorU);
-	J.plasma{ii}=-sign(q)*J_thi; % positive current away from probe
+	J.plasma{ii}=thermal_current(Probe,n,T,m,v,q,vectorU);
 	J.total=J.total+J.plasma{ii};
 end
 end
@@ -83,7 +87,7 @@ function jThermal = thermal_current(Lprobe,n,T,m,vsc,q,vectorU)
 %   spherical (cylindrical) S/C.
 %
 %   Input parameters:  N,T,m,Z    =  #density[m^-3], temperature[eV], mass[kg]
-%                                    and charge [+/-] of current carrying
+%                                    and charge [e] of current carrying
 %                                    species.
 %                      V          =  velocity of the body with respect
 %                                    to the plasma [m/s].
@@ -174,7 +178,7 @@ else
 	jThermalWire=0;
 end
 
-
 jThermal = jThermalSphere + jThermalWire;
+jThermal = -q*jThermal; % positive current is away from probe
 
 end

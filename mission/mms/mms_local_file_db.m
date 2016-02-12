@@ -16,11 +16,15 @@ classdef mms_local_file_db < mms_file_db
       
       obj@mms_file_db(rootPath); obj.dbRoot = rootPath;
       if nargin == 0, return, end
-      if ~ischar(rootPath) || exist(rootPath,'dir')~=7
+      if ~ischar(rootPath)
         errStr = 'rootPath must be a directory path name';
         irf.log('critical',errStr), error(errStr)
+      elseif exist(rootPath,'dir')~=7
+        errStr = sprintf('DB rootPath (%s) does not esist. Not mounted?',rootPath);
+        irf.log('critical',errStr), error(errStr)
       end
-    end
+		end
+
     %% LIST FILES
     function fileList = list_files(obj,filePrefix,tint)
       % fileList = list_files(obj, filePrefix, [tint]);
@@ -31,7 +35,7 @@ classdef mms_local_file_db < mms_file_db
       %  fileList = list_files(MMS_DB, 'mms1_edp_comm_l1b_dce128');
       narginchk(2,3)
       fileList = [];
-      if nargin==3 && ~isa(tint,'GenericTimeArray'),
+      if nargin==3 && (~isempty(tint) && ~isa(tint,'GenericTimeArray')),
         error('Expecting TINT (GenericTimeArray)')
       elseif nargin==2, tint = [];
       end
@@ -48,12 +52,19 @@ classdef mms_local_file_db < mms_file_db
         list_ancillary();
         if isempty(fileList) || isempty(tint), return, end
         pick_ancillary();
-      else
-        if ~isempty(tint), list_sci_tint()
-        else
-          irf.log('warning','THIS MAY TAKE SOME TIME')
-          list_sci()
-        end
+			else
+				if mms.db_index
+					irf.log('notice','Using index');
+					fileList = obj.index.search_files_with_dataset(filePrefix,tint);
+					return
+				else
+					if ~isempty(tint),
+						list_sci_tint()
+					else
+						irf.log('warning','THIS MAY TAKE SOME TIME')
+						list_sci()
+					end
+				end
       end
       % END LIST_FILES
       %% PICK ANCILLARY
@@ -67,7 +78,7 @@ classdef mms_local_file_db < mms_file_db
         if exist(fileDir,'dir')~=7, return, end
         filePref = [upper(C{1}) '_' upper(C{3}) '_'];
         if(~isempty(tint) && ...
-            ismember(upper(C{3}),{'DEFATT','DEFEPH','DEFERR'}) && ...
+            ismember(upper(C{3}),{'DEFATT','DEFEPH','DEFERR','DEFQ'}) && ...
             tint.stop.ttns-tint.start.ttns<int64(86400000000000))
           % Tint is set and less than one day. Speed up by only listing and
           % reading files +/- 5 days from this interval. (Ancillary files
@@ -114,7 +125,7 @@ classdef mms_local_file_db < mms_file_db
             e.start = get_time('start');
             e.stop = get_time('stop');
             function epoch = get_time(s)
-              epoch = [];
+              epoch = []; sss=[];
               cmd = sprintf('grep -m1 -i %s_time %s/%s | awk ''{print $3}''',...
                 s,e.path,e.name);
               [sta,out] = unix(cmd); if sta>0, return, end
@@ -123,15 +134,21 @@ classdef mms_local_file_db < mms_file_db
                   s,e.path,e.name);
                 [sta,out] = unix(cmd); if sta>0 || isempty(out), return, end
               end
-              sss = [irf_time([str2double(out(1:4)), str2double(out(6:8))],...
-                'doy>utc_yyyy-mm-dd') 'T'];
-              if length(out) == 19, sss = [sss out(10:17) '.000000000Z']; % ie. predatt (time string end with "hh:mm:ss\n") add remaining .mmmuuunnnZ
-              else sss = [sss out(10:21) '000000Z']; % defatt, depeph etc (time string end with "hh:mm:ss.mmm\n" add remaining uuunnnZ
-              end
               try
+                % Split up doy string YYYY-DOYThh:mm:ss.mmmuuunnn
+                % works on YYYY-DOYThh:mm:ss and YYYY-DOY/hh:mm:ss or a
+                % combination of these.
+                doy5 = sscanf(out,'%4d-%3d%c%2d:%2d:%2f');
+                sec = floor(doy5(6));
+                msec = floor((doy5(6)-sec)*10^3);
+                usec = floor(((doy5(6) - sec)*10^3 - msec)*10^3);
+                nsec = floor((((doy5(6) - sec)*10^3 - msec)*10^3 - usec) * 10^3);
+                doy8 = [doy5(1), doy5(2), doy5(4), doy5(5), sec, msec, usec, nsec]; % YYYY, DOY, hh, mm, ss, msec, usec, nsec
+                sss = irf_time(doy8, 'doy8>ttns');
                 epoch = EpochTT(sss);
               catch ME
-                errStr = ['Error reading times for ancillary file: ', e.name, ' got: ', sss];
+                errStr = ['Error reading times for ancillary file: ', ...
+                  e.name, ' got: ', sss, ' from :' out];
                 irf.log('critical', errStr); rethrow(ME);
               end
             end
@@ -243,21 +260,16 @@ classdef mms_local_file_db < mms_file_db
           error('multiple files with same name'),
         end
         
-        Ver = get_ver(fileList(iSame).ver); fVer = get_ver(fnd.vXYZ);
-        if(fVer.maj>Ver.maj) || ... % Newer major version
-            (fVer.maj==Ver.maj && fVer.min>Ver.min) || ... % Same major version, newer calibration
-            (fVer.maj==Ver.maj && fVer.min==Ver.min && fVer.rev>Ver.rev) % Same major and calib. but newer revision, replace file
-          fileList(iSame) = add_ss(Entry); % replace file
-        %else, older file.
-        end
-        function ver = get_ver(verS)
-           vT = strsplit(verS,'.');
-           for iTmp=1:length(vT), vT{iTmp} = str2double(vT{iTmp}); end
-           ver = struct('maj',vT{1},'min',0,'rev',0);
-           if isempty(vT{2}), return, end, ver.min = vT{2};
-           if isempty(vT{3}), return, end, ver.rev = vT{3};
-        end
+				if is_version_larger(fnd.vXYZ,fileList(iSame).ver)
+					fileList(iSame) = add_ss(Entry); % replace file
+				end
         function entry = add_ss(entry)
+          entryTmp = obj.cache.get_by_key(entry.name);
+          if ~isempty(entryTmp)
+            entry.start = entryTmp.start;
+            entry.stop = entryTmp.stop;
+            return
+          end
           try
             info = spdfcdfinfo([entry.path filesep entry.name]);
           catch
@@ -275,6 +287,10 @@ classdef mms_local_file_db < mms_file_db
           if isempty(data), entry = []; return, end
           entry.start = EpochTT(data(1));
           entry.stop = EpochTT(data(end));
+          % add to cache
+          entryTmp.start = entry.start; entryTmp.stop = entry.stop;
+          entryTmp.vars = info.Variables;
+          obj.cache.add_entry(entry.name, entryTmp);
         end % ADD_SS
       end % ADD2LIST
     end % LIST_FILES
@@ -283,24 +299,41 @@ classdef mms_local_file_db < mms_file_db
       narginchk(2,3)
       
       irf.log('notice',['loading ' fileName])
-      p = obj.get_path_to_file(fileName);
-      
+			if mms.db_index
+				fileNameFullPath = fileName;
+			else
+				p = obj.get_path_to_file(fileName);
+				fileNameFullPath = [p filesep fileName];
+			end
       if mms_local_file_db.is_cdf_file(fileName)
-        res = dataobj([p filesep fileName]);
+        res = dataobj(fileNameFullPath);
         return
       end
       
       % ancillary
-      [res,~] = mms_load_ancillary([p filesep fileName],...
+      [res,~] = mms_load_ancillary(fileNameFullPath,...
         mms_local_file_db.get_anc_type(fileName));
     end % LOAD_FILES
     
     %% FILE_HAS_VAR
     function res = file_has_var(obj,fileName,varName)
+			% checks if fileName includes variable name varName
+			% res = true/false
       narginchk(3,3)
       res = false; if isempty(varName) || isempty(fileName), return, end
       
-      p = obj.get_path_to_file(fileName); fullPath = [p filesep fileName];
+      entryTmp = obj.cache.get_by_key(fileName);
+      if ~isempty(entryTmp)
+        res = any(cellfun(@(x) strcmp(x,varName), entryTmp.vars(:,1)));
+        return
+      end
+			if mms.db_index
+				irf.log('notice','Using index to check if file ok');
+				fullPath = fileName;
+			else
+				p = obj.get_path_to_file(fileName); 
+				fullPath = [p filesep fileName];
+			end
       if ~exist(fullPath,'file')
         irf.log('warning', ['Fies does not exist: ' fullPath])
         return
@@ -310,6 +343,8 @@ classdef mms_local_file_db < mms_file_db
         ANC_VARS.defatt = {'wphase','zra','zdec','zphase','lra','ldec',...
           'lphase','pra','pdec','pphase'};
         ANC_VARS.defeph = {'r','v'};
+        ANC_VARS.defq = {'quality', 'scale'};
+        ANC_VARS.predq = {'quality', 'scale'};
         if ~isempty(intersect(varName,...
             ANC_VARS.(mms_local_file_db.get_anc_type(fileName)))) 
           res = true;
@@ -317,8 +352,12 @@ classdef mms_local_file_db < mms_file_db
         return
       end
       % cdf
-      info = spdfcdfinfo(fullPath);
-      res = any(cellfun(@(x) strcmp(x,varName), info.Variables(:,1)));
+			if mms.db_index
+				res = obj.index.file_has_var(fileName,varName);
+			else
+				info = spdfcdfinfo(fullPath);
+				res = any(cellfun(@(x) strcmp(x,varName), info.Variables(:,1)));
+			end
     end
   end
   

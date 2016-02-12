@@ -459,7 +459,7 @@ function aspa = readaspocactive( filen, datapath )
     fseek(fid,fposmem,'bof');
 
     if cols==2
-        C = textscan(fid, '%24s/%24s $', 'bufSize', 32768);
+        C = textscan(fid, '%24s/%24s $');
     else
         disp('PANIC: Can only read cef files with on/off data.');
         return;

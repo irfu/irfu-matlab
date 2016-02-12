@@ -12,6 +12,7 @@ function ScListOutput = default_spacecraft(scNames)
 
 scList = {'Cluster',       @sc_Cluster;...
           'THEMIS',        @sc_THEMIS;...
+          'MMS',           @sc_MMS;...
           'Solar_Orbiter', @sc_Solar_Orbiter;...
           'THOR_SDP',      @sc_THOR_SDP;...
           'THOR_HFA',      @sc_THOR_HFA;...
@@ -65,13 +66,30 @@ end
 		Sc.nProbes = 4;
 		Sc.probeDistanceToSpacecraft = 30;
 	end
+	function Sc = sc_MMS
+		Sc = lp.spacecraft;
+		Sc.name  = 'MMS';
+		Sc.probe = lp.default_lprobe('Cluster');
+		Sc.surface = 'themis';
+		Sc.areaTotal = 2*pi*3.5^2+3.5*1.2;% diam: 3.5?m, height: 1.2?m
+		Sc.areaSunlit = 3.5*1.2;
+		Sc.areaSunlitGuard = 0.039;
+		Sc.probeRefPotVsSatPot = 0.2;
+		Sc.nProbes = 4;
+		Sc.probeDistanceToSpacecraft = 60;
+	end
 	function Sc = sc_Solar_Orbiter
+		% SHIELD : front face 2.5 x 2.5 x 0.29 m (+ cut corner for SWA-protons alpha), rear face : 2.43 x 2.43 m
+		% SC Body : 1.68 x 1.68 x 1.8 m
+		% Solar Arrays : 3.85 x 1.2 x 0.025 m
+		% HGA : 0.55m (radius) and 0.22m (depth) + HGA mast : 1.42m (length) x 0.14m (width)
+		% BOOM : 4 m long, 0.025 radius
 		Sc = lp.spacecraft;
 		Sc.name  = 'Solar Orbiter';
 		Sc.probe = lp.default_lprobe('Solar_Orbiter');
 		Sc.surface = 'solar cells';
-		Sc.areaTotal = 10;
-		Sc.areaSunlit = 3;
+		Sc.areaTotal = 26;
+		Sc.areaSunlit = 6.25;
 		Sc.areaSunlitGuard = 0;
 		Sc.probeRefPotVsSatPot = 0.2;
 		Sc.nProbes = 3;

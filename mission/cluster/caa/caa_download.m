@@ -615,7 +615,30 @@ end
 				gunzip(downloadedFile);
 				delete(downloadedFile);
 				downloadedFile = downloadedFile(1:end-3); % remove '.gz'
-				filelist=untar(downloadedFile,tempDirectory);
+				%filelist=untar(downloadedFile,tempDirectory);
+				if( any( strcmp(version, {'8.6.0.267246 (R2015b)','9.0.0.307022 (R2016a) Prerelease'}) ) )
+					if(isunix)
+						% Matlab 8.6 R2015b and 9.0 R2016a Prerelease have a bug in Matlabs untar, try to use system built in tar on unix machines
+						irf.log('notice','Matlab R2015b Release or R2016a Prerelease have bug in Matlab untar, trying built in system tar on Mac/Linux.');
+						cmd = sprintf('tar -xf %s --directory %s', downloadedFile, tempDirectory);
+						[status, ~] = system(cmd);
+						cmd = sprintf('tar -tf %s', downloadedFile);
+						[~,cmdOutput] = system(cmd);
+						filelist = strsplit(cmdOutput(1:end-1)); % remove end \n
+						for i = 1:numel(filelist),
+							filelist{i} = [tempDirectory filesep filelist{i}];
+						end
+						if(status~=0)
+							irf.log('critical','Failed untar using built in system command. Trying Matlab, but this may fail with long file names.');
+							filelist = untar(downloadedFile, tempDirectory);
+						end
+					else
+						irf.log('warning','Matlab R2015b Release or R2016a Prerelease on Windows, trying built in Matlab untar. This may fail with long file names!');
+						filelist = untar(downloadedFile, tempDirectory);
+					end
+				else
+					filelist = untar(downloadedFile, tempDirectory);
+				end
 				
 				if isempty(filelist)
 					irf.log('warning','Returned gz file is empty');

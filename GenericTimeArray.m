@@ -141,7 +141,9 @@ classdef (Abstract) GenericTimeArray
             'inpus must be subclasses of GenericTimeArray')
       end
       len = obj.length(); len1 = obj1.length();
-			if len==0 && len1==0, res = true; return, end
+      if len==0 && len1==0, res = true; return
+      elseif len==0 || len1==0, res = false; return
+      end
 			
 			objTmp = convert_epoch(obj1,class(obj));
 			if len1==1,
@@ -302,7 +304,7 @@ classdef (Abstract) GenericTimeArray
     function [idxLim,res] = tlimPrivate(obj,inp,mode)
       % Private version of tLim, can be reloaded
       if mode==0
-        idxLim = find((obj.epoch >= inp.epoch(1)) & (obj.epoch < inp.epoch(end)));
+        idxLim = find((obj.epoch >= inp.epoch(1)) & (obj.epoch <= inp.epoch(end)));
       else
         idxLim = find((obj.epoch < inp.epoch(1)) | (obj.epoch > inp.epoch(end)));
       end

@@ -3,8 +3,6 @@
 % and perpendicular electric fields. 
 % Written by D. B. Graham.
 
-mms.db_init('local_file_db','/data/mms');
-
 % Select spacecraft number: 1--4
 ic = 3;
 

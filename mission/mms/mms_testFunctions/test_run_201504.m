@@ -15,12 +15,14 @@ setenv('DROPBOX_ROOT', [outDir filesep 'out'])
 setenv('DATA_PATH_ROOT', [outDir filesep 'out'])
 setenv('LOG_PATH_ROOT', [outDir filesep 'log'])
 MMS_CONST=mms_constants;
+global ENVIR
+ENVIR.CAL_PATH_ROOT='/Users/yuri/devel/irfu-matlab/mission/mms/cal';
 
-load /data/mms/irfu/mmsR.mat
-epocRTmp = EpochTT(R.time);
+%load /data/mms/irfu/mmsR.mat
+%epocRTmp = EpochTT(R.time);
 
 %% Define time
-flagComm = 1;
+flagComm = 0;
 %tint = irf.tint('2015-04-16T00:00:00Z/2015-04-16T06:00:00Z');
 %tint = irf.tint('2015-04-16T18:00:00Z/2015-04-16T23:59:59Z');
 %tint = irf.tint('2015-05-15T00:00:00Z/2015-05-15T05:59:59Z');
@@ -28,18 +30,23 @@ flagComm = 1;
 %tint = irf.tint('2015-05-06T12:00:00Z/2015-05-06T17:59:59Z');
 %tint = irf.tint('2015-06-21T00:00:00Z/2015-06-21T05:59:59Z'); 
 %tint = irf.tint('2015-06-22T00:00:00Z/2015-06-22T23:59:59Z'); flagComm = false;
-tint = irf.tint('2015-08-15T13:00:00Z/2015-08-15T13:59:59Z'); flagComm = 2;
-mmsId = 'mms4'; 
+%tint = irf.tint('2015-08-15T13:00:00Z/2015-08-15T13:59:59Z'); flagComm = 2;
+%tint = irf.tint('2015-09-11T09:30:00Z/2015-09-11T09:59:59Z'); flagComm = 2;
+%tint = irf.tint('2015-10-07T11:00:00Z/2015-10-07T13:59:59Z'); flagComm = 2;
+tint = irf.tint('2015-10-16T05:02:34Z/2015-10-16T16:34:04Z'); flagComm = 2;
+%tint = irf.tint('2015-12-18T00:00:00Z/2015-12-18T11:59:59Z'); flagComm = 2;
+mmsId = 'mms2'; 
 
 prf = [data_root filesep mmsId]; utc = tint.start.toUtc(); 
-mo = utc(6:7); yyyy=utc(1:4); day=utc(9:10); hh=utc(12:13); mm=utc(15:16);
-
+mo = utc(6:7); yyyy=utc(1:4); day=utc(9:10); hh=utc(12:13); mm=utc(15:16);%
 li = mms.db_list_files([mmsId '_fields_hk_l1b_101'],tint); if length(li)>1, error('li>1'), end
 HK_101_File = [li.path filesep li.name];
 li = mms.db_list_files([mmsId '_fields_hk_l1b_105'],tint); if length(li)>1, error('li>1'), end
 HK_105_File = [li.path filesep li.name];
 li = mms.db_list_files([mmsId '_fields_hk_l1b_10e'],tint); if length(li)>1, error('li>1'), end
 HK_10E_File = [li.path filesep li.name];
+li = mms.db_list_files([mmsId '_aspoc_srvy_l2'],tint); if length(li)>1, error('li>1'), end
+ASPOC_File = [li.path filesep li.name];
 if flagComm==1
   DCE_File  = [prf '/edp/comm/l1b/dce128/' yyyy '/' mo '/' mmsId ...
     '_edp_comm_l1b_dce128_' yyyy mo day hh mm '00_v0.8.0.cdf'];
@@ -55,7 +62,7 @@ else
   DCV_File = [];
 end
 
-gsmR = [epocRTmp.epochUnix R.(['gsmR' mmsId(end)])];
+%gseR = [epocRTmp.epochUnix R.(['gseR' mmsId(end)])];
 
 %% Test QL - DMNGR
 irf.log('log_out','screen'), irf.log('notice')
@@ -66,6 +73,7 @@ Dmgr = mms_sdp_dmgr(scId,procId,tmMode,samplerate);
 Dmgr.set_param('hk_10e',HK_10E_File);
 Dmgr.set_param('hk_105',HK_105_File);
 Dmgr.set_param('hk_101',HK_101_File);
+Dmgr.set_param('aspoc',ASPOC_File);
 Dmgr.set_param('dce',DCE_File);
 if ~isempty(DCV_File),Dmgr.set_param('dcv',DCV_File); end
 % Process
@@ -91,8 +99,7 @@ Dcv = irf.ts_scalar(dcv.time,[dcv.v1.data dcv.v2.data dcv.v3.data dcv.v4.data]);
 %% Summary plot
 E_YLIM = 7;
 
-figure(71), clf
-h = irf_plot(5);
+h = irf_figure(73,5,'reset');
 
 hca = irf_panel('E');
 irf_plot(hca,DceSL)
@@ -122,10 +129,11 @@ ylabel(hca,'P2ScPot [V]'), set(hca,'YLim',[-14 0])
 hca = irf_panel('Vs');
 irf_plot(hca,Dcv)
 ylabel(hca,'PPot [V]'), set(hca,'YLim',[-14 0])
+irf_legend(hca,{'P1','P2','P3','P4'},[0.9,0.02])
 
 %irf_plot_ylabels_align(h), 
 irf_zoom(h,'x',DceDSL.time)
-%add_position(h(end),gsmR), xlabel(h(end),'')
+%add_position(h(end),gseR), xlabel(h(end),'')
 
 %% Delta offsets
 Delta_p12_p34 = double(spinfits.sfit.e12(:,2:3)) - ...

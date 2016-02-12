@@ -1,7 +1,7 @@
 function cmap1=irf_colormap(varargin)
 % IRF_COLORMAP return colormap by name or apply and freeze the colormap
 %
-% IRF_COLORMAP(colormap_name)
+% CMAP = IRF_COLORMAP(colormap_name)
 %  Colormap_names:
 %       'standard'  - (default), same as 'space','cmap' (commonly used showing space data)
 %       'poynting'  - white in center and blue/green for negative and red/black for positive values
@@ -9,9 +9,6 @@ function cmap1=irf_colormap(varargin)
 %
 % IRF_COLORMAP(AX,colormap_name) - apply colormap to axis AX
 %
-
-
-% $Id$
 
 [ax,args,nargs] = axescheck(varargin{:});
 

@@ -83,6 +83,10 @@ switch procId
     dce_obj = dataobj(DCE_File);
     [~,tmpName, ~] = fileparts(DCE_File);
     update_header(mms_fields_file_info(tmpName)); % Update header with file info.
+    if(dce_obj.data.Epoch.nrec==0)
+      errStr='Empty Epoch. Possibly started processing too early..';
+      irf.log('critical',errStr); error(errStr);
+    end
     tint = EpochTT(sort(dce_obj.data.Epoch.data));
     % Keep only valid times (well after end of mission).
     tint(tint.tlim(irf.tint('2015-01-01T00:00:00.000000000Z/2040-12-31T23:59:59.999999999Z')));
@@ -120,8 +124,8 @@ switch procId
     if(isempty(ASPOC_File))
       % Go looking for ASPOC to match tint.
       list = mms.db_list_files(['mms',HdrInfo.scIdStr,'_aspoc_srvy_l2'],tint);
-      if(isempty(list) || list(1).start >= tint.start || list(end).stop <= tint.stop)
-        % If no ASPOC was found or it did not cover all of tint. Simply
+      if(isempty(list) || list(1).start > tint.start)
+        % If no ASPOC was found or it did not cover start of tint. Simply
         % issue warning.
         irf.log('warning','No ASPOC files located or sent in input.');
       else
@@ -149,9 +153,20 @@ switch procId
         src_fileData = load_file(L2A_File,'l2a');
         update_header(src_fileData); % Update header with file info.
       else
-        irf.log('warning',[procName ' but no L2A file from Fast Q/L.']);
+        irf.log('warning',[procName ' but no L2A file from Fast. Looking for it..']);
+        list = mms.db_list_files(['mms',HdrInfo.scIdStr,'_edp_fast_l2a_dce2d'], tint);
+        if(isempty(list) || list(1).start > tint.start)
+          % If no L2a dce2d was found or it did not cover start of tint.
+          % Simply issue warning.
+          irf.log('warning','No Fast L2a dce2d file located.');
+        else
+          irf.log('notice', [procName ' proc using: ',list(1).name]);
+          src_fileData = load_file([list(1).path, filesep, list(1).name],...
+            'l2a');
+          update_header(src_fileData); % Update header with file info.
+        end
       end
-    end
+    end % If running Brst
 
     % Go on with the DCE file.
     Dmgr.set_param('dce',dce_obj);

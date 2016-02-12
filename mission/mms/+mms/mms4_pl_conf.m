@@ -21,7 +21,7 @@ if       (nargin==1 && ischar(time)),
 	irf.log('debug',['action=' action]);
 end
 if nargin==0, % default time 
-	time=[2015 05 15 01 01 01];
+	time=[2015 09 01 01 01 01];
 	t=irf_time(time);
 end
 if (nargin==1 && ischar(time)),

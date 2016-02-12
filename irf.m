@@ -42,8 +42,9 @@ if nargin == 0,
 	irf('ceflib');
 	irf('mice');
 	irf('irbem');
-	irf('cdf_leapsecondstable');
 	irf('check_os');
+	irf('matlab');
+	irf('cdf_leapsecondstable');
 	return;
 else
 	if ischar(varargin{1}),
@@ -117,6 +118,10 @@ switch lower(action)
       ['mission' filesep 'mms' filesep 'mms_testFunctions'],...
 			};
 		strPath = {contribDirectories{:},irfDirectories{:}}; %#ok<CCAT>
+        if ~any(strfind(path, irf('path'))) % irfu-matlab root folder
+          addpath(irfPath);
+          disp(['Added to path: ' irfPath]);
+        end
 		for iPath = 1:numel(strPath)
 			if notOnIrfPath(strPath{iPath}),
 				pathToAdd = [irfPath strPath{iPath}];
@@ -311,6 +316,17 @@ switch lower(action)
           disp('If running on other system, please contact IRFU for help.');
           if(nargout), out=false; end;
             datastore('irfu_matlab','okCheckOS',false);
+      end
+    case 'matlab'
+      % Issue warning if running too old Matlab. This should be incremented
+      % when irfu-matlab relies on newer Matlab functions not found in older
+      % versions of Matlab.
+      if(verLessThan('matlab','R2013a'))
+        warning('IRFU-Matlab relies on code introduced in Matlab R2013a, please look into upgrading your Matlab installation or contacting IRFU for help.');
+      else
+        disp('Matlab version is OK');
+        if(nargout), out=true; end;
+        datastore('irfu_matlab','okMatlab',true);
       end
 	case 'path'
 		out = fileparts(which('irf.m'));

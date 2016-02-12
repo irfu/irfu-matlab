@@ -36,7 +36,7 @@ t_ref=0;flag_tref=0; % default value
 flag_old_syntax=0;
 
 %% check axes
-[ax,args,nargs] = axescheck(varargin{:});
+[ax,args,nargs] = irf.axescheck(varargin{:});
 if isempty(ax),
     if any(ishandle(args{1})), % first argument is axis handles
         ax=args{1};
@@ -206,6 +206,8 @@ end
 function zoom_y_auto(h)
 % make more space related auto zoom than Matlab 
 hlines=findall(h,'Type','line');
+hlines = findobj(hlines,'-not','Tag','irf_pl_mark');
+
 ud=get(h,'userdata');
 uf=get(get(h,'parent'),'userdata');
 xzero=0; % reference point

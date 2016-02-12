@@ -194,7 +194,7 @@ classdef mms_edp_Sweep < handle
       % do the same for the other probe
       tmp2 = compute_IPh_Impedance(voltage2, v02, biasRes2);
       if doPhase
-        if strcmp(type,'+-') || strcmp(type,'-+')
+        if strcmp(type,'+-') || strcmp(type,'-+') || strcmp(type,'00')
           disp(['*** Warning, phase not computed for type ',type,' sweep ',num2str(iSweep),...
             ' of ',num2str(obj.nSweeps)]);
           ph_tmp1 = NaN;
@@ -254,6 +254,10 @@ classdef mms_edp_Sweep < handle
           p = polyfit(biasRes(ind80:ind70),voltage(ind80:ind70),1);
           tmp.impedance = 1000*p(1);
         end
+        if ind70-ind80 < 1
+          p = polyfit(biasRes(ind70:ind80),voltage(ind70:ind80),1);
+          tmp.impedance = 1000*p(1);
+        end
       end
 
     end % analyze
@@ -288,6 +292,36 @@ classdef mms_edp_Sweep < handle
       end
       return
     end % analyze_all
+    
+    function [sweepTime, prb1, prb2, voltage1, biasRes1, voltage2, biasRes2,...
+        eVolt, eBias, v01, v02]...
+        = debug(obj,iSweep)
+      % Debug sweep
+      %
+      % [sweepTime, prb1, prb2, voltage1, biasRes1, voltage2, biasRes2,...
+      %   eVolt, eBias, v01, v02]...
+      %   = debug(obj,iSweep)
+      %
+      % Input: iSweep - sweep number in the file
+      %
+      % Output:
+      %  sweepTime
+      %  prb1 - swept probe
+      %  prb2 - other probe
+      %  voltage1 - voltage values of swept probe
+      %  biasRes1 - bias values of swept probe
+      %  voltage2 - voltage values of other probe
+      %  biasRes2 - bias values of other probe
+      %  eVolt - epoch of voltage values
+      %  eBias - epoch of bias values
+      %  v01 - last voltage value of swept probe before sweep
+      %  v02 - last voltage value of other probe before sweep
+      %
+      [sweepTime, prb1, prb2, voltage1, biasRes1, voltage2, biasRes2,...
+        eVolt, eBias, v01, v02]...
+        = getSweep(obj,iSweep);
+      return
+    end
       
     function list(obj,iSweep)
       % List sweep
@@ -299,11 +333,13 @@ classdef mms_edp_Sweep < handle
       [sweepTime, prb1, prb2, voltage1, biasRes1, voltage2, biasRes2,...
         eVolt, eBias, v01, v02]...
         = getSweep(obj,iSweep);
-      time = sweepTime.epochUnix(1) + (0:length(biasRes1)-1)' * ...
-        (sweepTime.epochUnix(2)-sweepTime.epochUnix(1)) / ...
+      disp(['Sweep start: ' irf_time(sweepTime(1).epoch,'ttns>utc')])
+      disp(['Sweep end:   ' irf_time(sweepTime(2).epoch,'ttns>utc')])
+      time = sweepTime(1).epochUnix + (0:length(biasRes1)-1)' * ...
+        (sweepTime(2).epochUnix-sweepTime(1).epochUnix) / ...
         (length(biasRes1)-0);
-      time_1 = sweepTime.epochUnix(1) - ...
-        (sweepTime.epochUnix(2)-sweepTime.epochUnix(1)) / ...
+      time_1 = sweepTime(1).epochUnix - ...
+        (sweepTime(2).epochUnix-sweepTime(1).epochUnix) / ...
         (length(biasRes1)-0);
       disp([ irf_time(time_1,'utc') ...
         ' ' '---' ' ' '---' ...
@@ -311,11 +347,13 @@ classdef mms_edp_Sweep < handle
       for i = 1:length(biasRes1)
         disp([ irf_time(time(i),'utc') ...
           ' ' num2str(biasRes1(i)) ' ' num2str(biasRes2(i)) ...
-          ' ' num2str(voltage1(i)) ' ' num2str(voltage2(i)) ])
+          ' ' num2str(voltage1(i)) ' ' num2str(voltage2(i)) ...
+          ' ' num2str((eBias(fix((i-1)*length(eBias)/length(biasRes1))+1)-sweepTime(1))*1e3) ...
+          ' ' num2str((eVolt(i)-sweepTime(1))*1e3) ])
       end
 % for debugging 2015-06-02
-      %eVolt
       %eBias
+      %eVolt
       return
     end % list
 
@@ -341,6 +379,11 @@ classdef mms_edp_Sweep < handle
       [sweepTime, prb1, prb2, voltage1, biasRes1, voltage2, biasRes2,...
         eVolt, eBias, v01, v02]...
         = getSweep(obj,iSweep);
+      if isempty(voltage1)
+        disp(['*** Warning, not plotted empty sweep ',num2str(iSweep),...
+          ' of ',num2str(obj.nSweeps)]);
+        return
+      end
       dwl = obj.sweep.data.([obj.scId '_sweep_dwell']).data(iSweep);
       stp = obj.sweep.data.([obj.scId '_sweep_steps']).data(iSweep);
       len = length(voltage1);
@@ -469,6 +512,11 @@ classdef mms_edp_Sweep < handle
       [sweepTime, prb1, prb2, voltage1, biasRes1, voltage2, biasRes2,...
         eVolt, eBias, v01, v02]...
         = getSweep(obj,iSweep);
+      if isempty(voltage1)
+        disp(['*** Warning, not plotted empty sweep ',num2str(iSweep),...
+          ' of ',num2str(obj.nSweeps)]);
+        return
+      end
       dwl = obj.sweep.data.([obj.scId '_sweep_dwell']).data(iSweep);
       stp = obj.sweep.data.([obj.scId '_sweep_steps']).data(iSweep);
       len = length(voltage1);
@@ -516,16 +564,26 @@ classdef mms_edp_Sweep < handle
       if doPhase
         if plotev
           evobj=dataobj(evfile);
-          %efield = getmat(evobj,[obj.scId,'_edp_dce_sensor']);
+          efield = getmat(evobj,[obj.scId,'_edp_dce_sensor']);
           vfield = getmat(evobj,[obj.scId,'_edp_dcv_sensor']);
           ind = find(vfield(:,1)>=2*time(1)-time(2) & ...
             vfield(:,1)<= 2*time(end)-time(length(time)-1));
-          %v12 = [efield(ind,1) vfield(ind,2) vfield(ind,2)-efield(ind,2)*0.12];
-          v12 = [vfield(ind,1) vfield(ind,2) vfield(ind,3)];
-          %irf_plot(h1(2),[v12(:,1) v12(:,2) v12(:,3)],'-')
+        switch prb1
+            case 1
+                v12 = [efield(ind,1) efield(ind,2)];
+                v1 = [efield(ind,1) vfield(ind,2) vfield(ind,2)-efield(ind,2)*0.12];
+            case 3
+                v12 = [efield(ind,1) efield(ind,3)];
+                v1 = [efield(ind,1) vfield(ind,3) vfield(ind,3)-efield(ind,3)*0.12];
+            case 5
+                v12 = [efield(ind,1) efield(ind,4)];
+                v1 = [efield(ind,1) vfield(ind,4) vfield(ind,4)-efield(ind,4)*0.12];
+            otherwise, error('Bad probe number')
+        end
           h1=irf_plot({[[2*time(1)-time(2); time] [NaN; biasRes1]],...
             [[2*time(1)-time(2); time] double([v01; voltage1]) double([v02; voltage2])], ...
-            [v12(:,1) v12(:,2) v12(:,3)],...
+            [v1(:,1) v1(:,2) v1(:,3)],...
+            [v12(:,1) v12(:,2)],...
             [time(ind_impedance)...
             impedance1(ind_impedance)...
             impedance2(ind_impedance)],...
@@ -553,23 +611,34 @@ classdef mms_edp_Sweep < handle
       ylabel(h1(2),{'Voltage',['[' getunits(obj.sweep,[obj.scId '_edp_sweeps']) ']']});
       legend(h1(1),sprintf('p%d',prb1))
       legend(h1(2),['p',num2str(prb1)],['p',num2str(prb2)])
+      imp1 = impedance1(ind_impedance); medi1 = median(imp1(isfinite(imp1)));
+      imp2 = impedance2(ind_impedance); medi2 = median(imp2(isfinite(imp2)));
+      n1 = obj.pTable(1,iSweep);
+      n2 = n1 - 1 + 2 * mod(n1,2);
+      obj.(['p' num2str(n1)])(obj.pTable(2,iSweep)).impedance = medi1;
+      obj.(['p' num2str(n2)])(obj.pTable(2,iSweep)).impedance = medi2;
       if doPhase
         if plotev
-          ylabel(h1(3),{'Voltage',['[' getunits(obj.sweep,[obj.scId '_edp_sweeps']) ']']});
-          ylabel(h1(4),{'dVdI','[MOhm]'})
-          ylabel(h1(5),{'Phase','[deg]'})
+          ylabel(h1(3),{'V',['[' getunits(obj.sweep,[obj.scId '_edp_sweeps']) ']']});
+          ylabel(h1(4),{'E',['[' 'mV/m' ']']});
+          ylabel(h1(5),{'dVdI','[MOhm]'})
+          ylabel(h1(6),{'Phase','[deg]'})
           legend(h1(3),['p',num2str(prb1)],['p',num2str(prb2)])
-          legend(h1(4),['p',num2str(prb1)],['p',num2str(prb2)])
-          legend(h1(5),sprintf('p%d',prb1))
+          legend(h1(4),['p',num2str(prb1),num2str(prb2)])
+          legend(h1(5),['p',num2str(prb1),' median=',num2str(medi1,'%4.1f')],...
+              ['p',num2str(prb2),' median=',num2str(medi2,'%4.1f')])
+          legend(h1(6),sprintf('p%d',prb1))
         else
           ylabel(h1(3),{'dVdI','[MOhm]'})
           ylabel(h1(4),{'Phase','[deg]'})
-          legend(h1(3),['p',num2str(prb1)],['p',num2str(prb2)])
+          legend(h1(3),['p',num2str(prb1),' median=',num2str(medi1,'%4.1f')],...
+              ['p',num2str(prb2),' median=',num2str(medi2,'%4.1f')])
           legend(h1(4),sprintf('p%d',prb1))
         end
       else
         ylabel(h1(3),{'dVdI','[MOhm]'})
-        legend(h1(3),['p',num2str(prb1)],['p',num2str(prb2)])
+        legend(h1(3),['p',num2str(prb1),' median=',num2str(medi1,'%4.1f')],...
+            ['p',num2str(prb2),' median=',num2str(medi2,'%4.1f')])
       end
       if nargout, hout = h1; end
     end % PLOT_TIME
@@ -601,10 +670,10 @@ classdef mms_edp_Sweep < handle
 %      sweepTime = EpochTT([...
 %        obj.sweep.data.([obj.scId '_sweep_start']).data(iSweep)+0e9/128-1e5 ...
 %        obj.sweep.data.([obj.scId '_sweep_stop']).data(iSweep)+0e9/128]);
-      %[idxBias,eBias] = ...
-      %  EpochTT(obj.sweep.data.epoch_sweepsamp.data+0e9/128).tlim(sweepTime);
       [idxBias,eBias] = ...
         tlim(EpochTT(obj.sweep.data.epoch_sweepsamp.data+0e9/128), sweepTime);
+      %[idxBias,eBias] = ...
+      %  tlim(EpochTT(obj.sweep.data.epoch_sweepsamp.data+0e9/128), sweepTime);
 % for debugging 2015-06-02
 %      sweepTime = EpochTT([...
 %        obj.sweep.data.([obj.scId '_sweep_start']).data(iSweep)+0e9/128-0e5 ...

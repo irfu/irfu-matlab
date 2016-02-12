@@ -18,6 +18,7 @@ function tOutput = irf_time(tInput,flag)
 %        date: MATLAB datenum format
 %     datenum: same as 'date'
 %         doy: [year, doy]
+%        doy8: only input, [year, doy, hour, min, sec, msec, micros, nanosec]
 %          tt: Terrestrial Time, seconds past  January 1, 2000, 11:58:55.816 (UTC)
 %        ttns: Terrestrial Time, nanoseconds past  January 1, 2000, 11:58:55.816 (UTC)
 %         utc: UTC string (see help spdfparsett2000 for supported formats)
@@ -180,11 +181,12 @@ switch lower(flag)
 		ttBreak(:,2:end) = 1;
 		tOutput = [ttBreak(:,1) ...
 			floor(irf_time(tInput,'ttns>datenum'))-floor(irf_time(ttBreak,'vector>datenum'))+1];
-		
 	case 'doy>ttns'
 		tOutput=irf_time([tInput(:,1) tInput(:,1).*0+1 tInput(:,1).*0+1 ...
 			tInput(:,2).*24-12 tInput(:,1).*0 tInput(:,1).*0],'vector6>ttns');
-		
+    case 'doy8>ttns'
+        tOutput = spdfcomputett2000([tInput(:,1) tInput(:,1).*0+1 tInput(:,2) ...
+          tInput(:,3) tInput(:,4) tInput(:,5) tInput(:,6) tInput(:,7) tInput(:,8)]);
 	case 'cdfepoch>ttns'
         sz = size(tInput);
         if sz(2)>1
@@ -246,6 +248,9 @@ switch lower(flag)
 			if isa(tInput,'GenericTimeArray') && length(tInput) == 2
 				t1iso=tInput(1).utc(fmt);
 				t2iso=tInput(2).utc(fmt);
+			elseif isa(tInput,'int64')
+				t1iso = irf_time(tInput(:,1),['ttns>utc_' fmt]);
+				t2iso = irf_time(tInput(:,2),['ttns>utc_' fmt]);
 			else
 				t1iso = irf_time(tInput(:,1),['epoch>utc_' fmt]);
 				t2iso = irf_time(tInput(:,2),['epoch>utc_' fmt]);

@@ -253,7 +253,7 @@ classdef TSeries
         if ~iscell(x)
           msg = 'Representation requires a cell input'; return
         end
-        if sDim~=length(x)
+        if sDim>0 && sDim~=length(x)
           msg = sprintf('Representation requires a cell(%d) input',sDim);
           return
         end
@@ -333,31 +333,31 @@ classdef TSeries
     %Components
     function y = x(obj)
       %access X component
-      y = getComponent(obj,'x'); if isempty(y), error('cannot get X'), end
+      [y,ok] = getComponent(obj,'x'); if ~ok, error('cannot get X'), end
     end
     function y = y(obj)
       %access Y component
-      y = getComponent(obj,'y'); if isempty(y), error('cannot get Y'), end
+      [y,ok] = getComponent(obj,'y'); if ~ok, error('cannot get Y'), end
     end
     function y = z(obj)
       %access Z component
-      y = getComponent(obj,'z'); if isempty(y), error('cannot get Z'), end
+      [y,ok] = getComponent(obj,'z'); if ~ok, error('cannot get Z'), end
     end
     function y = r(obj)
       %access R component
-      y = getComponent(obj,'r'); if isempty(y), error('cannot get R'), end
+      [y,ok] = getComponent(obj,'r'); if ~ok, error('cannot get R'), end
     end
     function y = theta(obj)
       %access T(theta) component
-      y = getComponent(obj,'t'); if isempty(y), error('cannot get THETA'), end
+      [y,ok] = getComponent(obj,'t'); if ~ok, error('cannot get THETA'), end
     end
     function y = phi(obj)
       %access P(phi) component
-      y = getComponent(obj,'p'); if isempty(y), error('cannot get PHI'), end
+      [y,ok] = getComponent(obj,'p'); if ~ok, error('cannot get PHI'), end
     end
     function y = lambda(obj)
       %access L(lambda) component
-      y = getComponent(obj,'l'); if isempty(y), error('cannot get LAMBDA'), end
+      [y,ok] = getComponent(obj,'l'); if ~ok, error('cannot get LAMBDA'), end
     end
     
     function obj = set.coordinateSystem(obj,value)
@@ -502,40 +502,56 @@ classdef TSeries
       %     TS3 = TS1 + TS2;
 			%     TS2 = TS1 + 0.1;
 			%     TS2 = TS1 + [1 2 4];  % if TS1,TS2 are vector time series
-      [ST,I] = dbstack; % see if plus() was called from within minus()
+      [ST,~] = dbstack; % see if plus() was called from within minus()
       if numel(ST)>1 && strcmp(ST(2).name,'TSeries.minus')
             operationStr = 'Minus'; operationSymbol = '-';
-      else, operationStr = 'Plus';  operationSymbol = '+';
+      else operationStr = 'Plus';  operationSymbol = '+';
       end
           
       if isnumeric(obj) && isa(obj1,'TSeries')
         Ts = plus(obj1,obj);        
       end
+      
       if isnumeric(obj1)
         Ts = obj;
-        if numel(obj1) == 1
-          Ts.data_ = Ts.data_ + obj1;
+        if isempty(obj) || isempty(obj1)
+          sz = size(Ts.data_); sz(1) = 0; Ts.data_ = zeros(sz);
+          Ts.t_ = Ts.t_([]);
         else
-          sizeInp = size(obj1);
-          sizeObj = size(Ts.data);
-          if isequal(sizeInp,sizeObj)
+          if numel(obj1) == 1
             Ts.data_ = Ts.data_ + obj1;
-          elseif numel(sizeInp) == numel(sizeObj) ...   % same dimensions
-            && sizeInp(1) == 1  ...                     % one row in obj1
-            && all(sizeInp(2:end) == sizeObj(2:end))    % otherwise same number of elements
-            Ts.data_ = Ts.data_ + repmat(obj1,[sizeObj(1) ones(1,numel(sizeInp)-1)]);
           else
-            error([operationStr ' not defined']);
+            sizeInp = size(obj1);
+            sizeObj = size(Ts.data);
+            if isequal(sizeInp,sizeObj)
+              Ts.data_ = Ts.data_ + obj1;
+            elseif numel(sizeInp) == numel(sizeObj) ...   % same dimensions
+                && sizeInp(1) == 1  ...                     % one row in obj1
+                && all(sizeInp(2:end) == sizeObj(2:end))    % otherwise same number of elements
+              Ts.data_ = Ts.data_ + repmat(obj1,[sizeObj(1) ones(1,numel(sizeInp)-1)]);
+            else
+              error([operationStr ' not defined']);
+            end
           end
         end
-      elseif isa(obj,'TSeries') && isa(obj1,'TSeries')
-        if obj.time~=obj1.time
-          error('Input TS objects have different timelines, use resample()')
+      elseif isa(obj,'TSeries') && isa(obj1,'TSeries') 
+        if obj.tensorOrder~=obj1.tensorOrder
+          error('Inputs must have the same tensor order');
+        %elseif obj.tensorBasis_ ~= obj1.tensorBasis_
+        %  error('Inputs must have the same tensor basis, use transform()');
         elseif ~strcmpi(obj.units,obj1.units)
-          error('Input TS objects have different units')
+          error('Inputs must have the same units')
         end
         Ts = obj;
-        Ts.data_ = obj.data + obj1.data;
+        if isempty(obj) || isempty(obj1)
+          sz = size(Ts.data_); sz(1) = 0; Ts.data_ = zeros(sz);
+          Ts.t_ = Ts.t_([]);
+        else
+          if obj.time~=obj1.time
+            error('Input TS objects have different timelines, use resample()')
+          end
+          Ts.data_ = obj.data + obj1.data;
+        end
         update_name()
       else        
         error([operationStr ' not defined']);
@@ -594,6 +610,7 @@ classdef TSeries
         if ~isnumeric(obj1) || ~isvector(obj1)
           error('Second argument must be a vector or TS')
         end
+        Ts = obj;        
         switch  obj.basis
           case 'xy'
             if length(obj1) ~= 2
@@ -828,12 +845,33 @@ classdef TSeries
       elseif obj.tensorBasis_ ~= obj1.tensorBasis_
         error('Inputs must have the same tensor basis, use transform()');
       end
-      Tmptime = [obj.time.epoch; obj1.time.epoch];
-      Tmpdata = [obj.data; obj1.data];
-      [srt_time, srt] = sort(Tmptime);
-      [Tmptime, usrt] = unique(srt_time);
-      Tmpdata = Tmpdata(srt(usrt),:);
-      Ts = TSeries(EpochTT(Tmptime), Tmpdata); % Combined TSeries
+      
+      timeClass = class(obj.time);
+      obj1TimeTmp = convert_epoch(obj1.time,timeClass);
+      epochTmp = [obj.time.epoch; obj1TimeTmp.epoch];
+      [srt_time, srt] = sort(epochTmp);
+      [epochTmp, usrt] = unique(srt_time);
+      NewTime = feval(timeClass,epochTmp);
+      
+      dataTmp = [obj.data; obj1.data];
+      nd = ndims(obj.data);
+      switch nd
+        case 2, dataTmp = dataTmp(srt(usrt), :);
+        case 3, dataTmp = dataTmp(srt(usrt), :, :);
+        case 4, dataTmp = dataTmp(srt(usrt), :, :, :);
+        case 5, dataTmp = dataTmp(srt(usrt), :, :, :, :);
+        case 6, dataTmp = dataTmp(srt(usrt), :, :, :, :, :);
+        otherwise
+          errStr = 'Cannot handle more than 6 dimensions.';
+          irf.log('critical', errStr);
+          error(errStr);
+      end
+      if obj.tensorOrder==0
+        Ts = TSeries(NewTime, dataTmp, 'tensorOrder', obj.tensorOrder);
+      else
+        Ts = TSeries(NewTime, dataTmp, 'tensorOrder', obj.tensorOrder, ...
+          'tensorBasis', obj.BASIS{obj.tensorBasis_}); % Combined TSeries
+      end
       % Perhaps fix a better combination of metadata, for now keep "obj".
       Ts.name = obj.name;
       Ts.units = obj.units;
@@ -858,12 +896,13 @@ classdef TSeries
       % Resample Ts to timeline of Ts2
       %
       % See also: IRF_RESAMP
+      if isempty(obj), error('Cannot resample empty TSeries'), end
       if ~isa(NewTime,'TSeries') && ~isa(NewTime,'GenericTimeArray')
         error('NewTime must be of TSeries or GenericTimeArray type or derived from it')
       end
       if isa(NewTime,'TSeries'), NewTime = NewTime.time; end
       if NewTime == obj.time, Ts = obj; return, end 
-            
+
       if obj.tensorOrder==0, 
           resample_(obj);
       elseif obj.tensorOrder==1,       
@@ -884,8 +923,10 @@ classdef TSeries
       end
            
       function resample_(TsTmp)
-        tData = TsTmp.time - TsTmp.time(1); dataTmp = double(TsTmp.data);
-        newData = irf_resamp([tData dataTmp],NewTime-TsTmp.time(1),varargin{:});
+        tData = double(TsTmp.time.ttns - TsTmp.time.start.ttns)/10^9;
+        dataTmp = double(TsTmp.data);
+        newTimeTmp = double(NewTime.ttns - TsTmp.time.start.ttns)/10^9;
+        newData = irf_resamp([tData dataTmp], newTimeTmp, varargin{:});
         Ts = TsTmp; Ts.t_ = NewTime; Ts.data_ = newData(:,2:end);
       end
     end %RESAMPLE
@@ -933,8 +974,8 @@ classdef TSeries
   end
   
   methods (Access=protected)
-    function res = getComponent(obj,comp)
-      res = [];
+    function [res, ok] = getComponent(obj,comp)
+      res = []; ok = false;
       nd = ndims(obj.data_);
       if nd>6, error('we cannot support more than 5 dimensions'), end % we cannot support more than 5 dimensions
       teno = obj.tensorOrder_;
@@ -972,6 +1013,7 @@ classdef TSeries
             end
           end
           res = TSeries(args{:}); res.name = sprintf('%s_%s',obj.name,comp);
+          ok = true;
         case 2
           error('not implemented')
         otherwise, error('should no be here')

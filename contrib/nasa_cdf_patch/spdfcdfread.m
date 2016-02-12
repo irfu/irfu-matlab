@@ -97,6 +97,23 @@ function [out, info] = spdfcdfread(filename, varargin)
 %       Attributes - a structure that contains all the attributes that
 %                    associated with this variable
 %
+%   DATA = SPDFCDFREAD(FILE, 'DATAONLY', TF, ...) specifies whether to simply 
+%   just return the CDF variable data, without metadata, nor attribute info. 
+%   This option provides the quick way of retrieving variable data as is, if
+%   true, without any data conversion. The retrieved data will be in the same
+%   form as the non-dataonly option, either a cell array for multiple
+%   variables or a vector for a single variable. It works with these defined
+%   options:
+%    "CombineRecords", true, "KeepEpochAsis', true, "CDFEpochtoDatenum", false
+%   without calling spdfcdfinfo for any info about the variables.
+%   If the 'Variables' option is provided, only selected variables' data are
+%   returned. Otherwise, all variables are retrieved. An empty matrix is
+%   returned for the variable that is not found in the CDF. The dataonly option 
+%   works faster as it only reads the data and it, unlike all other options,
+%   will not call spdfcdfinfo to collect the vital CDF and variable info.
+%   Such metadata and its variables' info can be acquired separately from
+%   spdfcdfinfo call, if required.
+%   
 %   [DATA, INFO] = SPDFCDFREAD(FILE, ...) also returns details about the CDF
 %   file in the INFO structure.
 %
@@ -248,57 +265,64 @@ end
 
 [args, msg, structure, show_progress] = parse_inputs(varargin{:});
 
+if (args.DataOnly && (nargout == 2))
+    error('MATLAB:spdfcdfread:outputArguments', ...
+          'SPDFCDFREAD requires only one output argument for dataonly option.')
+end
+
 if (~isempty(msg))
     error('MATLAB:spdfcdfread:badInputArguments', '%s', msg)
 end
 
 validate_inputs(args);
 
-if (args.CombineRecords)
-  if (args.epochtodatenum == 1)
+if (~args.DataOnly) 
+  if (args.CombineRecords)
+    if (args.epochtodatenum == 1)
       args.ConvertEpochToDatestr = false;
       args.KeepEpochAsIs = false;
       args.CDFEpochToString = false;
-  elseif (args.epochtodatestr == 1)
+    elseif (args.epochtodatestr == 1)
       args.ConvertEpochToDatenum = false;
       args.KeepEpochAsIs = false;
       args.CDFEpochToString = false;
-  elseif (args.keepepoch == 1)
+    elseif (args.keepepoch == 1)
       args.ConvertEpochToDatenum = false;
       args.ConvertEpochToDatestr = false;
       args.CDFEpochToString = false;
-  elseif (args.epochtostring == 1)
+    elseif (args.epochtostring == 1)
       args.ConvertEpochToDatenum = false;
       args.ConvertEpochToDatestr = false;
       args.KeepEpochAsIs = false;
-  else
+    else
       args.ConvertEpochToDatenum = true;
       args.ConvertEpochToDatestr = false;
       args.KeepEpochAsIs = false;
       args.CDFEpochToString = false;
-  end
-else
-  if (args.epochtodatenum == 1)
-      args.ConvertEpochToDatestr = false;
-      args.KeepEpochAsIs = false;
-      args.CDFEpochToString = false;
-  elseif (args.epochtodatestr == 1)
-      args.ConvertEpochToDatenum = false;
-      args.KeepEpochAsIs = false;
-      args.CDFEpochToString = false;
-  elseif (args.keepepoch == 1)
-      args.ConvertEpochToDatenum = false;
-      args.ConvertEpochToDatestr = false;
-      args.CDFEpochToString = false;
-  elseif (args.epochtostring == 1)
-      args.ConvertEpochToDatenum = false;
-      args.ConvertEpochToDatestr = false;
-      args.KeepEpochAsIs = false;
+    end
   else
+    if (args.epochtodatenum == 1)
+      args.ConvertEpochToDatestr = false;
+      args.KeepEpochAsIs = false;
+      args.CDFEpochToString = false;
+    elseif (args.epochtodatestr == 1)
+      args.ConvertEpochToDatenum = false;
+      args.KeepEpochAsIs = false;
+      args.CDFEpochToString = false;
+    elseif (args.keepepoch == 1)
+      args.ConvertEpochToDatenum = false;
+      args.ConvertEpochToDatestr = false;
+      args.CDFEpochToString = false;
+    elseif (args.epochtostring == 1)
+      args.ConvertEpochToDatenum = false;
+      args.ConvertEpochToDatestr = false;
+      args.KeepEpochAsIs = false;
+    else
       args.ConvertEpochToDatenum = false;
       args.ConvertEpochToDatestr = false;
       args.KeepEpochAsIs = false;
       args.CDFEpochToString = false;
+    end
   end
 end
 
@@ -334,25 +358,36 @@ if ((length(filename) > 4) && (isequal(lower(filename((end-3):end)), '.cdf')))
     filename((end-3):end) = '';
 end
 
-%
-% Get information about the variables.
-%
+if (args.DataOnly)
+  out = spdfcdfreadc(filename, args.Variables, args.Records, ...
+                     [], args.CombineRecords, ...
+                     args.ConvertEpochToDatenum, structure, ...
+                     args.KeepEpochAsIs, args.CDFEpochToString, ...
+                     args.ConvertEpochToDatestr, args.DataOnly);
+  if (numel(args.Variables) == 1)
+    out = out{1};
+  end
+else
 
-info = spdfcdfinfo(filename);
+  %
+  % Get information about the variables.
+  %
 
-if (isempty(args.Variables))
+  info = spdfcdfinfo(filename);
+
+  if (isempty(args.Variables))
     args.Variables = info.Variables(:, 1)';
-end
+  end
 
-% To make indexing info.Variables easier, reorder it to match the values in
-% args.Variables and remove unused values. Deblank variable list because
-% the intersection is based on the predicate of equality of strings.
-% Inconsistent trailing blanks in variable names from args and info may cause
-% inadvertent mismatch and consequent failure.
-[int, idx1, idx2] = intersect(deblank(args.Variables), ...
-                              deblank(info.Variables(:, 1)));
+  % To make indexing info.Variables easier, reorder it to match the values in
+  % args.Variables and remove unused values. Deblank variable list because
+  % the intersection is based on the predicate of equality of strings.
+  % Inconsistent trailing blanks in variable names from args and info may cause
+  % inadvertent mismatch and consequent failure.
+  [int, idx1, idx2] = intersect(deblank(args.Variables), ...
+                                deblank(info.Variables(:, 1)));
 
-if (length(int) < length(args.Variables))
+  if (length(int) < length(args.Variables))
     
     % Determine which requested variables do not exist in the CDF.
     invalid = setdiff(args.Variables, int);
@@ -362,28 +397,28 @@ if (length(int) < length(args.Variables))
     
     error('MATLAB:spdfcdfread:variableNotFound', '%s', msg)
     
-end
-
-% Remove unused variables.
-info.Variables = info.Variables(idx2, :);
-
-% Reorder the variables to match the order of args.Variables.
-[tmp, reorder_idx] = sort(idx1);
-info.Variables = info.Variables(reorder_idx, :);
-
-if (~structure) 
-  if (isempty(args.Records))
-    args.Records = find_records(info.Variables);
-  elseif (any(args.Records < 0))
-    error('MATLAB:spdfcdfread:recordNumber', 'Record values must be nonnegative.')
   end
-end
 
-%
-% Read each variable.
-%
+  % Remove unused variables.
+  info.Variables = info.Variables(idx2, :);
 
-if (length(args.Variables) == 1)
+  % Reorder the variables to match the order of args.Variables.
+  [tmp, reorder_idx] = sort(idx1);
+  info.Variables = info.Variables(reorder_idx, :);
+
+  if (~structure) 
+    if (isempty(args.Records))
+      args.Records = find_records(info.Variables);
+    elseif (any(args.Records < 0))
+      error('MATLAB:spdfcdfread:recordNumber', 'Record values must be nonnegative.')
+    end
+  end
+
+  %
+  % Read each variable.
+  %
+
+  if (length(args.Variables) == 1)
 
     % Special case for single variable.
     if (info.Variables{3} == 0)
@@ -402,7 +437,7 @@ if (length(args.Variables) == 1)
                              args.Slices, args.CombineRecords, ...
                              args.ConvertEpochToDatenum, structure, ...
                              args.KeepEpochAsIs, args.CDFEpochToString, ...
-                             args.ConvertEpochToDatestr);
+                             args.ConvertEpochToDatestr, args.DataOnly);
     if (isequal(lower(info.Variables{4}), 'epoch16') && ...
         (args.KeepEpochAsIs)) data=transpose(data);
     end
@@ -410,7 +445,7 @@ if (length(args.Variables) == 1)
                               args.Slices, args.CombineRecords, ...
                               args.ConvertEpochToDatenum, false, ...
                               args.KeepEpochAsIs, args.CDFEpochToString, ...
-                              args.ConvertEpochToDatestr);
+                              args.ConvertEpochToDatestr, args.DataOnly);
 
     if (~structure)
       if (isequal(lower(info.Variables{4}), 'tt2000'))
@@ -475,15 +510,15 @@ if (length(args.Variables) == 1)
       out.Attributes = attrs;
     end
 
-elseif ((~isempty(args.Slices)) && (length(args.Variables) ~= 1))
+  elseif ((~isempty(args.Slices)) && (length(args.Variables) ~= 1))
 
     error('MATLAB:spdfcdfread:sliceValue', 'Specifying variable slices requires just one variable.')
 
-else
-  if (structure)
-    % Regular reading.
-    out1 = cell(length(args.Variables),3);
-    for p = 1:length(args.Variables)
+  else
+    if (structure)
+      % Regular reading.
+      out1 = cell(length(args.Variables),3);
+      for p = 1:length(args.Variables)
         if (show_progress)
             fprintf ('%d) Reading variable "%s"\n', p, args.Variables{p});
         end
@@ -498,7 +533,7 @@ else
                                    args.ConvertEpochToDatenum, true, ...
                                    args.KeepEpochAsIs, ...
                                    args.CDFEpochToString, ...
-                                   args.ConvertEpochToDatestr);
+                                   args.ConvertEpochToDatestr, args.DataOnly);
         if (isequal(lower(info.Variables{p, 4}), 'epoch16'))
           if (args.KeepEpochAsIs)
             out1{p,2} = transpose(datax);
@@ -509,30 +544,30 @@ else
           out1{p,2} = datax;
         end
         out1{p,3} = attrs;
-    end
-    [dataX, dummy]  = spdfcdfreadc('to_close', args.Variables{1}, args.Records, ...
+      end
+      [dataX, dummy]  = spdfcdfreadc('to_close', args.Variables{1}, args.Records, ...
                                 args.Slices, args.CombineRecords, ...
                                 args.ConvertEpochToDatenum, false, ...
                                 args.KeepEpochAsIs, ... 
                                 args.CDFEpochToString, ...
-                                args.ConvertEpochToDatestr);
+                                args.ConvertEpochToDatestr, args.DataOnly);
 
-    % Change a cell array to an array of structures.
-    fields = {'VariableName', 'Data', 'Attributes'};
-    out = cell2struct(out1, fields, 2); 
-    if (~structure)
-      out = arrayfun(@(x)x.Data,out,'UniformOutput',false);
-    end
+      % Change a cell array to an array of structures.
+      fields = {'VariableName', 'Data', 'Attributes'};
+      out = cell2struct(out1, fields, 2); 
+      if (~structure)
+        out = arrayfun(@(x)x.Data,out,'UniformOutput',false);
+      end
 
-  else
-
-    if (args.CombineRecords)
-        data = cell(1, length(args.Variables));
     else
-        data = cell(length(args.Records), length(args.Variables));
-    end
 
-    for p = 1:length(args.Variables)
+      if (args.CombineRecords)
+          data = cell(1, length(args.Variables));
+      else
+          data = cell(length(args.Records), length(args.Variables));
+      end
+
+      for p = 1:length(args.Variables)
         if (show_progress)
             fprintf ('%d) Reading variable "%s"\n', p, args.Variables{p});
         end
@@ -541,6 +576,7 @@ else
         end
 
         args.Slices = fill_slice_vals([], info.Variables(p,:));
+
         if (info.Variables{p, 5}(1) == 'F')
 % Non-record variant
             % Special case for variables which don't vary by record.
@@ -550,7 +586,7 @@ else
                                       args.ConvertEpochToDatenum, false, ...
                                       args.KeepEpochAsIs, ...
                                       args.CDFEpochToString, ...
-                                      args.ConvertEpochToDatestr);
+                                      args.ConvertEpochToDatestr, args.DataOnly);
             if (args.CombineRecords)
               if (isequal(lower(info.Variables{p, 4}), 'epoch16'))
                 if (args.KeepEpochAsIs)
@@ -561,6 +597,7 @@ else
               else
                 data{p} = xdata;
               end
+%              data{p} = xdata;
             else
               data(:,p) = repmat(xdata, length(args.Records), 1);
             end
@@ -574,7 +611,7 @@ else
                                       false, ...
                                       args.KeepEpochAsIs, ...
                                       args.CDFEpochToString, ...
-                                      args.ConvertEpochToDatestr);
+                                      args.ConvertEpochToDatestr, args.DataOnly);
             if (args.CombineRecords)
               if (isequal(lower(info.Variables{p, 4}), 'epoch16') && ...
                   args.KeepEpochAsIs)
@@ -638,16 +675,17 @@ else
 
         end
 
-    end
-    [dataX, dummy]  = spdfcdfreadc('to_close', args.Variables{1}, args.Records, ...
+      end
+      [dataX, dummy]  = spdfcdfreadc('to_close', args.Variables{1}, args.Records, ...
                                args.Slices, args.CombineRecords, ...
                                args.ConvertEpochToDatenum, false, ...
                                args.KeepEpochAsIs, args.CDFEpochToString, ...
-                               args.ConvertEpochToDatestr);
-    out = data;
+                               args.ConvertEpochToDatestr, args.DataOnly);
+      out = data;
+    end
   end
-end
 
+end
 
 %%%
 %%% Function find_records
@@ -772,6 +810,7 @@ args.ConvertEpochToDatenum = true;
 args.ConvertEpochToDatestr = false;
 args.KeepEpochAsIs = false;
 args.CDFEpochToString = false;
+args.DataOnly = false;
 args.Records = [];
 args.Slices = [];
 args.Variables = {};
@@ -792,6 +831,7 @@ if (nargin > 0)
                     'combinerecords'
                     'structure'
                     'cdfepochtostring'
+                    'dataonly'
                     'showprogress'};
     
     % For each pair
@@ -1002,6 +1042,30 @@ if (nargin > 0)
                if (args.KeepEpochAsIs ==1)
                  args.keepepoch=1;
                end
+           end
+ 
+       case 'dataonly'
+
+           if (k == length(varargin))
+               msg = 'No dataonly value specified.';
+               return
+           else
+               dataonly = varargin{k + 1};
+               if (numel(dataonly) ~= 1)
+                   msg = 'dataonly value must be a scalar logical.';
+               end
+               if (islogical(dataonly))
+                   args.DataOnly = dataonly;
+               elseif (isnumeric(dataonly))
+                   args.DataOnly = logical(dataonly);
+               else
+                   msg = 'dataonly value must be a scalar logical.';
+               end
+	       if (args.DataOnly)
+		 args.CombineRecords = true;
+		 args.KeepEpochAsIs = true;
+		 args.ConvertEpochToDatenum = false;
+	       end
            end
  
        case 'cdfepochtostring'

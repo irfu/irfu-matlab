@@ -8,6 +8,8 @@
 # Updated: 2015/04/14, add hk_105 as possible input argument.
 # Updated: 2015/08/11, allow for multiple HK files (to be used when processing files crossing midnight).
 # Updated: 2015/11/18, add optional ASPOC L2 srvy as input, remove "(" or ")" from errStr (ie anonumous function error ensure bash can still send mail).
+# Updated: 2015/12/03, new return codes 198 if I/O error reading zlib compressed cdf file (mainly aspoc), and 197 if error reading DEFATT ascii file.
+# Updated: 2015/12/16, new return code 196 if L1b dce file in empty ("Epoch" variable contains zero Written records).
 #
 # Usage: place script in the same folder as has irfu-matlab as a subfolder, then run
 #  "./script.sh <mmsX_dce_filename> <mmsX_dcv_filename> <mmsX_101_filename> <mmsX_10e_filename> <mmsX_105_filename>", with the following
@@ -28,6 +30,9 @@
 #
 #  return code 0, if ok.
 #  return code 166, if error caused by incorrect usage.
+#  return code 196, if error empty l1b dce file. (too early processing?)
+#  return code 197, if error I/O DEFATT ascii file.
+#  return code 198, if error I/O cdf file (mainly zlib compressed aspoc)
 #  return code 199, if error during Matlab process.
 #
 # Note: The script assumes it is located in the folder which has irfu-matlab as a subfolder.
@@ -66,9 +71,58 @@ if [ ! -x $MATLAB_EXE ] ; then
 	exit 166  # SDC-defined error code for "incorrect usage"
 fi
 
+# Verify awk and cdfdump exists as commands in this environment.
+command -v awk >/dev/null 2>&1 && awkExist=true || { awkExist=false; }
+if [ -x $CDF_BASE/bin/cdfdump ]; then cdfdumpExist=true; else cdfdumpExist=false; fi
+
+# If awk & cdfdump exist, try to identify L1b dce file and check number of records written. If zero records in "Epoch" variable, return exit code 196.
+if [ "$awkExist"==true ] && [ "$cdfdumpExist"==true ]; then
+   for var in "$@"
+    do
+      if [ -f $var ]; then # its a single file, not one of the combined files separated by ":".
+         if [[ $var =~ mms[1-4]_edp_(fast|slow|brst|comm)_l1b_dce[0-9]{0,3}_20[0-9]{6,12}_v[0-9]+.[0-9]+.[0-9]+.cdf ]]; then
+            # File matches the MMS L1b dce file naming convention.
+            # Dump one record of variable "Epoch" in the file along with some metadata
+	    # awk for line with "Written records  12345/12345(max)" and print only the 
+	    # number (before the "/" sign).
+            nrec=`$CDF_BASE/bin/cdfdump -dump data -recordrange "1,1" -vars "Epoch" $var | awk -F"[ /]+" '/Written/ {print $3}'`
+            if [ "$nrec" == 0 ]; then
+               exit 196
+            fi
+         fi # if l1b dce
+      fi # if -f var
+   done # for var
+fi # if awk & cdfdump exist
+
 # RUN Matlab and try to run mms_sdc_sdp_proc, and if any errors are caught
 # get file name of log file created, check if that file exist,
 # if so attach it (8 Bit ASCII encoded) to a mail sent to mms-ops@irfu.se.
 # then exit with 199 (if errors occurred) or with 0 (if no errors).
+# exit with 197 if error reading DEFATT files (incorrect times of start/stop-> Epoch error).
+# exit with 198 if error reading cdf file (mostly related to ASPOC files),
 
-$MATLAB_EXE $MATLAB_FLAGS -r "try, mms_sdc_sdp_proc('$PROCESS_NAME','$1','$2','$3','$4','$5','$6'), catch ME, logFile=irf.log('log_out'); errStr=[]; for k=1:length(ME.stack), errStr=[errStr,' Error in file: ',ME.stack(k).file,' in function: ',ME.stack(k).name,' at line: ',num2str(ME.stack(k).line),'. ']; end; errStr=strrep(errStr,'(','_'); errStr=strrep(errStr,')','_'); mess=strrep(ME.message,'(','_'); mess=strrep(mess,')','_'); iden=strrep(ME.identifier,'(','_'); iden=strrep(iden,')','_'); if(exist(logFile,'file')), unix(['echo ''''Error ',iden,' with message: ',mess,errStr,''''' | mail -a', logFile,' -s MMS_SDC_Error mms-ops@irfu.se']); else unix(['echo ''''No log found, error: ',iden,' with message: ',mess,errStr,''''' | mail -s MMS_SDC_Error mms-ops@irfu.se']); end; exit(199); end, exit(0)"
+$MATLAB_EXE $MATLAB_FLAGS -r\
+  "\
+  try;\
+  mms_sdc_sdp_proc('$PROCESS_NAME','$1','$2','$3','$4','$5','$6');\
+  catch ME;\
+    logFile=irf.log('log_out');\
+    errStr=[];\
+    for k=1:length(ME.stack),\
+      errStr=[errStr,' Error in file: ',ME.stack(k).file,' in function: ',ME.stack(k).name,' at line: ',num2str(ME.stack(k).line),'. '];\
+    end;\
+    errStr=strrep(errStr,'(','_'); errStr=strrep(errStr,')','_');\
+    mess=strrep(ME.message,'(','_'); mess=strrep(mess,')','_');\
+    iden=strrep(ME.identifier,'(','_'); iden=strrep(iden,')','_');\
+    if(exist(logFile,'file')),\
+      unix(['echo ''''Error ',iden,' with message: ',mess,errStr,''''' | mail -a', logFile,' -s MMS_SDC_Error mms-ops@irfu.se']);\
+    else,\
+      unix(['echo ''''No log found, error: ',iden,' with message: ',mess,errStr,''''' | mail -s MMS_SDC_Error mms-ops@irfu.se']);\
+    end;\
+    if(~isempty(regexpi(iden,'spdfcdfreadc')) || ~isempty(regexpi(iden,'spdfcdfinfoc'))),exit(198);\
+    elseif(regexpi(errStr,'list_ancillary')),exit(197);\
+    end;\
+    exit(199);\
+ end,\
+ exit(0)"
+

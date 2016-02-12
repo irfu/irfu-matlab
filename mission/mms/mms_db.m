@@ -4,6 +4,8 @@ classdef mms_db < handle
   
   properties
     databases
+    cache
+		index
   end
   
   methods
@@ -19,10 +21,15 @@ classdef mms_db < handle
         return
       end
       obj.databases = [obj.databases dbInp];
+      obj.cache = mms_db_cache();
+      obj.cache.enabled = false;
+      obj.index.enabled = false;
     end
+    
     
    function fileList = list_files(obj,filePrefix,tint)
      fileList =[];
+		 if nargin==2, tint =[]; end
      if isempty(obj.databases)
        irf.log('warning','No databases initialized'), return
      end
@@ -34,12 +41,15 @@ classdef mms_db < handle
    function res = get_variable(obj,filePrefix,varName,tint)
      narginchk(4,4)
      res = [];
-     
-     fileList = list_files(obj,filePrefix,tint);
+		 if mms.db_index
+			 fileList=obj.databases.index.find_files('fileprefix',filePrefix,'varname',varName,'tint',tint);
+		 else
+			 fileList = list_files(obj,filePrefix,tint);
+		 end
      if isempty(fileList), return, end
      
-     loadedFiles = obj.load_list(fileList,varName);
-     if numel(loadedFiles)==0, return, end
+		 loadedFiles = obj.load_list(fileList,varName);
+		 if numel(loadedFiles)==0, return, end
      
      flagDataobj = isa(loadedFiles{1},'dataobj');
      for iFile = 1:length(loadedFiles)
@@ -89,7 +99,14 @@ classdef mms_db < handle
        % check for overlapping time records
        [~,idxUnique] = unique(res.DEPEND_0.data); 
        idxDuplicate = setdiff(1:length(res.DEPEND_0.data), idxUnique);
-       res.DEPEND_0.data(idxDuplicate) = []; res.data(idxDuplicate) = [];
+       res.DEPEND_0.data(idxDuplicate) = [];
+       switch ndims(res.data)
+         case 2, res.data(idxDuplicate, :) = [];
+         case 3, res.data(idxDuplicate, :, :) = [];
+         case 4, res.data(idxDuplicate, :, :, :) = [];
+         case 5, res.data(idxDuplicate, :, :, :, :) = [];
+         case 6, res.data(idxDuplicate, :, :, :, :, :) = [];
+       end
        res.nrec = length(res.DEPEND_0.data); res.DEPEND_0.nrec = res.nrec;
        nDuplicate = length(idxDuplicate);
        if nDuplicate
@@ -174,11 +191,25 @@ classdef mms_db < handle
      
      for iFile=1:length(fileList)
        fileToLoad = fileList(iFile);
-       db = obj.get_db(fileToLoad.dbId);  
-       if isempty(db) || ~db.file_has_var(fileToLoad.name,mustHaveVar)
-         continue
+			 if mms.db_index
+				 fileNameToLoad = fileToLoad{1};
+			 else
+				 fileNameToLoad = fileToLoad.name;
+			 end
+       dobjLoaded = obj.cache.get_by_key(fileNameToLoad);
+       if isempty(dobjLoaded)
+				 if mms.db_index
+					 db=obj.databases;
+				 else
+					 db = obj.get_db(fileToLoad.dbId);
+				 end
+         if isempty(db) || ~db.file_has_var(fileNameToLoad,mustHaveVar)
+           continue
+         end
+         dobjLoaded = db.load_file(fileNameToLoad);
+         obj.cache.add_entry(fileNameToLoad,dobjLoaded)
        end
-       res = [res {db.load_file(fileToLoad.name)}]; %#ok<AGROW>
+       res = [res {dobjLoaded}]; %#ok<AGROW>
      end
    end
    
@@ -192,10 +223,16 @@ classdef mms_db < handle
      res = [];
      v = get_variable(obj,filePrefix,varName,tint);
      if isempty(v), return, end
-     res = mms.variable2ts(v);
-     res = res.tlim(tint);
+     if numel(v)==1
+       res = mms.variable2ts(v);
+       res = res.tlim(tint);
+     else
+       res = cell(1,numel(v));
+       for iV = 1:numel(v)
+         resTmp = mms.variable2ts(v{iV});
+         res{iV} = resTmp.tlim(tint);
+       end
+     end
    end
   end
-  
 end
-

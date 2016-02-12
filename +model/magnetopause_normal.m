@@ -124,13 +124,13 @@ else
     mindist = sqrt(minval);
     
     q = y1/z1;
-    zn = sign(z1)*sqrt((1-xn^2)/(1+q^2));
+    zn = sign(z1)*sign(xn)*sqrt((1-xn^2)/(1+q^2));
     yn = zn*q;
     
     nvec = [xn,yn,zn];
     
     %if statement to ensure normal is pointing away from Earth
-    if nvec()>0
+    if nvec(1)<0
         nvec = -nvec;
         mindist = -mindist;
     end
