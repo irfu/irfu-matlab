@@ -1,12 +1,23 @@
 function [hax,hcb] = plot_projection(varargin)
-%MMS.PLOT_PROJECTION Plots projection.
+%MMS.PLOT_PROJECTION Plots projection on a specified plane.
 %
-% [ax,hcb] = MMS.PLOT_PROJECTION(TSeriesDesDist,'Opt1',OptVal1,...) - plot projection.
+% [ax,hcb] = MMS.PLOT_PROJECTION(dist,'Opt1',OptVal1,...)
+% [ax,hcb] = MMS.PLOT_PROJECTION(dist,phi,theta,stepTable,energy0,energy1,'Opt1',OptVal1,...)
 % MMS.PLOT_PROJECTION(AX,...) - plot in axes AX.
+%
+% Input: 
+%       pdist - Electron or ion distribution as a TSeries
+%       phi - Phi angles as a TSeries
+%       theta - theta angles as a vector or structure
+%       stepTable - Energy step table associated with the distribution (TSeries)
+%       energy0 - energy table 0 as a structure or vector
+%       energy1 - energy table 1 as a structure or vector
 %
 % Options:
 %   'tint' - plot data for time interval if tint.length = 2
-%             or closest time if tint.length = 1
+%             or closest time if tint.length = 1. For tint includes two or
+%             more distributions the energies are rebinned into 64
+%             channels.
 %   'vectors' - Nx2 cell array with 1x3 vector in first column and
 %                textlabel in second column
 %   'xyz' - 3x3 matrix with [x;y;z]. z is normal to the plotted plane and
@@ -18,17 +29,66 @@ function [hax,hcb] = plot_projection(varargin)
 %   'elevationlim' - in degrees [0 90], limiting elevation angle  
 %                    above/below projection plane to include in projection
 %
+%   Notes: If phi, theta, stepTable, energy0, energy1 are not specified
+%          then assumed values are used. 
+%          If the final distribution to be plotted is averaged over two or
+%          more distributions the final distribution is rebinned into 64
+%          energy channels.
+%
 %   Example:     
 %     mms.plot_projection(disDist1,'tint',tint+0.1*[-1 1],'xyz',[-1 0 0; 0 -1 0;hatB0],'vlim',1000);
 %     mms.plot_projection(desDist1,'tint',tint,'xyz',[-1 0 0; 0 -1 0;hatB0],'vlim',40000);
 
-irf.log('warning','Please verify that you think the projection is done properly!');
-
 [ax,args,nargs] = axescheck(varargin{:});
 
-dist = args{1}; args = args(2:end);
+
+irf.log('warning','Please verify that you think the projection is done properly!');
+
+anglespassed = 0;
+lengthE = 32;
+notint = 1;
+
+dist = args{1};
+% Check if it's electron or ions
+if strfind(dist.name,'des'),
+  isDes = 1; 
+elseif strfind(dist.name,'dis'),
+  isDes = 0;
+else
+  irf.log('warning','Can''t recognize if input is electron or ions. Assuming it''s electrons.');
+  isDes = 1;
+end
+
 if isempty(dist); irf.log('warning','Empty input.'); return; end
 
+% Check inputs for angles and energies
+if isa(args{2},'TSeries'),
+    irf.log('notice','Angles and energies passed.')
+    phi = args{2};
+    theta = args{3};
+    stepTable = args{4};
+    energy0 = args{5}; 
+    energy1 = args{6};
+    args = args(7:end);
+    if isstruct(theta), theta = theta.data; end
+    if isstruct(energy0), energy0 = energy0.data; end
+    if isstruct(energy1), energy1 = energy1.data; end
+    polar = theta*pi/180;
+    dE = median(diff(log10(energy0)))/2;
+    energy0Edges = 10.^(log10(energy0)-dE);
+    energy0Edges = [energy0Edges 10.^(log10(energy0(end))+dE)];
+    energy1Edges = 10.^(log10(energy1)-dE);
+    energy1Edges = [energy1Edges 10.^(log10(energy1(end))+dE)];
+    anglespassed = 1;
+else
+    irf.log('notice','Angles and energies not passed. Assumed values used.')
+    energyEdges = 10.^linspace(log10(10),log10(30e3),33);
+    % Set up spherical coordinate system.
+    [~,polar] = hist([0 pi],16);
+    [~,azimuthal] = hist([0,2*pi],32);
+    args = args(2:end);
+end
+ 
 doFlipX = 0;
 doFlipY = 0;
 have_vlabels = 0;
@@ -38,10 +98,6 @@ have_vlim = 0;
 limElevation = 20;
 correctForBinSize = 0;
 
-tId = 1:dist.length;
-[~,xi] = hist([log10(10),log10(30e3)],32); energyTable = 10.^xi; % energy levels
-energyEdges = 10.^linspace(log10(10),log10(30e3),33);
-
 x = [1 0 0]; y = [0 1 0]; z = [0 0 1]; % default vectors
 
 if nargs > 1, have_options = 1; end
@@ -50,12 +106,42 @@ while have_options
   switch(lower(args{1}))   
     case 'tint'
       l = 2;
+      notint = 0;
       tint = args{2};
-      if tint.length == 1
-        tId = find( abs(dist.time-tint) == min(abs(dist.time-tint)) );        
+      if tint.length == 1,
+        [~,tId] = min(abs(dist.time-tint));
+        dist = TSeries(dist.time(tId),dist.data(tId,:,:,:));
+        if anglespassed,
+            stepTable = TSeries(stepTable.time(tId),stepTable.data(tId));
+            azimuthal = squeeze(phi.data(tId,:))*pi/180;
+            if stepTable.data,
+            	energyEdges = energy1Edges;
+            else
+                energyEdges = energy0Edges;
+            end
+        end
       else
-        [tId,~] = dist.time.tlim(tint); 
-        if isempty(tId); irf.log('warning','No data for given time interval.'); return; end              
+        dist = dist.tlim(tint);
+        if (length(dist.time)<1); irf.log('warning','No data for given time interval.'); return; end   
+            if anglespassed,
+                stepTable = stepTable.tlim(tint);
+                phi = phi.tlim(tint);
+                if (length(dist.time) > 1),
+                    irf.log('notice','Rebinning distribution.')
+                    [dist,phi,energy] = mms.psd_rebin(dist,phi,energy0,energy1,stepTable);
+                    lengthE = 64;
+                    azimuthal = phi.data*pi/180;
+                    energyEdges = 10.^(log10(energy)-dE/2);
+                    energyEdges = [energyEdges 10.^(log10(energy(end))+dE/2)];
+                else
+                    azimuthal = phi.data*pi/180;
+                    if stepTable.data,
+                        energyEdges = energy1Edges;
+                    else
+                        energyEdges = energy0Edges;
+                    end
+                end          
+            end           
       end
     case 'vectors'
       l = 2;
@@ -112,21 +198,34 @@ else
   vlabelz = ['v_{z=[' num2str(z,'% .2f') ']}'];
 end
 
-% Check if it's electron or ions
-if strfind(dist.name,'des')
-  isDes = 1; 
-elseif strfind(dist.name,'dis')
-  isDes = 0;
-else
-  irf.log('warning','Can''t recognize if input is electron or ions. Assuming it''s electrons.');
-  isDes = 1;
+if (notint && anglespassed),
+    if (length(dist.time) > 1),
+        [dist,phi,energy] = mms.psd_rebin(dist,phi,energy0,energy1,stepTable);
+        irf.log('notice','Rebinning distribution.')
+        lengthE = 64;
+        azimuthal = phi.data*pi/180;
+        energyEdges = 10.^(log10(energy)-dE/2);
+        energyEdges = [energyEdges 10.^(log10(energy(end))+dE/2)];
+    else
+        azimuthal = phi.data*pi/180;
+        if stepTable.data,
+        	energyEdges = energy1Edges;
+        else
+        	energyEdges = energy0Edges;
+        end
+    end
 end
 
-% Set up spherical coordinate system.
-[~,polar] = hist([0 pi],16);
-[~,azimuthal] = hist([0,2*pi],32);
+% Construct polar and azimuthal angle matrices
+polar = ones(length(dist.time),1)*polar;
+if (anglespassed==0),
+    azimuthal = ones(length(dist.time),1)*azimuthal;
+end
+FF = zeros(length(dist.time),32,lengthE); % azimuthal, energy
+edgesAz = linspace(0,2*pi,33);
 
-[POL,AZ] = meshgrid(polar,azimuthal);
+for ii = 1:length(dist.time);
+[POL,AZ] = meshgrid(polar(ii,:),azimuthal(ii,:));
 X = -sin(POL).*cos(AZ); % '-' because the data shows which direction the particles were coming from
 Y = -sin(POL).*sin(AZ);
 Z = -cos(POL);
@@ -155,31 +254,39 @@ if correctForBinSize, geoFactorBinSize = sin(POL);
 else, geoFactorBinSize = 1; end
 
 % New coordinate system
-edgesAz = linspace(0,2*pi,33);
 [nAz,binAz] = histc(planeAz,edgesAz);
 
 % Collect data in new distribution function FF
-FF = zeros(32,32); % azimuthal, energy
-for iE = 1:32;
+for iE = 1:lengthE;
   for iAz = 1:32;
     % dist.data has dimensions nT x nE x nAz x nPol
-    C = squeeze(irf.nanmean(dist.data(tId,iE,:,:),1));
+    C = squeeze(dist.data(ii,iE,:,:));
     %C = squeeze(nansum(dist.data(tId,iE,:,:),1));
     C = C.*geoFactorElev.*geoFactorBinSize;    
     C(abs(elevationAngle)>limElevation*pi/180) = NaN;
     % surf(ax,newX,newY,newZ,C);xlabel(ax,'x');ylabel(ax,'y')
     C(planeAz<edgesAz(iAz)) = NaN;
-    C(planeAz>edgesAz(iAz+1)) = NaN;   
+    C(planeAz>edgesAz(iAz+1)) = NaN;    
     
-    FF(iAz,iE) = irf.nanmean(irf.nanmean(C));
+    FF(ii,iAz,iE) = irf.nanmean(irf.nanmean(C));
   end    
 end
-%%
+end
+
+if length(dist.time)==1,
+    FF = squeeze(FF);
+    tint = dist.time;
+else
+    FF = squeeze(irf.nanmean(FF,1));
+    tint = irf.tint(dist.time.start.utc,dist.time.stop.utc);
+end
+
 % Plot projection plane
 if isempty(ax), fig = figure; ax = axes; axis(ax,'square'); end
 
 Units = irf_units; % Use IAU and CODATA values for fundamental constants.
 if isDes, m = Units.me; else m = Units.mp; end
+
 speedTable = sqrt(energyEdges*Units.e*2/m)*1e-3; % km/s
 rE = speedTable;
 %rE = energyTable;
