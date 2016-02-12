@@ -33,90 +33,162 @@ switch scId
     % Rationale for changing:
     % Bias changed to -120nA on 2015/06/26T20 due to bad data, the really
     % bad data started already around 2015/05/23T18
-    timeTmp(2,:) = [2015 05 23 18 00 00];
-       dac.max(2) = -115; dac.min(2) = -125;
+    timeTmp(2,:) = [2015 05 23 17 59 59];
+       dac.max(2) = -130; dac.min(2) = -190;
        og.max(2)  = -3.9;  og.min(2) = -4.1;
        ig.max(2)  = -7.9;  ig.min(2) = -8.1;
-    % Bias changed to -110nA on 2015/07/23T15 but not really bad data
-    timeTmp(3,:) = [2015 07 23 15 00 00];
-       dac.max(3) = -105; dac.min(3) = -115;
+    timeTmp(3,:) = [2015 05 23 18 00 00];
+       dac.max(3) = -115; dac.min(3) = -125;
        og.max(3)  = -3.9;  og.min(3) = -4.1;
        ig.max(3)  = -7.9;  ig.min(3) = -8.1;
-    % Bias changed to -90nA on 2015/08/03T16 but not really bad data
-    timeTmp(4,:) = [2015 08 03 16 00 00];
-       dac.max(4) = -85;  dac.min(4) = -95;
+    % Bias changed to -110nA on 2015/07/23T15 but not really bad data
+    timeTmp(4,:) = [2015 07 23 14 59 59];
+       dac.max(4) = -115; dac.min(4) = -125;
        og.max(4)  = -3.9;  og.min(4) = -4.1;
        ig.max(4)  = -7.9;  ig.min(4) = -8.1;
-    % Bias changed to -110nA on 2016/01/26T18:55:16 but not really bad data
-    timeTmp(5,:) = [2016 01 26 18 55 16];
+    timeTmp(5,:) = [2015 07 23 15 00 00];
        dac.max(5) = -105; dac.min(5) = -115;
-       og.max(5) = -3.9;   og.min(5) = -4.1;
-       ig.max(5) = -7.9;   ig.min(5) = -8.1;
+       og.max(5)  = -3.9;  og.min(5) = -4.1;
+       ig.max(5)  = -7.9;  ig.min(5) = -8.1;
+    % Bias changed to -90nA on 2015/08/03T16 but not really bad data
+    timeTmp(6,:) = [2015 08 03 15 59 59];
+       dac.max(6) = -105;  dac.min(6) = -115;
+       og.max(6)  = -3.9;  og.min(6) = -4.1;
+       ig.max(6)  = -7.9;  ig.min(6) = -8.1;
+    timeTmp(7,:) = [2015 08 03 16 00 00];
+       dac.max(7) = -85;  dac.min(7) = -95;
+       og.max(7)  = -3.9;  og.min(7) = -4.1;
+       ig.max(7)  = -7.9;  ig.min(7) = -8.1;
+    % Bias changed to -110nA on 2016/01/26T18:55:16 but not really bad data
+    timeTmp(8,:) = [2016 01 26 18 54 15];
+       dac.max(8) = -85;  dac.min(8) = -95;
+       og.max(8)  = -3.9;  og.min(8) = -4.1;
+       ig.max(8)  = -7.9;  ig.min(8) = -8.1;
+    timeTmp(9,:) = [2016 01 26 18 55 16];
+       dac.max(9) = -105; dac.min(9) = -115;
+       og.max(9) = -3.9;   og.min(9) = -4.1;
+       ig.max(9) = -7.9;   ig.min(9) = -8.1;
+    timeTmp(10,:) = [2016 01 30 18 55 16];
+       dac.max(10) = -105; dac.min(10) = -115;
+       og.max(10) = -3.9;   og.min(10) = -4.1;
+       ig.max(10) = -7.9;   ig.min(10) = -8.1;
 
   case 2
     % Define new limits for good bias setting on MMS 2
     % Rationale for changing:
     % Bias changed to -100nA on 2015/06/25T02 due to bad data, the really
     % bad data started already around 2015/05/20T03
-    timeTmp(2,:) = [2015 05 20 03 00 00];
-       dac.max(2) = -95; dac.min(2) = -105;
+    timeTmp(2,:) = [2015 05 20 02 59 59];
+       dac.max(2) = -130; dac.min(2) = -190;
        og.max(2)  = -3.9; og.min(2) = -4.1;
        ig.max(2)  = -7.9; ig.min(2) = -8.1;
-    % Bias changed to -90nA on 2015/07/23T16:30 but not really bad data
-    timeTmp(3,:) = [2015 07 23 16 30 00];
-       dac.max(3) = -85; dac.min(3) = -95;
+    timeTmp(3,:) = [2015 05 20 03 00 00];
+       dac.max(3) = -95; dac.min(3) = -105;
        og.max(3)  = -3.9; og.min(3) = -4.1;
        ig.max(3)  = -7.9; ig.min(3) = -8.1;
-    % Bias changed to -70nA on 2015/08/03T20 but not really bad data
-    timeTmp(4,:) = [2015 08 03 20 00 00];
-       dac.max(4) = -65; dac.min(4) = -75;
+    % Bias changed to -90nA on 2015/07/23T16:30 but not really bad data
+    timeTmp(4,:) = [2015 07 23 16 29 59];
+       dac.max(4) = -95; dac.min(4) = -105;
        og.max(4)  = -3.9; og.min(4) = -4.1;
        ig.max(4)  = -7.9; ig.min(4) = -8.1;
-    % Bias changed to -90nA on 2016/01/26T20:55:36 but not really bad data
-    timeTmp(5,:) = [2016 01 26 20 55 36];
+    timeTmp(5,:) = [2015 07 23 16 30 00];
        dac.max(5) = -85; dac.min(5) = -95;
        og.max(5)  = -3.9; og.min(5) = -4.1;
        ig.max(5)  = -7.9; ig.min(5) = -8.1;
+    % Bias changed to -70nA on 2015/08/03T20 but not really bad data
+    timeTmp(6,:) = [2015 08 03 19 59 59];
+       dac.max(6) = -85; dac.min(6) = -95;
+       og.max(6)  = -3.9; og.min(6) = -4.1;
+       ig.max(6)  = -7.9; ig.min(6) = -8.1;
+    timeTmp(7,:) = [2015 08 03 20 00 00];
+       dac.max(7) = -65; dac.min(7) = -75;
+       og.max(7)  = -3.9; og.min(7) = -4.1;
+       ig.max(7)  = -7.9; ig.min(7) = -8.1;
+    % Bias changed to -90nA on 2016/01/26T20:55:36 but not really bad data
+    timeTmp(8,:) = [2016 01 26 20 55 35];
+       dac.max(8) = -65; dac.min(8) = -75;
+       og.max(8)  = -3.9; og.min(8) = -4.1;
+       ig.max(8)  = -7.9; ig.min(8) = -8.1;
+    timeTmp(9,:) = [2016 01 26 20 55 36];
+       dac.max(9) = -85; dac.min(9) = -95;
+       og.max(9)  = -3.9; og.min(9) = -4.1;
+       ig.max(9)  = -7.9; ig.min(9) = -8.1;
+    timeTmp(10,:) = [2016 01 30 20 55 36];
+       dac.max(10) = -85; dac.min(10) = -95;
+       og.max(10)  = -3.9; og.min(10) = -4.1;
+       ig.max(10)  = -7.9; ig.min(10) = -8.1;
 
   case 3
     % Define new limits for good bias setting on MMS 3
     % Rationale for changing:
     % Bias changed to -120nA on 2015/06/26T16 due to bad data, the really
     % bad data started already around 2015/06/17T07
-    timeTmp(2,:) = [2015 06 17 07 00 00];
-       dac.max(2) = -115; dac.min(2) = -125;
+    timeTmp(2,:) = [2015 06 17 06 59 59];
+       dac.max(2) = -130; dac.min(2) = -190;
        og.max(2)  = -3.9;  og.min(2) = -4.1;
        ig.max(2)  = -7.9;  ig.min(2) = -8.1;
-    % Bias changed to -110nA on 2015/07/24T15 but not really bad data
-    timeTmp(3,:) = [2015 07 24 15 00 00];
-       dac.max(3) = -105; dac.min(3) = -115;
+    timeTmp(3,:) = [2015 06 17 07 00 00];
+       dac.max(3) = -115; dac.min(3) = -125;
        og.max(3)  = -3.9;  og.min(3) = -4.1;
        ig.max(3)  = -7.9;  ig.min(3) = -8.1;
-    % Bias changed to -90nA on 2015/08/04T02 but not really bad data
-    timeTmp(4,:) = [2015 08 04 02 00 00];
-       dac.max(4) = -85; dac.min(4) = -95;
-       og.max(4)  = -3.9; og.min(4) = -4.1;
-       ig.max(4)  = -7.9; ig.min(4) = -8.1;
-    % Bias changed to -110nA on 2016/01/26T14:48:17 but not really bad data
-    timeTmp(5,:) = [2016 01 26 14 48 17];
+    % Bias changed to -110nA on 2015/07/24T15 but not really bad data
+    timeTmp(4,:) = [2015 07 24 14 59 59];
+       dac.max(4) = -115; dac.min(4) = -125;
+       og.max(4)  = -3.9;  og.min(4) = -4.1;
+       ig.max(4)  = -7.9;  ig.min(4) = -8.1;
+    timeTmp(5,:) = [2015 07 24 15 00 00];
        dac.max(5) = -105; dac.min(5) = -115;
-       og.max(5)  = -3.9; og.min(5) = -4.1;
-       ig.max(5)  = -7.9; ig.min(5) = -8.1;
+       og.max(5)  = -3.9;  og.min(5) = -4.1;
+       ig.max(5)  = -7.9;  ig.min(5) = -8.1;
+    % Bias changed to -90nA on 2015/08/04T02 but not really bad data
+    timeTmp(6,:) = [2015 08 04 01 59 59];
+       dac.max(6) = -105; dac.min(6) = -115;
+       og.max(6)  = -3.9;  og.min(6) = -4.1;
+       ig.max(6)  = -7.9;  ig.min(6) = -8.1;
+    timeTmp(7,:) = [2015 08 04 02 00 00];
+       dac.max(7) = -85; dac.min(7) = -95;
+       og.max(7)  = -3.9; og.min(7) = -4.1;
+       ig.max(7)  = -7.9; ig.min(7) = -8.1;
+    % Bias changed to -110nA on 2016/01/26T14:48:17 but not really bad data
+    timeTmp(8,:) = [2016 01 26 14 48 16];
+       dac.max(8) = -85; dac.min(8) = -95;
+       og.max(8)  = -3.9; og.min(8) = -4.1;
+       ig.max(8)  = -7.9; ig.min(8) = -8.1;
+    timeTmp(9,:) = [2016 01 26 14 48 17];
+       dac.max(9) = -105; dac.min(9) = -115;
+       og.max(9)  = -3.9; og.min(9) = -4.1;
+       ig.max(9)  = -7.9; ig.min(9) = -8.1;
+    timeTmp(10,:) = [2016 01 30 14 48 17];
+       dac.max(10) = -105; dac.min(10) = -115;
+       og.max(10)  = -3.9; og.min(10) = -4.1;
+       ig.max(10)  = -7.9; ig.min(10) = -8.1;
 
   case 4
     % Define new limits for good bias setting on MMS 4
     % Rationale for changing:
     % Bias changed to -140nA on 2015/08/03T15 but not really bad data
     %% CHECK WITH FAST & SLOW data
-    timeTmp(2,:) = [2015 08 03 15 00 00];
-        dac.max(2) = -135; dac.min(2) = -145;
-        og.max(2)  = -3.9;  og.min(2) = -4.1;
-        ig.max(2)  = -7.9;  ig.min(2) = -8.1;
-    % Bias changed to -160nA on 2016/01/26T16:39:44 but not really bad data
-    timeTmp(3,:) = [2016 01 26 16 39 44];
-        dac.max(3) = -155; dac.min(3) = -165;
+    timeTmp(2,:) = [2015 08 03 14 59 59];
+       dac.max(2) = -130; dac.min(2) = -190;
+       og.max(2)  = -3.9;  og.min(2) = -4.1;
+       ig.max(2)  = -7.9;  ig.min(2) = -8.1;
+    timeTmp(3,:) = [2015 08 03 15 00 00];
+        dac.max(3) = -135; dac.min(3) = -145;
         og.max(3)  = -3.9;  og.min(3) = -4.1;
         ig.max(3)  = -7.9;  ig.min(3) = -8.1;
+    % Bias changed to -160nA on 2016/01/26T16:39:44 but not really bad data
+    timeTmp(4,:) = [2016 01 26 16 39 43];
+        dac.max(4) = -135; dac.min(4) = -145;
+        og.max(4)  = -3.9;  og.min(4) = -4.1;
+        ig.max(4)  = -7.9;  ig.min(4) = -8.1;
+    timeTmp(5,:) = [2016 01 26 16 39 44];
+        dac.max(5) = -155; dac.min(5) = -165;
+        og.max(5)  = -3.9;  og.min(5) = -4.1;
+        ig.max(5)  = -7.9;  ig.min(5) = -8.1;
+    timeTmp(6,:) = [2016 01 30 16 39 44];
+        dac.max(6) = -155; dac.min(6) = -165;
+        og.max(6)  = -3.9;  og.min(6) = -4.1;
+        ig.max(6)  = -7.9;  ig.min(6) = -8.1;
 
   otherwise
     errStr = 'Invalid scId, only numerical 1, 2, 3 or 4 allowed.';

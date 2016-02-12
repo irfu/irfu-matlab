@@ -1,3 +1,4 @@
+2016-02-12 v1.11.0 NASA CDF patch, MMS new standard variable names (L2 products), also closing some issues and many, many other bug fixes.
 2015-11-17 v1.10.1 Fix mjuliandate in coord.transform, MMS new versions of QL/Usc/L2A (use defatt & aspoc), TSeries allowed in more functions, many other bug fixes.
 2015-10-12 v1.10.0 Epoch <1970 fix impacted coord. transform., MMS ADP scalefactor 1.5, TSeries allowed in more functions, many other bug fixes.
 2015-08-27 v1.9.5 MMS bugfix for Usc and QL, TSeries improvements, C4p3 failed, minor bug fixes.
