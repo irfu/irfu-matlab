@@ -43,7 +43,7 @@ try
   calPath = [ENVIR.CAL_PATH_ROOT, filesep 'mms', num2str(scId), filesep, ...
     'edp'];
   calFiles = [calPath, filesep, 'mms', num2str(scId), ...
-    '_edp_sdp_', calStr, '_v*.txt' ];
+    '_edp_sdp_', calStr, '_*v*.txt' ];
   list = dir(calFiles);
   if(~isempty(list))
     % Found at least one cal file for EDP_SDP_{SDCProcs}. Use the last
