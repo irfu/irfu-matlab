@@ -197,6 +197,10 @@ classdef mms_sdp_dmgr < handle
             % Old versions
             vPfx = sprintf('mms%d_dfg_srvy_l2pre_dmpa',DATAC.scId);
           end
+          if( strfind(dataObj.GlobalAttributes.Logical_file_id{1}, 'brst') )
+            % Brst segments, change variable names accordingly
+            vPfx = strrep(vPfx, 'srvy', 'brst');
+          end
           if(isempty(DATAC.(param)))
             % first DFG file
             DATAC.(param).dataObj = dataObj;
