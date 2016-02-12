@@ -38,16 +38,16 @@
 
 
 %% Time interval selection
-tint = irf.tint('2015-12-02T01:14:15.00Z/2015-12-02T01:15:03.50Z');
+Tint = irf.tint('2015-12-02T01:14:15.00Z/2015-12-02T01:15:03.50Z');
 
 %% Load data
 ic = 1:4;
 tic;
-c_eval('Bxyz?=mms.db_get_ts(''mms?_dfg_brst_ql'',''mms?_dfg_brst_dmpa'',tint);',ic);
-c_eval('SCpot?=mms.db_get_ts(''mms?_edp_brst_l2_scpot'',''mms?_edp_psp'',tint);',ic);
+c_eval('Bxyz?=mms.db_get_ts(''mms?_dfg_brst_ql'',''mms?_dfg_brst_dmpa'',Tint);',ic);
+c_eval('SCpot?=mms.db_get_ts(''mms?_edp_brst_l2_scpot'',''mms?_edp_psp'',Tint);',ic);
 offset1 = 1.3; offset2 = 1.5; offset3 = 1.2; offset4 = 0.0; %For v1 data
 c_eval('SCpot?.data = -SCpot?.data*1.2+offset?;',ic);
-%c_eval('Exyzf? = mms.db_get_ts(''mms?_edp_fast_ql_dce'',''mms?_edp_dce_ql_dsl'',tint);',ic);
+%c_eval('Exyzf? = mms.db_get_ts(''mms?_edp_fast_ql_dce'',''mms?_edp_dce_ql_dsl'',Tint);',ic);
 c_eval('E? = mms.db_get_ts(''mms?_edp_fast_ql_dce2d'',''mms?_edp_dce_xyz_dsl'',Tint);',ic);
 toc;
 
@@ -71,33 +71,33 @@ toc;
 
 for ii=1:4;
 tic;
-   c_eval('pdiste?=mms.db_get_ts(''mms?_fpi_brst_l1b_des-dist'',''mms?_des_brstSkyMap_dist'',tint);',ii);
-   c_eval('energye0?=mms.db_get_variable(''mms?_fpi_brst_l1b_des-dist'',''mms?_des_brstSkyMap_energy0'',tint);',ii);
-   c_eval('energye1?=mms.db_get_variable(''mms?_fpi_brst_l1b_des-dist'',''mms?_des_brstSkyMap_energy1'',tint);',ii);
-   c_eval('phie?=mms.db_get_ts(''mms?_fpi_brst_l1b_des-dist'',''mms?_des_brstSkyMap_phi'',tint);',ii);
-   c_eval('thetae?=mms.db_get_variable(''mms?_fpi_brst_l1b_des-dist'',''mms?_des_brstSkyMap_theta'',tint);',ii);
-   c_eval('stepTablee?=mms.db_get_ts(''mms?_fpi_brst_l1b_des-dist'',''mms?_des_stepTable_parity'',tint);',ii);
+   c_eval('pdiste?=mms.db_get_ts(''mms?_fpi_brst_l1b_des-dist'',''mms?_des_brstSkyMap_dist'',Tint);',ii);
+   c_eval('energye0?=mms.db_get_variable(''mms?_fpi_brst_l1b_des-dist'',''mms?_des_brstSkyMap_energy0'',Tint);',ii);
+   c_eval('energye1?=mms.db_get_variable(''mms?_fpi_brst_l1b_des-dist'',''mms?_des_brstSkyMap_energy1'',Tint);',ii);
+   c_eval('phie?=mms.db_get_ts(''mms?_fpi_brst_l1b_des-dist'',''mms?_des_brstSkyMap_phi'',Tint);',ii);
+   c_eval('thetae?=mms.db_get_variable(''mms?_fpi_brst_l1b_des-dist'',''mms?_des_brstSkyMap_theta'',Tint);',ii);
+   c_eval('stepTablee?=mms.db_get_ts(''mms?_fpi_brst_l1b_des-dist'',''mms?_des_stepTable_parity'',Tint);',ii);
 toc;
 end
 
 for ii=1:4;
 tic;
-   c_eval('pdisti?=mms.db_get_ts(''mms?_fpi_brst_l1b_dis-dist'',''mms?_dis_brstSkyMap_dist'',tint);',ii);
-   c_eval('energyi0?=mms.db_get_variable(''mms?_fpi_brst_l1b_dis-dist'',''mms?_dis_brstSkyMap_energy0'',tint);',ii);
-   c_eval('energyi1?=mms.db_get_variable(''mms?_fpi_brst_l1b_dis-dist'',''mms?_dis_brstSkyMap_energy1'',tint);',ii);
-   c_eval('phii?=mms.db_get_ts(''mms?_fpi_brst_l1b_dis-dist'',''mms?_dis_brstSkyMap_phi'',tint);',ii);
-   c_eval('thetai?=mms.db_get_variable(''mms?_fpi_brst_l1b_dis-dist'',''mms?_dis_brstSkyMap_theta'',tint);',ii);
-   c_eval('stepTablei?=mms.db_get_ts(''mms?_fpi_brst_l1b_dis-dist'',''mms?_dis_stepTable_parity'',tint);',ii);
+   c_eval('pdisti?=mms.db_get_ts(''mms?_fpi_brst_l1b_dis-dist'',''mms?_dis_brstSkyMap_dist'',Tint);',ii);
+   c_eval('energyi0?=mms.db_get_variable(''mms?_fpi_brst_l1b_dis-dist'',''mms?_dis_brstSkyMap_energy0'',Tint);',ii);
+   c_eval('energyi1?=mms.db_get_variable(''mms?_fpi_brst_l1b_dis-dist'',''mms?_dis_brstSkyMap_energy1'',Tint);',ii);
+   c_eval('phii?=mms.db_get_ts(''mms?_fpi_brst_l1b_dis-dist'',''mms?_dis_brstSkyMap_phi'',Tint);',ii);
+   c_eval('thetai?=mms.db_get_variable(''mms?_fpi_brst_l1b_dis-dist'',''mms?_dis_brstSkyMap_theta'',Tint);',ii);
+   c_eval('stepTablei?=mms.db_get_ts(''mms?_fpi_brst_l1b_dis-dist'',''mms?_dis_stepTable_parity'',Tint);',ii);
 toc;
 end
 %% Compute particle moments and rotate pressure and temperature tensors
 c_eval('emoments? = mms.psd_moments(pdiste?,phie?,thetae?,stepTablee?,energye0?,energye1?,SCpot?,''electron'');',ic);
 c_eval('imoments? = mms.psd_moments(pdisti?,phii?,thetai?,stepTablei?,energyi0?,energyi1?,SCpot?,''ion'');',ic);
 
-c_eval('Pet? = emoments?.P_psd.tlim(tint);',ic);
+c_eval('Pet? = emoments?.P_psd.tlim(Tint);',ic);
 c_eval('Pepp? = mms.rotate_tensor(Pet?,''fac'',Bxyz?,''pp'');',ic); % Peperp1 = Peperp2
 c_eval('Peqq? = mms.rotate_tensor(Pet?,''fac'',Bxyz?,''qq'');',ic); % Peperp1 and Peperp2 are most unequal
-c_eval('Tet? = emoments?.T_psd.tlim(tint);',ic);
+c_eval('Tet? = emoments?.T_psd.tlim(Tint);',ic);
 c_eval('Tefac? = mms.rotate_tensor(Tet?,''fac'',Bxyz?);',ic);
 
 %% Compute tests for EDR
@@ -123,14 +123,14 @@ Units = irf_units;
 qe = Units.e;
 me = Units.me;
 c_eval('Ue? = irf.ts_scalar(emoments?.V_psd.time,emoments?.V_psd.abs.data);',ic);
-c_eval('Ue? = Ue?.tlim(tint);',ic);
+c_eval('Ue? = Ue?.tlim(Tint);',ic);
 c_eval('Veperp? = sqrt((Tefac?.data(:,2,2)+Tefac?.data(:,3,3))*qe/me);',ic);
 c_eval('Me? = Ue?.data*1000./Veperp?;',ic);
 c_eval('Me? = irf.ts_scalar(Tet?.time,Me?);',ic);
 
 % Compute current density and J.E
-c_eval('ne? = emoments?.n_psd.tlim(tint);',ic);
-c_eval('Uevec? = emoments?.V_psd.tlim(tint);',ic);
+c_eval('ne? = emoments?.n_psd.tlim(Tint);',ic);
+c_eval('Uevec? = emoments?.V_psd.tlim(Tint);',ic);
 c_eval('Uivec? = imoments?.V_psd; Uivec? = Uivec?.resample(Uevec?);',ic);
 c_eval('Exyzf? = E?.resample(Uevec?);',ic);
 c_eval('Jmoms? = irf.ts_vec_xyz(Uevec?.time,1e18*qe*[ne?.data ne?.data ne?.data].*(Uivec?.data-Uevec?.data));',ic); % Current density in nA m^-2
@@ -208,7 +208,7 @@ ylabel(h(9),'\delta_{e}','Interpreter','tex');
 irf_legend(h(9),'(i)',[0.99 0.98],'color','k')
 
 irf_plot_axis_align(h(1:nplots));
-irf_zoom(h(1:nplots),'x',tint);
+irf_zoom(h(1:nplots),'x',Tint);
 
 %% save figure
 
