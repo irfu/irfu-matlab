@@ -646,6 +646,15 @@ classdef TSeries
         Ts.userData = [];
       end
     end
+
+    function Ts = uplus(obj)
+      % UPLUS The positive of the TS.
+			%
+			%   TS.UPLUS(TS)      
+      %   +TS
+      
+      Ts = obj;
+    end
     
     function Ts = minus(obj,obj1)
       % MINUS Subtraction of TS with TS/scalars.
@@ -664,6 +673,15 @@ classdef TSeries
 			%     TS2 = TS1 - [1 2 4];  % if TS1,TS2 are vector time series
       
       Ts = plus(obj,(-1)*obj1);
+    end
+    
+    function Ts = uminus(obj)
+      % UMINUS The negative of the TS.
+			%
+			%   TS.UMINUS(TS)      
+      %   -TS
+      
+      Ts = -1*obj;      
     end
     
     function Ts = dot(obj,obj1)
@@ -848,7 +866,7 @@ classdef TSeries
         Ts.userData = [];
       end
     end
-    
+        
     function Ts = mrdivide(obj,obj1)
       if isa(obj1,'TSeries') && ~isa(obj,'TSeries')
         obj1Tmp = obj1; obj1 = obj; obj = obj1Tmp;
@@ -1018,36 +1036,18 @@ classdef TSeries
       end
            
       function resample_(TsTmp)
-        if 1
-          disp('Passing directly to irf_resamp')
-          Ts = irf_resamp(TsTmp,NewTime,varargin{:});
-        else
-          tData = double(TsTmp.time.ttns - TsTmp.time.start.ttns)/10^9;
-          dataTmp = double(TsTmp.data);
-          newTimeTmp = double(NewTime.ttns - TsTmp.time.start.ttns)/10^9;
-          origDataSize = size(dataTmp);
+        tData = double(TsTmp.time.ttns - TsTmp.time.start.ttns)/10^9;
+        dataTmp = double(TsTmp.data);
+        newTimeTmp = double(NewTime.ttns - TsTmp.time.start.ttns)/10^9;
 
-          % reshape data so it can be directly inserted into irf_resamp
-          dataTmpReshaped = reshape(dataTmp,[origDataSize(1) prod(origDataSize(2:end))]);
-          newDataTmpReshaped = irf_resamp([tData squeeze(dataTmpReshaped)], newTimeTmp, varargin{:});
-          newDataReshaped = squeeze(newDataTmpReshaped(:,2:end)); % take away time column
-          newData = reshape(newDataReshaped,[length(newTimeTmp) origDataSize(2:end)]); % shape back to original dimensions
-          Ts = TsTmp; Ts.t_ = NewTime; Ts.data_ = newData;     
-
-  %           if ndims(dataTmp) == 3,
-  %             newData = nan(numel(newTimeTmp),size(dataTmp,2),size(dataTmp,3));
-  %             for ii = 1:size(newData,2)
-  %               newDataTmp = irf_resamp([tData squeeze(dataTmp(:,ii,:))], newTimeTmp, varargin{:});
-  %               newData(:,ii,:) = newDataTmp(:,2:end);
-  %             end          
-  %             Ts = TsTmp; Ts.t_ = NewTime; Ts.data_ = newData(:,:,:);
-  %           elseif ndims(dataTmp) < 3
-  %             newData = irf_resamp([tData dataTmp], newTimeTmp, varargin{:});
-  %             Ts = TsTmp; Ts.t_ = NewTime; Ts.data_ = newData(:,2:end);     
-  %           else 
-  %             error('Not yet implemented')
-  %           end
-        end       
+        % reshape data so it can be directly inserted into irf_resamp
+        origDataSize = size(dataTmp);
+        dataTmpReshaped = squeeze(reshape(dataTmp,[origDataSize(1) prod(origDataSize(2:end))]));
+        newDataTmpReshaped = irf_resamp([tData dataTmpReshaped], newTimeTmp, varargin{:}); % resample
+        newDataReshaped = squeeze(newDataTmpReshaped(:,2:end)); % take away time column
+        newData = reshape(newDataReshaped,[length(newTimeTmp) origDataSize(2:end)]); % shape back to original dimensions
+        
+        Ts = TsTmp; Ts.t_ = NewTime; Ts.data_ = newData;           
       end
     end %RESAMPLE
     
