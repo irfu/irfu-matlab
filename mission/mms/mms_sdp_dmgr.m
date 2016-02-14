@@ -189,13 +189,17 @@ classdef mms_sdp_dmgr < handle
           else
             dfgVerStr = dataObj.GlobalAttributes.Data_version{1}(1:end);
           end
-          if( is_version_larger(dfgVerStr,'4.0.-1') )
+          if( is_version_geq(dfgVerStr,'4.0.0') )
             % Version 4.0.z or later, new variable names conforming to
             % recommended MMS standard.
             vPfx = sprintf('mms%d_dfg_b_dmpa_srvy_l2pre',DATAC.scId);
           else
             % Old versions
             vPfx = sprintf('mms%d_dfg_srvy_l2pre_dmpa',DATAC.scId);
+          end
+          if( strfind(dataObj.GlobalAttributes.Logical_file_id{1}, 'brst') )
+            % Brst segments, change variable names accordingly
+            vPfx = strrep(vPfx, 'srvy', 'brst');
           end
           if(isempty(DATAC.(param)))
             % first DFG file
@@ -415,6 +419,10 @@ classdef mms_sdp_dmgr < handle
             Etmp.e12 = mask_bits(Etmp.e12, bitmask, MMS_CONST.Bitmask.SWEEP_DATA);
             Etmp.e34 = mask_bits(Etmp.e34, bitmask, MMS_CONST.Bitmask.SWEEP_DATA);
             dE = mms_sdp_despin(Etmp.e12, Etmp.e34, DATAC.l2a.phase.data, DATAC.l2a.delta_off);
+            offs = mms_sdp_get_offset(DATAC.scId, DATAC.procId, DATAC.l2a.dce.time);
+            DATAC.calFile = offs.calFile; % Store name of cal file used.
+            dE(:,1) = dE(:,1) - offs.ex; % Remove sunward
+            dE(:,2) = dE(:,2) - offs.ey; % and duskward offsets
             % Compute DCE Z from E.B = 0, if >10 deg and if abs(B_z)> 1 nT.
             B_tmp = DATAC.dfg.B_dmpa;
             B_tmp.data((abs(B_tmp.z.data) <= 1), :) = NaN;
@@ -979,8 +987,8 @@ classdef mms_sdp_dmgr < handle
         % [e12, e34, e56], dce bitmask [e12, e34, e56], phase, adc & delta 
         % offsets).
         % Check version number, 1.0.z use new variable names, old 0.1.z did
-        % not use. Compare against non-existing version 0.2.z.
-        if( ~is_version_larger(dataObj.GlobalAttributes.Data_version{1}(2:end),'0.2.0') )
+        % not use.
+        if( ~is_version_geq(dataObj.GlobalAttributes.Data_version{1}(2:end),'1.0.0') )
           % Old version, this code segment can be removed when
           % re-processing has occured.
           varPre = ['mms', num2str(DATAC.scId), '_edp_dce'];
@@ -1028,23 +1036,26 @@ classdef mms_sdp_dmgr < handle
           varPre = ['mms', num2str(DATAC.scId), '_edp_'];
           typePos = strfind(dataObj.GlobalAttributes.Data_type{1},'_');
           varSuf = dataObj.GlobalAttributes.Data_type{1}(1:typePos(2)-1);
-          varPre2='_spinfit_'; varPre4='delta_offset_';
+          varPre4='delta_offset_';
           sdpPair = {'e12', 'e34'};
           for iPair=1:numel(sdpPair)
-            tmp = dataObj.data.([varPre, sdpPair{iPair}, varPre2, varSuf]).data;
+            % Spinfits
+            tmp = dataObj.data.([varPre, 'espin_', strrep(sdpPair{1},'e','p'),'_', varSuf]).data;
             % Replace possible FillVal with NaN
             tmp(tmp==getfield(mms_sdp_typecast('spinfits'),'fillval')) = NaN;
             DATAC.(param).spinfits.sfit.(sdpPair{iPair}) = tmp;
-            tmp = dataObj.data.([varPre, 'sdev', varPre2, varSuf]).data(:,iPair);
+            % Sdev
+            tmp = dataObj.data.([varPre, 'sdevfit_', strrep(sdpPair{1},'e','p'),'_', varSuf]).data;
             % Replace possible FillVal with NaN
             tmp(tmp==getfield(mms_sdp_typecast('spinfits'),'fillval')) = NaN;
             DATAC.(param).spinfits.sdev.(sdpPair{iPair}) = tmp;
+            % ADC offset
             tmp = dataObj.data.([varPre, 'adc_offset_', varSuf]).data(:,iPair);
             % Replace possible FillVal with NaN
             tmp(tmp==getfield(mms_sdp_typecast('adc_offset'),'fillval')) = NaN;
             DATAC.(param).adc_off.(sdpPair{iPair}) = tmp;
           end
-          x = getdep(dataObj,[varPre, sdpPair{iPair}, varPre2, varSuf]);
+          x = getdep(dataObj,[varPre, 'espin_', strrep(sdpPair{1},'e','p'),'_', varSuf]);
           DATAC.(param).spinfits.time = x.DEPEND_O.data;
           check_monoton_timeincrease(DATAC.(param).spinfits.time, 'L2A spinfits');
           sensors = {'e12', 'e34', 'e56'};
@@ -1053,17 +1064,21 @@ classdef mms_sdp_dmgr < handle
           DATAC.(param).dce.time = x.DEPEND_O.data;
           check_monoton_timeincrease(DATAC.(param).dce.time, 'L2A dce');
           for iPair=1:numel(sensors);
+            % DCE
             tmp = dataObj.data.([varPre, 'dce_', varSuf]).data(:,iPair);
             % Replace possible FillVal with NaN
             tmp(tmp==getfield(mms_sdp_typecast('dce'),'fillval')) = NaN;
             DATAC.(param).dce.(sensors{iPair}).data = tmp;
+            % Bitmask
             tmp = dataObj.data.([varPre, 'bitmask_', varSuf]).data(:,iPair);
             tmp(tmp==getfield(mms_sdp_typecast('bitmask'),'fillval')) = NaN;
             DATAC.(param).dce.(sensors{iPair}).bitmask = tmp;
           end
+          % Phase
           tmp = dataObj.data.([varPre, 'phase_', varSuf]).data;
           tmp(tmp==getfield(mms_sdp_typecast('phase'),'fillval')) = NaN;
           DATAC.(param).phase.data = tmp;
+          % Delta offset
           DATAC.(param).delta_off = complex(dataObj.data.([varPre, varPre4, varSuf]).data(1),...
             dataObj.data.([varPre, varPre4, varSuf]).data(2));
         end
@@ -1229,18 +1244,12 @@ classdef mms_sdp_dmgr < handle
         errStr='Bad SPINFITS input, cannot proceed.';
         irf.log('critical',errStr); error(errStr);
       end
-      % Index of times when both pairs have good spinfits, excluding data
-      % gaps and such...
-      ind = and( all( ~isnan( Spinfits.sfit.e12(:,2:3) ), 2), ...
-                 all( ~isnan( Spinfits.sfit.e34(:,2:3) ), 2) );
-      if(any(ind))
-        Delta_p12_p34 = double(Spinfits.sfit.e12(ind,2:3)) - ...
-          double(Spinfits.sfit.e34(ind,2:3));
-        DATAC.delta_off = ...
-          median(Delta_p12_p34(:,1)) + median(Delta_p12_p34(:,2))*1j;
-      else
-        MMS_CONST = DATAC.CONST;
-        DATAC.delta_off = MMS_CONST.Error;
+      MMS_CONST = DATAC.CONST;
+      DATAC.delta_off = mms_sdp_dmgr.comp_delta_off(Spinfits,...
+        DATAC.dce.time, DATAC.dce.e12.bitmask, DATAC.dce.e34.bitmask,...
+        MMS_CONST);
+      
+      if DATAC.delta_off == MMS_CONST.Error;
         irf.log('warning','Delta offset could not be computed.');
       end
       res = DATAC.delta_off;
@@ -1419,7 +1428,75 @@ classdef mms_sdp_dmgr < handle
     
   end % public Methods
   methods (Static)
+    function delta_off = comp_delta_off(Spinfits,...
+        bitmaskTime,bitmaskP12,bitmaskP34,MMS_CONST)
+      %COMP_DELTA_OFF compute delta offsets
+      %
+      % delta = MMS_SDP_DMGR.COMP_DELTA_OFF(Spinfits,...
+      %              bitmaskTime,bitmaskP12,bitmaskP34,MMS_CONST)
+      delta_off = MMS_CONST.Error;
+      bits = MMS_CONST.Bitmask.ASPOC_RUNNING;
+      % ASPOC ON mask
+      mask = bitand(bitmaskP12,bits) > 0;
+      % XXX this will not be nescesary when we will have a reliable ASPOC bit
+      mask = mask | (bitand(bitmaskP34,bits) > 0);
+      
+      % Resample bitmask
+      spinSize = MMS_CONST.Limit.SPINFIT_INTERV;
+      mskAsponOnSpin = zeros(size(Spinfits.time));
+      intsON = find_on();
+      for idxInt=1:size(intsON,1)
+        mskAsponOnSpin((Spinfits.time> bitmaskTime(intsON(1,1))-spinSize/2) & ...
+          (Spinfits.time<= bitmaskTime(intsON(1,2))+spinSize/2)) = 1;
+      end
+      mskAsponOnSpin = logical(mskAsponOnSpin);
+      if all(mskAsponOnSpin)
+        irf.log('warning',...
+          'No Spinfits with ASPOC OFF, using data with ASPOC ON')
+        Es12AspocOff =  Spinfits.sfit.e12(:,2:3);
+        Es34AspocOff =  Spinfits.sfit.e34(:,2:3);
+      else
+        Es12AspocOff =  Spinfits.sfit.e12(~mskAsponOnSpin,2:3);
+        Es34AspocOff =  Spinfits.sfit.e34(~mskAsponOnSpin,2:3);
+      end
+      if isempty(Es12AspocOff) || isempty(Es34AspocOff)
+        irf.log('warning','No data to compute Delta_Off')
+        return
+      end
+      Delta_p12_p34 = Es12AspocOff - Es34AspocOff;
+      delta_off = del_my(Delta_p12_p34(:,1)) ...
+           + del_my(Delta_p12_p34(:,2))*1j;
+             
+      function [y,z] = del_my(x)
+        y = MMS_CONST.Error; z = MMS_CONST.Error;
+        % compute delta disregarding outlyers
+        STD_OFF = 1; % disregard points above this threhsould
+        xTmp = x(~isnan(x));
+        if isempty(x), return; end
+        y = median(xTmp); z = std(xTmp);
+        xTmp(abs(xTmp -y)>STD_OFF*z) = [];
+        if isempty(xTmp), return, end
+        y = median(xTmp); z = std(xTmp);
+      end % DEL_MY
+      function ints = find_on()
+        % find intervals when mask is set
+        idxJump = find(diff(mask)~=0);
+        ints = []; iStop = [];
+        for idxJmp=1:length(idxJump)+1
+          if isempty(iStop), iStart = 1; else iStart = iStop + 1; end
+          if idxJmp==length(idxJump)+1, iStop = length(mask); 
+          else iStop = idxJump(idxJmp); 
+          end
+          if ~mask(iStart), continue, end
+          ints = [ ints; iStart iStop]; %#ok<AGROW>
+        end 
+      end % FIND_ON
+    end % COMP_DELTA_OFF
     function probe2sc_pot = comp_probe2sc_pot(Dcv,sampleRate,MMS_CONST)
+      % COMP_PROBE2SC_POT  compute probe to SC potential
+      %
+      % p2sc_pot = MMS_SDP_DMGR.COMP_PROBE2SC_POT(Dcv,sampleRate,MMS_CONST)
+      
       % Blank sweeps
       sweepBit = MMS_CONST.Bitmask.SWEEP_DATA;
       Dcv.v1.data = mask_bits(Dcv.v1.data, Dcv.v1.bitmask, sweepBit);

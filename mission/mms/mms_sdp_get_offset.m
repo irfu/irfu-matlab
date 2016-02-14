@@ -1,21 +1,21 @@
 function off = mms_sdp_get_offset(scId, procId, time)
 % Return offsets etc. to be applied in MMS processing (currently only 
-% QL dce2d or Scpot.
+% QL dce2d, L2Pre dce2d or Scpot.
 %
 % Example: 
 %   MMS_CONST = mms_constants;
 %   off = mms_sdp_dsl_offset(1, MMS_CONST.SDCProc.ql, dceTime);
 %  returns 
-%   off.ex         - Sunward offset (DSL Ex), for QL dce2d
-%   off.ey         - Duskward offset (DSL Ey), for QL dce2d
+%   off.ex         - Sunward offset (DSL Ex), for QL dce2d or L2Pre dce2d
+%   off.ey         - Duskward offset (DSL Ey), for QL dce2d or L2Pre dce2d
 %   off.p2p        - Probe2Plasma potential, for L2 scpot
 %   off.shortening - Shortening factor, for L2 scpot
 %   off.calFile    - Calibration filename used (to be stored in GATTRIB in
 %                    the resulting cdf file).
 %
-% If calibration files are found, offsets will be interpolated with
-% 'previous' and 'extrap'. If failing to read latest calibration file a
-% static value is returned.
+% If calibration files are found, offsets will be the last values just
+% preceeding the start of time. (Start of data interval processing). If no
+% files are found a static value is used.
 %
 % NOTE: Keep in mind the signs used here and when applying the offsets and
 % scale factors.
@@ -29,11 +29,21 @@ if isempty(MMS_CONST), MMS_CONST = mms_constants(); end
 if isempty(ENVIR), errStr='Empty ENVIR'; irf.log(errStr); error(errStr); end
 if isa(time,'GenericTime'), time = time.ttns; end
 
+switch procId
+  case {MMS_CONST.SDCProc.ql, MMS_CONST.SDCProc.l2pre}
+    calStr = 'dsl';
+  case MMS_CONST.SDCProc.scpot
+    calStr = 'scpot';
+  otherwise
+    calStr = ''; errStr = 'Unexpected procId';
+    irf.log('critical',errStr); %error(errStr);
+end
+
 try
   calPath = [ENVIR.CAL_PATH_ROOT, filesep 'mms', num2str(scId), filesep, ...
     'edp'];
   calFiles = [calPath, filesep, 'mms', num2str(scId), ...
-    '_edp_sdp_', MMS_CONST.SDCProcs{procId},'_v*.txt' ];
+    '_edp_sdp_', calStr, '_v*.txt' ];
   list = dir(calFiles);
   if(~isempty(list))
     % Found at least one cal file for EDP_SDP_{SDCProcs}. Use the last
@@ -46,18 +56,18 @@ try
     C = textscan(fileID, fmt, 'HeaderLines', 1);
     fclose(fileID);
     offTime = EpochTT(cell2mat(C{1}));
-    offIntrp = interp1(double(offTime.ttns-offTime.start.ttns), ...
-      [C{2}, C{3}], double(time-offTime.start.ttns), 'previous', 'extrap');
+    ind = offTime.ttns <= time(1); % Preceeding offsets only.
+    if(~any(ind)), ind = true; end % Sanity check if time was incorrect...
+    % Use only the last of the preceeding offset values for the entire data
+    % interval.
+    offIntrp = [C{2}(ind), C{3}(ind)];
     switch procId
-      case MMS_CONST.SDCProc.ql
-        off.ex = offIntrp(:,1);
-        off.ey = offIntrp(:,2);
+      case {MMS_CONST.SDCProc.ql, MMS_CONST.SDCProc.l2pre}
+        off.ex = offIntrp(end,1);
+        off.ey = offIntrp(end,2);
       case MMS_CONST.SDCProc.scpot
-        off.p2p = offIntrp(:,1);
-        off.shortening = offIntrp(:,2);
-      otherwise
-        errStr = 'Unexpected procId';
-        irf.log('critical',errStr); error(errStr);
+        off.p2p = offIntrp(end,1);
+        off.shortening = offIntrp(end,2);
    end
   else
     off = useStaticOffset;
@@ -67,7 +77,6 @@ catch ME
   off = useStaticOffset;
 end
 
-
   function off = useStaticOffset
     % Did not locate any calibration offset file or failed to read it, use
     % static offsets instead.
@@ -76,7 +85,7 @@ end
     off = struct('ex', 0.0, 'ey', 0.0, 'p2p', 0.0, 'shortening', 1.0, ...
       'calFile', '20160204 static');
     switch procId
-      case MMS_CONST.SDCProc.ql
+      case {MMS_CONST.SDCProc.ql, MMS_CONST.SDCProc.l2pre}
         switch lower(scId)
           % See mms_sdp_dmgr;
           % dE = mms_sdp_despin(...);
