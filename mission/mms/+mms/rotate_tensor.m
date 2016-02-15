@@ -23,7 +23,7 @@ function Pe = rotate_tensor(varargin)
 % Input: 
 %       PeXX,PeXY,PeXZ,PeYY,PeYZ,PeZZ - Pressure terms or temperature in TSeries 
 %       Peall - TSERIES of all tensor terms with column order PeXX,PeXY,PeXZ,PeYY,PeYZ,PeZZ
-%               OR 3x3 data with [PeXX,PeXY,PeXZ;PeYX,PeYY,PeyZ;PeZX,PeZY,PeZZ] 
+%               OR 3x3 data (can have tensorOrder=2) with [PeXX,PeXY,PeXZ;PeYX,PeYY,PeYZ;PeZX,PeZY,PeZZ] 
 %       'fac' - Transform tensor into field-aligned coordinates. 
 %           * Bback - Background magnetic field (TSERIES format)
 %           * 'pp' - optional flag to rotate perpendicular components so
@@ -205,6 +205,10 @@ if qqeq,
     end
 end
 
-Pe = TSeries(Petimes,Ptensorp);
-
+% Construct output
+if Peall.tensorOrder == 2
+  Pe = irf.ts_tensor_xyz(Petimes,Ptensorp);
+else % for backwards compability
+  Pe = TSeries(Petimes,Ptensorp);
+end
 end
