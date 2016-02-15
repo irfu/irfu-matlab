@@ -8,6 +8,7 @@ function res = get_data(varStr, Tint, mmsId)
 %  varStr is one of:
 %  EPHEMERIS:
 %     R_gse, R_gsm, V_gse, V_gsm
+%     tetra_quality
 %  FPI IONS:
 %     Vi_gse_fpi_brst, 'Ti_fpi_ql','Ti_fpi_brst',
 %     'Ni_fpi_ql', 'Ni_fpi_brst', 
