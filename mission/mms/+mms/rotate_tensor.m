@@ -45,14 +45,16 @@ function Pe = rotate_tensor(varargin)
 %       For 'rot' and 'gse' Pe = [Pxx Pxy Pxz; Pxy Pyy Pyz; Pxz Pyz Pzz]
 % 
 
+rtntensor = 0;
 % Check input and load pressure/temperature terms
 if isa(varargin{2},'char'),
     rotflag = varargin{2};
     rotflagpos = 2;
     Peall = varargin{1};
     Petimes = Peall.time;
-    if ndims(Peall.data) == 3
-      Ptensor = Peall.data;      
+    if ndims(Peall.data) == 3,
+      Ptensor = Peall.data;   
+      rtntensor = 1;
     else
       Ptensor = zeros(length(Petimes),3,3);
       Ptensor(:,1,1) = Peall.data(:,1);
@@ -215,10 +217,10 @@ if qqeq,
 end
 
 % Construct output
-%if Peall.tensorOrder == 2
-Pe = irf.ts_tensor_xyz(Petimes,Ptensorp);
-%else % for backwards compability
-%  Pe = TSeries(Petimes,Ptensorp);
-%end
+if rtntensor,
+    Pe = irf.ts_tensor_xyz(Petimes,Ptensorp);
+else % for backwards compability
+	Pe = TSeries(Petimes,Ptensorp);
+end
 
 end
