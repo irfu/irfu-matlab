@@ -106,6 +106,15 @@ if (rotflag(1) == 'f'),
             irf_log('proc','Flag not recognized no additional rotations applied.')
         end
     end
+    if (nargin == 9)
+        if (isa(varargin{9},'char') && varargin{9}(1) == 'p'),
+            ppeq = 1;
+        elseif (isa(varargin{9},'char') && varargin{9}(1) == 'q'),
+            qqeq = 1;
+        else
+            irf_log('proc','Flag not recognized no additional rotations applied.')
+        end
+    end
     Bvec = Bback/Bback.abs;
     Rx = Bvec.data;
     Ry = [1 0 0];
@@ -206,9 +215,10 @@ if qqeq,
 end
 
 % Construct output
-if Peall.tensorOrder == 2
-  Pe = irf.ts_tensor_xyz(Petimes,Ptensorp);
-else % for backwards compability
-  Pe = TSeries(Petimes,Ptensorp);
-end
+%if Peall.tensorOrder == 2
+Pe = irf.ts_tensor_xyz(Petimes,Ptensorp);
+%else % for backwards compability
+%  Pe = TSeries(Petimes,Ptensorp);
+%end
+
 end
