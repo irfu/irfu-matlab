@@ -185,9 +185,12 @@ switch procId
       irf.log('critical',errStr)
       error('Matlab:MMS_SDC_SDP_PROC:Input', errStr)
     end
-    irf.log('notice',[procName ' proc using: ' DFG_File]);
-    src_fileData = load_file(DFG_File,'dfg');
-    update_header(src_fileData) % Update header with file info.
+    fileSplit = strsplit(DFG_File,':');
+    for iFile=1:size(fileSplit,2)
+      irf.log('notice',[procName ' proc using: ' fileSplit{iFile}]);
+      src_fileData = load_file(fileSplit{iFile}, 'dfg');
+      update_header(src_fileData) % Update header with file info.
+    end
 
     if isempty(L2A_File)
       errStr = ['missing required input for ' procName ': L2A_File'];
