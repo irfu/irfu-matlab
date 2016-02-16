@@ -137,16 +137,17 @@ if any(strfind(product,'PEA_3DXP'))
         
     specrec.p_label=['Log ' distr ' [' res.dataunits ']'];                   
     specrec.p=res.data;
-    specrec.p(find(specrec.p==0))=NaN; 
+    specrec.p(specrec.p==0)=NaN; 
     specrec.p_bg=bg.data;        
 end
 if any([strfind(product,'CODIF_HS'),...
         strfind(product,'CODIF_LS'),...
         strfind(product,'HIA_LS'),...
-        strfind(product,'HIA_HS')]);
+        strfind(product,'HIA_HS'),...
+        strfind(product,'HIA') ]);
     
     % Load pitch angle data
-    res=c_caa_construct_subspin_res_data(['x3d_ions__', product]);    
+    res=c_caa_construct_subspin_res_data(['3d_ions__', product]);
     caaSEDU=c_caa_var_get(['delta_plus_energy_table__', product]);
     caaSEDL=c_caa_var_get(['delta_minus_energy_table__', product]);                            
     SEDL1=flipdim(caaSEDL.data(1,:),2); en_nan=isnan(SEDL1);SEDL1(en_nan)=[];
@@ -171,7 +172,7 @@ if any([strfind(product,'CODIF_HS'),...
     % Data
     specrec.p_label=['Log ' distr ' [' res.dataunits ']'];                   
     specrec.p=res.data; 
-    specrec.p(find(specrec.p==0))=NaN; 
+    specrec.p(specrec.p==0)=NaN; 
     specrec.p_bg=NaN(size(specrec.p)); % No bg data?
 end
 if any(strfind(product,'RAP')) && any(strfind(product,'PAD'))
@@ -201,7 +202,7 @@ if any(strfind(product,'RAP')) && any(strfind(product,'PAD'))
     specrec.p_label=['Log ' distr ' [' Data_units ']'];
     dataraw=Data.data; dataraw(:,nan_en,:)=[];
     specrec.p=permute(double(dataraw(:,:,:)),[1 3 2]); % order: time, pitch angle, energy    
-    specrec.p(find(specrec.p==0))=NaN;  
+    specrec.p(specrec.p==0)=NaN;  
     specrec.p_bg=specrec.p;
     specrec.p_bg(:)=NaN; % No background data
 end        
