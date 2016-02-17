@@ -49,6 +49,8 @@ function particlemoments = psd_moments(varargin)
 % offset1 = 1.3; offset2 = 1.5; offset3 = 1.2; offset4 = 0.0; %For v1 data
 % c_eval('SCpot.data = -SCpot.data*1.2+offset?;',ic);
 % Apply correction for input. Correction is not applied in this script. 
+% This correction is applied to v2 spacecraft potential so use 
+% c_eval('SCpot = mms.variable2ts(get_variable(tmpDataObj,''mms?_edp_scpot_fast_l2''));',ic);
 %
 % Currently the heat flux vector does not match with the FPI ion moments. Currently
 % using Eq. (6.8) of Analysis Methods for Multi-Spacecraft Data. This needs

@@ -23,6 +23,7 @@ function Pe = rotate_tensor(varargin)
 % Input: 
 %       PeXX,PeXY,PeXZ,PeYY,PeYZ,PeZZ - Pressure terms or temperature in TSeries 
 %       Peall - TSERIES of all tensor terms with column order PeXX,PeXY,PeXZ,PeYY,PeYZ,PeZZ
+%               OR 3x3 data (can have tensorOrder=2) with [PeXX,PeXY,PeXZ;PeYX,PeYY,PeYZ;PeZX,PeZY,PeZZ] 
 %       'fac' - Transform tensor into field-aligned coordinates. 
 %           * Bback - Background magnetic field (TSERIES format)
 %           * 'pp' - optional flag to rotate perpendicular components so
@@ -44,22 +45,28 @@ function Pe = rotate_tensor(varargin)
 %       For 'rot' and 'gse' Pe = [Pxx Pxy Pxz; Pxy Pyy Pyz; Pxz Pyz Pzz]
 % 
 
+rtntensor = 0;
 % Check input and load pressure/temperature terms
 if isa(varargin{2},'char'),
     rotflag = varargin{2};
     rotflagpos = 2;
     Peall = varargin{1};
     Petimes = Peall.time;
-    Ptensor = zeros(length(Petimes),3,3);
-    Ptensor(:,1,1) = Peall.data(:,1);
-    Ptensor(:,2,1) = Peall.data(:,2);
-    Ptensor(:,3,1) = Peall.data(:,3);
-    Ptensor(:,1,2) = Peall.data(:,2);
-    Ptensor(:,2,2) = Peall.data(:,4);
-    Ptensor(:,3,2) = Peall.data(:,5);
-    Ptensor(:,1,3) = Peall.data(:,3);
-    Ptensor(:,2,3) = Peall.data(:,5);
-    Ptensor(:,3,3) = Peall.data(:,6);
+    if ndims(Peall.data) == 3,
+      Ptensor = Peall.data;   
+      rtntensor = 1;
+    else
+      Ptensor = zeros(length(Petimes),3,3);
+      Ptensor(:,1,1) = Peall.data(:,1);
+      Ptensor(:,2,1) = Peall.data(:,2);
+      Ptensor(:,3,1) = Peall.data(:,3);
+      Ptensor(:,1,2) = Peall.data(:,2);
+      Ptensor(:,2,2) = Peall.data(:,4);
+      Ptensor(:,3,2) = Peall.data(:,5);
+      Ptensor(:,1,3) = Peall.data(:,3);
+      Ptensor(:,2,3) = Peall.data(:,5);
+      Ptensor(:,3,3) = Peall.data(:,6);
+    end
 elseif isa(varargin{7},'char'),
     rotflag = varargin{7};
     rotflagpos = 7;
@@ -96,6 +103,15 @@ if (rotflag(1) == 'f'),
         if (isa(varargin{4},'char') && varargin{4}(1) == 'p'),
             ppeq = 1;
         elseif (isa(varargin{4},'char') && varargin{4}(1) == 'q'),
+            qqeq = 1;
+        else
+            irf_log('proc','Flag not recognized no additional rotations applied.')
+        end
+    end
+    if (nargin == 9)
+        if (isa(varargin{9},'char') && varargin{9}(1) == 'p'),
+            ppeq = 1;
+        elseif (isa(varargin{9},'char') && varargin{9}(1) == 'q'),
             qqeq = 1;
         else
             irf_log('proc','Flag not recognized no additional rotations applied.')
@@ -200,6 +216,11 @@ if qqeq,
     end
 end
 
-Pe = TSeries(Petimes,Ptensorp);
+% Construct output
+if rtntensor,
+    Pe = irf.ts_tensor_xyz(Petimes,Ptensorp);
+else % for backwards compability
+	Pe = TSeries(Petimes,Ptensorp);
+end
 
 end
