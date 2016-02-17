@@ -147,26 +147,28 @@ switch procId
     end
 
     %% Second type of special case, brst QL or L2A (use L2A from previously processed Fast).
-    if(regexpi(DCE_File,'_brst_'))
-      if((procId==MMS_CONST.SDCProc.ql || procId==MMS_CONST.SDCProc.l2a) && ~isempty(L2A_File))
-        irf.log('notice', [procName ' proc using: ' L2A_File]);
-        src_fileData = load_file(L2A_File,'l2a');
-        update_header(src_fileData); % Update header with file info.
-      else
-        irf.log('warning',[procName ' but no L2A file from Fast. Looking for it..']);
-        list = mms.db_list_files(['mms',HdrInfo.scIdStr,'_edp_fast_l2a_dce2d'], tint);
-        if(isempty(list) || list(1).start > tint.start)
-          % If no L2a dce2d was found or it did not cover start of tint.
-          % Simply issue warning.
-          irf.log('warning','No Fast L2a dce2d file located.');
-        else
-          irf.log('notice', [procName ' proc using: ',list(1).name]);
-          src_fileData = load_file([list(1).path, filesep, list(1).name],...
-            'l2a');
+    if(regexpi(DCE_File,'_brst_') )
+      if( procId==MMS_CONST.SDCProc.ql || procId==MMS_CONST.SDCProc.l2a)
+        if( ~isempty(L2A_File))
+          irf.log('notice', [procName ' proc using: ' L2A_File]);
+          src_fileData = load_file(L2A_File,'l2a');
           update_header(src_fileData); % Update header with file info.
+        else
+          irf.log('warning',[procName ' but no L2A file from Fast. Looking for it..']);
+          list = mms.db_list_files(['mms',HdrInfo.scIdStr,'_edp_fast_l2a_dce2d'], tint);
+          if(isempty(list) || list(1).start > tint.start)
+            % If no L2a dce2d was found or it did not cover start of tint.
+            % Simply issue warning.
+            irf.log('warning','No Fast L2a dce2d file located.');
+          else
+            irf.log('notice', [procName ' proc using: ',list(1).name]);
+            src_fileData = load_file([list(1).path, filesep, list(1).name],...
+              'l2a');
+            update_header(src_fileData); % Update header with file info.
+          end
         end
-      end
-    end % If running Brst
+      end % If QL or L2A
+    end % If running Brst dce
 
     % Go on with the DCE file.
     Dmgr.set_param('dce',dce_obj);

@@ -402,66 +402,69 @@ classdef mms_sdp_dmgr < handle
           
         case('l2a')
           load_l2a();
-          if(DATAC.tmMode ~= MMS_CONST.TmMode.brst)
-            % Do full L2Pre processing on L2A Fast/slow data.
-            %% FIXME: MOVE TO PROPER SUBFUNCTIONS.
-            DATAC.l2a.adp = DATAC.l2a.dce.e56.data;
-            % DESPIN, using L2A data (offsets, phase etc).
-            sdpProbes = fieldnames(DATAC.l2a.adc_off); % default {'e12', 'e34'}
-            Etmp = struct('e12',DATAC.l2a.dce.e12.data,'e34',DATAC.l2a.dce.e34.data);
-            for iProbe=1:numel(sdpProbes)
-              % Remove ADC offset
-              Etmp.(sdpProbes{iProbe}) = ...
-                Etmp.(sdpProbes{iProbe}) - DATAC.l2a.adc_off.(sdpProbes{iProbe});
-            end
-            MMS_CONST = DATAC.CONST;
-            bitmask = mms_sdp_typecast('bitmask',bitor(DATAC.l2a.dce.e12.bitmask,DATAC.l2a.dce.e34.bitmask));
-            Etmp.e12 = mask_bits(Etmp.e12, bitmask, MMS_CONST.Bitmask.SWEEP_DATA);
-            Etmp.e34 = mask_bits(Etmp.e34, bitmask, MMS_CONST.Bitmask.SWEEP_DATA);
-            dE = mms_sdp_despin(Etmp.e12, Etmp.e34, DATAC.l2a.phase.data, DATAC.l2a.delta_off);
-            offs = mms_sdp_get_offset(DATAC.scId, DATAC.procId, DATAC.l2a.dce.time);
-            DATAC.calFile = offs.calFile; % Store name of cal file used.
-            dE(:,1) = dE(:,1) - offs.ex; % Remove sunward
-            dE(:,2) = dE(:,2) - offs.ey; % and duskward offsets
-            % Compute DCE Z from E.B = 0, if >10 deg and if abs(B_z)> 1 nT.
-            B_tmp = DATAC.dfg.B_dmpa;
-            B_tmp.data((abs(B_tmp.z.data) <= 1), :) = NaN;
-            dEz = irf_edb(TSeries(EpochTT(DATAC.l2a.dce.time),dE,'vec_xy'), B_tmp, 10, 'E.B=0');
-            DATAC.l2a.dsl = struct('data',[dEz.data],...
-              'bitmask',bitmask);
+          if(DATAC.procId == MMS_CONST.SDCProc.l2a || DATAC.procId == MMS_CONST.SDCProc.l2pre)
+            if(DATAC.tmMode ~= MMS_CONST.TmMode.brst)
+              % Do full L2Pre processing on L2A Fast/slow data.
+              %% FIXME: MOVE TO PROPER SUBFUNCTIONS.
+              DATAC.l2a.adp = DATAC.l2a.dce.e56.data;
+              % DESPIN, using L2A data (offsets, phase etc).
+              sdpProbes = fieldnames(DATAC.l2a.adc_off); % default {'e12', 'e34'}
+              Etmp = struct('e12',DATAC.l2a.dce.e12.data,'e34',DATAC.l2a.dce.e34.data);
+              for iProbe=1:numel(sdpProbes)
+                % Remove ADC offset
+                Etmp.(sdpProbes{iProbe}) = ...
+                  Etmp.(sdpProbes{iProbe}) - DATAC.l2a.adc_off.(sdpProbes{iProbe});
+              end
+              MMS_CONST = DATAC.CONST;
+              bitmask = mms_sdp_typecast('bitmask',bitor(DATAC.l2a.dce.e12.bitmask,DATAC.l2a.dce.e34.bitmask));
+              Etmp.e12 = mask_bits(Etmp.e12, bitmask, MMS_CONST.Bitmask.SWEEP_DATA);
+              Etmp.e34 = mask_bits(Etmp.e34, bitmask, MMS_CONST.Bitmask.SWEEP_DATA);
+              dE = mms_sdp_despin(Etmp.e12, Etmp.e34, DATAC.l2a.phase.data, DATAC.l2a.delta_off);
+              offs = mms_sdp_get_offset(DATAC.scId, DATAC.procId, DATAC.l2a.dce.time);
+              DATAC.calFile = offs.calFile; % Store name of cal file used.
+              dE(:,1) = dE(:,1) - offs.ex; % Remove sunward
+              dE(:,2) = dE(:,2) - offs.ey; % and duskward offsets
+              % Compute DCE Z from E.B = 0, if >10 deg and if abs(B_z)> 1 nT.
+              B_tmp = DATAC.dfg.B_dmpa;
+              B_tmp.data((abs(B_tmp.z.data) <= 1), :) = NaN;
+              dEz = irf_edb(TSeries(EpochTT(DATAC.l2a.dce.time),dE,'vec_xy'), B_tmp, 10, 'E.B=0');
+              DATAC.l2a.dsl = struct('data',[dEz.data],...
+                'bitmask',bitmask);
 
-          else
-            % L1b data combined with L2A fast to be processed for L2Pre
-            % brst.
-            DATAC.l2a.adp = -DATAC.dce.e56.data; % Note: minus (L1b dce e56) to align with DSL Z
-            % Compute values from DCE and store in intermediate l2a
-            % position
-            DATAC.l2a.dce.time = DATAC.dce.time;
-            DATAC.l2a.phase = DATAC.phase;
-            DATAC.l2a.adc_off = DATAC.adc_off;
-            sdpProbes = fieldnames(DATAC.l2a.adc_off); % default {'e12', 'e34'}
-            Etmp = struct('e12',DATAC.dce.e12.data,'e34',DATAC.dce.e34.data);
-            for iProbe=1:numel(sdpProbes)
-              % Remove ADC offset
-              Etmp.(sdpProbes{iProbe}) = ...
-                Etmp.(sdpProbes{iProbe}) - DATAC.adc_off.(sdpProbes{iProbe});
+            else
+              % L1b data combined with L2A fast to be processed for L2Pre
+              % brst.
+              DATAC.l2a.adp = -DATAC.dce.e56.data; % Note: minus (L1b dce e56) to align with DSL Z
+              % Compute values from DCE and store in intermediate l2a
+              % position
+              DATAC.l2a.dce.time = DATAC.dce.time;
+              DATAC.l2a.phase = DATAC.phase;
+              DATAC.l2a.adc_off = DATAC.adc_off;
+              sdpProbes = fieldnames(DATAC.l2a.adc_off); % default {'e12', 'e34'}
+              Etmp = struct('e12',DATAC.dce.e12.data,'e34',DATAC.dce.e34.data);
+              for iProbe=1:numel(sdpProbes)
+                % Remove ADC offset
+                Etmp.(sdpProbes{iProbe}) = ...
+                  Etmp.(sdpProbes{iProbe}) - DATAC.adc_off.(sdpProbes{iProbe});
+              end
+              MMS_CONST = DATAC.CONST;
+              bitmask = mms_sdp_typecast('bitmask',bitor(DATAC.dce.e12.bitmask,DATAC.dce.e34.bitmask));
+              Etmp.e12 = mask_bits(Etmp.e12, bitmask, MMS_CONST.Bitmask.SWEEP_DATA);
+              Etmp.e34 = mask_bits(Etmp.e34, bitmask, MMS_CONST.Bitmask.SWEEP_DATA);
+              dE = mms_sdp_despin(Etmp.e12, Etmp.e34, DATAC.phase.data, DATAC.l2a.delta_off);
+              offs = mms_sdp_get_offset(DATAC.scId, DATAC.procId, DATAC.dce.time);
+              DATAC.calFile = offs.calFile; % Store name of cal file used.
+              dE(:,1) = dE(:,1) - offs.ex; % Remove sunward
+              dE(:,2) = dE(:,2) - offs.ey; % and duskward offsets
+              % Compute DCE Z from E.B = 0, if >10 deg and if abs(B_z)> 1 nT.
+              B_tmp = DATAC.dfg.B_dmpa;
+              B_tmp.data((abs(B_tmp.z.data) <= 1), :) = NaN;
+              dEz = irf_edb(TSeries(EpochTT(DATAC.dce.time),dE,'vec_xy'), B_tmp, 10, 'E.B=0');
+              DATAC.l2a.dsl = struct('data',[dEz.data],...
+                'bitmask',bitmask);
             end
-            MMS_CONST = DATAC.CONST;
-            bitmask = mms_sdp_typecast('bitmask',bitor(DATAC.dce.e12.bitmask,DATAC.dce.e34.bitmask));
-            Etmp.e12 = mask_bits(Etmp.e12, bitmask, MMS_CONST.Bitmask.SWEEP_DATA);
-            Etmp.e34 = mask_bits(Etmp.e34, bitmask, MMS_CONST.Bitmask.SWEEP_DATA);
-            dE = mms_sdp_despin(Etmp.e12, Etmp.e34, DATAC.phase.data, DATAC.l2a.delta_off);
-            offs = mms_sdp_get_offset(DATAC.scId, DATAC.procId, DATAC.dce.time);
-            DATAC.calFile = offs.calFile; % Store name of cal file used.
-            dE(:,1) = dE(:,1) - offs.ex; % Remove sunward
-            dE(:,2) = dE(:,2) - offs.ey; % and duskward offsets
-            % Compute DCE Z from E.B = 0, if >10 deg and if abs(B_z)> 1 nT.
-            B_tmp = DATAC.dfg.B_dmpa;
-            B_tmp.data((abs(B_tmp.z.data) <= 1), :) = NaN;
-            dEz = irf_edb(TSeries(EpochTT(DATAC.dce.time),dE,'vec_xy'), B_tmp, 10, 'E.B=0');
-            DATAC.l2a.dsl = struct('data',[dEz.data],...
-              'bitmask',bitmask);
           end
+          
           
         case('aspoc')
           % ASPOC, have an adverse impact on E-field mesurements.
