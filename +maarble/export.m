@@ -36,7 +36,7 @@ FORMAT_ANG = '%6.0f,'; % Angles - integer values
 FORMAT_DEG = '%6.1f,'; % Degree of ... -1..1 or 0..1
 FORMAT_EXP_ANG_ANG = [FORMAT_EXP FORMAT_ANG FORMAT_ANG];
 FORMAT_ROTMATR = '%11.6f,' ; % Rotation matrix, < 1
-
+FORMAT_R = '%10.2f,' ; % distance in km < 20 RE
 % Replace NaN with FILLVAL (specified in the CEF header)
 FILLVAL            = -999;
 FILLVAL_EXP        = -1.00E+31;
@@ -50,10 +50,14 @@ if any( ebsp.t<tint(1) | ebsp.t>tint(end) )
   error('data outside TINT')
 end
 
+flagHasE = true;
 if isnumeric(cl_id) % Cluster
   flagCluster = true;
 else
   flagCluster = false;
+  if cl_id(1)=='g' % GOES
+    flagHasE = false;
+  end
 end
 
 if isfield(ebsp,'rotMatrix')
@@ -148,6 +152,10 @@ end
     rm2d(isnan(rm2d)) = FILLVAL;
     dataToExport = { {FORMAT_ROTMATR, rm2d} };
     datasetID = 'ULF_FACMATR';
+    if ~flagCluster
+      r = ebsp.r; r(isnan(r)) = FILLVAL_EXP;
+      dataToExport = [dataToExport {{FORMAT_R, r}}]; 
+    end
   end % export_rotMatrix()
 
   function export_ebsp
@@ -157,7 +165,9 @@ end
       case 'pc12'
         %DT2 = 0.5; % time resolution
         datasetID = 'ULF_PC12';
-        numberOfFreq = 21;
+        if ischar(cl_id) && cl_id(1)=='g', numberOfFreq = 12; % GOES
+        else numberOfFreq = 21; % Cluster and THEMIS
+        end
       case 'pc35';
         %DT2 = 30; % time resolution
         datasetID = 'ULF_PC35';
@@ -186,10 +196,12 @@ end
     ebsp.planarity(isnan(ebsp.planarity)) = FILLVAL;
     magB(isnan(magB)) = FILLVAL_EXP;
     ebsp.bb_xxyyzzss(isnan(ebsp.bb_xxyyzzss)) = FILLVAL_EXP;
-    if isempty(ebsp.ee_ss)
-      ebsp.ee_ss = ones(nData,nFreq)*FILLVAL_EXP;
-    else
-      ebsp.ee_ss(isnan(ebsp.ee_ss)) = FILLVAL_EXP;
+    if flagHasE
+      if isempty(ebsp.ee_ss)
+        ebsp.ee_ss = ones(nData,nFreq)*FILLVAL_EXP;
+      else
+        ebsp.ee_ss(isnan(ebsp.ee_ss)) = FILLVAL_EXP;
+      end
     end
     
     % fliplr to make frequencies ascending
@@ -197,7 +209,9 @@ end
     ebsp.planarity = fliplr(ebsp.planarity);
     ebsp.dop = fliplr(ebsp.dop);
     ebsp.dop2d = fliplr(ebsp.dop2d);
-    ebsp.ee_ss = fliplr(ebsp.ee_ss);
+    if flagHasE
+      ebsp.ee_ss = fliplr(ebsp.ee_ss);
+    end
     
     % Reformat matrices/vectors and fliplr to make frequencies ascending
     BB_2D = zeros(nData,nFreq*3);
@@ -208,37 +222,51 @@ end
     for comp=1:2
       K(:,((1:nFreq)-1)*2+comp) = fliplr(ebsp.k_tp(:,:,comp));
     end
-    PV = ones(nData,nFreq*3)*FILLVAL;
-    if ~isempty(ebsp.pf_rtp)
-      for comp=1:3
-        PV(:,((1:nFreq)-1)*3+comp) = fliplr(ebsp.pf_rtp(:,:,comp));
+    if flagHasE
+      PV = ones(nData,nFreq*3)*FILLVAL;
+      if ~isempty(ebsp.pf_rtp)
+        for comp=1:3
+          PV(:,((1:nFreq)-1)*3+comp) = fliplr(ebsp.pf_rtp(:,:,comp));
+        end
       end
     end
     
     % NOTE: This list must be consistent with the CEF header file
-    dataToExport = {...
-      {FORMAT_EXP, BB_2D},...              % BB_xxyyzz_fac
-      {FORMAT_ANG, K},...                  % KSVD_fac
-      {FORMAT_DEG, ebsp.ellipticity},...   % ELLSVD
-      {FORMAT_DEG, ebsp.planarity},...     % PLANSVD
-      {FORMAT_DEG, ebsp.dop},...           % DOP
-      {FORMAT_DEG, ebsp.dop2d},...         % POLSVD
-      {FORMAT_EXP_ANG_ANG, PV},...         % PV
-      {FORMAT_EXP, ebsp.ee_ss},...         % ESUM
-      {FORMAT_EXP, magB}                   % BMAG
-      };
-    
-    % For Pc3-5 we also add E spectrum in FAC
-    if strcmpi(freqRange,'pc35')
-      ebsp.ee_xxyyzzss(isnan(ebsp.ee_xxyyzzss)) = FILLVAL_EXP;
-      % Reformat E matrix and fliplr to make frequencies ascending
-      EE_2D = ones(nData,nFreq*3)*FILLVAL;
-      if ~isempty(ebsp.ee_xxyyzzss)
-        for comp=1:3
-          EE_2D(:,((1:nFreq)-1)*3+comp) = fliplr(ebsp.ee_xxyyzzss(:,:,comp));
+    if ~flagHasE % Only magnetic field is available
+      dataToExport = {...
+        {FORMAT_EXP, BB_2D},...              % BB_xxyyzz_fac
+        {FORMAT_ANG, K},...                  % KSVD_fac
+        {FORMAT_DEG, ebsp.ellipticity},...   % ELLSVD
+        {FORMAT_DEG, ebsp.planarity},...     % PLANSVD
+        {FORMAT_DEG, ebsp.dop},...           % DOP
+        {FORMAT_DEG, ebsp.dop2d},...         % POLSVD
+        {FORMAT_EXP, magB}                   % BMAG
+        };
+    else % Both E & B
+      dataToExport = {...
+        {FORMAT_EXP, BB_2D},...              % BB_xxyyzz_fac
+        {FORMAT_ANG, K},...                  % KSVD_fac
+        {FORMAT_DEG, ebsp.ellipticity},...   % ELLSVD
+        {FORMAT_DEG, ebsp.planarity},...     % PLANSVD
+        {FORMAT_DEG, ebsp.dop},...           % DOP
+        {FORMAT_DEG, ebsp.dop2d},...         % POLSVD
+        {FORMAT_EXP_ANG_ANG, PV},...         % PV
+        {FORMAT_EXP, ebsp.ee_ss},...         % ESUM
+        {FORMAT_EXP, magB}                   % BMAG
+        };
+      
+      % For Pc3-5 we also add E spectrum in FAC
+      if strcmpi(freqRange,'pc35')
+        ebsp.ee_xxyyzzss(isnan(ebsp.ee_xxyyzzss)) = FILLVAL_EXP;
+        % Reformat E matrix and fliplr to make frequencies ascending
+        EE_2D = ones(nData,nFreq*3)*FILLVAL;
+        if ~isempty(ebsp.ee_xxyyzzss)
+          for comp=1:3
+            EE_2D(:,((1:nFreq)-1)*3+comp) = fliplr(ebsp.ee_xxyyzzss(:,:,comp));
+          end
         end
+        dataToExport = [dataToExport {{FORMAT_EXP, EE_2D}}]; % EE_xxyyzz_fac
       end
-      dataToExport = [dataToExport {{FORMAT_EXP, EE_2D}}]; % EE_xxyyzz_fac
     end
   end % export_ebsp()
 

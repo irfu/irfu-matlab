@@ -37,7 +37,7 @@ function out=c_pl_tx(varargin)
 if isempty(ax), % if empty axes
     ax=gca;
 end
-hcf=get(ax,'parent'); % get figure handle
+%hcf=get(ax,'parent'); % get figure handle
 
 if nargs == 0, % show help if no input parameters
     help c_pl_tx;
@@ -122,7 +122,7 @@ end
 % Get variable values from caller if needed
 if getVariablesFromCaller,
     for cl_id=sc_list,
-        ttt = evalin('caller',irf_ssub(variableNameInCaller,cl_id),'[]'); 
+        ttt = evalin('caller',irf_ssub(variableNameInCaller,cl_id),'[]');  %#ok<NASGU>
         c_eval('x? =ttt;',cl_id); clear ttt
     end
 end
@@ -153,28 +153,9 @@ else
     for ic=1:4, l_style(ic)={['''' line_style{ic} ''',''color'','  cluster_colors{ic}]};end
 end
 
-% t_start_epoch is saved in figures 'userdata' variable
-% check first if it exist otherwise set it if variables
-% use isdat epoch or put to zero without changing 'userdata'
-ud=get(hcf,'userdata');
-t_start_epoch = double(0); % default
-if isfield(ud,'t_start_epoch'),
-	t_start_epoch = double(ud.t_start_epoch);
-else
-	variablesUseEpochTime = false;
-	c_eval(['variablesUseEpochTime = or(variablesUseEpochTime,' ...
-		'(~isempty(x?) && x?(1,1)>1e8) );'],sc_list);
-	if variablesUseEpochTime 
-		% Set start_epoch if time is in isdat epoch,
-		tt = [];
-		c_eval('if ~isempty(x?), tt=[tt; x?(1,1)]; end')
-		t_start_epoch = double(min(tt)); clear tt
-		ud.t_start_epoch = t_start_epoch; set(hcf,'userdata',ud);
-		irf_log('proc',['user_data.t_start_epoch is set to ' ...
-			irf_time(t_start_epoch,'iso')]);
-	end
-end
-if isempty(delta_t), delta_t = [0 0 0 0]; end
+tt = []; c_eval('if ~isempty(x?), tt=[tt; x?(1,1)]; end')
+t_start_epoch = irf_plot_start_epoch(double(min(tt))); clear tt %#ok<NASGU>
+if isempty(delta_t), delta_t = [0 0 0 0]; end %#ok<NASGU>
 c_eval('ts?=t_start_epoch+delta_t(?);')
 
 % check which spacecraft data are available

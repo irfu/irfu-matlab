@@ -1,5 +1,6 @@
 function v=c_v(t,coord_sys)
 %C_V   Calculate velocity from timing between 4 spacecraft
+% NOT VALID FOR MMS! (use mms_v instead)
 %
 % v=c_v(t,[coord_sys]);
 % dt=c_v(v,[coord_sys]);
@@ -13,6 +14,7 @@ function v=c_v(t,coord_sys)
 % coord_sys='GSM' - when calculate in GSM reference frame
 %
 persistent R
+
 if ~exist('R','var') || isempty(R)
 	R=struct('R1',[],'R2',[],'R3',[],'R4',[],...
 		'V1',[],'V2',[],'V3',[],'V4',[]);
@@ -22,9 +24,11 @@ if nargin==1, coord_sys='GSE'; end
 
 if t(2) > 1e8,
 	flag='v_from_t';
+	tint = [min(t)-61 max(t)+61];
 else flag='dt_from_v';
 	v=t;
 	t=v(1);
+	tint = [t-61 t+61];
 end
 
 if ~is_R_ok && exist('./mR.mat','file'),
@@ -32,10 +36,13 @@ if ~is_R_ok && exist('./mR.mat','file'),
 	c_eval('R.R?=R?;');
 	c_eval('R.V?=V?;');
 end
-if ~is_R_ok && exist('CAA/C1_CP_AUX_POSGSE_1M','dir')==7, % checks if exist CAA data (STUPID SOLUTION)
+if ~is_R_ok
 	irf.log('warning','Trying to read CAA files C?_CP_AUX_POSGSE_1M...')
-	c_eval('R.R?=c_caa_var_get(''sc_r_xyz_gse__C?_CP_AUX_POSGSE_1M'',''mat'');');
-	c_eval('R.V?=c_caa_var_get(''sc_v_xyz_gse__C?_CP_AUX_POSGSE_1M'',''mat'');');
+	var = {'sc_r_xyz_gse__C1_CP_AUX_POSGSE_1M','sc_r_xyz_gse__C2_CP_AUX_POSGSE_1M','sc_r_xyz_gse__C3_CP_AUX_POSGSE_1M','sc_r_xyz_gse__C4_CP_AUX_POSGSE_1M',...
+		'sc_v_xyz_gse__C1_CP_AUX_POSGSE_1M','sc_v_xyz_gse__C2_CP_AUX_POSGSE_1M','sc_v_xyz_gse__C3_CP_AUX_POSGSE_1M','sc_v_xyz_gse__C4_CP_AUX_POSGSE_1M'};
+	ttt=c_caa_var_get(var,'mat','tint',tint);
+	R.R1 = ttt{1}; R.R2 = ttt{2}; R.R3 = ttt{3}; R.R4 = ttt{4}; 
+	R.V1 = ttt{5}; R.V2 = ttt{6}; R.V3 = ttt{7}; R.V4 = ttt{8};
 end
 if ~is_R_ok && exist('CAA/CL_SP_AUX','dir')==7,
 	irf.log('warning','Trying to read CAA files CL_CP_AUX ...')
@@ -49,7 +56,7 @@ if ~is_R_ok && exist('CAA/CL_SP_AUX','dir')==7,
 	end
 end
 if ~is_R_ok
-	irf.log('warning','Getting s/c position from CAA');
+	irf.log('warning','Streaming s/c position from CAA');
 	read_RV_from_caa_stream;
 end
 if ~is_R_ok
@@ -69,14 +76,6 @@ if ~is_R_ok
 	irf.log('warning','!!! Could not obtain position data !!!');
 	return
 end
-switch coord_sys
-	case 'GSE'
-		% do nothing
-	case 'GSM'
-		c_eval('R.R?=irf_gse2gsm(R.R?);R.V?=irf_gse2gsm(R.V?);');
-	otherwise
-		% do nothing, i.e. assume GSE
-end
 
 if strcmp(flag,'v_from_t'),
 	t_center=0.5*t(1)+0.5*t;
@@ -93,13 +92,15 @@ if strcmp(flag,'v_from_t'),
 	m=D\T;
 	clear v
 	v=m/norm(m)/norm(m);v=v';	% velocity vector of the boundary
-	
+	if strcmpi(coord_sys,'gsm'), v = irf_gse2gsm([t(1) v]); v(1) = []; end
 	disp([ datestr(datenum(fromepoch(t(1))))])
 	strdt=['dt=[' , num2str(R.dt,' %5.2f') '] s. dt=[t1-t1 t2-t1 ...]'];
 	vn=irf_norm(v);
 	strv=['V=' num2str(irf_abs(v,1),3) ' [ ' num2str(vn(end-2:end),' %5.2f') '] km/s ' coord_sys];
 	disp(strdt);disp(strv);
 elseif strcmp(flag,'dt_from_v'),
+  vOrig = v;
+  if strcmpi(coord_sys,'gsm'), v = irf_gse2gsm([t(1) v], -1); v(1)=[]; end 
 	t_center=0.5*t(1)+0.5*t;
 	for ic='1234',
 		i=ic-'0';
@@ -110,8 +111,8 @@ elseif strcmp(flag,'dt_from_v'),
 	end
 	% print result
 	disp([ datestr(datenum(fromepoch(t(1))))])
-	vn=irf_norm(v);
-	strv=['V=' num2str(irf_abs(v,1),3) '*[ ' num2str(vn(end-2:end),' %5.2f') '] km/s ' coord_sys];
+	vn=irf_norm(vOrig);
+	strv=['V=' num2str(irf_abs(vOrig,1),3) '*[ ' num2str(vn(end-2:end),' %5.2f') '] km/s ' coord_sys];
 	strdt=['dt=[' , num2str(R.dt,' %5.2f') '] s. dt=[t1-t1 t2-t1 ...]'];
 	disp(strv);  disp(strdt);
 	v=R.dt; % output variable is v
@@ -132,8 +133,8 @@ end
 				answer=false;
 				return;
 			else
-				tint=[R.(strSc)(1,1) R.(strSc)(end,1)];
-				if (tint(1)>min(t)) || (tint(2)<max(t)),
+				tintR=[R.(strSc)(1,1) R.(strSc)(end,1)];
+				if (tintR(1)>min(t)) || (tintR(2)<max(t)),
 					answer=false;
 					return;
 				end

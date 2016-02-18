@@ -1,4 +1,4 @@
-function res = plot(varargin)
+function res = plot(dobj,varargin)
 %PLOT([H], dobj, var, [comp], [options])  plot a variable 'var' in dataobj 'dobj'
 %   dobj - data object, see also CAA_LOAD
 %   var  - can be a string of variable name in data object
@@ -40,9 +40,8 @@ if isempty(ax),
 else
   create_axes = 0;
 end
-dobj=args{1};
-var_s=args{2};
-args=args(3:end);
+var_s=args{1};
+args=args(2:end);
 
 LCOMP = 3;
 
@@ -327,7 +326,11 @@ end
 if flag_lineplot
   %% PLOTTING -- LINE PLOT
   if isfield(dep,'DEPEND_O')
-    h = irf_plot(ax,[dep.DEPEND_O plot_data{:}],line_color,plot_properties{:});
+    if strcmpi(dep.DEPEND_O.type,'tt2000')
+      timeLine = EpochTT(dep.DEPEND_O.data).epochUnix;
+    else timeLine = dep.DEPEND_O.data;
+    end
+    h = irf_plot(ax,[timeLine plot_data{:}],line_color,plot_properties{:});
   else
     h = plot(ax,data.data,line_color,plot_properties{:});
   end
@@ -399,21 +402,27 @@ elseif flag_spectrogram
     else dep_x{d}.df=[];
     end
   end
-  % add time DELTA_PLUS and  DELTA_MINUS if given
+  
+  % Obtain time DELTA_PLUS and  DELTA_MINUS if given
+  % Also do necessary tome conversion if needed
+  if strcmpi(dep.DEPEND_O.type,'tt2000')
+    timeLine = EpochTT(dep.DEPEND_O.data).epochUnix; factor = 1e9;
+  else timeLine = dep.DEPEND_O.data; factor = 1;
+  end
   timevar=getv(dobj,dobj.VariableAttributes.DEPEND_0{1,2});
   if isfield(timevar,'DELTA_PLUS') && isfield(timevar,'DELTA_MINUS')
     dep.dt=struct('plus',timevar.DELTA_PLUS,'minus',timevar.DELTA_MINUS);
     if ischar(timevar.DELTA_PLUS)
-      deltaplus= getv(dobj,timevar.DELTA_PLUS);
-      dep.dt.plus=deltaplus.data(1,:);
+      deltaplus = getv(dobj,timevar.DELTA_PLUS);
+      dep.dt.plus = double(deltaplus.data(1,:))/factor;
     elseif isnumeric(timevar.DELTA_PLUS)
-      dep.dt.plus=timevar.DELTA_PLUS;
+      dep.dt.plus = double(timevar.DELTA_PLUS)/factor;
     end
     if ischar(timevar.DELTA_MINUS)
-      deltaminus= getv(dobj,timevar.DELTA_MINUS);
-      dep.dt.minus=deltaminus.data(1,:);
+      deltaminus = getv(dobj,timevar.DELTA_MINUS);
+      dep.dt.minus = double(deltaminus.data(1,:))/factor;
     elseif isnumeric(timevar.DELTA_MINUS)
-      dep.dt.minus=timevar.DELTA_MINUS;
+      dep.dt.minus = double(timevar.DELTA_MINUS)/factor;
     end
   end
   if flag_fill_spectrogram_gaps==1 && isfield(dep,'dt'), % fill gaps, disregard delta_plus and delta_minus for each data point
@@ -424,7 +433,7 @@ elseif flag_spectrogram
       sum_dim, dep_x{sum_dim}.lab));
   end
   if flag_log, plot_type='log'; else plot_type='lin'; end 
-  specrec = struct('t',dep.DEPEND_O,'f',dep_x{1}.data,'f_unit',...
+  specrec = struct('t',timeLine,'f',dep_x{1}.data,'f_unit',...
       dep_x{1}.units,'p',[],'df',dep_x{1}.df,'plot_type',plot_type);
   if isfield(dep,'dt'),
     specrec.dt=dep.dt;
@@ -439,7 +448,7 @@ elseif flag_spectrogram
     elseif strcmp(dep_x{comp_dim}.type,'single') && ...
         (strcmp(dep_x{comp_dim}.variance,'F/T') || ...
         strcmp(dep_x{comp_dim}.variance,'T/T'))
-      lab_2 = num2str(dep_x{comp_dim}.data(1,comp)',['%.2f ' dep_x{comp_dim}.units '\n']);
+      lab_2 = num2str(dep_x{comp_dim}.data(comp,1)',['%.2f ' dep_x{comp_dim}.units '\n']);
     else
       error('BAD type for DEPEND_X')
     end
@@ -463,8 +472,8 @@ elseif flag_spectrogram
   
   if isempty(comp), comp = 1; end
   ncomp = length(comp);
-  h = zeros(1,ncomp);
-  if create_axes, ax = zeros(1, ncomp); end
+  h = gobjects(1,ncomp);
+  if create_axes, ax = gobjects(1, ncomp); end
   
   
   if ydim > 1
@@ -515,10 +524,12 @@ elseif flag_spectrogram
   % Add colorbar
   if flag_colorbar_is_on,
       i=fix(ncomp/2)+1;
-      hcb = colorbar('peer',h(i));
+      if isa(h(i),'handle'), hcb = colorbar(h(i)); % HG2
+      else hcb = colorbar('peer',h(i));
+      end
+      posCb = get(hcb,'Position');
       posAx = get(ax(i),'Position');
-	  dy = posAx(3);
-	  posCb = get(hcb,'Position');
+      dy = posAx(3);
 	  if ncomp>1,
 		  set(hcb,'Position',...
 			  [posCb(1) posCb(2)-posCb(4)*(ncomp-fix(ncomp/2)-1) ...
@@ -533,7 +544,7 @@ elseif flag_spectrogram
 			  colorbar_label=[lablaxis ' [' units ']' ];
 			  if flag_log, colorbar_label = ['Log ' colorbar_label]; end
 		  end
-		  set(hcb,'yticklabel','0.0'); % the distance to colorlabel defined by width of 0.0 (stupid workaround to nonfunctioning automatic distance)
+		  set(hcb,'YTickLabel','0.0'); % the distance to colorlabel defined by width of 0.0 (stupid workaround to nonfunctioning automatic distance)
 		  ylabel(hcb,colorbar_label);
 		  if flag_colorbar_label_fit_to_colorbar_height_is_on
 			  irf_colorbar_fit_label_height(hcb);

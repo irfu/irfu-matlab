@@ -11,8 +11,12 @@ function [res,v,msg] = c_load(vs,cl_id,mode_s,probe_id)
 %	than one entry, RES will be an array and VAR a cell array. 
 %	MSG contains an error message
 %
-% RES = C_LOAD(V_S[,SC_LIST,MODE_S]) returns variable in RES if MODE_S 
-%	is set to 'var';
+% RES = C_LOAD(V_S[,SC_LIST,MODE_S]) 
+%     returns variable in RES if MODE_S	is set to 'var';
+% 
+% [RES,V,MSG] = C_LOAD(V_S,CL_ID,'res',PROBE_LIST]) 
+%     Expand '?' in V_S using PROBE_LIST, or if both '?' and '!' are
+%     present in V_S, expand '?' using CL_ID; and '!' using PROBE_LIST
 %
 % Input:
 %	V_S - variable string
@@ -39,8 +43,6 @@ function [res,v,msg] = c_load(vs,cl_id,mode_s,probe_id)
 %	% ok is 1 if load was sucessfull. 
 %
 % See also C_DESC, IRF_SSUB
-%
-% $Id$
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):
@@ -71,14 +73,12 @@ switch nargin
 	      error('mode_s must be ''res''.')
 	   end
 	   if regexp(vs,'?')
-%	      keyboard
 	      if regexp(vs, '!')
 	         vs = irf_ssub(vs, cl_id);     % Change '?' --> cl_id and '!' --> '?' in vs ...
 	         vs = strrep(vs, '!', '?');    % ...and '!' --> '?' in vs
 	      end
 	      cl_id = probe_id;    % Fool rest of program into thinking probe_id is cl_id.
-	   end
-	   %keyboard
+     end
 case 3
 	if ~isnumeric(cl_id), error('Second input argument must be a number 1..4'),end
 	if cl_id<0 || cl_id>4
@@ -129,17 +129,17 @@ for cli=cl_id
 	if exist(vs_tmp,'var')
 		switch nargout
 		case {2,3}
-			res(kk) = 1;
-			if length(cl_id)>1, v(kk) = {eval(vs_tmp)};
-            else v = eval(vs_tmp);
+			res(kk) = 1; %#ok<AGROW>
+			if length(cl_id)>1, v(kk) = {eval(vs_tmp)};  %#ok<AGROW>
+      else v = eval(vs_tmp);
 			end
 			msg = ['sucessfully loaded ' vs_tmp];
 		case 1
 			if ret_var
-				if length(cl_id)>1, res(kk) = {eval(vs_tmp)};
+				if length(cl_id)>1, res(kk) = {eval(vs_tmp)}; %#ok<AGROW>
                 else res = eval(vs_tmp);
 				end
-            else res(kk) = 1; assignin('caller',vs_tmp,eval(vs_tmp));
+      else res(kk) = 1; assignin('caller',vs_tmp,eval(vs_tmp)); %#ok<AGROW>
 			end
 		case 0
 			assignin('caller',vs_tmp,eval(vs_tmp));
@@ -147,9 +147,9 @@ for cli=cl_id
 	else
 		switch nargout
 		case {2,3}
-			res(kk) = 0;
-			if length(cl_id)>1, v(kk) = {[]};
-            else v = [];
+			res(kk) = 0;  %#ok<AGROW>
+			if length(cl_id)>1, v(kk) = {[]}; %#ok<AGROW>
+      else v = [];
 			end
 			if d.lev, OBJ = 'ClusterProc';
 			else OBJ = 'ClusterDB';
@@ -158,10 +158,10 @@ for cli=cl_id
 				',...,cl_id,''' d.quant ''')'];
 		case 1
 			if ret_var
-				if length(cl_id)>1, res(kk) = {ERR_RET};
-                else res = ERR_RET;
+				if length(cl_id)>1, res(kk) = {ERR_RET};  %#ok<AGROW>
+        else res = ERR_RET;
 				end
-            else res(kk) = 0;
+      else res(kk) = 0;  %#ok<AGROW>
 			end
 		case 0
 			irf.log('warning',['cannot load ' vs_tmp])

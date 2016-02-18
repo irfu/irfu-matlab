@@ -15,12 +15,19 @@ function [out,l,v]=irf_minvar(inp,flag)
 % [out,l,v]=irf_minvar(inp,'<Bn>=0') minimum variance under constraint <Bn>=0
 %                                      see Eq. 8.17 ISSI book
 %
-% See also IRF_MINVAR_GUI, IRF_MINVAR_NESTED, IRF_MINVAR_NESTED_GUI
-%
-% $Id$
+% See also IRF_MINVAR_GUI, IRF_MINVAR_NEST, IRF_MINVAR_NEST_GUI
+% Works with TSeries as input
 
 if nargin==1,
     flag='mvar'; % default is to do unconstrained minimum variance
+end
+
+rtrnTS = 0;
+isaTSeries = isa(inp,'TSeries');
+if isaTSeries,
+    inptemp = inp;
+    inp = inptemp.data;
+    rtrnTS = 1;
 end
 
 ooo=inp;
@@ -31,9 +38,9 @@ elseif lx < 3,
 end
 
 
-inp_m=mean(inp);
+inp_m=irf.nanmean(inp);
 Mm2=inp_m([1 2 3 1 1 2]).*inp_m([1 2 3 2 3 3]);
-Mm1=mean(inp(:,[1 2 3 1 1 2]).*inp(:,[1 2 3 2 3 3])); % all 6 elements of triagonal matrix
+Mm1=irf.nanmean(inp(:,[1 2 3 1 1 2]).*inp(:,[1 2 3 2 3 3])); % all 6 elements of triagonal matrix
 
 switch lower(flag) % define matrix M for which calculate eigenvalues and vectors
     case {'mvar','<bn>=0'}
@@ -61,7 +68,7 @@ v(3,:)=cross(v(1,:),v(2,:));
 l(3)=max(ll);
 
 if strcmpi(flag,'<bn>=0') % <Bn>=0 requires further calculations
-    c_eval('inp_mvar_?_mean=mean(dot(inp,repmat(v(?,:),size(inp,1),1)));',1:3);
+    c_eval('inp_mvar_?_mean=mean(dot(inp,repmat(v(?,:),size(inp,1),1)));',1:3); % TODO get rid of c_eval for speed
     % polynom roots
     a=inp_mvar_1_mean.^2+inp_mvar_2_mean.^2+inp_mvar_3_mean.^2;
     b=-inp_mvar_1_mean.^2*(l(2)+l(3))- inp_mvar_2_mean.^2*(l(1)+l(3))- inp_mvar_3_mean.^2*(l(1)+l(2));
@@ -96,3 +103,4 @@ if nargout < 1,
 end
 
 if lx>3, ooo(:,[2 3 4])=out;out=ooo; end
+if rtrnTS, ooo = out; out=inptemp; out.data = ooo; end

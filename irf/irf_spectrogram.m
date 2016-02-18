@@ -1,12 +1,13 @@
 function [hout,hcb] = irf_spectrogram(varargin)
-%function hout = irf_spectrogram(h,t,Pxx,F,dt,dF)
+%function [hout,hcb] = irf_spectrogram(h,t,Pxx,F,dt,dF)
 %IRF_SPECTROGRAM  plot spectrogram
 %
-% [h] = irf_spectrogram([h],specrec,'option1','option2',..)
-% [h] = irf_spectrogram([h],t,Pxx,[f],[dt],[df])
+% [h, hcb] = irf_spectrogram(h,specrec,'option1','option2',..)
+% [h, hcb] = irf_spectrogram(h,t,Pxx,[f],[dt],[df])
 %
 % Input:
 %          h - axis handle
+%          hcb - colorbar handle
 %    specrec - structure including spectra
 %              specrec.t  - time vector
 %              specrec.f - frequency vector (can be also matrix the size specrec.p)
@@ -32,8 +33,8 @@ function [hout,hcb] = irf_spectrogram(varargin)
 % ----------------------------------------------------------------------------
 
 [h,args,nargs] = axescheck(varargin{:});
-if isempty(h),
-  h=gca;
+ if isempty(h),
+  fig = get(groot,'CurrentFigure'); h = get(fig,'Children');
 end
 
 %% Defaults
@@ -71,11 +72,7 @@ elseif nargs==3 % irf_spectrogram(t,Pxx,F)
 	end
 	specrec.f = F;
 	specrec.t = t;
-	if length(specrec.t)>1 % assume equidistant times
-		specrec.dt=(specrec.t(2)-specrec.t(1))/2;
-	else
-		specrec.dt=[]; % will be calculated later
-	end
+	specrec.dt=[]; % will be calculated later
 	specrec.df=[];
 elseif	nargs==4 % irf_spectrogram(t,Pxx,F,dt)
     t=args{1};Pxx=args{2};F=args{3};dt=args{4};
@@ -88,7 +85,7 @@ elseif	nargs==4 % irf_spectrogram(t,Pxx,F,dt)
 	specrec.dt = dt;
 	specrec.df=[];
 elseif	nargin==5 % irf_spectrogram(t,Pxx,F,dt,df)
-	t=args{1};Pxx=args{2};F=args{3};dt=args{4};df=args{5};
+	t=args{1};Pxx=args{2};F=args{3};dt=args{4};dF=args{5};
     specrec.t = t;
 	if (size(Pxx,1) ~= length(t)) && (size(Pxx,2) == length(t)), Pxx = Pxx'; end
 	if iscell(Pxx),specrec.p = Pxx;
@@ -132,7 +129,7 @@ end
 % length(H) spectra
 for comp=1:min(length(h),ncomp)
 	
-	specrec.p{comp}(isnan(specrec.p{comp})) = NaN;
+	specrec.p{comp}(isnan(specrec.p{comp})) = NaN; % WHY is this done? NaN = NaN already.
 	
 	ud = get(gcf,'userdata');
 	ii = find(~isnan(specrec.t));
@@ -176,10 +173,10 @@ for comp=1:min(length(h),ncomp)
 	pp=specrec.p{comp};
 	if isempty(specrec.df) % if frequency steps are not given
 		fnew=[ff ff];
-		fnew(1)=ff(1)-0.5*(ff(2)-ff(1));
-		fnew(end)=ff(end)+0.5*(ff(end)-ff(end-1));
-		fnew(2:2:end-1)=0.5*(ff(1:end-1)+ff(2:end));
-		fnew(3:2:end-1)=0.5*(ff(1:end-1)+ff(2:end));
+		fnew(:,1)=ff(:,1)-0.5*(ff(:,2)-ff(:,1));
+		fnew(:,end)=ff(:,end)+0.5*(ff(:,end)-ff(:,end-1));
+		fnew(:,2:2:end-1)=0.5*(ff(:,1:end-1)+ff(:,2:end));
+		fnew(:,3:2:end-1)=0.5*(ff(:,1:end-1)+ff(:,2:end));
 		ff=fnew;
 	else                   % if frequency steps are given
 		if isstruct(specrec.df)                % if df is structure df.plus and df.minus should be specified
@@ -233,18 +230,26 @@ for comp=1:min(length(h),ncomp)
 		ttnew(jj*2-1)=tt-dtminus;
 		ttnew(jj*2)=tt+dtplus;
 		tt=ttnew;
-		ppnew=[pp;pp];
-		ppnew(jj*2-1,:)=pp;
-		ppnew(jj*2,:)=NaN;
-		pp=ppnew;
-		if min(size(ff))~= 1, % ff is matrix
-			ffnew=zeros(size(ff).*[2 1]);
-			ffnew(1:2:end,:)=ff;
-			ffnew(2:2:end,:)=ff;
-			ff=ffnew;
-		end
+    else
+  		ttnew=[tt;tt];
+		ttnew(1)=tt(1)-0.5*(tt(2)-tt(1));
+		ttnew(end)=tt(end)+0.5*(tt(end)-tt(end-1));
+		ttnew(2:2:end-1)=0.5*(tt(1:end-1)+tt(2:end));
+        ttnew(3:2:end-1)=0.5*(tt(1:end-1)+tt(2:end));
+		tt=ttnew;
+     
 	end
-	
+    ppnew=[pp;pp];
+    ppnew(1:2:end,:)=pp;
+    ppnew(2:2:end,:)=NaN;
+    pp=ppnew;
+    if min(size(ff))~= 1, % ff is matrix
+        ffnew=zeros(size(ff).*[2 1]);
+        ffnew(1:2:end,:)=ff;
+        ffnew(2:2:end,:)=ff;
+        ff=ffnew;
+    end
+    
 	tag=get(h(comp),'tag'); % keep tag during plotting
 	ud=get(h(comp),'userdata'); % keep tag during plotting
 	if min(size(ff))==1, % frequency is vector
@@ -277,12 +282,16 @@ for comp=1:min(length(h),ncomp)
 	ylabel(h(comp),specrec.f_label)
 	
 	if isfield(specrec,'p_label')
-		hcb = colorbar('peer',h(comp));
-		posAx = get(h(comp),'Position'); 
+    if isa(h(comp),'handle'), hcb = colorbar(h(comp)); % HG2
+    else hcb = colorbar('peer',h(comp));
+    end
+    drawnow
 		posCb = get(hcb,'Position');
+    posAx = get(h(comp),'Position');
+    drawnow
 		set(hcb,'TickDir','out','Position',...
 			[posCb(1) posCb(2)+posCb(4)*0.05 posCb(3)*.75 posCb(4)*0.9])
-		set(h(comp),'Position',posAx)
+		set(h(comp),'Position',[posAx(1) posAx(2) (posCb(1)-posAx(1))*0.97 posAx(4)])
 		ylabel(hcb,specrec.p_label);
         if fitColorbarLabel
             irf_colorbar_fit_label_height(hcb);

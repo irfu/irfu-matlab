@@ -46,6 +46,8 @@ function res = irf_ebsp(e,dB,fullB,B0,xyz,freq_int,varargin)
 %   'fullB=dB'     - dB contains DC field
 %   'nAv'          - number of wave periods to average (default=8)
 %   'facMatrix'    - specify rotation matrix to FAC system 
+%   'mwidthcoef'   - specify coefficient to multiple Morlet wavelet width by. 1
+%   corresponds to standard Morlet wavelet.
 % 
 %  Examples:
 %
@@ -63,10 +65,39 @@ function res = irf_ebsp(e,dB,fullB,B0,xyz,freq_int,varargin)
 % European Community's Seventh Framework Programme (FP7-SPACE-2011-1)
 % under grant agreement n. 284520.
 
+% Begin temporary fix to convert TS format to older format (Must include spacecraft position)
+if isa(e,'TSeries'), 
+    ttemp = e.time.epochUnix;
+    datatemp = double(e.data);
+    e = [ttemp, double(datatemp)];
+end
+if isa(dB,'TSeries'), 
+    ttemp = dB.time.epochUnix;
+    datatemp = double(dB.data);
+    dB = [ttemp, datatemp];
+end
+if isa(fullB,'TSeries'), 
+    ttemp = fullB.time.epochUnix;
+    datatemp = double(fullB.data);
+    fullB = [ttemp, datatemp];
+end
+if isa(B0,'TSeries'), 
+    ttemp = B0.time.epochUnix;
+    datatemp = double(B0.data);
+    B0 = [ttemp, datatemp];
+end
+if isa(xyz,'TSeries'), 
+    ttemp = xyz.time.epochUnix;
+    datatemp = double(xyz.data);
+    xyz = [ttemp, datatemp];
+end
+% End of temporary fix
+
 %% Check the input
 nWavePeriodToAverage = 8; % Number of wave periods to average
 angleBElevationMax = 15;  % Below which we cannot apply E*B=0
 facMatrix = []; % matrix for totation to FAC
+mwidthcoef = 1;
 
 wantPolarization = 0;
 if isempty(e), wantEE = 0;
@@ -87,6 +118,13 @@ while 1
   switch lower(args{1})
     case 'polarization'
       wantPolarization = 1;
+    case 'mwidthcoef'
+            if numel(args)>1 && isnumeric(args{2})
+                mwidthcoef = args{2}; l = 2;
+            else
+                error('parameter ''mwidthcoef'' without parameter value')
+            end
+        mwidthcoef = args{2};
     case 'noresamp'
       flag_no_resamp = 1;
     case 'fac'
@@ -120,9 +158,9 @@ if flag_want_fac && isempty(facMatrix)
     irf_log('fcal','assuming s/c position [1 0 0] for estimating FAC');
     xyz=[0 1 0 0];
   end
+  xyz = irf_resamp(xyz,dB);
 end
 B0 = irf_resamp(B0,dB);
-xyz = irf_resamp(xyz,dB);
 if flag_fullB_dB
     fullB = dB;
     res.fullB = fullB;
@@ -201,8 +239,9 @@ end
 if size(dB,1)/2 ~= floor(size(dB,1)/2)
 	dB=dB(1:end-1,:);
 	B0=B0(1:end-1,:);
-  xyz=xyz(1:end-1,:);
-  if ~isempty(facMatrix)
+  if isempty(facMatrix)
+    xyz=xyz(1:end-1,:);
+  else
     facMatrix.t = facMatrix.t(1:end-1,:);
     facMatrix.rotMatrix = facMatrix.rotMatrix(1:end-1,:,:);
   end
@@ -251,8 +290,8 @@ end
 nd2=length(inTime)/2; nyq=1/2; freq=inSampling*(1:nd2)/(nd2)*nyq;
 w=[0,freq,-freq(end-1:-1:1)];% The frequencies corresponding to FFT
 
-Morlet_width=5.36;
-freq_number=ceil((log10(freq_int(2)) - log10(freq_int(1)))*12); %to get proper overlap for Morlet
+Morlet_width=5.36*mwidthcoef;
+freq_number=ceil((log10(freq_int(2)) - log10(freq_int(1)))*12*mwidthcoef); %to get proper overlap for Morlet
 amin=log10(0.5*inSampling/freq_int(2));amax=log10(0.5*inSampling/freq_int(1));anumber=freq_number;
 %  amin=0.01; % The highest frequency to consider is 0.5*sampl/10^amin
 %  amax=2; % The lowest frequency to consider is 0.5*sampl/10^amax

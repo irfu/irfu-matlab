@@ -45,6 +45,7 @@ while read fname; do
 		*) ;;
 	esac
 	STATUS=Failed
+	STATUS_CODE=0
 	NAME=`echo "$fname" | cut -d'.' -f1`
 	echo -n "$NAME  "
 	LOG=$LOGDIR/$NAME.log
@@ -54,7 +55,13 @@ while read fname; do
 	rm -f $LOG
 	$CEFMERGE -I $INCLUDES -O $TMPDIR $fname >> $LOG 2>&1 || (cp $fname $FAILED && continue) 
 	newfile=`find $TMPDIR -name \*.cef` 
-	$QTRAN $newfile >> $LOG 2>&1 || (cp $fname $FAILED && continue)
+	echo -n "$QTRAN $newfile ... " >> $LOG
+	QTRAN_OUT=`$QTRAN $newfile 2>&1`
+	STATUS_CODE=`echo $QTRAN_OUT | grep Done`
+	if [ -z "$STATUS_CODE" ]; then
+		echo Failed >> $LOG && echo $QTRAN_OUT >> $LOG && cp $fname $FAILED && continue
+	else echo $STATUS_CODE >> $LOG
+	fi
 	
 	# Get destination directory for the data
 	DATASET_NAME=`echo $NAME|awk -F'__' '{print $1}'`
@@ -67,7 +74,9 @@ while read fname; do
 		CC_CP_AUX_MAARBLE_*)
   			SHORT_NAME=`echo $DATASET_NAME|awk -F'CC_CP_AUX_MAARBLE_' '{print $2}'`
   			case "$SHORT_NAME" in
+				CHAMP*) PROJ=CHAMP;;
   				TH[A-E]_*) PROJ=THEMIS;;
+  				G1[1-2]_*) PROJ=GOES;;
   				DOB_*|HOR_*|KEV_*|KIR_*|NUR_*|OUJ_*|RVK_*|SOD_*|UPS_*|TRO_*)
   					PROJ=IMAGE;;
   				FCHU_*|GILL_*|ISLL_*|MCMU_*|PINA_*|RANK_*)

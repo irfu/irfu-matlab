@@ -56,12 +56,7 @@ function spinfit = c_efw_sfit(pair,fout,maxit,minpts,te,data,tp,ph,method,tmmode
 %  ylabel('E [mV/m]');
 %  title('Cluster SC4 EFW Spin Fits (Ex black, Ey red)')
 %
-% See also C_PHASE, C_EFW_ONESFIT, isGetDataLite
-%
-% $Id$
-
-%
-% Original version by Anders.Eriksson@irfu.se, 13 December 2002
+% See also C_PHASE, C_EFW_ONESFIT
 
 narginchk(8,10)
 
@@ -172,6 +167,8 @@ if method==1 || method==2
 		end
 	end
 else
+  % Original version using polyfit() by Anders.Eriksson@irfu.se, 13 December 2002
+  
 	% Turn off warnings for badly conditioned polynomial:
 	warning('off','MATLAB:polyfit:RepeatedPointsOrRescale');
 	

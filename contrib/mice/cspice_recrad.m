@@ -7,53 +7,53 @@
 %
 %   THIS SOFTWARE AND ANY RELATED MATERIALS WERE CREATED BY THE
 %   CALIFORNIA  INSTITUTE OF TECHNOLOGY (CALTECH) UNDER A U.S.
-%   GOVERNMENT CONTRACT WITH THE NATIONAL AERONAUTICS AND SPACE 
+%   GOVERNMENT CONTRACT WITH THE NATIONAL AERONAUTICS AND SPACE
 %   ADMINISTRATION (NASA). THE SOFTWARE IS TECHNOLOGY AND SOFTWARE
-%   PUBLICLY AVAILABLE UNDER U.S. EXPORT LAWS AND IS PROVIDED 
+%   PUBLICLY AVAILABLE UNDER U.S. EXPORT LAWS AND IS PROVIDED
 %   "AS-IS" TO THE RECIPIENT WITHOUT WARRANTY OF ANY KIND, INCLUDING
 %   ANY WARRANTIES OF PERFORMANCE OR MERCHANTABILITY OR FITNESS FOR
 %   A PARTICULAR USE OR PURPOSE (AS SET FORTH IN UNITED STATES UCC
-%   SECTIONS 2312-2313) OR FOR ANY PURPOSE WHATSOEVER, FOR THE 
+%   SECTIONS 2312-2313) OR FOR ANY PURPOSE WHATSOEVER, FOR THE
 %   SOFTWARE AND RELATED MATERIALS, HOWEVER USED.
 %
-%   IN NO EVENT SHALL CALTECH, ITS JET PROPULSION LABORATORY, 
-%   OR NASA BE LIABLE FOR ANY DAMAGES AND/OR COSTS, INCLUDING, 
-%   BUT NOT LIMITED TO, INCIDENTAL OR CONSEQUENTIAL DAMAGES OF 
-%   ANY KIND, INCLUDING ECONOMIC DAMAGE OR INJURY TO PROPERTY 
-%   AND LOST PROFITS, REGARDLESS OF WHETHER CALTECH, JPL, OR 
-%   NASA BE ADVISED, HAVE REASON TO KNOW, OR, IN FACT, SHALL 
+%   IN NO EVENT SHALL CALTECH, ITS JET PROPULSION LABORATORY,
+%   OR NASA BE LIABLE FOR ANY DAMAGES AND/OR COSTS, INCLUDING,
+%   BUT NOT LIMITED TO, INCIDENTAL OR CONSEQUENTIAL DAMAGES OF
+%   ANY KIND, INCLUDING ECONOMIC DAMAGE OR INJURY TO PROPERTY
+%   AND LOST PROFITS, REGARDLESS OF WHETHER CALTECH, JPL, OR
+%   NASA BE ADVISED, HAVE REASON TO KNOW, OR, IN FACT, SHALL
 %   KNOW OF THE POSSIBILITY.
 %
-%   RECIPIENT BEARS ALL RISK RELATING TO QUALITY AND PERFORMANCE 
-%   OF THE SOFTWARE AND ANY RELATED MATERIALS, AND AGREES TO 
-%   INDEMNIFY CALTECH AND NASA FOR ALL THIRD-PARTY CLAIMS RESULTING 
+%   RECIPIENT BEARS ALL RISK RELATING TO QUALITY AND PERFORMANCE
+%   OF THE SOFTWARE AND ANY RELATED MATERIALS, AND AGREES TO
+%   INDEMNIFY CALTECH AND NASA FOR ALL THIRD-PARTY CLAIMS RESULTING
 %   FROM THE ACTIONS OF RECIPIENT IN THE USE OF THE SOFTWARE.
 %
 %-I/O
 %
 %   Given:
 %
-%      rectan   a double precision 3x1 array or double precision 
-%               3xN array containing the rectangular coordinates of the 
+%      rectan   a double precision 3x1 array or double precision
+%               3xN array containing the rectangular coordinates of the
 %               position or set of positions
 %
 %   the call:
-%   
+%
 %      [range, ra, dec] = cspice_recrad(rectan)
-%   
+%
 %   returns:
-%   
-%      radius   a double precision scalar or 1XN-vector describing 
+%
+%      radius   a double precision scalar or 1XN-vector describing
 %               the distance of the position from origin.
 %
 %      ra       a double precision scalar or 1XN-vector describing
-%               the right ascension of the position as measured in 
+%               the right ascension of the position as measured in
 %               radians.
 %
 %      dec      a double precision scalar or 1XN-vector describing
 %               the declination of the position as measured in radians.
 %
-%               'radius', 'ra', and 'dec' return with the same 
+%               'radius', 'ra', and 'dec' return with the same
 %               vectorization measure (N) as 'rectan'.
 %
 %-Examples
@@ -64,7 +64,7 @@
 %
 %      %
 %      % Output the right ascension and declination of the earth's pole
-%      % in the J2000 frame approximately every month for the time 
+%      % in the J2000 frame approximately every month for the time
 %      % interval January 1, 1990 to January 1, 2010 (UTC).
 %      %
 %      %
@@ -78,10 +78,10 @@
 %      %
 %      utc_bounds = [ '1 Jan 1990'; '1 Jan 2010' ];
 %      et_bounds = cspice_str2et( utc_bounds);
-%   
+%
 %      %
 %      % Step in units of a month. 20 years ~ 240 months.
-%      % 
+%      %
 %      step = (et_bounds(2) - et_bounds(1)) / 240.;
 %
 %      %
@@ -105,14 +105,14 @@
 %      % Extract the pole vector from the transformation matrix,
 %      % convert to RA and DEC expressed in degrees.
 %      %
-%      % The last column in each matrix is the pole vector (z = (0,0,1)) 
+%      % The last column in each matrix is the pole vector (z = (0,0,1))
 %      % of the earth in IAU expressed in J2000. We need to copy the
 %      % set of pole vectors to a 3xN array. Use reshape to do this.
 %      %
 %      pole = reshape( mat(:,3,:), 3,[] );
 %
 %      [radius, ra, dec] = cspice_recrad(pole);
-%     
+%
 %      ra  = ra * r2d;
 %      dec = dec * r2d;
 %
@@ -130,7 +130,7 @@
 %      cspice_kclear
 %
 %   MATLAB outputs:
-%   
+%
 %      A partial output centered on et = 0:
 %
 %                         ...
@@ -167,10 +167,10 @@
 %   -Mice Version 1.0.0, 22-NOV-2005, EDW (JPL)
 %
 %-Index_Entries
-% 
-%   rectangular coordinates to ra and dec 
-%   rectangular to right_ascension and declination 
-% 
+%
+%   rectangular coordinates to ra and dec
+%   rectangular to right_ascension and declination
+%
 %-&
 
 function [range, ra, dec] = cspice_recrad(rectan)

@@ -1,5 +1,5 @@
 function out=c_4_v_gui(x1,x2,x3,x4,column)
-%C_4_V_GUI interactive discontinuity analyzer for Cluster
+%C_4_V_GUI interactive discontinuity analyzer for Cluster (for MMS use mms4_v_gui)
 %
 %  C_4_V_GUI(x1,x2,x3,x4,column)	use interactive discontinuity analyzer 
 %		on variables x1..x4 using column number 'column'
@@ -8,9 +8,6 @@ function out=c_4_v_gui(x1,x2,x3,x4,column)
 %  H = C_4_V_GUI(..)				return axis handles
 %
 % See also: C_4_V
-%
-
-% $Id$
 
 flag_first_call=0;
 
@@ -18,7 +15,7 @@ if       (nargin<=2 && ischar(x1)), % either action as parameter or string varia
 	if strfind(x1,'?'),
 		figure;ud=[]; % intialize
 		ud.variable_str=x1;
-		if nargin == 1, ud.var_col=2;else ud.var_col=x2;end;
+		if nargin == 1, ud.var_col=1;else ud.var_col=x2;end;
 		action='new_var';
 		flag_first_call=1;
 	else
@@ -49,11 +46,12 @@ switch action,
 	case 'update_var_col'
 		hca=ud.h(1);
 		xl=get(ud.h(1),'XLim');
-		c_pl_tx(hca,ud.var1,ud.var2,ud.var3,ud.var4,ud.var_col);zoom(hca,'on');
+		irf_pl_tx(hca,ud.var1,ud.var2,ud.var3,ud.var4,ud.var_col);zoom(hca,'on');
 		ylabel(ud.h(1),var_label(ud.variable_str,ud.var_col));
 		axis(hca,[xl(1) xl(2) 0 1]);
+        irf_legend(hca,{'C1','C2','C3','C4'},[1, 1.1],'color','cluster');
 		irf_zoom(hca,'y');irf_timeaxis(hca)
-		c_pl_tx(ud.h(2),ud.var1,ud.var2,ud.var3,ud.var4,ud.var_col,ud.dt);
+		irf_pl_tx(ud.h(2),ud.var1,ud.var2,ud.var3,ud.var4,ud.var_col,ud.dt);
 		ylabel(ud.h(2),var_label(ud.variable_str,ud.var_col));
 %		c_4_v_gui('dt');
 	case 'new_var_enter'
@@ -96,20 +94,20 @@ switch action,
 	case 'initialize'
 		irf_figmenu;
 		set(gcf,'color','white'); % white background for figures (default is grey)
-		set(gcf,'userdata',ud); % because c_pl_tx can also changed userdata)
+		set(gcf,'userdata',ud); % because irf_pl_tx can also changed userdata)
 
 		h(1)=subplot(3,1,1);
-		c_pl_tx(h(1),ud.var1,ud.var2,ud.var3,ud.var4,ud.var_col);zoom(h(1),'on');
+		irf_pl_tx(h(1),ud.var1,ud.var2,ud.var3,ud.var4,ud.var_col);zoom(h(1),'on');
 		ylabel(h(1),var_label(ud.variable_str,ud.var_col));
 		
 		h(2)=subplot(3,1,2);
-		c_pl_tx(h(2),ud.var1,ud.var2,ud.var3,ud.var4,ud.var_col);
+		irf_pl_tx(h(2),ud.var1,ud.var2,ud.var3,ud.var4,ud.var_col);
 		ylabel(h(2),var_label(ud.variable_str,ud.var_col));
 		
 		ud=get(gcf,'userdata');
 		
 		irf_legend(0,['c\_4\_v\_int() ' datestr(now)],[0.01 0.99],'fontsize',7); % add information to the plot
-		
+		irf_legend(h(1),{'C1','C2','C3','C4'},[1, 1.1],'color','cluster');
 		hh=h(1,1);  % use the first subplot to estimate available time interval
 		xl=get(hh,'XLim');
 		hc=get(hh,'Children');
@@ -164,8 +162,12 @@ switch action,
 		uimenu('label','Click&Times','accelerator','t','callback','c_4_v_gui(''click_times'')');
 		uimenu('label','New&Variable','accelerator','v','callback','c_4_v_gui(''new_var_enter'')');
 		ud.columns=uimenu('label','&Columns','accelerator','c');
-		uimenu(ud.columns,'label','1 (time)');
-		for j_col=2:size(ud.var1,2)
+		%uimenu(ud.columns,'label','1 (time)');
+    nCol = 0;
+    if isa(ud.var1,'TSeries'), nCol = size(ud.var1.data,2); 
+    else nCol = size(ud.var1,2);
+    end
+		for j_col=1:nCol
 			%    hcol(j_col)=uimenu(ud.columns,'label',num2str(j_col));
 			eval_str=['ud.hcol(j_col)=uimenu(ud.columns,''label'',''' num2str(j_col) ''',''callback'',''c_4_v_gui(''''c' num2str(j_col) ''''')'');'];
 			eval(eval_str);
@@ -190,9 +192,9 @@ switch action,
 		if eval(get(ud.filter,'string'))<1
 			x1=ud.var1;Fs=1/(x1(2,1)-x1(1,1));flim=Fs*eval(get(ud.filter,'string'));
 			c_eval('x?=irf_tlim(ud.var?,xl+[-20/Fs 20/Fs]);x?=irf_filt(x?,0,flim,Fs,5);');
-			c_pl_tx(ud.h(2),'x?',ud.var_col,ud.dt);
+			irf_pl_tx(ud.h(2),'x?',ud.var_col,ud.dt);
 		else
-			c_pl_tx(ud.h(2),'ud.var?',ud.var_col,ud.dt);
+			irf_pl_tx(ud.h(2),'ud.var?',ud.var_col,ud.dt);
 		end
 		irf_zoom(ud.h(2),'x',xl);
 		irf_zoom(ud.h(2),'y',yl);
@@ -225,9 +227,9 @@ switch action,
 			x1=ud.var1;Fs=1/(x1(2,1)-x1(1,1));
 			flim=Fs*eval(get(ud.filter,'string'));
 			c_eval('x?=irf_tlim(var?,xl+[-20/Fs 20/Fs]);x?=irf_filt(x?,0,flim,Fs,5);');
-			c_pl_tx(ud.h(2),x1,x2,x3,x4,ud.var_col,dt);
+			irf_pl_tx(ud.h(2),x1,x2,x3,x4,ud.var_col,dt);
 		else
-			c_pl_tx(ud.h(2),ud.var1,ud.var2,ud.var3,ud.var4,ud.var_col,dt);
+			irf_pl_tx(ud.h(2),ud.var1,ud.var2,ud.var3,ud.var4,ud.var_col,dt);
 		end
 		axis(ud.h(2),[xl yl]);
 		irf_timeaxis(ud.h(2));
@@ -302,7 +304,7 @@ if nargout, out = ud.h; end
 end
 
 function label=var_label(var_str,var_col)
-iVecComponent = var_col - 1; % number of vector component
+iVecComponent = var_col; % number of vector component
 dd=c_desc(irf_ssub(var_str,1));
 if isempty(dd)
 	label=[var_str '[' num2str(iVecComponent) ']'];

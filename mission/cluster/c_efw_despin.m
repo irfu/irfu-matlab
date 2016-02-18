@@ -157,6 +157,9 @@ for j=1:floor(log10(length(ph(:,1))))
  dp=ph(ii,2)-mod(polyval(phc_coef,ph(ii,1))*180/pi,360);
  dpm=[dp dp-360 dp+360];
  dph=dpm(abs(dpm)<180);
+ if isempty(dph)
+    continue;
+ end
  phc_coef(1)=phc_coef(1)+dph*pi/180/ph(ii,1);
 end
 %dphc=exp(1i*ph(:,2)/180*pi)-exp(1i*polyval(phc_coef,ph(:,1)));

@@ -1,7 +1,5 @@
 function res = getdep(dobj,var_s)
 %GETDEP(dobj, var_s)  get dependencies for a variable
-%
-% $Id$
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):
@@ -37,9 +35,12 @@ if nvars>0
                 field = sprintf('DEPEND_%d',d);
                 tt = findva(dobj,field,v1_s);
                 if ~isempty(tt)
-                    if found, error('found both LABEL_X and DEPEND_X'), end
+                    if found
+                      irf.log('warining','found both LABEL_X and DEPEND_X'),
+                    else
                     dep_x(d,:) = {tt,field};
                     found_any = 1;
+                    end
                 end
             end
             if dobj.data.(dobj.vars{v,1}).variance(1) == 'T'
@@ -53,14 +54,14 @@ if nvars>0
                     end
                     if isempty(tvar)  % can be time variable itself because there is no DEPEND_O for a T variable
                         res=[];
-                        irf_log('dsrc','No DEPEND_O for a T variable');
+                        irf.log('warining','No DEPEND_O for a T variable');
                         return;
                     end
                 end
                 if found_any
-                    res = struct('DEPEND_O',tvar.data,'DEPEND_X',{dep_x});
+                    res = struct('DEPEND_O',tvar,'DEPEND_X',{dep_x});
                 else
-                    res = struct('DEPEND_O',tvar.data,'DEPEND_X',[]);
+                    res = struct('DEPEND_O',tvar,'DEPEND_X',[]);
                 end
             else
                 if found_any, res = struct('DEPEND_X',{dep_x});
@@ -72,5 +73,6 @@ if nvars>0
     end
 end
 
-error(['No such variable : ' var_s])
+errStr = ['No such variable : ' var_s];
+irf.log('critical',errStr), error(errStr)
 

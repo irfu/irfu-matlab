@@ -15,8 +15,6 @@ function out = irf_resamp(x,y,varargin)
 % max    - return max within each averaging window, rather than mean
 %
 % See also INTERP1
-%
-% $Id$
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):
@@ -51,49 +49,51 @@ while have_options
 					method = args{2};
 					l = 2;
 					flag_do='interpolation'; % if method is given do interpolation
-				else irf_log('fcal,','wrongArgType : METHOD must be numeric')
+				else irf.log('critical','wrongArgType : METHOD must be numeric')
 				end
-			else irf_log('fcal,','wrongArgType : METHOD value is missing')
+			else irf.log('critical','wrongArgType : METHOD value is missing')
 			end
 		case {'fs','fsample'}
 			if length(args)>1
 				if ~isempty(sfy)
-					error('FSAMPLE/WINDOW already specified')
+          msgS = 'FSAMPLE/WINDOW already specified';
+          irf.log('critical',msgS), error(msgS)
 				end
 				if isnumeric(args{2})
 					sfy = args{2};
 					l = 2;
-				else irf_log('fcal,','wrongArgType : FSAMPLE must be numeric')
+				else irf.log('critical','wrongArgType : FSAMPLE must be numeric')
 				end
-			else irf_log('fcal,','wrongArgType : FSAMPLE value is missing')
+			else irf.log('critical','wrongArgType : FSAMPLE value is missing')
 			end
 		case {'win','window'}
 			if length(args)>1
 				if ~isempty(sfy)
-					error('FSAMPLE/WINDOW already specified')
+					msgS = 'FSAMPLE/WINDOW already specified';
+          irf.log('critical',msgS), error(msgS)
 				end
 				if isnumeric(args{2})
 					sfy = 1/args{2};
 					l = 2;
-				else irf_log('fcal,','wrongArgType : WINDOW must be numeric')
+				else irf.log('critical','wrongArgType : WINDOW must be numeric')
 				end
-			else irf_log('fcal,','wrongArgType : WINDOW value is missing')
+			else irf.log('critical','wrongArgType : WINDOW value is missing')
 			end
 		case {'thresh','threshold'}
             if length(args)>1
                 if isnumeric(args{2})
                     thresh = args{2};
                     l = 2;
-                else irf_log('fcal,','wrongArgType : THRESHOLD must be numeric')
+                else irf.log('critical','wrongArgType : THRESHOLD must be numeric')
                 end
-            else irf_log('fcal,','wrongArgType : THRESHOLD value is missing')
+            else irf.log('critical','wrongArgType : THRESHOLD value is missing')
             end
         case 'median'
             median_flag=1;
         case 'max'
             max_flag=1;
 		otherwise
-			irf_log('fcal',['Skipping parameter ''' args{1} ''''])
+			irf.log('warning',['Skipping parameter ''' args{1} ''''])
 			args = args(2:end);
 	end
 	args = args(l+1:end);
@@ -103,24 +103,27 @@ end
 % return in case inputs are empty
 if numel(x)==0 || numel(y)==0
     out=[];
-    irf_log('fcal','some of input is empty, returning empty ouput');
+    irf.log('warining','Some of input is empty, returning empty ouput');
     return;
 end
 
 % construct output time axis
 if isstruct(y),
-    if isfield(y,'t'),
-        t=y.t;
-        t=t(:);
+    if isfield(y,'t'), t=y.t; t=t(:);
     else
-        irf_log('fcal','input is structure without time field, returning empty output');
-        out=[];
-        return;
+        msgS = 'Input is structure without time field';
+        irf.log('critical',msgS), error(msgS)
     end
 elseif size(y,2)==1, t = y(:); % y is only time
 else t = y(:,1); t = t(:);   % first column of y is time
 end
-ndata = length(t);
+
+% Same timeline - no need to do anything
+if length(x(:,1))==length(t) && all(x(:,1)==t)
+  irf.log('notice','New and old timelines are identical - no resampling needed')
+  out = x; 
+  return
+end
 
 if size(x,1) == 1,            % if X has only one point, this is a trivial
                               % case and we return directly
@@ -132,6 +135,7 @@ if size(x,1) == 1,            % if X has only one point, this is a trivial
   return
 end
 
+ndata = length(t);
 if strcmp(flag_do,'check'), % Check if interpolation or average
 	if ndata>1 
 		% If more than one output time check sampling frequencies
@@ -155,7 +159,7 @@ if strcmp(flag_do,'check'), % Check if interpolation or average
 				end
 				if not_found
 					sfy = sfy1;
-					irf_log('proc',	sprintf(...
+					irf.log('warning',	sprintf(...
 						'Cannot guess sampling frequency. Tried %d times',MAXTRY));
 				end
 			end
@@ -164,6 +168,7 @@ if strcmp(flag_do,'check'), % Check if interpolation or average
 		
 		if length(x(:,1))/(x(end,1) - x(1,1)) > 2*sfy
 			flag_do='average';
+			irf.log('warning','Using averages in irf_resamp.');
 		else
 			flag_do='interpolation';
 		end
@@ -175,7 +180,7 @@ end
 if strcmp(flag_do,'average')
     dt2 = .5/sfy; % Half interval
     if median_flag || max_flag || (exist('irf_average_mx','file')~=3)
-        if (~median_flag && ~max_flag), irf_log('fcal','cannot find mex file, defaulting to Matlab code.')
+        if (~median_flag && ~max_flag), irf.log('warning','cannot find mex file, defaulting to Matlab code.')
         end
         out = zeros(ndata,size(x,2));
         out(:,1) = t;
@@ -214,7 +219,7 @@ if strcmp(flag_do,'average')
         end
     else
         if ( (x(1,1) > t(end) + dt2) || (x(end,1) <= t(1) - dt2) )
-            irf_log('proc','interval mismatch')
+            irf.log('warning','Interval mismatch - empty return')
             out = [];
         else
             out = irf_average_mx(x,t,dt2,thresh);

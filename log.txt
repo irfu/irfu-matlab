@@ -1,3 +1,24 @@
+2016-02-18 v1.11.1 MMS fix for Brst L2Pre processing and calibration files in correct name and paths.
+2016-02-12 v1.11.0 NASA CDF patch, MMS new standard variable names (L2 products), also closing some issues and many, many other bug fixes.
+2015-11-17 v1.10.1 Fix mjuliandate in coord.transform, MMS new versions of QL/Usc/L2A (use defatt & aspoc), TSeries allowed in more functions, many other bug fixes.
+2015-10-12 v1.10.0 Epoch <1970 fix impacted coord. transform., MMS ADP scalefactor 1.5, TSeries allowed in more functions, many other bug fixes.
+2015-08-27 v1.9.5 MMS bugfix for Usc and QL, TSeries improvements, C4p3 failed, minor bug fixes.
+2015-08-12 v1.9.4 MMS multiple HK, 12th IGRF, caa_load fix, allow TSeries input in more functions, minor bug fixes.
+2015-07-29 v1.9.3 MMS allow for datagaps in processing for SITL, some minor update to TSeries and other bug fixes.
+2015-06-24 v1.9.2 MMS bugfix phase & Quality calculated, Cluster MS offset updated and some other minor bug fixes.
+2015-06-17 v1.9.1 MMS bugfix Signal Processing Toolbox not installed at SDC, some other minor bug fixes.
+2015-06-16 v1.9.0 NASA CDF patch, new TSeries, MMS ADP shadow removal, classes of GenericTimeArray (EpochTT etc), minor bug fixes.
+2015-05-18 v1.8.2 Bug fix in MMS resample probe, some exteded support in irf_time, minor bug fixes.
+2015-05-11 v1.8.1 Final NASA CDF patch (Linux bugfix and Win32 added), MMS allow for combined DCE&DCV file, minor bug fixes.
+2015-04-28 v1.8.0 MMS first release after boom deployed, new NASA CDF patch, irf_time use TT2000 internally, many minor bug fixes.
+2015-02-06 v1.7.3 WHAMP calling script bug fix: change complex transpose to normal transpose
+2015-02-06 v1.7.2 HG1,2 compatibility, WHAMP updates
+2014-11-05 v1.7.1 bug fix in dataobj.get_variable()
+2014-10-30 v1.7.0 CAA @ESTEC is closed, now data downloaded from @ESAC, new NASA CDF patch, many minor bug fixes
+2014-08-30 v1.6.2 different minor bug fixes
+2014-07-03 v1.6.1 bug fix reading datasets with '-' in name. If problems with git get a new copy of irfu-matlab!
+2014-06-25 v1.6.0 reading data from CSA@ESAC as default + many other improvements
+2014-04-21 v1.5.5 several bug fixes
 2014-03-24 v1.5.4 bug fix for dataobj() tint when delta_plus/minus are values and not variables
 2014-03-20 v1.5.3 bug fix for dataobj() tint with delta_plus/delta_minus, minor updates
 2014-03-18 v1.5.2 minor bug fix for dataobj() tint 

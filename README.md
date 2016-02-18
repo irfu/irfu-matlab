@@ -7,8 +7,8 @@ Examples
 A few examples of irfu-matlab usage can be seen under web page https://sites.google.com/site/irfumatlab/
 
 
-Instalation
-------------
+Installation
+-------------
 
 Download the code and add to the Matlab path the directory 'irfu-matlab'.
 
@@ -29,7 +29,7 @@ If you do not use command line there are github programs for Windows and Mac, se
 Usage
 -----
 
-Each time starting new Matlab session exectue in Matlab:
+Each time starting new Matlab session execute in Matlab:
 
 > irf
 
@@ -37,8 +37,8 @@ To see help execute in Matlab
 
 > help irfu-matlab
 
-To test some example execute in Matlab:
+To test an example execute in Matlab:
 
 > Example_1
 
-this should download Cluster data from caa archive and plot the figure consisting of 5 panels with data from different instruments. 
+this should download Cluster data from the CSA archive and plot the figure consisting of 5 panels with data from different instruments. 

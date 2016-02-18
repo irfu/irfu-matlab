@@ -33,14 +33,17 @@
 %
 %   Given:
 %
-%      a   {3x1 ARRAY or 3xN ARRAY, DOUBLE PRECISION}, the vector(s) whose
-%          component orthogonal to 'b' is sought.
+%      a   the 3-vector(s) whose component orthogonal to 'b' is sought.
+%
+%          [3,n] = size(a); double = class(a)
 %
 %          (There is a unique decomposition of a into a sum v + p, where v is
 %          parallel to b and p is orthogonal to b.  We want the component p.)
 %
-%      b   {3x1 ARRAY or 3xN ARRAY, DOUBLE PRECISION}, the second vector(s)
-%          used as a reference for the decomposition of 'a'.
+%      b   the second 3-vector(s) used as a reference for the decomposition
+%          of 'a'.
+%
+%          [3,n] = size(b); double = class(b)
 %
 %      An implicit assumption exists that 'a' and 'b' are specified
 %      in the same reference frame. If this is not the case, the numerical
@@ -52,8 +55,10 @@
 %
 %   returns:
 %
-%      vperp   {3x1 ARRAY or 3xN ARRAY, DOUBLE PRECISION}, vector(s)
-%              containing the component of 'a' orthogonal to 'b'.
+%      vperp   the 3-vector(s) containing the component of 'a' orthogonal
+%              to 'b'.
+%
+%              [3,n] = size(vperp); double = class(vperp)
 %
 %-Examples
 %
@@ -113,6 +118,10 @@
 %   MICE.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.1, 09-NOV-2012, EDW (JPL)
+%
+%      Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.0.0, 22-APR-2010, EDW (JPL)
 %

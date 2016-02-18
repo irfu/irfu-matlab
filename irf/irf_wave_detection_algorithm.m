@@ -1,7 +1,10 @@
 function h=irf_wave_detection_algorithm(tint,scId,varargin)    
-%function [t,newfreq,powerCrossCov_SM_plot,hCyclFreq,heCyclFreq,oCyclFreq,...
- %   power_median_removed,waveFrequencies]=irf_wave_detection_algorithm(tint,varargin)    
-
+%IRF_WAVE_DETECTION_ALGORITHM  Find banded EMIC waves 
+%
+% [t,newfreq,powerCrossCov_SM_plot,hCyclFreq,heCyclFreq,oCyclFreq,...
+%     power_median_removed,waveFrequencies] = ...
+%     IRF_WAVE_DETECTION_ALGORITHM(tint,varargin)  
+%
 % IRF_WAVE_DETECTION_ALGORITHM duplicates the method of Bortnik et al. 2007
 % to detect EMIC waves
 %
@@ -361,7 +364,9 @@ cmapSpace = irf_colormap('space');
     hold off
     caxis([-6.5 2.5]);
     colormap(cmapSpace);
-    hca2=colorbar('peer',h(1));
+    if isa(h(1),'handle'), hca2 = colorbar(h(1)); % HG2
+    else hca2 = colorbar('peer',h(1));
+    end
     ylabel(hca2,{'log(B)'; '[nT^2/Hz]'});
 
            %%%%% B spectra with median removed
@@ -384,7 +389,9 @@ cmapSpace = irf_colormap('space');
     hold off
     caxis([-3.5 2.5]);
     colormap(cmapSpace);
-    hca2=colorbar('peer',h(2));
+    if isa(h(1),'handle'), hca2 = colorbar(h(1)); % HG2
+    else hca2 = colorbar('peer',h(1));
+    end
     ylabel(hca2,{'log(B)'; '[nT^2/Hz]'});
 
    

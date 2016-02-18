@@ -29,6 +29,9 @@ switch lower(varName(5:6))
   case 'sc'
     instrumentId = 'scm';
     levelId = 'l2';
+  case 'sp'
+    instrumentId = 'state';
+    levelId = 'l1';
   otherwise
     error('This instrument is not implemented')
 end
@@ -64,17 +67,18 @@ end
 if ~isempty(res), res(diff(res(:,1))==0,:) = []; end 
 
   function res = read_var
-    tmpData = cdfread(fileToRead,'CombineRecords',true,'Variable',varName);
+    res = spdfcdfread(fileToRead,'CombineRecords',true,'Variable',varName);
+    if isempty(res), return, end
     depTimeVar = find_depend_time();
     if ~isempty(depTimeVar)
-      tmpTime = cdfread(fileToRead,'CombineRecords',true,'Variable',depTimeVar);
-      tmpData = [tmpTime double(tmpData)];
+      tmpTime = spdfcdfread(fileToRead,'CombineRecords',true,'Variable',depTimeVar);
+      res = [tmpTime double(res)];
     end
-    res = tmpData;
+    res = res;
     
     function res = find_depend_time
       res = '';
-      info = cdfinfo(fileToRead);
+      info = spdfcdfinfo(fileToRead);
       for iVar = 1:length(info.VariableAttributes.DEPEND_TIME)
         if strcmpi(info.VariableAttributes.DEPEND_TIME{iVar,1},varName)
           res = info.VariableAttributes.DEPEND_TIME{iVar,2};
@@ -89,9 +93,9 @@ if ~isempty(res), res(diff(res(:,1))==0,:) = []; end
     res = '';
     fullPath = sprintf('%s%sth%s%s%s%s%s%s%02d',dataDir,filesep,...
       thId,filesep,levelId,filesep,instrumentId,filesep,timeVecStart(1));
-    files = dir(sprintf('%s%sth%s_l2_%s_%d%02d%02d_v*.cdf',...
+    files = dir(sprintf('%s%sth%s_%s_%s_%d%02d%02d_v*.cdf',...
       fullPath,filesep,...
-      thId,instrumentId,timeVecStart(1),timeVecStart(2),timeVecStart(3)));
+      thId,levelId,instrumentId,timeVecStart(1),timeVecStart(2),timeVecStart(3)));
     if ~isempty(files)
       maxVer = 0; fileIdx = 1;
       for iFile = length(files)

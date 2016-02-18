@@ -27,7 +27,28 @@ function [out]=irf_convert_fac(inp,B0,r)
 %			or inp can be cell array of such vectors
 %    out= output in the same form as inp
 %
-% Note: all input parameters must be in the same coordinate system
+% Note: all input parameters must be in the same coordinate system 
+
+% Begin temporary fix to convert TS format to older format (Must include spacecraft position)
+
+isinpTS = isa(inp,'TSeries');
+if isinpTS, 
+    inptemp = inp;
+    ttemp = inp.time.epochUnix;
+    datatemp = double(inp.data);
+    inp = [ttemp, double(datatemp)];
+end
+if isa(B0,'TSeries'), 
+    ttemp = B0.time.epochUnix;
+    datatemp = double(B0.data);
+    B0 = [ttemp, datatemp];
+end
+if isa(r,'TSeries'), 
+    ttemp = r.time.epochUnix;
+    datatemp = double(r.data);
+    r = [ttemp, datatemp];
+end
+% End of temporary fix
 
 if nargin<3, r=[1 0 0];
 end
@@ -68,15 +89,24 @@ if iscell(inp)
 			error('all inputs must have the same time axis')
 		end
 		out{j}=calculate_out(inp{j});
+        if isinpTS,
+            inptemp.data =  out(:,[2:4]);
+            out = inptemp;
+        end
 	end
 else
 	if isempty(inp)  % return the transformation matrix instead
-    out = struct('t',B0(:,1),'rotMatrix',zeros(length(B0(:,1)),3,3));
+    out = struct('t',B0(:,1),'rotMatrix',zeros(length(B0(:,1)),3,3),...
+      'b',B0(:,2:4),'r',r(:,2:4));
     out.rotMatrix(:,1,:) = Rperpx(:,2:4);
     out.rotMatrix(:,2,:) = Rperpy(:,2:4);
     out.rotMatrix(:,3,:) = Rpar(:,2:4);
   else
     out=calculate_out(inp);
+        if isinpTS,
+            inptemp.data =  out(:,[2:4]);
+            out = inptemp;
+        end
   end
 end
 

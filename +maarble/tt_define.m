@@ -11,12 +11,13 @@
 
 %% Cluster
 Units=irf_units;
-tintIso='2001-01-01T00:00:00.000Z/2012-01-01T00:00:00.000Z';
-tint=irf_time(tintIso,'iso2tint');
+tintIso='2001-01-01T00:00:00.000Z/2013-01-01T00:00:00.000Z';
+tint=irf_time(tintIso,'utc>tint');
 disp(['Using time interval: ' tintIso]);
 
 disp('Loading Cluster 1-min positions');
-load /data/caa/CAA/mR_SM_1min; % load Cluster positions 1min resolution
+load /data/caalocal/mR_1min; % load Cluster positions 1min resolution
+c_eval('R?SM = irf.geocentric_coordinate_transformation(R?,''GSE>SM'');')
 c_eval('R?=R?SM;clear R?SM;')
 c_eval('izero=find(R?(:,1)==0);R?(izero,:)=[];');
 c_eval('R?=irf_tlim(R?,tint);');
@@ -25,7 +26,7 @@ c_eval('RRE?=irf_tappl(R?(:,[1 5]),''*Units.km/Units.RE'');');
 
 disp('Calculating Cluster mlat, saving to matMlat');
 c_eval('mlat?=[R?(:,1) asin(R?(:,4)./R?(:,5))*180/pi];');
-save /data/caa/CAA/matMlat mlat1 mlat2 mlat3 mlat4
+save /data/caalocal/matMlat mlat1 mlat2 mlat3 mlat4
 c_eval('clear R?;');
 
 %load /data/caa/CAA/matMlat
@@ -56,7 +57,7 @@ end
 %% THEMIS
 Units=irf_units;
 tintIso='2007-01-01T00:00:00.000Z/2012-01-01T00:00:00.000Z';
-tint=irf_time(tintIso,'iso2tint');
+tint=irf_time(tintIso,'utc>tint');
 disp(['Using time interval: ' tintIso]);
 
 disp('Loading THEMIS 1-min positions');

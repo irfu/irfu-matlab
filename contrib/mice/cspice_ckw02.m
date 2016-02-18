@@ -1,63 +1,63 @@
 %-Abstract
 %
 %   CSPICE_CKW02 adds a type 2 segment to a C-kernel.
-%   
+%
 %-Disclaimer
 %
 %   THIS SOFTWARE AND ANY RELATED MATERIALS WERE CREATED BY THE
 %   CALIFORNIA  INSTITUTE OF TECHNOLOGY (CALTECH) UNDER A U.S.
-%   GOVERNMENT CONTRACT WITH THE NATIONAL AERONAUTICS AND SPACE 
+%   GOVERNMENT CONTRACT WITH THE NATIONAL AERONAUTICS AND SPACE
 %   ADMINISTRATION (NASA). THE SOFTWARE IS TECHNOLOGY AND SOFTWARE
-%   PUBLICLY AVAILABLE UNDER U.S. EXPORT LAWS AND IS PROVIDED 
+%   PUBLICLY AVAILABLE UNDER U.S. EXPORT LAWS AND IS PROVIDED
 %   "AS-IS" TO THE RECIPIENT WITHOUT WARRANTY OF ANY KIND, INCLUDING
 %   ANY WARRANTIES OF PERFORMANCE OR MERCHANTABILITY OR FITNESS FOR
 %   A PARTICULAR USE OR PURPOSE (AS SET FORTH IN UNITED STATES UCC
-%   SECTIONS 2312-2313) OR FOR ANY PURPOSE WHATSOEVER, FOR THE 
+%   SECTIONS 2312-2313) OR FOR ANY PURPOSE WHATSOEVER, FOR THE
 %   SOFTWARE AND RELATED MATERIALS, HOWEVER USED.
 %
-%   IN NO EVENT SHALL CALTECH, ITS JET PROPULSION LABORATORY, 
-%   OR NASA BE LIABLE FOR ANY DAMAGES AND/OR COSTS, INCLUDING, 
-%   BUT NOT LIMITED TO, INCIDENTAL OR CONSEQUENTIAL DAMAGES OF 
-%   ANY KIND, INCLUDING ECONOMIC DAMAGE OR INJURY TO PROPERTY 
-%   AND LOST PROFITS, REGARDLESS OF WHETHER CALTECH, JPL, OR 
-%   NASA BE ADVISED, HAVE REASON TO KNOW, OR, IN FACT, SHALL 
+%   IN NO EVENT SHALL CALTECH, ITS JET PROPULSION LABORATORY,
+%   OR NASA BE LIABLE FOR ANY DAMAGES AND/OR COSTS, INCLUDING,
+%   BUT NOT LIMITED TO, INCIDENTAL OR CONSEQUENTIAL DAMAGES OF
+%   ANY KIND, INCLUDING ECONOMIC DAMAGE OR INJURY TO PROPERTY
+%   AND LOST PROFITS, REGARDLESS OF WHETHER CALTECH, JPL, OR
+%   NASA BE ADVISED, HAVE REASON TO KNOW, OR, IN FACT, SHALL
 %   KNOW OF THE POSSIBILITY.
 %
-%   RECIPIENT BEARS ALL RISK RELATING TO QUALITY AND PERFORMANCE 
-%   OF THE SOFTWARE AND ANY RELATED MATERIALS, AND AGREES TO 
-%   INDEMNIFY CALTECH AND NASA FOR ALL THIRD-PARTY CLAIMS RESULTING 
+%   RECIPIENT BEARS ALL RISK RELATING TO QUALITY AND PERFORMANCE
+%   OF THE SOFTWARE AND ANY RELATED MATERIALS, AND AGREES TO
+%   INDEMNIFY CALTECH AND NASA FOR ALL THIRD-PARTY CLAIMS RESULTING
 %   FROM THE ACTIONS OF RECIPIENT IN THE USE OF THE SOFTWARE.
 %
 %-I/O
 %
 %   Given:
 %
-%      handle   scalar integer value of the file handle for 
+%      handle   scalar integer value of the file handle for
 %               an open CK file returned from cspice_ckopn
-%               
+%
 %      begtim   double precision scalar encoded SCLK segment
 %               begin time
-%               
-%      endtim   double precision scalar encoded SCLK segment 
+%
+%      endtim   double precision scalar encoded SCLK segment
 %               end time
-%               
+%
 %      inst     the scalar integer NAIF instrument ID code
-%      
+%
 %      ref      scalar string identifying the reference frame for the
 %               segment
-%   
+%
 %      segid    a scalar string to identify the segment
-%      
+%
 %      start    a double precision Nx1 array containing
 %               encoded SCLK interval start times
-%               
+%
 %      stop     a double precision Nx1 array containing
 %               the encoded SCLK interval stop times
 %
 %      quats    a double precision 4xN matrix of SPICE style quaternions
 %               representing instrument pointing
-%               
-%      avvs     a double precision 3xN  matrix of angular 
+%
+%      avvs     a double precision 3xN  matrix of angular
 %               velocity vectors in units of radians per second
 %
 %      rates    a double precision Nx1 array containing the
@@ -65,14 +65,15 @@
 %
 %   the call:
 %
-%      cspice_ckw02( handle , ...
+%      cspice_ckw02( handle,  ...
 %                    begtime, ...
 %                    endtime, ...
-%                    inst   , ...
-%                    ref    , ...
-%                    avflag , ...
-%                    segid  , ...
-%                    sclkdp , ...
+%                    inst,    ...
+%                    ref,     ...
+%                    segid,   ...
+%                    start,   ...
+%                    stop,    ...
+%                    quats,   ...
 %                    avvs,    ...
 %                    rates )
 %
@@ -87,7 +88,7 @@
 %   and the machine specific arithmetic implementation.
 %
 %      %
-%      % Create a CK type 2 segment; fill with data for a simple time 
+%      % Create a CK type 2 segment; fill with data for a simple time
 %      % dependent rotation and angular velocity.
 %      %
 %
@@ -103,11 +104,11 @@
 %
 %      %
 %      % 'NCOMCH' is the number of characters to reserve for the kernel's
-%      % comment area. This example doesn't write comments, so set to 
+%      % comment area. This example doesn't write comments, so set to
 %      % zero.
 %      %
 %      NCOMCH = 0;
-%   
+%
 %      %
 %      % The base reference from for the rotation data.
 %      %
@@ -117,19 +118,19 @@
 %      % Time spacing in encoded ticks.
 %      %
 %      SPACING_TICKS = 10.;
-%      
+%
 %      %
 %      % Time spacing in seconds
 %      %
 %      SPACING_SECS = SPACING_TICKS * SECPERTICK;
-%   
+%
 %      %
 %      % Declare an angular rate in radians per sec.
 %      %
 %      RATE = 1.d-2;
 %
 %      %
-%      % Create a 4xMAXREC matrix for quaternions, and a 
+%      % Create a 4xMAXREC matrix for quaternions, and a
 %      % 3xMAXREC for expavs.
 %      %
 %      quats = zeros( [4, MAXREC] );
@@ -152,7 +153,7 @@
 %      quats(:,1) = work_quat;
 %
 %      %
-%      % Create an angular velocity vector. Copy to the third (Z) row 
+%      % Create an angular velocity vector. Copy to the third (Z) row
 %      % of 'av'. This vector is in the 'REF' reference frame and
 %      % indicates a constant rotation about the Z axis.
 %      %
@@ -170,7 +171,7 @@
 %      rates  = zeros( [MAXREC,1] ) + SECPERTICK;
 %
 %      %
-%      % Create an array of encoded tick values in increments of 
+%      % Create an array of encoded tick values in increments of
 %      % 'SPACING_TICKS' with an initial value of 1000 ticks...
 %      %
 %      sclkdp = [0:MAXREC-1]' * SPACING_TICKS + 1000;
@@ -185,7 +186,7 @@
 %      for i = 2:MAXREC
 %
 %         %
-%         % Create the transformation matrix for a rotation of 'theta' 
+%         % Create the transformation matrix for a rotation of 'theta'
 %         % about the Z axis. Calculate 'theta' from the constant
 %         % angular rate 'RATE' at increments of 'SPACING_SECS'.
 %         %
@@ -229,7 +230,7 @@
 %                        av,      ...
 %                        rates )
 %      catch
-%         error( [ 'Failure: ' lasterr] ) 
+%         error( [ 'Failure: ' lasterr] )
 %      end
 %
 %      %
@@ -252,10 +253,14 @@
 %
 %   MICE.REQ
 %   CK.REQ
-%   DAF.REQ 
-%   SCLK.REQ 
+%   DAF.REQ
+%   SCLK.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.2, 11-JUN-2013, EDW (JPL)
+%
+%       I/O descriptions edits to conform to Mice documentation format.
 %
 %   -Mice Version 1.0.1, 30-DEC-2008, EDW (JPL)
 %
@@ -264,9 +269,9 @@
 %   -Mice Version 1.0.0, 04-JAN-2008, EDW (JPL)
 %
 %-Index_Entries
-% 
-%   write ck type_2 pointing data segment 
-% 
+%
+%   write ck type_2 pointing data segment
+%
 %-&
 
 function cspice_ckw02( handle,  ...

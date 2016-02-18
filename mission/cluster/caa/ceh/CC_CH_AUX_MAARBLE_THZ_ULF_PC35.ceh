@@ -9,7 +9,7 @@ INCLUDE        =   "CC_CH_AUX_INST.ceh"
 ! DATASET LEVEL METADATA
 !
 START_META     =   DATASET_ID
-   ENTRY       =   "CC_CH_AUX_MAARBLE_THXXX_ULF_PC35"
+   ENTRY       =   "CC_CP_AUX_MAARBLE_THXXX_ULF_PC35"
 END_META       =   DATASET_ID
 !
 START_META     =   DATA_TYPE
@@ -57,7 +57,6 @@ START_META     =   DATASET_DESCRIPTION
 END_META       =   DATASET_DESCRIPTION
 !
 START_META     =   CONTACT_COORDINATES
-   ENTRY       =   "Meghan Mella>THEMIS ULF data provider>meghan.mella@irfu.se"
    ENTRY       =   "Yuri Khotyaitsev>MAARBLE Wave Database leader>yuri@irfu.se"
 END_META       =   CONTACT_COORDINATES
 !
@@ -91,7 +90,7 @@ END_META       =   ACKNOWLEDGEMENT
 !
 ! PARAMETER LEVEL METADATA
 !
-START_VARIABLE  =  Time__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
+START_VARIABLE  =  Time__CC_CP_AUX_MAARBLE_THXXX_ULF_PC35
     PARAMETER_TYPE      = "Support_Data"
     CATDESC             = "time tag"
     UNITS               = "s"
@@ -104,9 +103,9 @@ START_VARIABLE  =  Time__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
     LABLAXIS            = "UT"
     DELTA_PLUS          = 30 ! integration interval
     DELTA_MINUS         = 30
-END_VARIABLE    =  Time__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
+END_VARIABLE    =  Time__CC_CP_AUX_MAARBLE_THXXX_ULF_PC35
 !
-START_VARIABLE = Frequency__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
+START_VARIABLE = Frequency__CC_CP_AUX_MAARBLE_THXXX_ULF_PC35
    PARAMETER_TYPE     = "Support_Data"
    CATDESC            = "Interval centred frequency tag"
    UNITS              = "Hz"
@@ -118,15 +117,15 @@ START_VARIABLE = Frequency__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
    FIELDNAM           = "Frequency bin centres"
    LABLAXIS           = "F"
    LABEL_1            = "F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F"
-   DELTA_PLUS         = Frequency_BHW__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
-   DELTA_MINUS        = Frequency_BHW__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
+   DELTA_PLUS         = Frequency_BHW__CC_CP_AUX_MAARBLE_THXXX_ULF_PC35
+   DELTA_MINUS        = Frequency_BHW__CC_CP_AUX_MAARBLE_THXXX_ULF_PC35
    SCALETYP           = "Log"
    DATA               = 0.0020,0.0024,0.0030,0.0036,0.0044,0.0053,0.0065,0.0079,0.0096,0.0116, \
                         0.0141,0.0172,0.0209,0.0254,0.0309,0.0376,0.0457,0.0556,0.0676,0.0822, \
                         0.1000
-END_VARIABLE = Frequency__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
+END_VARIABLE = Frequency__CC_CP_AUX_MAARBLE_THXXX_ULF_PC35
 !
-START_VARIABLE = Frequency_BHW__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
+START_VARIABLE = Frequency_BHW__CC_CP_AUX_MAARBLE_THXXX_ULF_PC35
    PARAMETER_TYPE     = "Support_Data"
    CATDESC            = "Frequency bin half widths"
    UNITS              = "Hz"
@@ -142,9 +141,9 @@ START_VARIABLE = Frequency_BHW__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
    DATA               = 0.0002,0.0002,0.0003,0.0004,0.0004,0.0005,0.0006,0.0008,0.0009,0.0011, \
                         0.0014,0.0017,0.0020,0.0025,0.0030,0.0037,0.0045,0.0054,0.0066,0.0081, \
                         0.0097
-END_VARIABLE = Frequency_BHW__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
+END_VARIABLE = Frequency_BHW__CC_CP_AUX_MAARBLE_THXXX_ULF_PC35
 !
-START_VARIABLE = BB_xxyyzz_fac__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
+START_VARIABLE = BB_xxyyzz_fac__CC_CP_AUX_MAARBLE_THXXX_ULF_PC35
    PARAMETER_TYPE     = "Data"
    ENTITY             = "Magnetic_Field"
    PROPERTY           = "Vector"
@@ -162,13 +161,13 @@ START_VARIABLE = BB_xxyyzz_fac__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
    FIELDNAM           = "Magnetic Power Spectral Density"
    LABLAXIS           = "B PSD"
    REPRESENTATION_2   = "xx","yy","zz"
-   DEPEND_0           = Time__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
-   DEPEND_1           = Frequency__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
+   DEPEND_0           = Time__CC_CP_AUX_MAARBLE_THXXX_ULF_PC35
+   DEPEND_1           = Frequency__CC_CP_AUX_MAARBLE_THXXX_ULF_PC35
    LABEL_2            = "Bx^2","By^2","Bz^2"
    QUALITY            = 3
-END_VARIABLE = BB_xxyyzz_fac__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
+END_VARIABLE = BB_xxyyzz_fac__CC_CP_AUX_MAARBLE_THXXX_ULF_PC35
 !
-START_VARIABLE = KSVD_fac__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
+START_VARIABLE = KSVD_fac__CC_CP_AUX_MAARBLE_THXXX_ULF_PC35
    PARAMETER_TYPE     = "Data"
    ENTITY             = "Compound"   
    PROPERTY           = "Vector"
@@ -186,12 +185,12 @@ START_VARIABLE = KSVD_fac__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
    FILLVAL            = -999.
    FIELDNAM           = "Direction of propagation"
    LABLAXIS           = "THSVD"
-   DEPEND_0           = Time__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
-   DEPEND_1           = Frequency__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
+   DEPEND_0           = Time__CC_CP_AUX_MAARBLE_THXXX_ULF_PC35
+   DEPEND_1           = Frequency__CC_CP_AUX_MAARBLE_THXXX_ULF_PC35
    QUALITY            = 3
-END_VARIABLE = KSVD_fac__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
+END_VARIABLE = KSVD_fac__CC_CP_AUX_MAARBLE_THXXX_ULF_PC35
 !
-START_VARIABLE = ELLSVD__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
+START_VARIABLE = ELLSVD__CC_CP_AUX_MAARBLE_THXXX_ULF_PC35
    PARAMETER_TYPE     = "Data"
    ENTITY             = "Compound"        
    PROPERTY           = "Magnitude"
@@ -204,12 +203,12 @@ START_VARIABLE = ELLSVD__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
    FILLVAL            = -999.
    FIELDNAM           = "Ellipticity of the polarization (SVD)."
    LABLAXIS           = "ELLSVD"
-   DEPEND_0           = Time__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
-   DEPEND_1           = Frequency__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
+   DEPEND_0           = Time__CC_CP_AUX_MAARBLE_THXXX_ULF_PC35
+   DEPEND_1           = Frequency__CC_CP_AUX_MAARBLE_THXXX_ULF_PC35
    QUALITY            = 3
-END_VARIABLE = ELLSVD__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
+END_VARIABLE = ELLSVD__CC_CP_AUX_MAARBLE_THXXX_ULF_PC35
 !
-START_VARIABLE = PLANSVD__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
+START_VARIABLE = PLANSVD__CC_CP_AUX_MAARBLE_THXXX_ULF_PC35
    PARAMETER_TYPE     = "Data"
    ENTITY             = "Compound"        
    PROPERTY           = "Magnitude"
@@ -222,12 +221,12 @@ START_VARIABLE = PLANSVD__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
    FILLVAL            = -999.
    FIELDNAM           = "Planarity of the polarization (SVD)."
    LABLAXIS           = "PLANSVD"
-   DEPEND_0           = Time__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
-   DEPEND_1           = Frequency__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
+   DEPEND_0           = Time__CC_CP_AUX_MAARBLE_THXXX_ULF_PC35
+   DEPEND_1           = Frequency__CC_CP_AUX_MAARBLE_THXXX_ULF_PC35
    QUALITY            = 3
-END_VARIABLE = PLANSVD__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
+END_VARIABLE = PLANSVD__CC_CP_AUX_MAARBLE_THXXX_ULF_PC35
 !
-START_VARIABLE = DOP__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
+START_VARIABLE = DOP__CC_CP_AUX_MAARBLE_THXXX_ULF_PC35
    PARAMETER_TYPE     = "Data"
    ENTITY             = "Compound"         
    PROPERTY           = "Magnitude"
@@ -240,12 +239,12 @@ START_VARIABLE = DOP__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
    FILLVAL            = -999.
    FIELDNAM           = "3D Degree of polarization."
    LABLAXIS           = "DOP"
-   DEPEND_0           = Time__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
-   DEPEND_1           = Frequency__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
+   DEPEND_0           = Time__CC_CP_AUX_MAARBLE_THXXX_ULF_PC35
+   DEPEND_1           = Frequency__CC_CP_AUX_MAARBLE_THXXX_ULF_PC35
    QUALITY            = 3
-END_VARIABLE = DOP__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
+END_VARIABLE = DOP__CC_CP_AUX_MAARBLE_THXXX_ULF_PC35
 !
-START_VARIABLE = POLSVD__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
+START_VARIABLE = POLSVD__CC_CP_AUX_MAARBLE_THXXX_ULF_PC35
    PARAMETER_TYPE     = "Data"
    ENTITY             = "Compound"         
    PROPERTY           = "Magnitude"
@@ -258,12 +257,12 @@ START_VARIABLE = POLSVD__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
    FILLVAL            = -999.
    FIELDNAM           = "Degree of polarization in the polarization plane (SVD)."
    LABLAXIS           = "POLSVD"
-   DEPEND_0           = Time__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
-   DEPEND_1           = Frequency__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
+   DEPEND_0           = Time__CC_CP_AUX_MAARBLE_THXXX_ULF_PC35
+   DEPEND_1           = Frequency__CC_CP_AUX_MAARBLE_THXXX_ULF_PC35
    QUALITY            = 3
-END_VARIABLE = POLSVD__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
+END_VARIABLE = POLSVD__CC_CP_AUX_MAARBLE_THXXX_ULF_PC35
 !
-START_VARIABLE = PV_fac__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
+START_VARIABLE = PV_fac__CC_CP_AUX_MAARBLE_THXXX_ULF_PC35
    PARAMETER_TYPE     = "Data"
    ENTITY             = "Compound"           
    PROPERTY           = "Component"
@@ -281,12 +280,12 @@ START_VARIABLE = PV_fac__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
    REPRESENTATION_2   = "r","t","p"
    LABEL_2            = "PV(amp)", "PV(theta)", "PV(phi)"
    LABLAXIS           = "PFlux"
-   DEPEND_0           = Time__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
-   DEPEND_1           = Frequency__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
+   DEPEND_0           = Time__CC_CP_AUX_MAARBLE_THXXX_ULF_PC35
+   DEPEND_1           = Frequency__CC_CP_AUX_MAARBLE_THXXX_ULF_PC35
    QUALITY            = 3
-END_VARIABLE = PV_fac__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
+END_VARIABLE = PV_fac__CC_CP_AUX_MAARBLE_THXXX_ULF_PC35
 !
-START_VARIABLE = ESUM__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
+START_VARIABLE = ESUM__CC_CP_AUX_MAARBLE_THXXX_ULF_PC35
    PARAMETER_TYPE     = "Data"
    ENTITY             = "Electric_Field"           
    PROPERTY           = "Magnitude"
@@ -300,12 +299,12 @@ START_VARIABLE = ESUM__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
    FILLVAL            = -1.00E+31
    FIELDNAM           = "Sum of the two electric auto-power spectra."
    LABLAXIS           = "ESUM"
-   DEPEND_0           = Time__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
-   DEPEND_1           = Frequency__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
+   DEPEND_0           = Time__CC_CP_AUX_MAARBLE_THXXX_ULF_PC35
+   DEPEND_1           = Frequency__CC_CP_AUX_MAARBLE_THXXX_ULF_PC35
    QUALITY            = 3
-END_VARIABLE = ESUM__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
+END_VARIABLE = ESUM__CC_CP_AUX_MAARBLE_THXXX_ULF_PC35
 !
-START_VARIABLE = BMAG__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
+START_VARIABLE = BMAG__CC_CP_AUX_MAARBLE_THXXX_ULF_PC35
    PARAMETER_TYPE     = "Data"
    ENTITY             = "Magnetic_Field"
    PROPERTY           = "Magnitude"
@@ -318,11 +317,11 @@ START_VARIABLE = BMAG__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
    FILLVAL            = -1.00E+31
    FIELDNAM           = "DC Magnetic Field Magnutude"
    LABLAXIS           = "B"
-   DEPEND_0           = Time__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
+   DEPEND_0           = Time__CC_CP_AUX_MAARBLE_THXXX_ULF_PC35
    QUALITY            = 3
-END_VARIABLE = BMAG__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
+END_VARIABLE = BMAG__CC_CP_AUX_MAARBLE_THXXX_ULF_PC35
 !
-START_VARIABLE = EE_xxyyzz_fac__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
+START_VARIABLE = EE_xxyyzz_fac__CC_CP_AUX_MAARBLE_THXXX_ULF_PC35
    PARAMETER_TYPE     = "Data"
    ENTITY             = "Electric_Field"
    PROPERTY           = "Vector"
@@ -340,10 +339,10 @@ START_VARIABLE = EE_xxyyzz_fac__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
    FIELDNAM           = "Electric Power Spectral Density"
    LABLAXIS           = "E PSD"
    REPRESENTATION_2   = "xx","yy","zz"
-   DEPEND_0           = Time__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
-   DEPEND_1           = Frequency__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
+   DEPEND_0           = Time__CC_CP_AUX_MAARBLE_THXXX_ULF_PC35
+   DEPEND_1           = Frequency__CC_CP_AUX_MAARBLE_THXXX_ULF_PC35
    LABEL_2            = "Ex^2","Ey^2","Ez^2"
    QUALITY            = 3
-END_VARIABLE = EE_xxyyzz_fac__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
+END_VARIABLE = EE_xxyyzz_fac__CC_CP_AUX_MAARBLE_THXXX_ULF_PC35
 
 

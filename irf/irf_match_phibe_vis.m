@@ -7,7 +7,7 @@ function out = irf_match_phibe_vis(type,varargin)
 % 
 %   Examples:
 %       % Direction
-%       gif_stuff_dir = IRF_MATCH_PHIBE_VIS('direction',x,y,z,corr_dir,intEdt,Bz,En,Ek); 
+%       gif_stuff_dir = IRF_MATCH_PHIBE_VIS('direction',x,y,z,corr_dir,intEdt,Bz,Ek,En); 
 %       imwrite(gif_stuff_dir.im,gif_stuff_dir.map,'mygif_dir.gif','DelayTime',0.01,'LoopCount',inf);
 %
 %       % Velocity
@@ -76,7 +76,7 @@ case 'direction' % gif with normalized phi_B and intEdt for different propagatio
         irf_plot(h(3),B(:,[1 k+1])); ylabel(h(3),'E_k'); hold(h(3),'off')    
         ylimk=[min(min(B(:,2:end))) max(max(B(:,2:end)))]; set(h(3),'ylim',ylimk);
         irf_plot(h(4),C(:,[1 k+1])); ylabel(h(4),'E_n'); hold(h(4),'off')
-        ylimn=[min(min(C(:,2:end))) max(max(C(:,2:end)))]; set(h(4),'ylim',ylimk);
+        ylimn=[min(min(C(:,2:end))) max(max(C(:,2:end)))]; set(h(4),'ylim',ylimn);
         irf_zoom(h([1 3:4]),'x',tint);
         grid(h(3),'off');grid(h(4),'off')
 
@@ -133,8 +133,9 @@ case 'velocity' % gif with phi_B and phi_E for different v
     end
     %title_str=[title_str,', ',num2str(B0,'%.f'),' nT, ',num2str(n,'%.2f'), 'cc'];
     ylims=[floor(min(phi_B(:,end))/100) ceil(max(phi_B(:,end))/100)]*110;
+    ylims=[floor(min(phi_B(:,end))) ceil(max(phi_B(:,end)))];
 
-    fig=figure('name','Velocity match');
+    fig=figure('name','Velocity match','position',[560 560 1000 400]);
     set(gcf,'color','white'); % white background for figures (default is grey)
     set(gcf,'defaultAxesFontSize',14);
     set(gcf,'defaultTextFontSize',14);
@@ -170,13 +171,13 @@ case 'velocity/density' % 2D plot of correlation=f(v,n)
     n=args{1};
     v=args{2};
     corr_v=args{3};
-    pcolor(ax,v,n,log10(corr_v)); 
+    pcolor(ax,v,n,log10(abs(corr_v))); 
     shading(ax,'flat')
     title(ax,'Correlation')
     xlabel(ax,'Velocity')
     ylabel(ax,'Density')
     axc=colorbar('peer',ax);               
-    ylabel(axc,'log10(sum((\phi_E-\phi_B)^2))')    
+    ylabel(axc,'log_{10}|sum(log_{10}|\phi_E.\phi_B|)|')    
     vis.ax=ax;
     vis.axc=axc;
 end

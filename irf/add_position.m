@@ -11,6 +11,8 @@ narginchk(2,2)
 
 if ~ishandle(h), error('H is not an axis handle'), end
 if isempty(r), irf_log('func','empty position'), return, end 
+
+if isa(r,'TSeries'), r = irf.ts2mat(r); end
 if size(r,2)~=4, error('R has bad size'), end
 
 r = irf_abs(r);

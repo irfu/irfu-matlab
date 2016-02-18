@@ -1,25 +1,30 @@
 function [ax cb] = c_caa_plot_distribution_function(varargin)
-% C_CAA_PLOT_DISTRIBUTION_FUNCTION Plot particle distribution.
+% C_CAA_PLOT_DISTRIBUTION_FUNCTION  Plots particle pitch angle distribution with
+%                                   data prepared by c_caa_distribution_data.m.
+%   Plots cross-section or polar pitch angle (angle with respect to the 
+%   magnetic field) distributions for various PEACE, CIS and RAPID products.
 %
 %   [ax ax_cb] = C_CAA_PLOT_DSITRIBUTION_FUNTION(ax,'tint',tint,plot_type,...
 %           data_structure,'pitchangle',pitchangles,data_structure)
-%       ax - axis handle, can be given, or not
-%       ax_cb - colorbar handle if plot_type is 'polar'
+%   Needed input:
 %       data_structure - obtained from c_caa_distribution_data.m
+%            can plot two products simultaneously for polar plots
+%   Additional input:
+%       ax - axis handle
+%       ax_cb - colorbar handle if plot_type is 'polar'       
 %       'tint' - time interval or single time in epoch
-%           if [t1 t2] - averages over time for each energy and angle
+%           if [t1 t2] - averages over time for each energy and pitch angle
 %           if t1 - takes the closest energy sweep
 %       't_display' - 'given': displays given time(s) (default)
-%                   'tags': displays tagged time for relevant energy sweep(s)
-%       'plot_type' - 'polar' or 'cross-section' [0 90 180]
-%           supports up to two data_structure, 'cross-section' supports one
+%                     'tags': displays tagged time for relevant energy sweep(s)
+%       'plot_type' - 'polar' or 'cross-section'
+%           'polar' supports up to two data_structure, 'cross-section' supports one
 %       'pitchangle' - pitch angles to plot if 'cross-section' is chosen, 
 %           [0 90 180] is default
 %       'emin' - will only plot values above given energy, in eV
 %       'emin_scale' - the scale will start at this value, in eV, must be 
 %                      above emin, if emin_scale>emin then emin_scale=emin
 %               
-%
 %   Examples:
 %       data_structure = c_caa_distribution_data('C3_CP_PEA_3DXPH_PSD');
 %       h=C_CAA_PLOT_DISTRIBUTION_FUNCTION('tint',tint,'polar',data_structure);
@@ -79,9 +84,18 @@ end
 
 % Return if not enough input is given.
 % Reduce products if too much input is given.
-if isempty(tint)
+if ~exist('tint','var')
     disp('No time interval was given!')
-    return;
+    disp('Taking the largest possible (common) time interval of the product(s)!')
+    tmp_tstart = [];
+    tmp_tstop = [];
+    for oo=1:n_toplot
+        tmp_tstart = [tmp_tstart to_plot{1}.t(1)];
+        tmp_tstop = [tmp_tstop  to_plot{1}.t(end)];
+    end
+    tint = [max(tmp_tstart) min(tmp_tstop)];   
+    clear tmp_tstart tmp_tstop
+    %return;
 end
 switch n_toplot
     case 0
@@ -179,7 +193,9 @@ switch plot_type
         axis(ax,'equal','tight'); 
         shading(ax,'flat');
         grid(ax,'off');
-        cb=colorbar('peer',ax);
+        if isa(ax,'handle'), cb = colorbar(ax); % HG2
+        else cb = colorbar('peer',ax);
+        end
         ylabel(cb,to_plot{1}.p_label)
         
         if 1 % Energy ticks

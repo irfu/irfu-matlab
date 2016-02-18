@@ -6,10 +6,10 @@ function fout=pitch_angle_average(fin,theta,thetaRange,deltaTheta,thetaDimension
 %		theta - pitch angle vector in degrees
 %		thetaRange - theta range to average [theta_min theta_max] (default all)
 %		deltaTheta - step in pitch angle (if not given, calculate)
-%		thetaDimension - which dimension of matrix f correspond to pitch angle 
+%		thetaDimension - which dimension of matrix f correspond to pitch angle
 %
-%	fout matrix has one dimension less than fin, the pitch angle dimension is removed. 
-% 
+%	fout matrix has one dimension less than fin, the pitch angle dimension is removed.
+%
 
 if nargin < 3 || isempty(thetaRange)
 	thetaRange = [min(theta(:)) max(theta(:))];
@@ -20,8 +20,9 @@ end
 if nargin < 5, % define theta dimension
 	szind = (size(fin) == numel(theta));
 	if ~any(szind),
-		irf.log('error','Pitch angle dimension cannot be identified!');
-		error('irf.pitch_angle_average:Pitch angle dimension cannot be identified!');
+		errStr = 'Pitch angle dimension cannot be identified!';
+		irf.log('critical',errStr);
+		error(['irf.pitch_angle_average: ' errStr]);
 	elseif sum(szind) > 1, % more than 1 dimension corresponds theta vector size
 		irf.log('warning','WARNING!!! More than 1 dimension is of the theta vector size, assuming last one is pitch angle');
 		thetaDimension = find(szind,1,'last');

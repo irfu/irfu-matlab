@@ -17,31 +17,32 @@ function [Fpe_out,Fce,Fuh,Fpp,Fcp,FpO,FcO,Va,Vte,Le] = irf_plasma_calc(B_inp,n_i
 %             speeds - 'Va' (Alfven), 'Vte','Vtp','VtO','Vts'
 %         gyroradius - 'Roe','Rop','RoO'
 %
-% returned variables are in SI units, frequencies in Hz, lengths in m
+% returned variables are in SI units, frequencies in Hz, lengths in m.
+% Notation used: In 1D particle with thermal velocity has thermal energy e*T
 %
 % Here is also given a small table for simple/fast estimates of
-% space plasma paremeters with precision <5%
+% space plasma paremeters with precision <=1%
 %  units T[eV] B[nT] n[cc] E[mV/m]
 %
-%  Debye length       [m] = sqrt(200 T/n)
+%  Debye length       [m] = 7.43 sqrt(T/n)
 %  e- plasma f.     [kHz] = 9 sqrt(n)
 %  e- gyrof.         [Hz] = 28 B
-%  e- gyrorad.       [km] = sqrt(10 T) / B
+%  e- gyrorad.       [km] = 3.4 sqrt(T) / B
 %  e- inert. l       [km] = 5.3 / sqrt(n)
-%  e- veloc.       [km/s] = 600 sqrt(T)
+%  e- veloc.       [km/s] = 593 sqrt(T)
 %  H+ plasma f.      [Hz] = 210 sqrt(n)
-%  H+ gyrof.         [Hz] = 0.015 B
-%  H+ veloc.       [km/s] = sqrt(200 T)
-%  H+ gyrorad.       [km] = 100 sqrt(2 T) / B
+%  H+ gyrof.         [Hz] = 0.0153 B
+%  H+ veloc.       [km/s] = 13.8 sqrt(T)
+%  H+ gyrorad.       [km] = 144 sqrt(T) / B
 %  H+ inert. l       [km] = 230 / sqrt(n)
 %  H+ veloc.       [km/s] = 13.8 sqrt(T)
-%  O+ gyrof.        [mHz] = B
-%  O+ veloc.       [km/s] = sqrt(10 T)
-%  O+ gyrorad.       [km] = 100 sqrt(33 T) / B
+%  O+ gyrof.        [mHz] = 0.95 B
+%  O+ veloc.       [km/s] = 3.46 sqrt(T)
+%  O+ gyrorad.       [km] = 578 sqrt(T) / B
 %  lower hybr. f.    [Hz] = sqrt(0.427 B^2 /(1+ 9.7e-6 (B)^2)+2.3e-4 n);
-%  Alfven vel. V_A[km/s]  = 22 B /sqrt(n)
-%  Poynting fl. S[uW/m2]  = 0.8 E B
-%  Plasma beta = 0.4 n T / B^2 = ([gyroradius]/[inertial length])^2
+%  Alfven veloc.   [km/s] = 22 B /sqrt(n)
+%  Poynting flux  [uW/m2] = 0.8 E B
+%  Plasma beta            = 0.4 n T / B^2 = ([gyroradius]/[inertial length])^2
 %  Magnetic pressure[nPa] = (B/50)^2
 %  E_corrotation  [mV/m]  = 0.6e-4 R[RE] B
 
@@ -141,16 +142,16 @@ Wpp = sqrt(np*e^2/Mp/epso);
 WpO = sqrt(no*e^2/Mp/16/epso);
 Va  = B_SI./sqrt(mu0*(np+16*no)*Mp);
 Vae = B_SI./sqrt(mu0*n*Me);
-Vte = c*sqrt(1-1./(Te.*e./(Me*c^2)+1).^2);              % m/s (relativ. correct)
+Vte = c*sqrt(1-1./(Te.*e./(Me*c^2)+1).^2);              % m/s (relativ. correct), particle with Vte has energy e*Te
 Vtp = c*sqrt(1-1./(Ti.*e./(Mp*c^2)+1).^2);              % m/s
-Vts = Vtp.*sqrt(Te./Ti); Vts=Vts(:);                    % ? what is relativistic formula???
+Vts = Vtp.*sqrt(Te./Ti+3); Vts=Vts(:);                    % ? what is relativistic formula???
 VtO = c*sqrt(1-1./(To.*e./(16*Mp*c^2)+1).^2);           % m/s
 gamma_e=1./sqrt(1-(Vte/c).^2);
 gamma_p=1./sqrt(1-(Vtp/c).^2);
 gamma_O=1./sqrt(1-(VtO/c).^2);
 Le = c./Wpe;
 Li = c./Wpp;
-Ld = Vte./Wpe ; % Debye length scale
+Ld = Vte./Wpe/sqrt(2); % Debye length scale, sqrt(2) needed because of Vte definition
 Nd = Ld.*epso*Me.*Vte.^2 / e^2;							% number of e- in Debye sphere
 
 Fpe = Wpe/2/pi; % Hz
@@ -166,6 +167,8 @@ Roe = Me*c./(e*B_SI).*sqrt(gamma_e.^2-1); % m, relativistically correct
 Rop = Mp*c./(e*B_SI).*sqrt(gamma_p.^2-1); % m, relativistically correct
 RoO = Mp*16*c./(e*B_SI).*sqrt(gamma_O.^2-1); % m, relativistically correct
 Ros = Vts./Fcp/2/pi; % m
+
+magneticPressure = B_SI.^2/2/Units.mu0;
 
 % Collision stuff
 Fcol = (n*e^4) ./ (16*pi*epso^2*Me^2*Vte.^3);	% oollision frequency e-/ions
@@ -243,16 +246,18 @@ format_output(l(1,:),ls,'m');
 % etc
 
 fprintf('\n\nOther parameters\n');
-fprintf('\nN_deb  = %7.2e  / number of particle in Debye sphere',Nd);
-fprintf('\n  eta  = %7.2e Ohm m  / Spitzer resistivity',eta);
+fprintf('\nN_deb  = %7.2e        %% number of particle in Debye sphere',Nd);
+fprintf('\n  eta  = %7.2e Ohm m  %% Spitzer resistivity',eta);
+fprintf('\n  P_B  = %7.2e nPa    %% Magnetic pressure ',magneticPressure*1e9);
 
 fprintf('\n\nDimensionless parameters\n');
 
 beta  = Vtp.^2./Va.^2;
-fprintf('\n            beta = %1.2e',beta(1));
+fprintf('\n            beta = %1.2e %% H+ beta',beta(1));
 fprintf('\nbeta*sqrt(Mp/Me) = %1.2e',beta(1)*sqrt(Mp_Me));
 fprintf('\n    beta*(Mp/Me) = %1.2e',beta(1)*Mp_Me);
-fprintf('\n         Gamma_e = %1.2e  / 1./sqrt(1-(Vte/c).^2)\n',gamma_e);
+fprintf('\n         Gamma_e = %1.2e %% 1./sqrt(1-(Vte/c).^2)',gamma_e);
+fprintf('\n');
 
 if nargout>0, Fpe_out = Fpe; end
 

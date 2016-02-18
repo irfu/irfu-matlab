@@ -27,17 +27,24 @@ function [out,out1]=irf(varargin)
 %
 % IRF('demo') demonstration how to use IRF
 
+%this is an edit to load BLAS
+ones(10)*ones(10);
+
 %% Defaults
 % file to check version
 logFileUrl = 'https://raw.github.com/irfu/irfu-matlab/master/log.txt';
 
 %% Input check
 if nargin == 0,
+	setenv('LC_ALL','C'); % temporar fix for R2014a problems on Unix http://goo.gl/Sq1it7
 	irf('check_path');
 	irf('check');
 	irf('ceflib');
 	irf('mice');
 	irf('irbem');
+	irf('check_os');
+	irf('matlab');
+	irf('cdf_leapsecondstable');
 	return;
 else
 	if ischar(varargin{1}),
@@ -52,6 +59,7 @@ end
 switch lower(action)
 	case 'check'
 		[currentVersion,currentVersionDate] = irf('version');
+		disp(['irfu-matlab version: ' currentVersion]);
 		fprintf('Checking if you have latest irfu-matlab... ');
 		try
 			logText      = urlread(logFileUrl);
@@ -71,8 +79,7 @@ switch lower(action)
 			if indices > 1,
 				disp('NO!');
 				disp(' ');
-				disp(['Newest irfu-matlab: ' newestVersion]);
-				disp(['  Your irfu-matlab: ' currentVersion]);
+				disp(['Newest irfu-matlab version: ' newestVersion]);
 				disp('Please update, see <a href="https://github.com/irfu/irfu-matlab">https://github.com/irfu/irfu-matlab</a>');
 				disp('Log of updates: ');
 				for iInd = 1 : indices -1
@@ -102,12 +109,19 @@ switch lower(action)
 			['contrib' filesep 'nasa_cdf_patch'],...
 			};
 		irfDirectories = {'irf','plots',...
+			['plots'   filesep 'mms'],...
 			['mission' filesep 'cluster'],...
 			['mission' filesep 'cluster' filesep 'caa'],...
       ['mission' filesep 'solar_orbiter'],...
       ['mission' filesep 'themis'],...
+      ['mission' filesep 'mms'],...
+      ['mission' filesep 'mms' filesep 'mms_testFunctions'],...
 			};
 		strPath = {contribDirectories{:},irfDirectories{:}}; %#ok<CCAT>
+        if ~any(strfind(path, irf('path'))) % irfu-matlab root folder
+          addpath(irfPath);
+          disp(['Added to path: ' irfPath]);
+        end
 		for iPath = 1:numel(strPath)
 			if notOnIrfPath(strPath{iPath}),
 				pathToAdd = [irfPath strPath{iPath}];
@@ -139,7 +153,7 @@ switch lower(action)
 			if ~ok,
 				disp('MICE  .. NOT OK. Please, contact irfu!');
 			end
-        end
+		end
         end
 	case 'mice_help'
 		disp('Kernel files at IRFU are located at spis:/share/SPICE');
@@ -220,6 +234,100 @@ switch lower(action)
 		else
 			datastore('irfu_matlab','okCeflib',false);
 		end
+    case 'cdf_leapsecondstable'
+      % Check to see if CDF_LEAPSECONDSTABLE is set as environment
+      % variable, as it is used by TT2000 conversions in irf_time. If it is
+      % not, try to set it to the included CDFLeapSeconds.txt. If it is set
+      % verify it points to an exisiting file which is up to date with the
+      % included CDFLeapSeconds.txt. If the file it points to does
+      % not exist try to set it to the included file instead.
+      leapsecondstable = getenv('CDF_LEAPSECONDSTABLE');
+      if( isempty(leapsecondstable) )
+        % It was not set, try to set it.
+        disp('CDF_LEAPSECONDSTABLE was not set in user environment.');
+        disp(['Automatically setting it to: ',which('CDFLeapSeconds.txt')]);
+        if(nargout), out=true; end;
+        datastore('irfu_matlab','okLeapsecondstable',true);
+        try setenv('CDF_LEAPSECONDSTABLE',which('CDFLeapSeconds.txt'));
+        catch
+          disp('Was unsuccesful in setting environment variable.');
+          disp('Falling back to hard coded leap seconds table.');
+          if(nargout), out=false; end
+          datastore('irfu_matlab','okLeapsecondstable',false);
+        end
+      else
+        % It was set, check to see if it is a valid file and if it is up to
+        % date with version in irfu-matlab/contrib/nasa_cdf_patch.
+        if( exist(leapsecondstable,'file') )
+          fileId = fopen(which('CDFLeapSeconds.txt'),'r');
+          leapIRFU = textscan(fileId,'%s','delimiter','\n');
+          fclose(fileId);
+          leapIRFU = leapIRFU{1,1}(end); % Line of last leap second added
+          leapIRFU = str2double(strsplit(leapIRFU{1},' ')); % Convert to num
+          fileId = fopen(leapsecondstable,'r');
+          leapLocal = textscan(fileId,'%s','delimiter','\n');
+          fclose(fileId);
+          leapLocal = leapLocal{1,1}(end); % Line of last leap second added
+          leapLocal = str2double(strsplit(leapLocal{1},' ')); % Convert to num
+          if(leapLocal(4)<leapIRFU(4))
+            disp('Local leap seconds table appears to be out of date.');
+            disp('Please check you system settings and update your table.');
+            disp('Your environment variable CDF_LEAPSECONDSTABLE is set to ',leapsecondstable);
+            fprintf('Presently your table contain leap second %d-%d-%d.\n',leapLocal(1),leapLocal(2),leapLocal(3));
+            fprintf('while the latest leap second is %d-%d-%d.\n',leapIRFU(1),leapIRFU(2),leapIRFU(3));
+            disp('For now, we will use your specified leap seconds table.');
+            if(nargout), out=true; end;
+            datastore('irfu_matlab','okLeapsecondstable',true);
+          else
+            disp('CDF_LEAPSECONDSTABLE is OK');
+            if(nargout), out=true; end;
+            datastore('irfu_matlab','okLeapsecondstable',true);
+          end
+        else
+          disp(['Your environment variable CDF_LEAPSECONDSTABLE was set to ',leapsecondstable,' but this file does not exist?']);
+          disp(['Automatically setting it to: ',which('CDFLeapSeconds.txt'),' instead.']);
+          if(nargout), out=true; end;
+          datastore('irfu_matlab','okLeapsecondstable',true);
+          try setenv('CDF_LEAPSECONDSTABLE',which('CDFLeapSeconds.txt'));
+          catch
+            disp('Was unsuccesful in setting environemnt variable, falling back to hard coded leap seconds table.');
+            if(nargout), out=false; end;
+            datastore('irfu_matlab','okLeapsecondstable',false);
+          end
+        end
+      end
+    case 'check_os'
+      % NASA's SPDF cdf patch use complied mex files. For irfu-matlab only
+      % Linux, Mac and Windows (all of which 64 bit) OS are included.
+      switch(computer)
+        case({'GLNXA64','PCWIN64','MACI64'})
+          % OK, system is supported.
+          disp('Operating system is OK');
+          if(nargout), out=true; end;
+            datastore('irfu_matlab','okCheckOS',true);
+	case('PCWIN')
+	  % Untested, no guarantee it will work.
+	  disp('Operating system, Windows 32 bit, is not fully tested with IRFU-MATLAB.');
+	  disp('Recommended OS are: Linux, Mac and Windows (all 64 bit).');
+	  if(nargout), out=true; end;
+            datastore('irfu_matlab','okCheckOS',true);
+        otherwise
+          disp('Currently only compiled SPDF* mex files for the Linux, Windows and Mac operating systems (all 64bit) are included.');
+          disp('If running on other system, please contact IRFU for help.');
+          if(nargout), out=false; end;
+            datastore('irfu_matlab','okCheckOS',false);
+      end
+    case 'matlab'
+      % Issue warning if running too old Matlab. This should be incremented
+      % when irfu-matlab relies on newer Matlab functions not found in older
+      % versions of Matlab.
+      if(verLessThan('matlab','R2013a'))
+        warning('IRFU-Matlab relies on code introduced in Matlab R2013a, please look into upgrading your Matlab installation or contacting IRFU for help.');
+      else
+        disp('Matlab version is OK');
+        if(nargout), out=true; end;
+        datastore('irfu_matlab','okMatlab',true);
+      end
 	case 'path'
 		out = fileparts(which('irf.m'));
 	case 'version'

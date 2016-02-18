@@ -8,6 +8,7 @@ function [out] = irf_filt(inp,fmin,fmax,Fs,order)
 %              assume that the first column is time
 %              calculate frequency from the first time step
 %              assume that all time steps are the same length
+%              if inp is a TSeries, out is also a TSeries
 % fmin,fmax  - filter frequencies
 %              if fmin = 0 do lowpass filter
 %              if fmax = 0 do highpass filter
@@ -25,11 +26,20 @@ function [out] = irf_filt(inp,fmin,fmax,Fs,order)
 %    def=irf_filt(de,0,.1,25,3); 
 %    lowpass filter E at .1Hz
 %
-% $Id$
+% Revised to accept TS format. 
+
+isaTSeries = isa(inp,'TSeries');
+if isaTSeries,
+    inptemp = inp;
+end
 
 if ((nargin < 4) || (isempty(Fs))), 
- Fs=1/(inp(2,1)-inp(1,1));
- irf_log('proc',['Using sampling frequency ',num2str(Fs),' Hz']);
+    if isaTSeries,
+        Fs = 1/(inp.time(2)-inp.time(1));
+    else
+        Fs=1/(inp(2,1)-inp(1,1));
+    end
+    irf_log('proc',['Using sampling frequency ',num2str(Fs),' Hz']);
 end % estimate sampling frequency
 if nargin > 4
     %irf_log('proc',['You have specified '  num2str(order) '-th filter order (use uneven order)']);
@@ -37,7 +47,13 @@ if nargin > 4
 end
 fmin=fmin/(Fs/2);
 fmax=fmax/(Fs/2);if (fmax > 1);fmax=1;end
-out=inp;
+
+if isaTSeries,
+    out=double(inp.data);
+else
+    out=inp;
+end
+
 Rp=.5;Rs=60;fact=1.1; % fact defines the width between stopband and passband
 if fmin==0
   if fmax == 1, return;end
@@ -68,6 +84,10 @@ else
 	[B2,A2] = ellip(n,Rp,Rs,fmin,'high');
 end
 
+if isaTSeries,
+    inp = double(inp.data);
+end
+
 % find NaN and put to zero (in output set back to NaN
 ind_NaN=find(isnan(inp)); 
 inp(ind_NaN)=0;
@@ -77,6 +97,11 @@ iStartColumn=1; % from which column start filtering
 if nColumnsToFilter>1 % assume that first column is time
     iStartColumn=2;
 end
+
+if isaTSeries,
+    iStartColumn=1;
+end
+
 if ((fmin ~= 0) && (fmax ~= 0))
 	for iCol=iStartColumn:nColumnsToFilter
 	out(:,iCol) = filtfilt(B1,A1,inp(:,iCol)); 
@@ -88,4 +113,10 @@ else
 	end
 end
 out(ind_NaN)=NaN;
+
+if isaTSeries,
+    inptemp.data = out;
+    out = inptemp;
+end
+    
 

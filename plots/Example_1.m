@@ -9,7 +9,7 @@ disp(['Moving to temporary directory: ' tempdir_name]);
 
 %%%%%%%%%%%%%%%%%%%%%%%
 % specify time interval
-tint=[irf_time([2006 9 27 17 17 0]) irf_time([2006 9 27 17 24 0])]; % time interval
+tint=irf.tint('2006-09-27T17:17:00Z/2006-09-27T17:24:00Z'); % time interval
 
 %%%%%%%%%%%%%%%%%%%%%%%%
 % download data from CAA (needed only once!!!!!)
@@ -19,28 +19,21 @@ if 1, % put to 0 if data already downloaded !!!!
     caa_download(tint,'C1_CP_CIS_HIA_HS_1D_PEF')
     caa_download(tint,'C1_CP_RAP_ESPCT6')
     caa_download(tint,'C1_CP_PEA_PITCH_SPIN_DEFlux')
-    download_status=caa_download; % repeat until all data are downloaded
-    if download_status==0, % some data are still in queue
-      disp('___________!!!!_____________')
-      disp('Some data where put in queue!')
-      disp('To see when they are ready and to download execute "caa_download".');
-      return
-    end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%
-% initialize figure
+%% initialize figure
 h=irf_plot(5,'newfigure'); % initialize new figure with 5 subplots
 
 %%%%%%%%%%%%%%%%%%%%%%%
 % new panel
 hca=irf_panel('FGM B GSM');
 % read data
-B    = irf_get_data('B_vec_xyz_gse__C1_CP_FGM_5VPS','caa','mat');
+B    = irf_get_data('B_vec_xyz_gse__C1_CP_FGM_5VPS','caa','ts');
 gsmB = irf_gse2gsm(B);
 % plot
 irf_plot(hca,gsmB);
-ylabel(hca,'B [nT] GSM');
+ylabel(hca,'B_{GSM} [nT] GSM');
 irf_zoom(hca,'y',[-25 15])
 irf_legend(hca,{'B_X','B_Y','B_Z'},[0.98 0.05])
 irf_legend(hca,{'C1'},[0.98 0.98],'color','k')
@@ -48,7 +41,7 @@ irf_legend(hca,{'C1'},[0.98 0.98],'color','k')
 %%%%%%%%%%%%%%%%%%%%%%%
 % new panel
 hca=irf_panel('CIS V');
-V=irf_get_data('velocity_gse__C1_CP_CIS_HIA_ONBOARD_MOMENTS','caa','mat');
+V=irf_get_data('velocity_gse__C1_CP_CIS_HIA_ONBOARD_MOMENTS','caa','ts');
 gsmV=irf_gse2gsm(V);
 irf_plot(hca,gsmV)
 ylabel(hca,'V [km/s] GSM');
@@ -112,10 +105,19 @@ irf_pl_mark(h(1:2),tmarks)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%
-% to print the figure uncomment the lines below
+% To print the figure 
 %
-% set(gcf,'paperpositionmode','auto') % to get the same on paper as on screen
-% print -dpng -painters Example_1.png;
+% matlab> set(gcf,'paperpositionmode','auto') % to get the same on paper as on screen
+% to get bitmap file
+% matlab> print -dpng delme.png
+% to get pdf file with no white margins:
+% 1) print eps file from matlab
+% matlab> print -depsc2 -painters -loose delme.eps  % -loose is necessary for MATLAB2014 and later
+% 2) from terminal convert to eps file without white margins
+% epstool routine can be installed, e.g. on mac >brew install epstool
+% terminal> epstool --copy --bbox delme.eps delme_crop.eps
+% 3) convert eps file to pdf, result is in delme_crop.pdf
+% terminal> ps2pdf -dEPSFitPage -dEPSCrop -dAutoRotatePages=/None delme_crop.eps
 
 %%%%%%%%%%%%%%%%%%%%%%%%
 % remove temporary directory

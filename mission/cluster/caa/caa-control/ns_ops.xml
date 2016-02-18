@@ -181,10 +181,7 @@ Effect on the CAA processing:
 		<desc>Attitude manoeuvre.</desc>
 	</operation>
 	<operation start="2001-07-23T13:54:17Z" dt="-1" c2="yes" plan="no" sdesc="no_10Hz_filt">
-		<desc>
-			The 10Hz filter on probe 3 failed at this time, and has 
-			never recovered.
-		</desc>
+		<desc>The 10Hz filter on probe 3 failed at this time, and has never recovered.</desc>
 	</operation>
 	<operation start="2001-07-30T02:55:00Z" dt="3600" c4="yes" plan="no" sdesc="hxonly">
 		<desc>HXONLY sampling mode.</desc>
@@ -197,15 +194,10 @@ Effect on the CAA processing:
 	</operation>
 	<operation start="2001-10-01T07:30:00Z" dt="2100"
 			c1="yes" c2="yes" c3="yes" c4="yes" plan="yes" sdesc="no_spin_fits">
-		<desc>
-			Verify sweep interval settings. Will cause loss of spin fits for 25 minutes. 
-			07:30 After reset at start of AI, do 
-			not uplink spin patch or set burst. Start sweeps every 30 s (SC1), 1 
-			min (SC2), 90 s (SC3), 2 min (SC4). 
-			07:45 Setup burst (SWECJ349). 
-			07:55 Spinfit patch (SWECJ354). 
-			08:05 Test completed: change sweep interval to 30 mins on all. (SWECJ340 and 339).
-		</desc>
+		<desc>Verify sweep interval settings. Will cause loss of spin fits for 25 minutes. 
+			07:30 After reset at start of AI, do not uplink spin patch or set burst. Start sweeps every 30 s (SC1), 1 
+			min (SC2), 90 s (SC3), 2 min (SC4). 07:45 Setup burst (SWECJ349). 07:55 Spinfit patch (SWECJ354). 
+			08:05 Test completed: change sweep interval to 30 mins on all. (SWECJ340 and 339).</desc>
 		<res>
 			<link href="010913_aie_iw.txt">Ieuan</link>
 		</res>
@@ -221,16 +213,14 @@ Effect on the CAA processing:
 		<desc>Single bad HX packet.</desc>
 	</operation>
 	<operation start="2001-10-15T01:18:00Z" dt="61030" c1="yes" plan="no" sdesc="bad_data">
-		<desc>Probe 1 latched at -68 V, other probes also saturated
-			much of the time, reason unknown.</desc>
+		<desc>Probe 1 latched at -68 V, other probes also saturated much of the time, reason unknown.</desc>
 		<res>
 			<link href="latch011015.txt">Anders 011015</link>
 		</res>
 	</operation>
 	<operation start="2001-10-17T05:48:43Z" dt="90" c1="yes" c2="yes" c3="yes" c4="yes"
 			plan="yes" sdesc="no_tm">
-		<desc>Time tagged burst operations with 2E+3B components at perigee. 
-			 Loss of data for a little more than a minute expected.</desc>
+		<desc>Time tagged burst operations with 2E+3B components at perigee. Loss of data for a little more than a minute expected.</desc>
 		<res>
 			<link href="011017_pior_burst.txt">Commented excerpt from PIOR</link>
 			<link href="010927_NCW.txt">Mail to Nicole and Milan</link>
@@ -311,21 +301,13 @@ Effect on the CAA processing:
 		<desc>Maneuvre?</desc>
 	</operation>
 	<operation start="2002-01-07T17:36:00Z" dt="77370" c3="yes" plan="no" sdesc="no_tm">
-		<desc>
-			WEC latchup. All EFW data lost until 2002-01-08 15:05:30.
-			WEC restarted, EFW data regained
-		</desc>
+		<desc>WEC latchup. All EFW data lost until 2002-01-08 15:05:30. WEC restarted, EFW data regained</desc>
 		<res>
 			<link href="ky020108.txt">Keith 020108</link>
 		</res>
 	</operation>
 	<operation start="2002-01-08T09:50:00Z" dt="-157" c1="yes" plan="no" sdesc="no_p2">
-		<desc>
-			P2 bias went to 0xB2 (-300 nA), 
-			causing saturation at -68 V; later to 0 bias. Probable explanation is 
-			timing conflict between regular sweep command and extra bias command 
-			for probe 1.
-		</desc>
+		<desc>P2 bias went to 0xB2 (-300 nA), causing saturation at -68 V; later to 0 bias. Probable explanation is timing conflict between regular sweep command and extra bias command for probe 1.</desc>
 		<res>
 			<link href="pal020109a.txt">Per-Arne 010209</link> 
 			<link href="pal020109b.txt">Per-Arne 010209</link>
@@ -404,11 +386,7 @@ Effect on the CAA processing:
 		<res><link href="pal060331b.txt">Per-Arne 060331</link></res>
 	</operation>
 	<operation start="2002-04-29T09:55:00Z" dt="772560" c3="yes" plan="no" sdesc="bad_tm">
-		<desc>
-			WEC science telemetry bit error 
-			capable of causing all sorts of problems: timing jumps, apparent 
-			switches in EFW burst data, glitches.
-		</desc>
+		<desc>WEC science telemetry bit error capable of causing all sorts of problems: timing jumps, apparent switches in EFW burst data, glitches.</desc>
 		<res>
 			<link href="ky020612.txt">Keith 020612</link>
 		</res>
@@ -428,11 +406,7 @@ Effect on the CAA processing:
 		</res>
 	</operation>
 	<operation start="2002-05-26T10:27:00Z" dt="54180" c3="yes" plan="yes" sdesc="spec_bias">
-		<desc>
-			Corrupted WEC TM triggered s/c 
-			to reset WEC 020526 10:27. EFW then operated with default settings 
-			(e.g. non-ideal bias) until 020527 01:30.
-		</desc>
+		<desc>Corrupted WEC TM triggered s/c to reset WEC 020526 10:27. EFW then operated with default settings (e.g. non-ideal bias) until 020527 01:30.</desc>
 		<res>
 			<link href="pal020527a.txt">Per-Arne 020527</link> 
 			<link href="sm020527a.txt">Silvano 020527</link>
@@ -466,20 +440,14 @@ Effect on the CAA processing:
 		</res>
 	</operation>
 	<operation start="2002-08-06T18:20:00Z" dt="10800" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="bad_tm">
-		<desc>
-			BM1 data intermittent (period about 20 s ???) due to wrong 
-			STAFF SA mode (TM overflow).
-		</desc>
+		<desc>BM1 data intermittent (period about 20 s ???) due to wrong STAFF SA mode (TM overflow).</desc>
 		<res>
 			<link href="ky020808a.txt">Keith 020808</link> 
 			<link href="pal020821a.txt">Per-Arne 020821</link>
 		</res>
 	</operation>
 	<operation start="2002-08-10T05:34:13Z" dt="194147" c2="yes" plan="no" sdesc="bad_tm">
-		<desc>
-			Latchup, SEU protection on ADC trigged, 
-			causing complete loss of data until power on/off cycle.
-		</desc>
+		<desc>Latchup, SEU protection on ADC trigged, causing complete loss of data until power on/off cycle.</desc>
 		<res><link href="pal020812a.txt">Per-Arne 020812</link>
 		</res>
 	</operation>
@@ -494,10 +462,7 @@ Effect on the CAA processing:
 		</res>
 	</operation>
 	<operation start="2002-08-29T22:52:00Z" dt="59880" c2="yes" plan="no" sdesc="no_tm">
-		<desc>
-			SC2 reebooted by mistake at 22:5WEC not fully recovered until 
-			the end of a BM1 period at 2002-08-30 15:30.
-		</desc>
+		<desc>SC2 reebooted by mistake at 22:5WEC not fully recovered until the end of a BM1 period at 2002-08-30 15:30.</desc>
 		<res>
 			<link href="jv020830a.txt">ESOC 020830</link> 
 			<link href="sm020830a.txt">Silvano 020830</link>
@@ -541,22 +506,14 @@ Effect on the CAA processing:
 		</res>
 	</operation>
 	<operation start="2002-09-21T01:18:00Z" dt="11340" c1="yes" plan="no" sdesc="bad_tm">
-		<desc>
-			S/c problem caused loss of sun 
-			reference pulse and thus scrambling of WEC data. The EFW onboard 
-			spinfits should be crazy, as there is no sun pulse.
-		</desc>
+		<desc>S/c problem caused loss of sun reference pulse and thus scrambling of WEC data. The EFW onboard spinfits should be crazy, as there is no sun pulse.</desc>
 		<res>
 			<link href="sm020922a.txt">Silvano 020922</link>
 	<link href="ky020923a.txt">Keith 020923</link>
 		</res>
 	</operation>
 	<operation start="2002-10-02T00:49:00Z" dt="37080" c4="yes" plan="no" sdesc="no_tm">
-		<desc>
-			EFW data scrambled, though 
-			analog signals to WHISPER and STAFF are all right. Presumably a 
-			radiation induced SEU.
-		</desc>
+		<desc>EFW data scrambled, though analog signals to WHISPER and STAFF are all right. Presumably a radiation induced SEU.</desc>
 		<res>
 			<link href="pal021002a.txt">Per-Arne 021002</link>
 			<link href="sm021004a.txt">Silvano 021004</link>
@@ -631,21 +588,13 @@ Effect on the CAA processing:
 		</res>
 	</operation>
 	<operation start="2002-11-01T21:23:00Z" dt="11820" c1="yes" c3="yes"  plan="no" sdesc="info">
-		<desc>
-			By mistake, the failed P1 on SC13 were in E-field mode. This causes the 
-			flight s/w to use P12 for calcultating Vsc for HK and IEL, which thus 
-			are bad. Science data are OK.
-		</desc>
+		<desc>By mistake, the failed P1 on SC13 were in E-field mode. This causes the flight s/w to use P12 for calcultating Vsc for HK and IEL, which thus are bad. Science data are OK.</desc>
 		<res>
 			<link href="aie021106a.txt">Anders 021106</link>
 		</res>
 	</operation>
 	<operation start="2002-11-02T01:33:00Z" dt="87060" c1="yes" c3="yes" plan="no" sdesc="info">
-	<desc>
-			By mistake, the failed P1 on SC13 were in E-field mode. This causes the 
-			flight s/w to use P12 for calcultating Vsc for HK and IEL, which thus 
-			are bad. Science data are OK.
-		</desc>
+	<desc>By mistake, the failed P1 on SC13 were in E-field mode. This causes the flight s/w to use P12 for calcultating Vsc for HK and IEL, which thus are bad. Science data are OK.</desc>
 		<res>
 			<link href="aie021106a.txt">Anders 021106</link>
 		</res>
@@ -900,8 +849,7 @@ Effect on the CAA processing:
 		<res><link href="ky030324a.txt">Keith 030324</link></res>
 	</operation>
 	<operation start="2003-03-22T06:20:00Z" dt="14520" c4="yes" plan="no" sdesc="spec_bias">
-		<desc>Wrong bias current (+16 nA) due to erroneous 
-			eclipse commanding by JSOC.</desc>
+		<desc>Wrong bias current (+16 nA) due to erroneous eclipse commanding by JSOC.</desc>
 		<res>
 			<link href="aie030409a.txt">Anders 030409</link>
 			<link href="jsoc030410a.txt">JSOC 030410</link>
@@ -921,9 +869,7 @@ Effect on the CAA processing:
 		<res><link href="aie060412a.txt">Anders 060412</link></res>
 	</operation>
 	<operation start="2003-03-27T03:54:36Z" dt="90084" c1="yes" c3="yes" plan="yes" sdesc="TBD">
-		<desc>
-			Testing flight software 2.4 and new WEC sequences (NM1/TM0 and BM1/TM1).
-		</desc>
+		<desc>Testing flight software 2.4 and new WEC sequences (NM1/TM0 and BM1/TM1).</desc>
 		<res><link href="aie030307a.txt">Anders 030307</link></res>
 		<res><link href="pal060411qqq.txt">Per-Arne 060411</link></res>
 	</operation>
@@ -935,8 +881,7 @@ Effect on the CAA processing:
 		<desc>EFW in HXONLY mode (by spurious command?). In addition, HX data are bad 02:50-04:57 because of a bad burst dump.</desc>
 	</operation>
 	<operation start="2003-04-08T01:30:00Z" dt="90060" c1="yes" c3="yes" plan="yes" sdesc="TBD">
-		<desc>
-			Testing flight software 2.4 and new WEC sequences (NM1/TM0, BM1/TM1 and 
+		<desc>Testing flight software 2.4 and new WEC sequences (NM1/TM0, BM1/TM1 and 
 			BM1/TM2). We have TM2 (22 kbit/s) for the last ten minutes of the BM1 
 			interval. Functions used on each spacecraft in the different sampling 
 			mode: 
@@ -947,8 +892,7 @@ Effect on the CAA processing:
 			SC3: 
 			TM0: V2V34L  (0x94) 
 			TM1: V2V34M  (0x9F) 
-			TM2: V2V3V34M (0x1F)
-		</desc>
+			TM2: V2V3V34M (0x1F)</desc>
 		<res><link href="pal060411qqq.txt">Per-Arne 060411</link></res>
 	</operation>
 	<operation start="2003-04-10T06:26:00Z" dt="180" c1="yes" plan="no" sdesc="info">
@@ -1009,10 +953,7 @@ Effect on the CAA processing:
 		</res>
 	</operation>
 	<operation start="2003-06-18T12:58:22Z" dt="598664" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="TBD">
-		<desc>
-			Last expected occurrence of small WEC TM overflow problem that 
-			has occurred now and then lately.
-		</desc>
+		<desc>Last expected occurrence of small WEC TM overflow problem that has occurred now and then lately.</desc>
 		<res>
 			<link href="ky030620a.htm">Keith 030620</link>
 		</res>
@@ -1041,7 +982,7 @@ Effect on the CAA processing:
 	<operation start="2003-06-29T02:33:30Z" dt="60" c4="yes" plan="yes" sdesc="bad_data">
 		<desc>Axial delta-v manoeuvre.</desc>
 	</operation>
-	<operation start="2003-07-01T12:39:29Z" dt="125431" c1="yes" plan="no" sdesc="TDB">
+	<operation start="2003-07-01T12:39:29Z" dt="125431" c1="yes" plan="no" sdesc="hxonly">
 		<desc>HXONLY</desc>
 		<res><link href="pal030721a.txt">Per-Arne 030721</link></res>
 	</operation>
@@ -1049,12 +990,7 @@ Effect on the CAA processing:
 		<desc>Something strange happens to p1, it jumps by about +2 V.</desc>
 	</operation>
 	<operation start="2003-07-12T11:27:00Z" dt="780" c1="yes" c2="yes" c3="yes" c4="yes" plan="yes" sdesc="bad_tm">
-		<desc>
-			Sweep tests, bad bias -424 nA on p3,4. 
-			Intermediate sweeps on P34, internal burst. (Original request in 
-			ref 1 for slow sweeps at perigee was for a time outside data 
-			acquisition and had to be replaced, see ref 2)
-		</desc>
+		<desc>Sweep tests, bad bias -424 nA on p3,4. Intermediate sweeps on P34, internal burst. (Original request in ref 1 for slow sweeps at perigee was for a time outside data acquisition and had to be replaced, see ref 2)</desc>
 		<res>
 			<link href="aie030623a.txt">Anders 030623</link>
 			<link href="aie030626a.txt">Anders 030626</link>
@@ -1093,10 +1029,8 @@ Effect on the CAA processing:
 		</res>
 	</operation>
 	<operation start="2003-07-23T21:30:39Z" dt="9" c4="yes"  plan="no" sdesc="bad_tm">
-		<desc>Bad sweep handling. The EFW telemetry has bad 
-			packets from DWP such that the FDM is not properly decoded for all 
-			packets. In this case one FDM containing a sweep=on flag is 
-			missing so the sweep data are not removed as they should.</desc>
+		<desc>Bad sweep handling. The EFW telemetry has bad packets from DWP such that the FDM is not properly decoded for all 
+	packets. In this case one FDM containing a sweep=on flag is missing so the sweep data are not removed as they should.</desc>
 	</operation>
 	<operation start="2003-07-24T01:16:00Z" dt="53040" c2="yes" c4="yes" plan="yes" sdesc="spec_bias">
 		<desc>Perigee almost-floating bias test on P34: bias -8 nA, guard 0 V.</desc>
@@ -1278,20 +1212,14 @@ Effect on the CAA processing:
 		</res>
 	</operation>
 	<operation start="2003-12-14T07:30:00Z" dt="56520" c2="yes" c3="yes" c4="yes" plan="yes" sdesc="TBD">
-		<desc>
-			Sweep interval 30 minutes. Should 
-			have run also on SC3, but the WBD problem stopped this.
-		</desc>
+		<desc>Sweep interval 30 minutes. Should have run also on SC3, but the WBD problem stopped this.</desc>
 		<res>
 			<link href="aie031125a.txt">Anders 031125</link>
 			<link href="aie031125b.txt">Anders 031125</link>
 		</res>
 	</operation>
 	<operation start="2003-12-16T03:30:00Z" dt="360" c3="yes" plan="yes" sdesc="spec_bias">
-		<desc>
-			Slow sweeps on P2. Should have run also on SC3, 
-			but the WBD problem stopped this.
-		</desc>
+		<desc>Slow sweeps on P2. Should have run also on SC3, but the WBD problem stopped this.</desc>
 	</operation>
 	<operation start="2003-12-21T06:52:34Z" dt="2" c3="yes" plan="no" sdesc="bad_tm">
 		<desc>Single bad HX packet.</desc>
@@ -2376,15 +2304,9 @@ Effect on the CAA processing:
 	</operation>
         <operation dt="562" plan="no" sdesc="bad_tm" start="2006-03-14T08:41:08.0Z" c4="yes">
                 <desc>Bad packet header times.</desc>
-                <res>
-                Seen during CAA processing (chris).
-                </res>
         </operation>
         <operation dt="1500" plan="no" sdesc="bad_tm" start="2006-03-14T12:34:30.0Z" c4="yes">
                 <desc>Bad packet header times.</desc>
-                <res>
-                Seen during CAA processing (chris).
-                </res>
         </operation>
 	<operation dt="88400" plan="no" sdesc="no_tm" start="2006-03-14T21:53:00Z" c4="yes">
 		<desc>Payload off following CTU switchover.</desc>
@@ -2491,9 +2413,6 @@ Effect on the CAA processing:
         </operation>
         <operation dt="532" plan="no" sdesc="bad_tm" start="2006-04-20T14:33:32.0Z" c2="yes">
                 <desc>Problem with the data (looks digital, see below).</desc>
-                <res>
-                Seen during CAA processing (chris).
-                </res>
         </operation>
 	<operation dt="75581" plan="no" sdesc="no_tm" start="2006-04-20T14:34:19Z" c2="yes">
 		<desc>DWP problem finally cured by WEC power cycle. Problem may have started earlier than stated here, and also end somewhat earlier (or possibly later).</desc>
@@ -2503,9 +2422,6 @@ Effect on the CAA processing:
 	</operation>
         <operation dt="12600" plan="no" sdesc="bad_data" start="2006-04-21T19:09:30.0Z" c2="yes">
                 <desc>Serious problems with the data: digital hiccups as well as bad bias.</desc>
-                <res>
-                Seen during CAA processing (chris).
-                </res>
         </operation>
         <operation dt="17441" plan="yes" sdesc="no_tm" start="2006-05-09T07:11:56Z" c4="yes">
                 <desc>WEC turned off for s/c (CTU-B) test.</desc>
@@ -2854,7 +2770,7 @@ Effect on the CAA processing:
 		<link href="esoc061030yd.txt">ESOC 061030</link>
 		</res>
 	</operation>
-	<operation dt="64740" plan="no" sdesc="tbd" start="2006-10-28T17:34:00Z"  c3="yes">
+	<operation dt="64740" plan="no" sdesc="TBD" start="2006-10-28T17:34:00Z"  c3="yes">
 		<desc>DWP application buffer overflow.</desc>
 		<res>
 		<link href="esoc061102yd.txt">ESOC 061102</link>
@@ -2869,7 +2785,7 @@ Effect on the CAA processing:
         <operation dt="9" plan="no" sdesc="bad_data" start="2006-11-01T11:08:28Z"  c3="yes">
                 <desc>Bad packet.</desc>
         </operation>
-	<operation dt="104640" plan="no" sdesc="tbd" start="2006-11-05T12:20:00Z"  c2="yes">
+	<operation dt="104640" plan="no" sdesc="TBD" start="2006-11-05T12:20:00Z"  c2="yes">
 		<desc>DWP application buffer overflow.</desc>
 		<res>
 		<link href="esoc061116yd.txt">ESOC 061116</link>
@@ -2887,7 +2803,7 @@ Effect on the CAA processing:
 		<link href="aie061020a.txt">Anders 061020</link>
 		</res>
 	</operation>
-	<operation dt="104640" plan="no" sdesc="tbd" start="2006-11-15T18:20:28Z"  c1="yes">
+	<operation dt="104640" plan="no" sdesc="TBD" start="2006-11-15T18:20:28Z"  c1="yes">
 		<desc>S/c problem: SSR controller failure.</desc>
 		<res>
 		<link href="esoc061120yd.txt">ESOC 061120</link>
@@ -2919,19 +2835,19 @@ Effect on the CAA processing:
         <operation dt="3" plan="no" sdesc="bad_data" start="2006-11-29T03:54:05Z"  c3="yes">
                 <desc>Bad packet.</desc>
         </operation>
-	<operation dt="1140" plan="no" sdesc="tbd" start="2006-12-03T13:48:00Z"  c2="yes">
+	<operation dt="1140" plan="no" sdesc="TBD" start="2006-12-03T13:48:00Z"  c2="yes">
 		<desc>DWP application buffer overflow -- may or may not have given EFW problems.</desc>
 		<res>
 		<link href="esoc061206fs.txt">ESOC 061206</link>
 		</res>
 	</operation>
-	<operation dt="30300" plan="no" sdesc="tbd" start="2006-12-03T13:48:00Z"  c3="yes">
+	<operation dt="30300" plan="no" sdesc="TBD" start="2006-12-03T13:48:00Z"  c3="yes">
 		<desc>DWP application buffer overflow -- may or may not have given EFW problems.</desc>
 		<res>
 		<link href="esoc061206fs.txt">ESOC 061206</link>
 		</res>
 	</operation>
-	<operation dt="30421" plan="no" sdesc="tbd" start="2006-12-04T13:48:01Z"  c3="yes">
+	<operation dt="30421" plan="no" sdesc="TBD" start="2006-12-04T13:48:01Z"  c3="yes">
 		<desc>S/c problem: OBDH anomaly.</desc>
 		<res>
 		<link href="CLU_AR-103.pdf">AR-103</link>
@@ -2955,7 +2871,7 @@ Effect on the CAA processing:
 		<link href="CLU_AR-105.pdf">AR-105</link>
 		</res>
 	</operation>
-	<operation dt="32460" plan="no" sdesc="tbd" start="2006-12-13T12:59:00Z"  c2="yes">
+	<operation dt="32460" plan="no" sdesc="TBD" start="2006-12-13T12:59:00Z"  c2="yes">
 		<desc>DWP application buffer overflow -- may or may not have given EFW problems.</desc>
 		<res>
 		<link href="esoc061220as.eml">ESOC 061220</link>
@@ -3050,7 +2966,7 @@ Effect on the CAA processing:
 		<link href="esoc070202a.txt">ESOC 070202</link>
 		</res>
 	</operation>
-        <operation dt="10200" plan="no" sdesc="tbd" start="2007-02-20T06:19:00Z"  c4="yes">
+        <operation dt="10200" plan="no" sdesc="TBD" start="2007-02-20T06:19:00Z"  c4="yes">
                 <desc>Strange timing in the EFW data. DWP digital problem?</desc>
         </operation>
         <operation dt="141548" plan="no" sdesc="bad_tm" start="2007-02-20T19:02:52Z"  c4="yes">
@@ -3180,7 +3096,7 @@ Effect on the CAA processing:
         <operation dt="2" plan="no" sdesc="bad_data" start="2007-04-29T10:16:34.5Z"  c3="yes">
                 <desc>Bad packet.</desc>
         </operation>
-<operation dt="24660" plan="no" sdesc="" start="2007-04-30T21:06:00Z" c2="yes">
+        <operation dt="24660" plan="no" sdesc="no_tm" start="2007-04-30T21:06:00Z" c2="yes">
                 <desc>WEC OFF on SC2 from 120.21.06 to 121.03.58. Cluster Anomaly AR-114 SC2: 
 			"CTU Switchover caused by EDAC Double Error".</desc>
                 <res>
@@ -3197,7 +3113,7 @@ Effect on the CAA processing:
         <operation dt="3600" plan="no" sdesc="bad_data" start="2007-05-04T22:30:00Z"  c4="yes">
                 <desc>Bad telemetry. Only sporadic packets available.</desc>
         </operation>
-	<operation dt="60420" plan="no" sdesc="" start="2007-05-06T22:16:00Z" c3="yes">
+	<operation dt="60420" plan="no" sdesc="no_tm" start="2007-05-06T22:16:00Z" c3="yes">
 		<desc>No EFW TLM received + EFW sampling errors received on SC3 from 126.22.16 to 127.15.03.</desc>
 		<res>
 		<link href="esoc070510kq.eml">ESOC 070510</link>
@@ -3242,7 +3158,7 @@ Effect on the CAA processing:
 		<link href="esoc070524aw.eml">ESOC 070524</link>
 		</res>
 	</operation>
-	<operation dt="30480" plan="no" sdesc="tbd" start="2007-05-20T12:17:00Z"  c3="yes">
+	<operation dt="30480" plan="no" sdesc="TBD" start="2007-05-20T12:17:00Z"  c3="yes">
 		<desc>Application Buffer overflow message received on SC3 from 140.12.17 to 140.20.45.</desc>
 		<res>
 		<link href="esoc070524aw.eml">ESOC 070524</link>
@@ -3371,7 +3287,7 @@ Effect on the CAA processing:
         <operation dt="2700" plan="no" sdesc="bad_data" start="2007-07-21T18:00:00Z"  c4="yes">
                 <desc>Digital corruption.</desc>
         </operation>
-        <operation dt="1235760" plan="no" sdesc="tbd" start="2007-07-21T18:45:00Z"  c2="yes">
+        <operation dt="1235760" plan="no" sdesc="TBD" start="2007-07-21T18:45:00Z"  c2="yes">
                 <desc>Bad puck and guard settings (0 V) on C2 for 2007-07-21 18:45 until 2007-08-05 01:01.</desc>
         </operation>
         <operation dt="180" plan="no" sdesc="bad_data" start="2007-07-25T04:47:00Z"  c2="yes">
@@ -3484,7 +3400,7 @@ Effect on the CAA processing:
 		<link href="esoc071203a.eml">ESOC 071203</link>
 		</res>
 	</operation>
-	<operation dt="36000" plan="no" sdesc="tbd" start="2007-10-12T04:30:00Z"  c4="yes">
+	<operation dt="36000" plan="no" sdesc="TBD" start="2007-10-12T04:30:00Z"  c4="yes">
 		<desc>Choppy telemetry.</desc>
 	</operation>
 	<operation dt="72741" plan="no" sdesc="bad_tm" start="2007-10-13T07:21:48Z"  c1="yes">
@@ -3674,11 +3590,11 @@ Effect on the CAA processing:
 	<operation dt="30660" plan="no" sdesc="bad_data" start="2008-01-04T09:07:00Z" c1="yes">
 		<desc>Corrupt phase data.</desc>
 	</operation>
-	<operation dt="23939" plan="no" sdesc="no_data" start="2008-01-14T14:42:37Z"  c2="yes">
+	<operation dt="23939" plan="no" sdesc="no_tm" start="2008-01-14T14:42:37Z"  c2="yes">
 		<desc>WEC Switched off</desc>
 		<res><link href="http://www.acse.shef.ac.uk/wec-ops/old_mail/msg08438.html">WEC Ops 080115</link></res>
 	</operation>
-        <operation dt="50268" plan="no" sdesc="no_data" start="2008-01-17T03:18:47Z"  c1="yes">
+        <operation dt="50268" plan="no" sdesc="no_tm" start="2008-01-17T03:18:47Z"  c1="yes">
                 <desc>WEC Switched off</desc>
                 <res><link href="http://www.acse.shef.ac.uk/wec-ops/old_mail/msg08447.html">WEC Ops 080117</link></res>
         </operation>
@@ -3686,7 +3602,7 @@ Effect on the CAA processing:
 		<desc>Probe latchup.</desc>
 		<res><link href="http://www.acse.shef.ac.uk/wec-ops/old_mail/msg08466.html">Per-Arne 080123</link></res>
 	</operation>
-	<operation dt="28538" plan="no" sdesc="no_data" start="2008-01-24T06:11:22Z"  c1="yes">
+	<operation dt="28538" plan="no" sdesc="no_tm" start="2008-01-24T06:11:22Z"  c1="yes">
 		<desc>WEC Switched off</desc>
 		<res><link href="http://www.acse.shef.ac.uk/wec-ops/old_mail/msg08474.html">WEC Ops 080124</link></res>
 	</operation>
@@ -3713,18 +3629,18 @@ Effect on the CAA processing:
 		<desc>Trim maneuvers on all 4 sats.</desc>
 		<res><link href="ESOC_MOR/Cluster_MOR_no392_(week06-2008).pdf">ESOC MOR</link></res>
 	</operation>
-	<operation dt="44490" plan="no" sdesc="no_data" start="2008-02-08T22:16:30Z"  c2="yes">
+	<operation dt="44490" plan="no" sdesc="no_tm" start="2008-02-08T22:16:30Z"  c2="yes">
 		<desc>Data gap due to CTU switchover (see next entry).</desc>
 	</operation>
-	<operation dt="166510" plan="no" sdesc="no_data" start="2008-02-09T15:04:50Z"  c2="yes">
+	<operation dt="166510" plan="no" sdesc="no_tm" start="2008-02-09T15:04:50Z"  c2="yes">
 		<desc>CTU switchover resulted in data loss.</desc>
 		<res><link href="http://www.acse.shef.ac.uk/wec-ops/old_mail/msg08529.html">ESA 080212</link></res>
 	</operation>
-	<operation dt="120480" plan="no" sdesc="no_data" start="2008-02-17T01:46:00Z"  c2="yes">
+	<operation dt="120480" plan="no" sdesc="no_tm" start="2008-02-17T01:46:00Z"  c2="yes">
 		<desc>Data gap related to WEC latchup at 2008-02-12T05:43:55Z.</desc>
 		<res><link href="http://www.acse.shef.ac.uk/wec-ops/old_mail/msg08552.html">Keith 082018</link></res>
 	</operation>
-	<operation dt="203100" plan="no" sdesc="tbd" start="2008-02-25T07:50:00Z" c3="yes">
+	<operation dt="203100" plan="no" sdesc="TBD" start="2008-02-25T07:50:00Z" c3="yes">
 		<desc>Multiple isolated telemetry glitches (spikes in E data). Also, sending p12 rather than p34 until 02-26 14:29.</desc>
 	</operation>
 	<operation dt="1" plan="no" sdesc="bad_data" start="2008-02-27T22:31:33Z" c2="yes">
@@ -3767,7 +3683,7 @@ Effect on the CAA processing:
 		<desc>EFW probe latchup.</desc>
 		<res><link href="http://www.acse.shef.ac.uk/wec-ops/mail/msg00102.html">Per-Arne 0800428</link></res>
 	</operation>
-	<operation dt="0" plan="no" sdesc="tbd" start="2008-04-25T04:58:00Z" c3="yes">
+	<operation dt="0" plan="no" sdesc="TBD" start="2008-04-25T04:58:00Z" c3="yes">
 		<desc>Error in ADCE caused switchover to backup ADCE-B.</desc>
 		<res><link href="http://www.acse.shef.ac.uk/wec-ops/mail/msg00090.html">Juergen 080425</link></res>
 	</operation>
@@ -3836,7 +3752,7 @@ Effect on the CAA processing:
 		<desc>SSR anomaly</desc>
 		<res><link href="http://www.acse.shef.ac.uk/wec-ops/mail/msg00165.html">Juergen 080520</link></res>
 	</operation>
-	<operation dt="16800" plan="?" sdesc="no_tm" start="2008-05-20T00:20:00Z" c3="yes">
+	<operation dt="16800" plan="no" sdesc="no_tm" start="2008-05-20T00:20:00Z" c3="yes">
 		<desc>Data gap affecting all instruments. May be explained in MOR 407 (missing).</desc>
 	</operation> 
 	<operation dt="8400" plan="no" sdesc="bad_data" start="2008-05-29T07:22:00Z"  c1="yes">
@@ -4019,7 +3935,7 @@ Effect on the CAA processing:
 		<desc>WEC switched off by voltage monitoring 444</desc>
 		<res><link href="http://www.acse.shef.ac.uk/wec-ops/mail/msg00541.html">Colette 081006</link></res>
 	</operation>
-	<operation c2="yes" start="2008-10-08T21:18:30Z" dt="90" plan="no" sdesc="tbd">
+	<operation c2="yes" start="2008-10-08T21:18:30Z" dt="90" plan="no" sdesc="TBD">
 		<desc>Large swing in Vsc, presumably due to EDI.</desc>
                 <res><link href="aie100426.txt">pal/aie 100426</link></res>
 	</operation>
@@ -4040,7 +3956,7 @@ Effect on the CAA processing:
 		<desc>EFW stops working, but continues to present data.</desc>
 		<res><link href="pal100426.txt">Per-Arne 100426</link></res>
 	</operation>
-	<operation c1="yes" start="2008-10-24T02:42:00Z" dt="417600" plan="no" sdesc="no_data">
+	<operation c1="yes" start="2008-10-24T02:42:00Z" dt="417600" plan="no" sdesc="no_tm">
                 <desc>EFW digital problem: instrument stopped working, 
 		recovering at next reset. (dt is approximate)</desc>
                 <res>
@@ -4048,7 +3964,7 @@ Effect on the CAA processing:
                 <link href="esoc081028a.txt">ESOC 081028</link>
                 </res>
         </operation>
-	<operation c3="yes" start="2008-10-27T01:02:35Z" dt="309000" plan="no" sdesc="no_data">
+	<operation c3="yes" start="2008-10-27T01:02:35Z" dt="309000" plan="no" sdesc="no_tm">
                 <desc>DWP watchdog reset caused WEC off.</desc>
                 <res>
                 <link href="esoc081121a.txt">ESOC 081121</link>
@@ -4089,19 +4005,19 @@ Effect on the CAA processing:
 	<operation plan="yes" sdesc="bad_data" start="2008-11-15T11:37:36Z" c3="yes" dt="40">
 		<desc>Manoeuvre (8 pulses)</desc>
         </operation>
-	<operation c4="yes" start="2008-11-15T13:02:14Z" dt="928" plan="no" sdesc="no_data">
+	<operation c4="yes" start="2008-11-15T13:02:14Z" dt="928" plan="no" sdesc="no_tm">
 		<desc>Data loss due to CTU switchover (see below)</desc>
 		<res><link href="http://www.acse.shef.ac.uk/wec-ops/mail/msg00715.html">Juergen 081124</link></res>
 	</operation>
-	<operation c4="yes" start="2008-11-15T15:42:00Z" dt="84180" plan="no" sdesc="no_data">
+	<operation c4="yes" start="2008-11-15T15:42:00Z" dt="84180" plan="no" sdesc="no_tm">
 		<desc>Data loss due to CTU switchover (see below)</desc>
 		<res><link href="http://www.acse.shef.ac.uk/wec-ops/mail/msg00715.html">Juergen 081124</link></res>
 	</operation>
-	<operation c4="yes" start="2008-11-16T18:15:00Z" dt="32880" plan="no" sdesc="no_data">
+	<operation c4="yes" start="2008-11-16T18:15:00Z" dt="32880" plan="no" sdesc="no_tm">
 		<desc>Data loss due to CTU switchover (see below)</desc>
                 <res><link href="http://www.acse.shef.ac.uk/wec-ops/mail/msg00715.html">Juergen 081124</link></res>
 	</operation>
-	<operation c4="yes" start="2008-11-17T08:49:55Z" dt="21000" plan="no" sdesc="no_data">
+	<operation c4="yes" start="2008-11-17T08:49:55Z" dt="21000" plan="no" sdesc="no_tm">
 		<desc>Data loss due to CTU switchover caused by corrupted command upload.</desc>
 		<res><link href="http://www.acse.shef.ac.uk/wec-ops/mail/msg00697.html">Juergen 081117</link></res>
 		<res><link href="http://www.acse.shef.ac.uk/wec-ops/mail/msg00705.html">Juergen 081118</link></res>
@@ -4118,7 +4034,7 @@ Effect on the CAA processing:
 	<operation plan="yes" sdesc="bad_data" start="2008-11-27T16:20:02Z" c2="yes" dt="140">
 		<desc>Manoeuvre (28 pulses)</desc>
         </operation>
-	<operation c2="yes" start="2008-11-28T03:15:33Z" dt="3214" plan="no" sdesc="no_data">
+	<operation c2="yes" start="2008-11-28T03:15:33Z" dt="3214" plan="no" sdesc="no_tm">
                 <desc>S/c problem: SSR pointer corruption.</desc>
                 <res>
                 <link href="CLU_AR-128_updated_on20081203.pdf">AR-128</link>
@@ -4133,7 +4049,7 @@ Effect on the CAA processing:
 	<operation plan="yes" sdesc="bad_data" start="2008-12-02T05:33:13Z" c3="yes" dt="10">
 		<desc>Manoeuvre (2 pulses)</desc>
         </operation>
-	<operation c1="yes" start="2008-12-03T07:15:10Z" dt="50700" plan="no" sdesc="no_data">
+	<operation c1="yes" start="2008-12-03T07:15:10Z" dt="50700" plan="no" sdesc="no_tm">
 		<desc>WEC switched off after a latchup in the DWP interrupted normal bootup.</desc>
 		<res><link href="http://www.acse.shef.ac.uk/wec-ops/mail/msg00747.html">Keith 081204</link></res>
 	</operation>
@@ -4159,18 +4075,18 @@ Effect on the CAA processing:
 	<operation plan="yes" sdesc="bad_data" start="2008-12-11T17:55:05Z" c3="yes" dt="5">
 		<desc>Manoeuvre (1 pulse)</desc>
         </operation>
-	<operation c4="yes" start="2008-12-20T04:47:23Z" dt="98400" plan="no" sdesc="no_data">
+	<operation c4="yes" start="2008-12-20T04:47:23Z" dt="98400" plan="no" sdesc="no_tm">
 		<desc>WEC switched off after memory latchup.</desc>
 		<res><link href="http://www.acse.shef.ac.uk/wec-ops/mail/msg00807.html">Keith 081223</link></res>
 	</operation>
-	<operation c1="yes" start="2008-12-22T22:27:52Z" dt="79320" plan="no" sdesc="no_data">
+	<operation c1="yes" start="2008-12-22T22:27:52Z" dt="79320" plan="no" sdesc="no_tm">
 		<desc>WEC switched off after DWP watchdog reset</desc>
 		<res><link href="http://www.acse.shef.ac.uk/wec-ops/mail/msg00812.html">Keith 081224</link></res>
 	</operation>
 	<operation c4="yes" start="2008-12-26T13:44:00Z" dt="46680" plan="no" sdesc="bad_bias">
                 <desc>Bias at default -40 nA</desc>
         </operation>
-	<operation c1="yes" start="2008-12-28T03:35:29Z" dt="50400" plan="no" sdesc="no_data">
+	<operation c1="yes" start="2008-12-28T03:35:29Z" dt="50400" plan="no" sdesc="no_tm">
 		<desc>WEC switched off due to monitoring entries 444/445/446. Powered up in emergency mode (see below).</desc>
 		<res><link href="http://www.acse.shef.ac.uk/wec-ops/mail/msg00815.html">Keith 081229</link></res>
 	</operation>
@@ -4178,38 +4094,38 @@ Effect on the CAA processing:
 		<desc>WEC powered up in emergency mode, with -40 nA bias settings.</desc>
 		<res><link href="http://www.acse.shef.ac.uk/wec-ops/mail/msg00815.html">Keith 081229</link></res>
 	</operation>
- <operation c4="yes" start="2009-01-06T16:28:34Z" dt="127200" plan="no" sdesc="no_data">
+ <operation c4="yes" start="2009-01-06T16:28:34Z" dt="127200" plan="no" sdesc="no_tm">
                 <desc>WEC switched off due to monitoring entry 444.</desc>
                 <res><link href="http://www.acse.shef.ac.uk/wec-ops/mail/msg00833.html">ESOC 090108</link></res>
 		<res><link href="http://www.acse.shef.ac.uk/wec-ops/mail/msg00837.html">Keith 090108</link></res>
         </operation>
-	<operation c3="yes" start="2009-01-13T15:33:15Z" dt="23326" plan="no" sdesc="no_data">
+	<operation c3="yes" start="2009-01-13T15:33:15Z" dt="23326" plan="no" sdesc="no_tm">
                 <desc>S/c problem: data lost due to SSR anomaly.</desc>
                 <res>
                 <link href="esoc090115a.txt">ESOC 090115</link>
                 </res>
         </operation>
-	<operation c3="yes" start="2009-01-14T01:07:49Z" dt="23519" plan="no" sdesc="no_data">
+	<operation c3="yes" start="2009-01-14T01:07:49Z" dt="23519" plan="no" sdesc="no_tm">
                 <desc>S/c problem: data lost due to SSR anomaly.</desc>
                 <res>
                 <link href="esoc090115a.txt">ESOC 090115</link>
                 <link href="CLU_AR-139.pdf">AR-139</link>
                 </res>
         </operation>
-	<operation c1="yes" start="2009-01-18T23:06:11Z" dt="50306" plan="no" sdesc="no_data">
+	<operation c1="yes" start="2009-01-18T23:06:11Z" dt="50306" plan="no" sdesc="no_tm">
                 <desc>WEC switch-off due to DWP memory latchup.</desc>
                 <res>
                 <link href="ky090120a.txt">Keith 090120</link>
                 </res>
         </operation>
-	<operation c2="yes" start="2009-01-22T14:06:00Z" dt="1200" plan="no" sdesc="no_data">
+	<operation c2="yes" start="2009-01-22T14:06:00Z" dt="1200" plan="no" sdesc="no_tm">
 		<desc>WEC power-cycled to clear latchup. Data may potentially be affected from 2009-01-21 23:44, although no obvious problems.</desc>
 		<res><link href="http://www.acse.shef.ac.uk/wec-ops/mail/msg00880.html">Keith 090122</link></res>
         </operation>
 	<operation c3="yes" start="2009-01-29T13:15:10Z" dt="2" plan="no" sdesc="bad_data">
                 <desc>Bad packet.</desc>
         </operation>
-	<operation c4="yes" start="2009-02-04T13:44:00Z" dt="114300" plan="no" sdesc="no_data">
+	<operation c4="yes" start="2009-02-04T13:44:00Z" dt="114300" plan="no" sdesc="no_tm">
 		<desc>DWP reset by onboard monitor, emergency macro failed.</desc>
 		<res><link href="http://www.acse.shef.ac.uk/wec-ops/mail/msg00915.html">Keith 090205</link></res>
         </operation>
@@ -4224,13 +4140,13 @@ Effect on the CAA processing:
 	<operation c1="yes" start="2009-02-13T02:20:00Z" dt="52680" plan="no" sdesc="bad_bias">
                 <desc>Bias at default -40 nA.</desc>
         </operation>
-	<operation c3="yes" start="2009-02-13T09:45:39Z" dt="629" plan="yes" sdesc="no_data">
+	<operation c3="yes" start="2009-02-13T09:45:39Z" dt="629" plan="yes" sdesc="no_tm">
                 <desc>ESOC rain dance procedure.</desc>    
                 <res>
                 <link href="esoc090213a.txt">ESOC 090213</link>
                 </res>
         </operation>
-	<operation c2="yes" start="2009-02-15T01:34:08Z" dt="132420" plan="no" sdesc="no_data">
+	<operation c2="yes" start="2009-02-15T01:34:08Z" dt="132420" plan="no" sdesc="no_tm">
 		<desc>WEC switched off due to onboard monitoring</desc>
                 <res><link href="http://www.acse.shef.ac.uk/wec-ops/mail/msg00948.html">ESOC 090216</link></res>
         </operation>
@@ -4241,7 +4157,7 @@ Effect on the CAA processing:
                 <desc>EFW telemetry garbled. Affects both HX and LX. Cleared by switch to burst mode at 20:11.</desc>
                 <res><link href="http://www.acse.shef.ac.uk/wec-ops/mail/msg00962.html">Keith 090219</link></res>
         </operation>
-	<operation c3="yes" start="2009-02-18T17:06:11Z" dt="3900" plan="no" sdesc="no_data">
+	<operation c3="yes" start="2009-02-18T17:06:11Z" dt="3900" plan="no" sdesc="no_tm">
                 <desc>Data loss due to s/c SSR anomaly.</desc>    
                 <res>
                 <link href="esoc090224a.txt">ESOC 090224</link>
@@ -4259,31 +4175,31 @@ Effect on the CAA processing:
 	<operation c4="yes" start="2009-03-02T17:30:00Z" dt="86280" plan="no" sdesc="bad_bias">
                 <desc>Default -40 nA bias.</desc>
         </operation>
-	<operation c3="yes" start="2009-03-08T01:15:49Z" dt="45092" plan="no" sdesc="no_data">
+	<operation c3="yes" start="2009-03-08T01:15:49Z" dt="45092" plan="no" sdesc="no_tm">
                 <desc>S/c problem: SSR controller failure.</desc>
                 <res>
                 <link href="ar-141.pdf">AR-141</link>
                 </res>
         </operation>
-	<operation c1="yes" start="2009-03-12T16:42:00Z" dt="68400" plan="no" sdesc="no_data">
+	<operation c1="yes" start="2009-03-12T16:42:00Z" dt="68400" plan="no" sdesc="no_tm">
                 <desc>EFW switched off by DWP for unknown reason; all WEC switched off at 2009-03-13T05:52:00Z.</desc>
                 <res>
                 <link href="pal090313q.txt">Per-Arne 090313</link>
                 <link href="esoc090313q.txt">ESOC 090313</link>
                 </res>
         </operation>
-	<operation c1="yes" start="2009-03-13T16:11:00Z" dt="25565" plan="no" sdesc="no_data">
+	<operation c1="yes" start="2009-03-13T16:11:00Z" dt="25565" plan="no" sdesc="no_tm">
 		<desc>EFW data loss presumably due to CTU switchover (see next entry).</desc>
 		<res><link href="http://www.acse.shef.ac.uk/wec-ops/mail/msg01104.html">Per-Arne 090326</link></res>
         </operation>
-	<operation c1="yes" start="2009-03-13T23:17:05Z" dt="22140" plan="no" sdesc="no_data">
+	<operation c1="yes" start="2009-03-13T23:17:05Z" dt="22140" plan="no" sdesc="no_tm">
                 <desc>S/c problem: CTU/RTU switch-over.</desc>    
                 <res>
                 <link href="esoc090314a.txt">ESOC 090314</link>
                 <link href="ar-142.pdf">AR-142</link>
                 </res>
         </operation>
-	<operation c4="yes" start="2009-03-15T12:29:31Z" dt="39000" plan="no" sdesc="no_data">
+	<operation c4="yes" start="2009-03-15T12:29:31Z" dt="39000" plan="no" sdesc="no_tm">
                 <desc>WEC turned off by onboard monitoring.</desc>    
                 <res>
                 <link href="ky090316a.txt">Keith 090316</link>
@@ -4332,7 +4248,7 @@ Effect on the CAA processing:
 	<operation c3="yes" start="2009-04-22T01:44:00Z" dt="53640" plan="no" sdesc="bad_bias">
                 <desc>Default -40 nA bias.</desc>
         </operation>
-	<operation c1="yes" start="2009-04-24T10:53:19Z" dt="11598" plan="no" sdesc="no_data">
+	<operation c1="yes" start="2009-04-24T10:53:19Z" dt="11598" plan="no" sdesc="no_tm">
                 <desc>EFW powered off following DWP watchdog reset.</desc>    
                 <res>
                 <link href="ky090424a.txt">Keith 090424a</link>
@@ -4341,11 +4257,11 @@ Effect on the CAA processing:
 	<operation c3="yes" start="2009-04-29T21:40:27Z" dt="2" plan="no" sdesc="bad_data">
                 <desc>Bad packet.</desc>
         </operation>
-	<operation c4="yes" start="2009-04-30T19:56:37Z" dt="61980" plan="no" sdesc="no_data">
+	<operation c4="yes" start="2009-04-30T19:56:37Z" dt="61980" plan="no" sdesc="no_tm">
 		<desc>Data loss due to CTU switchover.</desc>
 		<res><link href="http://www.acse.shef.ac.uk/wec-ops/mail/msg01199.html">Juergen 090501</link></res>
         </operation>
-	<operation c1="yes" start="2009-05-02T20:40:00Z" dt="12288" plan="no" sdesc="no_data">
+	<operation c1="yes" start="2009-05-02T20:40:00Z" dt="12288" plan="no" sdesc="no_tm">
                 <desc>Data lost when spacecraft went into eclipse</desc>
                 <res><link href="ESOC_MOR/Cluster_MOR_no456_(week18-2009)%20incl%20instrument%20status.pdf">MOR 456</link></res>
         </operation>
@@ -4353,11 +4269,11 @@ Effect on the CAA processing:
                 <desc>Tests for the broken probe 4.</desc>
                 <res><link href="http://www.acse.shef.ac.uk/wec-ops/mail/msg01227.html">Per-Arne 090507</link></res>
         </operation>
-	<operation c1="yes" start="2009-05-07T17:44:22Z" dt="14438" plan="no" sdesc="tbd">
+	<operation c1="yes" start="2009-05-07T17:44:22Z" dt="14438" plan="no" sdesc="TBD">
                 <desc>Probe 4 returns from the dead for 4 hours and then fails again.</desc>
                 <res><link href="http://www.acse.shef.ac.uk/wec-ops/mail/msg01258.html">Per-Arne 090511</link></res>
         </operation>
-	<operation c1="yes" start="2009-05-08T07:30:00Z" dt="-1" plan="no" sdesc="tbd">
+	<operation c1="yes" start="2009-05-08T07:30:00Z" dt="-1" plan="no" sdesc="TBD">
                 <desc>Probe 4 functional again. Works until 2009-10-14.</desc>
                 <res><link href="http://www.acse.shef.ac.uk/wec-ops/mail/msg01258.html">Per-Arne 090511</link></res>
         </operation>
@@ -4390,7 +4306,7 @@ Effect on the CAA processing:
 	<operation c2="yes" start="2009-05-19T03:40:00Z" dt="10200" plan="no" sdesc="bad_data">
                 <desc>Corrupt data</desc>
         </operation>
-	<operation c3="yes" start="2009-06-02T14:09:00Z" dt="75360" plan="no" sdesc="no_data">
+	<operation c3="yes" start="2009-06-02T14:09:00Z" dt="75360" plan="no" sdesc="no_tm">
                 <desc>Data loss due to DWP latchup.</desc>
 		<res><link href="http://www.acse.shef.ac.uk/wec-ops/mail/msg01351.html">Colette 090603</link></res>
         </operation>
@@ -4404,7 +4320,7 @@ Effect on the CAA processing:
                 <link href="ky090613a.txt">Keith 090613</link>
                 </res>
         </operation>
-	<operation c3="yes" start="2009-06-11T11:29:40Z" dt="293700" plan="no" sdesc="no_data">
+	<operation c3="yes" start="2009-06-11T11:29:40Z" dt="293700" plan="no" sdesc="no_tm">
                 <desc>WEC switched off due to DWP latchup. Combined with above problem, no C3 data for 4 days.</desc>
                 <res>
                 <link href="ky090613a.txt">Keith 090613</link>
@@ -4426,7 +4342,7 @@ Effect on the CAA processing:
 	<operation c4="yes" start="2009-06-20T02:09:00Z" dt="1234" plan="no" sdesc="bad_data">
                 <desc>p3 develops a strange offset, and then abruptly returns to normal. p34 data consequently weird.</desc>
         </operation>
-	<operation c3="yes" start="2009-06-24T19:19:30Z" dt="54000" plan="no" sdesc="no_data">
+	<operation c3="yes" start="2009-06-24T19:19:30Z" dt="54000" plan="no" sdesc="no_tm">
                 <desc>WEC switched off by onboard monitor 445.</desc>
 		<res>
 		<link href="http://www.acse.shef.ac.uk/wec-ops/mail/msg01419.html">Keith 090625</link>
@@ -4446,25 +4362,25 @@ Effect on the CAA processing:
 		<link href="http://www.acse.shef.ac.uk/wec-ops/mail/msg01628.html">Keith 090825</link>
                 </res>
         </operation>
-	<operation c4="yes" start="2009-07-10T12:50:00Z" dt="5100" plan="no" sdesc="no_data">
+	<operation c4="yes" start="2009-07-10T12:50:00Z" dt="5100" plan="no" sdesc="no_tm">
                 <desc>WEC switched off, probably onboard monitoring.</desc>
                 <res><link href="http://www.acse.shef.ac.uk/wec-ops/mail/msg01469.html">ESOC 090710</link></res>
        </operation>
 	<operation c2="yes" start="2009-07-18T07:46:05Z" dt="660" plan="no" sdesc="bad_data">
                 <desc>Corrupt telemetry</desc>
         </operation>
-	<operation c1="yes" start="2009-07-20T00:20:00Z" dt="18420" plan="no" sdesc="no_data">
+	<operation c1="yes" start="2009-07-20T00:20:00Z" dt="18420" plan="no" sdesc="no_tm">
                 <desc>WEC switched off due to onboard monitoring 01BD, 01BE, 01BC.</desc>
                 <res><link href="http://www.acse.shef.ac.uk/wec-ops/mail/msg01488.html">Jefferys 090720</link></res>
        </operation>
 	<operation c3="yes" start="2009-07-24T09:43:04Z" dt="3" plan="no" sdesc="bad_data">
                 <desc>Corrupt telemetry</desc>
         </operation>
-	<operation c2="yes" start="2009-07-28T13:35:00Z" dt="42900" plan="no" sdesc="tbd">
+	<operation c2="yes" start="2009-07-28T13:35:00Z" dt="42900" plan="no" sdesc="TBD">
                 <desc>WEC in strange state; ISDAT has a hard time unpacking the data, with gaps that come and go. WEC turned off at 23:33.</desc>
                 <res><link href="http://www.acse.shef.ac.uk/wec-ops/mail/msg01517.html">ESOC 090729</link></res>
        </operation>
-	<operation c4="yes" start="2009-08-03T17:55:00Z" dt="165600" plan="no" sdesc="no_data">
+	<operation c4="yes" start="2009-08-03T17:55:00Z" dt="165600" plan="no" sdesc="no_tm">
                 <desc>Data loss due to s/c problem (CTU switchover).</desc>
                 <res>
                 <link href="esoc090805a.txt">ESOC 090805</link>
@@ -4477,14 +4393,14 @@ Effect on the CAA processing:
                 <link href="ky090825a.txt">Keith 090825</link>
                 </res>
         </operation>
-	<operation c1="yes" start="2009-08-08T17:31:43Z" dt="36840" plan="no" sdesc="no_data">
+	<operation c1="yes" start="2009-08-08T17:31:43Z" dt="36840" plan="no" sdesc="no_tm">
                 <desc>WEC switched of by onboard monitoring.
 		</desc>
                 <res>
                 <link href="esoc090809a.txt">ESOC 090809</link>
                 </res>
         </operation>
-	<operation c3="yes" start="2009-08-11T03:35:49Z" dt="213120" plan="no" sdesc="no_data">
+	<operation c3="yes" start="2009-08-11T03:35:49Z" dt="213120" plan="no" sdesc="no_tm">
                 <desc>WEC switched of by onboard monitoring.
 		</desc>
                 <res>
@@ -4514,7 +4430,7 @@ Effect on the CAA processing:
         <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
-	<operation c1="yes" start="2009-09-02T17:50:40Z" dt="121920" plan="no" sdesc="no_data">
+	<operation c1="yes" start="2009-09-02T17:50:40Z" dt="121920" plan="no" sdesc="no_tm">
                 <desc>WEC switched off by watchdog.</desc>
 		<res>
 		<link href="http://www.acse.shef.ac.uk/wec-ops/mail/msg01658.html">Colette 090904</link>
@@ -4533,7 +4449,7 @@ Effect on the CAA processing:
         <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
-	<operation c3="yes" start="2009-09-09T01:19:38Z" dt="198000" plan="no" sdesc="no_data">
+	<operation c3="yes" start="2009-09-09T01:19:38Z" dt="198000" plan="no" sdesc="no_tm">
                 <desc>Long data loss due to WEC watchdog reset caused by WBD command malfunction.</desc>
                 <res>
                 <link href="http://www.acse.shef.ac.uk/wec-ops/mail/msg01678.html">Keith 090909</link>
@@ -4553,7 +4469,7 @@ Effect on the CAA processing:
         <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
-	<operation c3="yes" start="2009-09-18T23:02:00Z" dt="16080" plan="no" sdesc="no_data">
+	<operation c3="yes" start="2009-09-18T23:02:00Z" dt="16080" plan="no" sdesc="no_tm">
                 <desc>Data lost due to s/c problem (SSR controller failure).</desc>
                 <res>
                 <link href="AR-152.pdf">AR-152</link>
@@ -4563,7 +4479,7 @@ Effect on the CAA processing:
         <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
-	<operation c1="yes" start="2009-09-20T13:48:48Z" dt="38400" plan="no" sdesc="no_data">
+	<operation c1="yes" start="2009-09-20T13:48:48Z" dt="38400" plan="no" sdesc="no_tm">
                 <desc>WEC off by monitoring entries 445/446/444.</desc>
                 <res>
                 <link href="http://www.acse.shef.ac.uk/wec-ops/mail/msg01712.html">Keith 090921</link>
@@ -4577,7 +4493,7 @@ Effect on the CAA processing:
         <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
-	<operation c2="yes" start="2009-09-22T13:00:00Z" dt="14400" plan="yes" sdesc="no_data">
+	<operation c2="yes" start="2009-09-22T13:00:00Z" dt="14400" plan="yes" sdesc="no_tm">
                 <desc>WEC switched off for s/c tests.
 		</desc>
                 <res>
@@ -4588,7 +4504,7 @@ Effect on the CAA processing:
         <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
-	<operation c1="yes" start="2009-09-30T10:33:00Z" dt="44820" plan="no" sdesc="no_data">
+	<operation c1="yes" start="2009-09-30T10:33:00Z" dt="44820" plan="no" sdesc="no_tm">
                 <desc>WEC off by monitoring entries 445/446/444.</desc>
                 <res>
                 <link href="http://www.acse.shef.ac.uk/wec-ops/mail/msg01738.html">Jefferys 091001</link>
@@ -4678,7 +4594,7 @@ Effect on the CAA processing:
         <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
-	<operation c1="yes" start="2009-10-21T19:35:00Z" dt="21420" plan="no" sdesc="no_data">
+	<operation c1="yes" start="2009-10-21T19:35:00Z" dt="21420" plan="no" sdesc="no_tm">
                 <desc>Spacecraft in nominal survival mode after power-down eclipse.</desc>
                 <res>
                 <link href="http://www.acse.shef.ac.uk/wec-ops/mail/msg01809.html">Juergen 091023</link>
@@ -4698,7 +4614,7 @@ Effect on the CAA processing:
 	<operation c1="yes" start="2009-11-11T07:31:03Z" dt="8" plan="no" sdesc ="bad_data">
                 <desc>Strange phase from isdat.</desc>
         </operation>
-	<operation c3="yes" start="2009-11-12T13:45:26Z" dt="33060" plan="no" sdesc="no_data">
+	<operation c3="yes" start="2009-11-12T13:45:26Z" dt="33060" plan="no" sdesc="no_tm">
                 <desc>SSR controller failure</desc>
                 <res>
                 <link href="http://www.acse.shef.ac.uk/wec-ops/mail/msg01905.html">Juergen 091117</link>
@@ -4733,7 +4649,7 @@ Effect on the CAA processing:
         <operation c4="yes" start="2009-11-30T13:15:30Z" dt="80"  plan="no" sdesc="bad_data">
                 <desc>DAC stuck after sweep.</desc>
         </operation>
-	<operation c4="yes" start="2009-12-01T12:00:00Z" dt="31500" plan="no" sdesc="tbd">
+	<operation c4="yes" start="2009-12-01T12:00:00Z" dt="31500" plan="no" sdesc="TBD">
                 <desc>WEC in a strange state. ISDAT has a tough time unpacking the HK, although no obvious problems in EFW data. Few details.</desc>
                 <res>
                 <link href="http://www.acse.shef.ac.uk/wec-ops/mail/msg01968.html">Colette</link>
@@ -4746,13 +4662,13 @@ Effect on the CAA processing:
                 <link href="http://www.acse.shef.ac.uk/wec-ops/mail/msg02009.html">Per-Arne 091208</link>
                 </res>
         </operation>
-	<operation c3="yes" start="2009-12-05T09:07:00Z" dt="175200" plan="no" sdesc="no_data">
+	<operation c3="yes" start="2009-12-05T09:07:00Z" dt="175200" plan="no" sdesc="no_tm">
                 <desc>Watchdog reset triggered monitoring entry 436 and shut off WEC. 48 hours data lost.</desc>
                 <res>
                 <link href="http://www.acse.shef.ac.uk/wec-ops/mail/msg01986.html">Keith 091205</link>
                 </res>
         </operation>
-	<operation c1="yes" start="2009-12-08T07:13:10Z" dt="50400" plan="no" sdesc="no_data">
+	<operation c1="yes" start="2009-12-08T07:13:10Z" dt="50400" plan="no" sdesc="no_tm">
                 <desc>DWP watchdog reset switched off EFW.</desc>
                 <res>
                 <link href="http://www.acse.shef.ac.uk/wec-ops/mail/msg02011.html">Keith 091209</link>
@@ -4770,7 +4686,7 @@ Effect on the CAA processing:
                         <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02107.html">Per-Arne 100106</link>
                 </res>
         </operation>
-	<operation c4="yes" start="2009-12-28T03:05:00Z" dt="92820" plan="no" sdesc="no_data">
+	<operation c4="yes" start="2009-12-28T03:05:00Z" dt="92820" plan="no" sdesc="no_tm">
 		<desc>WEC switched off by monitoring entry 444.</desc>
 		<res>
 			<link href="http://www.acse.shef.ac.uk/wec-ops/mail/msg02084.html">Keith 091231</link>
@@ -4788,7 +4704,7 @@ Effect on the CAA processing:
                         <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02173.html">Collette 100125</link>
                 </res>
         </operation>
-        <operation c3="yes" start="2010-01-06T03:35:00Z" dt="26100" plan="no" sdesc="no_data">
+        <operation c3="yes" start="2010-01-06T03:35:00Z" dt="26100" plan="no" sdesc="no_tm">
                 <desc>SSR sropped recording. Anomaly report.</desc>
                 <res>
                         <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02139.html">Sylvia 100113</link>
@@ -4806,13 +4722,13 @@ Effect on the CAA processing:
 			<link href="ky091217a.txt">Keith 091217</link>
 		</res>
 	</operation>
-        <operation c2="yes" start="2010-01-10T05:34:13Z" dt="43560" plan="no" sdesc="no_data">
+        <operation c2="yes" start="2010-01-10T05:34:13Z" dt="43560" plan="no" sdesc="no_tm">
                 <desc>DWP watchdog reset.</desc>
                 <res>
                         <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02121.html">Keith 100111</link>
                 </res>
         </operation>
-        <operation c3="yes" start="2010-01-10T13:31:00Z" dt="169800" plan="no" sdesc="no_data">
+        <operation c3="yes" start="2010-01-10T13:31:00Z" dt="169800" plan="no" sdesc="no_tm">
                 <desc>DWP watchdog reset. 48 hours of data lost.</desc>
                 <res>
                         <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02129.html">Keith 100112</link>
@@ -4902,13 +4818,13 @@ Effect on the CAA processing:
         <operation c4="yes" start="2010-01-25T16:50:40Z" dt="70" plan="no" sdesc ="bad_data">
                 <desc>DAC error.</desc>
         </operation>
-        <operation c2="yes" start="2010-01-26T00:21:00Z" dt="36600" plan="no" sdesc="no_data">
+        <operation c2="yes" start="2010-01-26T00:21:00Z" dt="36600" plan="no" sdesc="no_tm">
                 <desc>SSR anomaly</desc>
                 <res>
                         <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02182.html">Silvia 100127</link>
                 </res>
         </operation>
-        <operation c2="yes" start="2010-01-28T17:01:00Z" dt="26880" plan="no" sdesc="no_data">
+        <operation c2="yes" start="2010-01-28T17:01:00Z" dt="26880" plan="no" sdesc="no_tm">
                 <desc>Commanding mistake</desc>
                 <res>
                         <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02249.html">Juergen, Per-Arne 100219</link>
@@ -4918,25 +4834,25 @@ Effect on the CAA processing:
         <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
-	<operation c1="yes" start="2010-02-01T08:33:00Z" dt="1500" plan="no" sdesc="no_data">
+	<operation c1="yes" start="2010-02-01T08:33:00Z" dt="1500" plan="no" sdesc="no_tm">
 		<desc>Data loss for all payload.</desc>
 		<res>
 			<link href="AR-2624.pdf">AR-2624</link>
 		</res>
 	</operation>
-	<operation c1="yes" start="2010-02-01T10:10:00Z" dt="17940" plan="no" sdesc="no_data">
+	<operation c1="yes" start="2010-02-01T10:10:00Z" dt="17940" plan="no" sdesc="no_tm">
 		<desc>Data loss for all payload.</desc>
 		<res>
 			<link href="AR-2624.pdf">AR-2624</link>
 		</res>
 	</operation>
-	<operation c1="yes" start="2010-02-01T17:47:00Z" dt="51720" plan="no" sdesc="no_data">
+	<operation c1="yes" start="2010-02-01T17:47:00Z" dt="51720" plan="no" sdesc="no_tm">
 		<desc>Data loss for all payload.</desc>
 		<res>
 			<link href="AR-2624.pdf">AR-2624</link>
 		</res>
 	</operation>
-        <operation c1="yes" start="2010-02-04T07:55:00Z" dt="429900" plan="no" sdesc="no_data">
+        <operation c1="yes" start="2010-02-04T07:55:00Z" dt="429900" plan="no" sdesc="no_tm">
                 <desc>Undervoltage in CTU caused serious payload problems. Roughly 5 days of data lost. Anomaly: CLU-AR-162 SC1 does not accept block commands</desc>
                 <res>
                         <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02219.html">Juergen 100209</link>
@@ -4949,7 +4865,7 @@ Effect on the CAA processing:
         <operation c1="yes" start="2010-02-12T00:28:32Z" dt="6" plan="no" sdesc="bad_data">
                 <desc>Bad phase data</desc>
         </operation>
-        <operation c4="yes" start="2010-02-12T08:50:00Z" dt="10200" plan="no" sdesc="no_data">
+        <operation c4="yes" start="2010-02-12T08:50:00Z" dt="10200" plan="no" sdesc="no_tm">
                 <desc>SSR anomaly</desc>
                 <res>
                         <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02235.html">Juergen 100215</link>
@@ -4979,7 +4895,7 @@ Effect on the CAA processing:
 	<operation c2="yes" start="2010-03-04T18:00:00Z" dt="81240" plan="no" sdesc="info">
 		<desc>Bias at defualt -40 nA.</desc>
 	</operation>
-        <operation c4="yes" start="2010-03-26T10:23:00Z" dt="45600" plan="no" sdesc="no_data">
+        <operation c4="yes" start="2010-03-26T10:23:00Z" dt="45600" plan="no" sdesc="no_tm">
                 <desc>WEC off after monitoring</desc>
                 <res>
                         <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02351.html">ESOC 100330</link>
@@ -5014,7 +4930,7 @@ Effect on the CAA processing:
         <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
-	<operation c2="yes" start="2010-04-13T07:57:45Z" dt="205200" plan="no" sdesc="no_data">
+	<operation c2="yes" start="2010-04-13T07:57:45Z" dt="205200" plan="no" sdesc="no_tm">
 		<desc>EFW turn-off by WEC following probable DWP SEU.</desc>
 		<res>
 			<link href="ky100414a.txt">Keith 100414</link>
@@ -5026,7 +4942,7 @@ Effect on the CAA processing:
         <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
-        <operation c1="yes" start="2010-04-16T14:21:00Z" dt="3000" plan="no" sdesc="no_data">
+        <operation c1="yes" start="2010-04-16T14:21:00Z" dt="3000" plan="no" sdesc="no_tm">
                 <desc>WEC error.</desc>
                 <res>
                         <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02395.html">Colette 100416</link>
@@ -5040,7 +4956,7 @@ Effect on the CAA processing:
         <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
-       <operation c1="yes" start="2010-04-20T21:46:00Z" dt="27240" plan="no" sdesc="no_data">
+       <operation c1="yes" start="2010-04-20T21:46:00Z" dt="27240" plan="no" sdesc="no_tm">
                 <desc>anomaly AR-135: repeating VC2 virtual channelframe counter on C1</desc>
                 <res>
                         <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02416.html">Juergen 100423</link>
@@ -5096,7 +5012,7 @@ Effect on the CAA processing:
         <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
-        <operation c4="yes" start="2010-05-23T13:02:00Z" dt="10200" plan="no" sdesc="no_data">
+        <operation c4="yes" start="2010-05-23T13:02:00Z" dt="10200" plan="no" sdesc="no_tm">
                 <desc>SSR controller failure</desc>
                 <res>
                         <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02575.html">Juergen 1006616</link>
@@ -5106,13 +5022,13 @@ Effect on the CAA processing:
         <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
-	<operation c2="yes" start="2010-05-28T04:12:14Z" dt="98580" plan="no" sdesc="no_data">
+	<operation c2="yes" start="2010-05-28T04:12:14Z" dt="98580" plan="no" sdesc="no_tm">
 		<desc>EFW turn-off by DWP watchdog reset.</desc>
 		<res>
 			<link href="ky100529a.txt">Keith 100529</link>
 		</res>
 		</operation>
-	<operation c3="yes" start="2010-06-01T00:00:00Z" dt="-1" plan="no" sdesc="tbd">
+	<operation c3="yes" start="2010-06-01T00:00:00Z" dt="-1" plan="no" sdesc="TBD">
 		<desc>Bad EDI currents during this month caused occasional extreme (keV) charging on SC3.</desc>
 		<res>
 		</res>
@@ -5135,7 +5051,7 @@ Effect on the CAA processing:
         <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
-        <operation c1="yes" start="2010-06-08T06:36:00Z" dt="10800" plan="yes" sdesc="no_data">
+        <operation c1="yes" start="2010-06-08T06:36:00Z" dt="10800" plan="yes" sdesc="no_tm">
                 <desc>HPA /WEC Power Sharing procedure FCP_CLU_M821</desc>
                 <res>
                     <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02666.html">Colette 100706</link>
@@ -5153,37 +5069,37 @@ Effect on the CAA processing:
                         <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02554.html">esoc 100611</link>
                 </res>
         </operation>
-        <operation c1="yes" start="2010-06-10T07:23:00Z" dt="10800" plan="yes" sdesc="no_data">
+        <operation c1="yes" start="2010-06-10T07:23:00Z" dt="10800" plan="yes" sdesc="no_tm">
                 <desc>HPA /WEC Power Sharing procedure FCP_CLU_M821</desc>
                 <res>
                     <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02666.html">Colette 100706</link>
                 </res>
         </operation>
-         <operation c1="yes" start="2010-06-12T07:42:00Z" dt="12600" plan="yes" sdesc="no_data">
+         <operation c1="yes" start="2010-06-12T07:42:00Z" dt="12600" plan="yes" sdesc="no_tm">
                 <desc>HPA /WEC Power Sharing procedure FCP_CLU_M821</desc>
                 <res>
                     <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02666.html">Colette 100706</link>
                 </res>
         </operation>
-       <operation c1="yes" start="2010-06-14T07:49:00Z" dt="12540" plan="no" sdesc="no_data">
+       <operation c1="yes" start="2010-06-14T07:49:00Z" dt="12540" plan="no" sdesc="no_tm">
                 <desc>WEC off for HPA in high power mode.</desc>
                 <res>
                     <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02653.html">Keith 100702</link>
                 </res>
         </operation>
-        <operation c2="yes" start="2010-06-16T11:36:00Z" dt="8400" plan="no" sdesc="no_data">
+        <operation c2="yes" start="2010-06-16T11:36:00Z" dt="8400" plan="no" sdesc="no_tm">
                 <desc>SSR controller failure</desc>
                 <res>
                         <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02577.html">Juergen 1006617</link>
                 </res>
         </operation>
-         <operation c1="yes" start="2010-06-17T06:59:00Z" dt="8640" plan="yes" sdesc="no_data">
+         <operation c1="yes" start="2010-06-17T06:59:00Z" dt="8640" plan="yes" sdesc="no_tm">
                 <desc>HPA /WEC Power Sharing procedure FCP_CLU_M821</desc>
                 <res>
                     <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02690.html">Colette 100714</link>
                 </res>
         </operation>
-        <operation c1="yes" start="2010-06-18T10:35:00Z" dt="6840" plan="yes" sdesc="no_data">
+        <operation c1="yes" start="2010-06-18T10:35:00Z" dt="6840" plan="yes" sdesc="no_tm">
                 <desc>HPA /WEC Power Sharing procedure FCP_CLU_M821</desc>
                 <res>
                     <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02690.html">Colette 100714</link>
@@ -5195,7 +5111,7 @@ Effect on the CAA processing:
                     <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02614.html">Iannis 1006624</link>
                 </res>
         </operation>
-        <operation c2="yes" start="2010-06-22T09:55:00Z" dt="11700" plan="no" sdesc="no_data">
+        <operation c2="yes" start="2010-06-22T09:55:00Z" dt="11700" plan="no" sdesc="no_tm">
                 <desc>Data loss due to STU switchover. AR-171</desc>
                 <res>
                     <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02588.html">Juergen 1006622</link>
@@ -5205,7 +5121,7 @@ Effect on the CAA processing:
         <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
-         <operation c1="yes" start="2010-06-22T19:12:00Z" dt="118800" plan="no" sdesc="no_data">
+         <operation c1="yes" start="2010-06-22T19:12:00Z" dt="118800" plan="no" sdesc="no_tm">
                 <desc>EFW off for unclear reason. Problems with restarting due WECto inrush current. Long data gap.</desc>
                 <res>
                     <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02698.html">Colette 100715</link>
@@ -5215,7 +5131,7 @@ Effect on the CAA processing:
         <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
-       <operation c3="yes" start="2010-06-29T04:17:32Z" dt="122400" plan="no" sdesc="no_data">
+       <operation c3="yes" start="2010-06-29T04:17:32Z" dt="122400" plan="no" sdesc="no_tm">
                 <desc>Long data gap from SSR failure.</desc>
                 <res>
                     <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02664.html">Juergen 100706</link>
@@ -5265,11 +5181,11 @@ Effect on the CAA processing:
 <operation c1="yes" c2="yes" c3="yes" start="2010-07-14T10:25:24Z" dt="18882" plan="no" sdesc="no_p32">
         <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+</operation>
 <operation c3="yes" start="2010-07-14T16:30:00Z" dt="300" plan="yes" sdesc="bad_data">
-        <desc>Thruster firing with EFW on (66 pulses)</desc>
-    </operation>
-    </operation>
-        <operation c2="yes" start="2010-07-15T06:06:30Z" dt="75600" plan="no" sdesc="no_data">
+	<desc>Thruster firing with EFW on (66 pulses)</desc>
+</operation>
+        <operation c2="yes" start="2010-07-15T06:06:30Z" dt="75600" plan="no" sdesc="no_tm">
                 <desc>DWP SEU upset</desc>
                 <res>
                     <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02751.html">Keith 100802</link>
@@ -5279,7 +5195,7 @@ Effect on the CAA processing:
         <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
-        <operation c4="yes" start="2010-07-17T07:00:00Z" dt="156600" plan="no" sdesc="no_data">
+        <operation c4="yes" start="2010-07-17T07:00:00Z" dt="156600" plan="no" sdesc="no_tm">
                 <desc>Obscure DWP malfunction.</desc>
                 <res>
                     <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02742.html">Keith 100729</link>
@@ -5339,7 +5255,7 @@ Effect on the CAA processing:
         <desc>Corrupt data. Cause unknown. Likely commanding error.</desc>
     </operation>
 
-        <operation c1="yes" start="2010-08-08T00:48:00Z" dt="6900" plan="yes" sdesc="no_data">
+        <operation c1="yes" start="2010-08-08T00:48:00Z" dt="6900" plan="yes" sdesc="no_tm">
                 <desc>HPA /WEC Power Sharing procedure FCP_CLU_M821</desc>
                 <res>
                     <link href="http://http://www.acse.shef.ac.uk/wec-ops/old_mail/msg00033.html">Colette 100903</link>
@@ -5353,13 +5269,13 @@ Effect on the CAA processing:
         <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
-        <operation c1="yes" start="2010-08-14T02:31:00Z" dt="20400" plan="yes" sdesc="no_data">
+        <operation c1="yes" start="2010-08-14T02:31:00Z" dt="20400" plan="yes" sdesc="no_tm">
                 <desc>HPA /WEC Power Sharing procedure</desc>
                 <res>
                     <link href="http://http://www.acse.shef.ac.uk/wec-ops/old_mail/msg00059.html">Colette 100913</link>
                 </res>
         </operation>
-        <operation c1="yes" start="2010-08-15T03:28:00Z" dt="7200" plan="yes" sdesc="no_data">
+        <operation c1="yes" start="2010-08-15T03:28:00Z" dt="7200" plan="yes" sdesc="no_tm">
                 <desc>HPA /WEC Power Sharing procedure</desc>
                 <res>
                     <link href="http://http://www.acse.shef.ac.uk/wec-ops/old_mail/msg00059.html">Colette 100913</link>
@@ -5369,28 +5285,28 @@ Effect on the CAA processing:
         <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
-        <operation c3="yes" start="2010-08-15T16:32:00Z" dt="27000" plan="no" sdesc="no_data">
+        <operation c3="yes" start="2010-08-15T16:32:00Z" dt="27000" plan="no" sdesc="no_tm">
                 <desc>WEC off by multiple monitoring entries.</desc>
                 <res>
                     <link href="http://http://www.acse.shef.ac.uk/wec-ops/old_mail/msg00059.html">Colette 100913</link>
                 </res>
         </operation>
-        <operation c1="yes" start="2010-08-16T08:28:21Z" dt="3600" plan="no" sdesc="no_data">
+        <operation c1="yes" start="2010-08-16T08:28:21Z" dt="3600" plan="no" sdesc="no_tm">
                 <desc>WEC was Power cycle after the CLU_AR-175 (Uncommanded WEC LCL-B On).</desc>
                 <res>
                     <link href="http://http://www.acse.shef.ac.uk/wec-ops/old_mail/msg00059.html">Colette 100913</link>
                 </res>
         </operation>
-<operation c4="yes" start="2010-08-17T03:30:99Z" dt="48600" plan="no" sdesc="info">
+<operation c4="yes" start="2010-08-17T03:30:00Z" dt="48600" plan="no" sdesc="info">
         <desc>No data (LX or HX). Reason unknown.</desc>
     </operation>
-        <operation c3="yes" start="2010-08-20T05:14:36Z" dt="304200" plan="no" sdesc="no_data">
+        <operation c3="yes" start="2010-08-20T05:14:36Z" dt="304200" plan="no" sdesc="no_tm">
                 <desc>WEC off by multiple monitoring entries. Long data gap while teams asked to analyse WBD temp OOL(3 days).</desc>
                 <res>
                     <link href="http://http://www.acse.shef.ac.uk/wec-ops/old_mail/msg00059.html">Colette 100913</link>
                 </res>
         </operation>
-        <operation c1="yes" start="2010-08-20T23:52:00Z" dt="7700" plan="yes" sdesc="no_data">
+        <operation c1="yes" start="2010-08-20T23:52:00Z" dt="7700" plan="yes" sdesc="no_tm">
                 <desc>HPA /WEC Power Sharing procedure</desc>
                 <res>
                     <link href="http://http://www.acse.shef.ac.uk/wec-ops/old_mail/msg00063.html">Colette 100914</link>
@@ -5410,13 +5326,13 @@ Effect on the CAA processing:
         <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
-        <operation c4="yes" start="2010-08-31T16:55:00Z" dt="27300" plan="no" sdesc="no_data">
+        <operation c4="yes" start="2010-08-31T16:55:00Z" dt="27300" plan="no" sdesc="no_tm">
                 <desc>WEC off by multiple monitoring groups.</desc>
                 <res>
                     <link href="http://www.acse.shef.ac.uk/wec-ops/old_mail/msg00017.html">Jefferys 100901</link>
                 </res>
         </operation>
-        <operation c3="yes" start="2010-09-01T15:20:00Z" dt="24120" plan="no" sdesc="no_data">
+        <operation c3="yes" start="2010-09-01T15:20:00Z" dt="24120" plan="no" sdesc="no_tm">
                 <desc>DWP latchup. Data loss until 2010-09-04 10:20.</desc>
                 <res>
                     <link href="http://www.acse.shef.ac.uk/wec-ops/old_mail/msg00029.html">Keith 100903</link>
@@ -5448,13 +5364,13 @@ Effect on the CAA processing:
         <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
-        <operation c1="yes" start="2010-09-16T22:18:00Z" dt="18000" plan="yes" sdesc="no_data">
+        <operation c1="yes" start="2010-09-16T22:18:00Z" dt="18000" plan="yes" sdesc="no_tm">
                 <desc>HPA /WEC Power Sharing procedure</desc>
                 <res>
                     <link href="http://http://www.acse.shef.ac.uk/wec-ops/old_mail/msg00118.html">Colette 101001</link>
                 </res>
         </operation>
-        <operation c2="yes" start="2010-09-18T14:30:00Z" dt="172800" plan="no" sdesc="no_data">
+        <operation c2="yes" start="2010-09-18T14:30:00Z" dt="172800" plan="no" sdesc="no_tm">
                 <desc>WEC problems. 2 days of data lost.</desc>
                 <res>
                     <link href="http://http://www.acse.shef.ac.uk/wec-ops/old_mail/msg00118.html">Colette 101001</link>
@@ -5482,19 +5398,19 @@ Effect on the CAA processing:
         <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
-        <operation c1="yes" start="2010-09-28T21:44:00Z" dt="14400" plan="yes" sdesc="no_data">
+        <operation c1="yes" start="2010-09-28T21:44:00Z" dt="14400" plan="yes" sdesc="no_tm">
                 <desc>HPA /WEC Power Sharing procedure</desc>
                 <res>
                     <link href="http://http://www.acse.shef.ac.uk/wec-ops/old_mail/msg00161.html">Colette 101014</link>
                 </res>
         </operation>
-        <operation c2="yes" start="2010-10-02T00:20:00Z" dt="65400" plan="no" sdesc="no_data">
+        <operation c2="yes" start="2010-10-02T00:20:00Z" dt="65400" plan="no" sdesc="no_tm">
                 <desc>WEC off by onboard monitor.</desc>
                 <res>
                     <link href="http://http://www.acse.shef.ac.uk/wec-ops/old_mail/msg00161.html">Colette 101014</link>
                 </res>
         </operation>
-        <operation c1="yes" start="2010-10-02T21:16:00Z" dt="18000" plan="yes" sdesc="no_data">
+        <operation c1="yes" start="2010-10-02T21:16:00Z" dt="18000" plan="yes" sdesc="no_tm">
                 <desc>HPA /WEC Power Sharing procedure</desc>
                 <res>
                     <link href="http://http://www.acse.shef.ac.uk/wec-ops/old_mail/msg00161.html">Colette 101014</link>
@@ -5521,13 +5437,13 @@ Effect on the CAA processing:
 <operation c3="yes" start="2010-10-17T15:26:50Z" dt="3" plan="no" sdesc="bad_data">
         <desc>Bad packet.</desc>
     </operation>
-        <operation c2="yes" start="2010-10-19T23:20:00Z" dt="45000" plan="no" sdesc="no_data">
+        <operation c2="yes" start="2010-10-19T23:20:00Z" dt="45000" plan="no" sdesc="no_tm">
                 <desc>SSR latchup. CLU_AR-177.</desc>
                 <res>
                     <link href="http://http://www.acse.shef.ac.uk/wec-ops/old_mail/msg00201.html">Juergen 101026</link>
                 </res>
         </operation>
-        <operation c2="yes" start="2010-10-20T08:09:00Z" dt="12600" plan="no" sdesc="no_data">
+        <operation c2="yes" start="2010-10-20T08:09:00Z" dt="12600" plan="no" sdesc="no_tm">
                 <desc>EFW switched off for unknown reason.</desc>
                 <res>
                     <link href="http://http://www.acse.shef.ac.uk/wec-ops/old_mail/msg00177.html">Per-Arne 101021</link>
@@ -5546,13 +5462,13 @@ Effect on the CAA processing:
                     <link href="http://http://www.acse.shef.ac.uk/wec-ops/old_mail/msg00197.html">Per-Arne 101026</link>
                 </res>
         </operation>
-        <operation c3="yes" start="2010-10-26T18:14:00Z" dt="10800" plan="no" sdesc="no_data">
+        <operation c3="yes" start="2010-10-26T18:14:00Z" dt="10800" plan="no" sdesc="no_tm">
                 <desc>CTU switchover. CLU_AR-179</desc>
                 <res>
                     <link href="http://http://www.acse.shef.ac.uk/wec-ops/old_mail/msg00211.html">Silvia 101028</link>
                 </res>
         </operation>
-         <operation c4="yes" start="2010-10-27T00:57:00Z" dt="23280" plan="no" sdesc="no_data">
+         <operation c4="yes" start="2010-10-27T00:57:00Z" dt="23280" plan="no" sdesc="no_tm">
                 <desc>CTU switchover. CLU_AR-180</desc>
                 <res>
                     <link href="http://http://www.acse.shef.ac.uk/wec-ops/old_mail/msg00211.html">Silvia 101028</link>
@@ -5585,7 +5501,7 @@ Effect on the CAA processing:
                 <res>
                 </res>
         </operation>
-        <operation c2="yes" start="2010-11-08T11:10:00Z" dt="43200" plan="no" sdesc="no_data">
+        <operation c2="yes" start="2010-11-08T11:10:00Z" dt="43200" plan="no" sdesc="no_tm">
                 <desc>WEC off by monitoring 444/445/446.</desc>
                 <res>
                     <link href="http://http://www.acse.shef.ac.uk/wec-ops/old_mail/msg00244.html">Keith 101109</link>
@@ -5611,19 +5527,19 @@ Effect on the CAA processing:
         <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
-        <operation c4="yes" start="2010-11-18T21:00:00Z" dt="28140" plan="no" sdesc="no_data">
+        <operation c4="yes" start="2010-11-18T21:00:00Z" dt="28140" plan="no" sdesc="no_tm">
                 <desc>Data loss due to ground segment problem.</desc>
                 <res>
                     <link href="AR-2733.pdf">AR-2733</link>
                 </res>
         </operation>
-        <operation c3="yes" start="2010-11-22T02:10:00Z" dt="64800" plan="no" sdesc="no_data">
+        <operation c3="yes" start="2010-11-22T02:10:00Z" dt="64800" plan="no" sdesc="no_tm">
                 <desc>WEC off by monitoring 444.</desc>
                 <res>
                     <link href="http://http://www.acse.shef.ac.uk/wec-ops/old_mail/msg00375.html">Colette 101224</link>
                 </res>
         </operation>
-        <operation c3="yes" start="2010-11-28T12:09:00Z" dt="25200" plan="no" sdesc="no_data">
+        <operation c3="yes" start="2010-11-28T12:09:00Z" dt="25200" plan="no" sdesc="no_tm">
                 <desc>WEC off by multiple monitoring entries.</desc>
                 <res>
                     <link href="http://http://www.acse.shef.ac.uk/wec-ops/old_mail/msg00378.html">Colette 101230</link>
@@ -5641,15 +5557,10 @@ Effect on the CAA processing:
         <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
-	<operation c3="yes" start="2011-03-05T18:13:40Z" dt="-1" plan="no" sdesc="no_data">
-		<desc>WEC switched off by spacecraft monitoring and could
-	not be switched on again by standard procedures. Investigations 
-	identified likely cause and led to tests in late May. If
-	successful, operations could possibly be resumed in June.
-		</desc>
+	<operation c3="yes" start="2011-03-05T18:13:40Z" dt="-1" plan="no" sdesc="no_tm">
+		<desc>WEC switched off by spacecraft monitoring and could not be switched on again by standard procedures. Investigations identified likely cause and led to tests in late May. If successful, operations could possibly be resumed in June.</desc>
 		<res>
-		1. <link href="CL-OPS-MIN-1022_incl_annex.pdf">Meeting
-		ESOC 110513</link>
+		<link href="CL-OPS-MIN-1022_incl_annex.pdf">Meeting ESOC 110513</link>
 		</res>
 	</operation>
 <operation c1="yes" c2="yes" c3="yes" start="2011-03-11T06:45:24Z" dt="14082" plan="no" sdesc="no_p32">
@@ -5664,10 +5575,7 @@ Effect on the CAA processing:
         <desc>To be investigated by AIE</desc>
     </operation>
 <operation c2="yes" start="2011-04-21T09:00:00Z" dt="769414" plan="no" sdesc ="bad_bias">
-                <desc>Probe contamination at extremely low perigee passes caused P2 data to become intolerably bad
-	from about this time (perigee at 09:35) until the problem was discovered, analyzed, tests were run in space, 
-	and the bias current finally was adjusted from 2011-04-30 06:43:34.
-                </desc>
+                <desc>Probe contamination at extremely low perigee passes caused P2 data to become intolerably bad from about this time (perigee at 09:35) until the problem was discovered, analyzed, tests were run in space, and the bias current finally was adjusted from 2011-04-30 06:43:34.</desc>
                 <res>
                 </res>
         </operation>
@@ -5680,11 +5588,9 @@ Effect on the CAA processing:
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 <operation c2="yes" start="2011-04-30T06:43:31Z" dt="-1" plan="yes" sdesc ="info">
-                <desc>The adjusted bias current for low photoemission current due to probe contamination 
-	at low perigee passes should be effective from this time, and data should thus be of acceptable quality.
-                </desc>
+                <desc>The adjusted bias current for low photoemission current due to probe contamination at low perigee passes should be effective from this time, and data should thus be of acceptable quality.</desc>
                 <res>
-	        <link href="pal110429a.txt">Per-Arne 110429</link>
+                <link href="pal110429a.txt">Per-Arne 110429</link>
                 </res>
         </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2011-05-02T02:45:24Z" dt="24882" plan="no" sdesc="no_p32">
@@ -5695,17 +5601,17 @@ Effect on the CAA processing:
         <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
-        <operation c3="yes" c4="yes" start="2011-05-22T17:15:00Z" dt="19200" plan="yes" sdesc ="tbd">
+        <operation c3="yes" c4="yes" start="2011-05-22T17:15:00Z" dt="19200" plan="yes" sdesc ="TBD">
                 <desc>Sweeps also on SC34, 30 min interval.</desc>
                 <res>
                 </res>
         </operation>
-                <operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-05-26T12:05:00Z" dt="660" plan="yes" sdesc ="tbd">
+                <operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-05-26T12:05:00Z" dt="660" plan="yes" sdesc ="TBD">
                 <desc>Sweeps on all s/c, 64 s interval.</desc>
                 <res>
                 </res>
         </operation>
-                <operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-05-31T00:35:00Z" dt="900" plan="yes" sdesc ="tbd">
+                <operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-05-31T00:35:00Z" dt="900" plan="yes" sdesc ="TBD">
                 <desc>Sweeps on all s/c, 64 s interval.</desc>
                 <res>
                 </res>
@@ -5715,55 +5621,48 @@ Effect on the CAA processing:
                 <res>
                 </res>
         </operation>
-<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-06-04T12:29:00Z" dt="900" plan="yes" sdesc ="tbd">
+<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-06-04T12:29:00Z" dt="900" plan="yes" sdesc ="TBD">
                 <desc>Sweeps on all s/c, 64 s interval.</desc>
                 <res>
                 </res>
         </operation>
-<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-06-09T01:38:00Z" dt="900" plan="yes" sdesc ="tbd">
+<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-06-09T01:38:00Z" dt="900" plan="yes" sdesc ="TBD">
                 <desc>Sweeps on all s/c, 64 s interval.</desc>
                 <res>
                 </res>
         </operation>
-<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-06-13T14:55:00Z" dt="900" plan="yes" sdesc ="tbd">
-                <desc>Sweeps on all s/c, 64 s interval.
-		</desc>
+<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-06-13T14:55:00Z" dt="900" plan="yes" sdesc ="TBD">
+                <desc>Sweeps on all s/c, 64 s interval.</desc>
                 <res>
                 </res>
         </operation>
-<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-06-16T19:18:00Z" dt="900" plan="yes" sdesc ="tbd">
-                <desc>Sweeps on all s/c, 64 s interval.
-		</desc>
+<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-06-16T19:18:00Z" dt="900" plan="yes" sdesc ="TBD">
+                <desc>Sweeps on all s/c, 64 s interval.</desc>
                 <res>
                 </res>
         </operation>
-<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-06-22T16:08:00Z" dt="720" plan="yes" sdesc ="tbd">
-                <desc>Sweeps on all s/c, 64 s interval.
-		</desc>
+<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-06-22T16:08:00Z" dt="720" plan="yes" sdesc ="TBD">
+                <desc>Sweeps on all s/c, 64 s interval.</desc>
                 <res>
                 </res>
         </operation>
-<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-06-25T18:19:00Z" dt="900" plan="yes" sdesc ="tbd">
-                <desc>Sweeps on all s/c, 64 s interval.
-		</desc>
+<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-06-25T18:19:00Z" dt="900" plan="yes" sdesc ="TBD">
+                <desc>Sweeps on all s/c, 64 s interval.</desc>
                 <res>
                 </res>
         </operation>
-<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-06-27T03:45:00Z" dt="900" plan="yes" sdesc ="tbd">
-                <desc>Sweeps on all s/c, 64 s interval.
-		</desc>
+<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-06-27T03:45:00Z" dt="900" plan="yes" sdesc ="TBD">
+                <desc>Sweeps on all s/c, 64 s interval.</desc>
                 <res>
                 </res>
         </operation>
-<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-07-03T22:31:00Z" dt="900" plan="yes" sdesc ="tbd">
-                <desc>Sweeps on all s/c, 64 s interval.
-		</desc>
+<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-07-03T22:31:00Z" dt="900" plan="yes" sdesc ="TBD">
+                <desc>Sweeps on all s/c, 64 s interval.</desc>
                 <res>
                 </res>
         </operation>
-<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-07-04T21:19:00Z" dt="900" plan="yes" sdesc ="tbd">
-                <desc>Sweeps on all s/c, 64 s interval.
-		</desc>
+<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-07-04T21:19:00Z" dt="900" plan="yes" sdesc ="TBD">
+                <desc>Sweeps on all s/c, 64 s interval.</desc>
                 <res>
                 </res>
         </operation>
@@ -5771,9 +5670,8 @@ Effect on the CAA processing:
         <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
-<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-07-11T15:19:00Z" dt="900" plan="yes" sdesc ="tbd">
-                <desc>Sweeps on all s/c, 64 s interval.
-		</desc>
+<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-07-11T15:19:00Z" dt="900" plan="yes" sdesc ="TBD">
+                <desc>Sweeps on all s/c, 64 s interval.</desc>
                 <res>
                 </res>
         </operation>
@@ -5781,9 +5679,8 @@ Effect on the CAA processing:
         <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
-<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-07-15T02:19:00Z" dt="900" plan="yes" sdesc ="tbd">
-                <desc>Sweeps on all s/c, 64 s interval.
-		</desc>
+<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-07-15T02:19:00Z" dt="900" plan="yes" sdesc ="TBD">
+                <desc>Sweeps on all s/c, 64 s interval.</desc>
                 <res>
                 </res>
         </operation>
@@ -5791,120 +5688,102 @@ Effect on the CAA processing:
         <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
-<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-07-18T10:19:00Z" dt="900" plan="yes" sdesc ="tbd">
-                <desc>Sweeps on all s/c, 64 s interval.
-		</desc>
+<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-07-18T10:19:00Z" dt="900" plan="yes" sdesc ="TBD">
+                <desc>Sweeps on all s/c, 64 s interval.</desc>
                 <res>
                 </res>
         </operation>
-<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-07-22T00:42:00Z" dt="900" plan="yes" sdesc ="tbd">
-                <desc>Sweeps on all s/c, 64 s interval.
-		</desc>
+<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-07-22T00:42:00Z" dt="900" plan="yes" sdesc ="TBD">
+                <desc>Sweeps on all s/c, 64 s interval.</desc>
                 <res>
                 </res>
         </operation>
-<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-07-24T06:58:00Z" dt="900" plan="yes" sdesc ="tbd">
-                <desc>Sweeps on all s/c, 64 s interval.
-		</desc>
+<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-07-24T06:58:00Z" dt="900" plan="yes" sdesc ="TBD">
+                <desc>Sweeps on all s/c, 64 s interval.</desc>
                 <res>
                 </res>
         </operation>
-<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-07-31T01:35:00Z" dt="900" plan="yes" sdesc ="tbd">
-                <desc>Sweeps on all s/c, 64 s interval.
-		</desc>
+<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-07-31T01:35:00Z" dt="900" plan="yes" sdesc ="TBD">
+                <desc>Sweeps on all s/c, 64 s interval.</desc>
                 <res>
                 </res>
         </operation>
-<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-08-06T20:14:00Z" dt="900" plan="yes" sdesc ="tbd">
-                <desc>Sweeps on all s/c, 64 s interval.
-		</desc>
+<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-08-06T20:14:00Z" dt="900" plan="yes" sdesc ="TBD">
+                <desc>Sweeps on all s/c, 64 s interval.</desc>
                 <res>
                 </res>
         </operation>
-<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-08-13T14:49:00Z" dt="900" plan="yes" sdesc ="tbd">
-                <desc>Sweeps on all s/c, 64 s interval.
-		</desc>
+<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-08-13T14:49:00Z" dt="900" plan="yes" sdesc ="TBD">
+                <desc>Sweeps on all s/c, 64 s interval.</desc>
                 <res>
                 </res>
         </operation>
-<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-08-20T09:27:00Z" dt="900" plan="yes" sdesc ="tbd">
-                <desc>Sweeps on all s/c, 64 s interval.
-		</desc>
+<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-08-20T09:27:00Z" dt="900" plan="yes" sdesc ="TBD">
+                <desc>Sweeps on all s/c, 64 s interval.</desc>
                 <res>
                 </res>
         </operation>
 <operation c2="yes" start="2011-08-22T13:11:51Z" dt="279240" plan="no" sdesc ="bad_tm">
-                <desc>Bad or non-existing EFW data. Exact reason not known, but the problem started following a DWP anonaly.
-	</desc>
+                <desc>Bad or non-existing EFW data. Exact reason not known, but the problem started following a DWP anonaly.</desc>
         <res>
 	<link href="pal110825.txt">Per-Arne 110822</link>
 	<link href="ky110831.txt">Keith 110831</link>
         </res>
         </operation>
-<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-08-27T04:13:00Z" dt="900" plan="yes" sdesc ="tbd">
-                <desc>Sweeps on all s/c, 64 s interval.
-		</desc>
+<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-08-27T04:13:00Z" dt="900" plan="yes" sdesc ="TBD">
+                <desc>Sweeps on all s/c, 64 s interval.</desc>
                 <res>
                 </res>
         </operation>
-<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-09-05T05:23:00Z" dt="900" plan="yes" sdesc ="tbd">
-                <desc>Sweeps on all s/c, 64 s interval.
-		</desc>
+<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-09-05T05:23:00Z" dt="900" plan="yes" sdesc ="TBD">
+                <desc>Sweeps on all s/c, 64 s interval.</desc>
                 <res>
                 </res>
         </operation>
-<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-09-12T00:12:00Z" dt="900" plan="yes" sdesc ="tbd">
-                <desc>Sweeps on all s/c, 64 s interval.
-		</desc>
+<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-09-12T00:12:00Z" dt="900" plan="yes" sdesc ="TBD">
+                <desc>Sweeps on all s/c, 64 s interval.</desc>
                 <res>
                 </res>
         </operation>
 <operation c1="yes" c2="no" c3="yes" c4="yes" start="2011-10-09T03:54:30Z" dt="-1" plan="yes" sdesc ="info">
-                <desc>Bias current changed to 140 nA on SC134 as solar UV flux has increased.
-		</desc>
+                <desc>Bias current changed to 140 nA on SC134 as solar UV flux has increased.</desc>
                 <res>
                 </res>
         </operation>
 <operation c1="yes" c4="yes" start="2011-10-29T12:15:36Z" dt="60"
 plan="yes" sdesc ="bad_bias">
-                <desc>Bias stepping from 140 to 320 nA in steps of 12 nA, 4 sec step rate.
-                </desc>
+                <desc>Bias stepping from 140 to 320 nA in steps of 12 nA, 4 sec step rate.</desc>
                 <res>
                 </res>
         </operation>
-<operation c2="yes" start="2011-10-30T02:49:00Z" dt="52380" plan="no" sdesc ="tbd">
-                <desc>WEC turned off by onboard monitoring.
-                </desc>
+<operation c2="yes" start="2011-10-30T02:49:00Z" dt="52380" plan="no" sdesc ="TBD">
+                <desc>WEC turned off by onboard monitoring.</desc>
                 <res>
 	        <link href="ky111031a.txt">Keith 111031</link>
                 </res>
         </operation>
 <operation c1="yes" c3="yes" c4="yes" start="2011-10-30T10:01:00Z" dt="900"
-plan="yes" sdesc ="tbd">
-                <desc>Sweeps on all s/c, 64 s interval, with 450 Hz burst collection by time-tagged trig just after start. Burst quantities (same for all s/c): V1V2M, V3V4M, V1V2U, V3V4U. (Was planned also for C2, but lost due to WEC turned off on that s/c by the problem noted above).
-                </desc>
+plan="yes" sdesc ="TBD">
+                <desc>Sweeps on all s/c, 64 s interval, with 450 Hz burst collection by time-tagged trig just after start. Burst quantities (same for all s/c): V1V2M, V3V4M, V1V2U, V3V4U. (Was planned also for C2, but lost due to WEC turned off on that s/c by the problem noted above).</desc>
                 <res>
                 </res>
         </operation>
-<operation c1="yes" c3="yes" c4="yes" start="2011-10-31T21:30:24Z" dt="3600" plan="yes" sdesc ="tbd"> <desc>Special burst targeting narrowband noise.
-                </desc>
+<operation c1="yes" c3="yes" c4="yes" start="2011-10-31T21:30:24Z" dt="3600" plan="yes" sdesc ="TBD">
+		 <desc>Special burst targeting narrowband noise.</desc>
                 <res><link href="aie111011a.txt">Anders 111011</link>
                 </res>
         </operation>
-<operation c2="yes" start="2011-10-31T22:05:24Z" dt="1500" plan="yes" sdesc ="tbd">
-                <desc>Special burst targeting narrowband noise.
-                </desc>
+<operation c2="yes" start="2011-10-31T22:05:24Z" dt="1500" plan="yes" sdesc ="TBD">
+                <desc>Special burst targeting narrowband noise.</desc>
                 <res><link href="aie111011a.txt">Anders 111011</link>
                 </res>
         </operation>
-<operation c1="yes" c2="yes" c4="yes" start="2011-11-03T03:45:24Z" dt="3600" plan="yes" sdesc ="tbd"> <desc>Special burst targeting narrowband noise.
-                </desc>
+<operation c1="yes" c2="yes" c4="yes" start="2011-11-03T03:45:24Z" dt="3600" plan="yes" sdesc ="TBD"> <desc>Special burst targeting narrowband noise.</desc>
                 <res><link href="aie111011a.txt">Anders 111011</link>
                 </res>
         </operation>
-<operation c3="yes" start="2011-11-03T04:31:24Z" dt="480" plan="yes" sdesc ="tbd">
-                <desc>Special burst targeting narrowband noise.
-                </desc>
+<operation c3="yes" start="2011-11-03T04:31:24Z" dt="480" plan="yes" sdesc ="TBD">
+                <desc>Special burst targeting narrowband noise.</desc>
                 <res><link href="aie111011a.txt">Anders 111011</link>
                 </res>
         </operation>
@@ -5912,21 +5791,17 @@ plan="yes" sdesc ="tbd">
 		<desc>Bad WEC telemetry, DWP buffer overflow?</desc>
 	</operation>
 <operation c4="yes" start="2011-12-04T00:10:00Z" dt="136" plan="yes" sdesc ="bad_bias">
-                <desc>Bias stepping P34 from 8 to 380 nA in steps of 12 nA, 4 sec step rate. Start by setting 8 nA, 4 nA, 8 nA (to give time for any transient).  
-                </desc>
+                <desc>Bias stepping P34 from 8 to 380 nA in steps of 12 nA, 4 sec step rate. Start by setting 8 nA, 4 nA, 8 nA (to give time for any transient).</desc>
                 <res>
                 </res>
         </operation>
 <operation c2="yes" start="2011-12-04T00:10:00Z" dt="136" plan="yes" sdesc ="bad_bias">
-                <desc>Bias stepping P2 from 4 to 132 nA in steps of 4 nA, 4 sec step rate. 
-                </desc>
+                <desc>Bias stepping P2 from 4 to 132 nA in steps of 4 nA, 4 sec step rate.</desc>
                 <res>
                 </res>
         </operation>
-<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-12-05T15:15:00Z" dt="900" plan="yes" sdesc ="tbd">
-                <desc>Sweeps on all s/c, 64 s interval, with 450 Hz burst collection by time-tagged trig just after start. Burst quantities (same for all s/c): V1V2M
-, V3V4M, V1V2U, V3V4U. 
-                </desc>
+<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-12-05T15:15:00Z" dt="900" plan="yes" sdesc ="TBD">
+                <desc>Sweeps on all s/c, 64 s interval, with 450 Hz burst collection by time-tagged trig just after start. Burst quantities (same for all s/c): V1V2M, V3V4M, V1V2U, V3V4U.</desc>
                 <res>
                 </res>
         </operation>
@@ -5936,8 +5811,8 @@ plan="yes" sdesc ="tbd">
                         <link href="ky120124a.txt">Keith 120124</link>
                 </res>
         </operation>
-<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2012-02-03T22:08:00Z" dt="300" plan="yes" sdesc ="tbd">
-                <desc>Sweeps during BM3 interval that could not be used for dumping internal burst. Sweeps start at 22:01 and go on into the BM3. </desc>
+<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2012-02-03T22:08:00Z" dt="300" plan="yes" sdesc ="TBD">
+                <desc>Sweeps during BM3 interval that could not be used for dumping internal burst. Sweeps start at 22:01 and go on into the BM3.</desc>
                 <res>
                 </res>
         </operation>
@@ -5995,18 +5870,17 @@ plan="yes" sdesc ="tbd">
                 </res>
         </operation>
 
-<operation start="2012-03-04T02:51:00Z" dt="280" c2="yes" plan="yes" sdesc="bad_p2">
-        <desc>Bias stepping (slow sweep) on P2 (first vbias steps of 10 V from -39 V to -19.4 V, then vbias steps of +0.6 V from -19.4 V to -0.6 V, then ibias
- steps of -4 nA from -12 nA to -140 nA).</desc>
+<operation start="2012-03-04T02:51:00Z" dt="280" c2="yes" plan="yes" sdesc="bad_bias">
+        <desc>Bias stepping (slow sweep) on P2 (first vbias steps of 10 V from -39 V to -19.4 V, then vbias steps of +0.6 V from -19.4 V to -0.6 V, then ibias steps of -4 nA from -12 nA to -140 nA).</desc>
                 <res><link href="slowsweeps_PP616.txt">Anders 120214</link>
                 </res>
         </operation>
-<operation start="2012-03-04T02:54:00Z" dt="280" c4="yes" plan="yes" sdesc="bad_p34">
+<operation start="2012-03-04T02:54:00Z" dt="280" c4="yes" plan="yes" sdesc="bad_bias">
         <desc>Bias stepping (slow sweep) on P34 (first vbias steps of 10 V from -39 V to -19.4 V, then vbias steps of +0.6 V from -19.4 V to -0.6 V, then ibias steps of -12 nA from -104 nA to -500 nA).</desc>
                 <res><link href="slowsweeps_PP616.txt">Anders 120214</link>
                 </res>
         </operation>
-<operation start="2012-03-04T02:55:40Z" dt="140" c2="yes" plan="yes" sdesc="bad_p34">
+<operation start="2012-03-04T02:55:40Z" dt="140" c2="yes" plan="yes" sdesc="bad_bias">
         <desc>Bias stepping (slow sweep) on P34 (ibias steps of -4 nA from -12 nA to -140 nA). Stepping on P2 starts at 02:51.</desc>
                 <res><link href="slowsweeps_PP616.txt">Anders 120214</link>
                 </res>
@@ -6033,17 +5907,17 @@ plan="yes" sdesc ="tbd">
                 <res><link href="slowsweeps_PP616.txt">Anders 120214</link>
                 </res>
 	</operation>
-<operation start="2012-03-14T03:11:20Z" dt="140" c2="yes" plan="yes" sdesc="bad_p2">
+<operation start="2012-03-14T03:11:20Z" dt="140" c2="yes" plan="yes" sdesc="bad_bias">
         <desc>Bias current stepping (slow sweeps) on P2 (ibias steps of -4 nA from -12 nA to -140 nA). Modified from 120304.</desc>
                 <res><link href="slowsweeps_PP616.txt">Anders 120214</link>
                 </res>
         </operation>
-<operation start="2012-03-14T03:11:20Z" dt="140" c4="yes" plan="yes" sdesc="bad_p34">
+<operation start="2012-03-14T03:11:20Z" dt="140" c4="yes" plan="yes" sdesc="bad_bias">
         <desc>Bias current stepping (slow sweeps) on P34 (ibias steps of -4 nA from -12 nA to -140 nA). Modified from 120304.</desc>
                 <res><link href="slowsweeps_PP616.txt">Anders 120214</link>
                 </res>
         </operation>
-<operation start="2012-03-14T03:13:40Z" dt="140" c2="yes" plan="yes" sdesc="bad_p34">
+<operation start="2012-03-14T03:13:40Z" dt="140" c2="yes" plan="yes" sdesc="bad_bias">
         <desc>Bias stepping (slow sweeps) on P34 (ibias steps of -4 nA from -12 nA to -140 nA). Modified from 120304.</desc>
                 <res><link href="slowsweeps_PP616.txt">Anders 120214</link>
                 </res>
@@ -6059,17 +5933,17 @@ plan="yes" sdesc ="tbd">
                 <res><link href="slowsweeps_PP616.txt">Anders 120214</link>
                 </res>
 	</operation>
-<operation start="2012-04-10T04:31:20Z" dt="140" c2="yes" plan="yes" sdesc="bad_p2">
+<operation start="2012-04-10T04:31:20Z" dt="140" c2="yes" plan="yes" sdesc="bad_bias">
         <desc>Bias current stepping (slow sweeps) on P2 (ibias steps of -4 nA from -12 nA to -140 nA).  Operation identical to 120314.</desc>
                 <res><link href="slowsweeps_PP616.txt">Anders 120214</link>
                 </res>
         </operation>
-<operation start="2012-04-10T04:31:20Z" dt="140" c4="yes" plan="yes" sdesc="bad_p34">
+<operation start="2012-04-10T04:31:20Z" dt="140" c4="yes" plan="yes" sdesc="bad_bias">
         <desc>Bias current stepping (slow sweeps) on P34 (ibias steps of -4 nA from -12 nA to -140 nA).  Operation identical to 120314.</desc>
                 <res><link href="slowsweeps_PP616.txt">Anders 120214</link>
                 </res>
         </operation>
-<operation start="2012-04-10T04:33:40Z" dt="140" c2="yes" plan="yes" sdesc="bad_p34">
+<operation start="2012-04-10T04:33:40Z" dt="140" c2="yes" plan="yes" sdesc="bad_bias">
         <desc>Bias stepping (slow sweeps) on P34 (ibias steps of -4 nA from -12 nA to -140 nA).  Operation identical to 120314.</desc>
                 <res><link href="slowsweeps_PP616.txt">Anders 120214</link>
                 </res>
@@ -6085,17 +5959,17 @@ plan="yes" sdesc ="tbd">
                 <res><link href="slowsweeps_PP616.txt">Anders 120214</link>
                 </res>
 	</operation>
-<operation start="2012-06-10T06:51:20Z" dt="140" c2="yes" plan="yes" sdesc="bad_p2">
+<operation start="2012-06-10T06:51:20Z" dt="140" c2="yes" plan="yes" sdesc="bad_bias">
         <desc>Bias current stepping (slow sweeps) on P2 (ibias steps of -4 nA from -12 nA to -140 nA).  Operation identical to 120314 and 120410.</desc>
                 <res><link href="slowsweeps_PP616.txt">Anders 120214</link>
                 </res>
         </operation>
-<operation start="2012-06-10T06:51:20Z" dt="140" c4="yes" plan="yes" sdesc="bad_p34">
+<operation start="2012-06-10T06:51:20Z" dt="140" c4="yes" plan="yes" sdesc="bad_bias">
         <desc>Bias current stepping (slow sweeps) on P34 (ibias steps of -4 nA from -12 nA to -140 nA).  Operation identical to 120314 and 120410.</desc>
                 <res><link href="slowsweeps_PP616.txt">Anders 120214</link>
                 </res>
         </operation>
-<operation start="2012-06-10T06:53:40Z" dt="140" c2="yes" plan="yes" sdesc="bad_p34">
+<operation start="2012-06-10T06:53:40Z" dt="140" c2="yes" plan="yes" sdesc="bad_bias">
         <desc>Bias stepping (slow sweeps) on P34 (ibias steps of -4 nA from -12 nA to -140 nA).  Operation identical to 120314 and 120410.</desc>
                 <res><link href="slowsweeps_PP616.txt">Anders 120214</link>
                 </res>
@@ -6104,71 +5978,107 @@ plan="yes" sdesc ="tbd">
 	<desc>All probes latched at -68 V, reason unknown.</desc>
 	<res><link href="ky120820.txt">Keith 120820</link></res>
 </operation>
-<operation start="2012-08-20T20:35:21Z" dt="46939" c1="yes" plan="no" sdesc="bad_p2">
+<operation start="2012-08-20T20:35:21Z" dt="46939" c1="yes" plan="no" sdesc="no_p2">
 	<desc>Probe 2 latched at +68 V, reason unknown.</desc>
 </operation>
-<operation start="2012-09-04T06:40:00Z" dt="140" c1="yes" plan="yes" sdesc="bad_p2">
+<operation start="2012-09-04T06:40:00Z" dt="140" c1="yes" plan="yes" sdesc="bad_bias">
         <desc>Bias current stepping (slow sweep) on P2.</desc>
 	</operation>
 <operation start="2012-09-04T06:40:00Z" dt="140" c2="yes" plan="yes" sdesc="no_p2">
         <desc>Bias voltage stepping (slow sweep) on P2.</desc>
 	</operation>
-<operation start="2012-09-04T06:40:00Z" dt="140" c3="yes" plan="yes" sdesc="bad_p2">
+<operation start="2012-09-04T06:40:00Z" dt="140" c3="yes" plan="yes" sdesc="bad_bias">
         <desc>Bias current stepping (slow sweep) on P2.</desc>
 	</operation>
-<operation start="2012-09-04T06:40:00Z" dt="140" c4="yes" plan="yes" sdesc="bad_p12">
+<operation start="2012-09-04T06:40:00Z" dt="140" c4="yes" plan="yes" sdesc="bad_bias">
         <desc>Bias current stepping (slow sweep) on P12.</desc>
 	</operation>
-<operation start="2012-09-04T06:42:20Z" dt="140" c1="yes" plan="yes" sdesc="bad_p3">
+<operation start="2012-09-04T06:42:20Z" dt="140" c1="yes" plan="yes" sdesc="bad_bias">
         <desc>Bias current stepping (slow sweep) on P3.</desc>
 	</operation>
-<operation start="2012-09-04T06:42:20Z" dt="140" c2="yes" plan="yes" sdesc="bad_p2">
+<operation start="2012-09-04T06:42:20Z" dt="140" c2="yes" plan="yes" sdesc="bad_bias">
         <desc>Bias current stepping (slow sweep) on P2.</desc>
 	</operation>
-<operation start="2012-09-04T06:42:20Z" dt="140" c3="yes" plan="yes" sdesc="bad_p4">
+<operation start="2012-09-04T06:42:20Z" dt="140" c3="yes" plan="yes" sdesc="bad_bias">
         <desc>Bias current stepping (slow sweep) on P4.</desc>
 	</operation>
-<operation start="2012-09-04T06:42:20Z" dt="140" c4="yes" plan="yes" sdesc="bad_p34">
+<operation start="2012-09-04T06:42:20Z" dt="140" c4="yes" plan="yes" sdesc="bad_bias">
         <desc>Bias current stepping (slow sweeps) on P34.</desc>
-        </operation>
-<operation start="2012-09-04T06:44:40Z" dt="140" c2="yes" plan="yes" sdesc="bad_p34">
+	</operation>
+<operation start="2012-09-04T06:44:40Z" dt="140" c2="yes" plan="yes" sdesc="bad_bias">
         <desc>Bias current stepping (slow sweeps) on P34.</desc>
-        </operation>
-<operation start="2012-09-04T06:44:40Z" dt="1946" c4="yes" plan="yes" sdesc="bad_p3">
+	</operation>
+<operation start="2012-09-04T06:44:40Z" dt="1946" c4="yes" plan="yes" sdesc="bad_bias">
         <desc>P3 bias current test.</desc>
         </operation>
-<operation start="2012-09-04T06:47:00Z" dt="1786" c2="yes" plan="yes" sdesc="bad_p4">
+<operation start="2012-09-04T06:47:00Z" dt="1786" c2="yes" plan="yes" sdesc="bad_bias">
         <desc>P2 and P4 bias current test.</desc>
-</operation>
-<operation start="2012-09-04T06:47:00Z" dt="1786" c2="yes" plan="yes" sdesc="bad_p2">
+	</operation>
+<operation start="2012-09-04T06:47:00Z" dt="1786" c2="yes" plan="yes" sdesc="bad_bias">
         <desc>P2 and P4 bias current test.</desc>
-</operation>
-
+	</operation>
 <operation start="2012-09-10T16:48:00Z" dt="720" c1="yes" c4="yes" plan="yes" sdesc="bad_bias">
         <desc>WBD interference test (guard stepping).</desc> 
-               <res><link href="aie120817a.txt">Anders 120817</link>
-                </res>
+        <res><link href="aie120817a.txt">Anders 120817</link>
+        </res>
+	</operation>
+<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2012-10-14T02:13:30Z" dt="604800" plan="yes" sdesc="info">
+        <desc>Guard voltage changed to -2 V on all working probes for a week.</desc>
+        <res></res>
+	</operation>
+<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2012-10-20T21:11:30Z" dt="604800" plan="yes" sdesc="info">
+        <desc>Guard voltage changed to -8 V on all working probes for a week.</desc>
+        <res></res>
+	</operation>
+<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2012-10-27T16:12:30Z" dt="-1" plan="yes" sdesc="info">
+        <desc>Guard voltage changed to -4 V on all working probes permanently.</desc>
+        <res></res>
         </operation>
-
-<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2012-10-14T02:13:30Z" dt="-1" plan="yes" sdesc ="info">
-                <desc>Guard voltage changed to -2 V on all working probes for a week.
-		</desc>
-                <res>
-                </res>
-        </operation>
-
-<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2012-10-20T21:11:30Z" dt="-1" plan="yes" sdesc ="info">
-                <desc>Guard voltage changed to -8 V on all working probes for a week.
-		</desc>
-                <res>
-                </res>
-        </operation>
-
-<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2012-10-27T16:12:30Z" dt="-1" plan="yes" sdesc ="info">
-                <desc>Guard voltage changed to -4 V on all working probes permanently.
-		</desc>
-                <res>
-                </res>
-        </operation>
-
+<operation start="2013-07-01T14:43:44Z" dt="-1" c4="yes" plan="no" sdesc="no_p4">
+	<desc>Probe 4 effectively lost from this time.</desc>
+	</operation>
+<operation start="2014-10-03T06:20:20Z" dt="32916" c2="yes" plan="no" sdesc="bad_data">
+	<desc>EFW reset with launch default values.</desc>
+	<res><link href="pal20150923.txt">Per-Arne 150923</link></res>
+	</operation>
+<operation start="2014-10-07T21:03:00Z" dt="268620" c2="yes" plan="no" sdesc="bad_data">
+	<desc>DWP problem causing bad or no EFW telemetry.</desc>
+	<res><link href="pal20150923_2.txt">Per-Arne 150923</link></res>
+	</operation>
+<operation start="2014-10-15T23:54:00Z" dt="54360" c2="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated, possibly due to low density.</desc>
+	<res><link href="pal20150923_3.txt">Per-Arne 150923</link></res>
+	</operation>
+<operation start="2014-10-23T15:11:00Z" dt="159240" c3="yes" plan="no" sdesc="bad_data">
+	<desc>Bad EFW data after incorrect startup.</desc>
+	<res><link href="pal20150923_4.txt">Per-Arne 150923</link></res>
+	</operation>
+<operation start="2014-10-25T00:53:00Z" dt="41832" c2="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated, possibly due to low density.</desc>
+	<res><link href="pal20150923_5.txt">Per-Arne 150923</link></res>
+	</operation>
+<operation start="2014-10-31T09:46:08Z" dt="49944" c4="yes" plan="no" sdesc="bad_data">
+	<desc>DWP problem causing bad EFW data.</desc>
+	<res><link href="pal20150923_6.txt">Per-Arne 150923</link></res>
+	</operation>
+<operation start="2014-11-01T15:05:20Z" dt="78788" c2="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated, possibly due to low density, followed by DWP problem.</desc>
+	<res><link href="pal20150923_7.txt">Per-Arne 150923</link></res>
+	</operation>
+<operation start="2014-11-03T20:58:17Z" dt="-1" c3="yes" plan="no" sdesc="no_p2">
+	<desc>Probe 2 effectively lost from this time.</desc>
+	</operation>
+<operation start="2014-11-15T08:36:00Z" dt="64500" c1="yes" plan="no" sdesc="bad_data">
+	<desc>Bad EFW data after spontaneous EFW reset.</desc>
+	<res><link href="pal20150923_7.txt">Per-Arne 150923</link></res>
+	</operation>
+<operation start="2015-02-17T07:36:30Z" dt="-1" c4="yes" plan="no" sdesc="no_p3">
+	<desc>Probe 3 effectively lost from this time.</desc>
+	</operation>
+<operation start="2015-03-09T09:19:26Z" dt="50" c1="yes" plan="yes" sdesc="bad_data">
+	<desc>Maneuvre.</desc>
+	</operation>
+<operation start="2015-03-17T14:07:33Z" dt="1048" c1="yes" plan="yes" sdesc="bad_data">
+	<desc>Maneuvre.</desc>
+	</operation>
 </table>

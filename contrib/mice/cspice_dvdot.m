@@ -33,19 +33,21 @@
 %
 %   Given:
 %
-%      s1   {6x1 ARRAY or 6xN ARRAY, DOUBLE PRECISION} defining a
-%           SPICE state(s);
+%      s1   a SPICE state(s);
 %
 %              s1 = (r1, dr1 ).
 %                         --
 %                         dt
 %
-%      s2   {6x1 ARRAY or 6xN ARRAY, DOUBLE PRECISION} defining a
-%           second SPICE state(s);
+%           [6,n] = size(s1); double = class(s1)
+%
+%      s2   a second SPICE state(s);
 %
 %              s2 = (r2, dr2 ).
 %                        --
 %                        dt
+%
+%           [6,n] = size(s2); double = class(s2)
 %
 %      An implicit assumption exists that 's1' and 's2' are specified
 %      in the same reference frame. If this is not the case, the numerical
@@ -57,12 +59,13 @@
 %
 %   returns:
 %
-%      dvdot   {SCALAR or 1xN ARRAY, DOUBLE PRECISION} time derivative(s)
-%              of the dot product between the position components of 's1'
-%              and 's2'.
+%      dvdot   the time derivative(s) of the dot product between the position
+%              components of 's1' and 's2'.
 %
 %              'dvdot' returns with the same measure of vectorization (N)
 %              as 's1' and 's2'.
+%
+%              [1,n] = size(dvdot); double = class(dvdot)
 %
 %-Examples
 %
@@ -70,9 +73,31 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
+%     Suppose that given two state vectors (s1 and s2) whose position
+%     components are unit vectors, and that we need to compute the
+%     rate of change of the angle between the two vectors.
 %
-%   MATLAB outputs:
+%     We know that the Cosine of the angle THETA between them is given
+%     by
 %
+%        cos(theta) = dot(s1,s2)
+%
+%     Thus by the chain rule, the derivative of the angle is given
+%     by:
+%
+%        sine(theta) dtheta/dt = cspice_dvdot(s1,s2)
+%
+%     Thus for values of theta away from zero we can compute
+%
+%     dtheta/dt as
+%
+%     dtheta = cspice_dvdot(s1,s2) / sqrt( 1 - dot(s1,s2)**2 )
+%
+%     Note that position components of s1 and s2 are parallel, the
+%     derivative of the  angle between the positions does not
+%     exist.  Any code that computes the derivative of the angle
+%     between two position vectors should account for the case
+%     when the position components are parallel.
 %
 %-Particulars
 %

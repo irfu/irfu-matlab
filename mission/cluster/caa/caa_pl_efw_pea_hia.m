@@ -17,8 +17,6 @@ function caa_pl_efw_pea_hia(cl_id,vars,plot_range,varargin)
 % Example:
 %     caa_pl_efw_pea_hia(1,'edi|pea|cod','022',...
 %         'st','2003-11-01T00:10:00Z','dt',3600,'novz'))
-%
-% $Id$
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):
@@ -215,7 +213,7 @@ else
 		irf_ssub('Data_Temperature_ComponentParallelToMagField__C?_CP_PEA_MOMENTS',cl_id) );
 	try
 		T_PEA_PERP = getmat(pea, ...
-			irf_ssub('Data_Temperature_ComponentPerpendicularToMagField__C?_CP_PEA_',cl_id) );
+			irf_ssub('Data_Temperature_ComponentPerpendicularToMagField__C?__MOMENTS',cl_id) );
 	catch
 		disp('trying alternative for Te_perp')
 		try
@@ -545,7 +543,7 @@ orient tall
 function dobj = my_load(cl_id,prod)
 
 old_pwd = pwd;
-d_s = irf_ssub(prod,cl_id);
+d_s = ['CAA' filesep irf_ssub(prod,cl_id)];
 if ~exist(d_s,'dir')
 	disp(['error loading ' d_s ' : no such directory']);
 	dobj = [];

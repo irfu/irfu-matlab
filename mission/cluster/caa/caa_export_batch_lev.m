@@ -2,8 +2,6 @@ function caa_export_batch_lev(fname, out_path, lev_list)
 %CAA_EXPORT_BATCH_LEV run CAA_EXPORT in a batch script, for given levels
 %
 % caa_export_batch_lev(fname,[out_path],[lev_list])
-%
-% $Id$
 
 % Copyright 2008 Mikael Lundberg
 
@@ -127,7 +125,7 @@ for kk = 1:length(dirs)
       if any(checkFileExists_subfunc('mPR.mat', cur_dir, sp))
    	   for k=1:length(l1p)
    			disp(['Level 1 : ' l1p{k}])
-   			if caa_export_new(1,l1p{k},cl_id,QUAL,v_s,cur_dir,start_time,time_length) > 0
+   			if caa_export_cef(1,l1p{k},cl_id,QUAL,v_s,cur_dir,start_time,time_length) > 0
    			   fid = fopen(errlog, 'a');
    			   if fid < 0, error(['Export returned error for ' l1p{k} ' in ' cur_dir]), end
    			   fprintf(fid, '%s\n', ['Export returned error for ' l1p{k} ' in ' cur_dir]);
@@ -139,7 +137,7 @@ for kk = 1:length(dirs)
       if any(checkFileExists_subfunc('mER.mat', cur_dir, sp))
    		for k=1:length(l1e)
    			disp(['Level 1 : ' l1e{k}])
-   			if caa_export_new(1,l1e{k},cl_id,QUAL,v_s,cur_dir,start_time,time_length) > 0
+   			if caa_export_cef(1,l1e{k},cl_id,QUAL,v_s,cur_dir,start_time,time_length) > 0
    			   fid = fopen(errlog, 'a');
    			   if fid < 0, error(['Export returned error for ' l1e{k} ' in ' cur_dir]), end
    			   fprintf(fid, '%s\n', ['Export returned error for ' l1e{k} ' in ' cur_dir]);
@@ -160,12 +158,12 @@ for kk = 1:length(dirs)
 %      if any(checkFileExists_subfunc('mEDSIf.mat', cur_dir, sp))
 %         if findCellString_subfunc(l2, 'EF')
 %   		   disp(['Level ' num2str(lev) ' : EF'])
-%   		   caa_export_new(lev,'EF',cl_id,QUAL,v_s,cur_dir,start_time,time_length)
+%   		   caa_export_cef(lev,'EF',cl_id,QUAL,v_s,cur_dir,start_time,time_length)
 %         end
          if findCellString_subfunc(l2, 'E')
    		   disp(['Level ' num2str(lev) ' : E'])
    		   try
-   		   if caa_export_new(lev,'E',cl_id,QUAL,v_s,cur_dir,start_time,time_length) > 0
+   		   if caa_export_cef(lev,'E',cl_id,QUAL,v_s,cur_dir,start_time,time_length) > 0
    		      fid = fopen(errlog, 'a');
    		      if fid < 0, error(['Export returned error for L2E in ' cur_dir]), end
    		      fprintf(fid, '%s\n', ['Export returned error for L2E in ' cur_dir]);
@@ -185,7 +183,7 @@ for kk = 1:length(dirs)
       if any(checkFileExists_subfunc('mP.mat', cur_dir, sp))
          if findCellString_subfunc(l2, 'P')
    		   disp(['Level ' num2str(lev) ' : P'])
-   		   if caa_export_new(lev,'P',cl_id,QUAL,v_s,cur_dir,start_time,time_length) > 0
+   		   if caa_export_cef(lev,'P',cl_id,QUAL,v_s,cur_dir,start_time,time_length) > 0
    		      fid = fopen(errlog, 'a');
    		      if fid < 0, error(['Export returned error for L2P in ' cur_dir]), end
    		      fprintf(fid, '%s\n', ['Export returned error for L2P in ' cur_dir]);
@@ -207,7 +205,7 @@ for kk = 1:length(dirs)
          if findCellString_subfunc(l3, 'E')
    		   disp(['Level ' num2str(lev) ' : E'])
    		   try
-   		   if caa_export_new(lev,'E',cl_id,QUAL,v_s,cur_dir,start_time,time_length) > 0
+   		   if caa_export_cef(lev,'E',cl_id,QUAL,v_s,cur_dir,start_time,time_length) > 0
    		      fid = fopen(errlog, 'a');
    		      if fid < 0, error(['Export returned error for L3E in ' cur_dir]), end
    		      fprintf(fid, '%s\n', ['Export returned error for L3E in ' cur_dir]);
@@ -224,7 +222,7 @@ for kk = 1:length(dirs)
    		if findCellString_subfunc(l3, 'DER')
    		   disp(['Level ' num2str(lev) ' : DER'])
    		   try
-   		   if caa_export_new(lev,'DER',cl_id,QUAL,v_s,cur_dir,start_time,time_length) > 0
+   		   if caa_export_cef(lev,'DER',cl_id,QUAL,v_s,cur_dir,start_time,time_length) > 0
    		      fid = fopen(errlog, 'a');
    		      if fid < 0, error(['Export returned error for L3DER in ' cur_dir]), end
    		      fprintf(fid, '%s\n', ['Export returned error for L3DER in ' cur_dir]);
@@ -244,7 +242,7 @@ for kk = 1:length(dirs)
      if any(checkFileExists_subfunc('mP.mat', cur_dir, sp))
          if findCellString_subfunc(l3, 'P')
    		   disp(['Level ' num2str(lev) ' : P'])
-   		   if caa_export_new(lev,'P',cl_id,QUAL,v_s,cur_dir,start_time,time_length) > 0
+   		   if caa_export_cef(lev,'P',cl_id,QUAL,v_s,cur_dir,start_time,time_length) > 0
    		      fid = fopen(errlog, 'a');
    		      if fid < 0, error(['Export returned error for L3P in ' cur_dir]), end
    		      fprintf(fid, '%s\n', ['Export returned error for L3P in ' cur_dir]);

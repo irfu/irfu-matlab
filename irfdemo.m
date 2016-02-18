@@ -1,16 +1,12 @@
 %% Examples of IRFU-MATLAB usage
-% These examples demonstrate our intenation that 
-% irfu-matlab should help you with the following:
-% 1. Maximize time spent on science
-% 2. Make data analysis easy and natural
-% 3. Combine all instrument data in the same plot
-% 4. Simplify data analysis
-% 5. Create publishing quality figures
+% IRFU-MATLAB helps:
+% 1. To maximize time spent on science.
+% 2. To make data analysis simple and natural.
+% 3. To combine all spacecraft/instrument data in the same plot.
+% 4. To create publishing quality figures.
 % 
-% IRFU-MATLAB is mainly used for Cluster and therefore
-% there are many routines to work with Cluster Active Archive data.
-% 
-% This is simple demo, for more advanced examples see https://sites.google.com/site/irfumatlab/
+% This is simple demo.
+% For more advanced examples: https://sites.google.com/site/irfumatlab/
 %
 % To execute demo run irf('demo') or 
 % > echodemo irfdemo
@@ -22,10 +18,13 @@
 
 % For running examples we disable showing additional log information
 
-irf_log off
+irf.log('off')
 
-% Enable it afterwards by 
-% > irf_log on
+% Enable it afterwards by choosing log level, e.g. 
+% > irf.log('critical')
+
+% Other levels are 'warning','notice','debug'
+
 
 %% Some basic routines and basic usage
 % To see general help execute:
@@ -100,7 +99,7 @@ irf_zoom(h,'y');
 
 h=irf_plot({B2,Bnew},'comp');
 ylabel(h(1),'B_X');
-title(h(1),irf_time(B2(1,1),'epoch2yyyy-mm-dd'));
+title(h(1),irf_time(B2(1,1),'epoch>yyyy-mm-dd'));
 ylabel(h(2),'B_Y');
 irf_legend(h(1),{'B2','Bnew=B2*1.2+2 '},[0.02 0.98],'fontsize',20)
 

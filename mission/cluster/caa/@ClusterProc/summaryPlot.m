@@ -240,9 +240,14 @@ for k=1:length(q_list)
                     end
                     clear dsiof
                     E_ib=caa_corof_dsi(E_ib,Ddsi,Damp);
-                    
-                    data{n_plots-1} = {E_hx(:,[1 2]), E_ib(:,[1 2])};
-                    data{n_plots}   = {E_hx(:,[1 3]), E_ib(:,[1 3])};
+                    if size(E_hx,2)<3   % fix for cell E_hx C3 201210->
+                        n_plots=n_plots+1;
+                        data{n_plots-1} = {E_hx{1,1}, E_ib(:,[1 2])};
+                        data{n_plots} = {E_hx{1,2}, E_ib(:,[1 3])};
+                    else
+                        data{n_plots-1} = {E_hx(:,[1 2]), E_ib(:,[1 2])};
+                        data{n_plots}   = {E_hx(:,[1 3]), E_ib(:,[1 3])};
+                    end
                     labels{n_plots-1} = 'Ex DSI [mV/m]';
                     labels{n_plots}   = 'Ey DSI [mV/m]';
                     if exist('elev_ang','var')

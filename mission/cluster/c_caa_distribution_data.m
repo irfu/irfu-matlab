@@ -1,11 +1,14 @@
 function specrec = c_caa_distribution_data(product,detector)
-% C_CAA_DISTRIBUTION_DATA Prepares data to be plotted with
-% c_caa_distribution_function.
-%   data_structure = C_CAA_DISTRIBUTION_DATA(data_product,detector)
+% C_CAA_DISTRIBUTION_DATA   Prepares data to be plotted with
+%                           c_caa_distribution_function.
+%   Creates a data structure containing necessary data to plot pitch angle
+%   distribution functions for various PEACE, CIS and RAPID products.
+%
+%   data_structure = C_CAA_DISTRIBUTION_DATA(data_product,detector);
 %       data_product - for example: 'C3_CP_PEA_3DXPH_PSD'
 %       detector - 'LEEA' or 'HEEA', needs to be specified when using for 
-%       example data product 'C3_CP_PEA_PITCH_FULL_DEFlux' which contains
-%       both LEEA and HEEA data separately.
+%           example data product 'C3_CP_PEA_PITCH_FULL_DEFlux' which 
+%           contains both LEEA and HEEA data separately. Default is [].
 %   
 %    data_structure = 
 % 
@@ -23,11 +26,16 @@ function specrec = c_caa_distribution_data(product,detector)
 %               p: [69344x6x26 double]
 %            p_bg: [69344x6x26 double]
 %
+%   For cross-section plots, the directly given energy levels and pitch 
+%   angles are used. For polar plots, the energy ranges and pitch angles
+%   ranges are used. The resulting data matrix, data_structure.p, has
+%   dimensions (N_time,N_pitchangle,N_energylevels).
+%
 %   Examples:
 %       data_structure = C_CAA_DISTRIBUTION_DATA('C3_CP_PEA_3DXPH_PSD');
 %       h=c_caa_plot_distribution_function('tint',tint,'polar',data_structure);
 %
-% See also c_caa_plot_distribution_function.m,
+% See also c_caa_plot_distribution_function.m
 
 distr=product(max(strfind(product,'_'))+1:end);
 specrec.product=product;
@@ -104,7 +112,7 @@ if any(strfind(product,'PITCH')) % Something fishy with background level
     specrec.p=double(data(:,:,en_cs_order)); % average over time
     specrec.p_bg=double(bg(:,:,en_cs_order)); % average over time        
 end
-if any(strfind(product,'3DXPH'))
+if any(strfind(product,'PEA_3DXP'))
     % Load pitch angle data
     res=c_caa_construct_subspin_res_data(['Data__', product]);
     bg=c_caa_construct_subspin_res_data(['BackgroundLevel__',product]);
@@ -129,16 +137,17 @@ if any(strfind(product,'3DXPH'))
         
     specrec.p_label=['Log ' distr ' [' res.dataunits ']'];                   
     specrec.p=res.data;
-    specrec.p(find(specrec.p==0))=NaN; 
+    specrec.p(specrec.p==0)=NaN; 
     specrec.p_bg=bg.data;        
 end
 if any([strfind(product,'CODIF_HS'),...
         strfind(product,'CODIF_LS'),...
         strfind(product,'HIA_LS'),...
-        strfind(product,'HIA_HS')]);
+        strfind(product,'HIA_HS'),...
+        strfind(product,'HIA') ]);
     
     % Load pitch angle data
-    res=c_caa_construct_subspin_res_data(['x3d_ions__', product]);    
+    res=c_caa_construct_subspin_res_data(['3d_ions__', product]);
     caaSEDU=c_caa_var_get(['delta_plus_energy_table__', product]);
     caaSEDL=c_caa_var_get(['delta_minus_energy_table__', product]);                            
     SEDL1=flipdim(caaSEDL.data(1,:),2); en_nan=isnan(SEDL1);SEDL1(en_nan)=[];
@@ -163,7 +172,7 @@ if any([strfind(product,'CODIF_HS'),...
     % Data
     specrec.p_label=['Log ' distr ' [' res.dataunits ']'];                   
     specrec.p=res.data; 
-    specrec.p(find(specrec.p==0))=NaN; 
+    specrec.p(specrec.p==0)=NaN; 
     specrec.p_bg=NaN(size(specrec.p)); % No bg data?
 end
 if any(strfind(product,'RAP')) && any(strfind(product,'PAD'))
@@ -193,7 +202,7 @@ if any(strfind(product,'RAP')) && any(strfind(product,'PAD'))
     specrec.p_label=['Log ' distr ' [' Data_units ']'];
     dataraw=Data.data; dataraw(:,nan_en,:)=[];
     specrec.p=permute(double(dataraw(:,:,:)),[1 3 2]); % order: time, pitch angle, energy    
-    specrec.p(find(specrec.p==0))=NaN;  
+    specrec.p(specrec.p==0)=NaN;  
     specrec.p_bg=specrec.p;
     specrec.p_bg(:)=NaN; % No background data
 end        

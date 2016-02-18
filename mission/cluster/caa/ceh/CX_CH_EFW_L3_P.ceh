@@ -75,7 +75,7 @@ START_VARIABLE      = Spacecraft_potential__CXXX_CP_EFW_L3_P
   FILLVAL           = -1000000000.000
   QUALITY           = P_quality__CXXX_CP_EFW_L3_P
   SIGNIFICANT_DIGITS= 6
-  PARAMETER_CAVEATS = "*CXXX_CP_EFW_L3_P"
+  PARAMETER_CAVEATS = ""
   LABLAXIS          = "-Sc pot"
   DEPEND_0          = time_tags__CXXX_CP_EFW_L3_P
 END_VARIABLE        = Spacecraft_potential__CXXX_CP_EFW_L3_P
@@ -138,7 +138,7 @@ START_VARIABLE      = P_quality__CXXX_CP_EFW_L3_P
   FIELDNAM          = "Spacecraft potential measurement quality flag (4=best)"
   SI_CONVERSION     = "1>unitless"
   UNITS             = "unitless"
-  FILLVAL           = 0
+  FILLVAL           = -1
   SIGNIFICANT_DIGITS= 1
   LABLAXIS          = "Quality"
   DEPEND_0          = time_tags__CXXX_CP_EFW_L3_P

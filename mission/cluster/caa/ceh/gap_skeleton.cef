@@ -1,0 +1,40 @@
+!-------------------- CEF ASCII FILE --------------------|
+! created on __GENERATION_DATE__ UTC
+!--------------------------------------------------------|
+FILE_NAME = "CXXX_CP_EFW_YYY__ZZZ_V00.cef"
+FILE_FORMAT_VERSION = "CEF-2.0"
+END_OF_RECORD_MARKER = "$"
+include = "CL_CH_MISSION.ceh"
+include = "CXXX_CH_OBS.ceh"
+include = "CL_CH_EFW_EXP.ceh"
+include = "CXXX_CH_EFW_INST.ceh"
+include = "CXXX_CH_EFW_YYY.ceh"
+START_META     =   FILE_TYPE
+   ENTRY       =   "cef"
+END_META       =   FILE_TYPE
+START_META     =   DATASET_VERSION
+   ENTRY       =   "5"
+END_META       =   DATASET_VERSION
+START_META     =   LOGICAL_FILE_ID
+   ENTRY       =   "__LOGICAL_FILE_ID__"
+END_META       =   LOGICAL_FILE_ID
+START_META     =   VERSION_NUMBER
+   ENTRY       =   "00"
+END_META       =   VERSION_NUMBER
+START_META     =   FILE_TIME_SPAN
+   VALUE_TYPE  =   ISO_TIME_RANGE
+   ENTRY       =   __FILE_TIME_SPAN__ 
+END_META       =   FILE_TIME_SPAN
+START_META     =   GENERATION_DATE
+   VALUE_TYPE  =   ISO_TIME
+   ENTRY       =   __GENERATION_DATE__ 
+END_META       =   GENERATION_DATE
+START_META     =   FILE_CAVEATS
+   ENTRY       =   "THIS IS A GAP FILE"
+END_META       =   FILE_CAVEATS
+!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!     Data - THIS FILE IS INTENTIONALLY EMPTY         !
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+DATA_UNTIL = "END_OF_DATA"
+END_OF_DATA

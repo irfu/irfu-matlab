@@ -11,19 +11,21 @@ function [z]=irf_dot(x,y,flag_output)
 % If time axis of x and y are different then y is interpolated to x time axis
 %
 % if flag==1 then y returns only values of dot product without time axis
-%
-% $Id$
 
 z=x;
 
-if size(x,2) < 3, error('not enough components for x vector. irf_dot()');
+if size(x,2) < 3,
+  errS = 'not enough components for y vector.';
+  irf.log('critical',errS), error(errS)
 elseif size(x,2) == 3, xx=x;
 else xx=x(:,2:4);
 end
 
 if size(y,2) > 3, yy=y(:,2:4);
 elseif size(y,2) == 3,  yy=y;
-else  error('not enough components for y vector. irf_dot()');
+else
+  errS = 'not enough components for y vector.';
+  irf.log('critical',errS), error(errS)
 end
 
 if size(x,1) ~= size(y,1)
@@ -32,8 +34,8 @@ if size(x,1) ~= size(y,1)
   elseif size(y,1) == 1
     qq=xx;qq(:,1)=yy(1,1);qq(:,2)=yy(1,2);qq(:,3)=yy(1,3);yy=qq;
   else
-    irf_log('proc','interpolating y to x, assuming that first column is time');
-    qq=irf_resamp(y,x);yy=qq(:,[2 3 4]);
+    irf.log('warning','interpolating y to x, assuming that first column is time');
+    qq=irf_resamp(y,x);yy=qq(:,2:end);
   end
 end
 

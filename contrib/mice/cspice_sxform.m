@@ -1,32 +1,32 @@
 %-Abstract
 %
-%   CSPICE_SXFORM returns the state transformation matrix from one 
+%   CSPICE_SXFORM returns the state transformation matrix from one
 %   frame to another at a specified epoch.
 %
 %-Disclaimer
 %
 %   THIS SOFTWARE AND ANY RELATED MATERIALS WERE CREATED BY THE
 %   CALIFORNIA  INSTITUTE OF TECHNOLOGY (CALTECH) UNDER A U.S.
-%   GOVERNMENT CONTRACT WITH THE NATIONAL AERONAUTICS AND SPACE 
+%   GOVERNMENT CONTRACT WITH THE NATIONAL AERONAUTICS AND SPACE
 %   ADMINISTRATION (NASA). THE SOFTWARE IS TECHNOLOGY AND SOFTWARE
-%   PUBLICLY AVAILABLE UNDER U.S. EXPORT LAWS AND IS PROVIDED 
+%   PUBLICLY AVAILABLE UNDER U.S. EXPORT LAWS AND IS PROVIDED
 %   "AS-IS" TO THE RECIPIENT WITHOUT WARRANTY OF ANY KIND, INCLUDING
 %   ANY WARRANTIES OF PERFORMANCE OR MERCHANTABILITY OR FITNESS FOR
 %   A PARTICULAR USE OR PURPOSE (AS SET FORTH IN UNITED STATES UCC
-%   SECTIONS 2312-2313) OR FOR ANY PURPOSE WHATSOEVER, FOR THE 
+%   SECTIONS 2312-2313) OR FOR ANY PURPOSE WHATSOEVER, FOR THE
 %   SOFTWARE AND RELATED MATERIALS, HOWEVER USED.
 %
-%   IN NO EVENT SHALL CALTECH, ITS JET PROPULSION LABORATORY, 
-%   OR NASA BE LIABLE FOR ANY DAMAGES AND/OR COSTS, INCLUDING, 
-%   BUT NOT LIMITED TO, INCIDENTAL OR CONSEQUENTIAL DAMAGES OF 
-%   ANY KIND, INCLUDING ECONOMIC DAMAGE OR INJURY TO PROPERTY 
-%   AND LOST PROFITS, REGARDLESS OF WHETHER CALTECH, JPL, OR 
-%   NASA BE ADVISED, HAVE REASON TO KNOW, OR, IN FACT, SHALL 
+%   IN NO EVENT SHALL CALTECH, ITS JET PROPULSION LABORATORY,
+%   OR NASA BE LIABLE FOR ANY DAMAGES AND/OR COSTS, INCLUDING,
+%   BUT NOT LIMITED TO, INCIDENTAL OR CONSEQUENTIAL DAMAGES OF
+%   ANY KIND, INCLUDING ECONOMIC DAMAGE OR INJURY TO PROPERTY
+%   AND LOST PROFITS, REGARDLESS OF WHETHER CALTECH, JPL, OR
+%   NASA BE ADVISED, HAVE REASON TO KNOW, OR, IN FACT, SHALL
 %   KNOW OF THE POSSIBILITY.
 %
-%   RECIPIENT BEARS ALL RISK RELATING TO QUALITY AND PERFORMANCE 
-%   OF THE SOFTWARE AND ANY RELATED MATERIALS, AND AGREES TO 
-%   INDEMNIFY CALTECH AND NASA FOR ALL THIRD-PARTY CLAIMS RESULTING 
+%   RECIPIENT BEARS ALL RISK RELATING TO QUALITY AND PERFORMANCE
+%   OF THE SOFTWARE AND ANY RELATED MATERIALS, AND AGREES TO
+%   INDEMNIFY CALTECH AND NASA FOR ALL THIRD-PARTY CLAIMS RESULTING
 %   FROM THE ACTIONS OF RECIPIENT IN THE USE OF THE SOFTWARE.
 %
 %-I/O
@@ -35,12 +35,12 @@
 %
 %      from   the scalar string name of a reference frame in which
 %             a position is known.
-%             
-%      to     the scalar string name of a reference frame in which 
-%             it is desired to represent the position. 
-%      
-%      et     the double precision scalar or 1XN-vector of epochs in 
-%             ephemeris seconds past the epoch of J2000 (TDB) at which 
+%
+%      to     the scalar string name of a reference frame in which
+%             it is desired to represent the position.
+%
+%      et     the double precision scalar or 1XN-vector of epochs in
+%             ephemeris seconds past the epoch of J2000 (TDB) at which
 %             the state transformation matrix should be evaluated.
 %
 %   the call:
@@ -49,7 +49,7 @@
 %
 %   returns:
 %
-%      xform   a double precision, 6x6 or 6x6xN array state 
+%      xform   a double precision, 6x6 or 6x6xN array state
 %              transformation matrix that transforms states from the
 %              reference frame 'from' to frame 'to' at epoch 'et'
 %
@@ -66,10 +66,10 @@
 %      % Suppose you have geodetic coordinates of a station on the
 %      % surface of Earth and that you need the inertial (J2000)
 %      % state of this station.  The following code fragment
-%      % illustrates how to transform the geodetic state of the 
-%      % station to a J2000 state. 
+%      % illustrates how to transform the geodetic state of the
+%      % station to a J2000 state.
 %      %
-%   
+%
 %      %
 %      % Load the SPK, PCK and LSK kernels.
 %      %
@@ -83,7 +83,7 @@
 %      lon = 118.25 * cspice_rpd;
 %      lat = 34.05  * cspice_rpd;
 %      alt = 0.;
-%   
+%
 %      %
 %      % Define a UTC time of interest. Convert the 'utc' string
 %      % to ephemeris time J2000.
@@ -108,7 +108,7 @@
 %      % location at 'lon', 'lat', 'alt'.
 %      %
 %      estate = cspice_georec( lon, lat, alt, equatr, f);
-%   
+%
 %      %
 %      % cspice_georec returned the position vector of the geodetic
 %      % coordinates, but we want the state vector. Since it is a fixed
@@ -131,14 +131,14 @@
 %      disp( txt )
 %      txt = sprintf( '%16.8f %16.8f %16.8f ', jstate(1:3) );
 %      disp( txt )
-%      
+%
 %      disp( 'Cartesian velocity in J2000 frame' )
 %      txt = sprintf( '%16.8f %16.8f %16.8f ', jstate(4:6) );
 %      disp( txt )
 %
 %      %
 %      % Return the state transformation matrices from "IAU_EARTH"
-%      % to "J2000" approximately every month for the time 
+%      % to "J2000" approximately every month for the time
 %      % interval January 1, 1990 to January 1, 2010 (UTC).
 %      %
 %      %
@@ -147,12 +147,12 @@
 %      %
 %      utc_bounds = strvcat( '1 Jan 1990', '1 Jan 2010' );
 %      et_bounds = cspice_str2et( utc_bounds );
-%   
+%
 %      %
 %      % Step in units of a month. 20 years ~ 240 months.
-%      % 
+%      %
 %      step = (et_bounds(2) - et_bounds(1) ) / 240.;
-%         
+%
 %      %
 %      % Create an array of 240 ephemeris times starting at
 %      % et_bound(1) in intervals of 'step'.
@@ -218,10 +218,10 @@
 %   MATLAB outputs:
 %
 %      Scalar
-%      Cartesian position in J2000 frame at epoch: -315575942.816070 
-%        -4131.46296088   -3308.37067191    3547.02152550 
+%      Cartesian position in J2000 frame at epoch: -315575942.816070
+%        -4131.46296088   -3308.37067191    3547.02152550
 %      Cartesian velocity in J2000 frame
-%            0.24124981      -0.30101944       0.00023422 
+%            0.24124981      -0.30101944       0.00023422
 %
 %      Vector
 %      Dimension of xform:
@@ -229,12 +229,12 @@
 %
 %      Cartesian position in J2000 frame at epoch: -315575942.816070
 %                -4131.46296088        -3308.37067191       3547.02152550
-%      Cartesian velocity in J2000 frame 
+%      Cartesian velocity in J2000 frame
 %                0.241249810257       -0.301019439927       0.000234215852
-%       
+%
 %      Cartesian position in J2000 frame at epoch: 312946264.154758
 %                 4533.62043540        2731.85929290        3546.67378733
-%      Cartesian velocity in J2000 frame 
+%      Cartesian velocity in J2000 frame
 %               -0.199210494903        0.330347334014       0.000192387677
 %
 %-Particulars
@@ -255,9 +255,9 @@
 %   -Mice Version 1.0.0, 22-NOV-2005, EDW (JPL)
 %
 %-Index_Entries
-% 
-%   Find a state transformation matrix 
-% 
+%
+%   Find a state transformation matrix
+%
 %-&
 
 function [xform] = cspice_sxform(from, to, et)

@@ -5,7 +5,7 @@ function [out1,out2]=igrf(t,flag)
 persistent hIGRF gIGRF yearsIGRF
 
 if isempty(hIGRF)
-	fileIGRF = [fileparts(which('irf.m')) '/+model/igrf11coeffs.txt'];
+	fileIGRF = [fileparts(which('irf.m')) '/+model/igrf12coeffs.txt'];
 	irf.log('warning',['Reading IGRF coeficients from file:' fileIGRF]);
 	%file reading
 	fid = fopen(fileIGRF);
@@ -47,7 +47,7 @@ if min(yearRef) < min(yearsIGRF),
 end
 
 year = yearRef + ...
-	(t - irf_time([yearRef repmat([1 1 0 0 0],numel(yearRef),1)],'vector2epoch'))...
+	(t - irf_time([yearRef repmat([1 1 0 0 0],numel(yearRef),1)],'vector>epoch'))...
 	/(365.25*86400);
 
 switch flag

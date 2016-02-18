@@ -24,6 +24,8 @@ if 0
   fname='C1_CP_AUX_MAARBLE_ULF_PC12__20101013_120000_20101013_150000_V130628.cdf';
 end
 
+dataDir='/data/themis';
+
 if nargin<2, dataPath = '.'; end
 
 iSep=strfind(fname,'__');
@@ -97,10 +99,17 @@ end
 if regexp(productName,'^C[1-4]_CP')==1
   ebsp.r = local.c_read(['R' productName(2)],ebsp.t.data([1 end]));
 elseif regexp(productName,'^CC_CP_AUX_MAARBLE_TH[A-E]_[U,V]LF')==1
-  if iesmptty(Rth)
+  if isempty(Rth)
     Rth = load(sprintf('%s%smRth.mat',dataDir,filesep), '-mat'); 
   end
-  ebsp.r =Rth.(['Rth' lower(s(21))]);
+  ebsp.r =Rth.(['Rth' lower(productName(21))]);
+elseif regexp(productName,'^CC_CP_AUX_MAARBLE_G1[1-2]_ULF')==1
+  try 
+    dd=dataobj([dataPath '/../../FACMATR/CDF/CC_CP_AUX_MAARBLE_G1' fname(21) '_ULF_FACMATR__' fname(33:47) '*.cdf']);
+    ebsp.r = getmat(dd,['sc_pos_xyz_GSE__CC_CP_AUX_MAARBLE_G1' fname(21) '_ULF_FACMATR']);
+  catch
+    irf.log('warning','No FACMART file found')
+  end
 end
 
 flagNoE = 0;
@@ -112,6 +121,8 @@ if isempty(ebsp.dop), flagNoPolarization = 1; end
 if flagNoE && flagNoPolarization
   h = irf_pl_ebsp(ebsp,{{'bb_xxyyzzss',1:4}});
 elseif flagNoE
+  limByDopStruct = struct('type','low','val',0.6,'param','dop','comp',1);
+  limByPlanarityStruct = struct('type','low','val',0.6,'param','planarity','comp',1);
   params = {{'bb_xxyyzzss',4},...
     {'dop'},{'planarity'},...
     {'ellipticity',[],{limByDopStruct,limByPlanarityStruct}},...

@@ -1,5 +1,5 @@
 function [vht,corr_coef,eht]=irf_vht_plot(e,b,tint,vht_flag,vht)
-%IRF_VHT_PLOT computer and plot de Hoffman-Teller velocity
+%IRF_VHT_PLOT compute and plot de Hoffmann-Teller velocity
 %
 % [VHT,CORR_COEF] = IRF_VHT_PLOT(E,B,[TINT,VHT_FLAG,VHT])
 %
@@ -9,12 +9,18 @@ function [vht,corr_coef,eht]=irf_vht_plot(e,b,tint,vht_flag,vht)
 % e - E field, first column time
 % b - B field, first column time, inside code b is interpolated to e
 % c - returns the value of correlation coefficient
-% flag - see irf_VHT, default 2 (use two E field components for VHT estimate)
-%                    if flag ==3 use all 3 components
+% flag - see irf_VHT
+%        flag == 2 (default), use two E field components for VHT estimate
+%        flag == 3, use all 3 components
 % vht - VHT velocity vector
 %           if given do not calculate VHT but plot with a specified vht
 %
 % See also IRF_VHT.
+
+if isa(e,'TSeries') && isa(b,'TSeries')
+	e=[e.time.epochUnix double(e.data)];
+	b=[b.time.epochUnix double(b.data)];
+end
 
 if nargin < 3 || isempty(tint)
     tint=[min([e(1,1),b(1,1)]) max([e(end,1),b(end,1)])];

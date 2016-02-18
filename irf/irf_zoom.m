@@ -36,7 +36,7 @@ t_ref=0;flag_tref=0; % default value
 flag_old_syntax=0;
 
 %% check axes
-[ax,args,nargs] = axescheck(varargin{:});
+[ax,args,nargs] = irf.axescheck(varargin{:});
 if isempty(ax),
     if any(ishandle(args{1})), % first argument is axis handles
         ax=args{1};
@@ -107,10 +107,13 @@ if strcmpi(c,'x'),
         end
 	elseif isnumeric(interval) && size(interval,2) == 2 % Interval must be vector with two values
 	elseif ischar(interval) % assume interval is specified in ISO format
-		interval = irf_time(interval,'iso2tint');
+		interval = irf_time(interval,'utc>tint');
+	elseif isa(interval,'GenericTimeArray')
+    interval = [interval.start.epochUnix interval.stop.epochUnix];
 	else
-		irf.log('error','zooming interval in wrong format');
-		error('irf_zoom: zooming interval in wrong format.');
+		errStr = 'zooming interval in wrong format';
+		irf.log('critical',errStr);
+		error('irf_zoom:time_zoom:wrong_format',errStr);
 	end
 	if flag_use_t_start_epoch, % Account for reference time from userdata.t_start_epoch
 		interval=interval-t_ref;
@@ -124,7 +127,7 @@ end
 
 % Remove XTickLabel and XLabel from all panels but the last one
 if strcmpi(c,'x') && numel(axis_handles)>1
-    if strcmp(get(axis_handles(1),'Type'),'line')
+    if isgraphics(axis_handles( 1 ),'line')
         parent_handles = cell2mat(get(axis_handles,'Parent'));
         p = cell2mat(get(parent_handles,'Position'));
     else %axis
@@ -134,7 +137,7 @@ if strcmpi(c,'x') && numel(axis_handles)>1
 end
 
 for hii=axis_handles
-    if strcmp(get(hii,'Type'),'line')
+    if isgraphics(hii,'line')
         h = get(hii,'Parent');
     else
         h = hii;
@@ -142,7 +145,7 @@ for hii=axis_handles
     switch lower(c)
         case 'x'
             set(h,'XLim',interval);
-            if ax(1)+t_ref>1e8 && ax(1)+t_ref<1e10
+            if t_ref>1e8 && t_ref<1e10
                 if flag_use_t_start_epoch % Read t_ref from userdata.t_start_epoch
                     p = get(h,'position');
                     if numel(axis_handles)>1, % in case of multiple handles only last handle gets date label
@@ -203,6 +206,8 @@ end
 function zoom_y_auto(h)
 % make more space related auto zoom than Matlab 
 hlines=findall(h,'Type','line');
+hlines = findobj(hlines,'-not','Tag','irf_pl_mark');
+
 ud=get(h,'userdata');
 uf=get(get(h,'parent'),'userdata');
 xzero=0; % reference point
@@ -253,7 +258,7 @@ switch lower(yscale)
              ymax=ylims(1)+abs(ylims(1))/10;
             end
         else
-            dy=diffy/4; % 1st approx
+            dy=double(diffy)/4; % 1st approx
             dy10power=10^(floor(log10(dy)));
             dy1stcipher=floor(dy/dy10power);
             if dy1stcipher>5,

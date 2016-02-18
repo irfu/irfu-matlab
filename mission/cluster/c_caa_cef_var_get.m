@@ -17,6 +17,7 @@ function out = c_caa_cef_var_get(varName,fileName,varargin)
 %
 % See also: CEF_INIT, CEF_READ, IRF.DATATYPES
 
+%% Check CEFlib status
 persistent okCeflib 
 
 if isempty(okCeflib), 
@@ -29,6 +30,11 @@ if ~okCeflib,
 	if nargout > 0, out = []; end
 	return
 end
+%% Define defaults
+
+% returnOutputAsCellArray  - set later in code, if true output should be cell array
+
+%% Check inputs
 
 if nargin == 0, help c_caa_cef_var_get; return; end
 if nargin == 1,
@@ -41,7 +47,7 @@ if ischar(fileName)
 		assert(nargin == 4 && ischar(varargin{2}) && strcmpi(varargin{2},'stream'),...
 			'Syntax not correct');
 		if ischar(varargin{1}) % tint in iso format
-			tint = irf_time(varargin{1},'iso2tint');
+			tint = irf_time(varargin{1},'utc>tint');
 		elseif isnumeric(varargin{1}) ...
 				&& numel(varargin{1}) == 2 % tint as vector [tstart tend]
 			tint = varargin{1};
@@ -56,9 +62,10 @@ if ischar(fileName)
 		mkdir(tempDir);
 		cd(tempDir);
 		[datasetName,varName]=caa_get_dataset_name(varName);
-		caa_download(tint,datasetName,'stream');
-		cd(['CAA/' datasetName]);
+		caa_download(tint,datasetName{1},'stream'); % TODO: assumes all variables from the same dataset
+		cd(['CAA/' datasetName{1}]);
 		d=dir('*.cef.gz');
+    if isempty(d), out = []; return, end % No data
 		cefFile = d.name;
 		cef_init();
 		cef_read(cefFile);
@@ -79,11 +86,17 @@ end
 % get time
 tt=cef_var('time_tags');
 tt=tt';
-tt=irf_time( cef_date(tt),'datenum2epoch');
+tt=irf_time( cef_date(tt),'datenum>epoch');
 
 % make variable cell array if it is string
 if ischar(varName)
 	varName = {varName};
+	returnOutputAsCellArray = false;
+elseif iscellstr(varName)
+	returnOutputAsCellArray = true;
+else
+	irf.log('critical','varName incorrect format');
+	error('varName incorrect format');
 end
 if iscell(varName)
 	out = cell(size(varName));
@@ -99,7 +112,7 @@ end
 
 
 % define output
-if numel(out) == 1,
+if numel(out) == 1 && ~returnOutputAsCellArray,
 	out = out{1}; % return only matrix if one variable requested
 end
 

@@ -1,0 +1,41 @@
+ Problems seen when looking through the summary plots for 2011
+=============================================================
+
+C2, no data 2012-07-03 03:23 -- 07:51
+C1, no E data 2012-07-07 00:00 -- 2012-07-08 00:00
+C2, no data 2012-09-15 13:18 -- 15:00, rerun?
+C3, no data 2012-09-21 02:37 -- 05:02
+
+E-field jumps:
+C1 2012-09-22 13:30, 2012-10-10 15:45, 2012-10-19 16:50, 2012-10-26 12:22
+C3 2012-09-22 15:11, 2012-10-10 19:50
+
+C3, E goes wild 2012-10-23 11:45 -- 13:13, 16:30 -- 2012-10-25 14:06
+
+1a) Processing bugs fixed
+========================
+
+
+1b) Plotting bugs fixed
+=======================
+
+
+1c) Data problems fixed
+=======================
+
+2a) Software bugs to be fixed
+=============================
+
+2b) Data problems to be fixed/investigated
+==========================================
+
+3) Major data problems
+======================
+
+4) Ignored
+==========
+
+
+5) Unclassified
+===============
+

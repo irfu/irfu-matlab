@@ -7,59 +7,59 @@
 %
 %   THIS SOFTWARE AND ANY RELATED MATERIALS WERE CREATED BY THE
 %   CALIFORNIA  INSTITUTE OF TECHNOLOGY (CALTECH) UNDER A U.S.
-%   GOVERNMENT CONTRACT WITH THE NATIONAL AERONAUTICS AND SPACE 
+%   GOVERNMENT CONTRACT WITH THE NATIONAL AERONAUTICS AND SPACE
 %   ADMINISTRATION (NASA). THE SOFTWARE IS TECHNOLOGY AND SOFTWARE
-%   PUBLICLY AVAILABLE UNDER U.S. EXPORT LAWS AND IS PROVIDED 
+%   PUBLICLY AVAILABLE UNDER U.S. EXPORT LAWS AND IS PROVIDED
 %   "AS-IS" TO THE RECIPIENT WITHOUT WARRANTY OF ANY KIND, INCLUDING
 %   ANY WARRANTIES OF PERFORMANCE OR MERCHANTABILITY OR FITNESS FOR
 %   A PARTICULAR USE OR PURPOSE (AS SET FORTH IN UNITED STATES UCC
-%   SECTIONS 2312-2313) OR FOR ANY PURPOSE WHATSOEVER, FOR THE 
+%   SECTIONS 2312-2313) OR FOR ANY PURPOSE WHATSOEVER, FOR THE
 %   SOFTWARE AND RELATED MATERIALS, HOWEVER USED.
 %
-%   IN NO EVENT SHALL CALTECH, ITS JET PROPULSION LABORATORY, 
-%   OR NASA BE LIABLE FOR ANY DAMAGES AND/OR COSTS, INCLUDING, 
-%   BUT NOT LIMITED TO, INCIDENTAL OR CONSEQUENTIAL DAMAGES OF 
-%   ANY KIND, INCLUDING ECONOMIC DAMAGE OR INJURY TO PROPERTY 
-%   AND LOST PROFITS, REGARDLESS OF WHETHER CALTECH, JPL, OR 
-%   NASA BE ADVISED, HAVE REASON TO KNOW, OR, IN FACT, SHALL 
+%   IN NO EVENT SHALL CALTECH, ITS JET PROPULSION LABORATORY,
+%   OR NASA BE LIABLE FOR ANY DAMAGES AND/OR COSTS, INCLUDING,
+%   BUT NOT LIMITED TO, INCIDENTAL OR CONSEQUENTIAL DAMAGES OF
+%   ANY KIND, INCLUDING ECONOMIC DAMAGE OR INJURY TO PROPERTY
+%   AND LOST PROFITS, REGARDLESS OF WHETHER CALTECH, JPL, OR
+%   NASA BE ADVISED, HAVE REASON TO KNOW, OR, IN FACT, SHALL
 %   KNOW OF THE POSSIBILITY.
 %
-%   RECIPIENT BEARS ALL RISK RELATING TO QUALITY AND PERFORMANCE 
-%   OF THE SOFTWARE AND ANY RELATED MATERIALS, AND AGREES TO 
-%   INDEMNIFY CALTECH AND NASA FOR ALL THIRD-PARTY CLAIMS RESULTING 
+%   RECIPIENT BEARS ALL RISK RELATING TO QUALITY AND PERFORMANCE
+%   OF THE SOFTWARE AND ANY RELATED MATERIALS, AND AGREES TO
+%   INDEMNIFY CALTECH AND NASA FOR ALL THIRD-PARTY CLAIMS RESULTING
 %   FROM THE ACTIONS OF RECIPIENT IN THE USE OF THE SOFTWARE.
 %
 %-I/O
 %
 %   Given:
 %
-%      rectan   a double precision 3x1 array or double precision 
-%               3xN array containing the rectangular coordinates of the 
+%      rectan   a double precision 3x1 array or double precision
+%               3xN array containing the rectangular coordinates of the
 %               position or set of positions
-%   
-%       re      the scalar, double precision equatorial radius of 
+%
+%       re      the scalar, double precision equatorial radius of
 %               the body of interest
-% 
+%
 %       f       the scalar, double precision flattening coefficient
 %               of the body, a dimensionless value defined as:
-%   
+%
 %                    equatorial_radius - polar_radius
 %                    --------------------------------
 %                           equatorial_radius
 %
 %   the call:
-%   
+%
 %      [ lon, lat, alt ] = cspice_recgeo( rectan, re, f)
-%   
+%
 %   returns:
-%   
-%       lon   a double precision scalar or 1XN-vector describing 
+%
+%       lon   a double precision scalar or 1XN-vector describing
 %             the geodetic longitude measured in radians.
 %
 %       lat   a double precision scalar or 1XN-vector describing
 %             the geodetic latitude measured in radians.
 %
-%       alt   a double precision scalar or 1XN-vector describing 
+%       alt   a double precision scalar or 1XN-vector describing
 %             the altitude above the reference spheroid.
 %
 %             'lon', 'lat', and 'alt' return with the same vectorization
@@ -99,7 +99,7 @@
 %      disp('Scalar:')
 %      txt = sprintf( '%12.8f   %12.8f   %12.8f', lon , lat , alt );
 %      disp( txt )
-%     
+%
 %      disp(' ')
 %
 %      %
@@ -131,7 +131,7 @@
 %    disp('    lon        lat          alt         x          y          z    ')
 %    disp('  --------   --------   ----------   --------   --------   --------')
 %
-%      output = [ lon; lat; alt; x(1,:); x(2,:); x(3,:) ]; 
+%      output = [ lon; lat; alt; x(1,:); x(2,:); x(3,:) ];
 %      txt    = sprintf( '%10.4f %10.4f %12.6f %10.4f %10.4f %10.4f\n',output);
 %      disp(txt)
 %
@@ -142,14 +142,14 @@
 %      cspice_kclear
 %
 %   MATLAB outputs:
-%      
+%
 %      Scalar:
 %         118.00000000    32.00000000     0.00000024
 %
 %      118 degrees west, 32 north, 0.24 mm altitude.
 %
 %   Vector:
-%       lon        lat          alt         x          y          z    
+%       lon        lat          alt         x          y          z
 %     --------   --------   ----------   --------   --------   --------
 %       0.0000    90.0000 -6356.583800     0.0000     0.0000     0.0000
 %       0.0000    88.6772 -6356.572258     1.0000     0.0000     0.0000
@@ -162,7 +162,7 @@
 %       0.0000    88.7071 -6355.572518     1.0000     0.0000     1.0000
 %      90.0000    88.7071 -6355.572518     0.0000     1.0000     1.0000
 %      45.0000    88.1714 -6355.561236     1.0000     1.0000     1.0000
-%      
+%
 %-Particulars
 %
 %   None.
@@ -179,9 +179,9 @@
 %   -Mice Version 1.0.0, 22-NOV-2005, EDW (JPL)
 %
 %-Index_Entries
-% 
-%   rectangular to geodetic 
-% 
+%
+%   rectangular to geodetic
+%
 %-&
 
 function [lon, lat, alt] = cspice_recgeo(rectan, re, f)

@@ -16,6 +16,7 @@ function out=caa_meta(varargin)
 %	from CAA. This may take time! If you want to generate new index file
 %	for the irfu-matlab server, please see the comments inside the file. 
 %
+%
 %	Examples:
 %		caa_meta('C1','PEA')
 %		caa_meta C1 PEA 
@@ -30,7 +31,6 @@ persistent s datasetNames indexFile
 indexFileDefault = 'indexCaaMeta_v3'; % default file name, v2 added in 20130618
 linkUrlFile = ['http://www.space.irfu.se/cluster/matlab/' ...
 	indexFileDefault '.mat'];
-
 %% empty arguments > show help
 if nargin==0,
 	help caa_meta;
@@ -38,19 +38,47 @@ if nargin==0,
 end
 
 %% Create index file
-if nargin==1 && ischar(varargin{1}) && strcmp(varargin{1},'create')
+if nargin>=1 && ischar(varargin{1}) && strcmp(varargin{1},'create')
 	irf.log('warning','Getting all metadata from CAA, be very patient...');
-	urlMetaData = 'http://caa.estec.esa.int/caa_query/?uname=vaivads&pwd=caa&dataset_id=*&metadata=1';
-	%urlMetaData = 'http://caa.estec.esa.int/caa_query/?uname=vaivads&pwd=caa&dataset_id=C*_CP_PEA_3DXPH_DEFLUX&metadata=1';
+	urlMetaData = 'http://csaint.esac.esa.int/csa/aio/product-action?USERNAME=avaivads&PASSWORD=!kjUY88lm&RETRIEVALTYPE=HEADER&DATASET_ID=*&NON_BROWSER';
+
+	% Create temporary directory, download and unpack files
 	tempDir = tempname;
 	mkdir(tempDir);
 	cd(tempDir);
-	tempFile = [tempname(tempDir) '.zip'];
-	tempFile = urlwrite(urlMetaData,tempFile);
-	unzip(tempFile);
+	tempFileName  = tempname(tempDir);
+	tempFileTarGz = [tempFileName '.tar.gz'];
+	tempFileTar   = [tempFileName '.tar'];
+	[tempFileTarGz,isOk] = urlwrite(urlMetaData,tempFileTarGz);
+	if isOk,
+		gunzip(tempFileTarGz);
+		%untar(tempFileTar,'./');
+		if( any( strcmp(version, {'8.6.0.267246 (R2015b)','9.0.0.307022 (R2016a) Prerelease'}) ) )
+			if(isunix)
+				% Matlab 8.6 R2015b and 9.0 R2016a Prerelease have a bug in Matlabs untar, try to use system built in tar on unix machines
+				irf.log('notice','Matlab R2015b Release or R2016a Prerelease have bug in Matlab untar, trying built in system tar on Mac/Linux.');
+				cmd = sprintf('tar -xf %s --directory ./', tempFileTar);
+				status = system(cmd);
+				if(status~=0)
+					irf.log('critical','Failed untar using built in system command. Trying Matlab, but this may fail with long file names.');
+					untar(tempFileTar,'./');
+				end
+			else
+				irf.log('warning','Matlab R2015b Release or R2016a Prerelease on Windows, trying built in Matlab untar. This may fail with long file names!');
+				untar(tempFileTar,'./');
+			end
+		else
+			untar(tempFileTar,'./');
+		end
+	else
+		irf.log('critical','Did not succeed downloading file');
+		return;
+	end
+
+	% Create structures with all the metadata
 	irf.log('warning','Creating structures');
 	d = dir;
-	ii=arrayfun(@(x) any(strfind(x.name,'CAA')),d);
+	ii=arrayfun(@(x) any(strfind(x.name,'CSA')),d);
 	xmlDir = d(ii).name;
 	d = dir([xmlDir '/*.XML']);
 	isub = [d(:).isdir]; 
@@ -75,6 +103,9 @@ if nargin==1 && ischar(varargin{1}) && strcmp(varargin{1},'create')
 		end
 		meta.(nameDataset) = s;  %#ok<STRNU>
 	end
+
+	% Remove temporary directory, save metadata structure, display
+	% information
 	cd ..;
 	rmdir(tempDir,'s')
 	eval(['save -v7 ' indexFileDefault ' -struct meta ', horzcat(nameDatasetList{:})])
@@ -89,7 +120,7 @@ if nargin==1 && ischar(varargin{1}) && strcmp(varargin{1},'create')
 end
 	
 %% Locating index file
-if isempty(indexFile), % first time calling the routine during matlab session 
+if isempty(indexFile) || ~exist(indexFile,'file')
 	if exist(indexFile,'file'), % first usage
 		indexFileName = load(indexFile,'indexFileName');
 		if isempty(indexFileName) ...% indexFileName is not save (old version)
@@ -115,24 +146,26 @@ end
 
 %% Read metadata
 if 	nargin==1 && ischar(varargin{1}) && any(strfind(varargin{1},'__')) % CAA variable
-	varName=varargin{1};
+	varName=strrep(varargin{1},'-','_');
 	dd=regexp(varName, '__', 'split');
-	dd{2}(strfind(dd{2},'-')) = '_';	
+%	dd{2}=strrep(dd{2},'-','_');
+	if numel(varName)>2 && strcmp(varName(1:2),'x3'), varName(1)=[];end
 	dd{2} = upper(dd{2});
 	metaData = getfield(load(indexFile,dd{2}),dd{2});
 	par=metaData.PARAMETERS.PARAMETER;
-	iVar= cellfun(@(x) strcmp(x.PARAMETER_ID.Text,varName),par);
+	iVar= cellfun(@(x) strcmp(strrep(x.PARAMETER_ID.Text,'-','_'),varName),par);
 	parVar=par{iVar};
 	display_fields(parVar);
 	if nargout==1, out=parVar;end
 else % dataset
-	if isempty(s),
+	if isempty(datasetNames),
 		datasetNames = getfield(load(indexFile,'datasetList'),'datasetList');
 	end
 	iSelected = true(numel(datasetNames),1);
 	iEqual    = false(numel(datasetNames),1);
 	for jInp=1:numel(varargin)
 		filter=varargin{jInp};
+		filter(strfind(filter,'-')) = '_';
 		if ischar(filter)
 			iFind=cellfun(@(x) any(strfind(lower(x),lower(filter))),datasetNames);
 			iSelected=iSelected & iFind(:);
@@ -218,4 +251,3 @@ else
 	outStr=inStr;
 end
 end
-

@@ -1,51 +1,15 @@
 /*
 -Procedure
 
-   cspice_params.h - parameter values from SPICELIB
+   cspice_params.h
 
 -Abstract
 
-   Taken from pool.f version:
+    Parameter values from SPICELIB code for use in CSPICE.
 
-   SPICELIB Version 8.3.0, 22-DEC-2004 (NJB)
-
-
-      MAXVAR      is the maximum number of variables that the
-                  kernel pool may contain at any one time.
-                  MAXVAR should be a prime number.
-
-      MAXLEN      is the maximum length of the variable names
-                  that can be stored in the kernel pool.
-
-      MAXVAL      is the maximum number of distinct values that
-                  may belong to the variables in the kernel pool.
-                  Each variable must have at least one value, and
-                  may have any number, so long as the total number
-                  does not exceed MAXVAL. MAXVAL must be at least
-                  as large as MAXVAR.
-
-      MXNOTE      is the maximum number of distinct variable-agents
-                  pairs that can be maintained by the kernel pool.
-                  (A variable is "paired" with an agent, if that agent
-                  is to be notified whenever the variable is updated.)
-
-      MAXAGT      is the maximum number of agents that can be kept
-                  on the distribution list for notification of updates
-                  to kernel variables.
-
-      MAXCHR      is the maximum number of characters that can be
-                  stored in a component of a string valued kernel
-                  variable.
-
-      MAXLIN      is the maximum number of character strings that
-                  can be stored as data for kernel pool variables.
-
-
-   Taken from zzrvar.f version:
-
-   SPICELIB Version 1.6.0, 06-AUG-2002 (BVS)
-
-      LINLEN      is the maximum length of a line in the kernel file.
+    KEEP THE ASSIGNMENTS DEFINED IN THIS FILE SYNCHED WITH 
+    THE CORRESPONDING ASSIGNMENTS IN POOL.F, ZZRVAR.F, DAFFA.F, 
+    ERRHND.INC.
 
 -Disclaimer
 
@@ -79,7 +43,7 @@
 
 -Keywords
 
-   paramters
+   Paramters
 
 -Brief_I/O
 
@@ -107,7 +71,75 @@
 
 -Particulars
 
-    KEEP THIS FILE SYNCHED WITH POOL.F and ZZRVAR.F.
+   -Paramter values taken from pool.f version:
+
+       SPICELIB Version 10.1.0, 20-JUN-2013 (BVS)
+
+         MAXVAR      is the maximum number of variables that the
+                     kernel pool may contain at any one time.
+                     MAXVAR should be a prime number.
+
+         MAXLEN      is the maximum length of the variable names
+                     that can be stored in the kernel pool.
+
+         MAXVAL      is the maximum number of distinct values that
+                     may belong to the variables in the kernel pool.
+                     Each variable must have at least one value, and
+                     may have any number, so long as the total number
+                     does not exceed MAXVAL. MAXVAL must be at least
+                     as large as MAXVAR.
+
+         MXNOTE      is the maximum number of distinct variable-agents
+                     pairs that can be maintained by the kernel pool.
+                     (A variable is "paired" with an agent, if that agent
+                     is to be notified whenever the variable is updated.)
+
+         MAXAGT      is the maximum number of agents that can be kept
+                     on the distribution list for notification of updates
+                     to kernel variables.
+
+         MAXCHR      is the maximum number of characters that can be
+                     stored in a component of a string valued kernel
+                     variable.
+
+         MAXLIN      is the maximum number of character strings that
+                     can be stored as data for kernel pool variables.
+
+   -Paramter values taken from zzrvar.f version:
+
+      SPICELIB Version 1.6.0, 06-AUG-2002 (BVS)
+
+         LINLEN      is the maximum length of a line in the kernel file.
+
+   -Paramter values taken from daffa.f version:
+    
+      SPICELIB Version 3.0.0, 16-NOV-2001 (FST)
+
+         MAXNDC
+
+         MAXNIC
+
+   -Paramter values taken from dafah.f version:
+
+      SPICELIB Version 9.0.0, 09-NOV-2006 (NJB)
+
+         MAXSUM
+
+      Paramter SIDLEN derived from:
+
+                             (NI + 1)
+         SIDLEN = 8 * ( ND + -------- )     (Note that this is
+                                2           integer division.)
+
+          with ND = 2, and NI = 6 for SPKs.
+
+   -Parameter values take from errhnd.h version:
+   
+      SPICELIB Version 3.0.0, 14-JAN-2013 (EDW)
+
+         LMSGLN
+
+         SMSGLN
 
 -Examples
 
@@ -119,13 +151,34 @@
 
 -Literature_References
 
-    None.
+    DAF.REQ
+    ERROR.REQ
+    POOL.REQ
 
 -Author_and_Institution
 
-   E. D. Wright    (JPL)
+    E. D. Wright    (JPL)
 
 -Version
+
+   -CSPICE Version 1.3.0, 18-NOV-2013 (EDW) (BVS)
+
+      Added parameters:
+      
+         MAXNDC
+         MAXNIC
+         MAXSUM
+         SIDLEN
+         LMSGLN
+         SMSGLN
+
+      Updated to parameter values to match those defined
+      in pool.f:
+      
+         MAXVAR to 26003
+         MAXVAL to 400000
+         MAXLIN to 15000
+         MXNOTE to (MAXVAR * 5)
 
    -CSPICE Version 1.2.0, 24-MAY-2010 (EDW) (NJB)
 
@@ -139,23 +192,35 @@
 
 -Index_Entries
 
+   parameter definitions
+
 -&
 */
 
-#define         MAXVAR         5003 
- 
-#define         MAXVAL         200000 
- 
-#define         MAXLIN         4000 
- 
-#define         MAXCHR         80 
- 
-#define         MXNOTE         2000 
- 
-#define         MAXLEN         32 
+#define         MAXVAR         26003
+
+#define         MAXVAL         400000
+
+#define         MAXLIN         15000
+
+#define         MAXCHR         80
+
+#define         MXNOTE         (MAXVAR * 5)
+
+#define         MAXLEN         32
  
 #define         MAXAGT         1000 
 
-#define         LINLEN         132  
+#define         LINLEN         132
 
+#define         MAXNDC         124
 
+#define         MAXNIC         250
+
+#define         MAXSUM         125
+
+#define         SIDLEN         40
+
+#define         LMSGLN         23 * 80
+   
+#define         SMSGLN         25

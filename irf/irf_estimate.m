@@ -8,8 +8,6 @@ function out = irf_estimate(what_to_estimate,varargin)
 %
 % To see all possibilities execute
 %   irf_estimate 
-%
-% $Id$
 
 if nargin==0,
     disp(' ');
@@ -39,8 +37,14 @@ switch what_to_estimate
     case 'capacitance_wire'     % irf_estimate('capacitance_wire',radius,length)
         radius=varargin{1};
         length=varargin{2};
-        L=log(length/radius);
-        out=2*pi*Units.eps0*length/L*(1+1/L*(1-log(2)));
+				if isempty(radius) || radius == 0 || isempty(length)
+					out = [];
+				elseif length < 10*radius,
+					error('capacitance_wire requires length at least 10 times the radius!');
+				else
+					L=log(length/radius);
+					out=2*pi*Units.eps0*length/L*(1+1/L*(1-log(2)));
+				end
     case 'capacitance_cylinder' % irf_estimate('capacitance_cylinder',radius,length)
         % Verolino (1995) Electr. Eng. 78, 201-207 Eq. 21-22
         a=varargin{1};   % radius

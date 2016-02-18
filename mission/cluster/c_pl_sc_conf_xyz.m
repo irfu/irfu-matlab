@@ -34,11 +34,16 @@ if nargin==0, % default time (with time can make smarter solution)
 	if evalin('caller','exist(''tint'') && isnumeric(''tint'')') ,
 		time=irf_time(evalin('caller','tint(1)'),'vector');
 	elseif exist('CAA','dir')
-		R=irf_get_data('sc_r_xyz_gse__C1_CP_AUX_POSGSE_1M','caa','mat');
-		if isempty(R),
-			R=irf_get_data('sc_r_xyz_gse__CL_SP_AUX','caa','mat');
+		ok = caa_load('list','C1_CP_AUX_POSGSE_1M');
+		if ok,
+			R=irf_get_data('sc_r_xyz_gse__C1_CP_AUX_POSGSE_1M','caa','mat');
+		else
+			ok = caa_load('list','CL_SP_AUX');
+			if ok,
+				R=irf_get_data('sc_r_xyz_gse__CL_SP_AUX','caa','mat');
+			end
 		end
-		if numel(R)==0,
+		if ~ok,
 			time=[2010 12 31 01 01 01];
 		else
 			time=0.5*(R(1,1)+R(end,1)); % first point in center of position time series
@@ -97,6 +102,7 @@ switch lower(action)
 	case 'read_position'
 		data=get(gcf,'userdata');
 		R=data.R;
+		tint = [data.t-120 data.t+120];
 		if ~is_R_ok,     % try reading from disk mat files
 			irf.log('notice','===>>> Reading R? from mR.mat file')
 			for numSc = sc_list,
@@ -107,15 +113,30 @@ switch lower(action)
 					irf.log('notice','--->>> did not succeed.')
 					break; 
 				else
-					R.(strSc) = eval(strSc);
+					R.(strSc) = eval(strRsc);
 				end
+			end
+		end
+		if ~is_R_ok,     % try reading from CAA files CL_SP_AUX
+			irf.log('notice','===>>> Reading CAA files CL_CP_AUX ...')
+			rVarCaaNames = {'sc_r_xyz_gse__CL_SP_AUX',...
+				'sc_dr1_xyz_gse__CL_SP_AUX','sc_dr2_xyz_gse__CL_SP_AUX',...
+				'sc_dr3_xyz_gse__CL_SP_AUX','sc_dr4_xyz_gse__CL_SP_AUX'};
+			rTmp = irf_get_data(tint,rVarCaaNames([1 sc_list+1]),'caa','mat');
+			%R.R=irf_get_data(tint,'sc_r_xyz_gse__CL_SP_AUX','caa','mat');
+			if isempty(rTmp)
+				irf.log('notice','--->>> did not succeed.')
+			else
+				%c_eval('R.C?=irf_get_data(tint,''sc_dr?_xyz_gse__CL_SP_AUX'',''caa'',''mat'');',sc_list);
+				R.R=rTmp{1};
+				c_eval('R.C?=irf_add(1,R.R,1,rTmp{?+1});',sc_list);
 			end
 		end
 		if ~is_R_ok,     % try reading from CAA files CP_AUX_POSGSE_1M
 			irf.log('notice','===>>> Reading CAA files C?_CP_AUX_POSGSE_1M ...')
 			for numSc = sc_list,
 				strSc = ['C' num2str(numSc)];
-				R.(strSc) = irf_get_data(['sc_r_xyz_gse__C' strSc '_CP_AUX_POSGSE_1M'],'caa','mat');
+				R.(strSc) = irf_get_data(tint,['sc_r_xyz_gse__C' strSc '_CP_AUX_POSGSE_1M'],'caa','mat');
 				if isempty(R.(strSc)),
 					irf.log('notice','--->>> did not succeed.')
 					break;
@@ -130,16 +151,6 @@ switch lower(action)
 					irf.log('notice','--->>> did not succeed.')
 					break;
 				end
-			end
-		end
-		if ~is_R_ok,     % try reading from CAA files CL_SP_AUX
-			irf.log('notice','===>>> Reading CAA files CL_CP_AUX ...')
-			R.R=irf_get_data('sc_r_xyz_gse__CL_SP_AUX','caa','mat');
-			if isempty(R.R)
-				irf.log('notice','--->>> did not succeed.')
-			else
-				c_eval('R.C?=irf_get_data(''sc_dr?_xyz_gse__CL_SP_AUX'',''caa'',''mat'');',sc_list);
-				c_eval('R.C?=irf_add(1,R.R,1,R.C?);',sc_list);
 			end
 		end
 		if ~is_R_ok,     % try reading stream from CAA
@@ -189,7 +200,7 @@ switch lower(action)
 		sfactor=max([1 600/(ss(3)-80) 1000/(ss(4)-80)]);
 		set(gcf,'Position',[10 10 600/sfactor 1000/sfactor]);
 		delete(findall(gcf,'Type','axes'))
-		data.h=[];h=zeros(1,8);
+		data.h=[];h=gobjects(1,8);
 		xsize=.35;ysize=.195;dx=.13;dy=.05;
 		for ix=1:2,
 			for iy=1:4,
@@ -201,7 +212,7 @@ switch lower(action)
 		axis(h(4),[-19.99 19.99 0 19.99]);
 		for ii=1:4, hold(h(ii),'on');daspect(h(ii),[1 1 1]);end
 		data.h=h;
-		data.flag_show_cluster_description=1; % show cluster description
+		data.showClusterDescription = true; % show cluster description
 		data.plot_type='default';
 		set(gcf,'userdata',data);
 		c_pl_sc_conf_xyz(data.coord_label);
@@ -213,7 +224,7 @@ switch lower(action)
 		sfactor=max([1 600/(ss(3)-80) 1000/(ss(4)-80)]);
 		set(gcf,'Position',[10 ss(4)-80-700/sfactor 700/sfactor 700/sfactor]);
 		initialize_figure;
-		h=[];
+		h=gobjects(0);
 		h(1)=axes('position',[0.1  0.56 0.3 0.36]); % [x y dx dy]
 		h(2)=axes('position',[0.59 0.56 0.3 0.36]); % [x y dx dy]
 		h(3)=axes('position',[0.1  0.06 0.3 0.36]); % [x y dx dy]
@@ -223,7 +234,7 @@ switch lower(action)
 		h(23) = axes('Position',get(h(3),'Position'),'XAxisLocation','top','YAxisLocation','right','Color','none','XColor','k','YColor','k');
 		axis(h(4),'off');hold(h(4),'on');
 		data.h=h;
-		data.flag_show_cluster_description=1; % show cluster description
+		data.showClusterDescription = true; % show cluster description
 		data.plot_type='compact';
 		set(gcf,'userdata',data);
 		c_pl_sc_conf_xyz(data.coord_label);
@@ -235,13 +246,13 @@ switch lower(action)
 		sfactor=max([1 700/(ss(3)-80) 1000/(ss(4)-80)]);
 		set(gcf,'Position',[10 ss(4)-80-500/sfactor 500/sfactor 500/sfactor]);
 		initialize_figure;
-		h=[];
+		h=gobjects(0);
 		h(1)=axes('position',[0.15  0.16 0.7 0.7]); % [x y dx dy]
 		h(2)=axes('position',[0.5 0.8 0.5 0.2]);    % for legends
 		data.h=h;
-		data.flag_show_cluster_description=1; % show cluster description
+		data.showClusterDescription = true; % show cluster description
 		data.plot_type='config3d';
-		data.flag_show_cluster_description=0;
+		data.showClusterDescription = false;
 		set(gcf,'userdata',data);
 		c_pl_sc_conf_xyz(data.coord_label);
 	case 'lmn'
@@ -277,7 +288,7 @@ switch lower(action)
 		sfactor=max([1 600/(ss(3)-80) 1000/(ss(4)-80)]);
 		set(gcf,'Position',[10 ss(4)-80-350/sfactor 750/sfactor 350/sfactor]);
 		initialize_figure;
-		h=[];
+		h=gobjects(0);
 		h(1)=axes('position',[0.09 0.13 0.32 0.74]); % [x y dx dy]
 		h(2)=axes('position',[0.59 0.13 0.32 0.74]); % [x y dx dy]
 		h(3)=axes('position',[0 0 1 1]);
@@ -285,7 +296,7 @@ switch lower(action)
 		h(22)=axes('Position',get(h(2),'Position'),'XAxisLocation','top','YAxisLocation','right','Color','none','XColor','k','YColor','k');
 		axis(h(3),'off');
 		data.h=h;
-		data.flag_show_cluster_description=0;
+		data.showClusterDescription = false;
 		data.plot_type='supercompact';
 		set(gcf,'userdata',data);
 		c_pl_sc_conf_xyz(data.coord_label);
@@ -295,7 +306,7 @@ switch lower(action)
 		sfactor=max([1 600/(ss(3)-80) 1000/(ss(4)-80)]);
 		set(gcf,'Position',[10 ss(4)-80-650/sfactor 350/sfactor 650/sfactor]);
 		initialize_figure;
-		h=[];
+		h=gobjects(0);
 		h(2)=axes('position',[0.18 0.06 0.63 0.36]); % [x y dx dy]
 		h(1)=axes('position',[0.18 0.57 0.63 0.36]); % [x y dx dy]
 		h(3)=axes('position',[0 0 1 1]);axis off;
@@ -303,7 +314,7 @@ switch lower(action)
 		h(22)=axes('Position',get(h(2),'Position'),'XAxisLocation','top','YAxisLocation','right','Color','none','XColor','k','YColor','k');
 		axis(h(3),'off');
 		data.h=h;
-		data.flag_show_cluster_description=0;
+		data.showClusterDescription = false;
 		data.plot_type='supercompact2';
 		set(gcf,'userdata',data);
 		c_pl_sc_conf_xyz(data.coord_label);
@@ -321,6 +332,7 @@ switch lower(action)
 		if is_R_ok
 			for ic = data.sc_list
 				rr{ic}=irf_resamp(data.r.(['C' num2str(ic)]),data.t);
+				rr{ic}=rr{ic}(1:4); % remove magnitude in 5th col if present
 				R.R=R.R+rr{ic}/length(data.sc_list);
 			end
 			% estimate relative position wrt mass center
@@ -428,7 +440,7 @@ switch lower(action)
 				line([-drref drref],[-drref -drref],[-drref -drref],'parent',h(1),'linestyle','-','color','k','linewidth',0.6);
 				line([-drref -drref],[-drref drref],[-drref -drref],'parent',h(1),'linestyle','-','color','k','linewidth',0.6);
 				line([-drref -drref],[-drref -drref],[-drref drref],'parent',h(1),'linestyle','-','color','k','linewidth',0.6);
-				text(0.1,1,0,irf_time(data.t,'isoshort'),'parent',h(1),'units','normalized','horizontalalignment','center','fontsize',9);
+				text(0.1,1,0,irf_time(data.t,'utc_yyyy-mm-dd HH:MM:SS.mmm'),'parent',h(1),'units','normalized','horizontalalignment','center','fontsize',9);
 				xlabel(h(1),['{\Delta}X [km] ' coord_label]);
 				ylabel(h(1),['{\Delta}Y [km] ' coord_label]);
 				zlabel(h(1),['{\Delta}Z [km] ' coord_label]);
@@ -489,7 +501,7 @@ switch lower(action)
 				plotAxes = 'XZ';
 				plot_relative_position(h(1));
 				fix_RE_axis(h(1),h(21));
-				irf_legend(h(1),irf_time(data.t,'epoch2yyyy-mm-dd hh:mm:ss'),[0.02 0.98],'fontsize',9);
+				irf_legend(h(1),irf_time(data.t,'epoch>yyyy-mm-dd hh:mm:ss'),[0.02 0.98],'fontsize',9);
 				
 				plotAxes = 'YZ';
 				plot_relative_position(h(2));
@@ -501,14 +513,14 @@ switch lower(action)
 				plotAxes = 'XZ';
 				plot_relative_position(h(1));
 				fix_RE_axis(h(1),h(21));
-				irf_legend(h(1),irf_time(data.t,'epoch2yyyy-mm-dd hh:mm:ss'),[0.02 0.98],'fontsize',9);
+				irf_legend(h(1),irf_time(data.t,'epoch>yyyy-mm-dd hh:mm:ss'),[0.02 0.98],'fontsize',9);
 				
 				plotAxes = 'XY';
 				plot_relative_position(h(2));
 				text_Cluster_markers(h(2));
 				fix_RE_axis(h(2),h(22));
 		end
-		if data.flag_show_cluster_description==1,
+		if data.showClusterDescription,
 			if strcmpi(data.plot_type,'compact') || ...
 					strcmpi(data.plot_type,'lmn')  % decide in which axes write labels
 				hca=h(4);
@@ -527,24 +539,28 @@ switch lower(action)
 			axis(hca,'off');
 			ht=irf_legend(hca,['c_pl_sc_conf_xyz() ' datestr(now)],[0,0],'fontsize',8);
 			set(ht,'interpreter','none');
-			htime=irf_legend(hca,['Cluster configuration\newline ' irf_time(data.t,'isoshort')],[0,.95]);
+			htime=irf_legend(hca,['Cluster configuration\newline ' irf_time(data.t,'utc_yyyy-mm-dd HH:MM:SS.mmm')],[0,.95]);
 			set(htime,'fontsize',12);
 			if ~isempty(flag_using_omni_data)
 				if ~strcmpi(data.plot_type,'lmn'),
 					if flag_using_omni_data==1, % succeeded downloading OMNI
-						irf_legend(hca,['IMF from OMNI 1h database:\newline P=' num2str(omni.Dp,'%6.1f') '[nPa],\newline Bx=' num2str(omni.Bx,'%6.1f') ',By=' num2str(omni.By,'%6.1f') ',Bz=' num2str(fft(5),'%6.1f') '[nT] GSM' ],[0,0.7]);
+						irf_legend(hca,['IMF from OMNI 1h database:\newline P=' num2str(omni.Dp,'%6.1f') '[nPa],\newline Bx=' num2str(omni.Bx,'%6.1f') ',By=' num2str(omni.By,'%6.1f') ',Bz=' num2str(omni.Bz,'%6.1f') '[nT] GSM' ],[0,0.7]);
 					elseif flag_using_omni_data==0, % did not succeeded downloading OMNI
-						irf_legend(hca,['IMF using assumed model:\newline P=' num2str(omni.Dp,'%6.1f') '[nPa],\newline Bz=' num2str(fft(5),'%6.1f') '[nT] GSM' ],[0,0.7]);
+						irf_legend(hca,['IMF using assumed model:\newline P=' num2str(omni.Dp,'%6.1f') '[nPa],\newline Bz=' num2str(omni.Bz,'%6.1f') '[nT] GSM' ],[0,0.7]);
 					end
 				end
 			end
 		end
 	case 'new_time'
 		data=get(gcf,'userdata');
-		xx=inputdlg('Enter new time. [yyyy mm dd hh mm ss]','**',1,{mat2str(irf_time(data.t,'vector'))});
+		xx=inputdlg('New time. [yyyy mm dd hh mm ss] or ISO','**',1,{mat2str(irf_time(data.t,'vector'))});
 		if ~isempty(xx),
 			variable_str=xx{1};
-			data.t=irf_time(eval(variable_str));
+			if any(strfind(variable_str,'T'))
+				data.t = irf_time(variable_str,'iso>epoch');
+			else
+				data.t=irf_time(eval(variable_str));
+			end
 			set(gcf,'userdata',data);
 			c_pl_sc_conf_xyz('read_position');
 			c_pl_sc_conf_xyz(data.coord_label);
@@ -605,6 +621,8 @@ end
 		axis(ax1,[-drref drref -drref drref]);
 	end
 	function fix_RE_axis(axis1,axis2)
+		colX = plotAxes(1)-'W'+1;
+		colY = plotAxes(2)-'W'+1;
 		if drref>10000, REform='%6.1f';
 		elseif drref<100, REform='%6.3f';
 		else REform='%6.2f';
@@ -613,8 +631,8 @@ end
 		xtick_ax1=get(axis1,'XTick');ytick_ax1=get(axis1,'YTick');
 		xlabel(axis2,[plotAxes(1) ' [R_E] ' coord_label]);
 		ylabel(axis2,[plotAxes(2) ' [R_E] ' coord_label]);
-		xtlax2=num2str((xtick_ax1'+R.R(2))/6372,REform);
-		ytlax2=num2str((ytick_ax1'+R.R(4))/6372,REform);
+		xtlax2=num2str((xtick_ax1'+R.R(colX))/6372,REform);
+		ytlax2=num2str((ytick_ax1'+R.R(colY))/6372,REform);
 		set(axis2,'xdir',get(axis1,'xdir'));
 		set(axis2,'ydir',get(axis1,'ydir'));
 		set(axis2,'xlim',xlim_ax1,'xticklabel',xtlax2);
@@ -690,8 +708,8 @@ end
 				answer=false;
 				return;
 			else
-				tint=[R.(strSc)(1,1) R.(strSc)(end,1)];
-				if (tint(1)>data.t) || (tint(2)<data.t),
+				tintR=[R.(strSc)(1,1) R.(strSc)(end,1)];
+				if (tintR(1)>data.t) || (tintR(2)<data.t),
 					answer=false;
 					return;
 				end

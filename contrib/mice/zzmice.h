@@ -89,9 +89,13 @@
 
 -Version
 
+   -Mice Version 1.0.2 31-OCT-2012 (EDW)
+   
+      Added MiceFrinfo, MiceSFS, MicePVN enums.
+
    -Mice Version 1.0.1 17-DEC-2008 (EDW)
 
-       Addition of MiceWnsumd enum.
+      Addition of MiceWnsumd enum.
 
    -Mice Version 1.0.0 14-FEB-2008 (EDW)
 
@@ -128,10 +132,11 @@ used, the interface needs to peform memory allocation to the pointer.
 enum MiceType
    {
    MiceInvalidType,
-   MiceBodID,
+   MiceNameID,
+   MiceFrinfo,
    MiceState,
    MicePos,
-   MiceSub,
+   MiceNear,
    MiceSurf,
    MicePlane,
    MiceEllipse,
@@ -145,7 +150,9 @@ enum MiceType
    MiceSurf_PS,
    MiceIlum,
    MiceWnsumd,
-   MiceIgnore
+   MiceSFS,
+   MicePVN,
+   MiceIgnore,
    };
 
 
