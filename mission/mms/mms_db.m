@@ -166,6 +166,7 @@ classdef mms_db < handle
          if ~all(size(c1)==size(c2)), return, end
          
          [n,m] = size(c1);
+         if(m==1), c1=sort(c1); c2=sort(c2); end
          for iN = 1:n,
            for iM = 1:m
              if ischar(c1{iN, iM}) && ischar(c2{iN,iM})
