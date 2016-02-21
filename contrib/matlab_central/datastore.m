@@ -99,8 +99,10 @@ if isempty(filename)
 		error('please let me know how to find a suitable path on your system!');
 	end
 	
+	% Get computer name
+	hostName = getComputerName;
 	% get filename
-	filename = [path '/.matlab_datastore'];
+	filename = [path, '/.matlab_datastore_', hostName];
 	
 	% load
 	if exist(filename, 'file')
