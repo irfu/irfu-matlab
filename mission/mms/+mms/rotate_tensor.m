@@ -222,5 +222,5 @@ if rtntensor,
 else % for backwards compability
 	Pe = TSeries(Petimes,Ptensorp);
 end
-Pe.units = Peall.units;
+Pe.units = varargin{1}.units;
 end
