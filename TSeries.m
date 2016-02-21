@@ -1092,6 +1092,43 @@ classdef TSeries
       end
     end %RESAMPLE
     
+    function Ts = filt(obj,varargin)
+      % FILT  Filter TSeries
+      %
+      % TsOut = filt(Ts,fmin,fmax,[Fs],[order])
+      % TsOut = Ts.filt(fmin,fmax,[Fs],[order])
+      %
+      % See also: IRF_FILT
+      
+      if isempty(obj), error('Cannot filter empty TSeries'), end      
+      if numel(varargin)<2, error('Input missing'), end      
+      
+      if obj.tensorOrder==0, 
+        filt_(obj);
+      elseif obj.tensorOrder==1,       
+        % For non-cartesian bases, in order to do a proper inte/extrapolarion
+        % we first transform into cartesian basis, resample, and then
+        % transform back to teh original basis
+        basis = obj.BASIS{obj.tensorBasis_};
+        switch basis
+          case {'xy','xyz'}, filt_(obj); return 
+          case {'rtp','rlp','rpz'}, filt_(obj.transform('xyz'));
+          case 'rp', filt_(obj.transform('xy'));
+          otherwise
+            error('Unknown representation'); % should not be here
+        end
+        Ts = Ts.transform(basis);
+      elseif obj.tensorOrder==2;
+        filt_(obj)
+      else
+        error('Not yet implemented'); 
+      end
+           
+      function filt_(TsTmp)      
+        Ts = irf_filt(TsTmp,varargin{:}); % resample                  
+      end
+    end
+    
     function obj = tlim(obj,tint)
       %TLIM  Returns data within specified time interval
       %
