@@ -10,10 +10,11 @@ function res = get_data(varStr, Tint, mmsId)
 %     R_gse, R_gsm, V_gse, V_gsm
 %     tetra_quality
 %  FPI IONS:
-%     Vi_gse_fpi_brst, 'Ti_fpi_ql','Ti_fpi_brst',
+%     Vi_gse_fpi_brst, Vi_dbcs_fpi_brst_l2, 
+%     'Ti_fpi_ql','Ti_fpi_brst',
 %     'Ni_fpi_ql', 'Ni_fpi_brst', 
 %  FPI ELECTRONS:
-%     'Ne_fpi_brst', Ve_gse_fpi_brst
+%     'Ne_fpi_brst', Ve_gse_fpi_brst, Ve_dbcs_fpi_brst_l2
 %     Loads into tensor of order 2:
 %     'Te_fpi_ql','Te_fpi_brst','Te_fpi_brst_l2',
 %     'Pe_fpi_ql','Pe_fpi_brst','Pe_fpi_brst_l2'
@@ -45,9 +46,10 @@ end
 
 vars = {'R_gse','R_gsm','V_gse','V_gsm',...
   'Vi_gse_fpi_ql','Ve_gse_fpi_brst','Vi_gse_fpi_brst', ...
+  'Ve_dbcs_fpi_brst_l2','Vi_dbcs_fpi_brst_l2',...
   'Ni_fpi_ql','Ni_fpi_brst','Ne_fpi_brst',...
-  'Pe_fpi_ql','Pe_fpi_brst','Pe_fpi_brst_l2',...
-  'Te_fpi_ql','Te_fpi_brst','Te_fpi_brst_l2',...
+  'Pe_fpi_ql','Pe_fpi_brst','Pe_fpi_brst_l2','Pi_fpi_brst_l2',...
+  'Te_fpi_ql','Te_fpi_brst','Te_fpi_brst_l2','Ti_fpi_brst_l2',...
   'Ti_fpi_ql','Ti_fpi_brst',...
   'B_dmpa_srvy','B_gse_srvy','B_gsm_srvy','B_dmpa_brst','B_gse_brst','B_gsm_brst',...
   'dfg_ql_srvy','afg_ql_srvy','tetra_quality'}; % XXX THESE MUST BE THE SAME VARS AS BELOW
@@ -158,7 +160,24 @@ switch varStr
     res.name = [varStr '_' mmsIdS];
     res.units = rX.units;
     res.siConversion = rX.siConversion;
-  case {'Pe_fpi_ql','Pe_fpi_brst','Pe_fpi_brst_l2','Te_fpi_ql','Te_fpi_brst','Te_fpi_brst_l2'}
+  case {'Ve_dbcs_fpi_brst_l2','Vi_dbcs_fpi_brst_l2'}
+    if varStr(2)=='i', vS = 'dis';
+    else vS = 'des';
+    end
+    
+    datasetName = ['mms' mmsIdS '_fpi_brst_l2_' vS '-moms'];
+    
+    rX = mms.db_get_ts(datasetName,['mms' mmsIdS '_' vS '_bulkx_dbcs_brst'],Tint);
+    if isempty(rX), return, end
+    rX = comb_ts(rX);
+    rY = comb_ts(mms.db_get_ts(datasetName,['mms' mmsIdS '_' vS '_bulky_dbcs_brst'],Tint));
+    rZ = comb_ts(mms.db_get_ts(datasetName,['mms' mmsIdS '_' vS '_bulkz_dbcs_brst'],Tint));
+    res = irf.ts_vec_xyz(rX.time, [rX.data rY.data rZ.data]);
+    res.coordinateSystem = 'DBCS';
+    res.name = [varStr '_' mmsIdS];
+    res.units = rX.units;
+    res.siConversion = rX.siConversion;
+  case {'Pe_fpi_ql','Pe_fpi_brst','Pe_fpi_brst_l2','Te_fpi_ql','Te_fpi_brst','Te_fpi_brst_l2','Pi_fpi_brst_l2','Ti_fpi_brst_l2'}
     isL2 = 0;
     if varStr(2)=='i', vS = 'dis';
     else vS = 'des';
@@ -192,7 +211,7 @@ switch varStr
         ['mms' mmsIdS '_' vS '_' lower(momType) lower('YZ') '_dbcs_brst'],Tint);
       rZZ = mms.db_get_ts(datasetName,...
         ['mms' mmsIdS '_' vS '_' lower(momType) lower('ZZ') '_dbcs_brst'],Tint); 
-      coordinateSystem = '';
+      coordinateSystem = 'DBCS';
     else
       rXX = mms.db_get_ts(datasetName,...
         ['mms' mmsIdS '_' vS '_' momType 'XX'],Tint);
