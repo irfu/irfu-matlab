@@ -10,14 +10,14 @@ function res = get_data(varStr, Tint, mmsId)
 %     R_gse, R_gsm, V_gse, V_gsm
 %     tetra_quality
 %  FPI IONS:
-%     'Vi_gse_fpi_ql','Vi_gse_fpi_brst' (L1b), ...
+%     'Vi_gse_fpi_sitl','Vi_gse_fpi_ql','Vi_gse_fpi_brst' (L1b), ...
 %     'Vi_gse_fpi_brst_l1b', 'Vi_gse_fpi_fast_l1b',
 %     'Vi_gse_fpi_brst', 'Vi_dbcs_fpi_brst_l2',
 %     'Ve_dbcs_fpi_fast_l2', 'Vi_dbcs_fpi_fast_l2',
 %     'Ve_gse_fpi_brst_l2', 'Vi_gse_fpi_brst_l2',
 %     'Ve_gse_fpi_fast_l2', 'Vi_gse_fpi_fast_l2'
 %     'Ti_fpi_ql','Ti_fpi_brst',
-%     'Ni_fpi_ql', 'Ni_fpi_brst', 
+%     'Ni_fpi_sitl','Ni_fpi_ql', 'Ni_fpi_brst', 
 %  FPI ELECTRONS:
 %     'Ne_fpi_brst', 'Ve_gse_fpi_fast_l1b', 
 %     'Ve_gse_fpi_brst' (L1b), 'Ve_dbcs_fpi_brst_l2', 'Ve_gse_fpi_brst_l1b', 
@@ -51,14 +51,14 @@ elseif Tint.stop-Tint.start<=0,
 end
 
 vars = {'R_gse','R_gsm','V_gse','V_gsm',...
-  'Vi_gse_fpi_ql','Ve_gse_fpi_brst','Vi_gse_fpi_brst', ...
+  'Vi_gse_fpi_sitl', 'Vi_gse_fpi_ql','Ve_gse_fpi_brst','Vi_gse_fpi_brst', ...
   'Vi_gse_fpi_brst_l1b','Ve_gse_fpi_brst_l1b',...
   'Vi_gse_fpi_fast_l1b','Ve_gse_fpi_fast_l1b',...
   'Ve_dbcs_fpi_brst_l2','Vi_dbcs_fpi_brst_l2',...
   'Ve_dbcs_fpi_fast_l2','Vi_dbcs_fpi_fast_l2',...
   'Ve_gse_fpi_brst_l2','Vi_gse_fpi_brst_l2',...
   'Ve_gse_fpi_fast_l2','Vi_gse_fpi_fast_l2',...
-  'Ni_fpi_ql','Ni_fpi_brst','Ne_fpi_brst',...
+  'Ni_fpi_sitl','Ni_fpi_ql','Ni_fpi_brst','Ne_fpi_brst',...
   'Pe_fpi_ql','Pe_fpi_brst','Pe_fpi_brst_l2','Pi_fpi_brst_l2',...
   'Te_fpi_ql','Te_fpi_brst','Te_fpi_brst_l2','Ti_fpi_brst_l2',...
   'Ti_fpi_ql','Ti_fpi_brst',...
@@ -152,26 +152,28 @@ switch varStr
       dTmpR = dTmp.resample(res.time,'spline');
       res.([cS vC mmsIdS]) = dTmpR.data; 
     end
-  case {'Vi_gse_fpi_ql','Vi_gse_fpi_brst','Ve_gse_fpi_brst',...
+  case {'Vi_gse_fpi_sitl','Vi_gse_fpi_ql','Vi_gse_fpi_brst','Ve_gse_fpi_brst',...
       'Vi_gse_fpi_brst_l1b','Ve_gse_fpi_brst_l1b',...
       'Vi_gse_fpi_fast_l1b','Ve_gse_fpi_fast_l1b'}
     if varStr(2)=='i', vS = 'dis';
     else vS = 'des';
     end
-    if varStr(12)=='q'
-      datasetName = ['mms' mmsIdS '_fpi_fast_ql_' vS];
-    else
-      if varStr(12)=='f'
-        datasetName = ['mms' mmsIdS '_fpi_fast_l1b_' vS '-moms'];
-      else
+    suf = ''; varS = '_bulk';
+    switch varStr(12)
+      case 'q', datasetName = ['mms' mmsIdS '_fpi_fast_ql_' vS];
+      case 's', 
+        datasetName = ['mms' mmsIdS '_fpi_fast_sitl']; 
+        vS = 'fpi'; varS = '_iBulkV_'; suf = '_DSC';
+      case 'f', datasetName = ['mms' mmsIdS '_fpi_fast_l1b_' vS '-moms'];
+      otherwise
         datasetName = ['mms' mmsIdS '_fpi_brst_l1b_' vS '-moms'];
-      end
     end
-    rX = mms.db_get_ts(datasetName,['mms' mmsIdS '_' vS '_bulkX'],Tint);
+    pref = ['mms' mmsIdS '_' vS varS];
+    rX = mms.db_get_ts(datasetName,[pref 'X' suf],Tint);
     if isempty(rX), return, end
     rX = comb_ts(rX);
-    rY = comb_ts(mms.db_get_ts(datasetName,['mms' mmsIdS '_' vS '_bulkY'],Tint));
-    rZ = comb_ts(mms.db_get_ts(datasetName,['mms' mmsIdS '_' vS '_bulkZ'],Tint));
+    rY = comb_ts(mms.db_get_ts(datasetName,[pref 'Y' suf],Tint));
+    rZ = comb_ts(mms.db_get_ts(datasetName,[pref 'Z' suf],Tint));
     res = irf.ts_vec_xyz(rX.time, [rX.data rY.data rZ.data]);
     res.coordinateSystem = 'gse';
     res.name = [varStr '_' mmsIdS];
@@ -265,25 +267,24 @@ switch varStr
     res.units = rXX.units;
     res.siConversion = rXX.siConversion;
     res.coordinateSystem = coordinateSystem;
-  case {'Ni_fpi_ql','Ni_fpi_brst','Ne_fpi_brst','Ti_fpi_ql','Ti_fpi_brst'}
+  case {'Ni_fpi_sitl','Ni_fpi_ql','Ni_fpi_brst','Ne_fpi_brst','Ti_fpi_ql','Ti_fpi_brst'}
     if varStr(2)=='i', vS = 'dis';
     else vS = 'des';
     end
-    if varStr(8)=='q'
-      datasetName = ['mms' mmsIdS '_fpi_fast_ql_' vS];
-    else
-      datasetName = ['mms' mmsIdS '_fpi_brst_l1b_' vS '-moms'];
+    switch varStr(8)
+      case 's', datasetName = ['mms' mmsIdS '_fpi_fast_sitl']; vS = 'fpi_DIS';
+      case 'q', datasetName = ['mms' mmsIdS '_fpi_fast_ql_' vS]; vS = [vS '_'];
+      otherwise
+        datasetName = ['mms' mmsIdS '_fpi_brst_l1b_' vS '-moms']; vS = [vS '_'];
     end
+    pref = ['mms' mmsIdS '_' vS];
     if varStr(1)=='N' % density
-      rX = mms.db_get_ts(datasetName,...
-        ['mms' mmsIdS '_' vS '_numberDensity'],Tint);
+      rX = mms.db_get_ts(datasetName,[pref 'numberDensity'],Tint);
+      rX = comb_ts(rX);
     else % temperature
-      rX = mms.db_get_ts(datasetName,...
-        ['mms' mmsIdS '_' vS '_TempXX'],Tint);
-      rY = mms.db_get_ts(datasetName,...
-        ['mms' mmsIdS '_' vS '_TempYY'],Tint);
-      rZ = mms.db_get_ts(datasetName,...
-        ['mms' mmsIdS '_' vS '_TempZZ'],Tint);
+      rX = mms.db_get_ts(datasetName, [pref 'TempXX'],Tint); rX = comb_ts(rX);
+      rY = mms.db_get_ts(datasetName, [pref 'TempYY'],Tint); rY = comb_ts(rY);
+      rZ = mms.db_get_ts(datasetName, [pref 'TempZZ'],Tint); rZ = comb_ts(rZ);
       rX.data = rX.data + rY.data + rZ.data;
     end
     if isempty(rX), return, end
