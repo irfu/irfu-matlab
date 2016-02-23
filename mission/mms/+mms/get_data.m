@@ -27,6 +27,9 @@ function res = get_data(varStr, Tint, mmsId)
 %  FGM:
 %     'B_dmpa_srvy','B_gse_srvy','B_gsm_srvy',
 %     'B_dmpa_brst','B_gse_brst','B_gsm_brst'
+% Added 2016-02-18 by Per-Arne:
+%  HPCA:
+%     'Nhplus_hpca_sitl'
 %
 % Example:
 %   Tint = irf.tint('2015-09-21T00:00:00Z/2015-09-21T17:00:00Z');
@@ -63,7 +66,8 @@ vars = {'R_gse','R_gsm','V_gse','V_gsm',...
   'Te_fpi_ql','Te_fpi_brst','Te_fpi_brst_l2','Ti_fpi_brst_l2',...
   'Ti_fpi_ql','Ti_fpi_brst',...
   'B_dmpa_srvy','B_gse_srvy','B_gsm_srvy','B_dmpa_brst','B_gse_brst','B_gsm_brst',...
-  'dfg_ql_srvy','afg_ql_srvy','tetra_quality'}; % XXX THESE MUST BE THE SAME VARS AS BELOW
+  'dfg_ql_srvy','afg_ql_srvy','tetra_quality',...
+  'Nhplus_hpca_sitl'}; % XXX THESE MUST BE THE SAME VARS AS BELOW
 if isempty(intersect(varStr,vars)),
   errS = ['variable not recognized: ' varStr];
   irf.log('critical',errS);
@@ -342,6 +346,15 @@ switch varStr
       rTs = irf.ts_scalar(EpochTT(quality.time), quality.quality);
       res = rTs.tlim(Tint);
     end
+  case {'Nhplus_hpca_sitl'}
+    datasetName = ['mms' mmsIdS '_hpca_srvy_sitl_moments'];
+    rX = mms.db_get_ts(datasetName,...
+      ['mms' mmsIdS '_hpca_hplus_number_density'],Tint);
+    if isempty(rX), return, end
+    res = irf.ts_scalar(rX.time, rX.data);
+    res.name = [varStr '_' mmsIdS];
+    res.units = rX.units;
+    res.siConversion = rX.siConversion;
   otherwise, error('should not be here')
 end
 

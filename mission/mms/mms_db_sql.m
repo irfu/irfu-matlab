@@ -389,11 +389,7 @@ classdef mms_db_sql < handle
 				elseif searchVariable && searchDataset ;
 					idDatasetList = intersect(find_datasets_with_varname(obj,varName),find_dataset_id(obj,dataset));
 				end
-				sqlDataset = 'idDataset IN (';
-				for id =1:numel(idDatasetList)
-					sqlDataset=[sqlDataset '"' idDatasetList{id} '",'];
-				end
-				sqlDataset = [sqlDataset '"")'];
+				sqlDataset = ['idDataset IN ("', strjoin(idDatasetList, '","'), '")'];
 			end
 			% find files
 			idFileArray = []; iFile = 1;
