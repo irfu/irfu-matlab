@@ -619,7 +619,7 @@ if number_of_subplots>=1 && number_of_subplots<=20,
         set(hcf,'defaultTextFontSize',14);
         set(hcf,'defaultAxesFontUnits','pixels');
         set(hcf,'defaultTextFontUnits','pixels');
-        set(hcf,'defaultAxesColorOrder',[0 0 0;0 0 1;1 0 0;0.3 0.3 0.3;0 1 1 ;1 0 1; 1 1 0])
+        set(hcf,'defaultAxesColorOrder',[0 0 0;0 0 1;1 0 0;0 0.5 0;0 1 1 ;1 0 1; 1 1 0])
 	end
     clf;
     all_axis_position=[0.17 0.1 0.9 0.95]; % xmin ymin xmax ymax
