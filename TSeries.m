@@ -472,20 +472,34 @@ classdef TSeries
       Ts.data_ = data;
       Ts.t_ = t;
     end
-      
+
+    function Ts = sqrt(obj)
+      %SQRT Square root
+      if obj.tensorOrder~=0, error('Square root requires tensorOrder = 0'); end      
+      obj.data_ = sqrt(obj.data); Ts = obj;
+      Ts.tensorBasis_ = ''; Ts.representation{2} = [];
+      if ~isempty(obj.name), Ts.name = sprintf('sqrt(%s)',obj.name); end
+    end    
+    
     function Ts = abs(obj)
       %ABS Magnitude
-      if obj.tensorOrder~=1, error('Not yet implemented'); end
-      switch obj.basis
-        case {'xy','xyz'}, Tmpdata = sqrt( sum(abs(obj.data).^2, 2) );
-        case {'rtp','rlp','rp'}, Tmpdata = abs(obj.r.data);
-        case 'rpz' % cylindrical
-          Tmpdata = sqrt(abs(obj.r.data).^2 + abs(obj.z.data).^2);
-        otherwise
-          error('Unknown representation'); % should not be here
+      if obj.tensorOrder==0,
+        Tmpdata = abs(obj.data);
+      elseif obj.tensorOrder==1,
+        switch obj.basis
+          case {'xy','xyz'}, Tmpdata = sqrt( sum(abs(obj.data).^2, 2) );
+          case {'rtp','rlp','rp'}, Tmpdata = abs(obj.r.data);
+          case 'rpz' % cylindrical
+            Tmpdata = sqrt(abs(obj.r.data).^2 + abs(obj.z.data).^2);
+          otherwise
+            error('Unknown representation'); % should not be here
+        end
+        obj.representation{2} = [];
+      else        
+        error('Not yet implemented'); 
       end
       obj.data_ = Tmpdata; Ts = obj;
-      Ts.tensorOrder_=0; Ts.tensorBasis_ = ''; Ts.representation{2} = [];
+      Ts.tensorOrder_=0; Ts.tensorBasis_ = ''; %Ts.representation{2} = []; % moved this to tensorOrder = 1
       if ~isempty(obj.name), Ts.name = sprintf('|%s|',obj.name); end
     end
     
@@ -651,8 +665,7 @@ classdef TSeries
       % UPLUS The positive of the TS.
 			%
 			%   TS.UPLUS(TS)      
-      %   +TS
-      
+      %   +TS      
       Ts = obj;
     end
     
@@ -679,8 +692,7 @@ classdef TSeries
       % UMINUS The negative of the TS.
 			%
 			%   TS.UMINUS(TS)      
-      %   -TS
-      
+      %   -TS     
       Ts = -1*obj;      
     end
     
@@ -866,7 +878,36 @@ classdef TSeries
         Ts.userData = [];
       end
     end
-        
+
+    function Ts = power(obj,obj1)
+      %MPOWER Elementwise power (.^) with scalar
+      if ~isa(obj,'TSeries')
+        error('First input must be a TSeries.')
+      elseif ~isnumeric(obj1)
+        error('Second argument must be numeric.')
+      elseif ~isscalar(obj1)
+        error('Second argument must be numeric scalar.')
+      end
+      
+      Ts = obj;
+      Ts.data_ = Ts.data.^obj1;           
+      update_name_units()
+                          
+      function update_name_units()
+        if ~isempty(obj.name)
+          if isempty(obj.name), s = 'untitled';
+          else s = obj.name;
+          end          
+          Ts.name = sprintf('(%s).^%g',s,obj1);
+        end
+        if isempty(obj.units), s = 'unknown';
+        else s = obj.units;
+        end
+        Ts.units = sprintf('(%s)*%g',s,obj1);
+        Ts.userData = [];
+      end
+    end
+    
     function Ts = mrdivide(obj,obj1)
       if isa(obj1,'TSeries') && ~isa(obj,'TSeries')
         obj1Tmp = obj1; obj1 = obj; obj = obj1Tmp;
@@ -1050,6 +1091,43 @@ classdef TSeries
         Ts = TsTmp; Ts.t_ = NewTime; Ts.data_ = newData;           
       end
     end %RESAMPLE
+    
+    function Ts = filt(obj,varargin)
+      % FILT  Filter TSeries
+      %
+      % TsOut = filt(Ts,fmin,fmax,[Fs],[order])
+      % TsOut = Ts.filt(fmin,fmax,[Fs],[order])
+      %
+      % See also: IRF_FILT
+      
+      if isempty(obj), error('Cannot filter empty TSeries'), end      
+      if numel(varargin)<2, error('Input missing'), end      
+      
+      if obj.tensorOrder==0, 
+        filt_(obj);
+      elseif obj.tensorOrder==1,       
+        % For non-cartesian bases, in order to do a proper inte/extrapolarion
+        % we first transform into cartesian basis, resample, and then
+        % transform back to teh original basis
+        basis = obj.BASIS{obj.tensorBasis_};
+        switch basis
+          case {'xy','xyz'}, filt_(obj); return 
+          case {'rtp','rlp','rpz'}, filt_(obj.transform('xyz'));
+          case 'rp', filt_(obj.transform('xy'));
+          otherwise
+            error('Unknown representation'); % should not be here
+        end
+        Ts = Ts.transform(basis);
+      elseif obj.tensorOrder==2;
+        filt_(obj)
+      else
+        error('Not yet implemented'); 
+      end
+           
+      function filt_(TsTmp)      
+        Ts = irf_filt(TsTmp,varargin{:}); % resample                  
+      end
+    end
     
     function obj = tlim(obj,tint)
       %TLIM  Returns data within specified time interval
