@@ -10,7 +10,10 @@ function res = get_data(varStr, Tint, mmsId)
 %     R_gse, R_gsm, V_gse, V_gsm
 %     tetra_quality
 %  FPI IONS:
-%     Vi_gse_fpi_brst, Vi_dbcs_fpi_brst_l2, 
+%     'Vi_gse_fpi_brst', 'Vi_dbcs_fpi_brst_l2',
+%     'Ve_dbcs_fpi_fast_l2', 'Vi_dbcs_fpi_fast_l2',
+%     'Ve_gse_fpi_brst_l2', 'Vi_gse_fpi_brst_l2',
+%     'Ve_gse_fpi_fast_l2', 'Vi_gse_fpi_fast_l2'
 %     'Ti_fpi_ql','Ti_fpi_brst',
 %     'Ni_fpi_ql', 'Ni_fpi_brst', 
 %  FPI ELECTRONS:
@@ -47,6 +50,9 @@ end
 vars = {'R_gse','R_gsm','V_gse','V_gsm',...
   'Vi_gse_fpi_ql','Ve_gse_fpi_brst','Vi_gse_fpi_brst', ...
   'Ve_dbcs_fpi_brst_l2','Vi_dbcs_fpi_brst_l2',...
+  'Ve_dbcs_fpi_fast_l2','Vi_dbcs_fpi_fast_l2',...
+  'Ve_gse_fpi_brst_l2','Vi_gse_fpi_brst_l2',...
+  'Ve_gse_fpi_fast_l2','Vi_gse_fpi_fast_l2',...
   'Ni_fpi_ql','Ni_fpi_brst','Ne_fpi_brst',...
   'Pe_fpi_ql','Pe_fpi_brst','Pe_fpi_brst_l2','Pi_fpi_brst_l2',...
   'Te_fpi_ql','Te_fpi_brst','Te_fpi_brst_l2','Ti_fpi_brst_l2',...
@@ -160,20 +166,23 @@ switch varStr
     res.name = [varStr '_' mmsIdS];
     res.units = rX.units;
     res.siConversion = rX.siConversion;
-  case {'Ve_dbcs_fpi_brst_l2','Vi_dbcs_fpi_brst_l2'}
+  case {'Ve_dbcs_fpi_brst_l2','Vi_dbcs_fpi_brst_l2','Ve_dbcs_fpi_fast_l2','Vi_dbcs_fpi_fast_l2',...
+      'Ve_gse_fpi_brst_l2','Vi_gse_fpi_brst_l2','Ve_gse_fpi_fast_l2','Vi_gse_fpi_fast_l2'}
     if varStr(2)=='i', vS = 'dis';
     else vS = 'des';
     end
+    tk=tokenize(varStr,'_');
+    csS = tk{2}; modeS = tk{4};
+    datasetName = ['mms' mmsIdS '_fpi_' modeS '_l2_' vS '-moms'];
+    pref = ['mms' mmsIdS '_' vS '_']; suf = ['_' csS '_' modeS];
     
-    datasetName = ['mms' mmsIdS '_fpi_brst_l2_' vS '-moms'];
-    
-    rX = mms.db_get_ts(datasetName,['mms' mmsIdS '_' vS '_bulkx_dbcs_brst'],Tint);
+    rX = mms.db_get_ts(datasetName,[pref 'bulkx' suf],Tint);
     if isempty(rX), return, end
     rX = comb_ts(rX);
-    rY = comb_ts(mms.db_get_ts(datasetName,['mms' mmsIdS '_' vS '_bulky_dbcs_brst'],Tint));
-    rZ = comb_ts(mms.db_get_ts(datasetName,['mms' mmsIdS '_' vS '_bulkz_dbcs_brst'],Tint));
+    rY = comb_ts(mms.db_get_ts(datasetName,[pref 'bulky' suf],Tint));
+    rZ = comb_ts(mms.db_get_ts(datasetName,[pref 'bulkz' suf],Tint));
     res = irf.ts_vec_xyz(rX.time, [rX.data rY.data rZ.data]);
-    res.coordinateSystem = 'DBCS';
+    res.coordinateSystem = csS;
     res.name = [varStr '_' mmsIdS];
     res.units = rX.units;
     res.siConversion = rX.siConversion;
@@ -194,7 +203,7 @@ switch varStr
       momType = 'Temp';
     elseif varStr(1)=='P' % pressure
       momType = 'Pres';
-    else, return;
+    else return;
     end
     
     if isL2 % L2 data has different variable names
