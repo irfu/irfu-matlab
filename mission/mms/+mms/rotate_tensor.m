@@ -218,9 +218,9 @@ end
 
 % Construct output
 if rtntensor,
-    Pe = irf.ts_tensor_xyz(Petimes,Ptensorp);
+  Pe = irf.ts_tensor_xyz(Petimes,Ptensorp); 
 else % for backwards compability
 	Pe = TSeries(Petimes,Ptensorp);
 end
-
+Pe.units = varargin{1}.units;
 end
