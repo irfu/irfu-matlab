@@ -43,7 +43,7 @@ irf_pl_tx('Off?','x')
 %% Write CAL files
 for mmsId=1:4
   c_eval('OffTS=Off?;',mmsId)
-  fid = fopen(['mms' num2str(mmsId) '_edp_sdp_ql_v' irf_fname(date2epoch(now),3) '00.txt'],'w');
+  fid = fopen(['mms' num2str(mmsId) '_edp_sdp_dsl_' irf_fname(date2epoch(now),3) '_v0.0.0.txt'],'w');
   fprintf(fid,'%s\n','% UTC time [yyyy-mm-ddThh:mm:ss.mmmuuunnnZ]     DSL-X offset    DSL-Y offset, TAB separated');
   for i=nRec:-1:1
     if isnan(OffTS.data(i,1)), continue, end
