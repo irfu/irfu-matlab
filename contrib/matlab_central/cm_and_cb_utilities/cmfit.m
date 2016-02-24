@@ -1,5 +1,4 @@
-function [CMAP,CLIM,WIDTH,REF,LEVELS] = ...
-                                 cmfit(CMAP,CLIM,WIDTH,REF,CENTER,varargin) 
+function [CMAP,CLIM,WIDTH,REF,LEVELS] = cmfit(CMAP,CLIM,WIDTH,REF,CENTER,varargin) 
 %CMFIT   Sets the COLORMAP and CAXIS to specific color bands. 
 %
 %   SYNTAX:
@@ -36,11 +35,12 @@ function [CMAP,CLIM,WIDTH,REF,LEVELS] = ...
 %     LEVF   - Levels for the color bands.
 %
 %   DESCRIPTION:
-%     This program sets the current figure colormap with specified
-%     band-widths of colors taking the CAXIS limits as reference. When the 
-%     optional input argument CENTER is true, the colormap is moved and
-%     expanded so its middle color will be right at REF. This will help for
-%     distinguish between positive and negative values (REF=0).
+%     This program sets the current figure colormap (when no outputs) with
+%     specified band-widths of colors taking the CAXIS limits as reference.
+%     When the optional input argument CENTER is true, the colormap is
+%     moved and expanded so its middle color will be right at REF. This
+%     will help for distinguish between positive and negative values
+%     (REF=0).
 %
 %   NOTE:
 %     * Optional inputs use its DEFAULT value when not given or [].
@@ -59,7 +59,7 @@ function [CMAP,CLIM,WIDTH,REF,LEVELS] = ...
 %   SEE ALSO:
 %     COLORMAP
 %     and 
-%     CMAPPING, CBFIT by Caros Vargas
+%     CMAPPING, CBFIT by Carlos Vargas
 %     at http://www.mathworks.com/matlabcentral/fileexchange
 %
 %
