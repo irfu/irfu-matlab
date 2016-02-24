@@ -398,7 +398,9 @@ end
       if(~ischar(varargin{j})), error('MMS_SDC_SDP_PROC input parameter must be string.'); end
       [pathIn, fileIn, extIn] = fileparts(varargin{j});
       if any([isempty(pathIn), isempty(fileIn), isempty(extIn)])
-        error(['Expecting cdf file (full path), got: ', varargin{j}]);
+        errStr = sprintf('Expected file(-s) with full path(-s), got: %s as input argument number %i.', ...
+          varargin{j}, j);
+        irf.log('critical', errStr); error(errStr);
       end
   
       if j==1,
