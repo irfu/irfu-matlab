@@ -25,7 +25,7 @@ function [xfigure, yfigure]=axescoord2figurecoord(varargin)
 
 
 % Process inputs
-error(nargchk(2, 3, nargin))
+narginchk(2,3);
 
 if nargin==2
     xaxes=varargin{1};
