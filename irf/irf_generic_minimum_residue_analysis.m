@@ -1,7 +1,9 @@
 function [L,V,U]=irf_generic_minimum_residue_analysis(varargin)
 % IRF_GENERIC_MINIMUM_RESIDUE_ANALYSIS implements different GMRA methods: MVAB, MFR,...
 %
-%  IRF_GENERIC_MINIMUM_RESIDUE_ANALYSIS is based on Sonnerup et al. 2006 JGR
+%  IRF_GENERIC_MINIMUM_RESIDUE_ANALYSIS is based on:
+%			Sonnerup et al. 2006 JGR
+%			Sonnerup et al. 2007 JGR
 %
 %	 [L,V,U]=IRF_GENERIC_MINIMUM_RESIDUE_ANALYSIS('Q',Q) calculates
 %	 eigenvalues L, eigenvectors V and velocity vector U.
@@ -71,8 +73,11 @@ if doCalculateQ
 	if eta==0,
 		Q = dqdqAver; % Eq. 19
 	else
-		Q = (dqdqAver - detadqAver2Matrix) / deta2Aver; % Eq. 15b
+		Q = dqdqAver - detadqAver2Matrix / deta2Aver; % Eq. 15b (see correction in Sonnerup 2007)
 	end
+	% Correct Q by the number of dimensions so that eigenvalues coorespond to
+	% the variance of dq
+	Q = Q/size(dq,2);
 end
 
 
@@ -93,7 +98,7 @@ un = dot(U,X3);
 
 %% Print output
 if nargout == 0
-	disp(['Eigenvalues: ' sprintf('%5.2f ',L)]);
+	disp(['Eigenvalues: ' sprintf('%7.3f ',L)]);
 	disp(vector_disp('N',V(:,1)));
 	disp(vector_disp('M',V(:,2)));
 	disp(vector_disp('L',V(:,3)));
@@ -108,8 +113,8 @@ end
 %% Functions
 function out = vector_disp(vectSymbol,vect,vectUnit)
 if nargin==2, vectUnit ='';end
-	out = sprintf(['|' vectSymbol '| = %6.2f ' vectUnit ...
-		', ' vectSymbol ' = [ %5.2f %5.2f %5.2f ] ' vectUnit],...
+	out = sprintf(['|' vectSymbol '| = %7.3f ' vectUnit ...
+		', ' vectSymbol ' = [ %7.3f %7.3f %7.3f ] ' vectUnit],...
 		norm(vect),vect(1),vect(2),vect(3));
 	
 function out = matrix_dot(inp1,ind1,inp2,ind2)
