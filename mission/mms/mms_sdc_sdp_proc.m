@@ -56,7 +56,7 @@ while(~dbSuccess && dbCounter<=5)
   catch ME
     irf.log('warning', 'FAILED to initiate MMS db, trying again in one second.');
     irf.log('warning', ['Error was:', ME.identifier, ' with message: ', ME.message]);
-    pause(1); % Sleep for one second, then try again.
+    pause(floor(rand(1)*5)+1); % Sleep random value up to 6 second, then try again.
   end
 end
 if(~dbSuccess), irf.log('critical', 'FAILED to initiate MMS db'); end
