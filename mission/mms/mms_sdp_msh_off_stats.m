@@ -17,10 +17,10 @@ for i=iLast:-1:1
   shDslOffDb(i) = mms_sdp_comp_msh_dsl_off(Tint);
 end
 
-nRec = length(shDslOffDb);
-for i=1:nRec, tt(i)=shDslOffDb(i).tint.start.ttns(); end
-
 %% Create TS from the result
+nRec = length(shDslOffDb); clear tt
+for i=1:nRec, tt(i)=shDslOffDb(i).tint.start.ttns(); end %#ok<SAGROW>
+
 for mmsId=1:4
   mmsIdS=sprintf('c%d',mmsId);
   off = NaN(nRec,2);
