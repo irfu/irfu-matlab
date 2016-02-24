@@ -115,6 +115,10 @@ for mmsId = 1:4
     NifpiR = Nifpi.resample(Epoch20s,'median');
     VifpiR = Vifpi.resample(Epoch20s,'median');
     idxMSH = NifpiR.data>5 & VifpiR.x.data>-200;  
+    if sum(idxMSH) < 180 % We require min 100 spins of MSH data
+      irf.log('warning','Using ALL data (not only MSH)')
+      idxMSH(:)=true;
+    end
   end
 end
 %%
@@ -128,7 +132,7 @@ for mmsId = 1:4
   ErefFpiY = [ErefFpiY EFPI.(mmsIdS).y.data]; %#ok<AGROW>
 end
 
-ErefFpiX = median(ErefFpiX,2); ErefFpiY = median(ErefFpiY,2);
+ErefFpiX = median(ErefFpiX,2,'omitnan'); ErefFpiY = median(ErefFpiY,2,'omitnan');
 ErefFpi = irf.ts_vec_xy(Epoch20s,[ErefFpiX ErefFpiY]);
 
 %%

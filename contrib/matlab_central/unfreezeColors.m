@@ -31,7 +31,7 @@ function unfreezeColors(h)
 %   John Iversen, 2005-10
 %   john_iversen@post.harvard.edu
 
-error(nargchk(0,1,nargin,'struct'))
+narginchk(0,1)
 
 appdatacode = 'JRI__freezeColorsData';
 

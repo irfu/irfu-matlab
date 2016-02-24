@@ -7,10 +7,10 @@
 %   cmlines  - Change the color of plotted lines using the colormap.         v1.0    (Jun 08, 2009)
 %
 % COLORBAR utilities:
-%   cbfit    - Draws a colorbar with specific color bands between its ticks. v2.1    (Sep 30, 2009)
-%   cbfreeze - Freezes the colormap of a colorbar.                           v1.1    (Sep 02, 2009)
-%   cbhandle - Handle of current colorbar axes.                              v1.1    (Aug 20, 2009)
-%   cblabel  - Adds a label to the colorbar.                                 v2.0    (Jun 08, 2009)
-%   cbunits  - Adds units to the colorbar ticklabels.                        v3.0    (Sep 30, 2009)
+%   cbfit    - Changes COLORMAP and CAXIS to fit between colorbar's ticks.   v3.0    (Jun 05, 2014)
+%   cbfreeze - Freezes the colormap of a colorbar.                           v2.1    (Jul 03, 2014)
+%   cbhandle - Gets the handle of current colorbar or its peer axes.         v2.1    (Jul 03, 2014)
+%   cblabel  - Adds a label to the colorbar.                                 v2.2    (Jul 03, 2014)
+%   cbunits  - Adds units (and ISU prefixes) to the colorbar ticklabels.     v4.4    (Jul 03, 2014)
 %
-% Sep 30, 2009
+% Jul 03, 2014
