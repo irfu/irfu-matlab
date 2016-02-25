@@ -450,7 +450,13 @@ if (length(page      )==1),   page       = o * page      ;   end;
 if (size(crossdir  ,1)==1),   crossdir   = o * crossdir  ;   end;
 if (length(ends      )==1),   ends       = o * ends      ;   end;
 if (length(ispatch   )==1),   ispatch    = o * ispatch   ;   end;
-ax = o * gca;
+if verLessThan('matlab','8.4')
+  % R2014a and earlier
+  ax = o * gca;
+else
+  % R2014b and later
+  ax = repmat(gca,narrows,1);
+end
 
 % if we've got handles, get the defaults from the handles
 if ~isempty(oldh),
@@ -531,7 +537,13 @@ while (any(axnotdone)),
 	curpage = page(ii);
 	% get axes limits and aspect ratio
 	axl = [get(curax,'XLim'); get(curax,'YLim'); get(curax,'ZLim')];
-	oldaxlims(min(find(oldaxlims(:,1)==0)),:) = [curax reshape(axl',1,6)];
+    if verLessThan('matlab','8.4')
+      % R2014a and earlier
+      oldaxlims(min(find(oldaxlims(:,1)==0)),:) = [curax reshape(axl',1,6)];
+    else
+      % R2014b and later
+      oldaxlims(min(find(oldaxlims(:,1)==0)),:) = [ii reshape(axl',1,6)];
+    end
 	% get axes size in pixels (points)
 	u = get(curax,'Units');
 	axposoldunits = get(curax,'Position');
@@ -617,7 +629,14 @@ while (any(axnotdone)),
 		axl(ii,[1 2])=-axl(ii,[2 1]);
 	end;
 	% compute the range of 2-D values
-	curT = get(curax,'Xform');
+    if verLessThan('matlab','8.4')
+      % R2014a and earlier
+      curT = get(curax,'Xform');
+    else
+      % R2014b and later
+      [azA,elA] = view(curax);
+      curT = viewmtx(azA,elA);
+    end    
 	lim = curT*[0 1 0 1 0 1 0 1;0 0 1 1 0 0 1 1;0 0 0 0 1 1 1 1;1 1 1 1 1 1 1 1];
 	lim = lim(1:2,:)./([1;1]*lim(4,:));
 	curlimmin = min(lim')';
@@ -985,9 +1004,16 @@ if (nargout<=1),
 	if isempty(oldaxlims),
 		ARROW_AXLIMITS = [];
 	else,
-		lims = get(oldaxlims(:,1),{'XLim','YLim','ZLim'})';
-		lims = reshape(cat(2,lims{:}),6,size(lims,2));
-		mask = arrow_is2DXY(oldaxlims(:,1));
+		if verLessThan('matlab','8.4')
+          % R2014a and earlier
+          lims = get(oldaxlims(:,1),{'XLim','YLim','ZLim'})';
+          mask = arrow_is2DXY(oldaxlims(:,1));
+        else
+          % R2014b and later
+          lims = get(ax(oldaxlims(:,1)),{'XLim','YLim','ZLim'})';
+          mask = arrow_is2DXY(ax(oldaxlims(:,1)));
+        end
+        lims = reshape(cat(2,lims{:}),6,size(lims,2));
 		oldaxlims(mask,6:7) = lims(5:6,mask)';
 		ARROW_AXLIMITS = oldaxlims(find(any(oldaxlims(:,2:7)'~=lims)),:);
 		if ~isempty(ARROW_AXLIMITS),
