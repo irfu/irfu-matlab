@@ -134,7 +134,7 @@ if ndimsInp1 == 1
 	if ndimsInp2 == 1
 		out = sum(inp1.*inp2,2);
 	elseif ndimsInp2 == 2 && ind2 == 1
-		for jj = 1:szinp2(2)
+		for jj = 1:szinp2(3)
 			for kk = 1:szinp1(2)
 				out(:,jj) = out(:,jj) + inp1(:,kk).*inp2(:,kk,jj);
 			end
