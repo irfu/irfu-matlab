@@ -27,14 +27,68 @@ c_eval('energy(estepTable?.data==1,:) = repmat(eenergy1?.data,sum(estepTable?.da
 %% Make skymap directly with PDist
 c_eval('ePDist? = PDist(desDist?.time,desDist?.data,''skymap'',energy,ephi?.data,etheta?.data);',ic)
 c_eval('ePDist?.userData = desDist?.userData; ePDist?.name = desDist?.name; ePDist?.units = desDist?.units;',ic)
+c_eval('ePDist?.units = ''s^3/m^6'';',ic)
 c_eval('ePDist?',ic)
 
 %% Make skymap with irf.ts_skymap
 % If energy table is NOT passed, energy0, energy1 and energysteptable is necessary
 c_eval('ePDist? = irf.ts_skymap(desDist?.time,desDist?.data,[],ephi?.data,etheta?.data,''energy0'',eenergy0?.data,''energy1'',eenergy1?.data,''esteptable'',estepTable?.data);',ic)
+c_eval('ePDist?.units = ''s^3/m^6'';',ic)
 c_eval('ePDist?',ic)
 % If energy table is passed, energy0, energy1 and energysteptable is not necessary
 c_eval('ePDist? = irf.ts_skymap(desDist?.time,desDist?.data,energy,ephi?.data,etheta?.data);',ic)
+c_eval('ePDist?.units = ''s^3/m^6'';',ic)
 c_eval('ePDist?',ic)
 
-%% Take time limit
+%% Make omnidirectional differential energy flux
+eOMNI2 = ePDist2.omni('e');
+eOMNI2low = eOMNI.elim([0 200]);
+
+%% Example plot: omnidirectional differential energy flux
+h = irf_plot(4);
+
+hca = irf_panel('e omni');
+irf_spectrogram(hca,ePDist2.omni('e').specrec,'log')
+hca.YScale = 'log';
+hca.YLim = [10 30000];
+
+hca = irf_panel('e omni high');
+irf_spectrogram(hca,ePDist2.omni('e').elim([3000 40000]).specrec,'log')
+hca.YScale = 'log';
+hca.YLim = [10 30000];
+
+hca = irf_panel('e omni mid');
+irf_spectrogram(hca,ePDist2.omni('e').elim([200 3000]).specrec,'log')
+hca.YScale = 'log';
+hca.YLim = [10 30000];
+
+hca = irf_panel('e omni low');
+irf_spectrogram(hca,ePDist2.omni('e').elim([0 200]).specrec,'log')
+hca.YScale = 'log';
+hca.YLim = [10 30000];
+
+%% Pitchangles
+ePitch = ePDist2.pitchangles(dmpaB2,[]);
+ePitchDEF = ePitch.deflux; % change units
+
+%%  Example plot: Pitchangles for different energies
+h = irf_plot(4);
+
+hca = irf_panel('e omni high');
+irf_spectrogram(hca,ePDist2.omni('e').specrec,'log')
+hca.YScale = 'log';
+hca.YTick = [1e1 1e2 1e3 1e4];
+
+hca = irf_panel('e pa all');
+irf_spectrogram(hca,ePitch.deflux.specrec('pa'))
+
+hca = irf_panel('e pa high');
+eint = [0 500];
+irf_spectrogram(hca,ePitch.deflux.elim(eint).specrec('pa'))
+irf_legend(hca,[num2str(eint(1),'%g') '-' num2str(eint(2),'%g') ' eV'],[0.02 0.95],'color',[1 1 1])
+
+hca = irf_panel('e pa low');
+eint = [500 30000];
+irf_spectrogram(hca,ePitch.deflux.elim(eint).specrec('pa'))
+irf_legend(hca,[num2str(eint(1),'%g') '-' num2str(eint(2),'%g') ' eV'],[0.02 0.95],'color',[1 1 1])
+
