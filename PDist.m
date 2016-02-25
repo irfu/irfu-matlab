@@ -132,59 +132,82 @@ classdef PDist < TSeries
       end
     end
     
-    function out = palim(obj,paint)
-      out = obj;
+    function PD = palim(obj,palim)
+      if strcmp(obj.type,'pitchangle'); error('PDist type must be pitchangle.'); end      
+      pitchangles = obj.depend{2};
+      
+      elevels0 = intersect(find(pitchangles(1,:)>palim(1)),find(pitchangles(1,:)<palim(2)));
+      
+      if numel(elevels0) ~= numel(elevels1)
+        warning('Energy levels differ for different times. Including the largest interval.')
+        elevels = unique([elevels0,elevels1]);
+      end
+      disp(['Effective eint = [' num2str(min(min(energy(1:2,elevels))),'%g') ' ' num2str(max(max(energy(1:2,elevels))),'%g') ']'])
+      
+      tmpEnergy = energy(:,elevels);
+      tmpData = obj.data(:,elevels,:,:);
+      
+      PD = obj;
+      PD.data_ = tmpData;
+      PD.depend{1} = tmpEnergy; 
     end
-    function out = elim(obj,eint)
-      out = obj;
+    function PD = elim(obj,eint)  
+      energy = obj.depend{1};
+      % Picks out energies in an interval, or the closest energy (to be implemented!)
+      if numel(eint) == 2
+        elevels0 = intersect(find(energy(1,:)>eint(1)),find(energy(1,:)<eint(2)));
+        elevels1 = intersect(find(energy(2,:)>eint(1)),find(energy(2,:)<eint(2)));      
+        if numel(elevels0) ~= numel(elevels1)
+          warning('Energy levels differ for different times. Including the largest interval.')
+          elevels = unique([elevels0,elevels1]);
+        else
+          elevels = elevels0;
+        end
+        disp(['Effective eint = [' num2str(min(min(energy(1:2,elevels))),'%g') ' ' num2str(max(max(energy(1:2,elevels))),'%g') ']'])
+      else
+        ediff0 = abs(energy(1,:)-eint);
+        ediff1 = abs(energy(2,:)-eint);
+        if min(ediff0)<min(ediff1); ediff = ediff0;
+        else ediff = ediff1; end        
+        elevels = find(ediff==min(ediff));
+        disp(['Effective energies alternate in time between ' num2str(energy(1,elevels),'%g') ' and ' num2str(energy(2,elevels),'%g') ''])
+      end
+      
+      tmpEnergy = energy(:,elevels);
+      tmpData = obj.data(:,elevels,:,:);
+      
+      PD = obj;
+      PD.data_ = tmpData;
+      PD.depend{1} = tmpEnergy;      
     end
-    function out = omni(obj)
+    function PD = omni(obj,species)
       % Makes omnidirectional distribution
       % Conserves the units
       
       if ~strcmp(obj.type_,'skymap'); error('PDist must be a skymap'); end
       units = irf_units;
       
-      
-      diste.data = diste.data*1e30; % Unit conversion
-      disti.data = disti.data*1e30;
-
-      energyspec = ones(length(diste.time),1)*energye0;
-      for ii = 1:length(diste.time);
-          if stepTablee.data(ii),
-              energyspec(ii,:) = energye1;
-          end
+      diste = obj;
+      if isempty(strfind(obj.units,'km')) % Unit conversion from s^3/m^6 to s^3/km^6    
+        diste.data = diste.data*1e30; 
       end
-
-      energyspeci = ones(length(disti.time),1)*energyi0;
-      for ii = 1:length(disti.time);
-          if stepTablei.data(ii),
-              energyspeci(ii,:) = energyi1;
-          end
-      end
+      energyspec = obj.depend{1};
 
       % define angles
+      thetae = obj.depend{3};
       dangle = pi/16;
       lengthphi = 32;
 
       z2 = ones(lengthphi,1)*sind(thetae);
-      solida = dangle*dangle*z2;
-      allsolidi = zeros(size(disti.data));
+      solida = dangle*dangle*z2;      
       allsolide = zeros(size(diste.data));
-
-      for ii = 1:length(disti.time);
-          for jj=1:length(energyi0);
-              allsolidi(ii,jj,:,:) = solida;
-          end
-      end
-
+     
       for ii = 1:length(diste.time);
-          for jj=1:length(energye0);
+          for jj=1:size(energyspec,2);
               allsolide(ii,jj,:,:) = solida;
           end
       end
-
-      distis = disti.data.*allsolidi;
+      
       distes = diste.data.*allsolide;
 
       % Electron analysis - OMNI
@@ -193,22 +216,71 @@ classdef PDist < TSeries
           PSDomni(ii,:) = squeeze(irf.nanmean(irf.nanmean(disttemp,2),3))/(mean(mean(solida)));
       end
 
-      % Ion analysis - OMNI
-      PSDiomni = zeros(length(disti.time),length(energyi0));
-      for ii = 1:length(disti.time);
-          disttemp = squeeze(distis(ii,:,:,:));
-          PSDiomni(ii,:) = squeeze(irf.nanmean(irf.nanmean(disttemp,2),3))/(mean(mean(solida)));
+
+      switch species
+        case {'e','electron','electrons'}
+          efluxomni = PSDomni.*energyspec.^2;
+          efluxomni = efluxomni; %convert to normal units
+        case {'i','p','ion','ions'}
+          efluxomni = PSDomni.*energyspec.^2;
+          efluxomni = efluxomni/1e6/0.53707; %convert to normal units
       end
-
-      efluxomni = PSDomni.*energyspec.^2;
-      efluxomni = efluxomni; %convert to normal units
-
-      ifluxomni = PSDiomni.*energyspeci.^2;
-      ifluxomni = ifluxomni/1e6/0.53707; %convert to normal units
+      PD = obj;
+      PD.type = 'omni';
+      PD.data_ = efluxomni;
+      PD.depend = {energyspec};
+      PD.representation = {obj.representation{1},'energy'};
+      PD.units = 'keV/(cm^2 s sr keV)';
+      PD.name = 'Differential energy flux';
     end
-    function out = deflux(obj)
+    function spec = specrec(obj,varargin)      
+      if isempty(varargin); spectype = 'energy'; else spectype = varargin{1}; end % set default
+      switch spectype
+        case 'energy'
+          spec.t = obj.time.epochUnix;
+          spec.p = double(obj.data);
+          spec.p_label = {'dEF',obj.units};
+          spec.f = single(obj.depend{1});
+          spec.f_label = {'E (eV)'};
+        case {'pitchangle','pa'}
+          spec.t = obj.time.epochUnix;
+          spec.p = double(squeeze(nanmean(obj.data,2))); % nanmean over energies
+          spec.p_label = {'dEF',obj.units};
+          spec.f = single(obj.depend{2});
+          spec.f_label = {'\theta (deg.)'};
+        otherwise % energy is default          
+          spec.t = obj.time.epochUnix;
+          spec.p = double(obj.data);
+          spec.p_label = {'dEF',obj.units};
+          spec.f = single(obj.depend{1});
+          spec.f_label = {'E (eV)'};
+      end
+    end
+    function PD = deflux(obj)
       % Changes units to differential energy flux
-      out = obj;
+      switch obj.units
+        case {'s^3/m^6'}
+          tmpData = obj.data*1e30/1e6/(5.486e-4)^2/0.53707;
+        case {'s^3/km^6'}
+          tmpData = obj.data/1e6/(5.486e-4)^2/0.53707;
+        otherwise
+          error('Units not supported.')
+      end      
+      energy = obj.depend{1};
+      sizeData = size(tmpData);
+      reshapedData = reshape(tmpData,sizeData(1),sizeData(2),prod(sizeData(3:end)));
+      matEnergy = repmat(energy,1,1,prod(sizeData(3:end)));
+      reshapedData = reshapedData.*matEnergy.^2;
+      tmpData = reshape(reshapedData,sizeData);
+      
+%       for ii = 1:length(obj.time),
+%         energytemp = energy(ii,:)'*ones(1,length(thetae));
+%         paddiste.data(ii,:,:) = squeeze(paddiste.data(ii,:,:)).*energytemp.^2;
+%       end
+
+      PD = obj;
+      PD.data_ = tmpData;
+      PD.units = 'keV/(cm^2 s sr keV)';
     end
     function out = peflux(obj)
       % Changes units to differential particle flux
@@ -218,7 +290,7 @@ classdef PDist < TSeries
       % Changes units to phase space density (s^3/km^6)
       out = obj;
     end        
-    function Dist = pitchangles(obj,obj1,obj2)
+    function PD = pitchangles(obj,obj1,obj2)
       %PITCHANGLES Calculate pitchangle distribution
       % Distribution.pitchangles(pitchangles,B,[pitchangles])
       %   See also MMS.GET_PITCHANGLEDIST      
@@ -277,7 +349,8 @@ classdef PDist < TSeries
       paddistarr = cat(3,dist15,dist30,dist45,dist60,dist75,dist90,dist105,dist120,dist135,dist150,dist165,dist180);      
       theta = pitcha;
       
-      Dist = PDist(pdist.time,paddistarr,'pitchangle',obj.depend{1},theta);
+      PD = PDist(pdist.time,paddistarr,'pitchangle',obj.depend{1},theta);
+      PD.units = obj.units;
     end  
   end
   
