@@ -67,12 +67,12 @@ end
 % Check if data is fast or burst resolution
 if isa(varargin{7},'TSeries'),
     isbrstdata = 1;
-    irf_log('proc','Burst resolution data is used.')
+    irf.log('notice','Burst resolution data is used.');
 elseif (varargin{7}(1) == 'f'),
     isbrstdata = 0;
-    irf_log('proc','Fast resolution data is used.')
+    irf.log('notice','Fast resolution data is used.');
 else
-    irf_log('proc','Something is wrong with the input.')
+    irf.log('critical','Something is wrong with the input.');
     nargin
     help psd_moments;
     return;
@@ -151,19 +151,19 @@ while options
                 ende = find(energy0 < Eminmax(2));
                 ende = ende(end);
                 intenergies = starte:ende;
-                irf_log('proc','Using partial energy range')
+                irf.log('notice','Using partial energy range');
             end
       	case 'noscpot'
             if numel(args)>1 && args{2};
                 SCpot.data = zeros(size(SCpot.data));
-                irf_log('proc','Setting spacecraft potential to zero.')
+                irf.log('notice','Setting spacecraft potential to zero.');
             end
         case 'enchannels'
             if numel(args)>1 && isnumeric(args{2}),
                 intenergies = args{2}(1):args{2}(2);
             end
         otherwise
-            irf_log('fcal',['Unknown flag: ' args{1}])
+            irf.log('critical',['Unknown flag: ' args{1}]);
             l=1;
             break
     end
@@ -171,7 +171,7 @@ while options
     if isempty(args), options=0; end
 end
 
-irf_log('proc',strcat('Integrating over energy levels ',num2str(min(intenergies)),' to ',num2str(max(intenergies))));
+irf.log('notice',strcat('Integrating over energy levels ',num2str(min(intenergies)),' to ',num2str(max(intenergies))));
 
 % Define constants
 Units = irf_units; % Use IAU and CODATA values for fundamental constants.
@@ -180,14 +180,14 @@ kb = Units.kB;
 
 if (particletype(1) == 'e'),
     pmass = Units.me;
-    irf_log('proc','Particles are electrons')
+    irf.log('notice','Particles are electrons');
 elseif (particletype(1) == 'i'),
     pmass = Units.mp;
     SCpot.data = -SCpot.data;
-    irf_log('proc','Particles are Ions')
+    irf.log('notice','Particles are Ions');
 else
     particlemoments = NaN;
-    irf_log('proc','Could not identify the particle type')
+    irf.log('critical','Could not identify the particle type');
     return;
 end
 

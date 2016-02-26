@@ -1,3 +1,4 @@
+2016-02-26 v1.11.2 MMS L2 scpot improved, add license texts to be legally compliant, TSeries and minor fixes.
 2016-02-18 v1.11.1 MMS fix for Brst L2Pre processing and calibration files in correct name and paths.
 2016-02-12 v1.11.0 NASA CDF patch, MMS new standard variable names (L2 products), also closing some issues and many, many other bug fixes.
 2015-11-17 v1.10.1 Fix mjuliandate in coord.transform, MMS new versions of QL/Usc/L2A (use defatt & aspoc), TSeries allowed in more functions, many other bug fixes.

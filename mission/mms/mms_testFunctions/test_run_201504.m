@@ -13,10 +13,10 @@ if ~exist('log','dir'), mkdir('log'), end
 if ~exist('out','dir'), mkdir('out'), end
 setenv('DROPBOX_ROOT', [outDir filesep 'out'])
 setenv('DATA_PATH_ROOT', [outDir filesep 'out'])
-setenv('LOG_PATH_ROOT', [outDir filesep 'log'])
+setenv('LOG_PATH_ROOT', '')
+%setenv('LOG_PATH_ROOT', [outDir filesep 'log'])
+setenv('CAL_PATH_ROOT','/data/mms/irfu/cal/')
 MMS_CONST=mms_constants;
-global ENVIR
-ENVIR.CAL_PATH_ROOT='/Users/yuri/devel/irfu-matlab/mission/mms/cal';
 
 %load /data/mms/irfu/mmsR.mat
 %epocRTmp = EpochTT(R.time);

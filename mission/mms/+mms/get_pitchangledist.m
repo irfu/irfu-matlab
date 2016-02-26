@@ -46,7 +46,7 @@ if (nargin == 2 || nargin==3),
     if (nargin == 3),
         tint = varargin{3};
         if(length(tint) > 2),
-            irf_log('proc','Format of tint is wrong.')
+            irf.log('critical','Format of tint is wrong.');
             return; 
         end
         rtrnTS = 0;
@@ -56,7 +56,7 @@ if (nargin == 2 || nargin==3),
             B = B.tlim(tint);
         end
     end
-    irf_log('proc','No angles passed. Default values used.')
+    irf.log('warning','No angles passed. Default values used.');
 elseif (nargin==7 || nargin==8)
     pdist = varargin{1};
     phi = varargin{2};
@@ -78,7 +78,7 @@ elseif (nargin==7 || nargin==8)
     if (nargin == 8),
         tint = varargin{8};
         if(length(tint) > 2),
-            irf_log('proc','Format of tint is wrong.')
+            irf.log('critical','Format of tint is wrong.');
             return; 
         end
         rtrnTS = 0;
@@ -89,9 +89,9 @@ elseif (nargin==7 || nargin==8)
             B = B.tlim(tint);
         end
     end
-    irf_log('proc','Angles passed; using these to calculate PAD.')
+    irf.log('notice','Angles passed; using these to calculate PAD.');
 else
-    irf_log('proc','Input not recognized.')
+    irf.log('critical','Input not recognized.');
     return;
 end
 

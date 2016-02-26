@@ -90,7 +90,7 @@ end
 
 %% Print output
 if nargout == 0
-	disp(['Eigenvalues: ' sprintf('%7.3f ',L)]);
+	disp(['Eigenvalues: ' sprintf('%7.3d ',L)]);
 	disp(vector_disp('N',V(:,1)));
 	disp(vector_disp('M',V(:,2)));
 	disp(vector_disp('L',V(:,3)));
@@ -105,7 +105,7 @@ end
 %% Functions
 function out = vector_disp(vectSymbol,vect,vectUnit)
 if nargin==2, vectUnit ='';end
-	out = sprintf(['|' vectSymbol '| = %7.3f ' vectUnit ...
-		', ' vectSymbol ' = [ %7.3f %7.3f %7.3f ] ' vectUnit],...
+	out = sprintf(['|' vectSymbol '| = %8.4f ' vectUnit ...
+		', ' vectSymbol ' = [ %8.4f %8.4f %8.4f ] ' vectUnit],...
 		norm(vect),vect(1),vect(2),vect(3));
 	

@@ -34,7 +34,9 @@ for j=2:size(xint,2),
 end
 
 if nargin>=2, % other origo for integration 
-    if size(tref)==6,
+    if isa(tref,'GenericTimeArray')
+      tt = tref.epochUnix;
+    elseif size(tref)==6,
         tt=toepoch(tref);
     elseif size(tref)==1;
         tt=tref;
