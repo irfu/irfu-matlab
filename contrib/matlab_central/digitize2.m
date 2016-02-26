@@ -24,9 +24,11 @@ function varargout = digitize2(varargin)
 
 % Author(s): A. Prasad
 % Original version created by J.D.Cogdell
+% Source: Matlab Central File Exchange
+% https://www.mathworks.com/matlabcentral/fileexchange/928-digitize2-m/
 
 % Check for proper number of input arguments
-error(nargchk(0,1,nargin));
+narginchk(0,1);
 
 % Identify image filename
 if (nargin == 0),

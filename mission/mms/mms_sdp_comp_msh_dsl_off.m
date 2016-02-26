@@ -1,7 +1,7 @@
 function res = mms_sdp_comp_msh_dsl_off(Tint)
 %MMS_SDP_COMP_MSH_DSL_OFF  DSL ofssets from FPI comparison
 %
-% res = MMS_SDP_COMP_MSH_DSL_OFF(Tint,mmsId)
+% res = MMS_SDP_COMP_MSH_DSL_OFF(Tint)
 
 res = struct('c1',[],'c2',[],'c3',[],'c4',[],'tint',Tint);
 
@@ -12,17 +12,38 @@ Epoch20s = EpochUnix(epoch1min);
 
 idxMSH = [];
 E34 = struct('c1',[],'c2',[],'c3',[],'c4',[]);
-EFPI = E34;
+EFPI = E34; flagOldFile = false;
 
 for mmsId = 1:4
   mmsIdS = sprintf('c%d',mmsId);
   fPre = sprintf('mms%d_edp_fast_l2a_dce2d',mmsId);
-  Bmask = mms.db_get_ts(fPre,...
-    sprintf('mms%d_edp_dce_bitmask',mmsId), Tint);
+  
+  if flagOldFile
+    Bmask = mms.db_get_ts(fPre,...
+      sprintf('mms%d_edp_dce_bitmask',mmsId), Tint);
+  else
+    Bmask = mms.db_get_ts(fPre,...
+      sprintf('mms%d_edp_bitmask_fast_l2a',mmsId), Tint);
+    if mmsId==1 && isempty(Bmask)
+      Bmask = mms.db_get_ts(fPre,...
+        sprintf('mms%d_edp_dce_bitmask',mmsId), Tint);
+      if ~isempty(Bmask)
+        irf.log('warning','Using old L2a file')
+        flagOldFile = true;
+      end
+    end
+  end
+  
   if ~isempty(Bmask)
-    P34 = mms.db_get_ts(fPre,...
-      sprintf('mms%d_edp_dce_spinfit_e34',mmsId), Tint);
-    p34 = P34.data;
+    if flagOldFile
+      P34 = mms.db_get_ts(fPre,...
+        sprintf('mms%d_edp_dce_spinfit_e34',mmsId), Tint);
+      p34 = P34.data(:,3:4);
+    else
+      P34 = mms.db_get_ts(fPre,...
+        sprintf('mms%d_edp_espin_p34_fast_l2a',mmsId), Tint);
+      p34 = P34.data;
+    end
     epochSpin = P34.time.ttns;
     bitmask = Bmask.data;
     mskAsponOn = bitand(bitmask(:,2),64) > 0;
@@ -43,13 +64,13 @@ for mmsId = 1:4
     end
     mskAsponOnSpin=logical(mskAsponOnSpin);
     EpochS = EpochTT(epochSpin);
-    Es34 = irf.ts_vec_xy(EpochS,p34(:,3:4));
+    Es34 = irf.ts_vec_xy(EpochS,p34(:,1:2));
     Es34AspocOff =  Es34(~mskAsponOnSpin);
-    if isempty(Es34AspocOff)
+    if isempty(Es34AspocOff) || all(all(isnan(Es34AspocOff.data)))
       irf.log('warning','No data w/o ASPOC, using all data')
       Es34AspocOff = Es34;
     end
-    if ~isempty(Es34AspocOff),
+    if ~isempty(Es34AspocOff)
       Es34AspocOffR = Es34AspocOff.resample(Epoch20s,'median');
     else Es34AspocOffR = [];
     end
@@ -60,8 +81,26 @@ for mmsId = 1:4
   if isempty(B), B = mms.get_data('dfg_ql_srvy',Tint,mmsId); end
   if isempty(B), continue, end
   
-  % XXX here we could try different sources of FPI data
-  Vifpi = mms.get_data('Vi_gse_fpi_ql',Tint,mmsId);
+  % Here we try different sources of FPI data
+  Vifpi = mms.get_data('Vi_dbcs_fpi_fast_l2',Tint,mmsId);
+  if isempty(Vifpi)
+    Vifpi = mms.get_data('Vi_gse_fpi_fast_l1b',Tint,mmsId);
+    if ~isempty(Vifpi)
+      irf.log('warning','Using L1b FPI data')
+    end
+  end
+  if isempty(Vifpi)
+    Vifpi = mms.get_data('Vi_gse_fpi_ql',Tint,mmsId);
+    if ~isempty(Vifpi)
+      irf.log('warning','Using QL FPI data')
+    end
+  end
+  if isempty(Vifpi) % Last resort
+    Vifpi = mms.get_data('Vi_gse_fpi_sitl',Tint,mmsId);
+    if ~isempty(Vifpi)
+      irf.log('warning','Using SITL FPI data')
+    end
+  end
   if isempty(Vifpi), continue, end
   Efpi = irf_e_vxb(Vifpi,B.resample(Vifpi));
   EfpiR = Efpi.resample(Epoch20s,'median');
@@ -70,9 +109,16 @@ for mmsId = 1:4
   
   if isempty(idxMSH)
     Nifpi = mms.get_data('Ni_fpi_ql',Tint,mmsId);
+    if isempty(Nifpi),
+      Nifpi = mms.get_data('Ni_fpi_sitl',Tint,mmsId);
+    end
     NifpiR = Nifpi.resample(Epoch20s,'median');
     VifpiR = Vifpi.resample(Epoch20s,'median');
     idxMSH = NifpiR.data>5 & VifpiR.x.data>-200;  
+    if sum(idxMSH) < 180 % We require min 100 spins of MSH data
+      irf.log('warning','Using ALL data (not only MSH)')
+      idxMSH(:)=true;
+    end
   end
 end
 %%
@@ -86,11 +132,11 @@ for mmsId = 1:4
   ErefFpiY = [ErefFpiY EFPI.(mmsIdS).y.data]; %#ok<AGROW>
 end
 
-ErefFpiX = median(ErefFpiX,2); ErefFpiY = median(ErefFpiY,2);
+ErefFpiX = median(ErefFpiX,2,'omitnan'); ErefFpiY = median(ErefFpiY,2,'omitnan');
 ErefFpi = irf.ts_vec_xy(Epoch20s,[ErefFpiX ErefFpiY]);
 
 %%
-ALPHA = 1.25/1.1;
+if flagOldFile, ALPHA = 1.25/1.1; else ALPHA = 1; end
 DE = struct('c1',[],'c2',[],'c3',[],'c4',[]);
 Off = DE;
 for mmsId = 1:4

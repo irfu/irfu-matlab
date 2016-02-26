@@ -137,13 +137,13 @@ classdef mms_db < handle
          fields1 = fields(s1); fields2 = fields(s2);
          if ~comp_cell(fields1,fields2), return, end
          
+         ignoreFields = {'data','nrec','Generation_date',...
+           'GlobalAttributes','Logical_file_id','Data_version','Parents'};
          for iField=1:length(fields1)
            f = fields1{iField};
            % data, nrec and the GlobalAttributes Generation_date,
            % Logical_file_id and Data_version will almost always differ
            % between files.
-           ignoreFields = {'data','nrec','Generation_date',...
-             'Logical_file_id','Data_version','Parents'};
            if ~isempty(intersect(f,ignoreFields)), continue, end
            if isnumeric(s1.(f)) || ischar(s1.(f))
              if ~all(all(all(s1.(f)==s2.(f)))), return, end
@@ -166,6 +166,7 @@ classdef mms_db < handle
          if ~all(size(c1)==size(c2)), return, end
          
          [n,m] = size(c1);
+         if(m==1), c1=sort(c1); c2=sort(c2); end
          for iN = 1:n,
            for iM = 1:m
              if ischar(c1{iN, iM}) && ischar(c2{iN,iM})

@@ -29,21 +29,25 @@ function out = irf_4_v_gui(varargin)
 %
 %   See also: IRF_4_V
 
-persistent ud
+%persistent ud
 
 %% Input-------------
 if nargin == 0
     % Display help
     help irf_4_v_gui
     return;
-elseif nargin==1
+elseif nargin == 1,
+    error;
+elseif nargin==2 && ~ischar(varargin{1}) &&  all(ishandle(varargin{1}))
     % Only action input
-    action = varargin{1};
+    hfig=varargin{1};
+    action = varargin{2};
+    ud=get(hfig,'userdata');
     ud.flag_first_call = 0;
 else
     ud = [];
     ud.flag_first_call = 1;
-    figure;
+    ud.hfig=figure;
     if(nargin>=2 && nargin<=4)
         if ischar(varargin{1}) && ~isempty(strfind(varargin{1},'?'))
             ud.variable_str = varargin{1};
@@ -93,13 +97,14 @@ else
     else
         error('Unknown input type.')
     end
+    set(ud.hfig,'userdata',ud)
 end
 %----------------------
 
 %% Actions
 if ud.flag_first_call
     % Initialize gui and read position data if not inputted.
-    irf_4_v_gui('init')
+    ud=irf_4_v_gui(ud.hfig,'init');
     
     if ~is_pos_ok(ud)
         if ~isfield(ud,'sc')
@@ -119,7 +124,7 @@ else
         case {'c1','c2','c3','c4','c5','c6'}
             ud.var_col=str2double(action(2:end));
             set(gcf,'userdata',ud);
-            irf_4_v_gui('update_var_col');
+            ud=irf_4_v_gui(ud.hfig,'update_var_col');
         case 'dt'
             ud = v_from_dt(ud);
         case 'v'
@@ -140,6 +145,7 @@ else
         otherwise % Mostly for debugging
             error(['Not implemented action: ', action])
     end
+    set(ud.hfig,'userdata',ud);
 end
 
 if nargout == 1
@@ -188,7 +194,7 @@ xp=0.05;yp=0.25;
 uicontrol('style', 'text', 'string', '[dt1 dt2 dt3 dt4] =','units','normalized','position', [xp yp 0.15 0.03]);
 ud.dt_input = uicontrol('style', 'edit', ...
     'string', '[0 0 0 0]', ...
-    'callback', 'irf_4_v_gui(''dt'')', ...
+    'callback', 'irf_4_v_gui(gcf,''dt'')', ...
     'backgroundcolor','white','units','normalized','position', [xp+0.15 yp 0.29 0.05]);
 ud.dt=[0 0 0 0]; % default values
 
@@ -197,7 +203,7 @@ xp=0.05;yp=0.2;
 uicontrol('style', 'text', 'string', '[vx vy vz] km/s =','units','normalized','position', [xp yp 0.15 0.03]);
 ud.v = uicontrol('style', 'edit', ...
     'string', '0*[0 0 0]', ...
-    'callback', 'irf_4_v_gui(''v'')', ...
+    'callback', 'irf_4_v_gui(gcf,''v'')', ...
     'backgroundcolor','white','units','normalized','position', [xp+0.15 yp 0.29 0.05]);
 
 % Low pass filter text input.
@@ -205,14 +211,14 @@ xp=0.05;yp=0.15;
 uicontrol('style', 'text', 'string', 'Low pass filter f/Fs = ','units','normalized','position', [xp yp 0.15 0.03]);
 ud.filter = uicontrol('style', 'edit', ...
     'string', '1', ...
-    'callback', 'irf_4_v_gui(''dt'')', ...
+    'callback', 'irf_4_v_gui(gcf,''dt'')', ...
     'backgroundcolor','white','units','normalized','position', [xp+0.15 yp 0.1 0.05]);
 
 % GSM checkbox
 xp=0.05;yp=0.10;
 ud.coord_sys = uicontrol('style', 'checkbox', ...
     'string', 'velocity in GSM', ...
-    'callback', 'irf_4_v_gui(''dt'')', ...
+    'callback', 'irf_4_v_gui(gcf,''dt'')', ...
     'backgroundcolor','white','units','normalized','position', [xp+0.15 yp 0.3 0.05]);
 
 % Reference satellite text input.
@@ -220,13 +226,13 @@ xp=0.05;yp=0.05;
 uicontrol('style', 'text', 'string', 'Reference satellite ','units','normalized','position', [xp yp 0.15 0.03]);
 ud.ref_satellite = uicontrol('style', 'edit', ...
     'string', '1', ...
-    'callback', 'irf_4_v_gui(''v'')', ...
+    'callback', 'irf_4_v_gui(gcf,''v'')', ...
     'backgroundcolor','white','units','normalized','position', [xp+0.15 yp 0.1 0.05]);
 
-uimenu('label','Auto &YLim','accelerator','y','callback','irf_4_v_gui(''autoY'')');
-uimenu('label','&Distance','accelerator','d','callback','irf_4_v_gui(''distance'')');
-uimenu('label','Click&Times','accelerator','t','callback','irf_4_v_gui(''click_times'')');
-uimenu('label','New&Variable','accelerator','v','callback','irf_4_v_gui(''new_var_enter'')');
+uimenu('label','Auto &YLim','accelerator','y','callback','irf_4_v_gui(gcf,''autoY'')');
+uimenu('label','&Distance','accelerator','d','callback','irf_4_v_gui(gcf,''distance'')');
+uimenu('label','Click&Times','accelerator','t','callback','irf_4_v_gui(gcf,''click_times'')');
+uimenu('label','New&Variable','accelerator','v','callback','irf_4_v_gui(gcf,''new_var_enter'')');
 ud.columns=uimenu('label','&Columns','accelerator','c');
 %ud.t_start_epoch = h(1).Parent.UserData.t_start_epoch;
  figud = get(get(h(1),'Parent'),'UserData');
@@ -238,11 +244,11 @@ else nCol = size(ud.var1,2);
 end
 
 for j_col=1:nCol
-    eval_str=['ud.hcol(j_col)=uimenu(ud.columns,''label'',''' num2str(j_col) ''',''callback'',''irf_4_v_gui(''''c' num2str(j_col) ''''')'');'];
+    eval_str=['ud.hcol(j_col)=uimenu(ud.columns,''label'',''' num2str(j_col) ''',''callback'',''irf_4_v_gui(gcf,''''c' num2str(j_col) ''''')'');'];
     eval(eval_str);
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-set(gcf,'userdata',ud);
+set(ud.hfig,'userdata',ud);
 end
 
 
@@ -267,6 +273,8 @@ else
     vstr=[num2str(norm(v),3) ' * [' num2str(v./norm(v),'%6.2f') ']'];
 end
 set(ud.v,'string',vstr);
+ud.vVector=v;
+ud.nVector=v./norm(v);
 if eval(get(ud.filter,'string'))<1
     x1=ud.var1;Fs=1/(x1(2,1)-x1(1,1));flim=Fs*eval(get(ud.filter,'string'));
     c_eval('x?=irf_tlim(ud.var?,xl+[-20/Fs 20/Fs]);x?=irf_filt(x?,0,flim,Fs,5);');
@@ -278,7 +286,7 @@ irf_zoom(ud.h(2),'x',xl);
 irf_zoom(ud.h(2),'y',yl);
 irf_timeaxis(ud.h(2));
 text(.5,-.6,['t_{2nd panedel} = t_{1st panel} - dt\newline  dt = ' tstr '\newline V_{discontinuity}=' vstr ' km/s ' coord_sys(ud) ],'units','normalized','verticalalignment','top','paren',ud.h(2));
-set(gcf,'userdata',ud);
+set(ud.hfig,'userdata',ud);
 end
 
 
@@ -324,7 +332,7 @@ end
 axis(ud.h(2),[xl yl]);
 irf_timeaxis(ud.h(2));
 text(.5,-.6,['t_{2nd panedel} = t_{1st panel} - dt\newline dt = ' tstr '\newline V_{discontinuity}=' vstr ' km/s ' coord_sys(ud)],'units','normalized','verticalalignment','top','paren',ud.h(2));
-set(gcf,'userdata',ud);
+set(ud.hfig,'userdata',ud);
 end
 
 
@@ -334,7 +342,7 @@ function ud = click_times(ud)
 zoom(ud.h(1),'off');
 if (~isfield(ud,'ic') || isempty(ud.ic)), ud.ic=0;ud.dtv=[];end
 if ud.ic==0,
-    set(gcf,'windowbuttondownfcn', 'irf_4_v_gui(''click_times'')');
+    set(ud.hfig,'windowbuttondownfcn', 'irf_4_v_gui(gcf,''click_times'')');
     ud.ic=1;
 else
     p = get(ud.h(1), 'currentpoint');
@@ -343,19 +351,16 @@ else
 end
 title(['click on s/c ' num2str(ud.ic)]);
 if ud.ic==5,
-    set(gcf,'windowbuttondownfcn', '');
+    set(ud.hfig,'windowbuttondownfcn', '');
     title('');
     ud.ic=0;
     ud.dt=ud.dtv-ud.dtv(1);
     tstr=['[' num2str(ud.dt,'%10.2f') ']'];
     set(ud.dt_input,'string',tstr);
     zoom(ud.h(1),'on');
-    set(gcf,'userdata',ud);
-    irf_4_v_gui('dt');
+    set(ud.hfig,'userdata',ud);
+    ud=irf_4_v_gui(ud.hfig,'dt');
 end
-set(gcf,'userdata',ud);
-
-
 end
 
 
@@ -392,7 +397,7 @@ function ud = new_var_enter(ud)
 
 xx=inputdlg('Enter new variable mask. Examples: B? or R? or P?p1','**',1,{'B?'});
 ud.variable_str=xx{1};
-set(gcf,'userdata',ud);
+set(ud.hfig,'userdata',ud);
 ud = new_var(ud);
 end
 
@@ -404,8 +409,8 @@ evalin('base',['if ~exist(''' irf_ssub(ud.variable_str,1) '''), c_load(''' ud.va
 c_eval('ud.var?=evalin(''base'',irf_ssub(ud.variable_str,?));');
 if ud.var_col > size(ud.var1,2), ud.var_col=2;end % in case new variable has less columns
 if ud.flag_first_call,
-    set(gcf,'userdata',ud);
-    irf_4_v_gui('init');
+    set(ud.hfig,'userdata',ud);
+    irf_4_v_gui(ud.hfig,'init');
 else
     if ishandle(ud.h(1)),
         for j_col=2:size(ud.var1,2)
@@ -413,22 +418,22 @@ else
                 if ishandle(ud.hcol(j_col)),
                     set(ud.hcol(j_col),'enable','on')
                 else
-                    eval_str=['ud.hcol(j_col)=uimenu(ud.columns,''label'',''' num2str(j_col) ''',''callback'',''irf_4_v_gui(''''c' num2str(j_col) ''''')'');'];
+                    eval_str=['ud.hcol(j_col)=uimenu(ud.columns,''label'',''' num2str(j_col) ''',''callback'',''irf_4_v_gui(gcf,''''c' num2str(j_col) ''''')'');'];
                     eval(eval_str);
                 end
             else
-                eval_str=['ud.hcol(j_col)=uimenu(ud.columns,''label'',''' num2str(j_col) ''',''callback'',''irf_4_v_gui(''''c' num2str(j_col) ''''')'');'];
+                eval_str=['ud.hcol(j_col)=uimenu(ud.columns,''label'',''' num2str(j_col) ''',''callback'',''irf_4_v_gui(gcf,''''c' num2str(j_col) ''''')'');'];
                 eval(eval_str);
             end
             for jj_col=(size(ud.var1,2)+1):length(ud.hcol)
                 set(ud.hcol(jj_col),'enable','off')
             end
         end
-        set(gcf,'userdata',ud);
-        irf_4_v_gui('update_var_col');
+        set(ud.hfig,'userdata',ud);
+        irf_4_v_gui(ud.hfig,'update_var_col');
     else
-        set(gcf,'userdata',ud);
-        irf_4_v_gui('init');
+        set(ud.hfig,'userdata',ud);
+        irf_4_v_gui(ud.hfig,'init');
     end
 end
 end
