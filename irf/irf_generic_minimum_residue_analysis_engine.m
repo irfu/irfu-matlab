@@ -12,17 +12,25 @@ function [L,V,U]=irf_generic_minimum_residue_analysis_engine(varargin)
 %	 L, V and U given the density of conserved quantity eta and transport
 %	 tensor q.
 %
+%	 [L,V,U]=IRF_GENERIC_MINIMUM_RESIDUE_ANALYSIS_ENGINE(...,'constraint',vector)
+%	 calculates eigenvectors using constraint that discontinuity normal is
+%	 perpendicular to the constraint vector.
+%
 %  Inputs:
 %       Q - [3,3] matrix
 %     eta - [M,3] density of conserved quantity, M is number of points
 %       q - [M,3,3] transport tensor
+%  vector - [1,3] constraint vector
+%
 %  Output
 %       L - [lmin,lmean,lmax] eigenvalues
 %       V - V(:,1) eigenvector corresponding to lmin, V(:,2) - lmean, V(:,3) - lmax
+%       U - transport velocity, boundary velocity is Un=U*V(:,1)
 
 %% Defaults
 doCalculateVelocity = true;
 doCalculateQ        = true;
+haveConstraint      = false;
 %% Input check
 if nargin == 0 && nargout == 0,
 	help irf_generic_minimum_residue_analysis_engine;
@@ -38,14 +46,17 @@ elseif nargin > 1
 	args = varargin;
 	while numel(args)>=2
 		switch args{1}
-			case {'Q'}
+			case 'Q'
 				Q = args{2};
 				doCalculateVelocity = false;
 				doCalculateQ = false;
-			case {'eta'}
+			case 'eta'
 				eta = args{2};
-			case {'q'}
+			case 'q'
 				q = args{2};
+			case 'constraint'
+				constraintVector = args{2};
+				haveConstraint = true;
 			otherwise
 				irf.log('critical','unrecognized input');
 				return;
@@ -80,6 +91,11 @@ if doCalculateQ
 	Q = Q/size(dq,2);
 end
 
+%% Check for constraints
+if haveConstraint
+	P = eye(numel(constraintVector)) - constraintVector(:)*constraintVector(:)'; % Eq 41
+	Q = P*Q*P;
+end
 
 %% Calculate eigenvalues and eigenvectors from Q
 
@@ -95,15 +111,16 @@ end
 %% Calculate velocity
 
 X3 = V(1,:)';
-un = dot(U,X3);
+Un = dot(U,X3);
 
 %% Print output
 if nargout == 0
-	disp(['Eigenvalues: ' sprintf('%7.3f ',L)]);
+	disp(['Eigenvalues: ' sprintf('%7.5f ',L)]);
 	disp(vector_disp('N',V(:,1)));
 	disp(vector_disp('M',V(:,2)));
 	disp(vector_disp('L',V(:,3)));
 	disp(vector_disp('U',U,'km/s'));
+	disp(['Un = ' num2str(Un,3)]);
 end
 
 %% Define output
@@ -114,8 +131,8 @@ end
 %% Functions
 function out = vector_disp(vectSymbol,vect,vectUnit)
 if nargin==2, vectUnit ='';end
-	out = sprintf(['|' vectSymbol '| = %7.3f ' vectUnit ...
-		', ' vectSymbol ' = [ %7.3f %7.3f %7.3f ] ' vectUnit],...
+	out = sprintf(['|' vectSymbol '| = %8.4f ' vectUnit ...
+		', ' vectSymbol ' = [ %8.4f %8.4f %8.4f ] ' vectUnit],...
 		norm(vect),vect(1),vect(2),vect(3));
 	
 function out = matrix_dot(inp1,ind1,inp2,ind2)
@@ -134,7 +151,7 @@ if ndimsInp1 == 1
 	if ndimsInp2 == 1
 		out = sum(inp1.*inp2,2);
 	elseif ndimsInp2 == 2 && ind2 == 1
-		for jj = 1:szinp2(2)
+		for jj = 1:szinp2(3)
 			for kk = 1:szinp1(2)
 				out(:,jj) = out(:,jj) + inp1(:,kk).*inp2(:,kk,jj);
 			end
