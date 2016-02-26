@@ -3,12 +3,14 @@ classdef PDist < TSeries
   
   properties (Access = protected)
     type_
+    species_
     depend_
     ancillary_
   end
   
   properties (Dependent = true)
     type
+    species
     depend
     ancillary
   end
@@ -77,6 +79,9 @@ classdef PDist < TSeries
       end
     end    
     % set
+    function obj = set.species(obj,value)
+      obj.species_ = value;
+    end
     function obj = set.type(obj,value)
       obj.type_ = value;
     end
@@ -87,6 +92,9 @@ classdef PDist < TSeries
       obj.ancillary_ = value;
     end    
     % get
+    function value = get.species(obj)
+      value = obj.species_;
+    end
     function value = get.type(obj)
       value = obj.type_;
     end
@@ -180,7 +188,7 @@ classdef PDist < TSeries
       PD.data_ = tmpData;
       PD.depend{1} = tmpEnergy;      
     end
-    function PD = omni(obj,species)
+    function PD = omni(obj,varargin)
       % Makes omnidirectional distribution
       % Conserves the units
       
@@ -216,8 +224,7 @@ classdef PDist < TSeries
           PSDomni(ii,:) = squeeze(irf.nanmean(irf.nanmean(disttemp,2),3))/(mean(mean(solida)));
       end
 
-
-      switch species
+      switch obj.species
         case {'e','electron','electrons'}
           efluxomni = PSDomni.*energyspec.^2;
           efluxomni = efluxomni; %convert to normal units
@@ -225,6 +232,7 @@ classdef PDist < TSeries
           efluxomni = PSDomni.*energyspec.^2;
           efluxomni = efluxomni/1e6/0.53707; %convert to normal units
       end
+      
       PD = obj;
       PD.type = 'omni';
       PD.data_ = efluxomni;
@@ -241,7 +249,7 @@ classdef PDist < TSeries
           spec.p = double(obj.data);
           spec.p_label = {'dEF',obj.units};
           spec.f = single(obj.depend{1});
-          spec.f_label = {'E (eV)'};
+          spec.f_label = {['E_ ' obj.species(1) ' (eV)']};
         case {'pitchangle','pa'}
           spec.t = obj.time.epochUnix;
           spec.p = double(squeeze(nanmean(obj.data,2))); % nanmean over energies
@@ -258,11 +266,20 @@ classdef PDist < TSeries
     end
     function PD = deflux(obj)
       % Changes units to differential energy flux
+      units = irf_units;
+      switch obj.species
+        case {'e','electrons','electron'}
+          mm = units.me/units.mp;          
+        case {'i','p','ions','ion'}
+          mm = 1;
+        otherwise
+          error('Units not supported.')
+      end  
       switch obj.units
         case {'s^3/m^6'}
-          tmpData = obj.data*1e30/1e6/(5.486e-4)^2/0.53707;
+          tmpData = obj.data*1e30/1e6/mm^2/0.53707;
         case {'s^3/km^6'}
-          tmpData = obj.data/1e6/(5.486e-4)^2/0.53707;
+          tmpData = obj.data/1e6/mm^2/0.53707;
         otherwise
           error('Units not supported.')
       end      
@@ -351,7 +368,47 @@ classdef PDist < TSeries
       
       PD = PDist(pdist.time,paddistarr,'pitchangle',obj.depend{1},theta);
       PD.units = obj.units;
+      PD.species = obj.species;
     end  
+    function PD = e64(obj)
+      % E64 collect data into 64 energy levels per time
+%       energy = obj.depend{1};
+%       [newEnergy,energyOrder] = sort([energy(1,:) energy(2,:)]);
+%             
+%       sizeData = size(obj.data);
+%       sizeNewData = sizeData; sizeNewData(1) = fix(sizeNewData(1)/2); sizeNewData(2) = 64;
+%       tmpData = nan(sizeNewData);
+%       tmpData(:,1:32,:,:) = obj.data(1:2:end-1,:,:,:);
+%       tmpData(:,33:64,:,:) = obj.data(2:2:end,:,:,:);
+%       tmpData = tmpData(:,energyOrder,:,:);
+%       newEnergy = nan(sizeNewData(1),64);
+%       
+%                   
+% 
+%       % Define new times
+%       deltat = median(diff(obj.time.epochUnix))/2;
+%       newTimes = pdist.time(1:2:end-1)+deltat;      
+%       phir = nan(length(newtimes),32);
+%       newelnum = 1;
+% 
+%       phis = circshift(phi.data,1,2);
+%       phis(:,1) = phis(:,1)-360;
+% 
+%       for ii=1:2:sizeData(1)-1;
+%           if phi.data(ii,1) > phi.data(ii+1,1), 
+%               phir(newelnum,:) = (phi.data(ii,:)+phis(ii+1,:))/2;
+%               pdisttemp = circshift(squeeze(pdist.data(ii+1,:,:,:)),1,2);       
+%           else
+%               phir(newelnum,:) = (phi.data(ii,:)+phi.data(ii+1,:))/2;
+%           end
+%           newelnum = newelnum+1;
+%       end
+% 
+%       phir = TSeries(newtimes,phir);
+%       pdistr = TSeries(newtimes,pdistr);
+%       toc;
+
+    end
   end
   
 end
