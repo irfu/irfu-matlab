@@ -1,6 +1,9 @@
 classdef PDist < TSeries
   % Particle distributions, subclass of TSeries
-  
+  % TODO: 
+  % e65: collect data into 64 energy levels instead of alternating 32 
+  %
+  %
   properties (Access = protected)
     type_
     species_
@@ -409,6 +412,27 @@ classdef PDist < TSeries
 %       toc;
 
     end
+    function m = mass(obj)
+      % Get mass of species
+      units = irf_units;
+      switch obj.species
+        case {'e','electrons','electron'}
+          m = units.me;
+        case {'i','p','ions','ion'}
+          m = units.mp;
+        otherwise
+          error('Species not supported.')
+      end 
+    end
+    function e = energy(obj)
+      % Get energy of object
+      %indE = find(strcmp(obj.representation,'energy'))
+      e = obj.depend{1};
+    end
   end
-  
+  methods (Static)
+    function newUnits = changeunits(from,to)
+      
+    end
+  end
 end
