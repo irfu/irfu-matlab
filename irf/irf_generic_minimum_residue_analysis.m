@@ -22,6 +22,7 @@ function [L,V,U]=irf_generic_minimum_residue_analysis(varargin)
 %  Output
 %       L - [lmin,linterm,lmax] eigenvalues
 %       V - V(:,1) eigenvector corresponding to lmin, V(:,2) - linterm, V(:,3) - lmax
+%       U - transport velocity, boundary velocity is Un=U*V(:,1)
 %
 %  See also IRF_GENERIC_MINIMUM_RESIDUE_ANALYSIS_ENGINE
 
@@ -113,6 +114,7 @@ if nargout == 0
 	disp(vector_disp('M',V(:,2)));
 	disp(vector_disp('L',V(:,3)));
 	disp(vector_disp('U',U,'km/s'));
+	disp(['Un = ' num2str(Un,3)]);
 end
 
 %% Define output
