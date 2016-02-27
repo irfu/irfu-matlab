@@ -226,7 +226,11 @@ classdef PDist < TSeries
           disttemp = squeeze(distes(ii,:,:,:));
           PSDomni(ii,:) = squeeze(irf.nanmean(irf.nanmean(disttemp,2),3))/(mean(mean(solida)));
       end
-
+      if isempty(obj.species)
+        species = varargin{1};
+      else 
+        species = obj.species;
+      end
       switch obj.species
         case {'e','electron','electrons'}
           efluxomni = PSDomni.*energyspec.^2;
@@ -234,6 +238,7 @@ classdef PDist < TSeries
         case {'i','p','ion','ions'}
           efluxomni = PSDomni.*energyspec.^2;
           efluxomni = efluxomni/1e6/0.53707; %convert to normal units
+        otherwise          
       end
       
       PD = obj;
