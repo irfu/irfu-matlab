@@ -1,6 +1,6 @@
 % Example showing how to you can work with particle distributions.
 % PDist is a subclass of TSeries having the additional properties:
-%   type - skymap, pitchangles, omni
+%   type - skymap, pitchangles, omnideflux
 %   depend - skymap: energy, phi, theta
 %            pitchangles: energy, pitchangles
 %            omni - energies
@@ -27,17 +27,17 @@ c_eval('energy(estepTable?.data==1,:) = repmat(eenergy1?.data,sum(estepTable?.da
 %% Make skymap directly with PDist
 c_eval('ePDist? = PDist(desDist?.time,desDist?.data,''skymap'',energy,ephi?.data,etheta?.data);',ic)
 c_eval('ePDist?.userData = desDist?.userData; ePDist?.name = desDist?.name; ePDist?.units = desDist?.units;',ic)
-c_eval('ePDist?.units = ''s^3/m^6'';',ic)
+c_eval('ePDist?.units = ''s^3/cm^6'';',ic)
 c_eval('ePDist?',ic)
 
 %% Make skymap with irf.ts_skymap
 % If energy table is NOT passed, energy0, energy1 and energysteptable is necessary
 c_eval('ePDist? = irf.ts_skymap(desDist?.time,desDist?.data,[],ephi?.data,etheta?.data,''energy0'',eenergy0?.data,''energy1'',eenergy1?.data,''esteptable'',estepTable?.data);',ic)
-c_eval('ePDist?.units = ''s^3/m^6'';',ic)
+c_eval('ePDist?.units = ''s^3/cm^6'';',ic)
 c_eval('ePDist?',ic)
 % If energy table is passed, energy0, energy1 and energysteptable is not necessary
 c_eval('ePDist? = irf.ts_skymap(desDist?.time,desDist?.data,energy,ephi?.data,etheta?.data);',ic)
-c_eval('ePDist?.units = ''s^3/m^6'';',ic)
+c_eval('ePDist?.units = ''s^3/cm^6'';',ic)
 c_eval('ePDist?',ic)
 
 %% Make omnidirectional differential energy flux

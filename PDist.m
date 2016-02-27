@@ -199,7 +199,7 @@ classdef PDist < TSeries
       units = irf_units;
       
       diste = obj;
-      if isempty(strfind(obj.units,'km')) % Unit conversion from s^3/m^6 to s^3/km^6    
+      if isempty(strfind(obj.units,'km')) % Unit conversion from s^3/cm^6 to s^3/km^6    
         diste.data = diste.data*1e30; 
       end
       energyspec = obj.depend{1};
@@ -279,8 +279,10 @@ classdef PDist < TSeries
           error('Units not supported.')
       end  
       switch obj.units
-        case {'s^3/m^6'}
+        case {'s^3/cm^6'}
           tmpData = obj.data*1e30/1e6/mm^2/0.53707;
+        case {'s^3/m^6'}
+          tmpData = obj.data*1e18/1e6/mm^2/0.53707;
         case {'s^3/km^6'}
           tmpData = obj.data/1e6/mm^2/0.53707;
         otherwise
