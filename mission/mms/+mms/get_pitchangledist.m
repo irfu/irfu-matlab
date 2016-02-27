@@ -85,6 +85,7 @@ elseif (nargin==7 || nargin==8)
         if(length(tint) == 2),
             rtrnTS = 1;
             pdist = pdist.tlim(tint);
+            phi = phi.tlim(tint);
             stepTable = stepTable.tlim(tint);
             B = B.tlim(tint);
         end
