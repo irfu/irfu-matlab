@@ -106,6 +106,10 @@ if doConstraint
 else
 	[L,V,U] = irf_generic_minimum_residue_analysis_engine('eta',eta,'q',q);
 end
+%% Calculate normal velocity
+
+X3 = V(:,1)';
+Un = dot(U,X3);
 
 %% Print output
 if nargout == 0
@@ -114,7 +118,7 @@ if nargout == 0
 	disp(vector_disp('M',V(:,2)));
 	disp(vector_disp('L',V(:,3)));
 	disp(vector_disp('U',U,'km/s'));
-	disp(['Un = ' num2str(Un,3)]);
+	disp(['Un = ' num2str(Un,3),' km/s']);
 end
 
 %% Define output
