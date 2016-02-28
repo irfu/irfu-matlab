@@ -1,12 +1,12 @@
 function hout=sc_orient(spacecraft,time,phase_time_series,magnetic_field,velocity,action)
-%C_PL_SC_ORIENT   Plots the orientation of the EFW probes
+% MMS.SC_ORIENT   Plots the orientation of the SPD probes
 %
-%   h = C_PL_SC_ORIENT;
-%   h = C_PL_SC_ORIENT(ic);
-%   h = C_PL_SC_ORIENT(ic,t);
-%   h = C_PL_SC_ORIENT(ic,t,a);
-%   h = C_PL_SC_ORIENT(ic,t,a,b);
-%   h = C_PL_SC_ORIENT(ic,t,a,b,v);
+%   h = MMS.SC_ORIENT;
+%   h = MMS.SC_ORIENT(ic);
+%   h = MMS.SC_ORIENT(ic,t);
+%   h = MMS.SC_ORIENT(ic,t,a);
+%   h = MMS.SC_ORIENT(ic,t,a,b);
+%   h = MMS.SC_ORIENT(ic,t,a,b,v);
 %   ic - spacecraft number
 %   t  - time in isdat epoch
 %   a  - time vector of the satellite phase in degrees
@@ -203,7 +203,7 @@ switch lower(action)
         if data.getScPhase % still no phase info, use default 0
             data.phase=0; % default using 0 phase
         else
-            % Find best phase
+            % Find best phase (THIS NEEDS TO BE IMPROVED)
             [~,tID] = min(abs(data.a(:,1)-data.t));
             data.phase=data.a(tID,2);
         end
@@ -240,10 +240,16 @@ switch lower(action)
         phase_p3=data.phase/180*pi + 2*pi/3;
         phase_p2=data.phase/180*pi + 7*pi/6;
         phase_p4=data.phase/180*pi + 5*pi/3;
+        phase_b1=data.phase/180*pi + pi/4;
+        phase_b2=data.phase/180*pi + 5*pi/4;
         rp1=[60*cos(phase_p1) 60*sin(phase_p1) 0]; 
         rp2=[60*cos(phase_p2) 60*sin(phase_p2) 0];
         rp3=[60*cos(phase_p3) 60*sin(phase_p3) 0];
         rp4=[60*cos(phase_p4) 60*sin(phase_p4) 0];
+        % Boom lengths are 5m. Exaggerated in plot.
+        rb1=[15*cos(phase_b1) 15*sin(phase_b1) 0];
+        rb2=[15*cos(phase_b2) 15*sin(phase_b2) 0];
+        
         for ip=1:4, 
             c_eval('rp?ts = irf.ts_vec_xyz(irf_time(data.t,''epoch>epochTT''),rp?);',ip);
             c_eval('rp?_gse=mms_dsl2gse(rp?ts,data.defatt);',ip);
@@ -320,11 +326,16 @@ switch lower(action)
             hl=line([0 100*cos(aa)],[0 100*sin(aa)]);
             set(hl,'linestyle',':','color','green','linewidth',.2);
         end
+        % Plot Booms
+        c_eval('line([0 rb?(2)],[0 rb?(1)],''Linewidth'',3,''Color'',''k'');',1:2);
+        boomlabels = ['DFG';'AFG'];
+        c_eval('text(rb?(2)*1.5,rb?(1)*1.5,boomlabels(?,:));',1:2);
         for ip=1:4; % plot probes
             c_eval('line([0 rp?(2)],[0 rp?(1)]);',ip);
             c_eval('patch(rp?(2)+x_circle*0.4,rp?(1)+y_circle*0.4,x_circle*0+1,''facecolor'',''black'',''edgecolor'',''none'');',ip);
             c_eval('text(rp?(2)*.9,rp?(1)*.9,num2str(?),''fontweight'',''bold'');',ip);
         end
+        
         
         axes(h(3));cla
         text(0,70,'Z_{GSE}','verticalalignment','top','horizontalalignment','center','fontweight','demi');
