@@ -14,8 +14,6 @@ function PD = make_pdist(file)
  
 if isa(file,'dataobj');
   tmpDataObj =  file;  
-  %fileParts = strsplit(filePathAndName,'/');
-  %mmsId = fileParts{end}(4);  
 elseif isa(file,'char');
   tmpDataObj = dataobj(file);
 else
