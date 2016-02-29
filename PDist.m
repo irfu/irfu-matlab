@@ -382,6 +382,12 @@ classdef PDist < TSeries
     end  
     function PD = e64(obj)
       % E64 collect data into 64 energy levels per time
+      
+      [pdistr,phir,energyr] = mms.psd_rebin(obj,TSeries(obj.time,obj.depend{2}),obj.ancillary.energy0,obj.ancillary.energy1,TSeries(obj.time,obj.ancillary.energyStepTable));
+      PD = obj.clone(pdistr.time,pdistr.data);      
+      PD.depend{1} = energyr;
+      PD.depend{2} = phir.data;
+      
 %       energy = obj.depend{1};
 %       [newEnergy,energyOrder] = sort([energy(1,:) energy(2,:)]);
 %             
