@@ -4,7 +4,7 @@ function PD = make_pdist(file)
 %
 %   db_info = datastore('mms_db');  
 %   c_eval('ePDist? = mms.make_pdist([db_info.local_file_db_root ''/mms?/fpi/brst/l2/des-dist/2015/10/16/mms?_fpi_brst_l2_des-dist_20151016103254_v2.1.0.cdf''])',ic)
-
+ 
 filePathAndName = file;
 if strfind(filePathAndName,'des')
   vS = 'des';
@@ -12,38 +12,77 @@ if strfind(filePathAndName,'des')
 elseif strfind(filePathAndName,'dis')
   vS = 'dis';
   species = 'ions';
+else
+    PD = NaN;
+    disp('File not recognized as particle distribution.'); 
+    return;
 end
 fileParts = strsplit(filePathAndName,'/');
 mmsId = fileParts{end}(4);
 
 %disp('Loading electron distribution...')
 tmpDataObj = dataobj(filePathAndName);
-Dist = mms.variable2ts(get_variable(tmpDataObj,['mms' mmsId '_' vS '_dist_brst']));
+tmpDist = get_variable(tmpDataObj,['mms' mmsId '_' vS '_dist_brst']);
+Dist = tmpDist.data;
+
+% Collect User data
+ud = [];
+ud.GlobalAttributes = tmpDist.GlobalAttributes;
+ud.CATDESC          = tmpDist.CATDESC;
+if isfield(tmpDist,'DISPLAY_TYPE'), ud.DISPLAY_TYPE     = tmpDist.DISPLAY_TYPE; end
+ud.FIELDNAM         = tmpDist.FIELDNAM;
+ud.VALIDMIN         = tmpDist.VALIDMIN;
+ud.VALIDMAX         = tmpDist.VALIDMAX;
+if isfield(tmpDist,'LABLAXIS'), ud.LABLAXIS = tmpDist.LABLAXIS; end
+if isfield(tmpDist,'LABL_PTR_1'), ud.LABL_PTR_1 = tmpDist.LABL_PTR_1;
+elseif isfield(tmpDist,'LABL_PTR_2'), ud.LABL_PTR_2 = tmpDist.LABL_PTR_2;
+elseif isfield(tmpDist,'LABL_PTR_3'), ud.LABL_PTR_3 = tmpDist.LABL_PTR_3;
+end
+
+
+% Shift times to center of deltat- and deltat+ for l2 particle
+% distributions and moments
+if ~isempty(regexp(tmpDist.name,'^mms[1-4]_d[ei]s_','once'))
+	if isfield(tmpDist.DEPEND_0,'DELTA_MINUS_VAR') && isfield(tmpDist.DEPEND_0,'DELTA_PLUS_VAR'),
+        if isfield(tmpDist.DEPEND_0.DELTA_MINUS_VAR,'data') && isfield(tmpDist.DEPEND_0.DELTA_PLUS_VAR,'data'),
+            irf.log('critical','Times shifted to center of dt-+. dt-+ are recalculated');
+            toffset = (int64(tmpDist.DEPEND_0.DELTA_PLUS_VAR.data)-int64(tmpDist.DEPEND_0.DELTA_MINUS_VAR.data))*1e6/2;
+            tdiff = (int64(tmpDist.DEPEND_0.DELTA_PLUS_VAR.data)+int64(tmpDist.DEPEND_0.DELTA_MINUS_VAR.data))*1e6;
+            tmpDist.DEPEND_0.DELTA_MINUS_VAR.data = tdiff/2;
+            tmpDist.DEPEND_0.DELTA_PLUS_VAR.data = tdiff/2;
+            tmpDist.DEPEND_0.data = tmpDist.DEPEND_0.data+toffset;
+        end
+    end
+end
+
+time = tmpDist.DEPEND_0.data;
+if ~isa(time,'GenericTimeArray'), time = EpochTT(time); end
+dt_minus = tmpDist.DEPEND_0.DELTA_MINUS_VAR.data;
+dt_plus = tmpDist.DEPEND_0.DELTA_MINUS_VAR.data;
 energy0 = get_variable(tmpDataObj,['mms' mmsId '_' vS '_energy0_brst']);
 energy1 = get_variable(tmpDataObj,['mms' mmsId '_' vS '_energy1_brst']);
-phi = mms.variable2ts(get_variable(tmpDataObj,['mms' mmsId '_' vS '_phi_brst']));
+energy0 = energy0.data; energy1 = energy1.data; 
+phi = get_variable(tmpDataObj,['mms' mmsId '_' vS '_phi_brst']);
 theta = get_variable(tmpDataObj,['mms' mmsId '_' vS '_theta_brst']);
-stepTable = mms.variable2ts(get_variable(tmpDataObj,['mms' mmsId '_' vS '_steptable_parity_brst']));
-Epoch_plus_var = get_variable(tmpDataObj,'Epoch_plus_var');
-Epoch_minus_var = get_variable(tmpDataObj,'Epoch_minus_var');
+stepTable = get_variable(tmpDataObj,['mms' mmsId '_' vS '_steptable_parity_brst']);
+phi = phi.data; theta = theta.data; stepTable = stepTable.data;
 
 % Make energytable from energy0, energy1 and energysteptable
-energy = repmat(torow(energy0.data),numel(stepTable.data),1);
-energy(stepTable.data==1,:) = repmat(energy1.data,sum(stepTable.data),1);
-% Shift time so that time stap is in middle of sweep ins tead of in the beginning
-dt_shift = 0.5*(double(Epoch_plus_var.data)-double(Epoch_minus_var.data))*1e-3;
-dt_minus = double(Epoch_minus_var.data)*1e-3-dt_shift;
-dt_plus = double(Epoch_plus_var.data)*1e-3-dt_shift;
+energy = repmat(torow(energy0),numel(stepTable),1);
+energy(stepTable==1,:) = repmat(energy1,sum(stepTable),1);
+
 % Construct PDist
-PD = PDist(Dist.time+dt_shift,Dist.data,'skymap',energy,phi.data,theta.data);
-PD.userData = Dist.userData; 
-PD.name = Dist.name; 
-PD.units = Dist.units;
+PD = PDist(time,Dist,'skymap',energy,phi,theta);
+PD.userData = ud; 
+PD.name = tmpDist.name; 
+%PD.units = tmpDist.units;
 PD.units = 's^3/cm^6'; 
 PD.siConversion = '1e12';
 PD.species = species;
 PD.ancillary.dt_minus = dt_minus; 
 PD.ancillary.dt_plus = dt_plus; 
-PD.ancillary.energy0 = energy0.data; 
-PD.ancillary.energy1 = energy1.data;
-PD.ancillary.energyStepTable = stepTable.data;
+PD.ancillary.energy0 = energy0; 
+PD.ancillary.energy1 = energy1;
+PD.ancillary.energyStepTable = stepTable;
+
+end
