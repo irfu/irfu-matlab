@@ -1,7 +1,7 @@
-function [maneuvers, fileInfo] = mms_read_timeline(xmlFile, scId)
+function [maneuvers, fileInterval] = mms_read_timeline(xmlFile, scIdstr)
 % MMS_READ_TIMELINE get maneuver information from mms timeline xml files
-%	[maneuvers, fileInfo] = MMS_READ_TIMELINE(xmlFile, scId) reads the FDOA
-%	xmlFile and extract maneuvers for scId.
+%	[maneuvers, fileInfo] = MMS_READ_TIMELINE(xmlFile, scIdstr) reads the
+%   FDOA xmlFile and extract maneuvers for scIdstr.
 %
 %   Note: This function uses XPath directly to extract the interested
 %   maneuver information from the FDOA xml files and is thefore less
@@ -11,25 +11,24 @@ function [maneuvers, fileInfo] = mms_read_timeline(xmlFile, scId)
 %   xml2struct, (0.042 seconds as opposed to 24.93 seconds).
 %
 %   Input:
-%     xmlFile = string of the xml file to be read
-%     scId    = string of which spacecraft to be extracted, values '1', '2', '3' or '4'.
+%     xmlFile = xml file to be read
+%     scIdstr = string of which spacecraft to be extracted, values '1', 
+%               '2', '3' or '4'. Or a combination such as '1234'.
 %   Output:
 %     manuevers    = struct containing
-%       .startTime = start time of each maneuver, in ttns.
-%       .stopTime  = stop time of each maneuver, in ttns.
-%     fileInfo     = optional outout, struct containing
-%       .startTime = start time of xml file coverage, in ttns.
-%       .stopTime  = stop time of xml file coverage, in ttns.
+%       .mms1      = cell of maneuvers on MMS1, in irf.tint time interval.
+%       .mms2      = corresponding on MMS2.
+%       .mms3      = corresponding on MMS3.
+%       .mms4      = corresponding on MMS4.
+%     fileInterval = irf.tint time interval of file coverage.
 %
 %   Example:
 %
-%	[maneuvers, fileInfo] = MMS_READ_TIMELINE('/path/to/mms_timeline_2016011_2016073_v02.xml','1');
+%	[maneuvers, fileInterval] = MMS_READ_TIMELINE('/path/to/mms_timeline_2016011_2016073_v02.xml','1');
 %    returns a struct maneuvers containing
-%       .startTime = Start time of maneuvers for MMS1, in ttns.
-%       .stopTime  = Stop time of maneuvers for MMS1, in ttns.
-%    and a struct fileInfo containing
-%       .startTime = Start time of the xml file coverage, in ttns.
-%       .stopTime  = Stop time of the xml file coverage, in ttns.
+%       .mms1 = Cell with time intervals of maneuvers for MMS1, in irf.tint
+%    and a time interval fileInfo containing with start and stop time of
+%    the xml file coverage, in irf.tint.
 %
 % 	See also MMS_MANEUVERS.
 %
@@ -40,11 +39,17 @@ function [maneuvers, fileInfo] = mms_read_timeline(xmlFile, scId)
 if(~strcmp(getComputerName,'thonilaptop')), error('DO NOT USE THIS FUNCTION'); end
 
 % Verify input & output
-narginchk(2,2);
+narginchk(1,2);
 if(~exist(xmlFile,'file')), error(['File does not exist: ', xmlFile]); end
-if(isnumeric(scId)), scId = num2str(scId); end
-if(~ismember(scId,{'1','2','3','4'})), error(['Unexpected scId: ', scId]); end
+if(exist('scIdstr','var'))
+  if(isnumeric(scIdstr)), scIdstr = num2str(scIdstr); end
+else
+  irf.log('warning', 'scId not specified, processing all MMS 1234.');
+  scIdstr='1234';
+end
 nargoutchk(1,2);
+
+irf.log('debug', ['Loading timeline file: ', xmlFile,'.']);
 
 % Parse file and put it in RAM
 import javax.xml.parsers.*;
@@ -57,35 +62,43 @@ import javax.xml.xpath.*;
 factory = XPathFactory.newInstance();
 xpath = factory.newXPath();
 
-% Get some file information (coverage of the file)
-query = sprintf('timeline');
-expr = xpath.compile(query);
-res = expr.evaluate(doc, XPathConstants.NODESET);
-childNode = res.item(0).getChildNodes; % Java start with index 0
-startTimeStr = char(childNode.getElementsByTagName('starttime').item(0).getTextContent);
-fileInfo.startTime = convertTime(startTimeStr);
-stopTimeStr = char(childNode.getElementsByTagName('stoptime').item(0).getTextContent);
-fileInfo.stopTime = convertTime(stopTimeStr);
-
-% Locate Manuevers for MMS Spacecraft "scId"
-query = sprintf('timeline/node[@id=''Maneuver Plans (FDOA-11)'']/node[@id=''Maneuver - Spacecraft %s'']/event', scId);
-expr = xpath.compile(query);
-res = expr.evaluate(doc, XPathConstants.NODESET);
-
-manLen = res.getLength();
-
-maneuvers = struct('startTime', zeros(manLen, 1,'int64'), ...
-  'stopTime', zeros(manLen, 1,'int64'));
-
-for ii = 0:manLen-1
-  % Note: Java start with index 0.
-  childNode = res.item(ii).getChildNodes;
-  % Get start time of maneuver and convert the time to ttns
+if(nargout>=2)
+  % Get some file information (coverage of the file)
+  query = sprintf('timeline');
+  expr = xpath.compile(query);
+  res = expr.evaluate(doc, XPathConstants.NODESET);
+  childNode = res.item(0).getChildNodes; % Java start with index 0
   startTimeStr = char(childNode.getElementsByTagName('starttime').item(0).getTextContent);
-  maneuvers.startTime(ii+1) = convertTime(startTimeStr);
-  % Get stop time of maneuver
   stopTimeStr = char(childNode.getElementsByTagName('stoptime').item(0).getTextContent);
-  maneuvers.stopTime(ii+1) = convertTime(stopTimeStr);
+  fileInterval = irf.tint(convertTime(startTimeStr), convertTime(stopTimeStr));
+end
+
+for scId=1:length(scIdstr)
+  irf.log('notice',['Looking for maneuvers on MMS', scIdstr(scId)]);
+  % Verify it is one of 1,2,3,4
+  if(~ismember(scIdstr(scId),{'1','2','3','4'}))
+    errStr = ['Unexpected scIdstr ',scIdstr,'. Should be 1, 2 ,3 or 4 or a combination.'];
+    irf.log('critical',errStr); error(errStr);
+  end
+  % Locate Manuevers for MMS Spacecraft "scId"
+  query = sprintf('timeline/node[@id=''Maneuver Plans (FDOA-11)'']/node[@id=''Maneuver - Spacecraft %s'']/event', scIdstr(scId));
+  expr = xpath.compile(query);
+  res = expr.evaluate(doc, XPathConstants.NODESET);
+  manLen = res.getLength();
+  if(manLen==0)
+    irf.log('warning',[xmlFile,' did not contain any maneuvers for MMS',scIdstr(scId),'.']);
+  end
+  maneuvers.(['mms',scIdstr(scId)]) = cell(manLen,1);
+  for ii = 0:manLen-1
+    % Note: Java start with index 0.
+    childNode = res.item(ii).getChildNodes;
+    % Get start time of maneuver
+    startTimeStr = char(childNode.getElementsByTagName('starttime').item(0).getTextContent);
+    % Get stop time of maneuver
+    stopTimeStr = char(childNode.getElementsByTagName('stoptime').item(0).getTextContent);
+    % Tint interval
+    maneuvers.(['mms',scIdstr(scId)]){ii+1,1} = irf.tint(convertTime(startTimeStr), convertTime(stopTimeStr));
+  end
 end
 
 end
