@@ -203,6 +203,9 @@ classdef PDist < TSeries
         diste.data = diste.data*1e30; 
       end
       energyspec = obj.depend{1};
+      if size(energyspec,1) == 1
+        energyspec = repmat(energyspec,diste.length,1);
+      end
 
       % define angles
       thetae = obj.depend{3};
@@ -244,7 +247,7 @@ classdef PDist < TSeries
       PD = obj;
       PD.type = 'omni';
       PD.data_ = efluxomni;
-      PD.depend = {energyspec};
+      PD.depend = {obj.depend{1};};
       PD.representation = {obj.representation{1},'energy'};
       PD.units = 'keV/(cm^2 s sr keV)';
       PD.name = 'Differential energy flux';
