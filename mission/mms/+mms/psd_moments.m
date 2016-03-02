@@ -317,9 +317,10 @@ P_psd(:,6) = P_psd(:,6)-pmass*n_psd.*V_psd(:,3).*V_psd(:,3);
 Ptrace = (P_psd(:,1)+P_psd(:,4)+P_psd(:,6));
 T_psd = P_psd./([n_psd n_psd n_psd n_psd n_psd n_psd])/kb;
 H_psd = pmass/2*H_psd;
-H_psd(:,1) = H_psd(:,1)-(V_psd(:,1).*P_psd(:,1)+V_psd(:,2).*P_psd(:,2)+V_psd(:,3).*P_psd(:,3))-0.5*V_psd(:,1).*Ptrace;
-H_psd(:,2) = H_psd(:,2)-(V_psd(:,1).*P_psd(:,2)+V_psd(:,2).*P_psd(:,4)+V_psd(:,3).*P_psd(:,5))-0.5*V_psd(:,2).*Ptrace;
-H_psd(:,3) = H_psd(:,3)-(V_psd(:,1).*P_psd(:,3)+V_psd(:,2).*P_psd(:,5)+V_psd(:,3).*P_psd(:,6))-0.5*V_psd(:,3).*Ptrace;
+Vabs2 = V_psd(:,1).^2+V_psd(:,2).^2+V_psd(:,3).^2;
+H_psd(:,1) = H_psd(:,1)-(V_psd(:,1).*P_psd(:,1)+V_psd(:,2).*P_psd(:,2)+V_psd(:,3).*P_psd(:,3))-0.5*V_psd(:,1).*Ptrace-0.5*pmass*n_psd.*Vabs2.*V_psd(:,1);
+H_psd(:,2) = H_psd(:,2)-(V_psd(:,1).*P_psd(:,2)+V_psd(:,2).*P_psd(:,4)+V_psd(:,3).*P_psd(:,5))-0.5*V_psd(:,2).*Ptrace-0.5*pmass*n_psd.*Vabs2.*V_psd(:,2);
+H_psd(:,3) = H_psd(:,3)-(V_psd(:,1).*P_psd(:,3)+V_psd(:,2).*P_psd(:,5)+V_psd(:,3).*P_psd(:,6))-0.5*V_psd(:,3).*Ptrace-0.5*pmass*n_psd.*Vabs2.*V_psd(:,3);
 
 % Convert to typical units (/cc, km/s, nP, eV, and ergs/s/cm^2).
 n_psd = n_psd/1e6;
