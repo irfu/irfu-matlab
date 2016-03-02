@@ -4,7 +4,7 @@ function maneuvers = mms_maneuvers( Tint, scIdStr )
 % TESTING: DO NOT USE!
 
 narginchk(1,2);
-maneuvers = struct('mms1',[],'mms2',[],'mms3',[],'mms4',[]);
+maneuvers.mms1={}; maneuvers.mms2={}; maneuvers.mms3={}; maneuvers.mms4={};
 
 if(~isa(Tint,'GenericTimeArray') || ~all(size(Tint)==[2,1])), error('Unexpected Tint'); end
 if(nargin<2), scIdStr = '1234'; end
@@ -29,8 +29,6 @@ for ii = length(list):-1:2
   end
 end
 
-%% 
-
 Tint2 = Tint;
 
 % Read list from End to beginning, if Time of file is within interval Tint,
@@ -43,8 +41,8 @@ for ii = length(list):-1:1
   % nameInfo(3) - Stop  YYYY, nameInfo(4) - Stop  DOY, nameInfo(5)-Verison
   fileStart = irf_time([nameInfo(1), nameInfo(2)],'doy>ttns');
   fileStop = irf_time([nameInfo(3), nameInfo(4)], 'doy>ttns');
-  if( ( (fileStart - 86400*10^9) > Tint.stop.ttns ) || ...
-      ( (fileStop + 86400*10^9) < Tint.start.ttns ) )
+  if( ( (fileStart - 86400*10^9) > Tint2.stop.ttns ) || ...
+      ( (fileStop + 86400*10^9) < Tint2.start.ttns ) )
     % Remove file from list.
     list(ii) = [];
   else
@@ -62,15 +60,44 @@ for ii = length(list):-1:1
       irf.log('warning', errStr);
       continue
     end
-    
-    %% FIXME combine "maneuv" (just read) and "maneuvers" (read in previous file)
-    keyboard
-    
-    % Replace Tint interval to look for events to cover times up to this
-    % file for the following files (ie. events that have been
-    % changed/cancelled should not be loaded from older files).
-    tEnd = max(min(fileInterval.start.ttns,Tint2.stop.ttns), Tint.start.ttns);
-    Tint2 = irf.tint(Tint.start, EpochTT(tEnd));
+    if( fileInterval.start.ttns > Tint2.stop.ttns || ...
+        fileInterval.stop.ttns < Tint2.start.ttns )
+      % Skip file as it did not cover Tint time inteval despite its name
+      % suggested it would..
+      irf.log('notice',['Skipping file : ',list(ii).name]);
+      continue
+    end
+    % Locate maneuv within Tint2 (contains time interval from original
+    % Tint.start to the previous fileInterval.start) and append these to
+    % maneuvers (to be returned).
+    for kk=1:4
+      tmp = maneuv.(['mms',num2str(kk)]);
+      for ll=length(tmp):-1:1
+        % Check if it is outside of Tint2
+        if( tmp{ll}.start.ttns > Tint2.stop.ttns || ...
+            tmp{ll}.stop.ttns < Tint2.start.ttns )
+          continue
+        else
+          % Append
+          if(~isempty(maneuvers.(['mms',num2str(kk)])))
+            tmp2 = maneuvers.(['mms',num2str(kk)]);
+            maneuvers.(['mms',num2str(kk)]) = [tmp(ll); tmp2];
+          else
+            maneuvers.(['mms',num2str(kk)]) = {tmp{ll}};
+          end
+        end
+      end
+    end
+    % Replace Tint2 interval to look for maneuvers in next file to cover
+    % times up to the start of this previous file (ie. events that have
+    % been changed or cancelled should not be included from older files).
+    tEnd = max(min(fileInterval.start.ttns,Tint2.stop.ttns), Tint2.start.ttns);
+    Tint2 = irf.tint(Tint2.start, EpochTT(tEnd));
+    if(Tint2.start.ttns - Tint2.stop.ttns == int64(0)),
+      % We have processed all of the latest timeline files that cover our
+      % original requested time interval Tint.
+      return
+    end
   end
 end
 
