@@ -33,14 +33,12 @@ function [maneuvers, fileInterval] = mms_read_timeline(xmlFile, scIdstr)
 % 	See also MMS_MANEUVERS.
 %
 
-%% DO NOT USE
-% THIS IS FOR TESTING ONLY, DO NOT USE ! ! ! 
-%% FIXME: THIS IS FOR TESTING ONLY!!!
-if(~strcmp(getComputerName,'thonilaptop')), error('DO NOT USE THIS FUNCTION'); end
-
 % Verify input & output
 narginchk(1,2);
-if(~exist(xmlFile,'file')), error(['File does not exist: ', xmlFile]); end
+if(~exist(xmlFile,'file'))
+  errStr = ['File does not exist: ', xmlFile];
+  irf.log('critical', errStr); error(errStr);
+end
 if(exist('scIdstr','var'))
   if(isnumeric(scIdstr)), scIdstr = num2str(scIdstr); end
 else
