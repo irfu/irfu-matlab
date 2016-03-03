@@ -237,7 +237,7 @@ classdef PDist < TSeries
       switch obj.species
         case {'e','electron','electrons'}
           efluxomni = PSDomni.*energyspec.^2;
-          efluxomni = efluxomni; %convert to normal units
+          efluxomni = efluxomni/1e6/(5.486e-4)^2/0.53707; %convert to normal units
         case {'i','p','ion','ions'}
           efluxomni = PSDomni.*energyspec.^2;
           efluxomni = efluxomni/1e6/0.53707; %convert to normal units
