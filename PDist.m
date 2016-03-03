@@ -323,65 +323,8 @@ classdef PDist < TSeries
     function PD = pitchangles(obj,obj1,obj2)
       %PITCHANGLES Calculate pitchangle distribution
       % Distribution.pitchangles(pitchangles,B,[pitchangles])
-      %   See also MMS.GET_PITCHANGLEDIST      
-      
-      %[paddist,theta,energy,tint] = mms.get_pitchangledist(obj,obj.depend{2},obj.depend{3},obj.ancillary.steptable,obj.ancillary.energy0,obj.ancillary.energy1,obj1); % - For v1.0.0 or higher data
-      %Dist = PDist(paddist.time,paddist.data,energy,theta);
-      
-      if ~strcmp(obj.type_,'skymap'); error('PDist must be a skymap'); end
-      if isempty(obj2); anglevec = [15 30 45 60 75 90 105 120 135 150 165 180];
-      else anglevec = obj2; end
-      numechannels = size(obj.data,2);
-      lengthphi = size(obj.data,3);
-      lengththeta = size(obj.data,4);
-        
-      pitcha = anglevec-(anglevec(2)-anglevec(1))*0.5;
-      phi = obj.depend{2};
-      theta = obj.depend{3};
-
-
-      pdist = obj;
-      B = obj1;
-      B = B.resample(pdist);
-      Bvec = B/B.abs;
-      Bvecx = repmat(Bvec.data(:,1),1,numechannels,lengthphi,lengththeta);
-      Bvecy = repmat(Bvec.data(:,2),1,numechannels,lengthphi,lengththeta);
-      Bvecz = repmat(Bvec.data(:,3),1,numechannels,lengthphi,lengththeta);
-      
-      x = zeros(length(pdist.time),lengthphi,lengththeta);
-      y = zeros(length(pdist.time),lengthphi,lengththeta);
-      z = zeros(length(pdist.time),lengthphi,lengththeta);
-
-      for ii = 1:length(pdist.time);
-          x(ii,:,:) = -cosd(phi(ii,:)')*sind(theta);
-          y(ii,:,:) = -sind(phi(ii,:)')*sind(theta);
-          z(ii,:,:) = -ones(lengthphi,1)*cosd(theta);
-      end
-      
-      xt = repmat(x,1,1,1,32);
-      xt = squeeze(permute(xt,[1 4 2 3]));
-      yt = repmat(y,1,1,1,32);
-      yt = squeeze(permute(yt,[1 4 2 3]));
-      zt = repmat(z,1,1,1,32);
-      zt = squeeze(permute(zt,[1 4 2 3]));
-
-      thetab = acosd(xt.*Bvecx+yt.*Bvecy+zt.*Bvecz);
-
-      c_eval('dist? = pdist.data;',anglevec);
-      dist15(thetab > 15) = NaN;
-      for jj = 2:(length(anglevec)-1)
-        c_eval('dist?(thetab < (?-15)) = NaN;',anglevec(jj));
-        c_eval('dist?(thetab > ?) = NaN;',anglevec(jj));
-      end 
-      dist180(thetab < 165) = NaN;
-      c_eval('dist? =  squeeze(irf.nanmean(irf.nanmean(dist?,4),3));',anglevec);
-
-      paddistarr = cat(3,dist15,dist30,dist45,dist60,dist75,dist90,dist105,dist120,dist135,dist150,dist165,dist180);      
-      theta = pitcha;
-      
-      PD = PDist(pdist.time,paddistarr,'pitchangle',obj.depend{1},theta);
-      PD.units = obj.units;
-      PD.species = obj.species;
+      %   See also MMS.GET_PITCHANGLEDIST         
+      [PD,~,~,~] = mms.get_pitchangledist2(obj,obj1); % - For v1.0.0 or higher data
     end  
     function PD = e64(obj)
       % E64 collect data into 64 energy levels per time
