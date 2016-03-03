@@ -12,19 +12,19 @@ if(nargin<2), scIdStr = '1234'; end
 % List timeline files (can cover up to over 100 days...) The following is a
 % quick fix, should be integrated into mms db list_files.
 % /data/mms/ancillary/mms/timeline/mms_timeline_yyyyDOY_yyyyDOY_vXX.xml
-%% FIXME: "mounted/" should be removed when put in GIT.
 if(strcmp(getComputerName, 'thonilaptop'))
-dataPath = [filesep, 'data', filesep, 'mms', filesep, 'mounted', ...
-  filesep, 'ancillary', filesep, 'mms', filesep, 'timeline', filesep];
+dataRootPath = getenv('DATA_PATH_ROOT');
+dataPath = [dataRootPath, filesep, 'ancillary', filesep, 'mms', ...
+  filesep, 'timeline', filesep];
 else
   error('DO NOT USE THIS FUNCTION YET!');
 end
-
 % List all timeline files and remove superseeded versions.
 list = dir([dataPath,'mms_timeline_*.xml']);
 for ii = length(list):-1:2
   % If next file match the current file, remove next file from list.
   if(strcmpi(list(ii-1).name(1:end-6), list(ii).name(1:end-6)))
+    irf.log('debug',['Removing superseeded file ',list(ii-1).name,' from list.']);
     list(ii-1)=[];
   end
 end
@@ -51,7 +51,7 @@ for ii = length(list):-1:1
     % Tint and that are before the creation date of the previous list(ii)
     % file. This way any maneuvers that have been cancelled or moved in time
     % should not be included in our final list.
-    disp(list(ii).name);
+    irf.log('notice',['Processing file: ',list(ii).name]);
     try
       [maneuv, fileInterval] = mms_read_timeline([dataPath, list(ii).name], scIdStr);
     catch ME
@@ -71,23 +71,30 @@ for ii = length(list):-1:1
     % Tint.start to the previous fileInterval.start) and append these to
     % maneuvers (to be returned).
     for kk=1:4
-      tmp = maneuv.(['mms',num2str(kk)]);
-      for ll=length(tmp):-1:1
-        % Check if it is outside of Tint2
-        if( tmp{ll}.start.ttns > Tint2.stop.ttns || ...
-            tmp{ll}.stop.ttns < Tint2.start.ttns )
-          continue
-        else
-          % Append
-          if(~isempty(maneuvers.(['mms',num2str(kk)])))
-            tmp2 = maneuvers.(['mms',num2str(kk)]);
-            maneuvers.(['mms',num2str(kk)]) = [tmp(ll); tmp2];
+      if(isfield(maneuv, ['mms',num2str(kk)]))
+        tmp = maneuv.(['mms',num2str(kk)]);
+        for ll=length(tmp):-1:1
+          % Check if it is outside of Tint2
+          if( tmp{ll}.start.ttns > Tint2.stop.ttns || ...
+              tmp{ll}.stop.ttns < Tint2.start.ttns )
+            irf.log('debug',['Skipping maneuver outside of interval ', ...
+              Tint2.start.toUtc(1), '/', Tint2.stop.toUtc(1)]);
+            continue
           else
-            maneuvers.(['mms',num2str(kk)]) = {tmp{ll}};
+            % Append
+            irf.log('debug', ['Maneuver on MMS', num2str(kk), ' ', ...
+              tmp{ll}.start.toUtc(1), '/', tmp{ll}.stop.toUtc(1), ...
+              ' inside of requested interval.']);
+            if(~isempty(maneuvers.(['mms',num2str(kk)])))
+              tmp2 = maneuvers.(['mms',num2str(kk)]);
+              maneuvers.(['mms',num2str(kk)]) = [tmp(ll); tmp2];
+            else
+              maneuvers.(['mms',num2str(kk)]) = tmp(ll);
+            end
           end
-        end
-      end
-    end
+        end % for ll
+      end % isfield
+    end % for kk
     % Replace Tint2 interval to look for maneuvers in next file to cover
     % times up to the start of this previous file (ie. events that have
     % been changed or cancelled should not be included from older files).
