@@ -8,7 +8,8 @@ function [paddist,theta,energy,tint] = get_pitchangledist(varargin)
 % Computes the pitch angle distributions from l1b brst particle data. 
 %
 % Inputs:
-%       pdist - electron or ion particle distribution in TSeries
+%       pdist - electron or ion particle distribution in TSeries or PDist
+%       format
 %       B     - magnetic field in TSeries
 %       phi   - TSeries of all phi angles of distribution.
 %       theta - 1D array or structure of theta angles. 
@@ -39,7 +40,37 @@ lengththeta = 16;
 
 % Input check
 rtrnTS = 1;
-if (nargin == 2 || nargin==3),
+if isa(varargin{1},'PDist'),
+    if strcmp('skymap',varargin{1}.type),
+        irf.log('critical','PDist is skymap format; computing pitch angle distribution.');
+        pdist = varargin{1};
+        B = varargin{2};
+        phi = TSeries(pdist.time,pdist.depend{1,2});
+        theta = pdist.depend{1,3};
+        stepTable = TSeries(pdist.time,pdist.ancillary.energyStepTable);
+        energy0 = pdist.ancillary.energy0;
+        energy1 = pdist.ancillary.energy1;
+        noangles = 0;
+        if (nargin == 3),
+            tint = varargin{3};
+            if(length(tint) > 2),
+                irf.log('critical','Format of tint is wrong.');
+                return; 
+            end
+            rtrnTS = 0;
+            if (length(tint) == 2),
+                rtrnTS = 1;
+                pdist = pdist.tlim(tint);
+                B = B.tlim(tint);
+                phi = phi.tlim(tint);
+                stepTable = stepTable.tlim(tint);
+            end
+        end
+    else
+        irf.log('critical','PDist must be skymap.');
+        return;        
+    end
+elseif (nargin == 2 || nargin==3),
     pdist = varargin{1};
     B = varargin{2};
     noangles = 1;
@@ -57,7 +88,7 @@ if (nargin == 2 || nargin==3),
         end
     end
     irf.log('warning','No angles passed. Default values used.');
-elseif (nargin==7 || nargin==8)
+elseif (nargin==7 || nargin==8),
     pdist = varargin{1};
     phi = varargin{2};
     theta = varargin{3};
@@ -179,5 +210,10 @@ end
 
 theta = pitcha;
 toc;
+if isa(varargin{1},'PDist'),
+    paddist = PDist(pdist.time,paddistarr,'pitchangle',energy,theta);
+    paddist.units = pdist.units;
+    paddist.species = pdist.species;
+end
 
 end
