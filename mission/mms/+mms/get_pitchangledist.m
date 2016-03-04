@@ -5,7 +5,7 @@ function [paddist,theta,energy,tint] = get_pitchangledist(varargin)
 % [paddist,theta,energy,tint] = mms.get_pitchangledist(pdist,B,[tint]) - For v0.2.0 data
 % [paddist,theta,energy,tint] = mms.get_pitchangledist(pdist,phi,theta,stepTable,energy0,energy1,B,[tint]) - For v1.0.0 or higher data
 % [paddist,theta,energy,tint] = mms.get_pitchangledist(pdist,B,[tint]) - For PDist structure
-% [paddist,theta,energy,tint] = mms.get_pitchangledist(pdist,B,[tint],'awidth',10) - For PDist structure
+% [paddist,theta,energy,tint] = mms.get_pitchangledist(pdist,B,[tint],'nangles',24) - For PDist structure
 %
 %
 % Computes the pitch angle distributions from l1b brst particle data. 
@@ -29,7 +29,9 @@ function [paddist,theta,energy,tint] = get_pitchangledist(varargin)
 %       tint - interval or time of the returned distibution(s)
 %
 % Options: 
-%       'nangles' - flag to set number of pitch angles used (Default is 12).
+%       'nangles' - flag to set number of pitch angles used (Default is
+%       12). When counts are high (plasma is dense) 24 pitch angles for
+%       electrons may be used. 
 %
 % Support for v0.2.0 should be removed when it is not needed
 % 
