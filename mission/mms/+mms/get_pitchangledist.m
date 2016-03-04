@@ -1,8 +1,11 @@
 function [paddist,theta,energy,tint] = get_pitchangledist(varargin) 
 % GET_PITCHANGLEDIST compute pitch angle distributions from burst mode data
 %
+% Examples:
 % [paddist,theta,energy,tint] = mms.get_pitchangledist(pdist,B,[tint]) - For v0.2.0 data
 % [paddist,theta,energy,tint] = mms.get_pitchangledist(pdist,phi,theta,stepTable,energy0,energy1,B,[tint]) - For v1.0.0 or higher data
+% [paddist,theta,energy,tint] = mms.get_pitchangledist(pdist,B,[tint]) - For PDist structure
+% [paddist,theta,energy,tint] = mms.get_pitchangledist(pdist,B,[tint],'awidth',10) - For PDist structure
 %
 %
 % Computes the pitch angle distributions from l1b brst particle data. 
@@ -25,6 +28,9 @@ function [paddist,theta,energy,tint] = get_pitchangledist(varargin)
 %       energy - energy as a vector or array corresponding to paddist
 %       tint - interval or time of the returned distibution(s)
 %
+% Options: 
+%       'nangles' - flag to set number of pitch angles used (Default is 12).
+%
 % Support for v0.2.0 should be removed when it is not needed
 % 
 % Written by D. B. Graham
@@ -32,11 +38,24 @@ function [paddist,theta,energy,tint] = get_pitchangledist(varargin)
 
 tic;
 
-anglevec = [15 30 45 60 75 90 105 120 135 150 165 180];
-pitcha = anglevec-7.5;
 numechannels = 32;
 lengthphi = 32;
 lengththeta = 16;
+anglevec = [15:15:180]; % Default pitch angles. 15 degree angle widths
+dangle = median(diff(anglevec));
+tmpnargin = nargin;
+if isa(varargin{tmpnargin-1},'char')
+    if strcmp(varargin{tmpnargin-1},'nangles');
+        nangles = varargin{tmpnargin};
+        nangles = floor(nangles); % Make sure input is integer
+        dangle = 180/nangles;
+        anglevec = [dangle:dangle:180];
+        irf.log('notice','User defined pitch angle width used.')
+    end
+    tmpnargin = tmpnargin-2;
+end
+
+pitcha = anglevec-dangle/2;
 
 % Input check
 rtrnTS = 1;
@@ -51,7 +70,7 @@ if isa(varargin{1},'PDist'),
         energy0 = pdist.ancillary.energy0;
         energy1 = pdist.ancillary.energy1;
         noangles = 0;
-        if (nargin == 3),
+        if (tmpnargin == 3),
             tint = varargin{3};
             if(length(tint) > 2),
                 irf.log('critical','Format of tint is wrong.');
@@ -70,11 +89,11 @@ if isa(varargin{1},'PDist'),
         irf.log('critical','PDist must be skymap.');
         return;        
     end
-elseif (nargin == 2 || nargin==3),
+elseif (tmpnargin == 2 || tmpnargin==3),
     pdist = varargin{1};
     B = varargin{2};
     noangles = 1;
-    if (nargin == 3),
+    if (tmpnargin == 3),
         tint = varargin{3};
         if(length(tint) > 2),
             irf.log('critical','Format of tint is wrong.');
@@ -88,7 +107,7 @@ elseif (nargin == 2 || nargin==3),
         end
     end
     irf.log('warning','No angles passed. Default values used.');
-elseif (nargin==7 || nargin==8),
+elseif (tmpnargin==7 || tmpnargin==8),
     pdist = varargin{1};
     phi = varargin{2};
     theta = varargin{3};
@@ -106,7 +125,7 @@ elseif (nargin==7 || nargin==8),
     end
     B = varargin{7};
     noangles = 0;
-    if (nargin == 8),
+    if (tmpnargin == 8),
         tint = varargin{8};
         if(length(tint) > 2),
             irf.log('critical','Format of tint is wrong.');
@@ -190,16 +209,20 @@ zt = squeeze(permute(zt,[1 4 2 3]));
 
 thetab = acosd(xt.*Bvecx+yt.*Bvecy+zt.*Bvecz);
 
-c_eval('dist? = pdist.data;',anglevec);
-dist15(thetab > 15) = NaN;
+c_eval('dist? = pdist.data;',1:length(anglevec));
+dist1(thetab > anglevec(1)) = NaN;
 for jj = 2:(length(anglevec)-1)
-	c_eval('dist?(thetab < (?-15)) = NaN;',anglevec(jj));
-	c_eval('dist?(thetab > ?) = NaN;',anglevec(jj));
+	c_eval('dist?(thetab < (anglevec(?)-dangle)) = NaN;',jj);
+	c_eval('dist?(thetab > anglevec(?)) = NaN;',jj);
 end 
-dist180(thetab < 165) = NaN;
-c_eval('dist? =  squeeze(irf.nanmean(irf.nanmean(dist?,4),3));',anglevec);
+c_eval('dist?(thetab < (anglevec(end)-dangle)) = NaN;',length(anglevec));
+c_eval('dist? =  squeeze(irf.nanmean(irf.nanmean(dist?,4),3));',1:length(anglevec));
 
-paddistarr = cat(3,dist15,dist30,dist45,dist60,dist75,dist90,dist105,dist120,dist135,dist150,dist165,dist180);
+%paddistarr = cat(3,dist15,dist30,dist45,dist60,dist75,dist90,dist105,dist120,dist135,dist150,dist165,dist180);
+paddistarr = dist1;
+for ii = 2:length(anglevec);
+    c_eval('paddistarr = cat(3,paddistarr,dist?);',ii);
+end
 
 if rtrnTS,
     paddist = TSeries(pdist.time,paddistarr);
