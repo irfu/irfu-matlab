@@ -32,6 +32,10 @@ function particlemoments = psd_moments(varargin)
 %   correcting for spacecraft potential. 
 %   'enchannels' - set energy channels to integrate over [min max]; min and max
 %   between must be between 1 and 32.
+%   'partialmoms' - use a binary array (or TSeries) (pmomsarr) to select which psd points are used
+%   in the moments calculation. pmomsarr must be a binary array (1s and 0s, 1s correspond to points used).
+%   Array (or data of TSeries) must be the same size as pdist.data. For
+%   examples see Example_MMS_partialmoments.
 %
 % Output: 
 %   psd_moments - structure containing the particle moments: density, bulk
@@ -161,6 +165,26 @@ while options
         case 'enchannels'
             if numel(args)>1 && isnumeric(args{2}),
                 intenergies = args{2}(1):args{2}(2);
+            end
+        case 'partialmoms'
+            if numel(args)>1,
+                partialmoms = args{2};
+                if isa(partialmoms,'TSeries'), 
+                    partialmoms = partialmoms.data;
+                end
+                % Check size of partialmoms
+                if (size(partialmoms) == size(pdist.data)),
+                    sumones = sum(sum(sum(sum(partialmoms))));
+                    sumzeros = sum(sum(sum(sum(-partialmoms+1))));
+                    if ((sumones+sumzeros) == numel(pdist.data)),
+                        irf.log('notice','partialmoms is correct. Partial moments will be calculated');
+                        pdist.data = pdist.data.*partialmoms;
+                    else
+                        irf.log('notice','All values are not ones and zeros in partialmoms. Full moments will be calculated.');
+                    end
+                else
+                    irf.log('notice','Size of partialmoms is wrong. Full moments will be calculated.');
+                end
             end
         otherwise
             irf.log('critical',['Unknown flag: ' args{1}]);
@@ -317,9 +341,10 @@ P_psd(:,6) = P_psd(:,6)-pmass*n_psd.*V_psd(:,3).*V_psd(:,3);
 Ptrace = (P_psd(:,1)+P_psd(:,4)+P_psd(:,6));
 T_psd = P_psd./([n_psd n_psd n_psd n_psd n_psd n_psd])/kb;
 H_psd = pmass/2*H_psd;
-H_psd(:,1) = H_psd(:,1)-(V_psd(:,1).*P_psd(:,1)+V_psd(:,2).*P_psd(:,2)+V_psd(:,3).*P_psd(:,3))-0.5*V_psd(:,1).*Ptrace;
-H_psd(:,2) = H_psd(:,2)-(V_psd(:,1).*P_psd(:,2)+V_psd(:,2).*P_psd(:,4)+V_psd(:,3).*P_psd(:,5))-0.5*V_psd(:,2).*Ptrace;
-H_psd(:,3) = H_psd(:,3)-(V_psd(:,1).*P_psd(:,3)+V_psd(:,2).*P_psd(:,5)+V_psd(:,3).*P_psd(:,6))-0.5*V_psd(:,3).*Ptrace;
+Vabs2 = V_psd(:,1).^2+V_psd(:,2).^2+V_psd(:,3).^2;
+H_psd(:,1) = H_psd(:,1)-(V_psd(:,1).*P_psd(:,1)+V_psd(:,2).*P_psd(:,2)+V_psd(:,3).*P_psd(:,3))-0.5*V_psd(:,1).*Ptrace-0.5*pmass*n_psd.*Vabs2.*V_psd(:,1);
+H_psd(:,2) = H_psd(:,2)-(V_psd(:,1).*P_psd(:,2)+V_psd(:,2).*P_psd(:,4)+V_psd(:,3).*P_psd(:,5))-0.5*V_psd(:,2).*Ptrace-0.5*pmass*n_psd.*Vabs2.*V_psd(:,2);
+H_psd(:,3) = H_psd(:,3)-(V_psd(:,1).*P_psd(:,3)+V_psd(:,2).*P_psd(:,5)+V_psd(:,3).*P_psd(:,6))-0.5*V_psd(:,3).*Ptrace-0.5*pmass*n_psd.*Vabs2.*V_psd(:,3);
 
 % Convert to typical units (/cc, km/s, nP, eV, and ergs/s/cm^2).
 n_psd = n_psd/1e6;

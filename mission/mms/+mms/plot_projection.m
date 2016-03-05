@@ -28,6 +28,9 @@ function [hax,hcb] = plot_projection(varargin)
 %   'vlim' - vmax in km/s, zoom in to XLim = YLim = vlim*[-1 1]
 %   'elevationlim' - in degrees [0 90], limiting elevation angle  
 %                    above/below projection plane to include in projection
+%   'scpot' - scpot (TSeries), Correct velocities for spacecraft potential. For a single
+%   value of tint the closest potential is used. For an interval the
+%   spacecraft potential is average over that interval.
 %
 %   Notes: If phi, theta, stepTable, energy0, energy1 are not specified
 %          then assumed values are used. 
@@ -97,6 +100,7 @@ have_clim = 0;
 have_vlim = 0;
 limElevation = 20;
 correctForBinSize = 0;
+includescpot = 0;
 
 x = [1 0 0]; y = [0 1 0]; z = [0 0 1]; % default vectors
 
@@ -183,6 +187,16 @@ while have_options
       doFlipX = 1;
     case 'flipy'
       doFlipY = 1;  
+	case 'scpot'
+      l = 2;
+      scpot = args{2};
+      if isa(scpot,'TSeries'),
+        includescpot = 1;
+        irf.log('notice','Spacecraft potential passed.')
+      else
+          includescpot = 0;
+          irf.log('notice','scpot not recognized. Not using it.')
+      end
   end
   args = args(l+1:end);  
   if isempty(args), break, end    
@@ -284,10 +298,30 @@ end
 % Plot projection plane
 if isempty(ax), fig = figure; ax = axes; axis(ax,'square'); end
 
-Units = irf_units; % Use IAU and CODATA values for fundamental constants.
-if isDes, m = Units.me; else m = Units.mp; end
+% Calculate spacecraft potential for distribution
+if includescpot,
+    if length(tint)==1,
+        [~,tId] = min(abs(scpot.time-tint));
+        scpot = scpot.data(tId);
+    else
+        scpot = scpot.tlim(tint);
+        scpot = irf.nanmean(scpot.data);
+    end
+else
+    scpot = 0;
+end
+    
 
-speedTable = sqrt(energyEdges*Units.e*2/m)*1e-3; % km/s
+Units = irf_units; % Use IAU and CODATA values for fundamental constants.
+if isDes, 
+    m = Units.me; 
+else
+    m = Units.mp;
+    scpot = -scpot;
+end
+
+speedTable = real(sqrt((energyEdges-scpot)*Units.e*2/m)*1e-3); % km/s
+
 rE = speedTable;
 %rE = energyTable;
 plX = rE'*cos(edgesAz+pi);

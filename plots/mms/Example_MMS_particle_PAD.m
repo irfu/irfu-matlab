@@ -129,7 +129,7 @@ for ii = 1:length(disti.time);
 end
 
 efluxomni = PSDomni.*energyspec.^2;
-efluxomni = efluxomni; %convert to normal units
+efluxomni = efluxomni/1e6/(5.486e-4)^2/0.53707; %convert to normal units
 
 ifluxomni = PSDiomni.*energyspeci.^2;
 ifluxomni = ifluxomni/1e6/0.53707; %convert to normal units
