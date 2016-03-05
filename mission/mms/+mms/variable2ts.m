@@ -55,8 +55,8 @@ if ~isempty(regexp(v.name,'^mms[1-4]_d[ei]s_','once'))
             irf.log('critical','Times shifted to center of dt-+. dt-+ are recalculated');
             toffset = (int64(v.DEPEND_0.DELTA_PLUS_VAR.data)-int64(v.DEPEND_0.DELTA_MINUS_VAR.data))*1e6/2;
             tdiff = (int64(v.DEPEND_0.DELTA_PLUS_VAR.data)+int64(v.DEPEND_0.DELTA_MINUS_VAR.data))*1e6/2;
-            v.DEPEND_0.DELTA_MINUS_VAR.data = tdiff/2;
-            v.DEPEND_0.DELTA_PLUS_VAR.data = tdiff/2;
+            v.DEPEND_0.DELTA_MINUS_VAR.data = tdiff;
+            v.DEPEND_0.DELTA_PLUS_VAR.data = tdiff;
             v.DEPEND_0.data = v.DEPEND_0.data+toffset;
         end
     end

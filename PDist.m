@@ -141,6 +141,15 @@ classdef PDist < TSeries
           error('Depend has wrong dimensions.')
         end
       end
+      % on ancillary data
+      nameFields = fieldnames(obj.ancillary);
+      nFields = numel(nameFields);
+      for iField = 1:nFields
+        eval(['sizeField = size(obj.ancillary.' nameFields{iField} ');'])
+        if sizeField(1) == sizeData(1);
+          eval(['obj.ancillary.' nameFields{iField} ' = obj.ancillary.' nameFields{iField} '(idx,:);'])
+        end
+      end
     end
     
     function PD = palim(obj,palim)
@@ -327,12 +336,16 @@ classdef PDist < TSeries
       %     B - TSeries of B in dmpa coordinates
       %     nangles - Number of pitch angles
       %   See also MMS.GET_PITCHANGLEDIST         
+<<<<<<< HEAD
       if isempty(obj2),
           nangles = 12;
       else 
           nangles = obj2; 
       end
       [PD,~,~,~] = mms.get_pitchangledist(obj,obj1,'nangles',nangles); % - For v1.0.0 or higher data
+=======
+      [PD,~,~,~] = mms.get_pitchangledist(obj,obj1); % - For v1.0.0 or higher data
+>>>>>>> e8299032d0b8101eb27cde147f6cf83b55edbded
     end  
     function PD = e64(obj)
       % E64 collect data into 64 energy levels per time
