@@ -322,9 +322,17 @@ classdef PDist < TSeries
     end        
     function PD = pitchangles(obj,obj1,obj2)
       %PITCHANGLES Calculate pitchangle distribution
-      % Distribution.pitchangles(pitchangles,B,[pitchangles])
+      % Distribution.pitchangles(pitchangles,B,[nangles])
+      % Input: 
+      %     B - TSeries of B in dmpa coordinates
+      %     nangles - Number of pitch angles
       %   See also MMS.GET_PITCHANGLEDIST         
-      [PD,~,~,~] = mms.get_pitchangledist2(obj,obj1); % - For v1.0.0 or higher data
+      if isempty(obj2),
+          nangles = 12;
+      else 
+          nangles = obj2; 
+      end
+      [PD,~,~,~] = mms.get_pitchangledist(obj,obj1,'nangles',nangles); % - For v1.0.0 or higher data
     end  
     function PD = e64(obj)
       % E64 collect data into 64 energy levels per time
