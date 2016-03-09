@@ -17,6 +17,8 @@ function [ax,hcb] = plot_skymap(varargin)
 %    'flat' - plot a flat skymap (ie. not a sphere)
 %    'log' - plot log10 scale
 
+%   comments from wyli; going to change this script;
+
 [ax,args,nargs] = axescheck(varargin{:});
 
 dist = args{1}; args = args(2:end);
