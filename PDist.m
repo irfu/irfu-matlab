@@ -340,18 +340,24 @@ classdef PDist < TSeries
           nangles = 12;
       else 
           nangles = obj2; 
-      end
-      [PD,~,~,~] = mms.get_pitchangledist(obj,obj1,'nangles',nangles); % - For v1.0.0 or higher data
-      
+      end       
+      [PD,~,~,~] = mms.get_pitchangledist(obj,obj1,'nangles',nangles); % - For v1.0.0 or higher data      
     end  
     function PD = e64(obj)
       % E64 collect data into 64 energy levels per time
+      %   
+      %   see also MMS.PSD_REBIN
+      
+      % MMS.PSD_REBIN should be made compatible with pitch angle
+      % distrbutions!!!
       
       [pdistr,phir,energyr] = mms.psd_rebin(obj,TSeries(obj.time,obj.depend{2}),obj.ancillary.energy0,obj.ancillary.energy1,TSeries(obj.time,obj.ancillary.energyStepTable));
       PD = obj.clone(pdistr.time,pdistr.data);      
       PD.depend{1} = energyr;
-      PD.depend{2} = phir.data;
-      
+      PD.depend{2} = phir.data;  
+      %if isfield(PD.ancillary,'energy1'); PD.ancillary = rmfield(PD.ancillary,'energy1'); end
+      if isfield(PD.ancillary,'energy0'); PD.ancillary = setfield(PD.ancillary,'energy0',PD.depend{1}); end
+      if isfield(PD.ancillary,'energyStepTable'); PD.ancillary = setfield(PD.ancillary,'energyStepTable',zeros(PD.length,1)); end
 %       energy = obj.depend{1};
 %       [newEnergy,energyOrder] = sort([energy(1,:) energy(2,:)]);
 %             
@@ -405,6 +411,71 @@ classdef PDist < TSeries
       % Get energy of object
       %indE = find(strcmp(obj.representation,'energy'))
       e = obj.depend{1};
+    end
+    function moms = moments(obj,varargin)
+      % MOMENTS compute moments from the FPI particle phase-space densities 
+      %
+      % For brst mode data
+      % particlemoments = PDist.moments(phi,theta,stepTable,energy0,energy1,SCpot,particle,option,option_value)
+      %
+      % For fast mode data
+      % particlemoments = PDist.moments(phi,theta,energy,SCpot,particle,'fast',option,option_value)
+      %
+      % Input:
+      %   pdist - TSeries of the full particle distribution of electrons or ions
+      %   (must be in s^3/cm^6) (burst and fast)
+      %   phi - TSeries of all phi angles of distribution for burst data. 1D array or
+      %   structure for fast data.
+      %   theta - 1D array or structure of theta angles (burst and fast)
+      %   stepTable - TSeries of stepping table between energies (burst)
+      %   energy0 - 1D array or structure of energy table 0 (burst)
+      %   energy1 - 1D array or structure of energy table 1 (burst)
+      %   energy - 1D array or structure of energy table (fast)
+      %   SCpot - TSeries of spacecraft potential (burst and fast). 
+      %   (Make sure sign is correct, should be typically positive)
+      %   particle - indicate particle type: 'electron' or 'ion'
+      %
+      %   See Example_MMS_EDRsignatures for example of loading the necessary data 
+      %   and running the function.
+      %
+      % Optional Inputs:
+      %   'energyrange' - set energy range in eV to integrate over [E_min E_max].
+      %   energy range is applied to energy0 and the same elements are used for energy1 to 
+      %   ensure that the same number of points are integrated over. 
+      %   'noscpot' - set to 1 to set spacecraft potential to zero. Calculates moments without
+      %   correcting for spacecraft potential. 
+      %   'enchannels' - set energy channels to integrate over [min max]; min and max
+      %   between must be between 1 and 32.
+      %   'partialmoms' - use a binary array (or TSeries) (pmomsarr) to select which psd points are used
+      %   in the moments calculation. pmomsarr must be a binary array (1s and 0s, 1s correspond to points used).
+      %   Array (or data of TSeries) must be the same size as pdist.data. For
+      %   examples see Example_MMS_partialmoments.
+      %
+      % Output: 
+      %   psd_moments - structure containing the particle moments: density, bulk
+      %   velocity, pressure, temperature, and particle heat flux (n_psd, V_psd, P_psd, T_psd, and H_psd,
+      %   respectively) as TSeries'. For temperature and
+      %   pressure tensors the order of the columns is XX, XY, XZ, YY, YZ, ZZ.
+      %
+      % See also MMS.PSD_MOMENTS
+      %
+      % Notes: 
+      % Regarding the spacecraft potential, the best estimate of is -1.2*(probe
+      % to spacecraft voltage)+MMSoffset. Note that in most plasmas the spacecraft
+      % potential is positive. E.g.
+      % ic = 1,2,3, or 4;
+      % c_eval('do = dataobj(''data/mms?_edp_brst_l2_scpot_20151202011414_v1.0.0.cdf'');',ic);
+      % c_eval('SCpot = mms.variable2ts(get_variable(tmpDataObj,''mms?_edp_psp''));',ic);
+      % offset1 = 1.3; offset2 = 1.5; offset3 = 1.2; offset4 = 0.0; %For v1 data
+      % c_eval('SCpot.data = -SCpot.data*1.2+offset?;',ic);
+      % Apply correction for input. Correction is not applied in this script. 
+      % This correction is applied to v2 spacecraft potential so use 
+      % c_eval('SCpot = mms.variable2ts(get_variable(tmpDataObj,''mms?_edp_scpot_fast_l2''));',ic);
+      %
+      % Currently the heat flux vector does not match with the FPI ion moments. Currently
+      % using Eq. (6.8) of Analysis Methods for Multi-Spacecraft Data. This needs
+      % to be investigated further. 
+ 
     end
   end
   methods (Static)
