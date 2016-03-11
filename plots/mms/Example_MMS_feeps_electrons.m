@@ -2,6 +2,7 @@
 %   Example code to plot FEEPS-electron burst-l2 data
 %       - The current burst-l2 data is not helpful to see the pitch angle distributino. A better way is to ask
 %         help from FEEPS team, e.g. Drew Turner (drew.lawson.turner@gmail.com).
+%       - Refer to FEEPS and EPD documents for better understanding of the instrument.
 %       - Wenya, 2016-03-11, irfu.
 
 %%  1. basic
@@ -75,7 +76,7 @@
     caxis(hca,[-0.5, 3])
     ylabel(hca,'H1U [keV]','Interpreter','tex');
 
-%       4.1. electron Top 5
+%       4.2. electron Top 3
     hca=irf_panel('Top3');
     irf_spectrogram(hca, speTit3, 'log', 'donotfitcolorbarlabel');
     %set(hca,'yscale','log');
@@ -83,7 +84,7 @@
     caxis(hca,[-0.5, 3])
     ylabel(hca,'H2U','Interpreter','tex');
     
-%       4.1. electron Top 5
+%       4.3. electron Top 9
     hca=irf_panel('Top9');
     irf_spectrogram(hca, speTit9, 'log', 'donotfitcolorbarlabel');
     %set(hca,'yscale','log');
@@ -91,7 +92,7 @@
     caxis(hca,[-0.5, 3])
     ylabel(hca,'H5U','Interpreter','tex');
 
-%       4.1. electron Top 5
+%       4.4. electron Top 11
     hca=irf_panel('Top11');
     irf_spectrogram(hca, speTit11, 'log', 'donotfitcolorbarlabel');
     %set(hca,'yscale','log');
@@ -99,7 +100,7 @@
     caxis(hca,[-0.5, 3])
     ylabel(hca,'H6U','Interpreter','tex'); 
     
-%       4.1. electron Top 5
+%       4.5. electron Top 5
     hca=irf_panel('Top5');
     irf_spectrogram(hca, speTit5, 'log', 'donotfitcolorbarlabel');
     %set(hca,'yscale','log');
@@ -107,7 +108,7 @@
     caxis(hca,[-0.5, 3])
     ylabel(hca,'H3T','Interpreter','tex');
     
-%       4.1. electron Top 5
+%       4.6. electron Bottom 5
     hca=irf_panel('Bottom5');
     irf_spectrogram(hca, speBit5, 'log', 'donotfitcolorbarlabel');
     %set(hca,'yscale','log');
@@ -115,7 +116,7 @@
     caxis(hca,[-0.5, 3])
     ylabel(hca,'H3B','Interpreter','tex');      
     
-%       4.1. electron Top 5
+%       4.7. electron Bottom 2
     hca=irf_panel('Top2');
     irf_spectrogram(hca, speTit2, 'log', 'donotfitcolorbarlabel');
     %set(hca,'yscale','log');
@@ -123,7 +124,7 @@
     caxis(hca,[-0.5, 3])
     ylabel(hca,'H1D','Interpreter','tex');
 
-%       4.1. electron Top 5
+%       4.8. electron Top 4
     hca=irf_panel('Top4');
     irf_spectrogram(hca, speTit4, 'log', 'donotfitcolorbarlabel');
     %set(hca,'yscale','log');
@@ -131,7 +132,7 @@
     caxis(hca,[-0.5, 3])
     ylabel(hca,'H2D','Interpreter','tex');     
 
-%       4.1. electron Top 5
+%       4.9. electron Top 10
     hca=irf_panel('Top10');
     irf_spectrogram(hca, speTit10, 'log', 'donotfitcolorbarlabel');
     %set(hca,'yscale','log');
@@ -139,40 +140,13 @@
     caxis(hca,[-0.5, 3])
     ylabel(hca,'H3D','Interpreter','tex');
 
-%       4.1. electron Top 5
+%       4.10. electron Top 12
     hca=irf_panel('Top12');
     irf_spectrogram(hca, speTit12, 'log', 'donotfitcolorbarlabel');
     %set(hca,'yscale','log');
     %set(hca,'ytick',[1e1 1e2 1e3 1e4]);
     caxis(hca,[-0.5, 3])
     ylabel(hca,'H4D','Interpreter','tex');     
-    
-    
-    
-% %       4.1. electron Top 5
-%     hca=irf_panel('Bottom5');
-%     irf_spectrogram(hca, speBit5, 'log', 'donotfitcolorbarlabel');
-%     %set(hca,'yscale','log');
-%     %set(hca,'ytick',[1e1 1e2 1e3 1e4]);
-%     %scaxis(hca,[-1, 2])
-%     caxis(hca,[-0.5, 2])
-%     ylabel(hca,'eEnergy [keV]','Interpreter','tex');    
- 
-% %       4.1. electron Top 5
-%     hca=irf_panel('Top1');
-%     irf_spectrogram(hca, speTit1, 'log', 'donotfitcolorbarlabel');
-%     %set(hca,'yscale','log');
-%     %set(hca,'ytick',[1e1 1e2 1e3 1e4]);
-%     caxis(hca,[-0.5, 2])
-%     ylabel(hca,'eEnergy [keV]','Interpreter','tex');
-%     
-% %       4.1. electron Top 5
-%     hca=irf_panel('Top2');
-%     irf_spectrogram(hca, speTit2, 'log', 'donotfitcolorbarlabel');
-%     %set(hca,'yscale','log');
-%     %set(hca,'ytick',[1e1 1e2 1e3 1e4]);
-%     caxis(hca,[-0.5, 3])
-%     ylabel(hca,'eEnergy [keV]','Interpreter','tex');    
     
 %       4.X.
     irf_zoom(h,'y', [20 200])
