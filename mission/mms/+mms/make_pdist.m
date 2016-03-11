@@ -1,6 +1,8 @@
-function PD = make_pdist(file)
+function varargout = make_pdist(file,varargin)
 % Construct PDist skymap from file name + file path
-%   ePDist = mms.make_pdist(input)
+%   PDist = mms.make_pdist(input)
+%   [PDist PDistError] = mms.make_pdist(input)
+%   PDistError = mms.make_pdist(input,'error')
 %     input - can be a complete file path or a dataobj
 %
 %   db_info = datastore('mms_db');  
@@ -12,6 +14,18 @@ function PD = make_pdist(file)
 %   tmpDataObj = dataobj(file);
 %   c_eval('ePDist? = mms.make_pdist(tmpDataObj)',ic)
  
+loadError = 0;
+loadDist = 1;
+if ~isempty(varargin) && strcmp(varargin{1},'error')
+  loadError = 1;
+  loadDist = 0;
+end
+if nargout == 2
+  loadError = 1;
+  loadDist = 1;
+end
+
+
 if isa(file,'dataobj');
   tmpDataObj =  file;  
 elseif isa(file,'char');
@@ -36,8 +50,17 @@ end
 
 %dataSetName = tmpDataObj.
 %'mms1_des_dist_brst'
-tmpDist = get_variable(tmpDataObj,['mms' mmsId '_' detector '_dist_brst']);
-Dist = tmpDist.data;
+if loadError
+  tmpError = get_variable(tmpDataObj,['mms' mmsId '_' detector '_disterr_brst']);
+  Error = tmpError.data;
+end
+if loadDist
+  tmpDist = get_variable(tmpDataObj,['mms' mmsId '_' detector '_dist_brst']);
+  Dist = tmpDist.data;
+else
+  Dist = Error;
+end
+
 
 % Collect User data
 ud = [];
@@ -99,4 +122,12 @@ PD.ancillary.energy0 = energy0;
 PD.ancillary.energy1 = energy1;
 PD.ancillary.energyStepTable = stepTable;
 
+if loadDist && ~loadError
+  varargout = {PD};
+elseif loadError && ~loadDist
+  varargout = {PD};
+else
+  PDError = PD.clone(PD.time,Error);  PDError.name = tmpError.name;
+  varargout = {PD,PDError};
 end
+
