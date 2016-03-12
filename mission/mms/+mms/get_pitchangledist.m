@@ -5,8 +5,8 @@ function [paddist,theta,energy,tint] = get_pitchangledist(varargin)
 % [paddist,theta,energy,tint] = mms.get_pitchangledist(pdist,B,[tint]) - For v0.2.0 data
 % [paddist,theta,energy,tint] = mms.get_pitchangledist(pdist,phi,theta,stepTable,energy0,energy1,B,[tint]) - For v1.0.0 or higher data
 % [paddist,theta,energy,tint] = mms.get_pitchangledist(pdist,B,[tint]) - For PDist structure
-% [paddist,theta,energy,tint] = mms.get_pitchangledist(pdist,B,[tint],'nangles',24) - For PDist structure
-%
+% [paddist,theta,energy,tint] = mms.get_pitchangledist(pdist,B,[tint],'angles',24) - For PDist structure
+% [paddist,theta,energy,tint] = mms.get_pitchangledist(pdist,B,[tint],'angles',[0 45 90 135 180]) - For PDist structure
 %
 % Computes the pitch angle distributions from l1b brst particle data. 
 %
@@ -29,8 +29,8 @@ function [paddist,theta,energy,tint] = get_pitchangledist(varargin)
 %       tint - interval or time of the returned distibution(s)
 %
 % Options: 
-%       'nangles' - flag to set number of pitch angles used (Default is
-%       12). When counts are high (plasma is dense) 24 pitch angles for
+%       'angles' - flag to set number of pitch angles used (single value Default is
+%       12) or pitch angle edges (array). When counts are high (plasma is dense) 24 pitch angles for
 %       electrons may be used. 
 %
 % Support for v0.2.0 should be removed when it is not needed
@@ -40,24 +40,34 @@ function [paddist,theta,energy,tint] = get_pitchangledist(varargin)
 
 tic;
 
-numechannels = 32;
-lengthphi = 32;
-lengththeta = 16;
+%numechannels = 32;
+%lengthphi = 32;
+%lengththeta = 16;
 anglevec = [15:15:180]; % Default pitch angles. 15 degree angle widths
-dangle = median(diff(anglevec));
+dangle = diff(anglevec);
 tmpnargin = nargin;
 if isa(varargin{tmpnargin-1},'char')
-    if strcmp(varargin{tmpnargin-1},'nangles');
-        nangles = varargin{tmpnargin};
-        nangles = floor(nangles); % Make sure input is integer
-        dangle = 180/nangles;
-        anglevec = [dangle:dangle:180];
-        irf.log('notice','User defined pitch angle width used.')
+    if strcmp(varargin{tmpnargin-1},'angles');
+        if (length(varargin{tmpnargin}) == 1),
+            nangles = varargin{tmpnargin};
+            nangles = floor(nangles); % Make sure input is integer
+            dangle = 180/nangles;
+            anglevec = [dangle:dangle:180];
+            dangle = dangle*ones(1,length(anglevec));
+            irf.log('notice','User defined number of pitch angles.')
+        elseif (length(varargin{tmpnargin}) > 1),
+            anglevec = varargin{tmpnargin};
+            dangle = diff(anglevec);
+            anglevec = anglevec(2:end);
+            irf.log('notice','User defined pitch angle limits.')
+        else
+            irf.log('notice','angles parameter not understood. ')
+        end
     end
     tmpnargin = tmpnargin-2;
 end
 
-pitcha = anglevec-dangle/2;
+pitcha = anglevec-dangle/2
 
 % Input check
 rtrnTS = 1;
@@ -148,6 +158,10 @@ else
     return;
 end
 
+numechannels = length(energy0);
+lengthphi = length(phi.data(1,:));
+lengththeta = length(theta);
+
 B = B.resample(pdist);
 Bvec = B/B.abs;
 Bvecx = repmat(Bvec.data(:,1),1,numechannels,lengthphi,lengththeta);
@@ -214,10 +228,10 @@ thetab = acosd(xt.*Bvecx+yt.*Bvecy+zt.*Bvecz);
 c_eval('dist? = pdist.data;',1:length(anglevec));
 dist1(thetab > anglevec(1)) = NaN;
 for jj = 2:(length(anglevec)-1)
-	c_eval('dist?(thetab < (anglevec(?)-dangle)) = NaN;',jj);
+	c_eval('dist?(thetab < (anglevec(?)-dangle(?))) = NaN;',jj);
 	c_eval('dist?(thetab > anglevec(?)) = NaN;',jj);
 end 
-c_eval('dist?(thetab < (anglevec(end)-dangle)) = NaN;',length(anglevec));
+c_eval('dist?(thetab < (anglevec(end)-dangle(?))) = NaN;',length(anglevec));
 c_eval('dist? =  squeeze(irf.nanmean(irf.nanmean(dist?,4),3));',1:length(anglevec));
 
 %paddistarr = cat(3,dist15,dist30,dist45,dist60,dist75,dist90,dist105,dist120,dist135,dist150,dist165,dist180);
