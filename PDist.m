@@ -341,7 +341,7 @@ classdef PDist < TSeries
       else 
           nangles = obj2; 
       end       
-      [PD,~,~,~] = mms.get_pitchangledist(obj,obj1,'nangles',nangles); % - For v1.0.0 or higher data      
+      [PD,~,~,~] = mms.get_pitchangledist(obj,obj1,'angles',nangles); % - For v1.0.0 or higher data      
     end  
     function PD = e64(obj)
       % E64 collect data into 64 energy levels per time
