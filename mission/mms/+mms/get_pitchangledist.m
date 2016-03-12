@@ -40,9 +40,9 @@ function [paddist,theta,energy,tint] = get_pitchangledist(varargin)
 
 tic;
 
-%numechannels = 32;
-%lengthphi = 32;
-%lengththeta = 16;
+numechannels = 32;
+lengthphi = 32;
+lengththeta = 16;
 anglevec = [15:15:180]; % Default pitch angles. 15 degree angle widths
 dangle = diff(anglevec);
 tmpnargin = nargin;
@@ -67,7 +67,7 @@ if isa(varargin{tmpnargin-1},'char')
     tmpnargin = tmpnargin-2;
 end
 
-pitcha = anglevec-dangle/2
+pitcha = anglevec-dangle/2;
 
 % Input check
 rtrnTS = 1;
@@ -158,9 +158,12 @@ else
     return;
 end
 
-numechannels = length(energy0);
-lengthphi = length(phi.data(1,:));
-lengththeta = length(theta);
+% Check size of energy
+if noangles == 0;
+    numechannels = length(energy0);
+    lengthphi = length(phi.data(1,:));
+    lengththeta = length(theta);
+end
 
 B = B.resample(pdist);
 Bvec = B/B.abs;
