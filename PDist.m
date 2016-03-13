@@ -152,24 +152,44 @@ classdef PDist < TSeries
       end
     end
     
-    function PD = palim(obj,palim)
-      if strcmp(obj.type,'pitchangle'); error('PDist type must be pitchangle.'); end      
+    function PD = palim(obj,palim,varargin)
+      % PDIST.PALIM Picks out given pitchangles
+      %   distribution type must be 'pitchangle'
+      %   PADist = PADist.palim(palims,[arg])
+      %     palims - pitchangles, is one angle is given, the closest one is
+      %              chosen. If two are equally close, the average is taken,
+      %              unless the additional argument 'noav' is given
+      %   
+      %   PADist.palim([0 90])
+      %   PADist.palim(90)
+      %   PADist.palim(90,'noav')
+      
+      if ~strcmp(obj.type,'pitchangle'); error('PDist type must be pitchangle.'); end      
       pitchangles = obj.depend{2};
+      doAverage = 0;
+        
+      if numel(palim) == 1        
+        indPA = find(abs(pitchangles-palim) == min(abs(pitchangles-palim)));
+        if nargin>2 && ischar(varargin{1}) && strcmp(lower(varargin{1}),'noav')
+          doAverage = 0;
+        else 
+          doAverage = 1;
+        end                
+      else
+        indPA = intersect(find(pitchangles(1,:)>palim(1)),find(pitchangles(1,:)<palim(2)));
+      end                  
       
-      elevels0 = intersect(find(pitchangles(1,:)>palim(1)),find(pitchangles(1,:)<palim(2)));
-      
-      if numel(elevels0) ~= numel(elevels1)
-        warning('Energy levels differ for different times. Including the largest interval.')
-        elevels = unique([elevels0,elevels1]);
-      end
-      disp(['Effective eint = [' num2str(min(min(energy(1:2,elevels))),'%g') ' ' num2str(max(max(energy(1:2,elevels))),'%g') ']'])
-      
-      tmpEnergy = energy(:,elevels);
-      tmpData = obj.data(:,elevels,:,:);
+      if doAverage
+        tmpPA = mean(pitchangles(indPA));
+        tmpData = irf.nanmean(obj.data(:,:,indPA),3);
+      else
+        tmpPA = pitchangles(indPA);
+        tmpData = obj.data(:,:,indPA);
+      end      
       
       PD = obj;
       PD.data_ = tmpData;
-      PD.depend{1} = tmpEnergy; 
+      PD.depend{2} = tmpPA; 
     end
     function PD = elim(obj,eint)  
       energy = obj.depend{1};
@@ -334,7 +354,7 @@ classdef PDist < TSeries
       % Distribution.pitchangles(pitchangles,B,[nangles])
       % Input: 
       %     B - TSeries of B in dmpa coordinates
-      %     nangles - Number of pitch angles
+      %     nangles - Number of pitch angles or edges of pitchangle bins
       %   See also MMS.GET_PITCHANGLEDIST         
       if isempty(obj2),
           nangles = 12;
