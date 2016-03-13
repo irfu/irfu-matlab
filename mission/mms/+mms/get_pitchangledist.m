@@ -44,7 +44,7 @@ numechannels = 32;
 lengthphi = 32;
 lengththeta = 16;
 anglevec = [15:15:180]; % Default pitch angles. 15 degree angle widths
-dangle = diff(anglevec);
+dangle = median(diff(anglevec))*ones(1,length(anglevec));
 tmpnargin = nargin;
 if isa(varargin{tmpnargin-1},'char')
     if strcmp(varargin{tmpnargin-1},'angles');
@@ -67,6 +67,8 @@ if isa(varargin{tmpnargin-1},'char')
     tmpnargin = tmpnargin-2;
 end
 
+length(anglevec)
+length(dangle)
 pitcha = anglevec-dangle/2;
 
 % Input check
