@@ -67,8 +67,6 @@ if isa(varargin{tmpnargin-1},'char')
     tmpnargin = tmpnargin-2;
 end
 
-length(anglevec)
-length(dangle)
 pitcha = anglevec-dangle/2;
 
 % Input check
