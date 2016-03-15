@@ -81,7 +81,7 @@ if isa(varargin{1},'PDist'),
         stepTable = TSeries(pdist.time,pdist.ancillary.energyStepTable);
         energy0 = pdist.ancillary.energy0;
         energy1 = pdist.ancillary.energy1;
-        noangles = 0;
+        noangles = 0;        
         if (tmpnargin == 3),
             tint = varargin{3};
             if(length(tint) > 2),
@@ -175,9 +175,9 @@ Bvecz = repmat(Bvec.data(:,3),1,numechannels,lengthphi,lengththeta);
 if(rtrnTS == 0),
     [~,tintpos] = min(abs(pdist.time-tint));
     tint = pdist.time(tintpos);
-    Bvecx = ones(32,32,16)*Bvec.data(tintpos,1);
-    Bvecy = ones(32,32,16)*Bvec.data(tintpos,2);
-    Bvecz = ones(32,32,16)*Bvec.data(tintpos,3);
+    Bvecx = ones(numechannels,lengthphi,lengththeta)*Bvec.data(tintpos,1);
+    Bvecy = ones(numechannels,lengthphi,lengththeta)*Bvec.data(tintpos,2);
+    Bvecz = ones(numechannels,lengthphi,lengththeta)*Bvec.data(tintpos,3);
     pdist = TSeries(pdist.time(tintpos),pdist.data(tintpos,:,:,:));
     if(noangles == 0),
         stepTable = TSeries(stepTable.time(tintpos),stepTable.data(tintpos));
@@ -219,11 +219,11 @@ else
     end
 end
 
-xt = repmat(x,1,1,1,32);
+xt = repmat(x,1,1,1,numechannels);
 xt = squeeze(permute(xt,[1 4 2 3]));
-yt = repmat(y,1,1,1,32);
+yt = repmat(y,1,1,1,numechannels);
 yt = squeeze(permute(yt,[1 4 2 3]));
-zt = repmat(z,1,1,1,32);
+zt = repmat(z,1,1,1,numechannels);
 zt = squeeze(permute(zt,[1 4 2 3]));
 
 thetab = acosd(xt.*Bvecx+yt.*Bvecy+zt.*Bvecz);
