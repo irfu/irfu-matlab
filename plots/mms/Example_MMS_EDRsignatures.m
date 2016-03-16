@@ -36,6 +36,7 @@
 % Calculations of agyrotropy measures (1)--(3) become unreliable at low
 % densities n_e <~ 1 cm^-3, when the raw particle counts are low. 
 
+% The example event runs for ~1.5 hours.
 
 %% Time interval selection
 Tint = irf.tint('2015-12-02T01:14:15.00Z/2015-12-02T01:15:03.50Z');
