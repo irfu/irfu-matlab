@@ -34,9 +34,7 @@
 % epsilon_e and delta_e at any given point. 
 % Requires electron distributions with version number v1.0.0 or higher. 
 % Calculations of agyrotropy measures (1)--(3) become unreliable at low
-% densities n_e <~ 1 cm^-3, when the raw particle counts are low. 
-
-% The example event runs for ~1.5 hours.
+% densities n_e <~ 5 cm^-3, when the raw particle counts are low. 
 
 %% Time interval selection
 Tint = irf.tint('2015-12-02T01:14:15.00Z/2015-12-02T01:15:03.50Z');
@@ -44,62 +42,48 @@ Tint = irf.tint('2015-12-02T01:14:15.00Z/2015-12-02T01:15:03.50Z');
 %% Load data
 ic = 1:4;
 tic;
-c_eval('Bxyz?=mms.db_get_ts(''mms?_dfg_brst_ql'',''mms?_dfg_brst_dmpa'',Tint);',ic);
-c_eval('SCpot?=mms.db_get_ts(''mms?_edp_brst_l2_scpot'',''mms?_edp_psp'',Tint);',ic);
-offset1 = 1.3; offset2 = 1.5; offset3 = 1.2; offset4 = 0.0; %For v1 data
-c_eval('SCpot?.data = -SCpot?.data*1.2+offset?;',ic);
-%c_eval('Exyzf? = mms.db_get_ts(''mms?_edp_fast_ql_dce'',''mms?_edp_dce_ql_dsl'',Tint);',ic);
-c_eval('E? = mms.db_get_ts(''mms?_edp_fast_ql_dce2d'',''mms?_edp_dce_xyz_dsl'',Tint);',ic);
+c_eval('Bxyz?=mms.db_get_ts(''mms?_fgm_srvy_l2'',''mms?_fgm_b_dmpa_srvy_l2'',Tint);',ic);
+c_eval('E? = mms.db_get_ts(''mms?_edp_brst_l2_dce'',''mms?_edp_dce_dsl_brst_l2'',Tint);',ic);
 toc;
 
-%% Load electron and ion particle data
-% This way is fastest. Change directory to appropriate cdf here. 
-% c_eval('tmpDataObj? = dataobj(''data/mms?_fpi_brst_l1b_des-dist_20151202011414_v1.1.0.cdf'');',ic);
-% c_eval('pdiste? = mms.variable2ts(get_variable(tmpDataObj?,''mms?_des_brstSkyMap_dist''));',ic);
-% c_eval('energye0? = get_variable(tmpDataObj?,''mms?_des_brstSkyMap_energy0'');',ic);
-% c_eval('energye1? = get_variable(tmpDataObj?,''mms?_des_brstSkyMap_energy1'');',ic);
-% c_eval('phie? = mms.variable2ts(get_variable(tmpDataObj?,''mms?_des_brstSkyMap_phi''));',ic);
-% c_eval('thetae? = get_variable(tmpDataObj?,''mms?_des_brstSkyMap_theta'');',ic);
-% c_eval('stepTablee? = mms.variable2ts(get_variable(tmpDataObj?,''mms?_des_stepTable_parity''));',ic);
-% 
-% c_eval('tmpDataObj? = dataobj(''data/mms?_fpi_brst_l1b_dis-dist_20151202011414_v1.1.0.cdf'');',ic);
-% c_eval('pdisti? = mms.variable2ts(get_variable(tmpDataObj?,''mms?_dis_brstSkyMap_dist''));',ic);
-% c_eval('energyi0? = get_variable(tmpDataObj?,''mms?_dis_brstSkyMap_energy0'');',ic);
-% c_eval('energyi1? = get_variable(tmpDataObj?,''mms?_dis_brstSkyMap_energy1'');',ic);
-% c_eval('phii? = mms.variable2ts(get_variable(tmpDataObj?,''mms?_dis_brstSkyMap_phi''));',ic);
-% c_eval('thetai? = get_variable(tmpDataObj?,''mms?_dis_brstSkyMap_theta'');',ic);
-% c_eval('stepTablei? = mms.variable2ts(get_variable(tmpDataObj?,''mms?_dis_stepTable_parity''));',ic);
+tic;
+for ii=1:4;
+   c_eval('ne?=mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_numberdensity_dbcs_brst'',Tint);',ii);
+   c_eval('VeX?=mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_bulkx_dbcs_brst'',Tint);',ii);
+   c_eval('VeY?=mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_bulky_dbcs_brst'',Tint);',ii);
+   c_eval('VeZ?=mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_bulkz_dbcs_brst'',Tint);',ii);
+   c_eval('TeXX?=mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_tempxx_dbcs_brst'',Tint);',ii);
+   c_eval('TeXY?=mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_tempxy_dbcs_brst'',Tint);',ii);
+   c_eval('TeXZ?=mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_tempxz_dbcs_brst'',Tint);',ii);
+   c_eval('TeYY?=mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_tempyy_dbcs_brst'',Tint);',ii);
+   c_eval('TeYZ?=mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_tempyz_dbcs_brst'',Tint);',ii);
+   c_eval('TeZZ?=mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_tempzz_dbcs_brst'',Tint);',ii);
+   c_eval('PeXX?=mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_presxx_dbcs_brst'',Tint);',ii);
+   c_eval('PeXY?=mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_presxy_dbcs_brst'',Tint);',ii);
+   c_eval('PeXZ?=mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_presxz_dbcs_brst'',Tint);',ii);
+   c_eval('PeYY?=mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_presyy_dbcs_brst'',Tint);',ii);
+   c_eval('PeYZ?=mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_presyz_dbcs_brst'',Tint);',ii);
+   c_eval('PeZZ?=mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_preszz_dbcs_brst'',Tint);',ii);
+end
+toc;
+
+c_eval('Uevec? = irf.ts_vec_xyz(VeX?.time,[VeX?.data VeY?.data VeZ?.data]);',ic);
 
 for ii=1:4;
-tic;
-   c_eval('pdiste?=mms.db_get_ts(''mms?_fpi_brst_l1b_des-dist'',''mms?_des_brstSkyMap_dist'',Tint);',ii);
-   c_eval('energye0?=mms.db_get_variable(''mms?_fpi_brst_l1b_des-dist'',''mms?_des_brstSkyMap_energy0'',Tint);',ii);
-   c_eval('energye1?=mms.db_get_variable(''mms?_fpi_brst_l1b_des-dist'',''mms?_des_brstSkyMap_energy1'',Tint);',ii);
-   c_eval('phie?=mms.db_get_ts(''mms?_fpi_brst_l1b_des-dist'',''mms?_des_brstSkyMap_phi'',Tint);',ii);
-   c_eval('thetae?=mms.db_get_variable(''mms?_fpi_brst_l1b_des-dist'',''mms?_des_brstSkyMap_theta'',Tint);',ii);
-   c_eval('stepTablee?=mms.db_get_ts(''mms?_fpi_brst_l1b_des-dist'',''mms?_des_stepTable_parity'',Tint);',ii);
-toc;
+   c_eval('ViX?=mms.db_get_ts(''mms?_fpi_brst_l2_dis-moms'',''mms?_dis_bulkx_dbcs_brst'',Tint);',ii);
+   c_eval('ViY?=mms.db_get_ts(''mms?_fpi_brst_l2_dis-moms'',''mms?_dis_bulky_dbcs_brst'',Tint);',ii);
+   c_eval('ViZ?=mms.db_get_ts(''mms?_fpi_brst_l2_dis-moms'',''mms?_dis_bulkz_dbcs_brst'',Tint);',ii);
 end
 
-for ii=1:4;
-tic;
-   c_eval('pdisti?=mms.db_get_ts(''mms?_fpi_brst_l1b_dis-dist'',''mms?_dis_brstSkyMap_dist'',Tint);',ii);
-   c_eval('energyi0?=mms.db_get_variable(''mms?_fpi_brst_l1b_dis-dist'',''mms?_dis_brstSkyMap_energy0'',Tint);',ii);
-   c_eval('energyi1?=mms.db_get_variable(''mms?_fpi_brst_l1b_dis-dist'',''mms?_dis_brstSkyMap_energy1'',Tint);',ii);
-   c_eval('phii?=mms.db_get_ts(''mms?_fpi_brst_l1b_dis-dist'',''mms?_dis_brstSkyMap_phi'',Tint);',ii);
-   c_eval('thetai?=mms.db_get_variable(''mms?_fpi_brst_l1b_dis-dist'',''mms?_dis_brstSkyMap_theta'',Tint);',ii);
-   c_eval('stepTablei?=mms.db_get_ts(''mms?_fpi_brst_l1b_dis-dist'',''mms?_dis_stepTable_parity'',Tint);',ii);
-toc;
-end
-%% Compute particle moments and rotate pressure and temperature tensors
-c_eval('emoments? = mms.psd_moments(pdiste?,phie?,thetae?,stepTablee?,energye0?,energye1?,SCpot?,''electron'');',ic);
-c_eval('imoments? = mms.psd_moments(pdisti?,phii?,thetai?,stepTablei?,energyi0?,energyi1?,SCpot?,''ion'');',ic);
+c_eval('Uivec? = irf.ts_vec_xyz(ViX?.time,[ViX?.data ViY?.data ViZ?.data]);',ic);
+c_eval('E? = E?.resample(ne?);',ic);
+c_eval('Bxyz? = Bxyz?.resample(ne?);',ic);
+c_eval('Uivec? = Uivec?.resample(ne?);',ic);
 
-c_eval('Pet? = emoments?.P_psd.tlim(Tint);',ic);
-c_eval('Pepp? = mms.rotate_tensor(Pet?,''fac'',Bxyz?,''pp'');',ic); % Peperp1 = Peperp2
-c_eval('Peqq? = mms.rotate_tensor(Pet?,''fac'',Bxyz?,''qq'');',ic); % Peperp1 and Peperp2 are most unequal
-c_eval('Tet? = emoments?.T_psd.tlim(Tint);',ic);
-c_eval('Tefac? = mms.rotate_tensor(Tet?,''fac'',Bxyz?);',ic);
+%% Rotate pressure and temperature tensors
+c_eval('Pepp? = mms.rotate_tensor(PeXX?,PeXY?,PeXZ?,PeYY?,PeYZ?,PeZZ?,''fac'',Bxyz?,''pp'');',ic); % Peperp1 = Peperp2
+c_eval('Peqq? = mms.rotate_tensor(PeXX?,PeXY?,PeXZ?,PeYY?,PeYZ?,PeZZ?,''fac'',Bxyz?,''qq'');',ic); % Peperp1 and Peperp2 are most unequal
+c_eval('Tefac? = mms.rotate_tensor(TeXX?,TeXY?,TeXZ?,TeYY?,TeYZ?,TeZZ?,''fac'',Bxyz?);',ic);
 
 %% Compute tests for EDR
 % Compute Q and Dng from Pepp
@@ -107,51 +91,45 @@ c_eval('Tefac? = mms.rotate_tensor(Tet?,''fac'',Bxyz?);',ic);
 %c_eval('I2? = Pet?.data(:,1).*Pet?.data(:,4)+Pet?.data(:,1).*Pet?.data(:,6)+Pet?.data(:,4).*Pet?.data(:,6)-((Pet?.data(:,2)).^2+(Pet?.data(:,3)).^2+(Pet?.data(:,5)).^2);',ic);
 %c_eval('Q? = 1-4*I2?./((I1?-PeZZp?.data).*(I1?+3*PeZZp?.data));',ic);
 c_eval('Q? = (Pepp?.data(:,1,2).^2+Pepp?.data(:,1,3).^2+Pepp?.data(:,2,3).^2)./(Pepp?.data(:,2,2).^2+2*Pepp?.data(:,2,2).*Pepp?.data(:,1,1));',ic);
-c_eval('Q? = irf.ts_scalar(Pet?.time,sqrt(Q?));',ic);
+c_eval('Q? = irf.ts_scalar(ne?.time,sqrt(Q?));',ic);
 c_eval('Dng? = sqrt(8*(Pepp?.data(:,1,2).^2+Pepp?.data(:,1,3).^2+Pepp?.data(:,2,3).^2))./(Pepp?.data(:,1,1)+2*Pepp?.data(:,2,2));',ic);
-c_eval('Dng? = irf.ts_scalar(Pet?.time,Dng?);',ic);
+c_eval('Dng? = irf.ts_scalar(ne?.time,Dng?);',ic);
 
 % Compute agyrotropy Aphi from Peqq
 c_eval('agyro? = 2*abs(Peqq?.data(:,2,2)-Peqq?.data(:,3,3))./(Peqq?.data(:,2,2)+Peqq?.data(:,3,3));',ic);
-c_eval('agyro? = irf.ts_scalar(Pet?.time,agyro?);',ic);
+c_eval('agyro? = irf.ts_scalar(ne?.time,agyro?);',ic);
 
 % Compute temperature ratio An
 c_eval('Temprat? = Pepp?.data(:,1,1)./(Pepp?.data(:,2,2));',ic);
-c_eval('Temprat? = irf.ts_scalar(Tet?.time,Temprat?);',ic);
+c_eval('Temprat? = irf.ts_scalar(ne?.time,Temprat?);',ic);
 
 % Compute electron Mach number
 Units = irf_units; 
 qe = Units.e;
 me = Units.me;
-c_eval('Ue? = irf.ts_scalar(emoments?.V_psd.time,emoments?.V_psd.abs.data);',ic);
-c_eval('Ue? = Ue?.tlim(Tint);',ic);
+c_eval('Ue? = Uevec?.abs.data;',ic);
 c_eval('Veperp? = sqrt((Tefac?.data(:,2,2)+Tefac?.data(:,3,3))*qe/me);',ic);
-c_eval('Me? = Ue?.data*1000./Veperp?;',ic);
-c_eval('Me? = irf.ts_scalar(Tet?.time,Me?);',ic);
+c_eval('Me? = Ue?*1000./Veperp?;',ic);
+c_eval('Me? = irf.ts_scalar(ne?.time,Me?);',ic);
 
 % Compute current density and J.E
-c_eval('ne? = emoments?.n_psd.tlim(Tint);',ic);
-c_eval('Uevec? = emoments?.V_psd.tlim(Tint);',ic);
-c_eval('Uivec? = imoments?.V_psd; Uivec? = Uivec?.resample(Uevec?);',ic);
-c_eval('Exyzf? = E?.resample(Uevec?);',ic);
 c_eval('Jmoms? = irf.ts_vec_xyz(Uevec?.time,1e18*qe*[ne?.data ne?.data ne?.data].*(Uivec?.data-Uevec?.data));',ic); % Current density in nA m^-2
-c_eval('EdotJ? = dot(Exyzf?.data,Jmoms?.data,2)/1000;',ic); %J (nA/m^2), E (mV/m), E.J (nW/m^3)
+c_eval('EdotJ? = dot(E?.data,Jmoms?.data,2)/1000;',ic); %J (nA/m^2), E (mV/m), E.J (nW/m^3)
 c_eval('EdotJ? = irf.ts_scalar(ne?.time,EdotJ?);',ic);
 
 % Calculate epsilon and delta parameters
-c_eval('Bxyzf? = Bxyz?.resample(Uevec?);',ic);
-c_eval('Bmagf? = Bxyzf?.abs.data;',ic);
-c_eval('omegace? = qe*Bmagf?/me*1e-9;',ic);
-c_eval('EdotUe? = dot(Exyzf?.data,Uevec?.data,2);',ic);
+c_eval('Bmag? = Bxyz?.abs.data;',ic);
+c_eval('omegace? = qe*Bmag?/me*1e-9;',ic);
+c_eval('EdotUe? = dot(E?.data,Uevec?.data,2);',ic);
 c_eval('epsilone? = abs(6*pi*EdotUe?./(omegace?.*(Tefac?.data(:,1,1)+Tefac?.data(:,2,2)+Tefac?.data(:,3,3))));',ic);
 c_eval('epsilone? = irf.ts_scalar(Uevec?.time,epsilone?);',ic);
 
-c_eval('UexB? = cross(Uevec?,Bxyzf?);',ic);
+c_eval('UexB? = cross(Uevec?,Bxyz?);',ic);
 c_eval('UexB?.data = UexB?.data*1e-3;',ic);
-c_eval('UexB?.data = Exyzf?.data+UexB?.data*1e-3;',ic);
+c_eval('UexB?.data = E?.data+UexB?.data;',ic);
 c_eval('UexBabs? = UexB?.abs.data;',ic);
 
-c_eval('deltae? = 1e-3*UexBabs?./(Veperp?.*Bmagf?*1e-9);',ic);
+c_eval('deltae? = 1e-3*UexBabs?./(Veperp?.*Bmag?*1e-9);',ic);
 c_eval('deltae? = irf.ts_scalar(Uevec?.time,deltae?);',ic);
 
 %% Plot figure
