@@ -31,7 +31,8 @@ else
   % Special quirks for different instruments
   if (~isempty(regexp(v.name,'^mms[1-4]_[d,a]fg_(srvy|brst)(_gsm)?_dmpa$', 'once'))|| ...
       ~isempty(regexp(v.name,'^mms[1-4]_[d,a]fg_(srvy|brst)_l2pre_(gse|gsm|dmpa|bcs)$', 'once')) || ...
-      ~isempty(regexp(v.name,'^mms[1-4]_[d,a]fg_b_(gse|gsm|dmpa|bcs)_(srvy|brst)_l2pre$', 'once'))) %AFG/DFGb1
+      ~isempty(regexp(v.name,'^mms[1-4]_fgm_b_(gse|gsm|dmpa|bcs)_(srvy|brst)_l2$', 'once')) || ...
+      ~isempty(regexp(v.name,'^mms[1-4]_[d,a]fg_b_(gse|gsm|dmpa|bcs)_(srvy|brst)_l2pre$', 'once')) )%AFG/DFGb1
     data = data(:,1:3); % strip Btot
     varType = 'vec_xyz';
     ud.LABL_PTR_1.data = ud.LABL_PTR_1.data(1:3,:);
@@ -53,7 +54,7 @@ end
 if ~isempty(regexp(v.name,'^mms[1-4]_d[ei]s_','once'))
 	if isfield(v.DEPEND_0,'DELTA_MINUS_VAR') && isfield(v.DEPEND_0,'DELTA_PLUS_VAR'),
         if isfield(v.DEPEND_0.DELTA_MINUS_VAR,'data') && isfield(v.DEPEND_0.DELTA_PLUS_VAR,'data'),
-            irf.log('critical','Times shifted to center of dt-+. dt-+ are recalculated');
+            irf.log('warning','Times shifted to center of dt-+. dt-+ are recalculated');
             toffset = (int64(v.DEPEND_0.DELTA_PLUS_VAR.data)-int64(v.DEPEND_0.DELTA_MINUS_VAR.data))*1e6/2;
             tdiff = (int64(v.DEPEND_0.DELTA_PLUS_VAR.data)+int64(v.DEPEND_0.DELTA_MINUS_VAR.data))*1e6/2;
             v.DEPEND_0.DELTA_MINUS_VAR.data = tdiff;

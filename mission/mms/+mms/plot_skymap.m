@@ -16,6 +16,9 @@ function [ax,hcb] = plot_skymap(varargin)
 %                vectors = {Bhat,'B';Ehat,'E'}
 %    'flat' - plot a flat skymap (ie. not a sphere)
 %    'log' - plot log10 scale
+%    'energytable' - energytable from v1 data
+%    'phi' - phi data froom V1 data, vary from time to time, ax.XLim = [-10 370]; 
+%    'phicb' & 'thetacb' - solid angle boundary, only for 'flat'    
 
 [ax,args,nargs] = axescheck(varargin{:});
 
@@ -24,15 +27,23 @@ if isempty(dist); irf.log('warning','Empty input.'); return; end
 
 plotLog = 0; fString = 'f (s^3km^{-6})';
 plotSphere = 1;
+plotb = 0;          % flag for plotting boundary; 2016-03-11, wyli
 have_vectors = 0;
 tId = 1:dist.length;
 eId = 1:32;
 [~,xi] = hist([log10(10),log10(30e3)],32); energyTable = 10.^xi;
+% Set up spherical coordinate system.
+r = 1; % radius of sphere
+phi_edges = linspace(0,2*pi,size(dist.data,3)+1);  % azimuthal angle bin edges, default
+theta_edges = linspace(0,pi,size(dist.data,4)+1); % polar angle bin edges, default
 
 if nargs > 1, have_options = 1; end
 while have_options
   l = 1;
   switch(lower(args{1}))
+    case 'energytables'
+        l = 2;
+        energyTable = args{2};       
     case 'energy'
       l = 2;
       energy = args{2};      
@@ -40,6 +51,16 @@ while have_options
     case 'energylevel'
       l = 2;
       eId = args{2};
+    case 'phi_edges'            % phi edges from V1/V2 data
+      l = 2;
+      phi_edges = args{2};
+    case 'phicb'            % phi boundary for picking partial distribution
+      l = 2;
+      phicb = args{2};
+      plotb = 1;            % flag --> 1
+    case 'thetacb'            % theta boundary for picking partial distribution
+      l = 2;
+      thetacb = args{2};      
     case 'tint'
       l = 2;
       tint = args{2};
@@ -63,10 +84,6 @@ while have_options
   if isempty(args), break, end  
 end
 
-% Set up spherical coordinate system.
-r = 1; % radius of sphere
-phi_edges = linspace(0,2*pi,size(dist.data,3)+1); % azimuthal angle bin edges?
-theta_edges = linspace(0,pi,size(dist.data,4)+1); % polar angle bin edges?
 [PHI,THETA] = meshgrid(phi_edges,theta_edges);
 X = -r*sin(THETA).*cos(PHI); % '-' because the data shows which direction the particles were coming from
 Y = -r*sin(THETA).*sin(PHI);
@@ -98,7 +115,7 @@ else % plot flat map
   shading(ax,'flat');
   view(ax,[0 0 1])  
   ax.YLim = [0 180];
-  ax.XLim = [0 360];  
+  ax.XLim = [-10 370];                      % better for data phi range; 2016-03-11; wyli
   ax.Box = 'on';
 end
 hcb = colorbar('peer',ax);
@@ -125,16 +142,21 @@ while have_vectors
     if azim<0, azim = azim + 2*pi; end
     if azim>2*pi, azim = azim - 2*pi; end
     
-    plot(ax,azim*180/pi,elev*180/pi+90,'o','linewidth',2,'markersize',12,'color',[0 0 0])
-    plot(ax,azim*180/pi,elev*180/pi+90,'o','linewidth',0.5,'markersize',2,'color',[0 0 0],'markerfacecolor',[0 0 0])
-    axes(ax); text(double(azim*180/pi),double(elev*180/pi+90),['   ' vecTxt],'fontsize',14,'HorizontalAlignment','left')
+    plot(ax,azim*180/pi,elev*180/pi+90,'o','linewidth',2,'markersize',12,'color',[1 0 0])
+    plot(ax,azim*180/pi,elev*180/pi+90,'o','linewidth',0.5,'markersize',2,'color',[1 0 0],'markerfacecolor',[0 0 0])
+    axes(ax); text(double(azim*180/pi),double(elev*180/pi+90),['   ' vecTxt],'fontsize',14,'HorizontalAlignment','left', 'color', [1 1 1])
     
     [azim,elev,r] = cart2sph(-vecHat(1),-vecHat(2),-vecHat(3)); 
     if azim<0, azim = azim + 2*pi; end
     if azim>2*pi, azim = azim - 2*pi; end
-    plot3(ax,azim*180/pi,elev*180/pi+90,0,'o','linewidth',2,'markersize',12,'color',[0 0 0])
-    plot3(ax,azim*180/pi,elev*180/pi+90,0,'x','linewidth',2,'markersize',12,'color',[0 0 0])       
-    axes(ax); text(double(azim*180/pi),double(elev*180/pi+90),['   ' vecTxt],'fontsize',14,'HorizontalAlignment','left')        
+    plot3(ax,azim*180/pi,elev*180/pi+90,0,'o','linewidth',2,'markersize',12,'color',[1 0 0])
+    plot3(ax,azim*180/pi,elev*180/pi+90,0,'x','linewidth',2,'markersize',12,'color',[1 0 0])       
+    axes(ax); text(double(azim*180/pi),double(elev*180/pi+90),['   ' vecTxt],'fontsize',14,'HorizontalAlignment','left', 'color', [1 1 1])        
+    if plotb            % plot setting phi and theta boundary, 2016-03-11; wyli
+        phicb = [phicb, phicb(1)];
+        thetacb = [thetacb, thetacb(1)];        
+        plot(phicb, thetacb, 'linewidth',2, 'color',[1 1 1])
+    end
   end
   vectors = vectors(2:end,:);
   if isempty(vectors), break, end  
