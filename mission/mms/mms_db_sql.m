@@ -522,64 +522,78 @@ classdef mms_db_sql < handle
             if(~exist(cdfFileName, 'file'))
               errStr = ['File not found: ', cdfFileName];
               irf.log('warning', errStr); warning(errStr);
-	      out = []; return;
+              out = []; return;
             end
- 			irf.log('debug',['Reading: ' cdfFileName]);
-			try
-				inf = spdfcdfinfo(cdfFileName);
+            irf.log('debug',['Reading: ' cdfFileName]);
+            try
+              inf = spdfcdfinfo(cdfFileName, 'VARSTRUCT', true);
             catch ME
               errStr = ['Cannot get file information from: ', cdfFileName];
               irf.log('warning', errStr); irf.log('warning', ME.message);
-              warning(errStr);
-              out = [];
-              return;
-			end
-			dep = inf.VariableAttributes.DEPEND_0;
-			[tVarNames,~,IC] = unique(dep(:,2));
-			% FPI bug fix, removing energy_index and pitch_index from DEPEND_0
-			%isGoodTVarName = cellfun(@(x) isempty(strfind(x,'index')),tVarNames);
-			indGoodTVarName = 1:numel(tVarNames);
-			iBadTVarName = ~ismember(tVarNames,inf.Variables(:,1)); % time variable should be under inf.Variables(:,1)
-			if any(iBadTVarName)
-				irf.log('notice',['!! bad time variable names in DEPEND_O: ' tVarNames{iBadTVarName}]);
-				indGoodTVarName(iBadTVarName) = [];
-				tVarNames{iBadTVarName} = [];
-			end
-			isBadTime  = cellfun(@(x) ~any(strcmpi({'tt2000','epoch','epoch16'}, ...
-				inf.Variables(strcmp(inf.Variables(:,1), x),4))), tVarNames(indGoodTVarName));
-			if any(isBadTime)
-				irf.log('notice',['! not accepted time format for time DEPEND_O variable: ' ...
-					tVarNames{indGoodTVarName(isBadTime)}]);
-				indGoodTVarName(isBadTime) = [];
-			end
-			% read time variables
-            try
-              epoch = spdfcdfread(cdfFileName, ...
-				'Variable', tVarNames(indGoodTVarName), 'KeepEpochAsIs', true);
-            catch ME
-              errStr = ['Cannot read Epochs from file: ', cdfFileName];
-              irf.log('warning', errStr); irf.log('warning', ME.message);
-              warning(errStr); out=[]; return;
+              warning(errStr); out = []; return;
             end
-			if isinteger(epoch), epoch = {epoch};end % only one time variable
-			for iT = numel(indGoodTVarName):-1:1
-				out(iT).epochVarName = tVarNames{iT};
-				out(iT).varNames = dep(IC == iT,1);
-				startTT = min(epoch{indGoodTVarName(iT)});
-				endTT   = max(epoch{indGoodTVarName(iT)});
-				if any(startTT) && any(endTT) && ...
-						(min(startTT,endTT) < int64(479390467184000000)...% '2015-03-12T00:00:00.000000000'
-						||  max(startTT,endTT) > int64(1262260868184000000)),%'2040-01-01T00:00:00.000000000'
-					out(iT).startTT = NaN;
-					out(iT).endTT   = NaN;
-					irf.log('notice',['!!! In file:' cdfFileName]);
-					irf.log('notice',['!!! ' out(iT).epochVarName ' has startTT = ' num2str(startTT) ' and endTT = ' num2str(endTT)]);
-				else
-					out(iT).startTT = startTT;
-					out(iT).endTT   = endTT;
-				end
-			end
-		end
+            dep = inf.VariableAttributes.DEPEND_0;
+            [tVarNames, ~, IC] = unique(dep(:,2));
+            indGoodTVarName = 1:numel(tVarNames);
+            iBadTVarName = ~ismember(tVarNames, inf.Variables.Name); % time variable should be a variable in the cdf file
+            if any(iBadTVarName)
+              irf.log('notice',['!! bad time variable names in DEPEND_O: ' tVarNames{iBadTVarName}]);
+              indGoodTVarName(iBadTVarName) = [];
+              tVarNames{iBadTVarName} = [];
+            end
+            isBadTime = cellfun(@(x) ~any(strcmpi({'tt2000', 'epoch', 'epoch16'}, ...
+              inf.Variables.DataType(strcmp(inf.Variables.Name, x)))), ...
+              tVarNames(indGoodTVarName));
+            if any(isBadTime)
+              irf.log('notice',['! not accepted time format for time DEPEND_O variable: ' ...
+                tVarNames{indGoodTVarName(isBadTime)}]);
+              indGoodTVarName(isBadTime) = [];
+            end
+            timeVars = tVarNames(indGoodTVarName);
+            % Read only first and last record of timeVars.
+            for ii=1:length(timeVars)
+              if(ii==1)
+                % Zero based, but spdfcdfinfo returns records written starting with record 1.
+                RECNUMS = [0 cell2mat(inf.Variables.NumRecords(strcmp(inf.Variables.Name, timeVars(1))))-1];
+              else
+                RECNUMS = [RECNUMS, 0 cell2mat(inf.Variables.NumRecords(strcmp(inf.Variables.Name, timeVars(ii))))-1]; %#ok<AGROW>
+              end
+            end
+            % Check if something went wrong..
+            if(any(RECNUMS<0))
+              errStr = 'Some time variables appears to be missing records.';
+              irf.log('critical', errStr); warning(errStr);
+              out = []; return
+            end
+            epochRead = spdfcdfread(cdfFileName, 'Variable', timeVars, ...
+              'KeepEpochAsIs', true, 'Records', RECNUMS);
+            % Clean up epoch result, first column is first timeVars where
+            % first two rows correspond to first&last record
+            % second column row three&four correspond to first&last record
+            % etc.
+            epoch = zeros(2, length(timeVars), 'int64');
+            for ii=1:length(timeVars)
+              epoch(1:2, ii) = cell2mat(epochRead(2*ii-1:2*ii, ii));
+            end
+            for iT = numel(indGoodTVarName):-1:1
+              out(iT).epochVarName = timeVars{iT};
+              out(iT).varNames = dep(IC == iT,1);
+              startTT = epoch(1, indGoodTVarName(iT));
+              endTT   = epoch(2, indGoodTVarName(iT));
+              if any(startTT) && any(endTT) && ...
+                  (min(startTT,endTT) < int64(479390467184000000)...% '2015-03-12T00:00:00.000000000'
+                  ||  max(startTT,endTT) > int64(1262260868184000000)),%'2040-01-01T00:00:00.000000000'
+                out(iT).startTT = NaN;
+                out(iT).endTT   = NaN;
+                irf.log('notice',['!!! In file:' cdfFileName]);
+                irf.log('notice',['!!! ' out(iT).epochVarName ' has startTT = ' num2str(startTT) ' and endTT = ' num2str(endTT)]);
+              else
+                out(iT).startTT = startTT;
+                out(iT).endTT   = endTT;
+              end
+            end
+        end
+
 		function [startTT,endTT] = start_stop_in_ttns(timeInterval)
 			if ischar(timeInterval)
 				timeInterval = irf.tint(timeInterval);
