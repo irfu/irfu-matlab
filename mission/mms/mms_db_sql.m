@@ -565,8 +565,14 @@ classdef mms_db_sql < handle
               irf.log('critical', errStr); warning(errStr);
               out = []; return
             end
-            epochRead = spdfcdfread(cdfFileName, 'Variable', timeVars, ...
-              'KeepEpochAsIs', true, 'Records', RECNUMS);
+            try
+              epochRead = spdfcdfread(cdfFileName, 'Variable', timeVars, ...
+                'KeepEpochAsIs', true, 'Records', RECNUMS);
+            catch ME
+              errStr = ['Cannot read Epochs from file: ', cdfFileName];
+              irf.log('warning', errStr); irf.log('warning', ME.message);
+              warning(errStr); out = []; return;
+            end
             % Clean up epoch result, first column is first timeVars where
             % first two rows correspond to first&last record
             % second column row three&four correspond to first&last record
