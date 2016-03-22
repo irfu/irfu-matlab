@@ -106,7 +106,7 @@ end
 	function Lprobe = lp_THOR_HFA
 		Lprobe = lp.lprobe;
 		Lprobe.name = 'THOR HFA';
-		Lprobe.surface = 'cluster';
+		Lprobe.surface = 'gold';
 		Lprobe.radiusWire = 0.02; % TO CHECK
 		Lprobe.lengthWire = 1.25;
 	end
