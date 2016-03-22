@@ -8,16 +8,27 @@ if 1, % parameters
     PE_range=[1e-19 1e-6]; % (V^/m^)/Hz
     title_text='';
     %Rsolo=0.28;UV=1;R_plasma_nobias=3e6;R_plasma_bias=0.1e6;plasma=getfield(solar_orbiter('plasma'),'perihelion');
-    Rsolo=0.8;UV=1;R_plasma_nobias=40e6;R_plasma_bias=1e6;plasma=getfield(solar_orbiter('plasma'),'aphelion');
-    probe=solar_orbiter('probe');
-    antenna_eff_length=6; % efficient distance between antennas
-    T_plasma_eV=plasma.T(1); % plasma temperature in eV
-    n = plasma.n(1)*1e6;      % plasma density m^-3
+    Rsolo=1.0;UV=1;
+    T_plasma_eV=10; % plasma temperature in eV
+    n = 2*1e6;      % plasma density m^-3
     title_text=[title_text 'T_p=' num2str(T_plasma_eV) ' eV, '];
-    C_antenna=probe.capacitance; % antenna capacitance in F
-    title_text=[title_text 'C_{ant}=' num2str(probe.capacitance/1e-12) ' pF, '];
-    A_antenna=probe.total_area; % antenna area in m2
-    title_text=[title_text 'A_{ant}=' num2str(probe.total_area,'%5.2f') ' m^2, '];
+    % HFA
+    HFA_antenna_eff_length=2.5/2; % efficient distance between antennas
+    HFA_R_plasma_nobias=467e6;HFA_R_plasma_bias=3e6;
+    HFA_probe=lp.default_lprobe('THOR_HFA');
+    HFA_C_antenna=HFA_probe.capacitance; % antenna capacitance in F
+    title_text=[title_text 'HFAC_{ant}=' num2str(HFA_probe.capacitance/1e-12) ' pF, '];
+    A_antenna=HFA_probe.Area.total; % antenna area in m2
+    title_text=[title_text 'HFAA_{ant}=' num2str(HFA_probe.Area.total,'%5.2f') ' m^2, '];
+    % SDP
+    SDP_antenna_eff_length=100; % efficient distance between antennas
+    SDP_R_plasma_nobias=916e6;SDP_R_plasma_bias=21e6;
+    SDP_probe=lp.default_lprobe('THOR_SDP');
+    SDP_C_antenna=SDP_probe.capacitance; % antenna capacitance in F
+    title_text=[title_text 'SDPC_{ant}=' num2str(SDP_probe.capacitance/1e-12) ' pF, '];
+    A_antenna=HFA_probe.Area.total; % antenna area in m2
+    title_text=[title_text 'SDPA_{ant}=' num2str(SDP_probe.Area.total,'%5.2f') ' m^2, '];
+    
 end
 if 1, % read Alexandrova et al. 2009 spectra
     %file reading
@@ -64,34 +75,74 @@ if 1, % read example solar wind spectra
     end
     clear xx yy;
 end
-if 1, % instrument noise calculations
+if 1, % instrument noise calculations HFA
     if 1, % preamp parameters
         preamp_noise=10e-9; % preamplifier noise 4nV/Hz1/2
-        preamp_noise_level=(preamp_noise/antenna_eff_length)^2;
+        preamp_noise_level=(preamp_noise/HFA_antenna_eff_length)^2;
         f_break=400; % transition frequency at which 1/f noise is starting
     end
     if 1, % preamplifier noise
-        SOFI_instr_noise=[f(1) f_break f(end)]';
-        SOFI_instr_noise(:,2)=2*preamp_noise_level*[f_break/f(1); 1;  1];
+        HFA_instr_noise=[f(1) f_break f(end)]';
+        HFA_instr_noise(:,2)=2*preamp_noise_level*[f_break/f(1); 1;  1];
     end
     if 1, % photoelectron thermal noise  S=4kTZ
         T_eV=1; % photoelectron temperature
-        thermal_noise_bias=[f 4*Units.e*T_eV*sqrt(R_plasma_bias^2./(1+(2*pi*f).^2*R_plasma_bias^2*C_antenna^2))/antenna_eff_length^2];
-        thermal_noise_nobias=[f 4*Units.e*T_eV*sqrt(R_plasma_nobias^2./(1+(2*pi*f).^2*R_plasma_nobias^2*C_antenna^2))/antenna_eff_length^2];
+        HFA_thermal_noise_bias=[f 4*Units.e*T_eV*sqrt(HFA_R_plasma_bias^2./(1+(2*pi*f).^2*HFA_R_plasma_bias^2*HFA_C_antenna^2))/HFA_antenna_eff_length^2];
+        HFA_thermal_noise_nobias=[f 4*Units.e*T_eV*sqrt(HFA_R_plasma_nobias^2./(1+(2*pi*f).^2*HFA_R_plasma_nobias^2*HFA_C_antenna^2))/HFA_antenna_eff_length^2];
     end
     if 1, % shot noise plasma and photoelectrons
-        % SOFI_shot_noise_plasma
-        nu=n/2*sqrt(8*Units.e*T_plasma_eV/pi/Units.me)*A_antenna;
-        SOFI_shot_noise_bias=[f 2*Units.e^2*nu*(R_plasma_bias^2./(1+(2*pi*f).^2*R_plasma_bias^2*C_antenna^2))/antenna_eff_length^2];
-        SOFI_shot_noise_nobias=[f 2*Units.e^2*nu*(R_plasma_nobias^2./(1+(2*pi*f).^2*R_plasma_nobias^2*C_antenna^2))/antenna_eff_length^2];
+        % SOFI_shot_noise_plasma XXX WE IGNORE THIS
+        %nu=n/2*sqrt(8*Units.e*T_plasma_eV/pi/Units.me)*A_antenna;
+        %SOFI_shot_noise_bias=[f 2*Units.e^2*nu*(R_plasma_bias^2./(1+(2*pi*f).^2*R_plasma_bias^2*C_antenna^2))/antenna_eff_length^2];
+        %SOFI_shot_noise_nobias=[f 2*Units.e^2*nu*(R_plasma_nobias^2./(1+(2*pi*f).^2*R_plasma_nobias^2*C_antenna^2))/antenna_eff_length^2];
         % SOFI_shot_noise_photoelectron
-        I_photo=abs(lp.probe_current(probe,-1,Rsolo,UV,[]));
-        SOFI_shot_noise_photoelectron_bias=[f 2*Units.e*I_photo*(R_plasma_bias^2./(1+(2*pi*f).^2*R_plasma_bias^2*C_antenna^2))/antenna_eff_length^2];
-        SOFI_shot_noise_photoelectron_nobias=[f 2*Units.e*I_photo*(R_plasma_nobias^2./(1+(2*pi*f).^2*R_plasma_nobias^2*C_antenna^2))/antenna_eff_length^2];
+        HFA_I=lp.current(HFA_probe,-1,Rsolo,UV,[]);
+        
+        HFA_shot_noise_photoelectron_bias=[f 2*Units.e*abs(HFA_I.photo)*(HFA_R_plasma_bias^2./(1+(2*pi*f).^2*HFA_R_plasma_bias^2*HFA_C_antenna^2))/HFA_antenna_eff_length^2];
+        HFA_shot_noise_photoelectron_nobias=[f 2*Units.e*abs(HFA_I.photo)*(HFA_R_plasma_nobias^2./(1+(2*pi*f).^2*HFA_R_plasma_nobias^2*HFA_C_antenna^2))/HFA_antenna_eff_length^2];
     end
     if 1, % total noise = shot noise photo + thermal
-        SOFI_total_noise_bias=irf_add(1,SOFI_shot_noise_photoelectron_bias,1,thermal_noise_bias);
-        SOFI_total_noise_nobias=irf_add(1,SOFI_shot_noise_photoelectron_nobias,1,thermal_noise_nobias);
+        HFA_total_noise_bias=irf_add(1,HFA_shot_noise_photoelectron_bias,1,HFA_thermal_noise_bias);
+        HFA_total_noise_nobias=irf_add(1,HFA_shot_noise_photoelectron_nobias,1,HFA_thermal_noise_nobias);
+    end
+    if 1, % bit noise
+        f_sampling=25e3; % DC up to kHz
+        tmunit=15.2e-6; % in V/m for gain=1
+        tmrange=0.5;    % in V/m
+        SOFI_bit_noise_gain1=[f_range(1) f_range(1)*10]';
+        SOFI_bit_noise_gain1(:,2)=(tmunit/2)^2/(f_sampling/2)/3;
+    end
+end
+
+if 1, % instrument noise calculations SDP
+    if 1, % preamp parameters
+        preamp_noise=10e-9; % preamplifier noise 4nV/Hz1/2
+        preamp_noise_level=(preamp_noise/HFA_antenna_eff_length)^2;
+        f_break=400; % transition frequency at which 1/f noise is starting
+    end
+    if 1, % preamplifier noise
+        SDP_instr_noise=[f(1) f_break f(end)]';
+        SDP_instr_noise(:,2)=2*preamp_noise_level*[f_break/f(1); 1;  1];
+    end
+    if 1, % photoelectron thermal noise  S=4kTZ
+        T_eV=1; % photoelectron temperature
+        SDP_thermal_noise_bias=[f 4*Units.e*T_eV*sqrt(SDP_R_plasma_bias^2./(1+(2*pi*f).^2*SDP_R_plasma_bias^2*SDP_C_antenna^2))/SDP_antenna_eff_length^2];
+        SDP_thermal_noise_nobias=[f 4*Units.e*T_eV*sqrt(SDP_R_plasma_nobias^2./(1+(2*pi*f).^2*SDP_R_plasma_nobias^2*SDP_C_antenna^2))/SDP_antenna_eff_length^2];
+    end
+    if 1, % shot noise plasma and photoelectrons
+        % SOFI_shot_noise_plasma XXX WE IGNORE THIS
+        %nu=n/2*sqrt(8*Units.e*T_plasma_eV/pi/Units.me)*A_antenna;
+        %SOFI_shot_noise_bias=[f 2*Units.e^2*nu*(R_plasma_bias^2./(1+(2*pi*f).^2*R_plasma_bias^2*C_antenna^2))/antenna_eff_length^2];
+        %SOFI_shot_noise_nobias=[f 2*Units.e^2*nu*(R_plasma_nobias^2./(1+(2*pi*f).^2*R_plasma_nobias^2*C_antenna^2))/antenna_eff_length^2];
+        % SOFI_shot_noise_photoelectron
+        SDP_I=lp.current(SDP_probe,-1,Rsolo,UV,[]);
+        
+        SDP_shot_noise_photoelectron_bias=[f 2*Units.e*abs(SDP_I.photo)*(SDP_R_plasma_bias^2./(1+(2*pi*f).^2*SDP_R_plasma_bias^2*SDP_C_antenna^2))/SDP_antenna_eff_length^2];
+        SDP_shot_noise_photoelectron_nobias=[f 2*Units.e*abs(SDP_I.photo)*(SDP_R_plasma_nobias^2./(1+(2*pi*f).^2*SDP_R_plasma_nobias^2*SDP_C_antenna^2))/SDP_antenna_eff_length^2];
+    end
+    if 1, % total noise = shot noise photo + thermal
+        SDP_total_noise_bias=irf_add(1,SDP_shot_noise_photoelectron_bias,1,SDP_thermal_noise_bias);
+        SDP_total_noise_nobias=irf_add(1,SDP_shot_noise_photoelectron_nobias,1,SDP_thermal_noise_nobias);
     end
     if 1, % bit noise
         f_sampling=25e3; % DC up to kHz
@@ -172,7 +223,7 @@ if 1, % electric field plot
     text(0.97,0.85,'spectra at R=0.3 AU','fontsize',12,'fontweight','demi','color','r','units','normalized','horizontalalignment','right','parent',hca);
     title(hca,['Predicted electric field spectra and noise levels in solar wind \newline' ...
         'Noise levels calculated for distance ' num2str(Rsolo,3) 'AU \newline' ...
-        'L_{eff}= ' num2str(antenna_eff_length) 'm. S_E =V_A^2*S_B (S_B empirical), V_A=' num2str(VA) 'km/s. '])
+        'L_{eff}= ' num2str(HFA_antenna_eff_length) 'm. S_E =V_A^2*S_B (S_B empirical), V_A=' num2str(VA) 'km/s. '])
 end
 if 1, % electric field example spectra
     loglog(SW_example_Espectra_THEMIS(:,1), SW_example_Espectra_THEMIS(:,2),'color',[0.5 0.5 0.5],'linewidth',1);
@@ -192,10 +243,17 @@ if 1, % electric field example spectra
 end
 if 1, % plot electric field noises
     
-    loglog(SOFI_total_noise_bias,SOFI_total_noise_bias(:,2),'color',[0.8 0.0 0.0]);
-    loglog(SOFI_total_noise_nobias(:,1),SOFI_total_noise_nobias(:,2),'color',[0.8 0.0 0.0],'linestyle',':');
-    text(SOFI_total_noise_bias(1,1)*1.5,SOFI_total_noise_bias(1,2),'total noise','fontsize',10,'color',[0.8 0.0 0.0],'units','data','horizontalalignment','left','verticalalignment','bottom');
-    
+  if 1, % HFA
+    loglog(HFA_total_noise_bias,HFA_total_noise_bias(:,2),'color',[0.8 0.0 0.0]);
+    loglog(HFA_total_noise_nobias(:,1),HFA_total_noise_nobias(:,2),'color',[0.8 0.0 0.0],'linestyle',':');
+    text(HFA_total_noise_bias(1,1)*1.5,HFA_total_noise_bias(1,2),'total noise','fontsize',10,'color',[0.8 0.0 0.0],'units','data','horizontalalignment','left','verticalalignment','bottom');
+  end
+  if 1
+    loglog(SDP_total_noise_bias,SDP_total_noise_bias(:,2),'color',[0.8 0.5 0.0]);
+    loglog(SDP_total_noise_nobias(:,1),SDP_total_noise_nobias(:,2),'color',[0.8 0.5 0.0],'linestyle',':');
+    text(SDP_total_noise_bias(1,1)*1.5,SDP_total_noise_bias(1,2),'total noise','fontsize',10,'color',[0.8 0.5 0.0],'units','data','horizontalalignment','left','verticalalignment','bottom');
+  end
+    if 0
     loglog(thermal_noise_bias(:,1), thermal_noise_bias(:,2),'color',[0.5 0.5 0]);
     loglog(thermal_noise_nobias(:,1), thermal_noise_nobias(:,2),'color',[0.5 0.5 0],'linestyle',':');
     text(thermal_noise_bias(1,1)*200,thermal_noise_bias(1,2),'thermal noise 1eV','fontsize',10,'color',[0.5 0.5 0],'units','data','verticalalignment','bottom');
@@ -223,11 +281,11 @@ if 1, % plot electric field noises
     loglog(SOFI_shot_noise_photoelectron_bias(:,1), SOFI_shot_noise_photoelectron_bias(:,2),'color',[0 0.5 0.5]);
     loglog(SOFI_shot_noise_photoelectron_nobias(:,1), SOFI_shot_noise_photoelectron_nobias(:,2),'color',[0 0.5 0.5],'linestyle',':');
     text(SOFI_shot_noise_photoelectron_bias(1,1)*1.5,SOFI_shot_noise_photoelectron_bias(1,2),'shot noise photo','fontsize',10,'color',[0 0.5 0.5],'units','data','horizontalalignment','left','verticalalignment','bottom');
-
+    end
     loglog(f_range(1)*[1 10],PE_range(1)*3*[1 1],':');
     loglog(f_range(1)*[1 10],PE_range(1)*10*[1 1],'-');
-    text(f_range(1)*10,PE_range(1)*3,['unbiased probe, R=' num2str(R_plasma_nobias/1e6,3) 'M\Omega'],'horizontalalignment','left','verticalalignment','middle','color','k');
-    text(f_range(1)*10,PE_range(1)*10,['biased probe, R=' num2str(R_plasma_bias/1e6,3) 'M\Omega'],'horizontalalignment','left','verticalalignment','middle','color','k');
+    text(f_range(1)*10,PE_range(1)*3,['unbiased probe, R=' num2str(HFA_R_plasma_nobias/1e6,3) 'M\Omega'],'horizontalalignment','left','verticalalignment','middle','color','k');
+    text(f_range(1)*10,PE_range(1)*10,['biased probe, R=' num2str(HFA_R_plasma_bias/1e6,3) 'M\Omega'],'horizontalalignment','left','verticalalignment','middle','color','k');
     irf_legend(hca,['ne=' num2str(n(1)/1e6,3) 'cc, Te=' num2str(T_plasma_eV(1),3) 'eV'],[0.98 0.02])
 end
 irf_legend(0,['SolO noise turb ' datestr(now,31)],[0,0.001],'interpreter','none','color',[0.5 0.5 0.5])
