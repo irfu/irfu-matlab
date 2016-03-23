@@ -116,6 +116,7 @@ distis = disti.data.*allsolidi;
 distes = diste.data.*allsolide;
 
 % Electron analysis - OMNI
+PSDomni = zeros(length(diste.time),length(energye0));
 for ii = 1:length(diste.time);
     disttemp = squeeze(distes(ii,:,:,:));
     PSDomni(ii,:) = squeeze(irf.nanmean(irf.nanmean(disttemp,2),3))/(mean(mean(solida)));
