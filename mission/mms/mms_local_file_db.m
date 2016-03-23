@@ -282,8 +282,9 @@ classdef mms_local_file_db < mms_file_db
             irf.log('critical',errS), error(errS)
           end
           iVar = find(isCdfEpochTT2000VariableArray,1);
-          data = spdfcdfread([entry.path filesep entry.name],'Variables',...
-            info.Variables(iVar,1),'CombineRecords',true,'KeepEpochAsIs',true);
+          data = spdfcdfread([entry.path filesep entry.name], ...
+            'Variables', info.Variables(iVar,1), 'CombineRecords', true, ...
+            'KeepEpochAsIs', true, 'DataOnly', true);
           if isempty(data), entry = []; return, end
           entry.start = EpochTT(data(1));
           entry.stop = EpochTT(data(end));
