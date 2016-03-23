@@ -549,43 +549,21 @@ classdef mms_db_sql < handle
                 tVarNames{indGoodTVarName(isBadTime)}]);
               indGoodTVarName(isBadTime) = [];
             end
-            timeVars = tVarNames(indGoodTVarName);
-            % Read only first and last record of timeVars.
-            for ii=1:length(timeVars)
-              if(ii==1)
-                % Zero based, but spdfcdfinfo returns records written starting with record 1.
-                RECNUMS = [0 cell2mat(inf.Variables.NumRecords(strcmp(inf.Variables.Name, timeVars(1))))-1];
-              else
-                RECNUMS = [RECNUMS, 0 cell2mat(inf.Variables.NumRecords(strcmp(inf.Variables.Name, timeVars(ii))))-1]; %#ok<AGROW>
-              end
-            end
-            % Check if something went wrong..
-            if(any(RECNUMS<0))
-              errStr = 'Some time variables appears to be missing records.';
-              irf.log('critical', errStr); warning(errStr);
-              out = []; return
-            end
             try
-              epochRead = spdfcdfread(cdfFileName, 'Variable', timeVars, ...
-                'KeepEpochAsIs', true, 'Records', RECNUMS);
+              epoch = spdfcdfread(cdfFileName, 'DataOnly', true, ...
+                'Variable', tVarNames(indGoodTVarName), ...
+                'KeepEpochAsIs', true);
             catch ME
               errStr = ['Cannot read Epochs from file: ', cdfFileName];
               irf.log('warning', errStr); irf.log('warning', ME.message);
               warning(errStr); out = []; return;
             end
-            % Clean up epoch result, first column is first timeVars where
-            % first two rows correspond to first&last record
-            % second column row three&four correspond to first&last record
-            % etc.
-            epoch = zeros(2, length(timeVars), 'int64');
-            for ii=1:length(timeVars)
-              epoch(1:2, ii) = cell2mat(epochRead(2*ii-1:2*ii, ii));
-            end
+            if isinteger(epoch), epoch = {epoch};end % only one time variable
             for iT = numel(indGoodTVarName):-1:1
-              out(iT).epochVarName = timeVars{iT};
+              out(iT).epochVarName = tVarNames{iT};
               out(iT).varNames = dep(IC == iT,1);
-              startTT = epoch(1, indGoodTVarName(iT));
-              endTT   = epoch(2, indGoodTVarName(iT));
+              startTT = min(epoch{indGoodTVarName(iT)});
+              endTT   = max(epoch{indGoodTVarName(iT)});
               if any(startTT) && any(endTT) && ...
                   (min(startTT,endTT) < int64(479390467184000000)...% '2015-03-12T00:00:00.000000000'
                   ||  max(startTT,endTT) > int64(1262260868184000000)),%'2040-01-01T00:00:00.000000000'
