@@ -76,50 +76,92 @@ classdef mms_db_sql < handle
 			end
 		end
 		
-		
 		function import_a_file_from_list(obj)
-			% import one new file from FileListToImport
-			sql = 'select * from FileListToImport order by rowid desc limit 1';
-			rs = obj.sqlQuery(sql);
-			while rs.next
-				fileToImport = char(rs.getString('fileNameFullPath'));
-				obj.import_file(fileToImport);
-			end
-			% remove file from FileListToImport
-			sql = ['delete from FileListToImport where fileNameFullPath="' fileToImport '"'];
-			obj.sqlUpdate(sql);
-		end
-		
-		function import_files_from_list(obj)
-			% import all files from FileListToImport
-			someFilesDidNotImport = false;
-			while 1
-				sql = 'select * from FileListToImport order by rowid desc limit 1';
-				rs = obj.sqlQuery(sql);
-				if rs.next
-					fileToImport = char(rs.getString('fileNameFullPath'));
-					irf.log('debug',['Importing ' fileToImport]);
-					status = obj.import_file(fileToImport);
-					if status == 0,
-						irf.log('warning',['******** Did not succeed to import:',fileToImport]);
-						someFilesDidNotImport = true;
-					end
-					% remove file from FileListToImport
-					sql = ['delete from FileListToImport where fileNameFullPath="' fileToImport '"'];
-					obj.sqlUpdate(sql);
-				else
-					if someFilesDidNotImport
-						irf.log('critical','Some files did not import!');
-						break;
-					else
-						irf.log('warning','All files imported from FileListToImport');
-						break;
-					end
-				end
-			end
-		end
-		
-		function add_all_files_to_import_list(obj)
+          % import one new file from FileListToImport
+          sql = ['SELECT * FROM FileListToImport ',...
+            'WHERE fileNameFullPath NOT IN ', ...
+            '(SELECT fileNameFullPath FROM FileList) ', ...
+            'ORDER BY rowid DESC limit 1'];
+          rs = obj.sqlQuery(sql);
+          while rs.next
+            fileToImport = char(rs.getString('fileNameFullPath'));
+            status = obj.import_file(fileToImport);
+            if(status==0)
+              irf.log('warning',['Failed to import file: ',fileToImport]);
+            end
+          end
+          if(exist('fileToImport','var'))
+            % remove file from FileListToImport
+            sql = ['DELETE from FileListToImport ',...
+              'WHERE fileNameFullPath="' fileToImport '"'];
+            obj.sqlUpdate(sql);
+          else
+            % No previously files not previously known were found, simply
+            % clear FileListToImport
+            irf.log('notice','No new files (not already in database) was found.');
+            sql = 'DELETE FROM FileListToImport';
+            obj.sqlUpdate(sql);
+          end
+        end
+
+        function import_files_from_list(obj)
+          % import all files from FileListToImport
+          someFilesDidNotImport = false;
+% This could possibly speed up adding each result to "fileList" by
+% pre-allocating it (when it is really huge). But this should be combined
+% using some cleaver UNION so it is only one SQL query first of all..
+%           sql = ['SELECT count(*) as records FROM FileListToImport ', ...
+%             'WHERE fileNameFullPath NOT IN ', ...
+%             '(SELECT fileNameFullPath FROM FileList) ',...
+%             'ORDER BY rowid DESC'];
+%           rs = obj.sqlQuery(sql);
+%           if(rs.next)
+%             count = rs.getInt(1);
+%             fileList = cell(count,1);
+%           end
+
+          sql = ['SELECT * FROM FileListToImport ', ...
+            'WHERE fileNameFullPath NOT IN ', ...
+            '(SELECT fileNameFullPath FROM FileList) ',...
+            'ORDER BY rowid DESC'];
+          rs = obj.sqlQuery(sql);
+          ii = 1;
+          while rs.next
+            fileToImport = char(rs.getString('fileNameFullPath'));
+            fileList{ii,1} = fileToImport; %#ok<AGROW>
+            ii = ii + 1;
+          end
+          if(exist('fileList','var'))
+            % We got at least one new file to be imported.
+            for ii=1:length(fileList)
+              irf.log('warning',['Importing ' fileList{ii,1}]);
+              status = obj.import_file(fileList{ii,1});
+              if(status==0)
+                irf.log('warning',['******** Did not succeed to import:',fileList{ii,1}]);
+                someFilesDidNotImport = true;
+              end
+            end
+          else
+            irf.log('warning','No new files (not already in database) was found.');
+            someFilesDidNotImport = true;
+          end
+          if someFilesDidNotImport
+            irf.log('critical','Some files did not import!');
+            % irf.log('warning','Partially cleaning up FileListToImport.');
+            % sql = ['DELETE FROM FileListToImport ',...
+            %  'WHERE fileNameFullPath IN ',...
+            %  '(SELECT fileNameFullPath FROM FileList)'];
+            % obj.sqlUpdate(sql);
+          else
+            irf.log('warning','All files imported from FileListToImport.');
+          end
+          % Clean up FileListToImport
+          irf.log('warning','Cleaning up FileListToImport.');
+          sql = 'DELETE FROM FileListToImport';
+          obj.sqlUpdate(sql);
+        end
+
+        function add_all_files_to_import_list(obj)
 			% works only in unix or mac
 			% Verify sqlite3 is installed
 			[status, ~] = system('command -v sqlite3 >/dev/null 2>&1 || { exit 100; }');
@@ -130,34 +172,24 @@ classdef mms_db_sql < handle
 				'echo -e ".mod csv\n.import delme.txt FileListToImport\n" | sqlite3 ' obj.databaseFile ';'...
 				'rm ./delme.txt'...
 				]);
-		end
-		
-		function status = import_file(obj,fileToImport)
+        end
+
+        function status = import_file(obj,fileToImport)
 			% import a single file
 			% return status = 1 if file is imported sucessully, or it exists or
 			% file with newer version exists. Otherwise return status = 0.
 			%
 			irf.log('notice',['File to import: ' fileToImport]);
-			status = 1;
+			status = 0; % Assume it did not succeed yet.
 			removeOlderVersionFile = false;
-			% check if file is not in db
-			sql = ['select * from FileList ' ...
-				'where fileNameFullPath = "' fileToImport '"'];
-			rs=obj.sqlQuery(sql);
-			while rs.next % file already exist
-				irf.log('notice','File exists, not importing!');
-				return;
-			end
-			% check if files with different version exist 
+			% check if files with same data and date exist
 			FileInfo = mms_db_sql.get_file_info(fileToImport);
 			sql = ['select idFile,version from FileList ' ...
-				'where directory = "' FileInfo.directory '" '...
-				' and dataset = "' FileInfo.dataset '" '...
-				' and date = "' FileInfo.date '" '...
-				' and version != "' FileInfo.version '" '...
-				];
-			rs=obj.sqlQuery(sql);
-			if rs.next % file with different version exists
+				'where directory = "' FileInfo.directory '"'...
+				' and dataset = "' FileInfo.dataset '"'...
+				' and date = "' FileInfo.date '"'];
+			rs = obj.sqlQuery(sql);
+			if rs.next % file with same dataset and date exists, compare versions
 				existingVersion = char(rs.getString('version'));
 				if is_version_larger(FileInfo.version(2:end),existingVersion(2:end))
 					irf.log('notice',['File with older version ' existingVersion ' exsists!']);
@@ -175,7 +207,7 @@ classdef mms_db_sql < handle
 				' SELECT * from FileListToImport where fileNameFullPath = "' fileToImport '"'];
 			obj.sqlUpdate(sql);
 			sql = ['select idFile,dataset from FileList where  fileNameFullPath = "' fileToImport '"'];
-			rs=obj.sqlQuery(sql);
+			rs = obj.sqlQuery(sql);
 			while rs.next % file already exist
 				idFile = char(rs.getString('idFile'));
 				dataset = char(rs.getString('dataset'));
@@ -207,7 +239,8 @@ classdef mms_db_sql < handle
                 end
 				obj.sqlUpdate(sql);
 			end
-			
+			% If we have reached this point then insert went well
+            status = 1;
 			if removeOlderVersionFile
 				irf.log('notice',['Deleting information of the file with older version ' existingVersion '!']);
 				obj.sqlUpdate(['delete from VarIndex where idFile = "' existingFileID '"']);
@@ -215,7 +248,7 @@ classdef mms_db_sql < handle
 			end
 		end
 		
-		function idDataset=add_var_names(obj,dataset,varNames)
+		function idDataset = add_var_names(obj,dataset,varNames)
 			% ADD_VAR_NAMES add variable names to VarNames table
 			if ischar(varNames), varNames = {varNames};end
 			
@@ -278,7 +311,7 @@ classdef mms_db_sql < handle
 				end
 			end
 		end
-		function	idDatasetList = find_dataset_id(obj,dataset)
+        function idDatasetList = find_dataset_id(obj,dataset)
 			% find Datasets with name "dataset"
 			idDatasetList = {};iDataset = 1;
 			sql = ['select idDataset from Datasets where dataset = "' dataset '"'];
@@ -489,64 +522,62 @@ classdef mms_db_sql < handle
             if(~exist(cdfFileName, 'file'))
               errStr = ['File not found: ', cdfFileName];
               irf.log('warning', errStr); warning(errStr);
-	      out = []; return;
+              out = []; return;
             end
- 			irf.log('debug',['Reading: ' cdfFileName]);
-			try
-				inf = spdfcdfinfo(cdfFileName);
+            irf.log('debug',['Reading: ' cdfFileName]);
+            try
+              inf = spdfcdfinfo(cdfFileName, 'VARSTRUCT', true);
             catch ME
               errStr = ['Cannot get file information from: ', cdfFileName];
               irf.log('warning', errStr); irf.log('warning', ME.message);
-              warning(errStr);
-              out = [];
-              return;
-			end
-			dep = inf.VariableAttributes.DEPEND_0;
-			[tVarNames,~,IC] = unique(dep(:,2));
-			% FPI bug fix, removing energy_index and pitch_index from DEPEND_0
-			%isGoodTVarName = cellfun(@(x) isempty(strfind(x,'index')),tVarNames);
-			indGoodTVarName = 1:numel(tVarNames);
-			iBadTVarName = ~ismember(tVarNames,inf.Variables(:,1)); % time variable should be under inf.Variables(:,1)
-			if any(iBadTVarName)
-				irf.log('notice',['!! bad time variable names in DEPEND_O: ' tVarNames{iBadTVarName}]);
-				indGoodTVarName(iBadTVarName) = [];
-				tVarNames{iBadTVarName} = [];
-			end
-			isBadTime  = cellfun(@(x) ~any(strcmpi({'tt2000','epoch','epoch16'}, ...
-				inf.Variables(strcmp(inf.Variables(:,1), x),4))), tVarNames(indGoodTVarName));
-			if any(isBadTime)
-				irf.log('notice',['! not accepted time format for time DEPEND_O variable: ' ...
-					tVarNames{indGoodTVarName(isBadTime)}]);
-				indGoodTVarName(isBadTime) = [];
-			end
-			% read time variables
+              warning(errStr); out = []; return;
+            end
+            dep = inf.VariableAttributes.DEPEND_0;
+            [tVarNames, ~, IC] = unique(dep(:,2));
+            indGoodTVarName = 1:numel(tVarNames);
+            iBadTVarName = ~ismember(tVarNames, inf.Variables.Name); % time variable should be a variable in the cdf file
+            if any(iBadTVarName)
+              irf.log('notice',['!! bad time variable names in DEPEND_O: ' tVarNames{iBadTVarName}]);
+              indGoodTVarName(iBadTVarName) = [];
+              tVarNames{iBadTVarName} = [];
+            end
+            isBadTime = cellfun(@(x) ~any(strcmpi({'tt2000', 'epoch', 'epoch16'}, ...
+              inf.Variables.DataType(strcmp(inf.Variables.Name, x)))), ...
+              tVarNames(indGoodTVarName));
+            if any(isBadTime)
+              irf.log('notice',['! not accepted time format for time DEPEND_O variable: ' ...
+                tVarNames{indGoodTVarName(isBadTime)}]);
+              indGoodTVarName(isBadTime) = [];
+            end
             try
-              epoch = spdfcdfread(cdfFileName, ...
-				'Variable', tVarNames(indGoodTVarName), 'KeepEpochAsIs', true);
+              epoch = spdfcdfread(cdfFileName, 'DataOnly', true, ...
+                'Variable', tVarNames(indGoodTVarName), ...
+                'KeepEpochAsIs', true);
             catch ME
               errStr = ['Cannot read Epochs from file: ', cdfFileName];
               irf.log('warning', errStr); irf.log('warning', ME.message);
-              warning(errStr); out=[]; return;
+              warning(errStr); out = []; return;
             end
-			if isinteger(epoch), epoch = {epoch};end % only one time variable
-			for iT = numel(indGoodTVarName):-1:1
-				out(iT).epochVarName = tVarNames{iT};
-				out(iT).varNames = dep(IC == iT,1);
-				startTT = min(epoch{indGoodTVarName(iT)});
-				endTT   = max(epoch{indGoodTVarName(iT)});
-				if any(startTT) && any(endTT) && ...
-						(min(startTT,endTT) < int64(479390467184000000)...% '2015-03-12T00:00:00.000000000'
-						||  max(startTT,endTT) > int64(1262260868184000000)),%'2040-01-01T00:00:00.000000000'
-					out(iT).startTT = NaN;
-					out(iT).endTT   = NaN;
-					irf.log('notice',['!!! In file:' cdfFileName]);
-					irf.log('notice',['!!! ' out(iT).epochVarName ' has startTT = ' num2str(startTT) ' and endTT = ' num2str(endTT)]);
-				else
-					out(iT).startTT = startTT;
-					out(iT).endTT   = endTT;
-				end
-			end
-		end
+            if isinteger(epoch), epoch = {epoch};end % only one time variable
+            for iT = numel(indGoodTVarName):-1:1
+              out(iT).epochVarName = tVarNames{iT};
+              out(iT).varNames = dep(IC == iT,1);
+              startTT = min(epoch{indGoodTVarName(iT)});
+              endTT   = max(epoch{indGoodTVarName(iT)});
+              if any(startTT) && any(endTT) && ...
+                  (min(startTT,endTT) < int64(479390467184000000)...% '2015-03-12T00:00:00.000000000'
+                  ||  max(startTT,endTT) > int64(1262260868184000000)),%'2040-01-01T00:00:00.000000000'
+                out(iT).startTT = NaN;
+                out(iT).endTT   = NaN;
+                irf.log('notice',['!!! In file:' cdfFileName]);
+                irf.log('notice',['!!! ' out(iT).epochVarName ' has startTT = ' num2str(startTT) ' and endTT = ' num2str(endTT)]);
+              else
+                out(iT).startTT = startTT;
+                out(iT).endTT   = endTT;
+              end
+            end
+        end
+
 		function [startTT,endTT] = start_stop_in_ttns(timeInterval)
 			if ischar(timeInterval)
 				timeInterval = irf.tint(timeInterval);
