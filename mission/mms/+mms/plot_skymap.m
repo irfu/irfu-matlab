@@ -157,10 +157,13 @@ while have_vectors
   vectors = vectors(2:end,:);
   if isempty(vectors), break, end  
 end
-  if plotb            % plot setting phi and theta boundary, 2016-03-11; wyli
+    
+  if plotb           % plot setting phi and theta boundary, 2016-03-11; wyli
+    if not(plotSphere)            
     phicb = [phicb, phicb(1)];
     thetacb = [thetacb, thetacb(1)];        
     plot(ax, phicb, thetacb, 'linewidth',2, 'color',[1 1 1])
+    end
   end  
 hold(ax,'off');
 
