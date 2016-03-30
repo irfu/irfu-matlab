@@ -104,6 +104,30 @@ classdef mms_db_sql < handle
           end
         end
 
+        function clear_deleted_files(obj)
+          % Clear up database by removing all entries of files which have
+          % been deleted.
+          irf.log('warning', 'Re-running add_all_files_to_import_list to check which files are present on system.');
+          % Clear any old entries in FileListToImport.
+          obj.sqlUpdate('DELETE FROM FileListToImport');
+          obj.add_all_files_to_import_list;
+          % Verify at least some files are found. (ie avoid deleting all entries).
+          sql = 'SELECT * FROM FileListToImport ORDER BY rowid LIMIT 1';
+          rs = obj.sqlQuery(sql);
+          if(~rs.next), irf.log('warning','Nothing found. Aborting.'); return; end
+%FIXME: Combine the two sql DELETE queries.. Delete from VarIndex & FileList..
+          % Delete entries in VarIndex and FileList which fileNameFullPath
+          % does not appear to exist on our system...
+          sql = ['DELETE FROM VarIndex WHERE idFile IN ',...
+            '(SELECT idFile FROM FileList WHERE fileNameFullPath NOT IN ',...
+            '(SELECT fileNameFullPath FROM FileListToImport))'];
+          obj.sqlUpdate(sql);
+          sql = ['DELETE FROM FileList WHERE idFile IN ',...
+            '(SELECT idFile FROM FileList WHERE fileNameFullPath NOT IN ',...
+            '(SELECT fileNameFullPath FROM FileListToImport))'];
+          obj.sqlUpdate(sql);
+        end
+
         function import_files_from_list(obj)
           % import all files from FileListToImport
           someFilesDidNotImport = false;
@@ -163,6 +187,10 @@ classdef mms_db_sql < handle
 
         function add_all_files_to_import_list(obj)
 			% works only in unix or mac
+            % Note: This function adds all files found on system to import
+            % list, when importing only new (not previously imported files
+            % will be processed). This is to allows for deleting files from
+            % DB which has been deleted upstream and removed from system.
 			% Verify sqlite3 is installed
 			[status, ~] = system('command -v sqlite3 >/dev/null 2>&1 || { exit 100; }');
 			if(status==100), error('It appears Sqlite3 is not installed/found on your system.'); end
