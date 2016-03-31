@@ -31,25 +31,49 @@ classdef mms_db_sql < handle
 				obj.databaseFile = [dirPath filesep file ext];
 				obj.open_database;
 			end
-		end
+        end
 		
-		function open_database(obj)
-			% Create tables if not exist
-			sql = [...
-				'CREATE TABLE IF NOT EXISTS "FileList" ('...
-				'"idFile"	INTEGER, "directory","dataset","date","version","fileNameFullPath"	TEXT UNIQUE,'...
-				'	PRIMARY KEY(idFile) );'...
-				'CREATE TABLE IF NOT EXISTS "FileListToImport" '...
-				'("directory","dataset","date","version","fileNameFullPath"	TEXT UNIQUE);'...
-				'CREATE TABLE IF NOT EXISTS "VarNames" ('...
-				'"idVar"	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,"varName"	TEXT, "idDataset" INTEGER NOT NULL);'...
-				'CREATE TABLE IF NOT EXISTS "Datasets" ('...
-				'"idDataset"	INTEGER NOT NULL,"dataset"	TEXT,"varNames"	TEXT,PRIMARY KEY(idDataset));'...
-				'CREATE TABLE IF NOT EXISTS "VarIndex" ('...
-				'"idFile"	INTEGER,"idDataset"	TEXT,"startTT"	INTEGER,"endTT"	INTEGER, PRIMARY KEY (idFile,idDataset));'...
-				];
-			obj.sqlUpdate(sql);
-		end
+        function open_database(obj)
+          % Create tables if they do not exist
+          sql = [...
+            'PRAGMA foreign_keys = ON;', ...
+            'CREATE TABLE IF NOT EXISTS "FileList" (', ...
+              '"idFile" INTEGER, ', ...
+              '"directory",', ...
+              '"dataset",', ...
+              '"date",', ...
+              '"version",', ...
+              '"fileNameFullPath" TEXT UNIQUE, ', ...
+              'PRIMARY KEY(idFile) );', ...
+            'CREATE TABLE IF NOT EXISTS "FileListToImport" (', ...
+              '"directory",', ...
+              '"dataset",', ...
+              '"date",', ...
+              '"version",', ...
+              '"fileNameFullPath" TEXT UNIQUE);', ...
+            'CREATE TABLE IF NOT EXISTS "Datasets" (', ...
+              '"idDataset" INTEGER NOT NULL,', ...
+              '"dataset" TEXT,', ...
+              '"varNames" TEXT,', ...
+              'PRIMARY KEY(idDataset) );', ...
+            'CREATE TABLE IF NOT EXISTS "VarNames" (', ...
+              '"idVar" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,', ...
+              '"varName" TEXT,', ...
+              '"idDataset" INTEGER, ', ...
+              'FOREIGN KEY(idDataset) REFERENCES Datasets(idDataset) ', ...
+              'ON UPDATE CASCADE ON DELETE CASCADE );', ...
+            'CREATE TABLE IF NOT EXISTS "VarIndex" (', ...
+              '"idFile" INTEGER,', ...
+              '"idDataset" INTEGER,', ...
+              '"startTT" INTEGER,', ...
+              '"endTT" INTEGER, ', ...
+              'FOREIGN KEY(idFile) REFERENCES FileList(idFile) ', ...
+              'ON UPDATE CASCADE ON DELETE CASCADE, ', ...
+              'FOREIGN KEY(idDataset) REFERENCES Datasets(idDataset) ',...
+              'ON UPDATE CASCADE ON DELETE CASCADE);', ...
+              ];
+            obj.sqlUpdate(sql);
+        end
 		
 		function connect(obj)
 			% CONNECT open connection to database
@@ -102,6 +126,23 @@ classdef mms_db_sql < handle
             sql = 'DELETE FROM FileListToImport';
             obj.sqlUpdate(sql);
           end
+        end
+
+        function clear_deleted_files(obj)
+          % Clear up database by removing all entries of files which have
+          % been deleted.
+          irf.log('warning', 'Re-running add_all_files_to_import_list to check which files are present on system.');
+          % Clear any old entries in FileListToImport.
+          obj.sqlUpdate('DELETE FROM FileListToImport');
+          obj.add_all_files_to_import_list;
+          % Verify at least some files are found. (ie avoid deleting all entries).
+          sql = 'SELECT * FROM FileListToImport ORDER BY rowid LIMIT 1';
+          rs = obj.sqlQuery(sql);
+          if(~rs.next), irf.log('warning','Nothing found. Aborting.'); return; end
+          sql = ['DELETE FROM FileList WHERE idFile IN ',...
+            '(SELECT idFile FROM FileList WHERE fileNameFullPath NOT IN ',...
+            '(SELECT fileNameFullPath FROM FileListToImport))'];
+          obj.sqlUpdate(sql);
         end
 
         function import_files_from_list(obj)
@@ -163,6 +204,10 @@ classdef mms_db_sql < handle
 
         function add_all_files_to_import_list(obj)
 			% works only in unix or mac
+            % Note: This function adds all files found on system to import
+            % list, when importing only new (not previously imported files
+            % will be processed). This is to allows for deleting files from
+            % DB which has been deleted upstream and removed from system.
 			% Verify sqlite3 is installed
 			[status, ~] = system('command -v sqlite3 >/dev/null 2>&1 || { exit 100; }');
 			if(status==100), error('It appears Sqlite3 is not installed/found on your system.'); end
@@ -206,7 +251,7 @@ classdef mms_db_sql < handle
 			sql = ['insert into FileList (directory,dataset,date,version,fileNameFullPath)'...
 				' SELECT * from FileListToImport where fileNameFullPath = "' fileToImport '"'];
 			obj.sqlUpdate(sql);
-			sql = ['select idFile,dataset from FileList where  fileNameFullPath = "' fileToImport '"'];
+			sql = ['select idFile,dataset from FileList where fileNameFullPath = "' fileToImport '"'];
 			rs = obj.sqlQuery(sql);
 			while rs.next % file already exist
 				idFile = char(rs.getString('idFile'));
@@ -243,49 +288,51 @@ classdef mms_db_sql < handle
             status = 1;
 			if removeOlderVersionFile
 				irf.log('notice',['Deleting information of the file with older version ' existingVersion '!']);
-				obj.sqlUpdate(['delete from VarIndex where idFile = "' existingFileID '"']);
 				obj.sqlUpdate(['delete from FileList where idFile = "' existingFileID '"']);
 			end
-		end
+        end
 		
-		function idDataset = add_var_names(obj,dataset,varNames)
-			% ADD_VAR_NAMES add variable names to VarNames table
-			if ischar(varNames), varNames = {varNames};end
-			
-			% Check if dataset with varNames exists
-			varNamesCharArray = char(sort(varNames))';
-			varNamesCharArray(:,end+1)=' ';
-			varNamesString = reshape(varNamesCharArray,1,[]);
-			rs = obj.sqlQuery(['select idDataset,dataset from Datasets where varNames="' varNamesString '";']);
-			flagAddDatasetToDb = true;
-			while rs.next
-				datasetDb = char(rs.getString('dataset'));
-				idDataset = char(rs.getString('idDataset'));
-				if strcmp(datasetDb,dataset)
-					flagAddDatasetToDb = false;
-					break;
-				end
-				irf.log('warning',['! ' datasetDb ' and ' dataset ' include the same variables!']);
-			end
-			
-			% add dataset and variables if needed and get idDataset
-			if flagAddDatasetToDb
-				% add dataset
-				obj.sqlUpdate(['insert into Datasets(dataset,varNames) values("' dataset '","' varNamesString '");']);
-				rs = obj.sqlQuery(['select idDataset from Datasets where dataset="' dataset '";']);
-				while rs.next
-					idDataset = char(rs.getString('idDataset'));
-				end
-				% add variables and idDataset
-				for iVar = 1:length(varNames)
-					sql = ['insert or ignore into VarNames(varName,idDataset) values("' varNames{iVar} '",'...
-						idDataset ');'];
-					obj.sqlUpdate(sql);
-				end
-			end
-			
-		end
-		
+        function idDataset = add_var_names(obj,dataset,varNames)
+          % ADD_VAR_NAMES add variable names to VarNames table
+          if ischar(varNames), varNames = {varNames}; end
+          % Check if dataset with varNames exists
+          varNamesCharArray = char(sort(varNames))';
+          varNamesCharArray(:,end+1) = ' ';
+          varNamesString = reshape(varNamesCharArray, 1, []);
+          rs = obj.sqlQuery(['select idDataset,dataset from Datasets where varNames="' varNamesString '";']);
+          flagAddDatasetToDb = true;
+          while rs.next
+            datasetDb = char(rs.getString('dataset'));
+            idDataset = char(rs.getString('idDataset'));
+            if strcmp(datasetDb,dataset)
+              flagAddDatasetToDb = false;
+              break;
+            end
+            irf.log('warning',['! ' datasetDb ' and ' dataset ' include the same variables!']);
+          end
+
+          % add dataset and variables if needed and get idDataset
+          if flagAddDatasetToDb
+            % add dataset
+            obj.sqlUpdate(['insert into Datasets(dataset,varNames) values("' dataset '","' varNamesString '");']);
+            rs = obj.sqlQuery(['select idDataset from Datasets where dataset="' dataset '";']);
+            while rs.next
+              idDataset = char(rs.getString('idDataset'));
+            end
+            for iVar=1:length(varNames)
+              if(iVar==1)
+                sqlValues = ['("', varNames{iVar}, '",',idDataset,')'];
+              else
+                sqlValues = [sqlValues, ', ("', varNames{iVar}, ...
+                  '",',idDataset,')']; %#ok<AGROW>
+              end
+            end
+            sqlValues = [sqlValues, ';'];
+            sql = ['INSERT OR IGNORE INTO VarNames(varName,idDataset) VALUES', sqlValues];
+            obj.sqlUpdate(sql);
+          end
+        end
+
 		function [idDatasetList,DatasetList] = find_datasets_with_varname(obj,varName)
 			% find Datasets with varName
 			idDatasetList = {};iDataset = 1;
