@@ -353,21 +353,18 @@ classdef mms_db_sql < handle
         end
 
         function idDatasetList = find_dataset_id(obj,dataset)
-			% find Datasets with name "dataset"
-			idDatasetList = {};iDataset = 1;
-			sql = ['select idDataset from Datasets where dataset = "' dataset '"'];
-			rs=obj.sqlQuery(sql);
-			if ~rs.next
-				irf.log('warning',['There is no dataset with name ' dataset '.']);
-				return;
-			else
-				while true
-					idDatasetList{iDataset} = char(rs.getString('idDataset'));  %#ok<AGROW>
-					iDataset = iDataset +1 ;
-					if ~rs.next, break; end
-				end
-			end
-		end
+          % find Datasets with name "dataset"
+          idDatasetList = {}; iDataset = 1;
+          sql = ['SELECT idDataset FROM Datasets WHERE dataset = "' dataset '"'];
+          rs = obj.sqlQuery(sql);
+          while rs.next
+            idDatasetList{iDataset} = char(rs.getString('idDataset')); %#ok<AGROW>
+            iDataset = iDataset +1 ;
+          end
+          if(isempty(idDatasetList))
+            irf.log('warning',['There is no dataset with name ' dataset '.']);
+          end
+        end
 		
 		function tintArray = index_var(obj,varName)
             sql = ['SELECT startTT,endTT FROM VarIndex LEFT JOIN VarNames ', ...
