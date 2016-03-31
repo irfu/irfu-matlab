@@ -376,8 +376,9 @@ classdef mms_db_sql < handle
 		end
 		
 		function tintArray = index_var(obj,varName)
-			sql = ['select startTT,endTT from VarIndex where idDataset in ('...
-				'select idDataset from VarNames where varName = "' varName '") order by startTT asc'];
+            sql = ['SELECT startTT,endTT FROM VarIndex LEFT JOIN VarNames ', ...
+              'USING (idDataset) WHERE VarNames.varName = "' varName '" ',...
+              'ORDER BY startTT ASC'];
 			rs= obj.sqlQuery(sql);
 			tintArray = zeros(0,2,'int64');
 			while rs.next
