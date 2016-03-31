@@ -333,31 +333,25 @@ classdef mms_db_sql < handle
           end
         end
 
-		function [idDatasetList,DatasetList] = find_datasets_with_varname(obj,varName)
-			% find Datasets with varName
-			idDatasetList = {};iDataset = 1;
-			sql = ['select idDataset from VarNames where varName = "' varName '"'];
-			rs=obj.sqlQuery(sql);
-			if ~rs.next
-				irf.log('warning',['There is no variable with name ' varName '.']);
-				return;
-			else
-				while true
-					idDatasetList{iDataset} = char(rs.getString('idDataset'));  %#ok<AGROW>
-					iDataset = iDataset +1 ;
-					if ~rs.next, break; end
-				end
-			end
-			if nargout == 2,
-				DatasetList = idDatasetList;
-				for iD = 1:numel(idDatasetList)
-					rs = obj.sqlQuery(['select dataset from Datasets where idDataset = ' idDatasetList{iD} ';']);
-					if rs.next
-						DatasetList{iD} = char(rs.getString('dataset'));
-					end
-				end
-			end
-		end
+        function [idDatasetList,DatasetList] = find_datasets_with_varname(obj,varName)
+          % find Datasets with varName
+          idDatasetList = {}; iDataset = 1;
+          if(nargout==2), DatasetList = {}; end
+          sql = ['SELECT idDataset,dataset FROM VarNames LEFT JOIN Datasets ', ...
+            'USING (idDataset) WHERE varName = "' varName '"'];
+          rs=obj.sqlQuery(sql);
+          while rs.next
+            idDatasetList{iDataset} = char(rs.getString('idDataset')); %#ok<AGROW>
+            if(nargout==2)
+              DatasetList{iDataset} =  char(rs.getString('dataset')); %#ok<AGROW>
+            end
+            iDataset = iDataset + 1;
+          end
+          if(isempty(idDatasetList))
+            irf.log('warning',['There is no variable with name ' varName '.']);
+          end
+        end
+
         function idDatasetList = find_dataset_id(obj,dataset)
 			% find Datasets with name "dataset"
 			idDatasetList = {};iDataset = 1;
