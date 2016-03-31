@@ -170,10 +170,19 @@ classdef mms_db_sql < handle
           while rs.next
             fileToImport = char(rs.getString('fileNameFullPath'));
             fileList{ii,1} = fileToImport; %#ok<AGROW>
+% FIXME Use with import_files, when ready.
+%             fileInfo{ii,1} = struct('fileNameFullPath',fileToImport, ...
+%               'directory', char(rs.getString('directory')), ...
+%               'dataset', char(rs.getString('dataset')), ...
+%               'date', char(rs.getString('date')), ...
+%               'version', char(rs.getString('version')) ); %#ok<AGROW>
             ii = ii + 1;
           end
           if(exist('fileList','var'))
             % We got at least one new file to be imported.
+%% FIXME Use import_files when ready...
+%            status = obj.import_files(fileInfo);
+%% End of FIXME
             for ii=1:length(fileList)
               irf.log('warning',['Importing ' fileList{ii,1}]);
               status = obj.import_file(fileList{ii,1});
@@ -290,6 +299,97 @@ classdef mms_db_sql < handle
 				irf.log('notice',['Deleting information of the file with older version ' existingVersion '!']);
 				obj.sqlUpdate(['delete from FileList where idFile = "' existingFileID '"']);
 			end
+        end
+
+        function status = import_files(obj, filesToImport)
+          % Import multiple files at once. (Or as quickly as possible)..
+          %% DO NOT USE THIS FUNCTION YET!
+          % return status = 1 if file is imported sucessully, or it exists or
+          % file with newer version exists. Otherwise return status = 0.
+          %
+                      %% FIXME
+          warning('NOT YET FULLY TESTED. Do not use!');
+
+          if(~iscell(filesToImport) || ~isstruct(filesToImport{1})), error('Unexpected input'); end
+          irf.log('notice',['Number of file to import: ' length(filesToImport)]);
+          status = 0; % Assume it did not succeed yet.
+          IdFilesToDelete = []; % Keep track of "idFile"(-s) in FileList which are now superseeded.
+          % check if files with same data and date exist
+          for ii=length(filesToImport):-1:1
+            sql = ['SELECT idFile,version FROM FileList ' ...
+              'WHERE directory = "' filesToImport{ii}.directory '"'...
+              ' AND dataset = "' filesToImport{ii}.dataset '"'...
+              ' AND date = "' filesToImport{ii}.date '"'];
+            rs = obj.sqlQuery(sql);
+            if rs.next % file with same dataset and date exists, compare versions
+              existingVersion = char(rs.getString('version'));
+              if is_version_larger(filesToImport{ii}.version(2:end),existingVersion(2:end))
+                irf.log('notice',['File with older version ' existingVersion ' exsists!']);
+                if(isempty(IdFilesToDelete))
+                  IdFilesToDelete = char(rs.getString('idFile'));
+                else
+                  IdFilesToDelete = [IdFilesToDelete ', ',char(rs.getString('idFile'))]; %#ok<AGROW>
+                end
+              else
+                irf.log('notice',['Not importing version ' filesToImport{ii}.version ...
+                  ' because file with newer version ' existingVersion ' exists!']);
+                filesToImport(ii)=[];
+                continue
+              end
+            end
+            % add fileName to FileList and get idFile
+            sql = ['INSERT into FileList (directory,dataset,date,version,fileNameFullPath)'...
+              ' VALUES ("', ...
+              filesToImport{ii}.directory, '","',...
+              filesToImport{ii}.dataset, '","', ...
+              filesToImport{ii}.date, '","', ...
+              filesToImport{ii}.version, '","', ...
+              filesToImport{ii}.fileNameFullPath, '")'];
+            obj.sqlUpdate(sql);
+            sql = ['SELECT idFile FROM FileList WHERE fileNameFullPath = "' filesToImport{ii}.fileNameFullPath '"'];
+            rs = obj.sqlQuery(sql);
+            while rs.next % file already exist
+              idFile = char(rs.getString('idFile'));
+            end
+            % add to VarIndex list
+            out = obj.get_science_variables(filesToImport{ii}.fileNameFullPath);
+            if isempty(out) % reading cdf file did not succeed
+              status = 0;
+              % Clean up..
+              irf.log('warning',['Something went wrong reading file :',filesToImport{ii}.fileNameFullPath]);
+              sql = ['DELETE FROM FileList WHERE idFile = ', idFile];
+              obj.sqlUpdate(sql);
+              continue;
+            end
+            for iDataset = 1:numel(out)
+              if isempty(out(iDataset).startTT) || out(iDataset).startTT<1000, break;end % energy channels are put as DEPEND_0 for FPI
+              varNames = out(iDataset).varNames;
+              % add dataset to Datasets if needed
+              idDataset=obj.add_var_names(filesToImport{ii}.dataset, varNames);
+              % Sqlite does not have NaN but uses NULL values..
+              if(isnan(out(iDataset).startTT) || isnan(out(iDataset).endTT))
+                irf.log('debug',['.. insert into VarIndex: idDataset=' filesToImport{ii}.dataset ...
+                  ' : "NULL"/"NULL" ']);
+                sql = ['insert into VarIndex (idFile,idDataset,startTT,endTT) '...
+                  'values (' idFile ',"' idDataset '", "NULL", "NULL")'];
+              else
+                irf.log('debug',['.. insert into VarIndex: idDataset=' filesToImport{ii}.dataset ...
+                  ' : ' irf_time([out(iDataset).startTT out(iDataset).endTT],'tint>utc')]);
+                sql = ['insert into VarIndex (idFile,idDataset,startTT,endTT) '...
+                  'values (' idFile ',"' idDataset '",' ...
+                  num2str(out(iDataset).startTT) ',' num2str(out(iDataset).endTT) ')'];
+              end
+              obj.sqlUpdate(sql);
+            end
+            % If we have reached this point then insert went well
+            status = 1;
+          end
+          % If any superseeded files was found, delete these (cascade).
+          if(~isempty(IdFilesToDelete))
+            irf.log('notice',['Deleting information of superseeded files !']);
+            sql = ['DELETE FROM FileList WHERE idFile IN (', IdFilesToDelete,')'];
+            obj.sqlUpdate(sql);
+          end
         end
 		
         function idDataset = add_var_names(obj,dataset,varNames)
