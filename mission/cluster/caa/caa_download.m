@@ -571,7 +571,13 @@ end
 			end
 			tempFilePath   = [datasetDirName tempFileName];
 			tempFilePathGz = [tempFilePath '.gz'];
-			[downloadedFile,isReady]=urlwrite(urlLink,tempFilePathGz);
+			[urlLink, tmpGetRequest] = splitUrlLink(urlLink);
+			if(isempty(tmpGetRequest))
+			  [downloadedFile,isReady] = urlwrite(urlLink, tempFilePathGz);
+			else
+			  [downloadedFile,isReady] = urlwrite(urlLink, tempFilePathGz, ...
+			    'Authentication', 'Basic', 'Get', tmpGetRequest);
+			end
 			if isReady,
 				gunzip(tempFilePathGz);
 				% find the file name
@@ -601,7 +607,13 @@ end
 		end
 		
 		downloadedFile = [tempname '.gz'];
-		[downloadedFile,isZipFileReady]=urlwrite(urlLink,downloadedFile);
+		[urlLink, tmpGetRequest] = splitUrlLink(urlLink);
+		if(isempty(tmpGetRequest))
+		  [downloadedFile,isZipFileReady] = urlwrite(urlLink, downloadedFile);
+		else
+		  [downloadedFile,isZipFileReady] = urlwrite(urlLink, downloadedFile, ...
+		    'Authentication', 'Basic', 'Get', tmpGetRequest);
+		end
 		
 		if isZipFileReady, %
 			irf.log('notice',['Downloaded: ' urlLink]);
@@ -829,4 +841,29 @@ ok = caa_download(tintUTC,'C?_CP_FGM_5VPS');
 if ~ok, disp('FAILED!'); return; end
 disp('--- TEST PASSED! ---');
 ok=true;
+end
+
+function [url, getRequest] = splitUrlLink(urlLink)
+% Help function to split CSA url requests to account for new interface.
+% CSA is to replace thier interface from 2016/05/04 onward.
+  if(~isempty(regexpi(urlLink,'password')))
+    % It it a password protected page being requested, split it.
+    tmpSplit = strsplit(urlLink,'&');
+    url = strrep(tmpSplit{1}, '?',''); % strip "?"
+    for ii=2:length(tmpSplit)
+      tmpSplit2 = strsplit(tmpSplit{ii},'=');
+       % Single element, such as "NON_BROWSER", Add "1" as second argument.
+      if(size(tmpSplit2,2)==1), tmpSplit2{2}='1'; end
+      if(exist('getRequest','var'))
+        getRequest = [getRequest, tmpSplit2]; %#ok<AGROW>
+      else
+        getRequest = tmpSplit2;
+      end
+    end
+  else
+    % It is not password protected URL, return unaltered urlLink (used for
+    % urlread and not urlwrite?).
+    url = urlLink;
+    getRequest = [];
+  end
 end
