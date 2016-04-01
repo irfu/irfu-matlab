@@ -40,8 +40,12 @@ end
 %% Create index file
 if nargin>=1 && ischar(varargin{1}) && strcmp(varargin{1},'create')
 	irf.log('warning','Getting all metadata from CAA, be very patient...');
-	urlMetaData = 'http://csaint.esac.esa.int/csa/aio/product-action?USERNAME=avaivads&PASSWORD=!kjUY88lm&RETRIEVALTYPE=HEADER&DATASET_ID=*&NON_BROWSER';
-
+	urlMetaData = 'https://csaint.esac.esa.int/csa/aio/product-action';
+	tempGetRequest = { 'Username', 'avaivads', ...
+	  'password', '!kjUY88lm', ...
+	  'RETRIEVALTYPE', 'HEADER', ...
+	  'DATASET_ID', '*', ...
+	  'NON_BROWSER', '1'};
 	% Create temporary directory, download and unpack files
 	tempDir = tempname;
 	mkdir(tempDir);
@@ -49,7 +53,8 @@ if nargin>=1 && ischar(varargin{1}) && strcmp(varargin{1},'create')
 	tempFileName  = tempname(tempDir);
 	tempFileTarGz = [tempFileName '.tar.gz'];
 	tempFileTar   = [tempFileName '.tar'];
-	[tempFileTarGz,isOk] = urlwrite(urlMetaData,tempFileTarGz);
+	[tempFileTarGz,isOk] = urlwrite(urlMetaData, tempFileTarGz, ...
+      'Authentication', 'Basic', 'Get', tempGetRequest );
 	if isOk,
 		gunzip(tempFileTarGz);
 		%untar(tempFileTar,'./');
