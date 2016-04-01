@@ -111,8 +111,8 @@ end
 
 % CSA
 % CSA Archive Inter-Operability (AIO) System User's Manual:
-% http://csa.esac.esa.int/csa/aio/html/CsaAIOUsersManual.pdf
-Default.Csa.urlServer           = 'http://csa.esac.esa.int/csa/aio/';
+% https://csa.esac.esa.int/csa/aio/html/CsaAIOUsersManual.pdf
+Default.Csa.urlServer           = 'https://csa.esac.esa.int/csa/aio/';
 Default.Csa.urlQuery            = 'product-action?&NON_BROWSER';
 Default.Csa.urlQueryAsync       = 'async-product-action?&NON_BROWSER';
 Default.Csa.urlStream           = 'streaming-action?&NON_BROWSER&gzip=1';
@@ -198,7 +198,7 @@ if ~isempty(varargin), % check for additional flags
 			urlDataFormat = url_parameter('format=cef');
 		elseif any(strcmpi('schedule',flag))
 			doDownloadScheduling = true;
-		elseif any(strfind(flag,'uname='))
+		elseif (any(strfind(flag,'uname=')) || any(strfind(flag,'USERNAME=')) )
 			urlIdentity = flag;
 		elseif strcmpi('nolog',flag)
 			doLog = false;
@@ -210,8 +210,6 @@ if ~isempty(varargin), % check for additional flags
 			irf.log('warning','caa_download(): flag ''csa'' is not needed anymore, only CSA download available');
 		elseif any(strcmpi('caa',flag)) % download from CAA instead of CAA
 			irf.log('warning','caa_download(): flag ''caa'' is not supported anymore. CAA interface is closed and only CSA download is available');
-		elseif any(strfind(flag,'USERNAME='))
-			urlIdentity = flag;
 		elseif strcmpi('json',flag) % set query format to JSON
 			urlListFormat = '&RETURN_TYPE=JSON';
 		elseif strcmpi('csv',flag) % set query format to CSV
@@ -513,8 +511,8 @@ if status == 0 && exist(downloadedFile,'file')
 		tline = fgetl(fid);
 		if ~ischar(tline), break, end
 		disp(tline)
-		if any(strfind(tline,'http:')) && any(strfind(tline,'gz')), % CSA
-			downloadFile = tline(strfind(tline,'http:'):strfind(tline,'gz')+1);
+		if any(strfind(tline,'https:')) && any(strfind(tline,'gz')), % CSA
+			downloadFile = tline(strfind(tline,'https:'):strfind(tline,'gz')+1);
 		elseif any(strfind(tline,'LOGIN_REQUESTED')), % 
 			disp('**ERROR**');
 			disp('Your username or password are incorrect, please double check!')
