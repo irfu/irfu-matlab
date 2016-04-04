@@ -1029,6 +1029,7 @@ classdef TSeries
       Ts.units = obj.units;
       Ts.siConversion = obj.siConversion;
       Ts.userData = obj.userData;
+      Ts.fullDim_ = obj.fullDim_;
       if(~isempty(obj.coordinateSystem))
         Ts.coordinateSystem = obj.coordinateSystem;
       end
