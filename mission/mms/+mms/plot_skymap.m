@@ -125,6 +125,7 @@ ax.Title.String = titleString;
 
 % Plot vectors
 hold(ax,'on');
+
 while have_vectors
   if plotSphere
     vecHat = vectors{1,1}/norm(vectors{1,1});
@@ -152,15 +153,18 @@ while have_vectors
     plot3(ax,azim*180/pi,elev*180/pi+90,0,'o','linewidth',2,'markersize',12,'color',[1 0 0])
     plot3(ax,azim*180/pi,elev*180/pi+90,0,'x','linewidth',2,'markersize',12,'color',[1 0 0])       
     axes(ax); text(double(azim*180/pi),double(elev*180/pi+90),['   ' vecTxt],'fontsize',14,'HorizontalAlignment','left', 'color', [1 1 1])        
-    if plotb            % plot setting phi and theta boundary, 2016-03-11; wyli
-        phicb = [phicb, phicb(1)];
-        thetacb = [thetacb, thetacb(1)];        
-        plot(phicb, thetacb, 'linewidth',2, 'color',[1 1 1])
-    end
-  end
+  end  
   vectors = vectors(2:end,:);
   if isempty(vectors), break, end  
 end
+    
+  if plotb           % plot setting phi and theta boundary, 2016-03-11; wyli
+    if not(plotSphere)            
+    phicb = [phicb, phicb(1)];
+    thetacb = [thetacb, thetacb(1)];        
+    plot(ax, phicb, thetacb, 'linewidth',2, 'color',[1 1 1])
+    end
+  end  
 hold(ax,'off');
 
 end

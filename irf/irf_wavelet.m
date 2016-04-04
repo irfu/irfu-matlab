@@ -13,6 +13,7 @@ function specrec=irf_wavelet(varargin)
 %       'wavelet_width' - width of Morlet wavelet, default 5.36. (same as 'w')
 %       'returnpower' - set to 1 (default) to return the power, 0 for complex wavelet transform
 %       'cutedge' - set to 1 (default) to set points affected by edge effects to NaN, 0 to keep edge affect points
+%       'linear' - scalar [df]. Linear spacing between frequencies of df.
 %
 %	SPECREC is a structure:
 %		SPECREC.T - time
@@ -22,8 +23,6 @@ function specrec=irf_wavelet(varargin)
 % if no output specified, plot the spectrogram
 %
 % See also IRF_SPECTROGRAM
-
-% With modification by D. B. Graham
 
 %% Check the input
 if nargin == 0,
@@ -80,6 +79,7 @@ wavelet_width=5.36;
 %Other
 returnpower = 1;
 cutedge = 1;
+lineardf = 0;
 
 %% Check the options
 while flag_have_options
@@ -105,6 +105,14 @@ while flag_have_options
             else
                 irf_log('fcal','parameter ''nf'' without parameter value')
             end
+        case 'linear'
+            lineardf = 1;
+            if numel(args)>1 && isnumeric(args{2})
+                deltaf = args{2};
+            else
+                irf_log('fcal','parameter ''linear'' without parameter value. Using default 100 Hz.')
+                deltaf = 100;
+            end
         case {'wavelet_width','w'}
             if numel(args)>1 && isnumeric(args{2})
                 wavelet_width = args{2};
@@ -114,8 +122,10 @@ while flag_have_options
         case 'f'
             if numel(args)>1 && isnumeric(args{2})
                 if numel(args{2})== 2,
-                    fmin=max(fmin,args{2}(1)); 
-                    fmax=min(fmax,args{2}(2));
+                    %fmin=max(fmin,args{2}(1)); 
+                    %fmax=min(fmax,args{2}(2));
+                    fmin = args{2}(1);
+                    fmax = args{2}(2);
                 else
                     irf_log('fcal','parameter ''f'' should have vector with 2 elements as parameter value.')
                 end
@@ -135,9 +145,16 @@ sampl=Fs;
 w0=sampl/2; % The maximum frequency
 anumber=nf; % The number of frequencies
 sigma=wavelet_width/(Fs/2); % The width of the Morlet wavelet
-amin=log10(0.5*Fs/fmax); % The highest frequency to consider is 0.5*sampl/10^amin
-amax=log10(0.5*Fs/fmin); % The lowest frequency to consider is 0.5*sampl/10^amax
-a=logspace(amin,amax,anumber);
+if lineardf,
+    fmin = deltaf;
+    anumber = floor(w0/deltaf);
+    fmax = anumber*deltaf;
+    a = w0./(linspace(fmax,fmin,anumber));
+else
+    amin=log10(0.5*Fs/fmax); % The highest frequency to consider is 0.5*sampl/10^amin
+    amax=log10(0.5*Fs/fmin); % The lowest frequency to consider is 0.5*sampl/10^amax
+    a=logspace(amin,amax,anumber);
+end
 
 %% Remove the last sample if the total number of samples is odd
 

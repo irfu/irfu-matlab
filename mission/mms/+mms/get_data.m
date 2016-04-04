@@ -325,7 +325,7 @@ switch varStr
     if( sum(ind) < (length(rTs)-2) )
       % Remove samples that are too close, but ensure some output if only
       % two samples with very high sample rate.
-      irf.log('notice',['Removing ',sum(ind), ...
+      irf.log('notice',['Removing ',num2str(sum(ind)), ...
         ' samples due to overlap AFG/DFG when transitioning between fast/slow mode.']);
       res = rTs(~ind);
     else

@@ -5,6 +5,8 @@ function res = mms_sdp_comp_msh_dsl_off(Tint)
 
 res = struct('c1',[],'c2',[],'c3',[],'c4',[],'tint',Tint);
 
+global MMS_CONST, if isempty(MMS_CONST), MMS_CONST = mms_constants(); end
+
 %%
 epoch1min = fix(Tint.start.epochUnix/60)*60:20:ceil(Tint.stop.epochUnix/60)*60;
 %epoch1min = epoch1min*60;
@@ -46,8 +48,8 @@ for mmsId = 1:4
     end
     epochSpin = P34.time.ttns;
     bitmask = Bmask.data;
-    mskAsponOn = bitand(bitmask(:,2),64) > 0;
-    mskAsponOn = mskAsponOn | (bitand(bitmask(:,3),64) > 0);
+    mskAsponOn = bitand(bitmask(:,2), MMS_CONST.Bitmask.ASPOC_RUNNING) > 0;
+    mskAsponOn = mskAsponOn | (bitand(bitmask(:,3), MMS_CONST.Bitmask.ASPOC_RUNNING) > 0);
     epochFull = Bmask.time.ttns;
     % XXX hack
     if ~any(mskAsponOn)
@@ -55,14 +57,13 @@ for mmsId = 1:4
     end
     
     % Resample bitmask
-    spinSize = int64(20000000000);
-    mskAsponOnSpin = zeros(size(epochSpin));
+    spinSize = MMS_CONST.Limit.SPINFIT_INTERV;
+    mskAsponOnSpin = false(size(epochSpin));
     ints = find_on(mskAsponOn);
     for i=1:size(ints,1)
       mskAsponOnSpin((epochSpin> epochFull(ints(1,1))-spinSize/2) & ...
-        (epochSpin<= epochFull(ints(1,2))+spinSize/2)) = 1;
+        (epochSpin<= epochFull(ints(1,2))+spinSize/2)) = true;
     end
-    mskAsponOnSpin=logical(mskAsponOnSpin);
     EpochS = EpochTT(epochSpin);
     Es34 = irf.ts_vec_xy(EpochS,p34(:,1:2));
     Es34AspocOff =  Es34(~mskAsponOnSpin);
@@ -84,24 +85,29 @@ for mmsId = 1:4
   % Here we try different sources of FPI data
   Vifpi = mms.get_data('Vi_dbcs_fpi_fast_l2',Tint,mmsId);
   if isempty(Vifpi)
+    % No L2, try L1b
     Vifpi = mms.get_data('Vi_gse_fpi_fast_l1b',Tint,mmsId);
     if ~isempty(Vifpi)
-      irf.log('warning','Using L1b FPI data')
+      irf.log('warning','Using L1b FPI data');
+    else
+      % No L2 or L1b, try QL
+      Vifpi = mms.get_data('Vi_gse_fpi_ql',Tint,mmsId);
+      if ~isempty(Vifpi)
+        irf.log('warning','Using QL FPI data');
+      else
+        % No L2, L1b or QL. Last resort, try SITL
+        Vifpi = mms.get_data('Vi_gse_fpi_sitl',Tint,mmsId);
+        if ~isempty(Vifpi)
+          irf.log('warning','Using SITL FPI data');
+        else
+          irf.log('warning', 'Did not find any FPI data');
+          continue
+        end
+      end
     end
+  else
+    irf.log('notice','Using L2 FPI data');
   end
-  if isempty(Vifpi)
-    Vifpi = mms.get_data('Vi_gse_fpi_ql',Tint,mmsId);
-    if ~isempty(Vifpi)
-      irf.log('warning','Using QL FPI data')
-    end
-  end
-  if isempty(Vifpi) % Last resort
-    Vifpi = mms.get_data('Vi_gse_fpi_sitl',Tint,mmsId);
-    if ~isempty(Vifpi)
-      irf.log('warning','Using SITL FPI data')
-    end
-  end
-  if isempty(Vifpi), continue, end
   Efpi = irf_e_vxb(Vifpi,B.resample(Vifpi));
   EfpiR = Efpi.resample(Epoch20s,'median');
   
