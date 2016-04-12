@@ -145,9 +145,8 @@ else
         otherwise % Mostly for debugging
             error(['Not implemented action: ', action])
     end
-    set(ud.hfig,'userdata',ud);
 end
-
+set(ud.hfig,'userdata',ud);
 if nargout == 1
     out = ud;
 end
