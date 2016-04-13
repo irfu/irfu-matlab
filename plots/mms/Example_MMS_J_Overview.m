@@ -37,7 +37,7 @@ end
 disp('Loading Spacecraft Position');
 R  = mms.get_data('R_gse',Tint);%Cailbrated position
 if length(R.gseR1(1,:))==4 || length(R.gseR2(1,:))==4 || length(R.gseR3(1,:))==4 || length(R.gseR4(1,:))==4
-    c_eval('R? =irf.ts_vec_xyz(R.time, R.gseR?(:,2:4));',1:4);
+    c_eval('R? =irf.ts_vec_xyz(R.time, R.gseR?(:,1:3));',1:4);
 else
 c_eval('R? =irf.ts_vec_xyz(R.time, R.gseR?);',1:4);
 end
