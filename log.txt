@@ -1,3 +1,4 @@
+2016-04-14 v1.12.0 Cluser (CSA) moving to HTTPS only, some other TSeries and minor fixes.
 2016-02-26 v1.11.2 MMS L2 scpot improved, add license texts to be legally compliant, TSeries and minor fixes.
 2016-02-18 v1.11.1 MMS fix for Brst L2Pre processing and calibration files in correct name and paths.
 2016-02-12 v1.11.0 NASA CDF patch, MMS new standard variable names (L2 products), also closing some issues and many, many other bug fixes.
