@@ -19,7 +19,7 @@ if isempty(MMS_DB) ||  isempty(MMS_DB.databases),
 	mms.db_init();
 	if  isempty(MMS_DB.databases)
 		strTxt = 'No MMS database initialized. See help mms.db_init.';
-		irf_log('critical',strTxt); error(strTxt);
+		irf.log('critical',strTxt); error(strTxt);
 	end
 end
 
