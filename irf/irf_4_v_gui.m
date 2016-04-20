@@ -145,9 +145,8 @@ else
         otherwise % Mostly for debugging
             error(['Not implemented action: ', action])
     end
-    set(ud.hfig,'userdata',ud);
 end
-
+set(ud.hfig,'userdata',ud);
 if nargout == 1
     out = ud;
 end
@@ -560,7 +559,7 @@ if nargin >= 2
         if ismember(x1,psc)
             ud.sc = x1;
         end
-        ud.var_col = 2;
+        ud.var_col = 1;
     else
         ud.var_col = x1;
     end
@@ -577,7 +576,7 @@ if nargin == 3
 end
 
 if nargin == 1
-    ud.var_col = 2;
+    ud.var_col = 1;
 end
 
 end

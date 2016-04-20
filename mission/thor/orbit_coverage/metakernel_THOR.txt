@@ -1,0 +1,23 @@
+
+\begindata
+	PATH_VALUES = (
+		'/Users/andris/calc/SPICE/generic_kernels',
+		'/Users/andris/calc/SPICE/THOR/'
+	)
+	PATH_SYMBOLS = (
+		'GENERIC',
+		'THOR'
+	)
+	KERNELS_TO_LOAD = (
+		'$GENERIC/lsk/naif0010.tls'
+		'$GENERIC/spk/planets/de421.bsp'
+		'$THOR/alt1a.bsp'
+	)
+
+\begintext
+
+Comments go here.
+
+To read in matlab the file execute:
+	cspice_furnsh('metakernel_THOR.txt')
+

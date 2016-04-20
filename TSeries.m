@@ -130,7 +130,7 @@ classdef TSeries
       % specifying tensor order, since tensor order hase to be specified
       % before settin representation.
       if ~isempty(obj.t_)
-        obj.representation{iDim} = obj.t_; iDim = iDim + 1;
+        obj.representation{iDim} = obj.t_([]); iDim = iDim + 1;
       end
       
       args = varargin;
@@ -1029,6 +1029,7 @@ classdef TSeries
       Ts.units = obj.units;
       Ts.siConversion = obj.siConversion;
       Ts.userData = obj.userData;
+      Ts.fullDim_ = obj.fullDim_;
       if(~isempty(obj.coordinateSystem))
         Ts.coordinateSystem = obj.coordinateSystem;
       end
