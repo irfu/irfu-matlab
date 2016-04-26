@@ -8,37 +8,10 @@
 % 
 % SUGGESTIONS WELCOME ! :)
 
-%% Load data WITH DOBJ
-ic = 1;
-db_info = datastore('mms_db');   
-disp('Loading electron distribution...')
-c_eval('etmpDataObj? = dataobj([db_info.local_file_db_root ''/mms?/fpi/brst/l2/des-dist/2015/10/16/mms?_fpi_brst_l2_des-dist_20151016103254_v2.1.0.cdf'']);',ic);
-c_eval('desDist? = mms.variable2ts(get_variable(etmpDataObj?,''mms?_des_dist_brst''));',ic);
-c_eval('eenergy0? = get_variable(etmpDataObj?,''mms?_des_energy0_brst'');',ic);
-c_eval('eenergy1? = get_variable(etmpDataObj?,''mms?_des_energy1_brst'');',ic);
-c_eval('ephi? = mms.variable2ts(get_variable(etmpDataObj?,''mms?_des_phi_brst''));',ic);
-c_eval('etheta? = get_variable(etmpDataObj?,''mms?_des_theta_brst'');',ic);
-c_eval('estepTable? = mms.variable2ts(get_variable(etmpDataObj?,''mms?_des_steptable_parity_brst''));',ic);
-c_eval('eEpoch_plus_var? = get_variable(etmpDataObj?,''Epoch_plus_var'');',ic);
-c_eval('eEpoch_minus_var? = get_variable(etmpDataObj?,''Epoch_minus_var'');',ic);
-
-% Make energytable from energy0, energy1 and energysteptable
-c_eval('energy? = repmat(torow(eenergy0?.data),numel(estepTable?.data),1);',ic)
-c_eval('energy?(estepTable?.data==1,:) = repmat(eenergy1?.data,sum(estepTable?.data),1);',ic)
-% Shift time so that time stap is in middle of sweep ins tead of in the beginning
-c_eval('dt_shift? = 0.5*(double(eEpoch_plus_var?.data)-double(eEpoch_minus_var?.data))*1e-3;',ic)
-c_eval('dt_minus? = double(eEpoch_minus_var?.data)*1e-3-dt_shift?;',ic)
-c_eval('dt_plus? = double(eEpoch_plus_var?.data)*1e-3-dt_shift?;',ic)
-% Construct PDist
-c_eval('ePDist? = PDist(desDist?.time+dt_shift?,desDist?.data,''skymap'',energy?,ephi?.data,etheta?.data);',ic)
-c_eval('ePDist?.userData = desDist?.userData; ePDist?.name = desDist?.name; ePDist?.units = desDist?.units;',ic)
-c_eval('ePDist?.units = ''s^3/m^6''; ePDist?.species = ''electrons'';',ic)
-c_eval('ePDist?.ancillary.dt_minus = dt_minus?; ePDist?.ancillary.dt_plus = dt_plus?;',ic) 
-
 %% Load PDist using mms.get_PDist
 db_info = datastore('mms_db');  
-c_eval('ePDist? = mms.make_pdist([db_info.local_file_db_root ''/mms?/fpi/brst/l2/des-dist/2015/10/16/mms?_fpi_brst_l2_des-dist_20151016103254_v2.1.0.cdf''])',ic)
-c_eval('iPDist? = mms.make_pdist([db_info.local_file_db_root ''/mms?/fpi/brst/l2/dis-dist/2015/10/16/mms?_fpi_brst_l2_dis-dist_20151016103254_v2.1.0.cdf''])',ic)
+c_eval('[ePDist? ePDistError?] = mms.make_pdist([db_info.local_file_db_root ''/mms?/fpi/brst/l2/des-dist/2015/10/16/mms?_fpi_brst_l2_des-dist_20151016103254_v2.1.0.cdf''])',ic)
+c_eval('[iPDist? iPDistError?] = mms.make_pdist([db_info.local_file_db_root ''/mms?/fpi/brst/l2/dis-dist/2015/10/16/mms?_fpi_brst_l2_dis-dist_20151016103254_v2.1.0.cdf''])',ic)
 %% Make skymap directly with PDist
 c_eval('ePDist? = PDist(desDist?.time,desDist?.data,''skymap'',energy,ephi?.data,etheta?.data);',ic)
 c_eval('ePDist?.userData = desDist?.userData; ePDist?.name = desDist?.name; ePDist?.units = desDist?.units;',ic)
@@ -55,9 +28,12 @@ c_eval('ePDist? = irf.ts_skymap(desDist?.time,desDist?.data,energy,ephi?.data,et
 c_eval('ePDist?.units = ''s^3/cm^6'';',ic)
 c_eval('ePDist?',ic)
 
-%% Make omnidirectional differential energy flux
-eOMNI2 = ePDist2.omni('e');
-eOMNI2low = eOMNI.elim([0 200]);
+%% Example operations
+ePdist1_omni = ePDist1.omni; % omnidirectional differential energy flux
+ePDist1_pa = ePDist1.pitchangles(dmpaB1,[]); % construt pitchangle distribution
+ePDist1_lowE = ePDist1.elim([0 200]); % limit energy range
+ePDist1_deflux = ePDist1.deflux; % change units to differential energy flux
+ePDist1_e64 = ePDist1.e64; % resample energy to 64 energy levels, reduces the time resolution
 
 %% Example plot: omnidirectional differential energy flux
 h = irf_plot(4);
