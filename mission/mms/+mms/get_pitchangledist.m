@@ -73,7 +73,7 @@ pitcha = anglevec-dangle/2;
 rtrnTS = 1;
 if isa(varargin{1},'PDist'),
     if strcmp('skymap',varargin{1}.type),
-        irf.log('critical','PDist is skymap format; computing pitch angle distribution.');
+        irf.log('warning','PDist is skymap format; computing pitch angle distribution.');
         pdist = varargin{1};
         B = varargin{2};
         phi = TSeries(pdist.time,pdist.depend{1,2});

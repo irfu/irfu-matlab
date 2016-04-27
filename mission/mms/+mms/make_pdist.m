@@ -82,7 +82,7 @@ end
 if ~isempty(regexp(tmpDist.name,'^mms[1-4]_d[ei]s_','once'))
 	if isfield(tmpDist.DEPEND_0,'DELTA_MINUS_VAR') && isfield(tmpDist.DEPEND_0,'DELTA_PLUS_VAR'),
         if isfield(tmpDist.DEPEND_0.DELTA_MINUS_VAR,'data') && isfield(tmpDist.DEPEND_0.DELTA_PLUS_VAR,'data'),
-            irf.log('critical','Times shifted to center of dt-+. dt-+ are recalculated');
+            irf.log('warning','Times shifted to center of dt-+. dt-+ are recalculated');
             toffset = (int64(tmpDist.DEPEND_0.DELTA_PLUS_VAR.data)-int64(tmpDist.DEPEND_0.DELTA_MINUS_VAR.data))*1e6/2;
             tdiff = (int64(tmpDist.DEPEND_0.DELTA_PLUS_VAR.data)+int64(tmpDist.DEPEND_0.DELTA_MINUS_VAR.data))*1e6;
             tmpDist.DEPEND_0.DELTA_MINUS_VAR.data = tdiff/2;
