@@ -355,8 +355,9 @@ classdef PDist < TSeries
       % Input: 
       %     B - TSeries of B in dmpa coordinates
       %     nangles - Number of pitch angles or edges of pitchangle bins
-      %   See also MMS.GET_PITCHANGLEDIST         
-      if isempty(obj2),
+      %   See also MMS.GET_PITCHANGLEDIST     
+      
+      if nargin<3 || isempty(obj2),
           nangles = 12;
       else 
           nangles = obj2; 
