@@ -120,8 +120,8 @@ classdef TSeries
           'T and DATA must have the same number of records')
       end
       obj.data_ = data; obj.t_ = t;
-      obj.fullDim_ = cell(ndims(data),1);
-      obj.representation = cell(ndims(data),1); iDim = 1; 
+      obj.fullDim_ = cell(ndims(data)-1,1); % time should not be included -> -1
+      obj.representation = cell(ndims(data)-1,1); iDim = 1; % time should not be included -> -1
       %obj.representation = cell(ndims(data),1); iDim = 1;
       % Why is the dimension of represenation set already here? When
       % picking out a component of a Tensor: T.xy, the data becomes 2D 
@@ -129,9 +129,11 @@ classdef TSeries
       % 'x' and 'y'. This can be solved by resetting representation when
       % specifying tensor order, since tensor order hase to be specified
       % before settin representation.
-      if ~isempty(obj.t_)
-        obj.representation{iDim} = obj.t_([]); iDim = iDim + 1;
-      end
+      
+      % remove since time should not be included
+      %if ~isempty(obj.t_)
+      %  obj.representation{iDim} = obj.t_([]); iDim = iDim + 1; 
+      %end
       
       args = varargin;
       flagTensorOrderSet = false; flagTensorBasisSet = false;
@@ -152,10 +154,10 @@ classdef TSeries
             obj.tensorOrder_ = 2; flagTensorOrderSet = true;
             [~,iB] = intersect(obj.BASIS,x(8:10));
             obj.tensorBasis_ = iB; flagTensorBasisSet = true;
-            obj.representation{2} = {x(8), x(9), x(10)}; % 1st dimension, (rows for 2D)
+            obj.representation{1} = {x(8), x(9), x(10)}; % 1st dimension, (rows for 2D)
+            obj.fullDim_{1} = true;
+            obj.representation{2} = {x(8), x(9), x(10)}; % 2nd dimension, (cols for 2D)
             obj.fullDim_{2} = true;
-            obj.representation{3} = {x(8), x(9), x(10)}; % 2nd dimension, (cols for 2D)
-            obj.fullDim_{3} = true;
           case {'vec_xyz','vec_rtp','vec_rlp','vec_rpz'}
             if ndims(obj.data_)>2, %#ok<ISMAT>
               error('irf:TSeries:TSeries:badInputs',...
@@ -167,8 +169,8 @@ classdef TSeries
             obj.tensorOrder_ = 1; flagTensorOrderSet = true;
             [~,iB] = intersect(obj.BASIS,x(5:7));
             obj.tensorBasis_ = iB; flagTensorBasisSet = true;
-            obj.representation{2} = {x(5), x(6), x(7)};
-            obj.fullDim_{2} = true;
+            obj.representation{1} = {x(5), x(6), x(7)};
+            obj.fullDim_{1} = true;
           case {'vec_xy','vec_rp'}
             if ndims(obj.data_)>2, %#ok<ISMAT>
               error('irf:TSeries:TSeries:badInputs',...
@@ -210,11 +212,11 @@ classdef TSeries
                 'tensorOrder must be 0<=tensorOrder<=%d',...
                 obj.MAX_TENSOR_ORDER)
             end
-            obj.representation = cell(obj.tensorOrder+1,1); 
+            obj.representation = cell(obj.tensorOrder,1); 
             iDim = 1;
-            if ~isempty(obj.t_)
-              obj.representation{iDim} = obj.t_; iDim = iDim + 1;
-            end
+            %if ~isempty(obj.t_)
+            %  obj.representation{iDim} = obj.t_; iDim = iDim + 1;
+            %end
           case {'tb','basis','tensorbasis'}
             if flagTensorBasisSet
               error('irf:TSeries:TSeries:badInputs',...
@@ -241,7 +243,7 @@ classdef TSeries
               error('irf:TSeries:TSeries:badInputs',...
                 'Must specify TensorOrder first')
             end
-            if iDim>(obj.tensorOrder+1) %ndims(data),
+            if iDim>(obj.tensorOrder) %ndims(data), % remove '+1' after obj.tensorOrder, since time should no longer be included
               error('irf:TSeries:TSeries:badInputs',...
                 'Representation already set for all DATA dimensions')
             end
@@ -250,7 +252,7 @@ classdef TSeries
               error('irf:TSeries:TSeries:badInputs',...
                 'Representation requires a second argument')
             end
-            if isempty(y) && iDim<ndims(data), iDim = iDim + 1;
+            if isempty(y) && iDim<ndims(data)-1, iDim = iDim + 1;
             else
               [ok,msg] = validate_representation(y);
               if ~isempty(ok),
@@ -272,7 +274,7 @@ classdef TSeries
       
       function [ok,msg] = validate_representation(x)
         ok = []; msg = '';
-        sDim = size(obj.data,iDim); tb = obj.BASIS{obj.tensorBasis_};
+        sDim = size(obj.data,iDim+1); tb = obj.BASIS{obj.tensorBasis_};
         if sDim>length(tb),
           msg = sprintf(...
             'Dimension %d size %d>%d (Basis=%s) cannot have Representation. Use Depend instead',...
@@ -1175,7 +1177,7 @@ classdef TSeries
   methods (Access=protected)
     function [res, ok] = getComponent(obj,comp)
       res = []; ok = false;
-      nd = ndims(obj.data_);
+      nd = ndims(obj.data_)-1; % first is time
       if nd>6, error('we cannot support more than 5 dimensions'), end % we cannot support more than 5 dimensions
       teno = obj.tensorOrder_;
       if length(comp)~=teno, return, end
@@ -1197,16 +1199,16 @@ classdef TSeries
           end
           % XXX: This is ugly, what is a better way of doing this?
           switch nd
-            case 2, dataNew = obj.data_(idx{1},idx{2});
-            case 3, dataNew = obj.data_(idx{1},idx{2},idx{3});
-            case 4, dataNew = obj.data_(idx{1},idx{2},idx{3},idx{4});
-            case 5, dataNew = obj.data_(idx{1},idx{2},idx{3},idx{4},idx{5});
-            case 6
+            case 1, dataNew = obj.data_(:,idx{1});
+            case 2, dataNew = obj.data_(:,idx{1},idx{2});
+            case 3, dataNew = obj.data_(:,idx{1},idx{2},idx{3});
+            case 4, dataNew = obj.data_(:,idx{1},idx{2},idx{3},idx{4});
+            case 5
               dataNew = obj.data_(idx{1},idx{2},idx{3},idx{4},idx{5},idx{6});
             otherwise, error('should no be here')
           end
           args = {obj.t_,dataNew,'TensorOrder',teno,'TensorBasis',basis};
-          for i=2:nd
+          for i=1:nd
             if i==iDim, args = [args {'repres',{comp}}]; %#ok<AGROW>
             else args = [args {'repres',{}}]; %#ok<AGROW>
             end
@@ -1227,17 +1229,17 @@ classdef TSeries
           end
           % XXX: This is ugly, what is a better way of doing this?
           switch nd
-            case 2, dataNew = obj.data_(idx{1},idx{2});
-            case 3, dataNew = obj.data_(idx{1},idx{2},idx{3});
-            case 4, dataNew = obj.data_(idx{1},idx{2},idx{3},idx{4});
-            case 5, dataNew = obj.data_(idx{1},idx{2},idx{3},idx{4},idx{5});
-            case 6
+            case 1, dataNew = obj.data_(:,idx{1});
+            case 2, dataNew = obj.data_(:,idx{1},idx{2});
+            case 3, dataNew = obj.data_(:,idx{1},idx{2},idx{3});
+            case 4, dataNew = obj.data_(:,idx{1},idx{2},idx{3},idx{4});
+            case 5
               dataNew = obj.data_(idx{1},idx{2},idx{3},idx{4},idx{5},idx{6});
             otherwise, error('should no be here')
           end
           args = {obj.t_,dataNew,'TensorOrder',teno,'TensorBasis',basis};
           indDim = 1;
-          for i=2:nd
+          for i=1:nd
             if i==iDim(indDim),  args = [args {'repres',{comp(indDim)}}]; indDim = indDim+1;%#ok<AGROW>
             else args = [args {'repres',{}}]; %#ok<AGROW>
             end
