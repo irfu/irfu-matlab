@@ -61,7 +61,7 @@ if isa(varargin{tmpnargin-1},'char')
             anglevec = anglevec(2:end);
             irf.log('notice','User defined pitch angle limits.')
         else
-            irf.log('notice','angles parameter not understood. ')
+            irf.log('warning','angles parameter not understood. ')
         end
     end
     tmpnargin = tmpnargin-2;
@@ -252,7 +252,7 @@ end
 
 theta = pitcha;
 toc;
-if isa(varargin{1},'PDist'),
+if (isa(varargin{1},'PDist') && length(tint)==2),
     paddist = PDist(pdist.time,paddistarr,'pitchangle',energy,theta);
     paddist.units = pdist.units;
     paddist.species = pdist.species;
