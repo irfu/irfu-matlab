@@ -911,17 +911,25 @@ classdef TSeries
     end
     
     function Ts = mrdivide(obj,obj1)
-      if isa(obj1,'TSeries') && ~isa(obj,'TSeries')
-        obj1Tmp = obj1; obj1 = obj; obj = obj1Tmp;
-      end
+      % Divide
         
+      % Need to implement partial vectors!
+      
       % Division
-      if isa(obj1,'TSeries')
+      if isnumeric(obj) && isscalar(obj) && isa(obj1,'TSeries') % e.g. 1/ne
+        if obj1.tensorOrder > 0
+          error('Can only divide by scalar TSeries.')
+        end
+        Ts = obj1;
+        Ts.data_ = repmat(obj,size(obj1.data))./obj1.data;        
+        Ts.name = sprintf('%s/(%s)','unknown',Ts.name);
+        return
+      elseif isa(obj1,'TSeries')
         if obj.tensorOrder>1 || obj1.tensorOrder>1
           error('Only scalars and vectors are supported'); 
         end
-        if obj1.tensorOrder>obj.tensorOrder
-          Ts = mtimes(obj1,obj); return;
+        if obj1.tensorOrder>obj.tensorOrder % obj1: to=1, obj: to=0: 
+          error('Division with vector not supported.'); 
         end
         if obj.time~=obj1.time
           warning('tseries:resampling','resamplig TSeries')
@@ -934,8 +942,11 @@ classdef TSeries
             switch obj1.tensorOrder
               case 0
                 Ts.data_ = obj.data./repmat(obj1.data,1,size(obj.data,2));
+              case 1 % need to check it is a partial vector, e.g. B.x, then operation is ok
+                
+              case 2 % need to check it is a partial tensor, e.g. P.xx, then operation is ok                
               otherwise
-                error('Not supported')
+                error('Not supported.')
             end
           otherwise
             error('Not supported')
