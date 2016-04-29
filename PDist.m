@@ -221,16 +221,14 @@ classdef PDist < TSeries
       PD.depend{1} = tmpEnergy;      
     end
     function PD = omni(obj,varargin)
-      % Makes omnidirectional distribution
-      % Conserves the units
+      % Makes omnidirectional distribution, conserving units.
       
-      if ~strcmp(obj.type_,'skymap'); error('PDist must be a skymap'); end
-      units = irf_units;
+      if ~strcmp(obj.type_,'skymap'); error('PDist must be a skymap.'); end      
       
       diste = obj;
-      if isempty(strfind(obj.units,'km')) % Unit conversion from s^3/cm^6 to s^3/km^6    
-        diste.data = diste.data*1e30; 
-      end
+      %if isempty(strfind(obj.units,'km')) % Unit conversion from s^3/cm^6 to s^3/km^6    
+      %  diste.data = diste.data*1e30; 
+      %end
       energyspec = obj.depend{1};
       if size(energyspec,1) == 1
         energyspec = repmat(energyspec,diste.length,1);
@@ -253,32 +251,34 @@ classdef PDist < TSeries
       
       distes = diste.data.*allsolide;
 
-      % Electron analysis - OMNI
+      % OMNI
       for ii = 1:length(diste.time);
           disttemp = squeeze(distes(ii,:,:,:));
           PSDomni(ii,:) = squeeze(irf.nanmean(irf.nanmean(disttemp,2),3))/(mean(mean(solida)));
       end
-      if isempty(obj.species)
-        species = varargin{1};
-      else 
-        species = obj.species;
-      end
-      switch obj.species
-        case {'e','electron','electrons'}
-          efluxomni = PSDomni.*energyspec.^2;
-          efluxomni = efluxomni/1e6/(5.486e-4)^2/0.53707; %convert to normal units
-        case {'i','p','ion','ions'}
-          efluxomni = PSDomni.*energyspec.^2;
-          efluxomni = efluxomni/1e6/0.53707; %convert to normal units
-        otherwise          
-      end
+      
+      % This is changing units and should be done separately
+      %if isempty(obj.species)
+      %  species = varargin{1};
+      %else 
+      %  species = obj.species;
+      %end      
+      %switch obj.species
+      %  case {'e','electron','electrons'}
+      %    efluxomni = PSDomni.*energyspec.^2;
+      %    efluxomni = efluxomni/1e6/(5.486e-4)^2/0.53707; %convert to normal units
+      %  case {'i','p','ion','ions'}
+      %    efluxomni = PSDomni.*energyspec.^2;
+      %    efluxomni = efluxomni/1e6/0.53707; %convert to normal units
+      %  otherwise          
+      %end
       
       PD = obj;
       PD.type = 'omni';
       PD.data_ = efluxomni;
-      PD.depend = {obj.depend{1};};
+      PD.depend = {obj.depend{1}};
       PD.representation = {obj.representation{1},'energy'};
-      PD.units = 'keV/(cm^2 s sr keV)';
+      %PD.units = 'keV/(cm^2 s sr keV)';
       PD.name = 'Differential energy flux';
     end
     function spec = specrec(obj,varargin)      
@@ -369,52 +369,13 @@ classdef PDist < TSeries
       %   
       %   see also MMS.PSD_REBIN
       
-      % MMS.PSD_REBIN should be made compatible with pitch angle
-      % distrbutions!!!
-      
       [pdistr,phir,energyr] = mms.psd_rebin(obj,TSeries(obj.time,obj.depend{2}),obj.ancillary.energy0,obj.ancillary.energy1,TSeries(obj.time,obj.ancillary.energyStepTable));
       PD = obj.clone(pdistr.time,pdistr.data);      
       PD.depend{1} = energyr;
       PD.depend{2} = phir.data;  
-      %if isfield(PD.ancillary,'energy1'); PD.ancillary = rmfield(PD.ancillary,'energy1'); end
+      
       if isfield(PD.ancillary,'energy0'); PD.ancillary = setfield(PD.ancillary,'energy0',PD.depend{1}); end
       if isfield(PD.ancillary,'energyStepTable'); PD.ancillary = setfield(PD.ancillary,'energyStepTable',zeros(PD.length,1)); end
-%       energy = obj.depend{1};
-%       [newEnergy,energyOrder] = sort([energy(1,:) energy(2,:)]);
-%             
-%       sizeData = size(obj.data);
-%       sizeNewData = sizeData; sizeNewData(1) = fix(sizeNewData(1)/2); sizeNewData(2) = 64;
-%       tmpData = nan(sizeNewData);
-%       tmpData(:,1:32,:,:) = obj.data(1:2:end-1,:,:,:);
-%       tmpData(:,33:64,:,:) = obj.data(2:2:end,:,:,:);
-%       tmpData = tmpData(:,energyOrder,:,:);
-%       newEnergy = nan(sizeNewData(1),64);
-%       
-%                   
-% 
-%       % Define new times
-%       deltat = median(diff(obj.time.epochUnix))/2;
-%       newTimes = pdist.time(1:2:end-1)+deltat;      
-%       phir = nan(length(newtimes),32);
-%       newelnum = 1;
-% 
-%       phis = circshift(phi.data,1,2);
-%       phis(:,1) = phis(:,1)-360;
-% 
-%       for ii=1:2:sizeData(1)-1;
-%           if phi.data(ii,1) > phi.data(ii+1,1), 
-%               phir(newelnum,:) = (phi.data(ii,:)+phis(ii+1,:))/2;
-%               pdisttemp = circshift(squeeze(pdist.data(ii+1,:,:,:)),1,2);       
-%           else
-%               phir(newelnum,:) = (phi.data(ii,:)+phi.data(ii+1,:))/2;
-%           end
-%           newelnum = newelnum+1;
-%       end
-% 
-%       phir = TSeries(newtimes,phir);
-%       pdistr = TSeries(newtimes,pdistr);
-%       toc;
-
     end
     function m = mass(obj)
       % Get mass of species
