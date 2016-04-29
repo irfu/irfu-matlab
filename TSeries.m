@@ -765,10 +765,10 @@ classdef TSeries
           end
           Ts.name = sprintf('dot(%s,%s)',s,s1);
         end
-        if isempty(obj.units), s = 'unknown';
+        if isempty(obj.units), s = '';
         else s = obj.units;
         end
-        if ~isa(obj1,'TSeries') || isempty(obj1.units), s1 = 'unknown';
+        if ~isa(obj1,'TSeries') || isempty(obj1.units), s1 = '';
           else s1 = obj1.units;
         end
         Ts.units = sprintf('%s %s',s,s1);
@@ -803,10 +803,10 @@ classdef TSeries
           end
           Ts.name = sprintf('%s * %s',s,s1);
         end
-        if isempty(obj.units), s = 'unknown';
+        if isempty(obj.units), s = '';
         else s = obj.units;
         end
-        if isempty(obj1.units), s1 = 'unknown';
+        if isempty(obj1.units), s1 = '';
           else s1 = obj1.units;
         end
         Ts.units = sprintf('%s %s',s,s1);
@@ -862,7 +862,7 @@ classdef TSeries
       
       function update_name_units()
         if ~isempty(obj.name) || ~isempty(obj1.name)
-          if isempty(obj.name), s = 'untitled';
+          if isempty(obj.name), s = '';
           else s = obj.name;
           end
           if ~isa(obj1,'TSeries') || isempty(obj1.name), s1 = 'untitled';
@@ -870,10 +870,10 @@ classdef TSeries
           end
           Ts.name = sprintf('%s * %s',s,s1);
         end
-        if isempty(obj.units), s = 'unknown';
+        if isempty(obj.units), s = '';
         else s = obj.units;
         end
-        if ~isa(obj1,'TSeries') || isempty(obj1.units), s1 = 'unknown';
+        if ~isa(obj1,'TSeries') || isempty(obj1.units), s1 = '';
           else s1 = obj1.units;
         end
         Ts.units = sprintf('%s %s',s,s1);
@@ -902,7 +902,7 @@ classdef TSeries
           end          
           Ts.name = sprintf('(%s).^%g',s,obj1);
         end
-        if isempty(obj.units), s = 'unknown';
+        if isempty(obj.units), s = '';
         else s = obj.units;
         end
         Ts.units = sprintf('(%s)*%g',s,obj1);
@@ -960,10 +960,10 @@ classdef TSeries
           end
           Ts.name = sprintf('%s/(%s)',s,s1);
         end
-        if isempty(obj.units), s = 'unknown';
+        if isempty(obj.units), s = '';
         else s = obj.units;
         end
-        if ~isa(obj1,'TSeries') || isempty(obj1.units), s1 = 'unknown';
+        if ~isa(obj1,'TSeries') || isempty(obj1.units), s1 = '';
           else s1 = obj1.units;
         end
         Ts.units = sprintf('%s/(%s)',s,s1);
