@@ -56,14 +56,14 @@ classdef PDist < TSeries
       % collect required data, depend        
       switch obj.type_
         case {'skymap'} % construct skymap distribution                
-          obj.depend{1} = args{1}; args(1) = []; obj.representation{2} = {'energy'};
-          obj.depend{2} = args{1}; args(1) = []; obj.representation{3} = {'phi'};
-          obj.depend{3} = args{1}; args(1) = []; obj.representation{4} = {'theta'};             
+          obj.depend{1} = args{1}; args(1) = []; obj.representation{1} = {'energy'};
+          obj.depend{2} = args{1}; args(1) = []; obj.representation{2} = {'phi'};
+          obj.depend{3} = args{1}; args(1) = []; obj.representation{3} = {'theta'};             
         case {'pitchangle'} % construct pitchangle distribution
-          obj.depend{1} = args{1}; args(1) = []; obj.representation{2} = {'energy'};
-          obj.depend{2} = args{1}; args(1) = []; obj.representation{3} = {'pitchangle'};                            
+          obj.depend{1} = args{1}; args(1) = []; obj.representation{1} = {'energy'};
+          obj.depend{2} = args{1}; args(1) = []; obj.representation{2} = {'pitchangle'};                            
         case {'omni'} % construct omni directional distribution
-          obj.depend{1} = args{1}; args(1) = []; obj.representation{2} = {'energy'};
+          obj.depend{1} = args{1}; args(1) = []; obj.representation{1} = {'energy'};
         otherwise 
           warning('Unknown distribution type')
       end
@@ -220,7 +220,7 @@ classdef PDist < TSeries
       PD.data_ = tmpData;
       PD.depend{1} = tmpEnergy;      
     end
-    function PD = omni(obj,varargin)
+    function PD = omni(obj)
       % Makes omnidirectional distribution, conserving units.
       
       if ~strcmp(obj.type_,'skymap'); error('PDist must be a skymap.'); end      
@@ -306,6 +306,8 @@ classdef PDist < TSeries
     end
     function PD = deflux(obj)
       % Changes units to differential energy flux
+      
+      % Does not work on omni
       units = irf_units;
       switch obj.species
         case {'e','electrons','electron'}
@@ -328,7 +330,12 @@ classdef PDist < TSeries
       energy = obj.depend{1};
       sizeData = size(tmpData);
       reshapedData = reshape(tmpData,sizeData(1),sizeData(2),prod(sizeData(3:end)));
-      matEnergy = repmat(energy,1,1,prod(sizeData(3:end)));
+      if size(energy,1) == 1
+        matEnergy = repmat(energy,obj.length,1,prod(sizeData(3:end)));
+      elseif size(energy,1) == obj.length
+        matEnergy = repmat(energy,1,1,prod(sizeData(3:end)));
+      end
+        
       reshapedData = reshapedData.*matEnergy.^2;
       tmpData = reshape(reshapedData,sizeData);
       
