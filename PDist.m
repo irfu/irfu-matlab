@@ -275,7 +275,7 @@ classdef PDist < TSeries
       
       PD = obj;
       PD.type = 'omni';
-      PD.data_ = efluxomni;
+      PD.data_ = PSDomni;
       PD.depend = {obj.depend{1}};
       PD.representation = {obj.representation{1},'energy'};
       %PD.units = 'keV/(cm^2 s sr keV)';
