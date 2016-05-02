@@ -643,13 +643,9 @@
       if numel(ST)>1 && strcmp(ST(2).name,'TSeries.minus')
             operationStr = 'Minus'; operationSymbol = '-';
       else operationStr = 'Plus';  operationSymbol = '+';
-      end
-          
-      if isnumeric(obj) && isa(obj1,'TSeries')
-        Ts = plus(obj1,obj);        
-      end
+      end        
       
-      if isnumeric(obj1)
+      if isnumeric(obj1) % then obj is TSeries
         Ts = obj;
         if isempty(obj) || isempty(obj1)
           sz = size(Ts.data_); sz(1) = 0; Ts.data_ = zeros(sz);
@@ -666,6 +662,28 @@
                 && sizeInp(1) == 1  ...                     % one row in obj1
                 && all(sizeInp(2:end) == sizeObj(2:end))    % otherwise same number of elements
               Ts.data_ = Ts.data_ + repmat(obj1,[sizeObj(1) ones(1,numel(sizeInp)-1)]);
+            else
+              error([operationStr ' not defined']);
+            end
+          end
+        end
+      elseif isnumeric(obj) % then obj1 is a TSeries
+        Ts = obj1;
+        if isempty(obj1) || isempty(obj)
+          sz = size(Ts.data_); sz(1) = 0; Ts.data_ = zeros(sz);
+          Ts.t_ = Ts.t_([]);
+        else
+          if numel(obj) == 1
+            Ts.data_ = Ts.data_ + obj;
+          else
+            sizeInp = size(obj);
+            sizeObj = size(Ts.data);
+            if isequal(sizeInp,sizeObj)
+              Ts.data_ = Ts.data_ + obj;
+            elseif numel(sizeInp) == numel(sizeObj) ...   % same dimensions
+                && sizeInp(1) == 1  ...                     % one row in obj1
+                && all(sizeInp(2:end) == sizeObj(2:end))    % otherwise same number of elements
+              Ts.data_ = Ts.data_ + repmat(obj,[sizeObj(1) ones(1,numel(sizeInp)-1)]);
             else
               error([operationStr ' not defined']);
             end
@@ -980,7 +998,7 @@
         end            
       end
       function isOk = validate_times
-        if isa(obj1,'TSeries') && isa(obj2,'TSeries') && obj1.time~=obj2.time
+        if isa(obj1,'TSeries') && isa(obj2,'TSeries') && any(ne(obj1.time,obj2.time))
           error('Input TS objects have different timelines, use resample().')
         else
           isOk = 1;          
@@ -1011,11 +1029,11 @@
               newData = data1.*data2;
             elseif obj1.datasize('dataonly') == obj2.datasize('dataonly')
               newData = obj1.data.*obj1.data;    
-            elseif obj1.datasize('dataonly') == [1 1] && obj2.datasize('dataonly') ~= [1 1]
-              data1 = repmat(data1,[1 obj2.datasize('dataonly')]);
+            elseif all(obj1.datasize('dataonly') == [1 1]) && any(obj2.datasize('dataonly') ~= [1 1])
+              data1 = repmat(data1,[obj2.datasize('dataonly')]);
               newData = data1.*data2;
-            elseif obj1.datasize('dataonly') ~= [1 1] && obj2.datasize('dataonly') == [1 1]
-              data2 = repmat(data2,[1 obj1.datasize('dataonly')]);
+            elseif any(obj1.datasize('dataonly') ~= [1 1]) && all(obj2.datasize('dataonly') == [1 1])
+              data2 = repmat(data2,[obj1.datasize('dataonly')]);
               newData = data1.*data2;
             else
               error('Not supported.')
@@ -1106,6 +1124,8 @@
           Ts.name = sprintf('%s*%s',name1,name2);
           Ts.units = sprintf('%s*%s',units1,units2);
         end
+        if isempty(Ts.units); Ts.units = ''; end
+        if isempty(Ts.name); Ts.name = ''; end
       end     
     end
 
