@@ -1161,54 +1161,45 @@
     function Ts = mrdivide(obj,obj1)
       % Divide
         
-      % Need to implement partial vectors!
-      
-      % Division
-      if isnumeric(obj) && isscalar(obj) && isa(obj1,'TSeries') % e.g. 1/ne
-        if obj1.tensorOrder > 0
-          error('Can only divide by scalar TSeries.')
+      % Division with vectors or matrices not supported.            
+            
+      if isa(obj1,'TSeries') && isnumeric(obj) && isscalar(obj) % e.g. 2/ne
+        if obj1.tensorOrder > 0 && any(obj1.datasize('dataonly')~= [1 1])
+          error('Can only divide by scalar TSeries or partial tensor with data size [1 1].')
         end
         Ts = obj1;
         Ts.data_ = repmat(obj,size(obj1.data))./obj1.data;        
         Ts.name = sprintf('%s/(%s)','unknown',Ts.name);
         return
-      elseif isa(obj1,'TSeries')
-        if obj.tensorOrder>1 || obj1.tensorOrder>1
-          error('Only scalars and vectors are supported'); 
+      elseif isa(obj,'TSeries') && isnumeric(obj1) && isscalar(obj1) % e.g. ne/2        
+        Ts = obj;
+        Ts.data_ = obj.data/obj1;
+        Ts.name = sprintf('%s/(%s)',Ts.name,'unknown');
+        return        
+      elseif isa(obj,'TSeries') && isa(obj1,'TSeries') % both are TSeries
+        if (obj.tensorOrder ~= obj1.tensorOrder) && obj1.tensorOrder ~= 0
+          error('Tensor orders not compatible.');
+        elseif (obj.tensorOrder == obj1.tensorOrder) ...
+            && obj.tensorOrder>0 ...
+            && any(obj.datasize('dataonly')~=[1 1]) ...
+            && any(obj1.datasize('dataonly')~=[1 1])
+          error('Division with partial tensors require datasizes [1 1].');
         end
-        if obj1.tensorOrder>obj.tensorOrder % obj1: to=1, obj: to=0: 
-          error('Division with vector not supported.'); 
+        if any(obj1.datasize('dataonly')~=[1 1])
+          error('Denominator must be of size [1 1], e.g. either single scalar or single partial tensor.'); 
         end
         if obj.time~=obj1.time
           warning('tseries:resampling','resamplig TSeries')
           obj1 = obj1.resample(obj.time);
         end
         Ts = obj;
-        switch obj.tensorOrder
-          case 0, Ts.data_ = obj.data./obj1.data; 
-          case 1
-            switch obj1.tensorOrder
-              case 0
-                Ts.data_ = obj.data./repmat(obj1.data,1,size(obj.data,2));
-              case 1 % need to check it is a partial vector, e.g. B.x, then operation is ok
-                
-              case 2 % need to check it is a partial tensor, e.g. P.xx, then operation is ok                
-              otherwise
-                error('Not supported.')
-            end
-          otherwise
-            error('Not supported')
-        end
+        sizeData = size(obj.data);
+        newData  = obj.data./repmat(obj1.data,[1 sizeData(2:end)]);
+        Ts.data_ = newData;
         update_name_units()
         return
       end
-      if ~isnumeric(obj1)
-        error('second argument must be numeric or TSeries')
-      elseif ~isscalar(obj1)
-        error('only scalars are supported')
-      end
-      Ts = obj; Ts.data = Ts.data/obj1;
-      
+
       function update_name_units()
         if ~isempty(obj.name) || ~isempty(obj1.name)
           if isempty(obj.name), s = 'untitled';
