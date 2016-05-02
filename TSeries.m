@@ -1067,9 +1067,9 @@
               newTensorOrder = to1;
               newRepresentation = repres1;
             elseif to2 == 1
-              if dataSize1(1)>1 % obj2 is row vector, (1x3)*(3x3)
+              if sizeData1(1)>1 % obj2 is row vector, (1x3)*(3x3)
                 newTensorOrder = 1; 
-                newRepresentation = repres2(2);
+                newRepresentation = repres1(2);
               else % column vector
                 error('Can not determine new tensor order.')
               end
