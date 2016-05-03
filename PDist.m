@@ -244,17 +244,17 @@ classdef PDist < TSeries
       allsolide = zeros(size(diste.data));
      
       for ii = 1:length(diste.time);
-          for jj=1:size(energyspec,2);
-              allsolide(ii,jj,:,:) = solida;
-          end
+        for jj=1:size(energyspec,2);
+          allsolide(ii,jj,:,:) = solida;
+        end
       end
       
       distes = diste.data.*allsolide;
 
       % OMNI
       for ii = 1:length(diste.time);
-          disttemp = squeeze(distes(ii,:,:,:));
-          PSDomni(ii,:) = squeeze(irf.nanmean(irf.nanmean(disttemp,2),3))/(mean(mean(solida)));
+      	disttemp = squeeze(distes(ii,:,:,:));
+      	PSDomni(ii,:) = squeeze(irf.nanmean(irf.nanmean(disttemp,2),3))/(mean(mean(solida)));
       end
       
       % This is changing units and should be done separately
@@ -330,8 +330,8 @@ classdef PDist < TSeries
           error('Units not supported.')
       end  
       elseif flagdir == -1 && strcmp(obj.units,'keV/(cm^2 s sr keV)'),
-          irf.log('warning','Converting DEFlux to PSD in SI units');
-          tmpData = obj.data/1e12*mm^2*0.53707;
+        irf.log('warning','Converting DEFlux to PSD in SI units');
+        tmpData = obj.data/1e12*mm^2*0.53707;
       end    
       energy = obj.depend{1};
       sizeData = size(tmpData);
@@ -355,8 +355,8 @@ classdef PDist < TSeries
         PD.data_ = tmpData;
         PD.units = 's^3/m^6';  
       else 
-          irf.log('warning','No change to PDist');
-          PD = obj;
+      	irf.log('warning','No change to PDist');
+      	PD = obj;
       end
     end
     function PD = dpflux(obj,flagdir)
@@ -383,8 +383,8 @@ classdef PDist < TSeries
           error('Units not supported.')
       end
       elseif flagdir == -1 && strcmp(obj.units,'1/(cm^2 s sr keV)'),
-          irf.log('warning','Converting DPFlux to PSD');
-          tmpData = obj.data/1e12*mm^2*0.53707;
+        irf.log('warning','Converting DPFlux to PSD');
+        tmpData = obj.data/1e12*mm^2*0.53707;
       end   
       
       energy = obj.depend{1};
@@ -409,53 +409,52 @@ classdef PDist < TSeries
         PD.data_ = tmpData;
         PD.units = 's^3/m^6';  
       else 
-          irf.log('warning','No change to PDist');
-          PD = obj;
+        irf.log('warning','No change to PDist');
+        PD = obj;
       end
     end
     function PD = convertto(obj,newunits)
-        % Changes units of Pdist. 
-        % Accepted inputs 's^3/cm^6', 's^3/km^6', 's^3/m^6', 'keV/(cm^2 s sr keV)',
-        % and '1/(cm^2 s sr keV)'
+      % Changes units of Pdist. 
+      % Accepted inputs 's^3/cm^6', 's^3/km^6', 's^3/m^6', 'keV/(cm^2 s sr keV)',
+      % and '1/(cm^2 s sr keV)'
         
-        PD = obj;
-        % Convert to SI units
-        switch obj.units
-            case {'s^3/cm^6'}
-                PD.data_ = obj.data*1e12;
-            case {'s^3/km^6'}
-                PD.data_ = obj.data*1e-18;
-            case {'s^3/m^6'}
-                PD = PD;
-            case {'keV/(cm^2 s sr keV)'}
-                PD = obj.deflux(-1);
-            case {'1/(cm^2 s sr keV)'}
-                PD = obj.dpflux(-1);
-            otherwise
-                error('Unknown units.')
-        end
-        PD.units = 's^3/m^6';
-        PD.siConversion = 1;
-        % Convert to new units
-        switch newunits
-            case {'s^3/cm^6'}
-                PD.data_ = PD.data*1e-12;
-                PD.units = 's^3/cm^6';
-                PD.siConversion = 1e12;
-            case {'s^3/km^6'}
-                PD.data_ = PD.data*1e18;
-                PD.units = 's^3/km^6';
-                PD.siConversion = 1e-18;
-            case {'s^3/m^6'}
-                PD = PD;
-            case {'keV/(cm^2 s sr keV)'}
-                PD = PD.deflux;
-            case {'1/(cm^2 s sr keV)'}
-                PD = PD.dpflux;
-            otherwise
-                error('Units not supported.');
-        end
-        
+      PD = obj;
+      % Convert to SI units
+      switch obj.units
+        case {'s^3/cm^6'}
+          PD.data_ = obj.data*1e12;
+        case {'s^3/km^6'}
+          PD.data_ = obj.data*1e-18;
+        case {'s^3/m^6'}
+          PD = PD;
+        case {'keV/(cm^2 s sr keV)'}
+          PD = obj.deflux(-1);
+        case {'1/(cm^2 s sr keV)'}
+          PD = obj.dpflux(-1);
+        otherwise
+          error('Unknown units.')
+      end
+      PD.units = 's^3/m^6';
+      PD.siConversion = 1;
+      % Convert to new units
+      switch newunits
+        case {'s^3/cm^6'}
+        	PD.data_ = PD.data*1e-12;
+          PD.units = 's^3/cm^6';
+          PD.siConversion = 1e12;
+        case {'s^3/km^6'}
+          PD.data_ = PD.data*1e18;
+          PD.units = 's^3/km^6';
+          PD.siConversion = 1e-18;
+        case {'s^3/m^6'}
+          PD = PD;
+        case {'keV/(cm^2 s sr keV)'}
+          PD = PD.deflux;
+        case {'1/(cm^2 s sr keV)'}
+          PD = PD.dpflux;
+        otherwise
+          error('Units not supported.');
+      end
     end          
     function PD = pitchangles(obj,obj1,obj2)
       %PITCHANGLES Calculate pitchangle distribution
@@ -466,9 +465,9 @@ classdef PDist < TSeries
       %   See also MMS.GET_PITCHANGLEDIST     
       
       if nargin<3 || isempty(obj2),
-          nangles = 12;
+        nangles = 12;
       else 
-          nangles = obj2; 
+        nangles = obj2; 
       end       
       [PD,~,~,~] = mms.get_pitchangledist(obj,obj1,'angles',nangles); % - For v1.0.0 or higher data      
     end  
