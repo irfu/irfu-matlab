@@ -1161,7 +1161,9 @@
     function Ts = mrdivide(obj,obj1)
       % Divide
         
-      % Division with vectors or matrices not supported.            
+      % Division with complete vectors or matrices is not supported.
+      % Division between partial tensors of the same order is supported.
+      % The new tensor order is then 0.
             
       if isa(obj1,'TSeries') && isnumeric(obj) && isscalar(obj) % e.g. 2/ne
         if obj1.tensorOrder > 0 && any(obj1.datasize('dataonly')~= [1 1])
@@ -1177,26 +1179,36 @@
         Ts.name = sprintf('%s/(%s)',Ts.name,'unknown');
         return        
       elseif isa(obj,'TSeries') && isa(obj1,'TSeries') % both are TSeries
-        if (obj.tensorOrder ~= obj1.tensorOrder) && obj1.tensorOrder ~= 0
+        if any(obj1.datasize('dataonly')~=[1 1])
+          error('Denominator must be of size [1 1], e.g. either single scalar or single partial tensor.'); 
+        elseif (obj.tensorOrder ~= obj1.tensorOrder) && obj1.tensorOrder ~= 0
           error('Tensor orders not compatible.');
         elseif (obj.tensorOrder == obj1.tensorOrder) ...
             && obj.tensorOrder>0 ...
             && any(obj.datasize('dataonly')~=[1 1]) ...
             && any(obj1.datasize('dataonly')~=[1 1])
-          error('Division with partial tensors require datasizes [1 1].');
-        end
-        if any(obj1.datasize('dataonly')~=[1 1])
-          error('Denominator must be of size [1 1], e.g. either single scalar or single partial tensor.'); 
+          error('Division with partial tensors require datasizes [1 1].');        
         end
         if obj.time~=obj1.time
           warning('tseries:resampling','resamplig TSeries')
           obj1 = obj1.resample(obj.time);
         end
-        Ts = obj;
-        sizeData = size(obj.data);
-        newData  = obj.data./repmat(obj1.data,[1 sizeData(2:end)]);
-        Ts.data_ = newData;
+        
+        if (obj.tensorOrder == obj1.tensorOrder) ... % Partial tensors, new tensor order = 0
+            && obj.tensorOrder>0 ...
+            && all(obj.datasize('dataonly')==[1 1]) ...
+            && all(obj1.datasize('dataonly')==[1 1]) 
+          sizeData = size(obj.data);
+          newData  = obj.data./obj1.data;          
+          Ts = irf.ts_scalar(obj.time,newData);
+        else % Retain tensor order of numerator
+          Ts = obj;
+          sizeData = size(obj.data);
+          newData  = obj.data./repmat(obj1.data,[1 sizeData(2:end)]);
+          Ts.data_ = newData;          
+        end
         update_name_units()
+        
         return
       end
 
