@@ -304,7 +304,7 @@ classdef PDist < TSeries
           spec.f_label = {'E (eV)'};
       end
     end
-    function PD = deflux(obj)
+    function PD = deflux(obj,flagdir)
       % Changes units to differential energy flux
       
       % Does not work on omni
@@ -317,6 +317,8 @@ classdef PDist < TSeries
         otherwise
           error('Units not supported.')
       end  
+      
+      if nargin<2 || flagdir ~= -1,
       switch obj.units
         case {'s^3/cm^6'}
           tmpData = obj.data*1e30/1e6/mm^2/0.53707;
@@ -326,7 +328,11 @@ classdef PDist < TSeries
           tmpData = obj.data/1e6/mm^2/0.53707;
         otherwise
           error('Units not supported.')
-      end      
+      end  
+      elseif flagdir == -1 && strcmp(obj.units,'keV/(cm^2 s sr keV)'),
+          irf.log('warning','Converting DEFlux to PSD in SI units');
+          tmpData = obj.data/1e12*mm^2*0.53707;
+      end    
       energy = obj.depend{1};
       sizeData = size(tmpData);
       reshapedData = reshape(tmpData,sizeData(1),sizeData(2),prod(sizeData(3:end)));
@@ -335,27 +341,122 @@ classdef PDist < TSeries
       elseif size(energy,1) == obj.length
         matEnergy = repmat(energy,1,1,prod(sizeData(3:end)));
       end
-        
-      reshapedData = reshapedData.*matEnergy.^2;
-      tmpData = reshape(reshapedData,sizeData);
-      
-%       for ii = 1:length(obj.time),
-%         energytemp = energy(ii,:)'*ones(1,length(thetae));
-%         paddiste.data(ii,:,:) = squeeze(paddiste.data(ii,:,:)).*energytemp.^2;
-%       end
-
-      PD = obj;
-      PD.data_ = tmpData;
-      PD.units = 'keV/(cm^2 s sr keV)';
+       
+      if nargin<2 || flagdir ~= -1,
+        reshapedData = reshapedData.*matEnergy.^2;
+        tmpData = reshape(reshapedData,sizeData);
+        PD = obj;
+        PD.data_ = tmpData;
+        PD.units = 'keV/(cm^2 s sr keV)';
+      elseif flagdir == -1 && strcmp(obj.units,'keV/(cm^2 s sr keV)'),
+        reshapedData = reshapedData./(matEnergy.^2);
+        tmpData = reshape(reshapedData,sizeData);
+        PD = obj;
+        PD.data_ = tmpData;
+        PD.units = 's^3/m^6';  
+      else 
+          irf.log('warning','No change to PDist');
+          PD = obj;
+      end
     end
-    function out = peflux(obj)
+    function PD = dpflux(obj,flagdir)
       % Changes units to differential particle flux
-      out = obj;
+      units = irf_units;
+      switch obj.species
+        case {'e','electrons','electron'}
+          mm = units.me/units.mp;          
+        case {'i','p','ions','ion'}
+          mm = 1;
+        otherwise
+          error('Units not supported.')
+      end 
+      
+      if nargin<2 || flagdir ~= -1,
+      switch obj.units
+        case {'s^3/cm^6'}
+          tmpData = obj.data*1e30/1e6/mm^2/0.53707;
+        case {'s^3/m^6'}
+          tmpData = obj.data*1e18/1e6/mm^2/0.53707;
+        case {'s^3/km^6'}
+          tmpData = obj.data/1e6/mm^2/0.53707;
+        otherwise
+          error('Units not supported.')
+      end
+      elseif flagdir == -1 && strcmp(obj.units,'1/(cm^2 s sr keV)'),
+          irf.log('warning','Converting DPFlux to PSD');
+          tmpData = obj.data/1e12*mm^2*0.53707;
+      end   
+      
+      energy = obj.depend{1};
+      sizeData = size(tmpData);
+      reshapedData = reshape(tmpData,sizeData(1),sizeData(2),prod(sizeData(3:end)));
+      if size(energy,1) == 1
+        matEnergy = repmat(energy,obj.length,1,prod(sizeData(3:end)));
+      elseif size(energy,1) == obj.length
+        matEnergy = repmat(energy,1,1,prod(sizeData(3:end)));
+      end
+      
+      if nargin<2 || flagdir ~= -1,
+        reshapedData = reshapedData.*matEnergy;
+        tmpData = reshape(reshapedData,sizeData);
+        PD = obj;
+        PD.data_ = tmpData;
+        PD.units = '1/(cm^2 s sr keV)';  
+      elseif flagdir == -1 && strcmp(obj.units,'1/(cm^2 s sr keV)'),
+        reshapedData = reshapedData./matEnergy;
+        tmpData = reshape(reshapedData,sizeData);
+        PD = obj;
+        PD.data_ = tmpData;
+        PD.units = 's^3/m^6';  
+      else 
+          irf.log('warning','No change to PDist');
+          PD = obj;
+      end
     end
-    function out = psd(obj)
-      % Changes units to phase space density (s^3/km^6)
-      out = obj;
-    end        
+    function PD = convertto(obj,newunits)
+        % Changes units of Pdist. 
+        % Accepted inputs 's^3/cm^6', 's^3/km^6', 's^3/m^6', 'keV/(cm^2 s sr keV)',
+        % and '1/(cm^2 s sr keV)'
+        
+        PD = obj;
+        % Convert to SI units
+        switch obj.units
+            case {'s^3/cm^6'}
+                PD.data_ = obj.data*1e12;
+            case {'s^3/km^6'}
+                PD.data_ = obj.data*1e-18;
+            case {'s^3/m^6'}
+                PD = PD;
+            case {'keV/(cm^2 s sr keV)'}
+                PD = obj.deflux(-1);
+            case {'1/(cm^2 s sr keV)'}
+                PD = obj.dpflux(-1);
+            otherwise
+                error('Unknown units.')
+        end
+        PD.units = 's^3/m^6';
+        PD.siConversion = 1;
+        % Convert to new units
+        switch newunits
+            case {'s^3/cm^6'}
+                PD.data_ = PD.data*1e-12;
+                PD.units = 's^3/cm^6';
+                PD.siConversion = 1e12;
+            case {'s^3/km^6'}
+                PD.data_ = PD.data*1e18;
+                PD.units = 's^3/km^6';
+                PD.siConversion = 1e-18;
+            case {'s^3/m^6'}
+                PD = PD;
+            case {'keV/(cm^2 s sr keV)'}
+                PD = PD.deflux;
+            case {'1/(cm^2 s sr keV)'}
+                PD = PD.dpflux;
+            otherwise
+                error('Units not supported.');
+        end
+        
+    end          
     function PD = pitchangles(obj,obj1,obj2)
       %PITCHANGLES Calculate pitchangle distribution
       % Distribution.pitchangles(pitchangles,B,[nangles])
