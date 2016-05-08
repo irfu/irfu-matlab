@@ -225,61 +225,26 @@ classdef PDist < TSeries
       
       if ~strcmp(obj.type_,'skymap'); error('PDist must be a skymap.'); end      
       
-      diste = obj;
-      %if isempty(strfind(obj.units,'km')) % Unit conversion from s^3/cm^6 to s^3/km^6    
-      %  diste.data = diste.data*1e30; 
-      %end
-      energyspec = obj.depend{1};
-      if size(energyspec,1) == 1
-        energyspec = repmat(energyspec,diste.length,1);
-      end
-
+      dist = obj;
       % define angles
-      thetae = obj.depend{3};
+      theta = obj.depend{3};
       dangle = pi/16;
       lengthphi = 32;
 
-      z2 = ones(lengthphi,1)*sind(thetae);
+      z2 = ones(lengthphi,1)*sind(theta);
       solida = dangle*dangle*z2;      
-      allsolide = zeros(size(diste.data));
-     
-      for ii = 1:length(diste.time);
-        for jj=1:size(energyspec,2);
-          allsolide(ii,jj,:,:) = solida;
-        end
-      end
-      
-      distes = diste.data.*allsolide;
-
-      % OMNI
-      for ii = 1:length(diste.time);
-      	disttemp = squeeze(distes(ii,:,:,:));
-      	PSDomni(ii,:) = squeeze(irf.nanmean(irf.nanmean(disttemp,2),3))/(mean(mean(solida)));
-      end
-      
-      % This is changing units and should be done separately
-      %if isempty(obj.species)
-      %  species = varargin{1};
-      %else 
-      %  species = obj.species;
-      %end      
-      %switch obj.species
-      %  case {'e','electron','electrons'}
-      %    efluxomni = PSDomni.*energyspec.^2;
-      %    efluxomni = efluxomni/1e6/(5.486e-4)^2/0.53707; %convert to normal units
-      %  case {'i','p','ion','ions'}
-      %    efluxomni = PSDomni.*energyspec.^2;
-      %    efluxomni = efluxomni/1e6/0.53707; %convert to normal units
-      %  otherwise          
-      %end
+      allsolida = repmat(solida,1,1,length(dist.time),length(dist.ancillary.energy0));
+      allsolida = squeeze(permute(allsolida,[3 4 1 2]));
+      dists = dist.data.*allsolida;
+      omni = squeeze(irf.nanmean(irf.nanmean(dists,3),4))/(mean(mean(solida)));
       
       PD = obj;
       PD.type = 'omni';
-      PD.data_ = PSDomni;
+      PD.data_ = omni;
       PD.depend = {obj.depend{1}};
       PD.representation = {obj.representation{1},'energy'};
-      %PD.units = 'keV/(cm^2 s sr keV)';
-      PD.name = 'Differential energy flux';
+      PD.units = obj.units;
+      PD.name = 'omni';
     end
     function spec = specrec(obj,varargin)      
       if isempty(varargin); spectype = 'energy'; else spectype = varargin{1}; end % set default
@@ -472,9 +437,12 @@ classdef PDist < TSeries
       [PD,~,~,~] = mms.get_pitchangledist(obj,obj1,'angles',nangles); % - For v1.0.0 or higher data      
     end  
     function PD = e64(obj)
-      % E64 collect data into 64 energy levels per time
+      % E64 recompile data into 64 energy channels. Time resolution is
+      % halved. Only applies to skymap.
       %   
       %   see also MMS.PSD_REBIN
+      
+      if ~strcmp(obj.type_,'skymap'); error('PDist must be a skymap.'); end 
       
       [pdistr,phir,energyr] = mms.psd_rebin(obj,TSeries(obj.time,obj.depend{2}),obj.ancillary.energy0,obj.ancillary.energy1,TSeries(obj.time,obj.ancillary.energyStepTable));
       PD = obj.clone(pdistr.time,pdistr.data);      
