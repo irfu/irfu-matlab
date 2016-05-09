@@ -2,17 +2,17 @@
 function filepath = file_path(varargin)
 % FILE_PATH make the filepath of FPI/FGM/EDP data
 %
-%   filepath = file_path(ic, interval, 'harddrive', harddrive, 'fgm_mode', 'srvy', 'edp_mode', 'brst');
+%   filepath = file_path(ic, interval, 'harddrive', harddrive, 'fgm', 'srvy', 'edp', 'brst');
 %
 %   Input:
 %   ic - spacecraft #
 %   interval - data file time: "YYYYMMDDhhmmss"
 %   Optional Inputs:
 %   'harddrive' - data harddrive; DEFAULT: '/Volumes/mms';
-%   'fpi_mode' - FPI mode: brst [default]/fast; [under construction];
-%   'fgm_mode' - B field data mode: brst [default]/srvy;
-%   'edp_mode' - E field data mode: brst [default]/fast;
-%   'scpot_mode' - sc potential data mode: brst [default]/fast
+%   'fpi' - FPI mode: brst [default]/fast; [under construction];
+%   'fgm' - B field data mode: brst [default]/srvy;
+%   'edp' - E field data mode: brst [default]/fast;
+%   'scpot' - sc potential data mode: brst [default]/fast
 %   Output: 
 %   filepath - structure containing filepath;
 %   Potential bug: fake version selection.
@@ -27,10 +27,10 @@ function filepath = file_path(varargin)
     interval = varargin{2};
     % default setting;
     harddrive = '/Volumes/mms';
-    fpi_mode = 'brst';
-    fgm_mode = 'brst';
-    edp_mode = 'brst';
-    scpot_mode = 'brst';
+    fpi = 'brst';
+    fgm = 'brst';
+    edp = 'brst';
+    scpot = 'brst';
     % optional input
     args = varargin(3: end);
     if numel(args)> 0, 
@@ -45,22 +45,22 @@ function filepath = file_path(varargin)
             if numel(args) > 1 && ~isempty(args{2}),
                 harddrive = args{2};
             end
-        case 'fpi_mode'
+        case 'fpi'
             if numel(args) > 1 && ~isempty(args{2}),
-                fpi_mode = args{2};
-                if strcmp(fpi_mode, 'fast'), error('Under construction!'); end
+                fpi = args{2};
+                if strcmp(fpi, 'fast'), error('Under construction!'); end
             end
-        case 'fgm_mode'
+        case 'fgm'
             if numel(args) > 1 && ~isempty(args{2}),
-                fgm_mode = args{2};
+                fgm = args{2};
             end
-        case 'edp_mode'
+        case 'edp'
             if numel(args) > 1 && ~isempty(args{2}),
-                edp_mode = args{2};
+                edp = args{2};
             end            
-        case 'scpot_mode'
+        case 'scpot'
             if numel(args) > 1 && ~isempty(args{2}),
-                scpot_mode = args{2};
+                scpot = args{2};
             end
         otherwise
             irf.log('critical',['Unknown flag: ' args{1}]);
@@ -100,7 +100,7 @@ function filepath = file_path(varargin)
     end
 
     % 3. FGM direction and filename: brst [default]/srvy
-    if strcmp(fgm_mode, 'brst')
+    if strcmp(fgm, 'brst')
         c_eval('fgm_dr = [harddrive,''/mms?/fgm/brst/l2/'' yyyy ''/'' mm ''/'' dd ''/''];', ic);
         c_eval('fgm_fn = [''mms?_fgm_brst_l2_'' interval ''_v*.cdf''];', ic);            
         str_fgm = dir([fgm_dr fgm_fn]);
@@ -110,7 +110,7 @@ function filepath = file_path(varargin)
             disp(str_fgm(:).name);
             disp(fgm_fn);
         end
-    else if strcmp(fgm_mode, 'srvy')
+    else if strcmp(fgm, 'srvy')
         c_eval('fgm_dr = [harddrive,''/mms?/fgm/srvy/l2/'' yyyy ''/'' mm ''/''];', ic);
         c_eval('fgm_fn = [''mms?_fgm_srvy_l2_'' interval(1:8) ''_v*.cdf''];', ic);            
         str_fgm = dir([fgm_dr fgm_fn]);
@@ -126,7 +126,7 @@ function filepath = file_path(varargin)
     end
     
     % 4. edp direction and filename: brst [default]/fast;
-    if strcmp(edp_mode, 'brst')
+    if strcmp(edp, 'brst')
         c_eval('edp_dr = [harddrive,''/mms?/edp/brst/l2/dce/'' yyyy ''/'' mm ''/'' dd ''/''];', ic);
         c_eval('edp_fn = [''mms?_edp_brst_l2_dce_'' interval ''_v*.cdf''];', ic);            
         str_edp = dir([edp_dr edp_fn]);
@@ -136,7 +136,7 @@ function filepath = file_path(varargin)
             disp(str_edp(:).name);
             disp(edp_fn);
         end
-    else if strcmp(edp_mode, 'fast')
+    else if strcmp(edp, 'fast')
         c_eval('edp_dr = [harddrive,''/mms?/edp/fast/l2/dce/'' yyyy ''/'' mm ''/''];', ic);
         c_eval('edp_fn = [''mms?_edp_fast_l2_dce_'' interval(1:8) ''_v*.cdf''];', ic);            
         str_edp = dir([edp_dr edp_fn]);
@@ -152,7 +152,7 @@ function filepath = file_path(varargin)
     end
 
     % 5. scpot direction and filename: brst [default]/fast;    
-    if strcmp(scpot_mode, 'brst')
+    if strcmp(scpot, 'brst')
         c_eval('scpot_dr = [harddrive,''/mms?/edp/brst/l2/scpot/'' yyyy ''/'' mm ''/'' dd ''/''];', ic);
         c_eval('scpot_fn = [''mms?_edp_brst_l2_scpot_'' interval ''_v*.cdf''];', ic);            
         str_scpot = dir([scpot_dr scpot_fn]);
@@ -162,7 +162,7 @@ function filepath = file_path(varargin)
             disp(str_scpot(:).name);
             disp(scpot_fn);
         end
-    else if strcmp(scpot_mode, 'fast')
+    else if strcmp(scpot, 'fast')
         c_eval('scpot_dr = [harddrive,''/mms?/edp/fast/l2/scpot/'' yyyy ''/'' mm ''/''];', ic);
         c_eval('scpot_fn = [''mms?_edp_fast_l2_scpot_'' interval(1:8) ''000000_v*.cdf''];', ic);            
         str_scpot = dir([scpot_dr scpot_fn]);
