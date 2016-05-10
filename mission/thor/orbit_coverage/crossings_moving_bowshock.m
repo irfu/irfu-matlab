@@ -81,10 +81,12 @@ allInd = 1:rTHOR.length;
 isInside = find(xTHOR<xBSN.data/units.RE*1e3 & abs(yBS)>abs(yTHOR));
 isOutside = setdiff(allInd,isInside);
 
-isCrossing = isInside(find(diff(isInside)>1));
-nCrossings = numel(isCrossing);
+isOutboundCrossing = isInside(find(diff(isInside)>1));
+isInboundCrossing = isOutside(find(diff(isOutside)>1));
+%nCrossings = numel(isCrossing);
+nCrossings = numel(isOutboundCrossing)+numel(isInboundCrossing);
 
-nCrossingsPerYear = numel(isCrossing)/((rTHOR.time.stop-rTHOR.time.start)/60/60/24/365);
+nCrossingsPerYear = nCrossings/((rTHOR.time.stop-rTHOR.time.start)/60/60/24/365);
 
 %% Plot results
 hca=subplot(1,1,1);
