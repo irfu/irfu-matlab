@@ -102,12 +102,38 @@ tOMNI = tStart(1)+[0 xBSN.time.stop-xBSN.time.start];
 startUTC = tOMNI.start.utc;
 stopUTC = tOMNI.stop.utc;
 titleString = {['Bowshock crossings: ' num2str(nCrossings) ', crossings per year: ' num2str(nCrossingsPerYear,'%.0f')],...
-  ['(Based on bowshock distance: ' startUTC(1:10) '-' stopUTC(1:10) ')']};
+  ['(Based on bowshock distance: ' startUTC(1:10) ' to ' stopUTC(1:10) ')']};
 hca.Title.String = titleString;
 legend('Orbit','Inside bowshock','Bowshock crossings')
 
-hca.FontSize = 14;
+hca.FontSize = 18;
+hca.YLim = 45*[-1 1];
+hca.XLim = 45*[-1 1];
 
+%% Plot results
+hca=subplot(1,1,1);
+xInside = xTHOR; yInside = yTHOR;
+xInside(isOutside) = NaN; yInside(isOutside) = NaN;
+xOutside = xTHOR; yOutside = yTHOR; 
+xOutside(isInside) = NaN; yOutside(isInside) = NaN;
+
+plot(hca,xOutside,yOutside,'-',...
+         xInside,yInside,'-',...
+         xTHOR(isCrossing),yTHOR(isCrossing),'k.')
+axis(hca,'equal'); hca.XLabel.String = 'x (R_E)'; hca.YLabel.String = 'y (R_E)';
+tStart = irf.tint(tintUTC{iy}); 
+tOMNI = tStart(1)+[0 xBSN.time.stop-xBSN.time.start];
+
+startUTC = tOMNI.start.utc;
+stopUTC = tOMNI.stop.utc;
+titleString = {['Bowshock crossings: ' num2str(nCrossings) ', crossings per year: ' num2str(nCrossingsPerYear,'%.0f')],...
+  ['(Based on bowshock distance: ' startUTC(1:10) ' to ' stopUTC(1:10) ')']};
+hca.Title.String = titleString;
+legend('Outside bowshock','Inside bowshock','Bowshock crossings')
+
+hca.FontSize = 18;
+hca.YLim = 45*[-1 1];
+hca.XLim = 45*[-1 1];
 %% Plot results: plot inbound and outbound crossings separately
 hca=subplot(1,1,1);
 %plot(hca,xTHOR(isOutside),yTHOR(isOutside),'.',...
