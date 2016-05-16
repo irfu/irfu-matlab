@@ -977,14 +977,14 @@
       function isOk = validate_dimensions(multiplication_type)
         switch multiplication_type
           case 'scalar'
-            if all(sizeData1 == sizeData2) && all(sizeData2 ~= [1 1]) && all(sizeData1 ~= [1 1])
+            if numel(sizeData1) == numel(sizeData2) && all(sizeData1 == sizeData2) && all(sizeData2 ~= [1 1]) && all(sizeData1 ~= [1 1])
               warning('Interpreting both inputs as scalars.')
               to1 = 0;
               to2 = 0;
               repres1 = {};
               repres2 = {};
               isOk = 1;
-            elseif all(sizeData1 == [1 1]) || all(sizeData2 == [1 1])
+            elseif (numel(sizeData1) == 2 && all( sizeData1 == [1 1])) || (numel(sizeData2) == 2 && all(sizeData2 == [1 1]))
               isOk = 1;
             else
               error('For scalar multiplication, data sizes must agree or either data set must have size [1 1]. Consider using ''.*''.')
