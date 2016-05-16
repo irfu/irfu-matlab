@@ -88,7 +88,7 @@ function filepath = file_path(varargin)
     c_eval('emoms_fn = [''mms?_fpi_brst_l2_des-moms_'' interval ''_v*.cdf''];', ic);
     c_eval('str_? = dir([?_dr ?_fn]);', str_fpi);
     if isempty(str_idist) || isempty(str_edist) || isempty(str_imoms) || isempty(str_emoms), ...
-            error('Check connection of internet and harddrive and existence of this data'); end
+            error('[idist] Check connection of internet and harddrive and existence of this data'); end
     c_eval('?_fn = str_?(end).name;', str_fpi);
     for i=1: 4
         c_eval('tmp = str_?;', str_fpi(i));   
@@ -104,7 +104,7 @@ function filepath = file_path(varargin)
         c_eval('fgm_dr = [harddrive,''/mms?/fgm/brst/l2/'' yyyy ''/'' mm ''/'' dd ''/''];', ic);
         c_eval('fgm_fn = [''mms?_fgm_brst_l2_'' interval ''_v*.cdf''];', ic);            
         str_fgm = dir([fgm_dr fgm_fn]);
-        if isempty(str_fgm), error('Check connection of internet and harddrive and existence of this data'); end
+        if isempty(str_fgm), error('[FGM-brst] Check connection of internet and harddrive and existence of this data'); end
         fgm_fn = str_fgm(end).name;
         if length(str_fgm) > 1
             disp(str_fgm(:).name);
@@ -114,7 +114,7 @@ function filepath = file_path(varargin)
         c_eval('fgm_dr = [harddrive,''/mms?/fgm/srvy/l2/'' yyyy ''/'' mm ''/''];', ic);
         c_eval('fgm_fn = [''mms?_fgm_srvy_l2_'' interval(1:8) ''_v*.cdf''];', ic);            
         str_fgm = dir([fgm_dr fgm_fn]);
-        if isempty(str_fgm), error('Check connection of internet and harddrive and existence of this data'); end
+        if isempty(str_fgm), error('[FGM-srvy] Check connection of internet and harddrive and existence of this data'); end
         fgm_fn = str_fgm(end).name;
         if length(str_fgm) > 1
             disp(str_fgm(:).name);
@@ -130,7 +130,7 @@ function filepath = file_path(varargin)
         c_eval('edp_dr = [harddrive,''/mms?/edp/brst/l2/dce/'' yyyy ''/'' mm ''/'' dd ''/''];', ic);
         c_eval('edp_fn = [''mms?_edp_brst_l2_dce_'' interval ''_v*.cdf''];', ic);            
         str_edp = dir([edp_dr edp_fn]);
-        if isempty(str_edp), error('Check connection of internet and harddrive and existence of this data'); end
+        if isempty(str_edp), error('[EDP-brst] Check connection of internet and harddrive and existence of this data'); end
         edp_fn = str_edp(end).name;
         if length(str_edp) > 1
             disp(str_edp(:).name);
@@ -140,7 +140,7 @@ function filepath = file_path(varargin)
         c_eval('edp_dr = [harddrive,''/mms?/edp/fast/l2/dce/'' yyyy ''/'' mm ''/''];', ic);
         c_eval('edp_fn = [''mms?_edp_fast_l2_dce_'' interval(1:8) ''_v*.cdf''];', ic);            
         str_edp = dir([edp_dr edp_fn]);
-        if isempty(str_edp), error('Check connection of internet and harddrive and existence of this data'); end
+        if isempty(str_edp), error('[EDP-fast] Check connection of internet and harddrive and existence of this data'); end
         edp_fn = str_edp(end).name;
         if length(str_edp) > 1
             disp(str_edp(:).name);
@@ -156,7 +156,7 @@ function filepath = file_path(varargin)
         c_eval('scpot_dr = [harddrive,''/mms?/edp/brst/l2/scpot/'' yyyy ''/'' mm ''/'' dd ''/''];', ic);
         c_eval('scpot_fn = [''mms?_edp_brst_l2_scpot_'' interval ''_v*.cdf''];', ic);            
         str_scpot = dir([scpot_dr scpot_fn]);
-        if isempty(str_scpot), error('Check connection of internet and harddrive and existence of this data'); end
+        if isempty(str_scpot), error('[scpot-brst] Check connection of internet and harddrive and existence of this data'); end
         scpot_fn = str_scpot(end).name;
         if length(str_scpot) > 1
             disp(str_scpot(:).name);
@@ -166,7 +166,7 @@ function filepath = file_path(varargin)
         c_eval('scpot_dr = [harddrive,''/mms?/edp/fast/l2/scpot/'' yyyy ''/'' mm ''/''];', ic);
         c_eval('scpot_fn = [''mms?_edp_fast_l2_scpot_'' interval(1:8) ''000000_v*.cdf''];', ic);            
         str_scpot = dir([scpot_dr scpot_fn]);
-        if isempty(str_scpot), error('Check connection of internet and harddrive and existence of this data'); end
+        if isempty(str_scpot), error('[scpot-fast] Check connection of internet and harddrive and existence of this data'); end
         scpot_fn = str_scpot(end).name;
         if length(str_scpot) > 1
             disp(str_scpot(:).name);
