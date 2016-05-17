@@ -327,18 +327,20 @@ rE = speedTable;
 plX = rE'*cos(edgesAz+pi);
 plY = rE'*sin(edgesAz+pi);
 
+FF(FF == 0) = NaN; % set to white the zero points
+
 if isDes; % make electron velocities 10^3 km/s
-  hs = surf(ax,plX*1e-3,plY*1e-3,plY*0,log10(FF'*1e30)); % s+3*km-6
+  hs = surf(ax,plX*1e-3,plY*1e-3,plY*0,log10(FF'));
   vUnitStr= '(10^3 km/s)'; 
   if have_vlim, ax.YLim = vlim*[-1 1]*1e-3; ax.XLim = ax.YLim; end
   hcb = colorbar('peer',ax);
-  hcb.YLabel.String = 'log_{10} f_e (s^3km^{-6})';
+  hcb.YLabel.String = 'log_{10} f_e (s^3cm^{-6})'; %Default units
 else % ion velocities km/s
-  hs = surf(ax,plX,plY,plY*0,log10(FF'*1e30)); % s+3*km-6  
+  hs = surf(ax,plX,plY,plY*0,log10(FF'));  
   vUnitStr= '(km/s)'; 
   if have_vlim, ax.YLim = vlim*[-1 1]; ax.XLim = ax.YLim; end
   hcb = colorbar('peer',ax);
-  hcb.YLabel.String = 'log_{10} f_i (s^3km^{-6})';
+  hcb.YLabel.String = 'log_{10} f_i (s^3cm^{-6})'; %Default units
 end
 
 ax.XLabel.String = [vlabelx ' ' vUnitStr];
