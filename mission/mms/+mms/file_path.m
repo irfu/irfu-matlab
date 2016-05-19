@@ -9,7 +9,7 @@ function filepath = file_path(varargin)
 %   interval - data file time: "YYYYMMDDhhmmss"
 %   Optional Inputs:
 %   'harddrive' - data harddrive; DEFAULT: '/Volumes/mms';
-%   'fpi' - FPI mode: brst [default]/fast; [under construction];
+%   'fpi' - FPI mode: brst [default]/fast;
 %   'fgm' - B field data mode: brst [default]/srvy;
 %   'edp' - E field data mode: brst [default]/fast;
 %   'scpot' - sc potential data mode: brst [default]/fast
@@ -48,7 +48,6 @@ function filepath = file_path(varargin)
         case 'fpi'
             if numel(args) > 1 && ~isempty(args{2}),
                 fpi = args{2};
-                if strcmp(fpi, 'fast'), error('Under construction!'); end
             end
         case 'fgm'
             if numel(args) > 1 && ~isempty(args{2}),
@@ -70,35 +69,57 @@ function filepath = file_path(varargin)
     args = args(l+1:end);
     if isempty(args), options=0; end
     end
-    
+        
     %   1. time variables
     yyyy = interval(1:4);
     mm = interval(5:6);
     dd = interval(7:8);
 
-    %   2. FPI direction and filename, NOW ONLY brst
+    %   2. FPI direction and filename
     str_fpi = {'idist', 'edist', 'imoms', 'emoms'};
-    c_eval('idist_dr = [harddrive,''/mms?/fpi/brst/l2/dis-dist/'' yyyy ''/'' mm ''/'' dd ''/''];', ic);
-    c_eval('idist_fn = [''mms?_fpi_brst_l2_dis-dist_'' interval ''_v*.cdf''];', ic);
-    c_eval('edist_dr = [harddrive,''/mms?/fpi/brst/l2/des-dist/'' yyyy ''/'' mm ''/'' dd ''/''];', ic);
-    c_eval('edist_fn = [''mms?_fpi_brst_l2_des-dist_'' interval ''_v*.cdf''];', ic);    
-    c_eval('imoms_dr = [harddrive,''/mms?/fpi/brst/l2/dis-moms/'' yyyy ''/'' mm ''/'' dd ''/''];', ic);
-    c_eval('imoms_fn = [''mms?_fpi_brst_l2_dis-moms_'' interval ''_v*.cdf''];', ic);
-    c_eval('emoms_dr = [harddrive,''/mms?/fpi/brst/l2/des-moms/'' yyyy ''/'' mm ''/'' dd ''/''];', ic);
-    c_eval('emoms_fn = [''mms?_fpi_brst_l2_des-moms_'' interval ''_v*.cdf''];', ic);
-    c_eval('str_? = dir([?_dr ?_fn]);', str_fpi);
-    if isempty(str_idist) || isempty(str_edist) || isempty(str_imoms) || isempty(str_emoms), ...
-            error('[idist] Check connection of internet and harddrive and existence of this data'); end
-    c_eval('?_fn = str_?(end).name;', str_fpi);
-    for i=1: 4
-        c_eval('tmp = str_?;', str_fpi(i));   
-        if length(tmp) > 1
-            disp(tmp(:).name);
-            c_eval('disp(?_fn);', str_fpi(i));
+    if strcmp(fpi, 'brst')
+        c_eval('idist_dr = [harddrive,''/mms?/fpi/brst/l2/dis-dist/'' yyyy ''/'' mm ''/'' dd ''/''];', ic);
+        c_eval('idist_fn = [''mms?_fpi_brst_l2_dis-dist_'' interval ''_v*.cdf''];', ic);
+        c_eval('edist_dr = [harddrive,''/mms?/fpi/brst/l2/des-dist/'' yyyy ''/'' mm ''/'' dd ''/''];', ic);
+        c_eval('edist_fn = [''mms?_fpi_brst_l2_des-dist_'' interval ''_v*.cdf''];', ic);    
+        c_eval('imoms_dr = [harddrive,''/mms?/fpi/brst/l2/dis-moms/'' yyyy ''/'' mm ''/'' dd ''/''];', ic);
+        c_eval('imoms_fn = [''mms?_fpi_brst_l2_dis-moms_'' interval ''_v*.cdf''];', ic);
+        c_eval('emoms_dr = [harddrive,''/mms?/fpi/brst/l2/des-moms/'' yyyy ''/'' mm ''/'' dd ''/''];', ic);
+        c_eval('emoms_fn = [''mms?_fpi_brst_l2_des-moms_'' interval ''_v*.cdf''];', ic);
+        c_eval('str_? = dir([?_dr ?_fn]);', str_fpi);
+        if isempty(str_idist) || isempty(str_edist) || isempty(str_imoms) || isempty(str_emoms), ...
+            error('[FPI-burst] Check connection of internet and harddrive and existence of this data'); end
+        c_eval('?_fn = str_?(end).name;', str_fpi);
+        for i=1: 4
+            c_eval('tmp = str_?;', str_fpi(i));   
+            if length(tmp) > 1
+                disp(tmp(:).name);
+                c_eval('disp(?_fn);', str_fpi(i));
             
+            end
+        end
+    elseif strcmp(fpi, 'fast')
+        c_eval('idist_dr = [harddrive,''/mms?/fpi/fast/l2/dis-dist/'' yyyy ''/'' mm ''/''];', ic);
+        c_eval('idist_fn = [''mms?_fpi_fast_l2_dis-dist_'' interval ''_v*.cdf''];', ic);
+        c_eval('edist_dr = [harddrive,''/mms?/fpi/fast/l2/des-dist/'' yyyy ''/'' mm ''/''];', ic);
+        c_eval('edist_fn = [''mms?_fpi_fast_l2_des-dist_'' interval ''_v*.cdf''];', ic);    
+        c_eval('imoms_dr = [harddrive,''/mms?/fpi/fast/l2/dis-moms/'' yyyy ''/'' mm ''/''];', ic);
+        c_eval('imoms_fn = [''mms?_fpi_fast_l2_dis-moms_'' interval ''_v*.cdf''];', ic);
+        c_eval('emoms_dr = [harddrive,''/mms?/fpi/fast/l2/des-moms/'' yyyy ''/'' mm ''/''];', ic);
+        c_eval('emoms_fn = [''mms?_fpi_fast_l2_des-moms_'' interval ''_v*.cdf''];', ic);
+        c_eval('str_? = dir([?_dr ?_fn]);', str_fpi);
+        if isempty(str_idist) || isempty(str_edist) || isempty(str_imoms) || isempty(str_emoms), ...
+            error('[FPI-fast] Check connection of internet and harddrive and existence of this data'); end
+        c_eval('?_fn = str_?(end).name;', str_fpi);
+        for i=1: 4
+            c_eval('tmp = str_?;', str_fpi(i));   
+            if length(tmp) > 1
+                disp(tmp(:).name);
+                c_eval('disp(?_fn);', str_fpi(i));
+            end
         end
     end
-
+    
     % 3. FGM direction and filename: brst [default]/srvy
     if strcmp(fgm, 'brst')
         c_eval('fgm_dr = [harddrive,''/mms?/fgm/brst/l2/'' yyyy ''/'' mm ''/'' dd ''/''];', ic);
