@@ -3,19 +3,18 @@ function res = mms_sdp_pl_delta_off(Tint,mmsId)
 %
 % res = MMS_SDP_PL_DELTA_OFF(Tint,mmsId)
 
+%%
 fPre = sprintf('mms%d_edp_fast_l2a_dce2d',mmsId);
 Bmask = mms.db_get_ts(fPre,...
-  sprintf('mms%d_edp_dce_bitmask',mmsId), Tint);
+  sprintf('mms%d_edp_bitmask_fast_l2a',mmsId), Tint);
 if isempty(Bmask), res = []; return, end
 bitmask = Bmask.data;
 epochFull = Bmask.time.ttns;
-P12 = mms.db_get_ts(fPre,...
-  sprintf('mms%d_edp_dce_spinfit_e12',mmsId), Tint);
-p12 = P12.data;
-P34 = mms.db_get_ts(fPre,...
-  sprintf('mms%d_edp_dce_spinfit_e34',mmsId), Tint);
-p34 = P34.data;
-epochSpin = P34.time.ttns;
+Es12 = mms.db_get_ts(fPre,...
+  sprintf('mms%d_edp_espin_p12_fast_l2a',mmsId), Tint);
+Es34 = mms.db_get_ts(fPre,...
+  sprintf('mms%d_edp_espin_p34_fast_l2a',mmsId), Tint);
+epochSpin = Es34.time.ttns;
 
 mskAsponOn = bitand(bitmask(:,2),64) > 0;
 mskAsponOn = mskAsponOn | (bitand(bitmask(:,3),64) > 0);
@@ -37,9 +36,6 @@ end
 mskAsponOnSpin=logical(mskAsponOnSpin);
 
 %
-EpochS = EpochTT(epochSpin);
-Es12 = irf.ts_vec_xy(EpochS,p12(:,3:4));
-Es34 = irf.ts_vec_xy(EpochS,p34(:,3:4));
 Es12AspocOff =  Es12(~mskAsponOnSpin); Es12AspocOn =  Es12(mskAsponOnSpin);
 Es34AspocOff =  Es34(~mskAsponOnSpin); Es34AspocOn =  Es34(mskAsponOnSpin);
 DeltaAspocOff = Es12AspocOff - Es34AspocOff;
@@ -47,7 +43,7 @@ DeltaAspocOn = Es12AspocOn - Es34AspocOn;
 
 %% FPI
 B = mms.get_data('B_dmpa_srvy',Tint,mmsId);
-if isempty(B), B = mms.get_data('dfg_ql_srvy',Tint,mmsId); end
+if isempty(B), B = mms.get_data('B_dmpa_dfg_srvy_ql',Tint,mmsId); end
 Vfpi = mms.get_data('Vi_gse_fpi_ql',Tint,mmsId);
 if isempty(Vfpi)
   res = []; return
@@ -81,7 +77,7 @@ else
   Ehpca = irf_e_vxb(VHplushpca,B.resample(VHplushpca));
 end
 PSP = mms.db_get_ts(sprintf('mms%d_edp_fast_l2_scpot',mmsId),...
-  sprintf('mms%d_edp_psp',mmsId),Tint);
+  sprintf('mms%d_edp_psp_fast_l2',mmsId),Tint);
 
 %% resample to 1 min
 epoch1min = fix(Tint.start.epochUnix/60)*60:20:ceil(Tint.stop.epochUnix/60)*60;
@@ -129,7 +125,7 @@ EhpcaR = Ehpca.resample(Epoch1min,'median');
 
 %% Raw data figure
 myCols = [[0 0 0];[.3 .3 .3];[0 0 1];[.2 .2 .8]];
-if 0
+if 1
 h = irf_figure(93,9,'reset');
 cmap = irf_colormap('space'); colormap(cmap)
 
