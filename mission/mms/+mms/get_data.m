@@ -70,6 +70,9 @@ vars = {'R_gse','R_gsm','V_gse','V_gsm',...
   'Ne_fpi_sitl','Ne_fpi_ql',...
   'Ne_fpi_brst_l1b','Ne_fpi_fast_l1b',...
   'Pe_fpi_ql','Pe_fpi_brst','Pe_fpi_brst_l2','Pi_fpi_brst_l2',...
+  'Tse_fpi_fast_l2',...
+  'Tse_fpi_sitl','Tse_fpi_ql',...
+  'Tse_fpi_fast_l1b',...
   'Te_fpi_ql','Te_fpi_brst','Te_fpi_brst_l2','Ti_fpi_brst_l2',...
   'Ti_fpi_ql','Ti_fpi_brst',...
   'Ti_fpi_fast_l2','Te_fpi_fast_l2',...
@@ -176,6 +179,22 @@ switch Vr.inst
         end
         res = get_ts('scalar');
         return
+      case {'Tsi','Tse'}
+        getQ = 'trace';
+        switch Vr.lev
+          case {'l2','l2pre'}
+            pref = ['mms' mmsIdS '_' sensor '_temp'];
+            suf = ['_dbcs_' Vr.tmmode];
+            compS = struct('xx','xx','yy','yy','zz','zz');
+          case {'l1b','ql'}
+            pref = ['mms' mmsIdS '_' sensor '_Temp'];
+          case 'sitl'
+            pref = ['mms' mmsIdS '_fpi_' upper(sensor) 'temp'];
+            getQ = 'ts';
+          otherwise, error('should not be here')
+        end
+        res = get_ts(getQ);
+        return
       case {'Vi','Ve'}
         pref = ['mms' mmsIdS '_' sensor '_bulk'];
         switch Vr.lev
@@ -272,7 +291,7 @@ switch varStr
     res.units = rXX.units;
     res.siConversion = rXX.siConversion;
     res.coordinateSystem = coordinateSystem;
-  case {'Ni_fpi_sitl','Ni_fpi_ql','Ni_fpi_brst','Ne_fpi_brst','Ti_fpi_ql','Ti_fpi_brst'}
+  case {'Ti_fpi_ql','Ti_fpi_brst'}
     if varStr(2)=='i', vS = 'dis';
     else vS = 'des';
     end
@@ -412,6 +431,36 @@ end
         res.units = rX.units;
         res.siConversion = rX.siConversion;
       case 'trace'
+        if isempty(compS), compS.xx = 'XX'; compS.yy = 'YY'; compS.zz = 'ZZ'; end
+        rX = mms.db_get_ts(datasetName, [pref compS.xx suf],Tint); 
+        if isempty(rX)
+          irf.log('warning',...
+            ['No data for ' datasetName '(' [pref compS.xx suf] ')'])
+          return
+        end
+        rX = comb_ts(rX);
+        rY = mms.db_get_ts(datasetName, [pref compS.yy suf],Tint); rY = comb_ts(rY);
+        rZ = mms.db_get_ts(datasetName, [pref compS.yy suf],Tint); rZ = comb_ts(rZ);
+        rX.data = rX.data + rY.data + rZ.data;
+        res = irf.ts_scalar(rX.time, rX.data);
+        res.name = [varStr '_' mmsIdS];
+        res.units = rX.units;
+        res.siConversion = rX.siConversion;
+      case 'ts'
+        if isempty(compS), compS.par = 'Para'; compS.perp = 'Perp'; end
+        rX = mms.db_get_ts(datasetName, [pref compS.par suf],Tint); 
+        if isempty(rX)
+          irf.log('warning',...
+            ['No data for ' datasetName '(' [pref compS.par suf] ')'])
+          return
+        end
+        rX = comb_ts(rX);
+        rY = mms.db_get_ts(datasetName, [pref compS.perp suf],Tint); rY = comb_ts(rY);
+        rX.data = rX.data/3 + rY.data*2/3;
+        res = irf.ts_scalar(rX.time, rX.data);
+        res.name = [varStr '_' mmsIdS];
+        res.units = rX.units;
+        res.siConversion = rX.siConversion;
       case 'tensor2'
       otherwise
         error('data type not implemented')
