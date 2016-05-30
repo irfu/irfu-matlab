@@ -10,19 +10,18 @@ function res = get_data(varStr, Tint, mmsId)
 %     R_gse, R_gsm, V_gse, V_gsm
 %     tetra_quality
 %  FPI IONS:
-%     'Vi_gse_fpi_sitl','Vi_gse_fpi_ql','Vi_gse_fpi_brst' (L1b), ...
-%     'Vi_gse_fpi_brst_l1b', 'Vi_gse_fpi_fast_l1b',
-%     'Vi_gse_fpi_brst', 'Vi_dbcs_fpi_brst_l2',
-%     'Ve_dbcs_fpi_fast_l2', 'Vi_dbcs_fpi_fast_l2',
-%     'Ve_gse_fpi_brst_l2', 'Vi_gse_fpi_brst_l2',
-%     'Ve_gse_fpi_fast_l2', 'Vi_gse_fpi_fast_l2'
-%     'Ti_fpi_ql','Ti_fpi_brst',
-%     'Ni_fpi_sitl','Ni_fpi_ql', 'Ni_fpi_brst', 
+%     'Vi_dbcs_fpi_brst_l2' (alias:'Vi_dbcs_fpi_brst'), 'Vi_dbcs_fpi_fast_l2',...
+%     'Vi_gse_fpi_sitl', 'Vi_gse_fpi_ql',...
+%     'Vi_gse_fpi_brst_l1b','Vi_gse_fpi_fast_l1b',...
+%     'Ti_fpi_ql','Ti_fpi_brst', 'Ti_fpi_fast_l2'
+%     'Ni_fpi_sitl','Ni_fpi_ql', 'Ni_fpi_brst', 'Ni_fpi_fast_l2'
 %  FPI ELECTRONS:
-%     'Ne_fpi_brst', 'Ve_gse_fpi_fast_l1b', 
-%     'Ve_gse_fpi_brst' (L1b), 'Ve_dbcs_fpi_brst_l2', 'Ve_gse_fpi_brst_l1b', 
+%     'Ne_fpi_brst', 'Ne_fpi_fast_l2', 
+%     'Ve_dbcs_fpi_brst_l2' (alias:'Ve_dbcs_fpi_brst'), 'Ve_dbcs_fpi_fast_l2',...
+%     'Ve_gse_fpi_sitl', 'Ve_gse_fpi_ql',...
+%     'Ve_gse_fpi_brst_l1b','Ve_gse_fpi_fast_l1b',...
 %     Loads into tensor of order 2:
-%     'Te_fpi_ql','Te_fpi_brst','Te_fpi_brst_l2',
+%     'Te_fpi_ql','Te_fpi_brst','Te_fpi_brst_l2', 'Te_fpi_fast_l2'
 %     'Pe_fpi_ql','Pe_fpi_brst','Pe_fpi_brst_l2'
 %  FGM:
 %     'B_dmpa_srvy','B_gse_srvy','B_gsm_srvy',
@@ -54,17 +53,18 @@ elseif Tint.stop-Tint.start<=0,
 end
 
 vars = {'R_gse','R_gsm','V_gse','V_gsm',...
-  'Vi_gse_fpi_sitl', 'Vi_gse_fpi_ql','Ve_gse_fpi_brst','Vi_gse_fpi_brst', ...
-  'Vi_gse_fpi_brst_l1b','Ve_gse_fpi_brst_l1b',...
-  'Vi_gse_fpi_fast_l1b','Ve_gse_fpi_fast_l1b',...
-  'Ve_dbcs_fpi_brst_l2','Vi_dbcs_fpi_brst_l2',...
-  'Ve_dbcs_fpi_fast_l2','Vi_dbcs_fpi_fast_l2',...
-  'Ve_gse_fpi_brst_l2','Vi_gse_fpi_brst_l2',...
-  'Ve_gse_fpi_fast_l2','Vi_gse_fpi_fast_l2',...
-  'Ni_fpi_sitl','Ni_fpi_ql','Ni_fpi_brst','Ne_fpi_brst',...
+  'Vi_dbcs_fpi_brst_l2', 'Vi_dbcs_fpi_brst', 'Vi_dbcs_fpi_fast_l2',...
+  'Vi_gse_fpi_sitl', 'Vi_gse_fpi_ql',...
+  'Vi_gse_fpi_brst_l1b','Vi_gse_fpi_fast_l1b',...
+  'Ve_dbcs_fpi_brst_l2','Ve_dbcs_fpi_brst', 'Ve_dbcs_fpi_fast_l2',...
+  'Ve_gse_fpi_sitl', 'Ve_gse_fpi_ql',...
+  'Ve_gse_fpi_brst_l1b','Ve_gse_fpi_fast_l1b',...
+  'Ni_fpi_sitl','Ni_fpi_ql','Ni_fpi_brst','Ni_fpi_fast_l2',...
+  'Ne_fpi_fast_l2','Ne_fpi_brst',...
   'Pe_fpi_ql','Pe_fpi_brst','Pe_fpi_brst_l2','Pi_fpi_brst_l2',...
   'Te_fpi_ql','Te_fpi_brst','Te_fpi_brst_l2','Ti_fpi_brst_l2',...
   'Ti_fpi_ql','Ti_fpi_brst',...
+  'Ti_fpi_fast_l2','Te_fpi_fast_l2',...
   'B_dmpa_srvy','B_gse_srvy','B_gsm_srvy','B_dmpa_brst','B_gse_brst','B_gsm_brst',...
   'dfg_ql_srvy','afg_ql_srvy','tetra_quality',...
   'Nhplus_hpca_sitl'}; % XXX THESE MUST BE THE SAME VARS AS BELOW
@@ -81,33 +81,6 @@ end
 switch varStr
   case {'R_gse','R_gsm','V_gse','V_gsm'}
     vC = varStr(1); cS = varStr(3:5);
-    
-    if 0 % XXX this files are WRONG!!!
-    %Try to load common ephemeris file
-    switch cS
-      case 'gse', fSuf = '';
-      case 'gsm', fSuf = 'GSM';
-      otherwise, error('should not be here')
-    end
-    commonFile = ['/data/mms/irfu/mms' vC fSuf '.mat'];
-    if exist(commonFile,'file')
-      data = load(commonFile); data = data.(vC);
-      data = my_tlim(data);
-      if ~isempty(data)
-        if mmsId==0, res = data; return; end
-        res = irf.ts_vec_xyz(EpochTT(data.time),data.([cS vC mmsIdS]));
-        res.time = EpochTT(res.time);
-        res.name = sprintf('%s_%d',varStr,mmsId);
-        res.coordinateSystem = cS;
-        switch vC
-          case 'R', res.units = 'km'; res.siConversion = '1e3>m';
-          case 'V', res.units = 'km/s'; res.siConversion = '1e3>m/s';
-          otherwise, error('should not be here')
-        end
-        return
-      end
-    end
-    end
     
     if mmsId>0
       res = mms.db_get_ts(['mms' mmsIdS '_mec_srvy_l2_epht89d'],...
@@ -155,66 +128,72 @@ switch varStr
       dTmp.data = double(dTmp.data);
       dTmpR = dTmp.resample(res.time,'spline');
       res.([cS vC mmsIdS]) = dTmpR.data; 
+    end 
+end
+
+Vr = splitVs(varStr);
+datasetName = ['mms' mmsIdS '_' Vr.inst '_' Vr.tmmode '_' Vr.lev];
+compS = ''; pref = ''; suf = '';
+
+switch Vr.inst
+  case 'fpi'
+    switch Vr.param(end)
+      case 'i', sensor = 'dis';
+      case 'e', sensor = 'des';
+      otherwise 
+        error('invalid specie')
     end
-  case {'Vi_gse_fpi_sitl','Vi_gse_fpi_ql','Vi_gse_fpi_brst','Ve_gse_fpi_brst',...
-      'Vi_gse_fpi_brst_l1b','Ve_gse_fpi_brst_l1b',...
-      'Vi_gse_fpi_fast_l1b','Ve_gse_fpi_fast_l1b'}
-    if varStr(2)=='i', vS = 'dis';
-    else vS = 'des';
-    end
-    suf = ''; varS = '_bulk';
-    switch varStr(12)
-      case 'q', datasetName = ['mms' mmsIdS '_fpi_fast_ql_' vS];
-      case 's', 
-        datasetName = ['mms' mmsIdS '_fpi_fast_sitl']; 
-        vS = 'fpi'; varS = '_iBulkV_'; suf = '_DSC';
-      case 'f', datasetName = ['mms' mmsIdS '_fpi_fast_l1b_' vS '-moms'];
-      otherwise
-        datasetName = ['mms' mmsIdS '_fpi_brst_l1b_' vS '-moms'];
-    end
-    pref = ['mms' mmsIdS '_' vS varS];
-    rX = mms.db_get_ts(datasetName,[pref 'X' suf],Tint);
-    if isempty(rX), return, end
-    rX = comb_ts(rX);
-    rY = comb_ts(mms.db_get_ts(datasetName,[pref 'Y' suf],Tint));
-    rZ = comb_ts(mms.db_get_ts(datasetName,[pref 'Z' suf],Tint));
-    res = irf.ts_vec_xyz(rX.time, [rX.data rY.data rZ.data]);
-    res.coordinateSystem = 'gse';
-    res.name = [varStr '_' mmsIdS];
-    res.units = rX.units;
-    res.siConversion = rX.siConversion;
-  case {'Ve_dbcs_fpi_brst_l2','Vi_dbcs_fpi_brst_l2','Ve_dbcs_fpi_fast_l2','Vi_dbcs_fpi_fast_l2',...
-      'Ve_gse_fpi_brst_l2','Vi_gse_fpi_brst_l2','Ve_gse_fpi_fast_l2','Vi_gse_fpi_fast_l2'}
-    if varStr(2)=='i', vS = 'dis';
-    else vS = 'des';
-    end
-    tk = tokenize(varStr,'_');
-    csS = tk{2}; modeS = tk{4};
-    datasetName = ['mms' mmsIdS '_fpi_' modeS '_l2_' vS '-moms'];
-    pref = ['mms' mmsIdS '_' vS '_']; suf = ['_' csS '_' modeS];
     
-    rX = mms.db_get_ts(datasetName,[pref 'bulkx' suf],Tint);
-    if isempty(rX), return, end
-    rX = comb_ts(rX);
-    rY = comb_ts(mms.db_get_ts(datasetName,[pref 'bulky' suf],Tint));
-    rZ = comb_ts(mms.db_get_ts(datasetName,[pref 'bulkz' suf],Tint));
-    res = irf.ts_vec_xyz(rX.time, [rX.data rY.data rZ.data]);
-    res.coordinateSystem = csS;
-    res.name = [varStr '_' mmsIdS];
-    res.units = rX.units;
-    res.siConversion = rX.siConversion;
-  case {'Pe_fpi_ql','Pe_fpi_brst','Pe_fpi_brst_l2','Te_fpi_ql','Te_fpi_brst','Te_fpi_brst_l2','Pi_fpi_brst_l2','Ti_fpi_brst_l2'}
+    switch Vr.lev
+      case {'l2','l2pre','l1b'}
+        datasetName = [datasetName '_' sensor '-moms'];
+      case 'ql'
+        datasetName = [datasetName '_' sensor];
+      case 'sitl'
+      otherwise, error('should not be here')
+    end
+    
+    switch Vr.param
+      case {'Vi','Ve'}
+        pref = ['mms' mmsIdS '_' sensor '_bulk'];
+        switch Vr.lev
+          case {'l2','l2pre'}
+            suf = ['_' Vr.cs '_' Vr.tmmode];
+            compS = struct('x','x','y','y','z','z');
+          case 'l1b'
+          case 'ql'
+          case 'sitl'
+            pref = ['mms' mmsIdS '_fpi_' Vr.param(end) 'BulkV_'];
+            suf = '_DSC';
+          otherwise, error('should not be here')
+        end
+        res = get_ts('vector');
+        return
+    end    
+  otherwise
+    %error('not implemented yet')
+end
+
+switch varStr
+  case {'Pe_fpi_ql','Pe_fpi_brst','Te_fpi_ql',... % QL
+      'Te_fpi_brst','Te_fpi_fast',... % L1b
+      'Pe_fpi_brst_l2','Te_fpi_brst_l2','Pi_fpi_brst_l2','Ti_fpi_brst_l2',...
+      'Pe_fpi_fast_l2','Te_fpi_fast_l2','Pi_fpi_fast_l2','Ti_fpi_fast_l2'
+      }
     isL2 = 0;
     if varStr(2)=='i', vS = 'dis';
     else vS = 'des';
     end
     if varStr(8)=='q'
       datasetName = ['mms' mmsIdS '_fpi_fast_ql_' vS];
-    elseif varStr(end) == '2'
-      isL2 = 1;
-      datasetName = ['mms' mmsIdS '_fpi_brst_l2_' vS '-moms'];
     else
-      datasetName = ['mms' mmsIdS '_fpi_brst_l1b_' vS '-moms'];
+      if varStr(8)=='b', modeS = 'brst'; else modeS = 'fast'; end
+      if varStr(end) == '2'
+        isL2 = 1;
+        datasetName = ['mms' mmsIdS '_fpi_' modeS '_l2_' vS '-moms'];
+      else
+        datasetName = ['mms' mmsIdS '_fpi_' modeS '_l1b_' vS '-moms'];
+      end
     end
     if varStr(1)=='T' % temperature
       momType = 'Temp';
@@ -225,18 +204,18 @@ switch varStr
     
     if isL2 % L2 data has different variable names
       rXX = mms.db_get_ts(datasetName,...
-        ['mms' mmsIdS '_' vS '_' lower(momType) lower('XX') '_dbcs_brst'],Tint);
+        ['mms' mmsIdS '_' vS '_' lower(momType) lower('XX') '_dbcs_' modeS],Tint);
       if isempty(rXX), return, end
       rXY = mms.db_get_ts(datasetName,...
-        ['mms' mmsIdS '_' vS '_' lower(momType) lower('XY') '_dbcs_brst'],Tint);
+        ['mms' mmsIdS '_' vS '_' lower(momType) lower('XY') '_dbcs_' modeS],Tint);
       rXZ = mms.db_get_ts(datasetName,...
-        ['mms' mmsIdS '_' vS '_' lower(momType) lower('XZ') '_dbcs_brst'],Tint);
+        ['mms' mmsIdS '_' vS '_' lower(momType) lower('XZ') '_dbcs_' modeS],Tint);
       rYY = mms.db_get_ts(datasetName,...
-        ['mms' mmsIdS '_' vS '_' lower(momType) lower('YY') '_dbcs_brst'],Tint);
+        ['mms' mmsIdS '_' vS '_' lower(momType) lower('YY') '_dbcs_' modeS],Tint);
       rYZ = mms.db_get_ts(datasetName,...
-        ['mms' mmsIdS '_' vS '_' lower(momType) lower('YZ') '_dbcs_brst'],Tint);
+        ['mms' mmsIdS '_' vS '_' lower(momType) lower('YZ') '_dbcs_' modeS],Tint);
       rZZ = mms.db_get_ts(datasetName,...
-        ['mms' mmsIdS '_' vS '_' lower(momType) lower('ZZ') '_dbcs_brst'],Tint); 
+        ['mms' mmsIdS '_' vS '_' lower(momType) lower('ZZ') '_dbcs_' modeS],Tint); 
       coordinateSystem = 'DBCS';
     else
       rXX = mms.db_get_ts(datasetName,...
@@ -278,6 +257,7 @@ switch varStr
     switch varStr(8)
       case 's', datasetName = ['mms' mmsIdS '_fpi_fast_sitl']; vS = 'fpi_DIS';
       case 'q', datasetName = ['mms' mmsIdS '_fpi_fast_ql_' vS]; vS = [vS '_'];
+      case 'f'
       otherwise
         datasetName = ['mms' mmsIdS '_fpi_brst_l1b_' vS '-moms']; vS = [vS '_'];
     end
@@ -289,6 +269,26 @@ switch varStr
       rX = mms.db_get_ts(datasetName, [pref 'TempXX'],Tint); rX = comb_ts(rX);
       rY = mms.db_get_ts(datasetName, [pref 'TempYY'],Tint); rY = comb_ts(rY);
       rZ = mms.db_get_ts(datasetName, [pref 'TempZZ'],Tint); rZ = comb_ts(rZ);
+      rX.data = rX.data + rY.data + rZ.data;
+    end
+    if isempty(rX), return, end
+    res = irf.ts_scalar(rX.time, rX.data);
+    res.name = [varStr '_' mmsIdS];
+    res.units = rX.units;
+    res.siConversion = rX.siConversion;
+  case {'Ni_fpi_fast_l2','Ne_fpi_fast_l2'}
+    if varStr(2)=='i', vS = 'dis';
+    else vS = 'des';
+    end
+    datasetName = ['mms' mmsIdS '_fpi_fast_l2_' vS '-moms']; vS = [vS '_'];
+    pref = ['mms' mmsIdS '_' vS];
+    if varStr(1)=='N' % density
+      rX = mms.db_get_ts(datasetName,[pref 'numberdensity_dbcs_fast'],Tint);
+      rX = comb_ts(rX);
+    else % temperature
+      rX = mms.db_get_ts(datasetName, [pref 'tempxx_dbcs_fast'],Tint); rX = comb_ts(rX);
+      rY = mms.db_get_ts(datasetName, [pref 'tempyy_dbcs_fast'],Tint); rY = comb_ts(rY);
+      rZ = mms.db_get_ts(datasetName, [pref 'tempzz_dbcs_fast'],Tint); rZ = comb_ts(rZ);
       rX.data = rX.data + rY.data + rZ.data;
     end
     if isempty(rX), return, end
@@ -358,6 +358,32 @@ switch varStr
   otherwise, error('should not be here')
 end
 
+  function res = get_ts(dataType)
+    res = [];
+    switch dataType
+      case 'scalar'
+      case 'vector'
+        if isempty(compS), compS.x = 'X'; compS.y = 'Y'; compS.z = 'Z'; end
+        rX = mms.db_get_ts(datasetName,[pref compS.x suf],Tint);
+        if isempty(rX)
+          irf.log('warning',...
+            ['No data for ' datasetName '(' [pref compS.x suf] ')'])
+          return
+        end
+        rX = comb_ts(rX);
+        rY = comb_ts(mms.db_get_ts(datasetName,[pref compS.y suf],Tint));
+        rZ = comb_ts(mms.db_get_ts(datasetName,[pref compS.z suf],Tint));
+        res = irf.ts_vec_xyz(rX.time, [rX.data rY.data rZ.data]);
+        res.coordinateSystem = Vr.cs;
+        res.name = [varStr '_' mmsIdS];
+        res.units = rX.units;
+        res.siConversion = rX.siConversion;
+      case 'trace'
+      case 'tensor2'
+      otherwise
+        error('data type not implemented')
+    end
+  end
   function d = my_tlim(d)
     idx = tlim(EpochTT(d.time),Tint);
     f = fields(d);
@@ -373,4 +399,66 @@ function TsOut = comb_ts(TsIn)
  for i=2:numel(TsIn)
   TsOut = combine(TsOut, TsIn{i});
  end
+end
+
+function Res = splitVs(varStr)
+
+tk = tokenize(varStr,'_');
+nTk = length(tk);
+if nTk <3 || nTk > 5, error('invalig STRING format'), end
+
+param = tk{1};
+switch param
+  case {'Ni', 'Ne', 'Nhplus', 'Tsi', 'Tse'}
+    tensorOrder = 0;
+  case {'Vi', 'Ve', 'B', 'E'}
+    tensorOrder = 1;
+  case {'Pi', 'Pe', 'Ti', 'Te'}
+    tensorOrder = 2;
+  otherwise 
+    error('invalid PARAM')
+end
+
+coordinateSystem = []; idx = 1;
+if tensorOrder > 0
+  coordinateSystem = tk{idx+1}; idx = idx + 1;
+  switch coordinateSystem
+    case {'gse','gsm','dsl','dbcs','dmpa'}
+    otherwise
+      error('invalid COORDINATE_SYS')
+  end
+end
+
+instrument = tk{idx+1}; idx = idx + 1;
+switch instrument
+  case {'fpi','edp','edi','hpca','fgm','scm'}
+  otherwise
+    switch param
+      case B, instrument = 'fgm'; idx = idx - 1;
+      case {'Ve','Te','Ne','Pe'}, instrument = 'fpi'; idx = idx - 1;
+      otherwise
+        error('invalid INSTRUMENT')
+    end
+end
+
+tmMode = tk{idx+1}; idx = idx + 1;
+switch tmMode
+  case {'brst','fast','slow','srvy'}
+  otherwise
+    tmMode = 'fast'; idx = idx - 1;
+    irf.log('warning','assuming TM_MODE = FAST')
+end
+
+if length(tk)==idx, dataLevel = 'l2'; %default
+else
+  dataLevel = tk{idx+1};
+  switch dataLevel
+    case {'ql','sitl','l1b','l2a','l2pre','l2'}
+    otherwise
+      error('invalid DATA_LEVEL level')
+  end
+end
+
+Res = struct('param',param,'to',tensorOrder,'cs',coordinateSystem,...
+  'inst',instrument,'tmmode',tmMode,'lev',dataLevel);
 end
