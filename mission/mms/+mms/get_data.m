@@ -19,7 +19,12 @@ function res = get_data(varStr, Tint, mmsId)
 %     'Tsi_fpi_brst_l2' (alias:'Tsi_fpi_brst'), 'Tsi_fpi_fast_l2',... %scalar temperature
 %     'Tsi_fpi_sitl','Tsi_fpi_ql',...
 %     'Tsi_fpi_brst_l1b','Tsi_fpi_fast_l1b',...
-%     'Ti_fpi_ql','Ti_fpi_brst', 'Ti_fpi_fast_l2'
+%     'Ti_dbcs_fpi_brst_l2' (alias:'Ti_dbcs_fpi_brst'),'Ti_dbcs_fpi_fast_l2',...
+%     'Ti_gse_fpi_sitl','Ti_gse_fpi_ql',...
+%     'Ti_gse_fpi_brst_l1b','Ti_gse_fpi_fast_l1b',...
+%     'Pi_dbcs_fpi_brst_l2' (alias:'Pi_dbcs_fpi_brst'),'Pi_dbcs_fpi_fast_l2',...
+%     'Pi_gse_fpi_sitl' (alias:'Pi_gse_fpi_ql'),...
+%     'Pi_gse_fpi_brst_l1b','Pi_gse_fpi_fast_l1b',...
 %  FPI ELECTRONS:
 %     'Ne_fpi_brst_l2' (alias:'Ne_fpi_brst'),'Ne_fpi_fast_l2',...
 %     'Ne_fpi_sitl','Ne_fpi_ql',...
@@ -31,13 +36,30 @@ function res = get_data(varStr, Tint, mmsId)
 %     'Tse_fpi_sitl','Tse_fpi_ql',...
 %     'Tse_fpi_brst_l1b','Tse_fpi_fast_l1b',...
 %     Loads into tensor of order 2:
-%     'Te_fpi_ql','Te_fpi_brst','Te_fpi_brst_l2', 'Te_fpi_fast_l2'
-%     'Pe_fpi_ql','Pe_fpi_brst','Pe_fpi_brst_l2'
+%     'Te_dbcs_fpi_brst_l2' (alias:'Te_dbcs_fpi_brst'),'Te_dbcs_fpi_fast_l2',...
+%     'Te_gse_fpi_sitl','Te_gse_fpi_ql',...
+%     'Te_gse_fpi_brst_l1b','Te_gse_fpi_fast_l1b',...
+%     'Pe_dbcs_fpi_brst_l2' (alias:'Pe_dbcs_fpi_brst'),'Pe_dbcs_fpi_fast_l2',...
+%     'Pe_gse_fpi_sitl' (alias:'Pe_gse_fpi_ql'),...
+%     'Pe_gse_fpi_brst_l1b','Pe_gse_fpi_fast_l1b',...
 %  FGM:
-%     'B_dmpa_srvy','B_gse_srvy','B_gsm_srvy',
-%     'B_dmpa_brst','B_gse_brst','B_gsm_brst'
-% Added 2016-02-18 by Per-Arne:
+%     'B_gsm_fgm_srvy_l2' (aliases:'B_gsm_srvy_l2','B_gsm_srvy'),...
+%     'B_gsm_fgm_brst_l2' (aliases:'B_gsm_brst_l2','B_gsm_brst'),...
+%     'B_gse_fgm_srvy_l2' (aliases:'B_gse_srvy_l2','B_gse_srvy'),...
+%     'B_gse_fgm_brst_l2' (aliases:'B_gse_brst_l2','B_gse_brst'),...
+%     'B_bcs_fgm_srvy_l2' (aliases:'B_bcs_srvy_l2','B_bcs_srvy')...
+%     'B_bcs_fgm_brst_l2' (aliases:'B_bcs_brst_l2','B_bcs_brst'),...
+%     'B_dmpa_fgm_srvy_l2' (aliases:'B_dmpa_srvy_l2','B_dmpa_srvy'),...
+%     'B_dmpa_fgm_brst_l2' (aliases:'B_dmpa_brst_l2','B_dmpa_brst').
 %  HPCA:
+%     'Nhplus_hpca_srvy_l2','Nheplus_hpca_srvy_l2','Nheplusplus_hpca_srvy_l2','Noplus_hpca_srvy_l2',...
+%     'Tshplus_hpca_srvy_l2','Tsheplus_hpca_srvy_l2','Tsheplusplus_hpca_srvy_l2','Tsoplus_hpca_srvy_l2',...
+%     'Vhplus_dbcs_hpca_srvy_l2','Vheplus_dbcs_hpca_srvy_l2','Vheplusplus_dbcs_hpca_srvy_l2','Voplus_dbcs_hpca_srvy_l2',...
+%     'Phplus_dbcs_hpca_srvy_l2','Pheplus_dbcs_hpca_srvy_l2','Pheplusplus_dbcs_hpca_srvy_l2','Poplus_dbcs_hpca_srvy_l2',...
+%     'Thplus_dbcs_hpca_srvy_l2','Theplus_dbcs_hpca_srvy_l2','Theplusplus_dbcs_hpca_srvy_l2','Toplus_dbcs_hpca_srvy_l2',...
+%     'Vhplus_gsm_hpca_srvy_l2','Vheplus_gsm_hpca_srvy_l2','Vheplusplus_gsm_hpca_srvy_l2','Voplus_gsm_hpca_srvy_l2',...
+%     'Phplus_gsm_hpca_srvy_l2','Pheplus_gsm_hpca_srvy_l2','Pheplusplus_gsm_hpca_srvy_l2','Poplus_gsm_hpca_srvy_l2',...
+%     'Thplus_gsm_hpca_srvy_l2','Theplus_gsm_hpca_srvy_l2','Theplusplus_gsm_hpca_srvy_l2','Toplus_gsm_hpca_srvy_l2',...
 %     'Nhplus_hpca_sitl'
 %
 % Example:
@@ -63,6 +85,12 @@ elseif Tint.stop-Tint.start<=0,
 end
 
 vars = {'R_gse','R_gsm','V_gse','V_gsm',...
+  'B_gsm_fgm_srvy_l2','B_gsm_srvy_l2','B_gsm_srvy','B_gsm_fgm_brst_l2','B_gsm_brst_l2','B_gsm_brst',...
+  'B_gse_fgm_srvy_l2','B_gse_srvy_l2','B_gse_srvy','B_gse_fgm_brst_l2','B_gse_brst_l2','B_gse_brst',...
+  'B_bcs_fgm_srvy_l2','B_bcs_srvy_l2','B_bcs_srvy','B_bcs_fgm_brst_l2','B_bcs_brst_l2','B_bcs_brst',...
+  'B_dmpa_fgm_srvy_l2','B_dmpa_srvy_l2','B_dmpa_srvy','B_dmpa_fgm_brst_l2','B_dmpa_brst_l2','B_dmpa_brst',...
+  'B_gsm_dfg_srvy_l2pre','B_dmpa_dfg_srvy_ql',...
+  'dfg_ql_srvy','afg_ql_srvy','tetra_quality',...
   'Vi_dbcs_fpi_brst_l2', 'Vi_dbcs_fpi_brst', 'Vi_dbcs_fpi_fast_l2',...
   'Vi_gse_fpi_sitl', 'Vi_gse_fpi_ql',...
   'Vi_gse_fpi_brst_l1b','Vi_gse_fpi_fast_l1b',...
@@ -94,8 +122,14 @@ vars = {'R_gse','R_gsm','V_gse','V_gsm',...
   'Pe_dbcs_fpi_brst_l2','Pe_dbcs_fpi_brst','Pe_dbcs_fpi_fast_l2',...
   'Pe_gse_fpi_sitl','Pe_gse_fpi_ql',...
   'Pe_gse_fpi_brst_l1b','Pe_gse_fpi_fast_l1b',...
-  'B_dmpa_srvy','B_gse_srvy','B_gsm_srvy','B_dmpa_brst','B_gse_brst','B_gsm_brst',...
-  'dfg_ql_srvy','afg_ql_srvy','tetra_quality',...
+  'Nhplus_hpca_srvy_l2','Nheplus_hpca_srvy_l2','Nheplusplus_hpca_srvy_l2','Noplus_hpca_srvy_l2',...
+  'Tshplus_hpca_srvy_l2','Tsheplus_hpca_srvy_l2','Tsheplusplus_hpca_srvy_l2','Tsoplus_hpca_srvy_l2',...
+  'Vhplus_dbcs_hpca_srvy_l2','Vheplus_dbcs_hpca_srvy_l2','Vheplusplus_dbcs_hpca_srvy_l2','Voplus_dbcs_hpca_srvy_l2',...
+  'Phplus_dbcs_hpca_srvy_l2','Pheplus_dbcs_hpca_srvy_l2','Pheplusplus_dbcs_hpca_srvy_l2','Poplus_dbcs_hpca_srvy_l2',...
+  'Thplus_dbcs_hpca_srvy_l2','Theplus_dbcs_hpca_srvy_l2','Theplusplus_dbcs_hpca_srvy_l2','Toplus_dbcs_hpca_srvy_l2',...
+  'Vhplus_gsm_hpca_srvy_l2','Vheplus_gsm_hpca_srvy_l2','Vheplusplus_gsm_hpca_srvy_l2','Voplus_gsm_hpca_srvy_l2',...
+  'Phplus_gsm_hpca_srvy_l2','Pheplus_gsm_hpca_srvy_l2','Pheplusplus_gsm_hpca_srvy_l2','Poplus_gsm_hpca_srvy_l2',...
+  'Thplus_gsm_hpca_srvy_l2','Theplus_gsm_hpca_srvy_l2','Theplusplus_gsm_hpca_srvy_l2','Toplus_gsm_hpca_srvy_l2',...
   'Nhplus_hpca_sitl'}; % XXX THESE MUST BE THE SAME VARS AS BELOW
 if isempty(intersect(varStr,vars)),
   errS = ['variable not recognized: ' varStr];
@@ -109,6 +143,8 @@ if isempty(intersect(varStr,vars)),
 end
 
 switch varStr
+  case 'dfg_ql_srvy', varStr = 'B_dmpa_dfg_srvy_ql';
+  case 'afg_ql_srvy', varStr ='B_dmpa_afg_srvy_ql';
   case {'R_gse','R_gsm','V_gse','V_gsm'}
     vC = varStr(1); cS = varStr(3:5);
     
@@ -159,6 +195,23 @@ switch varStr
       dTmpR = dTmp.resample(res.time,'spline');
       res.([cS vC mmsIdS]) = dTmpR.data; 
     end 
+    return
+  case 'tetra_quality'
+    % Begin looking for Def. quality
+    quality = mms.db_get_variable('mms_ancillary_defq','quality',Tint);
+    if isempty(quality)
+      irf.log('warning', 'Did not find any definite tetrahedra quality. Looking for predicted.');
+      list = mms.db_list_files('mms_ancillary_predq',Tint);
+      if(~isempty(list))
+        % Load the last predicted file to match Tint
+        quality = mms_load_ancillary([list(end).path, filesep, list(end).name], 'predq');
+      end
+    end
+    if(~isempty(quality))
+      rTs = irf.ts_scalar(EpochTT(quality.time), quality.quality);
+      res = rTs.tlim(Tint);
+    end
+    return
 end
 
 Vr = splitVs(varStr);
@@ -166,6 +219,29 @@ datasetName = ['mms' mmsIdS '_' Vr.inst '_' Vr.tmmode '_' Vr.lev];
 compS = ''; pref = ''; suf = '';
 
 switch Vr.inst
+  case {'fgm','dfg','afg'}
+    switch Vr.lev
+      case 'l2'
+        vn = ['mms' mmsIdS '_' Vr.inst '_b_' Vr.cs '_' Vr.tmmode '_' Vr.lev];
+      case 'l2pre' 
+        vn = ['mms' mmsIdS '_' Vr.inst '_' Vr.tmmode '_' Vr.lev '_' Vr.cs];
+      case 'ql'
+        vn = ['mms' mmsIdS '_' Vr.inst '_' Vr.tmmode '_' Vr.cs];
+      otherwise, error('should not be here')
+    end
+    res = mms.db_get_ts(datasetName, vn, Tint);
+    if isempty(res), return, end
+    if strcmp(Vr.lev,'srvy')
+      ind = diff(res.time.ttns) <= 122000; % FIXME: what is brst min dt for A/DFG?
+      if( sum(ind) < (length(rTs)-2) )
+        % Remove samples that are too close, but ensure some output if only
+        % two samples with very high sample rate.
+        irf.log('notice',['Removing ',sum(ind), ...
+          ' samples due to overlap AFG/DFG when transitioning between fast/slow mode.']);
+        res = res(~ind);
+      end
+    end
+    
   case 'fpi'
     switch Vr.param(end)
       case 'i', sensor = 'dis';
@@ -197,7 +273,6 @@ switch Vr.inst
           otherwise, error('should not be here')
         end
         res = get_ts('scalar');
-        return
       case {'Tsi','Tse'}
         getQ = 'trace';
         switch Vr.lev
@@ -213,7 +288,6 @@ switch Vr.inst
           otherwise, error('should not be here')
         end
         res = get_ts(getQ);
-        return
       case {'Ti', 'Te', 'Pi', 'Pe'}
         switch Vr.param(1)
           case 'T' % temperature
@@ -231,11 +305,9 @@ switch Vr.inst
             pref = ['mms' mmsIdS '_' sensor '_' momType];
           case 'sitl'
             pref = ['mms' mmsIdS '_fpi_' upper(sensor) 'temp'];
-            getQ = 'ts';
           otherwise, error('should not be here')
         end
         res = get_ts('tensor2');
-        return
       case {'Vi','Ve'}
         pref = ['mms' mmsIdS '_' sensor '_bulk'];
         switch Vr.lev
@@ -250,194 +322,36 @@ switch Vr.inst
           otherwise, error('should not be here')
         end
         res = get_ts('vector');
-        return
+      otherwise, error('should not be here')
     end    
+  case 'hpca'
+    datasetName = ['mms' mmsIdS '_hpca_' Vr.tmmode '_' Vr.lev '_moments'];
+    param = Vr.param(1); ion = Vr.param(2:end); 
+    if ion(1)=='s', param = [param ion(1)]; ion = ion(2:end); end % Ts
+    switch ion
+      case {'hplus','heplus','heplusplus','oplus'}
+      otherwise, error('unrecognized ion')
+    end
+    switch param
+      case 'N', v = 'number_density';
+      case 'V', v = 'ion_bulk_velocity';
+      case 'Ts', v = 'scalar_temperature';
+      case 'P', v = 'ion_pressure';
+      case 'T', v = 'temperature_tensor';
+      otherwise, error('unrecognized param')
+    end
+    pref = ['mms' mmsIdS '_hpca_' ion '_' v];
+    if Vr.to>0
+      switch Vr.cs
+        case 'gsm', pref = [pref '_GSM'];
+        case 'dbcs'
+        otherwise, error('invalid CS')
+      end
+    end
+    res = mms.db_get_ts(datasetName,pref,Tint);
+    res.coordinateSystem =  Vr.cs;
   otherwise
-    %error('not implemented yet')
-end
-
-switch varStr
-  case {'Pe_fpi_ql','Pe_fpi_brst','Te_fpi_ql',... % QL
-      'Te_fpi_brst','Te_fpi_fast',... % L1b
-      'Pe_fpi_brst_l2','Te_fpi_brst_l2','Pi_fpi_brst_l2','Ti_fpi_brst_l2',...
-      'Pe_fpi_fast_l2','Te_fpi_fast_l2','Pi_fpi_fast_l2','Ti_fpi_fast_l2'
-      }
-    isL2 = 0;
-    if varStr(2)=='i', vS = 'dis';
-    else vS = 'des';
-    end
-    if varStr(8)=='q'
-      datasetName = ['mms' mmsIdS '_fpi_fast_ql_' vS];
-    else
-      if varStr(8)=='b', modeS = 'brst'; else modeS = 'fast'; end
-      if varStr(end) == '2'
-        isL2 = 1;
-        datasetName = ['mms' mmsIdS '_fpi_' modeS '_l2_' vS '-moms'];
-      else
-        datasetName = ['mms' mmsIdS '_fpi_' modeS '_l1b_' vS '-moms'];
-      end
-    end
-    if varStr(1)=='T' % temperature
-      momType = 'Temp';
-    elseif varStr(1)=='P' % pressure
-      momType = 'Pres';
-    else return;
-    end
-    
-    if isL2 % L2 data has different variable names
-      rXX = mms.db_get_ts(datasetName,...
-        ['mms' mmsIdS '_' vS '_' lower(momType) lower('XX') '_dbcs_' modeS],Tint);
-      if isempty(rXX), return, end
-      rXY = mms.db_get_ts(datasetName,...
-        ['mms' mmsIdS '_' vS '_' lower(momType) lower('XY') '_dbcs_' modeS],Tint);
-      rXZ = mms.db_get_ts(datasetName,...
-        ['mms' mmsIdS '_' vS '_' lower(momType) lower('XZ') '_dbcs_' modeS],Tint);
-      rYY = mms.db_get_ts(datasetName,...
-        ['mms' mmsIdS '_' vS '_' lower(momType) lower('YY') '_dbcs_' modeS],Tint);
-      rYZ = mms.db_get_ts(datasetName,...
-        ['mms' mmsIdS '_' vS '_' lower(momType) lower('YZ') '_dbcs_' modeS],Tint);
-      rZZ = mms.db_get_ts(datasetName,...
-        ['mms' mmsIdS '_' vS '_' lower(momType) lower('ZZ') '_dbcs_' modeS],Tint); 
-      coordinateSystem = 'DBCS';
-    else
-      rXX = mms.db_get_ts(datasetName,...
-        ['mms' mmsIdS '_' vS '_' momType 'XX'],Tint);
-      if isempty(rXX), return, end
-      rXY = mms.db_get_ts(datasetName,...
-        ['mms' mmsIdS '_' vS '_' momType 'XY'],Tint);
-      rXZ = mms.db_get_ts(datasetName,...
-        ['mms' mmsIdS '_' vS '_' momType 'XZ'],Tint);
-      rYY = mms.db_get_ts(datasetName,...
-        ['mms' mmsIdS '_' vS '_' momType 'YY'],Tint);
-      rYZ = mms.db_get_ts(datasetName,...
-        ['mms' mmsIdS '_' vS '_' momType 'YZ'],Tint);
-      rZZ = mms.db_get_ts(datasetName,...
-        ['mms' mmsIdS '_' vS '_' momType 'ZZ'],Tint);  
-      coordinateSystem = '';
-    end 
-    
-    rData = nan(rXX.length,3,3);
-    rData(:,1,1) = rXX.data;
-    rData(:,1,2) = rXY.data;
-    rData(:,1,3) = rXZ.data;
-    rData(:,2,1) = rXY.data;
-    rData(:,2,2) = rYY.data;
-    rData(:,2,3) = rYZ.data;
-    rData(:,3,1) = rXZ.data;
-    rData(:,3,2) = rYZ.data;
-    rData(:,3,3) = rZZ.data;
-        
-    res = irf.ts_tensor_xyz(rXX.time, rData);
-    res.name = [varStr '_' mmsIdS];
-    res.units = rXX.units;
-    res.siConversion = rXX.siConversion;
-    res.coordinateSystem = coordinateSystem;
-  case {'Ti_fpi_ql','Ti_fpi_brst'}
-    if varStr(2)=='i', vS = 'dis';
-    else vS = 'des';
-    end
-    switch varStr(8)
-      case 's', datasetName = ['mms' mmsIdS '_fpi_fast_sitl']; vS = 'fpi_DIS';
-      case 'q', datasetName = ['mms' mmsIdS '_fpi_fast_ql_' vS]; vS = [vS '_'];
-      case 'f'
-      otherwise
-        datasetName = ['mms' mmsIdS '_fpi_brst_l1b_' vS '-moms']; vS = [vS '_'];
-    end
-    pref = ['mms' mmsIdS '_' vS];
-    if varStr(1)=='N' % density
-      rX = mms.db_get_ts(datasetName,[pref 'numberDensity'],Tint);
-      rX = comb_ts(rX);
-    else % temperature
-      rX = mms.db_get_ts(datasetName, [pref 'TempXX'],Tint); rX = comb_ts(rX);
-      rY = mms.db_get_ts(datasetName, [pref 'TempYY'],Tint); rY = comb_ts(rY);
-      rZ = mms.db_get_ts(datasetName, [pref 'TempZZ'],Tint); rZ = comb_ts(rZ);
-      rX.data = rX.data + rY.data + rZ.data;
-    end
-    if isempty(rX), return, end
-    res = irf.ts_scalar(rX.time, rX.data);
-    res.name = [varStr '_' mmsIdS];
-    res.units = rX.units;
-    res.siConversion = rX.siConversion;
-  case {'Ni_fpi_fast_l2','Ne_fpi_fast_l2'}
-    if varStr(2)=='i', vS = 'dis';
-    else vS = 'des';
-    end
-    datasetName = ['mms' mmsIdS '_fpi_fast_l2_' vS '-moms']; vS = [vS '_'];
-    pref = ['mms' mmsIdS '_' vS];
-    if varStr(1)=='N' % density
-      rX = mms.db_get_ts(datasetName,[pref 'numberdensity_dbcs_fast'],Tint);
-      rX = comb_ts(rX);
-    else % temperature
-      rX = mms.db_get_ts(datasetName, [pref 'tempxx_dbcs_fast'],Tint); rX = comb_ts(rX);
-      rY = mms.db_get_ts(datasetName, [pref 'tempyy_dbcs_fast'],Tint); rY = comb_ts(rY);
-      rZ = mms.db_get_ts(datasetName, [pref 'tempzz_dbcs_fast'],Tint); rZ = comb_ts(rZ);
-      rX.data = rX.data + rY.data + rZ.data;
-    end
-    if isempty(rX), return, end
-    res = irf.ts_scalar(rX.time, rX.data);
-    res.name = [varStr '_' mmsIdS];
-    res.units = rX.units;
-    res.siConversion = rX.siConversion;
-  case {'B_dmpa_srvy','B_gse_srvy','B_gsm_srvy','B_dmpa_brst','B_gse_brst','B_gsm_brst'}
-    instr = 'dfg';
-    tk = tokenize(varStr,'_'); cS = tk{2}; dLev = tk{3};
-    datasetName = ['mms' mmsIdS '_' instr '_' dLev '_l2pre'];
-    varName = ['mms' mmsIdS '_' instr '_' dLev '_l2pre_' cS];
-    rTs = mms.db_get_ts(datasetName, varName, Tint);
-    if isempty(rTs), return, end
-    if strcmp(dLev,'srvy')
-      ind = diff(rTs.time.ttns) <= 122000; % FIXME: what is brst min dt for A/DFG?
-      if( sum(ind) < (length(rTs)-2) )
-        % Remove samples that are too close, but ensure some output if only
-        % two samples with very high sample rate.
-        irf.log('notice',['Removing ',sum(ind), ...
-          ' samples due to overlap AFG/DFG when transitioning between fast/slow mode.']);
-        res = rTs(~ind);
-      else res = rTs;
-      end
-    end
-  case {'dfg_ql_srvy', 'afg_ql_srvy'} % FIXME: Correct name, and above as well!!
-    instr = varStr(1:3);
-    datasetName = ['mms', mmsIdS, '_', instr, '_srvy_ql'];
-    varName = ['mms', mmsIdS, '_', instr, '_srvy_dmpa'];
-    rTs = mms.db_get_ts(datasetName, varName, Tint);
-    if isempty(rTs), return, end
-    rTs = comb_ts(rTs); % Try to combine multiple results.
-    ind = diff(rTs.time.ttns) <= 122000; % FIXME: what is brst min dt for A/DFG?
-    if( sum(ind) < (length(rTs)-2) )
-      % Remove samples that are too close, but ensure some output if only
-      % two samples with very high sample rate.
-      irf.log('notice',['Removing ',num2str(sum(ind)), ...
-        ' samples due to overlap AFG/DFG when transitioning between fast/slow mode.']);
-      res = rTs(~ind);
-    else
-      res = rTs;
-    end
-  case 'tetra_quality'
-    % Begin looking for Def. quality
-    quality = mms.db_get_variable('mms_ancillary_defq','quality',Tint);
-    if isempty(quality)
-      irf.log('warning', 'Did not find any definite tetrahedra quality. Looking for predicted.');
-      list = mms.db_list_files('mms_ancillary_predq',Tint);
-      if(~isempty(list))
-        % Load the last predicted file to match Tint
-        quality = mms_load_ancillary([list(end).path, filesep, list(end).name], 'predq');
-      end
-    end
-    if(~isempty(quality))
-      rTs = irf.ts_scalar(EpochTT(quality.time), quality.quality);
-      res = rTs.tlim(Tint);
-    end
-  case {'Nhplus_hpca_sitl'}
-    datasetName = ['mms' mmsIdS '_hpca_srvy_sitl_moments'];
-    rX = mms.db_get_ts(datasetName,...
-      ['mms' mmsIdS '_hpca_hplus_number_density'],Tint);
-    if isempty(rX), return, end
-    res = irf.ts_scalar(rX.time, rX.data);
-    res.name = [varStr '_' mmsIdS];
-    res.units = rX.units;
-    res.siConversion = rX.siConversion;
-  otherwise, error('should not be here')
+    error('not implemented yet')
 end
 
   function res = get_ts(dataType)
@@ -548,11 +462,11 @@ end
 end %% MAIN
 
 function TsOut = comb_ts(TsIn)
- if ~iscell(TsIn), TsOut = TsIn; return; end
- TsOut = TsIn{1};
- for i=2:numel(TsIn)
+if ~iscell(TsIn), TsOut = TsIn; return; end
+TsOut = TsIn{1};
+for i=2:numel(TsIn)
   TsOut = combine(TsOut, TsIn{i});
- end
+end
 end
 
 function Res = splitVs(varStr)
@@ -561,6 +475,15 @@ tk = tokenize(varStr,'_');
 nTk = length(tk);
 if nTk <3 || nTk > 5, error('invalig STRING format'), end
 
+ions = {'hplus','heplus','heplusplus','oplus'};
+
+phcaParamsScal = {'Nhplus','Nheplus','Nheplusplus','Noplus',...
+  'Tshplus','Tsheplus','Tsheplusplus','Tsoplus'}; 
+phcaParamsTens = {'Vhplus','Vheplus','Vheplusplus','Voplus',...
+  'Phplus','Pheplus','Pheplusplus','Poplus',...
+  'Thplus','Theplus','Theplusplus','Toplus'};
+
+  
 param = tk{1};
 switch param
   case {'Ni', 'Ne', 'Nhplus', 'Tsi', 'Tse'}
@@ -569,6 +492,10 @@ switch param
     tensorOrder = 1;
   case {'Pi', 'Pe', 'Ti', 'Te'}
     tensorOrder = 2;
+  case phcaParamsScal
+    tensorOrder = 0;
+  case phcaParamsTens
+    tensorOrder = 1;
   otherwise 
     error('invalid PARAM')
 end
@@ -585,10 +512,10 @@ end
 
 instrument = tk{idx+1}; idx = idx + 1;
 switch instrument
-  case {'fpi','edp','edi','hpca','fgm','scm'}
+  case {'fpi','edp','edi','hpca','fgm','dfg','afg','scm'}
   otherwise
     switch param
-      case B, instrument = 'fgm'; idx = idx - 1;
+      case 'B', instrument = 'fgm'; idx = idx - 1;
       case {'Ve','Te','Ne','Pe'}, instrument = 'fpi'; idx = idx - 1;
       otherwise
         error('invalid INSTRUMENT')
