@@ -79,7 +79,7 @@ for mmsId = 1:4
   end
   
   B = mms.get_data('B_dmpa_srvy',Tint,mmsId);
-  if isempty(B), B = mms.get_data('dfg_ql_srvy',Tint,mmsId); end
+  if isempty(B), B = mms.get_data('B_dmpa_dfg_srvy_ql',Tint,mmsId); end
   if isempty(B), continue, end
   
   % Here we try different sources of FPI data
