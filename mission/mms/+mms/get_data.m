@@ -233,7 +233,7 @@ switch Vr.inst
     if isempty(res), return, end
     if strcmp(Vr.lev,'srvy')
       ind = diff(res.time.ttns) <= 122000; % FIXME: what is brst min dt for A/DFG?
-      if( sum(ind) < (length(rTs)-2) )
+      if( sum(ind) < (length(res)-2) )
         % Remove samples that are too close, but ensure some output if only
         % two samples with very high sample rate.
         irf.log('notice',['Removing ',sum(ind), ...
@@ -474,8 +474,6 @@ function Res = splitVs(varStr)
 tk = tokenize(varStr,'_');
 nTk = length(tk);
 if nTk <3 || nTk > 5, error('invalig STRING format'), end
-
-ions = {'hplus','heplus','heplusplus','oplus'};
 
 phcaParamsScal = {'Nhplus','Nheplus','Nheplusplus','Noplus',...
   'Tshplus','Tsheplus','Tsheplusplus','Tsoplus'}; 
