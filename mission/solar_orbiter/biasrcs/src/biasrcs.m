@@ -1,18 +1,21 @@
+% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden, 2016
+%
 % BIASRCS = BIAS RCS (temporary name)
 %
-% RCS = RPW Calibration Software (abbrev. from ROC-TST-GSE-ICD-00023-LES)
+% (RCS = RPW Calibration Software; abbrev. from ROC-TST-GSE-ICD-00023-LES)
+%
+%
 %
 % IMPORTANT NOTE: The general interface that this software must comply with
-% is described in the ROC-TST-GSE-ICD-00023-LES document (the "ROC ICD").
+% is described in the ROC-TST-GSE-ICD-00023-LES document (the "RCS ICD").
 % Much documentation can thus be found there.
 %
-% NOTE: This function is the main MATLAB function, i.e. it is called by no other
-% MATLAB code during regular use. It is intended to be either (1) wrapped in
-% and called from non-MATLAB code, e.g. a bash script, or possibly (2) compiled using the MATLAB
-% compiler (probably not). Arguments passed on to this MATLAB function
-% should be exactly those passed on from the CLI.
 %
-% NOTE: This code is designed for MATLAB 2016a (as of 2016-05-19).
+%
+% PARAMETERS:
+% -----------
+% This function expects all the arguments defined in the RCS ICD and
+% possibly additional inoffical arguments.
 %
 % - The official CLI parameter syntax is defined in
 %   ROC-TST-GSE-ICD-00023-LES, Iss02 Rev02, Section 3.2.
@@ -20,20 +23,20 @@
 %   "combinations of s/w mode and input parameters) used by this
 %   particular code must be in agreement with "roc_sw_descriptor.js".
 % - NOTE: The parameter syntax may contain additional inofficial parameters,
-%   which are useful during development/debugging.
+%   which are useful for development/debugging.
 %
 % Parameters: [ --matlab ] <Syntax 1 or 2>
 %    Syntax 1: --identification | --version | --help
 %    Syntax 2: <S/W mode>
 %              <Common and specific input parameters; arbitrary order>
 %
-% --matlab : Flag for working from within MATLAB. Prevents the application
+% --matlab : Flag for working (developing) from within the MATLAB IDE. Prevents the application
 %            from exiting MATLAB itself. Useful for debugging.
 %            Inofficial and not specified by the RCS ICD.
 %
 % Common input parameters
 %    --output <absolute path to directory>
-%    --log    <absolute path to directory>
+%    --log    <absolute path to directory>   (Note: Ignored by this code; Log file not written here)
 %    --config <absolute path to file>
 % Specific input parameters
 %    Specify input and output files and which are which.
@@ -41,19 +44,18 @@
 %
 %
 %
+% NOTE: This function is the main MATLAB function, i.e. it is called by no other
+% MATLAB code during regular use. It is intended to be wrapped in
+% and called from non-MATLAB code, e.g. a bash script.
+%
+% NOTE: This code is designed for MATLAB 2016a (as of 2016-05-19).
+%
 % IMPLEMENTATION NOTE: The RCS ICD specifies tightly what should go to stdout.
+%
 % IMPLEMENTATION NOTE: Could be useful to print/log MATLABs regular printouts (e.g. when
 %       omitting/forgetting semicolon at end of line). Could be useful to
 %       temporarily merge that output with irf.log output and RCS-ICD specified output.
 %
-% NOTE: This MATLAB code was previously (before 2016-05-18) written to be
-% "deployable" i.e. compiled using
-% the MATLAB compiler. That puts some constraints on the code, in
-% particular that one does not modify the MATLAB path (not recommended), as
-% in irf.m. To make .m files outside of the current directory available
-% without modifying the path, compile using the (MATLAB compiler) mcc
-% option "-a". It has not been checked whether this code is still
-% deployable. This note is only here in case the code would again be made "deployable".
 
 
 
@@ -84,9 +86,13 @@ function biasrcs( varargin )
 
 try
 
+    UNKNOWN_ERROR_CODE = 1;
+    ARGUMENT_ERROR_CODE = 100;
+    OPERATION_NOT_IMPLEMENTED_ERROR_CODE = 101;
+    
     % Among other things: Sets up paths to within irfu-matlab (excluding .git/).
     % NOTE: Prints to stdout. Can not deactivate!
-    irf('check_path');    
+    irf('check_path');
     
     irf.log('debug')      % Set log level.
     %irf.log('log_out', '~/temp/biasrcslog.txt')    % NOTE: Amends to any preexisting file.
@@ -99,12 +105,15 @@ try
     
     
     
-    UNKNOWN_ERROR_CODE = 1;
-    ARGUMENT_ERROR_CODE = 100;
-    OPERATION_NOT_IMPLEMENTED_ERROR_CODE = 101;
-    
     arguments = varargin;
+    for i = 1:length(arguments)
+        irf.log('n', sprintf('Command line argument %i: %s', i, arguments{i}))
+    end
     
+    % Argument to permit, but ignore.
+    if (length(arguments) >= 1) && (strcmp(arguments{1}, '--developer-bash-settings'))
+        arguments = arguments(2:end);
+    end
     
     % Set DO_NOT_EXIT_MATLAB flag based on CLI parameters.
     DO_NOT_EXIT_MATLAB = 0;
@@ -149,33 +158,43 @@ catch exception
     % Parse exit code from exception message.
     % Assumes exception.message on format: <exit code><one whitespace><message string>.
     %
-    % NOTE: Does not seem to produce error for non-parsable strings, not even
-    % empty strings. exit_code = [], if can not parse.
-    temp = strsplit(exception.message);
-    exit_code = str2num(temp{1});
-    message = exception.message(length(temp{1}+2):end);
-    if isempty(exit_code)
-        exit_code = UNKNOWN_ERROR_CODE;
-    end
+    % QUESTION: How handle errors due to not finding "irf.log"?
     
-    len = length(exception.stack);
-    fprintf(2, 'Call stack:\n');
-    if (~isempty(len))
-        for i=1:len
-            fprintf(2, '    %s, row %i,\n', exception.stack(i).name, exception.stack(i).line);
+    try
+        
+        % NOTE: Does not seem to produce error for non-parsable strings, not even
+        % empty strings. exit_code = [], if can not parse.
+        temp = strsplit(exception.message);
+        exit_code = str2num(temp{1});
+        message = exception.message(length(temp{1}+2):end);
+        if isempty(exit_code)
+            exit_code = UNKNOWN_ERROR_CODE;
         end
-    end
-    
-    irf.log('critical', message);
-    fprintf(2, [message, '\n']);
-    
-    default_msg = sprintf('Exiting MATLAB application with exit code %i\n', exit_code);
-    irf.log('critical', default_msg);
-    fprintf(2, default_msg);
-    
-    
-    if ~DO_NOT_EXIT_MATLAB
-        quit(exit_code)
+        
+        len = length(exception.stack);
+        fprintf(2, 'Call stack:\n');
+        if (~isempty(len))
+            for i=1:len
+                fprintf(2, '    %s, row %i,\n', exception.stack(i).name, exception.stack(i).line);
+            end
+        end
+        
+        fprintf(2, [message, '\n']);
+        irf.log('critical', message);
+        
+        default_msg = sprintf('Exiting MATLAB application with exit code %i\n', exit_code);
+        fprintf(2, default_msg);
+        irf.log('critical', default_msg);
+        
+        
+        if ~DO_NOT_EXIT_MATLAB
+            quit(exit_code)
+        end
+        
+        
+    catch exception
+        fprintf(2, 'Unknown error. Error in the MATLAB script''s error handling.\n');
+        quit(1)
     end
 end
 
@@ -185,7 +204,7 @@ end
 % Parse arguments associated with a calibration run.
     function parameters = parse_calibration_arguments(arguments)
         if length(arguments) <= 2
-            error('%i Can not recognize the (single) argument.', ARGUMENT_ERROR_CODE)
+            error('%i Found un-paired argument.', ARGUMENT_ERROR_CODE)
         end
         
         parameters = struct;
@@ -250,20 +269,22 @@ end
         end
     end
 %==========================================================================
+%==========================================================================
     function print_version()
         descr = define_descriptor();
-        fprintf('Release version "%s"\n', descr.release.version)
+        stdoutprintf('Release version "%s"\n', descr.release.version)
     end
 %==========================================================================
     function print_identification()
         descr = define_descriptor();
-        print_JSON_object(descr);
+        str = JSON_object_str(descr);
+        stdoutprintf(str);
     end
 %==========================================================================
 % Returns structure representing the JSON object represented in the file "roc_sw_descriptor.js"
 % specified in the RCS ICD.
     function obj = define_descriptor()
-        ERIK_P_G_JOHANSSON = 'Erik P G Johansson'
+        ERIK_P_G_JOHANSSON = 'Erik P G Johansson';
 
         obj = struct();
         
@@ -273,7 +294,7 @@ end
         identification.description = 'BIAS calibration software (temporary description)';
         obj.identification = identification;
         
-        release.version = '0.0.1';
+        release.version =      '0.0.1';
         release.date =         '2016-05-19';
         release.author =       ERIK_P_G_JOHANSSON;
         release.contact =      'erik.johansson@irfu.se';
@@ -323,5 +344,5 @@ end
         mode.outputs.output_SCI.release.modification = 'None (initial release)';
         obj.modes{end+1} = mode;
     end
-%==========================================================================
+
 end
