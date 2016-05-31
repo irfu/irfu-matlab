@@ -400,7 +400,7 @@ switch Vr.inst
       end
     end
     res = mms.db_get_ts(datasetName,pref,Tint);
-    if Vr.to>0, res.coordinateSystem =  Vr.cs; end
+    if ~isempty(res) && (Vr.to>0), res.coordinateSystem =  Vr.cs; end
   otherwise
     error('not implemented yet')
 end
