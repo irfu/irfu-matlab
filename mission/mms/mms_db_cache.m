@@ -60,7 +60,7 @@ classdef mms_db_cache<handle
       if ~obj.enabled || isempty(obj.names), return, end
       idx = cellfun(@(x) strcmp(key,x),obj.names);
       if ~any(idx), return, end
-      if now() > obj.loaded(idx) + obj.timeout/86400
+      if (obj.timeout>0) && (now() > obj.loaded(idx) + obj.timeout/86400)
         obj.purge(), return
       end
       res = obj.data(idx);

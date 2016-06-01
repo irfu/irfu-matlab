@@ -66,16 +66,16 @@ switch key
     MMS_DB.add_db(localFileDb);
     datastore('mms_db','local_file_db_irfu_root',val);
   case 'db_index_enabled'
-    MMS_DB.indexEnabled = val;
+    MMS_DB.index.enabled = val;
     datastore('mms_db',key,val)
   case 'db_cache_enabled'
-    MMS_DB.cacheEnabled = val;
+    MMS_DB.cache.enabled = val;
     datastore('mms_db',key,val)
   case 'db_cache_timeout'
-    MMS_DB.cacheTimeout = val;
+    MMS_DB.cache.timeout = val;
     datastore('mms_db',key,val)
   case 'db_cache_size_max'
-    MMS_DB.cacheSizeMax = val;
+    MMS_DB.cache.cacheSizeMax = val;
     datastore('mms_db',key,val)
   otherwise
     error('Unrecoglized KEY')
