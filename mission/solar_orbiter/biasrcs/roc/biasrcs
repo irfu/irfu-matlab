@@ -1,9 +1,12 @@
 #!/bin/bash
 #====================================================================================================
 # Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+# First created 2016-04-xx
 #
 # The primary purpose of this bash script is to call a MATLAB script.
 # See the MATLAB script called for more documentation.
+#
+#
 # 
 # PARAMETERS: [--developer-bash-settings] <<--log <dir>; Other arguments>>
 #
@@ -11,13 +14,23 @@
 # --log <dir>               : Path to directory where log file will be created. 
 # Other arguments           : Argument parsed in the MATLAB code.
 #
+#
+#
 # NOTE: The script reads the "--log" parameter value and pipes "all" stdout to a log file. 
 # It also uses a prefix to filter out some lines that are piped to the actual stdout.
+# 
+# NOTE: The script is designed to handle important basic errors, such as
+# 1) Can not find MATLAB executable (not explicitly, but implicitly)
+# 2) MATLAB can not find the MATLAB script.
+# 
+# NOTE: The script is designed to return the same exit codes as the MATLAB code.
+# 
+# 
 # 
 # IMPLEMENTATION NOTE: Reasons to pipe MATLAB's stdout to the log file
 # from this bash script rather than from MATLAB code:
 # 1) can handle stdout from the MATLAB startup process
-# 2) can handle stdout from library MATLAB code that prints to stdout (code that should not be altered, e.g. in irfu-matlab)
+# 2) can handle stdout from library MATLAB code that prints to stdout (code that should not be altered, e.g. in irfu-matlab, e.g. irf.log)
 # 3) avoid manually having to pipe everything to log file in MATLAB code.
 # 
 # IMPLEMENTATION NOTE: The same arguments that are passed to this script are passed on to the MATLAB code, including
@@ -28,18 +41,14 @@
 # 3) Enable the MATLAB code to print its syntax which is then identical to the syntax of this script.
 # CON: The MATLAB code needs some knowledge of the parameter parsing in this script.
 #
-# NOTE: The script is designed to handle important basic errors, such as
-# 1) Can not find MATLAB executable (not explicitly, but implicitly)
-# 2) MATLAB can not find the MATLAB script.
-# 
-# NOTE: The script is designed to return the same exit codes as the MATLAB code.
-# 
-# NOTE: The name of this file may only contain alphanumeric characters.
+# IMPLEMENTATION NOTE: The name of this file may only contain alphanumeric characters. Can therefore not use 
+# file extension ".sh" to indicate that it is a shell script.
 # /ROC-TST-GSE-ICD-00023-LES, iss02rev01, Section 3.1.
 # 
 #====================================================================================================
 # TODO: Redirect (copy) all stderr to stdout and hence to the log file.
 # TODO?: Let script handle addpath(genpath(...)). Pass paths to script.
+# QUESTION: If log file already exists, overwrite, amend, or error?
 #====================================================================================================
 
 
@@ -76,6 +85,7 @@ done
 #=====================================
 # Construct path and name of log file
 #=====================================
+log_file='/dev/null'
 if [[ ! -z "$log_dir" ]]
 then
     if [[ ! -d "$log_dir" ]]
@@ -87,8 +97,6 @@ then
     # timestamp=$(date +%Y-%m-%d_%H.%M.%S)   # LOCAL time, not UTC.
     timestamp="XXXXTESTXXXX"     # DEBUG
     log_file="${log_dir}/${base}_${timestamp}.log"
-else
-    log_file='/dev/null'
 fi
 
 
@@ -201,7 +209,7 @@ launch_matlab_code() {
             $matlab_script_name($matlab_arg_list);\
             quit(0);\
         catch e;\
-            msg = sprintf('Could not launch the MATLAB script. The reason is probably that MATLAB could not find it.\nException message: %s\n', e.message);\
+            msg = sprintf('Could not launch the MATLAB script. The reason could be that MATLAB could not find it.\nException message: %s\n', e.message);\
             fprintf(1, msg);\
             fprintf(2, msg);\
             quit(1);\

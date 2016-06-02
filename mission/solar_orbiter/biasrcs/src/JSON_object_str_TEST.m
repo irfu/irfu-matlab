@@ -1,18 +1,25 @@
+%
+% Informal non-automated test code.
+%
 function JSON_object_str_TEST
 
-obj = define_descriptor1();
+obj = define_descriptor3();
 str = JSON_object_str(obj);
 fprintf('-------------------------------------------\n');
 fprintf(str);
-%stdoutprintf(str);
+%stdout_printf(str);
 
 
 
 %==========================================================================
+    function obj = define_descriptor3()
+        obj = struct('output_cdf1', 'output_filename1.cdf', 'output_cdf2', 'output_filename2.cdf');
+    end
+%==========================================================================
     function obj = define_descriptor2()
         obj = {};
-        obj{1} = struct('QWE', 'qwe');
-        obj{2} = struct('ASD', 'asd');
+        obj{1} = struct('output_cdf1', 'output_filename1.cdf');
+        obj{2} = struct('output_cdf2', 'output_filename2.cdf');
     end
 %==========================================================================
     function obj = define_descriptor1()
