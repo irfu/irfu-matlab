@@ -28,8 +28,8 @@ fprintf(str);
         obj = struct();
         
         identification.project     = 'ROC-SGSE';
-        identification.name        = 'BIASRCS (temporary name)';
-        identification.identifier  = 'ROC-SGSE-BIASRCS';    % Temporary
+        identification.name        = 'BICAS (temporary name)';
+        identification.identifier  = 'ROC-SGSE-BICAS';    % Temporary
         identification.description = 'BIAS calibration software (temporary description)';
         obj.identification = identification;
         
@@ -41,7 +41,7 @@ fprintf(str);
         release.modification = 'None (Initial release)';
         obj.release = release;
         
-        environment.executable = 'bin/biasrcs';
+        environment.executable = 'bin/bicas';
         obj.environment = environment;
         
         obj.modes = [];

@@ -13,7 +13,7 @@ end
 
 
 
-C = biasrcs_constants;
+C = bicas_constants;
 
 D.identification = C.SWD_identification;
 D.release        = C.SWD_release;

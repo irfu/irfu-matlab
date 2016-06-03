@@ -1,9 +1,9 @@
 {
     "identification":  {
         "project":      "ROC-SGSE",
-        "name":         "BIASRCS (temporary name)",
-        "identifier":   "ROC-SGSE-BIASRCS",
-        "description":  "Calibration software which derives the BIAS input signals (plus some) from the BIAS output signals."
+        "name":         "BICAS (temporary name)",
+        "identifier":   "ROC-SGSE-BICAS",
+        "description":  "BIAS Calibration Software (BICAS) which derives the BIAS input signals (plus some) from the BIAS output signals."
     },
     "release":  {
         "version":      "0.0.1",
@@ -14,7 +14,7 @@
         "modification": "No modification (initial release)"
     },
     "environment":  {
-        "executable":   "roc/biasrcs"
+        "executable":   "roc/bicas"
     },
     "modes":  [
         {

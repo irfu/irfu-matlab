@@ -1,9 +1,7 @@
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
 % First created 2016-03-xx
 %
-% BIASRCS = BIAS RCS (temporary name)
-%
-% (RCS = RPW Calibration Software; abbrev. from ROC-TST-GSE-ICD-00023-LES)
+% BICAS = BIAS CAlibration Software (temporary name)
 %
 %
 % IMPORTANT NOTE: The general interface that this software must comply with
@@ -58,7 +56,7 @@
 % out by the calling bash script.
 % Reasons: See the bash wrapper script.
 %
-function error_code = biasrcs( varargin )
+function error_code = bicas( varargin )
 %
 % PROPOSAL: Set flag for MATLAB warnings. Disable?
 %    NOTE: TN claims warnings are sent to stdout.
@@ -151,7 +149,7 @@ try
 %         flags(end+1) = flag;
 
         % Figure out which S/W mode (which index among the constants).
-        C = biasrcs_constants;
+        C = bicas_constants;
         temp = {};
         for i = 1:length(C.sw_modes)
             temp{end+1} = C.sw_modes{i}.CLI_parameter;
@@ -201,7 +199,7 @@ try
             output_filename = [C_mode_output.dataset_ID, '_', C_mode_output.dataset_version_str, '.cdf'];
             
             % TEST!!
-            %src_file = ['~/work_files/SOLAR_ORBITER/irfu-matlab/mission/solar_orbiter/biasrcs/data/', master_cdf_filename];
+            %src_file = ['~/work_files/SOLAR_ORBITER/irfu-matlab/mission/solar_orbiter/bicas/data/', master_cdf_filename];
             src_file  = fullfile(matlab_src_path, C.master_cdfs_dir_rel, master_cdf_filename);
             dest_file = fullfile(output_dir, output_filename);
             

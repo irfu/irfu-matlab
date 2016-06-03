@@ -60,7 +60,7 @@
 declare -r stdout_pattern='^STDOUT: '    # NOTE: Includes "^" = beginning of line.
 
 # Name of script such as it is called from inside MATLAB, i.e. without file extension.
-declare -r matlab_script_name="biasrcs"
+declare -r matlab_script_name="bicas"
 
 
 

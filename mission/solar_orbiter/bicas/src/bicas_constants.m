@@ -3,7 +3,7 @@
 %
 % Defines constants used by the software.
 %
-function constants = biasrcs_constants()
+function constants = bicas_constants()
 %
 % IMPORTANT NOTE: Some constants (1) correspond exactly to fields in the SW (JSON) descriptor,
 % and (2) are unlikely to be used for anything else. These are labeled with a prefix
@@ -44,9 +44,9 @@ C.master_cdfs_dir_rel = '../data';    % Location of master CDF files. Relative t
 
 
 C.SWD_identification.project     = 'ROC-SGSE';
-C.SWD_identification.name        = 'BIASRCS (temporary name)';   % Temporary sw name
-C.SWD_identification.identifier  = 'ROC-SGSE-BIASRCS';           % Temporary sw name
-C.SWD_identification.description = 'Calibration software which derives the BIAS input signals (plus some) from the BIAS output signals.';
+C.SWD_identification.name        = 'BICAS (temporary name)';   % Temporary sw name
+C.SWD_identification.identifier  = 'ROC-SGSE-BICAS';           % Temporary sw name
+C.SWD_identification.description = 'BIAS Calibration Software (BICAS) which derives the BIAS input signals (plus some) from the BIAS output signals.';
 
 % Refers to the S/W descriptor release data for the entire software (not specific outputs).
 C.SWD_release.version      = '0.0.1';
@@ -56,7 +56,7 @@ C.SWD_release.contact      = C.author_email;
 C.SWD_release.institute    = C.institute;
 C.SWD_release.modification = INITIAL_RELEASE_MODIFICATION_STR;
 
-C.SWD_environment.executable = 'roc/biasrcs';   % Temporary sw name
+C.SWD_environment.executable = 'roc/bicas';   % Temporary sw name
 
 C.sw_modes = {};
 
