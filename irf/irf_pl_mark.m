@@ -15,6 +15,7 @@ function [outhandle colr]=irf_pl_mark(varargin)
 % tlim - time interval or array of intervals to mark
 %        or time intervals as string (ISO 8601 time interval 1. format)
 %        or column vector of time instants to draw lines
+%        or a GenericTime interval (as created by irf.tint)
 % color - string, rgb 1x3, nx3, or 1xnx3 specifying color(s);
 %         if omitted colors are chosen randomly.
 %
@@ -48,6 +49,10 @@ tlim=args{1};
 % if mark time instants instead of time intervals (only one time given)
 if ischar(tlim), % time interval specified in iso format
 	tlim=irf_time(tlim, 'utc>tint');
+end
+if(isa(tlim,'GenericTimeArray'))
+  % Convert to epochUnix tint as is used by this function
+  tlim = [tlim.start.epochUnix, tlim.stop.epochUnix];
 end
 if size(tlim,2) == 1, tlim(:,2)=tlim(:,1); end
 
