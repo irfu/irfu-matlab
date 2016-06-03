@@ -22,6 +22,9 @@ function constants = biasrcs_constants()
 % (4) Some SW descriptor values repeat or can be derived from other constants (e.g. author, contact,
 %     institute, output_XX.release.file).
 % (5) It is easier to add automatic checks on the SW descriptor in the code that derives it.
+%
+% PROPOSAL: Simplify the SWD outputs to NOT be an array (but a single instance) since there should(?) always only be ONE output
+% file for every SW mode?!
 
 persistent C
 if ~isempty(C)
@@ -30,13 +33,14 @@ if ~isempty(C)
 end
 
 INITIAL_RELEASE_MODIFICATION_STR = 'No modification (initial release)';
+TEST_MASTER_CDF_FILENAME = 'ROC-SGSE_L2S_RPW-LFR-SURV-CWF-E-XXXTESTXXX_V01.cdf';   % For testing.
 
 
 
 C.author_name = 'Erik P G Johansson';
 C.author_email = 'erik.johansson@irfu.se';
 C.institute = 'IRF-U';
-
+C.master_cdfs_dir_rel = '../data';    % Location of master CDF files. Relative to MATLAB source code path.
 
 
 C.SWD_identification.project     = 'ROC-SGSE';
@@ -82,7 +86,8 @@ output = [];
 output.JSON_output_file_identifier = 'output_SCI';
 output.dataset_ID                  = 'ROC-SGSE_L2S_RPW-LFR-SURV-CWF-E';
 output.dataset_version_str         = '01';
-output.master_cdf_filename         = 'ROC-SGSE_L2S_RPW-LFR-SURV-CWF-E_V01.cdf';
+%output.master_cdf_filename         = 'ROC-SGSE_L2S_RPW-LFR-SURV-CWF-E_V01.cdf';
+output.master_cdf_filename         = TEST_MASTER_CDF_FILENAME;
 output.SWD_name                 = 'LFR L2s CWF science electric data in survey mode';
 output.SWD_description          = 'RPW LFR L2s CWF science electric (potential difference) data in survey mode, time-tagged';
 output.SWD_level                = 'L2S';
@@ -117,7 +122,8 @@ output = [];
 output.JSON_output_file_identifier = 'output_SCI';
 output.dataset_ID                  = 'ROC-SGSE_L2S_RPW-LFR-SURV-SWF-E';
 output.dataset_version_str         = '01';
-output.master_cdf_filename         = 'ROC-SGSE_L2S_RPW-LFR-SURV-SWF-E_V01.cdf';
+%output.master_cdf_filename         = 'ROC-SGSE_L2S_RPW-LFR-SURV-SWF-E_V01.cdf';
+output.master_cdf_filename         = TEST_MASTER_CDF_FILENAME;
 output.SWD_name                 = 'LFR L2s SWF science electric data in survey mode';
 output.SWD_description          = 'RPW LFR L2s SWF science electric (potential difference) data in survey mode, time-tagged';
 output.SWD_level                = 'L2S';

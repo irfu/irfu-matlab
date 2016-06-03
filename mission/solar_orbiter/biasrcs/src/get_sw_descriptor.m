@@ -1,3 +1,5 @@
+% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% First created ~2016-06-01
 %
 % Get MATLAB structure corresponding to the SW descriptor specified by the RCS ICD.
 %

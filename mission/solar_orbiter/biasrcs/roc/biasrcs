@@ -18,6 +18,8 @@
 #
 # NOTE: The script reads the "--log" parameter value and pipes "all" stdout to a log file. 
 # It also uses a prefix to filter out some lines that are piped to the actual stdout.
+# In addition, a symlink (with a constant filename) to the current log file is created.
+# Overwriting the old symlink might technically not be compliant with the RCS ICD.
 # 
 # NOTE: The script is designed to handle important basic errors, such as
 # 1) Can not find MATLAB executable (not explicitly, but implicitly)
@@ -47,7 +49,6 @@
 # 
 #====================================================================================================
 # TODO: Redirect (copy) all stderr to stdout and hence to the log file.
-# TODO?: Let script handle addpath(genpath(...)). Pass paths to script.
 # QUESTION: If log file already exists, overwrite, amend, or error?
 #====================================================================================================
 
@@ -85,7 +86,6 @@ done
 #=====================================
 # Construct path and name of log file
 #=====================================
-log_file='/dev/null'
 if [[ ! -z "$log_dir" ]]
 then
     if [[ ! -d "$log_dir" ]]
@@ -94,37 +94,63 @@ then
         exit 1
     fi
     base=$(basename "$0")
-    # timestamp=$(date +%Y-%m-%d_%H.%M.%S)   # LOCAL time, not UTC.
-    timestamp="XXXXTESTXXXX"     # DEBUG
+    timestamp=$(date +%Y-%m-%d_%H.%M.%S)   # LOCAL time, not UTC.
     log_file="${log_dir}/${base}_${timestamp}.log"
+    log_file_symlink="${log_dir}/${base}_latest.log"
+    
+    
+    
+    #=====================================================
+    # Test if can create (write) to the proposed log file
+    #=====================================================
+    touch "$log_file"
+    if [[ $? != 0 ]]
+    then
+        echo "Can not write to log file \"$log_file\"." >> /dev/stderr
+        exit 1
+    fi
+
+
+
+    #=================================================================
+    # Create symlink to latest/current log.
+    # NOTE: This may technically be in violation of the RSC ICD 
+    # when removing/overwriting an old symlink.
+    # 
+    # test options:
+    #        -h FILE
+    #               FILE exists and is a symbolic link (same as -L)
+    # 
+    # ln options:
+    #        -r, --relative
+    #               create symbolic links relative to link location
+    #=================================================================
+    if [[ -h "$log_file_symlink" ]]
+    then
+        rm -v "$log_file_symlink" >> "$log_file"
+    fi
+    ln -srv "$log_file" "$log_file_symlink" >> "$log_file"
+
+else
+    log_file='/dev/null'
 fi
 
 
 
 # DEBUG
-# echo log_dir = "$log_dir"
-# echo log_file = $log_file
+# echo log_dir  = "$log_dir"
+# echo log_file = "$log_file"
+# echo log_file_symlink = "$log_file_symlink"
 
 
 
-#=====================================
-# Test if can create (write) to the proposed log file
-#=====================================
-touch "$log_file"
-if [[ $? != 0 ]]
-then
-    echo "Can not write to log file \"$log_file\"." >> /dev/stderr
-    exit 1
-fi
-
-
-
-echo "Command-line arguments: $@" >>  "$log_file"
+echo "Command-line arguments: $@" >> "$log_file"
 
 
 
 launch_matlab_code() {
     
+    # Find (absolute) paths by using the path to this executable + relative paths.
     local temp=$(dirname "$0")/..
     local root_path=$(readlink -f "$temp")
     local matlab_src_path="${root_path}/src/"
@@ -200,22 +226,25 @@ launch_matlab_code() {
     # 2) MATLAB hangs if it can not find the MATALB script.
     # NOTE: It is very important to end lines with semicolons and backslash for
     # the command line-supplied MATLAB code to not yield syntax error AND NOT HANG.
+    # 
+    # NOTE: Do not change directory, so that the current working directory is the same
+    # in MATLAB as here. This is necessary for MATLAB code to correctly interpret relative paths (arguments).
     #=============================================================================
     echo "Launching MATLAB, using \"${matlab_command}\"."
-    cd "${matlab_src_path}"    # Makes it unnecessary to add this path to the MATLAB search path.
     "${matlab_command}" -nodisplay -r "\
         try;\
             addpath(genpath('${irfumatlab_path}'), '-begin');\
-            $matlab_script_name($matlab_arg_list);\
-            quit(0);\
+            addpath(genpath('${matlab_src_path}'), '-begin');\
+            error_code = $matlab_script_name($matlab_arg_list);\
+            quit(error_code);\
         catch e;\
-            msg = sprintf('Could not launch the MATLAB script. The reason could be that MATLAB could not find it.\nException message: %s\n', e.message);\
+            msg = sprintf('Could not launch the MATLAB script. The reason MIGHT be that MATLAB could not find it.\nException message: %s\n', e.message);\
             fprintf(1, msg);\
             fprintf(2, msg);\
             quit(1);\
         end"
-    matlab_exit_code=$?
-    echo "Bash launch function: matlab_exit_code = $matlab_exit_code"    # NOTE: Printed to stdout ==> Piped to log file.
+    matlab_error_code=$?
+    echo "Bash launch function: matlab_error_code = $matlab_error_code"    # NOTE: Printed to stdout ==> Piped to log file.
     
     
     
@@ -225,7 +254,7 @@ launch_matlab_code() {
     # 2) does NOT MAKE THE EXIT CODE AVAILABLE the usual way.
     # Instead, the script does not quit, and the exit code ends up in builtin variable $PIPESTATUS (array).
     #=======================================================================================================
-    exit $matlab_exit_code
+    exit $matlab_error_code
 }
 
 
@@ -233,14 +262,18 @@ launch_matlab_code() {
 if [[ -z "$log_dir" ]]
 then
     # CASE: No log file specified.
-    launch_matlab_code "$@"                   | grep "$stdout_pattern" | sed "s/${stdout_pattern}//"
-    matlab_exit_code=${PIPESTATUS[0]}    # Get exit code of the first component of piping.
+    launch_matlab_code "$@"                      | grep "$stdout_pattern" | sed "s/${stdout_pattern}//"
+    matlab_error_code=${PIPESTATUS[0]}    # Get exit code of the first component of piping.
 else
     # CASE: Log file specified.
-    launch_matlab_code "$@" | tee "$log_file" | grep "$stdout_pattern" | sed "s/${stdout_pattern}//"
-    matlab_exit_code=${PIPESTATUS[0]}    # Get exit code of the first component of piping.
+    
+    # tee options:
+    #        -a, --append
+    #               append to the given FILEs, do not overwrite
+    launch_matlab_code "$@" | tee -a "$log_file" | grep "$stdout_pattern" | sed "s/${stdout_pattern}//"
+    matlab_error_code=${PIPESTATUS[0]}    # Get exit code of the first component of piping.
 fi
 
 
 
-exit $matlab_exit_code
+exit $matlab_error_code

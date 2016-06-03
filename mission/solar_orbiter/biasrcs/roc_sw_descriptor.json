@@ -1,0 +1,83 @@
+{
+    "identification":  {
+        "project":      "ROC-SGSE",
+        "name":         "BIASRCS (temporary name)",
+        "identifier":   "ROC-SGSE-BIASRCS",
+        "description":  "Calibration software which derives the BIAS input signals (plus some) from the BIAS output signals."
+    },
+    "release":  {
+        "version":      "0.0.1",
+        "date":         "2016-06-01",
+        "author":       "Erik P G Johansson",
+        "contact":      "erik.johansson@irfu.se",
+        "institute":    "IRF-U",
+        "modification": "No modification (initial release)"
+    },
+    "environment":  {
+        "executable":   "roc/biasrcs"
+    },
+    "modes":  [
+        {
+            "name":         "LFR-CWF-E",
+            "purpose":      "Generate continuous waveform electric field data (potential difference) from LFR",
+            "inputs":  {
+                "input_HK":  {
+                    "version":      "01",
+                    "identifier":   "ROC-SGSE_HK_RPW-BIA"
+                },
+                "input_SCI":  {
+                    "version":      "01",
+                    "identifier":   "ROC-SGSE_L2R_RPW-LFR-SURV-CWF"
+                }
+            },
+            "outputs":  {
+                "output_SCI":  {
+                    "identifier":   "ROC-SGSE_L2S_RPW-LFR-SURV-CWF-E",
+                    "name":         "LFR L2s CWF science electric data in survey mode",
+                    "description":  "RPW LFR L2s CWF science electric (potential difference) data in survey mode, time-tagged",
+                    "level":        "L2S",
+                    "author":       "Erik P G Johansson",
+                    "release":  {
+                        "date":         "2016-06-02",
+                        "version":      "01",
+                        "contact":      "erik.johansson@irfu.se",
+                        "institute":    "IRF-U",
+                        "modification": "No modification (initial release)",
+                        "file":         "ROC-SGSE_L2S_RPW-LFR-SURV-CWF-E-XXXTESTXXX_V01.cdf"
+                    }
+                }
+            }
+        },
+        {
+            "name":         "LFR-SWF-E",
+            "purpose":      "Generate snapshow waveform electric (potential difference) data from LFR",
+            "inputs":  {
+                "input_HK":  {
+                    "version":      "01",
+                    "identifier":   "ROC-SGSE_HK_RPW-BIA"
+                },
+                "input_SCI":  {
+                    "version":      "01",
+                    "identifier":   "ROC-SGSE_L2R_RPW-LFR-SURV-SWF"
+                }
+            },
+            "outputs":  {
+                "output_SCI":  {
+                    "identifier":   "ROC-SGSE_L2S_RPW-LFR-SURV-SWF-E",
+                    "name":         "LFR L2s SWF science electric data in survey mode",
+                    "description":  "RPW LFR L2s SWF science electric (potential difference) data in survey mode, time-tagged",
+                    "level":        "L2S",
+                    "author":       "Erik P G Johansson",
+                    "release":  {
+                        "date":         "2016-06-02",
+                        "version":      "01",
+                        "contact":      "erik.johansson@irfu.se",
+                        "institute":    "IRF-U",
+                        "modification": "No modification (initial release)",
+                        "file":         "ROC-SGSE_L2S_RPW-LFR-SURV-CWF-E-XXXTESTXXX_V01.cdf"
+                    }
+                }
+            }
+        }
+    ]
+}

@@ -14,14 +14,16 @@ function  init_global_constants
 % NOTE: These constants are used by the error handling (the main function's catch section) and
 % should therefore be available in that code.
 %
-% NOTE: These constants are MATLAB exit codes which are passed on as wrapper bash script exit codes.
+% NOTE: These constants are MATLAB exit error codes which are passed to the wrapper bash script
+% which use them as exit codes.
 global ERROR_CODES
+ERROR_CODES.NO_ERROR = 0;
 ERROR_CODES.MISC_ERROR = 1;
 ERROR_CODES.UNKNOWN_ERROR = 2;          % Only use for error in error handling?
 ERROR_CODES.CLI_ARGUMENT_ERROR = 100;   % Can not interpret command-line arguments.
 ERROR_CODES.OPERATION_NOT_IMPLEMENTED = 101;   % Execution has reached a portion of the code that has not been implemented yet.
 ERROR_CODES.ASSERTION_ERROR = 102;  % Detected an internal state that never be possible. This should indicate a pure code bug.
-
+ERROR_CODES.PATH_NOT_FOUND = 103;   % Directory or file does not exist.
 
 global REQUIRED_MATLAB_VERSION
 REQUIRED_MATLAB_VERSION = '2016a';  % Value returned from "version('-release')".
