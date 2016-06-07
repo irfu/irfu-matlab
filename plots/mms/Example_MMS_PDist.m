@@ -8,10 +8,14 @@
 % 
 % SUGGESTIONS WELCOME ! :)
 
-%% Load PDist using mms.get_PDist
-db_info = datastore('mms_db');  
-c_eval('[ePDist? ePDistError?] = mms.make_pdist([db_info.local_file_db_root ''/mms?/fpi/brst/l2/des-dist/2015/10/16/mms?_fpi_brst_l2_des-dist_20151016103254_v2.1.0.cdf''])',ic)
-c_eval('[iPDist? iPDistError?] = mms.make_pdist([db_info.local_file_db_root ''/mms?/fpi/brst/l2/dis-dist/2015/10/16/mms?_fpi_brst_l2_dis-dist_20151016103254_v2.1.0.cdf''])',ic)
+%% Load PDist using mms.make_pdist
+ic = 1; % spacecraft number
+time = irf_time('2015-10-16T10:33:00.00Z','utc>epochtt');
+%[filepath,filename] = mms.get_filepath('mms1_fpi_brst_l2_des-dist',time);
+filepath_and_filename = mms.get_filepath('mms1_fpi_brst_l2_des-dist',time);
+c_eval('[ePDist?,ePDistError?] = mms.make_pdist(filepath_and_filename);',ic)
+c_eval('[iPDist?,iPDistError?] = mms.make_pdist(filepath_and_filename);',ic)
+
 %% Make skymap directly with PDist
 c_eval('ePDist? = PDist(desDist?.time,desDist?.data,''skymap'',energy,ephi?.data,etheta?.data);',ic)
 c_eval('ePDist?.userData = desDist?.userData; ePDist?.name = desDist?.name; ePDist?.units = desDist?.units;',ic)
@@ -30,7 +34,7 @@ c_eval('ePDist?',ic)
 
 %% Example operations
 ePdist1_omni = ePDist1.omni; % omnidirectional differential energy flux
-ePDist1_pa = ePDist1.pitchangles(dmpaB1,[]); % construt pitchangle distribution
+ePDist1_pa = g; % construt pitchangle distribution
 ePDist1_lowE = ePDist1.elim([0 200]); % limit energy range
 ePDist1_deflux = ePDist1.deflux; % change units to differential energy flux
 ePDist1_e64 = ePDist1.e64; % resample energy to 64 energy levels, reduces the time resolution
