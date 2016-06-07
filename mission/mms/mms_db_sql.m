@@ -1,6 +1,6 @@
 classdef mms_db_sql < handle
 	%MMS_DB_SQL handle MMS database of files and variables in SQLITE
-	%   IN DEVELOPMENT, DO NOT USE!!!!
+	%   IN DEVELOPMENT, DO NOT USE YET!!!! (Hopefully soon)
 	
 	properties (Access=protected)
 		connection = [];
@@ -109,7 +109,12 @@ classdef mms_db_sql < handle
           rs = obj.sqlQuery(sql);
           while rs.next
             fileToImport = char(rs.getString('fileNameFullPath'));
-            status = obj.import_file(fileToImport);
+            fileInfo{1,1} = struct('fileNameFullPath',fileToImport, ...
+              'directory', char(rs.getString('directory')), ...
+              'dataset', char(rs.getString('dataset')), ...
+              'date', char(rs.getString('date')), ...
+              'version', char(rs.getString('version')) );
+            status = obj.import_files(fileInfo);
             if(status==0)
               irf.log('warning',['Failed to import file: ',fileToImport]);
             end
@@ -164,44 +169,30 @@ classdef mms_db_sql < handle
           sql = ['SELECT * FROM FileListToImport ', ...
             'WHERE fileNameFullPath NOT IN ', ...
             '(SELECT fileNameFullPath FROM FileList) ',...
-            'ORDER BY rowid DESC'];
+            'ORDER BY dataset DESC, date DESC, version ASC'];
           rs = obj.sqlQuery(sql);
           ii = 1;
           while rs.next
             fileToImport = char(rs.getString('fileNameFullPath'));
-            fileList{ii,1} = fileToImport; %#ok<AGROW>
-% FIXME Use with import_files, when ready.
-%             fileInfo{ii,1} = struct('fileNameFullPath',fileToImport, ...
-%               'directory', char(rs.getString('directory')), ...
-%               'dataset', char(rs.getString('dataset')), ...
-%               'date', char(rs.getString('date')), ...
-%               'version', char(rs.getString('version')) ); %#ok<AGROW>
+             fileInfo{ii,1} = struct('fileNameFullPath',fileToImport, ...
+               'directory', char(rs.getString('directory')), ...
+               'dataset', char(rs.getString('dataset')), ...
+               'date', char(rs.getString('date')), ...
+               'version', char(rs.getString('version')) ); %#ok<AGROW>
             ii = ii + 1;
           end
-          if(exist('fileList','var'))
+          if(exist('fileInfo','var'))
             % We got at least one new file to be imported.
-%% FIXME Use import_files when ready...
-%            status = obj.import_files(fileInfo);
-%% End of FIXME
-            for ii=1:length(fileList)
-              irf.log('warning',['Importing ' fileList{ii,1}]);
-              status = obj.import_file(fileList{ii,1});
+            status = obj.import_files(fileInfo);
               if(status==0)
-                irf.log('warning',['******** Did not succeed to import:',fileList{ii,1}]);
                 someFilesDidNotImport = true;
               end
-            end
           else
             irf.log('warning','No new files (not already in database) was found.');
             someFilesDidNotImport = true;
           end
           if someFilesDidNotImport
             irf.log('critical','Some files did not import!');
-            % irf.log('warning','Partially cleaning up FileListToImport.');
-            % sql = ['DELETE FROM FileListToImport ',...
-            %  'WHERE fileNameFullPath IN ',...
-            %  '(SELECT fileNameFullPath FROM FileList)'];
-            % obj.sqlUpdate(sql);
           else
             irf.log('warning','All files imported from FileListToImport.');
           end
@@ -228,87 +219,10 @@ classdef mms_db_sql < handle
 				]);
         end
 
-        function status = import_file(obj,fileToImport)
-			% import a single file
-			% return status = 1 if file is imported sucessully, or it exists or
-			% file with newer version exists. Otherwise return status = 0.
-			%
-			irf.log('notice',['File to import: ' fileToImport]);
-			status = 0; % Assume it did not succeed yet.
-			removeOlderVersionFile = false;
-			% check if files with same data and date exist
-			FileInfo = mms_db_sql.get_file_info(fileToImport);
-			sql = ['select idFile,version from FileList ' ...
-				'where directory = "' FileInfo.directory '"'...
-				' and dataset = "' FileInfo.dataset '"'...
-				' and date = "' FileInfo.date '"'];
-			rs = obj.sqlQuery(sql);
-			if rs.next % file with same dataset and date exists, compare versions
-				existingVersion = char(rs.getString('version'));
-				if is_version_larger(FileInfo.version(2:end),existingVersion(2:end))
-					irf.log('notice',['File with older version ' existingVersion ' exsists!']);
-					removeOlderVersionFile = true;
-					existingFileID = char(rs.getString('idFile'));
-				else
-					irf.log('notice',['Not importing version ' FileInfo.version ...
-						' because file with newer version ' existingVersion ' exsists!']);
-					return;
-				end
-			end
-			
-			% add fileName to FileList and get idFile
-			sql = ['insert into FileList (directory,dataset,date,version,fileNameFullPath)'...
-				' SELECT * from FileListToImport where fileNameFullPath = "' fileToImport '"'];
-			obj.sqlUpdate(sql);
-			sql = ['select idFile,dataset from FileList where fileNameFullPath = "' fileToImport '"'];
-			rs = obj.sqlQuery(sql);
-			while rs.next % file already exist
-				idFile = char(rs.getString('idFile'));
-				dataset = char(rs.getString('dataset'));
-			end
-			
-			% add to VarIndex list
-			out = obj.get_science_variables(fileToImport);
-			if isempty(out) % reading cdf file did not succeed
-				status = 0;
-				return;
-			end
-			for iDataset = 1:numel(out)
-				if isempty(out(iDataset).startTT) || out(iDataset).startTT<1000, break;end % energy channels are put as DEPEND_0 for FPI
-				varNames = out(iDataset).varNames;
-				% add dataset to Datasets if needed
-				idDataset=obj.add_var_names(dataset,varNames);
-                % Sqlite does not have NaN but uses NULL values..
-                if(isnan(out(iDataset).startTT) || isnan(out(iDataset).endTT))
-                  irf.log('debug',['.. insert into VarIndex: idDataset=' dataset ...
-					' : "NULL"/"NULL" ']);
-				  sql = ['insert into VarIndex (idFile,idDataset,startTT,endTT) '...
-					'values (' idFile ',"' idDataset '", "NULL", "NULL")'];
-                else
-                  irf.log('debug',['.. insert into VarIndex: idDataset=' dataset ...
-					' : ' irf_time([out(iDataset).startTT out(iDataset).endTT],'tint>utc')]);
-				  sql = ['insert into VarIndex (idFile,idDataset,startTT,endTT) '...
-					'values (' idFile ',"' idDataset '",' ...
-					num2str(out(iDataset).startTT) ',' num2str(out(iDataset).endTT) ')'];
-                end
-				obj.sqlUpdate(sql);
-			end
-			% If we have reached this point then insert went well
-            status = 1;
-			if removeOlderVersionFile
-				irf.log('notice',['Deleting information of the file with older version ' existingVersion '!']);
-				obj.sqlUpdate(['delete from FileList where idFile = "' existingFileID '"']);
-			end
-        end
-
         function status = import_files(obj, filesToImport)
           % Import multiple files at once. (Or as quickly as possible)..
-          %% DO NOT USE THIS FUNCTION YET!
           % return status = 1 if file is imported sucessully, or it exists or
           % file with newer version exists. Otherwise return status = 0.
-          %
-                      %% FIXME
-          warning('NOT YET FULLY TESTED. Do not use!');
 
           if(~iscell(filesToImport) || ~isstruct(filesToImport{1})), error('Unexpected input'); end
           irf.log('notice',['Number of file to import: ' length(filesToImport)]);
@@ -324,7 +238,7 @@ classdef mms_db_sql < handle
             if rs.next % file with same dataset and date exists, compare versions
               existingVersion = char(rs.getString('version'));
               if is_version_larger(filesToImport{ii}.version(2:end),existingVersion(2:end))
-                irf.log('notice',['File with older version ' existingVersion ' exsists!']);
+                irf.log('notice',['File with older version ' existingVersion ' exists!']);
                 if(isempty(IdFilesToDelete))
                   IdFilesToDelete = char(rs.getString('idFile'));
                 else
@@ -391,7 +305,7 @@ classdef mms_db_sql < handle
             obj.sqlUpdate(sql);
           end
         end
-		
+
         function idDataset = add_var_names(obj,dataset,varNames)
           % ADD_VAR_NAMES add variable names to VarNames table
           if ischar(varNames), varNames = {varNames}; end
