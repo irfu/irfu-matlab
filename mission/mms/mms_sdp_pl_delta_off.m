@@ -3,19 +3,18 @@ function res = mms_sdp_pl_delta_off(Tint,mmsId)
 %
 % res = MMS_SDP_PL_DELTA_OFF(Tint,mmsId)
 
+%%
 fPre = sprintf('mms%d_edp_fast_l2a_dce2d',mmsId);
 Bmask = mms.db_get_ts(fPre,...
-  sprintf('mms%d_edp_dce_bitmask',mmsId), Tint);
+  sprintf('mms%d_edp_bitmask_fast_l2a',mmsId), Tint);
 if isempty(Bmask), res = []; return, end
 bitmask = Bmask.data;
 epochFull = Bmask.time.ttns;
-P12 = mms.db_get_ts(fPre,...
-  sprintf('mms%d_edp_dce_spinfit_e12',mmsId), Tint);
-p12 = P12.data;
-P34 = mms.db_get_ts(fPre,...
-  sprintf('mms%d_edp_dce_spinfit_e34',mmsId), Tint);
-p34 = P34.data;
-epochSpin = P34.time.ttns;
+Es12 = mms.db_get_ts(fPre,...
+  sprintf('mms%d_edp_espin_p12_fast_l2a',mmsId), Tint);
+Es34 = mms.db_get_ts(fPre,...
+  sprintf('mms%d_edp_espin_p34_fast_l2a',mmsId), Tint);
+epochSpin = Es34.time.ttns;
 
 mskAsponOn = bitand(bitmask(:,2),64) > 0;
 mskAsponOn = mskAsponOn | (bitand(bitmask(:,3),64) > 0);
@@ -37,9 +36,6 @@ end
 mskAsponOnSpin=logical(mskAsponOnSpin);
 
 %
-EpochS = EpochTT(epochSpin);
-Es12 = irf.ts_vec_xy(EpochS,p12(:,3:4));
-Es34 = irf.ts_vec_xy(EpochS,p34(:,3:4));
 Es12AspocOff =  Es12(~mskAsponOnSpin); Es12AspocOn =  Es12(mskAsponOnSpin);
 Es34AspocOff =  Es34(~mskAsponOnSpin); Es34AspocOn =  Es34(mskAsponOnSpin);
 DeltaAspocOff = Es12AspocOff - Es34AspocOff;
@@ -47,16 +43,26 @@ DeltaAspocOn = Es12AspocOn - Es34AspocOn;
 
 %% FPI
 B = mms.get_data('B_dmpa_srvy',Tint,mmsId);
-if isempty(B), B = mms.get_data('dfg_ql_srvy',Tint,mmsId); end
-Vfpi = mms.get_data('Vi_gse_fpi_ql',Tint,mmsId);
-if isempty(Vfpi)
-  res = []; return
-  Nifpi = []; Tifpi = []; Efpi = []; IonSpc = [];
-else
-  Nifpi = mms.get_data('Ni_fpi_ql',Tint,mmsId);
-  Tifpi = mms.get_data('Ti_fpi_ql',Tint,mmsId);
+if isempty(B), B = mms.get_data('B_dmpa_dfg_srvy_ql',Tint,mmsId); end
+
+% First try L2
+Vifpi = mms.get_data('Vi_dbcs_fpi_fast_l2',Tint,mmsId);
+if ~isempty(Vifpi)
+  Nifpi = mms.get_data('Ni_fpi_fast_l2',Tint,mmsId);
+  Tifpi = mms.get_data('Tsi_fpi_fast_l2',Tint,mmsId);
+else % QL
   Vifpi = mms.get_data('Vi_gse_fpi_ql',Tint,mmsId);
-  Efpi = irf_e_vxb(Vfpi,B.resample(Vfpi));
+  if ~isempty(Vifpi)
+    Nifpi = mms.get_data('Ni_fpi_ql',Tint,mmsId);
+    Tifpi = mms.get_data('Tsi_fpi_ql',Tint,mmsId);
+  else isempty(Vifpi)
+    res = []; return
+    Nifpi = []; Tifpi = []; Efpi = []; IonSpc = [];
+  end
+end
+  
+if ~isempty(Vifpi)
+  Efpi = irf_e_vxb(Vifpi,B.resample(Vifpi));
   
   mmsIdS = sprintf('mms%d',mmsId);
   fPref = [mmsIdS '_fpi_fast_ql_dis'];
@@ -77,11 +83,11 @@ else
   IonSpc.p_label = 'au';
   IonSpc.plot_type = 'log';
   
-  VHplushpca = mms.db_get_ts([mmsIdS '_hpca_srvy_l1b_moments'],[mmsIdS '_hpca_hplus_ion_bulk_velocity'],Tint);
+  VHplushpca = mms.get_data('Vhplus_dbcs_hpca_srvy_l2',Tint,mmsId);
   Ehpca = irf_e_vxb(VHplushpca,B.resample(VHplushpca));
 end
 PSP = mms.db_get_ts(sprintf('mms%d_edp_fast_l2_scpot',mmsId),...
-  sprintf('mms%d_edp_psp',mmsId),Tint);
+  sprintf('mms%d_edp_psp_fast_l2',mmsId),Tint);
 
 %% resample to 1 min
 epoch1min = fix(Tint.start.epochUnix/60)*60:20:ceil(Tint.stop.epochUnix/60)*60;
@@ -129,7 +135,7 @@ EhpcaR = Ehpca.resample(Epoch1min,'median');
 
 %% Raw data figure
 myCols = [[0 0 0];[.3 .3 .3];[0 0 1];[.2 .2 .8]];
-if 0
+if 1
 h = irf_figure(93,9,'reset');
 cmap = irf_colormap('space'); colormap(cmap)
 
@@ -144,12 +150,12 @@ set(hca,'YScale','log')
 hold(hca,'on')
 irf_plot(hca,Tifpi)
 hold(hca,'off')
-ylabel(hca,'E [eV]'), set(hca,'YTick',[10 100 1000 10000])
+ylabel(hca,'E(i) [eV]'), set(hca,'YTick',[10 100 1000 10000])
 
 irf_plot_axis_align(h);
 
 hca = irf_panel('Vfpi');
-irf_plot(hca,Vfpi);
+irf_plot(hca,Vifpi);
 ylabel(hca,'Vi [km/s]'), irf_legend(hca,{'X','Y','Z'},[0.95, 0.95])
 
 hca = irf_panel('Ni');
@@ -175,16 +181,17 @@ ylabel(hca,'Delta [mV/m]')
 set(hca,'YLim',[-1.4 1.4])
 irf_legend(hca,{'X','Y'},[0.95, 0.95])
 
+leg = {'12','34'};
 hca = irf_panel('Ex'); set(hca,'ColorOrder',myCols)
 irf_plot(hca,{Es12AspocOffR.x,Es12AspocOnR.x,...
   Es34AspocOffR.x,Es34AspocOnR.x},'comp');
 if ~isempty(Efpi)
-  hold(hca,'on'), irf_plot(hca,EfpiR.x,'.'), hold(hca,'off')
+  hold(hca,'on'), irf_plot(hca,EfpiR.x,'.'), hold(hca,'off'), leg = [leg 'dis'];
 end
 if ~isempty(Ehpca),
-  hold(hca,'on'), irf_plot(hca,EhpcaR.x,'r.'), hold(hca,'off')
+  hold(hca,'on'), irf_plot(hca,EhpcaR.x,'.'), hold(hca,'off'), leg = [leg 'hpca'];
 end
-ylabel(hca,'Ex [mV/m]')
+ylabel(hca,'Ex [mV/m]'), irf_legend(hca,leg,[0.95, 0.95])
 
 hca = irf_panel('Fpi_x'); set(hca,'ColorOrder',myCols)
 if ~isempty(Efpi)
@@ -195,16 +202,17 @@ ylabel(hca,'\Delta FPI x [mV/m]')
 set(hca,'YLim',[-4.9 .9])
 irf_legend(hca,{'12','34'},[0.95, 0.95])
 
+leg = {'12','34'};
 hca = irf_panel('Ey'); set(hca,'ColorOrder',myCols)
 irf_plot(hca,{Es12AspocOffR.y,Es12AspocOnR.y,...
   Es34AspocOffR.y,Es34AspocOnR.y},'comp');
 if ~isempty(Efpi)
-  hold(hca,'on'), irf_plot(hca,EfpiR.y,'.'), hold(hca,'off')
+  hold(hca,'on'), irf_plot(hca,EfpiR.y,'.'), hold(hca,'off'), leg = [leg 'dis'];
 end
 if ~isempty(Ehpca),
-  hold(hca,'on'), irf_plot(hca,EhpcaR.y,'r.'), hold(hca,'off')
+  hold(hca,'on'), irf_plot(hca,EhpcaR.y,'.'), hold(hca,'off'), leg = [leg 'hpca'];
 end
-ylabel(hca,'Ey [mV/m]')
+ylabel(hca,'Ey [mV/m]'), irf_legend(hca,leg,[0.95, 0.95])
 
 hca = irf_panel('Fpi_y'); set(hca,'ColorOrder',myCols)
 if ~isempty(Efpi)
@@ -353,7 +361,7 @@ ylabel(hca,'E [eV]'), set(hca,'YTick',[10 100 1000 10000])
 irf_plot_axis_align(h);
 
 hca = irf_panel('Vfpi');
-irf_plot(hca,Vfpi);
+irf_plot(hca,Vifpi);
 ylabel(hca,'Vi [km/s]'), irf_legend(hca,{'X','Y','Z'},[0.95, 0.95])
 
 hca = irf_panel('Ni');
@@ -369,16 +377,20 @@ set(hca,'XColor','b','YColor','b');
 irf_zoom(hca,'x',Tint), xlabel(hca,'')
 set(hca,'XAxisLocation','top','xtick',[]); % remove 'xtick' if xticks required
 
+leg = {'FPI'}; co = [[1 0 1];[0 0 0];[0 0 1];[1 0 0]];
 hca = irf_panel('Ex');
 irf_plot(hca,Efpi.x,'m.')
 hold(hca,'on')
-if ~isempty(Ehpca),irf_plot(hca,EhpcaR.x,'r.'),end
+if ~isempty(Ehpca),irf_plot(hca,EhpcaR.x,'r.'), leg = [leg 'hpca']; 
+  co = [[1 0 1];[1 0 0];[0 0 0];[0 0 1];];
+end
+leg = [leg, '12' , '34'];
 irf_plot(hca,{Es12AspocOffCorr.x,Es34AspocOffCorr.x},'comp')
 hold(hca,'off')
 ylabel(hca,'Ex [mV/m]')
 set(hca,'Ylim',9*[-1 1])
-set(hca,'ColorOrder',[[1 0 1];[0 0 0];[0 0 1];[1 0 0]]);
-irf_legend(hca,{'FPI','12','34'},[0.95, 0.95])
+set(hca,'ColorOrder',co);
+irf_legend(hca,leg,[0.95, 0.95])
 irf_legend(hca,sprintf('\\alpha=%.2f, \\Delta=%.2f mV/m, DSL=%.2f mV/m',...
   alpha, Del.x, OffDSL.x),[0.05, 0.95])
 
@@ -390,16 +402,20 @@ ylabel(hca,'Ex-res [mV/m]')
 set(hca,'Ylim',1.99*[-1 1])
 irf_legend(hca,{'12','34'},[0.95, 0.95])
 
+leg = {'FPI'}; co = [[1 0 1];[0 0 0];[0 0 1];[1 0 0]];
 hca = irf_panel('Ey');
 irf_plot(hca,Efpi.y,'m.')
 hold(hca,'on')
-if ~isempty(Ehpca),irf_plot(hca,EhpcaR.y,'r.'),end
+if ~isempty(Ehpca),irf_plot(hca,EhpcaR.y,'r.'), leg = [leg 'hpca']; 
+  co = [[1 0 1];[1 0 0];[0 0 0];[0 0 1];];
+end
+leg = [leg, '12' , '34'];
 irf_plot(hca,{Es12AspocOffCorr.y,Es34AspocOffCorr.y},'comp')
 hold(hca,'off')
 ylabel(hca,'Ey [mV/m]')
 set(hca,'Ylim',9*[-1 1])
-set(hca,'ColorOrder',[[1 0 1];[0 0 0];[0 0 1];[1 0 0]]);
-irf_legend(hca,{'FPI','12','34'},[0.95, 0.95])
+set(hca,'ColorOrder',co);
+irf_legend(hca,leg,[0.95, 0.95])
 irf_legend(hca,sprintf('\\alpha=%.2f, \\Delta=%.2f mV/m, DSL=%.2f mV/m',...
   alpha, Del.y, OffDSL.y),[0.05, 0.95])
 

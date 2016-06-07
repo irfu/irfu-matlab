@@ -3,9 +3,7 @@ function out = irf_waverage(data,fsample,nAveragePoints)
 %
 % out=irf_waverage(var,fsample,[nAveragePoints])
 %
-% nAveragePoints = 7 or 5 - number of point to average over
-%
-% $Id$
+% nAveragePoints = 7 (default) or 5 - number of point to average over
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):

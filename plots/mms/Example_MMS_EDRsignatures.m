@@ -37,7 +37,7 @@
 % densities n_e <~ 5 cm^-3, when the raw particle counts are low. 
 
 %% Time interval selection
-Tint = irf.tint('2015-12-02T01:14:15.00Z/2015-12-02T01:15:03.50Z');
+Tint = irf.tint('2015-10-30T05:15:20.00Z/2015-10-30T05:16:20.00Z');
 
 %% Load data
 ic = 1:4;
@@ -49,58 +49,35 @@ toc;
 tic;
 for ii=1:4;
    c_eval('ne?=mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_numberdensity_dbcs_brst'',Tint);',ii);
-   c_eval('VeX?=mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_bulkx_dbcs_brst'',Tint);',ii);
-   c_eval('VeY?=mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_bulky_dbcs_brst'',Tint);',ii);
-   c_eval('VeZ?=mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_bulkz_dbcs_brst'',Tint);',ii);
-   c_eval('TeXX?=mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_tempxx_dbcs_brst'',Tint);',ii);
-   c_eval('TeXY?=mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_tempxy_dbcs_brst'',Tint);',ii);
-   c_eval('TeXZ?=mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_tempxz_dbcs_brst'',Tint);',ii);
-   c_eval('TeYY?=mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_tempyy_dbcs_brst'',Tint);',ii);
-   c_eval('TeYZ?=mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_tempyz_dbcs_brst'',Tint);',ii);
-   c_eval('TeZZ?=mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_tempzz_dbcs_brst'',Tint);',ii);
-   c_eval('PeXX?=mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_presxx_dbcs_brst'',Tint);',ii);
-   c_eval('PeXY?=mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_presxy_dbcs_brst'',Tint);',ii);
-   c_eval('PeXZ?=mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_presxz_dbcs_brst'',Tint);',ii);
-   c_eval('PeYY?=mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_presyy_dbcs_brst'',Tint);',ii);
-   c_eval('PeYZ?=mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_presyz_dbcs_brst'',Tint);',ii);
-   c_eval('PeZZ?=mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_preszz_dbcs_brst'',Tint);',ii);
+   c_eval('Uevec? = mms.get_data(''Ve_dbcs_fpi_brst_l2'',Tint,?);',ii);
+   c_eval('Te? = mms.get_data(''Te_dbcs_fpi_brst_l2'',Tint,?);',ii);
+   c_eval('Pe? = mms.get_data(''Pe_dbcs_fpi_brst_l2'',Tint,?);',ii);
+   c_eval('Uivec? = mms.get_data(''Vi_dbcs_fpi_brst_l2'',Tint,?);',ii);
 end
 toc;
 
-c_eval('Uevec? = irf.ts_vec_xyz(VeX?.time,[VeX?.data VeY?.data VeZ?.data]);',ic);
-
-for ii=1:4;
-   c_eval('ViX?=mms.db_get_ts(''mms?_fpi_brst_l2_dis-moms'',''mms?_dis_bulkx_dbcs_brst'',Tint);',ii);
-   c_eval('ViY?=mms.db_get_ts(''mms?_fpi_brst_l2_dis-moms'',''mms?_dis_bulky_dbcs_brst'',Tint);',ii);
-   c_eval('ViZ?=mms.db_get_ts(''mms?_fpi_brst_l2_dis-moms'',''mms?_dis_bulkz_dbcs_brst'',Tint);',ii);
-end
-
-c_eval('Uivec? = irf.ts_vec_xyz(ViX?.time,[ViX?.data ViY?.data ViZ?.data]);',ic);
 c_eval('E? = E?.resample(ne?);',ic);
 c_eval('Bxyz? = Bxyz?.resample(ne?);',ic);
 c_eval('Uivec? = Uivec?.resample(ne?);',ic);
 
 %% Rotate pressure and temperature tensors
-c_eval('Pepp? = mms.rotate_tensor(PeXX?,PeXY?,PeXZ?,PeYY?,PeYZ?,PeZZ?,''fac'',Bxyz?,''pp'');',ic); % Peperp1 = Peperp2
-c_eval('Peqq? = mms.rotate_tensor(PeXX?,PeXY?,PeXZ?,PeYY?,PeYZ?,PeZZ?,''fac'',Bxyz?,''qq'');',ic); % Peperp1 and Peperp2 are most unequal
-c_eval('Tefac? = mms.rotate_tensor(TeXX?,TeXY?,TeXZ?,TeYY?,TeYZ?,TeZZ?,''fac'',Bxyz?);',ic);
+c_eval('Pepp? = mms.rotate_tensor(Pe?,''fac'',Bxyz?,''pp'');',ic); % Peperp1 = Peperp2
+c_eval('Peqq? = mms.rotate_tensor(Pe?,''fac'',Bxyz?,''qq'');',ic); % Peperp1 and Peperp2 are most unequal
+c_eval('Tefac? = mms.rotate_tensor(Te?,''fac'',Bxyz?);',ic);
 
 %% Compute tests for EDR
 % Compute Q and Dng from Pepp
-%c_eval('I1? = Pet?.data(:,1)+Pet?.data(:,4)+Pet?.data(:,6);',ic);
-%c_eval('I2? = Pet?.data(:,1).*Pet?.data(:,4)+Pet?.data(:,1).*Pet?.data(:,6)+Pet?.data(:,4).*Pet?.data(:,6)-((Pet?.data(:,2)).^2+(Pet?.data(:,3)).^2+(Pet?.data(:,5)).^2);',ic);
-%c_eval('Q? = 1-4*I2?./((I1?-PeZZp?.data).*(I1?+3*PeZZp?.data));',ic);
-c_eval('Q? = (Pepp?.data(:,1,2).^2+Pepp?.data(:,1,3).^2+Pepp?.data(:,2,3).^2)./(Pepp?.data(:,2,2).^2+2*Pepp?.data(:,2,2).*Pepp?.data(:,1,1));',ic);
+c_eval('Q? = (Pepp?.xy.data.^2+Pepp?.xz.data.^2+Pepp?.yz.data.^2)./(Pepp?.yy.data.^2+2*Pepp?.yy.data.*Pepp?.xx.data);',ic);
 c_eval('Q? = irf.ts_scalar(ne?.time,sqrt(Q?));',ic);
-c_eval('Dng? = sqrt(8*(Pepp?.data(:,1,2).^2+Pepp?.data(:,1,3).^2+Pepp?.data(:,2,3).^2))./(Pepp?.data(:,1,1)+2*Pepp?.data(:,2,2));',ic);
+c_eval('Dng? = sqrt(8*(Pepp?.xy.data.^2+Pepp?.xz.data.^2+Pepp?.yz.data.^2))./(Pepp?.xx.data+2*Pepp?.yy.data);',ic);
 c_eval('Dng? = irf.ts_scalar(ne?.time,Dng?);',ic);
 
 % Compute agyrotropy Aphi from Peqq
-c_eval('agyro? = 2*abs(Peqq?.data(:,2,2)-Peqq?.data(:,3,3))./(Peqq?.data(:,2,2)+Peqq?.data(:,3,3));',ic);
+c_eval('agyro? = 2*abs(Peqq?.yy.data-Peqq?.zz.data)./(Peqq?.yy.data+Peqq?.zz.data);',ic);
 c_eval('agyro? = irf.ts_scalar(ne?.time,agyro?);',ic);
 
 % Compute temperature ratio An
-c_eval('Temprat? = Pepp?.data(:,1,1)./(Pepp?.data(:,2,2));',ic);
+c_eval('Temprat? = Pepp?.xx.data./(Pepp?.yy.data);',ic);
 c_eval('Temprat? = irf.ts_scalar(ne?.time,Temprat?);',ic);
 
 % Compute electron Mach number
@@ -108,7 +85,7 @@ Units = irf_units;
 qe = Units.e;
 me = Units.me;
 c_eval('Ue? = Uevec?.abs.data;',ic);
-c_eval('Veperp? = sqrt((Tefac?.data(:,2,2)+Tefac?.data(:,3,3))*qe/me);',ic);
+c_eval('Veperp? = sqrt((Tefac?.yy.data+Tefac?.zz.data)*qe/me);',ic);
 c_eval('Me? = Ue?*1000./Veperp?;',ic);
 c_eval('Me? = irf.ts_scalar(ne?.time,Me?);',ic);
 
@@ -121,7 +98,7 @@ c_eval('EdotJ? = irf.ts_scalar(ne?.time,EdotJ?);',ic);
 c_eval('Bmag? = Bxyz?.abs.data;',ic);
 c_eval('omegace? = qe*Bmag?/me*1e-9;',ic);
 c_eval('EdotUe? = dot(E?.data,Uevec?.data,2);',ic);
-c_eval('epsilone? = abs(6*pi*EdotUe?./(omegace?.*(Tefac?.data(:,1,1)+Tefac?.data(:,2,2)+Tefac?.data(:,3,3))));',ic);
+c_eval('epsilone? = abs(6*pi*EdotUe?./(omegace?.*(Tefac?.trace.data)));',ic);
 c_eval('epsilone? = irf.ts_scalar(Uevec?.time,epsilone?);',ic);
 
 c_eval('UexB? = cross(Uevec?,Bxyz?);',ic);
