@@ -242,7 +242,7 @@ classdef PDist < TSeries
       PD.type = 'omni';
       PD.data_ = omni;
       PD.depend = {obj.depend{1}};
-      PD.representation = {obj.representation{1},'energy'};
+      PD.representation = {obj.representation{1}};
       PD.units = obj.units;
       PD.name = 'omni';
     end
