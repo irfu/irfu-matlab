@@ -250,6 +250,10 @@ end
 
 Del = delta_off(DeltaAspocOff.data);
 
+if ~any(idxMSH), 
+  irf.log('warning','No MSH data')
+  idxMSH = ~idxMSH;
+end
 TintTmp = Es12AspocOffR.time(idxMSH);
 res = struct('tint',EpochUnix(median(TintTmp.epochUnix)),...
   'p12',[],'p34',[],'p1234',[],'delta',DeltaAspocOffRes,'ni', NifpiRes,...
