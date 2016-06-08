@@ -130,10 +130,15 @@ end
 %%
 if isempty(idxMSH), return, end
 
-ErefFpiX = []; ErefFpiY = [];
+ErefFpiX = []; ErefFpiY = []; nData = [];
 for mmsId = 1:4
   mmsIdS = sprintf('c%d',mmsId);
   if isempty(EFPI.(mmsIdS)), continue, end
+  if isempty(nData), nData = size(EFPI.(mmsIdS).data,1);
+  elseif nData ~= size(EFPI.(mmsIdS).data,1)
+    msgS = ['different number of point in FPI on ' mmsIdS];
+    irf.log('critical',msgS), error(msgS)
+  end
   ErefFpiX = [ErefFpiX EFPI.(mmsIdS).x.data]; %#ok<AGROW>
   ErefFpiY = [ErefFpiY EFPI.(mmsIdS).y.data]; %#ok<AGROW>
 end
