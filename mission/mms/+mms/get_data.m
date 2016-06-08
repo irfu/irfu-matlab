@@ -400,6 +400,9 @@ switch Vr.inst
       end
     end
     res = mms.db_get_ts(datasetName,pref,Tint);
+    % XXX this needs to be investigated with HPCA
+    irf.log('warning','setting zeros to NaN for HPCA')
+    res.data(res.data==0) = NaN;
     if ~isempty(res) && (Vr.to>0), res.coordinateSystem =  Vr.cs; end
   otherwise
     error('not implemented yet')
