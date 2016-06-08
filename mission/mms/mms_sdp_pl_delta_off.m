@@ -308,7 +308,10 @@ ylabel('E FPI [mV/m]'), xlabel('SDP [mV/m]')
 subplot(nRows,2,8)
 [~,res.p1234.y] = plot_xy([Es12AspocOffR.data(idxMSH,2)-Del.y; Es34AspocOffR.data(idxMSH,2)],...
   [EfpiR.y.data(idxMSH); EfpiR.y.data(idxMSH)]); cla
-[offs_x, slope] = comp_off_slope(Es12AspocOffR(idxMSH)-[Del.x Del.y], Es34AspocOffR(idxMSH), EhpcaR(idxMSH));
+if isempty(EhpcaR), offs_x =[]; slope = [];
+else
+  [offs_x, slope] = comp_off_slope(Es12AspocOffR(idxMSH)-[Del.x Del.y], Es34AspocOffR(idxMSH), EhpcaR(idxMSH));
+end
 res.p1234.xy.slope_hpca = slope; res.p1234.xy.offs_hpca=offs_x;
 ylabel('E HPCA H+ [mV/m]'), xlabel('SDP [mV/m]')
 end
@@ -354,8 +357,8 @@ else
   Es34Residual.data = EfpiTmp.data(:,1:2) - Es34Corr.data;
   if ~isempty(Ehpca)
   EhpcaTmp = Ehpca.resample(Es12Corr,'spline');
-  Es12AspocOffResidualHPCA = Es12Corr; 
-  Es12AspocOffResidualHPCA.data = EhpcaTmp.data(:,1:2) - Es12Corr.data;
+  Es12ResidualHPCA = Es12Corr; 
+  Es12ResidualHPCA.data = EhpcaTmp.data(:,1:2) - Es12Corr.data;
   EhpcaTmp = Ehpca.resample(Es34Corr,'spline');
   Es34ResidualHPCA = Es34Corr; 
   Es34ResidualHPCA.data = EhpcaTmp.data(:,1:2) - Es34Corr.data;
@@ -417,8 +420,11 @@ irf_legend(hca,sprintf('\\alpha=%.2f, \\Delta=%.2f mV/m, DSL=%.2f mV/m',...
 
 %myCols = [[0 0 1];[1 0 0];];
 hca = irf_panel('Ex_res'); %set(hca,'ColorOrder',myCols)
-irf_plot(hca,{Es12Residual.x,Es34Residual.x,...
-  Es12AspocOffResidualHPCA.x,Es34ResidualHPCA.x},'comp')
+if ~isempty(Ehpca)
+  irf_plot(hca,{Es12Residual.x,Es34Residual.x,...
+    Es12ResidualHPCA.x,Es34ResidualHPCA.x},'comp')
+else irf_plot(hca,{Es12Residual.x,Es34Residual.x},'comp')
+end
 ylabel(hca,'Ex-res [mV/m]')
 set(hca,'Ylim',1.99*[-1 1])
 irf_legend(hca,{'12-dis','34-dis','12-hpca','34-hpca'},[0.95, 0.95])
@@ -441,8 +447,11 @@ irf_legend(hca,sprintf('\\alpha=%.2f, \\Delta=%.2f mV/m, DSL=%.2f mV/m',...
   alpha, Del.y, OffDSL.y),[0.05, 0.95])
 
 hca = irf_panel('Ey_res');  %set(hca,'ColorOrder',myCols)
-irf_plot(hca,{Es12Residual.y,Es34Residual.y,...
-  Es12AspocOffResidualHPCA.y,Es34ResidualHPCA.y},'comp')
+if ~isempty(Ehpca)
+  irf_plot(hca,{Es12Residual.y,Es34Residual.y,...
+    Es12ResidualHPCA.y,Es34ResidualHPCA.y},'comp')
+else irf_plot(hca,{Es12Residual.y,Es34Residual.y},'comp')
+end
 ylabel(hca,'Ey-res [mV/m]')
 set(hca,'Ylim',1.99*[-1 1])
 irf_legend(hca,{'12-dis','34-dis','12-hpca','34-hpca'},[0.95, 0.95])
