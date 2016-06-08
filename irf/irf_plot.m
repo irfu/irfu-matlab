@@ -355,7 +355,7 @@ elseif flag_subplot==3,  % components of vectors in separate panels
         hca = c(ipl);
         tag=get(hca,'tag'); ud=get(hca,'userdata'); % keep tag/userdata during plotting
       
-        line_colors=get(c(ipl),'ColorOrder');
+        line_colors=get(hca,'ColorOrder');
         for jj=1:size(x,2)
             use_color = 1;
             if iscell(marker)
@@ -373,16 +373,17 @@ elseif flag_subplot==3,  % components of vectors in separate panels
             end
             if size(data,2)>=ipl
                 if use_color
-                    plot(c(ipl),(time-ts-dt(jj)), data(:,ipl),...
+                    plot(hca,(time-ts-dt(jj)), data(:,ipl),...
                         'Color', line_colors(jj,:), 'LineStyle',marker_cur)
                 else
-                    plot(c(ipl),(time-ts-dt(jj)), data(:,ipl),marker_cur)
+                    plot(hca,(time-ts-dt(jj)), data(:,ipl),marker_cur)
                 end
-                hold(c(ipl),'on');
+                hold(hca,'on');
             end
         end
-        grid(c(ipl),'on');
+        grid(hca,'on');
         set(hca,'tag',tag); set(hca,'userdata',ud); % restore
+        set(hca,'ColorOrder',line_colors)
         % Put YLimits so that no labels are at the end (disturbing in
         % multipanel plots)
         set(c(ipl),'YLim',...
