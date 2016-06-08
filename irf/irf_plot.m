@@ -333,18 +333,19 @@ elseif flag_subplot==2, % Separate subplot for each variable
     
 elseif flag_subplot==3,  % components of vectors in separate panels
     if isstruct(x), error('cannot plot spectra in COMP mode'), end
-    if all(cellfun(@isempty,x))
+    idxEmpty = cellfun(@isempty, x); 
+    if all(idxEmpty)
       irf.log('warning','all inputs are empty'), return
     end
-    % t_start_epoch is saved in figures user_data variable
-    if isa(x{1},'TSeries')
-      ts = t_start_epoch(x{1}.time.epochUnix);
-      npl = size(x{1}.data,2);
-    elseif isstruct(x{1})
-      ts = t_start_epoch(x{1}.t); npl = size(x{1}.data,2);
-    else ts = t_start_epoch(x{1}(:,1)); npl = size(x{1},2) -1;
+    % t_start_epoch is saved in figures user_data variable 
+    idx = find(idxEmpty==0,1,'first');
+    if isa(x{idx},'TSeries')
+      ts = t_start_epoch(x{idx}.time.epochUnix);
+      npl = size(x{idx}.data,2);
+    elseif isstruct(x{idx})
+      ts = t_start_epoch(x{idx}.t); npl = size(x{idx}.data,2);
+    else ts = t_start_epoch(x{idx}(:,1)); npl = size(x{idx},2) -1;
     end
-    
     
     if npl==1,     % We make new figure with subplots only if more than 1 component to plot
         c = ax;
