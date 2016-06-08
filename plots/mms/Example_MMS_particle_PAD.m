@@ -8,24 +8,10 @@ Tint = irf.tint('2015-10-30T05:15:20.00Z/2015-10-30T05:16:20.00Z');
 
 %% Load Data
 % Particle distributions
-tic;
-c_eval('diste = mms.db_get_ts(''mms?_fpi_brst_l2_des-dist'',''mms?_des_dist_brst'',Tint);',ic);
-c_eval('energye0=mms.db_get_variable(''mms?_fpi_brst_l2_des-dist'',''mms?_des_energy0_brst'',Tint);',ic);
-c_eval('energye1=mms.db_get_variable(''mms?_fpi_brst_l2_des-dist'',''mms?_des_energy1_brst'',Tint);',ic);
-c_eval('phie=mms.db_get_ts(''mms?_fpi_brst_l2_des-dist'',''mms?_des_phi_brst'',Tint);',ic);
-c_eval('thetae=mms.db_get_variable(''mms?_fpi_brst_l2_des-dist'',''mms?_des_theta_brst'',Tint);',ic);
-c_eval('stepTablee=mms.db_get_ts(''mms?_fpi_brst_l2_des-dist'',''mms?_des_steptable_parity_brst'',Tint);',ic);
-toc;
-tic;
-c_eval('disti = mms.db_get_ts(''mms?_fpi_brst_l2_dis-dist'',''mms?_dis_dist_brst'',Tint);',ic);
-c_eval('energyi0=mms.db_get_variable(''mms?_fpi_brst_l2_dis-dist'',''mms?_dis_energy0_brst'',Tint);',ic);
-c_eval('energyi1=mms.db_get_variable(''mms?_fpi_brst_l2_dis-dist'',''mms?_dis_energy1_brst'',Tint);',ic);
-c_eval('phii=mms.db_get_ts(''mms?_fpi_brst_l2_dis-dist'',''mms?_dis_phi_brst'',Tint);',ic);
-c_eval('thetai=mms.db_get_variable(''mms?_fpi_brst_l2_dis-dist'',''mms?_dis_theta_brst'',Tint);',ic);
-c_eval('stepTablei=mms.db_get_ts(''mms?_fpi_brst_l2_dis-dist'',''mms?_dis_steptable_parity_brst'',Tint);',ic);
-toc;
+c_eval('ePDist = mms.get_data(''PDe_fpi_brst_l2'',Tint,?);',ic)
+c_eval('iPDist = mms.get_data(''PDi_fpi_brst_l2'',Tint,?);',ic)
 
-%Particle moments
+% Particle moments
 c_eval('ne = mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_numberdensity_dbcs_brst'',Tint);',ic);
 c_eval('Ve = mms.get_data(''Ve_dbcs_fpi_brst_l2'',Tint,?);',ic);
 c_eval('Te = mms.get_data(''Te_dbcs_fpi_brst_l2'',Tint,?);',ic);
@@ -43,15 +29,6 @@ Tiparperp = TSeries(Ti.time,[Tipp.xx.data Tipp.yy.data]);
 
 Tepp = mms.rotate_tensor(Te,'fac',Bxyz,'pp'); 
 Teparperp = TSeries(Te.time,[Tepp.xx.data Tepp.yy.data]);
-
-%% Make skymap distribution products
-ePDist = irf.ts_skymap(diste.time,diste.data,[],phie.data,thetae.data,'energy0',energye0.data,'energy1',energye1.data,'esteptable',stepTablee.data);
-ePDist.units = 's^3/cm^6';
-ePDist.species = 'e';
-
-iPDist = irf.ts_skymap(disti.time,disti.data,[],phii.data,thetai.data,'energy0',energyi0.data,'energy1',energyi1.data,'esteptable',stepTablei.data);
-iPDist.units = 's^3/cm^6';
-iPDist.species = 'i';
 
 %% Compute pitch-angle distributions and particle energy fluxes
 % electron and ion omnidirection differential energy flux

@@ -25,6 +25,8 @@ function res = get_data(varStr, Tint, mmsId)
 %     'Pi_dbcs_fpi_brst_l2' (alias:'Pi_dbcs_fpi_brst'),'Pi_dbcs_fpi_fast_l2',...
 %     'Pi_gse_fpi_sitl' (alias:'Pi_gse_fpi_ql'),...
 %     'Pi_gse_fpi_brst_l1b','Pi_gse_fpi_fast_l1b',...
+%     Skymaps:
+%     'PDi_fpi_brst_l2','PDi_fpi_fast_l2'.
 %  FPI ELECTRONS:
 %     'Ne_fpi_brst_l2' (alias:'Ne_fpi_brst'),'Ne_fpi_fast_l2',...
 %     'Ne_fpi_sitl','Ne_fpi_ql',...
@@ -41,7 +43,9 @@ function res = get_data(varStr, Tint, mmsId)
 %     'Te_gse_fpi_brst_l1b','Te_gse_fpi_fast_l1b',...
 %     'Pe_dbcs_fpi_brst_l2' (alias:'Pe_dbcs_fpi_brst'),'Pe_dbcs_fpi_fast_l2',...
 %     'Pe_gse_fpi_sitl' (alias:'Pe_gse_fpi_ql'),...
-%     'Pe_gse_fpi_brst_l1b','Pe_gse_fpi_fast_l1b'.
+%     'Pe_gse_fpi_brst_l1b','Pe_gse_fpi_fast_l1b',...
+%     Skymaps:
+%     'PDe_fpi_brst_l2','PDe_fpi_fast_l2'.
 %  FGM:
 %     'B_gsm_fgm_srvy_l2' (aliases:'B_gsm_srvy_l2','B_gsm_srvy'),...
 %     'B_gsm_fgm_brst_l2' (aliases:'B_gsm_brst_l2','B_gsm_brst'),...
@@ -140,6 +144,8 @@ vars = {'R_gse','R_gsm','V_gse','V_gsm',...
   'Pe_dbcs_fpi_brst_l2','Pe_dbcs_fpi_brst','Pe_dbcs_fpi_fast_l2',...
   'Pe_gse_fpi_sitl','Pe_gse_fpi_ql',...
   'Pe_gse_fpi_brst_l1b','Pe_gse_fpi_fast_l1b',...
+  'PDe_fpi_brst_l2','PDi_fpi_brst_l2',...
+  'PDe_fpi_fast_l2','PDi_fpi_fast_l2',...
   'Nhplus_hpca_srvy_l2','Nheplus_hpca_srvy_l2','Nheplusplus_hpca_srvy_l2','Noplus_hpca_srvy_l2',...
   'Tshplus_hpca_srvy_l2','Tsheplus_hpca_srvy_l2','Tsheplusplus_hpca_srvy_l2','Tsoplus_hpca_srvy_l2',...
   'Vhplus_dbcs_hpca_srvy_l2','Vheplus_dbcs_hpca_srvy_l2','Vheplusplus_dbcs_hpca_srvy_l2','Voplus_dbcs_hpca_srvy_l2',...
@@ -303,7 +309,11 @@ switch Vr.inst
     
     switch Vr.lev
       case {'l2','l2pre','l1b'}
-        datasetName = [datasetName '_' sensor '-moms'];
+        if strcmp(Vr.param(1:2),'PD')
+          datasetName = [datasetName '_' sensor '-dist'];
+        else
+          datasetName = [datasetName '_' sensor '-moms'];
+        end
       case 'ql'
         datasetName = [datasetName '_' sensor];
       case 'sitl'
@@ -311,6 +321,13 @@ switch Vr.inst
     end
     
     switch Vr.param
+      case {'PDe','PDi'}
+        switch Vr.lev
+          case {'l2'}
+            pref = ['mms' mmsIdS '_' sensor];        
+          otherwise, error('should not be here')
+        end        
+        res = get_ts('skymap');
       case {'Ni','Ne'}
         switch Vr.lev
           case {'l2','l2pre'}
@@ -502,6 +519,32 @@ end
         res.units = rXX.units;
         res.siConversion = rXX.siConversion;
         res.coordinateSystem = Vr.cs;
+      case 'skymap'
+        switch Vr.tmmode
+          case 'brst'
+            dist = mms.db_get_ts(datasetName,[pref '_dist_' Vr.tmmode],Tint);
+            energy0 = mms.db_get_variable(datasetName,[pref '_energy0_' Vr.tmmode],Tint);
+            energy1 = mms.db_get_variable(datasetName,[pref '_energy1_' Vr.tmmode],Tint);
+            phi = mms.db_get_ts(datasetName,[pref '_phi_' Vr.tmmode],Tint);
+            theta = mms.db_get_variable(datasetName,[pref '_theta_' Vr.tmmode],Tint);
+            stepTable = mms.db_get_ts(datasetName,[pref '_steptable_parity_' Vr.tmmode],Tint);
+            res = irf.ts_skymap(dist.time,dist.data,[],phi.data,theta.data,'energy0',energy0.data,'energy1',energy1.data,'esteptable',stepTable.data);            
+          case 'fast'
+            dist = mms.db_get_ts(datasetName,[pref '_dist_' Vr.tmmode],Tint);
+            energy = mms.db_get_variable(datasetName,[pref '_energy_' Vr.tmmode],Tint);
+            phi = mms.db_get_variable(datasetName,[pref '_phi_' Vr.tmmode],Tint);
+            theta = mms.db_get_variable(datasetName,[pref '_theta_' Vr.tmmode],Tint);
+            res = irf.ts_skymap(dist.time,dist.data,[],phi.data,theta.data,'energy0',energy.data,'energy1',energy.data,'esteptable',TSeries(dist.time,zeros(dist.length,1)));            
+        end
+        res.units = 's^3/cm^6';
+        if strcmp(sensor(2),'e')          
+          res.species = 'electrons';
+        elseif strcmp(sensor(2),'i')
+          res.species = 'ions';
+        end
+        res.name = datasetName;
+        res.siConversion = '1e12';
+        res.userData = dist.userData;
       otherwise
         error('data type not implemented')
     end
@@ -538,12 +581,12 @@ phcaParamsTens = {'Vhplus','Vheplus','Vheplusplus','Voplus',...
   
 param = tk{1};
 switch param
-  case {'Ni', 'Ne', 'Nhplus', 'Tsi', 'Tse'}
+  case {'Ni', 'Ne', 'Nhplus', 'Tsi', 'Tse','PDe','PDi'}
     tensorOrder = 0;
   case {'Vi', 'Ve', 'B', 'E'}
     tensorOrder = 1;
   case {'Pi', 'Pe', 'Ti', 'Te'}
-    tensorOrder = 2;
+    tensorOrder = 2;  
   case phcaParamsScal
     tensorOrder = 0;
   case phcaParamsTens
