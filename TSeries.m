@@ -182,7 +182,7 @@
             obj.tensorOrder_ = 1; flagTensorOrderSet = true;
             [~,iB] = intersect(obj.BASIS,x(5:6));
             obj.tensorBasis_ = iB; flagTensorBasisSet = true;
-            obj.representation{2} = {x(5), x(6)}; obj.fullDim_{2} = true;
+            obj.representation{1} = {x(5), x(6)}; obj.fullDim_{1} = true;
           case {'to','tensororder'}
             if flagTensorOrderSet
               error('irf:TSeries:TSeries:badInputs',...
