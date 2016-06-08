@@ -1021,12 +1021,11 @@
               newData = data1.*data2;
             elseif ~isa(obj1,'TSeries') && isa(obj2,'TSeries')
               if isscalar(obj1)
-                data1 = repmat(data1,obj2.datasize);
+                newData = data1*data2;
               else % is vector
                 data1 = repmat(data1,nTimes2,1);
-              end
-              newData = data1.*data2;
-              newData = data1.*data2;
+                newData = data1.*data2;
+              end   
             elseif obj1.datasize('dataonly') == obj2.datasize('dataonly')
               newData = obj1.data.*obj1.data;    
             elseif all(obj1.datasize('dataonly') == [1 1]) && any(obj2.datasize('dataonly') ~= [1 1])
