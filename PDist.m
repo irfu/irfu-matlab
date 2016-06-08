@@ -272,7 +272,6 @@ classdef PDist < TSeries
     function PD = deflux(obj,flagdir)
       % Changes units to differential energy flux
       
-      % Does not work on omni
       units = irf_units;
       switch obj.species
         case {'e','electrons','electron'}
@@ -444,13 +443,13 @@ classdef PDist < TSeries
       
       if ~strcmp(obj.type_,'skymap'); error('PDist must be a skymap.'); end 
       
-      [pdistr,phir,energyr] = mms.psd_rebin(obj,TSeries(obj.time,obj.depend{2}),obj.ancillary.energy0,obj.ancillary.energy1,TSeries(obj.time,obj.ancillary.energyStepTable));
+      [pdistr,phir,energyr] = mms.psd_rebin(obj,TSeries(obj.time,obj.depend{2}),obj.ancillary.energy0,obj.ancillary.energy1,TSeries(obj.time,obj.ancillary.esteptable));
       PD = obj.clone(pdistr.time,pdistr.data);      
       PD.depend{1} = energyr;
       PD.depend{2} = phir.data;  
       
       if isfield(PD.ancillary,'energy0'); PD.ancillary = setfield(PD.ancillary,'energy0',PD.depend{1}); end
-      if isfield(PD.ancillary,'energyStepTable'); PD.ancillary = setfield(PD.ancillary,'energyStepTable',zeros(PD.length,1)); end
+      if isfield(PD.ancillary,'esteptable'); PD.ancillary = setfield(PD.ancillary,'esteptable',zeros(PD.length,1)); end
     end
     function m = mass(obj)
       % Get mass of species

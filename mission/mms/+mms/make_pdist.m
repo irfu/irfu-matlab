@@ -120,7 +120,7 @@ PD.ancillary.dt_minus = double(dt_minus)*1e-9;
 PD.ancillary.dt_plus = double(dt_plus)*1e-9;
 PD.ancillary.energy0 = energy0; 
 PD.ancillary.energy1 = energy1;
-PD.ancillary.energyStepTable = stepTable;
+PD.ancillary.esteptable = stepTable;
 
 if loadDist && ~loadError
   varargout = {PD};

@@ -78,7 +78,7 @@ if isa(varargin{1},'PDist'),
         B = varargin{2};
         phi = TSeries(pdist.time,pdist.depend{1,2});
         theta = pdist.depend{1,3};
-        stepTable = TSeries(pdist.time,pdist.ancillary.energyStepTable);
+        stepTable = TSeries(pdist.time,pdist.ancillary.esteptable);
         energy0 = pdist.ancillary.energy0;
         energy1 = pdist.ancillary.energy1;
         noangles = 0;        
