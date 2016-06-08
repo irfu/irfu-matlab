@@ -67,24 +67,29 @@ if ~isempty(Vifpi)
   mmsIdS = sprintf('mms%d',mmsId);
   fPref = [mmsIdS '_fpi_fast_ql_dis'];
   iEnSp_pX = mms.db_get_variable(fPref,[mmsIdS '_dis_energySpectr_pX'], Tint); %positiveX
-  iEnSp_pY = mms.db_get_variable(fPref,[mmsIdS '_dis_energySpectr_pY'], Tint); %positiveY
-  iEnSp_pZ = mms.db_get_variable(fPref,[mmsIdS '_dis_energySpectr_pZ'], Tint); %positiveZ
-  iEnSp_mX = mms.db_get_variable(fPref,[mmsIdS '_dis_energySpectr_mX'], Tint); %positiveX
-  iEnSp_mY = mms.db_get_variable(fPref,[mmsIdS '_dis_energySpectr_mY'], Tint); %positiveY
-  iEnSp_mZ = mms.db_get_variable(fPref,[mmsIdS '_dis_energySpectr_mZ'], Tint); %positiveZ
-  
-  [~,energy] = hist([log10(10),log10(30e3)],32); energy = 10.^energy;
-  IonSpc = struct('t',irf_time(iEnSp_pX.DEPEND_0.data,'ttns>epoch'));
-  %specrec.f=iEnSp_pX.DEPEND_1.data;%energy levels
-  IonSpc.f = energy; % 0:31 - energy levels
-  IonSpc.p = iEnSp_pX.data+iEnSp_pY.data+iEnSp_pZ.data+...
-    iEnSp_mX.data+iEnSp_mY.data+iEnSp_mZ.data;%data matrix
-  IonSpc.f_label = 'E [eV]';
-  IonSpc.p_label = 'au';
-  IonSpc.plot_type = 'log';
+  if isempty(iEnSp_pX), IonSpc = [];
+  else
+    iEnSp_pY = mms.db_get_variable(fPref,[mmsIdS '_dis_energySpectr_pY'], Tint); %positiveY
+    iEnSp_pZ = mms.db_get_variable(fPref,[mmsIdS '_dis_energySpectr_pZ'], Tint); %positiveZ
+    iEnSp_mX = mms.db_get_variable(fPref,[mmsIdS '_dis_energySpectr_mX'], Tint); %positiveX
+    iEnSp_mY = mms.db_get_variable(fPref,[mmsIdS '_dis_energySpectr_mY'], Tint); %positiveY
+    iEnSp_mZ = mms.db_get_variable(fPref,[mmsIdS '_dis_energySpectr_mZ'], Tint); %positiveZ
+    
+    [~,energy] = hist([log10(10),log10(30e3)],32); energy = 10.^energy;
+    IonSpc = struct('t',irf_time(iEnSp_pX.DEPEND_0.data,'ttns>epoch'));
+    %specrec.f=iEnSp_pX.DEPEND_1.data;%energy levels
+    IonSpc.f = energy; % 0:31 - energy levels
+    IonSpc.p = iEnSp_pX.data+iEnSp_pY.data+iEnSp_pZ.data+...
+      iEnSp_mX.data+iEnSp_mY.data+iEnSp_mZ.data;%data matrix
+    IonSpc.f_label = 'E [eV]';
+    IonSpc.p_label = 'au';
+    IonSpc.plot_type = 'log';
+  end
   
   VHplushpca = mms.get_data('Vhplus_dbcs_hpca_srvy_l2',Tint,mmsId);
-  Ehpca = irf_e_vxb(VHplushpca,B.resample(VHplushpca));
+  if isempty(VHplushpca), Ehpca = [];
+  else Ehpca = irf_e_vxb(VHplushpca,B.resample(VHplushpca));
+  end
 end
 PSP = mms.db_get_ts(sprintf('mms%d_edp_fast_l2_scpot',mmsId),...
   sprintf('mms%d_edp_psp_fast_l2',mmsId),Tint);
@@ -131,10 +136,12 @@ if  ~isempty(Nifpi)
   PSPRes = PSPR(idxTmp2);
 end
 
-EhpcaR = Ehpca.resample(Epoch1min,'median');
+if isempty(Ehpca), EhpcaR = [];
+else EhpcaR = Ehpca.resample(Epoch1min,'median');
+end
 
 %% Raw data figure
-myCols = [[0 0 0];[.3 .3 .3];[0 0 1];[.2 .2 .8]];
+myCols = [[0 0 0];[.3 .3 .3];[0 0 1];[0.3010 0.7450 0.9330];[1 0 1];[0.8500 0.3250 0.0980]];
 if 1
 h = irf_figure(93,9,'reset');
 cmap = irf_colormap('space'); colormap(cmap)
@@ -144,8 +151,10 @@ irf_plot(hca,B);
 if any(B.abs.data>100), set(hca,'YLim',[-99 99]), end
 ylabel(hca,'B [nT]'), irf_legend(hca,{'X','Y','Z'},[0.95, 0.95])
 
-hca = irf_panel('ISpec');
-irf_spectrogram(hca,IonSpc,'log','donotfitcolorbarlabel');
+hca = irf_panel('DIS-spectrogram');
+if ~isempty(IonSpc)
+  irf_spectrogram(hca,IonSpc,'log','donotfitcolorbarlabel');
+end
 set(hca,'YScale','log')
 hold(hca,'on')
 irf_plot(hca,Tifpi)
@@ -179,14 +188,15 @@ irf_plot(hca,DeltaAspocOffRes,'.')
 hold(hca,'off')
 ylabel(hca,'Delta [mV/m]')
 set(hca,'YLim',[-1.4 1.4])
+set(hca,'ColorOrder',[[0 0 0];[0 0 1]]);
 irf_legend(hca,{'X','Y'},[0.95, 0.95])
 
-leg = {'12','34'};
+leg = {'12','12ao','34','34ao','dis'};
 hca = irf_panel('Ex'); set(hca,'ColorOrder',myCols)
 irf_plot(hca,{Es12AspocOffR.x,Es12AspocOnR.x,...
   Es34AspocOffR.x,Es34AspocOnR.x},'comp');
 if ~isempty(Efpi)
-  hold(hca,'on'), irf_plot(hca,EfpiR.x,'.'), hold(hca,'off'), leg = [leg 'dis'];
+  hold(hca,'on'), irf_plot(hca,EfpiR.x,'.'), hold(hca,'off')
 end
 if ~isempty(Ehpca),
   hold(hca,'on'), irf_plot(hca,EhpcaR.x,'.'), hold(hca,'off'), leg = [leg 'hpca'];
@@ -200,14 +210,14 @@ if ~isempty(Efpi)
 end
 ylabel(hca,'\Delta FPI x [mV/m]')
 set(hca,'YLim',[-4.9 .9])
-irf_legend(hca,{'12','34'},[0.95, 0.95])
+irf_legend(hca,{'12','12ao','34','34ao'},[0.95, 0.95])
 
-leg = {'12','34'};
+leg = {'12','12ao','34','34ao','dis'};
 hca = irf_panel('Ey'); set(hca,'ColorOrder',myCols)
 irf_plot(hca,{Es12AspocOffR.y,Es12AspocOnR.y,...
   Es34AspocOffR.y,Es34AspocOnR.y},'comp');
 if ~isempty(Efpi)
-  hold(hca,'on'), irf_plot(hca,EfpiR.y,'.'), hold(hca,'off'), leg = [leg 'dis'];
+  hold(hca,'on'), irf_plot(hca,EfpiR.y,'.'), hold(hca,'off'),
 end
 if ~isempty(Ehpca),
   hold(hca,'on'), irf_plot(hca,EhpcaR.y,'.'), hold(hca,'off'), leg = [leg 'hpca'];
@@ -221,7 +231,7 @@ if ~isempty(Efpi)
 end
 ylabel(hca,'\Delta FPI Y [mV/m]')
 set(hca,'YLim',[-1.9 1.9])
-irf_legend(hca,{'12','34'},[0.95, 0.95])
+irf_legend(hca,{'12','12ao','34','34ao'},[0.95, 0.95])
 
 %irf_plot_ylabels_align(h)
 irf_zoom(h,'x',Tint)
@@ -352,12 +362,14 @@ if any(B.abs.data>100), set(hca,'YLim',[-99 99]), end
 ylabel(hca,'B [nT]'), irf_legend(hca,{'X','Y','Z'},[0.95, 0.95])
 
 hca = irf_panel('ISpec');
-irf_spectrogram(hca,IonSpc,'log','donotfitcolorbarlabel');
+if ~isempty(IonSpc)
+  irf_spectrogram(hca,IonSpc,'log','donotfitcolorbarlabel');
+end
 set(hca,'YScale','log')
 hold(hca,'on')
 irf_plot(hca,Tifpi)
 hold(hca,'off')
-ylabel(hca,'E [eV]'), set(hca,'YTick',[10 100 1000 10000])
+ylabel(hca,'E(i) [eV]'), set(hca,'YTick',[10 100 1000 10000])
 irf_plot_axis_align(h);
 
 hca = irf_panel('Vfpi');
@@ -400,7 +412,7 @@ irf_plot(hca,{Es12AspocOffResidual.x,Es34AspocOffResidual.x,...
   Es12AspocOffResidualHPCA.x,Es34AspocOffResidualHPCA.x},'comp')
 ylabel(hca,'Ex-res [mV/m]')
 set(hca,'Ylim',1.99*[-1 1])
-irf_legend(hca,{'12','34'},[0.95, 0.95])
+irf_legend(hca,{'12-dis','34-dis','12-hpca','34-hpca'},[0.95, 0.95])
 
 leg = {'FPI'}; co = [[1 0 1];[0 0 0];[0 0 1];[1 0 0]];
 hca = irf_panel('Ey');
@@ -424,7 +436,7 @@ irf_plot(hca,{Es12AspocOffResidual.y,Es34AspocOffResidual.y,...
   Es12AspocOffResidualHPCA.y,Es34AspocOffResidualHPCA.y},'comp')
 ylabel(hca,'Ey-res [mV/m]')
 set(hca,'Ylim',1.99*[-1 1])
-irf_legend(hca,{'12','34'},[0.95, 0.95])
+irf_legend(hca,{'12-dis','34-dis','12-hpca','34-hpca'},[0.95, 0.95])
 
 irf_zoom(h,'x',Tint)
 
