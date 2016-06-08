@@ -32,7 +32,7 @@ Teparperp = TSeries(Te.time,[Tepp.xx.data Tepp.yy.data]);
 
 %% Compute pitch-angle distributions and particle energy fluxes
 % electron and ion omnidirection differential energy flux
-ePDistomni = ePDist.deflux.omni; 
+ePDistomni = ePDist.omni.deflux; 
 iPDistomni = iPDist.omni.deflux;
 
 % electron and ion omnidirection differential energy flux
