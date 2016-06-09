@@ -1027,7 +1027,7 @@
                 newData = data1.*data2;
               end   
             elseif obj1.datasize('dataonly') == obj2.datasize('dataonly')
-              newData = obj1.data.*obj1.data;    
+              newData = obj1.data.*obj2.data;    
             elseif all(obj1.datasize('dataonly') == [1 1]) && any(obj2.datasize('dataonly') ~= [1 1])
               data1 = repmat(data1,[obj2.datasize('dataonly')]);
               newData = data1.*data2;
