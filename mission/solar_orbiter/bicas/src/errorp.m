@@ -8,6 +8,10 @@
 % errorp = error prime ("prime" as in the apostrophe after a variable)
 %
 function errorp(error_code, message, varargin)
+%
+% PROPOSAL/TODO: Make it possible to submit a caught exception (thrown elsewhere).
+%     Ex: get_abs_path
+%
 
 message = sprintf(['%i ', message], error_code, varargin{:});
 

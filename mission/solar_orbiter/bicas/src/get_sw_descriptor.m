@@ -1,17 +1,29 @@
+%===================================================================================================
+%
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
 % First created ~2016-06-01
 %
-% Get MATLAB structure corresponding to the SW descriptor specified by the RCS ICD.
+% Get MATLAB structure "exactly" corresponding to the S/W descriptor specified by the RCS ICD.
+% Should effectively return a constant.
 %
 function SW_descriptor = get_sw_descriptor()
-
-persistent D
-if ~isempty(D)
-    SW_descriptor = D;
-    return
-end
-
-
+%
+% PROPOSAL: Have this function add the prefix "input_" to all modes[].inputs[].input (in SWD)
+% and only store the "CLI_parameter_suffix" in the BICAS constants structure instead.
+%   CON: The main function also uses the full CLI parameter. It too would have to add the prefix.
+%        ==> The same "input_" prefix is specified in two places ==> Bad practice.
+%
+% PROPOSAL: Implement checks on the information.
+%   PROPOSAL: All versions, CLI parameters, dates, dataset IDs on the right format.
+%   PROPOSAL: No mode name, dataset ID doubles.
+%   PROPOSAL: Check that there are no additional structure fields.
+%   PROPOSAL: Check that paths, filenames are valid.
+%   NOTE: Already implicitly checks that all the needed fields exist (since they are read here).
+%   NOTE: Checks on the main constants structure will (can) only happen if this file is executed, not if 
+%         the S/W as a whole is (by default).
+%
+% PROBLEM: Any validation checks here are not run if bicas_constants is called, but
+% get_sw_descriptor is not, even if the corresponding information from bicas_constants is used.
 
 C = bicas_constants;
 
@@ -29,47 +41,50 @@ SW_descriptor = D;
 end
 
 %===================================================================================================
-
+% Create data structure for a S/W mode corresponding to the information in the S/W descriptor.
+% 
 % mi = mode info
-% sw_descriptor_mode = Mode information that can be interpreted as a mode in the SW descriptor (JSON).
+% SWD_mode = Mode information that can be interpreted as a mode in the S/W descriptor (JSON).
+%
 function SWD_mode = generate_sw_descriptor_mode(C, mi)
+%
 % Variable naming convention:
-%    swd = SW descriptor
+%    SWD = S/W descriptor
 %    mi = mode info (information stemming from the function argument)
 
-swd = [];
-swd.name    = mi.CLI_parameter;
-swd.purpose = mi.SWD_purpose;
+SWD = [];
+SWD.name    = mi.CLI_parameter;
+SWD.purpose = mi.SWD_purpose;
 
 for x = mi.inputs
     mi_O = x{1};
-    swd_input = [];
+    SWD_input = [];
     
-    swd_input.version    = mi_O.dataset_version_str;
-    swd_input.identifier = mi_O.dataset_ID;
+    SWD_input.version    = mi_O.dataset_version_str;
+    SWD_input.identifier = mi_O.dataset_ID;
     
-    swd.inputs.(mi_O.CLI_parameter_name) = swd_input;
+    SWD.inputs.(mi_O.CLI_parameter_name) = SWD_input;
 end
 
 for x = mi.outputs
     mi_O = x{1};
-    swd_output = [];
+    SWD_output = [];
         
-    swd_output.identifier  = mi_O.dataset_ID;
-    swd_output.name        = mi_O.SWD_name;
-    swd_output.description = mi_O.SWD_description;
-    swd_output.level       = mi_O.SWD_level;
-    swd_output.author      = C.author_name;
-    swd_output.release.date         = mi_O.SWD_release_date;
-    swd_output.release.version      = mi_O.dataset_version_str;
-    swd_output.release.contact      = C.author_email;
-    swd_output.release.institute    = C.institute;
-    swd_output.release.modification = mi_O.SWD_release_modification;
-    swd_output.release.file         = mi_O.master_cdf_filename;
+    SWD_output.identifier  = mi_O.dataset_ID;
+    SWD_output.name        = mi_O.SWD_name;
+    SWD_output.description = mi_O.SWD_description;
+    SWD_output.level       = mi_O.SWD_level;
+    SWD_output.release.date         = mi_O.SWD_release_date;
+    SWD_output.release.version      = mi_O.dataset_version_str;
+    SWD_output.release.author       = C.author_name;
+    SWD_output.release.contact      = C.author_email;
+    SWD_output.release.institute    = C.institute;
+    SWD_output.release.modification = mi_O.SWD_release_modification;
+    SWD_output.release.file         = mi_O.master_cdf_filename;
         
-    swd.outputs.(mi_O.JSON_output_file_identifier) = swd_output;
+    SWD.outputs.(mi_O.JSON_output_file_identifier) = SWD_output;
 end
 
-SWD_mode = swd;
+SWD_mode = SWD;
 
 end

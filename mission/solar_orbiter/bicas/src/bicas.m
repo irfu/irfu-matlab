@@ -40,11 +40,17 @@
 %
 % RETURN VALUE: error_code = The error code that is to be passed on to the OS/shell.
 %
+%
+%
 % NOTE: This function is the main MATLAB function, i.e. it is called by no other MATLAB code during
 % regular use. It is intended to be wrapped in and called from non-MATLAB code, e.g. a bash script.
 %
-% NOTE: This code is designed for MATLAB 2016a (as of 2016-06-02) but may very well work in other
-% versions.
+% NOTE: This code is designed for MATLAB 2016a (as of 2016-06-02) but may very well work with other
+% versions of MATLAB.
+%
+% NOTE: The code uses persistent variables. One may want to call "clear all" to clear these before
+% calling the code again when working in MATLAB. (One can not put "clear all" in the code since that
+% clears the function parameters.)
 %
 % IMPLEMENTATION NOTE: This code does not quit/exit using the MATLAB function "quit" since that
 % always exits all of MATLAB which is undesirebly when developing in the MATLAB IDE. The function
@@ -81,20 +87,6 @@ try
     end
     irf.log('n', sprintf('Current working directory: "%s"', pwd));   % Useful for debugging the use of relative directory arguments.
     
-    [matlab_src_path, ~, ~] = fileparts(mfilename('fullpath'));
-    irf.log('n', sprintf('MATLAB source code path: "%s"', matlab_src_path))
-    
-    
-    
-    %=================
-    % Parse arguments
-    %=================
-    
-    % Argument to permit, but ignore.
-    if (length(arguments) >= 1) && (strcmp(arguments{1}, '--developer-bash-settings'))
-        arguments = arguments(2:end);
-    end
-    
     % Check MATLAB version
     found_version = version('-release');
     if ~strcmp(found_version, REQUIRED_MATLAB_VERSION)
@@ -102,51 +94,53 @@ try
             'Wrong MATLAB version. Found %s. Requires %s.\n', found_version, REQUIRED_MATLAB_VERSION)
     end
 
+    % Derive the root path of the software (BICAS directory structure root).
+    [matlab_src_path, ~, ~] = fileparts(mfilename('fullpath'));
+    sw_root_path = get_abs_path([matlab_src_path, filesep, '..']);
+    irf.log('n', sprintf('MATLAB source code path: "%s"', matlab_src_path))
+    irf.log('n', sprintf('Software root path:      "%s"', sw_root_path))
+    
 
+
+    %=================
+    % Parse arguments
+    %=================
     
-    flags = [];
-    flags(1).return_field_name = 'log_path';
-    flags(1).CLI_name = '--log';
-    flags(1).is_required = 0;
-    flags(1).expects_value = 1;
+    % Flag to permit, but ignore.
+    if (length(arguments) >= 1) && (strcmp(arguments{1}, '--developer-bash-settings'))
+        arguments = arguments(2:end);
+    end
     
+    flags = containers.Map;
+    flags('log_path') = struct('CLI_str', '--log', 'is_required', 0, 'expects_value', 1);    % Flag+value to permit but ignore.
+
     if (length(arguments) < 1)
 
         errorp(ERROR_CODES.CLI_ARGUMENT_ERROR, 'Not enough arguments found.')
 
     elseif (strcmp(arguments{1}, '--identification'))
 
-        [~] = parse_CLI_flags(arguments(2:end), flags);
+        [~] = parse_CLI_flags(arguments(2:end), flags);  % Check CLI syntax but ignore results.
         print_identification()
 
     elseif (strcmp(arguments{1}, '--version'))
 
-        [~] = parse_CLI_flags(arguments(2:end), flags);
+        [~] = parse_CLI_flags(arguments(2:end), flags);  % Check CLI syntax but ignore results.
         print_version()
 
     elseif (strcmp(arguments{1}, '--help'))
-            
-        errorp(ERROR_CODES.OPERATION_NOT_IMPLEMENTED, 'Operation not implemented: --help.')
-            
+
+        [~] = parse_CLI_flags(arguments(2:end), flags);  % Check CLI syntax but ignore results.
+        print_help()
+
     else
         
         %=================================================
         % CASE: Must be a S/W mode (or invalid arguments)
         %=================================================
-        
-        flag = [];
-        flag.return_field_name = 'output_dir';
-        flag.CLI_name = '--output';
-        flag.is_required = 1;
-        flag.expects_value = 1;
-        flags(end+1) = flag;
 
-%         flag = [];
-%         flag.return_field_name = 'config_file_path';
-%         flag.CLI_name = '--config';
-%         flag.is_required = 0;
-%         flag.expects_value = 1;
-%         flags(end+1) = flag;
+        flags('output_dir') = struct('CLI_str', '--output', 'is_required', 1, 'expects_value', 1);
+        %flags('config_file_path') = struct('CLI_str', '--config', 'is_required', 0, 'expects_value', 1);
 
         % Figure out which S/W mode (which index among the constants).
         C = bicas_constants;
@@ -156,64 +150,46 @@ try
         end
         i_mode = find(strcmp(arguments{1}, temp));        
         if length(i_mode) ~= 1
-            errorp(ERROR_CODES.CLI_ARGUMENT_ERROR, 'Can not interpret argument "%s" as S/W mode.', arguments{1});
+            % NOTE: The message is slightly inaccurate. Argument "--version" etc. would have worked too.
+            errorp(ERROR_CODES.CLI_ARGUMENT_ERROR, 'Can not interpret argument "%s" as a S/W mode.', arguments{1});
         end
-        
+
         % Add CLI flags depending on the S/W mode.
+        % ----------------------------------------
         C_inputs = C.sw_modes{i_mode}.inputs;    % C = Constants structure.
+        input_keys = {};
         for i_input = 1:length(C_inputs)
-            % ADD flags to look for.
+            key = C_inputs{i_input}.CLI_parameter_name;    % Replace key with dataset_ID?!
             flag = [];
-            flag.return_field_name = C_inputs{i_input}.CLI_parameter_name;
-            flag.CLI_name = ['--', flag.return_field_name];
+            flag.CLI_str = ['--', C_inputs{i_input}.CLI_parameter_name];
             flag.is_required = 1;
             flag.expects_value = 1;
-            flags(end+1) = flag;
+            
+            flags(key) = flag;
+            input_keys{end+1} = key;
         end
-        
+
         % Parse remaining arguments.
         parsed_flags = parse_CLI_flags(arguments(2:end), flags);
         
+        input_files = containers.Map(input_keys, parsed_flags.values(input_keys));
+        output_dir = get_abs_path(parsed_flags('output_dir'));
         
+        irf.log('n', sprintf('Output directory = "%s"', output_dir));
         
+        if ~exist(output_dir, 'dir')
+            errorp(ERROR_CODES.PATH_NOT_FOUND, 'Output directory "%s" does not exist.', output_dir)
+        end
+
+
+
         %===============================================================
         % TEST CODE
         % 
         % USING TEST CODE TO IMPLEMENT S/W MODES.
         % IGNORES INPUT FILES AND PRODUCES INVALID .CDF FILE AS OUTPUT.
         %===============================================================
-        warning('S/W modes are not implemented yet. Using test implementation.')   % Use irf.log warning/critical?
-        C_mode = C.sw_modes{i_mode};
-        for i = 1:length(C_mode.outputs)
-            C_mode_output = C_mode.outputs{i};
-            master_cdf_filename = C_mode_output.master_cdf_filename;
-            output_dir = parsed_flags.output_dir.value;
-            irf.log('n', sprintf('Output directory = "%s"', output_dir));
-            
-            % NOTE: Good to check existence of directory in particular for relative paths, since the
-            % bash wrapper might change the directory.
-            if ~exist(output_dir, 'dir')
-                errorp(ERROR_CODES.PATH_NOT_FOUND, 'Output directory "%s" does not exist.', output_dir)
-            end
-            
-            output_filename = [C_mode_output.dataset_ID, '_', C_mode_output.dataset_version_str, '.cdf'];
-            
-            % TEST!!
-            %src_file = ['~/work_files/SOLAR_ORBITER/irfu-matlab/mission/solar_orbiter/bicas/data/', master_cdf_filename];
-            src_file  = fullfile(matlab_src_path, C.master_cdfs_dir_rel, master_cdf_filename);
-            dest_file = fullfile(output_dir, output_filename);
-            
-            
-            [success, copyfile_msg, ~] = copyfile(src_file, dest_file);
-            if ~success
-                errorp(ERROR_CODES.MISC_ERROR, ...
-                    'Failed to copy file\n    from "%s"\n    to   "%s".\n"copyfile" error message: "%s"', ...
-                    src_file, dest_file, copyfile_msg)
-            end
-        end
-        
-        
-        
+        execute_sw_mode_TEST_IMPLEMENTATION(i_mode, output_dir, sw_root_path)
         %errorp(ERROR_CODES.OPERATION_NOT_IMPLEMENTED, 'Operation not completely implemented: Use S/W mode')
     end
 
@@ -237,6 +213,7 @@ catch exception
             message = message(length(temp{1})+2:end);
         end
         
+        % Print the call stack according to the exception.
         len = length(exception.stack);
         fprintf(2, 'MATLAB call stack:\n');
         if (~isempty(len))
@@ -249,12 +226,12 @@ catch exception
             end
         end
         
-        fprintf(2, [message, '\n']);
-        irf.log('critical', message);
+        fprintf(2, [message, '\n']);    % Print to stderr.
+        irf.log('critical', message);   % Print to stdout.
         
         default_msg = sprintf('Exiting MATLAB application with error code %i.\n', error_code);
-        fprintf(2, default_msg);
-        irf.log('critical', default_msg);
+        fprintf(2, default_msg);            % Print to stderr.
+        irf.log('critical', default_msg);   % Print to stdout.
         
         return
         
@@ -264,8 +241,8 @@ catch exception
         % NOTE: Only use very, very error safe code here.
         msg = sprintf('Unknown error. Error in the MATLAB script''s error handling.\nException message: "%s"\n', ...
             exception.message');
-        fprintf(1, msg);
-        fprintf(2, msg);
+        fprintf(2, msg);   % Print to stderr.
+        fprintf(1, msg);   % Print to stdout.
         
         error_code = ERROR_CODES.UNKNOWN_ERROR;   % Not even use hardcoded constant for error code?!!
         return
@@ -276,17 +253,92 @@ end
 
 end
 %===================================================================================================
+% 
+% TEST IMPLEMENTATION
+% Implements a S/W mode by simply creating nonsense cdf output files where expected.
+% Code should satisfy the RCS ICD with this implementation.
+%
+% NOTE: Will overwrite output file. Not necessary desirable in a real implementation but is
+% practical for testing.
+%
+function execute_sw_mode_TEST_IMPLEMENTATION(i_mode, output_dir, sw_root_path)
+
+global ERROR_CODES
+
+irf.log('c', 'USING TEST IMPLEMENTATION FOR S/W MODES. ONLY CREATES NONSENSE CDF FILES.')
+        
+C = bicas_constants;
+C_mode = C.sw_modes{i_mode};
+output_JSON = [];
+
+% Iterate over OUTPUTS
+for i = 1:length(C_mode.outputs)
+    C_mode_output = C_mode.outputs{i};
+    master_cdf_filename = C_mode_output.master_cdf_filename;
+    output_filename = [C_mode_output.dataset_ID, '_', C_mode_output.dataset_version_str, '.cdf'];
+    
+    src_file  = fullfile(sw_root_path, C.master_cdfs_dir_rel, master_cdf_filename);
+    dest_file = fullfile(output_dir, output_filename);
+    
+    irf.log('n', 'Trying to copy file')
+    irf.log('n', sprintf('   from %s', src_file))
+    irf.log('n', sprintf('   to   %s', dest_file))
+    [success, copyfile_msg, ~] = copyfile(src_file, dest_file);   % Overwrites any pre-existing file.
+    if ~success
+        errorp(ERROR_CODES.MISC_ERROR, ...
+            'Failed to copy file\n    from "%s"\n    to   "%s".\n"copyfile" error message: "%s"', ...
+            src_file, dest_file, copyfile_msg)
+    end
+    
+    output_JSON.(C_mode_output.JSON_output_file_identifier) = output_filename;
+end
+
+str = JSON_object_str(output_JSON);
+stdout_printf(str);
+
+end
+%===================================================================================================
 function print_version()
+
+% IMPLEMENTATION NOTE: Uses the software version in the S/W descriptor rather than the in the BICAS
+% constants since the RCS ICD specifies that it should be that version.
 
 swd = get_sw_descriptor();
 stdout_printf('Release version "%s"\n', swd.release.version)
 
 end
+
 %===================================================================================================
+% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% First created 2016-06-07
+%
+% Print the JSON S/W descriptor.
+%
 function print_identification()
 
-descr = get_sw_descriptor();
-str = JSON_object_str(descr);
+D = get_sw_descriptor();
+str = JSON_object_str(D);
 stdout_printf(str);
+
+end
+
+%===================================================================================================
+function print_help()
+%
+% PROPOSAL: Print error codes. Can use implementation to list them?
+%    PROPOSAL: Define error codes with description strings?! Map?! Check for doubles?!
+% PROPOSAL: Print CLI syntax incl. all modes?
+
+global ERROR_CODES
+
+D = get_sw_descriptor();
+stdout_printf('%s\n%s\n', D.identification.name, D.identification.description)
+
+stdout_printf('\nError codes (internal constants):\n')
+for sfn = fieldnames(ERROR_CODES)'
+    stdout_printf('   %3i = %s\n', ERROR_CODES.(sfn{1}), sfn{1})
+end
+
+%errorp(ERROR_CODES.OPERATION_NOT_IMPLEMENTED, 'Operation not implemented: --help.')
 
 end

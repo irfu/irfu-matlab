@@ -5,61 +5,72 @@
 % Function tries to give accurate user-friendly errors for non-compliant arguments and absence of
 % required arguments.
 %
-% Flag = A predefined (hardcoded, more or less) string meant to match a single argument.
-% Value = An argument that specifies a more or less arbitrary value and comes after a flag.
+% Flag = A predefined (hardcoded, more or less) string meant to match a single argument, e.g. "--version"
+% Value = An argument that specifies a more or less arbitrary value and comes after a flag, e.g. "--file <value>".
 %
-% flags : array of structs.
-% .return_field_name : Name of corresponding field in the return struct.
-% .CLI_name          : The command-line flag string.
-% .is_required       : ("Required" as opposed to "optional".)
-% .expects_value
+% flags : containers.Map, number/string-->struct
+%    <keys>   : Arbitrary unique strings to identify the flags in the return value.
+%    <values> : Information about each flag (syntax).
+%    .CLI_str        : The command-line flag string (e.g. "--version"), including any prefix (e.g. dash).
+%    .is_required    : Whether the flag (and any specified value) is required as opposed to optional.
+%    .expects_value  : Whether the flag expects the following argument to be a value connected to the flag.
 %
-% parsed_args : struct with fields corresponding to flags(i).return_field_name for every flag. Every
-% such field contains a copy of an element of flags with some fields added.
-% .(<return_field_name>).is_set
-% .(<return_field_name>).value
-% (+field inherited from flags(i))
+% flag_results : containers.Map, number/string-->string/number
+%    <keys>
+%    <values>  : For flag without value: 0=not set, 1=set
+%                For flag with value:
+%                   ~ischar(..) ==> the flag was not set (no such argument). (In reality numeric zero.)
+%                    ischar(..) ==> the flag was set (incl. empty string). The string is the value.
+%                (Note: Can not use/implement isempty(..) as criterion due to empty strings; isempty('')==0)
 %
-function parsed_args = parse_CLI_flags(arguments, flags)
+function flag_results = parse_CLI_flags(arguments, flags)
 %
-% TODO/PROPOSAL: Change name: parse_arguments? parse_CLI_arguments?
+% IMPLEMENTATION NOTE: Reasons for using containers.Map (instead of arrays, array of structs, cell
+% array, structure of structures).
+% 1) Caller can easily build up list of flags by amending list.
+% 2) Can use key strings to identify flags (rather than the CLI flag strings themselves)
+% 3) Can use more key strings (more characters) than for structure field names.
+% 4) Easy for caller to group subsets of flags by keeping track of sets of keys. The caller can
+% merge groups of flags (before submitting as one parameter), and can split the returned result into
+% the groups of flags.
+% Ex: Input files as opposed to output directory, log directory, config file.
+% NOTE: The caller can easily(?) convert result into struct (one field per key-value pair).
 %
-% IMPLEMENTATION NOTE:
-% Reasons for implementing function parameter "flags" as array with one struct per flag (instead of
-% struct with structs):
-% (1) Make it possible for the caller to successively add flags with the same ID and have the
-% function check for name collisions.
+% PROPOSAL: Change name: parse_arguments? parse_CLI_arguments?
 %
 % QUESTION: The function permits flags without value. Is this functionality really needed?
 %
+
 global ERROR_CODES
 
 
 
 % ASSERTION CHECKS
-if ~isstruct(flags)
-    errorp(ERROR_CODES.ASSERTION_ERROR, 'Parameter is not struct.');
+if ~iscell(arguments)
+    errorp(ERROR_CODES.ASSERTION_ERROR, 'Parameter is not a cell array.');
+elseif ~isa(flags, 'containers.Map')
+    errorp(ERROR_CODES.ASSERTION_ERROR, 'Parameter is not a containers.Map.');
 end
 
 
 
-% Add necessary fields to "flags".
-for i = 1:length(flags)
-    flags(i).is_set = 0;
-    flags(i).value = [];
+CLI_strs = {};
+flag_results = containers.Map;
+for skey = flags.keys
+    s = flags(skey{1});
+    CLI_strs{end+1} = s.CLI_str;
+    
+    % Create return structure. Default: No flags found
+    % NOTE: Applies to both flags with and without values!
+    flag_results(skey{1}) = 0;         
 end
 
 
 
-% ASSERTION CHECKS: Check that are no configuration doubles.
-CLI_names          = {flags.CLI_name};
-return_field_names = {flags.return_field_name};
-if length(CLI_names) ~= length(unique(CLI_names))
+% ASSERTION CHECKS: Check that there are no flag duplicates.
+if length(CLI_strs) ~= length(unique(CLI_strs))
     errorp(ERROR_CODES.ASSERTION_ERROR, ...
         'The code is configured to accept multiple IDENTICAL command-line flags. This indicates a bug.')
-elseif length(return_field_names) ~= length(unique(return_field_names))
-    errorp(ERROR_CODES.ASSERTION_ERROR, ...
-        'The code is configured to return multiple IDENTICAL field names. This indicates a bug.')
 end
 
 
@@ -68,21 +79,23 @@ ia = 1;
 while ia <= length(arguments)    % ia = i_argument
     arg = arguments{ia};
     
+    % Find matching flag (and key)
     flag = [];
-    for jf = 1:length(flags)
-        if strcmp(arg, flags(jf).CLI_name)
-            flag = flags(jf);
+    for skey = flags.keys
+        key = skey{1};
+        current_flag = flags(key);
+        if strcmp(arg, current_flag.CLI_str)
+            flag = current_flag;
             break
         end
-    end
+    end    
     if isempty(flag)
-        errorp(ERROR_CODES.CLI_ARGUMENT_ERROR, 'Can not interpret argument "%s".', arg)
+        errorp(ERROR_CODES.CLI_ARGUMENT_ERROR, 'Can not interpret command-line argument "%s". There is no such flag.', arg)
     end
     
-    if flag.is_set ~= 0
-        errorp(ERROR_CODES.CLI_ARGUMENT_ERROR, 'Specified the command-line flag "%s" (at least) twice.', arg)
+    if ~(isnumeric(flag_results(key)) && (flag_results(key) == 0))
+        errorp(ERROR_CODES.CLI_ARGUMENT_ERROR, 'The command-line flag "%s" was specified (at least) twice.', arg)
     end
-    flag.is_set = 1;
     
     if flag.expects_value
         if ia >= length(arguments)
@@ -90,40 +103,42 @@ while ia <= length(arguments)    % ia = i_argument
                 'Can not find the argument that is expected to follow command-line flag "%s".', arg)
         end
         ia = ia + 1;
-        flag.value = arguments{ia};
+        flag_results(key) = arguments{ia};
+    else
+        flag_results(key) = 1;
     end
     
-    flags(jf) = flag;
-
     ia = ia + 1;
 end   % while
 
 
-% Check that all required flags have been set.
-for jf = 1:length(flags)
-    flag = flags(jf);
-    if flag.is_required && ~flag.is_set
-        errorp(ERROR_CODES.CLI_ARGUMENT_ERROR, 'Missing required command-line flag "%s".', flag.CLI_name)
+
+% Check that all required flags were set.
+for skey = flags.keys
+    flag = flags(skey{1});
+    flag_result = flag_results(skey{1});
+    if flag.is_required && (isnumeric(flag_result) && (flag_result == 0))
+        errorp(ERROR_CODES.CLI_ARGUMENT_ERROR, 'Could not find required command-line flag "%s".', flag.CLI_str)
     end
 end
 
 
+
 % Convert flags (array) to structure.
 % -----------------------------------
-% IMPLEMENTATION NOTE: Up until here the algorithm works with the function argument, and amends the
-% results to it. First here does it copies the data to a variable that will be returned. This
-% function has been modified several times and it is best to keep this conversion separate so that
-% it is easy modify the output of the function again. The algorithm is also simpler(?) working with
-% arrays.
-parsed_args = [];
-for jf = 1:length(flags)
-    flag = flags(jf);
-    parsed_args.(flag.return_field_name) = rmfield(flag, 'return_field_name');
-    
-end
-
-
-
-%------------------------------
+% IMPLEMENTATION NOTE: Up until here the algorithm works with the function argument describing the
+% flags, and amends the results to it. First here does it copy the data to a variable that will be
+% returned. This function has been modified several times to modify the output data structure and it
+% is best to keep this conversion separate so that it is easy to modify the output data structure of
+% the function again. The algorithm is also simpler(?) when working with arrays.
+% flag_results = [];
+% for jf = 1:length(flags)    
+%     %flag_results.(flag.return_field_name).is_set = flags(jf).is_set;
+%     %flag_results.(flag.return_field_name).value  = flags(jf).value;
+%     
+%     flag = flags(jf);
+%     flag_results.(flag.return_field_name) = rmfield(flag, 'return_field_name');
+%     
+% end
 
 end

@@ -10,6 +10,10 @@
 % before calling other functions separately (for testing; without launching the main function).
 %
 function  init_global_constants
+%
+% PROPOSAL: Return structure (lazy eval.) rather than initializing global constants.
+
+
 
 % NOTE: These constants are used by the error handling (the main function's catch section) and
 % should therefore be available in that code.

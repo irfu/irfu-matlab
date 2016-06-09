@@ -1,0 +1,32 @@
+
+
+==================================================================================
+How to extract the ROC ICD-compliant software from the irfu-matlab git repository
+==================================================================================
+Context:
+--------
+(1) The ROC-OPS-PIP-NTT-00008-LES iss01rev01 (and maybe ROC-TST-GSE-ICD-00023-LES iss02rev02)
+    requires BICAS to have a certain directory structure, or at least where the start script should be (bicas/roc/).
+(2) BICAS is a subset of the irfu-matlab git repository (IRF-U, Uppsala, Sweden) and irfu-matlab
+    requires BICAS to be in a certain subdirectory within it.
+(3) When BICAS is a part of irfu-matlab, BICAS uses irfu-matlab function files located outside of BICAS' own subdirectories.
+Therefore one can NEITHER (1) just copy all of irfu-matlab to the location where BICAS is
+to be run, NOR (2) just copy the BICAS subdirectory from within irfu-matlab.
+
+
+Procedure in principle:
+-----------------------
+(1) Use bicas/ as a root directory and put the remainder of irfu-matlab/ under bicas/lib/.
+
+Example using copying:
+   cp -r   ~/irfu-matlab/mission/solar_orbiter/bicas   ~/
+   cp -r   ~/irfu-matlab   ~/bicas/lib/
+   rm -r   ~/bicas/lib/irfu-matlab/mission/solar_orbiter/bicas   ~/bicas/lib/irfu-matlab/.git/
+
+Note: This procedure is really just meant to show the setup one wants to achieve.
+Note: BICAS is designed to run using both directory configurations. When it runs in the irfu-matlab
+configuration it might require additional flags.
+
+(2) Add master cdf files for every dataset that the software can produce to the data/ subdirectory if
+not included already. Master cdf files must have standard filenames, i.e. on the form
+<Dataset ID>_<Version string>.cdf, where version string is on the form Vxx, x=digit.
