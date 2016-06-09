@@ -271,7 +271,9 @@ classdef (Abstract) GenericTimeArray
 		end
 		
 		function res = epochUnix(obj)
-			res = EpochUnix.from_ttns(obj.ttns);
+      if isempty(obj), res = [];
+      else res = EpochUnix.from_ttns(obj.ttns);
+      end
 		end
 		function s = utc(obj,varargin)
 			% s = utc(obj,format)

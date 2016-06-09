@@ -39,7 +39,8 @@ end
 c_eval('idx = abs(Off?.data(:,2))>0.5; Off?.data(idx,:)=NaN;')
 
 %% Plot
-irf_pl_tx('Off?','x')
+h = irf_pl_tx('Off?','x');
+ylabel(h(1),'\Delta Ex [mV/m]'),ylabel(h(2),'\Delta Ey [mV/m]')
 
 %% Write CAL files
 for mmsId=1:4
