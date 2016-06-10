@@ -86,7 +86,7 @@ C.SWD_release.contact      = C.author_email;
 C.SWD_release.institute    = C.institute;
 C.SWD_release.modification = INITIAL_RELEASE_MODIFICATION_STR;
 
-C.SWD_environment.executable = 'roc/bicas.sh';   % Temporary sw name
+C.SWD_environment.executable = 'roc/bicas';   % Temporary sw name
 
 C.sw_modes = {};
 

@@ -33,9 +33,9 @@
 # 
 # IMPLEMENTATION NOTE: Reasons to pipe MATLAB's stdout to the log file
 # from this bash script rather than from MATLAB code:
-# 1) can handle stdout from the MATLAB startup process
+# 1) avoid manually having to pipe everything to log file in MATLAB code.
 # 2) can handle stdout from library MATLAB code that prints to stdout (code that should not be altered, e.g. in irfu-matlab, e.g. irf.log)
-# 3) avoid manually having to pipe everything to log file in MATLAB code.
+# 3) can handle stdout from the MATLAB startup process
 # 
 # IMPLEMENTATION NOTE: The same arguments that are passed to this script are passed on to the MATLAB code, including
 # arguments which are unnecessary there, including --log <dir> and --developer-bash-settings.
@@ -46,11 +46,10 @@
 # CON: The MATLAB code needs some knowledge of the parameter parsing in this script.
 #
 # IMPLEMENTATION NOTE: The name of this file may only contain alphanumeric characters. Can therefore not use 
-# file extension ".sh" to indicate that it is a shell script.
-# /ROC-TST-GSE-ICD-00023-LES, iss02rev01, Section 3.1.
+# the file extension ".sh" to indicate that it is a shell script.
+# /ROC-TST-GSE-ICD-00023-LES, iss02rev02, Section 3.1.
 # 
 #====================================================================================================
-# TODO: Redirect (copy) all stderr to stdout and hence to the log file.
 # QUESTION: If log file already exists, overwrite, amend, or error?
 #====================================================================================================
 

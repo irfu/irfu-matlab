@@ -14,7 +14,7 @@
         "modification": "No modification (initial release)"
     },
     "environment":  {
-        "executable":   "roc/bicas.sh"
+        "executable":   "roc/bicas"
     },
     "modes":  [
         {
