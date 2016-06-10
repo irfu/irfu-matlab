@@ -197,23 +197,29 @@ try
     
 catch exception
     
-    % Parse error code from exception message.
-    % ASSUMES: exception.message is on format: <error code><one whitespace><message string>.
-    
     try
+        irf.log('critical', 'Main function caught an exception. Error handling. Exiting.');   % Print to stdout.
         
-        % NOTE: Does not seem to produce error for non-parsable strings, not even
-        % empty strings. error_code = [], if can not parse.
+        %========================================================================================
+        % Parse exception message - Extract and set error code
+        % ----------------------------------------------------
+        % ASSUMES: exception.message is on format: <Error code><Whitespace><Message string>.
+        % errorp produces error messages on that format.
+        % NOTE: Code does not seem to produce error for non-parsable strings, not even empty
+        % strings. error_code = [], if can not parse.
+        %========================================================================================
         message = exception.message;
         temp = strsplit(message);
-        error_code = str2double(temp{1});
+        error_code = str2double(temp{1});                 % NOTE: Set error code for when exiting MATLAB.
         if isnan(error_code)
-            error_code = ERROR_CODES.UNKNOWN_ERROR;
+            error_code = ERROR_CODES.UNKNOWN_ERROR;       % NOTE: Set error code for when exiting MATLAB.
         else
             message = message(length(temp{1})+2:end);
         end
         
-        % Print the call stack according to the exception.
+        %======================
+        % Print the call stack
+        %======================
         len = length(exception.stack);
         fprintf(2, 'MATLAB call stack:\n');
         if (~isempty(len))
@@ -227,11 +233,9 @@ catch exception
         end
         
         fprintf(2, [message, '\n']);    % Print to stderr.
-        irf.log('critical', message);   % Print to stdout.
         
         default_msg = sprintf('Exiting MATLAB application with error code %i.\n', error_code);
-        fprintf(2, default_msg);            % Print to stderr.
-        irf.log('critical', default_msg);   % Print to stdout.
+        fprintf(2, default_msg);        % Print to stderr.
         
         return
         
@@ -242,7 +246,6 @@ catch exception
         msg = sprintf('Unknown error. Error in the MATLAB script''s error handling.\nException message: "%s"\n', ...
             exception.message');
         fprintf(2, msg);   % Print to stderr.
-        fprintf(1, msg);   % Print to stdout.
         
         error_code = ERROR_CODES.UNKNOWN_ERROR;   % Not even use hardcoded constant for error code?!!
         return

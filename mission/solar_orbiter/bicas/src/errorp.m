@@ -5,7 +5,11 @@
 % This function is intended to be used instead of MATLAB's own "error" function to standardize the
 % behaviour. Should be able to handle multiline messages(?).
 %
-% errorp = error prime ("prime" as in the apostrophe after a variable)
+% errorp = error prime ("prime" as in the apostrophe after a variable to denote a different version
+% of about the same functionality)
+%
+% NOTE: Prints to stderr, but NOT to stdout. The bash wrapper script sends both stdout and
+% stderr to the log.
 %
 function errorp(error_code, message, varargin)
 %
@@ -15,7 +19,6 @@ function errorp(error_code, message, varargin)
 
 message = sprintf(['%i ', message], error_code, varargin{:});
 
-fprintf(1, ['ERROR: ', message, '\n']); % Use log.irf('c', message) instead? Can handle multiline messages?
-error(message)
+error(message)   % Prints to stderr.
 
 end

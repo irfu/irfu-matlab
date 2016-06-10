@@ -8,18 +8,20 @@
 #
 #
 # 
-# PARAMETERS: [--developer-bash-settings] <<--log <dir>; Other arguments>>
+# PARAMETERS: [--developer-bash-settings]   --log <dir>   <Other arguments>
 #
 # --developer-bash-settings : Unofficial flag for using particular settings.
 # --log <dir>               : Path to directory where log file will be created. 
-# Other arguments           : Argument parsed in the MATLAB code.
-#
+# <Other arguments>         : Argument parsed in the MATLAB code.
+# NOTE: Only the placement of the first flag --developer-bash-settings is important.
 #
 #
 # NOTE: The script reads the "--log" parameter value and pipes "all" stdout to a log file. 
-# It also uses a prefix to filter out some lines that are piped to the actual stdout.
+# It also uses a prefix to filter out some stdout lines that are piped to the actual stdout.
 # In addition, a symlink (with a constant filename) to the current log file is created.
 # Overwriting the old symlink might technically not be compliant with the RCS ICD.
+# 
+# NOTE: The script takes stderr and copy it to the log file with a prefix.
 # 
 # NOTE: The script is designed to handle important basic errors, such as
 # 1) Can not find MATLAB executable (not explicitly, but implicitly)
@@ -57,10 +59,12 @@
 # Search pattern that determines which stdout (in particular
 # from MATLAB) that is actually piped to stdout.
 # NOTE: This pattern must match the corresponding prefix used in MATLAB.
-declare -r stdout_pattern='^STDOUT: '    # NOTE: Includes "^" = beginning of line.
+declare -r STDOUT_PATTERN='^STDOUT: '    # NOTE: Includes "^" = beginning of line.
+
+declare -r STDERR_PREFIX='STDERR: '   # NOTE: Not a regex!
 
 # Name of script such as it is called from inside MATLAB, i.e. without file extension.
-declare -r matlab_script_name="bicas"
+declare -r MATLAB_SCRIPT_NAME="bicas"
 
 
 
@@ -235,7 +239,7 @@ launch_matlab_code() {
         try;\
             addpath(genpath('${irfumatlab_path}'), '-begin');\
             addpath(genpath('${matlab_src_path}'), '-begin');\
-            error_code = $matlab_script_name($matlab_arg_list);\
+            error_code = $MATLAB_SCRIPT_NAME($matlab_arg_list);\
             quit(error_code);\
         catch e;\
             msg = sprintf('Could not launch the MATLAB script. The reason MIGHT be that MATLAB could not find it.\nException message: %s\n', e.message);\
@@ -248,13 +252,35 @@ launch_matlab_code() {
     
     
     
-    #=======================================================================================================
-    # NOTE: "exit" inside a bash function when the function is being piped
-    # 1) does NOT EXIT the entire script and
-    # 2) does NOT MAKE THE EXIT CODE AVAILABLE the usual way.
-    # Instead, the script does not quit, and the exit code ends up in builtin variable $PIPESTATUS (array).
-    #=======================================================================================================
+    # NOTE: "exit" inside a bash function does NOT EXIT the entire script file.
     exit $matlab_error_code
+}
+
+
+
+#===========================================================================================================================
+# Function for sending (copying) the stderr to a log file (amending). Every row of stderr is prefixed.
+# 
+# NOTE: It is possible to use the same (stderr) log file for other logging (stdout) at the same time.
+# The order between stdout and stderr is not guaranteed then.
+# ASSUMES: stderr never contains the prefix. If so, the string is removed.
+#===========================================================================================================================
+log_stderr() {
+    local log_file_stderr="$1"
+    shift
+    #===========================================================================================================================
+    # The functionality requires some bash tricks:
+    # 1) One can only pipe stdout and "tee -a" (which copies stdout to file) only works on stdout.
+    #    Therefore switches stderr and stdout and pipes. Then, outside that shell (the brackets), switches them back again.
+    # 2) We want function to return the error code of the first, innermost command. Must therefore exit inner shell with
+    #    exit ${PIPESTATUS[0]} and then the whole function with it again.
+    # 
+    # tee options:
+    #        -a, --append
+    #               append to the given FILEs, do not overwrite
+    #===========================================================================================================================
+    ( eval "$@" 3>&1 1>&2 2>&3 | sed "s/^/${STDERR_PREFIX}/" | tee -a "$log_file_stderr" | sed "s/^${STDERR_PREFIX}//" ; exit ${PIPESTATUS[0]} ) 3>&1 1>&2 2>&3
+    exit ${PIPESTATUS[0]}
 }
 
 
@@ -262,15 +288,18 @@ launch_matlab_code() {
 if [[ -z "$log_dir" ]]
 then
     # CASE: No log file specified.
-    launch_matlab_code "$@"                      | grep "$stdout_pattern" | sed "s/${stdout_pattern}//"
+    
+    launch_matlab_code "$@"                      | grep "$STDOUT_PATTERN" | sed "s/${STDOUT_PATTERN}//"
     matlab_error_code=${PIPESTATUS[0]}    # Get exit code of the first component of piping.
 else
     # CASE: Log file specified.
     
-    # tee options:
-    #        -a, --append
-    #               append to the given FILEs, do not overwrite
-    launch_matlab_code "$@" | tee -a "$log_file" | grep "$stdout_pattern" | sed "s/${stdout_pattern}//"
+    # Launch MATLAB and do nothing with stderr.
+    #launch_matlab_code "$@" | tee -a "$log_file" | grep "$STDOUT_PATTERN" | sed "s/${STDOUT_PATTERN}//"
+    
+    # Launch MATLAB and copy stderr to the log file (where stderr is prefixed).
+    log_stderr "$log_file" launch_matlab_code "$@" | tee -a "$log_file" | grep "$STDOUT_PATTERN" | sed "s/${STDOUT_PATTERN}//"
+    
     matlab_error_code=${PIPESTATUS[0]}    # Get exit code of the first component of piping.
 fi
 
