@@ -113,6 +113,12 @@ vars = {'R_gse','R_gsm','V_gse','V_gsm',...
   'B_bcs_afg_srvy_l2pre','B_bcs_afg_srvy_l2pre',...
   'B_dmpa_dfg_srvy_ql','B_dmpa_afg_srvy_ql',...
   'dfg_ql_srvy','afg_ql_srvy','tetra_quality',...
+  'Phase_edp_fast_l2a','Phase_edp_slow_l2a',...
+  'Es12_dsl_edp_fast_l2a','Es34_dsl_edp_fast_l2a',...
+  'Adcoff_edp_fast_l2a','Adcoff_edp_slow_l2a',...
+  'E2d_dsl_edp_brst_l2pre','E2d_dsl_edp_fast_l2pre','E2d_dsl_edp_l2pre','E_dsl_edp_l2pre',...
+  'E_ssc_edp_brst_l1b','E_ssc_edp_fast_l1b','E_ssc_edp_slow_l1b',...
+  'V_edp_brst_l1b','V_edp_fast_l1b','V_edp_slow_l1b',...
   'Vi_dbcs_fpi_brst_l2', 'Vi_dbcs_fpi_brst', 'Vi_dbcs_fpi_fast_l2',...
   'Vi_gse_fpi_sitl', 'Vi_gse_fpi_ql',...
   'Vi_gse_fpi_brst_l1b','Vi_gse_fpi_fast_l1b',...
@@ -423,6 +429,27 @@ switch Vr.inst
       res.data(res.data==0) = NaN;
       if (Vr.to>0), res.coordinateSystem =  Vr.cs; end
     end
+  case 'edp' 
+    switch Vr.lev
+      case 'l1b'
+        switch Vr.param
+          case 'E', dset = 'dce'; param = 'dce_sensor';
+          case 'V', dset = 'dce'; param = 'dcv_sensor';
+        end
+        pref = ['mms' mmsIdS '_edp_' param];
+      otherwise
+        switch Vr.param
+          case 'E', dset = 'dce'; param = ['dce_' Vr.cs];
+          case 'E2d', dset = 'dce2d'; param = ['dce_' Vr.cs];
+          case 'Phase', dset = 'dce2d'; param = 'phase';
+          case {'Es12','Es34'}, dset = 'dce2d'; param = ['espin_p' Vr.param(3:4)];
+          case 'Adcoff', dset = 'dce2d'; param = 'adc_offset';
+          otherwise, error('unrecognized param')
+        end   
+        pref = ['mms' mmsIdS '_edp_' param '_' Vr.tmmode '_' Vr.lev];
+    end
+    datasetName = ['mms' mmsIdS '_edp_' Vr.tmmode '_' Vr.lev '_' dset];
+    res = mms.db_get_ts(datasetName,pref,Tint);
   otherwise
     error('not implemented yet')
 end
@@ -575,7 +602,7 @@ nTk = length(tk);
 if nTk <3 || nTk > 5, error('invalig STRING format'), end
 
 phcaParamsScal = {'Nhplus','Nheplus','Nheplusplus','Noplus',...
-  'Tshplus','Tsheplus','Tsheplusplus','Tsoplus'}; 
+  'Tshplus','Tsheplus','Tsheplusplus','Tsoplus','Phase','Adcoff'}; 
 phcaParamsTens = {'Vhplus','Vheplus','Vheplusplus','Voplus',...
   'Phplus','Pheplus','Pheplusplus','Poplus',...
   'Thplus','Theplus','Theplusplus','Toplus'};
@@ -585,7 +612,7 @@ param = tk{1};
 switch param
   case {'Ni', 'Ne', 'Nhplus', 'Tsi', 'Tse','PDe','PDi'}
     tensorOrder = 0;
-  case {'Vi', 'Ve', 'B', 'E'}
+  case {'Vi', 'Ve', 'B', 'E','E2d','Es12','Es34'}
     tensorOrder = 1;
   case {'Pi', 'Pe', 'Ti', 'Te'}
     tensorOrder = 2;  
@@ -601,7 +628,7 @@ coordinateSystem = []; idx = 1;
 if tensorOrder > 0
   coordinateSystem = tk{idx+1}; idx = idx + 1;
   switch coordinateSystem
-    case {'gse','gsm','dsl','dbcs','dmpa'}
+    case {'gse','gsm','dsl','dbcs','dmpa','ssc'}
     otherwise
       error('invalid COORDINATE_SYS')
   end
