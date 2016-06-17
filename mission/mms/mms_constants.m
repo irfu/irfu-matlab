@@ -34,6 +34,10 @@ MMS_CONST.Spinrate.max_deploy = 7.4; % Rev per Minute.
 % Angles when phase=0 (X BSC direction)
 MMS_CONST.Phaseshift.e12 =  2*pi*150/360; % probe 2 sunward
 MMS_CONST.Phaseshift.e34 =  2*pi* 60/360; % probe 4 sunward
+MMS_CONST.Phaseshift.p1  = 2*pi* 330/360; % probe 1 sunward
+MMS_CONST.Phaseshift.p2  = 2*pi* 150/360; % probe 2 sunward
+MMS_CONST.Phaseshift.p3  = 2*pi* 240/360; % probe 3 sunward
+MMS_CONST.Phaseshift.p4  = 2*pi*  60/360; % probe 4 sunward
 
 % Nominal Amplitude Correction factor multiplied to DCE data.
 MMS_CONST.NominalAmpCorr.e12 = 1.25;
