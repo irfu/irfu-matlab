@@ -117,6 +117,8 @@ vars = {'R_gse','R_gsm','V_gse','V_gsm',...
   'Es12_dsl_edp_fast_l2a','Es34_dsl_edp_fast_l2a',...
   'Adcoff_edp_fast_l2a','Adcoff_edp_slow_l2a',...
   'E2d_dsl_edp_brst_l2pre','E2d_dsl_edp_fast_l2pre','E2d_dsl_edp_l2pre','E_dsl_edp_l2pre',...
+  'E_ssc_edp_brst_l1b','E_ssc_edp_fast_l1b','E_ssc_edp_slow_l1b',...
+  'V_edp_brst_l1b','V_edp_fast_l1b','V_edp_slow_l1b',...
   'Vi_dbcs_fpi_brst_l2', 'Vi_dbcs_fpi_brst', 'Vi_dbcs_fpi_fast_l2',...
   'Vi_gse_fpi_sitl', 'Vi_gse_fpi_ql',...
   'Vi_gse_fpi_brst_l1b','Vi_gse_fpi_fast_l1b',...
@@ -428,16 +430,25 @@ switch Vr.inst
       if (Vr.to>0), res.coordinateSystem =  Vr.cs; end
     end
   case 'edp' 
-    switch Vr.param
-      case 'E', dset = 'dce'; param = ['dce_' Vr.cs];
-      case 'E2d', dset = 'dce2d'; param = ['dce_' Vr.cs];
-      case 'Phase', dset = 'dce2d'; param = 'phase';
-      case {'Es12','Es34'}, dset = 'dce2d'; param = ['espin_p' Vr.param(3:4)];
-      case 'Adcoff', dset = 'dce2d'; param = 'adc_offset';
-      otherwise, error('unrecognized param')
+    switch Vr.lev
+      case 'l1b'
+        switch Vr.param
+          case 'E', dset = 'dce'; param = 'dce_sensor';
+          case 'V', dset = 'dce'; param = 'dcv_sensor';
+        end
+        pref = ['mms' mmsIdS '_edp_' param];
+      otherwise
+        switch Vr.param
+          case 'E', dset = 'dce'; param = ['dce_' Vr.cs];
+          case 'E2d', dset = 'dce2d'; param = ['dce_' Vr.cs];
+          case 'Phase', dset = 'dce2d'; param = 'phase';
+          case {'Es12','Es34'}, dset = 'dce2d'; param = ['espin_p' Vr.param(3:4)];
+          case 'Adcoff', dset = 'dce2d'; param = 'adc_offset';
+          otherwise, error('unrecognized param')
+        end   
+        pref = ['mms' mmsIdS '_edp_' param '_' Vr.tmmode '_' Vr.lev];
     end
     datasetName = ['mms' mmsIdS '_edp_' Vr.tmmode '_' Vr.lev '_' dset];
-    pref = ['mms' mmsIdS '_edp_' param '_' Vr.tmmode '_' Vr.lev];
     res = mms.db_get_ts(datasetName,pref,Tint);
   otherwise
     error('not implemented yet')
@@ -617,7 +628,7 @@ coordinateSystem = []; idx = 1;
 if tensorOrder > 0
   coordinateSystem = tk{idx+1}; idx = idx + 1;
   switch coordinateSystem
-    case {'gse','gsm','dsl','dbcs','dmpa'}
+    case {'gse','gsm','dsl','dbcs','dmpa','ssc'}
     otherwise
       error('invalid COORDINATE_SYS')
   end
