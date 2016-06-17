@@ -250,7 +250,7 @@ end
 
 Del = delta_off(DeltaAspocOff.data);
 
-if ~any(idxMSH), 
+if ~any(idxMSH) || sum(idxMSH)<5 || all(all(isnan(Es12AspocOffR.data(idxMSH,:))))
   irf.log('warning','No MSH data')
   idxMSH = ~idxMSH;
 end
@@ -312,7 +312,7 @@ ylabel('E FPI [mV/m]'), xlabel('SDP [mV/m]')
 subplot(nRows,2,8)
 [~,res.p1234.y] = plot_xy([Es12AspocOffR.data(idxMSH,2)-Del.y; Es34AspocOffR.data(idxMSH,2)],...
   [EfpiR.y.data(idxMSH); EfpiR.y.data(idxMSH)]); cla
-if isempty(EhpcaR), offs_x =[]; slope = [];
+if isempty(EhpcaR) || sum(~isnan(EhpcaR.data(idxMSH,1))) < 5, offs_x =[]; slope = [];
 else
   [offs_x, slope] = comp_off_slope(Es12AspocOffR(idxMSH)-[Del.x Del.y], Es34AspocOffR(idxMSH), EhpcaR(idxMSH));
 end
