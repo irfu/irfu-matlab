@@ -214,11 +214,13 @@ classdef PDist < TSeries
       end
       
       tmpEnergy = energy(:,elevels);
-      tmpData = obj.data(:,elevels,:,:);
+      tmpData = obj.data(:,elevels,:,:);      
       
       PD = obj;
       PD.data_ = tmpData;
-      PD.depend{1} = tmpEnergy;      
+      PD.depend{1} = tmpEnergy;   
+      PD.ancillary.energy0 = PD.ancillary.energy0(elevels);
+      PD.ancillary.energy1 = PD.ancillary.energy1(elevels);
     end
     function PD = omni(obj)
       % Makes omnidirectional distribution, conserving units.

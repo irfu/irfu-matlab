@@ -82,6 +82,7 @@ if isa(varargin{1},'PDist'),
         energy0 = pdist.ancillary.energy0;
         energy1 = pdist.ancillary.energy1;
         noangles = 0;        
+        numechannels = size(pdist.depend{1},2);
         if (tmpnargin == 3),
             tint = varargin{3};
             if(length(tint) > 2),
