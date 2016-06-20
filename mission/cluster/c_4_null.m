@@ -10,9 +10,9 @@ function Nulls=c_4_null(R1,R2,R3,R4,B1,B2,B3,B4,varargin)
 %
 %
 %   INPUT
-%     B1..B4    - are B field times series measured by satellites C1..C4.
-%                 columns are [t Bx By Bz]
-%     R1..R4    - are position of C1..C4, columns are [t Rx Ry Rz]
+%     B1..B4    - are B field times series measured by satellites 1..4.
+%                 That can be in either columns [t Bx By Bz] or Tseries
+%     R1..R4    - are position of 1..C, That can be in either columns [t Rx Ry Rz] or Tseries
 %     all arguments allowed by C_4_NULL command that can be mixed freely as
 %     long as it follows this format for each argument. See Examples below.
 %

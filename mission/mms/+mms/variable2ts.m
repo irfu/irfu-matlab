@@ -15,8 +15,8 @@ ud.GlobalAttributes = v.GlobalAttributes;
 ud.CATDESC          = v.CATDESC;
 if isfield(v,'DISPLAY_TYPE'), ud.DISPLAY_TYPE     = v.DISPLAY_TYPE; end
 ud.FIELDNAM         = v.FIELDNAM;
-ud.VALIDMIN         = v.VALIDMIN;
-ud.VALIDMAX         = v.VALIDMAX;
+if isfield(v,'VALIDMIN'), ud.VALIDMIN = v.VALIDMIN; end
+if isfield(v,'VALIDMAX'), ud.VALIDMAX = v.VALIDMAX; end
 if isfield(v,'LABLAXIS'), ud.LABLAXIS = v.LABLAXIS; end
 if isfield(v,'LABL_PTR_1'), ud.LABL_PTR_1 = v.LABL_PTR_1;
 elseif isfield(v,'LABL_PTR_2'), ud.LABL_PTR_2 = v.LABL_PTR_2;
@@ -29,8 +29,10 @@ elseif v.dim(1)==2 && v.dim(2)==1, varType = 'vec_xy';
 elseif v.dim(1)==1 && v.dim(2)==1, varType = 'scalar';
 else
   % Special quirks for different instruments
-  if ~isempty(regexp(v.name,'^mms[1-4]_[d,a]fg_(srvy|brst)(_gsm)?_dmpa$', 'once'))|| ...
-      ~isempty(regexp(v.name,'^mms[1-4]_[d,a]fg_(srvy|brst)_l2pre_(gse|gsm|dmpa|bcs)$', 'once'))%AFG/DFGb1
+  if (~isempty(regexp(v.name,'^mms[1-4]_[d,a]fg_(srvy|brst)(_gsm)?_dmpa$', 'once'))|| ...
+      ~isempty(regexp(v.name,'^mms[1-4]_[d,a]fg_(srvy|brst)_l2pre_(gse|gsm|dmpa|bcs)$', 'once')) || ...
+      ~isempty(regexp(v.name,'^mms[1-4]_fgm_b_(gse|gsm|dmpa|bcs)_(srvy|brst)_l2$', 'once')) || ...
+      ~isempty(regexp(v.name,'^mms[1-4]_[d,a]fg_b_(gse|gsm|dmpa|bcs)_(srvy|brst)_l2pre$', 'once')) )%AFG/DFGb1
     data = data(:,1:3); % strip Btot
     varType = 'vec_xyz';
     ud.LABL_PTR_1.data = ud.LABL_PTR_1.data(1:3,:);
@@ -45,6 +47,21 @@ else
     siConversion = '1.0e3>m';
   else varType = 'scalar';
   end
+end
+
+% Shift times to center of deltat- and deltat+ for l2 particle
+% distributions and moments
+if ~isempty(regexp(v.name,'^mms[1-4]_d[ei]s_','once'))
+	if isfield(v.DEPEND_0,'DELTA_MINUS_VAR') && isfield(v.DEPEND_0,'DELTA_PLUS_VAR'),
+        if isfield(v.DEPEND_0.DELTA_MINUS_VAR,'data') && isfield(v.DEPEND_0.DELTA_PLUS_VAR,'data'),
+            irf.log('warning','Times shifted to center of dt-+. dt-+ are recalculated');
+            toffset = (int64(v.DEPEND_0.DELTA_PLUS_VAR.data)-int64(v.DEPEND_0.DELTA_MINUS_VAR.data))*1e6/2;
+            tdiff = (int64(v.DEPEND_0.DELTA_PLUS_VAR.data)+int64(v.DEPEND_0.DELTA_MINUS_VAR.data))*1e6/2;
+            v.DEPEND_0.DELTA_MINUS_VAR.data = tdiff;
+            v.DEPEND_0.DELTA_PLUS_VAR.data = tdiff;
+            v.DEPEND_0.data = v.DEPEND_0.data+toffset;
+        end
+    end
 end
 
 if isempty(varType)

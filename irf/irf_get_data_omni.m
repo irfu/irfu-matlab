@@ -132,6 +132,10 @@ switch omniDatabase
 end
 
 %% Define request url and time interval
+if isa(tint,'GenericTimeArray') && length(tint)==2
+						tintTemp = tint.epochUnix;
+						tint = tintTemp(:)';
+end
 httpRequest = ['http://omniweb.gsfc.nasa.gov/cgi/nx1.cgi?activity=retrieve&spacecraft=' dataSource '&'];
 startDate   = irf_time(tint(1)        ,dateFormat);
 endDate     = irf_time(tint(2) + dtMin,dateFormat);
@@ -239,6 +243,6 @@ if getDataSuccess, % success in downloading from internet
 	f(f==999)=NaN;
 	f(f==99.99)=NaN;
 else % no success in getting data from internet
-	irf.log('warning','Can not get OMNI data form internet!');
+	irf.log('warning','Can not get OMNI data from internet!');
 	f=[];
 end

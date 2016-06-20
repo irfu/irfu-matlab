@@ -14,7 +14,14 @@ function res = db_index(flagIndexON,flagSave)
 
 narginchk(0,2)
 
-global MMS_DB; if isempty(MMS_DB), mms.db_init(), end
+global MMS_DB;
+if isempty(MMS_DB) ||  isempty(MMS_DB.databases),
+	mms.db_init();
+	if  isempty(MMS_DB.databases)
+		strTxt = 'No MMS database initialized. See help mms.db_init.';
+		irf.log('critical',strTxt); error(strTxt);
+	end
+end
 
 if nargin == 0, % display status
 	res = MMS_DB.index.enabled;

@@ -2,24 +2,22 @@
 % Curlometer method. 
 % Written by D. B. Graham
 
-Tint = irf.tint('2015-12-13T00:00:00.00Z/2015-12-13T12:00:00.00Z');
+Tint = irf.tint('2016-06-07T01:53:44.00Z/2016-06-07T19:30:34.00Z');
 
 %%
 ic = [1:4]; 
 
 c_eval('Bxyz?=mms.db_get_ts(''mms?_dfg_srvy_ql'',''mms?_dfg_srvy_dmpa'',Tint);');
 c_eval('Bxyz? = Bxyz?.resample(Bxyz1);',2:4);
-Bxyzav = (Bxyz1.data+Bxyz2.data+Bxyz3.data+Bxyz4.data)/4;
-Bxyzav = TSeries(Bxyz1.time,Bxyzav,'to',1);
+Bxyzav = irf.ts_vec_xyz(Bxyz1.time,(Bxyz1.data+Bxyz2.data+Bxyz3.data+Bxyz4.data)/4);
 
 c_eval('Exyz?=mms.db_get_ts(''mms?_edp_fast_ql_dce2d'',''mms?_edp_dce_xyz_dsl'',Tint);');
 c_eval('Exyz? = Exyz?.resample(Exyz1);',2:4);
-c_eval('[Exyz?,~]=irf_edb(Exyz?,Bxyz?,15,''E.B=0'');',[1:4]); % Removes some wake fields
+%c_eval('[Exyz?,~]=irf_edb(Exyz?,Bxyz?,15,''E.B=0'');',[1:4]); % Removes some wake fields
+Exyzav = irf.ts_vec_xyz(Exyz1.time,(Exyz1.data+Exyz2.data+Exyz3.data+Exyz4.data)/4);
 
-Exyzav = (Exyz1.data+Exyz2.data+Exyz3.data+Exyz4.data)/4;
-Exyzav = TSeries(Exyz1.time,Exyzav,'to',1);
-
-c_eval('ni?=mms.db_get_ts(''mms?_fpi_fast_sitl'',''mms?_fpi_DISnumberDensity'',Tint);');
+%c_eval('ni?=mms.db_get_ts(''mms?_fpi_fast_sitl'',''mms?_fpi_DISnumberDensity'',Tint);'); % For MP phases
+c_eval('ni?=mms.db_get_ts(''mms?_hpca_srvy_sitl_moments'',''mms?_hpca_hplus_number_density'',Tint);'); % For 1x phase
 c_eval('ni? = ni?.resample(ni1);',2:4);
 ni = irf.ts_scalar(ni1.time,(ni1.data+ni2.data+ni3.data+ni4.data)/4);
 ni = ni.resample(Bxyz1);
@@ -35,32 +33,27 @@ divovercurl = divB;
 divovercurl.data = abs(divovercurl.data)./j.abs.data;
 
 % Transform current density into field-aligned coordinates
-SCpos = [1 0 0]; % J_perp1 is closest to X direction
-
-Bmag = Bxyz1.abs.data;
-Rpar = Bxyz1.data./[Bmag Bmag Bmag];
-Rperpy = irf_cross(Rpar,SCpos);
-Rmag   = irf_abs(Rperpy,1);
-Rperpy = Rperpy./[Rmag Rmag Rmag];
-Rperpx = irf_cross(Rperpy, Rpar);
-Rmag   = irf_abs(Rperpx,1);
-Rperpx = Rperpx./[Rmag Rmag Rmag];
-
-jpar = dot(Rpar,j.data,2);
-jperp = dot(Rperpx,j.data,2);
-jperp2 = dot(Rperpy,j.data,2);
-
-jfac = irf.ts_vec_xyz(j.time,[jperp jperp2 jpar]);
+jfac = irf_convert_fac(j,Bxyzav,[1 0 0]);
 jfac.coordinateSystem = 'FAC';
 
 %%
-h = irf_plot(7,'newfigure');
+h = irf_plot(8,'newfigure');
 
-hca = irf_panel('BMMS1');
+hca = irf_panel('BMMS');
 irf_plot(hca,Bxyzav);
 ylabel(hca,{'B_{DMPA}','(nT)'},'Interpreter','tex');
 irf_legend(hca,{'B_{x}','B_{y}','B_{z}'},[0.88 0.10])
+irf_zoom(hca,'y',[-70 70]);
 irf_legend(hca,'(a)',[0.99 0.98],'color','k')
+
+mmsColors=[0 0 0; 1 0 0 ; 0 0.5 0 ; 0 0 1];
+hca = irf_panel('niMMS4'); set(hca,'ColorOrder',mmsColors)
+irf_pl_tx(hca,'ni?',1);
+ylabel(hca,{'n_i','(cm^{-3})'},'Interpreter','tex');
+set(hca,'yscale','log');
+irf_zoom(hca,'y',[1e-4 10]);
+irf_legend(hca,'(b)',[0.99 0.98],'color','k')
+irf_legend(hca,{'MMS1','MMS2','MMS3','MMS4'},[0.99 0.1],'color','cluster')
 
 hca = irf_panel('J');
 j.data = j.data*1e9;
@@ -106,5 +99,5 @@ irf_legend(hca,'(g)',[0.99 0.98],'color','k')
 
 title(h(1),'MMS - Current density and fields');
 
-irf_plot_axis_align(1,h(1:7))
-irf_zoom(h(1:7),'x',Tint);
+irf_plot_axis_align(1,h(1:8))
+irf_zoom(h(1:8),'x',Tint);

@@ -1,7 +1,7 @@
 function [hax,hcb] = plot_projection(varargin)
 %MMS.PLOT_PROJECTION Plots projection on a specified plane.
 %
-% [ax,hcb] = MMS.PLOT_PROJECTION(dist,'Opt1',OptVal1,...)
+% [ax,hcb] = MMS.PLOT_PROJECTION(dist,'Opt1',OptVal1,...) For PDist format
 % [ax,hcb] = MMS.PLOT_PROJECTION(dist,phi,theta,stepTable,energy0,energy1,'Opt1',OptVal1,...)
 % MMS.PLOT_PROJECTION(AX,...) - plot in axes AX.
 %
@@ -28,6 +28,9 @@ function [hax,hcb] = plot_projection(varargin)
 %   'vlim' - vmax in km/s, zoom in to XLim = YLim = vlim*[-1 1]
 %   'elevationlim' - in degrees [0 90], limiting elevation angle  
 %                    above/below projection plane to include in projection
+%   'scpot' - scpot (TSeries), Correct velocities for spacecraft potential. For a single
+%   value of tint the closest potential is used. For an interval the
+%   spacecraft potential is average over that interval.
 %
 %   Notes: If phi, theta, stepTable, energy0, energy1 are not specified
 %          then assumed values are used. 
@@ -59,6 +62,8 @@ else
   isDes = 1;
 end
 
+distunits = 's^3cm^{-6}'; % These used are assumed if data is not PDist format
+
 if isempty(dist); irf.log('warning','Empty input.'); return; end
 
 % Check inputs for angles and energies
@@ -81,11 +86,33 @@ if isa(args{2},'TSeries'),
     energy1Edges = [energy1Edges 10.^(log10(energy1(end))+dE)];
     anglespassed = 1;
 else
-    irf.log('notice','Angles and energies not passed. Assumed values used.')
-    energyEdges = 10.^linspace(log10(10),log10(30e3),33);
-    % Set up spherical coordinate system.
-    [~,polar] = hist([0 pi],16);
-    [~,azimuthal] = hist([0,2*pi],32);
+    if isa(dist,'PDist')
+        irf.log('notice','Data is PDist format.')
+        %Check if data is skymap
+        if ~strcmp(dist.type,'skymap')
+            irf.log('critical','PDist must be skymap format.');
+            return;
+        end
+        phi = TSeries(dist.time,dist.depend{1,2});
+        theta = dist.depend{1,3};
+        polar = theta*pi/180;
+        stepTable = TSeries(dist.time,dist.ancillary.energyStepTable);
+        energy0 = dist.ancillary.energy0;
+        energy1 = dist.ancillary.energy1;
+        distunits = dist.units;
+        dE = median(diff(log10(energy0)))/2;
+        energy0Edges = 10.^(log10(energy0)-dE);
+        energy0Edges = [energy0Edges 10.^(log10(energy0(end))+dE)];
+        energy1Edges = 10.^(log10(energy1)-dE);
+        energy1Edges = [energy1Edges 10.^(log10(energy1(end))+dE)];
+        anglespassed = 1;
+    else
+        irf.log('warning','Angles and energies not passed. Assumed values used.')
+        energyEdges = 10.^linspace(log10(10),log10(30e3),33);
+        % Set up spherical coordinate system.
+        [~,polar] = hist([0 pi],16);
+        [~,azimuthal] = hist([0,2*pi],32);
+    end
     args = args(2:end);
 end
  
@@ -97,6 +124,7 @@ have_clim = 0;
 have_vlim = 0;
 limElevation = 20;
 correctForBinSize = 0;
+includescpot = 0;
 
 x = [1 0 0]; y = [0 1 0]; z = [0 0 1]; % default vectors
 
@@ -183,6 +211,16 @@ while have_options
       doFlipX = 1;
     case 'flipy'
       doFlipY = 1;  
+	case 'scpot'
+      l = 2;
+      scpot = args{2};
+      if isa(scpot,'TSeries'),
+        includescpot = 1;
+        irf.log('notice','Spacecraft potential passed.')
+      else
+          includescpot = 0;
+          irf.log('notice','scpot not recognized. Not using it.')
+      end
   end
   args = args(l+1:end);  
   if isempty(args), break, end    
@@ -201,7 +239,7 @@ end
 if (notint && anglespassed),
     if (length(dist.time) > 1),
         [dist,phi,energy] = mms.psd_rebin(dist,phi,energy0,energy1,stepTable);
-        irf.log('notice','Rebinning distribution.')
+        irf.log('notice','Recompling distribution into 64 energy channels.')
         lengthE = 64;
         azimuthal = phi.data*pi/180;
         energyEdges = 10.^(log10(energy)-dE/2);
@@ -284,27 +322,49 @@ end
 % Plot projection plane
 if isempty(ax), fig = figure; ax = axes; axis(ax,'square'); end
 
-Units = irf_units; % Use IAU and CODATA values for fundamental constants.
-if isDes, m = Units.me; else m = Units.mp; end
+% Calculate spacecraft potential for distribution
+if includescpot,
+    if length(tint)==1,
+        [~,tId] = min(abs(scpot.time-tint));
+        scpot = scpot.data(tId);
+    else
+        scpot = scpot.tlim(tint);
+        scpot = irf.nanmean(scpot.data);
+    end
+else
+    scpot = 0;
+end
+    
 
-speedTable = sqrt(energyEdges*Units.e*2/m)*1e-3; % km/s
+Units = irf_units; % Use IAU and CODATA values for fundamental constants.
+if isDes, 
+    m = Units.me; 
+else
+    m = Units.mp;
+    scpot = -scpot;
+end
+
+speedTable = real(sqrt((energyEdges-scpot)*Units.e*2/m)*1e-3); % km/s
+
 rE = speedTable;
 %rE = energyTable;
 plX = rE'*cos(edgesAz+pi);
 plY = rE'*sin(edgesAz+pi);
 
+FF(FF == 0) = NaN; % set to white the zero points
+
 if isDes; % make electron velocities 10^3 km/s
-  hs = surf(ax,plX*1e-3,plY*1e-3,plY*0,log10(FF'*1e30)); % s+3*km-6
+  hs = surf(ax,plX*1e-3,plY*1e-3,plY*0,log10(FF'));
   vUnitStr= '(10^3 km/s)'; 
   if have_vlim, ax.YLim = vlim*[-1 1]*1e-3; ax.XLim = ax.YLim; end
   hcb = colorbar('peer',ax);
-  hcb.YLabel.String = 'log_{10} f_e (s^3km^{-6})';
+  hcb.YLabel.String = ['log_{10} f_e (' distunits ')']; 
 else % ion velocities km/s
-  hs = surf(ax,plX,plY,plY*0,log10(FF'*1e30)); % s+3*km-6  
+  hs = surf(ax,plX,plY,plY*0,log10(FF'));  
   vUnitStr= '(km/s)'; 
   if have_vlim, ax.YLim = vlim*[-1 1]; ax.XLim = ax.YLim; end
   hcb = colorbar('peer',ax);
-  hcb.YLabel.String = 'log_{10} f_i (s^3km^{-6})';
+  hcb.YLabel.String = ['log_{10} f_i (' distunits ')']; 
 end
 
 ax.XLabel.String = [vlabelx ' ' vUnitStr];

@@ -26,7 +26,9 @@ narginchk(3,3);
 global MMS_CONST ENVIR
 if isempty(MMS_CONST), MMS_CONST = mms_constants(); end
 % ENVIR gets loaded from mms_sdc_sdp_init, should not be empty here.
-if isempty(ENVIR), errStr='Empty ENVIR'; irf.log(errStr); error(errStr); end
+if isempty(ENVIR)
+  errStr='Empty ENVIR'; irf.log('critical',errStr); error(errStr); 
+end
 if isa(time,'GenericTime'), time = time.ttns; end
 
 switch procId
