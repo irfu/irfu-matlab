@@ -35,7 +35,7 @@ if isempty(spacecraft),
 else
 	ic=spacecraft;
 end
-
+global MMS_CONST
 if(isempty(MMS_CONST)), MMS_CONST=mms_constants; end
 
 %% Choose action
