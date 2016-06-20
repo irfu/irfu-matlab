@@ -35,6 +35,8 @@ if isempty(spacecraft),
 else
 	ic=spacecraft;
 end
+global MMS_CONST
+if(isempty(MMS_CONST)), MMS_CONST=mms_constants; end
 
 %% Choose action
 irf.log('debug',['action=' action]);
@@ -235,7 +237,7 @@ switch lower(action)
             data.v2=eval(['[' get(data.vec2Hndl,'string') ']']);
             if length(data.v2)==1, data.flag_v2=0;end;
         end
-       
+%% USE MMS_CONST.Phaseshift.p1 etc..
         phase_p1=data.phase/180*pi + pi/6;
         phase_p3=data.phase/180*pi + 2*pi/3;
         phase_p2=data.phase/180*pi + 7*pi/6;

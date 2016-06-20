@@ -3,10 +3,12 @@
 % Written by D. B. Graham
 %
 % Quantities calculated so far are:
-% (1) sqrt(Q) - Based on Swisdak, 2015 (arxiv). Not
-% sure what value is expected in EDR's; lets say something above ~ 0.1. 
-% (2) Dng - Based on Aunia et al., 2013; Computed based on the off-diagonal
+% (1) sqrt(Q) - Based on Swisdak, GRL ,2016. Values around 0.1 indicate 
+% electron agyrotropies. Computed based on the off-diagonal
 % terms in the pressure tensor for Pe_perp1 = Pe_perp2. 
+% (2) Dng - Based on Aunia et al., 2013; Computed based on the off-diagonal
+% terms in the pressure tensor for Pe_perp1 = Pe_perp2. Similar to sqrt(Q)
+% but with different normalization. 
 % (3) A phi_e = 2 abs(Perp1-Perp2)/(Perp1+Perp2). 
 % This is a measure of electron agyrotropy. Values of 
 % O(1) are expected for EDRs. We transform the pressure tensor into 
@@ -32,21 +34,18 @@
 %
 % Notes: kappa_e (not yet included) is taken to be the largest value of
 % epsilon_e and delta_e at any given point. 
-% Requires electron distributions with version number v1.0.0 or higher. 
+% Requires electron distributions with version number v2.0.0 or higher. 
 % Calculations of agyrotropy measures (1)--(3) become unreliable at low
-% densities n_e <~ 5 cm^-3, when the raw particle counts are low. 
+% densities n_e <~ 2 cm^-3, when the raw particle counts are low. 
 
 %% Time interval selection
 Tint = irf.tint('2015-10-30T05:15:20.00Z/2015-10-30T05:16:20.00Z');
 
 %% Load data
 ic = 1:4;
-tic;
 c_eval('Bxyz?=mms.db_get_ts(''mms?_fgm_srvy_l2'',''mms?_fgm_b_dmpa_srvy_l2'',Tint);',ic);
 c_eval('E? = mms.db_get_ts(''mms?_edp_brst_l2_dce'',''mms?_edp_dce_dsl_brst_l2'',Tint);',ic);
-toc;
 
-tic;
 for ii=1:4;
    c_eval('ne?=mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_numberdensity_dbcs_brst'',Tint);',ii);
    c_eval('Uevec? = mms.get_data(''Ve_dbcs_fpi_brst_l2'',Tint,?);',ii);
@@ -54,7 +53,6 @@ for ii=1:4;
    c_eval('Pe? = mms.get_data(''Pe_dbcs_fpi_brst_l2'',Tint,?);',ii);
    c_eval('Uivec? = mms.get_data(''Vi_dbcs_fpi_brst_l2'',Tint,?);',ii);
 end
-toc;
 
 c_eval('E? = E?.resample(ne?);',ic);
 c_eval('Bxyz? = Bxyz?.resample(ne?);',ic);
@@ -77,8 +75,7 @@ c_eval('agyro? = 2*abs(Peqq?.yy.data-Peqq?.zz.data)./(Peqq?.yy.data+Peqq?.zz.dat
 c_eval('agyro? = irf.ts_scalar(ne?.time,agyro?);',ic);
 
 % Compute temperature ratio An
-c_eval('Temprat? = Pepp?.xx.data./(Pepp?.yy.data);',ic);
-c_eval('Temprat? = irf.ts_scalar(ne?.time,Temprat?);',ic);
+c_eval('Temprat? = Pepp?.xx/(Pepp?.yy);',ic);
 
 % Compute electron Mach number
 Units = irf_units; 
@@ -170,4 +167,4 @@ irf_zoom(h(1:nplots),'x',Tint);
 
 %set(gcf, 'InvertHardCopy', 'off');
 %set(gcf,'paperpositionmode','auto') % to get the same on paper as on screen
-%print('-dpng','-painters','-r600','EDRsignatures2.png');
+%print('-dpng','-painters','-r300','EDRsignatures.png');

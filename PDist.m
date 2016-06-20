@@ -193,17 +193,18 @@ classdef PDist < TSeries
     end
     function PD = elim(obj,eint)  
       energy = obj.depend{1};
+      
       % Picks out energies in an interval, or the closest energy (to be implemented!)
-      if numel(eint) == 2
-        elevels0 = intersect(find(energy(1,:)>eint(1)),find(energy(1,:)<eint(2)));
-        elevels1 = intersect(find(energy(2,:)>eint(1)),find(energy(2,:)<eint(2)));      
+      if numel(eint) == 2    
+        elevels0 = intersect(find(obj.ancillary.energy0>eint(1)),find(obj.ancillary.energy0<eint(2)));
+        elevels1 = intersect(find(obj.ancillary.energy1>eint(1)),find(obj.ancillary.energy1<eint(2)));                                 
         if numel(elevels0) ~= numel(elevels1)
           warning('Energy levels differ for different times. Including the largest interval.')
           elevels = unique([elevels0,elevels1]);
         else
           elevels = elevels0;
-        end
-        disp(['Effective eint = [' num2str(min(min(energy(1:2,elevels))),'%g') ' ' num2str(max(max(energy(1:2,elevels))),'%g') ']'])
+        end         
+        disp(['Effective eint = [' num2str(min(min(energy(:,elevels))),'%g') ' ' num2str(max(max(energy(:,elevels))),'%g') ']'])
       else
         ediff0 = abs(energy(1,:)-eint);
         ediff1 = abs(energy(2,:)-eint);
@@ -211,8 +212,7 @@ classdef PDist < TSeries
         else ediff = ediff1; end        
         elevels = find(ediff==min(ediff));
         disp(['Effective energies alternate in time between ' num2str(energy(1,elevels),'%g') ' and ' num2str(energy(2,elevels),'%g') ''])
-      end
-      
+      end      
       tmpEnergy = energy(:,elevels);
       tmpData = obj.data(:,elevels,:,:);      
       
@@ -250,17 +250,29 @@ classdef PDist < TSeries
     end
     function spec = specrec(obj,varargin)      
       if isempty(varargin); spectype = 'energy'; else spectype = varargin{1}; end % set default
+      
+      switch obj.units
+        case {'s^3/km^6','s^3/cm^6','s^3/m^6'}
+          spec.p_label = {'PSD',obj.units};
+        case {'s^3/km^6','s^3/cm^6','s^3/m^6'}
+          spec.p_label = {'PSD',obj.units};
+        case {'keV/(cm^2 s sr keV)'}
+          spec.p_label = {'DEF',obj.units};
+        case {'1/(cm^2 s sr keV)'}
+          spec.p_label = {'PEF',obj.units};  
+        otherwise
+          spec.p_label = {obj.units};
+      end
       switch spectype
         case 'energy'
           spec.t = obj.time.epochUnix;
-          spec.p = double(obj.data);
-          spec.p_label = {'dEF',obj.units};
+          spec.p = double(obj.data);          
           spec.f = single(obj.depend{1});
-          spec.f_label = {['E_ ' obj.species(1) ' (eV)']};
+          spec.f_label = {['E_' obj.species(1) ' (eV)']};
         case {'pitchangle','pa'}
           spec.t = obj.time.epochUnix;
           spec.p = double(squeeze(nanmean(obj.data,2))); % nanmean over energies
-          spec.p_label = {'dEF',obj.units};
+          %spec.p_label = {'dEF',obj.units};
           spec.f = single(obj.depend{2});
           spec.f_label = {'\theta (deg.)'};
         otherwise % energy is default          
@@ -450,7 +462,10 @@ classdef PDist < TSeries
       PD.depend{1} = energyr;
       PD.depend{2} = phir.data;  
       
-      if isfield(PD.ancillary,'energy0'); PD.ancillary = setfield(PD.ancillary,'energy0',PD.depend{1}); end
+      if isfield(PD.ancillary,'energy0'); 
+        PD.ancillary = setfield(PD.ancillary,'energy0',PD.depend{1}); 
+        PD.ancillary = setfield(PD.ancillary,'energy1',PD.depend{1}); 
+      end
       if isfield(PD.ancillary,'esteptable'); PD.ancillary = setfield(PD.ancillary,'esteptable',zeros(PD.length,1)); end
     end
     function m = mass(obj)
