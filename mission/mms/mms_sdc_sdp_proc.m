@@ -44,6 +44,23 @@ elseif(isempty(DCV_File) && procId~=MMS_CONST.SDCProc.l2pre )
   irf.log('debug','It appears we are running with the dcv data combined into dce file.');
 end
 
+% When running multiple instances in parallel at SDC sometimes we cannot
+% access the mat file "~./matlab_datastore_hostname" on all machines. Add a
+% delay on the problematic machine and try again.
+dbSuccess = false; dbCounter=0;
+while(~dbSuccess && dbCounter<=5)
+  try
+    dbCounter = dbCounter + 1;
+    mms.db_init('local_file_db', ENVIR.DATA_PATH_ROOT); % Setup mms database
+    dbSuccess = true; % if previous command was successful then exit loop
+  catch ME
+    irf.log('warning', 'FAILED to initiate MMS db, trying again in one second.');
+    irf.log('warning', ['Error was:', ME.identifier, ' with message: ', ME.message]);
+    pause(floor(rand(1)*5)+1); % Sleep random value up to 6 second, then try again.
+  end
+end
+if(~dbSuccess), irf.log('critical', 'FAILED to initiate MMS db'); end
+
 %% Processing for SCPOT, QL or other products.
 % Load and process identified files in the following order first any of the
 % available files out of "DCE", "HK_10E", "HK_101", "HK_105", then lastly
@@ -92,7 +109,10 @@ switch procId
     tint(tint.tlim(irf.tint('2015-01-01T00:00:00.000000000Z/2040-12-31T23:59:59.999999999Z')));
     % Create a time interval for start and stop of dce epoch times.
     tint = irf.tint(tint.start, tint.stop);
-    mms.db_init('local_file_db', ENVIR.DATA_PATH_ROOT); % Setup mms database
+    if(~dbSuccess)
+      % Setup mms database, if it failed several times before.
+      mms.db_init('local_file_db', ENVIR.DATA_PATH_ROOT);
+    end
     if(isempty(DEFATT_File))
       % Go looking for DEFATT to match tint.
       list = mms.db_list_files(['mms',HdrInfo.scIdStr,'_ancillary_defatt'],tint);
@@ -236,7 +256,10 @@ switch procId
       tint(tint.tlim(irf.tint('2015-01-01T00:00:00.000000000Z/2040-12-31T23:59:59.999999999Z')));
       % Create a time interval for start and stop of dce epoch times.
       tint = irf.tint(tint.start, tint.stop);
-      mms.db_init('local_file_db', ENVIR.DATA_PATH_ROOT); % Setup mms database
+      if(~dbSuccess)
+        % Setup mms database, if it failed several times before.
+        mms.db_init('local_file_db', ENVIR.DATA_PATH_ROOT);
+      end
       if(isempty(DEFATT_File))
         % Go looking for DEFATT to match tint.
         list = mms.db_list_files(['mms',HdrInfo.scIdStr,'_ancillary_defatt'],tint);
@@ -375,7 +398,9 @@ end
       if(~ischar(varargin{j})), error('MMS_SDC_SDP_PROC input parameter must be string.'); end
       [pathIn, fileIn, extIn] = fileparts(varargin{j});
       if any([isempty(pathIn), isempty(fileIn), isempty(extIn)])
-        error(['Expecting cdf file (full path), got: ', varargin{j}]);
+        errStr = sprintf('Expected files with full paths, got: %s as input argument number %i.', ...
+          varargin{j}, j);
+        irf.log('critical', errStr); error(errStr);
       end
   
       if j==1,

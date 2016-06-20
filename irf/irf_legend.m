@@ -14,6 +14,7 @@ function ht=irf_legend(varargin)
 %
 % nonstandard text property values:
 %  'color'='cluster' - if 4 labels given write them in cluster colors (black,red,green,blue)
+%  'color'='mms' - MMS colors
 %
 % Examples:
 % irf_legend({'B_X','B_Y','B_Z','B'},[0.02, 0.1]);
@@ -69,6 +70,8 @@ end
 unit_format='normalized';
 colord=get(axis_handle, 'ColorOrder');
 cluster_colors=[[0 0 0];[1 0 0];[0 0.5 0];[0 0 1];[1 0 1];[1 1 0];[0 1 1]];
+mms_colors=[[0 0 0];[213,94,0];[0,158,115];[86,180,233]]/255;
+  
 
 % use smart alignment in upper part of panel vertical alignment='top',
 % when vertical position above 1 then again 'bottom', in bottom part use
@@ -132,6 +135,8 @@ for i=label_order, % start with first label first
         end
         if strcmpi(textprop,'color') && strcmp(textvalue,'cluster') && i<=4,
             set(ht(i),'color',cluster_colors(i,:));
+        elseif strcmpi(textprop,'color') && strcmp(textvalue,'mms') && i<=4,
+            set(ht(i),'color',mms_colors(i,:));
         else
             set(ht(i),textprop,textvalue);
         end

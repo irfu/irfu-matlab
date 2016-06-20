@@ -120,6 +120,36 @@ function [h,yy,zz] = arrow(varargin)
 % Permission is granted to Dr. Josef Bigun to distribute ARROW with his
 % software to reproduce the figures in his image analysis text.
 
+% Source: Matlab Central File Exchange
+% https://www.mathworks.com/matlabcentral/fileexchange/278-arrow-m/
+
+% LICENSE
+% Copyright (c) 2009, Erik A Johnson
+% All rights reserved.
+% 
+% Redistribution and use in source and binary forms, with or without
+% modification, are permitted provided that the following conditions are
+% met:
+% 
+% * Redistributions of source code must retain the above copyright
+%   notice, this list of conditions and the following disclaimer.
+% * Redistributions in binary form must reproduce the above copyright
+%   notice, this list of conditions and the following disclaimer in
+%   the documentation and/or other materials provided with the distribution
+% 
+%   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+%   AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+%   IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+%   ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+%   LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+%   CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+%   SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+%   INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+%   CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+%   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+%   POSSIBILITY OF SUCH DAMAGE.
+% END OF LICENSE
+
 % global variable initialization
 global ARROW_PERSP_WARN ARROW_STRETCH_WARN ARROW_AXLIMITS
 if isempty(ARROW_PERSP_WARN  ), ARROW_PERSP_WARN  =1; end;
@@ -420,7 +450,13 @@ if (length(page      )==1),   page       = o * page      ;   end;
 if (size(crossdir  ,1)==1),   crossdir   = o * crossdir  ;   end;
 if (length(ends      )==1),   ends       = o * ends      ;   end;
 if (length(ispatch   )==1),   ispatch    = o * ispatch   ;   end;
-ax = o * gca;
+if verLessThan('matlab','8.4')
+  % R2014a and earlier
+  ax = o * gca;
+else
+  % R2014b and later
+  ax = repmat(gca,narrows,1);
+end
 
 % if we've got handles, get the defaults from the handles
 if ~isempty(oldh),
@@ -501,7 +537,13 @@ while (any(axnotdone)),
 	curpage = page(ii);
 	% get axes limits and aspect ratio
 	axl = [get(curax,'XLim'); get(curax,'YLim'); get(curax,'ZLim')];
-	oldaxlims(min(find(oldaxlims(:,1)==0)),:) = [curax reshape(axl',1,6)];
+    if verLessThan('matlab','8.4')
+      % R2014a and earlier
+      oldaxlims(min(find(oldaxlims(:,1)==0)),:) = [curax reshape(axl',1,6)];
+    else
+      % R2014b and later
+      oldaxlims(min(find(oldaxlims(:,1)==0)),:) = [ii reshape(axl',1,6)];
+    end
 	% get axes size in pixels (points)
 	u = get(curax,'Units');
 	axposoldunits = get(curax,'Position');
@@ -587,7 +629,14 @@ while (any(axnotdone)),
 		axl(ii,[1 2])=-axl(ii,[2 1]);
 	end;
 	% compute the range of 2-D values
-	curT = get(curax,'Xform');
+    if verLessThan('matlab','8.4')
+      % R2014a and earlier
+      curT = get(curax,'Xform');
+    else
+      % R2014b and later
+      [azA,elA] = view(curax);
+      curT = viewmtx(azA,elA);
+    end    
 	lim = curT*[0 1 0 1 0 1 0 1;0 0 1 1 0 0 1 1;0 0 0 0 1 1 1 1;1 1 1 1 1 1 1 1];
 	lim = lim(1:2,:)./([1;1]*lim(4,:));
 	curlimmin = min(lim')';
@@ -955,9 +1004,16 @@ if (nargout<=1),
 	if isempty(oldaxlims),
 		ARROW_AXLIMITS = [];
 	else,
-		lims = get(oldaxlims(:,1),{'XLim','YLim','ZLim'})';
-		lims = reshape(cat(2,lims{:}),6,size(lims,2));
-		mask = arrow_is2DXY(oldaxlims(:,1));
+		if verLessThan('matlab','8.4')
+          % R2014a and earlier
+          lims = get(oldaxlims(:,1),{'XLim','YLim','ZLim'})';
+          mask = arrow_is2DXY(oldaxlims(:,1));
+        else
+          % R2014b and later
+          lims = get(ax(oldaxlims(:,1)),{'XLim','YLim','ZLim'})';
+          mask = arrow_is2DXY(ax(oldaxlims(:,1)));
+        end
+        lims = reshape(cat(2,lims{:}),6,size(lims,2));
 		oldaxlims(mask,6:7) = lims(5:6,mask)';
 		ARROW_AXLIMITS = oldaxlims(find(any(oldaxlims(:,2:7)'~=lims)),:);
 		if ~isempty(ARROW_AXLIMITS),

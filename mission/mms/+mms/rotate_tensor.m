@@ -82,7 +82,7 @@ elseif isa(varargin{7},'char'),
     Ptensor(:,2,3) = varargin{5}.data;
     Ptensor(:,3,3) = varargin{6}.data;
 else
-    irf_log('proc','Something is wrong with the input.')
+    irf.log('critical','Something is wrong with the input.');
     help mms.rotate_tensor;
     return;
 end    
@@ -92,9 +92,9 @@ qqeq = 0;
 Rotmat = zeros(length(Petimes),3,3);
 
 if (rotflag(1) == 'f'),
-    irf_log('proc','Transforming tensor into field-aligned coordinates.')
+    irf.log('notice','Transforming tensor into field-aligned coordinates.');
     if (nargin == rotflagpos)
-        irf_log('proc','B TSeries is missing.')
+        irf.log('critical','B TSeries is missing.');
         return;
     end
     Bback = varargin{rotflagpos+1};
@@ -105,7 +105,7 @@ if (rotflag(1) == 'f'),
         elseif (isa(varargin{4},'char') && varargin{4}(1) == 'q'),
             qqeq = 1;
         else
-            irf_log('proc','Flag not recognized no additional rotations applied.')
+            irf.log('critical','Flag not recognized no additional rotations applied.');
         end
     end
     if (nargin == 9)
@@ -114,7 +114,7 @@ if (rotflag(1) == 'f'),
         elseif (isa(varargin{9},'char') && varargin{9}(1) == 'q'),
             qqeq = 1;
         else
-            irf_log('proc','Flag not recognized no additional rotations applied.')
+            irf.log('critical','Flag not recognized no additional rotations applied.');
         end
     end
     Bvec = Bback/Bback.abs;
@@ -130,16 +130,16 @@ if (rotflag(1) == 'f'),
     Rotmat(:,2,:) = Ry;
     Rotmat(:,3,:) = Rz;
 elseif (rotflag(1) == 'r'),
-    irf_log('proc','Transforming tensor into user defined coordinate system.')
+    irf.log('notice','Transforming tensor into user defined coordinate system.');
     if (nargin == rotflagpos),
-        irf_log('proc','Vector(s) is(are) missing.')
+        irf.log('critical','Vector(s) is(are) missing.');
         return;
     end
     vectors = varargin(rotflagpos+1:end);
     if (numel(vectors) == 1),
         Rx = vectors{1};
         if(length(Rx) ~= 3);
-            irf_log('proc','Vector format not recognized.')
+            irf.log('critical','Vector format not recognized.');
             return;
         end
         Rx = Rx/norm(Rx);
@@ -157,14 +157,14 @@ elseif (rotflag(1) == 'r'),
         Rz = Rz/norm(Rz);
         % TO DO: add check that vectors are orthogonal
     else
-        irf_log('proc','Vector format not recognized.')
+        irf.log('critical','Vector format not recognized.');
         return; 
     end
     Rotmat(:,1,:) = ones(length(Petimes),1)*Rx;
     Rotmat(:,2,:) = ones(length(Petimes),1)*Ry;
     Rotmat(:,3,:) = ones(length(Petimes),1)*Rz;    
 elseif (rotflag(1) == 'g'),
-    irf_log('proc','Transforming tensor into GSE coordinates.')
+    irf.log('notice','Transforming tensor into GSE coordinates.');
     SCnum = varargin{rotflagpos+1};
 	Tint = irf.tint(Petimes.start.utc,Petimes.stop.utc);
 	c_eval('defatt = mms.db_get_variable(''mms?_ancillary_defatt'',''zra'',Tint);',SCnum);
@@ -188,7 +188,7 @@ elseif (rotflag(1) == 'g'),
     Rotmat(:,2,:) = [0*a a.*Rz	-a.*Ry];
     Rotmat(:,3,:) = [Rx	Ry Rz];
 else
-    irf_log('proc','Flag is not recognized.')
+    irf.log('critical','Flag is not recognized.');
     return;
 end
 
@@ -199,7 +199,7 @@ for ii = 1:length(Petimes);
 end
 
 if ppeq,
-    irf_log('proc','Rotating tensor so perpendicular diagonal components are equal.')
+    irf.log('notice','Rotating tensor so perpendicular diagonal components are equal.');
     theta = 0.5*atan((Ptensorp(:,3,3)-Ptensorp(:,2,2))./(2*Ptensorp(:,2,3)));
     for ii = 1:length(Petimes);
         rottemp = [1 0 0; 0 cos(theta(ii)) sin(theta(ii)); 0 -sin(theta(ii)) cos(theta(ii))];
@@ -208,7 +208,7 @@ if ppeq,
 end
 
 if qqeq,
-    irf_log('proc','Rotating tensor so perpendicular diagonal components are most unequal.')
+    irf.log('notice','Rotating tensor so perpendicular diagonal components are most unequal.');
     theta = 0.5*atan((2*Ptensorp(:,2,3))./(Ptensorp(:,3,3)-Ptensorp(:,2,2)));
     for ii = 1:length(Petimes);
         rottemp = [1 0 0; 0 cos(theta(ii)) -sin(theta(ii)); 0 sin(theta(ii)) cos(theta(ii))];
@@ -218,9 +218,9 @@ end
 
 % Construct output
 if rtntensor,
-    Pe = irf.ts_tensor_xyz(Petimes,Ptensorp);
+  Pe = irf.ts_tensor_xyz(Petimes,Ptensorp); 
 else % for backwards compability
 	Pe = TSeries(Petimes,Ptensorp);
 end
-
+Pe.units = varargin{1}.units;
 end

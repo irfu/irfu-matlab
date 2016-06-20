@@ -1,3 +1,4 @@
 2015-12-11, No SFIT data on MMS4
 2015-12-12, No SFIT data on MMS4
 2016-01-21, No SFIT data on MMS4 after 22:00
+2016-03-08, No FPI data from this point on.

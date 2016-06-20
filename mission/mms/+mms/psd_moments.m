@@ -32,6 +32,10 @@ function particlemoments = psd_moments(varargin)
 %   correcting for spacecraft potential. 
 %   'enchannels' - set energy channels to integrate over [min max]; min and max
 %   between must be between 1 and 32.
+%   'partialmoms' - use a binary array (or TSeries) (pmomsarr) to select which psd points are used
+%   in the moments calculation. pmomsarr must be a binary array (1s and 0s, 1s correspond to points used).
+%   Array (or data of TSeries) must be the same size as pdist.data. For
+%   examples see Example_MMS_partialmoments.
 %
 % Output: 
 %   psd_moments - structure containing the particle moments: density, bulk
@@ -67,12 +71,12 @@ end
 % Check if data is fast or burst resolution
 if isa(varargin{7},'TSeries'),
     isbrstdata = 1;
-    irf_log('proc','Burst resolution data is used.')
+    irf.log('notice','Burst resolution data is used.');
 elseif (varargin{7}(1) == 'f'),
     isbrstdata = 0;
-    irf_log('proc','Fast resolution data is used.')
+    irf.log('notice','Fast resolution data is used.');
 else
-    irf_log('proc','Something is wrong with the input.')
+    irf.log('critical','Something is wrong with the input.');
     nargin
     help psd_moments;
     return;
@@ -151,19 +155,39 @@ while options
                 ende = find(energy0 < Eminmax(2));
                 ende = ende(end);
                 intenergies = starte:ende;
-                irf_log('proc','Using partial energy range')
+                irf.log('notice','Using partial energy range');
             end
       	case 'noscpot'
             if numel(args)>1 && args{2};
                 SCpot.data = zeros(size(SCpot.data));
-                irf_log('proc','Setting spacecraft potential to zero.')
+                irf.log('notice','Setting spacecraft potential to zero.');
             end
         case 'enchannels'
             if numel(args)>1 && isnumeric(args{2}),
                 intenergies = args{2}(1):args{2}(2);
             end
+        case 'partialmoms'
+            if numel(args)>1,
+                partialmoms = args{2};
+                if isa(partialmoms,'TSeries'), 
+                    partialmoms = partialmoms.data;
+                end
+                % Check size of partialmoms
+                if (size(partialmoms) == size(pdist.data)),
+                    sumones = sum(sum(sum(sum(partialmoms))));
+                    sumzeros = sum(sum(sum(sum(-partialmoms+1))));
+                    if ((sumones+sumzeros) == numel(pdist.data)),
+                        irf.log('notice','partialmoms is correct. Partial moments will be calculated');
+                        pdist.data = pdist.data.*partialmoms;
+                    else
+                        irf.log('notice','All values are not ones and zeros in partialmoms. Full moments will be calculated.');
+                    end
+                else
+                    irf.log('notice','Size of partialmoms is wrong. Full moments will be calculated.');
+                end
+            end
         otherwise
-            irf_log('fcal',['Unknown flag: ' args{1}])
+            irf.log('critical',['Unknown flag: ' args{1}]);
             l=1;
             break
     end
@@ -171,7 +195,7 @@ while options
     if isempty(args), options=0; end
 end
 
-irf_log('proc',strcat('Integrating over energy levels ',num2str(min(intenergies)),' to ',num2str(max(intenergies))));
+irf.log('notice',strcat('Integrating over energy levels ',num2str(min(intenergies)),' to ',num2str(max(intenergies))));
 
 % Define constants
 Units = irf_units; % Use IAU and CODATA values for fundamental constants.
@@ -180,14 +204,14 @@ kb = Units.kB;
 
 if (particletype(1) == 'e'),
     pmass = Units.me;
-    irf_log('proc','Particles are electrons')
+    irf.log('notice','Particles are electrons');
 elseif (particletype(1) == 'i'),
     pmass = Units.mp;
     SCpot.data = -SCpot.data;
-    irf_log('proc','Particles are Ions')
+    irf.log('notice','Particles are Ions');
 else
     particlemoments = NaN;
-    irf_log('proc','Could not identify the particle type')
+    irf.log('critical','Could not identify the particle type');
     return;
 end
 
@@ -317,9 +341,10 @@ P_psd(:,6) = P_psd(:,6)-pmass*n_psd.*V_psd(:,3).*V_psd(:,3);
 Ptrace = (P_psd(:,1)+P_psd(:,4)+P_psd(:,6));
 T_psd = P_psd./([n_psd n_psd n_psd n_psd n_psd n_psd])/kb;
 H_psd = pmass/2*H_psd;
-H_psd(:,1) = H_psd(:,1)-(V_psd(:,1).*P_psd(:,1)+V_psd(:,2).*P_psd(:,2)+V_psd(:,3).*P_psd(:,3))-0.5*V_psd(:,1).*Ptrace;
-H_psd(:,2) = H_psd(:,2)-(V_psd(:,1).*P_psd(:,2)+V_psd(:,2).*P_psd(:,4)+V_psd(:,3).*P_psd(:,5))-0.5*V_psd(:,2).*Ptrace;
-H_psd(:,3) = H_psd(:,3)-(V_psd(:,1).*P_psd(:,3)+V_psd(:,2).*P_psd(:,5)+V_psd(:,3).*P_psd(:,6))-0.5*V_psd(:,3).*Ptrace;
+Vabs2 = V_psd(:,1).^2+V_psd(:,2).^2+V_psd(:,3).^2;
+H_psd(:,1) = H_psd(:,1)-(V_psd(:,1).*P_psd(:,1)+V_psd(:,2).*P_psd(:,2)+V_psd(:,3).*P_psd(:,3))-0.5*V_psd(:,1).*Ptrace-0.5*pmass*n_psd.*Vabs2.*V_psd(:,1);
+H_psd(:,2) = H_psd(:,2)-(V_psd(:,1).*P_psd(:,2)+V_psd(:,2).*P_psd(:,4)+V_psd(:,3).*P_psd(:,5))-0.5*V_psd(:,2).*Ptrace-0.5*pmass*n_psd.*Vabs2.*V_psd(:,2);
+H_psd(:,3) = H_psd(:,3)-(V_psd(:,1).*P_psd(:,3)+V_psd(:,2).*P_psd(:,5)+V_psd(:,3).*P_psd(:,6))-0.5*V_psd(:,3).*Ptrace-0.5*pmass*n_psd.*Vabs2.*V_psd(:,3);
 
 % Convert to typical units (/cc, km/s, nP, eV, and ergs/s/cm^2).
 n_psd = n_psd/1e6;

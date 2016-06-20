@@ -44,8 +44,12 @@ function [Y,Nsum] = moving_average(X,F,DIM)
 %   http://www.mathworks.com/matlabcentral/fileexchange/loadAuthor.do?objec
 %   tType=author&objectId=1093874
 
+% Updated source: https://www.mathworks.com/matlabcentral/fileexchange/12276-moving-average-v3-1--mar-2008-/
+
 %   2008 Mar. Use CUMSUM as RUNMEAN by Jos van der Geest, no more
 %   subfunctions.
+
+% LICENSE UNSPECIFIED
 
 %% Error checking:
 if ~nargin

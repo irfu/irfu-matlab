@@ -20,7 +20,7 @@ classdef mms_local_file_db < mms_file_db
         errStr = 'rootPath must be a directory path name';
         irf.log('critical',errStr), error(errStr)
       elseif exist(rootPath,'dir')~=7
-        errStr = sprintf('DB rootPath (%s) does not esist. Not mounted?',rootPath);
+        errStr = ['DB rootPath (',rootPath,') does not exist. Not mounted?'];
         irf.log('critical',errStr), error(errStr)
       end
 		end
@@ -282,8 +282,9 @@ classdef mms_local_file_db < mms_file_db
             irf.log('critical',errS), error(errS)
           end
           iVar = find(isCdfEpochTT2000VariableArray,1);
-          data = spdfcdfread([entry.path filesep entry.name],'Variables',...
-            info.Variables(iVar,1),'CombineRecords',true,'KeepEpochAsIs',true);
+          data = spdfcdfread([entry.path filesep entry.name], ...
+            'Variables', info.Variables(iVar,1), 'CombineRecords', true, ...
+            'KeepEpochAsIs', true, 'DataOnly', true);
           if isempty(data), entry = []; return, end
           entry.start = EpochTT(data(1));
           entry.stop = EpochTT(data(end));

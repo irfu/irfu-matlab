@@ -1,9 +1,11 @@
 function res = mms_sdp_comp_msh_dsl_off(Tint)
 %MMS_SDP_COMP_MSH_DSL_OFF  DSL ofssets from FPI comparison
 %
-% res = MMS_SDP_COMP_MSH_DSL_OFF(Tint,mmsId)
+% res = MMS_SDP_COMP_MSH_DSL_OFF(Tint)
 
 res = struct('c1',[],'c2',[],'c3',[],'c4',[],'tint',Tint);
+
+global MMS_CONST, if isempty(MMS_CONST), MMS_CONST = mms_constants(); end
 
 %%
 epoch1min = fix(Tint.start.epochUnix/60)*60:20:ceil(Tint.stop.epochUnix/60)*60;
@@ -12,21 +14,42 @@ Epoch20s = EpochUnix(epoch1min);
 
 idxMSH = [];
 E34 = struct('c1',[],'c2',[],'c3',[],'c4',[]);
-EFPI = E34;
+EFPI = E34; flagOldFile = false;
 
 for mmsId = 1:4
   mmsIdS = sprintf('c%d',mmsId);
   fPre = sprintf('mms%d_edp_fast_l2a_dce2d',mmsId);
-  Bmask = mms.db_get_ts(fPre,...
-    sprintf('mms%d_edp_dce_bitmask',mmsId), Tint);
+  
+  if flagOldFile
+    Bmask = mms.db_get_ts(fPre,...
+      sprintf('mms%d_edp_dce_bitmask',mmsId), Tint);
+  else
+    Bmask = mms.db_get_ts(fPre,...
+      sprintf('mms%d_edp_bitmask_fast_l2a',mmsId), Tint);
+    if mmsId==1 && isempty(Bmask)
+      Bmask = mms.db_get_ts(fPre,...
+        sprintf('mms%d_edp_dce_bitmask',mmsId), Tint);
+      if ~isempty(Bmask)
+        irf.log('warning','Using old L2a file')
+        flagOldFile = true;
+      end
+    end
+  end
+  
   if ~isempty(Bmask)
-    P34 = mms.db_get_ts(fPre,...
-      sprintf('mms%d_edp_dce_spinfit_e34',mmsId), Tint);
-    p34 = P34.data;
+    if flagOldFile
+      P34 = mms.db_get_ts(fPre,...
+        sprintf('mms%d_edp_dce_spinfit_e34',mmsId), Tint);
+      p34 = P34.data(:,3:4);
+    else
+      P34 = mms.db_get_ts(fPre,...
+        sprintf('mms%d_edp_espin_p34_fast_l2a',mmsId), Tint);
+      p34 = P34.data;
+    end
     epochSpin = P34.time.ttns;
     bitmask = Bmask.data;
-    mskAsponOn = bitand(bitmask(:,2),64) > 0;
-    mskAsponOn = mskAsponOn | (bitand(bitmask(:,3),64) > 0);
+    mskAsponOn = bitand(bitmask(:,2), MMS_CONST.Bitmask.ASPOC_RUNNING) > 0;
+    mskAsponOn = mskAsponOn | (bitand(bitmask(:,3), MMS_CONST.Bitmask.ASPOC_RUNNING) > 0);
     epochFull = Bmask.time.ttns;
     % XXX hack
     if ~any(mskAsponOn)
@@ -34,22 +57,21 @@ for mmsId = 1:4
     end
     
     % Resample bitmask
-    spinSize = int64(20000000000);
-    mskAsponOnSpin = zeros(size(epochSpin));
+    spinSize = MMS_CONST.Limit.SPINFIT_INTERV;
+    mskAsponOnSpin = false(size(epochSpin));
     ints = find_on(mskAsponOn);
     for i=1:size(ints,1)
       mskAsponOnSpin((epochSpin> epochFull(ints(1,1))-spinSize/2) & ...
-        (epochSpin<= epochFull(ints(1,2))+spinSize/2)) = 1;
+        (epochSpin<= epochFull(ints(1,2))+spinSize/2)) = true;
     end
-    mskAsponOnSpin=logical(mskAsponOnSpin);
     EpochS = EpochTT(epochSpin);
-    Es34 = irf.ts_vec_xy(EpochS,p34(:,3:4));
+    Es34 = irf.ts_vec_xy(EpochS,p34(:,1:2));
     Es34AspocOff =  Es34(~mskAsponOnSpin);
-    if isempty(Es34AspocOff)
+    if isempty(Es34AspocOff) || all(all(isnan(Es34AspocOff.data)))
       irf.log('warning','No data w/o ASPOC, using all data')
       Es34AspocOff = Es34;
     end
-    if ~isempty(Es34AspocOff),
+    if ~isempty(Es34AspocOff)
       Es34AspocOffR = Es34AspocOff.resample(Epoch20s,'median');
     else Es34AspocOffR = [];
     end
@@ -57,40 +79,75 @@ for mmsId = 1:4
   end
   
   B = mms.get_data('B_dmpa_srvy',Tint,mmsId);
-  if isempty(B), B = mms.get_data('dfg_ql_srvy',Tint,mmsId); end
+  if isempty(B), B = mms.get_data('B_dmpa_dfg_srvy_ql',Tint,mmsId); end
   if isempty(B), continue, end
   
-  % XXX here we could try different sources of FPI data
-  Vifpi = mms.get_data('Vi_gse_fpi_ql',Tint,mmsId);
-  if isempty(Vifpi), continue, end
+  % Here we try different sources of FPI data
+  Vifpi = mms.get_data('Vi_dbcs_fpi_fast_l2',Tint,mmsId);
+  if isempty(Vifpi)
+    % No L2, try L1b
+    Vifpi = mms.get_data('Vi_gse_fpi_fast_l1b',Tint,mmsId);
+    if ~isempty(Vifpi)
+      irf.log('warning','Using L1b FPI data');
+      if isempty(idxMSH), Nifpi = mms.get_data('Ni_fpi_fast_l1b',Tint,mmsId); end
+    else
+      % No L2 or L1b, try QL
+      Vifpi = mms.get_data('Vi_gse_fpi_ql',Tint,mmsId);
+      if ~isempty(Vifpi)
+        irf.log('warning','Using QL FPI data');
+        if isempty(idxMSH), Nifpi = mms.get_data('Ni_fpi_ql',Tint,mmsId); end
+      else
+        % No L2, L1b or QL. Last resort, try SITL
+        Vifpi = mms.get_data('Vi_gse_fpi_sitl',Tint,mmsId);
+        if ~isempty(Vifpi)
+          irf.log('warning','Using SITL FPI data');
+          if isempty(idxMSH), Nifpi = mms.get_data('Ni_fpi_sitl',Tint,mmsId); end
+        else
+          irf.log('warning', 'Did not find any FPI data');
+          continue
+        end
+      end
+    end
+  else
+    irf.log('notice','Using L2 FPI data');
+    if isempty(idxMSH), Nifpi = mms.get_data('Ni_fpi_fast_l2',Tint,mmsId); end
+  end
   Efpi = irf_e_vxb(Vifpi,B.resample(Vifpi));
   EfpiR = Efpi.resample(Epoch20s,'median');
   
   EFPI.(mmsIdS) = EfpiR;
   
   if isempty(idxMSH)
-    Nifpi = mms.get_data('Ni_fpi_ql',Tint,mmsId);
     NifpiR = Nifpi.resample(Epoch20s,'median');
     VifpiR = Vifpi.resample(Epoch20s,'median');
     idxMSH = NifpiR.data>5 & VifpiR.x.data>-200;  
+    if sum(idxMSH) < 180 % We require min 100 spins of MSH data
+      irf.log('warning','Using ALL data (not only MSH)')
+      idxMSH(:)=true;
+    end
   end
 end
 %%
 if isempty(idxMSH), return, end
 
-ErefFpiX = []; ErefFpiY = [];
+ErefFpiX = []; ErefFpiY = []; nData = [];
 for mmsId = 1:4
   mmsIdS = sprintf('c%d',mmsId);
   if isempty(EFPI.(mmsIdS)), continue, end
+  if isempty(nData), nData = size(EFPI.(mmsIdS).data,1);
+  elseif nData ~= size(EFPI.(mmsIdS).data,1)
+    msgS = ['different number of point in FPI on ' mmsIdS];
+    irf.log('critical',msgS), error(msgS)
+  end
   ErefFpiX = [ErefFpiX EFPI.(mmsIdS).x.data]; %#ok<AGROW>
   ErefFpiY = [ErefFpiY EFPI.(mmsIdS).y.data]; %#ok<AGROW>
 end
 
-ErefFpiX = median(ErefFpiX,2); ErefFpiY = median(ErefFpiY,2);
+ErefFpiX = median(ErefFpiX,2,'omitnan'); ErefFpiY = median(ErefFpiY,2,'omitnan');
 ErefFpi = irf.ts_vec_xy(Epoch20s,[ErefFpiX ErefFpiY]);
 
 %%
-ALPHA = 1.25/1.1;
+if flagOldFile, ALPHA = 1.25/1.1; else ALPHA = 1; end
 DE = struct('c1',[],'c2',[],'c3',[],'c4',[]);
 Off = DE;
 for mmsId = 1:4
@@ -120,7 +177,7 @@ end
 
 hca = irf_panel('Ex'); set(hca,'ColorOrder',mmsColors)
 irf_plot(hca,plData,'comp')
-hold(hca,'on'), irf_plot(hca,ErefFpi.x,'.'), hold(hca,'off')
+hold(hca,'on'), irf_plot(hca,ErefFpi.x,'c.'), hold(hca,'off')
 ylabel(hca,'Ex [mV/m]')
 irf_legend(hca,{'mms1','mms2','mms3','mms4'},[0.98, 0.1],'color','cluster');
 end
@@ -135,7 +192,7 @@ end
 
 hca = irf_panel('Ey'); set(hca,'ColorOrder',mmsColors)
 irf_plot(hca,plData,'comp')
-hold(hca,'on'), irf_plot(hca,ErefFpi.y,'.'), hold(hca,'off')
+hold(hca,'on'), irf_plot(hca,ErefFpi.y,'c.'), hold(hca,'off')
 ylabel(hca,'Ey [mV/m]')
 end
 
@@ -192,7 +249,7 @@ end
 hca = irf_panel('Ex-corr'); set(hca,'ColorOrder',mmsColors)
 irf_plot(hca,plData,'comp')
 ttt = ErefFpi.x;
-hold(hca,'on'), irf_plot(hca,ttt,'.'), irf_plot(hca,ttt(idxMSH),'.'), hold(hca,'off')
+hold(hca,'on'), irf_plot(hca,ttt,'c.'), irf_plot(hca,ttt(idxMSH),'m.'), hold(hca,'off')
 ylabel(hca,'Ex [mV/m]')
 end
 
@@ -207,7 +264,7 @@ end
 hca = irf_panel('Ey-corr'); set(hca,'ColorOrder',mmsColors)
 irf_plot(hca,plData,'comp')
 ttt = ErefFpi.y;
-hold(hca,'on'), irf_plot(hca,ttt,'.'), irf_plot(hca,ttt(idxMSH),'.'), hold(hca,'off')
+hold(hca,'on'), irf_plot(hca,ttt,'c.'), irf_plot(hca,ttt(idxMSH),'m.'), hold(hca,'off')
 ylabel(hca,'Ey [mV/m]')
 end
 

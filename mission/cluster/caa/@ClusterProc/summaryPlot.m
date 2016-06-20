@@ -309,10 +309,7 @@ end
 % Plotting
 clf;
 orient tall;
-for j=1:n_plots,
-    h(j)=irf_subplot(n_plots,1,-j);
-    cla(h(j));    
-end
+h = irf_figure(747,n_plots,'reset');
 
 for k=1:n_plots
     if isempty(data{k})
@@ -327,7 +324,9 @@ for k=1:n_plots
         end
         continue
     end
-    irf_plot(h(k),data{k},'comp');
+    if iscell(data{k}), irf_plot(h(k),data{k},'comp');
+    else irf_plot(h(k),data{k})
+    end
     %axis(h(k),'tight');
     irf_zoom(h(k),'x',[t_st t_end]);
     YL = get(h(k),'YLim'); DYL = (YL(2) -YL(1))*0.05;

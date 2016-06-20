@@ -12,6 +12,8 @@ function out = irf_resamp(x,y,varargin)
 % fsample - sampling frequency of the Y signal, 1/window
 % window - length of the averaging window, 1/fsample
 % median - use median instead of mean when averaging
+% mean   - use mean when averaging
+% median - use median instead of mean when averaging
 % max    - return max within each averaging window, rather than mean
 %
 % See also INTERP1
@@ -35,6 +37,7 @@ thresh = 0;
 method = '';
 flag_do='check'; % if no method check if interpolate or average
 median_flag=0;
+mean_flag = 0;
 max_flag=0;
 
 while have_options
@@ -79,19 +82,21 @@ while have_options
 				end
 			else irf.log('critical','wrongArgType : WINDOW value is missing')
 			end
-		case {'thresh','threshold'}
-            if length(args)>1
-                if isnumeric(args{2})
-                    thresh = args{2};
-                    l = 2;
-                else irf.log('critical','wrongArgType : THRESHOLD must be numeric')
-                end
-            else irf.log('critical','wrongArgType : THRESHOLD value is missing')
-            end
-        case 'median'
-            median_flag=1;
-        case 'max'
-            max_flag=1;
+    case {'thresh','threshold'}
+      if length(args)>1
+        if isnumeric(args{2})
+          thresh = args{2};
+          l = 2;
+        else irf.log('critical','wrongArgType : THRESHOLD must be numeric')
+        end
+      else irf.log('critical','wrongArgType : THRESHOLD value is missing')
+      end
+    case 'mean'
+      mean_flag=1; flag_do='average';
+    case 'median'
+      median_flag=1; flag_do='average';
+    case 'max'
+      max_flag=1; flag_do='average';
 		otherwise
 			irf.log('warning',['Skipping parameter ''' args{1} ''''])
 			args = args(2:end);
@@ -119,7 +124,7 @@ else t = y(:,1); t = t(:);   % first column of y is time
 end
 
 % Same timeline - no need to do anything
-if length(x(:,1))==length(t) && all(x(:,1)==t)
+if 0 && length(x(:,1))==length(t) && all(x(:,1)==t)
   irf.log('notice','New and old timelines are identical - no resampling needed')
   out = x; 
   return
@@ -142,29 +147,7 @@ if strcmp(flag_do,'check'), % Check if interpolation or average
 		% to decide interpolation/average
 		
 		% Guess samplings frequency for Y
-		if isempty(sfy)
-			sfy1 = 1/(t(2) - t(1));
-			if ndata==2, sfy = sfy1;
-			else
-				not_found = 1; cur = 3; MAXTRY = 10;
-				while (not_found && cur<=ndata && cur-3<MAXTRY)
-					sfy = 1/(t(cur) - t(cur-1));
-                    if abs(sfy-sfy1)<sfy*0.001
-                        not_found = 0;
-                        sfy = (sfy+sfy1)/2;
-                        break
-                    end
-                    sfy1=sfy;
-					cur = cur + 1;
-				end
-				if not_found
-					sfy = sfy1;
-					irf.log('warning',	sprintf(...
-						'Cannot guess sampling frequency. Tried %d times',MAXTRY));
-				end
-			end
-			clear sfy1
-		end
+		guess_sampling_freq()
 		
 		if length(x(:,1))/(x(end,1) - x(1,1)) > 2*sfy
 			flag_do='average';
@@ -178,6 +161,11 @@ if strcmp(flag_do,'check'), % Check if interpolation or average
 end
 
 if strcmp(flag_do,'average')
+  if ~isempty(method)
+    errS = 'cannot mix interpolation and averaging flags';
+    irf.log('critical',errS), error(errS)
+  end
+  guess_sampling_freq()
     dt2 = .5/sfy; % Half interval
     if median_flag || max_flag || (exist('irf_average_mx','file')~=3)
         if (~median_flag && ~max_flag), irf.log('warning','cannot find mex file, defaulting to Matlab code.')
@@ -226,10 +214,41 @@ if strcmp(flag_do,'average')
         end
     end
 elseif strcmp(flag_do,'interpolation'),
+  if any([mean_flag median_flag max_flag])
+    errS = 'cannot mix interpolation and averaging flags';
+    irf.log('critical',errS), error(errS)
+  end
   if nargin < 3 || isempty(method), method = 'linear'; end
 
   % If time series agree, no interpolation is necessary.
   if size(x,1)==size(y,1), if x(:,1)==y(:,1), out = x; return, end, end
 
   out = [t interp1(x(:,1),x(:,2:end),t,method,'extrap')];
+end
+
+  function guess_sampling_freq()
+    if isempty(sfy)
+			sfy1 = 1/(t(2) - t(1));
+			if ndata==2, sfy = sfy1;
+			else
+				not_found = 1; cur = 3; MAXTRY = 10;
+				while (not_found && cur<=ndata && cur-3<MAXTRY)
+					sfy = 1/(t(cur) - t(cur-1));
+                    if abs(sfy-sfy1)<sfy*0.001
+                        not_found = 0;
+                        sfy = (sfy+sfy1)/2;
+                        break
+                    end
+                    sfy1=sfy;
+					cur = cur + 1;
+				end
+				if not_found
+					sfy = sfy1;
+					irf.log('warning',	sprintf(...
+						'Cannot guess sampling frequency. Tried %d times',MAXTRY));
+				end
+			end
+			clear sfy1
+    end
+  end
 end

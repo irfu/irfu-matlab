@@ -111,8 +111,8 @@ end
 
 % CSA
 % CSA Archive Inter-Operability (AIO) System User's Manual:
-% http://csa.esac.esa.int/csa/aio/html/CsaAIOUsersManual.pdf
-Default.Csa.urlServer           = 'http://csa.esac.esa.int/csa/aio/';
+% https://csa.esac.esa.int/csa/aio/html/CsaAIOUsersManual.pdf
+Default.Csa.urlServer           = 'https://csa.esac.esa.int/csa/aio/';
 Default.Csa.urlQuery            = 'product-action?&NON_BROWSER';
 Default.Csa.urlQueryAsync       = 'async-product-action?&NON_BROWSER';
 Default.Csa.urlStream           = 'streaming-action?&NON_BROWSER&gzip=1';
@@ -198,7 +198,7 @@ if ~isempty(varargin), % check for additional flags
 			urlDataFormat = url_parameter('format=cef');
 		elseif any(strcmpi('schedule',flag))
 			doDownloadScheduling = true;
-		elseif any(strfind(flag,'uname='))
+		elseif (any(strfind(flag,'uname=')) || any(strfind(flag,'USERNAME=')) )
 			urlIdentity = flag;
 		elseif strcmpi('nolog',flag)
 			doLog = false;
@@ -210,8 +210,6 @@ if ~isempty(varargin), % check for additional flags
 			irf.log('warning','caa_download(): flag ''csa'' is not needed anymore, only CSA download available');
 		elseif any(strcmpi('caa',flag)) % download from CAA instead of CAA
 			irf.log('warning','caa_download(): flag ''caa'' is not supported anymore. CAA interface is closed and only CSA download is available');
-		elseif any(strfind(flag,'USERNAME='))
-			urlIdentity = flag;
 		elseif strcmpi('json',flag) % set query format to JSON
 			urlListFormat = '&RETURN_TYPE=JSON';
 		elseif strcmpi('csv',flag) % set query format to CSV
@@ -513,8 +511,8 @@ if status == 0 && exist(downloadedFile,'file')
 		tline = fgetl(fid);
 		if ~ischar(tline), break, end
 		disp(tline)
-		if any(strfind(tline,'http:')) && any(strfind(tline,'gz')), % CSA
-			downloadFile = tline(strfind(tline,'http:'):strfind(tline,'gz')+1);
+		if any(strfind(tline,'https:')) && any(strfind(tline,'gz')), % CSA
+			downloadFile = tline(strfind(tline,'https:'):strfind(tline,'gz')+1);
 		elseif any(strfind(tline,'LOGIN_REQUESTED')), % 
 			disp('**ERROR**');
 			disp('Your username or password are incorrect, please double check!')
@@ -573,7 +571,13 @@ end
 			end
 			tempFilePath   = [datasetDirName tempFileName];
 			tempFilePathGz = [tempFilePath '.gz'];
-			[downloadedFile,isReady]=urlwrite(urlLink,tempFilePathGz);
+			[urlLink, tmpGetRequest] = splitUrlLink(urlLink);
+			if(isempty(tmpGetRequest))
+			  [downloadedFile,isReady] = urlwrite(urlLink, tempFilePathGz);
+			else
+			  [downloadedFile,isReady] = urlwrite(urlLink, tempFilePathGz, ...
+			    'Authentication', 'Basic', 'Get', tmpGetRequest);
+			end
 			if isReady,
 				gunzip(tempFilePathGz);
 				% find the file name
@@ -603,7 +607,13 @@ end
 		end
 		
 		downloadedFile = [tempname '.gz'];
-		[downloadedFile,isZipFileReady]=urlwrite(urlLink,downloadedFile);
+		[urlLink, tmpGetRequest] = splitUrlLink(urlLink);
+		if(isempty(tmpGetRequest))
+		  [downloadedFile,isZipFileReady] = urlwrite(urlLink, downloadedFile);
+		else
+		  [downloadedFile,isZipFileReady] = urlwrite(urlLink, downloadedFile, ...
+		    'Authentication', 'Basic', 'Get', tmpGetRequest);
+		end
 		
 		if isZipFileReady, %
 			irf.log('notice',['Downloaded: ' urlLink]);
@@ -831,4 +841,29 @@ ok = caa_download(tintUTC,'C?_CP_FGM_5VPS');
 if ~ok, disp('FAILED!'); return; end
 disp('--- TEST PASSED! ---');
 ok=true;
+end
+
+function [url, getRequest] = splitUrlLink(urlLink)
+% Help function to split CSA url requests to account for new interface.
+% CSA is to replace thier interface from 2016/05/04 onward.
+  if(~isempty(regexpi(urlLink,'password')))
+    % It it a password protected page being requested, split it.
+    tmpSplit = strsplit(urlLink,'&');
+    url = strrep(tmpSplit{1}, '?',''); % strip "?"
+    for ii=2:length(tmpSplit)
+      tmpSplit2 = strsplit(tmpSplit{ii},'=');
+       % Single element, such as "NON_BROWSER", Add "1" as second argument.
+      if(size(tmpSplit2,2)==1), tmpSplit2{2}='1'; end
+      if(exist('getRequest','var'))
+        getRequest = [getRequest, tmpSplit2]; %#ok<AGROW>
+      else
+        getRequest = tmpSplit2;
+      end
+    end
+  else
+    % It is not password protected URL, return unaltered urlLink (used for
+    % urlread and not urlwrite?).
+    url = urlLink;
+    getRequest = [];
+  end
 end

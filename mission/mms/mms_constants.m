@@ -34,6 +34,10 @@ MMS_CONST.Spinrate.max_deploy = 7.4; % Rev per Minute.
 % Angles when phase=0 (X BSC direction)
 MMS_CONST.Phaseshift.e12 =  2*pi*150/360; % probe 2 sunward
 MMS_CONST.Phaseshift.e34 =  2*pi* 60/360; % probe 4 sunward
+MMS_CONST.Phaseshift.p1  = 2*pi* 330/360; % probe 1 sunward
+MMS_CONST.Phaseshift.p2  = 2*pi* 150/360; % probe 2 sunward
+MMS_CONST.Phaseshift.p3  = 2*pi* 240/360; % probe 3 sunward
+MMS_CONST.Phaseshift.p4  = 2*pi*  60/360; % probe 4 sunward
 
 % Nominal Amplitude Correction factor multiplied to DCE data.
 MMS_CONST.NominalAmpCorr.e12 = 1.25;
@@ -67,7 +71,6 @@ MMS_CONST.SDCProc.l2ace = 6;
 
 % Limits used in processing
 MMS_CONST.Limit.LOW_DENSITY_SATURATION = -100; % Probe stuck and below limit.
-MMS_CONST.Limit.DIFF_PROBE_TO_SCPOT_MEDIAN = 1.5; % Probe not used for probe2scpot if moving average is off by this from the mean of all probes moving average, in V.
 MMS_CONST.Limit.DCE_DCV_DISCREPANCY = 0.28; % Max discrepancy DCE{12,34}=(DCV{1,3}-DCV{2,4})/NominalLength, for data with all probes.
 MMS_CONST.Limit.SPINFIT_INTERV = int64(20*10^9); % Perform spinfits covering this interval, in [ns].
 
@@ -79,6 +82,7 @@ MMS_CONST.Bitmask.LOW_DENSITY_SATURATION = mms_sdp_typecast('bitmask',8);  % Bit
 MMS_CONST.Bitmask.SWEEP_DATA             = mms_sdp_typecast('bitmask',16); % Bit 5
 MMS_CONST.Bitmask.ADP_SHADOW             = mms_sdp_typecast('bitmask',32); % Bit 6
 MMS_CONST.Bitmask.ASPOC_RUNNING          = mms_sdp_typecast('bitmask',64); % Bit 7
+% MMS_CONST.Bitmask.EDI_CORRECTION = mms_sdp_typecast('bitmask', 128); % Bit 8.
 
 MMS_CONST.Error = -Inf; % Indicates error in computation
 
@@ -89,8 +93,8 @@ MMS_CONST.Error = -Inf; % Indicates error in computation
 % New Calibration version, Y
 MMS_CONST.Version = struct(...
   MMS_CONST.SDCProcs{MMS_CONST.SDCProc.ql},    struct('X', 1, 'Y', 1), ...
-  MMS_CONST.SDCProcs{MMS_CONST.SDCProc.scpot}, struct('X', 2, 'Y', 0), ...
-  MMS_CONST.SDCProcs{MMS_CONST.SDCProc.l2pre}, struct('X', 0, 'Y', 0), ...
+  MMS_CONST.SDCProcs{MMS_CONST.SDCProc.scpot}, struct('X', 2, 'Y', 1), ...
+  MMS_CONST.SDCProcs{MMS_CONST.SDCProc.l2pre}, struct('X', 0, 'Y', 1), ...
   MMS_CONST.SDCProcs{MMS_CONST.SDCProc.l2a},   struct('X', 1, 'Y', 0), ...
   MMS_CONST.SDCProcs{MMS_CONST.SDCProc.l1ace}, struct('X', 0, 'Y', 0), ...
   MMS_CONST.SDCProcs{MMS_CONST.SDCProc.l2ace}, struct('X', 0, 'Y', 0));

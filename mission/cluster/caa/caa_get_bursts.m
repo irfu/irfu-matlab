@@ -426,7 +426,7 @@ if plot_flag
     
     if plot_save
         orient landscape
-        print('-dpdf', fname);
+        irf_print_fig(fname,'pdf')
     end
 end
 

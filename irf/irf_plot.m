@@ -333,18 +333,19 @@ elseif flag_subplot==2, % Separate subplot for each variable
     
 elseif flag_subplot==3,  % components of vectors in separate panels
     if isstruct(x), error('cannot plot spectra in COMP mode'), end
-    if all(cellfun(@isempty,x))
+    idxEmpty = cellfun(@isempty, x); 
+    if all(idxEmpty)
       irf.log('warning','all inputs are empty'), return
     end
-    % t_start_epoch is saved in figures user_data variable
-    if isa(x{1},'TSeries')
-      ts = t_start_epoch(x{1}.time.epochUnix);
-      npl = size(x{1}.data,2);
-    elseif isstruct(x{1})
-      ts = t_start_epoch(x{1}.t); npl = size(x{1}.data,2);
-    else ts = t_start_epoch(x{1}(:,1)); npl = size(x{1},2) -1;
+    % t_start_epoch is saved in figures user_data variable 
+    idx = find(idxEmpty==0,1,'first');
+    if isa(x{idx},'TSeries')
+      ts = t_start_epoch(x{idx}.time.epochUnix);
+      npl = size(x{idx}.data,2);
+    elseif isstruct(x{idx})
+      ts = t_start_epoch(x{idx}.t); npl = size(x{idx}.data,2);
+    else ts = t_start_epoch(x{idx}(:,1)); npl = size(x{idx},2) -1;
     end
-    
     
     if npl==1,     % We make new figure with subplots only if more than 1 component to plot
         c = ax;
@@ -355,7 +356,7 @@ elseif flag_subplot==3,  % components of vectors in separate panels
         hca = c(ipl);
         tag=get(hca,'tag'); ud=get(hca,'userdata'); % keep tag/userdata during plotting
       
-        line_colors=get(c(ipl),'ColorOrder');
+        line_colors=get(hca,'ColorOrder');
         for jj=1:size(x,2)
             use_color = 1;
             if iscell(marker)
@@ -373,16 +374,17 @@ elseif flag_subplot==3,  % components of vectors in separate panels
             end
             if size(data,2)>=ipl
                 if use_color
-                    plot(c(ipl),(time-ts-dt(jj)), data(:,ipl),...
+                    plot(hca,(time-ts-dt(jj)), data(:,ipl),...
                         'Color', line_colors(jj,:), 'LineStyle',marker_cur)
                 else
-                    plot(c(ipl),(time-ts-dt(jj)), data(:,ipl),marker_cur)
+                    plot(hca,(time-ts-dt(jj)), data(:,ipl),marker_cur)
                 end
-                hold(c(ipl),'on');
+                hold(hca,'on');
             end
         end
-        grid(c(ipl),'on');
+        grid(hca,'on');
         set(hca,'tag',tag); set(hca,'userdata',ud); % restore
+        set(hca,'ColorOrder',line_colors)
         % Put YLimits so that no labels are at the end (disturbing in
         % multipanel plots)
         set(c(ipl),'YLim',...
@@ -619,7 +621,7 @@ if number_of_subplots>=1 && number_of_subplots<=20,
         set(hcf,'defaultTextFontSize',14);
         set(hcf,'defaultAxesFontUnits','pixels');
         set(hcf,'defaultTextFontUnits','pixels');
-        set(hcf,'defaultAxesColorOrder',[0 0 0;0 0 1;1 0 0;0.3 0.3 0.3;0 1 1 ;1 0 1; 1 1 0])
+        set(hcf,'defaultAxesColorOrder',[0 0 0;0 0 1;1 0 0;0 0.5 0;0 1 1 ;1 0 1; 1 1 0])
 	end
     clf;
     all_axis_position=[0.17 0.1 0.9 0.95]; % xmin ymin xmax ymax

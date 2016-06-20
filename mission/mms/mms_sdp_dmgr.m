@@ -419,7 +419,9 @@ classdef mms_sdp_dmgr < handle
               bitmask = mms_sdp_typecast('bitmask',bitor(DATAC.l2a.dce.e12.bitmask,DATAC.l2a.dce.e34.bitmask));
               Etmp.e12 = mask_bits(Etmp.e12, bitmask, MMS_CONST.Bitmask.SWEEP_DATA);
               Etmp.e34 = mask_bits(Etmp.e34, bitmask, MMS_CONST.Bitmask.SWEEP_DATA);
-              dE = mms_sdp_despin(Etmp.e12, Etmp.e34, DATAC.l2a.phase.data, DATAC.l2a.delta_off);
+              DeltaOff = irf.ts_vec_xy(DATAC.l2a.spinfits.time, [real(DATAC.l2a.delta_off), imag(DATAC.l2a.delta_off)]);
+              DeltaOffR = DeltaOff.resample(EpochTT(DATAC.l2a.dce.time));
+              dE = mms_sdp_despin(Etmp.e12, Etmp.e34, DATAC.l2a.phase.data, DeltaOffR.data(:,1) + DeltaOffR.data(:,2)*1j);
               offs = mms_sdp_get_offset(DATAC.scId, DATAC.procId, DATAC.l2a.dce.time);
               DATAC.calFile = offs.calFile; % Store name of cal file used.
               dE(:,1) = dE(:,1) - offs.ex; % Remove sunward
@@ -451,7 +453,9 @@ classdef mms_sdp_dmgr < handle
               bitmask = mms_sdp_typecast('bitmask',bitor(DATAC.dce.e12.bitmask,DATAC.dce.e34.bitmask));
               Etmp.e12 = mask_bits(Etmp.e12, bitmask, MMS_CONST.Bitmask.SWEEP_DATA);
               Etmp.e34 = mask_bits(Etmp.e34, bitmask, MMS_CONST.Bitmask.SWEEP_DATA);
-              dE = mms_sdp_despin(Etmp.e12, Etmp.e34, DATAC.phase.data, DATAC.l2a.delta_off);
+              DeltaOff = irf.ts_vec_xy(DATAC.l2a.spinfits.time, [real(DATAC.l2a.delta_off), imag(DATAC.l2a.delta_off)]);
+              DeltaOffR = DeltaOff.resample(EpochTT(DATAC.l2a.dce.time));
+              dE = mms_sdp_despin(Etmp.e12, Etmp.e34, DATAC.phase.data, DeltaOffR.data(:,1) + DeltaOffR.data(:,2)*1j);
               offs = mms_sdp_get_offset(DATAC.scId, DATAC.procId, DATAC.dce.time);
               DATAC.calFile = offs.calFile; % Store name of cal file used.
               dE(:,1) = dE(:,1) - offs.ex; % Remove sunward
@@ -1017,15 +1021,13 @@ classdef mms_sdp_dmgr < handle
         % Split up the various parts (spinfits [sdev, e12, e34], dce data
         % [e12, e34, e56], dce bitmask [e12, e34, e56], phase, adc & delta 
         % offsets).
-        if( DATAC.tmMode ~= MMS_CONST.TmMode.brst)
-          % Load all of L2a (fast / slow L2pre processing).
           % Check version number, 1.0.z use new variable names, old 0.1.z did
           % not use.
           if( ~is_version_geq(dataObj.GlobalAttributes.Data_version{1}(2:end),'1.0.0') )
             % Old version, this code segment can be removed when
             % re-processing has occured.
             varPre = ['mms', num2str(DATAC.scId), '_edp_dce'];
-            varPre2='_spinfit_'; varPre3='_adc_offset'; varPre4='_delta_offset';
+            varPre2='_spinfit_'; varPre3='_adc_offset';
             sdpPair = {'e12', 'e34'};
             for iPair=1:numel(sdpPair)
               tmp = dataObj.data.([varPre, varPre2, sdpPair{iPair}]).data(:,2:end);
@@ -1061,24 +1063,28 @@ classdef mms_sdp_dmgr < handle
             tmp = dataObj.data.([varPre, '_phase']).data;
             tmp(tmp==getfield(mms_sdp_typecast('phase'),'fillval')) = NaN;
             DATAC.(param).phase.data = tmp;
-            DATAC.(param).delta_off = complex(dataObj.data.([varPre, varPre4]).data(1),...
-              dataObj.data.([varPre, varPre4]).data(2));
+            DATAC.(param).delta_off = mms_sdp_dmgr.comp_delta_off(DATAC.(param).spinfits, ...
+              DATAC.(param).dce.time, DATAC.(param).dce.(sensors{1}).bitmask, ...
+              DATAC.(param).dce.(sensors{2}).bitmask, ...
+              DATAC.CONST);
           else
             % New version, new variable names.. This piece of code should be
             % kept after all reprocessing is completed.
             varPre = ['mms', num2str(DATAC.scId), '_edp_'];
             typePos = strfind(dataObj.GlobalAttributes.Data_type{1},'_');
             varSuf = dataObj.GlobalAttributes.Data_type{1}(1:typePos(2)-1);
-            varPre4='delta_offset_';
             sdpPair = {'e12', 'e34'};
             for iPair=1:numel(sdpPair)
               % Spinfits
-              tmp = dataObj.data.([varPre, 'espin_', strrep(sdpPair{1},'e','p'),'_', varSuf]).data;
+              tmp1 = dataObj.data.([varPre, 'offsfit_', strrep(sdpPair{iPair},'e','p'),'_', varSuf]).data;
+              % Replace possible FillVal with NaN
+              tmp1(tmp1==getfield(mms_sdp_typecast('spinfits'),'fillval')) = NaN;
+              tmp = dataObj.data.([varPre, 'espin_', strrep(sdpPair{iPair},'e','p'),'_', varSuf]).data;
               % Replace possible FillVal with NaN
               tmp(tmp==getfield(mms_sdp_typecast('spinfits'),'fillval')) = NaN;
-              DATAC.(param).spinfits.sfit.(sdpPair{iPair}) = tmp;
+              DATAC.(param).spinfits.sfit.(sdpPair{iPair}) = [tmp1, tmp];
               % Sdev
-              tmp = dataObj.data.([varPre, 'sdevfit_', strrep(sdpPair{1},'e','p'),'_', varSuf]).data;
+              tmp = dataObj.data.([varPre, 'sdevfit_', strrep(sdpPair{iPair},'e','p'),'_', varSuf]).data;
               % Replace possible FillVal with NaN
               tmp(tmp==getfield(mms_sdp_typecast('spinfits'),'fillval')) = NaN;
               DATAC.(param).spinfits.sdev.(sdpPair{iPair}) = tmp;
@@ -1112,29 +1118,11 @@ classdef mms_sdp_dmgr < handle
             tmp(tmp==getfield(mms_sdp_typecast('phase'),'fillval')) = NaN;
             DATAC.(param).phase.data = tmp;
             % Delta offset
-            DATAC.(param).delta_off = complex(dataObj.data.([varPre, varPre4, varSuf]).data(1),...
-              dataObj.data.([varPre, varPre4, varSuf]).data(2));
+            DATAC.(param).delta_off = mms_sdp_dmgr.comp_delta_off(DATAC.(param).spinfits, ...
+              DATAC.(param).dce.time, DATAC.(param).dce.(sensors{1}).bitmask, ...
+              DATAC.(param).dce.(sensors{2}).bitmask, ...
+              DATAC.CONST);
           end
-        else
-          % Load only delta offset from the L2a fast file. (L2Pre
-          % processing of Brst segment).
-          if( ~is_version_geq(dataObj.GlobalAttributes.Data_version{1}(2:end),'1.0.0') )
-            % Old
-            varPre = ['mms', num2str(DATAC.scId), '_edp_dce'];
-            varPre4='_delta_offset';
-            DATAC.(param).delta_off = complex(dataObj.data.([varPre, varPre4]).data(1),...
-              dataObj.data.([varPre, varPre4]).data(2));
-          else
-            % New
-            varPre = ['mms', num2str(DATAC.scId), '_edp_'];
-            typePos = strfind(dataObj.GlobalAttributes.Data_type{1},'_');
-            varSuf = dataObj.GlobalAttributes.Data_type{1}(1:typePos(2)-1);
-            varPre4='delta_offset_';
-            % Delta offset
-            DATAC.(param).delta_off = complex(dataObj.data.([varPre, varPre4, varSuf]).data(1),...
-              dataObj.data.([varPre, varPre4, varSuf]).data(2));
-          end
-        end
       end % load_l2a
 
 %       function res = are_probes_enabled
@@ -1159,7 +1147,7 @@ classdef mms_sdp_dmgr < handle
         switch DATAC.tmMode
           case MMS_CONST.TmMode.slow, dtNominal = [8, 12, 16, 20, 160]; % seconds, (160 from old 1 Hz data)
           case MMS_CONST.TmMode.fast, dtNominal = [2.0, 3.0, 4.0, 5.0];
-          case MMS_CONST.TmMode.brst, dtNominal = [0.625, 0.229, 0.0763, 0.0391];
+	  case MMS_CONST.TmMode.brst, dtNominal = [0.6256, 0.625, 0.3128, 0.229, 0.1564, 0.0763, 0.0782, 0.0391, 0.01953];
           case MMS_CONST.TmMode.comm, dtNominal = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0, 2.5, 3.0, 4.0 5.0, 8.0, 12.0, 16.0, 20.0];
           otherwise
             errS = 'Unrecognized tmMode';
@@ -1255,7 +1243,14 @@ classdef mms_sdp_dmgr < handle
         errStr='Bad DELTA_OFF input, cannot proceed.';
         irf.log('critical',errStr); error(errStr);
       end
- 
+      % FIX Brst ql/l2pre using Fast L2a spinfits!
+      if( isfield(DATAC.l2a, 'spinfits') )
+        deltaTime = DATAC.l2a.spinfits.time;
+      else
+        deltaTime = DATAC.spinfits.time;
+      end
+      DeltaOff = irf.ts_vec_xy(deltaTime, [real(deltaOff), imag(deltaOff)]);
+      DeltaOffR = DeltaOff.resample(EpochTT(DATAC.dce.time));
       sdpProbes = fieldnames(Adc_off); % default {'e12', 'e34'}
       Etmp = struct('e12',Dce.e12.data,'e34',Dce.e34.data);
       for iProbe=1:numel(sdpProbes)
@@ -1267,7 +1262,8 @@ classdef mms_sdp_dmgr < handle
       bitmask = mms_sdp_typecast('bitmask',bitor(Dce.e12.bitmask,Dce.e34.bitmask));
       Etmp.e12 = mask_bits(Etmp.e12, bitmask, MMS_CONST.Bitmask.SWEEP_DATA);
       Etmp.e34 = mask_bits(Etmp.e34, bitmask, MMS_CONST.Bitmask.SWEEP_DATA);   
-      dE = mms_sdp_despin(Etmp.e12, Etmp.e34, Phase.data, deltaOff);
+      dE = mms_sdp_despin(Etmp.e12, Etmp.e34, Phase.data,...
+        DeltaOffR.data(:,1) + DeltaOffR.data(:,2)*1j);
       % Get DSL offsets
       offs = mms_sdp_get_offset(DATAC.scId, DATAC.procId, Dce.time);
       DATAC.calFile = offs.calFile; % Store name of cal file used.
@@ -1346,14 +1342,8 @@ classdef mms_sdp_dmgr < handle
         irf.log('critical',errStr); error(errStr);
       end
       
-      sampleRate = DATAC.samplerate;
-      if isempty(sampleRate)
-        errStr='Bad SAMPLERATE input, cannot proceed.';
-        irf.log('critical',errStr); error(errStr);
-      end
-      
       DATAC.probe2sc_pot = ...
-        mms_sdp_dmgr.comp_probe2sc_pot(Dcv,sampleRate,DATAC.CONST);
+        mms_sdp_dmgr.comp_probe2sc_pot(Dcv,DATAC.CONST);
       res = DATAC.probe2sc_pot;
     end
     
@@ -1481,8 +1471,8 @@ classdef mms_sdp_dmgr < handle
     
   end % public Methods
   methods (Static)
-    function delta_off = comp_delta_off(Spinfits,...
-        bitmaskTime,bitmaskP12,bitmaskP34,MMS_CONST)
+    function delta_off = comp_delta_off(Spinfits, ...
+        bitmaskTime, bitmaskP12, bitmaskP34, MMS_CONST)
       %COMP_DELTA_OFF compute delta offsets
       %
       % delta = MMS_SDP_DMGR.COMP_DELTA_OFF(Spinfits,...
@@ -1502,34 +1492,104 @@ classdef mms_sdp_dmgr < handle
         mskAsponOnSpin((Spinfits.time> bitmaskTime(intsON(1,1))-spinSize/2) & ...
           (Spinfits.time<= bitmaskTime(intsON(1,2))+spinSize/2)) = 1;
       end
+      Delta_p12_p34 = Spinfits.sfit.e12(:,2:3) - Spinfits.sfit.e34(:,2:3);
       mskAsponOnSpin = logical(mskAsponOnSpin);
-      if all(mskAsponOnSpin)
-        irf.log('warning',...
-          'No Spinfits with ASPOC OFF, using data with ASPOC ON')
-        Es12AspocOff =  Spinfits.sfit.e12(:,2:3);
-        Es34AspocOff =  Spinfits.sfit.e34(:,2:3);
+      if all(mskAsponOnSpin) || ~any(mskAsponOnSpin)
+        Delta_p12_p34_smooth = new_delta_off(Delta_p12_p34);
       else
-        Es12AspocOff =  Spinfits.sfit.e12(~mskAsponOnSpin,2:3);
-        Es34AspocOff =  Spinfits.sfit.e34(~mskAsponOnSpin,2:3);
+        DelTmp = Delta_p12_p34; DelTmp(mskAsponOnSpin) = NaN;
+        Delta_p12_p34_smooth = new_delta_off(DelTmp); % aspoc off
+        DelTmp = Delta_p12_p34; DelTmp(~mskAsponOnSpin) = NaN;
+        Delta_p12_p34_smooth_Tmp = new_delta_off(DelTmp); % aspoc on
+        Delta_p12_p34_smooth(mskAsponOnSpin,:) =...
+          Delta_p12_p34_smooth_Tmp(mskAsponOnSpin,:);
       end
-      if isempty(Es12AspocOff) || isempty(Es34AspocOff)
-        irf.log('warning','No data to compute Delta_Off')
-        return
-      end
-      Delta_p12_p34 = Es12AspocOff - Es34AspocOff;
-      delta_off = del_my(Delta_p12_p34(:,1)) ...
-           + del_my(Delta_p12_p34(:,2))*1j;
+
+      delta_off = Delta_p12_p34_smooth(:,1) + Delta_p12_p34_smooth(:,2)*1j;
              
-      function [y,z] = del_my(x)
-        y = MMS_CONST.Error; z = MMS_CONST.Error;
-        % compute delta disregarding outlyers
-        STD_OFF = 1; % disregard points above this threhsould
-        xTmp = x(~isnan(x));
-        if isempty(x), return; end
-        y = median(xTmp); z = std(xTmp);
-        xTmp(abs(xTmp -y)>STD_OFF*z) = [];
-        if isempty(xTmp), return, end
-        y = median(xTmp); z = std(xTmp);
+      function out = new_delta_off(inp)
+        %%
+        flagStd = false;
+        WIN_SIZE = 119; % number of spinfits (5 sec) in a window, must be odd
+        winW2 = fix(WIN_SIZE/2);
+        if winW2==WIN_SIZE/2, error('winSize must be an odd number'), end
+        idx = (1:(winW2*2+1))-1;
+        % XXX TODO: replace chebwin() with tabulated data so that we will
+        % not need signal processing toolbox
+        %win = chebwin(WIN_SIZE); sWin = sum(win);
+	    % use chebwin_talbe (tabular values)
+	    win = chebwin_table(WIN_SIZE); sWin = sum(win);
+        
+        [nData, nCol]=size(inp);
+        if nCol~=2, error('expecting INP with 2 columns'), end
+        data = [NaN(winW2,nCol); inp ; NaN(winW2,nCol)];
+        out = NaN(nData, nCol);
+        
+        %% reove spikes
+        one_iter(); %plot(out), hold on
+        NR = 6; NITER = 3;
+        for iter = 1:NITER
+          res = inp - out; % residual
+          mad = median(abs(res)); mad = repmat(mad',[1 nData])';
+          inpTmp = inp; inpTmp(abs(res)>=NR*mad) = NaN;
+          data(winW2+(1:nData),:) = inpTmp;
+          one_iter();
+        end
+        
+        function one_iter
+          %%
+          for i = 1:nData
+            tt = data(i+idx,:);
+            idxNan = isnan(tt(:,1)) | isnan(tt(:,2));
+            if all(idxNan), continue, end
+            if flagStd
+              STD_THR = 1.5;
+              s = std(tt(~idxNan,:)); m = mean(tt(~idxNan,:));
+              tt(abs(tt(:,1)-m(1))>s(1)*STD_THR,1) = NaN;
+              tt(abs(tt(:,2)-m(2))>s(2)*STD_THR,2) = NaN;
+              idxNan = isnan(tt(:,1)) | isnan(tt(:,2));
+            end
+            if any(idxNan)
+              idxNNan = ~idxNan;
+              sWinNaN = sum(win(idxNNan));
+              out(i,:) = sum(tt(idxNNan,:).*[win(idxNNan) win(idxNNan)])/sWinNaN;
+            else
+              out(i,:) = sum(tt.*[win win])/sWin;
+            end
+          end
+          %%
+        end
+        
+        function w = chebwin_table(L)
+          % Tablular values for L=119 only.
+          chebwinTable = [];
+          if(L==119)
+            chebwinTable = [0.000411163910123; 0.000515459556632; 0.000830350406912; ...
+              0.001264681979928; 0.001848061944924; 0.002614529601119; ...
+              0.003602761081911; 0.004856213587647; 0.006423197633619; ...
+              0.008356866721957; 0.010715114563889; 0.013560370999078; ...
+              0.016959289081214; 0.020982317415235; 0.025703153725169; ...
+              0.031198077777868; 0.037545164154235; 0.044823377905387; ...
+              0.053111558809152; 0.062487302698499; 0.073025751108949; ...
+              0.084798303223711; 0.097871266717503; 0.112304466546049; ...
+              0.128149832931883; 0.145449991694327; 0.164236881602301; ...
+              0.184530424538520; 0.206337274905416; 0.229649674838268; ...
+              0.254444441390954; 0.280682110907137; 0.308306264279142; ...
+              0.337243054735453; 0.367400957205817; 0.398670755223349; ...
+              0.430925777781370; 0.464022394626360; 0.497800774205781; ...
+              0.532085903978596; 0.566688868123050; 0.601408372933180; ...
+              0.636032505479081; 0.670340706514983; 0.704105934252385; ...
+              0.737096991568960; 0.769080985589309; 0.799825885435373; ...
+              0.829103141378020; 0.856690326691513; 0.882373762271193; ...
+              0.905951083559756; 0.927233709561502; 0.946049174714102; ...
+              0.962243286124095; 0.975682071130225; 0.986253483296290; ...
+              0.993868838696220; 0.998463958668262];
+	  else
+	    errStr='Unexpected window size in hard coded filter table.';
+	    irf.log('critical', errStr); error(errStr);
+          end
+          w = [chebwinTable; 1; flipud(chebwinTable)]; 
+        end
       end % DEL_MY
       function ints = find_on()
         % find intervals when mask is set
@@ -1545,106 +1605,28 @@ classdef mms_sdp_dmgr < handle
         end 
       end % FIND_ON
     end % COMP_DELTA_OFF
-    function probe2sc_pot = comp_probe2sc_pot(Dcv,sampleRate,MMS_CONST)
+    
+    function probe2sc_pot = comp_probe2sc_pot(Dcv,MMS_CONST)
       % COMP_PROBE2SC_POT  compute probe to SC potential
       %
-      % p2sc_pot = MMS_SDP_DMGR.COMP_PROBE2SC_POT(Dcv,sampleRate,MMS_CONST)
-      
+      % p2sc_pot = MMS_SDP_DMGR.COMP_PROBE2SC_POT(Dcv, MMS_CONST)
       % Blank sweeps
       sweepBit = MMS_CONST.Bitmask.SWEEP_DATA;
       Dcv.v1.data = mask_bits(Dcv.v1.data, Dcv.v1.bitmask, sweepBit);
       Dcv.v2.data = mask_bits(Dcv.v2.data, Dcv.v2.bitmask, sweepBit);
       Dcv.v3.data = mask_bits(Dcv.v3.data, Dcv.v3.bitmask, sweepBit);
       Dcv.v4.data = mask_bits(Dcv.v4.data, Dcv.v4.bitmask, sweepBit);
-      % Filter window size.
-      filterInterval = 20;
-      windowSize = sampleRate*filterInterval;
       
-      %    % Ideally we would like to use irf_filt, but this use ellip (part of
-      %    % Signal Processing Toolbox, which is not part of SDC installation).
-      %    filtOr = 3; epo = double(dcv.time - dcv.time(1))*1e-9;
-      %     MAfilt = irf_filt([epo...
-      %       double([dcv.v1.data dcv.v2.data dcv.v3.data dcv.v4.data])],...
-      %       0,1/filterInterval,samplerate,filtOr);
-      %     MAfilt(:,1) = [];
-      
-      MAfilt = NaN(size(Dcv.v1.data,1),4);
-      % For each windowSize segment, calculate the mean value of each probe,
-      % excluding NaN values.
-      indStart = 1;  indEnd = min(windowSize,length(Dcv.v1.data));
-      while indEnd<length(Dcv.v1.data)
-        ind = indStart:indEnd;
-        MAfilt(ind, 1:4) = repmat(irf.nanmean([...
-          Dcv.v1.data(ind), ...
-          Dcv.v2.data(ind), ...
-          Dcv.v3.data(ind), ...
-          Dcv.v4.data(ind)], 1),[length(ind), 1]);
-        % Compute next segments start and stop ind.
-        indStart = indEnd+1;
-        indEnd = min(indStart+windowSize-1, length(Dcv.v1.data));
-      end
-      % The last segment, or if a short data series then this first segment
-      % is the last segment.
-      ind = indStart:indEnd;
-      MAfilt(ind, 1:4) = repmat(irf.nanmean([...
-        Dcv.v1.data(ind), ...
-        Dcv.v2.data(ind), ...
-        Dcv.v3.data(ind), ...
-        Dcv.v4.data(ind)], 1),[length(ind), 1]);
-      
-      % For each timestamp get median value of the averaged probes.
-      MAmedian = median(MAfilt, 2);
-      % For each probe check if its value is too far off from the median
-      absDiff = abs([Dcv.v1.data, Dcv.v2.data, Dcv.v3.data, Dcv.v4.data] - ...
-        repmat(MAmedian, [1 4]));
-      badBits = absDiff > MMS_CONST.Limit.DIFF_PROBE_TO_SCPOT_MEDIAN;
-      
-      % Identify times with all four probes marked as bad
-      ind_row = ismember(badBits, [1 1 1 1], 'rows');
-      if( any(ind_row))
-        irf.log('warning', ...
-          'All four probes are outliers: using the "best" (closest to median) probe.');
-        %absDiff = abs(MAfilt(ind_row,:)-repmat(MAmedian(ind_row), [1 4]));
-        minAbsDiff = min(absDiff(ind_row,:), [], 2);
-        badBitsSeg = absDiff(ind_row,:) > repmat(minAbsDiff, [1 4]);
-        badBits(ind_row,:) = badBitsSeg;
-      end
-      
-      ind_row = ismember(badBits, [1 0 0 1; 0 1 1 0], 'rows');
-      if( any(ind_row))
-        irf.log('warning',...
-          'Two (not pairwise) probes as outliers: using them anyhow.');
-        % FIXME: WHAT TO DO? Use the other two? Or only the "Best"?
-      end
-      
-      % Identify times with one bad probe, set the entire pair as bad.
-      ind_row = ismember(badBits, [1 0 0 0 ; 0 1 0 0], 'rows');
-      if( any(ind_row))
-        irf.log('notice','Some timestamps show one probe as outlier, removing this probe pair (12) for those times.');
-        badBits(ind_row, 1:2) = 1;
-      end
-      ind_row = ismember(badBits, [0 0 1 0 ; 0 0 0 1], 'rows');
-      if( any(ind_row))
-        irf.log('notice','Some timestamps show one probe as outlier, removing this probe pair (34) for those times.');
-        badBits(ind_row, 3:4) = 1;
-      end
-      
-      % Set all bad bits to NaN in data before calculating the averaged value
-      Dcv.v1.data(badBits(:,1)) = NaN;
-      Dcv.v2.data(badBits(:,2)) = NaN;
-      Dcv.v3.data(badBits(:,3)) = NaN;
-      Dcv.v4.data(badBits(:,4)) = NaN;
-      
-      % Compute average of all spin plane probes, ignoring data identified as
-      % bad (NaN).
+      % Compute average of all spin plane probes, ignoring data identified
+      % as bad (NaN).
       avPot = irf.nanmean([Dcv.v1.data, Dcv.v2.data, Dcv.v3.data, Dcv.v4.data], 2);
       
       % Combine bitmask so that bit 0 = 0 (either four or two probes was
       % used), bit 0 = 1 (either one probe or no probe (if no probe => NaN
       % output in data). The other bits are a bitor comination of those
       % probes that were used (i.e. bitmask = 2 (dec), would mean at least
-      % one probe that was used for that point in time had "bad bias").
-      % Update badBits due to blanking of sweep.
+      % one probe that was used).
+      badBits = false(length(Dcv.v1.bitmask), 4);
       badBits(:,1) = isnan(Dcv.v1.data); badBits(:,2) = isnan(Dcv.v2.data);
       badBits(:,3) = isnan(Dcv.v3.data); badBits(:,4) = isnan(Dcv.v4.data);
       % Start with bit 0

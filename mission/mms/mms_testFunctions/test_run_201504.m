@@ -13,10 +13,10 @@ if ~exist('log','dir'), mkdir('log'), end
 if ~exist('out','dir'), mkdir('out'), end
 setenv('DROPBOX_ROOT', [outDir filesep 'out'])
 setenv('DATA_PATH_ROOT', [outDir filesep 'out'])
-setenv('LOG_PATH_ROOT', [outDir filesep 'log'])
+setenv('LOG_PATH_ROOT', '')
+%setenv('LOG_PATH_ROOT', [outDir filesep 'log'])
+setenv('CAL_PATH_ROOT','/data/mms/irfu/cal/')
 MMS_CONST=mms_constants;
-global ENVIR
-ENVIR.CAL_PATH_ROOT='/Users/yuri/devel/irfu-matlab/mission/mms/cal';
 
 %load /data/mms/irfu/mmsR.mat
 %epocRTmp = EpochTT(R.time);
@@ -33,8 +33,9 @@ flagComm = 0;
 %tint = irf.tint('2015-08-15T13:00:00Z/2015-08-15T13:59:59Z'); flagComm = 2;
 %tint = irf.tint('2015-09-11T09:30:00Z/2015-09-11T09:59:59Z'); flagComm = 2;
 %tint = irf.tint('2015-10-07T11:00:00Z/2015-10-07T13:59:59Z'); flagComm = 2;
-tint = irf.tint('2015-10-16T05:02:34Z/2015-10-16T16:34:04Z'); flagComm = 2;
+%tint = irf.tint('2015-10-16T05:02:34Z/2015-10-16T16:34:04Z'); flagComm = 2;
 %tint = irf.tint('2015-12-18T00:00:00Z/2015-12-18T11:59:59Z'); flagComm = 2;
+tint = irf.tint('2015-12-21T11:55:00Z/2015-12-21T21:55:00Z'); flagComm = 3;
 mmsId = 'mms2'; 
 
 prf = [data_root filesep mmsId]; utc = tint.start.toUtc(); 
@@ -165,15 +166,17 @@ irf_zoom(h,'x',epochE([1 end])')
 mms_sdc_sdp_proc('ql', DCE_File,  DCV_File, HK_10E_File, HK_101_File);
 mms_sdc_sdp_proc('scpot', DCE_File,  DCV_File, HK_10E_File, HK_101_File);
 
-%% L2Pre
+%% L2a
 tt = irf_time(tint.start.utc,'utc>doy');
 DEFATT_File = [data_root filesep 'ancillary' filesep mmsId filesep 'defatt'...
   filesep 'MMS' mmsId(end) '_DEFATT_' ...
   sprintf('%d%d_%d%d',tt(1),tt(2)-1,tt(1),tt(2)) '.V00'];
-mms_sdc_sdp_proc('l2pre', DCE_File,  DCV_File, HK_10E_File, DEFATT_File);
+mms_sdc_sdp_proc('l2a', DCE_File,  DCV_File, HK_10E_File);
 
-%% L2a
-mms_sdc_sdp_proc('l2a','out/mms4_edp_comm_l2pre_dce2d_20150506120000_v0.1.0.cdf')
+%% L2pre
+li = mms.db_list_files([mmsId '_dfg_srvy_l2pre'],tint); if length(li)>1, error('li>1'), end
+DFG_File = [li.path filesep li.name];
+mms_sdc_sdp_proc('l2pre','out/mms2_edp_slow_l2a_dce2d_20151221000000_v1.0.0.cdf',DFG_File)
 
 %% Plot
 dce2d=dataobj('out/mms4_edp_comm_l2pre_dce2d_20150405000000_v2.0.0.cdf');
