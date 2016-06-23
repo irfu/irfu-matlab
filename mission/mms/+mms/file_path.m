@@ -93,7 +93,7 @@ function filepath = file_path(varargin)
         for i=1: 4
             c_eval('tmp = str_?;', str_fpi(i));   
             if length(tmp) > 1
-                disp(tmp(:).name);
+                tmp.name
                 c_eval('disp(?_fn);', str_fpi(i));
             
             end
@@ -114,7 +114,7 @@ function filepath = file_path(varargin)
         for i=1: 4
             c_eval('tmp = str_?;', str_fpi(i));   
             if length(tmp) > 1
-                disp(tmp(:).name);
+                tmp.name
                 c_eval('disp(?_fn);', str_fpi(i));
             end
         end
@@ -128,7 +128,7 @@ function filepath = file_path(varargin)
         if isempty(str_fgm), error('[FGM-brst] Check connection of internet and harddrive and existence of this data'); end
         fgm_fn = str_fgm(end).name;
         if length(str_fgm) > 1
-            disp(str_fgm(:).name);
+            str_fgm.name
             disp(fgm_fn);
         end
     else if strcmp(fgm, 'srvy')
@@ -138,7 +138,7 @@ function filepath = file_path(varargin)
         if isempty(str_fgm), error('[FGM-srvy] Check connection of internet and harddrive and existence of this data'); end
         fgm_fn = str_fgm(end).name;
         if length(str_fgm) > 1
-            disp(str_fgm(:).name);
+            str_fgm.name
             disp(fgm_fn);
         end
         else
@@ -154,7 +154,7 @@ function filepath = file_path(varargin)
         if isempty(str_edp), error('[EDP-brst] Check connection of internet and harddrive and existence of this data'); end
         edp_fn = str_edp(end).name;
         if length(str_edp) > 1
-            disp(str_edp(:).name);
+            str_edp.name
             disp(edp_fn);
         end
     else if strcmp(edp, 'fast')
@@ -164,7 +164,7 @@ function filepath = file_path(varargin)
         if isempty(str_edp), error('[EDP-fast] Check connection of internet and harddrive and existence of this data'); end
         edp_fn = str_edp(end).name;
         if length(str_edp) > 1
-            disp(str_edp(:).name);
+            str_edp.name
             disp(edp_fn);
         end
         else
@@ -180,7 +180,7 @@ function filepath = file_path(varargin)
         if isempty(str_scpot), error('[scpot-brst] Check connection of internet and harddrive and existence of this data'); end
         scpot_fn = str_scpot(end).name;
         if length(str_scpot) > 1
-            disp(str_scpot(:).name);
+            str_scpot.name
             disp(scpot_fn);
         end
     else if strcmp(scpot, 'fast')
@@ -190,7 +190,7 @@ function filepath = file_path(varargin)
         if isempty(str_scpot), error('[scpot-fast] Check connection of internet and harddrive and existence of this data'); end
         scpot_fn = str_scpot(end).name;
         if length(str_scpot) > 1
-            disp(str_scpot(:).name);
+            str_scpot.name
             disp(scpot_fn);
         end
         else
