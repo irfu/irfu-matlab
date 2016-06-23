@@ -93,6 +93,7 @@ fy = @(x,R0) sqrt(0.04*(x-R0).^2-45.3*(x-R0)); % original F/G model adds rstando
 %% Check if THOR is inside bowshock or not
 xTHOR = rTHOR.x.data/units.RE*1e3; % km->RE
 yTHOR = rTHOR.y.data/units.RE*1e3;
+zTHOR = rTHOR.z.data/units.RE*1e3;
 
 yBS = fy(xTHOR,tsBSNX.data); 
 tsyBS = irf.ts_scalar(tsBSNX.time,yBS);
@@ -113,6 +114,9 @@ dt = rTHOR.time(2)-rTHOR.time(1);
 timeInside = dt*numel(isInside);
 timeOutside = dt*numel(isOutside);
 
+disp(sprintf('Dwell time, inside bowshock: %s days',num2str((timeInside)/60/60/24,'%g')))
+disp(sprintf('Dwell time, outside bowshock: %s days',num2str((timeOutside)/60/60/24,'%g')))
+
 %% Check quality of the bowshock crossing
 Rout = 15;
 QR = thor_QR(tsBSNX,Rout);
@@ -121,9 +125,9 @@ QV = thor_QV(tsBSNX,rTHOR);
 % Using Bz=0 is mostly for bugcheck
 tsB_Bz0 = tsB; tsB_Bz0.data(:,3) = 0;
 
-[QBparBz0,AngleBparBz0,NormalDirection] = thor_QB(tsBSNX,rTHOR,tsB_Bz0);
+[QBparBz0,AngleBparBz0,shockNormal] = thor_QB(tsBSNX,rTHOR,tsB_Bz0);
 [QBpar,AngleBpar] = thor_QB(tsBSNX,rTHOR,tsB);
-%[QBpar,AngleBpar,NormalDirection] = thor_QB(tsBSNX(isCrossing),rTHOR(isCrossing),tsB(isCrossing));
+%[QBpar,AngleBpar,shockNormal] = thor_QB(tsBSNX(isCrossing),rTHOR(isCrossing),tsB(isCrossing));
 [QBperpBz0,AngleBperpBz0] = thor_QB(tsBSNX,rTHOR,tsB_Bz0,'perp');
 [QBperp,AngleBperp] = thor_QB(tsBSNX,rTHOR,tsB,'perp');
 
@@ -167,17 +171,17 @@ centerAngle = edgesAngle(1:end)+edgesAngle(2)-edgesAngle(1);
 nAngles = histc(AngleBpar.data(isCrossing,:),edgesAngle');
 nAnglesBz0 = histc(AngleBparBz0.data(isCrossing,:),edgesAngle');
 
-
-%% Figures: General stuff
+%% Figures: Set some figure parameters
 markerStyle = 'o';
 xlim = [-20 40];
 ylim = [-30 30];
-%xlim = [-50 50];
-%ylim = [-50 50];
+xlim = [-50 50];
+ylim = [-50 50];
 xtick = [-50:10:50];
 ytick = [-50:10:50];
 fontsize = 14;
-plotB = 0;
+plotB = 1;
+plotShockNormal = 1;
 cmap = colormap('jet');
 mirrorcmap = [cmap; cmap(end:-1:1,:)];
 colorOrbit = [0 0 0]+0.8;
@@ -187,6 +191,170 @@ t1utc = t0(1).utc; t2utc = t0(end).utc;
 time_str = sprintf('%s_%s',t1utc(1:10),t2utc(1:10));
 printString = 'cn.print([time_str ''_box_'' num2str(diff(xlim)) ''x'' num2str(diff(ylim)) ''_'' figure_name],''thor'')';
 scrsz = get(groot,'ScreenSize');
+
+%% Figure: Shock normal angle in 3D
+figure_name = 'thetaB_3D';
+%figure_position = scrsz; figure_position(3) = figure_position(3)*0.5;
+%figure('Position',figure_position)
+
+nRows = 1; nCols = 1;
+for ii = 1:nRows*nCols; h(ii) = subplot(nRows,nCols,ii); end  
+isub = 1; 
+
+
+if 1 % B angle
+  hca = h(isub); isub = isub + 1;
+  plot3(hca,xTHOR(:),yTHOR(:),zTHOR(:),'color',colorOrbit)
+  hold(hca,'on')
+  scatter3(hca,xTHOR(isCrossing),yTHOR(isCrossing),zTHOR(isCrossing),[],AngleBpar.data(isCrossing,:),'marker',markerStyle)%,'filled')
+  hold(hca,'off')
+  hcb = colorbar('peer',hca); hcb.YLabel.String = '\Theta_{B}';  
+  colormap(hca,mirrorcmap);
+  hca.CLim = [0 180];
+  hca.Title.String = 'Magnetic field normal angle';
+  
+  hLegend = [];
+  txtLegend = {};
+  if plotB
+    hold(hca,'on')
+    quivB = quiver3(hca,xTHOR(isCrossing),yTHOR(isCrossing),zTHOR(isCrossing),tsB.x.data(isCrossing,1),tsB.y.data(isCrossing,1),tsB.z.data(isCrossing,1),'k');
+    hold(hca,'off')
+    hLegend = [hLegend(:) quivB]; 
+    txtLegend = {txtLegend{:} 'Magnetic field'}; 
+  end
+  if plotShockNormal
+    hold(hca,'on')
+    quivN = quiver3(hca,xTHOR(isCrossing),yTHOR(isCrossing),zTHOR(isCrossing),shockNormal.x.data(isCrossing,1),shockNormal.y.data(isCrossing,1),shockNormal.z.data(isCrossing,1),'color',[1 0 1]);
+    hold(hca,'off')  
+    hLegend = [hLegend(:) quivN]; 
+    txtLegend = {txtLegend{:} 'Shock normal'};
+  end
+  if ~isempty(hLegend)
+    legend(hLegend,txtLegend,'location','bestoutside')
+  end
+  hca.FontSize = fontsize;
+end
+
+for ii = 1:nRows*nCols; 
+  axis(h(ii),'equal')
+  h(ii).XGrid = 'on';
+  h(ii).YGrid = 'on';
+  h(ii).ZGrid = 'on';
+  h(ii).XTick = xtick;
+  h(ii).YTick = ytick;
+  h(ii).ZTick = xtick;
+  h(ii).XLim = xlim;
+  h(ii).YLim = ylim;
+  h(ii).XLabel.String = 'X';
+  h(ii).YLabel.String = 'Y';
+  h(ii).FontSize = fontsize;
+end
+if doPrint, eval(printString); end
+
+%% Figure: 3D: QV QBperp QBpar, for checking the 3D-case
+figure_name = 'Q_3D';
+figure_position = scrsz; figure_position(3) = figure_position(3)*0.5;
+figure('Position',figure_position)
+
+nRows = 2; nCols = 2;
+for ii = 1:nRows*nCols; h(ii) = subplot(nRows,nCols,ii); end  
+isub = 1; 
+
+if 1 % QV
+  hca = h(isub); isub = isub + 1;
+  plot3(hca,xTHOR(:),yTHOR(:),zTHOR(:),'color',colorOrbit)
+  hold(hca,'on')
+  scatter3(hca,xTHOR(isCrossing),yTHOR(isCrossing),zTHOR(isCrossing),[],QV.data(isCrossing,:),'marker',markerStyle)%,'filled')
+  hold(hca,'off')
+  hcb = colorbar('peer',hca); hcb.YLabel.String = 'Q';
+  colormap(hca,cmap);
+  hca.CLim = [0 1];
+  hca.Title.String = 'Q_{V}';
+  if plotB
+    hold(hca,'on')
+    quiver3(hca,xTHOR(isCrossing),yTHOR(isCrossing),zTHOR(isCrossing),tsB.x.data(isCrossing,1),tsB.y.data(isCrossing,1),tsB.z.data(isCrossing,1),'k')
+    hold(hca,'off')
+  end
+  hca.FontSize = fontsize;
+end
+if 1 % B angle
+  hca = h(isub); isub = isub + 1;
+  plot3(hca,xTHOR(:),yTHOR(:),zTHOR(:),'color',colorOrbit)
+  hold(hca,'on')
+  scatter3(hca,xTHOR(isCrossing),yTHOR(isCrossing),zTHOR(isCrossing),[],AngleBpar.data(isCrossing,:),'marker',markerStyle)%,'filled')
+  hold(hca,'off')
+  hcb = colorbar('peer',hca); hcb.YLabel.String = '\Theta_{B}';  
+  colormap(hca,mirrorcmap);
+  hca.CLim = [0 180];
+  hca.Title.String = 'Shock normal angle';
+  
+  if plotB
+    hold(hca,'on')
+    quiver(hca,xTHOR(isCrossing),yTHOR(isCrossing),tsB.x.data(isCrossing,1),tsB.y.data(isCrossing,1),'k')
+    hold(hca,'off')
+  end
+  if plotShockNormal
+    hold(hca,'on')
+    quiver3(hca,xTHOR(isCrossing),yTHOR(isCrossing),zTHOR(isCrossing),tsB.x.data(isCrossing,1),tsB.y.data(isCrossing,1),tsB.z.data(isCrossing,1),'k')
+    hold(hca,'off')
+  end
+  hca.FontSize = fontsize;
+end
+if 1 % QB perp
+  hca = h(isub); isub = isub + 1;
+  plot3(hca,xTHOR(:),yTHOR(:),zTHOR(:),'color',colorOrbit)
+  hold(hca,'on')
+  scatter3(hca,xTHOR(isCrossing),yTHOR(isCrossing),zTHOR(isCrossing),[],QBperp.data(isCrossing,:),'marker',markerStyle)%,'filled')
+  hold(hca,'off')
+  hcb = colorbar('peer',hca); hcb.YLabel.String = 'Q';
+  colormap(hca,cmap);
+  hca.CLim = [0 1];
+  hca.Title.String = 'Q_{B,\perp}';
+  if plotB
+    hold(hca,'on')
+    quiver(hca,xTHOR(isCrossing),yTHOR(isCrossing),tsB.x.data(isCrossing,1),tsB.y.data(isCrossing,1),'k')
+    hold(hca,'off')
+  end
+  if plotShockNormal
+    hold(hca,'on')
+    quiver3(hca,xTHOR(isCrossing),yTHOR(isCrossing),zTHOR(isCrossing),tsB.x.data(isCrossing,1),tsB.y.data(isCrossing,1),tsB.z.data(isCrossing,1),'k')
+    hold(hca,'off')
+  end
+  hca.FontSize = fontsize;
+end
+if 1 % QB par
+  hca = h(isub); isub = isub + 1;
+  plot3(hca,xTHOR(:),yTHOR(:),zTHOR(:),'color',colorOrbit)
+  hold(hca,'on')
+  scatter3(hca,xTHOR(isCrossing),yTHOR(isCrossing),zTHOR(isCrossing),[],QBpar.data(isCrossing,:),'marker',markerStyle)%,'filled')
+  hold(hca,'off')
+  hcb = colorbar('peer',hca); hcb.YLabel.String = 'Q';
+  colormap(hca,cmap);
+  hca.CLim = [0 1];  
+  hca.Title.String = sprintf('Q_{B,||}','a');
+  if plotB
+    hold(hca,'on')
+    quiver3(hca,xTHOR(isCrossing),yTHOR(isCrossing),zTHOR(isCrossing),tsB.x.data(isCrossing,1),tsB.y.data(isCrossing,1),tsB.z.data(isCrossing,1),'k')
+    hold(hca,'off')
+  end
+  hca.FontSize = fontsize;
+end  
+
+
+for ii = 1:nRows*nCols; 
+  axis(h(ii),'equal')
+  h(ii).XGrid = 'on';
+  h(ii).YGrid = 'on';
+  h(ii).XTick = xtick;
+  h(ii).YTick = ytick;
+  h(ii).XLim = xlim;
+  h(ii).YLim = ylim;
+  h(ii).XLabel.String = 'X';
+  h(ii).YLabel.String = 'Y';
+  h(ii).FontSize = fontsize;
+end
+linkaxes(h,'xy')   
+if doPrint, eval(printString); end
 
 %% Figure: BAngle, QBperp, QBpar, finite Bz    
 figure_name = 'theta_QBperp_QBpar';
@@ -237,7 +405,7 @@ end
 hca = h(isub); isub = isub + 1;
 plot(hca,xTHOR(:),yTHOR(:),'color',colorOrbit)
 hold(hca,'on')
-scatter(hca,xTHOR(isCrossing),yTHOR(isCrossing),[],AngleBparBz0.data(isCrossing,:),'marker',markerStyle)%,'filled')
+scatter(hca,xTHOR(isCrossing),yTHOR(isCrossing),[],AngleBparBz.data(isCrossing,:),'marker',markerStyle)%,'filled')
 hold(hca,'off')
 hcb = colorbar('peer',hca); hcb.YLabel.String = '\Theta_B';
 colormap(hca,mirrorcmap);
@@ -390,6 +558,11 @@ if 1 % QB perp
   if plotB
     hold(hca,'on')
     quiver(hca,xTHOR(isCrossing),yTHOR(isCrossing),tsB.x.data(isCrossing,1),tsB.y.data(isCrossing,1),'k')
+    hold(hca,'off')
+  end
+  if plotShockNormal
+    hold(hca,'on')
+    quiver(hca,xTHOR(isCrossing),yTHOR(isCrossing),shockNormal.x.data(isCrossing,1),shockNormal.y.data(isCrossing,1),'color',0.5*[1 1 1])
     hold(hca,'off')
   end
   hca.FontSize = fontsize;
