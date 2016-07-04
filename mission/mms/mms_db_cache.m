@@ -63,7 +63,7 @@ classdef mms_db_cache<handle
       if (obj.timeout>0) && (now() > obj.loaded(idx) + obj.timeout/86400)
         obj.purge(), return
       end
-      res = obj.data(idx);
+      res = obj.data{idx};
     end
     
     function add_entry(obj,key,dataEntry)
