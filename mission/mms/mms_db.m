@@ -210,7 +210,7 @@ classdef mms_db < handle
          dobjLoaded = db.load_file(fileNameToLoad);
          obj.cache.add_entry(fileNameToLoad,dobjLoaded)
        end
-       res = [res {dobjLoaded}]; %#ok<AGROW>
+       res = [res dobjLoaded]; %#ok<AGROW>
      end
    end
    
