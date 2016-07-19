@@ -20,7 +20,7 @@ if isempty(usingNasaPatchCdf), % check only once if using NASA cdf
   usingNasaPatchCdf=irf.check_if_using_nasa_cdf;
 end
 shouldReadAllData = true;  % default read all data
-isDataReturned    = true; % default expects data to be returned
+isDataReturned    = true;  % default expects data to be returned
 if     nargin==0, action='create_default_object';
 elseif nargin==1, action='read_data_from_file';
 else
