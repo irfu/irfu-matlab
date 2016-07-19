@@ -27,12 +27,12 @@
 % SYNTAX/PARAMETERS:
 % [--developer-bash-settings] ( --identification | --version | --help ) [--log <path>] | <S/W mode> <Common & specific input parameters>
 %
-% --developer-bash-settings : Used by the wrapper bash script. Ignored by this code.
+% --developer-bash-settings : Used by the wrapper bash script. Permitted but ignored by this code.
 %
 % <S/W mode> : 
 % Common input parameters
 %    --output <absolute path to directory>
-%    --log    <absolute path to directory>   (Note: Ignored by this code; The log file not written from here)
+%    --log    <absolute path to directory>   (Note: Ignored by this code; The log file is not written to from here)
 %    --config <absolute path to file>
 % Specific input parameters
 %    Specify input and output files and which are which.
@@ -43,7 +43,7 @@
 %
 %
 % NOTE: This function is the main MATLAB function, i.e. it is called by no other MATLAB code during
-% regular use. It is intended to be wrapped in and called from non-MATLAB code, e.g. a bash script.
+% regular use. It is intended to be wrapped in, and called from non-MATLAB code, e.g. a bash script.
 %
 % NOTE: This code is designed for MATLAB 2016a (as of 2016-06-02) but may very well work with other
 % versions of MATLAB.
@@ -53,7 +53,7 @@
 % clears the function parameters.)
 %
 % IMPLEMENTATION NOTE: This code does not quit/exit using the MATLAB function "quit" since that
-% always exits all of MATLAB which is undesirebly when developing in the MATLAB IDE. The function
+% always exits all of MATLAB which is undesirable when developing in the MATLAB IDE. The function
 % returns the error code to make it possible for the bash wrapper to quit with an exit code instead.
 %
 % IMPLEMENTATION NOTE: The RCS ICD specifies tightly what should go to stdout. This code
@@ -67,11 +67,13 @@ function error_code = bicas( varargin )
 % PROPOSAL: Set flag for MATLAB warnings. Disable?
 %    NOTE: TN claims warnings are sent to stdout.
 % PROPOSAL: Extra (inofficial) flag for setting the log level.
-% PROPOSAL: Have --help print the error codes.
+%
+
 
 init_global_constants
 global ERROR_CODES
 global REQUIRED_MATLAB_VERSION
+
 error_code = ERROR_CODES.NO_ERROR;   % Default exit error code.
    
 try
@@ -135,32 +137,34 @@ try
 
     else
         
-        %=================================================
-        % CASE: Must be a S/W mode (or invalid arguments)
-        %=================================================
+        %============================
+        % CASE: Should be a S/W mode
+        %============================
 
         flags('output_dir') = struct('CLI_str', '--output', 'is_required', 1, 'expects_value', 1);
         %flags('config_file_path') = struct('CLI_str', '--config', 'is_required', 0, 'expects_value', 1);
 
-        % Figure out which S/W mode (which index among the constants).
         C = bicas_constants;
-        temp = {};
-        for i = 1:length(C.sw_modes)
-            temp{end+1} = C.sw_modes{i}.CLI_parameter;
-        end
-        i_mode = find(strcmp(arguments{1}, temp));        
+        
+
+        % Figure out which S/W mode (which index among the constants).
+        temp = [C.sw_modes{:}];                         % Convert to array of structs.
+        CLI_parameter_list = {temp(:).CLI_parameter};   % Convert to cell array of strings.
+        i_mode = find(strcmp(arguments{1}, CLI_parameter_list));
         if length(i_mode) ~= 1
             % NOTE: The message is slightly inaccurate. Argument "--version" etc. would have worked too.
             errorp(ERROR_CODES.CLI_ARGUMENT_ERROR, 'Can not interpret argument "%s" as a S/W mode.', arguments{1});
         end
 
-        % Add CLI flags depending on the S/W mode.
-        % ----------------------------------------
+        %---------------------------------------------------------------------
+        % Configure CLI flags (CLI argument syntax) depending on the S/W mode
+        %---------------------------------------------------------------------
         C_inputs = C.sw_modes{i_mode}.inputs;    % C = Constants structure.
         input_keys = {};
         for i_input = 1:length(C_inputs)
-            key = C_inputs{i_input}.CLI_parameter_name;    % Replace key with dataset_ID?!
             flag = [];
+            
+            key = C_inputs{i_input}.dataset_ID;
             flag.CLI_str = ['--', C_inputs{i_input}.CLI_parameter_name];
             flag.is_required = 1;
             flag.expects_value = 1;
@@ -169,18 +173,19 @@ try
             input_keys{end+1} = key;
         end
 
-        % Parse remaining arguments.
+        %-----------------------------
+        % Parse (remaining) arguments
+        %-----------------------------
         parsed_flags = parse_CLI_flags(arguments(2:end), flags);
         
-        input_files = containers.Map(input_keys, parsed_flags.values(input_keys));
+        
+        
+        input_files = containers.Map(input_keys, parsed_flags.values(input_keys)); % Extract subset of parsed arguments.
+        
         output_dir = get_abs_path(parsed_flags('output_dir'));
         
-        irf.log('n', sprintf('Output directory = "%s"', output_dir));
         
-        if ~exist(output_dir, 'dir')
-            errorp(ERROR_CODES.PATH_NOT_FOUND, 'Output directory "%s" does not exist.', output_dir)
-        end
-
+        %execute_sw_mode(i_mode, input_files, output_dir, sw_root_path)
 
 
         %===============================================================
@@ -198,7 +203,7 @@ try
 catch exception
     
     try
-        irf.log('critical', 'Main function caught an exception. Error handling. Exiting.');   % Print to stdout.
+        irf.log('critical', 'Main function caught an exception. Beginning error handling.');   % Print to stdout.
         
         %========================================================================================
         % Parse exception message - Extract and set error code
@@ -221,7 +226,7 @@ catch exception
         % Print the call stack
         %======================
         len = length(exception.stack);
-        fprintf(2, 'MATLAB call stack:\n');
+        fprintf(2, 'MATLAB call stack:\n');    % Print to stderr.
         if (~isempty(len))
             for i=1:len
                 sc = exception.stack(i);   % sc = stack call
@@ -243,9 +248,8 @@ catch exception
         % CASE: There was an error in the error handling(!).
         
         % NOTE: Only use very, very error safe code here.
-        msg = sprintf('Unknown error. Error in the MATLAB script''s error handling.\nException message: "%s"\n', ...
-            exception.message');
-        fprintf(2, msg);   % Print to stderr.
+        fprintf(2, 'Unknown error. Error in the MATLAB code''s error handling.\nException message: "%s"\n', ...
+            exception.message');   % Print to stderr.
         
         error_code = ERROR_CODES.UNKNOWN_ERROR;   % Not even use hardcoded constant for error code?!!
         return
@@ -263,6 +267,8 @@ end
 %
 % NOTE: Will overwrite output file. Not necessary desirable in a real implementation but is
 % practical for testing.
+%
+% ASSUMES
 %
 function execute_sw_mode_TEST_IMPLEMENTATION(i_mode, output_dir, sw_root_path)
 
@@ -296,6 +302,7 @@ for i = 1:length(C_mode.outputs)
     output_JSON.(C_mode_output.JSON_output_file_identifier) = output_filename;
 end
 
+% Print list of files produced in the form of a JSON object.
 str = JSON_object_str(output_JSON);
 stdout_printf(str);
 
@@ -339,7 +346,9 @@ stdout_printf('%s\n%s\n', D.identification.name, D.identification.description)
 
 stdout_printf('\nError codes (internal constants):\n')
 for sfn = fieldnames(ERROR_CODES)'
-    stdout_printf('   %3i = %s\n', ERROR_CODES.(sfn{1}), sfn{1})
+    error_code = ERROR_CODES.(sfn{1});
+    error_name = sfn{1};
+    stdout_printf('   %3i = %s\n', error_code, error_name)
 end
 
 %errorp(ERROR_CODES.OPERATION_NOT_IMPLEMENTED, 'Operation not implemented: --help.')

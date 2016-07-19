@@ -49,15 +49,18 @@ function constants = bicas_constants()
 %    PRO: Validation may require extra parameters. Ex: S/W root directory
 %    PRO: Error-prone validation code can then be inside main try-catch.
 % PROPOSAL: More validation: Check that master cdfs exist, that executable exists.
+%
+% PROPOSAL: Other name for sw_mode.CLI_parameter which implies generic string identifier (which is
+%           used to derive a CLI parameter).
 
 
 
 % Support caching/lazy evaluation.
-persistent C
-if ~isempty(C)
-    constants = C;
-    return
-end
+% persistent C
+% if ~isempty(C)
+%     constants = C;
+%     return
+% end
 
 
 
@@ -91,10 +94,10 @@ C.SWD_environment.executable = 'roc/bicas';   % Temporary sw name
 C.sw_modes = {};
 
 %---------------------------------------------------------------------------------------------------
-% NOTE: sw_mode.inputs{..}.CLI_parameter_name = CLI parameter without flag prefix ("--").
+% NOTE: sw_mode.inputs{..}.CLI_parameter_name = CLI parameter minus flag prefix ("--").
+% NOTE: sw_mode.CLI_parameter = Is used as CLI parameter, but also to identify the mode.
 
 sw_mode = [];
-%sw_mode.CLI_parameter = 'L2S_LFR-SURV-CWF-E';
 sw_mode.CLI_parameter = 'LFR-CWF-E';
 sw_mode.SWD_purpose = 'Generate continuous waveform electric field data (potential difference) from LFR';
 
@@ -104,7 +107,7 @@ sw_mode.inputs{end}.dataset_ID          = 'ROC-SGSE_HK_RPW-BIA';
 sw_mode.inputs{end}.dataset_version_str = '01';
 
 sw_mode.inputs{end+1} = [];
-sw_mode.inputs{end}.CLI_parameter_name  = 'input_sci';
+sw_mode.inputs{end}.CLI_parameter_name  = 'input_sci';   
 sw_mode.inputs{end}.dataset_ID          = 'ROC-SGSE_L2R_RPW-LFR-SURV-CWF';
 sw_mode.inputs{end}.dataset_version_str = '01';
 
@@ -112,8 +115,8 @@ sw_mode.outputs = {[]};
 sw_mode.outputs{end}.JSON_output_file_identifier = 'output_SCI';
 sw_mode.outputs{end}.dataset_ID                  = 'ROC-SGSE_L2S_RPW-LFR-SURV-CWF-E';
 sw_mode.outputs{end}.dataset_version_str         = '01';
-%sw_mode.outputs{end}.master_cdf_filename         = 'ROC-SGSE_L2S_RPW-LFR-SURV-CWF-E_V01.cdf';
-sw_mode.outputs{end}.master_cdf_filename         = TEST_MASTER_CDF_FILENAME;
+sw_mode.outputs{end}.master_cdf_filename         = 'ROC-SGSE_L2S_RPW-LFR-SURV-CWF-E_V01.cdf';
+%sw_mode.outputs{end}.master_cdf_filename         = TEST_MASTER_CDF_FILENAME;
 sw_mode.outputs{end}.SWD_name                    = 'LFR L2s CWF science electric data in survey mode';
 sw_mode.outputs{end}.SWD_description             = 'RPW LFR L2s CWF science electric (potential difference) data in survey mode, time-tagged';
 sw_mode.outputs{end}.SWD_level                   = 'L2S';
@@ -123,7 +126,6 @@ sw_mode.outputs{end}.SWD_release_modification    = INITIAL_RELEASE_MODIFICATION_
 C.sw_modes{end+1} = sw_mode;
 %---------------------------------------------------------------------------------------------------
 sw_mode = [];
-%sw_mode.CLI_parameter = 'L2S_LFR-SURV-SWF-E';
 sw_mode.CLI_parameter = 'LFR-SWF-E';
 sw_mode.SWD_purpose = 'Generate snapshow waveform electric (potential difference) data from LFR';
 
@@ -141,8 +143,8 @@ sw_mode.outputs = {[]};
 sw_mode.outputs{end}.JSON_output_file_identifier = 'output_SCI';
 sw_mode.outputs{end}.dataset_ID                  = 'ROC-SGSE_L2S_RPW-LFR-SURV-SWF-E';
 sw_mode.outputs{end}.dataset_version_str         = '01';
-%sw_mode.outputs{end}.master_cdf_filename         = 'ROC-SGSE_L2S_RPW-LFR-SURV-SWF-E_V01.cdf';
-sw_mode.outputs{end}.master_cdf_filename         = TEST_MASTER_CDF_FILENAME;
+sw_mode.outputs{end}.master_cdf_filename         = 'ROC-SGSE_L2S_RPW-LFR-SURV-SWF-E_V01.cdf';
+%sw_mode.outputs{end}.master_cdf_filename         = TEST_MASTER_CDF_FILENAME;
 sw_mode.outputs{end}.SWD_name                    = 'LFR L2s SWF science electric data in survey mode';
 sw_mode.outputs{end}.SWD_description             = 'RPW LFR L2s SWF science electric (potential difference) data in survey mode, time-tagged';
 sw_mode.outputs{end}.SWD_level                   = 'L2S';

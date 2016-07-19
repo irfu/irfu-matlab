@@ -3,7 +3,7 @@
 %
 % Alternative error function.
 % This function is intended to be used instead of MATLAB's own "error" function to standardize the
-% behaviour. Should be able to handle multiline messages(?).
+% behaviour. Should be able to handle multiline messages(?) and printf format.
 %
 % errorp = error prime ("prime" as in the apostrophe after a variable to denote a different version
 % of about the same functionality)

@@ -30,3 +30,4 @@ configuration it might require additional flags.
 (2) Add master cdf files for every dataset that the software can produce to the data/ subdirectory if
 not included already. Master cdf files must have standard filenames, i.e. on the form
 <Dataset ID>_<Version string>.cdf, where version string is on the form Vxx, x=digit.
+The datasets and versions must be correct, i.e. in agreement with the S/W descriptor.
