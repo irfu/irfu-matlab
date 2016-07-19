@@ -12,6 +12,8 @@
 function  init_global_constants
 %
 % PROPOSAL: Return structure (lazy eval.) rather than initializing global constants.
+%   PRO: ~Write-protected.
+%   CON: Slower.
 
 
 
@@ -26,8 +28,8 @@ ERROR_CODES.MISC_ERROR = 1;
 ERROR_CODES.UNKNOWN_ERROR = 2;          % Only use for error in error handling?
 ERROR_CODES.CLI_ARGUMENT_ERROR = 100;   % Can not interpret command-line arguments.
 ERROR_CODES.OPERATION_NOT_IMPLEMENTED = 101;   % Execution has reached a portion of the code that has not been implemented yet.
-ERROR_CODES.ASSERTION_ERROR = 102;      % Detected an internal state that never be possible. This should indicate a pure code bug.
-ERROR_CODES.PATH_NOT_FOUND = 103;       % Directory or file does not exist.
+ERROR_CODES.ASSERTION_ERROR = 102;             % Detected an internal state that never be possible. This should indicate a pure code bug.
+ERROR_CODES.PATH_NOT_FOUND = 103;              % Directory or file does not exist.
 ERROR_CODES.SW_MODE_PROCESSING_ERROR = 104;
 
 global REQUIRED_MATLAB_VERSION

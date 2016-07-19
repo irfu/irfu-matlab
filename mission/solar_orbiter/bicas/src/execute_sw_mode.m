@@ -1,11 +1,12 @@
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
 % First created 2016-06-09
 %
+% sw_mode_CLI_parameter : String
 % input_files : containers.Map with
-%    keys   = dataset IDs
-%    values = paths to input files.
+%    keys   = Dataset IDs
+%    values = Paths to input files.
 %
-function execute_sw_mode(i_sw_mode, input_files, output_dir, sw_root_path)
+function execute_sw_mode(sw_mode_CLI_parameter, input_files, output_dir, sw_root_path)
 %
 % QUESTION: How verify dataset ID and dataset version against constants?
 %    NOTE: Need to read cdf first.
@@ -28,9 +29,8 @@ function execute_sw_mode(i_sw_mode, input_files, output_dir, sw_root_path)
 %
 
 global ERROR_CODES
-C = bicas_constants;
+C = bicas_constants.get_constants;
 
-% QUESTION: Move this check to execute_sw_mode/bicas?!
 irf.log('n', sprintf('Output directory = "%s"', output_dir));       
 if ~exist(output_dir, 'dir')
     errorp(ERROR_CODES.PATH_NOT_FOUND, 'Output directory "%s" does not exist.', output_dir)
@@ -43,5 +43,12 @@ for dataset_ID = input_files.keys
     input_file = input_files(dataset_ID{1});
     dm.set_input_cdf(dataset_ID{1}, input_file);
 end
+
+temp = select_structs(C.sw_modes, 'CLI_parameter', {sw_mode_CLI_parameter});
+C_sw_mode = temp{1};
+
+
+
+a = dm.get_data('ROC-SGSE_L2S_RPW-LFR-SURV-CWF-E');
 
 end

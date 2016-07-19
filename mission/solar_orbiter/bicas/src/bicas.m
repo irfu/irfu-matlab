@@ -67,6 +67,7 @@ function error_code = bicas( varargin )
 % PROPOSAL: Set flag for MATLAB warnings. Disable?
 %    NOTE: TN claims warnings are sent to stdout.
 % PROPOSAL: Extra (inofficial) flag for setting the log level.
+% QUESTION: Is the applicaton allowed to overwrite output files?
 %
 
 
@@ -80,14 +81,7 @@ try
     % Among other things: Sets up paths to within irfu-matlab (excluding .git/).
     % NOTE: Prints to stdout. Can not deactivate this behaviour!
     irf('check_path');
-    
     irf.log('debug')      % Set log level.
-    
-    arguments = varargin;
-    for i = 1:length(arguments)
-        irf.log('n', sprintf('CLI argument %2i: "%s"', i, arguments{i}))
-    end
-    irf.log('n', sprintf('Current working directory: "%s"', pwd));   % Useful for debugging the use of relative directory arguments.
     
     % Check MATLAB version
     found_version = version('-release');
@@ -96,81 +90,93 @@ try
             'Wrong MATLAB version. Found %s. Requires %s.\n', found_version, REQUIRED_MATLAB_VERSION)
     end
 
+    % Log arguments
+    for i = 1:length(varargin)
+        irf.log('n', sprintf('CLI argument %2i: "%s"', i, varargin{i}))
+    end
+    irf.log('n', sprintf('Current working directory: "%s"', pwd));   % Useful for debugging the use of relative directory arguments.
+    
     % Derive the root path of the software (BICAS directory structure root).
     [matlab_src_path, ~, ~] = fileparts(mfilename('fullpath'));
     sw_root_path = get_abs_path([matlab_src_path, filesep, '..']);
     irf.log('n', sprintf('MATLAB source code path: "%s"', matlab_src_path))
     irf.log('n', sprintf('Software root path:      "%s"', sw_root_path))
-    
 
 
-    %=================
-    % Parse arguments
-    %=================
+
+    %================================================================
+    % 1) Parse arguments, and
+    % 2) select which of BICAS' different modes of operation.
+    %================================================================
+    arguments = varargin;
     
-    % Flag to permit, but ignore.
-    if (length(arguments) >= 1) && (strcmp(arguments{1}, '--developer-bash-settings'))
-        arguments = arguments(2:end);
-    end
+    % First argument: Flag to permit but ignore.
+%     if (length(arguments) >= 1) && (strcmp(arguments{1}, '--developer-bash-settings'))
+%         arguments = arguments(2:end);
+%     end
     
+    % Start configuring requirements on (remaining) arguments.
     flags = containers.Map;
-    flags('log_path') = struct('CLI_str', '--log', 'is_required', 0, 'expects_value', 1);    % Flag+value to permit but ignore.
+    flags('log_path')         = struct('CLI_str', '--log',    'is_required', 0, 'expects_value', 1);   % Flag+value to permit but ignore.
+    flags('config_file_path') = struct('CLI_str', '--config', 'is_required', 0, 'expects_value', 1);   % Flag+calue to permit but ignore.
 
+    % Select mode of operations.
     if (length(arguments) < 1)
 
         errorp(ERROR_CODES.CLI_ARGUMENT_ERROR, 'Not enough arguments found.')
 
     elseif (strcmp(arguments{1}, '--identification'))
-
+        %============================
+        % CASE: Print identification
+        %============================
         [~] = parse_CLI_flags(arguments(2:end), flags);  % Check CLI syntax but ignore results.
         print_identification()
 
     elseif (strcmp(arguments{1}, '--version'))
-
+        %============================
+        % CASE: Print version
+        %============================
         [~] = parse_CLI_flags(arguments(2:end), flags);  % Check CLI syntax but ignore results.
         print_version()
 
     elseif (strcmp(arguments{1}, '--help'))
-
+        %============================
+        % CASE: Print help
+        %============================
         [~] = parse_CLI_flags(arguments(2:end), flags);  % Check CLI syntax but ignore results.
         print_help()
 
     else
-        
-        %============================
-        % CASE: Should be a S/W mode
-        %============================
+        %==============================================
+        % CASE: Should be a S/W mode (error otherwise)
+        %==============================================
 
-        flags('output_dir') = struct('CLI_str', '--output', 'is_required', 1, 'expects_value', 1);
-        %flags('config_file_path') = struct('CLI_str', '--config', 'is_required', 0, 'expects_value', 1);
-
-        C = bicas_constants;
-        
-
-        % Figure out which S/W mode (which index among the constants).
-        temp = [C.sw_modes{:}];                         % Convert to array of structs.
-        CLI_parameter_list = {temp(:).CLI_parameter};   % Convert to cell array of strings.
-        i_mode = find(strcmp(arguments{1}, CLI_parameter_list));
-        if length(i_mode) ~= 1
+        C = bicas_constants.get_constants();
+        try
+            temp = select_structs(C.sw_modes, 'CLI_parameter', {arguments{1}});   % Will return assertion error of does not work.
+            C_sw_mode = temp{1};
+        catch exception
             % NOTE: The message is slightly inaccurate. Argument "--version" etc. would have worked too.
             errorp(ERROR_CODES.CLI_ARGUMENT_ERROR, 'Can not interpret argument "%s" as a S/W mode.', arguments{1});
         end
 
-        %---------------------------------------------------------------------
-        % Configure CLI flags (CLI argument syntax) depending on the S/W mode
-        %---------------------------------------------------------------------
-        C_inputs = C.sw_modes{i_mode}.inputs;    % C = Constants structure.
-        input_keys = {};
+        %-----------------------------------------------------------------
+        % Configure CLI flags to expect, partly depending on the S/W mode
+        %-----------------------------------------------------------------
+        flags('output_dir')       = struct('CLI_str', '--output', 'is_required', 1, 'expects_value', 1);
+        C_inputs = C_sw_mode.inputs;    % C = Constants structure.
+        input_keys = {};   % List of keys used for input files.
         for i_input = 1:length(C_inputs)
-            flag = [];
+            dataset_ID = C_inputs{i_input}.dataset_ID;
             
-            key = C_inputs{i_input}.dataset_ID;
+            % Configure one flag+value pair
+            flag = [];
             flag.CLI_str = ['--', C_inputs{i_input}.CLI_parameter_name];
             flag.is_required = 1;
-            flag.expects_value = 1;
+            flag.expects_value = 1;            
+            flags(dataset_ID) = flag;
             
-            flags(key) = flag;
-            input_keys{end+1} = key;
+            input_keys{end+1} = dataset_ID;
         end
 
         %-----------------------------
@@ -180,21 +186,17 @@ try
         
         
         
-        input_files = containers.Map(input_keys, parsed_flags.values(input_keys)); % Extract subset of parsed arguments.
+        input_files = containers.Map(input_keys, parsed_flags.values(input_keys));   % Extract subset of parsed arguments.
         
         output_dir = get_abs_path(parsed_flags('output_dir'));
         
         
-        %execute_sw_mode(i_mode, input_files, output_dir, sw_root_path)
-
 
         %===============================================================
-        % TEST CODE
-        % 
-        % USING TEST CODE TO IMPLEMENT S/W MODES.
-        % IGNORES INPUT FILES AND PRODUCES INVALID .CDF FILE AS OUTPUT.
+        % CHOOSE IMPLEMENTATION TO USE.
         %===============================================================
-        execute_sw_mode_TEST_IMPLEMENTATION(i_mode, output_dir, sw_root_path)
+        execute_sw_mode(C_sw_mode.CLI_parameter, input_files, output_dir, sw_root_path)  % The intended real implementation
+        %execute_sw_mode_TEST_IMPLEMENTATION(C_sw_mode.CLI_parameter, output_dir, sw_root_path)   % IMPLEMENTATION FOR TESTING. OUTPUTS NONSENSE CDFs.
         %errorp(ERROR_CODES.OPERATION_NOT_IMPLEMENTED, 'Operation not completely implemented: Use S/W mode')
     end
 
@@ -233,7 +235,7 @@ catch exception
                 temp = strsplit(sc.file, filesep);
                 filename = temp{end};
                 
-                fprintf(2, '    %s (%s), row %i,\n', sc.name, filename, sc.line);
+                fprintf(2, '    %-25s %-30s row %i,\n', [filename, ','], [sc.name, ','], sc.line);
             end
         end
         
@@ -270,14 +272,16 @@ end
 %
 % ASSUMES
 %
-function execute_sw_mode_TEST_IMPLEMENTATION(i_mode, output_dir, sw_root_path)
+function execute_sw_mode_TEST_IMPLEMENTATION(sw_mode_CLI_parameter, output_dir, sw_root_path)
 
 global ERROR_CODES
 
 irf.log('c', 'USING TEST IMPLEMENTATION FOR S/W MODES. ONLY CREATES NONSENSE CDF FILES.')
-        
-C = bicas_constants;
-C_mode = C.sw_modes{i_mode};
+
+C = bicas_constants.get_constants;
+%C_mode = get_C_sw_mode(sw_mode_CLI_parameter);
+temp = select_structs(C.sw_modes, 'CLI_parameter', {sw_mode_CLI_parameter});
+C_mode = temp{1};
 output_JSON = [];
 
 % Iterate over OUTPUTS

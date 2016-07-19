@@ -21,7 +21,8 @@
 %                For flag with value:
 %                   ~ischar(..) ==> the flag was not set (no such argument). (In reality numeric zero.)
 %                    ischar(..) ==> the flag was set (incl. empty string). The string is the value.
-%                (Note: Can not use/implement isempty(..) as criterion due to empty strings; isempty('')==0)
+%                NOTE: Can not use/implement isempty(..) as criterion since empty strings can be
+%                legitimate argument values. Note that isempty('')==0.
 %
 function flag_results = parse_CLI_flags(arguments, flags)
 %

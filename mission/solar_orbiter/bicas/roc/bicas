@@ -51,6 +51,11 @@
 # 
 #====================================================================================================
 # QUESTION: If log file already exists, overwrite, amend, or error?
+# PROPOSAL: Use config file for determining which MATLAB version to launch?
+#    PRO: Useful for launching on different systems. Could abolish --bash-developer-settings
+#    PROPOSAL: Simply source bash code?
+#    PROPOSAL: S/W mode descriptor activation fields could also be used.
+#       CON: Must the use that when launching locally.
 #====================================================================================================
 
 
@@ -58,11 +63,11 @@
 # Search pattern that determines which stdout (in particular
 # from MATLAB) that is actually piped to stdout.
 # NOTE: This pattern must match the corresponding prefix used in MATLAB.
-declare -r STDOUT_PATTERN='^STDOUT: '    # NOTE: Includes "^" = beginning of line.
+declare -r STDOUT_PATTERN='^STDOUT: '    # NOTE: Regex. Includes "^" = beginning of line.
 
 declare -r STDERR_PREFIX='STDERR: '   # NOTE: Not a regex!
 
-# Name of script such as it is called from inside MATLAB, i.e. without file extension.
+# Name of script such as it is called from inside MATLAB, i.e. WITHOUT file extension.
 declare -r MATLAB_SCRIPT_NAME="bicas"
 
 
@@ -71,18 +76,42 @@ declare -r MATLAB_SCRIPT_NAME="bicas"
 
 
 
-#======================================
-# Find argument for the log directory.
-#======================================
-for ((i=1; i<$#; i++))                   # NOTE: Omit the last argument.
+#========================================
+# Extract relevant (optional) arguments:
+# (1) log directory
+# (2) config file
+#========================================
+for ((i=1; i<$#; i++))      # NOTE: Intentionally omit the last argument.
 do
     if [[ "${!i}" == "--log" ]]
     then
         let j=i+1
         declare -r log_dir="${!j}"
-        break
+    elif [[ "${!i}" == "--config" ]]
+    then
+        let j=i+1
+        declare -r config_file_argument="${!j}"
     fi
 done
+
+
+
+
+
+
+
+#===================================================================================
+# Find (absolute) paths by using the path to this executable + relative paths.
+# Assumes that this executable is located under a subdirectory of $BICAS_ROOT_PATH.
+#===================================================================================
+temp=$(dirname "$0")/..
+declare -r BICAS_ROOT_PATH=$(readlink -f "$temp")
+declare -r BICAS_MATLAB_CODE_SRC_PATH="${BICAS_ROOT_PATH}/src/"
+declare -r DEFAULT_CONFIG_FILE="${BICAS_ROOT_PATH}/config/bicas.conf"
+
+
+
+
 
 
 
@@ -91,8 +120,7 @@ done
 #=====================================
 if [[ ! -z "$log_dir" ]]
 then
-    if [[ ! -d "$log_dir" ]]
-    then
+    if [[ ! -d "$log_dir" ]] ; then
         echo "Can not find specified log directory \"$log_dir\"." >> /dev/stderr
         exit 1
     fi
@@ -107,8 +135,7 @@ then
     # Test if can create (write) to the proposed log file
     #=====================================================
     touch "$log_file"
-    if [[ $? != 0 ]]
-    then
+    if [[ $? != 0 ]] ; then
         echo "Can not write to log file \"$log_file\"." >> /dev/stderr
         exit 1
     fi
@@ -128,8 +155,7 @@ then
     #        -r, --relative
     #               create symbolic links relative to link location
     #=================================================================
-    if [[ -h "$log_file_symlink" ]]
-    then
+    if [[ -h "$log_file_symlink" ]] ; then
         rm -v "$log_file_symlink" >> "$log_file"
     fi
     ln -srv "$log_file" "$log_file_symlink" >> "$log_file"
@@ -140,6 +166,23 @@ fi
 
 
 
+#==================================
+# Determine config file and run it
+#==================================
+if [[ -z "$config_file_argument" ]] ; then
+    config_file="$DEFAULT_CONFIG_FILE"
+else
+    config_file="$config_file_argument"
+fi
+if [[ ! -f "$config_file" ]] ; then
+    echo "Can not find configuration file \"$config_file\"." >> /dev/stderr
+    exit 1
+fi
+source "$config_file"   # Sets IRFU_MATLAB_PATH, MATLAB_COMMAND.
+declare -r IRFU_MATLAB_PATH=$(cd "$BICAS_ROOT_PATH" ; readlink -f "$IRFU_MATLAB_PATH")   # NOTE: Changes value of the same variable.
+
+
+
 # DEBUG
 # echo log_dir  = "$log_dir"
 # echo log_file = "$log_file"
@@ -147,52 +190,32 @@ fi
 
 
 
+# DEBUG: Always piped to the actual stdout. Useful for debugging.
+# echo "BICAS_ROOT_PATH             = \"$BICAS_ROOT_PATH\""
+# echo "BICAS_MATLAB_CODE_SRC_PATH  = \"$BICAS_MATLAB_CODE_SRC_PATH\""
+# echo "MATLAB_COMMAND              = \"$MATLAB_COMMAND\""
+# echo "IRFU_MATLAB_PATH            = \"$IRFU_MATLAB_PATH\""
+# echo "config_file                 = \"$config_file\""
+# echo "log_file                    = \"$log_file\""
+
+
+
 echo "Command-line arguments: $@" >> "$log_file"
 
 
 
+# Any call to this function should appropriately pipe stdout, stderr.
+# Therefore there should be no need to pipe inside it.
 launch_matlab_code() {
-    
-    # Find (absolute) paths by using the path to this executable + relative paths.
-    local temp=$(dirname "$0")/..
-    local root_path=$(readlink -f "$temp")
-    local matlab_src_path="${root_path}/src/"
-    local irfumatlab_path="${root_path}/lib/irfu-matlab/"
-    local matlab_command="matlab"
-#     local matlab_command="matlabXXX"   # DEBUG
+
+    echo "BICAS_ROOT_PATH             = \"$BICAS_ROOT_PATH\""
+    echo "BICAS_MATLAB_CODE_SRC_PATH  = \"$BICAS_MATLAB_CODE_SRC_PATH\""
+    echo "MATLAB_COMMAND              = \"$MATLAB_COMMAND\""
+    echo "IRFU_MATLAB_PATH            = \"$IRFU_MATLAB_PATH\""
+    echo "config_file                 = \"$config_file\""
+    echo "log_file                    = \"$log_file\""
 
 
-
-    if [[ "$1" == "--developer-bash-settings" ]]
-    then
-        #============================================================================
-        # This option exists to enable working with customized settings on 
-        # a development machine (at IRF-U).
-        #
-        # Explanation for setting irfumatlab_path:
-        # (1) irfu-matlab is a general git repository that contains
-        #     the RPW BIAS RCS-specific code in a subdirectory.
-        # (2) When the software is run in the ROC pipeline, irfu-matlab has to be
-        #     a subdirectory due to this software's prescribed tree structure.
-        # (3) I want to avoid using symbolic links inside a git repository.
-        #============================================================================
-        #shift   # Remove the flag from the argument list!
-        echo "===================================="
-        echo "WARNING!   USING DEVELOPER SETTINGS!"
-        echo "===================================="
-        irfumatlab_path=$(readlink -f "$root_path"/../../../)
-        local matlab_command="/home/data/MATLAB/R2016a/bin/matlab"
-#         local matlab_command="/home/data/MATLAB/R2016a/bin/matlabXXX"    # DEBUG
-    fi
-    
-    # DEBUG
-    echo "temp            = \"$temp\""
-    echo "root_path       = \"$root_path\""
-    echo "matlab_src_path = \"$matlab_src_path\""
-    echo "irfumatlab_path = \"$irfumatlab_path\""
-    echo "matlab_command  = \"$matlab_command\""
-    
-    
 
     #=======================================================================
     # Convert arguments into one long string that MATLAB code
@@ -233,11 +256,11 @@ launch_matlab_code() {
     # NOTE: Do not change directory, so that the current working directory is the same
     # in MATLAB as here. This is necessary for MATLAB code to correctly interpret relative paths (arguments).
     #=============================================================================
-    echo "Launching MATLAB, using \"${matlab_command}\"."
-    "${matlab_command}" -nodisplay -r "\
+    echo "Launching MATLAB, using \"${MATLAB_COMMAND}\"."
+    "${MATLAB_COMMAND}" -nodisplay -r "\
         try;\
-            addpath(genpath('${irfumatlab_path}'), '-begin');\
-            addpath(genpath('${matlab_src_path}'), '-begin');\
+            addpath(genpath('${IRFU_MATLAB_PATH}'),           '-begin');\
+            addpath(genpath('${BICAS_MATLAB_CODE_SRC_PATH}'), '-begin');\
             error_code = $MATLAB_SCRIPT_NAME($matlab_arg_list);\
             quit(error_code);\
         catch e;\
@@ -258,11 +281,11 @@ launch_matlab_code() {
 
 
 #===========================================================================================================================
-# Function for sending (copying) the stderr to a log file (amending). Every row of stderr is prefixed.
+# Function for sending (copying) the stderr to a log file (amending). Every row of stderr is prefixed in the log file.
 # 
 # NOTE: It is possible to use the same (stderr) log file for other logging (stdout) at the same time.
 # The order between stdout and stderr is not guaranteed then.
-# ASSUMES: stderr never contains the prefix. If so, the string is removed.
+# ASSUMES: stderr itself never contains the prefix. If so, the string is removed.
 #===========================================================================================================================
 log_stderr() {
     local log_file_stderr="$1"
@@ -296,7 +319,7 @@ else
     # Launch MATLAB and do nothing with stderr.
     #launch_matlab_code "$@" | tee -a "$log_file" | grep "$STDOUT_PATTERN" | sed "s/${STDOUT_PATTERN}//"
     
-    # Launch MATLAB and copy stderr to the log file (where stderr is prefixed).
+    # Launch MATLAB and COPY stderr to the log file (where stderr is prefixed).
     log_stderr "$log_file" launch_matlab_code "$@" | tee -a "$log_file" | grep "$STDOUT_PATTERN" | sed "s/${STDOUT_PATTERN}//"
     
     matlab_error_code=${PIPESTATUS[0]}    # Get exit code of the first component of piping.

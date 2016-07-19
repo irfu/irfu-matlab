@@ -3,7 +3,7 @@
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
 % First created ~2016-06-01
 %
-% Get MATLAB structure "exactly" corresponding to the S/W descriptor specified by the RCS ICD.
+% Return MATLAB structure "exactly" corresponding to the S/W descriptor specified by the RCS ICD.
 % Should effectively return a constant.
 %
 function SW_descriptor = get_sw_descriptor()
@@ -22,10 +22,10 @@ function SW_descriptor = get_sw_descriptor()
 %   NOTE: Checks on the main constants structure will (can) only happen if this file is executed, not if 
 %         the S/W as a whole is (by default).
 %
-% PROBLEM: Any validation checks here are not run if bicas_constants is called, but
-% get_sw_descriptor is not, even if the corresponding information from bicas_constants is used.
+% PROBLEM: Any validation checks here are not run if bicas_constants.get_constants is called, but
+% get_sw_descriptor is not, even if the corresponding information from bicas_constants.get_constants is used.
 
-C = bicas_constants;
+C = bicas_constants.get_constants;
 
 D.identification = C.SWD_identification;
 D.release        = C.SWD_release;
