@@ -74,6 +74,7 @@ function error_code = bicas( varargin )
 init_global_constants
 global ERROR_CODES
 global REQUIRED_MATLAB_VERSION
+global CONSTANTS
 
 error_code = ERROR_CODES.NO_ERROR;   % Default exit error code.
    
@@ -89,7 +90,9 @@ try
         errorp(ERROR_CODES.MISC_ERROR, ...
             'Wrong MATLAB version. Found %s. Requires %s.\n', found_version, REQUIRED_MATLAB_VERSION)
     end
-
+    
+    CONSTANTS = constants();   % Do not run until the MATLAB version has been checked for.
+    
     % Log arguments
     for i = 1:length(varargin)
         irf.log('n', sprintf('CLI argument %2i: "%s"', i, varargin{i}))
@@ -99,6 +102,7 @@ try
     % Derive the root path of the software (BICAS directory structure root).
     [matlab_src_path, ~, ~] = fileparts(mfilename('fullpath'));
     sw_root_path = get_abs_path([matlab_src_path, filesep, '..']);
+    CONSTANTS.SW_root_dir(sw_root_path)
     irf.log('n', sprintf('MATLAB source code path: "%s"', matlab_src_path))
     irf.log('n', sprintf('Software root path:      "%s"', sw_root_path))
 
@@ -151,7 +155,7 @@ try
         % CASE: Should be a S/W mode (error otherwise)
         %==============================================
 
-        C = bicas_constants.get_constants();
+        C = CONSTANTS.get_general();
         try
             temp = select_structs(C.sw_modes, 'CLI_parameter', {arguments{1}});   % Will return assertion error of does not work.
             C_sw_mode = temp{1};
@@ -195,8 +199,8 @@ try
         %===============================================================
         % CHOOSE IMPLEMENTATION TO USE.
         %===============================================================
-        execute_sw_mode(C_sw_mode.CLI_parameter, input_files, output_dir, sw_root_path)  % The intended real implementation
-        %execute_sw_mode_TEST_IMPLEMENTATION(C_sw_mode.CLI_parameter, output_dir, sw_root_path)   % IMPLEMENTATION FOR TESTING. OUTPUTS NONSENSE CDFs.
+        execute_sw_mode(C_sw_mode.CLI_parameter, input_files, output_dir)  % The intended real implementation
+        %execute_sw_mode_TEST_IMPLEMENTATION(C_sw_mode.CLI_parameter, output_dir)   % IMPLEMENTATION FOR TESTING. OUTPUTS NONSENSE CDFs.
         %errorp(ERROR_CODES.OPERATION_NOT_IMPLEMENTED, 'Operation not completely implemented: Use S/W mode')
     end
 
@@ -272,13 +276,13 @@ end
 %
 % ASSUMES
 %
-function execute_sw_mode_TEST_IMPLEMENTATION(sw_mode_CLI_parameter, output_dir, sw_root_path)
+function execute_sw_mode_TEST_IMPLEMENTATION(sw_mode_CLI_parameter, output_dir)
 
-global ERROR_CODES
+global ERROR_CODES CONSTANTS
 
 irf.log('c', 'USING TEST IMPLEMENTATION FOR S/W MODES. ONLY CREATES NONSENSE CDF FILES.')
 
-C = bicas_constants.get_constants;
+C = CONSTANTS.get_general();
 %C_mode = get_C_sw_mode(sw_mode_CLI_parameter);
 temp = select_structs(C.sw_modes, 'CLI_parameter', {sw_mode_CLI_parameter});
 C_mode = temp{1};
@@ -290,7 +294,7 @@ for i = 1:length(C_mode.outputs)
     master_cdf_filename = C_mode_output.master_cdf_filename;
     output_filename = [C_mode_output.dataset_ID, '_', C_mode_output.dataset_version_str, '.cdf'];
     
-    src_file  = fullfile(sw_root_path, C.master_cdfs_dir_rel, master_cdf_filename);
+    src_file  = fullfile(bias_constants.sw_root_dir(), C.master_cdfs_dir_rel, master_cdf_filename);
     dest_file = fullfile(output_dir, output_filename);
     
     irf.log('n', 'Trying to copy file')
@@ -318,7 +322,7 @@ function print_version()
 % constants since the RCS ICD specifies that it should be that version.
 
 swd = get_sw_descriptor();
-stdout_printf('Release version "%s"\n', swd.release.version)
+stdout_printf('Version "%s"\n', swd.release.version)
 
 end
 
@@ -329,9 +333,10 @@ end
 % Print the JSON S/W descriptor.
 %
 function print_identification()
+global CONSTANTS
 
 D = get_sw_descriptor();
-str = JSON_object_str(D);
+str = JSON_object_str(D, CONSTANTS.JSON_object_str);
 stdout_printf(str);
 
 end

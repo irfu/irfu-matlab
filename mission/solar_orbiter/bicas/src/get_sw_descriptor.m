@@ -25,7 +25,8 @@ function SW_descriptor = get_sw_descriptor()
 % PROBLEM: Any validation checks here are not run if bicas_constants.get_constants is called, but
 % get_sw_descriptor is not, even if the corresponding information from bicas_constants.get_constants is used.
 
-C = bicas_constants.get_constants;
+global CONSTANTS
+C = CONSTANTS.get_general;
 
 D.identification = C.SWD_identification;
 D.release        = C.SWD_release;

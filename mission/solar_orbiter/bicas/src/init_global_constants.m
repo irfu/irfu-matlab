@@ -14,7 +14,10 @@ function  init_global_constants
 % PROPOSAL: Return structure (lazy eval.) rather than initializing global constants.
 %   PRO: ~Write-protected.
 %   CON: Slower.
-
+%
+% PROPOSAL: Redefine as ~"init_error_safe_constants".
+%
+% QUESTION: How distinguish between assertion errors and other errors?
 
 
 % NOTE: These constants are used by the error handling (the main function's catch section) and

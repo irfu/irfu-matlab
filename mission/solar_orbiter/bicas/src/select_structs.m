@@ -5,12 +5,16 @@
 % Given a cell array of structs, select a subset of these structs based upon the (string) values of
 % one of their fields.
 %
+% NOTE: Can be used multiple times successively to select using two struct fields, e.g. dataset_ID
+% AND dataset_version_str.
+%
 % ASSUMES: All structure field values (in struct_list) for the chosen field are unique.
 % ASSUMES: The structure field values are strings.
 %
 % struct_list = cell array of structs
 % field_name = string
 % field_valies = cell array of strings
+% return_stuct_list = cell array of structs
 %
 function return_struct_list = select_structs(struct_list, field_name, selection_values)
 global ERROR_CODES

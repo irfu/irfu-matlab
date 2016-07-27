@@ -6,7 +6,7 @@
 %    keys   = Dataset IDs
 %    values = Paths to input files.
 %
-function execute_sw_mode(sw_mode_CLI_parameter, input_files, output_dir, sw_root_path)
+function execute_sw_mode(sw_mode_CLI_parameter, input_files, output_dir)
 %
 % QUESTION: How verify dataset ID and dataset version against constants?
 %    NOTE: Need to read cdf first.
@@ -28,8 +28,8 @@ function execute_sw_mode(sw_mode_CLI_parameter, input_files, output_dir, sw_root
 % Should data manager check anything?
 %
 
-global ERROR_CODES
-C = bicas_constants.get_constants;
+global ERROR_CODES CONSTANTS
+C = CONSTANTS.get_general;
 
 irf.log('n', sprintf('Output directory = "%s"', output_dir));       
 if ~exist(output_dir, 'dir')

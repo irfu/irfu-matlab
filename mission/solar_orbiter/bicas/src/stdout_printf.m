@@ -1,38 +1,55 @@
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
 % First created 2016-05-31
 %
-% Print as with fprintf(1, ...) but add a standard prefix string to every row to make it possible to
+% Print to stdout but add a standard prefix string to every row to make it possible to
 % separate (grep) those particular rows from other stdout/log messages.
+% 1) if varargin empty: Use string "pattern" directly.
+% 2) if varargin not empty: Use sprintf with "pattern" and varargin as arguments.
+% (This makes it possible to print "raw" strings directly without having sprintf interpreting them.)
 %
-% NOTE: Requires string to end with line feed (either the LF character, or the string "\n").
+% NOTE: Requires string that is finally printed to end with a line break.
 % (The algorithm would be ambiguous without this criterion.)
-% NOTE: Can handle strings with many line feeds.
+% NOTE: Can handle strings with many line breaks.
 %
 function stdout_printf(pattern, varargin)
-%
-% IMPLEMENTATION NOTE: Interprets string with sprintf before making any actual string manipulations
-% since this takes care of escape codes etc. After that, substitutes the actual line feed character,
-% rather than the (sub)string '\n'.
-%
-% PROPOSAL: Modify to accept (only) string with LF directly (not string '\n')?
 
 global ERROR_CODES
-STDOUT_PREFIX = 'STDOUT: ';
+global CONSTANTS
 
 
 
-LF = sprintf('\n');   % Line feed _character_.
-str = sprintf(pattern, varargin{:});
-if (length(str) < 1) || ~strcmp(str(end), LF)
+% Line break string.
+% Put into the "constants" structure?!!
+% NOTE: sprintf('\n') is actually platform dependent?!!
+% NOTE: Used for interpreting line breaks in the function argument.
+% NOTE: Used for line breaks in the output.
+LINE_BREAK = sprintf('\n');   
+
+
+if isempty(varargin)
+    str = pattern;
+else
+    str = sprintf(pattern, varargin{:});
+end
+
+
+
+if (length(str) < 1) || ~strcmp(str(end), LINE_BREAK)
     errorp(ERROR_CODES.ASSERTION_ERROR, 'Not a legal string for printing. String must end with line feed.')
 end
 
-rows = strsplit(str, LF, 'CollapseDelimiters', false);
+% strsplit options:
+%       'CollapseDelimiters' - If true (default), consecutive delimiters in S
+%         are treated as one. If false, consecutive delimiters are treated as
+%         separate delimiters, resulting in empty string '' elements between
+%         matched delimiters.
+rows = strsplit(str, LINE_BREAK, 'CollapseDelimiters', false);
+
 rows(end) = [];   % Remove last string since it corresponds to empty string after last line feed.
 
 new_str = '';
 for row = rows
-    new_str = [new_str, STDOUT_PREFIX, row{1}, LF];
+    new_str = [new_str, CONSTANTS.stdout_prefix, row{1}, LINE_BREAK];
 end
 
 fprintf(1, new_str);
