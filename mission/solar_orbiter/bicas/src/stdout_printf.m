@@ -49,7 +49,7 @@ rows(end) = [];   % Remove last string since it corresponds to empty string afte
 
 new_str = '';
 for row = rows
-    new_str = [new_str, CONSTANTS.stdout_prefix, row{1}, LINE_BREAK];
+    new_str = [new_str, CONSTANTS.C.stdout_prefix, row{1}, LINE_BREAK];
 end
 
 fprintf(1, new_str);

@@ -26,50 +26,52 @@ function SW_descriptor = get_sw_descriptor()
 % get_sw_descriptor is not, even if the corresponding information from bicas_constants.get_constants is used.
 
 global CONSTANTS
-C = CONSTANTS.get_general;
 
-D.identification = C.SWD_identification;
-D.release        = C.SWD_release;
-D.environment    = C.SWD_environment;
+D.identification = CONSTANTS.C.SWD_identification;
+D.release        = CONSTANTS.C.SWD_release;
+D.environment    = CONSTANTS.C.SWD_environment;
 D.modes = {};
 
-for mi = C.sw_modes
-    D.modes{end+1} = generate_sw_descriptor_mode(C, mi{1});
+for i = 1:length(CONSTANTS.sw_modes)
+    CLI_parameter = CONSTANTS.sw_modes{i}.CLI_parameter;
+    
+    C_sw_mode = CONSTANTS.get_C_sw_mode_full(CLI_parameter);
+    D.modes{end+1} = generate_sw_descriptor_mode(CONSTANTS.C, C_sw_mode);
 end
 
 SW_descriptor = D;
 
 end
 
+
+
 %===================================================================================================
-% Create data structure for a S/W mode corresponding to the information in the S/W descriptor.
-% 
-% mi = mode info
-% SWD_mode = Mode information that can be interpreted as a mode in the S/W descriptor (JSON).
-%
-function SWD_mode = generate_sw_descriptor_mode(C, mi)
+% Create data structure for a S/W mode corresponding to the information in the JSON S/W descriptor.
+%===================================================================================================
+function SWD_mode = generate_sw_descriptor_mode(C, C_sw_mode)
 %
 % Variable naming convention:
 %    SWD = S/W descriptor
-%    mi = mode info (information stemming from the function argument)
 
 SWD = [];
-SWD.name    = mi.CLI_parameter;
-SWD.purpose = mi.SWD_purpose;
+SWD.name    = C_sw_mode.CLI_parameter;
+SWD.purpose = C_sw_mode.SWD_purpose;
 
-for x = mi.inputs
+for x = C_sw_mode.inputs
     mi_O = x{1};
     SWD_input = [];
     
     SWD_input.version    = mi_O.dataset_version_str;
     SWD_input.identifier = mi_O.dataset_ID;
     
-    SWD.inputs.(mi_O.CLI_parameter_name) = SWD_input;
+    SWD.inputs.(mi_O.CLI_parameter) = SWD_input;
 end
 
-for x = mi.outputs
+for x = C_sw_mode.outputs
     mi_O = x{1};
     SWD_output = [];
+    
+    [master_CDF_path, master_filename] = get_master_CDF_path(mi_O.dataset_ID, mi_O.dataset_version_str);
         
     SWD_output.identifier  = mi_O.dataset_ID;
     SWD_output.name        = mi_O.SWD_name;
@@ -81,7 +83,7 @@ for x = mi.outputs
     SWD_output.release.contact      = C.author_email;
     SWD_output.release.institute    = C.institute;
     SWD_output.release.modification = mi_O.SWD_release_modification;
-    SWD_output.release.file         = mi_O.master_cdf_filename;
+    SWD_output.release.file         = master_filename;
         
     SWD.outputs.(mi_O.JSON_output_file_identifier) = SWD_output;
 end

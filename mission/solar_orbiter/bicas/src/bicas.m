@@ -71,13 +71,11 @@ function error_code = bicas( varargin )
 %
 
 
-init_global_constants
 global ERROR_CODES
 global REQUIRED_MATLAB_VERSION
-global CONSTANTS
+global CONSTANTS                 % Initialized later
+[ERROR_CODES, REQUIRED_MATLAB_VERSION] = error_safe_constants();
 
-error_code = ERROR_CODES.NO_ERROR;   % Default exit error code.
-   
 try
     % Among other things: Sets up paths to within irfu-matlab (excluding .git/).
     % NOTE: Prints to stdout. Can not deactivate this behaviour!
@@ -91,7 +89,7 @@ try
             'Wrong MATLAB version. Found %s. Requires %s.\n', found_version, REQUIRED_MATLAB_VERSION)
     end
     
-    CONSTANTS = constants();   % Do not run until the MATLAB version has been checked for.
+    CONSTANTS = constants();   % Do not run initialization until the MATLAB version has been checked for. Could fail.
     
     % Log arguments
     for i = 1:length(varargin)
@@ -155,10 +153,8 @@ try
         % CASE: Should be a S/W mode (error otherwise)
         %==============================================
 
-        C = CONSTANTS.get_general();
         try
-            temp = select_structs(C.sw_modes, 'CLI_parameter', {arguments{1}});   % Will return assertion error of does not work.
-            C_sw_mode = temp{1};
+            C_sw_mode = CONSTANTS.get_C_sw_mode_full(arguments{1});
         catch exception
             % NOTE: The message is slightly inaccurate. Argument "--version" etc. would have worked too.
             errorp(ERROR_CODES.CLI_ARGUMENT_ERROR, 'Can not interpret argument "%s" as a S/W mode.', arguments{1});
@@ -166,21 +162,25 @@ try
 
         %-----------------------------------------------------------------
         % Configure CLI flags to expect, partly depending on the S/W mode
+        %
+        % NOTE: The flags are identified by strings (container.Map keys) which are a combination of the namespaces for
+        % 1) identifiers for misc. flags e.g. "output_dir", "log_path".
+        % 2) dataset IDs!
         %-----------------------------------------------------------------
-        flags('output_dir')       = struct('CLI_str', '--output', 'is_required', 1, 'expects_value', 1);
+        flags('output_dir') = struct('CLI_str', '--output', 'is_required', 1, 'expects_value', 1);
         C_inputs = C_sw_mode.inputs;    % C = Constants structure.
-        input_keys = {};   % List of keys used for input files.
+        input_process_data_types = {};   % List of keys used for input files.
         for i_input = 1:length(C_inputs)
-            dataset_ID = C_inputs{i_input}.dataset_ID;
+            process_data_type = C_inputs{i_input}.process_data_type;
             
             % Configure one flag+value pair
             flag = [];
-            flag.CLI_str = ['--', C_inputs{i_input}.CLI_parameter_name];
+            flag.CLI_str = ['--', C_inputs{i_input}.CLI_parameter];
             flag.is_required = 1;
-            flag.expects_value = 1;            
-            flags(dataset_ID) = flag;
+            flag.expects_value = 1;
+            flags(process_data_type) = flag;
             
-            input_keys{end+1} = dataset_ID;
+            input_process_data_types{end+1} = process_data_type;
         end
 
         %-----------------------------
@@ -190,19 +190,26 @@ try
         
         
         
-        input_files = containers.Map(input_keys, parsed_flags.values(input_keys));   % Extract subset of parsed arguments.
+        input_files = containers.Map(input_process_data_types, parsed_flags.values(input_process_data_types));   % Extract subset of parsed arguments.
         
         output_dir = get_abs_path(parsed_flags('output_dir'));
         
         
 
         %===============================================================
+        % EXECUTE S/W MODE
+        %
         % CHOOSE IMPLEMENTATION TO USE.
         %===============================================================
         execute_sw_mode(C_sw_mode.CLI_parameter, input_files, output_dir)  % The intended real implementation
         %execute_sw_mode_TEST_IMPLEMENTATION(C_sw_mode.CLI_parameter, output_dir)   % IMPLEMENTATION FOR TESTING. OUTPUTS NONSENSE CDFs.
         %errorp(ERROR_CODES.OPERATION_NOT_IMPLEMENTED, 'Operation not completely implemented: Use S/W mode')
     end
+
+        
+
+    % EXIT
+    error_code = ERROR_CODES.NO_ERROR;   % Default RETURN value.
 
 
     
@@ -223,7 +230,7 @@ catch exception
         temp = strsplit(message);
         error_code = str2double(temp{1});                 % NOTE: Set error code for when exiting MATLAB.
         if isnan(error_code)
-            error_code = ERROR_CODES.UNKNOWN_ERROR;       % NOTE: Set error code for when exiting MATLAB.
+            error_code = ERROR_CODES.ERROR_IN_MATLAB_ERROR_HANDLING;       % NOTE: Set error code for when exiting MATLAB.
         else
             message = message(length(temp{1})+2:end);
         end
@@ -251,13 +258,15 @@ catch exception
         return
         
     catch exception
-        % CASE: There was an error in the error handling(!).
+        %===================================================
+        % CASE: There was an error in the error handling(!)
+        %===================================================
         
         % NOTE: Only use very, very error safe code here.
         fprintf(2, 'Unknown error. Error in the MATLAB code''s error handling.\nException message: "%s"\n', ...
             exception.message');   % Print to stderr.
         
-        error_code = ERROR_CODES.UNKNOWN_ERROR;   % Not even use hardcoded constant for error code?!!
+        error_code = ERROR_CODES.ERROR_IN_MATLAB_ERROR_HANDLING;   % Not even use hardcoded constant for this error?!!
         return
     end
 end
@@ -265,8 +274,10 @@ end
 
 
 end
+
+
+
 %===================================================================================================
-% 
 % TEST IMPLEMENTATION
 % Implements a S/W mode by simply creating nonsense cdf output files where expected.
 % Code should satisfy the RCS ICD with this implementation.
@@ -275,14 +286,13 @@ end
 % practical for testing.
 %
 % ASSUMES
-%
+%===================================================================================================
 function execute_sw_mode_TEST_IMPLEMENTATION(sw_mode_CLI_parameter, output_dir)
 
 global ERROR_CODES CONSTANTS
 
 irf.log('c', 'USING TEST IMPLEMENTATION FOR S/W MODES. ONLY CREATES NONSENSE CDF FILES.')
 
-C = CONSTANTS.get_general();
 %C_mode = get_C_sw_mode(sw_mode_CLI_parameter);
 temp = select_structs(C.sw_modes, 'CLI_parameter', {sw_mode_CLI_parameter});
 C_mode = temp{1};
@@ -315,6 +325,8 @@ str = JSON_object_str(output_JSON);
 stdout_printf(str);
 
 end
+
+
 %===================================================================================================
 function print_version()
 
@@ -326,6 +338,8 @@ stdout_printf('Version "%s"\n', swd.release.version)
 
 end
 
+
+
 %===================================================================================================
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
 % First created 2016-06-07
@@ -336,10 +350,12 @@ function print_identification()
 global CONSTANTS
 
 D = get_sw_descriptor();
-str = JSON_object_str(D, CONSTANTS.JSON_object_str);
+str = JSON_object_str(D, CONSTANTS.C.JSON_object_str);
 stdout_printf(str);
 
 end
+
+
 
 %===================================================================================================
 function print_help()

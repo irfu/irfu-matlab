@@ -51,11 +51,7 @@
 # 
 #====================================================================================================
 # QUESTION: If log file already exists, overwrite, amend, or error?
-# PROPOSAL: Use config file for determining which MATLAB version to launch?
-#    PRO: Useful for launching on different systems. Could abolish --bash-developer-settings
-#    PROPOSAL: Simply source bash code?
-#    PROPOSAL: S/W mode descriptor activation fields could also be used.
-#       CON: Must the use that when launching locally.
+# PROPOSAL: Better error message when can not find MATLAB_COMMAND. Common error.
 #====================================================================================================
 
 
@@ -172,7 +168,8 @@ fi
 if [[ -z "$config_file_argument" ]] ; then
     config_file="$DEFAULT_CONFIG_FILE"
 else
-    config_file="$config_file_argument"
+    # Canonical paths are useful for error messages/debugging on paths with symbolic links.
+    config_file=$(readlink -f "$config_file_argument")
 fi
 if [[ ! -f "$config_file" ]] ; then
     echo "Can not find configuration file \"$config_file\"." >> /dev/stderr
@@ -249,7 +246,7 @@ launch_matlab_code() {
     #
     # NOTE: The MATLAB code supplied here is to make sure that the code works well in case of failure.
     # 1) MATLAB will NOT EXIT unless the code itself calls "exit".
-    # 2) MATLAB hangs if it can not find the MATALB script.
+    # 2) MATLAB hangs if it can not find the MATLAB script.
     # NOTE: It is very important to end lines with semicolons and backslash for
     # the command line-supplied MATLAB code to not yield syntax error AND NOT HANG.
     # 

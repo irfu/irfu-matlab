@@ -17,7 +17,7 @@ function str = JSON_object_str(obj, settings)
 % punctuation, but not within a string value). Four specific characters are considered whitespace
 % for this purpose: space, horizontal tab, line feed, and carriage return. JSON does not provide
 % any syntax for comments."
-% https://en.wikipedia.org/wiki/JSON
+% Source: https://en.wikipedia.org/wiki/JSON
 
 
 

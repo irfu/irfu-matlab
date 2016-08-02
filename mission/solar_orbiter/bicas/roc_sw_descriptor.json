@@ -1,13 +1,13 @@
 {
     "identification":  {
         "project":      "ROC-SGSE",
-        "name":         "BICAS (temporary name)",
+        "name":         "BICAS",
         "identifier":   "ROC-SGSE-BICAS",
         "description":  "BIAS Calibration Software (BICAS) which derives the BIAS L2S input signals (plus some) from the BIAS L2R output signals."
     },
     "release":  {
-        "version":      "0.0.1",
-        "date":         "2016-06-03",
+        "version":      "0.1.0",
+        "date":         "2016-07-21",
         "author":       "Erik P G Johansson",
         "contact":      "erik.johansson@irfu.se",
         "institute":    "IRF-U",
@@ -31,19 +31,19 @@
                 }
             },
             "outputs":  {
-                "output_SCI":  {
+                "output_sci":  {
                     "identifier":   "ROC-SGSE_L2S_RPW-LFR-SURV-CWF-E",
                     "name":         "LFR L2s CWF science electric data in survey mode",
                     "description":  "RPW LFR L2s CWF science electric (potential difference) data in survey mode, time-tagged",
                     "level":        "L2S",
                     "release":  {
-                        "date":         "2016-06-03",
+                        "date":         "2016-07-21",
                         "version":      "01",
                         "author":       "Erik P G Johansson",
                         "contact":      "erik.johansson@irfu.se",
                         "institute":    "IRF-U",
                         "modification": "No modification (initial release)",
-                        "file":         "ROC-SGSE_L2S_RPW-LFR-SURV-CWF-E-XXXTESTXXX_V01.cdf"
+                        "file":         "ROC-SGSE_L2S_RPW-LFR-SURV-CWF-E_V01.cdf"
                     }
                 }
             }
@@ -62,19 +62,19 @@
                 }
             },
             "outputs":  {
-                "output_SCI":  {
+                "output_sci":  {
                     "identifier":   "ROC-SGSE_L2S_RPW-LFR-SURV-SWF-E",
                     "name":         "LFR L2s SWF science electric data in survey mode",
                     "description":  "RPW LFR L2s SWF science electric (potential difference) data in survey mode, time-tagged",
                     "level":        "L2S",
                     "release":  {
-                        "date":         "2016-06-03",
+                        "date":         "2016-07-21",
                         "version":      "01",
                         "author":       "Erik P G Johansson",
                         "contact":      "erik.johansson@irfu.se",
                         "institute":    "IRF-U",
                         "modification": "No modification (initial release)",
-                        "file":         "ROC-SGSE_L2S_RPW-LFR-SURV-CWF-E-XXXTESTXXX_V01.cdf"
+                        "file":         "ROC-SGSE_L2S_RPW-LFR-SURV-SWF-E_V01.cdf"
                     }
                 }
             }

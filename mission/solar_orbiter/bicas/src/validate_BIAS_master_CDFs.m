@@ -1,21 +1,26 @@
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
 % First created 2016-07-06
 %
-% "Validate" a BIAS master CDF, i.e. a master file for any of the datasets that BIAS produces.
+% Standalone "validation" tool for BIAS master CDFs, i.e. master (template) CDF files for any of the datasets that BIAS
+% produces.
 %
-% The code tries to verify that multiple master cdfs satsify certain selected criteria instead of
-% manually checking them. The code is primarily intended as a standalone tool, separate from the
-% pipeline. It is neither intended to be "complete", nor to ever be constant and "finished".
+% The code tries to verify that multiple master cdfs satsify certain selected criteria instead of manually checking
+% them. The code is primarily intended as a standalone tool, separate from the pipeline. It is neither intended to be
+% "complete", nor to ever be constant and "finished".
 % 
 % This is useful when
-% (1) manually creating master cdfs based on other cdfs (e.g. from other teams, other levels), or
-% (2) the formal specification for master cdfs is modified/reinterpreted.
+% (1) manually creating master CDFs based on other CDFs (e.g. from other teams, other levels), or
+% (2) the formal specification for master CDFs is modified/reinterpreted.
 %
-% dir_path : Directory path
-% file_name_regex : Regular expression which specifies which files in the directory to include. ^
-% (beginning of string) and $ (end of string) are added automatically.
+% ARGUMENTS:
+% dir_path        : Directory path
+% file_name_regex : Regular expression which specifies which files in the directory to include. ^ (beginning of string)
+% and $ (end of string) are added automatically.
 %
-function do_list = validate_BIAS_master_CDF(dir_path, file_name_regex)
+% RETURN VALUE:
+% Cell array of dataobj for the validated CDF files.
+%
+function do_list = validate_BIAS_master_CDFs(dir_path, file_name_regex)
     
     irf('check_path');    
     irf.log('critical')      % Set log level.
@@ -129,7 +134,6 @@ function do = validate_one_BIAS_master_CDF(file_path)
     validate_value(CDF_Logical_source_description, derived_Logical_source_description, 'Logical_source_description');
 
     
-    
     %======================================
     % Check absence/prescence of variables
     %======================================
@@ -140,13 +144,19 @@ function do = validate_one_BIAS_master_CDF(file_path)
     % Should ideally look at do.Variables(:,1) ?
     if any(~cellfun(@isempty, regexp(fieldnames(ga), 'PACKET_.*')))
         validation_warning('Found at least one global attribute PACKET_*.')
-    end
+    end    
     
-    
-    % Check for misspelled variable attributes.
+    % Check for misspelled variable attributes (i.e. variable NAMES).
     if isfield(do.VariableAttributes, 'CATEDESC')
         validation_warning('Found at least one instance of misspelled variable attribute CATEDESC.')
     end
+    
+    
+    
+    %=================================
+    % Check "attribute" record values
+    %=================================
+    validate_value(strtrim(do.data.ACQUISITION_TIME_UNITS.data(2,:)), 's / 65536', 'ACQUISITION_TIME_UNITS(1,2) (trimmed)')
     
 end
 
@@ -193,6 +203,14 @@ end
 
 
 
+% Split string using delimiter into substrings and return a specified subset of these. Verifies number of substrings.
+% Useful for analyzing e.g. dataset IDs.
+%
+% str       : String to be split.
+% delimiter : Delimiter used for splitting (duh!).
+% N_parts   : The expected number of substrings (error if wrong).
+% i_parts   : The substrings to be returned (numeric array).
+% 
 function varargout = splitstr(str, delimiter, N_parts, i_parts, val_warning_msg)
     if nargout ~= length(i_parts)
         error('Number of return values does not match input. This indicates a pure bug.')
@@ -212,14 +230,20 @@ end
 
 
 
+% Print standardized warning.
+%
+% ARGUMENTS: Number of arguments = 1, 2, or 3
+% (msg)
+% (msg, CDF_value_found)
+% (msg, CDF_value_found, comparison_value)
 function validation_warning(msg, varargin)
     LF = sprintf('\n');
     
     if length(varargin) >= 1
-        msg = sprintf('%s\n        CDF value = "%s"', msg, varargin{1});
+        msg = sprintf('%s\n           CDF value = "%s"', msg, varargin{1});
     end
     if length(varargin) == 2
-        msg = sprintf('%s\n    Derived value = "%s"', msg, varargin{2});
+        msg = sprintf('%s\n    Comparison value = "%s"', msg, varargin{2});
     end
         
     msg = strrep(msg, LF, [LF, '   ']);

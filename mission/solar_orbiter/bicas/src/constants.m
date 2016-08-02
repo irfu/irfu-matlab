@@ -2,6 +2,7 @@
 % First created 2016-05-31
 %
 % Defines constants used by the software. Set up as a ~singleton handle class.
+% Also contains validation code and functions for more convenient access.
 %
 % IMPORTANT NOTE: Some constants (1) correspond exactly to fields in the S/W (JSON) descriptor, and
 % (2) are unlikely to be used for anything else. These are labeled with a prefix "SWD_". Other
@@ -30,10 +31,16 @@
 %
 % NOTE: sw_root_dir is not strictly a constant.
 %
+%
+%
+% ~"BUG"?/NOTE: The current implementation contains a minor error of thought(?): It contains an array with data for every
+% possible output format. There, every output format is associated with "release data" (required for the S/W descriptor).
+% This "release data" should possibly be associated with every S/W mode instead.
+%
 classdef constants < handle
 %
 % PROPOSAL: Redefine file into something that makes "decisions"?
-% PROPOSAL: Method for finding the path to the master cdf for a given output.
+% PROPOSAL: Method for finding the path to the master CDF for a given output.
 %
 % PROPOSAL: Include SW root path?! How?
 %    PRO: Needs to be universally accessible.
@@ -54,7 +61,7 @@ classdef constants < handle
 %    PRO: Can force validation to take place in get_sw_descriptor.
 %
 % PROPOSAL: More validation
-%   PROPOSAL: Check that master cdfs exist, that paths exist.
+%   PROPOSAL: Check that master CDFs exist, that paths exist.
 %       CON: Makes sense to make that kind of check here?!
 %   PROPOSAL: Check that data types are unique.
 %       NOTE: Requires access to the lists.
@@ -66,38 +73,29 @@ classdef constants < handle
 %
 
 
+
     % NOTE: Should be private when not debugging.
     properties(Access=private)
-    %properties     
-        C
         inputs
         outputs
         root_dir_path
     end
     
-    properties(Access=public,Constant)
-        
-        % Prefix used to identify the subset of stdout that should actually be passed on as stdout by the bash launcher script.
-        stdout_prefix = 'STDOUT: ';
-        
-        % Parameters influencing how JSON objects are printed with function JSON_object_str.
-        JSON_object_str = struct(...
-            'indent_size',          4, ...
-            'fill_str_max_length', 13);
-        
-        approximate_demuxer = struct(...
-            'alpha',    1/17, ...
-            'beta',       1, ...
-            'gamma_hg',   5, ...
-            'gamma_lg', 100);
+    %###################################################################################################################
+    
+    properties(Access=public)
+        C                  % For miscellaneous minor constants which still might require code to be initialized.
+        sw_modes
     end
 
+    %###################################################################################################################
+    
     methods(Access=public)
         
+        %=============
         % Constructor
+        %=============
         function obj = constants()            
-            % PROPOSAL: Other name for sw_mode.CLI_parameter which implies generic string identifier (which is
-            %           used to derive a CLI parameter).
             
             %--------------------------------------------------------------------------------
             % Common values. Only used INDIRECTLY to set the values of the "real" constants.
@@ -105,21 +103,16 @@ classdef constants < handle
             D = [];
             D.INITIAL_RELEASE_MODIFICATION_STR = 'No modification (initial release)';
             D.INITIAL_RELEASE_DATE = '2016-07-21';
-                        
             
             
-            obj.inputs = constants.produce_inputs_constants();
-            obj.outputs = constants.produce_outputs_constants(D);          
             
-            
-
             C = [];
-            C.author_name = 'Erik P G Johansson';
-            C.author_email = 'erik.johansson@irfu.se';
-            C.institute = 'IRF-U';
-            C.master_cdfs_dir_rel = 'data';    % Location of master CDF files. Relative to the software directory structure root.
             
-            
+            C.author_name         = 'Erik P G Johansson';
+            C.author_email        = 'erik.johansson@irfu.se';
+            C.institute           = 'IRF-U';
+            C.master_CDFs_dir_rel = 'data';    % Location of master CDF files. Relative to the software directory structure root.
+        
             %irf.log('w', 'Using temporary S/W name in constants.')
             C.SWD_identification.project     = 'ROC-SGSE';
             C.SWD_identification.name        = 'BICAS';
@@ -136,46 +129,75 @@ classdef constants < handle
             
             C.SWD_environment.executable = 'roc/bicas';   % Temporary SW (file) name
             
-            C.sw_modes = {};
+            % Prefix used to identify the subset of stdout that should actually be passed on as stdout by the bash launcher script.
+            C.stdout_prefix = 'STDOUT: ';
+        
+            % Parameters influencing how JSON objects are printed with function JSON_object_str.
+            C.JSON_object_str = struct(...
+                'indent_size',          4, ...
+                'fill_str_max_length', 13);
+        
+            % Define constants relating to LFR.
+            % F0, F1, F2, F3: Frequencies with which samples are taken. Unit: Hz.
+            C.LFR = [];
+            C.LFR.F0 = 24576;  % = 6 * 4096
+            C.LFR.F1 =  4096;
+            C.LFR.F2 =   256;
+            C.LFR.F3 =    16;
+        
+            C.approximate_demuxer = struct(...
+                'alpha',    1/17, ...
+                'beta',       1, ...
+                'gamma_hg',   5, ...
+                'gamma_lg', 100);
+            
+            obj.C = C;
+                        
+            
+        
+            obj.inputs  = constants.produce_inputs_constants();
+            obj.outputs = constants.produce_outputs_constants(D);          
             
             
             
             %---------------------------------------------------------------------------------------------------
-            % Define the software modes which are presented "outside" the software.
+            % Define the S/W modes which are visible to the "outside" of the software,
+            % the modes which "officially" exist at any given time.
             %
             % Influences (at least) the required CLI arguments and the S/W descriptor.
             %---------------------------------------------------------------------------------------------------
             % NOTE: sw_mode.CLI_parameter : Is used as CLI parameter, but also to identify the mode.
+            % NOTE: output_process_data_types is effectively an array of pointers to (1) the output constants, and
+            % (2) the input constants through data_manager.get_elementary_input_process_data_types.
             
             sw_mode = [];
             sw_mode.CLI_parameter = 'LFR-CWF-E';
             sw_mode.SWD_purpose = 'Generate continuous waveform electric field data (potential difference) from LFR';            
-            sw_mode.inputs  = select_structs(obj.inputs,  'dataset_ID', {'ROC-SGSE_L2R_RPW-LFR-SURV-CWF', 'ROC-SGSE_HK_RPW-BIA'});
-            sw_mode.outputs = select_structs(obj.outputs, 'dataset_ID', {'ROC-SGSE_L2S_RPW-LFR-SURV-CWF-E'});
-            C.sw_modes{end+1} = sw_mode;
+            sw_mode.output_process_data_types = {'ROC-SGSE_L2S_RPW-LFR-SURV-CWF-E_V01'};
+            obj.sw_modes{end+1} = sw_mode;
             
             sw_mode = [];
             sw_mode.CLI_parameter = 'LFR-SWF-E';
             sw_mode.SWD_purpose = 'Generate snapshow waveform electric (potential difference) data from LFR';            
-            sw_mode.inputs  = select_structs(obj.inputs,  'dataset_ID', {'ROC-SGSE_L2R_RPW-LFR-SURV-SWF', 'ROC-SGSE_HK_RPW-BIA'});
-            sw_mode.outputs = select_structs(obj.outputs, 'dataset_ID', {'ROC-SGSE_L2S_RPW-LFR-SURV-SWF-E'});            
-            C.sw_modes{end+1} = sw_mode;
-
+            sw_mode.output_process_data_types = {'ROC-SGSE_L2S_RPW-LFR-SURV-SWF-E_V01'};
+            obj.sw_modes{end+1} = sw_mode;
             
-            % Define constants relating to LFR.
-            % F0, F1, F2, F3: Frequencies with which samples are taken. Unit: Hz.
-            C.LFR = [];
-            C.LFR.F0 = 24576;   % = 6 * 4096
-            C.LFR.F1 = 4096;
-            C.LFR.F2 = 256;
-            C.LFR.F3 = 16;
+            % TEST
+            %sw_mode = [];
+            %sw_mode.CLI_parameter = 'TEST-MODE';
+            %sw_mode.SWD_purpose = 'Test mode. This mode is never supposed to be seen outside of development.';            
+            %sw_mode.output_process_data_types = {'ROC-SGSE_L2S_RPW-LFR-SURV-SWF-E_V01', 'ROC-SGSE_L2S_TEST_V99'};
+            %obj.sw_modes{end+1} = sw_mode;
             
-            
-            
-            obj.C = C;
             
             obj.validate
         end
+    end   % methods
+    
+    
+    %###################################################################################################################
+    
+    methods(Access=public)
         
         %===================================================================================================
         
@@ -192,80 +214,179 @@ classdef constants < handle
                 errorp(ERROR_CODES.ASSERTION_ERROR, 'Trying to set already set constant, or reading unset constant. Pure code bug.')
             end
         end
+
         
-        %===================================================================================================
         
-        function C = get_general(obj)
-            C = obj.C;
+        %======================================================
+        % Return constants structure for a specific S/W mode.
+        %
+        % This structure is put together from other constants.
+        %======================================================
+        function C_sw_mode = get_C_sw_mode_full(obj, CLI_parameter)
+            global ERROR_CODES
+            
+            C_sw_mode = select_structs(obj.sw_modes, 'CLI_parameter', {CLI_parameter});            
+            C_sw_mode = C_sw_mode{1};
+            
+            input_process_data_types = {};            
+            for i = 1:length(C_sw_mode.output_process_data_types)
+                temp = data_manager.get_elementary_input_process_data_types(C_sw_mode.output_process_data_types{i});
+                
+                input_process_data_types = [input_process_data_types, temp];
+            end
+            
+            try
+                C_sw_mode.inputs  = select_structs(obj.inputs,  'process_data_type', input_process_data_types);
+                C_sw_mode.outputs = select_structs(obj.outputs, 'process_data_type', C_sw_mode.output_process_data_types);
+            catch exception
+                errorp(ERROR_CODES.ASSERTION_ERROR, 'Can not identify all input/output process data types associated with mode/CLI parameter "%s".', CLI_parameter)
+            end
         end
-        
-        % Return info on a subset of possible INPUT data sets.
-        function inputs = get_cdf_inputs_constants(obj, dataset_IDs)           
-            inputs = select_structs(obj.inputs, 'dataset_ID', dataset_IDs);            
-        end
-        
-        % Return info on a subset of possible OUTPUT data sets.
-        function outputs = get_cdf_outputs_constants(obj, dataset_IDs)           
-            outputs = select_structs(obj.outputs, 'dataset_ID', dataset_IDs);            
-        end
-        
+
     end   % methods
     
+    %###################################################################################################################
     
+    methods(Access=private)
+
+        % Any code for double-checking the validity of hardcoded constants.
+        function validate(obj)
+
+            global ERROR_CODES            
+            C = obj.C;
+            
+            
+            
+            
+            %==========================
+            % Iterate over input types
+            %==========================
+            % The RCS ICD, iss2rev2, section 3.2.3 only permits these characters (and only lowercase).
+            INPUT_CLI_PARAMETER_NAME_PERMITTED_CHARACTERS = 'abcdefghijklmnopqrstuvxyz0123456789_';
+            for i = 1:length(obj.inputs)
+                CLI_parameter = obj.inputs{i}.CLI_parameter;
+                
+                % NOTE: Implicitly checks that CLI_parameter does NOT begin with "--".
+                disallowed_chars = setdiff(CLI_parameter, INPUT_CLI_PARAMETER_NAME_PERMITTED_CHARACTERS);
+                if ~isempty(disallowed_chars)
+                    errorp(ERROR_CODES.ASSERTION_ERROR, 'Constants value contains illegal character(s). This indicates a pure bug.');
+                end
+            end            
+            
+            %========================
+            % Iterate over S/W modes
+            %========================
+            sw_mode_CLI_parameters = {};
+            % The RCS ICD, iss2rev2, section 5.3 seems (ambiguous) to imply this regex.
+            SW_MODE_CLI_PARAMETER_REGEX = '^[A-Za-z][\w-]+$';   % NOTE: Only one backslash.
+            for i = 1:length(obj.sw_modes)
+                sw_mode_CLI_parameter = obj.sw_modes{i}.CLI_parameter;
+                
+                sw_mode_CLI_parameters{end+1} = sw_mode_CLI_parameter;
+                C_sw_mode = obj.get_C_sw_mode_full(sw_mode_CLI_parameter);
+                
+                if ~length(regexp(sw_mode_CLI_parameter, SW_MODE_CLI_PARAMETER_REGEX))
+                    errorp(ERROR_CODES.ASSERTION_ERROR, 'Illegal S/W mode CLI parameter definition. This indicates a pure bug.');
+                end
+                
+                % Iterate over inputs
+                inputs_CLI_parameters = {};
+                for j = 1:length(C_sw_mode.inputs)
+                    inputs_CLI_parameters{end+1} = C_sw_mode.inputs{j}.CLI_parameter;
+                end
+                validate_strings_unique(inputs_CLI_parameters)
+                
+                % Iterate over outputs
+                outputs_JSON_output_file_identifiers = {};
+                for j = 1:length(C_sw_mode.outputs)
+                    outputs_JSON_output_file_identifiers{end+1} = C_sw_mode.outputs{j}.JSON_output_file_identifier;
+                end
+                validate_strings_unique(outputs_JSON_output_file_identifiers)
+            end
+            validate_strings_unique(sw_mode_CLI_parameters)
+
+            
+            
+            % NOTE: Can not handle multiple version of same dataset ID. Should validate combinations
+            % thereof.
+            dataset_IDs = cellfun(@(x) ({x.dataset_ID}), {obj.outputs{:}, obj.inputs{:}});                        
+            validate_strings_unique(dataset_IDs)           
+        end
+
+    end   % methods
+    
+    %###################################################################################################################
     
     methods(Static, Access=private)
         
+        %==========================================================
         % Produce constants for all possible INPUT data sets.
+        % (independent of how they are associated with S/W modes).
+        %==========================================================
         function C_inputs = produce_inputs_constants
             CLI_PARAMETER_SCI_NAME = 'input_sci';
             
             C_inputs = {};
             
-            % NOTE: CLI_parameter_name = CLI parameter MINUS flag prefix ("--").           
+            % NOTE: CLI_parameter = CLI parameter MINUS flag prefix ("--").           
             C_inputs{end+1} = [];
-            C_inputs{end}.CLI_parameter_name  = 'input_hk';
+            C_inputs{end}.CLI_parameter  = 'input_hk';
             C_inputs{end}.dataset_ID          = 'ROC-SGSE_HK_RPW-BIA';
             C_inputs{end}.dataset_version_str = '01';
             
             C_inputs{end+1} = [];
-            C_inputs{end}.CLI_parameter_name  = CLI_PARAMETER_SCI_NAME;
+            C_inputs{end}.CLI_parameter  = CLI_PARAMETER_SCI_NAME;
             C_inputs{end}.dataset_ID          = 'ROC-SGSE_L2R_RPW-LFR-SURV-CWF';
             C_inputs{end}.dataset_version_str = '01';
             
             C_inputs{end+1} = [];
-            C_inputs{end}.CLI_parameter_name  = CLI_PARAMETER_SCI_NAME;
+            C_inputs{end}.CLI_parameter  = CLI_PARAMETER_SCI_NAME;
             C_inputs{end}.dataset_ID          = 'ROC-SGSE_L2R_RPW-LFR-SURV-SWF';
             C_inputs{end}.dataset_version_str = '01';
             
             C_inputs{end+1} = [];
-            C_inputs{end}.CLI_parameter_name  = CLI_PARAMETER_SCI_NAME;
+            C_inputs{end}.CLI_parameter  = CLI_PARAMETER_SCI_NAME;
             C_inputs{end}.dataset_ID          = 'ROC-SGSE_L2R_RPW-LFR-SBM1-CWF';
             C_inputs{end}.dataset_version_str = '01';
             
             C_inputs{end+1} = [];
-            C_inputs{end}.CLI_parameter_name  = CLI_PARAMETER_SCI_NAME;
+            C_inputs{end}.CLI_parameter  = CLI_PARAMETER_SCI_NAME;
             C_inputs{end}.dataset_ID          = 'ROC-SGSE_L2R_RPW-LFR-SBM2-CWF';
             C_inputs{end}.dataset_version_str = '01';
             
             C_inputs{end+1} = [];
-            C_inputs{end}.CLI_parameter_name  = CLI_PARAMETER_SCI_NAME;
+            C_inputs{end}.CLI_parameter  = CLI_PARAMETER_SCI_NAME;
             C_inputs{end}.dataset_ID          = 'ROC-SGSE_L2R_RPW-TDS-LFM-RSWF';
             C_inputs{end}.dataset_version_str = '01';
             
             C_inputs{end+1} = [];
-            C_inputs{end}.CLI_parameter_name  = CLI_PARAMETER_SCI_NAME;
+            C_inputs{end}.CLI_parameter  = CLI_PARAMETER_SCI_NAME;
             C_inputs{end}.dataset_ID          = 'ROC-SGSE_L2R_RPW-TDS-LFM-CWF';
             C_inputs{end}.dataset_version_str = '01';
             
+            % TEST
+            C_inputs{end+1} = [];
+            C_inputs{end}.CLI_parameter  = 'input_sci2';
+            C_inputs{end}.dataset_ID          = 'ROC-SGSE_L2R_TEST';
+            C_inputs{end}.dataset_version_str = '99';
+            
+            for i = 1:length(C_inputs)
+                C_inputs{i}.process_data_type = [C_inputs{i}.dataset_ID, '_V', C_inputs{i}.dataset_version_str];
+            end
         end
         
-        % Produce constants for all possible OUTPUT data sets.
+        
+        
+        %==========================================================
+        % Produce constants for all possible OUTPUT data sets
+        % (independent of how they are associated with S/W modes).
+        %==========================================================
         function C_outputs = produce_outputs_constants(D)
-            % PROPOSAL: Abolish master_cdf_filename? Return the value from a function?
+            % PROPOSAL: Abolish master_CDF_filename? Return the value from a function?
             %   CON: The value appears in the S/W descriptor and is hence "registered". There could
             %   be some value in having an actual table.
             %
-            % TODO: Set master_cdf_filename automatically.
+            % TODO: Set master_CDF_filename automatically.
             % TODO: Set SWD_level automatically?!
             
             CLI_PARAMETER_SCI_NAME = 'output_sci';
@@ -276,7 +397,6 @@ classdef constants < handle
             C_outputs{end}.JSON_output_file_identifier = CLI_PARAMETER_SCI_NAME;
             C_outputs{end}.dataset_ID                  = 'ROC-SGSE_L2S_RPW-LFR-SURV-CWF-E';
             C_outputs{end}.dataset_version_str         = '01';
-            %C_outputs{end}.master_cdf_filename         = 'ROC-SGSE_L2S_RPW-LFR-SURV-CWF-E_V01.cdf';
             C_outputs{end}.SWD_name                    =     'LFR L2s CWF science electric data in survey mode';
             C_outputs{end}.SWD_description             = 'RPW LFR L2s CWF science electric (potential difference) data in survey mode, time-tagged';
             C_outputs{end}.SWD_level                   = 'L2S';
@@ -287,7 +407,6 @@ classdef constants < handle
             C_outputs{end}.JSON_output_file_identifier = CLI_PARAMETER_SCI_NAME;
             C_outputs{end}.dataset_ID                  = 'ROC-SGSE_L2S_RPW-LFR-SURV-SWF-E';
             C_outputs{end}.dataset_version_str         = '01';
-            %C_outputs{end}.master_cdf_filename         = 'ROC-SGSE_L2S_RPW-LFR-SURV-SWF-E_V01.cdf';
             C_outputs{end}.SWD_name                    =     'LFR L2s SWF science electric data in survey mode';
             C_outputs{end}.SWD_description             = 'RPW LFR L2s SWF science electric (potential difference) data in survey mode, time-tagged';
             C_outputs{end}.SWD_level                   = 'L2S';
@@ -298,7 +417,6 @@ classdef constants < handle
             C_outputs{end}.JSON_output_file_identifier = CLI_PARAMETER_SCI_NAME;
             C_outputs{end}.dataset_ID                  = 'ROC-SGSE_L2S_RPW-LFR-SBM1-CWF-E';
             C_outputs{end}.dataset_version_str         = '01';
-            %C_outputs{end}.master_cdf_filename         = '';
             C_outputs{end}.SWD_name                    =     'LFR L2s CWF science electric data in survey mode';
             C_outputs{end}.SWD_description             = 'RPW LFR L2s CWF science electric (potential difference) data in selective burst mode 1, time-tagged';
             C_outputs{end}.SWD_level                   = 'L2S';
@@ -309,7 +427,6 @@ classdef constants < handle
             C_outputs{end}.JSON_output_file_identifier = CLI_PARAMETER_SCI_NAME;
             C_outputs{end}.dataset_ID                  = 'ROC-SGSE_L2S_RPW-LFR-SBM2-CWF-E';
             C_outputs{end}.dataset_version_str         = '01';
-            %C_outputs{end}.master_cdf_filename         = '';
             C_outputs{end}.SWD_name                    =     'LFR L2s CWF science electric data in survey mode';
             C_outputs{end}.SWD_description             = 'RPW LFR L2s CWF science electric (potential difference) data in selective burst mode 2, time-tagged';
             C_outputs{end}.SWD_level                   = 'L2S';
@@ -320,7 +437,6 @@ classdef constants < handle
             C_outputs{end}.JSON_output_file_identifier = CLI_PARAMETER_SCI_NAME;
             C_outputs{end}.dataset_ID                  = 'ROC-SGSE_L2S_RPW-TDS-LFM-RSWF-E';
             C_outputs{end}.dataset_version_str         = '01';
-            %C_outputs{end}.master_cdf_filename         = '';
             C_outputs{end}.SWD_name                    =     'TDS L2s RSWF science electric data in low frequency mode';
             C_outputs{end}.SWD_description             = 'RPW TDS L2s RSWF science electric (potential difference) data in low frequency mode, time-tagged';
             C_outputs{end}.SWD_level                   = 'L2S';
@@ -331,51 +447,27 @@ classdef constants < handle
             C_outputs{end}.JSON_output_file_identifier = CLI_PARAMETER_SCI_NAME;
             C_outputs{end}.dataset_ID                  = 'ROC-SGSE_L2S_RPW-TDS-LFM-CWF-E';
             C_outputs{end}.dataset_version_str         = '01';
-            %C_outputs{end}.master_cdf_filename         = '';
             C_outputs{end}.SWD_name                    =     'TDS L2s CWF science electric data in low frequency mode';
             C_outputs{end}.SWD_description             = 'RPW TDS L2s CWF science electric (potential difference) data in low frequency mode, time-tagged';
             C_outputs{end}.SWD_level                   = 'L2S';
             C_outputs{end}.SWD_release_date            = D.INITIAL_RELEASE_DATE;
             C_outputs{end}.SWD_release_modification    = D.INITIAL_RELEASE_MODIFICATION_STR;
             
-            for i=1:length(C_outputs)
-                C_outputs{i}.master_cdf_filename = [C_outputs{i}.dataset_ID, '_V', C_outputs{end}.dataset_version_str, '.cdf'];
-                %C_outputs{i}.SWD_level = 'L2S';
+            % TEST
+            C_outputs{end}.JSON_output_file_identifier = 'output_sci2';
+            C_outputs{end}.dataset_ID                  = 'ROC-SGSE_L2S_TEST';
+            C_outputs{end}.dataset_version_str         = '99';
+            C_outputs{end}.SWD_name                    = 'Test form of output.';
+            C_outputs{end}.SWD_description             = 'Test form of output. This never supposed to be seen outside of development.';
+            C_outputs{end}.SWD_level                   = 'L2S';
+            C_outputs{end}.SWD_release_date            = D.INITIAL_RELEASE_DATE;
+            C_outputs{end}.SWD_release_modification    = D.INITIAL_RELEASE_MODIFICATION_STR;
+            
+            for i = 1:length(C_outputs)
+                C_outputs{i}.process_data_type = [C_outputs{i}.dataset_ID, '_V', C_outputs{i}.dataset_version_str];
             end
         end
         
     end % methods
-    
-    
-    
-    methods(Access=private)
-
-        % Any code for double-checking the validity of hardcoded constants.
-        function validate(obj)
-
-            global ERROR_CODES
-            
-            C = obj.C;
-
-            for sw_mode = C.sw_modes
-                % The RCS ICD, iss2rev2, section 3.2.3 only permits these characters (and only lowercase).
-                PERMITTED_CHARACTERS = 'abcdefghijklmnopqrstuvxyz0123456789_';
-                
-                % NOTE: Implicitly checks that CLI_parameter_name does not begin with "--".
-                for input = sw_mode{1}.inputs
-                    disallowed_chars = setdiff(input{1}.CLI_parameter_name, PERMITTED_CHARACTERS);
-                    if ~isempty(disallowed_chars)
-                        errorp(ERROR_CODES.ASSERTION_ERROR, 'Constants value contains illegal characters. This indicates a pure bug.');
-                    end
-                end
-            end
-            
-            % NOTE: Can not handle multiple version of same dataset ID. Should validate combinations
-            % thereof.
-            dataset_IDs = cellfun(@(x) ({x.dataset_ID}), {obj.outputs{:}, obj.inputs{:}});                        
-            validate_strings_unique(dataset_IDs)           
-        end
-
-    end   % methods    
     
 end   % classdef

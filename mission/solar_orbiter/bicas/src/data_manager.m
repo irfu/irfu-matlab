@@ -1,42 +1,121 @@
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
 % First created 2016-06-10
 %
-% "Data manager". Does the actual processing of datasets.
+% "Data manager". Does the actual processing of datasets. Inspired by irfu-matlab's MMS data manager.
 %
-% "data type" = Type of data that is represented by a string.
+%
+%
+% BASIC CONCEPT
+% The user gives the class the input data ("elementary input process data") it has, and asks for the output data
+% ("elementary output process data") it wants.
+%
+% The class maintains an internal list of different "process data" variables, a list of variables where each one is
+% uniquely referenced by a unique string, a "process data type". These process data variables are all related to each other in a
+% web (an acyclic directed graph) describing their dependencies of each other. Initially these process data variables
+% are all empty.
+%
+% There are three forms of process data:
+%   (1) elementary input process data  : Supplied BY the user. In practise this should correspond to the content of a CDF.
+%   (2) elementary output process data : Returned TO the user. In practise this should correspond to the content of a CDF.
+%                                        Derived from a fixed set of other process data.
+%   (3) intermediate process data      : Derived from a fixed set of other process data. The outside user never sees these.
+%
+% When a process data variable Y is requested and it is not already derived, the other process data variables X_1, ...,
+% X_n required for it are requested. Then Y is derived from the X_1, ..., X_n. If a process data variable X_i is not
+% already derived, it will be derived the same way, recursively. If a variable can not be derived, because of error, or
+% because it can only be supplied by the user and the user has not, the process fails.
+%
+% Example: (Information flows from left to right. Each string represents a process data variable.)
+%    input_1 ---------------------------------------------- output_1 --
+%                                                                      \
+%                                                                       -- output_2
+%
+%    input_2 ------ intermediate_1 ------------------------ output_3
+%                /                 \
+%    input_3 ---|                   \
+%                \                   \
+%    input_4 -------------------------- intermediate_2 ---- output_4
+%
+% NOTE: Advantages with architecture.
+% -- Easy to implement _shifting_ S/W modes (as defined by the RCS ICD) using this class, althoguh the class itself is
+%   unaware of S/W modes.
+%      Ex: Updates to the RPW pipeline, datasets.
+%      Ex: Can use a different set of modes when validating using the official RCS validation software at LESIA (not all
+%      datasets are available for input there, and one gets error when the S/W descriptor describes modes which require
+%      non-existing dataset IDs).
+%      Ex: Implement inofficial modes for testing(?).
+% -- Easy to keep support for legacy datasets (older versions of CDFs)?
+% -- Indirect "caching".
+% -- Can reuse processing code?
+% -- External code can automatically derive which datasets are required to derive which. ==> Can automatically derive the
+% S/W modes in the S/W descriptor.
+%
+%
+%
+% DEFINITIONS OF TERMS ---- NEEDS REWORKING
+% -- process data = In practise, one (class) internal instance variable representing some form of data in some step of
+% the "data processing process".
+% -- (process) data type = Type of data that is represented by a string.
 % Can be a BICAS input dataset (in memory), a BICAS output dataset (in memory), or some intermediate
 % internal type of data. Input and output datasets are represented by their respective dataset IDs.
+% -- Elementary input/output (process data) = Data that goes in and out of the data manager as a whole. Not an intermediate data type.
+% The word "elementary" is added to distinguish input/output from input/output for a smaller operation.
 %
-%
-%
-% NOTE: It is implicit that arrays representing CDF data, or "CDF-like" use the first MATLAB array index to represent
+% CONVENTIONS: 
+% -- It is implicit that arrays representing CDF data, or "CDF-like" data, use the first MATLAB array index to represent
 % CDF records.
+%
+% IMPLEMENTATION NOTE: This class is intended to:
+% - Not be aware of S/W modes as defined in the RCS ICD.
+% - Not deal with writing CDFs. It does however read CDF files as a way of setting elementary input process data since
+% it is trivial.
 %
 classdef data_manager
 %###################################################################################################
-% PROPOSAL: Use other class name that implices processing. "processing_manager"?
+% PROPOSAL: Use other class name that implices processing. "processing_manager"? "proc_manager"?
 %
-% QUESTION: Should this class at all handle reading and writing cdf _FILES_?
-%    Should that not be done in some separate layer?!
-%    PROPOSAL: Only work with input/output data types that correspond tightly to cdf files.
-%       CON: Would work against the idea of combining code with the S/W descriptor info.
+% PROPOSAL: Better name for process data (all together or individual variable), process data type, elementary input/output.
+%     PROPOSAL: "process data", "process data variables" = All process data in aggregate?
+%     PROPOSAL: "process data variable" (PDV)
+%     PROPOSAL: "process data ID" (PDID).
+%
+% PROPOSAL: Different name for internal data variable. data, datas, data_types, internal_data,
+% data_network, data_chain, chain_data, process_data, processing_data. A one-letter name?
 %
 % QUESTION: Should this code have some kind of facility for handling multiple dataset versions in
 % principle, eventhough not formally required? Could be useful.
 %    NOTE: Could have multiple internal datatypes, remnants from earlier implementations.
 %    PROPOSAL: Add versions to data type strings for data sets.
 %
-% PROPOSAL: Different name for internal data variable. data, datas, data_types, internal_data,
-% data_network, data_chain, chain_data, process_data, processing_data. A one-letter name?
+% PROPOSAL: Move out the reading of input CDF files?! Of reading master CDFs?!!
 %
-% PROPOSAL: Implement master cdfs as internal process data types?!!
-%    NOTE: Should fit with S/W description.
+% QUESTION: How handle master CDFs?
+%   NOTE: Code needs the fill/pad values for the final CDF format. Can not work entirely with NaN internally since some
+%         MATLAB classes (non-floating point) type do not have NaN. Also, in principle, there is only one NaN which can not
+%         both represent the pad value and the fill value.
+%   NOTE: There is exactly one master CDF per elementary output.
+%   PROPOSAL: No master CDFs (no data, no pad/fill values) inside data_manager. Convert NaN to pad or fill value outside
+%             before writing to file.
+%       CON: Some MATLAB classes (non-floating point) type do not have NaN.
+%   PROPOSAL: Supply the master CDF with the call to get_process_data_recursively.
+%       CON: Won't work if it requires other process data corresponding to another (output) CDF which requires its own
+%            master CDF.
+%   PROPOSAL: User gives the master CDF to the data_manager which stores it in instance variable (containers.Map for output process data).
+%   PROPOSAL: data_manager has access to CONSTANTS/function which retrieves master CDFs.
 %
-% NOTE: Both BIAS HK and LFR SURV CWF contain MUX data (only LFR has one timestamp per snapshot). True also for other input datasets?
 %
-% PROPOSAL: Move out the reading of input cdf files?! Of reading master cdfs?!!
+% QUESTION: Should this class AT ALL handle reading and writing CDF _FILES_? Should that not be done in some separate layer?!
+%    PROPOSAL: Only work with input/output data types that correspond tightly to CDF files.
+%       CON: Would work against the idea of combining code with the S/W descriptor info.
+%          CON: Not really. How?
+%       CON: Might need access to fill/pad values from the CDF templates for the final CDF files.
+%          CON: Could make conversions NaN-->pad/fill value outside of data_manager.
 %
-% QUESTION: How obtain the SW root directory and the master cdfs?
+% PROPOSAL: Implement master CDFs as internal process data types?!!
+%    PRO: Does actually need the fill/pad values.
+%    CON: Elementary inputs should fit with S/W description. Master CDFs will mess that up.
+%
+% QUESTION: How obtain the SW root directory and the master CDFs?
 %     Some sort of function?
 %     Some sort of new constant?
 %
@@ -45,8 +124,10 @@ classdef data_manager
 %         Might have to handle both dataobj and other.
 %
 %
+% QUESTION: Is dataobj a handle class?! How (deep) copy? Needed?! If so, then matters for setting elementary input
+% processing data directly.
 %
-% QUESTION: Is dataobj a handle class?! How (deep) copy? Needed?!
+% NOTE: Both BIAS HK and LFR SURV CWF contain MUX data (only LFR has one timestamp per snapshot). True also for other input datasets?
 %###################################################################################################
 
 
@@ -54,22 +135,24 @@ classdef data_manager
         % Convention: properties is empty = property has not been set yet.
         
         
-        % NOTE: Only set keys here. This makes sure that no disallowed keys are ever used.
-        % For data corresponding to cdfs: Use dataset IDs.
+        % NOTE: Only set the map's keys here. This makes sure that no disallowed keys are ever used.
+        % For data corresponding to CDFs: Use dataset IDs.
         process_data = containers.Map('KeyType', 'char', 'ValueType', 'any');
         
-        test_property = [123];
+        ELEMENTARY_INPUT_DATA_TYPES  = {'ROC-SGSE_L2R_RPW-LFR-SURV-CWF_V01',   'ROC-SGSE_L2R_RPW-LFR-SURV-SWF_V01', 'ROC-SGSE_HK_RPW-BIA_V01', 'ROC-SGSE_L2R_TEST_V99'};
+        ELEMENTARY_OUTPUT_DATA_TYPES = {'ROC-SGSE_L2S_RPW-LFR-SURV-CWF-E_V01', 'ROC-SGSE_L2S_RPW-LFR-SURV-SWF-E_V01',                          'ROC-SGSE_L2S_TEST_V99'};
     end
     
     %###############################################################################################
 
-    methods (Access=public)
+    methods(Access=public)
         
+        %=============
         % Constructor
+        %=============
         function obj = data_manager()
-            INPUT_CDFS  = {'ROC-SGSE_L2R_RPW-LFR-SURV-CWF',   'ROC-SGSE_L2R_RPW-LFR-SURV-SWF', 'ROC-SGSE_HK_RPW-BIA'};
-            OUTPUT_CDFS = {'ROC-SGSE_L2S_RPW-LFR-SURV-CWF-E', 'ROC-SGSE_L2S_RPW-LFR-SURV-SWF-E'};
-            ALL_DATA_TYPES = {INPUT_CDFS{:}, OUTPUT_CDFS{:}};
+            ALL_DATA_TYPES = {obj.ELEMENTARY_INPUT_DATA_TYPES{:}, obj.ELEMENTARY_OUTPUT_DATA_TYPES{:}};
+            
             validate_strings_unique(ALL_DATA_TYPES)
             
             for data_type = ALL_DATA_TYPES
@@ -79,81 +162,92 @@ classdef data_manager
 
         
         
-        % NOTE: Not preventing from setting data types/properties which are not cdf files.
-        function set_input_cdf(obj, data_type, file_path)
-            % PROPOSAL: "Validate" cdf here.
-            global ERROR_CODES
+        % NOTE: Not preventing from setting data types/properties which are not CDF files.
+        function set_input_CDF(obj, data_type, file_path)
+            % PROPOSAL: "Validate" read CDF here.
             irf.log('n', sprintf('data_type=%s: file_path=%s', data_type, file_path))    % NOTE: irf.log adds the method name.
+            global ERROR_CODES
             
+            if ~ismember(data_type, obj.ELEMENTARY_INPUT_DATA_TYPES)
+                errorp(ERROR_CODES.ASSERTION_ERROR, 'Data type is not an elementary input data type.')
+            end
             data = dataobj(file_path);
             obj.set_process_data(data_type, data);
         end
-        
-        
-        
-        % Like get_process_data but tries to fill in values recursively using other process data.
-        % PROPOSAL: Better name. get_data_recursively?
-        function data = get_data(obj, data_type)
-            % TODO: General functions for handling cdfs:
-            %    -validating input/output cdfs: dataset IDs, (same variable sizes?, same nbr of
-            %    records), obtain number of records(?!!).
+
+
+
+        %===========================================================================================
+        % Like "get_process_data" but tries to fill in values recursively using other process data.
+        %
+        % This function derives process data from other process data, e.g. CDF data from other CDF data.
+        %===========================================================================================
+        function data = get_process_data_recursively(obj, data_type)
+            % TODO: General functions for handling CDFs:
+            %    -validating input/output CDFs: dataset IDs, (same variable sizes?, same nbr of
+            %     records), obtain number of records(?!!).
             %    -setting Parents+Parent_version,
-            %    -reading master cdf
+            %    -reading, finding master CDF
             
             % TODO: General functions for handling data.
             %    -Convert fill/pad values <---> NaN.
             
             global ERROR_CODES CONSTANTS
             
-            data = get_process_data(obj, data_type);   % Implicitly checks if the data type exists.
+            %=======================================
+            % Return process data if already exists.
+            %=======================================
+            data = get_process_data(obj, data_type);
             if ~isempty(data)
                 return
             end
             
-            C = CONSTANTS.get_general();
-            %C_output = CONSTANTS.get_cdf_outputs_constants({data_type});
-            %C_output = output{1};
+
+
+            %===============================
+            % Obtain the input process data
+            %===============================
+            input_data_types = data_manager.get_input_process_data_types(data_type);
+            inputs = [];
+            fn_list = fieldnames(input_data_types);
+            for i=1:length(fn_list)
+                fn = fn_list{i};
+                inputs.(fn) = obj.get_process_data_recursively(input_data_types.(fn));
+            end
             
             
             
             switch(data_type)
-                case 'ROC-SGSE_L2S_RPW-LFR-SURV-CWF-E'
-                    % PROPOSAL: Change names RCS_input/output? Implies input/output files.
-
-                    input_BIAS_HK = get_data(obj, 'ROC-SGSE_HK_RPW-BIA');
-                    input_LFR     = get_data(obj, 'ROC-SGSE_L2R_RPW-LFR-SURV-CWF');
-                    BIAS_HK_cdf = input_BIAS_HK.data;
-                    LFR_cdf     = input_LFR.data;
+                case 'ROC-SGSE_L2S_RPW-LFR-SURV-CWF-E_V01'
 
                     % Might be relevant. True/false depending on available BIAS_1/2/3? Should be in
                     % agreement with MUX_SET?
-                    % input_BIAS_HK.BIAS_MODE_BIAS1_ENABLED;
-                    % input_BIAS_HK.BIAS_MODE_BIAS2_ENABLED;
-                    % input_BIAS_HK.BIAS_MODE_BIAS3_ENABLED;
-                    %LFR_R0                  = input_LFR.data.R0;
-                    %LFR_R1                  = input_LFR.data.R1;
-                    %LFR_R2                  = input_LFR.data.R2;
+                    % input_BIAS_HK.BIAS_MODE_BIAS1_ENABLED; ...
+                    % input_LFR.data.R0; ...
                     
+                    BIAS_HK_cdf = inputs.HK.data;
+                    LFR_cdf     = inputs.SCI.data;
+
                     N_LFR_records          = size(LFR_cdf.POTENTIAL.data, 1);
                     N_samples_per_snapshot = size(LFR_cdf.POTENTIAL.data, 2);
                     
                     % Change to standard names.
-                    RCS_input = [];
-                    RCS_input.BIAS_1 = LFR_cdf.POTENTIAL.data;
-                    RCS_input.BIAS_2 = LFR_cdf.ELECTRICAL.data(:,:,1);
-                    RCS_input.BIAS_3 = LFR_cdf.ELECTRICAL.data(:,:,2);
-                    RCS_input.BIAS_4 = ones(size(LFR_cdf.POTENTIAL.data)) * NaN;
-                    RCS_input.BIAS_5 = ones(size(LFR_cdf.POTENTIAL.data)) * NaN;
+                    demuxer_input = [];
+                    demuxer_input.BIAS_1 = LFR_cdf.POTENTIAL.data;
+                    demuxer_input.BIAS_2 = LFR_cdf.ELECTRICAL.data(:,:,1);
+                    demuxer_input.BIAS_3 = LFR_cdf.ELECTRICAL.data(:,:,2);
+                    demuxer_input.BIAS_4 = ones(size(LFR_cdf.POTENTIAL.data)) * NaN;
+                    demuxer_input.BIAS_5 = ones(size(LFR_cdf.POTENTIAL.data)) * NaN;
 
                     DIFF_GAIN = data_manager.nearest_interpolate_records(...
                         BIAS_HK_cdf.ACQUISITION_TIME.data, ...
                         BIAS_HK_cdf.HK_BIA_DIFF_GAIN.data, ...
                         LFR_cdf    .ACQUISITION_TIME.data);
                     
-                    %------------------------------------------------------------------------
-                    % IMPLEMENTATION NOTE: One can obtain MUX_SET from both LFR and BIAS HK.
-                    % This code chooses which one is used.
-                    %------------------------------------------------------------------------
+                    %--------------------------------------------------------------------------
+                    % IMPLEMENTATION NOTE: One can obtain MUX_SET from (1) LFR or (2) BIAS HK.
+                    % This code chooses which one is actually used.
+                    %--------------------------------------------------------------------------
                     MUX_SET = data_manager.nearest_interpolate_records(...
                         BIAS_HK_cdf.ACQUISITION_TIME.data, ...
                         BIAS_HK_cdf.HK_BIA_MODE_MUX_SET.data, ...
@@ -166,12 +260,13 @@ classdef data_manager
                     % Run demuxer on sequences or records with constant settings
                     %============================================================
                     i_first = 1;
-                    RCS_output = struct(...
+                    demuxer_output = struct(...
                         'V1',  [],    'V2', [], 'V3', [], ...
                         'V12', [],    'V23', [], 'V13', [], ...
                         'V12_AC', [], 'V23_AC', [], 'V13_AC', []);
                     while i_first <= N_LFR_records;
                         
+                        % Find sequence of records having identical settings.
                         i_last = data_manager.find_last_same_sequence(...
                             i_first, ...
                             DIFF_GAIN, ...
@@ -182,11 +277,11 @@ classdef data_manager
                         mux_set          = MUX_SET(i_first);
                         sample_frequency = data_manager.get_LFR_samples_in_snapshot_frequency(LFR_cdf.FREQ.data(i_first));
                         
-                        RCS_input_subsequence = data_manager.select_subset_from_struct(RCS_input, i_first, i_last);
+                        demuxer_input_subseq = data_manager.select_subset_from_struct(demuxer_input, i_first, i_last);
                         
                         
-                        % How to structure the demuxing?
-                        % ------------------------------
+                        % QUESTION: How to structure the demuxing?
+                        % ----------------------------------------
                         % QUESTION: How split by record? How put together again? How do in a way which
                         % works for transfer functions? How handle the many non-indexed outputs?
                         % QUESTION: How handle changing values of diff_gain, mux_set, bias-dependent calibration offsets?
@@ -200,35 +295,44 @@ classdef data_manager
                         %   PROPOSAL: Work with only one row?
                         %   PROPOSAL: Work with a continuous sequence of rows/records?
                         %   PROPOSAL: Submit all values, and return structure. Only read and set subset specified by indices.
-                        RCS_output_subsequence = data_manager.simple_demultiplex(RCS_input_subsequence, mux_set, diff_gain);
+                        demuxer_output_subseq = data_manager.simple_demultiplex(demuxer_input_subseq, mux_set, diff_gain);
                         
-                        RCS_output = data_manager.add_components_to_struct(RCS_output, RCS_output_subsequence);
+                        demuxer_output = data_manager.add_components_to_struct(demuxer_output, demuxer_output_subseq);
                         
                         i_first = i_last + 1;
                     end   % while
-                    
-                    
+
+
+
                     %===============================================
                     % Convert 1 snapshot/record --> 1 sample/record
                     %===============================================
                     ACQUISITION_TIME = data_manager.convert_snapshotsPR_to_samplesPR_ACQUISITION_TIME(...
                         LFR_cdf.ACQUISITION_TIME.data, ...
                         N_samples_per_snapshot, ...
-                        sample_frequency);                        
-                    fn_list = fieldnames(RCS_output);
+                        sample_frequency);
+                    Epoch = data_manager.convert_snapshotsPR_to_samplesPR_Epoch_TEMP(  LFR_cdf.Epoch.data, N_samples_per_snapshot  );
+                    fn_list = fieldnames(demuxer_output);
                     for i = 1:length(fn_list)
                         fn = fn_list{i};
-                        RCS_output.(fn) = data_manager.convert_snapshotsPR_to_samplesPR_DATA(RCS_output.(fn), N_samples_per_snapshot);
+                        demuxer_output.(fn) = data_manager.convert_snapshotPR_to_samplePR_DATA(  demuxer_output.(fn), N_samples_per_snapshot  );
                     end
 
-                    % NOTE: Needs ~C.sw_modes{1}.outputs{1}.master_cdf_filename
-                    master_cdf_path = [CONSTANTS.SW_root_dir(), filesep, C.master_cdfs_dir_rel, filesep, output.master_cdf_filename];
-                    master_cdf = dataobj(master_cdf_path);
                     
-                    %data = [];
                     
-                    %master_cdf.data.ACQUISITION_TIME.data = LFR_ACQUISITION_TIME;  % Incorrect!
-                    % TODO: Update nrec? Needed when writing to file?!
+                    %============================================================
+                    % Put together variables to written to CDF file (elsewhere).
+                    %============================================================
+                    data = [];
+                    data.EPOCH = Epoch;
+                    %data.DELTA_PLUS_MINUS = 
+                    data.ACQUISITION_TIME = ACQUISITION_TIME;
+                    data.V   = [demuxer_output.V1,     demuxer_output.V2,     demuxer_output.V3];
+                    data.E   = [demuxer_output.V12,    demuxer_output.V13,    demuxer_output.V23];
+                    data.EAC = [demuxer_output.V12_AC, demuxer_output.V13_AC, demuxer_output.V23_AC];                    
+                    data.QUALITY_FLAG     = cast(  zeros(size(Epoch)),  convert_CDF_type_to_MATLAB_class('CDF_UINT1', 'Only CDF data types')  );
+                    data.QUALITY_BITMASK  = cast(  zeros(size(Epoch)),  convert_CDF_type_to_MATLAB_class('CDF_UINT1', 'Only CDF data types')  );
+                    data.DELTA_PLUS_MINUS = cast(  zeros(size(Epoch)),  convert_CDF_type_to_MATLAB_class('CDF_INT8', 'Only CDF data types')  );
                     
                 otherwise
                     errorp(ERROR_CODES.SW_MODE_PROCESSING_ERROR, 'Can not produce this data type, "%s".', data_type)
@@ -239,10 +343,117 @@ classdef data_manager
     end   % methods
     
     %###############################################################################################
+
+    methods(Access=private)        
+        
+        % Return process data value. Does NOT try to fill it with (derived) data if empty.
+        % Can be used to find out whether process data has been set.
+        %
+        % ASSERTS: Valid data_type.
+        % DOES NOT ASSERT: Process data has been set.
+        function data = get_process_data(obj, data_type)
+            global ERROR_CODES
+            
+            if ~obj.process_data.isKey(data_type)
+                errorp(ERROR_CODES.SW_MODE_PROCESSING_ERROR, 'There is no such process data type, "%s".', data_type);
+            end
+            data = obj.process_data(data_type);
+        end
+
+
+
+        % Set a process data variable.
+        %
+        % ASSERTS: Process data has NOT been set yet.
+        % ASSERTS: Valid data_type
+        function set_process_data(obj, data_type, data)
+            global ERROR_CODES
+            
+            if ~obj.process_data.isKey(data_type)
+                errorp(ERROR_CODES.SW_MODE_PROCESSING_ERROR, 'There is no such process data type, "%s".', data_type);
+            elseif ~isempty(obj.process_data(data_type))
+                errorp(ERROR_CODES.SW_MODE_PROCESSING_ERROR, 'There is aldready process data for that data type, "%s".', data_type);
+            end
+            obj.process_data(data_type) = data;
+        end
+        
+    end   % methods
+    
+    %###############################################################################################
     
     %methods(Static, Access=private)
     methods(Static, Access=public)
 
+        %===========================================================================================================
+        % For every process data type, return a structure with fields set to the data types required to derive that
+        % process data type (if any; some data process data types are just set by the caller).
+        %
+        % This function effectively
+        % 1) defines/describes the dependencies between different process data types, and
+        % 2) implicitly distinguishes the inputs data types by suitable field names for them (used as field names in other code).
+        %
+        % Not recursive but designed so that other recursive code can recurse over the implicit "tree data structure" defined by it.
+        % Could be used to derive the (elementary) input datasets from the (elementary) output datasets.
+        %===========================================================================================================
+        function inputs = get_input_process_data_types(data_type)
+            % PROPOSAL: Encode data into some data structure (in constants class) instead?!
+            global ERROR_CODES
+            
+            inputs = struct();
+            
+            switch(data_type)
+                case 'ROC-SGSE_HK_RPW-BIA_V01'
+                case 'ROC-SGSE_L2R_RPW-LFR-SURV-CWF_V01'
+                case 'ROC-SGSE_L2R_RPW-LFR-SURV-SWF_V01'
+                case 'ROC-SGSE_L2R_TEST_V99';   % TEST
+                    
+                case 'ROC-SGSE_L2S_RPW-LFR-SURV-CWF-E_V01'
+                    inputs.HK  = 'ROC-SGSE_HK_RPW-BIA_V01';
+                    inputs.SCI = 'ROC-SGSE_L2R_RPW-LFR-SURV-CWF_V01';
+                    
+                case 'ROC-SGSE_L2S_RPW-LFR-SURV-SWF-E_V01'
+                    inputs.HK  = 'ROC-SGSE_HK_RPW-BIA_V01';
+                    inputs.SCI = 'ROC-SGSE_L2R_RPW-LFR-SURV-SWF_V01';
+                    
+                % TEST
+                case 'ROC-SGSE_L2S_TEST_V99'
+                    inputs.SCI2  = 'ROC-SGSE_L2R_TEST_V99';
+                    
+                otherwise
+                    errorp(ERROR_CODES.SW_MODE_PROCESSING_ERROR, 'Can not produce this data type, "%s".', data_type)
+            end
+        end
+        
+        
+        
+        %==================================================================================================
+        % Collect all the elementary input process data types needed to produce a given process data type.
+        % Can be used to determine which process data types are needed for a S/W mode.
+        % Recursive.
+        %==================================================================================================
+        function process_data_types = get_elementary_input_process_data_types(data_type)
+            s = data_manager.get_input_process_data_types(data_type);
+            
+            process_data_types = {};
+            
+            if isempty(fieldnames(s))
+                % CASE: Found input process data type.
+                process_data_types = {data_type};
+            else
+                % CASE: Found NON-input process data type.
+                fn_list = fieldnames(s);
+                for i = 1:length(fn_list)
+                    fn = fn_list{i};
+                
+                    new_types = data_manager.get_elementary_input_process_data_types(s.(fn));   % NOTE: RECURSIVE CALL
+                    process_data_types = [process_data_types, new_types];
+                end
+            end
+
+        end
+        
+        
+        
         % Given a struct, select a subset of that struct defined by a range of column indicies for every field.
         function s = select_subset_from_struct(s, i_first, i_last)
             fn_list = fieldnames(s);
@@ -270,17 +481,15 @@ classdef data_manager
 
         function freq = get_LFR_samples_in_snapshot_frequency(LFR_FREQ)
             global CONSTANTS ERROR_CODES            
-            C = CONSTANTS.get_general();
-            
             switch(LFR_FREQ)
                 case 0
-                    freq = C.LFR.F0;
+                    freq = CONSTANTS.C.LFR.F0;
                 case 1
-                    freq = C.LFR.F1;
+                    freq = CONSTANTS.C.LFR.F1;
                 case 2
-                    freq = C.LFR.F2;
+                    freq = CONSTANTS.C.LFR.F2;
                 case 3
-                    freq = C.LFR.F3;
+                    freq = CONSTANTS.C.LFR.F3;
                 otherwise
                     errorp(ERROR_CODES.ASSERTION_ERROR, 'Can not handle this LFR_FREQ value.')
             end
@@ -288,10 +497,12 @@ classdef data_manager
 
 
 
+        %=====================================================================================================================
         % Finds the greatest i_last such that all varargin{k}(i) are equal for i_first <= i <= i_last separately for every k.
         % Useful for finding a continuous sequence of records with the same data.
         %
         % ASSUMES: varargin{i} are all column arrays of the same size.
+        %=====================================================================================================================
         function i_last = find_last_same_sequence(i_first, varargin)
             % PROPOSAL: Better name?
             
@@ -335,15 +546,22 @@ classdef data_manager
         
         
         
+        %==================================================================================
         % ASSUMES: Argument ACQUISITION_TIME refers to the first sample in every snapshot.
+        %
         % PR = Per Record
         % sample_frequency : Unit: Hz. Frequency of samples within a snapshot.
-        function ACQUISITION_TIME_2 = convert_snapshotsPR_to_samplesPR_ACQUISITION_TIME(ACQUISITION_TIME_1, N_samples_per_snapshot, sample_frequency)
+        %==================================================================================
+        function ACQUISITION_TIME_2 = convert_snapshotsPR_to_samplesPR_ACQUISITION_TIME(  ACQUISITION_TIME_1, N_samples_per_snapshot, sample_frequency  )
+            if size(ACQUISITION_TIME_1, 2) ~= 2
+                errorp(ERROR_CODES.ASSERTION_ERROR, 'Wrong dimensions on input argumet ACQUISITION_TIME_1.')
+            end
+            
             N_records = size(ACQUISITION_TIME_1, 1);
             
             % Derive the corresponding column and row vectors.
-            t_1           = data_manager.ACQUISITION_TIME_to_linear_seconds(ACQUISITION_TIME_1);
-            tr_snapshot_1 = (0:(N_samples_per_snapshot-1)) / sample_frequency;    % tr = time relative (does not refer to absolute point in time).
+            t_1           = data_manager.ACQUISITION_TIME_to_linear_seconds(ACQUISITION_TIME_1);  % Column vector
+            tr_snapshot_1 = (0:(N_samples_per_snapshot-1)) / sample_frequency;    % Row vector. tr = time relative (does not refer to absolute point in time).
             
             % Derive the corresponding same-sized matrices (one row per snapshot).
             t_1_M           = repmat(t_1,           1,         N_samples_per_snapshot);
@@ -354,11 +572,30 @@ classdef data_manager
             
             ACQUISITION_TIME_2 = data_manager.linear_seconds_to_ACQUISITION_TIME(t_2);
         end
+
+
+        
+        % TEMPORARY FUNCTION - FOR TESTING
+        % NOTE: No argument sample_frequency.
+        function Epoch_2 = convert_snapshotsPR_to_samplesPR_Epoch_TEMP(  Epoch_1, N_samples_per_snapshot)
+            Epoch_2 = repelem(Epoch_1, N_samples_per_snapshot);
+        end
         
         
         
+        % Convert data from 1 snapshot/record to 1 sample/record (from a matrix to a column vector).
+        % 
         % PR = Per Record
-        function data_2 = convert_snapshotsPR_to_samplesPR_DATA(data_1, N_samples_per_snapshot)
+        function data_2 = convert_snapshotPR_to_samplePR_DATA(data_1, N_samples_per_snapshot)
+            % PROPOSAL: Abolish argument N_samples_per_snapshot? Is already implicit in size(data, 2).
+            
+            if ndims(data_1) ~= 2
+                % NOTE: ndims always returns at least two, which is exactly what we want, also for empty and scalars, and row vectors.
+                errorp(ERROR_CODES.ASSERTION_ERROR, 'Wrong dimensions on input argumet ACQUISITION_TIME_1.')
+            elseif size(data_1, 2) ~= N_samples_per_snapshot
+                errorp(ERROR_CODES.ASSERTION_ERROR, 'Dimensions on input argumet ACQUISITION_TIME_1 does not match N_samples_per_snapshot.')
+            end
+            
             data_2 = reshape(data_1, size(data_1, 1)*N_samples_per_snapshot, 1);
         end
         
@@ -393,13 +630,13 @@ classdef data_manager
                 errorp(ERROR_CODES.ASSERTION_ERROR, 'Illegal argument value mux_set or diff_gain. Must be scalars (not arrays).')
             end
             
-            ALPHA    = CONSTANTS.approximate_demuxer.alpha;
-            BETA     = CONSTANTS.approximate_demuxer.beta;
+            ALPHA    = CONSTANTS.C.approximate_demuxer.alpha;
+            BETA     = CONSTANTS.C.approximate_demuxer.beta;
             switch(diff_gain)
                 case 0
-                    GAMMA = CONSTANTS.approximate_demuxer.gamma_lg;
+                    GAMMA = CONSTANTS.C.approximate_demuxer.gamma_lg;
                 case 1
-                    GAMMA = CONSTANTS.approximate_demuxer.gamma_hg;
+                    GAMMA = CONSTANTS.C.approximate_demuxer.gamma_hg;
                 otherwise
                     errorp(ERROR_CODES.ASSERTION_ERROR, 'Illegal argument value diff_gain.')
             end
@@ -475,7 +712,7 @@ classdef data_manager
         end
         
         %===========================================================================================        
-        % Take cdf data (src) divided into records (points in time) and use that to produce data
+        % Take CDF data (src) divided into records (points in time) and use that to produce data
         % divided into other records (other points in time).
         %
         % Will produce NaN for values of ACQUISITION_TIME_dest outside the range of
@@ -502,35 +739,4 @@ classdef data_manager
         
     end
 
-    %###############################################################################################
-
-    methods(Access=private)        
-        
-        % Return what is in the internal data structure, without trying to fill it with data.
-        function data = get_process_data(obj, data_type)
-            global ERROR_CODES
-            
-            if ~obj.process_data.isKey(data_type)
-                errorp(ERROR_CODES.SW_MODE_PROCESSING_ERROR, 'There is no such process data type, "%s".', data_type);
-            end
-            data = obj.process_data(data_type)
-        end
-
-
-
-        % Set the value associated with a key in the process_data.
-        % Will make sure that an unused key is not set.
-        function set_process_data(obj, data_type, data)
-            global ERROR_CODES
-            
-            if ~obj.process_data.isKey(data_type)
-                errorp(ERROR_CODES.SW_MODE_PROCESSING_ERROR, 'There is no such process data type, "%s".', data_type);
-            elseif ~isempty(obj.process_data(data_type))
-                errorp(ERROR_CODES.SW_MODE_PROCESSING_ERROR, 'There is aldready process data for that data type, "%s".', data_type);
-            end
-            obj.process_data(data_type) = data;
-        end
-        
-    end   % methods
-    
 end
