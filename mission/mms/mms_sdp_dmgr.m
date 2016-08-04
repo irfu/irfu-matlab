@@ -74,20 +74,30 @@ classdef mms_sdp_dmgr < handle
       end
       
       if nargin < 4 || isempty(samplerate)
-        % Normal operations, samplerate identified from TmMode
-        if(~isfield(MMS_CONST.Samplerate,MMS_CONST.TmModes{DATAC.tmMode}))
+        % Normal operations, try to identify sample rate from TmMode
+        if(~isfield(MMS_CONST.Samplerate, MMS_CONST.TmModes{DATAC.tmMode}))
           irf.log('warning', ['init_struct.samplerate not specified,'...
             'nor found in MMS_CONST for ',MMS_CONST.TmModes{DATAC.tmMode}]);
-          irf.log('warning', ['Defaulting samplerate to ',...
-            MMS_CONST.Samplerate.(MMS_CONST.TmModes{1})]);
-          DATAC.samplerate = MMS_CONST.Samplerate.(MMS_CONST.TmModes{1});
+          if iscell(MMS_CONST.Samplerate.(MMS_CONST.TmModes{1}))
+            % Some modes (slow/brst) may have multiple sample rates, use the first.
+            samplerate = MMS_CONST.Samplerate.(MMS_CONST.TmModes{1}){1};
+          else
+            samplerate = MMS_CONST.Samplerate.(MMS_CONST.TmModes{1});
+          end
+          irf.log('warning', ['Defaulting samplerate to ', num2str(samplerate)]);
+          DATAC.samplerate = samplerate;
         else
           % Automatic, determined by tmMode.
-          DATAC.samplerate = ...
-            MMS_CONST.Samplerate.(MMS_CONST.TmModes{DATAC.tmMode});
+          if iscell(MMS_CONST.Samplerate.(MMS_CONST.TmModes{DATAC.tmMode}))
+            % Slow & Brst may have multiple sample rates.
+            samplerate = MMS_CONST.Samplerate.(MMS_CONST.TmModes{DATAC.tmMode}){1};
+          else
+            samplerate = MMS_CONST.Samplerate.(MMS_CONST.TmModes{DATAC.tmMode});
+          end
+          DATAC.samplerate = samplerate;
         end
       else
-        % Commissioning, sample rate identified previously.
+        % Commissioning, or brst & slow, sample rate identified previously.
         DATAC.samplerate = samplerate;
       end
     end % mms_sdp_dmgr
@@ -1145,7 +1155,7 @@ classdef mms_sdp_dmgr < handle
         flag = get_variable(dataObj,[vPfx probe '_enable']);
         dtSampling = median(diff(flag.DEPEND_0.data));
         switch DATAC.tmMode
-          case MMS_CONST.TmMode.slow, dtNominal = [8, 12, 16, 20, 160]; % seconds, (160 from old 1 Hz data)
+          case MMS_CONST.TmMode.slow, dtNominal = [2.0, 3.0, 4.0, 5.0, 8, 12, 16, 20, 160]; % seconds, (160 from old 1 Hz data)
           case MMS_CONST.TmMode.fast, dtNominal = [2.0, 3.0, 4.0, 5.0];
 	  case MMS_CONST.TmMode.brst, dtNominal = [0.6256, 0.625, 0.3128, 0.229, 0.1564, 0.0763, 0.0782, 0.0391, 0.01953];
           case MMS_CONST.TmMode.comm, dtNominal = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0, 2.5, 3.0, 4.0 5.0, 8.0, 12.0, 16.0, 20.0];
