@@ -1,4 +1,4 @@
-function modelOut = mms_sdp_model_adp_shadow(dce,phase)
+function modelOut = mms_sdp_model_adp_shadow(dce,phase,signals)
 %MMS_SDP_MODEL_ADP_SHADOW  create a model for ADP shadow
 %
 %  modelOut = mms_sdp_model_adp_shadow(dce,phase)
@@ -26,10 +26,15 @@ timeTmp = interp1(phaseUnw,epochTmp,phaseTmp);
 phaseTmp(isnan(timeTmp)) = []; timeTmp(isnan(timeTmp)) = []; 
 phaseTmpWrp = mod(phaseTmp,360);
 
-signals = {'e12','e34'}; expShadow = 150 + [0 180];
 for iSig = 1:length(signals)
-  if iSig==2, expShadow = expShadow - 90; end % p34
   sig = signals{iSig};
+  switch sig
+    case 'e12', expShadow = 150 + [0 180];
+    case 'e34', expShadow = 60 + [0 180];
+    otherwise,
+      errS = 'unrecognized SIG';
+      irf.log('critical',errS), error(errS)
+  end
   eRes = interp1(epochTmp,double(dce.(sig).data),timeTmp);
   model = zeros(size(phaseTmp));
   

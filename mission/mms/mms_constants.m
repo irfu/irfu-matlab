@@ -83,6 +83,7 @@ MMS_CONST.Bitmask.SWEEP_DATA             = mms_sdp_typecast('bitmask',16); % Bit
 MMS_CONST.Bitmask.ADP_SHADOW             = mms_sdp_typecast('bitmask',32); % Bit 6
 MMS_CONST.Bitmask.ASPOC_RUNNING          = mms_sdp_typecast('bitmask',64); % Bit 7
 % MMS_CONST.Bitmask.EDI_CORRECTION = mms_sdp_typecast('bitmask', 128); % Bit 8.
+MMS_CONST.Bitmask.ASYMM_CONF             = mms_sdp_typecast('bitmask',256); % Bit 9
 
 MMS_CONST.Error = -Inf; % Indicates error in computation
 

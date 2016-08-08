@@ -168,6 +168,7 @@ classdef mms_sdp_dmgr < handle
           chk_latched_p()
           %apply_transfer_function()
           v_from_e_and_v()
+          e_from_asym()
           chk_bias_guard()
           chk_aspoc_on()
           chk_sweep_on()
@@ -837,7 +838,7 @@ classdef mms_sdp_dmgr < handle
           irf.log('critical',errStr); error(errStr);
         end
         irf.log('notice','Removing ADP spikes');
-        model = mms_sdp_model_adp_shadow(DATAC.dce,Phase);
+        model = mms_sdp_model_adp_shadow(DATAC.dce,Phase, {'e12','e34'});
         
         for iSen = 1:min(numel(sensors),2)
           sen = sensors{iSen};
@@ -888,6 +889,36 @@ classdef mms_sdp_dmgr < handle
         function l = sensor_dist(len)
           l = 1.67 + len + .07 + 1.75  + .04; % meters, sc+boom+preAmp+wire+probe
         end
+      end
+      
+      function e_from_asym()
+        % Compute E in asymmetric configuration
+        
+        if DATAC.scId ~=4, return, end
+        
+        %PROBE MAGIC
+        %MMS4, Probe 4 bias fail, 2016-06-12T05:28:48.2
+        TTFail = EpochTT('2016-06-12T05:28:48.200Z');
+        indFail = DATAC.dcv.time > TTFail.ttns;
+        if ~any(indFail), return, end
+        
+        senV = 'v4';
+        irf.log('notice',['Bad bias on ' senV ' starting at ' TTFail.utc]);
+        DATAC.dcv.(senV).bitmask(indFail) = ...
+          bitor(DATAC.dcv.(senV).bitmask(indFail), MMS_CONST.Bitmask.BAD_BIAS);
+        
+        % Compute asymmetric E34
+        % Data with no v3 cannot be reconstructed
+        sen3_off = bitand(DATAC.dcv.v3.bitmask, MMS_CONST.Bitmask.SIGNAL_OFF);
+        DATAC.dce.e34.data(indFail & sen3_off) = NaN; 
+        % E34 = (V3 - 0.5*(V1 + V2))/(L/2)
+        idx = indFail & ~sen3_off;
+        NOM_BOOM_L = .12; % 120 m
+        DATAC.dce.e34.data(idx) = single((double(DATAC.dcv.v3.data(idx)) - ...
+          0.5*(double(DATAC.dcv.v1.data(idx)) +...
+          double(DATAC.dcv.v2.data(idx))))/(NOM_BOOM_L/2));
+        DATAC.dce.e34.bitmask(idx) = bitor(DATAC.dce.e34.bitmask(idx), ...
+          MMS_CONST.Bitmask.ASYMM_CONF);
       end
       
       function v_from_e_and_v
@@ -1626,6 +1657,11 @@ classdef mms_sdp_dmgr < handle
       Dcv.v2.data = mask_bits(Dcv.v2.data, Dcv.v2.bitmask, sweepBit);
       Dcv.v3.data = mask_bits(Dcv.v3.data, Dcv.v3.bitmask, sweepBit);
       Dcv.v4.data = mask_bits(Dcv.v4.data, Dcv.v4.bitmask, sweepBit);
+      
+      % Probe 4 bias failure
+      badBias = MMS_CONST.Bitmask.BAD_BIAS;
+      Dcv.v3.data = mask_bits(Dcv.v3.data, Dcv.v4.bitmask, badBias);
+      Dcv.v4.data = mask_bits(Dcv.v4.data, Dcv.v4.bitmask, badBias);
       
       % Compute average of all spin plane probes, ignoring data identified
       % as bad (NaN).
