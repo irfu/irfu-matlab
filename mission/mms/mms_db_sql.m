@@ -135,21 +135,22 @@ classdef mms_db_sql < handle
           varNames = toImport{ii}.cdfOut(jj).varNames;
           if(ischar(varNames)), varNames={varNames}; end
           varNamesStr = strjoin(sort(varNames), ' ');
-          if(isnan(toImport{ii}.cdfOut(jj).startTT) || isnan(toImport{ii}.cdfOut(jj).endTT))
-            toImport{ii}.cdfOut(jj).startTT = '"NULL"';
-            toImport{ii}.cdfOut(jj).endTT = '"NULL"';
-          elseif(isempty(toImport{ii}.cdfOut(jj).startTT) || toImport{ii}.cdfOut(jj).startTT < int64(1000))
-            % FPI put energy in DEPEND_0
+          if(isempty(toImport{ii}.cdfOut(jj).startTT) || toImport{ii}.cdfOut(jj).startTT < int64(1000))
+            % FPI put energy in DEPEND_0 and some EDP have no main Epoch
+            % (created from HK before SCI data was downloaded).
             continue
+          elseif(isnan(toImport{ii}.cdfOut(jj).startTT) || isnan(toImport{ii}.cdfOut(jj).endTT))
+            startTT = '"NULL"';
+            endTT = '"NULL"';
           else
-            toImport{ii}.cdfOut(jj).startTT = num2str(toImport{ii}.cdfOut(jj).startTT);
-            toImport{ii}.cdfOut(jj).endTT = num2str(toImport{ii}.cdfOut(jj).startTT);
+            startTT = num2str(toImport{ii}.cdfOut(jj).startTT);
+            endTT = num2str(toImport{ii}.cdfOut(jj).startTT);
           end
           obj.PrepStmt.setString(1, toImport{ii}.fileNameFullPath);
           obj.PrepStmt.setString(2, varNamesStr);
           obj.PrepStmt.setString(3, toImport{ii}.dataset);
-          obj.PrepStmt.setString(4, toImport{ii}.cdfOut(jj).startTT);
-          obj.PrepStmt.setString(5, toImport{ii}.cdfOut(jj).endTT);
+          obj.PrepStmt.setString(4, startTT);
+          obj.PrepStmt.setString(5, endTT);
           obj.PrepStmt.addBatch(); % Quickest solution..
         end
       end
@@ -349,7 +350,7 @@ classdef mms_db_sql < handle
           toImport{1} = filesToImport{ii};
         else
           toImport{end+1} = filesToImport{ii}; %#ok<AGROW>
-          if( numel(toImport) >= 100)
+          if( numel(toImport) >= 1000)
             obj.insertPrepToVarIndex(toImport);
             toImport = [];
           end
