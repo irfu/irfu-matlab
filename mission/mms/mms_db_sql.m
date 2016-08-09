@@ -379,7 +379,9 @@ classdef mms_db_sql < handle
         idDataset = char(rs.getString('idDataset'));
       else
         % Add the new dataset and variables combination and get idDataset
-        [~, key] = obj.sqlInsertAndReturnLastKey(['INSERT INTO Datasets(dataset,varNames) VALUES ("', dataset '","' varNamesStr '");']);
+        sql = ['INSERT INTO Datasets(dataset,varNames) VALUES ("', ...
+          dataset, '","', varNamesStr, '");'];
+        [~, key] = obj.sqlInsertAndReturnLastKey(sql);
         idDataset = num2str(key);
         sqlValues = ['("', strjoin(varNames, ['",', idDataset, '), ("']), ...
           '",', idDataset, ');'];
@@ -617,7 +619,7 @@ classdef mms_db_sql < handle
       rs = obj.statement.getGeneratedKeys();
       if(rs.next)
         key = rs.getLong(1);
-        irf.log('notice', ['Inserted new value with Key: ', num2str(key)]);
+        irf.log('debug', ['Inserted new value with Key: ', num2str(key)]);
       else
         errStr = ['Failed to insert and get key! With sql>', sql];
         irf.log('critical', errStr);
@@ -683,7 +685,7 @@ classdef mms_db_sql < handle
         endTT   = max(epoch{indGoodTVarName(iT)});
         if any(startTT) && any(endTT) && ...
             (min(startTT,endTT) < int64(479390467184000000)...% '2015-03-12T00:00:00.000000000'
-            ||  max(startTT,endTT) > int64(1262260868184000000)),%'2040-01-01T00:00:00.000000000'
+            ||  max(startTT,endTT) > int64(1262260869184000000)),%'2040-01-01T00:00:00.000000000'
           out(iT).startTT = NaN;
           out(iT).endTT   = NaN;
           irf.log('notice',['!!! In file:', cdfFileName]);
