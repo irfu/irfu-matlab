@@ -535,24 +535,12 @@ keyboard; % THIS FUNCTION IS NOT FULLY TESTED, MAKE SURE TO MAKE A BACKUP OF THE
         sqlDataset = ['idDataset IN ("', strjoin(idDatasetList, '","'), '")'];
       end
       % find files
-      idFileArray = []; iFile = 1;
-      sql = ['SELECT idFile FROM VarIndex WHERE ', sqlDataset, sqlTime, ...
-        ' ORDER BY startTT ASC'];
+      sql = ['SELECT DISTINCT fileNameFullPath FROM FileList ', ...
+        'LEFT JOIN VarIndex USING (idFile) ', ...
+        'WHERE ', sqlDataset, sqlTime, ' ORDER BY startTT ASC'];
       rs = obj.sqlQuery(sql);
       while rs.next
-        idFileArray(iFile) = str2double(rs.getString('idFile')); %#ok<AGROW>
-        irf.log('debug', ['idFile = ' num2str(idFileArray(iFile))]);
-        iFile = iFile + 1;
-      end
-      % get filenames
-      fileNames = cell(numel(idFileArray), 1);
-      for iFile = 1:numel(idFileArray)
-        sql = ['SELECT fileNameFullPath FROM FileList WHERE idFile = ', ...
-          num2str(idFileArray(iFile))];
-        rs = obj.sqlQuery(sql);
-        if rs.next
-          fileNames{iFile} = char(rs.getString('fileNameFullPath'));
-        end
+        fileNames{end+1} = char(rs.getString('fileNameFullPath')); %#ok<AGROW>
       end
     end
 
