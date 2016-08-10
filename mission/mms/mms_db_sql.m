@@ -144,7 +144,7 @@ classdef mms_db_sql < handle
             endTT = '"NULL"';
           else
             startTT = num2str(toImport{ii}.cdfOut(jj).startTT);
-            endTT = num2str(toImport{ii}.cdfOut(jj).startTT);
+            endTT = num2str(toImport{ii}.cdfOut(jj).endTT);
           end
           obj.PrepStmt.setString(1, toImport{ii}.fileNameFullPath);
           obj.PrepStmt.setString(2, varNamesStr);
@@ -540,7 +540,7 @@ keyboard; % THIS FUNCTION IS NOT FULLY TESTED, MAKE SURE TO MAKE A BACKUP OF THE
         'WHERE ', sqlDataset, sqlTime, ' ORDER BY startTT ASC'];
       rs = obj.sqlQuery(sql);
       while rs.next
-        fileNames{end+1} = char(rs.getString('fileNameFullPath')); %#ok<AGROW>
+        fileNames{end+1, 1} = char(rs.getString('fileNameFullPath')); %#ok<AGROW>
       end
     end
 
