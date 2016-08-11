@@ -355,7 +355,7 @@ keyboard; % THIS FUNCTION IS NOT FULLY TESTED, MAKE SURE TO MAKE A BACKUP OF THE
               ( ~strcmp(prevVarNames, varNamesStr) || ...
               ~strcmp(prevDataset, filesToImport{ii}.dataset) ) )
             % Not the same as last iteration, possibly new. Make SQL queries
-            idDataset = obj.add_var_names(filesToImport{ii}.dataset, varNames);
+            obj.add_var_names(filesToImport{ii}.dataset, varNames);
             prevDataset = filesToImport{ii}.dataset;
             prevVarNames = varNamesStr;
           end
