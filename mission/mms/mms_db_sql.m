@@ -718,7 +718,7 @@ keyboard; % THIS FUNCTION IS NOT FULLY TESTED, MAKE SURE TO MAKE A BACKUP OF THE
             out.varNames = {'wphase', 'zra', 'zdec', 'zphase', 'lra', ...
               'ldec', 'lphase', 'pra', 'pdec', 'pphase'};
             try
-              [status, timeStr] = unix(['grep -i -A1 COMMENT ', cdfFileName,' | awk ''END {print $1}''']);
+              [status, timeStr] = unix(['head -n100 ', cdfFileName,' | grep -i -A1 COMMENT | awk ''END {print $1}''']);
               if(~status)
                 time = sscanf(timeStr, '%d-%dT%d:%d:%d.%d');
                 out.startTT = irf_time([time(1), time(2), time(3), time(4), time(5), time(6), 0, 0], 'doy8>ttns');
@@ -731,6 +731,7 @@ keyboard; % THIS FUNCTION IS NOT FULLY TESTED, MAKE SURE TO MAKE A BACKUP OF THE
             catch ME
               irf.log('warning', ['Failed to read: ', cdfFileName]);
               irf.log('warning', ['Message: ', ME.message]);
+	      if(~isempty(timeStr)), irf.log('warning',['Got timeStr: ', timeStr]); end
               out.startTT = []; out.endTT = [];
               return
             end
@@ -738,7 +739,7 @@ keyboard; % THIS FUNCTION IS NOT FULLY TESTED, MAKE SURE TO MAKE A BACKUP OF THE
             out.epochVarName = 'Time';
             out.varNames = {'r', 'v'};
             try
-              [status, timeStr] = unix(['grep -i -A1 Km/Sec ', cdfFileName,' | awk ''END {print $1}''']);
+              [status, timeStr] = unix(['head -n100 ', cdfFileName, ' | grep -i -A1 Km/Sec | awk ''END {print $1}''']);
               if(~status)
                 time = sscanf(timeStr, '%d-%d/%d:%d:%d.%d');
                 out.startTT = irf_time([time(1), time(2), time(3), time(4), time(5), time(6), 0, 0], 'doy8>ttns');
@@ -751,6 +752,7 @@ keyboard; % THIS FUNCTION IS NOT FULLY TESTED, MAKE SURE TO MAKE A BACKUP OF THE
             catch ME
               irf.log('warning', ['Failed to read: ', cdfFileName]);
               irf.log('warning', ['Message: ', ME.message]);
+	      if(~isempty(timeStr)), irf.log('warning',['Got timeStr: ', timeStr]); end
               out.startTT = []; out.endTT = [];
               return
             end
@@ -758,7 +760,7 @@ keyboard; % THIS FUNCTION IS NOT FULLY TESTED, MAKE SURE TO MAKE A BACKUP OF THE
             out.epochVarName = 'Time';
             out.varNames = {'quality', 'scale'};
             try
-              [status, timeStr] = unix(['grep -i -A1 Epoch ', cdfFileName,' | awk ''END {print $1}''']);
+              [status, timeStr] = unix(['head -n100 ', cdfFileName, ' | grep -i -A1 Epoch | awk ''END {print $1}''']);
               if(~status)
                 time = sscanf(timeStr, '%d-%d/%d:%d:%d.%d');
                 out.startTT = irf_time([time(1), time(2), time(3), time(4), time(5), time(6), 0, 0], 'doy8>ttns');
@@ -771,6 +773,7 @@ keyboard; % THIS FUNCTION IS NOT FULLY TESTED, MAKE SURE TO MAKE A BACKUP OF THE
             catch ME
               irf.log('warning', ['Failed to read: ', cdfFileName]);
               irf.log('warning', ['Message: ', ME.message]);
+	      if(~isempty(timeStr)), irf.log('warning',['Got timeStr: ', timeStr]); end
               out.startTT = []; out.endTT = [];
               return
             end
