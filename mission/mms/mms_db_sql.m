@@ -248,8 +248,7 @@ keyboard; % THIS FUNCTION IS NOT FULLY TESTED, MAKE SURE TO MAKE A BACKUP OF THE
       rs = obj.sqlQuery(sql);
       ii = 1;
       while rs.next
-        fileToImport = char(rs.getString('fileNameFullPath'));
-        fileInfo{ii,1} = struct('fileNameFullPath', fileToImport, ...
+        fileInfo{ii, 1} = struct('fileNameFullPath', char(rs.getString('fileNameFullPath')), ...
           'directory', char(rs.getString('directory')), ...
           'dataset', char(rs.getString('dataset')), ...
           'date', char(rs.getString('date')), ...
@@ -284,9 +283,15 @@ keyboard; % THIS FUNCTION IS NOT FULLY TESTED, MAKE SURE TO MAKE A BACKUP OF THE
       % Verify sqlite3 is installed
       [status, ~] = system('command -v sqlite3 >/dev/null 2>&1 || { exit 100; }');
       if(status==100), error('It appears Sqlite3 is not installed/found on your system.'); end
+      % Locate CDF files and add them to FileListToImport
       system(['cd ' obj.databaseDirectory ...
         '; find ./mms[1-4]* -name mms*cdf -type f |  ' ...
         'perl -pe ''s/(\.\/mms.*)(mms[1-4]?_[\w-]*)_(20\d\d\d\d\d\d\d*)_(v[\d\.]*)(.cdf)\n/$1,$2,$3,$4,$_/'' > delme.txt;'...
+        'echo -e ".mod csv\n.import delme.txt FileListToImport\n" | sqlite3 ' obj.databaseFile ';'...
+        'rm ./delme.txt' ]);
+      system(['cd ' obj.databaseDirectory ...
+        '; find ./ancillary/* -type f |  ' ...
+        'perl -pe ''s/(\.\/ancillary\/mms.*)(MMS[1-4]?_[\w-]*)_(20\d\d\d\d\d_20\d\d\d\d\d)\.(V\d\d)\n/$1,$2,$3,$4,$_/'' > delme.txt;'...
         'echo -e ".mod csv\n.import delme.txt FileListToImport\n" | sqlite3 ' obj.databaseFile ';'...
         'rm ./delme.txt' ]);
     end
@@ -326,7 +331,6 @@ keyboard; % THIS FUNCTION IS NOT FULLY TESTED, MAKE SURE TO MAKE A BACKUP OF THE
       
       % filesToImport contains only new files to be added into the database
       obj.insertPrepToFileList(filesToImport);
-      
       toImport = [];
       for ii = length(filesToImport):-1:1
         % Read and process each new file add to VarIndex list
@@ -488,6 +492,9 @@ keyboard; % THIS FUNCTION IS NOT FULLY TESTED, MAKE SURE TO MAKE A BACKUP OF THE
       searchVariable = false;
       searchDataset = false;
       args = varargin;
+      if( numel(args) == 0)
+        irf.log('warning', 'Searching database without any criteria will take long time and return a huge list.');
+      end
       while numel(args)>=2
         switch lower(args{1})
           case {'tint'}
@@ -645,57 +652,130 @@ keyboard; % THIS FUNCTION IS NOT FULLY TESTED, MAKE SURE TO MAKE A BACKUP OF THE
         irf.log('warning', errStr); warning(errStr);
         out = []; return;
       end
-      irf.log('debug',['Reading: ' cdfFileName]);
-      try
-        inf = spdfcdfinfo(cdfFileName, 'VARSTRUCT', true);
-      catch ME
-        errStr = ['Cannot get file information from: ', cdfFileName];
-        irf.log('warning', errStr); irf.log('warning', ME.message);
-        warning(errStr); out = []; return;
-      end
-      dep = inf.VariableAttributes.DEPEND_0;
-      [tVarNames, ~, IC] = unique(dep(:,2));
-      indGoodTVarName = 1:numel(tVarNames);
-      iBadTVarName = ~ismember(tVarNames, inf.Variables.Name); % time variable should be a variable in the cdf file
-      if any(iBadTVarName)
-        irf.log('notice',['!! bad time variable names in DEPEND_O: ' tVarNames{iBadTVarName}]);
-        indGoodTVarName(iBadTVarName) = [];
-        tVarNames{iBadTVarName} = [];
-      end
-      isBadTime = cellfun(@(x) ~any(strcmpi({'tt2000', 'epoch', 'epoch16'}, ...
-        inf.Variables.DataType(strcmp(inf.Variables.Name, x)))), ...
-        tVarNames(indGoodTVarName));
-      if any(isBadTime)
-        irf.log('notice',['! not accepted time format for time DEPEND_O variable: ' ...
-          tVarNames{indGoodTVarName(isBadTime)}]);
-        indGoodTVarName(isBadTime) = [];
-      end
-      try
-        epoch = spdfcdfread(cdfFileName, 'DataOnly', true, ...
-          'Variable', tVarNames(indGoodTVarName), ...
-          'KeepEpochAsIs', true);
-      catch ME
-        errStr = ['Cannot read Epochs from file: ', cdfFileName];
-        irf.log('warning', errStr); irf.log('warning', ME.message);
-        warning(errStr); out = []; return;
-      end
-      if isinteger(epoch), epoch = {epoch}; end % only one time variable
-      for iT = numel(indGoodTVarName):-1:1
-        out(iT).epochVarName = tVarNames{iT};
-        out(iT).varNames = dep(IC == iT,1);
-        startTT = min(epoch{indGoodTVarName(iT)});
-        endTT   = max(epoch{indGoodTVarName(iT)});
-        if any(startTT) && any(endTT) && ...
-            (min(startTT,endTT) < int64(479390467184000000)...% '2015-03-12T00:00:00.000000000'
-            ||  max(startTT,endTT) > int64(1262260869184000000)),%'2040-01-01T00:00:00.000000000'
-          out(iT).startTT = NaN;
-          out(iT).endTT   = NaN;
-          irf.log('notice',['!!! In file:', cdfFileName]);
-          irf.log('notice',['!!! ', out(iT).epochVarName, ' has startTT = ', ...
-            num2str(startTT), ' and endTT = ', num2str(endTT)]);
-        else
-          out(iT).startTT = startTT;
-          out(iT).endTT   = endTT;
+      [~, ~, ext] = fileparts(cdfFileName);
+      if(strcmpi(ext, '.cdf'))
+        % CDF file
+        irf.log('debug',['Reading: ' cdfFileName]);
+        try
+          inf = spdfcdfinfo(cdfFileName, 'VARSTRUCT', true);
+        catch ME
+          errStr = ['Cannot get file information from: ', cdfFileName];
+          irf.log('warning', errStr); irf.log('warning', ME.message);
+          warning(errStr); out = []; return;
+        end
+        dep = inf.VariableAttributes.DEPEND_0;
+        [tVarNames, ~, IC] = unique(dep(:,2));
+        indGoodTVarName = 1:numel(tVarNames);
+        iBadTVarName = ~ismember(tVarNames, inf.Variables.Name); % time variable should be a variable in the cdf file
+        if any(iBadTVarName)
+          irf.log('notice',['!! bad time variable names in DEPEND_O: ' tVarNames{iBadTVarName}]);
+          indGoodTVarName(iBadTVarName) = [];
+          tVarNames{iBadTVarName} = [];
+        end
+        isBadTime = cellfun(@(x) ~any(strcmpi({'tt2000', 'epoch', 'epoch16'}, ...
+          inf.Variables.DataType(strcmp(inf.Variables.Name, x)))), ...
+          tVarNames(indGoodTVarName));
+        if any(isBadTime)
+          irf.log('notice',['! not accepted time format for time DEPEND_O variable: ' ...
+            tVarNames{indGoodTVarName(isBadTime)}]);
+          indGoodTVarName(isBadTime) = [];
+        end
+        try
+          epoch = spdfcdfread(cdfFileName, 'DataOnly', true, ...
+            'Variable', tVarNames(indGoodTVarName), ...
+            'KeepEpochAsIs', true);
+        catch ME
+          errStr = ['Cannot read Epochs from file: ', cdfFileName];
+          irf.log('warning', errStr); irf.log('warning', ME.message);
+          warning(errStr); out = []; return;
+        end
+        if isinteger(epoch), epoch = {epoch}; end % only one time variable
+        for iT = numel(indGoodTVarName):-1:1
+          out(iT).epochVarName = tVarNames{iT};
+          out(iT).varNames = dep(IC == iT,1);
+          startTT = min(epoch{indGoodTVarName(iT)});
+          endTT   = max(epoch{indGoodTVarName(iT)});
+          if any(startTT) && any(endTT) && ...
+              (min(startTT,endTT) < int64(479390467184000000)...% '2015-03-12T00:00:00.000000000'
+              ||  max(startTT,endTT) > int64(1262260869184000000)),%'2040-01-01T00:00:00.000000000'
+            out(iT).startTT = NaN;
+            out(iT).endTT   = NaN;
+            irf.log('notice',['!!! In file:', cdfFileName]);
+            irf.log('notice',['!!! ', out(iT).epochVarName, ' has startTT = ', ...
+              num2str(startTT), ' and endTT = ', num2str(endTT)]);
+          else
+            out(iT).startTT = startTT;
+            out(iT).endTT   = endTT;
+          end
+        end
+      else
+        % ANCILLARY file
+        irf.log('debug', ['Reading ancillary file: ', cdfFileName]);
+        info = regexp(cdfFileName, '(\.\/ancillary\/mm.*)MM.*_(?<dataset>\w{4,6})_(20\d{5}_20\d{5})\.(V\d{2})', 'names');
+        switch lower(info.dataset)
+          case 'defatt'
+            out.epochVarName = 'Time';
+            out.varNames = {'wphase', 'zra', 'zdec', 'zphase', 'lra', ...
+              'ldec', 'lphase', 'pra', 'pdec', 'pphase'};
+            try
+              [status, timeStr] = unix(['grep -i -A1 COMMENT ', cdfFileName,' | awk ''END {print $1}''']);
+              if(~status)
+                time = sscanf(timeStr, '%d-%dT%d:%d:%d.%d');
+                out.startTT = irf_time([time(1), time(2), time(3), time(4), time(5), time(6), 0, 0], 'doy8>ttns');
+              end
+              [status, timeStr] = unix(['tail -n3 ', cdfFileName,' | grep -vi DATA_STOP | awk ''END {print $1}''']);
+              if(~status)
+                time = sscanf(timeStr, '%d-%dT%d:%d:%d.%d');
+                out.endTT = irf_time([time(1), time(2), time(3), time(4), time(5), time(6), 0, 0], 'doy8>ttns');
+              end
+            catch ME
+              irf.log('warning', ['Failed to read: ', cdfFileName]);
+              irf.log('warning', ['Message: ', ME.message]);
+              out.startTT = []; out.endTT = [];
+              return
+            end
+          case 'defeph'
+            out.epochVarName = 'Time';
+            out.varNames = {'r', 'v'};
+            try
+              [status, timeStr] = unix(['grep -i -A1 Km/Sec ', cdfFileName,' | awk ''END {print $1}''']);
+              if(~status)
+                time = sscanf(timeStr, '%d-%d/%d:%d:%d.%d');
+                out.startTT = irf_time([time(1), time(2), time(3), time(4), time(5), time(6), 0, 0], 'doy8>ttns');
+              end
+              [status, timeStr] = unix(['tail -n1 ', cdfFileName,' | awk ''{print $1}''']);
+              if(~status)
+                time = sscanf(timeStr, '%d-%d/%d:%d:%d.%d');
+                out.endTT = irf_time([time(1), time(2), time(3), time(4), time(5), time(6), 0, 0], 'doy8>ttns');
+              end
+            catch ME
+              irf.log('warning', ['Failed to read: ', cdfFileName]);
+              irf.log('warning', ['Message: ', ME.message]);
+              out.startTT = []; out.endTT = [];
+              return
+            end
+          case {'defq', 'predq'}
+            out.epochVarName = 'Time';
+            out.varNames = {'quality', 'scale'};
+            try
+              [status, timeStr] = unix(['grep -i -A1 Epoch ', cdfFileName,' | awk ''END {print $1}''']);
+              if(~status)
+                time = sscanf(timeStr, '%d-%d/%d:%d:%d.%d');
+                out.startTT = irf_time([time(1), time(2), time(3), time(4), time(5), time(6), 0, 0], 'doy8>ttns');
+              end
+              [status, timeStr] = unix(['tail -n1 ', cdfFileName,' | awk ''{print $1}''']);
+              if(~status)
+                time = sscanf(timeStr, '%d-%d/%d:%d:%d.%d');
+                out.endTT = irf_time([time(1), time(2), time(3), time(4), time(5), time(6), 0, 0], 'doy8>ttns');
+              end
+            catch ME
+              irf.log('warning', ['Failed to read: ', cdfFileName]);
+              irf.log('warning', ['Message: ', ME.message]);
+              out.startTT = []; out.endTT = [];
+              return
+            end
+          otherwise
+            irf.log('critical', ['Not yet implemented : ', dataset]);
         end
       end
     end
