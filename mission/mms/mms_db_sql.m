@@ -235,7 +235,6 @@ keyboard; % THIS FUNCTION IS NOT FULLY TESTED, MAKE SURE TO MAKE A BACKUP OF THE
       irf.log('warning', 'Clearing up unused files (i.e. files without children)');
       sql = ['DELETE FROM FileList WHERE idFILE NOT IN ', ...
         '(SELECT idFile FROM VarIndex);'];
-keyboard; % THIS FUNCTION IS NOT FULLY TESTED, MAKE SURE TO MAKE A BACKUP OF THE DB FILE
       obj.sqlUpdate(sql);
     end
 
@@ -317,14 +316,15 @@ keyboard; % THIS FUNCTION IS NOT FULLY TESTED, MAKE SURE TO MAKE A BACKUP OF THE
         if rs.next % file with same dataset and date exists, compare versions
           existingVersion = char(rs.getString('version'));
           if is_version_larger(filesToImport{ii}.version(2:end),existingVersion(2:end))
-            irf.log('notice',['File with older version ' existingVersion ' exists!']);
+            irf.log('notice',['File ', filesToImport{ii}.fileNameFullPath ,...
+              ' superseeds previous version ' existingVersion]);
             if(isempty(IdFilesToDelete))
               IdFilesToDelete = char(rs.getString('idFile'));
             else
               IdFilesToDelete = [IdFilesToDelete ', ',char(rs.getString('idFile'))]; %#ok<AGROW>
             end
           else
-            irf.log('notice',['Not importing version ', filesToImport{ii}.version, ...
+            irf.log('notice',['Not importing ', filesToImport{ii}.fileNameFullPath, ...
               ' because file with newer version ', existingVersion, ' exists!']);
             filesToImport(ii)=[];
             continue
