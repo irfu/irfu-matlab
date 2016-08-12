@@ -233,7 +233,7 @@ keyboard; % THIS FUNCTION IS NOT FULLY TESTED, MAKE SURE TO MAKE A BACKUP OF THE
       % files to the parent table first, then read them one by one and
       % import the read result into the child tables in a batch.
       irf.log('warning', 'Clearing up unused files (i.e. files without children)');
-      sql = ['DELETE FROM FileList WHERE idFILE NOT IN ', ...
+      sql = ['DELETE FROM FileList WHERE idFile NOT IN ', ...
         '(SELECT idFile FROM VarIndex);'];
       obj.sqlUpdate(sql);
     end
@@ -342,7 +342,7 @@ keyboard; % THIS FUNCTION IS NOT FULLY TESTED, MAKE SURE TO MAKE A BACKUP OF THE
           status = 0;
           % Clean up..
           irf.log('warning', ['Something went wrong reading file: ',filesToImport{ii}.fileNameFullPath]);
-          sql = ['DELETE FROM FileList WHERE fileNameFullPath = ', filesToImport{ii}.fileNameFullPath];
+          sql = ['DELETE FROM FileList WHERE fileNameFullPath = "', filesToImport{ii}.fileNameFullPath, '"'];
           obj.sqlUpdate(sql);
           filesToImport(ii) = [];
           continue;
@@ -742,8 +742,8 @@ keyboard; % THIS FUNCTION IS NOT FULLY TESTED, MAKE SURE TO MAKE A BACKUP OF THE
               irf.log('warning', ['Failed to read: ', cdfFileName]);
               irf.log('warning', ['Message: ', ME.message]);
 	      if(~isempty(timeStr)), irf.log('warning',['Got timeStr: ', timeStr]); end
-              out.startTT = []; out.endTT = [];
-              return
+              out = [];
+	      return
             end
           case 'defeph'
             out.epochVarName = 'Time';
@@ -763,7 +763,7 @@ keyboard; % THIS FUNCTION IS NOT FULLY TESTED, MAKE SURE TO MAKE A BACKUP OF THE
               irf.log('warning', ['Failed to read: ', cdfFileName]);
               irf.log('warning', ['Message: ', ME.message]);
 	      if(~isempty(timeStr)), irf.log('warning',['Got timeStr: ', timeStr]); end
-              out.startTT = []; out.endTT = [];
+              out = [];
               return
             end
           case {'defq', 'predq'}
@@ -772,6 +772,11 @@ keyboard; % THIS FUNCTION IS NOT FULLY TESTED, MAKE SURE TO MAKE A BACKUP OF THE
             try
               [status, timeStr] = unix(['head -n100 ', cdfFileName, ' | grep -i -A1 Epoch | awk ''END {print $1}''']);
               if(~status)
+	        if(strcmp(strtrim(timeStr), 'No')) % Some DEFQ and PREDQ have been created with one single line: "No data"
+		  irf.log('debug', ['No data in file: ', cdfFileName]);
+		  out = [];
+		  return
+		end
                 time = sscanf(timeStr, '%d-%d/%d:%d:%d.%d');
                 out.startTT = irf_time([time(1), time(2), time(3), time(4), time(5), time(6), 0, 0], 'doy8>ttns');
               end
@@ -784,7 +789,7 @@ keyboard; % THIS FUNCTION IS NOT FULLY TESTED, MAKE SURE TO MAKE A BACKUP OF THE
               irf.log('warning', ['Failed to read: ', cdfFileName]);
               irf.log('warning', ['Message: ', ME.message]);
 	      if(~isempty(timeStr)), irf.log('warning',['Got timeStr: ', timeStr]); end
-              out.startTT = []; out.endTT = [];
+              out = [];
               return
             end
           otherwise
