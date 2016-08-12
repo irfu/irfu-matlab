@@ -224,6 +224,7 @@ classdef mms_db_sql < handle
         '(SELECT fileNameFullPath FROM FileListToImport))'];
 keyboard; % THIS FUNCTION IS NOT FULLY TESTED, MAKE SURE TO MAKE A BACKUP OF THE DB FILE
       obj.sqlUpdate(sql);
+      obj.sqlUpdate('DELETE FROM FileListToImport');
     end
 
     function clear_unused_files(obj)
@@ -283,6 +284,8 @@ keyboard; % THIS FUNCTION IS NOT FULLY TESTED, MAKE SURE TO MAKE A BACKUP OF THE
       % Verify sqlite3 is installed
       [status, ~] = system('command -v sqlite3 >/dev/null 2>&1 || { exit 100; }');
       if(status==100), error('It appears Sqlite3 is not installed/found on your system.'); end
+      % Clear up any old files still in FileListToImport.
+      obj.sqlUpdate('DELETE FROM FileListToImport');
       % Locate CDF files and add them to FileListToImport
       system(['cd ' obj.databaseDirectory ...
         '; find ./mms[1-4]* -name mms*cdf -type f |  ' ...
