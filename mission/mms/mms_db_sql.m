@@ -487,9 +487,16 @@ keyboard; % THIS FUNCTION IS NOT FULLY TESTED, MAKE SURE TO MAKE A BACKUP OF THE
       % FIND_FILES(obj,'varName', variableName, ..)
       % FIND_FILES(obj,'dataset', datasetName, ..)
       % FIND__FILES(obj,'tint', tint, ..)
+      %  Note: "variableName" and "datasetName" values are case sensitive.
       %  time interval can be UTC string or GenericTimeArray
       %  startTT = int64(0);
       %  endTT = intmax('int64');
+      % Example: List all defatt files (with zphase) from MMS 3 from
+      %          interval 2016-01-01T00:00 to 2016-01-03T00:00
+      %  m = mms_db_sql('/data/mms/index.db'); % Open DB
+      %  Tint = irf.tint('2016-01-01T00:00:00.00Z/2016-01-03T00:00:00.00Z');
+      %  filelist = m.find_files('tint', Tint, 'dataset', 'MMS1_DEFATT');
+      %
       fileNames = cell(0);
       searchTint = false;
       searchVariable = false;
@@ -547,7 +554,7 @@ keyboard; % THIS FUNCTION IS NOT FULLY TESTED, MAKE SURE TO MAKE A BACKUP OF THE
       % find files
       sql = ['SELECT DISTINCT fileNameFullPath FROM FileList ', ...
         'LEFT JOIN VarIndex USING (idFile) ', ...
-        'WHERE ', sqlDataset, sqlTime, ' ORDER BY startTT ASC'];
+        'WHERE ', sqlDataset, sqlTime, ' ORDER BY idDataset ASC, startTT ASC'];
       rs = obj.sqlQuery(sql);
       while rs.next
         fileNames{end+1, 1} = char(rs.getString('fileNameFullPath')); %#ok<AGROW>
