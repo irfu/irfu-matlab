@@ -352,6 +352,7 @@ keyboard; % THIS FUNCTION IS NOT FULLY TESTED, MAKE SURE TO MAKE A BACKUP OF THE
         for iDataset = 1:numel(out)
           currOut(iDataset).epochVarName = out(iDataset).epochVarName;
           currOut(iDataset).varNames = out(iDataset).varNames;
+          currOut(iDataset).dataset = filesToImport{ii}.dataset;
         end
 
         if( ~exist('prevOut', 'var') || ~isequal(prevOut, currOut) )
