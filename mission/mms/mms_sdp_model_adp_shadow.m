@@ -15,7 +15,7 @@ function modelOut = mms_sdp_model_adp_shadow(dce,phase,signals)
 % can do whatever you want with this stuff. If we meet some day, and you think
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
-
+global MMS_CONST
 STEPS_PER_DEG=10;
 STEP_SPINS = 30;
 
@@ -29,12 +29,26 @@ phaseTmpWrp = mod(phaseTmp,360);
 for iSig = 1:length(signals)
   sig = signals{iSig};
   switch sig
-    case 'e12', expShadow = 150 + [0 180];
-    case 'e34', expShadow = 60 + [0 180];
+    % Phaseshift.pX = 0 rad when probe X is sunward, i.e. in shade pi rad later
+    case 'e12', expShadow = [MMS_CONST.Phaseshift.p1, MMS_CONST.Phaseshift.p2] + pi;
+    case 'e34', expShadow = [MMS_CONST.Phaseshift.p3, MMS_CONST.Phaseshift.p4] + pi;
+    case 'p123'
+      expShadow = [MMS_CONST.Phaseshift.p1, MMS_CONST.Phaseshift.p2, MMS_CONST.Phaseshift.p3] + pi; % p4 lost
+      sig = 'e34';
+    case 'p124'
+      expShadow = [MMS_CONST.Phaseshift.p1, MMS_CONST.Phaseshift.p2, MMS_CONST.Phaseshift.p4] + pi; % p3 lost
+      sig = 'e34';
+    case 'p134'
+      expShadow = [MMS_CONST.Phaseshift.p1, MMS_CONST.Phaseshift.p3, MMS_CONST.Phaseshift.p4] + pi; % p2 lost
+      sig = 'e12';
+    case 'p234'
+      expShadow = [MMS_CONST.Phaseshift.p2, MMS_CONST.Phaseshift.p3, MMS_CONST.Phaseshift.p4] + pi; % p1 lost
+      sig = 'e12';
     otherwise,
       errS = 'unrecognized SIG';
       irf.log('critical',errS), error(errS)
   end
+  expShadow = mod(180*expShadow/pi, 360);
   eRes = interp1(epochTmp,double(dce.(sig).data),timeTmp);
   model = zeros(size(phaseTmp));
   

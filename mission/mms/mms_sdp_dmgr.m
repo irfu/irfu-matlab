@@ -838,7 +838,11 @@ classdef mms_sdp_dmgr < handle
           irf.log('critical',errStr); error(errStr);
         end
         irf.log('notice','Removing ADP spikes');
-        model = mms_sdp_model_adp_shadow(DATAC.dce,Phase, {'e12','e34'});
+        if(DATAC.scId == 4 && all(DATAC.dce.time > int64(518981396384000000))) %MMS4 p4 2016-06-12T05:28:48.200Z
+          model = mms_sdp_model_adp_shadow(DATAC.dce, Phase, {'e12', 'p123'});
+        else
+          model = mms_sdp_model_adp_shadow(DATAC.dce,Phase, {'e12','e34'});
+        end
         
         for iSen = 1:min(numel(sensors),2)
           sen = sensors{iSen};
