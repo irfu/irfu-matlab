@@ -347,21 +347,26 @@ keyboard; % THIS FUNCTION IS NOT FULLY TESTED, MAKE SURE TO MAKE A BACKUP OF THE
           filesToImport(ii) = [];
           continue;
         end
-        
+
+        % Extract epochVarName and varNames to be compared between files.
         for iDataset = 1:numel(out)
-          if isempty(out(iDataset).startTT) || out(iDataset).startTT<1000, break; end % energy channels are put as DEPEND_0 for FPI
-          varNames = out(iDataset).varNames;
-          % add dataset to Datasets if needed
-          varNamesStr = strjoin(sort(varNames), ' ');
-          %SEE IF add_var_names can be improved!
-          if( ( ~exist('prevDataset','var') && ~exist('prevVarNames','var') ) || ...
-              ( ~strcmp(prevVarNames, varNamesStr) || ...
-              ~strcmp(prevDataset, filesToImport{ii}.dataset) ) )
+          currOut(iDataset).epochVarName = out(iDataset).epochVarName;
+          currOut(iDataset).varNames = out(iDataset).varNames;
+        end
+
+        if( ~exist('prevOut', 'var') || ~isequal(prevOut, currOut) )
+          % Not the same epochVarNames or varNames as last file, run full
+          % SQL query and insert possible new values.
+          for iDataset = 1:numel(out)
+            if isempty(out(iDataset).startTT) || out(iDataset).startTT<1000, break; end % energy channels are put as DEPEND_0 for FPI
+            % add dataset to Datasets if needed
+            %SEE IF add_var_names can be improved!
             % Not the same as last iteration, possibly new. Make SQL queries
-            obj.add_var_names(filesToImport{ii}.dataset, varNames);
-            prevDataset = filesToImport{ii}.dataset;
-            prevVarNames = varNamesStr;
+            obj.add_var_names(filesToImport{ii}.dataset, out(iDataset).varNames);
           end
+          prevOut = currOut;
+        else
+          % Same as previous, no need to run time consuming SQL query/insert
         end
         
         filesToImport{ii}.cdfOut = out;
@@ -772,11 +777,11 @@ keyboard; % THIS FUNCTION IS NOT FULLY TESTED, MAKE SURE TO MAKE A BACKUP OF THE
             try
               [status, timeStr] = unix(['head -n100 ', cdfFileName, ' | grep -i -A1 Epoch | awk ''END {print $1}''']);
               if(~status)
-	        if(strcmp(strtrim(timeStr), 'No')) % Some DEFQ and PREDQ have been created with one single line: "No data"
-		  irf.log('debug', ['No data in file: ', cdfFileName]);
-		  out = [];
-		  return
-		end
+                if(strcmp(strtrim(timeStr), 'No')) % Some DEFQ and PREDQ have been created with one single line: "No data"
+                  irf.log('debug', ['No data in file: ', cdfFileName]);
+                  out = [];
+                  return
+                end
                 time = sscanf(timeStr, '%d-%d/%d:%d:%d.%d');
                 out.startTT = irf_time([time(1), time(2), time(3), time(4), time(5), time(6), 0, 0], 'doy8>ttns');
               end
