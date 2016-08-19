@@ -4,30 +4,23 @@
 # First created 2016-04-xx
 #
 # The primary purpose of this bash script is to call a MATLAB script.
+# See readme.txt for more information on arguments.
 # See the MATLAB script called for more documentation.
 #
 #
+#
+# NOTE: The script is designed to handle important basic errors, such as
+# 1) Can not find MATLAB executable (not explicitly, but implicitly)
+# 2) MATLAB can not find the MATLAB script.
 # 
-# PARAMETERS: [--developer-bash-settings]   --log <dir>   <Other arguments>
-#
-# --developer-bash-settings : Unofficial flag for using particular settings.
-# --log <dir>               : Path to directory where log file will be created. 
-# <Other arguments>         : Argument parsed in the MATLAB code.
-# NOTE: Only the placement of the first flag --developer-bash-settings is important.
-#
-#
+# NOTE: The script is designed to return the same exit codes as the MATLAB code.
+# 
 # NOTE: The script reads the "--log" parameter value and pipes "all" stdout to a log file. 
 # It also uses a prefix to filter out some stdout lines that are piped to the actual stdout.
 # In addition, a symlink (with a constant filename) to the current log file is created.
 # Overwriting the old symlink might technically not be compliant with the RCS ICD.
 # 
 # NOTE: The script takes stderr and copy it to the log file with a prefix.
-# 
-# NOTE: The script is designed to handle important basic errors, such as
-# 1) Can not find MATLAB executable (not explicitly, but implicitly)
-# 2) MATLAB can not find the MATLAB script.
-# 
-# NOTE: The script is designed to return the same exit codes as the MATLAB code.
 # 
 # 
 # 
@@ -38,7 +31,7 @@
 # 3) can handle stdout from the MATLAB startup process
 # 
 # IMPLEMENTATION NOTE: The same arguments that are passed to this script are passed on to the MATLAB code, including
-# arguments which are unnecessary there, including --log <dir> and --developer-bash-settings.
+# arguments which are unnecessary there, including --log <dir> and --config <file>.
 # PRO (Reasons for):
 # 1) It is best to let as much parameter-parsing (incl. syntax checking) code to be in one place as possible (the MATLAB code).
 # 2) Enable the MATLAB code to print all the command-line parameters in error messages and to the log file.
@@ -52,19 +45,24 @@
 #====================================================================================================
 # QUESTION: If log file already exists, overwrite, amend, or error?
 # PROPOSAL: Better error message when can not find MATLAB_COMMAND. Common error.
+# PROPOSAL: Detect presence of bicas within irfu-matlab (avoid there being two bicas).
 #====================================================================================================
 
 
 
-# Search pattern that determines which stdout (in particular
-# from MATLAB) that is actually piped to stdout.
+# Search pattern that determines which stdout (in particular from MATLAB) that is actually piped to stdout.
 # NOTE: This pattern must match the corresponding prefix used in MATLAB.
 declare -r STDOUT_PATTERN='^STDOUT: '    # NOTE: Regex. Includes "^" = beginning of line.
 
-declare -r STDERR_PREFIX='STDERR: '   # NOTE: Not a regex!
+# Prefix added to stdout when it is added to the log.
+declare -r STDERR_PREFIX='STDERR: '   # NOTE: Not a regex (but will code will misbehave for regex commands)!
 
-# Name of script such as it is called from inside MATLAB, i.e. WITHOUT file extension.
+# Name of script such as it is called from inside MATLAB, i.e. WITHOUT file extension ".m".
 declare -r MATLAB_SCRIPT_NAME="bicas"
+
+# The two alternatives for where the root irfu-matlab directory may be relative to the BICAS root directory.
+declare -r INNER_IRFUMATLAB_RELATIVE_PATH="lib/irfu-matlab"    # Needed to detect the presence/absence of the directory.
+declare -r OUTER_IRFUMATLAB_RELATIVE_PATH="../../.."
 
 
 
@@ -81,12 +79,12 @@ for ((i=1; i<$#; i++))      # NOTE: Intentionally omit the last argument.
 do
     if [[ "${!i}" == "--log" ]]
     then
-        let j=i+1
-        declare -r log_dir="${!j}"
+        let i=i+1
+        declare -r log_dir="${!i}"
     elif [[ "${!i}" == "--config" ]]
     then
-        let j=i+1
-        declare -r config_file_argument="${!j}"
+        let i=i+1
+        declare -r config_file_argument="${!i}"
     fi
 done
 
@@ -99,11 +97,22 @@ done
 #===================================================================================
 # Find (absolute) paths by using the path to this executable + relative paths.
 # Assumes that this executable is located under a subdirectory of $BICAS_ROOT_PATH.
+#
+# NOTE: Some paths might not exist on disk and one can not use readlink on non-existent paths.
 #===================================================================================
 temp=$(dirname "$0")/..
 declare -r BICAS_ROOT_PATH=$(readlink -f "$temp")
-declare -r BICAS_MATLAB_CODE_SRC_PATH="${BICAS_ROOT_PATH}/src/"
 declare -r DEFAULT_CONFIG_FILE="${BICAS_ROOT_PATH}/config/bicas.conf"
+declare -r INNER_IRFUMATLAB_PATH="${BICAS_ROOT_PATH}/${INNER_IRFUMATLAB_RELATIVE_PATH}"   
+declare -r OUTER_IRFUMATLAB_PATH="${BICAS_ROOT_PATH}/${OUTER_IRFUMATLAB_RELATIVE_PATH}"
+
+# Set IRFUMATLAB_PATH : Path to irfu-matlab directory.
+# The value is selected depending on the directory structure used.
+if [[ -d "$INNER_IRFUMATLAB_PATH" ]] ; then
+    declare -r IRFUMATLAB_PATH="$INNER_IRFUMATLAB_PATH"
+else
+    declare -r IRFUMATLAB_PATH="$OUTER_IRFUMATLAB_PATH"
+fi
 
 
 
@@ -166,8 +175,10 @@ fi
 # Determine config file and run it
 #==================================
 if [[ -z "$config_file_argument" ]] ; then
+    # CASE: No config file argument set (or it is an empty string).
     config_file="$DEFAULT_CONFIG_FILE"
 else
+    # CASE: Config file argument set.
     # Canonical paths are useful for error messages/debugging on paths with symbolic links.
     config_file=$(readlink -f "$config_file_argument")
 fi
@@ -175,25 +186,23 @@ if [[ ! -f "$config_file" ]] ; then
     echo "Can not find configuration file \"$config_file\"." >> /dev/stderr
     exit 1
 fi
-source "$config_file"   # Sets IRFU_MATLAB_PATH, MATLAB_COMMAND.
-declare -r IRFU_MATLAB_PATH=$(cd "$BICAS_ROOT_PATH" ; readlink -f "$IRFU_MATLAB_PATH")   # NOTE: Changes value of the same variable.
+source "$config_file"   # Sets MATLAB_COMMAND.
 
 
 
-# DEBUG
-# echo log_dir  = "$log_dir"
-# echo log_file = "$log_file"
-# echo log_file_symlink = "$log_file_symlink"
+
 
 
 
 # DEBUG: Always piped to the actual stdout. Useful for debugging.
-# echo "BICAS_ROOT_PATH             = \"$BICAS_ROOT_PATH\""
-# echo "BICAS_MATLAB_CODE_SRC_PATH  = \"$BICAS_MATLAB_CODE_SRC_PATH\""
-# echo "MATLAB_COMMAND              = \"$MATLAB_COMMAND\""
-# echo "IRFU_MATLAB_PATH            = \"$IRFU_MATLAB_PATH\""
-# echo "config_file                 = \"$config_file\""
-# echo "log_file                    = \"$log_file\""
+#echo log_dir           = "$log_dir"
+#echo log_file          = "$log_file"
+#echo log_file_symlink  = "$log_file_symlink"
+#echo "BICAS_ROOT_PATH  = \"$BICAS_ROOT_PATH\""
+#echo "MATLAB_COMMAND   = \"$MATLAB_COMMAND\""
+#echo "IRFUMATLAB_PATH  = \"$IRFUMATLAB_PATH\""
+#echo "config_file      = \"$config_file\""
+#echo "log_file         = \"$log_file\""
 
 
 
@@ -201,16 +210,15 @@ echo "Command-line arguments: $@" >> "$log_file"
 
 
 
-# Any call to this function should appropriately pipe stdout, stderr.
-# Therefore there should be no need to pipe inside it.
+# Any CALL to this function should appropriately pipe stdout, stderr to log file.
+# Therefore code inside of it does not need to do this.
 launch_matlab_code() {
 
-    echo "BICAS_ROOT_PATH             = \"$BICAS_ROOT_PATH\""
-    echo "BICAS_MATLAB_CODE_SRC_PATH  = \"$BICAS_MATLAB_CODE_SRC_PATH\""
-    echo "MATLAB_COMMAND              = \"$MATLAB_COMMAND\""
-    echo "IRFU_MATLAB_PATH            = \"$IRFU_MATLAB_PATH\""
-    echo "config_file                 = \"$config_file\""
-    echo "log_file                    = \"$log_file\""
+    echo "BICAS_ROOT_PATH  = \"$BICAS_ROOT_PATH\""
+    echo "MATLAB_COMMAND   = \"$MATLAB_COMMAND\""
+    echo "IRFUMATLAB_PATH  = \"${IRFUMATLAB_PATH}\""
+    echo "config_file      = \"$config_file\""
+    echo "log_file         = \"$log_file\""
 
 
 
@@ -219,7 +227,7 @@ launch_matlab_code() {
     # can interpret as a list of arguments.
     # NOTE: Can not handle arguments containing the character single quote.
     #=======================================================================
-    matlab_arg_list=""
+    local matlab_arg_list=""
     for arg in "$@"
     do
         if [[ -z "$matlab_arg_list" ]]   # if string is empty
@@ -252,12 +260,14 @@ launch_matlab_code() {
     # 
     # NOTE: Do not change directory, so that the current working directory is the same
     # in MATLAB as here. This is necessary for MATLAB code to correctly interpret relative paths (arguments).
+    # NOTE: The irfu-matlab code itself adds subdirectories to irfu-matlab/. "genpath is therefor not required.
     #=============================================================================
     echo "Launching MATLAB, using \"${MATLAB_COMMAND}\"."
     "${MATLAB_COMMAND}" -nodisplay -r "\
         try;\
-            addpath(genpath('${IRFU_MATLAB_PATH}'),           '-begin');\
-            addpath(genpath('${BICAS_MATLAB_CODE_SRC_PATH}'), '-begin');\
+            addpath(genpath('${BICAS_ROOT_PATH}/src'), '-begin');\
+            addpath(genpath('${BICAS_ROOT_PATH}/lib'), '-begin');\
+            addpath(        '${IRFUMATLAB_PATH}',      '-begin');\
             error_code = $MATLAB_SCRIPT_NAME($matlab_arg_list);\
             quit(error_code);\
         catch e;\
@@ -266,7 +276,7 @@ launch_matlab_code() {
             fprintf(2, msg);\
             quit(1);\
         end"
-    matlab_error_code=$?
+    local matlab_error_code=$?
     echo "Bash launch function: matlab_error_code = $matlab_error_code"    # NOTE: Printed to stdout ==> Piped to log file.
     
     
@@ -289,11 +299,14 @@ log_stderr() {
     shift
     #===========================================================================================================================
     # The functionality requires some bash tricks:
-    # 1) One can only pipe stdout and "tee -a" (which copies stdout to file) only works on stdout.
-    #    Therefore switches stderr and stdout and pipes. Then, outside that shell (the brackets), switches them back again.
-    # 2) We want function to return the error code of the first, innermost command. Must therefore exit inner shell with
+    # 1) One can only pipe stdout (not stderr) and one can only "copy" stdout (not stderr) to a file with "tee -a".
+    #    Therefore the code switches stderr and stdout with 3>&1 1>&2 2>&3 and then pipes and "copies" it with "tee -a".
+    #    After that, outside that shell (the brackets), switches them back again.
+    # 2) We want the function to return the error code of the first, innermost command. Must therefore exit inner shell with
     #    exit ${PIPESTATUS[0]} and then the whole function with it again.
     # 
+    # NOTE: $STDERR_PREFIX is added to stderr and is then removed again.
+    #
     # tee options:
     #        -a, --append
     #               append to the given FILEs, do not overwrite
