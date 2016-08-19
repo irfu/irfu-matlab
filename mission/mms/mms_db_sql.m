@@ -383,7 +383,7 @@ keyboard; % THIS FUNCTION IS NOT FULLY TESTED, MAKE SURE TO MAKE A BACKUP OF THE
           toImport{1} = filesToImport{ii};
         else
           toImport{end+1} = filesToImport{ii}; %#ok<AGROW>
-          if( numel(toImport) >= 1000)
+          if( numel(toImport) >= 10000)
             obj.insertPrepToVarIndex(toImport);
             toImport = [];
           end
