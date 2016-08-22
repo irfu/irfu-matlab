@@ -63,7 +63,7 @@ classdef mms_db_cache<handle
       if (obj.timeout>0) && (now() > obj.loaded(idx) + obj.timeout/86400)
         obj.purge(), return
       end
-      res = obj.data(idx);
+      res = obj.data{idx};
     end
     
     function add_entry(obj,key,dataEntry)
@@ -77,12 +77,12 @@ classdef mms_db_cache<handle
         if any(idx), return, end % file is already there
       end
       if isempty(obj.names)
-        obj.loaded = now(); obj.names = {key}; obj.data = dataEntry;
+        obj.loaded = now(); obj.names = {key}; obj.data = {dataEntry};
         return
       end
       obj.loaded = [obj.loaded now()];
       obj.names = [obj.names {key}];
-      obj.data = [obj.data dataEntry];
+      obj.data = [obj.data {dataEntry}];
       % check if we did not exceed cacheSizeMax
       cacheTmp = obj.data; w = whos('cacheTmp'); t0 = now(); %#ok<NASGU>
       while w.bytes > obj.cacheSizeMax*1024*1024
