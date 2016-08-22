@@ -96,7 +96,7 @@ else
         phi = TSeries(dist.time,dist.depend{1,2});
         theta = dist.depend{1,3};
         polar = theta*pi/180;
-        stepTable = TSeries(dist.time,dist.ancillary.energyStepTable);
+        stepTable = TSeries(dist.time,dist.ancillary.esteptable);
         energy0 = dist.ancillary.energy0;
         energy1 = dist.ancillary.energy1;
         distunits = dist.units;

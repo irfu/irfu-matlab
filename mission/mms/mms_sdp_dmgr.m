@@ -1388,7 +1388,7 @@ classdef mms_sdp_dmgr < handle
       end
       
       DATAC.probe2sc_pot = ...
-        mms_sdp_dmgr.comp_probe2sc_pot(Dcv,DATAC.CONST,DATAC.scId);
+        mms_sdp_dmgr.comp_probe2sc_pot(Dcv,DATAC.CONST);
       res = DATAC.probe2sc_pot;
     end
     
@@ -1651,10 +1651,10 @@ classdef mms_sdp_dmgr < handle
       end % FIND_ON
     end % COMP_DELTA_OFF
     
-    function probe2sc_pot = comp_probe2sc_pot(Dcv,MMS_CONST,scId)
+    function probe2sc_pot = comp_probe2sc_pot(Dcv,MMS_CONST)
       % COMP_PROBE2SC_POT  compute probe to SC potential
       %
-      % p2sc_pot = MMS_SDP_DMGR.COMP_PROBE2SC_POT(Dcv, MMS_CONST, scId)
+      % p2sc_pot = MMS_SDP_DMGR.COMP_PROBE2SC_POT(Dcv, MMS_CONST)
       % Blank sweeps
       sweepBit = MMS_CONST.Bitmask.SWEEP_DATA;
       Dcv.v1.data = mask_bits(Dcv.v1.data, Dcv.v1.bitmask, sweepBit);
@@ -1662,11 +1662,11 @@ classdef mms_sdp_dmgr < handle
       Dcv.v3.data = mask_bits(Dcv.v3.data, Dcv.v3.bitmask, sweepBit);
       Dcv.v4.data = mask_bits(Dcv.v4.data, Dcv.v4.bitmask, sweepBit);
       
-      % Probe 4 bias failure 2016-06-12T05:28:48.200Z
-      if( scId ==4 && Dcv.time(end)>= int64(518981396384000000) )
-        Dcv.v4.data(Dcv.time>=int64(518981396384000000)) = NaN;
-      end
-
+      % Probe 4 bias failure
+      badBias = MMS_CONST.Bitmask.BAD_BIAS;
+      Dcv.v3.data = mask_bits(Dcv.v3.data, Dcv.v4.bitmask, badBias);
+      Dcv.v4.data = mask_bits(Dcv.v4.data, Dcv.v4.bitmask, badBias);
+      
       % Compute average of all spin plane probes, ignoring data identified
       % as bad (NaN).
       avPot = irf.nanmean([Dcv.v1.data, Dcv.v2.data, Dcv.v3.data, Dcv.v4.data], 2);

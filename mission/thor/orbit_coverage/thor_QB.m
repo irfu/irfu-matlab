@@ -28,13 +28,16 @@ if isa(rTHOR,'TSeries');
   Time = rTHOR.time;
   xTHOR = rTHOR.x.data;
   yTHOR = rTHOR.y.data;
+  zTHOR = rTHOR.z.data;
   if strcmp(rTHOR.units,'km') || rTHOR.data(end,1) > 100; 
     xTHOR = xTHOR/units.RE*1e3; % km->RE
     yTHOR = yTHOR/units.RE*1e3; % km->RE
+    zTHOR = zTHOR/units.RE*1e3; % km->RE
   end
 else
   xTHOR = rTHOR(:,1);
   yTHOR = rTHOR(:,2);
+  zTHOR = rTHOR(:,3);
 end
 if isa(B,'TSeries'); 
   Time = B.time;
@@ -47,52 +50,68 @@ else
   By = B(:,2);
   Bz = B(:,3);
 end
-if 0 % Normalize magnetic field
+if 1 % Normalize magnetic field
   Bnorm = sqrt(Bx.^2+By.^2+0*Bz.^2);
   Bx = Bx./Bnorm;
   By = By./Bnorm;
   Bz = Bz./Bnorm;
 end
 
-  
+% THOR position in spherical coordinates
+thetaTHOR = atand(zTHOR./yTHOR);
+rTHOR = sqrt(yTHOR.^2+zTHOR.^2);
+
 % Bowshock model
-fy = @(x,R0) sqrt(0.04*(x-R0).^2-45.3*(x-R0)); % original F/G model adds rstandoff^2=645
-fx = @(y,R0) 0.5*45.3/0.04-sqrt((0.5*45.3/0.04)^2+y.^2/0.04)+R0;
+% Spherical coordinates, r,z (z=x)
+fr = @(x,R0) sqrt(0.04*(x-R0).^2-45.3*(x-R0));
+fx = @(r,R0) 0.5*45.3/0.04-sqrt((0.5*45.3/0.04)^2+r.^2/0.04)+R0;
 
 % First resample THORs location to the bowshock location
-newX = fx(yTHOR,R0);
-newY = fy(newX,R0);
+newX = fx(rTHOR,R0);
+newR = fr(newX,R0);
+newY = newR.*cosd(thetaTHOR);
+newZ = newR.*sind(thetaTHOR);
 
-x1 = newX-0.0001; x2 = newX;
-y1 = (fy(x1,R0)); y2 = (fy(x2,R0));
-y1(yTHOR<0) = -y1(yTHOR<0);
-y2(yTHOR<0) = -y2(yTHOR<0);
+% Using three points: first one is S/C, second one is a shift in the x direction
+% and third one is a shift in the azimuthal direction.
+x1 = newX; y1 = newY; z1 = newZ; r1 = newR;
 
-dx12 = [x2-x1];
-dy12 = [y2-y1];
+x2 = x1 - 0.0001; r2 = fr(x2,R0); 
+y2 = r2.*cosd(thetaTHOR); 
+z2 = r2.*sind(thetaTHOR);
 
-dnorm = sqrt(dx12.^2+dy12.^2);
+theta3 = thetaTHOR - 0.001; x3=x1;
+y3 = r1.*cosd(theta3); 
+z3 = r1.*sind(theta3);
 
-x3 = x1 + dx12*cosd(90)-dy12*sind(90);
-y3 = y1 + dx12*sind(90)+dy12*cosd(90);
+y1(yTHOR<0) = -abs(y1(yTHOR<0));
+y2(yTHOR<0) = -abs(y2(yTHOR<0));
+y3(yTHOR<0) = -abs(y3(yTHOR<0));
+z1(zTHOR<0) = -abs(z1(zTHOR<0));
+z2(zTHOR<0) = -abs(z2(zTHOR<0));
+z3(zTHOR<0) = -abs(z3(zTHOR<0));
 
-dnorm = sqrt(dx12.^2+dy12.^2);
-dx13 = [x3-x1];
-dy13 = [y3-y1];
-dnorm13 = sqrt(dx13.^2+dy13.^2);
-dx13 = dx13./dnorm13;
-dy13 = dy13./dnorm13;
-%aa=acosd(dx23.*dx12+dy23.*dy12);
+% Creating two vectors (on the BS surface) from these three points.
+d21 = [x1-x2, y1-y2, z1-z2]; d23 = [x3-x2, y3-y2, z3-z2];
 
-normdir = irf.ts_vec_xyz(Time,[dx13,dy13,dy13*0]); tsTheta.name = 'Bowshock surface';
+% Cross product gives a vector perpendicular to the surface.
+cr213 =  cross(d21,d23);
 
-dotprod = dx13.*Bx + dy13.*By + 0.*Bz;
-%normmat = repmat(sqrt(dx13.^2+dx13.^2),1,1); 
-theta = acosd(dotprod);%./normmat);%dotprod./normmat);
-%alfaXY = acosd(dx13.*Bx + dy13.*By + 0.*Bz);%dotprod./normmat);
-%alfaZ = atand(Bz./sqrt(Bx.^2+By.^2));
+% Normalizing to unit vector.
+normat = sqrt(cr213(:,1).^2+cr213(:,2).^2+cr213(:,3).^2);
+vecx = cr213(:,1)./normat;
+vecy = cr213(:,2)./normat;
+vecz = cr213(:,3)./normat;
 
-%alfa=alfaXY;
+% Normal vector to the shock's surface at the spacecraft location.
+nvec = [vecx, vecy, vecz];
+normdir = irf.ts_vec_xyz(Time,[nvec(:,1),nvec(:,2),nvec(:,3)]);
+
+% Dot product between normalized B field vector and normal vector.
+dotprod = nvec(:,1).*Bx + nvec(:,2).*By + nvec(:,3).*Bz;
+
+theta = acosd(dotprod);
+
 tsTheta = irf.ts_scalar(Time,theta); tsTheta.name = 'Magnetic field normal angle';
 if doParShock;
   %theta = alfa;
