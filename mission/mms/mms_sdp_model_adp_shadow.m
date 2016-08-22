@@ -1,4 +1,4 @@
-function modelOut = mms_sdp_model_adp_shadow(dce,phase)
+function modelOut = mms_sdp_model_adp_shadow(dce,phase,signals)
 %MMS_SDP_MODEL_ADP_SHADOW  create a model for ADP shadow
 %
 %  modelOut = mms_sdp_model_adp_shadow(dce,phase)
@@ -15,7 +15,7 @@ function modelOut = mms_sdp_model_adp_shadow(dce,phase)
 % can do whatever you want with this stuff. If we meet some day, and you think
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
-
+global MMS_CONST
 STEPS_PER_DEG=10;
 STEP_SPINS = 30;
 
@@ -26,10 +26,29 @@ timeTmp = interp1(phaseUnw,epochTmp,phaseTmp);
 phaseTmp(isnan(timeTmp)) = []; timeTmp(isnan(timeTmp)) = []; 
 phaseTmpWrp = mod(phaseTmp,360);
 
-signals = {'e12','e34'}; expShadow = 150 + [0 180];
 for iSig = 1:length(signals)
-  if iSig==2, expShadow = expShadow - 90; end % p34
   sig = signals{iSig};
+  switch sig
+    % Phaseshift.pX = 0 rad when probe X is sunward, i.e. in shade pi rad later
+    case 'e12', expShadow = [MMS_CONST.Phaseshift.p1, MMS_CONST.Phaseshift.p2] + pi;
+    case 'e34', expShadow = [MMS_CONST.Phaseshift.p3, MMS_CONST.Phaseshift.p4] + pi;
+    case 'p123'
+      expShadow = [MMS_CONST.Phaseshift.p1, MMS_CONST.Phaseshift.p2, MMS_CONST.Phaseshift.p3] + pi; % p4 lost
+      sig = 'e34';
+    case 'p124'
+      expShadow = [MMS_CONST.Phaseshift.p1, MMS_CONST.Phaseshift.p2, MMS_CONST.Phaseshift.p4] + pi; % p3 lost
+      sig = 'e34';
+    case 'p134'
+      expShadow = [MMS_CONST.Phaseshift.p1, MMS_CONST.Phaseshift.p3, MMS_CONST.Phaseshift.p4] + pi; % p2 lost
+      sig = 'e12';
+    case 'p234'
+      expShadow = [MMS_CONST.Phaseshift.p2, MMS_CONST.Phaseshift.p3, MMS_CONST.Phaseshift.p4] + pi; % p1 lost
+      sig = 'e12';
+    otherwise,
+      errS = 'unrecognized SIG';
+      irf.log('critical',errS), error(errS)
+  end
+  expShadow = mod(180*expShadow/pi, 360);
   eRes = interp1(epochTmp,double(dce.(sig).data),timeTmp);
   model = zeros(size(phaseTmp));
   
