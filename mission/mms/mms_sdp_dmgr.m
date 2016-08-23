@@ -172,6 +172,7 @@ classdef mms_sdp_dmgr < handle
           chk_bias_guard()
           chk_aspoc_on()
           chk_sweep_on()
+%          chk_maneuvers()
           chk_sdp_v_vals()
           sensors = {'e12','e34','e56'};
           apply_nom_amp_corr() % AFTER all V values was calculated but before most processing.
@@ -187,6 +188,7 @@ classdef mms_sdp_dmgr < handle
           v_from_e_and_v()
           chk_bias_guard()
           chk_sweep_on()
+%          chk_maneuvers()
           chk_sdp_v_vals()
           sensors = {'e12','e34','e56'};
           apply_nom_amp_corr() % AFTER all V values was calculated but before most processing.
@@ -699,6 +701,48 @@ classdef mms_sdp_dmgr < handle
           irf.log('Warning','No HK_10E file : cannot perform bias/guard check');
         end % if ~isempty(hk_10e)
       end
+      
+      function chk_maneuvers()
+        % Check to see if any maneuvers are planned to occur during the
+        % interval we have data. If so, then bitmask it.
+        if isempty(DATAC.dce),
+          irf.log('warning','Empty DCE, cannot proceed')
+          return
+        end
+        Tint = irf.tint(DATAC.dce.time(1), DATAC.dce.time(end));
+        try
+          maneuvers = MMS_MANEUVERS(Tint, DATAC.scId);
+          scIdStr = sprintf('mms%d', DATAC.scId);
+          if(isfield(maneuvers, scIdStr) && ...
+              ~isempty(maneuvers.(scIdStr)))
+            irf.log('notice', 'Some manuevers found during data interval');
+            bits = MMS_CONST.Bitmask.MANEUVERS;
+            for ii=1:length(maneuvers.(scIdStr))
+              irf.log('notice', ['Bitmasking maneuver: ', ...
+                maneuvers.(scIdStr){ii}.start.toUtc, '/', ...
+                maneuvers.(scIdStr){ii}.stop.toUtc]);
+              ind = (DATAC.dce.time >= maneuvers.(scIdStr){ii}.start.ttns ...
+                & DATAC.dce.time <= maneuvers.(scIdStr){ii}.stop.ttns);
+              for iSen = 1:2:numel(sensors)
+                senA = sensors{iSen};  senB = sensors{iSen+1};
+                senE = ['e' senA(2) senB(2)]; % E-field sensor
+                DATAC.dcv.(senA).bitmask(ind) = ...
+                    bitor(DATAC.dcv.(senA).bitmask(ind), bits);
+                DATAC.dcv.(senB).bitmask(ind) = ...
+                  bitor(DATAC.dcv.(senB).bitmask(ind), bits);
+                DATAC.dce.(senE).bitmask(ind) = ...
+                  bitor(DATAC.dce.(senE).bitmask(ind), bits);
+              end
+            end
+          else
+            irf.log('debug', 'No maneuvers found during data interval.');
+          end
+        catch ME
+          irf.log('warning', 'Failed to read timeline and bitmask maneuvers.');
+          irf.log('warning', ['Got ', ME.identifier, ' with message ', ME.message]);
+          return
+        end
+      end % CHK_MANEUVERS
       
       function chk_sweep_on()
         % Check if sweep is on for all probes
