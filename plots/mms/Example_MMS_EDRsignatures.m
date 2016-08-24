@@ -37,7 +37,7 @@
 % Requires electron distributions with version number v2.0.0 or higher. 
 % Calculations of agyrotropy measures (1)--(3) become unreliable at low
 % densities n_e <~ 2 cm^-3, when the raw particle counts are low. 
-% These points are removed from agyrotropies
+% Agyrotropies are removed for n_e < 1 cm^-3
 
 %% Time interval selection
 Tint = irf.tint('2015-10-30T05:15:20.00Z/2015-10-30T05:16:20.00Z');
@@ -88,11 +88,12 @@ c_eval('for ii=2:1:length(agyro?.data)-1;if (agyro?.data(ii) > 1.5*agyro?.data(i
 c_eval('agyro?.data = agyrodata?;',xx);
 end
 
-% remove all points corresponding to densities below 2cm^-3
+% remove all points corresponding to densities below 1cm^-3
 c_eval('rmpnts? = ones(size(ne?.data));',ic);
-c_eval('rmpnts?(ne?.data < 2) = NaN;',ic);
+c_eval('rmpnts?(ne?.data < 1) = NaN;',ic);
 c_eval('Q?.data = Q?.data.*rmpnts?;',ic);
 c_eval('agyro?.data = agyro?.data.*rmpnts?;',ic);
+c_eval('Dng?.data = Dng?.data.*rmpnts?;',ic);
 
 % Compute temperature ratio An
 c_eval('Temprat? = Pepp?.xx/(Pepp?.yy);',ic);
