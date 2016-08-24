@@ -711,7 +711,7 @@ classdef mms_sdp_dmgr < handle
         end
         Tint = irf.tint(DATAC.dce.time(1), DATAC.dce.time(end));
         try
-          maneuvers = MMS_MANEUVERS(Tint, DATAC.scId);
+          maneuvers = mms_maneuvers(Tint, DATAC.scId);
           scIdStr = sprintf('mms%d', DATAC.scId);
           if(isfield(maneuvers, scIdStr) && ...
               ~isempty(maneuvers.(scIdStr)))
