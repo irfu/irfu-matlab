@@ -120,7 +120,11 @@ for ii = length(list):-1:1
               ' inside of requested interval.']);
             if(~isempty(maneuvers.(['mms',num2str(kk)])))
               tmp2 = maneuvers.(['mms',num2str(kk)]);
-              maneuvers.(['mms',num2str(kk)]) = [tmp(ll); tmp2];
+              if(tmp2{1}.start.ttns ~= tmp{ll}.start.ttns)
+                maneuvers.(['mms',num2str(kk)]) = [tmp(ll); tmp2];
+              else
+                irf.log('debug', 'Maneuver already included.');
+              end
             else
               maneuvers.(['mms',num2str(kk)]) = tmp(ll);
             end
