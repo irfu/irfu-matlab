@@ -249,8 +249,9 @@ switch lower(action)
         rp3=[60*cos(phase_p3) 60*sin(phase_p3) 0];
         rp4=[60*cos(phase_p4) 60*sin(phase_p4) 0];
         % Boom lengths are 5m. Exaggerated in plot.
-        rb1=[15*cos(phase_b1) 15*sin(phase_b1) 0];
-        rb2=[15*cos(phase_b2) 15*sin(phase_b2) 0];
+        rb1=[20*cos(phase_b1) 20*sin(phase_b1) 0];
+        rb2=[20*cos(phase_b2) 20*sin(phase_b2) 0];
+        scoctogon = (data.phase+22.5+single(0:45:360))/180*pi
         
         for ip=1:4, 
             c_eval('rp?ts = irf.ts_vec_xyz(irf_time(data.t,''epoch>epochTT''),rp?);',ip);
@@ -328,6 +329,8 @@ switch lower(action)
             hl=line([0 100*cos(aa)],[0 100*sin(aa)]);
             set(hl,'linestyle',':','color','green','linewidth',.2);
         end
+        % plot spacecraft octogon structure
+        line(12*cos(scoctogon),12*sin(scoctogon),'Linewidth',2,'Color','r');
         % Plot Booms
         c_eval('line([0 rb?(1)],[0 rb?(2)],''Linewidth'',3,''Color'',''k'');',1:2);
         boomlabels = ['DFG';'AFG'];
@@ -337,7 +340,6 @@ switch lower(action)
             c_eval('patch(rp?(1)+x_circle*0.4,rp?(2)+y_circle*0.4,x_circle*0+1,''facecolor'',''black'',''edgecolor'',''none'');',ip);
             c_eval('text(rp?(1)*.9,rp?(2)*.9,num2str(?),''fontweight'',''bold'');',ip);
         end
-        
         
         axes(h(3));cla
         text(0,70,'Z_{GSE}','verticalalignment','top','horizontalalignment','center','fontweight','demi');
