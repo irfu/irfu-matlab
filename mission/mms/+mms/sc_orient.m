@@ -251,7 +251,7 @@ switch lower(action)
         % Boom lengths are 5m. Exaggerated in plot.
         rb1=[20*cos(phase_b1) 20*sin(phase_b1) 0];
         rb2=[20*cos(phase_b2) 20*sin(phase_b2) 0];
-        scoctogon = (data.phase+22.5+single(0:45:360))/180*pi
+        scoctogon = (data.phase+22.5+single(0:45:360))/180*pi;
         
         for ip=1:4, 
             c_eval('rp?ts = irf.ts_vec_xyz(irf_time(data.t,''epoch>epochTT''),rp?);',ip);
