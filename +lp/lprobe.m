@@ -59,7 +59,7 @@ classdef lprobe
 			if isnumeric(Lp.radiusWire) && ~isempty(Lp.radiusWire) ...
 					&& isnumeric(Lp.lengthWire) && ~isempty(Lp.lengthWire),
 				if numel(Lp.radiusWire) <= 2, % wire or stazer
-					areaWireSunlit = mean(Lp.radiusWire)*Lp.lengthWire;
+					areaWireSunlit = 2*mean(Lp.radiusWire)*Lp.lengthWire;
 				else
 					errStr = 'The wire radius should be a numeric vector of length 1 (wire) or 2 (stazer).';
 					irf.log('critical',errStr);error(errStr);

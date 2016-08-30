@@ -450,7 +450,7 @@ classdef (Abstract) GenericTimeArray
       else
         % File not found?
         %info_str=['No CDFLeapSeconds.txt found. Using hardcoded values,
-        %updated 20150109.'];
+        %updated 20160801.'];
         res = [...
           1960   1    1    1.4178180  37300.0  0.001296
           1961   1    1    1.4228180  37300.0  0.001296
@@ -493,6 +493,7 @@ classdef (Abstract) GenericTimeArray
           2009   1    1   34.0            0.0  0.0
           2012   7    1   35.0            0.0  0.0
           2015   7    1   36.0            0.0  0.0
+          2017   1    1   37.0            0.0  0.0
         ];
       end
     end

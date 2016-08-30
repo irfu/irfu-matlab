@@ -436,7 +436,8 @@ classdef PDist < TSeries
     end          
     function PD = pitchangles(obj,obj1,obj2)
       %PITCHANGLES Calculate pitchangle distribution
-      % Distribution.pitchangles(pitchangles,B,[nangles])
+      % PitchangleDistribution = Distribution.pitchangles(B,[nangles])
+      % PitchangleDistribution = pitchangles(Distribution,B,[nangles])
       % Input: 
       %     B - TSeries of B in dmpa coordinates
       %     nangles - Number of pitch angles or edges of pitchangle bins

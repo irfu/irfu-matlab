@@ -136,10 +136,10 @@ irf_plot_axis_align
 ic = 1;
 time = irf_time('2015-10-16T10:33:30.00Z','utc>epochtt');
 
-%ePitch1 = ePDist1.pitchangles(dmpaB1,[17]);
-c_eval('B0 = gseB?.resample(time).data;',ic); 
+ePitch1 = ePDist1.pitchangles(dmpaB1,[17]);
+c_eval('B0 = dmpaB?.resample(time).data;',ic); 
 hatB0 = double(irf_norm(B0));
-c_eval('E0 = gseE?.resample(time).data;',ic); 
+c_eval('E0 = dslE?.resample(time).data;',ic); 
 hatE0 = double(irf_norm(E0));
 hatExB0 = cross(hatE0,hatB0);
 c_eval('scpot = scPot?.resample(time);',ic); 
