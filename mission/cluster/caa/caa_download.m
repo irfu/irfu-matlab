@@ -626,10 +626,14 @@ end
 				delete(downloadedFile);
 				downloadedFile = downloadedFile(1:end-3); % remove '.gz'
 				%filelist=untar(downloadedFile,tempDirectory);
-				if( any( strcmp(version, {'8.6.0.267246 (R2015b)','9.0.0.307022 (R2016a) Prerelease'}) ) )
+				if( any( strcmp(version, {'8.5.0.197613 (R2015a)','8.6.0.267246 (R2015b)','9.0.0.307022 (R2016a) Prerelease'}) ) )
 					if(isunix)
-						% Matlab 8.6 R2015b and 9.0 R2016a Prerelease have a bug in Matlabs untar, try to use system built in tar on unix machines
-						irf.log('notice','Matlab R2015b Release or R2016a Prerelease have bug in Matlab untar, trying built in system tar on Mac/Linux.');
+						% Matlab 8.5 R2015a, Matlab 8.6 R2015b and
+						% 9.0 R2016a Prerelease have bugs in Matlabs untar
+						% (8.5 issues with permission, 8.6 and 9.0 with 
+						% excess of 100 chars).
+						% try to use system built in tar on unix machines 
+						irf.log('notice','Matlab R2015a/b Release or R2016a Prerelease have bug in Matlab untar, trying built in system tar on Mac/Linux.');
 						cmd = sprintf('tar -xf %s --directory %s', downloadedFile, tempDirectory);
 						[status, ~] = system(cmd);
 						cmd = sprintf('tar -tf %s', downloadedFile);
@@ -643,7 +647,7 @@ end
 							filelist = untar(downloadedFile, tempDirectory);
 						end
 					else
-						irf.log('warning','Matlab R2015b Release or R2016a Prerelease on Windows, trying built in Matlab untar. This may fail with long file names!');
+						irf.log('warning','Matlab R2015a/b Release or R2016a Prerelease on Windows, trying built in Matlab untar. This may fail with long file names!');
 						filelist = untar(downloadedFile, tempDirectory);
 					end
 				else
