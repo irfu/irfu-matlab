@@ -1,5 +1,6 @@
 
 
+
 =====================
  System requirements
 =====================
@@ -14,9 +15,15 @@ NOTE: BICAS can also be run directly from inside MATLAB, without the bash launch
 How to extract the ROC ICD-compliant software from the irfu-matlab git repository
 ==================================================================================
 
+BICAS can be run using any one of two directory structures.
+(1) As it is in the irfu-matlab git repository.
+(2) As it should be run in the RPW pipeline.
+
+
+
 Context, rationale:
 -------------------
-(1) The ROC-OPS-PIP-NTT-00008-LES iss01rev01 (and maybe ROC-TST-GSE-ICD-00023-LES iss02rev02)
+(1) The ROC Engineering Guidelines iss01rev01 (and maybe the ROC ICD iss02rev02)
     requires BICAS to have a certain directory structure, or at least where the start script should be (bicas/roc/).
 (2) BICAS is developed as a subset of the irfu-matlab git repository (used by IRF-U, Uppsala, Sweden). irfu-matlab
     requires BICAS to be in a certain subdirectory within it.

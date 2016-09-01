@@ -43,10 +43,12 @@ DM = data_manager();
 
 
 
-% Take all the CDF files (from the CLI argument list) and give to the data manager.
+%===========================================================================
+% Give all input CDF files (from the CLI argument list) to the data manager
+%===========================================================================
 input_process_data_types = input_files.keys;
 for i = 1:length(input_process_data_types)
-    process_data_type = input_process_data_types{i};    
+    process_data_type = input_process_data_types{i};
     input_file = input_files(process_data_type);
     
     DM.set_input_CDF(process_data_type, input_file);
@@ -65,15 +67,16 @@ JSON_filenames_obj = [];
 for i = 1:length(C_sw_mode.outputs)
     C_output = C_sw_mode.outputs{i};
     
-    output_filename = get_output_filename(C_output.dataset_ID, C_output.dataset_version_str);
-    output_file_path = [output_dir, filesep, output_filename];
+    output_filename = get_output_filename(C_output.dataset_ID, C_output.skeleton_version_str);
+    output_file_path = fullfile(output_dir, output_filename);
     
     JSON_filenames_obj.(C_output.JSON_output_file_identifier) = output_filename;
     
     process_data_type = C_output.process_data_type;
     process_data = DM.get_process_data_recursively(process_data_type);
     
-    master_CDF_path = get_master_CDF_path(C_output.dataset_ID, C_output.dataset_version_str);
+    % Read master CDF file.
+    master_CDF_path = get_master_CDF_path(C_output.dataset_ID, C_output.skeleton_version_str);
     [master_data, master_info] = spdfcdfread(master_CDF_path, 'Structure', 1, 'KeepEpochAsIs', 1);
     
     
@@ -133,7 +136,7 @@ end
 % Required by the RCS ICD iss2rev2, section 3.3.
 %============================================================
 str = JSON_object_str(JSON_filenames_obj, CONSTANTS.C.JSON_object_str);
-stdout_printf(str);
+stdout_disp(str);
 
 end
 
@@ -142,11 +145,12 @@ end
 %=======================================================================
 % This function decides what filename to use for any given output file.
 %=======================================================================
-function filename = get_output_filename(dataset_ID, dataset_version_str)
+function filename = get_output_filename(dataset_ID, skeleton_version_str)
     % PROPOSAL: Include date and time?
     % PROPOSAL: Move into constants.
+    % QUESTION: Use the "Data_version" instead? ROC-TST-GSE-SPC-00017-LES, i1r3, Section 3.4/3.1 seems to imply this.
     
-    current_time = datestr(now, 'yyyy-mm-dd_hhMMss.FFF');
-    %filename = [dataset_ID, '_V', dataset_version_str, '___OUTPUT.cdf'];
-    filename = [dataset_ID, '_V', dataset_version_str, '_', current_time, '.cdf'];
+    %current_time = datestr(now, 'yyyy-mm-dd_hhMMss.FFF');
+    %filename = [dataset_ID, '_V', skeleton_version_str, '_', current_time, '.cdf'];
+    filename = [dataset_ID, '_V', skeleton_version_str, '___OUTPUT.cdf'];
 end

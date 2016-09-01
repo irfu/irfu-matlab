@@ -16,10 +16,10 @@ IMPORTANT NOTE: BICAS is designed to comply with the RCS ICD. Much documentation
 RCS            = RPW Calibration Software. BICAS is an example of an RCS.
 ICD            = Interface Control Document
 RCS ICD        = Shorthand for the document ROC-TST-GSE-ICD-00023-LES, "RPW Calibration Software ICD Documentation".
+ROC Engineering Guidelines = Document ROC-OPS-PIP-NTT-00008-LES, "RPW Ground Segment - ROC Engineering Guidelines"
 S/W mode       = Mode which defines a set of required input CDF files and a set of output CDF files derived from the input files.
                  BICAS can execute only one such mode on each run. Executing such modes is the primary purpose of an RCS.
 S/W descriptor = Text on JSON format which describes among other things the S/W modes, including the required CLI parameters albeit not very clearly.
-
 
 
 =======================

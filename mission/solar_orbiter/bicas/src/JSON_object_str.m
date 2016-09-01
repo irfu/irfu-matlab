@@ -5,18 +5,21 @@
 % object and returns it as an indented multi-line string that is suitable for printing and human
 % reading.
 %
-% - Interprets MATLAB structure field names as JSON parameter name strings.
-%   NOTE: Does in principle limit the characters that can be used for such.
-% - Interprets MATLAB cell arrays as JSON arrays.
+% - Interprets MATLAB structure field names as "JSON parameter name strings".
+%   NOTE: This does in principle limit the characters that can be used for JSON parameter name strings.
+% - Interprets MATLAB cell arrays as "JSON arrays/sets".
+%
+% settings : struct
+%   .indent_size     : Number of whitespace per indentation level.
+%   .value_position  : The minimum number of characters between the beginning of a "name" and the beginning of the corresponding value.
 %
 % NOTE: This is not a rigorous implementation and therefore does not check for permitted characters.
 %
 function str = JSON_object_str(obj, settings)
 %
-% NOTE: "Whitespace is allowed and ignored around or between syntactic elements (values and
-% punctuation, but not within a string value). Four specific characters are considered whitespace
-% for this purpose: space, horizontal tab, line feed, and carriage return. JSON does not provide
-% any syntax for comments."
+% NOTE: Concerning the JSON syntax: "Whitespace is allowed and ignored around or between syntactic elements (values and
+% punctuation, but not within a string value). Four specific characters are considered whitespace for this purpose:
+% space, horizontal tab, line feed, and carriage return. JSON does not provide any syntax for comments."
 % Source: https://en.wikipedia.org/wiki/JSON
 
 
@@ -38,7 +41,7 @@ end
 % Can be useful for some layouts (placement of whitespace and line feeds).
 function str = print_JSON_object_recursive(obj, indent_level, indent_first_line, settings)
 
-LINE_BREAK = sprintf('\n');    % Put in constants structure?!!
+LINE_BREAK = sprintf('\n');    % Move to the application-global "constants" structure?!!
 INDENT_0_STR = repmat(' ', 1, settings.indent_size *  indent_level   );
 INDENT_1_STR = repmat(' ', 1, settings.indent_size * (indent_level+1));
 
@@ -76,10 +79,11 @@ elseif isstruct(obj)
         name = names{i};
         value = obj.(name);
         
-        str = [str, INDENT_1_STR, sprintf('"%s":', name)];
+        name_str = sprintf('"%s":', name);
+        str = [str, INDENT_1_STR, name_str];
         
         if ischar(value)
-            fill_str = repmat(' ', 1, settings.fill_str_max_length-length(name));
+            fill_str = repmat(' ', 1, settings.value_position-length(name_str));
             str = [str, fill_str, sprintf('"%s"', value)];
         else
             % Alternative 1:

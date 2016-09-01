@@ -22,9 +22,8 @@ function SW_descriptor = get_sw_descriptor()
 %   NOTE: Checks on the main constants structure will (can) only happen if this file is executed, not if 
 %         the S/W as a whole is (by default).
 %
-% PROBLEM: Any validation checks here are not run if bicas_constants.get_constants is called, but
-% get_sw_descriptor is not, even if the corresponding information from bicas_constants.get_constants is used.
-
+% BUG?: 
+%
 global CONSTANTS
 
 D.identification = CONSTANTS.C.SWD_identification;
@@ -58,27 +57,27 @@ SWD.name    = C_sw_mode.CLI_parameter;
 SWD.purpose = C_sw_mode.SWD_purpose;
 
 for x = C_sw_mode.inputs
-    mi_O = x{1};
+    mi_I = x{1};
     SWD_input = [];
     
-    SWD_input.version    = mi_O.dataset_version_str;
-    SWD_input.identifier = mi_O.dataset_ID;
+    SWD_input.version    = mi_I.skeleton_version_str;
+    SWD_input.identifier = mi_I.dataset_ID;
     
-    SWD.inputs.(mi_O.CLI_parameter) = SWD_input;
+    SWD.inputs.(mi_I.CLI_parameter) = SWD_input;
 end
 
 for x = C_sw_mode.outputs
     mi_O = x{1};
     SWD_output = [];
     
-    [master_CDF_path, master_filename] = get_master_CDF_path(mi_O.dataset_ID, mi_O.dataset_version_str);
+    [master_CDF_path, master_filename] = get_master_CDF_path(mi_O.dataset_ID, mi_O.skeleton_version_str);
         
     SWD_output.identifier  = mi_O.dataset_ID;
     SWD_output.name        = mi_O.SWD_name;
     SWD_output.description = mi_O.SWD_description;
     SWD_output.level       = mi_O.SWD_level;
     SWD_output.release.date         = mi_O.SWD_release_date;
-    SWD_output.release.version      = mi_O.dataset_version_str;
+    SWD_output.release.version      = mi_O.SWD_release_version;
     SWD_output.release.author       = C.author_name;
     SWD_output.release.contact      = C.author_email;
     SWD_output.release.institute    = C.institute;

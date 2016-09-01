@@ -6,7 +6,7 @@
 % one of their fields.
 %
 % NOTE: Can be used multiple times successively to select using two struct fields, e.g. dataset_ID
-% AND dataset_version_str.
+% AND skeleton_version_str.
 %
 % ASSUMES: All structure field values (in struct_list) for the chosen field are unique.
 % ASSUMES: The structure field values are strings.

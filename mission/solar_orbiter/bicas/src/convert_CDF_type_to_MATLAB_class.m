@@ -7,7 +7,9 @@
 % Data based upon table in spdfcdfwrite.m with modifications:
 %    1) "tt2000" is NOT a MATLAB type but corresponds to int64.
 %    2) "epoch", "epoch16" are not MATLAB types and are not included (yet).
+%
 function MATLAB_class = convert_CDF_type_to_MATLAB_class(cdf_data_type, policy)
+
 global ERROR_CODES
 %-------------------------------------------------------------------------------------------------------------
 % Left column = Legal MATLAB types.

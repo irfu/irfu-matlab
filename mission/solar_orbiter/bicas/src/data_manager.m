@@ -38,73 +38,78 @@
 %
 % NOTE: Advantages with architecture.
 % -- Easy to implement _shifting_ S/W modes (as defined by the RCS ICD) using this class, althoguh the class itself is
-%   unaware of S/W modes.
+%    unaware of S/W modes.
 %      Ex: Updates to the RPW pipeline, datasets.
 %      Ex: Can use a different set of modes when validating using the official RCS validation software at LESIA (not all
 %      datasets are available for input there, and one gets error when the S/W descriptor describes modes which require
 %      non-existing dataset IDs).
 %      Ex: Implement inofficial modes for testing(?).
-% -- Easy to keep support for legacy datasets (older versions of CDFs)?
+% -- Easier to keep support for legacy datasets (older versions of CDFs)?
+% -- Easier to maintain a varying set of test/debugging modes?
 % -- Indirect "caching".
 % -- Can reuse processing code?
-% -- External code can automatically derive which datasets are required to derive which. ==> Can automatically derive the
-% S/W modes in the S/W descriptor.
+% -- Other code can automatically derive which datasets are required to derive which. ==> Can automatically derive (1) the
+%    S/W modes in the S/W descriptor, (2) the required CLI parameters.
 %
 %
 %
 % DEFINITIONS OF TERMS ---- NEEDS REWORKING
-% -- process data = In practise, one (class) internal instance variable representing some form of data in some step of
-% the "data processing process".
-% -- (process) data type = Type of data that is represented by a string.
-% Can be a BICAS input dataset (in memory), a BICAS output dataset (in memory), or some intermediate
-% internal type of data. Input and output datasets are represented by their respective dataset IDs.
-% -- Elementary input/output (process data) = Data that goes in and out of the data manager as a whole. Not an intermediate data type.
-% The word "elementary" is added to distinguish input/output from input/output for a smaller operation.
+% -- process data
+%        In practise, one internal instance variable representing some form of data in some step of
+%        the "data processing process".
+% -- elementary input/output (process data)
+%        Process data that goes in and out of the data manager as a whole. Not an intermediate data type.
+%        The word "elementary" is added to distinguish input/output from the input/output for a smaller operation.
+% -- (process) data type
+%        A string that uniquely represents (refers to) a type of process data.
+%        Can be a BICAS input dataset (in memory), a BICAS output dataset (in memory), or some intermediate
+%        internal type of data.
+%        Dataset ID+Skeleton_version, e.g. "ROC-SGSE_L2S_RPW-LFR-SURV-CWF-E_V01", are used as process data types for
+%        elementary input/output process data.
 %
 % CONVENTIONS: 
 % -- It is implicit that arrays representing CDF data, or "CDF-like" data, use the first MATLAB array index to represent
-% CDF records.
+%    CDF records.
 %
 % IMPLEMENTATION NOTE: This class is intended to:
 % - Not be aware of S/W modes as defined in the RCS ICD.
 % - Not deal with writing CDFs. It does however read CDF files as a way of setting elementary input process data since
-% it is trivial.
+%   it is trivial.
 %
 classdef data_manager
 %###################################################################################################
-% PROPOSAL: Use other class name that implices processing. "processing_manager"? "proc_manager"?
+% PROPOSAL: Use other class name that implices processing, and fits with defined term "process data".
+%     "processing_manager"? "proc_manager"?
 %
-% PROPOSAL: Better name for process data (all together or individual variable), process data type, elementary input/output.
+% PROPOSAL: Better name for "process data" (all together or individual variable), process data type, elementary input/output.
 %     PROPOSAL: "process data", "process data variables" = All process data in aggregate?
 %     PROPOSAL: "process data variable" (PDV)
 %     PROPOSAL: "process data ID" (PDID).
 %
-% PROPOSAL: Different name for internal data variable. data, datas, data_types, internal_data,
-% data_network, data_chain, chain_data, process_data, processing_data. A one-letter name?
-%
-% QUESTION: Should this code have some kind of facility for handling multiple dataset versions in
-% principle, eventhough not formally required? Could be useful.
-%    NOTE: Could have multiple internal datatypes, remnants from earlier implementations.
-%    PROPOSAL: Add versions to data type strings for data sets.
-%
-% PROPOSAL: Move out the reading of input CDF files?! Of reading master CDFs?!!
+% PROPOSAL: Different name for internal data variable: data, datas, data_types, internal_data,
+%     data_network, data_chain, chain_data, process_data, processing_data.
+%     A one-letter name?
 %
 % QUESTION: How handle master CDFs?
-%   NOTE: Code needs the fill/pad values for the final CDF format. Can not work entirely with NaN internally since some
-%         MATLAB classes (non-floating point) type do not have NaN. Also, in principle, there is only one NaN which can not
-%         both represent the pad value and the fill value.
-%   NOTE: There is exactly one master CDF per elementary output.
+%   NOTE: Code needs the fill/pad values for the final CDF format.
+%         (1) Can not work entirely with NaN internally since some MATLAB classes (non-floating point) do not have NaN.
+%         (2) In principle, there is only one NaN which can not both represent the pad value and the fill value.
+%   NOTE: There is ALWAYS exactly one master CDF per elementary output.
+%   NOTE: Code might want to use the master CDF zVariable sizes as input.
+%   --
 %   PROPOSAL: No master CDFs (no data, no pad/fill values) inside data_manager. Convert NaN to pad or fill value outside
 %             before writing to file.
 %       CON: Some MATLAB classes (non-floating point) type do not have NaN.
 %   PROPOSAL: Supply the master CDF with the call to get_process_data_recursively.
-%       CON: Won't work if it requires other process data corresponding to another (output) CDF which requires its own
-%            master CDF.
+%       CON: Won't work if it in turn requires other process data corresponding to another (output) CDF which requires
+%            its own master CDF.
 %   PROPOSAL: User gives the master CDF to the data_manager which stores it in instance variable (containers.Map for output process data).
 %   PROPOSAL: data_manager has access to CONSTANTS/function which retrieves master CDFs.
 %
 %
 % QUESTION: Should this class AT ALL handle reading and writing CDF _FILES_? Should that not be done in some separate layer?!
+%    NOTE: Concerns input, output, and MASTER CDF files.
+%    NOTE: Need to handle conversion to/from fill/pad values which more closely tied to the CDF files.
 %    PROPOSAL: Only work with input/output data types that correspond tightly to CDF files.
 %       CON: Would work against the idea of combining code with the S/W descriptor info.
 %          CON: Not really. How?
@@ -113,15 +118,16 @@ classdef data_manager
 %
 % PROPOSAL: Implement master CDFs as internal process data types?!!
 %    PRO: Does actually need the fill/pad values.
-%    CON: Elementary inputs should fit with S/W description. Master CDFs will mess that up.
-%
-% QUESTION: How obtain the SW root directory and the master CDFs?
-%     Some sort of function?
-%     Some sort of new constant?
+%    CON: Elementary inputs should fit with S/W description and CLI parameters. Master CDFs will mess that up, or BICAS
+%         will have to distinguish between different types of elementary input process data.
+%    CON: Can just as well have the data_manager read master files itself.
 %
 % PROPOSAL: Do NOT use dataset IDs (or dataset IDs+version) for data types.
 %    PRO: That scheme still assumes that the internal variables format (in memory) is unambiguous.
 %         Might have to handle both dataobj and other.
+%
+% PROPOSAL: Check input CDFs and master CDFs for global attributes "DATASET_ID" and "Skeleton_version".
+%    QUESTION: Data manager only knows the process data types. Connect process types to constants?
 %
 %
 % QUESTION: Is dataobj a handle class?! How (deep) copy? Needed?! If so, then matters for setting elementary input
@@ -139,8 +145,8 @@ classdef data_manager
         % For data corresponding to CDFs: Use dataset IDs.
         process_data = containers.Map('KeyType', 'char', 'ValueType', 'any');
         
-        ELEMENTARY_INPUT_DATA_TYPES  = {'ROC-SGSE_L2R_RPW-LFR-SURV-CWF_V01',   'ROC-SGSE_L2R_RPW-LFR-SURV-SWF_V01', 'ROC-SGSE_HK_RPW-BIA_V01', 'ROC-SGSE_L2R_TEST_V99'};
-        ELEMENTARY_OUTPUT_DATA_TYPES = {'ROC-SGSE_L2S_RPW-LFR-SURV-CWF-E_V01', 'ROC-SGSE_L2S_RPW-LFR-SURV-SWF-E_V01',                          'ROC-SGSE_L2S_TEST_V99'};
+        ELEMENTARY_INPUT_DATA_TYPES  = {'ROC-SGSE_L2R_RPW-LFR-SURV-CWF_V01',   'ROC-SGSE_L2R_RPW-LFR-SURV-SWF_V01',  'ROC-SGSE_HK_RPW-BIA_V01', 'ROC-SGSE_L2R_TEST_V99'};
+        ELEMENTARY_OUTPUT_DATA_TYPES = {'ROC-SGSE_L2S_RPW-LFR-SURV-CWF-E_V01', 'ROC-SGSE_L2S_RPW-LFR-SURV-SWF-E_V01',                           'ROC-SGSE_L2S_TEST_V99'};
     end
     
     %###############################################################################################
@@ -153,7 +159,7 @@ classdef data_manager
         function obj = data_manager()
             ALL_DATA_TYPES = {obj.ELEMENTARY_INPUT_DATA_TYPES{:}, obj.ELEMENTARY_OUTPUT_DATA_TYPES{:}};
             
-            validate_strings_unique(ALL_DATA_TYPES)
+            assert_strings_unique(ALL_DATA_TYPES)
             
             for data_type = ALL_DATA_TYPES
                 obj.process_data(data_type{1}) = [];
@@ -219,50 +225,98 @@ classdef data_manager
             
             switch(data_type)
                 case 'ROC-SGSE_L2S_RPW-LFR-SURV-CWF-E_V01'
-
-                    % Might be relevant. True/false depending on available BIAS_1/2/3? Should be in
-                    % agreement with MUX_SET?
-                    % input_BIAS_HK.BIAS_MODE_BIAS1_ENABLED; ...
-                    % input_LFR.data.R0; ...
+                    % INCOMPLETE/INCORRECT IMPLEMENTATION
+                    % Does not take LFR's R0/R1/R2 into account. Current implementation probably based on misinterpretation how the dataset format works.
+                    % PROPOSAL: Move assignment of base variables into record loop? Its own record loop?
+                    % PROPOSAL: Convert everything to/from 1 sample/record and implement core algorithms as 1 sample/record.
+                    %    NOTE: R0, R1.
+                    %    NOTE: Convert data from HK time stamps to SAMPLE time stamps (not snapshot or record time stamps).
+                    %    CON: Conversion back to waveforms, assuming that some values are constant over entire snapshot?
+                    %
+                    % Might be relevant:
+                    %    True/false depending on available BIAS_1/2/3? Should be in
+                    %    agreement with MUX_SET?
+                    %    input_BIAS_HK.BIAS_MODE_BIAS1_ENABLED; ...
+                    %    input_LFR.data.R0; ...
                     
                     BIAS_HK_cdf = inputs.HK.data;
                     LFR_cdf     = inputs.SCI.data;
 
                     N_LFR_records          = size(LFR_cdf.POTENTIAL.data, 1);
-                    N_samples_per_snapshot = size(LFR_cdf.POTENTIAL.data, 2);
+                    N_samples_per_snapshot = size(LFR_cdf.POTENTIAL.data, 2);                    
                     
                     % Change to standard names.
+                    %R0 = LFR_cdf.R0.data;
+                    %R1 = LFR_cdf.R1.data;
                     demuxer_input = [];
                     demuxer_input.BIAS_1 = LFR_cdf.POTENTIAL.data;
                     demuxer_input.BIAS_2 = LFR_cdf.ELECTRICAL.data(:,:,1);
                     demuxer_input.BIAS_3 = LFR_cdf.ELECTRICAL.data(:,:,2);
-                    demuxer_input.BIAS_4 = ones(size(LFR_cdf.POTENTIAL.data)) * NaN;
-                    demuxer_input.BIAS_5 = ones(size(LFR_cdf.POTENTIAL.data)) * NaN;
+                    demuxer_input.BIAS_4 = ones(size(LFR_cdf.POTENTIAL.data)) * NaN;    % No data.
+                    demuxer_input.BIAS_5 = ones(size(LFR_cdf.POTENTIAL.data)) * NaN;    % No data.
+                    %================================================================================
+                    % ... on sequences of records (1 snapshot/record) with constant settings
+                    %================================================================================
+%                     i_first = 1;    % First record in sequence of records with constant settings.
+%                     while i_first <= N_LFR_records;
+%                         
+%                         % Find sequence of records having identical settings.
+%                         i_last = data_manager.find_last_same_sequence(...
+%                             i_first, ...
+%                             LFR_cdf.R0.data, ...
+%                             LFR_cdf.R1.data);
+%                         
+%                     	R0 = LFR_cdf.R0.data(i_first);
+%                     	R1 = LFR_cdf.R1.data(i_first);
+%                         
+%                         demuxer_input.BIAS_2 = ones(size(LFR_cdf.POTENTIAL.data)) * NaN;    % No data.
+%                         demuxer_input.BIAS_3 = ones(size(LFR_cdf.POTENTIAL.data)) * NaN;    % No data.
+%                         demuxer_input.BIAS_4 = ones(size(LFR_cdf.POTENTIAL.data)) * NaN;    % No data.
+%                         demuxer_input.BIAS_5 = ones(size(LFR_cdf.POTENTIAL.data)) * NaN;    % No data.
+%                         if R0==1 && R1==0
+%                             demuxer_input.BIAS_2 = LFR_cdf.ELECTRICAL.data(i_first:i_last,:,1);
+%                             demuxer_input.BIAS_3 = LFR_cdf.ELECTRICAL.data(i_first:i_last,:,2);
+%                         elseif R0==0 && R1==1
+%                             demuxer_input.BIAS_4 = LFR_cdf.ELECTRICAL.data(i_first:i_last,:,1);
+%                             demuxer_input.BIAS_5 = LFR_cdf.ELECTRICAL.data(i_first:i_last,:,2);
+%                         elseif R0==1 && R1==1
+%                             errorp(ERROR_CODES.SW_MODE_PROCESSING_ERROR ,'Illegal combination of LFR CDF R0=1 and R1=1.')
+%                         end
+%                     
+%                         i_first = i_last + 1;
+%                         
+%                     end   % while
 
+                    %------------------------------------------------------------------------------------------------
+                    % Derives approximate DIFF_GAIN values for LFR SCI time stamps/records (one per snapshot), using
+                    % DIFF_GAIN values for BIAS HK time stamps.
+                    % NOTE: Not perfect, since one should ideally use time stamps for every LFR _sample_.
+                    %------------------------------------------------------------------------------------------------
                     DIFF_GAIN = data_manager.nearest_interpolate_records(...
                         BIAS_HK_cdf.ACQUISITION_TIME.data, ...
                         BIAS_HK_cdf.HK_BIA_DIFF_GAIN.data, ...
                         LFR_cdf    .ACQUISITION_TIME.data);
-                    
-                    %--------------------------------------------------------------------------
+
+                    %-------------------------------------------------------------------------------------
                     % IMPLEMENTATION NOTE: One can obtain MUX_SET from (1) LFR or (2) BIAS HK.
                     % This code chooses which one is actually used.
-                    %--------------------------------------------------------------------------
+                    % NOTE: Not perfect, since one should ideally use time stamps for every LFR _sample_.
+                    %-------------------------------------------------------------------------------------
                     MUX_SET = data_manager.nearest_interpolate_records(...
                         BIAS_HK_cdf.ACQUISITION_TIME.data, ...
                         BIAS_HK_cdf.HK_BIA_MODE_MUX_SET.data, ...
-                        LFR_cdf    .ACQUISITION_TIME.data);
-                    %MUX_SET = LFR_cdf.BIAS_MODE_MUX_SET.data;
+                        LFR_cdf    .ACQUISITION_TIME.data);      % Use BIAS HK.
+                    %MUX_SET = LFR_cdf.BIAS_MODE_MUX_SET.data;    % Use LFR SCI.
 
                     
                     
-                    %============================================================
-                    % Run demuxer on sequences or records with constant settings
-                    %============================================================
-                    i_first = 1;
+                    %================================================================================
+                    % Run demuxer on sequences of records (1 snapshot/record) with constant settings
+                    %================================================================================
+                    i_first = 1;    % First record in sequence of records with constant settings.
                     demuxer_output = struct(...
-                        'V1',  [],    'V2', [], 'V3', [], ...
-                        'V12', [],    'V23', [], 'V13', [], ...
+                        'V1',     [], 'V2',     [], 'V3',     [], ...
+                        'V12',    [], 'V23',    [], 'V13',    [], ...
                         'V12_AC', [], 'V23_AC', [], 'V13_AC', []);
                     while i_first <= N_LFR_records;
                         
@@ -279,27 +333,15 @@ classdef data_manager
                         
                         demuxer_input_subseq = data_manager.select_subset_from_struct(demuxer_input, i_first, i_last);
                         
-                        
-                        % QUESTION: How to structure the demuxing?
-                        % ----------------------------------------
-                        % QUESTION: How split by record? How put together again? How do in a way which
-                        % works for transfer functions? How handle the many non-indexed outputs?
-                        % QUESTION: How handle changing values of diff_gain, mux_set, bias-dependent calibration offsets?
-                        % NOTE: LFR data can be both 1 sample/record or 1 snapshot/record.
-                        % PROPOSAL: Work with some subset of in- and out-values of each type?
-                        %   PROPOSAL: Work with exactly one value of each type?
-                        %       CON: Slow.
-                        %           CON: Only temporary implementation.
-                        %       PRO: Quick to implement.
-                        %   PROPOSAL: Work with only some arbitrary subset specified by array of indices.
-                        %   PROPOSAL: Work with only one row?
-                        %   PROPOSAL: Work with a continuous sequence of rows/records?
-                        %   PROPOSAL: Submit all values, and return structure. Only read and set subset specified by indices.
+                        %=================================================
+                        % CALL DEMUXER - See method/function for comments
+                        %=================================================
                         demuxer_output_subseq = data_manager.simple_demultiplex(demuxer_input_subseq, mux_set, diff_gain);
                         
                         demuxer_output = data_manager.add_components_to_struct(demuxer_output, demuxer_output_subseq);
                         
                         i_first = i_last + 1;
+                        
                     end   % while
 
 
@@ -320,19 +362,20 @@ classdef data_manager
 
                     
                     
-                    %============================================================
-                    % Put together variables to written to CDF file (elsewhere).
-                    %============================================================
+                    %==============================================================
+                    % Put together variables to be written to CDF file (elsewhere)
+                    %==============================================================
                     data = [];
                     data.EPOCH = Epoch;
-                    %data.DELTA_PLUS_MINUS = 
                     data.ACQUISITION_TIME = ACQUISITION_TIME;
                     data.V   = [demuxer_output.V1,     demuxer_output.V2,     demuxer_output.V3];
                     data.E   = [demuxer_output.V12,    demuxer_output.V13,    demuxer_output.V23];
                     data.EAC = [demuxer_output.V12_AC, demuxer_output.V13_AC, demuxer_output.V23_AC];                    
                     data.QUALITY_FLAG     = cast(  zeros(size(Epoch)),  convert_CDF_type_to_MATLAB_class('CDF_UINT1', 'Only CDF data types')  );
                     data.QUALITY_BITMASK  = cast(  zeros(size(Epoch)),  convert_CDF_type_to_MATLAB_class('CDF_UINT1', 'Only CDF data types')  );
-                    data.DELTA_PLUS_MINUS = cast(  zeros(size(Epoch)),  convert_CDF_type_to_MATLAB_class('CDF_INT8', 'Only CDF data types')  );
+                    data.DELTA_PLUS_MINUS = cast(  zeros(size(Epoch)),  convert_CDF_type_to_MATLAB_class('CDF_INT8',  'Only CDF data types')  );
+                    
+                %case 'ROC-SGSE_L2S_RPW-LFR-SURV-SWF-E_V01'
                     
                 otherwise
                     errorp(ERROR_CODES.SW_MODE_PROCESSING_ERROR, 'Can not produce this data type, "%s".', data_type)
@@ -491,7 +534,7 @@ classdef data_manager
                 case 3
                     freq = CONSTANTS.C.LFR.F3;
                 otherwise
-                    errorp(ERROR_CODES.ASSERTION_ERROR, 'Can not handle this LFR_FREQ value.')
+                    errorp(ERROR_CODES.ASSERTION_ERROR, 'Illegal LFR_FREQ value.')
             end
         end
 
@@ -608,10 +651,27 @@ classdef data_manager
         % This implements Table 3 and Table 4 in "RPW-SYS-MEB-BIA-SPC-00001-IRF", iss1rev16.
         % Variable names are chosen according to these tables.
         %
-        % BIAS = ...
+        % NOTE: "input"/"output" refers to input/output for the function, but (approximately) the opposite for the BIAS hardware.
         %====================================================================================
         % BIAS_physical_input = ...
         function output = simple_demultiplex(input, mux_set, diff_gain)
+            % QUESTION: How to structure the demuxing?
+            % --
+            % QUESTION: How split by record? How put together again? How do in a way which
+            %           works for real transfer functions? How handle the many non-indexed outputs?
+            % QUESTION: How handle changing values of diff_gain, mux_set, bias-dependent calibration offsets?
+            % NOTE: LFR data can be either 1 sample/record or 1 snapshot/record.
+            % PROPOSAL: Work with some subset of in- and out-values of each type?
+            %   PROPOSAL: Work with exactly one value of each type?
+            %       CON: Slow.
+            %           CON: Only temporary implementation.
+            %       PRO: Quick to implement.
+            %   PROPOSAL: Work with only some arbitrary subset specified by array of indices.
+            %   PROPOSAL: Work with only one row?
+            %   PROPOSAL: Work with a continuous sequence of rows/records?
+            %   PROPOSAL: Submit all values, and return structure. Only read and set subset specified by indices.
+            %
+            %
             % PROPOSAL: Could, maybe, be used for demuxing if the caller has already applied the
             % transfer function calibration on on the BIAS signals.
             % PROPOSAL: Validate with some "multiplexer" function?!
@@ -622,12 +682,14 @@ classdef data_manager
             % QUESTION: Is there some better way of implementing than giant switch statement?!
             %
             % PROPOSAL: Only work for scalar values of mux_set and diff_gain?
+            % QUESTION: MUX mode 1-3 are overdetermined if we always have BIAS1-3?
+            %           If so, how select what to calculate?! What if results disagree/are inconsistent? Check for it?
             
             global ERROR_CODES
             global CONSTANTS
             
             if numel(mux_set) ~= 1 || numel(diff_gain) ~= 1
-                errorp(ERROR_CODES.ASSERTION_ERROR, 'Illegal argument value mux_set or diff_gain. Must be scalars (not arrays).')
+                errorp(ERROR_CODES.ASSERTION_ERROR, 'Illegal argument value "mux_set" or "diff_gain". Must be scalars (not arrays).')
             end
             
             ALPHA    = CONSTANTS.C.approximate_demuxer.alpha;
@@ -638,9 +700,11 @@ classdef data_manager
                 case 1
                     GAMMA = CONSTANTS.C.approximate_demuxer.gamma_hg;
                 otherwise
-                    errorp(ERROR_CODES.ASSERTION_ERROR, 'Illegal argument value diff_gain.')
+                    errorp(ERROR_CODES.ASSERTION_ERROR, 'Illegal argument value "diff_gain".')
             end
             
+            % Set default values which will remain for
+            % variables which are not set by the demuxer.
             NONE_VALUES = ones(size(input.BIAS_1)) * NaN;
             V1_LF     = NONE_VALUES;
             V2_LF     = NONE_VALUES;
@@ -674,23 +738,50 @@ classdef data_manager
                     V13_LF_AC = V12_LF_AC - V23_LF_AC;
                     
                 case 1   % Probe 1 fails
-                    % QUESTION: Overdetermined if we always have BIAS1-3? If so, how select what to
-                    % calculate?! What if results disagree?
+                    
+                    V2_LF     = input.BIAS_1 / ALPHA;
+                    V3_LF     = input.BIAS_2 / ALPHA;
+                    V23_LF    = input.BIAS_3 / BETA;
+                    % input.BIAS_4 unavailable.
+                    V23_LF_AC = input.BIAS_5 / GAMMA;
+                    
+                case 2   % Probe 2 fails
+                    
+                    V1_LF     = input.BIAS_1 / ALPHA;
+                    V3_LF     = input.BIAS_2 / ALPHA;
+                    V13_LF    = input.BIAS_3 / BETA;
+                    V13_LF_AC = input.BIAS_4 / GAMMA;
+                    % input.BIAS_5 unavailable.
+                    
+                case 3   % Probe 3 fails
+                    
+                    V1_LF     = input.BIAS_1 / ALPHA;
+                    V2_LF     = input.BIAS_2 / ALPHA;
+                    V12_LF    = input.BIAS_3 / BETA;
+                    V12_LF_AC = input.BIAS_4 / GAMMA;
+                    % input.BIAS_5 unavailable.
+                    
+                case 4   % Calibration mode 0
                     
                     % Summarize what we have;
-                    V2_DC  = input.BIAS_1;
-                    V3_DC  = input.BIAS_2;
-                    V23_DC = input.BIAS_3;
-                    %V12_AC = input.BIAS_4;   % Not accessible(?)
+                    V1_DC  = input.BIAS_1;
+                    V2_DC  = input.BIAS_2;
+                    V3_DC  = input.BIAS_3;
+                    V12_AC = input.BIAS_4;
                     V23_AC = input.BIAS_5;
                     % Convert that which is trivial.
+                    V1_LF     = V1_DC / ALPHA;
                     V2_LF     = V2_DC / ALPHA;
                     V3_LF     = V3_DC / ALPHA;
-                    V23_LF_AC = V23_DC / GAMMA
+                    V12_LF_AC = V12_AC / GAMMA;
+                    V23_LF_AC = V23_AC / GAMMA;
+                    % Convert that which is less trivial.
+                    V12_LF    = V1_LF     - V2_LF;
+                    V13_LF    = V1_LF     - V3_LF;
+                    V23_LF    = V2_LF     - V3_LF;
+                    V13_LF_AC = V12_LF_AC - V23_LF_AC;
                     
-                    errorp(ERROR_CODES.OPERATION_NOT_IMPLEMENTED, 'Not certain if correct implementation / incomplete implementation.')
-                    
-                case {2,3,4,5,6,7}
+                case {5,6,7}
                     errorp(ERROR_CODES.OPERATION_NOT_IMPLEMENTED, 'Not implemented yet for this value of mux_set.')
                     
                 otherwise

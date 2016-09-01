@@ -3,11 +3,11 @@
 %
 function JSON_object_str_TEST
 
-obj = define_descriptor3();
-str = JSON_object_str(obj);
+obj = define_descriptor1();
+str = JSON_object_str(obj, struct('indent_size', 4, 'value_position', 15));
 fprintf('-------------------------------------------\n');
 fprintf(str);
-%stdout_printf(str);
+%stdout_disp(str);
 
 
 
@@ -34,10 +34,10 @@ fprintf(str);
         obj.identification = identification;
         
         release.version = '0.0.1';
-        release.date =         '2016-05-19';
-        release.author =       ERIK_P_G_JOHANSSON;
-        release.contact =      'erik.johansson@irfu.se';
-        release.institute =    'IRF-U';
+        release.date         = '2016-05-19';
+        release.author       = ERIK_P_G_JOHANSSON;
+        release.contact      = 'erik.johansson@irfu.se';
+        release.institute    = 'IRF-U';
         release.modification = 'None (Initial release)';
         obj.release = release;
         

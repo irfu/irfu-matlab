@@ -3,6 +3,20 @@
 %
 % Attempt at a function which can easily write a CDF using variables on the same data format as
 % returned by [out, info] = spdfcdfread(... , 'Structure', 1, 'KeepEpochAsIs', 1).
+%
+%
+%
+% ARGUMENTS
+% ---------
+% spdfcdfread_out  : Data on the format returned from spdfcdfread.
+% spdfcdfread_info : Data on the format returned from spdfcdfread.
+% varargin : Optionally 'fill_empty' : EXPERIMENTAL FEATURE. Empty CDF variable data is replaced by one pad value scalar
+% (one record only) of the right type. NOTE: This is not meant for "serious use" (it only a workaround) but for tests
+% when writing CDFs, using data read from CDFs. Only works for numerical types.
+%
+% NOTE: As of 2016-07-28: In practise this function only uses "spdfcdfread_out.Data" in "spdfcdfread_out". Therefore the
+% caller does not need to set the other "out" fields, like when reading a master file with empty fields for zero-record
+% zVariables.
 % 
 %
 %
@@ -10,9 +24,10 @@
 % -----------
 % NOTE PROBLEM: spdfcdfread and scpdfcdfinfo may crash MATLAB(!) when reading files written with spdfcdfwrite (which
 % this function uses). It appears that this happens when spdfcdfwrite receives various forms of "incomplete" input data.
-% spdfcdfwrite appears to be very bad at giving direct errors for such data and writes the file anyway. Before passing
-% data to spdfcdfwrite, this function tries to give errors for, or correct such data, but can only do so as far as the
-% problem is understood. Submitting empty data for a CDF variable is one such case.
+% spdfcdfwrite appears to often not give any warning/error message when and writes a file anyway. Before passing data to
+% spdfcdfwrite, this function tries to give errors for, or correct such data, but can only do so as far as the problem
+% is understood by the author. Submitting empty data for a CDF variable is one such case. Therefore, despite best
+% efforts, this function might still produce nonsensical files instead of producing any warning or error message.
 %
 % NOTE PROBLEM(?): Can not select CDF encoding (Network/XDR, IBMPC etc) when writing files. The NASA SPDF MATLAB CDF
 % Software distribution does not have this option (this has been confirmed with their email support 2016-07-14).
@@ -28,7 +43,7 @@
 %
 %
 %
-% COMPLICATIONS WHEN COMBINING spdfcdfread + cpdfcdfwrite
+% IMPLEMENTATION NOTES: COMPLICATIONS WHEN COMBINING spdfcdfread + cpdfcdfwrite
 % -------------------------------------------------------
 % NOTE: spdfcdfread and spdfcdfwrite interpret 'tt2000' (or at least "Epoch") data differently:
 % - spdfcdfread by default converts tt2000 data to MATLAB's own time scalar (using datenum)
@@ -58,18 +73,16 @@
 % info.Variables(:,1) instead. This is important when reading master CDFs which by their nature contain many zero-record
 % zVariables.
 %
+% NOTE: The format of data returned by
+%    [out, info] = spdfcdfread(... , 'Structure', 1, 'KeepEpochAsIs', 1)
+% is peculiar. 
+%  - It contains redundant data.
+%  - The "out" array contains empty components (the struct fields are empty), apparently for CDF variables which contain no data.
+%    However, the CDF variable names and variable attributes are still represented in info.Variables{#variable, #column} and
+%    info.VariableAttributes.(var_attr_name) == [var_names_column, values_column].
+%    Note: It appears that out(i) corresponds to info.Variables(i,:).
 %
-%
-% ARGUMENTS
-% ---------
-% spdfcdfread_out  : Data on the format returned from spdfcdfread.
-% spdfcdfread_info : Data on the format returned from spdfcdfread.
-% varargin : Optionally 'fill_empty' : EXPERIMENTAL FEATURE. Empty CDF variable data is replaced by one pad value scalar
-% (one record only) of the right type. NOTE: This is not meant for "serious use" (it only a workaround) but for tests
-% when writing CDFs, using data read from CDFs. Only works for numerical types.
-%
-% NOTE: As of 2016-07-28: In practise this function only uses "spdfcdfread_out.Data" in "spdfcdfread_out". Therefore does not
-% need to set the other "out" fields, like when reading a master file with empty fields for zero-record zVariables.
+% 
 %
 function write_CDF(file_path, spdfcdfread_out, spdfcdfread_info, varargin)
 %
@@ -84,9 +97,15 @@ function write_CDF(file_path, spdfcdfread_out, spdfcdfread_info, varargin)
 %   NOTE: Ambiguous format. Cell array (vector) of cell arrays?
 %   CON: Not really analogue with anything that can be directly extracted from spdfcdfread.
 %
+% PROPOSAL: Some form of validation of input.
+%    PRO: Would confirm that the input format is as it is understood.
+%    PROPOSAL: Check that out(i) corresponds to info.Variables(i,:) (where "out" fields are not empty).
+%
+
     global ERROR_CODES
     VARIABLE_ATTRIBUTES_OF_VARIABLE_TYPE = {'VALIDMIN', 'VALIDMAX', 'SCALEMIN', 'SCALEMAX', 'FILLVAL'};
         
+    % Rename variables for convenience.
     out  = spdfcdfread_out;
     info = spdfcdfread_info;
 
@@ -113,19 +132,20 @@ function write_CDF(file_path, spdfcdfread_out, spdfcdfread_info, varargin)
     PADVALS = {};
     
     for i=1:length(out)
-        % IMPLEMENTATION NOTE: Not using (1) out(i).VariableName or (2) info.Variables(:,1) to
-        % obtain the variable name since experience shows that (1) can be empty and (2) may not
-        % cover all variables when obtained via spdfcdfread!!
-        % TODO: Find examples!!! Assertions?
-        %zVar_name  = info.VariableAttributes.FIELDNAM{i, 1};    % i.Variables{i, 1}
-        zVar_name  = info.Variables{i, 1};
+        %---------------------------------------------------------------------------------------------------------------
+        % IMPLEMENTATION NOTE: Not using (1) out(i).VariableName or (2) info.Variables(:,1) to obtain the variable name
+        % since experience shows that components of (1) can be empty (contain empty struct fields) and (2) may not cover
+        % all variables when obtained via spdfcdfread!!
+        %---------------------------------------------------------------------------------------------------------------
+        %zVar_name              = info.VariableAttributes.FIELDNAM{i, 1};    % i.Variables{i, 1}
+        zVar_name              = info.Variables{i, 1};
         spdfcdfwrite_data_type = info.Variables{i, 4};   % uint32, tt2000 etc. Change name to CDF_Data_type?! spdfcdfwrite_data_type?!
-        pad_value = info.Variables{i, 9};
+        pad_value              = info.Variables{i, 9};
         
         %=========================================
         % Special case for zero record zVariables
         %=========================================
-        if isempty(out(i).Data)            
+        if isempty(out(i).Data) % && ~isempty(out(i).VariableName) && ~isempty(out(i).Attributes)
             if ~fill_empty_variables
                 error('Can not handle CDF variables with zero records (due to presumed bug in spdfcdfwrite).')
             else
@@ -238,8 +258,8 @@ function write_CDF(file_path, spdfcdfread_out, spdfcdfread_info, varargin)
     
 %===================================================================================================
 % RELEVANT spdfcdfwrite OPTIONS:
-% (Selected parts of spdfcdfwrite.m copied here for convenience.)
-% -------------------------------------------------------------
+% (Relevant excerpts from spdfcdfwrite.m copied here for convenience.)
+% --------------------------------------------------------------------
 %   SPDFCDFWRITE(FILE, VARIABLELIST, ...) writes out a CDF file whose name
 %   is specified by FILE.  VARIABLELIST is a cell array of ordered
 %   pairs, which are comprised of a CDF variable name (a string) and
@@ -345,7 +365,3 @@ spdfcdfwrite(file_path, VARIABLE_LIST(:), 'RecordBound', RECBNDVARS, 'GlobalAttr
     'VariableAttributes', info.VariableAttributes, 'Vardatatypes', VARDATATYPE, 'PadValues', PADVALS)
 
 end
-
-
-
-

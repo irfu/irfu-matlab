@@ -1,8 +1,8 @@
-% Validate that a cell 1D array of strings only contains unique strings.
+% Assert that a cell 1D array of strings only contains unique strings.
 %
 % This is useful for strings which serve as "identifiers", that can be "pointed to" and have to be unique.
 %
-function validate_strings_unique(string_list)
+function assert_strings_unique(string_list)
 %
 % PROPOSAL: Error message containing doubled strings.
 % PROPOSAL: Have caller throw error instead. Return list of unique strings.

@@ -102,7 +102,8 @@ classdef constants < handle
             %--------------------------------------------------------------------------------
             D = [];
             D.INITIAL_RELEASE_MODIFICATION_STR = 'No modification (initial release)';
-            D.INITIAL_RELEASE_DATE = '2016-07-21';
+            D.INITIAL_RELEASE_DATE = '2016-08-26';
+            D.SWD_OUTPUT_RELEASE_VERSION = '0.0.0';   % For the S/W descriptor output CDFs release version. Unknown what sensible value is.
             
             
             
@@ -134,8 +135,8 @@ classdef constants < handle
         
             % Parameters influencing how JSON objects are printed with function JSON_object_str.
             C.JSON_object_str = struct(...
-                'indent_size',          4, ...
-                'fill_str_max_length', 13);
+                'indent_size',     4, ...
+                'value_position', 15);
         
             % Define constants relating to LFR.
             % F0, F1, F2, F3: Frequencies with which samples are taken. Unit: Hz.
@@ -294,23 +295,24 @@ classdef constants < handle
                 for j = 1:length(C_sw_mode.inputs)
                     inputs_CLI_parameters{end+1} = C_sw_mode.inputs{j}.CLI_parameter;
                 end
-                validate_strings_unique(inputs_CLI_parameters)
+                assert_strings_unique(inputs_CLI_parameters)
                 
                 % Iterate over outputs
                 outputs_JSON_output_file_identifiers = {};
                 for j = 1:length(C_sw_mode.outputs)
                     outputs_JSON_output_file_identifiers{end+1} = C_sw_mode.outputs{j}.JSON_output_file_identifier;
                 end
-                validate_strings_unique(outputs_JSON_output_file_identifiers)
+                assert_strings_unique(outputs_JSON_output_file_identifiers)
             end
-            validate_strings_unique(sw_mode_CLI_parameters)
+            assert_strings_unique(sw_mode_CLI_parameters)
 
             
             
-            % NOTE: Can not handle multiple version of same dataset ID. Should validate combinations
-            % thereof.
-            dataset_IDs = cellfun(@(x) ({x.dataset_ID}), {obj.outputs{:}, obj.inputs{:}});                        
-            validate_strings_unique(dataset_IDs)           
+            % NOTE: Check that combinations of dataset_ID and skeleton_version_str are unique.
+            % Implemented by merging strings and checking for unique strings.
+            % Is strictly speaking very slightly unsafe; could get false negatives.
+            dataset_IDs = cellfun(   @(x) ({[x.dataset_ID, '_V', x.skeleton_version_str]}),   {obj.outputs{:}, obj.inputs{:}}   );
+            assert_strings_unique(dataset_IDs)           
         end
 
     end   % methods
@@ -329,49 +331,66 @@ classdef constants < handle
             C_inputs = {};
             
             % NOTE: CLI_parameter = CLI parameter MINUS flag prefix ("--").           
+            
+            %=========
+            % BIAS HK
+            %=========
             C_inputs{end+1} = [];
             C_inputs{end}.CLI_parameter  = 'input_hk';
-            C_inputs{end}.dataset_ID          = 'ROC-SGSE_HK_RPW-BIA';
-            C_inputs{end}.dataset_version_str = '01';
+            C_inputs{end}.dataset_ID           = 'ROC-SGSE_HK_RPW-BIA';
+            C_inputs{end}.skeleton_version_str = '01';
+            
+            %=========
+            % LFR SCI
+            %=========
+            C_inputs{end+1} = [];
+            C_inputs{end}.CLI_parameter  = CLI_PARAMETER_SCI_NAME;
+            C_inputs{end}.dataset_ID           = 'ROC-SGSE_L2R_RPW-LFR-SURV-CWF';
+            C_inputs{end}.skeleton_version_str = '01';
             
             C_inputs{end+1} = [];
             C_inputs{end}.CLI_parameter  = CLI_PARAMETER_SCI_NAME;
-            C_inputs{end}.dataset_ID          = 'ROC-SGSE_L2R_RPW-LFR-SURV-CWF';
-            C_inputs{end}.dataset_version_str = '01';
+            C_inputs{end}.dataset_ID           = 'ROC-SGSE_L2R_RPW-LFR-SURV-SWF';
+            C_inputs{end}.skeleton_version_str = '01';
             
             C_inputs{end+1} = [];
             C_inputs{end}.CLI_parameter  = CLI_PARAMETER_SCI_NAME;
-            C_inputs{end}.dataset_ID          = 'ROC-SGSE_L2R_RPW-LFR-SURV-SWF';
-            C_inputs{end}.dataset_version_str = '01';
+            C_inputs{end}.dataset_ID           = 'ROC-SGSE_L2R_RPW-LFR-SBM1-CWF';
+            C_inputs{end}.skeleton_version_str = '01';
             
             C_inputs{end+1} = [];
             C_inputs{end}.CLI_parameter  = CLI_PARAMETER_SCI_NAME;
-            C_inputs{end}.dataset_ID          = 'ROC-SGSE_L2R_RPW-LFR-SBM1-CWF';
-            C_inputs{end}.dataset_version_str = '01';
+            C_inputs{end}.dataset_ID           = 'ROC-SGSE_L2R_RPW-LFR-SBM2-CWF';
+            C_inputs{end}.skeleton_version_str = '01';
+            
+            %=========
+            % TDS SCI
+            %=========
+            C_inputs{end+1} = [];
+            C_inputs{end}.CLI_parameter  = CLI_PARAMETER_SCI_NAME;
+            C_inputs{end}.dataset_ID           = 'ROC-SGSE_L2R_RPW-TDS-LFM-RSWF';
+            C_inputs{end}.skeleton_version_str = '01';
             
             C_inputs{end+1} = [];
             C_inputs{end}.CLI_parameter  = CLI_PARAMETER_SCI_NAME;
-            C_inputs{end}.dataset_ID          = 'ROC-SGSE_L2R_RPW-LFR-SBM2-CWF';
-            C_inputs{end}.dataset_version_str = '01';
+            C_inputs{end}.dataset_ID           = 'ROC-SGSE_L2R_RPW-TDS-LFM-RSWF';
+            C_inputs{end}.skeleton_version_str = '02';
             
             C_inputs{end+1} = [];
             C_inputs{end}.CLI_parameter  = CLI_PARAMETER_SCI_NAME;
-            C_inputs{end}.dataset_ID          = 'ROC-SGSE_L2R_RPW-TDS-LFM-RSWF';
-            C_inputs{end}.dataset_version_str = '01';
+            C_inputs{end}.dataset_ID           = 'ROC-SGSE_L2R_RPW-TDS-LFM-CWF';
+            C_inputs{end}.skeleton_version_str = '01';
             
-            C_inputs{end+1} = [];
-            C_inputs{end}.CLI_parameter  = CLI_PARAMETER_SCI_NAME;
-            C_inputs{end}.dataset_ID          = 'ROC-SGSE_L2R_RPW-TDS-LFM-CWF';
-            C_inputs{end}.dataset_version_str = '01';
-            
+            %======
             % TEST
+            %======
             C_inputs{end+1} = [];
-            C_inputs{end}.CLI_parameter  = 'input_sci2';
-            C_inputs{end}.dataset_ID          = 'ROC-SGSE_L2R_TEST';
-            C_inputs{end}.dataset_version_str = '99';
+            C_inputs{end}.CLI_parameter        = 'input_sci2';
+            C_inputs{end}.dataset_ID           = 'ROC-SGSE_L2R_TEST';
+            C_inputs{end}.skeleton_version_str = '99';
             
             for i = 1:length(C_inputs)
-                C_inputs{i}.process_data_type = [C_inputs{i}.dataset_ID, '_V', C_inputs{i}.dataset_version_str];
+                C_inputs{i}.process_data_type = [C_inputs{i}.dataset_ID, '_V', C_inputs{i}.skeleton_version_str];
             end
         end
         
@@ -382,11 +401,6 @@ classdef constants < handle
         % (independent of how they are associated with S/W modes).
         %==========================================================
         function C_outputs = produce_outputs_constants(D)
-            % PROPOSAL: Abolish master_CDF_filename? Return the value from a function?
-            %   CON: The value appears in the S/W descriptor and is hence "registered". There could
-            %   be some value in having an actual table.
-            %
-            % TODO: Set master_CDF_filename automatically.
             % TODO: Set SWD_level automatically?!
             
             CLI_PARAMETER_SCI_NAME = 'output_sci';
@@ -396,75 +410,82 @@ classdef constants < handle
             C_outputs{end+1} = [];
             C_outputs{end}.JSON_output_file_identifier = CLI_PARAMETER_SCI_NAME;
             C_outputs{end}.dataset_ID                  = 'ROC-SGSE_L2S_RPW-LFR-SURV-CWF-E';
-            C_outputs{end}.dataset_version_str         = '01';
+            C_outputs{end}.skeleton_version_str        = '01';
             C_outputs{end}.SWD_name                    =     'LFR L2s CWF science electric data in survey mode';
             C_outputs{end}.SWD_description             = 'RPW LFR L2s CWF science electric (potential difference) data in survey mode, time-tagged';
             C_outputs{end}.SWD_level                   = 'L2S';
             C_outputs{end}.SWD_release_date            = D.INITIAL_RELEASE_DATE;
             C_outputs{end}.SWD_release_modification    = D.INITIAL_RELEASE_MODIFICATION_STR;
+            C_outputs{end}.SWD_release_version         = D.SWD_OUTPUT_RELEASE_VERSION;
             
             C_outputs{end+1} = [];
             C_outputs{end}.JSON_output_file_identifier = CLI_PARAMETER_SCI_NAME;
             C_outputs{end}.dataset_ID                  = 'ROC-SGSE_L2S_RPW-LFR-SURV-SWF-E';
-            C_outputs{end}.dataset_version_str         = '01';
+            C_outputs{end}.skeleton_version_str        = '01';
             C_outputs{end}.SWD_name                    =     'LFR L2s SWF science electric data in survey mode';
             C_outputs{end}.SWD_description             = 'RPW LFR L2s SWF science electric (potential difference) data in survey mode, time-tagged';
             C_outputs{end}.SWD_level                   = 'L2S';
             C_outputs{end}.SWD_release_date            = D.INITIAL_RELEASE_DATE;
             C_outputs{end}.SWD_release_modification    = D.INITIAL_RELEASE_MODIFICATION_STR;
+            C_outputs{end}.SWD_release_version         = D.SWD_OUTPUT_RELEASE_VERSION;
             
             C_outputs{end+1} = [];
             C_outputs{end}.JSON_output_file_identifier = CLI_PARAMETER_SCI_NAME;
             C_outputs{end}.dataset_ID                  = 'ROC-SGSE_L2S_RPW-LFR-SBM1-CWF-E';
-            C_outputs{end}.dataset_version_str         = '01';
+            C_outputs{end}.skeleton_version_str        = '01';
             C_outputs{end}.SWD_name                    =     'LFR L2s CWF science electric data in survey mode';
             C_outputs{end}.SWD_description             = 'RPW LFR L2s CWF science electric (potential difference) data in selective burst mode 1, time-tagged';
             C_outputs{end}.SWD_level                   = 'L2S';
             C_outputs{end}.SWD_release_date            = D.INITIAL_RELEASE_DATE;
             C_outputs{end}.SWD_release_modification    = D.INITIAL_RELEASE_MODIFICATION_STR;
+            C_outputs{end}.SWD_release_version         = D.SWD_OUTPUT_RELEASE_VERSION;
             
             C_outputs{end+1} = [];
             C_outputs{end}.JSON_output_file_identifier = CLI_PARAMETER_SCI_NAME;
             C_outputs{end}.dataset_ID                  = 'ROC-SGSE_L2S_RPW-LFR-SBM2-CWF-E';
-            C_outputs{end}.dataset_version_str         = '01';
+            C_outputs{end}.skeleton_version_str        = '01';
             C_outputs{end}.SWD_name                    =     'LFR L2s CWF science electric data in survey mode';
             C_outputs{end}.SWD_description             = 'RPW LFR L2s CWF science electric (potential difference) data in selective burst mode 2, time-tagged';
             C_outputs{end}.SWD_level                   = 'L2S';
             C_outputs{end}.SWD_release_date            = D.INITIAL_RELEASE_DATE;
             C_outputs{end}.SWD_release_modification    = D.INITIAL_RELEASE_MODIFICATION_STR;
+            C_outputs{end}.SWD_release_version         = D.SWD_OUTPUT_RELEASE_VERSION;
 
             C_outputs{end+1} = [];
             C_outputs{end}.JSON_output_file_identifier = CLI_PARAMETER_SCI_NAME;
             C_outputs{end}.dataset_ID                  = 'ROC-SGSE_L2S_RPW-TDS-LFM-RSWF-E';
-            C_outputs{end}.dataset_version_str         = '01';
+            C_outputs{end}.skeleton_version_str        = '01';
             C_outputs{end}.SWD_name                    =     'TDS L2s RSWF science electric data in low frequency mode';
             C_outputs{end}.SWD_description             = 'RPW TDS L2s RSWF science electric (potential difference) data in low frequency mode, time-tagged';
             C_outputs{end}.SWD_level                   = 'L2S';
             C_outputs{end}.SWD_release_date            = D.INITIAL_RELEASE_DATE;
             C_outputs{end}.SWD_release_modification    = D.INITIAL_RELEASE_MODIFICATION_STR;
-            C_outputs{end+1} = [];
+            C_outputs{end}.SWD_release_version         = D.SWD_OUTPUT_RELEASE_VERSION;
             
+            C_outputs{end+1} = [];            
             C_outputs{end}.JSON_output_file_identifier = CLI_PARAMETER_SCI_NAME;
             C_outputs{end}.dataset_ID                  = 'ROC-SGSE_L2S_RPW-TDS-LFM-CWF-E';
-            C_outputs{end}.dataset_version_str         = '01';
+            C_outputs{end}.skeleton_version_str        = '01';
             C_outputs{end}.SWD_name                    =     'TDS L2s CWF science electric data in low frequency mode';
             C_outputs{end}.SWD_description             = 'RPW TDS L2s CWF science electric (potential difference) data in low frequency mode, time-tagged';
             C_outputs{end}.SWD_level                   = 'L2S';
             C_outputs{end}.SWD_release_date            = D.INITIAL_RELEASE_DATE;
             C_outputs{end}.SWD_release_modification    = D.INITIAL_RELEASE_MODIFICATION_STR;
+            C_outputs{end}.SWD_release_version         = D.SWD_OUTPUT_RELEASE_VERSION;
             
             % TEST
             C_outputs{end}.JSON_output_file_identifier = 'output_sci2';
             C_outputs{end}.dataset_ID                  = 'ROC-SGSE_L2S_TEST';
-            C_outputs{end}.dataset_version_str         = '99';
+            C_outputs{end}.skeleton_version_str        = '99';
             C_outputs{end}.SWD_name                    = 'Test form of output.';
             C_outputs{end}.SWD_description             = 'Test form of output. This never supposed to be seen outside of development.';
             C_outputs{end}.SWD_level                   = 'L2S';
             C_outputs{end}.SWD_release_date            = D.INITIAL_RELEASE_DATE;
             C_outputs{end}.SWD_release_modification    = D.INITIAL_RELEASE_MODIFICATION_STR;
+            C_outputs{end}.SWD_release_version         = D.SWD_OUTPUT_RELEASE_VERSION;
             
             for i = 1:length(C_outputs)
-                C_outputs{i}.process_data_type = [C_outputs{i}.dataset_ID, '_V', C_outputs{i}.dataset_version_str];
+                C_outputs{i}.process_data_type = [C_outputs{i}.dataset_ID, '_V', C_outputs{i}.skeleton_version_str];
             end
         end
         

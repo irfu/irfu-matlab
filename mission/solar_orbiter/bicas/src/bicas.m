@@ -1,56 +1,37 @@
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
 % First created 2016-03-xx
 %
-% BICAS = BIAS CAlibration Software (temporary name)
-%
-%
-% IMPORTANT NOTE: The general interface that this software must comply with
-% is described in the ROC-TST-GSE-ICD-00023-LES document (the "RCS ICD").
-% Much documentation can thus be found there.
+% BICAS = BIAS CAlibration Software
 %
 %
 %
-% INPUT / OUTPUT VARIABLES:
-% -------------------------
-% This function expects only string arguments corresponding to CLI arguments.
-% This function expects the arguments defined in the RCS ICD and possibly additional inoffical
-% arguments.
+% IMPORTANT NOTE: INFORMATION IMPORTANT FOR JUST USING THIS CODE CAN BE FOUND IN "readme.txt" AND OTHER DOCUMENTATION
+% TEXT FILES (*.txt). To prevent the duplication of documentation, comments in this file tries to only cover subjects
+% important for understanding the implementation and information not already present in other documentation text files.
 %
-% - The official CLI parameter syntax is defined in
-%   RCS ICD, Iss02 Rev02, Section 3.2.
-% - NOTE: The official parameter syntax ("Specific input parameters", i.e.
-%   "combinations of s/w mode and input parameters) used by this
-%   particular code must be in agreement with "roc_sw_descriptor.js".
-% - NOTE: The parameter syntax may contain additional inofficial parameters,
-%   which are useful for development/debugging.
 %
-% SYNTAX/PARAMETERS:
-% [--developer-bash-settings] ( --identification | --version | --help ) [--log <path>] | <S/W mode> <Common & specific input parameters>
 %
-% --developer-bash-settings : Used by the wrapper bash script. Permitted but ignored by this code.
+% This function is the main MATLAB function, i.e. it is called by no other MATLAB code during regular use. It is
+% intended to be wrapped in, and called from non-MATLAB code, e.g. a bash script.
 %
-% <S/W mode> : 
-% Common input parameters
-%    --output <absolute path to directory>
-%    --log    <absolute path to directory>   (Note: Ignored by this code; The log file is not written to from here)
-%    --config <absolute path to file>
-% Specific input parameters
-%    Specify input and output files and which are which.
-%    Depends on the exact <S/W mode>.
+%
+%
+% INPUT / OUTPUT FOR THIS FUNCTION:
+% ---------------------------------
+% This function expects exactly the CLI arguments submitted to the bash launcher script. This function therefore expects
+% the arguments defined in the RCS ICD and possibly additional inoffical arguments.
 %
 % RETURN VALUE: error_code = The error code that is to be passed on to the OS/shell.
 %
+% Notes:
+% - The official parameter syntax for S/W modes must be in agreement with "roc_sw_descriptor.js" as specified by the RCS ICD.
+% - The parameter syntax may contain additional inofficial parameters, which are useful for development/debugging, but which are still compatible with the RCS ICD.
+% - The (MATLAB) code ignore but permits the CLI flags --log and --config.
 %
 %
-% NOTE: This function is the main MATLAB function, i.e. it is called by no other MATLAB code during
-% regular use. It is intended to be wrapped in, and called from non-MATLAB code, e.g. a bash script.
 %
 % NOTE: This code is designed for MATLAB 2016a (as of 2016-06-02) but may very well work with other
 % versions of MATLAB.
-%
-% NOTE: The code uses persistent variables. One may want to call "clear all" to clear these before
-% calling the code again when working in MATLAB. (One can not put "clear all" in the code since that
-% clears the function parameters.)
 %
 % IMPLEMENTATION NOTE: This code does not quit/exit using the MATLAB function "quit" since that
 % always exits all of MATLAB which is undesirable when developing in the MATLAB IDE. The function
@@ -58,8 +39,8 @@
 %
 % IMPLEMENTATION NOTE: The RCS ICD specifies tightly what should go to stdout. This code
 % 1) prints all log messages to stdout, and
-% 2) prints all messages intended for stdout to stdout but with a prefix so they can be filtered
-% out by the calling bash script.
+% 2) prints all messages intended for the final stdout to stdout but with a prefix so they can be filtered
+% out by the calling wrapper bash script.
 % Reasons: See the bash wrapper script.
 %
 function error_code = bicas( varargin )
@@ -68,6 +49,11 @@ function error_code = bicas( varargin )
 %    NOTE: TN claims warnings are sent to stdout.
 % PROPOSAL: Extra (inofficial) flag for setting the log level.
 % QUESTION: Is the applicaton allowed to overwrite output files?
+%
+% PROPOSAL: Check that all master cdf files are present/available.
+%
+% PROPOSAL: Rename to "bicas_main.m".
+% PROPOSAL: Move prescribed MATLAB version to the config file.
 %
 
 
@@ -80,7 +66,7 @@ try
     % Among other things: Sets up paths to within irfu-matlab (excluding .git/).
     % NOTE: Prints to stdout. Can not deactivate this behaviour!
     irf('check_path');
-    irf.log('debug')      % Set log level.
+    irf.log('warning')      % Set log level.
     
     % Check MATLAB version
     found_version = version('-release');
@@ -88,6 +74,8 @@ try
         errorp(ERROR_CODES.MISC_ERROR, ...
             'Wrong MATLAB version. Found %s. Requires %s.\n', found_version, REQUIRED_MATLAB_VERSION)
     end
+    
+    t_tic_start = tic;
     
     CONSTANTS = constants();   % Do not run initialization until the MATLAB version has been checked for. Could fail.
     
@@ -111,11 +99,6 @@ try
     % 2) select which of BICAS' different modes of operation.
     %================================================================
     arguments = varargin;
-    
-    % First argument: Flag to permit but ignore.
-%     if (length(arguments) >= 1) && (strcmp(arguments{1}, '--developer-bash-settings'))
-%         arguments = arguments(2:end);
-%     end
     
     % Start configuring requirements on (remaining) arguments.
     flags = containers.Map;
@@ -204,10 +187,16 @@ try
         execute_sw_mode(C_sw_mode.CLI_parameter, input_files, output_dir)  % The intended real implementation
         %execute_sw_mode_TEST_IMPLEMENTATION(C_sw_mode.CLI_parameter, output_dir)   % IMPLEMENTATION FOR TESTING. OUTPUTS NONSENSE CDFs.
         %errorp(ERROR_CODES.OPERATION_NOT_IMPLEMENTED, 'Operation not completely implemented: Use S/W mode')
+        
     end
 
         
 
+    dt_toc = toc(t_tic_start);
+    irf.log('n', sprintf('Execution took %g s (wall time).', dt_toc));    % Always log?
+        
+        
+        
     % EXIT
     error_code = ERROR_CODES.NO_ERROR;   % Default RETURN value.
 
@@ -302,7 +291,7 @@ output_JSON = [];
 for i = 1:length(C_mode.outputs)
     C_mode_output = C_mode.outputs{i};
     master_cdf_filename = C_mode_output.master_cdf_filename;
-    output_filename = [C_mode_output.dataset_ID, '_', C_mode_output.dataset_version_str, '.cdf'];
+    output_filename = [C_mode_output.dataset_ID, '_V', C_mode_output.skeleton_version_str, '.cdf'];
     
     src_file  = fullfile(bias_constants.sw_root_dir(), C.master_cdfs_dir_rel, master_cdf_filename);
     dest_file = fullfile(output_dir, output_filename);
@@ -322,7 +311,7 @@ end
 
 % Print list of files produced in the form of a JSON object.
 str = JSON_object_str(output_JSON);
-stdout_printf(str);
+stdout_disp(str);
 
 end
 
@@ -334,7 +323,7 @@ function print_version()
 % constants since the RCS ICD specifies that it should be that version.
 
 swd = get_sw_descriptor();
-stdout_printf('Version "%s"\n', swd.release.version)
+stdout_printf('Version %s\n', swd.release.version)
 
 end
 
@@ -351,7 +340,7 @@ global CONSTANTS
 
 D = get_sw_descriptor();
 str = JSON_object_str(D, CONSTANTS.C.JSON_object_str);
-stdout_printf(str);
+stdout_disp(str);
 
 end
 
