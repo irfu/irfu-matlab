@@ -28,7 +28,8 @@ function quality = comp_quality(bitmask)
   quality = 3*ones(size(bitmask), ...
     getfield(mms_sdp_typecast('bitmask'),'matlab'));
   % Set quality to 2 (caution)
-  bits_2 = MMS_CONST.Bitmask.ASPOC_RUNNING;
+  bits_2 = MMS_CONST.Bitmask.ASPOC_RUNNING + ...
+    MMS_CONST.Bitmask.ASYMM_CONF;
   ind_2 = logical(bitand(bitmask, bits_2));
   quality(ind_2) = 2;
   % Set quality to 1 (bad)

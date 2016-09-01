@@ -289,8 +289,8 @@ switch lower(action)
         aa=0:.1:2*pi;x_circle=cos(aa);y_circle=sin(aa);
         
         axes(h(1));cla
-        text(0,70,'sun','verticalalignment','top','horizontalalignment','center','fontweight','demi');
-        text(70,0,'dawn','rotation',90,'verticalalignment','bottom','horizontalalignment','center','fontweight','demi');
+        text(0,70,'dawn','verticalalignment','top','horizontalalignment','center','fontweight','demi');
+        text(70,0,'sun','rotation',90,'verticalalignment','bottom','horizontalalignment','center','fontweight','demi');
         patch(x_circle*1.5,y_circle*1.5,x_circle*0+1);hold on; % plot spacecraft
         patch(x_circle*1.5,y_circle*1.5,x_circle*0-1);         % plot spacecraft
         %patch([0 rheea(2,2) rheea(3,2)], [0 rheea(2,1) rheea(3,1)],'b'); % heea
@@ -304,9 +304,9 @@ switch lower(action)
         
         if data.flag_b==1,
             bnproj=[0 bn(2)/norm(bn(2:3)) bn(3)/norm(bn(2:3))];
-            hl=line([0 bnproj(3)*25],[0 bnproj(2)*25]);set(hl,'color','red','linewidth',.4);       % B direction
-            hl=line([0 bn(3)*25],[0 bn(2)*25]);set(hl,'color','red','linewidth',2);       % B direction
-            text(30*bnproj(3),30*bnproj(2),'B');           % label
+            hl=line([0 bnproj(2)*25],[0 bnproj(3)*25]);set(hl,'color','red','linewidth',.4);       % B direction
+            hl=line([0 bn(2)*25],[0 bn(3)*25]);set(hl,'color','red','linewidth',2);       % B direction
+            text(30*bnproj(2),30*bnproj(3),'B');           % label
             text(-49,-48,['B elevation=' num2str(b_elevation,2) ' deg'],'fontsize',8);           % label
         end
         if data.flag_v1==1, % plot v1 vector
@@ -329,13 +329,13 @@ switch lower(action)
             set(hl,'linestyle',':','color','green','linewidth',.2);
         end
         % Plot Booms
-        c_eval('line([0 rb?(2)],[0 rb?(1)],''Linewidth'',3,''Color'',''k'');',1:2);
+        c_eval('line([0 rb?(1)],[0 rb?(2)],''Linewidth'',3,''Color'',''k'');',1:2);
         boomlabels = ['DFG';'AFG'];
-        c_eval('text(rb?(2)*1.5,rb?(1)*1.5,boomlabels(?,:));',1:2);
+        c_eval('text(rb?(1)*1.5,rb?(2)*1.5,boomlabels(?,:));',1:2);
         for ip=1:4; % plot probes
-            c_eval('line([0 rp?(2)],[0 rp?(1)]);',ip);
-            c_eval('patch(rp?(2)+x_circle*0.4,rp?(1)+y_circle*0.4,x_circle*0+1,''facecolor'',''black'',''edgecolor'',''none'');',ip);
-            c_eval('text(rp?(2)*.9,rp?(1)*.9,num2str(?),''fontweight'',''bold'');',ip);
+            c_eval('line([0 rp?(1)],[0 rp?(2)]);',ip);
+            c_eval('patch(rp?(1)+x_circle*0.4,rp?(2)+y_circle*0.4,x_circle*0+1,''facecolor'',''black'',''edgecolor'',''none'');',ip);
+            c_eval('text(rp?(1)*.9,rp?(2)*.9,num2str(?),''fontweight'',''bold'');',ip);
         end
         
         
