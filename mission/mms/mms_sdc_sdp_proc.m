@@ -421,6 +421,14 @@ end
             && ~isempty(regexpi(fileIn,'_l2a_')) && any(cell2mat(regexp(varargin(:),'_brst_'))) )
           % L2A file (from fast mode) for "QL Brst" or "L2A Brst" process.
         else
+% Alternative to multiple regexpi() in commissioning data.
+%           expr = ['mms(?<SCid>\d{0,1})_edp_(?<tmModeStr>(', ...
+%              strjoin(MMS_CONST.TmModes, '|'),'))', ...
+%              '_(?<dataLevel>(l1b|l2a|l2pre))', ...
+%              '_dc[ev](?<commRate>\d{0,3})', ...
+%              '_(?<dateTime>\d{8,14})', ...
+%              '_v(?<verX>\d{1,}).(?<verY>\d{1,}).(?<verZ>\d{1,})'];
+%           dceStr = regexpi(fileIn, expr, 'names');
           % This argument is the dce file, (l1b raw, l2a/pre dce2d or similar)
           % Use this file to get TMmode directly from filename, and if comm.
           % data also sample rate. And also initialize the Dmgr.
@@ -448,12 +456,42 @@ end
               % now just default to first TmMode (slow).
               irf.log('warning',...
                 ['Unknown samplerate for Commissioning data from file: ',fileIn]);
-              irf.log('warning', ['Defaulting samplerate to ',...
-                MMS_CONST.Samplerate.(MMS_CONST.TmModes{1})]);
-              samplerate = MMS_CONST.Samplerate.(MMS_CONST.TmModes{1});
+              if iscell(MMS_CONST.Samplerate.(MMS_CONST.TmModes{1}))
+                samplerate = MMS_CONST.Samplerate.(MMS_CONST.TmModes{1}){1};
+              else
+                samplerate = MMS_CONST.Samplerate.(MMS_CONST.TmModes{1});
+              end
+              irf.log('warning', ['Defaulting samplerate to ',num2str(samplerate)]);
             end
             Dmgr = mms_sdp_dmgr(str2double(HdrInfo.scIdStr), procId, tmMode, samplerate);
+          elseif(tmMode==MMS_CONST.TmMode.slow || tmMode==MMS_CONST.TmMode.brst)
+            % As of 2016/08 discussion about increasing Slow mode to 32 Hz,
+            % and eventually Brst mode will change from 8192 Hz to 1024 Hz.
+            irf.log('warning', [tmModeStr, ' mode dce looking inside to determine sample rate.']);
+            try
+              % Read the first 10 records of the main "Epoch" (as int64, TT2000)
+              tmpEpoch = spdfcdfread(varargin{j}, 'KeepEpochAsis', true, ...
+                'Variables', 'Epoch', 'Records', 1:10);
+              % Compute the sample rate of these records and compare with
+              % expected values, consider match if within +/- 5%.
+              tmpRate = 10^9 / median(diff(double(cell2mat(tmpEpoch))));
+              for jj=1:length(MMS_CONST.Samplerate.(MMS_CONST.TmModes{tmMode}))
+                if tmpRate < 1.05*MMS_CONST.Samplerate.(MMS_CONST.TmModes{tmMode}){jj} && ...
+                    tmpRate > 0.95*MMS_CONST.Samplerate.(MMS_CONST.TmModes{tmMode}){jj}
+                  samplerate = MMS_CONST.Samplerate.(MMS_CONST.TmModes{tmMode}){jj};
+                  break
+                end
+              end
+            catch err
+              irf.log('warning', ['Failed to read sample rate. Falling back to original default for ', tmModeStr]);
+            end
+            if(exist('samplerate','var') && ~isempty(samplerate) )
+              Dmgr = mms_sdp_dmgr(str2double(HdrInfo.scIdStr), procId, tmMode, samplerate);
+            else
+              Dmgr = mms_sdp_dmgr(str2double(HdrInfo.scIdStr), procId, tmMode, MMS_CONST.Samplerate.(MMS_CONST.TmModes{tmMode}){1});
+            end
           else
+            % Not "Comm", "Slow" or "Brst". Determine sample rate by tmMode.
             Dmgr = mms_sdp_dmgr(str2double(HdrInfo.scIdStr), procId, tmMode);
           end
         end

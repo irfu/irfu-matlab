@@ -273,7 +273,7 @@ switch lower(action)
           if(leapLocal(4)<leapIRFU(4))
             disp('Local leap seconds table appears to be out of date.');
             disp('Please check you system settings and update your table.');
-            disp('Your environment variable CDF_LEAPSECONDSTABLE is set to ',leapsecondstable);
+            disp(['Your environment variable CDF_LEAPSECONDSTABLE is set to ',leapsecondstable]);
             fprintf('Presently your table contain leap second %d-%d-%d.\n',leapLocal(1),leapLocal(2),leapLocal(3));
             fprintf('while the latest leap second is %d-%d-%d.\n',leapIRFU(1),leapIRFU(2),leapIRFU(3));
             disp('For now, we will use your specified leap seconds table.');

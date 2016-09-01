@@ -38,6 +38,8 @@ MMS_CONST.Phaseshift.p1  = 2*pi* 330/360; % probe 1 sunward
 MMS_CONST.Phaseshift.p2  = 2*pi* 150/360; % probe 2 sunward
 MMS_CONST.Phaseshift.p3  = 2*pi* 240/360; % probe 3 sunward
 MMS_CONST.Phaseshift.p4  = 2*pi*  60/360; % probe 4 sunward
+MMS_CONST.Phaseshift.dfg = 2*pi* 315/360; % DFG sunward
+MMS_CONST.Phaseshift.afg = 2*pi* 135/360; % AFG sunward
 
 % Nominal Amplitude Correction factor multiplied to DCE data.
 MMS_CONST.NominalAmpCorr.e12 = 1.25;
@@ -52,13 +54,13 @@ MMS_CONST.TmMode.brst = 3;
 MMS_CONST.TmMode.comm = 4; % Commissioning data.
 
 % Sample rates
-MMS_CONST.Samplerate.slow = 8; % Samples per second (dce & dcv), TM mode slow
+MMS_CONST.Samplerate.slow = {8; 32}; % Samples per second (dce & dcv), TM mode slow.
 MMS_CONST.Samplerate.fast = 32; % TM mode fast
 MMS_CONST.Samplerate.comm_8 = 8; % Commissioning "Slow"
 MMS_CONST.Samplerate.comm_32 = 32; % Commissioning "I&T" phase
 MMS_CONST.Samplerate.comm_64 = 64; % Commissioning "Turn ON" phase
 MMS_CONST.Samplerate.comm_128 = 128; % Commissioning "Boom deployment" phase
-MMS_CONST.Samplerate.brst = 8192; % Or 1024? TM mode burst
+MMS_CONST.Samplerate.brst = {8192; 1024}; % 8192 in tail, 1024 in sub-solar TM mode burst
 
 % SDC process names
 MMS_CONST.SDCProcs = {'ql','scpot','l2pre','l2a','l1ace','l2ace'};
@@ -83,6 +85,7 @@ MMS_CONST.Bitmask.SWEEP_DATA             = mms_sdp_typecast('bitmask',16); % Bit
 MMS_CONST.Bitmask.ADP_SHADOW             = mms_sdp_typecast('bitmask',32); % Bit 6
 MMS_CONST.Bitmask.ASPOC_RUNNING          = mms_sdp_typecast('bitmask',64); % Bit 7
 % MMS_CONST.Bitmask.EDI_CORRECTION = mms_sdp_typecast('bitmask', 128); % Bit 8.
+MMS_CONST.Bitmask.ASYMM_CONF             = mms_sdp_typecast('bitmask',256); % Bit 9
 
 MMS_CONST.Error = -Inf; % Indicates error in computation
 
@@ -92,10 +95,10 @@ MMS_CONST.Error = -Inf; % Indicates error in computation
 % Major new Software version, X
 % New Calibration version, Y
 MMS_CONST.Version = struct(...
-  MMS_CONST.SDCProcs{MMS_CONST.SDCProc.ql},    struct('X', 1, 'Y', 1), ...
-  MMS_CONST.SDCProcs{MMS_CONST.SDCProc.scpot}, struct('X', 2, 'Y', 1), ...
-  MMS_CONST.SDCProcs{MMS_CONST.SDCProc.l2pre}, struct('X', 0, 'Y', 1), ...
-  MMS_CONST.SDCProcs{MMS_CONST.SDCProc.l2a},   struct('X', 1, 'Y', 0), ...
+  MMS_CONST.SDCProcs{MMS_CONST.SDCProc.ql},    struct('X', 1, 'Y', 2), ...
+  MMS_CONST.SDCProcs{MMS_CONST.SDCProc.scpot}, struct('X', 2, 'Y', 2), ...
+  MMS_CONST.SDCProcs{MMS_CONST.SDCProc.l2pre}, struct('X', 0, 'Y', 2), ...
+  MMS_CONST.SDCProcs{MMS_CONST.SDCProc.l2a},   struct('X', 1, 'Y', 1), ...
   MMS_CONST.SDCProcs{MMS_CONST.SDCProc.l1ace}, struct('X', 0, 'Y', 0), ...
   MMS_CONST.SDCProcs{MMS_CONST.SDCProc.l2ace}, struct('X', 0, 'Y', 0));
 % Version Notes Y, for us. Not written to CDF files.

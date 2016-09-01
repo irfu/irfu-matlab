@@ -88,18 +88,21 @@ tsB = tsB.tlim(rTHOR.time([1 end]));
 rTHOR = rTHOR.resample(tsBSNX); % upsample orbit times to bsnx's timeline, 1 min
 
 %% Bowshock model
-fy = @(x,R0) sqrt(0.04*(x-R0).^2-45.3*(x-R0)); % original F/G model adds rstandoff^2=645
+fr = @(x,R0) sqrt(0.04*(x-R0).^2-45.3*(x-R0)); % original F/G model adds rstandoff^2=645
+fx = @(r,R0) 0.5*45.3/0.04-sqrt((0.5*45.3/0.04)^2+r.^2/0.04)+R0; 
 
 %% Check if THOR is inside bowshock or not
 xTHOR = rTHOR.x.data/units.RE*1e3; % km->RE
 yTHOR = rTHOR.y.data/units.RE*1e3;
 zTHOR = rTHOR.z.data/units.RE*1e3;
 
-yBS = fy(xTHOR,tsBSNX.data); 
-tsyBS = irf.ts_scalar(tsBSNX.time,yBS);
+r_THOR = sqrt(yTHOR.^2+zTHOR.^2);
+
+rBS = fr(xTHOR,tsBSNX.data);
+tsrBS = irf.ts_scalar(tsBSNX.time,rBS);
 
 allInd = 1:rTHOR.length;
-isInside = find(xTHOR<tsBSNX.data & abs(yBS)>abs(yTHOR));
+isInside = find(xTHOR<tsBSNX.data & abs(rBS)>abs(r_THOR));
 isOutside = tocolumn(setdiff(allInd,isInside));
 
 isInboundCrossing = isInside(find(diff(isInside)>1));
