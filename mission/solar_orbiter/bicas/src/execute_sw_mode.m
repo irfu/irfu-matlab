@@ -51,7 +51,7 @@ for i = 1:length(input_process_data_types)
     process_data_type = input_process_data_types{i};
     input_file = input_files(process_data_type);
     
-    DM.set_input_CDF(process_data_type, input_file);
+    DM.set_elementary_input_CDF(process_data_type, input_file);
 end
 
 
@@ -73,7 +73,7 @@ for i = 1:length(C_sw_mode.outputs)
     JSON_filenames_obj.(C_output.JSON_output_file_identifier) = output_filename;
     
     process_data_type = C_output.process_data_type;
-    process_data = DM.get_process_data_recursively(process_data_type);
+    process_data = DM.get_process_data_recursively(process_data_type, C_sw_mode.ID);
     
     % Read master CDF file.
     master_CDF_path = get_master_CDF_path(C_output.dataset_ID, C_output.skeleton_version_str);

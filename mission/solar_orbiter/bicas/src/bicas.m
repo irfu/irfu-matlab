@@ -87,7 +87,7 @@ try
     
     % Derive the root path of the software (BICAS directory structure root).
     [matlab_src_path, ~, ~] = fileparts(mfilename('fullpath'));
-    sw_root_path = get_abs_path([matlab_src_path, filesep, '..']);
+    sw_root_path = get_abs_path(fullfile(matlab_src_path, '..'));
     CONSTANTS.SW_root_dir(sw_root_path)
     irf.log('n', sprintf('MATLAB source code path: "%s"', matlab_src_path))
     irf.log('n', sprintf('Software root path:      "%s"', sw_root_path))
@@ -320,7 +320,8 @@ end
 function print_version()
 
 % IMPLEMENTATION NOTE: Uses the software version in the S/W descriptor rather than the in the BICAS
-% constants since the RCS ICD specifies that it should be that version.
+% constants since the RCS ICD specifies that it should be that specific version.
+% This in principle inefficient but precise.
 
 swd = get_sw_descriptor();
 stdout_printf('Version %s\n', swd.release.version)

@@ -28,7 +28,7 @@ end
 for i=1:length(selection_values)    
     j = find(strcmp(selection_values{i}, struct_list_values));
     if numel(j) ~= 1
-        errorp(ERROR_CODES.ASSERTION_ERROR, 'Pure code bug. Can not find exactly one structure for field value "%s".', selection_values{i})
+        errorp(ERROR_CODES.ASSERTION_ERROR, 'Pure code bug. Can not find exactly one structure with field "%s" with value "%s".', field_name, selection_values{i})
     end
     return_struct_list{i} = struct_list{j};
 end

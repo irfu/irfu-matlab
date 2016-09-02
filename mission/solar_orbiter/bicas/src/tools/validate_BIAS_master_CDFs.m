@@ -42,7 +42,7 @@ function [varargout] = validate_BIAS_master_CDFs(dir_path, file_name_regex)
     for i = 1:length(file_info_list)
         file_name = file_info_list(i).name;
         if ~isempty(regexp(file_name, file_name_regex))
-            file_path = [dir_path, filesep, file_name];
+            file_path = fullfile(dir_path, file_name);
             do_list{end+1} = validate_one_BIAS_master_CDF(file_path);    % do = dataobj
             N_validated_files = N_validated_files + 1;
         end

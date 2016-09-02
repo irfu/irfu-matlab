@@ -53,19 +53,20 @@
 %
 %
 %
-% DEFINITIONS OF TERMS ---- NEEDS REWORKING
+% DEFINITIONS OF TERMS
 % -- process data
 %        In practise, one internal instance variable representing some form of data in some step of
 %        the "data processing process".
-% -- elementary input/output (process data)
-%        Process data that goes in and out of the data manager as a whole. Not an intermediate data type.
-%        The word "elementary" is added to distinguish input/output from the input/output for a smaller operation.
-% -- (process) data type
+% -- elementary input/output process data
+%        Process data that represents data that goes in and out of the data manager as a whole. The word "elementary" is
+%        added to distinguish input/output from the input/output for a smaller operation.
+% -- intermediate process data
+%        Process data that is not elementary.
+% -- process data type
 %        A string that uniquely represents (refers to) a type of process data.
-%        Can be a BICAS input dataset (in memory), a BICAS output dataset (in memory), or some intermediate
-%        internal type of data.
-%        Dataset ID+Skeleton_version, e.g. "ROC-SGSE_L2S_RPW-LFR-SURV-CWF-E_V01", are used as process data types for
-%        elementary input/output process data.
+%        By convention, the process data types for elementary input/output process data types are a shortened version of
+%        dataset_ID+skeleton_version_str, e.g. "L2S_LFR-SURV-CWF-E_V01". Hardcoded values of these occur throughout the
+%        code as constants.
 %
 % CONVENTIONS: 
 % -- It is implicit that arrays representing CDF data, or "CDF-like" data, use the first MATLAB array index to represent
@@ -139,14 +140,18 @@ classdef data_manager
 
     properties(Access=private)
         % Convention: properties is empty = property has not been set yet.
-        
+        % NOTE: Does not need any instance variable "ALL_PROCESS_DATA_TYPES" since the keys in "process_data"
+        % (initialized in the constructor) have the same function.
         
         % NOTE: Only set the map's keys here. This makes sure that no disallowed keys are ever used.
         % For data corresponding to CDFs: Use dataset IDs.
+        % Initialized by constructor.
         process_data = containers.Map('KeyType', 'char', 'ValueType', 'any');
         
-        ELEMENTARY_INPUT_DATA_TYPES  = {'ROC-SGSE_L2R_RPW-LFR-SURV-CWF_V01',   'ROC-SGSE_L2R_RPW-LFR-SURV-SWF_V01',  'ROC-SGSE_HK_RPW-BIA_V01', 'ROC-SGSE_L2R_TEST_V99'};
-        ELEMENTARY_OUTPUT_DATA_TYPES = {'ROC-SGSE_L2S_RPW-LFR-SURV-CWF-E_V01', 'ROC-SGSE_L2S_RPW-LFR-SURV-SWF-E_V01',                           'ROC-SGSE_L2S_TEST_V99'};
+        ELEMENTARY_INPUT_PROCESS_DATA_TYPES  = {'L2R_LFR-SURV-CWF_V01',   'L2R_LFR-SURV-SWF_V01',  'HK_BIA_V01', 'L2R_TEST_V99'};
+        ELEMENTARY_OUTPUT_PROCESS_DATA_TYPES = {'L2S_LFR-SURV-CWF-E_V01', 'L2S_LFR-SURV-SWF-E_V01',              'L2S_TEST_V99'};
+        INTERMEDIATE_PROCESS_DATA_TYPES      = {};
+        %ALL_PROCESS_DATA_TYPES;     % Initialized by constructor
     end
     
     %###############################################################################################
@@ -157,38 +162,51 @@ classdef data_manager
         % Constructor
         %=============
         function obj = data_manager()
-            ALL_DATA_TYPES = {obj.ELEMENTARY_INPUT_DATA_TYPES{:}, obj.ELEMENTARY_OUTPUT_DATA_TYPES{:}};
             
-            assert_strings_unique(ALL_DATA_TYPES)
+            % Initialize instance variable "ALL_PROCESS_DATA_TYPES".
+            ALL_PROCESS_DATA_TYPES = {...
+                obj.ELEMENTARY_INPUT_PROCESS_DATA_TYPES{:}, ...
+                obj.ELEMENTARY_OUTPUT_PROCESS_DATA_TYPES{:}, ...
+                obj.INTERMEDIATE_PROCESS_DATA_TYPES{:}};
             
-            for data_type = ALL_DATA_TYPES
+            % Initialize instance variable "process_data".
+            for data_type = ALL_PROCESS_DATA_TYPES
                 obj.process_data(data_type{1}) = [];
             end
+            
+            % Validate
+            assert_strings_unique(obj.ELEMENTARY_INPUT_PROCESS_DATA_TYPES)
+            assert_strings_unique(obj.ELEMENTARY_OUTPUT_PROCESS_DATA_TYPES)
+            assert_strings_unique(obj.INTERMEDIATE_PROCESS_DATA_TYPES)
+            assert_strings_unique(    ALL_PROCESS_DATA_TYPES)
         end
 
         
         
         % NOTE: Not preventing from setting data types/properties which are not CDF files.
-        function set_input_CDF(obj, data_type, file_path)
-            % PROPOSAL: "Validate" read CDF here.
+        function set_elementary_input_CDF(obj, data_type, file_path)
+            % PROPOSAL: "Validate" the read CDF file here.
+            
             irf.log('n', sprintf('data_type=%s: file_path=%s', data_type, file_path))    % NOTE: irf.log adds the method name.
             global ERROR_CODES
             
-            if ~ismember(data_type, obj.ELEMENTARY_INPUT_DATA_TYPES)
+            % Assertion
+            if ~ismember(data_type, obj.ELEMENTARY_INPUT_PROCESS_DATA_TYPES)
                 errorp(ERROR_CODES.ASSERTION_ERROR, 'Data type is not an elementary input data type.')
             end
+            
             data = dataobj(file_path);
             obj.set_process_data(data_type, data);
         end
 
 
 
-        %===========================================================================================
-        % Like "get_process_data" but tries to fill in values recursively using other process data.
+        %========================================================================================================
+        % Like "get_process_data" but tries to fill in process data values recursively using other process data.
         %
         % This function derives process data from other process data, e.g. CDF data from other CDF data.
-        %===========================================================================================
-        function data = get_process_data_recursively(obj, data_type)
+        %========================================================================================================
+        function data = get_process_data_recursively(obj, data_type, sw_mode_ID)
             % TODO: General functions for handling CDFs:
             %    -validating input/output CDFs: dataset IDs, (same variable sizes?, same nbr of
             %     records), obtain number of records(?!!).
@@ -198,14 +216,14 @@ classdef data_manager
             % TODO: General functions for handling data.
             %    -Convert fill/pad values <---> NaN.
             
-            global ERROR_CODES CONSTANTS
+            global ERROR_CODES %CONSTANTS
             
             %=======================================
             % Return process data if already exists.
             %=======================================
             data = get_process_data(obj, data_type);
             if ~isempty(data)
-                return
+                return   % Return empty data 
             end
             
 
@@ -213,18 +231,18 @@ classdef data_manager
             %===============================
             % Obtain the input process data
             %===============================
-            input_data_types = data_manager.get_input_process_data_types(data_type);
+            input_data_types = data_manager.get_input_process_data_types(data_type, sw_mode_ID);
             inputs = [];
             fn_list = fieldnames(input_data_types);
             for i=1:length(fn_list)
                 fn = fn_list{i};
-                inputs.(fn) = obj.get_process_data_recursively(input_data_types.(fn));
+                inputs.(fn) = obj.get_process_data_recursively(input_data_types.(fn), sw_mode_ID);   % NOTE: RECURSIVE CALL.
             end
-            
+
             
             
             switch(data_type)
-                case 'ROC-SGSE_L2S_RPW-LFR-SURV-CWF-E_V01'
+                case 'L2S_LFR-SURV-CWF-E_V01'
                     % INCOMPLETE/INCORRECT IMPLEMENTATION
                     % Does not take LFR's R0/R1/R2 into account. Current implementation probably based on misinterpretation how the dataset format works.
                     % PROPOSAL: Move assignment of base variables into record loop? Its own record loop?
@@ -375,10 +393,10 @@ classdef data_manager
                     data.QUALITY_BITMASK  = cast(  zeros(size(Epoch)),  convert_CDF_type_to_MATLAB_class('CDF_UINT1', 'Only CDF data types')  );
                     data.DELTA_PLUS_MINUS = cast(  zeros(size(Epoch)),  convert_CDF_type_to_MATLAB_class('CDF_INT8',  'Only CDF data types')  );
                     
-                %case 'ROC-SGSE_L2S_RPW-LFR-SURV-SWF-E_V01'
+                %case 'L2S_LFR-SURV-SWF-E_V01'
                     
                 otherwise
-                    errorp(ERROR_CODES.SW_MODE_PROCESSING_ERROR, 'Can not produce this data type, "%s".', data_type)
+                    errorp(ERROR_CODES.SW_MODE_PROCESSING_ERROR, 'Can not produce this data type ("%s").', data_type)
                     
             end   % switch
         end
@@ -387,7 +405,7 @@ classdef data_manager
     
     %###############################################################################################
 
-    methods(Access=private)        
+    methods(Access=private)
         
         % Return process data value. Does NOT try to fill it with (derived) data if empty.
         % Can be used to find out whether process data has been set.
@@ -428,54 +446,138 @@ classdef data_manager
     methods(Static, Access=public)
 
         %===========================================================================================================
-        % For every process data type, return a structure with fields set to the data types required to derive that
-        % process data type (if any; some data process data types are just set by the caller).
+        % For every process data type (given a S/W mode), return a structure with fields set to the process data types
+        % required to derive that process data type. Elementary input process data types return empty structs.
         %
         % This function effectively
-        % 1) defines/describes the dependencies between different process data types, and
-        % 2) implicitly distinguishes the inputs data types by suitable field names for them (used as field names in other code).
+        % 1) defines/describes the dependencies between different process data types (an acyclic directed graph, albeit
+        %    dependent on S/W modes), and
+        % 2) implicitly decides how to distinguish the input data types by giving them suitable struct field names (used
+        %    as field names in other code).
         %
-        % Not recursive but designed so that other recursive code can recurse over the implicit "tree data structure" defined by it.
+        % The method itself is not recursive but it is designed so that other recursive code can recurse over
+        % the implicit "tree data structure" defined by it.
         % Could be used to derive the (elementary) input datasets from the (elementary) output datasets.
         %===========================================================================================================
-        function inputs = get_input_process_data_types(data_type)
+        function inputs = get_input_process_data_types(data_type, sw_mode_ID)
             % PROPOSAL: Encode data into some data structure (in constants class) instead?!
             global ERROR_CODES
             
-            inputs = struct();
+            inputs = struct();   % Default return value - No input process data required.
             
             switch(data_type)
-                case 'ROC-SGSE_HK_RPW-BIA_V01'
-                case 'ROC-SGSE_L2R_RPW-LFR-SURV-CWF_V01'
-                case 'ROC-SGSE_L2R_RPW-LFR-SURV-SWF_V01'
-                case 'ROC-SGSE_L2R_TEST_V99';   % TEST
+                %=====================================
+                % Elementary INPUT process data types
+                %=====================================
+                case 'HK_BIA_V01'
+
+                % LFR
+                case 'L2R_LFR-SBM1-CWF_V01'
+                case 'L2R_LFR-SBM2-CWF_V01'
+                case 'L2R_LFR-SURV-CWF_V01'
+                case 'L2R_LFR-SURV-SWF_V01'
                     
-                case 'ROC-SGSE_L2S_RPW-LFR-SURV-CWF-E_V01'
-                    inputs.HK  = 'ROC-SGSE_HK_RPW-BIA_V01';
-                    inputs.SCI = 'ROC-SGSE_L2R_RPW-LFR-SURV-CWF_V01';
-                    
-                case 'ROC-SGSE_L2S_RPW-LFR-SURV-SWF-E_V01'
-                    inputs.HK  = 'ROC-SGSE_HK_RPW-BIA_V01';
-                    inputs.SCI = 'ROC-SGSE_L2R_RPW-LFR-SURV-SWF_V01';
-                    
+                % TDS
+                case 'L2R_TDS-LFM-CWF_V01'                    
+                case 'L2R_TDS-LFM-RSWF_V01'
+                case 'L2R_TDS-LFM-RSWF_V02'
+
                 % TEST
-                case 'ROC-SGSE_L2S_TEST_V99'
-                    inputs.SCI2  = 'ROC-SGSE_L2R_TEST_V99';
+                %case 'L2R_TEST_V99';
+
+                %======================================
+                % Elementary OUTPUT process data types
+                %======================================
+                
+                %-----
+                % LFR
+                %-----
+                
+                case 'L2S_LFR-SURV-CWF-E_V01'
+                    inputs.HK  = 'HK_BIA_V01';
+                    inputs.SCI = 'L2R_LFR-SURV-CWF_V01';
                     
+                case 'L2S_LFR-SURV-SWF-E_V01'
+                    inputs.HK  = 'HK_BIA_V01';
+                    inputs.SCI = 'L2R_LFR-SURV-SWF_V01';
+                    
+                %-----
+                % TDS
+                %-----
+                case 'L2S_TDS-LFM-CWF-E_V01'
+                   inputs.HK  = 'HK_BIA_V01';
+                   inputs.SCI = 'L2R_TDS-LFM-CWF_V01';
+                            
+                case 'L2S_TDS-LFM-RSWF-E_V01'
+                    inputs.HK  = 'HK_BIA_V01';
+                    switch(sw_mode_ID)
+                        case 'TDS-LFM-RSWF-E_V01-V01'
+                            inputs.SCI = 'L2R_TDS-LFM-RSWF_V01';
+                        case 'TDS-LFM-RSWF-E_V02-V01'
+                            inputs.SCI = 'L2R_TDS-LFM-RSWF_V02';
+                        otherwise
+                            error_bad_sw_mode(data_type, sw_mode_ID)
+                    end
+
+%                 case 'L2S_TDS-LFM-CWF-E_V01'
+%                     inputs.data = 'std_waveform_data_format';
+%                     inputs.HK   = 'HK_BIA_V01';
+% 
+%                 case 'L2S_TDS-LFM-RSWF-E_V01'
+%                     inputs.data = 'std_waveform_data_format';
+%                     inputs.HK   = 'HK_BIA_V01';
+                
+                %---------------------------------
+                % Intermediate process data types
+                %---------------------------------
+
+%                 case 'input_waveform_data_std_format'
+%                     % Represents the input waveform data, without any HK (incl. LFR's BIAS_MODE_MUX_SET).
+%                     % Name? raw?
+%                     switch(sw_mode_ID)
+%                         case 'TDS-LFM-CWF-E_V01-V01'  ; inputs.SCI = 'L2R_TDS-LFM-CWF_V01';
+%                         case 'TDS-LFM-RSWF-E_V01-V01' ; inputs.SCI = 'L2R_TDS-LFM-RSWF_V01';
+%                         case 'TDS-LFM-RSWF-E_V02-V01' ; inputs.SCI = 'L2R_TDS-LFM-RSWF_V02';
+%                         otherwise
+%                             error_bad_sw_mode(data_type, sw_mode_ID)
+%                     end
+%                 
+%                 case 'HK_std_format'
+%                     % Could also take information from LFR since their datasets also contain (some) HK in BIAS_MODE_MUX_SET.
+%                     inputs.HK = 'HK_BIA_V01';
+                
+                %------
+                % TEST
+                %------
+                
+                case 'L2S_TEST_V99'
+                    inputs.SCI2  = 'L2R_TEST_V99';
+                    
+                %============================================
+                % ERROR: Can not recognize process data type
+                %============================================                    
                 otherwise
-                    errorp(ERROR_CODES.SW_MODE_PROCESSING_ERROR, 'Can not produce this data type, "%s".', data_type)
+                    errorp(ERROR_CODES.SW_MODE_PROCESSING_ERROR, 'Can not produce this process data type, "%s".', data_type)
+            end   % switch
+            
+            
+            
+            %-----------------------------------------------------------------------------------------------------------
+            function error_bad_sw_mode(data_type, sw_mode_ID)
+                errorp(ERROR_CODES.SW_MODE_PROCESSING_ERROR, 'Can not interpret S/W mode ID (%s) for this process data type (%s).', sw_mode_ID, data_type)
             end
+            %-----------------------------------------------------------------------------------------------------------
         end
-        
+
         
         
         %==================================================================================================
         % Collect all the elementary input process data types needed to produce a given process data type.
-        % Can be used to determine which process data types are needed for a S/W mode.
-        % Recursive.
+        %
+        % Can be used to determine which process data types are needed for a S/W mode. Recursive.
         %==================================================================================================
-        function process_data_types = get_elementary_input_process_data_types(data_type)
-            s = data_manager.get_input_process_data_types(data_type);
+        function process_data_types = get_elementary_input_process_data_types(data_type, sw_mode_ID)
+            s = data_manager.get_input_process_data_types(data_type, sw_mode_ID);
             
             process_data_types = {};
             
@@ -488,7 +590,7 @@ classdef data_manager
                 for i = 1:length(fn_list)
                     fn = fn_list{i};
                 
-                    new_types = data_manager.get_elementary_input_process_data_types(s.(fn));   % NOTE: RECURSIVE CALL
+                    new_types = data_manager.get_elementary_input_process_data_types(s.(fn), sw_mode_ID);   % NOTE: RECURSIVE CALL
                     process_data_types = [process_data_types, new_types];
                 end
             end
