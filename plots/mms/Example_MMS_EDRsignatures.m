@@ -37,13 +37,14 @@
 % Requires electron distributions with version number v2.0.0 or higher. 
 % Calculations of agyrotropy measures (1)--(3) become unreliable at low
 % densities n_e <~ 2 cm^-3, when the raw particle counts are low. 
+% Agyrotropies are removed for n_e < 1 cm^-3
 
 %% Time interval selection
 Tint = irf.tint('2015-10-30T05:15:20.00Z/2015-10-30T05:16:20.00Z');
 
 %% Load data
 ic = 1:4;
-c_eval('Bxyz?=mms.db_get_ts(''mms?_fgm_srvy_l2'',''mms?_fgm_b_dmpa_srvy_l2'',Tint);',ic);
+c_eval('Bxyz?=mms.db_get_ts(''mms?_fgm_brst_l2'',''mms?_fgm_b_dmpa_brst_l2'',Tint);',ic);
 c_eval('E? = mms.db_get_ts(''mms?_edp_brst_l2_dce'',''mms?_edp_dce_dsl_brst_l2'',Tint);',ic);
 
 for ii=1:4;
@@ -74,6 +75,26 @@ c_eval('Dng? = irf.ts_scalar(ne?.time,Dng?);',ic);
 c_eval('agyro? = 2*abs(Peqq?.yy.data-Peqq?.zz.data)./(Peqq?.yy.data+Peqq?.zz.data);',ic);
 c_eval('agyro? = irf.ts_scalar(ne?.time,agyro?);',ic);
 
+% Simple fix to remove spurious points
+for xx=1:4
+c_eval('Qdata? = Q?.data;',xx);
+c_eval('for ii=2:1:length(Q?.data)-1;if (Q?.data(ii) > 1.5*Q?.data(ii-1)) && (Q?.data(ii) > 1.5*Q?.data(ii+1)); Qdata?(ii) = NaN; end; end;',xx);
+c_eval('Q?.data = Qdata?;',xx);
+c_eval('Dngdata? = Dng?.data;',xx);
+c_eval('for ii=2:1:length(Dng?.data)-1;if (Dng?.data(ii) > 1.5*Dng?.data(ii-1)) && (Dng?.data(ii) > 1.5*Dng?.data(ii+1)); Dngdata?(ii) = NaN; end; end;',xx);
+c_eval('Dng?.data = Dngdata?;',xx);
+c_eval('agyrodata? = agyro?.data;',xx);
+c_eval('for ii=2:1:length(agyro?.data)-1;if (agyro?.data(ii) > 1.5*agyro?.data(ii-1)) && (agyro?.data(ii) > 1.5*agyro?.data(ii+1)); agyrodata?(ii) = NaN; end; end;',xx);
+c_eval('agyro?.data = agyrodata?;',xx);
+end
+
+% remove all points corresponding to densities below 1cm^-3
+c_eval('rmpnts? = ones(size(ne?.data));',ic);
+c_eval('rmpnts?(ne?.data < 1) = NaN;',ic);
+c_eval('Q?.data = Q?.data.*rmpnts?;',ic);
+c_eval('agyro?.data = agyro?.data.*rmpnts?;',ic);
+c_eval('Dng?.data = Dng?.data.*rmpnts?;',ic);
+
 % Compute temperature ratio An
 c_eval('Temprat? = Pepp?.xx/(Pepp?.yy);',ic);
 
@@ -88,7 +109,10 @@ c_eval('Me? = irf.ts_scalar(ne?.time,Me?);',ic);
 
 % Compute current density and J.E
 c_eval('Jmoms? = irf.ts_vec_xyz(Uevec?.time,1e18*qe*[ne?.data ne?.data ne?.data].*(Uivec?.data-Uevec?.data));',ic); % Current density in nA m^-2
-c_eval('EdotJ? = dot(E?.data,Jmoms?.data,2)/1000;',ic); %J (nA/m^2), E (mV/m), E.J (nW/m^3)
+c_eval('UexB? = cross(Uevec?,Bxyz?);',ic);
+c_eval('UexB?.data = UexB?.data*1e-3;',ic);
+c_eval('UexB?.data = E?.data+UexB?.data;',ic);
+c_eval('EdotJ? = dot(UexB?.data,Jmoms?.data,2)/1000;',ic); %J (nA/m^2), E (mV/m), E.J (nW/m^3)
 c_eval('EdotJ? = irf.ts_scalar(ne?.time,EdotJ?);',ic);
 
 % Calculate epsilon and delta parameters
@@ -98,11 +122,7 @@ c_eval('EdotUe? = dot(E?.data,Uevec?.data,2);',ic);
 c_eval('epsilone? = abs(6*pi*EdotUe?./(omegace?.*(Tefac?.trace.data)));',ic);
 c_eval('epsilone? = irf.ts_scalar(Uevec?.time,epsilone?);',ic);
 
-c_eval('UexB? = cross(Uevec?,Bxyz?);',ic);
-c_eval('UexB?.data = UexB?.data*1e-3;',ic);
-c_eval('UexB?.data = E?.data+UexB?.data;',ic);
 c_eval('UexBabs? = UexB?.abs.data;',ic);
-
 c_eval('deltae? = 1e-3*UexBabs?./(Veperp?.*Bmag?*1e-9);',ic);
 c_eval('deltae? = irf.ts_scalar(Uevec?.time,deltae?);',ic);
 
@@ -137,7 +157,7 @@ irf_legend(h(4),'(d)',[0.99 0.98],'color','k')
 
 h(5)=irf_panel('temprat'); set(h(4),'ColorOrder',mmsColors)
 irf_pl_tx(h(5),'Temprat?',1);
-ylabel(h(5),'An_{e}','Interpreter','tex');
+ylabel(h(5),'T_{e||}/T_{e \perp}','Interpreter','tex');
 irf_legend(h(5),'(e)',[0.99 0.98],'color','k')
 
 h(6)=irf_panel('Me'); set(h(5),'ColorOrder',mmsColors)
@@ -147,7 +167,7 @@ irf_legend(h(6),'(f)',[0.99 0.98],'color','k')
 
 h(7)=irf_panel('JdotE'); set(h(6),'ColorOrder',mmsColors)
 irf_pl_tx(h(7),'EdotJ?',1);
-ylabel(h(7),'E.J (nW m^{-3})','Interpreter','tex');
+ylabel(h(7),'E''.J (nW m^{-3})','Interpreter','tex');
 irf_legend(h(7),'(g)',[0.99 0.98],'color','k')
 
 h(8)=irf_panel('epsilone'); set(h(7),'ColorOrder',mmsColors)

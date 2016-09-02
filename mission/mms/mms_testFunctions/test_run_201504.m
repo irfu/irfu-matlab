@@ -40,11 +40,15 @@ flagComm = 0;
 %tint = irf.tint('2015-10-22T04:17:34Z/2015-10-22T16:42:34Z'); flagComm = 2;
 %tint = irf.tint('2015-12-18T00:00:00Z/2015-12-18T11:59:59Z'); flagComm = 2;
 %tint = irf.tint('2015-12-21T11:55:00Z/2015-12-21T21:55:00Z'); flagComm = 3;
+%tint = irf.tint('2015-12-23T00:00:00Z/2015-12-23T08:30:00Z'); flagComm = 2;
 %tint = irf.tint('2015-11-16T01:25:04Z/2015-11-16T14:41:04Z'); flagComm = 2;
 %tint = irf.tint('2015-11-29T00:01:34Z/2015-11-29T13:46:44Z'); flagComm = 2;
 %tint = irf.tint('2015-11-13T01:44:14Z/2015-11-13T15:00:34Z'); flagComm = 2;
-tint = irf.tint('2016-06-12T05:00:00Z/2016-06-12T06:00:00Z'); flagComm = 2;
-mmsId = 'mms4'; 
+%tint = irf.tint('2016-01-03T00:00:00Z/2016-01-03T07:59:59Z'); flagComm = 2;
+tint = irf.tint('2016-01-31T00:00:00Z/2016-01-31T03:59:59Z'); flagComm = 2;
+%tint = irf.tint('2016-01-03T23:00:00Z/2016-01-03T23:59:59Z'); flagComm = 2;
+%tint = irf.tint('2016-06-12T05:00:00Z/2016-06-12T06:00:00Z'); flagComm = 2;
+mmsId = 'mms3'; 
 
 prf = [data_root filesep mmsId]; utc = tint.start.toUtc(); 
 mo = utc(6:7); yyyy=utc(1:4); day=utc(9:10); hh=utc(12:13); mm=utc(15:16);%
@@ -94,7 +98,9 @@ delta_off = Dmgr.delta_off;
 dce_xyz_dsl = Dmgr.dce_xyz_dsl;
 dcv = Dmgr.dcv;
 
-% Construct TSeries
+phase_an
+
+%% Construct TSeries
 DceSL = irf.ts_vec_xy(dce_xyz_dsl.time,[dce.e12.data dce.e34.data]);
 DceDSL = irf.ts_vec_xyz(dce_xyz_dsl.time,dce_xyz_dsl.data);
 Phase = irf.ts_scalar(dce_xyz_dsl.time,phase.data);
