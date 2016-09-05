@@ -82,7 +82,14 @@ end
 %% Test QL - DMNGR
 irf.log('log_out','screen'), irf.log('notice')
 procId = MMS_CONST.SDCProc.ql; procName='QL'; scId=str2double(mmsId(end));
-tmMode=MMS_CONST.TmMode.comm; samplerate = MMS_CONST.Samplerate.comm_128;
+tmMode=MMS_CONST.TmMode.comm;
+switch flagComm
+  case 0, samplerate = MMS_CONST.Samplerate.slow;
+  case 1, samplerate = MMS_CONST.Samplerate.comm_128;
+  case 2, samplerate = MMS_CONST.Samplerate.fast;
+  otherwise
+    error('Bad flagComm')
+end
 % Initialize DMGR
 Dmgr = mms_sdp_dmgr(scId,procId,tmMode,samplerate);
 Dmgr.set_param('hk_10e',HK_10E_File);
