@@ -367,12 +367,12 @@ switch lower(action)
 				hca=h(2);
 				hold(hca,'on');
 				axis(hca,[0 1 0 1]);
-				yy=.5;dxx=.15;xs=.3;
+				yy=.5;dxx=.25;xs=.01;
 				plot(hca,xs,yy,'ks',xs+1*dxx,yy,'rd',xs+2*dxx,yy,'go',xs+3*dxx,yy,'bv','LineWidth',1.5);
-				text(xs+0.03,yy,'C1','parent',hca);
-				text(xs+1*dxx+0.03,yy,'C2','parent',hca);
-				text(xs+2*dxx+0.03,yy,'C3','parent',hca);
-				text(xs+3*dxx+0.03,yy,'C4','parent',hca);
+				text(xs+0.03,yy,'MMS1','parent',hca);
+				text(xs+1*dxx+0.03,yy,'MMS2','parent',hca);
+				text(xs+2*dxx+0.03,yy,'MMS3','parent',hca);
+				text(xs+3*dxx+0.03,yy,'MMS4','parent',hca);
 				axis(hca,'off');
 				
 			case 'lmn'
@@ -445,11 +445,11 @@ switch lower(action)
 			axis(hca,[0 1 0 1]);
 			hold(hca,'on');
 			yy=1;
-			plot(hca,0,yy,'ks',.2,yy,'rd',.4,yy,'go',.6,yy,'bv','LineWidth',1.5);
+			plot(hca,0,yy,'ks',.27,yy,'rd',.54,yy,'go',.81,yy,'bv','LineWidth',1.5);
 			text(0.03,yy,'MMS1','parent',hca);
-			text(.23,yy,'MMS2','parent',hca);
-			text(.43,yy,'MMS3','parent',hca);
-			text(.63,yy,'MMS4','parent',hca);
+			text(.30,yy,'MMS2','parent',hca);
+			text(.57,yy,'MMS3','parent',hca);
+			text(.84,yy,'MMS4','parent',hca);
 			axis(hca,'off');
 			ht=irf_legend(hca,['mms.mms4_pl_conf() ' datestr(now)],[0,0],'fontsize',8);
 			set(ht,'interpreter','none');

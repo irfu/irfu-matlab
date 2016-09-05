@@ -19,7 +19,7 @@ if isa(tsdata,'TSeries')
     newtstime = tsdata.time(norepeat == 1);
     newtsdata = tsdata.data(norepeat == 1,:);
 
-    newdata = TSeries(newtstime,newtsdata,'to',1);
+    newdata = TSeries(newtstime,newtsdata,'to',tsdata.tensorOrder);
     
 elseif isstruct(tsdata) && isfield(tsdata,'time')
     if isa(tsdata.time,'EpochTT')
