@@ -55,14 +55,18 @@ t3.ns  = floor(t2-t3.sec*10^9-t3.ms*10^6-t3.us*10^3);
 % Compute what TT2000 time that corresponds to, using spdfcomputeTT2000.
 t0 = spdfcomputett2000([t1(1) t1(2) t1(3) t1(4) t1(5) t3.sec t3.ms t3.us t3.ns]);
       
-phaseRad = unwrap(Phase.data*pi/180);
+phaRad = unwrap(Phase.data*pi/180);
 
-STEPS_PER_DEG = 1;
-phaseDegUnw = phaseRad*180/pi;
-phaseFixed = (fix(phaseDegUnw(1)):1/STEPS_PER_DEG:fix(phaseDegUnw(end)))' + 0.5;
-timeTmp = interp1(phaseDegUnw,epochTmp,phaseFixed);
-phaseFixed(isnan(timeTmp)) = []; timeTmp(isnan(timeTmp)) = [];
-phaseFixedWrp = mod(phaseFixed,360);
+STEPS_PER_DEG = 1; phaShift=STEPS_PER_DEG/2;
+phaDegUnw = phaRad*180/pi;
+phaFixed = (fix(phaDegUnw(1)):STEPS_PER_DEG:fix(phaDegUnw(end)))' ...
+  + phaShift;
+pha360 = 0:STEPS_PER_DEG:360; pha360 = pha360' + phaShift; pha360(end) = [];
+n360 = length(pha360);
+timeTmp = interp1(phaDegUnw,epochTmp,phaFixed);
+phaFixed(isnan(timeTmp)) = []; timeTmp(isnan(timeTmp)) = [];
+phaFixedWrp = mod(phaFixed,360);
+
   
 for signal = signals
   sig = signal{:};
@@ -70,7 +74,7 @@ for signal = signals
     errS = ['invalid signal: ' sig]; irf.log('critical',errS), error(errS)
   end 
   
-  phaseRadTmp = phaseRad;
+  phaseRadTmp = phaRad;
   if( (Dcv.time(1)<=t0) && (t0<=Dcv.time(end)))
     bits = MMS_CONST.Bitmask.SWEEP_DATA;
     if sig(1)=='e',
@@ -95,14 +99,23 @@ for signal = signals
   end
   
   sfitR = interp1(double(tSfit-epoch0),Sfit.(sig),epochTmp);
-  spinFitComponent = sfitR(:,1) + sfitR(:,2).*cos(phaseRad) + sfitR(:,3).*sin(phaseRad);
+  spinFitComponent = sfitR(:,1) + sfitR(:,2).*cos(phaRad) + sfitR(:,3).*sin(phaRad);
   
-  Model360.(sig) = zeros(360,1);
+  Model360.(sig) = zeros(n360,1);
   spinRes = interp1(epochTmp,double(double(dataIn))-spinFitComponent,timeTmp);
-  for idx=1:360
-    Model360.(sig)(idx) = median(spinRes(phaseFixedWrp==idx-0.5),'omitnan');
+  for idx=1:n360
+    dataTmp = spinRes(phaFixedWrp==pha360(idx));
+    Model360.(sig)(idx) = median(dataTmp(~isnan(dataTmp)));
   end
-  ModelOut.(sig) = interp1((1:360)'-0.5,Model360.(sig),Phase.data);
+  %Interpolate through the ADP spike for V1..4
+  if sig(1)=='v'
+    angProbeShadow = mod(MMS_CONST.Phaseshift.(['p' sig(2)])*180/pi+180,360);
+    idxAdp = find(pha360<angProbeShadow+1 & pha360>angProbeShadow-1); % +/- 1 deg
+    idxOK = [idxAdp(1)-1 idxAdp(end)+1];
+    Model360.(sig)(idxAdp) = interp1(pha360(idxOK),Model360.(sig)(idxOK),...
+      pha360(idxAdp));
+  end
+  ModelOut.(sig) = interp1(pha360,Model360.(sig),Phase.data);
 end
   
 end
