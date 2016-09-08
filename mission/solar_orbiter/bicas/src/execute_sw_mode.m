@@ -81,22 +81,23 @@ for i = 1:length(C_sw_mode.outputs)
     
     
     
-    %===============================================================
-    % Iterate over all output process data field names (zVariables)
-    %===============================================================
+    %===========================================================================================
+    % Iterate over all output process data field names
+    %===========================================================================================
     fn_list = fieldnames(process_data);
     for i = 1:length(fn_list)
         zVar_name = fn_list{i};
         master_zVar_names = master_info.Variables(:,1);
+        irf.log('n', sprintf('Converting "%s" to CDF zVariable.', zVar_name))
         
         %===========================================
-        % Add process field to CDF as zVariable
+        % Add process field to CDF as a zVariable
         % (assuming there is one in the master CDF)
         %===========================================
         % NOTE: THIS CODE IS STILL INCOMPLETE.
         % 1) The data supplied to write_CDF/spdfcdfwrite is not complete.
         % 1a) The data from the master CDF does not contain attributes for zero-record zVariables in master_data, but it
-        % does in master_info and that seems to be enough for write_CDF/spdfcdfwrite but it is not obvious.
+        % does in master_info and that seems to be enough for write_CDF/spdfcdfwrite but it is not obvious that it should be so.
         % 1b) Not all zVariables are explicitly set (QUALITY_FLAG, QUALITY_BITMASK, DELTA_PLUS_MINUS) and up with one
         % record.
         % 2) There should be a check/assertion that all zVariables expected to be set are also set.

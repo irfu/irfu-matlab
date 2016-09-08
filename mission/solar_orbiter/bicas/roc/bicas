@@ -210,7 +210,7 @@ echo "Command-line arguments: $@" >> "$log_file"
 
 
 
-# Any CALL to this function should appropriately pipe stdout, stderr to log file.
+# Any CALL to this function should appropriately pipe stdout and stderr to log file.
 # Therefore code inside of it does not need to do this.
 launch_matlab_code() {
 
@@ -277,8 +277,16 @@ launch_matlab_code() {
             quit(1);\
         end"
     local matlab_error_code=$?
-    echo "Bash launch function: matlab_error_code = $matlab_error_code"    # NOTE: Printed to stdout ==> Piped to log file.
-    
+    if [[  "$matlab_error_code" != 0 ]] ; then
+        # NOTE: Can receive error both from
+        # (1) failure to launch MATLAB (command does not work, bad path, not on PATH etc.), and
+        # (2) MATLAB itself (MATLAB launched, but the MATLAB code decided something was wrong).
+        # The error message has to be chosen accordingly.
+        echo "Error from launching MATLAB command \"${MATLAB_COMMAND}\"."     >> /dev/stderr
+        echo "Bash launch function: matlab_error_code = $matlab_error_code"   >> /dev/stderr   # Send to stderr, not stdout.
+    else
+        echo "Bash launch function: matlab_error_code = $matlab_error_code"    # NOTE: Send to stdout ==> Piped to log file.
+    fi
     
     
     # NOTE: "exit" inside a bash function does NOT EXIT the entire script file.

@@ -1,59 +1,95 @@
 
+#############
+ About BICAS
+#############
 BICAS = BIAS Calibration Software
-
-
 
 This software, BICAS, is created for the calibration of the hardware BIAS, a component in the RPW instrument on the Solar Orbiter spacecraft.
 The principle author of this software is Erik P G Johansson, IRF-U, Uppsala, Sweden. Software development began 2016-03-xx.
 
-IMPORTANT NOTE: BICAS is designed to comply with the RCS ICD. Much documentation on how to use this software can thus be found there. The documentation here only covers the most important information covered in the RCS ICD.
+IMPORTANT NOTE: BICAS is designed to comply with the RCS ICD. Much documentation on how to use this software can thus be found there. The documentation included in BICAS only covers the most important parts of the RCS ICD.
 
 
 
-=======================
- ACRONYMS / DICTIONARY
-=======================
-RCS            = RPW Calibration Software. BICAS is an example of an RCS.
-ICD            = Interface Control Document
-RCS ICD        = Shorthand for the document ROC-TST-GSE-ICD-00023-LES, "RPW Calibration Software ICD Documentation".
+#######################
+ Acronyms / Dictionary
+#######################
+RCS                        = RPW Calibration Software. BICAS is an example of an RCS.
+ICD                        = Interface Control Document
+RCS ICD                    = Shorthand for the document ROC-TST-GSE-ICD-00023-LES, "RPW Calibration Software ICD Documentation".
 ROC Engineering Guidelines = Document ROC-OPS-PIP-NTT-00008-LES, "RPW Ground Segment - ROC Engineering Guidelines"
-S/W mode       = Mode which defines a set of required input CDF files and a set of output CDF files derived from the input files.
-                 BICAS can execute only one such mode on each run. Executing such modes is the primary purpose of an RCS.
-S/W descriptor = Text on JSON format which describes among other things the S/W modes, including the required CLI parameters albeit not very clearly.
+S/W mode                   = A "S/W mode" defines a set of required input CDF files and a set of output CDF files derived from the input files.
+                             BICAS can execute only one such mode on each run. Executing such modes is the primary purpose of an RCS.
+S/W descriptor             = Text on JSON format which describes among other things the S/W modes, including the required CLI parameters that
+                             every mode requires albeit not very clearly.
+CLI                        = Command-line interface
 
 
-=======================
-SYNTAX / CLI PARAMETERS
-=======================
+
+#################
+ Main executable
+#################
+<BICAS root dir>/roc/bicas
+
+
+
+#############################
+ CLI syntax / CLI parameters
+#############################
 NOTE: The official CLI parameter syntax is defined in RCS ICD, Iss02 Rev02, Section 3.2.
 
 SYNTAX 1: ( --identification | --version | --help ) <General parameters>
 SYNTAX 2: <S/W mode> <General parameters, Output parameter, Specific inputs parameters> 
 
-NOTE: Only the position of the first parameter is important.
-
+NOTE: Only the position of the first parameter is important. The order of all other parameters is arbitrary.
 
 --version           Prints the software version.
 --identification    Prints the S/W descriptor.
 --help
 
-General parameters
-   --log    <absolute path to directory>   (optional) Specifies directory in which to put log files.
-   --config <absolute path to file>        (optional) Specifies the configuration file to use.
+
+====================
+ General parameters
+====================
+--log    <absolute path to directory>   (optional) Specifies directory in which to put log files.
+--config <absolute path to file>        (optional) Specifies the configuration file to use.
 
 <S/W mode>   Selects the S/W mode to use.
-   
-Specific input parameters
-    Set of parameters which specify input CDF files. The exact set depends on the exact S/W mode.
+Available S/W modes can be found in the S/W descriptor. They are listed under "modes". "name" specifies the string that identifies a given mode and can be used on as CLI argument.
 
-Output parameter
+
+===========================
+ Specific input parameters
+===========================
+Set of parameters which specify input CDF files. The exact set depends on the exact S/W mode and can in principle be read from the S/W descriptor.
+Required input parameters for a specific S/W mode can be found in the S/W descriptor under "modes" --> (specific mode) --> "inputs" --> Name of subsection, e.g. "input_hk", "input_sci".
+Example: an input subsection "input_hk" means that there is a required parameter "--input_hk <path_to_file>".
+
+
+==================
+ Output parameter
+==================
    --log    <absolute path to directory>   Specifies the directory in which to put output CDF files.
 
    
+
+===============
+ Example calls
+===============
+bicas --version --config ~/bicas.conf
+bicas --identification
+bicas --identification --log ~/logs
+bicas LFR-SURV-CWF-E   --input_hk  ROC-SGSE_HK_RPW-BIA_7729147_CNE_V01.cdf
+                       --input_sci ROC-SGSE_L2R_RPW-LFR-SURV-CWF_7729147_CNE_V01.cdf
+                       --output ~/temp   --log ~/logs/   --config ~/bicas.conf
+
+
    
-========================================
+   
+########################################
  S/W descriptor, roc_sw_descriptor.json
-========================================
-The S/W descriptor and the file "roc_sw_descriptor.json" are specified by the RCS ICD.
+########################################
+The S/W descriptor and the file "roc_sw_descriptor.json" are required and specified by the RCS ICD.
 The file "roc_sw_descriptor.json" should contain the S/W descriptor. The file is NOT meant to be edited manually.
-If BICAS has been updated in such a way that the software descriptor changes, then a new "roc_sw_descriptor.json" can be generated by piping the stdout from "bicas --identification" to a file.
+If BICAS has been updated in such a way that the software descriptor changes, then a new "roc_sw_descriptor.json" can be generated by piping the stdout from the call "bicas --identification" to the corresponding file.
+

@@ -1,57 +1,73 @@
 
 
-
-=====================
+#####################
+#####################
  System requirements
-=====================
+#####################
+#####################
 1) Mathworks MATLAB 2016a - Needed for the bulk of the application. It is possible that other versions of MATLAB also work but BICAS has neither been tested nor is it supported for any other version of MATLAB. To try BICAS with any other version of MATLAB, BICAS' own internal MATLAB version check has to be modified or disabled for this to work.
 2) bash command shell (Linux) - Needed for the bash script that launches the actual MATLAB application.
 
-NOTE: BICAS can also be run directly from inside MATLAB, without the bash launcher script, and hence without bash and without Linux (untested). For this case, call bicas.m with the CLI parameters as string arguments. Argument flags "--log" and "--config" will be tolerated but will have no effect.
+==================================
+ Running BICAS from inside MATLAB
+==================================
+NOTE: BICAS can also be run directly from inside MATLAB, without the bash launcher script, and hence without bash and presumably without Linux (untested). For this case, call "bicas.m" with the CLI parameters as a sequence of separate string arguments. The argument flags "--log" and "--config" (and their associated user-submitted paths) will be tolerated but will have no effect.
 
 
 
-==================================================================================
-How to extract the ROC ICD-compliant software from the irfu-matlab git repository
-==================================================================================
+########################################
+########################################
+ How to set up an installation of BICAS
+########################################
+########################################
 
-BICAS can be run using any one of two directory structures.
+
+####################################
+ Step 1: Choose directory structure
+####################################
+
+IMPORTANT NOTE: BICAS __CAN__ be run using any one of two different directory structures.
 (1) As it is in the irfu-matlab git repository.
-(2) As it should be run in the RPW pipeline.
+(2) As it should be run in the RPW pipeline. This is compliant with the ROC ICD.
 
 
-
-Context, rationale:
--------------------
+Rationale: Why BICAS can be run using two different directory structures
+------------------------------------------------------------------------
 (1) The ROC Engineering Guidelines iss01rev01 (and maybe the ROC ICD iss02rev02)
     requires BICAS to have a certain directory structure, or at least where the start script should be (bicas/roc/).
 (2) BICAS is developed as a subset of the irfu-matlab git repository (used by IRF-U, Uppsala, Sweden). irfu-matlab
     requires BICAS to be in a certain subdirectory within it.
 (3) When BICAS is a part of irfu-matlab, BICAS uses irfu-matlab function files located outside of BICAS' own subdirectories.
-(4) It is inappropriate to include data (master cdf files) in a git repository.
-
 Therefore one can NEITHER (1) just copy all of irfu-matlab to the location where BICAS is
 to be officially run, NOR (2) just copy the BICAS subdirectory from within irfu-matlab.
 
 
+ONLY IF YOU NEED IT: How to convert an irfu-matlab repository into a ROC ICD-compliant software
+-----------------------------------------------------------------------------------------------
+Procedure in principle: Move the bicas/ directory (irfu-matlab/mission/solar_orbiter/bicas) out of irfu-matlab to where you want BICAS to be located.
+Use bicas/ as a root directory and put the remainder of irfu-matlab/ under bicas/lib/.
 
-Procedure in principle:
------------------------
-(1) Use bicas/ as a root directory and put the remainder of irfu-matlab/ under bicas/lib/.
+Example using moving commands:
+   rm -rf ~/irfu-matlab/.git                                # NOTE: Destroy git versioning information. Optional.
+   mv     ~/irfu-matlab/mission/solar_orbiter/bicas/   ~
+   mkdir  ~/bicas/lib
+   mv     ~/irfu-matlab/   ~/bicas/lib/
 
-Example using copying:
-   rm -rf irfu-matlab/.git
-   mv ~/irfu-matlab/mission/solar_orbiter/bicas/   ~
-   mkdir bicas/lib
-   mv irfu-matlab/   bicas/lib/
+Note: This procedure is only meant to show the setup one wants to achieve.
 
-Note: This procedure is really just meant to show the setup one wants to achieve.
-Note: BICAS is designed to run using both directory configurations. 
 
-(2) Add master cdf files for every dataset that the software can produce to the data/ subdirectory if
-not included already. The master cdf files must have filenames as indicated in the S/W descriptor.
+##########################
+ Step 2: Master CDF files
+##########################
+Add master CDF files for every dataset that the software can produce to the <BICAS root dir>/data/ subdirectory if
+not included already. The master CDF files must have filenames as indicated in the S/W descriptor.
 
-(3) Make sure that BICAS uses the right MATLAB version (important if multiple versions of MATLAB are installed, or MATLAB is not on the path).
+
+############################################
+ Step 3: Configure the right MATLAB command
+############################################
+Make sure that BICAS uses the right MATLAB version (important if there are multiple versions of MATLAB installed, or MATLAB is not on the path).
 The shell command used to launch MATLAB is specified in the configuration file. By default, BICAS uses the configuration file
-<BICAS root dir>/config/bicas.conf .
+<BICAS root dir>/config/bicas.conf . See "System requirements" for MATLAB version.
+NOTE: One can manually specify a configuration file using a command-line flag.
 
