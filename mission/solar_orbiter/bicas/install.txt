@@ -61,6 +61,8 @@ Note: This procedure is only meant to show the setup one wants to achieve.
 ##########################
 Add master CDF files for every dataset that the software can produce to the <BICAS root dir>/data/ subdirectory if
 not included already. The master CDF files must have filenames as indicated in the S/W descriptor.
+As of 2016-09-09, master CDF files can be downloaded from
+https://version-lesia.obspm.fr/repos/ROC/GroundTests/ROC-SGSE/Data/Schemas/CDF/Master/
 
 
 ############################################
