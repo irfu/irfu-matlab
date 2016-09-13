@@ -13,7 +13,10 @@ if length(s)~=13, return, end
 
 try
 	y = str2double(s(1:4));
-	if y<2000 || y > 2015, return, end
+	if y<2000 || y > 2020
+        irf.log('warning',['Invalid year of dataset ' num2str(y)])
+        return
+    end
 	m = str2double(s(5:6));
 	if m<1 || m > 12, return, end
 	d = str2double(s(7:8));
