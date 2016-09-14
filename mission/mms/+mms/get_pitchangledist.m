@@ -76,7 +76,13 @@ if isa(varargin{1},'PDist'),
         irf.log('warning','PDist is skymap format; computing pitch angle distribution.');
         pdist = varargin{1};
         B = varargin{2};
-        phi = TSeries(pdist.time,pdist.depend{1,2});
+        tmpPhi = pdist.depend{1,2};
+        if size(tmpPhi,1) == 1 % only one value for one time or for all times
+          phi = TSeries(pdist.time,repmat(pdist.depend{1,2},pdist.length,1));
+        else
+          phi = TSeries(pdist.time,pdist.depend{1,2});
+        end
+          
         theta = pdist.depend{1,3};
         stepTable = TSeries(pdist.time,pdist.ancillary.esteptable);
         energy0 = pdist.ancillary.energy0;
