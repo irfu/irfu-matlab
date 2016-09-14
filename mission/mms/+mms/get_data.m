@@ -239,8 +239,10 @@ switch varStr
     res.time = EpochTT((TintTmp.start.epoch:int64(30*1e9):TintTmp.stop.epoch)');
     for mmsId=1:4
       mmsIdS = num2str(mmsId);
-      dTmp = mms.db_get_ts(['mms' mmsIdS '_mec_srvy_l2_epht89d'],...
-        ['mms' mmsIdS '_mec_' lower(vC) '_' cS],Tint);
+      
+        dTmp = mms.db_get_ts(['mms' mmsIdS '_mec_srvy_l2_epht89d'],...
+          ['mms' mmsIdS '_mec_' lower(vC) '_' cS],Tint);
+      
       if isempty(dTmp) &&  vC=='V', continue, end
       
       if isempty(dTmp)
@@ -300,7 +302,7 @@ switch Vr.inst
       ind = diff(res.time.ttns) <= 122000; % FIXME: what is brst min dt for A/DFG?
       if( sum(ind) < (length(res)-2) )
         % Remove samples that are too close, but ensure some output if only
-        % two samples with very high sample rate.
+        % two samples with very high sam  ple rate.
         irf.log('notice',['Removing ',sum(ind), ...
           ' samples due to overlap AFG/DFG when transitioning between fast/slow mode.']);
         res = res(~ind);
@@ -524,7 +526,7 @@ end
         end
         rXX = mms.db_get_ts(datasetName,[pref compS.xx suf],Tint);
         if isempty(rXX),irf.log('warning',...
-            ['No data for ' datasetName '(' [pref compS.par suf] ')'])
+            ['No data for ' datasetName '(' [pref compS.xx suf] ')'])
           return
         end
         rXX = comb_ts(rXX);
@@ -565,7 +567,8 @@ end
             energy = mms.db_get_variable(datasetName,[pref '_energy_' Vr.tmmode],Tint);
             phi = mms.db_get_variable(datasetName,[pref '_phi_' Vr.tmmode],Tint);
             theta = mms.db_get_variable(datasetName,[pref '_theta_' Vr.tmmode],Tint);
-            res = irf.ts_skymap(dist.time,dist.data,[],phi.data,theta.data,'energy0',energy.data,'energy1',energy.data,'esteptable',TSeries(dist.time,zeros(dist.length,1)));            
+            %res = irf.ts_skymap(dist.time,dist.data,[],phi.data,theta.data,'energy0',energy.data,'energy1',energy.data,'esteptable',TSeries(dist.time,zeros(dist.length,1)));
+            res = irf.ts_skymap(dist.time,dist.data,[],phi.data,theta.data,'energy0',energy.data,'energy1',energy.data,'esteptable',zeros(dist.length,1));
         end
         res.units = 's^3/cm^6';
         if strcmp(sensor(2),'e')          
