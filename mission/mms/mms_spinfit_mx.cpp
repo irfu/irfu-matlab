@@ -39,7 +39,7 @@ int solve(double A[MAXTERMS_FIT][MAXTERMS_FIT+1], const int nTerms,
 		int mm;
 		for ( int k=j; k<nTerms; k++ ) {
 			mm = k;
-			if ( abs(A[k][j]) > 1.E-12 ) {
+			if ( std::abs(A[k][j]) > 1.E-12 ) {
 				notFound = false;
 				break;
 			}
@@ -202,7 +202,7 @@ Returns:
 			// Search badPoint points
 			bool flagChanged = false;
 			for ( int i=0; i<nData; i++) {
-				if ( !badPoint[i] && abs(adiff[i])>ref ) {
+				if ( !badPoint[i] && std::abs(adiff[i])>ref ) {
 					// Subtract from normal equations
 					double w[MAXTERMS_FIT+1];
 					w[0] = 1;
