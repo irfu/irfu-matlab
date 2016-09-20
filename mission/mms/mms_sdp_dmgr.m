@@ -966,7 +966,8 @@ classdef mms_sdp_dmgr < handle
           DATAC.dce.e34.data(idx) = single((double(DATAC.dcv.v3.data(idx)) - ...
             0.5*(double(DATAC.dcv.v1.data(idx)) +...
             double(DATAC.dcv.v2.data(idx))))/(NOM_BOOM_L/2));
-        else
+        end
+        if 0
           % Correct for spin residual
           Phase = DATAC.phase; %#ok<UNRCH>
           if isempty(Phase)
@@ -980,6 +981,20 @@ classdef mms_sdp_dmgr < handle
             0.5*(double(DATAC.dcv.v1.data(idx)- SpinModel.v1(idx)) +...
             double(DATAC.dcv.v2.data(idx))- SpinModel.v2(idx)...
             ))/(NOM_BOOM_L/2));
+        end
+        if 0
+          % Correct for spin residual using model
+          Phase = DATAC.phase; %#ok<UNRCH>
+          if isempty(Phase)
+            errStr='Bad PHASE input, cannot proceed.';
+            irf.log('critical',errStr); error(errStr);
+          end
+          CMDModel = mms_sdp_model_spin_residual_cmd312(DATAC.dcv,Phase,...
+            DATAC.samplerate);
+          DATAC.dce.e34.data(idx) = single((...
+            double(DATAC.dcv.v3.data(idx)) - ...
+            0.5*(double(DATAC.dcv.v1.data(idx)) + ...
+            double(DATAC.dcv.v2.data(idx))) - CMDModel)/(NOM_BOOM_L/2));
         end
         DATAC.dce.e34.bitmask(idx) = bitor(DATAC.dce.e34.bitmask(idx), ...
           MMS_CONST.Bitmask.ASYMM_CONF);
