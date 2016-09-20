@@ -86,12 +86,10 @@ for signal = signals
       dataIn = mask_bits(dataIn, Dcv.(sig).bitmask, bits);
       timeIn = Dcv.time;
     end
-    idxBad = isnan(dataIn); dataIn(idxBad) = [];
-    timeIn(idxBad) = []; phaseRadTmp(idxBad) = [];
-    
+    idxGood = ~isnan(dataIn);
     [tSfit, Sfit.(sig), ~, ~, ~] = ...
-      mms_spinfit_m(MAX_IT, minPts, N_TERMS, double(timeIn), double(dataIn), ...
-      phaseRadTmp, FIT_EVERY, FIT_INTERV, t0);
+      mms_spinfit_m(MAX_IT, minPts, N_TERMS, double(timeIn(idxGood)),...
+      double(dataIn(idxGood)), phaseRadTmp(idxGood), FIT_EVERY, FIT_INTERV, t0);
   else
     warnStr = sprintf(['Too short time series:'...
       ' no data cover first spinfit timestamp (t0=%i)'],t0);
