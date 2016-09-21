@@ -760,8 +760,8 @@ classdef mms_sdp_dmgr < handle
         end
         
         % Get sweep status and sweep Start/Stop
-        % Add extra 0.2 sec to Stop for safety
-        sweepStart = DATAC.dce.dataObj.data.([varPref 'start']).data;
+        % Add extra 0.1 sec to Stop for safety and remove 0.05 sec to Start
+        sweepStart = DATAC.dce.dataObj.data.([varPref 'start']).data - 5e7;
         sweepStop = DATAC.dce.dataObj.data.([varPref 'stop']).data + 1e8;
         sweepSwept = DATAC.dce.dataObj.data.([varPref 'swept']).data;
         
@@ -774,7 +774,7 @@ classdef mms_sdp_dmgr < handle
           end
           sweepStatus = logical(DATAC.hk_105.sweepstatus);
           sweepStart = DATAC.hk_105.time([diff(sweepStatus)==1; false]);
-          if sweepStatus(1) % First point nas sweep ON, start at t(0)-4s
+          if sweepStatus(1) % First point has sweep ON, start at t(0)-4s
             sweepStart = [DATAC.hk_105.time(1)-int64(4e9) sweepStart];
           end
           sweepStop = DATAC.hk_105.time([false; diff(sweepStatus)==-1]);
