@@ -168,12 +168,12 @@ classdef mms_sdp_dmgr < handle
           chk_latched_p()
           %apply_transfer_function()
           v_from_e_and_v()
-          e_from_asym()
           chk_bias_guard()
           chk_aspoc_on()
           chk_sweep_on()
 %          chk_maneuvers()
           chk_sdp_v_vals()
+          e_from_asym()
           sensors = {'e12','e34','e56'};
           apply_nom_amp_corr() % AFTER all V values was calculated but before most processing.
           sensors = {'e12','e34'};
@@ -966,6 +966,10 @@ classdef mms_sdp_dmgr < handle
           DATAC.dce.e34.data(idx) = single((double(DATAC.dcv.v3.data(idx)) - ...
             0.5*(double(DATAC.dcv.v1.data(idx)) +...
             double(DATAC.dcv.v2.data(idx))))/(NOM_BOOM_L/2));
+          % Combine the bitmasks, as the new E34 will be affected when
+          % either E12 or E34 is sweeping. Other bits are left unaffected.
+          e12Sweep = bitand(DATAC.dce.e12.bitmask(idx), MMS_CONST.Bitmask.SWEEP_DATA); % True when e12 sweep
+          DATAC.dce.e34.bitmask(idx) = bitor(DATAC.dce.e34.bitmask(idx), e12Sweep);
         end
         if 0
           % Correct for spin residual
