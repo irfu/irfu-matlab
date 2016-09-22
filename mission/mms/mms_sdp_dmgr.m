@@ -10,6 +10,7 @@ classdef mms_sdp_dmgr < handle
     adc_off = [];     % comp ADC offsets
     aspoc = [];       % src ASPOC file
     calFile = [];     % name of calibration file used
+    CMDModel = [];    % comp CMDmodel
     dce = [];         % src DCE file
     dce_xyz_dsl = []; % comp E-field xyz DSL-coord
     dcv = [];         % src DCV file
@@ -962,10 +963,10 @@ classdef mms_sdp_dmgr < handle
         % E34 = (V3 - 0.5*(V1 + V2))/(L/2)
         idx = indFail & ~sen3_off;
         NOM_BOOM_L = .12; % 120 m
-        if 1 % The simplest correstion
+        if 0 % The simplest correstion
           DATAC.dce.e34.data(idx) = single((double(DATAC.dcv.v3.data(idx)) - ...
             0.5*(double(DATAC.dcv.v1.data(idx)) +...
-            double(DATAC.dcv.v2.data(idx))))/(NOM_BOOM_L/2));
+            double(DATAC.dcv.v2.data(idx))))/(NOM_BOOM_L/2)); %#ok<UNRCH>
           % Combine the bitmasks, as the new E34 will be affected when
           % either E12 or E34 is sweeping. Other bits are left unaffected.
           e12Sweep = bitand(DATAC.dce.e12.bitmask(idx), MMS_CONST.Bitmask.SWEEP_DATA); % True when e12 sweep
@@ -986,19 +987,23 @@ classdef mms_sdp_dmgr < handle
             double(DATAC.dcv.v2.data(idx))- SpinModel.v2(idx)...
             ))/(NOM_BOOM_L/2));
         end
-        if 0
+        if 1
           % Correct for spin residual using model
           Phase = DATAC.phase; %#ok<UNRCH>
           if isempty(Phase)
             errStr='Bad PHASE input, cannot proceed.';
             irf.log('critical',errStr); error(errStr);
           end
-          CMDModel = mms_sdp_model_spin_residual_cmd312(DATAC.dcv,Phase,...
+          DATAC.CMDModel = mms_sdp_model_spin_residual_cmd312(DATAC.dcv,Phase,...
             DATAC.samplerate);
           DATAC.dce.e34.data(idx) = single((...
             double(DATAC.dcv.v3.data(idx)) - ...
             0.5*(double(DATAC.dcv.v1.data(idx)) + ...
-            double(DATAC.dcv.v2.data(idx))) - CMDModel)/(NOM_BOOM_L/2));
+            double(DATAC.dcv.v2.data(idx))) - DATAC.CMDModel)/(NOM_BOOM_L/2));
+          % Combine the bitmasks, as the new E34 will be affected when
+          % either E12 or E34 is sweeping. Other bits are left unaffected.
+          e12Sweep = bitand(DATAC.dce.e12.bitmask(idx), MMS_CONST.Bitmask.SWEEP_DATA); % True when e12 sweep
+          DATAC.dce.e34.bitmask(idx) = bitor(DATAC.dce.e34.bitmask(idx), e12Sweep);
         end
         DATAC.dce.e34.bitmask(idx) = bitor(DATAC.dce.e34.bitmask(idx), ...
           MMS_CONST.Bitmask.ASYMM_CONF);
