@@ -416,72 +416,6 @@ classdef mms_sdp_dmgr < handle
           
         case('l2a')
           load_l2a();
-          if(DATAC.procId == MMS_CONST.SDCProc.l2a || DATAC.procId == MMS_CONST.SDCProc.l2pre)
-            if(DATAC.tmMode ~= MMS_CONST.TmMode.brst)
-              % Do full L2Pre processing on L2A Fast/slow data.
-              %% FIXME: MOVE TO PROPER SUBFUNCTIONS.
-              DATAC.l2a.adp = DATAC.l2a.dce.e56.data;
-              % DESPIN, using L2A data (offsets, phase etc).
-              sdpProbes = fieldnames(DATAC.l2a.adc_off); % default {'e12', 'e34'}
-              Etmp = struct('e12',DATAC.l2a.dce.e12.data,'e34',DATAC.l2a.dce.e34.data);
-              for iProbe=1:numel(sdpProbes)
-                % Remove ADC offset
-                Etmp.(sdpProbes{iProbe}) = ...
-                  Etmp.(sdpProbes{iProbe}) - DATAC.l2a.adc_off.(sdpProbes{iProbe});
-              end
-              MMS_CONST = DATAC.CONST;
-              bitmask = mms_sdp_typecast('bitmask',bitor(DATAC.l2a.dce.e12.bitmask,DATAC.l2a.dce.e34.bitmask));
-              Etmp.e12 = mask_bits(Etmp.e12, bitmask, MMS_CONST.Bitmask.SWEEP_DATA);
-              Etmp.e34 = mask_bits(Etmp.e34, bitmask, MMS_CONST.Bitmask.SWEEP_DATA);
-              DeltaOff = irf.ts_vec_xy(DATAC.l2a.spinfits.time, [real(DATAC.l2a.delta_off), imag(DATAC.l2a.delta_off)]);
-              DeltaOffR = DeltaOff.resample(EpochTT(DATAC.l2a.dce.time));
-              dE = mms_sdp_despin(Etmp.e12, Etmp.e34, DATAC.l2a.phase.data, DeltaOffR.data(:,1) + DeltaOffR.data(:,2)*1j);
-              offs = mms_sdp_get_offset(DATAC.scId, DATAC.procId, DATAC.l2a.dce.time);
-              DATAC.calFile = offs.calFile; % Store name of cal file used.
-              dE(:,1) = dE(:,1) - offs.ex; % Remove sunward
-              dE(:,2) = dE(:,2) - offs.ey; % and duskward offsets
-              % Compute DCE Z from E.B = 0, if >10 deg and if abs(B_z)> 1 nT.
-              B_tmp = DATAC.dfg.B_dmpa;
-              B_tmp.data((abs(B_tmp.z.data) <= 1), :) = NaN;
-              dEz = irf_edb(TSeries(EpochTT(DATAC.l2a.dce.time),dE,'vec_xy'), B_tmp, 10, 'E.B=0');
-              DATAC.l2a.dsl = struct('data',[dEz.data],...
-                'bitmask',bitmask);
-
-            else
-              % L1b data combined with L2A fast to be processed for L2Pre
-              % brst.
-              DATAC.l2a.adp = -DATAC.dce.e56.data; % Note: minus (L1b dce e56) to align with DSL Z
-              % Compute values from DCE and store in intermediate l2a
-              % position
-              DATAC.l2a.dce.time = DATAC.dce.time;
-              DATAC.l2a.phase = DATAC.phase;
-              DATAC.l2a.adc_off = DATAC.adc_off;
-              sdpProbes = fieldnames(DATAC.l2a.adc_off); % default {'e12', 'e34'}
-              Etmp = struct('e12',DATAC.dce.e12.data,'e34',DATAC.dce.e34.data);
-              for iProbe=1:numel(sdpProbes)
-                % Remove ADC offset
-                Etmp.(sdpProbes{iProbe}) = ...
-                  Etmp.(sdpProbes{iProbe}) - DATAC.adc_off.(sdpProbes{iProbe});
-              end
-              MMS_CONST = DATAC.CONST;
-              bitmask = mms_sdp_typecast('bitmask',bitor(DATAC.dce.e12.bitmask,DATAC.dce.e34.bitmask));
-              Etmp.e12 = mask_bits(Etmp.e12, bitmask, MMS_CONST.Bitmask.SWEEP_DATA);
-              Etmp.e34 = mask_bits(Etmp.e34, bitmask, MMS_CONST.Bitmask.SWEEP_DATA);
-              DeltaOff = irf.ts_vec_xy(DATAC.l2a.spinfits.time, [real(DATAC.l2a.delta_off), imag(DATAC.l2a.delta_off)]);
-              DeltaOffR = DeltaOff.resample(EpochTT(DATAC.l2a.dce.time));
-              dE = mms_sdp_despin(Etmp.e12, Etmp.e34, DATAC.phase.data, DeltaOffR.data(:,1) + DeltaOffR.data(:,2)*1j);
-              offs = mms_sdp_get_offset(DATAC.scId, DATAC.procId, DATAC.dce.time);
-              DATAC.calFile = offs.calFile; % Store name of cal file used.
-              dE(:,1) = dE(:,1) - offs.ex; % Remove sunward
-              dE(:,2) = dE(:,2) - offs.ey; % and duskward offsets
-              % Compute DCE Z from E.B = 0, if >10 deg and if abs(B_z)> 1 nT.
-              B_tmp = DATAC.dfg.B_dmpa;
-              B_tmp.data((abs(B_tmp.z.data) <= 1), :) = NaN;
-              dEz = irf_edb(TSeries(EpochTT(DATAC.dce.time),dE,'vec_xy'), B_tmp, 10, 'E.B=0');
-              DATAC.l2a.dsl = struct('data',[dEz.data],...
-                'bitmask',bitmask);
-            end
-          end
           
           
         case('aspoc')
@@ -967,10 +901,6 @@ classdef mms_sdp_dmgr < handle
           DATAC.dce.e34.data(idx) = single((double(DATAC.dcv.v3.data(idx)) - ...
             0.5*(double(DATAC.dcv.v1.data(idx)) +...
             double(DATAC.dcv.v2.data(idx))))/(NOM_BOOM_L/2)); %#ok<UNRCH>
-          % Combine the bitmasks, as the new E34 will be affected when
-          % either E12 or E34 is sweeping. Other bits are left unaffected.
-          e12Sweep = bitand(DATAC.dce.e12.bitmask(idx), MMS_CONST.Bitmask.SWEEP_DATA); % True when e12 sweep
-          DATAC.dce.e34.bitmask(idx) = bitor(DATAC.dce.e34.bitmask(idx), e12Sweep);
         end
         if 0
           % Correct for spin residual
@@ -989,22 +919,38 @@ classdef mms_sdp_dmgr < handle
         end
         if 1
           % Correct for spin residual using model
-          Phase = DATAC.phase; %#ok<UNRCH>
+          Phase = DATAC.phase;
           if isempty(Phase)
             errStr='Bad PHASE input, cannot proceed.';
             irf.log('critical',errStr); error(errStr);
           end
-          DATAC.CMDModel = mms_sdp_model_spin_residual_cmd312(DATAC.dcv,Phase,...
-            DATAC.samplerate);
+          % FOR BRST SEGMENTS TRY TO USE L2A, if not brst or if no L2a
+          % loaded compute CMDModel
+          if(DATAC.tmMode == DATAC.CONST.TmMode.brst)
+            if(isfield(DATAC.l2a, 'cmdmodel'))
+              irf.log('notice', 'Using CMD model from L2a file.');
+              tmp = irf.ts_scalar(DATAC.l2a.dce.time, DATAC.l2a.cmdmodel);
+              CMDModel = tmp.resample(EpochTT(DATAC.dce.time));
+              CMDModel = CMDModel.data;
+            else
+              irf.log('warning','Burst but no L2a (fast) CMD model loaded.');
+              CMDModel = mms_sdp_model_spin_residual_cmd312(DATAC.dcv,...
+                Phase, DATAC.samplerate);
+            end
+          else
+            CMDModel = mms_sdp_model_spin_residual_cmd312(DATAC.dcv, ...
+              Phase, DATAC.samplerate);
+            DATAC.CMDModel = CMDModel;
+          end
           DATAC.dce.e34.data(idx) = single((...
             double(DATAC.dcv.v3.data(idx)) - ...
             0.5*(double(DATAC.dcv.v1.data(idx)) + ...
-            double(DATAC.dcv.v2.data(idx))) - DATAC.CMDModel)/(NOM_BOOM_L/2));
-          % Combine the bitmasks, as the new E34 will be affected when
-          % either E12 or E34 is sweeping. Other bits are left unaffected.
-          e12Sweep = bitand(DATAC.dce.e12.bitmask(idx), MMS_CONST.Bitmask.SWEEP_DATA); % True when e12 sweep
-          DATAC.dce.e34.bitmask(idx) = bitor(DATAC.dce.e34.bitmask(idx), e12Sweep);
+            double(DATAC.dcv.v2.data(idx))) - CMDModel)/(NOM_BOOM_L/2));
         end
+        % Combine the bitmasks, as the new E34 will be affected when
+        % either E12 or E34 is sweeping. Other bits are left unaffected.
+        e12Sweep = bitand(DATAC.dce.e12.bitmask(idx), MMS_CONST.Bitmask.SWEEP_DATA); % True when e12 sweep
+        DATAC.dce.e34.bitmask(idx) = bitor(DATAC.dce.e34.bitmask(idx), e12Sweep);
         DATAC.dce.e34.bitmask(idx) = bitor(DATAC.dce.e34.bitmask(idx), ...
           MMS_CONST.Bitmask.ASYMM_CONF);
       end
@@ -1251,6 +1197,14 @@ classdef mms_sdp_dmgr < handle
               DATAC.(param).dce.time, DATAC.(param).dce.(sensors{1}).bitmask, ...
               DATAC.(param).dce.(sensors{2}).bitmask, ...
               DATAC.CONST);
+            % CMDmodel
+            if(isfield(dataObj.data, [varPre, 'cmdmodel_', varSuf]))
+              % CMDmodel (as of 2016/09/22 only for MMS4 after probe 4
+              % failed), to be used in Brst processing.
+              tmp = dataObj.data.([varPre, 'cmdmodel_', varSuf]).data;
+              tmp(tmp==getfield(mms_sdp_typecast('dce'),'fillval')) = NaN;
+              DATAC.(param).cmdmodel = tmp;
+            end
           end
       end % load_l2a
 
@@ -1598,6 +1552,75 @@ classdef mms_sdp_dmgr < handle
       end
     end
     
+    function process_l2a_to_l2pre(DATAC, MMS_CONST)
+      if(DATAC.procId == MMS_CONST.SDCProc.l2a || DATAC.procId == MMS_CONST.SDCProc.l2pre)
+        if(DATAC.tmMode ~= MMS_CONST.TmMode.brst)
+          % Do full L2Pre processing on L2A Fast/slow data.
+          %% FIXME: MOVE TO PROPER SUBFUNCTIONS.
+          DATAC.l2a.adp = DATAC.l2a.dce.e56.data;
+          % DESPIN, using L2A data (offsets, phase etc).
+          sdpProbes = fieldnames(DATAC.l2a.adc_off); % default {'e12', 'e34'}
+          Etmp = struct('e12',DATAC.l2a.dce.e12.data,'e34',DATAC.l2a.dce.e34.data);
+          for iProbe=1:numel(sdpProbes)
+            % Remove ADC offset
+            Etmp.(sdpProbes{iProbe}) = ...
+              Etmp.(sdpProbes{iProbe}) - DATAC.l2a.adc_off.(sdpProbes{iProbe});
+          end
+          MMS_CONST = DATAC.CONST;
+          bitmask = mms_sdp_typecast('bitmask',bitor(DATAC.l2a.dce.e12.bitmask,DATAC.l2a.dce.e34.bitmask));
+          Etmp.e12 = mask_bits(Etmp.e12, bitmask, MMS_CONST.Bitmask.SWEEP_DATA);
+          Etmp.e34 = mask_bits(Etmp.e34, bitmask, MMS_CONST.Bitmask.SWEEP_DATA);
+          DeltaOff = irf.ts_vec_xy(DATAC.l2a.spinfits.time, [real(DATAC.l2a.delta_off), imag(DATAC.l2a.delta_off)]);
+          DeltaOffR = DeltaOff.resample(EpochTT(DATAC.l2a.dce.time));
+          dE = mms_sdp_despin(Etmp.e12, Etmp.e34, DATAC.l2a.phase.data, DeltaOffR.data(:,1) + DeltaOffR.data(:,2)*1j);
+          offs = mms_sdp_get_offset(DATAC.scId, DATAC.procId, DATAC.l2a.dce.time);
+          DATAC.calFile = offs.calFile; % Store name of cal file used.
+          dE(:,1) = dE(:,1) - offs.ex; % Remove sunward
+          dE(:,2) = dE(:,2) - offs.ey; % and duskward offsets
+          % Compute DCE Z from E.B = 0, if >10 deg and if abs(B_z)> 1 nT.
+          B_tmp = DATAC.dfg.B_dmpa;
+          B_tmp.data((abs(B_tmp.z.data) <= 1), :) = NaN;
+          dEz = irf_edb(TSeries(EpochTT(DATAC.l2a.dce.time),dE,'vec_xy'), B_tmp, 10, 'E.B=0');
+          DATAC.l2a.dsl = struct('data',[dEz.data],...
+            'bitmask',bitmask);
+
+        else
+          % L1b data combined with L2A fast to be processed for L2Pre
+          % brst.
+          DATAC.l2a.adp = -DATAC.dce.e56.data; % Note: minus (L1b dce e56) to align with DSL Z
+          % Compute values from DCE and store in intermediate l2a
+          % position
+          DATAC.l2a.dce.time = DATAC.dce.time;
+          DATAC.l2a.phase = DATAC.phase;
+          DATAC.l2a.adc_off = DATAC.adc_off;
+          sdpProbes = fieldnames(DATAC.l2a.adc_off); % default {'e12', 'e34'}
+          Etmp = struct('e12',DATAC.dce.e12.data,'e34',DATAC.dce.e34.data);
+          for iProbe=1:numel(sdpProbes)
+            % Remove ADC offset
+            Etmp.(sdpProbes{iProbe}) = ...
+              Etmp.(sdpProbes{iProbe}) - DATAC.adc_off.(sdpProbes{iProbe});
+          end
+          MMS_CONST = DATAC.CONST;
+          bitmask = mms_sdp_typecast('bitmask',bitor(DATAC.dce.e12.bitmask,DATAC.dce.e34.bitmask));
+          Etmp.e12 = mask_bits(Etmp.e12, bitmask, MMS_CONST.Bitmask.SWEEP_DATA);
+          Etmp.e34 = mask_bits(Etmp.e34, bitmask, MMS_CONST.Bitmask.SWEEP_DATA);
+          DeltaOff = irf.ts_vec_xy(DATAC.l2a.spinfits.time, [real(DATAC.l2a.delta_off), imag(DATAC.l2a.delta_off)]);
+          DeltaOffR = DeltaOff.resample(EpochTT(DATAC.l2a.dce.time));
+          dE = mms_sdp_despin(Etmp.e12, Etmp.e34, DATAC.phase.data, DeltaOffR.data(:,1) + DeltaOffR.data(:,2)*1j);
+          offs = mms_sdp_get_offset(DATAC.scId, DATAC.procId, DATAC.dce.time);
+          DATAC.calFile = offs.calFile; % Store name of cal file used.
+          dE(:,1) = dE(:,1) - offs.ex; % Remove sunward
+          dE(:,2) = dE(:,2) - offs.ey; % and duskward offsets
+          % Compute DCE Z from E.B = 0, if >10 deg and if abs(B_z)> 1 nT.
+          B_tmp = DATAC.dfg.B_dmpa;
+          B_tmp.data((abs(B_tmp.z.data) <= 1), :) = NaN;
+          dEz = irf_edb(TSeries(EpochTT(DATAC.dce.time),dE,'vec_xy'), B_tmp, 10, 'E.B=0');
+          DATAC.l2a.dsl = struct('data',[dEz.data],...
+            'bitmask',bitmask);
+        end
+      end
+    end % process_l2a_to_l2pre
+    
   end % public Methods
   methods (Static)
     function delta_off = comp_delta_off(Spinfits, ...
@@ -1780,6 +1803,8 @@ classdef mms_sdp_dmgr < handle
       
       probe2sc_pot = struct('time',Dcv.time,'data',avPot,'bitmask',bitmask);
     end
+    
+    
   end % static methods
   
 end
