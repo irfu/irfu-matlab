@@ -165,9 +165,9 @@ classdef constants < handle
         
             
             
-            obj.inputs   = constants.produce_inputs_constants();
-            obj.outputs  = constants.produce_outputs_constants(D);          
-            obj.sw_modes = constants.produce_sw_modes_constants();
+            obj.inputs   = bicas.constants.produce_inputs_constants();
+            obj.outputs  = bicas.constants.produce_outputs_constants(D);          
+            obj.sw_modes = bicas.constants.produce_sw_modes_constants();
             
             
             
@@ -221,7 +221,7 @@ classdef constants < handle
                 %==============================================================================================
                 % Find all elementary input process data types for a given elementary output process data type
                 %==============================================================================================
-                temp = data_manager.get_elementary_input_process_data_types(...
+                temp = bicas.data_manager.get_elementary_input_process_data_types(...
                     C_sw_mode.output_process_data_types{i}, C_sw_mode.ID);
                 
                 input_process_data_types = [input_process_data_types, temp];
@@ -469,7 +469,7 @@ classdef constants < handle
             C_inputs{end}.skeleton_version_str = '99';
             
             for i = 1:length(C_inputs)
-                C_inputs{i}.process_data_type = constants.construct_process_data_type(C_inputs{i}.dataset_ID, C_inputs{i}.skeleton_version_str);
+                C_inputs{i}.process_data_type = bicas.constants.construct_process_data_type(C_inputs{i}.dataset_ID, C_inputs{i}.skeleton_version_str);
                 %C_inputs{i}.process_data_type = [C_inputs{i}.dataset_ID, '_V', C_inputs{i}.skeleton_version_str];
             end
         end
@@ -574,7 +574,7 @@ classdef constants < handle
             % See data_manager for definition.
             for i = 1:length(C_outputs)
                 %C_outputs{i}.process_data_type = [C_outputs{i}.dataset_ID, '_V', C_outputs{i}.skeleton_version_str];
-                C_outputs{i}.process_data_type = constants.construct_process_data_type(C_outputs{i}.dataset_ID, C_outputs{i}.skeleton_version_str);
+                C_outputs{i}.process_data_type = bicas.constants.construct_process_data_type(C_outputs{i}.dataset_ID, C_outputs{i}.skeleton_version_str);
             end
         end
         

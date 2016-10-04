@@ -54,19 +54,21 @@ function error_code = bicas( varargin )
 %
 % PROPOSAL: Rename to "bicas_main.m".
 % PROPOSAL: Move prescribed MATLAB version to the config file.
-%
+
 
 
 global ERROR_CODES
 global REQUIRED_MATLAB_VERSION
 global CONSTANTS                 % Initialized later
-[ERROR_CODES, REQUIRED_MATLAB_VERSION] = error_safe_constants();
+[ERROR_CODES, REQUIRED_MATLAB_VERSION] = bicas.error_safe_constants();
 
 try
     % Among other things: Sets up paths to within irfu-matlab (excluding .git/).
     % NOTE: Prints to stdout. Can not deactivate this behaviour!
+    
     irf('check_path');
-    irf.log('warning')      % Set log level.
+    %irf.log('warning')      % Set log level.
+    irf.log('notice')      % Set log level.
     
     % Check MATLAB version
     found_version = version('-release');
@@ -77,7 +79,7 @@ try
     
     t_tic_start = tic;
     
-    CONSTANTS = constants();   % Do not run initialization until the MATLAB version has been checked for. Could fail.
+    CONSTANTS = bicas.constants();   % Do not run initialization until the MATLAB version has been checked for. Could fail.
     
     % Log arguments
     for i = 1:length(varargin)
@@ -184,7 +186,7 @@ try
         %
         % CHOOSE IMPLEMENTATION TO USE.
         %===============================================================
-        execute_sw_mode(C_sw_mode.CLI_parameter, input_files, output_dir)  % The intended real implementation
+        bicas.execute_sw_mode(C_sw_mode.CLI_parameter, input_files, output_dir)   % The intended real implementation
         %execute_sw_mode_TEST_IMPLEMENTATION(C_sw_mode.CLI_parameter, output_dir)   % IMPLEMENTATION FOR TESTING. OUTPUTS NONSENSE CDFs.
         %errorp(ERROR_CODES.OPERATION_NOT_IMPLEMENTED, 'Operation not completely implemented: Use S/W mode')
         
@@ -235,7 +237,7 @@ catch exception
                 temp = strsplit(sc.file, filesep);
                 filename = temp{end};
                 
-                fprintf(2, '    %-25s %-30s row %i,\n', [filename, ','], [sc.name, ','], sc.line);
+                fprintf(2, '    %-25s %-55s row %i,\n', [filename, ','], [sc.name, ','], sc.line);
             end
         end
         
@@ -273,47 +275,46 @@ end
 %
 % NOTE: Will overwrite output file. Not necessary desirable in a real implementation but is
 % practical for testing.
-%
-% ASSUMES
 %===================================================================================================
-function execute_sw_mode_TEST_IMPLEMENTATION(sw_mode_CLI_parameter, output_dir)
+% function execute_sw_mode_TEST_IMPLEMENTATION(sw_mode_CLI_parameter, output_dir)
+% 
+% global ERROR_CODES CONSTANTS
+% 
+% irf.log('c', 'USING TEST IMPLEMENTATION FOR S/W MODES. ONLY CREATES NONSENSE CDF FILES.')
+% 
+% %C_mode = get_C_sw_mode(sw_mode_CLI_parameter);
+% temp = select_structs(C.sw_modes, 'CLI_parameter', {sw_mode_CLI_parameter});
+% C_mode = temp{1};
+% output_JSON = [];
+% 
+% % Iterate over OUTPUTS
+% for i = 1:length(C_mode.outputs)
+%     C_mode_output = C_mode.outputs{i};
+%     master_cdf_filename = C_mode_output.master_cdf_filename;
+%     output_filename = [C_mode_output.dataset_ID, '_V', C_mode_output.skeleton_version_str, '.cdf'];
+%     
+%     src_file  = fullfile(bias_constants.sw_root_dir(), C.master_cdfs_dir_rel, master_cdf_filename);
+%     dest_file = fullfile(output_dir, output_filename);
+%     
+%     irf.log('n', 'Trying to copy file')
+%     irf.log('n', sprintf('   from %s', src_file))
+%     irf.log('n', sprintf('   to   %s', dest_file))
+%     [success, copyfile_msg, ~] = copyfile(src_file, dest_file);   % Overwrites any pre-existing file.
+%     if ~success
+%         errorp(ERROR_CODES.MISC_ERROR, ...
+%             'Failed to copy file\n    from "%s"\n    to   "%s".\n"copyfile" error message: "%s"', ...
+%             src_file, dest_file, copyfile_msg)
+%     end
+%     
+%     output_JSON.(C_mode_output.JSON_output_file_identifier) = output_filename;
+% end
+% 
+% % Print list of files produced in the form of a JSON object.
+% str = JSON_object_str(output_JSON);
+% bicas.stdout_disp(str);
+% 
+% end
 
-global ERROR_CODES CONSTANTS
-
-irf.log('c', 'USING TEST IMPLEMENTATION FOR S/W MODES. ONLY CREATES NONSENSE CDF FILES.')
-
-%C_mode = get_C_sw_mode(sw_mode_CLI_parameter);
-temp = select_structs(C.sw_modes, 'CLI_parameter', {sw_mode_CLI_parameter});
-C_mode = temp{1};
-output_JSON = [];
-
-% Iterate over OUTPUTS
-for i = 1:length(C_mode.outputs)
-    C_mode_output = C_mode.outputs{i};
-    master_cdf_filename = C_mode_output.master_cdf_filename;
-    output_filename = [C_mode_output.dataset_ID, '_V', C_mode_output.skeleton_version_str, '.cdf'];
-    
-    src_file  = fullfile(bias_constants.sw_root_dir(), C.master_cdfs_dir_rel, master_cdf_filename);
-    dest_file = fullfile(output_dir, output_filename);
-    
-    irf.log('n', 'Trying to copy file')
-    irf.log('n', sprintf('   from %s', src_file))
-    irf.log('n', sprintf('   to   %s', dest_file))
-    [success, copyfile_msg, ~] = copyfile(src_file, dest_file);   % Overwrites any pre-existing file.
-    if ~success
-        errorp(ERROR_CODES.MISC_ERROR, ...
-            'Failed to copy file\n    from "%s"\n    to   "%s".\n"copyfile" error message: "%s"', ...
-            src_file, dest_file, copyfile_msg)
-    end
-    
-    output_JSON.(C_mode_output.JSON_output_file_identifier) = output_filename;
-end
-
-% Print list of files produced in the form of a JSON object.
-str = JSON_object_str(output_JSON);
-stdout_disp(str);
-
-end
 
 
 %===================================================================================================
@@ -323,8 +324,8 @@ function print_version()
 % constants since the RCS ICD specifies that it should be that specific version.
 % This in principle inefficient but precise.
 
-swd = get_sw_descriptor();
-stdout_printf('Version %s\n', swd.release.version)
+swd = bicas.get_sw_descriptor();
+bicas.stdout_printf('Version %s\n', swd.release.version)
 
 end
 
@@ -339,9 +340,9 @@ end
 function print_identification()
 global CONSTANTS
 
-D = get_sw_descriptor();
+D = bicas.get_sw_descriptor();
 str = JSON_object_str(D, CONSTANTS.C.JSON_object_str);
-stdout_disp(str);
+bicas.stdout_disp(str);
 
 end
 
@@ -356,14 +357,14 @@ function print_help()
 
 global ERROR_CODES
 
-D = get_sw_descriptor();
-stdout_printf('%s\n%s\n', D.identification.name, D.identification.description)
+D = bicas.get_sw_descriptor();
+bicas.stdout_printf('%s\n%s\n', D.identification.name, D.identification.description)
 
-stdout_printf('\nError codes (internal constants):\n')
+bicas.stdout_printf('\nError codes (internal constants):\n')
 for sfn = fieldnames(ERROR_CODES)'
     error_code = ERROR_CODES.(sfn{1});
     error_name = sfn{1};
-    stdout_printf('   %3i = %s\n', error_code, error_name)
+    bicas.stdout_printf('   %3i = %s\n', error_code, error_name)
 end
 
 %errorp(ERROR_CODES.OPERATION_NOT_IMPLEMENTED, 'Operation not implemented: --help.')

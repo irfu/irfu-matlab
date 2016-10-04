@@ -237,7 +237,7 @@ classdef data_manager
                 return   % Return with already available process data.
             end
             
-            [input_process_data_types, processing_func] = data_manager.get_processing_info(process_data_type, sw_mode_ID);            
+            [input_process_data_types, processing_func] = bicas.data_manager.get_processing_info(process_data_type, sw_mode_ID);            
             % Assertion
             if isempty(processing_func)
                 errorp(ERROR_CODES.ASSERTION_ERROR, 'Received no processing function necessary for deriving process data (type "%s").', process_data_type)
@@ -396,7 +396,7 @@ classdef data_manager
                 case 'L2S_LFR-SURV-CWF-E_V01'
                     inputs.HK_cdf  = 'HK_BIA_V01';
                     inputs.SCI_cdf = 'L2R_LFR-SURV-CWF_V01';
-                    func = @data_manager.process_LFR_CWF_CDF_to_BIAS_CDF;
+                    func = @bicas.data_manager.process_LFR_CWF_CDF_to_BIAS_CDF;
                 case 'L2S_LFR-SURV-SWF-E_V01'
                     inputs.HK_cdf  = 'HK_BIA_V01';
                     inputs.SCI_cdf = 'L2R_LFR-SURV-SWF_V01';
@@ -493,7 +493,7 @@ classdef data_manager
             %     T = T_next
             % end
             
-            [input_process_data_types, ~] = data_manager.get_processing_info(process_data_type, sw_mode_ID);
+            [input_process_data_types, ~] = bicas.data_manager.get_processing_info(process_data_type, sw_mode_ID);
             
             elem_input_types = {};
             
@@ -506,7 +506,7 @@ classdef data_manager
                 for i = 1:length(fn_list)
                     fn = fn_list{i};
                 
-                    new_types = data_manager.get_elementary_input_process_data_types(...
+                    new_types = bicas.data_manager.get_elementary_input_process_data_types(...
                         input_process_data_types.(fn), ...
                         sw_mode_ID);                        % NOTE: RECURSIVE CALL
                     
@@ -564,7 +564,7 @@ classdef data_manager
             %                     while i_first <= N_LFR_records;
             %
             %                         % Find sequence of records having identical settings.
-            %                         i_last = data_manager.find_last_same_sequence(...
+            %                         i_last = bicas.data_manager.find_last_same_sequence(...
             %                             i_first, ...
             %                             LFR_cdf.R0.data, ...
             %                             LFR_cdf.R1.data, ...
@@ -597,7 +597,7 @@ classdef data_manager
             % DIFF_GAIN values for BIAS HK time stamps.
             % NOTE: Not perfect, since one should ideally use time stamps for every LFR _sample_.
             %------------------------------------------------------------------------------------------------
-            DIFF_GAIN = data_manager.nearest_interpolate_records(...
+            DIFF_GAIN = bicas.data_manager.nearest_interpolate_records(...
                 BIAS_HK_cdf.ACQUISITION_TIME.data, ...
                 BIAS_HK_cdf.HK_BIA_DIFF_GAIN.data, ...
                 LFR_cdf    .ACQUISITION_TIME.data);
@@ -608,7 +608,7 @@ classdef data_manager
             % NOTE: One can obtain MUX_SET from either (1) LFR, or (2) BIAS HK.
             % NOTE: Not perfect handling of time, since one should ideally use time stamps for every LFR _sample_.
             %------------------------------------------------------------------------------------------------------
-            MUX_SET = data_manager.nearest_interpolate_records(...
+            MUX_SET = bicas.data_manager.nearest_interpolate_records(...
                 BIAS_HK_cdf.ACQUISITION_TIME.data, ...
                 BIAS_HK_cdf.HK_BIA_MODE_MUX_SET.data, ...
                 LFR_cdf    .ACQUISITION_TIME.data);      % Use BIAS HK.
@@ -627,7 +627,7 @@ classdef data_manager
             while i_first <= N_LFR_records;
                 
                 % Find sequence of records having identical settings.
-                i_last = data_manager.find_last_same_sequence(...
+                i_last = bicas.data_manager.find_last_same_sequence(...
                     i_first, ...
                     DIFF_GAIN, ...
                     MUX_SET, ...
@@ -635,16 +635,16 @@ classdef data_manager
                 
                 diff_gain        = DIFF_GAIN(i_first);
                 mux_set          = MUX_SET(i_first);
-                sample_frequency = data_manager.get_LFR_samples_in_snapshot_frequency(LFR_cdf.FREQ.data(i_first));
+                sample_frequency = bicas.data_manager.get_LFR_samples_in_snapshot_frequency(LFR_cdf.FREQ.data(i_first));
                 
-                demuxer_input_subseq = data_manager.select_subset_from_struct(demuxer_input, i_first, i_last);
+                demuxer_input_subseq = bicas.data_manager.select_subset_from_struct(demuxer_input, i_first, i_last);
                 
                 %=================================================
                 % CALL DEMUXER - See method/function for comments
                 %=================================================
-                demuxer_output_subseq = data_manager.simple_demultiplex(demuxer_input_subseq, mux_set, diff_gain);
+                demuxer_output_subseq = bicas.data_manager.simple_demultiplex(demuxer_input_subseq, mux_set, diff_gain);
                 
-                demuxer_output = data_manager.add_components_to_struct(demuxer_output, demuxer_output_subseq);
+                demuxer_output = bicas.data_manager.add_components_to_struct(demuxer_output, demuxer_output_subseq);
                 
                 i_first = i_last + 1;
                 
@@ -655,15 +655,15 @@ classdef data_manager
             %===============================================
             % Convert 1 snapshot/record --> 1 sample/record
             %===============================================
-            ACQUISITION_TIME = data_manager.convert_snapshotsPR_to_samplesPR_ACQUISITION_TIME(...
+            ACQUISITION_TIME = bicas.data_manager.convert_snapshotsPR_to_samplesPR_ACQUISITION_TIME(...
                 LFR_cdf.ACQUISITION_TIME.data, ...
                 N_samples_per_snapshot, ...
                 sample_frequency);
-            Epoch = data_manager.convert_snapshotsPR_to_samplesPR_Epoch_TEMP(  LFR_cdf.Epoch.data, N_samples_per_snapshot  );
+            Epoch = bicas.data_manager.convert_snapshotsPR_to_samplesPR_Epoch_TEMP(  LFR_cdf.Epoch.data, N_samples_per_snapshot  );
             fn_list = fieldnames(demuxer_output);
             for i = 1:length(fn_list)
                 fn = fn_list{i};
-                demuxer_output.(fn) = data_manager.convert_snapshotPR_to_samplePR_DATA(  demuxer_output.(fn), N_samples_per_snapshot  );
+                demuxer_output.(fn) = bicas.data_manager.convert_snapshotPR_to_samplePR_DATA(  demuxer_output.(fn), N_samples_per_snapshot  );
             end
             
             
@@ -797,7 +797,7 @@ classdef data_manager
             N_records = size(ACQUISITION_TIME_1, 1);
             
             % Derive the corresponding column and row vectors.
-            t_1           = data_manager.ACQUISITION_TIME_to_linear_seconds(ACQUISITION_TIME_1);  % Column vector
+            t_1           = bicas.data_manager.ACQUISITION_TIME_to_linear_seconds(ACQUISITION_TIME_1);  % Column vector
             tr_snapshot_1 = (0:(N_samples_per_snapshot-1)) / sample_frequency;    % Row vector. tr = time relative (does not refer to absolute point in time).
             
             % Derive the corresponding same-sized matrices (one row per snapshot).
@@ -807,7 +807,7 @@ classdef data_manager
             % Add matrices and convert to column vector.
             t_2 = reshape((t_1_M + tr_snapshot_1_M)', N_records*N_samples_per_snapshot, 1);
             
-            ACQUISITION_TIME_2 = data_manager.linear_seconds_to_ACQUISITION_TIME(t_2);
+            ACQUISITION_TIME_2 = bicas.data_manager.linear_seconds_to_ACQUISITION_TIME(t_2);
         end
 
 
@@ -1016,8 +1016,8 @@ classdef data_manager
             % PROPOSAL: Better name?
             % PROPOSAL: Type cast return variable?
             
-            t_src  = data_manager.ACQUISITION_TIME_to_linear_seconds(ACQUISITION_TIME_src);
-            t_dest = data_manager.ACQUISITION_TIME_to_linear_seconds(ACQUISITION_TIME_dest);
+            t_src  = bicas.data_manager.ACQUISITION_TIME_to_linear_seconds(ACQUISITION_TIME_src);
+            t_dest = bicas.data_manager.ACQUISITION_TIME_to_linear_seconds(ACQUISITION_TIME_dest);
             
             % Vq = interp1(X,V,Xq,METHOD,EXTRAPVAL) replaces the values outside of the
             % interval spanned by X with EXTRAPVAL.  NaN and 0 are often used for

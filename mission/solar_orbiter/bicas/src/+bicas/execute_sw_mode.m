@@ -39,7 +39,7 @@ end
 
 
 
-DM = data_manager();
+DM = bicas.data_manager();
 
 
 
@@ -76,7 +76,7 @@ for i = 1:length(C_sw_mode.outputs)
     process_data = DM.get_process_data_recursively(process_data_type, C_sw_mode.ID);
     
     % Read master CDF file.
-    master_CDF_path = get_master_CDF_path(C_output.dataset_ID, C_output.skeleton_version_str);
+    master_CDF_path = bicas.get_master_CDF_path(C_output.dataset_ID, C_output.skeleton_version_str);
     [master_data, master_info] = spdfcdfread(master_CDF_path, 'Structure', 1, 'KeepEpochAsIs', 1);
     
     
@@ -137,7 +137,7 @@ end
 % Required by the RCS ICD iss2rev2, section 3.3.
 %============================================================
 str = JSON_object_str(JSON_filenames_obj, CONSTANTS.C.JSON_object_str);
-stdout_disp(str);
+bicas.stdout_disp(str);
 
 end
 

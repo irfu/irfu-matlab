@@ -240,7 +240,7 @@ launch_matlab_code() {
 
 
 
-    #=============================================================================
+    #===================================================================================================================
     # MATLAB options:
     #
     #     -r MATLAB_command    - Start MATLAB and execute the MATLAB_command.
@@ -252,22 +252,26 @@ launch_matlab_code() {
     #                            desktop will not be started.
     #     -nosplash            - Do not display the splash screen during startup.
     #
-    # NOTE: The MATLAB code supplied here is to make sure that the code works well in case of failure.
-    # 1) MATLAB will NOT EXIT unless the code itself calls "exit".
-    # 2) MATLAB hangs if it can not find the MATLAB script.
+    # IMPLEMENTATION NOTE: The MATLAB code supplied here is to make sure that
+    # the code works well in the event of failure.
+    # 1) MATLAB itself will NOT EXIT unless the code itself calls "exit".
+    # 2) MATLAB hangs if it can not find the MATLAB script. One can therefore not just launch MATLAB to call script.
+    # One also has to catch (try-catch) errors.
+    #
     # NOTE: It is very important to end lines with semicolons and backslash for
     # the command line-supplied MATLAB code to not yield syntax error AND NOT HANG.
     # 
-    # NOTE: Do not change directory, so that the current working directory is the same
-    # in MATLAB as here. This is necessary for MATLAB code to correctly interpret relative paths (arguments).
-    # NOTE: The irfu-matlab code itself adds subdirectories to irfu-matlab/. "genpath is therefor not required.
-    #=============================================================================
+    # IMPLEMENTATION NOTE: MATLAB must be called from the same current directory as this bash script is called from.
+    # This is necessary for the MATLAB code TO AT ALL BE ABLE to correctly interpret relative paths (arguments).
+    #
+    # NOTE: The irfu-matlab code itself adds subdirectories to irfu-matlab/. "genpath" should therefor not ne required.
+    #===================================================================================================================
     echo "Launching MATLAB, using \"${MATLAB_COMMAND}\"."
     "${MATLAB_COMMAND}" -nodisplay -r "\
         try;\
-            addpath(genpath('${BICAS_ROOT_PATH}/src'), '-begin');\
-            addpath(genpath('${BICAS_ROOT_PATH}/lib'), '-begin');\
-            addpath(        '${IRFUMATLAB_PATH}',      '-begin');\
+            addpath('${BICAS_ROOT_PATH}/src', '-begin');\
+            addpath('${BICAS_ROOT_PATH}/lib', '-begin');\
+            addpath('${IRFUMATLAB_PATH}',      '-begin');\
             error_code = $MATLAB_SCRIPT_NAME($matlab_arg_list);\
             quit(error_code);\
         catch e;\

@@ -5,6 +5,6 @@
 %
 function stdout_printf(pattern, varargin)
 
-    stdout_disp(sprintf(pattern, varargin{:}));
+    bicas.stdout_disp(sprintf(pattern, varargin{:}));
     
 end
