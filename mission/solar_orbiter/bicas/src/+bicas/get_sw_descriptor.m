@@ -82,9 +82,9 @@ end
 for x = C_sw_mode.outputs
     mi_O = x{1};
     SWD_output = [];
-    
+
     [~, master_filename] = bicas.get_master_CDF_path(mi_O.dataset_ID, mi_O.skeleton_version_str);
-        
+
     SWD_output.identifier  = mi_O.dataset_ID;
     SWD_output.name        = mi_O.SWD_name;
     SWD_output.description = mi_O.SWD_description;

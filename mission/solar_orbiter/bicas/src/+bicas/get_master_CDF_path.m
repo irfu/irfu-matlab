@@ -12,6 +12,5 @@ function [master_CDF_path, master_filename] = get_master_CDF_path(dataset_ID, sk
     global CONSTANTS
     
     master_filename = [dataset_ID, '_V', skeleton_version_str, '.cdf'];
-    master_CDF_path = fullfile(CONSTANTS.SW_root_dir(), CONSTANTS.C.master_CDFs_dir_rel, master_filename);
+    master_CDF_path = fullfile(CONSTANTS.BICAS_root_path, CONSTANTS.C.master_CDFs_dir_rel, master_filename);
 end
-

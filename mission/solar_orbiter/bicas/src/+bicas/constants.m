@@ -41,15 +41,16 @@
 classdef constants < handle
 %
 % PROPOSAL: Redefine file into something that makes "decisions"?
-% PROPOSAL: Method for finding the path to the master CDF for a given output.
+% PROPOSAL: Method for finding the path to the master CDF for a given output (instead of separate function).
 %
 % PROPOSAL: Include SW root path?! How?
 %    PRO: Needs to be universally accessible.
 %    CON: Not hardcoded. ==> Mixes code with manually set constants.
 %    CON: No good MATLAB implementation of static variables.
 %    QUESTION: Is there anything analogous? output dir?
+%    PROPOSAL: Some functionality for setting "properties", in reality named ~global variables as key-value pairs. cf OVT.
 %
-% PROPOSAL: Merge with init global constants?
+% PROPOSAL: Merge with error_safe_constants?
 %    CON: Would require to having only "error safe code".
 %       PROPOSAL: Limit to code without branching (except lazy eval.) and without reading/calling
 %                 external files so that one single clear+run will tell whether it works or not.
@@ -81,11 +82,12 @@ classdef constants < handle
 
 
 
+    %###################################################################################################################
+    
     % NOTE: Should be private when not debugging.
     properties(Access=private)
         inputs
         outputs
-        root_dir_path
     end
     
     %###################################################################################################################
@@ -93,6 +95,7 @@ classdef constants < handle
     properties(Access=public)
         C                  % For miscellaneous minor constants which still might require code to be initialized.
         sw_modes
+        BICAS_root_path
     end
 
     %###################################################################################################################
@@ -102,7 +105,7 @@ classdef constants < handle
         %=============
         % Constructor
         %=============
-        function obj = constants()            
+        function obj = constants(BICAS_root_path)            
             
             %--------------------------------------------------------------------------------
             % Common values. Only used INDIRECTLY to set the values of the "real" constants.
@@ -167,7 +170,7 @@ classdef constants < handle
             obj.outputs  = bicas.constants.produce_outputs_constants(D);          
             obj.sw_modes = bicas.constants.produce_sw_modes_constants();
             
-            
+            obj.BICAS_root_path = BICAS_root_path;
             
             obj.validate
         end
@@ -183,17 +186,17 @@ classdef constants < handle
         %=========================================================================
         % Effectively a variable that can be written to once, and then only read.
         %=========================================================================
-        function varargout = SW_root_dir(obj, varargin)
-            % PROPOSAL: Change to plain public variable/property?
-            
-            if nargout == 0 && length(varargin) == 1 && isempty(obj.root_dir_path)
-                obj.root_dir_path = varargin{1};
-            elseif length(varargin) == 0 && ~isempty(obj.root_dir_path)  % NOTE: Does not check for nargout intentionally.
-                varargout{1} = obj.root_dir_path;
-            else
-                error('BICAS:Assertion', 'Trying to set already set constant, or reading unset constant. Pure code bug.')
-            end
-        end
+%         function varargout = SW_root_dir(obj, varargin)
+%             % PROPOSAL: Change to plain public variable/property?
+%             
+%             if nargout == 0 && length(varargin) == 1 && isempty(obj.root_dir_path)
+%                 obj.root_dir_path = varargin{1};
+%             elseif length(varargin) == 0 && ~isempty(obj.root_dir_path)  % NOTE: Does not check for nargout intentionally.
+%                 varargout{1} = obj.root_dir_path;
+%             else
+%                 error('BICAS:Assertion', 'Trying to set already set constant, or reading unset constant. Pure code bug.')
+%             end
+%         end
 
         
         

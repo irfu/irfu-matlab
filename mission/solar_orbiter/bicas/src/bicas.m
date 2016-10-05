@@ -61,35 +61,42 @@ global CONSTANTS                 % Initialized later
 [ERROR_CODES, REQUIRED_MATLAB_VERSION] = bicas.error_safe_constants();
 
 try
+    
+    t_tic_start = tic;
+    
     % Among other things: Sets up paths to within irfu-matlab (excluding .git/).
     % NOTE: Prints to stdout. Can not deactivate this behaviour!
-    
     irf('check_path');
     %irf.log('warning')      % Set log level.
     irf.log('notice')      % Set log level.
     
+    %======================
     % Check MATLAB version
+    %======================
     found_version = version('-release');
     if ~strcmp(found_version, REQUIRED_MATLAB_VERSION)
-        error('BICAS:BadMATLABVersion', 'Bad MATLAB version. Found %s. Requires %s.\n', found_version, REQUIRED_MATLAB_VERSION)
+        error('BICAS:BadMATLABVersion', 'Bad MATLAB version. Found "%s". Requires "%s".\n', found_version, REQUIRED_MATLAB_VERSION)
     end
     
-    t_tic_start = tic;
+    %=======================================================================
+    % Derive the root path of the software (BICAS directory structure root)
+    %=======================================================================
+    [matlab_src_path, ~, ~] = fileparts(mfilename('fullpath'));
+    BICAS_root_path = get_abs_path(fullfile(matlab_src_path, '..'));
+    %CONSTANTS.SW_root_dir(BICAS_root_path)
+    irf.log('n', sprintf('MATLAB source code path:  "%s"', matlab_src_path))
+    irf.log('n', sprintf('BICAS software root path: "%s"', BICAS_root_path))
     
-    CONSTANTS = bicas.constants();   % Do not run initialization until the MATLAB version has been checked for. Could fail.
-    
+    %=============================
+    % Initialize global constants
+    %=============================
+    CONSTANTS = bicas.constants(BICAS_root_path);   % Do not run initialization until the MATLAB version has been checked for. Could fail.
     % Log arguments
     for i = 1:length(varargin)
         irf.log('n', sprintf('CLI argument %2i: "%s"', i, varargin{i}))
     end
     irf.log('n', sprintf('Current working directory: "%s"', pwd));   % Useful for debugging the use of relative directory arguments.
     
-    % Derive the root path of the software (BICAS directory structure root).
-    [matlab_src_path, ~, ~] = fileparts(mfilename('fullpath'));
-    sw_root_path = get_abs_path(fullfile(matlab_src_path, '..'));
-    CONSTANTS.SW_root_dir(sw_root_path)
-    irf.log('n', sprintf('MATLAB source code path:  "%s"', matlab_src_path))
-    irf.log('n', sprintf('BICAS software root path: "%s"', sw_root_path))
 
 
 
@@ -324,8 +331,10 @@ function print_version()
 % constants since the RCS ICD specifies that it should be that specific version.
 % This in principle inefficient but precise.
 
-swd = bicas.get_sw_descriptor();
-bicas.stdout_printf('Version %s\n', swd.release.version)
+global CONSTANTS
+
+D = bicas.get_sw_descriptor();
+bicas.stdout_printf('Version %s\n', D.release.version)
 
 end
 
