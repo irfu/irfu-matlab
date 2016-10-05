@@ -220,6 +220,15 @@ switch procId
       irf.log('critical', errStr); error('MATLAB:MMS_SDP_CDFWRITE:OUT', errStr);
     end
     sdpPair = fields(spinfit.sfit); % Defailt e12 & e34
+% NEW CMDModel, writing here to be used by Brst segments. As of 2016/09/22
+% it is nominally only produced for MMS4 for time after probe 4 failed. Ie.
+% if it does not exist, do not fail and do not try to write it to file.
+    cmdmodel = Dmgr.CMDModel;
+    if mms_is_error(cmdmodel) || isempty(cmdmodel)
+      no_CMD = true;
+    else
+      no_CMD = false;
+    end
 
     epochTT = dce.time;
     % adcdata & dcedata, defined as CDF_REAL4 (single in Matlab)
@@ -256,7 +265,7 @@ switch procId
     label        = ['E_12'; 'E_34'; 'E_56'];
     label3       = ['E_12'; 'E_34'];
     label4       = ['Delta Ex DSL'; 'Delta Ey DSL'];
-
+    
     outVars = {name.epoch, epochTT, name.label, label, name.dce, dcedata, ...
       name.bitmask, bitmask, name.quality, quality, name.phase, phasedata, ...
       name.label3, label3, name.adc, adcdata, ...
@@ -530,6 +539,28 @@ switch procId
         name.sfits.(sdpPair{iPair}), 'data'; ...
         name.sfitSdev,   'support_data'; ...
         name.sfitAfit,   'support_data'}];
+    end
+    
+    if(~no_CMD)
+      cmdmodel = mms_sdp_typecast('dce', cmdmodel);
+      name.cmdmodel = [datasetPrefix '_cmdmodel_' varNameSuffix];
+      outVars = [outVars {name.cmdmodel, cmdmodel}];
+      recBound = [recBound {name.cmdmodel}];
+      varDatatype = [varDatatype {name.cmdmodel, getfield(mms_sdp_typecast('dce'), 'cdf')}];
+      compressVars = [compressVars {name.cmdmodel, COMPRESS_LEVEL}];
+      % Update VATTRIB
+      VATTRIB.CATDESC = [VATTRIB.CATDESC; {name.cmdmodel, 'CMD Model'}];
+      VATTRIB.DEPEND_0 = [VATTRIB.DEPEND_0; {name.cmdmodel, name.epoch}];
+      VATTRIB.DISPLAY_TYPE = [VATTRIB.DISPLAY_TYPE; {name.cmdmodel, 'time_series'}];
+      VATTRIB.FIELDNAM = [VATTRIB.FIELDNAM; {name.cmdmodel, 'CMD Model'}];
+      VATTRIB.FILLVAL = [VATTRIB.FILLVAL; {name.cmdmodel, getfield(mms_sdp_typecast('dce'), 'fillval')}];
+      VATTRIB.FORMAT = [VATTRIB.FORMAT; {name.cmdmodel, 'F8.3'}];
+      VATTRIB.SI_CONVERSION = [VATTRIB.SI_CONVERSION; {name.cmdmodel, '1.0e-3>V m^-1'}];
+      VATTRIB.TENSOR_ORDER = [VATTRIB.TENSOR_ORDER; {name.cmdmodel, mms_sdp_typecast('tensor_order',0)}];
+      VATTRIB.UNITS = [VATTRIB.UNITS; {name.cmdmodel, 'mV/m'}];
+      VATTRIB.VALIDMIN = [VATTRIB.VALIDMIN; {name.cmdmodel, -EFIELD_MAX}];
+      VATTRIB.VALIDMAX = [VATTRIB.VALIDMAX; {name.cmdmodel, EFIELD_MAX}];
+      VATTRIB.VAR_TYPE = [VATTRIB.VAR_TYPE; {name.cmdmodel, 'support_data'}];
     end
 
   case MMS_CONST.SDCProc.l2pre

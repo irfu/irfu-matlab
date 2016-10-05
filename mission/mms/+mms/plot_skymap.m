@@ -18,7 +18,7 @@ function [ax,hcb] = plot_skymap(varargin)
 %    'log' - plot log10 scale
 %    'energytable' - energytable from v1 data
 %    'phi' - phi data froom V1 data, vary from time to time, ax.XLim = [-10 370]; 
-%    'phicb' & 'thetacb' - solid angle boundary, only for 'flat'    
+%    'phib' & 'polarb' [no theta] - solid angle boundary, only for 'flat'; 
 
 [ax,args,nargs] = axescheck(varargin{:});
 
@@ -54,13 +54,13 @@ while have_options
     case 'phi_edges'            % phi edges from V1/V2 data
       l = 2;
       phi_edges = args{2};
-    case 'phicb'            % phi boundary for picking partial distribution
+    case 'phib'            % phi boundary for picking partial distribution
       l = 2;
-      phicb = args{2};
+      phib = args{2};
       plotb = 1;            % flag --> 1
-    case 'thetacb'            % theta boundary for picking partial distribution
+    case 'polarb'            % theta boundary for picking partial distribution
       l = 2;
-      thetacb = args{2};      
+      polarb = args{2};      
     case 'tint'
       l = 2;
       tint = args{2};
@@ -115,7 +115,7 @@ else % plot flat map
   shading(ax,'flat');
   view(ax,[0 0 1])  
   ax.YLim = [0 180];
-  ax.XLim = [-10 370];                      % better for data phi range; 2016-03-11; wyli
+  ax.XLim = [-10 370];
   ax.Box = 'on';
 end
 hcb = colorbar('peer',ax);
@@ -158,11 +158,11 @@ while have_vectors
   if isempty(vectors), break, end  
 end
     
-  if plotb           % plot setting phi and theta boundary, 2016-03-11; wyli
+  if plotb
     if not(plotSphere)            
-    phicb = [phicb, phicb(1)];
-    thetacb = [thetacb, thetacb(1)];        
-    plot(ax, phicb, thetacb, 'linewidth',2, 'color',[1 1 1])
+    phib = [phib, phib(1)];
+    polarb = [polarb, polarb(1)];        
+    plot(ax, phib, polarb, 'linewidth',2, 'color',[1 1 1])
     end
   end  
 hold(ax,'off');

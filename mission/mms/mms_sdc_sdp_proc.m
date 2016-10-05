@@ -312,8 +312,6 @@ switch procId
           update_header(src_fileData) % Update header with file info.
         end
       end % ASPOC special case
-      %% L1B dce file
-      Dmgr.set_param('dce',dce_obj);
       %% L2A Fast mode file
       if(~isempty(L2A_File))
         irf.log('notice', [procName ' proc using: ' L2A_File]);
@@ -334,6 +332,9 @@ switch procId
           update_header(src_fileData); % Update header with file info.
         end
       end
+      %% L1B dce file
+      Dmgr.set_param('dce',dce_obj);
+      Dmgr.process_l2a_to_l2pre(MMS_CONST);
     else
       % Simple L2A Fast/Slow to L2Pre file
       if isempty(L2A_File)
@@ -343,6 +344,7 @@ switch procId
       end
       irf.log('notice', [procName ' proc using: ' L2A_File]);
       src_fileData = load_file(L2A_File,'l2a');
+      Dmgr.process_l2a_to_l2pre(MMS_CONST);
       update_header(src_fileData) % Update header with file info.
     end % Empty L1B DCE_File
     

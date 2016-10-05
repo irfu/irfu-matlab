@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tables
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="mms_ns_ops.xsd">
+<!-- The following columns should be specified for each event:
+startDate  stopDate  mms1  mms2  mms3  mms4  problem  description  [link]
+
+startDate   = Date and time at the start of the problematic event
+stopDate    = Date and time at the end, both startDate and stopDate should
+              be provided in format "YYYY-MM-DDThh:mm:ss[.mmmuuunnn]Z" where
+              fractional seconds [.mmmuuunnn] are optional.
+mms[1-4]    = Boolean indicator if event affects mms spacecraft [1-4].
+problem     = Short description of the anomaly (problem code), possible
+              values include:
+  - no_tm      = No data at all, e.g. lost DSN download.
+  - bad_data   = Bad data.
+  - bad_bias   = Bad bias on probe(-s).
+  - spec_bias  = Special bias was set on probes and/or guards, e.g.
+                 commissioning.
+  - no_p[1-4]  = No/bad data on probe(-s) [1-4], e.g. probe failure.
+  - info       = informational only (no effect on data processing)
+  - TBD        = TBD
+description = More informative text describing the event.
+link        = Optional link to further information.
+-->
+	<event>
+		<startDate>2002-05-30T09:30:10Z</startDate>
+		<stopDate>2002-05-30T10:30:10Z</stopDate>
+		<mms1>false</mms1>
+		<mms2>false</mms2>
+		<mms3>true</mms3>
+		<mms4>false</mms4>
+		<problem>no_tm</problem>
+		<description>A minor test problem</description>
+	</event>
+	<event>
+		<startDate>2012-05-30T09:30:10Z</startDate>
+		<stopDate>2012-05-30T10:30:10Z</stopDate>
+		<mms1>true</mms1>
+		<mms2>false</mms2>
+		<mms3>true</mms3>
+		<mms4>false</mms4>
+		<problem>bad_bias</problem>
+		<description>A minor test problem 2</description>
+	</event>
+	<event>
+		<startDate>2012-13-30T09:30:10Z</startDate>
+		<stopDate>2012-14-30T10:30:10Z</stopDate>
+		<mms1>true</mms1>
+		<mms2>false</mms2>
+		<mms3>true</mms3>
+		<mms4>false</mms4>
+		<problem>bad_bias</problem>
+		<description>THIS WILL FAIL VERIFICATION A minor test problem 3</description>
+	</event>
+</tables>

@@ -9,6 +9,13 @@ function res = get_data(varStr, Tint, mmsId)
 %  EPHEMERIS:
 %     R_gse, R_gsm, V_gse, V_gsm
 %     tetra_quality
+%  EDP:
+%      'Phase_edp_fast_l2a', 'Phase_edp_slow_l2a', 'Es12_dsl_edp_fast_l2a',...
+%      'Es34_dsl_edp_fast_l2a', 'Adcoff_edp_fast_l2a', ...
+%      'Adcoff_edp_slow_l2a', 'E_dsl_edp_brst_l2','E_dsl_edp_fast_l2', ...
+%      'E_gse_edp_brst_l2', 'E_gse_edp_fast_l2', 'E2d_dsl_edp_brst_l2pre',...
+%      'E2d_dsl_edp_fast_l2pre', 'E2d_dsl_edp_l2pre', 'E_dsl_edp_l2pre', ...
+%      'E_ssc_edp_brst_l1b', 'E_ssc_edp_fast_l1b', 'E_ssc_edp_slow_l1b'.
 %  FPI IONS:
 %     'Ni_fpi_brst_l2' (alias:'Ni_fpi_brst'), 'Ni_fpi_fast_l2',...
 %     'Ni_fpi_sitl','Ni_fpi_ql',...
@@ -112,7 +119,9 @@ vars = {'R_gse','R_gsm','V_gse','V_gsm',...
   'B_dmpa_afg_srvy_l2pre','B_dmpa_afg_srvy_l2pre',...
   'B_bcs_afg_srvy_l2pre','B_bcs_afg_srvy_l2pre',...
   'B_dmpa_dfg_srvy_ql','B_dmpa_afg_srvy_ql',...
-  'dfg_ql_srvy','afg_ql_srvy','tetra_quality',...
+  'dfg_ql_srvy','afg_ql_srvy',...
+  'B_gse_scm_brst_l2',...
+  'tetra_quality',...
   'Phase_edp_fast_l2a','Phase_edp_slow_l2a',...
   'Es12_dsl_edp_fast_l2a','Es34_dsl_edp_fast_l2a',...
   'Adcoff_edp_fast_l2a','Adcoff_edp_slow_l2a',...
@@ -239,8 +248,10 @@ switch varStr
     res.time = EpochTT((TintTmp.start.epoch:int64(30*1e9):TintTmp.stop.epoch)');
     for mmsId=1:4
       mmsIdS = num2str(mmsId);
-      dTmp = mms.db_get_ts(['mms' mmsIdS '_mec_srvy_l2_epht89d'],...
-        ['mms' mmsIdS '_mec_' lower(vC) '_' cS],Tint);
+      
+        dTmp = mms.db_get_ts(['mms' mmsIdS '_mec_srvy_l2_epht89d'],...
+          ['mms' mmsIdS '_mec_' lower(vC) '_' cS],Tint);
+      
       if isempty(dTmp) &&  vC=='V', continue, end
       
       if isempty(dTmp)
@@ -300,7 +311,7 @@ switch Vr.inst
       ind = diff(res.time.ttns) <= 122000; % FIXME: what is brst min dt for A/DFG?
       if( sum(ind) < (length(res)-2) )
         % Remove samples that are too close, but ensure some output if only
-        % two samples with very high sample rate.
+        % two samples with very high sam  ple rate.
         irf.log('notice',['Removing ',sum(ind), ...
           ' samples due to overlap AFG/DFG when transitioning between fast/slow mode.']);
         res = res(~ind);
@@ -431,6 +442,18 @@ switch Vr.inst
       res.data(res.data==0) = NaN;
       if (Vr.to>0), res.coordinateSystem =  Vr.cs; end
     end
+  case 'scm'
+    switch Vr.lev
+      case 'l2'
+        otherwise
+          error('not implemented yet')
+    end
+    dset = 'scb';
+    param = 'acb';
+    pref = ['mms' mmsIdS '_scm_' param '_' Vr.cs '_' dset '_' Vr.tmmode '_' Vr.lev];
+    datasetName = ['mms' mmsIdS '_scm_' Vr.tmmode '_' Vr.lev '_' dset];
+    res = mms.db_get_ts(datasetName, pref, Tint);
+    res = comb_ts(res);
   case 'edp' 
     switch Vr.lev
       case 'l1b'
@@ -524,7 +547,7 @@ end
         end
         rXX = mms.db_get_ts(datasetName,[pref compS.xx suf],Tint);
         if isempty(rXX),irf.log('warning',...
-            ['No data for ' datasetName '(' [pref compS.par suf] ')'])
+            ['No data for ' datasetName '(' [pref compS.xx suf] ')'])
           return
         end
         rXX = comb_ts(rXX);
@@ -565,7 +588,8 @@ end
             energy = mms.db_get_variable(datasetName,[pref '_energy_' Vr.tmmode],Tint);
             phi = mms.db_get_variable(datasetName,[pref '_phi_' Vr.tmmode],Tint);
             theta = mms.db_get_variable(datasetName,[pref '_theta_' Vr.tmmode],Tint);
-            res = irf.ts_skymap(dist.time,dist.data,[],phi.data,theta.data,'energy0',energy.data,'energy1',energy.data,'esteptable',TSeries(dist.time,zeros(dist.length,1)));            
+            %res = irf.ts_skymap(dist.time,dist.data,[],phi.data,theta.data,'energy0',energy.data,'energy1',energy.data,'esteptable',TSeries(dist.time,zeros(dist.length,1)));
+            res = irf.ts_skymap(dist.time,dist.data,[],phi.data,theta.data,'energy0',energy.data,'energy1',energy.data,'esteptable',zeros(dist.length,1));
         end
         res.units = 's^3/cm^6';
         if strcmp(sensor(2),'e')          

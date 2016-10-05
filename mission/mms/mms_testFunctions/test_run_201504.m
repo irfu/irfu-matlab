@@ -40,15 +40,21 @@ flagComm = 0;
 %tint = irf.tint('2015-10-22T04:17:34Z/2015-10-22T16:42:34Z'); flagComm = 2;
 %tint = irf.tint('2015-12-18T00:00:00Z/2015-12-18T11:59:59Z'); flagComm = 2;
 %tint = irf.tint('2015-12-21T11:55:00Z/2015-12-21T21:55:00Z'); flagComm = 3;
+tint = irf.tint('2015-12-23T00:00:00Z/2015-12-23T08:30:00Z'); flagComm = 2;
 %tint = irf.tint('2015-11-16T01:25:04Z/2015-11-16T14:41:04Z'); flagComm = 2;
 %tint = irf.tint('2015-11-29T00:01:34Z/2015-11-29T13:46:44Z'); flagComm = 2;
 %tint = irf.tint('2015-11-13T01:44:14Z/2015-11-13T15:00:34Z'); flagComm = 2;
-tint = irf.tint('2016-06-12T05:00:00Z/2016-06-12T06:00:00Z'); flagComm = 2;
-mmsId = 'mms4'; 
+%tint = irf.tint('2015-12-14T00:00:00Z/2015-12-14T02:59:59Z'); flagComm = 2;
+%tint = irf.tint('2016-01-03T00:00:00Z/2016-01-03T07:59:59Z'); flagComm = 2;
+%tint = irf.tint('2016-01-31T00:00:00Z/2016-01-31T03:59:59Z'); flagComm = 2;
+%tint = irf.tint('2016-01-03T23:00:00Z/2016-01-03T23:59:59Z'); flagComm = 2;
+tint = irf.tint('2016-02-25T20:00:00Z/2016-02-25T23:59:59Z'); flagComm = 2;
+%tint = irf.tint('2016-06-12T05:00:00Z/2016-06-12T06:00:00Z'); flagComm = 2;
+mmsId = 'mms2'; 
 
 prf = [data_root filesep mmsId]; utc = tint.start.toUtc(); 
 mo = utc(6:7); yyyy=utc(1:4); day=utc(9:10); hh=utc(12:13); mm=utc(15:16);%
-li = mms.db_list_files([mmsId '_fields_hk_l1b_101'],tint); if length(li)>1, error('edili>1'), end
+li = mms.db_list_files([mmsId '_fields_hk_l1b_101'],tint); if length(li)>1, error('li>1'), end
 HK_101_File = [li.path filesep li.name];
 li = mms.db_list_files([mmsId '_fields_hk_l1b_105'],tint); if length(li)>1, error('li>1'), end
 HK_105_File = [li.path filesep li.name];
@@ -76,13 +82,27 @@ end
 %% Test QL - DMNGR
 irf.log('log_out','screen'), irf.log('notice')
 procId = MMS_CONST.SDCProc.ql; procName='QL'; scId=str2double(mmsId(end));
-tmMode=MMS_CONST.TmMode.comm; samplerate = MMS_CONST.Samplerate.comm_128;
+tmMode=MMS_CONST.TmMode.comm;
+switch flagComm
+  case 0, samplerate = MMS_CONST.Samplerate.slow;
+  case 1, samplerate = MMS_CONST.Samplerate.comm_128;
+  case 2, samplerate = MMS_CONST.Samplerate.fast;
+  otherwise
+    error('Bad flagComm')
+end
 % Initialize DMGR
 Dmgr = mms_sdp_dmgr(scId,procId,tmMode,samplerate);
 Dmgr.set_param('hk_10e',HK_10E_File);
 Dmgr.set_param('hk_105',HK_105_File);
 Dmgr.set_param('hk_101',HK_101_File);
 Dmgr.set_param('aspoc',ASPOC_File);
+list = mms.db_list_files([mmsId '_ancillary_defatt'],tint); 
+for ii=1:length(list)
+  irf.log('notice', [procName ' proc using: ',list(ii).name]);
+  [dataTmp, src_fileData] = mms_load_ancillary([list(ii).path, filesep, ...
+    list(ii).name], 'defatt');
+  Dmgr.set_param('defatt', dataTmp);
+end
 Dmgr.set_param('dce',DCE_File);
 if ~isempty(DCV_File),Dmgr.set_param('dcv',DCV_File); end
 % Process
@@ -94,7 +114,10 @@ delta_off = Dmgr.delta_off;
 dce_xyz_dsl = Dmgr.dce_xyz_dsl;
 dcv = Dmgr.dcv;
 
-% Construct TSeries
+sampleRate=Dmgr.samplerate;
+phase_an
+
+%% Construct TSeries
 DceSL = irf.ts_vec_xy(dce_xyz_dsl.time,[dce.e12.data dce.e34.data]);
 DceDSL = irf.ts_vec_xyz(dce_xyz_dsl.time,dce_xyz_dsl.data);
 Phase = irf.ts_scalar(dce_xyz_dsl.time,phase.data);

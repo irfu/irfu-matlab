@@ -81,6 +81,43 @@ classdef PDist < TSeries
         end     
       end
     end    
+    
+    function [varargout] = subsref(obj,idx)
+    %SUBSREF handle indexing
+    switch idx(1).type
+      % Use the built-in subsref for dot notation
+      case '.'
+        [varargout{1:nargout}] = builtin('subsref',obj,idx);
+      case '()'
+        tmpEpoch = builtin('subsref',obj.time,idx(1));        
+        obj.t_ = tmpEpoch;
+        idxTmp = repmat({':'}, ndims(obj.data), 1);
+        idxTmp(1) = idx(1).subs;
+        sizeData = size(obj.data_);
+        obj.data_ = obj.data_(idxTmp{:});
+        % on depend data      
+        
+        nDepend = numel(obj.depend);
+        for ii = 1:nDepend
+          sizeDepend =  size(obj.depend{ii});
+          if sizeDepend(1) == 1, % same dependence for all times
+            obj.depend_{ii} = obj.depend{ii};
+          elseif sizeDepend(1) == sizeData(1);                    
+            obj.depend_{ii} = obj.depend_{ii}(idxTmp{:},:);
+          else
+            error('Depend has wrong dimensions.')
+          end
+        end
+        if numel(idx) > 1,
+          obj = builtin('subsref',obj,idx(2:end));
+        end
+        [varargout{1:nargout}] = obj;
+      case '{}'
+        error('irf:TSeries:subsref',...
+          'Not a supported subscripted reference')
+      end
+    end
+    
     % set
     function obj = set.species(obj,value)
       obj.species_ = value;
@@ -441,6 +478,7 @@ classdef PDist < TSeries
       % Input: 
       %     B - TSeries of B in dmpa coordinates
       %     nangles - Number of pitch angles or edges of pitchangle bins
+      %               default number of pitchangles is 12
       %   See also MMS.GET_PITCHANGLEDIST     
       
       if nargin<3 || isempty(obj2),
