@@ -2,18 +2,24 @@
 % First created 2016-06-02
 %
 % Parses list of command-line arguments assuming it is a list of flags and pairs of flag+value.
-% Function tries to give accurate user-friendly errors for non-compliant arguments and absence of
+% Function tries to give accurate user-friendly errors (not assertions) for non-compliant arguments and absence of
 % required arguments.
 %
-% Flag = A predefined (hardcoded, more or less) string meant to match a single argument, e.g. "--version"
-% Value = An argument that specifies a more or less arbitrary value and comes after a flag, e.g. "--file <value>".
+% Definitions of terms
+% --------------------
+% Flag = A predefined (hardcoded, more or less) string meant to match a single argument, e.g. "--verbose" or "--file".
+% Value = An argument that specifies a more or less arbitrary value that comes after some flags, e.g. "--file <value>".
 %
+%
+% Arguments and return values
+% ---------------------------
+% arguments : 1D cell array of strings.
 % flags : containers.Map, number/string-->struct
 %    <keys>   : Arbitrary unique strings to identify the flags in the return value.
-%    <values> : Information about each flag (syntax).
-%    .CLI_str        : The command-line flag string (e.g. "--version"), including any prefix (e.g. dash).
-%    .is_required    : Whether the flag (and any specified value) is required as opposed to optional.
-%    .expects_value  : Whether the flag expects the following argument to be a value connected to the flag.
+%    <values> : Information about each specified flag (syntax).
+%       .CLI_str        : The command-line flag string (e.g. "--version"), including any prefix (e.g. dash).
+%       .is_required    : Whether the flag (and any specified value) is required as opposed to optional.
+%       .expects_value  : Whether the flag expects the following argument to be a value connected to the flag.
 %
 % flag_results : containers.Map, number/string-->string/number
 %    <keys>
@@ -40,17 +46,19 @@ function flag_results = parse_CLI_flags(arguments, flags)
 % PROPOSAL: Change name: parse_arguments? parse_CLI_arguments?
 %
 % QUESTION: The function permits flags without value. Is this functionality really needed?
-%
-
-global ERROR_CODES
+% PROPOSAL: Return containers.Map with values which are structures.
+%    s.value
+%    s.is_set   % True implies "value" if the corresponding flag has a value.
 
 
 
 % ASSERTION CHECKS
 if ~iscell(arguments)
-    errorp(ERROR_CODES.ASSERTION_ERROR, 'Parameter is not a cell array.');
+    error('parse_CLI_flags:Assertion:IllegalArgument', 'Parameter is not a cell array.')
+elseif length(arguments) ~= numel(arguments)
+    error('parse_CLI_flags:Assertion:IllegalArgument', 'Parameter is not a 1D cell array.')
 elseif ~isa(flags, 'containers.Map')
-    errorp(ERROR_CODES.ASSERTION_ERROR, 'Parameter is not a containers.Map.');
+    error('parse_CLI_flags:Assertion:IllegalArgument', 'Parameter is not a containers.Map.');
 end
 
 
@@ -70,7 +78,7 @@ end
 
 % ASSERTION CHECKS: Check that there are no flag duplicates.
 if length(CLI_strs) ~= length(unique(CLI_strs))
-    errorp(ERROR_CODES.ASSERTION_ERROR, ...
+    error('parse_CLI_flags:Assertion:IllegalArgument', ...
         'The code is configured to accept multiple IDENTICAL command-line flags. This indicates a bug.')
 end
 
@@ -91,16 +99,16 @@ while ia <= length(arguments)    % ia = i_argument
         end
     end    
     if isempty(flag)
-        errorp(ERROR_CODES.CLI_ARGUMENT_ERROR, 'Can not interpret command-line argument "%s". There is no such flag.', arg)
+        error('parse_CLI_flags:CLISyntax', 'Can not interpret command-line argument "%s". There is no such flag.', arg)
     end
     
     if ~(isnumeric(flag_results(key)) && (flag_results(key) == 0))
-        errorp(ERROR_CODES.CLI_ARGUMENT_ERROR, 'The command-line flag "%s" was specified (at least) twice.', arg)
+        error('parse_CLI_flags:CLISyntax', 'The command-line flag "%s" was specified (at least) twice.', arg)
     end
     
     if flag.expects_value
         if ia >= length(arguments)
-            errorp(ERROR_CODES.CLI_ARGUMENT_ERROR, ...
+            error('parse_CLI_flags:CLISyntax', ...
                 'Can not find the argument that is expected to follow command-line flag "%s".', arg)
         end
         ia = ia + 1;
@@ -119,7 +127,8 @@ for skey = flags.keys
     flag = flags(skey{1});
     flag_result = flag_results(skey{1});
     if flag.is_required && (isnumeric(flag_result) && (flag_result == 0))
-        errorp(ERROR_CODES.CLI_ARGUMENT_ERROR, 'Could not find required command-line flag "%s".', flag.CLI_str)
+        % NOT: Not assertion since it is meant as a error message to be displayed for users.
+        error('parse_CLI_flags:CLISyntax', 'Could not find required command-line flag "%s".', flag.CLI_str)
     end
 end
 

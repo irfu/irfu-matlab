@@ -2,7 +2,7 @@
 % First created 2016-05-31
 %
 % Interprets a MATLAB variable consisting of recursively nested structures and cell arrays as a JSON
-% object and returns it as an indented multi-line string that is suitable for printing and human
+% object and returns it as an indented multi-line string with that is suitable for printing and human
 % reading.
 %
 % - Interprets MATLAB structure field names as "JSON parameter name strings".
@@ -14,6 +14,7 @@
 %   .value_position  : The minimum number of characters between the beginning of a "name" and the beginning of the corresponding value.
 %
 % NOTE: This is not a rigorous implementation and therefore does not check for permitted characters.
+% NOTE: Uses line feed character for line breaks.
 %
 function str = JSON_object_str(obj, settings)
 %
@@ -21,10 +22,10 @@ function str = JSON_object_str(obj, settings)
 % punctuation, but not within a string value). Four specific characters are considered whitespace for this purpose:
 % space, horizontal tab, line feed, and carriage return. JSON does not provide any syntax for comments."
 % Source: https://en.wikipedia.org/wiki/JSON
+%
+% PROPOSAL: Permit arbitrary line break?
 
-
-
-LINE_BREAK = sprintf('\n');    % Put in constants structure?!!
+LINE_BREAK = char(10);    % Should be same as sprintf('\n').
 
 str = print_JSON_object_recursive(obj, 0, false, settings);
 str = [str, LINE_BREAK];
@@ -41,7 +42,7 @@ end
 % Can be useful for some layouts (placement of whitespace and line feeds).
 function str = print_JSON_object_recursive(obj, indent_level, indent_first_line, settings)
 
-LINE_BREAK = sprintf('\n');    % Move to the application-global "constants" structure?!!
+LINE_BREAK = char(10);    % Should be same as sprintf('\n').
 INDENT_0_STR = repmat(' ', 1, settings.indent_size *  indent_level   );
 INDENT_1_STR = repmat(' ', 1, settings.indent_size * (indent_level+1));
 
@@ -106,7 +107,7 @@ elseif isstruct(obj)
     str = [str, INDENT_0_STR, '}'];   % NOTE: No line break.
     
 else
-    errorp(ERROR_CODES.ASSERTION_ERROR, 'Disallowed variable type. Neither structure nor cell array.')
+    error('JSON_object_str:Assertion:IllegalArgument', 'Disallowed variable type. Neither structure nor cell array.')
 end
 
 end    % print_JSON_object_recursive

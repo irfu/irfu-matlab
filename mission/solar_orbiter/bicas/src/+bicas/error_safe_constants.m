@@ -30,17 +30,23 @@ function [ERROR_CODES, REQUIRED_MATLAB_VERSION] = error_safe_constants
 % NOTE: These constants are MATLAB exit error codes which are passed to the wrapper bash script which uses them as exit
 % codes.
 ERROR_CODES = [];
+
 ERROR_CODES.NO_ERROR = 0;
+
 ERROR_CODES.MISC_ERROR = 1;
 ERROR_CODES.ERROR_IN_MATLAB_ERROR_HANDLING = 2;          % QUESTION: Not for the launch scripts error handling?
-ERROR_CODES.CLI_ARGUMENT_ERROR = 100;                    % Can not interpret command-line arguments.
+%ERROR_CODES.UNKNOWN_ERROR = 3;                           % Error, and does not know how to translate error identifer to error code. Rename? Abolish?
+
+ERROR_CODES.CLI_SYNTAX_ERROR = 100;                      % Can not interpret command-line arguments syntax.
 ERROR_CODES.OPERATION_NOT_IMPLEMENTED = 101;             % Execution has reached a portion of the code that has not been implemented yet.
-ERROR_CODES.ASSERTION_ERROR = 102;                       % Detected an internal state that never be possible. This should ideally indicate a pure code bug.
+ERROR_CODES.ASSERTION_ERROR = 102;                       % Detected an internal state that should never be possible in a bug-free code, ideally even with any possibly input.
+                                                         % This should ideally indicate a pure code bug.
 ERROR_CODES.PATH_NOT_FOUND = 103;                        % Directory or file does not exist.
 ERROR_CODES.SW_MODE_PROCESSING_ERROR = 104;
-ERROR_CODES.CDF_ERROR = 105;                             % Error when reading, writing, interpreting CDF?? Ambiguous.
+ERROR_CODES.DATASET_FORMAT_ERROR = 105;                  % Error when interpreting (official CDF) datasets, including master CDF files.
+ERROR_CODES.CONFIGURATION_ERROR = 106;                   % Bad configuration (in particular hard-coded), e.g. constants, S/W descriptor.
 
-REQUIRED_MATLAB_VERSION = '2016a';  % Value returned from "version('-release')".
+REQUIRED_MATLAB_VERSION = '2016a';   % Value returned from "version('-release')".
 
 end
 

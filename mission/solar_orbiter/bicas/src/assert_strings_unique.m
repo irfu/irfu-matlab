@@ -4,11 +4,9 @@
 %
 function assert_strings_unique(string_list)
 %
-% PROPOSAL: Error message containing doubled strings.
 % PROPOSAL: Have caller throw error instead. Return list of unique strings.
 % PROPOSAL: Generalize to arbitrary data using ~isequal, isequaln.
 %
-global ERROR_CODES
 [unique_strings, i_l, i_u] = unique(string_list);    % iu=indices to unique_strings; il=indices to string_list
 
 if length(unique_strings) == length(string_list)
@@ -31,7 +29,7 @@ else
         disp_list = [disp_list, sprintf('   "%s"\n', nonuniques_list{i})];
     end    
     
-    errorp(ERROR_CODES.ASSERTION_ERROR, ...
+    error('assert_strings_unique:Assertion', ...
         ['Strings in list of strings are not unique as expected. The following quoted strings are not unique:\n', disp_list])
 end
 

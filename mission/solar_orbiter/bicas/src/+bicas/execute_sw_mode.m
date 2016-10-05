@@ -30,11 +30,11 @@ function execute_sw_mode(sw_mode_CLI_parameter, input_files, output_dir)
 % Should data manager check anything?
 %
 
-global ERROR_CODES CONSTANTS
+global CONSTANTS
 
 irf.log('n', sprintf('Output directory = "%s"', output_dir));       
 if ~exist(output_dir, 'dir')
-    errorp(ERROR_CODES.PATH_NOT_FOUND, 'Output directory "%s" does not exist.', output_dir)
+    error('BICAS:execute_sw_mode:Assertion:PathNotFound', 'Output directory "%s" does not exist.', output_dir)
 end
 
 
@@ -105,9 +105,9 @@ for i = 1:length(C_sw_mode.outputs)
         % It is not obvious that this is correct although it seems to work.
         i_zVar = find(strcmp(zVar_name, master_zVar_names));
         if isempty(i_zVar)
-            errorp(ERROR_CODES.CDF_ERROR, 'Can not find zVariable "%s" in master file.', zVar_name)
+            error('BICAS:execute_sw_mode:Assertion:DatasetFormat', 'Can not find zVariable "%s" in master file.', zVar_name)
         elseif ~isempty(master_data(i_zVar).Data) || ~isempty(master_data(i_zVar).VariableName)
-            errorp(ERROR_CODES.CDF_ERROR, 'Trying to overwrite zero-record CDF zVariable "%s". Expected empty zVariable.', zVar_name)
+            error('BICAS:execute_sw_mode:SWModeProcessing', 'Trying to overwrite zero-record CDF zVariable "%s". Expected empty zVariable.', zVar_name)
         end
         MATLAB_class = convert_CDF_type_to_MATLAB_class(master_info.Variables(i_zVar,4), 'Permit MATLAB classes');
         master_data(i_zVar).Data = cast(process_data.(zVar_name), MATLAB_class);
@@ -119,7 +119,7 @@ for i = 1:length(C_sw_mode.outputs)
             % Ugly error message. Uses two zVariable names since not sure if either is going to be available or correct.
             zVar_name1 = master_data(i).VariableName;
             zVar_name2 = master_info.Variables{i,1};
-            errorp(ERROR_CODES.SW_MODE_PROCESSING_ERROR, 'Master CDF contains zVariable which has not been set. "%s", "%s".', zVar_name1, zVar_name2)
+            error('BICAS:execute_sw_mode:SWModeProcessing', 'Master CDF contains zVariable which has not been set. "%s", "%s".', zVar_name1, zVar_name2)
         end
     end
 

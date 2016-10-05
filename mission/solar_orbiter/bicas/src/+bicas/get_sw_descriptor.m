@@ -48,7 +48,7 @@ end
 % NOTE: It is hard to thoroughly follow the description, but the end result should be under
 % release-->version-->pattern (not to be confused with release_dataset-->version--pattern).
 if isempty(regexp(SWD.release.version, '^(\d+\.)?(\d+\.)?(\d+)$', 'once'))
-    errorp(ERROR_CODES.ASSERTION_ERROR, 'Illegal S/W descriptor release version "%s". This indicates a hard-coded configuration bug.', SWD.release.version)
+    error('BICAS:get_sw_descriptor:IllegalConfiguration', 'Illegal S/W descriptor release version "%s". This indicates a hard-coded configuration bug.', SWD.release.version)
 end
 
 SW_descriptor = SWD;
@@ -64,8 +64,6 @@ function SWD_mode = generate_sw_descriptor_mode(C, C_sw_mode)
 %
 % Variable naming convention:
 %    SWD = S/W descriptor
-
-global ERROR_CODES
 
 SWD_mode = [];
 SWD_mode.name    = C_sw_mode.CLI_parameter;
@@ -85,7 +83,7 @@ for x = C_sw_mode.outputs
     mi_O = x{1};
     SWD_output = [];
     
-    [master_CDF_path, master_filename] = bicas.get_master_CDF_path(mi_O.dataset_ID, mi_O.skeleton_version_str);
+    [~, master_filename] = bicas.get_master_CDF_path(mi_O.dataset_ID, mi_O.skeleton_version_str);
         
     SWD_output.identifier  = mi_O.dataset_ID;
     SWD_output.name        = mi_O.SWD_name;
@@ -105,7 +103,8 @@ for x = C_sw_mode.outputs
     % NOTE: It is hard to thoroughly follow the description, but the end result should be under
     % release_dataset-->version-->pattern (not to be confused with release-->version--pattern).
     if isempty(regexp(SWD_output.release.version, '^[0-9]{2}$', 'once'))
-        errorp(ERROR_CODES.ASSERTION_ERROR, 'Illegal S/W descriptor output release version "%s". This indicates a hard-coded configuration bug.', SWD_output.release.version)
+        error('BICAS:get_sw_descriptor:Assertion:IllegalConfiguration', ...
+            'Illegal S/W descriptor output release version "%s". This indicates a hard-coded configuration bug.', SWD_output.release.version)
     end
         
     SWD_mode.outputs.(mi_O.JSON_output_file_identifier) = SWD_output;

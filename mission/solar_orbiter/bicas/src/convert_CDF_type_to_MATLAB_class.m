@@ -10,7 +10,6 @@
 %
 function MATLAB_class = convert_CDF_type_to_MATLAB_class(cdf_data_type, policy)
 
-global ERROR_CODES
 %-------------------------------------------------------------------------------------------------------------
 % Left column = Legal MATLAB types.
 % Right column(s) = Legal types for scpdfcdfwrite which correspond to the ONE MATLAB type in the left column.
@@ -33,7 +32,7 @@ CDF_TYPES      = DATA(:, 2);
 switch(policy)
     case 'Permit MATLAB classes'; permit_MATLAB_classes = 1;
     case 'Only CDF data types';   permit_MATLAB_classes = 0;
-    otherwise errorp(ERROR_CODES.ASSERTION_ERROR, 'Illegal policy.')
+    otherwise error('convert_CDF_type_to_MATLAB_class:Assertion:IllegalArgument', 'Illegal policy.');
 end
         
 for i = 1:size(DATA, 1)
@@ -46,6 +45,6 @@ for i = 1:size(DATA, 1)
         return
     end
 end
-errorp(ERROR_CODES.ASSERTION_ERROR, 'Does not recognize CDF variable type "%s".', cdf_data_type)
+error('convert_CDF_type_to_MATLAB_class:Assertion:IllegalArgument', 'Does not recognize CDF variable type "%s".', cdf_data_type)
 
 end

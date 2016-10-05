@@ -102,7 +102,6 @@ function write_CDF(file_path, spdfcdfread_out, spdfcdfread_info, varargin)
 %    PROPOSAL: Check that out(i) corresponds to info.Variables(i,:) (where "out" fields are not empty).
 %
 
-    global ERROR_CODES
     VARIABLE_ATTRIBUTES_OF_VARIABLE_TYPE = {'VALIDMIN', 'VALIDMAX', 'SCALEMIN', 'SCALEMAX', 'FILLVAL'};
         
     % Rename variables for convenience.
@@ -117,7 +116,7 @@ function write_CDF(file_path, spdfcdfread_out, spdfcdfread_info, varargin)
         if strcmp(varargin{i}, 'fill_empty')
             fill_empty_variables = 1;
         else
-            error('Can not interpret argument option.')
+            error('write_CDF:Assertion:IllegalArgument', 'Can not interpret argument option.')
         end
     end
     
@@ -147,7 +146,7 @@ function write_CDF(file_path, spdfcdfread_out, spdfcdfread_info, varargin)
         %=========================================
         if isempty(out(i).Data) % && ~isempty(out(i).VariableName) && ~isempty(out(i).Attributes)
             if ~fill_empty_variables
-                error('Can not handle CDF variables with zero records (due to presumed bug in spdfcdfwrite).')
+                error('write_CDF:Assertion', 'Can not handle CDF variables with zero records (due to presumed bug in spdfcdfwrite).')
             else
                 %----------------------------------------------------------------------------------------
                 % EXPERIMENTAL SOLUTION: Store data with pad values instead.
@@ -159,7 +158,7 @@ function write_CDF(file_path, spdfcdfread_out, spdfcdfread_info, varargin)
                 try
                     zVar_data = cast(ones(N_records, 1), MATLAB_class) * pad_value;       % NOTE: Hardcoded uint8
                 catch exception
-                    errorp(ERROR_CODES.ASSERTION_ERROR, 'Can not type cast variable to "%s" (CDF: "%s").', MATLAB_class, spdfcdfwrite_data_type)
+                    error('write_CDF:Assertion', 'Can not type cast variable to "%s" (CDF: "%s").', MATLAB_class, spdfcdfwrite_data_type)
                 end
             end
         else
@@ -179,7 +178,7 @@ function write_CDF(file_path, spdfcdfread_out, spdfcdfread_info, varargin)
         MATLAB_class = class(zVar_data);
         %if ~MATLAB_type_compatible_with_cdf_type(MATLAB_class, spdfcdfwrite_data_type)
         if ~strcmp(  convert_CDF_type_to_MATLAB_class(spdfcdfwrite_data_type, 'Permit MATLAB classes'),   MATLAB_class  )
-            error(sprintf('MATLAB data type "%s" does not match the actual CDF data ("%s") for CDF variable "%s".', MATLAB_class, spdfcdfwrite_data_type, zVar_name))
+            error('write_CDF:Assertion', 'MATLAB data type "%s" does not match the actual CDF data ("%s") for CDF variable "%s".', MATLAB_class, spdfcdfwrite_data_type, zVar_name)
         end
         
         
@@ -194,7 +193,7 @@ function write_CDF(file_path, spdfcdfread_out, spdfcdfread_info, varargin)
             % Convert 3-D char matrices to column cell arrays of 2-D char matrices.
             %=======================================================================
             if ndims(zVar_data) > 3
-                error('Can not handle more CDF char strings variables with more than 1 dimension (excluding the record dimension).')
+                error('write_CDF:Assertion:OperationNotImplemented', 'Can not handle more CDF char strings variables with more than 1 dimension (excluding the record dimension).')
             end
             zVar_data_new = {};
             for i_record = 1:size(zVar_data, 3)
@@ -231,14 +230,14 @@ function write_CDF(file_path, spdfcdfread_out, spdfcdfread_info, varargin)
             if length(i_va) == 0
                 continue
             elseif length(i_va) > 1
-                error(sprintf('Can not handle multiple variable name matches in info.VariableAttributes.%s.', var_attr_name))
+                error('write_CDF:Assertion:OperationNotImplemented', 'Can not handle multiple variable name matches in info.VariableAttributes.%s.', var_attr_name)
             end
             var_attr_value = iVAf{i_va, 2};
             if strcmp(spdfcdfwrite_data_type, 'tt2000') && ischar(var_attr_value) && 1
                 var_attr_value = spdfparsett2000(var_attr_value);
             else
                 if ~strcmp(spdfcdfwrite_data_type, class(var_attr_value))
-                    error(sprintf('Found VariableAttribute %s for CDF variable %s whose data type did not match the declared one.', var_attr_name, zVar_name))
+                    error('write_CDF:Assertion', 'Found VariableAttribute %s for CDF variable %s whose data type did not match the declared one.', var_attr_name, zVar_name)
                 end
                 %fprintf('%s  %s  ', class(var_attr_value), spdfcdfwrite_data_type)   % DEBUG
                 %var_attr_value = typecast(var_attr_value, spdfcdfwrite_data_type);                

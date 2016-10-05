@@ -57,8 +57,6 @@ function error_code = bicas( varargin )
 
 
 
-global ERROR_CODES
-global REQUIRED_MATLAB_VERSION
 global CONSTANTS                 % Initialized later
 [ERROR_CODES, REQUIRED_MATLAB_VERSION] = bicas.error_safe_constants();
 
@@ -73,8 +71,7 @@ try
     % Check MATLAB version
     found_version = version('-release');
     if ~strcmp(found_version, REQUIRED_MATLAB_VERSION)
-        errorp(ERROR_CODES.MISC_ERROR, ...
-            'Wrong MATLAB version. Found %s. Requires %s.\n', found_version, REQUIRED_MATLAB_VERSION)
+        error('BICAS:BadMATLABVersion', 'Bad MATLAB version. Found %s. Requires %s.\n', found_version, REQUIRED_MATLAB_VERSION)
     end
     
     t_tic_start = tic;
@@ -91,8 +88,8 @@ try
     [matlab_src_path, ~, ~] = fileparts(mfilename('fullpath'));
     sw_root_path = get_abs_path(fullfile(matlab_src_path, '..'));
     CONSTANTS.SW_root_dir(sw_root_path)
-    irf.log('n', sprintf('MATLAB source code path: "%s"', matlab_src_path))
-    irf.log('n', sprintf('Software root path:      "%s"', sw_root_path))
+    irf.log('n', sprintf('MATLAB source code path:  "%s"', matlab_src_path))
+    irf.log('n', sprintf('BICAS software root path: "%s"', sw_root_path))
 
 
 
@@ -110,7 +107,7 @@ try
     % Select mode of operations.
     if (length(arguments) < 1)
 
-        errorp(ERROR_CODES.CLI_ARGUMENT_ERROR, 'Not enough arguments found.')
+        error('BICAS:CLISyntax', 'Not enough arguments found.')
 
     elseif (strcmp(arguments{1}, '--identification'))
         %============================
@@ -131,18 +128,17 @@ try
         % CASE: Print help
         %============================
         [~] = parse_CLI_flags(arguments(2:end), flags);  % Check CLI syntax but ignore results.
-        print_help()
+        print_help(ERROR_CODES)
 
     else
         %==============================================
         % CASE: Should be a S/W mode (error otherwise)
         %==============================================
-
         try
             C_sw_mode = CONSTANTS.get_C_sw_mode_full(arguments{1});
         catch exception
             % NOTE: The message is slightly inaccurate. Argument "--version" etc. would have worked too.
-            errorp(ERROR_CODES.CLI_ARGUMENT_ERROR, 'Can not interpret argument "%s" as a S/W mode.', arguments{1});
+            error('BICAS:CLISyntax', 'Can not interpret argument "%s" as a S/W mode.', arguments{1});
         end
 
         %-----------------------------------------------------------------
@@ -188,7 +184,7 @@ try
         %===============================================================
         bicas.execute_sw_mode(C_sw_mode.CLI_parameter, input_files, output_dir)   % The intended real implementation
         %execute_sw_mode_TEST_IMPLEMENTATION(C_sw_mode.CLI_parameter, output_dir)   % IMPLEMENTATION FOR TESTING. OUTPUTS NONSENSE CDFs.
-        %errorp(ERROR_CODES.OPERATION_NOT_IMPLEMENTED, 'Operation not completely implemented: Use S/W mode')
+        %error('BICAS:OperationNotImplemented', 'Operation not completely implemented: Use S/W mode')
         
     end
 
@@ -209,21 +205,25 @@ catch exception
     try
         irf.log('critical', 'Main function caught an exception. Beginning error handling.');   % Print to stdout.
         
-        %========================================================================================
-        % Parse exception message - Extract and set error code
-        % ----------------------------------------------------
-        % ASSUMES: exception.message is on format: <Error code><Whitespace><Message string>.
-        % errorp produces error messages on that format.
-        % NOTE: Code does not seem to produce error for non-parsable strings, not even empty
-        % strings. error_code = [], if can not parse.
-        %========================================================================================
         message = exception.message;
-        temp = strsplit(message);
-        error_code = str2double(temp{1});                 % NOTE: Set error code for when exiting MATLAB.
-        if isnan(error_code)
-            error_code = ERROR_CODES.ERROR_IN_MATLAB_ERROR_HANDLING;       % NOTE: Set error code for when exiting MATLAB.
+        
+        %==================================================================
+        % Convert MATLAB error message identifiers into return error codes
+        %==================================================================
+        % NOTE: The order in which tests occur matters since the same error message identifier may contain multiple matching components.
+        error_ID = strsplit(exception.identifier, ':');
+        if     any(strcmpi(error_ID, 'OperationNotImplemented'));   error_code = ERROR_CODES.OPERATION_NOT_IMPLEMENTED;
+        elseif any(strcmpi(error_ID, 'PathNotFound'));              error_code = ERROR_CODES.PATH_NOT_FOUND;
+        elseif any(strcmpi(error_ID, 'CLISyntax'));                 error_code = ERROR_CODES.CLI_SYNTAX_ERROR;
+        elseif any(strcmpi(error_ID, 'SWModeProcessing'));          error_code = ERROR_CODES.SW_MODE_PROCESSING_ERROR;
+        elseif any(strcmpi(error_ID, 'DatasetFormat'));             error_code = ERROR_CODES.DATASET_FORMAT_ERROR;
+        elseif any(strcmpi(error_ID, 'IllegalConfiguration'));      error_code = ERROR_CODES.CONFIGURATION_ERROR;
+        elseif any(strcmpi(error_ID, 'Assertion')) ;                error_code = ERROR_CODES.ASSERTION_ERROR;
+        %elseif any(strcmpi(error_ID, ''))
+        %    error_code = ERROR_CODES.;
         else
-            message = message(length(temp{1})+2:end);
+            error_code = ERROR_CODES.MISC_ERROR;
+            %error_code = ERROR_CODES.ERROR_IN_MATLAB_ERROR_HANDLING;
         end
         
         %======================
@@ -301,7 +301,7 @@ end
 %     irf.log('n', sprintf('   to   %s', dest_file))
 %     [success, copyfile_msg, ~] = copyfile(src_file, dest_file);   % Overwrites any pre-existing file.
 %     if ~success
-%         errorp(ERROR_CODES.MISC_ERROR, ...
+%         error('BICAS:FailedToCopyFile',, ...
 %             'Failed to copy file\n    from "%s"\n    to   "%s".\n"copyfile" error message: "%s"', ...
 %             src_file, dest_file, copyfile_msg)
 %     end
@@ -349,24 +349,22 @@ end
 
 
 %===================================================================================================
-function print_help()
+function print_help(ERROR_CODES)
 %
 % PROPOSAL: Print error codes. Can use implementation to list them?
 %    PROPOSAL: Define error codes with description strings?! Map?! Check for doubles?!
-% PROPOSAL: Print CLI syntax incl. all modes?
+% PROPOSAL: Print CLI syntax incl. for all modes? More easy to parse than the S/W descriptor.
 
-global ERROR_CODES
+%error('BICAS:OperationNotImplemented', 'Operation not implemented: --help.')
 
 D = bicas.get_sw_descriptor();
 bicas.stdout_printf('%s\n%s\n', D.identification.name, D.identification.description)
-
 bicas.stdout_printf('\nError codes (internal constants):\n')
 for sfn = fieldnames(ERROR_CODES)'
     error_code = ERROR_CODES.(sfn{1});
     error_name = sfn{1};
     bicas.stdout_printf('   %3i = %s\n', error_code, error_name)
 end
-
-%errorp(ERROR_CODES.OPERATION_NOT_IMPLEMENTED, 'Operation not implemented: --help.')
+bicas.stdout_printf('\nSee "readme.txt" for more help.\n')
 
 end

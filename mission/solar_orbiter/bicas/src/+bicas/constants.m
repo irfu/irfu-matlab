@@ -50,8 +50,6 @@ classdef constants < handle
 %    QUESTION: Is there anything analogous? output dir?
 %
 % PROPOSAL: Merge with init global constants?
-%    CON: Calling would slow down code. Many functions use ERROR_CODES.
-%       PROPOSAL: Use one big global variable instead (initialized here).
 %    CON: Would require to having only "error safe code".
 %       PROPOSAL: Limit to code without branching (except lazy eval.) and without reading/calling
 %                 external files so that one single clear+run will tell whether it works or not.
@@ -187,14 +185,13 @@ classdef constants < handle
         %=========================================================================
         function varargout = SW_root_dir(obj, varargin)
             % PROPOSAL: Change to plain public variable/property?
-            global ERROR_CODES
             
             if nargout == 0 && length(varargin) == 1 && isempty(obj.root_dir_path)
                 obj.root_dir_path = varargin{1};
             elseif length(varargin) == 0 && ~isempty(obj.root_dir_path)  % NOTE: Does not check for nargout intentionally.
                 varargout{1} = obj.root_dir_path;
             else
-                errorp(ERROR_CODES.ASSERTION_ERROR, 'Trying to set already set constant, or reading unset constant. Pure code bug.')
+                error('BICAS:Assertion', 'Trying to set already set constant, or reading unset constant. Pure code bug.')
             end
         end
 
@@ -208,7 +205,6 @@ classdef constants < handle
         % NOTE: The function takes the CLI_parameter as parameter, not the ID.
         %================================================================================================================
         function C_sw_mode = get_C_sw_mode_full(obj, CLI_parameter)
-            global ERROR_CODES
             
             C_sw_mode = select_structs(obj.sw_modes, 'CLI_parameter', {CLI_parameter});            
             C_sw_mode = C_sw_mode{1};
@@ -230,12 +226,12 @@ classdef constants < handle
             try
                 C_sw_mode.inputs  = select_structs(obj.inputs,  'process_data_type', input_process_data_types);
             catch exception
-                errorp(ERROR_CODES.ASSERTION_ERROR, 'Can not identify all input process data types associated with mode/CLI parameter "%s".', CLI_parameter)
+                error('BICAS:Assertion', 'Can not identify all input process data types associated with mode/CLI parameter "%s".', CLI_parameter)
             end
             try
                 C_sw_mode.outputs = select_structs(obj.outputs, 'process_data_type', C_sw_mode.output_process_data_types);
             catch exception
-                errorp(ERROR_CODES.ASSERTION_ERROR, 'Can not identify all output process data types associated with mode/CLI parameter "%s".', CLI_parameter)
+                error('BICAS:Assertion', 'Can not identify all output process data types associated with mode/CLI parameter "%s".', CLI_parameter)
             end
         end
 
@@ -248,7 +244,6 @@ classdef constants < handle
         % Any code for double-checking the validity of hardcoded constants.
         function validate(obj)
 
-            global ERROR_CODES            
             C = obj.C;
 
 
@@ -264,7 +259,7 @@ classdef constants < handle
                 % NOTE: Implicitly checks that CLI_parameter does NOT begin with "--".
                 disallowed_chars = setdiff(CLI_parameter, INPUT_CLI_PARAMETER_NAME_PERMITTED_CHARACTERS);
                 if ~isempty(disallowed_chars)
-                    errorp(ERROR_CODES.ASSERTION_ERROR, 'Constants value contains illegal character(s). This indicates a pure configuration bug (hard-coded).');
+                    error('BICAS:Assertion:IllegalConfiguration', 'Constants value contains illegal character(s). This indicates a pure configuration bug (hard-coded).');
                 end
             end            
             
@@ -283,7 +278,7 @@ classdef constants < handle
                 C_sw_mode = obj.get_C_sw_mode_full(sw_mode_CLI_parameter);
                 
                 if ~length(regexp(sw_mode_CLI_parameter, SW_MODE_CLI_PARAMETER_REGEX))
-                    errorp(ERROR_CODES.ASSERTION_ERROR, 'Illegal S/W mode CLI parameter definition. This indicates a pure configuration bug (hard-coded).');
+                    error('BICAS:Assertion:IllegalConfiguration', 'Illegal S/W mode CLI parameter definition. This indicates a pure (hard-coded) configuration bug.');
                 end
                 
                 % Iterate over inputs

@@ -17,7 +17,6 @@
 % return_stuct_list = cell array of structs
 %
 function return_struct_list = select_structs(struct_list, field_name, selection_values)
-global ERROR_CODES
 
 % Convert to cell array of strings.
 struct_list_values = {};
@@ -28,7 +27,7 @@ end
 for i=1:length(selection_values)    
     j = find(strcmp(selection_values{i}, struct_list_values));
     if numel(j) ~= 1
-        errorp(ERROR_CODES.ASSERTION_ERROR, 'Pure code bug. Can not find exactly one structure with field "%s" with value "%s".', field_name, selection_values{i})
+        error('select_structs:Assertion:IllegalArgument', 'Can not find exactly one structure with field "%s" with value "%s".', field_name, selection_values{i})
     end
     return_struct_list{i} = struct_list{j};
 end

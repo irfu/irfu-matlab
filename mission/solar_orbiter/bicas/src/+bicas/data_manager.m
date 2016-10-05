@@ -205,11 +205,10 @@ classdef data_manager
             % PROPOSAL: "Validate" the read CDF file here.
             
             irf.log('n', sprintf('process_data_type=%s: file_path=%s', process_data_type, file_path))    % NOTE: irf.log adds the method name.
-            global ERROR_CODES
             
             % Assertion
             if ~ismember(process_data_type, obj.ELEMENTARY_INPUT_PROCESS_DATA_TYPES)
-                errorp(ERROR_CODES.ASSERTION_ERROR, 'Data type is not an elementary input data type.')
+                error('BICAS:data_manager:Assertion:IllegalArgument', 'Data type is not an elementary input data type.')
             end
             
             obj.set_process_data_variable(process_data_type, dataobj(file_path));
@@ -225,8 +224,6 @@ classdef data_manager
         %=============================================================================================================
         function process_data = get_process_data_recursively(obj, process_data_type, sw_mode_ID)
             
-            global ERROR_CODES
-            
             %==================================================================================
             % If process data already exists - Return it and exit
             % 
@@ -240,7 +237,7 @@ classdef data_manager
             [input_process_data_types, processing_func] = bicas.data_manager.get_processing_info(process_data_type, sw_mode_ID);            
             % Assertion
             if isempty(processing_func)
-                errorp(ERROR_CODES.ASSERTION_ERROR, 'Received no processing function necessary for deriving process data (type "%s").', process_data_type)
+                error('BICAS:data_manager:Assertion', 'Received no processing function necessary for deriving process data (type "%s").', process_data_type)
             end
             
             %==============================================
@@ -279,10 +276,8 @@ classdef data_manager
         % DOES NOT ASSERT: Process data has been set.
         %==================================================================================
         function process_data = get_process_data_variable(obj, process_data_type)
-            global ERROR_CODES
-            
             if ~obj.process_data.isKey(process_data_type)
-                errorp(ERROR_CODES.SW_MODE_PROCESSING_ERROR, 'There is no such process data type, "%s".', process_data_type);
+                error('BICAS:data_manager:Assertion:IllegalArgument:NoSuchProcessDataType', 'There is no such process data type, "%s".', process_data_type);
             end
             process_data = obj.process_data(process_data_type);
         end
@@ -296,12 +291,10 @@ classdef data_manager
         % ASSERTS: Valid process_data_type.
         %==================================================================================
         function set_process_data_variable(obj, process_data_type, process_data)
-            global ERROR_CODES
-            
             if ~obj.process_data.isKey(process_data_type)
-                errorp(ERROR_CODES.SW_MODE_PROCESSING_ERROR, 'There is no such process data type, "%s".', process_data_type);
+                error('BICAS:data_manager:Assertion:IllegalArgument:NoSuchProcessDataType', 'There is no such process data type, "%s".', process_data_type);
             elseif ~isempty(obj.process_data(process_data_type))
-                errorp(ERROR_CODES.SW_MODE_PROCESSING_ERROR, 'There is already process data for the specified data type "%s".', process_data_type);
+                error('BICAS:data_manager:Assertion', 'There is already process data for the specified data type "%s".', process_data_type);
             end
             obj.process_data(process_data_type) = process_data;
         end
@@ -350,14 +343,14 @@ classdef data_manager
             %    only one mode.
             % PROBLEM: Do not want to include to much dependence on modes.
             
-            global ERROR_CODES
+            
             
             % Default values. These are returned to the caller if not amended to or overwritten.
             % NOTE: "func" stores the variable values which are not its argument (process_data_type, sw_mode_ID).
             inputs = struct();
             func   = @(input_process_datas) (...
-                errorp(...
-                    ERROR_CODES.SW_MODE_PROCESSING_ERROR, ...
+                error(...
+                    'BICAS:data_manager:Assertion:OperationNotImplemented', ...
                     'The processing function for process data type "%s", S/W mode "%s" has not yet been implemented.', ...
                     process_data_type, sw_mode_ID) ...
                 );
@@ -445,7 +438,8 @@ classdef data_manager
                 % ERROR: Can not recognize process data type
                 %============================================                    
                 otherwise
-                    errorp(ERROR_CODES.SW_MODE_PROCESSING_ERROR, 'Can not produce this process data type, "%s".', process_data_type)
+                    error('BICAS:data_manager:Assertion:IllegalArgument:NoSuchProcessDataType', ...
+                        'Can not produce this process data type, "%s".', process_data_type)
             end   % switch
             
             
@@ -458,7 +452,8 @@ classdef data_manager
             
             %-----------------------------------------------------------------------------------------------------------
             function error_bad_sw_mode(process_data_type, sw_mode_ID)
-                errorp(ERROR_CODES.SW_MODE_PROCESSING_ERROR, 'Can not interpret S/W mode ID (%s) for this process data type (%s).', sw_mode_ID, process_data_type)
+                error('BICAS:data_manager:Assertion:IllegalArgument:NoSuchSWMode', ...
+                    'Can not interpret S/W mode ID (%s) for this process data type (%s).', sw_mode_ID, process_data_type)
             end
             %-----------------------------------------------------------------------------------------------------------
         end
@@ -585,7 +580,7 @@ classdef data_manager
             %                             demuxer_input.BIAS_4 = LFR_cdf.ELECTRICAL.data(i_first:i_last,:,1);
             %                             demuxer_input.BIAS_5 = LFR_cdf.ELECTRICAL.data(i_first:i_last,:,2);
             %                         elseif R0==1 && R1==1
-            %                             errorp(ERROR_CODES.SW_MODE_PROCESSING_ERROR ,'Illegal combination of LFR CDF R0=1 and R1=1.')
+            %                             error('BICAS:data_manager:Assertion:DatasetFormat' ,'Illegal combination of LFR CDF R0=1 and R1=1.')
             %                         end
             %
             %                         i_first = i_last + 1;
@@ -716,7 +711,7 @@ classdef data_manager
 
 
         function freq = get_LFR_samples_in_snapshot_frequency(LFR_FREQ)
-            global CONSTANTS ERROR_CODES            
+            global CONSTANTS
             switch(LFR_FREQ)
                 case 0
                     freq = CONSTANTS.C.LFR.F0;
@@ -727,7 +722,7 @@ classdef data_manager
                 case 3
                     freq = CONSTANTS.C.LFR.F3;
                 otherwise
-                    errorp(ERROR_CODES.ASSERTION_ERROR, 'Illegal LFR_FREQ value.')
+                    error('BICAS:data_manager:Assertion:IllegalArgument:DatasetFormat', 'Illegal LFR_FREQ value.')
             end
         end
 
@@ -742,12 +737,10 @@ classdef data_manager
         function i_last = find_last_same_sequence(i_first, varargin)
             % PROPOSAL: Better name?
             
-            global ERROR_CODES
-            
             % Check arguments
             for k = 1:length(varargin)
                 if ~iscolumn(varargin{k})
-                    errorp(ERROR_CODES.ASSERTION_ERROR, 'varargins are not all column vectors.')
+                    error('BICAS:data_manager:Assertion:IllegalArgument', 'varargins are not all column vectors.')
                 end
             end
                 
@@ -791,7 +784,7 @@ classdef data_manager
         %==================================================================================
         function ACQUISITION_TIME_2 = convert_snapshotsPR_to_samplesPR_ACQUISITION_TIME(  ACQUISITION_TIME_1, N_samples_per_snapshot, sample_frequency  )
             if size(ACQUISITION_TIME_1, 2) ~= 2
-                errorp(ERROR_CODES.ASSERTION_ERROR, 'Wrong dimensions on input argumet ACQUISITION_TIME_1.')
+                error('BICAS:data_manager:Assertion:IllegalArgument', 'Wrong dimensions on input argumet ACQUISITION_TIME_1.')
             end
             
             N_records = size(ACQUISITION_TIME_1, 1);
@@ -830,9 +823,9 @@ classdef data_manager
             
             if ndims(data_1) ~= 2
                 % NOTE: ndims always returns at least two, which is exactly what we want, also for empty and scalars, and row vectors.
-                errorp(ERROR_CODES.ASSERTION_ERROR, 'Wrong dimensions on input argumet ACQUISITION_TIME_1.')
+                error('BICAS:data_manager:Assertion:IllegalArgument', 'Input argumet ACQUISITION_TIME_1 has the wrong dimensions.')
             elseif size(data_1, 2) ~= N_samples_per_snapshot
-                errorp(ERROR_CODES.ASSERTION_ERROR, 'Dimensions on input argumet ACQUISITION_TIME_1 does not match N_samples_per_snapshot.')
+                error('BICAS:data_manager:Assertion:IllegalArgument', 'Dimensions on input argumet ACQUISITION_TIME_1 does not match N_samples_per_snapshot.')
             end
             
             data_2 = reshape(data_1, size(data_1, 1)*N_samples_per_snapshot, 1);
@@ -881,11 +874,10 @@ classdef data_manager
             % QUESTION: MUX mode 1-3 are overdetermined if we always have BIAS1-3?
             %           If so, how select what to calculate?! What if results disagree/are inconsistent? Check for it?
             
-            global ERROR_CODES
             global CONSTANTS
             
             if numel(mux_set) ~= 1 || numel(diff_gain) ~= 1
-                errorp(ERROR_CODES.ASSERTION_ERROR, 'Illegal argument value "mux_set" or "diff_gain". Must be scalars (not arrays).')
+                error('BICAS:data_manager:Assertion:IllegalArgument', 'Illegal argument value "mux_set" or "diff_gain". Must be scalars (not arrays).')
             end
             
             ALPHA    = CONSTANTS.C.approximate_demuxer.alpha;
@@ -896,7 +888,7 @@ classdef data_manager
                 case 1
                     GAMMA = CONSTANTS.C.approximate_demuxer.gamma_hg;
                 otherwise
-                    errorp(ERROR_CODES.ASSERTION_ERROR, 'Illegal argument value "diff_gain".')
+                    error('BICAS:data_manager:Assertion:IllegalArgument:DatasetFormat', 'Illegal argument value "diff_gain".')
             end
             
             % Set default values which will remain for
@@ -978,10 +970,10 @@ classdef data_manager
                     V13_LF_AC = V12_LF_AC - V23_LF_AC;
                     
                 case {5,6,7}
-                    errorp(ERROR_CODES.OPERATION_NOT_IMPLEMENTED, 'Not implemented yet for this value of mux_set.')
+                    error('BICAS:data_manager:Assertion:OperationNotImplemented', 'Not implemented yet for this value of mux_set.')
                     
                 otherwise
-                    errorp(ERROR_CODES.ASSERTION_ERROR, 'Illegal argument value for mux_set.')
+                    error('BICAS:data_manager:Assertion:IllegalArgument:DatasetFormat', 'Illegal argument value for mux_set.')
             end
             
             % Create structure to return.
