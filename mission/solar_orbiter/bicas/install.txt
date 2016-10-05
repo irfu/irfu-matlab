@@ -48,9 +48,9 @@ Procedure in principle: Move the bicas/ directory (irfu-matlab/mission/solar_orb
 Use bicas/ as a root directory and put the remainder of irfu-matlab/ under bicas/lib/.
 
 Example using moving commands:
-   rm -rf ~/irfu-matlab/.git                                # NOTE: Destroy git versioning information. Optional.
+   rm -rf ~/irfu-matlab/.git                             # NOTE: Destroys the git repository versioning information. Optional.
    mv     ~/irfu-matlab/mission/solar_orbiter/bicas/   ~
-   mkdir  ~/bicas/lib
+   mkdir  ~/bicas/lib                                    # Only needed if directory lib/ does not already exist.
    mv     ~/irfu-matlab/   ~/bicas/lib/
 
 Note: This procedure is only meant to show the setup one wants to achieve.

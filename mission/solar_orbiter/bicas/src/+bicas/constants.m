@@ -1,3 +1,5 @@
+% Constants - Singleton class for global constants used by BICAS.
+%
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
 % First created 2016-05-31
 %
@@ -10,27 +12,25 @@
 % probably more unambiguous in their meaning.
 %
 % IMPLEMENTATION NOTE: Reasons for using a singleton class (instead of static methods:
-% 1) Can use properties/instance variables for "caching" values. Persistent variables are bad for testing.
-% NOTE: There are no proper static variables in MATLAB.
+% 1) Can use properties/instance variables for "caching" values. Do not want to use persistent variables since they
+% cause trouble when testing. NOTE: There are no proper static variables in MATLAB.
 % 2) Can split up (structure, organize) configuration and validation code in methods.
 % 3) The constructor can be used as initialization code which must be run before using the class/constants.
 %
-% IMPLEMENTATION NOTE: There is other code which builds a structure corresponding to the S/W descriptor
-% from the constants structure here.
+% IMPLEMENTATION NOTE: BICAS contains other code which builds a structure corresponding to the S/W descriptor (defined
+% in the RCS ICD) from the constants structure here.
 % Reasons for NOT putting the S/W descriptor structure inside the constants structure:
 % (1) Some of the S/W descriptor variables have vague or misleading names ("name", "dataset versions", "dataset IDs")
-%     which would be represented by MATLAB variables by the same names.
+%     which would (reasoably) have to be represented by MATLAB variables with the same names.
 % (2) Some of the S/W descriptor variables are grouped in a way which
 %     does not fit the rest of the code (modes[].outputs.output_XX.release in the S/W descriptor structure).
-% (2) Some of the S/W descriptor values are really structure field NAMES, but would be better as
+% (3) Some of the S/W descriptor values are really structure field NAMES, but would be better as
 %     structure field VALUES (e.g. input CLI parameter, output JSON identifier string).
-% (3) The constants structure would become dependent on the format of the S/W descriptor structure.
-%     The latter might change in the future, or be misunderstood in the precent (i.e. be changed).
-% (4) Some S/W descriptor values repeat or can be derived from other constants (e.g. author, contact,
+% (4) The constants structure would become dependent on the format of the S/W descriptor structure.
+%     The latter might change in the future, or be misunderstood in the present (i.e. be changed).
+% (5) Some S/W descriptor values repeat or can be derived from other constants (e.g. author, contact,
 %     institute, output_XX.release.file).
-% (5) It is easier to add automatic checks on the S/W descriptor in the code that derives it.
-%
-% NOTE: sw_root_dir is not strictly a constant.
+% (6) It is easier to add automatic checks on the S/W descriptor in the code that derives it.
 %
 %
 %
@@ -79,15 +79,22 @@ classdef constants < handle
 %   PRO: It has to do with constants.
 %       CON: The function really represents code, not constants.
 %   PRO: More natural to incorporate validation.
-
+%   PRO: The result could/should be "cached" here.
+%
+% PROPOSAL: Use (nested) function to set every input in produce_inputs_constants. Reduce to one-liners.
+%     PROPOSAL: Same for produce_inputs_constants.
+%     PROPOSAL: Use struct statement instead.
+%        CON: Does not make use of the similarities between assignments.
+%        CON: Want to "extract values from a table".
+%
 
 
     %###################################################################################################################
     
     % NOTE: Should be private when not debugging.
     properties(Access=private)
-        inputs
-        outputs
+        inputs    % Information associated with input  datasets.
+        outputs   % Information associated with output datasets.
     end
     
     %###################################################################################################################
@@ -112,7 +119,7 @@ classdef constants < handle
             %--------------------------------------------------------------------------------
             D = [];
             D.INITIAL_RELEASE_MODIFICATION_STR = 'No modification (initial release)';
-            D.INITIAL_RELEASE_DATE = '2016-09-01';
+            D.INITIAL_RELEASE_DATE = '2016-10-05';
             %D.SWD_OUTPUT_RELEASE_VERSION = '01';  % For the S/W descriptor output CDFs' release version. Unknown what a sensible value is.
             
             
@@ -215,26 +222,26 @@ classdef constants < handle
             %=================================================
             % Collect all elementary input process data types
             %=================================================
-            input_process_data_types = {};            
-            for i = 1:length(C_sw_mode.output_process_data_types)
+            input_PDTs = {};            
+            for i = 1:length(C_sw_mode.output_PDTs)
                 %==============================================================================================
                 % Find all elementary input process data types for a given elementary output process data type
                 %==============================================================================================
-                temp = bicas.data_manager.get_elementary_input_process_data_types(...
-                    C_sw_mode.output_process_data_types{i}, C_sw_mode.ID);
+                temp = bicas.data_manager.get_elementary_input_PDTs(...
+                    C_sw_mode.output_PDTs{i}, C_sw_mode.ID);
                 
-                input_process_data_types = [input_process_data_types, temp];
+                input_PDTs = [input_PDTs, temp];
             end
             
             try
-                C_sw_mode.inputs  = select_structs(obj.inputs,  'process_data_type', input_process_data_types);
+                C_sw_mode.inputs = select_structs(obj.inputs,  'PDT', input_PDTs);
             catch exception
-                error('BICAS:Assertion', 'Can not identify all input process data types associated with mode/CLI parameter "%s".', CLI_parameter)
+                error('BICAS:Assertion:IllegalConfiguration', 'Can not identify all input process data types associated with S/W mode/CLI parameter "%s".', CLI_parameter)
             end
             try
-                C_sw_mode.outputs = select_structs(obj.outputs, 'process_data_type', C_sw_mode.output_process_data_types);
+                C_sw_mode.outputs = select_structs(obj.outputs, 'PDT', C_sw_mode.output_PDTs);
             catch exception
-                error('BICAS:Assertion', 'Can not identify all output process data types associated with mode/CLI parameter "%s".', CLI_parameter)
+                error('BICAS:Assertion:IllegalConfiguration', 'Can not identify all output process data types associated with S/W mode/CLI parameter "%s".', CLI_parameter)
             end
         end
 
@@ -246,10 +253,6 @@ classdef constants < handle
 
         % Any code for double-checking the validity of hardcoded constants.
         function validate(obj)
-
-            C = obj.C;
-
-
 
             %==========================
             % Iterate over input types
@@ -333,60 +336,81 @@ classdef constants < handle
             %                  values/constants can be easily modified, whereas ID values are tied to hardcoded
             %                  constants in data_manager which are harder to modify.
             %
-            % .output_process_data_types : Effectively an array of pointers to (1) the output constants, and (2)
-            % indirectly to the input constants through data_manager.get_elementary_input_process_data_types.
+            % .output_PDTs : A cell array of process data types. Effectively an array of pointers to (1) the output constants, and (2)
+            % indirectly to the input constants through data_manager.get_elementary_input_PDTs.
             
             C_sw_modes = {};
             
-            % -------- LFR --------
+            %=====
+            % LFR 
+            %=====
+            sw_mode = [];
+            sw_mode.CLI_parameter = 'LFR-SBM1-CWF-E';
+            sw_mode.ID            = 'LFR-SBM1-CWF-E_V01-V01';
+            sw_mode.SWD_purpose = 'Generate CWF electric field data (potential difference) from LFR';            
+            sw_mode.output_PDTs = {'L2S_LFR-SBM1-CWF-E_V01'};
+            C_sw_modes{end+1} = sw_mode;
+            
+            sw_mode = [];
+            sw_mode.CLI_parameter = 'LFR-SBM2-CWF-E';
+            sw_mode.ID            = 'LFR-SBM2-CWF-E_V01-V01';
+            sw_mode.SWD_purpose = 'Generate CWF electric field data (potential difference) from LFR';            
+            sw_mode.output_PDTs = {'L2S_LFR-SBM2-CWF-E_V01'};
+            C_sw_modes{end+1} = sw_mode;
+            
             sw_mode = [];
             sw_mode.CLI_parameter = 'LFR-SURV-CWF-E';
             sw_mode.ID            = 'LFR-SURV-CWF-E_V01-V01';
             sw_mode.SWD_purpose = 'Generate CWF electric field data (potential difference) from LFR';            
-            sw_mode.output_process_data_types = {'L2S_LFR-SURV-CWF-E_V01'};
-            C_sw_modes{end+1} = sw_mode;
-            
-            sw_mode = [];
-            sw_mode.CLI_parameter = 'LFR-SURV-CWF-E___EXPERIMENTAL';
-            sw_mode.ID            = 'LFR-SURV-CWF-E_V01-V01___EXPERIMENTAL';
-            sw_mode.SWD_purpose = 'Generate CWF electric field data (potential difference) from LFR - EXPERIMENTAL';            
-            sw_mode.output_process_data_types = {'L2S_LFR-SURV-CWF-E_V01'};
+            sw_mode.output_PDTs = {'L2S_LFR-SURV-CWF-E_V01'};
             C_sw_modes{end+1} = sw_mode;
             
             sw_mode = [];
             sw_mode.CLI_parameter = 'LFR-SURV-SWF-E';
             sw_mode.ID            = 'LFR-SURV-SWF-E_V01-V01';
             sw_mode.SWD_purpose = 'Generate SWF electric (potential difference) data from LFR';            
-            sw_mode.output_process_data_types = {'L2S_LFR-SURV-SWF-E_V01'};
+            sw_mode.output_PDTs = {'L2S_LFR-SURV-SWF-E_V01'};
             C_sw_modes{end+1} = sw_mode;
             
-            % -------- TDS --------
+            %=====
+            % TDS
+            %=====
             sw_mode = [];
             sw_mode.CLI_parameter = 'TDS-LFM-CWF-E';
             sw_mode.ID            = 'TDS-LFM-CWF-E_V01-V01';
             sw_mode.SWD_purpose = 'Generate CWF electric (potential difference) data from TDS-LFM-CWF';
-            sw_mode.output_process_data_types = {'L2S_TDS-LFM-CWF-E_V01'};
+            sw_mode.output_PDTs = {'L2S_TDS-LFM-CWF-E_V01'};
             C_sw_modes{end+1} = sw_mode;
             
+            % NOTE: Accepts older/obsoleted input data.
             sw_mode = [];
             sw_mode.CLI_parameter = 'TDS-LFM-RSWF-E_V01-V01';
             sw_mode.ID            = 'TDS-LFM-RSWF-E_V01-V01';
             sw_mode.SWD_purpose = 'Generate RSWF electric (potential difference) data from TDS-LFM-RSWF V01';
-            sw_mode.output_process_data_types = {'L2S_TDS-LFM-RSWF-E_V01'};
+            sw_mode.output_PDTs = {'L2S_TDS-LFM-RSWF-E_V01'};
             C_sw_modes{end+1} = sw_mode;
             
             sw_mode = [];
             sw_mode.CLI_parameter = 'TDS-LFM-RSWF-E_V02-V01';
             sw_mode.ID            = 'TDS-LFM-RSWF-E_V02-V01';
             sw_mode.SWD_purpose = 'Generate RSWF electric (potential difference) data from TDS-LFM-RSWF V02';
-            sw_mode.output_process_data_types = {'L2S_TDS-LFM-RSWF-E_V01'};
+            sw_mode.output_PDTs = {'L2S_TDS-LFM-RSWF-E_V01'};
             C_sw_modes{end+1} = sw_mode;
             
-            % -------- TEST --------
+            %======
+            % TEST
+            %======
+%             sw_mode = [];
+%             sw_mode.CLI_parameter = 'LFR-SURV-CWF-E___EXPERIMENTAL';
+%             sw_mode.ID            = 'LFR-SURV-CWF-E_V01-V01___EXPERIMENTAL';
+%             sw_mode.SWD_purpose = 'Generate CWF electric field data (potential difference) from LFR - EXPERIMENTAL';            
+%             sw_mode.output_PDTs = {'L2S_LFR-SURV-CWF-E_V01'};
+%             C_sw_modes{end+1} = sw_mode;
+%             
             %sw_mode = [];
             %sw_mode.CLI_parameter = 'TEST-MODE';
             %sw_mode.SWD_purpose = 'Test mode. This mode is never supposed to be seen outside of development.';            
-            %sw_mode.output_process_data_types = {'L2S_LFR-SURV-SWF-E_V01', 'L2S_TEST_V99'};
+            %sw_mode.output_PDTs = {'L2S_LFR-SURV-SWF-E_V01', 'L2S_TEST_V99'};
             %C_sw_modes{end+1} = sw_mode;
         end
             
@@ -396,84 +420,70 @@ classdef constants < handle
         % (independent of how they are associated with S/W modes).
         %==========================================================
         function C_inputs = produce_inputs_constants
-            CLI_PARAMETER_SCI_NAME = 'input_sci';
+            % PROPOSAL: Put derivation of .PDT in nested init function.
             
+            % NOTE: NESTED function
+            function C_input = init_input_C_sci(dataset_ID, skeleton_version_str)
+                C_input.CLI_parameter        = 'input_sci';
+                C_input.dataset_ID           = dataset_ID;
+                C_input.skeleton_version_str = skeleton_version_str;
+            end
+
             C_inputs = {};
             
-            % NOTE: CLI_parameter = CLI parameter MINUS flag prefix ("--").           
+            % NOTE: CLI_parameter = CLI parameter MINUS flag prefix ("--"), i.e. e.g. "sci" instead of "--sci".
             
             %=========
             % BIAS HK
             %=========
             C_inputs{end+1} = [];
-            C_inputs{end}.CLI_parameter  = 'input_hk';
+            C_inputs{end}.CLI_parameter        = 'input_hk';
             C_inputs{end}.dataset_ID           = 'ROC-SGSE_HK_RPW-BIA';
             C_inputs{end}.skeleton_version_str = '01';
             
             %=========
             % LFR SCI
-            %=========
-            % 1 snapshot/record
-            C_inputs{end+1} = [];
-            C_inputs{end}.CLI_parameter  = CLI_PARAMETER_SCI_NAME;
-            C_inputs{end}.dataset_ID           = 'ROC-SGSE_L2R_RPW-LFR-SBM1-CWF';
-            C_inputs{end}.skeleton_version_str = '01';
+            %=========            
+            C_inputs{end+1} = init_input_C_sci('ROC-SGSE_L2R_RPW-LFR-SBM1-CWF', '01');   % 1 snapshot/record            
+            C_inputs{end+1} = init_input_C_sci('ROC-SGSE_L2R_RPW-LFR-SBM1-CWF', '02');   % 1 sample/record            
             
-            % 1 snapshot/record
-            C_inputs{end+1} = [];
-            C_inputs{end}.CLI_parameter  = CLI_PARAMETER_SCI_NAME;
-            C_inputs{end}.dataset_ID           = 'ROC-SGSE_L2R_RPW-LFR-SBM2-CWF';
-            C_inputs{end}.skeleton_version_str = '01';
+            C_inputs{end+1} = init_input_C_sci('ROC-SGSE_L2R_RPW-LFR-SBM2-CWF', '01');   % 1 snapshot/record            
+            C_inputs{end+1} = init_input_C_sci('ROC-SGSE_L2R_RPW-LFR-SBM2-CWF', '02');   % 1 sample/record            
             
-            % 1 snapshot/record
-            C_inputs{end+1} = [];
-            C_inputs{end}.CLI_parameter  = CLI_PARAMETER_SCI_NAME;
-            C_inputs{end}.dataset_ID           = 'ROC-SGSE_L2R_RPW-LFR-SURV-CWF';
-            C_inputs{end}.skeleton_version_str = '01';
+            C_inputs{end+1} = init_input_C_sci('ROC-SGSE_L2R_RPW-LFR-SURV-CWF', '01');   % 1 snapshot/record            
+            C_inputs{end+1} = init_input_C_sci('ROC-SGSE_L2R_RPW-LFR-SURV-CWF', '02');   % 1 sample/record
             
-            % 1 snapshot/record
-            C_inputs{end+1} = [];
-            C_inputs{end}.CLI_parameter  = CLI_PARAMETER_SCI_NAME;
-            C_inputs{end}.dataset_ID           = 'ROC-SGSE_L2R_RPW-LFR-SURV-SWF';
-            C_inputs{end}.skeleton_version_str = '01';
-
+            
+            C_inputs{end+1} = init_input_C_sci('ROC-SGSE_L2R_RPW-LFR-SURV-SWF', '01');   % 1 snapshot/record            
+            % Add zVar SAMP_DTIME
+            C_inputs{end+1} = init_input_C_sci('ROC-SGSE_L2R_RPW-LFR-SURV-SWF', '02');   % 1 snapshot/record -- Not a change of snapshot/samples per record.
+            
             %=========
             % TDS SCI
             %=========
-            % 1 sample/record
-            C_inputs{end+1} = [];
-            C_inputs{end}.CLI_parameter  = CLI_PARAMETER_SCI_NAME;
-            C_inputs{end}.dataset_ID           = 'ROC-SGSE_L2R_RPW-TDS-LFM-CWF';
-            C_inputs{end}.skeleton_version_str = '01';
-
-            % 1 sample/record
-            C_inputs{end+1} = [];
-            C_inputs{end}.CLI_parameter  = CLI_PARAMETER_SCI_NAME;
-            C_inputs{end}.dataset_ID           = 'ROC-SGSE_L2R_RPW-TDS-LFM-RSWF';
-            C_inputs{end}.skeleton_version_str = '01';
             
-            % 1 snapshot/record
-            C_inputs{end+1} = [];
-            C_inputs{end}.CLI_parameter  = CLI_PARAMETER_SCI_NAME;
-            C_inputs{end}.dataset_ID           = 'ROC-SGSE_L2R_RPW-TDS-LFM-RSWF';
-            C_inputs{end}.skeleton_version_str = '02';
+            C_inputs{end+1} = init_input_C_sci('ROC-SGSE_L2R_RPW-TDS-LFM-CWF',  '01');% 1 sample/record
+            
+            C_inputs{end+1} = init_input_C_sci('ROC-SGSE_L2R_RPW-TDS-LFM-RSWF', '01');% 1 sample/record            
+            % Adds two zVariables: SAMP_DTIME, SAMPS_PER_CH
+            C_inputs{end+1} = init_input_C_sci('ROC-SGSE_L2R_RPW-TDS-LFM-RSWF', '02');% 1 snapshot/record
             
             %======
             % TEST
             %======
-            C_inputs{end+1} = [];
-            C_inputs{end}.CLI_parameter        = 'input_sci2';
-            C_inputs{end}.dataset_ID           = 'ROC-SGSE_L2R_TEST';
-            C_inputs{end}.skeleton_version_str = '99';
+            %C_inputs{end+1} = [];
+            %C_inputs{end}.CLI_parameter        = 'input_sci2';
+            %C_inputs{end}.dataset_ID           = 'ROC-SGSE_L2R_TEST';
+            %C_inputs{end}.skeleton_version_str = '99';
             
             for i = 1:length(C_inputs)
-                C_inputs{i}.process_data_type = bicas.constants.construct_process_data_type(C_inputs{i}.dataset_ID, C_inputs{i}.skeleton_version_str);
-                %C_inputs{i}.process_data_type = [C_inputs{i}.dataset_ID, '_V', C_inputs{i}.skeleton_version_str];
+                C_inputs{i}.PDT = bicas.constants.construct_PDT(C_inputs{i}.dataset_ID, C_inputs{i}.skeleton_version_str);
+                %C_inputs{i}.PDT = [C_inputs{i}.dataset_ID, '_V', C_inputs{i}.skeleton_version_str];
             end
         end
-        
-        
-        
+
+
+
         %==========================================================
         % Produce constants for all possible OUTPUT datasets
         % (independent of how they are associated with S/W modes).
@@ -557,34 +567,34 @@ classdef constants < handle
             
             % -------- TEST --------
             
-            C_outputs{end+1} = [];
-            C_outputs{end}.JSON_output_file_identifier = 'output_test2';
-            C_outputs{end}.dataset_ID                  = 'ROC-SGSE_L2S_TEST';
-            C_outputs{end}.skeleton_version_str        = '99';
-            C_outputs{end}.SWD_name                    = 'Test form of output.';
-            C_outputs{end}.SWD_description             = 'Test form of output. This never supposed to be seen outside of development.';
-            C_outputs{end}.SWD_level                   = 'L2S';
-            C_outputs{end}.SWD_release_date            = D.INITIAL_RELEASE_DATE;
-            C_outputs{end}.SWD_release_modification    = D.INITIAL_RELEASE_MODIFICATION_STR;
-            %C_outputs{end}.SWD_release_version         = D.SWD_OUTPUT_RELEASE_VERSION;
-            
+%             C_outputs{end+1} = [];
+%             C_outputs{end}.JSON_output_file_identifier = 'output_test2';
+%             C_outputs{end}.dataset_ID                  = 'ROC-SGSE_L2S_TEST';
+%             C_outputs{end}.skeleton_version_str        = '99';
+%             C_outputs{end}.SWD_name                    = 'Test form of output.';
+%             C_outputs{end}.SWD_description             = 'Test form of output. This never supposed to be seen outside of development.';
+%             C_outputs{end}.SWD_level                   = 'L2S';
+%             C_outputs{end}.SWD_release_date            = D.INITIAL_RELEASE_DATE;
+%             C_outputs{end}.SWD_release_modification    = D.INITIAL_RELEASE_MODIFICATION_STR;
+%             %C_outputs{end}.SWD_release_version         = D.SWD_OUTPUT_RELEASE_VERSION;
+
             % Put together process data types (used in data_manager).
             % See data_manager for definition.
             for i = 1:length(C_outputs)
-                %C_outputs{i}.process_data_type = [C_outputs{i}.dataset_ID, '_V', C_outputs{i}.skeleton_version_str];
-                C_outputs{i}.process_data_type = bicas.constants.construct_process_data_type(C_outputs{i}.dataset_ID, C_outputs{i}.skeleton_version_str);
+                C_outputs{i}.PDT = bicas.constants.construct_PDT(C_outputs{i}.dataset_ID, C_outputs{i}.skeleton_version_str);
             end
         end
         
         
         
-        function process_data_type = construct_process_data_type(dataset_ID, skeleton_version_str)
-            %process_data_type = [dataset_ID, '_V', skeleton_version_str];
+        function PDT = construct_PDT(dataset_ID, skeleton_version_str)
+        % Construct a (shorter) process data type (PDT) from a dataset ID and version.
+        
+            %PDT = [dataset_ID, '_V', skeleton_version_str];
             
             dataset_ID_shortened = regexprep(dataset_ID,           '^ROC-SGSE_', '',  'once');
             dataset_ID_shortened = regexprep(dataset_ID_shortened, '_RPW-',      '_', 'once');                
-            process_data_type = [dataset_ID_shortened, '_V', skeleton_version_str];
-            %disp(process_data_type)   % DEBUG
+            PDT = [dataset_ID_shortened, '_V', skeleton_version_str];
         end
 
     end % methods

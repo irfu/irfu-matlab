@@ -157,18 +157,18 @@ try
         %-----------------------------------------------------------------
         flags('output_dir') = struct('CLI_str', '--output', 'is_required', 1, 'expects_value', 1);
         C_inputs = C_sw_mode.inputs;    % C = Constants structure.
-        input_process_data_types = {};   % List of keys used for input files.
+        input_PDTs = {};   % List of keys used for input files.
         for i_input = 1:length(C_inputs)
-            process_data_type = C_inputs{i_input}.process_data_type;
+            PDT = C_inputs{i_input}.PDT;
             
             % Configure one flag+value pair
             flag = [];
             flag.CLI_str = ['--', C_inputs{i_input}.CLI_parameter];
             flag.is_required = 1;
             flag.expects_value = 1;
-            flags(process_data_type) = flag;
+            flags(PDT) = flag;
             
-            input_process_data_types{end+1} = process_data_type;
+            input_PDTs{end+1} = PDT;
         end
 
         %-----------------------------
@@ -178,7 +178,7 @@ try
         
         
         
-        input_files = containers.Map(input_process_data_types, parsed_flags.values(input_process_data_types));   % Extract subset of parsed arguments.
+        input_files = containers.Map(input_PDTs, parsed_flags.values(input_PDTs));   % Extract subset of parsed arguments.
         
         output_dir = get_abs_path(parsed_flags('output_dir'));
         

@@ -1,8 +1,10 @@
+% execute_sw_mode   Execute a "S/W mode" as (implicitly) specified by the CLI arguments.
+%
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
 % First created 2016-06-09
 %
-% Execute a "S/W mode" as (implicitly) specified by the CLI arguments.
-%
+% ARGUMENTS AND RETURN VALUES
+% ===========================
 % sw_mode_CLI_parameter : String
 % input_files : containers.Map with
 %    keys   = Dataset IDs
@@ -46,12 +48,12 @@ DM = bicas.data_manager();
 %===========================================================================
 % Give all input CDF files (from the CLI argument list) to the data manager
 %===========================================================================
-input_process_data_types = input_files.keys;
-for i = 1:length(input_process_data_types)
-    process_data_type = input_process_data_types{i};
-    input_file = input_files(process_data_type);
+input_PDTs = input_files.keys;
+for i = 1:length(input_PDTs)
+    PDT = input_PDTs{i};
+    input_file = input_files(PDT);
     
-    DM.set_elementary_input_CDF(process_data_type, input_file);
+    DM.set_elementary_input_CDF(PDT, input_file);
 end
 
 
@@ -72,8 +74,8 @@ for i = 1:length(C_sw_mode.outputs)
     
     JSON_filenames_obj.(C_output.JSON_output_file_identifier) = output_filename;
     
-    process_data_type = C_output.process_data_type;
-    process_data = DM.get_process_data_recursively(process_data_type, C_sw_mode.ID);
+    PDT = C_output.PDT;
+    process_data = DM.get_process_data_recursively(PDT, C_sw_mode.ID);
     
     % Read master CDF file.
     master_CDF_path = bicas.get_master_CDF_path(C_output.dataset_ID, C_output.skeleton_version_str);
