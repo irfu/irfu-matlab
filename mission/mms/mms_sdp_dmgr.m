@@ -10,6 +10,7 @@ classdef mms_sdp_dmgr < handle
     adc_off = [];     % comp ADC offsets
     aspoc = [];       % src ASPOC file
     calFile = [];     % name of calibration file used
+    CMDModel = [];    % comp CMDmodel
     dce = [];         % src DCE file
     dce_xyz_dsl = []; % comp E-field xyz DSL-coord
     dcv = [];         % src DCV file
@@ -168,11 +169,12 @@ classdef mms_sdp_dmgr < handle
           chk_latched_p()
           %apply_transfer_function()
           v_from_e_and_v()
-          e_from_asym()
           chk_bias_guard()
           chk_aspoc_on()
           chk_sweep_on()
+%          chk_maneuvers()
           chk_sdp_v_vals()
+          e_from_asym()
           sensors = {'e12','e34','e56'};
           apply_nom_amp_corr() % AFTER all V values was calculated but before most processing.
           sensors = {'e12','e34'};
@@ -187,6 +189,7 @@ classdef mms_sdp_dmgr < handle
           v_from_e_and_v()
           chk_bias_guard()
           chk_sweep_on()
+%          chk_maneuvers()
           chk_sdp_v_vals()
           sensors = {'e12','e34','e56'};
           apply_nom_amp_corr() % AFTER all V values was calculated but before most processing.
@@ -412,74 +415,123 @@ classdef mms_sdp_dmgr < handle
           check_monoton_timeincrease(DATAC.(param).time);
           
         case('l2a')
-          load_l2a();
-          if(DATAC.procId == MMS_CONST.SDCProc.l2a || DATAC.procId == MMS_CONST.SDCProc.l2pre)
-            if(DATAC.tmMode ~= MMS_CONST.TmMode.brst)
-              % Do full L2Pre processing on L2A Fast/slow data.
-              %% FIXME: MOVE TO PROPER SUBFUNCTIONS.
-              DATAC.l2a.adp = DATAC.l2a.dce.e56.data;
-              % DESPIN, using L2A data (offsets, phase etc).
-              sdpProbes = fieldnames(DATAC.l2a.adc_off); % default {'e12', 'e34'}
-              Etmp = struct('e12',DATAC.l2a.dce.e12.data,'e34',DATAC.l2a.dce.e34.data);
-              for iProbe=1:numel(sdpProbes)
-                % Remove ADC offset
-                Etmp.(sdpProbes{iProbe}) = ...
-                  Etmp.(sdpProbes{iProbe}) - DATAC.l2a.adc_off.(sdpProbes{iProbe});
-              end
-              MMS_CONST = DATAC.CONST;
-              bitmask = mms_sdp_typecast('bitmask',bitor(DATAC.l2a.dce.e12.bitmask,DATAC.l2a.dce.e34.bitmask));
-              Etmp.e12 = mask_bits(Etmp.e12, bitmask, MMS_CONST.Bitmask.SWEEP_DATA);
-              Etmp.e34 = mask_bits(Etmp.e34, bitmask, MMS_CONST.Bitmask.SWEEP_DATA);
-              DeltaOff = irf.ts_vec_xy(DATAC.l2a.spinfits.time, [real(DATAC.l2a.delta_off), imag(DATAC.l2a.delta_off)]);
-              DeltaOffR = DeltaOff.resample(EpochTT(DATAC.l2a.dce.time));
-              dE = mms_sdp_despin(Etmp.e12, Etmp.e34, DATAC.l2a.phase.data, DeltaOffR.data(:,1) + DeltaOffR.data(:,2)*1j);
-              offs = mms_sdp_get_offset(DATAC.scId, DATAC.procId, DATAC.l2a.dce.time);
-              DATAC.calFile = offs.calFile; % Store name of cal file used.
-              dE(:,1) = dE(:,1) - offs.ex; % Remove sunward
-              dE(:,2) = dE(:,2) - offs.ey; % and duskward offsets
-              % Compute DCE Z from E.B = 0, if >10 deg and if abs(B_z)> 1 nT.
-              B_tmp = DATAC.dfg.B_dmpa;
-              B_tmp.data((abs(B_tmp.z.data) <= 1), :) = NaN;
-              dEz = irf_edb(TSeries(EpochTT(DATAC.l2a.dce.time),dE,'vec_xy'), B_tmp, 10, 'E.B=0');
-              DATAC.l2a.dsl = struct('data',[dEz.data],...
-                'bitmask',bitmask);
-
-            else
-              % L1b data combined with L2A fast to be processed for L2Pre
-              % brst.
-              DATAC.l2a.adp = -DATAC.dce.e56.data; % Note: minus (L1b dce e56) to align with DSL Z
-              % Compute values from DCE and store in intermediate l2a
-              % position
-              DATAC.l2a.dce.time = DATAC.dce.time;
-              DATAC.l2a.phase = DATAC.phase;
-              DATAC.l2a.adc_off = DATAC.adc_off;
-              sdpProbes = fieldnames(DATAC.l2a.adc_off); % default {'e12', 'e34'}
-              Etmp = struct('e12',DATAC.dce.e12.data,'e34',DATAC.dce.e34.data);
-              for iProbe=1:numel(sdpProbes)
-                % Remove ADC offset
-                Etmp.(sdpProbes{iProbe}) = ...
-                  Etmp.(sdpProbes{iProbe}) - DATAC.adc_off.(sdpProbes{iProbe});
-              end
-              MMS_CONST = DATAC.CONST;
-              bitmask = mms_sdp_typecast('bitmask',bitor(DATAC.dce.e12.bitmask,DATAC.dce.e34.bitmask));
-              Etmp.e12 = mask_bits(Etmp.e12, bitmask, MMS_CONST.Bitmask.SWEEP_DATA);
-              Etmp.e34 = mask_bits(Etmp.e34, bitmask, MMS_CONST.Bitmask.SWEEP_DATA);
-              DeltaOff = irf.ts_vec_xy(DATAC.l2a.spinfits.time, [real(DATAC.l2a.delta_off), imag(DATAC.l2a.delta_off)]);
-              DeltaOffR = DeltaOff.resample(EpochTT(DATAC.l2a.dce.time));
-              dE = mms_sdp_despin(Etmp.e12, Etmp.e34, DATAC.phase.data, DeltaOffR.data(:,1) + DeltaOffR.data(:,2)*1j);
-              offs = mms_sdp_get_offset(DATAC.scId, DATAC.procId, DATAC.dce.time);
-              DATAC.calFile = offs.calFile; % Store name of cal file used.
-              dE(:,1) = dE(:,1) - offs.ex; % Remove sunward
-              dE(:,2) = dE(:,2) - offs.ey; % and duskward offsets
-              % Compute DCE Z from E.B = 0, if >10 deg and if abs(B_z)> 1 nT.
-              B_tmp = DATAC.dfg.B_dmpa;
-              B_tmp.data((abs(B_tmp.z.data) <= 1), :) = NaN;
-              dEz = irf_edb(TSeries(EpochTT(DATAC.dce.time),dE,'vec_xy'), B_tmp, 10, 'E.B=0');
-              DATAC.l2a.dsl = struct('data',[dEz.data],...
-                'bitmask',bitmask);
+          % L2A, contain dce data, spinfits, etc. for L2Pre processing or
+          % Fast data/offsets to be used by Brst QL processing.
+          DATAC.(param) = [];
+          DATAC.(param).dataObj = dataObj;
+          % Split up the various parts (spinfits [sdev, e12, e34], dce data
+          % [e12, e34, e56], dce bitmask [e12, e34, e56], phase, adc & delta 
+          % offsets).
+          % Check version number, 1.0.z use new variable names, old 0.1.z did
+          % not use.
+          if( ~is_version_geq(dataObj.GlobalAttributes.Data_version{1}(2:end),'1.0.0') )
+            % Old version, this code segment can be removed when
+            % re-processing has occured.
+            varPre = ['mms', num2str(DATAC.scId), '_edp_dce'];
+            varPre2='_spinfit_'; varPre3='_adc_offset';
+            sdpPair = {'e12', 'e34'};
+            for iPair=1:numel(sdpPair)
+              tmp = dataObj.data.([varPre, varPre2, sdpPair{iPair}]).data(:,2:end);
+              % Replace possible FillVal with NaN
+              tmp(tmp==getfield(mms_sdp_typecast('spinfits'),'fillval')) = NaN;
+              DATAC.(param).spinfits.sfit.(sdpPair{iPair}) = tmp;
+              tmp = dataObj.data.([varPre, varPre2, sdpPair{iPair}]).data(:,iPair);
+              % Replace possible FillVal with NaN
+              tmp(tmp==getfield(mms_sdp_typecast('spinfits'),'fillval')) = NaN;
+              DATAC.(param).spinfits.sdev.(sdpPair{iPair}) = tmp;
+              tmp = dataObj.data.([varPre, varPre3]).data(:,iPair);
+              % Replace possible FillVal with NaN
+              tmp(tmp==getfield(mms_sdp_typecast('adc_offset'),'fillval')) = NaN;
+              DATAC.(param).adc_off.(sdpPair{iPair}) = tmp;
+            end
+            x = getdep(dataObj,[varPre, varPre2, sdpPair{iPair}]);
+            DATAC.(param).spinfits.time = x.DEPEND_O.data;
+            check_monoton_timeincrease(DATAC.(param).spinfits.time, 'L2A spinfits');
+            sensors = {'e12', 'e34', 'e56'};
+            DATAC.(param).dce = [];
+            x = getdep(dataObj,[varPre, '_data']);
+            DATAC.(param).dce.time = x.DEPEND_O.data;
+            check_monoton_timeincrease(DATAC.(param).dce.time, 'L2A dce');
+            for iPair=1:numel(sensors);
+              tmp = dataObj.data.([varPre, '_data']).data(:,iPair);
+              % Replace possible FillVal with NaN
+              tmp(tmp==getfield(mms_sdp_typecast('dce'),'fillval')) = NaN;
+              DATAC.(param).dce.(sensors{iPair}).data = tmp;
+              tmp = dataObj.data.([varPre, '_bitmask']).data(:,iPair);
+              tmp(tmp==getfield(mms_sdp_typecast('bitmask'),'fillval')) = NaN;
+              DATAC.(param).dce.(sensors{iPair}).bitmask = tmp;
+            end
+            tmp = dataObj.data.([varPre, '_phase']).data;
+            tmp(tmp==getfield(mms_sdp_typecast('phase'),'fillval')) = NaN;
+            DATAC.(param).phase.data = tmp;
+            DATAC.(param).delta_off = mms_sdp_dmgr.comp_delta_off(DATAC.(param).spinfits, ...
+              DATAC.(param).dce.time, DATAC.(param).dce.(sensors{1}).bitmask, ...
+              DATAC.(param).dce.(sensors{2}).bitmask, ...
+              DATAC.CONST);
+          else
+            % New version, new variable names.. This piece of code should be
+            % kept after all reprocessing is completed.
+            varPre = ['mms', num2str(DATAC.scId), '_edp_'];
+            typePos = strfind(dataObj.GlobalAttributes.Data_type{1},'_');
+            varSuf = dataObj.GlobalAttributes.Data_type{1}(1:typePos(2)-1);
+            sdpPair = {'e12', 'e34'};
+            for iPair=1:numel(sdpPair)
+              % Spinfits
+              tmp1 = dataObj.data.([varPre, 'offsfit_', strrep(sdpPair{iPair},'e','p'),'_', varSuf]).data;
+              % Replace possible FillVal with NaN
+              tmp1(tmp1==getfield(mms_sdp_typecast('spinfits'),'fillval')) = NaN;
+              tmp = dataObj.data.([varPre, 'espin_', strrep(sdpPair{iPair},'e','p'),'_', varSuf]).data;
+              % Replace possible FillVal with NaN
+              tmp(tmp==getfield(mms_sdp_typecast('spinfits'),'fillval')) = NaN;
+              DATAC.(param).spinfits.sfit.(sdpPair{iPair}) = [tmp1, tmp];
+              % Sdev
+              tmp = dataObj.data.([varPre, 'sdevfit_', strrep(sdpPair{iPair},'e','p'),'_', varSuf]).data;
+              % Replace possible FillVal with NaN
+              tmp(tmp==getfield(mms_sdp_typecast('spinfits'),'fillval')) = NaN;
+              DATAC.(param).spinfits.sdev.(sdpPair{iPair}) = tmp;
+              % ADC offset
+              tmp = dataObj.data.([varPre, 'adc_offset_', varSuf]).data(:,iPair);
+              % Replace possible FillVal with NaN
+              tmp(tmp==getfield(mms_sdp_typecast('adc_offset'),'fillval')) = NaN;
+              DATAC.(param).adc_off.(sdpPair{iPair}) = tmp;
+            end
+            x = getdep(dataObj,[varPre, 'espin_', strrep(sdpPair{1},'e','p'),'_', varSuf]);
+            DATAC.(param).spinfits.time = x.DEPEND_O.data;
+            check_monoton_timeincrease(DATAC.(param).spinfits.time, 'L2A spinfits');
+            sensors = {'e12', 'e34', 'e56'};
+            DATAC.(param).dce = [];
+            x = getdep(dataObj,[varPre, 'dce_', varSuf]);
+            DATAC.(param).dce.time = x.DEPEND_O.data;
+            check_monoton_timeincrease(DATAC.(param).dce.time, 'L2A dce');
+            for iPair=1:numel(sensors);
+              % DCE
+              tmp = dataObj.data.([varPre, 'dce_', varSuf]).data(:,iPair);
+              % Replace possible FillVal with NaN
+              tmp(tmp==getfield(mms_sdp_typecast('dce'),'fillval')) = NaN;
+              DATAC.(param).dce.(sensors{iPair}).data = tmp;
+              % Bitmask
+              tmp = dataObj.data.([varPre, 'bitmask_', varSuf]).data(:,iPair);
+              tmp(tmp==getfield(mms_sdp_typecast('bitmask'),'fillval')) = NaN;
+              DATAC.(param).dce.(sensors{iPair}).bitmask = tmp;
+            end
+            % Phase
+            tmp = dataObj.data.([varPre, 'phase_', varSuf]).data;
+            tmp(tmp==getfield(mms_sdp_typecast('phase'),'fillval')) = NaN;
+            DATAC.(param).phase.data = tmp;
+            % Delta offset
+            DATAC.(param).delta_off = mms_sdp_dmgr.comp_delta_off(DATAC.(param).spinfits, ...
+              DATAC.(param).dce.time, DATAC.(param).dce.(sensors{1}).bitmask, ...
+              DATAC.(param).dce.(sensors{2}).bitmask, ...
+              DATAC.CONST);
+            % CMDmodel
+            if(isfield(dataObj.data, [varPre, 'cmdmodel_', varSuf]))
+              % CMDmodel (as of 2016/09/22 only for MMS4 after probe 4
+              % failed), to be used in Brst processing.
+              tmp = dataObj.data.([varPre, 'cmdmodel_', varSuf]).data;
+              tmp(tmp==getfield(mms_sdp_typecast('dce'),'fillval')) = NaN;
+              DATAC.(param).CMDModel = tmp;
             end
           end
-          
           
         case('aspoc')
           % ASPOC, have an adverse impact on E-field mesurements.
@@ -700,6 +752,48 @@ classdef mms_sdp_dmgr < handle
         end % if ~isempty(hk_10e)
       end
       
+      function chk_maneuvers()
+        % Check to see if any maneuvers are planned to occur during the
+        % interval we have data. If so, then bitmask it.
+        if isempty(DATAC.dce),
+          irf.log('warning','Empty DCE, cannot proceed')
+          return
+        end
+        Tint = irf.tint(DATAC.dce.time(1), DATAC.dce.time(end));
+        try
+          maneuvers = mms_maneuvers(Tint, DATAC.scId);
+          scIdStr = sprintf('mms%d', DATAC.scId);
+          if(isfield(maneuvers, scIdStr) && ...
+              ~isempty(maneuvers.(scIdStr)))
+            irf.log('notice', 'Some manuevers found during data interval');
+            bits = MMS_CONST.Bitmask.MANEUVERS;
+            for ii=1:length(maneuvers.(scIdStr))
+              irf.log('notice', ['Bitmasking maneuver: ', ...
+                maneuvers.(scIdStr){ii}.start.toUtc, '/', ...
+                maneuvers.(scIdStr){ii}.stop.toUtc]);
+              ind = (DATAC.dce.time >= maneuvers.(scIdStr){ii}.start.ttns ...
+                & DATAC.dce.time <= maneuvers.(scIdStr){ii}.stop.ttns);
+              for iSen = 1:2:numel(sensors)
+                senA = sensors{iSen};  senB = sensors{iSen+1};
+                senE = ['e' senA(2) senB(2)]; % E-field sensor
+                DATAC.dcv.(senA).bitmask(ind) = ...
+                    bitor(DATAC.dcv.(senA).bitmask(ind), bits);
+                DATAC.dcv.(senB).bitmask(ind) = ...
+                  bitor(DATAC.dcv.(senB).bitmask(ind), bits);
+                DATAC.dce.(senE).bitmask(ind) = ...
+                  bitor(DATAC.dce.(senE).bitmask(ind), bits);
+              end
+            end
+          else
+            irf.log('debug', 'No maneuvers found during data interval.');
+          end
+        catch ME
+          irf.log('warning', 'Failed to read timeline and bitmask maneuvers.');
+          irf.log('warning', ['Got ', ME.identifier, ' with message ', ME.message]);
+          return
+        end
+      end % CHK_MANEUVERS
+      
       function chk_sweep_on()
         % Check if sweep is on for all probes
         % if yes, set bit in both V and E bitmask
@@ -716,8 +810,8 @@ classdef mms_sdp_dmgr < handle
         end
         
         % Get sweep status and sweep Start/Stop
-        % Add extra 0.2 sec to Stop for safety
-        sweepStart = DATAC.dce.dataObj.data.([varPref 'start']).data;
+        % Add extra 0.1 sec to Stop for safety and remove 0.05 sec to Start
+        sweepStart = DATAC.dce.dataObj.data.([varPref 'start']).data - 5e7;
         sweepStop = DATAC.dce.dataObj.data.([varPref 'stop']).data + 1e8;
         sweepSwept = DATAC.dce.dataObj.data.([varPref 'swept']).data;
         
@@ -730,7 +824,7 @@ classdef mms_sdp_dmgr < handle
           end
           sweepStatus = logical(DATAC.hk_105.sweepstatus);
           sweepStart = DATAC.hk_105.time([diff(sweepStatus)==1; false]);
-          if sweepStatus(1) % First point nas sweep ON, start at t(0)-4s
+          if sweepStatus(1) % First point has sweep ON, start at t(0)-4s
             sweepStart = [DATAC.hk_105.time(1)-int64(4e9) sweepStart];
           end
           sweepStop = DATAC.hk_105.time([false; diff(sweepStatus)==-1]);
@@ -838,7 +932,7 @@ classdef mms_sdp_dmgr < handle
           irf.log('critical',errStr); error(errStr);
         end
         irf.log('notice','Removing ADP spikes');
-        if(DATAC.scId == 4 && all(DATAC.dce.time > int64(518981396384000000))) %MMS4 p4 2016-06-12T05:28:48.200Z
+        if(DATAC.scId == 4 && all(DATAC.dce.time > EpochTT('2016-06-12T05:28:48.200Z').ttns)) %MMS4 p4 failed
           model = mms_sdp_model_adp_shadow(DATAC.dce, Phase, {'e12', 'p123'});
         else
           model = mms_sdp_model_adp_shadow(DATAC.dce,Phase, {'e12','e34'});
@@ -918,9 +1012,65 @@ classdef mms_sdp_dmgr < handle
         % E34 = (V3 - 0.5*(V1 + V2))/(L/2)
         idx = indFail & ~sen3_off;
         NOM_BOOM_L = .12; % 120 m
-        DATAC.dce.e34.data(idx) = single((double(DATAC.dcv.v3.data(idx)) - ...
-          0.5*(double(DATAC.dcv.v1.data(idx)) +...
-          double(DATAC.dcv.v2.data(idx))))/(NOM_BOOM_L/2));
+        if 0 % The simplest correstion
+          DATAC.dce.e34.data(idx) = single((double(DATAC.dcv.v3.data(idx)) - ...
+            0.5*(double(DATAC.dcv.v1.data(idx)) +...
+            double(DATAC.dcv.v2.data(idx))))/(NOM_BOOM_L/2)); %#ok<UNRCH>
+        end
+        if 0
+          % Correct for spin residual
+          Phase = DATAC.phase; %#ok<UNRCH>
+          if isempty(Phase)
+            errStr='Bad PHASE input, cannot proceed.';
+            irf.log('critical',errStr); error(errStr);
+          end
+          SpinModel = mms_sdp_model_spin_residual(DATAC.dce,DATAC.dcv,Phase,...
+            {'v1','v2','v3'},DATAC.samplerate);
+          DATAC.dce.e34.data(idx) = single((...
+            double(DATAC.dcv.v3.data(idx)) - SpinModel.v3(idx) - ...
+            0.5*(double(DATAC.dcv.v1.data(idx)- SpinModel.v1(idx)) +...
+            double(DATAC.dcv.v2.data(idx))- SpinModel.v2(idx)...
+            ))/(NOM_BOOM_L/2));
+        end
+        if 1
+          % Correct for spin residual using model
+          Phase = DATAC.phase;
+          if isempty(Phase)
+            errStr='Bad PHASE input, cannot proceed.';
+            irf.log('critical',errStr); error(errStr);
+          end
+          % FOR BRST SEGMENTS TRY TO USE L2A, if not brst or if no L2a
+          % loaded compute CMDModel
+          if(DATAC.tmMode == DATAC.CONST.TmMode.brst)
+            if(isfield(DATAC.l2a, 'CMDModel'))
+              irf.log('notice', 'Using CMD model from L2a file.');
+              tmp = irf.ts_scalar(DATAC.l2a.dce.time, DATAC.l2a.CMDModel);
+              CMDModel = tmp.resample(EpochTT(DATAC.dce.time));
+              CMDModel = CMDModel.data;
+            else
+              irf.log('warning','Burst but no L2a (fast) CMD model loaded.');
+              CMDModel = mms_sdp_model_spin_residual_cmd312(DATAC.dcv,...
+                Phase, DATAC.samplerate);
+            end
+%% Daniel            
+            DATAC.dce.e34.data(idx) = single((...
+            double(DATAC.dcv.v3.data(idx)) - ...
+            0.5*(double(DATAC.dcv.v1.data(idx)) + ...
+            double(DATAC.dcv.v2.data(idx))) - CMDModel)/(NOM_BOOM_L/2));
+          else
+            CMDModel = mms_sdp_model_spin_residual_cmd312(DATAC.dcv, ...
+              Phase, DATAC.samplerate);
+            DATAC.CMDModel = CMDModel; % Store it, if process is L2A it should be written to file.
+            DATAC.dce.e34.data(idx) = single((...
+            double(DATAC.dcv.v3.data(idx)) - ...
+            0.5*(double(DATAC.dcv.v1.data(idx)) + ...
+            double(DATAC.dcv.v2.data(idx))) - CMDModel)/(NOM_BOOM_L/2));
+          end
+        end
+        % Combine the bitmasks, as the new E34 will be affected when
+        % either E12 or E34 is sweeping. Other bits are left unaffected.
+        e12Sweep = bitand(DATAC.dce.e12.bitmask(idx), MMS_CONST.Bitmask.SWEEP_DATA); % True when e12 sweep
+        DATAC.dce.e34.bitmask(idx) = bitor(DATAC.dce.e34.bitmask(idx), e12Sweep);
         DATAC.dce.e34.bitmask(idx) = bitor(DATAC.dce.e34.bitmask(idx), ...
           MMS_CONST.Bitmask.ASYMM_CONF);
       end
@@ -1058,118 +1208,6 @@ classdef mms_sdp_dmgr < handle
         end
       end
       
-      function load_l2a()
-        % L2A, contain dce data, spinfits, etc. for L2Pre processing or
-        % Fast data/offsets to be used by Brst QL processing.
-        DATAC.(param) = [];
-        DATAC.(param).dataObj = dataObj;
-        % Split up the various parts (spinfits [sdev, e12, e34], dce data
-        % [e12, e34, e56], dce bitmask [e12, e34, e56], phase, adc & delta 
-        % offsets).
-          % Check version number, 1.0.z use new variable names, old 0.1.z did
-          % not use.
-          if( ~is_version_geq(dataObj.GlobalAttributes.Data_version{1}(2:end),'1.0.0') )
-            % Old version, this code segment can be removed when
-            % re-processing has occured.
-            varPre = ['mms', num2str(DATAC.scId), '_edp_dce'];
-            varPre2='_spinfit_'; varPre3='_adc_offset';
-            sdpPair = {'e12', 'e34'};
-            for iPair=1:numel(sdpPair)
-              tmp = dataObj.data.([varPre, varPre2, sdpPair{iPair}]).data(:,2:end);
-              % Replace possible FillVal with NaN
-              tmp(tmp==getfield(mms_sdp_typecast('spinfits'),'fillval')) = NaN;
-              DATAC.(param).spinfits.sfit.(sdpPair{iPair}) = tmp;
-              tmp = dataObj.data.([varPre, varPre2, sdpPair{iPair}]).data(:,iPair);
-              % Replace possible FillVal with NaN
-              tmp(tmp==getfield(mms_sdp_typecast('spinfits'),'fillval')) = NaN;
-              DATAC.(param).spinfits.sdev.(sdpPair{iPair}) = tmp;
-              tmp = dataObj.data.([varPre, varPre3]).data(:,iPair);
-              % Replace possible FillVal with NaN
-              tmp(tmp==getfield(mms_sdp_typecast('adc_offset'),'fillval')) = NaN;
-              DATAC.(param).adc_off.(sdpPair{iPair}) = tmp;
-            end
-            x = getdep(dataObj,[varPre, varPre2, sdpPair{iPair}]);
-            DATAC.(param).spinfits.time = x.DEPEND_O.data;
-            check_monoton_timeincrease(DATAC.(param).spinfits.time, 'L2A spinfits');
-            sensors = {'e12', 'e34', 'e56'};
-            DATAC.(param).dce = [];
-            x = getdep(dataObj,[varPre, '_data']);
-            DATAC.(param).dce.time = x.DEPEND_O.data;
-            check_monoton_timeincrease(DATAC.(param).dce.time, 'L2A dce');
-            for iPair=1:numel(sensors);
-              tmp = dataObj.data.([varPre, '_data']).data(:,iPair);
-              % Replace possible FillVal with NaN
-              tmp(tmp==getfield(mms_sdp_typecast('dce'),'fillval')) = NaN;
-              DATAC.(param).dce.(sensors{iPair}).data = tmp;
-              tmp = dataObj.data.([varPre, '_bitmask']).data(:,iPair);
-              tmp(tmp==getfield(mms_sdp_typecast('bitmask'),'fillval')) = NaN;
-              DATAC.(param).dce.(sensors{iPair}).bitmask = tmp;
-            end
-            tmp = dataObj.data.([varPre, '_phase']).data;
-            tmp(tmp==getfield(mms_sdp_typecast('phase'),'fillval')) = NaN;
-            DATAC.(param).phase.data = tmp;
-            DATAC.(param).delta_off = mms_sdp_dmgr.comp_delta_off(DATAC.(param).spinfits, ...
-              DATAC.(param).dce.time, DATAC.(param).dce.(sensors{1}).bitmask, ...
-              DATAC.(param).dce.(sensors{2}).bitmask, ...
-              DATAC.CONST);
-          else
-            % New version, new variable names.. This piece of code should be
-            % kept after all reprocessing is completed.
-            varPre = ['mms', num2str(DATAC.scId), '_edp_'];
-            typePos = strfind(dataObj.GlobalAttributes.Data_type{1},'_');
-            varSuf = dataObj.GlobalAttributes.Data_type{1}(1:typePos(2)-1);
-            sdpPair = {'e12', 'e34'};
-            for iPair=1:numel(sdpPair)
-              % Spinfits
-              tmp1 = dataObj.data.([varPre, 'offsfit_', strrep(sdpPair{iPair},'e','p'),'_', varSuf]).data;
-              % Replace possible FillVal with NaN
-              tmp1(tmp1==getfield(mms_sdp_typecast('spinfits'),'fillval')) = NaN;
-              tmp = dataObj.data.([varPre, 'espin_', strrep(sdpPair{iPair},'e','p'),'_', varSuf]).data;
-              % Replace possible FillVal with NaN
-              tmp(tmp==getfield(mms_sdp_typecast('spinfits'),'fillval')) = NaN;
-              DATAC.(param).spinfits.sfit.(sdpPair{iPair}) = [tmp1, tmp];
-              % Sdev
-              tmp = dataObj.data.([varPre, 'sdevfit_', strrep(sdpPair{iPair},'e','p'),'_', varSuf]).data;
-              % Replace possible FillVal with NaN
-              tmp(tmp==getfield(mms_sdp_typecast('spinfits'),'fillval')) = NaN;
-              DATAC.(param).spinfits.sdev.(sdpPair{iPair}) = tmp;
-              % ADC offset
-              tmp = dataObj.data.([varPre, 'adc_offset_', varSuf]).data(:,iPair);
-              % Replace possible FillVal with NaN
-              tmp(tmp==getfield(mms_sdp_typecast('adc_offset'),'fillval')) = NaN;
-              DATAC.(param).adc_off.(sdpPair{iPair}) = tmp;
-            end
-            x = getdep(dataObj,[varPre, 'espin_', strrep(sdpPair{1},'e','p'),'_', varSuf]);
-            DATAC.(param).spinfits.time = x.DEPEND_O.data;
-            check_monoton_timeincrease(DATAC.(param).spinfits.time, 'L2A spinfits');
-            sensors = {'e12', 'e34', 'e56'};
-            DATAC.(param).dce = [];
-            x = getdep(dataObj,[varPre, 'dce_', varSuf]);
-            DATAC.(param).dce.time = x.DEPEND_O.data;
-            check_monoton_timeincrease(DATAC.(param).dce.time, 'L2A dce');
-            for iPair=1:numel(sensors);
-              % DCE
-              tmp = dataObj.data.([varPre, 'dce_', varSuf]).data(:,iPair);
-              % Replace possible FillVal with NaN
-              tmp(tmp==getfield(mms_sdp_typecast('dce'),'fillval')) = NaN;
-              DATAC.(param).dce.(sensors{iPair}).data = tmp;
-              % Bitmask
-              tmp = dataObj.data.([varPre, 'bitmask_', varSuf]).data(:,iPair);
-              tmp(tmp==getfield(mms_sdp_typecast('bitmask'),'fillval')) = NaN;
-              DATAC.(param).dce.(sensors{iPair}).bitmask = tmp;
-            end
-            % Phase
-            tmp = dataObj.data.([varPre, 'phase_', varSuf]).data;
-            tmp(tmp==getfield(mms_sdp_typecast('phase'),'fillval')) = NaN;
-            DATAC.(param).phase.data = tmp;
-            % Delta offset
-            DATAC.(param).delta_off = mms_sdp_dmgr.comp_delta_off(DATAC.(param).spinfits, ...
-              DATAC.(param).dce.time, DATAC.(param).dce.(sensors{1}).bitmask, ...
-              DATAC.(param).dce.(sensors{2}).bitmask, ...
-              DATAC.CONST);
-          end
-      end % load_l2a
-
 %       function res = are_probes_enabled
 %         % Use FILLVAL of each sensor to determine if probes are enabled or not.
 %         % Returns logical of size correspondig to sensor.
@@ -1514,6 +1552,75 @@ classdef mms_sdp_dmgr < handle
       end
     end
     
+    function process_l2a_to_l2pre(DATAC, MMS_CONST)
+      if(DATAC.procId == MMS_CONST.SDCProc.l2a || DATAC.procId == MMS_CONST.SDCProc.l2pre)
+        if(DATAC.tmMode ~= MMS_CONST.TmMode.brst)
+          % Do full L2Pre processing on L2A Fast/slow data.
+          %% FIXME: MOVE TO PROPER SUBFUNCTIONS.
+          DATAC.l2a.adp = DATAC.l2a.dce.e56.data;
+          % DESPIN, using L2A data (offsets, phase etc).
+          sdpProbes = fieldnames(DATAC.l2a.adc_off); % default {'e12', 'e34'}
+          Etmp = struct('e12',DATAC.l2a.dce.e12.data,'e34',DATAC.l2a.dce.e34.data);
+          for iProbe=1:numel(sdpProbes)
+            % Remove ADC offset
+            Etmp.(sdpProbes{iProbe}) = ...
+              Etmp.(sdpProbes{iProbe}) - DATAC.l2a.adc_off.(sdpProbes{iProbe});
+          end
+          MMS_CONST = DATAC.CONST;
+          bitmask = mms_sdp_typecast('bitmask',bitor(DATAC.l2a.dce.e12.bitmask,DATAC.l2a.dce.e34.bitmask));
+          Etmp.e12 = mask_bits(Etmp.e12, bitmask, MMS_CONST.Bitmask.SWEEP_DATA);
+          Etmp.e34 = mask_bits(Etmp.e34, bitmask, MMS_CONST.Bitmask.SWEEP_DATA);
+          DeltaOff = irf.ts_vec_xy(DATAC.l2a.spinfits.time, [real(DATAC.l2a.delta_off), imag(DATAC.l2a.delta_off)]);
+          DeltaOffR = DeltaOff.resample(EpochTT(DATAC.l2a.dce.time));
+          dE = mms_sdp_despin(Etmp.e12, Etmp.e34, DATAC.l2a.phase.data, DeltaOffR.data(:,1) + DeltaOffR.data(:,2)*1j);
+          offs = mms_sdp_get_offset(DATAC.scId, DATAC.procId, DATAC.l2a.dce.time);
+          DATAC.calFile = offs.calFile; % Store name of cal file used.
+          dE(:,1) = dE(:,1) - offs.ex; % Remove sunward
+          dE(:,2) = dE(:,2) - offs.ey; % and duskward offsets
+          % Compute DCE Z from E.B = 0, if >10 deg and if abs(B_z)> 1 nT.
+          B_tmp = DATAC.dfg.B_dmpa;
+          B_tmp.data((abs(B_tmp.z.data) <= 1), :) = NaN;
+          dEz = irf_edb(TSeries(EpochTT(DATAC.l2a.dce.time),dE,'vec_xy'), B_tmp, 10, 'E.B=0');
+          DATAC.l2a.dsl = struct('data',[dEz.data],...
+            'bitmask',bitmask);
+
+        else
+          % L1b data combined with L2A fast to be processed for L2Pre
+          % brst.
+          DATAC.l2a.adp = -DATAC.dce.e56.data; % Note: minus (L1b dce e56) to align with DSL Z
+          % Compute values from DCE and store in intermediate l2a
+          % position
+          DATAC.l2a.dce.time = DATAC.dce.time;
+          DATAC.l2a.phase = DATAC.phase;
+          DATAC.l2a.adc_off = DATAC.adc_off;
+          sdpProbes = fieldnames(DATAC.l2a.adc_off); % default {'e12', 'e34'}
+          Etmp = struct('e12',DATAC.dce.e12.data,'e34',DATAC.dce.e34.data);
+          for iProbe=1:numel(sdpProbes)
+            % Remove ADC offset
+            Etmp.(sdpProbes{iProbe}) = ...
+              Etmp.(sdpProbes{iProbe}) - DATAC.adc_off.(sdpProbes{iProbe});
+          end
+          MMS_CONST = DATAC.CONST;
+          bitmask = mms_sdp_typecast('bitmask',bitor(DATAC.dce.e12.bitmask,DATAC.dce.e34.bitmask));
+          Etmp.e12 = mask_bits(Etmp.e12, bitmask, MMS_CONST.Bitmask.SWEEP_DATA);
+          Etmp.e34 = mask_bits(Etmp.e34, bitmask, MMS_CONST.Bitmask.SWEEP_DATA);
+          DeltaOff = irf.ts_vec_xy(DATAC.l2a.spinfits.time, [real(DATAC.l2a.delta_off), imag(DATAC.l2a.delta_off)]);
+          DeltaOffR = DeltaOff.resample(EpochTT(DATAC.l2a.dce.time));
+          dE = mms_sdp_despin(Etmp.e12, Etmp.e34, DATAC.phase.data, DeltaOffR.data(:,1) + DeltaOffR.data(:,2)*1j);
+          offs = mms_sdp_get_offset(DATAC.scId, DATAC.procId, DATAC.dce.time);
+          DATAC.calFile = offs.calFile; % Store name of cal file used.
+          dE(:,1) = dE(:,1) - offs.ex; % Remove sunward
+          dE(:,2) = dE(:,2) - offs.ey; % and duskward offsets
+          % Compute DCE Z from E.B = 0, if >10 deg and if abs(B_z)> 1 nT.
+          B_tmp = DATAC.dfg.B_dmpa;
+          B_tmp.data((abs(B_tmp.z.data) <= 1), :) = NaN;
+          dEz = irf_edb(TSeries(EpochTT(DATAC.dce.time),dE,'vec_xy'), B_tmp, 10, 'E.B=0');
+          DATAC.l2a.dsl = struct('data',[dEz.data],...
+            'bitmask',bitmask);
+        end
+      end
+    end % process_l2a_to_l2pre
+    
   end % public Methods
   methods (Static)
     function delta_off = comp_delta_off(Spinfits, ...
@@ -1696,6 +1803,8 @@ classdef mms_sdp_dmgr < handle
       
       probe2sc_pot = struct('time',Dcv.time,'data',avPot,'bitmask',bitmask);
     end
+    
+    
   end % static methods
   
 end

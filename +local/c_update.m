@@ -3,10 +3,10 @@ function c_update(varargin)
 %
 %    LOCAL.C_UPDATE update index for all datasets
 % 
-%    LOCAL.C_UPDATE(datasetName) update only the index of dataset datasetName 
+%    LOCAL.C_UPDATE(datasetName) update only the index datasetName or all datasets beginning with dataSetName. (Ex 'C2_')
 %
 %    LOCAL.C_UPDATE(..,'datadirectory',dataDir) look for data in directory
-%    dataDir. The default data directory is /data/caalocal unless set by 
+%    dataDir. The default data directory is /data/caalocal unless set by
 %		datastore('caa','localDataDirectory','/new/path')
 %
 % See also:
@@ -50,8 +50,9 @@ dataSetArray(ismember(dataSetArray,{'.','..'})) = []; % remove '.' and '..'
 % dataset name should start with character C
 indOkDatasets = cellfun(@(x) (numel(x)>0 && (x(1) == 'C')), dataSetArray);
 dataSetArray = dataSetArray(indOkDatasets);
-if filterDataSet 
-	dataSetArray(~ismember(dataSetArray,{dataSetFilter})) = [];
+if filterDataSet
+	dataSetArray=dataSetArray(strmatch({dataSetFilter},dataSetArray));
+%	dataSetArray(~ismember(dataSetArray,{dataSetFilter})) = [];
 end
 
 %% go through all the datasets to be indexed

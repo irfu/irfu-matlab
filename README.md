@@ -42,3 +42,10 @@ To test an example execute in Matlab:
 > Example_1
 
 this should download Cluster data from the CSA archive and plot the figure consisting of 5 panels with data from different instruments. 
+
+Issues
+-----
+
+If you experience any issues with irfu-matlab please [submit an issue](https://github.com/irfu/irfu-matlab/issues) via our github page.
+
+When submitting a new issue, please provide information required to replicate the issue as well as information regarding operating system and version of Matlab used.

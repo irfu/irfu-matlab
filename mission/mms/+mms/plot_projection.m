@@ -181,8 +181,9 @@ while have_options
       x = coord_sys(1,:)/norm(coord_sys(1,:));
       y = coord_sys(2,:)/norm(coord_sys(2,:));
       z = coord_sys(3,:)/norm(coord_sys(3,:));
-      y = cross(z,cross(y,z)); y = y/norm(y);
-      x = cross(y,z); x = x/norm(x);
+      z = cross(x,y); z = z/norm(z);
+      y = cross(z,x); y = y/norm(y);    
+      
       if abs(acosd(y*(coord_sys(2,:)/norm(coord_sys(2,:)))'))>1; 
         irf.log('warning',['y (perp1) changed from [' num2str(coord_sys(2,:)/norm(coord_sys(2,:)),'% .2f') '] to [' num2str(y,'% .2f') '].']);
       end

@@ -26,6 +26,10 @@ function out=irf_fname(tint,fmt)
 narginchk(1,2)
 
 if nargin < 2, fmt = 0; end
+if isa(tint,'GenericTimeArray')
+  tint = [tint.start.epochUnix tint.stop.epochUnix];
+end
+  
 if fmt==2 && length(tint)<=1, error('ST must have two elements for FORMAT=2'), end
 
 d = fromepoch(tint(1));

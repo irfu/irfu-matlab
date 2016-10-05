@@ -108,7 +108,7 @@ for ii = length(list):-1:1
         tmp = maneuv.(['mms',num2str(kk)]);
         for ll=length(tmp):-1:1
           % Check if it is outside of Tint2
-          if( tmp{ll}.start.ttns > Tint2.stop.ttns || ...
+          if( tmp{ll}.start.ttns >= Tint2.stop.ttns || ...
               tmp{ll}.stop.ttns < Tint2.start.ttns )
             irf.log('debug',['Skipping maneuver outside of interval ', ...
               Tint2.start.toUtc(1), '/', Tint2.stop.toUtc(1)]);
@@ -120,7 +120,11 @@ for ii = length(list):-1:1
               ' inside of requested interval.']);
             if(~isempty(maneuvers.(['mms',num2str(kk)])))
               tmp2 = maneuvers.(['mms',num2str(kk)]);
-              maneuvers.(['mms',num2str(kk)]) = [tmp(ll); tmp2];
+              if(tmp2{1}.start.ttns ~= tmp{ll}.start.ttns)
+                maneuvers.(['mms',num2str(kk)]) = [tmp(ll); tmp2];
+              else
+                irf.log('debug', 'Maneuver already included.');
+              end
             else
               maneuvers.(['mms',num2str(kk)]) = tmp(ll);
             end

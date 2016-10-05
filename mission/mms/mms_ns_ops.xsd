@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+	<xsd:element name="tables">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="event" maxOccurs="unbounded">
+					<xsd:complexType>
+						<xsd:sequence>
+							<xsd:element name="startDate">
+								<xsd:simpleType>
+									<xsd:restriction base="xsd:dateTime">
+										<xsd:minInclusive value="2015-03-13T00:00:00Z"/>
+										<xsd:pattern value="\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.{0,1}\d{0,9}Z"/>
+									</xsd:restriction>
+								</xsd:simpleType>
+							</xsd:element>
+							<xsd:element name="stopDate">
+								<xsd:simpleType>
+									<xsd:restriction base="xsd:dateTime">
+										<xsd:minInclusive value="2015-03-13T00:00:00Z"/>
+										<xsd:pattern value="\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.{0,1}\d{0,9}Z"/>
+									</xsd:restriction>
+								</xsd:simpleType>
+							</xsd:element>
+							<xsd:element name="mms1" type="xsd:boolean"/>
+							<xsd:element name="mms2" type="xsd:boolean"/>
+							<xsd:element name="mms3" type="xsd:boolean"/>
+							<xsd:element name="mms4" type="xsd:boolean"/>
+							<xsd:element name="problem">
+								<xsd:simpleType>
+									<xsd:restriction base="xsd:string">
+										<xsd:enumeration value="no_tm"/>
+										<xsd:enumeration value="bad_data"/>
+										<xsd:enumeration value="no_p1"/>
+										<xsd:enumeration value="no_p2"/>
+										<xsd:enumeration value="no_p3"/>
+										<xsd:enumeration value="no_p4"/>
+										<xsd:enumeration value="spec_bias"/>
+										<xsd:enumeration value="bad_bias"/>
+										<xsd:enumeration value="info"/>
+										<xsd:enumeration value="TBD"/>
+									</xsd:restriction>
+								</xsd:simpleType>
+							</xsd:element>
+							<xsd:element name="description" type="xsd:string"/>
+							<xsd:element name="link" type="xsd:string" minOccurs="0"/>
+						</xsd:sequence>
+					</xsd:complexType>
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+</xsd:schema>
