@@ -1051,12 +1051,15 @@ classdef mms_sdp_dmgr < handle
               irf.log('warning','Burst but no L2a (fast) CMD model loaded.');
               CMDModel = mms_sdp_model_spin_residual_cmd312(DATAC.dcv,...
                 Phase, DATAC.samplerate);
-            end
-%% Daniel            
-            DATAC.dce.e34.data(idx) = single((...
+            end           
+            tempE34 = single((...
             double(DATAC.dcv.v3.data(idx)) - ...
             0.5*(double(DATAC.dcv.v1.data(idx)) + ...
             double(DATAC.dcv.v2.data(idx))) - CMDModel)/(NOM_BOOM_L/2));
+            fcut = 600; % E34 merging frequency
+            fSample = double(int64(1e9)/median(diff(DATAC.dce.time(idx))));
+            % Add check if sampling frequency is 8192???
+            DATAC.dce.e34.data(idx) = mms_sdp_dmgr.combine_E34(tempE34,DATAC.dce.e34.data(idx),fcut,fSample);
           else
             CMDModel = mms_sdp_model_spin_residual_cmd312(DATAC.dcv, ...
               Phase, DATAC.samplerate);
@@ -1803,7 +1806,81 @@ classdef mms_sdp_dmgr < handle
       
       probe2sc_pot = struct('time',Dcv.time,'data',avPot,'bitmask',bitmask);
     end
-    
+
+    function res = combine_E34(E34rec,E34mes,cfreq,fSample)
+      % Merge measured (V34) and reconstructed (V312) electric fields at cfreq.
+
+      % Convert fields to double precision
+      E34rec = double(E34rec);
+      E34mes = double(E34mes);
+      % Check sampling frequency
+      fSample = round(fSample);
+      if rem(fSample,2),
+          fSample = fSample-1; % Make sure N is odd
+      end
+      N = fSample-1; % filter length
+      beta = 6;
+      fcut = double(cfreq/(fSample/2));
+      % Compute Kaiser window
+      kwindow = double(besseli(0,beta*sqrt(1-(((0:N-1)-(N-1)/2)/((N-1)/2)).^2))/besseli(0,beta));
+      % Define low-pass filter
+      ff = [0;fcut;fcut;1];
+      aa = [1;1;0;0];
+      W = double(ones(length(ff)/2,1));                 
+      ff=ff(:)/2;   
+      L=(N-1)/2;
+      m=(0:L);
+      k=m';
+      k=k(2:length(k));
+      b0=0;  
+      b=zeros(size(k));
+      for s=1:2:length(ff),
+        m=(aa(s+1)-aa(s))/(ff(s+1)-ff(s));
+        b1=aa(s)-m*ff(s);
+        b0 = b0 + (b1*(ff(s+1)-ff(s)) + m/2*(ff(s+1)*ff(s+1)-ff(s)*ff(s)))...
+          * abs(W((s+1)/2)^2) ;
+        b = b+(m/(4*pi*pi)*(cos(2*pi*k*ff(s+1))-cos(2*pi*k*ff(s)))./(k.*k))...
+          * abs(W((s+1)/2)^2);
+        b = b + (ff(s+1)*(m*ff(s+1)+b1)*sinc(2*k*ff(s+1)) ...
+          - ff(s)*(m*ff(s)+b1)*sinc(2*k*ff(s))) * abs(W((s+1)/2)^2);
+      end
+      b=[b0; b];
+      a=(W(1)^2)*4*b;
+      a(1) = a(1)/2;
+      hh=[a(L+1:-1:2)/2; a(1); a(2:L+1)/2].';
+      LoP = hh.*kwindow;
+      LoP = LoP/sum(LoP);
+      % Apply filter to brst data
+      nfact = max(1,3*(N-1)); 
+      a = 1.0;
+      a = a(:);
+      LoP = LoP(:);
+      a(N,1)=0;
+      rows = [1:N-1, 2:N-1, 1:N-2];
+      cols = [ones(1,N-1), 2:N-1, 2:N-1];
+      vals = [1+a(2), a(3:N).', ones(1,N-2), -ones(1,N-2)];
+      zi = sparse(rows,cols,vals) \ (LoP(2:N) - LoP(1)*a(2:N));
+      xt = -E34rec(nfact+1:-1:2) + 2*E34rec(1);
+      [~,zo] = filter(LoP,a(:), xt, zi(:)*xt(1));
+      [yc2,zo] = filter(LoP,a(:), E34rec, zo);
+      xt = -E34rec(end-1:-1:end-nfact) + 2*E34rec(end);
+      yc3 = filter(LoP,a(:), xt, zo);   
+      [~,zo] = filter(LoP,a(:), yc3(end:-1:1), zi(:)*yc3(end));
+      yc5 = filter(LoP,a(:), yc2(end:-1:1), zo);
+      E34recfilt = yc5(end:-1:1);
+      
+      xt = -E34mes(nfact+1:-1:2) + 2*E34mes(1);
+      [~,zo] = filter(LoP,a(:), xt, zi(:)*xt(1));
+      [yc2,zo] = filter(LoP,a(:), E34mes, zo);
+      xt = -E34mes(end-1:-1:end-nfact) + 2*E34mes(end);
+      yc3 = filter(LoP,a(:), xt, zo);  
+      [~,zo] = filter(LoP,a(:), yc3(end:-1:1), zi(:)*yc3(end));
+      yc5 = filter(LoP,a(:), yc2(end:-1:1), zo);
+      E34mesfilt = yc5(end:-1:1);
+      % Merge measured and reconstructed fields
+      E34mesfilt = E34mes - E34mesfilt;
+      res = single(E34recfilt+E34mesfilt);
+    end
     
   end % static methods
   
