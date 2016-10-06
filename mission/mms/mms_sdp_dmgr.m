@@ -1056,10 +1056,7 @@ classdef mms_sdp_dmgr < handle
             double(DATAC.dcv.v3.data(idx)) - ...
             0.5*(double(DATAC.dcv.v1.data(idx)) + ...
             double(DATAC.dcv.v2.data(idx))) - CMDModel)/(NOM_BOOM_L/2));
-            fcut = 600; % E34 merging frequency
-            fSample = double(int64(1e9)/median(diff(DATAC.dce.time(idx))));
-            % Add check if sampling frequency is 8192???
-            DATAC.dce.e34.data(idx) = mms_sdp_dmgr.combine_E34(tempE34,DATAC.dce.e34.data(idx),fcut,fSample);
+            DATAC.dce.e34.data(idx) = mms_sdp_dmgr.merge_fields(tempE34,DATAC.dce.e34.data(idx),MMS_CONST.fcut,DATAC.samplerate);
           else
             CMDModel = mms_sdp_model_spin_residual_cmd312(DATAC.dcv, ...
               Phase, DATAC.samplerate);
@@ -1807,23 +1804,27 @@ classdef mms_sdp_dmgr < handle
       probe2sc_pot = struct('time',Dcv.time,'data',avPot,'bitmask',bitmask);
     end
 
-    function res = combine_E34(E34rec,E34mes,cfreq,fSample)
-      % Merge measured (V34) and reconstructed (V312) electric fields at cfreq.
+    function res = merge_fields(lowfield,highfield,cfreq,fSample)
+      % Merge two fields at a specific frequency.
+      % Input:  lowfield - field used at frequencies below cfreq
+      %         highfield - field used at frequencies above cfreq
+      %         cfreq - fields are merged at this frequency
+      %         fSample - sampling frequency of lowfield and highfield
 
       % Convert fields to double precision
-      E34rec = double(E34rec);
-      E34mes = double(E34mes);
+      lowfield = double(lowfield);
+      highfield = double(highfield);
       % Check sampling frequency
       fSample = round(fSample);
       if rem(fSample,2),
-          fSample = fSample-1; % Make sure N is odd
+          fSample = fSample-1; % Make sure fSample is even (so N is odd)
       end
-      N = fSample-1; % filter length
-      beta = 6;
+      N = fSample-1; % FIR filter order (must be odd)
+      beta = 6; % approx. stop band attenuation. 
       fcut = double(cfreq/(fSample/2));
-      % Compute Kaiser window
+      % Compute Kaiser window used in FIR
       kwindow = double(besseli(0,beta*sqrt(1-(((0:N-1)-(N-1)/2)/((N-1)/2)).^2))/besseli(0,beta));
-      % Define low-pass filter
+      % Design the N'th order lowpass FIR filter
       ff = [0;fcut;fcut;1];
       aa = [1;1;0;0];
       W = double(ones(length(ff)/2,1));                 
@@ -1849,8 +1850,9 @@ classdef mms_sdp_dmgr < handle
       a(1) = a(1)/2;
       hh=[a(L+1:-1:2)/2; a(1); a(2:L+1)/2].';
       LoP = hh.*kwindow;
-      LoP = LoP/sum(LoP);
-      % Apply filter to brst data
+      LoP = LoP/sum(LoP); 
+      
+      % Apply filter to lowfield and highfield
       nfact = max(1,3*(N-1)); 
       a = 1.0;
       a = a(:);
@@ -1860,26 +1862,28 @@ classdef mms_sdp_dmgr < handle
       cols = [ones(1,N-1), 2:N-1, 2:N-1];
       vals = [1+a(2), a(3:N).', ones(1,N-2), -ones(1,N-2)];
       zi = sparse(rows,cols,vals) \ (LoP(2:N) - LoP(1)*a(2:N));
-      xt = -E34rec(nfact+1:-1:2) + 2*E34rec(1);
+      % Apply lowpass filter to lowfield
+      xt = -lowfield(nfact+1:-1:2) + 2*lowfield(1);
       [~,zo] = filter(LoP,a(:), xt, zi(:)*xt(1));
-      [yc2,zo] = filter(LoP,a(:), E34rec, zo);
-      xt = -E34rec(end-1:-1:end-nfact) + 2*E34rec(end);
+      [yc2,zo] = filter(LoP,a(:), lowfield, zo);
+      xt = -lowfield(end-1:-1:end-nfact) + 2*lowfield(end);
       yc3 = filter(LoP,a(:), xt, zo);   
       [~,zo] = filter(LoP,a(:), yc3(end:-1:1), zi(:)*yc3(end));
       yc5 = filter(LoP,a(:), yc2(end:-1:1), zo);
-      E34recfilt = yc5(end:-1:1);
-      
-      xt = -E34mes(nfact+1:-1:2) + 2*E34mes(1);
+      lowfieldfilt = yc5(end:-1:1); 
+      % Apply lowpass filter to highfield
+      xt = -highfield(nfact+1:-1:2) + 2*highfield(1);
       [~,zo] = filter(LoP,a(:), xt, zi(:)*xt(1));
-      [yc2,zo] = filter(LoP,a(:), E34mes, zo);
-      xt = -E34mes(end-1:-1:end-nfact) + 2*E34mes(end);
+      [yc2,zo] = filter(LoP,a(:), highfield, zo);
+      xt = -highfield(end-1:-1:end-nfact) + 2*highfield(end);
       yc3 = filter(LoP,a(:), xt, zo);  
       [~,zo] = filter(LoP,a(:), yc3(end:-1:1), zi(:)*yc3(end));
       yc5 = filter(LoP,a(:), yc2(end:-1:1), zo);
-      E34mesfilt = yc5(end:-1:1);
+      highfieldfilt = yc5(end:-1:1);
+      % Remove signals below cfreq (high pass filter)
+      highfieldfilt = highfield - highfieldfilt;
       % Merge measured and reconstructed fields
-      E34mesfilt = E34mes - E34mesfilt;
-      res = single(E34recfilt+E34mesfilt);
+      res = single(lowfieldfilt+highfieldfilt);
     end
     
   end % static methods
