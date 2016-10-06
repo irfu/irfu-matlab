@@ -62,6 +62,9 @@ MMS_CONST.Samplerate.comm_64 = 64; % Commissioning "Turn ON" phase
 MMS_CONST.Samplerate.comm_128 = 128; % Commissioning "Boom deployment" phase
 MMS_CONST.Samplerate.brst = {8192; 1024}; % 8192 in tail, 1024 in sub-solar TM mode burst
 
+% Merging frequency of measured and reconstructed electric fields
+MMS_CONST.fcut = 600;
+
 % SDC process names
 MMS_CONST.SDCProcs = {'ql','scpot','l2pre','l2a','l1ace','l2ace'};
 MMS_CONST.SDCProc.ql    = 1; % Number must corrspond to position in the list
