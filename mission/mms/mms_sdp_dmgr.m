@@ -992,7 +992,7 @@ classdef mms_sdp_dmgr < handle
       function e_from_asym()
         % Compute E in asymmetric configuration
         
-        if DATAC.scId ~=4, return, end
+        if(DATAC.scId ~=4 || DATAC.procId == MMS_CONST.SDCProc.scpot), return, end
         
         %PROBE MAGIC
         %MMS4, Probe 4 bias fail, 2016-06-12T05:28:48.2
@@ -1045,7 +1045,7 @@ classdef mms_sdp_dmgr < handle
             if(isfield(DATAC.l2a, 'CMDModel'))
               irf.log('notice', 'Using CMD model from L2a file.');
               tmp = irf.ts_scalar(DATAC.l2a.dce.time, DATAC.l2a.CMDModel);
-              CMDModel = tmp.resample(EpochTT(DATAC.dce.time));
+              CMDModel = tmp.resample(EpochTT(DATAC.dce.time(idx)));
               CMDModel = CMDModel.data;
             else
               irf.log('warning','Burst but no L2a (fast) CMD model loaded.');
@@ -1056,7 +1056,7 @@ classdef mms_sdp_dmgr < handle
             double(DATAC.dcv.v3.data(idx)) - ...
             0.5*(double(DATAC.dcv.v1.data(idx)) + ...
             double(DATAC.dcv.v2.data(idx))) - CMDModel)/(NOM_BOOM_L/2));
-            DATAC.dce.e34.data(idx) = mms_sdp_dmgr.merge_fields(tempE34,DATAC.dce.e34.data(idx),MMS_CONST.fcut,DATAC.samplerate);
+            DATAC.dce.e34.data(idx) = mms_sdp_dmgr.merge_fields(tempE34, DATAC.dce.e34.data(idx), MMS_CONST.Limit.MERGE_FREQ, DATAC.samplerate);
           else
             CMDModel = mms_sdp_model_spin_residual_cmd312(DATAC.dcv, ...
               Phase, DATAC.samplerate);
@@ -1064,7 +1064,7 @@ classdef mms_sdp_dmgr < handle
             DATAC.dce.e34.data(idx) = single((...
             double(DATAC.dcv.v3.data(idx)) - ...
             0.5*(double(DATAC.dcv.v1.data(idx)) + ...
-            double(DATAC.dcv.v2.data(idx))) - CMDModel)/(NOM_BOOM_L/2));
+            double(DATAC.dcv.v2.data(idx))) - CMDModel(idx))/(NOM_BOOM_L/2));
           end
         end
         % Combine the bitmasks, as the new E34 will be affected when
