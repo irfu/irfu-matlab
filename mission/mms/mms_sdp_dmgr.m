@@ -1828,7 +1828,7 @@ classdef mms_sdp_dmgr < handle
       ff = [0;fcut;fcut;1];
       aa = [1;1;0;0];
       W = double(ones(length(ff)/2,1));                 
-      ff=ff(:)/2;   
+      ff=ff(:)/2; 
       L=(N-1)/2;
       m=(0:L);
       k=m';
@@ -1838,12 +1838,17 @@ classdef mms_sdp_dmgr < handle
       for s=1:2:length(ff),
         m=(aa(s+1)-aa(s))/(ff(s+1)-ff(s));
         b1=aa(s)-m*ff(s);
+        % Compute sinc functions
+        sinc2kfs = sin(2*pi*k*ff(s))./(2*pi*k*ff(s));
+        sinc2kfs(isnan(sinc2kfs)) = 1;
+        sinc2kfs1 = sin(2*pi*k*ff(s+1))./(2*pi*k*ff(s+1));
+        sinc2kfs1(isnan(sinc2kfs1)) = 1;
         b0 = b0 + (b1*(ff(s+1)-ff(s)) + m/2*(ff(s+1)*ff(s+1)-ff(s)*ff(s)))...
           * abs(W((s+1)/2)^2) ;
         b = b+(m/(4*pi*pi)*(cos(2*pi*k*ff(s+1))-cos(2*pi*k*ff(s)))./(k.*k))...
           * abs(W((s+1)/2)^2);
-        b = b + (ff(s+1)*(m*ff(s+1)+b1)*sinc(2*k*ff(s+1)) ...
-          - ff(s)*(m*ff(s)+b1)*sinc(2*k*ff(s))) * abs(W((s+1)/2)^2);
+        b = b + (ff(s+1)*(m*ff(s+1)+b1)*sinc2kfs1 ...
+          - ff(s)*(m*ff(s)+b1)*sinc2kfs) * abs(W((s+1)/2)^2);
       end
       b=[b0; b];
       a=(W(1)^2)*4*b;
