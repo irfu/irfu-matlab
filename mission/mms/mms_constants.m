@@ -60,7 +60,7 @@ MMS_CONST.Samplerate.comm_8 = 8; % Commissioning "Slow"
 MMS_CONST.Samplerate.comm_32 = 32; % Commissioning "I&T" phase
 MMS_CONST.Samplerate.comm_64 = 64; % Commissioning "Turn ON" phase
 MMS_CONST.Samplerate.comm_128 = 128; % Commissioning "Boom deployment" phase
-MMS_CONST.Samplerate.brst = {8192; 1024}; % 8192 in tail, 1024 in sub-solar TM mode burst
+MMS_CONST.Samplerate.brst = {8192; 1024; 16384}; % 8192 in tail, 1024 in sub-solar TM mode burst, special 16384 Hz at PI discretion.
 
 
 % SDC process names
