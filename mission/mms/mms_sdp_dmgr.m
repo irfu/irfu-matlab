@@ -1056,7 +1056,14 @@ classdef mms_sdp_dmgr < handle
             double(DATAC.dcv.v3.data(idx)) - ...
             0.5*(double(DATAC.dcv.v1.data(idx)) + ...
             double(DATAC.dcv.v2.data(idx))) - CMDModel)/(NOM_BOOM_L/2));
-            DATAC.dce.e34.data(idx) = mms_sdp_dmgr.merge_fields(tempE34, DATAC.dce.e34.data(idx), MMS_CONST.Limit.MERGE_FREQ, DATAC.samplerate);
+            if 2*DATAC.samplerate < MMS_CONST.Limit.MERGE_FREQ
+              irf.log('warning', ['Sample rate: ', num2str(DATAC.samplerate), ...
+                'Hz must be at least twice the merge frequency: ', ...
+                num2str(MMS_CONST.Limit.MERGE_FREQ), 'Hz. Will not merge (using only reconstructed).']);
+              DATAC.dce.e34.data(idx) = tempE34;
+            else
+              DATAC.dce.e34.data(idx) = mms_sdp_dmgr.merge_fields(tempE34, DATAC.dce.e34.data(idx), MMS_CONST.Limit.MERGE_FREQ, DATAC.samplerate);
+            end
           else
             CMDModel = mms_sdp_model_spin_residual_cmd312(DATAC.dcv, ...
               Phase, DATAC.samplerate);
@@ -1820,7 +1827,7 @@ classdef mms_sdp_dmgr < handle
           fSample = fSample-1; % Make sure fSample is even (so N is odd)
       end
       N = fSample-1; % FIR filter order (must be odd)
-      beta = 6; % approx. stop band attenuation. 
+      beta = 6; % approx. stop band attenuation.
       fcut = double(cfreq/(fSample/2));
       % Compute Kaiser window used in FIR
       kwindow = double(besseli(0,beta*sqrt(1-(((0:N-1)-(N-1)/2)/((N-1)/2)).^2))/besseli(0,beta));
