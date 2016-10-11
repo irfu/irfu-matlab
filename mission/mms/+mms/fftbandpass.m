@@ -16,7 +16,7 @@ function bpfields = fftbandpass(varargin)
 % then use .tlim to remove
 % Written by D. B. Graham
 
-if (length(varargin) < 3);
+if (length(varargin) < 3)
     help mms.fftbandpass;
     bpfields = NaN;
     return;
@@ -50,7 +50,7 @@ inan=isnan(tmpfields);
 tmpfields(inan)=0;
 
 %Bandpass filter field data
-if (length(varargin) == 4);
+if (length(varargin) == 4)
     dt = 1/varargin{4};
 else
     dt = tmptime(2)-tmptime(1);
@@ -77,7 +77,7 @@ tmpfields(inan)= NaN;
 % Return data in the same format as input
 if isa(fielddata,'TSeries')
     bpfields = TSeries(tmptime,tmpfields,'to',fielddata.tensorOrder);
-    if fielddata.tensorOrder == 1,
+    if fielddata.tensorOrder == 1
         bpfields.coordinateSystem = fielddata.coordinateSystem;
     end
     bpfields.name = fielddata.name;

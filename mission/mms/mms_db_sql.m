@@ -25,7 +25,7 @@ classdef mms_db_sql < handle
       listDir = dir([javaPath, 'sqlite-jdbc*.jar']);
       if(isempty(listDir)), error('Missing sqlite-jdbc.jar'); end
       javaaddpath([javaPath, listDir(end).name]);
-      if nargin == 1,
+      if nargin == 1
         [dirPath,file,ext] = fileparts(fileName);
         if isempty(dirPath) || strcmp(dirPath,'.')
           dirPath = pwd;
@@ -468,7 +468,7 @@ keyboard; % THIS FUNCTION IS NOT FULLY TESTED, MAKE SURE TO MAKE A BACKUP OF THE
           char(rs.getString('endTT'))],'%ld %ld');
         tintArray(end+1, :) = tint; %#ok<AGROW>
       end
-      if nargout == 0, % print time intervals
+      if nargout == 0 % print time intervals
         nTint = size(tintArray, 1);
         for ii = 1:min(nTint, 5), disp(irf_time(tintArray(ii,:),'tint>utc')); end
         if nTint>10, disp('...'); end
@@ -720,7 +720,7 @@ keyboard; % THIS FUNCTION IS NOT FULLY TESTED, MAKE SURE TO MAKE A BACKUP OF THE
           endTT   = max(epoch{indGoodTVarName(iT)});
           if any(startTT) && any(endTT) && ...
               (min(startTT,endTT) < int64(479390467184000000)...% '2015-03-12T00:00:00.000000000'
-              ||  max(startTT,endTT) > int64(1262260869184000000)),%'2040-01-01T00:00:00.000000000'
+              ||  max(startTT,endTT) > int64(1262260869184000000)) %'2040-01-01T00:00:00.000000000'
             out(iT).startTT = NaN;
             out(iT).endTT   = NaN;
             irf.log('notice',['!!! In file:', cdfFileName]);

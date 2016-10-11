@@ -25,10 +25,10 @@ function [pdistr,phir,energyr] = psd_rebin(pdist,phi,energy0,energy1,stepTable)
 % Written by D. B. Graham
 
 tic;
-if isstruct(energy0),
+if isstruct(energy0)
 	energy0 = energy0.data;
 end
-if isstruct(energy1),
+if isstruct(energy1)
 	energy1 = energy1.data;
 end
 
@@ -48,12 +48,12 @@ newelnum = 1;
 phis = circshift(phi.data,1,2);
 phis(:,1) = phis(:,1)-360;
 
-for ii=1:2:length(pdist.time)-1;
-    if phi.data(ii,1) > phi.data(ii+1,1), 
+for ii=1:2:length(pdist.time)-1
+    if phi.data(ii,1) > phi.data(ii+1,1)
         phir(newelnum,:) = (phi.data(ii,:)+phis(ii+1,:))/2;
         pdisttemp = circshift(squeeze(pdist.data(ii+1,:,:,:)),1,2);
         
-        if stepTable(ii),
+        if stepTable(ii)
             pdistr(newelnum,[2:2:64],:,:) = pdist.data(ii,:,:,:);
             pdistr(newelnum,[1:2:63],:,:) = pdisttemp;
         else
@@ -63,7 +63,7 @@ for ii=1:2:length(pdist.time)-1;
     else
         phir(newelnum,:) = (phi.data(ii,:)+phi.data(ii+1,:))/2;
     
-        if stepTable(ii),
+        if stepTable(ii)
             pdistr(newelnum,[2:2:64],:,:) = pdist.data(ii,:,:,:);
             pdistr(newelnum,[1:2:63],:,:) = pdist.data(ii+1,:,:,:);
         else

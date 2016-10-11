@@ -478,14 +478,14 @@ while t0 < epochTmp(end)
   if sum(idxOk)< sampleRate*ceil(NSPINS/2)*60/spinRate
     nGap = nGap + 1;
     if nGap > fix(NSPINS/2), aPrev= []; t0 = t0 + 60/spinRate*1e9; continue
-    else a = aPrev;% use prev model
+    else, a = aPrev; % use prev model
     end
   else
     a = mTmp(idxOk)\dTmp(idxOk);
     nGap = 0;
   end
   if ~isempty(aPrev), idxCorr = epochTmp>=t0+fix(NSPINS/2)*nsPerSpin & epochTmp<t0+ceil(NSPINS/2)*nsPerSpin;
-  else idxCorr = epochTmp>=t0 & epochTmp<t0+ceil(NSPINS/2)*nsPerSpin; % first points
+  else, idxCorr = epochTmp>=t0 & epochTmp<t0+ceil(NSPINS/2)*nsPerSpin; % first points
   end
   modelOut(idxCorr) = model(idxCorr)*a;
   aPrev = a;

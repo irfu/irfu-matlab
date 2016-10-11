@@ -1006,7 +1006,7 @@ cd(oldDir);
         if rev>maxRev, maxRev = rev; end
       end
       newVer = maxRev + 1;
-    else newVer = 0;
+    else, newVer = 0;
     end
     verStr = [verStr num2str(newVer)];
     fileName = [fileName verStr];

@@ -55,7 +55,7 @@ else % QL
   if ~isempty(Vifpi)
     Nifpi = mms.get_data('Ni_fpi_ql',Tint,mmsId);
     Tifpi = mms.get_data('Tsi_fpi_ql',Tint,mmsId);
-  else isempty(Vifpi)
+  else %isempty(Vifpi)
     res = []; return
     Nifpi = []; Tifpi = []; Efpi = []; IonSpc = [];
   end
@@ -88,7 +88,7 @@ if ~isempty(Vifpi)
   
   VHplushpca = mms.get_data('Vhplus_dbcs_hpca_srvy_l2',Tint,mmsId);
   if isempty(VHplushpca), Ehpca = [];
-  else Ehpca = irf_e_vxb(VHplushpca,B.resample(VHplushpca));
+  else, Ehpca = irf_e_vxb(VHplushpca,B.resample(VHplushpca));
   end
 end
 PSP = mms.db_get_ts(sprintf('mms%d_edp_fast_l2_scpot',mmsId),...
@@ -103,25 +103,25 @@ if ~isempty(PSP)
   PSPR = PSP.resample(Epoch1min,'median');
 end
 if ~isempty(Es12AspocOff), Es12AspocOffR = Es12AspocOff.resample(Epoch1min,'median');
-else Es12AspocOffR = Es12AspocOff;
+else, Es12AspocOffR = Es12AspocOff;
 end
 if ~isempty(Es12AspocOn), Es12AspocOnR = Es12AspocOn.resample(Epoch1min,'median');
-else Es12AspocOnR = Es12AspocOn;
+else, Es12AspocOnR = Es12AspocOn;
 end
 if ~isempty(Es34AspocOff), Es34AspocOffR = Es34AspocOff.resample(Epoch1min,'median');
-else Es34AspocOffR = Es34AspocOff;
+else, Es34AspocOffR = Es34AspocOff;
 end
 if ~isempty(Es34AspocOn), Es34AspocOnR = Es34AspocOn.resample(Epoch1min,'median');
-else Es34AspocOnR = Es34AspocOn;
+else, Es34AspocOnR = Es34AspocOn;
 end
 if ~isempty(Efpi)
   EfpiR = Efpi.resample(Epoch1min,'median');
 end
 if isempty(DeltaAspocOff), DeltaAspocOffR = DeltaAspocOff;
-else DeltaAspocOffR = DeltaAspocOff.resample(Epoch1min,'median');
+else, DeltaAspocOffR = DeltaAspocOff.resample(Epoch1min,'median');
 end
 if isempty(DeltaAspocOn), DeltaAspocOnR = DeltaAspocOn;
-else DeltaAspocOnR = DeltaAspocOn.resample(Epoch1min,'median');
+else, DeltaAspocOnR = DeltaAspocOn.resample(Epoch1min,'median');
 end
 
 idxMSH = [];
@@ -137,7 +137,7 @@ if  ~isempty(Nifpi)
 end
 
 if isempty(Ehpca), EhpcaR = [];
-else EhpcaR = Ehpca.resample(Epoch1min,'median');
+else, EhpcaR = Ehpca.resample(Epoch1min,'median');
 end
 
 %% Raw data figure
@@ -198,7 +198,7 @@ irf_plot(hca,{Es12AspocOffR.x,Es12AspocOnR.x,...
 if ~isempty(Efpi)
   hold(hca,'on'), irf_plot(hca,EfpiR.x,'m.'), hold(hca,'off')
 end
-if ~isempty(Ehpca),
+if ~isempty(Ehpca)
   hold(hca,'on'), irf_plot(hca,EhpcaR.x,'r.'), hold(hca,'off'), leg = [leg 'hpca'];
 end
 ylabel(hca,'Ex [mV/m]'), irf_legend(hca,leg,[0.95, 0.95])
@@ -219,7 +219,7 @@ irf_plot(hca,{Es12AspocOffR.y,Es12AspocOnR.y,...
 if ~isempty(Efpi)
   hold(hca,'on'), irf_plot(hca,EfpiR.y,'m.'), hold(hca,'off'),
 end
-if ~isempty(Ehpca),
+if ~isempty(Ehpca)
   hold(hca,'on'), irf_plot(hca,EhpcaR.y,'r.'), hold(hca,'off'), leg = [leg 'hpca'];
 end
 ylabel(hca,'Ey [mV/m]'), irf_legend(hca,leg,[0.95, 0.95])
@@ -242,7 +242,7 @@ set(gcf,'paperpositionmode','auto')
 irf_print_fig(['Offsets_' mmsIdS '_' irf_fname(Tint.start.epochUnix)],'png')
 end
 %% Scatter plots
-if isempty(DeltaAspocOff), 
+if isempty(DeltaAspocOff)
   irf.log('warning','No data with ASPOC OFF')
   Es12AspocOffR = Es12AspocOnR; Es34AspocOffR = Es34AspocOnR;
   DeltaAspocOff = DeltaAspocOn;
@@ -427,7 +427,7 @@ hca = irf_panel('Ex_res'); %set(hca,'ColorOrder',myCols)
 if ~isempty(Ehpca)
   irf_plot(hca,{Es12Residual.x,Es34Residual.x,...
     Es12ResidualHPCA.x,Es34ResidualHPCA.x},'comp')
-else irf_plot(hca,{Es12Residual.x,Es34Residual.x},'comp')
+else, irf_plot(hca,{Es12Residual.x,Es34Residual.x},'comp')
 end
 ylabel(hca,'Ex-res [mV/m]')
 set(hca,'Ylim',1.99*[-1 1])
@@ -454,7 +454,7 @@ hca = irf_panel('Ey_res');  %set(hca,'ColorOrder',myCols)
 if ~isempty(Ehpca)
   irf_plot(hca,{Es12Residual.y,Es34Residual.y,...
     Es12ResidualHPCA.y,Es34ResidualHPCA.y},'comp')
-else irf_plot(hca,{Es12Residual.y,Es34Residual.y},'comp')
+else, irf_plot(hca,{Es12Residual.y,Es34Residual.y},'comp')
 end
 ylabel(hca,'Ey-res [mV/m]')
 set(hca,'Ylim',1.99*[-1 1])
@@ -476,8 +476,8 @@ idxJump = find(diff(mask)~=0);
 
 ints = []; iStop = [];
 for i=1:length(idxJump)+1
-  if isempty(iStop), iStart = 1; else iStart = iStop + 1; end
-  if i==length(idxJump)+1, iStop = length(mask); else iStop = idxJump(i); end
+  if isempty(iStop), iStart = 1; else, iStart = iStop + 1; end
+  if i==length(idxJump)+1, iStop = length(mask); else, iStop = idxJump(i); end
   if ~mask(iStart), continue, end
   ints = [ ints; iStart iStop]; %#ok<AGROW>
 end

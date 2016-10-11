@@ -31,7 +31,7 @@ function [phiEB,vbest,dirbest,thetas,corrs] = lhwaveanalysis(varargin)
 % irf_match_phibe_v, and irf_match_phibe_vis.
 
 % Check input
-if (nargin < 5),
+if (nargin < 5)
     help lhwaveanalysis;
     return;
 end
@@ -45,7 +45,7 @@ ne = varargin{5};
 ic = Bscm.name(4);
 
 args=varargin(6:end);
-if numel(args)>0,
+if numel(args)>0
     options=1;
 else
     options=0;
@@ -62,10 +62,10 @@ while options
     l = 2;
     switch(lower(args{1}))
         case 'lhfilt'
-            if numel(args)>1 && isnumeric(args{2}),
-                if length(args{2}) == 1,
+            if numel(args)>1 && isnumeric(args{2})
+                if length(args{2}) == 1
                     minfreq = args{2};
-                elseif length(args{2}) == 2,
+                elseif length(args{2}) == 2
                     minfreq = args{2}(1);
                     maxfreq = args{2}(2);
                     frange = 1;
@@ -75,12 +75,12 @@ while options
                 end
             end
          case 'blpass'
-            if numel(args)>1 && isnumeric(args{2}),
+            if numel(args)>1 && isnumeric(args{2})
                 lowpassBxyz = args{2};
             end
       	case 'plot'
-            if numel(args)>1 && isnumeric(args{2}),
-                if args{2},
+            if numel(args)>1 && isnumeric(args{2})
+                if args{2}
                     plotfigure = 1;
                 end
             end
@@ -134,7 +134,7 @@ Efac = irf.ts_vec_xyz(Exyz.time,[ER1 ER2 ER3]);
 thetas = 0:1:360;
 corrs = zeros(1,length(thetas));
 
-for ii = 1:length(thetas);
+for ii = 1:length(thetas)
     Etemp = cosd(thetas(ii))*Efac.data(:,1)+sind(thetas(ii))*Efac.data(:,2);
     Etemp = TSeries(Exyz.time,Etemp);
     phitemp = irf_integrate(Etemp);
@@ -157,7 +157,7 @@ dirbestround = round(dirbest,2);
 vphvec = 1e1:1e0:5e2; % Maximum velocity may need to be increased in rare cases
 corrv = zeros(1,length(vphvec));
 
-for ii=1:length(vphvec);
+for ii=1:length(vphvec)
     phiEtemp = phibest.data*vphvec(ii);
     corrv(ii)=sum(abs(phiEtemp-phiBs.data).^2);
 end
@@ -169,7 +169,7 @@ vbest = vphvec(corrvpos);
 
 phiEB = TSeries(phiBs.time,[phiEbest.data phiBs.data]);
 
-if plotfigure,
+if plotfigure
 fn=figure;
 set(fn,'Position',[10 10 600 600])
     h(1)=axes('position',[0.1 0.58 0.8 0.4]); 
@@ -183,7 +183,7 @@ h(1)=irf_panel('phi');
 irf_plot(h(1),phiEB);
 ylabel(h(1),'\phi (V)','Interpreter','tex','fontsize',14);
 irf_legend(h(1),{'\phi_{E}','\phi_{B}'},[0.1 0.12],'fontsize',14)
-if frange,
+if frange
     freqlab = [num2str(minfreq) ' Hz < f < ' num2str(maxfreq) ' Hz'];
 else
     freqlab = ['f > ' num2str(minfreq) ' Hz'];

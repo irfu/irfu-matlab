@@ -33,7 +33,7 @@ function [starttime1,endtime1,starttime3,endtime3] = probe_align_times(varargin)
 % Temporary fix for axial field direction is used before running this function: 
 % Exyz.data(:,3) = -Exyz.data(:,3);
 
-if (numel(varargin) < 4),
+if (numel(varargin) < 4)
     help mms.probe_align_times;
     starttime1=NaN;starttime3=NaN;endtime1=NaN;endtime3=NaN;
     return;
@@ -44,7 +44,7 @@ Bxyz = varargin{2};
 SCpot = varargin{3};
 zphase = varargin{4};
 
-if (numel(varargin)==5);
+if (numel(varargin)==5)
     plotfigure=varargin{5};
 else 
     plotfigure = 0;
@@ -64,8 +64,8 @@ norepeat = ones(length(zphase.time),1);
 
 nph = length(zphase.data);
 for ii=[2:nph]
-    if(zphase.time(ii) > zphase.time(ii-1));
-        if(zphase.data(ii) < zphase.data(ii-1));
+    if(zphase.time(ii) > zphase.time(ii-1))
+        if(zphase.data(ii) < zphase.data(ii-1))
             zphase.data(ii:end) = zphase.data(ii:end)+double(360.0);
         end
     else 
@@ -139,7 +139,7 @@ E4(idxB) = NaN;
 SCV12(idxB) = NaN;
 SCV34(idxB) = NaN;
 
-if plotfigure,
+if plotfigure
     
 Bplane = TSeries(Bxyz.time,[sqrt(Bxyz.data(:,1).^2+Bxyz.data(:,2).^2) abs(Bxyz.data(:,3))]);
 thetas = TSeries(zphase.time,[thetap1b thetap3b]);

@@ -62,17 +62,17 @@ function particlemoments = psd_moments(varargin)
 %
 
 % First input check
-if (nargin < 7),
+if (nargin < 7)
     nargin
     help psd_moments;
     return;
 end
 
 % Check if data is fast or burst resolution
-if isa(varargin{7},'TSeries'),
+if isa(varargin{7},'TSeries')
     isbrstdata = 1;
     irf.log('notice','Burst resolution data is used.');
-elseif (varargin{7}(1) == 'f'),
+elseif (varargin{7}(1) == 'f')
     isbrstdata = 0;
     irf.log('notice','Fast resolution data is used.');
 else
@@ -83,7 +83,7 @@ else
 end
 
 % Second input check
-if (nargin < 8 && isbrstdata),
+if (nargin < 8 && isbrstdata)
     nargin
     help psd_moments;
     return;
@@ -92,21 +92,21 @@ end
 pdist = varargin{1};
 phi = varargin{2};
 thetak = varargin{3};
-if isstruct(thetak),
+if isstruct(thetak)
     thetak = thetak.data;
 end
 
-if isbrstdata,
+if isbrstdata
     stepTable = varargin{4};
     energy0 = varargin{5};
     energy1 = varargin{6};
     SCpot = varargin{7};
     particletype = varargin{8};
     args=varargin(9:end);
-    if isstruct(energy0),
+    if isstruct(energy0)
         energy0 = energy0.data;
     end
-    if isstruct(energy1),
+    if isstruct(energy1)
         energy1 = energy1.data;
     end
 else
@@ -114,7 +114,7 @@ else
     SCpot = varargin{5};
     particletype = varargin{6};
     args=varargin(8:end);
-    if isstruct(energy),
+    if isstruct(energy)
         energy = energy.data;
     end
 end
@@ -124,17 +124,17 @@ SCpot = SCpot.resample(pdist);
 
 %check theta dimensions
 thetasize = size(thetak);
-if thetasize(1) > thetasize(2),
+if thetasize(1) > thetasize(2)
     thetak = thetak';
 end
 
-if isbrstdata,
+if isbrstdata
     args=varargin(9:end);
 else
     args=varargin(8:end);
 end
     
-if numel(args)>0,
+if numel(args)>0
     options=1;
 else
     options=0;
@@ -145,8 +145,8 @@ while options
     l = 2;
     switch(lower(args{1}))
         case 'energyrange'
-            if numel(args)>1 && isnumeric(args{2}),
-                if isbrstdata==0,
+            if numel(args)>1 && isnumeric(args{2})
+                if isbrstdata==0
                     energy0 = energy;
                 end
                 Eminmax = args{2};
@@ -158,25 +158,25 @@ while options
                 irf.log('notice','Using partial energy range');
             end
       	case 'noscpot'
-            if numel(args)>1 && args{2};
+            if numel(args)>1 && args{2}
                 SCpot.data = zeros(size(SCpot.data));
                 irf.log('notice','Setting spacecraft potential to zero.');
             end
         case 'enchannels'
-            if numel(args)>1 && isnumeric(args{2}),
+            if numel(args)>1 && isnumeric(args{2})
                 intenergies = args{2}(1):args{2}(2);
             end
         case 'partialmoms'
-            if numel(args)>1,
+            if numel(args)>1
                 partialmoms = args{2};
-                if isa(partialmoms,'TSeries'), 
+                if isa(partialmoms,'TSeries') 
                     partialmoms = partialmoms.data;
                 end
                 % Check size of partialmoms
-                if (size(partialmoms) == size(pdist.data)),
+                if (size(partialmoms) == size(pdist.data))
                     sumones = sum(sum(sum(sum(partialmoms))));
                     sumzeros = sum(sum(sum(sum(-partialmoms+1))));
-                    if ((sumones+sumzeros) == numel(pdist.data)),
+                    if ((sumones+sumzeros) == numel(pdist.data))
                         irf.log('notice','partialmoms is correct. Partial moments will be calculated');
                         pdist.data = pdist.data.*partialmoms;
                     else
@@ -202,10 +202,10 @@ Units = irf_units; % Use IAU and CODATA values for fundamental constants.
 qe = Units.e;
 kb = Units.kB;
 
-if (particletype(1) == 'e'),
+if (particletype(1) == 'e')
     pmass = Units.me;
     irf.log('notice','Particles are electrons');
-elseif (particletype(1) == 'i'),
+elseif (particletype(1) == 'i')
     pmass = Units.mp;
     SCpot.data = -SCpot.data;
     irf.log('notice','Particles are Ions');
@@ -229,22 +229,22 @@ tic
 % angle between theta and phi points is 360/32 = 11.25 degrees
 deltaang = (11.25*pi/180)^2;
 
-if isbrstdata,
+if isbrstdata
     phitr = phi.data';
 else
     phitr = phi;
-    if isstruct(phitr),
+    if isstruct(phitr)
         phitr = phitr.data;
     end
     phisize = size(phitr);
-    if phisize(2) > phisize(1),
+    if phisize(2) > phisize(1)
         phitr = phitr';
     end
 end
 
 % Calculate speed widths associated with each energy channel. 
 % Lowest energy channels extended to reproduce fpi moments
-if isbrstdata, % Burst mode energy/speed widths
+if isbrstdata % Burst mode energy/speed widths
     energyall = [energy0 energy1];
     energyall = log10(sort(energyall));
     temp0 = 2*energyall(1)-energyall(2);
@@ -277,11 +277,11 @@ else % Fast mode energy/speed widths
     deltav(1) = deltav(1)*2.7;
 end
     
-for nt = 1:length(pdist.time);
-    if isbrstdata,
+for nt = 1:length(pdist.time)
+    if isbrstdata
         energy = energy0;
         deltav = deltav0;
-        if stepTable.data(nt), 
+        if stepTable.data(nt) 
             energy = energy1;
             deltav = deltav1;
         end 
@@ -290,7 +290,7 @@ for nt = 1:length(pdist.time);
     v = real(sqrt(2*qe*(energy-SCpot.data(nt))/pmass));    
     v(energy-SCpot.data(nt)<0) = 0;
 
-    if isbrstdata,
+    if isbrstdata
         phij = phitr(:,nt);
     else
         phij = phitr;
@@ -307,7 +307,7 @@ for nt = 1:length(pdist.time);
     Mpsdmfxz = cosd(phij) * (sind(thetak).^2.*cosd(thetak));
     Mpsdmfyz = sind(phij) * (sind(thetak).^2.*cosd(thetak));
    
-    for ii = intenergies; 
+    for ii = intenergies 
         tmp = squeeze(pdist.data(nt, ii, :, :));
         n_psd(nt) = n_psd(nt) + irf.nansum(irf.nansum(tmp .* Mpsd2n, 1), 2) * v(ii)^2 * deltav(ii) * deltaang;
         Vxtemp = irf.nansum(irf.nansum(tmp .* Mpsd2Vx, 1), 2) * v(ii)^3 * deltav(ii) * deltaang;
