@@ -1,3 +1,5 @@
+% error_code = bicas( varargin )   Main function that launches BICAS.
+%
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
 % First created 2016-03-xx
 %
@@ -52,8 +54,10 @@ function error_code = bicas( varargin )
 %
 % PROPOSAL: Check that all master cdf files are present/available.
 %
-% PROPOSAL: Rename to "bicas_main.m".
+% PROPOSAL: Rename to "bicas_main.m", or bicas.main (+bicas/main.m).
 % PROPOSAL: Move prescribed MATLAB version to the config file.
+% PROPOSAL: Put a summarized version of CLI syntax in "bicas --help" (somethinger easier that the S/W descriptor).
+%    PRO: Useful when S/W descriptor becomes big and complex.
 
 
 
@@ -82,7 +86,7 @@ try
     % Derive the root path of the software (BICAS directory structure root)
     %=======================================================================
     [matlab_src_path, ~, ~] = fileparts(mfilename('fullpath'));
-    BICAS_root_path = get_abs_path(fullfile(matlab_src_path, '..'));
+    BICAS_root_path = bicas.utils.get_abs_path(fullfile(matlab_src_path, '..'));
     %CONSTANTS.SW_root_dir(BICAS_root_path)
     irf.log('n', sprintf('MATLAB source code path:  "%s"', matlab_src_path))
     irf.log('n', sprintf('BICAS software root path: "%s"', BICAS_root_path))
@@ -120,21 +124,21 @@ try
         %============================
         % CASE: Print identification
         %============================
-        [~] = parse_CLI_flags(arguments(2:end), flags);  % Check CLI syntax but ignore results.
+        [~] = bicas.utils.parse_CLI_flags(arguments(2:end), flags);  % Check CLI syntax but ignore results.
         print_identification()
 
     elseif (strcmp(arguments{1}, '--version'))
         %============================
         % CASE: Print version
         %============================
-        [~] = parse_CLI_flags(arguments(2:end), flags);  % Check CLI syntax but ignore results.
+        [~] = bicas.utils.parse_CLI_flags(arguments(2:end), flags);  % Check CLI syntax but ignore results.
         print_version()
 
     elseif (strcmp(arguments{1}, '--help'))
         %============================
         % CASE: Print help
         %============================
-        [~] = parse_CLI_flags(arguments(2:end), flags);  % Check CLI syntax but ignore results.
+        [~] = bicas.utils.parse_CLI_flags(arguments(2:end), flags);  % Check CLI syntax but ignore results.
         print_help(ERROR_CODES)
 
     else
@@ -174,13 +178,13 @@ try
         %-----------------------------
         % Parse (remaining) arguments
         %-----------------------------
-        parsed_flags = parse_CLI_flags(arguments(2:end), flags);
+        parsed_flags = bicas.utils.parse_CLI_flags(arguments(2:end), flags);
         
         
         
         input_files = containers.Map(input_PDTs, parsed_flags.values(input_PDTs));   % Extract subset of parsed arguments.
         
-        output_dir = get_abs_path(parsed_flags('output_dir'));
+        output_dir = bicas.utils.get_abs_path(parsed_flags('output_dir'));
         
         
 
@@ -290,7 +294,7 @@ end
 % irf.log('c', 'USING TEST IMPLEMENTATION FOR S/W MODES. ONLY CREATES NONSENSE CDF FILES.')
 % 
 % %C_mode = get_C_sw_mode(sw_mode_CLI_parameter);
-% temp = select_structs(C.sw_modes, 'CLI_parameter', {sw_mode_CLI_parameter});
+% temp = bicas.utils.select_structs(C.sw_modes, 'CLI_parameter', {sw_mode_CLI_parameter});
 % C_mode = temp{1};
 % output_JSON = [];
 % 
@@ -317,7 +321,7 @@ end
 % end
 % 
 % % Print list of files produced in the form of a JSON object.
-% str = JSON_object_str(output_JSON);
+% str = bicas.utils.JSON_object_str(output_JSON);
 % bicas.stdout_disp(str);
 % 
 % end
@@ -350,7 +354,7 @@ function print_identification()
 global CONSTANTS
 
 D = bicas.get_sw_descriptor();
-str = JSON_object_str(D, CONSTANTS.C.JSON_object_str);
+str = bicas.utils.JSON_object_str(D, CONSTANTS.C.JSON_object_str);
 bicas.stdout_disp(str);
 
 end

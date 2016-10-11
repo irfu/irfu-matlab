@@ -82,7 +82,7 @@ end
 
 
 
-write_CDF(output_file_path, out, info, 'fill_empty')
+bicas.utils.write_CDF(output_file_path, out, info, 'fill_empty')
 
 end
 

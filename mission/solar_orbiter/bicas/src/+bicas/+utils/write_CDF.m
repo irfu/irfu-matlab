@@ -1,27 +1,29 @@
-% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
-% First created 2016-07-12
+% write_CDF(file_path, spdfcdfread_out, spdfcdfread_info, varargin)   Function which writes a CDF file.
 %
 % Attempt at a function which can easily write a CDF using variables on the same data format as
 % returned by [out, info] = spdfcdfread(... , 'Structure', 1, 'KeepEpochAsIs', 1).
 %
+% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% First created 2016-07-12
+%
 %
 %
 % ARGUMENTS
-% ---------
+% =========
 % spdfcdfread_out  : Data on the format returned from spdfcdfread.
 % spdfcdfread_info : Data on the format returned from spdfcdfread.
-% varargin : Optionally 'fill_empty' : EXPERIMENTAL FEATURE. Empty CDF variable data is replaced by one pad value scalar
-% (one record only) of the right type. NOTE: This is not meant for "serious use" (it only a workaround) but for tests
-% when writing CDFs, using data read from CDFs. Only works for numerical types.
+% varargin         : Optionally 'fill_empty' : EXPERIMENTAL FEATURE. Empty CDF variable data is replaced by one pad
+% value scalar (one record only) of the right type. NOTE: This is not meant for "serious use" (it only a workaround) but
+% for tests when writing CDFs, using data read from CDFs. Only works for numerical types.
 %
-% NOTE: As of 2016-07-28: In practise this function only uses "spdfcdfread_out.Data" in "spdfcdfread_out". Therefore the
+% NOTE: As of 2016-07-28: In practice this function only uses "spdfcdfread_out.Data" in "spdfcdfread_out". Therefore the
 % caller does not need to set the other "out" fields, like when reading a master file with empty fields for zero-record
 % zVariables.
 % 
 %
 %
 % LIMITATIONS
-% -----------
+% ===========
 % NOTE PROBLEM: spdfcdfread and scpdfcdfinfo may crash MATLAB(!) when reading files written with spdfcdfwrite (which
 % this function uses). It appears that this happens when spdfcdfwrite receives various forms of "incomplete" input data.
 % spdfcdfwrite appears to often not give any warning/error message when and writes a file anyway. Before passing data to
@@ -44,7 +46,7 @@
 %
 %
 % IMPLEMENTATION NOTES: COMPLICATIONS WHEN COMBINING spdfcdfread + cpdfcdfwrite
-% -------------------------------------------------------
+% =============================================================================
 % NOTE: spdfcdfread and spdfcdfwrite interpret 'tt2000' (or at least "Epoch") data differently:
 % - spdfcdfread by default converts tt2000 data to MATLAB's own time scalar (using datenum)
 %   datestr converts value_default-->UTC. ("value_default" refers to the above).
@@ -91,6 +93,8 @@ function write_CDF(file_path, spdfcdfread_out, spdfcdfread_info, varargin)
 %    CON: Can not know the (non-record) dimensions of such a CDF variable.
 %    CON: Using exactly one record automatically leads to the CDF labelling the CDF variable as record-invariant!
 % PROPOSAL: Redo to work easily with dataobj instead? How handles time? Separat function? One wraps the other?
+%    NOTE: Not necessarily difficult since dataobj seems to contain structures/arrays from spdfcdfread/-info.
+%    QUESTION: Can dataobj be altered?!
 %
 % PROPOSAL: Call NASA SPDFs Java code instead?!! Should be possible to easily call Java code from inside MATLAB.
 % PROPOSAL: Redefine argument "spdfcdfread_out" to "spdfcdfread_out_Data".
@@ -154,7 +158,7 @@ function write_CDF(file_path, spdfcdfread_out, spdfcdfread_info, varargin)
                 %----------------------------------------------------------------------------------------
                 %N_records = max([s{:}]);   % Get the greatest number of records that any variable has.
                 N_records = 1;
-                MATLAB_class = convert_CDF_type_to_MATLAB_class(spdfcdfwrite_data_type, 'Permit MATLAB classes');
+                MATLAB_class = bicas.utils.convert_CDF_type_to_MATLAB_class(spdfcdfwrite_data_type, 'Permit MATLAB classes');
                 try
                     zVar_data = cast(ones(N_records, 1), MATLAB_class) * pad_value;       % NOTE: Hardcoded uint8
                 catch exception
@@ -177,7 +181,7 @@ function write_CDF(file_path, spdfcdfread_out, spdfcdfread_info, varargin)
         %========================================================================================================
         MATLAB_class = class(zVar_data);
         %if ~MATLAB_type_compatible_with_cdf_type(MATLAB_class, spdfcdfwrite_data_type)
-        if ~strcmp(  convert_CDF_type_to_MATLAB_class(spdfcdfwrite_data_type, 'Permit MATLAB classes'),   MATLAB_class  )
+        if ~strcmp(  bicas.utils.convert_CDF_type_to_MATLAB_class(spdfcdfwrite_data_type, 'Permit MATLAB classes'),   MATLAB_class  )
             error('write_CDF:Assertion', 'MATLAB data type "%s" does not match the actual CDF data ("%s") for CDF variable "%s".', MATLAB_class, spdfcdfwrite_data_type, zVar_name)
         end
         

@@ -1,11 +1,10 @@
-%===================================================================================================
+% Return MATLAB structure that "exactly" corresponds to the S/W descriptor specified by the RCS ICD.
 %
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
 % First created ~2016-06-01
 %
-% Return MATLAB structure "exactly" corresponding to the S/W descriptor specified by the RCS ICD.
-% The values are derived entirely from BICAS constants. The structure is NOT directly incorporated in
-% the BICAS constants for extra flexibility.
+% The values are derived entirely from BICAS constants. The structure is NOT directly incorporated in the BICAS
+% constants for extra flexibility.
 %
 function SW_descriptor = get_sw_descriptor()
 %
@@ -36,7 +35,7 @@ SWD.environment    = CONSTANTS.C.SWD_environment;
 SWD.modes = {};
 
 for i = 1:length(CONSTANTS.sw_modes)
-    CLI_parameter = CONSTANTS.sw_modes{i}.CLI_parameter;    
+    CLI_parameter = CONSTANTS.sw_modes{i}.CLI_parameter;
     
     C_sw_mode = CONSTANTS.get_C_sw_mode_full(CLI_parameter);
     

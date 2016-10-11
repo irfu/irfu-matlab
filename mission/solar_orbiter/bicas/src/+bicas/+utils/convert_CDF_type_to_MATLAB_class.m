@@ -1,10 +1,10 @@
-% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
-% First created 2016-07-xx
-%
 % Convert a string representing a data type in CDF (spdfcdfread, spdfcdfwrite) to a string representing a MATLAB class
 % (type). Useful for correctly type casting or type checking data before writing to a CDF.
 %
-% Data based upon table in spdfcdfwrite.m with modifications:
+% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% First created 2016-07-xx
+%
+% Data is based upon table in "spdfcdfwrite.m" with modifications:
 %    1) "tt2000" is NOT a MATLAB type but corresponds to int64.
 %    2) "epoch", "epoch16" are not MATLAB types and are not included (yet).
 %

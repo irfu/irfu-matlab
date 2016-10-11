@@ -1,20 +1,20 @@
-% Assert that a cell 1D array of strings only contains unique strings.
+% assert_strings_unique(string_list)   Assert that a cell array of strings only contains unique strings.
 %
-% This is useful for strings which serve as "identifiers", that can be "pointed to" and have to be unique.
+% This is useful for checking lists of strings which serve as "identifiers", that can be "pointed to" and that have to
+% be unique.
 %
 function assert_strings_unique(string_list)
 %
 % PROPOSAL: Have caller throw error instead. Return list of unique strings.
 % PROPOSAL: Generalize to arbitrary data using ~isequal, isequaln.
 %
-[unique_strings, i_l, i_u] = unique(string_list);    % iu=indices to unique_strings; il=indices to string_list
+[unique_strings, i_l, i_u] = unique(string_list);    % i_u=indices to unique_strings; i_l=indices to string_list
 
-if length(unique_strings) == length(string_list)
+if numel(unique_strings) == numel(string_list)
     %return
-    ;
+    ;   % Do nothing.
 else
-    % Figure out which strings occur more than one time. Surprisingly difficult for such a simple
-    % task.
+    % Figure out which strings that occur more than one time. Surprisingly difficult for such a simple task.
     % "TEST CODE" for playing around on the command line.
     % l={'a', 'qwe', 'asd', 'qwe', 'qwe', 'a'} ; [u, i_l, i_u]=unique(l); i_us = sort(i_u); i_i_us = find(~diff(i_us)); unique(u(i_us(i_i_us)))
     % ----------------------------------------------------------------------
@@ -25,7 +25,7 @@ else
 
     
     disp_list = '';
-    for i = 1:length(nonuniques_list)
+    for i = 1:numel(nonuniques_list)
         disp_list = [disp_list, sprintf('   "%s"\n', nonuniques_list{i})];
     end    
     

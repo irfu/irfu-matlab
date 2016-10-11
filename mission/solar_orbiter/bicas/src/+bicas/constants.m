@@ -80,6 +80,15 @@ classdef constants < handle
 %       CON: The function really represents code, not constants.
 %   PRO: More natural to incorporate validation.
 %   PRO: The result could/should be "cached" here.
+% PROPOSAL: Store derived S/W descriptor in constants, even if get_sw_descriptor is not there.
+%   CON/PROBLEM: get_sw_descriptor is a function of CONSTANTS which must hence first be initialized. 
+%       PROPOSAL: Have get_sw_descriptor be a function of subsets of constants.
+%
+% PROPOSAL: Change constants to not have any public variables. All constants are accessed through functions which cache
+% against private instance variables.
+%    PRO: Useful for non-trivial instantiation.
+%       Ex: Using external get_sw_descriptor to derive SWD variable INSIDE constants.
+%           CON: External function would use constants before it has been properly initialized.
 %
 % PROPOSAL: Use (nested) function to set every input in produce_inputs_constants. Reduce to one-liners.
 %     PROPOSAL: Same for produce_inputs_constants.
@@ -87,6 +96,7 @@ classdef constants < handle
 %        CON: Does not make use of the similarities between assignments.
 %        CON: Want to "extract values from a table".
 %
+% PROPOSAL: Rename ".C" to ".general", ".misc"
 
 
     %###################################################################################################################
@@ -103,6 +113,7 @@ classdef constants < handle
         C                  % For miscellaneous minor constants which still might require code to be initialized.
         sw_modes
         BICAS_root_path
+        %sw_descriptor
     end
 
     %###################################################################################################################
@@ -155,6 +166,11 @@ classdef constants < handle
                 'indent_size',     4, ...
                 'value_position', 15);
         
+            % The epoch for ACQUISITION_TIME.
+            % The time in UTC at which ACQUISITION_TIME is [0,0].
+            % PROPOSAL: Store spdfcomputett2000(ACQUISITION_TIME_EPOCH_UTC) instead?
+            C.ACQUISITION_TIME_EPOCH_UTC = [2000, 01,01, 12,00,00, 000,000,000];
+
             % Define constants relating to LFR.
             % F0, F1, F2, F3: Frequencies with which samples are taken. Unit: Hz.
             C.LFR = [];
@@ -208,40 +224,29 @@ classdef constants < handle
         
         
         %================================================================================================================
-        % Return constants structure for a specific S/W mode.
+        % Return constants structure for a specific S/W mode as referenced by a CLI parameter.
         %        
         % This structure is automatically put together from other structures (constants) to avoid having to define too
         % many redundant constants.
-        % NOTE: The function takes the CLI_parameter as parameter, not the ID.
+        % NOTE: The function takes the CLI_parameter as parameter, not the S/W mode ID.
         %================================================================================================================
         function C_sw_mode = get_C_sw_mode_full(obj, CLI_parameter)
             
-            C_sw_mode = select_structs(obj.sw_modes, 'CLI_parameter', {CLI_parameter});            
+            C_sw_mode = bicas.utils.select_structs(obj.sw_modes, 'CLI_parameter', {CLI_parameter});            
             C_sw_mode = C_sw_mode{1};
             
-            %=================================================
-            % Collect all elementary input process data types
-            %=================================================
-            input_PDTs = {};            
-            for i = 1:length(C_sw_mode.output_PDTs)
-                %==============================================================================================
-                % Find all elementary input process data types for a given elementary output process data type
-                %==============================================================================================
-                temp = bicas.data_manager.get_elementary_input_PDTs(...
-                    C_sw_mode.output_PDTs{i}, C_sw_mode.ID);
-                
-                input_PDTs = [input_PDTs, temp];
-            end
+            % Collect all associated elementary input PDTs.
+            input_PDTs = bicas.data_manager.get_elementary_input_PDTs(C_sw_mode.output_PDTs, C_sw_mode.ID);
             
             try
-                C_sw_mode.inputs = select_structs(obj.inputs,  'PDT', input_PDTs);
+                C_sw_mode.inputs = bicas.utils.select_structs(obj.inputs,  'PDT', input_PDTs);
             catch exception
-                error('BICAS:Assertion:IllegalConfiguration', 'Can not identify all input process data types associated with S/W mode/CLI parameter "%s".', CLI_parameter)
+                error('BICAS:Assertion:IllegalConfiguration', 'Can not identify all input PDTs associated with S/W mode/CLI parameter "%s".', CLI_parameter)
             end
             try
-                C_sw_mode.outputs = select_structs(obj.outputs, 'PDT', C_sw_mode.output_PDTs);
+                C_sw_mode.outputs = bicas.utils.select_structs(obj.outputs, 'PDT', C_sw_mode.output_PDTs);
             catch exception
-                error('BICAS:Assertion:IllegalConfiguration', 'Can not identify all output process data types associated with S/W mode/CLI parameter "%s".', CLI_parameter)
+                error('BICAS:Assertion:IllegalConfiguration', 'Can not identify all output PDTs associated with S/W mode/CLI parameter "%s".', CLI_parameter)
             end
         end
 
@@ -292,17 +297,17 @@ classdef constants < handle
                 for j = 1:length(C_sw_mode.inputs)
                     inputs_CLI_parameters{end+1} = C_sw_mode.inputs{j}.CLI_parameter;
                 end
-                assert_strings_unique(inputs_CLI_parameters)
+                bicas.utils.assert_strings_unique(inputs_CLI_parameters)
                 
                 % Iterate over outputs
                 outputs_JSON_output_file_identifiers = {};
                 for j = 1:length(C_sw_mode.outputs)
                     outputs_JSON_output_file_identifiers{end+1} = C_sw_mode.outputs{j}.JSON_output_file_identifier;
                 end
-                assert_strings_unique(outputs_JSON_output_file_identifiers)
+                bicas.utils.assert_strings_unique(outputs_JSON_output_file_identifiers)
             end
-            assert_strings_unique(sw_mode_CLI_parameters)
-            assert_strings_unique(sw_mode_IDs)
+            bicas.utils.assert_strings_unique(sw_mode_CLI_parameters)
+            bicas.utils.assert_strings_unique(sw_mode_IDs)
 
             
             
@@ -312,7 +317,7 @@ classdef constants < handle
             dataset_ID_version_list = cellfun( ...
                 @(x) ({[x.dataset_ID, '_V', x.skeleton_version_str]}), ...
                 [obj.outputs, obj.inputs]   );
-            assert_strings_unique(dataset_ID_version_list)           
+            bicas.utils.assert_strings_unique(dataset_ID_version_list)           
         end
 
     end   % methods
@@ -323,21 +328,23 @@ classdef constants < handle
         
         
         function C_sw_modes = produce_sw_modes_constants()
-            %---------------------------------------------------------------------------------------------------
+            %===================================================================================================
             % Define the S/W modes which are visible to the "outside" of the software,
             % the modes which "officially" exist at any given time.
             %
             % Influences (at least) the required CLI arguments and the S/W descriptor.
-            %---------------------------------------------------------------------------------------------------
-            % .CLI_parameter : Is used as CLI parameter to identify the S/W mode.
-            % .ID            : S/W mode ID. Used to identify the mode internally (in particular for hardcoded constants
-            %                  in data_manager).
-            %                  Has about the same purpose as CLI_parameter but is separate so that CLI_parameter
-            %                  values/constants can be easily modified, whereas ID values are tied to hardcoded
-            %                  constants in data_manager which are harder to modify.
             %
-            % .output_PDTs : A cell array of process data types. Effectively an array of pointers to (1) the output constants, and (2)
-            % indirectly to the input constants through data_manager.get_elementary_input_PDTs.
+            % C_sw_modes : struct
+            %    .CLI_parameter : Is used as CLI parameter to identify the S/W mode.
+            %    .ID            : S/W mode ID. Used to identify the mode internally (in particular for hardcoded constants
+            %                     in data_manager).
+            %                     Has about the same purpose as CLI_parameter but is separate so that CLI_parameter
+            %                     values/constants can be easily modified, whereas ID values are tied to hardcoded
+            %                     constants in data_manager which are harder to modify.
+            %
+            %    .output_PDTs : A cell array of PDTs. Effectively an array of pointers to (1) the output constants, and (2)
+            %                   indirectly to the input constants through data_manager.get_elementary_input_PDTs.
+            %===================================================================================================
             
             C_sw_modes = {};
             
@@ -382,7 +389,7 @@ classdef constants < handle
             sw_mode.output_PDTs = {'L2S_TDS-LFM-CWF-E_V01'};
             C_sw_modes{end+1} = sw_mode;
             
-            % NOTE: Accepts older/obsoleted input data.
+            % NOTE: Accepts older/obsoleted V01 input data.
             sw_mode = [];
             sw_mode.CLI_parameter = 'TDS-LFM-RSWF-E_V01-V01';
             sw_mode.ID            = 'TDS-LFM-RSWF-E_V01-V01';
@@ -454,19 +461,17 @@ classdef constants < handle
             C_inputs{end+1} = init_input_C_sci('ROC-SGSE_L2R_RPW-LFR-SURV-CWF', '02');   % 1 sample/record
             
             
-            C_inputs{end+1} = init_input_C_sci('ROC-SGSE_L2R_RPW-LFR-SURV-SWF', '01');   % 1 snapshot/record            
-            % Add zVar SAMP_DTIME
-            C_inputs{end+1} = init_input_C_sci('ROC-SGSE_L2R_RPW-LFR-SURV-SWF', '02');   % 1 snapshot/record -- Not a change of snapshot/samples per record.
+            C_inputs{end+1} = init_input_C_sci('ROC-SGSE_L2R_RPW-LFR-SURV-SWF', '01');   % 1 snapshot/record
+            C_inputs{end+1} = init_input_C_sci('ROC-SGSE_L2R_RPW-LFR-SURV-SWF', '02');   % 1 snapshot/record(!). Add zVar SAMP_DTIME
             
             %=========
             % TDS SCI
             %=========
             
-            C_inputs{end+1} = init_input_C_sci('ROC-SGSE_L2R_RPW-TDS-LFM-CWF',  '01');% 1 sample/record
+            C_inputs{end+1} = init_input_C_sci('ROC-SGSE_L2R_RPW-TDS-LFM-CWF',  '01');  % 1 sample/record
             
-            C_inputs{end+1} = init_input_C_sci('ROC-SGSE_L2R_RPW-TDS-LFM-RSWF', '01');% 1 sample/record            
-            % Adds two zVariables: SAMP_DTIME, SAMPS_PER_CH
-            C_inputs{end+1} = init_input_C_sci('ROC-SGSE_L2R_RPW-TDS-LFM-RSWF', '02');% 1 snapshot/record
+            C_inputs{end+1} = init_input_C_sci('ROC-SGSE_L2R_RPW-TDS-LFM-RSWF', '01');  % 1 sample/record.  Adds two zVariables: SAMP_DTIME, SAMPS_PER_CH
+            C_inputs{end+1} = init_input_C_sci('ROC-SGSE_L2R_RPW-TDS-LFM-RSWF', '02');  % 1 snapshot/record
             
             %======
             % TEST
@@ -578,7 +583,7 @@ classdef constants < handle
 %             C_outputs{end}.SWD_release_modification    = D.INITIAL_RELEASE_MODIFICATION_STR;
 %             %C_outputs{end}.SWD_release_version         = D.SWD_OUTPUT_RELEASE_VERSION;
 
-            % Put together process data types (used in data_manager).
+            % Put together PDTs (used in data_manager).
             % See data_manager for definition.
             for i = 1:length(C_outputs)
                 C_outputs{i}.PDT = bicas.constants.construct_PDT(C_outputs{i}.dataset_ID, C_outputs{i}.skeleton_version_str);
@@ -588,7 +593,7 @@ classdef constants < handle
         
         
         function PDT = construct_PDT(dataset_ID, skeleton_version_str)
-        % Construct a (shorter) process data type (PDT) from a dataset ID and version.
+        % Construct a (shorter) PDT from a dataset ID and version.
         
             %PDT = [dataset_ID, '_V', skeleton_version_str];
             

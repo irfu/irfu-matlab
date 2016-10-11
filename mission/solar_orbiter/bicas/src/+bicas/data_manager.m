@@ -17,8 +17,8 @@
 % process data variables are all empty.
 %
 % There are three forms of process data:
-%   (1) elementary input  process data : Supplied BY the user. In practise this should correspond to the content of a CDF file.
-%   (2) elementary output process data : Returned TO the user. In practise this should correspond to the content of a CDF file.
+%   (1) elementary input  process data : Supplied BY the user. In practice this should correspond to the content of a CDF file.
+%   (2) elementary output process data : Returned TO the user. In practice this should correspond to the content of a CDF file.
 %                                        Derived from a fixed set of other process data.
 %   (3) intermediate process data      : Derived from a fixed set of other process data. These only exist inside data_manager.
 %
@@ -55,10 +55,10 @@
 %
 %
 %
-% DEFINITIONS OF TERMS
-% ====================
-% - process data
-%        In practise, one internal variable representing some form of data in some step of
+% DEFINITIONS OF TERMS, ABBREVIATIONS
+% ===================================
+% - process data (PD)
+%        In practice, one internal variable representing some form of data in some step of
 %        the "data processing process".
 % - elementary input/output process data
 %        Process data that represents data that goes in and out of the data manager as a whole. The word "elementary" is
@@ -67,9 +67,15 @@
 %        Process data that is not elementary.
 % - process data type (PDT)
 %        A string that uniquely represents (refers to) a type of process data.
-%        By convention, the process data types for elementary input/output process data types are a shortened version of
+%        By convention, the PDTs for elementary input/output PDTs are a shortened version of
 %        dataset_ID+skeleton_version_str, e.g. "L2S_LFR-SURV-CWF-E_V01". Hardcoded values of these occur throughout the
 %        code as constants.
+% 
+% NOTE: So far (2016-10-07), every elementary input/output PDT is associated with exactly one specific dataset ID
+% (one-to-one), and the process data represents the data in a CDF with that specific dataset ID. In principle, in the
+% future, multiple elementary PDTs could each be associated with the one and same dataset ID, if the different CDFs
+% (with the same dataset ID) fulfill different roles.
+% Example: Produce one output CDF covering the time intervals of data in input CDFs (all with the same dataset ID).
 %
 %
 %
@@ -82,13 +88,13 @@
 %
 % IMPLEMENTATION NOTES
 % ====================
-% - As of now (2016-10-05), the "basic concept" is only partly taken advantage of, and is partly unnecessary.
-% - This class is intended to:
-%    - As far as possible, not be aware of S/W modes as defined in the RCS ICD.
-%    - Not deal with writing CDFs. It does however read CDF files as a way of setting elementary input process data but
-%      only since it is trivial.
+% 1) As of now (2016-10-11), the "basic concept" is only partly taken advantage of, and is partly unnecessary.
+% 2) This class is intended to:
+%     - As far as possible, not be aware of S/W modes as defined in the RCS ICD.
+%     - Not deal with writing CDFs. It does however read CDF files as a way of setting elementary input process data but
+%       only since it is trivial.
 %
-classdef data_manager
+classdef data_manager < handle     % Explicitly declare it as a handle class to avoid IDE warnings.
 %#######################################################################################################################
 % PROPOSAL: Use other class name that implices processing, and fits with defined term "process data".
 %     "processing_manager"? "proc_manager"?
@@ -117,7 +123,7 @@ classdef data_manager
 %            its own master CDF.
 %   PROPOSAL: User gives the master CDF to the data_manager which stores it in instance variable (containers.Map for output process data).
 %   PROPOSAL: data_manager has access to CONSTANTS/function which retrieves master CDFs.
-%   PROPOSAL: Implement master CDFs as internal process data types?!!
+%   PROPOSAL: Implement master CDFs as internal PDTs?!!
 %      PRO: Does actually need the fill/pad values.
 %      CON: Elementary inputs should fit with S/W description and CLI parameters. Master CDFs will mess that up, or BICAS
 %           will have to distinguish between different types of elementary input process data.
@@ -135,16 +141,22 @@ classdef data_manager
 % QUESTION: Is dataobj a handle class?! How (deep) copy? Needed?! If so, then matters for setting elementary input
 % processing data directly.
 %
-% PROPOSAL: Functions assert_is_elem_input_PDT, assert_is_elem_output_PDT, assert_is_PT.
+% PROPOSAL: Functions assert_is_elem_input_PDT, assert_is_elem_output_PDT, assert_is_PDT.
 %
-% PROPOSAL: Automatically generate lists of elementary input/output process data types, and all process data types from
+% PROPOSAL: Automatically generate lists of elementary input/output PDTs, and all PDTs from
 % get_processing_info.
-%    CON: Can not generate list of elementary INPUT process data types.
-%    PROPOSAL: Check these against process data types in BICAS constants somehow.
+%    CON: Can not generate list of elementary INPUT PDTs.
+%    PROPOSAL: Check these against PDTs in BICAS constants somehow.
 %
 % PROPOSAL: Merge get_processing_info with definitions (constants) for mode and (elementary) input/output datasets?!!!
 %
-%
+% PROPOSAL: Functions for classifying PDTs.
+%   Ex: LFR/TDS, sample/record or snapshot/record, V01/V02 (for LFR variables changing name).
+%   Ex: Number of samples per snapshot (useful for "virtual snapshots") in record (~size of record).
+%   PRO: Could reduce/collect the usage of hardcoded PDTs.
+%   NOTE: Mostly/only useful for elementary input PDTs?
+%   PROPOSAL: Add field (sub-struct) "format_constants" in list of EI PDTs in constants?!!
+%       NOTE: Already has version string in list of EI PDTs.
 %
 % TODO: General functions for handling CDFs:
 %    -validating input/output CDFs: dataset IDs, (same variable sizes?, same nbr of
@@ -153,7 +165,6 @@ classdef data_manager
 %    -reading, finding, validating/checking (Skeleton_version) master CDF
 %
 % TODO: General functions for handling data.
-%    -Convert fill/pad values <---> NaN.
 %
 % ~BUG: Documentation (beginning of file) does not mention dependencies varying due to sw_modes.
 %
@@ -165,10 +176,10 @@ classdef data_manager
         % (initialized in the constructor) have the same function.
         
         % Initialized by constructor.
-        process_data = containers.Map('KeyType', 'char', 'ValueType', 'any');
+        process_data_variables = containers.Map('KeyType', 'char', 'ValueType', 'any');
         
-        ELEMENTARY_INPUT_PDTs  = {'L2R_LFR-SURV-CWF_V01',   'L2R_LFR-SURV-SWF_V01',  'HK_BIA_V01', 'L2R_TEST_V99'};
-        ELEMENTARY_OUTPUT_PDTs = {'L2S_LFR-SURV-CWF-E_V01', 'L2S_LFR-SURV-SWF-E_V01',              'L2S_TEST_V99'};
+        ELEMENTARY_INPUT_PDTs  = {'L2R_LFR-SURV-CWF_V01',   'L2R_LFR-SURV-SWF_V01',  'HK_BIA_V01'};
+        ELEMENTARY_OUTPUT_PDTs = {'L2S_LFR-SURV-CWF-E_V01', 'L2S_LFR-SURV-SWF-E_V01'             };
         INTERMEDIATE_PDTs      = {};
         
     end
@@ -189,20 +200,26 @@ classdef data_manager
             
             % Initialize instance variable "process_data" with keys (with corresponding empty values).
             for PDT = ALL_PDTs
-                obj.process_data(PDT{1}) = [];
+                obj.process_data_variables(PDT{1}) = [];
             end
             
             % Validate
-            assert_strings_unique(obj.ELEMENTARY_INPUT_PDTs)
-            assert_strings_unique(obj.ELEMENTARY_OUTPUT_PDTs)
-            assert_strings_unique(obj.INTERMEDIATE_PDTs)
-            assert_strings_unique(    ALL_PDTs)
+            bicas.utils.assert_strings_unique(obj.ELEMENTARY_INPUT_PDTs)
+            bicas.utils.assert_strings_unique(obj.ELEMENTARY_OUTPUT_PDTs)
+            bicas.utils.assert_strings_unique(obj.INTERMEDIATE_PDTs)
+            bicas.utils.assert_strings_unique(    ALL_PDTs)
         end
 
         
         
         function set_elementary_input_CDF(obj, PDT, file_path)
-        % Set elementary input process data via CDF file.
+        % Set elementary input process data via a CDF file.
+        % Copies zVariables into fields of a regular structure.
+        % 
+        % Fill & pad values are replaced with NaN for numeric data types.
+        % Other CDF data (attributes) are ignored.
+        %
+        % NOTE: Uses irfu-matlab's dataobj for reading the CDF file.
         
             %==============================================
             % PROPOSAL: "Validate" the read CDF file here.
@@ -210,7 +227,47 @@ classdef data_manager
             
             irf.log('n', sprintf('PDT=%s: file_path=%s', PDT, file_path))    % NOTE: irf.log adds the method name.
             
-            set_elementary_input_process_data(obj, PDT, dataobj(file_path))
+            %==============================================================
+            % Select parts from dataobj and put them into a smaller struct
+            %==============================================================
+            process_data = struct();
+            DO = dataobj(file_path);                 % irfu-matlab's dataobj!!!
+            zVar_list = fieldnames(DO.data);
+            N_zVar = length(zVar_list);
+            for i = 1:N_zVar
+                zVar_name = zVar_list{i};
+                zVar_data = DO.data.(zVar_name).data;
+                
+                % Replace fill/pad values with NaN for numeric data.
+                if isnumeric(zVar_data)
+                    [fill_value, pad_value] = get_fill_pad_values(DO, zVar_name);
+                    zVar_data = bicas.utils.replace_value(zVar_data, fill_value, NaN);
+                    zVar_data = bicas.utils.replace_value(zVar_data, pad_value,  NaN);
+                    process_data.(zVar_name) = zVar_data;
+                end
+            end
+            
+            set_elementary_input_process_data(obj, PDT, process_data);
+            
+            
+            
+            % NOTE: Nested function
+            % NOTE: Uncertain how it handles the absence of a fill value. (Or is fill value mandatory?)
+            function [fill_value, pad_value] = get_fill_pad_values(do, zVar_name)
+                % PROPOSAL: Remake into general-purpose function.
+                % PROPOSAL: Remake into just using the do.Variables array?
+                %    NOTE: Has to derive CDF variable type from do.Variables too.
+                
+                fill_value = getfillval(do, zVar_name);        % NOTE: Special function for dataobj.
+                % NOTE: For unknown reasons, the fill value for tt2000 zVariables (or at least "Epoch") is stored as a UTC(?) string.
+                if strcmp(do.data.(zVar_name).type, 'tt2000')
+                   fill_value = spdfparsett2000(fill_value);   % NOTE: Uncertain if this is the correct conversion function.
+                end
+
+                i_zVar_table=find(strcmp(do.Variables(:,1), zVar_name));
+                pad_value = do.Variables{i_zVar_table, 9};
+                % Comments in "spdfcdfinfo.m" should indirectly imply that column 9 is pad values since the structure/array commented on should be identical.
+            end
         end
         
         
@@ -249,7 +306,7 @@ classdef data_manager
             [input_PDTs, processing_func] = bicas.data_manager.get_processing_info(PDT, sw_mode_ID);            
             % ASSERTION
             if isempty(processing_func)
-                error('BICAS:data_manager:Assertion', 'Received no processing function necessary for deriving process data (type "%s").', PDT)
+                error('BICAS:data_manager:Assertion', 'Received no processing function necessary for deriving process data (PDT "%s").', PDT)
             end
             
             %==============================================
@@ -270,6 +327,8 @@ classdef data_manager
             % Derive process data from other process data
             %=============================================
             process_data = processing_func(input_process_datas);
+            
+            obj.set_process_data_variable(process_data, PDT)
         end
     
     end   % methods: Instance, public
@@ -284,13 +343,13 @@ classdef data_manager
         % Can be used to find out whether process data has been set.
         %
         % ASSERTS: Valid PDT.
-        % DOES NOT ASSERT: Process data has been set.
+        % DOES NOT ASSERT: Process data has already been set.
         %==================================================================================
         function process_data = get_process_data_variable(obj, PDT)
-            if ~obj.process_data.isKey(PDT)
-                error('BICAS:data_manager:Assertion:IllegalArgument:NoSuchProcessDataType', 'There is no such process data type, "%s".', PDT);
+            if ~obj.process_data_variables.isKey(PDT)
+                error('BICAS:data_manager:Assertion:IllegalArgument:NoSuchProcessDataType', 'There is no such PDT, "%s".', PDT);
             end
-            process_data = obj.process_data(PDT);
+            process_data = obj.process_data_variables(PDT);
         end
 
 
@@ -302,12 +361,12 @@ classdef data_manager
         % ASSERTS: Valid PDT.
         %==================================================================================
         function set_process_data_variable(obj, PDT, process_data)
-            if ~obj.process_data.isKey(PDT)
-                error('BICAS:data_manager:Assertion:IllegalArgument:NoSuchProcessDataType', 'There is no such process data type, "%s".', PDT);
-            elseif ~isempty(obj.process_data(PDT))
-                error('BICAS:data_manager:Assertion', 'There is already process data for the specified data type "%s".', PDT);
+            if ~obj.process_data_variables.isKey(PDT)
+                error('BICAS:data_manager:Assertion:IllegalArgument:NoSuchProcessDataType', 'There is no such PDT, "%s".', PDT);
+            elseif ~isempty(obj.process_data_variables(PDT))
+                error('BICAS:data_manager:Assertion', 'There is already process data for the specified PDT "%s".', PDT);
             end
-            obj.process_data(PDT) = process_data;
+            obj.process_data_variables(PDT) = process_data;
         end
         
     end   % methods: Instance, private
@@ -316,32 +375,82 @@ classdef data_manager
     
     methods(Static, Access=public)
     
-        function [input_PDTs, processing_func] = get_processing_info(PDT, sw_mode_ID)
-        % For every process data type, return meta-information needed to derive the process data.
+        function elementary_input_PDTs = get_elementary_input_PDTs(PDTs, sw_mode_ID)
+            % get_elementary_input_PDTs   Collect all the elementary input PDTs needed to produce a given list of PDTs.
+            %
+            % PDTs                  : Cell array of PDTs (strings).
+            % elementary_input_PDTs : Cell array of PDTs (strings). Contains no duplicates (they are removed).
+            %
+            % NOTE: NOT recursive algorithm to speed it up by removing duplicates better (which is not necessary but looks nice).
+
+
+            % List where we collect PDTs for which we have not yet identified the elementary input PDTs.
+            % It is repeatedly set to a new list as the algorithm goes along.
+            % undet = undetermined.
+            undet_PDTs = PDTs;           
+            
+            % List where we add elementary input PDTs as the algorithm goes along.
+            elementary_input_PDTs = {};  
+            
+            while ~isempty(undet_PDTs)
+                
+                undet_PDTs_new = {};
+                for i = 1:numel(undet_PDTs)   % For every PDT.
+                    undet_PDT = undet_PDTs{i};
+
+                    [input_PDTs_struct, ~] = bicas.data_manager.get_processing_info(undet_PDT, sw_mode_ID);
+                    input_PDTs = struct2cell(input_PDTs_struct);     % NOTE: Always column vector.
+
+                    if isempty(input_PDTs)
+                        elementary_input_PDTs{end+1} = undet_PDT;
+                    else
+                        undet_PDTs_new = [undet_PDTs_new; input_PDTs];   % Grow column vector.
+                    end
+                end
+                
+                undet_PDTs = unique(undet_PDTs_new);
+            end
+            
+            elementary_input_PDTs = unique(elementary_input_PDTs);
+        end
+        
+        
+    end  % methods: Static, public
+    
+    %###################################################################################################################
+
+    methods(Static, Access=private)
+
+        function [input_PDTs, processing_func] = get_processing_info(output_PDT, sw_mode_ID)
+        % For every PDT, return meta-information needed to derive the actual process data.
         %
         % HIGH-LEVEL DESCRIPTION
         % ======================
-        % This function effectively
-        % 1) (IMPORTANT) defines/describes the dependencies between different process data types (an acyclic directed
-        %    graph, albeit dependent on S/W modes), and
-        % 2) (LESS IMPORTANT) implicitly decides how to informally distinguish the input process datas by giving them
+        % This function effectively does two things:
+        % 1) (IMPORTANT) It defines/describes the dependencies between different PDTs (an acyclic directed
+        %    graph, albeit dependent on S/W modes), by returning
+        %    - the "processing" function needed to produce the process data, and
+        %    - the PDTs needed by the processing function.
+        % 2) (LESS IMPORTANT) It implicitly decides how to informally distinguish the input process datas by giving them
         %    suitable struct field names which the processing functions recognize them with.
         %
         % The method itself is NOT recursive but it is designed so that other code can recurse over
         % the implicit "acyclic graph" defined by it.
-        % It can be used to recursively:
+        % Other code can use this method to two things recursively:
         % (1) Derive process data.
-        % (2) Derive all the necessary elementary input process data types needed to produce an elementary output
-        %     process data type. This is useful for automatically generating the required input datasets for S/W modes
-        %    (for generating the S/W descriptor, for generating requirements on CLI parameters).
+        % (2) Derive all the necessary elementary input PDTs needed to produce an elementary output
+        %     PDT (without generating any process data). This is useful for automatically generating the required input
+        %     dataset IDs for S/W modes (needed for (a) generating the S/W descriptor, and (b) generating requirements
+        %     on CLI parameters).
         %
-        % RETURN VALUES
-        % =============
+        % ARGUMENT AND RETURN VALUES
+        % ==========================
+        % PDT        : The PDT (string) that should be produced.
         % input_PDTs :
-        %     Struct with fields set to the necessary process data types. The names of the fields are "human-readable".
-        %     Elementary input process data types yield empty structs.
+        %     Struct with fields set to the necessary PDTs. The names of the fields are "human-readable".
+        %     Elementary input PDTs yield an empty struct.
         % processing_func :
-        %     Pointer to function that can derive the process data.
+        %     Pointer to function that can derive the process data from other process data.
         %         process_data = processing_func(input_process_datas)
         %     The function accepts exactly one argument: a struct analogous to input_PDTs but with fields set to
         %     the corresponding process DATA instead.
@@ -350,13 +459,13 @@ classdef data_manager
         %
         % NOTE: Even a reasonable implementation should not check for the validity of the combination of sw_mode_ID and
         % process_data in all cases. That check is done when (1) combining S/W modes with elementary output process data
-        % types in constants, and (2) in the function here, when a process data type can be derived differently
+        % types in constants, and (2) in the function here, when a PDT can be derived differently
         % depending on S/W mode.
         
             %===============================================================================================================        
             % PROPOSAL: Warning/error for not assigning a processing function.
             % PROPOSAL: Should check PDT in addition to switch statement.
-            % PROPOSAL: Reverse the switch statements for S/W mode and process data types. S/W mode outermost.
+            % PROPOSAL: Reverse the switch statements for S/W mode and PDTs. S/W mode outermost.
             %    CON: Would in total give more checks (switch), longer code.(?) Can not omit the check for cases with
             %    only one mode.
             % PROBLEM: Do not want to include to much dependence on modes.
@@ -370,64 +479,67 @@ classdef data_manager
             processing_func = @(input_process_datas) (...
                 error(...
                     'BICAS:data_manager:Assertion:OperationNotImplemented', ...
-                    'The processing function for process data type "%s", S/W mode "%s" has not yet been implemented.', ...
-                    PDT, sw_mode_ID) ...
+                    'The processing function for producing PDT "%s", S/W mode "%s" has not yet been implemented.', ...
+                    output_PDT, sw_mode_ID) ...
                 );
 
+            
 
-
-            switch(PDT)
-                %=====================================
-                % Elementary INPUT process data types
-                %=====================================
+            use_generic_processing_func = 0;   % Default value;
+            switch(output_PDT)
+                %=====================================================================
+                % Elementary INPUT PDTs : Return empty default values
+                %=====================================================================
+                % NOTE: It is still useful to include cases which do nothing since it is a check on permitted values
+                % (so that switch-otherwise can give error).
                 
                 % BIAS
                 case 'HK_BIA_V01'
 
                 % LFR
                 case 'L2R_LFR-SBM1-CWF_V01'
+                case 'L2R_LFR-SBM1-CWF_V02'
                 case 'L2R_LFR-SBM2-CWF_V01'
+                case 'L2R_LFR-SBM2-CWF_V02'
                 case 'L2R_LFR-SURV-CWF_V01'
+                case 'L2R_LFR-SURV-CWF_V02'
                 case 'L2R_LFR-SURV-SWF_V01'
+                case 'L2R_LFR-SURV-SWF_V02'
                     
                 % TDS
                 case 'L2R_TDS-LFM-CWF_V01'                    
                 case 'L2R_TDS-LFM-RSWF_V01'
                 case 'L2R_TDS-LFM-RSWF_V02'
 
-                % TEST
-                %case 'L2R_TEST_V99';
-
-                %======================================
-                % Elementary OUTPUT process data types
-                %======================================
+                %========================
+                % Elementary OUTPUT PDTs
+                %========================
                 
                 %-----
                 % LFR
                 %-----
-                case 'L2S_LFR-SBM1-CWF-E_V01'
+                case 'L2S_LFR-SBM1-CWF-E_V01' ; use_generic_processing_func = 1;
                     input_PDTs.HK_cdf  = 'HK_BIA_V01';
                     input_PDTs.SCI_cdf = 'L2R_LFR-SBM1-CWF_V01';
-                case 'L2S_LFR-SBM2-CWF-E_V01'
+                case 'L2S_LFR-SBM2-CWF-E_V01' ; use_generic_processing_func = 1;
                     input_PDTs.HK_cdf  = 'HK_BIA_V01';
                     input_PDTs.SCI_cdf = 'L2R_LFR-SBM2-CWF_V01';
-                case 'L2S_LFR-SURV-CWF-E_V01'
+                case 'L2S_LFR-SURV-CWF-E_V01' ; use_generic_processing_func = 1;
                     input_PDTs.HK_cdf  = 'HK_BIA_V01';
                     input_PDTs.SCI_cdf = 'L2R_LFR-SURV-CWF_V01';
-                    processing_func = @bicas.data_manager.process_LFR_CWF_CDF_to_BIAS_CDF;
-                case 'L2S_LFR-SURV-SWF-E_V01'
+                    processing_func = @bicas.data_manager.process_LFR_CWF_CDF_to_BIAS_CDF;   % EXPERIMENTAL PROTOTYPE processing function.
+                case 'L2S_LFR-SURV-SWF-E_V01' ; use_generic_processing_func = 1;
                     input_PDTs.HK_cdf  = 'HK_BIA_V01';
                     input_PDTs.SCI_cdf = 'L2R_LFR-SURV-SWF_V01';
 
                 %-----
                 % TDS
                 %-----
-                case 'L2S_TDS-LFM-CWF-E_V01'
-                    % processing_func = 
+                case 'L2S_TDS-LFM-CWF-E_V01' ; use_generic_processing_func = 1;
                    input_PDTs.HK_cdf  = 'HK_BIA_V01';
                    input_PDTs.SCI_cdf = 'L2R_TDS-LFM-CWF_V01';
 
-                case 'L2S_TDS-LFM-RSWF-E_V01'
+                case 'L2S_TDS-LFM-RSWF-E_V01' ; use_generic_processing_func = 1;
                     input_PDTs.HK_cdf  = 'HK_BIA_V01';
                     switch(sw_mode_ID)
                         case 'TDS-LFM-RSWF-E_V01-V01' ; input_PDTs.SCI_cdf = 'L2R_TDS-LFM-RSWF_V01';
@@ -435,124 +547,240 @@ classdef data_manager
                         otherwise ; error_bad_sw_mode(PDT, sw_mode_ID)
                     end
 
-                %---------------------------------
-                % Intermediate process data types
-                %---------------------------------
-
-%                 case 'input_waveform_data_std_format'
-%                     % Represents the input waveform data, without any HK (incl. LFR's BIAS_MODE_MUX_SET).
-%                     % Name? raw?
-%                     switch(sw_mode_ID)
-%                         case 'TDS-LFM-CWF-E_V01-V01'  ; input_PDTs.SCI_cdf = 'L2R_TDS-LFM-CWF_V01';
-%                         case 'TDS-LFM-RSWF-E_V01-V01' ; input_PDTs.SCI_cdf = 'L2R_TDS-LFM-RSWF_V01';
-%                         case 'TDS-LFM-RSWF-E_V02-V01' ; input_PDTs.SCI_cdf = 'L2R_TDS-LFM-RSWF_V02';
-%                         otherwise ; error_bad_sw_mode(PDT, sw_mode_ID)
-%                     end
-                
-                %case 'HK_std_format'
-                %    % Could also take information from LFR since their datasets also contain (some) HK in BIAS_MODE_MUX_SET.
-                %    input_PDTs.HK = 'HK_BIA_V01';
-                
-                %------
-                % TEST
-                %------
-                
-                %case 'L2S_TEST_V99'
-                %    input_PDTs.SCI2  = 'L2R_TEST_V99';
-                    
-                %============================================
-                % ERROR: Can not recognize process data type
-                %============================================                    
+                %==================================
+                % OTHERWISE: Can not recognize PDT
+                %==================================
                 otherwise
                     error('BICAS:data_manager:Assertion:IllegalArgument:NoSuchProcessDataType', ...
-                        'Can not produce this process data type, "%s".', PDT)
+                        'Can not produce this PDT, "%s".', output_PDT)
             end   % switch
-            
-            
-            % EXPERIMENTAL
-            % Function that in practise can handle all derivations to date, but it is not obvious that this will be the
-            % case forever. It can therefore be put outside the switch-case statement (for now).
-            % NOTE: The function value is not valid for elementary input process data types.
-            %processing_func = @(input_PDs) (bicas.data_manager.process_input_to_output(input_PDs, input_PDTs.SCI_cdf, PDT));
-            
-            % Change variable name before returning it.
-            input_PDTs = input_PDTs;
+
+
+
+            if use_generic_processing_func
+                % EXPERIMENTAL
+                % One processing function can so far handle all processing, but it might not always be so.
+                % The assignment of processing function can therefore be put outside the switch-case statement (for now).
+                % NOTE: The function value is NOT VALID FOR elementary input PDTs.
+                % NOTE: Can handle processing all combinations of LFR/TDS input-output.  
+                processing_func = @(input_PDs) (bicas.data_manager.process_input_to_output(...
+                    input_PDs, ...   % The needed input process data (PD). Not set here.
+                    input_PDTs, ...  % The needed PDTs, describing the contents of the fields in "input_PDs". Necessary for knowing what data one has to work with.
+                    output_PDT));
+            end
             
             
             
             %-----------------------------------------------------------------------------------------------------------
             function error_bad_sw_mode(PDT, sw_mode_ID)
                 error('BICAS:data_manager:Assertion:IllegalArgument:NoSuchSWMode', ...
-                    'Can not interpret S/W mode ID (%s) for this process data type (%s).', sw_mode_ID, PDT)
+                    'Can not interpret S/W mode ID (%s) for this PDT (%s).', sw_mode_ID, PDT)
             end
             %-----------------------------------------------------------------------------------------------------------
         end
         
         
         
-        function elementary_input_PDTs = get_elementary_input_PDTs(PDT, sw_mode_ID)
-            % Collect all the elementary input process data types needed to produce a given process data type.
-            %
-            % Can be used to determine which process data types are needed for a S/W mode. Recursive.
-            %
-            % RETURN VALUES
-            % =============
-            % elementary_input_PDTs :
-            %   Cell list of strings. Never contains any duplicates. If PDT is an elementary data type,
-            %   then it returns a cell array containing only "PDT" itself.
-        
-            %=========================================================================================================
-            % PROPOSAL: Change implementation. Iterate over list instead.
-            %     PRO: Better way of handling duplicates.
-            % T = {start_type}
-            % %  T_handled = {}  // Use?!!
-            % T_f = {}
-            % while (T not empty)
-            %     T_next = {}
-            %     for t in T
-            %         if t elementary input PDT
-            %             Put t in T_f
-            %         else
-            %             Add t's input PDTs in T_next
-            %         end
-            %     end
-            %     Remove doubles from T_next
-            %     T = T_next
-            % end
-            %=========================================================================================================
+        % UNFINISHED, EXPERIMENTAL
+        % Function that in practice can handle all derivations to date, but it is not obvious that this will be the
+        % case forever. In the future, it might only handle a subset.
+        %
+        % input_PDs  : struct. Each field has process data for one PDT.
+        % input_PDTs : struct. Each field has the corresponding PDT for the fields of input_PDs.
+        % output_PDT : The PDT that shall be produced.
+        function PD = process_input_to_output(input_PDs, input_PDTs, output_PDT)
             
-            [input_PDTs, ~] = bicas.data_manager.get_processing_info(PDT, sw_mode_ID);
+            SCI = input_PDs.SCI_cdf;
             
-            elementary_input_PDTs = {};
-            
-            if isempty(fieldnames(input_PDTs))
-                % CASE: PDT is an ELEMENTARY INPUT process data type.
-                elementary_input_PDTs = {PDT};
-            else
-                % CASE: PDT is NOT an NON-ELEMENTARY INPUT process data type.
-                fn_list = fieldnames(input_PDTs);
-                for i = 1:length(fn_list)
-                    fn = fn_list{i};
-                
-                    new_types = bicas.data_manager.get_elementary_input_PDTs(...
-                        input_PDTs.(fn), ...
-                        sw_mode_ID);                        % NOTE: RECURSIVE CALL
+            switch(input_PDTs.SCI_cdf)
                     
-                    elementary_input_PDTs = {elementary_input_PDTs{:}, new_types{:}};
-                end
+                %=====
+                % LFR
+                %=====
+                
+                % All LFR dataset IDs.
+                case {  'L2R_LFR-SBM1-CWF_V01', ...
+                        'L2R_LFR-SBM2-CWF_V01', ...
+                        'L2R_LFR-SURV-CWF_V01', ...
+                        'L2R_LFR-SURV-SWF_V01', ...
+                        'L2R_LFR-SBM1-CWF_V02', ...
+                        'L2R_LFR-SBM2-CWF_V02', ...
+                        'L2R_LFR-SURV-CWF_V02', ...
+                        'L2R_LFR-SURV-SWF_V02'}
+                    std_data = bicas.data_manager.process_LFR_to_std_format(input_PDs, input_PDTs);
+                    
+                %=====
+                % TDS
+                %=====
+                
+                % sample/record
+                case 'L2R_TDS-LFM-CWF_V01'
+                case 'L2R_TDS-LFM-RSWF_V01'
+                    
+                % snapshot/record
+                case 'L2R_TDS-LFM-RSWF_V02'
+                    
+                otherwise
+                    error('BICAS:data_manager:Assertion:IllegalArgument', 'Illegal input_PDTs.SCI_cdf="%s"', input_PDTs.SCI_cdf)
             end
             
-            elementary_input_PDTs = unique(elementary_input_PDTs);
+            
+            data = process_input_to_std_format(input_PDs);
+            error('BICAS:data_manager:OperationNotImplemented', 'Function not finished yet.')
+            % ...
+            
+            PD = process_std_format_to_PD
         end
         
         
         
-    end  % methods: Static, public
-    
-    %###################################################################################################################
-        
-    methods(Static, Access=private)
+        % UNFINISHED, EXPERIMENTAL
+        function std_data = process_LFR_to_std_format(input_PDs, input_PDTs)
+            SCI = input_PDs.SCI_cdf;
+            HK  = input_PDs.HK_cdf;
+            
+            switch(input_PDTs.SCI_cdf)
+                case {  'L2R_LFR-SBM1-CWF_V01', ...
+                        'L2R_LFR-SBM2-CWF_V01', ...
+                        'L2R_LFR-SURV-CWF_V01', ...
+                        'L2R_LFR-SURV-SWF_V01'}
+                    LFR_V = SCI.POTENTIAL;
+                    LFR_E = SCI.ELECTRICAL;
+                case {  'L2R_LFR-SBM1-CWF_V02', ...
+                        'L2R_LFR-SBM2-CWF_V02', ...
+                        'L2R_LFR-SURV-CWF_V02', ...
+                        'L2R_LFR-SURV-SWF_V02'}
+                    LFR_V = SCI.V;
+                    LFR_E = SCI.E;
+                otherwise
+                    error('BICAS:data_manager:Assertion:ConfigurationBug', 'Can not handle input_PDTs.SCI_cdf="%s"', input_PDTs.SCI_cdf)
+            end
+            N_records = size(LFR_V, 1);
+            switch(input_PDTs.SCI_cdf)
+                case {  'L2R_LFR-SBM1-CWF_V01', ...
+                        'L2R_LFR-SBM1-CWF_V02'}
+                    LFR_FREQ = ones(N_records, 1) * CONSTANTS.C.LFR.F1; 
+                case {  'L2R_LFR-SBM2-CWF_V01', ...
+                        'L2R_LFR-SBM2-CWF_V02'}
+                    LFR_FREQ = ones(N_records, 1) * CONSTANTS.C.LFR.F2;
+                case {  'L2R_LFR-SURV-CWF_V01', ...
+                        'L2R_LFR-SURV-CWF_V02', ...
+                        'L2R_LFR-SURV-SWF_V01', ...
+                        'L2R_LFR-SURV-SWF_V02'}
+                    LFR_FREQ = SCI.FREQ;
+                otherwise
+                    error('BICAS:data_manager:Assertion:ConfigurationBug', 'Can not handle input_PDTs.SCI_cdf="%s"', input_PDTs.SCI_cdf)
+            end
+            
+            freq = bicas.dm_utils.get_LFR_frequency( SCI.FREQ );
+            Rx   = bicas.dm_utils.get_LFR_Rx( SCI.R0, SCI.R1, SCI.R2, SCI.FREQ );
+            BIAS_1 = SCI.POTENTIAL;
+            BIAS_2 = bicas.dm_utils.filter_rows( SCI.ELECTRICAL(:,:,1), Rx==1 );
+            BIAS_3 = bicas.dm_utils.filter_rows( SCI.ELECTRICAL(:,:,2), Rx==1 );
+            BIAS_4 = bicas.dm_utils.filter_rows( SCI.ELECTRICAL(:,:,1), Rx==0 );
+            BIAS_5 = bicas.dm_utils.filter_rows( SCI.ELECTRICAL(:,:,2), Rx==0 );
 
+
+
+            % 1) Convert time to something linear in time.
+            % 2) Effectively also chooses which time to use for the purpose of processing (not storing time to file):
+            %    ACQUISITION_TIME or Epoch.
+            t_HK_ACQUISITION_TIME  = bicas.dm_utils.ACQUISITION_TIME_to_tt2000(HK.ACQUISITION_TIME);
+            t_SCI_ACQUISITION_TIME = bicas.dm_utils.ACQUISITION_TIME_to_tt2000(SCI.ACQUISITION_TIME);            
+            t_HK_Epoch  = HK.Epoch;
+            t_SCI_Epoch = SCI.Epoch;
+            t_HK        = t_HK_ACQUISITION_TIME;
+            t_SCI       = t_SCI_ACQUISITION_TIME;
+
+
+
+            %------------------------------------------------------------------------------------------------
+            % Derives approximate DIFF_GAIN values for LFR SCI time stamps/records, using
+            % DIFF_GAIN values for BIAS HK time stamps.
+            % NOTE: Not perfect for snapshot/record datasets, since one should ideally use time stamps for every LFR _sample_.
+            %------------------------------------------------------------------------------------------------
+            DIFF_GAIN = interp1(double(t_HK), double(HK.HK_BIA_DIFF_GAIN), double(t_SCI), 'nearest', NaN);
+
+            
+            %------------------------------------------------------------------------------------------------------
+            % Choose where to get MUX_SET from
+            % --------------------------------
+            % NOTE: One can obtain MUX_SET from either (1) LFR, or (2) BIAS HK.
+            % NOTE: Not perfect handling of time, since one should ideally use time stamps for every LFR _sample_.
+            %------------------------------------------------------------------------------------------------------
+            MUX_SET = interp1(double(t_HK), double(HK.HK_BIA_MODE_MUX_SET), double(t_SCI), 'nearest', NaN); % Use BIAS HK.
+            %MUX_SET = LFR_cdf.BIAS_MODE_MUX_SET;    % Use LFR SCI.
+
+
+            % Misc. log messages.
+            % PROPOSAL: PDT, dataset ID.
+            irf.log('n', sprintf('Unique LFR_FREQ  values: %s',        sprintf('%d ',        bicas.data_manager.unique_NaN(LFR_FREQ ))))
+            irf.log('n', sprintf('Unique Rx        values: %s',        sprintf('%d ',        bicas.data_manager.unique_NaN(Rx       ))))
+            irf.log('n', sprintf('Unique DIFF_GAIN values: %s',        sprintf('%d ',        bicas.data_manager.unique_NaN(DIFF_GAIN))))
+            irf.log('n', sprintf('Unique MUX_SET   values: %s',        sprintf('%d ',        bicas.data_manager.unique_NaN(MUX_SET))))
+            irf.log('n', sprintf('Number of unique BIAS_1 values: %s', sprintf('%d ', length(bicas.data_manager.unique_NaN(BIAS_1)))))
+            irf.log('n', sprintf('Number of unique BIAS_2 values: %s', sprintf('%d ', length(bicas.data_manager.unique_NaN(BIAS_2)))))
+            irf.log('n', sprintf('Number of unique BIAS_3 values: %s', sprintf('%d ', length(bicas.data_manager.unique_NaN(BIAS_3)))))
+            irf.log('n', sprintf('Number of unique BIAS_4 values: %s', sprintf('%d ', length(bicas.data_manager.unique_NaN(BIAS_4)))))
+            irf.log('n', sprintf('Number of unique BIAS_5 values: %s', sprintf('%d ', length(bicas.data_manager.unique_NaN(BIAS_5)))))
+            irf.log('n', sprintf('HK  ACQUISITION_TIME: %s -- %s', bicas.dm_utils.tt2000_to_UTC_str(t_HK_ACQUISITION_TIME(1)),  bicas.dm_utils.tt2000_to_UTC_str(t_HK_ACQUISITION_TIME(end))))
+            irf.log('n', sprintf('SCI ACQUISITION_TIME: %s -- %s', bicas.dm_utils.tt2000_to_UTC_str(t_SCI_ACQUISITION_TIME(1)), bicas.dm_utils.tt2000_to_UTC_str(t_SCI_ACQUISITION_TIME(end))))
+            irf.log('n', sprintf('HK  Epoch:            %s -- %s', bicas.dm_utils.tt2000_to_UTC_str(t_HK_Epoch(1)),             bicas.dm_utils.tt2000_to_UTC_str(t_HK_Epoch(end))))
+            irf.log('n', sprintf('SCI Epoch:            %s -- %s', bicas.dm_utils.tt2000_to_UTC_str(t_SCI_Epoch(1)),            bicas.dm_utils.tt2000_to_UTC_str(t_SCI_Epoch(end))))
+
+            
+            
+            error('BICAS:data_manager:OperationNotImplemented', 'Unfinished implementation')
+        end
+
+
+
+        % MOVE
+        function unique_values = unique_NaN(A)
+            % Return number of unique values in array, treating +Inf, -Inf, and NaN as equal to themselves.
+            % (MATLAB's "unique" function does not do this for NaN.)
+            %
+            % NOTE: Should work for all dimensionalities.
+        
+            % NOTE: "unique" has special behaviour whic hmust be taken into account:
+            % 1) Inf and -Inf are treated as equal to themselves.
+            % 2) NaN is treated as if it is NOT equal itself. ==> Can thus return multiple instances of NaN.
+            % 3) "unique" always puts NaN at the then of the vector of unique values (one or many NaN).
+            unique_values = unique(A);
+            
+            % Remove all NaN unless it is found in the last component (save one legitimate occurrence of NaN, if there is any).
+            % NOTE: Does work for empty matrices.
+            unique_values(isnan(unique_values(1:end-1))) = [];
+        end
+
+
+
+        % UNFINISHED, EXPERIMENTAL        
+        % QUESTION: How handle HK from BIAS?
+        %function std_data = process_PD_to_std_format(input_PDTs)
+        %end
+        
+        
+        
+        % UNFINISHED, EXPERIMENTAL
+%         function PD = process_std_format_to_PD(output_PDT)
+%             switch(output_PDT)
+%                 case 'L2S_LFR-SBM1-CWF-E_V01'
+%                 case 'L2S_LFR-SBM2-CWF-E_V01'
+%                 case 'L2S_LFR-SURV-CWF-E_V01'
+%                 case 'L2S_TDS-LFM-CWF-E_V01'
+%                     
+%                 case 'L2S_LFR-SURV-SWF-E_V01'
+%                 case 'L2S_TDS-LFM-RSWF-E_V01'
+%                     
+%                 otherwise
+%                     error('BICAS:data_manager:Assertion:IllegalArgument', 'Illegal output_PDT="%s"', output_PDT)
+%             end
+%         end
+
+
+
+        % EXPERIMENTAL PROTOTYPE IMPLEMENTATION
         function output = process_LFR_CWF_CDF_to_BIAS_CDF(input_process_datas)
             % INCOMPLETE/INCORRECT IMPLEMENTATION
             % Does not take LFR's R0/R1/R2 into account. Current implementation probably based on misinterpretation of how the dataset format works.
@@ -569,22 +797,22 @@ classdef data_manager
             %    input_BIAS_HK.BIAS_MODE_BIAS1_ENABLED; ...
             %    input_LFR.data.R0; ...
 
-            BIAS_HK_cdf = input_process_datas.HK_cdf.data;
-            LFR_cdf     = input_process_datas.SCI_cdf.data;
+            BIAS_HK_cdf = input_process_datas.HK_cdf;
+            LFR_cdf     = input_process_datas.SCI_cdf;
 
-            N_LFR_records          = size(LFR_cdf.POTENTIAL.data, 1);
-            N_samples_per_snapshot = size(LFR_cdf.POTENTIAL.data, 2);
+            N_LFR_records          = size(LFR_cdf.POTENTIAL, 1);
+            N_samples_per_snapshot = size(LFR_cdf.POTENTIAL, 2);
 
             % Change to standard names.
             %R0 = LFR_cdf.R0.data;
             %R1 = LFR_cdf.R1.data;
             %R2 = LFR_cdf.R2.data;
             demuxer_input = [];
-            demuxer_input.BIAS_1 = LFR_cdf.POTENTIAL.data;
-            demuxer_input.BIAS_2 = LFR_cdf.ELECTRICAL.data(:,:,1);                 % BUG: Can not assume that these values should be used. Depends on R0/R1/R2.
-            demuxer_input.BIAS_3 = LFR_cdf.ELECTRICAL.data(:,:,2);                 % BUG: Can not assume that these values should be used. Depends on R0/R1/R2.
-            demuxer_input.BIAS_4 = ones(size(LFR_cdf.POTENTIAL.data)) * NaN;    % No data.
-            demuxer_input.BIAS_5 = ones(size(LFR_cdf.POTENTIAL.data)) * NaN;    % No data.
+            demuxer_input.BIAS_1 = LFR_cdf.POTENTIAL;
+            demuxer_input.BIAS_2 = LFR_cdf.ELECTRICAL(:,:,1);                 % BUG: Can not assume that these values should be used. Depends on R0/R1/R2.
+            demuxer_input.BIAS_3 = LFR_cdf.ELECTRICAL(:,:,2);                 % BUG: Can not assume that these values should be used. Depends on R0/R1/R2.
+            demuxer_input.BIAS_4 = ones(size(LFR_cdf.POTENTIAL)) * NaN;    % No data.
+            demuxer_input.BIAS_5 = ones(size(LFR_cdf.POTENTIAL)) * NaN;    % No data.
             %================================================================================
             % Find sequences of records (1 snapshot/record) with constant settings incl. R0/R1/R2. - UNFINISHED; BASED ON FALSE PREMISES
             %================================================================================
@@ -592,7 +820,7 @@ classdef data_manager
             %                     while i_first <= N_LFR_records;
             %
             %                         % Find sequence of records having identical settings.
-            %                         i_last = bicas.data_manager.find_last_same_sequence(...
+            %                         i_last = bicas.dm_utils.find_last_same_sequence(...
             %                             i_first, ...
             %                             LFR_cdf.R0.data, ...
             %                             LFR_cdf.R1.data, ...
@@ -626,9 +854,9 @@ classdef data_manager
             % NOTE: Not perfect, since one should ideally use time stamps for every LFR _sample_.
             %------------------------------------------------------------------------------------------------
             DIFF_GAIN = bicas.data_manager.nearest_interpolate_records(...
-                BIAS_HK_cdf.ACQUISITION_TIME.data, ...
-                BIAS_HK_cdf.HK_BIA_DIFF_GAIN.data, ...
-                LFR_cdf    .ACQUISITION_TIME.data);
+                BIAS_HK_cdf.ACQUISITION_TIME, ...
+                BIAS_HK_cdf.HK_BIA_DIFF_GAIN, ...
+                LFR_cdf    .ACQUISITION_TIME);
             
             %------------------------------------------------------------------------------------------------------
             % Choose where to get MUX_SET from
@@ -637,10 +865,10 @@ classdef data_manager
             % NOTE: Not perfect handling of time, since one should ideally use time stamps for every LFR _sample_.
             %------------------------------------------------------------------------------------------------------
             MUX_SET = bicas.data_manager.nearest_interpolate_records(...
-                BIAS_HK_cdf.ACQUISITION_TIME.data, ...
-                BIAS_HK_cdf.HK_BIA_MODE_MUX_SET.data, ...
-                LFR_cdf    .ACQUISITION_TIME.data);      % Use BIAS HK.
-            %MUX_SET = LFR_cdf.BIAS_MODE_MUX_SET.data;    % Use LFR SCI.
+                BIAS_HK_cdf.ACQUISITION_TIME, ...
+                BIAS_HK_cdf.HK_BIA_MODE_MUX_SET, ...
+                LFR_cdf    .ACQUISITION_TIME);      % Use BIAS HK.
+            %MUX_SET = LFR_cdf.BIAS_MODE_MUX_SET;    % Use LFR SCI.
             
             
             
@@ -655,24 +883,24 @@ classdef data_manager
             while i_first <= N_LFR_records;
                 
                 % Find sequence of records having identical settings.
-                i_last = bicas.data_manager.find_last_same_sequence(...
+                i_last = bicas.dm_utils.find_last_same_sequence(...
                     i_first, ...
                     DIFF_GAIN, ...
                     MUX_SET, ...
-                    LFR_cdf.FREQ.data);
+                    LFR_cdf.FREQ);
                 
                 diff_gain        = DIFF_GAIN(i_first);
                 mux_set          = MUX_SET(i_first);
-                sample_frequency = bicas.data_manager.get_LFR_samples_in_snapshot_frequency(LFR_cdf.FREQ.data(i_first));
+                sample_frequency = bicas.dm_utils.get_LFR_frequency(LFR_cdf.FREQ(i_first));
                 
-                demuxer_input_subseq = bicas.data_manager.select_subset_from_struct(demuxer_input, i_first, i_last);
+                demuxer_input_subseq = bicas.dm_utils.select_subset_from_struct(demuxer_input, i_first, i_last);
                 
                 %=================================================
                 % CALL DEMUXER - See method/function for comments
                 %=================================================
                 demuxer_output_subseq = bicas.data_manager.simple_demultiplex(demuxer_input_subseq, mux_set, diff_gain);
                 
-                demuxer_output = bicas.data_manager.add_components_to_struct(demuxer_output, demuxer_output_subseq);
+                demuxer_output = bicas.dm_utils.add_components_to_struct(demuxer_output, demuxer_output_subseq);
                 
                 i_first = i_last + 1;
                 
@@ -683,15 +911,15 @@ classdef data_manager
             %===============================================
             % Convert 1 snapshot/record --> 1 sample/record
             %===============================================
-            ACQUISITION_TIME = bicas.data_manager.convert_snapshotsPR_to_samplesPR_ACQUISITION_TIME(...
-                LFR_cdf.ACQUISITION_TIME.data, ...
+            ACQUISITION_TIME = bicas.dm_utils.convert_snapshotsPR_to_samplesPR_ACQUISITION_TIME(...
+                LFR_cdf.ACQUISITION_TIME, ...
                 N_samples_per_snapshot, ...
                 sample_frequency);
-            Epoch = bicas.data_manager.convert_snapshotsPR_to_samplesPR_Epoch_TEMP(  LFR_cdf.Epoch.data, N_samples_per_snapshot  );
+            Epoch = bicas.dm_utils.convert_snapshotsPR_to_samplesPR_Epoch_TEMP(  LFR_cdf.Epoch, N_samples_per_snapshot  );
             fn_list = fieldnames(demuxer_output);
             for i = 1:length(fn_list)
                 fn = fn_list{i};
-                demuxer_output.(fn) = bicas.data_manager.convert_snapshotPR_to_samplePR_DATA(  demuxer_output.(fn), N_samples_per_snapshot  );
+                demuxer_output.(fn) = bicas.dm_utils.convert_snapshotPR_to_samplePR_DATA(  demuxer_output.(fn), N_samples_per_snapshot  );
             end
             
             
@@ -705,9 +933,9 @@ classdef data_manager
             output.V   = [demuxer_output.V1,     demuxer_output.V2,     demuxer_output.V3];
             output.E   = [demuxer_output.V12,    demuxer_output.V13,    demuxer_output.V23];
             output.EAC = [demuxer_output.V12_AC, demuxer_output.V13_AC, demuxer_output.V23_AC];
-            output.QUALITY_FLAG     = cast(  zeros(size(Epoch)),  convert_CDF_type_to_MATLAB_class('CDF_UINT1', 'Only CDF data types')  );
-            output.QUALITY_BITMASK  = cast(  zeros(size(Epoch)),  convert_CDF_type_to_MATLAB_class('CDF_UINT1', 'Only CDF data types')  );
-            output.DELTA_PLUS_MINUS = cast(  zeros(size(Epoch)),  convert_CDF_type_to_MATLAB_class('CDF_INT8',  'Only CDF data types')  );
+            output.QUALITY_FLAG     = cast(  zeros(size(Epoch)),  bicas.utils.convert_CDF_type_to_MATLAB_class('CDF_UINT1', 'Only CDF data types')  );
+            output.QUALITY_BITMASK  = cast(  zeros(size(Epoch)),  bicas.utils.convert_CDF_type_to_MATLAB_class('CDF_UINT1', 'Only CDF data types')  );
+            output.DELTA_PLUS_MINUS = cast(  zeros(size(Epoch)),  bicas.utils.convert_CDF_type_to_MATLAB_class('CDF_INT8',  'Only CDF data types')  );
             
             output.IBIAS1 = NaN * zeros(size(demuxer_output.V1));
             output.IBIAS2 = NaN * zeros(size(demuxer_output.V2));
@@ -716,169 +944,26 @@ classdef data_manager
 
 
 
-        % Generic utility function.
-        %
-        % Given a struct, select a subset of that struct defined by a range of column indicies for every field.
-        function s = select_subset_from_struct(s, i_first, i_last)
-            fn_list = fieldnames(s);
-            for i=1:length(fn_list)
-                fn = fn_list{i};
-                
-                s.(fn) = s.(fn)(i_first:i_last, :, :);
-            end
-        end
-        
-        
-
-        % Generic utility function.
-        %
-        % Add values to every struct field by adding components after their highest column index (let them grow in
-        % the column index).
-        function s = add_components_to_struct(s, s_amendment)
-            fn_list = fieldnames(s_amendment);
-            for i=1:length(fn_list)
-                fn = fn_list{i};
-                
-                s.(fn) = [s.(fn) ; s_amendment.(fn)];
-            end
-        end
-
-
-
-        function freq = get_LFR_samples_in_snapshot_frequency(LFR_FREQ)
-            % PROPOSAL: Move to constants?!
-            global CONSTANTS
-            switch(LFR_FREQ)
-                case 0
-                    freq = CONSTANTS.C.LFR.F0;
-                case 1
-                    freq = CONSTANTS.C.LFR.F1;
-                case 2
-                    freq = CONSTANTS.C.LFR.F2;
-                case 3
-                    freq = CONSTANTS.C.LFR.F3;
-                otherwise
-                    error('BICAS:data_manager:Assertion:IllegalArgument:DatasetFormat', 'Illegal LFR_FREQ value.')
-            end
-        end
-
-
-
-        %=====================================================================================================================
-        % Finds the greatest i_last such that all varargin{k}(i) are equal for i_first <= i <= i_last separately for every k.
-        % Useful for finding a continuous sequence of records with the same data.
-        %
-        % ASSUMES: varargin{i} are all column arrays of the same size.
-        %=====================================================================================================================
-        function i_last = find_last_same_sequence(i_first, varargin)
-            % PROPOSAL: Better name?
-            
-            % Check arguments
-            for k = 1:length(varargin)
-                if ~iscolumn(varargin{k})
-                    error('BICAS:data_manager:Assertion:IllegalArgument', 'varargins are not all column vectors.')
-                end
-            end
-                
-            N_records = size(varargin{1}, 1);
-            i_vetted = i_first;
-            while i_vetted+1 <= N_records;
-                for k = 1:length(varargin)
-                    if varargin{k}(i_first) ~= varargin{k}(i_vetted+1)
-                        break
-                    end
-                end
-                i_vetted = i_vetted + 1;
-            end
-            i_last = i_vetted;
-        end
-
-
-
-        function t = ACQUISITION_TIME_to_linear_seconds(ACQUISITION_TIME)
-            t = double(ACQUISITION_TIME(:, 1)) + double(ACQUISITION_TIME(:, 2)) / 65536;
-        end
-        
-        
-        
-        % ASSUMES: ACQUISITION_TIME should be uint32.
-        function ACQUISITION_TIME = linear_seconds_to_ACQUISITION_TIME(t)            
-            t_floor = floor(t);            
-            
-            ACQUISITION_TIME = ones(size(t), 'uint32');
-            ACQUISITION_TIME(:, 1) = uint32(t_floor);
-            ACQUISITION_TIME(:, 2) = uint32((t - t_floor) * 65536);
-        end
-        
-        
-        
-        %==================================================================================
-        % ASSUMES: Argument ACQUISITION_TIME refers to the first sample in every snapshot.
-        %
-        % PR = Per Record
-        % sample_frequency : Unit: Hz. Frequency of samples within a snapshot.
-        %==================================================================================
-        function ACQUISITION_TIME_2 = convert_snapshotsPR_to_samplesPR_ACQUISITION_TIME(  ACQUISITION_TIME_1, N_samples_per_snapshot, sample_frequency  )
-            if size(ACQUISITION_TIME_1, 2) ~= 2
-                error('BICAS:data_manager:Assertion:IllegalArgument', 'Wrong dimensions on input argumet ACQUISITION_TIME_1.')
-            end
-            
-            N_records = size(ACQUISITION_TIME_1, 1);
-            
-            % Derive the corresponding column and row vectors.
-            t_1           = bicas.data_manager.ACQUISITION_TIME_to_linear_seconds(ACQUISITION_TIME_1);  % Column vector
-            tr_snapshot_1 = (0:(N_samples_per_snapshot-1)) / sample_frequency;    % Row vector. tr = time relative (does not refer to absolute point in time).
-            
-            % Derive the corresponding same-sized matrices (one row per snapshot).
-            t_1_M           = repmat(t_1,           1,         N_samples_per_snapshot);
-            tr_snapshot_1_M = repmat(tr_snapshot_1, N_records, 1                     );
-            
-            % Add matrices and convert to column vector.
-            t_2 = reshape((t_1_M + tr_snapshot_1_M)', N_records*N_samples_per_snapshot, 1);
-            
-            ACQUISITION_TIME_2 = bicas.data_manager.linear_seconds_to_ACQUISITION_TIME(t_2);
-        end
-
-
-        
-        % TEMPORARY FUNCTION - FOR TESTING
-        % NOTE: No argument sample_frequency.
-        function Epoch_2 = convert_snapshotsPR_to_samplesPR_Epoch_TEMP(  Epoch_1, N_samples_per_snapshot)
-            Epoch_2 = repelem(Epoch_1, N_samples_per_snapshot);
-        end
-        
-        
-        
-        %============================================================================================
-        % Convert data from 1 snapshot/record to 1 sample/record (from a matrix to a column vector).
-        % 
-        % PR = Per Record
-        %============================================================================================
-        function data_2 = convert_snapshotPR_to_samplePR_DATA(data_1, N_samples_per_snapshot)
-            % PROPOSAL: Abolish argument N_samples_per_snapshot? Is already implicit in size(data, 2).
-            
-            if ndims(data_1) ~= 2
-                % NOTE: ndims always returns at least two, which is exactly what we want, also for empty and scalars, and row vectors.
-                error('BICAS:data_manager:Assertion:IllegalArgument', 'Input argumet ACQUISITION_TIME_1 has the wrong dimensions.')
-            elseif size(data_1, 2) ~= N_samples_per_snapshot
-                error('BICAS:data_manager:Assertion:IllegalArgument', 'Dimensions on input argumet ACQUISITION_TIME_1 does not match N_samples_per_snapshot.')
-            end
-            
-            data_2 = reshape(data_1, size(data_1, 1)*N_samples_per_snapshot, 1);
-        end
-        
-        
-        
         function output = simple_demultiplex(input, mux_set, diff_gain)
-        % Demultiplex, with only constant factors for calibration.
+        % Demultiplex, with only constant factors for calibration (no transfer functions).
         %
         % This function implements Table 3 and Table 4 in "RPW-SYS-MEB-BIA-SPC-00001-IRF", iss1rev16.
         % Variable names are chosen according to these tables.
         %
         % NOTE: Intended for development/testing until there is proper code for using transfer functions.
-        %
         % NOTE: "input"/"output" refers to input/output for the function, which is (approximately) the opposite of
         % the physical signals in the BIAS hardware.
+        %
+        %
+        % ARGUMENTS AND RETURN VALUE
+        % ==========================
+        % mux_set   = Scalar number identifying the MUX/DEMUX mode.
+        % input     = struct with fields BIAS_1 to BIAS_5.
+        % diff_gain = Gain for differential measurements. 0 = Low gain, 1 = High gain.
+        % output    = struct with fields V1, V2, V3,   V12, V13, V23,   V12_AC, V13_AC, V23_AC.
+        %
+        % NOTE: Can handle any arrays of any size as long as the sizes are consistent.
+        %
         
             %==========================================================================================================
             % QUESTION: How to structure the demuxing?
@@ -918,15 +1003,12 @@ classdef data_manager
                 error('BICAS:data_manager:Assertion:IllegalArgument', 'Illegal argument value "mux_set" or "diff_gain". Must be scalars (not arrays).')
             end
             
-            ALPHA    = CONSTANTS.C.approximate_demuxer.alpha;
-            BETA     = CONSTANTS.C.approximate_demuxer.beta;
+            ALPHA = CONSTANTS.C.approximate_demuxer.alpha;
+            BETA  = CONSTANTS.C.approximate_demuxer.beta;
             switch(diff_gain)
-                case 0
-                    GAMMA = CONSTANTS.C.approximate_demuxer.gamma_lg;
-                case 1
-                    GAMMA = CONSTANTS.C.approximate_demuxer.gamma_hg;
-                otherwise
-                    error('BICAS:data_manager:Assertion:IllegalArgument:DatasetFormat', 'Illegal argument value "diff_gain".')
+                case 0    ; GAMMA = CONSTANTS.C.approximate_demuxer.gamma_lg;
+                case 1    ; GAMMA = CONSTANTS.C.approximate_demuxer.gamma_hg;
+                otherwise ; error('BICAS:data_manager:Assertion:IllegalArgument:DatasetFormat', 'Illegal argument value "diff_gain".')
             end
             
             % Set default values which will remain for
@@ -1008,11 +1090,11 @@ classdef data_manager
                     V13_LF_AC = V12_LF_AC - V23_LF_AC;
                     
                 case {5,6,7}
-                    error('BICAS:data_manager:Assertion:OperationNotImplemented', 'Not implemented yet for this value of mux_set.')
+                    error('BICAS:data_manager:Assertion:OperationNotImplemented', 'Not implemented for this value of mux_set yet.')
                     
                 otherwise
                     error('BICAS:data_manager:Assertion:IllegalArgument:DatasetFormat', 'Illegal argument value for mux_set.')
-            end
+            end   % switch
             
             % Create structure to return.
             output = [];
@@ -1029,33 +1111,6 @@ classdef data_manager
         end  % simple_demultiplex
         
         
-        
-        % NOTE: NESTED FUNCTION (function within function)
-        %===========================================================================================        
-        % Take CDF data (src) divided into records (points in time) and use that to produce data
-        % divided into other records (other points in time).
-        %
-        % Will produce NaN for values of ACQUISITION_TIME_dest outside the range of
-        % ACQUISITION_TIME_src.
-        %
-        % ASSUMES: data_src is a column vector (i.e. one scalar/record).
-        %
-        % NOTE: Returned data is double (i.e. not e.g. logical).
-        %===========================================================================================        
-        function data_dest = nearest_interpolate_records(ACQUISITION_TIME_src, data_src, ACQUISITION_TIME_dest)
-            % PROPOSAL: Better name?
-            % PROPOSAL: Type cast return variable?
-            
-            t_src  = bicas.data_manager.ACQUISITION_TIME_to_linear_seconds(ACQUISITION_TIME_src);
-            t_dest = bicas.data_manager.ACQUISITION_TIME_to_linear_seconds(ACQUISITION_TIME_dest);
-            
-            % Vq = interp1(X,V,Xq,METHOD,EXTRAPVAL) replaces the values outside of the
-            % interval spanned by X with EXTRAPVAL.  NaN and 0 are often used for
-            % EXTRAPVAL.  The default extrapolation behavior with four input arguments
-            % is 'extrap' for 'spline' and 'pchip' and EXTRAPVAL = NaN (NaN +NaNi for 
-            % complex values) for the other methods.
-            data_dest = interp1(t_src, double(data_src), t_dest);
-        end
         
     end
 

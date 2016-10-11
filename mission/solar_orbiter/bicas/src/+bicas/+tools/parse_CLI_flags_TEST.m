@@ -15,13 +15,13 @@ init_global_constants
 % flags.c.is_required = 1;
 % flags.c.expects_value = 1;
 % 
-% %pa1 = parse_CLI_flags(strsplit('-a'), flags)
-% %pa1 = parse_CLI_flags(strsplit('-a -b'), flags)
-% pa1 = parse_CLI_flags(strsplit('-b 123'), flags)
-% %pa1 = parse_CLI_flags(strsplit('-b 123 -c'), flags)
-% pa1 = parse_CLI_flags(strsplit('-b 123 -c 999'), flags)
+% %pa1 = bicas.utils.parse_CLI_flags(strsplit('-a'), flags)
+% %pa1 = bicas.utils.parse_CLI_flags(strsplit('-a -b'), flags)
+% pa1 = bicas.utils.parse_CLI_flags(strsplit('-b 123'), flags)
+% %pa1 = bicas.utils.parse_CLI_flags(strsplit('-b 123 -c'), flags)
+% pa1 = bicas.utils.parse_CLI_flags(strsplit('-b 123 -c 999'), flags)
 % 
-% pa1 = parse_CLI_flags(strsplit('-b 123 -c 999 -b'), flags)
+% pa1 = bicas.utils.parse_CLI_flags(strsplit('-b 123 -c 999 -b'), flags)
 
 
 flags = containers.Map;
@@ -30,11 +30,11 @@ flags('b') = struct('CLI_name', '-b', 'is_required', 0, 'expects_value', 1);
 flags('c') = struct('CLI_name', '-c', 'is_required', 1, 'expects_value', 1);
 
 
-%pa1 = parse_CLI_flags(strsplit('-a'), flags);
-%pa1 = parse_CLI_flags(strsplit('-a -b'), flags);
-%pa1 = parse_CLI_flags(strsplit('-b 123'), flags);
-%pa1 = parse_CLI_flags(strsplit('-b 123 -c'), flags);
-pa1 = parse_CLI_flags(strsplit('-b 123 -c 999'), flags);
-%pa1 = parse_CLI_flags(strsplit('-b 123 -c 999 -b'), flags);
+%pa1 = bicas.utils.parse_CLI_flags(strsplit('-a'), flags);
+%pa1 = bicas.utils.parse_CLI_flags(strsplit('-a -b'), flags);
+%pa1 = bicas.utils.parse_CLI_flags(strsplit('-b 123'), flags);
+%pa1 = bicas.utils.parse_CLI_flags(strsplit('-b 123 -c'), flags);
+pa1 = bicas.utils.parse_CLI_flags(strsplit('-b 123 -c 999'), flags);
+%pa1 = bicas.utils.parse_CLI_flags(strsplit('-b 123 -c 999 -b'), flags);
 
 

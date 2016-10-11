@@ -111,7 +111,7 @@ for i = 1:length(C_sw_mode.outputs)
         elseif ~isempty(master_data(i_zVar).Data) || ~isempty(master_data(i_zVar).VariableName)
             error('BICAS:execute_sw_mode:SWModeProcessing', 'Trying to overwrite zero-record CDF zVariable "%s". Expected empty zVariable.', zVar_name)
         end
-        MATLAB_class = convert_CDF_type_to_MATLAB_class(master_info.Variables(i_zVar,4), 'Permit MATLAB classes');
+        MATLAB_class = bicas.utils.convert_CDF_type_to_MATLAB_class(master_info.Variables(i_zVar,4), 'Permit MATLAB classes');
         master_data(i_zVar).Data = cast(process_data.(zVar_name), MATLAB_class);
         master_data(i_zVar).VariableName = zVar_name;
     end
@@ -127,7 +127,7 @@ for i = 1:length(C_sw_mode.outputs)
 
 
 
-    write_CDF(output_file_path, master_data, master_info)    % NOTE: No "fill_empty" option.
+    bicas.utils.write_CDF(output_file_path, master_data, master_info)    % NOTE: No "fill_empty" option.
     
 end
 
@@ -138,7 +138,7 @@ end
 % ----------------------------------------------------------
 % Required by the RCS ICD iss2rev2, section 3.3.
 %============================================================
-str = JSON_object_str(JSON_filenames_obj, CONSTANTS.C.JSON_object_str);
+str = bicas.utils.JSON_object_str(JSON_filenames_obj, CONSTANTS.C.JSON_object_str);
 bicas.stdout_disp(str);
 
 end

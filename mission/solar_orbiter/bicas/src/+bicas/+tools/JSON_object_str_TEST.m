@@ -4,7 +4,7 @@
 function JSON_object_str_TEST
 
 obj = define_descriptor1();
-str = JSON_object_str(obj, struct('indent_size', 4, 'value_position', 15));
+str = bicas.utils.JSON_object_str(obj, struct('indent_size', 4, 'value_position', 15));
 fprintf('-------------------------------------------\n');
 fprintf(str);
 %bicas.stdout_disp(str);

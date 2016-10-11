@@ -1,17 +1,20 @@
-% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
-% First created 2016-06-02
+% flag_results = parse_CLI_flags(arguments, flags)   Parse list of command-line arguments (flags).
 %
 % Parses list of command-line arguments assuming it is a list of flags and pairs of flag+value.
 % Function tries to give accurate user-friendly errors (not assertions) for non-compliant arguments and absence of
 % required arguments.
 %
-% Definitions of terms
+% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% First created 2016-06-02
+%
+%
+% DEFINITIONS OF TERMS
 % --------------------
 % Flag = A predefined (hardcoded, more or less) string meant to match a single argument, e.g. "--verbose" or "--file".
 % Value = An argument that specifies a more or less arbitrary value that comes after some flags, e.g. "--file <value>".
 %
 %
-% Arguments and return values
+% ARGUMENTS AND RETURN VALUES
 % ---------------------------
 % arguments : 1D cell array of strings.
 % flags : containers.Map, number/string-->struct
