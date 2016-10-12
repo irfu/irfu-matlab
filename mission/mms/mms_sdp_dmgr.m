@@ -1522,6 +1522,11 @@ classdef mms_sdp_dmgr < handle
           timeIn = Dce.time; timeIn(idxBad) = [];
           probePhaseRad(idxBad) = [];
           
+          % It is possible that the time (default 5 sec evenly) differs
+          % between the probe pairs as they do not sweep at the same time.
+          % Store the previous "time" and find common timestamps if they
+          % do differ.
+          if(iPair>1), prevTime = time; end
           % Call mms_spinfit_m, .m interface file for the mex compiled file
           % XXX FIXME: converting time here to double reduces the precision.
           % It would be best if the function accepted time as seconds from
@@ -1529,7 +1534,27 @@ classdef mms_sdp_dmgr < handle
           [time, Sfit.(sigE), Sdev.(sdpPair{iPair}), Iter.(sigE), NBad.(sigE)] = ...
             mms_spinfit_m(MAX_IT, minPts, N_TERMS, double(timeIn), double(dataIn), ...
             probePhaseRad, FIT_EVERY, FIT_INTERV, t0);
-          
+          % For the second pair (or more) compare the spinfits timestamps
+          % and discard any times only fitted to one of the probe pairs
+          % (due to removing sweeping) so their dimensions match.
+          if(iPair>1 && size(prevTime,1) ~= size(time,1))
+            [idxPrev, idxTime] = irf_find_comm_idx(prevTime, time);
+            % Keep only the overlapping time in the newly computed spinfits
+            time = time(idxTime);
+            Sfit.(sigE) = Sfit.(sigE)(idxTime,:);
+            Sdev.(sigE) = Sdev.(sigE)(idxTime);
+            Iter.(sigE) = Iter.(sigE)(idxTime);
+            NBad.(sigE) = NBad.(sigE)(idxTime);
+            % Keep only the overlappong times in the previously computed
+            % spinfits
+            for iPrev=iPair-1:-1:1
+              sigPrev = sdpPair{iPrev};
+              Sfit.(sigPrev) = Sfit.(sigPrev)(idxPrev,:);
+              Sdev.(sigPrev) = Sdev.(sigPrev)(idxPrev);
+              Iter.(sigPrev) = Iter.(sigPrev)(idxPrev);
+              NBad.(sigPrev) = NBad.(sigPrev)(idxPrev);
+            end
+          end
           % Change to single
           Sfit.(sigE) = single(Sfit.(sigE));
           Sdev.(sigE) = single(Sdev.(sigE));
