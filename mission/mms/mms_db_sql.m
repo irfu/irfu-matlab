@@ -344,7 +344,13 @@ keyboard; % THIS FUNCTION IS NOT FULLY TESTED, MAKE SURE TO MAKE A BACKUP OF THE
       toImport = [];
       for ii = length(filesToImport):-1:1
         % Read and process each new file add to VarIndex list
-        out = obj.get_science_variables(filesToImport{ii}.fileNameFullPath);
+        try
+          out = obj.get_science_variables(filesToImport{ii}.fileNameFullPath);
+        catch ME
+          irf.log('warning', ['Error message: ', ME.message, ...
+            ' when getting variables from: ', filesToImport{ii}.fileNameFullPath]);
+          out = [];
+        end
         if isempty(out) % reading cdf file did not succeed
           status = 0;
           % Clean up..
