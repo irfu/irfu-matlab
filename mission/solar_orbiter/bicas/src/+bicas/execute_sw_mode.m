@@ -16,15 +16,7 @@ function execute_sw_mode(sw_mode_CLI_parameter, input_files, output_dir)
 %    NOTE: Need to read CDF first.
 %    NOTE: Need S/W mode.
 %
-% PROPOSAL: In principle, if using the MMS data manager concept, then the code does not need
-%       to explicitly check for input files, only ask for a set of datasets.
-%    PROBLEM: How check input dataset version? Need to look up S/W mode and constants.
-%       Could in principle be different for different modes(?!)
-%       QUESTION: Check where? In data_manager.set_input? In execute_sw_mode.
-%          data_manager does logically need some knowledge of dataset versions since its algorithms
-%          are tailored for different dataset versions.
-%       --
-%       PROPOSAL: Set input data not one CDF at a time, but one S/W mode at a time.
+% PROPOSAL: Verify output zVariables against master CDF zVariable dimensions (accessible with dataobj, even for zero records).
 %
 % TODO: Function for determining output filename.
 %

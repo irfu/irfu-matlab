@@ -60,7 +60,7 @@ classdef constants < handle
 % PROPOSAL: Add S/W descriptor to this structure by calling get_sw_descriptor?
 %    PRO: Can force validation to take place in get_sw_descriptor.
 %
-% PROPOSAL: More validation
+% PROPOSAL: More validation.
 %   PROPOSAL: Check that master CDFs exist, that paths exist.
 %       CON: Makes sense to make that kind of check here?!
 %   PROPOSAL: Check that data types are unique.
@@ -97,6 +97,10 @@ classdef constants < handle
 %        CON: Want to "extract values from a table".
 %
 % PROPOSAL: Rename ".C" to ".general", ".misc"
+%
+% PROPOSAL: Convert constant cell arrays of structs to arrays of structs: S/W modes, CDF/PDT inputs/outputs.
+%   PRO: Simplifies code that constructs cell arrays of the same struct field in multiple cell structs.
+%
 
 
     %###################################################################################################################
@@ -130,7 +134,7 @@ classdef constants < handle
             %--------------------------------------------------------------------------------
             D = [];
             D.INITIAL_RELEASE_MODIFICATION_STR = 'No modification (initial release)';
-            D.INITIAL_RELEASE_DATE = '2016-10-05';
+            D.INITIAL_RELEASE_DATE = '2016-10-17';
             %D.SWD_OUTPUT_RELEASE_VERSION = '01';  % For the S/W descriptor output CDFs' release version. Unknown what a sensible value is.
             
             
@@ -181,9 +185,9 @@ classdef constants < handle
         
             C.approximate_demuxer = struct(...
                 'alpha',    1/17, ...
-                'beta',       1, ...
-                'gamma_hg',   5, ...
-                'gamma_lg', 100);
+                'beta',        1, ...
+                'gamma_hg',  100, ...
+                'gamma_lg',    5);      % NOTE/POSSIBLE BUG: Uncertain which value is high-gain, and low-gain.
             
             obj.C = C;
         
@@ -204,31 +208,14 @@ classdef constants < handle
     
     methods(Access=public)
         
-        %===================================================================================================
-        
-        %=========================================================================
-        % Effectively a variable that can be written to once, and then only read.
-        %=========================================================================
-%         function varargout = SW_root_dir(obj, varargin)
-%             % PROPOSAL: Change to plain public variable/property?
-%             
-%             if nargout == 0 && length(varargin) == 1 && isempty(obj.root_dir_path)
-%                 obj.root_dir_path = varargin{1};
-%             elseif length(varargin) == 0 && ~isempty(obj.root_dir_path)  % NOTE: Does not check for nargout intentionally.
-%                 varargout{1} = obj.root_dir_path;
-%             else
-%                 error('BICAS:Assertion', 'Trying to set already set constant, or reading unset constant. Pure code bug.')
-%             end
-%         end
-
-        
-        
         %================================================================================================================
         % Return constants structure for a specific S/W mode as referenced by a CLI parameter.
         %        
         % This structure is automatically put together from other structures (constants) to avoid having to define too
         % many redundant constants.
         % NOTE: The function takes the CLI_parameter as parameter, not the S/W mode ID.
+        %
+        % NOTE: This function calls DATA_MANAGER!
         %================================================================================================================
         function C_sw_mode = get_C_sw_mode_full(obj, CLI_parameter)
             
@@ -249,8 +236,20 @@ classdef constants < handle
                 error('BICAS:Assertion:IllegalConfiguration', 'Can not identify all output PDTs associated with S/W mode/CLI parameter "%s".', CLI_parameter)
             end
         end
+        
+        
+                
+        function assert_sw_mode_ID(obj, sw_mode_ID)
+            
+            for i=1:length(obj.sw_modes)
+                if strcmp(obj.sw_modes{i}.ID, sw_mode_ID)
+                    return
+                end
+            end
+            error('BICAS:constants:Assertion', '"%s" is not a valid S/D mode ID', sw_mode_ID)            
+        end
 
-    end   % methods
+    end   % methods(Access=public)
     
     %###################################################################################################################
     
@@ -286,7 +285,7 @@ classdef constants < handle
                 
                 sw_mode_CLI_parameters{end+1} = sw_mode_CLI_parameter;
                 sw_mode_IDs{end+1}            = obj.sw_modes{i}.ID;
-                C_sw_mode = obj.get_C_sw_mode_full(sw_mode_CLI_parameter);
+                C_sw_mode = obj.get_C_sw_mode_full(sw_mode_CLI_parameter);   % PROBLEMATIC since it calls data_manager --> Potentially calls constants.
                 
                 if ~length(regexp(sw_mode_CLI_parameter, SW_MODE_CLI_PARAMETER_REGEX))
                     error('BICAS:Assertion:IllegalConfiguration', 'Illegal S/W mode CLI parameter definition. This indicates a pure (hard-coded) configuration bug.');
@@ -320,7 +319,7 @@ classdef constants < handle
             bicas.utils.assert_strings_unique(dataset_ID_version_list)           
         end
 
-    end   % methods
+    end   % methods(Access=private)
     
     %###################################################################################################################
     
@@ -373,36 +372,50 @@ classdef constants < handle
             C_sw_modes{end+1} = sw_mode;
             
             sw_mode = [];
+            sw_mode.CLI_parameter = 'LFR-SURV-CWF-E_V02-V01';
+            sw_mode.ID            = 'LFR-SURV-CWF-E_V02-V01';
+            sw_mode.SWD_purpose = 'Generate CWF electric field data (potential difference) from LFR';            
+            sw_mode.output_PDTs = {'L2S_LFR-SURV-CWF-E_V01'};
+            C_sw_modes{end+1} = sw_mode;
+            
+            sw_mode = [];
             sw_mode.CLI_parameter = 'LFR-SURV-SWF-E';
             sw_mode.ID            = 'LFR-SURV-SWF-E_V01-V01';
             sw_mode.SWD_purpose = 'Generate SWF electric (potential difference) data from LFR';            
             sw_mode.output_PDTs = {'L2S_LFR-SURV-SWF-E_V01'};
             C_sw_modes{end+1} = sw_mode;
             
+            %sw_mode = [];
+            %sw_mode.CLI_parameter = 'LFR-SURV-SWF-E_V02-V01';
+            %sw_mode.ID            = 'LFR-SURV-SWF-E_V02-V01';
+            %sw_mode.SWD_purpose = 'Generate SWF electric (potential difference) data from LFR';            
+            %sw_mode.output_PDTs = {'L2S_LFR-SURV-SWF-E_V01'};
+            %C_sw_modes{end+1} = sw_mode;
+            
             %=====
             % TDS
             %=====
-            sw_mode = [];
-            sw_mode.CLI_parameter = 'TDS-LFM-CWF-E';
-            sw_mode.ID            = 'TDS-LFM-CWF-E_V01-V01';
-            sw_mode.SWD_purpose = 'Generate CWF electric (potential difference) data from TDS-LFM-CWF';
-            sw_mode.output_PDTs = {'L2S_TDS-LFM-CWF-E_V01'};
-            C_sw_modes{end+1} = sw_mode;
+            %sw_mode = [];
+            %sw_mode.CLI_parameter = 'TDS-LFM-CWF-E';
+            %sw_mode.ID            = 'TDS-LFM-CWF-E_V01-V01';
+            %sw_mode.SWD_purpose = 'Generate CWF electric (potential difference) data from TDS-LFM-CWF';
+            %sw_mode.output_PDTs = {'L2S_TDS-LFM-CWF-E_V01'};
+            %C_sw_modes{end+1} = sw_mode;
             
             % NOTE: Accepts older/obsoleted V01 input data.
-            sw_mode = [];
-            sw_mode.CLI_parameter = 'TDS-LFM-RSWF-E_V01-V01';
-            sw_mode.ID            = 'TDS-LFM-RSWF-E_V01-V01';
-            sw_mode.SWD_purpose = 'Generate RSWF electric (potential difference) data from TDS-LFM-RSWF V01';
-            sw_mode.output_PDTs = {'L2S_TDS-LFM-RSWF-E_V01'};
-            C_sw_modes{end+1} = sw_mode;
+            %sw_mode = [];
+            %sw_mode.CLI_parameter = 'TDS-LFM-RSWF-E_V01-V01';
+            %sw_mode.ID            = 'TDS-LFM-RSWF-E_V01-V01';
+            %sw_mode.SWD_purpose = 'Generate RSWF electric (potential difference) data from TDS-LFM-RSWF V01';
+            %sw_mode.output_PDTs = {'L2S_TDS-LFM-RSWF-E_V01'};
+            %C_sw_modes{end+1} = sw_mode;
             
-            sw_mode = [];
-            sw_mode.CLI_parameter = 'TDS-LFM-RSWF-E_V02-V01';
-            sw_mode.ID            = 'TDS-LFM-RSWF-E_V02-V01';
-            sw_mode.SWD_purpose = 'Generate RSWF electric (potential difference) data from TDS-LFM-RSWF V02';
-            sw_mode.output_PDTs = {'L2S_TDS-LFM-RSWF-E_V01'};
-            C_sw_modes{end+1} = sw_mode;
+            %sw_mode = [];
+            %sw_mode.CLI_parameter = 'TDS-LFM-RSWF-E_V02-V01';
+            %sw_mode.ID            = 'TDS-LFM-RSWF-E_V02-V01';
+            %sw_mode.SWD_purpose = 'Generate RSWF electric (potential difference) data from TDS-LFM-RSWF V02';
+            %sw_mode.output_PDTs = {'L2S_TDS-LFM-RSWF-E_V01'};
+            %C_sw_modes{end+1} = sw_mode;
             
             %======
             % TEST
@@ -421,6 +434,7 @@ classdef constants < handle
             %C_sw_modes{end+1} = sw_mode;
         end
             
+        
         
         %==========================================================
         % Produce constants for all possible INPUT datasets.
@@ -570,18 +584,6 @@ classdef constants < handle
             C_outputs{end}.SWD_release_modification    = D.INITIAL_RELEASE_MODIFICATION_STR;
             %C_outputs{end}.SWD_release_version         = D.SWD_OUTPUT_RELEASE_VERSION;
             
-            % -------- TEST --------
-            
-%             C_outputs{end+1} = [];
-%             C_outputs{end}.JSON_output_file_identifier = 'output_test2';
-%             C_outputs{end}.dataset_ID                  = 'ROC-SGSE_L2S_TEST';
-%             C_outputs{end}.skeleton_version_str        = '99';
-%             C_outputs{end}.SWD_name                    = 'Test form of output.';
-%             C_outputs{end}.SWD_description             = 'Test form of output. This never supposed to be seen outside of development.';
-%             C_outputs{end}.SWD_level                   = 'L2S';
-%             C_outputs{end}.SWD_release_date            = D.INITIAL_RELEASE_DATE;
-%             C_outputs{end}.SWD_release_modification    = D.INITIAL_RELEASE_MODIFICATION_STR;
-%             %C_outputs{end}.SWD_release_version         = D.SWD_OUTPUT_RELEASE_VERSION;
 
             % Put together PDTs (used in data_manager).
             % See data_manager for definition.
@@ -602,6 +604,6 @@ classdef constants < handle
             PDT = [dataset_ID_shortened, '_V', skeleton_version_str];
         end
 
-    end % methods
+    end % methods(Static, Access=private)
     
 end   % classdef

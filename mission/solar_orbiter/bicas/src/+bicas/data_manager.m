@@ -60,16 +60,42 @@
 % - process data (PD)
 %        In practice, one internal variable representing some form of data in some step of
 %        the "data processing process".
-% - elementary input/output process data
+% - elementary input/output (EI/EO) process data
 %        Process data that represents data that goes in and out of the data manager as a whole. The word "elementary" is
-%        added to distinguish input/output from the input/output for a smaller operation.
+%        added to distinguish input/output from the input/output for a smaller operation, in particular when converting
+%        to/from intermediate process data.
 % - intermediate process data
-%        Process data that is not elementary.
+%        Process data that is not "elementary" input/output process data.
 % - process data type (PDT)
 %        A string that uniquely represents (refers to) a type of process data.
 %        By convention, the PDTs for elementary input/output PDTs are a shortened version of
 %        dataset_ID+skeleton_version_str, e.g. "L2S_LFR-SURV-CWF-E_V01". Hardcoded values of these occur throughout the
 %        code as constants.
+% - Pre-Demuxing-Calibration Data PreDCD)
+%       Generic data format that can represent all forms of input datasets before demuxing and calibration.
+%       Can use an arbitrary number of samples per record.
+%       Consists of struct with fields:
+%           .Epoch
+%           .ACQUISITION_TIME
+%           .demuxer_input : struct with fields.
+%               BIAS_1 to .BIAS_5  : NxM arrays, where M may be 1 (1 sample/record) or >1.
+%           .freq               : Snapshot frequency in Hz. Unimportant for one sample/record data.
+%           .DIFF_GAIN
+%           .MUX_SET
+%           QUALITY_FLAG
+%           QUALITY_BITMASK
+%           DELTA_PLUS_MINUS
+%           (.SAMP_DTIME  ?)
+%       Fields are "CDF-like": rows=records, all have same number of rows.
+% - Post-Demuxing-Calibration Data (PostDCD)
+%       Like PreDCD but with additional fields. Tries to capture a superset of the information that goes into any
+%       dataset produced by BICAS.
+%       Has extra fields:
+%           .demuxer_output   : struct with fields.
+%               V1, V2, V3,   V12, V13, V23,   V12_AC, V13_AC, V23_AC.
+%           .IBIAS1
+%           .IBIAS2
+%           .IBIAS3
 % 
 % NOTE: So far (2016-10-07), every elementary input/output PDT is associated with exactly one specific dataset ID
 % (one-to-one), and the process data represents the data in a CDF with that specific dataset ID. In principle, in the
@@ -138,10 +164,9 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
 %       CON: Might need access to fill/pad values from the CDF templates for the final CDF files.
 %          CON: Could make conversions NaN-->pad/fill value outside of data_manager.
 % --
-% QUESTION: Is dataobj a handle class?! How (deep) copy? Needed?! If so, then matters for setting elementary input
-% processing data directly.
-%
-% PROPOSAL: Functions assert_is_elem_input_PDT, assert_is_elem_output_PDT, assert_is_PDT.
+% PROPOSAL: Functions assert_is_EI_PDT
+%                     assert_is_EO_PDT,
+%                     assert_is_PDT.
 %
 % PROPOSAL: Automatically generate lists of elementary input/output PDTs, and all PDTs from
 % get_processing_info.
@@ -158,13 +183,35 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
 %   PROPOSAL: Add field (sub-struct) "format_constants" in list of EI PDTs in constants?!!
 %       NOTE: Already has version string in list of EI PDTs.
 %
+% PROPOSAL: Move deriving DIFF_GAIN (from BIAS HK) from LFR & TDS code separately to combined code.
+%       In intermediate PDT?
+%
+% PROPOSAL: Move out calibration (not demuxing) from data_manager.
+%   PROPOSAL: Reading of calibration files.
+%   PROPOSAL: Function for calibrating with either constant factors and transfer functions. (Flag for choosing which.)
+%       NOTE: Function needs enough information to split up data into sequences on which transfer functions can be applied.
+%
+% PROPOSAL: Use double for all numeric zVariables in the processing. Do not produce or require proper type, e.g. integers, in any
+%           intermediate processing. Only convert to the proper data type/class when writing to CDF.
+%   PRO: Variables can keep NaN to represent fill/pad value, also for "integers".
+%   PRO: The knowledge of the dataset CDF formats is not spread out over the code.
+%       Ex: Setting default values for preDCD.QUALITY_FLAG, preDCD.QUALITY_BITMASK, preDCD.DELTA_PLUS_MINUS.
+%       Ex: ACQUISITION_TIME.
+%   CON: Less assertions can be made in utility functions.
+%       Ex: dm_utils.ACQUISITION_TIME_*, dm_utils.tt2000_* functions.
+%   CON: ROUNDING ERRORS. Can not be certain that values which are copied, are actually copied.
+%   --
+%   NOTE: Functions may in principle require integer math to work correctly.
+%
+% QUESTION/PROBLEM: Constants initializes --> Validates --> Uses data_manager to derive S/W modes EI PDTs --> Uses
+% constants to assert valid S/W modes, BEFORE CONSTANTS INITIALIZED!
+%   PROPOSAL: Move get_C_sw_mode_full and its validation out of Constants?!
+%
 % TODO: General functions for handling CDFs:
 %    -validating input/output CDFs: dataset IDs, (same variable sizes?, same nbr of
 %     records), obtain number of records(?!!).
 %    -setting Parents+Parent_version,
 %    -reading, finding, validating/checking (Skeleton_version) master CDF
-%
-% TODO: General functions for handling data.
 %
 % ~BUG: Documentation (beginning of file) does not mention dependencies varying due to sw_modes.
 %
@@ -178,9 +225,13 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
         % Initialized by constructor.
         process_data_variables = containers.Map('KeyType', 'char', 'ValueType', 'any');
         
-        ELEMENTARY_INPUT_PDTs  = {'L2R_LFR-SURV-CWF_V01',   'L2R_LFR-SURV-SWF_V01',  'HK_BIA_V01'};
+        ELEMENTARY_INPUT_PDTs  = {...
+            'L2R_LFR-SURV-CWF_V01', ...
+            'L2R_LFR-SURV-CWF_V02', 'L2R_LFR-SURV-SWF_V01',  'HK_BIA_V01'};
         ELEMENTARY_OUTPUT_PDTs = {'L2S_LFR-SURV-CWF-E_V01', 'L2S_LFR-SURV-SWF-E_V01'             };
         INTERMEDIATE_PDTs      = {};
+        
+        %settings;   % Misc. flags which affect the workings of the data_manager.
         
     end
     
@@ -188,10 +239,16 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
 
     methods(Access=public)
         
-        %=============
-        % Constructor
-        %=============
-        function obj = data_manager()
+        function obj = data_manager(settings)
+        % CONSTRUCTOR
+        %
+        
+        % NOT IMPLEMENTED
+        % settings : structure with flags influencing the processing.
+        %   .use_AT_for_processing : 
+        %   .set_Epoch_from_AT     : 
+            
+            %obj.settings = settings;
             
             ALL_PDTs = {...
                 obj.ELEMENTARY_INPUT_PDTs{:}, ...
@@ -328,7 +385,7 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
             %=============================================
             process_data = processing_func(input_process_datas);
             
-            obj.set_process_data_variable(process_data, PDT)
+            obj.set_process_data_variable(PDT, process_data)
         end
     
     end   % methods: Instance, public
@@ -349,6 +406,7 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
             if ~obj.process_data_variables.isKey(PDT)
                 error('BICAS:data_manager:Assertion:IllegalArgument:NoSuchProcessDataType', 'There is no such PDT, "%s".', PDT);
             end
+            
             process_data = obj.process_data_variables(PDT);
         end
 
@@ -361,11 +419,14 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
         % ASSERTS: Valid PDT.
         %==================================================================================
         function set_process_data_variable(obj, PDT, process_data)
-            if ~obj.process_data_variables.isKey(PDT)
+            if ~ischar(PDT)
+                error('BICAS:data_manager:Assertion:IllegalArgument', 'PDT is not a string.')
+            elseif ~obj.process_data_variables.isKey(PDT)
                 error('BICAS:data_manager:Assertion:IllegalArgument:NoSuchProcessDataType', 'There is no such PDT, "%s".', PDT);
             elseif ~isempty(obj.process_data_variables(PDT))
                 error('BICAS:data_manager:Assertion', 'There is already process data for the specified PDT "%s".', PDT);
             end
+            
             obj.process_data_variables(PDT) = process_data;
         end
         
@@ -375,22 +436,21 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
     
     methods(Static, Access=public)
     
-        function elementary_input_PDTs = get_elementary_input_PDTs(PDTs, sw_mode_ID)
-            % get_elementary_input_PDTs   Collect all the elementary input PDTs needed to produce a given list of PDTs.
-            %
-            % PDTs                  : Cell array of PDTs (strings).
-            % elementary_input_PDTs : Cell array of PDTs (strings). Contains no duplicates (they are removed).
-            %
-            % NOTE: NOT recursive algorithm to speed it up by removing duplicates better (which is not necessary but looks nice).
+        function EI_PDTs = get_elementary_input_PDTs(PDTs, sw_mode_ID)
+        % get_elementary_input_PDTs   Collect all the elementary input PDTs needed to produce a given list of PDTs.
+        %
+        % PDTs    : Cell array of PDTs (strings).
+        % EI_PDTs : Cell array of EI PDTs (strings). Contains no duplicates (they are removed).
+        %
+        % NOTE: NOT recursive algorithm to speed it up by removing duplicates better (which is not necessary but looks nice).
 
-
-            % List where we collect PDTs for which we have not yet identified the elementary input PDTs.
+            % List where we collect PDTs for which we have not yet identified the EI PDTs.
             % It is repeatedly set to a new list as the algorithm goes along.
             % undet = undetermined.
             undet_PDTs = PDTs;           
             
             % List where we add elementary input PDTs as the algorithm goes along.
-            elementary_input_PDTs = {};  
+            EI_PDTs = {};  
             
             while ~isempty(undet_PDTs)
                 
@@ -402,7 +462,7 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
                     input_PDTs = struct2cell(input_PDTs_struct);     % NOTE: Always column vector.
 
                     if isempty(input_PDTs)
-                        elementary_input_PDTs{end+1} = undet_PDT;
+                        EI_PDTs{end+1} = undet_PDT;
                     else
                         undet_PDTs_new = [undet_PDTs_new; input_PDTs];   % Grow column vector.
                     end
@@ -411,7 +471,7 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
                 undet_PDTs = unique(undet_PDTs_new);
             end
             
-            elementary_input_PDTs = unique(elementary_input_PDTs);
+            EI_PDTs = unique(EI_PDTs);
         end
         
         
@@ -471,19 +531,31 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
             % PROBLEM: Do not want to include to much dependence on modes.
             %===============================================================================================================
             
-            
+            %global CONSTANTS            
+            %CONSTANTS.assert_sw_mode_ID(sw_mode_ID);
             
             % Default values. These are returned to the caller if not amended to or overwritten.
             % NOTE: "func" stores the variable values which are not its argument (PDT, sw_mode_ID).
             input_PDTs = struct();
-            processing_func = @(input_process_datas) (...
+            
+            
+            
+            % Assign default processing function: Nonsense function representing the absence of a processing function            
+            % -------------------------------------------------------------------------------------------------------
+            % IMPLEMENTATION NOTE: This function is referenced explicitly only once but can still not be replaced by
+            % "error" (as a function pointer) or an anonymous function since neither can be made to return a value.
+            % This important for getting the right error message when calling the function processing_func points to.
+            % If not, the call will give error message: "Error using error", "Too many output arguments." referring to this.
+            function output_PD = processing_func_none(input_process_datas)
+            % NESTED FUNCTION
                 error(...
                     'BICAS:data_manager:Assertion:OperationNotImplemented', ...
                     'The processing function for producing PDT "%s", S/W mode "%s" has not yet been implemented.', ...
-                    output_PDT, sw_mode_ID) ...
+                    output_PDT, sw_mode_ID ...
                 );
+            end
+            processing_func = @processing_func_none;
 
-            
 
             use_generic_processing_func = 0;   % Default value;
             switch(output_PDT)
@@ -527,7 +599,6 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
                 case 'L2S_LFR-SURV-CWF-E_V01' ; use_generic_processing_func = 1;
                     input_PDTs.HK_cdf  = 'HK_BIA_V01';
                     input_PDTs.SCI_cdf = 'L2R_LFR-SURV-CWF_V01';
-                    processing_func = @bicas.data_manager.process_LFR_CWF_CDF_to_BIAS_CDF;   % EXPERIMENTAL PROTOTYPE processing function.
                 case 'L2S_LFR-SURV-SWF-E_V01' ; use_generic_processing_func = 1;
                     input_PDTs.HK_cdf  = 'HK_BIA_V01';
                     input_PDTs.SCI_cdf = 'L2R_LFR-SURV-SWF_V01';
@@ -566,7 +637,8 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
                 processing_func = @(input_PDs) (bicas.data_manager.process_input_to_output(...
                     input_PDs, ...   % The needed input process data (PD). Not set here.
                     input_PDTs, ...  % The needed PDTs, describing the contents of the fields in "input_PDs". Necessary for knowing what data one has to work with.
-                    output_PDT));
+                    output_PDT) ...
+                );
             end
             
             
@@ -588,7 +660,7 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
         % input_PDs  : struct. Each field has process data for one PDT.
         % input_PDTs : struct. Each field has the corresponding PDT for the fields of input_PDs.
         % output_PDT : The PDT that shall be produced.
-        function PD = process_input_to_output(input_PDs, input_PDTs, output_PDT)
+        function output_PD = process_input_to_output(input_PDs, input_PDTs, output_PDT)
             
             SCI = input_PDs.SCI_cdf;
             
@@ -607,8 +679,8 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
                         'L2R_LFR-SBM2-CWF_V02', ...
                         'L2R_LFR-SURV-CWF_V02', ...
                         'L2R_LFR-SURV-SWF_V02'}
-                    std_data = bicas.data_manager.process_LFR_to_std_format(input_PDs, input_PDTs);
-                    
+                    preDCD = bicas.data_manager.process_LFR_to_PreDCD(input_PDs, input_PDTs);
+
                 %=====
                 % TDS
                 %=====
@@ -625,20 +697,26 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
             end
             
             
-            data = process_input_to_std_format(input_PDs);
-            error('BICAS:data_manager:OperationNotImplemented', 'Function not finished yet.')
-            % ...
+            postDCD = bicas.data_manager.demux_calib(preDCD);
+            output_PD = bicas.data_manager.process_PostDCD_to_EO_PDT(postDCD, output_PDT);
             
-            PD = process_std_format_to_PD
+            %error('BICAS:data_manager:OperationNotImplemented', 'Function not finished yet.')            
         end
         
         
         
-        % UNFINISHED, EXPERIMENTAL
-        function std_data = process_LFR_to_std_format(input_PDs, input_PDTs)
+        function preDCD = process_LFR_to_PreDCD(input_PDs, input_PDTs)
+        % Convert LFR CDF data (PDTs) to PreDCD.
+        
+            % PROBLEM: Hardcoded CDF data types (MATLAB classes).
+
             SCI = input_PDs.SCI_cdf;
             HK  = input_PDs.HK_cdf;
-            
+
+            %===============================================================
+            % Define variables LFR_V, LFR_E corresponding to zVars which
+            % with different names (but not meaning) in different datasets.
+            %===============================================================
             switch(input_PDTs.SCI_cdf)
                 case {  'L2R_LFR-SBM1-CWF_V01', ...
                         'L2R_LFR-SBM2-CWF_V01', ...
@@ -652,17 +730,23 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
                         'L2R_LFR-SURV-SWF_V02'}
                     LFR_V = SCI.V;
                     LFR_E = SCI.E;
+                    %LFR_SAMP_DTIME = SCI.SAMP_DTIME;
                 otherwise
                     error('BICAS:data_manager:Assertion:ConfigurationBug', 'Can not handle input_PDTs.SCI_cdf="%s"', input_PDTs.SCI_cdf)
             end
+            
+            %========================================================================================
+            % Define a variable LFR_FREQ (for all datasets) with the same meaning as LFR zVar FREQ
+            % (which exists only for some LFR datasets).
+            %========================================================================================
             N_records = size(LFR_V, 1);
             switch(input_PDTs.SCI_cdf)
                 case {  'L2R_LFR-SBM1-CWF_V01', ...
                         'L2R_LFR-SBM1-CWF_V02'}
-                    LFR_FREQ = ones(N_records, 1) * CONSTANTS.C.LFR.F1; 
+                    LFR_FREQ = ones(N_records, 1) * 1;   % Always value "1".
                 case {  'L2R_LFR-SBM2-CWF_V01', ...
                         'L2R_LFR-SBM2-CWF_V02'}
-                    LFR_FREQ = ones(N_records, 1) * CONSTANTS.C.LFR.F2;
+                    LFR_FREQ = ones(N_records, 1) * 2;   % Always value "2".
                 case {  'L2R_LFR-SURV-CWF_V01', ...
                         'L2R_LFR-SURV-CWF_V02', ...
                         'L2R_LFR-SURV-SWF_V01', ...
@@ -672,21 +756,45 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
                     error('BICAS:data_manager:Assertion:ConfigurationBug', 'Can not handle input_PDTs.SCI_cdf="%s"', input_PDTs.SCI_cdf)
             end
             
-            freq = bicas.dm_utils.get_LFR_frequency( SCI.FREQ );
-            Rx   = bicas.dm_utils.get_LFR_Rx( SCI.R0, SCI.R1, SCI.R2, SCI.FREQ );
-            BIAS_1 = SCI.POTENTIAL;
-            BIAS_2 = bicas.dm_utils.filter_rows( SCI.ELECTRICAL(:,:,1), Rx==1 );
-            BIAS_3 = bicas.dm_utils.filter_rows( SCI.ELECTRICAL(:,:,2), Rx==1 );
-            BIAS_4 = bicas.dm_utils.filter_rows( SCI.ELECTRICAL(:,:,1), Rx==0 );
-            BIAS_5 = bicas.dm_utils.filter_rows( SCI.ELECTRICAL(:,:,2), Rx==0 );
+            Rx = bicas.dm_utils.get_LFR_Rx( SCI.R0, SCI.R1, SCI.R2, LFR_FREQ );   % NOTE: Function can handles "R3".
+            
+            preDCD.freq = bicas.dm_utils.get_LFR_frequency( LFR_FREQ );
+            
+            preDCD.demuxer_input        = [];
+            preDCD.demuxer_input.BIAS_1 = LFR_V;
+            preDCD.demuxer_input.BIAS_2 = bicas.dm_utils.filter_rows( LFR_E(:,:,1), Rx==1 );
+            preDCD.demuxer_input.BIAS_3 = bicas.dm_utils.filter_rows( LFR_E(:,:,2), Rx==1 );
+            preDCD.demuxer_input.BIAS_4 = bicas.dm_utils.filter_rows( LFR_E(:,:,1), Rx==0 );
+            preDCD.demuxer_input.BIAS_5 = bicas.dm_utils.filter_rows( LFR_E(:,:,2), Rx==0 );
+            preDCD.Epoch = SCI.Epoch;
+            preDCD.ACQUISITION_TIME = SCI.ACQUISITION_TIME;
+            
+            % IMPLEMENTATION NOTE: QUALITY_FLAG, QUALITY_BITMASK have been found empty in test data, but should have
+            % attribute DEPEND_0 = "Epoch" ==> Should have same number of records as Epoch.
+            % Can not save CDF with zVar with zero records (crashes when reading CDF). ==> Better create empty records.
+            % Test data: MYSTERIOUS_SIGNAL_1_2016-04-15_Run2__7729147__CNES/ROC-SGSE_L2R_RPW-LFR-SURV-SWF_7729147_CNE_V01.cdf
+            if isempty(SCI.QUALITY_FLAG)
+                preDCD.QUALITY_FLAG    = cast(  zeros(size(preDCD.Epoch)),  bicas.utils.convert_CDF_type_to_MATLAB_class('CDF_UINT1', 'Only CDF data types')  );
+            else
+                preDCD.QUALITY_FLAG    = SCI.QUALITY_FLAG;
+            end
+            if isempty(SCI.QUALITY_BITMASK)
+                preDCD.QUALITY_BITMASK = cast(  zeros(size(preDCD.Epoch)),  bicas.utils.convert_CDF_type_to_MATLAB_class('CDF_UINT1', 'Only CDF data types')  );
+            else
+                preDCD.QUALITY_BITMASK = SCI.QUALITY_BITMASK;
+            end
+                
+            preDCD.DELTA_PLUS_MINUS = cast(  zeros(size(preDCD.Epoch)),  bicas.utils.convert_CDF_type_to_MATLAB_class('CDF_INT8',  'Only CDF data types')  );
 
+            
 
-
-            % 1) Convert time to something linear in time.
-            % 2) Effectively also chooses which time to use for the purpose of processing (not storing time to file):
+            %=========================================================================================================
+            % 1) Convert time to something linear in time that can be used for processing (not storing time to file).
+            % 2) Effectively also chooses which time to use for the purpose of processing:
             %    ACQUISITION_TIME or Epoch.
-            t_HK_ACQUISITION_TIME  = bicas.dm_utils.ACQUISITION_TIME_to_tt2000(HK.ACQUISITION_TIME);
-            t_SCI_ACQUISITION_TIME = bicas.dm_utils.ACQUISITION_TIME_to_tt2000(SCI.ACQUISITION_TIME);            
+            %=========================================================================================================
+            t_HK_ACQUISITION_TIME  = bicas.dm_utils.ACQUISITION_TIME_to_tt2000(  HK.ACQUISITION_TIME );
+            t_SCI_ACQUISITION_TIME = bicas.dm_utils.ACQUISITION_TIME_to_tt2000( SCI.ACQUISITION_TIME );
             t_HK_Epoch  = HK.Epoch;
             t_SCI_Epoch = SCI.Epoch;
             t_HK        = t_HK_ACQUISITION_TIME;
@@ -694,205 +802,176 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
 
 
 
-            %------------------------------------------------------------------------------------------------
-            % Derives approximate DIFF_GAIN values for LFR SCI time stamps/records, using
-            % DIFF_GAIN values for BIAS HK time stamps.
-            % NOTE: Not perfect for snapshot/record datasets, since one should ideally use time stamps for every LFR _sample_.
-            %------------------------------------------------------------------------------------------------
-            DIFF_GAIN = interp1(double(t_HK), double(HK.HK_BIA_DIFF_GAIN), double(t_SCI), 'nearest', NaN);
+            %=========================================================================================================
+            % Choose where to get MUX_SET from: LFR-SCI, or BIAS-HK
+            % -----------------------------------------------------
+            % NOTE: Only obtains one MUX_SET per record ==> Can not change MUX_SET in the middle of a record.
+            %=========================================================================================================
+            preDCD.MUX_SET = interp1(double(t_HK), double(HK.HK_BIA_MODE_MUX_SET), double(t_SCI), 'nearest', NaN);   % Use BIAS HK.
+            %std_data.MUX_SET = LFR_cdf.BIAS_MODE_MUX_SET;    % Use LFR SCI.
 
-            
-            %------------------------------------------------------------------------------------------------------
-            % Choose where to get MUX_SET from
-            % --------------------------------
-            % NOTE: One can obtain MUX_SET from either (1) LFR, or (2) BIAS HK.
-            % NOTE: Not perfect handling of time, since one should ideally use time stamps for every LFR _sample_.
-            %------------------------------------------------------------------------------------------------------
-            MUX_SET = interp1(double(t_HK), double(HK.HK_BIA_MODE_MUX_SET), double(t_SCI), 'nearest', NaN); % Use BIAS HK.
-            %MUX_SET = LFR_cdf.BIAS_MODE_MUX_SET;    % Use LFR SCI.
+
+
+            %=========================================================================================================
+            % Derive approximate DIFF_GAIN values for from BIAS HK
+            %
+            % NOTE: Not perfect handling of time when 1 snapshot/record, since one should ideally use time stamps
+            % for every LFR _sample_.
+            %=========================================================================================================
+            preDCD.DIFF_GAIN = interp1(double(t_HK), double(HK.HK_BIA_DIFF_GAIN), double(t_SCI), 'nearest', NaN);
+
 
 
             % Misc. log messages.
             % PROPOSAL: PDT, dataset ID.
-            irf.log('n', sprintf('Unique LFR_FREQ  values: %s',        sprintf('%d ',        bicas.data_manager.unique_NaN(LFR_FREQ ))))
-            irf.log('n', sprintf('Unique Rx        values: %s',        sprintf('%d ',        bicas.data_manager.unique_NaN(Rx       ))))
-            irf.log('n', sprintf('Unique DIFF_GAIN values: %s',        sprintf('%d ',        bicas.data_manager.unique_NaN(DIFF_GAIN))))
-            irf.log('n', sprintf('Unique MUX_SET   values: %s',        sprintf('%d ',        bicas.data_manager.unique_NaN(MUX_SET))))
-            irf.log('n', sprintf('Number of unique BIAS_1 values: %s', sprintf('%d ', length(bicas.data_manager.unique_NaN(BIAS_1)))))
-            irf.log('n', sprintf('Number of unique BIAS_2 values: %s', sprintf('%d ', length(bicas.data_manager.unique_NaN(BIAS_2)))))
-            irf.log('n', sprintf('Number of unique BIAS_3 values: %s', sprintf('%d ', length(bicas.data_manager.unique_NaN(BIAS_3)))))
-            irf.log('n', sprintf('Number of unique BIAS_4 values: %s', sprintf('%d ', length(bicas.data_manager.unique_NaN(BIAS_4)))))
-            irf.log('n', sprintf('Number of unique BIAS_5 values: %s', sprintf('%d ', length(bicas.data_manager.unique_NaN(BIAS_5)))))
-            irf.log('n', sprintf('HK  ACQUISITION_TIME: %s -- %s', bicas.dm_utils.tt2000_to_UTC_str(t_HK_ACQUISITION_TIME(1)),  bicas.dm_utils.tt2000_to_UTC_str(t_HK_ACQUISITION_TIME(end))))
-            irf.log('n', sprintf('SCI ACQUISITION_TIME: %s -- %s', bicas.dm_utils.tt2000_to_UTC_str(t_SCI_ACQUISITION_TIME(1)), bicas.dm_utils.tt2000_to_UTC_str(t_SCI_ACQUISITION_TIME(end))))
-            irf.log('n', sprintf('HK  Epoch:            %s -- %s', bicas.dm_utils.tt2000_to_UTC_str(t_HK_Epoch(1)),             bicas.dm_utils.tt2000_to_UTC_str(t_HK_Epoch(end))))
-            irf.log('n', sprintf('SCI Epoch:            %s -- %s', bicas.dm_utils.tt2000_to_UTC_str(t_SCI_Epoch(1)),            bicas.dm_utils.tt2000_to_UTC_str(t_SCI_Epoch(end))))
-
+            % PROPOSAL: Move to demux_calib.
+            %    NOTE: Must have t_* variables.
+            bicas.dm_utils.log_unique_values_all('LFR_FREQ',  LFR_FREQ);
+            bicas.dm_utils.log_unique_values_all('Rx',        Rx);
+            bicas.dm_utils.log_unique_values_all('DIFF_GAIN', preDCD.DIFF_GAIN);
+            bicas.dm_utils.log_unique_values_all('MUX_SET',   preDCD.MUX_SET);
             
-            
-            error('BICAS:data_manager:OperationNotImplemented', 'Unfinished implementation')
+            % PROPOSAL: Move to reading of CDF, setting EI PD.
+            % PROPOSAL: Move to demux_calib.
+            bicas.dm_utils.log_tt2000_interval('HK  ACQUISITION_TIME', t_HK_ACQUISITION_TIME)
+            bicas.dm_utils.log_tt2000_interval('SCI ACQUISITION_TIME', t_SCI_ACQUISITION_TIME)
+            bicas.dm_utils.log_tt2000_interval('HK  Epoch           ', t_HK_Epoch)
+            bicas.dm_utils.log_tt2000_interval('SCI Epoch           ', t_SCI_Epoch)
         end
 
 
 
-        % MOVE
-        function unique_values = unique_NaN(A)
-            % Return number of unique values in array, treating +Inf, -Inf, and NaN as equal to themselves.
-            % (MATLAB's "unique" function does not do this for NaN.)
-            %
-            % NOTE: Should work for all dimensionalities.
-        
-            % NOTE: "unique" has special behaviour whic hmust be taken into account:
-            % 1) Inf and -Inf are treated as equal to themselves.
-            % 2) NaN is treated as if it is NOT equal itself. ==> Can thus return multiple instances of NaN.
-            % 3) "unique" always puts NaN at the then of the vector of unique values (one or many NaN).
-            unique_values = unique(A);
+        function postDCD = demux_calib(preDCD)
+        % Convert PreDCD to PostDCD, i.e. demux and calibrate data.
+                    
+            % Log messages
+            for f = fieldnames(preDCD.demuxer_input)'
+                bicas.dm_utils.log_unique_values_summary(f{1}, preDCD.demuxer_input.(f{1}));
+            end
             
-            % Remove all NaN unless it is found in the last component (save one legitimate occurrence of NaN, if there is any).
-            % NOTE: Does work for empty matrices.
-            unique_values(isnan(unique_values(1:end-1))) = [];
+            postDCD = preDCD;
+            
+            postDCD.demuxer_output = bicas.data_manager.simple_demultiplex_multiple(...
+                preDCD.demuxer_input, preDCD.MUX_SET, preDCD.DIFF_GAIN);
+            
+            % Log messages
+            for f = fieldnames(postDCD.demuxer_output)'
+                bicas.dm_utils.log_unique_values_summary(f{1}, postDCD.demuxer_output.(f{1}));
+            end
+            
+            postDCD.IBIAS1 = NaN * zeros(size(postDCD.demuxer_output.V1));
+            postDCD.IBIAS2 = NaN * zeros(size(postDCD.demuxer_output.V2));
+            postDCD.IBIAS3 = NaN * zeros(size(postDCD.demuxer_output.V3));
+        end
+        
+        
+        
+        function EO_PD = process_PostDCD_to_EO_PDT(postDCD, EO_PDT)
+        % Convert PostDCD to any one of several similar dataset PDTs.
+        
+            D = postDCD;
+            EO_PD = [];
+            
+            N_smpls_rec = size(D.demuxer_output.V1, 2);   % Samples per record.
+            
+            switch(EO_PDT)
+                case  {'L2S_LFR-SBM1-CWF-E_V01', ...
+                       'L2S_LFR-SBM2-CWF-E_V01'}                        
+                    error('BICAS:data_manager:OperationNotImplemented', 'Can not produce this EO PDT.')
+                    
+                case  'L2S_LFR-SURV-CWF-E_V01'
+                    
+                    %===============================================
+                    % Convert 1 snapshot/record --> 1 sample/record
+                    %===============================================
+                    EO_PD.ACQUISITION_TIME = bicas.dm_utils.ACQUISITION_TIME___expand_to_sequences(...
+                        D.ACQUISITION_TIME, ...
+                        N_smpls_rec, ...
+                        D.freq  );
+                    EO_PD.Epoch = bicas.dm_utils.tt2000___expand_to_sequences( ...
+                        D.Epoch, ...
+                        N_smpls_rec, ...
+                        D.freq  );
+                    for fn = fieldnames(D.demuxer_output)'
+                        D.demuxer_output.(fn{1}) = bicas.dm_utils.reshape_to_1_sample_per_record( ...
+                            D.demuxer_output.(fn{1}) );
+                    end
+                    EO_PD.V   = [D.demuxer_output.V1,     D.demuxer_output.V2,     D.demuxer_output.V3];
+                    EO_PD.E   = [D.demuxer_output.V12,    D.demuxer_output.V13,    D.demuxer_output.V23];
+                    EO_PD.EAC = [D.demuxer_output.V12_AC, D.demuxer_output.V13_AC, D.demuxer_output.V23_AC];
+                    EO_PD.IBIAS1 = bicas.dm_utils.reshape_to_1_sample_per_record( postDCD.IBIAS1 );
+                    EO_PD.IBIAS2 = bicas.dm_utils.reshape_to_1_sample_per_record( postDCD.IBIAS2 );
+                    EO_PD.IBIAS3 = bicas.dm_utils.reshape_to_1_sample_per_record( postDCD.IBIAS3 );
+
+                case  'L2S_LFR-SURV-SWF-E_V01'
+                    % Check number of samples/record to see if one can just keep the samples as they are distributed on records.
+                    if N_smpls_rec ~= 2048
+                        error('BICAS:data_manager:Assertion:IllegalArgument', 'Number of samples per CDF record is not 2048.')
+                    end
+                    
+                    EO_PD.Epoch            = D.Epoch;
+                    EO_PD.ACQUISITION_TIME = D.ACQUISITION_TIME;                    
+                    EO_PD.F_SAMPLE         = D.freq;
+                    EO_PD.V(:,:,1)   = D.demuxer_output.V1;
+                    EO_PD.V(:,:,2)   = D.demuxer_output.V2;
+                    EO_PD.V(:,:,3)   = D.demuxer_output.V3;
+                    EO_PD.E(:,:,1)   = D.demuxer_output.V12;
+                    EO_PD.E(:,:,2)   = D.demuxer_output.V13;
+                    EO_PD.E(:,:,3)   = D.demuxer_output.V23;
+                    EO_PD.EAC(:,:,1) = D.demuxer_output.V12_AC;
+                    EO_PD.EAC(:,:,2) = D.demuxer_output.V13_AC;
+                    EO_PD.EAC(:,:,3) = D.demuxer_output.V23_AC;
+                    
+                case 'L2S_TDS-LFM-CWF-E_V01'
+                    error('BICAS:data_manager:OperationNotImplemented', 'Can not produce this EO PDT.')
+                case 'L2S_TDS-LFM-RSWF-E_V01'
+                    error('BICAS:data_manager:OperationNotImplemented', 'Can not produce this EO PDT.')
+                otherwise
+                    error('BICAS:data_manager:Assertion:IllegalArgument', 'Function can not produce this EO PDT.')
+            end
+            
+            
+            % BUG: How handle?!!!
+            % NOTE: Can not change number of records when just copying information!!!
+            EO_PD.QUALITY_FLAG     = postDCD.QUALITY_FLAG;
+            EO_PD.QUALITY_BITMASK  = postDCD.QUALITY_BITMASK;
+            
+            EO_PD.DELTA_PLUS_MINUS = postDCD.DELTA_PLUS_MINUS;
+
         end
 
 
 
-        % UNFINISHED, EXPERIMENTAL        
-        % QUESTION: How handle HK from BIAS?
-        %function std_data = process_PD_to_std_format(input_PDTs)
-        %end
+        function demuxer_output = simple_demultiplex_multiple(demuxer_input, MUX_SET, DIFF_GAIN)
+        % Wrapper around "simple_demultiplex_multiple" to be able to handle multiple CDF records with changing
+        % settings (mux_set, diff_gain).
+        %
+        % ARGUMENTS AND RETURN VALUE
+        % ==========================
+        % mux_set   = Column vector. Numbers identifying the MUX/DEMUX mode. 
+        % input     = Struct with fields BIAS_1 to BIAS_5.
+        % diff_gain = Column vector. Gains for differential measurements. 0 = Low gain, 1 = High gain.
+        %
+        % NOTE: Can handle any arrays of any size as long as the sizes are consistent.
         
-        
-        
-        % UNFINISHED, EXPERIMENTAL
-%         function PD = process_std_format_to_PD(output_PDT)
-%             switch(output_PDT)
-%                 case 'L2S_LFR-SBM1-CWF-E_V01'
-%                 case 'L2S_LFR-SBM2-CWF-E_V01'
-%                 case 'L2S_LFR-SURV-CWF-E_V01'
-%                 case 'L2S_TDS-LFM-CWF-E_V01'
-%                     
-%                 case 'L2S_LFR-SURV-SWF-E_V01'
-%                 case 'L2S_TDS-LFM-RSWF-E_V01'
-%                     
-%                 otherwise
-%                     error('BICAS:data_manager:Assertion:IllegalArgument', 'Illegal output_PDT="%s"', output_PDT)
-%             end
-%         end
-
-
-
-        % EXPERIMENTAL PROTOTYPE IMPLEMENTATION
-        function output = process_LFR_CWF_CDF_to_BIAS_CDF(input_process_datas)
-            % INCOMPLETE/INCORRECT IMPLEMENTATION
-            % Does not take LFR's R0/R1/R2 into account. Current implementation probably based on misinterpretation of how the dataset format works.
-            %
-            % PROPOSAL: Move assignment of base variables into record loop? Its own record loop?
-            % PROPOSAL: Convert everything to/from 1 sample/record and implement core algorithms as 1 sample/record.
-            %    NOTE: R0, R1.
-            %    NOTE: Convert data from HK time stamps to SAMPLE time stamps (not snapshot or record time stamps).
-            %    CON: Conversion back to waveforms, assuming that some values are constant over entire snapshot?
-            %
-            % Might be relevant:
-            %    True/false depending on available BIAS_1/2/3? Should be in
-            %    agreement with MUX_SET?
-            %    input_BIAS_HK.BIAS_MODE_BIAS1_ENABLED; ...
-            %    input_LFR.data.R0; ...
-
-            BIAS_HK_cdf = input_process_datas.HK_cdf;
-            LFR_cdf     = input_process_datas.SCI_cdf;
-
-            N_LFR_records          = size(LFR_cdf.POTENTIAL, 1);
-            N_samples_per_snapshot = size(LFR_cdf.POTENTIAL, 2);
-
-            % Change to standard names.
-            %R0 = LFR_cdf.R0.data;
-            %R1 = LFR_cdf.R1.data;
-            %R2 = LFR_cdf.R2.data;
-            demuxer_input = [];
-            demuxer_input.BIAS_1 = LFR_cdf.POTENTIAL;
-            demuxer_input.BIAS_2 = LFR_cdf.ELECTRICAL(:,:,1);                 % BUG: Can not assume that these values should be used. Depends on R0/R1/R2.
-            demuxer_input.BIAS_3 = LFR_cdf.ELECTRICAL(:,:,2);                 % BUG: Can not assume that these values should be used. Depends on R0/R1/R2.
-            demuxer_input.BIAS_4 = ones(size(LFR_cdf.POTENTIAL)) * NaN;    % No data.
-            demuxer_input.BIAS_5 = ones(size(LFR_cdf.POTENTIAL)) * NaN;    % No data.
-            %================================================================================
-            % Find sequences of records (1 snapshot/record) with constant settings incl. R0/R1/R2. - UNFINISHED; BASED ON FALSE PREMISES
-            %================================================================================
-            %                     i_first = 1;    % First record in sequence of records with constant settings.
-            %                     while i_first <= N_LFR_records;
-            %
-            %                         % Find sequence of records having identical settings.
-            %                         i_last = bicas.dm_utils.find_last_same_sequence(...
-            %                             i_first, ...
-            %                             LFR_cdf.R0.data, ...
-            %                             LFR_cdf.R1.data, ...
-            %                             LFR_cdf.R2.data);   % BUG: Only one R0, R1, R2 needs to be checked for.
-            %
-            %                     	R0 = LFR_cdf.R0.data(i_first);
-            %                     	R1 = LFR_cdf.R1.data(i_first);
-            %                     	R1 = LFR_cdf.R1.data(i_first);
-            %
-            %                         demuxer_input.BIAS_2 = ones(size(LFR_cdf.POTENTIAL.data)) * NaN;    % No data.
-            %                         demuxer_input.BIAS_3 = ones(size(LFR_cdf.POTENTIAL.data)) * NaN;    % No data.
-            %                         demuxer_input.BIAS_4 = ones(size(LFR_cdf.POTENTIAL.data)) * NaN;    % No data.
-            %                         demuxer_input.BIAS_5 = ones(size(LFR_cdf.POTENTIAL.data)) * NaN;    % No data.
-            %                         if R0==1 && R1==0
-            %                             demuxer_input.BIAS_2 = LFR_cdf.ELECTRICAL.data(i_first:i_last,:,1);
-            %                             demuxer_input.BIAS_3 = LFR_cdf.ELECTRICAL.data(i_first:i_last,:,2);
-            %                         elseif R0==0 && R1==1
-            %                             demuxer_input.BIAS_4 = LFR_cdf.ELECTRICAL.data(i_first:i_last,:,1);
-            %                             demuxer_input.BIAS_5 = LFR_cdf.ELECTRICAL.data(i_first:i_last,:,2);
-            %                         elseif R0==1 && R1==1
-            %                             error('BICAS:data_manager:Assertion:DatasetFormat' ,'Illegal combination of LFR CDF R0=1 and R1=1.')
-            %                         end
-            %
-            %                         i_first = i_last + 1;
-            %
-            %                     end   % while
+            N_records = length(MUX_SET);
             
-            %------------------------------------------------------------------------------------------------
-            % Derives approximate DIFF_GAIN values for LFR SCI time stamps/records (one per snapshot), using
-            % DIFF_GAIN values for BIAS HK time stamps.
-            % NOTE: Not perfect, since one should ideally use time stamps for every LFR _sample_.
-            %------------------------------------------------------------------------------------------------
-            DIFF_GAIN = bicas.data_manager.nearest_interpolate_records(...
-                BIAS_HK_cdf.ACQUISITION_TIME, ...
-                BIAS_HK_cdf.HK_BIA_DIFF_GAIN, ...
-                LFR_cdf    .ACQUISITION_TIME);
-            
-            %------------------------------------------------------------------------------------------------------
-            % Choose where to get MUX_SET from
-            % --------------------------------
-            % NOTE: One can obtain MUX_SET from either (1) LFR, or (2) BIAS HK.
-            % NOTE: Not perfect handling of time, since one should ideally use time stamps for every LFR _sample_.
-            %------------------------------------------------------------------------------------------------------
-            MUX_SET = bicas.data_manager.nearest_interpolate_records(...
-                BIAS_HK_cdf.ACQUISITION_TIME, ...
-                BIAS_HK_cdf.HK_BIA_MODE_MUX_SET, ...
-                LFR_cdf    .ACQUISITION_TIME);      % Use BIAS HK.
-            %MUX_SET = LFR_cdf.BIAS_MODE_MUX_SET;    % Use LFR SCI.
-            
-            
-            
-            %================================================================================
-            % Run demuxer on sequences of records (1 snapshot/record) with constant settings
-            %================================================================================
-            i_first = 1;    % First record in sequence of records with constant settings.
+            % Create empty structure to which new components can be added.
             demuxer_output = struct(...
                 'V1',     [], 'V2',     [], 'V3',     [], ...
                 'V12',    [], 'V23',    [], 'V13',    [], ...
                 'V12_AC', [], 'V23_AC', [], 'V13_AC', []);
-            while i_first <= N_LFR_records;
+            
+            i_first = 1;    % First record in sequence of records with constant settings.
+            while i_first <= N_records;
                 
-                % Find sequence of records having identical settings.
-                i_last = bicas.dm_utils.find_last_same_sequence(...
-                    i_first, ...
-                    DIFF_GAIN, ...
-                    MUX_SET, ...
-                    LFR_cdf.FREQ);
+                % Find continuous sequence of records (i_first to i_last) having identical settings.
+                i_last = bicas.dm_utils.find_last_same_sequence(i_first, DIFF_GAIN, MUX_SET);
+                mux_set   = MUX_SET  (i_first);
+                diff_gain = DIFF_GAIN(i_first);
+                irf.log('n', sprintf('Records %i-%i : Demultiplexing; MUX_SET=%i; DIFF_GAIN=%i', i_first, i_last, mux_set, diff_gain))
                 
-                diff_gain        = DIFF_GAIN(i_first);
-                mux_set          = MUX_SET(i_first);
-                sample_frequency = bicas.dm_utils.get_LFR_frequency(LFR_cdf.FREQ(i_first));
-                
+                % Extract subsequence of records to "demux".
                 demuxer_input_subseq = bicas.dm_utils.select_subset_from_struct(demuxer_input, i_first, i_last);
                 
                 %=================================================
@@ -900,57 +979,27 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
                 %=================================================
                 demuxer_output_subseq = bicas.data_manager.simple_demultiplex(demuxer_input_subseq, mux_set, diff_gain);
                 
+                % Add demuxed sequence to the to-be complete set of records.
                 demuxer_output = bicas.dm_utils.add_components_to_struct(demuxer_output, demuxer_output_subseq);
                 
                 i_first = i_last + 1;
                 
             end   % while
-            
-            
-            
-            %===============================================
-            % Convert 1 snapshot/record --> 1 sample/record
-            %===============================================
-            ACQUISITION_TIME = bicas.dm_utils.convert_snapshotsPR_to_samplesPR_ACQUISITION_TIME(...
-                LFR_cdf.ACQUISITION_TIME, ...
-                N_samples_per_snapshot, ...
-                sample_frequency);
-            Epoch = bicas.dm_utils.convert_snapshotsPR_to_samplesPR_Epoch_TEMP(  LFR_cdf.Epoch, N_samples_per_snapshot  );
-            fn_list = fieldnames(demuxer_output);
-            for i = 1:length(fn_list)
-                fn = fn_list{i};
-                demuxer_output.(fn) = bicas.dm_utils.convert_snapshotPR_to_samplePR_DATA(  demuxer_output.(fn), N_samples_per_snapshot  );
-            end
-            
-            
-            
-            %==============================================================
-            % Put together variables to be written to CDF file (elsewhere)
-            %==============================================================
-            output = [];
-            output.Epoch = Epoch;
-            output.ACQUISITION_TIME = ACQUISITION_TIME;
-            output.V   = [demuxer_output.V1,     demuxer_output.V2,     demuxer_output.V3];
-            output.E   = [demuxer_output.V12,    demuxer_output.V13,    demuxer_output.V23];
-            output.EAC = [demuxer_output.V12_AC, demuxer_output.V13_AC, demuxer_output.V23_AC];
-            output.QUALITY_FLAG     = cast(  zeros(size(Epoch)),  bicas.utils.convert_CDF_type_to_MATLAB_class('CDF_UINT1', 'Only CDF data types')  );
-            output.QUALITY_BITMASK  = cast(  zeros(size(Epoch)),  bicas.utils.convert_CDF_type_to_MATLAB_class('CDF_UINT1', 'Only CDF data types')  );
-            output.DELTA_PLUS_MINUS = cast(  zeros(size(Epoch)),  bicas.utils.convert_CDF_type_to_MATLAB_class('CDF_INT8',  'Only CDF data types')  );
-            
-            output.IBIAS1 = NaN * zeros(size(demuxer_output.V1));
-            output.IBIAS2 = NaN * zeros(size(demuxer_output.V2));
-            output.IBIAS3 = NaN * zeros(size(demuxer_output.V3));
         end
 
 
-
+        
         function output = simple_demultiplex(input, mux_set, diff_gain)
-        % Demultiplex, with only constant factors for calibration (no transfer functions).
+        % simple_demultiplex   Demultiplex, with only constant factors for calibration (no transfer functions).
         %
         % This function implements Table 3 and Table 4 in "RPW-SYS-MEB-BIA-SPC-00001-IRF", iss1rev16.
         % Variable names are chosen according to these tables.
         %
-        % NOTE: Intended for development/testing until there is proper code for using transfer functions.
+        % NOTE: Conceptually, this function mixes demuxing with calibration which can (and most likely should) be separated.
+        % - Demuxing is done on individual samples at a specific point in time.
+        % - Calibration (with transfer functions) is made on a time series (presumably of one variable, but could be several).
+        %
+        % NOTE: Function is intended for development/testing until there is proper code for using transfer functions.
         % NOTE: "input"/"output" refers to input/output for the function, which is (approximately) the opposite of
         % the physical signals in the BIAS hardware.
         %
@@ -958,12 +1007,12 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
         % ARGUMENTS AND RETURN VALUE
         % ==========================
         % mux_set   = Scalar number identifying the MUX/DEMUX mode.
-        % input     = struct with fields BIAS_1 to BIAS_5.
+        % input     = Struct with fields BIAS_1 to BIAS_5.
         % diff_gain = Gain for differential measurements. 0 = Low gain, 1 = High gain.
-        % output    = struct with fields V1, V2, V3,   V12, V13, V23,   V12_AC, V13_AC, V23_AC.
+        % output    = Struct with fields V1, V2, V3,   V12, V13, V23,   V12_AC, V13_AC, V23_AC.
         %
         % NOTE: Can handle any arrays of any size as long as the sizes are consistent.
-        %
+
         
             %==========================================================================================================
             % QUESTION: How to structure the demuxing?
@@ -995,6 +1044,8 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
             % PROPOSAL: Only work for scalar values of mux_set and diff_gain?
             % QUESTION: MUX mode 1-3 are overdetermined if we always have BIAS1-3?
             %           If so, how select what to calculate?! What if results disagree/are inconsistent? Check for it?
+            %
+            % PROPOSAL: Move translation diff_gain-->gamma to separate function (cf. dm_utils.get_LFR_frequency).
             %==========================================================================================================
             
             global CONSTANTS
@@ -1040,10 +1091,10 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
                     V12_LF_AC = V12_AC / GAMMA;
                     V23_LF_AC = V23_AC / GAMMA;
                     % Convert that which is less trivial.
-                    V13_LF    = V12_LF    - V23_LF;
+                    V13_LF    = V12_LF    + V23_LF;
                     V2_LF     = V1_LF     - V12_LF;
                     V3_LF     = V2_LF     - V23_LF;                    
-                    V13_LF_AC = V12_LF_AC - V23_LF_AC;
+                    V13_LF_AC = V12_LF_AC + V23_LF_AC;
                     
                 case 1   % Probe 1 fails
                     
@@ -1087,7 +1138,7 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
                     V12_LF    = V1_LF     - V2_LF;
                     V13_LF    = V1_LF     - V3_LF;
                     V23_LF    = V2_LF     - V3_LF;
-                    V13_LF_AC = V12_LF_AC - V23_LF_AC;
+                    V13_LF_AC = V12_LF_AC + V23_LF_AC;
                     
                 case {5,6,7}
                     error('BICAS:data_manager:Assertion:OperationNotImplemented', 'Not implemented for this value of mux_set yet.')

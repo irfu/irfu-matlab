@@ -261,7 +261,7 @@ function write_CDF(file_path, spdfcdfread_out, spdfcdfread_info, varargin)
     
 %===================================================================================================
 % RELEVANT spdfcdfwrite OPTIONS:
-% (Relevant excerpts from spdfcdfwrite.m copied here for convenience.)
+% (Relevant excerpts from spdfcdfwrite.m COPIED here for convenience.)
 % --------------------------------------------------------------------
 %   SPDFCDFWRITE(FILE, VARIABLELIST, ...) writes out a CDF file whose name
 %   is specified by FILE.  VARIABLELIST is a cell array of ordered

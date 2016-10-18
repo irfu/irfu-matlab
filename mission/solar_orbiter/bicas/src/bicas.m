@@ -58,6 +58,9 @@ function error_code = bicas( varargin )
 % PROPOSAL: Move prescribed MATLAB version to the config file.
 % PROPOSAL: Put a summarized version of CLI syntax in "bicas --help" (somethinger easier that the S/W descriptor).
 %    PRO: Useful when S/W descriptor becomes big and complex.
+%
+% PROPOSAL: Do not print just one error message based on msgID, pick several possible one.
+%   CON: Does not match with picking exactly one error code to return.
 
 
 
@@ -87,7 +90,7 @@ try
     %=======================================================================
     [matlab_src_path, ~, ~] = fileparts(mfilename('fullpath'));
     BICAS_root_path = bicas.utils.get_abs_path(fullfile(matlab_src_path, '..'));
-    %CONSTANTS.SW_root_dir(BICAS_root_path)
+    
     irf.log('n', sprintf('MATLAB source code path:  "%s"', matlab_src_path))
     irf.log('n', sprintf('BICAS software root path: "%s"', BICAS_root_path))
     
