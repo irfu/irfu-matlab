@@ -37,7 +37,7 @@ SWD.modes = {};
 for i = 1:length(CONSTANTS.sw_modes)
     CLI_parameter = CONSTANTS.sw_modes{i}.CLI_parameter;
     
-    C_sw_mode = CONSTANTS.get_C_sw_mode_full(CLI_parameter);
+    C_sw_mode = bicas.data_manager.get_C_sw_mode_full(CLI_parameter);
     
     SWD.modes{end+1} = generate_sw_descriptor_mode(CONSTANTS.C, C_sw_mode);
 end

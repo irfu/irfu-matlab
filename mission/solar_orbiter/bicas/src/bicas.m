@@ -148,12 +148,13 @@ try
         %==============================================
         % CASE: Should be a S/W mode (error otherwise)
         %==============================================
-        try
-            C_sw_mode = CONSTANTS.get_C_sw_mode_full(arguments{1});
-        catch exception
-            % NOTE: The message is slightly inaccurate. Argument "--version" etc. would have worked too.
-            error('BICAS:CLISyntax', 'Can not interpret argument "%s" as a S/W mode.', arguments{1});
-        end
+        %try
+            C_sw_mode = bicas.data_manager.get_C_sw_mode_full(arguments{1});
+        %catch exception
+            % NOTE: The message is slightly inaccurate since it assumes that the first argument is a S/W mode.
+            % Argument "--version" etc. would have worked too.
+            %error('BICAS:CLISyntax', 'Can not interpret argument "%s" as a S/W mode.', arguments{1});
+        %end
 
         %-----------------------------------------------------------------
         % Configure CLI flags to expect, partly depending on the S/W mode

@@ -164,27 +164,10 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
 %       CON: Might need access to fill/pad values from the CDF templates for the final CDF files.
 %          CON: Could make conversions NaN-->pad/fill value outside of data_manager.
 % --
-% PROPOSAL: Functions assert_is_EI_PDT
-%                     assert_is_EO_PDT,
-%                     assert_is_PDT.
-%
-% PROPOSAL: Automatically generate lists of elementary input/output PDTs, and all PDTs from
-% get_processing_info.
-%    CON: Can not generate list of elementary INPUT PDTs.
-%    PROPOSAL: Check these against PDTs in BICAS constants somehow.
-%
-% PROPOSAL: Merge get_processing_info with definitions (constants) for mode and (elementary) input/output datasets?!!!
-%
-% PROPOSAL: Functions for classifying PDTs.
-%   Ex: LFR/TDS, sample/record or snapshot/record, V01/V02 (for LFR variables changing name).
-%   Ex: Number of samples per snapshot (useful for "virtual snapshots") in record (~size of record).
-%   PRO: Could reduce/collect the usage of hardcoded PDTs.
-%   NOTE: Mostly/only useful for elementary input PDTs?
-%   PROPOSAL: Add field (sub-struct) "format_constants" in list of EI PDTs in constants?!!
-%       NOTE: Already has version string in list of EI PDTs.
-%
 % PROPOSAL: Move deriving DIFF_GAIN (from BIAS HK) from LFR & TDS code separately to combined code.
 %       In intermediate PDT?
+%
+% PROPOSAL: Merge get_processing_info with definitions (constants) for mode and (elementary) input/output datasets?!!!
 %
 % PROPOSAL: Move out calibration (not demuxing) from data_manager.
 %   PROPOSAL: Reading of calibration files.
@@ -202,11 +185,26 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
 %   CON: ROUNDING ERRORS. Can not be certain that values which are copied, are actually copied.
 %   --
 %   NOTE: Functions may in principle require integer math to work correctly.
+%--
+% PROPOSAL: Automatically generate lists of elementary input/output PDTs, and all PDTs from
+% get_processing_info.
+%    CON: Can not generate list of elementary INPUT PDTs.
+%    PROPOSAL: Check these against PDTs in BICAS constants somehow.
 %
-% QUESTION/PROBLEM: Constants initializes --> Validates --> Uses data_manager to derive S/W modes EI PDTs --> Uses
-% constants to assert valid S/W modes, BEFORE CONSTANTS INITIALIZED!
-%   PROPOSAL: Move get_C_sw_mode_full and its validation out of Constants?!
+% PROPOSAL: Functions for classifying PDTs.
+%   Ex: LFR/TDS, sample/record or snapshot/record, V01/V02 (for LFR variables changing name).
+%   Ex: Number of samples per snapshot (useful for "virtual snapshots") in record (~size of record).
+%   PRO: Could reduce/collect the usage of hardcoded PDTs.
+%   NOTE: Mostly/only useful for elementary input PDTs?
+%   PROPOSAL: Add field (sub-struct) "format_constants" in list of EI PDTs in constants?!!
+%       NOTE: Already has version string in list of EI PDTs.
 %
+% PROPOSAL: Functions assert_PDT (EI,EO,intermediate).
+% QUESTION: Which lists of EI/EO PDTs should data_manager use for assertions? There is a difference between
+%   1) inputs/outputs listed in constants, and
+%   2) the PDTs actually used in the currently defined S/W modes, and
+%   3) which data_manager can handle.
+%--
 % TODO: General functions for handling CDFs:
 %    -validating input/output CDFs: dataset IDs, (same variable sizes?, same nbr of
 %     records), obtain number of records(?!!).
@@ -225,13 +223,17 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
         % Initialized by constructor.
         process_data_variables = containers.Map('KeyType', 'char', 'ValueType', 'any');
         
-        ELEMENTARY_INPUT_PDTs  = {...
-            'L2R_LFR-SURV-CWF_V01', ...
-            'L2R_LFR-SURV-CWF_V02', 'L2R_LFR-SURV-SWF_V01',  'HK_BIA_V01'};
-        ELEMENTARY_OUTPUT_PDTs = {'L2S_LFR-SURV-CWF-E_V01', 'L2S_LFR-SURV-SWF-E_V01'             };
+%         ELEMENTARY_INPUT_PDTs  = {...
+%             'L2R_LFR-SURV-CWF_V01', ...
+%             'L2R_LFR-SURV-CWF_V02', ...
+%             'L2R_LFR-SURV-SWF_V01',  ...
+%             'HK_BIA_V01'};
+%         ELEMENTARY_OUTPUT_PDTs = {...
+%             'L2S_LFR-SURV-CWF-E_V01', ...
+%             'L2S_LFR-SURV-SWF-E_V01'};
         INTERMEDIATE_PDTs      = {};
         
-        %settings;   % Misc. flags which affect the workings of the data_manager.
+        settings;   % Misc. flags which affect the workings of the data_manager.
         
     end
     
@@ -243,28 +245,14 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
         % CONSTRUCTOR
         %
         
-        % NOT IMPLEMENTED
-        % settings : structure with flags influencing the processing.
-        %   .use_AT_for_processing : 
-        %   .set_Epoch_from_AT     : 
+            global CONSTANTS
+        
+            % NOT IMPLEMENTED
+            %   .use_AT_for_processing : 
+            %   .set_Epoch_from_AT     : 
+            obj.settings.strict_CDF_assertions = 0;
             
-            %obj.settings = settings;
-            
-            ALL_PDTs = {...
-                obj.ELEMENTARY_INPUT_PDTs{:}, ...
-                obj.ELEMENTARY_OUTPUT_PDTs{:}, ...
-                obj.INTERMEDIATE_PDTs{:}};
-            
-            % Initialize instance variable "process_data" with keys (with corresponding empty values).
-            for PDT = ALL_PDTs
-                obj.process_data_variables(PDT{1}) = [];
-            end
-            
-            % Validate
-            bicas.utils.assert_strings_unique(obj.ELEMENTARY_INPUT_PDTs)
-            bicas.utils.assert_strings_unique(obj.ELEMENTARY_OUTPUT_PDTs)
-            bicas.utils.assert_strings_unique(obj.INTERMEDIATE_PDTs)
-            bicas.utils.assert_strings_unique(    ALL_PDTs)
+            obj.validate
         end
 
         
@@ -278,9 +266,9 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
         %
         % NOTE: Uses irfu-matlab's dataobj for reading the CDF file.
         
-            %==============================================
-            % PROPOSAL: "Validate" the read CDF file here.
-            %==============================================
+            % PROPOSAL: "Validate" the CDF file read here.
+            
+            global CONSTANTS
             
             irf.log('n', sprintf('PDT=%s: file_path=%s', PDT, file_path))    % NOTE: irf.log adds the method name.
             
@@ -288,14 +276,14 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
             % Select parts from dataobj and put them into a smaller struct
             %==============================================================
             process_data = struct();
-            DO = dataobj(file_path);                 % irfu-matlab's dataobj!!!
+            DO = dataobj(file_path);                 % DO=dataobj. irfu-matlab's dataobj!!!
             zVar_list = fieldnames(DO.data);
-            N_zVar = length(zVar_list);
-            for i = 1:N_zVar
+            for i = 1:length(zVar_list)
                 zVar_name = zVar_list{i};
                 zVar_data = DO.data.(zVar_name).data;
                 
                 % Replace fill/pad values with NaN for numeric data.
+                % QUESTION: How does this work with integer fields?!!!
                 if isnumeric(zVar_data)
                     [fill_value, pad_value] = get_fill_pad_values(DO, zVar_name);
                     zVar_data = bicas.utils.replace_value(zVar_data, fill_value, NaN);
@@ -304,6 +292,29 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
                 end
             end
             
+            file_DATASET_ID       = DO.GlobalAttributes.DATASET_ID{1};
+            file_Skeleton_version = DO.GlobalAttributes.Skeleton_version{1};
+            irf.log('n', sprintf('File: DATASET_ID       = "%s"', file_DATASET_ID))
+            irf.log('n', sprintf('File: Skeleton_version = "%s"', file_Skeleton_version))
+
+
+
+            % ASSERTIONS
+            % NOTE: HK TIME_SYNCHRO_FLAG can be empty.
+            %bicas.dm_utils.assert_unvaried_N_rows(process_data);
+            C_input = bicas.utils.select_structs(CONSTANTS.inputs, 'PDT', {PDT});
+            C_input = C_input{1};
+            obj.suspect_condition(...
+                ~strcmp(file_DATASET_ID, C_input.dataset_ID), ...
+                sprintf('The CDF file''s stated DATASET_ID ("%s") does not match the expected one ("%s").', ...
+                        file_DATASET_ID, C_input.dataset_ID))
+            obj.suspect_condition(...
+                ~strcmp(file_Skeleton_version, C_input.skeleton_version_str), ...
+                sprintf('The CDF file''s stated Skeleton_version ("%s") does not match the expected one ("%s").', ...
+                        file_Skeleton_version, C_input.skeleton_version_str))
+            
+            
+
             set_elementary_input_process_data(obj, PDT, process_data);
             
             
@@ -326,18 +337,21 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
                 % Comments in "spdfcdfinfo.m" should indirectly imply that column 9 is pad values since the structure/array commented on should be identical.
             end
         end
-        
-        
-        
+
+
+
         function set_elementary_input_process_data(obj, PDT, process_data)
         % Set elementary input process data directly as a struct.
         %
-        % This is a useful interface for test code.
+        % The primary purpose of this function is an interface for test code.
+        
+            global CONSTANTS
         
             % ASSERTION
-            if ~ismember(PDT, obj.ELEMENTARY_INPUT_PDTs)
-                error('BICAS:data_manager:Assertion:IllegalArgument', 'Data type is not an elementary input data type.')
-            end
+            CONSTANTS.assert_EI_PDT(PDT)
+%             if ~ismember(PDT, obj.ELEMENTARY_INPUT_PDTs)
+%                 error('BICAS:data_manager:Assertion:IllegalArgument', 'Data type is not an elementary input data type.')
+%             end
             
             obj.set_process_data_variable(PDT, process_data);
         end
@@ -349,6 +363,10 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
         %
         % If it is already available (stored), return it, if not, derive it from other process data recursively.
         % Should (indirectly) return error if can not return process data.
+        
+            % NOTE: This log message is particularly useful for following the recursive calls of this function.
+            % sw_mode_ID comes first since that tends to make the log message values line up better.
+            irf.log('n', sprintf('Arguments=(sw_mode_ID=%s, PDT=%s)', sw_mode_ID, PDT))
 
             %==================================================================================
             % If process data already exists - Return it and exit
@@ -386,6 +404,9 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
             process_data = processing_func(input_process_datas);
             
             obj.set_process_data_variable(PDT, process_data)
+            
+            % NOTE: This log message is useful for being able to follow the recursive calls of this function.
+            irf.log('n', sprintf('End function', sw_mode_ID, PDT))
         end
     
     end   % methods: Instance, public
@@ -393,6 +414,84 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
     %###################################################################################################################
 
     methods(Access=private)
+        
+        function validate(obj)
+            
+            global CONSTANTS
+            
+            % The RCS ICD, iss2rev2, section 5.3 seems (ambiguous) to imply this regex for CLI S/W mode parameters.
+            SW_MODE_CLI_PARAMETER_REGEX = '^[A-Za-z][\w-]+$';   % NOTE: Only one backslash in MATLAB regex as opposed to in the RCS ICD.
+            
+            
+            
+%             ALL_PDTs = {...
+%                 obj.ELEMENTARY_INPUT_PDTs{:}, ...
+%                 obj.ELEMENTARY_OUTPUT_PDTs{:}, ...
+%                 obj.INTERMEDIATE_PDTs{:}};
+            ALL_PDTs = {...
+                CONSTANTS.EI_PDTs{:}, ...
+                CONSTANTS.EO_PDTs{:}, ...
+                obj.INTERMEDIATE_PDTs{:}};
+            
+            % Initialize instance variable "process_data" with keys (with corresponding empty values).
+            for PDT = ALL_PDTs
+                obj.process_data_variables(PDT{1}) = [];
+            end
+            
+            % Validate
+            %bicas.utils.assert_strings_unique(obj.ELEMENTARY_INPUT_PDTs)
+            %bicas.utils.assert_strings_unique(obj.ELEMENTARY_OUTPUT_PDTs)
+            bicas.utils.assert_strings_unique(obj.INTERMEDIATE_PDTs)
+            bicas.utils.assert_strings_unique(    ALL_PDTs)
+            
+            
+            
+            %========================
+            % Iterate over S/W modes
+            %========================
+            sw_mode_CLI_parameters = {};
+            sw_mode_IDs            = {};
+            for i = 1:length(CONSTANTS.sw_modes)
+                sw_mode_CLI_parameter = CONSTANTS.sw_modes{i}.CLI_parameter;
+                
+                sw_mode_CLI_parameters{end+1} = sw_mode_CLI_parameter;
+                sw_mode_IDs{end+1}            = CONSTANTS.sw_modes{i}.ID;
+                
+                C_sw_mode = bicas.data_manager.get_C_sw_mode_full(sw_mode_CLI_parameter);
+
+                if ~length(regexp(sw_mode_CLI_parameter, SW_MODE_CLI_PARAMETER_REGEX))
+                    error('BICAS:Assertion:IllegalConfiguration', 'Illegal S/W mode CLI parameter definition. This indicates a pure (hard-coded) configuration bug.');
+                end
+                
+                % Iterate over inputs: Collect CLI_parameter into list.
+                inputs_CLI_parameters = {};
+                for j = 1:length(C_sw_mode.inputs)
+                    inputs_CLI_parameters{end+1} = C_sw_mode.inputs{j}.CLI_parameter;
+                end
+                bicas.utils.assert_strings_unique(inputs_CLI_parameters)
+                
+                % Iterate over outputs: Collect JSON_output_file_identifier into list.
+                outputs_JSON_output_file_identifiers = {};
+                for j = 1:length(C_sw_mode.outputs)
+                    outputs_JSON_output_file_identifiers{end+1} = C_sw_mode.outputs{j}.JSON_output_file_identifier;
+                end
+                bicas.utils.assert_strings_unique(outputs_JSON_output_file_identifiers)
+            end
+            bicas.utils.assert_strings_unique(sw_mode_CLI_parameters)
+            bicas.utils.assert_strings_unique(sw_mode_IDs)
+
+            
+            
+            % NOTE: Check that combinations of dataset_ID and skeleton_version_str are unique.
+            % Implemented by merging strings and checking for unique strings.
+            % Is strictly speaking very slightly unsafe; could get false negatives.
+            dataset_ID_version_list = cellfun( ...
+                @(x) ({[x.dataset_ID, '_V', x.skeleton_version_str]}), ...
+                [CONSTANTS.outputs, CONSTANTS.inputs]   );
+            bicas.utils.assert_strings_unique(dataset_ID_version_list)
+        end
+        
+        
         
         %==================================================================================
         % Return process data value.
@@ -430,12 +529,61 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
             obj.process_data_variables(PDT) = process_data;
         end
         
+        
+        
+        function suspect_condition(obj, condition, msg)
+        % Function for either giving a warning or error depending on setting.
+        
+             if condition
+                if obj.settings.strict_CDF_assertions
+                    error('BICAS:data_manager:Assertion', msg)
+                else
+                    irf.log('w', msg)
+                end
+             end
+        end        
+        
     end   % methods: Instance, private
     
     %###################################################################################################################
     
     methods(Static, Access=public)
     
+        function C_sw_mode = get_C_sw_mode_full(CLI_parameter)
+        % Return ~constants structure for a specific S/W mode as referenced by a CLI parameter.
+        %        
+        % This structure is automatically put together from other structures (constants) to avoid having to define too
+        % many redundant constants.
+        %
+        % NOTE: This function takes what constants.sw_modes returns and adds info about input and output datasets to it.
+        % NOTE: The function takes the CLI_parameter as parameter, not the S/W mode ID!
+        
+            global CONSTANTS
+            
+            C_sw_mode = bicas.utils.select_structs(CONSTANTS.sw_modes, 'CLI_parameter', {CLI_parameter});            
+            C_sw_mode = C_sw_mode{1};
+            
+            % Collect all associated elementary input PDTs.
+            input_PDTs = bicas.data_manager.get_elementary_input_PDTs(C_sw_mode.output_PDTs, C_sw_mode.ID);
+            
+            try
+                C_sw_mode.inputs = bicas.utils.select_structs(CONSTANTS.inputs,  'PDT', input_PDTs);
+            catch exception
+                error('BICAS:Assertion:IllegalConfiguration', 'Can not identify all input PDTs associated with S/W mode/CLI parameter "%s".', CLI_parameter)
+            end
+            try
+                C_sw_mode.outputs = bicas.utils.select_structs(CONSTANTS.outputs, 'PDT', C_sw_mode.output_PDTs);
+            catch exception
+                error('BICAS:Assertion:IllegalConfiguration', 'Can not identify all output PDTs associated with S/W mode/CLI parameter "%s".', CLI_parameter)
+            end
+        end
+        
+    end  % methods: Static, public
+    
+    %###################################################################################################################
+
+    methods(Static, Access=private)
+
         function EI_PDTs = get_elementary_input_PDTs(PDTs, sw_mode_ID)
         % get_elementary_input_PDTs   Collect all the elementary input PDTs needed to produce a given list of PDTs.
         %
@@ -443,6 +591,8 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
         % EI_PDTs : Cell array of EI PDTs (strings). Contains no duplicates (they are removed).
         %
         % NOTE: NOT recursive algorithm to speed it up by removing duplicates better (which is not necessary but looks nice).
+        
+            % NOTE: Function can be made PRIVATE?
 
             % List where we collect PDTs for which we have not yet identified the EI PDTs.
             % It is repeatedly set to a new list as the algorithm goes along.
@@ -474,13 +624,8 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
             EI_PDTs = unique(EI_PDTs);
         end
         
+
         
-    end  % methods: Static, public
-    
-    %###################################################################################################################
-
-    methods(Static, Access=private)
-
         function [input_PDTs, processing_func] = get_processing_info(output_PDT, sw_mode_ID)
         % For every PDT, return meta-information needed to derive the actual process data.
         %
@@ -489,8 +634,8 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
         % This function effectively does two things:
         % 1) (IMPORTANT) It defines/describes the dependencies between different PDTs (an acyclic directed
         %    graph, albeit dependent on S/W modes), by returning
-        %    - the "processing" function needed to produce the process data, and
-        %    - the PDTs needed by the processing function.
+        %    a) the "processing" function needed to produce the process data, and
+        %    b) the PDTs needed by the processing function.
         % 2) (LESS IMPORTANT) It implicitly decides how to informally distinguish the input process datas by giving them
         %    suitable struct field names which the processing functions recognize them with.
         %
@@ -514,6 +659,7 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
         %         process_data = processing_func(input_process_datas)
         %     The function accepts exactly one argument: a struct analogous to input_PDTs but with fields set to
         %     the corresponding process DATA instead.
+        %     If there is no such function (i.e. output_PDT is an EI-PDT), then returns empty.
         % 
         % 
         %
@@ -531,30 +677,24 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
             % PROBLEM: Do not want to include to much dependence on modes.
             %===============================================================================================================
             
-            %global CONSTANTS            
-            %CONSTANTS.assert_sw_mode_ID(sw_mode_ID);
+            global CONSTANTS            
+            CONSTANTS.assert_sw_mode_ID(sw_mode_ID);
             
-            % Default values. These are returned to the caller if not amended to or overwritten.
-            % NOTE: "func" stores the variable values which are not its argument (PDT, sw_mode_ID).
+            % Assign value used for the case of elementary INPUT PDT.
             input_PDTs = struct();
             
             
+
+            % Assign value used for the case of there being no real processing function
+            % -------------------------------------------------------------------------
+            % IMPLEMENTATION NOTE: Choice of value for the case of there being no processing function:
+            % 1) Using an empty value ==> The caller can immediately check whether it has received a processing function
+            % and then immediately throw an assertion error if that was unexpected.
+            % 2) Bad alternative: Use a nonsense function (one that always gives an assertion error, albeit a good error message)
+            % ==> The (assertion) error will be triggered first when the attempting to call the nonexisting processing
+            % function. ==> Error first very late. ==> Bad alternative.
+            processing_func = [];
             
-            % Assign default processing function: Nonsense function representing the absence of a processing function            
-            % -------------------------------------------------------------------------------------------------------
-            % IMPLEMENTATION NOTE: This function is referenced explicitly only once but can still not be replaced by
-            % "error" (as a function pointer) or an anonymous function since neither can be made to return a value.
-            % This important for getting the right error message when calling the function processing_func points to.
-            % If not, the call will give error message: "Error using error", "Too many output arguments." referring to this.
-            function output_PD = processing_func_none(input_process_datas)
-            % NESTED FUNCTION
-                error(...
-                    'BICAS:data_manager:Assertion:OperationNotImplemented', ...
-                    'The processing function for producing PDT "%s", S/W mode "%s" has not yet been implemented.', ...
-                    output_PDT, sw_mode_ID ...
-                );
-            end
-            processing_func = @processing_func_none;
 
 
             use_generic_processing_func = 0;   % Default value;
@@ -577,7 +717,7 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
                 case 'L2R_LFR-SURV-CWF_V02'
                 case 'L2R_LFR-SURV-SWF_V01'
                 case 'L2R_LFR-SURV-SWF_V02'
-                    
+
                 % TDS
                 case 'L2R_TDS-LFM-CWF_V01'                    
                 case 'L2R_TDS-LFM-RSWF_V01'
@@ -586,7 +726,7 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
                 %========================
                 % Elementary OUTPUT PDTs
                 %========================
-                
+
                 %-----
                 % LFR
                 %-----
@@ -598,10 +738,18 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
                     input_PDTs.SCI_cdf = 'L2R_LFR-SBM2-CWF_V01';
                 case 'L2S_LFR-SURV-CWF-E_V01' ; use_generic_processing_func = 1;
                     input_PDTs.HK_cdf  = 'HK_BIA_V01';
-                    input_PDTs.SCI_cdf = 'L2R_LFR-SURV-CWF_V01';
+                    switch(sw_mode_ID)
+                        case 'LFR-SURV-CWF-E_V01-V01' ; input_PDTs.SCI_cdf = 'L2R_LFR-SURV-CWF_V01';
+                        case 'LFR-SURV-CWF-E_V02-V01' ; input_PDTs.SCI_cdf = 'L2R_LFR-SURV-CWF_V02';
+                        otherwise                     ; error_bad_sw_mode(PDT, sw_mode_ID)
+                    end
                 case 'L2S_LFR-SURV-SWF-E_V01' ; use_generic_processing_func = 1;
                     input_PDTs.HK_cdf  = 'HK_BIA_V01';
-                    input_PDTs.SCI_cdf = 'L2R_LFR-SURV-SWF_V01';
+                    switch(sw_mode_ID)
+                        case 'LFR-SURV-SWF-E_V01-V01' ; input_PDTs.SCI_cdf = 'L2R_LFR-SURV-SWF_V01';
+                        case 'LFR-SURV-SWF-E_V02-V01' ; input_PDTs.SCI_cdf = 'L2R_LFR-SURV-SWF_V02';
+                        otherwise                     ; error_bad_sw_mode(PDT, sw_mode_ID)
+                    end
 
                 %-----
                 % TDS
@@ -615,7 +763,7 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
                     switch(sw_mode_ID)
                         case 'TDS-LFM-RSWF-E_V01-V01' ; input_PDTs.SCI_cdf = 'L2R_TDS-LFM-RSWF_V01';
                         case 'TDS-LFM-RSWF-E_V02-V01' ; input_PDTs.SCI_cdf = 'L2R_TDS-LFM-RSWF_V02';
-                        otherwise ; error_bad_sw_mode(PDT, sw_mode_ID)
+                        otherwise                     ; error_bad_sw_mode(PDT, sw_mode_ID)
                     end
 
                 %==================================
@@ -653,16 +801,13 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
         
         
         
-        % UNFINISHED, EXPERIMENTAL
-        % Function that in practice can handle all derivations to date, but it is not obvious that this will be the
-        % case forever. In the future, it might only handle a subset.
+        function output_PD = process_input_to_output(input_PDs, input_PDTs, output_PDT)
+        % Function that in practice can handle all derivations to date (2016-10-18), but it is not obvious that this
+        % will be the case forever. In the future, it might only handle a subset.
         %
         % input_PDs  : struct. Each field has process data for one PDT.
         % input_PDTs : struct. Each field has the corresponding PDT for the fields of input_PDs.
         % output_PDT : The PDT that shall be produced.
-        function output_PD = process_input_to_output(input_PDs, input_PDTs, output_PDT)
-            
-            SCI = input_PDs.SCI_cdf;
             
             switch(input_PDTs.SCI_cdf)
                     
@@ -706,7 +851,7 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
         
         
         function preDCD = process_LFR_to_PreDCD(input_PDs, input_PDTs)
-        % Convert LFR CDF data (PDTs) to PreDCD.
+        % Convert LFR CDF data (PDs) to PreDCD.
         
             % PROBLEM: Hardcoded CDF data types (MATLAB classes).
 
@@ -821,6 +966,10 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
             preDCD.DIFF_GAIN = interp1(double(t_HK), double(HK.HK_BIA_DIFF_GAIN), double(t_SCI), 'nearest', NaN);
 
 
+            
+            % ASSERTIONS
+            bicas.dm_utils.assert_unvaried_N_rows(preDCD);
+            bicas.dm_utils.assert_unvaried_N_rows(preDCD.demuxer_input);
 
             % Misc. log messages.
             % PROPOSAL: PDT, dataset ID.
@@ -849,9 +998,13 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
                 bicas.dm_utils.log_unique_values_summary(f{1}, preDCD.demuxer_input.(f{1}));
             end
             
+            % ASSERTION
+            bicas.dm_utils.assert_unvaried_N_rows(preDCD);
+            
             postDCD = preDCD;
             
-            postDCD.demuxer_output = bicas.data_manager.simple_demultiplex_multiple(...
+            % DEMUX
+            postDCD.demuxer_output = bicas.data_manager.simple_demultiplex(...
                 preDCD.demuxer_input, preDCD.MUX_SET, preDCD.DIFF_GAIN);
             
             % Log messages
@@ -864,7 +1017,7 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
             postDCD.IBIAS3 = NaN * zeros(size(postDCD.demuxer_output.V3));
         end
         
-        
+
         
         function EO_PD = process_PostDCD_to_EO_PDT(postDCD, EO_PDT)
         % Convert PostDCD to any one of several similar dataset PDTs.
@@ -921,6 +1074,9 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
                     EO_PD.EAC(:,:,1) = D.demuxer_output.V12_AC;
                     EO_PD.EAC(:,:,2) = D.demuxer_output.V13_AC;
                     EO_PD.EAC(:,:,3) = D.demuxer_output.V23_AC;
+                    EO_PD.IBIAS1 = postDCD.IBIAS1;
+                    EO_PD.IBIAS2 = postDCD.IBIAS2;
+                    EO_PD.IBIAS3 = postDCD.IBIAS3;
                     
                 case 'L2S_TDS-LFM-CWF-E_V01'
                     error('BICAS:data_manager:OperationNotImplemented', 'Can not produce this EO PDT.')
@@ -929,7 +1085,6 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
                 otherwise
                     error('BICAS:data_manager:Assertion:IllegalArgument', 'Function can not produce this EO PDT.')
             end
-            
             
             % BUG: How handle?!!!
             % NOTE: Can not change number of records when just copying information!!!
@@ -942,8 +1097,8 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
 
 
 
-        function demuxer_output = simple_demultiplex_multiple(demuxer_input, MUX_SET, DIFF_GAIN)
-        % Wrapper around "simple_demultiplex_multiple" to be able to handle multiple CDF records with changing
+        function demuxer_output = simple_demultiplex(demuxer_input, MUX_SET, DIFF_GAIN)
+        % Wrapper around "simple_demultiplex_subsequence" to be able to handle multiple CDF records with changing
         % settings (mux_set, diff_gain).
         %
         % ARGUMENTS AND RETURN VALUE
@@ -954,6 +1109,7 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
         %
         % NOTE: Can handle any arrays of any size as long as the sizes are consistent.
         
+            bicas.dm_utils.assert_unvaried_N_rows(demuxer_input)
             N_records = length(MUX_SET);
             
             % Create empty structure to which new components can be added.
@@ -977,7 +1133,7 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
                 %=================================================
                 % CALL DEMUXER - See method/function for comments
                 %=================================================
-                demuxer_output_subseq = bicas.data_manager.simple_demultiplex(demuxer_input_subseq, mux_set, diff_gain);
+                demuxer_output_subseq = bicas.data_manager.simple_demultiplex_subsequence(demuxer_input_subseq, mux_set, diff_gain);
                 
                 % Add demuxed sequence to the to-be complete set of records.
                 demuxer_output = bicas.dm_utils.add_components_to_struct(demuxer_output, demuxer_output_subseq);
@@ -989,8 +1145,8 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
 
 
         
-        function output = simple_demultiplex(input, mux_set, diff_gain)
-        % simple_demultiplex   Demultiplex, with only constant factors for calibration (no transfer functions).
+        function output = simple_demultiplex_subsequence(input, mux_set, diff_gain)
+        % simple_demultiplex_subsequence   Demultiplex, with only constant factors for calibration (no transfer functions).
         %
         % This function implements Table 3 and Table 4 in "RPW-SYS-MEB-BIA-SPC-00001-IRF", iss1rev16.
         % Variable names are chosen according to these tables.
@@ -999,6 +1155,7 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
         % - Demuxing is done on individual samples at a specific point in time.
         % - Calibration (with transfer functions) is made on a time series (presumably of one variable, but could be several).
         %
+        % NOTE: This function can only handle one value for mux
         % NOTE: Function is intended for development/testing until there is proper code for using transfer functions.
         % NOTE: "input"/"output" refers to input/output for the function, which is (approximately) the opposite of
         % the physical signals in the BIAS hardware.
@@ -1006,10 +1163,12 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
         %
         % ARGUMENTS AND RETURN VALUE
         % ==========================
-        % mux_set   = Scalar number identifying the MUX/DEMUX mode.
-        % input     = Struct with fields BIAS_1 to BIAS_5.
-        % diff_gain = Gain for differential measurements. 0 = Low gain, 1 = High gain.
-        % output    = Struct with fields V1, V2, V3,   V12, V13, V23,   V12_AC, V13_AC, V23_AC.
+        % input     : Struct with fields BIAS_1 to BIAS_5.
+        % mux_set   : Scalar number identifying the MUX/DEMUX mode.
+        % diff_gain : Gain for differential measurements. 0 = Low gain, 1 = High gain.
+        % output    : Struct with fields V1, V2, V3,   V12, V13, V23,   V12_AC, V13_AC, V23_AC.
+        % 
+        % NOTE: Will tolerate values of NaN for mux_set, diff_gain. The effect is NaN in the corresponding output values.
         %
         % NOTE: Can handle any arrays of any size as long as the sizes are consistent.
 
@@ -1059,21 +1218,26 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
             switch(diff_gain)
                 case 0    ; GAMMA = CONSTANTS.C.approximate_demuxer.gamma_lg;
                 case 1    ; GAMMA = CONSTANTS.C.approximate_demuxer.gamma_hg;
-                otherwise ; error('BICAS:data_manager:Assertion:IllegalArgument:DatasetFormat', 'Illegal argument value "diff_gain".')
+                otherwise
+                    if isnan(diff_gain)
+                        GAMMA = NaN;
+                    else
+                        error('BICAS:data_manager:Assertion:IllegalArgument:DatasetFormat', 'Illegal argument value "diff_gain"=%d.', diff_gain)                    
+                    end
             end
             
             % Set default values which will remain for
             % variables which are not set by the demuxer.
-            NONE_VALUES = ones(size(input.BIAS_1)) * NaN;
-            V1_LF     = NONE_VALUES;
-            V2_LF     = NONE_VALUES;
-            V3_LF     = NONE_VALUES;
-            V12_LF    = NONE_VALUES;
-            V13_LF    = NONE_VALUES;
-            V23_LF    = NONE_VALUES;
-            V12_LF_AC = NONE_VALUES;
-            V13_LF_AC = NONE_VALUES;
-            V23_LF_AC = NONE_VALUES;
+            NaN_VALUES = ones(size(input.BIAS_1)) * NaN;
+            V1_LF     = NaN_VALUES;
+            V2_LF     = NaN_VALUES;
+            V3_LF     = NaN_VALUES;
+            V12_LF    = NaN_VALUES;
+            V13_LF    = NaN_VALUES;
+            V23_LF    = NaN_VALUES;
+            V12_LF_AC = NaN_VALUES;
+            V13_LF_AC = NaN_VALUES;
+            V23_LF_AC = NaN_VALUES;
 
             switch(mux_set)
                 case 0   % "Standard operation" : We have all information.
@@ -1144,7 +1308,11 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
                     error('BICAS:data_manager:Assertion:OperationNotImplemented', 'Not implemented for this value of mux_set yet.')
                     
                 otherwise
-                    error('BICAS:data_manager:Assertion:IllegalArgument:DatasetFormat', 'Illegal argument value for mux_set.')
+                    if isnan(mux_set)
+                        ;   % Do nothing. Allow the default values (NaN) to be returned.
+                    else
+                        error('BICAS:data_manager:Assertion:IllegalArgument:DatasetFormat', 'Illegal argument value for mux_set.')
+                    end
             end   % switch
             
             % Create structure to return.
@@ -1159,7 +1327,7 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
             output.V13_AC = V13_LF_AC;
             output.V23_AC = V23_LF_AC;
             
-        end  % simple_demultiplex
+        end  % simple_demultiplex_subsequence
         
         
         

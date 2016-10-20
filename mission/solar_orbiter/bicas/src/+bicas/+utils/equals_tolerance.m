@@ -19,10 +19,10 @@ function eq = equals_tolerance(A,B, epsilon)
 % NOTE: Check for NaN, Inf, class, size/Ndimensions, empty matrix.
 
 if ~strcmp(class(A), class(B))
-    eq = 0
+    eq = 0;
     return
 elseif ~isequal(size(A), size(B))
-    eq = 0
+    eq = 0;
     return
 elseif ~isequal(isnan(A), isnan(B))
     eq = 0;

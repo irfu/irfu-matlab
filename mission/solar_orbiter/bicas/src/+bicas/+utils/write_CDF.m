@@ -206,6 +206,11 @@ function write_CDF(file_path, spdfcdfread_out, spdfcdfread_info, varargin)
             zVar_data = zVar_data_new;
         else
             RECBNDVARS{end+1} = zVar_name;
+            
+            % TEMP BUG FIX. - TEST
+            %if ndims(zVar_data) == 3
+            %    zVar_data = permute(zVar_data, [2,3,1]);
+            %end
         end
         
 

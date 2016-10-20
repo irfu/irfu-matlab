@@ -1,24 +1,26 @@
 classdef dm_utils
-    % Collections of minor utility functions (in the form of static methods) used by data_manager ("dm").
-    % The functions are put here to reduce the size of data_manager.
-    %
-    % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
-    % First created 2016-10-10
+% Collections of minor utility functions (in the form of static methods) used by data_manager.
+% The functions are collected here to reduce the size of data_manager.
+% dm_utils = data_manager utilities
+%
+% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% First created 2016-10-10
 
-    % PROPOSAL: Move some functions to "utils".
-    %   Ex: add_components_to_struct, select_subset_from_struct
-    % PROPOSAL: Write test code for ACQUISITION_TIME_to_tt2000 and inversion.
-    % PROPOSAL: Split up in separate files?!
+% PROPOSAL: Move some functions to "utils".
+%   Ex: add_components_to_struct, select_subset_from_struct
+% PROPOSAL: Write test code for ACQUISITION_TIME_to_tt2000 and inversion.
+% PROPOSAL: Split up in separate files?!
+% PROPOSAL: Reorg select_subset_from_struct into returning a list of intervals instead.
     
     methods(Static, Access=public)
 
         function filtered_data = filter_rows(data, row_filter)
-            % Function intended for filtering out data from a zVariable.
-            % records       : Numeric array with N rows.             (Intended to represent zVariables with N records.)
-            % record_filter : Numeric/logical 1D vector with N rows. (Intended to represent zVariables with N records.)
-            % filtered_data : Array of the same size as "records", with 
-            %                 filtered_data(i,:,:, ...) == NaN,                 for record_filter(i)==0.
-            %                 filtered_data(i,:,:, ...) == records(i,:,:, ...), for record_filter(i)~=0.
+        % Function intended for filtering out data from a zVariable.
+        % records       : Numeric array with N rows.             (Intended to represent zVariables with N records.)
+        % record_filter : Numeric/logical 1D vector with N rows. (Intended to represent zVariables with N records.)
+        % filtered_data : Array of the same size as "records", with
+        %                 filtered_data(i,:,:, ...) == NaN,                 for record_filter(i)==0.
+        %                 filtered_data(i,:,:, ...) == records(i,:,:, ...), for record_filter(i)~=0.
 
             % Name? filter_rows? filter_records?
             
@@ -46,8 +48,19 @@ classdef dm_utils
         % Generic utility function.
         
             fn_list = fieldnames(s);
+            N = NaN;
             for i=1:length(fn_list)
                 fn = fn_list{i};
+                
+                % ASSERTIONS
+                if isnan(N)
+                    N = size(s.(fn), 1);
+                    if (N < i_first) || (N < i_last)
+                        error('BICAS:dm_utils:Assertion', 'i_first or i_last outside of interval of indices (rows).')
+                    end
+                elseif N ~= size(s.(fn), 1)
+                   error('BICAS:dm_utils:Assertion', 'Not all struct fields have the same number of rows.')
+                end
                 
                 s.(fn) = s.(fn)(i_first:i_last, :, :);
             end
@@ -56,8 +69,11 @@ classdef dm_utils
         
 
         function s = add_components_to_struct(s, s_amendment)
-        % Add values to every struct field by adding components after their highest column index (let them grow in
-        % the column index).
+        % Add values to every struct field by adding components after their highest row index (let them grow in
+        % the row index).
+        
+        % PROPOSAL: Better name. ~rows, ~fields
+        %   Ex: add_row_components_to_struct_fields
             
             % Generic utility function.
             fn_list = fieldnames(s_amendment);
@@ -71,10 +87,10 @@ classdef dm_utils
 
 
         function freq = get_LFR_frequency(FREQ)
-            % Convert LFR zVariable FREQ constant values to Hz.
-            %
-            % FREQ : The FREQ zVariable in LFR CDFs.
-            % freq : Frequency in Hz.
+        % Convert LFR zVariable FREQ constant values to Hz.
+        %
+        % FREQ : The FREQ zVariable in LFR CDFs.
+        % freq : Frequency in Hz.
             
             % PROPOSAL: FREQ assertion in separate function. General assertion-values-from-subset function?
             
@@ -98,19 +114,21 @@ classdef dm_utils
         
         
         function Rx = get_LFR_Rx(R0, R1, R2, FREQ)
-            % Return the relevant value of LFR CDF zVariables R0, R1, or R2, or a hypothetical "R3" which is always 1.
-            %
-            % R0, R1, R2, FREQ : LFR CDF zVariables. All must have identical sizes.
-            % Rx : The relevant values taken from R0, R1, R2, or an analogous hypothetical "R3" (always =1).
-            %
-            % NOTE: Works for all array sizes.
+        % Return the relevant value of LFR CDF zVariables R0, R1, or R2, or a hypothetical but analogous "R3" which is always 1.
+        %
+        % R0, R1, R2, FREQ : LFR CDF zVariables. All must have identical array sizes.
+        % Rx               : Same size array as R0, R1, R2, FREQ. The relevant values are copied, respectively, from
+        %                    R0, R1, R2, or an analogous hypothetical "R3" that is a constant (=1) depending on
+        %                    the value of FREQ in the corresponding component.
+        %
+        % NOTE: Works for all array sizes.
             
-            Rx = -ones(size(FREQ));
+            Rx = -ones(size(FREQ));        % Set to -1 (should always be overwritten).
             
             I = (FREQ==0); Rx(I) = R0(I);
             I = (FREQ==1); Rx(I) = R1(I);
             I = (FREQ==2); Rx(I) = R2(I);
-            I = (FREQ==3); Rx(I) = 1;      % Value of a hypothetical (non-existant) analogous zVariable "R3".
+            I = (FREQ==3); Rx(I) = 1;      % The value of a hypothetical (non-existant, constant) analogous zVariable "R3".
         end
 
 
@@ -125,23 +143,32 @@ classdef dm_utils
             % PROPOSAL: Better name?
             
             % ASSERTIONS
+            if 0 == length(varargin)
+                error('BICAS:dm_utils:Assertion:IllegalArgument', 'There is no vectors to look for sequences in.')
+            end
             for k = 1:length(varargin)
                 if ~iscolumn(varargin{k})
                     error('BICAS:dm_utils:Assertion:IllegalArgument', 'varargins are not all column vectors.')
                 end
+            end                
+            N_records = size(varargin{1}, 1);
+            if N_records == 0
+                error('BICAS:dm_utils:Assertion:IllegalArgument', 'Vectors are empty.')
             end
                 
-            N_records = size(varargin{1}, 1);
-            i_vetted = i_first;
-            while i_vetted+1 <= N_records;
+                
+            i_last = i_first;
+            while i_last+1 <= N_records       % For as long as there is another row...
                 for k = 1:length(varargin)
-                    if varargin{k}(i_first) ~= varargin{k}(i_vetted+1)
-                        break
+                    %if varargin{k}(i_first) ~= varargin{k}(i_last+1)
+                    if ~isequaln(varargin{k}(i_first), varargin{k}(i_last+1))
+                        % CASE: This row is different from the previous one.
+                        return
                     end
                 end
-                i_vetted = i_vetted + 1;
+                i_last = i_last + 1;
             end
-            i_last = i_vetted;
+            i_last = N_records;
         end
 
 
@@ -254,7 +281,7 @@ classdef dm_utils
             if numel(N_sequence) ~= 1
                 error('BICAS:dm_utils:Assertion:IllegalArgument', 'N_sequence not scalar.')
             elseif size(F_sequence, 1) ~= size(t_tt2000_1, 1)
-                error('BICAS:dm_utils:Assertion:IllegalArgument', 'F_sequence not the correct column vector.')
+                error('BICAS:dm_utils:Assertion:IllegalArgument', 'F_sequence and t_tt2000 do not have the same number of rows.')
             end
             
             N_records = numel(t_tt2000_1);
@@ -292,15 +319,12 @@ classdef dm_utils
         function data_2 = reshape_to_1_sample_per_record(data_1)
         % Convert data from N samples/record to 1 sample/record (from a matrix to a column vector).
         
-            % PROPOSAL: Abolish argument N_samples_per_snapshot? Is already implicit in size(data, 2).
-            
-            
             % NOTE: ndims always returns at least two, which is exactly what we want, also for empty and scalars, and row vectors.
             if ndims(data_1) > 2
                 error('BICAS:dm_utils:Assertion:IllegalArgument', 'data_1 has more than two dimensions.')
             end
             
-            data_2 = reshape(data_1, numel(data_1), 1);
+            data_2 = reshape(data_1', numel(data_1), 1);
         end
         
         
@@ -354,22 +378,33 @@ classdef dm_utils
         
         
         function log_unique_values_summary(variable_name, v)
-            % NOTE: Can handle zero values.
+        % Log number of unique values, and NaN, found in numeric matrix.
+        % Useful for summarizin dataset data (usually many unique values).            
+        %
+        % NOTE: Can handle zero values.
+        
             % Excplicitly state including/excluding NaN? Number of NaN? Percent NaN? Min-max?
             
             N_values = length(bicas.dm_utils.unique_NaN(v));
             N_NaN = sum(isnan(v(:)));
-            irf.log('n', sprintf('Number of unique %s values: %d (%i/%i NaN)', variable_name, N_values, N_NaN, numel(v)))
+            irf.log('n', sprintf('Number of unique %-6s values: %5d (%3i%%=%6i/%6i NaN)', ...
+                variable_name, N_values, ...
+                (N_NaN/numel(v))*100, ...
+                N_NaN, numel(v)))
         end
 
         
         
         function log_unique_values_all(variable_name, v)
-            % NOTE: Can handle zero values.
-            % Switch to log_unique_values_summary if too many?
+        % Log all unique values found in numeric matrix.
+        % Useful for logging dataset settings (few unique values).            
+        %
+        % NOTE: Can handle zero values.
+            
+            % Automatically switch to log_unique_values_summary if too many?
             % Print number of NaN?
             %N_NaN = sum(isnan(v(:)));
-            values_str = sprintf('%d', bicas.dm_utils.unique_NaN(v));
+            values_str = sprintf('%d ', bicas.dm_utils.unique_NaN(v));
             irf.log('n', sprintf('Unique %s values: %s', variable_name, values_str))
         end
         
@@ -415,7 +450,34 @@ classdef dm_utils
                 error('BICAS:dm_utils:Assertion:IllegalArgument', 'ACQUISITION_TIME has negative number of integer seconds.')
             end
         end
+        
+        
+        
+        function assert_unvaried_N_rows(s)
+        % Assert that all numeric fields in a structure have the same number of rows.
+        %
+        % Useful since in data_manager, much code assumes that struct fields represent CDF zVar records.
+            
+            % PROPOSAL: Better name.
+            %   Ex: _equal_rows, _equal_N_rows, _same_N_rows, _equal_nbr_of_rows
+            
+            fn_list = fieldnames(s);
+            N_rows = [];
+            for i = 1:length(fn_list)
+                fn = fn_list{i};
+                
+                if isnumeric(s.(fn))
+                    N_rows(end+1) = size(s.(fn), 1);
+                end
+            end
+            if length(unique(N_rows)) > 1    % NOTE: length=0 valid for struct containing zero numeric fields.
+                error('BICAS:dm_utils:Assertion', 'Numeric fields in struct do not have the same number of rows (likely corresponding to CDF zVar records).')
+            end
+        end
+        
     end   % Static
+    
+    
     
 end
 

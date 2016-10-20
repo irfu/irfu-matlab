@@ -32,8 +32,10 @@ end
 
 for i=1:length(selection_values)    
     j = find(strcmp(selection_values{i}, struct_list_values));
+    
     if numel(j) ~= 1
-        error('select_structs:Assertion:IllegalArgument', 'Can not find exactly one structure with field "%s" with value "%s".', field_name, selection_values{i})
+        error('select_structs:Assertion:IllegalArgument', 'Can not find exactly one structure with field "%s" with value "%s" (found %i of them).', ...
+            field_name, selection_values{i}, numel(j))
     end
     subset_struct_list{i} = struct_list{j};
 end

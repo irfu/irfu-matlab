@@ -21,7 +21,7 @@ end
 
 
 function test_1
-    % Testing L2R_LFR-SURV-CWF_V01/V02 --> L2S_LFR-SURV-CWF-E_V01
+    % Testing L2R_LFR-SURV-CWF_V01 --> L2S_LFR-SURV-CWF-E_V01
     % MUX mode 0
     %
     % NOTE: Does not test IBIAS.
@@ -30,6 +30,7 @@ function test_1
     %           specifically instead.
     %   Ex: ACQUISITION_TIME___expand_to_sequences
     %   Ex: tt2000___expand_to_sequences
+    % TODO: At least two rows - Tests reshaping snapshot/record-->sample/record better.
     
     clear   % Remove all global variables, i.e. CONSTANTS.    
     global CONSTANTS
@@ -37,9 +38,12 @@ function test_1
 
     DM = bicas.data_manager();
     
-    V_seq   = rand(1,672);
-    E_seq1  = rand(1,672);
-    E_seq2  = rand(1,672);
+    V_seq1   = rand(1,672);
+    V_seq2   = rand(1,672);
+    E_seq1_1  = rand(1,672);   % ELECTRICAL_1, record 1
+    E_seq2_1  = rand(1,672);
+    E_seq1_2  = rand(1,672);
+    E_seq2_2  = rand(1,672);
     NaN_seq = ones(1,672) * NaN;
     
     HK = struct();
@@ -49,29 +53,32 @@ function test_1
     HK.HK_BIA_DIFF_GAIN    = [0; 0];
     
     SCI = struct();    
-    SCI.Epoch = spdfparsett2000('2016-10-14 00:30:00');
-    SCI.ACQUISITION_TIME = uint32([0, 32767]);
+    SCI.Epoch = spdfparsett2000('2016-10-14 00:30:00')+int64([0;1e9]);
+    SCI.ACQUISITION_TIME = uint32([0, 32767; 1, 0]);
     SCI.QUALITY_FLAG = [];
     SCI.QUALITY_BITMASK = [];
-    SCI.POTENTIAL  = V_seq;
-    SCI.ELECTRICAL(:,:,1) = E_seq1;
-    SCI.ELECTRICAL(:,:,2) = E_seq2;
-    SCI.FREQ = [2];
-    SCI.R0 = [0];
-    SCI.R1 = [0];
-    SCI.R2 = [0];
+    SCI.POTENTIAL  = [V_seq1, V_seq2];
+    %SCI.ELECTRICAL(:,:,1) = [E_seq1_1];
+    %SCI.ELECTRICAL(:,:,2) = [E_seq2_1];
+    SCI.ELECTRICAL(:,:,1) = [E_seq1_1; E_seq1_2];
+    SCI.ELECTRICAL(:,:,2) = [E_seq2_1; E_seq2_2];
+    SCI.FREQ = [2; 2];
+    SCI.R0 = [0; 0];
+    SCI.R1 = [0; 0];
+    SCI.R2 = [0; 0];
 
     SCI_out = struct;
-    SCI_out.Epoch            = bicas.dm_utils.tt2000___expand_to_sequences(spdfparsett2000('2016-10-14 00:30:00'), 672, 256);
-    SCI_out.ACQUISITION_TIME = bicas.dm_utils.ACQUISITION_TIME___expand_to_sequences(SCI.ACQUISITION_TIME, 672, 256);
+    SCI_out.Epoch            = bicas.dm_utils.tt2000___expand_to_sequences(          SCI.Epoch,            672, [256; 256]);
+    SCI_out.ACQUISITION_TIME = bicas.dm_utils.ACQUISITION_TIME___expand_to_sequences(SCI.ACQUISITION_TIME, 672, [256; 256]);
     
-    SCI_out.V = [V_seq'*17, NaN_seq', NaN_seq'];
+    SCI_out.V = [V_seq1'*17, NaN_seq', NaN_seq'; V_seq2'*17, NaN_seq', NaN_seq'];
     SCI_out.E = [NaN_seq',  NaN_seq', NaN_seq'];
-    SCI_out.EAC = [E_seq1', E_seq1'+E_seq2', E_seq2'] / 5;
+    SCI_out.EAC = [E_seq1_1', E_seq1_1'+E_seq2_1', E_seq2_1'] / 5;
 
     DM.set_elementary_input_process_data('HK_BIA_V01', HK);
     DM.set_elementary_input_process_data('L2R_LFR-SURV-CWF_V01', SCI);
-    SCI_out_result = DM.get_process_data_recursively('L2S_LFR-SURV-CWF-E_V01', 'LFR-SURV-CWF-E_V02-V01');
+    %DM.set_elementary_input_process_data('L2R_LFR-SURV-CWF_V02', SCI);
+    SCI_out_result = DM.get_process_data_recursively('L2S_LFR-SURV-CWF-E_V01', 'LFR-SURV-CWF-E_V01-V01');
     
     epsilon = 1e-13;
     fn_list = fieldnames(SCI_out)';

@@ -50,7 +50,7 @@ end
 
 
 
-C_sw_mode = CONSTANTS.get_C_sw_mode_full(sw_mode_CLI_parameter);
+C_sw_mode = bicas.data_manager.get_C_sw_mode_full(sw_mode_CLI_parameter);
 
 
 
@@ -75,9 +75,9 @@ for i = 1:length(C_sw_mode.outputs)
     
     
     
-    %===========================================================================================
+    %==================================================
     % Iterate over all output process data field names
-    %===========================================================================================
+    %==================================================
     fn_list = fieldnames(process_data);
     for i = 1:length(fn_list)
         zVar_name = fn_list{i};
