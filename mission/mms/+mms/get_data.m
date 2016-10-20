@@ -520,8 +520,8 @@ end
         end
         rX = comb_ts(rX);
         rY = mms.db_get_ts(datasetName, [pref compS.yy suf],Tint); rY = comb_ts(rY);
-        rZ = mms.db_get_ts(datasetName, [pref compS.yy suf],Tint); rZ = comb_ts(rZ);
-        rX.data = rX.data + rY.data + rZ.data;
+        rZ = mms.db_get_ts(datasetName, [pref compS.zz suf],Tint); rZ = comb_ts(rZ);
+        rX.data = (rX.data + rY.data + rZ.data)/3;
         res = irf.ts_scalar(rX.time, rX.data);
         res.name = [varStr '_' mmsIdS];
         res.units = rX.units;
