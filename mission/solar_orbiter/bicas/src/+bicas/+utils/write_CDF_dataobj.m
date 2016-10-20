@@ -1,40 +1,48 @@
-% write_CDF(file_path, spdfcdfread_out, spdfcdfread_info, varargin)   Function which writes a CDF file.
+function write_CDF_dataobj(file_path, dataobj_GlobalAttributes, dataobj_data, dataobj_VariableAttributes, dataobj_Variables, varargin)
+% write_CDF_dataobj(file_path, spdfcdfread_data, spdfcdfread_info, varargin)   Function which writes a CDF file.
 %
-% Attempt at a function which can easily write a CDF using variables on the same data format as
-% returned by [out, info] = spdfcdfread(... , 'Structure', 1, 'KeepEpochAsIs', 1).
+% Attempt at a function which can easily write a CDF using variables on the same data format as returned by dataobj
+% (irfu-matlab). Useful for reading a CDF file, modifying the contents somewhat, and then writing the modified contents
+% to a CDF file. Originally based on write_cdf.m/write_cdf_spdfcdfread.m.
 %
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
-% First created 2016-07-12
+% First created 2016-07-12 (write_cdf.m/write_cdf_spdfcdfread.m), 2016-10-20 (write_cdf_dataobj.m)
 %
 %
+% NOTE: As of 2016-10-20: This function is intended to replace write_CDF_spdfcdfread.
 %
 % ARGUMENTS
 % =========
-% spdfcdfread_out  : Data on the format returned from spdfcdfread.
-% spdfcdfread_info : Data on the format returned from spdfcdfread.
-% varargin         : Optionally 'fill_empty' : EXPERIMENTAL FEATURE. Empty CDF variable data is replaced by one pad
-% value scalar (one record only) of the right type. NOTE: This is not meant for "serious use" (it only a workaround) but
-% for tests when writing CDFs, using data read from CDFs. Only works for numerical types.
+% file_path                   : Path to file to create.
+% dataobj_GlobalAttributes,   
+% dataobj_data,
+% dataobj_VariableAttributes,
+% dataobj_Variables           : The corresponding fields of an instantiated dataobj, i.e. e.g. do.data,
+%                               do.GlobalAttributes.
+% varargin                    : EXPERIMENTAL FEATURE. Optionally string 'fill_empty':
+%                               Empty CDF variable data is replaced by one pad
+%                               value scalar (one record only) of the right type.
+%                               NOTE: This is not meant for "serious use" (it is only a workaround) but
+%                               for tests when writing CDFs, using data read from CDFs. Only works for numerical types.
 %
-% NOTE: As of 2016-07-28: In practice this function only uses "spdfcdfread_out.Data" in "spdfcdfread_out". Therefore the
-% caller does not need to set the other "out" fields, like when reading a master file with empty fields for zero-record
-% zVariables.
-% 
 %
 %
 % LIMITATIONS
 % ===========
-% NOTE PROBLEM: spdfcdfread and scpdfcdfinfo may crash MATLAB(!) when reading files written with spdfcdfwrite (which
+% NOTE/PROBLEM: spdfcdfread and scpdfcdfinfo may crash MATLAB(!) when reading files written with spdfcdfwrite (which
 % this function uses). It appears that this happens when spdfcdfwrite receives various forms of "incomplete" input data.
-% spdfcdfwrite appears to often not give any warning/error message when and writes a file anyway. Before passing data to
-% spdfcdfwrite, this function tries to give errors for, or correct such data, but can only do so as far as the problem
-% is understood by the author. Submitting empty data for a CDF variable is one such case. Therefore, despite best
-% efforts, this function might still produce nonsensical files instead of producing any warning or error message.
+% spdfcdfwrite appears to often not give any warning/error message when receiving such data and writes a file anyway
+% with neither error nor warning. Before passing data to spdfcdfwrite, this function tries to give errors for, or
+% correct such data, but can only do so as far as the problem is understood by the author. Submitting empty data for a
+% CDF variable is one such case. Therefore, despite best efforts, this function might still produce nonsensical files
+% instead of producing any warning or error message.
 %
 % NOTE PROBLEM(?): Can not select CDF encoding (Network/XDR, IBMPC etc) when writing files. The NASA SPDF MATLAB CDF
 % Software distribution does not have this option (this has been confirmed with their email support 2016-07-14).
 %
-% BUG: SCALEMIN, SCALEMAX for tt2000/Epoch of the wrong type in the final CDF.
+% BUG: Variable attributes SCALEMIN, SCALEMAX for Epoch are stored as CDF_INT8 (not CDF_TT2000) in the final CDF file.
+% The information stored seems correct though. Therefore, the same variable attributes are also represented as integers
+% when reading the CDF file with dataobj.
 %
 % BUG/NOTE: spdfcdfwrite has been observed to set the wrong pad value when writing 0 records. Observed when tried to
 % copy
@@ -43,51 +51,17 @@
 %
 % NOTE: spdfcdfwrite always writes char as UCHAR (not CHAR) in the CDF.
 %
+% NOTE: Might fail for matrices of four dimensions or higher (including records as one dimension). Untested.
 %
 %
-% IMPLEMENTATION NOTES: COMPLICATIONS WHEN COMBINING spdfcdfread + cpdfcdfwrite
-% =============================================================================
-% NOTE: spdfcdfread and spdfcdfwrite interpret 'tt2000' (or at least "Epoch") data differently:
-% - spdfcdfread by default converts tt2000 data to MATLAB's own time scalar (using datenum)
-%   datestr converts value_default-->UTC. ("value_default" refers to the above).
-%   Use spdfcdfread argument 'KeepEpochAsIs'=1 to read data that can be directly passed on to spdfcdfwrite.
-%   spdfbreakdowntt2000 converts value_KeepEpochAsIs-->UTC.
-% - spdfdatenumtott2000 converts value_default-->value_KeepEpochAsIs
-%   However, in practice there is a slight difference in data (rounding?) between
-%    (1) Read the CDF and get MATLAB's time scalar, then convert to tt2000, and
-%    (2) Read the CDF with spdfcdfread+KeepEpochAsIs=1.
 %
-% NOTE: FILLVAL, VALIDMIN/-MAX, SCALEMIN/-MAX and pad values should presumably be thought of as having the
-% same CDF data type (or MATLAB class) as the corresponding variable data. However, scpdfcdfread returns
-% 1) FILLVAL, VALIDMIN/-MAX, SCALEMIN/-MAX as UTC strings for tt2000 data (or at least "Epoch").
-% 2) pad value (info.Variables(i, 9)       as a tt2000 value (independent of spdfcdfread+KeepEpochAsIs flag).
-%
-% NOTE: String CDF variables can not be written back in the same format. spdfcdfread returns (0-D and 1-D) CDF char
-% variables as matrices with
-%   index 1=row   =component within a 1-D record
-%   index 2=column=#character in string (as usual)
-%   index 3=#record.
-% Empirically, strings should be specified without the (spdfcdfwrite) 'RecordBound' option. Multiple strings within a
-% (1-D) record should be specified as one string per row. Every such matrix is a component in a column cell array.
-%
-% NOTE: [out, info] = spdfcdfread(..., 'Structure', 1) returns out(i).VariableName/.Data/.Attributes==[] for zero-record
-% zVariables. info.VariableAttributes.FIELDNAM{i,1} and info.Variables are still complete in those cases. Therefore, use
-% info.Variables(:,1) instead. This is important when reading master CDFs which by their nature contain many zero-record
-% zVariables.
-%
-% NOTE: The format of data returned by
-%    [out, info] = spdfcdfread(... , 'Structure', 1, 'KeepEpochAsIs', 1)
-% is peculiar. 
-%  - It contains redundant data.
-%  - The "out" array contains empty components (the struct fields are empty), apparently for CDF variables which contain no data.
-%    However, the CDF variable names and variable attributes are still represented in info.Variables{#variable, #column} and
-%    info.VariableAttributes.(var_attr_name) == [var_names_column, values_column].
-%    Note: It appears that out(i) corresponds to info.Variables(i,:).
-%
-% 
-%
-function write_CDF(file_path, spdfcdfread_out, spdfcdfread_info, varargin)
-%
+% IMPLEMENTATION NOTE
+% ===================
+% The function does not accept a whole dataobj object since instances of dataobj are likely not meant to be modified
+% after creation. It is possible to modify them though. Therefore the function only accepts the parts of a dataobj that
+% it really needs, which still means it accepts a lot of redundant information in the arguments.
+
+
 % PROPOSAL: Enable MD5 checksum.
 % PROPOSAL: Option for filling empty variable with pad values. 1 record?
 %    CON: Can not know the (non-record) dimensions of such a CDF variable.
@@ -97,20 +71,21 @@ function write_CDF(file_path, spdfcdfread_out, spdfcdfread_info, varargin)
 %    QUESTION: Can dataobj be altered?!
 %
 % PROPOSAL: Call NASA SPDFs Java code instead?!! Should be possible to easily call Java code from inside MATLAB.
-% PROPOSAL: Redefine argument "spdfcdfread_out" to "spdfcdfread_out_Data".
+% PROPOSAL: Redefine argument "spdfcdfread_data" to "spdfcdfread_data_Data".
 %   NOTE: Ambiguous format. Cell array (vector) of cell arrays?
 %   CON: Not really analogue with anything that can be directly extracted from spdfcdfread.
 %
 % PROPOSAL: Some form of validation of input.
 %    PRO: Would confirm that the input format is as it is understood.
-%    PROPOSAL: Check that out(i) corresponds to info.Variables(i,:) (where "out" fields are not empty).
-%
+%    PROPOSAL: Check that stated size (within record) fits data.
+%       PROPOSAL: Flag
+%    PROPOSAL: Check that stated nbr of records fits data.
+%       PROPOSAL: Flag
+%    PROPOSAL: Assertions for redundant data (within dataobj data/attributes).
+
+
 
     VARIABLE_ATTRIBUTES_OF_VARIABLE_TYPE = {'VALIDMIN', 'VALIDMAX', 'SCALEMIN', 'SCALEMAX', 'FILLVAL'};
-        
-    % Rename variables for convenience.
-    out  = spdfcdfread_out;
-    info = spdfcdfread_info;
 
 
 
@@ -120,7 +95,7 @@ function write_CDF(file_path, spdfcdfread_out, spdfcdfread_info, varargin)
         if strcmp(varargin{i}, 'fill_empty')
             fill_empty_variables = 1;
         else
-            error('write_CDF:Assertion:IllegalArgument', 'Can not interpret argument option.')
+            error('write_CDF_dataobj:Assertion:IllegalArgument', 'Can not interpret argument option.')
         end
     end
     
@@ -134,23 +109,23 @@ function write_CDF(file_path, spdfcdfread_out, spdfcdfread_info, varargin)
     VARDATATYPE = {};
     PADVALS = {};
     
-    for i=1:length(out)
+    %for i=1:length(data)
+    for i=1:length(dataobj_Variables(:,1))
         %---------------------------------------------------------------------------------------------------------------
-        % IMPLEMENTATION NOTE: Not using (1) out(i).VariableName or (2) info.Variables(:,1) to obtain the variable name
+        % IMPLEMENTATION NOTE: Not using (1) data(i).VariableName or (2) info.Variables(:,1) to obtain the variable name
         % since experience shows that components of (1) can be empty (contain empty struct fields) and (2) may not cover
         % all variables when obtained via spdfcdfread!!
         %---------------------------------------------------------------------------------------------------------------
-        %zVar_name              = info.VariableAttributes.FIELDNAM{i, 1};    % i.Variables{i, 1}
-        zVar_name              = info.Variables{i, 1};
-        spdfcdfwrite_data_type = info.Variables{i, 4};   % uint32, tt2000 etc. Change name to CDF_Data_type?! spdfcdfwrite_data_type?!
-        pad_value              = info.Variables{i, 9};
+        zVar_name              = dataobj_Variables{i, 1};
+        dataobj_stated_data_type = dataobj_Variables{i, 4};   % uint32, tt2000 etc. Change name to CDF_Data_type?! dataobj_stated_data_type?!
+        pad_value              = dataobj_Variables{i, 9};   % This value can NOT be found in dataobj_data. Has to be read from dataobj_Variables.
         
         %=========================================
         % Special case for zero record zVariables
         %=========================================
-        if isempty(out(i).Data) % && ~isempty(out(i).VariableName) && ~isempty(out(i).Attributes)
+        if isempty(dataobj_data.(zVar_name).data)
             if ~fill_empty_variables
-                error('write_CDF:Assertion', 'Can not handle CDF variables with zero records (due to presumed bug in spdfcdfwrite).')
+                error('write_CDF_dataobj:Assertion', 'Can not handle CDF variables with zero records (due to presumed bug in spdfcdfwrite).')
             else
                 %----------------------------------------------------------------------------------------
                 % EXPERIMENTAL SOLUTION: Store data with pad values instead.
@@ -158,15 +133,16 @@ function write_CDF(file_path, spdfcdfread_out, spdfcdfread_info, varargin)
                 %----------------------------------------------------------------------------------------
                 %N_records = max([s{:}]);   % Get the greatest number of records that any variable has.
                 N_records = 1;
-                MATLAB_class = bicas.utils.convert_CDF_type_to_MATLAB_class(spdfcdfwrite_data_type, 'Permit MATLAB classes');
+                zVar_data_MATLAB_class = bicas.utils.convert_CDF_type_to_MATLAB_class(dataobj_stated_data_type, 'Permit MATLAB classes');
                 try
-                    zVar_data = cast(ones(N_records, 1), MATLAB_class) * pad_value;       % NOTE: Hardcoded uint8
+                    zVar_data = cast(ones(N_records, 1), zVar_data_MATLAB_class) * pad_value;       % NOTE: Hardcoded uint8
                 catch exception
-                    error('write_CDF:Assertion', 'Can not type cast variable to "%s" (CDF: "%s").', MATLAB_class, spdfcdfwrite_data_type)
+                    error('write_CDF_dataobj:Assertion', 'Can not type cast variable to "%s" (CDF: "%s").', ...
+                        zVar_data_MATLAB_class, dataobj_stated_data_type)
                 end
             end
         else
-            zVar_data = out(i).Data;
+            zVar_data = dataobj_data.(zVar_name).data;
         end
         
         
@@ -179,25 +155,24 @@ function write_CDF(file_path, spdfcdfread_out, spdfcdfread_info, varargin)
         % Therefore, do this check after having dealt with empty data.
         % (2) Must do this after converting time strings (char) data to uint64/tt2000.
         %========================================================================================================
-        MATLAB_class = class(zVar_data);
-        %if ~MATLAB_type_compatible_with_cdf_type(MATLAB_class, spdfcdfwrite_data_type)
-        if ~strcmp(  bicas.utils.convert_CDF_type_to_MATLAB_class(spdfcdfwrite_data_type, 'Permit MATLAB classes'),   MATLAB_class  )
-            error('write_CDF:Assertion', 'MATLAB data type "%s" does not match the actual CDF data ("%s") for CDF variable "%s".', MATLAB_class, spdfcdfwrite_data_type, zVar_name)
+        zVar_data_MATLAB_class = class(zVar_data);
+        if ~strcmp(  bicas.utils.convert_CDF_type_to_MATLAB_class(dataobj_stated_data_type, 'Permit MATLAB classes'),   zVar_data_MATLAB_class  )
+            error('write_CDF_dataobj:Assertion', ...
+                'MATLAB class (variable type) ("%s") does not match the actual CDF data type ("%s") for CDF variable "%s".', ...
+                zVar_data_MATLAB_class, dataobj_stated_data_type, zVar_name)
         end
         
         
         
-        %==========================================================================================
-        % Special case for "char"
-        % -----------------------
-        % NOTE: Previous tt2000/UTC strings have already been converted to non-char at this stage.
-        %==========================================================================================
         if ischar(zVar_data)
-            %=======================================================================
-            % Convert 3-D char matrices to column cell arrays of 2-D char matrices.
-            %=======================================================================
+            %===========================================================================================================
+            % Special case for "char": Convert 3-D char matrices to column cell arrays of 2-D char matrices.
+            % -----------------------
+            % IMPLEMENTATION NOTE: It is not possible to permute indices for string as one can for non-char for ndim==3.
+            %===========================================================================================================
             if ndims(zVar_data) > 3
-                error('write_CDF:Assertion:OperationNotImplemented', 'Can not handle more CDF char strings variables with more than 1 dimension (excluding the record dimension).')
+                error('write_CDF_dataobj:Assertion:OperationNotImplemented', ...
+                    'Can not handle more CDF char strings variables with more than 1 dimension (excluding the record dimension).')
             end
             zVar_data_new = {};
             for i_record = 1:size(zVar_data, 3)
@@ -207,61 +182,93 @@ function write_CDF(file_path, spdfcdfread_out, spdfcdfread_info, varargin)
         else
             RECBNDVARS{end+1} = zVar_name;
             
-            % TEMP BUG FIX. - TEST
-            %if ndims(zVar_data) == 3
-            %    zVar_data = permute(zVar_data, [2,3,1]);
-            %end
+            %===========================================================================================================
+            % Special behaviour for 3D matrices.
+            % ----------------------------------
+            % For 3D matrices, spdfcdfwrite interprets the last index (not the first index!) as the record number.
+            % Must therefore permute the indices so that write_cdf2 is consistent for all numbers of dimensions.
+            %     write_cdf2 data arguments        : index 1 = record.
+            %     matrix passed on to spdfcdfwrite : index 3 = record.
+            % NOTE: spdfcdfread (at least with argument "'Structure', 1, 'KeepEpochAsIs', 1") works like spdfcdfwrite in
+            % this regard. 
+            %
+            % Excerpt from the comments in "spdfcdfwrite.m":
+            % ----------------------------------------------
+            %   """SPDFCDFWRITE(..., 'RecordBound', RECBNDVARS) specifies data values in arrays
+            %   (1-D or multi-dimensional) are to be written into "records" for the given
+            %   variable. RECBNDVARS is a cell array of variable names. The M-by-N array
+            %   data will create M rows (records), while each row having N elements. For
+            %   examples, 5-by-1 array will create five (5) scalar records and 1-by-5 array
+            %   will write out just one (1) record with 5 elements. For 3-D array of
+            %   M-by-N-by-R, R records will be written, and each record with M-by-N
+            %   elements. Without this option, array of M-by-N will be written into a single
+            %   record of 2-dimensions. See sample codes for its usage."""
+            %===========================================================================================================
+            if ndims(zVar_data) == 3
+                zVar_data = permute(zVar_data, [2,3,1]);
+            elseif ndims(zVar_data) > 3
+                error('write_CDF_dataobj:Assertion:IllegalArgument:OperationNotImplemented', ...
+                    'Found zVar data with more than three dimensions. Functionality has not been tested for this.')
+            end
         end
         
 
         
-        %=================================================================
+        %===========================================================================================================
         % Convert specific VariableAttributes values.
-        % 1) tt2000 values as UTC strings: converted to tt2000.
-        % 2) All other: Convert to the (z)variable data type.
-        %
-        % IMPLEMENTATION NOTE: spdfcdfread (not spdfcdfwrite) can crash if not doing this!!! Think
-        % it is tt2000 CDF variables which are the problem(?).
+        % Case 1: tt2000 values as UTC strings : Convert to tt2000.
+        % Case 2: All other                    : Convert to the zVariable data type.
+        % --------------------------------------------------------------------------
+        % IMPLEMENTATION NOTE: spdfcdfread (not spdfcdfwrite) can crash if not doing this!!!
+        % The tt2000 CDF variables are likely the problem(?).
         %
         % BUG: Does not seem to work on SCALEMIN/-MAX specifically despite identical treatment, for unknown reason.
-        %=================================================================
-        for i_va = 1:length(VARIABLE_ATTRIBUTES_OF_VARIABLE_TYPE)
-            var_attr_name = VARIABLE_ATTRIBUTES_OF_VARIABLE_TYPE{i_va};
-            if ~isfield(info.VariableAttributes, var_attr_name)
+        %===========================================================================================================
+        %zVar_name
+        for i_van = 1:length(VARIABLE_ATTRIBUTES_OF_VARIABLE_TYPE)   % van = variable attribute name
+            var_attr_name = VARIABLE_ATTRIBUTES_OF_VARIABLE_TYPE{i_van};
+            if ~isfield(dataobj_VariableAttributes, var_attr_name)
                 continue
             end
             
-            % IMPLEMENTATION NOTE: Can NOT assume that every CDF variable is represented among
-            % info.VariableAttributes.
+            % IMPLEMENTATION NOTE: Can NOT assume that every CDF variable is represented among the cell arrays in
+            % dataobj_VariableAttributes.(...).
             % Example: EM2_CAL_BIAS_SWEEP_LFR_CONF1_1M_2016-04-15_Run1__e1d0a9a__CNES/ROC-SGSE_L2R_RPW-LFR-SURV-CWF_e1d0a9a_CNE_V01.cdf
-            iVAf = info.VariableAttributes.(var_attr_name);
-            i_va = find(strcmp(iVAf(:,1), zVar_name));
-            if length(i_va) == 0
+            VA_field = dataobj_VariableAttributes.(var_attr_name);
+            i_vav = find(strcmp(VA_field(:,1), zVar_name));
+            i_van = i_vav;
+            if length(i_vav) == 0
+                % CASE: The current zVariable does not have this attribute (var_attr_name).
                 continue
-            elseif length(i_va) > 1
-                error('write_CDF:Assertion:OperationNotImplemented', 'Can not handle multiple variable name matches in info.VariableAttributes.%s.', var_attr_name)
+            elseif length(i_vav) > 1
+                error('write_CDF_dataobj:Assertion:OperationNotImplemented', ...
+                    'Can not handle multiple variable name matches in dataobj_VariableAttributes.%s.', var_attr_name)
             end
-            var_attr_value = iVAf{i_va, 2};
-            if strcmp(spdfcdfwrite_data_type, 'tt2000') && ischar(var_attr_value) && 1
-                var_attr_value = spdfparsett2000(var_attr_value);
-            else
-                if ~strcmp(spdfcdfwrite_data_type, class(var_attr_value))
-                    error('write_CDF:Assertion', 'Found VariableAttribute %s for CDF variable %s whose data type did not match the declared one.', var_attr_name, zVar_name)
-                end
-                %fprintf('%s  %s  ', class(var_attr_value), spdfcdfwrite_data_type)   % DEBUG
-                %var_attr_value = typecast(var_attr_value, spdfcdfwrite_data_type);                
-                %fprintf('%s\n', class(var_attr_value))   % DEBUG                
+            var_attr_value = VA_field{i_vav, 2};
+            if strcmp(dataobj_stated_data_type, 'tt2000') && ischar(var_attr_value)
+                %var_attr_name
+                %var_attr_value
+                var_attr_value = spdfparsett2000(var_attr_value);   % Convert char-->tt2000.
+            elseif ~strcmp(dataobj_stated_data_type, class(var_attr_value))
+                %zVar_name
+                %dataobj_stated_data_type
+                %var_attr_name
+                %var_attr_value
+                class(var_attr_value)
+                error('write_CDF_dataobj:Assertion', ...
+                    'Found VariableAttribute %s for CDF variable %s whose data type did not match the declared one.', ...
+                    var_attr_name, zVar_name)
             end
-            iVAf{i_va, 2} = var_attr_value;
-            info.VariableAttributes.(var_attr_name) = iVAf;
+            VA_field{i_van, 2} = var_attr_value;
+            dataobj_VariableAttributes.(var_attr_name) = VA_field;
         end
 
-        VARIABLE_LIST(end+[1,2]) = {zVar_name, zVar_data                  };        
-        VARDATATYPE  (end+[1,2]) = {zVar_name, spdfcdfwrite_data_type};
-        PADVALS      (end+[1,2]) = {zVar_name, pad_value             };
+        VARIABLE_LIST(end+[1,2]) = {zVar_name, zVar_data               };        
+        VARDATATYPE  (end+[1,2]) = {zVar_name, dataobj_stated_data_type};
+        PADVALS      (end+[1,2]) = {zVar_name, pad_value               };
     end
     
-    % info.VariableAttributes = rmfield(info.VariableAttributes, {'VALIDMIN', 'VALIDMAX', 'SCALEMIN', 'SCALEMAX', 'FILLVAL'});
+    % dataobj_VariableAttributes = rmfield(dataobj_VariableAttributes, {'VALIDMIN', 'VALIDMAX', 'SCALEMIN', 'SCALEMAX', 'FILLVAL'});
     
     
 %===================================================================================================
@@ -369,7 +376,7 @@ function write_CDF(file_path, spdfcdfread_out, spdfcdfread_info, varargin)
 %   that appear in PADVALS must appear in VARIABLELIST.
 %===================================================================================================
 irf.log('n', sprintf('Writing CDF file "%s".', file_path))
-spdfcdfwrite(file_path, VARIABLE_LIST(:), 'RecordBound', RECBNDVARS, 'GlobalAttributes', info.GlobalAttributes, ...
-    'VariableAttributes', info.VariableAttributes, 'Vardatatypes', VARDATATYPE, 'PadValues', PADVALS)
+spdfcdfwrite(file_path, VARIABLE_LIST(:), 'RecordBound', RECBNDVARS, 'GlobalAttributes', dataobj_GlobalAttributes, ...
+    'VariableAttributes', dataobj_VariableAttributes, 'Vardatatypes', VARDATATYPE, 'PadValues', PADVALS)
 
 end
