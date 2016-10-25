@@ -84,7 +84,11 @@ if isa(varargin{1},'PDist')
         end
           
         theta = pdist.depend{1,3};
-        stepTable = TSeries(pdist.time,pdist.ancillary.esteptable);
+        if isfield(pdist.ancillary, 'esteptable')
+            stepTable = TSeries(pdist.time,pdist.ancillary.esteptable);
+        else
+            stepTable = TSeries(pdist.time, zeros(length(pdist.time), 1));
+        end
         energy0 = pdist.ancillary.energy0;
         energy1 = pdist.ancillary.energy1;
         noangles = 0;        
