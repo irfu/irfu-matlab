@@ -35,7 +35,7 @@ classdef mms_local_file_db < mms_file_db
       %  fileList = list_files(MMS_DB, 'mms1_edp_comm_l1b_dce128');
       narginchk(2,3)
       fileList = [];
-      if nargin==3 && (~isempty(tint) && ~isa(tint,'GenericTimeArray')),
+      if nargin==3 && (~isempty(tint) && ~isa(tint,'GenericTimeArray'))
         error('Expecting TINT (GenericTimeArray)')
       elseif nargin==2, tint = [];
       end
@@ -48,7 +48,7 @@ classdef mms_local_file_db < mms_file_db
         errStr = 'filePrefix too short';
         irf.log('critical',errStr), error(errStr)
       end
-      if strcmp(C{2},'ancillary'),
+      if strcmp(C{2},'ancillary')
         list_ancillary();
         if isempty(fileList) || isempty(tint), return, end
         pick_ancillary();
@@ -58,7 +58,7 @@ classdef mms_local_file_db < mms_file_db
 					fileList = obj.index.search_files_with_dataset(filePrefix,tint);
 					return
 				else
-					if ~isempty(tint),
+					if ~isempty(tint)
 						list_sci_tint()
 					else
 						irf.log('warning','THIS MAY TAKE SOME TIME')
@@ -256,7 +256,7 @@ classdef mms_local_file_db < mms_file_db
         hasFile = arrayfun(@(x) ~isempty(strfind(x.name,fName)),fileList);
         if ~any(hasFile), fileList = [fileList add_ss(Entry)]; return, end
         iSame = find(hasFile);
-        if length(iSame) > 1,
+        if length(iSame) > 1
           error('multiple files with same name'),
         end
         
@@ -365,7 +365,7 @@ classdef mms_local_file_db < mms_file_db
   methods (Access=private)
     function p = get_path_to_file(obj,fileName)
       C = strsplit(lower(fileName),'_');
-      if strcmpi(fileName(end-3:end),'.cdf'),
+      if strcmpi(fileName(end-3:end),'.cdf')
         d =  C{end-1}; p = obj.dbRoot;
         for ix=1:(length(C)-2), p = [p filesep C{ix}]; end %#ok<AGROW>
         p = [p filesep d(1:4) filesep d(5:6)];

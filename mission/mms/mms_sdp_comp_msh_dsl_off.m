@@ -73,7 +73,7 @@ for mmsId = 1:4
     end
     if ~isempty(Es34AspocOff)
       Es34AspocOffR = Es34AspocOff.resample(Epoch20s,'median');
-    else Es34AspocOffR = [];
+    else, Es34AspocOffR = [];
     end
     E34.(mmsIdS) = Es34AspocOffR;
   end
@@ -147,7 +147,7 @@ ErefFpiX = median(ErefFpiX,2,'omitnan'); ErefFpiY = median(ErefFpiY,2,'omitnan')
 ErefFpi = irf.ts_vec_xy(Epoch20s,[ErefFpiX ErefFpiY]);
 
 %%
-if flagOldFile, ALPHA = 1.25/1.1; else ALPHA = 1; end
+if flagOldFile, ALPHA = 1.25/1.1; else, ALPHA = 1; end
 DE = struct('c1',[],'c2',[],'c3',[],'c4',[]);
 Off = DE;
 for mmsId = 1:4
@@ -156,7 +156,7 @@ for mmsId = 1:4
   DE.(mmsIdS) = ALPHA*E34.(mmsIdS) - ErefFpi;
   deTmp = DE.(mmsIdS).data; deTmp = deTmp(idxMSH,:); 
   offTmp = zeros(1,2);
-  for iComp = 1:2,
+  for iComp = 1:2
     offTmp(iComp) = median(deTmp(~isnan(deTmp(:,iComp)),iComp));
   end
   Off.(mmsIdS) = offTmp;
@@ -211,7 +211,7 @@ ylabel(hca,'dEx [mV/m]')
 plData = {};
 for mmsId = 1:4
   mmsIdS = sprintf('c%d',mmsId);
-  if isempty(Off.(mmsIdS)), tt = NaN; else tt = Off.(mmsIdS)(1); end
+  if isempty(Off.(mmsIdS)), tt = NaN; else, tt = Off.(mmsIdS)(1); end
   plData= [plData {sprintf('dEx%d=%.2f',mmsId,tt)}]; %#ok<AGROW>
 end
 irf_legend(hca,plData,[0.1, 0.05],'color','cluster');
@@ -232,7 +232,7 @@ ylabel(hca,'dEy [mV/m]')
 plData = {};
 for mmsId = 1:4
   mmsIdS = sprintf('c%d',mmsId);
-  if isempty(Off.(mmsIdS)), tt = NaN; else tt = Off.(mmsIdS)(2); end
+  if isempty(Off.(mmsIdS)), tt = NaN; else, tt = Off.(mmsIdS)(2); end
   plData= [plData {sprintf('dEy%d=%.2f',mmsId,tt)}]; %#ok<AGROW>
 end
 irf_legend(hca,plData,[0.1, 0.05],'color','cluster');
@@ -283,8 +283,8 @@ idxJump = find(diff(mask)~=0);
 
 ints = []; iStop = [];
 for i=1:length(idxJump)+1
-  if isempty(iStop), iStart = 1; else iStart = iStop + 1; end
-  if i==length(idxJump)+1, iStop = length(mask); else iStop = idxJump(i); end
+  if isempty(iStop), iStart = 1; else, iStart = iStop + 1; end
+  if i==length(idxJump)+1, iStop = length(mask); else, iStop = idxJump(i); end
   if ~mask(iStart), continue, end
   ints = [ ints; iStart iStop]; %#ok<AGROW>
 end

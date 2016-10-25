@@ -100,8 +100,8 @@ end
 		Lprobe.name = 'THOR SDP';
 		Lprobe.surface = 'cluster';
 		Lprobe.radiusSphere = 0.04; % 4cm
-		Lprobe.radiusWire = 0.12e-3;
-		Lprobe.lengthWire = 1.75;
+		Lprobe.radiusWire = 0.23/2*1e-3; % 0.23 mm diameter
+		Lprobe.lengthWire = 3;
 	end
 	function Lprobe = lp_THOR_HFA
 		Lprobe = lp.lprobe;

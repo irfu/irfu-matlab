@@ -47,15 +47,15 @@ anglevec = [15:15:180]; % Default pitch angles. 15 degree angle widths
 dangle = median(diff(anglevec))*ones(1,length(anglevec));
 tmpnargin = nargin;
 if isa(varargin{tmpnargin-1},'char')
-    if strcmp(varargin{tmpnargin-1},'angles');
-        if (length(varargin{tmpnargin}) == 1),
+    if strcmp(varargin{tmpnargin-1},'angles')
+        if (length(varargin{tmpnargin}) == 1)
             nangles = varargin{tmpnargin};
             nangles = floor(nangles); % Make sure input is integer
             dangle = 180/nangles;
             anglevec = [dangle:dangle:180];
             dangle = dangle*ones(1,length(anglevec));
             irf.log('notice','User defined number of pitch angles.')
-        elseif (length(varargin{tmpnargin}) > 1),
+        elseif (length(varargin{tmpnargin}) > 1)
             anglevec = varargin{tmpnargin};
             dangle = diff(anglevec);
             anglevec = anglevec(2:end);
@@ -71,8 +71,8 @@ pitcha = anglevec-dangle/2;
 
 % Input check
 rtrnTS = 1;
-if isa(varargin{1},'PDist'),
-    if strcmp('skymap',varargin{1}.type),
+if isa(varargin{1},'PDist')
+    if strcmp('skymap',varargin{1}.type)
         irf.log('warning','PDist is skymap format; computing pitch angle distribution.');
         pdist = varargin{1};
         B = varargin{2};
@@ -84,19 +84,23 @@ if isa(varargin{1},'PDist'),
         end
           
         theta = pdist.depend{1,3};
-        stepTable = TSeries(pdist.time,pdist.ancillary.esteptable);
+        if isfield(pdist.ancillary, 'esteptable')
+            stepTable = TSeries(pdist.time,pdist.ancillary.esteptable);
+        else
+            stepTable = TSeries(pdist.time, zeros(length(pdist.time), 1));
+        end
         energy0 = pdist.ancillary.energy0;
         energy1 = pdist.ancillary.energy1;
         noangles = 0;        
         numechannels = size(pdist.depend{1},2);
-        if (tmpnargin == 3),
+        if (tmpnargin == 3)
             tint = varargin{3};
-            if(length(tint) > 2),
+            if(length(tint) > 2)
                 irf.log('critical','Format of tint is wrong.');
                 return; 
             end
             rtrnTS = 0;
-            if (length(tint) == 2),
+            if (length(tint) == 2)
                 rtrnTS = 1;
                 pdist = pdist.tlim(tint);
                 B = B.tlim(tint);
@@ -108,50 +112,50 @@ if isa(varargin{1},'PDist'),
         irf.log('critical','PDist must be skymap.');
         return;        
     end
-elseif (tmpnargin == 2 || tmpnargin==3),
+elseif (tmpnargin == 2 || tmpnargin==3)
     pdist = varargin{1};
     B = varargin{2};
     noangles = 1;
-    if (tmpnargin == 3),
+    if (tmpnargin == 3)
         tint = varargin{3};
-        if(length(tint) > 2),
+        if(length(tint) > 2)
             irf.log('critical','Format of tint is wrong.');
             return; 
         end
         rtrnTS = 0;
-        if(length(tint) == 2),
+        if(length(tint) == 2)
             rtrnTS = 1;
             pdist = pdist.tlim(tint);
             B = B.tlim(tint);
         end
     end
     irf.log('warning','No angles passed. Default values used.');
-elseif (tmpnargin==7 || tmpnargin==8),
+elseif (tmpnargin==7 || tmpnargin==8)
     pdist = varargin{1};
     phi = varargin{2};
     theta = varargin{3};
     stepTable = varargin{4};
     energy0 = varargin{5};
     energy1 = varargin{6};
-    if isstruct(theta),
+    if isstruct(theta)
         theta = theta.data;
     end
-    if isstruct(energy0),
+    if isstruct(energy0)
         energy0 = energy0.data;
     end
-    if isstruct(energy1),
+    if isstruct(energy1)
         energy1 = energy1.data;
     end
     B = varargin{7};
     noangles = 0;
-    if (tmpnargin == 8),
+    if (tmpnargin == 8)
         tint = varargin{8};
-        if(length(tint) > 2),
+        if(length(tint) > 2)
             irf.log('critical','Format of tint is wrong.');
             return; 
         end
         rtrnTS = 0;
-        if(length(tint) == 2),
+        if(length(tint) == 2)
             rtrnTS = 1;
             pdist = pdist.tlim(tint);
             phi = phi.tlim(tint);
@@ -166,7 +170,7 @@ else
 end
 
 % Check size of energy
-if noangles == 0;
+if noangles == 0
     numechannels = length(energy0);
     lengthphi = length(phi.data(1,:));
     lengththeta = length(theta);
@@ -179,19 +183,19 @@ Bvecy = repmat(Bvec.data(:,2),1,numechannels,lengthphi,lengththeta);
 Bvecz = repmat(Bvec.data(:,3),1,numechannels,lengthphi,lengththeta);
 
 
-if(rtrnTS == 0),
+if(rtrnTS == 0)
     [~,tintpos] = min(abs(pdist.time-tint));
     tint = pdist.time(tintpos);
     Bvecx = ones(numechannels,lengthphi,lengththeta)*Bvec.data(tintpos,1);
     Bvecy = ones(numechannels,lengthphi,lengththeta)*Bvec.data(tintpos,2);
     Bvecz = ones(numechannels,lengthphi,lengththeta)*Bvec.data(tintpos,3);
     pdist = TSeries(pdist.time(tintpos),pdist.data(tintpos,:,:,:));
-    if(noangles == 0),
+    if(noangles == 0)
         stepTable = TSeries(stepTable.time(tintpos),stepTable.data(tintpos));
     end
 end
 
-if noangles,
+if noangles
     % Define angles
     dangle = 180/16;
     phi = dangle*[0:31]+dangle/2;
@@ -213,14 +217,14 @@ else
     y = zeros(length(pdist.time),lengthphi,lengththeta);
     z = zeros(length(pdist.time),lengthphi,lengththeta);
 
-    for ii = 1:length(pdist.time);
+    for ii = 1:length(pdist.time)
         x(ii,:,:) = -cosd(phi.data(ii,:)')*sind(theta);
         y(ii,:,:) = -sind(phi.data(ii,:)')*sind(theta);
         z(ii,:,:) = -ones(lengthphi,1)*cosd(theta);
     end
     energy = ones(length(pdist.time),1)*energy0;
-    for ii = 1:length(pdist.time);
-        if stepTable.data(ii),
+    for ii = 1:length(pdist.time)
+        if stepTable.data(ii)
         	energy(ii,:) = energy1;
         end
     end
@@ -246,11 +250,11 @@ c_eval('dist? =  squeeze(irf.nanmean(irf.nanmean(dist?,4),3));',1:length(angleve
 
 %paddistarr = cat(3,dist15,dist30,dist45,dist60,dist75,dist90,dist105,dist120,dist135,dist150,dist165,dist180);
 paddistarr = dist1;
-for ii = 2:length(anglevec);
+for ii = 2:length(anglevec)
     c_eval('paddistarr = cat(3,paddistarr,dist?);',ii);
 end
 
-if rtrnTS,
+if rtrnTS
     paddist = TSeries(pdist.time,paddistarr);
     tint = irf.tint(paddist.time.start.utc,paddist.time.stop.utc);
 else
@@ -259,7 +263,7 @@ end
 
 theta = pitcha;
 toc;
-if (isa(varargin{1},'PDist') && length(tint)==2),
+if (isa(varargin{1},'PDist') && length(tint)==2)
     paddist = PDist(pdist.time,paddistarr,'pitchangle',energy,theta);
     paddist.units = pdist.units;
     paddist.species = pdist.species;

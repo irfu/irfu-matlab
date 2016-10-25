@@ -15,7 +15,7 @@ function res = db_index(flagIndexON,flagSave)
 narginchk(0,2)
 
 global MMS_DB;
-if isempty(MMS_DB) ||  isempty(MMS_DB.databases),
+if isempty(MMS_DB) ||  isempty(MMS_DB.databases)
 	mms.db_init();
 	if  isempty(MMS_DB.databases)
 		strTxt = 'No MMS database initialized. See help mms.db_init.';
@@ -23,7 +23,7 @@ if isempty(MMS_DB) ||  isempty(MMS_DB.databases),
 	end
 end
 
-if nargin == 0, % display status
+if nargin == 0 % display status
 	res = MMS_DB.index.enabled;
 	return;
 end
@@ -36,7 +36,7 @@ if nargin>0
       warning('unrecognized value for flagIndex')
       val = [];
   end
-  if ~isempty(val),
+  if ~isempty(val)
     MMS_DB.index.enabled = val;
     if nargin<2, flagSave = false;
     else
@@ -46,7 +46,7 @@ if nargin>0
         flagSave = false;
       end
     end
-    if flagSave,
+    if flagSave
       irf.log('notice','saving indexing status')
       datastore('mms_db','db_index_enabled',val),
     end
@@ -54,7 +54,7 @@ if nargin>0
 end
 
 if MMS_DB.index.enabled, disp('use of the DB indexing enabled')
-else disp('use of DB indexing disabled')
+else, disp('use of DB indexing disabled')
 end
 
 if nargout>0, res = MMS_DB.index.enabled; end

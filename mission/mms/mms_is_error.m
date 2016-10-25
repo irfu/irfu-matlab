@@ -14,5 +14,5 @@ global MMS_CONST; if isempty(MMS_CONST), MMS_CONST = mms_constants(); end
 
 if isnumeric(input) && numel(input)==1 && input==MMS_CONST.Error
   res = true;
-else res = false;
+else, res = false;
 end

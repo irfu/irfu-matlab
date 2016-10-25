@@ -34,10 +34,10 @@ end
 
 if nargin==1, coord_sys='gse'; end
 
-if t(2) > 1e8,
+if t(2) > 1e8
 	flag='v_from_t';
 	tint = [min(t)-61 max(t)+61];
-else flag='dt_from_v';
+else, flag='dt_from_v';
 	v=t;
 	t=v(1);
 	tint = [t-61 t+61];
@@ -48,19 +48,19 @@ end
 
 
 
-if ~is_R_ok && exist('./mmsR.mat','file'),
+if ~is_R_ok && exist('./mmsR.mat','file')
 	load ./mmsR.mat
     load ./mmsV.mat
     irf.log('warning','mms position loaded from current folder (./mmsR.dat)')
 end
 
-if ~is_R_ok && exist('/data/mms/irfu/mmsR.mat','file'),
+if ~is_R_ok && exist('/data/mms/irfu/mmsR.mat','file')
 	load /data/mms/irfu/mmsR.mat
     load /data/mms/irfu/mmsV.mat
     irf.log('warning','mms position loaded from local repository folder (./data/mms/irfu/mmsR.mat)')
 end
 
-if ~is_R_ok && exist('mmsR.mat','file'),
+if ~is_R_ok && exist('mmsR.mat','file')
 	load mmsR.mat
     load mmsV.mat
         irf.log('warning','mms position loaded from somewhere in the path (mmsR.mat)')
@@ -121,7 +121,7 @@ s1=numel(ind1);
 s2=numel(ind2);
 s3=numel(ind3);
 s4=numel(ind4);
-[aaa bbb]=max([s1 s2 s3 s4]);%pick the most restrictive
+[aaa, bbb]=max([s1 s2 s3 s4]);%pick the most restrictive
 switch bbb
     case 1
         ind=ind1;
@@ -146,7 +146,7 @@ ind1 = find(isnan(V.gseV1(:,1)));
 ind2 = find(isnan(V.gseV2(:,1)));
 ind3 = find(isnan(V.gseV3(:,1)));
 ind4 = find(isnan(V.gseV4(:,1)));
-[aaa bbb]=max([s1 s2 s3 s4]);%pick the most restrictive
+[aaa, bbb]=max([s1 s2 s3 s4]);%pick the most restrictive
 switch bbb
     case 1
         ind=ind1;
@@ -168,9 +168,9 @@ V.gsmV3(ind,:)=[];
 V.gsmV4(ind,:)=[];
 
 
-if strcmp(flag,'v_from_t'),
+if strcmp(flag,'v_from_t')
 	t_center=0.5*t(1)+0.5*t;
-	for ic='1234',
+	for ic='1234'
 		i=ic-'0';
 R.(['vsc'  ic]) = irf_resamp([irf_time(V.time,'ttns>epoch') V.([coord_sys 'V' ic])],t_center','spline');
 		R.(['drsc' ic]) = irf_resamp([irf_time(R.time,'ttns>epoch') R.([coord_sys 'R' ic])-R.([coord_sys 'R' num2str(1)])],t(i),'spline');
@@ -190,11 +190,11 @@ R.(['vsc'  ic]) = irf_resamp([irf_time(V.time,'ttns>epoch') V.([coord_sys 'V' ic
 	strv=['V=' num2str(irf_abs(v,1),3) ' [ ' num2str(vn(end-2:end),' %5.2f') '] km/s ' coord_sys];
 	disp(strdt);disp(strv);
 
-elseif strcmp(flag,'dt_from_v'),
+elseif strcmp(flag,'dt_from_v')
   vOrig = v;
   %if strcmpi(coord_sys,'gsm'), v = irf_gse2gsm([t(1) v], -1); v(1)=[]; end 
 	t_center=0.5*t(1)+0.5*t;
-	for ic='1234',
+	for ic='1234'
 		i=ic-'0';
 		R.(['vsc'  ic]) = irf_resamp([irf_time(V.time,'ttns>epoch') V.([coord_sys 'V' ic])],t_center','spline');
 		R.(['v' ic])   = v(2:4)-dot(R.(['vsc' ic])(2:4),v(2:4)).*v(2:4)./norm(v(2:4))^2;
@@ -217,7 +217,7 @@ end
 		% check if position data are ok for spacecraft number 'sc'
 		% if input argument not given check if ok for all spacecraft that needs
 		% to be plotted.
-		if nargin == 0,
+		if nargin == 0
 			scList = 1:4;
 		else
 			scList = sc;
@@ -229,11 +229,11 @@ end
 				return;
 			else
 				tintR=[irf_time(R.time(1),'ttns>epoch') irf_time(R.time(end),'ttns>epoch')];
-				if(tintR(1)>min(t)) || (tintR(2)<max(t)),
+				if(tintR(1)>min(t)) || (tintR(2)<max(t))
 					answer=false;
 					return;
-                end
-			end
+				end
+            end
 		end
 		answer=true;
     end

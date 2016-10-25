@@ -54,7 +54,7 @@ classdef mms_db < handle
      flagDataobj = isa(loadedFiles{1},'dataobj');
      for iFile = 1:length(loadedFiles)
        if flagDataobj, append_sci_var(loadedFiles{iFile})
-       else append_ancillary_var(loadedFiles{iFile});
+       else, append_ancillary_var(loadedFiles{iFile});
        end
      end
      
@@ -167,7 +167,7 @@ classdef mms_db < handle
          
          [n,m] = size(c1);
          if(m==1), c1=sort(c1); c2=sort(c2); end
-         for iN = 1:n,
+         for iN = 1:n
            for iM = 1:m
              if ischar(c1{iN, iM}) && ischar(c2{iN,iM})
                if ~strcmp(c1{iN, iM},c2{iN,iM}), return , end

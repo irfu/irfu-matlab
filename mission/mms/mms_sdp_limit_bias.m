@@ -76,6 +76,10 @@ switch scId
         dac.max(11) = -85; dac.min(11) = -95;
         og.max(11) = -3.9;  og.min(11) = -4.1;
         ig.max(11) = -7.9;  ig.min(11) = -8.1;
+    timeTmp(12,:) = [2016 10 18 14 48 10];
+       dac.max(12) = -75; dac.min(12) = -95; %p3 -80, p1,2,4 -90
+       og.max(12)  = -3.9; og.min(12) = -4.1;
+       ig.max(12)  = -7.9; ig.min(12) = -8.1;
 
   case 2
     % Define new limits for good bias setting on MMS 2

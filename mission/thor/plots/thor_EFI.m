@@ -22,7 +22,7 @@ if 1, % parameters
     title_text=[title_text 'HFAA_{ant}=' num2str(HFA_probe.Area.total,'%5.2f') ' m^2, '];
     % SDP
     SDP_antenna_eff_length=100; % efficient distance between antennas
-    SDP_R_plasma_nobias=916e6;SDP_R_plasma_bias=21e6;
+    SDP_R_plasma_nobias=916e6;SDP_R_plasma_bias=25e6; SDP_R_plasma_bias_low=10e6;
     SDP_probe=lp.default_lprobe('THOR_SDP');
     SDP_C_antenna=SDP_probe.capacitance; % antenna capacitance in F
     title_text=[title_text 'SDPC_{ant}=' num2str(SDP_probe.capacitance/1e-12) ' pF, '];
@@ -127,7 +127,7 @@ if 1, % instrument noise calculations SDP
     if 1, % photoelectron thermal noise  S=4kTZ
         T_eV=1; % photoelectron temperature
         SDP_thermal_noise_bias=[f 4*Units.e*T_eV*sqrt(SDP_R_plasma_bias^2./(1+(2*pi*f).^2*SDP_R_plasma_bias^2*SDP_C_antenna^2))/SDP_antenna_eff_length^2];
-        SDP_thermal_noise_nobias=[f 4*Units.e*T_eV*sqrt(SDP_R_plasma_nobias^2./(1+(2*pi*f).^2*SDP_R_plasma_nobias^2*SDP_C_antenna^2))/SDP_antenna_eff_length^2];
+        SDP_thermal_noise_bias_low=[f 4*Units.e*T_eV*sqrt(SDP_R_plasma_bias_low^2./(1+(2*pi*f).^2*SDP_R_plasma_bias_low^2*SDP_C_antenna^2))/SDP_antenna_eff_length^2];
     end
     if 1, % shot noise plasma and photoelectrons
         % SOFI_shot_noise_plasma XXX WE IGNORE THIS
@@ -138,11 +138,11 @@ if 1, % instrument noise calculations SDP
         SDP_I=lp.current(SDP_probe,-1,Rsolo,UV,[]);
         
         SDP_shot_noise_photoelectron_bias=[f 2*Units.e*abs(SDP_I.photo)*(SDP_R_plasma_bias^2./(1+(2*pi*f).^2*SDP_R_plasma_bias^2*SDP_C_antenna^2))/SDP_antenna_eff_length^2];
-        SDP_shot_noise_photoelectron_nobias=[f 2*Units.e*abs(SDP_I.photo)*(SDP_R_plasma_nobias^2./(1+(2*pi*f).^2*SDP_R_plasma_nobias^2*SDP_C_antenna^2))/SDP_antenna_eff_length^2];
+        SDP_shot_noise_photoelectron_bias_low=[f 2*Units.e*abs(SDP_I.photo)*(SDP_R_plasma_bias_low^2./(1+(2*pi*f).^2*SDP_R_plasma_bias_low^2*SDP_C_antenna^2))/SDP_antenna_eff_length^2];
     end
     if 1, % total noise = shot noise photo + thermal
         SDP_total_noise_bias=irf_add(1,SDP_shot_noise_photoelectron_bias,1,SDP_thermal_noise_bias);
-        SDP_total_noise_nobias=irf_add(1,SDP_shot_noise_photoelectron_nobias,1,SDP_thermal_noise_nobias);
+        SDP_total_noise_bias_low=irf_add(1,SDP_shot_noise_photoelectron_bias_low,1,SDP_thermal_noise_bias_low);
     end
     if 1, % bit noise
         f_sampling=25e3; % DC up to kHz
@@ -260,9 +260,9 @@ if 1, % plot electric field noises
     %loglog(HFA_total_noise_nobias(:,1),HFA_total_noise_nobias(:,2),'color',HFA_color,'linestyle',':');
     %text(HFA_total_noise_nobias(1,1)*1.5,HFA_total_noise_nobias(1,2),'HFA nobias noise','fontsize',10,'color',HFA_color,'units','data','horizontalalignment','left','verticalalignment','bottom');
     text(HFA_total_noise_bias(1,1)*1.5,HFA_total_noise_bias(1,2),'HFA noise','fontsize',10,'color',HFA_color,'units','data','horizontalalignment','left','verticalalignment','bottom');
-    loglog(f_range(1)*[1 5],PE_range(1)*30*[1 1],'color',HFA_color,'linestyle',':');
+    %loglog(f_range(1)*[1 5],PE_range(1)*30*[1 1],'color',HFA_color,'linestyle',':');
     loglog(f_range(1)*[1 5],PE_range(1)*10*[1 1],'color',HFA_color,'linestyle','-');
-    text(f_range(1)*6,PE_range(1)*30,['unbiased HFA, R=' num2str(HFA_R_plasma_nobias/1e6,3) 'M\Omega'],'horizontalalignment','left','verticalalignment','middle','color','k');
+    %text(f_range(1)*6,PE_range(1)*30,['unbiased HFA, R=' num2str(HFA_R_plasma_nobias/1e6,3) 'M\Omega'],'horizontalalignment','left','verticalalignment','middle','color','k');
     text(f_range(1)*6,PE_range(1)*10,['biased HFA, R=' num2str(HFA_R_plasma_bias/1e6,3) 'M\Omega'],'horizontalalignment','left','verticalalignment','middle','color','k');
     loglog(HFA_instr_noise(:,1), HFA_instr_noise(:,2),'color',[0.3 0.3 0.3]);
     text(HFA_instr_noise(2,1),HFA_instr_noise(end,2)*0.9,'HFA preamp noise','fontsize',10,'color','k','units','data','horizontalalignment','left','verticalalignment','top');
@@ -307,6 +307,186 @@ if 1, % plot electric field noises
     loglog(SOFI_shot_noise_photoelectron_bias(:,1), SOFI_shot_noise_photoelectron_bias(:,2),'color',[0 0.5 0.5]);
     loglog(SOFI_shot_noise_photoelectron_nobias(:,1), SOFI_shot_noise_photoelectron_nobias(:,2),'color',[0 0.5 0.5],'linestyle',':');
     text(SOFI_shot_noise_photoelectron_bias(1,1)*1.5,SOFI_shot_noise_photoelectron_bias(1,2),'shot noise photo','fontsize',10,'color',[0 0.5 0.5],'units','data','horizontalalignment','left','verticalalignment','bottom');
+    end
+    irf_legend(hca,['ne=' num2str(n(1)/1e6,3) 'cc, Te=' num2str(T_plasma_eV(1),3) 'eV'],[0.98 0.02])
+end
+irf_legend(0,['THOR EFI noise ' datestr(now,31)],[0,0.001],'interpreter','none','color',[0.5 0.5 0.5])
+
+if 1, % initialize figure
+    figure(12);clf
+    h=irf_plot(1);
+    set(h,'position',[0.15 0.1 0.75 0.75]);
+    set(gcf,'defaultLineLineWidth',2);
+    set(gcf,'PaperUnits','centimeters')
+    xSize = 12; ySize = 13;
+    xLeft = (21-xSize)/2; yTop = (30-ySize)/2;
+    set(gcf,'PaperPosition',[xLeft yTop xSize ySize])
+    set(gcf,'Position',[10 10 xSize*50 ySize*50])
+end
+if 1, % electric field plot
+    hca=h(1);
+    loglog(hca,SP1AU.f,SP1AU.Epower,'b.-','markersize',20);
+    hold(hca,'on');
+    %loglog(hca,SP03AU.f,SP03AU.Epower,'r.-','markersize',20);
+    
+    set(hca,'xlim',f_range)
+    set(hca,'ylim',PE_range)
+    set(hca,'xtick',10.^[log10(f_range(1)):1:log10(f_range(2))]),
+    set(hca,'ytick',10.^[log10(PE_range(1)):2:log10(PE_range(2))]),
+    grid(hca,'on');
+    set(hca,'xminorgrid','off');
+    set(hca,'yminorgrid','off');
+    
+    ylabel(hca,'S_E [(V/m)^2/Hz]');
+    xlabel(hca,'frequency [Hz]');
+    
+    text(0.97,0.85,'Expected spectrum at R=1 AU','fontsize',12,'fontweight','demi','color','b','units','normalized','horizontalalignment','right','parent',hca);
+    %text(0.97,0.85,'spectra at R=0.3 AU','fontsize',12,'fontweight','demi','color','r','units','normalized','horizontalalignment','right','parent',hca);
+    title(hca,['Predicted electric field spectra and noise levels in solar wind \newline' ...
+        'Noise levels calculated for distance ' num2str(Rsolo,3) 'AU \newline' ...
+        'S_E =V_A^2*S_B (S_B empirical), V_A=' num2str(VA,'%.1f') ' km/s '])
+end
+if 1, % electric field example spectra
+    loglog(SW_example_Espectra_THEMIS(:,1), SW_example_Espectra_THEMIS(:,2),'color',[0.5 0.5 0.5],'linewidth',1);
+    text(29,1.2e-13,'THEMIS','fontsize',10,'color',[0.5 0.5 0.5],'units','data','horizontalalignment','left','verticalalignment','bottom');
+    
+    % the power is based on electric field Cluster spectra from Sahraoui et al 2009.
+    %loglog(sahraoui2009_Espectra(:,1),sahraoui2009_Espectra(:,2),'color',[0.5 0.5 0.5],'linewidth',1);
+    %text(2,3e-4,'Cluster','fontsize',10,'color',[0.5 0.5 0.5],'units','data','horizontalalignment','left','verticalalignment','bottom');
+    
+    % electric field Cluster spectra for interval Sahraoui et al 2009.
+    loglog(Cluster_Espectra(:,1),Cluster_Espectra(:,2),'color',[0.5 0.5 0.5],'linewidth',1);
+    text(3,3e-10,'Cluster','fontsize',10,'color',[0.5 0.5 0.5],'units','data','horizontalalignment','left','verticalalignment','bottom');
+    
+    %loglog(Helios2_Espectra(:,1),Helios2_Espectra(:,2),'color',[0.5 0.5 0.5],'linewidth',1);
+    %text(80,3e-9,'Helios2','fontsize',10,'color',[0.5 0.5 0.5],'units','data','horizontalalignment','left','verticalalignment','bottom');  
+end
+if 1, % plot electric field noises
+    
+    if 1, % HFA
+    HFA_color = [0.8 0.0 0.0];
+    loglog(HFA_total_noise_bias,HFA_total_noise_bias(:,2),'color',HFA_color);
+    %loglog(HFA_total_noise_nobias(:,1),HFA_total_noise_nobias(:,2),'color',HFA_color,'linestyle',':');
+    %text(HFA_total_noise_nobias(1,1)*1.5,HFA_total_noise_nobias(1,2),'HFA nobias noise','fontsize',10,'color',HFA_color,'units','data','horizontalalignment','left','verticalalignment','bottom');
+    text(HFA_total_noise_bias(1,1)*1.5,HFA_total_noise_bias(1,2),'HFA noise','fontsize',10,'color',HFA_color,'units','data','horizontalalignment','left','verticalalignment','bottom');
+    %loglog(f_range(1)*[1 5],PE_range(1)*30*[1 1],'color',HFA_color,'linestyle',':');
+    loglog(f_range(1)*[1 5],PE_range(1)*10*[1 1],'color',HFA_color,'linestyle','-');
+    %text(f_range(1)*6,PE_range(1)*30,['unbiased HFA, R=' num2str(HFA_R_plasma_nobias/1e6,3) 'M\Omega'],'horizontalalignment','left','verticalalignment','middle','color','k');
+    text(f_range(1)*6,PE_range(1)*10,['biased HFA, R=' num2str(HFA_R_plasma_bias/1e6,3) 'M\Omega'],'horizontalalignment','left','verticalalignment','middle','color','k');
+    loglog(HFA_instr_noise(:,1), HFA_instr_noise(:,2),'color',[0.3 0.3 0.3]);
+    text(HFA_instr_noise(2,1),HFA_instr_noise(end,2)*0.9,'HFA preamp noise','fontsize',10,'color','k','units','data','horizontalalignment','left','verticalalignment','top');
+    loglog(hca,HFA_EMC.f,HFA_EMC.Epower,'o-','markersize',10,'color',[0 0.8 0]);
+    text(0.97,0.8,'HFA EMC req','fontsize',12,'fontweight','demi','color',[0 0.8 0],'units','normalized','horizontalalignment','right','parent',hca);
+    end
+    if 0
+    SDP_color = [0.8 0.5 0.0];
+    loglog(SDP_total_noise_bias,SDP_total_noise_bias(:,2),'color',SDP_color);
+    %loglog(SDP_total_noise_nobias(:,1),SDP_total_noise_nobias(:,2),'color',SDP_color,'linestyle',':');
+    text(SDP_total_noise_bias(1,1)*1.5,SDP_total_noise_bias(1,2),'SDP noise','fontsize',10,'color',[0.8 0.5 0.0],'units','data','horizontalalignment','left','verticalalignment','bottom');
+    loglog(f_range(1)*[1 5],PE_range(1)*3*[1 1],'color',SDP_color,'linestyle','-');
+    loglog(f_range(1)*[1 5],PE_range(1)*300*[1 1],'color',SDP_color,'linestyle',':');
+    text(f_range(1)*6,PE_range(1)*300,['biased SDP, R=' num2str(SDP_R_plasma_bias_low/1e6,3) 'M\Omega'],'horizontalalignment','left','verticalalignment','middle','color','k');
+    text(f_range(1)*6,PE_range(1)*3,['biased SDP, R=' num2str(SDP_R_plasma_bias/1e6,3) 'M\Omega'],'horizontalalignment','left','verticalalignment','middle','color','k');
+    
+    loglog(SDP_instr_noise(:,1), SDP_instr_noise(:,2),'k');
+    text(SDP_instr_noise(2,1),SDP_instr_noise(end,2)*0.9,'SDP preamp noise','fontsize',10,'color','k','units','data','horizontalalignment','left','verticalalignment','top');
+    loglog(hca,SDP_EMC.f,SDP_EMC.Epower,'o-','markersize',10,'color',[0 0.5 0]);
+    text(0.97,0.75,'SDP EMC req','fontsize',12,'fontweight','demi','color',[0 0.5 0],'units','normalized','horizontalalignment','right','parent',hca);
+    end
+    if 0
+    loglog(thermal_noise_bias(:,1), thermal_noise_bias(:,2),'color',[0.5 0.5 0]);
+    loglog(thermal_noise_nobias(:,1), thermal_noise_nobias(:,2),'color',[0.5 0.5 0],'linestyle',':');
+    text(thermal_noise_bias(1,1)*200,thermal_noise_bias(1,2),'thermal noise 1eV','fontsize',10,'color',[0.5 0.5 0],'units','data','verticalalignment','bottom');
+    irf_legend(['A_{antenna}=' num2str(A_antenna,3) 'm^2, C_{antenna}=' num2str(C_antenna*1e12,3) 'pF'],[0.98 0.98]);
+    
+    loglog(SOFI_bit_noise_gain1(:,1), SOFI_bit_noise_gain1(:,2),'color',[0 0.5 0]);
+    text(SOFI_bit_noise_gain1(1,1)*1.5,SOFI_bit_noise_gain1(1,2),...
+        ['bit noise gain=1\newline 1tm=' num2str(tmunit*1e6,3) '\muV/m\newlinerange \pm' num2str(tmrange,3) 'V/m\newline '],'fontsize',9,'color',[0 0.5 0],'units','data','verticalalignment','middle');
+    gain=5;
+    loglog(SOFI_bit_noise_gain1(:,1), SOFI_bit_noise_gain1(:,2)/gain^2,'color',[0 0.5 0]);
+    text(SOFI_bit_noise_gain1(1,1)*1.5,SOFI_bit_noise_gain1(1,2)/gain^2,...
+        ['bit noise gain=5\newline 1tm=' num2str(tmunit/gain*1e6,3) '\muV/m\newlinerange \pm' num2str(tmrange/gain,3) 'V/m\newline '],'fontsize',9,'color',[0 0.5 0],'units','data','verticalalignment','middle');
+    gain=1/15;
+    loglog(SOFI_bit_noise_gain1(:,1), SOFI_bit_noise_gain1(:,2)/gain^2,'color',[0 0.5 0]);
+    text(SOFI_bit_noise_gain1(1,1)*1.5,SOFI_bit_noise_gain1(1,2)/gain^2,...
+        ['bit noise gain=1/15\newline 1tm=' num2str(tmunit/gain*1e6,3) '\muV/m\newlinerange \pm' num2str(tmrange/gain,3) 'V/m\newline '],'fontsize',9,'color',[0 0.5 0],'units','data','verticalalignment','middle');
+    
+    loglog(SOFI_shot_noise_bias(:,1), SOFI_shot_noise_bias(:,2),'color',[0 0.3 0.3]);
+    loglog(SOFI_shot_noise_nobias(:,1), SOFI_shot_noise_nobias(:,2),'color',[0 0.3 0.3],'linestyle',':');
+    text(SOFI_shot_noise_bias(1,1)*1.5,SOFI_shot_noise_bias(1,2),'shot noise plasma','fontsize',10,'color',[0 0.3 0.3],'units','data','horizontalalignment','left','verticalalignment','bottom');
+    
+    loglog(SOFI_shot_noise_photoelectron_bias(:,1), SOFI_shot_noise_photoelectron_bias(:,2),'color',[0 0.5 0.5]);
+    loglog(SOFI_shot_noise_photoelectron_nobias(:,1), SOFI_shot_noise_photoelectron_nobias(:,2),'color',[0 0.5 0.5],'linestyle',':');
+    text(SOFI_shot_noise_photoelectron_bias(1,1)*1.5,SOFI_shot_noise_photoelectron_bias(1,2),'shot noise photo','fontsize',10,'color',[0 0.5 0.5],'units','data','horizontalalignment','left','verticalalignment','bottom');
+    end
+    irf_legend(hca,['ne=' num2str(n(1)/1e6,3) 'cc, Te=' num2str(T_plasma_eV(1),3) 'eV'],[0.98 0.02])
+end
+irf_legend(0,['THOR EFI noise ' datestr(now,31)],[0,0.001],'interpreter','none','color',[0.5 0.5 0.5])
+
+if 1, % initialize figure
+    figure(13);clf
+    h=irf_plot(1);
+    set(h,'position',[0.15 0.1 0.75 0.75]);
+    set(gcf,'defaultLineLineWidth',2);
+    set(gcf,'PaperUnits','centimeters')
+    xSize = 12; ySize = 13;
+    xLeft = (21-xSize)/2; yTop = (30-ySize)/2;
+    set(gcf,'PaperPosition',[xLeft yTop xSize ySize])
+    set(gcf,'Position',[10 10 xSize*50 ySize*50])
+end
+if 1, % electric field plot
+    hca=h(1);
+    loglog(hca,SP1AU.f,SP1AU.Epower,'b.-','markersize',20);
+    hold(hca,'on');
+    %loglog(hca,SP03AU.f,SP03AU.Epower,'r.-','markersize',20);
+    
+    set(hca,'xlim',f_range)
+    set(hca,'ylim',PE_range)
+    set(hca,'xtick',10.^[log10(f_range(1)):1:log10(f_range(2))]),
+    set(hca,'ytick',10.^[log10(PE_range(1)):2:log10(PE_range(2))]),
+    grid(hca,'on');
+    set(hca,'xminorgrid','off');
+    set(hca,'yminorgrid','off');
+    
+    ylabel(hca,'S_E [(V/m)^2/Hz]');
+    xlabel(hca,'frequency [Hz]');
+    
+    text(0.97,0.85,'Expected spectrum at R=1 AU','fontsize',12,'fontweight','demi','color','b','units','normalized','horizontalalignment','right','parent',hca);
+    %text(0.97,0.85,'spectra at R=0.3 AU','fontsize',12,'fontweight','demi','color','r','units','normalized','horizontalalignment','right','parent',hca);
+    title(hca,['Predicted electric field spectra and noise levels in solar wind \newline' ...
+        'Noise levels calculated for distance ' num2str(Rsolo,3) 'AU \newline' ...
+        'S_E =V_A^2*S_B (S_B empirical), V_A=' num2str(VA,'%.1f') ' km/s '])
+end
+if 1, % electric field example spectra
+    loglog(SW_example_Espectra_THEMIS(:,1), SW_example_Espectra_THEMIS(:,2),'color',[0.5 0.5 0.5],'linewidth',1);
+    text(29,1.2e-13,'THEMIS','fontsize',10,'color',[0.5 0.5 0.5],'units','data','horizontalalignment','left','verticalalignment','bottom');
+    
+    % the power is based on electric field Cluster spectra from Sahraoui et al 2009.
+    %loglog(sahraoui2009_Espectra(:,1),sahraoui2009_Espectra(:,2),'color',[0.5 0.5 0.5],'linewidth',1);
+    %text(2,3e-4,'Cluster','fontsize',10,'color',[0.5 0.5 0.5],'units','data','horizontalalignment','left','verticalalignment','bottom');
+    
+    % electric field Cluster spectra for interval Sahraoui et al 2009.
+    loglog(Cluster_Espectra(:,1),Cluster_Espectra(:,2),'color',[0.5 0.5 0.5],'linewidth',1);
+    text(3,3e-10,'Cluster','fontsize',10,'color',[0.5 0.5 0.5],'units','data','horizontalalignment','left','verticalalignment','bottom');
+    
+    %loglog(Helios2_Espectra(:,1),Helios2_Espectra(:,2),'color',[0.5 0.5 0.5],'linewidth',1);
+    %text(80,3e-9,'Helios2','fontsize',10,'color',[0.5 0.5 0.5],'units','data','horizontalalignment','left','verticalalignment','bottom');  
+end
+if 1, % plot electric field noises
+    if 1
+    SDP_color = [0.8 0.5 0.0];
+    loglog(SDP_total_noise_bias,SDP_total_noise_bias(:,2),'color',SDP_color);
+    loglog(SDP_total_noise_bias_low(:,1),SDP_total_noise_bias_low(:,2),'color',SDP_color,'linestyle',':');
+    text(SDP_total_noise_bias(1,1)*1.5,SDP_total_noise_bias(1,2),'SDP noise','fontsize',10,'color',[0.8 0.5 0.0],'units','data','horizontalalignment','left','verticalalignment','bottom');
+    loglog(f_range(1)*[1 5],PE_range(1)*3*[1 1],'color',SDP_color,'linestyle','-');
+    text(f_range(1)*6,PE_range(1)*3,['biased SDP, R=' num2str(SDP_R_plasma_bias/1e6,3) 'M\Omega'],'horizontalalignment','left','verticalalignment','middle','color','k');
+    loglog(f_range(1)*[1 5],PE_range(1)*15*[1 1],'color',SDP_color,'linestyle',':');
+    text(f_range(1)*6,PE_range(1)*15,['biased SDP, R=' num2str(SDP_R_plasma_bias_low/1e6,3) 'M\Omega'],'horizontalalignment','left','verticalalignment','middle','color','k');
+    
+    loglog(SDP_instr_noise(:,1), SDP_instr_noise(:,2),'k');
+    text(SDP_instr_noise(2,1),SDP_instr_noise(end,2)*0.9,'SDP preamp noise','fontsize',10,'color','k','units','data','horizontalalignment','left','verticalalignment','top');
+    loglog(hca,SDP_EMC.f,SDP_EMC.Epower,'o-','markersize',10,'color',[0 0.5 0]);
+    text(0.97,0.75,'SDP EMC req','fontsize',12,'fontweight','demi','color',[0 0.5 0],'units','normalized','horizontalalignment','right','parent',hca);
     end
     irf_legend(hca,['ne=' num2str(n(1)/1e6,3) 'cc, Te=' num2str(T_plasma_eV(1),3) 'eV'],[0.98 0.02])
 end
