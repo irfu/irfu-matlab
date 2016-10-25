@@ -115,8 +115,8 @@ Qperp.data(noCrossing,:) = 0;
 
 %% Turn a 1-min bowshock crossing into a 30-min interval
 T = 30;
-[Qpar30,indQpar30] = thos_30minbs(Qpar,T); % one point is still one minute
-[Qper30,indQper30] = thos_30minbs(Qperp,T);
+[Qpar30,indQpar30] = thor_30minbs(Qpar,T); % one point is still one minute
+[Qper30,indQper30] = thor_30minbs(Qperp,T);
 newCrossing = find(Qpar30.data>0);
 iKSR30 = iKSR; iKSR30.data(newCrossing) = repmat(6,numel(newCrossing,1));
 
@@ -265,17 +265,18 @@ downlinkSW = irf.ts_scalar(tsDownlink.time,tsDownlink.data(:,4));
 
 
 %% Check how much data accumulates onboard the satellite
-netDataMSH = thor_netdata(dataMSH,downlinkMSH);
-netDataBS = thor_netdata(dataBS,downlinkBS);
-netDataBSpar = thor_netdata(dataBSpar,downlinkBS);
-netDataBSper = thor_netdata(dataBSper,downlinkBS);
-netDataFS = thor_netdata(dataFS,downlinkFS);
-netDataSW = thor_netdata(dataSW,downlinkSW);
+onboard_memory = 1000; % Gbit
+downlink_delay = 1; % data might stay this long before getting downlinked
+netDataMSH = thor_netdata(dataMSH,downlinkMSH,onboard_memory,downlink_delay);
+netDataBS = thor_netdata(dataBS,downlinkBS,onboard_memory,downlink_delay);
+netDataBSpar = thor_netdata(dataBSpar,downlinkBS,onboard_memory,downlink_delay);
+netDataBSper = thor_netdata(dataBSper,downlinkBS,onboard_memory,downlink_delay);
+netDataFS = thor_netdata(dataFS,downlinkFS,onboard_memory,downlink_delay);
+netDataSW = thor_netdata(dataSW,downlinkSW,onboard_memory,downlink_delay);
 
 %% Bowshock datavolume, parallel and perpendicular crossings
 h = irf_plot(4);
 
-onboard_memory = 1000; %Gbit
 if 1 % Collected data per orbit
   hca = irf_panel('Collected data par');
   hp = irf_patch(hca,dataBSpar.cumsum(1));       
@@ -286,6 +287,7 @@ if 1 % Collected data per orbit
   irf_legend(hca,{'- downlink/orbit'},[0.02 0.95],'k')
   hold(hca,'on') 
   hca.YLabel.String = {'New data','Gbit/orbit'};
+  irf_legend(hca,{'parallel crossings'},[0.98 0.95],'k')
 end
 if 1 % Net data onborad satellite
   hca = irf_panel('Onboard data par');
@@ -305,7 +307,8 @@ if 1 % Collected data per orbit
   h_downlink = irf_plot(hca,downlinkBS); 
   irf_legend(hca,{'- downlink/orbit'},[0.02 0.95],'k')
   hold(hca,'on')  
-  hca.YLabel.String = {'New data','Gbit/orbit'};     
+  hca.YLabel.String = {'New data','Gbit/orbit'};  
+  irf_legend(hca,{'perpendicular crossings'},[0.98 0.95],'k')
 end
 if 1 % Net data onborad satellite
   hca = irf_panel('Onboard data per');
@@ -317,227 +320,37 @@ if 1 % Net data onborad satellite
   hca.YLabel.String = {'Onboard data','Gbit/orbit'};  
 end
 
-h(1).Title.String = 'Bowshock datavolumes';
-irf_plot_axis_align
-irf_zoom(h,'x',tintTHOR)
-%%
-h = irf_plot(4);
-if 1 % Downlinked data per orbit
-  hca = irf_panel('Downlink');
-  hp = irf_patch(hca,downlinkBS);  
-  hca.YLabel.String = {'Data','Gbit/orbit'};    
-end
-if 1 % Collected data per orbit
-  hca = irf_panel('Collected data');
-  hp = irf_patch(hca,dataBS.cumsum(1));  
-  hca.YLabel.String = {'Data','Gbit/orbit'};   
-  labels = arrayfun(@(x,y) {[num2str(x) ' > Q_{||} > ' num2str(y)]}, edgesQvar(1:1:end-1),edgesQvar(2:1:end));
-  legend(hp,labels{:},'location','eastoutside')
-  hold(hca,'on')
-  h_downlink = irf_plot(hca,downlinkBS); 
-  irf_legend(hca,{'downlink/orbit'},[0.02 0.95],'k')
-  hold(hca,'on')  
-end
-if 1 % Collected data per orbit
-  hca = irf_panel('Collected data acc T');
-  hp = irf_patch(hca,dataBS.cumsum(1).cumsum('t'));  
-  hca.YLabel.String = {'Data','Gbit/orbit'};    
-end
-if 1 % Net data onborad satellite
-  hca = irf_panel('Onboard data');
-  hp = irf_patch(hca,netDataBS.cumsum(1));  
-  hca.YLabel.String = {'Data','Gbit/orbit'};  
-  hold(hca,'on')
-  irf_plot(hca,irf.ts_scalar(netDataBS.time([1 end]),1000*[1 1]'),'k')
-  hold(hca,'on')  
-end
+irf_zoom(h,'x',EpochTT([tintPhase1(1).utc; tintPhase2(2).utc]))
+%h(2).YLim = [0 3000];
+%h(4).YLim = [0 3000];
+h(1).YLim = [0 400];
+h(3).YLim = [0 400];
 
 h(1).Title.String = 'Bowshock datavolumes';
 irf_plot_axis_align
-
-%% Bowshock datavolume, parallel and perpendicular crossings
-h = irf_plot(4);
-
-if 1 % Collected data per orbit
-  hca = irf_panel('Collected data par');
-  hp = irf_patch(hca,dataBSpar.cumsum(1));  
-  hca.YLabel.String = {'Data','Gbit/orbit'};   
-  labels = arrayfun(@(x,y) {[num2str(x) ' > Q_{||} > ' num2str(y)]}, edgesQvar(1:1:end-1),edgesQvar(2:1:end));
-  legend(hp,labels{:},'location','eastoutside')
-  hold(hca,'on')
-  h_downlink = irf_plot(hca,downlinkBS); 
-  irf_legend(hca,{'downlink/orbit'},[0.02 0.95],'k')
-  hold(hca,'on')  
-end
-if 1 % Collected data per orbit
-  hca = irf_panel('Collected data per');
-  hp = irf_patch(hca,dataBSper.cumsum(1));  
-  hca.YLabel.String = {'Data','Gbit/orbit'};   
-  labels = arrayfun(@(x,y) {[num2str(x) ' > Q_{||} > ' num2str(y)]}, edgesQvar(1:1:end-1),edgesQvar(2:1:end));
-  legend(hp,labels{:},'location','eastoutside')
-  hold(hca,'on')
-  h_downlink = irf_plot(hca,downlinkBS); 
-  irf_legend(hca,{'downlink/orbit'},[0.02 0.95],'k')
-  hold(hca,'on')  
-end
-if 0 % Collected data per orbit
-  hca = irf_panel('Collected data acc T');
-  hp = irf_patch(hca,dataBS.cumsum(1).cumsum('t'));  
-  hca.YLabel.String = {'Data','Gbit/orbit'};    
-end
-if 1 % Net data onborad satellite
-  hca = irf_panel('Onboard data');
-  hp = irf_patch(hca,netDataBS.cumsum(1));  
-  hca.YLabel.String = {'Data','Gbit/orbit'};  
-  hold(hca,'on')
-  irf_plot(hca,irf.ts_scalar(netDataBS.time([1 end]),1000*[1 1]'),'k')
-  hold(hca,'on')  
-end
-if 1 % Net data onborad satellite
-  hca = irf_panel('Onboard data');
-  hp = irf_patch(hca,netDataBS.cumsum(1));  
-  hca.YLabel.String = {'Data','Gbit/orbit'};  
-  hold(hca,'on')
-  irf_plot(hca,irf.ts_scalar(netDataBS.time([1 end]),1000*[1 1]'),'k')
-  hold(hca,'on')  
-end
-
-h(1).Title.String = 'Bowshock datavolumes';
-irf_plot_axis_align
+%irf_zoom(h,'x',tintTHOR)
 
 %% Write to file
-fileID = fopen('/Users/Cecilia/Matlab/irfu-matlab/mission/thor/orbit_coverage/KSR.txt','w');
+fileID = fopen('/Users/Cecilia/Matlab/irfu-matlab/mission/thor/orbit_coverage/KSR_time_spent.txt','w');
 fprintf(fileID,'%6s\n','Time spent in key science regions (minutes)');
-fprintf(fileID,'Qpar are sorted in bins: %s\n',num2str(edgesQ));
-fprintf(fileID,'%6s %6s %6s %6s %6s %15s %6s %6s %6s %6s %6s %6s %6s %40s\n','orbit','msp','msh','fs','psw','bs: Qpar');
-printData = [tocolumn(1:tsDistKSR_Q.length) tsDistKSR_Q.data]';
-fprintf(fileID,'%6.0f %6.0f %6.0f %6.0f %6.0f %15.0f %6.0f %6.0f %6.0f %6.0f %6.0f %6.0f %6.0f %6.0f %6.0f %6.0f\n',printData);
+fprintf(fileID,'Qpar and Qperp are sorted in bins: %s\n',num2str(edgesQvar));
+stringFormat = '%6s %6s %6s %6s %6s %40s %40s';
+fprintf(fileID,'%6s %6s %6s %6s %6s %15s %6s %6s %6s %6s %6s %6s %6s %40s\n','orbit','msp','msh','fs','psw','bs: Qpar','bs: Qperp');
+
+numFormat = '%6.0f %6.0f %6.0f %6.0f %6.0f';
+for iQ = 1:numel(edgesQvar)
+  numFormat = [numFormat ' %6.0f'];
+end
+for iQ = 1:numel(edgesQvar)
+  numFormat = [numFormat ' %6.0f'];
+end
+
+printData = [tocolumn(1:iKSRorbit.length) iKSRorbit.data(:,1:4) distQpar30_var.data distQper30_var.data]';
+fprintf(fileID,[numFormat '\n'],printData);
 
 %fprintf(fileID,'%6.0f %6.0f\n',[1:tsDistKSR_Q.length;1:tsDistKSR_Q.length]);
-fclose(fileID);
-%%
-return
-%%
-%%
-%%
-%%
-%%
-% For plots
-tsDownlinkStacked = irf.ts_scalar(tsDownlink.time,cumsum(tsDownlink.data,2));
-tsDownlinkStackedT = irf.ts_scalar(tsDownlink.time,cumsum(tsDownlinkStacked.data,1));
+fclose(fileID); 
 
-h = irf_plot(4);
-if 1 % Downlinked data per orbit
-  hca = irf_panel('Downlink');
-  hp = irf_patch(hca,tsDownlinkStacked);  
-  hca.YLabel.String = {'Data','Gbit/orbit'};
-  labels = {'Bowshock','Magnetosheath','Foreshock','Pristine solar wind'};  
-  legend(hp,labels,'location','eastoutside')
-end
-if 1 % Accumulated downlinked data per orbit
-  hca = irf_panel('Downlink acc T');
-  hp = irf_patch(hca,tsDownlinkStackedT);  
-  hca.YLabel.String = {'Data','Gbit/orbit'};
-  labels = {'Bowshock','Magnetosheath','Foreshock','Pristine solar wind'};  
-  legend(hp,labels,'location','eastoutside')
-end
-if 1 % Science data per orbit
-  hca = irf_panel('Science data acc');
-  hp = irf_patch(hca,tsDataStacked);  
-  hca.YLabel.String = {'Data','Gbit/orbit'};
-  labels = {'Bowshock','Magnetosheath','Foreshock','Pristine solar wind'};  
-  legend(hp,labels,'location','eastoutside')
-end
-if 1 % Accumulated science data per orbit
-  hca = irf_panel('Science data acc T');
-  hp = irf_patch(hca,tsDataStackedT);  
-  hca.YLabel.String = {'Data','Gbit/orbit'};
-  labels = {'Bowshock','Magnetosheath','Foreshock','Pristine solar wind'};  
-  legend(hp,labels,'location','eastoutside')
-end
-
-
-%% Magnetosheath
-dataMSHstacked = irf.ts_scalar(dataMSH.time,cumsum(dataMSH.data,2));
-dataMSHstackedT = irf.ts_scalar(dataMSH.time,cumsum(dataMSHstacked.data,1));
-downlinkMSHstacked = irf.ts_scalar(tsDownlink.time,cumsum(downlinkMSH.data,2));
-downlinkMSHstackedT = irf.ts_scalar(tsDownlink.time,cumsum(downlinkMSHstacked.data,1));
-
-dataNetMSHstacked = irf.ts_scalar(dataMSHstacked.time,dataMSHstacked.data-downlinkMSHstacked.data);
-dataNetMSHstackedT = irf.ts_scalar(dataNetMSHstacked.time,cumsum(dataNetMSHstacked.data,1));
-
-
-h = irf_plot(5);
-if 1 % Collected data
-  hca = irf_panel('data');
-  hp = irf_patch(hca,dataMSHstacked);   
-  hca.YLabel.String = {'Collected data','Gbit/orbit'};    
-end
-if 1 % Accumulated data
-  hca = irf_panel('data, acc T');
-  hp = irf_patch(hca,dataMSHstackedT);
-  hca.YLabel.String = {'Collected data','Gbit'};    
-end
-if 1 % Downlinked data
-  hca = irf_panel('downlink');
-  hp = irf_patch(hca,downlinkMSHstacked);   
-  hca.YLabel.String = {'Downlinked data','Gbit/orbit'};    
-end
-if 1 % Accumulated data
-  hca = irf_panel('downlink, acc T');
-  hp = irf_patch(hca,downlinkMSHstackedT);
-  hca.YLabel.String = {'Downlinked data','Gbit'};    
-end
-if 1 % Net Accumulated data
-  hca = irf_panel('data-downlink, acc T');
-  hp = irf_patch(hca,dataNetMSHstackedT);
-  hca.YLabel.String = {'Downlinked data','Gbit'};    
-end
-irf_plot_axis_align
-
-%%
-%dataNetBSstacked = irf.ts_scalar(dataBSstacked.time,dataBSstacked.data-downlinkBSstacked.data);
-%dataNetBSstackedT = irf.ts_scalar(dataNetBSstacked.time,cumsum(dataNetBSstacked.data,1));
-
-
-h = irf_plot(6);
-if 1 % Collected data
-  hca = irf_panel('data');
-  hp = irf_patch(hca,dataBSstacked);   
-  hca.YLabel.String = {'Collected data','Gbit/orbit'};  
-  labels = arrayfun(@(x,y) {[num2str(x) ' > Q_{||} > ' num2str(y)]}, edgesQ(1:1:end-1),edgesQ(2:1:end));
-  legend(hp,labels,'location','eastoutside')
-end
-if 1 % Accumulated data
-  hca = irf_panel('data, acc T');
-  hp = irf_patch(hca,dataBSstackedT);
-  hca.YLabel.String = {'Collected data','Gbit'};    
-end
-if 1 % Downlinked data
-  hca = irf_panel('downlink');
-  hp = irf_patch(hca,downlinkBSstacked);   
-  hca.YLabel.String = {'Downlinked data','Gbit/orbit'};    
-end
-if 1 % Accumulated data
-  hca = irf_panel('downlink, acc T');
-  hp = irf_patch(hca,downlinkBSstackedT);
-  hca.YLabel.String = {'Downlinked data','Gbit'};    
-end
-if 1 % Net Accumulated data
-  hca = irf_panel('data-downlink, acc T');
-  hp = irf_patch(hca,netDataBS);
-  hca.YLabel.String = {'Downlinked data','Gbit'};    
-end
-if 1 % Net Accumulated data
-  hca = irf_panel('data-downlink, acc T 2');
-  hp = irf_patch(hca,netDataBST);
-  hca.YLabel.String = {'Onboard data','Gbit'};
-  hold(hca,'on')
-  irf_plot(hca,irf.ts_scalar(netDataBST.time([1 end]),0.8*150*[1 1]'),'k')
-  hold(hca,'on')
-  hca.YLim = [0 5000];
-end
-
-
-irf_plot_axis_align
+%% Write to excel
+csvwrite('/Users/Cecilia/Matlab/irfu-matlab/mission/thor/orbit_coverage/KSR_time_spent',printData')
 
