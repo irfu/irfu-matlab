@@ -38,7 +38,7 @@ if nargin==0
   cacheEnabled = datastore('mms_db','db_cache_enabled');
   if ~isempty(cacheEnabled)
     MMS_DB.cache.enabled = cacheEnabled;
-    if cacheEnabled, s = 'ON'; else s = 'OFF'; end
+    if cacheEnabled, s = 'ON'; else, s = 'OFF'; end
     irf.log('notice',['db_cache: ' s])
   end
   cacheTimeout = datastore('mms_db','db_cache_timeout');

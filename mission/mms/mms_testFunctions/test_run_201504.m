@@ -3,10 +3,10 @@ data_root='/data/mms';
 if ~exist(data_root,'dir')
   error('DATA_ROOT(%s) does not exist',data_root)
 end
-if ismac,
+if ismac
   setenv('CDF_BASE','/Applications/cdf35_0-dist/')
   outDir = '/Users/yuri/Documents/MATLAB/MMS/test_proc/';
-else outDir = data_root;
+else, outDir = data_root;
 end
 cd(outDir)
 if ~exist('log','dir'), mkdir('log'), end

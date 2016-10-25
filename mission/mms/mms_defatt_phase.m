@@ -11,7 +11,7 @@ if time(1) > EpochTT('2015-06-18T00:00:00.000000Z').epoch
   SPIN_RATE_MAX = MMS_CONST.Spinrate.max;
 elseif time(1) > EpochTT('2015-01-01T00:00:00.000000Z').epoch
   SPIN_RATE_MAX = MMS_CONST.Spinrate.max_comm; 
-else SPIN_RATE_MAX = MMS_CONST.Spinrate.max_deploy;
+else, SPIN_RATE_MAX = MMS_CONST.Spinrate.max_deploy;
 end
 SPIN_RATE_NOMINAL = 3.1; % rpm
 DT_MAX = 60/SPIN_RATE_NOMINAL; % allow extrapolation for max DT_MAX seconds
@@ -40,7 +40,7 @@ while tStart<=targetTime(end)
   phaTmpUnwrapped = unwrap(phaTmp*pi/180)*180/pi;
   
   if isempty(iLastOkPoint), iOutTmp = targetTime < tStop;
-  else iOutTmp = targetTime<tStop & targetTime>targetTime(iLastOkPoint);
+  else, iOutTmp = targetTime<tStop & targetTime>targetTime(iLastOkPoint);
   end
   if ~any(iOutTmp), tStart = tStop; continue; end
   
@@ -92,7 +92,7 @@ res = TSeries(EpochTT(time),phaseOut);
     spinRateLast = spinRate;
   end
   function verify_input()
-    if ~isa(time,'int64'), 
+    if ~isa(time,'int64')
       errStr = 'TIME must be int64 (tt2000)';
       irf.log('critical',errStr), error(errStr)
     end

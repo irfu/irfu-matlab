@@ -232,9 +232,16 @@ classdef PDist < TSeries
       energy = obj.depend{1};
       
       % Picks out energies in an interval, or the closest energy (to be implemented!)
-      if numel(eint) == 2    
-        elevels0 = intersect(find(obj.ancillary.energy0>eint(1)),find(obj.ancillary.energy0<eint(2)));
-        elevels1 = intersect(find(obj.ancillary.energy1>eint(1)),find(obj.ancillary.energy1<eint(2)));                                 
+      if numel(eint) == 2
+        if isempty(obj.ancillary)
+            energytmp0 = energy(1,:);
+            energytmp1 = energy(2,:);
+            elevels0 = intersect(find(energytmp0>eint(1)),find(energytmp0<eint(2)));
+            elevels1 = intersect(find(energytmp1>eint(1)),find(energytmp1<eint(2)));            
+        else
+            elevels0 = intersect(find(obj.ancillary.energy0>eint(1)),find(obj.ancillary.energy0<eint(2)));
+            elevels1 = intersect(find(obj.ancillary.energy1>eint(1)),find(obj.ancillary.energy1<eint(2)));                                 
+        end
         if numel(elevels0) ~= numel(elevels1)
           warning('Energy levels differ for different times. Including the largest interval.')
           elevels = unique([elevels0,elevels1]);
@@ -255,9 +262,14 @@ classdef PDist < TSeries
       
       PD = obj;
       PD.data_ = tmpData;
-      PD.depend{1} = tmpEnergy;   
-      PD.ancillary.energy0 = PD.ancillary.energy0(elevels);
-      PD.ancillary.energy1 = PD.ancillary.energy1(elevels);
+      PD.depend{1} = tmpEnergy;
+      if isempty(PD.ancillary)
+          PD.ancillary.energy0 = energytmp0(elevels);
+          PD.ancillary.energy1 = energytmp1(elevels);      
+      else
+          PD.ancillary.energy0 = PD.ancillary.energy0(elevels);
+          PD.ancillary.energy1 = PD.ancillary.energy1(elevels);
+      end
     end
     function PD = omni(obj)
       % Makes omnidirectional distribution, conserving units.
@@ -266,13 +278,14 @@ classdef PDist < TSeries
       
       dist = obj;
       % define angles
+      energysize = size(obj.depend{1});
       theta = obj.depend{3};
       dangle = pi/16;
       lengthphi = 32;
 
       z2 = ones(lengthphi,1)*sind(theta);
       solida = dangle*dangle*z2;      
-      allsolida = repmat(solida,1,1,length(dist.time),length(dist.ancillary.energy0));
+      allsolida = repmat(solida,1,1,length(dist.time), energysize(2));
       allsolida = squeeze(permute(allsolida,[3 4 1 2]));
       dists = dist.data.*allsolida;
       omni = squeeze(irf.nanmean(irf.nanmean(dists,3),4))/(mean(mean(solida)));

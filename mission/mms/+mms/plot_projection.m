@@ -53,9 +53,9 @@ notint = 1;
 
 dist = args{1};
 % Check if it's electron or ions
-if strfind(dist.name,'des'),
+if strfind(dist.name,'des')
   isDes = 1; 
-elseif strfind(dist.name,'dis'),
+elseif strfind(dist.name,'dis')
   isDes = 0;
 else
   irf.log('warning','Can''t recognize if input is electron or ions. Assuming it''s electrons.');
@@ -67,7 +67,7 @@ distunits = 's^3cm^{-6}'; % These used are assumed if data is not PDist format
 if isempty(dist); irf.log('warning','Empty input.'); return; end
 
 % Check inputs for angles and energies
-if isa(args{2},'TSeries'),
+if isa(args{2},'TSeries')
     irf.log('notice','Angles and energies passed.')
     phi = args{2};
     theta = args{3};
@@ -136,13 +136,13 @@ while have_options
       l = 2;
       notint = 0;
       tint = args{2};
-      if tint.length == 1,
+      if tint.length == 1
         [~,tId] = min(abs(dist.time-tint));
         dist = TSeries(dist.time(tId),dist.data(tId,:,:,:));
-        if anglespassed,
+        if anglespassed
             stepTable = TSeries(stepTable.time(tId),stepTable.data(tId));
             azimuthal = squeeze(phi.data(tId,:))*pi/180;
-            if stepTable.data,
+            if stepTable.data
             	energyEdges = energy1Edges;
             else
                 energyEdges = energy0Edges;
@@ -151,10 +151,10 @@ while have_options
       else
         dist = dist.tlim(tint);
         if (length(dist.time)<1); irf.log('warning','No data for given time interval.'); return; end   
-            if anglespassed,
+            if anglespassed
                 stepTable = stepTable.tlim(tint);
                 phi = phi.tlim(tint);
-                if (length(dist.time) > 1),
+                if (length(dist.time) > 1)
                     irf.log('notice','Rebinning distribution.')
                     [dist,phi,energy] = mms.psd_rebin(dist,phi,energy0,energy1,stepTable);
                     lengthE = 64;
@@ -163,7 +163,7 @@ while have_options
                     energyEdges = [energyEdges 10.^(log10(energy(end))+dE/2)];
                 else
                     azimuthal = phi.data*pi/180;
-                    if stepTable.data,
+                    if stepTable.data
                         energyEdges = energy1Edges;
                     else
                         energyEdges = energy0Edges;
@@ -184,10 +184,10 @@ while have_options
       z = cross(x,y); z = z/norm(z);
       y = cross(z,x); y = y/norm(y);    
       
-      if abs(acosd(y*(coord_sys(2,:)/norm(coord_sys(2,:)))'))>1; 
+      if abs(acosd(y*(coord_sys(2,:)/norm(coord_sys(2,:)))'))>1 
         irf.log('warning',['y (perp1) changed from [' num2str(coord_sys(2,:)/norm(coord_sys(2,:)),'% .2f') '] to [' num2str(y,'% .2f') '].']);
       end
-      if abs(acosd(x*(coord_sys(1,:)/norm(coord_sys(1,:)))'))>1; 
+      if abs(acosd(x*(coord_sys(1,:)/norm(coord_sys(1,:)))'))>1 
         irf.log('warning',['x (perp2) changed from [' num2str(coord_sys(1,:)/norm(coord_sys(1,:)),'% .2f') '] to [' num2str(x,'% .2f') '].']);
       end
     case 'clim'
@@ -215,7 +215,7 @@ while have_options
 	case 'scpot'
       l = 2;
       scpot = args{2};
-      if isa(scpot,'TSeries'),
+      if isa(scpot,'TSeries')
         includescpot = 1;
         irf.log('notice','Spacecraft potential passed.')
       else
@@ -237,8 +237,8 @@ else
   vlabelz = ['v_{z=[' num2str(z,'% .2f') ']}'];
 end
 
-if (notint && anglespassed),
-    if (length(dist.time) > 1),
+if (notint && anglespassed)
+    if (length(dist.time) > 1)
         [dist,phi,energy] = mms.psd_rebin(dist,phi,energy0,energy1,stepTable);
         irf.log('notice','Recompling distribution into 64 energy channels.')
         lengthE = 64;
@@ -247,7 +247,7 @@ if (notint && anglespassed),
         energyEdges = [energyEdges 10.^(log10(energy(end))+dE/2)];
     else
         azimuthal = phi.data*pi/180;
-        if stepTable.data,
+        if stepTable.data
         	energyEdges = energy1Edges;
         else
         	energyEdges = energy0Edges;
@@ -257,13 +257,13 @@ end
 
 % Construct polar and azimuthal angle matrices
 polar = ones(length(dist.time),1)*polar;
-if (anglespassed==0),
+if (anglespassed==0)
     azimuthal = ones(length(dist.time),1)*azimuthal;
 end
 FF = zeros(length(dist.time),32,lengthE); % azimuthal, energy
 edgesAz = linspace(0,2*pi,33);
 
-for ii = 1:length(dist.time);
+for ii = 1:length(dist.time)
 [POL,AZ] = meshgrid(polar(ii,:),azimuthal(ii,:));
 X = -sin(POL).*cos(AZ); % '-' because the data shows which direction the particles were coming from
 Y = -sin(POL).*sin(AZ);
@@ -296,8 +296,8 @@ else, geoFactorBinSize = 1; end
 [nAz,binAz] = histc(planeAz,edgesAz);
 
 % Collect data in new distribution function FF
-for iE = 1:lengthE;
-  for iAz = 1:32;
+for iE = 1:lengthE
+  for iAz = 1:32
     % dist.data has dimensions nT x nE x nAz x nPol
     C = squeeze(dist.data(ii,iE,:,:));
     %C = squeeze(nansum(dist.data(tId,iE,:,:),1));
@@ -312,7 +312,7 @@ for iE = 1:lengthE;
 end
 end
 
-if length(dist.time)==1,
+if length(dist.time)==1
     FF = squeeze(FF);
     tint = dist.time;
 else
@@ -324,8 +324,8 @@ end
 if isempty(ax), fig = figure; ax = axes; axis(ax,'square'); end
 
 % Calculate spacecraft potential for distribution
-if includescpot,
-    if length(tint)==1,
+if includescpot
+    if length(tint)==1
         [~,tId] = min(abs(scpot.time-tint));
         scpot = scpot.data(tId);
     else
@@ -338,7 +338,7 @@ end
     
 
 Units = irf_units; % Use IAU and CODATA values for fundamental constants.
-if isDes, 
+if isDes 
     m = Units.me; 
 else
     m = Units.mp;
@@ -354,7 +354,7 @@ plY = rE'*sin(edgesAz+pi);
 
 FF(FF == 0) = NaN; % set to white the zero points
 
-if isDes; % make electron velocities 10^3 km/s
+if isDes % make electron velocities 10^3 km/s
   hs = surf(ax,plX*1e-3,plY*1e-3,plY*0,log10(FF'));
   vUnitStr= '(10^3 km/s)'; 
   if have_vlim, ax.YLim = vlim*[-1 1]*1e-3; ax.XLim = ax.YLim; end

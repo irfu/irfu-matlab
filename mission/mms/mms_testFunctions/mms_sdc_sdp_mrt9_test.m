@@ -7,7 +7,7 @@ if ~exist(data_root,'dir')
   error('DATA_ROOT(%s) does not exist',data_root)
 end
 
-if ismac,
+if ismac
   setenv('CDF_BASE','/Applications/cdf35_0-dist/')
   outDir = '/Users/yuri/tmp_out';
 else
@@ -46,23 +46,23 @@ for scId = scList
         data_root, scId, scId, defattdate{iDate});
       d = dir(dceFile);
       if isempty(d), dceFile = '';
-      else dceFile = sprintf('%s/mms%d/%s', data_root, scId, d(1).name);
+      else, dceFile = sprintf('%s/mms%d/%s', data_root, scId, d(1).name);
       end
       d = dir(dcvFile);
       if isempty(d), dcvFile = '';
-      else dcvFile = sprintf('%s/mms%d/%s', data_root, scId, d(1).name);
+      else, dcvFile = sprintf('%s/mms%d/%s', data_root, scId, d(1).name);
       end
       d = dir(hk_101File); % HK with sunpulse, use highest version found.
       if isempty(d), hk_101File='';
-      else hk_101File = sprintf('%s/mms%d/%s', data_root, scId, d(end).name);
+      else, hk_101File = sprintf('%s/mms%d/%s', data_root, scId, d(end).name);
       end
       d = dir(hk_10eFile); % HK with bias settings, use highest version found.
       if isempty(d), hk_10eFile='';
-      else hk_10eFile = sprintf('%s/mms%d/%s', data_root, scId, d(end).name);
+      else, hk_10eFile = sprintf('%s/mms%d/%s', data_root, scId, d(end).name);
       end
       d = dir(defattFile); % Defatt, used in L2pre, use highest version found.
       if isempty(d), defattFile = '';
-      else defattFile = sprintf('%s/mms%d/%s', data_root, scId, d(end).name);
+      else, defattFile = sprintf('%s/mms%d/%s', data_root, scId, d(end).name);
       end
       if isempty(dcvFile) && isempty(dceFile), continue, end
       for iProc=1:length(procs)

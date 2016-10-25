@@ -77,7 +77,7 @@ for signal = signals
   phaseRadTmp = phaRad;
   if( (Dcv.time(1)<=t0) && (t0<=Dcv.time(end)))
     bits = MMS_CONST.Bitmask.SWEEP_DATA;
-    if sig(1)=='e',
+    if sig(1)=='e'
       dataIn = Dce.(sig).data;
       dataIn = mask_bits(dataIn, Dce.(sig).bitmask, bits);
       timeIn = Dce.time;

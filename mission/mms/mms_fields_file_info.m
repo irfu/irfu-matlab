@@ -30,7 +30,7 @@ filenameData.vXYZ = fileName(pos(end)+2:end);
 filenameData.filename = fileName;
 
 lST = length(filenameData.startTime);
-if lST == 14, % = yyyymmddhhmmss, fine
+if lST == 14 % = yyyymmddhhmmss, fine
 elseif lST<14 && lST>7
   % If length has been shortened, padd it so we can find day of year and
   % proper startTime.

@@ -95,7 +95,7 @@ C = squeeze(nanmean(nanmean(dist.data(tId,eId,:,:),2),1))';
 % Plot skymap
 if isempty(ax), fig = figure; ax = axes; end
 if plotLog, fC = log10(C*1e30); % s+3*km-6 
-else fC = (C*1e30); end % s+3*km-6; 
+else, fC = (C*1e30); end % s+3*km-6; 
   
 if plotSphere
   hs = surf(ax,X,Y,Z,fC); % 

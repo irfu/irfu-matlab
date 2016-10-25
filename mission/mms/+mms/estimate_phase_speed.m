@@ -19,7 +19,7 @@ function vph = estimate_phase_speed(varargin)
 %   vph - estimated phase speed by fitting linear dispersion relation to
 %         data.
 
-if (numel(varargin) < 3),
+if (numel(varargin) < 3)
     help mms.estimate_phase_speed;
     return;
 end
@@ -28,7 +28,7 @@ fkpower = varargin{1};
 freq = varargin{2};
 wavenumber = varargin{3};
 
-if (numel(varargin)==3);
+if (numel(varargin)==3)
     fmin = 100;
 else 
     fmin = varargin{4};
@@ -70,7 +70,7 @@ kpowers2 = [];
 elnum = 1;
 
 for ii = [1:length(ppowers)]
-    if (abs(fpowers(ii)/kpowers(ii)) > abs(vphrange(1)) && abs(fpowers(ii)/kpowers(ii)) < abs(vphrange(2)));
+    if (abs(fpowers(ii)/kpowers(ii)) > abs(vphrange(1)) && abs(fpowers(ii)/kpowers(ii)) < abs(vphrange(2)))
         ppowers2(elnum) = ppowers(ii);
         fpowers2(elnum) = fpowers(ii);
         kpowers2(elnum) = kpowers(ii);

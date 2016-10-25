@@ -67,7 +67,7 @@ listingD = dir([totDir filesep filePrefix '*.cdf']);
 if isempty(listingD) % Files are in month folder
     totDir = totDir(1:end-3); isDay = 1;
     listingD = dir([totDir filesep filePrefix '*.cdf']);
-    if isempty(listingD), % Also month folder is empty
+    if isempty(listingD) % Also month folder is empty
         disp(['Could not find any ' filePrefix ' files during the same day!']); 
         TS = []; dobj = []; return;
     end
@@ -75,7 +75,7 @@ end
 disp(['  Directory: ' totDir])
 nFiles = numel(listingD);
 if doList % Only list the files
-    for ii = 1:nFiles, 
+    for ii = 1:nFiles 
         disp(listingD(ii).name)        
     end
     TS = []; dobj = [];
@@ -83,7 +83,7 @@ if doList % Only list the files
 end
 
 % Find file that contains interval start time, t1
-for ii = 1:nFiles,     
+for ii = 1:nFiles     
     splitName = strsplit(listingD(ii).name,'_');
     dateStr = splitName{end-1};
     if isDay, dateStr = [dateStr '000001']; end
@@ -91,7 +91,7 @@ for ii = 1:nFiles,
 end
 % plot(1:nFiles,dateNums,'-*',[1 nFiles],tdateNum*[1 1])
 fileId = find(tdateNum>dateNums,1,'last');
-if isempty(fileId); 
+if isempty(fileId) 
     fileId = 1; 
     allId = fileId;
 else
