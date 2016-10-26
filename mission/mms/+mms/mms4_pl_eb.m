@@ -21,7 +21,7 @@ if ~isempty(R1), gseR = [R1.time.epochUnix double(R1.data(:,1:3))];
 elseif ~isempty(R2), gseR = [R2.time.epochUnix double(R2.data(:,1:3))];
 elseif ~isempty(R3), gseR = [R3.time.epochUnix double(R3.data(:,1:3))];
 elseif ~isempty(R4), gseR = [R4.time.epochUnix double(R4.data(:,1:3))];
-else gseR = [];
+else, gseR = [];
 end
 toc
 %% Plot

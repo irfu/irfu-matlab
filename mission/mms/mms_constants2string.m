@@ -20,7 +20,7 @@ if ~isfield(MMS_CONST,listName)
   irf.log('critical',errStr), error(errStr)
 end
 l = MMS_CONST.(listName);
-if ~iscell(l),
+if ~iscell(l)
   errStr = ['MMS_CONST.' listName ' is not a cell array'];
   irf.log('critical',errStr), error(errStr)
 end

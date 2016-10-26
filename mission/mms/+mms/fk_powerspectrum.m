@@ -34,7 +34,7 @@ function [fkpower,freq,wavenumber] = fk_powerspectrum(varargin)
 % Directions and speeds are consistent with expectations based on time
 % delays.
 
-if (numel(varargin) < 5),
+if (numel(varargin) < 5)
     help mms.fk_powerspectrum;
     return;
 end
@@ -50,7 +50,7 @@ Bxyz = Bxyz.tlim(ts2l);
 
 probe = varargin{5};
 
-if (numel(varargin)==5);
+if (numel(varargin)==5)
     cav = 128;
 else 
     cav = varargin{6};
@@ -61,8 +61,8 @@ zphase = zphase.tlim(ts2l);
 norepeat = ones(length(zphase.time),1);
 nph = length(zphase.data);
 for ii=[2:nph]
-    if(zphase.time(ii) > zphase.time(ii-1));
-        if(zphase.data(ii) < zphase.data(ii-1));
+    if(zphase.time(ii) > zphase.time(ii-1))
+        if(zphase.data(ii) < zphase.data(ii-1))
             zphase.data(ii:end) = zphase.data(ii:end)+double(360.0);
         end
     else 
@@ -157,9 +157,9 @@ maxk = pi/min(rcos);
 dk = (maxk - mink)/numk; 
 kvec = mink + [0:1:numk-1]*dk;
 
-if 1,
+if 1
 for m = [1:1:N+1]
-    for q = [1:1:numf];
+    for q = [1:1:numf]
         knumber = floor((kval(m,q)-mink)/dk)+1;
         disprel(knumber,q) = disprel(knumber,q) + Powerav(m,q);
     end

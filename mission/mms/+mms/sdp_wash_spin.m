@@ -60,14 +60,14 @@ if ~isempty(ii)
 	ends = [ii(ju)+1; ii(end)+1];
 	switch lower(method)
 		case 'linear'
-			for idx=1:length(begs);
+			for idx=1:length(begs)
 				res.data(begs(idx)+1:ends(idx)-1,:) = interp1(...
 					[epoch(begs(idx)); epoch(ends(idx))],...
 					[res(begs(idx),2); res(ends(idx),2)],...
 					epoch(begs(idx)+1:ends(idx)-1),'linear');
 			end
 		case 'prevspin'
-			for idx=1:length(begs);
+			for idx=1:length(begs)
 				prevs = res.data( epoch >= epoch(begs(idx)+1)-SPIN_PERIOD, :);
 				res.data(begs(idx)+1:ends(idx)-1,:) = ...
 					prevs(1:ends(idx)-begs(idx)-1,:);
@@ -95,7 +95,7 @@ end
     f = fft(res - m);
     nff = length(f);
     if(rem(nff,2)==0), kfft=nff/2 +1;
-    else kfft=(nff+1)/2;
+    else, kfft=(nff+1)/2;
     end
     freq = fSample*(1:(kfft-1))'/nff;
     a = abs(f(1:kfft-1));

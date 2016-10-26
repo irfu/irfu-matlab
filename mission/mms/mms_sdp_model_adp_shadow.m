@@ -46,7 +46,7 @@ for iSig = 1:length(signals)
     case 'p234'
       expShadow = [MMS_CONST.Phaseshift.p2, MMS_CONST.Phaseshift.p3, MMS_CONST.Phaseshift.p4] + pi; % p1 lost
       sig = 'e12';
-    otherwise,
+    otherwise
       errS = 'unrecognized SIG';
       irf.log('critical',errS), error(errS)
   end

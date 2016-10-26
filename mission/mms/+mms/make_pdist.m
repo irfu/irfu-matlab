@@ -26,9 +26,9 @@ if nargout == 2
 end
 
 
-if isa(file,'dataobj');
+if isa(file,'dataobj')
   tmpDataObj =  file;  
-elseif isa(file,'char');
+elseif isa(file,'char')
   tmpDataObj = dataobj(file);
 else
   error('Input not recognized.')
@@ -80,8 +80,8 @@ end
 % Shift times to center of deltat- and deltat+ for l2 particle
 % distributions and moments
 if ~isempty(regexp(tmpDist.name,'^mms[1-4]_d[ei]s_','once'))
-	if isfield(tmpDist.DEPEND_0,'DELTA_MINUS_VAR') && isfield(tmpDist.DEPEND_0,'DELTA_PLUS_VAR'),
-        if isfield(tmpDist.DEPEND_0.DELTA_MINUS_VAR,'data') && isfield(tmpDist.DEPEND_0.DELTA_PLUS_VAR,'data'),
+	if isfield(tmpDist.DEPEND_0,'DELTA_MINUS_VAR') && isfield(tmpDist.DEPEND_0,'DELTA_PLUS_VAR')
+        if isfield(tmpDist.DEPEND_0.DELTA_MINUS_VAR,'data') && isfield(tmpDist.DEPEND_0.DELTA_PLUS_VAR,'data')
             irf.log('warning','Times shifted to center of dt-+. dt-+ are recalculated');
             toffset = (int64(tmpDist.DEPEND_0.DELTA_PLUS_VAR.data)-int64(tmpDist.DEPEND_0.DELTA_MINUS_VAR.data))*1e6/2;
             tdiff = (int64(tmpDist.DEPEND_0.DELTA_PLUS_VAR.data)+int64(tmpDist.DEPEND_0.DELTA_MINUS_VAR.data))*1e6;
@@ -89,7 +89,7 @@ if ~isempty(regexp(tmpDist.name,'^mms[1-4]_d[ei]s_','once'))
             tmpDist.DEPEND_0.DELTA_PLUS_VAR.data = tdiff/2;
             tmpDist.DEPEND_0.data = tmpDist.DEPEND_0.data+toffset;
         end
-    end
+	end
 end
 
 time = tmpDist.DEPEND_0.data;

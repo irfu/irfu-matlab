@@ -464,7 +464,7 @@ for i = 1:ngap
       i, spdfbreakdowntt2000(pulse(gapidx)));
     irf.log('warning', logStr);
     period_flag(gapidx) = 4;
-  elseif finite(nspins2) && abs(nspins2 - round(nspins2)) lt 0.25*0.111 then begin
+  elseif finite(nspins2) && abs(nspins2 - round(nspins2)) < 0.25*0.111
     nspins = nspins2;
     logStr=sprintf(['Processing gap %i accepting spin period from ', ...
       'end of gap at: %04i-%02i-%02iT%02i:%02i:%02i:%03i.%03i.%03iZ.'], ...

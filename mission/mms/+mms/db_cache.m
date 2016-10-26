@@ -24,7 +24,7 @@ if nargin>0
       warning('unrecognized value for flagCache')
       val = [];
   end
-  if ~isempty(val),
+  if ~isempty(val)
     MMS_DB.cache.enabled = val;
     if nargin<2, flagSave = false;
     else
@@ -34,7 +34,7 @@ if nargin>0
         flagSave = false;
       end
     end
-    if flagSave,
+    if flagSave
       disp('saving caching status')
       datastore('mms_db','db_cache_enabled',val),
     end
@@ -42,7 +42,7 @@ if nargin>0
 end
 
 if MMS_DB.cache.enabled, disp('DB caching enabled')
-else disp('DB caching disabled')
+else, disp('DB caching disabled')
 end
 
 if nargout>0, res = MMS_DB.cache.enabled; end
