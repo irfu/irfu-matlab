@@ -1,6 +1,8 @@
-function [tsNetData,~] = thor_netdata(data,downlink,memory_limit,downlink_delay)
+function [tsNetData,tsDiscardedData] = thor_netdata(data,downlink,memory_limit,downlink_delay)
 % THOR_NETDATA - calculates how much data accumulates onboard THOR
-%   netdata = thor_netdata(data,downlink)
+%   [netOnboardData,discardedData] = thor_netdata(data,downlink,memory_limit,downlink_delay)
+%   discardedData - not implemented
+%   downlink_delay - not implemented
 
 % there can be different subcategories, the first category is downlinked 
 % first, which should for example highest quality factor
@@ -49,3 +51,4 @@ for iOrbit = 2:nOrbits
 end
 
 tsNetData = irf.ts_scalar(data.time,netData);
+tsDiscardedData = [];
