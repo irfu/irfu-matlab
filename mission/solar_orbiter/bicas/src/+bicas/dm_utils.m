@@ -6,38 +6,59 @@ classdef dm_utils
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
 % First created 2016-10-10
 
+%============================================================================================================
 % PROPOSAL: Move some functions to "utils".
 %   Ex: add_components_to_struct, select_subset_from_struct
 % PROPOSAL: Write test code for ACQUISITION_TIME_to_tt2000 and inversion.
 % PROPOSAL: Split up in separate files?!
 % PROPOSAL: Reorg select_subset_from_struct into returning a list of intervals instead.
-    
+%
+% PROPOSAL: More analogous names and functionality for all functions for converting N samples/record --> 1 sample/record.
+%   Ex: reshape_to_1_sample_per_record
+%   Ex: ACQUISITION_TIME___expand_to_sequences
+%   Ex: tt2000___expand_to_sequences
+%   NOTE: Time conversion may require moving the zero-point within the snapshot/record.
+%   PROPOSAL: Names
+%       convert_Nspr_to_1spr_samples
+%       convert_Nspr_to_1spr_tt2000
+%       convert_Nspr_to_1spr_ACQUISITION_TIME
+%   PROPOSAL: All have N_seq as column vector.
+
+
+
     methods(Static, Access=public)
 
         function filtered_data = filter_rows(data, row_filter)
-        % Function intended for filtering out data from a zVariable.
-        % records       : Numeric array with N rows.             (Intended to represent zVariables with N records.)
-        % record_filter : Numeric/logical 1D vector with N rows. (Intended to represent zVariables with N records.)
+        % Function intended for filtering out (copying selectively) data from a zVariable.
+        %
+        % data          : Numeric array with N rows.             (Intended to represent zVariables with N records.)
+        % row_filter    : Numeric/logical 1D vector with N rows. (Intended to represent zVariables with N records.)
         % filtered_data : Array of the same size as "records", with
-        %                 filtered_data(i,:,:, ...) == NaN,                 for record_filter(i)==0.
         %                 filtered_data(i,:,:, ...) == records(i,:,:, ...), for record_filter(i)~=0.
+        %                 filtered_data(i,:,:, ...) == NaN,                 for record_filter(i)==0.
 
             % Name? filter_rows? filter_records?
             
             % ASSERTIONS
-            if length(row_filter) ~= numel(row_filter)
-                % Not necessary to require row vector, only 1D vector.
+            if ~iscolumn(row_filter)     % Not really necessary to require row vector, only 1D vector.
                 error('BICAS:dm_utils:Assertion:IllegalArgument', 'row_filter is not a 1D vector.')  % Use "DatasetFormat"?
             elseif size(row_filter, 1) ~= size(data, 1)
                 error('BICAS:dm_utils:Assertion:IllegalArgument', 'Numbers of records do not match.')    % Use "DatasetFormat"?
+            elseif ~isfloat(data)
+                error('BICAS:dm_utils:Assertion:IllegalArgument', 'data is not a floating-point class (can not represent NaN).')    % Use "DatasetFormat"?
             end
             
+            
+            
+            % Copy all data
             filtered_data = data;
             
-            % IMPLEMENTATION NOTE: Command works empirically for filtered_data having any number of dimensions.
-            % However, if row_filter and filtered_data have different numbers of rows, then
-            % the final array may get the wrong dimensions (without triggering error!) since
-            % new array components (indices) are assigned. ==> The corresponding ASSERTION is important!
+            % Overwrite data that should not have been copied with NaN
+            % --------------------------------------------------------
+            % IMPLEMENTATION NOTE: Command works empirically for filtered_data having any number of dimensions. However,
+            % if row_filter and filtered_data have different numbers of rows, then the final array may get the wrong
+            % dimensions (without triggering error!) since new array components (indices) are assigned. ==> The
+            % corresponding ASSERTION is important!
             filtered_data(row_filter==0, :) = NaN;
         end
 
@@ -91,8 +112,6 @@ classdef dm_utils
         %
         % FREQ : The FREQ zVariable in LFR CDFs.
         % freq : Frequency in Hz.
-            
-            % PROPOSAL: FREQ assertion in separate function. General assertion-values-from-subset function?
             
             global CONSTANTS
             
@@ -237,6 +256,77 @@ classdef dm_utils
         
         
         
+        function data_2 = reshape_to_1_sample_per_record(data_1)
+        % Convert data from N samples/record to 1 sample/record (from a matrix to a column vector).
+        
+            % NOTE: ndims always returns at least two, which is exactly what we want, also for empty and scalars, and row vectors.
+            if ndims(data_1) > 2
+                error('BICAS:dm_utils:Assertion:IllegalArgument', 'data_1 has more than two dimensions.')
+            end
+            
+            data_2 = reshape(data_1', numel(data_1), 1);
+        end
+        
+        
+        
+        function t_tt2000_2 = tt2000___expand_to_sequences( t_tt2000_1, N_sequence, F_sequence )
+        % t_tt2000_1 : Nx1 vector.
+        % t_tt2000_2 : Nx1 vector. Like t_tt2000_1 but each single time (row) has been replaced by a constantly
+        %              incrementing sequence of times (rows). Every such sequence begins with the original
+        %              value, has length N_samples_per_record with frequency F_records(i).
+        %              NOTE: There is no check that the entire sequence is monotonic. LFR data can have snapshots that
+        %              overlap in time!
+        % N_sequence : Positive integer. Scalar. Number of values per sequence.
+        % F_records  : Nx1 vector. Frequency of samples within a subsequence (CDF record). Unit: Hz.
+            
+            % PROPOSAL: Turn into more generic function, working on number sequences in general.
+            % PROPOSAL: N_sequence should be a column vector.
+            %    NOTE: TDS-LFM-RSWF, LFR-SURV-CWF has varying snapshot length.
+            %    PRO: Could be useful for converting N samples/record to sample/record for calibration with transfer functions.
+            %       NOTE: Then also needs function that does the reverse.
+            
+            % ASSERTION:
+            bicas.dm_utils.assert_Epoch(t_tt2000_1)
+            if numel(N_sequence) ~= 1
+                error('BICAS:dm_utils:Assertion:IllegalArgument', 'N_sequence not scalar.')
+            elseif size(F_sequence, 1) ~= size(t_tt2000_1, 1)
+                error('BICAS:dm_utils:Assertion:IllegalArgument', 'F_sequence and t_tt2000 do not have the same number of rows.')
+            end
+            
+            N_records = numel(t_tt2000_1);
+            
+            % Express frequency as period length in ns (since tt2000 uses ns as a unit).
+            % Use the same MATLAB class as tt
+            T_sequence = int64(1e9 ./ F_sequence);   
+                        
+            % Conventions:
+            % ------------
+            % Variable names
+            %    One letter  : vector (row/column)
+            %    Two letters : matrix
+            % Time unit: ns (as for tt2000)            
+            % Algorithm should require integers to have a very predictable behaviour (useful when testing).
+            
+            % One unique time per record.
+            t_records  = t_tt2000_1;  % Column vector            
+            tt_records = repmat(t_records, [1, N_sequence]);
+            
+            % Incrementing indices for every sample (within record).
+            i_samples  = int64(0:(N_sequence-1));
+            ii_samples = repmat(i_samples, [N_records, 1]);
+            
+            % Unique frequency per record.
+            TT_record = repmat(T_sequence, [1, N_sequence]);
+            
+            % Unique time for every sample in every record.
+            tt = tt_records + ii_samples .* TT_record;
+            
+            % Convert to 2D matrix --> 1D column vector.
+            t_tt2000_2 = reshape(tt', [N_records*N_sequence, 1]);
+        end
+        
+        
+        
         function ACQUISITION_TIME_2 = ACQUISITION_TIME___expand_to_sequences(  ACQUISITION_TIME_1, N_sequence, F_sequence  )
         % Function intended for converting ACQUISITION_TIME (always one time per record) from many samples/record to one sample/record.
         % Analogous to tt2000___expand_to_sequences.
@@ -264,71 +354,6 @@ classdef dm_utils
 
 
         
-        function t_tt2000_2 = tt2000___expand_to_sequences( t_tt2000_1, N_sequence, F_sequence )
-        % t_tt2000_1 : Nx1 vector.
-        % t_tt2000_2 : Nx1 vector. Like t_tt2000_1 but each single time (row) has been replaced by a constantly
-        %              incrementing sequence of times (rows). Every such sequence begins with the original
-        %              value, has length N_samples_per_record with frequency F_records(i).
-        %              NOTE: There is no check that the entire sequence is monotonic. LFR data can have snapshots that
-        %              overlap in time!
-        % N_sequence : Positive integer. Scalar. Number of values per sequence.
-        % F_records  : Nx1 vector. Frequency of samples within a subsequence (CDF record). Unit: Hz.
-            
-            % PROPOSAL: Turn into more generic function, working on number sequences in general.
-            
-            % ASSERTION:
-            bicas.dm_utils.assert_Epoch(t_tt2000_1)
-            if numel(N_sequence) ~= 1
-                error('BICAS:dm_utils:Assertion:IllegalArgument', 'N_sequence not scalar.')
-            elseif size(F_sequence, 1) ~= size(t_tt2000_1, 1)
-                error('BICAS:dm_utils:Assertion:IllegalArgument', 'F_sequence and t_tt2000 do not have the same number of rows.')
-            end
-            
-            N_records = numel(t_tt2000_1);
-            
-            % Express frequency as period length in ns (since tt2000 uses ns as a unit).
-            % Use the same MATLAB class as tt
-            T_sequence = int64(1e9 ./ F_sequence);   
-                        
-            % Conventions:
-            % One upper case letter:  vector (row/column)
-            % Two upper case letters: matrix
-            % Time unit: ns (as for tt2000)            
-            % Algorithm should require integers to be reliable.
-            
-            % One unique time per record.
-            t_records  = t_tt2000_1;  % Column vector            
-            tt_records = repmat(t_records, [1, N_sequence]);
-            
-            % Incrementing indices for every sample (within record).
-            i_samples  = int64(0:(N_sequence-1));
-            ii_samples = repmat(i_samples, [N_records, 1]);
-            
-            % Unique frequency per record.
-            TT_record = repmat(T_sequence, [1, N_sequence]);
-            
-            % Unique time for every sample in every record.
-            tt = tt_records + ii_samples .* TT_record;
-            
-            % Convert to 2D matrix --> 1D column vector.
-            t_tt2000_2 = reshape(tt', [N_records*N_sequence, 1]);
-        end
-        
-        
-        
-        function data_2 = reshape_to_1_sample_per_record(data_1)
-        % Convert data from N samples/record to 1 sample/record (from a matrix to a column vector).
-        
-            % NOTE: ndims always returns at least two, which is exactly what we want, also for empty and scalars, and row vectors.
-            if ndims(data_1) > 2
-                error('BICAS:dm_utils:Assertion:IllegalArgument', 'data_1 has more than two dimensions.')
-            end
-            
-            data_2 = reshape(data_1', numel(data_1), 1);
-        end
-        
-        
-%         
 %         function data_dest = nearest_interpolate_records(ACQUISITION_TIME_src, data_src, ACQUISITION_TIME_dest)
 %             % Take CDF data (src) divided into records (points in time) and use that to produce data
 %             % divided into other records (other points in time).
@@ -439,9 +464,9 @@ classdef dm_utils
         
         function assert_ACQUISITION_TIME(ACQUISITION_TIME)
             if ~isa(ACQUISITION_TIME, 'uint32')
-                error('BICAS:dm_utils:Assertion:IllegalArgument', 'ACQUISITION_TIME has the wrong MATLAB class.')
+                error('BICAS:dm_utils:Assertion:IllegalArgument', 'ACQUISITION_TIME is not uint32.')
             elseif ndims(ACQUISITION_TIME) ~= 2
-                error('BICAS:dm_utils:Assertion:IllegalArgument', 'ACQUISITION_TIME has the wrong number of dimensions.')
+                error('BICAS:dm_utils:Assertion:IllegalArgument', 'ACQUISITION_TIME is not two-dimensional.')
             elseif size(ACQUISITION_TIME, 2) ~= 2
                 error('BICAS:dm_utils:Assertion:IllegalArgument', 'ACQUISITION_TIME is does not have two columns.')
             elseif any(ACQUISITION_TIME(:, 2) < 0 | 65536 <= ACQUISITION_TIME(:, 2))   % NOTE: Permits up to 65526- to make it possible to use fractions (non-integers).

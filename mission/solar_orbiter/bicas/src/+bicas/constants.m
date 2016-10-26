@@ -108,7 +108,7 @@ classdef constants < handle
 %   PROPOSAL: Something analogous to data_manager's "elementary input/output".
 %   PROPOSAL: Something with CDF, datasets, BICAS_input/output, ...
 %
-% PROPOSAL: Convert constant cell arrays of structs to arrays of structs: S/W modes, CDF/PDT inputs/outputs.
+% PROPOSAL: Convert constant cell arrays of structs to arrays of structs: S/W modes, CDF/PDID inputs/outputs.
 %   PRO: Simplifies code that constructs cell arrays of the same struct field in multiple cell structs.
 %
 
@@ -128,8 +128,8 @@ classdef constants < handle
         inputs     % Information associated with input  datasets.
         outputs    % Information associated with output datasets.
         sw_modes   % Information associated with S/W modes datasets.
-        EI_PDTs
-        EO_PDTs
+        EI_PDIDs
+        EO_PDIDs
     end
 
     %###################################################################################################################
@@ -205,8 +205,8 @@ classdef constants < handle
         
             
             
-            [obj.inputs,  obj.EI_PDTs]  = bicas.constants.produce_inputs_constants();
-            [obj.outputs, obj.EO_PDTs]  = bicas.constants.produce_outputs_constants(D);          
+            [obj.inputs,  obj.EI_PDIDs]  = bicas.constants.produce_inputs_constants();
+            [obj.outputs, obj.EO_PDIDs]  = bicas.constants.produce_outputs_constants(D);          
             obj.sw_modes = bicas.constants.produce_sw_modes_constants();
             
             obj.BICAS_root_path = BICAS_root_path;
@@ -228,24 +228,24 @@ classdef constants < handle
             error('BICAS:constants:Assertion', '"%s" is not a valid S/D mode ID', sw_mode_ID)
         end
 
-        function assert_EI_PDT(obj, EI_PDT)
+        function assert_EI_PDID(obj, EI_PDID)
             
             for i=1:length(obj.inputs)
-                if strcmp(obj.inputs{i}.PDT, EI_PDT)
+                if strcmp(obj.inputs{i}.PDID, EI_PDID)
                     return
                 end
             end
-            error('BICAS:constants:Assertion', '"%s" is not a valid EI PDT', EI_PDT)
+            error('BICAS:constants:Assertion', '"%s" is not a valid EI PDID', EI_PDID)
         end
 %         
-%         function assert_EO_PDT(obj, EO_PDT)
+%         function assert_EO_PDID(obj, EO_PDID)
 %             
 %             for i=1:length(obj.outputs)
-%                 if strcmp(obj.outputs{i}.PDT, EO_PDT)
+%                 if strcmp(obj.outputs{i}.PDID, EO_PDID)
 %                     return
 %                 end
 %             end
-%             error('BICAS:constants:Assertion', '"%s" is not a valid EO PDT', EO_PDT)
+%             error('BICAS:constants:Assertion', '"%s" is not a valid EO PDID', EO_PDID)
 %         end
     end   % methods(Access=public)
     
@@ -271,8 +271,8 @@ classdef constants < handle
                 end
             end            
             
-            bicas.utils.assert_strings_unique(obj.EI_PDTs)
-            bicas.utils.assert_strings_unique(obj.EO_PDTs)
+            bicas.utils.assert_strings_unique(obj.EI_PDIDs)
+            bicas.utils.assert_strings_unique(obj.EO_PDIDs)
         end
 
     end   % methods(Access=private)
@@ -297,8 +297,8 @@ classdef constants < handle
             %                     values/constants can be easily modified, whereas ID values are tied to hardcoded
             %                     constants in data_manager which are harder to modify.
             %
-            %    .output_PDTs : A cell array of PDTs. Effectively an array of pointers to (1) the output constants, and (2)
-            %                   indirectly to the input constants through data_manager.get_elementary_input_PDTs.
+            %    .output_PDIDs : A cell array of PDIDs. Effectively an array of pointers to (1) the output constants, and (2)
+            %                   indirectly to the input constants through data_manager.get_elementary_input_PDIDs.
             %===================================================================================================
             
             C_sw_modes = {};
@@ -310,42 +310,42 @@ classdef constants < handle
 %             sw_mode.CLI_parameter = 'LFR-SBM1-CWF-E';
 %             sw_mode.ID            = 'LFR-SBM1-CWF-E_V01-V01';
 %             sw_mode.SWD_purpose = 'Generate CWF electric field data (potential difference) from LFR';            
-%             sw_mode.output_PDTs = {'L2S_LFR-SBM1-CWF-E_V01'};
+%             sw_mode.output_PDIDs = {'L2S_LFR-SBM1-CWF-E_V01'};
 %             C_sw_modes{end+1} = sw_mode;
 %             
 %             sw_mode = [];
 %             sw_mode.CLI_parameter = 'LFR-SBM2-CWF-E';
 %             sw_mode.ID            = 'LFR-SBM2-CWF-E_V01-V01';
 %             sw_mode.SWD_purpose = 'Generate CWF electric field data (potential difference) from LFR';            
-%             sw_mode.output_PDTs = {'L2S_LFR-SBM2-CWF-E_V01'};
+%             sw_mode.output_PDIDs = {'L2S_LFR-SBM2-CWF-E_V01'};
 %             C_sw_modes{end+1} = sw_mode;
             
             sw_mode = [];
             sw_mode.CLI_parameter = 'LFR-SURV-CWF-E_V01-V01';
             sw_mode.ID            = 'LFR-SURV-CWF-E_V01-V01';
             sw_mode.SWD_purpose = 'Generate CWF electric field data (potential difference) from LFR';            
-            sw_mode.output_PDTs = {'L2S_LFR-SURV-CWF-E_V01'};
+            sw_mode.output_PDIDs = {'L2S_LFR-SURV-CWF-E_V01'};
             C_sw_modes{end+1} = sw_mode;
             
             sw_mode = [];
             sw_mode.CLI_parameter = 'LFR-SURV-CWF-E_V02-V01';
             sw_mode.ID            = 'LFR-SURV-CWF-E_V02-V01';
             sw_mode.SWD_purpose = 'Generate CWF electric field data (potential difference) from LFR';            
-            sw_mode.output_PDTs = {'L2S_LFR-SURV-CWF-E_V01'};
+            sw_mode.output_PDIDs = {'L2S_LFR-SURV-CWF-E_V01'};
             C_sw_modes{end+1} = sw_mode;
             
             sw_mode = [];
             sw_mode.CLI_parameter = 'LFR-SURV-SWF-E_V01-V01';
             sw_mode.ID            = 'LFR-SURV-SWF-E_V01-V01';
             sw_mode.SWD_purpose = 'Generate SWF electric (potential difference) data from LFR';            
-            sw_mode.output_PDTs = {'L2S_LFR-SURV-SWF-E_V01'};
+            sw_mode.output_PDIDs = {'L2S_LFR-SURV-SWF-E_V01'};
             C_sw_modes{end+1} = sw_mode;
             
             sw_mode = [];
             sw_mode.CLI_parameter = 'LFR-SURV-SWF-E_V02-V01';
             sw_mode.ID            = 'LFR-SURV-SWF-E_V02-V01';
             sw_mode.SWD_purpose = 'Generate SWF electric (potential difference) data from LFR';
-            sw_mode.output_PDTs = {'L2S_LFR-SURV-SWF-E_V01'};
+            sw_mode.output_PDIDs = {'L2S_LFR-SURV-SWF-E_V01'};
             C_sw_modes{end+1} = sw_mode;
             
             %=====
@@ -355,7 +355,7 @@ classdef constants < handle
             %sw_mode.CLI_parameter = 'TDS-LFM-CWF-E';
             %sw_mode.ID            = 'TDS-LFM-CWF-E_V01-V01';
             %sw_mode.SWD_purpose = 'Generate CWF electric (potential difference) data from TDS-LFM-CWF';
-            %sw_mode.output_PDTs = {'L2S_TDS-LFM-CWF-E_V01'};
+            %sw_mode.output_PDIDs = {'L2S_TDS-LFM-CWF-E_V01'};
             %C_sw_modes{end+1} = sw_mode;
             
             % NOTE: Accepts older/obsoleted V01 input data.
@@ -363,14 +363,14 @@ classdef constants < handle
             %sw_mode.CLI_parameter = 'TDS-LFM-RSWF-E_V01-V01';
             %sw_mode.ID            = 'TDS-LFM-RSWF-E_V01-V01';
             %sw_mode.SWD_purpose = 'Generate RSWF electric (potential difference) data from TDS-LFM-RSWF V01';
-            %sw_mode.output_PDTs = {'L2S_TDS-LFM-RSWF-E_V01'};
+            %sw_mode.output_PDIDs = {'L2S_TDS-LFM-RSWF-E_V01'};
             %C_sw_modes{end+1} = sw_mode;
             
             %sw_mode = [];
             %sw_mode.CLI_parameter = 'TDS-LFM-RSWF-E_V02-V01';
             %sw_mode.ID            = 'TDS-LFM-RSWF-E_V02-V01';
             %sw_mode.SWD_purpose = 'Generate RSWF electric (potential difference) data from TDS-LFM-RSWF V02';
-            %sw_mode.output_PDTs = {'L2S_TDS-LFM-RSWF-E_V01'};
+            %sw_mode.output_PDIDs = {'L2S_TDS-LFM-RSWF-E_V01'};
             %C_sw_modes{end+1} = sw_mode;
             
             %======
@@ -380,13 +380,13 @@ classdef constants < handle
 %             sw_mode.CLI_parameter = 'LFR-SURV-CWF-E___EXPERIMENTAL';
 %             sw_mode.ID            = 'LFR-SURV-CWF-E_V01-V01___EXPERIMENTAL';
 %             sw_mode.SWD_purpose = 'Generate CWF electric field data (potential difference) from LFR - EXPERIMENTAL';            
-%             sw_mode.output_PDTs = {'L2S_LFR-SURV-CWF-E_V01'};
+%             sw_mode.output_PDIDs = {'L2S_LFR-SURV-CWF-E_V01'};
 %             C_sw_modes{end+1} = sw_mode;
 %             
             %sw_mode = [];
             %sw_mode.CLI_parameter = 'TEST-MODE';
             %sw_mode.SWD_purpose = 'Test mode. This mode is never supposed to be seen outside of development.';            
-            %sw_mode.output_PDTs = {'L2S_LFR-SURV-SWF-E_V01', 'L2S_TEST_V99'};
+            %sw_mode.output_PDIDs = {'L2S_LFR-SURV-SWF-E_V01', 'L2S_TEST_V99'};
             %C_sw_modes{end+1} = sw_mode;
         end
             
@@ -396,8 +396,8 @@ classdef constants < handle
         % Produce constants for all possible INPUT datasets.
         % (independent of how they are associated with S/W modes).
         %==========================================================
-        function [C_inputs, EI_PDTs] = produce_inputs_constants
-            % PROPOSAL: Put derivation of .PDT in nested init function.
+        function [C_inputs, EI_PDIDs] = produce_inputs_constants
+            % PROPOSAL: Put derivation of .PDID in nested init function.
             
             % NOTE: NESTED function
             function C_input = init_input_C_sci(dataset_ID, skeleton_version_str)
@@ -453,15 +453,15 @@ classdef constants < handle
 
 
 
-            % Add one field ".PDT" to every struct above!
+            % Add one field ".PDID" to every struct above!
             % 
-            % Put together PDTs (used in data_manager).
+            % Put together PDIDs (used in data_manager).
             % See data_manager for definition.
-            EI_PDTs = {};
+            EI_PDIDs = {};
             for i = 1:length(C_inputs)
-                C_inputs{i}.PDT = bicas.constants.construct_PDT(C_inputs{i}.dataset_ID, C_inputs{i}.skeleton_version_str);
-                %C_inputs{i}.PDT = [C_inputs{i}.dataset_ID, '_V', C_inputs{i}.skeleton_version_str];
-                EI_PDTs{i} = C_inputs{i}.PDT;
+                C_inputs{i}.PDID = bicas.constants.construct_PDID(C_inputs{i}.dataset_ID, C_inputs{i}.skeleton_version_str);
+                %C_inputs{i}.PDID = [C_inputs{i}.dataset_ID, '_V', C_inputs{i}.skeleton_version_str];
+                EI_PDIDs{i} = C_inputs{i}.PDID;
             end
         end
 
@@ -471,7 +471,7 @@ classdef constants < handle
         % Produce constants for all possible OUTPUT datasets
         % (independent of how they are associated with S/W modes).
         %==========================================================
-        function [C_outputs, EO_PDTs] = produce_outputs_constants(D)
+        function [C_outputs, EO_PDIDs] = produce_outputs_constants(D)
             % TODO: Set SWD_level automatically?!
             
             CLI_PARAMETER_SCI_NAME = 'output_sci';
@@ -549,27 +549,27 @@ classdef constants < handle
             %C_outputs{end}.SWD_release_version         = D.SWD_OUTPUT_RELEASE_VERSION;
 
 
-            % Add one field ".PDT" to every struct above!
+            % Add one field ".PDID" to every struct above!
             % 
-            % Put together PDTs (used in data_manager).
+            % Put together PDIDs (used in data_manager).
             % See data_manager for definition.
-            EO_PDTs = {};
+            EO_PDIDs = {};
             for i = 1:length(C_outputs)
-                C_outputs{i}.PDT = bicas.constants.construct_PDT(C_outputs{i}.dataset_ID, C_outputs{i}.skeleton_version_str);
-                EO_PDTs{i} = C_outputs{i}.PDT;
+                C_outputs{i}.PDID = bicas.constants.construct_PDID(C_outputs{i}.dataset_ID, C_outputs{i}.skeleton_version_str);
+                EO_PDIDs{i} = C_outputs{i}.PDID;
             end
         end
         
         
         
-        function PDT = construct_PDT(dataset_ID, skeleton_version_str)
-        % Construct a (shorter) PDT from a dataset ID and version.
+        function PDID = construct_PDID(dataset_ID, skeleton_version_str)
+        % Construct a (shorter) PDID from a dataset ID and version.
         
-            %PDT = [dataset_ID, '_V', skeleton_version_str];
+            %PDID = [dataset_ID, '_V', skeleton_version_str];
             
             dataset_ID_shortened = regexprep(dataset_ID,           '^ROC-SGSE_', '',  'once');
             dataset_ID_shortened = regexprep(dataset_ID_shortened, '_RPW-',      '_', 'once');                
-            PDT = [dataset_ID_shortened, '_V', skeleton_version_str];
+            PDID = [dataset_ID_shortened, '_V', skeleton_version_str];
         end
 
     end % methods(Static, Access=private)

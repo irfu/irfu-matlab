@@ -5,6 +5,14 @@ function data_manager_TEST
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
 % First created 2016-10-05
 %
+% NOTE: There can be NaN in individual samples.
+%    Ex: Mysterious signal 7: ROC-SGSE_L2S_RPW-LFR-SURV-SWF-E_V01___OUTPUT_AV.cdf   
+%       V: (35, 1477,2), (53, 500,3) (32, 1477,3)
+%       E:  (32+3, 1477, 1)
+%           (53+3,  500, 2)
+%           (53+3,  500, 3)
+%           (32+3, 1477, 2)
+
 
     % PROPOSAL: Create long complex test data from which one then deletes different subsets of "records", perhaps based on time.
     % QUESTION: How handle very similar datasets?

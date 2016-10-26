@@ -165,18 +165,18 @@ try
         %-----------------------------------------------------------------
         flags('output_dir') = struct('CLI_str', '--output', 'is_required', 1, 'expects_value', 1);
         C_inputs = C_sw_mode.inputs;    % C = Constants structure.
-        input_PDTs = {};   % List of keys used for input files.
+        input_PDIDs = {};   % List of keys used for input files.
         for i_input = 1:length(C_inputs)
-            PDT = C_inputs{i_input}.PDT;
+            PDID = C_inputs{i_input}.PDID;
             
             % Configure one flag+value pair
             flag = [];
             flag.CLI_str = ['--', C_inputs{i_input}.CLI_parameter];
             flag.is_required = 1;
             flag.expects_value = 1;
-            flags(PDT) = flag;
+            flags(PDID) = flag;
             
-            input_PDTs{end+1} = PDT;
+            input_PDIDs{end+1} = PDID;
         end
 
         %-----------------------------
@@ -186,7 +186,7 @@ try
         
         
         
-        input_files = containers.Map(input_PDTs, parsed_flags.values(input_PDTs));   % Extract subset of parsed arguments.
+        input_files = containers.Map(input_PDIDs, parsed_flags.values(input_PDIDs));   % Extract subset of parsed arguments.
         
         output_dir = bicas.utils.get_abs_path(parsed_flags('output_dir'));
         
@@ -225,7 +225,8 @@ catch exception
         %==================================================================
         % Convert MATLAB error message identifiers into return error codes
         %==================================================================
-        % NOTE: The order in which tests occur matters since the same error message identifier may contain multiple matching components.
+        % NOTE: The order in which tests occur matters since the same error message identifier may contain multiple
+        % matching components. Therefore, the matching of msg IDs with error codes is also not an exact science.
         error_ID = strsplit(exception.identifier, ':');
         if     any(strcmpi(error_ID, 'OperationNotImplemented'));   error_code = ERROR_CODES.OPERATION_NOT_IMPLEMENTED;
         elseif any(strcmpi(error_ID, 'PathNotFound'));              error_code = ERROR_CODES.PATH_NOT_FOUND;

@@ -10,16 +10,18 @@
 %
 % ARGUMENTS AND RETURN VALUE
 % ==========================
-% obj : recursively nested struct and cell arrays that can be interpreted as a JSON object.
-%       - Interprets MATLAB structure field names as "JSON parameter name strings".
-%         NOTE: This does in principle limit the characters that can be used for JSON parameter name strings.
-%       - Interprets MATLAB cell arrays as "JSON arrays/sets".
-% settings : struct
+% obj                : Recursively nested struct and cell arrays that can be interpreted as a JSON object.
+%                      - Interprets MATLAB structure field names as "JSON parameter name strings".
+%                      - Interprets MATLAB cell arrays as "JSON arrays/sets".
+% settings           : Struct
 %   .indent_size     : Number of whitespace per indentation level.
 %   .value_position  : The minimum number of characters between the beginning of a "name" and the beginning of the
 %                      corresponding value. This setting can make the final string more readable.
-% str : Indented multi-line string with that is suitable for printing and human reading.
-%       NOTE: Uses line feed character for line breaks.
+% str                : Indented multi-line string with that is suitable for printing and human reading.
+%                      NOTE: Uses line feed character for line breaks.
+%
+% NOTE: Since MATLAB structure field names are used for "JSON parameter name strings", the characters that can be used
+% are likely more limited than what JSON permits.
 %
 function str = JSON_object_str(obj, settings)
 %

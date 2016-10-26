@@ -5,11 +5,12 @@ function write_CDF_dataobj(file_path, dataobj_GlobalAttributes, dataobj_data, da
 % (irfu-matlab). Useful for reading a CDF file, modifying the contents somewhat, and then writing the modified contents
 % to a CDF file. Originally based on write_cdf.m/write_cdf_spdfcdfread.m.
 %
+%
+% IMPORTANT NOTE: As of 2016-10-20: This function is intended to replace write_CDF_spdfcdfread.
+%
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
 % First created 2016-07-12 (write_cdf.m/write_cdf_spdfcdfread.m), 2016-10-20 (write_cdf_dataobj.m)
 %
-%
-% NOTE: As of 2016-10-20: This function is intended to replace write_CDF_spdfcdfread.
 %
 % ARGUMENTS
 % =========
@@ -17,14 +18,16 @@ function write_CDF_dataobj(file_path, dataobj_GlobalAttributes, dataobj_data, da
 % dataobj_GlobalAttributes,   
 % dataobj_data,
 % dataobj_VariableAttributes,
-% dataobj_Variables           : The corresponding fields of an instantiated dataobj, i.e. e.g. do.data,
-%                               do.GlobalAttributes.
+% dataobj_Variables           : The corresponding fields of an instantiated dataobj, i.e. do.data,
+%                               do.GlobalAttributes and so on, where do=dataobj(...).
 % varargin                    : EXPERIMENTAL FEATURE. Optionally string 'fill_empty':
 %                               Empty CDF variable data is replaced by one pad
 %                               value scalar (one record only) of the right type.
 %                               NOTE: This is not meant for "serious use" (it is only a workaround) but
 %                               for tests when writing CDFs, using data read from CDFs. Only works for numerical types.
 %
+% NOTE: 
+% 
 %
 %
 % LIMITATIONS
@@ -57,23 +60,29 @@ function write_CDF_dataobj(file_path, dataobj_GlobalAttributes, dataobj_data, da
 %
 % IMPLEMENTATION NOTE
 % ===================
-% The function does not accept a whole dataobj object since instances of dataobj are likely not meant to be modified
-% after creation. It is possible to modify them though. Therefore the function only accepts the parts of a dataobj that
-% it really needs, which still means it accepts a lot of redundant information in the arguments.
+% The function does not accept a whole dataobj object since:
+% (1) instances of dataobj are likely not meant to be modified after creation. It is possible to modify them though.
+% Therefore the function only accepts the parts of a dataobj that it really needs, which still means it accepts a lot of
+% redundant information in the arguments.
+% (2) One might want to use the function for writing a CDF file without basing it on a dataobj (i.e. without basing it
+% on an existing CDF file).
 
-
+%=======================================================================================================================
+% PROPOSAL: Implement using NASA SPDFs Java code instead?!! Should be possible to easily call Java code from inside MATLAB.
+%   PRO?: Java interface might be more easy to work with and have fewer quirks & limitations.
+%
 % PROPOSAL: Enable MD5 checksum.
+%
 % PROPOSAL: Option for filling empty variable with pad values. 1 record?
 %    CON: Can not know the (non-record) dimensions of such a CDF variable.
 %    CON: Using exactly one record automatically leads to the CDF labelling the CDF variable as record-invariant!
-% PROPOSAL: Redo to work easily with dataobj instead? How handles time? Separat function? One wraps the other?
-%    NOTE: Not necessarily difficult since dataobj seems to contain structures/arrays from spdfcdfread/-info.
-%    QUESTION: Can dataobj be altered?!
 %
-% PROPOSAL: Call NASA SPDFs Java code instead?!! Should be possible to easily call Java code from inside MATLAB.
-% PROPOSAL: Redefine argument "spdfcdfread_data" to "spdfcdfread_data_Data".
-%   NOTE: Ambiguous format. Cell array (vector) of cell arrays?
-%   CON: Not really analogue with anything that can be directly extracted from spdfcdfread.
+% PROPOSAL: Rework into function that uses write_CDF_spdfcdfread (wrapper)?!! 
+%    NOTE: Not necessarily difficult since dataobj seems to contain structures/arrays from spdfcdfread/-info.
+%    PRO: Would reduce amount of code.
+%    CON: write_CDF_spdfread needs knowledge of strange behaviour in spdfcdfread to mimic it (int the interface), which
+%         this function then needs to have knowledge of to use write_CDF_spdfread.
+%    PROPOSAL: Abolish write_CDF_spdfcdfread, or at least stop updating it.
 %
 % PROPOSAL: Some form of validation of input.
 %    PRO: Would confirm that the input format is as it is understood.
@@ -82,6 +91,8 @@ function write_CDF_dataobj(file_path, dataobj_GlobalAttributes, dataobj_data, da
 %    PROPOSAL: Check that stated nbr of records fits data.
 %       PROPOSAL: Flag
 %    PROPOSAL: Assertions for redundant data (within dataobj data/attributes).
+%
+% PROPOSAL: Accept a smaller subset of dataobj data, with less/no redundant data.
 
 
 

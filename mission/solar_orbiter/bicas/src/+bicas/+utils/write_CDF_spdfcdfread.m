@@ -4,6 +4,8 @@ function write_CDF_spdfcdfread(file_path, spdfcdfread_out, spdfcdfread_info, var
 % Attempt at a function which can easily write a CDF using variables on the same data format as
 % returned by [out, info] = spdfcdfread(... , 'Structure', 1, 'KeepEpochAsIs', 1).
 %
+% IMPORTANT NOTE: As of 2016-10-20: This function is intended to be phased out and be replaced by write_CDF_dataobj.
+%
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
 % First created 2016-07-12
 %
@@ -23,8 +25,6 @@ function write_CDF_spdfcdfread(file_path, spdfcdfread_out, spdfcdfread_info, var
 % caller does not need to set the other "out" fields, like when reading a master file with empty fields for zero-record
 % zVariables.
 % 
-% NOTE: As of 2016-10-20: This function is intended to be phased out and be replaced by write_CDF_dataobj.
-%
 %
 %
 % LIMITATIONS
