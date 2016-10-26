@@ -1,4 +1,5 @@
-2016-10-05 v1.12.3 Updated fix for MMS4 sdp4 failure, CAA download fix (MatlabR2015b) and some minor other fixes.
+2016-10-25 v1.12.4 Mainly improved MMS code, updated fix MMS4 sdp4 failure (burst), and some minor other fixes.
+2016-10-05 v1.12.3 Updated fix for MMS4 sdp4 failure, CAA download fix (MatlabR2015a) and some minor other fixes.
 2016-08-22 v1.12.2 New leap second (2017/01), MMS4 sdp4 failure (2016/06/12) and some other minor enhancements and fixes.
 2016-06-20 v1.12.1 NASA CDF patch, MMS improved delta offset, TSeries enhancements and other minor fixes.
 2016-04-14 v1.12.0 Cluser (CSA) moving to HTTPS only, some other TSeries and minor fixes.

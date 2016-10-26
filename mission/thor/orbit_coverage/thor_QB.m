@@ -51,7 +51,7 @@ else
   Bz = B(:,3);
 end
 if 1 % Normalize magnetic field
-  Bnorm = sqrt(Bx.^2+By.^2+0*Bz.^2);
+  Bnorm = sqrt(Bx.^2+By.^2+Bz.^2);
   Bx = Bx./Bnorm;
   By = By./Bnorm;
   Bz = Bz./Bnorm;
