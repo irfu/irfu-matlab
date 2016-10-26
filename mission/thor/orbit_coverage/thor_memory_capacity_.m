@@ -1,5 +1,6 @@
 %% Get omni data
 tint = irf.tint('2004-01-01T00:00:00.00Z/2007-12-01T00:00:00.00Z');
+%tint = irf.tint('2006-01-01T00:00:00.00Z/2009-12-01T00:00:00.00Z');
 %tint = irf.tint('2004-01-01T00:00:00.00Z',60*60*20*30);
 %omni_orig = thor_get_omni(tint,'Bx,By,Bz,bsnx,P,Ma,n,V,T'); % ~90 s/year
 %save('/Users/Cecilia/MATLAB/irfu-matlab/mission/thor/orbit_coverage/omni_data/omni2004-2008','omni_orig')
@@ -122,7 +123,7 @@ iKSR30 = iKSR; iKSR30.data(newCrossing) = repmat(6,numel(newCrossing,1));
 
 % Combine into the highest quality parallel and perpendicular shocks,
 % basically the shocks we want to bring down
-sortedQpar = sort(Qpar30.tlim(tintPhase1).data); limQpar = sortedQpar(end-300);
+sortedQpar = sort(Qpar30.tlim(tintPhase1).data); limQpar = sortedQpar(end-100);
 sortedQper = sort(Qper30.tlim(tintPhase1).data); limQper = sortedQper(end-100);
 indPar = find(Qpar30.data>limQpar);
 indPer = find(Qper30.data>limQper);
@@ -165,7 +166,16 @@ end
 % edgesQ = 0.8:0.02:1; % quality factor bins, high Q
 % [distQpar30_08,~] = thor_bin(Qpar30,edgesQ,tPerigee);
 % [distQper30_08,~] = thor_bin(Qper30,edgesQ,tPerigee);
-edgesQvar = [0.01 0.2 0.4 0.6 0.7 0.8:0.02:1]; % quality factor bins, high Q
+%limQpar1 = sortedQpar(end-40);
+%limQpar2 = sortedQpar(end-80);
+%limQpar3 = sortedQpar(end-120);
+for ii = 1:5
+  edgesQvar(ii) = sortedQpar(end-40*ii*30);
+end
+edgesQvar = [1 edgesQvar];
+edgesQvar = edgesQvar(end:-1:1);
+%edgesQvar = [limQpar1 limQpar2 limQpar3]
+%edgesQvar = [0.01 0.2 0.4 0.6 0.7 0.8:0.02:1]; % quality factor bins, high Q
 [distQpar30_var,~] = thor_bin(Qpar30,edgesQvar,tPerigee);
 [distQper30_var,~] = thor_bin(Qper30,edgesQvar,tPerigee);
 
@@ -183,10 +193,10 @@ distQpar30_var.data = distQpar30_var.data(:,end:-1:1); edgesQvar = edgesQvar(end
 tApogee = iKSRorbit.time;
 
 % Divide KSR = 6 (bowshock) into Q bins with index k = 6:14
-tmpdata = iKSRorbit.data;
-tmpdata(:,6+[0:size(distQpar30_08.data,2)-1]) = distQpar30_08.data(:,1:end);
-tsDistKSR_Q = irf.ts_scalar(distQpar30_08.time,tmpdata);
-tsDistKSR_Q.units = 'min';
+% tmpdata = iKSRorbit.data;
+% tmpdata(:,6+[0:size(distQpar30_08.data,2)-1]) = distQpar30_08.data(:,1:end);
+% tsDistKSR_Q = irf.ts_scalar(distQpar30_08.time,tmpdata);
+% tsDistKSR_Q.units = 'min';
 %% Make plot
 if 0
 h = irf_plot(3);
@@ -249,9 +259,9 @@ c_eval('ind_phase? = iKSRorbit.time.tlim(tintPhase?); n_phase? = numel(ind_phase
 
 %% What is to be downlinked
 % bs (high to low priority) / msh / fs / psw
-phase1_downlink_per_orbit = 150*[0.8 0.8 0.0 0.0]; % Gbit
-phase2_downlink_per_orbit = 150*[0.2 0.2 0.85 0.3]; % Gbit
-phase3_downlink_per_orbit = 150*[0.0 0.0 0.15 0.7]; % Gbit
+phase1_downlink_per_orbit = 150*[0.8 0.8 0.0 0.0]/sum([0.8 0.8 0.0 0.0]); % Gbit
+phase2_downlink_per_orbit = 150*[0.2 0.2 0.85 0.3]/sum([0.2 0.2 0.85 0.3]); % Gbit
+phase3_downlink_per_orbit = 150*[0.0 0.0 0.15 0.7]/sum([0.0 0.0 0.15 0.7]); % Gbit
 
 tsDownlinkPhase1 = irf.ts_scalar(time_phase1,repmat(phase1_downlink_per_orbit,n_phase1,1)); tsDownlinkPhase1.units = 'Gbit';
 tsDownlinkPhase2 = irf.ts_scalar(time_phase2,repmat(phase2_downlink_per_orbit,n_phase2,1)); tsDownlinkPhase2.units = 'Gbit';
