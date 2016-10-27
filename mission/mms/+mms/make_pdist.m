@@ -34,28 +34,29 @@ else
   error('Input not recognized.')
 end
 
-if isempty(tmpDataObj); PD = []; return; end
+if isempty(tmpDataObj); return; end
 
-tmpString = tmpDataObj.vars{4}; mmsId = tmpString(4); detector = tmpString(6:8);
+fileInfo = regexp(tmpDataObj.GlobalAttributes.Logical_source{1}, ...
+  'mms(?<mmsId>[1-4])_fpi_(?<tmMode>(fast|brst))_(?<datalevel>\w*)_(?<detector>\w*)', 'names');
 
-if strfind(detector,'des')  
-  species = 'electrons';
-elseif strfind(detector,'dis')  
-  species = 'ions';
-else
-  PD = NaN;
-  disp('File not recognized as particle distribution.'); 
-  return;
+switch(lower(fileInfo.detector))
+  case {'des'}
+    species = 'electrons';
+  case {'dis'}
+    species = 'ions';
+  otherwise
+    irf.log('critical','File not recognized as particle distribution.');
+    return;
 end
 
 %dataSetName = tmpDataObj.
 %'mms1_des_dist_brst'
 if loadError
-  tmpError = get_variable(tmpDataObj,['mms' mmsId '_' detector '_disterr_brst']);
+  tmpError = get_variable(tmpDataObj,['mms' fileInfo.mmsId '_' fileInfo.detector '_disterr_' fileInfo.tmMode]);
   Error = tmpError.data;
 end
 if loadDist
-  tmpDist = get_variable(tmpDataObj,['mms' mmsId '_' detector '_dist_brst']);
+  tmpDist = get_variable(tmpDataObj,['mms' fileInfo.mmsId '_' fileInfo.detector '_dist_' fileInfo.tmMode]);
   Dist = tmpDist.data;
 else
   Dist = Error;
@@ -99,13 +100,13 @@ dt_plus = tmpDist.DEPEND_0.DELTA_MINUS_VAR.data;
 
 if is_version_geq(tmpDist.GlobalAttributes.Data_version{:}, '3.1.0')
   % FPI version 3.1.z files or newer
-  energy = get_variable(tmpDataObj,['mms' mmsId '_' detector '_energy_brst']);
+  energy = get_variable(tmpDataObj,['mms' fileInfo.mmsId '_' fileInfo.detector '_energy_' fileInfo.tmMode]);
   energy = energy.data;
-  phi = get_variable(tmpDataObj,['mms' mmsId '_' detector '_phi_brst']);
+  phi = get_variable(tmpDataObj,['mms' fileInfo.mmsId '_' fileInfo.detector '_phi_' fileInfo.tmMode]);
   phi = phi.data;
-  theta = get_variable(tmpDataObj,['mms' mmsId '_' detector '_theta_brst']);
+  theta = get_variable(tmpDataObj,['mms' fileInfo.mmsId '_' fileInfo.detector '_theta_' fileInfo.tmMode]);
   theta = theta.data;
-  stepTable = get_variable(tmpDataObj,['mms' mmsId '_' detector '_steptable_parity_brst']);
+  stepTable = get_variable(tmpDataObj,['mms' fileInfo.mmsId '_' fileInfo.detector '_steptable_parity_' fileInfo.tmMode]);
   stepTable = stepTable.data;
 
   % Make energytable from energy0, energy1 and energysteptable
@@ -125,12 +126,12 @@ if is_version_geq(tmpDist.GlobalAttributes.Data_version{:}, '3.1.0')
   PD.ancillary.energy = energy;
   PD.ancillary.esteptable = stepTable;
 else
-  energy0 = get_variable(tmpDataObj,['mms' mmsId '_' detector '_energy0_brst']);
-  energy1 = get_variable(tmpDataObj,['mms' mmsId '_' detector '_energy1_brst']);
+  energy0 = get_variable(tmpDataObj,['mms' fileInfo.mmsId '_' fileInfo.detector '_energy0_' fileInfo.tmMode]);
+  energy1 = get_variable(tmpDataObj,['mms' fileInfo.mmsId '_' fileInfo.detector '_energy1_' fileInfo.tmMode]);
   energy0 = energy0.data; energy1 = energy1.data;
-  phi = get_variable(tmpDataObj,['mms' mmsId '_' detector '_phi_brst']);
-  theta = get_variable(tmpDataObj,['mms' mmsId '_' detector '_theta_brst']);
-  stepTable = get_variable(tmpDataObj,['mms' mmsId '_' detector '_steptable_parity_brst']);
+  phi = get_variable(tmpDataObj,['mms' fileInfo.mmsId '_' fileInfo.detector '_phi_' fileInfo.tmMode]);
+  theta = get_variable(tmpDataObj,['mms' fileInfo.mmsId '_' fileInfo.detector '_theta_' fileInfo.tmMode]);
+  stepTable = get_variable(tmpDataObj,['mms' fileInfo.mmsId '_' fileInfo.detector '_steptable_parity_' fileInfo.tmMode]);
   phi = phi.data; theta = theta.data; stepTable = stepTable.data;
 
   % Make energytable from energy0, energy1 and energysteptable
@@ -161,3 +162,4 @@ else
   varargout = {PD,PDError};
 end
 
+end
