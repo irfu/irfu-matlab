@@ -1,15 +1,45 @@
-MMS_CONST = mms_constants; sampleRate = 32;
+MMS_CONST = mms_constants; sampleRate = 32; mmsId = 'mms1';
 yymm = '2016/02';
 %%
-dataDir = ['/data/mms/mms4/edp/fast/l2a/dce2d/' yymm '/'];
-fList=dir([dataDir '*.cdf']);
-
 %Model = [];
-for i=1:length(fList)
-  fName = fList(i).name; dS = fName(25:38);
+for dd=1:31
+  day = sprintf('%02d',dd);
+  dataDir = ['/data/mms/' mmsId '/edp/fast/l2a/dce2d/' yymm '/'];
+  fList=dir([dataDir '*' yymm(1:4) yymm(6:7) day '*.cdf']);
+  if isempty(fList), continue, end
+  
+  vMax = [0 0 0]; fName = '';
+  for i=1:length(fList)
+    filenameData = mms_fields_file_info(fList(i).name);
+    v = tokenize(filenameData.vXYZ,'.');
+    v = [num2str(v{1}) num2str(v{2}) num2str(v{3})];
+    if isempty(fName)
+      fName = fList(i).name; vMax = v; continue
+    end
+    if v(1)>vMax(1) || (v(1)==vMax(1) && v(2)>vMax(2)) || ...
+        (v(1)==vMax(1) && v(2)==vMax(2) && v(3)>vMax(3))
+      fName = fList(i).name; vMax = v;
+    end
+  end
+  dS = fName(25:38);
   dobj = dataobj([dataDir fName]);
-  dobjScp = dataobj(['/data/mms/mms4/edp/fast/l2/scpot/' yymm '/mms4_edp_fast_l2_scpot_' dS '_v*.cdf']); 
-  tt_ns = dobj.data.mms4_edp_epoch_fast_l2a.data;
+  fList = dir(['/data/mms/' mmsId '/edp/fast/l2/scpot/' yymm '/'...
+    mmsId '_edp_fast_l2_scpot_' dS '_v*.cdf']);
+  if isempty(fList), disp('no scpot'),continue, end
+  for i=1:length(fList)
+    filenameData = mms_fields_file_info(fList(i).name);
+    v = tokenize(filenameData.vXYZ,'.');
+    v = [num2str(v{1}) num2str(v{2}) num2str(v{3})];
+    if isempty(fName)
+      fName = fList(i).name; vMax = v; continue
+    end
+    if v(1)>vMax(1) || (v(1)==vMax(1) && v(2)>vMax(2)) || ...
+        (v(1)==vMax(1) && v(2)==vMax(2) && v(3)>vMax(3))
+      fName = fList(i).name; vMax = v;
+    end
+  end
+  dobjScp = dataobj(['/data/mms/' mmsId '/edp/fast/l2/scpot/' yymm '/' fName]);
+  tt_ns = dobj.data.([mmsId '_edp_epoch_fast_l2a']).data;
   t0 = EpochTT(tt_ns(1)); tStop = EpochTT(tt_ns(end));
   while true
     disp(t0.toUtc)
@@ -17,18 +47,23 @@ for i=1:length(fList)
     if tStop+1800 < tEnd, break, end
     idx = tt_ns>=t0.ttns & tt_ns<tEnd.ttns;
     if sum(idx)> 1800*sampleRate
-      Dce.time = dobj.data.mms4_edp_epoch_fast_l2a.data(idx);
-      Dce.e12.data = dobj.data.mms4_edp_dce_fast_l2a.data(idx,1);
-      Dce.e34.data = dobj.data.mms4_edp_dce_fast_l2a.data(idx,2);
-      Dce.e12.bitmask = dobj.data.mms4_edp_bitmask_fast_l2a.data(idx,1);
-      Dce.e34.bitmask = dobj.data.mms4_edp_bitmask_fast_l2a.data(idx,2);
-      Phase.data = dobj.data.mms4_edp_phase_fast_l2a.data(idx);
+      Dce.time = dobj.data.([mmsId '_edp_epoch_fast_l2a']).data(idx);
+      Dce.e12.data = dobj.data.([mmsId '_edp_dce_fast_l2a']).data(idx,1);
+      Dce.e34.data = dobj.data.([mmsId '_edp_dce_fast_l2a']).data(idx,2);
+      Dce.e12.bitmask = dobj.data.([mmsId '_edp_bitmask_fast_l2a']).data(idx,1);
+      Dce.e34.bitmask = dobj.data.([mmsId '_edp_bitmask_fast_l2a']).data(idx,2);
+      Phase.data = dobj.data.([mmsId '_edp_phase_fast_l2a']).data(idx);
       
-      Dcv.time = dobjScp.data.mms4_edp_epoch_fast_l2.data(idx);
+      try
+        Dcv.time = dobjScp.data.([mmsId '_edp_epoch_fast_l2']).data(idx);
+      catch
+        disp('BAD ScPot size')
+        t0 = tEnd; continue
+      end
       for p=1:4
         pS = sprintf('v%d',p);
-        Dcv.(pS).data = dobjScp.data.mms4_edp_dcv_fast_l2.data(idx,p);
-        Dcv.(pS).bitmask = dobjScp.data.mms4_edp_bitmask_fast_l2.data(idx);
+        Dcv.(pS).data = dobjScp.data.([mmsId '_edp_dcv_fast_l2']).data(idx,p);
+        Dcv.(pS).bitmask = dobjScp.data.([mmsId '_edp_bitmask_fast_l2']).data(idx);
       end
       
       [~,Model360] = mms_sdp_model_spin_residual(Dce,Dcv,Phase,...
@@ -36,19 +71,19 @@ for i=1:length(fList)
       Model360.time = irf.tint(t0,tEnd);
       Model360.aspoc = any(bitand(Dce.e12.bitmask,...
         MMS_CONST.Bitmask.ASPOC_RUNNING));
-      Model360.psp = median(dobjScp.data.mms4_edp_psp_fast_l2.data(idx));
+      Model360.psp = median(dobjScp.data.([mmsId '_edp_psp_fast_l2']).data(idx));
       Model = [Model Model360]; clear Model360
     end
     t0 = tEnd;
   end
 end
 
-%% 
+%%
 Model360.e12 = zeros(360,length(Model));
 for i=1:length(Model)
   Model360.e12(:,i) = Model(i).e12;
 end
-%% 
+%%
 for sig = {'e12','e34','v1','v2','v3','v4'}
   pS = sig{:};
   Model360.(pS) = zeros(360,length(Model));
@@ -56,7 +91,7 @@ for sig = {'e12','e34','v1','v2','v3','v4'}
     Model360.(pS)(:,i) = Model(i).(pS);
   end
 end
-%% 
+%%
 Model360.t = zeros(length(Model),1);
 Model360.psp  = zeros(length(Model),1);
 Model360.aspoc = zeros(length(Model),1);
@@ -75,7 +110,7 @@ hca = irf_panel('e12');
 irf_plot(hca,{[t e12],[t(~idxA) e12(~idxA)],[t(idxA) e12(idxA)]},'comp','linestyle',{'-','*','x'})
 ylabel(hca,'sum(abs(R)) 12')
 title(hca,upper(mmsId))
-  
+
 hca = irf_panel('e34');
 irf_plot(hca,{[t e34],[t(~idxA) e34(~idxA)],[t(idxA) e34(idxA)]},'comp','linestyle',{'-','*','x'})
 ylabel(hca,'sum(abs(R)) 34')
@@ -94,12 +129,12 @@ comps = [2 4 6 8 10 12];
 h=irf_figure(3);
 hca = irf_panel('e12');
 irf_plot(hca,[t e12(:,comps)])
-ylabel(hca,'abs(fft(R)) 12'), legend(hca,{'2','4','6','8','10','12'})
+ylabel(hca,'abs(fft(R)) 12'), legend(hca,{'1','3','5','7','9','11'})
 title(hca,upper(mmsId))
-  
+
 hca = irf_panel('e34');
 irf_plot(hca,[t e34(:,comps)])
-ylabel(hca,'abs(fft(R)) 34'), legend(hca,{'2','4','6','8','10','12'})
+ylabel(hca,'abs(fft(R)) 34'), legend(hca,{'1','3','5','7','9','11'})
 
 hca = irf_panel('psp');
 irf_plot(hca,[t Model360.psp])
