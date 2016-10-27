@@ -96,31 +96,61 @@ time = tmpDist.DEPEND_0.data;
 if ~isa(time,'GenericTimeArray'), time = EpochTT(time); end
 dt_minus = tmpDist.DEPEND_0.DELTA_MINUS_VAR.data;
 dt_plus = tmpDist.DEPEND_0.DELTA_MINUS_VAR.data;
-energy0 = get_variable(tmpDataObj,['mms' mmsId '_' detector '_energy0_brst']);
-energy1 = get_variable(tmpDataObj,['mms' mmsId '_' detector '_energy1_brst']);
-energy0 = energy0.data; energy1 = energy1.data; 
-phi = get_variable(tmpDataObj,['mms' mmsId '_' detector '_phi_brst']);
-theta = get_variable(tmpDataObj,['mms' mmsId '_' detector '_theta_brst']);
-stepTable = get_variable(tmpDataObj,['mms' mmsId '_' detector '_steptable_parity_brst']);
-phi = phi.data; theta = theta.data; stepTable = stepTable.data;
 
-% Make energytable from energy0, energy1 and energysteptable
-energy = repmat(torow(energy0),numel(stepTable),1);
-energy(stepTable==1,:) = repmat(energy1,sum(stepTable),1);
+if is_version_geq(tmpDist.GlobalAttributes.Data_version{:}, '3.1.0')
+  % FPI version 3.1.z files or newer
+  energy = get_variable(tmpDataObj,['mms' mmsId '_' detector '_energy_brst']);
+  energy = energy.data;
+  phi = get_variable(tmpDataObj,['mms' mmsId '_' detector '_phi_brst']);
+  phi = phi.data;
+  theta = get_variable(tmpDataObj,['mms' mmsId '_' detector '_theta_brst']);
+  theta = theta.data;
+  stepTable = get_variable(tmpDataObj,['mms' mmsId '_' detector '_steptable_parity_brst']);
+  stepTable = stepTable.data;
 
-% Construct PDist
-PD = PDist(time,Dist,'skymap',energy,phi,theta);
-PD.userData = ud; 
-PD.name = tmpDist.name; 
-%PD.units = tmpDist.units;
-PD.units = 's^3/cm^6'; 
-PD.siConversion = '1e12';
-PD.species = species;
-PD.ancillary.dt_minus = double(dt_minus)*1e-9; 
-PD.ancillary.dt_plus = double(dt_plus)*1e-9;
-PD.ancillary.energy0 = energy0; 
-PD.ancillary.energy1 = energy1;
-PD.ancillary.esteptable = stepTable;
+  % Make energytable from energy0, energy1 and energysteptable
+  %energy = repmat(torow(energy),numel(stepTable),1);
+  %energy(stepTable==1,:) = repmat(energy,sum(stepTable),1);
+
+  % Construct PDist
+  PD = PDist(time,Dist,'skymap',energy,phi,theta);
+  PD.userData = ud;
+  PD.name = tmpDist.name;
+  %PD.units = tmpDist.units;
+  PD.units = 's^3/cm^6';
+  PD.siConversion = '1e12';
+  PD.species = species;
+  PD.ancillary.dt_minus = double(dt_minus)*1e-9;
+  PD.ancillary.dt_plus = double(dt_plus)*1e-9;
+  PD.ancillary.energy = energy;
+  PD.ancillary.esteptable = stepTable;
+else
+  energy0 = get_variable(tmpDataObj,['mms' mmsId '_' detector '_energy0_brst']);
+  energy1 = get_variable(tmpDataObj,['mms' mmsId '_' detector '_energy1_brst']);
+  energy0 = energy0.data; energy1 = energy1.data;
+  phi = get_variable(tmpDataObj,['mms' mmsId '_' detector '_phi_brst']);
+  theta = get_variable(tmpDataObj,['mms' mmsId '_' detector '_theta_brst']);
+  stepTable = get_variable(tmpDataObj,['mms' mmsId '_' detector '_steptable_parity_brst']);
+  phi = phi.data; theta = theta.data; stepTable = stepTable.data;
+
+  % Make energytable from energy0, energy1 and energysteptable
+  energy = repmat(torow(energy0),numel(stepTable),1);
+  energy(stepTable==1,:) = repmat(energy1,sum(stepTable),1);
+
+  % Construct PDist
+  PD = PDist(time,Dist,'skymap',energy,phi,theta);
+  PD.userData = ud;
+  PD.name = tmpDist.name;
+  %PD.units = tmpDist.units;
+  PD.units = 's^3/cm^6';
+  PD.siConversion = '1e12';
+  PD.species = species;
+  PD.ancillary.dt_minus = double(dt_minus)*1e-9;
+  PD.ancillary.dt_plus = double(dt_plus)*1e-9;
+  PD.ancillary.energy0 = energy0;
+  PD.ancillary.energy1 = energy1;
+  PD.ancillary.esteptable = stepTable;
+end
 
 if loadDist && ~loadError
   varargout = {PD};
