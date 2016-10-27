@@ -21,7 +21,8 @@ testsToRun = {...
   'test_irf_time', ...
   'testC4', ...                     % Cluster specific
   'test_mms_defatt_phase', ...      % MMS specific
-  'test_mms_spinfit'};
+  'test_mms_spinfit', ...
+  'mms_phaseFromSunpulse_2_Test'};
 
 for ii = 1:length(testsToRun)
   try
