@@ -1,4 +1,4 @@
-% error_code = bicas( varargin )   Main function that launches BICAS.
+% errorCode = bicas( varargin )   Main function that launches BICAS.
 %
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
 % First created 2016-03-xx
@@ -17,13 +17,15 @@
 % intended to be wrapped in, and called from non-MATLAB code, e.g. a bash script.
 %
 %
+% ASSUMES: The current file is in the <BICAS>/src directory.
 %
-% INPUT / OUTPUT FOR THIS FUNCTION:
-% ---------------------------------
+%
+% ARGUMENTS AND RETURN VALUE:
+% ---------------------------
 % This function expects exactly the CLI arguments submitted to the bash launcher script. This function therefore expects
 % the arguments defined in the RCS ICD and possibly additional inoffical arguments.
 %
-% RETURN VALUE: error_code = The error code that is to be passed on to the OS/shell.
+% RETURN VALUE: errorCode = The error code that is to be passed on to the OS/shell.
 %
 % Notes:
 % - The official parameter syntax for S/W modes must be in agreement with "roc_sw_descriptor.js" as specified by the RCS ICD.
@@ -45,7 +47,7 @@
 % out by the calling wrapper bash script.
 % Reasons: See the bash wrapper script.
 %
-function error_code = bicas( varargin )
+function errorCode = bicas( varargin )
 %
 % PROPOSAL: Set flag for MATLAB warnings. Disable?
 %    NOTE: TN claims warnings are sent to stdout.
@@ -64,40 +66,43 @@ function error_code = bicas( varargin )
 
 
 
-global CONSTANTS                 % Initialized later
+global CONSTANTS                 % Gobal structure "CONSTANTS" is initialized later.
 [ERROR_CODES, REQUIRED_MATLAB_VERSION] = bicas.error_safe_constants();
 
 try
     
-    t_tic_start = tic;
+    startTimeTicSeconds = tic;
     
     % Among other things: Sets up paths to within irfu-matlab (excluding .git/).
     % NOTE: Prints to stdout. Can not deactivate this behaviour!
     irf('check_path');
-    %irf.log('warning')      % Set log level.
-    irf.log('notice')      % Set log level.
+    irf.log('notice')      % Set initial log level value until it is later overridden by the Config value.
     
     %======================
     % Check MATLAB version
     %======================
-    found_version = version('-release');
-    if ~strcmp(found_version, REQUIRED_MATLAB_VERSION)
-        error('BICAS:BadMATLABVersion', 'Bad MATLAB version. Found "%s". Requires "%s".\n', found_version, REQUIRED_MATLAB_VERSION)
+    matlabVersionString = version('-release');
+    if ~strcmp(matlabVersionString, REQUIRED_MATLAB_VERSION)
+        error('BICAS:BadMATLABVersion', 'Bad MATLAB version. Found "%s". Requires "%s".\n', matlabVersionString, REQUIRED_MATLAB_VERSION)
     end
     
     %=======================================================================
     % Derive the root path of the software (BICAS directory structure root)
     %=======================================================================
-    [matlab_src_path, ~, ~] = fileparts(mfilename('fullpath'));
-    BICAS_root_path = bicas.utils.get_abs_path(fullfile(matlab_src_path, '..'));
+    % ASSUMES: The current file is in the <BICAS>/src directory.
+    [matlabSrcPath, ~, ~] = fileparts(mfilename('fullpath'));
+    bicasRootPath = bicas.utils.get_abs_path(fullfile(matlabSrcPath, '..'));
     
-    irf.log('n', sprintf('MATLAB source code path:  "%s"', matlab_src_path))
-    irf.log('n', sprintf('BICAS software root path: "%s"', BICAS_root_path))
+    irf.log('n', sprintf('MATLAB source code path:  "%s"', matlabSrcPath))
+    irf.log('n', sprintf('BICAS software root path: "%s"', bicasRootPath))
     
     %=============================
     % Initialize global constants
     %=============================
-    CONSTANTS = bicas.constants(BICAS_root_path);   % Do not run initialization until the MATLAB version has been checked for. Could fail.
+    % NOTE: Does not initialize CONSTANTS until the MATLAB version has been checked for. The init. code could otherwise
+    % fail.
+    CONSTANTS = bicas.constants(bicasRootPath);
+    irf.log(CONSTANTS.C.irfLogLevel);
     % Log arguments
     for i = 1:length(varargin)
         irf.log('n', sprintf('CLI argument %2i: "%s"', i, varargin{i}))
@@ -164,19 +169,19 @@ try
         % 2) dataset IDs!
         %-----------------------------------------------------------------
         flags('output_dir') = struct('CLI_str', '--output', 'is_required', 1, 'expects_value', 1);
-        C_inputs = C_sw_mode.inputs;    % C = Constants structure.
-        input_PDIDs = {};   % List of keys used for input files.
-        for i_input = 1:length(C_inputs)
-            PDID = C_inputs{i_input}.PDID;
+        C_inputs = C_sw_mode.inputs;      % C = Constants structure.
+        inputPdids = {};                  % List of keys used for input files.
+        for iInput = 1:length(C_inputs)
+            pdid = C_inputs{iInput}.PDID;
             
             % Configure one flag+value pair
             flag = [];
-            flag.CLI_str = ['--', C_inputs{i_input}.CLI_parameter];
+            flag.CLI_str = ['--', C_inputs{iInput}.CLI_parameter];
             flag.is_required = 1;
             flag.expects_value = 1;
-            flags(PDID) = flag;
+            flags(pdid) = flag;
             
-            input_PDIDs{end+1} = PDID;
+            inputPdids{end+1} = pdid;
         end
 
         %-----------------------------
@@ -186,9 +191,9 @@ try
         
         
         
-        input_files = containers.Map(input_PDIDs, parsed_flags.values(input_PDIDs));   % Extract subset of parsed arguments.
+        InputFilesMap = containers.Map(inputPdids, parsed_flags.values(inputPdids));   % Extract subset of parsed arguments.
         
-        output_dir = bicas.utils.get_abs_path(parsed_flags('output_dir'));
+        outputDir = bicas.utils.get_abs_path(parsed_flags('output_dir'));
         
         
 
@@ -197,21 +202,21 @@ try
         %
         % CHOOSE IMPLEMENTATION TO USE.
         %===============================================================
-        bicas.execute_sw_mode(C_sw_mode.CLI_parameter, input_files, output_dir)   % The intended real implementation
-        %execute_sw_mode_TEST_IMPLEMENTATION(C_sw_mode.CLI_parameter, output_dir)   % IMPLEMENTATION FOR TESTING. OUTPUTS NONSENSE CDFs.
+        bicas.execute_sw_mode(C_sw_mode.CLI_parameter, InputFilesMap, outputDir)   % The intended real implementation
+        %execute_sw_mode_TEST_IMPLEMENTATION(C_sw_mode.CLI_parameter, outputDir)   % IMPLEMENTATION FOR TESTING. OUTPUTS NONSENSE CDFs.
         %error('BICAS:OperationNotImplemented', 'Operation not completely implemented: Use S/W mode')
         
     end
 
         
 
-    dt_toc = toc(t_tic_start);
-    irf.log('n', sprintf('Execution took %g s (wall time).', dt_toc));    % Always log?
+    executionWallTimeSeconds = toc(startTimeTicSeconds);
+    irf.log('n', sprintf('Execution took %g s (wall time).', executionWallTimeSeconds));    % Always log (-->critical)?
         
         
         
     % EXIT
-    error_code = ERROR_CODES.NO_ERROR;   % Default RETURN value.
+    errorCode = ERROR_CODES.NO_ERROR;   % Default RETURN value.
 
 
     
@@ -227,40 +232,39 @@ catch exception
         %==================================================================
         % NOTE: The order in which tests occur matters since the same error message identifier may contain multiple
         % matching components. Therefore, the matching of msg IDs with error codes is also not an exact science.
-        error_ID = strsplit(exception.identifier, ':');
-        if     any(strcmpi(error_ID, 'OperationNotImplemented'));   error_code = ERROR_CODES.OPERATION_NOT_IMPLEMENTED;
-        elseif any(strcmpi(error_ID, 'PathNotFound'));              error_code = ERROR_CODES.PATH_NOT_FOUND;
-        elseif any(strcmpi(error_ID, 'CLISyntax'));                 error_code = ERROR_CODES.CLI_SYNTAX_ERROR;
-        elseif any(strcmpi(error_ID, 'SWModeProcessing'));          error_code = ERROR_CODES.SW_MODE_PROCESSING_ERROR;
-        elseif any(strcmpi(error_ID, 'DatasetFormat'));             error_code = ERROR_CODES.DATASET_FORMAT_ERROR;
-        elseif any(strcmpi(error_ID, 'IllegalConfiguration'));      error_code = ERROR_CODES.CONFIGURATION_ERROR;
-        elseif any(strcmpi(error_ID, 'Assertion')) ;                error_code = ERROR_CODES.ASSERTION_ERROR;
-        %elseif any(strcmpi(error_ID, ''))
-        %    error_code = ERROR_CODES.;
+        errorId = strsplit(exception.identifier, ':');
+        if     any(strcmpi(errorId, 'OperationNotImplemented'));   errorCode = ERROR_CODES.OPERATION_NOT_IMPLEMENTED;
+        elseif any(strcmpi(errorId, 'PathNotFound'));              errorCode = ERROR_CODES.PATH_NOT_FOUND;
+        elseif any(strcmpi(errorId, 'CLISyntax'));                 errorCode = ERROR_CODES.CLI_SYNTAX_ERROR;
+        elseif any(strcmpi(errorId, 'SWModeProcessing'));          errorCode = ERROR_CODES.SW_MODE_PROCESSING_ERROR;
+        elseif any(strcmpi(errorId, 'DatasetFormat'));             errorCode = ERROR_CODES.DATASET_FORMAT_ERROR;
+        elseif any(strcmpi(errorId, 'IllegalConfiguration'));      errorCode = ERROR_CODES.CONFIGURATION_ERROR;
+        elseif any(strcmpi(errorId, 'Assertion')) ;                errorCode = ERROR_CODES.ASSERTION_ERROR;
+        %elseif any(strcmpi(errorId, ''))
+        %    errorCode = ERROR_CODES.;
         else
-            error_code = ERROR_CODES.MISC_ERROR;
-            %error_code = ERROR_CODES.ERROR_IN_MATLAB_ERROR_HANDLING;
+            errorCode = ERROR_CODES.MISC_ERROR;
+            %errorCode = ERROR_CODES.ERROR_IN_MATLAB_ERROR_HANDLING;
         end
         
         %======================
         % Print the call stack
         %======================
-        len = length(exception.stack);
+        callStackLength = length(exception.stack);
         fprintf(2, 'MATLAB call stack:\n');    % Print to stderr.
-        if (~isempty(len))
-            for i=1:len
-                sc = exception.stack(i);   % sc = stack call
-                temp = strsplit(sc.file, filesep);
-                filename = temp{end};
+        if (~isempty(callStackLength))
+            for i=1:callStackLength
+                stackCall = exception.stack(i);
+                temp      = strsplit(stackCall.file, filesep);
+                filename  = temp{end};
                 
-                fprintf(2, '    %-25s %-55s row %i,\n', [filename, ','], [sc.name, ','], sc.line);
+                fprintf(2, '    %-25s %-55s row %i,\n', [filename, ','], [stackCall.name, ','], stackCall.line);
             end
         end
         
         fprintf(2, [message, '\n']);    % Print to stderr.
         
-        default_msg = sprintf('Exiting MATLAB application with error code %i.\n', error_code);
-        fprintf(2, default_msg);        % Print to stderr.
+        fprintf(2, 'Exiting MATLAB application with error code %i.\n', errorCode);        % Print to stderr.
         
         return
         
@@ -273,7 +277,7 @@ catch exception
         fprintf(2, 'Unknown error. Error in the MATLAB code''s error handling.\nException message: "%s"\n', ...
             exception.message');   % Print to stderr.
         
-        error_code = ERROR_CODES.ERROR_IN_MATLAB_ERROR_HANDLING;   % Not even use hardcoded constant for this error?!!
+        errorCode = ERROR_CODES.ERROR_IN_MATLAB_ERROR_HANDLING;   % Not even use hardcoded constant for this error?!!
         return
     end
 end
@@ -292,7 +296,7 @@ end
 % NOTE: Will overwrite output file. Not necessary desirable in a real implementation but is
 % practical for testing.
 %===================================================================================================
-% function execute_sw_mode_TEST_IMPLEMENTATION(sw_mode_CLI_parameter, output_dir)
+% function execute_sw_mode_TEST_IMPLEMENTATION(sw_mode_CLI_parameter, outputDir)
 % 
 % global ERROR_CODES CONSTANTS
 % 
@@ -310,7 +314,7 @@ end
 %     output_filename = [C_mode_output.dataset_ID, '_V', C_mode_output.skeleton_version_str, '.cdf'];
 %     
 %     src_file  = fullfile(bias_constants.sw_root_dir(), C.master_cdfs_dir_rel, master_cdf_filename);
-%     dest_file = fullfile(output_dir, output_filename);
+%     dest_file = fullfile(outputDir, output_filename);
 %     
 %     irf.log('n', 'Trying to copy file')
 %     irf.log('n', sprintf('   from %s', src_file))
@@ -379,9 +383,9 @@ D = bicas.get_sw_descriptor();
 bicas.stdout_printf('%s\n%s\n', D.identification.name, D.identification.description)
 bicas.stdout_printf('\nError codes (internal constants):\n')
 for sfn = fieldnames(ERROR_CODES)'
-    error_code = ERROR_CODES.(sfn{1});
-    error_name = sfn{1};
-    bicas.stdout_printf('   %3i = %s\n', error_code, error_name)
+    errorCode = ERROR_CODES.(sfn{1});
+    errorName = sfn{1};
+    bicas.stdout_printf('   %3i = %s\n', errorCode, errorName)
 end
 bicas.stdout_printf('\nSee "readme.txt" for more help.\n')
 

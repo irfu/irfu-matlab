@@ -7,7 +7,7 @@
     },
     "release":  {
         "version":     "0.1.0",
-        "date":        "2016-09-01",
+        "date":        "2016-10-17",
         "author":      "Erik P G Johansson",
         "contact":     "erik.johansson@irfu.se",
         "institute":   "IRF-U",
@@ -18,7 +18,7 @@
     },
     "modes":  [
         {
-            "name":        "LFR-SURV-CWF-E",
+            "name":        "LFR-SURV-CWF-E_V01-V01",
             "purpose":     "Generate CWF electric field data (potential difference) from LFR",
             "inputs":  {
                 "input_hk":  {
@@ -37,7 +37,7 @@
                     "description": "RPW LFR L2s CWF science electric (potential difference) data in survey mode, time-tagged",
                     "level":       "L2S",
                     "release":  {
-                        "date":        "2016-09-01",
+                        "date":        "2016-10-17",
                         "version":     "01",
                         "author":      "Erik P G Johansson",
                         "contact":     "erik.johansson@irfu.se",
@@ -49,15 +49,15 @@
             }
         },
         {
-            "name":        "LFR-SURV-CWF-E___EXPERIMENTAL",
-            "purpose":     "Generate CWF electric field data (potential difference) from LFR - EXPERIMENTAL",
+            "name":        "LFR-SURV-CWF-E_V02-V01",
+            "purpose":     "Generate CWF electric field data (potential difference) from LFR",
             "inputs":  {
                 "input_hk":  {
                     "version":     "01",
                     "identifier":  "ROC-SGSE_HK_RPW-BIA"
                 },
                 "input_sci":  {
-                    "version":     "01",
+                    "version":     "02",
                     "identifier":  "ROC-SGSE_L2R_RPW-LFR-SURV-CWF"
                 }
             },
@@ -68,7 +68,7 @@
                     "description": "RPW LFR L2s CWF science electric (potential difference) data in survey mode, time-tagged",
                     "level":       "L2S",
                     "release":  {
-                        "date":        "2016-09-01",
+                        "date":        "2016-10-17",
                         "version":     "01",
                         "author":      "Erik P G Johansson",
                         "contact":     "erik.johansson@irfu.se",
@@ -80,7 +80,7 @@
             }
         },
         {
-            "name":        "LFR-SURV-SWF-E",
+            "name":        "LFR-SURV-SWF-E_V01-V01",
             "purpose":     "Generate SWF electric (potential difference) data from LFR",
             "inputs":  {
                 "input_hk":  {
@@ -99,7 +99,7 @@
                     "description": "RPW LFR L2s SWF science electric (potential difference) data in survey mode, time-tagged",
                     "level":       "L2S",
                     "release":  {
-                        "date":        "2016-09-01",
+                        "date":        "2016-10-17",
                         "version":     "01",
                         "author":      "Erik P G Johansson",
                         "contact":     "erik.johansson@irfu.se",
@@ -111,70 +111,8 @@
             }
         },
         {
-            "name":        "TDS-LFM-CWF-E",
-            "purpose":     "Generate CWF electric (potential difference) data from TDS-LFM-CWF",
-            "inputs":  {
-                "input_hk":  {
-                    "version":     "01",
-                    "identifier":  "ROC-SGSE_HK_RPW-BIA"
-                },
-                "input_sci":  {
-                    "version":     "01",
-                    "identifier":  "ROC-SGSE_L2R_RPW-TDS-LFM-CWF"
-                }
-            },
-            "outputs":  {
-                "output_sci":  {
-                    "identifier":  "ROC-SGSE_L2S_RPW-TDS-LFM-CWF-E",
-                    "name":        "TDS L2s CWF science electric data in low frequency mode",
-                    "description": "RPW TDS L2s CWF science electric (potential difference) data in low frequency mode, time-tagged",
-                    "level":       "L2S",
-                    "release":  {
-                        "date":        "2016-09-01",
-                        "version":     "01",
-                        "author":      "Erik P G Johansson",
-                        "contact":     "erik.johansson@irfu.se",
-                        "institute":   "IRF-U",
-                        "modification":"No modification (initial release)",
-                        "file":        "ROC-SGSE_L2S_RPW-TDS-LFM-CWF-E_V01.cdf"
-                    }
-                }
-            }
-        },
-        {
-            "name":        "TDS-LFM-RSWF-E_V01-V01",
-            "purpose":     "Generate RSWF electric (potential difference) data from TDS-LFM-RSWF V01",
-            "inputs":  {
-                "input_hk":  {
-                    "version":     "01",
-                    "identifier":  "ROC-SGSE_HK_RPW-BIA"
-                },
-                "input_sci":  {
-                    "version":     "01",
-                    "identifier":  "ROC-SGSE_L2R_RPW-TDS-LFM-RSWF"
-                }
-            },
-            "outputs":  {
-                "output_sci":  {
-                    "identifier":  "ROC-SGSE_L2S_RPW-TDS-LFM-RSWF-E",
-                    "name":        "TDS L2s RSWF science electric data in low frequency mode",
-                    "description": "RPW TDS L2s RSWF science electric (potential difference) data in low frequency mode, time-tagged",
-                    "level":       "L2S",
-                    "release":  {
-                        "date":        "2016-09-01",
-                        "version":     "01",
-                        "author":      "Erik P G Johansson",
-                        "contact":     "erik.johansson@irfu.se",
-                        "institute":   "IRF-U",
-                        "modification":"No modification (initial release)",
-                        "file":        "ROC-SGSE_L2S_RPW-TDS-LFM-RSWF-E_V01.cdf"
-                    }
-                }
-            }
-        },
-        {
-            "name":        "TDS-LFM-RSWF-E_V02-V01",
-            "purpose":     "Generate RSWF electric (potential difference) data from TDS-LFM-RSWF V02",
+            "name":        "LFR-SURV-SWF-E_V02-V01",
+            "purpose":     "Generate SWF electric (potential difference) data from LFR",
             "inputs":  {
                 "input_hk":  {
                     "version":     "01",
@@ -182,23 +120,23 @@
                 },
                 "input_sci":  {
                     "version":     "02",
-                    "identifier":  "ROC-SGSE_L2R_RPW-TDS-LFM-RSWF"
+                    "identifier":  "ROC-SGSE_L2R_RPW-LFR-SURV-SWF"
                 }
             },
             "outputs":  {
                 "output_sci":  {
-                    "identifier":  "ROC-SGSE_L2S_RPW-TDS-LFM-RSWF-E",
-                    "name":        "TDS L2s RSWF science electric data in low frequency mode",
-                    "description": "RPW TDS L2s RSWF science electric (potential difference) data in low frequency mode, time-tagged",
+                    "identifier":  "ROC-SGSE_L2S_RPW-LFR-SURV-SWF-E",
+                    "name":        "LFR L2s SWF science electric data in survey mode",
+                    "description": "RPW LFR L2s SWF science electric (potential difference) data in survey mode, time-tagged",
                     "level":       "L2S",
                     "release":  {
-                        "date":        "2016-09-01",
+                        "date":        "2016-10-17",
                         "version":     "01",
                         "author":      "Erik P G Johansson",
                         "contact":     "erik.johansson@irfu.se",
                         "institute":   "IRF-U",
                         "modification":"No modification (initial release)",
-                        "file":        "ROC-SGSE_L2S_RPW-TDS-LFM-RSWF-E_V01.cdf"
+                        "file":        "ROC-SGSE_L2S_RPW-LFR-SURV-SWF-E_V01.cdf"
                     }
                 }
             }

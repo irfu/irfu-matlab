@@ -20,14 +20,13 @@ function write_CDF_dataobj(file_path, dataobj_GlobalAttributes, dataobj_data, da
 % dataobj_VariableAttributes,
 % dataobj_Variables           : The corresponding fields of an instantiated dataobj, i.e. do.data,
 %                               do.GlobalAttributes and so on, where do=dataobj(...).
+%                               NOTE: For "dataobj_data", only the value of dataobj_data.<field>.data is actually used.
 % varargin                    : EXPERIMENTAL FEATURE. Optionally string 'fill_empty':
 %                               Empty CDF variable data is replaced by one pad
 %                               value scalar (one record only) of the right type.
 %                               NOTE: This is not meant for "serious use" (it is only a workaround) but
 %                               for tests when writing CDFs, using data read from CDFs. Only works for numerical types.
 %
-% NOTE: 
-% 
 %
 %
 % LIMITATIONS
@@ -61,9 +60,9 @@ function write_CDF_dataobj(file_path, dataobj_GlobalAttributes, dataobj_data, da
 % IMPLEMENTATION NOTE
 % ===================
 % The function does not accept a whole dataobj object since:
-% (1) instances of dataobj are likely not meant to be modified after creation. It is possible to modify them though.
-% Therefore the function only accepts the parts of a dataobj that it really needs, which still means it accepts a lot of
-% redundant information in the arguments.
+% (1) instances of dataobj are likely NOT meant to be modified after creation. Empirically, it is possible to modify
+% them in practice though. Therefore the function only accepts the parts of a dataobj that it really needs, which still
+% means it accepts a lot of redundant information in the arguments.
 % (2) One might want to use the function for writing a CDF file without basing it on a dataobj (i.e. without basing it
 % on an existing CDF file).
 
@@ -127,9 +126,9 @@ function write_CDF_dataobj(file_path, dataobj_GlobalAttributes, dataobj_data, da
         % since experience shows that components of (1) can be empty (contain empty struct fields) and (2) may not cover
         % all variables when obtained via spdfcdfread!!
         %---------------------------------------------------------------------------------------------------------------
-        zVar_name              = dataobj_Variables{i, 1};
+        zVar_name                = dataobj_Variables{i, 1};
         dataobj_stated_data_type = dataobj_Variables{i, 4};   % uint32, tt2000 etc. Change name to CDF_Data_type?! dataobj_stated_data_type?!
-        pad_value              = dataobj_Variables{i, 9};   % This value can NOT be found in dataobj_data. Has to be read from dataobj_Variables.
+        pad_value                = dataobj_Variables{i, 9};   % This value can NOT be found in dataobj_data. Has to be read from dataobj_Variables.
         
         %=========================================
         % Special case for zero record zVariables

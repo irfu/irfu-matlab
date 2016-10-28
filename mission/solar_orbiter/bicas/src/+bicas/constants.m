@@ -108,9 +108,15 @@ classdef constants < handle
 %   PROPOSAL: Something analogous to data_manager's "elementary input/output".
 %   PROPOSAL: Something with CDF, datasets, BICAS_input/output, ...
 %
+% PROPOSAL: Change variable naming convention for C_* variables in general (not the inside constants.m).
+%   Ex: C_sw_mode, C_input, C_output.
+%   PROPOSAL: infoSwMode, infoInput, infoOutput
+%   PROPOSAL: metadataSwMode, metadataInput, metadataOutput   (metaDataSwMode?)
+%
 % PROPOSAL: Convert constant cell arrays of structs to arrays of structs: S/W modes, CDF/PDID inputs/outputs.
 %   PRO: Simplifies code that constructs cell arrays of the same struct field in multiple cell structs.
 %
+% TODO: EI/EO --> EIn/EOut (must be done globally in other files?)
 
 
     %###################################################################################################################
@@ -157,6 +163,10 @@ classdef constants < handle
             C.author_email        = 'erik.johansson@irfu.se';
             C.institute           = 'IRF-U';
             C.master_CDFs_dir_rel = 'data';    % Location of master CDF files. Relative to the software directory structure root.
+            
+            % Value that shows up in EOut dataset GlobalAttributes.Calibration_version.
+            % String value.
+            C.Calibration_version = '0.1; Only proportionality constants; No voltage offset tables, no transfer functions';
         
             %irf.log('w', 'Using temporary S/W name in constants.')
             C.SWD_identification.project     = 'ROC-SGSE';
@@ -200,6 +210,13 @@ classdef constants < handle
                 'beta',        1, ...
                 'gamma_hg',  100, ...
                 'gamma_lg',    5);      % NOTE/POSSIBLE BUG: Uncertain which value is high-gain, and low-gain.
+            
+            C.INPUT_CDF_ASSERTIONS.STRICT_DATASET_ID       = 0;
+            C.INPUT_CDF_ASSERTIONS.STRICT_Skeleton_version = 1;
+            C.OUTPUT_CDF.SET_Test_id = 1;       % ROC DFMD says that it should really be set by ROC.
+            C.OUTPUT_CDF.Data_version = '01';   % ROC DFMD says it should be updated in a way which can not be automatized?!!! Set here for now.
+            
+            C.irfLogLevel = 'notice';
             
             obj.C = C;
         

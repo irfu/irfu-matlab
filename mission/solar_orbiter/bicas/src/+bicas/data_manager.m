@@ -60,7 +60,7 @@
 % - process data (PD)
 %        In practice, one internal variable representing some form of data in some step of
 %        the "data processing process".
-% - elementary input/output (EI/EO) process data
+% - elementary input/output (EIn/EOut) process data
 %        Process data that represents data that goes in and out of the data manager as a whole. The word "elementary" is
 %        added to distinguish input/output from the input/output for a smaller operation, in particular when converting
 %        to/from intermediate process data.
@@ -195,11 +195,11 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
 %   Ex: Number of samples per snapshot (useful for "virtual snapshots") in record (~size of record).
 %   PRO: Could reduce/collect the usage of hardcoded PDIDs.
 %   NOTE: Mostly/only useful for elementary input PDIDs?
-%   PROPOSAL: Add field (sub-struct) "format_constants" in list of EI PDIDs in constants?!!
-%       NOTE: Already has version string in list of EI PDIDs.
+%   PROPOSAL: Add field (sub-struct) "format_constants" in list of EIn PDIDs in constants?!!
+%       NOTE: Already has version string in list of EIn PDIDs.
 %
-% PROPOSAL: Functions assert_PDID (EI,EO,intermediate).
-% QUESTION: Which lists of EI/EO PDIDs should data_manager use for assertions? There is a difference between
+% PROPOSAL: Functions assert_PDID (EIn,EOut,intermediate).
+% QUESTION: Which lists of EIn/EOut PDIDs should data_manager use for assertions? There is a difference between
 %   1) inputs/outputs listed in constants, and
 %   2) the PDIDs actually used in the currently defined S/W modes, and
 %   3) which data_manager can handle.
@@ -232,8 +232,6 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
 %             'L2S_LFR-SURV-SWF-E_V01'};
         INTERMEDIATE_PDIDs      = {};
         
-        settings;   % Misc. flags which affect the workings of the data_manager.
-        
     end
     
     %###################################################################################################################
@@ -242,103 +240,12 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
         
         function obj = data_manager(settings)
         % CONSTRUCTOR
-        %
         
-            global CONSTANTS
-        
-            % NOT IMPLEMENTED
-            %   .use_AT_for_processing : 
-            %   .set_Epoch_from_AT     : 
-            obj.settings.strict_CDF_assertions = 0;
-            
             obj.validate
         end
 
         
         
-        function set_elementary_input_CDF(obj, PDID, file_path)
-        % Set elementary input process data via a CDF file.
-        % Copies zVariables into fields of a regular structure.
-        % 
-        % Fill & pad values are replaced with NaN for numeric data types.
-        % Other CDF data (attributes) are ignored.
-        %
-        % NOTE: Uses irfu-matlab's dataobj for reading the CDF file.
-        
-            % PROPOSAL: "Validate" the CDF file read here.
-            
-            global CONSTANTS
-            
-            irf.log('n', sprintf('PDID=%s: file_path=%s', PDID, file_path))    % NOTE: irf.log adds the method name.
-            
-            %==============================================================
-            % Select parts from dataobj and put them into a smaller struct
-            %==============================================================
-            process_data = struct();
-            DO = dataobj(file_path);                 % DO=dataobj. irfu-matlab's dataobj!!!
-            zVar_list = fieldnames(DO.data);
-            for i = 1:length(zVar_list)
-                zVar_name = zVar_list{i};
-                zVar_data = DO.data.(zVar_name).data;
-                
-                % Replace fill/pad values with NaN for numeric data.
-                % QUESTION: How does this work with integer fields?!!!
-                if isnumeric(zVar_data)
-                    [fill_value, pad_value] = get_fill_pad_values(DO, zVar_name);
-                    zVar_data = bicas.utils.replace_value(zVar_data, fill_value, NaN);
-                    zVar_data = bicas.utils.replace_value(zVar_data, pad_value,  NaN);
-                    process_data.(zVar_name) = zVar_data;
-                end
-            end
-            
-            file_DATASET_ID       = DO.GlobalAttributes.DATASET_ID{1};
-            file_Skeleton_version = DO.GlobalAttributes.Skeleton_version{1};
-            irf.log('n', sprintf('File: DATASET_ID       = "%s"', file_DATASET_ID))
-            irf.log('n', sprintf('File: Skeleton_version = "%s"', file_Skeleton_version))
-
-
-
-            % ASSERTIONS
-            % NOTE: HK TIME_SYNCHRO_FLAG can be empty.
-            %bicas.dm_utils.assert_unvaried_N_rows(process_data);
-            C_input = bicas.utils.select_structs(CONSTANTS.inputs, 'PDID', {PDID});
-            C_input = C_input{1};
-            obj.suspect_condition(...
-                ~strcmp(file_DATASET_ID, C_input.dataset_ID), ...
-                sprintf('The CDF file''s stated DATASET_ID ("%s") does not match the expected one ("%s").', ...
-                        file_DATASET_ID, C_input.dataset_ID))
-            obj.suspect_condition(...
-                ~strcmp(file_Skeleton_version, C_input.skeleton_version_str), ...
-                sprintf('The CDF file''s stated Skeleton_version ("%s") does not match the expected one ("%s").', ...
-                        file_Skeleton_version, C_input.skeleton_version_str))
-            
-            
-
-            set_elementary_input_process_data(obj, PDID, process_data);
-            
-            
-            
-            % NOTE: Nested function
-            % NOTE: Uncertain how it handles the absence of a fill value. (Or is fill value mandatory?)
-            function [fill_value, pad_value] = get_fill_pad_values(do, zVar_name)
-                % PROPOSAL: Remake into general-purpose function.
-                % PROPOSAL: Remake into just using the do.Variables array?
-                %    NOTE: Has to derive CDF variable type from do.Variables too.
-                
-                fill_value = getfillval(do, zVar_name);        % NOTE: Special function for dataobj.
-                % NOTE: For unknown reasons, the fill value for tt2000 zVariables (or at least "Epoch") is stored as a UTC(?) string.
-                if strcmp(do.data.(zVar_name).type, 'tt2000')
-                   fill_value = spdfparsett2000(fill_value);   % NOTE: Uncertain if this is the correct conversion function.
-                end
-
-                i_zVar_table=find(strcmp(do.Variables(:,1), zVar_name));
-                pad_value = do.Variables{i_zVar_table, 9};
-                % Comments in "spdfcdfinfo.m" should indirectly imply that column 9 is pad values since the structure/array commented on should be identical.
-            end
-        end
-
-
-
         function set_elementary_input_process_data(obj, PDID, process_data)
         % Set elementary input process data directly as a struct.
         %
@@ -530,18 +437,6 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
         
         
         
-        function suspect_condition(obj, condition, msg)
-        % Function for either giving a warning or error depending on setting.
-        
-             if condition
-                if obj.settings.strict_CDF_assertions
-                    error('BICAS:data_manager:Assertion', msg)
-                else
-                    irf.log('w', msg)
-                end
-             end
-        end        
-        
     end   % methods: Instance, private
     
     %###################################################################################################################
@@ -550,7 +445,7 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
     
         function C_sw_mode = get_C_sw_mode_full(CLI_parameter)
         % Return ~constants structure for a specific S/W mode as referenced by a CLI parameter.
-        %        
+        % 
         % This structure is automatically put together from other structures (constants) to avoid having to define too
         % many redundant constants.
         %
@@ -587,13 +482,13 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
         % get_elementary_input_PDIDs   Collect all the elementary input PDIDs needed to produce a given list of PDIDs.
         %
         % PDIDs    : Cell array of PDIDs (strings).
-        % EI_PDIDs : Cell array of EI PDIDs (strings). Contains no duplicates (they are removed).
+        % EI_PDIDs : Cell array of EIn PDIDs (strings). Contains no duplicates (they are removed).
         %
         % NOTE: NOT recursive algorithm to speed it up by removing duplicates better (which is not necessary but looks nice).
         
             % NOTE: Function can be made PRIVATE?
 
-            % List where we collect PDIDs for which we have not yet identified the EI PDIDs.
+            % List where we collect PDIDs for which we have not yet identified the EIn PDIDs.
             % It is repeatedly set to a new list as the algorithm goes along.
             % undet = undetermined.
             undet_PDIDs = PDIDs;           
@@ -658,7 +553,7 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
         %         process_data = processing_func(input_process_datas)
         %     The function accepts exactly one argument: a struct analogous to input_PDIDs but with fields set to
         %     the corresponding process DATA instead.
-        %     If there is no such function (i.e. output_PDID is an EI-PDID), then returns empty.
+        %     If there is no such function (i.e. output_PDID is an EIn-PDID), then returns empty.
         % 
         % 
         %
@@ -979,7 +874,7 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
             bicas.dm_utils.log_unique_values_all('DIFF_GAIN', preDCD.DIFF_GAIN);
             bicas.dm_utils.log_unique_values_all('MUX_SET',   preDCD.MUX_SET);
             
-            % PROPOSAL: Move to reading of CDF, setting EI PD.
+            % PROPOSAL: Move to reading of CDF, setting EIn PD.
             % PROPOSAL: Move to demux_calib.
             bicas.dm_utils.log_tt2000_interval('HK  ACQUISITION_TIME', t_HK_ACQUISITION_TIME)
             bicas.dm_utils.log_tt2000_interval('SCI ACQUISITION_TIME', t_SCI_ACQUISITION_TIME)
@@ -1029,7 +924,7 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
             switch(EO_PDID)
                 case  {'L2S_LFR-SBM1-CWF-E_V01', ...
                        'L2S_LFR-SBM2-CWF-E_V01'}                        
-                    error('BICAS:data_manager:OperationNotImplemented', 'Can not produce this EO PDID.')
+                    error('BICAS:data_manager:OperationNotImplemented', 'Can not produce this EOut PDID.')
                     
                 case  'L2S_LFR-SURV-CWF-E_V01'
                     
@@ -1078,11 +973,11 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
                     EO_PD.IBIAS3 = postDCD.IBIAS3;
                     
                 case 'L2S_TDS-LFM-CWF-E_V01'
-                    error('BICAS:data_manager:OperationNotImplemented', 'Can not produce this EO PDID.')
+                    error('BICAS:data_manager:OperationNotImplemented', 'Can not produce this EOut PDID.')
                 case 'L2S_TDS-LFM-RSWF-E_V01'
-                    error('BICAS:data_manager:OperationNotImplemented', 'Can not produce this EO PDID.')
+                    error('BICAS:data_manager:OperationNotImplemented', 'Can not produce this EOut PDID.')
                 otherwise
-                    error('BICAS:data_manager:Assertion:IllegalArgument', 'Function can not produce this EO PDID.')
+                    error('BICAS:data_manager:Assertion:IllegalArgument', 'Function can not produce this EOut PDID.')
             end
             
             % BUG: How handle?!!!

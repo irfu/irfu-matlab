@@ -7,7 +7,7 @@ function assert_strings_unique(string_list)
 %
 % PROPOSAL: Have caller throw error instead. Return list of unique strings.
 % PROPOSAL: Generalize to arbitrary data using ~isequal, isequaln.
-%
+
 [unique_strings, i_l, i_u] = unique(string_list);    % i_u=indices to unique_strings; i_l=indices to string_list
 
 if numel(unique_strings) == numel(string_list)
