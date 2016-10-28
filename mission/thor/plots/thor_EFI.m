@@ -349,7 +349,7 @@ if 1, % electric field plot
     %text(0.97,0.85,'spectra at R=0.3 AU','fontsize',12,'fontweight','demi','color','r','units','normalized','horizontalalignment','right','parent',hca);
     title(hca,['Predicted electric field spectra and SDP noise levels in solar wind \newline' ...
         'S_{E} =V_A^2*S_B (inertial range), V_A=' num2str(VA,'%.1f') ' km/s, V_A=' num2str(VA,'%.1f') ' km/s, S_{E} \sim k^2 S_B (kinetic scales)  \newline'...
-        'S_{VxB} =V_{SW}^2*S_B, V_{SW}=' num2str(Vf,'%.1f') ' km/s (S_B empirical)'])
+        'S_{VxB} =V_{SW}^2*S_B, V_{SW}=' num2str(Vf,'%.1f') ' km/s (S_B based on Sahraoui et al, 2009)'])
 end
 if 1, % electric field example spectra
     loglog(SW_example_Espectra_THEMIS(:,1), SW_example_Espectra_THEMIS(:,2),'color',[0.5 0.5 0.5],'linewidth',1);
