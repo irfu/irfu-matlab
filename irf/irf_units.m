@@ -21,6 +21,9 @@ function Units=irf_units(varargin)
 %   CODATA 2014 - DOI: 10.1103/RevModPhys.88.035009
 %   IAU 2012    - https://www.iau.org/static/resolutions/IAU2012_English.pdf
 %   IAU 2015    - https://www.iau.org/static/resolutions/IAU2015_English.pdf
+%   CGPM 1903   - http://www.bipm.org/en/CGPM/db/3/2/
+%   CGPM 1954   - http://www.bipm.org/en/CGPM/db/10/4/
+%   IAU WG 2009 - DOI 10.1007/s10569-010-9320-4
 
 if nargin==1 % display matching units
     fid=fopen(which('irf_units'));
@@ -194,12 +197,12 @@ Units.nK = 1e-9*Units.K;
 
 %---- pressure -----
 Units.Pa = 1;
-Units.torr = 133.322*Units.Pa;
-Units.mtorr = 1e-3*Units.torr;
-Units.bar = 1e5*Units.Pa;
+Units.bar = 1e5*Units.Pa;                          % Exact
 Units.mbar = 1e-3*Units.bar;
-Units.atm = 1.013e5*Units.Pa;
+Units.atm = 101325*Units.Pa;                       % Exact, Src: CGPM 1954
 Units.psi = 6.895e3*Units.Pa;
+Units.torr = (1/760)*Units.atm;                    % Exact
+Units.mtorr = 1e-3*Units.torr;
 
 
 
@@ -238,7 +241,7 @@ Units.gauss = 1e-4*Units.T;
 
 
 %----fundamental constants ----
-Units.g = 9.80665*Units.m/Units.s^2;			% gravitational acceleration
+Units.g = 9.80665*Units.m/Units.s^2;			% gravitational acceleration, Src: CGPM 1903
 Units.G = 6.67408e-11*Units.m^3/Units.kg/Units.s^2;	% Newtonian graviational constant, Src: CODATA 2014 - Table XXXII
 Units.kB = 1.38064852e-23*Units.J/Units.K;			% Boltzman constant, Src: CODATA 2014 - Table XXXII
 Units.sigma_SB = 5.670367e-8 * Units.W/(Units.m^2 * Units.K^4);	% Stefan-Boltzmann constant, Src: CODATA 2014 - Table XXXII
@@ -259,7 +262,7 @@ Units.eps0 = 1/(Units.mu0*Units.c^2);			% Vacuum permittivity, Src: CODATA 2014 
 %-------- UNITS ------------------------------
 %------- length ----
 Units.AU = 149597870700*Units.m;			% astronomical unit, exact, Src: IAU 2012
-Units.R_Sun = 6.96e8*Units.m;                       % Solar radius 
+Units.R_Sun = 6.96e8*Units.m;                       % Solar radius, Src: IAU WG 2009 - Table 4
 Units.Sun.radius=Units.R_Sun;
 Units.pc = (648000/pi)*Units.AU;				% parsec, exact, Src: IAU 2015
 Units.Uranus.distanceTSun = 19.1914*Units.AU;      % Uranus orbit, semimajor axis
@@ -293,13 +296,13 @@ Units.Mercury.semiMajorAxis = 57909100*Units.km;	% Mercury semimajor axis
 Units.Merucry.distanceToSun	= 57909100*Units.km;	% Mercury orbit, semimajor axis
 Units.Mercury.aphelion		= 69816900*Units.km;
 Units.Mercury.perihelion	= 46001200*Units.km;
-Units.Mercury.radius		= 2439.7*Units.km;		% Mercury radius (mean)
+Units.Mercury.radius		= 2439.7*Units.km;		% Mercury radius (mean), Src: IAU WG 2009 - Table 4
 
 %---- MARS -----
 Units.Mars.distanceToSun	= 1.5273*Units.AU;		% Mars orbit, semimajor axis
-Units.Mars.radius		= 3396.2*Units.km;		% Mars radius (equatorial)
-Units.Mars.radiusEquatorial	= 3396.2*Units.km;		% Mars radius (equatorial)
-Units.Mars.radiusPolar		= 3376.2*Units.km;		% Mars radius (polar)
+Units.Mars.radius		= 3396.19*Units.km;		% Mars radius (equatorial), Src: IAU WG 2009 - Table 4
+Units.Mars.radiusEquatorial	= 3396.19*Units.km;		% Mars radius (equatorial), Src: IAU WG 2009 - Table 4
+Units.Mars.radiusPolar		= 3376.2*Units.km;		% Mars radius (average polar), Src: IAU WG 2009 - Table 4
 
 %---- EARTH -----
 Units.Earth.semiMajorAxis	= 149598261*Units.km;	% Earth semimajor axis
@@ -310,16 +313,16 @@ Units.RE			= Units.R_Earth;		% Earth radius
 
 %---- VENUS -----
 Units.Venus.distanceToSun	= 0.7233*Units.AU;      % Venus orbit, semimajor axis
-Units.Venus.radius		= 6051.8*Units.km;
+Units.Venus.radius		= 6051.8*Units.km;		% Src: IAU WG 2009 - Table 4
 
 %---- SATURN -----
 Units.Saturn.distanceToSun	= 9.5388*Units.AU;		% Saturn orbit, semimajor axis
-Units.Saturn.radius		= 60268*Units.km;		% Saturn equatorial radius
+Units.Saturn.radius		= 60268*Units.km;		% Saturn equatorial radius (one-bar surface), Src: IAU WG 2009 - Table 4
 
 %---- JUPITER -----
-Units.Jupiter.radius		= 69911*Units.km;		% Jupiter mean radius
-Units.Jupiter.radiusEquatorial = 71492*Units.km;
-Units.Jupiter.radiusPolar 	= 66854*Units.km;
+Units.Jupiter.radius		= 69911*Units.km;		% Jupiter mean radius (one-bar surface), Src: IAU WG 2009 - Table 4
+Units.Jupiter.radiusEquatorial = 71492*Units.km;		% Jupiter equatorial radius (one-bar surface), Src: IAU WG 2009 - Table 4
+Units.Jupiter.radiusPolar 	= 66854*Units.km;		% Jupiter polar radius (one-bar surface), Src: IAU WG 2009 - Table 4
 Units.Jupiter.semiMajorAxis = 778547200*Units.km;   
 Units.Jupiter.distanceToSun	= 778547200*Units.km;	% Jupiter semimajor axis
 Units.Jupiter.aphelion 		= 816520800*Units.km;
@@ -328,13 +331,14 @@ Units.Jupiter.mass			= 1.8986e27*Units.kg;
 
 %---- GANYMEDE -----
 Units.Ganymede.semiMajorAxis = 1070400*Units.km;
-Units.Ganymede.radius		= 2634.1*Units.km;
+Units.Ganymede.radius = 2631.2*Units.km;		% Src: IAU WG 2009 - Table 5
 
 %---- EUROPA -----
 Units.Europa.semiMajorAxis	= 670900*Units.km;		% 
-Units.Europa.radius			= 1560.8*Units.km;		%
+Units.Europa.radius	= 1560.8*Units.km;		% Europa radius (mean), Src: IAU WG 2009 - Table 5
 
 %---- CALLISTO -----
-Units.Callisto.semiMajorAxis= 1882700*Units.km;		% 
-Units.Callisto.radius		= 2410.3*Units.km;		%
+Units.Callisto.semiMajorAxis = 1882700*Units.km;		%
+Units.Callisto.radius	= 2410.3*Units.km;		% Src: IAU WG 2009 - Table 5
 
+end
