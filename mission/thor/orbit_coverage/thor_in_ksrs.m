@@ -8,9 +8,9 @@ function iKSR = thor_in_ksrs(rTHOR,B,Dp,M,BSNX)
 %   Output:
 %   iKSR = 1 - magnetosphere, inside magnetopause
 %          2 - magnetosheath, outside magnetopause but inside bowshock
-%          3 - quasi-parallel foreshock, outside bowshock but inside the
+%          3 - foreshock, outside bowshock but inside the
 %              region limited by the tangent of IMF B to the bowshock
-%          4 - outside bowshock and foreshock
+%          4 - pristine solar wind, outside bowshock and foreshock
 %          5 - magnetopause crossing
 %          6 - bowshock crossing
 %
