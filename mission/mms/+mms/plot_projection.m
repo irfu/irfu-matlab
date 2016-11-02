@@ -53,9 +53,9 @@ notint = 1;
 
 dist = args{1};
 % Check if it's electron or ions
-if strfind(dist.name,'des')
+if or(~isempty(strfind(dist.name,'des')), strfind(dist.species, 'electron'))
   isDes = 1; 
-elseif strfind(dist.name,'dis')
+elseif or(~isempty(strfind(dist.name,'dis')), strfind(dist.species, 'ion'))
   isDes = 0;
 else
   irf.log('warning','Can''t recognize if input is electron or ions. Assuming it''s electrons.');
@@ -97,8 +97,17 @@ else
         theta = dist.depend{1,3};
         polar = theta*pi/180;
         stepTable = TSeries(dist.time,dist.ancillary.esteptable);
-        energy0 = dist.ancillary.energy0;
-        energy1 = dist.ancillary.energy1;
+        if and(isfield(dist.ancillary, 'energy0'), isfield(dist.ancillary, 'energy1'))
+            energy0 = dist.ancillary.energy0;
+            energy1 = dist.ancillary.energy1;            
+        else    
+            if isfield(dist.ancillary, 'energy')
+                energy0 = dist.ancillary.energy(1, :);
+                energy1 = dist.ancillary.energy(2, :);
+            else
+                irf.log('warning', 'no data for energy0 & energy1.');
+            end
+        end
         distunits = dist.units;
         dE = median(diff(log10(energy0)))/2;
         energy0Edges = 10.^(log10(energy0)-dE);
