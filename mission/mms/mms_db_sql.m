@@ -309,12 +309,15 @@ keyboard; % THIS FUNCTION IS NOT FULLY TESTED, MAKE SURE TO MAKE A BACKUP OF THE
       % list, when importing only new (not previously imported files
       % will be processed). This is to allows for deleting files from
       % DB which has been deleted upstream and removed from system.
-      % Verify sqlite3 is installed
-      [status, ~] = system('command -v sqlite3 >/dev/null 2>&1 || { exit 100; }');
-      if(status==100), error('It appears Sqlite3 is not installed/found on your system.'); end
-      % Verify awk is installed
-      [status, ~] = system('command -v awk >/dev/null 2>&1 || { exit 100; }');
-      if(status==100), error('It appears AWK is not installed/found on your system.'); end
+      % Verify required software is installed
+      reqSoftware = {'sqlite3', 'awk', 'perl'};
+      for ii = 1:length(reqSoftware)
+        [status, ~] = system(['command -v ', reqSoftware{ii}, ' >/dev/null 2>&1 || { exit 100; }']);
+        if(status==100)
+          errStr = ['It appears ', reqSoftware{ii}, ' is not installed on your system.'];
+          irf.log('critical', errStr); error(errStr);
+        end
+      end
       % Clear up any old files still in FileListToImport.
       obj.sqlUpdate('DELETE FROM FileListToImport');
       % Locate latest version of each CDF file and add them to FileListToImport
