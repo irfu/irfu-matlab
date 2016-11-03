@@ -89,15 +89,15 @@ if ~isempty(regexp(tmpDist.name,'^mms[1-4]_d[ei]s_','once'))
                 if strcmp(tmpDist.DEPEND_0.DELTA_MINUS_VAR.UNITS, 's')
                     flag_MINUS = 1e3;           % s --> ms
                 elseif strcmp(tmpDist.DEPEND_0.DELTA_MINUS_VAR.UNITS, 'ms')
-                    flag_MINUS = 1;             % s --> ms
+                    flag_MINUS = 1;
                 else
                     irf.log('warning','Epoch_minus_var units are not clear, assume s');
                     flag_MINUS = 1e3;       
                 end
                 if strcmp(tmpDist.DEPEND_0.DELTA_PLUS_VAR.UNITS, 's')
-                    flag_PLUS = 1e3;           % s --> ns
+                    flag_PLUS = 1e3;           % s --> ms
                 elseif strcmp(tmpDist.DEPEND_0.DELTA_PLUS_VAR.UNITS, 'ms')
-                    flag_PLUS = 1;           % s --> ns
+                    flag_PLUS = 1;
                 else
                     irf.log('warning','Epoch_plus_var units are not clear, assume s');
                     flag_PLUS = 1e3;
