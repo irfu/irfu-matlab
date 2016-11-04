@@ -225,10 +225,10 @@ if 1 % EMC requirements
   HFA_EMC.f =      [10    1e2   1e3   1e4   1e5   2e5];
   HFA_EMC.Epower = [2e-11 5e-13 5e-13 3e-14 3e-14 5e-13];
   
-  SDP_EMC.f =      [0.1 1 10    1e2   1e3   1e4   1e5   2e5];
-  SDP_EMC.Epower =     [5e-9 2e-11 2e-13 1e-15 1e-16 1e-17 1e-17 1e-15];
-  SDP_EMC_OLD = SDP_EMC;
-  SDP_EMC_OLD.Epower = [5e-8 1e-10 2e-13 1e-15 1e-16 1e-17 1e-17 1e-15];
+  SDP_EMC.f =      [0.1 30    1e2   1e3   1e4   1e5   2e5];
+  SDP_EMC.Epower =     [1e-10 1e-15 1e-15 1e-16 1e-17 1e-17 1e-15];
+  %SDP_EMC_OLD.f =      [0.1 1 10    1e2   1e3   1e4   1e5   2e5];
+  %SDP_EMC_OLD.Epower = [5e-8 1e-10 2e-13 1e-15 1e-16 1e-17 1e-17 1e-15];
 end
 
 if 1, % initialize figure - HFA
@@ -261,9 +261,10 @@ if 1, % electric field plot
     
     text(0.97,0.85,'S_{E} Expected spectrum at R=1 AU','fontsize',12,'fontweight','demi','color','b','units','normalized','horizontalalignment','right','parent',hca);
     %text(0.97,0.85,'spectra at R=0.3 AU','fontsize',12,'fontweight','demi','color','r','units','normalized','horizontalalignment','right','parent',hca);
-    title(hca,['Predicted electric field spectra and noise levels in solar wind \newline' ...
-        'Noise levels calculated for distance ' num2str(Rsolo,3) 'AU \newline' ...
-        'S_E =V_A^2*S_B (S_B empirical), V_A=' num2str(VA,'%.1f') ' km/s '])
+    title(hca,'Predicted electric field spectra and HFA noise levels in solar wind')
+    %title(hca,['Predicted electric field spectra and noise levels in solar wind \newline' ...
+    %    'Noise levels calculated for distance ' num2str(Rsolo,3) 'AU \newline' ...
+    %    'S_E =V_A^2*S_B (S_B empirical), V_A=' num2str(VA,'%.1f') ' km/s '])
 end
 if 1, % electric field example spectra
     loglog(SW_example_Espectra_THEMIS(:,1), SW_example_Espectra_THEMIS(:,2),'color',[0.5 0.5 0.5],'linewidth',1);
@@ -368,8 +369,8 @@ if 1, % electric field plot
     %text(0.97,0.8,'S_{ExB} - Expected spectrum of V_{SW}xB','fontsize',12,'fontweight','demi','color','r','units','normalized','horizontalalignment','right','parent',hca);
     
     %text(0.97,0.85,'spectra at R=0.3 AU','fontsize',12,'fontweight','demi','color','r','units','normalized','horizontalalignment','right','parent',hca);
-    title(hca,['Predicted electric field spectra and SDP noise levels in solar wind \newline' ...
-        'S_{E} =V_A^2*S_B (inertial range), V_A=' num2str(VA,'%.1f') ' km/s, S_{E} \sim k^2 S_B (kinetic scales)  \newline'...
+    title(hca,['Predicted E-field spectra and SDP noise levels in SW\newline' ...
+        'S_{E} =V_A^2*S_B (inertial rng), V_A=' num2str(VA,'%.1f') ' km/s, S_{E} \sim k^2 S_B (kinetic rng)  \newline'...
         'S_B based on Sahraoui et al, 2009'])
         %'S_{VxB} =V_{SW}^2*S_B, V_{SW}=' num2str(Vf,'%.1f') ' km/s (S_B based on Sahraoui et al, 2009)'])
 end
@@ -416,9 +417,10 @@ if 1, % plot electric field noises
     
     loglog(SDP_instr_noise(:,1), SDP_instr_noise(:,2),'k');
     text(SDP_instr_noise(2,1),SDP_instr_noise(end,2)*0.9,'SDP preamp noise','fontsize',10,'color','k','units','data','horizontalalignment','left','verticalalignment','top');
-    loglog(hca,SDP_EMC_OLD.f,SDP_EMC_OLD.Epower,'o-','markersize',10,'color',[0 0.7 0.7]);
-    text(0.97,0.65,'OLD SDP EMC req','fontsize',12,'fontweight','demi','color',[0 0.7 0.7],'units','normalized','horizontalalignment','right','parent',hca);
-    loglog(hca,SDP_EMC.f,SDP_EMC.Epower,'o-','markersize',10,'color',[0 0.5 0]);
+    %loglog(hca,SDP_EMC_OLD.f,SDP_EMC_OLD.Epower,'o-','markersize',10,'color',[0 0.7 0.7]);
+    %text(0.97,0.65,'OLD SDP EMC req','fontsize',12,'fontweight','demi','color',[0 0.7 0.7],'units','normalized','horizontalalignment','right','parent',hca);
+    loglog(hca,SDP_EMC.f(1:2),SDP_EMC.Epower(1:2),'--','color',[0 0.5 0]);
+    loglog(hca,SDP_EMC.f(2:end),SDP_EMC.Epower(2:end),'o-','markersize',10,'color',[0 0.5 0]);
     text(0.97,0.75,'SDP EMC req','fontsize',12,'fontweight','demi','color',[0 0.5 0],'units','normalized','horizontalalignment','right','parent',hca);
     end
     %irf_legend(hca,['ne=' num2str(n(1)/1e6,3) 'cc, Te=' num2str(T_plasma_eV(1),3) 'eV'],[0.98 0.02])
