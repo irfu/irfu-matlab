@@ -109,8 +109,8 @@ if ~isempty(regexp(tmpDist.name,'^mms[1-4]_d[ei]s_','once'))
             tdiff = (int64(tmpDist.DEPEND_0.DELTA_PLUS_VAR.data*flag_PLUS)+int64(tmpDist.DEPEND_0.DELTA_MINUS_VAR.data*flag_MINUS))*1e6/2;    
             %toffset = (int64(tmpDist.DEPEND_0.DELTA_PLUS_VAR.data)-int64(tmpDist.DEPEND_0.DELTA_MINUS_VAR.data))*1e6/2;
             %tdiff = (int64(tmpDist.DEPEND_0.DELTA_PLUS_VAR.data)+int64(tmpDist.DEPEND_0.DELTA_MINUS_VAR.data))*1e6;
-            tmpDist.DEPEND_0.DELTA_MINUS_VAR.data = tdiff/2;
-            tmpDist.DEPEND_0.DELTA_PLUS_VAR.data = tdiff/2;
+            tmpDist.DEPEND_0.DELTA_MINUS_VAR.data = tdiff;
+            tmpDist.DEPEND_0.DELTA_PLUS_VAR.data = tdiff;
             tmpDist.DEPEND_0.data = tmpDist.DEPEND_0.data+toffset;
         end
 	end
