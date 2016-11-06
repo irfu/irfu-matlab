@@ -53,9 +53,9 @@ notint = 1;
 
 dist = args{1};
 % Check if it's electron or ions
-if or(~isempty(strfind(dist.name,'des')), strfind(dist.species, 'electron'))
+if strfind(dist.name,'des')
   isDes = 1; 
-elseif or(~isempty(strfind(dist.name,'dis')), strfind(dist.species, 'ion'))
+elseif strfind(dist.name,'dis')
   isDes = 0;
 else
   irf.log('warning','Can''t recognize if input is electron or ions. Assuming it''s electrons.');
