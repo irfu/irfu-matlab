@@ -69,6 +69,8 @@ function errorCode = bicas( varargin )
 global CONSTANTS                 % Gobal structure "CONSTANTS" is initialized later.
 [ERROR_CODES, REQUIRED_MATLAB_VERSION] = bicas.error_safe_constants();
 
+
+
 try
     
     startTimeTicSeconds = tic;
@@ -83,7 +85,8 @@ try
     %======================
     matlabVersionString = version('-release');
     if ~strcmp(matlabVersionString, REQUIRED_MATLAB_VERSION)
-        error('BICAS:BadMATLABVersion', 'Bad MATLAB version. Found "%s". Requires "%s".\n', matlabVersionString, REQUIRED_MATLAB_VERSION)
+        error('BICAS:BadMATLABVersion', 'Using bad MATLAB version. Found version "%s". BICAS requires version "%s".\n', ...
+            matlabVersionString, REQUIRED_MATLAB_VERSION)
     end
     
     %=======================================================================
@@ -93,22 +96,23 @@ try
     [matlabSrcPath, ~, ~] = fileparts(mfilename('fullpath'));
     bicasRootPath = bicas.utils.get_abs_path(fullfile(matlabSrcPath, '..'));
     
-    irf.log('n', sprintf('MATLAB source code path:  "%s"', matlabSrcPath))
-    irf.log('n', sprintf('BICAS software root path: "%s"', bicasRootPath))
-    
     %=============================
     % Initialize global constants
     %=============================
     % NOTE: Does not initialize CONSTANTS until the MATLAB version has been checked for. The init. code could otherwise
     % fail.
     CONSTANTS = bicas.constants(bicasRootPath);
-    irf.log(CONSTANTS.C.irfLogLevel);
-    % Log arguments
-    for i = 1:length(varargin)
-        irf.log('n', sprintf('CLI argument %2i: "%s"', i, varargin{i}))
-    end
-    irf.log('n', sprintf('Current working directory: "%s"', pwd));   % Useful for debugging the use of relative directory arguments.
+    irf.log(CONSTANTS.C.IRF_LOG_LEVEL);
     
+    %=======================================
+    % Log misc. paths and all CLI arguments
+    %=======================================
+    irf.log('n', sprintf('BICAS software root path:      "%s"', bicasRootPath))
+    irf.log('n', sprintf('BICAS MATLAB source code path: "%s"', matlabSrcPath))
+    irf.log('n', sprintf('Current working directory:     "%s"', pwd));   % Useful for debugging the use of relative directory arguments.
+    for i = 1:length(varargin)
+        irf.log('n', sprintf('CLI argument %2i: "%s"', i, varargin{i}))    % PROPOSAL: Combine into a single multiline log message?
+    end
 
 
 
@@ -116,37 +120,37 @@ try
     % 1) Parse arguments, and
     % 2) select which of BICAS' different modes of operation.
     %================================================================
-    arguments = varargin;
+    cliArgumentsArray = varargin;
     
     % Start configuring requirements on (remaining) arguments.
-    flags = containers.Map;
-    flags('log_path')         = struct('CLI_str', '--log',    'is_required', 0, 'expects_value', 1);   % Flag+value to permit but ignore.
-    flags('config_file_path') = struct('CLI_str', '--config', 'is_required', 0, 'expects_value', 1);   % Flag+calue to permit but ignore.
+    FlagsConfigMap = containers.Map;
+    FlagsConfigMap('log_path')         = struct('cliString', '--log',    'isRequired', 0, 'expectsValue', 1);   % Flag+value to permit but ignore.
+    FlagsConfigMap('config_file_path') = struct('cliString', '--config', 'isRequired', 0, 'expectsValue', 1);   % Flag+calue to permit but ignore.
 
     % Select mode of operations.
-    if (length(arguments) < 1)
+    if (length(cliArgumentsArray) < 1)
 
         error('BICAS:CLISyntax', 'Not enough arguments found.')
 
-    elseif (strcmp(arguments{1}, '--identification'))
+    elseif (strcmp(cliArgumentsArray{1}, '--identification'))
         %============================
         % CASE: Print identification
         %============================
-        [~] = bicas.utils.parse_CLI_flags(arguments(2:end), flags);  % Check CLI syntax but ignore results.
+        [~] = bicas.utils.parse_CLI_flags(cliArgumentsArray(2:end), FlagsConfigMap);  % Check CLI syntax but ignore results.
         print_identification()
 
-    elseif (strcmp(arguments{1}, '--version'))
+    elseif (strcmp(cliArgumentsArray{1}, '--version'))
         %============================
         % CASE: Print version
         %============================
-        [~] = bicas.utils.parse_CLI_flags(arguments(2:end), flags);  % Check CLI syntax but ignore results.
+        [~] = bicas.utils.parse_CLI_flags(cliArgumentsArray(2:end), FlagsConfigMap);  % Check CLI syntax but ignore results.
         print_version()
 
-    elseif (strcmp(arguments{1}, '--help'))
+    elseif (strcmp(cliArgumentsArray{1}, '--help'))
         %============================
         % CASE: Print help
         %============================
-        [~] = bicas.utils.parse_CLI_flags(arguments(2:end), flags);  % Check CLI syntax but ignore results.
+        [~] = bicas.utils.parse_CLI_flags(cliArgumentsArray(2:end), FlagsConfigMap);  % Check CLI syntax but ignore results.
         print_help(ERROR_CODES)
 
     else
@@ -154,11 +158,11 @@ try
         % CASE: Should be a S/W mode (error otherwise)
         %==============================================
         %try
-            C_sw_mode = bicas.data_manager.get_C_sw_mode_full(arguments{1});
+            C_sw_mode = bicas.data_manager.get_C_sw_mode_full(cliArgumentsArray{1});
         %catch exception
             % NOTE: The message is slightly inaccurate since it assumes that the first argument is a S/W mode.
             % Argument "--version" etc. would have worked too.
-            %error('BICAS:CLISyntax', 'Can not interpret argument "%s" as a S/W mode.', arguments{1});
+            %error('BICAS:CLISyntax', 'Can not interpret argument "%s" as a S/W mode.', cliArgumentsArray{1});
         %end
 
         %-----------------------------------------------------------------
@@ -168,18 +172,18 @@ try
         % 1) identifiers for misc. flags e.g. "output_dir", "log_path".
         % 2) dataset IDs!
         %-----------------------------------------------------------------
-        flags('output_dir') = struct('CLI_str', '--output', 'is_required', 1, 'expects_value', 1);
+        FlagsConfigMap('output_dir') = struct('cliString', '--output', 'isRequired', 1, 'expectsValue', 1);
         C_inputs = C_sw_mode.inputs;      % C = Constants structure.
         inputPdids = {};                  % List of keys used for input files.
         for iInput = 1:length(C_inputs)
             pdid = C_inputs{iInput}.PDID;
             
             % Configure one flag+value pair
-            flag = [];
-            flag.CLI_str = ['--', C_inputs{iInput}.CLI_parameter];
-            flag.is_required = 1;
-            flag.expects_value = 1;
-            flags(pdid) = flag;
+            FlagConfig = [];
+            FlagConfig.cliString    = ['--', C_inputs{iInput}.CLI_parameter];
+            FlagConfig.isRequired   = 1;
+            FlagConfig.expectsValue = 1;
+            FlagsConfigMap(pdid) = FlagConfig;
             
             inputPdids{end+1} = pdid;
         end
@@ -187,13 +191,13 @@ try
         %-----------------------------
         % Parse (remaining) arguments
         %-----------------------------
-        parsed_flags = bicas.utils.parse_CLI_flags(arguments(2:end), flags);
+        ParsedCliArgumentsMap = bicas.utils.parse_CLI_flags(cliArgumentsArray(2:end), FlagsConfigMap);
         
         
         
-        InputFilesMap = containers.Map(inputPdids, parsed_flags.values(inputPdids));   % Extract subset of parsed arguments.
+        InputFilesMap = containers.Map(inputPdids, ParsedCliArgumentsMap.values(inputPdids));   % Extract subset of parsed arguments.
         
-        outputDir = bicas.utils.get_abs_path(parsed_flags('output_dir'));
+        outputDir = bicas.utils.get_abs_path(ParsedCliArgumentsMap('output_dir'));
         
         
 
@@ -204,7 +208,6 @@ try
         %===============================================================
         bicas.execute_sw_mode(C_sw_mode.CLI_parameter, InputFilesMap, outputDir)   % The intended real implementation
         %execute_sw_mode_TEST_IMPLEMENTATION(C_sw_mode.CLI_parameter, outputDir)   % IMPLEMENTATION FOR TESTING. OUTPUTS NONSENSE CDFs.
-        %error('BICAS:OperationNotImplemented', 'Operation not completely implemented: Use S/W mode')
         
     end
 
@@ -219,7 +222,7 @@ try
     errorCode = ERROR_CODES.NO_ERROR;   % Default RETURN value.
 
 
-    
+
 catch exception
     
     try

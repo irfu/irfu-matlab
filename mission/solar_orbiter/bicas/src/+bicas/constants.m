@@ -117,15 +117,8 @@ classdef constants < handle
 %   PRO: Simplifies code that constructs cell arrays of the same struct field in multiple cell structs.
 %
 % TODO: EI/EO --> EIn/EOut (must be done globally in other files?)
-
-
-    %###################################################################################################################
-    
-    % NOTE: Should be private when not debugging.
-    %properties(Access=private)
-    %end
-    
-    %###################################################################################################################
+% TODO: Change more (all?) constants to upper case.
+%###################################################################################################################
     
     properties(Access=public)
         C                  % For miscellaneous minor constants which still might require code to be initialized.
@@ -182,7 +175,7 @@ classdef constants < handle
             C.SWD_release.institute    = C.institute;
             C.SWD_release.modification = D.INITIAL_RELEASE_MODIFICATION_STR;
             
-            C.SWD_environment.executable = 'roc/bicas';   % Temporary SW (file) name
+            C.SWD_environment.executable = 'roc/bicas';
             
             % Prefix used to identify the subset of stdout that should actually be passed on as stdout by the bash launcher script.
             C.stdout_prefix = 'STDOUT: ';
@@ -211,12 +204,16 @@ classdef constants < handle
                 'gamma_hg',  100, ...
                 'gamma_lg',    5);      % NOTE/POSSIBLE BUG: Uncertain which value is high-gain, and low-gain.
             
-            C.INPUT_CDF_ASSERTIONS.STRICT_DATASET_ID       = 0;
-            C.INPUT_CDF_ASSERTIONS.STRICT_Skeleton_version = 1;
-            C.OUTPUT_CDF.SET_Test_id = 1;       % ROC DFMD says that it should really be set by ROC.
-            C.OUTPUT_CDF.Data_version = '01';   % ROC DFMD says it should be updated in a way which can not be automatized?!!! Set here for now.
+            C.INPUT_CDF_ASSERTIONS.STRICT_DATASET_ID       = 0;   % Require input CDF Global Attribute "DATASET_ID"       to match the expected value.
+            C.INPUT_CDF_ASSERTIONS.STRICT_Skeleton_version = 1;   % Require input CDF Global Attribute "Skeleton_version" to match the expected value.
+            C.OUTPUT_CDF.SET_Test_id = 1;            % Set CDF GlobalAttribute "Test_id". ROC DFMD says that it should really be set by ROC.
+            C.OUTPUT_CDF.Data_version = '01';        % Set CDF GlobalAttribute "Data_version". ROC DFMD says it should be updated in a way which can not be automatized?!!! Set here for now.
             
-            C.irfLogLevel = 'notice';
+            % zVariables which are still empty after copying data into the master CDF assigned a correctly sized array with fill values.
+            % This should only be necessary for S/W modes with incomplete processing.
+            C.OUTPUT_CDF.EMPTY_ZVARIABLES_SET_TO_FILL = 0;
+            
+            C.IRF_LOG_LEVEL = 'notice';   % Log level for "irf.log".
             
             obj.C = C;
         

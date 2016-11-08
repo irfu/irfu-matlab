@@ -412,9 +412,9 @@ classdef dm_utils
             
             N_values = length(bicas.dm_utils.unique_NaN(v));
             N_NaN = sum(isnan(v(:)));
-            irf.log('n', sprintf('Number of unique %-6s values: %5d (%3i%%=%6i/%6i NaN)', ...
+            irf.log('n', sprintf('#Unique %-6s values: %5d (%3i%%=%6i/%6i NaN)', ...
                 variable_name, N_values, ...
-                (N_NaN/numel(v))*100, ...
+                round((N_NaN/numel(v))*100), ...
                 N_NaN, numel(v)))
         end
 
@@ -430,7 +430,7 @@ classdef dm_utils
             % Print number of NaN?
             %N_NaN = sum(isnan(v(:)));
             values_str = sprintf('%d ', bicas.dm_utils.unique_NaN(v));
-            irf.log('n', sprintf('Unique %s values: %s', variable_name, values_str))
+            irf.log('n', sprintf('Unique %-9s values: %s', variable_name, values_str))
         end
         
         

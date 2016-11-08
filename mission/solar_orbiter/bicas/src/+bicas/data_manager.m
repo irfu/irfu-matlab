@@ -57,16 +57,16 @@
 %
 % DEFINITIONS OF TERMS, ABBREVIATIONS
 % ===================================
-% - process data (PD)
+% - Process data (PD)
 %        In practice, one internal variable representing some form of data in some step of
 %        the "data processing process".
-% - elementary input/output (EIn/EOut) process data
+% - Elementary input/output (EIn/EOut) process data
 %        Process data that represents data that goes in and out of the data manager as a whole. The word "elementary" is
 %        added to distinguish input/output from the input/output for a smaller operation, in particular when converting
 %        to/from intermediate process data.
-% - intermediate process data
+% - Intermediate process data
 %        Process data that is not "elementary" input/output process data.
-% - process data ID (PDID)
+% - Process data ID (PDID)
 %        A string that uniquely represents (refers to) a type of process data.
 %        By convention, the PDIDs for elementary input/output PDIDs are a shortened version of
 %        dataset_ID+skeleton_version_str, e.g. "L2S_LFR-SURV-CWF-E_V01". Hardcoded values of these occur throughout the
@@ -238,7 +238,7 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
 
     methods(Access=public)
         
-        function obj = data_manager(settings)
+        function obj = data_manager()
         % CONSTRUCTOR
         
             obj.validate
@@ -274,25 +274,27 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
             % sw_mode_ID comes first since that tends to make the log message values line up better.
             irf.log('n', sprintf('Arguments=(sw_mode_ID=%s, PDID=%s)', sw_mode_ID, PDID))
 
-            %==================================================================================
-            % If process data already exists - Return it and exit
-            % 
-            % NOTE: This provides caching so that the same process data are not derived twice.
-            %==================================================================================
             process_data = obj.get_process_data_variable(PDID);
+
+            %============================================
+            % Check if process data is already available
+            %============================================
             if ~isempty(process_data)
-                return   % Return with already available process data.
+                % CASE: Process data is already available.
+                return
+                % NOTE: This provides caching so that the same process data are not derived twice.
             end
-            
-            [input_PDIDs, processing_func] = bicas.data_manager.get_processing_info(PDID, sw_mode_ID);            
-            % ASSERTION
-            if isempty(processing_func)
-                error('BICAS:data_manager:Assertion', 'Received no processing function necessary for deriving process data (PDID "%s").', PDID)
-            end
+
+            % CASE: Process data is NOT already available.            
             
             %==============================================
             % Obtain the input process datas - RECURSIVELY
             %==============================================
+            [input_PDIDs, processing_func] = bicas.data_manager.get_processing_info(PDID, sw_mode_ID);
+            % ASSERTION
+            if isempty(processing_func)
+                error('BICAS:data_manager:Assertion', 'Received no processing function necessary for deriving process data (PDID "%s").', PDID)
+            end
             input_process_datas = struct();
             fn_list = fieldnames(input_PDIDs);
             for i = 1:length(fn_list)
@@ -304,9 +306,9 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
                     sw_mode_ID);                         % NOTE: RECURSIVE CALL.
             end
             
-            %=============================================
-            % Derive process data from other process data
-            %=============================================
+            %========================================================
+            % Derive the actual process data from other process data
+            %========================================================
             process_data = processing_func(input_process_datas);
             
             obj.set_process_data_variable(PDID, process_data)
@@ -386,7 +388,7 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
             bicas.utils.assert_strings_unique(sw_mode_CLI_parameters)
             bicas.utils.assert_strings_unique(sw_mode_IDs)
 
-            
+
             
             % NOTE: Check that combinations of dataset_ID and skeleton_version_str are unique.
             % Implemented by merging strings and checking for unique strings.
@@ -395,7 +397,8 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
                 @(x) ({[x.dataset_ID, '_V', x.skeleton_version_str]}), ...
                 [CONSTANTS.outputs, CONSTANTS.inputs]   );
             bicas.utils.assert_strings_unique(dataset_ID_version_list)
-        end
+            
+        end   % validate
         
         
         
@@ -574,7 +577,7 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
             global CONSTANTS            
             CONSTANTS.assert_sw_mode_ID(sw_mode_ID);
             
-            % Assign value used for the case of elementary INPUT PDID.
+            % Assign value used for the case of elementary INPUT PDID (no input PDs <==> no fields).
             input_PDIDs = struct();
             
             
@@ -686,6 +689,7 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
             
             
             %-----------------------------------------------------------------------------------------------------------
+            % NOTE: Nested function
             function error_bad_sw_mode(PDID, sw_mode_ID)
                 error('BICAS:data_manager:Assertion:IllegalArgument:NoSuchSWMode', ...
                     'Can not interpret S/W mode ID (%s) for this PDID (%s).', sw_mode_ID, PDID)
@@ -699,7 +703,7 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
         % Function that in practice can handle all derivations to date (2016-10-18), but it is not obvious that this
         % will be the case forever. In the future, it might only handle a subset.
         %
-        % input_PDs  : struct. Each field has process data for one PDID.
+        % input_PDs   : struct. Each field has process data for one PDID.
         % input_PDIDs : struct. Each field has the corresponding PDID for the fields of input_PDs.
         % output_PDID : The PDID that shall be produced.
             
@@ -734,11 +738,10 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
                 otherwise
                     error('BICAS:data_manager:Assertion:IllegalArgument', 'Illegal input_PDIDs.SCI_cdf="%s"', input_PDIDs.SCI_cdf)
             end
-            
-            
+
             postDCD = bicas.data_manager.demux_calib(preDCD);
-            output_PD = bicas.data_manager.process_PostDCD_to_EO_PDID(postDCD, output_PDID);
-            
+            output_PD = bicas.data_manager.process_PostDCD_to_EO_PD(postDCD, output_PDID);
+
             %error('BICAS:data_manager:OperationNotImplemented', 'Function not finished yet.')            
         end
         
@@ -823,6 +826,7 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
                 preDCD.QUALITY_BITMASK = SCI.QUALITY_BITMASK;
             end
                 
+            % BUG / TEMP: Set default values.
             preDCD.DELTA_PLUS_MINUS = cast(  zeros(size(preDCD.Epoch)),  bicas.utils.convert_CDF_type_to_MATLAB_class('CDF_INT8',  'Only CDF data types')  );
 
             
@@ -906,6 +910,7 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
                 bicas.dm_utils.log_unique_values_summary(f{1}, postDCD.demuxer_output.(f{1}));
             end
             
+            % BUG / TEMP: Set default values since the real values are not available.
             postDCD.IBIAS1 = NaN * zeros(size(postDCD.demuxer_output.V1));
             postDCD.IBIAS2 = NaN * zeros(size(postDCD.demuxer_output.V2));
             postDCD.IBIAS3 = NaN * zeros(size(postDCD.demuxer_output.V3));
@@ -913,7 +918,7 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
         
 
         
-        function EO_PD = process_PostDCD_to_EO_PDID(postDCD, EO_PDID)
+        function EO_PD = process_PostDCD_to_EO_PD(postDCD, EO_PDID)
         % Convert PostDCD to any one of several similar dataset PDIDs.
         
             D = postDCD;
@@ -1019,7 +1024,7 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
                 i_last = bicas.dm_utils.find_last_same_sequence(i_first, DIFF_GAIN, MUX_SET);
                 mux_set   = MUX_SET  (i_first);
                 diff_gain = DIFF_GAIN(i_first);
-                irf.log('n', sprintf('Records %i-%i : Demultiplexing; MUX_SET=%i; DIFF_GAIN=%i', i_first, i_last, mux_set, diff_gain))
+                irf.log('n', sprintf('Records %2i-%2i : Demultiplexing; MUX_SET=%-3i; DIFF_GAIN=%-3i', i_first, i_last, mux_set, diff_gain))  % "%-3" since value might be NaN.
                 
                 % Extract subsequence of records to "demux".
                 demuxer_input_subseq = bicas.dm_utils.select_subset_from_struct(demuxer_input, i_first, i_last);

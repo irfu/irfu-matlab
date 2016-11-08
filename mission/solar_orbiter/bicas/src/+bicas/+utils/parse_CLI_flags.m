@@ -1,4 +1,4 @@
-% flag_results = parse_CLI_flags(arguments, flags)   Parse list of command-line arguments (flags).
+% ParsedCliArgumentsMap = parse_CLI_flags(cliArgumentsArray, FlagsConfigMap)   Parse list of command-line arguments (flags).
 %
 % Parses list of command-line arguments assuming it is a list of flags and pairs of flag+value.
 % Function tries to give accurate user-friendly errors (not assertions) for non-compliant arguments and absence of
@@ -8,32 +8,33 @@
 % First created 2016-06-02
 %
 %
+%
 % DEFINITIONS OF TERMS
-% --------------------
-% Flag = A predefined (hardcoded, more or less) string meant to match a single argument, e.g. "--verbose" or "--file".
+% ====================
+% Flag  = A predefined (hardcoded, more or less) string meant to match a single argument, e.g. "--verbose" or "--file".
 % Value = An argument that specifies a more or less arbitrary value that comes after some flags, e.g. "--file <value>".
 %
 %
 % ARGUMENTS AND RETURN VALUES
-% ---------------------------
-% arguments : 1D cell array of strings.
-% flags : containers.Map, number/string-->struct
+% ===========================
+% cliArgumentsArray      : 1D cell array of strings.
+% FlagsConfigMap : containers.Map, number/string-->struct
 %    <keys>   : Arbitrary unique strings to identify the flags in the return value.
 %    <values> : Information about each specified flag (syntax).
-%       .CLI_str        : The command-line flag string (e.g. "--version"), including any prefix (e.g. dash).
-%       .is_required    : Whether the flag (and any specified value) is required as opposed to optional.
-%       .expects_value  : Whether the flag expects the following argument to be a value connected to the flag.
+%       .cliString    : The command-line flag string (e.g. "--version"), including any prefix (e.g. dash).
+%       .isRequired   : Whether the flag (and any specified value) is required as opposed to optional.
+%       .expectsValue : Whether the flag expects the following argument to be a value connected to the flag.
 %
-% flag_results : containers.Map, number/string-->string/number
+% ParsedCliArgumentsMap : containers.Map, number/string-->string/number
 %    <keys>
 %    <values>  : For flag without value: 0=not set, 1=set
 %                For flag with value:
-%                   ~ischar(..) ==> the flag was not set (no such argument). (In reality numeric zero.)
-%                    ischar(..) ==> the flag was set (incl. empty string). The string is the value.
-%                NOTE: Can not use/implement isempty(..) as criterion since empty strings can be
-%                legitimate argument values. Note that isempty('')==0.
+%                      ~ischar(..) ==> the flag was not set (no such argument). (In reality numeric zero.)
+%                       ischar(..) ==> the flag was set (incl. empty string). The string is the value.
+%                   NOTE: Can not use/implement isempty(..) as criterion since empty strings can be
+%                   legitimate argument values. Note that isempty('')==0.
 %
-function flag_results = parse_CLI_flags(arguments, flags)
+function ParsedCliArgumentsMap = parse_CLI_flags(cliArgumentsArray, FlagsConfigMap)
 %
 % IMPLEMENTATION NOTE: Reasons for using containers.Map (instead of arrays, array of structs, cell
 % array, structure of structures).
@@ -55,83 +56,96 @@ function flag_results = parse_CLI_flags(arguments, flags)
 
 
 
-% ASSERTION CHECKS
-if ~iscell(arguments)
+% ASSERTIONS
+if ~iscell(cliArgumentsArray)
     error('parse_CLI_flags:Assertion:IllegalArgument', 'Parameter is not a cell array.')
-elseif length(arguments) ~= numel(arguments)
+elseif length(cliArgumentsArray) ~= numel(cliArgumentsArray)
     error('parse_CLI_flags:Assertion:IllegalArgument', 'Parameter is not a 1D cell array.')
-elseif ~isa(flags, 'containers.Map')
+elseif ~isa(FlagsConfigMap, 'containers.Map')
     error('parse_CLI_flags:Assertion:IllegalArgument', 'Parameter is not a containers.Map.');
 end
 
 
 
-CLI_strs = {};
-flag_results = containers.Map;
-for skey = flags.keys
-    s = flags(skey{1});
-    CLI_strs{end+1} = s.CLI_str;
+cliStringArray = {};
+ParsedCliArgumentsMap = containers.Map;
+for skey = FlagsConfigMap.keys
+    FlagConfig = FlagsConfigMap(skey{1});
     
-    % Create return structure. Default: No flags found
+    % ASSERTION
+    if ~all(isfield(FlagConfig, {'cliString', 'isRequired', 'expectsValue'}))
+        error('parse_CLI_flags:Assertion:IllegalArgument', 'FlagsConfigMap lacks all the required fields.')
+    end
+    
+    cliStringArray{end+1} = FlagConfig.cliString;
+    
+    % Create return structure. Default: No flags found.
     % NOTE: Applies to both flags with and without values!
-    flag_results(skey{1}) = 0;         
+    ParsedCliArgumentsMap(skey{1}) = 0;         
 end
 
 
 
-% ASSERTION CHECKS: Check that there are no flag duplicates.
-if length(CLI_strs) ~= length(unique(CLI_strs))
-    error('parse_CLI_flags:Assertion:IllegalArgument', ...
-        'The code is configured to accept multiple IDENTICAL command-line flags. This indicates a bug.')
-end
+% ASSERTION: Check that all cliString are unique.
+bicas.utils.assert_strings_unique(cliStringArray)
 
 
 
-ia = 1;
-while ia <= length(arguments)    % ia = i_argument
-    arg = arguments{ia};
+
+%====================================
+% Iterate over list of CLI arguments
+%====================================
+iCliArgument = 1;
+while iCliArgument <= length(cliArgumentsArray)
+    cliArgument = cliArgumentsArray{iCliArgument};
     
-    % Find matching flag (and key)
-    flag = [];
-    for skey = flags.keys
-        key = skey{1};
-        current_flag = flags(key);
-        if strcmp(arg, current_flag.CLI_str)
-            flag = current_flag;
+    % Find matching flag (and key). Set "flagKey".
+    for skey = FlagsConfigMap.keys
+        flagKey = skey{1};
+        
+        FlagConfig = FlagsConfigMap(flagKey);
+        if strcmp(cliArgument, FlagConfig.cliString)
             break
+        else
+            FlagConfig = [];   % Assignment is necessary in case loop ends without finding a value.
         end
-    end    
-    if isempty(flag)
-        error('parse_CLI_flags:CLISyntax', 'Can not interpret command-line argument "%s". There is no such flag.', arg)
+    end
+    if isempty(FlagConfig)
+        error('parse_CLI_flags:CLISyntax', 'Can not interpret command-line argument "%s". There is no such flag.', cliArgument)
     end
     
-    if ~(isnumeric(flag_results(key)) && (flag_results(key) == 0))
-        error('parse_CLI_flags:CLISyntax', 'The command-line flag "%s" was specified (at least) twice.', arg)
+    
+    
+    % Check that flag has not been set already and that it does not.
+    % NOTE: Can not use .isKey since all keys have been set to initialize ParsedCliArgumentsMap (needs default values
+    %       for flags which are not set).
+    if ~(isnumeric(ParsedCliArgumentsMap(flagKey)) && (ParsedCliArgumentsMap(flagKey) == 0))
+        error('parse_CLI_flags:CLISyntax', 'The command-line flag "%s" was specified (at least) twice.', cliArgument)
     end
     
-    if flag.expects_value
-        if ia >= length(arguments)
+    if FlagConfig.expectsValue
+        if iCliArgument >= length(cliArgumentsArray)
             error('parse_CLI_flags:CLISyntax', ...
-                'Can not find the argument that is expected to follow command-line flag "%s".', arg)
+                'Can not find the argument that is expected to follow command-line flag "%s".', cliArgument)
         end
-        ia = ia + 1;
-        flag_results(key) = arguments{ia};
+        iCliArgument = iCliArgument + 1;
+        ParsedCliArgumentsMap(flagKey) = cliArgumentsArray{iCliArgument};
     else
-        flag_results(key) = 1;
+        ParsedCliArgumentsMap(flagKey) = 1;   % Set to "1" (true) representing that the flag was set.
     end
     
-    ia = ia + 1;
+    iCliArgument = iCliArgument + 1;
 end   % while
 
 
 
 % Check that all required flags were set.
-for skey = flags.keys
-    flag = flags(skey{1});
-    flag_result = flag_results(skey{1});
-    if flag.is_required && (isnumeric(flag_result) && (flag_result == 0))
+for skey = FlagsConfigMap.keys
+    flag = FlagsConfigMap(skey{1});
+    flag_result = ParsedCliArgumentsMap(skey{1});
+    if flag.isRequired && (isnumeric(flag_result) && (flag_result == 0))
         % NOT: Not assertion since it is meant as a error message to be displayed for users.
-        error('parse_CLI_flags:CLISyntax', 'Could not find required command-line flag "%s".', flag.CLI_str)
+        error('parse_CLI_flags:CLISyntax', 'Could not find required command-line flag "%s".', flag.cliString)
     end
 end
 

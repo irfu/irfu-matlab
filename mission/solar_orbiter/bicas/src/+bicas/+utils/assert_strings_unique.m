@@ -11,7 +11,6 @@ function assert_strings_unique(string_list)
 [unique_strings, i_l, i_u] = unique(string_list);    % i_u=indices to unique_strings; i_l=indices to string_list
 
 if numel(unique_strings) == numel(string_list)
-    %return
     ;   % Do nothing.
 else
     % Figure out which strings that occur more than one time. Surprisingly difficult for such a simple task.
