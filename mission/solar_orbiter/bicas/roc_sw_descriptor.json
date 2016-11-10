@@ -18,7 +18,7 @@
     },
     "modes":  [
         {
-            "name":        "LFR-SURV-CWF-E_V01-V01",
+            "name":        "LFR-SURV-CWF-E_V01-V02",
             "purpose":     "Generate CWF electric field data (potential difference) from LFR",
             "inputs":  {
                 "input_hk":  {
@@ -38,18 +38,18 @@
                     "level":       "L2S",
                     "release":  {
                         "date":        "2016-10-17",
-                        "version":     "01",
+                        "version":     "02",
                         "author":      "Erik P G Johansson",
                         "contact":     "erik.johansson@irfu.se",
                         "institute":   "IRF-U",
                         "modification":"No modification (initial release)",
-                        "file":        "ROC-SGSE_L2S_RPW-LFR-SURV-CWF-E_V01.cdf"
+                        "file":        "ROC-SGSE_L2S_RPW-LFR-SURV-CWF-E_V02.cdf"
                     }
                 }
             }
         },
         {
-            "name":        "LFR-SURV-CWF-E_V02-V01",
+            "name":        "LFR-SURV-CWF-E_V02-V02",
             "purpose":     "Generate CWF electric field data (potential difference) from LFR",
             "inputs":  {
                 "input_hk":  {
@@ -69,18 +69,18 @@
                     "level":       "L2S",
                     "release":  {
                         "date":        "2016-10-17",
-                        "version":     "01",
+                        "version":     "02",
                         "author":      "Erik P G Johansson",
                         "contact":     "erik.johansson@irfu.se",
                         "institute":   "IRF-U",
                         "modification":"No modification (initial release)",
-                        "file":        "ROC-SGSE_L2S_RPW-LFR-SURV-CWF-E_V01.cdf"
+                        "file":        "ROC-SGSE_L2S_RPW-LFR-SURV-CWF-E_V02.cdf"
                     }
                 }
             }
         },
         {
-            "name":        "LFR-SURV-SWF-E_V01-V01",
+            "name":        "LFR-SURV-SWF-E_V01-V02",
             "purpose":     "Generate SWF electric (potential difference) data from LFR",
             "inputs":  {
                 "input_hk":  {
@@ -100,18 +100,18 @@
                     "level":       "L2S",
                     "release":  {
                         "date":        "2016-10-17",
-                        "version":     "01",
+                        "version":     "02",
                         "author":      "Erik P G Johansson",
                         "contact":     "erik.johansson@irfu.se",
                         "institute":   "IRF-U",
                         "modification":"No modification (initial release)",
-                        "file":        "ROC-SGSE_L2S_RPW-LFR-SURV-SWF-E_V01.cdf"
+                        "file":        "ROC-SGSE_L2S_RPW-LFR-SURV-SWF-E_V02.cdf"
                     }
                 }
             }
         },
         {
-            "name":        "LFR-SURV-SWF-E_V02-V01",
+            "name":        "LFR-SURV-SWF-E_V02-V02",
             "purpose":     "Generate SWF electric (potential difference) data from LFR",
             "inputs":  {
                 "input_hk":  {
@@ -131,12 +131,12 @@
                     "level":       "L2S",
                     "release":  {
                         "date":        "2016-10-17",
-                        "version":     "01",
+                        "version":     "02",
                         "author":      "Erik P G Johansson",
                         "contact":     "erik.johansson@irfu.se",
                         "institute":   "IRF-U",
                         "modification":"No modification (initial release)",
-                        "file":        "ROC-SGSE_L2S_RPW-LFR-SURV-SWF-E_V01.cdf"
+                        "file":        "ROC-SGSE_L2S_RPW-LFR-SURV-SWF-E_V02.cdf"
                     }
                 }
             }

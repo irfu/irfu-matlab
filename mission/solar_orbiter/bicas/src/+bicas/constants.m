@@ -116,10 +116,12 @@ classdef constants < handle
 % PROPOSAL: Convert constant cell arrays of structs to arrays of structs: S/W modes, CDF/PDID inputs/outputs.
 %   PRO: Simplifies code that constructs cell arrays of the same struct field in multiple cell structs.
 %
+% PROPOSAL: assert_sw_mode_ID/assert_EI_PDID/assert_EO_PDID use lists of valid values.
+%
 % TODO: EI/EO --> EIn/EOut (must be done globally in other files?)
 % TODO: Change more (all?) constants to upper case.
 %###################################################################################################################
-    
+
     properties(Access=public)
         C                  % For miscellaneous minor constants which still might require code to be initialized.
         BICAS_root_path
@@ -131,6 +133,10 @@ classdef constants < handle
         EO_PDIDs
     end
 
+    properties(Access=private)
+        all_dataset_IDs    % Collect alla known dataset IDs. Useful for assertions.
+    end
+    
     %###################################################################################################################
     
     methods(Access=public)
@@ -211,7 +217,7 @@ classdef constants < handle
             
             % zVariables which are still empty after copying data into the master CDF assigned a correctly sized array with fill values.
             % This should only be necessary for S/W modes with incomplete processing.
-            C.OUTPUT_CDF.EMPTY_ZVARIABLES_SET_TO_FILL = 0;
+            C.OUTPUT_CDF.EMPTY_ZVARIABLES_SET_TO_FILL = 1;
             
             C.IRF_LOG_LEVEL = 'notice';   % Log level for "irf.log".
             
@@ -225,6 +231,11 @@ classdef constants < handle
             
             obj.BICAS_root_path = BICAS_root_path;
             
+            
+            
+            obj.all_dataset_IDs = unique(cellfun(@(s) ({s.dataset_ID}), [obj.outputs, obj.inputs])');
+
+            
             obj.validate
         end
     end   % methods
@@ -232,6 +243,15 @@ classdef constants < handle
     %###################################################################################################################
 
     methods(Access=public)
+        
+        function assert_dataset_ID(obj, dataset_ID)
+        % Assert that argument is a valid dataset ID.
+        
+            if ~ismember(dataset_ID, obj.all_dataset_IDs)
+                error('BICAS:constants:Assertion', '"%s" is not a valid dataset ID.', dataset_ID)
+            end
+        end
+        
         function assert_sw_mode_ID(obj, sw_mode_ID)
             
             for i=1:length(obj.sw_modes)
@@ -322,44 +342,44 @@ classdef constants < handle
             %=====
 %             sw_mode = [];
 %             sw_mode.CLI_parameter = 'LFR-SBM1-CWF-E';
-%             sw_mode.ID            = 'LFR-SBM1-CWF-E_V01-V01';
+%             sw_mode.ID            = 'LFR-SBM1-CWF-E_V01-V02';
 %             sw_mode.SWD_purpose = 'Generate CWF electric field data (potential difference) from LFR';            
-%             sw_mode.output_PDIDs = {'L2S_LFR-SBM1-CWF-E_V01'};
+%             sw_mode.output_PDIDs = {'L2S_LFR-SBM1-CWF-E_V02'};
 %             C_sw_modes{end+1} = sw_mode;
 %             
 %             sw_mode = [];
 %             sw_mode.CLI_parameter = 'LFR-SBM2-CWF-E';
-%             sw_mode.ID            = 'LFR-SBM2-CWF-E_V01-V01';
+%             sw_mode.ID            = 'LFR-SBM2-CWF-E_V01-V02';
 %             sw_mode.SWD_purpose = 'Generate CWF electric field data (potential difference) from LFR';            
-%             sw_mode.output_PDIDs = {'L2S_LFR-SBM2-CWF-E_V01'};
+%             sw_mode.output_PDIDs = {'L2S_LFR-SBM2-CWF-E_V02'};
 %             C_sw_modes{end+1} = sw_mode;
             
             sw_mode = [];
-            sw_mode.CLI_parameter = 'LFR-SURV-CWF-E_V01-V01';
-            sw_mode.ID            = 'LFR-SURV-CWF-E_V01-V01';
+            sw_mode.CLI_parameter = 'LFR-SURV-CWF-E_V01-V02';
+            sw_mode.ID            = 'LFR-SURV-CWF-E_V01-V02';
             sw_mode.SWD_purpose = 'Generate CWF electric field data (potential difference) from LFR';            
-            sw_mode.output_PDIDs = {'L2S_LFR-SURV-CWF-E_V01'};
+            sw_mode.output_PDIDs = {'L2S_LFR-SURV-CWF-E_V02'};
             C_sw_modes{end+1} = sw_mode;
             
             sw_mode = [];
-            sw_mode.CLI_parameter = 'LFR-SURV-CWF-E_V02-V01';
-            sw_mode.ID            = 'LFR-SURV-CWF-E_V02-V01';
+            sw_mode.CLI_parameter = 'LFR-SURV-CWF-E_V02-V02';
+            sw_mode.ID            = 'LFR-SURV-CWF-E_V02-V02';
             sw_mode.SWD_purpose = 'Generate CWF electric field data (potential difference) from LFR';            
-            sw_mode.output_PDIDs = {'L2S_LFR-SURV-CWF-E_V01'};
+            sw_mode.output_PDIDs = {'L2S_LFR-SURV-CWF-E_V02'};
             C_sw_modes{end+1} = sw_mode;
             
             sw_mode = [];
-            sw_mode.CLI_parameter = 'LFR-SURV-SWF-E_V01-V01';
-            sw_mode.ID            = 'LFR-SURV-SWF-E_V01-V01';
+            sw_mode.CLI_parameter = 'LFR-SURV-SWF-E_V01-V02';
+            sw_mode.ID            = 'LFR-SURV-SWF-E_V01-V02';
             sw_mode.SWD_purpose = 'Generate SWF electric (potential difference) data from LFR';            
-            sw_mode.output_PDIDs = {'L2S_LFR-SURV-SWF-E_V01'};
+            sw_mode.output_PDIDs = {'L2S_LFR-SURV-SWF-E_V02'};
             C_sw_modes{end+1} = sw_mode;
             
             sw_mode = [];
-            sw_mode.CLI_parameter = 'LFR-SURV-SWF-E_V02-V01';
-            sw_mode.ID            = 'LFR-SURV-SWF-E_V02-V01';
+            sw_mode.CLI_parameter = 'LFR-SURV-SWF-E_V02-V02';
+            sw_mode.ID            = 'LFR-SURV-SWF-E_V02-V02';
             sw_mode.SWD_purpose = 'Generate SWF electric (potential difference) data from LFR';
-            sw_mode.output_PDIDs = {'L2S_LFR-SURV-SWF-E_V01'};
+            sw_mode.output_PDIDs = {'L2S_LFR-SURV-SWF-E_V02'};
             C_sw_modes{end+1} = sw_mode;
             
             %=====
@@ -367,41 +387,26 @@ classdef constants < handle
             %=====
             %sw_mode = [];
             %sw_mode.CLI_parameter = 'TDS-LFM-CWF-E';
-            %sw_mode.ID            = 'TDS-LFM-CWF-E_V01-V01';
+            %sw_mode.ID            = 'TDS-LFM-CWF-E_V01-V02';
             %sw_mode.SWD_purpose = 'Generate CWF electric (potential difference) data from TDS-LFM-CWF';
-            %sw_mode.output_PDIDs = {'L2S_TDS-LFM-CWF-E_V01'};
+            %sw_mode.output_PDIDs = {'L2S_TDS-LFM-CWF-E_V02'};
             %C_sw_modes{end+1} = sw_mode;
             
             % NOTE: Accepts older/obsoleted V01 input data.
             %sw_mode = [];
-            %sw_mode.CLI_parameter = 'TDS-LFM-RSWF-E_V01-V01';
-            %sw_mode.ID            = 'TDS-LFM-RSWF-E_V01-V01';
+            %sw_mode.CLI_parameter = 'TDS-LFM-RSWF-E_V01-V02';
+            %sw_mode.ID            = 'TDS-LFM-RSWF-E_V01-V02';
             %sw_mode.SWD_purpose = 'Generate RSWF electric (potential difference) data from TDS-LFM-RSWF V01';
-            %sw_mode.output_PDIDs = {'L2S_TDS-LFM-RSWF-E_V01'};
+            %sw_mode.output_PDIDs = {'L2S_TDS-LFM-RSWF-E_V02'};
             %C_sw_modes{end+1} = sw_mode;
             
             %sw_mode = [];
-            %sw_mode.CLI_parameter = 'TDS-LFM-RSWF-E_V02-V01';
-            %sw_mode.ID            = 'TDS-LFM-RSWF-E_V02-V01';
+            %sw_mode.CLI_parameter = 'TDS-LFM-RSWF-E_V02-V02';
+            %sw_mode.ID            = 'TDS-LFM-RSWF-E_V02-V02';
             %sw_mode.SWD_purpose = 'Generate RSWF electric (potential difference) data from TDS-LFM-RSWF V02';
-            %sw_mode.output_PDIDs = {'L2S_TDS-LFM-RSWF-E_V01'};
+            %sw_mode.output_PDIDs = {'L2S_TDS-LFM-RSWF-E_V02'};
             %C_sw_modes{end+1} = sw_mode;
             
-            %======
-            % TEST
-            %======
-%             sw_mode = [];
-%             sw_mode.CLI_parameter = 'LFR-SURV-CWF-E___EXPERIMENTAL';
-%             sw_mode.ID            = 'LFR-SURV-CWF-E_V01-V01___EXPERIMENTAL';
-%             sw_mode.SWD_purpose = 'Generate CWF electric field data (potential difference) from LFR - EXPERIMENTAL';            
-%             sw_mode.output_PDIDs = {'L2S_LFR-SURV-CWF-E_V01'};
-%             C_sw_modes{end+1} = sw_mode;
-%             
-            %sw_mode = [];
-            %sw_mode.CLI_parameter = 'TEST-MODE';
-            %sw_mode.SWD_purpose = 'Test mode. This mode is never supposed to be seen outside of development.';            
-            %sw_mode.output_PDIDs = {'L2S_LFR-SURV-SWF-E_V01', 'L2S_TEST_V99'};
-            %C_sw_modes{end+1} = sw_mode;
         end
             
         
@@ -436,13 +441,13 @@ classdef constants < handle
             % LFR SCI
             %=========            
             C_inputs{end+1} = init_input_C_sci('ROC-SGSE_L2R_RPW-LFR-SBM1-CWF', '01');   % 1 snapshot/record
-            C_inputs{end+1} = init_input_C_sci('ROC-SGSE_L2R_RPW-LFR-SBM1-CWF', '02');   % 1 sample/record
+            C_inputs{end+1} = init_input_C_sci('ROC-SGSE_L2R_RPW-LFR-SBM1-CWF', '02');   % 1   sample/record
             
             C_inputs{end+1} = init_input_C_sci('ROC-SGSE_L2R_RPW-LFR-SBM2-CWF', '01');   % 1 snapshot/record
-            C_inputs{end+1} = init_input_C_sci('ROC-SGSE_L2R_RPW-LFR-SBM2-CWF', '02');   % 1 sample/record
+            C_inputs{end+1} = init_input_C_sci('ROC-SGSE_L2R_RPW-LFR-SBM2-CWF', '02');   % 1   sample/record
             
             C_inputs{end+1} = init_input_C_sci('ROC-SGSE_L2R_RPW-LFR-SURV-CWF', '01');   % 1 snapshot/record
-            C_inputs{end+1} = init_input_C_sci('ROC-SGSE_L2R_RPW-LFR-SURV-CWF', '02');   % 1 sample/record
+            C_inputs{end+1} = init_input_C_sci('ROC-SGSE_L2R_RPW-LFR-SURV-CWF', '02');   % 1   sample/record
             
             
             C_inputs{end+1} = init_input_C_sci('ROC-SGSE_L2R_RPW-LFR-SURV-SWF', '01');   % 1 snapshot/record
@@ -452,20 +457,12 @@ classdef constants < handle
             % TDS SCI
             %=========
             
-            C_inputs{end+1} = init_input_C_sci('ROC-SGSE_L2R_RPW-TDS-LFM-CWF',  '01');  % 1 sample/record
+            C_inputs{end+1} = init_input_C_sci('ROC-SGSE_L2R_RPW-TDS-LFM-CWF',  '01');  % 1   sample/record
             
-            C_inputs{end+1} = init_input_C_sci('ROC-SGSE_L2R_RPW-TDS-LFM-RSWF', '01');  % 1 sample/record.  Adds two zVariables: SAMP_DTIME, SAMPS_PER_CH
+            C_inputs{end+1} = init_input_C_sci('ROC-SGSE_L2R_RPW-TDS-LFM-RSWF', '01');  % 1   sample/record.  Adds two zVariables: SAMP_DTIME, SAMPS_PER_CH
             C_inputs{end+1} = init_input_C_sci('ROC-SGSE_L2R_RPW-TDS-LFM-RSWF', '02');  % 1 snapshot/record
+
             
-            %======
-            % TEST
-            %======
-            %C_inputs{end+1} = [];
-            %C_inputs{end}.CLI_parameter        = 'input_sci2';
-            %C_inputs{end}.dataset_ID           = 'ROC-SGSE_L2R_TEST';
-            %C_inputs{end}.skeleton_version_str = '99';
-
-
 
             % Add one field ".PDID" to every struct above!
             % 
@@ -496,30 +493,8 @@ classdef constants < handle
             
             C_outputs{end+1} = [];
             C_outputs{end}.JSON_output_file_identifier = CLI_PARAMETER_SCI_NAME;
-            C_outputs{end}.dataset_ID                  = 'ROC-SGSE_L2S_RPW-LFR-SURV-CWF-E';
-            C_outputs{end}.skeleton_version_str        = '01';
-            C_outputs{end}.SWD_name                    =     'LFR L2s CWF science electric data in survey mode';
-            C_outputs{end}.SWD_description             = 'RPW LFR L2s CWF science electric (potential difference) data in survey mode, time-tagged';
-            C_outputs{end}.SWD_level                   = 'L2S';
-            C_outputs{end}.SWD_release_date            = D.INITIAL_RELEASE_DATE;
-            C_outputs{end}.SWD_release_modification    = D.INITIAL_RELEASE_MODIFICATION_STR;
-            %C_outputs{end}.SWD_release_version         = D.SWD_OUTPUT_RELEASE_VERSION;
-            
-            C_outputs{end+1} = [];
-            C_outputs{end}.JSON_output_file_identifier = CLI_PARAMETER_SCI_NAME;
-            C_outputs{end}.dataset_ID                  = 'ROC-SGSE_L2S_RPW-LFR-SURV-SWF-E';
-            C_outputs{end}.skeleton_version_str        = '01';
-            C_outputs{end}.SWD_name                    =     'LFR L2s SWF science electric data in survey mode';
-            C_outputs{end}.SWD_description             = 'RPW LFR L2s SWF science electric (potential difference) data in survey mode, time-tagged';
-            C_outputs{end}.SWD_level                   = 'L2S';
-            C_outputs{end}.SWD_release_date            = D.INITIAL_RELEASE_DATE;
-            C_outputs{end}.SWD_release_modification    = D.INITIAL_RELEASE_MODIFICATION_STR;
-            %C_outputs{end}.SWD_release_version         = D.SWD_OUTPUT_RELEASE_VERSION;
-            
-            C_outputs{end+1} = [];
-            C_outputs{end}.JSON_output_file_identifier = CLI_PARAMETER_SCI_NAME;
             C_outputs{end}.dataset_ID                  = 'ROC-SGSE_L2S_RPW-LFR-SBM1-CWF-E';
-            C_outputs{end}.skeleton_version_str        = '01';
+            C_outputs{end}.skeleton_version_str        = '02';
             C_outputs{end}.SWD_name                    =     'LFR L2s CWF science electric data in survey mode';
             C_outputs{end}.SWD_description             = 'RPW LFR L2s CWF science electric (potential difference) data in selective burst mode 1, time-tagged';
             C_outputs{end}.SWD_level                   = 'L2S';
@@ -530,9 +505,31 @@ classdef constants < handle
             C_outputs{end+1} = [];
             C_outputs{end}.JSON_output_file_identifier = CLI_PARAMETER_SCI_NAME;
             C_outputs{end}.dataset_ID                  = 'ROC-SGSE_L2S_RPW-LFR-SBM2-CWF-E';
-            C_outputs{end}.skeleton_version_str        = '01';
+            C_outputs{end}.skeleton_version_str        = '02';
             C_outputs{end}.SWD_name                    =     'LFR L2s CWF science electric data in survey mode';
             C_outputs{end}.SWD_description             = 'RPW LFR L2s CWF science electric (potential difference) data in selective burst mode 2, time-tagged';
+            C_outputs{end}.SWD_level                   = 'L2S';
+            C_outputs{end}.SWD_release_date            = D.INITIAL_RELEASE_DATE;
+            C_outputs{end}.SWD_release_modification    = D.INITIAL_RELEASE_MODIFICATION_STR;
+            %C_outputs{end}.SWD_release_version         = D.SWD_OUTPUT_RELEASE_VERSION;
+            
+            C_outputs{end+1} = [];
+            C_outputs{end}.JSON_output_file_identifier = CLI_PARAMETER_SCI_NAME;
+            C_outputs{end}.dataset_ID                  = 'ROC-SGSE_L2S_RPW-LFR-SURV-CWF-E';
+            C_outputs{end}.skeleton_version_str        = '02';
+            C_outputs{end}.SWD_name                    =     'LFR L2s CWF science electric data in survey mode';
+            C_outputs{end}.SWD_description             = 'RPW LFR L2s CWF science electric (potential difference) data in survey mode, time-tagged';
+            C_outputs{end}.SWD_level                   = 'L2S';
+            C_outputs{end}.SWD_release_date            = D.INITIAL_RELEASE_DATE;
+            C_outputs{end}.SWD_release_modification    = D.INITIAL_RELEASE_MODIFICATION_STR;
+            %C_outputs{end}.SWD_release_version         = D.SWD_OUTPUT_RELEASE_VERSION;
+            
+            C_outputs{end+1} = [];
+            C_outputs{end}.JSON_output_file_identifier = CLI_PARAMETER_SCI_NAME;
+            C_outputs{end}.dataset_ID                  = 'ROC-SGSE_L2S_RPW-LFR-SURV-SWF-E';
+            C_outputs{end}.skeleton_version_str        = '02';
+            C_outputs{end}.SWD_name                    =     'LFR L2s SWF science electric data in survey mode';
+            C_outputs{end}.SWD_description             = 'RPW LFR L2s SWF science electric (potential difference) data in survey mode, time-tagged';
             C_outputs{end}.SWD_level                   = 'L2S';
             C_outputs{end}.SWD_release_date            = D.INITIAL_RELEASE_DATE;
             C_outputs{end}.SWD_release_modification    = D.INITIAL_RELEASE_MODIFICATION_STR;
@@ -543,7 +540,7 @@ classdef constants < handle
             C_outputs{end+1} = [];            
             C_outputs{end}.JSON_output_file_identifier = CLI_PARAMETER_SCI_NAME;
             C_outputs{end}.dataset_ID                  = 'ROC-SGSE_L2S_RPW-TDS-LFM-CWF-E';
-            C_outputs{end}.skeleton_version_str        = '01';
+            C_outputs{end}.skeleton_version_str        = '02';
             C_outputs{end}.SWD_name                    =     'TDS L2s CWF science electric data in low frequency mode';
             C_outputs{end}.SWD_description             = 'RPW TDS L2s CWF science electric (potential difference) data in low frequency mode, time-tagged';
             C_outputs{end}.SWD_level                   = 'L2S';
@@ -554,7 +551,7 @@ classdef constants < handle
             C_outputs{end+1} = [];
             C_outputs{end}.JSON_output_file_identifier = CLI_PARAMETER_SCI_NAME;
             C_outputs{end}.dataset_ID                  = 'ROC-SGSE_L2S_RPW-TDS-LFM-RSWF-E';
-            C_outputs{end}.skeleton_version_str        = '01';
+            C_outputs{end}.skeleton_version_str        = '02';
             C_outputs{end}.SWD_name                    =     'TDS L2s RSWF science electric data in low frequency mode';
             C_outputs{end}.SWD_description             = 'RPW TDS L2s RSWF science electric (potential difference) data in low frequency mode, time-tagged';
             C_outputs{end}.SWD_level                   = 'L2S';

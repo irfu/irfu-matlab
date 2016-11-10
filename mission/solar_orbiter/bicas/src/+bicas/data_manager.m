@@ -228,8 +228,8 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
 %             'L2R_LFR-SURV-SWF_V01',  ...
 %             'HK_BIA_V01'};
 %         ELEMENTARY_OUTPUT_PDIDs = {...
-%             'L2S_LFR-SURV-CWF-E_V01', ...
-%             'L2S_LFR-SURV-SWF-E_V01'};
+%             'L2S_LFR-SURV-CWF-E_V02', ...
+%             'L2S_LFR-SURV-SWF-E_V02'};
         INTERMEDIATE_PDIDs      = {};
         
     end
@@ -627,40 +627,40 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
                 %-----
                 % LFR
                 %-----
-                case 'L2S_LFR-SBM1-CWF-E_V01' ; use_generic_processing_func = 1;
+                case 'L2S_LFR-SBM1-CWF-E_V02' ; use_generic_processing_func = 1;
                     input_PDIDs.HK_cdf  = 'HK_BIA_V01';
                     input_PDIDs.SCI_cdf = 'L2R_LFR-SBM1-CWF_V01';
-                case 'L2S_LFR-SBM2-CWF-E_V01' ; use_generic_processing_func = 1;
+                case 'L2S_LFR-SBM2-CWF-E_V02' ; use_generic_processing_func = 1;
                     input_PDIDs.HK_cdf  = 'HK_BIA_V01';
                     input_PDIDs.SCI_cdf = 'L2R_LFR-SBM2-CWF_V01';
-                case 'L2S_LFR-SURV-CWF-E_V01' ; use_generic_processing_func = 1;
+                case 'L2S_LFR-SURV-CWF-E_V02' ; use_generic_processing_func = 1;
                     input_PDIDs.HK_cdf  = 'HK_BIA_V01';
                     switch(sw_mode_ID)
-                        case 'LFR-SURV-CWF-E_V01-V01' ; input_PDIDs.SCI_cdf = 'L2R_LFR-SURV-CWF_V01';
-                        case 'LFR-SURV-CWF-E_V02-V01' ; input_PDIDs.SCI_cdf = 'L2R_LFR-SURV-CWF_V02';
-                        otherwise                     ; error_bad_sw_mode(PDID, sw_mode_ID)
+                        case 'LFR-SURV-CWF-E_V01-V02' ; input_PDIDs.SCI_cdf = 'L2R_LFR-SURV-CWF_V01';
+                        case 'LFR-SURV-CWF-E_V02-V02' ; input_PDIDs.SCI_cdf = 'L2R_LFR-SURV-CWF_V02';
+                        otherwise                     ; error_bad_sw_mode(output_PDID, sw_mode_ID)
                     end
-                case 'L2S_LFR-SURV-SWF-E_V01' ; use_generic_processing_func = 1;
+                case 'L2S_LFR-SURV-SWF-E_V02' ; use_generic_processing_func = 1;
                     input_PDIDs.HK_cdf  = 'HK_BIA_V01';
                     switch(sw_mode_ID)
-                        case 'LFR-SURV-SWF-E_V01-V01' ; input_PDIDs.SCI_cdf = 'L2R_LFR-SURV-SWF_V01';
-                        case 'LFR-SURV-SWF-E_V02-V01' ; input_PDIDs.SCI_cdf = 'L2R_LFR-SURV-SWF_V02';
-                        otherwise                     ; error_bad_sw_mode(PDID, sw_mode_ID)
+                        case 'LFR-SURV-SWF-E_V01-V02' ; input_PDIDs.SCI_cdf = 'L2R_LFR-SURV-SWF_V01';
+                        case 'LFR-SURV-SWF-E_V02-V02' ; input_PDIDs.SCI_cdf = 'L2R_LFR-SURV-SWF_V02';
+                        otherwise                     ; error_bad_sw_mode(output_PDID, sw_mode_ID)
                     end
 
                 %-----
                 % TDS
                 %-----
-                case 'L2S_TDS-LFM-CWF-E_V01' ; use_generic_processing_func = 1;
+                case 'L2S_TDS-LFM-CWF-E_V02' ; use_generic_processing_func = 1;
                    input_PDIDs.HK_cdf  = 'HK_BIA_V01';
                    input_PDIDs.SCI_cdf = 'L2R_TDS-LFM-CWF_V01';
 
-                case 'L2S_TDS-LFM-RSWF-E_V01' ; use_generic_processing_func = 1;
+                case 'L2S_TDS-LFM-RSWF-E_V02' ; use_generic_processing_func = 1;
                     input_PDIDs.HK_cdf  = 'HK_BIA_V01';
                     switch(sw_mode_ID)
-                        case 'TDS-LFM-RSWF-E_V01-V01' ; input_PDIDs.SCI_cdf = 'L2R_TDS-LFM-RSWF_V01';
-                        case 'TDS-LFM-RSWF-E_V02-V01' ; input_PDIDs.SCI_cdf = 'L2R_TDS-LFM-RSWF_V02';
-                        otherwise                     ; error_bad_sw_mode(PDID, sw_mode_ID)
+                        case 'TDS-LFM-RSWF-E_V01-V02' ; input_PDIDs.SCI_cdf = 'L2R_TDS-LFM-RSWF_V01';
+                        case 'TDS-LFM-RSWF-E_V02-V02' ; input_PDIDs.SCI_cdf = 'L2R_TDS-LFM-RSWF_V02';
+                        otherwise                     ; error_bad_sw_mode(output_PDID, sw_mode_ID)
                     end
 
                 %==================================
@@ -927,11 +927,11 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
             N_smpls_rec = size(D.demuxer_output.V1, 2);   % Samples per record.
             
             switch(EO_PDID)
-                case  {'L2S_LFR-SBM1-CWF-E_V01', ...
-                       'L2S_LFR-SBM2-CWF-E_V01'}                        
+                case  {'L2S_LFR-SBM1-CWF-E_V02', ...
+                       'L2S_LFR-SBM2-CWF-E_V02'}                        
                     error('BICAS:data_manager:OperationNotImplemented', 'Can not produce this EOut PDID.')
                     
-                case  'L2S_LFR-SURV-CWF-E_V01'
+                case  'L2S_LFR-SURV-CWF-E_V02'
                     
                     %===============================================
                     % Convert 1 snapshot/record --> 1 sample/record
@@ -955,7 +955,7 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
                     EO_PD.IBIAS2 = bicas.dm_utils.reshape_to_1_sample_per_record( postDCD.IBIAS2 );
                     EO_PD.IBIAS3 = bicas.dm_utils.reshape_to_1_sample_per_record( postDCD.IBIAS3 );
 
-                case  'L2S_LFR-SURV-SWF-E_V01'
+                case  'L2S_LFR-SURV-SWF-E_V02'
                     % Check number of samples/record to see if one can just keep the samples as they are distributed on records.
                     if N_smpls_rec ~= 2048
                         error('BICAS:data_manager:Assertion:IllegalArgument', 'Number of samples per CDF record is not 2048.')
@@ -977,9 +977,9 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
                     EO_PD.IBIAS2 = postDCD.IBIAS2;
                     EO_PD.IBIAS3 = postDCD.IBIAS3;
                     
-                case 'L2S_TDS-LFM-CWF-E_V01'
+                case 'L2S_TDS-LFM-CWF-E_V02'
                     error('BICAS:data_manager:OperationNotImplemented', 'Can not produce this EOut PDID.')
-                case 'L2S_TDS-LFM-RSWF-E_V01'
+                case 'L2S_TDS-LFM-RSWF-E_V02'
                     error('BICAS:data_manager:OperationNotImplemented', 'Can not produce this EOut PDID.')
                 otherwise
                     error('BICAS:data_manager:Assertion:IllegalArgument', 'Function can not produce this EOut PDID.')

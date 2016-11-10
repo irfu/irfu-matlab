@@ -37,7 +37,7 @@ function execute_sw_mode(swModeCliParameter, InputFilePathMap, outputDir)
 % QUESTION: What should be the relationship between data manager and S/W modes really?
 % Should data manager check anything?
 %
-% PROPOSAL: Separate functions for converting CDF file<-->PDV?
+% Separate functions for converting CDF file<-->PDV?
 %   NOTE: May be different procedures (GlobalAttributes etc.) for all post-calibration datasets.
 %   NOTE: There are values which are identical for all output datasets (for a given set of input files).
 %   --
@@ -139,7 +139,8 @@ for iOutputCdf = 1:length(C_sw_mode.outputs)
 
 
     % Write dataset CDF file using NEW CODE.
-    [outputFilename] = write_dataset_CDF ( outputDir, masterCdfPath, ProcessData, @get_output_filename, C_output.PDID, globalAttributesSubset );
+    [outputFilename] = write_dataset_CDF ( ...
+        ProcessData, globalAttributesSubset, outputDir, @get_output_filename, masterCdfPath, C_output.dataset_ID );
     
     % Write dataset CDF file using OLD CODE.
     %[~, baseName, ext] = fileparts(outputFilename);
@@ -209,7 +210,8 @@ end
 
 
 
-function [outputFilename] = write_dataset_CDF(outputFileParentDir, masterCdfPath, ProcessData, FilenamingFunction, datasetId, GlobalAttributesSubset)
+function [outputFilename] = write_dataset_CDF(...
+    ProcessData, GlobalAttributesSubset, outputFileParentDir, FilenamingFunction, masterCdfPath, datasetId)
 % Function that writes one dataset CDF file.
 %
 % The function uses the new CDF file writing method, via write_CDF_dataobj.
@@ -271,7 +273,8 @@ DataObj.GlobalAttributes.Software_name       = CONSTANTS.C.SWD_identification.na
 DataObj.GlobalAttributes.Software_version    = CONSTANTS.C.SWD_release.version;
 DataObj.GlobalAttributes.Calibration_version = CONSTANTS.C.Calibration_version;             % "Static"?!!
 DataObj.GlobalAttributes.Generation_date     = datestr(now, 'yyyy-mm-ddTHH:MM:SS');         % BUG? Assigns local time, not UTC!!! ROC DFMD does not mention time zone.
-DataObj.GlobalAttributes.Logical_file_id     = logical_file_id(datasetId, GlobalAttributesSubset.Test_Id, GlobalAttributesSubset.Provider);
+DataObj.GlobalAttributes.Logical_file_id     = logical_file_id(...
+    datasetId, GlobalAttributesSubset.Test_Id, GlobalAttributesSubset.Provider, CONSTANTS.C.OUTPUT_CDF.Data_version);
 DataObj.GlobalAttributes.Parents             = GlobalAttributesSubset.Parents;
 DataObj.GlobalAttributes.Parent_version      = GlobalAttributesSubset.Parent_version;
 DataObj.GlobalAttributes.Data_version        = CONSTANTS.C.OUTPUT_CDF.Data_version;         % ROC DFMD says it should be updated in a way which can not be automatized?!!!
@@ -333,7 +336,8 @@ end
 %=======================================================
 % Write to CDF file using NEW METHOD: write_CDF_dataobj
 %=======================================================
-outputFilename = FilenamingFunction(datasetId, GlobalAttributesSubset.Test_Id, GlobalAttributesSubset.Provider);
+outputFilename = FilenamingFunction(...
+    datasetId, GlobalAttributesSubset.Test_Id, GlobalAttributesSubset.Provider, CONSTANTS.C.OUTPUT_CDF.Data_version);
 filePath = fullfile(outputFileParentDir, outputFilename);
 irf.log('n', sprintf('Writing dataset CDF file: %s', filePath))
 bicas.utils.write_CDF_dataobj( filePath, ...
@@ -407,7 +411,7 @@ irf.log('n', sprintf('File: Skeleton_version = "%s"', file_Skeleton_version))
 
 
 %===================================================
-% ASSERTIONS: Check GlobalAttributes values.
+% ASSERTIONS: Check GlobalAttributes values
 %===================================================
 % NOTE: Does print file name since it has only been previously been logged as "notice".
 %bicas.dm_utils.assert_unvaried_N_rows(processData);
@@ -506,13 +510,14 @@ end
 
 
 
-function filename = get_output_filename(datasetId, testId, provider)
-%=================================================================================
+function filename = get_output_filename(datasetId, testId, provider, data_version)
 % Function that decides the filename to use for any given output dataset CDF file
 %
 % NOTE: ROC-TST-GSE-NTT-00017, "Data format and metadata definition for the ROC-SGSE data", iss2,rev1, Section 3.4
-% specifies a file naming convention. The version number should be the "data version".
-%=================================================================================
+% specifies a file naming convention. Note: The version number should be the "data version"!
+%
+% data_version : two-digit string
+
 % PROPOSAL: Include date and time?
 %
 % NOTE: May need to know the global attributes of the master CDF! See file naming convention, Test_id.
@@ -524,7 +529,7 @@ function filename = get_output_filename(datasetId, testId, provider)
 %filename = [datasetId, '_V', skeletonVersionStr, '_', current_time, '.cdf'];
 %filename = [datasetId, '_V', skeletonVersionStr, '___OUTPUT.cdf'];
 
-filename = [logical_file_id(datasetId, testId, provider), '.cdf'];
+filename = [logical_file_id(datasetId, testId, provider, data_version), '.cdf'];
 end
 
 
@@ -533,11 +538,18 @@ end
 
 
 
-function logicalFileId = logical_file_id(datasetId, testId, provider)
+function logicalFileId = logical_file_id(datasetId, testId, provider, data_version)
 % Construct a "Logical_file_id" as defined in the ROC DFMD, global attribute+file name convention.
 
+global CONSTANTS
+
+CONSTANTS.assert_dataset_ID(datasetId)
+if ~ischar(data_version ) || length(data_version)~=2
+    error('BICAS:execute_sw_mode:Assertion:IllegalArgument', 'Illegal data_version')
+end
+
 providerParts = strsplit(provider, '>');
-logicalFileId = [datasetId, '_', testId, '_', providerParts{1}];
+logicalFileId = [datasetId, '_', testId, '_', providerParts{1}, '_V', data_version];
 end
 
 
