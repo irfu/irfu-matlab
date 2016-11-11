@@ -386,30 +386,32 @@ classdef constants < handle
             sw_mode = [];
             sw_mode.CLI_parameter = 'LFR-SURV-CWF-E_V01-V02';
             sw_mode.ID            = 'LFR-SURV-CWF-E_V01-V02';
-            sw_mode.SWD_purpose = 'Generate CWF electric field data (potential difference) from LFR';            
+            sw_mode.SWD_purpose = 'Generate CWF electric field data (potential difference) from LFR';
+            sw_mode.input_PDIDs  = {'L2R_LFR-SURV-CWF_V01', 'HK_BIA_V01'};
             sw_mode.output_PDIDs = {'L2S_LFR-SURV-CWF-E_V02'};
             C_sw_modes{end+1} = sw_mode;
-            
-            sw_mode = [];
-            sw_mode.CLI_parameter = 'LFR-SURV-CWF-E_V02-V02';
-            sw_mode.ID            = 'LFR-SURV-CWF-E_V02-V02';
-            sw_mode.SWD_purpose = 'Generate CWF electric field data (potential difference) from LFR';            
-            sw_mode.output_PDIDs = {'L2S_LFR-SURV-CWF-E_V02'};
-            C_sw_modes{end+1} = sw_mode;
+            %sw_mode = [];
+            %sw_mode.CLI_parameter = 'LFR-SURV-CWF-E_V02-V02';
+            %sw_mode.ID            = 'LFR-SURV-CWF-E_V02-V02';
+            %sw_mode.SWD_purpose = 'Generate CWF electric field data (potential difference) from LFR';            
+            %sw_mode.input_PDIDs  = {'L2R_LFR-SURV-CWF_V02', 'HK_BIA_V01'};
+            %sw_mode.output_PDIDs = {'L2S_LFR-SURV-CWF-E_V02'};
+            %C_sw_modes{end+1} = sw_mode;
             
             sw_mode = [];
             sw_mode.CLI_parameter = 'LFR-SURV-SWF-E_V01-V02';
             sw_mode.ID            = 'LFR-SURV-SWF-E_V01-V02';
             sw_mode.SWD_purpose = 'Generate SWF electric (potential difference) data from LFR';            
+            sw_mode.input_PDIDs  = {'L2R_LFR-SURV-SWF_V01', 'HK_BIA_V01'};
             sw_mode.output_PDIDs = {'L2S_LFR-SURV-SWF-E_V02'};
             C_sw_modes{end+1} = sw_mode;
-            
-            sw_mode = [];
-            sw_mode.CLI_parameter = 'LFR-SURV-SWF-E_V02-V02';
-            sw_mode.ID            = 'LFR-SURV-SWF-E_V02-V02';
-            sw_mode.SWD_purpose = 'Generate SWF electric (potential difference) data from LFR';
-            sw_mode.output_PDIDs = {'L2S_LFR-SURV-SWF-E_V02'};
-            C_sw_modes{end+1} = sw_mode;
+            %sw_mode = [];
+            %sw_mode.CLI_parameter = 'LFR-SURV-SWF-E_V02-V02';
+            %sw_mode.ID            = 'LFR-SURV-SWF-E_V02-V02';
+            %sw_mode.SWD_purpose = 'Generate SWF electric (potential difference) data from LFR';
+            %sw_mode.input_PDIDs  = {'L2R_LFR-SURV-SWF_V02', 'HK_BIA_V01'};
+            %sw_mode.output_PDIDs = {'L2S_LFR-SURV-SWF-E_V02'};
+            %C_sw_modes{end+1} = sw_mode;
             
             %=====
             % TDS
@@ -500,7 +502,6 @@ classdef constants < handle
             EI_PDIDs = {};
             for i = 1:length(C_inputs)
                 C_inputs{i}.PDID = bicas.constants.construct_PDID(C_inputs{i}.dataset_ID, C_inputs{i}.skeleton_version_str);
-                %C_inputs{i}.PDID = [C_inputs{i}.dataset_ID, '_V', C_inputs{i}.skeleton_version_str];
                 EI_PDIDs{i} = C_inputs{i}.PDID;
             end
         end
@@ -603,7 +604,7 @@ classdef constants < handle
         
         
         function PDID = construct_PDID(dataset_ID, skeleton_version_str)
-        % Construct a (shorter) PDID from a dataset ID and version.
+        % Construct a (shorter) PDID from a dataset ID and skeleton version).
         
             %PDID = [dataset_ID, '_V', skeleton_version_str];
             

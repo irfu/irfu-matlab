@@ -7,27 +7,33 @@
 %
 % BASIC CONCEPT
 % =============
-% The basic concept is inspired by irfu-matlab's MMS data manager.
-% The user gives the class the input data ("elementary input process data") it has, and asks for the output data
-% ("elementary output process data") it wants.
+% The basic concept is inspired by irfu-matlab's MMS data manager. The user gives the class the input data ("elementary
+% input process data") it has, and asks for the output data ("elementary output process data") it wants.
 %
-% The class maintains an internal set of different "process data" variables, a set of variables where each one is
-% uniquely referenced by a unique string, a "process data type". These process data variables are all related to each
+% The class maintains an internal set of different "process data" variables (PDVs), a set of variables where each one is
+% uniquely referenced by a unique string, a "process data ID" (PDID). These process data variables are all related to each
 % other in a conceptual "web" (an acyclic directed graph) describing their dependencies on each other. Initially these
 % process data variables are all empty.
 %
-% There are three forms of process data:
-%   (1) elementary input  process data : Supplied BY the user. In practice this should correspond to the content of a CDF file.
-%   (2) elementary output process data : Returned TO the user. In practice this should correspond to the content of a CDF file.
-%                                        Derived from a fixed set of other process data.
-%   (3) intermediate process data      : Derived from a fixed set of other process data. These only exist inside data_manager.
 %
-% When a process data variable Y is requested and it has not already been derived, the process data variables X_1, ...,
-% X_n which are required for it to be derived are requested. Then Y is derived from the X_1, ..., X_n. If a process data
-% variable X_i has not already been derived, it will be derived the same way, recursively. If a variable can not be derived,
-% because of error, or because it can only be supplied by the user and the user has not, the process fails.
+% Dependencies
+% -------------
+% For a PDV "Y", there is a list of lists(!) of PDVs (or PDIDs) X_ij. To derive Y, you need to have available at least
+% one X_ij, for every i. 
+% 
 %
-% Example: (Information flows from left to right. Each string represents a process data variable.)
+% Execution/process
+% -----------------
+% One or a few PDVs are simply set at the outset. After that, the desired output PDV is requested. When a PDV
+% "Y" is requested (and it has not already been derived and stored), the data manager tries to recursively request
+% enough PDVs {X_ij} that could be used to later derive Y. After that those requests have been satisfied, Y is finally
+% derived from the available PDVs {X_ij}.
+%
+%
+% Example
+% -------
+% (Assuming unique sets of required PDVs. Information flows from left to right, i.e. PDVs on the left are used to derive
+% the ones to the right. Each string represents a PDV.)
 %    input_1 ---------------------------------------------- output_1 --
 %                                                                      \
 %                                                                       -- output_2
@@ -38,39 +44,47 @@
 %                \                   \
 %    input_4 -------------------------- intermediate_2 ---- output_4
 %
-% NOTE: Advantages with architecture.
+%
+% Advantages with architecture
+% ----------------------------
 % - Easy to implement CHANGING S/W modes (as defined by the RCS ICD) using this class, althoguh the class itself is
-%   (partly) unaware of S/W modes.
+%   unaware of S/W modes.
 %      Ex: Updates to the RPW pipeline, datasets.
 %      Ex: Can use a different set of modes when validating using the official RCS validation software at LESIA (not all
 %      datasets are available for input there, and one gets error when the S/W descriptor describes modes which require
 %      dataset IDs not defined/existing there).
 %      Ex: Implement inofficial modes for testing(?).
-% - Easier to keep support for legacy datasets (older versions of CDFs)?
+% - Easier to keep support for legacy datasets (older versions of CDFs).
 % - Easier to maintain a varying set of test/debugging modes?
 % - Indirect "caching".
 % - Can reuse processing code?
-% - Other code can automatically derive which datasets are required to derive which. ==> Can automatically derive (1) the
-%   S/W modes in the S/W descriptor, (2) the required CLI parameters.
+% - PDVs can be derived from different sets of PDVs which is useful since many datasets (CDF files) are similar.
 %
 %
 %
 % DEFINITIONS OF TERMS, ABBREVIATIONS
 % ===================================
 % - Process data (PD)
-%        In practice, one internal variable representing some form of data in some step of
-%        the "data processing process".
+%       In practice, one internal variable representing some form of data in some step of
+%       the "data processing process".
 % - Elementary input/output (EIn/EOut) process data
-%        Process data that represents data that goes in and out of the data manager as a whole. The word "elementary" is
-%        added to distinguish input/output from the input/output for a smaller operation, in particular when converting
-%        to/from intermediate process data.
+%       Process data that represents data that goes in and out of the data manager as a whole. The word "elementary" is
+%       added to distinguish input/output from the input/output for a smaller operation, in particular when converting
+%       to/from intermediate process data.
+%       Elementary input (EIn)  process data :
+%           Supplied BY the user. In practice this should correspond to the content of a CDF file.
+%       Elementary output(EOut) process data :
+%           Returned TO the user. In practice this should correspond to the content of a CDF file.
 % - Intermediate process data
-%        Process data that is not "elementary" input/output process data.
+%       Process data that is not "elementary" input/output process data.
+%       These only exist inside data_manager.
 % - Process data ID (PDID)
-%        A string that uniquely represents (refers to) a type of process data.
-%        By convention, the PDIDs for elementary input/output PDIDs are a shortened version of
-%        dataset_ID+skeleton_version_str, e.g. "L2S_LFR-SURV-CWF-E_V01". Hardcoded values of these occur throughout the
-%        code as constants.
+%       A string that uniquely represents (refers to) a type of process data.
+%       By convention, the PDIDs for elementary input/output PDIDs are a shortened version of
+%       dataset_ID+skeleton_version_str, e.g. "L2S_LFR-SURV-CWF-E_V01". Hardcoded values of these occur throughout the
+%       code as constants.
+% - Processing function
+%       Function that accepts PDs as arguments and from them derive another PD.
 % - Pre-Demuxing-Calibration Data PreDCD)
 %       Generic data format that can represent all forms of input datasets before demuxing and calibration.
 %       Can use an arbitrary number of samples per record.
@@ -97,11 +111,10 @@
 %           .IBIAS2
 %           .IBIAS3
 % 
-% NOTE: So far (2016-10-07), every elementary input/output PDID is associated with exactly one specific dataset ID
-% (one-to-one), and the process data represents the data in a CDF with that specific dataset ID. In principle, in the
-% future, multiple elementary PDIDs could each be associated with the one and same dataset ID, if the different CDFs
-% (with the same dataset ID) fulfill different roles.
-% Example: Produce one output CDF covering the time intervals of data in input CDFs (all with the same dataset ID).
+% NOTE: So far (2016-11-11), every dataset ID is mapped (one-to-one) to a PDID. In principle, in the future, multiple
+% elementary PDVs could each be associated with the one and same dataset ID, if the different datasets (CDF files) (with
+% the same dataset ID) fulfill different roles. Example: Produce one output CDF covering the time intervals of data in
+% input CDFs (all with the same dataset ID).
 %
 %
 %
@@ -128,40 +141,6 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
 % PROPOSAL: Better name for "process data" (all together or individual variable), process data type, elementary input/output.
 %     PROPOSAL: "process data" (PD), "process data variables" = All process data in aggregate?
 %     PROPOSAL: "process data variable" (PDV).
-%
-% PROPOSAL: Different name for process data variable: data, datas, data_types, internal_data,
-%     data_network, data_chain, chain_data, process_data, processing_data.
-%     A one-letter name? Shortening? PD and PDID?
-% --
-% QUESTION: How handle master CDFs?
-%   NOTE: Code needs the fill/pad values for the final CDF format.
-%         (1) Can not work entirely with NaN internally since some MATLAB classes (non-floating point) do not have NaN.
-%         (2) In principle, there is only one NaN which can not both represent the pad value and the fill value.
-%   NOTE: There is ALWAYS exactly one master CDF per elementary output.
-%   NOTE: Code might want to use the master CDF zVariable sizes as input.
-%   --
-%   PROPOSAL: No master CDFs (no data, no pad/fill values) inside data_manager. Convert NaN to pad or fill value outside
-%             before writing to file.
-%       CON: Some MATLAB classes (non-floating point) type do not have NaN.
-%   PROPOSAL: Supply the master CDF with the call to get_process_data_recursively.
-%       CON: Won't work if it in turn requires other process data corresponding to another (output) CDF which requires
-%            its own master CDF.
-%   PROPOSAL: User gives the master CDF to the data_manager which stores it in instance variable (containers.Map for output process data).
-%   PROPOSAL: data_manager has access to CONSTANTS/function which retrieves master CDFs.
-%   PROPOSAL: Implement master CDFs as internal PDIDs?!!
-%      PRO: Does actually need the fill/pad values.
-%      CON: Elementary inputs should fit with S/W description and CLI parameters. Master CDFs will mess that up, or BICAS
-%           will have to distinguish between different types of elementary input process data.
-%      CON: Can just as well have the data_manager read master files itself.
-% 
-% QUESTION: Should this class AT ALL handle reading and writing CDF _FILES_? Should that not be done in some separate layer?!
-%    NOTE: Concerns input, output, and MASTER CDF files.
-%    NOTE: Need to handle conversion to/from fill/pad values which more closely tied to the CDF files.
-%    PROPOSAL: Only work with input/output data types that correspond tightly to CDF files.
-%       CON: Would work against the idea of combining code with the S/W descriptor info.
-%          CON: Not really. How?
-%       CON: Might need access to fill/pad values from the CDF templates for the final CDF files.
-%          CON: Could make conversions NaN-->pad/fill value outside of data_manager.
 % --
 % PROPOSAL: Move deriving DIFF_GAIN (from BIAS HK) from LFR & TDS code separately to combined code.
 %       In intermediate PDID?
@@ -197,21 +176,7 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
 %   NOTE: Mostly/only useful for elementary input PDIDs?
 %   PROPOSAL: Add field (sub-struct) "format_constants" in list of EIn PDIDs in constants?!!
 %       NOTE: Already has version string in list of EIn PDIDs.
-%
-% PROPOSAL: Functions assert_PDID (EIn,EOut,intermediate).
-% QUESTION: Which lists of EIn/EOut PDIDs should data_manager use for assertions? There is a difference between
-%   1) inputs/outputs listed in constants, and
-%   2) the PDIDs actually used in the currently defined S/W modes, and
-%   3) which data_manager can handle.
 %--
-% TODO: General functions for handling CDFs:
-%    -validating input/output CDFs: dataset IDs, (same variable sizes?, same nbr of
-%     records), obtain number of records(?!!).
-%    -setting Parents+Parent_version,
-%    -reading, finding, validating/checking (Skeleton_version) master CDF
-%
-% ~BUG: Documentation (beginning of file) does not mention dependencies varying due to sw_modes.
-%
 % NOTE: Both BIAS HK and LFR SURV CWF contain MUX data (only LFR has one timestamp per snapshot). True also for other input datasets?
 %#######################################################################################################################
 
@@ -220,7 +185,7 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
         % Initialized by constructor.
         process_data_variables = containers.Map('KeyType', 'char', 'ValueType', 'any');
 
-        INTERMEDIATE_PDIDs = {};
+        INTERMEDIATE_PDIDs = {'PreDCD', 'PostDCD'};
         ALL_PDIDs          = [];  % Initialized by constructor.
         
     end
@@ -256,57 +221,85 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
 
 
 
-        function process_data = get_process_data_recursively(obj, PDID, sw_mode_ID)
+        function processData = get_process_data_recursively(obj, pdid)
         % Get process data by deriving it from other process data recursively.
         %
-        % If it is already available (stored), return it, if not, derive it from other process data recursively.
-        % Should (indirectly) return error if can not return process data.
+        % Try in the following order
+        % 1) If the process data is already available (stored), then return it.
+        % 2) If there is a process function, try to derive process data from other process data recursively.
+        % 3) Return nothing.
+        %
+        % RETURN VALUE
+        % ============
+        % processData : Empty if data was not already available, or could not be derived recursively.        
+        %               ==> Empty is returnd for elementary input process data, or possibly for misconfigurations (error).
         
+
             % NOTE: This log message is particularly useful for following the recursive calls of this function.
             % sw_mode_ID comes first since that tends to make the log message values line up better.
-            irf.log('n', sprintf('Arguments=(sw_mode_ID=%s, PDID=%s)', sw_mode_ID, PDID))
+            irf.log('n', sprintf('Arguments (pdid=%s)', pdid))
 
-            process_data = obj.get_process_data_variable(PDID);
+            processData = obj.get_process_data_variable(pdid);
 
             %============================================
             % Check if process data is already available
             %============================================
-            if ~isempty(process_data)
+            if ~isempty(processData)
                 % CASE: Process data is already available.
-                return
-                % NOTE: This provides caching so that the same process data are not derived twice.
+                return   % NOTE: This provides caching so that the same process data are not derived twice.
             end
 
             % CASE: Process data is NOT already available.
-            
+
+            %=============================================================
+            % Obtain processing function, and the PDs which are necessary
+            %=============================================================
+            [inputPdidsStruct, processingFunc] = obj.get_processing_info(pdid);
+            % ASSERTION
+            if isempty(processingFunc)
+                processData = [];
+                return
+            end
+
             %==============================================
             % Obtain the input process datas - RECURSIVELY
             %==============================================
-            [input_PDIDs, processing_func] = obj.get_processing_info(PDID, sw_mode_ID);
-            % ASSERTION
-            if isempty(processing_func)
-                error('BICAS:data_manager:Assertion', 'Received no processing function necessary for deriving process data (PDID "%s").', PDID)
-            end
-            input_process_datas = struct();
-            fn_list = fieldnames(input_PDIDs);
-            for i = 1:length(fn_list)
-                fn = fn_list{i};
+            inputs = struct();
+            inputFieldsList = fieldnames(inputPdidsStruct);
+            
+            for iField = 1:length(inputFieldsList)
+                inputField = inputFieldsList{iField};
+                pdidList   = inputPdidsStruct.(inputField);
                 
-                % NOTE: Should return error if can not derive data.
-                input_process_datas.(fn) = obj.get_process_data_recursively(...
-                    input_PDIDs.(fn), ...
-                    sw_mode_ID);                         % NOTE: RECURSIVE CALL.
+                for iPdid = 1:length(pdidList)
+                
+                    % NOTE: Should return error if can not derive data.
+                    inputPd = obj.get_process_data_recursively(pdidList{iPdid});    % NOTE: RECURSIVE CALL.
+                    
+                    if ~isempty(inputPd)
+                        inputs.(inputField).PD   = inputPd;
+                        inputs.(inputField).PDID = pdidList{iPdid};
+                        break;
+                    end
+                end
+                
+                if ~isfield(inputs, inputField)
+                    error('BICAS:data_manager:Assertion:SWModeProcessing', ...
+                        'Can not derive necessary process data for pdid=%s, input field=%s', pdid, inputField)
+                end
+                    
             end
             
             %========================================================
             % Derive the actual process data from other process data
             %========================================================
-            process_data = processing_func(input_process_datas);
+            processData = processingFunc(inputs);
             
-            obj.set_process_data_variable(PDID, process_data)
+            obj.set_process_data_variable(pdid, processData)
             
             % NOTE: This log message is useful for being able to follow the recursive calls of this function.
-            irf.log('n', sprintf('End function (sw_mode_ID=%s, PDID=%s)', sw_mode_ID, PDID))
+            irf.log('n', sprintf('End function (pdid=%s)', pdid))
+            
         end
         
         
@@ -329,17 +322,19 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
             C_sw_mode = C_sw_mode{1};
 
             % Collect all associated elementary input PDIDs.
-            input_PDIDs = obj.get_elementary_input_PDIDs(C_sw_mode.output_PDIDs, C_sw_mode.ID);
+            %input_PDIDs = obj.get_elementary_input_PDIDs(C_sw_mode.output_PDIDs, C_sw_mode.ID);
 
             try
-                C_sw_mode.inputs = bicas.utils.select_structs(CONSTANTS.inputs,  'PDID', input_PDIDs);
+                C_sw_mode.inputs = bicas.utils.select_structs(CONSTANTS.inputs,  'PDID', C_sw_mode.input_PDIDs);
             catch exception
-                error('BICAS:Assertion:IllegalConfiguration', 'Can not identify all input PDIDs associated with S/W mode/CLI parameter "%s".', CLI_parameter)
+                error('BICAS:Assertion:IllegalConfiguration', ...
+                    'Can not identify all input PDIDs associated with S/W mode/CLI parameter "%s".', CLI_parameter)
             end
             try
                 C_sw_mode.outputs = bicas.utils.select_structs(CONSTANTS.outputs, 'PDID', C_sw_mode.output_PDIDs);
             catch exception
-                error('BICAS:Assertion:IllegalConfiguration', 'Can not identify all output PDIDs associated with S/W mode/CLI parameter "%s".', CLI_parameter)
+                error('BICAS:Assertion:IllegalConfiguration', ...
+                    'Can not identify all output PDIDs associated with S/W mode/CLI parameter "%s".', CLI_parameter)
             end
         end
         
@@ -430,65 +425,25 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
             
             obj.process_data_variables(PDID) = process_data;
         end
+
         
         
-        
-        function EI_PDIDs = get_elementary_input_PDIDs(obj, PDIDs, sw_mode_ID)
-        % get_elementary_input_PDIDs   Collect all the elementary input PDIDs needed to produce a given list of PDIDs.
-        %
-        % PDIDs    : Cell array of PDIDs (strings).
-        % EI_PDIDs : Cell array of EIn PDIDs (strings). Contains no duplicates (they are removed).
-        %
-        % NOTE: NOT recursive algorithm to speed it up by removing duplicates better (which is not necessary but looks nice).
-        
-            % NOTE: Function can be made PRIVATE?
-
-            % List where we collect PDIDs for which we have not yet identified the EIn PDIDs.
-            % It is repeatedly set to a new list as the algorithm goes along.            
-            undet_PDIDs = PDIDs;    % undet = undetermined.
-            
-            % List where we add elementary input PDIDs as the algorithm goes along.
-            EI_PDIDs = {};  
-            
-            while ~isempty(undet_PDIDs)
-                
-                undet_PDIDs_new = {};
-                for i = 1:numel(undet_PDIDs)   % For every PDID.
-                    undet_PDID = undet_PDIDs{i};
-
-                    [input_PDIDs_struct, ~] = obj.get_processing_info(undet_PDID, sw_mode_ID);
-                    input_PDIDs = struct2cell(input_PDIDs_struct);     % NOTE: Always column vector.
-
-                    if isempty(input_PDIDs)
-                        EI_PDIDs{end+1} = undet_PDID;
-                    else
-                        undet_PDIDs_new = [undet_PDIDs_new; input_PDIDs];   % Grow column vector.
-                    end
-                end
-                
-                undet_PDIDs = unique(undet_PDIDs_new);
-            end
-            
-            EI_PDIDs = unique(EI_PDIDs);
-        end   % get_elementary_input_PDIDs
-
-
-
-        function [input_PDIDs, processing_func] = get_processing_info(obj, output_PDID, sw_mode_ID)
+        % EXPERIMENTAL
+        function [input_PDIDs, processing_func] = get_processing_info(obj, output_PDID)
         % For every PDID, return meta-information needed to derive the actual process data.
         %
         % HIGH-LEVEL DESCRIPTION
         % ======================
         % This function effectively does two things:
-        % 1) (IMPORTANT) It defines/describes the dependencies between different PDIDs (an acyclic directed
-        %    graph, albeit dependent on S/W modes), by returning
+        % 1) (IMPORTANT) It defines/describes the dependencies between different PDIDs (an ~acyclic directed
+        %    graph), by returning
         %    a) the "processing" function needed to produce the process data, and
         %    b) the PDIDs needed by the processing function.
         % 2) (LESS IMPORTANT) It implicitly decides how to informally distinguish the input process datas by giving them
         %    suitable struct field names which the processing functions recognize them with.
         %
         % The method itself is NOT recursive but it is designed so that other code can recurse over
-        % the implicit "acyclic graph" defined by it.
+        % the implicit "~acyclic graph" defined by it.
         % Other code can use this method to two things recursively:
         % (1) Derive process data.
         % (2) Derive all the necessary elementary input PDIDs needed to produce an elementary output
@@ -500,32 +455,21 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
         % ==========================
         % PDID        : The PDID (string) for the PD that should be produced.
         % input_PDIDs :
-        %     Struct with fields set to the necessary PDIDs. The names of the fields are "human-readable".
-        %     Elementary input PDIDs yield an empty struct.
+        %     Struct where every field is set to a cell array of PDIDs. In every such cell array, only one of its
+        %     PDIDs/PDs is necessary for the processing function. The field names of the fields are "human-readable".
+        %     NOTE: Elementary input PDIDs yield an empty struct (no field names).
         % processing_func :
-        %     Pointer to function that can derive the process data from other process data.
-        %         process_data = processing_func(input_process_datas)
-        %     The function accepts exactly one argument: a struct analogous to input_PDIDs but with fields set to
-        %     the corresponding process DATA instead.
-        %     If there is no such function (i.e. output_PDID is an EIn-PDID), then returns empty.
-        % 
-        % 
-        %
-        % NOTE: Even a reasonable implementation should NOT check for the validity of the combination of sw_mode_ID and
-        % process_data in all cases. That check is done when (1) combining S/W modes with elementary output process data
-        % types in constants, and (2) in the function here, when a PDID can be derived differently
-        % depending on S/W mode.
-        
-            %===============================================================================================================        
-            % PROPOSAL: Should check PDID in addition to switch statement.
-            % PROPOSAL: Reverse the switch statements for S/W mode and PDIDs. S/W mode outermost.
-            %    CON: Would in total give more checks (switch), longer code.(?) Can not omit the check for cases with
-            %    only one mode.
-            % PROBLEM: Do not want to include to much dependence on modes.
-            %===============================================================================================================
+        %     Pointer to a function that can derive process data (for output_PDID) from other process data (for
+        %     input_PDIDs).
+        %         process_data = processing_func(inputs)
+        %         ARGUMENTS:
+        %             inputs : A struct 
+        %                .<field>     : The same field names as input_PDIDs (returned by get_processing_info).
+        %                     .PD     : Process data.
+        %                     .PDID   : A single PDID (describing the sister field .PD).
+        %     If there is no such function (i.e. output_PDID is an EIn-PDID), then empty.
             
-            global CONSTANTS            
-            CONSTANTS.assert_sw_mode_ID(sw_mode_ID);
+            %global CONSTANTS         
             obj.assert_PDID(output_PDID)
             
             % Assign value used for the case of elementary INPUT PDID (no input PDs <==> no fields).
@@ -545,7 +489,8 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
             
 
 
-            use_generic_processing_func = 0;   % Default value;
+            process_PostDCD_to_specific_EO_PD = @(inputs) (bicas.data_manager.process_PostDCD_to_EO_PD(inputs, output_PDID));
+            %use_generic_processing_func = 0;   % Default value;
             switch(output_PDID)
                 %=====================================================
                 % Elementary INPUT PDIDs : Return empty default value
@@ -567,6 +512,30 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
                 case 'L2R_TDS-LFM-CWF_V01'                    
                 case 'L2R_TDS-LFM-RSWF_V01'
                 case 'L2R_TDS-LFM-RSWF_V02'
+                    
+                %====================
+                % Intermediary PDIDs
+                %====================
+                
+                case 'PreDCD'
+                    input_PDIDs.HK_cdf = {'HK_BIA_V01'};
+                    input_PDIDs.SCI_cdf = {...
+                    'L2R_LFR-SBM1-CWF_V01', ...    % LFR    
+                    'L2R_LFR-SBM1-CWF_V02', ...
+                    'L2R_LFR-SBM2-CWF_V01', ...
+                    'L2R_LFR-SBM2-CWF_V02', ...
+                    'L2R_LFR-SURV-CWF_V01', ...
+                    'L2R_LFR-SURV-CWF_V02', ...
+                    'L2R_LFR-SURV-SWF_V01', ...
+                    'L2R_LFR-SURV-SWF_V02', ...
+                    'L2R_TDS-LFM-CWF_V01', ...     % TDS
+                    'L2R_TDS-LFM-RSWF_V01', ...
+                    'L2R_TDS-LFM-RSWF_V02'};
+                    processing_func = @bicas.data_manager.process_LFR_to_PreDCD;
+                    
+                case 'PostDCD'
+                    input_PDIDs.preDCD = {'PreDCD'};
+                    processing_func = @bicas.data_manager.demux_calib;
 
                 %=========================
                 % Elementary OUTPUT PDIDs
@@ -575,41 +544,18 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
                 %-----
                 % LFR
                 %-----
-                case 'L2S_LFR-SBM1-CWF-E_V02' ; use_generic_processing_func = 1;
-                    input_PDIDs.HK_cdf  = 'HK_BIA_V01';
-                    input_PDIDs.SCI_cdf = 'L2R_LFR-SBM1-CWF_V01';
-                case 'L2S_LFR-SBM2-CWF-E_V02' ; use_generic_processing_func = 1;
-                    input_PDIDs.HK_cdf  = 'HK_BIA_V01';
-                    input_PDIDs.SCI_cdf = 'L2R_LFR-SBM2-CWF_V01';
-                case 'L2S_LFR-SURV-CWF-E_V02' ; use_generic_processing_func = 1;
-                    input_PDIDs.HK_cdf  = 'HK_BIA_V01';
-                    switch(sw_mode_ID)
-                        case 'LFR-SURV-CWF-E_V01-V02' ; input_PDIDs.SCI_cdf = 'L2R_LFR-SURV-CWF_V01';
-                        case 'LFR-SURV-CWF-E_V02-V02' ; input_PDIDs.SCI_cdf = 'L2R_LFR-SURV-CWF_V02';
-                        otherwise                     ; error_bad_sw_mode(output_PDID, sw_mode_ID)
-                    end
-                case 'L2S_LFR-SURV-SWF-E_V02' ; use_generic_processing_func = 1;
-                    input_PDIDs.HK_cdf  = 'HK_BIA_V01';
-                    switch(sw_mode_ID)
-                        case 'LFR-SURV-SWF-E_V01-V02' ; input_PDIDs.SCI_cdf = 'L2R_LFR-SURV-SWF_V01';
-                        case 'LFR-SURV-SWF-E_V02-V02' ; input_PDIDs.SCI_cdf = 'L2R_LFR-SURV-SWF_V02';
-                        otherwise                     ; error_bad_sw_mode(output_PDID, sw_mode_ID)
-                    end
+                case {'L2S_LFR-SBM1-CWF-E_V02', ...
+                      'L2S_LFR-SBM2-CWF-E_V02', ...
+                      'L2S_LFR-SURV-CWF-E_V02', ...
+                      'L2S_LFR-SURV-SWF-E_V02'}
+                    input_PDIDs.postDCD = {'PostDCD'};
+                    processing_func     = process_PostDCD_to_specific_EO_PD;
 
                 %-----
                 % TDS
                 %-----
-                case 'L2S_TDS-LFM-CWF-E_V02' ; use_generic_processing_func = 1;
-                   input_PDIDs.HK_cdf  = 'HK_BIA_V01';
-                   input_PDIDs.SCI_cdf = 'L2R_TDS-LFM-CWF_V01';
-
-                case 'L2S_TDS-LFM-RSWF-E_V02' ; use_generic_processing_func = 1;
-                    input_PDIDs.HK_cdf  = 'HK_BIA_V01';
-                    switch(sw_mode_ID)
-                        case 'TDS-LFM-RSWF-E_V01-V02' ; input_PDIDs.SCI_cdf = 'L2R_TDS-LFM-RSWF_V01';
-                        case 'TDS-LFM-RSWF-E_V02-V02' ; input_PDIDs.SCI_cdf = 'L2R_TDS-LFM-RSWF_V02';
-                        otherwise                     ; error_bad_sw_mode(output_PDID, sw_mode_ID)
-                    end
+                %case 'L2S_TDS-LFM-CWF-E_V02'
+                %case 'L2S_TDS-LFM-RSWF-E_V02'                    
 
                 %===========================================
                 % OTHERWISE: Has no implementation for PDID
@@ -621,31 +567,8 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
                         'This function has no implementation for this PDID, "%s".', output_PDID)
             end   % switch
 
-
-
-            if use_generic_processing_func
-                % EXPERIMENTAL
-                % One processing function can so far handle all processing, but it might not always be so.
-                % The assignment of processing function can therefore be put outside the switch-case statement (for now).
-                % NOTE: The function value is NOT VALID FOR elementary input PDIDs.
-                % NOTE: Can handle processing all combinations of LFR/TDS input-output.  
-                processing_func = @(input_PDs) (bicas.data_manager.process_input_to_output(...
-                    input_PDs, ...   % The needed input process data (PD). Not set here.
-                    input_PDIDs, ...  % The needed PDIDs, describing the contents of the fields in "input_PDs". Necessary for knowing what data one has to work with.
-                    output_PDID) ...
-                );
-            end
-            
-            
-            
-            %-----------------------------------------------------------------------------------------------------------
-            % NOTE: Nested function
-            function error_bad_sw_mode(PDID, sw_mode_ID)
-                error('BICAS:data_manager:Assertion:IllegalArgument:NoSuchSWMode', ...
-                    'Can not interpret S/W mode ID (%s) for this particular PDID (%s).', sw_mode_ID, PDID)
-            end
-            %-----------------------------------------------------------------------------------------------------------
         end   % get_processing_info
+       
         
         
         
@@ -657,70 +580,22 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
 
     
     
-    methods(Static, Access=private)
+    %methods(Static, Access=private)
+    methods(Static, Access=public)
 
-        function output_PD = process_input_to_output(input_PDs, input_PDIDs, output_PDID)
-        % Function that in practice can handle all derivations to date (2016-10-18), but it is not obvious that this
-        % will be the case forever. In the future, it might only handle a subset.
-        %
-        % input_PDs   : struct. Each field has process data for one PDID.
-        % input_PDIDs : struct. Each field has the corresponding PDID for the fields of input_PDs.
-        % output_PDID : The PDID that shall be produced.
-            
-            switch(input_PDIDs.SCI_cdf)
-                    
-                %=====
-                % LFR
-                %=====
-                
-                % All LFR dataset IDs.
-                case {  'L2R_LFR-SBM1-CWF_V01', ...
-                        'L2R_LFR-SBM2-CWF_V01', ...
-                        'L2R_LFR-SURV-CWF_V01', ...
-                        'L2R_LFR-SURV-SWF_V01', ...
-                        ...
-                        'L2R_LFR-SBM1-CWF_V02', ...
-                        'L2R_LFR-SBM2-CWF_V02', ...
-                        'L2R_LFR-SURV-CWF_V02', ...
-                        'L2R_LFR-SURV-SWF_V02'}
-                    preDCD = bicas.data_manager.process_LFR_to_PreDCD(input_PDs, input_PDIDs);
-
-                %=====
-                % TDS
-                %=====
-                
-                % sample/record
-                case 'L2R_TDS-LFM-CWF_V01'
-                case 'L2R_TDS-LFM-RSWF_V01'
-                    
-                % snapshot/record
-                case 'L2R_TDS-LFM-RSWF_V02'
-                    
-                otherwise
-                    error('BICAS:data_manager:Assertion:IllegalArgument', 'Illegal input_PDIDs.SCI_cdf="%s"', input_PDIDs.SCI_cdf)
-            end
-
-            postDCD = bicas.data_manager.demux_calib(preDCD);
-            output_PD = bicas.data_manager.process_PostDCD_to_EO_PD(postDCD, output_PDID);
-
-            %error('BICAS:data_manager:OperationNotImplemented', 'Function not finished yet.')            
-        end
-        
-        
-        
-        function preDCD = process_LFR_to_PreDCD(input_PDs, input_PDIDs)
-        % Convert LFR CDF data (PDs) to PreDCD.
+        function preDCD = process_LFR_to_PreDCD(inputs)
+        % Processing function. Convert LFR CDF data (PDs) to PreDCD.
         
             % PROBLEM: Hardcoded CDF data types (MATLAB classes).
 
-            SCI = input_PDs.SCI_cdf;
-            HK  = input_PDs.HK_cdf;
+            SCI = inputs.SCI_cdf.PD;
+            HK  = inputs.HK_cdf.PD;
 
             %===============================================================
             % Define variables LFR_V, LFR_E corresponding to zVars which
             % with different names (but not meaning) in different datasets.
             %===============================================================
-            switch(input_PDIDs.SCI_cdf)
+            switch(inputs.SCI_cdf.PDID)
                 case {  'L2R_LFR-SBM1-CWF_V01', ...
                         'L2R_LFR-SBM2-CWF_V01', ...
                         'L2R_LFR-SURV-CWF_V01', ...
@@ -744,7 +619,7 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
             % (which exists only for some LFR datasets).
             %========================================================================================
             N_records = size(LFR_V, 1);
-            switch(input_PDIDs.SCI_cdf)
+            switch(inputs.SCI_cdf.PDID)
                 case {  'L2R_LFR-SBM1-CWF_V01', ...
                         'L2R_LFR-SBM1-CWF_V02'}
                     LFR_FREQ = ones(N_records, 1) * 1;   % Always value "1".
@@ -758,7 +633,7 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
                     LFR_FREQ = SCI.FREQ;
                 otherwise
                     error('BICAS:data_manager:Assertion:ConfigurationBug', ...
-                        'Can not handle input_PDIDs.SCI_cdf="%s"', input_PDIDs.SCI_cdf)
+                        'Can not handle inputs.SCI_cdf.PDID="%s"', inputs.SCI_cdf.PDID)
             end
             
             Rx = bicas.dm_utils.get_LFR_Rx( SCI.R0, SCI.R1, SCI.R2, LFR_FREQ );   % NOTE: Function can handles "R3".
@@ -832,7 +707,11 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
             bicas.dm_utils.assert_unvaried_N_rows(preDCD);
             bicas.dm_utils.assert_unvaried_N_rows(preDCD.demuxer_input);
 
-            % Misc. log messages.
+            
+            
+            %====================
+            % Misc. log messages
+            %====================
             % PROPOSAL: PDID, dataset ID.
             % PROPOSAL: Move to demux_calib.
             %    NOTE: Must have t_* variables.
@@ -851,8 +730,10 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
 
 
 
-        function postDCD = demux_calib(preDCD)
-        % Convert PreDCD to PostDCD, i.e. demux and calibrate data.
+        function postDCD = demux_calib(inputs)
+        % Processing function. Convert PreDCD to PostDCD, i.e. demux and calibrate data.
+        
+            preDCD = inputs.preDCD.PD;
                     
             % Log messages
             for f = fieldnames(preDCD.demuxer_input)'
@@ -881,13 +762,13 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
         
 
         
-        function EO_PD = process_PostDCD_to_EO_PD(postDCD, EO_PDID)
-        % Convert PostDCD to any one of several similar dataset PDIDs.
+        function EO_PD = process_PostDCD_to_EO_PD(inputs, EO_PDID)
+        % Processing function. Convert PostDCD to any one of several similar dataset PDs.
         
-            D = postDCD;
+            postDCD = inputs.postDCD.PD;
             EO_PD = [];
             
-            N_smpls_rec = size(D.demuxer_output.V1, 2);   % Samples per record.
+            N_smpls_rec = size(postDCD.demuxer_output.V1, 2);   % Samples per record.
             
             switch(EO_PDID)
                 case  {'L2S_LFR-SBM1-CWF-E_V02', ...
@@ -900,20 +781,20 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
                     % Convert 1 snapshot/record --> 1 sample/record (if not already done)
                     %=====================================================================
                     EO_PD.ACQUISITION_TIME = bicas.dm_utils.ACQUISITION_TIME___expand_to_sequences(...
-                        D.ACQUISITION_TIME, ...
+                        postDCD.ACQUISITION_TIME, ...
                         N_smpls_rec, ...
-                        D.freq  );
+                        postDCD.freq  );
                     EO_PD.Epoch = bicas.dm_utils.tt2000___expand_to_sequences( ...
-                        D.Epoch, ...
+                        postDCD.Epoch, ...
                         N_smpls_rec, ...
-                        D.freq  );
-                    for fn = fieldnames(D.demuxer_output)'
-                        D.demuxer_output.(fn{1}) = bicas.dm_utils.reshape_to_1_sample_per_record( ...
-                            D.demuxer_output.(fn{1}) );
+                        postDCD.freq  );
+                    for fn = fieldnames(postDCD.demuxer_output)'
+                        postDCD.demuxer_output.(fn{1}) = bicas.dm_utils.reshape_to_1_sample_per_record( ...
+                            postDCD.demuxer_output.(fn{1}) );
                     end
-                    EO_PD.V   = [D.demuxer_output.V1,     D.demuxer_output.V2,     D.demuxer_output.V3];
-                    EO_PD.E   = [D.demuxer_output.V12,    D.demuxer_output.V13,    D.demuxer_output.V23];
-                    EO_PD.EAC = [D.demuxer_output.V12_AC, D.demuxer_output.V13_AC, D.demuxer_output.V23_AC];
+                    EO_PD.V   = [postDCD.demuxer_output.V1,     postDCD.demuxer_output.V2,     postDCD.demuxer_output.V3];
+                    EO_PD.E   = [postDCD.demuxer_output.V12,    postDCD.demuxer_output.V13,    postDCD.demuxer_output.V23];
+                    EO_PD.EAC = [postDCD.demuxer_output.V12_AC, postDCD.demuxer_output.V13_AC, postDCD.demuxer_output.V23_AC];
                     EO_PD.IBIAS1 = bicas.dm_utils.reshape_to_1_sample_per_record( postDCD.IBIAS1 );
                     EO_PD.IBIAS2 = bicas.dm_utils.reshape_to_1_sample_per_record( postDCD.IBIAS2 );
                     EO_PD.IBIAS3 = bicas.dm_utils.reshape_to_1_sample_per_record( postDCD.IBIAS3 );
@@ -924,18 +805,18 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
                         error('BICAS:data_manager:Assertion:IllegalArgument', 'Number of samples per CDF record is not 2048.')
                     end
                     
-                    EO_PD.Epoch            = D.Epoch;
-                    EO_PD.ACQUISITION_TIME = D.ACQUISITION_TIME;                    
-                    EO_PD.F_SAMPLE         = D.freq;
-                    EO_PD.V(:,:,1)   = D.demuxer_output.V1;
-                    EO_PD.V(:,:,2)   = D.demuxer_output.V2;
-                    EO_PD.V(:,:,3)   = D.demuxer_output.V3;
-                    EO_PD.E(:,:,1)   = D.demuxer_output.V12;
-                    EO_PD.E(:,:,2)   = D.demuxer_output.V13;
-                    EO_PD.E(:,:,3)   = D.demuxer_output.V23;
-                    EO_PD.EAC(:,:,1) = D.demuxer_output.V12_AC;
-                    EO_PD.EAC(:,:,2) = D.demuxer_output.V13_AC;
-                    EO_PD.EAC(:,:,3) = D.demuxer_output.V23_AC;
+                    EO_PD.Epoch            = postDCD.Epoch;
+                    EO_PD.ACQUISITION_TIME = postDCD.ACQUISITION_TIME;                    
+                    EO_PD.F_SAMPLE         = postDCD.freq;
+                    EO_PD.V(:,:,1)   = postDCD.demuxer_output.V1;
+                    EO_PD.V(:,:,2)   = postDCD.demuxer_output.V2;
+                    EO_PD.V(:,:,3)   = postDCD.demuxer_output.V3;
+                    EO_PD.E(:,:,1)   = postDCD.demuxer_output.V12;
+                    EO_PD.E(:,:,2)   = postDCD.demuxer_output.V13;
+                    EO_PD.E(:,:,3)   = postDCD.demuxer_output.V23;
+                    EO_PD.EAC(:,:,1) = postDCD.demuxer_output.V12_AC;
+                    EO_PD.EAC(:,:,2) = postDCD.demuxer_output.V13_AC;
+                    EO_PD.EAC(:,:,3) = postDCD.demuxer_output.V23_AC;
                     EO_PD.IBIAS1 = postDCD.IBIAS1;
                     EO_PD.IBIAS2 = postDCD.IBIAS2;
                     EO_PD.IBIAS3 = postDCD.IBIAS3;

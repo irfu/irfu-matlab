@@ -33,9 +33,11 @@ function execute_sw_mode(DataManager, swModeCliParameter, InputFilePathMap, outp
 %    NOTE: Need S/W mode.
 %
 % PROPOSAL: Verify output zVariables against master CDF zVariable dimensions (accessible with dataobj, even for zero records).
+%   PROPOSAL: function matchesMaster(DataObj, MasterDataobj)
+%       PRO: Want to use dataobj to avoid reading file (input dataset) twice.
 %
 % QUESTION: What should be the relationship between data manager and S/W modes really?
-% Should data manager check anything?
+%           Should data manager check anything?
 %
 % Separate functions for converting CDF file<-->PDV?
 %   NOTE: May be different procedures (GlobalAttributes etc.) for all post-calibration datasets.
@@ -128,7 +130,7 @@ for iOutputCdf = 1:length(C_sw_mode.outputs)
     C_output = C_sw_mode.outputs{iOutputCdf};
     
     eOutPdid = C_output.PDID;
-    ProcessData = DataManager.get_process_data_recursively(eOutPdid, C_sw_mode.ID);
+    ProcessData = DataManager.get_process_data_recursively(eOutPdid);
     
     masterCdfPath = bicas.get_master_CDF_path(C_output.dataset_ID, C_output.skeleton_version_str);
 
