@@ -26,7 +26,7 @@
 %   might be wrong. Should ideally be run on the exact input datasets (~EIn PDs) used to produce a specific output
 %   dataset.
 %
-function execute_sw_mode(swModeCliParameter, InputFilePathMap, outputDir)
+function execute_sw_mode(DataManager, swModeCliParameter, InputFilePathMap, outputDir)
 %
 % QUESTION: How verify dataset ID and dataset version against constants?
 %    NOTE: Need to read CDF first.
@@ -95,10 +95,6 @@ end
 
 
 
-DataManager = bicas.data_manager();
-
-
-
 %===========================================================================
 % Give all input CDF files (from the CLI argument list) to the data manager
 %===========================================================================
@@ -120,7 +116,7 @@ end
 
 
 globalAttributesSubset = derive_output_dataset_GlobalAttributes(GlobalAttributesCellArray);
-C_sw_mode = bicas.data_manager.get_C_sw_mode_full(swModeCliParameter);
+C_sw_mode = DataManager.get_C_sw_mode_full(swModeCliParameter);
 
 
 

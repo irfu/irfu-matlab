@@ -157,8 +157,9 @@ try
         %==============================================
         % CASE: Should be a S/W mode (error otherwise)
         %==============================================
+        DataManager = bicas.data_manager();
         %try
-            C_sw_mode = bicas.data_manager.get_C_sw_mode_full(cliArgumentsArray{1});
+            C_sw_mode = DataManager.get_C_sw_mode_full(cliArgumentsArray{1});
         %catch exception
             % NOTE: The message is slightly inaccurate since it assumes that the first argument is a S/W mode.
             % Argument "--version" etc. would have worked too.
@@ -206,7 +207,7 @@ try
         %
         % CHOOSE IMPLEMENTATION TO USE.
         %===============================================================
-        bicas.execute_sw_mode(C_sw_mode.CLI_parameter, InputFilesMap, outputDir)   % The intended real implementation
+        bicas.execute_sw_mode(DataManager, C_sw_mode.CLI_parameter, InputFilesMap, outputDir)   % The intended real implementation
         %execute_sw_mode_TEST_IMPLEMENTATION(C_sw_mode.CLI_parameter, outputDir)   % IMPLEMENTATION FOR TESTING. OUTPUTS NONSENSE CDFs.
         
     end

@@ -289,24 +289,53 @@ classdef constants < handle
 
         % Any code for double-checking the validity of hardcoded constants.
         function validate(obj)
+            
+            % The RCS ICD, iss2rev2, section 5.3 seems (ambiguous) to imply this regex for CLI S/W mode parameters.
+            SW_MODE_CLI_PARAMETER_REGEX = '^[A-Za-z][\w-]+$';   % NOTE: Only one backslash in MATLAB regex as opposed to in the RCS ICD.
 
+            % The RCS ICD, iss2rev2, section 3.2.3 only permits these characters (and only lowercase).
+            INPUT_CLI_PARAMETER_NAME_PERMITTED_CHARACTERS = 'abcdefghijklmnopqrstuvxyz0123456789_';
+            
             %==========================
             % Iterate over input types
             %==========================
-            % The RCS ICD, iss2rev2, section 3.2.3 only permits these characters (and only lowercase).
-            INPUT_CLI_PARAMETER_NAME_PERMITTED_CHARACTERS = 'abcdefghijklmnopqrstuvxyz0123456789_';
             for i = 1:length(obj.inputs)
                 CLI_parameter = obj.inputs{i}.CLI_parameter;
                 
                 % NOTE: Implicitly checks that CLI_parameter does NOT begin with "--".
                 disallowed_chars = setdiff(CLI_parameter, INPUT_CLI_PARAMETER_NAME_PERMITTED_CHARACTERS);
                 if ~isempty(disallowed_chars)
-                    error('BICAS:Assertion:IllegalConfiguration', 'Constants value contains illegal character(s). This indicates a pure configuration bug (hard-coded).');
+                    error('BICAS:constants:Assertion:IllegalConfiguration', ...
+                        'Constants value contains illegal character(s). This indicates a pure configuration bug (hard-coded).');
                 end
-            end            
+            end
             
             bicas.utils.assert_strings_unique(obj.EI_PDIDs)
-            bicas.utils.assert_strings_unique(obj.EO_PDIDs)
+            bicas.utils.assert_strings_unique(obj.EO_PDIDs)            
+            
+            sw_mode_CLI_parameters = cellfun(@(s) ({s.CLI_parameter}), obj.sw_modes);
+            sw_mode_IDs            = cellfun(@(s) ({s.ID           }), obj.sw_modes);
+            bicas.utils.assert_strings_unique(sw_mode_CLI_parameters);
+            bicas.utils.assert_strings_unique(sw_mode_IDs);
+            
+            % ASSERTION: CONSTANTS.sw_modes{i}.CLI_parameter matches validation regexp.
+            for i = 1:length(obj.sw_modes)
+                CLI_parameter = obj.sw_modes{i}.CLI_parameter;
+                
+                if isempty(regexp(CLI_parameter, SW_MODE_CLI_PARAMETER_REGEX, 'once'))
+                    error('BICAS:constants:Assertion:IllegalConfiguration', ...
+                        'Illegal S/W mode CLI parameter definition. This indicates a pure (hard-coded) configuration bug.');
+                end
+            end
+            
+            % NOTE: Check that combinations of dataset_ID and skeleton_version_str are unique.
+            % Implemented by merging strings and checking for unique strings.
+            % Is strictly speaking very slightly unsafe; could get false negatives.
+            dataset_ID_version_list = cellfun( ...
+                @(x) ({[x.dataset_ID, '_V', x.skeleton_version_str]}), ...
+                [obj.outputs, obj.inputs]   );
+            bicas.utils.assert_strings_unique(dataset_ID_version_list)
+            
         end
 
     end   % methods(Access=private)
