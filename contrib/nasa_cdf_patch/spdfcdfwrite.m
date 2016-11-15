@@ -8,14 +8,15 @@ function spdfcdfwrite(filename, varcell, varargin)
 %   for a variable, there are two ways of doing it. One way is putting the
 %   variable values in a cell array, where each element in the cell array
 %   represents a record. Another way, the better one, is to place the
-%   values in a vector (single or multi-dimensional) with the option
+%   values in an array (single or multi-dimensional) with the option
 %   'RecordBound' being specified.  
 %
 %   SPDFCDFWRITE(..., 'PadValues', PADVALS) writes out pad values for given
-%   variable names.  PADVALS is a cell array of pairs of a variable name (a
-%   string) and a corresponding pad value.  Pad values are the default value
-%   associated with the variable when an out-of-bounds record is accessed.
-%   Variable names that appear in PADVALS must be in VARIABLELIST.
+%   variable names.  PADVALS is a cell array of ordered pairs, which
+%   are comprised of a variable name (a string) and a corresponding 
+%   pad value.  Pad values are the default value associated with the
+%   variable when an out-of-bounds record is accessed.  Variable names
+%   that appear in PADVALS must appear in VARIABLELIST.
 %
 %   SPDFCDFWRITE(..., 'GlobalAttributes', GATTRIB, ...) writes the structure
 %   GATTRIB as global meta-data for the CDF.  Each field of the
@@ -86,12 +87,12 @@ function spdfcdfwrite(filename, varcell, varargin)
 %   SPDFCDFWRITE(..., 'RecordBound', RECBNDVARS) specifies data values in arrays
 %   (1-D or multi-dimensional) are to be written into "records" for the given
 %   variable. RECBNDVARS is a cell array of variable names. The M-by-N array
-%   data will create M rows (records), while each row having N elements. For an
-%   M-by-1 (column) or 1-by-M (row) vector, it will create M records, each 
-%   being a scarlar. For a 3-D array M-by-N-by-R, R records will be written,
-%   and each record with M-by-N elements. Without this option, an array of 
-%   M-by-N will be written into a single record of 2-dimensions. See sample
-%   codes for its usage.
+%   data will create M rows (records), while each row having N elements. For
+%   examples, 5-by-1 array will create five (5) scalar records and 1-by-5 array
+%   will write out just one (1) record with 5 elements. For 3-D array of
+%   M-by-N-by-R, R records will be written, and each record with M-by-N
+%   elements. Without this option, array of M-by-N will be written into a single
+%   record of 2-dimensions. See sample codes for its usage.
 %
 %   SPDFCDFWRITE(..., 'Vardatatypes', VARDATATYPE) specifies the variable's
 %   data types. By default, this module uses each variable's passed data to
@@ -152,10 +153,9 @@ function spdfcdfwrite(filename, varcell, varargin)
 %   preferable). 
 %
 %   SPDFCDFWRITE(..., 'VarSparse', SPARSEVARS) specifies which variables have
-%   sparse records. SPARSEVARS is a cell array of prderly pairs of a variable
-%   name and its respective value. The valid value should be 'full',
-%   'Sparse(padded)' or 'Sparse(previous)' (the 6th column from Variables field
-%   from spdfcdfinfo).
+%   sparse records. SPARSEVARS is a cell array of variable names and their
+%   respective values. The valid values should be 'full', 'Sparse(padded)' or
+%   'Sparse(previous)' (the 6th column from Variables field from spdfcdfinfo).
 %   Value 'full' is the default if a variable does not have the sparse records.
 %   For examples, to set the sparse record for 'var1' and 'var2' with 'full'
 %   and 'Sparse(previous)', SPARSEVARS should be specified as {'var1', 'full',
@@ -171,7 +171,7 @@ function spdfcdfwrite(filename, varcell, varargin)
 %   number. A large blocking factor (up to a variable's maximum record number)
 %   can make access to the full variable data more efficient as less blocks
 %   are involved (thus less I/Os). It can also make the file less fragmented.
-%   BFVARS is a cell array of pairs of variable name and its respective value.
+%   BFVARS is a cell array of variable names and their respective values.
 %   The value should be a numeric.
 %
 %   If there is a master CDF that has all the same variable info as the new CDF,
@@ -226,18 +226,6 @@ function spdfcdfwrite(filename, varcell, varargin)
 %   CDF will automatically fill the value with the last entry date in the leap
 %   second table if this option is not specified. 
 %
-%   SPDFCDFWRITE(..., 'Singleton', VARS, ...) indicates whether to keep the
-%   singleton dimension(s) passed in from the multi-dimensional data. VARS is
-%   a cell array of variable names, indicating each variable's singleton 
-%   dimension(s) is to be kept.
-%   For example, variable with data dimensions like 10x1x100 will be written
-%   as 2-dimensions (10x1) for 100 records if the record bound is specified.
-%   For a row (1-by-M) or column (M-by-1) vector, the variable data will be
-%   written as 2-dimension as is, unless the recordbound is specified.  
-%   The default setting is to have all singleton dimension(s) removed.
-%   The above 10x1x100 variable will be written as 1-dimension
-%   (with 10 elements).  
-%
 %   Notes:
 %
 %     SPDFCDFWRITE creates temporary files when writing CDF files.  Both the
@@ -269,11 +257,11 @@ function spdfcdfwrite(filename, varcell, varargin)
 %                'VariableAttributes', varAttribStruct);
 %
 %   % Write out a file 'example.cdf' containing variables 'Longitude'
-%   % and 'Latitude' with the variable 'Longitude' being a Record-bound
+%   % and 'Latitude' with the variable 'Latitude' being a Record-bound
 %   % (361 records to be written)::
 %
-%   spdfcdfwrite('example', {'Longitude', (0:360), 'Latitude', 10:20}, ...
-%                'RecordBound', {'Longitude'});
+%   spdfcdfwrite('example', {'Longitude', (0:360)', 'Latitude', 10:20}, ...
+%                'RecordBound', {'Latitude'});
 %
 %   % These two commands should write out the data values identically:
 %      SPDFCDFWRITE('example', {'Epoch', num2cell(1:100)}, ...
@@ -294,8 +282,8 @@ function spdfcdfwrite(filename, varcell, varargin)
 %
 %   % Write out a file 'example.cdf', with multiple rows of time series data.
 %   % Each row has a time and a sampled data, both being scalar. 
-%   % The following sample shows 100 records (rows): epoch is of CDF_EPOCH 
-%   % data type and Samples of CDF_DOUBLE. 
+%   % The following sample shows 100 records (rows): the time being of
+%   % CDF_EPOCH data type and sampled value as double. 
 %   % The epoch starts from 2010-01-01T00:00:00.000 with 1 second stride.
 %   % Each sampled value starts from 0.0, with 5.0 stride. 
 %
@@ -560,7 +548,7 @@ spdfcdfwritec(filename, args.VarNames, args.VarVals, args.PadVals, ...
           args.EpochIsCDFEpoch, args.TT2000, args.ConvertDatenum2, ...
           args.EpochTp, args.VarCompVals, args.SparseVarVals, ...
           args.BFVarVals, args.DTVarVals, args.MD5, args.CDFComp, ...
-          args.CDFleapsecondlastupdated, args.SingletonVars);
+          args.CDFleapsecondlastupdated);
 
 %%%
 %%% Function parse_inputs
@@ -639,7 +627,6 @@ args.VarCompVals = cell(1,length(args.VarNames));
 args.SparseVarVals = cell(1,length(args.VarNames));
 args.BFVarVals = cell(1,length(args.VarNames));
 args.DTVarVals = cell(1,length(args.VarNames));
-args.SingletonVars = cell(1,length(args.VarNames));
 
 % Parse arguments based on their number.
 if (nargin > 0)
@@ -662,8 +649,7 @@ if (nargin > 0)
                     'tt2000'
                     'checksum'
                     'cdfleapsecondlastupdated'
-                    'epochtype'
-                    'singleton'};
+                    'epochtype'};
     
     % For each pair
     for k = 1:2:length(varargin)
@@ -720,7 +706,7 @@ if (nargin > 0)
                end
                if isnumeric(padVal) || ischar(padVal) || isa(padVal,'cdfepoch') || ...
                   isa(padVal,'cdftt2000')
-                   args.PadVals{strcmp(args.VarNames,vars{i})} = padVal;
+                   args.PadVals{strcmp(args.VarNames,vars{i})} = padVals{i};
                else
                    exception.msg = 'Pad values must be numbers, strings, cdfepoch or cdftt2000.';
                    exception.id = 'MATLAB:spdfcdfwrite:badPadValue';
@@ -1105,23 +1091,6 @@ if (nargin > 0)
                else
                    msg = 'TT2000 conversion value must be a scalar logical.';
                end
-           end
-        case 'singleton'
-           if (k == length(varargin))
-               msg = 'No variables specified for Singleton.';
-               return
-           else
-             singletonVars = varargin{k+1};
-             if ~iscellstr(singletonVars)
-               exception.msg = 'Singleton variable names must be a cell of strings.';
-               exception.id = 'MATLAB:spdfcdfwrite:varNameNotString';
-               return
-             end 
-             % Check that vars are in the list above.
-             for i = 1:length(singletonVars)
-               singletonVar = singletonVars{i};
-               args.SingletonVars{strcmp(args.VarNames,singletonVar)} = singletonVar;
-             end
            end
         end  % switch
     end  % for

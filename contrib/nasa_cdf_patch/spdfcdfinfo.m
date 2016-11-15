@@ -171,15 +171,11 @@ function info = spdfcdfinfo(filename, varargin)
 %
 
 %if (argin < 1)
-%  if ~(nargin == 0) || ~(length(strtrim(filename)) == 0)
 %    error('MATLAB:spdfcdfinfo:inputArguments', 'SPDFCDFINFO requires at least one input argument.')
-%  end
 %end
 
 if ~(nargout == 1)
-  if ~(nargin == 0) && ~(length(strtrim(filename)) == 0)
     error('MATLAB:spdfcdfinfo:outputArguments', 'SPDFCDFINFO requires one output argument.')
-  end
 end
 
 % CDFlib creates temporary files in the current directory.  Make sure PWD is
@@ -206,7 +202,7 @@ info1.Variables = {};
 info1.GlobalAttributes = [];
 info1.VariableAttributes = [];
 info1.LibVersion = '';
-info1.PatchVersion = '3.6.2.3';
+info1.PatchVersion = '3.6.2.1';
 info2.Variables = {};
 info2.VariableAttributes = [];
 args.VarStruct = false;
@@ -217,11 +213,10 @@ if (nargin == 0) || (length(strtrim(filename)) == 0)
     % Only for library info
     tmp = spdfcdfinfoc(' ');
     % Library version.
-    theLibVersion = sprintf('%d.%d.%d', tmp.LibVersion.Version, ...
-                                        tmp.LibVersion.Release, ...
-                                        tmp.LibVersion.Increment);
-    disp(['LibVersion: ',theLibVersion]);
-    disp(['PatchVersion: ', info1.PatchVersion]);
+    info1.LibVersion = sprintf('%d.%d.%d', tmp.LibVersion.Version, ...
+                                           tmp.LibVersion.Release, ...
+                                           tmp.LibVersion.Increment);
+
 else    
   % Parse arguments based on their number.
   if (nargin > 0)
