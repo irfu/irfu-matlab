@@ -36,8 +36,8 @@ function test_1
 
     % PROPOSAL: Use dm_utils.* functions (==>This code does not test them), but create test code for those functions
     %           specifically instead.
-    %   Ex: ACQUISITION_TIME___expand_to_sequences
-    %   Ex: tt2000___expand_to_sequences
+    %   Ex: convert_N_to_1_SPR_ACQUISITION_TIME
+    %   Ex: convert_N_to_1_SPR_Epoch
     % TODO: At least two rows - Tests reshaping snapshot/record-->sample/record better.
     
     clear   % Remove all global variables, i.e. CONSTANTS.    
@@ -76,8 +76,8 @@ function test_1
     SCI.R2 = [0; 0];
 
     SCI_out = struct;
-    SCI_out.Epoch            = bicas.dm_utils.tt2000___expand_to_sequences(          SCI.Epoch,            672, [256; 256]);
-    SCI_out.ACQUISITION_TIME = bicas.dm_utils.ACQUISITION_TIME___expand_to_sequences(SCI.ACQUISITION_TIME, 672, [256; 256]);
+    SCI_out.Epoch            = bicas.dm_utils.convert_N_to_1_SPR_Epoch(          SCI.Epoch,            672, [256; 256]);
+    SCI_out.ACQUISITION_TIME = bicas.dm_utils.convert_N_to_1_SPR_ACQUISITION_TIME(SCI.ACQUISITION_TIME, 672, [256; 256]);
     
     SCI_out.V = [V_seq1'*17, NaN_seq', NaN_seq'; V_seq2'*17, NaN_seq', NaN_seq'];
     SCI_out.E = [NaN_seq',  NaN_seq', NaN_seq'];

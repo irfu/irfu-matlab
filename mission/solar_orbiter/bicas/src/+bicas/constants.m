@@ -215,6 +215,8 @@ classdef constants < handle
             C.OUTPUT_CDF.SET_Test_id = 1;            % Set CDF GlobalAttribute "Test_id". ROC DFMD says that it should really be set by ROC.
             C.OUTPUT_CDF.Data_version = '01';        % Set CDF GlobalAttribute "Data_version". ROC DFMD says it should be updated in a way which can not be automatized?!!! Set here for now.
             
+            C.PROCESSING.USE_AQUISITION_TIME_FOR_HK_INTERPOLATION = 1;
+            
             % zVariables which are still empty after copying data into the master CDF assigned a correctly sized array with fill values.
             % This should only be necessary for S/W modes with incomplete processing.
             C.OUTPUT_CDF.EMPTY_ZVARIABLES_SET_TO_FILL = 1;

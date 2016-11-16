@@ -122,7 +122,9 @@ try
     %================================================================
     cliArgumentsArray = varargin;
     
-    % Start configuring requirements on (remaining) arguments.
+    %==============================================================    
+    % Start configuring requirements on (remaining) CLI arguments.
+    %==============================================================    
     FlagsConfigMap = containers.Map;
     FlagsConfigMap('log_path')         = struct('cliString', '--log',    'isRequired', 0, 'expectsValue', 1);   % Flag+value to permit but ignore.
     FlagsConfigMap('config_file_path') = struct('cliString', '--config', 'isRequired', 0, 'expectsValue', 1);   % Flag+calue to permit but ignore.
@@ -166,13 +168,13 @@ try
             %error('BICAS:CLISyntax', 'Can not interpret argument "%s" as a S/W mode.', cliArgumentsArray{1});
         %end
 
-        %-----------------------------------------------------------------
-        % Configure CLI flags to expect, partly depending on the S/W mode
+        %=======================================================================================
+        % Configure requirements on (remaining) CLI arguments, partly depending on the S/W mode
         %
         % NOTE: The flags are identified by strings (container.Map keys) which are a combination of the namespaces for
         % 1) identifiers for misc. flags e.g. "output_dir", "log_path".
         % 2) dataset IDs!
-        %-----------------------------------------------------------------
+        %=======================================================================================
         FlagsConfigMap('output_dir') = struct('cliString', '--output', 'isRequired', 1, 'expectsValue', 1);
         C_inputs = C_sw_mode.inputs;      % C = Constants structure.
         inputPdids = {};                  % List of keys used for input files.
@@ -189,9 +191,9 @@ try
             inputPdids{end+1} = pdid;
         end
 
-        %-----------------------------
-        % Parse (remaining) arguments
-        %-----------------------------
+        %=================================
+        % Parse (remaining) CLI arguments
+        %=================================
         ParsedCliArgumentsMap = bicas.utils.parse_CLI_flags(cliArgumentsArray(2:end), FlagsConfigMap);
         
         

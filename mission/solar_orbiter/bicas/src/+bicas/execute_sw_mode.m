@@ -226,6 +226,7 @@ function [outputFilename] = write_dataset_CDF(...
 % QUESTION: Should function find the master CDF file itself?
 %   Function needs the dataset ID for it anyway.
 %   Function should check the master file anyway: Assert existence, GlobalAttributes (dataset ID, SkeletonVersion, ...)
+%==========================================================================
 
 global CONSTANTS
 
@@ -250,6 +251,7 @@ for iPdFieldName = 1:length(pdFieldNameList)
         error('BICAS:execute_sw_mode:Assertion:SWModeProcessing', ...
         'Trying to write to zVariable "%s" that does not exist in the master CDF file.', zVariableName)
     end
+    
     
     % Prepare PDV zVariable data: Replace NaN-->fill value; convert to the right MATLAB class.
     [fillValue, ~] = get_fill_pad_values(DataObj, zVariableName);
