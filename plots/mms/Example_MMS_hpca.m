@@ -6,8 +6,9 @@
 %   The upper two variable are slightly different for one crossing and between four spacecraft.
 
 %   History:
-%       1. 2016-02-19, wyli
-%       2. 2016-03-21, wyli @ IRFU
+%       1. 2016-02-19, v0
+%       2. 2016-03-21, v1
+%       3. 2016-11-01, fix mean0 bug
 
 %%  1. basic
     ic = 1;
@@ -57,6 +58,11 @@
     c_eval('Bxyz? = get_ts(fgm_obj?, ''mms?_fgm_b_gse_srvy_l2'');', ic);
 
 %%  3. compute
+    % 3.0. fix mean0 error.
+    c_eval('HpfluxT?.data(HpfluxT?.data<=0) = NaN;', ic);    
+    c_eval('HepfluxT?.data(HepfluxT?.data<=0) = NaN;', ic);
+    c_eval('HeppfluxT?.data(HeppfluxT?.data<=0) = NaN;', ic);
+    c_eval('OpfluxT?.data(OpfluxT?.data<=0) = NaN;', ic);
 %       3.1. HpfluxT1
     c_eval('specHp=struct(''t'',HpfluxT?.time.epochUnix);', ic);
     c_eval('specHp.p = squeeze(irf.nanmean(HpfluxT?.data, 2));', ic);
