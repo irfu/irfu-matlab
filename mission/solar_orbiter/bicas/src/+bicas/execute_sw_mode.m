@@ -118,7 +118,7 @@ end
 
 
 globalAttributesSubset = derive_output_dataset_GlobalAttributes(GlobalAttributesCellArray);
-C_sw_mode = DataManager.get_C_sw_mode_full(swModeCliParameter);
+C_sw_mode = DataManager.get_extended_sw_mode_info(swModeCliParameter);
 
 
 

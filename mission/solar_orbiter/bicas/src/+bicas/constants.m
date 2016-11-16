@@ -116,9 +116,8 @@ classdef constants < handle
 % PROPOSAL: Convert constant cell arrays of structs to arrays of structs: S/W modes, CDF/PDID inputs/outputs.
 %   PRO: Simplifies code that constructs cell arrays of the same struct field in multiple cell structs.
 %
-% PROPOSAL: assert_sw_mode_ID/assert_EI_PDID/assert_EO_PDID use lists of valid values.
+% PROPOSAL: assert_sw_mode_ID/assert_EIn_PDID/assert_EOut_PDID use lists of valid values.
 %
-% TODO: EI/EO --> EIn/EOut (must be done globally in other files?)
 % TODO: Change more (all?) constants to upper case.
 %###################################################################################################################
 
@@ -129,8 +128,8 @@ classdef constants < handle
         inputs     % Information associated with input  datasets.
         outputs    % Information associated with output datasets.
         sw_modes   % Information associated with S/W modes datasets.
-        EI_PDIDs
-        EO_PDIDs
+        EIn_PDIDs
+        EOut_PDIDs
     end
 
     properties(Access=private)
@@ -215,7 +214,7 @@ classdef constants < handle
             C.OUTPUT_CDF.SET_Test_id = 1;            % Set CDF GlobalAttribute "Test_id". ROC DFMD says that it should really be set by ROC.
             C.OUTPUT_CDF.Data_version = '01';        % Set CDF GlobalAttribute "Data_version". ROC DFMD says it should be updated in a way which can not be automatized?!!! Set here for now.
             
-            C.PROCESSING.USE_AQUISITION_TIME_FOR_HK_INTERPOLATION = 1;
+            C.PROCESSING.USE_AQUISITION_TIME_FOR_HK_TIME_INTERPOLATION = 1;
             
             % zVariables which are still empty after copying data into the master CDF assigned a correctly sized array with fill values.
             % This should only be necessary for S/W modes with incomplete processing.
@@ -227,8 +226,8 @@ classdef constants < handle
         
             
             
-            [obj.inputs,  obj.EI_PDIDs]  = bicas.constants.produce_inputs_constants();
-            [obj.outputs, obj.EO_PDIDs]  = bicas.constants.produce_outputs_constants(D);          
+            [obj.inputs,  obj.EIn_PDIDs]  = bicas.constants.produce_inputs_constants();
+            [obj.outputs, obj.EOut_PDIDs]  = bicas.constants.produce_outputs_constants(D);          
             obj.sw_modes = bicas.constants.produce_sw_modes_constants();
             
             obj.BICAS_root_path = BICAS_root_path;
@@ -264,24 +263,24 @@ classdef constants < handle
             error('BICAS:constants:Assertion', '"%s" is not a valid S/D mode ID', sw_mode_ID)
         end
 
-        function assert_EI_PDID(obj, EI_PDID)
+        function assert_EIn_PDID(obj, EIn_PDID)
             
             for i=1:length(obj.inputs)
-                if strcmp(obj.inputs{i}.PDID, EI_PDID)
+                if strcmp(obj.inputs{i}.PDID, EIn_PDID)
                     return
                 end
             end
-            error('BICAS:constants:Assertion', '"%s" is not a valid EI PDID', EI_PDID)
+            error('BICAS:constants:Assertion', '"%s" is not a valid EIn PDID', EIn_PDID)
         end
 %         
-%         function assert_EO_PDID(obj, EO_PDID)
+%         function assert_EOut_PDID(obj, EOut_PDID)
 %             
 %             for i=1:length(obj.outputs)
-%                 if strcmp(obj.outputs{i}.PDID, EO_PDID)
+%                 if strcmp(obj.outputs{i}.PDID, EOut_PDID)
 %                     return
 %                 end
 %             end
-%             error('BICAS:constants:Assertion', '"%s" is not a valid EO PDID', EO_PDID)
+%             error('BICAS:constants:Assertion', '"%s" is not a valid EOut PDID', EOut_PDID)
 %         end
     end   % methods(Access=public)
     
@@ -312,8 +311,8 @@ classdef constants < handle
                 end
             end
             
-            bicas.utils.assert_strings_unique(obj.EI_PDIDs)
-            bicas.utils.assert_strings_unique(obj.EO_PDIDs)            
+            bicas.utils.assert_strings_unique(obj.EIn_PDIDs)
+            bicas.utils.assert_strings_unique(obj.EOut_PDIDs)            
             
             sw_mode_CLI_parameters = cellfun(@(s) ({s.CLI_parameter}), obj.sw_modes);
             sw_mode_IDs            = cellfun(@(s) ({s.ID           }), obj.sw_modes);
@@ -448,7 +447,7 @@ classdef constants < handle
         % Produce constants for all possible INPUT datasets.
         % (independent of how they are associated with S/W modes).
         %==========================================================
-        function [C_inputs, EI_PDIDs] = produce_inputs_constants
+        function [C_inputs, EIn_PDIDs] = produce_inputs_constants
             % PROPOSAL: Put derivation of .PDID in nested init function.
             
             % NOTE: NESTED function
@@ -501,10 +500,10 @@ classdef constants < handle
             % 
             % Put together PDIDs (used in data_manager).
             % See data_manager for definition.
-            EI_PDIDs = {};
+            EIn_PDIDs = {};
             for i = 1:length(C_inputs)
                 C_inputs{i}.PDID = bicas.constants.construct_PDID(C_inputs{i}.dataset_ID, C_inputs{i}.skeleton_version_str);
-                EI_PDIDs{i} = C_inputs{i}.PDID;
+                EIn_PDIDs{i} = C_inputs{i}.PDID;
             end
         end
 
@@ -514,7 +513,7 @@ classdef constants < handle
         % Produce constants for all possible OUTPUT datasets
         % (independent of how they are associated with S/W modes).
         %==========================================================
-        function [C_outputs, EO_PDIDs] = produce_outputs_constants(D)
+        function [C_outputs, EOut_PDIDs] = produce_outputs_constants(D)
             % TODO: Set SWD_level automatically?!
             
             CLI_PARAMETER_SCI_NAME = 'output_sci';
@@ -596,10 +595,10 @@ classdef constants < handle
             % 
             % Put together PDIDs (used in data_manager).
             % See data_manager for definition.
-            EO_PDIDs = {};
+            EOut_PDIDs = {};
             for i = 1:length(C_outputs)
                 C_outputs{i}.PDID = bicas.constants.construct_PDID(C_outputs{i}.dataset_ID, C_outputs{i}.skeleton_version_str);
-                EO_PDIDs{i} = C_outputs{i}.PDID;
+                EOut_PDIDs{i} = C_outputs{i}.PDID;
             end
         end
         

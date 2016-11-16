@@ -161,7 +161,7 @@ try
         %==============================================
         DataManager = bicas.data_manager();
         %try
-            C_sw_mode = DataManager.get_C_sw_mode_full(cliArgumentsArray{1});
+            C_sw_mode = DataManager.get_extended_sw_mode_info(cliArgumentsArray{1});
         %catch exception
             % NOTE: The message is slightly inaccurate since it assumes that the first argument is a S/W mode.
             % Argument "--version" etc. would have worked too.
