@@ -156,7 +156,7 @@ end
 % ----------------------------------------------------------
 % Required by the RCS ICD iss2rev2, section 3.3.
 %============================================================
-str = bicas.utils.JSON_object_str(JsonOutputCdfFilenameListStruct, CONSTANTS.C.JSON_object_str);
+str = bicas.utils.JSON_object_str(JsonOutputCdfFilenameListStruct, CONSTANTS.C.JSON_OBJECT_STR);
 bicas.stdout_disp(str);
 
 end   % execute_sw_mode
@@ -235,6 +235,7 @@ global CONSTANTS
 %======================
 % Read master CDF file
 %======================
+irf.log('n', sprintf('Reading master CDF file: "%s"', masterCdfPath))
 DataObj = dataobj(masterCdfPath);
 
 %=====================================================================================
@@ -242,9 +243,9 @@ DataObj = dataobj(masterCdfPath);
 %=====================================================================================
 % NOTE: Only sets a SUBSET of the zVariables in master CDF.
 pdFieldNameList = fieldnames(ProcessData);
+irf.log('n', 'Converting PDV to dataobj (CDF data structure)')
 for iPdFieldName = 1:length(pdFieldNameList)
     zVariableName = pdFieldNameList{iPdFieldName};
-    irf.log('n', sprintf('Converting PD struct field into CDF zVariable: "%s"', zVariableName))   % zVariable name last to make log messages line up.
     
     % ASSERTION: Master CDF already contains the zVariable.
     if ~isfield(DataObj.data, zVariableName)
@@ -252,14 +253,28 @@ for iPdFieldName = 1:length(pdFieldNameList)
         'Trying to write to zVariable "%s" that does not exist in the master CDF file.', zVariableName)
     end
     
+    zVariableData = ProcessData.(zVariableName);
+    
+    %=================================================================================================
+    % Log CDF data
+    % ------------
+    % NOTE: Somewhat misleading log values since (1) fill/pad values have not been replaced with NaN,
+    % and (2) the variable type has not been changed yet.
+    %=================================================================================================
+    if isnumeric(zVariableData)
+        if strcmp(zVariableName, 'Epoch')
+            bicas.dm_utils.log_tt2000_interval(zVariableName, zVariableData)
+        else
+            bicas.dm_utils.log_values_summary(zVariableName, zVariableData)
+        end
+    end
     
     % Prepare PDV zVariable data: Replace NaN-->fill value; convert to the right MATLAB class.
-    [fillValue, ~] = get_fill_pad_values(DataObj, zVariableName);
-    matlabClass = bicas.utils.convert_CDF_type_to_MATLAB_class(DataObj.data.(zVariableName).type, 'Permit MATLAB classes');
-    zVariableData = ProcessData.(zVariableName);
     if isfloat(zVariableData)
+        [fillValue, ~] = get_fill_pad_values(DataObj, zVariableName);
         zVariableData = bicas.utils.replace_value(zVariableData, NaN, fillValue);
     end
+    matlabClass = bicas.utils.convert_CDF_type_to_MATLAB_class(DataObj.data.(zVariableName).type, 'Permit MATLAB classes');
     zVariableData = cast(zVariableData, matlabClass);
     
     % Set zVariable.
@@ -269,8 +284,8 @@ end
 %==========================
 % Set CDF GlobalAttributes
 %==========================
-DataObj.GlobalAttributes.Software_name       = CONSTANTS.C.SWD_identification.name;
-DataObj.GlobalAttributes.Software_version    = CONSTANTS.C.SWD_release.version;
+DataObj.GlobalAttributes.Software_name       = CONSTANTS.C.SWD_IDENTIFICATION.name;
+DataObj.GlobalAttributes.Software_version    = CONSTANTS.C.SWD_RELEASE.version;
 DataObj.GlobalAttributes.Calibration_version = CONSTANTS.C.Calibration_version;             % "Static"?!!
 DataObj.GlobalAttributes.Generation_date     = datestr(now, 'yyyy-mm-ddTHH:MM:SS');         % BUG? Assigns local time, not UTC!!! ROC DFMD does not mention time zone.
 DataObj.GlobalAttributes.Logical_file_id     = logical_file_id(...
@@ -367,16 +382,18 @@ function [processData, GlobalAttributes] = read_dataset_CDF(pdid, filePath)
 
 global CONSTANTS
 
-irf.log('n', sprintf('pdid=%s: filePath=%s', pdid, filePath))    % NOTE: irf.log adds the method name.
+irf.log('n', sprintf('pdid=%s', pdid))    % NOTE: irf.log adds the method name.
 
 %===========
 % Read file
 %===========
+irf.log('n', sprintf('Reading CDF file: "%s"', filePath))
 do = dataobj(filePath);                 % do=dataobj, i.e. irfu-matlab's dataobj!!!
 
 %=========================================================================
 % Copy zVariables (only the data) into analogous fields in smaller struct
 %=========================================================================
+irf.log('n', 'Converting dataobj (CDF data structure) to PDV.')
 processData       = struct();
 zVariableNameList = fieldnames(do.data);
 for i = 1:length(zVariableNameList)
@@ -398,6 +415,19 @@ for i = 1:length(zVariableNameList)
         %irf.log('w', sprintf('Can not handle replace fill/pad values for zVariable "%s" when reading "%s".', zVariableName, filePath))
     end
     
+    %=================================================================================================
+    % Log CDF data
+    % ------------
+    % NOTE: Somewhat misleading log values since fill/pad values have already been replaced with NaN.
+    %=================================================================================================
+    if isnumeric(zVariableData)
+        if strcmp(zVariableName, 'Epoch')
+            bicas.dm_utils.log_tt2000_interval(zVariableName, zVariableData)
+        else
+            bicas.dm_utils.log_values_summary(zVariableName, zVariableData)
+        end
+    end
+    
     processData.(zVariableName) = zVariableData;
 end
 
@@ -415,7 +445,7 @@ irf.log('n', sprintf('File: Skeleton_version = "%s"', file_Skeleton_version))
 %===================================================
 % NOTE: Does print file name since it has only been previously been logged as "notice".
 %bicas.dm_utils.assert_unvaried_N_rows(processData);
-C_input = bicas.utils.select_structs(CONSTANTS.inputs, 'PDID', {pdid});
+C_input = bicas.utils.select_structs(CONSTANTS.INPUTS_INFO_LIST, 'PDID', {pdid});
 C_input = C_input{1};
 bicas.utils.assert_strings_equal(...
     CONSTANTS.C.INPUT_CDF_ASSERTIONS.STRICT_DATASET_ID, ...

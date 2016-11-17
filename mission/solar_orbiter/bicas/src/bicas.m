@@ -102,7 +102,7 @@ try
     % NOTE: Does not initialize CONSTANTS until the MATLAB version has been checked for. The init. code could otherwise
     % fail.
     CONSTANTS = bicas.constants(bicasRootPath);
-    irf.log(CONSTANTS.C.IRF_LOG_LEVEL);
+    irf.log(CONSTANTS.C.LOGGING.IRF_LOG_LEVEL);
     
     %=======================================
     % Log misc. paths and all CLI arguments
@@ -126,40 +126,41 @@ try
     % Start configuring requirements on (remaining) CLI arguments.
     %==============================================================    
     FlagsConfigMap = containers.Map;
-    FlagsConfigMap('log_path')         = struct('cliString', '--log',    'isRequired', 0, 'expectsValue', 1);   % Flag+value to permit but ignore.
-    FlagsConfigMap('config_file_path') = struct('cliString', '--config', 'isRequired', 0, 'expectsValue', 1);   % Flag+calue to permit but ignore.
+    FlagsConfigMap('log_path')         = struct('cliString', '--log',    'isRequired', 0, 'expectsValue', 1);   % Flag+value to permit but ignore since handled by bash launcher script.
+    FlagsConfigMap('config_file_path') = struct('cliString', '--config', 'isRequired', 0, 'expectsValue', 1);   % Flag+calue to permit but ignore since handled by bash launcher script.
+    
+    DataManager = bicas.data_manager();
 
     % Select mode of operations.
     if (length(cliArgumentsArray) < 1)
 
         error('BICAS:CLISyntax', 'Not enough arguments found.')
 
-    elseif (strcmp(cliArgumentsArray{1}, '--identification'))
-        %============================
-        % CASE: Print identification
-        %============================
-        [~] = bicas.utils.parse_CLI_flags(cliArgumentsArray(2:end), FlagsConfigMap);  % Check CLI syntax but ignore results.
-        print_identification()
-
     elseif (strcmp(cliArgumentsArray{1}, '--version'))
         %============================
         % CASE: Print version
         %============================
         [~] = bicas.utils.parse_CLI_flags(cliArgumentsArray(2:end), FlagsConfigMap);  % Check CLI syntax but ignore results.
-        print_version()
+        print_version(DataManager)
+
+    elseif (strcmp(cliArgumentsArray{1}, '--identification'))
+        %============================
+        % CASE: Print identification
+        %============================
+        [~] = bicas.utils.parse_CLI_flags(cliArgumentsArray(2:end), FlagsConfigMap);  % Check CLI syntax but ignore results.
+        print_identification(DataManager)
 
     elseif (strcmp(cliArgumentsArray{1}, '--help'))
         %============================
         % CASE: Print help
         %============================
         [~] = bicas.utils.parse_CLI_flags(cliArgumentsArray(2:end), FlagsConfigMap);  % Check CLI syntax but ignore results.
-        print_help(ERROR_CODES)
+        print_help(ERROR_CODES, DataManager)
 
     else
         %==============================================
         % CASE: Should be a S/W mode (error otherwise)
         %==============================================
-        DataManager = bicas.data_manager();
         %try
             C_sw_mode = DataManager.get_extended_sw_mode_info(cliArgumentsArray{1});
         %catch exception
@@ -204,13 +205,10 @@ try
         
         
 
-        %===============================================================
+        %==================
         % EXECUTE S/W MODE
-        %
-        % CHOOSE IMPLEMENTATION TO USE.
-        %===============================================================
-        bicas.execute_sw_mode(DataManager, C_sw_mode.CLI_parameter, InputFilesMap, outputDir)   % The intended real implementation
-        %execute_sw_mode_TEST_IMPLEMENTATION(C_sw_mode.CLI_parameter, outputDir)   % IMPLEMENTATION FOR TESTING. OUTPUTS NONSENSE CDFs.
+        %==================
+        bicas.execute_sw_mode( DataManager, C_sw_mode.CLI_parameter, InputFilesMap, outputDir )
         
     end
 
@@ -295,65 +293,14 @@ end
 
 
 %===================================================================================================
-% TEST IMPLEMENTATION
-% Implements a S/W mode by simply creating nonsense cdf output files where expected.
-% Code should satisfy the RCS ICD with this implementation.
-%
-% NOTE: Will overwrite output file. Not necessary desirable in a real implementation but is
-% practical for testing.
-%===================================================================================================
-% function execute_sw_mode_TEST_IMPLEMENTATION(sw_mode_CLI_parameter, outputDir)
-% 
-% global ERROR_CODES CONSTANTS
-% 
-% irf.log('c', 'USING TEST IMPLEMENTATION FOR S/W MODES. ONLY CREATES NONSENSE CDF FILES.')
-% 
-% %C_mode = get_C_sw_mode(sw_mode_CLI_parameter);
-% temp = bicas.utils.select_structs(C.sw_modes, 'CLI_parameter', {sw_mode_CLI_parameter});
-% C_mode = temp{1};
-% output_JSON = [];
-% 
-% % Iterate over OUTPUTS
-% for i = 1:length(C_mode.outputs)
-%     C_mode_output = C_mode.outputs{i};
-%     master_cdf_filename = C_mode_output.master_cdf_filename;
-%     output_filename = [C_mode_output.dataset_ID, '_V', C_mode_output.skeleton_version_str, '.cdf'];
-%     
-%     src_file  = fullfile(bias_constants.sw_root_dir(), C.master_cdfs_dir_rel, master_cdf_filename);
-%     dest_file = fullfile(outputDir, output_filename);
-%     
-%     irf.log('n', 'Trying to copy file')
-%     irf.log('n', sprintf('   from %s', src_file))
-%     irf.log('n', sprintf('   to   %s', dest_file))
-%     [success, copyfile_msg, ~] = copyfile(src_file, dest_file);   % Overwrites any pre-existing file.
-%     if ~success
-%         error('BICAS:FailedToCopyFile',, ...
-%             'Failed to copy file\n    from "%s"\n    to   "%s".\n"copyfile" error message: "%s"', ...
-%             src_file, dest_file, copyfile_msg)
-%     end
-%     
-%     output_JSON.(C_mode_output.JSON_output_file_identifier) = output_filename;
-% end
-% 
-% % Print list of files produced in the form of a JSON object.
-% str = bicas.utils.JSON_object_str(output_JSON);
-% bicas.stdout_disp(str);
-% 
-% end
-
-
-
-%===================================================================================================
-function print_version()
+function print_version(DataManager)
 
 % IMPLEMENTATION NOTE: Uses the software version in the S/W descriptor rather than the in the BICAS
 % constants since the RCS ICD specifies that it should be that specific version.
 % This in principle inefficient but precise.
 
-global CONSTANTS
-
-D = bicas.get_sw_descriptor();
-bicas.stdout_printf('Version %s\n', D.release.version)
+swd = bicas.get_sw_descriptor(DataManager);
+bicas.stdout_printf('Version %s\n', swd.release.version)
 
 end
 
@@ -365,11 +312,11 @@ end
 %
 % Print the JSON S/W descriptor.
 %
-function print_identification()
+function print_identification(DataManager)
 global CONSTANTS
 
-D = bicas.get_sw_descriptor();
-str = bicas.utils.JSON_object_str(D, CONSTANTS.C.JSON_object_str);
+swd = bicas.get_sw_descriptor(DataManager);
+str = bicas.utils.JSON_object_str(swd, CONSTANTS.C.JSON_OBJECT_STR);
 bicas.stdout_disp(str);
 
 end
@@ -377,7 +324,7 @@ end
 
 
 %===================================================================================================
-function print_help(ERROR_CODES)
+function print_help(ERROR_CODES, DataManager)
 %
 % PROPOSAL: Print error codes. Can use implementation to list them?
 %    PROPOSAL: Define error codes with description strings?! Map?! Check for doubles?!
@@ -385,8 +332,8 @@ function print_help(ERROR_CODES)
 
 %error('BICAS:OperationNotImplemented', 'Operation not implemented: --help.')
 
-D = bicas.get_sw_descriptor();
-bicas.stdout_printf('%s\n%s\n', D.identification.name, D.identification.description)
+swd = bicas.get_sw_descriptor(DataManager);
+bicas.stdout_printf('%s\n%s\n', swd.identification.name, swd.identification.description)
 bicas.stdout_printf('\nError codes (internal constants):\n')
 for sfn = fieldnames(ERROR_CODES)'
     errorCode = ERROR_CODES.(sfn{1});

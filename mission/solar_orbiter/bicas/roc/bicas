@@ -46,6 +46,9 @@
 # QUESTION: If log file already exists, overwrite, amend, or error?
 # PROPOSAL: Better error message when can not find MATLAB_COMMAND. Common error.
 # PROPOSAL: Detect presence of bicas within irfu-matlab (avoid there being two bicas).
+#
+# BUG: If mistakenly uses bad "--config" flag, i.e. "--conf", then the script itself will use the wrong
+# MATLAB version ==> Can not launch MATLAB (which would have checked if "--conf" was a bad flag).
 #====================================================================================================
 
 
@@ -103,8 +106,8 @@ done
 temp=$(dirname "$0")/..
 declare -r BICAS_ROOT_PATH=$(readlink -f "$temp")
 declare -r DEFAULT_CONFIG_FILE="${BICAS_ROOT_PATH}/config/bicas.conf"
-declare -r INNER_IRFUMATLAB_PATH="${BICAS_ROOT_PATH}/${INNER_IRFUMATLAB_RELATIVE_PATH}"   
-declare -r OUTER_IRFUMATLAB_PATH="${BICAS_ROOT_PATH}/${OUTER_IRFUMATLAB_RELATIVE_PATH}"
+declare -r INNER_IRFUMATLAB_PATH=$(readlink -f "${BICAS_ROOT_PATH}/${INNER_IRFUMATLAB_RELATIVE_PATH}")  
+declare -r OUTER_IRFUMATLAB_PATH=$(readlink -f "${BICAS_ROOT_PATH}/${OUTER_IRFUMATLAB_RELATIVE_PATH}")
 
 # Set IRFUMATLAB_PATH : Path to irfu-matlab directory.
 # The value is selected depending on the directory structure used.
@@ -210,7 +213,7 @@ echo "Command-line arguments: $@" >> "$log_file"
 
 
 
-# Any CALL to this function should appropriately pipe stdout and stderr to log file.
+# NOTE: Any CALL to this function should appropriately pipe stdout and stderr to log file.
 # Therefore code inside of it does not need to do this.
 launch_matlab_code() {
 

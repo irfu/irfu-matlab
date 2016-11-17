@@ -1,6 +1,7 @@
 classdef dm_utils
 % Collections of minor utility functions (in the form of static methods) used by data_manager.
 % The functions are collected here to reduce the size of data_manager.
+%
 % dm_utils = data_manager utilities
 %
 % SPR = Samples per record
@@ -11,7 +12,7 @@ classdef dm_utils
 %============================================================================================================
 % PROPOSAL: Move some functions to "utils".
 %   Ex: add_components_to_struct, select_subset_from_struct
-% PROPOSAL: Write test code for ACQUISITION_TIME_to_tt2000 and inversion.
+% PROPOSAL: Write test code for ACQUISITION_TIME_to_tt2000 and its inversion.
 % PROPOSAL: Split up in separate files?!
 % PROPOSAL: Reorg select_subset_from_struct into returning a list of intervals instead.
 %
@@ -343,8 +344,8 @@ classdef dm_utils
         
         
         function ACQUISITION_TIME_2 = convert_N_to_1_SPR_ACQUISITION_TIME(  ACQUISITION_TIME_1, nSpr, frequencyWithinRecords  )
-        % Function intended for converting ACQUISITION_TIME (always one time per record) from many samples/record to one sample/record.
-        % Analogous to convert_N_to_1_SPR_Epoch.
+        % Function intended for converting ACQUISITION_TIME (always one time per record) from many samples/record to one
+        % sample/record. See convert_N_to_1_SPR_Epoch which is analogous.
         % 
         % ACQUISITION_TIME_1 : Nx2 vector.
         % ACQUISITION_TIME_2 : Nx2 vector.
@@ -403,14 +404,14 @@ classdef dm_utils
         end
 
 
-        
-        function uniqueValues = unique_NaN(A)
-        % Return number of unique values in array, treating +Inf, -Inf, and NaN as equal to themselves.
+
+        function uniqueValues = unique_values_NaN(A)
+        % Return number of unique values in array, treating +Inf, -Inf, and NaN as equal to themselves (separately).
         % (MATLAB's "unique" function does not do this for NaN.)
         %
         % NOTE: Should work for all dimensionalities.
            
-        % PROPOSAL: Move to +utils?
+        % PROPOSAL: Move to +utils.
             
             % NOTE: "unique" has special behaviour which must be taken into account:
             % 1) Inf and -Inf are treated as equal to themselves.
@@ -422,38 +423,61 @@ classdef dm_utils
             % NOTE: Does work for empty matrices.
             uniqueValues(isnan(uniqueValues(1:end-1))) = [];
         end
-        
-        
-        
-        function log_unique_values_summary(variable_name, v)
-        % Log number of unique values, and NaN, found in numeric matrix.
-        % Useful for summarizin dataset data (usually many unique values).
-        %
-        % NOTE: Can handle zero values.
-            
-        % Excplicitly state including/excluding NaN? Number of NaN? Percent NaN? Min-max?
-            
-            N_values = length(bicas.dm_utils.unique_NaN(v));
-            N_NaN = sum(isnan(v(:)));
-            irf.log('n', sprintf('#Unique %-6s values: %5d (%3i%%=%6i/%6i NaN)', ...
-                variable_name, N_values, ...
-                round((N_NaN/numel(v))*100), ...
-                N_NaN, numel(v)))
-        end
 
         
-        
-        function log_unique_values_all(variableName, v)
-        % Log all unique values found in numeric matrix.
-        % Useful for logging dataset settings (few unique values).
-        %
-        % NOTE: Can handle zero values.
+
+        function log_values_summary(variableName, v)
+        % Logs statistics on the contents of a numeric variable (any dimensionality): Number of & percentage NaN, unique
+        % values, min-max. Primarily intended for zVariables and derivatives thereof. Can be useful for knowing which
+        % settings are used (e.g. DIFF_GAIN), constant/varying bias current, suspect input datasets.
             
-            % Automatically switch to log_unique_values_summary if too many?
-            % Print number of NaN?
-            %N_NaN = sum(isnan(v(:)));
-            valuesStr = sprintf('%d ', bicas.dm_utils.unique_NaN(v));
-            irf.log('n', sprintf('Unique %-9s values: %s', variableName, valuesStr))
+        % PROPOSAL: Handle fill/pad value?
+        % PROPOSAL: Move to +utils.
+        % PROPOSAL: Shorten printouts
+        %   PROPOSAL: "#Uniques" ==> #un
+        %   PROPOSAL: "Min-max" ==> mm 
+        %   PROPOSAL: Uniques ==> Us (plural; same length as "mm")
+        %   PROPOSAL: Omit "Uniques: "/"Min-max". Dash/no dash explains.
+        % PROPOSAL: Print size of matrix.
+        % PROPOSAL: Special mode which prints explanation of printout.
+        % PROPOSAL: Special log function for zVars. Can print CDF type (implicitly range).
+        % PROPOSAL: Print MATLAB class (implicitly range).
+        %
+        %  #ACQUISITION_TIME         : #Uniques=  294 (#NaN=0=0%)       Min-max: 20621--526142341
+        %  #ACQUISITION_TIME (142x2,uint32)        : #Us=  294 (#NaN=0=0%)       Mm: 20621--526142341
+
+        
+            global CONSTANTS
+            
+            if ~isnumeric(v)
+                error('BICAS:dm_utils:Assertion:IllegalArgument', 'v is not numerical')
+            end
+            
+            nValues       = numel(v);
+            nUniqueValues = length(bicas.dm_utils.unique_values_NaN(v));
+            nNan          = sum(isnan(v(:)));
+            
+            if nValues == 0
+                nanStr = '';
+            else
+                nanStr = sprintf('(#NaN=%d=%d%%)', nNan, round((nNan/numel(v))*100));
+            end
+            
+            if nUniqueValues > CONSTANTS.C.LOGGING.MAX_UNIQUES_PRINTED
+                vMin = min(min(min(v)));
+                vMax = max(max(max(v)));
+                valuesStr = sprintf('Min-max: %d--%d', vMin, vMax);
+            else
+                if nUniqueValues == 0
+                    valuesStr = '';
+                else
+                    valuesStr = ['Uniques: ', sprintf('%d ', bicas.dm_utils.unique_values_NaN(v))];
+                end
+            end
+            
+            outputStr = sprintf('#%-25s: #Uniques=%5d %-17s %s', variableName, nUniqueValues, nanStr, valuesStr);
+            
+            irf.log('n', outputStr)
         end
         
         
@@ -466,6 +490,8 @@ classdef dm_utils
         % NOTE: Assumes that t is sorted in time, increasing.
         % NOTE: Can handle zero values.
         
+        % PROPOSAL: Move to +utils.
+        
             bicas.dm_utils.assert_Epoch(tt2000)
             
             if ~isempty(tt2000)
@@ -476,6 +502,45 @@ classdef dm_utils
                 irf.log('n', sprintf('%s: <empty>', variableName))
             end
         end
+
+
+
+%         function log_unique_values_summary(variable_name, v)
+%         % Log number of unique values, and NaN, found in numeric matrix.
+%         % Useful for summarizing dataset data (usually many unique values).
+%         %
+%         % NOTE: Can handle zero values.
+%             
+%         % Excplicitly state including/excluding NaN? Number of NaN? Percent NaN? Min-max?
+%         % PROPOSAL: Move to +utils.
+%             
+%             nUniqueValues = length(bicas.dm_utils.unique_values_NaN(v));
+%             nNan = sum(isnan(v(:)));
+%             
+%             outputStr = sprintf('#Unique %-25s values: %5d', variable_name, nUniqueValues);
+%             if nUniqueValues ~= 0
+%                 outputStr = [outputStr, sprintf(' (NaN: %3i%%=%6i/%6i)', ...
+%                     round((nNan/numel(v))*100), ...
+%                     nNan, numel(v))];
+%             end
+%             
+%             irf.log('n', outputStr)
+%         end
+% 
+% 
+% 
+%         function log_unique_values_all(variableName, v)
+%         % Log all unique values found in numeric matrix.
+%         % Useful for logging dataset settings (few unique values).
+%         %
+%         % NOTE: Can handle zero values.
+%             
+%             % Automatically switch to log_unique_values_summary if too many?
+%             % Print number of NaN?
+% 
+%             valuesStr = sprintf('%d ', bicas.dm_utils.unique_values_NaN(v));
+%             irf.log('n', sprintf('Unique %-9s values: %s', variableName, valuesStr))
+%         end
         
         
         

@@ -6,7 +6,7 @@
 % The values are derived entirely from BICAS constants. The structure is NOT directly incorporated in the BICAS
 % constants for extra flexibility.
 %
-function SW_descriptor = get_sw_descriptor()
+function swDescriptor = get_sw_descriptor(DataManager)
 %
 % PROPOSAL: Have this function add the prefix "input_" to all modes[].inputs[].input (in SWD)
 % and only store the "CLI_parameter_suffix" in the BICAS constants structure instead.
@@ -29,28 +29,35 @@ function SW_descriptor = get_sw_descriptor()
 %
 global CONSTANTS
 
-SWD.identification = CONSTANTS.C.SWD_identification;
-SWD.release        = CONSTANTS.C.SWD_release;
-SWD.environment    = CONSTANTS.C.SWD_environment;
-SWD.modes = {};
+% SWD = The structure which is used for producing the S/W descriptor (SWD) JSON object string. Its fields (field names)
+% should NOT follow variable naming conventions since they influence the JSON object string.
+swd = [];
+swd.identification = CONSTANTS.C.SWD_IDENTIFICATION;
+swd.release        = CONSTANTS.C.SWD_RELEASE;
+swd.environment    = CONSTANTS.C.SWD_ENVIRONMENT;
+swd.modes = {};
 
-for i = 1:length(CONSTANTS.sw_modes)
-    CLI_parameter = CONSTANTS.sw_modes{i}.CLI_parameter;
+for i = 1:length(CONSTANTS.SW_MODES_INFO_LIST)
+    cliParameter = CONSTANTS.SW_MODES_INFO_LIST{i}.CLI_parameter;
     
-    C_sw_mode = bicas.data_manager.get_extended_sw_mode_info(CLI_parameter);
+    ExtendedSwModeInfo = DataManager.get_extended_sw_mode_info(cliParameter);
     
-    SWD.modes{end+1} = generate_sw_descriptor_mode(CONSTANTS.C, C_sw_mode);
+    swd.modes{end+1} = generate_sw_descriptor_mode(CONSTANTS.C, ExtendedSwModeInfo);
 end
 
-% Validate S/W release version.
+
+%===========================================================================================
+% Validate S/W release version
+% ----------------------------
 % RCS ICD, iss2rev2, Section 5.3 S/W descriptor file validation scheme implies this regex.
 % NOTE: It is hard to thoroughly follow the description, but the end result should be under
 % release-->version-->pattern (not to be confused with release_dataset-->version--pattern).
-if isempty(regexp(SWD.release.version, '^(\d+\.)?(\d+\.)?(\d+)$', 'once'))
-    error('BICAS:get_sw_descriptor:IllegalConfiguration', 'Illegal S/W descriptor release version "%s". This indicates a hard-coded configuration bug.', SWD.release.version)
+%===========================================================================================
+if isempty(regexp(swd.release.version, '^(\d+\.)?(\d+\.)?(\d+)$', 'once'))
+    error('BICAS:get_sw_descriptor:IllegalConfiguration', 'Illegal S/W descriptor release version "%s". This indicates a hard-coded configuration bug.', swd.release.version)
 end
 
-SW_descriptor = SWD;
+swDescriptor = swd;
 
 end
 
@@ -59,54 +66,55 @@ end
 %===================================================================================================
 % Create data structure for a S/W mode corresponding to the information in the JSON S/W descriptor.
 %===================================================================================================
-function SWD_mode = generate_sw_descriptor_mode(C, C_sw_mode)
+function swdMode = generate_sw_descriptor_mode(C, ExtendedSwModeInfo)
 %
 % Variable naming convention:
 %    SWD = S/W descriptor
 
-SWD_mode = [];
-SWD_mode.name    = C_sw_mode.CLI_parameter;
-SWD_mode.purpose = C_sw_mode.SWD_purpose;
+swdMode = [];
+swdMode.name    = ExtendedSwModeInfo.CLI_parameter;
+swdMode.purpose = ExtendedSwModeInfo.SWD_purpose;
 
-for x = C_sw_mode.inputs
-    mi_I = x{1};
-    SWD_input = [];
+for x = ExtendedSwModeInfo.inputs
+    swModeInput = x{1};
     
-    SWD_input.version    = mi_I.skeleton_version_str;
-    SWD_input.identifier = mi_I.dataset_ID;
+    swdInput = [];    
+    swdInput.version    = swModeInput.skeleton_version_str;
+    swdInput.identifier = swModeInput.dataset_ID;
     
-    SWD_mode.inputs.(mi_I.CLI_parameter) = SWD_input;
+    swdMode.inputs.(swModeInput.CLI_parameter) = swdInput;
 end
 
-for x = C_sw_mode.outputs
-    mi_O = x{1};
-    SWD_output = [];
+for x = ExtendedSwModeInfo.outputs
+    swModeOutput = x{1};
+    swdOutput = [];
 
-    [~, master_filename] = bicas.get_master_CDF_path(mi_O.dataset_ID, mi_O.skeleton_version_str);
+    [~, masterFilename] = bicas.get_master_CDF_path(swModeOutput.dataset_ID, swModeOutput.skeleton_version_str);
 
-    SWD_output.identifier  = mi_O.dataset_ID;
-    SWD_output.name        = mi_O.SWD_name;
-    SWD_output.description = mi_O.SWD_description;
-    SWD_output.level       = mi_O.SWD_level;
-    SWD_output.release.date         = mi_O.SWD_release_date;
+    swdOutput.identifier  = swModeOutput.dataset_ID;
+    swdOutput.name        = swModeOutput.SWD_name;
+    swdOutput.description = swModeOutput.SWD_description;
+    swdOutput.level       = swModeOutput.SWD_level;
+    swdOutput.release.date         = swModeOutput.SWD_release_date;
     %SWD_output.release.version      = mi_O.SWD_release_version;
-    SWD_output.release.version      = mi_O.skeleton_version_str;
-    SWD_output.release.author       = C.author_name;
-    SWD_output.release.contact      = C.author_email;
-    SWD_output.release.institute    = C.institute;
-    SWD_output.release.modification = mi_O.SWD_release_modification;
-    SWD_output.release.file         = master_filename;
+    swdOutput.release.version      = swModeOutput.skeleton_version_str;
+    swdOutput.release.author       = C.AUTHOR_NAME;
+    swdOutput.release.contact      = C.AUTHOR_EMAIL;
+    swdOutput.release.institute    = C.INSTITUTE;
+    swdOutput.release.modification = swModeOutput.SWD_release_modification;
+    swdOutput.release.file         = masterFilename;
     
-    % Validate output datasets release version.
+    % Validate output datasets release version
+    % ----------------------------------------
     % RCS ICD, iss2rev2, Section 5.3 S/W descriptor file validation scheme implies this regex.
     % NOTE: It is hard to thoroughly follow the description, but the end result should be under
     % release_dataset-->version-->pattern (not to be confused with release-->version--pattern).
-    if isempty(regexp(SWD_output.release.version, '^[0-9]{2}$', 'once'))
+    if isempty(regexp(swdOutput.release.version, '^[0-9]{2}$', 'once'))
         error('BICAS:get_sw_descriptor:Assertion:IllegalConfiguration', ...
-            'Illegal S/W descriptor output release version "%s". This indicates a hard-coded configuration bug.', SWD_output.release.version)
+            'Illegal S/W descriptor output release version "%s". This indicates a hard-coded configuration bug.', swdOutput.release.version)
     end
         
-    SWD_mode.outputs.(mi_O.JSON_output_file_identifier) = SWD_output;
+    swdMode.outputs.(swModeOutput.JSON_output_file_identifier) = swdOutput;
 end
 
 

@@ -103,37 +103,29 @@ classdef constants < handle
 %        CON: Does not make use of the similarities between assignments.
 %        CON: Want to "extract values from a table".
 %
-% PROPOSAL: Rename ".C" to ".general", ".misc"
-% PROPOSAL: .inputs, .outputs to something more specific.
-%   PROPOSAL: Something analogous to data_manager's "elementary input/output".
-%   PROPOSAL: Something with CDF, datasets, BICAS_input/output, ...
+% PROPOSAL: Rename ".C" to ".GENERAL", ".MISC"
 %
 % PROPOSAL: Change variable naming convention for C_* variables in general (not the inside constants.m).
 %   Ex: C_sw_mode, C_input, C_output.
-%   PROPOSAL: infoSwMode, infoInput, infoOutput
 %   PROPOSAL: metadataSwMode, metadataInput, metadataOutput   (metaDataSwMode?)
 %
 % PROPOSAL: Convert constant cell arrays of structs to arrays of structs: S/W modes, CDF/PDID inputs/outputs.
 %   PRO: Simplifies code that constructs cell arrays of the same struct field in multiple cell structs.
 %
-% PROPOSAL: assert_sw_mode_ID/assert_EIn_PDID/assert_EOut_PDID use lists of valid values.
-%
 % TODO: Change more (all?) constants to upper case.
 %###################################################################################################################
 
     properties(Access=public)
-        C                  % For miscellaneous minor constants which still might require code to be initialized.
-        BICAS_root_path
-        %sw_descriptor
-        inputs     % Information associated with input  datasets.
-        outputs    % Information associated with output datasets.
-        sw_modes   % Information associated with S/W modes datasets.
-        EIn_PDIDs
-        EOut_PDIDs
+        C          % For miscellaneous minor constants which still might require code to be initialized.
+        SW_MODES_INFO_LIST   % Information associated with S/W modes.
+        INPUTS_INFO_LIST     % Information associated with input  datasets.
+        OUTPUTS_INFO_LIST    % Information associated with output datasets.
+        INPUTS_PDIDS_LIST
+        OUTPUTS_PDIDS_LIST
     end
 
     properties(Access=private)
-        all_dataset_IDs    % Collect alla known dataset IDs. Useful for assertions.
+        ALL_DATASET_IDS_LIST    % Collect alla known dataset IDs. Useful for assertions.
     end
     
     %###################################################################################################################
@@ -145,70 +137,68 @@ classdef constants < handle
         %=============
         function obj = constants(BICAS_root_path)            
             
-            %--------------------------------------------------------------------------------
-            % Common values. Only used INDIRECTLY to set the values of the "real" constants.
-            %--------------------------------------------------------------------------------
+            %-------------------------------------------------------------------------------------
+            % Common values
+            % -------------
+            % Only used INDIRECTLY and only INTERNALLY to set the values of the "real" constants.
+            %-------------------------------------------------------------------------------------
             D = [];
             D.INITIAL_RELEASE_MODIFICATION_STR = 'No modification (initial release)';
-            D.INITIAL_RELEASE_DATE = '2016-10-17';
+            D.INITIAL_RELEASE_DATE = '2016-11-17';
             %D.SWD_OUTPUT_RELEASE_VERSION = '01';  % For the S/W descriptor output CDFs' release version. Unknown what a sensible value is.
             
             
             
             C = [];
             
-            C.author_name         = 'Erik P G Johansson';
-            C.author_email        = 'erik.johansson@irfu.se';
-            C.institute           = 'IRF-U';
-            C.master_CDFs_dir_rel = 'data';    % Location of master CDF files. Relative to the software directory structure root.
+            C.AUTHOR_NAME              = 'Erik P G Johansson';
+            C.AUTHOR_EMAIL             = 'erik.johansson@irfu.se';
+            C.INSTITUTE                = 'IRF-U';
+            C.BICAS_ROOT_PATH          = BICAS_root_path;
+            C.MASTER_CDFS_RELATIVE_DIR = 'data';    % Location of master CDF files. Relative to the software directory structure root.
             
             % Value that shows up in EOut dataset GlobalAttributes.Calibration_version.
             % String value.
-            C.Calibration_version = '0.1; Only proportionality constants; No voltage offset tables, no transfer functions';
+            C.Calibration_version = '0.1; Only proportionality constants i.e. no voltage offset tables, no transfer functions; No bias currents';
         
-            %irf.log('w', 'Using temporary S/W name in constants.')
-            C.SWD_identification.project     = 'ROC-SGSE';
-            C.SWD_identification.name        = 'BICAS';
-            C.SWD_identification.identifier  = 'ROC-SGSE-BICAS';
-            C.SWD_identification.description = 'BIAS Calibration Software (BICAS) which derives the BIAS L2S input signals (plus some) from the BIAS L2R output signals.';
             
-            % Refers to the S/W descriptor release data for the entire software (not specific outputs).
-            C.SWD_release.version      = '0.1.0';
-            C.SWD_release.date         = D.INITIAL_RELEASE_DATE;
-            C.SWD_release.author       = C.author_name;
-            C.SWD_release.contact      = C.author_email;
-            C.SWD_release.institute    = C.institute;
-            C.SWD_release.modification = D.INITIAL_RELEASE_MODIFICATION_STR;
             
-            C.SWD_environment.executable = 'roc/bicas';
+            %==========================================================================================================
+            % Various S/W descriptor release data for the entire software (not specific outputs)
+            % ----------------------------------------------------------------------------------
+            % NOTE: Field names are used for constructing the JSON object struct and can therefore NOT follow variable
+            % naming conventions.
+            %==========================================================================================================
+            C.SWD_IDENTIFICATION.project     = 'ROC-SGSE';
+            C.SWD_IDENTIFICATION.name        = 'BICAS';
+            C.SWD_IDENTIFICATION.identifier  = 'ROC-SGSE-BICAS';
+            C.SWD_IDENTIFICATION.description = 'BIAS Calibration Software (BICAS) which derives the BIAS L2S input signals (plus some) from the BIAS L2R output signals.';
+            %
+            C.SWD_RELEASE.version      = '0.1.0';
+            C.SWD_RELEASE.date         = D.INITIAL_RELEASE_DATE;
+            C.SWD_RELEASE.author       = C.AUTHOR_NAME;
+            C.SWD_RELEASE.contact      = C.AUTHOR_EMAIL;
+            C.SWD_RELEASE.institute    = C.INSTITUTE;
+            C.SWD_RELEASE.modification = D.INITIAL_RELEASE_MODIFICATION_STR;
+            %
+            C.SWD_ENVIRONMENT.executable = 'roc/bicas';
+            
+            
             
             % Prefix used to identify the subset of stdout that should actually be passed on as stdout by the bash launcher script.
-            C.stdout_prefix = 'STDOUT: ';
+            C.STDOUT_PREFIX = 'STDOUT: ';
         
             % Parameters influencing how JSON objects are printed with function JSON_object_str.
-            C.JSON_object_str = struct(...
-                'indent_size',     4, ...
-                'value_position', 15);
+            C.JSON_OBJECT_STR = [];
+            C.JSON_OBJECT_STR.INDENT_SIZE    =  4;
+            C.JSON_OBJECT_STR.VALUE_POSITION = 15;
         
             % The epoch for ACQUISITION_TIME.
             % The time in UTC at which ACQUISITION_TIME is [0,0].
+            % Year-month-day-hour-minute-second-millisecond-mikrosecond(0-999)-nanoseconds(0-999)
             % PROPOSAL: Store the value returned by spdfcomputett2000(ACQUISITION_TIME_EPOCH_UTC) instead?
             C.ACQUISITION_TIME_EPOCH_UTC = [2000,01,01, 12,00,00, 000,000,000];
 
-            % Define constants relating to LFR.
-            % F0, F1, F2, F3: Frequencies with which samples are taken. Unit: Hz.
-            C.LFR = [];
-            C.LFR.F0 = 24576;  % = 6 * 4096
-            C.LFR.F1 =  4096;
-            C.LFR.F2 =   256;
-            C.LFR.F3 =    16;
-        
-            C.approximate_demuxer = struct(...
-                'alpha',    1/17, ...
-                'beta',        1, ...
-                'gamma_hg',  100, ...
-                'gamma_lg',    5);      % NOTE/POSSIBLE BUG: Uncertain which value is high-gain, and low-gain.
-            
             C.INPUT_CDF_ASSERTIONS.STRICT_DATASET_ID       = 0;   % Require input CDF Global Attribute "DATASET_ID"       to match the expected value.
             C.INPUT_CDF_ASSERTIONS.STRICT_Skeleton_version = 1;   % Require input CDF Global Attribute "Skeleton_version" to match the expected value.
             C.OUTPUT_CDF.SET_Test_id = 1;            % Set CDF GlobalAttribute "Test_id". ROC DFMD says that it should really be set by ROC.
@@ -216,25 +206,46 @@ classdef constants < handle
             
             C.PROCESSING.USE_AQUISITION_TIME_FOR_HK_TIME_INTERPOLATION = 1;
             
-            % zVariables which are still empty after copying data into the master CDF assigned a correctly sized array with fill values.
-            % This should only be necessary for S/W modes with incomplete processing.
+            % zVariables which are still empty after copying data into the master CDF assigned a correctly sized array
+            % with fill values. This should only be necessary for S/W modes with incomplete processing.
             C.OUTPUT_CDF.EMPTY_ZVARIABLES_SET_TO_FILL = 1;
             
-            C.IRF_LOG_LEVEL = 'notice';   % Log level for "irf.log".
+            C.LOGGING.MAX_UNIQUES_PRINTED = 5;    % When logging contents of matrix/vector, maximum number of unique values printed before switching to shorter representation (min-max range)
+            C.LOGGING.IRF_LOG_LEVEL = 'notice';   % Log level for "irf.log".
+            
+            
+            
+            %=====================================================================
+            % Define constants relating to interpreting LFR datasets
+            % ------------------------------------------------------
+            % F0, F1, F2, F3: Frequencies with which samples are taken. Unit: Hz. Names are LFR's naming.
+            %=====================================================================
+            C.LFR = [];
+            C.LFR.F0 = 24576;  % = 6 * 4096
+            C.LFR.F1 =  4096;
+            C.LFR.F2 =   256;
+            C.LFR.F3 =    16;
+        
+            %========================================================
+            % Constants for how the "simple demuxer" calibrates data
+            %========================================================
+            C.SIMPLE_DEMUXER = [];
+            C.SIMPLE_DEMUXER.ALPHA           = 1/17;
+            C.SIMPLE_DEMUXER.BETA            =    1;
+            C.SIMPLE_DEMUXER.GAMMA_HIGH_GAIN =  100;
+            C.SIMPLE_DEMUXER.GAMMA_LOW_GAIN  =    5;   % NOTE/POSSIBLE BUG: Uncertain which value is high-gain, and low-gain.
             
             obj.C = C;
         
             
             
-            [obj.inputs,  obj.EIn_PDIDs]  = bicas.constants.produce_inputs_constants();
-            [obj.outputs, obj.EOut_PDIDs]  = bicas.constants.produce_outputs_constants(D);          
-            obj.sw_modes = bicas.constants.produce_sw_modes_constants();
-            
-            obj.BICAS_root_path = BICAS_root_path;
+            [obj.INPUTS_INFO_LIST,  obj.INPUTS_PDIDS_LIST]  = bicas.constants.produce_inputs_constants();
+            [obj.OUTPUTS_INFO_LIST, obj.OUTPUTS_PDIDS_LIST] = bicas.constants.produce_outputs_constants(D);          
+            obj.SW_MODES_INFO_LIST                 = bicas.constants.produce_sw_modes_constants();
             
             
             
-            obj.all_dataset_IDs = unique(cellfun(@(s) ({s.dataset_ID}), [obj.outputs, obj.inputs])');
+            obj.ALL_DATASET_IDS_LIST = unique(cellfun(@(s) ({s.dataset_ID}), [obj.OUTPUTS_INFO_LIST, obj.INPUTS_INFO_LIST])');
 
             
             obj.validate
@@ -248,15 +259,15 @@ classdef constants < handle
         function assert_dataset_ID(obj, dataset_ID)
         % Assert that argument is a valid dataset ID.
         
-            if ~ismember(dataset_ID, obj.all_dataset_IDs)
+            if ~ismember(dataset_ID, obj.ALL_DATASET_IDS_LIST)
                 error('BICAS:constants:Assertion', '"%s" is not a valid dataset ID.', dataset_ID)
             end
         end
         
         function assert_sw_mode_ID(obj, sw_mode_ID)
             
-            for i=1:length(obj.sw_modes)
-                if strcmp(obj.sw_modes{i}.ID, sw_mode_ID)
+            for i=1:length(obj.SW_MODES_INFO_LIST)
+                if strcmp(obj.SW_MODES_INFO_LIST{i}.ID, sw_mode_ID)
                     return
                 end
             end
@@ -265,8 +276,8 @@ classdef constants < handle
 
         function assert_EIn_PDID(obj, EIn_PDID)
             
-            for i=1:length(obj.inputs)
-                if strcmp(obj.inputs{i}.PDID, EIn_PDID)
+            for i=1:length(obj.INPUTS_INFO_LIST)
+                if strcmp(obj.INPUTS_INFO_LIST{i}.PDID, EIn_PDID)
                     return
                 end
             end
@@ -275,8 +286,8 @@ classdef constants < handle
 %         
 %         function assert_EOut_PDID(obj, EOut_PDID)
 %             
-%             for i=1:length(obj.outputs)
-%                 if strcmp(obj.outputs{i}.PDID, EOut_PDID)
+%             for i=1:length(obj.OUTPUTS_INFO_LIST)
+%                 if strcmp(obj.OUTPUTS_INFO_LIST{i}.PDID, EOut_PDID)
 %                     return
 %                 end
 %             end
@@ -300,8 +311,8 @@ classdef constants < handle
             %==========================
             % Iterate over input types
             %==========================
-            for i = 1:length(obj.inputs)
-                CLI_parameter = obj.inputs{i}.CLI_parameter;
+            for i = 1:length(obj.INPUTS_INFO_LIST)
+                CLI_parameter = obj.INPUTS_INFO_LIST{i}.CLI_parameter;
                 
                 % NOTE: Implicitly checks that CLI_parameter does NOT begin with "--".
                 disallowed_chars = setdiff(CLI_parameter, INPUT_CLI_PARAMETER_NAME_PERMITTED_CHARACTERS);
@@ -311,17 +322,17 @@ classdef constants < handle
                 end
             end
             
-            bicas.utils.assert_strings_unique(obj.EIn_PDIDs)
-            bicas.utils.assert_strings_unique(obj.EOut_PDIDs)            
+            bicas.utils.assert_strings_unique(obj.INPUTS_PDIDS_LIST)
+            bicas.utils.assert_strings_unique(obj.OUTPUTS_PDIDS_LIST)            
             
-            sw_mode_CLI_parameters = cellfun(@(s) ({s.CLI_parameter}), obj.sw_modes);
-            sw_mode_IDs            = cellfun(@(s) ({s.ID           }), obj.sw_modes);
+            sw_mode_CLI_parameters = cellfun(@(s) ({s.CLI_parameter}), obj.SW_MODES_INFO_LIST);
+            sw_mode_IDs            = cellfun(@(s) ({s.ID           }), obj.SW_MODES_INFO_LIST);
             bicas.utils.assert_strings_unique(sw_mode_CLI_parameters);
             bicas.utils.assert_strings_unique(sw_mode_IDs);
             
-            % ASSERTION: CONSTANTS.sw_modes{i}.CLI_parameter matches validation regexp.
-            for i = 1:length(obj.sw_modes)
-                CLI_parameter = obj.sw_modes{i}.CLI_parameter;
+            % ASSERTION: CONSTANTS.SW_MODES_INFO_LIST{i}.CLI_parameter matches validation regexp.
+            for i = 1:length(obj.SW_MODES_INFO_LIST)
+                CLI_parameter = obj.SW_MODES_INFO_LIST{i}.CLI_parameter;
                 
                 if isempty(regexp(CLI_parameter, SW_MODE_CLI_PARAMETER_REGEX, 'once'))
                     error('BICAS:constants:Assertion:IllegalConfiguration', ...
@@ -334,7 +345,7 @@ classdef constants < handle
             % Is strictly speaking very slightly unsafe; could get false negatives.
             dataset_ID_version_list = cellfun( ...
                 @(x) ({[x.dataset_ID, '_V', x.skeleton_version_str]}), ...
-                [obj.outputs, obj.inputs]   );
+                [obj.OUTPUTS_INFO_LIST, obj.INPUTS_INFO_LIST]   );
             bicas.utils.assert_strings_unique(dataset_ID_version_list)
             
         end

@@ -14,8 +14,8 @@
 %                      - Interprets MATLAB structure field names as "JSON parameter name strings".
 %                      - Interprets MATLAB cell arrays as "JSON arrays/sets".
 % settings           : Struct
-%   .indent_size     : Number of whitespace per indentation level.
-%   .value_position  : The minimum number of characters between the beginning of a "name" and the beginning of the
+%   .INDENT_SIZE     : Number of whitespace per indentation level.
+%   .VALUE_POSITION  : The minimum number of characters between the beginning of a "name" and the beginning of the
 %                      corresponding value. This setting can make the final string more readable.
 % str                : Indented multi-line string with that is suitable for printing and human reading.
 %                      NOTE: Uses line feed character for line breaks.
@@ -52,8 +52,8 @@ end
 function str = print_JSON_object_recursive(obj, indent_level, indent_first_line, settings)
 
 %LINE_BREAK = char(10);    % Should be same as sprintf('\n').
-INDENT_0_STR = repmat(' ', 1, settings.indent_size *  indent_level   );
-INDENT_1_STR = repmat(' ', 1, settings.indent_size * (indent_level+1));
+INDENT_0_STR = repmat(' ', 1, settings.INDENT_SIZE *  indent_level   );
+INDENT_1_STR = repmat(' ', 1, settings.INDENT_SIZE * (indent_level+1));
 
 str = '';
 
@@ -93,7 +93,7 @@ elseif isstruct(obj)
         str = [str, INDENT_1_STR, name_str];
         
         if ischar(value)
-            fill_str = repmat(' ', 1, settings.value_position-length(name_str));
+            fill_str = repmat(' ', 1, settings.VALUE_POSITION-length(name_str));
             str = [str, fill_str, sprintf('"%s"', value)];
         else
             % Alternative 1:

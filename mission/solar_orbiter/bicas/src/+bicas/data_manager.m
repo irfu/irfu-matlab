@@ -137,10 +137,6 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
 %#######################################################################################################################
 % PROPOSAL: Use other class name that implices processing, and fits with defined term "process data".
 %     "processing_manager"? "proc_manager"?
-%
-% PROPOSAL: Better name for "process data" (all together or individual variable), process data type, elementary input/output.
-%     PROPOSAL: "process data" (PD), "process data variables" = All process data in aggregate?
-%     PROPOSAL: "process data variable" (PDV).
 % --
 % PROPOSAL: Derive DIFF_GAIN (from BIAS HK using time interpolation) in one code common to both LFR & TDS.
 %   PROPOSAL: Function
@@ -203,8 +199,8 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
             global CONSTANTS
         
             obj.ALL_PDIDs = {...
-                CONSTANTS.EIn_PDIDs{:}, ...
-                CONSTANTS.EOut_PDIDs{:}, ...
+                CONSTANTS.INPUTS_PDIDS_LIST{:}, ...
+                CONSTANTS.OUTPUTS_PDIDS_LIST{:}, ...
                 obj.INTERMEDIATE_PDIDs{:}};
             
             obj.validate
@@ -295,7 +291,7 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
                     error('BICAS:data_manager:Assertion:SWModeProcessing', ...
                         'Can not derive necessary process data for pdid=%s, input field=%s', pdid, inputField)
                 end
-                    
+
             end
             
             %========================================================
@@ -319,30 +315,30 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
         % This structure is automatically put together from other structures (constants) to avoid having to define too
         % many redundant constants.
         %
-        % NOTE: This function takes what constants.sw_modes returns and adds info about input and output datasets to it.
+        % NOTE: This function takes what constants.SW_MODES_INFO_LIST returns and adds info about input and output datasets to it.
         % NOTE: The function takes the CLI_parameter as parameter, not the S/W mode ID!
         %
         % IMPLEMENTATION NOTE: The reason for that this function is located in data_manager instead of constants is the
         % call to "bicas.data_manager.get_elementary_input_PDIDs" and that constants.m should contain no reference to
         % data_manager.m (for initialization reasons at the very least). AMENDMENT 2016-11-16: Function no longer call
-        % that function but might call a future similar one. Comment therefore still relevant.
+        % that function but might call a similar one in the future. Comment therefore still relevant.
 
             global CONSTANTS
 
-            SwModeInfo = bicas.utils.select_structs(CONSTANTS.sw_modes, 'CLI_parameter', {cliParameter});            
+            SwModeInfo = bicas.utils.select_structs(CONSTANTS.SW_MODES_INFO_LIST, 'CLI_parameter', {cliParameter});            
             SwModeInfo = SwModeInfo{1};
 
             % Collect all associated elementary input PDIDs.
             %input_PDIDs = obj.get_elementary_input_PDIDs(C_sw_mode.output_PDIDs, C_sw_mode.ID);
 
             try
-                SwModeInfo.inputs = bicas.utils.select_structs(CONSTANTS.inputs,  'PDID', SwModeInfo.input_PDIDs);
+                SwModeInfo.inputs = bicas.utils.select_structs(CONSTANTS.INPUTS_INFO_LIST,  'PDID', SwModeInfo.input_PDIDs);
             catch exception
                 error('BICAS:Assertion:IllegalConfiguration', ...
                     'Can not identify all input PDIDs associated with S/W mode CLI parameter "%s".', cliParameter)
             end
             try
-                SwModeInfo.outputs = bicas.utils.select_structs(CONSTANTS.outputs, 'PDID', SwModeInfo.output_PDIDs);
+                SwModeInfo.outputs = bicas.utils.select_structs(CONSTANTS.OUTPUTS_INFO_LIST, 'PDID', SwModeInfo.output_PDIDs);
             catch exception
                 error('BICAS:Assertion:IllegalConfiguration', ...
                     'Can not identify all output PDIDs associated with S/W mode CLI parameter "%s".', cliParameter)
@@ -377,10 +373,10 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
             %========================
             % Iterate over S/W modes
             %========================
-            for i = 1:length(CONSTANTS.sw_modes)
+            for i = 1:length(CONSTANTS.SW_MODES_INFO_LIST)
                 
                 % Get info for S/W mode.
-                sw_mode_CLI_parameter = CONSTANTS.sw_modes{i}.CLI_parameter;
+                sw_mode_CLI_parameter = CONSTANTS.SW_MODES_INFO_LIST{i}.CLI_parameter;
                 SwModeInfo = obj.get_extended_sw_mode_info(sw_mode_CLI_parameter);
                 
                 % Check unique inputs CLI_parameter.
@@ -739,16 +735,6 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
             %====================
             % Misc. log messages
             %====================
-            % PROPOSAL: PDID, dataset ID.
-            % PROPOSAL: Move to process_demuxing_calibration.
-            %    NOTE: Must have t_* variables.
-            bicas.dm_utils.log_unique_values_all('LFR_FREQ',  LFR_FREQ);
-            bicas.dm_utils.log_unique_values_all('Rx',        Rx);
-            bicas.dm_utils.log_unique_values_all('DIFF_GAIN', PreDcd.DIFF_GAIN);
-            bicas.dm_utils.log_unique_values_all('MUX_SET',   PreDcd.MUX_SET);
-            
-            % PROPOSAL: Move to reading of CDF, setting EIn PD.
-            % PROPOSAL: Move to process_demuxing_calibration.
             bicas.dm_utils.log_tt2000_interval('HK  ACQUISITION_TIME', hkAtTt2000)
             bicas.dm_utils.log_tt2000_interval('SCI ACQUISITION_TIME', sciAtTt2000)
             bicas.dm_utils.log_tt2000_interval('HK  Epoch           ', hkEpoch)
@@ -789,7 +775,7 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
                     
             % Log messages
             for f = fieldnames(PreDcd.DemuxerInput)'
-                bicas.dm_utils.log_unique_values_summary(f{1}, PreDcd.DemuxerInput.(f{1}));
+                bicas.dm_utils.log_values_summary(f{1}, PreDcd.DemuxerInput.(f{1}));
             end
             
             PostDcd = PreDcd;
@@ -800,7 +786,7 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
             
             % Log messages
             for f = fieldnames(PostDcd.DemuxerOutput)'
-                bicas.dm_utils.log_unique_values_summary(f{1}, PostDcd.DemuxerOutput.(f{1}));
+                bicas.dm_utils.log_values_summary(f{1}, PostDcd.DemuxerOutput.(f{1}));
             end
             
             % BUG / TEMP: Set default values since the real values are not available.
@@ -1014,11 +1000,11 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
                 error('BICAS:data_manager:Assertion:IllegalArgument', 'Illegal argument value "mux_set" or "diff_gain". Must be scalars (not arrays).')
             end
             
-            ALPHA = CONSTANTS.C.approximate_demuxer.alpha;
-            BETA  = CONSTANTS.C.approximate_demuxer.beta;
+            ALPHA = CONSTANTS.C.SIMPLE_DEMUXER.ALPHA;
+            BETA  = CONSTANTS.C.SIMPLE_DEMUXER.BETA;
             switch(DIFF_GAIN)
-                case 0    ; GAMMA = CONSTANTS.C.approximate_demuxer.gamma_lg;
-                case 1    ; GAMMA = CONSTANTS.C.approximate_demuxer.gamma_hg;
+                case 0    ; GAMMA = CONSTANTS.C.SIMPLE_DEMUXER.GAMMA_LOW_GAIN;
+                case 1    ; GAMMA = CONSTANTS.C.SIMPLE_DEMUXER.GAMMA_HIGH_GAIN;
                 otherwise
                     if isnan(DIFF_GAIN)
                         GAMMA = NaN;
