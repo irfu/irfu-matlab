@@ -28,7 +28,7 @@
     
     % 2.2. load dfg and edp data
     dmpaB = mms.db_get_ts('mms1_dfg_srvy_ql', 'mms1_dfg_srvy_dmpa', Tint);
-    Exyz = mms.db_get_ts('mms1_edp_fast_l1b_dce', 'mms1_edp_dce_sensor', Tint);
+    Exyz = mms.db_get_ts('mms1_edp_fast_ql_dce', 'mms1_edp_dce_xyz_dsl', Tint);
    
 %%  3. make omni flux
     % 3.1. ion omni flux;
