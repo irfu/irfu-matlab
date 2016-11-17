@@ -109,6 +109,47 @@ classdef dm_utils
 
 
 
+        function iLast = find_last_same_sequence(iFirst, varargin)
+        % Finds the greatest iLast such that all varargin{k}(i) are equal for iFirst <= i <= iLast separately for every k.
+        % Useful for finding a continuous sequence of records with the same data.
+        %
+        % ASSUMES: varargin{i} are all column arrays of the same size.
+        % ASSUMES: At least one record. (Algorithm does not work for zero records. Output is ill-defined.)
+        
+        % PROPOSAL: Better name?
+        % PROPOSAL: Replace by function that returns list of sequences.
+        %   PRO: Can naturally handle zero records.
+            
+            % ASSERTIONS
+            if 0 == length(varargin)
+                error('BICAS:dm_utils:Assertion:IllegalArgument', 'There is no vectors to look for sequences in.')
+            end
+            for k = 1:length(varargin)
+                if ~iscolumn(varargin{k})
+                    error('BICAS:dm_utils:Assertion:IllegalArgument', 'varargins are not all column vectors.')
+                end
+            end                
+            nRecords = size(varargin{1}, 1);
+            if nRecords == 0
+                error('BICAS:dm_utils:Assertion:IllegalArgument', 'Vectors are empty.')
+            end
+                
+            % NOTE: Algorithm does not work for nRecords==0.
+            iLast = iFirst;
+            while iLast+1 <= nRecords       % For as long as there is another row...
+                for k = 1:length(varargin)
+                    if ~isequaln(varargin{k}(iFirst), varargin{k}(iLast+1))    % NOTE: Use equals that treats NaN as any other value.
+                        % CASE: This row is different from the previous one.
+                        return
+                    end
+                end
+                iLast = iLast + 1;
+            end
+            iLast = nRecords;
+        end
+
+
+
         function freq = get_LFR_frequency(FREQ)
         % Convert LFR zVariable FREQ values to Hz. The usefulness of this function stems from how the LFR
         % datasets are defined.
@@ -151,47 +192,6 @@ classdef dm_utils
             I = (FREQ==1); Rx(I) = R1(I);
             I = (FREQ==2); Rx(I) = R2(I);
             I = (FREQ==3); Rx(I) = 1;      % The value of a hypothetical (non-existant, constant) analogous zVariable "R3".
-        end
-
-
-
-        function iLast = find_last_same_sequence(iFirst, varargin)
-        % Finds the greatest iLast such that all varargin{k}(i) are equal for iFirst <= i <= iLast separately for every k.
-        % Useful for finding a continuous sequence of records with the same data.
-        %
-        % ASSUMES: varargin{i} are all column arrays of the same size.
-        % ASSUMES: At least one record. (Algorithm does not work for zero records. Output is ill-defined.)
-        
-        % PROPOSAL: Better name?
-        % PROPOSAL: Replace by function that returns list of sequences.
-        %   PRO: Can naturally handle zero records.
-            
-            % ASSERTIONS
-            if 0 == length(varargin)
-                error('BICAS:dm_utils:Assertion:IllegalArgument', 'There is no vectors to look for sequences in.')
-            end
-            for k = 1:length(varargin)
-                if ~iscolumn(varargin{k})
-                    error('BICAS:dm_utils:Assertion:IllegalArgument', 'varargins are not all column vectors.')
-                end
-            end                
-            nRecords = size(varargin{1}, 1);
-            if nRecords == 0
-                error('BICAS:dm_utils:Assertion:IllegalArgument', 'Vectors are empty.')
-            end
-                
-            % NOTE: Algorithm does not work for nRecords==0.
-            iLast = iFirst;
-            while iLast+1 <= nRecords       % For as long as there is another row...
-                for k = 1:length(varargin)
-                    if ~isequaln(varargin{k}(iFirst), varargin{k}(iLast+1))    % NOTE: Use equals that treats NaN as any other value.
-                        % CASE: This row is different from the previous one.
-                        return
-                    end
-                end
-                iLast = iLast + 1;
-            end
-            iLast = nRecords;
         end
 
 
@@ -363,28 +363,63 @@ classdef dm_utils
         
         
         
-        function DELTA_PLUS_MINUS = derive_DELTA_PLUS_MINUS(freq, varSize)
+        function DELTA_PLUS_MINUS = derive_DELTA_PLUS_MINUS(freqHz, nSpr)
         % freq    : Frequency column vector in s^-1.
         % varSize : Size of the matrix to be returned. 
         % DELTA_PLUS_MINUS : Analogous to BIAS zVariable CDF_INT8=int64. NOTE: Unit ns.
         %
         % NOTE: Can not handle freq=NaN since the output is an integer.
-        %
-        % NOTE: The real DELTA_PLUS_MINUS is CDF_INT8.
             
-            if ~iscolumn(freq) || ~isfloat(freq)
-                error('BICAS:dm_utils:Assertion', '"freq" is not a column vector of floats.')
-            elseif size(freq, 1) ~= varSize(1)
-                error('BICAS:dm_utils:Assertion', 'The size of "freq" does not match varSize.')
-            elseif length(varSize) < 2
-                error('BICAS:dm_utils:Assertion', 'The "freq" is not at least two elements long.')
+            if ~iscolumn(freqHz) || ~isfloat(freqHz)
+                error('BICAS:dm_utils:Assertion:IllegalArgument', '"freqHz" is not a column vector of floats.')
+            elseif ~isscalar(nSpr)
+                error('BICAS:dm_utils:Assertion:IllegalArgument', '"nSpr" is not a scalar.')
             end
             
-            DELTA_PLUS_MINUS = zeros(varSize);             % NOTE: "zeros" creates a square matrix for scalar argument!
-            for i = 1:length(freq)
-                DELTA_PLUS_MINUS(i, :) = 1/freq(i) * 1e9 * 0.5;      % Seems to work for more than 2D.
+            nRecords = size(freqHz, 1);
+            DELTA_PLUS_MINUS = zeros([nRecords, nSpr]);
+            for i = 1:length(freqHz)
+                DELTA_PLUS_MINUS(i, :) = 1/freqHz(i) * 1e9 * 0.5;      % Seems to work for more than 2D.
             end
             DELTA_PLUS_MINUS = cast(DELTA_PLUS_MINUS, bicas.utils.convert_CDF_type_to_MATLAB_class('CDF_INT8',  'Only CDF data types'));
+        end
+        
+        
+        
+        function SAMP_DTIME = derive_SAMP_DTIME(freqHz, nSpr)
+        % frequencyWithinRecords : Frequency column vector in s^-1.
+        % nSpr                   : Number of samples per record (SPR).
+        % SAMP_DTIME             : Analogous to BIAS zVariable CDF_UINT4=uint32. NOTE: Unit ns.
+        %
+        % NOTE: Can not handle freq=NaN since the output is an integer.
+        %
+        % BUG: The LFR/TDS/BIAS dataset skeletons specify that zVariable SAMP_DTIME is CDF_UINT4 in unit ns which should
+        % have a too small a range for some snapshots. Therefore, this conversion will eliminate most Example: LFR
+        % 2048/256 Hz = 8e9 ns > 2^31 ns.
+        
+        % Algorithm should require integers to have a very predictable behaviour (useful when testing).
+            
+            nRecords = size(freqHz, 1);
+            
+            % Express frequency as period length in ns (since tt2000 uses ns as a unit).
+            % Use the same MATLAB class as tt
+            % Unique frequency per record.
+            periodNsColVec = int64(1e9 ./ freqHz);   % Ns = ns = nanoseconds
+            periodNsMatrix = repmat(periodNsColVec, [1, nSpr]);
+                        
+            % Conventions:
+            % ------------
+            % Time unit: ns (as for tt2000)            
+            % Algorithm should require integers to have a very predictable behaviour (useful when testing).
+            
+            % Indices for within every record (start at zero for every record).
+            iSampleRowVec = int64(0:(nSpr-1));
+            iSampleMatrix = repmat(iSampleRowVec, [nRecords, 1]);
+            
+            % Unique time for every sample in every record.
+            SAMP_DTIME = iSampleMatrix .* periodNsMatrix;
+            
+            SAMP_DTIME = cast(SAMP_DTIME, bicas.utils.convert_CDF_type_to_MATLAB_class('CDF_UINT4',  'Only CDF data types'));
         end
 
 
@@ -426,58 +461,96 @@ classdef dm_utils
 
         
 
-        function log_values_summary(variableName, v)
+        function log_values_summary(varargin)
         % Logs statistics on the contents of a numeric variable (any dimensionality): Number of & percentage NaN, unique
         % values, min-max. Primarily intended for zVariables and derivatives thereof. Can be useful for knowing which
         % settings are used (e.g. DIFF_GAIN), constant/varying bias current, suspect input datasets.
+        %
+        % ARGUMENTS
+        % =========
+        % Alternative 1: 'explanation'    : Prints explanation of the (very condensed) log messages.
+        % Alternative 2: variableName, v  : Print statistics on line
             
         % PROPOSAL: Handle fill/pad value?
         % PROPOSAL: Move to +utils.
-        % PROPOSAL: Shorten printouts
-        %   PROPOSAL: "#Uniques" ==> #un
-        %   PROPOSAL: "Min-max" ==> mm 
-        %   PROPOSAL: Uniques ==> Us (plural; same length as "mm")
-        %   PROPOSAL: Omit "Uniques: "/"Min-max". Dash/no dash explains.
         % PROPOSAL: Print size of matrix.
         % PROPOSAL: Special mode which prints explanation of printout.
         % PROPOSAL: Special log function for zVars. Can print CDF type (implicitly range).
         % PROPOSAL: Print MATLAB class (implicitly range).
         %
-        %  #ACQUISITION_TIME         : #Uniques=  294 (#NaN=0=0%)       Min-max: 20621--526142341
-        %  #ACQUISITION_TIME (142x2,uint32)        : #Us=  294 (#NaN=0=0%)       Mm: 20621--526142341
-
         
-            global CONSTANTS
-            
-            if ~isnumeric(v)
-                error('BICAS:dm_utils:Assertion:IllegalArgument', 'v is not numerical')
-            end
-            
-            nValues       = numel(v);
-            nUniqueValues = length(bicas.dm_utils.unique_values_NaN(v));
-            nNan          = sum(isnan(v(:)));
-            
-            if nValues == 0
-                nanStr = '';
-            else
-                nanStr = sprintf('(#NaN=%d=%d%%)', nNan, round((nNan/numel(v))*100));
-            end
-            
-            if nUniqueValues > CONSTANTS.C.LOGGING.MAX_UNIQUES_PRINTED
-                vMin = min(min(min(v)));
-                vMax = max(max(max(v)));
-                valuesStr = sprintf('Min-max: %d--%d', vMin, vMax);
-            else
-                if nUniqueValues == 0
-                    valuesStr = '';
-                else
-                    valuesStr = ['Uniques: ', sprintf('%d ', bicas.dm_utils.unique_values_NaN(v))];
+            global CONSTANTS                
+        
+            if nargin == 1
+                % ASSERTION
+                if ~strcmp(varargin{1}, 'explanation')
+                    error('BICAS:dm_utils:Assertion:IllegalArgument', 'Wrong number of arguments')
                 end
+                    
+                EXPLANATION_STRING = 'Explanation for variable log messages: (x,y, ...)=size of variable; #=Number of ...; Us=Unique values (incl. NaN which counts as equal to itself); Mm=Min-max';
+                irf.log('n', EXPLANATION_STRING)
+                return
+                
+            elseif nargin == 2
+                
+                variableName  = varargin{1};
+                variableValue = varargin{2};
+                
+                % ASSERTIONS
+                if ~isnumeric(variableValue) || ndims(variableValue) > 3   % NOTE: min-max limit number of dimensions.
+                    error('BICAS:dm_utils:Assertion:IllegalArgument', 'v is not numerical with max 3 dimensions.')
+                end
+                
+                nValues       = numel(variableValue);
+                nUniqueValues = length(bicas.dm_utils.unique_values_NaN(variableValue));
+                nNan          = sum(isnan(variableValue(:)));
+                
+                %============================
+                % Construct string: NaN info
+                %============================
+                if nValues == 0
+                    nanStr = '';
+                else
+                    nanStr = sprintf('#NaN=%3d%%=%d', round((nNan/numel(variableValue))*100), nNan);
+                end
+                
+                %=================================
+                % Construct string: variable size
+                %=================================
+                % Create comma-separated list of numbers.
+                sizeStr = strjoin(arrayfun(@(n) num2str(n), size(variableValue), 'UniformOutput', 0),',');
+                
+                %===================================
+                % Construct string: range of values
+                %===================================
+                if nUniqueValues > CONSTANTS.C.LOGGING.MAX_UNIQUES_PRINTED
+                    vMin = min(min(min(variableValue)));
+                    vMax = max(max(max(variableValue)));
+                    valuesStr = sprintf('Mm: %d--%d', vMin, vMax);
+                else
+                    if nUniqueValues == 0
+                        valuesStr = '';
+                    else
+                        valuesStr = ['Us: ', sprintf('%d ', bicas.dm_utils.unique_values_NaN(variableValue))];
+                    end
+                end
+                
+                %======================================================
+                % Assemble the final string
+                % -------------------------
+                % Examples for choosing column sizes:
+                % Long variable names:       HK_BIA_MODE_BIAS3_ENABLED
+                % Long variable size string: (90,90,2048)
+                %======================================================
+                outputStr = sprintf('%-25s (%-10s): #Us=%5d (%-16s) %s', variableName, sizeStr, nUniqueValues, nanStr, valuesStr);
+                
+                irf.log('n', outputStr)
+            else
+                
+                % ASSERTION
+                error('BICAS:dm_utils:Assertion:IllegalArgument', 'Wrong number of arguments')
+                
             end
-            
-            outputStr = sprintf('#%-25s: #Uniques=%5d %-17s %s', variableName, nUniqueValues, nanStr, valuesStr);
-            
-            irf.log('n', outputStr)
         end
         
         

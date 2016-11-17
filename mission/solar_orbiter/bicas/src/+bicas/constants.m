@@ -102,6 +102,7 @@ classdef constants < handle
 %     PROPOSAL: Use struct statement instead.
 %        CON: Does not make use of the similarities between assignments.
 %        CON: Want to "extract values from a table".
+%     PROPOSAL: Use functions to produce equivalent S/W modes for different input dataset versions (V01-->V02, V02-->V02).
 %
 % PROPOSAL: Rename ".C" to ".GENERAL", ".MISC"
 %
@@ -116,10 +117,13 @@ classdef constants < handle
 %###################################################################################################################
 
     properties(Access=public)
-        C          % For miscellaneous minor constants which still might require code to be initialized.
+        C                    % For miscellaneous minor constants which still might require code to be initialized.
+        
         SW_MODES_INFO_LIST   % Information associated with S/W modes.
+        
         INPUTS_INFO_LIST     % Information associated with input  datasets.
         OUTPUTS_INFO_LIST    % Information associated with output datasets.
+        
         INPUTS_PDIDS_LIST
         OUTPUTS_PDIDS_LIST
     end
@@ -208,7 +212,7 @@ classdef constants < handle
             
             % zVariables which are still empty after copying data into the master CDF assigned a correctly sized array
             % with fill values. This should only be necessary for S/W modes with incomplete processing.
-            C.OUTPUT_CDF.EMPTY_ZVARIABLES_SET_TO_FILL = 1;
+            C.OUTPUT_CDF.EMPTY_ZVARIABLES_SET_TO_FILL = 0;
             
             C.LOGGING.MAX_UNIQUES_PRINTED = 5;    % When logging contents of matrix/vector, maximum number of unique values printed before switching to shorter representation (min-max range)
             C.LOGGING.IRF_LOG_LEVEL = 'notice';   % Log level for "irf.log".
@@ -381,19 +385,35 @@ classdef constants < handle
             %=====
             % LFR 
             %=====
-%             sw_mode = [];
-%             sw_mode.CLI_parameter = 'LFR-SBM1-CWF-E';
-%             sw_mode.ID            = 'LFR-SBM1-CWF-E_V01-V02';
-%             sw_mode.SWD_purpose = 'Generate CWF electric field data (potential difference) from LFR';            
-%             sw_mode.output_PDIDs = {'L2S_LFR-SBM1-CWF-E_V02'};
-%             C_sw_modes{end+1} = sw_mode;
-%             
-%             sw_mode = [];
-%             sw_mode.CLI_parameter = 'LFR-SBM2-CWF-E';
-%             sw_mode.ID            = 'LFR-SBM2-CWF-E_V01-V02';
-%             sw_mode.SWD_purpose = 'Generate CWF electric field data (potential difference) from LFR';            
-%             sw_mode.output_PDIDs = {'L2S_LFR-SBM2-CWF-E_V02'};
-%             C_sw_modes{end+1} = sw_mode;
+            sw_mode = [];
+            sw_mode.CLI_parameter = 'LFR-SBM1-CWF-E_V01-V02';
+            sw_mode.ID            = 'LFR-SBM1-CWF-E_V01-V02';
+            sw_mode.SWD_purpose = 'Generate CWF electric field data (potential difference) from LFR';            
+            sw_mode.input_PDIDs  = {'L2R_LFR-SBM1-CWF_V01', 'HK_BIA_V01'};
+            sw_mode.output_PDIDs = {'L2S_LFR-SBM1-CWF-E_V02'};
+            C_sw_modes{end+1} = sw_mode;
+            sw_mode = [];
+            sw_mode.CLI_parameter = 'LFR-SBM1-CWF-E_V02-V02';
+            sw_mode.ID            = 'LFR-SBM1-CWF-E_V02-V02';
+            sw_mode.SWD_purpose = 'Generate CWF electric field data (potential difference) from LFR';            
+            sw_mode.input_PDIDs  = {'L2R_LFR-SBM1-CWF_V02', 'HK_BIA_V01'};
+            sw_mode.output_PDIDs = {'L2S_LFR-SBM1-CWF-E_V02'};
+            C_sw_modes{end+1} = sw_mode;
+            
+            sw_mode = [];
+            sw_mode.CLI_parameter = 'LFR-SBM2-CWF-E_V01-V02';
+            sw_mode.ID            = 'LFR-SBM2-CWF-E_V01-V02';
+            sw_mode.SWD_purpose = 'Generate CWF electric field data (potential difference) from LFR';            
+            sw_mode.input_PDIDs  = {'L2R_LFR-SBM2-CWF_V01', 'HK_BIA_V01'};
+            sw_mode.output_PDIDs = {'L2S_LFR-SBM2-CWF-E_V02'};
+            C_sw_modes{end+1} = sw_mode;
+            sw_mode = [];
+            sw_mode.CLI_parameter = 'LFR-SBM2-CWF-E_V02-V02';
+            sw_mode.ID            = 'LFR-SBM2-CWF-E_V02-V02';
+            sw_mode.SWD_purpose = 'Generate CWF electric field data (potential difference) from LFR';            
+            sw_mode.input_PDIDs  = {'L2R_LFR-SBM2-CWF_V02', 'HK_BIA_V01'};
+            sw_mode.output_PDIDs = {'L2S_LFR-SBM2-CWF-E_V02'};
+            C_sw_modes{end+1} = sw_mode;
             
             sw_mode = [];
             sw_mode.CLI_parameter = 'LFR-SURV-CWF-E_V01-V02';
@@ -402,13 +422,13 @@ classdef constants < handle
             sw_mode.input_PDIDs  = {'L2R_LFR-SURV-CWF_V01', 'HK_BIA_V01'};
             sw_mode.output_PDIDs = {'L2S_LFR-SURV-CWF-E_V02'};
             C_sw_modes{end+1} = sw_mode;
-            %sw_mode = [];
-            %sw_mode.CLI_parameter = 'LFR-SURV-CWF-E_V02-V02';
-            %sw_mode.ID            = 'LFR-SURV-CWF-E_V02-V02';
-            %sw_mode.SWD_purpose = 'Generate CWF electric field data (potential difference) from LFR';            
-            %sw_mode.input_PDIDs  = {'L2R_LFR-SURV-CWF_V02', 'HK_BIA_V01'};
-            %sw_mode.output_PDIDs = {'L2S_LFR-SURV-CWF-E_V02'};
-            %C_sw_modes{end+1} = sw_mode;
+            sw_mode = [];
+            sw_mode.CLI_parameter = 'LFR-SURV-CWF-E_V02-V02';
+            sw_mode.ID            = 'LFR-SURV-CWF-E_V02-V02';
+            sw_mode.SWD_purpose = 'Generate CWF electric field data (potential difference) from LFR';            
+            sw_mode.input_PDIDs  = {'L2R_LFR-SURV-CWF_V02', 'HK_BIA_V01'};
+            sw_mode.output_PDIDs = {'L2S_LFR-SURV-CWF-E_V02'};
+            C_sw_modes{end+1} = sw_mode;
             
             sw_mode = [];
             sw_mode.CLI_parameter = 'LFR-SURV-SWF-E_V01-V02';
@@ -417,13 +437,13 @@ classdef constants < handle
             sw_mode.input_PDIDs  = {'L2R_LFR-SURV-SWF_V01', 'HK_BIA_V01'};
             sw_mode.output_PDIDs = {'L2S_LFR-SURV-SWF-E_V02'};
             C_sw_modes{end+1} = sw_mode;
-            %sw_mode = [];
-            %sw_mode.CLI_parameter = 'LFR-SURV-SWF-E_V02-V02';
-            %sw_mode.ID            = 'LFR-SURV-SWF-E_V02-V02';
-            %sw_mode.SWD_purpose = 'Generate SWF electric (potential difference) data from LFR';
-            %sw_mode.input_PDIDs  = {'L2R_LFR-SURV-SWF_V02', 'HK_BIA_V01'};
-            %sw_mode.output_PDIDs = {'L2S_LFR-SURV-SWF-E_V02'};
-            %C_sw_modes{end+1} = sw_mode;
+            sw_mode = [];
+            sw_mode.CLI_parameter = 'LFR-SURV-SWF-E_V02-V02';
+            sw_mode.ID            = 'LFR-SURV-SWF-E_V02-V02';
+            sw_mode.SWD_purpose = 'Generate SWF electric (potential difference) data from LFR';
+            sw_mode.input_PDIDs  = {'L2R_LFR-SURV-SWF_V02', 'HK_BIA_V01'};
+            sw_mode.output_PDIDs = {'L2S_LFR-SURV-SWF-E_V02'};
+            C_sw_modes{end+1} = sw_mode;
             
             %=====
             % TDS

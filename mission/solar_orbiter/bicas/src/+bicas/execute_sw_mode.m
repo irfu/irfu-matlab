@@ -85,6 +85,9 @@ function execute_sw_mode(DataManager, swModeCliParameter, InputFilePathMap, outp
 %   PROPOSAL: Since functionality is identical for all (L2R-->L2S) processing, use data_manager.get_elementary_input_PDIDs.
 %       CON: There is no proper link from EIn PDs to dataset global attributes unless these are in the EIn PDs, but they
 %            are not really needed for the processing so it would be contradictive if they were.
+%
+% PROPOSAL: Print variable statistics also for zVariables which are created with fill values.
+%   NOTE: These do not use NaN, but fill values.
 
 global CONSTANTS
 
@@ -238,12 +241,13 @@ global CONSTANTS
 irf.log('n', sprintf('Reading master CDF file: "%s"', masterCdfPath))
 DataObj = dataobj(masterCdfPath);
 
-%=====================================================================================
-% Iterate over all OUTPUT PD field names (~zVariables) : Set corresponding zVariables
-%=====================================================================================
+%=============================================================================================
+% Iterate over all OUTPUT PD field names (~zVariables) : Set corresponding dataobj zVariables
+%=============================================================================================
 % NOTE: Only sets a SUBSET of the zVariables in master CDF.
 pdFieldNameList = fieldnames(ProcessData);
 irf.log('n', 'Converting PDV to dataobj (CDF data structure)')
+bicas.dm_utils.log_values_summary('explanation')
 for iPdFieldName = 1:length(pdFieldNameList)
     zVariableName = pdFieldNameList{iPdFieldName};
     
@@ -396,6 +400,7 @@ do = dataobj(filePath);                 % do=dataobj, i.e. irfu-matlab's dataobj
 irf.log('n', 'Converting dataobj (CDF data structure) to PDV.')
 processData       = struct();
 zVariableNameList = fieldnames(do.data);
+bicas.dm_utils.log_values_summary('explanation')
 for i = 1:length(zVariableNameList)
     zVariableName = zVariableNameList{i};
     zVariableData = do.data.(zVariableName).data;

@@ -7,7 +7,7 @@
     },
     "release":  {
         "version":     "0.1.0",
-        "date":        "2016-10-17",
+        "date":        "2016-11-17",
         "author":      "Erik P G Johansson",
         "contact":     "erik.johansson@irfu.se",
         "institute":   "IRF-U",
@@ -18,16 +18,140 @@
     },
     "modes":  [
         {
-            "name":        "LFR-SURV-CWF-E_V01-V02",
+            "name":        "LFR-SBM1-CWF-E_V01-V02",
             "purpose":     "Generate CWF electric field data (potential difference) from LFR",
             "inputs":  {
+                "input_sci":  {
+                    "version":     "01",
+                    "identifier":  "ROC-SGSE_L2R_RPW-LFR-SBM1-CWF"
+                },
                 "input_hk":  {
                     "version":     "01",
                     "identifier":  "ROC-SGSE_HK_RPW-BIA"
+                }
+            },
+            "outputs":  {
+                "output_sci":  {
+                    "identifier":  "ROC-SGSE_L2S_RPW-LFR-SBM1-CWF-E",
+                    "name":        "LFR L2s CWF science electric data in survey mode",
+                    "description": "RPW LFR L2s CWF science electric (potential difference) data in selective burst mode 1, time-tagged",
+                    "level":       "L2S",
+                    "release":  {
+                        "date":        "2016-11-17",
+                        "version":     "02",
+                        "author":      "Erik P G Johansson",
+                        "contact":     "erik.johansson@irfu.se",
+                        "institute":   "IRF-U",
+                        "modification":"No modification (initial release)",
+                        "file":        "ROC-SGSE_L2S_RPW-LFR-SBM1-CWF-E_V02.cdf"
+                    }
+                }
+            }
+        },
+        {
+            "name":        "LFR-SBM1-CWF-E_V02-V02",
+            "purpose":     "Generate CWF electric field data (potential difference) from LFR",
+            "inputs":  {
+                "input_sci":  {
+                    "version":     "02",
+                    "identifier":  "ROC-SGSE_L2R_RPW-LFR-SBM1-CWF"
                 },
+                "input_hk":  {
+                    "version":     "01",
+                    "identifier":  "ROC-SGSE_HK_RPW-BIA"
+                }
+            },
+            "outputs":  {
+                "output_sci":  {
+                    "identifier":  "ROC-SGSE_L2S_RPW-LFR-SBM1-CWF-E",
+                    "name":        "LFR L2s CWF science electric data in survey mode",
+                    "description": "RPW LFR L2s CWF science electric (potential difference) data in selective burst mode 1, time-tagged",
+                    "level":       "L2S",
+                    "release":  {
+                        "date":        "2016-11-17",
+                        "version":     "02",
+                        "author":      "Erik P G Johansson",
+                        "contact":     "erik.johansson@irfu.se",
+                        "institute":   "IRF-U",
+                        "modification":"No modification (initial release)",
+                        "file":        "ROC-SGSE_L2S_RPW-LFR-SBM1-CWF-E_V02.cdf"
+                    }
+                }
+            }
+        },
+        {
+            "name":        "LFR-SBM2-CWF-E_V01-V02",
+            "purpose":     "Generate CWF electric field data (potential difference) from LFR",
+            "inputs":  {
+                "input_sci":  {
+                    "version":     "01",
+                    "identifier":  "ROC-SGSE_L2R_RPW-LFR-SBM2-CWF"
+                },
+                "input_hk":  {
+                    "version":     "01",
+                    "identifier":  "ROC-SGSE_HK_RPW-BIA"
+                }
+            },
+            "outputs":  {
+                "output_sci":  {
+                    "identifier":  "ROC-SGSE_L2S_RPW-LFR-SBM2-CWF-E",
+                    "name":        "LFR L2s CWF science electric data in survey mode",
+                    "description": "RPW LFR L2s CWF science electric (potential difference) data in selective burst mode 2, time-tagged",
+                    "level":       "L2S",
+                    "release":  {
+                        "date":        "2016-11-17",
+                        "version":     "02",
+                        "author":      "Erik P G Johansson",
+                        "contact":     "erik.johansson@irfu.se",
+                        "institute":   "IRF-U",
+                        "modification":"No modification (initial release)",
+                        "file":        "ROC-SGSE_L2S_RPW-LFR-SBM2-CWF-E_V02.cdf"
+                    }
+                }
+            }
+        },
+        {
+            "name":        "LFR-SBM2-CWF-E_V02-V02",
+            "purpose":     "Generate CWF electric field data (potential difference) from LFR",
+            "inputs":  {
+                "input_sci":  {
+                    "version":     "02",
+                    "identifier":  "ROC-SGSE_L2R_RPW-LFR-SBM2-CWF"
+                },
+                "input_hk":  {
+                    "version":     "01",
+                    "identifier":  "ROC-SGSE_HK_RPW-BIA"
+                }
+            },
+            "outputs":  {
+                "output_sci":  {
+                    "identifier":  "ROC-SGSE_L2S_RPW-LFR-SBM2-CWF-E",
+                    "name":        "LFR L2s CWF science electric data in survey mode",
+                    "description": "RPW LFR L2s CWF science electric (potential difference) data in selective burst mode 2, time-tagged",
+                    "level":       "L2S",
+                    "release":  {
+                        "date":        "2016-11-17",
+                        "version":     "02",
+                        "author":      "Erik P G Johansson",
+                        "contact":     "erik.johansson@irfu.se",
+                        "institute":   "IRF-U",
+                        "modification":"No modification (initial release)",
+                        "file":        "ROC-SGSE_L2S_RPW-LFR-SBM2-CWF-E_V02.cdf"
+                    }
+                }
+            }
+        },
+        {
+            "name":        "LFR-SURV-CWF-E_V01-V02",
+            "purpose":     "Generate CWF electric field data (potential difference) from LFR",
+            "inputs":  {
                 "input_sci":  {
                     "version":     "01",
                     "identifier":  "ROC-SGSE_L2R_RPW-LFR-SURV-CWF"
+                },
+                "input_hk":  {
+                    "version":     "01",
+                    "identifier":  "ROC-SGSE_HK_RPW-BIA"
                 }
             },
             "outputs":  {
@@ -37,7 +161,7 @@
                     "description": "RPW LFR L2s CWF science electric (potential difference) data in survey mode, time-tagged",
                     "level":       "L2S",
                     "release":  {
-                        "date":        "2016-10-17",
+                        "date":        "2016-11-17",
                         "version":     "02",
                         "author":      "Erik P G Johansson",
                         "contact":     "erik.johansson@irfu.se",
@@ -52,13 +176,13 @@
             "name":        "LFR-SURV-CWF-E_V02-V02",
             "purpose":     "Generate CWF electric field data (potential difference) from LFR",
             "inputs":  {
-                "input_hk":  {
-                    "version":     "01",
-                    "identifier":  "ROC-SGSE_HK_RPW-BIA"
-                },
                 "input_sci":  {
                     "version":     "02",
                     "identifier":  "ROC-SGSE_L2R_RPW-LFR-SURV-CWF"
+                },
+                "input_hk":  {
+                    "version":     "01",
+                    "identifier":  "ROC-SGSE_HK_RPW-BIA"
                 }
             },
             "outputs":  {
@@ -68,7 +192,7 @@
                     "description": "RPW LFR L2s CWF science electric (potential difference) data in survey mode, time-tagged",
                     "level":       "L2S",
                     "release":  {
-                        "date":        "2016-10-17",
+                        "date":        "2016-11-17",
                         "version":     "02",
                         "author":      "Erik P G Johansson",
                         "contact":     "erik.johansson@irfu.se",
@@ -83,13 +207,13 @@
             "name":        "LFR-SURV-SWF-E_V01-V02",
             "purpose":     "Generate SWF electric (potential difference) data from LFR",
             "inputs":  {
-                "input_hk":  {
-                    "version":     "01",
-                    "identifier":  "ROC-SGSE_HK_RPW-BIA"
-                },
                 "input_sci":  {
                     "version":     "01",
                     "identifier":  "ROC-SGSE_L2R_RPW-LFR-SURV-SWF"
+                },
+                "input_hk":  {
+                    "version":     "01",
+                    "identifier":  "ROC-SGSE_HK_RPW-BIA"
                 }
             },
             "outputs":  {
@@ -99,7 +223,7 @@
                     "description": "RPW LFR L2s SWF science electric (potential difference) data in survey mode, time-tagged",
                     "level":       "L2S",
                     "release":  {
-                        "date":        "2016-10-17",
+                        "date":        "2016-11-17",
                         "version":     "02",
                         "author":      "Erik P G Johansson",
                         "contact":     "erik.johansson@irfu.se",
@@ -114,13 +238,13 @@
             "name":        "LFR-SURV-SWF-E_V02-V02",
             "purpose":     "Generate SWF electric (potential difference) data from LFR",
             "inputs":  {
-                "input_hk":  {
-                    "version":     "01",
-                    "identifier":  "ROC-SGSE_HK_RPW-BIA"
-                },
                 "input_sci":  {
                     "version":     "02",
                     "identifier":  "ROC-SGSE_L2R_RPW-LFR-SURV-SWF"
+                },
+                "input_hk":  {
+                    "version":     "01",
+                    "identifier":  "ROC-SGSE_HK_RPW-BIA"
                 }
             },
             "outputs":  {
@@ -130,7 +254,7 @@
                     "description": "RPW LFR L2s SWF science electric (potential difference) data in survey mode, time-tagged",
                     "level":       "L2S",
                     "release":  {
-                        "date":        "2016-10-17",
+                        "date":        "2016-11-17",
                         "version":     "02",
                         "author":      "Erik P G Johansson",
                         "contact":     "erik.johansson@irfu.se",
