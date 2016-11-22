@@ -401,6 +401,9 @@ switch Vr.inst
           case {'l2','l2pre'}
             suf = ['_' Vr.cs '_' Vr.tmmode];
             compS = struct('x','x','y','y','z','z');
+            % try to load V3
+            res = mms.db_get_ts(datasetName,[pref 'v' suf],Tint);
+            if ~isempty(res), return, end
           case 'l1b'
           case 'ql'
           case 'sitl'
