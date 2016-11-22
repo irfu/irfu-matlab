@@ -1,5 +1,5 @@
-MMS_CONST = mms_constants; sampleRate = 32; mmsId = 'mms1';
-yymm = '2016/02';
+MMS_CONST = mms_constants; sampleRate = 32; mmsId = 'mms4';
+yymm = '2015/12';
 %%
 %Model = [];
 for dd=1:31
@@ -79,11 +79,11 @@ for dd=1:31
 end
 
 %%
+clear Model360
 Model360.e12 = zeros(360,length(Model));
 for i=1:length(Model)
   Model360.e12(:,i) = Model(i).e12;
 end
-%%
 for sig = {'e12','e34','v1','v2','v3','v4'}
   pS = sig{:};
   Model360.(pS) = zeros(360,length(Model));
@@ -91,7 +91,6 @@ for sig = {'e12','e34','v1','v2','v3','v4'}
     Model360.(pS)(:,i) = Model(i).(pS);
   end
 end
-%%
 Model360.t = zeros(length(Model),1);
 Model360.psp  = zeros(length(Model),1);
 Model360.aspoc = zeros(length(Model),1);
@@ -143,7 +142,6 @@ irf_print_fig([mmsId '_EResHarmPlot_Dec_Feb'],'png')
 
 
 %%
-mmsId = 'mms4';
 idxChk = 821; %212; %;670; %268;
 plot(Model(idxChk).e12)
 hold on
@@ -165,4 +163,36 @@ title(gca,[upper(mmsId) ' ' irf_fname(Model(268).time,2)],'Interpreter','none')
 irf_print_fig([mmsId '_sdp_spinresE_pha_' irf_fname(Model(idxChk).time,2)],'png')
 
 %% CMD
-cmd = (Model360.v3 - 0.5*(Model360.v1+Model360.v2))/.120/2;
+cmd312 = ( Model360.v3 - 0.5*(Model360.v1+Model360.v2))/.120/2;
+cmd124 = (-Model360.v4 + 0.5*(Model360.v1+Model360.v2))/.120/2;
+
+%% PCA
+comp = 'e34';
+data = Model360.(comp);
+pp = sum(abs(data))'; idxOut = (pp>40);
+idxA = logical((Model360.aspoc)); t = Model360.t;
+figure, irf_plot({[t pp],[t(~idxA & ~idxOut) pp(~idxA & ~idxOut)],[t(idxA | idxOut) pp(idxA| idxOut)]},'comp','linestyle',{'-','*','x'})
+data = data(:,~idxA & ~idxOut);
+%%
+[nV,nData] = size(data);
+U = sum(data,2)/nData;
+B = data - repmat(U,1,nData);
+C=B*B'/(nData-1);
+[V,D] = eig(C);
+lamb=diag(D);
+
+figure, for i=0:5, plot(V(:,end-i)*lamb(end-i)), hold on, end
+title([mmsId ' ' comp]), legend('1','2','3','4','5','6')
+irf_print_fig([mmsId '_EigFuncs_' comp '_Dec_Feb'],'png')
+
+%%
+tmpM = zeros(size(V(:,end)));
+for i=0:3, 
+  tmpM = tmpM + V(:,end-i)*lamb(end-i);
+end
+plot(tmpM)
+if exist('mms_sdp_spinres_model.mat','file')
+  eval(['m_' comp '_' mmsId '=tmpM; save mms_sdp_spinres_model m_' comp '_' mmsId ' -append'])
+else
+  eval(['m_' comp '_' mmsId '=tmpM; save mms_sdp_spinres_model m_' comp '_' mmsId])
+end
