@@ -405,7 +405,7 @@ end
         irf.log('critical', errStr); error(errStr);
       end
   
-      if j==1,
+      if j==1
         % Setup log and environment.
         HdrInfo.scIdStr = fileIn(4);
         ENVIR = mms_sdc_sdp_init(HdrInfo.scIdStr);

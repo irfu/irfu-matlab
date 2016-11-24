@@ -91,7 +91,7 @@ function res = get_data(varStr, Tint, mmsId)
 res = [];
 
 if nargin<3, mmsId = 0; end
-if isempty(intersect(mmsId,0:4)),
+if isempty(intersect(mmsId,0:4))
   errS = ['invalid MMS ID: ' mmsId];
   irf.log('critical',errS); error(errS)
 end
@@ -100,7 +100,7 @@ mmsIdS = num2str(mmsId);
 if ~isa(Tint,'GenericTimeArray')
   errS = 'TINT must be of GenericTimeArray type';
   irf.log('critical',errS); error(errS)
-elseif Tint.stop-Tint.start<=0,
+elseif Tint.stop-Tint.start<=0
   errS = 'TINT duration is zero or negative';
   irf.log('critical',errS); error(errS)
 end
@@ -204,7 +204,7 @@ vars = {'R_gse','R_gsm','V_gse','V_gsm',...
   'Phplus_gsm_hpca_srvy_sitl','Pheplus_gsm_hpca_srvy_sitl','Pheplusplus_gsm_hpca_srvy_sitl','Poplus_gsm_hpca_srvy_sitl',...
   'Thplus_gsm_hpca_srvy_sitl','Theplus_gsm_hpca_srvy_sitl','Theplusplus_gsm_hpca_srvy_sitl','Toplus_gsm_hpca_srvy_sitl',...
   'Nhplus_hpca_sitl'}; % XXX THESE MUST BE THE SAME VARS AS BELOW
-if isempty(intersect(varStr,vars)),
+if isempty(intersect(varStr,vars))
   errS = ['variable not recognized: ' varStr];
   irf.log('critical',errS);
   vars = sort(vars);
@@ -350,7 +350,9 @@ switch Vr.inst
       case {'Ni','Ne'}
         switch Vr.lev
           case {'l2','l2pre'}
-            pref = ['mms' mmsIdS '_' sensor '_numberdensity_dbcs_' Vr.tmmode];
+           % pref = ['mms' mmsIdS '_' sensor '_numberdensity_dbcs_' Vr.tmmode];
+            % V3.1 FPI
+            pref = ['mms' mmsIdS '_' sensor '_numberdensity_' Vr.tmmode];
           case 'l1b'
             pref = ['mms' mmsIdS '_' sensor '_numberdensity'];
           case 'ql'
@@ -401,6 +403,9 @@ switch Vr.inst
           case {'l2','l2pre'}
             suf = ['_' Vr.cs '_' Vr.tmmode];
             compS = struct('x','x','y','y','z','z');
+            % try to load V3
+            res = mms.db_get_ts(datasetName,[pref 'v' suf],Tint);
+            if ~isempty(res), return, end
           case 'l1b'
           case 'ql'
           case 'sitl'
@@ -542,7 +547,7 @@ end
         res.units = rX.units;
         res.siConversion = rX.siConversion;
       case 'tensor2'
-        if isempty(compS), 
+        if isempty(compS) 
           compS = struct('xx','XX','xy','XY','xz','XZ','yy','YY','yz','YZ','zz','ZZ'); 
         end
         rXX = mms.db_get_ts(datasetName,[pref compS.xx suf],Tint);

@@ -50,7 +50,7 @@ classdef PDist < TSeries
       
       args = varargin;     
       if isa(args{1},'char'); obj.type_ = args{1}; args(1) = [];
-      else error('3rd input must specify distribution type')
+      else, error('3rd input must specify distribution type')
       end
             
       % collect required data, depend        
@@ -100,22 +100,22 @@ classdef PDist < TSeries
         nDepend = numel(obj.depend);
         for ii = 1:nDepend
           sizeDepend =  size(obj.depend{ii});
-          if sizeDepend(1) == 1, % same dependence for all times
+          if sizeDepend(1) == 1 % same dependence for all times
             obj.depend_{ii} = obj.depend{ii};
-          elseif sizeDepend(1) == sizeData(1);                    
+          elseif sizeDepend(1) == sizeData(1)
             obj.depend_{ii} = obj.depend_{ii}(idxTmp{:},:);
           else
             error('Depend has wrong dimensions.')
           end
         end
-        if numel(idx) > 1,
+        if numel(idx) > 1
           obj = builtin('subsref',obj,idx(2:end));
         end
         [varargout{1:nargout}] = obj;
       case '{}'
         error('irf:TSeries:subsref',...
           'Not a supported subscripted reference')
-      end
+    end
     end
     
     % set
@@ -170,9 +170,9 @@ classdef PDist < TSeries
       nDepend = numel(obj.depend);
       for ii = 1:nDepend
         sizeDepend =  size(obj.depend{ii});
-        if sizeDepend(1) == 1, % same dependence for all times
+        if sizeDepend(1) == 1 % same dependence for all times
           obj.depend_{ii} = obj.depend{ii};
-        elseif sizeDepend(1) == sizeData(1);                    
+        elseif sizeDepend(1) == sizeData(1)
           obj.depend_{ii} = obj.depend_{ii}(idx,:);
         else
           error('Depend has wrong dimensions.')
@@ -183,7 +183,7 @@ classdef PDist < TSeries
       nFields = numel(nameFields);
       for iField = 1:nFields
         eval(['sizeField = size(obj.ancillary.' nameFields{iField} ');'])
-        if sizeField(1) == sizeData(1);
+        if sizeField(1) == sizeData(1)
           eval(['obj.ancillary.' nameFields{iField} ' = obj.ancillary.' nameFields{iField} '(idx,:);'])
         end
       end
@@ -207,7 +207,7 @@ classdef PDist < TSeries
         
       if numel(palim) == 1        
         indPA = find(abs(pitchangles-palim) == min(abs(pitchangles-palim)));
-        if nargin>2 && ischar(varargin{1}) && strcmp(lower(varargin{1}),'noav')
+        if nargin>2 && ischar(varargin{1}) && strcmpi(varargin{1},'noav')
           doAverage = 0;
         else 
           doAverage = 1;
@@ -232,10 +232,22 @@ classdef PDist < TSeries
       energy = obj.depend{1};
       
       % Picks out energies in an interval, or the closest energy (to be implemented!)
-      if numel(eint) == 2    
-        elevels0 = intersect(find(obj.ancillary.energy0>eint(1)),find(obj.ancillary.energy0<eint(2)));
-        elevels1 = intersect(find(obj.ancillary.energy1>eint(1)),find(obj.ancillary.energy1<eint(2)));                                 
-        if numel(elevels0) ~= numel(elevels1)
+      if numel(eint) == 2
+       if or(isempty(obj.ancillary), or(~isfield(obj.ancillary, 'energy0'), ~isfield(obj.ancillary, 'energy1')))
+            energytmp0 = energy(1,:);
+            energytmp1 = energy(2,:);
+            if energytmp0(1) > energytmp1(1)
+                tmp = energytmp0;
+                energytmp0 = energytmp1;
+                energytmp1 = tmp;
+            end
+            elevels0 = intersect(find(energytmp0>eint(1)),find(energytmp0<eint(2)));
+            elevels1 = intersect(find(energytmp1>eint(1)),find(energytmp1<eint(2)));            
+       else
+            elevels0 = intersect(find(obj.ancillary.energy0>eint(1)),find(obj.ancillary.energy0<eint(2)));
+            elevels1 = intersect(find(obj.ancillary.energy1>eint(1)),find(obj.ancillary.energy1<eint(2)));        
+       end
+       if numel(elevels0) ~= numel(elevels1)
           warning('Energy levels differ for different times. Including the largest interval.')
           elevels = unique([elevels0,elevels1]);
         else
@@ -246,7 +258,7 @@ classdef PDist < TSeries
         ediff0 = abs(energy(1,:)-eint);
         ediff1 = abs(energy(2,:)-eint);
         if min(ediff0)<min(ediff1); ediff = ediff0;
-        else ediff = ediff1; end        
+        else, ediff = ediff1; end
         elevels = find(ediff==min(ediff));
         disp(['Effective energies alternate in time between ' num2str(energy(1,elevels),'%g') ' and ' num2str(energy(2,elevels),'%g') ''])
       end      
@@ -255,9 +267,14 @@ classdef PDist < TSeries
       
       PD = obj;
       PD.data_ = tmpData;
-      PD.depend{1} = tmpEnergy;   
-      PD.ancillary.energy0 = PD.ancillary.energy0(elevels);
-      PD.ancillary.energy1 = PD.ancillary.energy1(elevels);
+      PD.depend{1} = tmpEnergy;
+      if or(isempty(PD.ancillary), or(~isfield(PD.ancillary, 'energy0'), ~isfield(PD.ancillary, 'energy1')))    
+          PD.ancillary.energy0 = energytmp0(elevels);
+          PD.ancillary.energy1 = energytmp1(elevels);      
+      else
+          PD.ancillary.energy0 = PD.ancillary.energy0(elevels);
+          PD.ancillary.energy1 = PD.ancillary.energy1(elevels);
+      end
     end
     function PD = omni(obj)
       % Makes omnidirectional distribution, conserving units.
@@ -266,13 +283,14 @@ classdef PDist < TSeries
       
       dist = obj;
       % define angles
+      energysize = size(obj.depend{1});
       theta = obj.depend{3};
       dangle = pi/16;
       lengthphi = 32;
 
       z2 = ones(lengthphi,1)*sind(theta);
       solida = dangle*dangle*z2;      
-      allsolida = repmat(solida,1,1,length(dist.time),length(dist.ancillary.energy0));
+      allsolida = repmat(solida,1,1,length(dist.time), energysize(2));
       allsolida = squeeze(permute(allsolida,[3 4 1 2]));
       dists = dist.data.*allsolida;
       omni = squeeze(irf.nanmean(irf.nanmean(dists,3),4))/(mean(mean(solida)));
@@ -286,11 +304,9 @@ classdef PDist < TSeries
       PD.name = 'omni';
     end
     function spec = specrec(obj,varargin)      
-      if isempty(varargin); spectype = 'energy'; else spectype = varargin{1}; end % set default
+      if isempty(varargin); spectype = 'energy'; else, spectype = varargin{1}; end % set default
       
       switch obj.units
-        case {'s^3/km^6','s^3/cm^6','s^3/m^6'}
-          spec.p_label = {'PSD',obj.units};
         case {'s^3/km^6','s^3/cm^6','s^3/m^6'}
           spec.p_label = {'PSD',obj.units};
         case {'keV/(cm^2 s sr keV)'}
@@ -333,7 +349,7 @@ classdef PDist < TSeries
           error('Units not supported.')
       end  
       
-      if nargin<2 || flagdir ~= -1,
+      if nargin<2 || flagdir ~= -1
       switch obj.units
         case {'s^3/cm^6'}
           tmpData = obj.data*1e30/1e6/mm^2/0.53707;
@@ -344,7 +360,7 @@ classdef PDist < TSeries
         otherwise
           error('Units not supported.')
       end  
-      elseif flagdir == -1 && strcmp(obj.units,'keV/(cm^2 s sr keV)'),
+      elseif flagdir == -1 && strcmp(obj.units,'keV/(cm^2 s sr keV)')
         irf.log('warning','Converting DEFlux to PSD in SI units');
         tmpData = obj.data/1e12*mm^2*0.53707;
       end    
@@ -357,13 +373,13 @@ classdef PDist < TSeries
         matEnergy = repmat(energy,1,1,prod(sizeData(3:end)));
       end
        
-      if nargin<2 || flagdir ~= -1,
+      if nargin<2 || flagdir ~= -1
         reshapedData = reshapedData.*matEnergy.^2;
         tmpData = reshape(reshapedData,sizeData);
         PD = obj;
         PD.data_ = tmpData;
         PD.units = 'keV/(cm^2 s sr keV)';
-      elseif flagdir == -1 && strcmp(obj.units,'keV/(cm^2 s sr keV)'),
+      elseif flagdir == -1 && strcmp(obj.units,'keV/(cm^2 s sr keV)')
         reshapedData = reshapedData./(matEnergy.^2);
         tmpData = reshape(reshapedData,sizeData);
         PD = obj;
@@ -386,7 +402,7 @@ classdef PDist < TSeries
           error('Units not supported.')
       end 
       
-      if nargin<2 || flagdir ~= -1,
+      if nargin<2 || flagdir ~= -1
       switch obj.units
         case {'s^3/cm^6'}
           tmpData = obj.data*1e30/1e6/mm^2/0.53707;
@@ -397,7 +413,7 @@ classdef PDist < TSeries
         otherwise
           error('Units not supported.')
       end
-      elseif flagdir == -1 && strcmp(obj.units,'1/(cm^2 s sr keV)'),
+      elseif flagdir == -1 && strcmp(obj.units,'1/(cm^2 s sr keV)')
         irf.log('warning','Converting DPFlux to PSD');
         tmpData = obj.data/1e12*mm^2*0.53707;
       end   
@@ -411,13 +427,13 @@ classdef PDist < TSeries
         matEnergy = repmat(energy,1,1,prod(sizeData(3:end)));
       end
       
-      if nargin<2 || flagdir ~= -1,
+      if nargin<2 || flagdir ~= -1
         reshapedData = reshapedData.*matEnergy;
         tmpData = reshape(reshapedData,sizeData);
         PD = obj;
         PD.data_ = tmpData;
         PD.units = '1/(cm^2 s sr keV)';  
-      elseif flagdir == -1 && strcmp(obj.units,'1/(cm^2 s sr keV)'),
+      elseif flagdir == -1 && strcmp(obj.units,'1/(cm^2 s sr keV)')
         reshapedData = reshapedData./matEnergy;
         tmpData = reshape(reshapedData,sizeData);
         PD = obj;
@@ -441,7 +457,7 @@ classdef PDist < TSeries
         case {'s^3/km^6'}
           PD.data_ = obj.data*1e-18;
         case {'s^3/m^6'}
-          PD = PD;
+          %PD = PD;
         case {'keV/(cm^2 s sr keV)'}
           PD = obj.deflux(-1);
         case {'1/(cm^2 s sr keV)'}
@@ -462,7 +478,7 @@ classdef PDist < TSeries
           PD.units = 's^3/km^6';
           PD.siConversion = 1e-18;
         case {'s^3/m^6'}
-          PD = PD;
+          %PD = PD;
         case {'keV/(cm^2 s sr keV)'}
           PD = PD.deflux;
         case {'1/(cm^2 s sr keV)'}
@@ -481,7 +497,7 @@ classdef PDist < TSeries
       %               default number of pitchangles is 12
       %   See also MMS.GET_PITCHANGLEDIST     
       
-      if nargin<3 || isempty(obj2),
+      if nargin<3 || isempty(obj2)
         nangles = 12;
       else 
         nangles = obj2; 
@@ -501,11 +517,11 @@ classdef PDist < TSeries
       PD.depend{1} = energyr;
       PD.depend{2} = phir.data;  
       
-      if isfield(PD.ancillary,'energy0'); 
-        PD.ancillary = setfield(PD.ancillary,'energy0',PD.depend{1}); 
-        PD.ancillary = setfield(PD.ancillary,'energy1',PD.depend{1}); 
+      if isfield(PD.ancillary,'energy0')
+        PD.ancillary.energy0 = PD.depend{1};
+        PD.ancillary.energy1 = PD.depend{1};
       end
-      if isfield(PD.ancillary,'esteptable'); PD.ancillary = setfield(PD.ancillary,'esteptable',zeros(PD.length,1)); end
+      if isfield(PD.ancillary,'esteptable'); PD.ancillary.esteptable = zeros(PD.length,1); end
     end
     function m = mass(obj)
       % Get mass of species

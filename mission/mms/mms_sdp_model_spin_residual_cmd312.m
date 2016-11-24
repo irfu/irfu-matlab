@@ -468,6 +468,12 @@ modelOut = zeros(size(model));
 
 NSPINS = 9; spinRate = 3.1; %rpm
 nsPerSpin = 60/spinRate*1e9;
+% If SDC processing QL brst directly, without L2a file, CMDmodel cannot be
+% computed for segments that are too short.
+if (Dcv.time(end)-Dcv.time(1) < int64(NSPINS*nsPerSpin))
+  irf.log('warning', 'Too short interval to compute CMDmodel (processing Burst QL?), returning zeros as model.');
+  return
+end
 t0 = 0; aPrev = []; nGap = 0;
 while t0 < epochTmp(end)
   tEnd = t0 + NSPINS*nsPerSpin;
@@ -478,14 +484,14 @@ while t0 < epochTmp(end)
   if sum(idxOk)< sampleRate*ceil(NSPINS/2)*60/spinRate
     nGap = nGap + 1;
     if nGap > fix(NSPINS/2), aPrev= []; t0 = t0 + 60/spinRate*1e9; continue
-    else a = aPrev;% use prev model
+    else, a = aPrev; % use prev model
     end
   else
     a = mTmp(idxOk)\dTmp(idxOk);
     nGap = 0;
   end
   if ~isempty(aPrev), idxCorr = epochTmp>=t0+fix(NSPINS/2)*nsPerSpin & epochTmp<t0+ceil(NSPINS/2)*nsPerSpin;
-  else idxCorr = epochTmp>=t0 & epochTmp<t0+ceil(NSPINS/2)*nsPerSpin; % first points
+  else, idxCorr = epochTmp>=t0 & epochTmp<t0+ceil(NSPINS/2)*nsPerSpin; % first points
   end
   modelOut(idxCorr) = model(idxCorr)*a;
   aPrev = a;

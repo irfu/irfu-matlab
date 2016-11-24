@@ -32,7 +32,7 @@ elseif isstruct(tsdata) && isfield(tsdata,'time')
     norepeat(diffs < threshold) = 0;
     
     varnames = fieldnames(tsdata);
-    for ii=1:length(varnames);
+    for ii=1:length(varnames)
         tsdata.(varnames{ii}) = tsdata.(varnames{ii})(norepeat == 1,:);
     end
     newdata = tsdata;

@@ -68,7 +68,7 @@ switch lower(dataType)
 end
 
 % Get number of last header line using unix commands grep, tail and cut.
-if ismac, cutArgs = '-d'':'' -f2'; else cutArgs = '-d: -f1'; end
+if ismac, cutArgs = '-d'':'' -f2'; else, cutArgs = '-d: -f1'; end
 [~, nHeaders] = unix(['grep -onr "' headerGrep '" "' fullFilename,...
   '" | tail -n1 | cut ' cutArgs]);
 nHeaders = str2double(nHeaders);
