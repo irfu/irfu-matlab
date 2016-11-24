@@ -350,7 +350,9 @@ switch Vr.inst
       case {'Ni','Ne'}
         switch Vr.lev
           case {'l2','l2pre'}
-            pref = ['mms' mmsIdS '_' sensor '_numberdensity_dbcs_' Vr.tmmode];
+           % pref = ['mms' mmsIdS '_' sensor '_numberdensity_dbcs_' Vr.tmmode];
+            % V3.1 FPI
+            pref = ['mms' mmsIdS '_' sensor '_numberdensity_' Vr.tmmode];
           case 'l1b'
             pref = ['mms' mmsIdS '_' sensor '_numberdensity'];
           case 'ql'
