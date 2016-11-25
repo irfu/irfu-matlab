@@ -36,8 +36,8 @@ end
 
 for comp=col
     tfinp = get_staff_ib_tf(cl_id,component(comp));
-    tf = interp1(tfinp(:,1),tfinp(:,2),f,'linear','extrap');
-    tf = tf + 1i*interp1(tfinp(:,1),tfinp(:,3),f,'linear','extrap');
+    tf =         interp1(tfinp(:,1),tfinp(:,2),f,'linear','extrap');   % Add real part.
+    tf = tf + 1i*interp1(tfinp(:,1),tfinp(:,3),f,'linear','extrap');   % Add imaginary part.
 
     Pxx = fft(binp(:,comp+1));
     if size(Pxx,1)+1==size(tf,1)*2

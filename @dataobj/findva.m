@@ -12,7 +12,7 @@ function res = findva(dobj,field,var_s)
 
 narginchk(3,3)
 
-if ~ischar(var_s), error('VAR_S must be a stirng'), end
+if ~ischar(var_s), error('VAR_S must be a string'), end
 
 res = '';
 
