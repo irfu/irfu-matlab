@@ -813,7 +813,16 @@ classdef mms_sdp_dmgr < handle
         % Get sweep status and sweep Start/Stop
         % Add extra 0.1 sec to Stop for safety and remove 0.05 sec to Start
         sweepStart = DATAC.dce.dataObj.data.([varPref 'start']).data - 5e7;
-        sweepStop = DATAC.dce.dataObj.data.([varPref 'stop']).data + 1e8;
+        if(DATAC.tmMode == DATAC.CONST.TmMode.slow)
+          % Some sweep seems to still be effecting our measurements well
+          % after stop time, especially bad in slow mode, see 2016/11/10.
+          % (Perhaps intervals with other mode as well but that is still to
+          % be determined). Add 0.15 sec to stop time.
+          sweepStop = DATAC.dce.dataObj.data.([varPref 'stop']).data + 1.4e8;
+        else
+          % Add 0.1 seconds to stop.
+          sweepStop = DATAC.dce.dataObj.data.([varPref 'stop']).data + 1e8;
+        end
         sweepSwept = DATAC.dce.dataObj.data.([varPref 'swept']).data;
         
         if isempty(sweepStart)
