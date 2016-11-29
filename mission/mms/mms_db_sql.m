@@ -346,6 +346,7 @@ keyboard; % THIS FUNCTION IS NOT FULLY TESTED, MAKE SURE TO MAKE A BACKUP OF THE
       % filesToImport contains only new files to be added into the database
       obj.insertPrepToFileList(filesToImport);
       toImport = [];
+      failedToImport = {};
       for ii = length(filesToImport):-1:1
         % Read and process each new file add to VarIndex list
         try
@@ -359,8 +360,8 @@ keyboard; % THIS FUNCTION IS NOT FULLY TESTED, MAKE SURE TO MAKE A BACKUP OF THE
           status = 0;
           % Clean up..
           irf.log('warning', ['Something went wrong reading file: ',filesToImport{ii}.fileNameFullPath]);
-          sql = ['DELETE FROM FileList WHERE fileNameFullPath = "', filesToImport{ii}.fileNameFullPath, '"'];
-          obj.sqlUpdate(sql);
+          % Keep the "fileNameFullPath"(-s) to be deleted later.
+          failedToImport{end+1} = filesToImport{ii}.fileNameFullPath; %#ok<AGROW>
           filesToImport(ii) = [];
           continue;
         end
@@ -403,6 +404,15 @@ keyboard; % THIS FUNCTION IS NOT FULLY TESTED, MAKE SURE TO MAKE A BACKUP OF THE
       end % Read and process each new file
       if ~isempty(toImport) % Any remaining files in toImport
         obj.insertPrepToVarIndex(toImport);
+      end
+      if ~isempty(failedToImport)
+        % If some files failed to be read, delete these from the database.
+        logStr = ['Removing files, ', num2str(length(failedToImport)), ...
+          ' in total, from FileList that failed to be read for some reason.'];
+        irf.log('notice', logStr);
+        sql = ['DELETE FROM FileList WHERE fileNameFullPath IN (', ...
+          strjoin(failedToImport, ', '),')'];
+        obj.sqlUpdate(sql);
       end
     end
 
