@@ -172,7 +172,7 @@ classdef mms_sdp_dmgr < handle
           chk_bias_guard()
           chk_aspoc_on()
           chk_sweep_on()
-%          chk_maneuvers()
+          chk_maneuvers()
           chk_sdp_v_vals()
           %e_corr_cmd()
           e_from_asym()
@@ -190,7 +190,7 @@ classdef mms_sdp_dmgr < handle
           v_from_e_and_v()
           chk_bias_guard()
           chk_sweep_on()
-%          chk_maneuvers()
+          chk_maneuvers()
           chk_sdp_v_vals()
           sensors = {'e12','e34','e56'};
           apply_nom_amp_corr() % AFTER all V values was calculated but before most processing.
