@@ -44,7 +44,12 @@ if nargs > 0
             cmap=[ [it it it*0+1];[it*0+1 flipud(it) flipud(it)]; [flipud(it) 0*it 0*it]]; clear it;
 			case {'parula','jet','hsv','hot','cool','spring','summer','autumn',...
 					'winter','gray','bone','copper','pink','lines','colorcube','prism','flag','white'}
-				cmap = colormap(colormap_name);
+            cmap = colormap(colormap_name);
+      case {'bluered'}
+            rr = interp1([1 64 128 192 256],[0.0  0.5 0.75 1.0 0.75],1:256);
+            gg = interp1([1 64 128 192 256],[0.0  0.5 0.75 0.5 0.00],1:256);
+            bb = interp1([1 64 128 192 256],[0.75 1.0 0.75 0.5 0.00],1:256);
+            cmap = [rr' gg' bb'];
     end
 end
 

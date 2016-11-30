@@ -50,11 +50,15 @@ function irf_disp_surfplot(kc_x_max,kc_z_max,wfinal,extraparam,surfchoice,colorc
   elseif colorchoice==6
     colorstring='<---- Left handed              Right handed ---->';
     colorlimits=[-1,1];
-		colorMap = 'poynting';
+		colorMap = 'bluered';
   elseif colorchoice==7
     colorstring='<---- Most energy in B    log10(eps0 E^2/(B^2/mu0))  Most energy in E ---->';
     colorlimits=[-3,3];
-		colorMap = 'poynting';
+		colorMap = 'bluered';
+  elseif colorchoice==8
+    colorstring='<---- Most energy in ions     log10(We/Wi)      Most energy in electrons ---->';
+    colorlimits=[-3,3];
+		colorMap = 'bluered';
   else
     colorchoice=1;
     colorlimits=[0,1];
