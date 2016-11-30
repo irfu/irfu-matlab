@@ -124,7 +124,7 @@ function [wfinal,extraparam]=irf_disp_surf_calc(kc_x_max,kc_z_max,m_i,wp_e)
   
   temp=length(kc_x);
   dk_x=kc_x(2);dk_z=kc_z(2);
-  dw_x=diff(wfinal,1,2); dw_z=diff(wfinal,1,3);
+  dw_x=diff(wfinal,1,3); dw_z=diff(wfinal,1,2);
   dw_x(1,temp,temp)=0; dw_z(1,temp,temp)=0;
   v_x=dw_x/dk_x; v_z=dw_z/dk_z;
   
