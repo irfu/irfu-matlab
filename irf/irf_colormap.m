@@ -12,13 +12,13 @@ function cmap1=irf_colormap(varargin)
 
 [ax,args,nargs] = axescheck(varargin{:});
 
-if nargs == 0, % show only help
+if nargs == 0 % show only help
     help irf_colormap;
     return
 end
 
 % check which axis to apply
-if isempty(ax), 
+if isempty(ax)
     axes(gca);
 else
     axes(ax(1));
@@ -27,7 +27,7 @@ end
 colormap_name=args{1};
 
 load caa/cmap.mat % default map
-if nargs > 0,
+if nargs > 0
     switch lower(colormap_name)
         case 'poynting'
             it=0:.02:1;it=it(:);
@@ -42,14 +42,17 @@ if nargs > 0,
         case 'solo'
             it=0:.02:1;it=it(:);
             cmap=[ [it it it*0+1];[it*0+1 flipud(it) flipud(it)]; [flipud(it) 0*it 0*it]]; clear it;
+			case {'parula','jet','hsv','hot','cool','spring','summer','autumn',...
+					'winter','gray','bone','copper','pink','lines','colorcube','prism','flag','white'}
+				cmap = colormap(colormap_name);
     end
 end
 
-if nargout == 0, % apply the colormap and freeze
+if nargout == 0 % apply the colormap and freeze
     colormap(cmap);
     freezeColors;
     hcb = cbhandle;
-    if hcb, % workaround cbfreeze bug that cbfreeze removes cblabel
+    if hcb % workaround cbfreeze bug that cbfreeze removes cblabel
         hy=get(hcb,'ylabel');
         ylabel_string=get(hy,'string');
         ylabel_fontsize=get(hy,'fontsize');
@@ -58,7 +61,7 @@ if nargout == 0, % apply the colormap and freeze
         set(new_hy,'string',ylabel_string,'fontsize',ylabel_fontsize);
     end
     %    cbfreeze;
-elseif nargout == 1, % only return colormap
+elseif nargout == 1 % only return colormap
     cmap1=cmap;
 end
 

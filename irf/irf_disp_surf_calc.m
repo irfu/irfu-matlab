@@ -133,4 +133,5 @@ function [wfinal,extraparam]=irf_disp_surf_calc(kc_x_max,kc_z_max,m_i,wp_e)
   extraparam(4,:,:,:)=Ez./Etot; % Degree of parallelity
   extraparam(5,:,:,:)=sqrt(v_x.*v_x+v_z.*v_z); % Value of the group vel.
   extraparam(6,:,:,:)=Epolar; % Ellipticity
+  extraparam(7,:,:,:)=log10(Etot.^2./Btot.^2); % Degree of electromagnetism
   warning on
