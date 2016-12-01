@@ -2,3 +2,4 @@
 2015-12-12, No SFIT data on MMS4
 2016-01-21, No SFIT data on MMS4 after 22:00
 2016-03-08, No FPI data from this point on.
+2016-09-26, FPI is back on.

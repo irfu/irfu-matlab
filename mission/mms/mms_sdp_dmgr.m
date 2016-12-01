@@ -172,8 +172,9 @@ classdef mms_sdp_dmgr < handle
           chk_bias_guard()
           chk_aspoc_on()
           chk_sweep_on()
-%          chk_maneuvers()
+          chk_maneuvers()
           chk_sdp_v_vals()
+          %e_corr_cmd()
           e_from_asym()
           sensors = {'e12','e34','e56'};
           apply_nom_amp_corr() % AFTER all V values was calculated but before most processing.
@@ -189,7 +190,7 @@ classdef mms_sdp_dmgr < handle
           v_from_e_and_v()
           chk_bias_guard()
           chk_sweep_on()
-%          chk_maneuvers()
+          chk_maneuvers()
           chk_sdp_v_vals()
           sensors = {'e12','e34','e56'};
           apply_nom_amp_corr() % AFTER all V values was calculated but before most processing.
@@ -812,7 +813,16 @@ classdef mms_sdp_dmgr < handle
         % Get sweep status and sweep Start/Stop
         % Add extra 0.1 sec to Stop for safety and remove 0.05 sec to Start
         sweepStart = DATAC.dce.dataObj.data.([varPref 'start']).data - 5e7;
-        sweepStop = DATAC.dce.dataObj.data.([varPref 'stop']).data + 1e8;
+        if(DATAC.tmMode == DATAC.CONST.TmMode.slow)
+          % Some sweep seems to still be effecting our measurements well
+          % after stop time, especially bad in slow mode, see 2016/11/10.
+          % (Perhaps intervals with other mode as well but that is still to
+          % be determined). Add 0.15 sec to stop time.
+          sweepStop = DATAC.dce.dataObj.data.([varPref 'stop']).data + 1.4e8;
+        else
+          % Add 0.1 seconds to stop.
+          sweepStop = DATAC.dce.dataObj.data.([varPref 'stop']).data + 1e8;
+        end
         sweepSwept = DATAC.dce.dataObj.data.([varPref 'swept']).data;
         
         if isempty(sweepStart)
@@ -987,6 +997,38 @@ classdef mms_sdp_dmgr < handle
         function l = sensor_dist(len)
           l = 1.67 + len + .07 + 1.75  + .04; % meters, sc+boom+preAmp+wire+probe
         end
+      end
+      
+      function e_corr_cmd()
+        % Correct E for CMD
+        Phase = DATAC.phase;
+        if isempty(Phase)
+          errStr='Bad PHASE input, cannot proceed.';
+          irf.log('critical',errStr); error(errStr);
+        end
+        if(DATAC.tmMode == DATAC.CONST.TmMode.brst)
+          % XXX implement something
+        else
+          irf.log('notice','Correcting E for CMD');
+          NOM_BOOM_L = .12; % 120 m
+          if 1 % using spin resudual
+            SpinModel = mms_sdp_model_spin_residual(DATAC.dce,DATAC.dcv,Phase,...
+            {'v1','v2','v3','v4'},DATAC.samplerate);
+            DATAC.dce.e12.data = single( double(DATAC.dce.e12.data) - ...
+              (SpinModel.v1 - SpinModel.v2)/NOM_BOOM_L );
+            DATAC.dce.e34.data = single( double(DATAC.dce.e34.data) - ...
+              (SpinModel.v3 - SpinModel.v4)/NOM_BOOM_L );
+          else % using CMD
+            CmdModel = mms_sdp_model_spin_residual_cmd312(DATAC.dcv,...
+              Phase, DATAC.samplerate,'e12');
+            DATAC.dce.e12.data = single( ...
+              double(DATAC.dce.e12.data) - CmdModel/NOM_BOOM_L );
+            CmdModel = mms_sdp_model_spin_residual_cmd312(DATAC.dcv,...
+              Phase, DATAC.samplerate,'e34');
+            DATAC.dce.e34.data = single( ...
+              double(DATAC.dce.e34.data) - CmdModel/NOM_BOOM_L );
+          end
+        end   
       end
       
       function e_from_asym()

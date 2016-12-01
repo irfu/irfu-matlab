@@ -89,8 +89,17 @@ if isa(varargin{1},'PDist')
         else
             stepTable = TSeries(pdist.time, zeros(length(pdist.time), 1));
         end
-        energy0 = pdist.ancillary.energy0;
-        energy1 = pdist.ancillary.energy1;
+        if and(isfield(pdist.ancillary, 'energy0'), isfield(pdist.ancillary, 'energy1'))
+            energy0 = pdist.ancillary.energy0;
+            energy1 = pdist.ancillary.energy1;            
+        else    
+            if isfield(pdist.ancillary, 'energy')
+                energy0 = pdist.ancillary.energy(1, :);
+                energy1 = pdist.ancillary.energy(2, :);
+            else
+                irf.log('warning', 'no data for energy0 & energy1.');
+            end
+        end
         noangles = 0;        
         numechannels = size(pdist.depend{1},2);
         if (tmpnargin == 3)

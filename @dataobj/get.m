@@ -12,7 +12,7 @@ function res = get(dobj,var_s)
 
 narginchk(2,2)
 
-if ~ischar(var_s), error('VAR_S must be a stirng'), end
+if ~ischar(var_s), error('VAR_S must be a string'), end
 		
 switch var_s
 	case {'va','VariableAttributes'}

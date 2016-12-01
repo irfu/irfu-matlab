@@ -481,7 +481,33 @@
       obj.data_ = sqrt(obj.data); Ts = obj;
       Ts.tensorBasis_ = ''; Ts.representation{2} = [];
       if ~isempty(obj.name), Ts.name = sprintf('sqrt(%s)',obj.name); end
-    end    
+    end  
+    
+    function Ts = cumsum(obj,option)
+      %CUMSUM Cumsum
+      % TS = TSeries.cumsum(option)
+      %   option = 't' - cumsum over time
+      %            n - integer - cumsum over data dimension n
+      
+      if obj.tensorOrder~=0, error('Cumsum requires tensorOrder = 0'); end
+      if isempty(option)
+        option = 1;      
+      end
+      switch option
+        case 't'             
+          obj.data_ = cumsum(obj.data,1); Ts = obj;
+        otherwise % dimension is numeric value
+          %if option> ndims(obj.data), error('cumsum dimension exceeds data dimension'); end
+          if option>0,             
+            obj.data_ = cumsum(obj.data,abs(option)+1); Ts = obj;  
+          elseif option<0            
+            obj.data_ = cumsum(obj.data(:,end:-1:1),abs(option)+1); Ts = obj;
+          end
+      end     
+          
+      Ts.tensorBasis_ = ''; Ts.representation{2} = [];
+      if ~isempty(obj.name), Ts.name = sprintf('cumsum(%s)',obj.name); end
+    end   
     
     function Ts = abs(obj)
       %ABS Magnitude

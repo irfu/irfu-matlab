@@ -32,7 +32,9 @@ function [A,im,map]=irf_plasma_wave_visualization(varargin)
 %
 % Examples:
 %   [A,im,map]=irf_plasma_wave_visualization('demo','alfven_shear');
-%   movie(A,20);
+%   po=get(gcf,'Position'); close gcf; % needed due to bugs in MATLAB R2016b
+%   fg=figure;set(fg,'Position',po);   % needed due to bugs in MATLAB R2016b
+%   movie(fg,A,20);
 %
 % to create animated gif
 % imwrite(im,map,'anim.gif','DelayTime',0,'LoopCount',inf)
@@ -400,16 +402,16 @@ if 1, % calculate field line position
         field_lines(j,:,:,:)=field_lines_init+dr_field;
     end
 end
-if 1, % plot wave animation
-    A=moviein(length(time_steps)); % create matlab movie matrix
-    for j=1:length(time_steps), % plot wave animation
+if 1 % plot wave animation
+%    A=moviein(length(time_steps)); % create matlab movie matrix
+    for j=1:length(time_steps) % plot wave animation
         %pause(.01);
         plot_particles(h,r{j},qm,squeeze(field_lines(j,:,:,:)));
         drawnow;
-        if flag_generate_output_files,
-            f=getframe(h);
-            A(:,j)=f;
-            if j==1, % initialize animated gif matrix
+        if flag_generate_output_files
+            f=getframe(gcf);
+            A(j)=f;
+            if j==1 % initialize animated gif matrix
                 [im,map] = rgb2ind(f.cdata,256,'nodither');
                 im(1,1,1,20) = 0;
             else

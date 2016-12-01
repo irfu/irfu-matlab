@@ -113,7 +113,8 @@ for signal = signals
     Model360.(sig)(idxAdp) = interp1(pha360(idxOK),Model360.(sig)(idxOK),...
       pha360(idxAdp));
   end
-  ModelOut.(sig) = interp1(pha360,Model360.(sig),Phase.data);
+  ModelOut.(sig) = interp1([-phaShift; pha360; 360+phaShift],...
+    [Model360.(sig)(end); Model360.(sig); Model360.(sig)(1)]',Phase.data);
 end
   
 end

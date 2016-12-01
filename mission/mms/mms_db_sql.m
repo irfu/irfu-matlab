@@ -249,18 +249,20 @@ keyboard; % THIS FUNCTION IS NOT FULLY TESTED, MAKE SURE TO MAKE A BACKUP OF THE
     function import_files_from_list(obj)
       % import all files from FileListToImport
       someFilesDidNotImport = false;
-      % Get names of new file(-s) that superseed file(-s) already in databse
-      % along with the idFile of the superseeded file(-s).
-      sql = ['SELECT new.directory,new.dataset,new.date,new.verX,new.verY,new.verZ,new.fileNameFullPath,old.idFile ', ...
-        'FROM FileListToImport AS new JOIN FileList AS old WHERE ', ...
-        'old.directory = new.directory AND old.date = new.date AND ', ...
-        '(new.verX > old.verX OR ', ...
-        '(new.verX = old.verX AND new.verY > old.verY) OR ', ...
-        '(new.verX = old.verX AND new.verY = old.verY AND new.verZ > old.verZ))', ...
-        'ORDER BY new.dataset DESC, new.date DESC, new.verX DESC, new.verY DESC, new.verZ DESC'];
+      % Left outer join will return "Null" for "o.idFile" files that are
+      % not superseeding any previously existing file (based on date and
+      % directory), i.e. completely new files. Otherwise compare version
+      % numbers and return the corresponding idFile of the superseeded file.
+      % And excluding all old files that overlap in "FileListToImport" and
+      % "FileList", based on "fileNameFullPath".
+      sql = ['SELECT n.directory,n.dataset,n.date,n.verX,n.verY,n.verZ,n.fileNameFullPath,o.idFile ', ...
+        'FROM FileListToImport AS n LEFT OUTER JOIN FileList AS o ', ...
+        'ON o.directory = n.directory AND o.date = n.date AND ', ...
+        '( (n.verX > o.verX) OR (n.verX = o.verX AND n.verY > o.verY) OR ',...
+        '(n.verX = o.verX AND n.verY = o.verY AND n.verZ > o.verZ) ) ', ...
+        'WHERE n.fileNameFullPath NOT IN (SELECT fileNameFullPath FROM FileList)'];
       rs = obj.sqlQuery(sql);
-      ii = 1;
-      superseededIdFile = [];
+      ii = 1; superseededIdFile = {};
       while rs.next
         infoStruct = struct('fileNameFullPath', char(rs.getString('fileNameFullPath')), ...
           'directory', char(rs.getString('directory')), ...
@@ -270,29 +272,12 @@ keyboard; % THIS FUNCTION IS NOT FULLY TESTED, MAKE SURE TO MAKE A BACKUP OF THE
           'verY', rs.getInt('verY'), ...
           'verZ', rs.getInt('verZ') );
         fileInfo{ii, 1} = infoStruct; %#ok<AGROW>
-        superseededIdFile{ii} = char(rs.getString('idFile')); %#ok<AGROW>
+        tmpId = char(rs.getString('idFile'));
+        if ~isempty(tmpId)
+          superseededIdFile{end+1} = tmpId; %#ok<AGROW>
+        end
         ii = ii + 1;
       end
-
-      % Get new names of files not presently in database
-      sql = ['SELECT new.directory,new.dataset,new.date,new.verX,new.verY,new.verZ,new.fileNameFullPath ', ...
-        'FROM FileListToImport AS new WHERE ', ...
-        'new.directory NOT IN (SELECT directory FROM FileList) OR ', ...
-        'new.date NOT IN (SELECT old.date FROM FileList AS old WHERE old.dataset = new.dataset)', ...
-        'ORDER BY new.dataset DESC, new.date DESC, new.verX DESC, new.verY DESC, new.verZ DESC'];
-      rs = obj.sqlQuery(sql);
-      while rs.next
-        infoStruct = struct('fileNameFullPath', char(rs.getString('fileNameFullPath')), ...
-          'directory', char(rs.getString('directory')), ...
-          'dataset', char(rs.getString('dataset')), ...
-          'date', char(rs.getString('date')), ...
-          'verX', rs.getInt('verX'), ...
-          'verY', rs.getInt('verY'), ...
-          'verZ', rs.getInt('verZ') );
-        fileInfo{ii, 1} = infoStruct; %#ok<AGROW>
-        ii = ii + 1;
-      end
-
       if(exist('fileInfo','var'))
         % We got at least one new file to be imported.
         status = obj.import_files(fileInfo);
@@ -324,21 +309,29 @@ keyboard; % THIS FUNCTION IS NOT FULLY TESTED, MAKE SURE TO MAKE A BACKUP OF THE
       % list, when importing only new (not previously imported files
       % will be processed). This is to allows for deleting files from
       % DB which has been deleted upstream and removed from system.
-      % Verify sqlite3 is installed
-      [status, ~] = system('command -v sqlite3 >/dev/null 2>&1 || { exit 100; }');
-      if(status==100), error('It appears Sqlite3 is not installed/found on your system.'); end
+      % Verify required software is installed
+      reqSoftware = {'sqlite3', 'awk', 'perl'};
+      for ii = 1:length(reqSoftware)
+        [status, ~] = system(['command -v ', reqSoftware{ii}, ' >/dev/null 2>&1 || { exit 100; }']);
+        if(status==100)
+          errStr = ['It appears ', reqSoftware{ii}, ' is not installed on your system.'];
+          irf.log('critical', errStr); error(errStr);
+        end
+      end
       % Clear up any old files still in FileListToImport.
       obj.sqlUpdate('DELETE FROM FileListToImport');
-      % Locate CDF files and add them to FileListToImport
+      % Locate latest version of each CDF file and add them to FileListToImport
       system(['cd ' obj.databaseDirectory ...
-        '; find ./mms[1-4]* -name mms*cdf -type f |  ' ...
-        'perl -pe ''s/(\.\/mms.*)(mms[1-4]?_[\w-]*)_(20\d\d\d\d\d\d\d*)_v(\d).(\d).(\d)(.cdf)\n/$1,$2,$3,$4,$5,$6,$_/'' > delme.txt;' ...
+        '; find ./mms[1-4]/* -name mms*cdf -type f | sort -rV | ', ...
+        'awk ''{nn=split($0,aa,"_"); if (nn!=mm) print $aa[1]; else if(aa[1]!=bb[1]) print $aa[1]; else if (aa[1]==bb[1] && aa[nn-1]!=bb[mm-1]) print $aa[1] }; {mm=split($0,bb,"_")}'' - | ', ...
+        'perl -pe ''s/(\.\/mms.*)(mms[1-4]?_[\w-]*)_(20\d{6,12})_v(\d{1,4}).(\d{1,4}).(\d{1,4})(.cdf)\n/$1,$2,$3,$4,$5,$6,$_/'' > delme.txt;' ...
         'echo -e ".mod csv\n.import delme.txt FileListToImport\n" | sqlite3 ' obj.databaseFile ';'...
         'rm ./delme.txt' ]);
       % Locate ancillary files, (and padd the 'verZ' to zero as ancillary only have two digits in version number)
       system(['cd ' obj.databaseDirectory ...
-        '; find ./ancillary/* -type f  -name "*_DEFATT_*" -o -name "*_DEFEPH_*" -o -name "*_DEFQ_*" -o -name "*_PREDQ_*" |  ' ...
-        'perl -pe ''s/(\.\/ancillary\/mms.*)(MMS[1-4]?_[\w-]*)_(20\d\d\d\d\d_20\d\d\d\d\d)\.V(\d)(\d)\n/$1,$2,$3,$4,$5,0,$_/'' > delme.txt;'...
+        '; find ./ancillary/* -type f  -name "*_DEFATT_*" -o -name "*_DEFEPH_*" -o -name "*_DEFQ_*" -o -name "*_PREDQ_*" | sort -rV | ', ...
+        'awk ''{nn=split($0,aa,"."); if (nn!=mm) print $aa[1]; else if(aa[2]!=bb[2]) print $aa[1]; }; {mm=split($0,bb,".")}'' - | ', ...
+        'perl -pe ''s/(\.\/ancillary\/mms.*)(MMS[1-4]?_[\w-]*)_(20\d{5,5}_20\d{5,5})\.V(\d)(\d)\n/$1,$2,$3,$4,$5,0,$_/'' > delme.txt;'...
         'echo -e ".mod csv\n.import delme.txt FileListToImport\n" | sqlite3 ' obj.databaseFile ';'...
         'rm ./delme.txt' ]);
     end
@@ -353,6 +346,7 @@ keyboard; % THIS FUNCTION IS NOT FULLY TESTED, MAKE SURE TO MAKE A BACKUP OF THE
       % filesToImport contains only new files to be added into the database
       obj.insertPrepToFileList(filesToImport);
       toImport = [];
+      failedToImport = {};
       for ii = length(filesToImport):-1:1
         % Read and process each new file add to VarIndex list
         try
@@ -366,8 +360,8 @@ keyboard; % THIS FUNCTION IS NOT FULLY TESTED, MAKE SURE TO MAKE A BACKUP OF THE
           status = 0;
           % Clean up..
           irf.log('warning', ['Something went wrong reading file: ',filesToImport{ii}.fileNameFullPath]);
-          sql = ['DELETE FROM FileList WHERE fileNameFullPath = "', filesToImport{ii}.fileNameFullPath, '"'];
-          obj.sqlUpdate(sql);
+          % Keep the "fileNameFullPath"(-s) to be deleted later.
+          failedToImport{end+1} = filesToImport{ii}.fileNameFullPath; %#ok<AGROW>
           filesToImport(ii) = [];
           continue;
         end
@@ -410,6 +404,15 @@ keyboard; % THIS FUNCTION IS NOT FULLY TESTED, MAKE SURE TO MAKE A BACKUP OF THE
       end % Read and process each new file
       if ~isempty(toImport) % Any remaining files in toImport
         obj.insertPrepToVarIndex(toImport);
+      end
+      if ~isempty(failedToImport)
+        % If some files failed to be read, delete these from the database.
+        logStr = ['Removing files, ', num2str(length(failedToImport)), ...
+          ' in total, from FileList that failed to be read for some reason.'];
+        irf.log('notice', logStr);
+        sql = ['DELETE FROM FileList WHERE fileNameFullPath IN (', ...
+          strjoin(failedToImport, ', '),')'];
+        obj.sqlUpdate(sql);
       end
     end
 

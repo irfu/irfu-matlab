@@ -40,7 +40,8 @@ classdef test_mms_defatt_phase < matlab.unittest.TestCase
       phaseExpected(iiE) =  p0 + 360*(timeSecReq(iiE)-tSpinup)*factor*spinRate/60;
       phaseExpected = mod(phaseExpected,360);
       phaseComputed= mms_defatt_phase(defatt,timeEpochTT200Req);
-      testCase.verifyEqual(phaseComputed.data,phaseExpected,'AbsTol',1e-6);
+      % Unwrap to continous phase to avoid issues with 0 ~= 359.9999... deg.
+      testCase.verifyEqual(unwrap(pi/180*(phaseComputed.data)),unwrap(pi/180*(phaseExpected)),'AbsTol',pi/180*(1e-6));
       diffangle = phaseComputed.data - phaseExpected;
       diffangle = min([diffangle';360-diffangle']);
       testCase.verifyEqual(diffangle,diffangle*0,'AbsTol',1e-6);
