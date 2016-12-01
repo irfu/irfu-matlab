@@ -145,7 +145,7 @@ function [wfinal,extraparam]=irf_disp_surf_calc(kc_x_max,kc_z_max,m_i,wp_e)
   Ee = 0.5*m_e*(vex.*conj(vex)+vey.*conj(vey)+vez.*conj(vez));
   Ei = 0.5*m_i*(vix.*conj(vix)+viy.*conj(viy)+viz.*conj(viz));
   
-  % To do: Ratio of particle and field energy densities
+  % Ratio of particle and field energy densities
   ne = wp_e^2;
   Een = Ee*ne;
   Ein = Ei*ne;
