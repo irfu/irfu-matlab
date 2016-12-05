@@ -227,12 +227,13 @@ classdef mms_db_sql < handle
       sql = 'SELECT * FROM FileListToImport ORDER BY rowid LIMIT 1';
       rs = obj.sqlQuery(sql);
       if(~rs.next), irf.log('warning','Nothing found. Aborting.'); return; end
-      sql = ['DELETE FROM FileList WHERE idFile IN ',...
-        '(SELECT idFile FROM FileList WHERE fileNameFullPath NOT IN ',...
-        '(SELECT fileNameFullPath FROM FileListToImport))'];
+      sql = ['DELETE FROM FileList WHERE fileNameFullPath NOT IN ', ...
+        '(SELECT fileNameFullPath FROM FileListToImport)'];
 keyboard; % THIS FUNCTION IS NOT FULLY TESTED, MAKE SURE TO MAKE A BACKUP OF THE DB FILE
       obj.sqlUpdate(sql);
       obj.sqlUpdate('DELETE FROM FileListToImport');
+      % Clean up storage space
+%      obj.sqlUpdate('VACUUM');
     end
 
     function clear_unused_files(obj)
@@ -410,8 +411,8 @@ keyboard; % THIS FUNCTION IS NOT FULLY TESTED, MAKE SURE TO MAKE A BACKUP OF THE
         logStr = ['Removing files, ', num2str(length(failedToImport)), ...
           ' in total, from FileList that failed to be read for some reason.'];
         irf.log('notice', logStr);
-        sql = ['DELETE FROM FileList WHERE fileNameFullPath IN (', ...
-          strjoin(failedToImport, ', '),')'];
+        sql = ['DELETE FROM FileList WHERE fileNameFullPath IN ("', ...
+          strjoin(failedToImport, '", "'),'")'];
         obj.sqlUpdate(sql);
       end
     end
