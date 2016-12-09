@@ -659,7 +659,7 @@ coordinateSystem = []; idx = 1;
 if tensorOrder > 0
   coordinateSystem = tk{idx+1}; idx = idx + 1;
   switch coordinateSystem
-    case {'gse','gsm','dsl','dbcs','dmpa','ssc'}
+    case {'gse','gsm','dsl','dbcs','dmpa','ssc','bcs'}
     otherwise
       error('invalid COORDINATE_SYS')
   end
