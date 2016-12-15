@@ -9,7 +9,8 @@ function [varargout]=c_4_gradvec(r1,r2,r3,r4,u1,u2,u3,u4)
 %  r1..r4 are position vectors in TSeries or nx4 array (1st column time)
 %  u1..u4 are vectors in TSeries or nx4 array (1st column time)
 %
-%  Reference: ISSI book  Eq.12.18
+%  Reference: ISSI book SR-001 Eq.12.18
+%  http://www.issibern.ch/PDF-Files/analysis_methods_1_1a.pdf
 %  k_l=S_l R_kl^-1
 %  where S_l=(Sum a!=b dx_ab dR_ab)/N^2   N=4 number of satellites
 %
@@ -67,10 +68,8 @@ if nargout==0||nargout==1
       'repres', {'x','y','z'}, 'repres',{'x','y','z'});
     gradVec.name = ['Grad of ' name];
     gradVec.units = units;
-    varargout(1) = {gradVec};
-  else
-    varargout(1) = {gradVec};
   end
+  varargout(1) = {gradVec};
 elseif nargout == 2
   div = trace(gradVec);
   curl = [gradVec(2,3)-gradVec(3,2) -gradVec(1,3)+gradVec(3,1) gradVec(1,2)-gradVec(2,1)];
@@ -78,15 +77,12 @@ elseif nargout == 2
     div = TSeries(tref, div, 'TensorOrder', 0);
     div.name = ['div of ' name];
     div.units = units;
-    varargout(1) = {div};
     curl = TSeries(tref, curl, 'TensorOrder', 1, 'repres', {'x','y','z'});
     curl.name = ['Curl of ' name];
     curl.units = units;
-    varargout(2) = {curl};
-  else
-    varargout(1) = {div};
-    varargout(2) = {curl};
   end
+  varargout(1) = {div};
+  varargout(2) = {curl};
 end
 
 end
