@@ -33,8 +33,8 @@ elseif all([isnumeric(r1), isnumeric(r2), isnumeric(r3), isnumeric(r4), ...
     isnumeric(u1), isnumeric(u2), isnumeric(u3), isnumeric(u4)])
   output_as_TSeries = false;
   % everything is resampled to u1
-  c_eval('r?=irf_resample(r?,u1);')
-  c_eval('u?=irf_resample(u?,u1);')
+  c_eval('r?=irf_resamp(r?,u1);')
+  c_eval('u?=irf_resamp(u?,u1);')
   c_eval('r?=r?(:,2:4);')
   c_eval('u?=u?(:,2:4);')
 else
@@ -45,7 +45,7 @@ n = size(r1,1);
 gradVec = zeros(n,3,3);
 for i=1:n % to be vectorized at some point
   r1i=r1(i,1:3); r2i=r2(i,1:3); r3i=r3(i,1:3); r4i=r4(i,1:3);
-  u1i=u1(i,1:3); u2i=u2(i,1:3); u3i=u3(i,1:3); u4i=u4(i,1:3);
+  u1i=u1(i,1:3); u2i=u2(i,1:3); u3i=u3(i,1:3); u4i=u4(i,1:3); %#ok<NASGU>
   R_Center = (r1i+r2i+r3i+r4i)/4;
   dR1 = r1i-R_Center; dR2 = r2i-R_Center;
   dR3 = r3i-R_Center; dR4 = r4i-R_Center;
