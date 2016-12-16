@@ -458,7 +458,9 @@ elseif strcmp(quantity,'dies') || strcmp(quantity,'diehxs') || strcmp(quantity,'
       % Check if we have at least 1 spin of data left
       if length(find(~isnan(wE{iPr}.e(:,2)))) < 4*fsamp
         irf_log('proc',irf_ssub('No p? data after removals',wE{iPr}.probe));
-        if p12==wE{iPr}.probe, p12=[]; end
+        if     wE{iPr}.probe==34, flag_have_p34 = 0;
+        elseif wE{iPr}.probe==p12, p12=[]; 
+        end
         continue
       end
       
