@@ -318,7 +318,7 @@ elseif strcmp(quantity,'dies') || strcmp(quantity,'diehxs') || strcmp(quantity,'
   end
   
   if strcmp(quantity,'dies'), qlist = {'diehxs', 'dielxs'};
-  else qlist = {quantity};
+  else, qlist = {quantity};
   end
   
   for qq = qlist
@@ -334,7 +334,7 @@ elseif strcmp(quantity,'dies') || strcmp(quantity,'diehxs') || strcmp(quantity,'
           if ~ok || isempty(da)
             irf_log('load', irf_ssub('No/empty wcE?p! and wE?p!',cl_id,probe));
             continue
-          else irf_log('load', irf_ssub('read wE?p!',cl_id,probe));
+          else, irf_log('load', irf_ssub('read wE?p!',cl_id,probe));
           end
           irf_log('load','using raw (not corrected) data')
         else
@@ -511,7 +511,7 @@ elseif strcmp(quantity,'dies') || strcmp(quantity,'diehxs') || strcmp(quantity,'
           irf_log('proc','blanking Whisper pulses in ADC offsets')
           if (wE{iPr}.probe == 32 || wE{iPr}.probe == 42) && size(sp,2) == 10
             SPCOLS = [4 9 10];
-          else SPCOLS = 4;
+          else, SPCOLS = 4;
           end
           % Obtain time interval boundaries around each
           % (averaged) data point;
@@ -526,7 +526,7 @@ elseif strcmp(quantity,'dies') || strcmp(quantity,'diehxs') || strcmp(quantity,'
               SPCOLS) = NaN;
           end
         end
-      else irf_log('load',msg)
+      else, irf_log('load',msg)
       end
       clear ok whip msg
       
