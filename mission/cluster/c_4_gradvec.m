@@ -60,6 +60,36 @@ for i=1:n % to be vectorized at some point
   Rinv = c_4_r(dR1, dR2, dR3, dR4, -1);  % inverse of volumetric tensor
   gradVec(i,:,:) = S*Rinv;
 end
+% OUTLINE OF VECTORIZED CODE, to be tested...
+% c_eval('r?=double(r?); u?=double(u?);');
+% R_Center = (r1 + r2 + r3 + r4)/4;
+% dR1 = r1-R_Center; dR2 = r2-R_Center; dR3 = r3-R_Center; dR4 = r4-R_Center;
+% % Differences in dR (aka "dR_ab, for all n(n-1)/2 independent terms with a ~= b")
+% dR_21 = dR2 - dR1;
+% dR_31 = dR3 - dR1; dR_32 = dR3 - dR2;
+% dR_41 = dR4 - dR1; dR_42 = dR4 - dR2; dR_43 = dR4 - dR3;
+% j = repmat(1:3, [3, 1]);
+% S_sum = repmat((u2-u1)', 3, 1) .* dR_21(:,j).' + ...
+%  repmat((u3-u1)', 3, 1) .* dR_31(:,j).' + ...
+%  repmat((u3-u2)', 3, 1) .* dR_32(:,j).' + ...
+%  repmat((u4-u1)', 3, 1) .* dR_41(:,j).' + ...
+%  repmat((u4-u2)', 3, 1) .* dR_42(:,j).' + ...
+%  repmat((u4-u3)', 3, 1) .* dR_43(:,j).';
+% S = reshape(S_sum/16, [3 3 n]); % with "/16 = /N^2 for N=4"
+% Rinv = zeros(3, 3, n);
+% gradVec_old = zeros(n, 3, 3);
+% for i=1:n % Function c_4_r TO BE VECTORIZED AT SOME POINT...
+%   Rinv(:,:,i) = c_4_r(dR1(i,:), dR2(i,:), dR3(i,:), dR4(i,:), -1); % inverse of volumetric tensor
+%   %gradVec_old(i,:,:) = S(:,:,i)*Rinv(:,:,i); % Old method, one by one...
+% end
+% % loop over 1:3, multiply corresponding 2d slices and summarize, then permute it, giving the result as looped over 1:n.
+% C = zeros(3, 3, n);
+% for j = 1:3
+%   C = C + bsxfun(@times, S(:,j,:), Rinv(j,:,:));
+% end
+% gradVec = permute(C,[3 1 2]); % "gradVec(i,1:3,1:3)" now corresponds to "S(1:3,1:3,i)*Rinv(1:3,1:3,i)" for all i=1:n
+% % Assert it is same (within numerical accuracy of class).
+% %all(all(all(ismembertol(gradVec,gradVec_old))))
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  OUTPUT %%%%%%%%%%%%%%%%%%%%%%%%%
 if nargout==0||nargout==1
