@@ -61,7 +61,7 @@ volTensor = reshape(S_sum/4, [3 3 n]); % 1e6 to get into SI units km->m
 
 % TODO vectorize (if possible)
 if returnInverseVolumetricTensor || nargout>6
-  computedVolTensor = volTensor; volTensor = zeros(3,3,n);
+  computedVolTensor = volTensor;
   L = zeros(n,1); E = zeros(n,1); P = zeros(n,1);
   for i=1:n
     if(returnInverseVolumetricTensor)
