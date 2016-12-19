@@ -429,7 +429,11 @@ elseif strcmp(quantity,'dies') || strcmp(quantity,'diehxs') || strcmp(quantity,'
       
       aa = c_phase(wE{iPr}.e(:,1),pha);
       if isempty(aa)
-        irf_log('proc','Empty phase')
+        irf_log('proc', sprintf('Empty phase, skipping w%sE%dp%d %s',...
+          ss,cl_id,wE{iPr}.probe,lx_str))
+        if wE{iPr}.probe==34, flag_have_p34 = 0;
+        elseif wE{iPr}.probe==p12, p12=[]; 
+        end
         continue
       end
       
