@@ -44,7 +44,6 @@ end
 
 n = size(r1,1);
 gradVec = zeros(n,3,3);
-Rinv = zeros(3, 3, n);
 
 c_eval('r?=double(r?); u?=double(u?);');
 R_Center = (r1 + r2 + r3 + r4)/4;
@@ -62,8 +61,9 @@ S_sum = repmat((u2-u1)', 3, 1) .* dR_21(:,j).' + ...
  repmat((u4-u3)', 3, 1) .* dR_43(:,j).';
 S = reshape(S_sum/16, [3 3 n]); % with "/16 = /N^2 for N=4"
 
-for i=1:n % TO BE VECTORIZED AT SOME POINT... (c_4_r not yet vectorized).
-  Rinv(:,:,i) = c_4_r(dR1(i,:), dR2(i,:), dR3(i,:), dR4(i,:), -1); % inverse of volumetric tensor
+Rinv = c_4_r(dR1, dR2, dR3, dR4, -1);
+
+for i=1:n % TO BE VECTORIZED AT SOME POINT.
   gradVec(i,:,:) = S(:,:,i)*Rinv(:,:,i);
 end
 
