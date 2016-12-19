@@ -2346,7 +2346,8 @@ elseif strcmp(quantity,'rawspec')
 	if ~n_ok, data = []; cd(old_pwd), return, end
 	
 	%Compute spin period
-	ph = c_phase(tpharef,pha); ph(isnan(ph(:,2)),:) = [];
+	ph = c_phase(tpharef,pha); 
+  if ~isempty(ph), ph(isnan(ph(:,2)),:) = []; end
 	if isempty(ph)
 		irf_log('proc','Phase is empty')
 		data = []; cd(old_pwd), return
@@ -2365,7 +2366,7 @@ elseif strcmp(quantity,'rawspec')
 	if spin_p > 4.4 || spin_p < 3.6
 		irf_log('proc','using spin period == 4 sec')
 		spin_p = 4.0;
-    else irf_log('proc',['spin period is ' num2str(spin_p) ' sec'])
+  else, irf_log('proc',['spin period is ' num2str(spin_p) ' sec'])
 	end
 	
 	for pr = [12 34]
@@ -2385,13 +2386,13 @@ elseif strcmp(quantity,'rawspec')
 		end
 		
 		if corrected_raw_data, ss = 'c';
-		else ss = '';
+    else, ss = '';
 		end
 		irf_log('proc',sprintf('Raw spectrum w%sE%dp%d -> RSPEC%dp%d',...
 			ss,cl_id,probe,cl_id,probe))
 		
         if flag_lx, fsamp = c_efw_fsample(tt,'lx');
-        else fsamp = c_efw_fsample(tt,'hx');
+        else, fsamp = c_efw_fsample(tt,'hx');
         end
 		if ~fsamp, error('no sampling frequency'),end
 		
@@ -2454,7 +2455,7 @@ elseif strcmp(quantity,'rawspec')
 				rspec(i,9)  = -AmpSin(4+1); % 8 omega
 				rspec(i,10) =  AmpCos(5+1);
 				rspec(i,11) = -AmpSin(5+1);
-            else n_gap = n_gap + 1;
+      else, n_gap = n_gap + 1;
 			end
 		end
 		irf_log('proc',sprintf('%d spins processed, %d gaps found',n,n_gap))
