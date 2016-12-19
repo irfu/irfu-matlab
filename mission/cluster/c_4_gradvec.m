@@ -103,7 +103,7 @@ if nargout==0||nargout==1
 elseif nargout == 2
   % Sum of the diagonal elements for each 3D "slice"
   div = sum(gradVec(bsxfun(@plus,(1:n)',[0, 4*n, 8*n])), 2);
-  curl = [gradVec(2,3)-gradVec(3,2) -gradVec(1,3)+gradVec(3,1) gradVec(1,2)-gradVec(2,1)];
+  curl = [gradVec(:,2,3)-gradVec(:,3,2), -gradVec(:,1,3)+gradVec(:,3,1), gradVec(:,1,2)-gradVec(:,2,1)];
   if output_as_TSeries
     div = TSeries(tref, div, 'TensorOrder', 0);
     div.name = ['div of ' name];
