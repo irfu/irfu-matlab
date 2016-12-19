@@ -2274,11 +2274,11 @@ elseif strcmp(quantity,'rawspec')
 	
 	% Src quantities: Atwo?, wE?p12/wE?p32, wE?p34
 	[ok,pha] = c_load('Atwo?',cl_id);
-	if ~ok || isempty(pha)
-        irf_log('load',...
-             irf_ssub('No/empty Atwo? in mA. Use getData(CDB,...,cl_id,''a'')',cl_id));
-		data = []; cd(old_pwd); return
-	else
+  if ~ok || isempty(pha)
+    irf_log('load',...
+      irf_ssub('No/empty Atwo? in mA. Use getData(CDB,...,cl_id,''a'')',cl_id));
+    data = []; cd(old_pwd); return
+  else
 		%Find zero phase
 		ii = find(pha(:,2)==0);
 		if isempty(ii)
@@ -2305,7 +2305,7 @@ elseif strcmp(quantity,'rawspec')
             end
             irf_log('load','using raw (not corrected) data')
             if probe==34, corrected_raw_data_p34 = 0;
-            else corrected_raw_data_p12 = 0;
+            else, corrected_raw_data_p12 = 0;
             end
         end
         n_ok = n_ok + 1;
@@ -2315,7 +2315,7 @@ elseif strcmp(quantity,'rawspec')
         if probe==32
             p12 = 32;
             e12 = da;
-        else c_eval('e?=da;',probe)
+        else, c_eval('e?=da;',probe)
         end
         clear ok da
     end
