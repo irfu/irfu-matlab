@@ -17,6 +17,7 @@ end
 %%
 [~, Vi_perp] = irf_dec_parperp(B_bcs_fgm_srvy_l2,Vi_dbcs_fpi);
 [~, Ve_perp] = irf_dec_parperp(B_bcs_fgm_srvy_l2,Ve_dbcs_fpi);
+[~, E_perp] = irf_dec_parperp(B_bcs_fgm_srvy_l2,E_dsl_edp_l2);
 VExB = irf_e_vxb(E_dsl_edp_l2,B_bcs_fgm_srvy_l2,-1);
 VExB_l2pre = irf_e_vxb(E2d_dsl_edp_l2pre,B_bcs_fgm_srvy_l2,-1);
 EVixB = irf_e_vxb(Vi_dbcs_fpi,B_bcs_fgm_srvy_l2.resample(Vi_dbcs_fpi));
@@ -29,7 +30,7 @@ end
 
 %%
 f = irf_figure(2387456,3);
-set(gcf,'defaultAxesColorOrder',[0 0 0;0 0 1;1 0 0;0 0.7 0;0 1 1 ;1 0 1; 1 1 0])
+set(gcf,'defaultAxesColorOrder',[0 0 0;0 0 1;1 0 0;0 0.9 0;0 1 1 ;1 0 1; 1 1 0])
 h = irf_plot({VExB,VExB_l2pre,Ve_perp,Vi_perp,Vhplus_perp},'comp');
 title(h(1),sprintf('MMS%d',mmsId))
 legend(h(1),'VExB','VExB l2pre','V_{e\perp}','V_{i\perp}','V_{H+\perp}')
@@ -40,19 +41,19 @@ ylabel(h(2),'V_y DSL [km/s]')
 ylabel(h(3),'V_z DSL [km/s]')
 irf_zoom(h,'x',Tint)
 
-irf_print_fig(['mms' num2str(mmsId) '_VExB_EDP_vs_FPI_vs_HPCA_' irf_fname(Tint,2)],'png')
+irf_print_fig(['mms' num2str(mmsId) '_VExB_EDP_vs_FPI_vs_HPCA_brst_' irf_fname(Tint,2)],'png')
 
 %%
 f = irf_figure(2387457,3);
-set(gcf,'defaultAxesColorOrder',[0 0 0;0 0 1;1 0 0;0 0.7 0;0 1 1 ;1 0 1; 1 1 0])
-h = irf_plot({E2d_dsl_edp_l2pre,E_dsl_edp_l2,EVexB,EVixB,EVphlusxB},'comp');
+set(gcf,'defaultAxesColorOrder',[0 0 0;0 0 1;1 0 0;0 0.9 0;0 1 1 ;1 0 1; 1 1 0])
+h = irf_plot({E2d_dsl_edp_l2pre,E_dsl_edp_l2,E_perp,EVexB,EVixB,EVphlusxB},'comp');
 title(h(1),sprintf('MMS%d',mmsId))
-legend(h(1),'E L2pre','E l2','V_{e}xB','V_{i}xB','V_{H+}xB')
-legend(h(2),'E L2pre','E l2','V_{e}xB','V_{i}xB','V_{H+}xB')
-legend(h(3),'E L2pre','E l2','V_{e}xB','V_{i}xB','V_{H+}xB')
+legend(h(1),'E L2pre','E L2','E_perp','V_{e}xB','V_{i}xB','V_{H+}xB')
+legend(h(2),'E L2pre','E L2','E_perp','V_{e}xB','V_{i}xB','V_{H+}xB')
+legend(h(3),'E L2pre','E L2','E_perp','V_{e}xB','V_{i}xB','V_{H+}xB')
 ylabel(h(1),'E_x DSL [mV/m]')
 ylabel(h(2),'E_y DSL [mV/m]')
 ylabel(h(3),'E_z DSL [mV/m]')
 irf_zoom(h,'x',Tint)
 
-irf_print_fig(['mms' num2str(mmsId) '_E_EDP_vs_FPI_vs_HPCA_' irf_fname(Tint,2)],'png')
+irf_print_fig(['mms' num2str(mmsId) '_E_EDP_vs_FPI_vs_HPCA_brst_' irf_fname(Tint,2)],'png')
