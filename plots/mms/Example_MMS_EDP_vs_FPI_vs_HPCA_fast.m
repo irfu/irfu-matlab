@@ -2,7 +2,7 @@ mmsId = 1;
 Tint = irf.tint('2016-08-10T09:50:00Z/2016-08-10T10:15:00Z');
 
 %% FGM & EDP
-B_bcs_fgm_srvy_l2 = mms.get_data('B_dmpa_fgm_srvy_l2',Tint,mmsId);
+B_dmpa_fgm_srvy_l2 = mms.get_data('B_dmpa_fgm_srvy_l2',Tint,mmsId);
 E_dsl_edp_l2 = mms.get_data('E_dsl_edp_fast_l2',Tint,mmsId);
 E2d_dsl_edp_l2pre = mms.get_data('E2d_dsl_edp_fast_l2pre',Tint,mmsId);
 
@@ -15,16 +15,16 @@ if isempty(Vhplus_dbcs_hpca)
 end
 
 %%
-[~, Vi_perp] = irf_dec_parperp(B_bcs_fgm_srvy_l2,Vi_dbcs_fpi);
-[~, Ve_perp] = irf_dec_parperp(B_bcs_fgm_srvy_l2,Ve_dbcs_fpi);
-VExB = irf_e_vxb(E_dsl_edp_l2,B_bcs_fgm_srvy_l2,-1);
-VExB_l2pre = irf_e_vxb(E2d_dsl_edp_l2pre,B_bcs_fgm_srvy_l2,-1);
-EVixB = irf_e_vxb(Vi_dbcs_fpi,B_bcs_fgm_srvy_l2.resample(Vi_dbcs_fpi));
-EVexB = irf_e_vxb(Ve_dbcs_fpi,B_bcs_fgm_srvy_l2.resample(Ve_dbcs_fpi));
+[~, Vi_perp] = irf_dec_parperp(B_dmpa_fgm_srvy_l2,Vi_dbcs_fpi);
+[~, Ve_perp] = irf_dec_parperp(B_dmpa_fgm_srvy_l2,Ve_dbcs_fpi);
+VExB = irf_e_vxb(E_dsl_edp_l2,B_dmpa_fgm_srvy_l2,-1);
+VExB_l2pre = irf_e_vxb(E2d_dsl_edp_l2pre,B_dmpa_fgm_srvy_l2,-1);
+EVixB = irf_e_vxb(Vi_dbcs_fpi,B_dmpa_fgm_srvy_l2.resample(Vi_dbcs_fpi));
+EVexB = irf_e_vxb(Ve_dbcs_fpi,B_dmpa_fgm_srvy_l2.resample(Ve_dbcs_fpi));
 if isempty(Vhplus_dbcs_hpca), Vhplus_perp = []; EVphlusxB = [];
 else
-  [~, Vhplus_perp] = irf_dec_parperp(B_bcs_fgm_srvy_l2,Vhplus_dbcs_hpca);
-  EVphlusxB = irf_e_vxb(Vhplus_dbcs_hpca,B_bcs_fgm_srvy_l2.resample(Vhplus_dbcs_hpca));
+  [~, Vhplus_perp] = irf_dec_parperp(B_dmpa_fgm_srvy_l2,Vhplus_dbcs_hpca);
+  EVphlusxB = irf_e_vxb(Vhplus_dbcs_hpca,B_dmpa_fgm_srvy_l2.resample(Vhplus_dbcs_hpca));
 end
 
 %%
