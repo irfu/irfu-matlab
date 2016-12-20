@@ -299,13 +299,22 @@ switch Vr.inst
     switch Vr.lev
       case 'l2'
         vn = ['mms' mmsIdS '_' Vr.inst '_b_' Vr.cs '_' Vr.tmmode '_' Vr.lev];
+        res = mms.db_get_ts(datasetName, vn, Tint);
       case 'l2pre' 
-        vn = ['mms' mmsIdS '_' Vr.inst '_' Vr.tmmode '_' Vr.lev '_' Vr.cs];
+        vn = ['mms' mmsIdS '_' Vr.inst '_b_' Vr.cs '_' Vr.tmmode '_' Vr.lev];
+        res = mms.db_get_ts(datasetName, vn, Tint);
+        % XXX: once there will be no v3x files, this entry can be combined
+        % with 'l2'
+        if isempty(res)
+          irf.log('notice','Trying v3.x files')
+          vn = ['mms' mmsIdS '_' Vr.inst '_' Vr.tmmode '_' Vr.lev '_' Vr.cs];
+          res = mms.db_get_ts(datasetName, vn, Tint);
+        end
       case 'ql'
         vn = ['mms' mmsIdS '_' Vr.inst '_' Vr.tmmode '_' Vr.cs];
+        res = mms.db_get_ts(datasetName, vn, Tint);
       otherwise, error('should not be here')
     end
-    res = mms.db_get_ts(datasetName, vn, Tint);
     if isempty(res), return, end
     if strcmp(Vr.lev,'srvy')
       ind = diff(res.time.ttns) <= 122000; % FIXME: what is brst min dt for A/DFG?
