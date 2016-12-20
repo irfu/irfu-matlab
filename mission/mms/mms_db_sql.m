@@ -232,8 +232,6 @@ classdef mms_db_sql < handle
 keyboard; % THIS FUNCTION IS NOT FULLY TESTED, MAKE SURE TO MAKE A BACKUP OF THE DB FILE
       obj.sqlUpdate(sql);
       obj.sqlUpdate('DELETE FROM FileListToImport');
-      % Clean up storage space
-%      obj.sqlUpdate('VACUUM');
     end
 
     function clear_unused_files(obj)
@@ -378,7 +376,6 @@ keyboard; % THIS FUNCTION IS NOT FULLY TESTED, MAKE SURE TO MAKE A BACKUP OF THE
           % Not the same epochVarNames or varNames as last file, run full
           % SQL query and insert possible new values.
           for iDataset = 1:numel(out)
-            if isempty(out(iDataset).startTT) || out(iDataset).startTT<1000, break; end % energy channels are put as DEPEND_0 for FPI
             % add dataset to Datasets if needed
             %SEE IF add_var_names can be improved!
             % Not the same as last iteration, possibly new. Make SQL queries
