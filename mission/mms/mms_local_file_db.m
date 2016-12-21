@@ -53,7 +53,7 @@ classdef mms_local_file_db < mms_file_db
         if isempty(fileList) || isempty(tint), return, end
         pick_ancillary();
 			else
-				if mms.db_index
+				if mms.db_index && ~isempty(obj.index)
 					irf.log('notice','Using index');
 					fileList = obj.index.search_files_with_dataset(filePrefix,tint);
 					return
