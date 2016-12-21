@@ -388,6 +388,17 @@ switch Vr.inst
         end
         res = get_ts(getQ);
       case {'Ti', 'Te', 'Pi', 'Pe'}
+        % try to load v3.x
+        switch Vr.param(1)
+          case 'T', momType = 'temptensor'; % temperature
+          case 'P', momType = 'prestensor'; % pressure
+          otherwise, error('should not be here 2')
+        end
+        pref = ['mms' mmsIdS '_' sensor '_'];
+        suf = ['_' Vr.cs '_' Vr.tmmode];
+        res = mms.db_get_ts(datasetName,[pref momType suf],Tint);
+        if ~isempty(res), return, end
+        % continue with v2.x
         switch Vr.param(1)
           case 'T' % temperature
             momType = 'Temp';
