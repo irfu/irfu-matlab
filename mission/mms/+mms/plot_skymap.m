@@ -27,7 +27,8 @@ if isempty(dist); irf.log('warning','Empty input.'); return; end
 
 plotLog = 0; fString = 'f (s^3km^{-6})';
 plotSphere = 1;
-plotb = 0;          % flag for plotting boundary; 2016-03-11, wyli
+plotb = 0;
+flag_energy = 0;
 have_vectors = 0;
 tId = 1:dist.length;
 eId = 1:32;
@@ -38,6 +39,7 @@ phi_edges = linspace(0,2*pi,size(dist.data,3)+1);  % azimuthal angle bin edges, 
 theta_edges = linspace(0,pi,size(dist.data,4)+1); % polar angle bin edges, default
 
 if nargs > 1, have_options = 1; end
+
 while have_options
   l = 1;
   switch(lower(args{1}))
@@ -46,7 +48,8 @@ while have_options
         energyTable = args{2};       
     case 'energy'
       l = 2;
-      energy = args{2};      
+      energy = args{2};
+      flag_energy = 1;
       eId = find(abs(energyTable-energy)==min(abs(energyTable-energy)));
     case 'energylevel'
       l = 2;
@@ -84,13 +87,20 @@ while have_options
   if isempty(args), break, end  
 end
 
+if strcmp(dist.type, 'skymap')
+    energyTable_all = dist.depend{1};
+    energyTable = irf.nanmean(energyTable_all(tId, :), 1);  
+    if flag_energy
+      eId = find(abs(energyTable-energy)==min(abs(energyTable-energy)));    
+    end    
+end
+
 [PHI,THETA] = meshgrid(phi_edges,theta_edges);
 X = -r*sin(THETA).*cos(PHI); % '-' because the data shows which direction the particles were coming from
 Y = -r*sin(THETA).*sin(PHI);
 Z = -r*cos(THETA);
 % dist.data has dimensions nT x nE x nAz x nPol
 C = squeeze(nanmean(nanmean(dist.data(tId,eId,:,:),2),1))';
-
 
 % Plot skymap
 if isempty(ax), fig = figure; ax = axes; end

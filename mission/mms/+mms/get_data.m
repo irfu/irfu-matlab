@@ -125,9 +125,10 @@ vars = {'R_gse','R_gsm','V_gse','V_gsm',...
   'Phase_edp_fast_l2a','Phase_edp_slow_l2a',...
   'Es12_dsl_edp_fast_l2a','Es34_dsl_edp_fast_l2a',...
   'Adcoff_edp_fast_l2a','Adcoff_edp_slow_l2a',...
-  'E_dsl_edp_brst_l2','E_dsl_edp_fast_l2',...
-  'E_gse_edp_brst_l2','E_gse_edp_fast_l2',...
-  'E2d_dsl_edp_brst_l2pre','E2d_dsl_edp_fast_l2pre','E2d_dsl_edp_l2pre','E_dsl_edp_l2pre',...
+  'E_dsl_edp_brst_l2','E_dsl_edp_fast_l2','E_dsl_edp_brst_ql','E_dsl_edp_fast_ql',...
+  'E_gse_edp_brst_l2','E_gse_edp_fast_l2','E_gse_edp_brst_ql','E_gse_edp_fast_ql',...
+  'E2d_dsl_edp_brst_l2pre','E2d_dsl_edp_fast_l2pre','E2d_dsl_edp_brst_ql','E2d_dsl_edp_fast_ql',...
+  'E2d_dsl_edp_l2pre','E_dsl_edp_l2pre',...
   'E_ssc_edp_brst_l1b','E_ssc_edp_fast_l1b','E_ssc_edp_slow_l1b',...
   'V_edp_brst_l1b','V_edp_fast_l1b','V_edp_slow_l1b',...
   'Vi_dbcs_fpi_brst_l2', 'Vi_dbcs_fpi_brst', 'Vi_dbcs_fpi_fast_l2',...
@@ -299,13 +300,22 @@ switch Vr.inst
     switch Vr.lev
       case 'l2'
         vn = ['mms' mmsIdS '_' Vr.inst '_b_' Vr.cs '_' Vr.tmmode '_' Vr.lev];
+        res = mms.db_get_ts(datasetName, vn, Tint);
       case 'l2pre' 
-        vn = ['mms' mmsIdS '_' Vr.inst '_' Vr.tmmode '_' Vr.lev '_' Vr.cs];
+        vn = ['mms' mmsIdS '_' Vr.inst '_b_' Vr.cs '_' Vr.tmmode '_' Vr.lev];
+        res = mms.db_get_ts(datasetName, vn, Tint);
+        % XXX: once there will be no v3x files, this entry can be combined
+        % with 'l2'
+        if isempty(res)
+          irf.log('notice','Trying v3.x files')
+          vn = ['mms' mmsIdS '_' Vr.inst '_' Vr.tmmode '_' Vr.lev '_' Vr.cs];
+          res = mms.db_get_ts(datasetName, vn, Tint);
+        end
       case 'ql'
         vn = ['mms' mmsIdS '_' Vr.inst '_' Vr.tmmode '_' Vr.cs];
+        res = mms.db_get_ts(datasetName, vn, Tint);
       otherwise, error('should not be here')
     end
-    res = mms.db_get_ts(datasetName, vn, Tint);
     if isempty(res), return, end
     if strcmp(Vr.lev,'srvy')
       ind = diff(res.time.ttns) <= 122000; % FIXME: what is brst min dt for A/DFG?
@@ -378,6 +388,17 @@ switch Vr.inst
         end
         res = get_ts(getQ);
       case {'Ti', 'Te', 'Pi', 'Pe'}
+        % try to load v3.x
+        switch Vr.param(1)
+          case 'T', momType = 'temptensor'; % temperature
+          case 'P', momType = 'prestensor'; % pressure
+          otherwise, error('should not be here 2')
+        end
+        pref = ['mms' mmsIdS '_' sensor '_'];
+        suf = ['_' Vr.cs '_' Vr.tmmode];
+        res = mms.db_get_ts(datasetName,[pref momType suf],Tint);
+        if ~isempty(res), return, end
+        % continue with v2.x
         switch Vr.param(1)
           case 'T' % temperature
             momType = 'Temp';
@@ -461,6 +482,12 @@ switch Vr.inst
     res = comb_ts(res);
   case 'edp' 
     switch Vr.lev
+      case 'ql'
+        switch Vr.param
+          case 'E', dset = 'dce'; param = ['dce_xyz_' Vr.cs];
+          case 'E2d', dset = 'dce2d'; param = ['dce_xyz_' Vr.cs];
+        end
+        pref = ['mms' mmsIdS '_edp_' param];
       case 'l1b'
         switch Vr.param
           case 'E', dset = 'dce'; param = 'dce_sensor';
@@ -659,7 +686,7 @@ coordinateSystem = []; idx = 1;
 if tensorOrder > 0
   coordinateSystem = tk{idx+1}; idx = idx + 1;
   switch coordinateSystem
-    case {'gse','gsm','dsl','dbcs','dmpa','ssc'}
+    case {'gse','gsm','dsl','dbcs','dmpa','ssc','bcs'}
     otherwise
       error('invalid COORDINATE_SYS')
   end

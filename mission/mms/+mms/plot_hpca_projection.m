@@ -31,7 +31,7 @@ function [hax, hcb] = plot_hpca_projection(varargin)
 %        ienergy, 'xyz', xyz, 'elevationlim', elevlim, 'vlim', vlim, ...
 %        'vlabel', vlabels);
 % History:
-%   1. v1 on 2016-11-20;
+%   1. v1 on 2016-11-20;  
 
     % 1. get data
     [ax,args,nargs] = axescheck(varargin{:});

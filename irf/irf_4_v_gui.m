@@ -592,8 +592,8 @@ function ud = get_mms_pos(ud)
 %   Reads position data for MMS and stores it in ud.
 
 % Gets position data for all data +-2 min for good measure
-tstart = ud.var1.time(1);
-tstop = ud.var1.time(end);
+tstart = ud.var1.time(1)+-120;
+tstop = ud.var1.time(end)+120;
 
 Tint = irf.tint(tstart,tstop);
 R  = mms.get_data('R_gse',Tint);

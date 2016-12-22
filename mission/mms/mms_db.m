@@ -27,25 +27,33 @@ classdef mms_db < handle
     end
     
     
-   function fileList = list_files(obj,filePrefix,tint)
+   function fileList = list_files(obj,filePrefix,tint,varName)
+     if nargin < 4, varName = ''; end
      fileList =[];
 		 if nargin==2, tint =[]; end
      if isempty(obj.databases)
        irf.log('warning','No databases initialized'), return
      end
      for iDb = 1:length(obj.databases)
-       fileList = [fileList obj.databases(iDb).list_files(filePrefix,tint)]; %#ok<AGROW>
+       db = obj.databases(iDb);
+       if mms.db_index && ~isempty(obj.databases(iDb).index)
+         if isempty(varName)
+           flTmp = db.index.find_files('fileprefix',filePrefix,'tint',tint);
+         else
+           flTmp = db.index.find_files('fileprefix',filePrefix,...
+             'varname',varName,'tint',tint);
+         end
+       else
+         flTmp =  db.list_files(filePrefix,tint);
+       end
+       fileList = [fileList flTmp]; %#ok<AGROW>
      end
    end
    
    function res = get_variable(obj,filePrefix,varName,tint)
      narginchk(4,4)
-     res = [];
-		 if mms.db_index
-			 fileList=obj.databases.index.find_files('fileprefix',filePrefix,'varname',varName,'tint',tint);
-		 else
-			 fileList = list_files(obj,filePrefix,tint);
-		 end
+     res = [];		 
+     fileList = list_files(obj,filePrefix,tint,varName);
      if isempty(fileList), return, end
      
 		 loadedFiles = obj.load_list(fileList,varName);

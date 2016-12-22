@@ -1,4 +1,4 @@
-function display(dobj,mode)
+function display(varargin)
 %DISPLAY(dobj)  display a DATAOBJ object
 %
 % DISPLAY(dobj,[mode])
@@ -15,8 +15,12 @@ function display(dobj,mode)
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
 
-if nargin < 2, m = 0;
+if nargin < 2
+    m = 0;
+    dobj = varargin{1};
 else
+    dobj = varargin{1};
+    mode = varargin{2};
 	switch lower(mode)
 		case {'f','full'}
 			m = 1;
