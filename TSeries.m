@@ -1309,7 +1309,13 @@
       end
       if obj.tensorOrder==0
         Ts = TSeries(NewTime, dataTmp, 'tensorOrder', obj.tensorOrder);
-      else
+      elseif obj.tensorOrder==1
+        Ts = TSeries(NewTime, dataTmp, 'tensorOrder', obj.tensorOrder, ...
+          'tensorBasis', obj.BASIS{obj.tensorBasis_} , 'repres', obj.representation{1}); % Combined TSeries
+      elseif obj.tensorOrder==2
+        Ts = TSeries(NewTime, dataTmp, 'tensorOrder', obj.tensorOrder, ...
+          'tensorBasis', obj.BASIS{obj.tensorBasis_} , 'repres', obj.representation{1} , 'repres', obj.representation{2}); % Combined TSeries
+      else 
         Ts = TSeries(NewTime, dataTmp, 'tensorOrder', obj.tensorOrder, ...
           'tensorBasis', obj.BASIS{obj.tensorBasis_}); % Combined TSeries
       end
