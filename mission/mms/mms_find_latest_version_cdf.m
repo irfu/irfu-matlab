@@ -1,9 +1,9 @@
 function fName = mms_find_latest_version_cdf(dir_input)
-%MMS_FIND_LATEST_VERSION_CDF  find the highest version file
+%MMS_FIND_LATEST_VERSION_CDF  find the highest version file(-s)
 %
 % FNAME = MMS_FIND_LATEST_VERSION_CDF(DIR_INPUT)
 %
-% Find the highest version file from the list returned by dir(DIR_INPUT)
+% Find the highest version file(-s) from the list returned by dir(DIR_INPUT)
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):
@@ -14,18 +14,27 @@ function fName = mms_find_latest_version_cdf(dir_input)
 
 fName = '';
 
-fList=dir(dir_input); if isempty(fList), return, end
+fList = dir(dir_input); if isempty(fList), fName=fList; return, end
   
-vMax = [0 0 0]; fName = '';
-for i=1:length(fList)
+for i=length(fList):-1:1
   filenameData = mms_fields_file_info(fList(i).name);
-  v = tokenize(filenameData.vXYZ,'.');
-  v = [num2str(v{1}) num2str(v{2}) num2str(v{3})];
   if isempty(fName)
-    fName = fList(i).name; vMax = v; continue
+    fName = fList(i);
+    prevVer = filenameData.vXYZ;
+    prevDate = filenameData.date;
+    continue
   end
-  if v(1)>vMax(1) || (v(1)==vMax(1) && v(2)>vMax(2)) || ...
-      (v(1)==vMax(1) && v(2)==vMax(2) && v(3)>vMax(3))
-    fName = fList(i).name; vMax = v;
+  if prevDate == filenameData.date
+    if is_version_larger(filenameData.vXYZ, prevVer)
+      fName = fList(i);
+      prevVer = filenameData.vXYZ;
+    end
+  else
+    % New date/time stamps (burst?)
+    fName(end+1) = fList(i); %#ok<AGROW>
+    prevVer = filenameData.vXYZ;
+    prevDate = filenameData.date;
   end
+end
+
 end

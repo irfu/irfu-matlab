@@ -17,8 +17,8 @@ for dd=1:31
     [dataDir '*' yymm(1:4) yymm(6:7) day '*.cdf'])
   if isempty(fName), continue, end
 
-  disp(['Processing: ' fName])
-  [out,Tint] = mms_sdp_1sec_db(fName,dataDir);
+  disp(['Processing: ' fName.name])
+  [out,Tint] = mms_sdp_1sec_db(fName.name,dataDir);
   
   % Append data
   fi = fields(out);

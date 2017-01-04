@@ -179,13 +179,13 @@ classdef mms_local_file_db < mms_file_db
                   curDir = [moDir filesep sprintf('%02d',day)]; % BRST files are in daily subdirs
                 end
                 dPref = sprintf('%s_%d%02d%02d',filePrefix,year,mo,day);
-                listingD = dir([curDir filesep dPref '*.cdf']);
+                listingD = mms_find_latest_version_cdf([curDir filesep dPref '*.cdf']);
                 if isempty(listingD), continue, end
                 arrayfun(@(x) add2list_sci(x.name,curDir), listingD)
               end
             else % List all files
               dPref = sprintf('%s_%d%02d',filePrefix,year,mo);
-              listingD = dir([curDir filesep dPref '*.cdf']);
+              listingD = mms_find_latest_version_cdf([curDir filesep dPref '*.cdf']);
               if isempty(listingD), continue, end
               arrayfun(@(x) add2list_sci(x.name,curDir), listingD)
             end
@@ -230,7 +230,7 @@ classdef mms_local_file_db < mms_file_db
               otherwise, continue
             end
             curDir = [fileDir filesep dNameY filesep dNameM];
-            listingD = dir([curDir filesep filePrefix '*.cdf']);
+            listingD = mms_find_latest_version_cdf([curDir filesep filePrefix '*.cdf']);
             if isempty(listingD), continue, end
             arrayfun(@(x) add2list_sci(x.name,curDir), listingD)
           end
