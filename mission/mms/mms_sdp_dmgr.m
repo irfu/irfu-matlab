@@ -166,6 +166,7 @@ classdef mms_sdp_dmgr < handle
           param = 'dcv';
           sensors = {'v1','v2','v3','v4','v5','v6'};
           init_param()
+%          interp_time()
           chk_latched_p()
           %apply_transfer_function()
           v_from_e_and_v()
@@ -186,6 +187,7 @@ classdef mms_sdp_dmgr < handle
           init_param()
           chk_timeline()
           chk_latched_p()
+%          interp_time()
           %apply_transfer_function()
           v_from_e_and_v()
           chk_bias_guard()
@@ -684,6 +686,60 @@ classdef mms_sdp_dmgr < handle
         end
       end % CHK_TIMELINE
       
+      function interp_time()
+        % Measurements are not done at same instance but with a delay of
+        % 3.8us between each channel. Adjust V[2-6] and E12, E34, E56 with
+        % interp1() to align with timestamp of V1.
+        % NOTE THIS FUNCTION IS NOT READY for production, added here as to
+        % create test files to see what impact it has on our files. Mainly
+        % burst 16'384 Hz may be impacted, but this is TBD.
+
+        % Offset between each channel in ADC
+        Dt = int64(3.8e3); % 3.8 us expressed in ns (TT2000, int64)
+        % V1 is start of nominal Epoch
+% <-- FIXME: THIS IS AN STRONG ASSUMTION!!! (WAIT FOR CLEARIFICATION UNTIL
+% PROMOTION INTO PRODUCTION
+        keyboard
+        % V2 is Dt later (included here, but NaN unless in comm.)
+        % V3 is Dt later again (ie 2*Dt)
+        % V4 is 3*Dt (NaN unless in comm.)
+        % V5 is 4*Dt
+        % V6 is 5*Dt (NaN unless in comm.)
+        % Dt for one empty "Nap of the ADC"
+        % E12 is 7*Dt
+        % E34 is 8*Dt
+        % E56 is 9*Dt
+        tV = DATAC.dcv.time;
+        %tE = DATAC.dce.time;
+
+        % Interpolate each data to align in time with V1, convert int64 and
+        % single data into double first than back again after interpolation
+        DATAC.dcv.v2.data = single( interp1(double(tV + 1*Dt - tV(1)), ...
+          double(DATAC.dcv.v2.data), ...
+          double(tV-tV(1)), 'linear', 'extrap') ); % V2 is nominally NaN
+        DATAC.dcv.v3.data = single( interp1(double(tV + 2*Dt - tV(1)), ...
+          double(DATAC.dcv.v3.data), ...
+          double(tV-tV(1)), 'linear', 'extrap') );
+        DATAC.dcv.v4.data = single( interp1(double(tV + 3*Dt - tV(1)), ...
+          double(DATAC.dcv.v4.data), ...
+          double(tV-tV(1)), 'linear', 'extrap') ); % V4 is nominally NaN
+        DATAC.dcv.v5.data = single( interp1(double(tV + 4*Dt - tV(1)), ...
+          double(DATAC.dcv.v5.data), ...
+          double(tV-tV(1)), 'linear', 'extrap') );
+        DATAC.dcv.v6.data = single( interp1(double(tV + 5*Dt - tV(1)), ...
+          double(DATAC.dcv.v6.data), ...
+          double(tV-tV(1)), 'linear', 'extrap') ); % V6 is nominally NaN
+        DATAC.dce.e12.data = single( interp1(double(tV + 7*Dt - tV(1)), ...
+          double(DATAC.dce.e12.data), ...
+          double(tV-tV(1)), 'linear', 'extrap') );
+        DATAC.dce.e34.data = single( interp1(double(tV + 8*Dt - tV(1)), ...
+          double(DATAC.dce.e34.data), ...
+          double(tV-tV(1)), 'linear', 'extrap') );
+        DATAC.dce.e56.data = single( interp1(double(tV + 9*Dt - tV(1)), ...
+          double(DATAC.dce.e56.data), ...
+          double(tV-tV(1)), 'linear', 'extrap') );
+      end % INTERP_TIME
+
       function chk_bias_guard()
         % Check that bias/guard setting, found in HK_10E, are nominal. If any
         % are found to be non nominal set bitmask value in both V and E.
