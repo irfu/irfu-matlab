@@ -6,7 +6,7 @@ function y = nansum(x,dim)
 %   non-NaN elements in each column.  For N-D arrays, IRF.NANSUM operates
 %   along the first non-singleton dimension.
 %
-%   IRF.NANSUM(X,DIM) takes the mean along dimension DIM of X.
+%   IRF.NANSUM(X,DIM) takes the sum along dimension DIM of X.
 %
 %   See also SUM, IRF.NANMEAN
 %
