@@ -75,7 +75,7 @@ if 0, % read example solar wind spectra
     end
     clear xx yy;
 end
-if 0, % read example solar wind spectra
+if 1, % read example solar wind spectra
     %file reading
     [xx,yy]=textread('Cluster4_Ey_20070130_0000_0120.dat','%s%s','headerlines',4);
     for j=1:size(xx,1),
@@ -437,7 +437,7 @@ if 1
     set(h,'position',[0.15 0.1 0.75 0.75]);
     set(gcf,'defaultLineLineWidth',2);
     set(gcf,'PaperUnits','centimeters')
-    xSize = 12; ySize = 13;
+    xSize = 16; ySize = 13;
     xLeft = (21-xSize)/2; yTop = (30-ySize)/2;
     set(gcf,'PaperPosition',[xLeft yTop xSize ySize])
     set(gcf,'Position',[10 10 xSize*50 ySize*50])
@@ -472,7 +472,7 @@ if 1
     set(h,'position',[0.15 0.1 0.75 0.75]);
     set(gcf,'defaultLineLineWidth',2);
     set(gcf,'PaperUnits','centimeters')
-    xSize = 12; ySize = 13;
+    xSize = 16; ySize = 13;
     xLeft = (21-xSize)/2; yTop = (30-ySize)/2;
     set(gcf,'PaperPosition',[xLeft yTop xSize ySize])
     set(gcf,'Position',[10 10 xSize*50 ySize*50])
@@ -562,6 +562,61 @@ SOLO_EMC.Efield_dBnVm = [15.8 3.8 -8.2 1.8 1.8 -2.9 27.6];
 semilogx(SOLO_EMC.ff,SOLO_EMC.Efield_dBnVm-30+SOLO_Scale,'r') % nV->uV
 
 ylabel('E-field [ dB ({\mu}V/m) ]'), xlabel('frequency [Hz]')
+legend('HFA','SDP','SDP goal','JUICE RPW EID-B','SOLO EID-A')
+
+set(gca,'XLim',[.1 2e5],'YLim',[-20 38])
+grid on, set(gca,'xminorgrid','off'), set(gca,'yminorgrid','off')
+title(['EMC reqs on broadband noise (scaled to HFA location)'])
+
+irf_legend(0,['THOR/JUICE/SOLO EMC req ' datestr(now,31)],[0,0.001],'interpreter','none','color',[0.5 0.5 0.5])
+irf_print_fig(['THOR_EMC_vs_JUICE_SOLO_' datestr(now,'yyyymmdd')],'png')
+
+%% compare to SolO, JUICE in dB (uV/m)^2 /Hz
+
+% We scale to HFA location, 
+% e.g. 5 m distance, similar to SolO and JUICE/PWI sensors 
+
+if 1 % initialize figure - comparison
+  figure(17);clf
+  h=irf_plot(1);
+  set(h,'position',[0.15 0.1 0.75 0.75]);
+  set(gcf,'defaultLineLineWidth',2);
+  set(gcf,'PaperUnits','centimeters')
+  xSize = 22; ySize = 13;
+  xLeft = (21-xSize)/2; yTop = (30-ySize)/2;
+  set(gcf,'PaperPosition',[xLeft yTop xSize ySize])
+  set(gcf,'Position',[10 10 xSize*50 ySize*50])
+end
+
+SDP_Scale = (50/5)^3;
+
+loglog(HFA_EMC.ff,HFA_EMC.EEpower,'m'), hold on
+loglog(SDP_EMC_OLD.ff,SDP_Scale^2*SDP_EMC_OLD.EEpower,'b')
+loglog(SDP_EMC.ff,SDP_Scale^2*SDP_EMC.EEpower,'b--')
+
+% JUICE RPW EID-B (i3.3, May 2016), EIDB-S00310 - boadband noise at sensor position
+JUICE_PWI_EMC.ff           = [1  10 10 220 220 1e3 1e3 1e4 1e4 1e5 1e5 16e5];
+JUICE_PWI_EMC.bw           = [1   1 10  10  10  10  30  30 300 300 3e3  3e3];
+JUICE_PWI_EMC.Efield_dBuVm = [25 5  18 -10 -10 -10 -5  -5  0   0   20  20];
+JUICE_PWI_EMC.EEpower = 1e-12*10.^(0.2*JUICE_PWI_EMC.Efield_dBuVm)./JUICE_PWI_EMC.bw; % (V/m)^2/Hz
+loglog(JUICE_PWI_EMC.ff,JUICE_PWI_EMC.EEpower,'k')
+
+% JUICE EID-A (i2r7, July 2016), EIDA-R003706 - radiated emissions for
+% space-exposed and transition equipment at 1m
+%JUICE_EMC.ff           = [30 1e7];
+%JUICE_EMC.Efield_dBuVm = [-10 -10];
+%JUICE_Scale = 10*log10((5/1)^3); % scale to HFA location
+%emilogx(JUICE_EMC.ff,JUICE_EMC.Efield_dBuVm+JUICE_Scale,'k--')
+
+% SolO EID-A (i5,r0, Mar 2015), EIDA-5145/EIDA R-707 - boadband noise at preamp
+% location
+SOLO_Scale = 10*log10((5/1)^3); % scale to HFA location
+SOLO_EMC.ff           = [1    10  100  1e3 1e4 1e5  1e6];
+SOLO_EMC.Efield_dBnVm = [15.8 3.8 -8.2 1.8 1.8 -2.9 27.6];
+SOLO_EMC.EEpower = 1e-12*10.^(0.2*(SOLO_EMC.Efield_dBnVm-30+SOLO_Scale)); % (V/m)^2/Hz
+loglog(SOLO_EMC.ff,SOLO_EMC.EEpower,'r') 
+
+ylabel('PSD [ (V/m)^2/Hz ]'), xlabel('frequency [Hz]')
 legend('HFA','SDP','SDP goal','JUICE RPW EID-B','SOLO EID-A')
 
 set(gca,'XLim',[.1 2e5],'YLim',[-20 38])
