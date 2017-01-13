@@ -135,9 +135,17 @@ caxis(h(8),[-2 2])
 set(h(8),'ytick',[1e1 1e2 1e3 1e4]);
 ylabel(h(8),'E_{e} (eV)','fontsize',12);
 
+% Define blue-red colormap
+rr = interp1([1 64 128 192 256],[0.0  0.5 0.75 1.0 0.75],1:256);
+gg = interp1([1 64 128 192 256],[0.0  0.5 0.75 0.5 0.00],1:256);
+bb = interp1([1 64 128 192 256],[0.75 1.0 0.75 0.5 0.00],1:256);
+bgrcmap = [rr' gg' bb'];
+
 load('caa/cmap.mat');
 colormap(h(5),cmap);
 colormap(h(6),cmap);
+colormap(h(7),bgrcmap);
+colormap(h(8),bgrcmap);
 
 c_eval('title(h(1),''MMS ?'')',ic);
 

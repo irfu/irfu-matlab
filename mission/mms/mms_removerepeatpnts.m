@@ -19,7 +19,7 @@ if isa(tsdata,'TSeries')
     newtstime = tsdata.time(norepeat == 1);
     newtsdata = tsdata.data(norepeat == 1,:);
 
-    newdata = TSeries(newtstime,newtsdata,'to',1);
+    newdata = TSeries(newtstime,newtsdata,'to',tsdata.tensorOrder);
     
 elseif isstruct(tsdata) && isfield(tsdata,'time')
     if isa(tsdata.time,'EpochTT')
@@ -32,7 +32,7 @@ elseif isstruct(tsdata) && isfield(tsdata,'time')
     norepeat(diffs < threshold) = 0;
     
     varnames = fieldnames(tsdata);
-    for ii=1:length(varnames);
+    for ii=1:length(varnames)
         tsdata.(varnames{ii}) = tsdata.(varnames{ii})(norepeat == 1,:);
     end
     newdata = tsdata;

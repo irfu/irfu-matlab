@@ -35,7 +35,7 @@ classdef mms_local_file_db < mms_file_db
       %  fileList = list_files(MMS_DB, 'mms1_edp_comm_l1b_dce128');
       narginchk(2,3)
       fileList = [];
-      if nargin==3 && (~isempty(tint) && ~isa(tint,'GenericTimeArray')),
+      if nargin==3 && (~isempty(tint) && ~isa(tint,'GenericTimeArray'))
         error('Expecting TINT (GenericTimeArray)')
       elseif nargin==2, tint = [];
       end
@@ -48,17 +48,17 @@ classdef mms_local_file_db < mms_file_db
         errStr = 'filePrefix too short';
         irf.log('critical',errStr), error(errStr)
       end
-      if strcmp(C{2},'ancillary'),
+      if strcmp(C{2},'ancillary')
         list_ancillary();
         if isempty(fileList) || isempty(tint), return, end
         pick_ancillary();
 			else
-				if mms.db_index
+				if mms.db_index && ~isempty(obj.index)
 					irf.log('notice','Using index');
 					fileList = obj.index.search_files_with_dataset(filePrefix,tint);
 					return
 				else
-					if ~isempty(tint),
+					if ~isempty(tint)
 						list_sci_tint()
 					else
 						irf.log('warning','THIS MAY TAKE SOME TIME')
@@ -179,13 +179,13 @@ classdef mms_local_file_db < mms_file_db
                   curDir = [moDir filesep sprintf('%02d',day)]; % BRST files are in daily subdirs
                 end
                 dPref = sprintf('%s_%d%02d%02d',filePrefix,year,mo,day);
-                listingD = dir([curDir filesep dPref '*.cdf']);
+                listingD = mms_find_latest_version_cdf([curDir filesep dPref '*.cdf']);
                 if isempty(listingD), continue, end
                 arrayfun(@(x) add2list_sci(x.name,curDir), listingD)
               end
             else % List all files
               dPref = sprintf('%s_%d%02d',filePrefix,year,mo);
-              listingD = dir([curDir filesep dPref '*.cdf']);
+              listingD = mms_find_latest_version_cdf([curDir filesep dPref '*.cdf']);
               if isempty(listingD), continue, end
               arrayfun(@(x) add2list_sci(x.name,curDir), listingD)
             end
@@ -230,7 +230,7 @@ classdef mms_local_file_db < mms_file_db
               otherwise, continue
             end
             curDir = [fileDir filesep dNameY filesep dNameM];
-            listingD = dir([curDir filesep filePrefix '*.cdf']);
+            listingD = mms_find_latest_version_cdf([curDir filesep filePrefix '*.cdf']);
             if isempty(listingD), continue, end
             arrayfun(@(x) add2list_sci(x.name,curDir), listingD)
           end
@@ -256,7 +256,7 @@ classdef mms_local_file_db < mms_file_db
         hasFile = arrayfun(@(x) ~isempty(strfind(x.name,fName)),fileList);
         if ~any(hasFile), fileList = [fileList add_ss(Entry)]; return, end
         iSame = find(hasFile);
-        if length(iSame) > 1,
+        if length(iSame) > 1
           error('multiple files with same name'),
         end
         
@@ -365,7 +365,7 @@ classdef mms_local_file_db < mms_file_db
   methods (Access=private)
     function p = get_path_to_file(obj,fileName)
       C = strsplit(lower(fileName),'_');
-      if strcmpi(fileName(end-3:end),'.cdf'),
+      if strcmpi(fileName(end-3:end),'.cdf')
         d =  C{end-1}; p = obj.dbRoot;
         for ix=1:(length(C)-2), p = [p filesep C{ix}]; end %#ok<AGROW>
         p = [p filesep d(1:4) filesep d(5:6)];

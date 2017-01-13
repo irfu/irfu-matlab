@@ -45,23 +45,46 @@ else
     ud.LABL_PTR_1.data = ud.LABL_PTR_1.data(1:3,:);
     ud.LABL_PTR_1.dim(1) = 3;
     siConversion = '1.0e3>m';
-  else varType = 'scalar';
+  else, varType = 'scalar';
   end
 end
 
 % Shift times to center of deltat- and deltat+ for l2 particle
 % distributions and moments
 if ~isempty(regexp(v.name,'^mms[1-4]_d[ei]s_','once'))
-	if isfield(v.DEPEND_0,'DELTA_MINUS_VAR') && isfield(v.DEPEND_0,'DELTA_PLUS_VAR'),
-        if isfield(v.DEPEND_0.DELTA_MINUS_VAR,'data') && isfield(v.DEPEND_0.DELTA_PLUS_VAR,'data'),
+	if isfield(v.DEPEND_0,'DELTA_MINUS_VAR') && isfield(v.DEPEND_0,'DELTA_PLUS_VAR')
+        if isfield(v.DEPEND_0.DELTA_MINUS_VAR,'data') && isfield(v.DEPEND_0.DELTA_PLUS_VAR,'data')
             irf.log('warning','Times shifted to center of dt-+. dt-+ are recalculated');
-            toffset = (int64(v.DEPEND_0.DELTA_PLUS_VAR.data)-int64(v.DEPEND_0.DELTA_MINUS_VAR.data))*1e6/2;
-            tdiff = (int64(v.DEPEND_0.DELTA_PLUS_VAR.data)+int64(v.DEPEND_0.DELTA_MINUS_VAR.data))*1e6/2;
+            flag_MINUS = 1e3;       flag_PLUS = 1e3;
+            if isfield(v.DEPEND_0.DELTA_MINUS_VAR, 'UNITS') && isfield(v.DEPEND_0.DELTA_PLUS_VAR, 'UNITS')
+                if strcmp(v.DEPEND_0.DELTA_MINUS_VAR.UNITS, 's')
+                    flag_MINUS = 1e3;           % s --> ms
+                elseif strcmp(v.DEPEND_0.DELTA_MINUS_VAR.UNITS, 'ms')
+                    flag_MINUS = 1;
+                else
+                    irf.log('warning','Epoch_minus_var units are not clear, assume s');
+                    flag_MINUS = 1e3;       
+                end
+                if strcmp(v.DEPEND_0.DELTA_PLUS_VAR.UNITS, 's')
+                    flag_PLUS = 1e3;           % s --> ms
+                elseif strcmp(v.DEPEND_0.DELTA_PLUS_VAR.UNITS, 'ms')
+                    flag_PLUS = 1;
+                else
+                    irf.log('warning','Epoch_plus_var units are not clear, assume s');
+                    flag_PLUS = 1e3;
+                end
+            else
+                irf.log('warning','Epoch_plus_var/Epoch_minus_var units are not clear, assume s');
+            end                
+            %toffset = (int64(v.DEPEND_0.DELTA_PLUS_VAR.data)-int64(v.DEPEND_0.DELTA_MINUS_VAR.data))*1e6/2;
+            %tdiff = (int64(v.DEPEND_0.DELTA_PLUS_VAR.data)+int64(v.DEPEND_0.DELTA_MINUS_VAR.data))*1e6/2;
+            toffset = (int64(v.DEPEND_0.DELTA_PLUS_VAR.data*flag_PLUS)-int64(v.DEPEND_0.DELTA_MINUS_VAR.data*flag_MINUS))*1e6/2;
+            tdiff = (int64(v.DEPEND_0.DELTA_PLUS_VAR.data*flag_PLUS)+int64(v.DEPEND_0.DELTA_MINUS_VAR.data*flag_MINUS))*1e6/2;              
             v.DEPEND_0.DELTA_MINUS_VAR.data = tdiff;
             v.DEPEND_0.DELTA_PLUS_VAR.data = tdiff;
             v.DEPEND_0.data = v.DEPEND_0.data+toffset;
         end
-    end
+	end
 end
 
 if isempty(varType)
@@ -73,7 +96,7 @@ if isfield(v,'FILLVAL'), data(data==v.FILLVAL) = NaN; end
 ts = feval(['irf.ts_' varType],v.DEPEND_0.data,data);
 ts.name = v.name;
 if isfield(v,'UNITS'), ts.units = v.UNITS;
-else ts.units = 'unitless';
+else, ts.units = 'unitless';
 end
 if ~isempty(siConversion), ts.siConversion = siConversion;
 elseif isfield(v,'SI_CONVERSION'), ts.siConversion    = v.SI_CONVERSION;

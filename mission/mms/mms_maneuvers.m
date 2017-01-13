@@ -137,7 +137,7 @@ for ii = length(list):-1:1
     % been changed or cancelled should not be included from older files).
     tEnd = max(min(fileInterval.start.ttns,Tint2.stop.ttns), Tint2.start.ttns);
     Tint2 = irf.tint(Tint2.start, EpochTT(tEnd));
-    if(Tint2.start.ttns - Tint2.stop.ttns == int64(0)),
+    if(Tint2.start.ttns - Tint2.stop.ttns == int64(0))
       % We have processed all of the latest timeline files that cover our
       % original requested time interval Tint.
       % Improve?: Possibly limit resulting maneuvers that cover longer time

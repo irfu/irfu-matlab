@@ -124,13 +124,42 @@ function [wfinal,extraparam]=irf_disp_surf_calc(kc_x_max,kc_z_max,m_i,wp_e)
   
   temp=length(kc_x);
   dk_x=kc_x(2);dk_z=kc_z(2);
-  dw_x=diff(wfinal,1,2); dw_z=diff(wfinal,1,3);
+  dw_x=diff(wfinal,1,3); dw_z=diff(wfinal,1,2);
   dw_x(1,temp,temp)=0; dw_z(1,temp,temp)=0;
   v_x=dw_x/dk_x; v_z=dw_z/dk_z;
+  
+  % Compute ion and electron velocities
+  qe = -1;
+  qi = 1;
+  m_e = 1;
+  wce = 1;
+  vex = 1i*qe./(m_e*(wfinal.*wfinal - wce^2)).*(wfinal.*Ex - 1i*wce*Ey);
+  vey = 1i*qe./(m_e*(wfinal.*wfinal - wce^2)).*(1i*wce*Ex + wfinal.*Ey);
+  vez = 1i*qe*Ez./(m_e*wfinal);
+  
+  vix = 1i*qi./(m_i*(wfinal.*wfinal - wci^2)).*(wfinal.*Ex + 1i*wci*Ey);
+  viy = 1i*qi./(m_i*(wfinal.*wfinal - wci^2)).*(-1i*wci*Ex + wfinal.*Ey);
+  viz = 1i*qi*Ez./(m_i*wfinal);
+  
+  % Ion and electron energies
+  Ee = 0.5*m_e*(vex.*conj(vex)+vey.*conj(vey)+vez.*conj(vez));
+  Ei = 0.5*m_i*(vix.*conj(vix)+viy.*conj(viy)+viz.*conj(viz));
+  
+  % Ratio of particle and field energy densities
+  ne = wp_e^2;
+  Een = Ee*ne;
+  Ein = Ei*ne;
+  EE = 0.5*Etot.^2;
+  EB = 0.5*Btot.^2;
+  ratiopf = (EE+EB)./(Een+Ein);
+  
   
   extraparam(2,:,:,:)=Btot./Etot; % Degree of electromagnetism
   extraparam(3,:,:,:)=abs(EparK)./Etot; % Degree of longitudinality
   extraparam(4,:,:,:)=Ez./Etot; % Degree of parallelity
   extraparam(5,:,:,:)=sqrt(v_x.*v_x+v_z.*v_z); % Value of the group vel.
   extraparam(6,:,:,:)=Epolar; % Ellipticity
+  extraparam(7,:,:,:)=log10(Etot.^2./Btot.^2); % Degree of electromagnetism
+  extraparam(8,:,:,:)=log10(Ee./Ei); % Ratio of electron to ion energy
+  extraparam(9,:,:,:)=log10(ratiopf); % Ratio of field to particle energy densities
   warning on

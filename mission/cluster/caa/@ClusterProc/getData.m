@@ -307,443 +307,448 @@ if strcmp(quantity,'ec')
 % dies, diehxs, dielxs - spin fiting of Electric field
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif strcmp(quantity,'dies') || strcmp(quantity,'diehxs') || strcmp(quantity,'dielxs')
-	save_file = './mEDSI.mat';
-	
-	% Src quantities: Atwo?, wE?p12/wE?p32, wE?p34
-	[ok,pha] = c_load('Atwo?',cl_id);
-    if ~ok || isempty(pha)
-        irf_log('load',...
-            irf_ssub('No/empty Atwo? in mA. Use getData(CDB,...,cl_id,''a'')',cl_id))
-        data = []; cd(old_pwd); return
+  save_file = './mEDSI.mat';
+  
+  % Src quantities: Atwo?, wE?p12/wE?p32, wE?p34
+  [ok,pha] = c_load('Atwo?',cl_id);
+  if ~ok || isempty(pha)
+    irf_log('load',...
+      irf_ssub('No/empty Atwo? in mA. Use getData(CDB,...,cl_id,''a'')',cl_id))
+    data = []; cd(old_pwd); return
+  end
+  
+  if strcmp(quantity,'dies'), qlist = {'diehxs', 'dielxs'};
+  else, qlist = {quantity};
+  end
+  
+  for qq = qlist
+    n_ok = 0; wE = {}; flag_lx = 0; p12 = ''; flag_have_p34 = 0;
+    if strcmp(qq{:},'diehxs')
+      flag_p12_loaded = 0;
+      for probe = [12,32,34]
+        flag_corr = 0;
+        if probe == 32 && flag_p12_loaded, continue, end
+        [ok,da] = c_load(irf_ssub('wcE?p!',cl_id,probe));
+        if ~ok || isempty(da)
+          [ok,da] = c_load(irf_ssub('wE?p!',cl_id,probe));
+          if ~ok || isempty(da)
+            irf_log('load', irf_ssub('No/empty wcE?p! and wE?p!',cl_id,probe));
+            continue
+          else, irf_log('load', irf_ssub('read wE?p!',cl_id,probe));
+          end
+          irf_log('load','using raw (not corrected) data')
+        else
+          irf_log('proc',irf_ssub('Using corrected data wcE?p!',cl_id,probe))
+          flag_corr = 1;
+        end
+        if probe == 12, flag_p12_loaded = 1; p12 = 12;
+        elseif probe == 32 && isempty(p12), p12 = 32;
+        elseif probe == 34, flag_have_p34 = 1;
+        end
+        e = struct('probe',probe,'corr',flag_corr,'e',da);
+        wE = [wE {e}]; n_ok = n_ok + 1; %#ok<AGROW>
+        clear ok da e
+      end
+      clear flag_corr flag_p12_loaded
+    elseif strcmp(qq{:},'dielxs')
+      flag_lx = 1;
+      p1 = []; p2 = []; p3 = []; p4 = [];
+      for probe=1:4
+        [ok,da] = c_load(irf_ssub('P10Hz?p!',cl_id,probe));
+        if ~ok || isempty(da)
+          irf_log('load', irf_ssub('No/empty P10Hz?p!',cl_id,probe));
+          continue
+        end
+        c_eval('p?=da;',probe)
+        clear ok da
+      end
+      
+      p_sep = .088;
+      if ~isempty(p1) && ~isempty(p2)
+        if size(p1,1) ~= size(p2,1)
+          [ii1, ii2]=irf_find_comm_idx(p1,p2);
+          tt(:,1) = p2(ii2,1); tt(:,2) = ( p2(ii2,2) - p1(ii1,2) )/p_sep;
+          clear ii1 ii2
+        else
+          tt(:,1) = p2(:,1); tt(:,2) = ( p2(:,2) - p1(:,2) )/p_sep;
+        end
+        e = struct('probe',12,'corr',0,'e',tt);
+        wE = [wE {e}]; n_ok = n_ok + 1; %#ok<AGROW>
+        clear tt e
+        p12 = 12;
+      end
+      if ~isempty(p3) && ~isempty(p4)
+        if size(p3,1) ~= size(p4,1)
+          [ii3, ii4]=irf_find_comm_idx(p3,p4);
+          tt(:,1) = p4(ii4,1); tt(:,2) = ( p4(ii4,2) - p3(ii3,2) )/p_sep;
+          clear ii3 ii4
+        else
+          tt(:,1) = p4(:,1); tt(:,2) = ( p4(:,2) - p3(:,2) )/p_sep;
+        end
+        e = struct('probe',34,'corr',0,'e',tt);
+        wE = [wE {e}]; n_ok = n_ok + 1; %#ok<AGROW>
+        clear tt e
+        flag_have_p34 = 1;
+      end
+      p_sep = .066;
+      if ~isempty(p3) && ~isempty(p2)
+        if size(p2,1) ~=  size(p3,1)
+          [ii2,ii3]=irf_find_comm_idx(p2,p3);
+          tt(:,1) = p2(ii2,1); tt(:,2) = ( p2(ii2,2) - p3(ii3,2) )/p_sep;
+          clear ii2 ii3
+        else
+          tt(:,1) = p2(:,1); tt(:,2) = ( p2(:,2) - p3(:,2) )/p_sep;
+        end
+        e = struct('probe',32,'corr',0,'e',tt);
+        wE = [wE {e}]; n_ok = n_ok + 1; %#ok<AGROW>
+        clear tt e
+        if isempty(p12), p12 = 32; end
+      end
+      if ~isempty(p2) && ~isempty(p4)
+        if size(p2,1) ~=  size(p4,1)
+          [ii2,ii4]=irf_find_comm_idx(p2,p4);
+          tt(:,1) = p2(ii2,1); tt(:,2) = ( p2(ii2,2) - p4(ii4,2) )/p_sep;
+          clear ii2 ii4
+        else
+          tt(:,1) = p2(:,1); tt(:,2) = ( p2(:,2) - p4(:,2) )/p_sep;
+        end
+        e = struct('probe',42,'corr',0,'e',tt);
+        wE = [wE {e}]; n_ok = n_ok + 1; %#ok<AGROW>
+        clear tt e
+        if isempty(p12), p12 = 42; end
+      end
+      clear p1 p2 p3 p4 p_sep
     end
-	
-    if strcmp(quantity,'dies'), qlist = {'diehxs', 'dielxs'};
-    else qlist = {quantity};
+    if ~n_ok, data = []; continue, end
+    
+    if flag_lx, lx_str = 'LX'; else, lx_str=''; end
+    for iPr=1:length(wE)
+      if wE{iPr}.corr, ss = 'c'; else, ss = ''; end
+      irf_log('proc',sprintf('Spin fit w%sE%dp%d %s -> diE%ss%dp%d',...
+        ss,cl_id,wE{iPr}.probe,lx_str,lx_str,cl_id,wE{iPr}.probe))
+      
+      aa = c_phase(wE{iPr}.e(:,1),pha);
+      if isempty(aa)
+        irf_log('proc', sprintf('Empty phase, skipping w%sE%dp%d %s',...
+          ss,cl_id,wE{iPr}.probe,lx_str))
+        if wE{iPr}.probe==34, flag_have_p34 = 0;
+        elseif wE{iPr}.probe==p12, p12=[]; 
+        end
+        continue
+      end
+      
+      if flag_lx, tmode = 'lx'; else, tmode = 'hx'; end
+      fsamp = c_efw_fsample(wE{iPr}.e,tmode);
+      if ~fsamp, error('no sampling frequency'),end
+      
+      problems = 'reset|bbias|probesa|probeld|sweep|bdump|nsops|whip';
+      if flag_lx
+        ps = sprintf('%d',wE{iPr}.probe);
+        nsops_errlist = [caa_str2errid('bad_bias') caa_str2errid('hxonly')...
+          caa_str2errid('bad_lx')...
+          caa_str2errid(['no_p' ps(1)]) caa_str2errid(['no_p' ps(2)])];%#ok<NASGU>
+      else
+        nsops_errlist = [caa_str2errid('bad_bias') caa_str2errid('bad_hx')...
+          caa_str2errid(irf_ssub('no_p?',wE{iPr}.probe))];%#ok<NASGU>
+      end
+      % We remove Whisper only if explicitely asked for this by user
+      if flag_rmwhip && flag_rmwhip_force, problems = [problems '|whip']; end %#ok<AGROW>
+      if flag_rmhbsa, problems = [problems '|hbiassa']; end %#ok<AGROW,NASGU>
+      signal = wE{iPr}.e; %#ok<NASGU>
+      remove_problems
+      wE{iPr}.e = res; %#ok<AGROW,NODEF>
+      clear res signal problems
+      
+      % Check if we have at least 1 spin of data left
+      if length(find(~isnan(wE{iPr}.e(:,2)))) < 4*fsamp
+        irf_log('proc',irf_ssub('No p? data after removals',wE{iPr}.probe));
+        if     wE{iPr}.probe==34, flag_have_p34 = 0;
+        elseif wE{iPr}.probe==p12, p12=[]; 
+        end
+        continue
+      end
+      
+      % Run spin fitting
+      sfit_ver_bak = sfit_ver; % save sfit_ver for next probe pair
+      if sfit_ver>=0
+        irf_log('proc',['using SFIT_VER=' num2str(sfit_ver)])
+      else
+        if wE{iPr}.probe==32 || wE{iPr}.probe==42, sfit_ver = 2;
+        else, sfit_ver = 1;
+        end
+      end
+      
+      sp = c_efw_sfit(wE{iPr}.probe,3,10,20,wE{iPr}.e(:,1),wE{iPr}.e(:,2),...
+        aa(:,1),aa(:,2),sfit_ver,tmode);
+      sfit_ver = sfit_ver_bak;
+      
+      % Check if we have any data left
+      if isempty(sp)
+        irf_log('load',sprintf('No data left after spinfit for C%d p%d',...
+          cl_id,wE{iPr}.probe))
+        continue
+      end
+      
+      % Remove erroneous points with zero time
+      ind = find(sp(:,1)>0);
+      if length(ind)<length(sp(:,1))
+        irf_log('proc',...
+          [num2str(length(sp(:,1))-length(ind)) ' spins removed (bad time)']);
+        sp = sp(ind,:);
+      end
+      % Remove spins with bad spin fit (obtained E > 10000 mV/m)
+      ind = find(abs(sp(:,3))>1e4); sp(ind,:) = [];
+      if ind, disp([num2str(length(ind)) ' spins removed due to E>10000 mV/m']);end
+      
+      % ADC offsets, i.e. DC offset of the raw sinals
+      % Warn about points with sdev>.8
+      ii = find(sp(:,6)>.8);
+      if length(ii)/size(sp,1)>.05
+        irf_log('proc',[sprintf('%.1f',100*length(ii)/size(sp,1))...
+          '% of spins have SDEV>.8 (ADC offsets)']);
+      end
+      
+      % Remove whisper pulses for ADC offset and 2 Omega
+      [ok,whip,msg] = c_load('WHIP?',cl_id);
+      if ok
+        if ~isempty(whip)
+          irf_log('proc','blanking Whisper pulses in ADC offsets')
+          if (wE{iPr}.probe == 32 || wE{iPr}.probe == 42) && size(sp,2) == 10
+            SPCOLS = [4 9 10];
+          else, SPCOLS = 4;
+          end
+          % Obtain time interval boundaries around each
+          % (averaged) data point;
+          data_time_lower = sp(:, 1) - 2;
+          data_time_upper = sp(:, 1) + 2;
+          for num = 1:size(whip, 1)
+            problem_start = whip(num, 1);
+            problem_stop = whip(num, 2);
+            sp((problem_start >= data_time_lower & problem_start < data_time_upper) | ...
+              (problem_stop  >  data_time_lower & problem_stop <= data_time_upper) | ...
+              (problem_start <= data_time_lower & problem_stop >= data_time_upper),...
+              SPCOLS) = NaN;
+          end
+        end
+      else, irf_log('load',msg)
+      end
+      clear ok whip msg
+      
+      % Continue with ADC offsets
+      adc_off = sp(:,[1 4]);
+      % Don't include hbiassa intervals when calculating mean, variance
+      max_off=adc_off(~isnan(adc_off(:,2)),:);
+      [ok,hbsa] = c_load(irf_ssub('HBIASSA?p!',cl_id,12)); 
+      if ok && ~isempty(hbsa),max_off = caa_rm_blankt(max_off,hbsa); end
+      [ok,hbsa] = c_load(irf_ssub('HBIASSA?p!',cl_id,34)); 
+      if ok && ~isempty(hbsa),max_off = caa_rm_blankt(max_off,hbsa); end
+      [ok,hbsa] = c_load(irf_ssub('HBIASSA?p!',cl_id,32)); 
+      if ok && ~isempty(hbsa),max_off = caa_rm_blankt(max_off,hbsa); end
+      [ok,hbsa] = c_load(irf_ssub('HBIASSA?p!',cl_id,42)); 
+      if ok && ~isempty(hbsa),max_off = caa_rm_blankt(max_off,hbsa); end
+      max_off=max_off(~isnan(max_off(:,2)),:);
+      adc_off_mean = mean(max_off(:,2));
+      max_off = 3*std(max_off(:,2));
+      % Fill NaNs with mean value
+      adc_off(isnan(adc_off(:,2)),2) = adc_off_mean;
+      % For C4p34, check for DAC problems if date is after 2009-01-01
+      adc_despike=1;
+      if cl_id == 4 && wE{iPr}.probe == 34 && adc_off(1,1) > 1230768000
+        % Check for BADDAC set earlier (i.e. by manual forcing)
+        [ok, badDAC] = c_load(irf_ssub('BADDAC?p!', cl_id,wE{iPr}.probe));
+        if ok && ~isempty(badDAC)
+          irf_log('proc', 'BADDAC set manually')
+          adc_despike=0;
+        end
+        
+        % Identify intervals
+        idx = find( abs( adc_off(:,2)) > 1);
+        if length(idx) > 150 % Longer interval of DAC problems
+          adc_despike=0;
+          badDAC=[adc_off(idx(1),1)-20 adc_off(idx(end),1)+20]; %#ok<NASGU>
+          irf_log('proc','Long interval of DAC problems.');
+        else
+          if length(idx) > 5
+            % Check for short interval at start
+            idx2=find(idx < 150);
+            if length(idx2) > 3 && idx2(end) < idx(idx2(end))*1.3
+              adc_despike=0;
+              if adc_despike,badDAC=[adc_off(1,1)-20 adc_off(idx(idx2(end)),1)+20]; %#ok<UNRCH>
+              else, badDAC=[badDAC' [adc_off(1,1)-20 adc_off(idx(idx2(end)),1)+20]']';
+              end
+              irf_log('proc','Short interval of DAC problems at start of interval.');
+            end
+            % Check for short interval at end
+            idx2=find(idx > length(adc_off(:,1))-150);
+            if length(idx2) > 3 && idx2(end)-idx2(1) < (idx(idx2(end))-idx(idx2(1)))*1.3
+              if adc_despike, badDAC=[adc_off(idx(idx2(1)),1)-20 adc_off(end,1)+20]; %#ok<NASGU>
+              else, badDAC=[badDAC' [adc_off(idx(idx2(1)),1)-20 adc_off(end,1)+20]']'; %#ok<NASGU>
+              end
+              adc_despike=0;
+              irf_log('proc','Short interval of DAC problems at end of interval.');
+            end
+            % Check for short interval in middle
+            if adc_despike
+              idx2=find(diff(idx)<3);
+              if length(idx2) > 15
+                badDAC=[adc_off(idx(1),1)-20 adc_off(idx(end),1)+20]; %#ok<NASGU>
+                adc_despike=0;
+                irf_log('proc','Short interval of DAC problems in middle of interval.');
+              end
+            end
+          end
+        end
+        
+        % Save problem to file mEFW.mat (not save_file=mEDSI.mat)
+        if ~adc_despike
+          badDACname=irf_ssub('BADDAC?p!',cl_id,wE{iPr}.probe);
+          irf_log('save', [badDACname ' -> mEFW.mat']);
+          eval([badDACname '=badDAC;']);
+          if exist('mEFW.mat','file')
+            eval(['save -append mEFW.mat ' badDACname]);
+          else
+            eval(['save mEFW.mat ' badDACname]);
+          end
+          % Tell export routines to use p12
+          caa_sfit_probe(cl_id,p12);
+        end
+      end
+      
+      % Unless a suspect DAC interval was detected, take care of spikes
+      if adc_despike
+        % Take care of spikes: replace extreme values with mean value
+        idx = find( abs( adc_off(:,2) - adc_off_mean ) > max_off );
+        if ~isempty(idx)
+          adc_off(idx,2) = 0;
+          adc_off_mean = mean(adc_off(abs(adc_off(:,2))>0,2));
+          adc_off(adc_off(:,2)==0,2) = adc_off_mean;
+          irf_log('proc',sprintf('%d spikes (ADC offsets)',length(idx)));
+        end
+      end
+      % Smooth the ADC offset signal
+      adc_off = irf_waverage(adc_off,1/4,nPointsADCOffset); %#ok<NASGU>
+      
+      % Save 2 omega separately
+      if wE{iPr}.probe == 32 && size(sp,2) == 10
+        % Fill NaNs with zeros and smooth the signal
+        for col = 9:10
+          sp( isnan(sp(:,col)) ,col) = 0;
+          sp(:,[1 col]) = irf_waverage(sp(:,[1 col]),1/4);
+        end
+        
+        eval(irf_ssub(...
+          ['w2W' lx_str '?p!=sp(:,[1 9 10]);save_list=[save_list ''w2W' lx_str '?p! ''];'],...
+          cl_id,wE{iPr}.probe));
+      end
+      
+      sp = sp(:,[1:4 6]);
+      sp(:,4) = 0*sp(:,4); %#ok<NASGU> % Z component
+      
+      eval(irf_ssub(...
+        ['diE' lx_str 's?p!=sp;Dadc' lx_str ...
+        '?p!=adc_off;save_list=[save_list ''diE' lx_str 's?p! Dadc' lx_str '?p! ''];'],...
+        cl_id,wE{iPr}.probe));
+      clear tt sp adc_off
     end
     
-    for qq = qlist
-	n_ok = 0; wE = {}; flag_lx = 0; p12 = ''; flag_have_p34 = 0;
-    if strcmp(qq{:},'diehxs')
-        flag_p12_loaded = 0;
-        for probe = [12,32,34]
-            flag_corr = 0; 
-            if probe == 32 && flag_p12_loaded, continue, end
-            [ok,da] = c_load(irf_ssub('wcE?p!',cl_id,probe));
-            if ~ok || isempty(da)
-                [ok,da] = c_load(irf_ssub('wE?p!',cl_id,probe));
-                if ~ok || isempty(da)
-                    irf_log('load', irf_ssub('No/empty wcE?p! and wE?p!',cl_id,probe));
-                    continue
-                else irf_log('load', irf_ssub('read wE?p!',cl_id,probe));
-                end
-                irf_log('load','using raw (not corrected) data')
-            else
-                irf_log('proc',irf_ssub('Using corrected data wcE?p!',cl_id,probe))
-                flag_corr = 1;
-            end
-            if probe == 12, flag_p12_loaded = 1; p12 = 12; 
-            elseif probe == 32 && isempty(p12), p12 = 32;
-            elseif probe == 34, flag_have_p34 = 1;
-            end
-            e = struct('probe',probe,'corr',flag_corr,'e',da);
-            wE = [wE {e}]; n_ok = n_ok + 1; %#ok<AGROW>
-            clear ok da e
-        end
-        clear flag_corr flag_p12_loaded
-    elseif strcmp(qq{:},'dielxs')
-        flag_lx = 1;
-        p1 = []; p2 = []; p3 = []; p4 = [];
-        for probe=1:4
-            [ok,da] = c_load(irf_ssub('P10Hz?p!',cl_id,probe));
-            if ~ok || isempty(da)
-                irf_log('load', irf_ssub('No/empty P10Hz?p!',cl_id,probe));
-                continue
-            end
-            c_eval('p?=da;',probe)
-            clear ok da
-        end
-        
-        p_sep = .088;
-        if ~isempty(p1) && ~isempty(p2)
-            if size(p1,1) ~= size(p2,1)
-                [ii1, ii2]=irf_find_comm_idx(p1,p2);
-                tt(:,1) = p2(ii2,1); tt(:,2) = ( p2(ii2,2) - p1(ii1,2) )/p_sep;
-                clear ii1 ii2
-            else   
-                tt(:,1) = p2(:,1); tt(:,2) = ( p2(:,2) - p1(:,2) )/p_sep;
-            end
-            e = struct('probe',12,'corr',0,'e',tt);
-            wE = [wE {e}]; n_ok = n_ok + 1; %#ok<AGROW>
-            clear tt e
-            p12 = 12;
-        end
-        if ~isempty(p3) && ~isempty(p4)
-            if size(p3,1) ~= size(p4,1)
-                [ii3, ii4]=irf_find_comm_idx(p3,p4);
-                tt(:,1) = p4(ii4,1); tt(:,2) = ( p4(ii4,2) - p3(ii3,2) )/p_sep;
-                clear ii3 ii4
-            else
-                tt(:,1) = p4(:,1); tt(:,2) = ( p4(:,2) - p3(:,2) )/p_sep;
-            end 
-            e = struct('probe',34,'corr',0,'e',tt);
-            wE = [wE {e}]; n_ok = n_ok + 1; %#ok<AGROW>
-            clear tt e
-            flag_have_p34 = 1;
-        end
-        p_sep = .066;
-        if ~isempty(p3) && ~isempty(p2)
-            if size(p2,1) ~=  size(p3,1)
-                [ii2,ii3]=irf_find_comm_idx(p2,p3);
-                tt(:,1) = p2(ii2,1); tt(:,2) = ( p2(ii2,2) - p3(ii3,2) )/p_sep;
-                clear ii2 ii3
-            else
-                tt(:,1) = p2(:,1); tt(:,2) = ( p2(:,2) - p3(:,2) )/p_sep;
-            end
-            e = struct('probe',32,'corr',0,'e',tt);
-            wE = [wE {e}]; n_ok = n_ok + 1; %#ok<AGROW>
-            clear tt e
-            if isempty(p12), p12 = 32; end
-        end
-        if ~isempty(p2) && ~isempty(p4)
-            if size(p2,1) ~=  size(p4,1)
-                [ii2,ii4]=irf_find_comm_idx(p2,p4);
-                tt(:,1) = p2(ii2,1); tt(:,2) = ( p2(ii2,2) - p4(ii4,2) )/p_sep;
-                clear ii2 ii4
-            else
-                tt(:,1) = p2(:,1); tt(:,2) = ( p2(:,2) - p4(:,2) )/p_sep;
-            end
-            e = struct('probe',42,'corr',0,'e',tt);
-            wE = [wE {e}]; n_ok = n_ok + 1; %#ok<AGROW>
-            clear tt e
-            if isempty(p12), p12 = 42; end
-        end
-        clear p1 p2 p3 p4 p_sep
-    end
-	if ~n_ok, data = []; continue, end
-	
-    if flag_lx, lx_str = 'LX'; else lx_str=''; end
-	for iPr=1:length(wE)
-		if wE{iPr}.corr, ss = 'c'; else ss = ''; end
-		irf_log('proc',sprintf('Spin fit w%sE%dp%d %s -> diE%ss%dp%d',...
-			ss,cl_id,wE{iPr}.probe,lx_str,lx_str,cl_id,wE{iPr}.probe))
-
-		aa = c_phase(wE{iPr}.e(:,1),pha);
-        if isempty(aa)
-            irf_log('proc','Empty phase')
-            continue
-        end
-		
-        if flag_lx, tmode = 'lx'; else tmode = 'hx'; end
-        fsamp = c_efw_fsample(wE{iPr}.e,tmode);
-		if ~fsamp, error('no sampling frequency'),end
-		
-		problems = 'reset|bbias|probesa|probeld|sweep|bdump|nsops|whip';
-        if flag_lx
-            ps = sprintf('%d',wE{iPr}.probe);
-            nsops_errlist = [caa_str2errid('bad_bias') caa_str2errid('hxonly')...
-                caa_str2errid('bad_lx')...
-                caa_str2errid(['no_p' ps(1)]) caa_str2errid(['no_p' ps(2)])];%#ok<NASGU>
-        else 
-            nsops_errlist = [caa_str2errid('bad_bias') caa_str2errid('bad_hx')...
-                caa_str2errid(irf_ssub('no_p?',wE{iPr}.probe))];%#ok<NASGU>
-        end
-		% We remove Whisper only if explicitely asked for this by user
-		if flag_rmwhip && flag_rmwhip_force, problems = [problems '|whip']; end %#ok<AGROW>
-		if flag_rmhbsa, problems = [problems '|hbiassa']; end %#ok<AGROW,NASGU>
-		signal = wE{iPr}.e; %#ok<NASGU>
-		remove_problems
-		wE{iPr}.e = res; %#ok<AGROW,NODEF>
-		clear res signal problems
-		
-		% Check if we have at least 1 spin of data left
-		if length(find(~isnan(wE{iPr}.e(:,2)))) < 4*fsamp
-			irf_log('proc',irf_ssub('No p? data after removals',wE{iPr}.probe));
-            if p12==wE{iPr}.probe;
-                p12=[];
-            end
-			continue
-		end
-
-		% Run spin fitting
-        sfit_ver_bak = sfit_ver; % save sfit_ver for next probe pair
-        if sfit_ver>=0
-            irf_log('proc',['using SFIT_VER=' num2str(sfit_ver)])
-        else
-            if wE{iPr}.probe==32 || wE{iPr}.probe==42, sfit_ver = 2;
-            else sfit_ver = 1;
-            end
-        end
-
-		sp = c_efw_sfit(wE{iPr}.probe,3,10,20,wE{iPr}.e(:,1),wE{iPr}.e(:,2),...
-      aa(:,1),aa(:,2),sfit_ver,tmode);
-        sfit_ver = sfit_ver_bak;
-		
-		% Check if we have any data left
-		if isempty(sp)
-			irf_log('load',sprintf('No data left after spinfit for C%d p%d',...
-				cl_id,wE{iPr}.probe))
-			continue
-		end
-		
-		% Remove erroneous points with zero time
-		ind = find(sp(:,1)>0);
-		if length(ind)<length(sp(:,1))
-			irf_log('proc',...
-				[num2str(length(sp(:,1))-length(ind)) ' spins removed (bad time)']);
-			sp = sp(ind,:);
-		end
-		% Remove spins with bad spin fit (obtained E > 10000 mV/m)
-		ind = find(abs(sp(:,3))>1e4); sp(ind,:) = [];
-		if ind, disp([num2str(length(ind)) ' spins removed due to E>10000 mV/m']);end
-		
-		% ADC offsets, i.e. DC offset of the raw sinals
-		% Warn about points with sdev>.8
-		ii = find(sp(:,6)>.8);
-		if length(ii)/size(sp,1)>.05,
-			irf_log('proc',[sprintf('%.1f',100*length(ii)/size(sp,1)) '% of spins have SDEV>.8 (ADC offsets)']);
-		end
-		
-		% Remove whisper pulses for ADC offset and 2 Omega
-		[ok,whip,msg] = c_load('WHIP?',cl_id);
-		if ok
-			if ~isempty(whip)
-				irf_log('proc','blanking Whisper pulses in ADC offsets')
-				if (wE{iPr}.probe == 32 || wE{iPr}.probe == 42) && size(sp,2) == 10
-                    SPCOLS = [4 9 10];
-				else SPCOLS = 4;
-				end
-				% Obtain time interval boundaries around each
-				% (averaged) data point;
-				data_time_lower = sp(:, 1) - 2;
-				data_time_upper = sp(:, 1) + 2;
-				for num = 1:size(whip, 1)
-					problem_start = whip(num, 1);
-					problem_stop = whip(num, 2);
-					sp((problem_start >= data_time_lower & problem_start < data_time_upper) | ...
-						(problem_stop  >  data_time_lower & problem_stop <= data_time_upper) | ...
-						(problem_start <= data_time_lower & problem_stop >= data_time_upper),...
-						SPCOLS) = NaN;
-				end
-			end
-		else irf_log('load',msg)
-		end
-		clear ok whip msg
-		
-		% Continue with ADC offsets
-		adc_off = sp(:,[1 4]);
-		% Don't include hbiassa intervals when calculating mean, variance
-		max_off=adc_off(~isnan(adc_off(:,2)),:);
-		[ok,hbsa,msg] = c_load(irf_ssub('HBIASSA?p!',cl_id,12)); %#ok<NASGU>
-		if ok && ~isempty(hbsa),max_off = caa_rm_blankt(max_off,hbsa); end
-		[ok,hbsa,msg] = c_load(irf_ssub('HBIASSA?p!',cl_id,34)); %#ok<NASGU>
-		if ok && ~isempty(hbsa),max_off = caa_rm_blankt(max_off,hbsa); end
-        [ok,hbsa,msg] = c_load(irf_ssub('HBIASSA?p!',cl_id,32)); %#ok<NASGU>
-		if ok && ~isempty(hbsa),max_off = caa_rm_blankt(max_off,hbsa); end
-        [ok,hbsa,msg] = c_load(irf_ssub('HBIASSA?p!',cl_id,42)); %#ok<NASGU>
-		if ok && ~isempty(hbsa),max_off = caa_rm_blankt(max_off,hbsa); end
-		max_off=max_off(~isnan(max_off(:,2)),:);
-		adc_off_mean = mean(max_off(:,2));
-		max_off = 3*std(max_off(:,2));
-		% Fill NaNs with mean value
-		adc_off(isnan(adc_off(:,2)),2) = adc_off_mean;
-		% For C4p34, check for DAC problems if date is after 2009-01-01
-		adc_despike=1;
-		if cl_id == 4 && wE{iPr}.probe == 34 && adc_off(1,1) > 1230768000
-			% Check for BADDAC set earlier (i.e. by manual forcing)
-			[ok, badDAC] = c_load(irf_ssub('BADDAC?p!', cl_id,wE{iPr}.probe));
-			if ok && ~isempty(badDAC)
-				irf_log('proc', 'BADDAC set manually')
-				adc_despike=0;
-			end
-
-			% Identify intervals
-			idx = find( abs( adc_off(:,2)) > 1);
-			if length(idx) > 150 % Longer interval of DAC problems
-				adc_despike=0;
-				badDAC=[adc_off(idx(1),1)-20 adc_off(idx(end),1)+20]; %#ok<NASGU>
-				irf_log('proc','Long interval of DAC problems.');
-			else
-				if length(idx) > 5
-					% Check for short interval at start
-					idx2=find(idx < 150);
-					if length(idx2) > 3 && idx2(end) < idx(idx2(end))*1.3
-						adc_despike=0;
-						if adc_despike,badDAC=[adc_off(1,1)-20 adc_off(idx(idx2(end)),1)+20]; %#ok<UNRCH>
-						else badDAC=[badDAC' [adc_off(1,1)-20 adc_off(idx(idx2(end)),1)+20]']';
-						end
-						irf_log('proc','Short interval of DAC problems at start of interval.');
-					end
-					% Check for short interval at end
-					idx2=find(idx > length(adc_off(:,1))-150);
-					if length(idx2) > 3 && idx2(end)-idx2(1) < (idx(idx2(end))-idx(idx2(1)))*1.3
-						if adc_despike, badDAC=[adc_off(idx(idx2(1)),1)-20 adc_off(end,1)+20]; %#ok<NASGU>
-						else badDAC=[badDAC' [adc_off(idx(idx2(1)),1)-20 adc_off(end,1)+20]']'; %#ok<NASGU>
-						end
-						adc_despike=0;
-						irf_log('proc','Short interval of DAC problems at end of interval.');
-					end
-					% Check for short interval in middle
-					if adc_despike
-						idx2=find(diff(idx)<3);
-						if length(idx2) > 15
-							badDAC=[adc_off(idx(1),1)-20 adc_off(idx(end),1)+20]; %#ok<NASGU>
-							adc_despike=0;
-							irf_log('proc','Short interval of DAC problems in middle of interval.');
-						end
-					end
-				end
-			end
-			
-			% Save problem to file mEFW.mat (not save_file=mEDSI.mat)
-			if ~adc_despike
-				badDACname=irf_ssub('BADDAC?p!',cl_id,wE{iPr}.probe);
-				irf_log('save', [badDACname ' -> mEFW.mat']);
-				eval([badDACname '=badDAC;']);
-				if exist('mEFW.mat','file')
-					eval(['save -append mEFW.mat ' badDACname]);
-				else
-					eval(['save mEFW.mat ' badDACname]);
-				end
-				% Tell export routines to use p12
-				caa_sfit_probe(cl_id,p12);
-			end
-		end
-
-		% Unless a suspect DAC interval was detected, take care of spikes
-		if adc_despike
-			% Take care of spikes: replace extreme values with mean value
-			idx = find( abs( adc_off(:,2) - adc_off_mean ) > max_off );
-			if ~isempty(idx)
-				adc_off(idx,2) = 0;
-				adc_off_mean = mean(adc_off(abs(adc_off(:,2))>0,2));
-				adc_off(adc_off(:,2)==0,2) = adc_off_mean;
-				irf_log('proc',sprintf('%d spikes (ADC offsets)',length(idx)));
-			end
-		end
-		% Smooth the ADC offset signal
-		adc_off = irf_waverage(adc_off,1/4,nPointsADCOffset); %#ok<NASGU>
-		
-		% Save 2 omega separately
-		if wE{iPr}.probe == 32 && size(sp,2) == 10
-			% Fill NaNs with zeros and smooth the signal
-			for col = 9:10
-				sp( isnan(sp(:,col)) ,col) = 0;
-				sp(:,[1 col]) = irf_waverage(sp(:,[1 col]),1/4);
-			end
-		
-			eval(irf_ssub(...
-			['w2W' lx_str '?p!=sp(:,[1 9 10]);save_list=[save_list ''w2W' lx_str '?p! ''];'],...
-			cl_id,wE{iPr}.probe));
-		end
-		
-		sp = sp(:,[1:4 6]);
-		sp(:,4) = 0*sp(:,4); %#ok<NASGU> % Z component
-		
-		eval(irf_ssub(...
-			['diE' lx_str 's?p!=sp;Dadc' lx_str ...
-            '?p!=adc_off;save_list=[save_list ''diE' lx_str 's?p! Dadc' lx_str '?p! ''];'],...
-			cl_id,wE{iPr}.probe));
-		clear tt sp adc_off
-	end
-
-	% Delta offsets (offsets between E DSI obtained from p12/32 and p34)
+    % Delta offsets (offsets between E DSI obtained from p12/32 and p34)
     if flag_have_p34 && ~isempty(p12)
-        
-        % Compute delta offsets, i.e. difference between DSI E obtained
-        % from different probe pairs
-        % Remove points which are > deltaof_sdev_max*sdev
-        % as this must be a stable quantity
-        eval(irf_ssub(['[ii1,ii2] = irf_find_comm_idx(diE' lx_str 's?p!,diE'...
-            lx_str 's?p34);'],cl_id,p12))
-        eval(irf_ssub(['df=diE' lx_str 's?p!(ii1,1:3);df(:,2:3)=diE' lx_str ...
-            's?p!(ii1,2:3)-diE' lx_str 's?p34(ii2,2:3);'],cl_id,p12))
-        clear ii1 ii2
-        
-        % Remove saturation due to too high bias current
-        if ~flag_rmhbsa % Otherwise the saturation is already blanked
-            for probe=[p12 34]
-                [ok,hbsa,msg] = c_load(irf_ssub('HBIASSA?p!',cl_id,probe));
-                if ok
-                    if ~isempty(hbsa)
-                        irf_log('proc','blanking HB saturation')
-                        df = caa_rm_blankt(df,hbsa);
-                    end
-                else irf_log('load',msg)
-                end
-                clear ok hbsa msg
+      
+      % Compute delta offsets, i.e. difference between DSI E obtained
+      % from different probe pairs
+      % Remove points which are > deltaof_sdev_max*sdev
+      % as this must be a stable quantity
+      eval(irf_ssub(['[ii1,ii2] = irf_find_comm_idx(diE' lx_str 's?p!,diE'...
+        lx_str 's?p34);'],cl_id,p12))
+      eval(irf_ssub(['df=diE' lx_str 's?p!(ii1,1:3);df(:,2:3)=diE' lx_str ...
+        's?p!(ii1,2:3)-diE' lx_str 's?p34(ii2,2:3);'],cl_id,p12))
+      clear ii1 ii2
+      
+      % Remove saturation due to too high bias current
+      if ~flag_rmhbsa % Otherwise the saturation is already blanked
+        for probe=[p12 34]
+          [ok,hbsa,msg] = c_load(irf_ssub('HBIASSA?p!',cl_id,probe));
+          if ok
+            if ~isempty(hbsa)
+              irf_log('proc','blanking HB saturation')
+              df = caa_rm_blankt(df,hbsa);
             end
+          else, irf_log('load',msg)
+          end
+          clear ok hbsa msg
         end
-        
-        df = df (:,2:3);
-        df(isnan(df(:,2)),:) = [];
-        iia = [];
-        if size(df,1)>2
-            sdev = std(df);
-            for comp = 1:2
-                ii = find(abs(df(:,comp)-mean(df(:,comp))) > deltaof_sdev_max*sdev(comp));
-                iia = [iia; ii]; %#ok<AGROW>
-            end
-            iia = sortrows(iia(:));
-            iia(diff(iia)==0) = [];
-            irf_log('calb',sprintf('%d points are removed for delta offsets',...
-                length(iia)))
-        end
-        Del = [0 0];
+      end
+      
+      df = df (:,2:3);
+      df(isnan(df(:,2)),:) = [];
+      iia = [];
+      if size(df,1)>2
+        sdev = std(df);
         for comp = 1:2
-            ddd = df(:,comp); ddd(iia) = [];
-            Del(comp) = mean(ddd);
+          ii = find(abs(df(:,comp)-mean(df(:,comp))) > deltaof_sdev_max*sdev(comp));
+          iia = [iia; ii]; %#ok<AGROW>
         end
-        
-        irf_log('calb',sprintf('%s delta offsets are: %.2f [x] %.2f [y]', ...
-            lx_str, Del(1), Del(2)))
-        
-        % Check for unreallistically large Del.
-        % If it is larger than deltaof_max, we set it to zero and
-        % NOT doing any corrections.
-        if ( abs(Del(1)) > deltaof_max ) || ( abs(Del(2)) > deltaof_max )
-            irf_log('calb',...
-                irf_ssub('DELTA OFFSET TOO BIG >!. Setting D?p12p34=[0 0]',...
-                cl_id,deltaof_max))
-            Del=[0 0]; %#ok<NASGU>
-        else
-            % Always correct p12/p32.
-            % Deprecated behavior: real offset is applied to p12, imaginary to p34.
-            irf_log('calb',irf_ssub('correcting p?',p12))
-            eval(irf_ssub(['diE' lx_str 's?p!(:,2:3)=diE' lx_str ...
-                's?p!(:,2:3)-ones(size(diE' lx_str 's?p!,1),1)*Del;'],cl_id,p12));
-        end
-        
-        eval(irf_ssub(['D' lx_str '?p12p34=Del;'],cl_id))
-        clear m12 m34 Del
-        
-        eval(irf_ssub(['save_list=[save_list ''D' lx_str '?p12p34 ''];'],cl_id));
+        iia = sortrows(iia(:));
+        iia(diff(iia)==0) = [];
+        irf_log('calb',sprintf('%d points are removed for delta offsets',...
+          length(iia)))
+      end
+      Del = [0 0];
+      for comp = 1:2
+        ddd = df(:,comp); ddd(iia) = [];
+        Del(comp) = mean(ddd);
+      end
+      
+      irf_log('calb',sprintf('%s delta offsets are: %.2f [x] %.2f [y]', ...
+        lx_str, Del(1), Del(2)))
+      
+      % Check for unreallistically large Del.
+      % If it is larger than deltaof_max, we set it to zero and
+      % NOT doing any corrections.
+      if ( abs(Del(1)) > deltaof_max ) || ( abs(Del(2)) > deltaof_max )
+        irf_log('calb',...
+          irf_ssub('DELTA OFFSET TOO BIG >!. Setting D?p12p34=[0 0]',...
+          cl_id,deltaof_max))
+        Del=[0 0]; %#ok<NASGU>
+      else
+        % Always correct p12/p32.
+        % Deprecated behavior: real offset is applied to p12, imaginary to p34.
+        irf_log('calb',irf_ssub('correcting p?',p12))
+        eval(irf_ssub(['diE' lx_str 's?p!(:,2:3)=diE' lx_str ...
+          's?p!(:,2:3)-ones(size(diE' lx_str 's?p!,1),1)*Del;'],cl_id,p12));
+      end
+      
+      eval(irf_ssub(['D' lx_str '?p12p34=Del;'],cl_id))
+      clear m12 m34 Del
+      
+      eval(irf_ssub(['save_list=[save_list ''D' lx_str '?p12p34 ''];'],cl_id));
     elseif ~flag_have_p34 && ~flag_lx % XXX: fix me
-        % If we have only p12, we should use it for sfits&co
-        if exist(irf_ssub('diEs?p!',cl_id,12), 'var')
-            irf_log('calb',irf_ssub('Will use p? for spin res data',12))
-            caa_sfit_probe(cl_id,12);
-        elseif exist(irf_ssub('diEs?p!',cl_id,32), 'var')
-            irf_log('calb',irf_ssub('Will use p? for spin res data',32))
-            caa_sfit_probe(cl_id,32);
-            %elseif exist(irf_ssub('diEs?p!',cl_id,42), 'var')
-            %	irf_log('calb',irf_ssub('Will use p? for spin res data',42))
-            %	caa_sfit_probe(cl_id,42);
+      % If we have only p12, we should use it for sfits&co
+      if exist(irf_ssub('diEs?p!',cl_id,12), 'var')
+        irf_log('calb',irf_ssub('Will use p? for spin res data',12))
+        caa_sfit_probe(cl_id,12);
+      elseif exist(irf_ssub('diEs?p!',cl_id,32), 'var')
+        irf_log('calb',irf_ssub('Will use p? for spin res data',32))
+        caa_sfit_probe(cl_id,32);
+        %elseif exist(irf_ssub('diEs?p!',cl_id,42), 'var')
+        %	irf_log('calb',irf_ssub('Will use p? for spin res data',42))
+        %	caa_sfit_probe(cl_id,42);
+      end
+    end
+  end
+  if strcmp(quantity,'dies')
+    % Decide on which probes to use
+    if ~any(strfind(save_list,sprintf('diEs%dp',cl_id))) && ...
+        any(strfind(save_list,sprintf('diELXs%dp',cl_id)))
+      for pp = [34 12 32 42]
+        if strfind(save_list,sprintf('diELXs%dp%d',cl_id,pp))
+          caa_sfit_probe(cl_id,pp*10);
+          irf_log('calb',irf_ssub('Will use p?LX for spin res data',pp))
+          break
         end
+      end
     end
-    end
-    if strcmp(quantity,'dies')
-        % Decide on which probes to use
-        if ~any(strfind(save_list,sprintf('diEs%dp',cl_id))) && ...
-                any(strfind(save_list,sprintf('diELXs%dp',cl_id)))
-            for pp = [34 12 32 42]
-                if strfind(save_list,sprintf('diELXs%dp%d',cl_id,pp))
-                    caa_sfit_probe(cl_id,pp*10);
-                    irf_log('calb',irf_ssub('Will use p?LX for spin res data',pp))
-                    break
-                end
-            end
-        end
-    end
+  end
     
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % die - despin of full resolution data.
@@ -1792,74 +1797,76 @@ elseif strcmp(quantity,'probesa')
     irf_log('proc',sprintf('Probe shadow (SAA=%.1f > %.1f)',saa,SAA_MIN))
     tTmp = fix(start_time):0.5:(ceil(start_time)+ceil(dt));
     [phaTmp, tInts] = c_phase(tTmp', pha);
-    for idxTInt = 1:size(tInts,1)
-      if size(tInts,1)>1
-        phaTmpTmp = irf_tlim(phaTmp,tInts(idxTInt,:));
-        irf_log('proc',...
-          ['processing shadow : ' irf_disp_iso_range(tInts(idxTInt,:))])
-      else phaTmpTmp = phaTmp;
-      end
-      [spin_period,err_angle,err_angle_mean,phc_coef] = c_spin_period(phaTmpTmp,1);
-      if isempty(spin_period)
-        irf_log('proc','cannot find spin period'),data = [];cd(old_pwd); return
-      end
-      if err_angle>1 || err_angle_mean>1,
-        irf_log('proc','This is not yet implemented, need to do spin-by-spin');
-        error('This is not yet implemented, need to do spin-by-spin')
-      end
-      fsamp = [];
-      for probe = [12 32 34]
-        [ok,da] = c_load(irf_ssub('wE?p!',cl_id,probe));
-        if ~ok || isempty(da)
-          irf_log('load', irf_ssub('No/empty wE?p!',cl_id,probe));
-          continue
+    if ~isempty(phaTmp)
+      for idxTInt = 1:size(tInts,1)
+        if size(tInts,1)>1
+          phaTmpTmp = irf_tlim(phaTmp,tInts(idxTInt,:));
+          irf_log('proc',...
+            ['processing shadow : ' irf_disp_iso_range(tInts(idxTInt,:))])
+        else phaTmpTmp = phaTmp;
         end
-        fsamp = c_efw_fsample(da,'hx');
-        if ~isempty(fsamp), break; end
+        [spin_period,err_angle,err_angle_mean,phc_coef] = c_spin_period(phaTmpTmp,1);
+        if isempty(spin_period)
+          irf_log('proc','cannot find spin period'),data = [];cd(old_pwd); return
+        end
+        if err_angle>1 || err_angle_mean>1,
+          irf_log('proc','This is not yet implemented, need to do spin-by-spin');
+          error('This is not yet implemented, need to do spin-by-spin')
+        end
+        fsamp = [];
+        for probe = [12 32 34]
+          [ok,da] = c_load(irf_ssub('wE?p!',cl_id,probe));
+          if ~ok || isempty(da)
+            irf_log('load', irf_ssub('No/empty wE?p!',cl_id,probe));
+            continue
+          end
+          fsamp = c_efw_fsample(da,'hx');
+          if ~isempty(fsamp), break; end
+        end
+        
+        DT_MINUS_M = 2*spin_period*shadow_2/360;
+        DT_PLUS_M = 1.6*DT_MINUS_M;
+        DT_MINUS_L = 3*spin_period*shadow_2/360;
+        DT_PLUS_L = 10/25;
+        DT_MINUS_LX = 2/5; DT_PLUS_LX = 3/5;
+        % Determine if we use 180Hz filter
+        if cl_id == 2 && start_time>toepoch([2001 07 23 13 54 18])
+          dt_lx = [DT_MINUS_M DT_PLUS_M];
+          dt_hx = dt_lx;
+        elseif fix(fsamp) == 450
+          dt_lx = [DT_MINUS_LX DT_PLUS_LX];
+          dt_hx = [DT_MINUS_M DT_PLUS_M];
+        else % 10 Hz filter
+          dt_lx = [DT_MINUS_LX DT_PLUS_LX];
+          dt_hx = [DT_MINUS_L DT_PLUS_L];
+        end
+        
+        nSpins=ceil(dt/spin_period)+2; spinN = (1:nSpins)-2;
+        probes = [1 3 2 4]; saasa = zeros(nSpins,4);
+        % Shadow times
+        for iProbe=1:4
+          saasa(:,probes(iProbe)) = ...
+            (pi/4 + pi/2*(iProbe-1) + spinN*2*pi - phc_coef(2))/phc_coef(1)...
+            + phaTmp(1,1);
+        end
+        % LX Shadows
+        saasa_se = zeros(nSpins,8);
+        for iProbe=1:4
+          saasa_se(:,iProbe*2-1) = saasa(:,iProbe) - dt_lx(1);
+          saasa_se(:,iProbe*2) = saasa(:,iProbe) + dt_lx(2);
+        end
+        % HX Shadows
+        probes = [12 34 32 42]; saasa_di = zeros(nSpins*2,8);
+        for iProbe=1:4
+          pA = fix(probes(iProbe)/10); pB = probes(iProbe) - pA*10;
+          tmpT = sort([saasa(:,pA); saasa(:,pB)]);
+          saasa_di(:,iProbe*2-1) = tmpT - dt_hx(1);
+          saasa_di(:,iProbe*2) = tmpT + dt_hx(2);
+        end
+        clear tmpT
+        saasa_se_all = [saasa_se_all; saasa_se]; %#ok<AGROW>
+        saasa_di_all = [saasa_di_all; saasa_di]; %#ok<AGROW>
       end
-      
-      DT_MINUS_M = 2*spin_period*shadow_2/360;
-      DT_PLUS_M = 1.6*DT_MINUS_M;
-      DT_MINUS_L = 3*spin_period*shadow_2/360;
-      DT_PLUS_L = 10/25;
-      DT_MINUS_LX = 2/5; DT_PLUS_LX = 3/5;
-      % Determine if we use 180Hz filter
-      if cl_id == 2 && start_time>toepoch([2001 07 23 13 54 18])
-        dt_lx = [DT_MINUS_M DT_PLUS_M];
-        dt_hx = dt_lx;
-      elseif fix(fsamp) == 450
-        dt_lx = [DT_MINUS_LX DT_PLUS_LX];
-        dt_hx = [DT_MINUS_M DT_PLUS_M];
-      else % 10 Hz filter
-        dt_lx = [DT_MINUS_LX DT_PLUS_LX];
-        dt_hx = [DT_MINUS_L DT_PLUS_L];
-      end
-      
-      nSpins=ceil(dt/spin_period)+2; spinN = (1:nSpins)-2;
-      probes = [1 3 2 4]; saasa = zeros(nSpins,4);
-      % Shadow times
-      for iProbe=1:4
-        saasa(:,probes(iProbe)) = ...
-          (pi/4 + pi/2*(iProbe-1) + spinN*2*pi - phc_coef(2))/phc_coef(1)...
-          + phaTmp(1,1);
-      end
-      % LX Shadows
-      saasa_se = zeros(nSpins,8);
-      for iProbe=1:4
-        saasa_se(:,iProbe*2-1) = saasa(:,iProbe) - dt_lx(1);
-        saasa_se(:,iProbe*2) = saasa(:,iProbe) + dt_lx(2);
-      end
-      % HX Shadows
-      probes = [12 34 32 42]; saasa_di = zeros(nSpins*2,8);
-      for iProbe=1:4
-        pA = fix(probes(iProbe)/10); pB = probes(iProbe) - pA*10;
-        tmpT = sort([saasa(:,pA); saasa(:,pB)]);
-        saasa_di(:,iProbe*2-1) = tmpT - dt_hx(1);
-        saasa_di(:,iProbe*2) = tmpT + dt_hx(2);
-      end
-      clear tmpT
-      saasa_se_all = [saasa_se_all; saasa_se]; %#ok<AGROW>
-      saasa_di_all = [saasa_di_all; saasa_di]; %#ok<AGROW>
     end
   end % SAA saturation
   c_eval(['SAASASE?=saasa_se_all;SAASADI?=saasa_di_all;'...
@@ -2271,11 +2278,11 @@ elseif strcmp(quantity,'rawspec')
 	
 	% Src quantities: Atwo?, wE?p12/wE?p32, wE?p34
 	[ok,pha] = c_load('Atwo?',cl_id);
-	if ~ok || isempty(pha)
-        irf_log('load',...
-             irf_ssub('No/empty Atwo? in mA. Use getData(CDB,...,cl_id,''a'')',cl_id));
-		data = []; cd(old_pwd); return
-	else
+  if ~ok || isempty(pha)
+    irf_log('load',...
+      irf_ssub('No/empty Atwo? in mA. Use getData(CDB,...,cl_id,''a'')',cl_id));
+    data = []; cd(old_pwd); return
+  else
 		%Find zero phase
 		ii = find(pha(:,2)==0);
 		if isempty(ii)
@@ -2302,7 +2309,7 @@ elseif strcmp(quantity,'rawspec')
             end
             irf_log('load','using raw (not corrected) data')
             if probe==34, corrected_raw_data_p34 = 0;
-            else corrected_raw_data_p12 = 0;
+            else, corrected_raw_data_p12 = 0;
             end
         end
         n_ok = n_ok + 1;
@@ -2312,7 +2319,7 @@ elseif strcmp(quantity,'rawspec')
         if probe==32
             p12 = 32;
             e12 = da;
-        else c_eval('e?=da;',probe)
+        else, c_eval('e?=da;',probe)
         end
         clear ok da
     end
@@ -2343,7 +2350,8 @@ elseif strcmp(quantity,'rawspec')
 	if ~n_ok, data = []; cd(old_pwd), return, end
 	
 	%Compute spin period
-	ph = c_phase(tpharef,pha); ph(isnan(ph(:,2)),:) = [];
+	ph = c_phase(tpharef,pha); 
+  if ~isempty(ph), ph(isnan(ph(:,2)),:) = []; end
 	if isempty(ph)
 		irf_log('proc','Phase is empty')
 		data = []; cd(old_pwd), return
@@ -2362,7 +2370,7 @@ elseif strcmp(quantity,'rawspec')
 	if spin_p > 4.4 || spin_p < 3.6
 		irf_log('proc','using spin period == 4 sec')
 		spin_p = 4.0;
-    else irf_log('proc',['spin period is ' num2str(spin_p) ' sec'])
+  else, irf_log('proc',['spin period is ' num2str(spin_p) ' sec'])
 	end
 	
 	for pr = [12 34]
@@ -2382,13 +2390,13 @@ elseif strcmp(quantity,'rawspec')
 		end
 		
 		if corrected_raw_data, ss = 'c';
-		else ss = '';
+    else, ss = '';
 		end
 		irf_log('proc',sprintf('Raw spectrum w%sE%dp%d -> RSPEC%dp%d',...
 			ss,cl_id,probe,cl_id,probe))
 		
         if flag_lx, fsamp = c_efw_fsample(tt,'lx');
-        else fsamp = c_efw_fsample(tt,'hx');
+        else, fsamp = c_efw_fsample(tt,'hx');
         end
 		if ~fsamp, error('no sampling frequency'),end
 		
@@ -2451,7 +2459,7 @@ elseif strcmp(quantity,'rawspec')
 				rspec(i,9)  = -AmpSin(4+1); % 8 omega
 				rspec(i,10) =  AmpCos(5+1);
 				rspec(i,11) = -AmpSin(5+1);
-            else n_gap = n_gap + 1;
+      else, n_gap = n_gap + 1;
 			end
 		end
 		irf_log('proc',sprintf('%d spins processed, %d gaps found',n,n_gap))

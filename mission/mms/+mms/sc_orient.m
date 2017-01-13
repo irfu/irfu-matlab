@@ -26,11 +26,11 @@ elseif nargin==1 && ischar(spacecraft)
 elseif   (nargin < 6)
     action='initialize';
 end
-if nargin==0, 
+if nargin==0
     spacecraft=defaultSC;
 	time=defaultTime;
 end
-if isempty(spacecraft), 
+if isempty(spacecraft)
 	ic=defaultSC;
 else
 	ic=spacecraft;
@@ -53,11 +53,11 @@ switch lower(action)
         data.ic=ic;
         data.getScPhase=1;
         data.getB=1;
-        if length(time)==1, % define time of interest when initializing
+        if length(time)==1 % define time of interest when initializing
             data.t=time;
-        elseif length(time)==6,
+        elseif length(time)==6
             data.t=irf_time(time);
-        elseif exist('t','var'),
+        elseif exist('t','var')
             % use existing t
         else
             irf.log('critical','unknown time format');
@@ -65,10 +65,10 @@ switch lower(action)
         end
         if nargin<6, data.flag_v=1; end
         if nargin<5, data.flag_v=0; end
-        if nargin>4, % use mangetic field that is given as input
+        if nargin>4 % use mangetic field that is given as input
             data.b=magnetic_field; %c_coord_trans('GSE','ISR2',magnetic_field,'cl_id',data.ic);
         end
-        if nargin>2, % use phase given as input
+        if nargin>2 % use phase given as input
             data.a=phase_time_series;
         end
         if data.flag_v == 1, data.v=velocity; end
@@ -145,13 +145,13 @@ switch lower(action)
     case 'read_phase_and_b'
         data=get(gcf,'userdata');
 		tint = data.t + [-10 10]; % read in 20sec data
-        if get(data.bflag,'value')==1,
+        if get(data.bflag,'value')==1
             data.getB = true;
-            if ~isfield(data,'b'),
+            if ~isfield(data,'b')
                 data.b=[1 0 0 NaN]; % first col is time
             end
-            if ~isempty(data.b), % use existing b if there is one
-                if data.t>=data.b(1,1) && data.t<=data.b(end,1), % time within interval of B
+            if ~isempty(data.b) % use existing b if there is one
+                if data.t>=data.b(1,1) && data.t<=data.b(end,1) % time within interval of B
                     data.getB = false;
                 elseif strcmp(get(data.bflag,'value'),1) % get B data
                     data.getB = true;
@@ -168,20 +168,20 @@ switch lower(action)
                 ttemp = bgse.time.epochUnix;
                 datatemp = double(bgse.data);
                 data.bgse = [ttemp, double(datatemp)];    
-                if ~isempty(b),
+                if ~isempty(b)
                     %data.b=c_coord_trans('GSE','DSC',b,'cl_id',data.ic);
-                    if data.t>=data.b(1,1) && data.t<=data.b(end,1), % time within interval of B
+                    if data.t>=data.b(1,1) && data.t<=data.b(end,1) % time within interval of B
                         data.getB = false;
                     end
                 end
             end
-            if data.getB, % did not succeed to read B data
+            if data.getB % did not succeed to read B data
                 irf.log('warning','Could not read B field data');
                 data.b=[1 0 0 NaN]; % first col is time
             end
         end
-        if ~data.getScPhase, % can use old phase data if they are valid
-                if data.t<=data.a(1,1) || data.t>=data.a(end,1), % time outside interval of phase
+        if ~data.getScPhase % can use old phase data if they are valid
+                if data.t<=data.a(1,1) || data.t>=data.a(end,1) % time outside interval of phase
                     data.getScPhase = true;
                 end
         end
@@ -197,7 +197,7 @@ switch lower(action)
                 ttemp = phase_time_series.time.epochUnix;
                 datatemp = double(phase_time_series.data);
                 phase_time_series = [ttemp, double(datatemp)]; 
-            if ~isempty(phase_time_series),
+            if ~isempty(phase_time_series)
                 data.getScPhase = false;
                 data.a=phase_time_series;
             end
@@ -229,11 +229,11 @@ switch lower(action)
         data.flag_v2=get(data.vec2flag, 'value');
         data.flag_b=get(data.bflag, 'value');
         
-        if data.flag_v1==1,
+        if data.flag_v1==1
             data.v1=eval(['[' get(data.vec1Hndl,'string') ']']);
             if length(data.v1)==1, data.flag_v1=0;end;
         end
-        if data.flag_v2==1,
+        if data.flag_v2==1
             data.v2=eval(['[' get(data.vec2Hndl,'string') ']']);
             if length(data.v2)==1, data.flag_v2=0;end;
         end
@@ -249,10 +249,11 @@ switch lower(action)
         rp3=[60*cos(phase_p3) 60*sin(phase_p3) 0];
         rp4=[60*cos(phase_p4) 60*sin(phase_p4) 0];
         % Boom lengths are 5m. Exaggerated in plot.
-        rb1=[15*cos(phase_b1) 15*sin(phase_b1) 0];
-        rb2=[15*cos(phase_b2) 15*sin(phase_b2) 0];
+        rb1=[20*cos(phase_b1) 20*sin(phase_b1) 0];
+        rb2=[20*cos(phase_b2) 20*sin(phase_b2) 0];
+        scoctogon = (data.phase+22.5+single(0:45:360))/180*pi;
         
-        for ip=1:4, 
+        for ip=1:4 
             c_eval('rp?ts = irf.ts_vec_xyz(irf_time(data.t,''epoch>epochTT''),rp?);',ip);
             c_eval('rp?_gse=mms_dsl2gse(rp?ts,data.defatt);',ip);
             c_eval('rp?_gse=rp?_gse.data;',ip);
@@ -271,14 +272,14 @@ switch lower(action)
             angle_deg_p12_vs_b=acos(bn(2)*cos(phase_p2)+bn(3)*sin(phase_p2))*180/pi;
             for ip=1:4,c_eval('rp?_b=[irf_dot(rp?,bxs,1) irf_dot(rp?,bxsxb,1) irf_dot(rp?,bn,1)];',ip),end
         end
-        if data.flag_v1==1,
+        if data.flag_v1==1
             vn1_gse=irf.ts_vec_xyz(irf_time(bn(1,1),'epoch>epochTT'),irf_norm(data.v1));
             vn1_ds = mms_dsl2gse(vn1_gse,data.defatt,-1);
             vn1_gse = vn1_gse.data;
             vn1_ds = vn1_ds.data;
             vn1_elevation=-asin(vn1_ds(3))*180/pi;
         end
-        if data.flag_v2==1,
+        if data.flag_v2==1
             vn2_gse=irf.ts_vec_xyz(irf_time(bn(1,1),'epoch>epochTT'),irf_norm(data.v2));
             vn2_ds = mms_dsl2gse(vn2_gse,data.defatt,-1);
             vn2_gse = vn2_gse.data;
@@ -302,21 +303,21 @@ switch lower(action)
         %text(50,40,'HEEA','verticalalignment','top','horizontalalignment','right','fontweight','demi','color','b');
         %text(50,35,'Rapid','verticalalignment','top','horizontalalignment','right','fontweight','demi','color','k');
         
-        if data.flag_b==1,
+        if data.flag_b==1
             bnproj=[0 bn(2)/norm(bn(2:3)) bn(3)/norm(bn(2:3))];
             hl=line([0 bnproj(2)*25],[0 bnproj(3)*25]);set(hl,'color','red','linewidth',.4);       % B direction
             hl=line([0 bn(2)*25],[0 bn(3)*25]);set(hl,'color','red','linewidth',2);       % B direction
             text(30*bnproj(2),30*bnproj(3),'B');           % label
             text(-49,-48,['B elevation=' num2str(b_elevation,2) ' deg'],'fontsize',8);           % label
         end
-        if data.flag_v1==1, % plot v1 vector
+        if data.flag_v1==1 % plot v1 vector
             vn1proj=[0 vn1_ds(1)/norm(vn1_ds(1:2)) vn1_ds(2)/norm(vn1_ds(1:2))];
             hl=line([0 vn1proj(3)*25],[0 vn1proj(2)*25]);set(hl,'color','k','linewidth',.4);       % V direction
             hl=line([0 vn1_ds(2)*25],[0 vn1_ds(1)*25]);set(hl,'color','k','linewidth',2);       % V direction
             text(30*vn1proj(3),30*vn1proj(2),'V');           % label
             text(-49,44,['V1 elevation=' num2str(vn1_elevation,2) ' deg'],'fontsize',8);           % label
         end
-        if data.flag_v2==1, % plot v1 vector
+        if data.flag_v2==1 % plot v1 vector
             vn2proj=[0 vn2_ds(1)/norm(vn2_ds(1:2)) vn2_ds(2)/norm(vn2_ds(1:2))];
             hl=line([0 vn2proj(3)*25],[0 vn2proj(2)*25]);set(hl,'color','b','linewidth',.4);       % V direction
             hl=line([0 vn2_ds(2)*25],[0 vn2_ds(1)*25]);set(hl,'color','b','linewidth',2);       % V direction
@@ -324,50 +325,51 @@ switch lower(action)
             text(-49,38,['V2 elevation=' num2str(vn2_elevation,2) ' deg'],'fontsize',8);           % label
         end
         
-        for aa=0:pi/12:2*pi, % plot grid
+        for aa=0:pi/12:2*pi % plot grid
             hl=line([0 100*cos(aa)],[0 100*sin(aa)]);
             set(hl,'linestyle',':','color','green','linewidth',.2);
         end
+        % plot spacecraft octogon structure
+        line(12*cos(scoctogon),12*sin(scoctogon),'Linewidth',2,'Color','r');
         % Plot Booms
         c_eval('line([0 rb?(1)],[0 rb?(2)],''Linewidth'',3,''Color'',''k'');',1:2);
         boomlabels = ['DFG';'AFG'];
         c_eval('text(rb?(1)*1.5,rb?(2)*1.5,boomlabels(?,:));',1:2);
-        for ip=1:4; % plot probes
+        for ip=1:4 % plot probes
             c_eval('line([0 rp?(1)],[0 rp?(2)]);',ip);
             c_eval('patch(rp?(1)+x_circle*0.4,rp?(2)+y_circle*0.4,x_circle*0+1,''facecolor'',''black'',''edgecolor'',''none'');',ip);
             c_eval('text(rp?(1)*.9,rp?(2)*.9,num2str(?),''fontweight'',''bold'');',ip);
         end
-        
         
         axes(h(3));cla
         text(0,70,'Z_{GSE}','verticalalignment','top','horizontalalignment','center','fontweight','demi');
         text(70,0,'-Y_{GSE}','rotation',90,'verticalalignment','bottom','horizontalalignment','center','fontweight','demi');
         patch(x_circle*1.5,y_circle*1.5,x_circle*0+1);hold on; % plot spacecraft
         patch(x_circle*1.5,y_circle*1.5,x_circle*0-1);         % plot spacecraft
-        if data.flag_b==1,
+        if data.flag_b==1
             bnproj=[0 0 bn_gse(3)/norm(bn_gse(3:4)) bn_gse(4)/norm(bn_gse(3:4))];
             hl=line([0 -bnproj(3)*25],[0 bnproj(4)*25]);set(hl,'color','red','linewidth',.4);       % B direction
             hl=line([0 -bn_gse(3)*25],[0 bn_gse(4)*25]);set(hl,'color','red','linewidth',2);       % B direction
             text(-30*bnproj(3),30*bnproj(4),'B');           % label
         end
-        if data.flag_v1==1, % plot v vector
+        if data.flag_v1==1 % plot v vector
             vn1proj=[0 0 vn1_gse(2)/norm(vn1_gse(2:3)) vn1_gse(3)/norm(vn1_gse(2:3))];
             hl=line([0 -vn1proj(3)*25],[0 vn1proj(4)*25]);set(hl,'color','k','linewidth',.4);       % V direction
             hl=line([0 -vn1_gse(2)*25],[0 vn1_gse(3)*25]);set(hl,'color','k','linewidth',2);       % V direction
             text(-30*vn1proj(3),30*vn1proj(4),'V');           % label
         end
-        if data.flag_v2==1, % plot v vector
+        if data.flag_v2==1 % plot v vector
             vn2proj=[0 0 vn2_gse(2)/norm(vn2_gse(2:3)) vn2_gse(3)/norm(vn2_gse(2:3))];
             hl=line([0 -vn2proj(3)*25],[0 vn2proj(4)*25]);set(hl,'color','b','linewidth',.4);       % V direction
             hl=line([0 -vn2_gse(2)*25],[0 vn2_gse(3)*25]);set(hl,'color','b','linewidth',2);       % V direction
             text(-30*vn2proj(3),30*vn2proj(4),'V');           % label
         end
         
-        for aa=0:pi/12:pi/2,
+        for aa=0:pi/12:pi/2
             hl=line(x_circle*60*sin(aa),y_circle*60*sin(aa));
             set(hl,'linestyle',':','color','green','linewidth',.2);
         end
-        for ip=1:4;
+        for ip=1:4
             c_eval('line([0 -rp?_gse(2)],[0 rp?_gse(3)]);',ip);
             c_eval('patch(-rp?_gse(2)+x_circle*0.4,rp?_gse(3)+y_circle*0.4,x_circle*0+1,''facecolor'',''black'',''edgecolor'',''none'');',ip);
             c_eval('text(-rp?_gse(2)*.8,rp?_gse(3)*.8,num2str(?));',ip);
@@ -378,12 +380,12 @@ switch lower(action)
         text(70,0,'BxS','rotation',90,'verticalalignment','bottom','horizontalalignment','center','fontweight','demi');
         patch(x_circle*1.5,y_circle*1.5,x_circle*0+1);hold on; % plot spacecraft
         patch(x_circle*1.5,y_circle*1.5,x_circle*0-1);         % plot spacecraft
-        for aa=0:pi/12:pi/2,
+        for aa=0:pi/12:pi/2
             hl=line(x_circle*60*sin(aa),y_circle*60*sin(aa));
             set(hl,'linestyle',':','color','green','linewidth',.2);
         end
         if data.flag_b==1
-            for ip=1:4;
+            for ip=1:4
                 c_eval('line([0 rp?_b(1)],[0 rp?_b(2)]);',ip);
                 c_eval('patch(rp?_b(1)+x_circle*0.4,rp?_b(2)+y_circle*0.4,x_circle*0+1,''facecolor'',''black'',''edgecolor'',''none'');',ip);
                 c_eval('text(rp?_b(1)*.8,rp?_b(2)*.8,num2str(?));',ip);
@@ -394,14 +396,14 @@ switch lower(action)
         cla(h(4))
         irf_legend(h(4),['mms.sc_orient() ' datestr(now)],[0,1],'fontsize',8,'interpreter','none','color',[0.5 0.5 0.5]);
         irf_legend(h(4),['MMS' num2str(data.ic)],[0,.9],'fontsize',10);
-        if data.flag_b==1,
+        if data.flag_b==1
             irf_legend(h(4),['angle beteen p34 and B ' num2str(angle_deg_p34_vs_b,'%3.1f') 'deg'],[0,.82],'interpreter','none','fontsize',10);
             irf_legend(h(4),['angle beteen p12 and B ' num2str(angle_deg_p12_vs_b,'%3.1f') 'deg'],[0,.74],'interpreter','none','fontsize',10);
         end
         set(gcf,'userdata',data);
     case 'c1'
         data=get(gcf,'userdata');
-        if ic~=1,
+        if ic~=1
             data.getScPhase=1;data.getB=1;data.b=[];data.ic=1;
             set(gcf,'Name',['MMS' num2str(data.ic) ' orientation']);
             set(gcf,'userdata',data);

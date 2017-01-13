@@ -8,6 +8,7 @@
 # Updated: 2015/11/18, add optional ASPOC L2 srvy as input, remove "(" or ")" from errStr (ie anonumous function error ensure bash can still send mail).
 # Updated: 2015/12/03, new return codes 198 if I/O error reading zlib compressed cdf file (mainly aspoc), and 197 if error reading DEFATT ascii file.
 # Updated: 2015/12/16, new return code 196 if L1b dce file in empty ("Epoch" variable contains zero Written records).
+# Updated: 2017/01/09, reading XML files (containing information about manuevers) require jvm.
 #
 # Usage: place script in the same folder as has irfu-matlab as a subfolder, then run
 #  "./script.sh <mmsX_dce_filename> <mmsX_dcv_filename> <mmsX_101_filename> <mmsX_10e_filename> <mmsX_105_filename>", with the following
@@ -39,7 +40,7 @@
 
 # User definable constants
 MATLAB_EXE=/tools/matlab/R2013b/bin/matlab # SDC location of installed Matlab. # XXX: change this to whereever matlab is located.
-MATLAB_FLAGS="-nodesktop -nosplash -nodisplay -nojvm"
+MATLAB_FLAGS="-nodesktop -nosplash -nodisplay"
 IRFU_MATLAB=/mms/itfhome/mms-sdp/software/irfu-matlab # SDC location of irfu-matlab. # XXX: change this to whereever irfu-matlab is located.
 
 # No need to edit after this line

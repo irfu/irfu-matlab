@@ -45,7 +45,7 @@ classdef mms_edp_Sweep < handle
         irf.log('critical',msg),error(msg)
       end
       obj.sweep = dataobj(fileName);
-      if isempty(obj.sweep),
+      if isempty(obj.sweep)
         msg = 'No data loaded'; irf.log('critical',msg),error(msg)
       end
       obj.scId = lower(obj.sweep.GlobalAttributes.Source_name{:}(1:4));
@@ -153,7 +153,7 @@ classdef mms_edp_Sweep < handle
       %
       % If sps is absent no phase is computed
       narginchk(2,3);
-      if(nargin==2), doPhase=false; else doPhase=true; end;
+      if(nargin==2), doPhase=false; else, doPhase=true; end;
       [sweepTime, prb1, prb2, voltage1, biasRes1, voltage2, biasRes2,...
           eVolt, eBias, v01, v02]...
           = getSweep(obj,iSweep);
@@ -426,11 +426,11 @@ classdef mms_edp_Sweep < handle
         disp('*** Warning, biasRes tables changed from [-250,100] to [-460,50]')
       end
 % Plot
-      if isempty(h), clf, else clf(h), end
+      if isempty(h), clf, else, clf(h), end
       c = 'krgbmc';
       lineStyleP1 = [c(prb1) '.-']; lineStyleP2 = [c(prb2) '.-'];
       if strcmp(type,'++') || strcmp(type,'--') || strcmp(type,'00')
-        if isempty(h),
+        if isempty(h)
           plot(voltage1,biasRes1,lineStyleP1,...
             voltage2,biasRes2,lineStyleP2,voltage1(1),NaN);
           h = gca;
@@ -441,7 +441,7 @@ classdef mms_edp_Sweep < handle
       else
         n=length(biasRes1(isfinite(biasRes1))); n2=round(n/2);
         lineStyleP3 = [c(prb1) '.--']; lineStyleP4 = [c(prb2) '.--'];
-        if isempty(h),
+        if isempty(h)
           plot(voltage1(n2:n),biasRes1(n2:n),lineStyleP3,...
             voltage2(n2:n),biasRes2(n2:n),lineStyleP4);
           hold(gca,'on')
@@ -514,7 +514,7 @@ classdef mms_edp_Sweep < handle
       %    sps - a sunpulse structure obtained from sunpulse_from_hk101()
       %    if sps is not given, no phase is plotted
       %
-      if nargin==4, evfile = sps; plotev = true; else plotev = false; end
+      if nargin==4, evfile = sps; plotev = true; else, plotev = false; end
       if nargin>=3, sps = iSweep; iSweep = h; h = []; doPhase = true;
       elseif nargin == 2, iSweep = h; h = []; doPhase = false;
       elseif ~isgraphics(h,'axes')
@@ -677,7 +677,7 @@ classdef mms_edp_Sweep < handle
       [idx, Epoch] = tlim(EpochTT(obj.sweep.data.Epoch.data), sweepTime);
       prb1 = obj.sweep.data.([obj.scId '_sweep_swept']).data(iSweep);
       % The "other probe" is the other probe in the pair 1-2, 3-4, 5-6
-      if fix(prb1/2)*2==prb1, prb2 = prb1 - 1; else prb2 = prb1 + 1; end
+      if fix(prb1/2)*2==prb1, prb2 = prb1 - 1; else, prb2 = prb1 + 1; end
       voltage1 =  obj.sweep.data.([obj.scId '_edp_sweeps']).data(idx,prb1);
       voltage2 =  obj.sweep.data.([obj.scId '_edp_sweeps']).data(idx,prb2);
       if ~isempty(voltage1)
@@ -705,7 +705,7 @@ classdef mms_edp_Sweep < handle
       for i=1:length(idxBias)
         if i == length(idxBias)
           ii = tlim(Epoch, irf.tint([eBias.stop.toUtc,'/',sweepTime.stop.toUtc]));
-        else ii = tlim(Epoch, eBias(i+[0 1]));
+        else, ii = tlim(Epoch, eBias(i+[0 1]));
         end
         biasRes1(ii) = bias1(i);  biasRes2(ii) = bias2(i);
       end

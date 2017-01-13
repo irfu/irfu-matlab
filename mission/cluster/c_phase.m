@@ -51,7 +51,10 @@ while tStart<targetTime(end)
   end
   
   gaps = find(diff(tPhaTmp)>SPIN_GAP_MAX, 1);
-  if ~isempty(gaps), error('gaps'), end
+  if ~isempty(gaps),
+    irf_log('proc','Gaps in phase_2, cannot compute phase'), 
+    res = []; return
+  end
   irf_log('proc',sprintf('Processing %d points (%s -- %s)',...
     length(tPhaTmp),epoch2iso(tStart+t0), epoch2iso(tStop+t0)))
   comp_spin_rate()
