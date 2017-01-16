@@ -16,6 +16,8 @@ idxMSH = [];
 E34 = struct('c1',[],'c2',[],'c3',[],'c4',[]);
 EFPI = E34; flagOldFile = false;
 
+maneuvers = mms_maneuvers(Tint); % Locate any maneuvers
+
 for mmsId = 1:4
   mmsIdS = sprintf('c%d',mmsId);
   fPre = sprintf('mms%d_edp_fast_l2a_dce2d',mmsId);
@@ -78,6 +80,16 @@ for mmsId = 1:4
     E34.(mmsIdS) = Es34AspocOffR;
   end
   
+  for iManuev = 1:length(maneuvers.(sprintf('mms%i',mmsId)))
+    % Maneuvers was found...
+    irf.log('warning', ['Maneuver: ', ...
+      maneuvers.(sprintf('mms%i',mmsId)){iManuev}.start.toUtc, '/', ...
+      maneuvers.(sprintf('mms%i',mmsId)){iManuev}.stop.toUtc]);
+    % Set EDP data as NaN for the duration of the maneuvers.
+    E34.(mmsIdS).data(bitand( E34.(mmsIdS).time.ttns >= maneuvers.(sprintf('mms%i',mmsId)){iManuev}.start.ttns, ...
+      E34.(mmsIdS).time.ttns <= maneuvers.(sprintf('mms%i',mmsId)){iManuev}.stop.ttns), :) = NaN;
+  end
+
   B = mms.get_data('B_dmpa_srvy',Tint,mmsId);
   if isempty(B), B = mms.get_data('B_dmpa_dfg_srvy_ql',Tint,mmsId); end
   if isempty(B), continue, end
