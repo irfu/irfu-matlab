@@ -186,8 +186,8 @@ classdef mms_sdp_dmgr < handle
           sensors = {'v1','v2','v3','v4','v5','v6'};
           init_param()
           chk_timeline()
-          chk_latched_p()
 %          interp_time()
+          chk_latched_p()
           %apply_transfer_function()
           v_from_e_and_v()
           chk_bias_guard()
@@ -694,7 +694,16 @@ classdef mms_sdp_dmgr < handle
         % Epoch variable).
         % Source used: E-mail from Mark dated 2017/01/11T19:21 CET, and the
         % "Document No. 108328revE".
-        %
+
+        % Only Burst mode should be interpolated
+        if(DATAC.tmMode == DATAC.CONST.TmMode.brst)
+          irf.log('notice', 'Resampling burst measurements to align with first channel ("epoch").');
+        else
+          irf.log('debug', 'Not in burst mode, not doing resample of measurements to align with first channel ("epoch")');
+          return;
+        end
+
+        keyboard
         % NOTE THIS FUNCTION IS NOT READY for production, added here as to
         % create test files to see what impact it has on our files. Mainly
         % burst 16'384 Hz may be impacted, but this is TBD. Also "to be
@@ -704,7 +713,6 @@ classdef mms_sdp_dmgr < handle
         % Offset between each channel in ADC
         Dt = int64(3.8e3); % 3.8 us expressed in ns (TT2000, int64)
         % V1 is start of nominal Epoch (when combined dce&dcv file)
-        keyboard
         % V2 is Dt later (included here, but NaN unless in comm.)
         % V3 is Dt later again (ie 2*Dt)
         % V4 is 3*Dt (NaN unless in comm.)
