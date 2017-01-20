@@ -596,8 +596,8 @@ loglog(SDP_EMC.ff,SDP_Scale^2*SDP_EMC.EEpower,'b--')
 
 % JUICE RPW EID-B (i3.3, May 2016), EIDB-S00310 - boadband noise at sensor position
 JUICE_PWI_EMC.ff           = [1  10 10 220 220 1e3 1e3 1e4 1e4 1e5 1e5 16e5];
-JUICE_PWI_EMC.bw           = [1   1 10  10  10  10  30  30 300 300 3e3  3e3];
-JUICE_PWI_EMC.Efield_dBuVm = [25 5  18 -10 -10 -10 -5  -5  0   0   20  20];
+JUICE_PWI_EMC.bw           = [1   1 10  10  10  10  30  30 100 100 10e3  10e3];
+JUICE_PWI_EMC.Efield_dBuVm = [25 5  15 -10 -10 -10 -5  -5  0   0   20  20];
 JUICE_PWI_EMC.EEpower = 1e-12*10.^(0.2*JUICE_PWI_EMC.Efield_dBuVm)./JUICE_PWI_EMC.bw; % (V/m)^2/Hz
 loglog(JUICE_PWI_EMC.ff,JUICE_PWI_EMC.EEpower,'k')
 
