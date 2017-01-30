@@ -91,35 +91,38 @@ for mmsId = 1:4
   end
 
   B = mms.get_data('B_dmpa_srvy',Tint,mmsId);
-  if isempty(B), B = mms.get_data('B_dmpa_dfg_srvy_ql',Tint,mmsId); end
+  if isempty(B), B = mms.get_data('B_dmpa_dfg_srvy_l2pre',Tint,mmsId); 
+  irf.log('warning','Using L2pre DFG data'); end
+  if isempty(B), B = mms.get_data('B_dmpa_dfg_srvy_ql',Tint,mmsId); 
+  irf.log('warning','Using QL DFG data'); end
   if isempty(B), continue, end
   
   % Here we try different sources of FPI data
   Vifpi = mms.get_data('Vi_dbcs_fpi_fast_l2',Tint,mmsId);
   if isempty(Vifpi)
     % No L2, try L1b
-    Vifpi = mms.get_data('Vi_gse_fpi_fast_l1b',Tint,mmsId);
-    if ~isempty(Vifpi)
-      irf.log('warning','Using L1b FPI data');
-      if isempty(idxMSH), Nifpi = mms.get_data('Ni_fpi_fast_l1b',Tint,mmsId); end
-    else
+    %Vifpi = mms.get_data('Vi_gse_fpi_fast_l1b',Tint,mmsId);
+    %if ~isempty(Vifpi)
+    %  irf.log('warning','Using L1b FPI data');
+    %  if isempty(idxMSH), Nifpi = mms.get_data('Ni_fpi_fast_l1b',Tint,mmsId); end
+    %else
       % No L2 or L1b, try QL
-      Vifpi = mms.get_data('Vi_gse_fpi_ql',Tint,mmsId);
+      Vifpi = mms.get_data('Vi_dbcs_fpi_ql',Tint,mmsId);
       if ~isempty(Vifpi)
         irf.log('warning','Using QL FPI data');
         if isempty(idxMSH), Nifpi = mms.get_data('Ni_fpi_ql',Tint,mmsId); end
       else
         % No L2, L1b or QL. Last resort, try SITL
-        Vifpi = mms.get_data('Vi_gse_fpi_sitl',Tint,mmsId);
-        if ~isempty(Vifpi)
-          irf.log('warning','Using SITL FPI data');
-          if isempty(idxMSH), Nifpi = mms.get_data('Ni_fpi_sitl',Tint,mmsId); end
-        else
+        %Vifpi = mms.get_data('Vi_dbcs_fpi_sitl',Tint,mmsId);
+        %if ~isempty(Vifpi)
+          %irf.log('warning','Using SITL FPI data');
+          %if isempty(idxMSH), Nifpi = mms.get_data('Ni_fpi_sitl',Tint,mmsId); end
+       %else
           irf.log('warning', 'Did not find any FPI data');
           continue
-        end
-      end
-    end
+       end
+      %end
+    %end
   else
     irf.log('notice','Using L2 FPI data');
     if isempty(idxMSH), Nifpi = mms.get_data('Ni_fpi_fast_l2',Tint,mmsId); end
