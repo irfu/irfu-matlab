@@ -46,10 +46,10 @@ function f = irf_get_data_omni( tint, parameter , database)
 %   ff= irf_get_data_omni(tint,'f10.7');
 %   ff= irf_get_data_omni(tint,'b','omni_min');
 
-% http://omniweb.gsfc.nasa.gov/html/ow_data.html
+% https://omniweb.gsfc.nasa.gov/html/ow_data.html
 
 % data description of high res 1min,5min omni data set
-% http://omniweb.gsfc.nasa.gov/html/omni_min_data.html#4b
+% https://omniweb.gsfc.nasa.gov/html/omni_min_data.html#4b
 % %
 % %
 % Year                        I4 1995 ... 2006
@@ -139,7 +139,8 @@ if isa(tint,'GenericTimeArray') && length(tint)==2
 						tintTemp = tint.epochUnix;
 						tint = tintTemp(:)';
 end
-httpRequest = ['http://omniweb.gsfc.nasa.gov/cgi/nx1.cgi?activity=retrieve&spacecraft=' dataSource '&'];
+
+httpRequest = ['https://omniweb.gsfc.nasa.gov/cgi/nx1.cgi?activity=retrieve&spacecraft=' dataSource '&'];
 startDate   = irf_time(tint(1)        ,dateFormat);
 endDate     = irf_time(tint(2) + dtMin,dateFormat);
 
@@ -204,9 +205,28 @@ for jj=1:length(iStart)
 end
 
 %% Request data
-url=[httpRequest 'start_date=' startDate '&end_date=' endDate vars];
-disp(['url:' url]);
-[c,getDataSuccess]=urlread(url);
+if(verLessThan('matlab','R2014b'))
+  % Soon this will fail as all US Gov is moving to HTTPS only as per
+  % https://obamawhitehouse.archives.gov/blog/2015/06/08/https-everywhere-government
+  httpRequest = [httpRequest(1:4), httpRequest(6:end)]; % excl. "s" from https
+  url=[httpRequest 'start_date=' startDate '&end_date=' endDate vars];
+  disp(['url:' url]);
+  [c,getDataSuccess]=urlread(url);
+else
+  % Download data from HTTPS
+  url=[httpRequest 'start_date=' startDate '&end_date=' endDate vars];
+  disp(['url:' url]);
+  % Set root certificate pem file to empty disables verification, as of
+  % version R2016b Matlab does not include root certificate used by "Let's
+  % encrypt". Bug reported to Mathworks 2017/02/01T13 CET.
+  webOpt = weboptions('CertificateFilename','');
+  try
+    c = webread(url, webOpt);
+    getDataSuccess = true;
+  catch
+    getDataSuccess = false;
+  end
+end
 
 %% Analyze returned data
 if getDataSuccess, % success in downloading from internet
