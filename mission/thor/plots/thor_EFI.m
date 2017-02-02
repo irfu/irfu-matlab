@@ -542,9 +542,9 @@ EMCR.Efield = sqrt(EMCR.EEpower.*EMCR.bw);
 SDP_EMC = EMCR;
 semilogx(SDP_EMC.ff,10*log10(1e6*SDP_Scale*SDP_EMC.Efield),'b--')
 
-% JUICE RPW EID-B (i3.3, May 2016), EIDB-S00310 - boadband noise at sensor position
+% JUICE RPW EID-B (i3.5, Jan 2017), EIDB-S00310 - boadband noise at sensor position
 JUICE_PWI_EMC.ff           = [1  10 10 220 220 1e3 1e3 1e4 1e4 1e5 1e5 16e5];
-JUICE_PWI_EMC.Efield_dBuVm = [25 5  18 -10 -10 -10 -5  -5  0   0   20  20];
+JUICE_PWI_EMC.Efield_dBuVm = [25 5  15 -10 -10 -10 -5  -5  0   0   20  20];
 semilogx(JUICE_PWI_EMC.ff,JUICE_PWI_EMC.Efield_dBuVm,'k')
 
 % JUICE EID-A (i2r7, July 2016), EIDA-R003706 - radiated emissions for
@@ -590,16 +590,16 @@ end
 
 SDP_Scale = (50/5)^3;
 
-loglog(HFA_EMC.ff,HFA_EMC.EEpower,'m'), hold on
-loglog(SDP_EMC_OLD.ff,SDP_Scale^2*SDP_EMC_OLD.EEpower,'b')
-loglog(SDP_EMC.ff,SDP_Scale^2*SDP_EMC.EEpower,'b--')
+loglog(HFA_EMC.ff,sqrt(HFA_EMC.EEpower),'m'), hold on
+loglog(SDP_EMC_OLD.ff,sqrt(SDP_Scale^2*SDP_EMC_OLD.EEpower),'b')
+loglog(SDP_EMC.ff,sqrt(SDP_Scale^2*SDP_EMC.EEpower),'b--')
 
-% JUICE RPW EID-B (i3.3, May 2016), EIDB-S00310 - boadband noise at sensor position
+% JUICE RPW EID-B (i3.5, Jan 2017), EIDB-S00310 - boadband noise at sensor position
 JUICE_PWI_EMC.ff           = [1  10 10 220 220 1e3 1e3 1e4 1e4 1e5 1e5 16e5];
-JUICE_PWI_EMC.bw           = [1   1 10  10  10  10  30  30 300 300 3e3  3e3];
-JUICE_PWI_EMC.Efield_dBuVm = [25 5  18 -10 -10 -10 -5  -5  0   0   20  20];
-JUICE_PWI_EMC.EEpower = 1e-12*10.^(0.2*JUICE_PWI_EMC.Efield_dBuVm)./JUICE_PWI_EMC.bw; % (V/m)^2/Hz
-loglog(JUICE_PWI_EMC.ff,JUICE_PWI_EMC.EEpower,'k')
+JUICE_PWI_EMC.bw           = [1   1 10  10  10  10  30  30 100 100 10e3  10e3];
+JUICE_PWI_EMC.Efield_dBuVm = [25 5  15 -10 -10 -10 -5  -5  0   0   20  20];
+JUICE_PWI_EMC.EEpower = 1e-12*10.^(2*JUICE_PWI_EMC.Efield_dBuVm/20)./JUICE_PWI_EMC.bw; % (V/m)^2/Hz
+loglog(JUICE_PWI_EMC.ff,sqrt(JUICE_PWI_EMC.EEpower),'k')
 
 % JUICE EID-A (i2r7, July 2016), EIDA-R003706 - radiated emissions for
 % space-exposed and transition equipment at 1m
@@ -613,10 +613,10 @@ loglog(JUICE_PWI_EMC.ff,JUICE_PWI_EMC.EEpower,'k')
 SOLO_Scale = 10*log10((5/1)^3); % scale to HFA location
 SOLO_EMC.ff           = [1    10  100  1e3 1e4 1e5  1e6];
 SOLO_EMC.Efield_dBnVm = [15.8 3.8 -8.2 1.8 1.8 -2.9 27.6];
-SOLO_EMC.EEpower = 1e-12*10.^(0.2*(SOLO_EMC.Efield_dBnVm-30+SOLO_Scale)); % (V/m)^2/Hz
-loglog(SOLO_EMC.ff,SOLO_EMC.EEpower,'r') 
+SOLO_EMC.EEpower = 1e-12*10.^(2*(SOLO_EMC.Efield_dBnVm-30+SOLO_Scale)/20); % (V/m)^2/Hz
+loglog(SOLO_EMC.ff,sqrt(SOLO_EMC.EEpower),'r') 
 
-ylabel('PSD [ (V/m)^2/Hz ]'), xlabel('frequency [Hz]')
+ylabel('noise [ (V/m)/Hz^{1/2} ]'), xlabel('frequency [Hz]')
 legend('HFA','SDP','SDP goal','JUICE RPW EID-B','SOLO EID-A')
 
 set(gca,'XLim',[.1 2e5],'YLim',[-20 38])

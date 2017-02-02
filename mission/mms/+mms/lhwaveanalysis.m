@@ -169,6 +169,9 @@ vbest = vphvec(corrvpos);
 
 phiEB = TSeries(phiBs.time,[phiEbest.data phiBs.data]);
 
+phiEmax = max(abs(phiEB.data(:,1)));
+phiBmax = max(abs(phiEB.data(:,2)));
+
 if plotfigure
 fn=figure;
 set(fn,'Position',[10 10 600 600])
@@ -198,6 +201,8 @@ c_eval('irf_legend(h(1),''MMS ?'',[0.01 0.98],''color'',''k'',''fontsize'',14)',
 irf_legend(h(1),freqlab,[0.95 0.2],'color','k','fontsize',14)
 irf_legend(h(1),vlab,[0.95 0.13],'color','k','fontsize',14)
 irf_legend(h(1),dirlab,[0.95 0.06],'color','k','fontsize',14)
+irf_legend(h(1),['|\phi_E|_{max} = ' num2str(round(phiEmax,1))],[0.90 0.98],'color','k','fontsize',14)
+irf_legend(h(1),['|\phi_B|_{max} = ' num2str(round(phiBmax,1))],[0.90 0.90],'color','k','fontsize',14)
 irf_zoom(h(1),'x',tints);
 
 plot(h(2),thetas,corrs);
