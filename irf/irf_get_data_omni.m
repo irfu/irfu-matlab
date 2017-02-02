@@ -205,7 +205,7 @@ for jj=1:length(iStart)
 end
 
 %% Request data
-if(verLessThan('matlab','R2014b'))
+if(verLessThan('matlab','8.4')) % Version less than R2014b
   % Soon this will fail as all US Gov is moving to HTTPS only as per
   % https://obamawhitehouse.archives.gov/blog/2015/06/08/https-everywhere-government
   httpRequest = [httpRequest(1:4), httpRequest(6:end)]; % excl. "s" from https
@@ -218,7 +218,9 @@ else
   disp(['url:' url]);
   % Set root certificate pem file to empty disables verification, as of
   % version R2016b Matlab does not include root certificate used by "Let's
-  % encrypt". Bug reported to Mathworks 2017/02/01T13 CET.
+  % encrypt".
+  % Bug reported to Mathworks 2017/02/01T13 CET, not fixed in released "R2017a Pre",
+  % but now appears fixed in an internal Mathworks build of "R2017a Pre".
   webOpt = weboptions('CertificateFilename','');
   try
     c = webread(url, webOpt);

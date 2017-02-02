@@ -322,7 +322,7 @@ switch lower(action)
       % Issue warning if running too old Matlab. This should be incremented
       % when irfu-matlab relies on newer Matlab functions not found in older
       % versions of Matlab.
-      if(verLessThan('matlab','R2013a'))
+      if(verLessThan('matlab','8.1'))
         warning('IRFU-Matlab relies on code introduced in Matlab R2013a, please look into upgrading your Matlab installation or contacting IRFU for help.');
       else
         disp('Matlab version is OK');
