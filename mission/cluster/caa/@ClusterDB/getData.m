@@ -803,7 +803,7 @@ elseif strcmp(quantity,'a')
 	save_file = './mA.mat';
 	pha = [];
   irf_log('dsrc','Trying to to read phase from CP_AUX_SPIN_TIME...');
-  currentDir = pwd;	tempDir = sprintf('CAA_Download_%d',fix(rand*1e6));	
+  currentDir = pwd;	tempDir = sprintf('CAA_Download_%d',fix(rand*1e6));
   mkdir(tempDir); cd(tempDir);
   tint = start_time +[-5 dt+10];
   datasetName = sprintf('C%d_CP_AUX_SPIN_TIME',cl_id);
@@ -817,7 +817,7 @@ elseif strcmp(quantity,'a')
     cefFile = ['CAA/' datasetName '/' d.name];
     cef_init(); cef_read(cefFile);
     c1 = onCleanup(@() cef_close());
-    c2 = onCleanup(@() rmdir(tempDir,'s'));
+    c2 = onCleanup(@() rmdir([currentDir '/' tempDir],'s'));
     tt = cef_var('time_tags'); tt = irf_time( cef_date(tt'),'datenum>epoch');
     spinPeriod = cef_var('spin_period'); spinPeriod = double(spinPeriod');
     % find errors
