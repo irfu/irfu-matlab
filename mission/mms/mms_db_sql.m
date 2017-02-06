@@ -746,7 +746,7 @@ keyboard; % THIS FUNCTION IS NOT FULLY TESTED, MAKE SURE TO MAKE A BACKUP OF THE
       else
         % ANCILLARY file
         irf.log('debug', ['Reading ancillary file: ', cdfFileName]);
-        info = regexp(cdfFileName, '(\.\/ancillary\/mm.*)MM.*_(?<dataset>\w{4,6})_(20\d{5}_20\d{5})\.(V\d{2})', 'names');
+        info = regexp(cdfFileName, '(\.\/ancillary\/mm.*)MM.*_(?<dataset>\w{4,6})_(20\d{5}_20\d{5})\w{0,4}\.(V\d{2})', 'names');
         switch lower(info.dataset)
           case 'defatt'
             out.epochVarName = 'Time';
