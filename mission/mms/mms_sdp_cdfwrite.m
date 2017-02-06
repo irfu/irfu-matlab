@@ -1073,7 +1073,7 @@ cd(oldDir);
     GATTRIB.PI_name = {'J.Burch, R.Ergun, P.Lindqvist.'};
     GATTRIB.Project = {'STP>Solar-Terrestrial Physics'};
     GATTRIB.Source_name = {sprintf('MMS%i>MMS Satellite Number %i',scId,scId)}; % Or possibly 'MMS>MMS Constellation'.
-    GATTRIB.TEXT = {'http://mms.gsfc.nasa.gov/'; ...
+    GATTRIB.TEXT = {'https://mms.gsfc.nasa.gov/'; ...
       ['The full name of PI affiliations: SWRI - Southwest Research Institute. ',...
       'LASP - Laboratory for Atmospheric and Space Physics. ',...
       'KTH - Kungliga Tekniska Hogskolan (Swedish Royal Institute of Technology). ']};  % FIXME This attribute is an SPDF standard global attribute, which is a text description of the
@@ -1084,7 +1084,7 @@ cd(oldDir);
       %Typically, this attribute is about a paragraph in length and is not shown on CDAWeb.
       % Note: Matlab & spdcdfwrite to cdf files result in issues with ASCII
       % for the charachter "??", therefor replace ?? with o.
-    GATTRIB.HTTP_LINK = {'http://mms.gsfc.nasa.gov/'; 'http://mms.space.swri.edu/'}; % FIXME should point to data
+    GATTRIB.HTTP_LINK = {'https://mms.gsfc.nasa.gov/'; 'http://mms.space.swri.edu/'}; % FIXME should point to data
     GATTRIB.LINK_TEXT = {'Magnetospheric Multiscale (MMS) mission home page'; 'SMART package home page'}; % FIXME as well
     GATTRIB.LINK_TITLE = {'At NASA GSFC'; 'At SWRI'}; % FIXME as well
     GATTRIB.MODS = MMS_CONST.Version.MODS; % Text describing major version changes, ie. "vX" changes.
