@@ -13,7 +13,7 @@ function ok=check_if_using_nasa_cdf
 % 
 % NASA cdf patch is located under 'irfu-matlab/contrib/nasa_cdf_patch'
 % The NASA cdf patch web page:
-% http://cdf.gsfc.nasa.gov/html/matlab_cdf_patch.html
+% https://cdf.gsfc.nasa.gov/html/matlab_cdf_patch.html
 
 irfDir = fileparts(which('irf.m'));
 irfNasaCdfDir = fileparts(which('spdftt2000todatenum.m'));

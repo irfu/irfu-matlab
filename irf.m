@@ -11,7 +11,7 @@ function [out,out1]=irf(varargin)
 % [out] = IRF('mice') check if spice/mice routines are installed properly
 % and if necessary add to the path. run irf('mice_help') if you want to see
 % more help on mice kernels.
-% more SPICE info: http://naif.jpl.nasa.gov/pub/naif/toolkit_docs/MATLAB/
+% more SPICE info: https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/MATLAB/
 %
 % [out] = IRF('irbem')
 %
