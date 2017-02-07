@@ -18,6 +18,19 @@ EFPI = E34; flagOldFile = false;
 
 maneuvers = mms_maneuvers(Tint); % Locate any maneuvers
 
+% Check if Tint covers midnight and the stop time is more than 10 minutes
+% after midnight and within the last 40 days. If this is the case then
+% loading recent L2 or L2Pre data products may result in data only from the
+% start of Tint to midnight if the next day(-s) L2 or L2Pre products has
+% not yet been produced.
+if( ~strcmp(Tint.start.utc('dd'), Tint.stop.utc('dd')) && ...
+    EpochTT(Tint.stop.utc('yyyy-mm-ddT00:10:00.000000000Z')) < Tint.stop && ...
+    Tint.stop.ttns > irf_time(now,'datenum>ttns') - int64(40*86400*10^9) )
+  midnightROI = true;
+else
+  midnightROI = false;
+end
+
 for mmsId = 1:4
   mmsIdS = sprintf('c%d',mmsId);
   fPre = sprintf('mms%d_edp_fast_l2a_dce2d',mmsId);
@@ -91,15 +104,28 @@ for mmsId = 1:4
   end
 
   B = mms.get_data('B_dmpa_srvy',Tint,mmsId);
-  if isempty(B), B = mms.get_data('B_dmpa_dfg_srvy_l2pre',Tint,mmsId); 
-  irf.log('warning','Using L2pre DFG data'); end
-  if isempty(B), B = mms.get_data('B_dmpa_dfg_srvy_ql',Tint,mmsId); 
-  irf.log('warning','Using QL DFG data'); end
-  if isempty(B), continue, end
+  if isempty(B) || (midnightROI && B.time(end) < EpochTT(Tint.stop.utc('yyyy-mm-ddT00:01:00.000000000Z')))
+    % If higher level data was not found, or ROI covers midnight +10min and
+    % resulting data did not at least cover midnight +1min it is likely
+    % that the higher level has not yet been produced. Try a lower level
+    % product.
+    B = mms.get_data('B_dmpa_dfg_srvy_l2pre',Tint,mmsId);
+    if isempty(B) || (midnightROI && B.time(end) < EpochTT(Tint.stop.utc('yyyy-mm-ddT00:01:00.000000000Z')))
+      B = mms.get_data('B_dmpa_dfg_srvy_ql',Tint,mmsId);
+      if isempty(B)
+        irf.log('warning','Failed to load any B-field data');
+        continue
+      else
+        irf.log('warning','Using QL DFG data');
+      end
+    else
+      irf.log('warning','Using L2pre DFG data');
+    end
+  end
   
   % Here we try different sources of FPI data
   Vifpi = mms.get_data('Vi_dbcs_fpi_fast_l2',Tint,mmsId);
-  if isempty(Vifpi)
+  if isempty(Vifpi) || (midnightROI && Vifpi.time(end) < EpochTT(Tint.stop.utc('yyyy-mm-ddT00:01:00.000000000Z')))
     % No L2, try L1b
     %Vifpi = mms.get_data('Vi_gse_fpi_fast_l1b',Tint,mmsId);
     %if ~isempty(Vifpi)
