@@ -6,7 +6,7 @@ function write_CDF_dataobj(filePath, dataobj_GlobalAttributes, dataobj_data, dat
 % to a CDF file. Originally based on write_cdf.m/write_cdf_spdfcdfread.m.
 %
 %
-% IMPORTANT NOTE: As of 2016-10-20: This function is intended to replace write_CDF_spdfcdfread.
+% IMPORTANT NOTE: This function replaces "write_CDF_spdfcdfread.m".
 %
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
 % First created 2016-07-12 (write_cdf.m/write_cdf_spdfcdfread.m), 2016-10-20 (write_cdf_dataobj.m)
@@ -79,7 +79,7 @@ function write_CDF_dataobj(filePath, dataobj_GlobalAttributes, dataobj_data, dat
 % PROPOSAL: Rework into function that uses write_CDF_spdfcdfread (wrapper)?!! 
 %    NOTE: Not necessarily difficult since dataobj seems to contain structures/arrays from spdfcdfread/-info.
 %    PRO: Would reduce amount of code.
-%    CON: write_CDF_spdfread needs knowledge of strange behaviour in spdfcdfread to mimic it (int the interface), which
+%    CON: write_CDF_spdfread needs knowledge of strange behaviour in spdfcdfread to mimic it (in the interface), which
 %         this function then needs to have knowledge of to use write_CDF_spdfread.
 %    PROPOSAL: Abolish write_CDF_spdfcdfread, or at least stop updating it.
 %
@@ -94,7 +94,7 @@ function write_CDF_dataobj(filePath, dataobj_GlobalAttributes, dataobj_data, dat
 % PROPOSAL: Accept a smaller subset of dataobj data, with less/no redundant data.
 
 
-
+    % Variable attributes that should reasonably have the same type as the zVariable itself.
     VARIABLE_ATTRIBUTES_OF_VARIABLE_TYPE = {'VALIDMIN', 'VALIDMAX', 'SCALEMIN', 'SCALEMAX', 'FILLVAL'};
 
 
@@ -234,26 +234,25 @@ function write_CDF_dataobj(filePath, dataobj_GlobalAttributes, dataobj_data, dat
         %
         % BUG: Does not seem to work on SCALEMIN/-MAX specifically despite identical treatment, for unknown reason.
         %===========================================================================================================
-        for i_van = 1:length(VARIABLE_ATTRIBUTES_OF_VARIABLE_TYPE)         % van = variable attribute name
-            varAttrName = VARIABLE_ATTRIBUTES_OF_VARIABLE_TYPE{i_van};
+        for iVarAttrOfVarType = 1:length(VARIABLE_ATTRIBUTES_OF_VARIABLE_TYPE)         % van = variable attribute name
+            varAttrName = VARIABLE_ATTRIBUTES_OF_VARIABLE_TYPE{iVarAttrOfVarType};
             if ~isfield(dataobj_VariableAttributes, varAttrName)
                 continue
             end
             
             % IMPLEMENTATION NOTE: Can NOT assume that every CDF variable is represented among the cell arrays in
-            % dataobj_VariableAttributes.(...).
+            %                      dataobj_VariableAttributes.(...).
             % Example: EM2_CAL_BIAS_SWEEP_LFR_CONF1_1M_2016-04-15_Run1__e1d0a9a__CNES/ROC-SGSE_L2R_RPW-LFR-SURV-CWF_e1d0a9a_CNE_V01.cdf
-            varAttrField = dataobj_VariableAttributes.(varAttrName);
-            i_vav = find(strcmp(varAttrField(:,1), zVarName));
-            i_van = i_vav;
-            if length(i_vav) == 0
+            doVarAttrField = dataobj_VariableAttributes.(varAttrName);   % do = dataobj. This variable attribute (e.g. VALIDMIN) for alla zVariables (where present). Nx2 array.
+            iAttrZVar = find(strcmp(doVarAttrField(:,1), zVarName));
+            if isempty(iAttrZVar)
                 % CASE: The current zVariable does not have this attribute (varAttrName).
                 continue
-            elseif length(i_vav) > 1
+            elseif length(iAttrZVar) > 1
                 error('write_CDF_dataobj:Assertion:OperationNotImplemented', ...
                     'Can not handle multiple variable name matches in dataobj_VariableAttributes.%s.', varAttrName)
             end
-            varAttrValue = varAttrField{i_vav, 2};
+            varAttrValue = doVarAttrField{iAttrZVar, 2};
             if strcmp(dataobjStatedDataType, 'tt2000') && ischar(varAttrValue)
                 %varAttrName
                 %varAttrValue
@@ -268,8 +267,10 @@ function write_CDF_dataobj(filePath, dataobj_GlobalAttributes, dataobj_data, dat
                     'Found VariableAttribute %s for CDF variable %s whose data type did not match the declared one.', ...
                     varAttrName, zVarName)
             end
-            varAttrField{i_van, 2} = varAttrValue;
-            dataobj_VariableAttributes.(varAttrName) = varAttrField;
+            
+            % Modify dataobj_VariableAttributes correspondingly.
+            doVarAttrField{iAttrZVar, 2} = varAttrValue;
+            dataobj_VariableAttributes.(varAttrName) = doVarAttrField;
         end
 
         VARIABLE_LIST(end+[1,2]) = {zVarName, zVarData             };        

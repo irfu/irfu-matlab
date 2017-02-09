@@ -139,15 +139,10 @@ for iOutputCdf = 1:length(SwModeInfo.outputs)
 
 
 
-    % Write dataset CDF file using NEW CODE.
+    % Write dataset CDF file.
     [outputFilename] = write_dataset_CDF ( ...
         ProcessData, globalAttributesSubset, outputDir, @get_output_filename, masterCdfPath, OutputInfo.DATASET_ID );
     
-    % Write dataset CDF file using OLD CODE.
-    %[~, baseName, ext] = fileparts(outputFilename);
-    %outputFilePathOld = fullfile(outputDir, [baseName, '_old', ext]);
-    %write_dataset_CDF_OLD( outputFilePathOld, masterCdfPath, ProcessData )
-       
     % Collect list (struct) of output files.
     JsonOutputCdfFilenameListStruct.( OutputInfo.SWD_OUTPUT_FILE_IDENTIFIER ) = outputFilename;
 end
@@ -475,85 +470,13 @@ end
 
 
 
-% function write_dataset_CDF_OLD(datasetFilePath, masterCdfPath, ProcessData)
-% % Function that writes dataset CDF file using old method.
-% %
-% % Should be phased out (removed) eventually.
-% 
-% 
-% 
-% % Read master CDF file via spdfcdfread.
-% MasterSpdf = [];
-% [MasterSpdf.data, MasterSpdf.info] = spdfcdfread(masterCdfPath, 'Structure', 1, 'KeepEpochAsIs', 1);
-% 
-% %================================================================
-% % Iterate over all OUTPUT process data field names (~zVariables) : Modify MasterSpdf.data, MasterSpdf.info
-% %================================================================
-% pdFieldNameList = fieldnames(ProcessData);
-% for iPdFieldName = 1:length(pdFieldNameList)
-%     zVariableName = pdFieldNameList{iPdFieldName};
-%     irf.log('n', sprintf('Converting process data struct field "%s" into CDF zVariable.', zVariableName))
-%     
-%     %===========================================
-%     % Add process field to CDF as a zVariable
-%     % (assuming there is one in the master CDF)
-%     %===========================================
-%     % NOTE: THIS CODE IS STILL INCOMPLETE.
-%     % 1) The data supplied to write_CDF/spdfcdfwrite is not complete.
-%     % 1a) The data from the master CDF does not contain attributes for zero-record zVariables in MasterSpdf.data, but it
-%     % does in MasterSpdf.info and that seems to be enough for write_CDF/spdfcdfwrite but it is not obvious that it should be so.
-%     % 1b) Not all zVariables are explicitly set (QUALITY_FLAG, QUALITY_BITMASK, DELTA_PLUS_MINUS).
-%     % 2) There should be a check/assertion that all zVariables expected to be set are also set.
-%     % 3) Using an index from MasterSpdf.info.Variables to set a variable in MasterSpdf.data(iZVariable).Data.
-%     % It is not obvious that this is correct although it seems to work.
-%     
-%     masterZVariableNameList = MasterSpdf.info.Variables(:,1);
-%     iZVariable = find(strcmp(zVariableName, masterZVariableNameList));
-%     if isempty(iZVariable)
-%         error('BICAS:execute_sw_mode:Assertion:DatasetFormat', 'Can not find zVariable "%s" in master file.', zVariableName)
-%     elseif ~isempty(MasterSpdf.data(iZVariable).Data) || ~isempty(MasterSpdf.data(iZVariable).VariableName)
-%         error('BICAS:execute_sw_mode:SWModeProcessing', ...
-%             'Trying to overwrite zero-record CDF zVariable "%s" copied from master CDF file. Expected empty zVariable in master CDF file.', ...
-%             zVariableName)
-%     end
-%     matlabClass = bicas.utils.convert_CDF_type_to_MATLAB_class(MasterSpdf.info.Variables(iZVariable,4), 'Permit MATLAB classes');
-%     zVariableData = ProcessData.(zVariableName);
-%     % Compensating for odd behaviour in spdfcdfread and hence in write_CDF.
-%     if ~ischar(zVariableData) && ndims(zVariableData) == 3
-%         zVariableData = permute(zVariableData, [2,3,1]);
-%     end
-%     MasterSpdf.data(iZVariable).Data = cast(zVariableData, matlabClass);
-%     MasterSpdf.data(iZVariable).VariableName = zVariableName;
-% end
-% % ASSERTION: MasterSpdf.data, MasterSpdf.info
-% for i = 1:length(MasterSpdf.data)
-%     if isempty(MasterSpdf.data(i).Data)
-%         % Ugly error message. Uses two zVariable names since not sure if either is going to be available or correct.
-%         zVariableName1 = MasterSpdf.data(i).VariableName;
-%         zVariableName2 = MasterSpdf.info.Variables{i,1};
-%         error('BICAS:execute_sw_mode:SWModeProcessing', ...
-%             'Master CDF contains zVariable which has not been set (i.e. it has zero records). "%s", "%s".', ...
-%             zVariableName1, zVariableName2)
-%     end
-% end
-% % Write to CDF file using OLD METHOD: write_CDF_spdfcdfread
-% bicas.utils.write_CDF_spdfcdfread(datasetFilePath, MasterSpdf.data, MasterSpdf.info)    % NOTE: No "fill_empty" option.
-% 
-% end
-
-
-
-
-
-
-
-function filename = get_output_filename(datasetId, testId, provider, data_version)
+function filename = get_output_filename(datasetId, testId, provider, dataVersion)
 % Function that decides the filename to use for any given output dataset CDF file
 %
 % NOTE: ROC-TST-GSE-NTT-00017, "Data format and metadata definition for the ROC-SGSE data", iss2,rev1, Section 3.4
 % specifies a file naming convention. Note: The version number should be the "data version"!
 %
-% data_version : two-digit string
+% dataVersion : two-digit string
 
 % PROPOSAL: Include date and time?
 %
@@ -566,7 +489,7 @@ function filename = get_output_filename(datasetId, testId, provider, data_versio
 %filename = [datasetId, '_V', skeletonVersionStr, '_', current_time, '.cdf'];
 %filename = [datasetId, '_V', skeletonVersionStr, '___OUTPUT.cdf'];
 
-filename = [logical_file_id(datasetId, testId, provider, data_version), '.cdf'];
+filename = [logical_file_id(datasetId, testId, provider, dataVersion), '.cdf'];
 end
 
 
@@ -582,7 +505,7 @@ global CONSTANTS
 
 CONSTANTS.assert_dataset_ID(datasetId)
 if ~ischar(dataVersion ) || length(dataVersion)~=2
-    error('BICAS:execute_sw_mode:Assertion:IllegalArgument', 'Illegal data_version')
+    error('BICAS:execute_sw_mode:Assertion:IllegalArgument', 'Illegal dataVersion')
 end
 
 providerParts = strsplit(provider, '>');
