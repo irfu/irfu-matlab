@@ -350,7 +350,9 @@ switch Vr.inst
       case {'Ni','Ne'}
         switch Vr.lev
           case {'l2','l2pre'}
-            pref = ['mms' mmsIdS '_' sensor '_numberdensity_dbcs_' Vr.tmmode];
+           % pref = ['mms' mmsIdS '_' sensor '_numberdensity_dbcs_' Vr.tmmode];
+            % V3.1 FPI
+            pref = ['mms' mmsIdS '_' sensor '_numberdensity_' Vr.tmmode];
           case 'l1b'
             pref = ['mms' mmsIdS '_' sensor '_numberdensity'];
           case 'ql'
@@ -401,6 +403,9 @@ switch Vr.inst
           case {'l2','l2pre'}
             suf = ['_' Vr.cs '_' Vr.tmmode];
             compS = struct('x','x','y','y','z','z');
+            % try to load V3
+            res = mms.db_get_ts(datasetName,[pref 'v' suf],Tint);
+            if ~isempty(res), return, end
           case 'l1b'
           case 'ql'
           case 'sitl'
