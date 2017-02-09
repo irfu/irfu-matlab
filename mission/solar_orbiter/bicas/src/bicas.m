@@ -99,8 +99,8 @@ try
     %=============================
     % Initialize global constants
     %=============================
-    % NOTE: Does not initialize CONSTANTS until the MATLAB version has been checked for. The init. code could otherwise
-    % fail.
+    % NOTE: Does not initialize CONSTANTS until the MATLAB version has been checked for. The initialization code could
+    % otherwise fail.
     CONSTANTS = bicas.constants(bicasRootPath);
     irf.log(CONSTANTS.C.LOGGING.IRF_LOG_LEVEL);
     
@@ -116,45 +116,45 @@ try
 
 
 
-    %================================================================
+    %===================================================================
     % 1) Parse arguments, and
-    % 2) select which of BICAS' different modes of operation.
-    %================================================================
-    cliArgumentsArray = varargin;
+    % 2) select which of BICAS' different modes of operation to execute
+    %===================================================================
+    cliArgumentsList = varargin;
     
     %==============================================================    
     % Start configuring requirements on (remaining) CLI arguments.
     %==============================================================    
     FlagsConfigMap = containers.Map;
-    FlagsConfigMap('log_path')         = struct('cliString', '--log',    'isRequired', 0, 'expectsValue', 1);   % Flag+value to permit but ignore since handled by bash launcher script.
-    FlagsConfigMap('config_file_path') = struct('cliString', '--config', 'isRequired', 0, 'expectsValue', 1);   % Flag+calue to permit but ignore since handled by bash launcher script.
+    FlagsConfigMap('log_path')         = struct('cliFlagString', '--log',    'occurranceRequirement', '0-1', 'nValues', 1);   % Flag+value to permit but ignore since handled by bash launcher script.
+    FlagsConfigMap('config_file_path') = struct('cliFlagString', '--config', 'occurranceRequirement', '0-1', 'nValues', 1);   % Flag+value to permit but ignore since handled by bash launcher script.
     
     DataManager = bicas.data_manager();
 
     % Select mode of operations.
-    if (length(cliArgumentsArray) < 1)
+    if (length(cliArgumentsList) < 1)
 
         error('BICAS:CLISyntax', 'Not enough arguments found.')
 
-    elseif (strcmp(cliArgumentsArray{1}, '--version'))
+    elseif (strcmp(cliArgumentsList{1}, '--version'))
         %============================
         % CASE: Print version
         %============================
-        [~] = bicas.utils.parse_CLI_flags(cliArgumentsArray(2:end), FlagsConfigMap);  % Check CLI syntax but ignore results.
+        [~] = bicas.utils.parse_CLI_flags(cliArgumentsList(2:end), FlagsConfigMap);  % Check CLI syntax but ignore results.
         print_version(DataManager)
 
-    elseif (strcmp(cliArgumentsArray{1}, '--identification'))
+    elseif (strcmp(cliArgumentsList{1}, '--identification'))
         %============================
         % CASE: Print identification
         %============================
-        [~] = bicas.utils.parse_CLI_flags(cliArgumentsArray(2:end), FlagsConfigMap);  % Check CLI syntax but ignore results.
+        [~] = bicas.utils.parse_CLI_flags(cliArgumentsList(2:end), FlagsConfigMap);  % Check CLI syntax but ignore results.
         print_identification(DataManager)
 
-    elseif (strcmp(cliArgumentsArray{1}, '--help'))
+    elseif (strcmp(cliArgumentsList{1}, '--help'))
         %============================
         % CASE: Print help
         %============================
-        [~] = bicas.utils.parse_CLI_flags(cliArgumentsArray(2:end), FlagsConfigMap);  % Check CLI syntax but ignore results.
+        [~] = bicas.utils.parse_CLI_flags(cliArgumentsList(2:end), FlagsConfigMap);  % Check CLI syntax but ignore results.
         print_help(ERROR_CODES, DataManager)
 
     else
@@ -162,21 +162,23 @@ try
         % CASE: Should be a S/W mode (error otherwise)
         %==============================================
         %try
-            ExtendedSwModeInfo = DataManager.get_extended_sw_mode_info(cliArgumentsArray{1});
+            ExtendedSwModeInfo = DataManager.get_extended_sw_mode_info(cliArgumentsList{1});
         %catch exception
             % NOTE: The message is slightly inaccurate since it assumes that the first argument is a S/W mode.
             % Argument "--version" etc. would have worked too.
-            %error('BICAS:CLISyntax', 'Can not interpret argument "%s" as a S/W mode.', cliArgumentsArray{1});
+            %error('BICAS:CLISyntax', 'Can not interpret argument "%s" as a S/W mode.', cliArgumentsList{1});
         %end
 
         %=======================================================================================
         % Configure requirements on (remaining) CLI arguments, partly depending on the S/W mode
         %
-        % NOTE: The flags are identified by strings (container.Map keys) which are a combination of the namespaces for
+        % NOTE: The flags are identified by strings (container.Map keys) which are a in reality a combination of the
+        % namespaces for
         % 1) identifiers for misc. flags e.g. "output_dir", "log_path".
         % 2) dataset IDs!
+        % This is not really appropriate.
         %=======================================================================================
-        FlagsConfigMap('output_dir') = struct('cliString', '--output', 'isRequired', 1, 'expectsValue', 1);
+        FlagsConfigMap('output_dir') = struct('cliFlagString', '--output', 'occurranceRequirement', '1', 'nValues', 1);
         inputsInfoList = ExtendedSwModeInfo.inputs;      % C = Constants structure.
         inputPdidsList = {};                  % List of keys used for input files.
         for iInput = 1:length(inputsInfoList)
@@ -184,9 +186,9 @@ try
             
             % Configure one flag+value pair
             FlagConfig = [];
-            FlagConfig.cliString    = ['--', inputsInfoList{iInput}.CLI_PARAMETER];
-            FlagConfig.isRequired   = 1;
-            FlagConfig.expectsValue = 1;
+            FlagConfig.cliFlagString         = ['--', inputsInfoList{iInput}.CLI_PARAMETER];
+            FlagConfig.occurranceRequirement = '1';
+            FlagConfig.nValues               = 1;
             FlagsConfigMap(pdid) = FlagConfig;
             
             inputPdidsList{end+1} = pdid;
@@ -195,13 +197,18 @@ try
         %=================================
         % Parse (remaining) CLI arguments
         %=================================
-        ParsedCliArgumentsMap = bicas.utils.parse_CLI_flags(cliArgumentsArray(2:end), FlagsConfigMap);
+        FlagValuesMap = bicas.utils.parse_CLI_flags(cliArgumentsList(2:end), FlagsConfigMap);
         
+        % Extract the input files (datasets) from CLI arguments.
+        InputFilesMap = containers.Map;
+        for iPdid = 1:length(inputPdidsList)
+            valuesListsLists = FlagValuesMap(inputPdidsList{iPdid});
+            InputFilesMap(inputPdidsList{iPdid}) = valuesListsLists{1}{1};   % Extract subset of parsed arguments.
+        end
         
-        
-        InputFilesMap = containers.Map(inputPdidsList, ParsedCliArgumentsMap.values(inputPdidsList));   % Extract subset of parsed arguments.
-        
-        outputDir = bicas.utils.get_abs_path(ParsedCliArgumentsMap('output_dir'));
+        % Extract the output directory from CLI arguments.
+        valuesListsLists = FlagValuesMap('output_dir')
+        outputDir = bicas.utils.get_abs_path(valuesListsLists{1}{1});
         
         
 
@@ -297,7 +304,7 @@ function print_version(DataManager)
 
 % IMPLEMENTATION NOTE: Uses the software version in the S/W descriptor rather than the in the BICAS
 % constants since the RCS ICD specifies that it should be that specific version.
-% This in principle inefficient but precise.
+% This is in principle inefficient but "precise".
 
 swd = bicas.get_sw_descriptor(DataManager);
 bicas.stdout_printf('Version %s\n', swd.release.version)
