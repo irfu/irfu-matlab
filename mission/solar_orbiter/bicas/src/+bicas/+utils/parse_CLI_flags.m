@@ -52,7 +52,7 @@ function ParsedCliArgumentsMap = parse_CLI_flags(cliArgumentsArray, FlagsConfigM
 % QUESTION: The function permits flags without value. Is this functionality really needed?
 % PROPOSAL: Return containers.Map with values which are structures.
 %    s.value
-%    s.is_set   % True implies "value" if the corresponding flag has a value.
+%    s.isSet   % True implies "value" if the corresponding flag has a value.
 
 
 
@@ -142,8 +142,8 @@ end   % while
 % Check that all required flags were set.
 for skey = FlagsConfigMap.keys
     flag = FlagsConfigMap(skey{1});
-    flag_result = ParsedCliArgumentsMap(skey{1});
-    if flag.isRequired && (isnumeric(flag_result) && (flag_result == 0))
+    flagResult = ParsedCliArgumentsMap(skey{1});
+    if flag.isRequired && (isnumeric(flagResult) && (flagResult == 0))
         % NOT: Not assertion since it is meant as a error message to be displayed for users.
         error('parse_CLI_flags:CLISyntax', 'Could not find required command-line flag "%s".', flag.cliString)
     end

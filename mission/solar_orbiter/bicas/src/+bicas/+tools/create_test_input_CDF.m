@@ -19,7 +19,7 @@ function create_test_input_CDF(input_file_path, output_file_path)
 %
 % PROPOSAL: Set to pad values?
 % PROPOSAL: Take dataset version into account.
-%
+% PROPOSAL: Remove from BICAS/irfu-matlab.
 %
 % QUESTION: How handle files without DATASET_ID? 1) How determine the DATASET_ID. Set the DATASET_ID in the output
 % files?

@@ -31,9 +31,9 @@ end
 
 
 % NOTE: Removes the last character (line feed) since "disp" implicitly adds a line break at the end.
-new_str = [CONSTANTS.C.STDOUT_PREFIX, strrep(str(1:end-1), LINE_FEED, [LINE_FEED, CONSTANTS.C.STDOUT_PREFIX])];
+newStr = [CONSTANTS.C.STDOUT_PREFIX, strrep(str(1:end-1), LINE_FEED, [LINE_FEED, CONSTANTS.C.STDOUT_PREFIX])];
 
-disp(new_str)
+disp(newStr)
 
 
 

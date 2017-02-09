@@ -175,6 +175,9 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
 %   PROPOSAL: Add field (sub-struct) "format_constants" in list of EIn PDIDs in constants?!!
 %       NOTE: Already has version string in list of EIn PDIDs.
 %--
+% PROPOSAL: Comment section for intermediate PDVs.
+% PROPOSAL: Make processing functions private. (possible?)
+%
 % NOTE: Both BIAS HK and LFR SURV CWF contain MUX data (only LFR has one timestamp per snapshot). True also for other input datasets?
 %#######################################################################################################################
 
@@ -184,8 +187,8 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
         ProcessDataVariables = containers.Map('KeyType', 'char', 'ValueType', 'any');
 
         % Local constants
-        INTERMEDIATE_PDIDs = {'PreDCD', 'PostDCD'};
-        ALL_PDIDs          = [];  % Initialized by constructor.
+        INTERMEDIATE_PDID_LIST = {'PreDCD_LFR', 'PreDCD_TDS', 'PostDCD', 'HK_on_SCI_time'};
+        ALL_PDID_LIST          = [];  % Initialized by constructor.
         
     end
     
@@ -198,10 +201,10 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
         
             global CONSTANTS
         
-            obj.ALL_PDIDs = {...
+            obj.ALL_PDID_LIST = {...
                 CONSTANTS.INPUTS_PDIDS_LIST{:}, ...
                 CONSTANTS.OUTPUTS_PDIDS_LIST{:}, ...
-                obj.INTERMEDIATE_PDIDs{:}};
+                obj.INTERMEDIATE_PDID_LIST{:}};
             
             obj.validate
         end
@@ -236,7 +239,7 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
 
             % NOTE: This log message is particularly useful for following the recursive calls of this function.
             % sw_mode_ID comes first since that tends to make the log message values line up better.
-            irf.log('n', sprintf('Begin function (pdid=%s)', pdid))
+            %irf.log('n', sprintf('Begin function (pdid=%s)', pdid))
 
             processData = obj.get_process_data_variable(pdid);
 
@@ -245,7 +248,7 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
             %============================================
             if ~isempty(processData)
                 % CASE: Process data is already available.
-                irf.log('n', sprintf('End   function (pdid=%s) - PD already available', pdid))
+                %irf.log('n', sprintf('End   function (pdid=%s) - PD already available', pdid))
                 return   % NOTE: This provides caching so that the same process data are not derived twice.
             end
 
@@ -258,7 +261,7 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
             % ASSERTION
             if isempty(processingFunc)
                 processData = [];
-                irf.log('n', sprintf('End   function (pdid=%s) - PD can not be derived (is EIn)', pdid))
+                %irf.log('n', sprintf('End   function (pdid=%s) - PD can not be derived (is EIn)', pdid))
                 return
             end
 
@@ -303,42 +306,42 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
             obj.set_process_data_variable(pdid, processData)
             
             % NOTE: This log message is useful for being able to follow the recursive calls of this function.
-            irf.log('n', sprintf('End   function (pdid=%s) - PD was derived', pdid))
+            %irf.log('n', sprintf('End   function (pdid=%s) - PD was derived', pdid))
             
         end
         
         
     
-        function SwModeInfo = get_extended_sw_mode_info(obj, cliParameter)
+        function ExtendedSwModeInfo = get_extended_sw_mode_info(obj, cliParameter)
         % Return ~constants structure for a specific S/W mode as referenced by a CLI parameter.
         % 
         % This structure is automatically put together from other structures (constants) to avoid having to define too
         % many redundant constants.
         %
-        % NOTE: This function takes what constants.SW_MODES_INFO_LIST returns and adds info about input and output datasets to it.
-        % NOTE: The function takes the CLI_parameter as parameter, not the S/W mode ID!
+        % NOTE: This function takes constants.SW_MODES_INFO_LIST and adds info about input and output datasets to it.
+        % NOTE: The function takes the "cliParameter" as parameter, not the S/W mode ID!
         %
-        % IMPLEMENTATION NOTE: The reason for that this function is located in data_manager instead of constants is the
+        % IMPLEMENTATION NOTE: The reason for that this function is located in data_manager instead of "constants" is the
         % call to "bicas.data_manager.get_elementary_input_PDIDs" and that constants.m should contain no reference to
-        % data_manager.m (for initialization reasons at the very least). AMENDMENT 2016-11-16: Function no longer call
+        % data_manager.m (for initialization reasons at the very least). AMENDMENT 2016-11-16: Function no longer calls
         % that function but might call a similar one in the future. Comment therefore still relevant.
 
             global CONSTANTS
 
-            SwModeInfo = bicas.utils.select_structs(CONSTANTS.SW_MODES_INFO_LIST, 'CLI_parameter', {cliParameter});            
-            SwModeInfo = SwModeInfo{1};
+            ExtendedSwModeInfo = bicas.utils.select_structs(CONSTANTS.SW_MODES_INFO_LIST, 'CLI_PARAMETER', {cliParameter});            
+            ExtendedSwModeInfo = ExtendedSwModeInfo{1};
 
             % Collect all associated elementary input PDIDs.
-            %input_PDIDs = obj.get_elementary_input_PDIDs(C_sw_mode.output_PDIDs, C_sw_mode.ID);
+            %input_PDIDs = obj.get_elementary_input_PDIDs(C_sw_mode.OUTPUT_PDID_LIST, C_sw_mode.ID);
 
             try
-                SwModeInfo.inputs = bicas.utils.select_structs(CONSTANTS.INPUTS_INFO_LIST,  'PDID', SwModeInfo.input_PDIDs);
+                ExtendedSwModeInfo.inputs = bicas.utils.select_structs(CONSTANTS.INPUTS_INFO_LIST,  'PDID', ExtendedSwModeInfo.INPUT_PDID_LIST);
             catch exception
                 error('BICAS:Assertion:IllegalConfiguration', ...
                     'Can not identify all input PDIDs associated with S/W mode CLI parameter "%s".', cliParameter)
             end
             try
-                SwModeInfo.outputs = bicas.utils.select_structs(CONSTANTS.OUTPUTS_INFO_LIST, 'PDID', SwModeInfo.output_PDIDs);
+                ExtendedSwModeInfo.outputs = bicas.utils.select_structs(CONSTANTS.OUTPUTS_INFO_LIST, 'PDID', ExtendedSwModeInfo.OUTPUT_PDID_LIST);
             catch exception
                 error('BICAS:Assertion:IllegalConfiguration', ...
                     'Can not identify all output PDIDs associated with S/W mode CLI parameter "%s".', cliParameter)
@@ -358,15 +361,15 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
             global CONSTANTS
             
             % Initialize instance variable "process_data" with keys (with corresponding empty values).
-            for pdid = obj.ALL_PDIDs
+            for pdid = obj.ALL_PDID_LIST
                 obj.ProcessDataVariables(pdid{1}) = [];
             end
             
             % Validate
             %bicas.utils.assert_strings_unique(obj.ELEMENTARY_INPUT_PDIDs)
             %bicas.utils.assert_strings_unique(obj.ELEMENTARY_OUTPUT_PDIDs)
-            bicas.utils.assert_strings_unique(obj.INTERMEDIATE_PDIDs)
-            bicas.utils.assert_strings_unique(obj.ALL_PDIDs)
+            bicas.utils.assert_strings_unique(obj.INTERMEDIATE_PDID_LIST)
+            bicas.utils.assert_strings_unique(obj.ALL_PDID_LIST)
             
             
             
@@ -376,15 +379,15 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
             for i = 1:length(CONSTANTS.SW_MODES_INFO_LIST)
                 
                 % Get info for S/W mode.
-                sw_mode_CLI_parameter = CONSTANTS.SW_MODES_INFO_LIST{i}.CLI_parameter;
-                SwModeInfo = obj.get_extended_sw_mode_info(sw_mode_CLI_parameter);
+                swModeCliParameter = CONSTANTS.SW_MODES_INFO_LIST{i}.CLI_PARAMETER;
+                ExtendedSwModeInfo = obj.get_extended_sw_mode_info(swModeCliParameter);
                 
-                % Check unique inputs CLI_parameter.
-                inputs_CLI_parameters = cellfun(@(s) ({s.CLI_parameter}), SwModeInfo.inputs);
-                bicas.utils.assert_strings_unique(inputs_CLI_parameters)
+                % Check unique inputs CLI_PARAMETER.
+                inputsCliParameterList = cellfun(@(s) ({s.CLI_PARAMETER}), ExtendedSwModeInfo.inputs);
+                bicas.utils.assert_strings_unique(inputsCliParameterList)
                 
-                % Check unique outputs JSON_output_file_identifier.
-                jsonOutputFileIdentifiers = cellfun(@(s) ({s.JSON_output_file_identifier}), SwModeInfo.outputs);
+                % Check unique outputs SWD_OUTPUT_FILE_IDENTIFIER.
+                jsonOutputFileIdentifiers = cellfun(@(s) ({s.SWD_OUTPUT_FILE_IDENTIFIER}), ExtendedSwModeInfo.outputs);
 
                 bicas.utils.assert_strings_unique(jsonOutputFileIdentifiers)
             end
@@ -394,8 +397,8 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
         
         
         function assert_PDID(obj, pdid)
-            if ~ischar(pdid) || ~ismember(pdid, obj.ALL_PDIDs)
-                error('BICAS:data_manager:Assertion', 'There is no such PDID="\%s".', pdid)
+            if ~ischar(pdid) || ~ismember(pdid, obj.ALL_PDID_LIST)
+                error('BICAS:data_manager:Assertion', 'There is no such PDID="%s".', pdid)
             end
         end
 
@@ -436,7 +439,6 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
 
         
         
-        % EXPERIMENTAL
         function [InputPdidsMap, processingFunc] = get_processing_info(obj, outputPdid)
         % For every PDID, return meta-information needed to derive the actual process data.
         %
@@ -447,17 +449,18 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
         %    graph), by returning
         %    a) the "processing" function needed to produce the process data, and
         %    b) the PDIDs needed by the processing function.
-        % 2) (LESS IMPORTANT) It implicitly decides how to informally distinguish the input process datas by giving them
-        %    suitable struct field names which the processing functions recognize them with.
+        % 2) (LESS IMPORTANT) It implicitly decides how to informally distinguish the input process datas by assigning
+        %    them "human-readable" containers.Map key values which the processing functions can use to distinguish them
+        %    with (even if the data comes from different PDVs).
         %
         % The method itself is NOT recursive but it is designed so that other code can recurse over
         % the implicit "~acyclic graph" defined by it.
-        % Other code can use this method to two things recursively:
+        % Other code can use this method to do two things recursively:
         % (1) Derive process data.
-        % (2) Derive all the necessary elementary input PDIDs needed to produce an elementary output
-        %     PDID (without generating any process data). This is useful for automatically generating the required input
-        %     dataset IDs for S/W modes (needed for (a) generating the S/W descriptor, and (b) generating requirements
-        %     on CLI parameters).
+        % (2) Check if supplied data (EIn PDVs/PDIDs) are sufficient for deriving alla EOut PDVs/PDIDs (without
+        %     generating any process data). This is useful for automatically checking that the required input
+        %     dataset IDs for S/W modes are correct (needed for (a) generating the S/W descriptor, and (b) generating
+        %     requirements on CLI parameters).
         %
         % ARGUMENT AND RETURN VALUES
         % ==========================
@@ -475,8 +478,6 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
         %                <keys>       : The same keys as InputPdidsMap (returned by get_processing_info).
         %                <values>     : A struct with fields .pd (Process data) and .pdid (PDID for .pd).
         %     Empty function is equivalent to that outputPdid is an EIn-PDID.
-        
-        % PROPOSAL: Change name of return value: InputPdidsLists? Something to imply a list of lists of PDIDs. *Map?
             
             obj.assert_PDID(outputPdid)
             
@@ -501,10 +502,11 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
                 %=====================================================
                 % Elementary INPUT PDIDs : Return empty default value
                 %=====================================================
-                % NOTE: It is still useful to include cases which do nothing since it is a check on permitted values
-                % (so that switch-otherwise can give error).
+                % NOTE: It is still useful to include cases which do nothing since it is a check on permitted values (so
+                % that switch-otherwise can give error).
                 % BIAS
                 case 'HK_BIA_V01'
+                case 'HK_BIA_V02'
                 % LFR
                 case 'L2R_LFR-SBM1-CWF_V01'
                 case 'L2R_LFR-SBM1-CWF_V02'
@@ -523,24 +525,50 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
                 % Intermediary PDIDs
                 %====================
                 
-                case 'PreDCD'
-                    InputPdidsMap('HK_cdf') = {'HK_BIA_V01'};
+                % EXPERIMENTAL
+                case 'HK_on_SCI_time'
+                    InputPdidsMap('HK_cdf') = {...
+                        'HK_BIA_V01', ...
+                        'HK_BIA_V02'};
                     InputPdidsMap('SCI_cdf') = {...
-                    'L2R_LFR-SBM1-CWF_V01', ...    % LFR    
-                    'L2R_LFR-SBM1-CWF_V02', ...
-                    'L2R_LFR-SBM2-CWF_V01', ...
-                    'L2R_LFR-SBM2-CWF_V02', ...
-                    'L2R_LFR-SURV-CWF_V01', ...
-                    'L2R_LFR-SURV-CWF_V02', ...
-                    'L2R_LFR-SURV-SWF_V01', ...
-                    'L2R_LFR-SURV-SWF_V02', ...
-                    'L2R_TDS-LFM-CWF_V01', ...     % TDS
-                    'L2R_TDS-LFM-RSWF_V01', ...
-                    'L2R_TDS-LFM-RSWF_V02'};
+                        'L2R_LFR-SBM1-CWF_V01', ...   % LFR
+                        'L2R_LFR-SBM1-CWF_V02', ...
+                        'L2R_LFR-SBM2-CWF_V01', ...
+                        'L2R_LFR-SBM2-CWF_V02', ...
+                        'L2R_LFR-SURV-CWF_V01', ...
+                        'L2R_LFR-SURV-CWF_V02', ...
+                        'L2R_LFR-SURV-SWF_V01', ...
+                        'L2R_LFR-SURV-SWF_V02', ...
+                        'L2R_TDS-LFM-CWF_V01', ...    % TDS
+                        'L2R_TDS-LFM-RSWF_V01', ...
+                        'L2R_TDS-LFM-RSWF_V02'};
+                    processingFunc = @bicas.data_manager.process_HK_to_HK_on_SCI_TIME;
+                
+                case 'PreDCD_LFR'
+                    InputPdidsMap('HK_on_SCI_time') = {...
+                        'HK_on_SCI_time'};
+                    InputPdidsMap('SCI_cdf') = {...
+                        'L2R_LFR-SBM1-CWF_V01', ...
+                        'L2R_LFR-SBM1-CWF_V02', ...
+                        'L2R_LFR-SBM2-CWF_V01', ...
+                        'L2R_LFR-SBM2-CWF_V02', ...
+                        'L2R_LFR-SURV-CWF_V01', ...
+                        'L2R_LFR-SURV-CWF_V02', ...
+                        'L2R_LFR-SURV-SWF_V01', ...
+                        'L2R_LFR-SURV-SWF_V02'};
                     processingFunc = @bicas.data_manager.process_LFR_to_PreDCD;
+                
+                case 'PreDCD_TDS'
+                    InputPdidsMap('HK_on_SCI_time') = {...
+                        'HK_on_SCI_time'};
+                    InputPdidsMap('SCI_cdf') = {...
+                        'L2R_TDS-LFM-CWF_V01', ...
+                        'L2R_TDS-LFM-RSWF_V01', ...
+                        'L2R_TDS-LFM-RSWF_V02'};
+                    processingFunc = @bicas.data_manager.process_TDS_to_PreDCD;
                     
                 case 'PostDCD'
-                    InputPdidsMap('PreDCD') = {'PreDCD'};
+                    InputPdidsMap('PreDCD') = {'PreDCD_LFR', 'PreDCD_TDS'};
                     processingFunc = @bicas.data_manager.process_demuxing_calibration;
 
                 %=========================
@@ -555,13 +583,15 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
                       'L2S_LFR-SURV-CWF-E_V02', ...
                       'L2S_LFR-SURV-SWF-E_V02'}
                     InputPdidsMap('PostDCD') = {'PostDCD'};
-                    processingFunc     = @(inputs) (bicas.data_manager.process_PostDCD_to_LFR(inputs, outputPdid));
+                    processingFunc = @(InputsMap) (bicas.data_manager.process_PostDCD_to_LFR(InputsMap, outputPdid));
 
                 %-----
                 % TDS
                 %-----
-                %case 'L2S_TDS-LFM-CWF-E_V02'
-                %case 'L2S_TDS-LFM-RSWF-E_V02'                    
+                case {'L2S_TDS-LFM-CWF-E_V02', ...
+                      'L2S_TDS-LFM-RSWF-E_V02'}
+                   InputPdidsMap('PostDCD') = {'PostDCD'};
+                   processingFunc = @(InputsMap) (process_PostDCD_to_TDS(InputsMap, outputPdid))
 
                 %===========================================
                 % OTHERWISE: Has no implementation for PDID
@@ -570,35 +600,102 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
                     % NOTE: The PDID can be valid without there being an implementation for it, i.e. the error should
                     % NOT be replaced with assert_PDID().
                     error('BICAS:data_manager:Assertion:OperationNotImplemented', ...
-                        'This function has no implementation for this PDID, "%s".', outputPdid)
+                        'There is no processing data for PDID="%s".', outputPdid)
             end   % switch
 
         end   % get_processing_info
-       
-        
-        
-        
-    end   % methods: Instance, private
 
-    
-    
+
+
+    end    % methods(Access=private)
+
+   
     %###################################################################################################################
-
-    
     
     methods(Static, Access=public)
+        
+        function hkOnSciTimePd = process_HK_to_HK_on_SCI_TIME(InputsMap)
+        % Processing function
+        
+            global CONSTANTS
+            
+            SciPd   = InputsMap('SCI_cdf').pd;
+            HkPd    = InputsMap('HK_cdf').pd;
+            
+            hkOnSciTimePd = [];
+            
+            
+            
+            % Define local convenience variables. AT = ACQUISITION_TIME
+            hkAtTt2000  = bicas.dm_utils.ACQUISITION_TIME_to_tt2000(  HkPd.ACQUISITION_TIME );
+            sciAtTt2000 = bicas.dm_utils.ACQUISITION_TIME_to_tt2000( SciPd.ACQUISITION_TIME );
+            hkEpoch     = HkPd.Epoch;
+            sciEpoch    = SciPd.Epoch;
+            
+            %==================================================================
+            % Log time intervals to enable comparing available SCI and HK data
+            %==================================================================
+            bicas.dm_utils.log_tt2000_interval('HK  ACQUISITION_TIME', hkAtTt2000)
+            bicas.dm_utils.log_tt2000_interval('SCI ACQUISITION_TIME', sciAtTt2000)
+            bicas.dm_utils.log_tt2000_interval('HK  Epoch           ', hkEpoch)
+            bicas.dm_utils.log_tt2000_interval('SCI Epoch           ', sciEpoch)
+            
+            %=========================================================================================================
+            % 1) Convert time to something linear in time that can be used for processing (not storing time to file).
+            % 2) Effectively also chooses which time to use for the purpose of processing:
+            %    ACQUISITION_TIME or Epoch.
+            %=========================================================================================================
+            if CONSTANTS.C.PROCESSING.USE_AQUISITION_TIME_FOR_HK_TIME_INTERPOLATION 
+                irf.log('n', 'Using HK & SCI zVariable ACQUISITION_TIME (not Epoch) for interpolating HK data to SCI time.')
+                hkInterpolationTimeTt2000  = hkAtTt2000;
+                sciInterpolationTimeTt2000 = sciAtTt2000;
+            else
+                %irf.log('n', 'Using HK & SCI zVariable Epoch (not ACQUISITION_TIME) for interpolating HK data to SCI time.')
+                hkInterpolationTimeTt2000  = hkEpoch;
+                sciInterpolationTimeTt2000 = sciEpoch;
+            end
+
+
+
+            %=========================================================================================================
+            % Choose where to get MUX_SET from: BIAS-HK, or possibly LFR-SCI
+            % --------------------------------------------------------------
+            % NOTE: Only obtains one MUX_SET per record ==> Can not change MUX_SET in the middle of a record.
+            %=========================================================================================================            
+            hkOnSciTimePd.MUX_SET = bicas.dm_utils.nearest_interpolate_float_records(...
+                double(HkPd.HK_BIA_MODE_MUX_SET), hkInterpolationTimeTt2000, sciInterpolationTimeTt2000);   % Use BIAS HK.
+            %PreDcd.MUX_SET = LFR_cdf.BIAS_MODE_MUX_SET;    % Use LFR SCI. NOTE: Only possible for ___LFR___.
+
+
+
+            %=========================================================================================================
+            % Derive approximate DIFF_GAIN values for from BIAS HK
+            %
+            % NOTE: Not perfect handling of time when 1 snapshot/record, since one should ideally use time stamps
+            % for every LFR _sample_.
+            %=========================================================================================================
+            hkOnSciTimePd.DIFF_GAIN = bicas.dm_utils.nearest_interpolate_float_records(...
+                double(HkPd.HK_BIA_DIFF_GAIN), hkInterpolationTimeTt2000, sciInterpolationTimeTt2000);
+            
+            
+            
+            %error('BICAS:data_manager:OperationNotImplemented', ...
+            %    'This processing function process_HK_to_HK_on_SCI_TIME has not been implemented yet.')
+        end        
+        
+        
 
         function PreDcd = process_LFR_to_PreDCD(InputsMap)
         % Processing function. Convert LFR CDF data (PDs) to PreDCD.
         %
         % Keeps number of samples/record. Treats 1 samples/record "length-one snapshots".
         
+        % PROBLEM: Hardcoded CDF data types (MATLAB classes).
+        
             global CONSTANTS
         
-            % PROBLEM: Hardcoded CDF data types (MATLAB classes).
-
-            SciPd   = InputsMap('SCI_cdf').pd;
-            HkPd    = InputsMap('HK_cdf').pd;
+            SciPd         = InputsMap('SCI_cdf').pd;
+            HkOnSciTimePd = InputsMap('HK_on_SCI_time').pd;
             sciPdid = InputsMap('SCI_cdf').pdid;
 
             nRecords = size(SciPd.Epoch, 1);
@@ -625,7 +722,7 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
                     ELECTRICAL = SciPd.E;
                     L1_REC_NUM = SciPd.L1_REC_NUM;
                 otherwise
-                    error('BICAS:data_manager:Assertion:SWModeProcessing:ConfigurationBug', ...
+                    error('BICAS:data_manager:SWModeProcessing:Assertion:ConfigurationBug', ...
                         'Can not handle PDID="%s"', sciPdid)
             end
             
@@ -646,7 +743,7 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
                         'L2R_LFR-SURV-SWF_V02'}
                     FREQ = SciPd.FREQ;
                 otherwise
-                    error('BICAS:data_manager:Assertion:ConfigurationBug', ...
+                    error('BICAS:data_manager:SWModeProcessing:Assertion:ConfigurationBug', ...
                         'Can not handle PDID="%s"', sciPdid)
             end
             
@@ -657,19 +754,21 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
             Rx = bicas.dm_utils.get_LFR_Rx( SciPd.R0, SciPd.R1, SciPd.R2, FREQ );   % NOTE: Function also handles the imaginary zVar "R3".
             
             PreDcd = [];
-            PreDcd.Epoch = SciPd.Epoch;
+            PreDcd.Epoch            = SciPd.Epoch;
             PreDcd.ACQUISITION_TIME = SciPd.ACQUISITION_TIME;
             PreDcd.DELTA_PLUS_MINUS = bicas.dm_utils.derive_DELTA_PLUS_MINUS(freqHz, nSamplesPerRecord);            
             PreDcd.freqHz           = freqHz;
-            PreDcd.SAMP_DTIME       = bicas.dm_utils.derive_SAMP_DTIME(freqHz, nSamplesPerRecord);
+            PreDcd.SAMP_DTIME       = bicas.dm_utils.derive_SAMP_DTIME(freqHz, nSamplesPerRecord);            
+            PreDcd.L1_REC_NUM       = L1_REC_NUM;
             
-            PreDcd.L1_REC_NUM = L1_REC_NUM;
+            %===========================================================================================================
             % Replace illegally empty data with fill values/NaN
             % -------------------------------------------------
             % IMPLEMENTATION NOTE: QUALITY_FLAG, QUALITY_BITMASK have been found empty in test data, but should have
             % attribute DEPEND_0 = "Epoch" ==> Should have same number of records as Epoch.
             % Can not save CDF with zVar with zero records (crashes when reading CDF). ==> Better create empty records.
             % Test data: MYSTERIOUS_SIGNAL_1_2016-04-15_Run2__7729147__CNES/ROC-SGSE_L2R_RPW-LFR-SURV-SWF_7729147_CNE_V01.cdf
+            %===========================================================================================================
             PreDcd.QUALITY_FLAG    = SciPd.QUALITY_FLAG;
             PreDcd.QUALITY_BITMASK = SciPd.QUALITY_BITMASK;
             if isempty(PreDcd.QUALITY_FLAG)
@@ -688,66 +787,88 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
             PreDcd.DemuxerInput.BIAS_4 = bicas.dm_utils.filter_rows( ELECTRICAL(:,:,1), Rx==0 );
             PreDcd.DemuxerInput.BIAS_5 = bicas.dm_utils.filter_rows( ELECTRICAL(:,:,2), Rx==0 );
             
+            PreDcd.MUX_SET   = HkOnSciTimePd.MUX_SET;
+            PreDcd.DIFF_GAIN = HkOnSciTimePd.DIFF_GAIN;
+
             
-
-            % Define local convenience variables. AT = ACQUISITION_TIME
-            hkAtTt2000  = bicas.dm_utils.ACQUISITION_TIME_to_tt2000(  HkPd.ACQUISITION_TIME );
-            sciAtTt2000 = bicas.dm_utils.ACQUISITION_TIME_to_tt2000( SciPd.ACQUISITION_TIME );
-            hkEpoch     = HkPd.Epoch;
-            sciEpoch    = SciPd.Epoch;
-            
-            
-            
-            %=========================================================================================================
-            % 1) Convert time to something linear in time that can be used for processing (not storing time to file).
-            % 2) Effectively also chooses which time to use for the purpose of processing:
-            %    ACQUISITION_TIME or Epoch.
-            %=========================================================================================================
-            if CONSTANTS.C.PROCESSING.USE_AQUISITION_TIME_FOR_HK_TIME_INTERPOLATION 
-                hkInterpolationTimeTt2000  = hkAtTt2000;
-                sciInterpolationTimeTt2000 = sciAtTt2000;
-            else
-                hkInterpolationTimeTt2000  = hkEpoch;
-                sciInterpolationTimeTt2000 = sciEpoch;
-            end
-
-
-
-            %=========================================================================================================
-            % Choose where to get MUX_SET from: LFR-SCI, or BIAS-HK
-            % -----------------------------------------------------
-            % NOTE: Only obtains one MUX_SET per record ==> Can not change MUX_SET in the middle of a record.
-            %=========================================================================================================            
-            PreDcd.MUX_SET = bicas.dm_utils.nearest_interpolate_float_records(...
-                double(HkPd.HK_BIA_MODE_MUX_SET), hkInterpolationTimeTt2000, sciInterpolationTimeTt2000);   % Use BIAS HK.
-            %PreDcd.MUX_SET = LFR_cdf.BIAS_MODE_MUX_SET;    % Use LFR SCI.
-
-
-
-            %=========================================================================================================
-            % Derive approximate DIFF_GAIN values for from BIAS HK
-            %
-            % NOTE: Not perfect handling of time when 1 snapshot/record, since one should ideally use time stamps
-            % for every LFR _sample_.
-            %=========================================================================================================
-            PreDcd.DIFF_GAIN = bicas.dm_utils.nearest_interpolate_float_records(...
-                double(HkPd.HK_BIA_DIFF_GAIN), hkInterpolationTimeTt2000, sciInterpolationTimeTt2000);
-
-
             
             % ASSERTIONS
             bicas.dm_utils.assert_unvaried_N_rows(PreDcd);
             bicas.dm_utils.assert_unvaried_N_rows(PreDcd.DemuxerInput);
+        end
+        
+        
+        
+        function PreDcd = process_TDS_to_PreDCD(InputsMap)
+        % UNTESTED
+        %
+        % Processing function. Convert TDS CDF data (PDs) to PreDCD.
+        %
+        % Keeps number of samples/record. Treats 1 samples/record "length-one snapshots".
+        
+        % NOTE: L1_REC_NUM not set in any TDS L2R dataset
+        
+            % global CONSTANTS
+        
+            SciPd         = InputsMap('SCI_cdf').pd;
+            HkOnSciTimePd = InputsMap('HK_on_SCI_time').pd;
+            sciPdid       = InputsMap('SCI_cdf').pdid;
 
+            %=====================================================================
+            % Handle differences between skeletons V01 and V02
+            % ------------------------------------------------
+            % LFR_V, LFR_E: zVars with different names (but identical meaning).
+            % L1_REC_NUM  : Not defined in V01, but in V02 dataset skeletons.
+            %=====================================================================
+            switch(sciPdid)
+                % Those TDS datasets which have the SAME number of samples/record as in the output datasets.
+                case {'L2R_TDS-LFM-CWF_V01', ...     % 1 S/R
+                      'L2R_TDS-LFM-RSWF_V02'};       % N S/R
+                      
+                % Those TDS datasets which have DIFFERENT number of samples/record compared to the output datasets.
+                case {'L2R_TDS-LFM-RSWF_V01'}        % 1 S/R for SWF data!!!
+                    error('BICAS:data_manager:SWModeProcessing:Assertion:OperationNotImplemented', ...
+                        'This processing function can not interpret PDID=%s. Not implemented yet.', sciPdid)
+                otherwise
+                    error('BICAS:data_manager:SWModeProcessing:Assertion:ConfigurationBug', ...
+                        'Can not handle PDID="%s"', sciPdid)
+            end
+            
+            nRecords          = size(SciPd.Epoch, 1);
+            nSamplesPerRecord = size(SciPd.WAVEFORM_DATA, 3);
+            
+            freqHz = SciPd.SAMPLING_RATE;
+            
+            PreDcd = [];
+            
+            PreDcd.Epoch            = SciPd.Epoch;
+            PreDcd.ACQUISITION_TIME = SciPd.ACQUISITION_TIME;
+            PreDcd.DELTA_PLUS_MINUS = bicas.dm_utils.derive_DELTA_PLUS_MINUS(freqHz, nSamplesPerRecord);            
+            PreDcd.freqHz           = freqHz;    % CDF_UINT1 ?!!!
+            PreDcd.SAMP_DTIME       = bicas.dm_utils.derive_SAMP_DTIME(freqHz, nSamplesPerRecord);
+            PreDcd.L1_REC_NUM       = NaN * zeros(nRecords, nSamplesPerRecord);   % Set to fill values. Not set in any TDS L2R dataset yet.
+
+            PreDcd.QUALITY_FLAG    = SciPd.QUALITY_FLAG;
+            PreDcd.QUALITY_BITMASK = SciPd.QUALITY_BITMASK;
+            
+            PreDcd.DemuxerInput        = [];
+            PreDcd.DemuxerInput.BIAS_1 = permute(SciPd.WAVEFORM_DATA(:,1,:), [1,3,2]);
+            PreDcd.DemuxerInput.BIAS_2 = permute(SciPd.WAVEFORM_DATA(:,2,:), [1,3,2]);
+            PreDcd.DemuxerInput.BIAS_3 = permute(SciPd.WAVEFORM_DATA(:,3,:), [1,3,2]);
+            PreDcd.DemuxerInput.BIAS_4 = NaN*zeros([nRecords, nSamplesPerRecord]);
+            PreDcd.DemuxerInput.BIAS_5 = NaN*zeros([nRecords, nSamplesPerRecord]);
+            
+            PreDcd.MUX_SET   = HkOnSciTimePd.MUX_SET;
+            PreDcd.DIFF_GAIN = HkOnSciTimePd.DIFF_GAIN;
             
             
-            %==================================================================
-            % Log time intervals to enable comparing available SCI and HK data
-            %==================================================================
-            bicas.dm_utils.log_tt2000_interval('HK  ACQUISITION_TIME', hkAtTt2000)
-            bicas.dm_utils.log_tt2000_interval('SCI ACQUISITION_TIME', sciAtTt2000)
-            bicas.dm_utils.log_tt2000_interval('HK  Epoch           ', hkEpoch)
-            bicas.dm_utils.log_tt2000_interval('SCI Epoch           ', sciEpoch)
+            
+            % ASSERTIONS
+            bicas.dm_utils.assert_unvaried_N_rows(PreDcd);
+            bicas.dm_utils.assert_unvaried_N_rows(PreDcd.DemuxerInput);
+            
+            %error('BICAS:data_manager:OperationNotImplemented', ...
+            %    'This processing function process_TDS_to_PreDCD has not been implemented yet.')
         end
 
         
@@ -756,7 +877,7 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
             FIELDS = {'Epoch', 'ACQUISITION_TIME', 'DemuxerInput', 'freqHz', 'DIFF_GAIN', 'MUX_SET', 'QUALITY_FLAG', ...
                 'QUALITY_BITMASK', 'DELTA_PLUS_MINUS', 'L1_REC_NUM', 'SAMP_DTIME'};
             
-            if ~isstruct(PreDcd) || ~isempty(setdiff(fieldnames(PreDcd), FIELDS))
+            if ~isstruct(PreDcd) || ~isempty(setxor(fieldnames(PreDcd), FIELDS))
                 error('BICAS:data_manager:Assertion:SWModeProcessing', 'PDV structure is not on "PreDCD format".')
             end
             bicas.dm_utils.assert_unvaried_N_rows(PreDcd);
@@ -768,7 +889,7 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
             FIELDS = {'Epoch', 'ACQUISITION_TIME', 'DemuxerInput', 'freqHz', 'DIFF_GAIN', 'MUX_SET', 'QUALITY_FLAG', ...
                 'QUALITY_BITMASK', 'DELTA_PLUS_MINUS', 'DemuxerOutput', 'IBIAS1', 'IBIAS2', 'IBIAS3', 'L1_REC_NUM', 'SAMP_DTIME'};
             
-            if ~isstruct(PostDcd) || ~isempty(setdiff(fieldnames(PostDcd), FIELDS))
+            if ~isstruct(PostDcd) || ~isempty(setxor(fieldnames(PostDcd), FIELDS))
                 error('BICAS:data_manager:Assertion:SWModeProcessing', 'PDV structure is not on "PostDCD format".')
             end
             bicas.dm_utils.assert_unvaried_N_rows(PostDcd);
@@ -799,6 +920,7 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
             end
             
             % BUG / TEMP: Set default values since the real values are not available.
+            % Move "derivation" to HK_on_SCI_time?
             PostDcd.IBIAS1 = NaN * zeros(size(PostDcd.DemuxerOutput.V1));
             PostDcd.IBIAS2 = NaN * zeros(size(PostDcd.DemuxerOutput.V2));
             PostDcd.IBIAS3 = NaN * zeros(size(PostDcd.DemuxerOutput.V3));
@@ -809,7 +931,7 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
 
         
         function EOutPD = process_PostDCD_to_LFR(InputsMap, eoutPDID)
-        % Processing function. Convert PostDCD to any one of several similar dataset PDs.
+        % Processing function. Convert PostDCD to any one of several similar LFR dataset PDs.
         
             PostDcd = InputsMap('PostDCD').pd;
             EOutPD = [];
@@ -844,21 +966,14 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
                         PostDcd.DemuxerOutput.(fn{1}) = bicas.dm_utils.convert_N_to_1_SPR_redistribute( ...
                             PostDcd.DemuxerOutput.(fn{1}) );
                     end
+                    
                     EOutPD.IBIAS1           = bicas.dm_utils.convert_N_to_1_SPR_redistribute( PostDcd.IBIAS1 );
                     EOutPD.IBIAS2           = bicas.dm_utils.convert_N_to_1_SPR_redistribute( PostDcd.IBIAS2 );
                     EOutPD.IBIAS3           = bicas.dm_utils.convert_N_to_1_SPR_redistribute( PostDcd.IBIAS3 );
-                    EOutPD.V(:,:,1)         = PostDcd.DemuxerOutput.V1;
-                    EOutPD.V(:,:,2)         = PostDcd.DemuxerOutput.V2;
-                    EOutPD.V(:,:,3)         = PostDcd.DemuxerOutput.V3;
-                    EOutPD.E(:,:,1)         = PostDcd.DemuxerOutput.V12;
-                    EOutPD.E(:,:,2)         = PostDcd.DemuxerOutput.V13;
-                    EOutPD.E(:,:,3)         = PostDcd.DemuxerOutput.V23;
-                    EOutPD.EAC(:,:,1)       = PostDcd.DemuxerOutput.V12_AC;
-                    EOutPD.EAC(:,:,2)       = PostDcd.DemuxerOutput.V13_AC;
-                    EOutPD.EAC(:,:,3)       = PostDcd.DemuxerOutput.V23_AC;
 
                 case  'L2S_LFR-SURV-SWF-E_V02'
-                    % Check number of samples/record to see if one can just keep the samples as they are distributed on records.
+                    
+                    % ASSERTION
                     if nSamplesPerRecord ~= 2048
                         error('BICAS:data_manager:Assertion:IllegalArgument', 'Number of samples per CDF record is not 2048.')
                     end
@@ -870,25 +985,28 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
                     EOutPD.L1_REC_NUM       = PostDcd.L1_REC_NUM;
                     EOutPD.QUALITY_BITMASK  = PostDcd.QUALITY_BITMASK;
                     EOutPD.QUALITY_FLAG     = PostDcd.QUALITY_FLAG;
+                    
+                    % Only in LFR SWF (not CWF): F_SAMPLE, SAMP_DTIME
                     EOutPD.F_SAMPLE         = PostDcd.freqHz;
                     EOutPD.SAMP_DTIME       = PostDcd.SAMP_DTIME;
 
                     EOutPD.IBIAS1           = PostDcd.IBIAS1;
                     EOutPD.IBIAS2           = PostDcd.IBIAS2;
                     EOutPD.IBIAS3           = PostDcd.IBIAS3;
-                    EOutPD.V(:,:,1)         = PostDcd.DemuxerOutput.V1;
-                    EOutPD.V(:,:,2)         = PostDcd.DemuxerOutput.V2;
-                    EOutPD.V(:,:,3)         = PostDcd.DemuxerOutput.V3;
-                    EOutPD.E(:,:,1)         = PostDcd.DemuxerOutput.V12;
-                    EOutPD.E(:,:,2)         = PostDcd.DemuxerOutput.V13;
-                    EOutPD.E(:,:,3)         = PostDcd.DemuxerOutput.V23;
-                    EOutPD.EAC(:,:,1)       = PostDcd.DemuxerOutput.V12_AC;
-                    EOutPD.EAC(:,:,2)       = PostDcd.DemuxerOutput.V13_AC;
-                    EOutPD.EAC(:,:,3)       = PostDcd.DemuxerOutput.V23_AC;
                     
                 otherwise
                     error('BICAS:data_manager:Assertion:IllegalArgument', 'Function can not produce PDID=%s.', eoutPDID)
             end
+            
+            EOutPD.V(:,:,1)         = PostDcd.DemuxerOutput.V1;
+            EOutPD.V(:,:,2)         = PostDcd.DemuxerOutput.V2;
+            EOutPD.V(:,:,3)         = PostDcd.DemuxerOutput.V3;
+            EOutPD.E(:,:,1)         = PostDcd.DemuxerOutput.V12;
+            EOutPD.E(:,:,2)         = PostDcd.DemuxerOutput.V13;
+            EOutPD.E(:,:,3)         = PostDcd.DemuxerOutput.V23;
+            EOutPD.EAC(:,:,1)       = PostDcd.DemuxerOutput.V12_AC;
+            EOutPD.EAC(:,:,2)       = PostDcd.DemuxerOutput.V13_AC;
+            EOutPD.EAC(:,:,3)       = PostDcd.DemuxerOutput.V23_AC;
             
             % ASSERTION            
             bicas.dm_utils.assert_unvaried_N_rows(EOutPD);
@@ -896,6 +1014,19 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
 
 
 
+        function EOutPD = process_PostDCD_to_TDS(InputsMap, eoutPDID)
+
+            %switch(eoutPDID)
+            %    case  'L2S_TDS-LFM-CWF-E_V02'
+            %    case  'L2S_TDS-LFM-RSWF-E_V02'
+                        
+                    
+            error('BICAS:data_manager:SWModeProcessing:Assertion:OperationNotImplemented', ...
+                'This processing function has not been implemented yet.')
+        end    
+        
+            
+            
         function DemuxerOutput = simple_demultiplex(DemuxerInput, MUX_SET, DIFF_GAIN)
         % Wrapper around "simple_demultiplex_subsequence" to be able to handle multiple CDF records with changing
         % settings (mux_set, diff_gain).
@@ -949,7 +1080,8 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
 
         
         function Output = simple_demultiplex_subsequence(Input, MUX_SET, DIFF_GAIN)
-        % simple_demultiplex_subsequence   Demultiplex, with only constant factors for calibration (no transfer functions).
+        % simple_demultiplex_subsequence   Demultiplex, with only constant factors for calibration (no transfer
+        % functions, no offsets) and only one setting for MUX_SET and DIFF_GAIN respectively.
         %
         % This function implements Table 3 and Table 4 in "RPW-SYS-MEB-BIA-SPC-00001-IRF", iss1rev16.
         % Variable names are chosen according to these tables.
@@ -1012,6 +1144,7 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
             
             global CONSTANTS
             
+            % ASSERTIONS
             if numel(MUX_SET) ~= 1 || numel(DIFF_GAIN) ~= 1
                 error('BICAS:data_manager:Assertion:IllegalArgument', 'Illegal argument value "mux_set" or "diff_gain". Must be scalars (not arrays).')
             end
@@ -1031,33 +1164,33 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
             
             % Set default values which will remain for
             % variables which are not set by the demuxer.
-            NaN_VALUES = ones(size(Input.BIAS_1)) * NaN;
-            V1_LF     = NaN_VALUES;
-            V2_LF     = NaN_VALUES;
-            V3_LF     = NaN_VALUES;
-            V12_LF    = NaN_VALUES;
-            V13_LF    = NaN_VALUES;
-            V23_LF    = NaN_VALUES;
-            V12_LF_AC = NaN_VALUES;
-            V13_LF_AC = NaN_VALUES;
-            V23_LF_AC = NaN_VALUES;
+            NAN_VALUES = ones(size(Input.BIAS_1)) * NaN;
+            V1_LF     = NAN_VALUES;
+            V2_LF     = NAN_VALUES;
+            V3_LF     = NAN_VALUES;
+            V12_LF    = NAN_VALUES;
+            V13_LF    = NAN_VALUES;
+            V23_LF    = NAN_VALUES;
+            V12_LF_AC = NAN_VALUES;
+            V13_LF_AC = NAN_VALUES;
+            V23_LF_AC = NAN_VALUES;
 
             switch(MUX_SET)
                 case 0   % "Standard operation" : We have all information.
                     
-                    % Summarize what we have;
+                    % Summarize the IN DATA we have.
                     V1_DC  = Input.BIAS_1;
                     V12_DC = Input.BIAS_2;
                     V23_DC = Input.BIAS_3;
                     V12_AC = Input.BIAS_4;
                     V23_AC = Input.BIAS_5;
-                    % Convert that which is trivial.
-                    V1_LF     = V1_DC / ALPHA;
+                    % Derive the OUT DATA which are trivial.
+                    V1_LF     = V1_DC  / ALPHA;
                     V12_LF    = V12_DC / BETA;
                     V23_LF    = V23_DC / BETA;
                     V12_LF_AC = V12_AC / GAMMA;
                     V23_LF_AC = V23_AC / GAMMA;
-                    % Convert that which is less trivial.
+                    % Derive the OUT DATA which are less trivial.
                     V13_LF    = V12_LF    + V23_LF;
                     V2_LF     = V1_LF     - V12_LF;
                     V3_LF     = V2_LF     - V23_LF;                    
@@ -1089,24 +1222,24 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
                     
                 case 4   % Calibration mode 0
                     
-                    % Summarize what we have;
+                    % Summarize the IN DATA we have.
                     V1_DC  = Input.BIAS_1;
                     V2_DC  = Input.BIAS_2;
                     V3_DC  = Input.BIAS_3;
                     V12_AC = Input.BIAS_4;
                     V23_AC = Input.BIAS_5;
-                    % Convert that which is trivial.
+                    % Derive the OUT DATA which are trivial.
                     V1_LF     = V1_DC / ALPHA;
                     V2_LF     = V2_DC / ALPHA;
                     V3_LF     = V3_DC / ALPHA;
                     V12_LF_AC = V12_AC / GAMMA;
                     V23_LF_AC = V23_AC / GAMMA;
-                    % Convert that which is less trivial.
+                    % Derive the OUT DATA which are less trivial.
                     V12_LF    = V1_LF     - V2_LF;
                     V13_LF    = V1_LF     - V3_LF;
                     V23_LF    = V2_LF     - V3_LF;
                     V13_LF_AC = V12_LF_AC + V23_LF_AC;
-                    
+
                 case {5,6,7}
                     error('BICAS:data_manager:Assertion:OperationNotImplemented', 'Not implemented for this value of mux_set yet.')
                     

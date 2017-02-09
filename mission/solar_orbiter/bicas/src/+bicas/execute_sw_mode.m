@@ -121,7 +121,7 @@ end
 
 
 globalAttributesSubset = derive_output_dataset_GlobalAttributes(GlobalAttributesCellArray);
-C_sw_mode = DataManager.get_extended_sw_mode_info(swModeCliParameter);
+SwModeInfo = DataManager.get_extended_sw_mode_info(swModeCliParameter);
 
 
 
@@ -129,19 +129,19 @@ C_sw_mode = DataManager.get_extended_sw_mode_info(swModeCliParameter);
 % Iterate over all the output CDFs
 %==================================
 JsonOutputCdfFilenameListStruct = struct;    % Struct(!) representing a JSON object.
-for iOutputCdf = 1:length(C_sw_mode.outputs)
-    C_output = C_sw_mode.outputs{iOutputCdf};
+for iOutputCdf = 1:length(SwModeInfo.outputs)
+    OutputInfo = SwModeInfo.outputs{iOutputCdf};
     
-    eOutPdid = C_output.PDID;
+    eOutPdid = OutputInfo.PDID;
     ProcessData = DataManager.get_process_data_recursively(eOutPdid);
     
-    masterCdfPath = bicas.get_master_CDF_path(C_output.dataset_ID, C_output.skeleton_version_str);
+    masterCdfPath = bicas.get_master_CDF_path(OutputInfo.DATASET_ID, OutputInfo.SKELETON_VERSION_STR);
 
 
 
     % Write dataset CDF file using NEW CODE.
     [outputFilename] = write_dataset_CDF ( ...
-        ProcessData, globalAttributesSubset, outputDir, @get_output_filename, masterCdfPath, C_output.dataset_ID );
+        ProcessData, globalAttributesSubset, outputDir, @get_output_filename, masterCdfPath, OutputInfo.DATASET_ID );
     
     % Write dataset CDF file using OLD CODE.
     %[~, baseName, ext] = fileparts(outputFilename);
@@ -149,7 +149,7 @@ for iOutputCdf = 1:length(C_sw_mode.outputs)
     %write_dataset_CDF_OLD( outputFilePathOld, masterCdfPath, ProcessData )
        
     % Collect list (struct) of output files.
-    JsonOutputCdfFilenameListStruct.( C_output.JSON_output_file_identifier ) = outputFilename;
+    JsonOutputCdfFilenameListStruct.( OutputInfo.SWD_OUTPUT_FILE_IDENTIFIER ) = outputFilename;
 end
 
 
@@ -179,29 +179,31 @@ function GlobalAttributesSubset = derive_output_dataset_GlobalAttributes(GlobalA
 %                          NOTE: Deviates from the usual variable naming conventions. GlobalAttributesSubset field names
 %                          have the exact names of CDF global attributes.
 
-% pgaArray_ = parents' GlobalAttributes (+Array ==> One value per parent).
+global CONSTANTS
+INPUT_CDF_ASSERTIONS = CONSTANTS.C.INPUT_CDF_ASSERTIONS;
+
 GlobalAttributesSubset.Parents        = {};            % Array in which to collect value for this file's GlobalAttributes (array-sized GlobalAttribute).
 GlobalAttributesSubset.Parent_version = {};
-pgaArray_Test_id      = {};
-pgaArray_Provider     = {};
+pgaTestIdList   = {};   % PGA = parents' GlobalAttributes. List = List with one value per parent.
+pgaProviderList = {};
 for i = 1:length(GlobalAttributesCellArray)
     GlobalAttributesSubset.Parents       {end+1} = ['CDF>', GlobalAttributesCellArray{i}.Logical_file_id{1}];
     
     % NOTE: ROC DFMD is not completely clear on which version number should be used.
     GlobalAttributesSubset.Parent_version{end+1} = GlobalAttributesCellArray{i}.Data_version{1};
     
-    pgaArray_Test_id                     {end+1} = GlobalAttributesCellArray{i}.Test_id{1};
-    pgaArray_Provider                    {end+1} = GlobalAttributesCellArray{i}.Provider{1};
+    pgaTestIdList                        {end+1} = GlobalAttributesCellArray{i}.Test_id{1};
+    pgaProviderList                      {end+1} = GlobalAttributesCellArray{i}.Provider{1};
 end
 
 % NOTE: Test_id values can legitimately differ. E.g. "eeabc1edba9d76b08870510f87a0be6193c39051" and "eeabc1e".
-bicas.utils.assert_strings_equal(1, pgaArray_Provider, 'The input CDF files'' GlobalAttribute "Provider" values differ.')
-bicas.utils.assert_strings_equal(0, pgaArray_Test_id,  'The input CDF files'' GlobalAttribute "Test_id" values differ.')
+bicas.utils.assert_strings_equal(0,                                     pgaProviderList, 'The input CDF files'' GlobalAttribute "Provider" values differ.')
+bicas.utils.assert_strings_equal(INPUT_CDF_ASSERTIONS.MATCHING_TEST_ID, pgaTestIdList,   'The input CDF files'' GlobalAttribute "Test_id" values differ.')
 
 % NOTE: Uses shortened "Test id" value in case it is a long one, e.g. "eeabc1edba9d76b08870510f87a0be6193c39051". Uncertain
 % how "legal" that is but it seems to be at least what people use in the filenames.
-GlobalAttributesSubset.Provider = pgaArray_Provider{1};
-GlobalAttributesSubset.Test_Id  = pgaArray_Test_id{1}(1:7);
+GlobalAttributesSubset.Provider = pgaProviderList{1};
+GlobalAttributesSubset.Test_Id  = pgaTestIdList{1}(1:7);
 
 end
 
@@ -290,15 +292,15 @@ end
 %==========================
 DataObj.GlobalAttributes.Software_name       = CONSTANTS.C.SWD_IDENTIFICATION.name;
 DataObj.GlobalAttributes.Software_version    = CONSTANTS.C.SWD_RELEASE.version;
-DataObj.GlobalAttributes.Calibration_version = CONSTANTS.C.Calibration_version;             % "Static"?!!
+DataObj.GlobalAttributes.Calibration_version = CONSTANTS.C.CALIBRATION_VERSION;             % "Static"?!!
 DataObj.GlobalAttributes.Generation_date     = datestr(now, 'yyyy-mm-ddTHH:MM:SS');         % BUG? Assigns local time, not UTC!!! ROC DFMD does not mention time zone.
 DataObj.GlobalAttributes.Logical_file_id     = logical_file_id(...
-    datasetId, GlobalAttributesSubset.Test_Id, GlobalAttributesSubset.Provider, CONSTANTS.C.OUTPUT_CDF.Data_version);
+    datasetId, GlobalAttributesSubset.Test_Id, GlobalAttributesSubset.Provider, CONSTANTS.C.OUTPUT_CDF.DATA_VERSION);
 DataObj.GlobalAttributes.Parents             = GlobalAttributesSubset.Parents;
 DataObj.GlobalAttributes.Parent_version      = GlobalAttributesSubset.Parent_version;
-DataObj.GlobalAttributes.Data_version        = CONSTANTS.C.OUTPUT_CDF.Data_version;         % ROC DFMD says it should be updated in a way which can not be automatized?!!!
+DataObj.GlobalAttributes.Data_version        = CONSTANTS.C.OUTPUT_CDF.DATA_VERSION;         % ROC DFMD says it should be updated in a way which can not be automatized?!!!
 DataObj.GlobalAttributes.Provider            = GlobalAttributesSubset.Provider;             % ROC DFMD contradictive if it should be set.
-if CONSTANTS.C.OUTPUT_CDF.SET_Test_id
+if CONSTANTS.C.OUTPUT_CDF.SET_TEST_ID
     DataObj.GlobalAttributes.Test_id         = GlobalAttributesSubset.Test_Id;              % ROC DFMD says that it should really be set by ROC.
 end
 %DataObj.GlobalAttributes.SPECTRAL_RANGE_MIN
@@ -356,7 +358,7 @@ end
 % Write to CDF file using NEW METHOD: write_CDF_dataobj
 %=======================================================
 outputFilename = FilenamingFunction(...
-    datasetId, GlobalAttributesSubset.Test_Id, GlobalAttributesSubset.Provider, CONSTANTS.C.OUTPUT_CDF.Data_version);
+    datasetId, GlobalAttributesSubset.Test_Id, GlobalAttributesSubset.Provider, CONSTANTS.C.OUTPUT_CDF.DATA_VERSION);
 filePath = fullfile(outputFileParentDir, outputFilename);
 irf.log('n', sprintf('Writing dataset CDF file: %s', filePath))
 bicas.utils.write_CDF_dataobj( filePath, ...
@@ -438,10 +440,10 @@ end
 
 
 
-file_DATASET_ID       = do.GlobalAttributes.DATASET_ID{1};
-file_Skeleton_version = do.GlobalAttributes.Skeleton_version{1};
-irf.log('n', sprintf('File: DATASET_ID       = "%s"', file_DATASET_ID))
-irf.log('n', sprintf('File: Skeleton_version = "%s"', file_Skeleton_version))
+fileDatasetId          = do.GlobalAttributes.DATASET_ID{1};
+fileSkeletonVersionStr = do.GlobalAttributes.Skeleton_version{1};
+irf.log('n', sprintf('File: DATASET_ID       = "%s"', fileDatasetId))
+irf.log('n', sprintf('File: Skeleton_version = "%s"', fileSkeletonVersionStr))
 
 
 
@@ -450,15 +452,15 @@ irf.log('n', sprintf('File: Skeleton_version = "%s"', file_Skeleton_version))
 %===================================================
 % NOTE: Does print file name since it has only been previously been logged as "notice".
 %bicas.dm_utils.assert_unvaried_N_rows(processData);
-C_input = bicas.utils.select_structs(CONSTANTS.INPUTS_INFO_LIST, 'PDID', {pdid});
-C_input = C_input{1};
+InputInfo = bicas.utils.select_structs(CONSTANTS.INPUTS_INFO_LIST, 'PDID', {pdid});
+InputInfo = InputInfo{1};
 bicas.utils.assert_strings_equal(...
     CONSTANTS.C.INPUT_CDF_ASSERTIONS.STRICT_DATASET_ID, ...
-    {file_DATASET_ID, C_input.dataset_ID}, ...
+    {fileDatasetId, InputInfo.DATASET_ID}, ...
     sprintf('The input CDF file''s stated DATASET_ID does not match the value expected for the S/W mode.\n    File: %s\n    ', filePath))
 bicas.utils.assert_strings_equal(...
-    CONSTANTS.C.INPUT_CDF_ASSERTIONS.STRICT_Skeleton_version, ...
-    {file_Skeleton_version, C_input.skeleton_version_str}, ...
+    CONSTANTS.C.INPUT_CDF_ASSERTIONS.STRICT_SKELETON_VERSION, ...
+    {fileSkeletonVersionStr, InputInfo.SKELETON_VERSION_STR}, ...
     sprintf('The input CDF file''s stated Skeleton_version does not match the value expected for the S/W mode.\n    File: (%s)\n    ', filePath))
 
 
@@ -573,18 +575,18 @@ end
 
 
 
-function logicalFileId = logical_file_id(datasetId, testId, provider, data_version)
+function logicalFileId = logical_file_id(datasetId, testId, provider, dataVersion)
 % Construct a "Logical_file_id" as defined in the ROC DFMD, global attribute+file name convention.
 
 global CONSTANTS
 
 CONSTANTS.assert_dataset_ID(datasetId)
-if ~ischar(data_version ) || length(data_version)~=2
+if ~ischar(dataVersion ) || length(dataVersion)~=2
     error('BICAS:execute_sw_mode:Assertion:IllegalArgument', 'Illegal data_version')
 end
 
 providerParts = strsplit(provider, '>');
-logicalFileId = [datasetId, '_', testId, '_', providerParts{1}, '_V', data_version];
+logicalFileId = [datasetId, '_', testId, '_', providerParts{1}, '_V', dataVersion];
 end
 
 

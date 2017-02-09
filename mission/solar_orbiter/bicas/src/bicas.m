@@ -162,7 +162,7 @@ try
         % CASE: Should be a S/W mode (error otherwise)
         %==============================================
         %try
-            C_sw_mode = DataManager.get_extended_sw_mode_info(cliArgumentsArray{1});
+            ExtendedSwModeInfo = DataManager.get_extended_sw_mode_info(cliArgumentsArray{1});
         %catch exception
             % NOTE: The message is slightly inaccurate since it assumes that the first argument is a S/W mode.
             % Argument "--version" etc. would have worked too.
@@ -177,19 +177,19 @@ try
         % 2) dataset IDs!
         %=======================================================================================
         FlagsConfigMap('output_dir') = struct('cliString', '--output', 'isRequired', 1, 'expectsValue', 1);
-        C_inputs = C_sw_mode.inputs;      % C = Constants structure.
-        inputPdids = {};                  % List of keys used for input files.
-        for iInput = 1:length(C_inputs)
-            pdid = C_inputs{iInput}.PDID;
+        inputsInfoList = ExtendedSwModeInfo.inputs;      % C = Constants structure.
+        inputPdidsList = {};                  % List of keys used for input files.
+        for iInput = 1:length(inputsInfoList)
+            pdid = inputsInfoList{iInput}.PDID;
             
             % Configure one flag+value pair
             FlagConfig = [];
-            FlagConfig.cliString    = ['--', C_inputs{iInput}.CLI_parameter];
+            FlagConfig.cliString    = ['--', inputsInfoList{iInput}.CLI_PARAMETER];
             FlagConfig.isRequired   = 1;
             FlagConfig.expectsValue = 1;
             FlagsConfigMap(pdid) = FlagConfig;
             
-            inputPdids{end+1} = pdid;
+            inputPdidsList{end+1} = pdid;
         end
 
         %=================================
@@ -199,7 +199,7 @@ try
         
         
         
-        InputFilesMap = containers.Map(inputPdids, ParsedCliArgumentsMap.values(inputPdids));   % Extract subset of parsed arguments.
+        InputFilesMap = containers.Map(inputPdidsList, ParsedCliArgumentsMap.values(inputPdidsList));   % Extract subset of parsed arguments.
         
         outputDir = bicas.utils.get_abs_path(ParsedCliArgumentsMap('output_dir'));
         
@@ -208,7 +208,7 @@ try
         %==================
         % EXECUTE S/W MODE
         %==================
-        bicas.execute_sw_mode( DataManager, C_sw_mode.CLI_parameter, InputFilesMap, outputDir )
+        bicas.execute_sw_mode( DataManager, ExtendedSwModeInfo.CLI_PARAMETER, InputFilesMap, outputDir )
         
     end
 

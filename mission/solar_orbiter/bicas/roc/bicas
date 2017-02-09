@@ -228,7 +228,7 @@ launch_matlab_code() {
     #=======================================================================
     # Convert arguments into one long string that MATLAB code
     # can interpret as a list of arguments.
-    # NOTE: Can not handle arguments containing the character single quote.
+    # NOTE: Can not handle arguments containing the character single quote '.
     #=======================================================================
     local matlab_arg_list=""
     for arg in "$@"

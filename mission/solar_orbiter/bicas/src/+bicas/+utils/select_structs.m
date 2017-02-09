@@ -7,7 +7,7 @@
 % NOTE: Can be used multiple times successively to select for two matching struct fields, e.g. dataset_ID
 % AND skeleton_version_str.
 %
-% ASSUMES: All structure field values (in "struct_list") for the chosen field ("field_name") are unique.
+% ASSUMES: All structure field values (in "structList") for the chosen field ("fieldName") are unique.
 % ASSUMES: The structure field values are strings.
 %
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
@@ -16,28 +16,30 @@
 %
 % ARGUMENTS AND RETURN VALUES
 % ===========================
-% struct_list        : Cell array of structs
-% field_name         : Name of a struct field.
-% selection_values   : Cell array of strings.
-% subset_struct_list : Cell array of structs. That subset of structs in "struct_list" whose field name "field_name"
-%                      equals any of the string values in "selection_values".
+% structList       : Cell array of structs
+% fieldName        : Name of a struct field.
+% selectionValues  : Cell array of strings.
+% subsetStructList : Cell array of structs. That subset of structs in "structList" whose field name "fieldName"
+%                    equals any of the string values in "selectionValues".
 %
-function subset_struct_list = select_structs(struct_list, field_name, selection_values)
+function subsetStructList = select_structs(structList, fieldName, selectionValues)
 
 % Convert to cell array of strings.
-struct_list_values = {};
-for i=1:length(struct_list)
-    struct_list_values{i} = struct_list{i}.(field_name);
+structListValues = {};
+for iStruct = 1:length(structList)
+    structListValues{iStruct} = structList{iStruct}.(fieldName);
 end
 
-for i=1:length(selection_values)    
-    j = find(strcmp(selection_values{i}, struct_list_values));
+for iSelVal = 1:length(selectionValues)    
+    jFound = find(strcmp(selectionValues{iSelVal}, structListValues));
     
-    if numel(j) ~= 1
+    % ASSERTION
+    if numel(jFound) ~= 1
         error('select_structs:Assertion:IllegalArgument', 'Can not find exactly one structure with field "%s" with value "%s" (found %i of them).', ...
-            field_name, selection_values{i}, numel(j))
+            fieldName, selectionValues{iSelVal}, numel(jFound))
     end
-    subset_struct_list{i} = struct_list{j};
+    
+    subsetStructList{iSelVal} = structList{jFound};
 end
 
 end

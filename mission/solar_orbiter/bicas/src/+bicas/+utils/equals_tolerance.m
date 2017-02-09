@@ -1,4 +1,4 @@
-function eq = equals_tolerance(A,B, epsilon)
+function eq = equals_tolerance(A, B, epsilon)
 % Check if two numerical arrays are identical.
 % Intended as a utility function for automatic test code.
 %
@@ -30,11 +30,11 @@ elseif ~isequal(isnan(A), isnan(B))
 end
 A(isnan(A)) = [];   % Seems like this produces a 1D array, but only if something is removed.
 B(isnan(B)) = [];
-if isempty(A)  % NOTE: Must check for empty matrix after removing NaN since that changes the size..
+if isempty(A)     % NOTE: Must check for empty matrix after removing NaN since that changes the size.
     eq = 1;
     return
 end
-max_diff = max(max(abs(double(A-B))));
+maxDiff = max(max(abs(double(A-B))));   % Greatest difference between any pair of components.
 
-eq = (max_diff <= epsilon);
+eq = (maxDiff <= epsilon);
 end
