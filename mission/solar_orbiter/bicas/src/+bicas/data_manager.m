@@ -11,9 +11,9 @@
 % input process data") it has, and asks for the output data ("elementary output process data") it wants.
 %
 % The class maintains an internal set of different "process data" variables (PDVs), a set of variables where each one is
-% uniquely referenced by a unique string, a "process data ID" (PDID). These process data variables are all related to each
-% other in a conceptual "web" (an acyclic directed graph) describing their dependencies on each other. Initially these
-% process data variables are all empty.
+% uniquely referenced by a unique string, a "process data ID" (PDID). These process data variables are all related to
+% each other in a conceptual "web" (an acyclic directed graph) describing their dependencies on each other. Initially
+% these process data variables are all empty.
 %
 %
 % Dependencies
@@ -47,17 +47,17 @@
 %
 % Advantages with architecture
 % ----------------------------
+% - Can split processing into multiple simpler and natural parts which can be recycled for different S/W modes.
 % - Easy to implement CHANGING S/W modes (as defined by the RCS ICD) using this class, althoguh the class itself is
 %   unaware of S/W modes.
 %      Ex: Updates to the RPW pipeline, datasets.
 %      Ex: Can use a different set of modes when validating using the official RCS validation software at LESIA (not all
-%      datasets are available for input there, and one gets error when the S/W descriptor describes modes which require
-%      dataset IDs not defined/existing there).
-%      Ex: Implement inofficial modes for testing(?).
+%          datasets are available for input there, and one gets error when the S/W descriptor describes modes which
+%          require dataset IDs not defined/existing there).
+%      Ex: Implement inofficial modes for testing(?) but still easily switch between making them visible/invisible.
 % - Easier to keep support for legacy datasets (older versions of CDFs).
 % - Easier to maintain a varying set of test/debugging modes?
 % - Indirect "caching".
-% - Can reuse processing code?
 % - PDVs can be derived from different sets of PDVs which is useful since many datasets (CDF files) are similar.
 %
 %
@@ -85,7 +85,7 @@
 %       code as constants.
 % - Processing function
 %       Function that accepts PDs as arguments and from them derive another PD.
-% - Pre-Demuxing-Calibration Data PreDCD)
+% - Pre-Demuxing-Calibration Data (PreDCD)
 %       Generic data format that can represent all forms of input datasets before demuxing and calibration.
 %       Can use an arbitrary number of samples per record.
 %       Consists of struct with fields:
@@ -174,6 +174,9 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
 %   NOTE: Mostly/only useful for elementary input PDIDs?
 %   PROPOSAL: Add field (sub-struct) "format_constants" in list of EIn PDIDs in constants?!!
 %       NOTE: Already has version string in list of EIn PDIDs.
+%
+% PROPOSAL: get_process_data_recursively should give assertion error for not finding processing function? (Is there a
+% reason why not already so?)
 %--
 % PROPOSAL: Comment section for intermediate PDVs.
 % PROPOSAL: Make processing functions private. (possible?)
@@ -236,7 +239,7 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
         % processData : Empty if data was not already available, or could not be derived recursively.        
         %               ==> Empty is returnd for elementary input process data, or possibly for misconfigurations (error).
         
-
+        
             % NOTE: This log message is particularly useful for following the recursive calls of this function.
             % sw_mode_ID comes first since that tends to make the log message values line up better.
             %irf.log('n', sprintf('Begin function (pdid=%s)', pdid))
@@ -290,16 +293,21 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
                     end
                 end
                 
+                % ASSERTION: Check that input (field) has been derived.
                 if ~Inputs.isKey(inputField)
                     error('BICAS:data_manager:Assertion:SWModeProcessing', ...
-                        'Can not derive necessary process data for pdid=%s, input field=%s', pdid, inputField)
+                        'Can not derive necessary process data for pdid=%s, inputField=%s', pdid, inputField)
                 end
 
             end
             
-            %========================================================
-            % Derive the actual process data from other process data
-            %========================================================
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            % CALL PROCESSING FUNCTION - Derive the actual process data from other process data
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             irf.log('n', sprintf('Begin deriving PDID=%s using %s', pdid, func2str(processingFunc)))
             processData = processingFunc(Inputs);
             
@@ -319,12 +327,12 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
         % many redundant constants.
         %
         % NOTE: This function takes constants.SW_MODES_INFO_LIST and adds info about input and output datasets to it.
-        % NOTE: The function takes the "cliParameter" as parameter, not the S/W mode ID!
+        % NOTE: The function takes the "swModeCliParameter" as parameter, not the S/W mode ID!
         %
-        % IMPLEMENTATION NOTE: The reason for that this function is located in data_manager instead of "constants" is the
-        % call to "bicas.data_manager.get_elementary_input_PDIDs" and that constants.m should contain no reference to
-        % data_manager.m (for initialization reasons at the very least). AMENDMENT 2016-11-16: Function no longer calls
-        % that function but might call a similar one in the future. Comment therefore still relevant.
+        % IMPLEMENTATION NOTE: The reason for that this function is located in "data_manager" instead of "constants" is
+        % the call to "bicas.data_manager.get_elementary_input_PDIDs" and that constants.m should contain no reference
+        % to data_manager.m (for initialization reasons at the very least). AMENDMENT 2016-11-16: Function no longer
+        % calls that function but might call a similar one in the future. The comment is therefore still relevant.
 
             global CONSTANTS
 
@@ -334,13 +342,13 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
             % Collect all associated elementary input PDIDs.
             %input_PDIDs = obj.get_elementary_input_PDIDs(C_sw_mode.OUTPUT_PDID_LIST, C_sw_mode.ID);
 
-            try
+            try   % Assign INPUTS
                 ExtendedSwModeInfo.inputs = bicas.utils.select_structs(CONSTANTS.INPUTS_INFO_LIST,  'PDID', ExtendedSwModeInfo.INPUT_PDID_LIST);
             catch exception
                 error('BICAS:Assertion:IllegalConfiguration', ...
                     'Can not identify all input PDIDs associated with S/W mode CLI parameter "%s".', swModeCliParameter)
             end
-            try
+            try   % Assign OUTPUTS
                 ExtendedSwModeInfo.outputs = bicas.utils.select_structs(CONSTANTS.OUTPUTS_INFO_LIST, 'PDID', ExtendedSwModeInfo.OUTPUT_PDID_LIST);
             catch exception
                 error('BICAS:Assertion:IllegalConfiguration', ...
@@ -454,49 +462,37 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
         %    with (even if the data comes from different PDVs).
         %
         % The method itself is NOT recursive but it is designed so that other code can recurse over
-        % the implicit "~acyclic graph" defined by it.
+        % the implicit "~acyclic directed graph" defined by it.
         % Other code can use this method to do two things recursively:
         % (1) Derive process data.
         % (2) Check if supplied data (EIn PDVs/PDIDs) are sufficient for deriving alla EOut PDVs/PDIDs (without
-        %     generating any process data). This is useful for automatically checking that the required input
-        %     dataset IDs for S/W modes are correct (needed for (a) generating the S/W descriptor, and (b) generating
+        %     generating any process data). This is useful for automatically checking that the required input dataset
+        %     IDs for S/W modes are correct (this is needed for (a) generating the S/W descriptor, and (b) generating
         %     requirements on CLI parameters).
         %
         % ARGUMENT AND RETURN VALUES
         % ==========================
-        % pdid        : The PDID (string) for the PD that should be produced.
-        % inputPdids  :
-        %     Struct where every field is set to a cell array of PDIDs. In every such cell array, only one of its
-        %     PDIDs/PDs is necessary for the processing function. The field names of the fields are "human-readable".
-        %     NOTE: Elementary input PDIDs yield an empty struct (no field names).
-        % processingFunc :
-        %     Pointer to a function that can derive process data (for output_PDID) from other process data (for
-        %     input_PDIDs).
-        %         process_data = processing_func(inputs)
+        % outputPdid     : The PDID (string) for the PD that should be produced.
+        % inputPdids     : Struct where every field is set to a cell array of PDIDs. In every such cell array, only one
+        %                  of its PDIDs/PDs is necessary for the processing function. The field names of the fields are
+        %                  "human-readable".
+        %                  NOTE: Elementary input PDIDs yield an empty struct (no field names).
+        % processingFunc : Pointer to a function that can derive process data (for output_PDID) from other process data
+        %                  (for input_PDIDs).
+        %         Function "syntax": process_data = processing_func(InputsMap)
         %         ARGUMENTS:
-        %             inputsMap : A containers.Map
+        %             InputsMap : A containers.Map
         %                <keys>       : The same keys as InputPdidsMap (returned by get_processing_info).
-        %                <values>     : A struct with fields .pd (Process data) and .pdid (PDID for .pd).
-        %     Empty function is equivalent to that outputPdid is an EIn-PDID.
+        %                <values>     : A struct with fields .pd (process data) and .pdid (PDID for .pd).
+        %         An empty function pointer is equivalent to that outputPdid is an EIn-PDID.
             
             obj.assert_PDID(outputPdid)
             
-            % Assign value used for the case of elementary INPUT PDID (no input PDs <==> no fields).
+            
+            % Initialize InputPdidsMap for all cases.
             InputPdidsMap = containers.Map('KeyType', 'char', 'ValueType', 'any');
             
             
-
-            % Assign value used for the case of there being no real processing function
-            % -------------------------------------------------------------------------
-            % IMPLEMENTATION NOTE: Choice of value for the case of there being no processing function:
-            % 1) Using an empty value ==> The caller can immediately check whether it has received a processing function
-            % and then immediately throw an assertion error if that was unexpected.
-            % 2) Bad alternative: Use a nonsense function (one that always gives an assertion error, albeit a good error message)
-            % ==> The (assertion) error will be triggered first when the attempting to call the nonexisting processing
-            % function. ==> Error first very late. ==> Bad alternative.
-            processingFunc = [];
-            
-
             
             switch(outputPdid)
                 %=====================================================
@@ -504,23 +500,31 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
                 %=====================================================
                 % NOTE: It is still useful to include cases which do nothing since it is a check on permitted values (so
                 % that switch-otherwise can give error).
-                % BIAS
-                case 'HK_BIA_V01'
-                case 'HK_BIA_V02'
-                % LFR
-                case 'L2R_LFR-SBM1-CWF_V01'
-                case 'L2R_LFR-SBM1-CWF_V02'
-                case 'L2R_LFR-SBM2-CWF_V01'
-                case 'L2R_LFR-SBM2-CWF_V02'
-                case 'L2R_LFR-SURV-CWF_V01'
-                case 'L2R_LFR-SURV-CWF_V02'
-                case 'L2R_LFR-SURV-SWF_V01'
-                case 'L2R_LFR-SURV-SWF_V02'
-                % TDS
-                case 'L2R_TDS-LFM-CWF_V01'                    
-                case 'L2R_TDS-LFM-RSWF_V01'
-                case 'L2R_TDS-LFM-RSWF_V02'
-                    
+                % BIAS HK
+                case {'HK_BIA_V01', ...             % BIAS HK
+                      'HK_BIA_V02', ...
+                      'L2R_LFR-SBM1-CWF_V01', ...   % LFR
+                      'L2R_LFR-SBM1-CWF_V02', ...
+                      'L2R_LFR-SBM2-CWF_V01', ...
+                      'L2R_LFR-SBM2-CWF_V02', ...
+                      'L2R_LFR-SURV-CWF_V01', ...
+                      'L2R_LFR-SURV-CWF_V02', ...
+                      'L2R_LFR-SURV-SWF_V01', ...
+                      'L2R_LFR-SURV-SWF_V02', ...
+                      'L2R_TDS-LFM-CWF_V01', ...   % TDS
+                      'L2R_TDS-LFM-RSWF_V01', ...
+                      'L2R_TDS-LFM-RSWF_V02'}
+                  
+                    % Add nothing to InputPdidsMap.
+
+                    % IMPLEMENTATION NOTE: Choice of value for the case of there being no processing function:
+                    % 1) Using an empty value ==> The caller can immediately check whether it has received a processing function
+                    % and then immediately throw an assertion error if that was unexpected.
+                    % 2) Bad alternative: Use a nonsense function (one that always gives an assertion error, albeit a good error message)
+                    % ==> The (assertion) error will be triggered first when the attempting to call the nonexisting processing
+                    % function. ==> Error first very late. ==> Bad alternative.
+                    processingFunc = [];
+            
                 %====================
                 % Intermediary PDIDs
                 %====================
@@ -693,9 +697,9 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
         
             global CONSTANTS
         
+            sciPdid       = InputsMap('SCI_cdf').pdid;
             SciPd         = InputsMap('SCI_cdf').pd;
             HkOnSciTimePd = InputsMap('HK_on_SCI_time').pd;
-            sciPdid = InputsMap('SCI_cdf').pdid;
 
             nRecords = size(SciPd.Epoch, 1);
             
@@ -909,7 +913,9 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
             
             PostDcd = PreDcd;
             
+            %=======
             % DEMUX
+            %=======
             PostDcd.DemuxerOutput = bicas.data_manager.simple_demultiplex(...
                 PreDcd.DemuxerInput, PreDcd.MUX_SET, PreDcd.DIFF_GAIN);
             
