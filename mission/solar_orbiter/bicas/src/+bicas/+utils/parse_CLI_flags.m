@@ -23,7 +23,11 @@
 %    <keys>                    : Arbitrary unique strings to identify the flags in the return value.
 %    <values>                  : Struct. Information about each specified flag (syntax).
 %       .cliFlagString             : The command-line flag string (e.g. "--version"), including any prefix (e.g. dash).
-%       .occurranceRequirement : String specifying the number of times the flag may occurr. Alternatives: "0-1", "1", "0-inf".
+%       .occurrenceRequirement : String specifying the number of times the flag may occur.
+%                                Permitted alternatives (strings):
+%                                   '0-1'   = Flag must occur once or never.
+%                                   '1'     = Flag must occur exactly once.
+%                                   '0-inf' = Flug may occur any number of times (zero or more).
 %       .nValues               : The number of values that are expected after the flag.
 %
 % FlagValuesMap : containers.Map, number/string-->string/number
@@ -76,7 +80,7 @@ for iFlag = 1:length(flagKeysList)
     flagKey    = flagKeysList{iFlag};
     
     % ASSERTION
-    if ~isempty( setxor(fieldnames(FlagConfig), {'cliFlagString', 'occurranceRequirement', 'nValues'}))
+    if ~isempty( setxor(fieldnames(FlagConfig), {'cliFlagString', 'occurrenceRequirement', 'nValues'}))
         error('parse_CLI_flags:Assertion:IllegalArgument', 'FlagsConfigMap does not have the expected fields.')
     end
     
@@ -114,7 +118,7 @@ while iCliArgument <= length(cliArgumentsArray)
         end
     end
     if isempty(FlagConfig)
-        error('parse_CLI_flags:CLISyntax', 'Can not interpret command-line argument "%s". There is no such flag.', cliArgument)
+        error('parse_CLI_flags:CLISyntax', 'Can not interpret command-line argument "%s". It is not a permitted flag.', cliArgument)
     end
 
 
@@ -142,18 +146,18 @@ for iFlag = 1:length(flagKeysList)
     FlagConfig = flagConfigsList{iFlag};
     flagValues = FlagValuesMap(flagKey);
     
-    if strcmp(FlagConfig.occurranceRequirement, '0-1')
+    if strcmp(FlagConfig.occurrenceRequirement, '0-1')
         if numel(flagValues) > 1
             error('parse_CLI_flags:CLISyntax', 'Found more than one occurance of command-line flag "%s".', FlagConfig.cliFlagString)
         end
-    elseif strcmp(FlagConfig.occurranceRequirement, '1')
+    elseif strcmp(FlagConfig.occurrenceRequirement, '1')
         if numel(flagValues) ~= 1
             error('parse_CLI_flags:CLISyntax', 'Could not find required command-line flag "%s".', FlagConfig.cliFlagString)
         end
-    elseif strcmp(FlagConfig.occurranceRequirement, '0-N')
+    elseif strcmp(FlagConfig.occurrenceRequirement, '0-inf')
         ;   % Do nothing.
     else
-        error('parse_CLI_flags:Assertion', 'Can not interpret occurranceRequirement="%s".', FlagConfig.occurranceRequirement)
+        error('parse_CLI_flags:Assertion', 'Can not interpret occurrenceRequirement="%s".', FlagConfig.occurrenceRequirement)
     end
 end
 

@@ -125,7 +125,7 @@ classdef constants < handle
     methods(Access=public)
         
         % Constructor
-        function obj = constants(bicasRootPath)            
+        function obj = constants(bicasRootPath, ModifiedSettings)            
             
             %-------------------------------------------------------------------------------------
             % Common values
@@ -194,7 +194,7 @@ classdef constants < handle
             C.INPUT_CDF_ASSERTIONS.MATCHING_TEST_ID        = 0;   % Require Test_id to be identical for all input CDF datasets.
             C.OUTPUT_CDF.SET_TEST_ID = 1;            % Set CDF GlobalAttribute "Test_id". ROC DFMD says that it should really be set by ROC.            
             C.OUTPUT_CDF.DATA_VERSION = '01';        % Set CDF GlobalAttribute "Data_version". ROC DFMD says it should be updated in a way which can not be automatized?!!! Set here for now.
-            
+
             C.PROCESSING.USE_AQUISITION_TIME_FOR_HK_TIME_INTERPOLATION = 1;
             
             % zVariables which are still empty after copying data into the master CDF assigned a correctly sized array
@@ -238,7 +238,18 @@ classdef constants < handle
             
             % Extract list (cell array) of unique dataset IDs for input and output datasets.
             obj.ALL_DATASET_IDS_LIST = unique(cellfun(@(s) ({s.DATASET_ID}), [obj.OUTPUTS_INFO_LIST, obj.INPUTS_INFO_LIST])');
-
+            
+            
+            
+            % Overwrite default values
+            keysList = ModifiedSettings.keys;
+            for iModifSetting = 1:length(keysList)
+                key = keysList{iModifSetting};                
+                valueAsString = ModifiedSettings(key);
+                
+                obj.overwrite_setting(key, valueAsString);
+            end
+            
             
             
             obj.validate
@@ -337,6 +348,43 @@ classdef constants < handle
                 @(x) ({[x.DATASET_ID, '_V', x.SKELETON_VERSION_STR]}), ...
                 [obj.OUTPUTS_INFO_LIST, obj.INPUTS_INFO_LIST]   );
             bicas.utils.assert_strings_unique(datasetIdVersionList)
+            
+        end
+        
+        
+        
+        % Set (modify, overwrite) setting.
+        %
+        % Will parse string referring to particular setting. This function is intended for overwriting default values.
+        % The method therefore defines the syntax used to refer to specific settings and connects them to the internal
+        % data structure that stores the settings. Function could be used also for reading (interpreting) settings from
+        % configuration file in the future.
+        %
+        % NOTE: This function is only meant to be called from the constructor.        
+        %
+        % ~BUG: Does not treat logical values. (Assumes that conceptually logical values are represented as numerical
+        % values.)
+        function overwrite_setting(obj, key, newValueAsString)
+            
+            keySectionsList = strsplit(key, '.');
+            
+            try
+                oldValue = getfield(obj.C, keySectionsList{:});
+            catch exception
+                error('BICAS:constants:ConfigurationBug', 'Can not find setting "%s".', key)
+            end
+            
+            % Use old value to convert string value to appropriate MATLAB class.
+            if isnumeric(oldValue)
+                newValue = str2double(newValueAsString);
+            elseif ischar(oldValue)
+                newValue = newValueAsString;
+            else
+                error('BICAS:constants:Assertion:ConfigurationBug', 'Can not handle the MATLAB class=%s of internal setting "%s".', class(oldValue), key)
+            end
+            
+            % Overwrite old setting.
+            obj.C = setfield(obj.C, keySectionsList{:}, newValue);
             
         end
 

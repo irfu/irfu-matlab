@@ -312,7 +312,7 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
         
         
     
-        function ExtendedSwModeInfo = get_extended_sw_mode_info(obj, cliParameter)
+        function ExtendedSwModeInfo = get_extended_sw_mode_info(obj, swModeCliParameter)
         % Return ~constants structure for a specific S/W mode as referenced by a CLI parameter.
         % 
         % This structure is automatically put together from other structures (constants) to avoid having to define too
@@ -328,7 +328,7 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
 
             global CONSTANTS
 
-            ExtendedSwModeInfo = bicas.utils.select_structs(CONSTANTS.SW_MODES_INFO_LIST, 'CLI_PARAMETER', {cliParameter});            
+            ExtendedSwModeInfo = bicas.utils.select_structs(CONSTANTS.SW_MODES_INFO_LIST, 'CLI_PARAMETER', {swModeCliParameter});            
             ExtendedSwModeInfo = ExtendedSwModeInfo{1};
 
             % Collect all associated elementary input PDIDs.
@@ -338,13 +338,13 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
                 ExtendedSwModeInfo.inputs = bicas.utils.select_structs(CONSTANTS.INPUTS_INFO_LIST,  'PDID', ExtendedSwModeInfo.INPUT_PDID_LIST);
             catch exception
                 error('BICAS:Assertion:IllegalConfiguration', ...
-                    'Can not identify all input PDIDs associated with S/W mode CLI parameter "%s".', cliParameter)
+                    'Can not identify all input PDIDs associated with S/W mode CLI parameter "%s".', swModeCliParameter)
             end
             try
                 ExtendedSwModeInfo.outputs = bicas.utils.select_structs(CONSTANTS.OUTPUTS_INFO_LIST, 'PDID', ExtendedSwModeInfo.OUTPUT_PDID_LIST);
             catch exception
                 error('BICAS:Assertion:IllegalConfiguration', ...
-                    'Can not identify all output PDIDs associated with S/W mode CLI parameter "%s".', cliParameter)
+                    'Can not identify all output PDIDs associated with S/W mode CLI parameter "%s".', swModeCliParameter)
             end
         end
         
@@ -608,7 +608,6 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
 
 
     end    % methods(Access=private)
-
    
     %###################################################################################################################
     
