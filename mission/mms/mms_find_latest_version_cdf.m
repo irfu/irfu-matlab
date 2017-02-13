@@ -13,28 +13,35 @@ function fName = mms_find_latest_version_cdf(dir_input)
 % ----------------------------------------------------------------------------
 
 fName = '';
-
 fList = dir(dir_input); if isempty(fList), fName=fList; return, end
-  
-for i=length(fList):-1:1
+
+fNameTmp = '';
+for i=length(fList):-1:1 % Reversed order of "dir"
+  % Store only the superseeded versions of each file.
   filenameData = mms_fields_file_info(fList(i).name);
-  if isempty(fName)
-    fName = fList(i);
+  if isempty(fNameTmp)
+    fNameTmp = fList(i);
     prevVer = filenameData.vXYZ;
     prevDate = filenameData.date;
     continue
   end
   if prevDate == filenameData.date
     if is_version_larger(filenameData.vXYZ, prevVer)
-      fName = fList(i);
+      fNameTmp = fList(i);
       prevVer = filenameData.vXYZ;
     end
   else
     % New date/time stamps (burst?)
-    fName(end+1) = fList(i); %#ok<AGROW>
+    fNameTmp(end+1) = fList(i); %#ok<AGROW>
     prevVer = filenameData.vXYZ;
     prevDate = filenameData.date;
   end
+end
+
+% Reverse order back to "dir" default, increasing with names of file.
+for i=1:length(fNameTmp)
+  if i==1, fName = fNameTmp(end); continue; end
+  fName(end+1) = fNameTmp(end-i+1); %#ok<AGROW>
 end
 
 end
