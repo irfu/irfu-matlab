@@ -101,10 +101,10 @@ classdef dm_processing_functions
             %==================================================================
             % Log time intervals to enable comparing available SCI and HK data
             %==================================================================
-            bicas.dm_utils.log_tt2000_interval('HK  ACQUISITION_TIME', hkAtTt2000)
-            bicas.dm_utils.log_tt2000_interval('SCI ACQUISITION_TIME', sciAtTt2000)
-            bicas.dm_utils.log_tt2000_interval('HK  Epoch           ', hkEpoch)
-            bicas.dm_utils.log_tt2000_interval('SCI Epoch           ', sciEpoch)
+            bicas.dm_utils.log_tt2000_array('HK  ACQUISITION_TIME', hkAtTt2000)
+            bicas.dm_utils.log_tt2000_array('SCI ACQUISITION_TIME', sciAtTt2000)
+            bicas.dm_utils.log_tt2000_array('HK  Epoch           ', hkEpoch)
+            bicas.dm_utils.log_tt2000_array('SCI Epoch           ', sciEpoch)
             
             %=========================================================================================================
             % 1) Convert time to something linear in time that can be used for processing (not storing time to file).
@@ -367,11 +367,6 @@ classdef dm_processing_functions
             PreDcd = InputsMap('PreDCD').pd;
             bicas.dm_processing_functions.assert_PreDCD(PreDcd);
                     
-            % Log messages
-            for f = fieldnames(PreDcd.DemuxerInput)'
-                bicas.dm_utils.log_values_summary(f{1}, PreDcd.DemuxerInput.(f{1}));
-            end
-            
             PostDcd = PreDcd;
             
             %=======
@@ -379,11 +374,6 @@ classdef dm_processing_functions
             %=======
             PostDcd.DemuxerOutput = bicas.dm_processing_functions.simple_demultiplex(...
                 PreDcd.DemuxerInput, PreDcd.MUX_SET, PreDcd.DIFF_GAIN);
-            
-            % Log messages
-            for f = fieldnames(PostDcd.DemuxerOutput)'
-                bicas.dm_utils.log_values_summary(f{1}, PostDcd.DemuxerOutput.(f{1}));
-            end
             
             % BUG / TEMP: Set default values since the real values are not available.
             % Move "derivation" to HK_on_SCI_time?

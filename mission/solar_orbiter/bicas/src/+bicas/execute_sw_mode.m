@@ -133,13 +133,18 @@ for iOutputCdf = 1:length(SwModeInfo.outputs)
     OutputInfo = SwModeInfo.outputs{iOutputCdf};
     
     eOutPdid = OutputInfo.PDID;
-    ProcessData = DataManager.get_process_data_recursively(eOutPdid);
     
-    masterCdfPath = bicas.get_master_CDF_path(OutputInfo.DATASET_ID, OutputInfo.SKELETON_VERSION_STR);
-
-
+    %%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%
+    % PROCESS DATA
+    %%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%
+    ProcessData = DataManager.get_process_data_recursively(eOutPdid);
 
     % Write dataset CDF file.
+    masterCdfPath = bicas.get_master_CDF_path(OutputInfo.DATASET_ID, OutputInfo.SKELETON_VERSION_STR);
     [outputFilename] = write_dataset_CDF ( ...
         ProcessData, globalAttributesSubset, outputDir, @get_output_filename, masterCdfPath, OutputInfo.DATASET_ID );
     
@@ -210,10 +215,8 @@ end
 
 function [outputFilename] = write_dataset_CDF(...
     ProcessData, GlobalAttributesSubset, outputFileParentDir, FilenamingFunction, masterCdfPath, datasetId)
-% Function that writes one dataset CDF file.
+% Function that writes one ___dataset___ CDF file.
 %
-% The function uses the new CDF file writing method, via write_CDF_dataobj.
-% The function is meant to replace "write_dataset_CDF_OLD".
 
 %==========================================================================
 % This function needs GlobaAttributes values from the input files:
@@ -239,12 +242,12 @@ irf.log('n', sprintf('Reading master CDF file: "%s"', masterCdfPath))
 DataObj = dataobj(masterCdfPath);
 
 %=============================================================================================
-% Iterate over all OUTPUT PD field names (~zVariables) : Set corresponding dataobj zVariables
+% Iterate over all OUTPUT PD field names (~zVariables) - Set corresponding dataobj zVariables
 %=============================================================================================
 % NOTE: Only sets a SUBSET of the zVariables in master CDF.
 pdFieldNameList = fieldnames(ProcessData);
 irf.log('n', 'Converting PDV to dataobj (CDF data structure)')
-bicas.dm_utils.log_values_summary('explanation')
+%bicas.dm_utils.log_array('explanation')
 for iPdFieldName = 1:length(pdFieldNameList)
     zVariableName = pdFieldNameList{iPdFieldName};
     
@@ -256,21 +259,9 @@ for iPdFieldName = 1:length(pdFieldNameList)
     
     zVariableData = ProcessData.(zVariableName);
     
-    %=================================================================================================
-    % Log CDF data
-    % ------------
-    % NOTE: Somewhat misleading log values since (1) fill/pad values have not been replaced with NaN,
-    % and (2) the variable type has not been changed yet.
-    %=================================================================================================
-    if isnumeric(zVariableData)
-        if strcmp(zVariableName, 'Epoch')
-            bicas.dm_utils.log_tt2000_interval(zVariableName, zVariableData)
-        else
-            bicas.dm_utils.log_values_summary(zVariableName, zVariableData)
-        end
-    end
-    
-    % Prepare PDV zVariable data: Replace NaN-->fill value; convert to the right MATLAB class.
+    % Prepare PDV zVariable data:
+    % (1) Replace NaN-->fill value
+    % (2) Convert to the right MATLAB class.
     if isfloat(zVariableData)
         [fillValue, ~] = get_fill_pad_values(DataObj, zVariableName);
         zVariableData = bicas.utils.replace_value(zVariableData, NaN, fillValue);
@@ -278,10 +269,20 @@ for iPdFieldName = 1:length(pdFieldNameList)
     matlabClass = bicas.utils.convert_CDF_type_to_MATLAB_class(DataObj.data.(zVariableName).type, 'Permit MATLAB classes');
     zVariableData = cast(zVariableData, matlabClass);
     
+    %=================================================================================================
+    % Log data to be written to CDF file
+    % ----------------------------------
+    % NOTE: Log messages should reflect the values WRITTEN to file.
+    %       Process data variables are logged separately by data_manager.
+    %=================================================================================================
+    %bicas.dm_utils.log_struct_arrays(zVariableName, zVariableData);
+    
     % Set zVariable.
     DataObj.data.(zVariableName).data = zVariableData;
 end
 
+
+    
 %==========================
 % Set CDF GlobalAttributes
 %==========================
@@ -349,9 +350,9 @@ for fn = fieldnames(DataObj.data)'
     end
 end
 
-%=======================================================
-% Write to CDF file using NEW METHOD: write_CDF_dataobj
-%=======================================================
+%===========================================
+% Write to CDF file using write_CDF_dataobj
+%===========================================
 outputFilename = FilenamingFunction(...
     datasetId, GlobalAttributesSubset.Test_Id, GlobalAttributesSubset.Provider, CONSTANTS.C.OUTPUT_CDF.DATA_VERSION);
 filePath = fullfile(outputFileParentDir, outputFilename);
@@ -397,10 +398,18 @@ do = dataobj(filePath);                 % do=dataobj, i.e. irfu-matlab's dataobj
 irf.log('n', 'Converting dataobj (CDF data structure) to PDV.')
 processData       = struct();
 zVariableNameList = fieldnames(do.data);
-bicas.dm_utils.log_values_summary('explanation')
+%bicas.dm_utils.log_array('explanation')
 for i = 1:length(zVariableNameList)
     zVariableName = zVariableNameList{i};
     zVariableData = do.data.(zVariableName).data;
+    
+    %=================================================================================================
+    % Log data to be written to CDF file
+    % ----------------------------------
+    % NOTE: Log messages should reflect the values READ from file.
+    %       Process data variables are logged separately by data_manager.
+    %=================================================================================================
+    %bicas.dm_utils.log_struct_arrays(zVariableName, zVariableData);
     
     %=================================================
     % Replace fill/pad values with NaN for FLOAT data
@@ -415,19 +424,6 @@ for i = 1:length(zVariableNameList)
     else
         % Disable?! Only print warning if finds fill value which is not replaced?
         %irf.log('w', sprintf('Can not handle replace fill/pad values for zVariable "%s" when reading "%s".', zVariableName, filePath))
-    end
-    
-    %=================================================================================================
-    % Log CDF data
-    % ------------
-    % NOTE: Somewhat misleading log values since fill/pad values have already been replaced with NaN.
-    %=================================================================================================
-    if isnumeric(zVariableData)
-        if strcmp(zVariableName, 'Epoch')
-            bicas.dm_utils.log_tt2000_interval(zVariableName, zVariableData)
-        else
-            bicas.dm_utils.log_values_summary(zVariableName, zVariableData)
-        end
     end
     
     processData.(zVariableName) = zVariableData;

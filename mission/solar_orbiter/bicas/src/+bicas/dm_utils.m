@@ -461,20 +461,25 @@ classdef dm_utils
 
         
 
-        function log_values_summary(varargin)
+        function log_array(varargin)
         % Logs statistics on the contents of a numeric variable (any dimensionality): Number of & percentage NaN, unique
         % values, min-max. Primarily intended for zVariables and derivatives thereof. Can be useful for knowing which
         % settings are used (e.g. DIFF_GAIN), constant/varying bias current, suspect input datasets.
         %
+        % IMPLEMENTATION NOTE: Deliberately short function name to not clutter the log.
+        %
+        %
         % ARGUMENTS
         % =========
-        % Alternative 1: 'explanation'    : Prints explanation of the (very condensed) log messages.
-        % Alternative 2: variableName, v  : Print statistics on line
+        % Alternative 1: 'explanation' (string literal) : Prints explanation of the (very condensed) log messages.
+        % Alternative 2: variableName, variableValue    : Print statistics on line
+        %
+        % ASSUMPTIONS
+        % ===========
+        % variableValue is numeric
             
         % PROPOSAL: Handle fill/pad value?
         % PROPOSAL: Move to +utils.
-        % PROPOSAL: Print size of matrix.
-        % PROPOSAL: Special mode which prints explanation of printout.
         % PROPOSAL: Special log function for zVars. Can print CDF type (implicitly range).
         % PROPOSAL: Print MATLAB class (implicitly range).
         %
@@ -540,9 +545,11 @@ classdef dm_utils
                 % -------------------------
                 % Examples for choosing column sizes:
                 % Long variable names:       HK_BIA_MODE_BIAS3_ENABLED
+                %                            <L2S_LFR-SURV-CWF-E_V02>.QUALITY_BITMASK
+                %                            <L2R_LFR-SURV-CWF_V01>.BIAS_MODE_BIAS1_ENABLED
                 % Long variable size string: (90,90,2048)
                 %======================================================
-                outputStr = sprintf('%-25s (%-10s): #Us=%5d (%-16s) %s', variableName, sizeStr, nUniqueValues, nanStr, valuesStr);
+                outputStr = sprintf('%-46s (%-10s): #Us=%5d (%-16s) %s', variableName, sizeStr, nUniqueValues, nanStr, valuesStr);
                 
                 irf.log('n', outputStr)
             else
@@ -555,7 +562,53 @@ classdef dm_utils
         
         
         
-        function log_tt2000_interval(variableName, tt2000)
+        function log_struct_arrays(variableName, variableValue)
+            
+            bicas.dm_utils.log_array('explanation')
+            log_struct_arrays_INNER(variableName, variableValue)
+        
+            function log_struct_arrays_INNER(variableName, variableValue)
+                % Call log_array recursively for struct.
+                %
+                % NOTE: Special case for variables/fields named "Epoch" of type int64.
+                
+                if iscolumn(variableValue) && isa(variableValue, 'int64') && ~isempty(regexp(variableName, 'Epoch$'))
+                    
+                    bicas.dm_utils.log_tt2000_array(variableName, variableValue);
+                    
+                elseif isnumeric(variableValue)
+                    
+                    bicas.dm_utils.log_array(variableName, variableValue)
+                    
+                elseif isstruct(variableValue)
+                    
+                    fieldNamesList = fieldnames(variableValue);
+                    for i = 1:length(fieldNamesList)
+                        fieldName = fieldNamesList{i};
+                        
+                        % NOTE: RECURSIVE CALL
+                        log_struct_arrays_INNER(...
+                            [variableName, '.', fieldName], ...
+                            variableValue.(fieldName))
+                    end
+                    
+                elseif ischar(variableValue)
+                    
+                    % Example of string valued (but irrelevant) CDF zVariables: ACQUISITION_TIME_LABEL
+                    ;   % Ignore
+                    
+                else
+                    
+                    error('BICAS:dm_utils:Assertion', 'variableValue is neither numeric nor struct.')
+                    
+                end
+            end
+            
+        end
+        
+        
+        
+        function log_tt2000_array(variableName, tt2000)
         % Log summary of series of times.
         %
         % tt2000 : A vector of tt2000 values.
@@ -576,45 +629,6 @@ classdef dm_utils
             end
         end
 
-
-
-%         function log_unique_values_summary(variable_name, v)
-%         % Log number of unique values, and NaN, found in numeric matrix.
-%         % Useful for summarizing dataset data (usually many unique values).
-%         %
-%         % NOTE: Can handle zero values.
-%             
-%         % Excplicitly state including/excluding NaN? Number of NaN? Percent NaN? Min-max?
-%         % PROPOSAL: Move to +utils.
-%             
-%             nUniqueValues = length(bicas.dm_utils.unique_values_NaN(v));
-%             nNan = sum(isnan(v(:)));
-%             
-%             outputStr = sprintf('#Unique %-25s values: %5d', variable_name, nUniqueValues);
-%             if nUniqueValues ~= 0
-%                 outputStr = [outputStr, sprintf(' (NaN: %3i%%=%6i/%6i)', ...
-%                     round((nNan/numel(v))*100), ...
-%                     nNan, numel(v))];
-%             end
-%             
-%             irf.log('n', outputStr)
-%         end
-% 
-% 
-% 
-%         function log_unique_values_all(variableName, v)
-%         % Log all unique values found in numeric matrix.
-%         % Useful for logging dataset settings (few unique values).
-%         %
-%         % NOTE: Can handle zero values.
-%             
-%             % Automatically switch to log_unique_values_summary if too many?
-%             % Print number of NaN?
-% 
-%             valuesStr = sprintf('%d ', bicas.dm_utils.unique_values_NaN(v));
-%             irf.log('n', sprintf('Unique %-9s values: %s', variableName, valuesStr))
-%         end
-        
         
         
         function assert_Epoch(Epoch)

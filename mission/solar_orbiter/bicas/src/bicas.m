@@ -66,6 +66,9 @@ function errorCode = bicas( varargin )
 
 
 
+clear -global CONSTANTS          % Clear any previous instance of a global variable "CONSTANTS". This is useful to avoid
+                                 % mistakenly using a previously initialized version of CONSTANTS when the
+                                 % initialization has failed and when developing in MATLAB.
 global CONSTANTS                 % Gobal structure "CONSTANTS" is initialized later.
 [ERROR_CODES, REQUIRED_MATLAB_VERSION] = bicas.error_safe_constants();
 
@@ -97,23 +100,38 @@ try
     bicasRootPath = bicas.utils.get_abs_path(fullfile(matlabSrcPath, '..'));
     
     
+    %=============================
+    % Initialize global constants
+    %=============================
+    % IMPLEMENTATION NOTE: Does not initialize CONSTANTS until here because:
+    %    1) MATLAB version has been checked for. The initialization code could otherwise fail.
+    %    2) Needs BICAS root path.
+    % NOTE: Constants will later be modified by the CLI arguments.
+    % Should preferably not use irf.log before here so that the right logging level is used.
+    CONSTANTS = bicas.constants(bicasRootPath);
+    irf.log(CONSTANTS.C.LOGGING.IRF_LOG_LEVEL);
+
+    
+    
     %===================================================================
     % Configure permitted flags COMMON for all BICAS modes of operation
     %===================================================================
     FlagsConfigMap = containers.Map;
-    FlagsConfigMap('log_path')         = struct('cliFlagString', '--log',      'occurrenceRequirement', '0-1',   'nValues', 1);   % NOTE: Flag+value to permit but ignore since handled by bash launcher script.
-    FlagsConfigMap('config_file_path') = struct('cliFlagString', '--config',   'occurrenceRequirement', '0-1',   'nValues', 1);   % NOTE: Flag+value to permit but ignore since handled by bash launcher script.
+    FlagsConfigMap('log_path')          = struct('cliFlagString', '--log',     'occurrenceRequirement', '0-1',   'nValues', 1);   % NOTE: Flag+value to permit but ignore since handled by bash launcher script.
+    FlagsConfigMap('config_file_path')  = struct('cliFlagString', '--config',  'occurrenceRequirement', '0-1',   'nValues', 1);   % NOTE: Flag+value to permit but ignore since handled by bash launcher script.
     FlagsConfigMap('modified_settings') = struct('cliFlagString', '--setting', 'occurrenceRequirement', '0-inf', 'nValues', 2);
 
-    
 
-    DataManager = bicas.data_manager();
+
+    DataManager = bicas.data_manager();    % Requires CONSTANTS to be initialized.
     cliArgumentsList = varargin;
-    
-    
-    
+
+
+
     %=====================================================================
-    % Configure permitted CLI flags for SPECIFIC BICAS modes of operation
+    % Read the first CLI argument -- Determine BICAS modes of operation
+    % -----------------------------------------------------------------
+    % ==> Configure permitted CLI flags
     %=====================================================================
     if (length(cliArgumentsList) < 1)
         error('BICAS:CLISyntax', 'Not enough arguments found.')
@@ -135,22 +153,21 @@ try
         try
             ExtendedSwModeInfo = DataManager.get_extended_sw_mode_info(cliArgumentsList{1});
         catch exception
-            % NOTE: The message is slightly inaccurate since it assumes that the first argument is a S/W mode.
-            % Argument "--veersson" (misspelled --version) etc. would have produced error here too.
-            error('BICAS:CLISyntax', 'Can not interpret argument "%s" as a S/W mode (or any other legal argument).', cliArgumentsList{1});
+            % NOTE: Argument "--verson" (misspelled "--version") etc. would have produced error here too.
+            error('BICAS:CLISyntax', 'Can not interpret first argument "%s" as a S/W mode (or any other legal first argument).', cliArgumentsList{1});
         end
 
-        
-        
-        %=======================================================================================
+
+
+        %==============================================================================================================
         % Configure requirements on (remaining) CLI arguments depending on the S/W mode
         % -----------------------------------------------------------------------------
-        % NOTE: The flags are identified by strings (container.Map keys) which are a in reality a combination of the
-        % namespaces for
-        % 1) identifiers for misc. flags e.g. "output_dir", "log_path".
-        % 2) dataset IDs!
-        % This is not really appropriate.
-        %=======================================================================================
+        % NOTE/BUG RISK: The flags are identified by strings (container.Map keys) which are a in reality a combination
+        % of the namespaces for:
+        % (1) identifiers for misc. flags e.g. "output_dir", "log_path".
+        % (2) dataset IDs!
+        % This is not really appropriate but works as long as there is no overlap between the two sets of strings.
+        %==============================================================================================================
         FlagsConfigMap('output_dir') = struct('cliFlagString', '--output', 'occurrenceRequirement', '1', 'nValues', 1);
         inputsInfoList = ExtendedSwModeInfo.inputs;      % C = Constants structure.
         inputPdidsList = {};                  % List of keys used for input files.
@@ -186,14 +203,9 @@ try
 
     
     
-    %=============================
-    % Initialize global constants
-    %=============================
-    % IMPLEMENTATION NOTE: Does not initialize CONSTANTS until here because:
-    %    1) MATLAB version has been checked for. The initialization code could otherwise fail.
-    %    2) Overriding settings from the CLI arguments are available here.
+    % Modify settings
     % Should preferably not use irf.log before here so that the right logging level is used.
-    CONSTANTS = bicas.constants(bicasRootPath, ModifiedSettings);
+    CONSTANTS.modify_settings(ModifiedSettings)
     irf.log(CONSTANTS.C.LOGGING.IRF_LOG_LEVEL);
     
     
@@ -241,7 +253,7 @@ try
         end
         
         % Extract the output directory from CLI arguments.
-        valuesListsLists = FlagValuesMap('output_dir')
+        valuesListsLists = FlagValuesMap('output_dir');
         outputDir = bicas.utils.get_abs_path(valuesListsLists{1}{1});
         
         

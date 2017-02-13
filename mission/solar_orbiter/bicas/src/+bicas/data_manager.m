@@ -103,7 +103,7 @@
 classdef data_manager < handle     % Explicitly declare it as a handle class to avoid IDE warnings.
 %#######################################################################################################################
 % PROPOSAL: Use other class name that implices processing, and fits with defined term "process data".
-%     "processing_manager"? "proc_manager"?x
+%     "processing_manager"? "proc_manager"?
 %--
 % PROPOSAL: Function for checking if list of Ein PDIDs for a list of EOut PDIDs can be satisfied.
 %
@@ -381,6 +381,9 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
             end
             
             obj.ProcessDataVariables(pdid) = processData;
+            
+            % Log summary of process data.
+            bicas.dm_utils.log_struct_arrays(sprintf('<%s>', pdid), processData);
         end
 
         

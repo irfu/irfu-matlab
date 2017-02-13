@@ -125,7 +125,7 @@ classdef constants < handle
     methods(Access=public)
         
         % Constructor
-        function obj = constants(bicasRootPath, ModifiedSettings)            
+        function obj = constants(bicasRootPath)            
             
             %-------------------------------------------------------------------------------------
             % Common values
@@ -134,7 +134,7 @@ classdef constants < handle
             %-------------------------------------------------------------------------------------
             D = [];
             D.INITIAL_RELEASE_MODIFICATION_STR = 'No modification (initial release)';
-            D.INITIAL_RELEASE_DATE = '2016-11-17';
+            D.INITIAL_RELEASE_DATE = '2017-02-13';
             %D.SWD_OUTPUT_RELEASE_VERSION = '01';  % For the S/W descriptor output CDFs' release version. Unknown what a sensible value is.
             
             
@@ -153,12 +153,12 @@ classdef constants < handle
         
             
             
-            %==========================================================================================================
+            %===========================================================================================================
             % Various S/W descriptor release data for the entire software (not specific outputs)
             % ----------------------------------------------------------------------------------
             % EXCEPTION TO VARIABLE NAMING CONVENTION: Field names are used for constructing the JSON object struct and
             % can therefore NOT follow variable naming conventions without modifying other code.
-            %==========================================================================================================
+            %===========================================================================================================
             C.SWD_IDENTIFICATION.project     = 'ROC-SGSE';
             C.SWD_IDENTIFICATION.name        = 'BICAS';
             C.SWD_IDENTIFICATION.identifier  = 'ROC-SGSE-BICAS';
@@ -240,7 +240,27 @@ classdef constants < handle
             obj.ALL_DATASET_IDS_LIST = unique(cellfun(@(s) ({s.DATASET_ID}), [obj.OUTPUTS_INFO_LIST, obj.INPUTS_INFO_LIST])');
             
             
-            
+            obj.validate
+        end
+        
+        
+        
+        % Modify settings.
+        %
+        % ARGUMENTS
+        % =========
+        % ModifiedSettings : containers.Map with
+        %   keys   = Recursive struct names / settings names
+        %   values = Settings values as strings.
+        %
+        %
+        % NOTE: This function is only supposed to be called once, and as soon as possible after the constants object has
+        % been initialized.
+        % IMPLEMENTATION NOTE: This function can NOT be trivially merged with the constructor since
+        % (1) "constants" have to be initialized before parsing CLI arguments (for S/W modes).
+        % (2) "constants"/settings can be modified by the CLI arguments.
+        %
+        function modify_settings(obj, ModifiedSettings)
             % Overwrite default values
             keysList = ModifiedSettings.keys;
             for iModifSetting = 1:length(keysList)
@@ -250,9 +270,7 @@ classdef constants < handle
                 obj.overwrite_setting(key, valueAsString);
             end
             
-            
-            
-            obj.validate
+            obj.validate     % Doubtful if this checks anything that can be modified by this function.
         end
         
         
@@ -272,7 +290,7 @@ classdef constants < handle
                     return
                 end
             end
-            error('BICAS:constants:Assertion', '"%s" is not a valid S/D mode ID', swModeId)
+            error('BICAS:constants:Assertion', '"%s" is not a valid S/W mode ID', swModeId)
         end
 
         function assert_EIn_PDID(obj, einPdid)
