@@ -272,6 +272,10 @@ classdef mms_local_file_db < mms_file_db
           end
           try
             info = spdfcdfinfo([entry.path filesep entry.name]);
+            % Add a very short delay to ensure consecutive files are not
+            % accessed TOO quickly as this may cause Matlab to experince a
+            % hard crash regardless of the try&catch.
+            pause(0.0001);
           catch
             errS = ['Cannot read: ' entry.path filesep entry.name];
             irf.log('critical',errS), error(errS)
