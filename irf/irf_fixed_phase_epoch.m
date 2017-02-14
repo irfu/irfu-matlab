@@ -45,8 +45,8 @@ phaDegUnw = unwrap(phaData*pi/180)*180/pi;
 % Handle long gaps
 N_GAP = 10; % Number of missing points to bec considered a data gap
 idxGap = find(diff(epochTmp)>N_GAP*median(diff(epochTmp)));
-idxStart = [1 idxGap+1];
-idxEnd = [idxGap length(epochTmp)];
+idxStart = [1; idxGap+1];
+idxEnd = [idxGap; length(epochTmp)];
 
 phaFixedAll = []; timeAll = [];
 for idx = 1:length(idxStart)
