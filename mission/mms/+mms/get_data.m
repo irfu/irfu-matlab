@@ -133,7 +133,7 @@ vars = {'R_gse','R_gsm','V_gse','V_gsm',...
   'V_edp_brst_l1b','V_edp_fast_l1b','V_edp_slow_l1b','V_edp_fast_sitl','V_edp_slow_sitl'...
   'V_edp_brst_l2',...
   'Vi_dbcs_fpi_brst_l2', 'Vi_dbcs_fpi_brst', 'Vi_dbcs_fpi_fast_l2',...
-  'Vi_gse_fpi_sitl', 'Vi_gse_fpi_ql',...
+  'Vi_gse_fpi_sitl', 'Vi_gse_fpi_ql', 'Vi_dbcs_fpi_ql',...
   'Vi_gse_fpi_brst_l1b','Vi_gse_fpi_fast_l1b',...
   'Ve_dbcs_fpi_brst_l2','Ve_dbcs_fpi_brst', 'Ve_dbcs_fpi_fast_l2',...
   'Ve_gse_fpi_sitl', 'Ve_gse_fpi_ql',...
@@ -367,7 +367,7 @@ switch Vr.inst
           case 'l1b'
             pref = ['mms' mmsIdS '_' sensor '_numberdensity'];
           case 'ql'
-            pref = ['mms' mmsIdS '_' sensor '_numberDensity'];
+            pref = ['mms' mmsIdS '_' sensor '_numberdensity_fast'];
           case 'sitl'
             pref = ['mms' mmsIdS '_fpi_' upper(sensor) 'numberDensity'];
           otherwise, error('should not be here')
@@ -430,6 +430,11 @@ switch Vr.inst
             if ~isempty(res), return, end
           case 'l1b'
           case 'ql'
+            suf = ['_' Vr.cs '_' Vr.tmmode];
+            compS = struct('x','x','y','y','z','z');
+            % try to load V3
+            res = mms.db_get_ts(dsetName,[pref 'v' suf],Tint);
+            if ~isempty(res), return, end
           case 'sitl'
             pref = ['mms' mmsIdS '_fpi_' Vr.param(end) 'BulkV_'];
             suf = '_DSC';

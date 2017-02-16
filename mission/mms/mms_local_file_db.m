@@ -272,6 +272,12 @@ classdef mms_local_file_db < mms_file_db
           end
           try
             info = spdfcdfinfo([entry.path filesep entry.name]);
+            if ispc
+              % Add a very short delay to ensure consecutive files are not
+              % accessed TOO quickly as this may cause Matlab to experince a
+              % hard crash on Win10 regardless of the try&catch.
+              pause(0.0001);
+            end
           catch
             errS = ['Cannot read: ' entry.path filesep entry.name];
             irf.log('critical',errS), error(errS)
@@ -285,6 +291,12 @@ classdef mms_local_file_db < mms_file_db
           data = spdfcdfread([entry.path filesep entry.name], ...
             'Variables', info.Variables(iVar,1), 'CombineRecords', true, ...
             'KeepEpochAsIs', true, 'DataOnly', true);
+          if ispc
+            % Add a very short delay to ensure consecutive files are not
+            % accessed TOO quickly as this may cause Matlab to experince a
+            % hard crash on Win10 regardless of the try&catch.
+            pause(0.0001);
+          end
           if isempty(data), entry = []; return, end
           entry.start = EpochTT(data(1));
           entry.stop = EpochTT(data(end));
@@ -357,6 +369,12 @@ classdef mms_local_file_db < mms_file_db
 				res = obj.index.file_has_var(fileName,varName);
 			else
 				info = spdfcdfinfo(fullPath);
+                if ispc
+                  % Add a very short delay to ensure consecutive files are not
+                  % accessed TOO quickly as this may cause Matlab to experince a
+                  % hard crash on Win10 regardless of the try&catch.
+                  pause(0.0001);
+                end
 				res = any(cellfun(@(x) strcmp(x,varName), info.Variables(:,1)));
 			end
     end

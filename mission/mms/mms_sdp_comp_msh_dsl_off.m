@@ -16,6 +16,21 @@ idxMSH = [];
 E34 = struct('c1',[],'c2',[],'c3',[],'c4',[]);
 EFPI = E34; flagOldFile = false;
 
+maneuvers = mms_maneuvers(Tint); % Locate any maneuvers
+
+% Check if Tint covers midnight and the stop time is more than 10 minutes
+% after midnight and within the last 40 days. If this is the case then
+% loading recent L2 or L2Pre data products may result in data only from the
+% start of Tint to midnight if the next day(-s) L2 or L2Pre products has
+% not yet been produced.
+if( ~strcmp(Tint.start.utc('dd'), Tint.stop.utc('dd')) && ...
+    EpochTT(Tint.stop.utc('yyyy-mm-ddT00:10:00.000000000Z')) < Tint.stop && ...
+    Tint.stop.ttns > irf_time(now,'datenum>ttns') - int64(40*86400*10^9) )
+  midnightROI = true;
+else
+  midnightROI = false;
+end
+
 for mmsId = 1:4
   mmsIdS = sprintf('c%d',mmsId);
   fPre = sprintf('mms%d_edp_fast_l2a_dce2d',mmsId);
@@ -78,36 +93,62 @@ for mmsId = 1:4
     E34.(mmsIdS) = Es34AspocOffR;
   end
   
+  for iManuev = 1:length(maneuvers.(sprintf('mms%i',mmsId)))
+    % Maneuvers was found...
+    irf.log('warning', ['Maneuver: ', ...
+      maneuvers.(sprintf('mms%i',mmsId)){iManuev}.start.toUtc, '/', ...
+      maneuvers.(sprintf('mms%i',mmsId)){iManuev}.stop.toUtc]);
+    % Set EDP data as NaN for the duration of the maneuvers.
+    E34.(mmsIdS).data(bitand( E34.(mmsIdS).time.ttns >= maneuvers.(sprintf('mms%i',mmsId)){iManuev}.start.ttns, ...
+      E34.(mmsIdS).time.ttns <= maneuvers.(sprintf('mms%i',mmsId)){iManuev}.stop.ttns), :) = NaN;
+  end
+
   B = mms.get_data('B_dmpa_srvy',Tint,mmsId);
-  if isempty(B), B = mms.get_data('B_dmpa_dfg_srvy_ql',Tint,mmsId); end
-  if isempty(B), continue, end
+  if isempty(B) || (midnightROI && B.time(end) < EpochTT(Tint.stop.utc('yyyy-mm-ddT00:01:00.000000000Z')))
+    % If higher level data was not found, or ROI covers midnight +10min and
+    % resulting data did not at least cover midnight +1min it is likely
+    % that the higher level has not yet been produced. Try a lower level
+    % product.
+    B = mms.get_data('B_dmpa_dfg_srvy_l2pre',Tint,mmsId);
+    if isempty(B) || (midnightROI && B.time(end) < EpochTT(Tint.stop.utc('yyyy-mm-ddT00:01:00.000000000Z')))
+      B = mms.get_data('B_dmpa_dfg_srvy_ql',Tint,mmsId);
+      if isempty(B)
+        irf.log('warning','Failed to load any B-field data');
+        continue
+      else
+        irf.log('warning','Using QL DFG data');
+      end
+    else
+      irf.log('warning','Using L2pre DFG data');
+    end
+  end
   
   % Here we try different sources of FPI data
   Vifpi = mms.get_data('Vi_dbcs_fpi_fast_l2',Tint,mmsId);
-  if isempty(Vifpi)
+  if isempty(Vifpi) || (midnightROI && Vifpi.time(end) < EpochTT(Tint.stop.utc('yyyy-mm-ddT00:01:00.000000000Z')))
     % No L2, try L1b
-    Vifpi = mms.get_data('Vi_gse_fpi_fast_l1b',Tint,mmsId);
-    if ~isempty(Vifpi)
-      irf.log('warning','Using L1b FPI data');
-      if isempty(idxMSH), Nifpi = mms.get_data('Ni_fpi_fast_l1b',Tint,mmsId); end
-    else
+    %Vifpi = mms.get_data('Vi_gse_fpi_fast_l1b',Tint,mmsId);
+    %if ~isempty(Vifpi)
+    %  irf.log('warning','Using L1b FPI data');
+    %  if isempty(idxMSH), Nifpi = mms.get_data('Ni_fpi_fast_l1b',Tint,mmsId); end
+    %else
       % No L2 or L1b, try QL
-      Vifpi = mms.get_data('Vi_gse_fpi_ql',Tint,mmsId);
+      Vifpi = mms.get_data('Vi_dbcs_fpi_ql',Tint,mmsId);
       if ~isempty(Vifpi)
         irf.log('warning','Using QL FPI data');
         if isempty(idxMSH), Nifpi = mms.get_data('Ni_fpi_ql',Tint,mmsId); end
       else
         % No L2, L1b or QL. Last resort, try SITL
-        Vifpi = mms.get_data('Vi_gse_fpi_sitl',Tint,mmsId);
-        if ~isempty(Vifpi)
-          irf.log('warning','Using SITL FPI data');
-          if isempty(idxMSH), Nifpi = mms.get_data('Ni_fpi_sitl',Tint,mmsId); end
-        else
+        %Vifpi = mms.get_data('Vi_dbcs_fpi_sitl',Tint,mmsId);
+        %if ~isempty(Vifpi)
+          %irf.log('warning','Using SITL FPI data');
+          %if isempty(idxMSH), Nifpi = mms.get_data('Ni_fpi_sitl',Tint,mmsId); end
+       %else
           irf.log('warning', 'Did not find any FPI data');
           continue
-        end
-      end
-    end
+       end
+      %end
+    %end
   else
     irf.log('notice','Using L2 FPI data');
     if isempty(idxMSH), Nifpi = mms.get_data('Ni_fpi_fast_l2',Tint,mmsId); end
