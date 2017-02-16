@@ -1,14 +1,17 @@
 %% Example code to perform Walen test; only for burst mode MMS data.
-%   Reference: Phan et al. [AG, 2004]
+%   Reference: Phan et al. [AG, 2004], Reto
 
 %%  1. basic
     ic = 1;
-    Jsign = -1;         % 1/-1 for jet direction;    
-    time = irf_time('2015-11-12T06:43:00.000Z','utc>epochtt');
+    Jsign = 1;         % 1/-1 for jet direction;    
+    time = irf_time('2015-11-30T00:23:55.200Z','utc>epochtt');
     vec1 = [1, 0, 0];       vec2 = [0, 1, 0];       vec3 = [0, 0, 1];       % in GSE
-    tint = irf.tint('2015-11-12T06:42:05.000000Z/2015-11-12T06:43:10.000000Z');             % plot
-    tint_ref = irf.tint('2015-11-12T06:42:50.000000Z/2015-11-12T06:42:52.000000Z');         % reference region     
-    tint_walen = irf.tint('2015-11-12T06:42:20.000000Z/2015-11-12T06:42:52.000000Z');       % test region
+    %tint = irf.tint('2015-11-12T06:42:05.000000Z/2015-11-12T06:43:10.000000Z');             % plot
+    %tint_ref = irf.tint('2015-11-12T06:42:50.000000Z/2015-11-12T06:42:52.000000Z');         % reference region     
+    %tint_walen = irf.tint('2015-11-12T06:42:20.000000Z/2015-11-12T06:42:52.000000Z');       % test region
+    tint = irf.tint('2015-11-30T00:23:48.000000Z/2015-11-30T00:24:01.000000Z'); % plot
+    tint_ref = irf.tint('2015-11-30T00:23:49.000000Z/2015-11-30T00:23:50.000000Z'); % reference region
+    tint_walen = irf.tint('2015-11-30T00:23:50.000000Z/2015-11-30T00:23:54.000000Z'); % test region    
     unit_v2w = 1e6 * 0.5 * 1.673e-27 / 1.6e-19;
     
 %%  2. load data
@@ -170,7 +173,7 @@
     title(h(1), strcat('MMS-', num2str(ic)));
     irf_plot_axis_align(h(1 : 7))
     irf_zoom(h(1 : 7),'x', tint);
-    irf_pl_mark(h(1: 7), tint_ref, 'red')
-    irf_pl_mark(h(5: 7), tint_walen, 'yellow'); %, 'LineStyle', '--', 'LineWidth', 1.5)    
+    irf_pl_mark(h(5), tint_ref, 'red')
+    irf_pl_mark(h(5), tint_walen, 'yellow'); %, 'LineStyle', '--', 'LineWidth', 1.5)    
 
 %%
