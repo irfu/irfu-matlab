@@ -23,7 +23,7 @@ time = sort(unique(time));
 
 %%
 idx = cell(1,length(vars));
-if nOk > 1
+if nOk >= 1
   for iv=1:length(vars)
     vv = vars{iv};
     if isempty(vv), continue, end
