@@ -146,7 +146,8 @@ classdef mms_db < handle
          if ~comp_cell(fields1,fields2), return, end
          
          ignoreFields = {'data','nrec','Generation_date',...
-           'GlobalAttributes','Logical_file_id','Data_version','Parents'};
+           'GlobalAttributes','Logical_file_id','Data_version','Parents', ...
+           'VALIDMAX'};
          for iField=1:length(fields1)
            f = fields1{iField};
            % data, nrec and the GlobalAttributes Generation_date,
