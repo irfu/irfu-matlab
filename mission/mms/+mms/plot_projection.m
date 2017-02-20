@@ -43,7 +43,7 @@ function [hax,hcb] = plot_projection(varargin)
 %     mms.plot_projection(desDist1,'tint',tint,'xyz',[-1 0 0; 0 -1 0;hatB0],'vlim',40000);
 
 [ax,args,nargs] = axescheck(varargin{:});
-
+hax = ax;
 
 irf.log('warning','Please verify that you think the projection is done properly!');
 
