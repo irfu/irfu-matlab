@@ -1,8 +1,8 @@
 function [dE, dAmp, weight] = caa_sh_xoff(st,dt,flag_amp)
 %CAA_SH_XOFF  sunward offset and amplitude correction in the sh/sw
 %
-% [dE, dAmp, weight] = caa_sh_xoff(st,dt [,flag_amp])
-% [dE, dAmp, weight] = caa_sh_xoff(iso_st,iso_et [,flag_amp])
+% [dE, dAmp, weight] = CAA_SH_XOFF(st,dt [,flag_amp])
+% [dE, dAmp, weight] = CAA_SH_XOFF(iso_st,iso_et [,flag_amp])
 %
 % Study sunward offset (X GSE) and amplitude correction
 % factor by comparing EFW data with CIS HIA
@@ -12,7 +12,12 @@ function [dE, dAmp, weight] = caa_sh_xoff(st,dt,flag_amp)
 %
 % See also CAA_SH_PLAN, CAA_COROF_DSI
 
-% Copyright 2007, 2014 Yuri Khotyaintsev
+% ----------------------------------------------------------------------------
+% "THE BEER-WARE LICENSE" (Revision 42):
+% <yuri@irfu.se> wrote this file.  As long as you retain this notice you
+% can do whatever you want with this stuff. If we meet some day, and you think
+% this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
+% ----------------------------------------------------------------------------
 
 STEP = 600; % Averaging window
 DEY = 0.5;  % Good Ey correspondence in mV/m
@@ -44,7 +49,7 @@ for cli=1:4
   % Concatenate intervals
   [~,ii] = sort([dirList.st]);
   es_tmp = [];
-  for idxDir = ii;
+  for idxDir = ii
     cd(dirList(idxDir).dir);
     spinFits = get_spin_fits();
     if isempty(spinFits), continue, end
@@ -59,18 +64,42 @@ for cli=1:4
   cd(old_pwd)
 end
 		
-diVCEh1 = caa_get(st,dt,1,'diVCEh?');
+
+% Try loading C1 CIS-HIA from CAA
+diVCh1 = caa_stream_var(st,dt,'C1_CP_CIS_HIA_ONBOARD_MOMENTS','velocity_isr2');
+if ~isempty(diVCh1)
+  % Fetch B interval limited to CIS for speed reasons
+  diB1 = caa_stream_var(diVCh1(1,1)-3,diVCh1(end,1)-diVCh1(1,1)+6,...
+    'C1_CP_FGM_5VPS_ISR2','B_vec_xyz_isr2');
+  if ~isempty(diB1), diVCEh1 = irf_e_vxb(diVCh1,diB1); end
+else %diVCEh1 = caa_get(st,dt,1,'diVCEh?'); end %try from disk
+  diVCEh1 = [];
+end
+
 if ~isempty(diVCEh1)
     diVCEh1(isnan(diVCEh1(:,2)),:)=[];
     CE1=irf_resamp(diVCEh1,t);
-else CE1 = [];
+else, CE1 = [];
 end
 
-diVCEh3 = caa_get(st,dt,3,'diVCEh?');
+% Try loading C3 CIS-HIA from CAA
+if st+dt < iso2epoch('2009-11-11T08:30:00Z') % No CIS-HIA on C3 after this
+  diVCh3 = caa_stream_var(st,dt,'C1_CP_CIS_HIA_ONBOARD_MOMENTS','velocity_isr2');
+  if ~isempty(diVCh3)
+    % Fetch B interval limited to CIS for speed reasons
+    diB3 = caa_stream_var(diVCh3(1,1)-3,diVCh3(end,1)-diVCh3(1,1)+6,...
+      'C3_CP_FGM_5VPS_ISR2','B_vec_xyz_isr2');
+    if ~isempty(diB3), diVCEh3 = irf_e_vxb(diVCh3,diB3); end
+  else %diVCEh1 = caa_get(st,dt,3,'diVCEh?'); end %try from disk
+    diVCEh3 = [];
+  end
+else, diVCEh3 = [];
+end
+
 if ~isempty(diVCEh3)
-    diVCEh3(isnan(diVCEh3(:,2)),:)=[];
-    CE3=irf_resamp(diVCEh3,t);
-else CE3 = [];
+  diVCEh3(isnan(diVCEh3(:,2)),:)=[];
+  CE3=irf_resamp(diVCEh3,t);
+else, CE3 = [];
 end
 
 % Plot
@@ -107,7 +136,7 @@ if ~isempty(E1) && ~isempty(CE1)
   if ~isempty(ii)
     dEx = E1(ii,1:2);
     if flag_amp, dAmp = find_damp(E1(ii,3), CE1(ii,3));
-    else dAmp = DAMP_DEF;
+    else, dAmp = DAMP_DEF;
     end
     dEx(:,2) = dAmp*E1(ii,2) - CE1(ii,2);
     irf_plot(hca,dEx,'kx'), on = 1;
@@ -122,7 +151,7 @@ if ~isempty(E3) && ~isempty(CE3)
   if ~isempty(ii)
     dEx = E3(ii,1:2);
     if flag_amp, dAmp = find_damp(E3(ii,3), CE3(ii,3));
-    else dAmp = DAMP_DEF;
+    else, dAmp = DAMP_DEF;
     end
     dEx(:,2) = dAmp*E3(ii,2) - CE3(ii,2);
     if on, hold(hca,'on'), end
@@ -156,7 +185,7 @@ if ~isempty(Eref)
     ii = find( ~isnan(Eref(:,2)) & ~isnan(E1(:,2)) );
     if ~isempty(ii)
       if flag_amp, dAmp1 = find_damp(E1(ii,3), Eref(ii,3));
-      else dAmp1 = DAMP_DEF;
+      else, dAmp1 = DAMP_DEF;
       end
       dE1 = mean(dAmp1*E1(ii,2)-Eref(ii,2))/dAmp1;
       
@@ -170,45 +199,45 @@ if ~isempty(Eref)
     ii = find( ~isnan(Eref(:,2)) & ~isnan(E2(:,2)) );
     if ~isempty(ii)
       if flag_amp, dAmp2 = find_damp(E2(ii,3), Eref(ii,3));
-      else dAmp2 = DAMP_DEF;
+      else, dAmp2 = DAMP_DEF;
       end
       dE2 = mean(dAmp2*E2(ii,2)-Eref(ii,2))/dAmp2;
       irf_plot(hcx,[E2(:,1) dAmp2*E2(:,2)-dE2],'r')
       irf_plot(hcy,[E2(:,1) dAmp2*E2(:,3)],'r')
       l = num2str(dE2,'dEx2 = %.2f');
-      if isempty(legx), legx = l; else legx = [legx ', ' l]; end
+      if isempty(legx), legx = l; else, legx = [legx ', ' l]; end
       l = num2str(dAmp2,'dAm2 = %.2f');
-      if isempty(legy), legy = l; else legy = [legy ', ' l]; end
+      if isempty(legy), legy = l; else, legy = [legy ', ' l]; end
     end
   end
   if ~isempty(E3)
     ii = find( ~isnan(Eref(:,2)) & ~isnan(E3(:,2)) );
     if ~isempty(ii)
       if flag_amp, dAmp3 = find_damp(E3(ii,3), Eref(ii,3));
-      else dAmp3 = DAMP_DEF;
+      else, dAmp3 = DAMP_DEF;
       end
       dE3 = mean(dAmp3*E3(ii,2)-Eref(ii,2))/dAmp3;
       irf_plot(hcx,[E3(:,1) dAmp3*E3(:,2)-dE3],'g')
       irf_plot(hcy,[E3(:,1) dAmp3*E3(:,3)],'g')
       l = num2str(dE3,'dEx3 = %.2f');
-      if isempty(legx), legx = l; else legx = [legx ', ' l]; end
+      if isempty(legx), legx = l; else, legx = [legx ', ' l]; end
       l = num2str(dAmp3,'dAm3 = %.2f');
-      if isempty(legy), legy = l; else legy = [legy ', ' l]; end
+      if isempty(legy), legy = l; else, legy = [legy ', ' l]; end
     end
   end
   if ~isempty(E4)
     ii = find( ~isnan(Eref(:,2)) & ~isnan(E4(:,2)) );
     if ~isempty(ii)
       if flag_amp, dAmp4 = find_damp(E4(ii,3), Eref(ii,3));
-      else dAmp4 = DAMP_DEF;
+      else, dAmp4 = DAMP_DEF;
       end
       dE4 = mean(E4(ii,2)-Eref(ii,2));
       irf_plot(hcx,[E4(:,1) dAmp4*E4(:,2)-dE4],'b')
       irf_plot(hcy,[E4(:,1) dAmp4*E4(:,3)],'b')
       l = num2str(dE4,'dEx4 = %.2f');
-      if isempty(legx), legx = l; else legx = [legx ', ' l]; end
+      if isempty(legx), legx = l; else, legx = [legx ', ' l]; end
       l = num2str(dAmp4,'dAm4 = %.2f');
-      if isempty(legy), legy = l; else legy = [legy ', ' l]; end
+      if isempty(legy), legy = l; else, legy = [legy ', ' l]; end
     end
   end
   if ~isempty(CE1)
@@ -248,12 +277,12 @@ dAmp = [dAmp1 dAmp2 dAmp3 dAmp4];
         if isempty(E_info) || ~isfield(E_info, 'probe')
           irf_log('load','Could not load probe pair info!')
           probe_numeric = spinFits.probePair;
-        else probe_numeric=str2double(E_info.probe);
+        else, probe_numeric=str2double(E_info.probe);
         end
       end
       % Remove saturation due to too high bias current
       if probe_numeric<50, probepair_list=probe_numeric;
-      else probepair_list=[12 32 34];end
+      else, probepair_list=[12 32 34];end
       for probepair=probepair_list
         [ok,hbias,msg] = c_load(irf_ssub('HBIASSA?p!',cli,probepair));
         if ok
@@ -265,14 +294,14 @@ dAmp = [dAmp1 dAmp2 dAmp3 dAmp4];
             irf_log('proc','blanking HB saturation')
             spinFits.diEs = caa_rm_blankt(spinFits.diEs,hbias);
           end
-        else irf_log('load',msg)
+        else, irf_log('load',msg)
         end
         clear ok hbias msg
       end
       
       % Remove saturation
       if probe_numeric<50, probepair_list=[mod(probe_numeric,10),fix(probe_numeric/10)];
-      else probepair_list=[1 2 3 4];end
+      else, probepair_list=[1 2 3 4];end
       for probe=probepair_list
         [ok,hbias,msg] = c_load(irf_ssub('PROBESA?p!',cli,probe));
         if ok
@@ -280,7 +309,7 @@ dAmp = [dAmp1 dAmp2 dAmp3 dAmp4];
             irf_log('proc','blanking probe saturation')
             spinFits.diEs = caa_rm_blankt(spinFits.diEs,hbias);
           end
-        else irf_log('load',msg)
+        else, irf_log('load',msg)
         end
         clear ok hbias msg
       end
@@ -292,7 +321,7 @@ dAmp = [dAmp1 dAmp2 dAmp3 dAmp4];
           irf_log('proc','blanking Whisper pulses')
           spinFits.diEs = caa_rm_blankt(spinFits.diEs,whip);
         end
-      else irf_log('load',msg)
+      else, irf_log('load',msg)
       end
       clear ok whip msg
       
