@@ -48,7 +48,7 @@ c_eval('Bxyz?=mms.db_get_ts(''mms?_fgm_brst_l2'',''mms?_fgm_b_dmpa_brst_l2'',Tin
 c_eval('E? = mms.db_get_ts(''mms?_edp_brst_l2_dce'',''mms?_edp_dce_dsl_brst_l2'',Tint);',ic);
 
 for ii=1:4;
-   c_eval('ne?=mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_numberdensity_dbcs_brst'',Tint);',ii);
+   c_eval('ne?=mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_numberdensity_brst'',Tint);',ii);
    c_eval('Uevec? = mms.get_data(''Ve_dbcs_fpi_brst_l2'',Tint,?);',ii);
    c_eval('Te? = mms.get_data(''Te_dbcs_fpi_brst_l2'',Tint,?);',ii);
    c_eval('Pe? = mms.get_data(''Pe_dbcs_fpi_brst_l2'',Tint,?);',ii);

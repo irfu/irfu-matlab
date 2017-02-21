@@ -5,6 +5,7 @@
 # Author: T. Nilsson, IRFU
 # Date: 2016/02/11
 # Updated: 2016/02/18, added support for processing Brst L1b dce segments directly to L2Pre without going via L2A brst. (Note L2A Fast dce2d is requried for corresponding day).
+# Updated: 2017/01/09, reading XML files (containing information about manuevers) require jvm.
 #
 # Usage: place script in the same folder as has irfu-matlab as a subfolder, then run
 #  "./script.sh <mmsX_dce_filename> <mmsX_dfg_l2pre_filename>", with the following
@@ -45,7 +46,7 @@
 
 # User definable constants
 MATLAB_EXE=/tools/matlab/R2013b/bin/matlab # SDC location of installed Matlab. # XXX: change this to whereever matlab is located.
-MATLAB_FLAGS="-nodesktop -nosplash -nodisplay -nojvm"
+MATLAB_FLAGS="-nodesktop -nosplash -nodisplay"
 IRFU_MATLAB=/mms/itfhome/mms-sdp/software/irfu-matlab # SDC location of irfu-matlab. # XXX: change this to whereever irfu-matlab is located.
 
 # No need to edit after this line

@@ -493,7 +493,7 @@ while t0 < epochTmp(end)
   if ~isempty(aPrev), idxCorr = epochTmp>=t0+fix(NSPINS/2)*nsPerSpin & epochTmp<t0+ceil(NSPINS/2)*nsPerSpin;
   else, idxCorr = epochTmp>=t0 & epochTmp<t0+ceil(NSPINS/2)*nsPerSpin; % first points
   end
-  modelOut(idxCorr) = model(idxCorr)*a;
+  if(~isempty(a)), modelOut(idxCorr) = model(idxCorr)*a; end
   aPrev = a;
   t0 = t0 + 60/spinRate*1e9;
 end

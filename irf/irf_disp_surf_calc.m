@@ -145,7 +145,14 @@ function [wfinal,extraparam]=irf_disp_surf_calc(kc_x_max,kc_z_max,m_i,wp_e)
   Ee = 0.5*m_e*(vex.*conj(vex)+vey.*conj(vey)+vez.*conj(vez));
   Ei = 0.5*m_i*(vix.*conj(vix)+viy.*conj(viy)+viz.*conj(viz));
   
-  % To do: Ratio of particle and field energy densities
+  % Ratio of particle and field energy densities
+  ne = wp_e^2;
+  Een = Ee*ne;
+  Ein = Ei*ne;
+  EE = 0.5*Etot.^2;
+  EB = 0.5*Btot.^2;
+  ratiopf = (EE+EB)./(Een+Ein);
+  
   
   extraparam(2,:,:,:)=Btot./Etot; % Degree of electromagnetism
   extraparam(3,:,:,:)=abs(EparK)./Etot; % Degree of longitudinality
@@ -154,4 +161,5 @@ function [wfinal,extraparam]=irf_disp_surf_calc(kc_x_max,kc_z_max,m_i,wp_e)
   extraparam(6,:,:,:)=Epolar; % Ellipticity
   extraparam(7,:,:,:)=log10(Etot.^2./Btot.^2); % Degree of electromagnetism
   extraparam(8,:,:,:)=log10(Ee./Ei); % Ratio of electron to ion energy
+  extraparam(9,:,:,:)=log10(ratiopf); % Ratio of field to particle energy densities
   warning on
