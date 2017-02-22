@@ -1,4 +1,4 @@
-% dm_utils_TST - Automated test code for dm_utils.
+% dm_utils_TEST - Automated test code for dm_utils.
 % 
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
 % First created 2016-10-17
@@ -21,6 +21,7 @@ end
 function find_last_same_sequence_TEST
 
     function i = split_into_sequences(varargin)
+	% Utility function
         i = [];
         i_first = 1;        
         while i_first <= length(varargin{1})

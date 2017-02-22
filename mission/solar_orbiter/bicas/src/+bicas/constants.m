@@ -171,7 +171,7 @@ classdef constants < handle
             C.SWD_RELEASE.institute    = C.INSTITUTE;
             C.SWD_RELEASE.modification = D.INITIAL_RELEASE_MODIFICATION_STR;
             %
-            C.SWD_ENVIRONMENT.executable = 'roc/bicas';
+            C.SWD_ENVIRONMENT.executable = 'roc/bicas';     % Relative path to BICAS executable. See RCS ICD.
             
             
             
