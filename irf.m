@@ -32,7 +32,7 @@ ones(10)*ones(10);
 
 %% Defaults
 % file to check version
-logFileUrl = 'https://raw.github.com/irfu/irfu-matlab/master/log.txt';
+logFileUrl = 'https://raw.githubusercontent.com/irfu/irfu-matlab/master/log.txt';
 
 %% Input check
 if nargin == 0,
