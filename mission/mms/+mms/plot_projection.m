@@ -43,7 +43,7 @@ function [hax,hcb] = plot_projection(varargin)
 %     mms.plot_projection(desDist1,'tint',tint,'xyz',[-1 0 0; 0 -1 0;hatB0],'vlim',40000);
 
 [ax,args,nargs] = axescheck(varargin{:});
-
+hax = ax;
 
 irf.log('warning','Please verify that you think the projection is done properly!');
 
@@ -97,8 +97,17 @@ else
         theta = dist.depend{1,3};
         polar = theta*pi/180;
         stepTable = TSeries(dist.time,dist.ancillary.esteptable);
-        energy0 = dist.ancillary.energy0;
-        energy1 = dist.ancillary.energy1;
+        if and(isfield(dist.ancillary, 'energy0'), isfield(dist.ancillary, 'energy1'))
+            energy0 = dist.ancillary.energy0;
+            energy1 = dist.ancillary.energy1;            
+        else    
+            if isfield(dist.ancillary, 'energy')
+                energy0 = dist.ancillary.energy(1, :);
+                energy1 = dist.ancillary.energy(2, :);
+            else
+                irf.log('warning', 'no data for energy0 & energy1.');
+            end
+        end
         distunits = dist.units;
         dE = median(diff(log10(energy0)))/2;
         energy0Edges = 10.^(log10(energy0)-dE);

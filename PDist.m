@@ -233,16 +233,21 @@ classdef PDist < TSeries
       
       % Picks out energies in an interval, or the closest energy (to be implemented!)
       if numel(eint) == 2
-        if isempty(obj.ancillary)
+       if or(isempty(obj.ancillary), or(~isfield(obj.ancillary, 'energy0'), ~isfield(obj.ancillary, 'energy1')))
             energytmp0 = energy(1,:);
             energytmp1 = energy(2,:);
+            if energytmp0(1) > energytmp1(1)
+                tmp = energytmp0;
+                energytmp0 = energytmp1;
+                energytmp1 = tmp;
+            end
             elevels0 = intersect(find(energytmp0>eint(1)),find(energytmp0<eint(2)));
             elevels1 = intersect(find(energytmp1>eint(1)),find(energytmp1<eint(2)));            
-        else
+       else
             elevels0 = intersect(find(obj.ancillary.energy0>eint(1)),find(obj.ancillary.energy0<eint(2)));
-            elevels1 = intersect(find(obj.ancillary.energy1>eint(1)),find(obj.ancillary.energy1<eint(2)));                                 
-        end
-        if numel(elevels0) ~= numel(elevels1)
+            elevels1 = intersect(find(obj.ancillary.energy1>eint(1)),find(obj.ancillary.energy1<eint(2)));        
+       end
+       if numel(elevels0) ~= numel(elevels1)
           warning('Energy levels differ for different times. Including the largest interval.')
           elevels = unique([elevels0,elevels1]);
         else
@@ -263,7 +268,7 @@ classdef PDist < TSeries
       PD = obj;
       PD.data_ = tmpData;
       PD.depend{1} = tmpEnergy;
-      if isempty(PD.ancillary)
+      if or(isempty(PD.ancillary), or(~isfield(PD.ancillary, 'energy0'), ~isfield(PD.ancillary, 'energy1')))    
           PD.ancillary.energy0 = energytmp0(elevels);
           PD.ancillary.energy1 = energytmp1(elevels);      
       else

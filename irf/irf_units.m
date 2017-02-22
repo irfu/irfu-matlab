@@ -18,16 +18,20 @@ function Units=irf_units(varargin)
 %
 
 % Sources used:
-%   CODATA 2010 - http://physics.nist.gov/cuu/pdf/RevModPhysCODATA2010.pdf
-%   IAU 2012    - http://www.iau.org/static/resolutions/IAU2012_English.pdf
+%   CODATA 2014 - DOI: 10.1103/RevModPhys.88.035009
+%   IAU 2012    - https://www.iau.org/static/resolutions/IAU2012_English.pdf
+%   IAU 2015    - https://www.iau.org/static/resolutions/IAU2015_English.pdf
+%   CGPM 1903   - http://www.bipm.org/en/CGPM/db/3/2/
+%   CGPM 1954   - http://www.bipm.org/en/CGPM/db/10/4/
+%   IAU WG 2009 - DOI 10.1007/s10569-010-9320-4
 
-if nargin==1, % display matching units
+if nargin==1 % display matching units
     fid=fopen(which('irf_units'));
     while 1
         tline = fgetl(fid);
         if ~ischar(tline), break, end
-		if ~isempty(tline) && ~strcmp(tline(1),'%'), % check that not comment line
-			if strfind(lower(tline),lower(varargin{:}));
+		if ~isempty(tline) && ~strcmp(tline(1),'%') % check that not comment line
+			if strfind(lower(tline),lower(varargin{:}))
 				disp(tline);
 			end
 		end
@@ -36,7 +40,7 @@ if nargin==1, % display matching units
     return
 end
 	
-if nargout==0 && nargin==0, 
+if nargout==0 && nargin==0 
 	disp('!!!WARNING!!!!');
 	disp('IRF_UNITS usage has been changed, from script it has become function.');
 	disp('please check the help!');
@@ -147,7 +151,7 @@ Units.gm = 1e-3*Units.kg;
 Units.mg = 1e-3*Units.gm;
 Units.lb = 0.45359237*Units.kg;
 Units.oz = (1/16)*Units.lb;
-Units.amu = 1.660538921e-27*Units.kg; 			% Src: CODATA 2010 - Table XLV
+Units.amu = 1.660539040e-27*Units.kg;				% Src: CODATA 2014 - Table XXXVII
 
 %---- time -------
 Units.s = 1;
@@ -179,7 +183,7 @@ Units.kJ = 1e3*Units.J;
 Units.mJ = 1e-3*Units.J;
 Units.uJ = 1e-6*Units.J;
 Units.nJ = 1e-9*Units.J;
-Units.eV = 1.602176565e-19*Units.J; 			% Src: CODATA 2010 - Table XLV
+Units.eV = 1.6021766208e-19*Units.J;				% Src: CODATA 2014 - Table XXXVII
 Units.BTU = 1.0550559e3*Units.J;
 Units.kWh = 3.6e6*Units.J;
 Units.cal = 4.1868*Units.J;
@@ -193,12 +197,12 @@ Units.nK = 1e-9*Units.K;
 
 %---- pressure -----
 Units.Pa = 1;
-Units.torr = 133.322*Units.Pa;
-Units.mtorr = 1e-3*Units.torr;
-Units.bar = 1e5*Units.Pa;
+Units.bar = 1e5*Units.Pa;                          % Exact
 Units.mbar = 1e-3*Units.bar;
-Units.atm = 1.013e5*Units.Pa;
+Units.atm = 101325*Units.Pa;                       % Exact, Src: CGPM 1954
 Units.psi = 6.895e3*Units.Pa;
+Units.torr = (1/760)*Units.atm;                    % Exact
+Units.mtorr = 1e-3*Units.torr;
 
 
 
@@ -214,7 +218,7 @@ Units.hp = 745.69987*Units.W;
 
 %------ charge ------
 Units.coul = 1;
-Units.e = 1.602176565e-19*Units.coul;			% elementary charge, Src: CODATA 2010 - Table XLI
+Units.e = 1.6021766208e-19*Units.coul;				% elementary charge, Src: CODATA 2014 - Table XXXVII
 
 
 %------ Voltage -----
@@ -237,17 +241,17 @@ Units.gauss = 1e-4*Units.T;
 
 
 %----fundamental constants ----
-Units.g = 9.80665*Units.m/Units.s^2;			% gravitational acceleration
-Units.G = 6.67384e-11*Units.m^3/Units.kg/Units.s^2; 	% Newtonian graviational constant, Src: CODATA 2010 - Table XLI
-Units.kB = 1.3806488e-23*Units.J/Units.K;		% Boltzman constant, Src: CODATA 2010 - Table XLI
-Units.sigma_SB = 5.670373e-8 * Units.W/(Units.m^2 * Units.K^4); % Stefan-Boltzmann constant, Src: CODATA 2010 - Table XLI
-Units.h = 6.62606957e-34 * Units.J*Units.s;		% Planck constant, Src: CODATA 2010 - Table XLI
+Units.g = 9.80665*Units.m/Units.s^2;			% gravitational acceleration, Src: CGPM 1903
+Units.G = 6.67408e-11*Units.m^3/Units.kg/Units.s^2;	% Newtonian graviational constant, Src: CODATA 2014 - Table XXXII
+Units.kB = 1.38064852e-23*Units.J/Units.K;			% Boltzman constant, Src: CODATA 2014 - Table XXXII
+Units.sigma_SB = 5.670367e-8 * Units.W/(Units.m^2 * Units.K^4);	% Stefan-Boltzmann constant, Src: CODATA 2014 - Table XXXII
+Units.h = 6.626070040e-34 * Units.J*Units.s;		% Planck constant, Src: CODATA 2014 - Table XXXII
 Units.hbar = Units.h/(2*pi);				% Planck constant
-Units.mu_B = 9.27400968e-24 * Units.J/Units.T;  	% Bohr magneton, Src: CODATA 2010 - Table XLI
-Units.mu_N = 5.05078353e-27 * Units.J/Units.T;		% Nuclear magneton, Src: CODATA 2010 - Table XLI
-Units.c = 2.99792458e8*Units.m/Units.s;			% speed of light exact, Src: CODATA 2010 - Table XLI
-Units.mu0 = (4*pi)*10^-7 * Units.J/(Units.m*Units.A^2); % Magnetic constant, Src: CODATA 2010 - Table XLI
-Units.eps0 = 1/(Units.mu0*Units.c^2);			% Vacuum permittivity, Src: CODATA 2010 - Table XLI
+Units.mu_B = 9.274009994e-24 * Units.J/Units.T;		% Bohr magneton, Src: CODATA 2014 - Table XXXIII
+Units.mu_N = 5.050783699e-27 * Units.J/Units.T;		% Nuclear magneton, Src: CODATA 2014 - Table XXXIII
+Units.c = 2.99792458e8*Units.m/Units.s;			% speed of light exact, Src: CODATA 2014 - Table XXXII
+Units.mu0 = (4*pi)*10^-7 * Units.J/(Units.m*Units.A^2); % Magnetic constant, Src: CODATA 2014 - Table XXXII
+Units.eps0 = 1/(Units.mu0*Units.c^2);			% Vacuum permittivity, Src: CODATA 2014 - Table XXXII
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -258,19 +262,19 @@ Units.eps0 = 1/(Units.mu0*Units.c^2);			% Vacuum permittivity, Src: CODATA 2010 
 %-------- UNITS ------------------------------
 %------- length ----
 Units.AU = 149597870700*Units.m;			% astronomical unit, exact, Src: IAU 2012
-Units.R_Sun = 6.96e8*Units.m;                       % Solar radius 
+Units.R_Sun = 6.96e8*Units.m;                       % Solar radius, Src: IAU WG 2009 - Table 4
 Units.Sun.radius=Units.R_Sun;
-Units.pc = 3.0857e16*Units.m;                       % parsec
-Units.Uranus.distanceTSun	=19.1914*Units.AU;      % Uranus orbit, semimajor axis
-Units.Neptune.distanceToSun =30.0611*Units.AU;      % Neptune orbit, semimajor axis
+Units.pc = (648000/pi)*Units.AU;				% parsec, exact, Src: IAU 2015
+Units.Uranus.distanceTSun = 19.1914*Units.AU;      % Uranus orbit, semimajor axis
+Units.Neptune.distanceToSun = 30.0611*Units.AU;      % Neptune orbit, semimajor axis
 
 %------- mass ----
 Units.M_Earth = 5.9742e24*Units.kg;                 % Mass of the Earth
-Units.Earth.mass=Units.M_Earth;
+Units.Earth.mass = Units.M_Earth;
 Units.M_Sun = 1.98892e30*Units.kg;                  % Mass of the Sun
-Units.Sun.mass=Units.M_Sun;
-Units.me = 9.10938291e-31*Units.kg;			% electron mass, Src: CODATA 2010 - Table XLI
-Units.mp = 1.672621777e-27*Units.kg;			% proton mass, Src: CODATA 2010 - Table XLI
+Units.Sun.mass = Units.M_Sun;
+Units.me = 9.10938356e-31*Units.kg;				% electron mass, Src: CODATA 2014 - Table XXXIII
+Units.mp = 1.672621898e-27*Units.kg;			% proton mass, Src: CODATA 2014 - Table XXXIII
 
 %---- frequency ---- 
 Units.mHz = 1e-3*Units.Hz;
@@ -292,13 +296,13 @@ Units.Mercury.semiMajorAxis = 57909100*Units.km;	% Mercury semimajor axis
 Units.Merucry.distanceToSun	= 57909100*Units.km;	% Mercury orbit, semimajor axis
 Units.Mercury.aphelion		= 69816900*Units.km;
 Units.Mercury.perihelion	= 46001200*Units.km;
-Units.Mercury.radius		= 2439.7*Units.km;		% Mercury radius (mean)
+Units.Mercury.radius		= 2439.7*Units.km;		% Mercury radius (mean), Src: IAU WG 2009 - Table 4
 
 %---- MARS -----
 Units.Mars.distanceToSun	= 1.5273*Units.AU;		% Mars orbit, semimajor axis
-Units.Mars.radius		= 3396.2*Units.km;		% Mars radius (equatorial)
-Units.Mars.radiusEquatorial	= 3396.2*Units.km;		% Mars radius (equatorial)
-Units.Mars.radiusPolar		= 3376.2*Units.km;		% Mars radius (polar)
+Units.Mars.radius		= 3396.19*Units.km;		% Mars radius (equatorial), Src: IAU WG 2009 - Table 4
+Units.Mars.radiusEquatorial	= 3396.19*Units.km;		% Mars radius (equatorial), Src: IAU WG 2009 - Table 4
+Units.Mars.radiusPolar		= 3376.2*Units.km;		% Mars radius (average polar), Src: IAU WG 2009 - Table 4
 
 %---- EARTH -----
 Units.Earth.semiMajorAxis	= 149598261*Units.km;	% Earth semimajor axis
@@ -309,16 +313,16 @@ Units.RE			= Units.R_Earth;		% Earth radius
 
 %---- VENUS -----
 Units.Venus.distanceToSun	= 0.7233*Units.AU;      % Venus orbit, semimajor axis
-Units.Venus.radius		= 6051.8*Units.km;
+Units.Venus.radius		= 6051.8*Units.km;		% Src: IAU WG 2009 - Table 4
 
 %---- SATURN -----
 Units.Saturn.distanceToSun	= 9.5388*Units.AU;		% Saturn orbit, semimajor axis
-Units.Saturn.radius		= 60268*Units.km;		% Saturn equatorial radius
+Units.Saturn.radius		= 60268*Units.km;		% Saturn equatorial radius (one-bar surface), Src: IAU WG 2009 - Table 4
 
 %---- JUPITER -----
-Units.Jupiter.radius		= 69911*Units.km;		% Jupiter mean radius
-Units.Jupiter.radiusEquatorial = 71492*Units.km;
-Units.Jupiter.radiusPolar 	= 66854*Units.km;
+Units.Jupiter.radius		= 69911*Units.km;		% Jupiter mean radius (one-bar surface), Src: IAU WG 2009 - Table 4
+Units.Jupiter.radiusEquatorial = 71492*Units.km;		% Jupiter equatorial radius (one-bar surface), Src: IAU WG 2009 - Table 4
+Units.Jupiter.radiusPolar 	= 66854*Units.km;		% Jupiter polar radius (one-bar surface), Src: IAU WG 2009 - Table 4
 Units.Jupiter.semiMajorAxis = 778547200*Units.km;   
 Units.Jupiter.distanceToSun	= 778547200*Units.km;	% Jupiter semimajor axis
 Units.Jupiter.aphelion 		= 816520800*Units.km;
@@ -327,13 +331,14 @@ Units.Jupiter.mass			= 1.8986e27*Units.kg;
 
 %---- GANYMEDE -----
 Units.Ganymede.semiMajorAxis = 1070400*Units.km;
-Units.Ganymede.radius		= 2634.1*Units.km;
+Units.Ganymede.radius = 2631.2*Units.km;		% Src: IAU WG 2009 - Table 5
 
 %---- EUROPA -----
 Units.Europa.semiMajorAxis	= 670900*Units.km;		% 
-Units.Europa.radius			= 1560.8*Units.km;		%
+Units.Europa.radius	= 1560.8*Units.km;		% Europa radius (mean), Src: IAU WG 2009 - Table 5
 
 %---- CALLISTO -----
-Units.Callisto.semiMajorAxis= 1882700*Units.km;		% 
-Units.Callisto.radius		= 2410.3*Units.km;		%
+Units.Callisto.semiMajorAxis = 1882700*Units.km;		%
+Units.Callisto.radius	= 2410.3*Units.km;		% Src: IAU WG 2009 - Table 5
 
+end

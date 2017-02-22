@@ -259,7 +259,7 @@ xl=get(hh,'XLim')+ud.t_start_epoch;
 yl=get(hh,'YLim');
 %hc=get(hh,'Children');
 ud.dt=eval(['[' get(ud.dt_input,'string') ']']);
-tstr=['[' num2str(ud.dt,'%9.2f') '] s'];
+tstr=['[' num2str(ud.dt,'%9.4f') '] s'];
 t=0.5*(xl(1)+xl(2))+ud.dt;
 if max(abs(ud.dt))==0
     vstr='0 * [0 0 0]';
@@ -313,7 +313,7 @@ else
     if ref_satellite<1 || ref_satellite>4, ref_satellite=1;end
     dt=dt-dt(ref_satellite);
 end
-tstr=['[' num2str(dt,'%9.2f') ']'];
+tstr=['[' num2str(dt,'%9.4f') ']'];
 if norm(v) > 0,
     vstr=[num2str(norm(v),3) ' * [' num2str(v./norm(v),'%6.2f') ']'];
 else
@@ -354,7 +354,7 @@ if ud.ic==5,
     title('');
     ud.ic=0;
     ud.dt=ud.dtv-ud.dtv(1);
-    tstr=['[' num2str(ud.dt,'%10.2f') ']'];
+    tstr=['[' num2str(ud.dt,'%10.4f') ']'];
     set(ud.dt_input,'string',tstr);
     zoom(ud.h(1),'on');
     set(ud.hfig,'userdata',ud);
@@ -592,8 +592,8 @@ function ud = get_mms_pos(ud)
 %   Reads position data for MMS and stores it in ud.
 
 % Gets position data for all data +-2 min for good measure
-tstart = ud.var1.time(1);
-tstop = ud.var1.time(end);
+tstart = ud.var1.time(1)+-120;
+tstop = ud.var1.time(end)+120;
 
 Tint = irf.tint(tstart,tstop);
 R  = mms.get_data('R_gse',Tint);

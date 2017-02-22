@@ -12,7 +12,7 @@ classdef test_mms_spinfit < matlab.unittest.TestCase
       t0 = int64(481744867369743068); % 2015-04-08T06:00:00.185743068Z
       phiDeg0 = 267.5688;
       MMS_CONST=mms_constants;
-      
+      DEBUG = false; % Show some plots?
       %0.5 sec sampling DEFATT
       timeSecPhase = (1:3600)'*.5;
       defatt.time = int64(timeSecPhase*1e9) + t0;
@@ -27,13 +27,15 @@ classdef test_mms_spinfit < matlab.unittest.TestCase
       e12 = Ex*cos(phaseRad12) + Ey*sin(phaseRad12) + adcOff_12;
       e34 = Ex*cos(phaseRad34) + Ey*sin(phaseRad34) + adcOff_34;
       
-      % Plot
-      irf_plot([EpochTT(timeEpochTT200Req).epochUnix e12 e34])
-      
       % Check with despin
       dE = mms_sdp_despin(e12-adcOff_12,e34-adcOff_34,phaseComputed.data);
-      irf_plot([EpochTT(timeEpochTT200Req).epochUnix dE])
-      legend('Ex','Ey')
+
+      if(DEBUG)
+        % Plot
+        irf_plot([EpochTT(timeEpochTT200Req).epochUnix e12 e34]);
+        irf_plot([EpochTT(timeEpochTT200Req).epochUnix dE])
+        legend('Ex','Ey')
+      end
       
       % Compute spinfit for E12
       [~,sfit,~,~,~] = ...

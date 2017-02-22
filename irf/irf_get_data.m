@@ -22,7 +22,7 @@ function f = irf_get_data(varargin)
 %   ff= irf_get_data(tint,'b,bx,bygsm','omni_min');
 %   ff= irf_get_data(tint,'f10.7','omni');
 
-% http://omniweb.gsfc.nasa.gov/html/ow_data.html
+% https://omniweb.gsfc.nasa.gov/html/ow_data.html
 nargs=nargin; % number of defined input arguments
 if nargs == 0,
   help irf_get_data;

@@ -166,14 +166,16 @@ classdef mms_sdp_dmgr < handle
           param = 'dcv';
           sensors = {'v1','v2','v3','v4','v5','v6'};
           init_param()
+%          interp_time()
           chk_latched_p()
           %apply_transfer_function()
           v_from_e_and_v()
           chk_bias_guard()
           chk_aspoc_on()
           chk_sweep_on()
-%          chk_maneuvers()
+          chk_maneuvers()
           chk_sdp_v_vals()
+          %e_corr_cmd()
           e_from_asym()
           sensors = {'e12','e34','e56'};
           apply_nom_amp_corr() % AFTER all V values was calculated but before most processing.
@@ -184,12 +186,13 @@ classdef mms_sdp_dmgr < handle
           sensors = {'v1','v2','v3','v4','v5','v6'};
           init_param()
           chk_timeline()
+%          interp_time()
           chk_latched_p()
           %apply_transfer_function()
           v_from_e_and_v()
           chk_bias_guard()
           chk_sweep_on()
-%          chk_maneuvers()
+          chk_maneuvers()
           chk_sdp_v_vals()
           sensors = {'e12','e34','e56'};
           apply_nom_amp_corr() % AFTER all V values was calculated but before most processing.
@@ -683,6 +686,74 @@ classdef mms_sdp_dmgr < handle
         end
       end % CHK_TIMELINE
       
+      function interp_time()
+        % Measurements are not done at same instance but with a delay of
+        % 3.8us between each channel. Adjust V[2-6] and E12, E34, E56 with
+        % interp1() to align with timestamp of V1 (which is the first
+        % channel and for the combined DCE&DCV file this is the time of the
+        % Epoch variable).
+        % Source used: E-mail from Mark dated 2017/01/11T19:21 CET, and the
+        % "Document No. 108328revE".
+
+        % Only Burst mode should be interpolated
+        if(DATAC.tmMode == DATAC.CONST.TmMode.brst)
+          irf.log('notice', 'Resampling burst measurements to align with first channel ("epoch").');
+        else
+          irf.log('debug', 'Not in burst mode, not doing resample of measurements to align with first channel ("epoch")');
+          return;
+        end
+
+        keyboard
+        % NOTE THIS FUNCTION IS NOT READY for production, added here as to
+        % create test files to see what impact it has on our files. Mainly
+        % burst 16'384 Hz may be impacted, but this is TBD. Also "to be
+        % checked" is the commissioning data with separate dce and dcv
+        % files.
+
+        % Offset between each channel in ADC
+        Dt = int64(3.8e3); % 3.8 us expressed in ns (TT2000, int64)
+        % V1 is start of nominal Epoch (when combined dce&dcv file)
+        % V2 is Dt later (included here, but NaN unless in comm.)
+        % V3 is Dt later again (ie 2*Dt)
+        % V4 is 3*Dt (NaN unless in comm.)
+        % V5 is 4*Dt
+        % V6 is 5*Dt (NaN unless in comm.)
+        % Dt for one empty "Nap of the ADC"
+        % E12 is 7*Dt
+        % E34 is 8*Dt
+        % E56 is 9*Dt
+        tV = DATAC.dcv.time;
+        t1 = tV - tV(1);
+        %tE = DATAC.dce.time; % Separate time for DCE file?
+
+        % Interpolate each data to align in time with V1, convert int64 and
+        % single data into double first than back again after interpolation
+        DATAC.dcv.v2.data = single( interp1(double(t1 + 1*Dt), ...
+          double(DATAC.dcv.v2.data), ...
+          double(t1), 'linear', 'extrap') ); % V2 is nominally NaN
+        DATAC.dcv.v3.data = single( interp1(double(t1 + 2*Dt), ...
+          double(DATAC.dcv.v3.data), ...
+          double(t1), 'linear', 'extrap') );
+        DATAC.dcv.v4.data = single( interp1(double(t1 + 3*Dt), ...
+          double(DATAC.dcv.v4.data), ...
+          double(t1), 'linear', 'extrap') ); % V4 is nominally NaN
+        DATAC.dcv.v5.data = single( interp1(double(t1 + 4*Dt), ...
+          double(DATAC.dcv.v5.data), ...
+          double(t1), 'linear', 'extrap') );
+        DATAC.dcv.v6.data = single( interp1(double(t1 + 5*Dt), ...
+          double(DATAC.dcv.v6.data), ...
+          double(t1), 'linear', 'extrap') ); % V6 is nominally NaN
+        DATAC.dce.e12.data = single( interp1(double(t1 + 7*Dt), ...
+          double(DATAC.dce.e12.data), ...
+          double(t1), 'linear', 'extrap') );
+        DATAC.dce.e34.data = single( interp1(double(t1 + 8*Dt), ...
+          double(DATAC.dce.e34.data), ...
+          double(t1), 'linear', 'extrap') );
+        DATAC.dce.e56.data = single( interp1(double(t1 + 9*Dt), ...
+          double(DATAC.dce.e56.data), ...
+          double(t1), 'linear', 'extrap') );
+      end % INTERP_TIME
+
       function chk_bias_guard()
         % Check that bias/guard setting, found in HK_10E, are nominal. If any
         % are found to be non nominal set bitmask value in both V and E.
@@ -812,7 +883,16 @@ classdef mms_sdp_dmgr < handle
         % Get sweep status and sweep Start/Stop
         % Add extra 0.1 sec to Stop for safety and remove 0.05 sec to Start
         sweepStart = DATAC.dce.dataObj.data.([varPref 'start']).data - 5e7;
-        sweepStop = DATAC.dce.dataObj.data.([varPref 'stop']).data + 1e8;
+        if(DATAC.tmMode == DATAC.CONST.TmMode.slow)
+          % Some sweep seems to still be effecting our measurements well
+          % after stop time, especially bad in slow mode, see 2016/11/10.
+          % (Perhaps intervals with other mode as well but that is still to
+          % be determined). Add 0.15 sec to stop time.
+          sweepStop = DATAC.dce.dataObj.data.([varPref 'stop']).data + 1.4e8;
+        else
+          % Add 0.1 seconds to stop.
+          sweepStop = DATAC.dce.dataObj.data.([varPref 'stop']).data + 1e8;
+        end
         sweepSwept = DATAC.dce.dataObj.data.([varPref 'swept']).data;
         
         if isempty(sweepStart)
@@ -987,6 +1067,38 @@ classdef mms_sdp_dmgr < handle
         function l = sensor_dist(len)
           l = 1.67 + len + .07 + 1.75  + .04; % meters, sc+boom+preAmp+wire+probe
         end
+      end
+      
+      function e_corr_cmd()
+        % Correct E for CMD
+        Phase = DATAC.phase;
+        if isempty(Phase)
+          errStr='Bad PHASE input, cannot proceed.';
+          irf.log('critical',errStr); error(errStr);
+        end
+        if(DATAC.tmMode == DATAC.CONST.TmMode.brst)
+          % XXX implement something
+        else
+          irf.log('notice','Correcting E for CMD');
+          NOM_BOOM_L = .12; % 120 m
+          if 1 % using spin resudual
+            SpinModel = mms_sdp_model_spin_residual(DATAC.dce,DATAC.dcv,Phase,...
+            {'v1','v2','v3','v4'},DATAC.samplerate);
+            DATAC.dce.e12.data = single( double(DATAC.dce.e12.data) - ...
+              (SpinModel.v1 - SpinModel.v2)/NOM_BOOM_L );
+            DATAC.dce.e34.data = single( double(DATAC.dce.e34.data) - ...
+              (SpinModel.v3 - SpinModel.v4)/NOM_BOOM_L );
+          else % using CMD
+            CmdModel = mms_sdp_model_spin_residual_cmd312(DATAC.dcv,...
+              Phase, DATAC.samplerate,'e12');
+            DATAC.dce.e12.data = single( ...
+              double(DATAC.dce.e12.data) - CmdModel/NOM_BOOM_L );
+            CmdModel = mms_sdp_model_spin_residual_cmd312(DATAC.dcv,...
+              Phase, DATAC.samplerate,'e34');
+            DATAC.dce.e34.data = single( ...
+              double(DATAC.dce.e34.data) - CmdModel/NOM_BOOM_L );
+          end
+        end   
       end
       
       function e_from_asym()

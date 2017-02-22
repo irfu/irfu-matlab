@@ -1,45 +1,51 @@
 function varargout = thor_QB(R,rTHOR,B,varargin)
-% Quality factor for bow shock crossing.
-%   QB = THOR_QB(R,rTHOR,B);
-%     R - bow shock nose standoff distance
-%     rTHOR - coordinates of THOR
-%     B - interplanetary magnetic field
+% THOR_QB Quality factor for bow shock crossings
 %
-%     QV = cos(theta)^2
-%     theta - angle between shock normal and magnetic field
+% [QB,tsTheta,normdir] = THOR_QB(R,rTHOR,B);
+%   R     - bow shock nose standoff distance
+%   rTHOR - coordinates of THOR
+%   B     - interplanetary magnetic field
+%
+%   QB    - quality factor, default QB = cos(theta)^2 corresponding to
+%           quasi-parallel shock
+%   theta - angle between shock normal and magnetic field
+%
+% [QB,tsTheta,normdir] = THOR_QB(R,rTHOR,B,'perp');
+%  estimate quality factor for quasi-perpendicular shock, where
+%  QB=sin(theta)^2
 
 units = irf_units;
 
-doParShock = 1;
+doParShock = true;
 if nargin>3 && strcmp(varargin{1},'perp')
-  doParShock = 0;
+  doParShock = false;
 end
   
-if isa(R,'TSeries'); 
+if isa(R,'TSeries')
   Time = R.time;
   R0 = R.data; 
-  if strcmp(R.units,'km') || R0(1,1) > 50; 
+  if strcmp(R.units,'km') || R0(1,1) > 50
     R0 = R0/units.RE*1e3; % km->RE
   end  
 else 
   R0 = R;
 end
-if isa(rTHOR,'TSeries'); 
+if isa(rTHOR,'TSeries')
   Time = rTHOR.time;
-  xTHOR = rTHOR.x.data;
+%  xTHOR = rTHOR.x.data; %% NOT USED
   yTHOR = rTHOR.y.data;
   zTHOR = rTHOR.z.data;
-  if strcmp(rTHOR.units,'km') || rTHOR.data(end,1) > 100; 
-    xTHOR = xTHOR/units.RE*1e3; % km->RE
+  if strcmp(rTHOR.units,'km') || rTHOR.data(end,1) > 100
+%    xTHOR = xTHOR/units.RE*1e3; % km->RE %% NOT USED
     yTHOR = yTHOR/units.RE*1e3; % km->RE
     zTHOR = zTHOR/units.RE*1e3; % km->RE
   end
 else
-  xTHOR = rTHOR(:,1);
+%  xTHOR = rTHOR(:,1);  %% NOT USED
   yTHOR = rTHOR(:,2);
   zTHOR = rTHOR(:,3);
 end
-if isa(B,'TSeries'); 
+if isa(B,'TSeries')
   Time = B.time;
   B = B/B.abs;
   Bx = B.x.data;
@@ -109,16 +115,15 @@ normdir = irf.ts_vec_xyz(Time,[nvec(:,1),nvec(:,2),nvec(:,3)]);
 
 % Dot product between normalized B field vector and normal vector.
 dotprod = nvec(:,1).*Bx + nvec(:,2).*By + nvec(:,3).*Bz;
-
 theta = acosd(dotprod);
 
-tsTheta = irf.ts_scalar(Time,theta); tsTheta.name = 'Magnetic field normal angle';
-if doParShock;
-  %theta = alfa;
-  QB = real(cosd((theta)).^2);
+tsTheta      = irf.ts_scalar(Time,theta); 
+tsTheta.name = 'Magnetic field normal angle';
+
+if doParShock
+  QB = real(cosd((theta)).^2).*(theta<45); % QB=0 for angles corresponding to quasi-perp shock
 else
-  %theta = alfa;
-  QB = real(sind((theta)).^2);
+  QB = real(sind((theta)).^2).*(theta>=45);% QB=0 for angles corresponding to quasi-par shock
 end
 
 if isa(rTHOR,'TSeries') || isa(R,'TSeries')
@@ -132,10 +137,8 @@ end
 
 if nargout == 1
   varargout = {QB};
-elseif nargout == 2;
-  %tsTheta = irf.ts_scalar(Time,theta); tsTheta.name = 'Magnetic field normal angle';
+elseif nargout == 2
   varargout = {QB,tsTheta};
-elseif nargout == 3;
-  %tsTheta = irf.ts_scalar(Time,theta); tsTheta.name = 'Magnetic field normal angle';
+elseif nargout == 3
   varargout = {QB,tsTheta,normdir};  
 end

@@ -6,8 +6,9 @@ function currentIntervals=strong_current_search_brst(sc,currentLim,intervalStart
 % IMPORTANT: This example loads the tetrahedron quality from /data/mms/ancillary so
 % these files are needed if a different harddrive is used than /data/mms.
 % It also uses the irfu_index.mat from l2pre dfg to get all brst data time
-% intervals available. Currently it will not work for other harddrives than
-% /data/mms.
+% intervals available. Currently it will not work because the
+% irfu_index.mat is removed. Will be updated once the database of all
+% datafiles is finished
 %
 %   currentIntervals=MMS.STRONG_CURRENT_SEARCH_BRST(sc,currentLim,intervalStart, intervalStop)
 %

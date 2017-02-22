@@ -26,6 +26,105 @@ The delivery contains 4 sub-directories :
 WHAT'S NEW
 ==========
 
+
+NEW IN VERSION 1.8.0 (2016/03/19)
+---------------------------
+Updated Matlab API
+^^^^^^^^^^^^^^^^^^
+
+ * Minor internal changes on Matlab API to ensure compatibility with Matlab 2016a.
+
+ * This release is mandatory if you are using latest Mac OSX "El Capitan".
+
+ * You will have also to download the latest Matlab 2016a version
+
+ * And probably upgrade to Xcode 7.2.
+
+See Building Matlab API on MacOSX El Capitan
+
+Updated C and Python API
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+As needed by Thomasz KLOS, member of CAA teem, the C and Python API have been updated to give the ability of reading only the CEF metadata.
+
+A new function has been added in the Python interface :
+
+ceflib.read_metadata (filename.cef)
+
+This function parse the content of CEF header, to allow further metadata queries, without reading data records, to improve performances.
+
+NEW IN VERSION 1.7.3 (2014/02/20)
+---------------------------------
+
+Minor changes, due to internal usage :
+
+ * Adding a new fonction to LIB/src/LISTS.c :
+
+    char *Join_list (t_list *, char * sep);
+
+ * Modification of the generation process of IDL CEFLIB DLM :
+
+    CEFLIB/IDL/bin/idl_cef.dlm
+
+NEW IN VERSION 1.7.2 (2013/09/27)
+---------------------------------
+
+A bug was discovered by Nataliya Bourrel, when building the CEFLIB C API in a Fedora 19 computer, that embed the zlib.1.2.7 package.
+
+Changes were necessary in the zlib interface (module ZZLIB).
+
+ * LIB/inc/ZZLIB.h
+
+ * LIB/src/ZZLIB.c
+
+ * C/src/CEF.c
+
+NEW IN VERSION 1.7.1 (2013/09/04)
+---------------------------------
+Bugs solved on Mac OSX
+
+If the library was extracted on a case insensitive file system, a conflict between local and system header files occurs, and make the building process fail.
+
+Some header files had to be renamed.
+
+Another problem should occur while building the library.
+
+You will need to update manually the mexopts.sh scripts delivered with MATLAB, as indicaed in Known bugs
+
+CEFLIB Python Interface (Beta testing)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+It’s now possible to call the CEFLIB from Python, using numpy package to handle multi-dimensionnal arrays.
+
+Plots can be done using matplotlib package, that gives plot capabilities similar to Matlab.
+
+This is a preliminar release for this language, and the interface should evolve in the future to become more Pythonic.
+
+Handling BYTE data type
+^^^^^^^^^^^^^^^^^^^^^^^
+
+The library was not able to handle variables with VALUE_TYPE = BYTE.
+
+This bug was found by A. Masson while readind a CEF file, generated with Qtran translator from CSDS CDF Prime Parameter file.
+
+The BYTE data type was defined in the "Cluster Exchange Format" document, but not present in the "CAA Metadata dictionnary".
+
+The library has been updated to take in account this datatype.
+
+Handling CEF files generated on Windows
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The library was modified in order to allow reading of CEF files generated on Windows,
+with CR + LF (0x0C + 0x0A) end of line terminators.
+
+It’s actually not possible to read CEF files generated on old MacOS systems,
+using CR (0x0C) end of line terminators.
+
+Other
+^^^^^
+
+An older bug corrected in CEFLIB/Makefile but not yet redelivered.
+
 NEW FEATURES IN VERSION 1.6
 ---------------------------
 

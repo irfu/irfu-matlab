@@ -84,10 +84,33 @@ if ~isempty(regexp(tmpDist.name,'^mms[1-4]_d[ei]s_','once'))
 	if isfield(tmpDist.DEPEND_0,'DELTA_MINUS_VAR') && isfield(tmpDist.DEPEND_0,'DELTA_PLUS_VAR')
         if isfield(tmpDist.DEPEND_0.DELTA_MINUS_VAR,'data') && isfield(tmpDist.DEPEND_0.DELTA_PLUS_VAR,'data')
             irf.log('warning','Times shifted to center of dt-+. dt-+ are recalculated');
-            toffset = (int64(tmpDist.DEPEND_0.DELTA_PLUS_VAR.data)-int64(tmpDist.DEPEND_0.DELTA_MINUS_VAR.data))*1e6/2;
-            tdiff = (int64(tmpDist.DEPEND_0.DELTA_PLUS_VAR.data)+int64(tmpDist.DEPEND_0.DELTA_MINUS_VAR.data))*1e6;
-            tmpDist.DEPEND_0.DELTA_MINUS_VAR.data = tdiff/2;
-            tmpDist.DEPEND_0.DELTA_PLUS_VAR.data = tdiff/2;
+            flag_MINUS = 1e3;       flag_PLUS = 1e3;            % s --> ms
+            if isfield(tmpDist.DEPEND_0.DELTA_MINUS_VAR, 'UNITS') && isfield(tmpDist.DEPEND_0.DELTA_PLUS_VAR, 'UNITS')
+                if strcmp(tmpDist.DEPEND_0.DELTA_MINUS_VAR.UNITS, 's')
+                    flag_MINUS = 1e3;           % s --> ms
+                elseif strcmp(tmpDist.DEPEND_0.DELTA_MINUS_VAR.UNITS, 'ms')
+                    flag_MINUS = 1;
+                else
+                    irf.log('warning','Epoch_minus_var units are not clear, assume s');
+                    flag_MINUS = 1e3;       
+                end
+                if strcmp(tmpDist.DEPEND_0.DELTA_PLUS_VAR.UNITS, 's')
+                    flag_PLUS = 1e3;           % s --> ms
+                elseif strcmp(tmpDist.DEPEND_0.DELTA_PLUS_VAR.UNITS, 'ms')
+                    flag_PLUS = 1;
+                else
+                    irf.log('warning','Epoch_plus_var units are not clear, assume s');
+                    flag_PLUS = 1e3;
+                end
+            else
+                irf.log('warning','Epoch_plus_var/Epoch_minus_var units are not clear, assume s');
+            end                
+            toffset = (int64(tmpDist.DEPEND_0.DELTA_PLUS_VAR.data*flag_PLUS)-int64(tmpDist.DEPEND_0.DELTA_MINUS_VAR.data*flag_MINUS))*1e6/2;
+            tdiff = (int64(tmpDist.DEPEND_0.DELTA_PLUS_VAR.data*flag_PLUS)+int64(tmpDist.DEPEND_0.DELTA_MINUS_VAR.data*flag_MINUS))*1e6/2;    
+            %toffset = (int64(tmpDist.DEPEND_0.DELTA_PLUS_VAR.data)-int64(tmpDist.DEPEND_0.DELTA_MINUS_VAR.data))*1e6/2;
+            %tdiff = (int64(tmpDist.DEPEND_0.DELTA_PLUS_VAR.data)+int64(tmpDist.DEPEND_0.DELTA_MINUS_VAR.data))*1e6;
+            tmpDist.DEPEND_0.DELTA_MINUS_VAR.data = tdiff;
+            tmpDist.DEPEND_0.DELTA_PLUS_VAR.data = tdiff;
             tmpDist.DEPEND_0.data = tmpDist.DEPEND_0.data+toffset;
         end
 	end

@@ -2,9 +2,9 @@
 tint = irf.tint('2004-01-01T00:00:00.00Z/2007-12-01T00:00:00.00Z');
 %tint = irf.tint('2006-01-01T00:00:00.00Z/2009-12-01T00:00:00.00Z');
 %tint = irf.tint('2004-01-01T00:00:00.00Z',60*60*20*30);
-%omni_orig = thor_get_omni(tint,'Bx,By,Bz,bsnx,P,Ma,n,V,T'); % ~90 s/year
-%save('/Users/Cecilia/MATLAB/irfu-matlab/mission/thor/orbit_coverage/omni_data/omni2004-2008','omni_orig')
-load /Users/Cecilia/MATLAB/irfu-matlab/mission/thor/orbit_coverage/omni_data/omni2004-2008.mat
+% omni_orig = thor_get_omni(tint,'Bx,By,Bz,bsnx,P,Ma,n,V,T'); % ~90 s/year
+% save([irf('path') '/mission/thor/orbit_coverage/omni_data/omni2004-2008'],'omni_orig')
+load([irf('path') '/mission/thor/orbit_coverage/omni_data/omni2004-2008.mat'])
 omni = omni_orig;
 
 %% Make TSeries of omni data and oversample NaN values
@@ -51,7 +51,7 @@ tsT = irf.ts_scalar(time(notNaN),omni(notNaN,10));
   tsT = tsT.resample(time); 
 
 %% Load THOR orbit
-datastore('spice','dir','/Users/Cecilia/calc/SPICE');
+datastore('spice','dir','/Users/andris/calc/spice');
 units = irf_units;
 
 resampleKernels = 1; 
@@ -69,18 +69,15 @@ newTime = rTHOR.time + tShift; % shift the time of THOR to bsnx's time
 rTHOR = irf.ts_vec_xyz(newTime,rTHOR.data); rTHOR.name = 'THOR orbit'; rTHOR.units = 'km';  
 
 % cut the end of the TSeries
-tsB = tsB.tlim(rTHOR.time);
+tsB    =    tsB.tlim(rTHOR.time);
 tsBSNX = tsBSNX.tlim(rTHOR.time);
-tsDp = tsDp.tlim(rTHOR.time);
-tsM = tsM.tlim(rTHOR.time);
-tsV = tsV.tlim(rTHOR.time);
-tsN = tsN.tlim(rTHOR.time);
-tsT = tsT.tlim(rTHOR.time);
+tsDp   =   tsDp.tlim(rTHOR.time);
+tsM    =    tsM.tlim(rTHOR.time);
+tsV    =    tsV.tlim(rTHOR.time);
+tsN    =    tsN.tlim(rTHOR.time);
+tsT    =    tsT.tlim(rTHOR.time);
 
 rTHOR = rTHOR.resample(tsB); % upsample orbit times to OMNI timeline, 1 min
-
-% remove negative M
-
 
 %% Define THOR phases, based on original timeline, add timeshift
 tintTHOR = rTHOR_orig.time([1 end])+tShift;
@@ -97,37 +94,70 @@ tintSciencePhase = EpochTT([tintPhase1.start.utc; tintPhase3.stop.utc]);
 %% Find local minima to divide complete trajectory into separate orbits
 [valPerigee,isPerigee] = findpeaks(-rTHOR.abs.data*1e3/units.RE,'MinPeakProminence',3); %irf_plot({rTHOR.abs*1e3/units.RE},'comp'); hold on; irf_plot(rTHOR(isPerigee).abs*1e3/units.RE,'*')
 tPerigee = rTHOR.time(isPerigee);
+indOrbitsTPR = false(size(tPerigee));
+indOrbitsTPR(rTHOR.data(isPerigee,1)<0 & ...
+	abs(atan2d(rTHOR.data(isPerigee,2),-rTHOR.data(isPerigee,1)))<45) = true;
+
 %irf_plot({rTHOR.abs*1e3/units.RE},'comp'); irf_plot(rTHOR(isPerigee).abs*1e3/units.RE,'*')
 
 %% Check which KSR THOR is in
-iKSR = thor_in_ksrs(rTHOR,tsB,tsDp,tsM,tsBSNX);
+iKSR_orig = thor_in_ksrs(rTHOR,tsB,tsDp,tsM,tsBSNX);
+iKSR = iKSR_orig; % iKSR can be manipulated later
+FOM = iKSR;
+FOM.data=zeros(size(iKSR.data));
 
 %% Check quality factor of bowshock crossings
-ind = 6; bsCrossing = find((iKSR.data)==ind); allInd = 1:iKSR.length; noCrossing = setdiff(allInd,bsCrossing);
+ind = 6; 
+bsCrossing = find((iKSR.data)==ind); allInd = 1:iKSR.length; 
+noCrossing = setdiff(allInd,bsCrossing);
 Rout = 15;
 QR = thor_QR(tsBSNX,Rout);
 QV = thor_QV(tsBSNX,rTHOR);
-[QBpar,ShockNormalAngle] = thor_QB(tsBSNX,rTHOR,tsB);
+[QBpar ,ShockNormalAngle] = thor_QB(tsBSNX,rTHOR,tsB);
 [QBperp,ShockNormalAngle] = thor_QB(tsBSNX,rTHOR,tsB,'perp');
 Qpar = QR*QBpar*QV; 
 Qperp = QR*QBperp*QV; 
-Qpar.data(noCrossing,:) = 0;
+Qpar.data(noCrossing,:)  = 0;
 Qperp.data(noCrossing,:) = 0;
 
-%% Turn a 1-min bowshock crossing into a 30-min interval
-T = 30;
-[Qpar30,indQpar30] = thor_30minbs(Qpar,T); % one point is still one minute
-[Qper30,indQper30] = thor_30minbs(Qperp,T);
-newCrossing = find(Qpar30.data>0);
-iKSR30 = iKSR; iKSR30.data(newCrossing) = repmat(6,numel(newCrossing,1));
+%% Turn a 1-min bowshock crossing into a 30-min intervals with corresponding FOM
+dtBS = 30*60;
+dt = 60; 
+tBSparToDownload = 50*30;
+tBSperToDownload = 20*30;
+% [Qpar30,indQpar30] = thor_30minbs(Qpar,T); % one point is still one minute
+% [Qper30,indQper30] = thor_30minbs(Qperp,T);
+Qpar30 = thor_q_sort(Qpar,dtBS); % one point is still one minute
+Qper30 = thor_q_sort(Qperp,dtBS);
 
-% Combine into the highest quality parallel and perpendicular shocks,
-% basically the shocks we want to bring down
-sortedQpar = sort(Qpar30.tlim(tintPhase1).data); limQpar = sortedQpar(end-100);
-sortedQper = sort(Qper30.tlim(tintPhase1).data); limQper = sortedQper(end-100);
-indPar = find(Qpar30.data>limQpar);
-indPer = find(Qper30.data>limQper);
-%distBS = 
+% assign FOMs to sorted lists
+FOMpar=Qpar30;FOMpar.data=zeros(size(Qpar30.data));
+FOMper=Qper30;FOMper.data=zeros(size(Qper30.data));
+
+tmpQ = Qpar30.data;
+Qlist = tmpQ(tmpQ>0);
+Qlist = sort(Qlist,'descend');
+Qlim = [Qlist(tBSparToDownload+1) + (0:-1:-5)*0.1 0.03 0.02 0.01 0];
+for iQ = numel(Qlim):-1:1
+	tmpFOM = 10-iQ;
+	tmpQlim = Qlim(iQ);
+	FOMpar.data(tmpQ>tmpQlim)=tmpFOM;
+end
+tmpQ = Qper30.data;
+Qlist = tmpQ(tmpQ>0);
+Qlist = sort(Qlist,'descend');
+Qlim = [Qlist(tBSperToDownload+1) + (0:-1:-5)*0.015 0.03 0.02 0.01 0];
+for iQ = numel(Qlim):-1:1
+	tmpFOM = 10-iQ;
+	tmpQlim = Qlim(iQ);
+	FOMper.data(tmpQ>tmpQlim)=tmpFOM;
+end
+iFOMPerPutToZero=find((FOMpar.data>0) & (FOMper.data > 0));
+FOMper.data(iFOMPerPutToZero) = 0;
+Qper30.data(iFOMPerPutToZero) = 0;
+FOM.data = FOMpar.data + FOMper.data;
+iKSR.data(FOMpar.data>0) = 6;
+iKSR.data(FOMper.data>0) = 6;
 
 if 0 % plot regions
   %%
@@ -169,36 +199,21 @@ end
 %limQpar1 = sortedQpar(end-40);
 %limQpar2 = sortedQpar(end-80);
 %limQpar3 = sortedQpar(end-120);
-for ii = 1:5
-  edgesQvar(ii) = sortedQpar(end-40*ii*30);
-end
-edgesQvar = [1 edgesQvar];
-edgesQvar = edgesQvar(end:-1:1);
+
+edgesQvar = [1 sortedQpar((1:5)*40)'];
+edgesFOM = 9.5:-1:-0.5;
 %edgesQvar = [limQpar1 limQpar2 limQpar3]
 %edgesQvar = [0.01 0.2 0.4 0.6 0.7 0.8:0.02:1]; % quality factor bins, high Q
-[distQpar30_var,~] = thor_bin(Qpar30,edgesQvar,tPerigee);
-[distQper30_var,~] = thor_bin(Qper30,edgesQvar,tPerigee);
+% distQpar30_var = thor_bin(Qpar30,edgesQvar,tPerigee);
+% distQper30_var = thor_bin(Qper30,edgesQvar,tPerigee);
+distFOM = thor_bin(FOM,edgesFOM,tPerigee);
 
-% Put highest priority first
-distQpar30_var.data = distQpar30_var.data(:,end:-1:1); edgesQvar = edgesQvar(end:-1:1);
-% distQpar30_08.data = distQpar30_var.data(:,end:-1:1);
-% distQpar30_00.data = distQpar30_var.data(:,end:-1:1);
-
-% cspar = irf.ts_scalar(distQpar30_08.time,cumsum(distQpar30_08.data,2));
-% csper = irf.ts_scalar(distQper30_08.time,cumsum(distQper30_08.data,2));
-% h = irf_plot(2); irf_patch(h(1),cspar); irf_patch(h(2),csper);
-
-[iKSRorbit,~] = thor_bin(iKSR30,[0.5:1:6.5],tPerigee);
+iKSRorbit = thor_bin(iKSR,0.5:1:6.5,tPerigee);
 
 tApogee = iKSRorbit.time;
 
-% Divide KSR = 6 (bowshock) into Q bins with index k = 6:14
-% tmpdata = iKSRorbit.data;
-% tmpdata(:,6+[0:size(distQpar30_08.data,2)-1]) = distQpar30_08.data(:,1:end);
-% tsDistKSR_Q = irf.ts_scalar(distQpar30_08.time,tmpdata);
-% tsDistKSR_Q.units = 'min';
 %% Make plot
-if 0
+if 1
 h = irf_plot(3);
   hca = irf_panel('KSR dist total counts');
   tsCumSumQ = irf.ts_scalar(tsDistQpar_resamp30min.time,cumsum(tsDistQpar_resamp30min.data(:,end:-1:1),2));
@@ -236,108 +251,119 @@ end
 
 dt = iKSR.time(2)-iKSR.time(1);
 
-% Burst telemetry data rates
-% mshTM = 14914; % kbps
-% bsTM = 19644; % kbps
-% fsTM = 13337; % kbps
-% pswTM = 5061; % kbps
-
-mshTM = 14914*1e-6; % Gbps
-bsTM = 19644*1e-6; % Gbps
-fsTM = 13337*1e-6; % Gbps
-pswTM = 5061*1e-6; % Gbps
+% TM rates with margin
+mshTM = 17897*1e-6*1.2; % Gbps
+bsTM  = 23572*1e-6*1.2; % Gbps
+fsTM  = 16005*1e-6*1.2; % Gbps
+pswTM =  6073*1e-6*1.2; % Gbps
 
 % Collected data, sorted by KSR and BS quality factor
 dataMSH = irf.ts_scalar(iKSRorbit.time,iKSRorbit.data(:,1)*dt*mshTM);
-distQ = distQper30_var; dataBSper = irf.ts_scalar(distQ.time,distQ.data(:,:)*dt*bsTM);
-distQ = distQpar30_var; dataBSpar = irf.ts_scalar(distQ.time,distQ.data(:,:)*dt*bsTM);
-dataBS = dataBSpar;
-dataFS = irf.ts_scalar(iKSRorbit.time,iKSRorbit.data(:,3)*dt*fsTM);
-dataSW = irf.ts_scalar(iKSRorbit.time,iKSRorbit.data(:,4)*dt*pswTM);
+% distQ   = distQper30_var; dataBSper = irf.ts_scalar(distQ.time,distQ.data(:,:)*dtBS*bsTM);
+% distQ   = distQpar30_var; dataBSpar = irf.ts_scalar(distQ.time,distQ.data(:,:)*dtBS*bsTM);
+% dataBS  = dataBSpar;
+dataBS  = irf.ts_scalar(distFOM.time,distFOM.data(:,:)*dt*bsTM);
+dataFS  = irf.ts_scalar(iKSRorbit.time,iKSRorbit.data(:,3)*dt*fsTM);
+dataSW  = irf.ts_scalar(iKSRorbit.time,iKSRorbit.data(:,4)*dt*pswTM);
 
-c_eval('ind_phase? = iKSRorbit.time.tlim(tintPhase?); n_phase? = numel(ind_phase?); time_phase? = iKSRorbit.time(ind_phase?);',1:3)
+c_eval('ind_phase?  = iKSRorbit.time.tlim(tintPhase?);',1:3);
+c_eval('n_phase?    = numel(ind_phase?);'              ,1:3);
+c_eval('time_phase? = iKSRorbit.time(ind_phase?);'     ,1:3)
 
 %% What is to be downlinked
 % bs (high to low priority) / msh / fs / psw
-phase1_downlink_per_orbit = 150*[0.8 0.8 0.0 0.0]/sum([0.8 0.8 0.0 0.0]); % Gbit
-phase2_downlink_per_orbit = 150*[0.2 0.2 0.85 0.3]/sum([0.2 0.2 0.85 0.3]); % Gbit
-phase3_downlink_per_orbit = 150*[0.0 0.0 0.15 0.7]/sum([0.0 0.0 0.15 0.7]); % Gbit
+burstTMperOrbitGbit = 150*0.9; 
+phase1_downlink_per_orbit = burstTMperOrbitGbit*[0.8 0.8 0.0 0.0]/sum([0.8 0.8 0.0 0.0]); % Gbit
+phase2_downlink_per_orbit = burstTMperOrbitGbit*[0.2 0.2 0.85 0.3]/sum([0.2 0.2 0.85 0.3]); % Gbit
+phase3_downlink_per_orbit = burstTMperOrbitGbit*[0.0 0.0 0.15 0.7]/sum([0.0 0.0 0.15 0.7]); % Gbit
 
 tsDownlinkPhase1 = irf.ts_scalar(time_phase1,repmat(phase1_downlink_per_orbit,n_phase1,1)); tsDownlinkPhase1.units = 'Gbit';
 tsDownlinkPhase2 = irf.ts_scalar(time_phase2,repmat(phase2_downlink_per_orbit,n_phase2,1)); tsDownlinkPhase2.units = 'Gbit';
 tsDownlinkPhase3 = irf.ts_scalar(time_phase3,repmat(phase3_downlink_per_orbit,n_phase3,1)); tsDownlinkPhase3.units = 'Gbit'; 
-tsDownlink = combine(tsDownlinkPhase1,combine(tsDownlinkPhase2,tsDownlinkPhase3));
+tsDownlink       = combine(tsDownlinkPhase1,combine(tsDownlinkPhase2,tsDownlinkPhase3));
 
 downlinkMSH = irf.ts_scalar(tsDownlink.time,tsDownlink.data(:,1));
-downlinkBS = irf.ts_scalar(tsDownlink.time,tsDownlink.data(:,2));
-downlinkFS = irf.ts_scalar(tsDownlink.time,tsDownlink.data(:,3));
-downlinkSW = irf.ts_scalar(tsDownlink.time,tsDownlink.data(:,4));
+downlinkBS  = irf.ts_scalar(tsDownlink.time,tsDownlink.data(:,2));
+downlinkFS  = irf.ts_scalar(tsDownlink.time,tsDownlink.data(:,3));
+downlinkSW  = irf.ts_scalar(tsDownlink.time,tsDownlink.data(:,4));
 
 
-%% Check how much data accumulates onboard the satellite
+%% OLD Check how much data accumulates onboard the satellite
 onboard_memory = 1000; % Gbit
 downlink_delay = 1; % data might stay this long before getting downlinked
-netDataMSH = thor_netdata(dataMSH,downlinkMSH,onboard_memory,downlink_delay);
-netDataBS = thor_netdata(dataBS,downlinkBS,onboard_memory,downlink_delay);
-netDataBSpar = thor_netdata(dataBSpar,downlinkBS,onboard_memory,downlink_delay);
-netDataBSper = thor_netdata(dataBSper,downlinkBS,onboard_memory,downlink_delay);
-netDataFS = thor_netdata(dataFS,downlinkFS,onboard_memory,downlink_delay);
-netDataSW = thor_netdata(dataSW,downlinkSW,onboard_memory,downlink_delay);
-
+netDataMSH   = thor_netdata(dataMSH,  downlinkMSH,onboard_memory,downlink_delay);
+netDataBS    = thor_netdata(dataBS,   downlinkBS, onboard_memory,downlink_delay);
+netDataBSpar = thor_netdata(dataBSpar,downlinkBS, onboard_memory,downlink_delay);
+netDataBSper = thor_netdata(dataBSper,downlinkBS, onboard_memory,downlink_delay);
+netDataFS    = thor_netdata(dataFS,   downlinkFS, onboard_memory,downlink_delay);
+netDataSW    = thor_netdata(dataSW,   downlinkSW, onboard_memory,downlink_delay);
+%% Check how much data accumulates onboard the satellite
+memorySaved = 1000; % Gbit
+tmMSH   = thor_tm(dataMSH,  downlinkMSH,memorySaved);
+tmBS    = thor_tm(dataBS,   downlinkBS ,memorySaved);
+tmFS    = thor_tm(dataFS,   downlinkFS ,memorySaved);
+tmSW    = thor_tm(dataSW,   downlinkSW ,memorySaved);
+dataTotal = dataBS;
+dataTotal.data = dataBS.data;
+dataTotal.data(:,3:10) = dataTotal.data(:,3:10) + dataMSH.data*[0.01 0.01 0.05 0.1 0.1 0.1 0.1 0.53];
+dataTotal.data(:,3:10) = dataTotal.data(:,3:10) + dataFS.data*[0.01 0.01 0.05 0.1 0.1 0.1 0.1 0.53];
+dataTotal.data(:,3:10) = dataTotal.data(:,3:10) + dataSW.data*[0.025 0.025 0.1 0.1 0.1 0.1 0.1 0.45];
+tmTotal = thor_tm(dataTotal,   burstTMperOrbitGbit ,memorySaved);
 %% Bowshock datavolume, parallel and perpendicular crossings
 h = irf_plot(4);
+ud = get(gcf,'userdata');
+if ~isfield(ud,'t_start_epoch')
+ ud.t_start_epoch = dataBS.time(1).epochUnix;
+ set(gcf,'userdata',ud);
+end
 
 if 1 % Collected data per orbit
-  hca = irf_panel('Collected data par');
-  hp = irf_patch(hca,dataBSpar.cumsum(1));       
-  labels = arrayfun(@(x,y) {[num2str(x) ' > Q_{||} > ' num2str(y)]}, edgesQvar(1:1:end-1),edgesQvar(2:1:end));
+  hca = irf_panel(h,'Collected data par');
+	hp=bar(hca,dataBS.time.epochUnix-tStartEpoch,dataTotal.data,1.6,'stacked');
+	irf_timeaxis(hca);
+  irf_zoom(hca,'y',[0 1000]);
+	%labels = arrayfun(@(x,y) {[num2str(x,2) ' > Q_{||} > ' num2str(y,2)]}, edgesQvar(1:1:end-1),edgesQvar(2:1:end));
+  labels = arrayfun(@(x) {num2str(x)}, 9:-1:1);
   legend(hp,labels{:},'location','eastoutside')
-  hold(hca,'on')
-  h_downlink = irf_plot(hca,downlinkBS); 
-  irf_legend(hca,{'- downlink/orbit'},[0.02 0.95],'k')
-  hold(hca,'on') 
+	hold(hca,'on')
+%   h_downlink = irf_plot(hca,downlinkBS);
+%   irf_legend(hca,{'- downlink/orbit'},[0.02 0.95],'k')
+%   hold(hca,'on') 
   hca.YLabel.String = {'New data','Gbit/orbit'};
-  irf_legend(hca,{'parallel crossings'},[0.98 0.95],'k')
 end
-if 1 % Net data onborad satellite
-  hca = irf_panel('Onboard data par');
-  hp = irf_patch(hca,netDataBSpar.cumsum(1));    
-  hold(hca,'on')
-  irf_plot(hca,irf.ts_scalar(netDataBS.time([1 end]),onboard_memory*[1 1]'),'k')
-  irf_legend(hca,{sprintf(' - onboard memory = %d Gbit',onboard_memory)},[0.02 0.95],'k')
-  hold(hca,'on')  
-  hca.YLabel.String = {'Onboard Data','Gbit/orbit'};  
-end
-if 1 % Collected data per orbit
-  hca = irf_panel('Collected data per');
-  hp = irf_patch(hca,dataBSper.cumsum(1));  
-  labels = arrayfun(@(x,y) {[num2str(x) ' > Q_{\perp} > ' num2str(y)]}, edgesQvar(1:1:end-1),edgesQvar(2:1:end));
+if 1 % downloaded data per orbit
+  hca = irf_panel(h,'Onboard data par');
+	hp=bar(hca,tmBSpar.downloaded.time.epochUnix-tStartEpoch,tmTotal.downloaded.data,1.5,'stacked');
+	grid(hca,'on');
+	irf_timeaxis(hca);
+	irf_zoom(hca,'y',[0 burstTMperOrbitGbit]);
+  labels = arrayfun(@(x) {num2str(x)}, 9:-1:1);
   legend(hp,labels{:},'location','eastoutside')
-  hold(hca,'on')
-  h_downlink = irf_plot(hca,downlinkBS); 
-  irf_legend(hca,{'- downlink/orbit'},[0.02 0.95],'k')
-  hold(hca,'on')  
-  hca.YLabel.String = {'New data','Gbit/orbit'};  
-  irf_legend(hca,{'perpendicular crossings'},[0.98 0.95],'k')
+  hca.YLabel.String = {'Downloaded','Gbit/orbit'};  
 end
-if 1 % Net data onborad satellite
-  hca = irf_panel('Onboard data per');
-  hp = irf_patch(hca,netDataBSper.cumsum(1));    
+if 1 % saved data onboard
+  hca = irf_panel(h,'Downloaded data par');
+  hp=bar(hca,tmBSpar.saved.time.epochUnix-tStartEpoch,tmTotal.saved.data,1.5,'stacked');
+  labels = arrayfun(@(x) {num2str(x)}, 9:-1:1);
+  irf_zoom(hca,'y',[0 1200]);
+	legend(hp,labels{:},'location','eastoutside')
   hold(hca,'on')
-  irf_plot(hca,irf.ts_scalar(netDataBS.time([1 end]),onboard_memory*[1 1]'),'k')
-  irf_legend(hca,{sprintf('- onboard memory = %d Gbit',onboard_memory)},[0.02 0.95],'k')
-  hold(hca,'on')  
-  hca.YLabel.String = {'Onboard data','Gbit/orbit'};  
+	irf_zoom(hca,'y',[0 memorySaved]);
+  hca.YLabel.String = {'Saved onboard','Gbit/orbit'};  
 end
-
-irf_zoom(h,'x',EpochTT([tintPhase1(1).utc; tintPhase2(2).utc]))
-%h(2).YLim = [0 3000];
-%h(4).YLim = [0 3000];
-h(1).YLim = [0 400];
-h(3).YLim = [0 400];
-
-h(1).Title.String = 'Bowshock datavolumes';
+if 1 % discarded data onboard
+  hca = irf_panel(h,'Discarded data');
+	hp=bar(hca,tmBSpar.discarded.time.epochUnix-tStartEpoch,tmTotal.discarded.data,1.5,'stacked');
+	irf_zoom(hca,'y',[0 1500]);
+	labels = arrayfun(@(x) {num2str(x)}, 9:-1:1);
+  legend(hp,labels{:},'location','eastoutside')
+  hca.YLabel.String = {'Discarded','Gbit/orbit'};  
+end
 irf_plot_axis_align
+
+irf_zoom(h,'x',EpochTT([tintPhase1(1).utc; tintPhase3(2).utc]))
+
+h(1).Title.String = 'THOR - FOM and Burst TM datavolumes';
 %irf_zoom(h,'x',tintTHOR)
 
 %% Write to file
