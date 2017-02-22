@@ -157,21 +157,46 @@ classdef dm_utils
         % FREQ : The FREQ zVariable in LFR CDFs (contains constants representing frequencies, themselves NOT being frequencies).
         % freq : Frequency in Hz.
             
-            global CONSTANTS
+            global SETTINGS
             
             % ASSERTION
             unique_values = unique(FREQ);
             if ~all(ismember(unique_values, [0,1,2,3]))
                 unique_values_str = sprintf('%d', unique_values);   % NOTE: Has to print without \n to keep all values on a single-line string.
-                error('BICAS:dm_utils:Assertion:IllegalArgument:DatasetFormat', 'Found unexpected values in LFR_FREQ (unique values: %s).', unique_values_str)
+                error('BICAS:dm_utils:Assertion:IllegalArgument:DatasetFormat', 'Found unexpected values in (LFR) FREQ (unique values: %s).', unique_values_str)
             end
             
             % NOTE: Implementation that works for arrays of any size.
-            freq = ones(size(FREQ)) * -1;
-            freq(FREQ==0) = CONSTANTS.C.LFR.F0;
-            freq(FREQ==1) = CONSTANTS.C.LFR.F1;
-            freq(FREQ==2) = CONSTANTS.C.LFR.F2;
-            freq(FREQ==3) = CONSTANTS.C.LFR.F3;
+            freq = ones(size(FREQ)) * -1;        % Allocate array and set default values.
+            freq(FREQ==0) = SETTINGS.get('LFR.F0');
+            freq(FREQ==1) = SETTINGS.get('LFR.F1');
+            freq(FREQ==2) = SETTINGS.get('LFR.F2');
+            freq(FREQ==3) = SETTINGS.get('LFR.F3');
+        end
+        
+        
+        
+        function GAMMA = get_simple_demuxer_gamma(DIFF_GAIN)
+        % Translate a scalar zVariable value DIFF_GAIN to an actual scalar gamma used in simplified calibration.
+        % NaN translates to NaN.
+        
+            global SETTINGS
+            
+            % ASSERTION
+            if numel(DIFF_GAIN) ~= 1
+                error('BICAS:dm_utils:Assertion:IllegalArgument', 'Illegal argument value "DIFF_GAIN". Must be scalar (not array).')
+            end
+            
+            switch(DIFF_GAIN)
+                case 0    ; GAMMA = SETTINGS.get('SIMPLE_DEMUXER.GAMMA_LOW_GAIN');
+                case 1    ; GAMMA = SETTINGS.get('SIMPLE_DEMUXER.GAMMA_HIGH_GAIN');
+                otherwise
+                    if isnan(DIFF_GAIN)
+                        GAMMA = NaN;
+                    else
+                        error('BICAS:dm_utils:Assertion:IllegalArgument:DatasetFormat', 'Illegal argument value "DIFF_GAIN"=%d.', DIFF_GAIN)                    
+                    end
+            end
         end
         
         
@@ -201,14 +226,14 @@ classdef dm_utils
         % 
         % NOTE: t_tt2000 is in int64.
         % NOTE: ACQUSITION_TIME can not be negative since it is uint32.
-            
-            global CONSTANTS
+        
+            global SETTINGS
             
             bicas.dm_utils.assert_ACQUISITION_TIME(ACQUISITION_TIME)
             
             ACQUISITION_TIME = double(ACQUISITION_TIME);
             atSeconds = ACQUISITION_TIME(:, 1) + ACQUISITION_TIME(:, 2) / 65536;   % at = ACQUISITION_TIME
-            tt2000 = spdfcomputett2000(CONSTANTS.C.ACQUISITION_TIME_EPOCH_UTC) + int64(atSeconds * 1e9);   % NOTE: spdfcomputett2000 returns int64 (as it should).
+            tt2000 = spdfcomputett2000(SETTINGS.get('ACQUISITION_TIME_EPOCH_UTC')) + int64(atSeconds * 1e9);   % NOTE: spdfcomputett2000 returns int64 (as it should).
         end
         
         
@@ -220,13 +245,13 @@ classdef dm_utils
         % ACQUISITION_TIME : Nx2 vector. uint32.
         %       NOTE: ACQUSITION_TIME can not be negative since it is uint32.
         
-            global CONSTANTS
+            global SETTINGS
             
             % ASSERTIONS
             bicas.dm_utils.assert_Epoch(tt2000)
 
             % NOTE: Important to type cast to double because of multiplication
-            atSeconds = double(int64(tt2000) - spdfcomputett2000(CONSTANTS.C.ACQUISITION_TIME_EPOCH_UTC)) * 1e-9;    % at = ACQUISITION_TIME
+            atSeconds = double(int64(tt2000) - spdfcomputett2000(SETTINGS.get('ACQUISITION_TIME_EPOCH_UTC'))) * 1e-9;    % at = ACQUISITION_TIME
             
             % ASSERTION: ACQUISITION_TIME must not be negative.
             if any(atSeconds < 0)
@@ -484,7 +509,7 @@ classdef dm_utils
         % PROPOSAL: Print MATLAB class (implicitly range).
         %
         
-            global CONSTANTS                
+            global SETTINGS                
         
             if nargin == 1
                 % ASSERTION
@@ -528,7 +553,7 @@ classdef dm_utils
                 %===================================
                 % Construct string: range of values
                 %===================================
-                if nUniqueValues > CONSTANTS.C.LOGGING.MAX_UNIQUES_PRINTED
+                if nUniqueValues > SETTINGS.get('LOGGING.MAX_UNIQUES_PRINTED')
                     vMin = min(min(min(variableValue)));
                     vMax = max(max(max(variableValue)));
                     valuesStr = sprintf('Mm: %d--%d', vMin, vMax);

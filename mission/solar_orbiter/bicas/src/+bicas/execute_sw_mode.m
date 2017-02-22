@@ -89,7 +89,7 @@ function execute_sw_mode(DataManager, swModeCliParameter, InputFilePathMap, outp
 % PROPOSAL: Print variable statistics also for zVariables which are created with fill values.
 %   NOTE: These do not use NaN, but fill values.
 
-global CONSTANTS
+global SETTINGS
 
 irf.log('n', sprintf('Output directory = "%s"', outputDir));       
 
@@ -159,7 +159,7 @@ end
 % ----------------------------------------------------------
 % Required by the RCS ICD iss2rev2, section 3.3.
 %============================================================
-str = bicas.utils.JSON_object_str(JsonOutputCdfFilenameListStruct, CONSTANTS.C.JSON_OBJECT_STR);
+str = bicas.utils.JSON_object_str(JsonOutputCdfFilenameListStruct, SETTINGS.get('JSON_OBJECT_STR.INDENT_SIZE'), SETTINGS.get('JSON_OBJECT_STR.VALUE_POSITION'));
 bicas.stdout_disp(str);
 
 end   % execute_sw_mode
@@ -179,8 +179,8 @@ function GlobalAttributesSubset = derive_output_dataset_GlobalAttributes(GlobalA
 %                          NOTE: Deviates from the usual variable naming conventions. GlobalAttributesSubset field names
 %                          have the exact names of CDF global attributes.
 
-global CONSTANTS
-INPUT_CDF_ASSERTIONS = CONSTANTS.C.INPUT_CDF_ASSERTIONS;
+global SETTINGS
+ASSERT_MATCHING_TEST_ID = SETTINGS.get('INPUT_CDF_ASSERTIONS.MATCHING_TEST_ID');
 
 GlobalAttributesSubset.Parents        = {};            % Array in which to collect value for this file's GlobalAttributes (array-sized GlobalAttribute).
 GlobalAttributesSubset.Parent_version = {};
@@ -197,8 +197,8 @@ for i = 1:length(GlobalAttributesCellArray)
 end
 
 % NOTE: Test_id values can legitimately differ. E.g. "eeabc1edba9d76b08870510f87a0be6193c39051" and "eeabc1e".
-bicas.utils.assert_strings_equal(0,                                     pgaProviderList, 'The input CDF files'' GlobalAttribute "Provider" values differ.')
-bicas.utils.assert_strings_equal(INPUT_CDF_ASSERTIONS.MATCHING_TEST_ID, pgaTestIdList,   'The input CDF files'' GlobalAttribute "Test_id" values differ.')
+bicas.utils.assert_strings_equal(0,                       pgaProviderList, 'The input CDF files'' GlobalAttribute "Provider" values differ.')
+bicas.utils.assert_strings_equal(ASSERT_MATCHING_TEST_ID, pgaTestIdList,   'The input CDF files'' GlobalAttribute "Test_id" values differ.')
 
 % NOTE: Uses shortened "Test id" value in case it is a long one, e.g. "eeabc1edba9d76b08870510f87a0be6193c39051". Uncertain
 % how "legal" that is but it seems to be at least what people use in the filenames.
@@ -231,7 +231,7 @@ function [outputFilename] = write_dataset_CDF(...
 %   Function should check the master file anyway: Assert existence, GlobalAttributes (dataset ID, SkeletonVersion, ...)
 %==========================================================================
 
-global CONSTANTS
+global SETTINGS
 
 
 
@@ -286,17 +286,19 @@ end
 %==========================
 % Set CDF GlobalAttributes
 %==========================
-DataObj.GlobalAttributes.Software_name       = CONSTANTS.C.SWD_IDENTIFICATION.name;
-DataObj.GlobalAttributes.Software_version    = CONSTANTS.C.SWD_RELEASE.version;
-DataObj.GlobalAttributes.Calibration_version = CONSTANTS.C.CALIBRATION_VERSION;             % "Static"?!!
+DataObj.GlobalAttributes.Software_name       = SETTINGS.get('SWD_IDENTIFICATION.name');
+DataObj.GlobalAttributes.Software_version    = SETTINGS.get('SWD_RELEASE.version');
+DataObj.GlobalAttributes.Calibration_version = SETTINGS.get('CALIBRATION_VERSION');         % "Static"?!!
 DataObj.GlobalAttributes.Generation_date     = datestr(now, 'yyyy-mm-ddTHH:MM:SS');         % BUG? Assigns local time, not UTC!!! ROC DFMD does not mention time zone.
 DataObj.GlobalAttributes.Logical_file_id     = logical_file_id(...
-    datasetId, GlobalAttributesSubset.Test_Id, GlobalAttributesSubset.Provider, CONSTANTS.C.OUTPUT_CDF.DATA_VERSION);
+    datasetId, GlobalAttributesSubset.Test_Id, ...
+    GlobalAttributesSubset.Provider, ...
+    SETTINGS.get('OUTPUT_CDF.DATA_VERSION'));
 DataObj.GlobalAttributes.Parents             = GlobalAttributesSubset.Parents;
 DataObj.GlobalAttributes.Parent_version      = GlobalAttributesSubset.Parent_version;
-DataObj.GlobalAttributes.Data_version        = CONSTANTS.C.OUTPUT_CDF.DATA_VERSION;         % ROC DFMD says it should be updated in a way which can not be automatized?!!!
+DataObj.GlobalAttributes.Data_version        = SETTINGS.get('OUTPUT_CDF.DATA_VERSION');     % ROC DFMD says it should be updated in a way which can not be automatized?!!!
 DataObj.GlobalAttributes.Provider            = GlobalAttributesSubset.Provider;             % ROC DFMD contradictive if it should be set.
-if CONSTANTS.C.OUTPUT_CDF.SET_TEST_ID
+if SETTINGS.get('OUTPUT_CDF.SET_TEST_ID')
     DataObj.GlobalAttributes.Test_id         = GlobalAttributesSubset.Test_Id;              % ROC DFMD says that it should really be set by ROC.
 end
 %DataObj.GlobalAttributes.SPECTRAL_RANGE_MIN
@@ -320,7 +322,7 @@ for fn = fieldnames(DataObj.data)'
             'processing data to the master CDF. This should only happen for incomplete processing.'], ...
             zVariableName);
         
-        if CONSTANTS.C.OUTPUT_CDF.EMPTY_ZVARIABLES_SET_TO_FILL
+        if SETTINGS.get('OUTPUT_CDF.EMPTY_ZVARIABLES_SET_TO_FILL')
             irf.log('w', logMsg)
             matlabClass = bicas.utils.convert_CDF_type_to_MATLAB_class(DataObj.data.(zVariableName).type, 'Permit MATLAB classes');
             
@@ -354,7 +356,7 @@ end
 % Write to CDF file using write_CDF_dataobj
 %===========================================
 outputFilename = FilenamingFunction(...
-    datasetId, GlobalAttributesSubset.Test_Id, GlobalAttributesSubset.Provider, CONSTANTS.C.OUTPUT_CDF.DATA_VERSION);
+    datasetId, GlobalAttributesSubset.Test_Id, GlobalAttributesSubset.Provider, SETTINGS.get('OUTPUT_CDF.DATA_VERSION'));
 filePath = fullfile(outputFileParentDir, outputFilename);
 irf.log('n', sprintf('Writing dataset CDF file: %s', filePath))
 bicas.utils.write_CDF_dataobj( filePath, ...
@@ -382,7 +384,7 @@ function [processData, GlobalAttributes] = read_dataset_CDF(pdid, filePath)
 
 % NOTE: HK TIME_SYNCHRO_FLAG can be empty.
 
-global CONSTANTS
+global SETTINGS CONSTANTS
 
 irf.log('n', sprintf('pdid=%s', pdid))    % NOTE: irf.log adds the method name.
 
@@ -446,11 +448,11 @@ irf.log('n', sprintf('File: Skeleton_version = "%s"', fileSkeletonVersionStr))
 InputInfo = bicas.utils.select_structs(CONSTANTS.INPUTS_INFO_LIST, 'PDID', {pdid});
 InputInfo = InputInfo{1};
 bicas.utils.assert_strings_equal(...
-    CONSTANTS.C.INPUT_CDF_ASSERTIONS.STRICT_DATASET_ID, ...
+    SETTINGS.get('INPUT_CDF_ASSERTIONS.STRICT_DATASET_ID'), ...
     {fileDatasetId, InputInfo.DATASET_ID}, ...
     sprintf('The input CDF file''s stated DATASET_ID does not match the value expected for the S/W mode.\n    File: %s\n    ', filePath))
 bicas.utils.assert_strings_equal(...
-    CONSTANTS.C.INPUT_CDF_ASSERTIONS.STRICT_SKELETON_VERSION, ...
+    SETTINGS.get('INPUT_CDF_ASSERTIONS.STRICT_SKELETON_VERSION'), ...
     {fileSkeletonVersionStr, InputInfo.SKELETON_VERSION_STR}, ...
     sprintf('The input CDF file''s stated Skeleton_version does not match the value expected for the S/W mode.\n    File: (%s)\n    ', filePath))
 

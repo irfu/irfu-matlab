@@ -11,7 +11,7 @@
 %
 function stdout_disp(str)
 
-global CONSTANTS
+global SETTINGS
 
 
 
@@ -20,7 +20,7 @@ global CONSTANTS
 % NOTE: Used for interpreting line breaks in the function argument.
 % NOTE: Used for line breaks in the output.
 LINE_FEED = char(10);
-
+STDOUT_PREFIX = SETTINGS.get('STDOUT_PREFIX');
 
 
 % ASSERTIONS
@@ -31,7 +31,7 @@ end
 
 
 % NOTE: Removes the last character (line feed) since "disp" implicitly adds a line break at the end.
-newStr = [CONSTANTS.C.STDOUT_PREFIX, strrep(str(1:end-1), LINE_FEED, [LINE_FEED, CONSTANTS.C.STDOUT_PREFIX])];
+newStr = [STDOUT_PREFIX, strrep(str(1:end-1), LINE_FEED, [LINE_FEED, STDOUT_PREFIX])];
 
 disp(newStr)
 

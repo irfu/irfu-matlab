@@ -27,14 +27,24 @@ function swDescriptor = get_sw_descriptor(DataManager)
 %   NOTE: Checks on the main constants structure will (can) only happen if this file is executed, not if 
 %         the S/W as a whole is (by default).
 %
-global CONSTANTS
+global CONSTANTS SETTINGS
 
 % SWD = The structure which is used for producing the S/W descriptor (SWD) JSON object string. Its fields (field names)
 % should NOT follow variable naming conventions since they influence the JSON object string.
 swd = [];
-swd.identification = CONSTANTS.C.SWD_IDENTIFICATION;
-swd.release        = CONSTANTS.C.SWD_RELEASE;
-swd.environment    = CONSTANTS.C.SWD_ENVIRONMENT;
+swd.identification.project     = SETTINGS.get('SWD_IDENTIFICATION.project');
+swd.identification.name        = SETTINGS.get('SWD_IDENTIFICATION.name');
+swd.identification.identifier  = SETTINGS.get('SWD_IDENTIFICATION.identifier');
+swd.identification.description = SETTINGS.get('SWD_IDENTIFICATION.description');
+            
+swd.release.version            = SETTINGS.get('SWD_RELEASE.version');
+swd.release.date               = SETTINGS.get('SWD_RELEASE.date');
+swd.release.author             = SETTINGS.get('SWD_RELEASE.author');
+swd.release.contact            = SETTINGS.get('SWD_RELEASE.contact');
+swd.release.institute          = SETTINGS.get('SWD_RELEASE.institute');
+swd.release.modification       = SETTINGS.get('SWD_RELEASE.modification');
+
+swd.environment                = SETTINGS.get('SWD_ENVIRONMENT.executable');
 swd.modes = {};
 
 for i = 1:length(CONSTANTS.SW_MODES_INFO_LIST)
@@ -42,7 +52,7 @@ for i = 1:length(CONSTANTS.SW_MODES_INFO_LIST)
     
     ExtendedSwModeInfo = DataManager.get_extended_sw_mode_info(cliParameter);
     
-    swd.modes{end+1} = generate_sw_descriptor_mode(CONSTANTS.C, ExtendedSwModeInfo);
+    swd.modes{end+1} = generate_sw_descriptor_mode(ExtendedSwModeInfo);
 end
 
 
@@ -65,10 +75,13 @@ end
 
 % Create data structure for a S/W mode corresponding to the information in the JSON S/W descriptor.
 %
-function SwdMode = generate_sw_descriptor_mode(C, ExtendedSwModeInfo)
+function SwdMode = generate_sw_descriptor_mode(ExtendedSwModeInfo)
 %
 % Variable naming convention:
 %    SWD = S/W descriptor
+
+global SETTINGS
+
 
 SwdMode = struct;
 SwdMode.name    = ExtendedSwModeInfo.CLI_PARAMETER;
@@ -97,9 +110,9 @@ for iOutput = 1:length(ExtendedSwModeInfo.outputs)
     SwdOutputInfo.level       = OutputInfo.SWD_LEVEL;
     SwdOutputInfo.release.date         = OutputInfo.SWD_RELEASE_DATE;
     SwdOutputInfo.release.version      = OutputInfo.SKELETON_VERSION_STR;
-    SwdOutputInfo.release.author       = C.AUTHOR_NAME;
-    SwdOutputInfo.release.contact      = C.AUTHOR_EMAIL;
-    SwdOutputInfo.release.institute    = C.INSTITUTE;
+    SwdOutputInfo.release.author       = SETTINGS.get('AUTHOR_NAME');
+    SwdOutputInfo.release.contact      = SETTINGS.get('AUTHOR_EMAIL');
+    SwdOutputInfo.release.institute    = SETTINGS.get('INSTITUTE');
     SwdOutputInfo.release.modification = OutputInfo.SWD_RELEASE_MODIFICATION;
     SwdOutputInfo.release.file         = masterFilename;
     

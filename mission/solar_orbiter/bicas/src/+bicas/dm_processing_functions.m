@@ -83,7 +83,7 @@ classdef dm_processing_functions
         function hkOnSciTimePd = process_HK_to_HK_on_SCI_TIME(InputsMap)
         % Processing function
         
-            global CONSTANTS
+            global SETTINGS
             
             SciPd   = InputsMap('SCI_cdf').pd;
             HkPd    = InputsMap('HK_cdf').pd;
@@ -111,7 +111,7 @@ classdef dm_processing_functions
             % 2) Effectively also chooses which time to use for the purpose of processing:
             %    ACQUISITION_TIME or Epoch.
             %=========================================================================================================
-            if CONSTANTS.C.PROCESSING.USE_AQUISITION_TIME_FOR_HK_TIME_INTERPOLATION 
+            if SETTINGS.get('PROCESSING.USE_AQUISITION_TIME_FOR_HK_TIME_INTERPOLATION')
                 irf.log('n', 'Using HK & SCI zVariable ACQUISITION_TIME (not Epoch) for interpolating HK data to SCI time.')
                 hkInterpolationTimeTt2000  = hkAtTt2000;
                 sciInterpolationTimeTt2000 = sciAtTt2000;
@@ -271,8 +271,6 @@ classdef dm_processing_functions
         % Keeps number of samples/record. Treats 1 samples/record "length-one snapshots".
         
         % NOTE: L1_REC_NUM not set in any TDS L2R dataset
-        
-            % global CONSTANTS
         
             SciPd         = InputsMap('SCI_cdf').pd;
             HkOnSciTimePd = InputsMap('HK_on_SCI_time').pd;
@@ -598,29 +596,18 @@ classdef dm_processing_functions
             % PROPOSAL: Only work for scalar values of mux_set and diff_gain?
             % QUESTION: MUX mode 1-3 are overdetermined if we always have BIAS1-3?
             %           If so, how select what to calculate?! What if results disagree/are inconsistent? Check for it?
-            %
-            % PROPOSAL: Move translation diff_gain-->gamma to separate function (cf. dm_utils.get_LFR_frequency).
             %==========================================================================================================
             
-            global CONSTANTS
+            global SETTINGS
             
             % ASSERTIONS
             if numel(MUX_SET) ~= 1 || numel(DIFF_GAIN) ~= 1
                 error('BICAS:data_manager:Assertion:IllegalArgument', 'Illegal argument value "mux_set" or "diff_gain". Must be scalars (not arrays).')
             end
             
-            ALPHA = CONSTANTS.C.SIMPLE_DEMUXER.ALPHA;
-            BETA  = CONSTANTS.C.SIMPLE_DEMUXER.BETA;
-            switch(DIFF_GAIN)
-                case 0    ; GAMMA = CONSTANTS.C.SIMPLE_DEMUXER.GAMMA_LOW_GAIN;
-                case 1    ; GAMMA = CONSTANTS.C.SIMPLE_DEMUXER.GAMMA_HIGH_GAIN;
-                otherwise
-                    if isnan(DIFF_GAIN)
-                        GAMMA = NaN;
-                    else
-                        error('BICAS:data_manager:Assertion:IllegalArgument:DatasetFormat', 'Illegal argument value "diff_gain"=%d.', DIFF_GAIN)                    
-                    end
-            end
+            ALPHA = SETTINGS.get('SIMPLE_DEMUXER.ALPHA');
+            BETA  = SETTINGS.get('SIMPLE_DEMUXER.BETA');
+            GAMMA = bicas.dm_utils.get_simple_demuxer_gamma(DIFF_GAIN);
             
             % Set default values which will remain for
             % variables which are not set by the demuxer.

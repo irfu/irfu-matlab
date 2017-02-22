@@ -16,8 +16,11 @@ function [masterCdfPath, masterFilename] = get_master_CDF_path(datasetId, skelet
 % PROPOSAL: Move function into constants.
 % PROPOSAL: Retrieve value from constants somehow (or rather, verify with constants).
 %
-    global CONSTANTS
+    global SETTINGS CONSTANTS
     
     masterFilename = [datasetId, '_V', skeletonVersionStr, '.cdf'];
-    masterCdfPath  = fullfile(CONSTANTS.C.BICAS_ROOT_PATH, CONSTANTS.C.MASTER_CDFS_RELATIVE_DIR, masterFilename);
+    masterCdfPath  = fullfile(...
+        CONSTANTS.BICAS_ROOT_PATH, ...
+        SETTINGS.get('MASTER_CDFS_RELATIVE_DIR'), ...
+        masterFilename);
 end

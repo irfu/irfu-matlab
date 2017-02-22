@@ -49,23 +49,16 @@
 %
 classdef constants < handle
 %
-% PROPOSAL: Redefine file into something that makes "decisions"?
-%   PROPOSAL: Method for finding the path to the master CDF for a given output (instead of separate function).
-%
 % PROPOSAL: Include SW root path?! How?
 %    PRO: Needs to be universally accessible.
 %    CON: Not hardcoded. ==> Mixes code with manually set constants.
-%    CON: No good MATLAB implementation of static variables.
 %    QUESTION: Is there anything analogous? output dir?
 %    PROPOSAL: Some functionality for setting "properties", in reality named ~global variables as key-value pairs. cf OVT.
 %    PROPOSAL: Handle "manually" through function parameters.
 %
-% PROPOSAL: Add S/W descriptor to this structure by calling get_sw_descriptor?
-%    PRO: Can force validation to take place in get_sw_descriptor.
+% PROPOSAL: Get rid of BICAS_ROOT_PATH somehow. Does not fit in.
 %
 % PROPOSAL: More validation.
-%   PROPOSAL: Check that master CDFs exist, that paths exist.
-%       CON: Makes sense to make that kind of check here?!
 %   PROPOSAL: Check that data types are unique.
 %       NOTE: Requires access to the lists.
 %
@@ -78,21 +71,6 @@ classdef constants < handle
 %    PRO: Forces the use of the same struct fields.
 %    NOTE: Would need to create new version of "select_structs" that works on arrays instead.
 %
-% PROPOSAL: Move get_sw_descriptor function to this class.
-%   PRO: It has to do with constants.
-%       CON: The function really represents code, not constants.
-%   PRO: More natural to incorporate validation.
-%   PRO: The result could/should be "cached" here.
-% PROPOSAL: Store derived S/W descriptor in constants, even if get_sw_descriptor is not there.
-%   CON/PROBLEM: get_sw_descriptor is a function of CONSTANTS which must hence first be initialized. 
-%       PROPOSAL: Have get_sw_descriptor be a function of subsets of constants.
-%
-% PROPOSAL: Change constants to not have any public variables. All constants are accessed through functions which cache
-% against private instance variables.
-%    PRO: Useful for non-trivial instantiation.
-%       Ex: Using external get_sw_descriptor to derive SWD variable INSIDE constants.
-%           CON: External function would use constants before it has been properly initialized.
-%
 % PROPOSAL: Use (nested) function to set every input in produce_inputs_constants. Reduce to one-liners.
 %     PROPOSAL: Same for produce_inputs_constants.
 %     PROPOSAL: Use struct statement instead.
@@ -102,10 +80,13 @@ classdef constants < handle
 %
 % PROPOSAL: Convert constant cell arrays of structs to arrays of structs: S/W modes, CDF/PDID inputs/outputs.
 %   PRO: Simplifies code that constructs cell arrays of the same struct field in multiple cell structs.
+%
+% PROPOSAL: Change name to dm_constants.
+%   NOTE: Should then get rid of BICAS_ROOT_PATH first.
 %###################################################################################################################
 
     properties(Access=public)
-        C                    % For miscellaneous minor constants which still might require code to be initialized.
+        BICAS_ROOT_PATH
         
         SW_MODES_INFO_LIST   % Information associated with S/W modes.
         
@@ -127,150 +108,23 @@ classdef constants < handle
         % Constructor
         function obj = constants(bicasRootPath)            
             
-            %-------------------------------------------------------------------------------------
-            % Common values
-            % -------------
-            % Only used INDIRECTLY and only INTERNALLY to set the values of the "real" constants.
-            %-------------------------------------------------------------------------------------
-            D = [];
-            D.INITIAL_RELEASE_MODIFICATION_STR = 'No modification (initial release)';
-            D.INITIAL_RELEASE_DATE = '2017-02-13';
-            %D.SWD_OUTPUT_RELEASE_VERSION = '01';  % For the S/W descriptor output CDFs' release version. Unknown what a sensible value is.
-            
-            
-            
-            C = [];
+             obj.BICAS_ROOT_PATH = bicasRootPath;
 
-            C.AUTHOR_NAME              = 'Erik P G Johansson';
-            C.AUTHOR_EMAIL             = 'erik.johansson@irfu.se';
-            C.INSTITUTE                = 'IRF-U';
-            C.BICAS_ROOT_PATH          = bicasRootPath;
-            C.MASTER_CDFS_RELATIVE_DIR = 'data';    % Location of master CDF files. Relative to the software directory structure root.
-            
-            % Value that shows up in EOut dataset GlobalAttributes.Calibration_version.
-            % String value.
-            C.CALIBRATION_VERSION = '0.1; Only proportionality constants i.e. no voltage offset tables, no transfer functions; No bias currents';
-        
-            
-            
-            %===========================================================================================================
-            % Various S/W descriptor release data for the entire software (not specific outputs)
-            % ----------------------------------------------------------------------------------
-            % EXCEPTION TO VARIABLE NAMING CONVENTION: Field names are used for constructing the JSON object struct and
-            % can therefore NOT follow variable naming conventions without modifying other code.
-            %===========================================================================================================
-            C.SWD_IDENTIFICATION.project     = 'ROC-SGSE';
-            C.SWD_IDENTIFICATION.name        = 'BICAS';
-            C.SWD_IDENTIFICATION.identifier  = 'ROC-SGSE-BICAS';
-            C.SWD_IDENTIFICATION.description = 'BIAS Calibration Software (BICAS) which derives the BIAS L2S input signals (plus some) from the BIAS L2R output signals.';
-            %
-            C.SWD_RELEASE.version      = '0.1.0';
-            C.SWD_RELEASE.date         = D.INITIAL_RELEASE_DATE;
-            C.SWD_RELEASE.author       = C.AUTHOR_NAME;
-            C.SWD_RELEASE.contact      = C.AUTHOR_EMAIL;
-            C.SWD_RELEASE.institute    = C.INSTITUTE;
-            C.SWD_RELEASE.modification = D.INITIAL_RELEASE_MODIFICATION_STR;
-            %
-            C.SWD_ENVIRONMENT.executable = 'roc/bicas';     % Relative path to BICAS executable. See RCS ICD.
-            
-            
-            
-            % Prefix used to identify the subset of stdout that should actually be passed on as stdout by the bash launcher script.
-            C.STDOUT_PREFIX = 'STDOUT: ';
-        
-            % Parameters influencing how JSON objects are printed with function JSON_object_str.
-            C.JSON_OBJECT_STR = [];
-            C.JSON_OBJECT_STR.INDENT_SIZE    =  4;
-            C.JSON_OBJECT_STR.VALUE_POSITION = 15;
-        
-            % The epoch for ACQUISITION_TIME.
-            % The time in UTC at which ACQUISITION_TIME is [0,0].
-            % Year-month-day-hour-minute-second-millisecond-mikrosecond(0-999)-nanoseconds(0-999)
-            % PROPOSAL: Store the value returned by spdfcomputett2000(ACQUISITION_TIME_EPOCH_UTC) instead?
-            C.ACQUISITION_TIME_EPOCH_UTC = [2000,01,01, 12,00,00, 000,000,000];
-
-            C.INPUT_CDF_ASSERTIONS.STRICT_DATASET_ID       = 0;   % Require input CDF Global Attribute "DATASET_ID"       to match the expected value.
-            C.INPUT_CDF_ASSERTIONS.STRICT_SKELETON_VERSION = 1;   % Require input CDF Global Attribute "Skeleton_version" to match the expected value.
-            C.INPUT_CDF_ASSERTIONS.MATCHING_TEST_ID        = 0;   % Require Test_id to be identical for all input CDF datasets.
-            C.OUTPUT_CDF.SET_TEST_ID = 1;            % Set CDF GlobalAttribute "Test_id". ROC DFMD says that it should really be set by ROC.            
-            C.OUTPUT_CDF.DATA_VERSION = '01';        % Set CDF GlobalAttribute "Data_version". ROC DFMD says it should be updated in a way which can not be automatized?!!! Set here for now.
-
-            C.PROCESSING.USE_AQUISITION_TIME_FOR_HK_TIME_INTERPOLATION = 1;
-            
-            % zVariables which are still empty after copying data into the master CDF assigned a correctly sized array
-            % with fill values. This should only be necessary for S/W modes with incomplete processing.
-            C.OUTPUT_CDF.EMPTY_ZVARIABLES_SET_TO_FILL = 0;
-            
-            C.LOGGING.MAX_UNIQUES_PRINTED = 5;    % When logging contents of matrix/vector, maximum number of unique values printed before switching to shorter representation (min-max range)
-            C.LOGGING.IRF_LOG_LEVEL = 'notice';   % Log level for "irf.log".
-            
-            
-            
-            %=====================================================================
-            % Define constants relating to interpreting LFR datasets
-            % ------------------------------------------------------
-            % F0, F1, F2, F3: Frequencies with which samples are taken. Unit: Hz. Names are LFR's naming.
-            %=====================================================================
-            C.LFR = [];
-            C.LFR.F0 = 24576;  % = 6 * 4096
-            C.LFR.F1 =  4096;
-            C.LFR.F2 =   256;
-            C.LFR.F3 =    16;
-        
-            %========================================================
-            % Constants for how the "simple demuxer" calibrates data
-            %========================================================
-            C.SIMPLE_DEMUXER = [];
-            C.SIMPLE_DEMUXER.ALPHA           = 1/17;
-            C.SIMPLE_DEMUXER.BETA            =    1;
-            C.SIMPLE_DEMUXER.GAMMA_HIGH_GAIN =  100;
-            C.SIMPLE_DEMUXER.GAMMA_LOW_GAIN  =    5;   % NOTE/POSSIBLE BUG: Uncertain which value is high-gain, and low-gain.
-            
-            obj.C = C;
-        
-            
+            % These two values exist in "settings" in principle, but that is just for as long as there has been no
+            % official release. After first release, then the two sets should start diverging.
+            INITIAL_RELEASE_DATE_STR = '2017-02-22';
+            INITIAL_RELEASE_MODIFICATION_STR = 'No modification (initial release)';
             
             [obj.INPUTS_INFO_LIST,  obj.INPUTS_PDIDS_LIST]  = bicas.constants.produce_inputs_constants();
-            [obj.OUTPUTS_INFO_LIST, obj.OUTPUTS_PDIDS_LIST] = bicas.constants.produce_outputs_constants(D);          
+            [obj.OUTPUTS_INFO_LIST, obj.OUTPUTS_PDIDS_LIST] = bicas.constants.produce_outputs_constants(INITIAL_RELEASE_DATE_STR, INITIAL_RELEASE_MODIFICATION_STR);          
             obj.SW_MODES_INFO_LIST                          = bicas.constants.produce_sw_modes_constants();
             
             
             
             % Extract list (cell array) of unique dataset IDs for input and output datasets.
             obj.ALL_DATASET_IDS_LIST = unique(cellfun(@(s) ({s.DATASET_ID}), [obj.OUTPUTS_INFO_LIST, obj.INPUTS_INFO_LIST])');
-            
-            
+                        
             obj.validate
-        end
-        
-        
-        
-        % Modify settings.
-        %
-        % ARGUMENTS
-        % =========
-        % ModifiedSettings : containers.Map with
-        %   keys   = Recursive struct names / settings names
-        %   values = Settings values as strings.
-        %
-        %
-        % NOTE: This function is only supposed to be called once, and as soon as possible after the constants object has
-        % been initialized.
-        % IMPLEMENTATION NOTE: This function can NOT be trivially merged with the constructor since
-        % (1) "constants" have to be initialized before parsing CLI arguments (for S/W modes).
-        % (2) "constants"/settings can be modified by the CLI arguments.
-        %
-        function modify_settings(obj, ModifiedSettings)
-            % Overwrite default values
-            keysList = ModifiedSettings.keys;
-            for iModifSetting = 1:length(keysList)
-                key = keysList{iModifSetting};                
-                valueAsString = ModifiedSettings(key);
-                
-                obj.overwrite_setting(key, valueAsString);
-            end
-            
-            obj.validate     % Doubtful if this checks anything that can be modified by this function.
         end
         
         
@@ -366,43 +220,6 @@ classdef constants < handle
                 @(x) ({[x.DATASET_ID, '_V', x.SKELETON_VERSION_STR]}), ...
                 [obj.OUTPUTS_INFO_LIST, obj.INPUTS_INFO_LIST]   );
             bicas.utils.assert_strings_unique(datasetIdVersionList)
-            
-        end
-        
-        
-        
-        % Set (modify, overwrite) setting.
-        %
-        % Will parse string referring to particular setting. This function is intended for overwriting default values.
-        % The method therefore defines the syntax used to refer to specific settings and connects them to the internal
-        % data structure that stores the settings. Function could be used also for reading (interpreting) settings from
-        % configuration file in the future.
-        %
-        % NOTE: This function is only meant to be called from the constructor.        
-        %
-        % ~BUG: Does not treat logical values. (Assumes that conceptually logical values are represented as numerical
-        % values.)
-        function overwrite_setting(obj, key, newValueAsString)
-            
-            keySectionsList = strsplit(key, '.');
-            
-            try
-                oldValue = getfield(obj.C, keySectionsList{:});
-            catch exception
-                error('BICAS:constants:ConfigurationBug', 'Can not find setting "%s".', key)
-            end
-            
-            % Use old value to convert string value to appropriate MATLAB class.
-            if isnumeric(oldValue)
-                newValue = str2double(newValueAsString);
-            elseif ischar(oldValue)
-                newValue = newValueAsString;
-            else
-                error('BICAS:constants:Assertion:ConfigurationBug', 'Can not handle the MATLAB class=%s of internal setting "%s".', class(oldValue), key)
-            end
-            
-            % Overwrite old setting.
-            obj.C = setfield(obj.C, keySectionsList{:}, newValue);
             
         end
 
@@ -595,8 +412,13 @@ classdef constants < handle
         % Produce constants for all possible OUTPUT datasets
         % (independent of how they are associated with S/W modes).
         %
-        function [outputsInfoList, eoutPdidList] = produce_outputs_constants(D)
-            % TODO: Set SWD_LEVEL automatically?!
+        % ARGUMENTS
+        % =========
+        % initialRelaseDateStr, initialRelaseModificationStr : For now, values used for all outputs. Should
+        %                                                      ideally(?) be set individually for every output.
+        function [outputsInfoList, eoutPdidList] = produce_outputs_constants(initialRelaseDateStr, initialRelaseModificationStr)
+        % TODO: Set SWD_LEVEL automatically?!
+        % PROPOSAL: initialRelaseDateStr, initialRelaseModificationStr as "file-global" constants.
             
             CLI_PARAMETER_SCI_NAME = 'output_sci';
             
@@ -611,8 +433,8 @@ classdef constants < handle
             outputsInfoList{end}.SWD_NAME                   =     'LFR L2s CWF science electric data in survey mode';
             outputsInfoList{end}.SWD_DESCRIPTION            = 'RPW LFR L2s CWF science electric (potential difference) data in selective burst mode 1, time-tagged';
             outputsInfoList{end}.SWD_LEVEL                  = 'L2S';
-            outputsInfoList{end}.SWD_RELEASE_DATE           = D.INITIAL_RELEASE_DATE;
-            outputsInfoList{end}.SWD_RELEASE_MODIFICATION   = D.INITIAL_RELEASE_MODIFICATION_STR;
+            outputsInfoList{end}.SWD_RELEASE_DATE           = initialRelaseDateStr;
+            outputsInfoList{end}.SWD_RELEASE_MODIFICATION   = initialRelaseModificationStr;
             
             outputsInfoList{end+1} = [];
             outputsInfoList{end}.SWD_OUTPUT_FILE_IDENTIFIER = CLI_PARAMETER_SCI_NAME;
@@ -621,8 +443,8 @@ classdef constants < handle
             outputsInfoList{end}.SWD_NAME                   =     'LFR L2s CWF science electric data in survey mode';
             outputsInfoList{end}.SWD_DESCRIPTION            = 'RPW LFR L2s CWF science electric (potential difference) data in selective burst mode 2, time-tagged';
             outputsInfoList{end}.SWD_LEVEL                  = 'L2S';
-            outputsInfoList{end}.SWD_RELEASE_DATE           = D.INITIAL_RELEASE_DATE;
-            outputsInfoList{end}.SWD_RELEASE_MODIFICATION   = D.INITIAL_RELEASE_MODIFICATION_STR;
+            outputsInfoList{end}.SWD_RELEASE_DATE           = initialRelaseDateStr;
+            outputsInfoList{end}.SWD_RELEASE_MODIFICATION   = initialRelaseModificationStr;
             
             outputsInfoList{end+1} = [];
             outputsInfoList{end}.SWD_OUTPUT_FILE_IDENTIFIER = CLI_PARAMETER_SCI_NAME;
@@ -631,8 +453,8 @@ classdef constants < handle
             outputsInfoList{end}.SWD_NAME                   =     'LFR L2s CWF science electric data in survey mode';
             outputsInfoList{end}.SWD_DESCRIPTION            = 'RPW LFR L2s CWF science electric (potential difference) data in survey mode, time-tagged';
             outputsInfoList{end}.SWD_LEVEL                  = 'L2S';
-            outputsInfoList{end}.SWD_RELEASE_DATE           = D.INITIAL_RELEASE_DATE;
-            outputsInfoList{end}.SWD_RELEASE_MODIFICATION   = D.INITIAL_RELEASE_MODIFICATION_STR;
+            outputsInfoList{end}.SWD_RELEASE_DATE           = initialRelaseDateStr;
+            outputsInfoList{end}.SWD_RELEASE_MODIFICATION   = initialRelaseModificationStr;
             
             outputsInfoList{end+1} = [];
             outputsInfoList{end}.SWD_OUTPUT_FILE_IDENTIFIER = CLI_PARAMETER_SCI_NAME;
@@ -641,8 +463,8 @@ classdef constants < handle
             outputsInfoList{end}.SWD_NAME                   =     'LFR L2s SWF science electric data in survey mode';
             outputsInfoList{end}.SWD_DESCRIPTION            = 'RPW LFR L2s SWF science electric (potential difference) data in survey mode, time-tagged';
             outputsInfoList{end}.SWD_LEVEL                  = 'L2S';
-            outputsInfoList{end}.SWD_RELEASE_DATE           = D.INITIAL_RELEASE_DATE;
-            outputsInfoList{end}.SWD_RELEASE_MODIFICATION   = D.INITIAL_RELEASE_MODIFICATION_STR;
+            outputsInfoList{end}.SWD_RELEASE_DATE           = initialRelaseDateStr;
+            outputsInfoList{end}.SWD_RELEASE_MODIFICATION   = initialRelaseModificationStr;
             
             % -------- TDS --------
 
@@ -653,8 +475,8 @@ classdef constants < handle
             outputsInfoList{end}.SWD_NAME                   =     'TDS L2s CWF science electric data in low frequency mode';
             outputsInfoList{end}.SWD_DESCRIPTION            = 'RPW TDS L2s CWF science electric (potential difference) data in low frequency mode, time-tagged';
             outputsInfoList{end}.SWD_LEVEL                  = 'L2S';
-            outputsInfoList{end}.SWD_RELEASE_DATE           = D.INITIAL_RELEASE_DATE;
-            outputsInfoList{end}.SWD_RELEASE_MODIFICATION   = D.INITIAL_RELEASE_MODIFICATION_STR;
+            outputsInfoList{end}.SWD_RELEASE_DATE           = initialRelaseDateStr;
+            outputsInfoList{end}.SWD_RELEASE_MODIFICATION   = initialRelaseModificationStr;
             
             outputsInfoList{end+1} = [];
             outputsInfoList{end}.SWD_OUTPUT_FILE_IDENTIFIER = CLI_PARAMETER_SCI_NAME;
@@ -663,8 +485,8 @@ classdef constants < handle
             outputsInfoList{end}.SWD_NAME                   =     'TDS L2s RSWF science electric data in low frequency mode';
             outputsInfoList{end}.SWD_DESCRIPTION            = 'RPW TDS L2s RSWF science electric (potential difference) data in low frequency mode, time-tagged';
             outputsInfoList{end}.SWD_LEVEL                  = 'L2S';
-            outputsInfoList{end}.SWD_RELEASE_DATE           = D.INITIAL_RELEASE_DATE;
-            outputsInfoList{end}.SWD_RELEASE_MODIFICATION   = D.INITIAL_RELEASE_MODIFICATION_STR;
+            outputsInfoList{end}.SWD_RELEASE_DATE           = initialRelaseDateStr;
+            outputsInfoList{end}.SWD_RELEASE_MODIFICATION   = initialRelaseModificationStr;
 
 
             % Add one field ".PDID" to every struct above!

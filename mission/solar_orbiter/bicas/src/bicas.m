@@ -66,10 +66,11 @@ function errorCode = bicas( varargin )
 
 
 
-clear -global CONSTANTS          % Clear any previous instance of a global variable "CONSTANTS". This is useful to avoid
-                                 % mistakenly using a previously initialized version of CONSTANTS when the
-                                 % initialization has failed and when developing in MATLAB.
-global CONSTANTS                 % Gobal structure "CONSTANTS" is initialized later.
+clear -global CONSTANTS SETTINGS  % Clear any previous instance of global variables. This is useful to avoid
+                                  % mistakenly using a previously initialized version of CONSTANTS or SETTTINGS when the
+                                  % initialization has failed and when developing in MATLAB.
+global CONSTANTS                  % Gobal structure "CONSTANTS" is initialized later.
+global SETTINGS                   % Gobal structure "SETTINGS" is initialized later.
 [ERROR_CODES, REQUIRED_MATLAB_VERSION] = bicas.error_safe_constants();
 
 
@@ -109,7 +110,8 @@ try
     % NOTE: Constants will later be modified by the CLI arguments.
     % Should preferably not use irf.log before here so that the right logging level is used.
     CONSTANTS = bicas.constants(bicasRootPath);
-    irf.log(CONSTANTS.C.LOGGING.IRF_LOG_LEVEL);
+    SETTINGS  = bicas.settings;
+    irf.log(SETTINGS.get('LOGGING.IRF_LOG_LEVEL'));
 
     
     
@@ -123,7 +125,7 @@ try
 
 
 
-    DataManager = bicas.data_manager();    % Requires CONSTANTS to be initialized.
+    DataManager = bicas.data_manager();    % Requires CONSTANTS (not necessarily SETTINGS) to be initialized.
     cliArgumentsList = varargin;
 
 
@@ -195,18 +197,19 @@ try
     % Extract the modified settings from the CLI arguments.
     % NOTE: ModifiedSettings is filled with values in the order of the CLI arguments.
     %       ==> A later flag (for the same setting) overwrites the value of a former flag.
-    ModifiedSettings = containers.Map;
+    ModifiedSettingsAsStrings = containers.Map;
     valuesListsLists = FlagValuesMap('modified_settings');
     for iSetting = 1:length(valuesListsLists)
-        ModifiedSettings(valuesListsLists{iSetting}{1}) = valuesListsLists{iSetting}{2};
+        ModifiedSettingsAsStrings(valuesListsLists{iSetting}{1}) = valuesListsLists{iSetting}{2};
     end
 
     
     
     % Modify settings
     % Should preferably not use irf.log before here so that the right logging level is used.
-    CONSTANTS.modify_settings(ModifiedSettings)
-    irf.log(CONSTANTS.C.LOGGING.IRF_LOG_LEVEL);
+    SETTINGS.modify_settings(ModifiedSettingsAsStrings)
+    irf.log(SETTINGS.get('LOGGING.IRF_LOG_LEVEL'));
+    irf.log('n', bicas.sprint_settings)
     
     
 
@@ -368,10 +371,13 @@ end
 % Print the JSON S/W descriptor.
 %
 function print_identification(DataManager)
-global CONSTANTS
+
+global SETTINGS
 
 swd = bicas.get_sw_descriptor(DataManager);
-str = bicas.utils.JSON_object_str(swd, CONSTANTS.C.JSON_OBJECT_STR);
+str = bicas.utils.JSON_object_str(swd, ...
+    SETTINGS.get('JSON_OBJECT_STR.INDENT_SIZE'), ...
+    SETTINGS.get('JSON_OBJECT_STR.VALUE_POSITION'));
 bicas.stdout_disp(str);
 
 end
@@ -382,19 +388,25 @@ end
 function print_help(ERROR_CODES, DataManager)
 %
 % PROPOSAL: Print error codes. Can use implementation to list them?
-%    PROPOSAL: Define error codes with description strings?! Map?! Check for doubles?!
+%    PROPOSAL: Define error codes with description strings?! Map?!! Check for doubles?!
 % PROPOSAL: Print CLI syntax incl. for all modes? More easy to parse than the S/W descriptor.
 
-%error('BICAS:OperationNotImplemented', 'Operation not implemented: --help.')
+global SETTINGS
 
+% Print software name & description
 swd = bicas.get_sw_descriptor(DataManager);
 bicas.stdout_printf('%s\n%s\n', swd.identification.name, swd.identification.description)
+
+% Print error codes.
 bicas.stdout_printf('\nError codes (internal constants):\n')
 for sfn = fieldnames(ERROR_CODES)'
     errorCode = ERROR_CODES.(sfn{1});
     errorName = sfn{1};
     bicas.stdout_printf('   %3i = %s\n', errorCode, errorName)
 end
-bicas.stdout_printf('\nSee "readme.txt" for more help.\n')
 
+% Print settings
+bicas.stdout_disp(bicas.sprint_settings)   % Includes title
+
+bicas.stdout_printf('\nSee "readme.txt" and user manual for more help.\n')
 end
