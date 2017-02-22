@@ -803,7 +803,7 @@ elseif strcmp(quantity,'a')
 	save_file = './mA.mat';
 	pha = [];
   irf_log('dsrc','Trying to to read phase from CP_AUX_SPIN_TIME...');
-  currentDir = pwd;	tempDir = sprintf('CAA_Download_%d',fix(rand*1e6));	
+  currentDir = pwd;	tempDir = sprintf('CAA_Download_%d',fix(rand*1e6));
   mkdir(tempDir); cd(tempDir);
   tint = start_time +[-5 dt+10];
   datasetName = sprintf('C%d_CP_AUX_SPIN_TIME',cl_id);
@@ -817,7 +817,7 @@ elseif strcmp(quantity,'a')
     cefFile = ['CAA/' datasetName '/' d.name];
     cef_init(); cef_read(cefFile);
     c1 = onCleanup(@() cef_close());
-    c2 = onCleanup(@() rmdir(tempDir,'s'));
+    c2 = onCleanup(@() rmdir([currentDir '/' tempDir],'s'));
     tt = cef_var('time_tags'); tt = irf_time( cef_date(tt'),'datenum>epoch');
     spinPeriod = cef_var('spin_period'); spinPeriod = double(spinPeriod');
     % find errors
@@ -938,9 +938,9 @@ elseif strcmp(quantity,'magc')
 	end
 %}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% B FGM - full res
+% B FGM - full res LOCAL
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif strcmp(quantity,'bfgm')
+elseif strcmp(quantity,'bfgmlocal')
 	save_file = './mB.mat';
 	
     if check_caa_sh_interval
@@ -973,8 +973,59 @@ elseif strcmp(quantity,'bfgm')
 	if ~isempty(sax)
 		c_eval('diB?=c_gse2dsi(B?,sax);save_list=[save_list '' diB? ''];',cl_id);
     else irf_log('dsrc',irf_ssub('No data for diB?',cl_id))
-	end
-	
+  end
+  
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% B FGM - full res from CAA
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif strcmp(quantity,'bfgm')
+  save_file = './mB.mat';
+  
+  if check_caa_sh_interval
+    if ~exist('./.caa_ms_interval','file')
+      irf_log('proc','Outside magnetosphere. No bfgm data fetched.')
+      out_data = []; cd(old_pwd), return
+    end
+  end
+  
+  currentDir = pwd; tempDir = tempname;
+  try
+    dsetName = irf_ssub('C?_CP_FGM_FULL',cl_id);
+    mkdir(tempDir);
+    cd(tempDir);
+    caa_download(start_time + [0 dt],dsetName,'stream')
+    cd(['CAA' filesep dsetName]);
+    d=dir('*.cef.gz');
+    dat = c_caa_cef_var_get('B_vec_xyz_gse',d.name);
+  catch
+    irf_log('dsrc',irf_ssub('Error downloading B from CAA',cl_id))
+  end
+  cd(currentDir);
+  if exist(tempDir,'dir'), rmdir(tempDir,'s'); end
+  
+  if isempty(dat)
+    irf_log('dsrc',irf_ssub('No data for B, diB?',cl_id))
+    out_data = []; cd(old_pwd), return
+  end
+  c_eval('B?=dat;save_list=[save_list '' B? ''];',cl_id);
+  clear dat
+  
+  % Transform vector data to DSI
+  [ok,sax] = c_load('SAX?',cl_id);
+  if ~ok
+    tempv = getData(cdb,start_time,dt,cl_id,'sax');
+    if isempty(tempv)
+      irf_log('dsrc',irf_ssub('Cannot load SAX?',cl_id))
+      sax = [];
+    else, sax = tempv{2};
+    end
+    clear tempv
+  end
+  if ~isempty(sax)
+    c_eval('diB?=c_gse2dsi(B?,sax);save_list=[save_list '' diB? ''];',cl_id);
+  else, irf_log('dsrc',irf_ssub('No data for diB?',cl_id))
+  end
+  
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % B STAFF SC
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

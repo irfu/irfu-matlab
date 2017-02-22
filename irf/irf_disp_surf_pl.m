@@ -59,6 +59,10 @@ function irf_disp_surfplot(kc_x_max,kc_z_max,wfinal,extraparam,surfchoice,colorc
     colorstring='<---- Most energy in ions     log10(We/Wi)      Most energy in electrons ---->';
     colorlimits=[-3,3];
 		colorMap = 'bluered';
+  elseif colorchoice==9
+    colorstring='<---- Most energy in particles     log10(Wp/Wf)      Most energy in fields ---->';
+    colorlimits=[-3,3];
+		colorMap = 'bluered';
   else
     colorchoice=1;
     colorlimits=[0,1];

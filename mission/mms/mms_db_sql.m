@@ -227,9 +227,8 @@ classdef mms_db_sql < handle
       sql = 'SELECT * FROM FileListToImport ORDER BY rowid LIMIT 1';
       rs = obj.sqlQuery(sql);
       if(~rs.next), irf.log('warning','Nothing found. Aborting.'); return; end
-      sql = ['DELETE FROM FileList WHERE idFile IN ',...
-        '(SELECT idFile FROM FileList WHERE fileNameFullPath NOT IN ',...
-        '(SELECT fileNameFullPath FROM FileListToImport))'];
+      sql = ['DELETE FROM FileList WHERE fileNameFullPath NOT IN ', ...
+        '(SELECT fileNameFullPath FROM FileListToImport)'];
 keyboard; % THIS FUNCTION IS NOT FULLY TESTED, MAKE SURE TO MAKE A BACKUP OF THE DB FILE
       obj.sqlUpdate(sql);
       obj.sqlUpdate('DELETE FROM FileListToImport');
@@ -331,7 +330,7 @@ keyboard; % THIS FUNCTION IS NOT FULLY TESTED, MAKE SURE TO MAKE A BACKUP OF THE
       system(['cd ' obj.databaseDirectory ...
         '; find ./ancillary/* -type f  -name "*_DEFATT_*" -o -name "*_DEFEPH_*" -o -name "*_DEFQ_*" -o -name "*_PREDQ_*" | sort -rV | ', ...
         'awk ''{nn=split($0,aa,"."); if (nn!=mm) print $aa[1]; else if(aa[2]!=bb[2]) print $aa[1]; }; {mm=split($0,bb,".")}'' - | ', ...
-        'perl -pe ''s/(\.\/ancillary\/mms.*)(MMS[1-4]?_[\w-]*)_(20\d{5,5}_20\d{5,5})\.V(\d)(\d)\n/$1,$2,$3,$4,$5,0,$_/'' > delme.txt;'...
+        'perl -pe ''s/(\.\/ancillary\/mms.*)(MMS[1-4]?_[\w-]*)_(20\d{5,5}_20\d{5,5})\w{0,4}\.V(\d)(\d)\n/$1,$2,$3,$4,$5,0,$_/'' > delme.txt;'...
         'echo -e ".mod csv\n.import delme.txt FileListToImport\n" | sqlite3 ' obj.databaseFile ';'...
         'rm ./delme.txt' ]);
     end
@@ -377,7 +376,6 @@ keyboard; % THIS FUNCTION IS NOT FULLY TESTED, MAKE SURE TO MAKE A BACKUP OF THE
           % Not the same epochVarNames or varNames as last file, run full
           % SQL query and insert possible new values.
           for iDataset = 1:numel(out)
-            if isempty(out(iDataset).startTT) || out(iDataset).startTT<1000, break; end % energy channels are put as DEPEND_0 for FPI
             % add dataset to Datasets if needed
             %SEE IF add_var_names can be improved!
             % Not the same as last iteration, possibly new. Make SQL queries
@@ -410,8 +408,8 @@ keyboard; % THIS FUNCTION IS NOT FULLY TESTED, MAKE SURE TO MAKE A BACKUP OF THE
         logStr = ['Removing files, ', num2str(length(failedToImport)), ...
           ' in total, from FileList that failed to be read for some reason.'];
         irf.log('notice', logStr);
-        sql = ['DELETE FROM FileList WHERE fileNameFullPath IN (', ...
-          strjoin(failedToImport, ', '),')'];
+        sql = ['DELETE FROM FileList WHERE fileNameFullPath IN ("', ...
+          strjoin(failedToImport, '", "'),'")'];
         obj.sqlUpdate(sql);
       end
     end
@@ -748,7 +746,7 @@ keyboard; % THIS FUNCTION IS NOT FULLY TESTED, MAKE SURE TO MAKE A BACKUP OF THE
       else
         % ANCILLARY file
         irf.log('debug', ['Reading ancillary file: ', cdfFileName]);
-        info = regexp(cdfFileName, '(\.\/ancillary\/mm.*)MM.*_(?<dataset>\w{4,6})_(20\d{5}_20\d{5})\.(V\d{2})', 'names');
+        info = regexp(cdfFileName, '(\.\/ancillary\/mm.*)MM.*_(?<dataset>\w{4,6})_(20\d{5}_20\d{5})\w{0,4}\.(V\d{2})', 'names');
         switch lower(info.dataset)
           case 'defatt'
             out.epochVarName = 'Time';
