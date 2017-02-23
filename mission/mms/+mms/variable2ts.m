@@ -25,6 +25,7 @@ end
 
 data = v.data; siConversion = '';
 if v.dim(1)==3 && v.dim(2)==1, varType = 'vec_xyz';
+elseif v.dim(1) == 3 && v.dim(2) == 3 && isfield(v,'TENSOR_ORDER') && v.TENSOR_ORDER == 2, varType = 'tensor_xyz';
 elseif v.dim(1)==2 && v.dim(2)==1, varType = 'vec_xy';
 elseif v.dim(1)==1 && v.dim(2)==1, varType = 'scalar';
 else
