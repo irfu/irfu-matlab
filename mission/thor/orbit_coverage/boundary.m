@@ -17,16 +17,18 @@ if isempty(boundary); boundary = 'mp'; end
 % Default values: Dp=2nPa, Bz=0nT
 Bz = 0; Dp = 2;
 
-theta=0:0.1:pi;
+theta=0:0.01:pi;
 alpha=(0.58-0.007*Bz)*(1+0.024*log(Dp));
 r=R0*(2./(1+cos(theta))).^alpha;
 xMP=r.*cos(theta);
 yMP=r.*sin(theta);
 yMP(abs(xMP)>100)=[];
 xMP(abs(xMP)>100)=[];
+yMP(xMP<-50)=[];
+xMP(xMP<-50)=[];
 
 % Bowshock
-xBS=R0:-0.5:-100;
+xBS=R0:-0.1:-50;
 yBS=sqrt(0.04*(xBS-R0).^2-45.3*(xBS-R0)); % original F/G model adds rstandoff^2=645
 
 switch lower(boundary)

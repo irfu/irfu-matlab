@@ -499,9 +499,9 @@
         otherwise % dimension is numeric value
           %if option> ndims(obj.data), error('cumsum dimension exceeds data dimension'); end
           if option>0,             
-            obj.data_ = cumsum(obj.data,abs(option)+1); Ts = obj;  
+            obj.data_ = cumsum(obj.data,abs(option)); Ts = obj;  
           elseif option<0            
-            obj.data_ = cumsum(obj.data(:,end:-1:1),abs(option)+1); Ts = obj;
+            obj.data_ = cumsum(obj.data(:,end:-1:1),abs(option)); Ts = obj;
           end
       end     
           

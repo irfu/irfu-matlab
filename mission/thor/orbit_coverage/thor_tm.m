@@ -1,9 +1,9 @@
 function [tsData] = thor_tm(data,downlink,memorySaved)
 % THOR_TM - calculates how much data accumulates onboard and what is downlinked THOR
 %   [tsData] = thor_netdata(data,downlink,memoryLimit,downlink_delay)
-%   data           - TSeries of generated data where data can be a vector of different
-%   quality data produced onboard. If data is vector the first indexes are
-%   downloaded first.
+%   data           - TSeries of generated data where data can be a vector 
+%                    of different quality data produced onboard. If data is
+%                    vector the first indexes are downloaded first.
 %   downlink         - how much data are downloaded per orbit
 %   memorySaved      - memory limit which is saved from one time step to
 %   tsData.saved      - data saved onboard after downlink
