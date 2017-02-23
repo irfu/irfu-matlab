@@ -15,14 +15,29 @@ for month=1:1
     dayStr = sprintf('%02d',day);
     
     filename_url=sprintf(...
-      '%s%i%s%s%i%s%s%s','http://cdaweb.gsfc.nasa.gov/pub/data/goes/goes12/mag_l2/',...
+      '%s%i%s%s%i%s%s%s','https://cdaweb.gsfc.nasa.gov/pub/data/goes/goes12/mag_l2/',...
       year,'/','g12_l2_mag_',year,monthStr,dayStr,'_v01.cdf');
     filename=sprintf('%s%s%i%s%s', folder,...
       'g12_l2_mag_',year,monthStr,dayStr,'_v01.cdf');
     
     if exist(filename,'file')==0
-      [f, status]=urlwrite(filename_url, filename);
-      display(strcat('downloading ', filename));
+      if(verLessThan('matlab','8.4')) % Version less than R2014b
+        filename_url = [filename_url(1:4), filename_url(6:end)]; % excl. "s" from https
+        [f, status]=urlwrite(filename_url, filename);
+        display(strcat('downloading ', filename));
+      else
+        % Set root certificate pem file to empty disables verification, as of
+        % version R2016b Matlab does not include root certificate used by "Let's
+        % encrypt". Bug reported to Mathworks 2017/02/01T13 CET.
+        webOpt = weboptions('CertificateFilename','');
+        try
+          f = websave(filename, filename_url, webOpt);
+          display(strcat('downloading ', filename));
+          status = true;
+        catch
+          status = false;
+        end
+      end
     end
     if exist(filename,'file')~=0
       display('processing file');

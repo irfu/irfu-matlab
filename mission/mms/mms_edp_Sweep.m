@@ -162,6 +162,11 @@ classdef mms_edp_Sweep < handle
           ' of ',num2str(obj.nSweeps)]);
         return
       end
+      if size(voltage1,1) <2
+        disp(['*** Warning, not analyzed almost empty sweep ',num2str(iSweep),...
+          ' of ',num2str(obj.nSweeps)]);
+        return
+      end
       % Determine type of sweep:
       % ++ = up only, -- = down only, +- = up-down, -+ = down-up, 00 = wiggly
       type = obj.(['p' num2str(obj.pTable(1,iSweep))])(obj.pTable(2,iSweep)).type;
@@ -203,11 +208,21 @@ classdef mms_edp_Sweep < handle
           t_iph = sweepTime.start.epoch ...
             + (-tmp1.iPh - biasRes1(1)) / (biasRes1(end)-biasRes1(1)) ...
             * (sweepTime.stop.epoch-sweepTime.start.epoch);
-          [ph_tmp1, ~] = mms_sdp_phase_2(sps,t_iph);
+          if isfield(sps,'zphase')
+            phase = mms_defatt_phase(sps,t_iph);
+            ph_tmp1 = phase.data;
+          else
+            [ph_tmp1, ~] = mms_sdp_phase_2(sps,t_iph);
+          end
           t_iph = sweepTime.start.epoch ...
             + (-tmp2.iPh - biasRes2(1)) / (biasRes2(end)-biasRes2(1)) ...
             * (sweepTime.stop.epoch-sweepTime.start.epoch);
-          [ph_tmp2, ~] = mms_sdp_phase_2(sps,t_iph);
+          if isfield(sps,'zphase')
+            phase = mms_defatt_phase(sps,t_iph);
+            ph_tmp2 = phase.data;
+          else
+            [ph_tmp2, ~] = mms_sdp_phase_2(sps,t_iph);
+          end
         end
       else
         ph_tmp1 = NaN;
@@ -547,7 +562,12 @@ classdef mms_edp_Sweep < handle
         time_ph = sweepTime.epoch(1) + int64(0:length(biasRes1)-1)' * ...
           (sweepTime.epoch(2)-sweepTime.epoch(1)) / ...
           int64(length(biasRes1)-0);
-        [ph_tmp, ~] = mms_sdp_phase_2(sps,time_ph);
+          if isfield(sps,'zphase')
+            phase = mms_defatt_phase(sps,time_ph);
+            ph_tmp = phase.data;
+          else
+            [ph_tmp, ~] = mms_sdp_phase_2(sps,time_ph);
+          end
         switch prb1
           case 1, p_1='p1'; p_2='p2'; angle1=30; angle2=210; %#ok<NASGU>
           case 2, p_1='p2'; p_2='p1'; angle1=210; angle2=30; %#ok<NASGU>

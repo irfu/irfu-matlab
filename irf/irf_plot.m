@@ -374,6 +374,11 @@ elseif flag_subplot==3,  % components of vectors in separate panels
             end
             if size(data,2)>=ipl
                 if use_color
+                  if(jj>size(line_colors,1))
+                    irf.log('critical', ['Plot multiple lines (>', num2str(size(line_colors,1),'%i'), ...
+                      ') requires argument "LineStyle" to provide colour for each line.']);
+                    error('More lines to plot than the number of defined colours to use.');
+                  end
                     plot(hca,(time-ts-dt(jj)), data(:,ipl),...
                         'Color', line_colors(jj,:), 'LineStyle',marker_cur)
                 else
