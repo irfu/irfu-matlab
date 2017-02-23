@@ -83,7 +83,7 @@ indNotFS2 = find(angleXGSE<-BAng-180);
 indInsideFS = setdiff([allInd],[indNotFS;indNotFS2]);
 FS.data(indNotFS) = NaN;
 FS.data(indNotFS2) = NaN;
-FS.data(indBS) = NaN;
+FS.data(indInsideBS) = NaN;
 
 indInsideFS = setdiff(allInd,[tocolumn(indInsideBS);tocolumn(indNotFS);tocolumn(indNotFS2)]);
 
