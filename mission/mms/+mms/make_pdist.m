@@ -135,13 +135,11 @@ if is_version_geq(tmpDist.GlobalAttributes.Data_version{:}, '3.1.0')
     stepTable = get_variable(tmpDataObj,['mms' fileInfo.mmsId '_' fileInfo.detector '_steptable_parity_' fileInfo.tmMode]);
     stepTable = stepTable.data;
   end
-  energy0 = energy(1,:);
-  energy1 = energy(2,:);
-
-  % Make energytable from energy0, energy1 and energysteptable
-  %energy = repmat(torow(energy),numel(stepTable),1);
-  %energy(stepTable==1,:) = repmat(energy,sum(stepTable),1);
-
+  
+  % energy table can start at energy1
+  energy0 = energy(find(stepTable==0,1,'first'),:);
+  energy1 = energy(find(stepTable==1,1,'first'),:); if isempty(energy1), energy1 = energy0; end
+  
   % Construct PDist
   PD = PDist(time,Dist,'skymap',energy,phi,theta);
   PD.userData = ud;
