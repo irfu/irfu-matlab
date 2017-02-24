@@ -264,12 +264,22 @@ end
 if isTimeSpecified % add time if given
 	if doOutputTSeries
     torder = 0; repr = {};
-    if length(result(1,:))==3; torder = 1; repr = {'x','y','z'}; end
-    result = TSeries(EpochUnix(tB),result,'TensorOrder',torder,'repres',repr);
+    if length(result(1,:))==3; 
+      torder = 1; 
+      repr = {'x','y','z'}; 
+      result = TSeries(EpochUnix(tB),result,'TensorOrder',torder,'repres',repr);
+    else
+      result = TSeries(EpochUnix(tB),result,'TensorOrder',torder);
+    end    
 		if nargout == 2,
       torder = 0;
-      if length(b(1,:))==3; torder = 1; repr = {'x','y','z'}; end
-			b = TSeries(EpochUnix(tB),b,'TensorOrder',torder,'repres',repr);
+      if length(b(1,:))==3; 
+        torder = 1; 
+        repr = {'x','y','z'}; 
+        b = TSeries(EpochUnix(tB),b,'TensorOrder',torder,'repres',repr);
+      else
+        b = TSeries(EpochUnix(tB),b,'TensorOrder',torder,'repres');
+      end
 			result.units = Bunits;
 		end
 	else
