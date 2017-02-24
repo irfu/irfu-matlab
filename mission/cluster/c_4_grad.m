@@ -278,7 +278,7 @@ if isTimeSpecified % add time if given
         repr = {'x','y','z'}; 
         b = TSeries(EpochUnix(tB),b,'TensorOrder',torder,'repres',repr);
       else
-        b = TSeries(EpochUnix(tB),b,'TensorOrder',torder,'repres');
+        b = TSeries(EpochUnix(tB),b,'TensorOrder',torder);
       end
 			result.units = Bunits;
 		end
