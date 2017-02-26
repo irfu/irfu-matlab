@@ -1334,7 +1334,7 @@
       % RESAMPLE  Resample TSeries to a new timeline
       %
       % TsOut = RESAMPLE(Ts,NewTime, [ARGS])
-      % 
+      % irf_sample METHOD: 'nearest','linear','spline','pchip','cubic','v5cubic'
 			% NewTime should be GeneralTimeArray (e.g. EpochTT.)
 			% Resampled data type is double. 
       % ARGS are given as input to irf_resamp()
