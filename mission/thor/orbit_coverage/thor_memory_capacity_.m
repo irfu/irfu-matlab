@@ -154,7 +154,7 @@ FOMpar=Qpar30;FOMpar.data=zeros(size(Qpar30.data));
 FOMper=Qper30;FOMper.data=zeros(size(Qper30.data));
 
 tmpQ = Qpar30.data; % includes all phases
-%tmpQ = Qpar30.tlim(tNSP12).data; % limit to NSP1 and 2
+tmpQ = Qpar30.tlim(tNSP12).data; % limit to NSP1 and 2
 Qlist = tmpQ(tmpQ>0);
 Qlist = sort(Qlist,'descend'); % highest first
 Qlist234 = Qlist(tBSparToDownloadCat1+1:end);
@@ -209,16 +209,16 @@ end
 FOMmsh.name = 'FOM MSH';
 FOMmsh.data(iKSR.data~=2) = 0; % set non-MSH intervals to FOM 0;
 
-
 %% Assign FOMs to foreshock...
 [Qfs,~] = thor_Q_fs(rTHOR); % irf_plot({rTHOR,Qmsh,dataMSH});
 FOMfs = Qfs;
+% scatter(rTHOR.x.data(1:20:end,:)*1e3/units.RE,rTHOR.y.data(1:20:end,:)*1e3/units.RE,1,FOMfs.data(1:20:end,:))
 tmpQ = Qfs.data;
 Qlist = tmpQ(tmpQ>0);
 Qlist = sort(Qlist,'descend');
 QlimFS = [Qlist(end*[0.25 0.5 0.75])' 0]; % bins for FOM, assign a given range of Qpar a certain FOM 
 QlimFS = [0.75 0.50 0.25 0];
-
+% scatter(rTHOR.x.data(1:20:end,:)*1e3/units.RE,rTHOR.y.data(1:20:end,:)*1e3/units.RE,1,FOMfs.data(1:20:end,:))
 for iQ = numel(QlimFS):-1:1
 	tmpFOM = iQ;
 	tmpQlim = QlimFS(iQ);
@@ -329,6 +329,7 @@ h = irf_plot(3);
 
   irf_plot_axis_align
 end
+
 %% Datavolume
 % 1 - magnetosphere, inside magnetopause
 % 2 - magnetosheath, outside magnetopause but inside bowshock
@@ -341,10 +342,22 @@ end
 dt = iKSR.time(2)-iKSR.time(1);
 
 % TM rates with margin
-mshTM = 17897*1e-6*1.2; % Gbps
-bsTM  = 23572*1e-6*1.2; % Gbps
-fsTM  = 16005*1e-6*1.2; % Gbps
-pswTM =  6073*1e-6*1.2; % Gbps, for one orbit: pswTMorbit = 6073*1e-6*1.2*(6*24*60*60)
+% mshTM = 17897*1e-6*1.2; % Gbps
+% bsTM  = 23572*1e-6*1.2; % Gbps
+% fsTM  = 16005*1e-6*1.2; % Gbps
+% pswTM =  6073*1e-6*1.2; % Gbps, for one orbit: pswTMorbit = 6073*1e-6*1.2*(6*24*60*60)
+
+% TM rates with margin, from Payload spreadsheet
+mshTM = 14914*1e-6*1.2; % Gbps
+bsTM  = 19644*1e-6*1.2; % Gbps
+fsTM  = 13337*1e-6*1.2; % Gbps
+pswTM =  5061*1e-6*1.2; % Gbps, for one orbit: pswTMorbit = 6073*1e-6*1.2*(6*24*60*60)
+
+% Mission sucess criteria from Payload spreadsheet
+mshMSC = 6443;
+bsMSC = 2970;
+fsMSC = 2881;
+swMSC = 3279;
 
 % Collected data, sorted by KSR and BS quality factor
 dataMSH = irf.ts_scalar(iKSRorbit.time,iKSRorbit.data(:,2)*dt*mshTM); dataMSH.units = 'Gbit'; % i_2: 'magnetosheath, outside magnetopause but inside bowshock'
@@ -381,7 +394,6 @@ downlinkMSH = irf.ts_scalar(tsDownlink.time,tsDownlink.data(:,1));
 downlinkBS  = irf.ts_scalar(tsDownlink.time,tsDownlink.data(:,2));
 downlinkFS  = irf.ts_scalar(tsDownlink.time,tsDownlink.data(:,3));
 downlinkSW  = irf.ts_scalar(tsDownlink.time,tsDownlink.data(:,4));
-
 
 %% OLD Check how much data accumulates onboard the satellite
 onboard_memory = 1000; % Gbit
@@ -430,8 +442,9 @@ relTswFOM = totTswFOM/sum(totTswFOM);
 % MSH - 120 h in total
 % FS - 50 h in total
 % SW - 150 h in total
+fomBS = [1.2 1.1 1 1]; fomBS = fomBS/sum(fomBS);
 fomMSH = [0.07 0.2 0.3 0.4]; fomMSH = fomMSH/sum(fomMSH);relTmshFOM; % This adjusts the FOM so that the Cat1 is fully acieved during NSP1 and NSP2 % [0.1 0.2 0.3 0.4]; fomMSH = fomMSH/sum(fomMSH); % percentage
-fomFS = [0.02 0.08 0.3 0.5]; fomFS = fomFS/sum(fomFS); % percentage
+fomFS = [0.007 0.05 0.3 0.5]; fomFS = fomFS/sum(fomFS); % percentage
 fomSW = [0.03 0.1 0.3 0.4]; fomSW = fomSW/sum(fomSW); % percentage
 
 dataFomMSH = irf.ts_scalar(dataMSH.time,dataMSH.data.*repmat(4*fomMSH,dataMSH.length,1)); % maybe I should weight this with magnetic clock angle
@@ -439,6 +452,7 @@ dataFomMSH = irf.ts_scalar(dataMSH.time,dataMSH.data.*repmat(4*fomMSH,dataMSH.le
 dataFomFS = irf.ts_scalar(dataFS.time,dataFS.data.*repmat(4*fomFS,dataFS.length,1));
 dataFomSW = irf.ts_scalar(dataSW.time,dataSW.data*fomSW);
 dataFomBS = dataBS;
+dataFomBS = irf.ts_scalar(dataBS.time,dataBS.data.*repmat(4*fomBS,dataBS.length,1));
 
 if 0  
   tmMSH   = thor_tm(dataFomMSH, downlinkMSH, memorySaved); tmMSH.collected = dataFomMSH;
@@ -458,13 +472,22 @@ else
   tRoiNSP1 = (tApogee(iOrbNSP1(end-10))-tApogee(iOrbNSP1(end-11)))-60*60*8; % minus 8 h
   tRoiNSP2 = (tApogee(iOrbNSP2(end-10))-tApogee(iOrbNSP2(end-11)))-60*60*8;
   tRoiNSP3 = (tApogee(iOrbNSP3(end-10))-tApogee(iOrbNSP3(end-11)))-60*60*8;
-  avtmNSP1 = (tmAllocationNSP1(1)*mshTM + tmAllocationNSP1(2)*bsTM + tmAllocationNSP1(3)*fsTM + tmAllocationNSP1(4)*pswTM)/sum(tmAllocationNSP1)*tRoiNSP1;
-  avtmNSP2 = (tmAllocationNSP2(1)*mshTM + tmAllocationNSP2(2)*bsTM + tmAllocationNSP2(3)*fsTM + tmAllocationNSP2(4)*pswTM)/sum(tmAllocationNSP2)*tRoiNSP2;
-  avtmNSP3 = (tmAllocationNSP3(1)*mshTM + tmAllocationNSP3(2)*bsTM + tmAllocationNSP3(3)*fsTM + tmAllocationNSP3(4)*pswTM)/sum(tmAllocationNSP3)*tRoiNSP3;
+  atnsp1 = (tmAllocationNSP1(1)*bsTM + tmAllocationNSP1(2)*mshTM + tmAllocationNSP1(3)*fsTM + tmAllocationNSP1(4)*pswTM)/sum(tmAllocationNSP1);
+  atnsp2 = (tmAllocationNSP2(1)*bsTM + tmAllocationNSP2(2)*mshTM + tmAllocationNSP2(3)*fsTM + tmAllocationNSP2(4)*pswTM)/sum(tmAllocationNSP2);
+  atnsp3 = (tmAllocationNSP3(1)*bsTM + tmAllocationNSP3(2)*mshTM + tmAllocationNSP3(3)*fsTM + tmAllocationNSP3(4)*pswTM)/sum(tmAllocationNSP3);
+  avtmNSP1 = atnsp1*tRoiNSP1;
+  avtmNSP2 = atnsp2*tRoiNSP2;
+  avtmNSP3 = atnsp3*tRoiNSP3;
+  nOrbitToStoreData1 = 3;
+  nOrbitToStoreData2 = 2;
+  nOrbitToStoreData3 = 1;
+  c_eval('disp(sprintf(''NSP?: Av TM rate: %.5f Gbps, tOrbit: %5.1f h, Average TM per orbit = %4.0f Gbps, Min # Orbits to store data onboard: %g, Memory buffert needed: %5.0f Gbit'',atnsp?,tRoiNSP?/60/60,avtmNSP?,nOrbitToStoreData?,avtmNSP?*nOrbitToStoreData?))',1:3)
   % bias more towards fs data instead
   %avtmNSP3 = (0*mshTM + 0*bsTM + 0.5*fsTM + 0.5*pswTM)*tRoiNSP3;
-  tsDownlinkDelay = irf.ts_scalar(dataBS.time,[iOrbNSP1'*0+3;iOrbNSP2'*0+2;iOrbNSP3'*0+1]);
-  tsAvTM = irf.ts_scalar(dataBS.time,[iOrbNSP1'*0+avtmNSP1*3;iOrbNSP2'*0+avtmNSP2*2;iOrbNSP3'*0+avtmNSP3*1]);  
+  tsDownlinkDelay = irf.ts_scalar(dataBS.time,[iOrbNSP1'*0+3;iOrbNSP2'*0+2;iOrbNSP3'*0+1]);  
+  % how much memory buffert is needed
+  %tsAvTM = irf.ts_scalar(dataBS.time,[iOrbNSP1'*0+avtmNSP1*nOrbitToStoreData1;iOrbNSP2'*0+avtmNSP2*nOrbitToStoreData2;iOrbNSP3'*0+avtmNSP3*nOrbitToStoreData3]);  
+  tsAvTM = irf.ts_scalar(dataBS.time,repmat(memorySaved*(1-1/1.75),dataBS.length,1));
   c_eval('relAll? = tmAllocationNSP?/sum(tmAllocationNSP?);',1:3) % bs / msh / fs / psw
 %   tsAvTMmsh = irf.ts_scalar(dataBS.time,[iOrbNSP1'*0+avtmNSP1*3*relAll1(2);iOrbNSP2'*0+avtmNSP2*2*relAll2(2);iOrbNSP3'*0+avtmNSP3*1*relAll3(2)]);
 %   tsAvTMbs = irf.ts_scalar(dataBS.time,[iOrbNSP1'*0+avtmNSP1*3*relAll1(1);iOrbNSP2'*0+avtmNSP2*2*relAll2(1);iOrbNSP3'*0+avtmNSP3*1*relAll3(1)]);
@@ -505,6 +528,352 @@ totSwTM = pswTM*(60*60*150)/1.2;   tsTotSwTM = irf.ts_scalar(tmSW.downloaded.tim
 
 % Common colormap
 cmap = mms_colors('2b34'); cmap(2,:) = [1 0.8 0]; %cmap = cmap(end:-1:1,:);
+
+%% Total datavolume, FOM, Yellow book, fig 1
+h = irf_plot(2);
+ud = get(gcf,'userdata');
+if ~isfield(ud,'t_start_epoch')
+ ud.t_start_epoch = dataBS.time(1).epochUnix;
+ set(gcf,'userdata',ud);
+end
+tStartEpoch = ud.t_start_epoch;
+
+if 1 % Collected Cat1 data per orbit for the different KSRs
+  dataCat1 = dataBS;
+  dataCat1.data = [tmMSH.collected.data(:,1) tmBS.collected.data(:,1) tmFS.collected.data(:,1) tmSW.collected.data(:,1)];
+  hca = irf_panel(h,'Collected data Cat1');
+	hp=bar(hca,dataCat1.time.epochUnix-tStartEpoch,dataCat1.data,1.6,'stacked');
+	irf_timeaxis(hca);
+  %hca.YLabel.String = {'Collected data','Category 1','Gbit/orbit'};
+  hca.YLabel.String = {'Collected data','(Gbit/orbit)'};
+  %hl = legend(hca,{'MSH','BS','FS','SW'},'location','eastoutside'); %hl.Box = 'off'; hl.Position = [0.1722    0.1084    0.1052    0.1667];
+  hl = legend(hca,{'MSH','BS','FS','SW'},'location','northeast'); %hl.Box = 'off'; hl.Position = [0.1722    0.1084    0.1052    0.1667];
+end
+if 0 % Saved data per orbit
+  hca = irf_panel(h,'Saved data');
+	hp=bar(hca,dataBS.time.epochUnix-tStartEpoch,tmTotal.saved.data,2.5,'stacked');
+	hold(hca,'on')
+  irf_plot(hca,tsAvTM*-1+memorySaved,'k');
+  %tsPatch = irf.ts_scalar(tsAvTM)
+  hpatch = irf_patch(hca,{tsAvTM*-1+memorySaved,memorySaved}); hpatch.FaceColor = [0.8 0.8 0.8]; hpatch.EdgeColor = 0.2*[1 1 1];
+  hold(hca,'off')
+  hl_ = irf_legend(hca,{'Memory allocated for'},[0.01, 0.85],'k'); hl_.Color = 0.3*[1 1 1];
+  hl_ = irf_legend(hca,{'newly collected data'},[0.01, 0.7],'k'); hl_.Color = 0.3*[1 1 1];
+  
+  %irf_legend(hca,{'Data with assigned FOM'},[0.01, 0.55],'k')
+  %irf_legend(hca,{'placed in download queue'},[0.01, 0.3],'k')
+  
+  %ht = irf_legend(hca,{'Data with assigned FOM'},[0.98, 0.3],'w'); ht.Color = [1 1 1]; ht.FontSize = 11;
+  %ht = irf_legend(hca,{'placed in download queue'},[0.98, 0.1],'w'); ht.Color = [1 1 1]; ht.FontSize = 11;
+  irf_timeaxis(hca);
+  labels = arrayfun(@(x) {['Cat. ' num2str(x)]}, 1:4);
+  %labels = {labels{:},'m'}
+  legend([hp],labels{:},'location','eastoutside')
+	
+  
+  hca.YLabel.String = {'Saved','onboard','Gbit/orbit'};
+  hca.YLabel.String = {'Saved data in','download queue','Gbit'};
+  hca.YLabel.String = {'Onboard data','Gbit'};
+end
+if 1
+  hca = irf_panel(h,'Accumulated downloaded Cat1 data');
+  set(hca,'ColorOrder',cmap)
+  tmTotalCat1 = irf.ts_scalar(tmTotal.downloaded.time,[tmMSH.downloaded.data(:,1), tmBS.downloaded.data(:,1), tmFS.downloaded.data(:,1) tmSW.downloaded.data(:,1)]);
+  hh=irf_plot(hca,tmTotalCat1.cumsum('t'));
+  c_eval('hh(?).Color = cmap(?,:);',1:4);
+  hold(hca,'on')
+  if 0
+    iMisReqMSH = find(cumsum(tmMSH.downloaded.data(:,1),1)>tsTotMshTM.data(1,1),1,'first'); if isempty(iMisReqMSH); iMisReqMSH = tmMSH.downloaded.length; end
+    iMisReqBS = find(cumsum(tmBS.downloaded.data(:,1),1)>tsTotBsTM.data(1,1),1,'first'); if isempty(iMisReqBS); iMisReqBS = tmMSH.downloaded.length; end 
+    iMisReqFS = find(cumsum(tmFS.downloaded.data(:,1),1)>tsTotFsTM.data(1,1),1,'first'); if isempty(iMisReqFS); iMisReqFS = tmMSH.downloaded.length; end
+    iMisReqSW = find(cumsum(tmSW.downloaded.data(:,1),1)>tsTotSwTM.data(1,1),1,'first'); if isempty(iMisReqSW); iMisReqSW = tmMSH.downloaded.length; end
+    irf_plot(hca,irf.ts_scalar(tmMSH.downloaded.time(iMisReqMSH),tsTotMshTM.data(1,1)),'*','color',cmap(1,:));
+    irf_plot(hca,irf.ts_scalar(tmMSH.downloaded.time(iMisReqBS),tsTotBsTM.data(1,1)),'*','color',cmap(2,:));
+    irf_plot(hca,irf.ts_scalar(tmMSH.downloaded.time(iMisReqFS),tsTotFsTM.data(1,1)),'*','color',cmap(3,:));
+    irf_plot(hca,irf.ts_scalar(tmMSH.downloaded.time(iMisReqSW),tsTotSwTM.data(1,1)),'*','color',cmap(4,:));  
+  else    
+    iMisReqMSH = find(cumsum(tmMSH.downloaded.data(:,1),1)>mshMSC,1,'first'); if isempty(iMisReqMSH); iMisReqMSH = tmMSH.downloaded.length; end
+    iMisReqBS = find(cumsum(tmBS.downloaded.data(:,1),1)>bsMSC,1,'first'); if isempty(iMisReqBS); iMisReqBS = tmMSH.downloaded.length; end 
+    iMisReqFS = find(cumsum(tmFS.downloaded.data(:,1),1)>fsMSC,1,'first'); if isempty(iMisReqFS); iMisReqFS = tmMSH.downloaded.length; end
+    iMisReqSW = find(cumsum(tmSW.downloaded.data(:,1),1)>swMSC,1,'first'); if isempty(iMisReqSW); iMisReqSW = tmMSH.downloaded.length; end
+    irf_plot(hca,irf.ts_scalar(tmMSH.downloaded.time(iMisReqMSH),mshMSC),'*','color',cmap(1,:));
+    irf_plot(hca,irf.ts_scalar(tmMSH.downloaded.time(iMisReqBS),bsMSC),'*','color',cmap(2,:));
+    irf_plot(hca,irf.ts_scalar(tmMSH.downloaded.time(iMisReqFS),fsMSC),'*','color',cmap(3,:));
+    irf_plot(hca,irf.ts_scalar(tmMSH.downloaded.time(iMisReqSW),swMSC),'*','color',cmap(4,:));
+  end
+%   irf_plot(hca,tsTotMshTM,'--','color',cmap(1,:));
+%   irf_plot(hca,tsTotBsTM,'--','color',cmap(2,:));
+%   irf_plot(hca,tsTotFsTM,'--','color',cmap(3,:));
+%   irf_plot(hca,tsTotSwTM,'--','color',cmap(4,:));
+  hold(hca,'off')
+  %hca.YLabel.String = {'Accumulated','downloaded data','Category 1','Gbit'};
+  hca.YLabel.String = {'Accumulated','downloaded data','(Gbit)'};
+  %legend(hca,{'MSH','BS','FS','SW'},'location','eastoutside')
+  %hl = legend(hca,{'MSH','BS','FS','SW'},'location','west');  hl.Position = [0.1722    0.1084    0.1052    0.1667]; hl.Box = 'off';
+  %irf_legend(hca,{'data required'},[0.05, 0.96],'k')
+  irf_legend(hca,{'Mission success criteria'},[0.05, 0.96],'k')
+  hstar = irf_legend(hca,{'*'},[0.01, 0.95],'k'); hstar.FontSize = 20;
+end
+
+c_eval('irf_zoom(h(?),''y'',[0 8000]);',2)  
+set(h(1),'YLim',[0 400]);
+cmap = mms_colors('2b34'); cmap(2,:) = [1 0.8 0]; %cmap = cmap(end:-1:1,:);
+c_eval('colormap(h(?),cmap);',[1:2])
+c_eval('h(?).XGrid = ''off''; h(?).YGrid = ''on'';',[1:2])
+
+linkaxes(h,'x')
+irf_plot_axis_align
+irf_zoom(h,'x',tmTotal.saved.time)
+c_eval('h(?).Position(4) = h(?).Position(4)*0.9;',1:2)
+h(1).Position(2) = h(1).Position(2)*0.93;
+%h(1).Title.String = 'THOR - FOM and Burst TM datavolumes';
+h(1).Title.String = 'THOR - FOM and Burst TM datavolumes, Cat. 1';
+
+%% Total datavolume, FOM, Yellow book, fig 2
+h = irf_plot(1);
+ud = get(gcf,'userdata');
+if ~isfield(ud,'t_start_epoch')
+ ud.t_start_epoch = dataBS.time(1).epochUnix;
+ set(gcf,'userdata',ud);
+end
+tStartEpoch = ud.t_start_epoch;
+
+if 1 % Onboard data  
+  hca = irf_panel(h,'Saved data');
+	hp = bar(hca,dataBS.time.epochUnix-tStartEpoch,tmTotal.saved.data,2.5,'stacked');
+	hold(hca,'on')
+  irf_plot(hca,tsAvTM*-1+memorySaved,'k');
+  % Patch showing what memory data is unavailable
+  %hpatch = irf_patch(hca,{tsAvTM*-1+memorySaved,memorySaved}); hpatch.FaceColor = [0.8 0.8 0.8]; hpatch.EdgeColor = 0.2*[1 1 1];
+  % Patch showing what available memory data is margin
+  hpatch2 = irf_patch(hca,{tsAvTM*-1+memorySaved,memorySaved*(1-1/1.75)*0.25}); 
+  hpatch2.FaceColor = [1 1 1]; 
+  hpatch2.EdgeColor = 0.0*[1 1 1]; 
+  hpatch2.FaceAlpha = 0.3;
+  
+  %hl_ = irf_legend(hca,{'Memory allocated for'},[0.01, 0.95],'k'); hl_.Color = 0.3*[1 1 1];
+  %hl_ = irf_legend(hca,{'newly collected data'},[0.01, 0.8],'k'); hl_.Color = 0.3*[1 1 1];
+  if 1
+    hl_ = irf_legend(hca,{'Memory allocated for newly collected data'},[0.95, 0.8],'k'); hl_.Color = 0.3*[1 1 1];
+    arrow([60*60*24*4*365 3000],[60*60*24*4*365 memorySaved*(1-1/1.75)*0.25])
+    arrow([60*60*24*4*365 4500],[60*60*24*4*365 memorySaved*(1/1.75)])
+    hl_ = irf_legend(hca,{'Margin'},[0.95, 0.3],'k'); hl_.Color = 0.3*[1 1 1];  
+    arrow([60*60*24*4*365 8500],[60*60*24*4*365 memorySaved*(1/1.75)])
+    arrow([60*60*24*4*365 10000],[60*60*24*4*365 memorySaved])
+    labels = arrayfun(@(x) {['Cat. ' num2str(x)]}, 1:4);  
+    %labels = arrayfun(@(x) {['FOM ' num2str(x)]}, 1:4);  
+    legend([hp],labels{:},'location','northwest')    
+  else
+    hl_ = irf_legend(hca,{'Memory allocated for newly collected data'},[0.01, 0.8],'k'); hl_.Color = 0.3*[1 1 1];
+    arrow([60*60*24*30*2 3000],[60*60*24*30*2 memorySaved*(1-1/1.75)*0.25])
+    arrow([60*60*24*30*2 4500],[60*60*24*30*2 memorySaved*(1/1.75)])
+    hl_ = irf_legend(hca,{'Margin'},[0.01, 0.3],'k'); hl_.Color = 0.3*[1 1 1];  
+    arrow([60*60*24*30*2 8500],[60*60*24*30*2 memorySaved*(1/1.75)])
+    arrow([60*60*24*30*2 10000],[60*60*24*30*2 memorySaved])
+    labels = arrayfun(@(x) {['Cat. ' num2str(x)]}, 1:4);  
+    legend([hp],labels{:},'location','northeast')
+  end
+  hold(hca,'off')
+  %irf_legend(hca,{'Data with assigned FOM'},[0.01, 0.55],'k')
+  %irf_legend(hca,{'placed in download queue'},[0.01, 0.3],'k')  
+  %ht = irf_legend(hca,{'Data with assigned FOM'},[0.98, 0.3],'w'); ht.Color = [1 1 1]; ht.FontSize = 11;
+  %ht = irf_legend(hca,{'placed in download queue'},[0.98, 0.1],'w'); ht.Color = [1 1 1]; ht.FontSize = 11;
+  irf_timeaxis(hca);
+  
+	  
+  hca.YLabel.String = {'Saved','onboard','Gbit/orbit'};
+  hca.YLabel.String = {'Saved data in','download queue','Gbit'};
+  hca.YLabel.String = {'Memory','(Gbit)'};
+  hca.YLim = [0 12000];
+end
+
+
+cmap = mms_colors('2b34'); cmap(2,:) = [1 0.8 0]; %cmap = cmap(end:-1:1,:);
+c_eval('colormap(h(?),cmap);',[1])
+c_eval('h(?).XGrid = ''off''; h(?).YGrid = ''off'';',[1])
+c_eval('h(?).XGrid = ''off''; h(?).YGrid = ''on'';',[1])
+
+h(1).Position(4) = h(1).Position(4)*0.9;
+irf_plot_axis_align
+irf_zoom(h,'x',tmTotal.saved.time)
+
+h(1).Title.String = 'THOR - FOM and Burst TM datavolumes';
+
+%% Total datavolume, FOM, Yellow book suggestion 
+h = irf_plot(3);
+ud = get(gcf,'userdata');
+if ~isfield(ud,'t_start_epoch')
+ ud.t_start_epoch = dataBS.time(1).epochUnix;
+ set(gcf,'userdata',ud);
+end
+tStartEpoch = ud.t_start_epoch;
+
+if 1 % Collected Cat1 data per orbit for the different KSRs
+  dataCat1 = dataBS;
+  dataCat1.data = [tmMSH.collected.data(:,1) tmBS.collected.data(:,1) tmFS.collected.data(:,1) tmSW.collected.data(:,1)];
+  hca = irf_panel(h,'Collected data Cat1');
+	hp=bar(hca,dataCat1.time.epochUnix-tStartEpoch,dataCat1.data,2.5,'stacked');
+	irf_timeaxis(hca);
+  hca.YLabel.String = {'Collected data','Category 1','Gbit/orbit'};
+  hl = legend(hca,{'MSH','BS','FS','SW'},'location','eastoutside'); %hl.Box = 'off'; hl.Position = [0.1722    0.1084    0.1052    0.1667];
+end
+if 0 % Collected data per orbit
+  hca = irf_panel(h,'Collected data MSh');
+	hp=bar(hca,dataBS.time.epochUnix-tStartEpoch,tmMSH.collected.data,1.6,'stacked');
+	irf_timeaxis(hca);
+  labels = arrayfun(@(x) {['Cat ' num2str(x)]}, 1:4);
+  legend(hp,labels{:},'location','eastoutside')
+	hold(hca,'on')
+  hca.YLabel.String = {'Coll. MSH','Gbit/orbit'};
+end
+if 0 % Collected data per orbit
+  hca = irf_panel(h,'Collected data BS');
+	hp=bar(hca,dataBS.time.epochUnix-tStartEpoch,tmBS.collected.data,1.6,'stacked');
+	irf_timeaxis(hca);
+  labels = arrayfun(@(x) {['Cat ' num2str(x)]}, 1:4);
+  legend(hp,labels{:},'location','eastoutside')
+	hold(hca,'on')
+  hca.YLabel.String = {'Coll. BS','Gbit/orbit'};
+end
+if 0 % Collected data per orbit
+  hca = irf_panel(h,'Collected data FS');
+	hp=bar(hca,dataBS.time.epochUnix-tStartEpoch,tmFS.collected.data,1.6,'stacked');
+	irf_timeaxis(hca);
+  labels = arrayfun(@(x) {['Cat ' num2str(x)]}, 1:4);
+  legend(hp,labels{:},'location','eastoutside')
+	hold(hca,'on')
+  hca.YLabel.String = {'Coll. FS','Gbit/orbit'};
+end
+if 0 % Collected data per orbit
+  hca = irf_panel(h,'Collected data SW');
+	hp=bar(hca,dataBS.time.epochUnix-tStartEpoch,tmSW.collected.data,1.6,'stacked');
+	irf_timeaxis(hca);
+  labels = arrayfun(@(x) {['Cat ' num2str(x)]}, 1:4);
+  legend(hp,labels{:},'location','eastoutside')
+	hold(hca,'on')
+  hca.YLabel.String = {'Coll. SW','Gbit/orbit'};
+end
+if 0 % Collected data per orbit
+  hca = irf_panel(h,'Collected data par');
+	hp=bar(hca,dataBS.time.epochUnix-tStartEpoch,tmTotal.collected.data,1.6,'stacked');
+	irf_timeaxis(hca);
+  irf_zoom(hca,'y',[0 12000]);
+	%labels = arrayfun(@(x,y) {[num2str(x,2) ' > Q_{||} > ' num2str(y,2)]}, edgesQvar(1:1:end-1),edgesQvar(2:1:end));
+  labels = arrayfun(@(x) {['Cat ' num2str(x)]}, 1:4);
+  legend(hp,labels{:},'location','eastoutside')
+	hold(hca,'on')
+%   h_downlink = irf_plot(hca,downlinkBS);
+%   irf_legend(hca,{'- downlink/orbit'},[0.02 0.95],'k')
+%   hold(hca,'on') 
+  hca.YLabel.String = {'Collected','Gbit/orbit'};
+end
+if 0 % Discarded data per orbit
+  hca = irf_panel(h,'Discarded data par');
+	hp=bar(hca,dataBS.time.epochUnix-tStartEpoch,tmTotal.discarded.data,1.6,'stacked');
+	irf_timeaxis(hca);
+  irf_zoom(hca,'y',[0 12000]);
+	labels = arrayfun(@(x) {num2str(x)}, 1:4);
+  legend(hp,labels{:},'location','eastoutside')
+	hold(hca,'on')
+  hca.YLabel.String = {'Discarded','Gbit/orbit'};
+end
+if 1 % Saved data per orbit
+  hca = irf_panel(h,'Saved data');
+	hp=bar(hca,dataBS.time.epochUnix-tStartEpoch,tmTotal.saved.data,2.5,'stacked');
+	hold(hca,'on')
+  irf_plot(hca,tsAvTM*-1+memorySaved,'k');
+  %tsPatch = irf.ts_scalar(tsAvTM)
+  hpatch = irf_patch(hca,{tsAvTM*-1+memorySaved,memorySaved}); hpatch.FaceColor = [0.8 0.8 0.8]; hpatch.EdgeColor = 0.2*[1 1 1];
+  hold(hca,'off')
+  hl_ = irf_legend(hca,{'Memory allocated for'},[0.01, 0.85],'k'); hl_.Color = 0.3*[1 1 1];
+  hl_ = irf_legend(hca,{'newly collected data'},[0.01, 0.7],'k'); hl_.Color = 0.3*[1 1 1];
+  
+  %irf_legend(hca,{'Data with assigned FOM'},[0.01, 0.55],'k')
+  %irf_legend(hca,{'placed in download queue'},[0.01, 0.3],'k')
+  
+  %ht = irf_legend(hca,{'Data with assigned FOM'},[0.98, 0.3],'w'); ht.Color = [1 1 1]; ht.FontSize = 11;
+  %ht = irf_legend(hca,{'placed in download queue'},[0.98, 0.1],'w'); ht.Color = [1 1 1]; ht.FontSize = 11;
+  irf_timeaxis(hca);
+  labels = arrayfun(@(x) {['Cat. ' num2str(x)]}, 1:4);
+  %labels = {labels{:},'m'}
+  legend([hp],labels{:},'location','eastoutside')
+	
+  
+  hca.YLabel.String = {'Saved','onboard','Gbit/orbit'};
+  hca.YLabel.String = {'Saved data in','download queue','Gbit'};
+  hca.YLabel.String = {'Onboard data','Gbit'};
+end
+if 0 % Downloaded data per orbit
+  hca = irf_panel(h,'Downloaded data par');
+	hp=bar(hca,dataBS.time.epochUnix-tStartEpoch,tmTotal.downloaded.data,1.6,'stacked');
+	irf_timeaxis(hca);  	    
+  hca.YLabel.String = {'Downloaded','Gbit/orbit'};
+end
+if 0
+  hca = irf_panel(h,'Accumulated downloaded data');
+  set(hca,'ColorOrder',cmap)
+  hh=irf_plot(hca,tmTotal.downloaded.cumsum('t'));
+  c_eval('hh(?).Color = cmap(?,:);',1:4);
+  hold(hca,'on')
+  irf_plot(hca,tsTotalTM,'--k');
+  hold(hca,'off')
+  hca.YLabel.String = {'Accumulated','downloaded','Gbit'};
+  labels = arrayfun(@(x) {num2str(x)}, 1:4);
+  labels{5} = 'mis. req.';
+  legend(hca,labels{:},'location','eastoutside')
+end
+if 1
+  hca = irf_panel(h,'Accumulated downloaded Cat1 data');
+  set(hca,'ColorOrder',cmap)
+  tmTotalCat1 = irf.ts_scalar(tmTotal.downloaded.time,[tmMSH.downloaded.data(:,1), tmBS.downloaded.data(:,1), tmFS.downloaded.data(:,1) tmSW.downloaded.data(:,1)]);
+  hh=irf_plot(hca,tmTotalCat1.cumsum('t'));
+  c_eval('hh(?).Color = cmap(?,:);',1:4);
+  hold(hca,'on')
+  iMisReqMSH = find(cumsum(tmMSH.downloaded.data(:,1),1)>tsTotMshTM.data(1,1),1,'first'); if isempty(iMisReqMSH); iMisReqMSH = tmMSH.downloaded.length; end
+  iMisReqBS = find(cumsum(tmBS.downloaded.data(:,1),1)>tsTotBsTM.data(1,1),1,'first'); if isempty(iMisReqBS); iMisReqBS = tmMSH.downloaded.length; end 
+  iMisReqFS = find(cumsum(tmFS.downloaded.data(:,1),1)>tsTotFsTM.data(1,1),1,'first'); if isempty(iMisReqFS); iMisReqFS = tmMSH.downloaded.length; end
+  iMisReqSW = find(cumsum(tmSW.downloaded.data(:,1),1)>tsTotSwTM.data(1,1),1,'first'); if isempty(iMisReqSW); iMisReqSW = tmMSH.downloaded.length; end
+%   irf_plot(hca,tsTotMshTM,'--','color',cmap(1,:));
+%   irf_plot(hca,tsTotBsTM,'--','color',cmap(2,:));
+%   irf_plot(hca,tsTotFsTM,'--','color',cmap(3,:));
+%   irf_plot(hca,tsTotSwTM,'--','color',cmap(4,:));
+  irf_plot(hca,irf.ts_scalar(tmMSH.downloaded.time(iMisReqMSH),tsTotMshTM.data(1,1)),'*','color',cmap(1,:));
+  irf_plot(hca,irf.ts_scalar(tmMSH.downloaded.time(iMisReqBS),tsTotBsTM.data(1,1)),'*','color',cmap(2,:));
+  irf_plot(hca,irf.ts_scalar(tmMSH.downloaded.time(iMisReqFS),tsTotFsTM.data(1,1)),'*','color',cmap(3,:));
+  irf_plot(hca,irf.ts_scalar(tmMSH.downloaded.time(iMisReqSW),tsTotSwTM.data(1,1)),'*','color',cmap(4,:));
+  hold(hca,'off')
+  hca.YLabel.String = {'Accumulated','downloaded','Category 1','Gbit'};
+  legend(hca,{'MSH','BS','FS','SW'},'location','eastoutside')
+  %hl = legend(hca,{'MSH','BS','FS','SW'},'location','west');  hl.Position = [0.1722    0.1084    0.1052    0.1667]; hl.Box = 'off';
+  irf_legend(hca,{'data required'},[0.05, 0.96],'k')
+  hstar = irf_legend(hca,{'*'},[0.01, 0.95],'k'); hstar.FontSize = 20;
+end
+if 0
+  hca = irf_panel(h,'Thor orbit');
+  irf_plot(hca,rTHOR.resample(rTHOR.time(1:5:end)))
+end
+if 0
+  hca = irf_panel(h,'Region index');
+  cmap_ = [0.9 0.9 0.9; mms_colors('2'); mms_colors('3'); mms_colors('4'); [0 0 0]; mms_colors('b')];  
+  hp = irf_patch(hca,iKSRorbit.cumsum(2)*dt/60/60);
+  legend(hp,{'MSP','MSH','FS','PSW','MP','BS'},'location','eastoutside')
+  c_eval('hp(?).FaceColor = cmap_(?,:); hp(?).FaceAlpha = 1;',1:6)
+  %hca.YLim = [0 13000];
+  hca.YLabel.String = {'KSR','dwell time','hours'};
+end
+
+c_eval('irf_zoom(h(?),''y'',[0 7000]);',2)  
+set(h(1),'YLim',[0 400]);
+cmap = mms_colors('2b34'); cmap(2,:) = [1 0.8 0]; %cmap = cmap(end:-1:1,:);
+c_eval('colormap(h(?),cmap);',[1:2])
+c_eval('h(?).XGrid = ''off''; h(?).YGrid = ''off'';',[1:3])
+c_eval('h(?).XGrid = ''off''; h(?).YGrid = ''on'';',[1:3])
+
+linkaxes(h,'x')
+irf_plot_axis_align
+irf_zoom(h,'x',tmTotal.saved.time)
+
+h(1).Title.String = 'THOR - FOM and Burst TM datavolumes';
 
 %% Total datavolume, FOM
 h = irf_plot(7);
@@ -602,21 +971,16 @@ if 1
   %hca.YLim = [0 13000];
   hca.YLabel.String = {'KSR','dwell time','hours'};
 end
-
 %
-for iP = [3];
-  %irf_zoom(h(iP),'y',[0 1001]);  
-end
+
+c_eval('irf_zoom(h(?),''y'',[0 6000]);',3)
 cmap = mms_colors('2b34'); cmap(2,:) = [1 0.8 0]; %cmap = cmap(end:-1:1,:);
-%cmap = colormap('hot');
-for iP = [1 2 3 4];
-  colormap(h(iP),cmap);  
-end
+c_eval('colormap(h(?),cmap);',[1 2 3 4])
 
 h(1).YScale = 'lin';
 linkaxes(h,'x')
 irf_plot_axis_align
-irf_zoom(h,'x',tmTotal.saved.time)
+%irf_zoom(h,'x',tmTotal.saved.time)
 
 h(1).Title.String = 'THOR - FOM and Burst TM datavolumes';
 
@@ -752,14 +1116,9 @@ if 1 % Collected data per orbit
   hca = irf_panel(h,'Collected data par');
 	hp=bar(hca,dataBS.time.epochUnix-tStartEpoch,tmMSH.collected.data,1.6,'stacked');
 	irf_timeaxis(hca);
-  irf_zoom(hca,'y',[0 12000]);
-	%labels = arrayfun(@(x,y) {[num2str(x,2) ' > Q_{||} > ' num2str(y,2)]}, edgesQvar(1:1:end-1),edgesQvar(2:1:end));
   labels = arrayfun(@(x) {['Cat ' num2str(x)]}, 1:4);
   legend(hp,labels{:},'location','eastoutside')
 	hold(hca,'on')
-%   h_downlink = irf_plot(hca,downlinkBS);
-%   irf_legend(hca,{'- downlink/orbit'},[0.02 0.95],'k')
-%   hold(hca,'on') 
   hca.YLabel.String = {'Collected','Gbit/orbit'};
 end
 if 1 % Discarded data per orbit
