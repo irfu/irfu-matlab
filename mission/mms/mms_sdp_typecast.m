@@ -18,7 +18,7 @@ function [out] = mms_sdp_typecast(dataName, data)
 %
 % DataName: "epoch", "bitmask", "quality", "dce", "adc_offset", "scpot",
 %  "phase", "delta_offset", "spinfits", "tensor_order", "deltaplus", 
-%  "deltaminus" and "label".
+%  "channel_delay", "deltaminus" and "label".
 %
 % See also: MMS_SDP_CDFWRITE
 
@@ -70,6 +70,14 @@ switch(lower(dataName))
       out.cdf     = 'cdf_uint1';
       out.matlab  = 'uint8';
       out.fillval = uint8(255);
+    end
+  case 'channel_delay'
+    if(~isempty(data))
+      out = int8(data);
+    else
+      out.cdf = 'cdf_int1';
+      out.matlab = 'int8';
+      out.fillval = int8(-128);
     end
   case {'dce', 'adc_offset', 'scpot', 'phase', 'spinfits', 'delta_offset'}
     if(~isempty(data))
