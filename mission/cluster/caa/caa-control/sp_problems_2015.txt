@@ -4,6 +4,8 @@
 1a) Processing bugs fixed
 ========================
 
+switch to M filter for HX/LX signals to avoid ringing of the shadow spike in February 2015.
+
 Short maneuvre causing shadow wake detection to fail was fixed by
 whictching to processing the times before and after a maneuvre separately
 Example: C1, 2015-03-09T09:19:26Z
@@ -26,6 +28,12 @@ Example: C1, 2015-03-09T09:19:26Z
 
 3) Major data problems
 ======================
+
+Entered in NS_OPS:
+C4 saturation, 2015-02-15 02:12 - 07:10
+C4 saturation, 2015-02-23 11:30 - 13:20
+C4 saturation, 2015-02-27 20:54 - 00:14 
+C4 saturation, 2015-02-28 14:10 - 17:00 
 
 4) Ignored
 ==========
