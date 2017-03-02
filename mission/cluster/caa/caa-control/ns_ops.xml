@@ -6078,7 +6078,7 @@ plan="yes" sdesc ="TBD">
 <operation start="2015-02-17T07:36:30Z" dt="-1" c4="yes" plan="no" sdesc="no_p3">
 	<desc>Probe 3 effectively lost from this time.</desc>
 	</operation>
-<operation start="2015-02-23T11:30:00Z" dt="3000" c4="yes" plan="no" sdesc="bad_data">
+<operation start="2015-02-23T11:30:00Z" dt="6600" c4="yes" plan="no" sdesc="bad_data">
 	<desc>Probes saturated in dense plasma due to high bias.</desc>
 </operation>
 <operation start="2015-02-27T20:54:00Z" dt="12000" c4="yes" plan="no" sdesc="bad_data">
