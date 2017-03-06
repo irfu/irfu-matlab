@@ -686,73 +686,73 @@ classdef mms_sdp_dmgr < handle
         end
       end % CHK_TIMELINE
       
-      function interp_time()
-        % Measurements are not done at same instance but with a delay of
-        % 3.8us between each channel. Adjust V[2-6] and E12, E34, E56 with
-        % interp1() to align with timestamp of V1 (which is the first
-        % channel and for the combined DCE&DCV file this is the time of the
-        % Epoch variable).
-        % Source used: E-mail from Mark dated 2017/01/11T19:21 CET, and the
-        % "Document No. 108328revE".
-
-        % Only Burst mode should be interpolated
-        if(DATAC.tmMode == DATAC.CONST.TmMode.brst)
-          irf.log('notice', 'Resampling burst measurements to align with first channel ("epoch").');
-        else
-          irf.log('debug', 'Not in burst mode, not doing resample of measurements to align with first channel ("epoch")');
-          return;
-        end
-
-        keyboard
-        % NOTE THIS FUNCTION IS NOT READY for production, added here as to
-        % create test files to see what impact it has on our files. Mainly
-        % burst 16'384 Hz may be impacted, but this is TBD. Also "to be
-        % checked" is the commissioning data with separate dce and dcv
-        % files.
-
-        % Offset between each channel in ADC
-        Dt = int64(3.8e3); % 3.8 us expressed in ns (TT2000, int64)
-        % V1 is start of nominal Epoch (when combined dce&dcv file)
-        % V2 is Dt later (included here, but NaN unless in comm.)
-        % V3 is Dt later again (ie 2*Dt)
-        % V4 is 3*Dt (NaN unless in comm.)
-        % V5 is 4*Dt
-        % V6 is 5*Dt (NaN unless in comm.)
-        % Dt for one empty "Nap of the ADC"
-        % E12 is 7*Dt
-        % E34 is 8*Dt
-        % E56 is 9*Dt
-        tV = DATAC.dcv.time;
-        t1 = tV - tV(1);
-        %tE = DATAC.dce.time; % Separate time for DCE file?
-
-        % Interpolate each data to align in time with V1, convert int64 and
-        % single data into double first than back again after interpolation
-        DATAC.dcv.v2.data = single( interp1(double(t1 + 1*Dt), ...
-          double(DATAC.dcv.v2.data), ...
-          double(t1), 'linear', 'extrap') ); % V2 is nominally NaN
-        DATAC.dcv.v3.data = single( interp1(double(t1 + 2*Dt), ...
-          double(DATAC.dcv.v3.data), ...
-          double(t1), 'linear', 'extrap') );
-        DATAC.dcv.v4.data = single( interp1(double(t1 + 3*Dt), ...
-          double(DATAC.dcv.v4.data), ...
-          double(t1), 'linear', 'extrap') ); % V4 is nominally NaN
-        DATAC.dcv.v5.data = single( interp1(double(t1 + 4*Dt), ...
-          double(DATAC.dcv.v5.data), ...
-          double(t1), 'linear', 'extrap') );
-        DATAC.dcv.v6.data = single( interp1(double(t1 + 5*Dt), ...
-          double(DATAC.dcv.v6.data), ...
-          double(t1), 'linear', 'extrap') ); % V6 is nominally NaN
-        DATAC.dce.e12.data = single( interp1(double(t1 + 7*Dt), ...
-          double(DATAC.dce.e12.data), ...
-          double(t1), 'linear', 'extrap') );
-        DATAC.dce.e34.data = single( interp1(double(t1 + 8*Dt), ...
-          double(DATAC.dce.e34.data), ...
-          double(t1), 'linear', 'extrap') );
-        DATAC.dce.e56.data = single( interp1(double(t1 + 9*Dt), ...
-          double(DATAC.dce.e56.data), ...
-          double(t1), 'linear', 'extrap') );
-      end % INTERP_TIME
+%       function interp_time()
+%         % Measurements are not done at same instance but with a delay of
+%         % 3.8us between each channel. Adjust V[2-6] and E12, E34, E56 with
+%         % interp1() to align with timestamp of V1 (which is the first
+%         % channel and for the combined DCE&DCV file this is the time of the
+%         % Epoch variable).
+%         % Source used: E-mail from Mark dated 2017/01/11T19:21 CET, and the
+%         % "Document No. 108328revE".
+% 
+%         % Only Burst mode should be interpolated
+%         if(DATAC.tmMode == DATAC.CONST.TmMode.brst)
+%           irf.log('notice', 'Resampling burst measurements to align with first channel ("epoch").');
+%         else
+%           irf.log('debug', 'Not in burst mode, not doing resample of measurements to align with first channel ("epoch")');
+%           return;
+%         end
+% 
+%         keyboard
+%         % NOTE THIS FUNCTION IS NOT READY for production, added here as to
+%         % create test files to see what impact it has on our files. Mainly
+%         % burst 16'384 Hz may be impacted, but this is TBD. Also "to be
+%         % checked" is the commissioning data with separate dce and dcv
+%         % files.
+% 
+%         % Offset between each channel in ADC
+%         Dt = int64(3.8e3); % 3.8 us expressed in ns (TT2000, int64)
+%         % V1 is start of nominal Epoch (when combined dce&dcv file)
+%         % V2 is Dt later (included here, but NaN unless in comm.)
+%         % V3 is Dt later again (ie 2*Dt)
+%         % V4 is 3*Dt (NaN unless in comm.)
+%         % V5 is 4*Dt
+%         % V6 is 5*Dt (NaN unless in comm.)
+%         % Dt for one empty "Nap of the ADC"
+%         % E12 is 7*Dt
+%         % E34 is 8*Dt
+%         % E56 is 9*Dt
+%         tV = DATAC.dcv.time;
+%         t1 = tV - tV(1);
+%         %tE = DATAC.dce.time; % Separate time for DCE file?
+% 
+%         % Interpolate each data to align in time with V1, convert int64 and
+%         % single data into double first than back again after interpolation
+%         DATAC.dcv.v2.data = single( interp1(double(t1 + 1*Dt), ...
+%           double(DATAC.dcv.v2.data), ...
+%           double(t1), 'linear', 'extrap') ); % V2 is nominally NaN
+%         DATAC.dcv.v3.data = single( interp1(double(t1 + 2*Dt), ...
+%           double(DATAC.dcv.v3.data), ...
+%           double(t1), 'linear', 'extrap') );
+%         DATAC.dcv.v4.data = single( interp1(double(t1 + 3*Dt), ...
+%           double(DATAC.dcv.v4.data), ...
+%           double(t1), 'linear', 'extrap') ); % V4 is nominally NaN
+%         DATAC.dcv.v5.data = single( interp1(double(t1 + 4*Dt), ...
+%           double(DATAC.dcv.v5.data), ...
+%           double(t1), 'linear', 'extrap') );
+%         DATAC.dcv.v6.data = single( interp1(double(t1 + 5*Dt), ...
+%           double(DATAC.dcv.v6.data), ...
+%           double(t1), 'linear', 'extrap') ); % V6 is nominally NaN
+%         DATAC.dce.e12.data = single( interp1(double(t1 + 7*Dt), ...
+%           double(DATAC.dce.e12.data), ...
+%           double(t1), 'linear', 'extrap') );
+%         DATAC.dce.e34.data = single( interp1(double(t1 + 8*Dt), ...
+%           double(DATAC.dce.e34.data), ...
+%           double(t1), 'linear', 'extrap') );
+%         DATAC.dce.e56.data = single( interp1(double(t1 + 9*Dt), ...
+%           double(DATAC.dce.e56.data), ...
+%           double(t1), 'linear', 'extrap') );
+%       end % INTERP_TIME
 
       function chk_bias_guard()
         % Check that bias/guard setting, found in HK_10E, are nominal. If any
