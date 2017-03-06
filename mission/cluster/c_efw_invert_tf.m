@@ -97,8 +97,8 @@ if strcmpi(method,'frequency')
 
     tfinp = get_efw_tf(filt);
 
-    tf = interp1(tfinp(:,1),tfinp(:,4),f,'linear','extrap');
-    tf = tf + 1i*interp1(tfinp(:,1),tfinp(:,5),f,'linear','extrap');
+    tf =         interp1(tfinp(:,1),tfinp(:,4),f,'linear','extrap');    % Add real part.
+    tf = tf + 1i*interp1(tfinp(:,1),tfinp(:,5),f,'linear','extrap');    % Add imaginary part.
 
     Pxx = fft(einp(:,2));
     if nfft/2==fix(nfft/2)
@@ -110,7 +110,7 @@ if strcmpi(method,'frequency')
     eout = einp;
     eout(:,2) = ifft(Pxy,'symmetric')/14.8;
 elseif strcmpi(method,'time')
-    % Translated to Matlab by T.Nilsson, IRFU, from LPP/Berekeley IDL code 
+    % Translated to Matlab by T.Nilsson, IRFU, from LPP/Berkeley IDL code.
 
     fsamp = c_efw_fsample(einp);
     nk = 512;

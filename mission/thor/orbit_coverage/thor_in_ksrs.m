@@ -62,6 +62,12 @@ iKSR.data(isFS) = repmat(3,numel(isFS),1);
 iKSR.data(isPSW) = repmat(4,numel(isPSW),1);
 iKSR.data(crossingBS) = repmat(6,numel(crossingBS),1);
 1;
+iKSR.userData.indexKSR.i_1 = 'magnetosphere, inside magnetopause';
+iKSR.userData.indexKSR.i_2 = 'magnetosheath, outside magnetopause but inside bowshock';
+iKSR.userData.indexKSR.i_3 = 'foreshock, outside bowshock but inside the region limited by the tangent of IMF B to the bowshock';
+iKSR.userData.indexKSR.i_4 = 'pristine solar wind, outside bowshock and foreshock';
+iKSR.userData.indexKSR.i_5 = 'magnetopause crossing';
+iKSR.userData.indexKSR.i_6 = 'bowshock crossing';
 
 return
 
@@ -79,6 +85,7 @@ function [isOutside,isInside,isCrossing] = magnetopause(rTHOR,B,Dp)
   % Magnetopause model
   f_mpR0 = @(B,Dp) (10.22+1.29*tanh(0.184*(B+8.14))).*Dp.^(-1/6.6); % magnetopause standoff distance  
   mpR0 = f_mpR0(B,Dp);
+  %mpR0 = repmat(12,size(mpR0));
   f_alpha = @(B,Dp) (0.58-0.007*B).*(1+0.024*log(Dp));
   f_mpR = @(B,Dp,theta) f_mpR0(B,Dp).*(2./(1+cos(theta))).^f_alpha(B,Dp);
 

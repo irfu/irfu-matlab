@@ -67,7 +67,7 @@ switch action
         end
         switch numel(cdf_files)
           case 0
-            error('no cdf files specified');
+            error('No cdf files specified');
           case 1
             cdf_file = [directory_name cdf_files.name];
           otherwise
@@ -81,7 +81,7 @@ switch action
       else cdf_file = varargin{1};
       end
       if ~exist(cdf_file,'file')
-        error(['file ' cdf_file ' does not exist']);
+        error(['File ' cdf_file ' does not exist']);
       end
       %% read in file
       irf.log('notice',['Reading: ' cdf_file]);

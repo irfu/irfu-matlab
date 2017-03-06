@@ -6072,9 +6072,21 @@ plan="yes" sdesc ="TBD">
 	<desc>Bad EFW data after spontaneous EFW reset.</desc>
 	<res><link href="pal20150923_7.txt">Per-Arne 150923</link></res>
 	</operation>
+<operation start="2015-02-15T02:12:00Z" dt="17880" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+</operation>	
 <operation start="2015-02-17T07:36:30Z" dt="-1" c4="yes" plan="no" sdesc="no_p3">
 	<desc>Probe 3 effectively lost from this time.</desc>
 	</operation>
+<operation start="2015-02-23T11:30:00Z" dt="6600" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+</operation>
+<operation start="2015-02-27T20:54:00Z" dt="12000" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+</operation>
+<operation start="2015-02-28T14:10:00Z" dt="10200" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+</operation>
 <operation start="2015-03-09T09:19:26Z" dt="50" c1="yes" plan="yes" sdesc="bad_data">
 	<desc>Maneuvre.</desc>
 	</operation>

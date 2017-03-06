@@ -129,13 +129,17 @@ if is_version_geq(tmpDist.GlobalAttributes.Data_version{:}, '3.1.0')
   phi = phi.data;
   theta = get_variable(tmpDataObj,['mms' fileInfo.mmsId '_' fileInfo.detector '_theta_' fileInfo.tmMode]);
   theta = theta.data;
-  stepTable = get_variable(tmpDataObj,['mms' fileInfo.mmsId '_' fileInfo.detector '_steptable_parity_' fileInfo.tmMode]);
-  stepTable = stepTable.data;
-
-  % Make energytable from energy0, energy1 and energysteptable
-  %energy = repmat(torow(energy),numel(stepTable),1);
-  %energy(stepTable==1,:) = repmat(energy,sum(stepTable),1);
-
+  if strcmp(fileInfo.tmMode,'fast') % fast
+    stepTable = zeros(time.length,1);
+  else
+    stepTable = get_variable(tmpDataObj,['mms' fileInfo.mmsId '_' fileInfo.detector '_steptable_parity_' fileInfo.tmMode]);
+    stepTable = stepTable.data;
+  end
+  
+  % energy table can start at energy1
+  energy0 = energy(find(stepTable==0,1,'first'),:);
+  energy1 = energy(find(stepTable==1,1,'first'),:); if isempty(energy1), energy1 = energy0; end
+  
   % Construct PDist
   PD = PDist(time,Dist,'skymap',energy,phi,theta);
   PD.userData = ud;
@@ -147,19 +151,35 @@ if is_version_geq(tmpDist.GlobalAttributes.Data_version{:}, '3.1.0')
   PD.ancillary.dt_minus = double(dt_minus)*1e-9;
   PD.ancillary.dt_plus = double(dt_plus)*1e-9;
   PD.ancillary.energy = energy;
+  PD.ancillary.energy0 = energy0;
+  PD.ancillary.energy1 = energy1;
   PD.ancillary.esteptable = stepTable;
 else
-  energy0 = get_variable(tmpDataObj,['mms' fileInfo.mmsId '_' fileInfo.detector '_energy0_' fileInfo.tmMode]);
-  energy1 = get_variable(tmpDataObj,['mms' fileInfo.mmsId '_' fileInfo.detector '_energy1_' fileInfo.tmMode]);
-  energy0 = energy0.data; energy1 = energy1.data;
+  if strcmp(fileInfo.tmMode,'fast') % fast
+    energy0 = get_variable(tmpDataObj,['mms' fileInfo.mmsId '_' fileInfo.detector '_energy_' fileInfo.tmMode]);
+    energy1 = energy0;
+    energy0 = energy0.data; energy1 = energy1.data;   
+    stepTable = zeros(time.length);
+    energy = repmat(torow(energy0),time.length,1);
+    %energy(stepTable==1,:) = repmat(energy1,sum(stepTable),1);
+  else % brst
+    energy0 = get_variable(tmpDataObj,['mms' fileInfo.mmsId '_' fileInfo.detector '_energy0_' fileInfo.tmMode]);
+    energy1 = get_variable(tmpDataObj,['mms' fileInfo.mmsId '_' fileInfo.detector '_energy1_' fileInfo.tmMode]);
+    energy0 = energy0.data; energy1 = energy1.data;
+    % Make energytable from energy0, energy1 and energysteptable
+    stepTable = get_variable(tmpDataObj,['mms' fileInfo.mmsId '_' fileInfo.detector '_steptable_parity_' fileInfo.tmMode]);
+    energy = repmat(torow(energy0),numel(stepTable),1);
+    energy(stepTable==1,:) = repmat(energy1,sum(stepTable),1);
+  end
+  %energy0 = get_variable(tmpDataObj,['mms' fileInfo.mmsId '_' fileInfo.detector '_energy0_' fileInfo.tmMode]);
+  %energy1 = get_variable(tmpDataObj,['mms' fileInfo.mmsId '_' fileInfo.detector '_energy1_' fileInfo.tmMode]);
+  
   phi = get_variable(tmpDataObj,['mms' fileInfo.mmsId '_' fileInfo.detector '_phi_' fileInfo.tmMode]);
   theta = get_variable(tmpDataObj,['mms' fileInfo.mmsId '_' fileInfo.detector '_theta_' fileInfo.tmMode]);
-  stepTable = get_variable(tmpDataObj,['mms' fileInfo.mmsId '_' fileInfo.detector '_steptable_parity_' fileInfo.tmMode]);
-  phi = phi.data; theta = theta.data; stepTable = stepTable.data;
+  
+  phi = phi.data; theta = theta.data;
 
-  % Make energytable from energy0, energy1 and energysteptable
-  energy = repmat(torow(energy0),numel(stepTable),1);
-  energy(stepTable==1,:) = repmat(energy1,sum(stepTable),1);
+  
 
   % Construct PDist
   PD = PDist(time,Dist,'skymap',energy,phi,theta);

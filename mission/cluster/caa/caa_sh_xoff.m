@@ -66,20 +66,21 @@ end
 		
 
 % Try loading C1 CIS-HIA from CAA
+diVCEh1 = [];
 diVCh1 = caa_stream_var(st,dt,'C1_CP_CIS_HIA_ONBOARD_MOMENTS','velocity_isr2');
 if ~isempty(diVCh1)
   % Fetch B interval limited to CIS for speed reasons
   diB1 = caa_stream_var(diVCh1(1,1)-3,diVCh1(end,1)-diVCh1(1,1)+6,...
     'C1_CP_FGM_5VPS_ISR2','B_vec_xyz_isr2');
   if ~isempty(diB1), diVCEh1 = irf_e_vxb(diVCh1,diB1); end
-else %diVCEh1 = caa_get(st,dt,1,'diVCEh?'); end %try from disk
-  diVCEh1 = [];
+%else %diVCEh1 = caa_get(st,dt,1,'diVCEh?'); end %try from disk
 end
 
 if ~isempty(diVCEh1)
     diVCEh1(isnan(diVCEh1(:,2)),:)=[];
     CE1=irf_resamp(diVCEh1,t);
-else, CE1 = [];
+else
+    CE1 = [];
 end
 
 % Try loading C3 CIS-HIA from CAA

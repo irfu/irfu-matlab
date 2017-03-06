@@ -1,4 +1,4 @@
-function [tsData] = thor_tm(data,downlink,memorySaved)
+function [tsData] = thor_tm_sitl___(data,downlink,memorySaved_,tsDownlinkDelay,tsAvTM)
 % THOR_TM - calculates how much data accumulates onboard and what is downlinked THOR
 %   [tsData] = thor_netdata(data,downlink,memoryLimit,downlink_delay)
 %   data           - TSeries of generated data where data can be a vector 
@@ -26,10 +26,19 @@ else
 	downlinkData = downlink.data;
 end
 
-for iOrbit = 1:nOrbits
+for iOrbit = 1:(nOrbits-1)
+  % Data that has no assigned FOM yet...
+  downlinkDelay = tsDownlinkDelay(iOrbit).data;
+  memorySaved = memorySaved_ - tsAvTM(iOrbit).data;
+  
+  indDelay = 0;      
+  if iOrbit > (downlinkDelay-1)
+    indDelay = downlinkDelay-1;  
+  end    
+  
 	% Download highest FOM data from the memorySaved
 	if iOrbit > 1
-		lastSavedData = savedData(iOrbit-1,:);
+		lastSavedData = savedData(iOrbit,:);
 		newSavedData  = lastSavedData;
 		while sum(lastSavedData) > 0
 			ind=find(lastSavedData>0,1);
@@ -44,24 +53,23 @@ for iOrbit = 1:nOrbits
 				break
 			end
 		end
-	end
+  end  
   
 	% Add new data to memory and check what is discarded
-	discData = data.data(iOrbit,:)+newSavedData; % default all
+	discData = data.data(iOrbit-indDelay,:)+newSavedData; % default all
 	newSavedData = discData*0;
-	for iDim = 1:nDimData
-		if sum(newSavedData)+discData(iDim)  < memorySaved
+	for iDim = 1:nDimData % loop over quality factors
+		if sum(newSavedData) + discData(iDim)  < memorySaved
 			newSavedData(iDim)  = discData(iDim);
 			discData(iDim) = 0;
 		else
-			tmpSave = memorySaved -  sum(newSavedData);
+			tmpSave = memorySaved - sum(newSavedData);
 			newSavedData(iDim)  = tmpSave;
 			discData(iDim) = discData(iDim) - tmpSave;
 		end
 	end
-	discardedData(iOrbit,:) = discData;
-	savedData(iOrbit,:) = newSavedData;
-	
+	discardedData(iOrbit,:) = discData;  
+	savedData(iOrbit+1,:) = newSavedData;  	
 end
 
 tsData.saved      = data; tsData.saved.data = savedData;

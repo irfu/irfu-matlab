@@ -2,8 +2,6 @@ function caa_ms_pl_xoff_stats(xoff)
 %CAA_MS_PL_XOFF_STATS plot statistics for DdsiX1-4
 %
 % caa_ms_pl_xoff_stats(DdsiXn)
-%
-% $Id$
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):
@@ -13,9 +11,9 @@ function caa_ms_pl_xoff_stats(xoff)
 % ----------------------------------------------------------------------------
 
 STEP = 0.1;
-d = 0:STEP:3;
+d = -1:STEP:5;
 
-yy=2001:2005;
+yy=2011:2018;
 c = 'krgbm';
 leg = {};
 
@@ -36,10 +34,10 @@ for i=1:length(yy)
 		pdf(j) = length(find( x>=d(j) & x<d(j)+STEP ));
 	end
 	
-	pdf = pdf/sum(x);
+	pdf = pdf/abs(sum(x));
 	
 	im = find( pdf==max(pdf), 1, 'last');
-	ii = im-3:im+3;
+	ii = im-3:im+3; ii(ii<=0) = [];
 	cf = fit(d(ii)'+STEP/2,(pdf(ii))','gauss1');
 	cf = coeffvalues(cf);
 	
