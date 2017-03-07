@@ -75,5 +75,8 @@ else
         ud=get(parent,'userdata');
         ud.current_plot=tag;
         set(parent,'userdata',ud);
+				if nargout==0
+					axes(hout);
+				end
     end    
 end
