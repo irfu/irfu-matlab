@@ -632,13 +632,29 @@ end
       case 'skymap'
         switch Vr.tmmode
           case 'brst'
-            dist = mms.db_get_ts(dsetName,[pref '_dist_' Vr.tmmode],Tint);
+            dist = mms.db_get_variable(dsetName,[pref '_dist_' Vr.tmmode],Tint);
+            theta = dist.DEPEND_2.data;
+            dist = mms.variable2ts(dist);
+            dist = dist.tlim(Tint);
             energy0 = mms.db_get_variable(dsetName,[pref '_energy0_' Vr.tmmode],Tint);
             energy1 = mms.db_get_variable(dsetName,[pref '_energy1_' Vr.tmmode],Tint);
             phi = mms.db_get_ts(dsetName,[pref '_phi_' Vr.tmmode],Tint);
-            theta = mms.db_get_variable(dsetName,[pref '_theta_' Vr.tmmode],Tint);
+            %theta = mms.db_get_variable(dsetName,[pref '_theta_' Vr.tmmode],Tint);
             stepTable = mms.db_get_ts(dsetName,[pref '_steptable_parity_' Vr.tmmode],Tint);
-            res = irf.ts_skymap(dist.time,dist.data,[],phi.data,theta.data,'energy0',energy0.data,'energy1',energy1.data,'esteptable',stepTable.data);            
+            if isempty(energy0),
+              energymat = mms.db_get_ts(dsetName,[pref '_energy_' Vr.tmmode],Tint);
+              if stepTable.data(1),
+                energy1 = energymat.data(1,:);
+                energy0 = energymat.data(2,:);
+              else
+                energy1 = energymat.data(2,:);
+                energy0 = energymat.data(1,:);
+              end
+            else
+              energy0 = energy0.data;
+              energy1 = energy1.data;
+            end
+            res = irf.ts_skymap(dist.time,dist.data,[],phi.data,theta,'energy0',energy0,'energy1',energy1,'esteptable',stepTable.data);
           case 'fast'
             dist = mms.db_get_ts(dsetName,[pref '_dist_' Vr.tmmode],Tint);
             energy = mms.db_get_variable(dsetName,[pref '_energy_' Vr.tmmode],Tint);
