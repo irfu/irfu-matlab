@@ -1104,7 +1104,7 @@ classdef mms_sdp_dmgr < handle
       function e_from_asym()
         % Compute E in asymmetric configuration
         
-        if(DATAC.scId ~=4 || DATAC.procId == MMS_CONST.SDCProc.scpot), return, end
+        if(DATAC.scId ~=4), return, end
         
         %PROBE MAGIC
         %MMS4, Probe 4 bias fail, 2016-06-12T05:28:48.2
@@ -1116,7 +1116,8 @@ classdef mms_sdp_dmgr < handle
         irf.log('notice',['Bad bias on ' senV ' starting at ' TTFail.utc]);
         DATAC.dcv.(senV).bitmask(indFail) = ...
           bitor(DATAC.dcv.(senV).bitmask(indFail), MMS_CONST.Bitmask.BAD_BIAS);
-        
+        if(DATAC.procId == MMS_CONST.SDCProc.scpot), return, end
+
         % Compute asymmetric E34
         % Data with no v3 cannot be reconstructed
         sen3_off = bitand(DATAC.dcv.v3.bitmask, MMS_CONST.Bitmask.SIGNAL_OFF);
