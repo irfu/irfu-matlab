@@ -61,6 +61,15 @@ elseif(HeaderInfo.numberOfSources>=2)
       HeaderInfo.(sprintf('parents_%i',i))]}];
   end
 end
+try
+  % Add also timeline xml files used to bitmask maneuvers during.
+  for iXml = 1:size(Dmgr.timelineXML, 1)
+    GATTRIB.Parents = [GATTRIB.Parents; ...
+      {['XML>', Dmgr.timelineXML(iXml, 1:end-4)]}];
+  end
+catch
+  irf.log('notice', 'Failed to add xml timeline(-s) to GATTRIB parents.');
+end
 GATTRIB.Logical_file_id = {outFileName};    % Filename, except '.cdf'
 GATTRIB.Data_version = {['v' verFileName]}; % 'vX.Y.Z'
 

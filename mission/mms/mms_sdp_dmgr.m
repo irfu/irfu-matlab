@@ -26,6 +26,7 @@ classdef mms_sdp_dmgr < handle
     probe2sc_pot = [];% comp probe to sc potential
     sc_pot = [];      % comp sc potential
     spinfits = [];    % comp spinfits
+    timelineXML = []; % List of timeline files used to bitmask maneuvers.
   end
   properties (SetAccess = immutable)
     CONST = [];       % constants
@@ -832,7 +833,7 @@ classdef mms_sdp_dmgr < handle
         end
         Tint = irf.tint(DATAC.dce.time(1), DATAC.dce.time(end));
         try
-          maneuvers = mms_maneuvers(Tint, DATAC.scId);
+          [maneuvers, timeline] = mms_maneuvers(Tint, DATAC.scId);
           scIdStr = sprintf('mms%d', DATAC.scId);
           if(isfield(maneuvers, scIdStr) && ...
               ~isempty(maneuvers.(scIdStr)))
@@ -855,6 +856,7 @@ classdef mms_sdp_dmgr < handle
                   bitor(DATAC.dce.(senE).bitmask(ind), bits);
               end
             end
+            DATAC.timelineXML = timeline;
           else
             irf.log('debug', 'No maneuvers found during data interval.');
           end
