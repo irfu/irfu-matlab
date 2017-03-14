@@ -1005,28 +1005,45 @@ classdef mms_sdp_dmgr < handle
       
       function corr_adp_spikes()
         % correct ADP shadow spikes
-        MODEL_THRESHOLD = .01;
         MSK_SHADOW = MMS_CONST.Bitmask.ADP_SHADOW;
-        
+
         Phase = DATAC.phase;
         if isempty(Phase)
           errStr='Bad PHASE input, cannot proceed.';
           irf.log('critical',errStr); error(errStr);
         end
         irf.log('notice','Removing ADP spikes');
-        if(DATAC.scId == 4 && all(DATAC.dce.time > EpochTT('2016-06-12T05:28:48.200Z').ttns)) %MMS4 p4 failed
-          model = mms_sdp_model_adp_shadow(DATAC.dce, Phase, {'e12', 'p123'});
+        if(DATAC.procId == MMS_CONST.SDCProc.scpot)
+          % Spacecraft potential process, correct individual probes
+          sens = {'v1', 'v2', 'v3', 'v4'};
+          MODEL_THRESHOLD = 0.01; % V
+          model = mms_sdp_model_adp_shadow(DATAC.dcv, Phase, sens);
+
+          for iSen = 1:length(sens)
+            sen = sens{iSen};
+            DATAC.dcv.(sen).data = ...
+              single(double(DATAC.dcv.(sen).data) - model.(sen));
+            idx = abs(model.(sen)) > MODEL_THRESHOLD;
+            DATAC.dcv.(sen).bitmask(idx) = ...
+              bitor(DATAC.dcv.(sen).bitmask(idx), MSK_SHADOW);
+          end
         else
-          model = mms_sdp_model_adp_shadow(DATAC.dce,Phase, {'e12','e34'});
-        end
-        
-        for iSen = 1:min(numel(sensors),2)
-          sen = sensors{iSen};
-          DATAC.dce.(sen).data = ...
-            single(double(DATAC.dce.(sen).data) - model.(sen));
-          idx = abs(model.(sen))>MODEL_THRESHOLD;
-          DATAC.dce.(sen).bitmask(idx) = ...
-            bitor(DATAC.dce.(sen).bitmask(idx), MSK_SHADOW);
+          % Electric field process, correct DCE fields.
+          MODEL_THRESHOLD = 0.01; % mV/m
+          if(DATAC.scId == 4 && all(DATAC.dce.time > EpochTT('2016-06-12T05:28:48.200Z').ttns)) %MMS4 p4 failed
+            model = mms_sdp_model_adp_shadow(DATAC.dce, Phase, {'e12', 'p123'});
+          else
+            model = mms_sdp_model_adp_shadow(DATAC.dce,Phase, {'e12','e34'});
+          end
+
+          for iSen = 1:min(numel(sensors),2)
+            sen = sensors{iSen};
+            DATAC.dce.(sen).data = ...
+              single(double(DATAC.dce.(sen).data) - model.(sen));
+            idx = abs(model.(sen))>MODEL_THRESHOLD;
+            DATAC.dce.(sen).bitmask(idx) = ...
+              bitor(DATAC.dce.(sen).bitmask(idx), MSK_SHADOW);
+          end
         end
       end
       
