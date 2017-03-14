@@ -216,12 +216,14 @@ else
   % Download data from HTTPS
   url=[httpRequest 'start_date=' startDate '&end_date=' endDate vars];
   disp(['url:' url]);
-  % Set root certificate pem file to empty disables verification, as of
-  % version R2016b Matlab does not include root certificate used by "Let's
-  % encrypt".
-  % Bug reported to Mathworks 2017/02/01T13 CET, not fixed in released "R2017a Pre",
-  % but now appears fixed in an internal Mathworks build of "R2017a Pre".
-  webOpt = weboptions('CertificateFilename','');
+  if(verLessThan('matlab','9.2')) % Version less than R2017a
+    % Set root certificate pem file to empty disables verification, as
+    % Matlab versions before R2017a does not include root certificate used
+    % by "Let's encrypt".
+    webOpt = weboptions('CertificateFilename','');
+  else
+    webOpt = weboptions();
+  end
   try
     c = webread(url, webOpt);
     getDataSuccess = true;
