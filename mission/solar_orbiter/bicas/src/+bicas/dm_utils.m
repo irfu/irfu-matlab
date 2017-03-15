@@ -10,10 +10,12 @@ classdef dm_utils
 % First created 2016-10-10
 
 %============================================================================================================
+% PROPOSAL: Split up in separate files?!
 % PROPOSAL: Move some functions to "utils".
 %   Ex: add_components_to_struct, select_subset_from_struct
+%   Ex: log_array, log_struct_array, log_tt2000_array (uses bicas.dm_utils_assert_Epoch)
+%
 % PROPOSAL: Write test code for ACQUISITION_TIME_to_tt2000 and its inversion.
-% PROPOSAL: Split up in separate files?!
 % PROPOSAL: Reorg select_subset_from_struct into returning a list of intervals instead.
 %
 % PROPOSAL: Replace find_last_same_subsequence with function that returns list of sequences.
@@ -25,44 +27,16 @@ classdef dm_utils
 %       PRO: LFR.
 %    PROPOSAL: First convert column data to 2D data (with separate functions), then reshape to 1D with one common function.
 %       CON: Does not work for ACQUISITION_TIME since two columns.
+%
+% PROPOSAL: Split up SPR functions.
+%   convert_N_to_1_SPR_redistribute     -- Keep
+%   convert_N_to_1_SPR_repeat           -- repeat_in_record    + convert_N_to_1_SPR_redistribute
+%   convert_N_to_1_SPR_Epoch            -- increment_in_record + convert_N_to_1_SPR_redistribute
+%   convert_N_to_1_SPR_ACQUISITION_TIME -- Keep
 
 
 
     methods(Static, Access=public)
-
-        function filteredData = filter_rows(data, rowFilter)
-        % Function intended for filtering out (copying selectively) data from a zVariable.
-        %
-        % data         : Numeric array with N rows.                 (Intended to represent zVariables with N records.)
-        % rowFilter    : Numeric/logical column vector with N rows. (Intended to represent zVariables with N records.)
-        % filteredData : Array of the same size as "records", with
-        %                filteredData(i,:,:, ...) == NaN,                 for record_filter(i)==0.
-        %                filteredData(i,:,:, ...) == records(i,:,:, ...), for record_filter(i)~=0.
-
-            % ASSERTIONS
-            if ~iscolumn(rowFilter)     % Not really necessary to require row vector, only 1D vector.
-                error('BICAS:dm_utils:Assertion:IllegalArgument', 'rowFilter is not a column vector.')
-            elseif size(rowFilter, 1) ~= size(data, 1)
-                error('BICAS:dm_utils:Assertion:IllegalArgument', 'Numbers of records do not match.')
-            elseif ~isfloat(data)
-                error('BICAS:dm_utils:Assertion:IllegalArgument', 'data is not a floating-point class (can not represent NaN).')
-            end
-            
-            
-            
-            % Copy all data
-            filteredData = data;
-            
-            % Overwrite data that should not have been copied with NaN
-            % --------------------------------------------------------
-            % IMPLEMENTATION NOTE: Command works empirically for filteredData having any number of dimensions. However,
-            % if rowFilter and filteredData have different numbers of rows, then the final array may get the wrong
-            % dimensions (without triggering error!) since new array components (indices) are assigned. ==> The
-            % corresponding ASSERTION is important!
-            filteredData(rowFilter==0, :) = NaN;
-        end
-
-
 
         function s = select_subset_from_struct(s, iFirst, iLast)
         % Given a struct, select a subset of that struct defined by a range of COLUMN indicies for every field.
@@ -105,47 +79,6 @@ classdef dm_utils
                 
                 s.(fn) = [s.(fn) ; structAmendment.(fn)];
             end
-        end
-
-
-
-        function iLast = find_last_same_sequence(iFirst, varargin)
-        % Finds the greatest iLast such that all varargin{k}(i) are equal for iFirst <= i <= iLast separately for every k.
-        % Useful for finding a continuous sequence of records with the same data.
-        %
-        % ASSUMES: varargin{i} are all column arrays of the same size.
-        % ASSUMES: At least one record. (Algorithm does not work for zero records. Output is ill-defined.)
-        
-        % PROPOSAL: Better name?
-        % PROPOSAL: Replace by function that returns list of sequences.
-        %   PRO: Can naturally handle zero records.
-            
-            % ASSERTIONS
-            if 0 == length(varargin)
-                error('BICAS:dm_utils:Assertion:IllegalArgument', 'There is no vectors to look for sequences in.')
-            end
-            for k = 1:length(varargin)
-                if ~iscolumn(varargin{k})
-                    error('BICAS:dm_utils:Assertion:IllegalArgument', 'varargins are not all column vectors.')
-                end
-            end                
-            nRecords = size(varargin{1}, 1);
-            if nRecords == 0
-                error('BICAS:dm_utils:Assertion:IllegalArgument', 'Vectors are empty.')
-            end
-                
-            % NOTE: Algorithm does not work for nRecords==0.
-            iLast = iFirst;
-            while iLast+1 <= nRecords       % For as long as there is another row...
-                for k = 1:length(varargin)
-                    if ~isequaln(varargin{k}(iFirst), varargin{k}(iLast+1))    % NOTE: Use equals that treats NaN as any other value.
-                        % CASE: This row is different from the previous one.
-                        return
-                    end
-                end
-                iLast = iLast + 1;
-            end
-            iLast = nRecords;
         end
 
 
@@ -269,23 +202,144 @@ classdef dm_utils
         
         
         
-        function utcStr = tt2000_to_UTC_str(tt2000)
-        % Convert tt2000 value to UTC string with nanoseconds.
+        function iLast = find_last_same_sequence(iFirst, varargin)
+        % Finds the greatest iLast such that all varargin{k}(i) are equal for iFirst <= i <= iLast separately for every k.
+        % Useful for finding a continuous sequence of records with the same data.
         %
-        % Example: 2016-04-16T02:26:14.196334848
-        % NOTE: This is the inverse to spdfparsett2000.
+        % ASSUMES: varargin{i} are all column arrays of the same size.
+        % ASSUMES: At least one record. (Algorithm does not work for zero records. Output is ill-defined.)
+        
+        % PROPOSAL: Better name?
+        % PROPOSAL: Replace by function that returns list of sequences.
+        %   PRO: Can naturally handle zero records.
             
-            bicas.dm_utils.assert_Epoch(tt2000)
-            
-            v = spdfbreakdowntt2000(tt2000);
-            utcStr = sprintf('%04i-%02i-%02iT%02i:%02i:%2i.%03i%03i%03i', v(1), v(2), v(3), v(4), v(5), v(6), v(7), v(8), v(9));
+            % ASSERTIONS
+            if isempty(varargin)
+                error('BICAS:dm_utils:Assertion:IllegalArgument', 'There are no vectors to look for sequences in.')
+            end
+            for kArg = 1:length(varargin)
+                if ~iscolumn(varargin{kArg})
+                    error('BICAS:dm_utils:Assertion:IllegalArgument', 'varargins are not all column vectors.')
+                end
+            end                
+            nRecords = size(varargin{1}, 1);
+            if nRecords == 0
+                error('BICAS:dm_utils:Assertion:IllegalArgument', 'Vectors are empty.')
+            end
+
+            % NOTE: Algorithm does not work for nRecords==0.
+            iLast = iFirst;
+            while iLast+1 <= nRecords       % For as long as there is another row...
+                for kArg = 1:length(varargin)
+                    if ~isequaln(varargin{kArg}(iFirst), varargin{kArg}(iLast+1))    % NOTE: Use "isequaln" that treats NaN as any other value.
+                        % CASE: This row is different from the previous one.
+                        return
+                    end
+                end
+                iLast = iLast + 1;
+            end
+            iLast = nRecords;
         end
         
         
         
-        function newData = convert_N_to_1_SPR_redistribute(oldData)
-        % Convert data from N samples/record to 1 sample/record (from a matrix to a column vector).
+        % EXPERIMENTAL
+        function [iFirstList, iLastList] = find_sequences(varargin)
+        % For a non-empty set of column vectors, find all subsequences of continuously constant values in all the vectors.
+        % Useful for finding continuous sequences of (CDF) records with identical settings.
+        % NOTE: NaN counts as equal to itself.
+        %
+        % ARGUMENTS
+        % ==================
+        % Arguments (varargin{i}) : Column arrays of the same size. Can have zero rows (but must still have one column;
+        %                           size 0xN). Does not have to be numeric as long as isequaln can handle it.
+        % iFirst, iLast           : Vectors with indices to the first and last index of each sequence.
         
+            % ASSERTIONS & variable extraction
+            if isempty(varargin)
+                error('BICAS:dm_utils:Assertion:IllegalArgument', 'There are no vectors to look for sequences in.')
+            end
+            nRecords = size(varargin{1}, 1);
+            for kArg = 1:length(varargin)
+                if ~iscolumn(varargin{kArg}) || nRecords ~= size(varargin{kArg}, 1)
+                    error('BICAS:dm_utils:Assertion:IllegalArgument', 'varargins are not all same-size column vectors.')
+                end
+            end                
+            
+            % NOTE: Works also for nRecords == 0. Never calls find_last_same_sequence for nRecords == 0.
+            iFirstList = [];
+            iLastList  = [];
+            iFirst = 1;
+            iLast = iFirst;
+            while iFirst <= nRecords
+%                 iLast = find_last_same_sequence(iFirst, varargin{:});
+                
+                while iLast+1 <= nRecords       % For as long as there is another row...
+                    foundLast = false;
+                    for kArg = 1:length(varargin)
+                        if ~isequaln(varargin{kArg}(iFirst), varargin{kArg}(iLast+1))    % NOTE: Use "isequaln" that treats NaN as any other value.
+                            % CASE: This row is different from the previous one.
+                            foundLast = true;
+                            break
+                        end
+                    end
+                    if foundLast
+                        break
+                    end
+                    
+                    iLast = iLast + 1;                    
+                end
+
+                iFirstList(end+1) = iFirst;
+                iLastList(end+1)  = iLast;
+
+                iFirst = iLast + 1;
+            end
+        end
+        
+        
+        
+        function filteredData = filter_rows(data, rowFilter)
+        % Function intended for filtering out (copying selectively) data from a zVariable. Not copied values are set to
+        % NaN.
+        %
+        % ARGUMENTS AND RETURN VALUE
+        % ==========================
+        % data         : Numeric array with N rows.                 (Intended to represent zVariables with N records.)
+        % rowFilter    : Numeric/logical column vector with N rows. (Intended to represent zVariables with N records.)
+        % filteredData : Array of the same size as "records", such that
+        %                filteredData(i,:,:, ...) == NaN,                 for record_filter(i)==0.
+        %                filteredData(i,:,:, ...) == records(i,:,:, ...), for record_filter(i)~=0.
+
+            % ASSERTIONS
+            if ~iscolumn(rowFilter)     % Not really necessary to require row vector, only 1D vector.
+                error('BICAS:dm_utils:Assertion:IllegalArgument', '"rowFilter" is not a column vector.')
+            elseif size(rowFilter, 1) ~= size(data, 1)
+                error('BICAS:dm_utils:Assertion:IllegalArgument', 'Numbers of records do not match.')
+            elseif ~isfloat(data)
+                error('BICAS:dm_utils:Assertion:IllegalArgument', '"data" is not a floating-point class (can not represent NaN).')
+            end
+            
+            
+            
+            % Copy all data
+            filteredData = data;
+            
+            % Overwrite data that should not have been copied with NaN
+            % --------------------------------------------------------
+            % IMPLEMENTATION NOTE: Command works empirically for filteredData having any number of dimensions. However,
+            % if rowFilter and filteredData have different numbers of rows, then the final array may get the wrong
+            % dimensions (without triggering error!) since new array components (indices) are assigned. ==> Having a
+            % corresponding ASSERTION is important!
+            filteredData(rowFilter==0, :) = NaN;
+        end
+
+
+
+        function newData = convert_N_to_1_SPR_redistribute(oldData)
+        % Convert zVariable-like variable from N samples/record to 1 sample/record (from a matrix to a column vector).
+        
+            % ASSERTIONS
             % NOTE: ndims always returns at least two, which is exactly what we want, also for empty and scalars, and row vectors.
             if ndims(oldData) > 2
                 error('BICAS:dm_utils:Assertion:IllegalArgument', 'oldData has more than two dimensions.')
@@ -297,6 +351,9 @@ classdef dm_utils
         
         
         function newData = convert_N_to_1_SPR_repeat(oldData, nRepeatsPerOldRecord)
+        % (1) Convert zVariable-like variable from 1 value/record to N values/record (same number of records) by repeating within record.
+        % (2) Convert zVariable-like variable from N values/record to 1 value/record by redistributing values.
+            
             % ASSERTIONS
             if ~(iscolumn(oldData))
                 error('BICAS:dm_utils:Assertion', 'oldData is not a column vector')
@@ -305,12 +362,13 @@ classdef dm_utils
             end
             
             newData = repmat(oldData, [1,nRepeatsPerOldRecord]);
-            newData = reshape(newData', [numel(newData), 1]);     % NOTE: Must transpose first.
+            %newData = reshape(newData', [numel(newData), 1]);     % NOTE: Must transpose first.
+            newData = bicas.dm_utils.convert_N_to_1_SPR_redistribute(newData);
         end
         
         
         
-        function newTt2000 = convert_N_to_1_SPR_Epoch( oldTt2000, nSpr, frequencyWithinRecords )
+        function newTt2000 = convert_N_to_1_SPR_Epoch( oldTt2000, nSpr, frequencyHzWithinRecords )
         % Convert time series zVariable (column) equivalent to converting N-->1 samples/record, assuming time increments
         % with frequency in each snapshot.
         %
@@ -334,16 +392,16 @@ classdef dm_utils
             bicas.dm_utils.assert_Epoch(oldTt2000)
             if numel(nSpr) ~= 1
                 error('BICAS:dm_utils:Assertion:IllegalArgument', 'nSpr not scalar.')
-            elseif size(frequencyWithinRecords, 1) ~= size(oldTt2000, 1)
+            elseif size(frequencyHzWithinRecords, 1) ~= size(oldTt2000, 1)
                 error('BICAS:dm_utils:Assertion:IllegalArgument', 'frequencyWithinRecords and oldTt2000 do not have the same number of rows.')
             end
             
             nRecords = numel(oldTt2000);
             
             % Express frequency as period length in ns (since tt2000 uses ns as a unit).
-            % Use the same MATLAB class as tt
+            % Use the same MATLAB class as tt.
             % Unique frequency per record.
-            periodNsColVec = int64(1e9 ./ frequencyWithinRecords);   
+            periodNsColVec = int64(1e9 ./ frequencyHzWithinRecords);   
             periodNsMatrix = repmat(periodNsColVec, [1, nSpr]);
                         
             % Conventions:
@@ -363,7 +421,8 @@ classdef dm_utils
             tt2000Matrix = tt2000RecordBeginMatrix + iSampleMatrix .* periodNsMatrix;
             
             % Convert to 2D matrix --> 1D column vector.
-            newTt2000 = reshape(tt2000Matrix', [nRecords*nSpr, 1]);
+            %newTt2000 = reshape(tt2000Matrix', [nRecords*nSpr, 1]);
+            newTt2000 = bicas.dm_utils.convert_N_to_1_SPR_redistribute(tt2000Matrix);
         end
         
         
@@ -389,14 +448,12 @@ classdef dm_utils
         
         
         function DELTA_PLUS_MINUS = derive_DELTA_PLUS_MINUS(freqHz, nSpr)
-        % freq    : Frequency column vector in s^-1.
-        % varSize : Size of the matrix to be returned. 
-        % DELTA_PLUS_MINUS : Analogous to BIAS zVariable CDF_INT8=int64. NOTE: Unit ns.
-        %
-        % NOTE: Can not handle freq=NaN since the output is an integer.
+        % freqHz  : Frequency column vector in s^-1. Can not handle freqHz=NaN since the output is an integer.
+        % nSpr    : Number of samples/record.
+        % DELTA_PLUS_MINUS : Analogous to BIAS zVariable. CDF_INT8=int64. NOTE: Unit ns.
             
-            if ~iscolumn(freqHz) || ~isfloat(freqHz)
-                error('BICAS:dm_utils:Assertion:IllegalArgument', '"freqHz" is not a column vector of floats.')
+            if ~iscolumn(freqHz) || ~isfloat(freqHz) || any(isnan(freqHz))
+                error('BICAS:dm_utils:Assertion:IllegalArgument', '"freqHz" is not a column vector of non-NaN floats.')
             elseif ~isscalar(nSpr)
                 error('BICAS:dm_utils:Assertion:IllegalArgument', '"nSpr" is not a scalar.')
             end
@@ -412,17 +469,25 @@ classdef dm_utils
         
         
         function SAMP_DTIME = derive_SAMP_DTIME(freqHz, nSpr)
-        % frequencyWithinRecords : Frequency column vector in s^-1.
-        % nSpr                   : Number of samples per record (SPR).
-        % SAMP_DTIME             : Analogous to BIAS zVariable CDF_UINT4=uint32. NOTE: Unit ns.
+        % freqHz     : Frequency column vector in s^-1. Can not handle freq=NaN since the output is an integer.
+        % nSpr       : Number of samples per record (SPR).
+        % SAMP_DTIME : Analogous to BIAS zVariable with CDF_UINT4=uint32. NOTE: Unit ns.
         %
-        % NOTE: Can not handle freq=NaN since the output is an integer.
-        %
-        % BUG: The LFR/TDS/BIAS dataset skeletons specify that zVariable SAMP_DTIME is CDF_UINT4 in unit ns which should
+        % ~BUG: The LFR/TDS/BIAS dataset skeletons specify that zVariable SAMP_DTIME is CDF_UINT4 in unit ns which should
         % have a too small a range for some snapshots. Therefore, this conversion will eliminate most Example: LFR
-        % 2048/256 Hz = 8e9 ns > 2^31 ns.
+        % 2048/256 Hz = 8e9 ns > 2^31 ns ~ 2e9 ns.
+        % 2017-03-08: Xavier Bonnin (LESIA) and Bruno Katra (RPW/LFR) are aware of this and seem to have implemented it
+        % that way intentionally!!!
+        %
+        % IMPLEMENTATION NOTE: Algorithm should require integers in order to have a very predictable behaviour (useful
+        % when testing).
         
-        % Algorithm should require integers to have a very predictable behaviour (useful when testing).
+            % ASSERTIONS
+            if ~iscolumn(freqHz) || ~isfloat(freqHz) || any(isnan(freqHz))
+                error('BICAS:dm_utils:Assertion:IllegalArgument', '"freqHz" is not a column vector of non-NaN floats.')
+            elseif ~isscalar(nSpr)
+                error('BICAS:dm_utils:Assertion:IllegalArgument', '"nSpr" is not a scalar.')
+            end
             
             nRecords = size(freqHz, 1);
             
@@ -446,6 +511,14 @@ classdef dm_utils
             
             SAMP_DTIME = cast(SAMP_DTIME, bicas.utils.convert_CDF_type_to_MATLAB_class('CDF_UINT4',  'Only CDF data types'));
         end
+        
+        
+        
+        function M = create_NaN_array(nRowsColumns)
+            % Input on the format [nRows, nColumns] so that the return value from the size() function can be used.
+            
+            M = NaN * zeros(nRowsColumns(1), nRowsColumns(2));
+        end
 
 
 
@@ -465,6 +538,20 @@ classdef dm_utils
 
 
 
+        function utcStr = tt2000_to_UTC_str(tt2000)
+        % Convert tt2000 value to UTC string with nanoseconds.
+        %
+        % Example: 2016-04-16T02:26:14.196334848
+        % NOTE: This is the inverse to spdfparsett2000.
+            
+            bicas.dm_utils.assert_Epoch(tt2000)
+            
+            v = spdfbreakdowntt2000(tt2000);
+            utcStr = sprintf('%04i-%02i-%02iT%02i:%02i:%2i.%03i%03i%03i', v(1), v(2), v(3), v(4), v(5), v(6), v(7), v(8), v(9));
+        end
+        
+        
+        
         function uniqueValues = unique_values_NaN(A)
         % Return number of unique values in array, treating +Inf, -Inf, and NaN as equal to themselves (separately).
         % (MATLAB's "unique" function does not do this for NaN.)

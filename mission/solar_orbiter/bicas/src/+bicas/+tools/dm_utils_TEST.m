@@ -11,9 +11,10 @@
 function dm_utils_TEST
     %find_last_same_sequence_TEST
     %convert_N_to_1_SPR_ACQUISITION_TIME_TEST
-    convert_N_to_1_SPR_Epoch_TEST
+    %convert_N_to_1_SPR_Epoch_TEST
     %convert_N_to_1_SPR_redistribute_TEST
     %convert_N_to_1_SPR_repeat_TEST
+    find_sequences_TEST
 end
 
 
@@ -31,7 +32,7 @@ function find_last_same_sequence_TEST
         end
         i(end+1) = i_first;
     end
-    
+
     i_res = {};
     i_exp = {};
     i_res{end+1} = split_into_sequences([1,1,1]');
@@ -59,6 +60,53 @@ function find_last_same_sequence_TEST
         if ~bicas.utils.equals_tolerance(i_res{k}, i_exp{k}, 0)
             i_res{k}
             i_exp{k}
+            error('FAIL')
+        end
+    end
+end
+
+
+
+function find_sequences_TEST
+    % Rewrite to test expected consistency?
+    % iFirst(2:end) + 1 == iLast(1:end-1)
+    % numel(unique(A(iFirst(i):iLast(i)))) == 1
+    % A(iLast(1:end-1)) ~= A(iFirst(2:end))    // if only one vector.
+
+    args = {};
+    exp = {};
+    args{end+1} = {zeros(0,1)};
+    exp{end+1} = zeros(0,2);
+    args{end+1} = {[1,1,1]'};
+    exp{end+1} = [1,3];
+    args{end+1} = {[1,5]'};
+    exp{end+1} = [1,1; 2,2];
+    args{end+1} = {[1,1,1,5,6,6]'};
+    exp{end+1} = [1,3; 4,4; 5,6];
+    args{end+1} = {[1,1,1,5,6,6]', [2,2,2,7,4,4]'};
+    exp{end+1} = [1,3;4,4;5,6];
+    args{end+1} = {[1,1,5,5,6,6]', [2,2,2,7,4,4]'};
+    exp{end+1} = [1,2; 3,3; 4,4; 5,6];
+    args{end+1} = {[1,1, NaN,NaN, 6,6,6]', [2,2,2, 7, 4,4,4]'};
+    exp{end+1} = [1,2; 3,3; 4,4; 5,7];
+    args{end+1} = {[NaN]'};
+    exp{end+1} = [1,1];
+    args{end+1} = {[NaN,NaN]'};
+    exp{end+1} = [1,2];
+    args{end+1} = {[NaN,1,1,5,6,6]'};
+    exp{end+1} = [1,1; 2,3; 4,4; 5,6];
+    args{end+1} = {[1,1,NaN,6,6]'};
+    exp{end+1} = [1,2; 3,3; 4,5];
+    args{end+1} = {[1,1,6,6,NaN]'};
+    exp{end+1} = [1,2; 3,4; 5,5];
+    
+    for k = 1:length(args)
+        [res1, res2] = bicas.dm_utils.find_sequences(args{k}{:});
+        res = [res1(:), res2(:)];
+        if ~bicas.utils.equals_tolerance(res, exp{k}, 0)
+            args{k}{:}
+            exp{k}
+            res
             error('FAIL')
         end
     end

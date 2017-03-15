@@ -3,10 +3,25 @@
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
 % First created ~2016-06-01
 %
-% The values are derived entirely from BICAS constants. The structure is NOT directly incorporated in the BICAS
-% constants for extra flexibility.
 %
-function swDescriptor = get_sw_descriptor(DataManager)
+% IMPLEMENTATION NOTE
+% ===================
+% The values are derived entirely from BICAS constants. The structure is NOT directly incorporated in the BICAS
+% constants/settings for extra flexibility. Reasons for NOT putting the S/W descriptor structure inside the settings
+% class:
+% (1) Some of the S/W descriptor variables have vague or misleading names ("name", "dataset versions", "dataset IDs")
+%     which would (reasoably) have to be represented by MATLAB variables with the same names.
+% (2) Some of the S/W descriptor variables are grouped in a way which
+%     does not fit the rest of the code (e.g. modes[i].outputs.(output_XX).release in the S/W descriptor structure).
+% (3) Some of the S/W descriptor values are really structure field NAMES, but would be better as
+%     structure field VALUES (e.g. input CLI parameter, output JSON identifier string).
+% (4) The constants structure would become dependent on the format of the S/W descriptor structure.
+%     The latter might change in the future, or be misunderstood in the present (i.e. be changed).
+% (5) Some S/W descriptor values repeat or can be derived from other constants (e.g. author, contact,
+%     institute, output_XX.release.file).
+% (6) It is easier to add automatic checks on the S/W descriptor in the code that derives it.
+%
+function SwDescriptor = get_sw_descriptor(DataManager)
 %
 % PROPOSAL: Have this function add the prefix "input_" to all modes[].inputs[].input (in SWD)
 % and only store the "CLI_PARAMETER_suffix" in the BICAS constants structure instead.
@@ -29,30 +44,34 @@ function swDescriptor = get_sw_descriptor(DataManager)
 %
 global CONSTANTS SETTINGS
 
-% SWD = The structure which is used for producing the S/W descriptor (SWD) JSON object string. Its fields (field names)
-% should NOT follow variable naming conventions since they influence the JSON object string.
-swd = [];
-swd.identification.project     = SETTINGS.get('SWD_IDENTIFICATION.project');
-swd.identification.name        = SETTINGS.get('SWD_IDENTIFICATION.name');
-swd.identification.identifier  = SETTINGS.get('SWD_IDENTIFICATION.identifier');
-swd.identification.description = SETTINGS.get('SWD_IDENTIFICATION.description');
-            
-swd.release.version            = SETTINGS.get('SWD_RELEASE.version');
-swd.release.date               = SETTINGS.get('SWD_RELEASE.date');
-swd.release.author             = SETTINGS.get('SWD_RELEASE.author');
-swd.release.contact            = SETTINGS.get('SWD_RELEASE.contact');
-swd.release.institute          = SETTINGS.get('SWD_RELEASE.institute');
-swd.release.modification       = SETTINGS.get('SWD_RELEASE.modification');
+% Variable naming convention:
+% ---------------------------
+% Swd = S/W descriptor = The MATLAB structure which is used for producing the S/W descriptor (SWD) JSON object string.
+% Its fields (field names) should NOT follow variable naming conventions since they determine the JSON object string
+% which must follow the RCS ICD.
 
-swd.environment                = SETTINGS.get('SWD_ENVIRONMENT.executable');
-swd.modes = {};
+Swd = [];
+Swd.identification.project     = SETTINGS.get('SWD_IDENTIFICATION.project');
+Swd.identification.name        = SETTINGS.get('SWD_IDENTIFICATION.name');
+Swd.identification.identifier  = SETTINGS.get('SWD_IDENTIFICATION.identifier');
+Swd.identification.description = SETTINGS.get('SWD_IDENTIFICATION.description');
+            
+Swd.release.version            = SETTINGS.get('SWD_RELEASE.version');
+Swd.release.date               = SETTINGS.get('SWD_RELEASE.date');
+Swd.release.author             = SETTINGS.get('SWD_RELEASE.author');
+Swd.release.contact            = SETTINGS.get('SWD_RELEASE.contact');
+Swd.release.institute          = SETTINGS.get('SWD_RELEASE.institute');
+Swd.release.modification       = SETTINGS.get('SWD_RELEASE.modification');
+
+Swd.environment                = SETTINGS.get('SWD_ENVIRONMENT.executable');
+Swd.modes = {};
 
 for i = 1:length(CONSTANTS.SW_MODES_INFO_LIST)
     cliParameter = CONSTANTS.SW_MODES_INFO_LIST{i}.CLI_PARAMETER;
     
     ExtendedSwModeInfo = DataManager.get_extended_sw_mode_info(cliParameter);
     
-    swd.modes{end+1} = generate_sw_descriptor_mode(ExtendedSwModeInfo);
+    Swd.modes{end+1} = generate_sw_descriptor_mode(ExtendedSwModeInfo);
 end
 
 
@@ -63,11 +82,11 @@ end
 % NOTE: It is hard to thoroughly follow the description, but the end result should be under
 % release-->version-->pattern (not to be confused with release_dataset-->version--pattern).
 %===========================================================================================
-if isempty(regexp(swd.release.version, '^(\d+\.)?(\d+\.)?(\d+)$', 'once'))
-    error('BICAS:get_sw_descriptor:IllegalConfiguration', 'Illegal S/W descriptor release version "%s". This indicates a hard-coded configuration bug.', swd.release.version)
+if isempty(regexp(Swd.release.version, '^(\d+\.)?(\d+\.)?(\d+)$', 'once'))
+    error('BICAS:get_sw_descriptor:IllegalConfiguration', 'Illegal S/W descriptor release version "%s". This indicates a hard-coded configuration bug.', Swd.release.version)
 end
 
-swDescriptor = swd;
+SwDescriptor = Swd;    % Assign return value.
 
 end
 
@@ -76,12 +95,8 @@ end
 % Create data structure for a S/W mode corresponding to the information in the JSON S/W descriptor.
 %
 function SwdMode = generate_sw_descriptor_mode(ExtendedSwModeInfo)
-%
-% Variable naming convention:
-%    SWD = S/W descriptor
 
 global SETTINGS
-
 
 SwdMode = struct;
 SwdMode.name    = ExtendedSwModeInfo.CLI_PARAMETER;
@@ -104,10 +119,10 @@ for iOutput = 1:length(ExtendedSwModeInfo.outputs)
     [~, masterFilename] = bicas.get_master_CDF_path(OutputInfo.DATASET_ID, OutputInfo.SKELETON_VERSION_STR);
 
     SwdOutputInfo = struct;
-    SwdOutputInfo.identifier  = OutputInfo.DATASET_ID;
-    SwdOutputInfo.name        = OutputInfo.SWD_NAME;
-    SwdOutputInfo.description = OutputInfo.SWD_DESCRIPTION;
-    SwdOutputInfo.level       = OutputInfo.SWD_LEVEL;
+    SwdOutputInfo.identifier           = OutputInfo.DATASET_ID;
+    SwdOutputInfo.name                 = OutputInfo.SWD_NAME;
+    SwdOutputInfo.description          = OutputInfo.SWD_DESCRIPTION;
+    SwdOutputInfo.level                = OutputInfo.SWD_LEVEL;
     SwdOutputInfo.release.date         = OutputInfo.SWD_RELEASE_DATE;
     SwdOutputInfo.release.version      = OutputInfo.SKELETON_VERSION_STR;
     SwdOutputInfo.release.author       = SETTINGS.get('AUTHOR_NAME');

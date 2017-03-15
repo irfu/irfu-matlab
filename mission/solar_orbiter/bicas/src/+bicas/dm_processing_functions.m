@@ -17,9 +17,9 @@
 %
 % SOME PDVs
 % =========
-% - Pre-Demuxing-Calibration Data (PreDCD)
-%       Generic data format that can represent all forms of input datasets before demuxing and calibration.
-%       Can use an arbitrary number of samples per record.
+% - Pre-Demuxing-Calibration Data (PreDC)
+%       Generic data format that can represent all forms of input datasets before demuxing and calibration. Can use an
+%       arbitrary number of samples per record. Some variables are therefore not used in CWF output datasets.
 %       Consists of struct with fields:
 %           .Epoch
 %           .ACQUISITION_TIME
@@ -31,10 +31,10 @@
 %           QUALITY_FLAG
 %           QUALITY_BITMASK
 %           DELTA_PLUS_MINUS
-%           (.SAMP_DTIME  ?)
+%           SAMP_DTIME          % Only important for SWF.
 %       Fields are "CDF-like": rows=records, all have same number of rows.
-% - Post-Demuxing-Calibration Data (PostDCD)
-%       Like PreDCD but with additional fields. Tries to capture a superset of the information that goes into any
+% - Post-Demuxing-Calibration Data (PostDC)
+%       Like PreDC but with additional fields. Tries to capture a superset of the information that goes into any
 %       dataset produced by BICAS.
 %       Has extra fields:
 %           .DemuxerOutput   : struct with fields.
@@ -46,7 +46,7 @@
 %
 classdef dm_processing_functions
 %#######################################################################################################################
-% PROPOSAL: Move out calibration (not demuxing) from data_manager.
+% PROPOSAL: Move out calibration (not demuxing) from dm_processing_functions.
 %   PROPOSAL: Reading of calibration files.
 %   PROPOSAL: Function for calibrating with either constant factors and transfer functions. (Flag for choosing which.)
 %       NOTE: Function needs enough information to split up data into sequences on which transfer functions can be applied.
@@ -151,12 +151,14 @@ classdef dm_processing_functions
         
         
 
-        function PreDcd = process_LFR_to_PreDCD(InputsMap)
-        % Processing function. Convert LFR CDF data (PDs) to PreDCD.
+        function PreDcd = process_LFR_to_PreDC(InputsMap)
+        % Processing function. Convert LFR CDF data (PDs) to PreDC.
         %
         % Keeps number of samples/record. Treats 1 samples/record "length-one snapshots".
         
         % PROBLEM: Hardcoded CDF data types (MATLAB classes).
+        % MINOR PROBLEM: Still does not handle LFR zVar TYPE for determining "virtual snapshot" length.
+        % Should only be relevant for L2R_LFR-SURV-CWF_V01 (not V02) which should expire.
         
             sciPdid       = InputsMap('SCI_cdf').pdid;
             SciPd         = InputsMap('SCI_cdf').pd;
@@ -177,7 +179,7 @@ classdef dm_processing_functions
                         'L2R_LFR-SURV-SWF_V01'}
                     POTENTIAL  = SciPd.POTENTIAL;
                     ELECTRICAL = SciPd.ELECTRICAL;
-                    L1_REC_NUM = NaN * zeros(nRecords, 1);   % Set to fill values.
+                    L1_REC_NUM = bicas.dm_utils.create_NaN_array([nRecords, 1]);   % Set to fill values.
                 case {  'L2R_LFR-SBM1-CWF_V02', ...
                         'L2R_LFR-SBM2-CWF_V02', ...
                         'L2R_LFR-SURV-CWF_V02', ...
@@ -211,6 +213,8 @@ classdef dm_processing_functions
                         'Can not handle PDID="%s"', sciPdid)
             end
             
+            
+            
             nSamplesPerRecord = size(POTENTIAL, 2);
             freqHz            = bicas.dm_utils.get_LFR_frequency( FREQ );   % NOTE: Needed also for 1 SPR.
             
@@ -222,7 +226,7 @@ classdef dm_processing_functions
             PreDcd.ACQUISITION_TIME = SciPd.ACQUISITION_TIME;
             PreDcd.DELTA_PLUS_MINUS = bicas.dm_utils.derive_DELTA_PLUS_MINUS(freqHz, nSamplesPerRecord);            
             PreDcd.freqHz           = freqHz;
-            PreDcd.SAMP_DTIME       = bicas.dm_utils.derive_SAMP_DTIME(freqHz, nSamplesPerRecord);            
+            PreDcd.SAMP_DTIME       = bicas.dm_utils.derive_SAMP_DTIME(freqHz, nSamplesPerRecord);
             PreDcd.L1_REC_NUM       = L1_REC_NUM;
             
             %===========================================================================================================
@@ -232,16 +236,18 @@ classdef dm_processing_functions
             % attribute DEPEND_0 = "Epoch" ==> Should have same number of records as Epoch.
             % Can not save CDF with zVar with zero records (crashes when reading CDF). ==> Better create empty records.
             % Test data: MYSTERIOUS_SIGNAL_1_2016-04-15_Run2__7729147__CNES/ROC-SGSE_L2R_RPW-LFR-SURV-SWF_7729147_CNE_V01.cdf
+            %
+            % PROPOSAL: Move to the code that reads CDF datasets instead. Generalize to many zVariables.
             %===========================================================================================================
             PreDcd.QUALITY_FLAG    = SciPd.QUALITY_FLAG;
             PreDcd.QUALITY_BITMASK = SciPd.QUALITY_BITMASK;
             if isempty(PreDcd.QUALITY_FLAG)
                 irf.log('w', 'QUALITY_FLAG from the SCI source dataset is empty. Filling with empty values.')
-                PreDcd.QUALITY_FLAG    = NaN * zeros([nRecords, 1]);
+                PreDcd.QUALITY_FLAG    = bicas.dm_utils.create_NaN_array([nRecords, 1]);
             end
             if isempty(PreDcd.QUALITY_BITMASK)
                 irf.log('w', 'QUALITY_BITMASK from the SCI source dataset is empty. Filling with empty values.')
-                PreDcd.QUALITY_BITMASK = NaN * zeros([nRecords, 1]);
+                PreDcd.QUALITY_BITMASK = bicas.dm_utils.create_NaN_array([nRecords, 1]);
             end
             
             PreDcd.DemuxerInput        = [];
@@ -263,10 +269,10 @@ classdef dm_processing_functions
         
         
         
-        function PreDcd = process_TDS_to_PreDCD(InputsMap)
+        function PreDcd = process_TDS_to_PreDC(InputsMap)
         % UNTESTED
         %
-        % Processing function. Convert TDS CDF data (PDs) to PreDCD.
+        % Processing function. Convert TDS CDF data (PDs) to PreDC.
         %
         % Keeps number of samples/record. Treats 1 samples/record "length-one snapshots".
         
@@ -308,7 +314,7 @@ classdef dm_processing_functions
             PreDcd.DELTA_PLUS_MINUS = bicas.dm_utils.derive_DELTA_PLUS_MINUS(freqHz, nSamplesPerRecord);            
             PreDcd.freqHz           = freqHz;    % CDF_UINT1 ?!!!
             PreDcd.SAMP_DTIME       = bicas.dm_utils.derive_SAMP_DTIME(freqHz, nSamplesPerRecord);
-            PreDcd.L1_REC_NUM       = NaN * zeros(nRecords, nSamplesPerRecord);   % Set to fill values. Not set in any TDS L2R dataset yet.
+            PreDcd.L1_REC_NUM       = bicas.dm_utils.create_NaN_array([nRecords, nSamplesPerRecord]);   % Set to fill values. Not set in any TDS L2R dataset yet.
 
             PreDcd.QUALITY_FLAG    = SciPd.QUALITY_FLAG;
             PreDcd.QUALITY_BITMASK = SciPd.QUALITY_BITMASK;
@@ -317,8 +323,8 @@ classdef dm_processing_functions
             PreDcd.DemuxerInput.BIAS_1 = permute(SciPd.WAVEFORM_DATA(:,1,:), [1,3,2]);
             PreDcd.DemuxerInput.BIAS_2 = permute(SciPd.WAVEFORM_DATA(:,2,:), [1,3,2]);
             PreDcd.DemuxerInput.BIAS_3 = permute(SciPd.WAVEFORM_DATA(:,3,:), [1,3,2]);
-            PreDcd.DemuxerInput.BIAS_4 = NaN*zeros([nRecords, nSamplesPerRecord]);
-            PreDcd.DemuxerInput.BIAS_5 = NaN*zeros([nRecords, nSamplesPerRecord]);
+            PreDcd.DemuxerInput.BIAS_4 = bicas.dm_utils.create_NaN_array([nRecords, nSamplesPerRecord]);
+            PreDcd.DemuxerInput.BIAS_5 = bicas.dm_utils.create_NaN_array([nRecords, nSamplesPerRecord]);
             
             PreDcd.MUX_SET   = HkOnSciTimePd.MUX_SET;
             PreDcd.DIFF_GAIN = HkOnSciTimePd.DIFF_GAIN;
@@ -330,29 +336,29 @@ classdef dm_processing_functions
             bicas.dm_utils.assert_unvaried_N_rows(PreDcd.DemuxerInput);
             
             %error('BICAS:data_manager:OperationNotImplemented', ...
-            %    'This processing function process_TDS_to_PreDCD has not been implemented yet.')
+            %    'This processing function process_TDS_to_PreDC has not been implemented yet.')
         end
 
-        
 
-        function assert_PreDCD(PreDcd)
+
+        function assert_PreDC(PreDcd)
             FIELDS = {'Epoch', 'ACQUISITION_TIME', 'DemuxerInput', 'freqHz', 'DIFF_GAIN', 'MUX_SET', 'QUALITY_FLAG', ...
                 'QUALITY_BITMASK', 'DELTA_PLUS_MINUS', 'L1_REC_NUM', 'SAMP_DTIME'};
             
             if ~isstruct(PreDcd) || ~isempty(setxor(fieldnames(PreDcd), FIELDS))
-                error('BICAS:data_manager:Assertion:SWModeProcessing', 'PDV structure is not on "PreDCD format".')
+                error('BICAS:data_manager:Assertion:SWModeProcessing', 'PDV structure is not on "PreDC format".')
             end
             bicas.dm_utils.assert_unvaried_N_rows(PreDcd);
         end
         
         
         
-        function assert_PostDCD(PostDcd)
+        function assert_PostDC(PostDcd)
             FIELDS = {'Epoch', 'ACQUISITION_TIME', 'DemuxerInput', 'freqHz', 'DIFF_GAIN', 'MUX_SET', 'QUALITY_FLAG', ...
                 'QUALITY_BITMASK', 'DELTA_PLUS_MINUS', 'DemuxerOutput', 'IBIAS1', 'IBIAS2', 'IBIAS3', 'L1_REC_NUM', 'SAMP_DTIME'};
             
             if ~isstruct(PostDcd) || ~isempty(setxor(fieldnames(PostDcd), FIELDS))
-                error('BICAS:data_manager:Assertion:SWModeProcessing', 'PDV structure is not on "PostDCD format".')
+                error('BICAS:data_manager:Assertion:SWModeProcessing', 'PDV structure is not on "PostDC format".')
             end
             bicas.dm_utils.assert_unvaried_N_rows(PostDcd);
         end
@@ -360,10 +366,10 @@ classdef dm_processing_functions
         
 
         function PostDcd = process_demuxing_calibration(InputsMap)
-        % Processing function. Converts PreDCD to PostDCD, i.e. demux and calibrate data.
+        % Processing function. Converts PreDC to PostDC, i.e. demux and calibrate data.
         
-            PreDcd = InputsMap('PreDCD').pd;
-            bicas.dm_processing_functions.assert_PreDCD(PreDcd);
+            PreDcd = InputsMap('PreDC').pd;
+            bicas.dm_processing_functions.assert_PreDC(PreDcd);
                     
             PostDcd = PreDcd;
             
@@ -375,19 +381,19 @@ classdef dm_processing_functions
             
             % BUG / TEMP: Set default values since the real values are not available.
             % Move "derivation" to HK_on_SCI_time?
-            PostDcd.IBIAS1 = NaN * zeros(size(PostDcd.DemuxerOutput.V1));
-            PostDcd.IBIAS2 = NaN * zeros(size(PostDcd.DemuxerOutput.V2));
-            PostDcd.IBIAS3 = NaN * zeros(size(PostDcd.DemuxerOutput.V3));
+            PostDcd.IBIAS1 = bicas.dm_utils.create_NaN_array(size(PostDcd.DemuxerOutput.V1));
+            PostDcd.IBIAS2 = bicas.dm_utils.create_NaN_array(size(PostDcd.DemuxerOutput.V2));
+            PostDcd.IBIAS3 = bicas.dm_utils.create_NaN_array(size(PostDcd.DemuxerOutput.V3));
             
-            bicas.dm_processing_functions.assert_PostDCD(PostDcd)
+            bicas.dm_processing_functions.assert_PostDC(PostDcd)
         end
         
 
         
-        function EOutPD = process_PostDCD_to_LFR(InputsMap, eoutPDID)
-        % Processing function. Convert PostDCD to any one of several similar LFR dataset PDs.
+        function EOutPD = process_PostDC_to_LFR(InputsMap, eoutPDID)
+        % Processing function. Convert PostDC to any one of several similar LFR dataset PDs.
         
-            PostDcd = InputsMap('PostDCD').pd;
+            PostDcd = InputsMap('PostDC').pd;
             EOutPD = [];
             
             nSamplesPerRecord = size(PostDcd.DemuxerOutput.V1, 2);   % Samples per record.
@@ -464,11 +470,11 @@ classdef dm_processing_functions
             
             % ASSERTION            
             bicas.dm_utils.assert_unvaried_N_rows(EOutPD);
-        end   % process_PostDCD_to_LFR
+        end   % process_PostDC_to_LFR
 
 
 
-        function EOutPD = process_PostDCD_to_TDS(InputsMap, eoutPDID)
+        function EOutPD = process_PostDC_to_TDS(InputsMap, eoutPDID)
 
             %switch(eoutPDID)
             %    case  'L2S_TDS-LFM-CWF-E_V02'
@@ -491,13 +497,16 @@ classdef dm_processing_functions
         %
         % NOTE: NOT a processing function (does not derive a PDV).
         %
+        %
         % ARGUMENTS AND RETURN VALUE
         % ==========================
-        % mux_set   = Column vector. Numbers identifying the MUX/DEMUX mode. 
-        % input     = Struct with fields BIAS_1 to BIAS_5.
-        % diff_gain = Column vector. Gains for differential measurements. 0 = Low gain, 1 = High gain.
+        % DemuxerInput = Struct with fields BIAS_1 to BIAS_5.
+        % MUX_SET      = Column vector. Numbers identifying the MUX/DEMUX mode. 
+        % DIFF_GAIN    = Column vector. Gains for differential measurements. 0 = Low gain, 1 = High gain.
         %
-        % NOTE: Can handle any arrays of any size as long as the sizes are consistent.
+        % NOTE: Can handle arrays of any size as long as the sizes are consistent.
+        
+        % PROPOSAL: Incorporate into processing function process_demuxing_calibration.
         
             bicas.dm_utils.assert_unvaried_N_rows(DemuxerInput)
             nRecords = length(MUX_SET);
@@ -513,18 +522,21 @@ classdef dm_processing_functions
                 
                 % Find continuous sequence of records (i_first to i_last) having identical settings.
                 iLast = bicas.dm_utils.find_last_same_sequence(iFirst, DIFF_GAIN, MUX_SET);
+                
+                % Extract SCALAR settings to use for entire subsequence of records.
                 MUX_SET_value   = MUX_SET  (iFirst);
                 DIFF_GAIN_value = DIFF_GAIN(iFirst);
                 irf.log('n', sprintf('Records %2i-%2i : Demultiplexing; MUX_SET=%-3i; DIFF_GAIN=%-3i', ...
                     iFirst, iLast, MUX_SET_value, DIFF_GAIN_value))    % "%-3" since value might be NaN.
                 
-                % Extract subsequence of records to "demux".
+                % Extract subsequence of DATA records to "demux".
                 demuxerInputSubseq = bicas.dm_utils.select_subset_from_struct(DemuxerInput, iFirst, iLast);
                 
                 %=================================================
                 % CALL DEMUXER - See method/function for comments
                 %=================================================
-                demuxerOutputSubseq = bicas.dm_processing_functions.simple_demultiplex_subsequence(demuxerInputSubseq, MUX_SET_value, DIFF_GAIN_value);
+                demuxerOutputSubseq = bicas.dm_processing_functions.simple_demultiplex_subsequence(...
+                    demuxerInputSubseq, MUX_SET_value, DIFF_GAIN_value);
                 
                 % Add demuxed sequence to the to-be complete set of records.
                 DemuxerOutput = bicas.dm_utils.add_components_to_struct(DemuxerOutput, demuxerOutputSubseq);
@@ -535,11 +547,11 @@ classdef dm_processing_functions
             
         end   % simple_demultiplex
 
-        
-        
+
+
         function Output = simple_demultiplex_subsequence(Input, MUX_SET, DIFF_GAIN)
-        % simple_demultiplex_subsequence   Demultiplex, with only constant factors for calibration (no transfer
-        % functions, no offsets) and only one setting for MUX_SET and DIFF_GAIN respectively.
+        % Demultiplex, with only constant factors for calibration (no transfer functions, no offsets) and exactly one
+        % setting for MUX_SET and DIFF_GAIN respectively.
         %
         % This function implements Table 3 and Table 4 in "RPW-SYS-MEB-BIA-SPC-00001-IRF", iss1rev16.
         % Variable names are chosen according to these tables.
@@ -548,7 +560,8 @@ classdef dm_processing_functions
         % - Demuxing is done on individual samples at a specific point in time.
         % - Calibration (with transfer functions) is made on a time series (presumably of one variable, but could be several).
         %
-        % NOTE: This function can only handle one value for mux
+        % NOTE: NOT a processing function (does not derive a PDV).
+        %
         % NOTE: Function is intended for development/testing until there is proper code for using transfer functions.
         % NOTE: "input"/"output" refers to input/output for the function, which is (approximately) the opposite of
         % the physical signals in the BIAS hardware.
@@ -561,7 +574,7 @@ classdef dm_processing_functions
         % DIFF_GAIN : Scalar gain for differential measurements. 0 = Low gain, 1 = High gain.
         % Output    : Struct with fields V1, V2, V3,   V12, V13, V23,   V12_AC, V13_AC, V23_AC.
         % 
-        % NOTE: Will tolerate values of NaN for MUX_SET_value, DIFF_GAIN_value. The effect is NaN in the corresponding output values.
+        % NOTE: Will tolerate values of NaN for MUX_SET, DIFF_GAIN. The effect is NaN in the corresponding output values.
         %
         % NOTE: Can handle any arrays of any size as long as the sizes are consistent.
 
@@ -587,29 +600,31 @@ classdef dm_processing_functions
             % PROPOSAL: Could, maybe, be used for demuxing if the caller has already applied the
             % transfer function calibration on on the BIAS signals.
             % PROPOSAL: Validate with some "multiplexer" function?!
-            % QUESTION: How handle overdetermined systems one gets when one probe fails?
             % QUESTION: Does it make sense to have BIAS values as cell array? Struct fields?!
             %   PRO: Needed for caller's for loop to split up by record.
             %
-            % QUESTION: Is there some better way of implementing than giant switch statement?!
+            % QUESTION: Is there some better implementation than giant switch statement?! Something more similar to BIAS
+            % specification Table 3-4?
             %
-            % PROPOSAL: Only work for scalar values of mux_set and diff_gain?
-            % QUESTION: MUX mode 1-3 are overdetermined if we always have BIAS1-3?
+            % QUESTION: MUX modes 1-3 are overdetermined if we always have BIAS1-3?
             %           If so, how select what to calculate?! What if results disagree/are inconsistent? Check for it?
+            %
+            % PROPOSAL: Separate the multiplication with factor in other function.
+            %   PRO: Can use function together with TFs.
             %==========================================================================================================
             
             global SETTINGS
             
             % ASSERTIONS
             if numel(MUX_SET) ~= 1 || numel(DIFF_GAIN) ~= 1
-                error('BICAS:data_manager:Assertion:IllegalArgument', 'Illegal argument value "mux_set" or "diff_gain". Must be scalars (not arrays).')
+                error('BICAS:data_manager:Assertion:IllegalArgument', 'Illegal argument value "MUX_SET" or "DIFF_GAIN". Must be scalars (not arrays).')
             end
             
             ALPHA = SETTINGS.get('SIMPLE_DEMUXER.ALPHA');
             BETA  = SETTINGS.get('SIMPLE_DEMUXER.BETA');
-            GAMMA = bicas.dm_utils.get_simple_demuxer_gamma(DIFF_GAIN);
+            GAMMA = bicas.dm_utils.get_simple_demuxer_gamma(DIFF_GAIN);   % NOTE: GAMMA can be NaN iff DIFF_GAIN is.
             
-            % Set default values which will remain for
+            % Set default values which will be returned for
             % variables which are not set by the demuxer.
             NAN_VALUES = ones(size(Input.BIAS_1)) * NaN;
             V1_LF     = NAN_VALUES;
@@ -625,22 +640,22 @@ classdef dm_processing_functions
             switch(MUX_SET)
                 case 0   % "Standard operation" : We have all information.
                     
-                    % Summarize the IN DATA we have.
+                    % Summarize the INPUT DATA we have.
                     V1_DC  = Input.BIAS_1;
                     V12_DC = Input.BIAS_2;
                     V23_DC = Input.BIAS_3;
                     V12_AC = Input.BIAS_4;
                     V23_AC = Input.BIAS_5;
-                    % Derive the OUT DATA which are trivial.
+                    % Derive the OUTPUT DATA which are trivial.
                     V1_LF     = V1_DC  / ALPHA;
                     V12_LF    = V12_DC / BETA;
                     V23_LF    = V23_DC / BETA;
                     V12_LF_AC = V12_AC / GAMMA;
                     V23_LF_AC = V23_AC / GAMMA;
-                    % Derive the OUT DATA which are less trivial.
+                    % Derive the OUTPUT DATA which are less trivial.
                     V13_LF    = V12_LF    + V23_LF;
                     V2_LF     = V1_LF     - V12_LF;
-                    V3_LF     = V2_LF     - V23_LF;                    
+                    V3_LF     = V2_LF     - V23_LF;
                     V13_LF_AC = V12_LF_AC + V23_LF_AC;
                     
                 case 1   % Probe 1 fails
@@ -648,7 +663,7 @@ classdef dm_processing_functions
                     V2_LF     = Input.BIAS_1 / ALPHA;
                     V3_LF     = Input.BIAS_2 / ALPHA;
                     V23_LF    = Input.BIAS_3 / BETA;
-                    % input.BIAS_4 unavailable.
+                    % Input.BIAS_4 unavailable.
                     V23_LF_AC = Input.BIAS_5 / GAMMA;
                     
                 case 2   % Probe 2 fails
@@ -657,7 +672,7 @@ classdef dm_processing_functions
                     V3_LF     = Input.BIAS_2 / ALPHA;
                     V13_LF    = Input.BIAS_3 / BETA;
                     V13_LF_AC = Input.BIAS_4 / GAMMA;
-                    % input.BIAS_5 unavailable.
+                    % Input.BIAS_5 unavailable.
                     
                 case 3   % Probe 3 fails
                     
@@ -665,30 +680,38 @@ classdef dm_processing_functions
                     V2_LF     = Input.BIAS_2 / ALPHA;
                     V12_LF    = Input.BIAS_3 / BETA;
                     V12_LF_AC = Input.BIAS_4 / GAMMA;
-                    % input.BIAS_5 unavailable.
+                    % Input.BIAS_5 unavailable.
                     
                 case 4   % Calibration mode 0
                     
-                    % Summarize the IN DATA we have.
+                    % Summarize the INPUT DATA we have.
                     V1_DC  = Input.BIAS_1;
                     V2_DC  = Input.BIAS_2;
                     V3_DC  = Input.BIAS_3;
                     V12_AC = Input.BIAS_4;
                     V23_AC = Input.BIAS_5;
-                    % Derive the OUT DATA which are trivial.
+                    % Derive the OUTPUT DATA which are trivial.
                     V1_LF     = V1_DC / ALPHA;
                     V2_LF     = V2_DC / ALPHA;
                     V3_LF     = V3_DC / ALPHA;
                     V12_LF_AC = V12_AC / GAMMA;
                     V23_LF_AC = V23_AC / GAMMA;
-                    % Derive the OUT DATA which are less trivial.
+                    % Derive the OUTPUT DATA which are less trivial.
                     V12_LF    = V1_LF     - V2_LF;
                     V13_LF    = V1_LF     - V3_LF;
                     V23_LF    = V2_LF     - V3_LF;
                     V13_LF_AC = V12_LF_AC + V23_LF_AC;
 
-                case {5,6,7}
-                    error('BICAS:data_manager:Assertion:OperationNotImplemented', 'Not implemented for this value of mux_set yet.')
+                case {5,6,7}   % Calibration mode 1/2/3
+                    
+                    % Summarize the INPUT DATA we have.
+                    V12_AC = Input.BIAS_4;
+                    V23_AC = Input.BIAS_5;
+                    % Derive the OUTPUT DATA which are trivial.
+                    V12_LF_AC = V12_AC / GAMMA;
+                    V23_LF_AC = V23_AC / GAMMA;
+                    % Derive the OUTPUT DATA which are less trivial.
+                    V13_LF_AC = V12_LF_AC + V23_LF_AC;
                     
                 otherwise
                     if isnan(MUX_SET)
@@ -698,7 +721,7 @@ classdef dm_processing_functions
                     end
             end   % switch
             
-            % Create structure to return.
+            % Create structure to return. (Removes the "_LF" suffix.)
             Output = [];
             Output.V1     = V1_LF;
             Output.V2     = V2_LF;
@@ -711,7 +734,50 @@ classdef dm_processing_functions
             Output.V23_AC = V23_LF_AC;
             
         end  % simple_demultiplex_subsequence
-        
+
+
+
+        % Add probe signals that can be derived from already known probe signals.
+        %
+        % ARGUMENTS
+        % =========
+        % probeSignals             : Struct with an arbitrary subset of the fields ... . Fields must have the same array
+        % sizes.
+        % complementedProbeSignals
+%         function ComplementedProbeSignals = complement_probe_signals(ProbeSignals)
+%             % TODO: Lägg till helt tomma signaler, NaN.
+% %                     % Derive the OUTPUT DATA which are less trivial.
+% %                     V13_LF    = V12_LF    + V23_LF;
+% %                     V2_LF     = V1_LF     - V12_LF;
+% %                     V3_LF     = V2_LF     - V23_LF;
+% %                     V13_LF_AC = V12_LF_AC + V23_LF_AC;
+% %                     % Derive the OUTPUT DATA which are less trivial.
+% %                     V12_LF    = V1_LF     - V2_LF;
+% %                     V13_LF    = V1_LF     - V3_LF;
+% %                     V23_LF    = V2_LF     - V3_LF;
+% %                     V13_LF_AC = V12_LF_AC + V23_LF_AC;
+% %                     % Derive the OUTPUT DATA which are less trivial.
+% %                     V13_LF_AC = V12_LF_AC + V23_LF_AC;
+%             
+% %             if can_derive_signal(ProbeSignals, 'V13', 'V12', 'V23')
+% %                 ProbeSignals.V13 = 
+% %             elseif
+% 
+%             ProbeSignals = derive_signal_if_possible(ProbeSignals, 'V13', 'V12', 'V23', @(x1,x2) (x1+x2));
+%             ProbeSignals = derive_signal_if_possible(ProbeSignals, 'V2',  'V1',  'V12', @(x1,x2) (x1-x2));
+%             ComplementedProbeSignals = ProbeSignals;
+%             
+%             function ProbeSignals = derive_signal_if_possible(ProbeSignals, outputFieldName, inputFieldName1, inputFieldName2, funcPtr)
+%                 if isfield(ProbeSignals, inputFieldName1) ...
+%                     &&  isfield(ProbeSignals, inputFieldName2) ...
+%                     && ~isfield(ProbeSignals, outputFieldName);
+%                     ProbeSignals.(outputFieldName) = funcPtr(ProbeSignals.(inputFieldName1), ProbeSignals.(inputFieldName2));
+%                 else
+%                     ;   % Do nothing. Return the same ProbeSignals.
+%                 end
+%             end
+%         end
+
     end   % methods(Static, Access=private)
         
 end

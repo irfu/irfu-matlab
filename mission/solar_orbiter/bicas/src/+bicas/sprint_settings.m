@@ -1,5 +1,5 @@
 % str = sprint_settings()
-% Create human-readable string to represent settings. Meant for logging and printing to stdout.
+% Create human-readable multi-line string to represent settings. Meant for logging and printing to stdout.
 %
 %
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden

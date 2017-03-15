@@ -8,16 +8,28 @@
 % obtained and set via methods.
 % 
 %
+% NOTES ON SETTINGS NAMING CONVENTION
+% ===================================
+% Some constants (1) correspond exactly to fields in the (JSON) S/W descriptor, and (2) are unlikely to be used for
+% anything else. These are labeled with a prefix "SWD_". Other variables which do not have the prefix may also be used
+% for the S/W descriptor too but they are probably more unambiguous in their meaning.
+%
+%
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
 % First created 2017-02-22
 %
 classdef settings < handle
 % BOGIQ: 
-%
+% ------
 % PROPOSAL: Rename SIMPLE_DEMUXER. SIMPLE_CALIBRATION?
 % PROPOSAL: Validation code.
 %   PROPOSAL: Check that master CDFs exist, that paths exist.
 %       CON: Makes sense to make that kind of check here?!
+% PROPOSAL: Add extra information for every setting (key-value pair).
+%   Ex: MATLAB class
+%   Ex: Default value (so can display it if overridden)
+%   Ex: Flag for origin of current value: default, config file, CLI argument.
+%   Ex: Flag for write-protection
     
     properties(Access=private)
         map = containers.Map('KeyType', 'char', 'ValueType', 'any')    % Bad name. "storage"? "SETTINGS.g"?
@@ -198,6 +210,7 @@ classdef settings < handle
     
     methods(Access=private)
         
+        % Set a key-value pair. Only meant to be set from inside the class.
         function set(obj, key, value)
             obj.map(key) = value;
         end

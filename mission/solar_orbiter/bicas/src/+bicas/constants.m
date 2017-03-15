@@ -7,34 +7,9 @@
 % Also contains validation code and functions for more convenient access.
 %
 %
-% VARIABLE NAMING CONVENTION
-% ==========================
-% Some constants (1) correspond exactly to fields in the S/W (JSON) descriptor, and
-% (2) are unlikely to be used for anything else. These are labeled with a prefix "SWD_". Other
-% variables which do not have the prefix may also be used for the S/W descriptor too but they are
-% probably more unambiguous in their meaning.
 %
-%
-% IMPLEMENTATION NOTE 1
-% =====================
-% BICAS contains other code which builds a structure corresponding to the S/W descriptor (defined
-% in the RCS ICD) from the constants structure here.
-% Reasons for NOT putting the S/W descriptor structure inside the constants structure:
-% (1) Some of the S/W descriptor variables have vague or misleading names ("name", "dataset versions", "dataset IDs")
-%     which would (reasoably) have to be represented by MATLAB variables with the same names.
-% (2) Some of the S/W descriptor variables are grouped in a way which
-%     does not fit the rest of the code (modes[].outputs.output_XX.release in the S/W descriptor structure).
-% (3) Some of the S/W descriptor values are really structure field NAMES, but would be better as
-%     structure field VALUES (e.g. input CLI parameter, output JSON identifier string).
-% (4) The constants structure would become dependent on the format of the S/W descriptor structure.
-%     The latter might change in the future, or be misunderstood in the present (i.e. be changed).
-% (5) Some S/W descriptor values repeat or can be derived from other constants (e.g. author, contact,
-%     institute, output_XX.release.file).
-% (6) It is easier to add automatic checks on the S/W descriptor in the code that derives it.
-%
-%
-% IMPLEMENTATION NOTE 2
-% =====================
+% IMPLEMENTATION NOTE
+% ===================
 % Reasons for using a singleton class (instead of static methods:
 % 1) Can use properties/instance variables for "caching" values. Do not want to use persistent variables since they
 % cause trouble when testing. NOTE: There are no proper static variables in MATLAB.
@@ -62,11 +37,6 @@ classdef constants < handle
 %   PROPOSAL: Check that data types are unique.
 %       NOTE: Requires access to the lists.
 %
-% PROPOSAL: Have string identifiers for input/output types identical to what "data_manager" uses?
-%    PROPOSAL: Use containers.Map instead of cell arrays.
-%       CON: Using dataset IDs as keys creates another double use of that value.
-%       CON?: Only useful if it obvious which string to use for look-up. Already have "select_structs" for selecting.
-%       PRO: Makes it more convenient to internally have multiple input/output dataset versions.
 % PROPOSAL: Use arrays of structs instead of cells.
 %    PRO: Forces the use of the same struct fields.
 %    NOTE: Would need to create new version of "select_structs" that works on arrays instead.
@@ -81,7 +51,7 @@ classdef constants < handle
 % PROPOSAL: Convert constant cell arrays of structs to arrays of structs: S/W modes, CDF/PDID inputs/outputs.
 %   PRO: Simplifies code that constructs cell arrays of the same struct field in multiple cell structs.
 %
-% PROPOSAL: Change name to dm_constants.
+% PROPOSAL: Change name to ~dm_constants.
 %   NOTE: Should then get rid of BICAS_ROOT_PATH first.
 %###################################################################################################################
 

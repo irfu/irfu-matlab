@@ -128,7 +128,7 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
         ProcessDataVariables = containers.Map('KeyType', 'char', 'ValueType', 'any');
 
         % Local constants
-        INTERMEDIATE_PDID_LIST = {'PreDCD_LFR', 'PreDCD_TDS', 'PostDCD', 'HK_on_SCI_time'};
+        INTERMEDIATE_PDID_LIST = {'PreDC_LFR', 'PreDC_TDS', 'PostDC', 'HK_on_SCI_time'};
         ALL_PDID_LIST          = [];  % Initialized by constructor.
         
     end
@@ -268,9 +268,10 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
         % NOTE: The function takes the "swModeCliParameter" as parameter, not the S/W mode ID!
         %
         % IMPLEMENTATION NOTE: The reason for that this function is located in "data_manager" instead of "constants" is
-        % the call to "bicas.data_manager.get_elementary_input_PDIDs" and that constants.m should contain no reference
-        % to data_manager.m (for initialization reasons at the very least). AMENDMENT 2016-11-16: Function no longer
-        % calls that function but might call a similar one in the future. The comment is therefore still relevant.
+        % the combination of (1) the call to "bicas.data_manager.get_elementary_input_PDIDs" (which goes/went through the
+        % data manager's processing graph recursively) and (2) that constants.m should contain no reference to
+        % data_manager.m (for initialization reasons at the very least). AMENDMENT 2016-11-16: Function no longer calls
+        % that function but might call a similar one in the future. The comment is therefore still relevant.
 
             global CONSTANTS
 
@@ -428,8 +429,9 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
         %         An empty function pointer is equivalent to that outputPdid is an EIn-PDID.
             
             obj.assert_PDID(outputPdid)
-            
-            
+
+
+
             % Initialize InputPdidsMap for all cases.
             InputPdidsMap = containers.Map('KeyType', 'char', 'ValueType', 'any');
             
@@ -489,7 +491,7 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
                         'L2R_TDS-LFM-RSWF_V02'};
                     processingFunc = @bicas.dm_processing_functions.process_HK_to_HK_on_SCI_TIME;
                 
-                case 'PreDCD_LFR'
+                case 'PreDC_LFR'
                     InputPdidsMap('HK_on_SCI_time') = {...
                         'HK_on_SCI_time'};
                     InputPdidsMap('SCI_cdf') = {...
@@ -501,19 +503,21 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
                         'L2R_LFR-SURV-CWF_V02', ...
                         'L2R_LFR-SURV-SWF_V01', ...
                         'L2R_LFR-SURV-SWF_V02'};
-                    processingFunc = @bicas.dm_processing_functions.process_LFR_to_PreDCD;
+                    processingFunc = @bicas.dm_processing_functions.process_LFR_to_PreDC;
                 
-                case 'PreDCD_TDS'
+                case 'PreDC_TDS'
                     InputPdidsMap('HK_on_SCI_time') = {...
                         'HK_on_SCI_time'};
                     InputPdidsMap('SCI_cdf') = {...
                         'L2R_TDS-LFM-CWF_V01', ...
                         'L2R_TDS-LFM-RSWF_V01', ...
                         'L2R_TDS-LFM-RSWF_V02'};
-                    processingFunc = @bicas.dm_processing_functions.process_TDS_to_PreDCD;
+                    processingFunc = @bicas.dm_processing_functions.process_TDS_to_PreDC;
                     
-                case 'PostDCD'
-                    InputPdidsMap('PreDCD') = {'PreDCD_LFR', 'PreDCD_TDS'};
+                case 'PostDC'
+                    InputPdidsMap('PreDC') = {...
+                        'PreDC_LFR', ...
+                        'PreDC_TDS'};
                     processingFunc = @bicas.dm_processing_functions.process_demuxing_calibration;
 
                 %=========================
@@ -527,16 +531,16 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
                       'L2S_LFR-SBM2-CWF-E_V02', ...
                       'L2S_LFR-SURV-CWF-E_V02', ...
                       'L2S_LFR-SURV-SWF-E_V02'}
-                    InputPdidsMap('PostDCD') = {'PostDCD'};
-                    processingFunc = @(InputsMap) (bicas.dm_processing_functions.process_PostDCD_to_LFR(InputsMap, outputPdid));
+                    InputPdidsMap('PostDC') = {'PostDC'};
+                    processingFunc = @(InputsMap) (bicas.dm_processing_functions.process_PostDC_to_LFR(InputsMap, outputPdid));
 
                 %-----
                 % TDS
                 %-----
                 case {'L2S_TDS-LFM-CWF-E_V02', ...
                       'L2S_TDS-LFM-RSWF-E_V02'}
-                   InputPdidsMap('PostDCD') = {'PostDCD'};
-                   processingFunc = @(InputsMap) (process_PostDCD_to_TDS(InputsMap, outputPdid))
+                   InputPdidsMap('PostDC') = {'PostDC'};
+                   processingFunc = @(InputsMap) (process_PostDC_to_TDS(InputsMap, outputPdid))
 
                 %===========================================
                 % OTHERWISE: Has no implementation for PDID
