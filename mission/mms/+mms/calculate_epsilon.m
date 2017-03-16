@@ -56,7 +56,7 @@ while options
     switch(lower(args{1}))
         case 'enchannels'
             if numel(args)>1 && isnumeric(args{2})
-                intenergies = args{2}(1):args{2}(2);
+                intenergies = args{2}(1):args{2}(end);
             end
         otherwise
             irf.log('critical',['Unknown flag: ' args{1}]);
@@ -71,7 +71,7 @@ end
 SCpot = SCpot.resample(n);
 
 % Remove zero count points from final calculation 
-modelPDist.data(PDist.data <= 0) = 0;
+%modelPDist.data(PDist.data <= 0) = 0;
 
 modelPDist = modelPDist.convertto('s^3/m^6');
 PDist = PDist.convertto('s^3/m^6');
