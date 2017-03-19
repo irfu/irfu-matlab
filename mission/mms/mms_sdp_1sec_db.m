@@ -28,7 +28,7 @@ end
 
 %%
 Phase = getmat(l2a,[mmsIdS '_edp_phase_fast_l2a']);
-PhaseFixed = irf_fixed_phase_epoch(Phase,18,9);
+PhaseFixed = irf_fixed_phase_epoch(Phase,30,18,9);
 tFixedPha = PhaseFixed(:,1);
 dtAv = median(diff(PhaseFixed(:,1)));
 
