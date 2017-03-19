@@ -588,17 +588,18 @@ if 1 % initialize figure - comparison
   set(gcf,'Position',[10 10 xSize*50 ySize*50])
 end
 
-SDP_Scale = (50/5)^3;
+SDP_Scale = (50/1)^3; HFA_Scale = (5/1)^3;
 
-loglog(HFA_EMC.ff,sqrt(HFA_EMC.EEpower),'m'), hold on
+loglog(HFA_EMC.ff,sqrt(HFA_Scale^2*HFA_EMC.EEpower),'m'), hold on
 loglog(SDP_EMC_OLD.ff,sqrt(SDP_Scale^2*SDP_EMC_OLD.EEpower),'b')
 loglog(SDP_EMC.ff,sqrt(SDP_Scale^2*SDP_EMC.EEpower),'b--')
 
-% JUICE RPW EID-B (i3.5, Jan 2017), EIDB-S00310 - boadband noise at sensor position
+% JUICE RPWI EID-B (i3.5, Jan 2017), EIDB-S00310 - boadband noise at sensor position
+JUICE_PWI_Scale = (3/1)^3;
 JUICE_PWI_EMC.ff           = [1  10 10 220 220 1e3 1e3 1e4 1e4 1e5 1e5 16e5];
-JUICE_PWI_EMC.bw           = [1   1 10  10  10  10  30  30 100 100 10e3  10e3];
-JUICE_PWI_EMC.Efield_dBuVm = [25 5  15 -10 -10 -10 -5  -5  0   0   20  20];
-JUICE_PWI_EMC.EEpower = 1e-12*10.^(2*JUICE_PWI_EMC.Efield_dBuVm/20)./JUICE_PWI_EMC.bw; % (V/m)^2/Hz
+JUICE_PWI_EMC.bw           = [1   1 10  10  10  10  30  30 100 100 10e3  10e3]; % New corrected numbers from Lennart, 2017-01-19
+JUICE_PWI_EMC.Efield_dBuVm = [25 5  15 -10 -10 -10 -5  -5  0   0   20  20]; % New corrected numbers from Lennart, 2017-01-19
+JUICE_PWI_EMC.EEpower = 1e-12*10.^(2*(JUICE_PWI_EMC.Efield_dBuVm + 20*log10(JUICE_PWI_Scale))/20)./JUICE_PWI_EMC.bw; % (V/m)^2/Hz
 loglog(JUICE_PWI_EMC.ff,sqrt(JUICE_PWI_EMC.EEpower),'k')
 
 % JUICE EID-A (i2r7, July 2016), EIDA-R003706 - radiated emissions for
@@ -610,18 +611,19 @@ loglog(JUICE_PWI_EMC.ff,sqrt(JUICE_PWI_EMC.EEpower),'k')
 
 % SolO EID-A (i5,r0, Mar 2015), EIDA-5145/EIDA R-707 - boadband noise at preamp
 % location
-SOLO_Scale = 10*log10((5/1)^3); % scale to HFA location
+%SOLO_Scale = 10*log10((5/1)^3); % scale to HFA location
+SOLO_Scale = 0; % It is not appropriate to scale SOLO numbers, as they are give at the premp location
 SOLO_EMC.ff           = [1    10  100  1e3 1e4 1e5  1e6];
 SOLO_EMC.Efield_dBnVm = [15.8 3.8 -8.2 1.8 1.8 -2.9 27.6];
-SOLO_EMC.EEpower = 1e-12*10.^(2*(SOLO_EMC.Efield_dBnVm-30+SOLO_Scale)/20); % (V/m)^2/Hz
+SOLO_EMC.EEpower = 1e-18*10.^(2*(SOLO_EMC.Efield_dBnVm+SOLO_Scale)/20); % (V/m)^2/Hz
 loglog(SOLO_EMC.ff,sqrt(SOLO_EMC.EEpower),'r') 
 
 ylabel('noise [ (V/m)/Hz^{1/2} ]'), xlabel('frequency [Hz]')
-legend('HFA','SDP','SDP goal','JUICE RPW EID-B','SOLO EID-A')
+legend('THOR-HFA','THOR-SDP','THOR-SDP goal','JUICE RPW EID-B','SOLO EID-A')
 
 set(gca,'XLim',[.1 2e5],'YLim',[-20 38])
 grid on, set(gca,'xminorgrid','off'), set(gca,'yminorgrid','off')
-title(['EMC reqs on broadband noise (scaled to HFA location)'])
+title(['EMC reqs on broadband noise (scaled to 1m from the S/C)'])
 
 irf_legend(0,['THOR/JUICE/SOLO EMC req ' datestr(now,31)],[0,0.001],'interpreter','none','color',[0.5 0.5 0.5])
 irf_print_fig(['THOR_EMC_vs_JUICE_SOLO_' datestr(now,'yyyymmdd')],'png')
