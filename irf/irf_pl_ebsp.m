@@ -349,8 +349,8 @@ if nargout, out = h; end % Return here
       set(hcbNew,'Position',[pos(1)-pos(3)*0.25 pos(2:4)])
       hYLabel = get(hcbNew,'ylabel');
       set(hYLabel,'string',yLabelStr,'fontsize',yLabelFontSize);
-      l = get(hcbNew,'YTickLabel'); l=[l(:,1) l]; l(:,1)=' ';
-      set(hcbNew,'YTickLabel',l);
+      l = get(hcbNew,'YTickLabel'); 
+      if ~isempty(l), l=[l(:,1) l]; l(:,1)=' '; set(hcbNew,'YTickLabel',l); end
     end
   end
 end
