@@ -19,7 +19,11 @@ try
   caa_download(start_time + [0 dt],dsetName,'stream')
   cd(['CAA' filesep dsetName]);
   d=dir('*.cef.gz');
-  res = c_caa_cef_var_get(varName,d.name);
+  if isempty(d)
+    res = [];
+  else
+    res = c_caa_cef_var_get(varName,d.name);
+  end;
 catch
   irf_log('dsrc',['Error downloading from CAA: ' dsetName '/' varName])
 end

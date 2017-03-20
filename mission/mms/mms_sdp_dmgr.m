@@ -26,6 +26,7 @@ classdef mms_sdp_dmgr < handle
     probe2sc_pot = [];% comp probe to sc potential
     sc_pot = [];      % comp sc potential
     spinfits = [];    % comp spinfits
+    timelineXML = []; % List of timeline files used to bitmask maneuvers.
   end
   properties (SetAccess = immutable)
     CONST = [];       % constants
@@ -686,73 +687,73 @@ classdef mms_sdp_dmgr < handle
         end
       end % CHK_TIMELINE
       
-      function interp_time()
-        % Measurements are not done at same instance but with a delay of
-        % 3.8us between each channel. Adjust V[2-6] and E12, E34, E56 with
-        % interp1() to align with timestamp of V1 (which is the first
-        % channel and for the combined DCE&DCV file this is the time of the
-        % Epoch variable).
-        % Source used: E-mail from Mark dated 2017/01/11T19:21 CET, and the
-        % "Document No. 108328revE".
-
-        % Only Burst mode should be interpolated
-        if(DATAC.tmMode == DATAC.CONST.TmMode.brst)
-          irf.log('notice', 'Resampling burst measurements to align with first channel ("epoch").');
-        else
-          irf.log('debug', 'Not in burst mode, not doing resample of measurements to align with first channel ("epoch")');
-          return;
-        end
-
-        keyboard
-        % NOTE THIS FUNCTION IS NOT READY for production, added here as to
-        % create test files to see what impact it has on our files. Mainly
-        % burst 16'384 Hz may be impacted, but this is TBD. Also "to be
-        % checked" is the commissioning data with separate dce and dcv
-        % files.
-
-        % Offset between each channel in ADC
-        Dt = int64(3.8e3); % 3.8 us expressed in ns (TT2000, int64)
-        % V1 is start of nominal Epoch (when combined dce&dcv file)
-        % V2 is Dt later (included here, but NaN unless in comm.)
-        % V3 is Dt later again (ie 2*Dt)
-        % V4 is 3*Dt (NaN unless in comm.)
-        % V5 is 4*Dt
-        % V6 is 5*Dt (NaN unless in comm.)
-        % Dt for one empty "Nap of the ADC"
-        % E12 is 7*Dt
-        % E34 is 8*Dt
-        % E56 is 9*Dt
-        tV = DATAC.dcv.time;
-        t1 = tV - tV(1);
-        %tE = DATAC.dce.time; % Separate time for DCE file?
-
-        % Interpolate each data to align in time with V1, convert int64 and
-        % single data into double first than back again after interpolation
-        DATAC.dcv.v2.data = single( interp1(double(t1 + 1*Dt), ...
-          double(DATAC.dcv.v2.data), ...
-          double(t1), 'linear', 'extrap') ); % V2 is nominally NaN
-        DATAC.dcv.v3.data = single( interp1(double(t1 + 2*Dt), ...
-          double(DATAC.dcv.v3.data), ...
-          double(t1), 'linear', 'extrap') );
-        DATAC.dcv.v4.data = single( interp1(double(t1 + 3*Dt), ...
-          double(DATAC.dcv.v4.data), ...
-          double(t1), 'linear', 'extrap') ); % V4 is nominally NaN
-        DATAC.dcv.v5.data = single( interp1(double(t1 + 4*Dt), ...
-          double(DATAC.dcv.v5.data), ...
-          double(t1), 'linear', 'extrap') );
-        DATAC.dcv.v6.data = single( interp1(double(t1 + 5*Dt), ...
-          double(DATAC.dcv.v6.data), ...
-          double(t1), 'linear', 'extrap') ); % V6 is nominally NaN
-        DATAC.dce.e12.data = single( interp1(double(t1 + 7*Dt), ...
-          double(DATAC.dce.e12.data), ...
-          double(t1), 'linear', 'extrap') );
-        DATAC.dce.e34.data = single( interp1(double(t1 + 8*Dt), ...
-          double(DATAC.dce.e34.data), ...
-          double(t1), 'linear', 'extrap') );
-        DATAC.dce.e56.data = single( interp1(double(t1 + 9*Dt), ...
-          double(DATAC.dce.e56.data), ...
-          double(t1), 'linear', 'extrap') );
-      end % INTERP_TIME
+%       function interp_time()
+%         % Measurements are not done at same instance but with a delay of
+%         % 3.8us between each channel. Adjust V[2-6] and E12, E34, E56 with
+%         % interp1() to align with timestamp of V1 (which is the first
+%         % channel and for the combined DCE&DCV file this is the time of the
+%         % Epoch variable).
+%         % Source used: E-mail from Mark dated 2017/01/11T19:21 CET, and the
+%         % "Document No. 108328revE".
+% 
+%         % Only Burst mode should be interpolated
+%         if(DATAC.tmMode == DATAC.CONST.TmMode.brst)
+%           irf.log('notice', 'Resampling burst measurements to align with first channel ("epoch").');
+%         else
+%           irf.log('debug', 'Not in burst mode, not doing resample of measurements to align with first channel ("epoch")');
+%           return;
+%         end
+% 
+%         keyboard
+%         % NOTE THIS FUNCTION IS NOT READY for production, added here as to
+%         % create test files to see what impact it has on our files. Mainly
+%         % burst 16'384 Hz may be impacted, but this is TBD. Also "to be
+%         % checked" is the commissioning data with separate dce and dcv
+%         % files.
+% 
+%         % Offset between each channel in ADC
+%         Dt = int64(3.8e3); % 3.8 us expressed in ns (TT2000, int64)
+%         % V1 is start of nominal Epoch (when combined dce&dcv file)
+%         % V2 is Dt later (included here, but NaN unless in comm.)
+%         % V3 is Dt later again (ie 2*Dt)
+%         % V4 is 3*Dt (NaN unless in comm.)
+%         % V5 is 4*Dt
+%         % V6 is 5*Dt (NaN unless in comm.)
+%         % Dt for one empty "Nap of the ADC"
+%         % E12 is 7*Dt
+%         % E34 is 8*Dt
+%         % E56 is 9*Dt
+%         tV = DATAC.dcv.time;
+%         t1 = tV - tV(1);
+%         %tE = DATAC.dce.time; % Separate time for DCE file?
+% 
+%         % Interpolate each data to align in time with V1, convert int64 and
+%         % single data into double first than back again after interpolation
+%         DATAC.dcv.v2.data = single( interp1(double(t1 + 1*Dt), ...
+%           double(DATAC.dcv.v2.data), ...
+%           double(t1), 'linear', 'extrap') ); % V2 is nominally NaN
+%         DATAC.dcv.v3.data = single( interp1(double(t1 + 2*Dt), ...
+%           double(DATAC.dcv.v3.data), ...
+%           double(t1), 'linear', 'extrap') );
+%         DATAC.dcv.v4.data = single( interp1(double(t1 + 3*Dt), ...
+%           double(DATAC.dcv.v4.data), ...
+%           double(t1), 'linear', 'extrap') ); % V4 is nominally NaN
+%         DATAC.dcv.v5.data = single( interp1(double(t1 + 4*Dt), ...
+%           double(DATAC.dcv.v5.data), ...
+%           double(t1), 'linear', 'extrap') );
+%         DATAC.dcv.v6.data = single( interp1(double(t1 + 5*Dt), ...
+%           double(DATAC.dcv.v6.data), ...
+%           double(t1), 'linear', 'extrap') ); % V6 is nominally NaN
+%         DATAC.dce.e12.data = single( interp1(double(t1 + 7*Dt), ...
+%           double(DATAC.dce.e12.data), ...
+%           double(t1), 'linear', 'extrap') );
+%         DATAC.dce.e34.data = single( interp1(double(t1 + 8*Dt), ...
+%           double(DATAC.dce.e34.data), ...
+%           double(t1), 'linear', 'extrap') );
+%         DATAC.dce.e56.data = single( interp1(double(t1 + 9*Dt), ...
+%           double(DATAC.dce.e56.data), ...
+%           double(t1), 'linear', 'extrap') );
+%       end % INTERP_TIME
 
       function chk_bias_guard()
         % Check that bias/guard setting, found in HK_10E, are nominal. If any
@@ -832,7 +833,7 @@ classdef mms_sdp_dmgr < handle
         end
         Tint = irf.tint(DATAC.dce.time(1), DATAC.dce.time(end));
         try
-          maneuvers = mms_maneuvers(Tint, DATAC.scId);
+          [maneuvers, timeline] = mms_maneuvers(Tint, DATAC.scId);
           scIdStr = sprintf('mms%d', DATAC.scId);
           if(isfield(maneuvers, scIdStr) && ...
               ~isempty(maneuvers.(scIdStr)))
@@ -855,6 +856,7 @@ classdef mms_sdp_dmgr < handle
                   bitor(DATAC.dce.(senE).bitmask(ind), bits);
               end
             end
+            DATAC.timelineXML = timeline;
           else
             irf.log('debug', 'No maneuvers found during data interval.');
           end
@@ -1003,28 +1005,45 @@ classdef mms_sdp_dmgr < handle
       
       function corr_adp_spikes()
         % correct ADP shadow spikes
-        MODEL_THRESHOLD = .01;
         MSK_SHADOW = MMS_CONST.Bitmask.ADP_SHADOW;
-        
+
         Phase = DATAC.phase;
         if isempty(Phase)
           errStr='Bad PHASE input, cannot proceed.';
           irf.log('critical',errStr); error(errStr);
         end
         irf.log('notice','Removing ADP spikes');
-        if(DATAC.scId == 4 && all(DATAC.dce.time > EpochTT('2016-06-12T05:28:48.200Z').ttns)) %MMS4 p4 failed
-          model = mms_sdp_model_adp_shadow(DATAC.dce, Phase, {'e12', 'p123'});
+        if(DATAC.procId == MMS_CONST.SDCProc.scpot)
+          % Spacecraft potential process, correct individual probes
+          sens = {'v1', 'v2', 'v3', 'v4'};
+          MODEL_THRESHOLD = 0.01; % V
+          model = mms_sdp_model_adp_shadow(DATAC.dcv, Phase, sens);
+
+          for iSen = 1:length(sens)
+            sen = sens{iSen};
+            DATAC.dcv.(sen).data = ...
+              single(double(DATAC.dcv.(sen).data) - model.(sen));
+            idx = abs(model.(sen)) > MODEL_THRESHOLD;
+            DATAC.dcv.(sen).bitmask(idx) = ...
+              bitor(DATAC.dcv.(sen).bitmask(idx), MSK_SHADOW);
+          end
         else
-          model = mms_sdp_model_adp_shadow(DATAC.dce,Phase, {'e12','e34'});
-        end
-        
-        for iSen = 1:min(numel(sensors),2)
-          sen = sensors{iSen};
-          DATAC.dce.(sen).data = ...
-            single(double(DATAC.dce.(sen).data) - model.(sen));
-          idx = abs(model.(sen))>MODEL_THRESHOLD;
-          DATAC.dce.(sen).bitmask(idx) = ...
-            bitor(DATAC.dce.(sen).bitmask(idx), MSK_SHADOW);
+          % Electric field process, correct DCE fields.
+          MODEL_THRESHOLD = 0.01; % mV/m
+          if(DATAC.scId == 4 && all(DATAC.dce.time > EpochTT('2016-06-12T05:28:48.200Z').ttns)) %MMS4 p4 failed
+            model = mms_sdp_model_adp_shadow(DATAC.dce, Phase, {'e12', 'p123'});
+          else
+            model = mms_sdp_model_adp_shadow(DATAC.dce,Phase, {'e12','e34'});
+          end
+
+          for iSen = 1:min(numel(sensors),2)
+            sen = sensors{iSen};
+            DATAC.dce.(sen).data = ...
+              single(double(DATAC.dce.(sen).data) - model.(sen));
+            idx = abs(model.(sen))>MODEL_THRESHOLD;
+            DATAC.dce.(sen).bitmask(idx) = ...
+              bitor(DATAC.dce.(sen).bitmask(idx), MSK_SHADOW);
+          end
         end
       end
       
@@ -1104,7 +1123,7 @@ classdef mms_sdp_dmgr < handle
       function e_from_asym()
         % Compute E in asymmetric configuration
         
-        if(DATAC.scId ~=4 || DATAC.procId == MMS_CONST.SDCProc.scpot), return, end
+        if(DATAC.scId ~=4), return, end
         
         %PROBE MAGIC
         %MMS4, Probe 4 bias fail, 2016-06-12T05:28:48.2
@@ -1116,7 +1135,8 @@ classdef mms_sdp_dmgr < handle
         irf.log('notice',['Bad bias on ' senV ' starting at ' TTFail.utc]);
         DATAC.dcv.(senV).bitmask(indFail) = ...
           bitor(DATAC.dcv.(senV).bitmask(indFail), MMS_CONST.Bitmask.BAD_BIAS);
-        
+        if(DATAC.procId == MMS_CONST.SDCProc.scpot), return, end
+
         % Compute asymmetric E34
         % Data with no v3 cannot be reconstructed
         sen3_off = bitand(DATAC.dcv.v3.bitmask, MMS_CONST.Bitmask.SIGNAL_OFF);

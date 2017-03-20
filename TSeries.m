@@ -499,9 +499,9 @@
         otherwise % dimension is numeric value
           %if option> ndims(obj.data), error('cumsum dimension exceeds data dimension'); end
           if option>0,             
-            obj.data_ = cumsum(obj.data,abs(option)+1); Ts = obj;  
+            obj.data_ = cumsum(obj.data,abs(option)); Ts = obj;  
           elseif option<0            
-            obj.data_ = cumsum(obj.data(:,end:-1:1),abs(option)+1); Ts = obj;
+            obj.data_ = cumsum(obj.data(:,end:-1:1),abs(option)); Ts = obj;
           end
       end     
           
@@ -1334,7 +1334,7 @@
       % RESAMPLE  Resample TSeries to a new timeline
       %
       % TsOut = RESAMPLE(Ts,NewTime, [ARGS])
-      % 
+      %     irf_resamp METHOD: 'nearest','linear','spline','pchip','cubic','v5cubic'
 			% NewTime should be GeneralTimeArray (e.g. EpochTT.)
 			% Resampled data type is double. 
       % ARGS are given as input to irf_resamp()

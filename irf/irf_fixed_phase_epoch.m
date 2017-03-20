@@ -1,15 +1,16 @@
-function res = irf_fixed_phase_epoch(Phase,phaStep,phaOffs)
+function res = irf_fixed_phase_epoch(Phase,pha0,phaStep,phaOffs)
 %IRF_FIXED_PHASE_EPOCH  create timeseries of constant phase
 %
-% PHASEFIXED = IRF_FIXED_PHASE_EPOCH(PHASE[,PHA_STEP,PHA_OFFS])
+% PHASEFIXED = IRF_FIXED_PHASE_EPOCH(PHASE[,PHA_0,PHA_STEP,PHA_OFFS])
 %
 % Create a correponding timeline of fixed phase, e.g. 0 to 360 deg,
 % which can be used for phase epoch analysis.
 %
 % Input:
 %    PHASE - phase in degrees
+%    PHA_0 - reference phase (default 0)
 %    PHA_STEP - step in degrees (degault 1)
-%    PHA_OFFS - offset from 0 (default PHA_STEP/2)
+%    PHA_OFFS - offset from PHA_0 (default PHA_STEP/2)
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):
@@ -19,8 +20,9 @@ function res = irf_fixed_phase_epoch(Phase,phaStep,phaOffs)
 % ----------------------------------------------------------------------------
 
 
-if nargin<2, phaStep = 1; end
-if nargin<3, phaOffs=phaStep/2;
+if nargin<2, pha0 = 0; end
+if nargin<3, phaStep = 1; end
+if nargin<4, phaOffs=phaStep/2;
 else
   if phaOffs>phaStep  
     errS = 'offset>step'; irf.log('critical',errS), error(errS);
@@ -52,8 +54,10 @@ phaFixedAll = []; timeAll = [];
 for idx = 1:length(idxStart)
   irf.log('notice',sprintf('Phase gap #%d',idx-1));
   phaFixed =...
-    (fix(phaDegUnw(idxStart(idx))):phaStep:fix(phaDegUnw(idxEnd(idx))))'...
-    + phaOffs;
+    ((round((phaDegUnw(idxStart(idx))-(pha0+phaOffs))/phaStep)*phaStep):...
+    phaStep:...
+    (round((phaDegUnw(idxEnd(idx))-(pha0+phaOffs))/phaStep)*phaStep))'...
+    +pha0+phaOffs;
   idxTmp = idxStart(idx):idxEnd(idx);
   timeTmp = interp1(phaDegUnw(idxTmp),epochTmp(idxTmp),phaFixed);
   phaFixed(isnan(timeTmp)) = []; timeTmp(isnan(timeTmp)) = [];

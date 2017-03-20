@@ -19,7 +19,7 @@ if nargin<2, dataPath = '/data/mms'; end
 
 mmsIdS = fileName(1:4); mmsId = str2double(fileName(4));
 l2a = dataobj([dataPath filesep fileName]);
-Tint = EpochTT(l2a.data.mms1_edp_epoch_fast_l2a.data([1 end]));
+Tint = EpochTT(l2a.data.([mmsIdS '_edp_epoch_fast_l2a']).data([1 end]));
 % xxx - check if loaded
 ScPot_sitl = irf.ts2mat(mms.get_data('V_edp_fast_sitl',Tint,mmsId));
 if isempty(ScPot_sitl)
@@ -28,14 +28,14 @@ end
 
 %%
 Phase = getmat(l2a,[mmsIdS '_edp_phase_fast_l2a']);
-PhaseFixed = irf_fixed_phase_epoch(Phase,18,9);
+PhaseFixed = irf_fixed_phase_epoch(Phase,30,18,9);
 tFixedPha = PhaseFixed(:,1);
 dtAv = median(diff(PhaseFixed(:,1)));
 
 dce = getmat(l2a,[mmsIdS '_edp_dce_fast_l2a']);
 % ASPOC
 MMS_CONST = mms_constants;
-aspocBit = double(bitand(l2a.data.mms1_edp_bitmask_fast_l2a.data(:,1),...
+aspocBit = double(bitand(l2a.data.([mmsIdS '_edp_bitmask_fast_l2a']).data(:,1),...
   MMS_CONST.Bitmask.ASPOC_RUNNING));
 % ScPot
 [idx1,idx2] = irf_find_comm_idx(dce,ScPot_sitl);

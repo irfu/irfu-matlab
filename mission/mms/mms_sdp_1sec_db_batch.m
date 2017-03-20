@@ -7,7 +7,7 @@
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
 
-yymmList = {'201511','201512','201601','201602','201609','201610','201611','201612'};
+yymmList = {'201511','201512','201601','201602','201610','201611','201612'};
 mmsId = 'mms1'; dataPath = '/data/mms';
 for idxMo=yymmList
   yymm = idxMo{:};

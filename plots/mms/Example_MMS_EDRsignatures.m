@@ -44,11 +44,13 @@ Tint = irf.tint('2015-10-30T05:15:20.00Z/2015-10-30T05:16:20.00Z');
 
 %% Load data
 ic = 1:4;
-c_eval('Bxyz?=mms.db_get_ts(''mms?_fgm_brst_l2'',''mms?_fgm_b_dmpa_brst_l2'',Tint);',ic);
-c_eval('E? = mms.db_get_ts(''mms?_edp_brst_l2_dce'',''mms?_edp_dce_dsl_brst_l2'',Tint);',ic);
+%c_eval('Bxyz?=mms.db_get_ts(''mms?_fgm_brst_l2'',''mms?_fgm_b_dmpa_brst_l2'',Tint);',ic);
+%c_eval('E? = mms.db_get_ts(''mms?_edp_brst_l2_dce'',''mms?_edp_dce_dsl_brst_l2'',Tint);',ic);
+c_eval('Bxyz?=mms.get_data(''B_dmpa_dfg_srvy_l2pre'',Tint,?);',ic);
+c_eval('E? =mms.get_data(''E_dsl_edp_brst_ql'',Tint,mmsId);',ic);
 
-for ii=1:4;
-   c_eval('ne?=mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_numberdensity_brst'',Tint);',ii);
+for ii=1:4
+   c_eval('ne?=mms.get_data(''Ne_fpi_brst_l2'',Tint,?);',ii);
    c_eval('Uevec? = mms.get_data(''Ve_dbcs_fpi_brst_l2'',Tint,?);',ii);
    c_eval('Te? = mms.get_data(''Te_dbcs_fpi_brst_l2'',Tint,?);',ii);
    c_eval('Pe? = mms.get_data(''Pe_dbcs_fpi_brst_l2'',Tint,?);',ii);

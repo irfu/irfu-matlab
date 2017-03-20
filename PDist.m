@@ -511,10 +511,19 @@ classdef PDist < TSeries
       %   see also MMS.PSD_REBIN
       
       if ~strcmp(obj.type_,'skymap'); error('PDist must be a skymap.'); end 
+      if size(obj.depend{1},2) == 64; irf_log(proc,'PDist already has 64 energy levels.'); end 
+      
+      if ~any([isfield(obj.ancillary,'energy0') isfield(obj.ancillary,'energy1') isfield(obj.ancillary,'esteptable')]) % construct energy0, energy1, and esteptable 
+        esteptable = zeros(obj.length,1);
+        [energies,~,esteptable] = unique(obj.depend{1},'rows'); % consider using legacy
+        energy0 = obj.depend{1}(1,:);
+        energy1 = obj.depend{1}(2,:);
+      end
       
       [pdistr,phir,energyr] = mms.psd_rebin(obj,TSeries(obj.time,obj.depend{2}),obj.ancillary.energy0,obj.ancillary.energy1,TSeries(obj.time,obj.ancillary.esteptable));
       PD = obj.clone(pdistr.time,pdistr.data);      
       PD.depend{1} = energyr;
+      PD.ancillary.energy = PD.depend{1}; 
       PD.depend{2} = phir.data;  
       
       if isfield(PD.ancillary,'energy0')
