@@ -656,12 +656,14 @@ end
             end
             res = irf.ts_skymap(dist.time,dist.data,[],phi.data,theta,'energy0',energy0,'energy1',energy1,'esteptable',stepTable.data);
           case 'fast'
-            dist = mms.db_get_ts(dsetName,[pref '_dist_' Vr.tmmode],Tint);
-            energy = mms.db_get_variable(dsetName,[pref '_energy_' Vr.tmmode],Tint);
-            phi = mms.db_get_variable(dsetName,[pref '_phi_' Vr.tmmode],Tint);
-            theta = mms.db_get_variable(dsetName,[pref '_theta_' Vr.tmmode],Tint);
-            %res = irf.ts_skymap(dist.time,dist.data,[],phi.data,theta.data,'energy0',energy.data,'energy1',energy.data,'esteptable',TSeries(dist.time,zeros(dist.length,1)));
-            res = irf.ts_skymap(dist.time,dist.data,[],phi.data,theta.data,'energy0',energy.data,'energy1',energy.data,'esteptable',zeros(dist.length,1));
+            dist = mms.db_get_variable(dsetName,[pref '_dist_' Vr.tmmode],Tint);
+            phi = dist.DEPEND_1.data;
+            theta = dist.DEPEND_2.data;
+            dist = mms.variable2ts(dist);
+            dist = dist.tlim(Tint);            
+            energy = mms.db_get_ts(dsetName,[pref '_energy_' Vr.tmmode],Tint);            
+            energy = energy.tlim(Tint);
+            res = irf.ts_skymap(dist.time, dist.data, energy.data, phi, theta);
         end
         res.units = 's^3/cm^6';
         if strcmp(sensor(2),'e')          
