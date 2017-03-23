@@ -6894,6 +6894,31 @@ plan="yes" sdesc ="TBD">
 	<desc>Probes saturated in dense plasma due to high bias.</desc>
 	</operation>
 
+<operation start="2015-06-04T00:27:29Z" dt="41" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-06-04T01:05:45Z" dt="165" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-06-04T01:48:20Z" dt="380" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-06-04T02:01:14Z" dt="166" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-06-04T03:10:10Z" dt="29" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-06-04T04:36:06Z" dt="36" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-06-04T04:55:15Z" dt="127" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-06-04T05:26:56Z" dt="25" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+
 <operation start="2015-06-06T00:06:35Z" dt="16579" c4="yes" plan="no" sdesc="bad_data">
 	<desc>Probes saturated in dense plasma due to high bias.</desc>
 	</operation>
