@@ -67,6 +67,8 @@ C4 saturation, 2015-04-12 16:47 - 18:53, 19:42:12 - 19:42:32, 21:52:48 - 21:53:0
 4) Ignored
 ==========
 
+No Es burst data in summary plots for C4. This is because one of the probes is very saturated.
+
 
 5) Unclassified
 ===============
