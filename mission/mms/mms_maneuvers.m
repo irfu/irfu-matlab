@@ -1,9 +1,10 @@
-function maneuvers = mms_maneuvers( Tint, scIdStr )
+function [maneuvers, timelineXML] = mms_maneuvers( Tint, scIdStr )
 % MMS_MANEUVERS get maneuver information
-%	maneuvers = MMS_MANEUVERS(Tint, [scIdStr]) reads the appropriate FDOA
-%   timeline files and extract all maneuvers that took place during the
-%   time interval "Tint". If "scIdStr" is specified, only the manuevers on
-%   that occured during the time interval "Tint" on spacecraft "scIdStr".
+%	[maneuvers, timelineXML] = MMS_MANEUVERS(Tint, [scIdStr]) reads the
+%   appropriate FDOA timeline files and extract all maneuvers that took
+%   place during the time interval "Tint".
+%   If "scIdStr" is specified, only the manuevers on that occured during 
+%   the time interval "Tint" on spacecraft "scIdStr".
 %
 %   Note: This function relies on MMS_READ_TIMELINE and therefor indirectly
 %   on XPath, should FDOA change their file structure this function may
@@ -19,6 +20,10 @@ function maneuvers = mms_maneuvers( Tint, scIdStr )
 %       .mms2      = corresponding on MMS2.
 %       .mms3      = corresponding on MMS3.
 %       .mms4      = corresponding on MMS4.
+%     timelineXML  = list of timeline xml files containing the maneuvers.
+%                    Note: Only files containing maneuvers, not a complete
+%                    list of all xml files read if they do not contain any
+%                    relevant manuevers for the requested interval.
 %
 %   Example:
 %
@@ -122,11 +127,13 @@ for ii = length(list):-1:1
               tmp2 = maneuvers.(['mms',num2str(kk)]);
               if(tmp2{1}.start.ttns ~= tmp{ll}.start.ttns)
                 maneuvers.(['mms',num2str(kk)]) = [tmp(ll); tmp2];
+                tmpTimeline = [tmpTimeline; list(ii).name];
               else
                 irf.log('debug', 'Maneuver already included.');
               end
             else
               maneuvers.(['mms',num2str(kk)]) = tmp(ll);
+              tmpTimeline = list(ii).name;
             end
           end
         end % for ll
@@ -142,6 +149,14 @@ for ii = length(list):-1:1
       % original requested time interval Tint.
       % Improve?: Possibly limit resulting maneuvers that cover longer time
       % intervals than the specified original Tint.
+      
+      % if maneuvers found and tmpTimeline exist, return only the unique
+      % list of files
+      if(exist('tmpTimeline','var') && ~isempty(tmpTimeline))
+        timelineXML = unique(tmpTimeline, 'rows');
+      else
+        timelineXML = [];
+      end
       return
     end
   end

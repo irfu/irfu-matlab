@@ -62,39 +62,39 @@ if nargin >= 4, Te=Te_inp; end
 if nargin >= 5, Ti=Ti_inp; To=Ti; end % O+ temperature the same as for H+
 
 if flag_ask_parameters_interactively
-	if nargin < 1,
-		if numel(B)>1; B=B(1); end             % use only the first element in persistent variable
+	if nargin < 1
+		if numel(B)>1; B=B(1); end  %#ok<NASGU> % use only the first element in persistent variable
 		B=irf_ask('Magnetic field in nT [%] >','B',10);
 	end
 	
-	if nargin < 2,
-		if numel(np_cc)>1; np_cc=np_cc(1); end % use only the first element in persistent variable
+	if nargin < 2
+		if numel(np_cc)>1; np_cc=np_cc(1); end %#ok<NASGU> % use only the first element in persistent variable
 		np_cc=irf_ask('H+ desity in cc [%] >','np_cc',1);
 	end
 	
-	if nargin < 3,
-		if numel(no_rel)>1; no_rel=no_rel(1); end % use only the first element in persistent variable
+	if nargin < 3
+		if numel(no_rel)>1; no_rel=no_rel(1); end %#ok<NASGU> % use only the first element in persistent variable
 		no_rel=irf_ask('Oxygen density in percent from H+ density [%] >','no_rel',0);
 	end
 	
-	if nargin < 4,
-		if numel(Te)>1; Te=Te(1); end % use only the first element in persistent variable
+	if nargin < 4
+		if numel(Te)>1; Te=Te(1); end %#ok<NASGU> % use only the first element in persistent variable
 		Te=irf_ask('Electron  temperature in eV [%] >','Te',100);
 	end
 	
-	if nargin < 5,
-		if numel(Ti)>1; Ti=Ti(1); end % use only the first element in persistent variable
+	if nargin < 5
+		if numel(Ti)>1; Ti=Ti(1); end %#ok<NASGU> % use only the first element in persistent variable
 		Ti=irf_ask('Ion  temperature in eV [%] >','Ti',1000); To=Ti;
 	end
 end
 
 %if time series are supplied then time series shoud be returned
-if size(B,2)>1,     % we have time series of B
-	t=B(:,1);       % time axis
+if size(B,2)>1      % we have time series of B
+	t=B(:,1); %#ok<NASGU>     % time axis
 	B(:,1)=[];      % delete time column
-	if size(B,2)>3; %asssume that column 4 is amplitude, delete other coolumns
+	if size(B,2)>3 %asssume that column 4 is amplitude, delete other coolumns
 		B(:,[1:3 5:end])=[];
-	elseif size(B,2)==3, % assume there are three columns Bx,By,Bz
+	elseif size(B,2)==3 % assume there are three columns Bx,By,Bz
 		B(:,4)=sqrt(B(:,1).^2+B(:,2).^2+B(:,3).^2);
 		B(:,1:3)=[];  %leave only amplitude
 	else              % do not know what to do if several B columns, take only first
@@ -104,13 +104,13 @@ if size(B,2)>1,     % we have time series of B
 else
 	flag_time_series='no';
 end
-if strcmp(flag_time_series,'yes'), % check that other variables are time series, if not interpoplate
+if strcmp(flag_time_series,'yes') % check that other variables are time series, if not interpoplate
 	variables_to_check={'np_cc','no_rel','Te','Ti','To'};
 	for j=1:length(variables_to_check)
-		if eval(['size(' variables_to_check{j} ',2)'])>1, % we have time series
+		if eval(['size(' variables_to_check{j} ',2)'])>1 % we have time series
 			c_eval('?=irf_resamp(?,t);',variables_to_check(j)) % resample to new time axis
 			c_eval('?(:,[1,3:end])=[];',variables_to_check(j)) % delete time and  other columns
-		elseif eval(['prod(size(' variables_to_check{j} '))==1']), % only one number
+		elseif eval(['prod(size(' variables_to_check{j} '))==1']) % only one number
 			eval([variables_to_check{j} '=repmat(' variables_to_check{j} ',size(t));']);
 		else
 			c_eval('irf.log(''warning'',''do not understand input <?>'');',variables_to_check{j});
@@ -188,7 +188,7 @@ if strcmp(flag_time_series,'yes')
 		{'Va'},{'Vte'},{'Vtp'},{'VtO'},{'Vts'}...
 		{'Roe'},{'Rop'},{'RoO'}...
 		};
-	for j=1:length(var),
+	for j=1:length(var)
 		eval([var{j}{1} '= [t ' var{j}{1} '];']);
 	end
 end
@@ -206,7 +206,7 @@ end
 
 if ~flag_display_values,    return; end
 
-if strcmp(flag_time_series,'yes'),
+if strcmp(flag_time_series,'yes')
 	disp('!!! TIME SERIES. Showing only the values for the first point!');
 end
 
@@ -260,7 +260,7 @@ fprintf('\n         Gamma_e = %1.2e %% 1./sqrt(1-(Vte/c).^2)',gamma_e);
 fprintf('\n');
 
 if nargout>0, Fpe_out = Fpe; end
-
+end
 function format_output(values,labels,unit)
 % values - vector
 % labels - cell string array
@@ -268,6 +268,7 @@ for ii = 1:numel(values)
 	val = values(ii);
 	[multiplier,formatStr]=value_format(val);
 	fprintf(formatStr,labels{ii},val/multiplier, unit);
+end
 end
 
 function [multiplier,formatStr]=value_format(val)
@@ -303,7 +304,8 @@ if val <1e9
 		formatStr = '%6.0f';
 	end
 end
-if ok, 
+if ok 
 	formatStr = '%6.2f';
 end
 formatStr = ['\n%5s = ' formatStr ' ' prefix '%s'];
+end
