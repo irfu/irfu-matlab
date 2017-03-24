@@ -547,7 +547,7 @@ if nargout==0, clear c; end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   function init_figure
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    if x>=1 && x<=20,
+    if x>=1 && x<=30,
       % check if there is 'newfigure' argument
       if numel(args)>=2 && ischar(args{2}) && strcmpi(args{2},'newfigure')
         c=initialize_figure(x,'newfigure');
@@ -555,7 +555,7 @@ if nargout==0, clear c; end
         c=initialize_figure(x,'reset');
       else c=initialize_figure(x);
       end
-    else irf.log('warning','Max 20 subplots supported ;)');
+    else irf.log('warning','Max 30 subplots supported ;)');
     end
   end
 end % IRF_PLOT
