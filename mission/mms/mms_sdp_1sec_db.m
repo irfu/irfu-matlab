@@ -15,28 +15,30 @@ function [out,Tint] = mms_sdp_1sec_db(fileName,dataPath)
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
 
-if nargin<2, dataPath = '/data/mms'; end
-
 mmsIdS = fileName(1:4); mmsId = str2double(fileName(4));
 l2a = dataobj([dataPath filesep fileName]);
-Tint = EpochTT(l2a.data.([mmsIdS '_edp_epoch_fast_l2a']).data([1 end]));
+TintPre = EpochTT(l2a.data.([mmsIdS '_edp_epoch_fast_l2a']).data([1 end]));
+Vifpi = mms.get_data('Vi_dbcs_fpi_fast_l2',TintPre,mmsId);
+Tint = Vifpi.time([1 end]);
 % xxx - check if loaded
-ScPot_sitl = irf.ts2mat(mms.get_data('V_edp_fast_sitl',Tint,mmsId));
+ScPot_sitl = irf.ts2mat(mms.get_data('V_edp_fast_sitl',TintPre,mmsId));
 if isempty(ScPot_sitl)
-  ScPot_sitl = irf.ts2mat(mms.get_data('V_edp_fast_l2',Tint,mmsId));
+  ScPot_sitl = irf.ts2mat(mms.get_data('V_edp_fast_l2',TintPre,mmsId));
 end
+ScPot_sitl = irf_tlim(ScPot_sitl,Tint.epochUnix);
 
 %%
-Phase = getmat(l2a,[mmsIdS '_edp_phase_fast_l2a']);
-PhaseFixed = irf_fixed_phase_epoch(Phase,30,18,9);
+Phase = getmat(l2a,[mmsIdS '_edp_phase_fast_l2a']); [Phase,idx] = irf_tlim(Phase,Tint.epochUnix);
+PhaseFixed = irf_fixed_phase_epoch(Phase,0,15,15/2);
 tFixedPha = PhaseFixed(:,1);
 dtAv = median(diff(PhaseFixed(:,1)));
 
-dce = getmat(l2a,[mmsIdS '_edp_dce_fast_l2a']);
+dce = getmat(l2a,[mmsIdS '_edp_dce_fast_l2a']); dce = dce(idx,:);
 % ASPOC
 MMS_CONST = mms_constants;
 aspocBit = double(bitand(l2a.data.([mmsIdS '_edp_bitmask_fast_l2a']).data(:,1),...
   MMS_CONST.Bitmask.ASPOC_RUNNING));
+aspocBit = aspocBit(idx);
 % ScPot
 [idx1,idx2] = irf_find_comm_idx(dce,ScPot_sitl);
 scPot = nan(size(dce,1),2); scPot(:,1) = dce(:,1);
@@ -50,7 +52,7 @@ bfgm = irf.ts2mat(mms.get_data('B_dmpa_srvy_l2',Tint,mmsId));
 bfgmFixedPha = irf_resamp(bfgm,tFixedPha,'window',dtAv,'median');
 
 %% FPI Ions
-vifpi = irf.ts2mat(mms.get_data('Vi_dbcs_fpi_fast_l2',Tint,mmsId));
+vifpi = irf.ts2mat(Vifpi);
 nifpi = irf.ts2mat(mms.get_data('Ni_fpi_fast_l2',Tint,mmsId));
 TiFPI = mms.get_data('Ti_dbcs_fpi_fast_l2',Tint,mmsId);
 tifpi = [TiFPI.time.epochUnix, ...
