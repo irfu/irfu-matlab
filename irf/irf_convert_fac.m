@@ -109,9 +109,13 @@ else
   else
     out=calculate_out(inp);
         if isinpTS,
+            if size(out, 2) == 4
+                out = irf.ts_vec_xyz(inptemp.time, out(:, 2: 4));
+            elseif size(out, 2) == 3
+                out = irf.ts_vec_xy(inptemp.time, out(:, 2: 3));
+            end
             %inptemp.data =  out(:,[2:4]);
-            %out = inptemp;
-            out = TSeries(inptemp.time, out(:, 2: end));
+            %out = inptemp;            
         end
   end
 end
