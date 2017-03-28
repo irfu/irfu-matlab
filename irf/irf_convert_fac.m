@@ -8,7 +8,7 @@ function [out]=irf_convert_fac(inp,B0,r)
 %  R_perp_y defined by R_parallel cross the position vector of the
 %  spacecraft (nominally eastward at the equator)
 %  R_perp_x defined by R_perp_y cross R_par
-%
+%  If inp is one vector along r direction, out is inp[perp, para] projection
 %
 %  rotMatrix = irf_convert_fac([],B0,[r])
 %
@@ -26,6 +26,10 @@ function [out]=irf_convert_fac(inp,B0,r)
 %    inp= vector that is to be transformed to FAC, columns (t x y z)
 %			or inp can be cell array of such vectors
 %    out= output in the same form as inp
+%   
+% Example:
+%   Efac = irf_convert_fac(Egse, Bgse, [1, 0, 0]);
+%   Emfac = irf_convert_fac(Em, Bgse, Mdir);
 %
 % Note: all input parameters must be in the same coordinate system 
 
@@ -53,6 +57,7 @@ end
 if nargin<3, r=[1 0 0];
 end
 Rpar = []; Rperpy = []; Rperpx = [];
+if size(r, 2) == 3, r = [B0(1, 1), r];end
 
 if isempty(inp) % return the transformation matrix instead
   r = irf_resamp(r,B0);
@@ -104,8 +109,9 @@ else
   else
     out=calculate_out(inp);
         if isinpTS,
-            inptemp.data =  out(:,[2:4]);
-            out = inptemp;
+            %inptemp.data =  out(:,[2:4]);
+            %out = inptemp;
+            out = TSeries(inptemp.time, out(:, 2: end));
         end
   end
 end
@@ -118,10 +124,18 @@ end
 	function out=calculate_out(inp)
 		%A_mfa=A;
 		ndata=size(inp,1);
-		out=zeros(ndata,4);
-		out(:,1)=inp(:,1);
-		out(:,4)=  Rpar(:,2).*inp(:,2)+  Rpar(:,3).*inp(:,3)+  Rpar(:,4).*inp(:,4);
-		out(:,2)=Rperpx(:,2).*inp(:,2)+Rperpx(:,3).*inp(:,3)+Rperpx(:,4).*inp(:,4);
-		out(:,3)=Rperpy(:,2).*inp(:,2)+Rperpy(:,3).*inp(:,3)+Rperpy(:,4).*inp(:,4);
+        ndim = size(inp, 2);
+        if ndim == 4
+            out=zeros(ndata,4);
+            out(:,1)=inp(:,1);
+            out(:,4)=  Rpar(:,2).*inp(:,2)+  Rpar(:,3).*inp(:,3)+  Rpar(:,4).*inp(:,4);
+            out(:,2)=Rperpx(:,2).*inp(:,2)+Rperpx(:,3).*inp(:,3)+Rperpx(:,4).*inp(:,4);
+            out(:,3)=Rperpy(:,2).*inp(:,2)+Rperpy(:,3).*inp(:,3)+Rperpy(:,4).*inp(:,4);
+        elseif ndim ==2
+            out=zeros(ndata,3);
+            out(:, 1)=inp(:,1);
+            out(:, 2)=inp(:, 2) .*(Rperpx(:,2) .* r(:, 2) + Rperpx(:,3) .* r(:, 3) + Rperpx(:,4) .* r(:, 4));
+            out(:, 3)=inp(:, 2) .*(Rpar(:,2) .* r(:, 2) + Rpar(:,3) .* r(:, 3) + Rpar(:,4) .* r(:, 4));               
+        end
 	end
 end
