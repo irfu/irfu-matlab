@@ -33,7 +33,7 @@
 %
 %   Given:
 %
-%      No input required.
+%      None.
 %
 %   the call:
 %
@@ -41,9 +41,11 @@
 %
 %   returns:
 %
-%      A double precision scalar, the number of seconds per tropical
-%      year.  This value is taken from the 1992 Explanatory Supplement
-%      to the Astronomical Almanac.
+%      tyear   the number of seconds per tropical year. This value is
+%              taken from the 1992 Explanatory Supplement to the
+%              Astronomical Almanac.
+%
+%              [1,n] = size(tyear); double = class(tyear)
 %
 %-Examples
 %
@@ -70,6 +72,10 @@
 %   TIME.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.1, 13-FEB-2015, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.0.0, 22-NOV-2005, EDW (JPL)
 %

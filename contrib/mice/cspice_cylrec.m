@@ -33,15 +33,20 @@
 %
 %   Given:
 %
-%      r      a double precision scalar or double precision 1xN array
-%             describing the distance of the point of interest from z axis.
+%      r      the value(s) describing the distance of the point of
+%             interest from z axis.
 %
-%      lonc   a double precision scalar or double precision 1xN array
-%             describing the cylindrical angle of the point of interest
-%             from the XZ plane measured in radians
+%             [1,n] = size(r); double = class(r)
 %
-%      z      a double precision scalar or double precision 1xN array
-%             describing the height of the point above the XY plane
+%      lonc   the value(s) describing the cylindrical angle of the point of
+%             interest from the XZ plane measured in radians.
+%
+%             [1,n] = size(lonc); double = class(lonc)
+%
+%      z      the value(s) describing the height of the point above
+%             the XY plane.
+%
+%             [1,n] = size(z); double = class(z)
 %
 %   the call:
 %
@@ -49,9 +54,10 @@
 %
 %   returns:
 %
-%      rectan   a double precision 3x1 array or double precision
-%               3xN array containing the rectangular coordinates of the
+%      rectan   the array(s) containing the rectangular coordinates of the
 %               position or set of positions
+%
+%               [3,n] = size(rectan); double = class(rectan)
 %
 %               The argument 'rectan' returns in the same units associated
 %               with 'r' and 'z'.
@@ -175,6 +181,10 @@
 %   MICE.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.1, 30-OCT-2014, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.0.0, 22-NOV-2005, EDW (JPL)
 %

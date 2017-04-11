@@ -87,6 +87,19 @@
 
 -Version
 
+   -Mice Version 1.3.0 23-FEB-2016 (EDW)
+   
+      Eliminated an error check that ensured multiple input matrices 
+      with an undefined second dimension had a common value for the 
+      second dimension, e.g. AxN, BxN, CxN. An error signaled
+      for input matricies with different second dimension.
+
+      Checks on matrix dimension now occur in the interface call, 
+      e.g. cspice_ckw03.
+
+      Edits return argument structure MiceIlum, replacing the field
+      name "solar" with "incdnc" (incident).
+
    -Mice Version 1.2.0 30-OCT-2012 (EDW)
 
       Added definitions and conditions for MiceFrinfo, MiceSFS,
@@ -181,6 +194,8 @@
             sincpt_c
 
          MiceIlum:
+            illumf_c
+            illumg_c
             ilumin_c
 
          MiceWnsumd:
@@ -307,7 +322,7 @@ static struct structdata
            MiceIlum ,
            "MiceIlum",
            5,
-           {"trgepc",   "srfvec",   "phase",   "solar",     "emissn"  },
+           {"trgepc",   "srfvec",   "phase",   "incdnc",    "emissn"  },
            {MiceDouble, MiceDouble, MiceDouble, MiceDouble, MiceDouble},
            {1,          3,          1,          1,          1         }
          },
@@ -1175,24 +1190,12 @@ struct extra_dims  * mice_checkargs(int                 nlhs,
                      /*
                      This block executes only for input non-vectorized
                      matrices with undefined column length. E.g. ckw01, ckw03
-                     where inputs are (3,N) and (4,N). We uses the same check
-                     as with vectorized inputs to ensure the required
-                     consistency in column length.
+                     where inputs are (3,N) and (4,N).
                      */
                      if (extra.count == 0)
                         {
                         extra.first_vector_arg_index = ii;
                         extra.count                  = Dims[1];
-                        }
-                     else if (extra.count != Dims[1])
-                        {
-                        sprintf( msg,
-                           "Input argument (`%s') must have "
-                           "same length as `%s'",
-                           argcheck[ii].name,
-                           argcheck[extra.first_vector_arg_index].name);
-
-                        mexErrMsgTxt(msg);
                         }
 
                      extra.vectorized[ii] = 1;

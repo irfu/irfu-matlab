@@ -37,8 +37,14 @@
 %
 %   Given:
 %
-%      method   a scalar string providing parameters defining
-%               the computation method to be used.
+%      method   a string providing parameters defining
+%               the computation method to use.
+%
+%               [1,c1] = size(method); char = class(method)
+%
+%                  or
+%
+%               [1,1] = size(method); cell = class(method)
 %
 %               The supported values of 'method' are listed below.
 %               Please note that the colon is a required delimiter;
@@ -73,9 +79,15 @@
 %
 %               is valid.
 %
-%      target   the scalar string name of the target body. The target
+%      target   the name of the target body. The target
 %               body is an ephemeris object (its trajectory is given by
 %               SPK data), and is an extended object.
+%
+%               [1,c2] = size(target); char = class(target)
+%
+%                  or
+%
+%               [1,1] = size(target); cell = class(target)
 %
 %               The string 'target' is case-insensitive, and leading
 %               and trailing blanks in 'target' are not significant.
@@ -91,9 +103,11 @@
 %               variable would be defined by loading a PCK file.
 %
 %
-%      et       the double precision scalar epoch, expressed as seconds
-%               past J2000 TDB, of the observer: 'et' is
+%      et       the epoch(s), expressed as seconds past
+%               J2000 TDB, of the observer: 'et' is
 %               the epoch at which the observer's state is computed.
+%
+%               [1,n] = size(et); double = class(et)
 %
 %               When aberration corrections are not used, 'et' is also
 %               the epoch at which the position and orientation of
@@ -109,14 +123,26 @@
 %               selected correction. See the description of 'abcorr'
 %               below for details.
 %
-%      fixref   the scalar string name of the body-fixed, body-centered
+%      fixref   the name of the body-fixed, body-centered
 %               reference frame associated with the target body.
 %               The output sub-solar point 'spoint' will be
 %               expressed relative to this reference frame.
 %
-%      abcorr   the scalar string aberration correction to apply
+%               [1,c3] = size(fixref); char = class(fixref)
+%
+%                  or
+%
+%               [1,1] = size(fixref); cell = class(fixref)
+%
+%      abcorr   the aberration correction to apply
 %               when computing the observer-target state and the
 %               orientation of the target body.
+%
+%               [1,c4] = size(abcorr); char = class(abcorr)
+%
+%                  or
+%
+%               [1,1] = size(abcorr); cell = class(abcorr)
 %
 %               For remote sensing applications, where the apparent
 %               sub-solar point seen by the observer is desired,
@@ -198,16 +224,30 @@
 %               are legitimate strings that indicate the Moon is the
 %               observer.
 %
+%               [1,c5] = size(obsrvr); char = class(obsrvr)
+%
+%                  or
+%
+%               [1,1] = size(obsrvr); cell = class(obsrvr)
+%
 %   the call:
 %
 %      subslr = mice_subslr( method, target, et, fixref, abcorr, obsrvr )
 %
 %   returns:
 %
-%      subslr   a scalar structure, each structure consisting of three fields:
+%      subslr  the structure(s) containing the results of the calculation.
 %
-%              'spoint'   a double precision 3x1 array defining the sub-solar
-%                         point on the target body.
+%              [1,n] = size(subslr); struct = class(subslr)
+%
+%              Each structure consists of the fields:
+%
+%
+%              'spoint'   the array defining the sub-solar point on the
+%                         target body.
+%
+%                         [3,1] = size(subslr(i).spoint)
+%                         double = class(subslr(i).spoint)
 %
 %                         The sub-solar point is defined either as the point
 %                         on the target body that is closest to the Sun,
@@ -238,8 +278,8 @@
 %
 %                         The components of 'spoint' have units of km.
 %
-%              'trgepc'   the scalar double precision "sub-solar point epoch."
-%                         'trgepc' is defined as follows: letting 'lt' be the
+%              'trgepc'   the "sub-solar point epoch." 'trgepc' is
+%                         defined as follows: letting 'lt' be the
 %                         one-way light time between the observer and the
 %                         sub-solar point, 'trgepc' is the epoch et-lt, et+lt,
 %                         or 'et' depending on whether the requested aberration
@@ -247,26 +287,32 @@
 %                         transmitted radiation, or omitted. 'lt' is computed
 %                         using the method indicated by 'abcorr'.
 %
+%                         [1,1] = size(subslr(i).trgepc)
+%                         double = class(subslr(i).trgepc)
+%
 %                         'trgepc' is expressed as seconds past J2000 TDB.
 %
-%              'srfvec'   a double precision 3x1 array defining the position
-%                         vector from the observer at 'et' to 'spoint'. 'srfvec'
-%                         is expressed in the target body-fixed  reference frame
-%                          designated by 'fixref', evaluated at  'trgepc'.
+%              'srfvec'   the array defining the position vector from
+%                         the observer at 'et' to 'spoint'. 'srfvec' is
+%                         expressed in the target body-fixed  reference frame
+%                         designated by 'fixref', evaluated at  'trgepc'.
+%
+%                         [3,1] = size(subslr(i).srfvec)
+%                         double = class(subslr(i).srfvec)
 %
 %                         The components of 'srfvec' are given in units of km.
 %
 %                         One can use the CSPICE function vnorm_c to obtain the
 %                         distance between the observer and 'spoint':
 %
-%                            dist = norm( srfvec )
+%                            dist = norm( subslr(i).srfvec )
 %
 %                         The observer's position 'obspos', relative to the
 %                         target body's center, where the center's position is
 %                         corrected for aberration effects as indicated by
 %                         'abcorr', can be computed with:
 %
-%                            obspos = spoint - srfvec
+%                            obspos = subslr(i).spoint - subslr(i).srfvec
 %
 %                         To transform the vector 'srfvec' to a time-dependent
 %                         reference frame 'ref' at 'et', a sequence of two
@@ -279,24 +325,26 @@
 %                         composition of 'mref' with 'mfix'. Then 'srfvec' can
 %                         be transformed to the result 'refvec' as follows:
 %
-%                            mfix   = cspice_pxform( fixref, 'j2000', trgepc )
-%                            mref   = cspice_pxform( 'j2000', ref,     et    )
+%                            mfix   = cspice_pxform( fixref, 'j2000', ...
+%                                                    subslr(i).trgepc )
+%                            mref   = cspice_pxform( 'j2000', ref, et )
 %                            xform  = mref * mfix
-%                            refvec = xform * srfvec
+%                            refvec = xform * subslr(i).srfvec
 %
+%      'subslr' return with the same vectorization measure, N, as 'et'.
 %
-%   Note, If needed the user can extract the field data from vectorized
-%  'spoint' structures into separate arrays.
+%      Note, If needed the user can extract the field data from vectorized
+%      'spoint' structures into separate arrays.
 %
-%      Extract the 'spoint' field data to a 3X1 array 'spoint':
+%      Extract the 'spoint' field data to a 3Xn array 'spoint':
 %
 %         spoint = reshape( [subpnt(:).spoint], 3, [] )
 %
-%      Extract the 'trgepc' field data to a scalar 'trgepc':
+%      Extract the 'trgepc' field data to a 1xn array 'trgepc':
 %
 %         trgepc = reshape( [subpnt(:).trgepc], 1, [] )
 %
-%      Extract the 'spoint' field data to a 3X1 array 'spoint':
+%      Extract the 'spoint' field data to a 3Xn array 'spoint':
 %
 %         spoint = reshape( [subpnt(:).spoint], 3, [] )
 %
@@ -309,13 +357,19 @@
 %      %
 %      % Load kernel files via the meta-kernel.
 %      %
-%      cspice_furnsh( 'standard.tm' );
+%      cspice_furnsh( '/kernels/standard.tm' );
 %
 %      %
 %      % Convert the UTC request time to ET (seconds past
 %      % J2000, TDB).
 %      %
-%      et = cspice_str2et( '2008 aug 11 00:00:00' );
+%      et0 = cspice_str2et( '2008 aug 11 00:00:00' );
+%
+%      %
+%      % Create a vector of times. The code will also run for 'et'
+%      % a scalar.
+%      %
+%      et = [0:10]*cspice_spd + et0;
 %
 %      %
 %      % Look up the target body's radii. We'll use these to
@@ -347,13 +401,23 @@
 %
 %         subslr = mice_subslr( method(i), 'MARS', et, ...
 %                              'IAU_MARS', 'LT+S', 'EARTH' );
+%         N = length(subslr);
+%
+%         %
+%         % Expand the embedded data arrays to properly shaped
+%         % generic arrays.
+%         %
+%         spoint   = reshape( [subslr.spoint], 3, [] );
+%         trgepc   = reshape( [subslr.trgepc], 1, [] );
+%         srfvec   = reshape( [subslr.srfvec], 3, [] );
+%         spoint   = reshape( [subslr.spoint], 3, [] );
 %
 %         %
 %         % Convert the sub-solar point's rectangular coordinates
 %         % to planetographic longitude, latitude and altitude.
 %         % Convert radians to degrees.
 %         %
-%         [spglon, spglat, spgalt ] = cspice_recpgr( 'mars', subslr.spoint, ...
+%         [spglon, spglat, spgalt ] = cspice_recpgr( 'mars', spoint, ...
 %                                                     re,    f);
 %
 %         spglon = spglon * cspice_dpr;
@@ -364,7 +428,7 @@
 %         % planetodetic longitude, latitude and altitude. Convert radians
 %         % to degrees.
 %         %
-%         [ spcrad, spclon, spclat ] =cspice_reclat( subslr.spoint ) ;
+%         [ spcrad, spclon, spclat ] =cspice_reclat( spoint ) ;
 %
 %         spclon = spclon * cspice_dpr;
 %         spclat = spclat * cspice_dpr;
@@ -374,7 +438,7 @@
 %         % center of the target at `trgepc'. Express the Sun's
 %         % location in planetographic coordinates.
 %         %
-%         [sunpos,  sunlt] = cspice_spkpos( 'sun', subslr.trgepc,  ...
+%         [sunpos,  sunlt] = cspice_spkpos( 'sun', trgepc,  ...
 %                                           'iau_mars', 'lt+s', 'mars');
 %
 %         [ supgln, supglt, supgal] = cspice_recpgr( 'mars', sunpos, re, f );
@@ -392,29 +456,53 @@
 %         supcln = supcln * cspice_dpr;
 %         supclt = supclt * cspice_dpr;
 %
-%        fprintf( 'Computational Method %s\n\n', char(method(i)) )
+%         utcstr = cspice_et2utc( et, 'C', 6);
 %
-%        fprintf( 'Computational Method %s\n\n', char(method(i)) )
+%        for j=1:N
 %
-%        fprintf( '  Sub-solar point altitude            (km) = %21.9f\n', ...
-%                                                                spgalt )
-%        fprintf( '  Sub-solar planetographic longitude (deg) = %21.9f\n', ...
-%                                                                spglon )
-%        fprintf( '  Sun  planetographic longitude      (deg) = %21.9f\n', ...
-%                                                                 supgln)
-%        fprintf( '  Sub-solar planetographic latitude  (deg) = %21.9f\n', ...
-%                                                                 spglat)
-%        fprintf( '  Sun  planetographic latitude       (deg) = %21.9f\n', ...
-%                                                                 supglt)
-%        fprintf( '  Sub-solar planetocentric longitude (deg) = %21.9f\n', ...
-%                                                                 spclon)
-%        fprintf( '  Sun  planetocentric longitude      (deg) = %21.9f\n', ...
-%                                                                 supcln)
-%        fprintf( '  Sub-solar planetocentric latitude  (deg) = %21.9f\n', ...
-%                                                                 spclat)
-%        fprintf( '  Sun  planetocentric latitude       (deg) = %21.9f\n', ...
-%                                                                 supclt)
-%        fprintf( '\n')
+%           fprintf( '  Computational Method %s\n\n', char(method(i)) )
+%
+%           fprintf( '  Time (UTC):                          %s\n', ...
+%                                                           utcstr(j,:) )
+%
+%           fprintf(                                                  ...
+%           '  Sub-solar point altitude            (km) = %21.9f\n',  ...
+%                                                             spgalt(j) )
+%
+%           fprintf(                                                  ...
+%           '  Sub-solar planetographic longitude (deg) = %21.9f\n',  ...
+%                                                             spglon(j) )
+%
+%           fprintf(                                                  ...
+%           '  Sun  planetographic longitude      (deg) = %21.9f\n',  ...
+%                                                             supgln(j) )
+%
+%           fprintf(                                                  ...
+%           '  Sub-solar planetographic latitude  (deg) = %21.9f\n',  ...
+%                                                             spglat(j) )
+%
+%           fprintf(                                                  ...
+%           '  Sun  planetographic latitude       (deg) = %21.9f\n',  ...
+%                                                             supglt(j) )
+%
+%           fprintf(                                                  ...
+%           '  Sub-solar planetocentric longitude (deg) = %21.9f\n',  ...
+%                                                             spclon(j) )
+%
+%           fprintf(                                                  ...
+%           '  Sun  planetocentric longitude      (deg) = %21.9f\n',  ...
+%                                                             supcln(j) )
+%
+%           fprintf(                                                  ...
+%           '  Sub-solar planetocentric latitude  (deg) = %21.9f\n',  ...
+%                                                             spclat(j) )
+%
+%           fprintf(                                                  ...
+%           '  Sun  planetocentric latitude       (deg) = %21.9f\n',  ...
+%                                                             supclt(j) )
+%           fprintf( '\n')
+%
+%        end
 %
 %      end
 %
@@ -428,27 +516,57 @@
 %
 %      Computational Method Intercept:  ellipsoid
 %
-%        Sub-solar point altitude            (km) =          -0.000000000
-%        Sub-solar planetographic longitude (deg) =         175.810721418
-%        Sun  planetographic longitude      (deg) =         175.810721416
-%        Sub-solar planetographic latitude  (deg) =          23.668549969
-%        Sun  planetographic latitude       (deg) =          23.420823052
-%        Sub-solar planetocentric longitude (deg) =        -175.810721418
-%        Sun  planetocentric longitude      (deg) =        -175.810721416
-%        Sub-solar planetocentric latitude  (deg) =          23.420819627
-%        Sun  planetocentric latitude       (deg) =          23.420819627
+%      Time (UTC):                          2008 AUG 11 00:00:00.000000
+%      Sub-solar point altitude            (km) =          -0.000000000
+%      Sub-solar planetographic longitude (deg) =         175.810675510
+%      Sun  planetographic longitude      (deg) =         175.810721536
+%      Sub-solar planetographic latitude  (deg) =          23.668550281
+%      Sun  planetographic latitude       (deg) =          23.420823372
+%      Sub-solar planetocentric longitude (deg) =        -175.810675510
+%      Sun  planetocentric longitude      (deg) =        -175.810721536
+%      Sub-solar planetocentric latitude  (deg) =          23.420819936
+%      Sun  planetocentric latitude       (deg) =          23.420819946
+%
+%         ...
+%
+%      Computational Method Intercept:  ellipsoid
+%
+%      Time (UTC):                          2008 AUG 21 00:00:00.000212
+%      Sub-solar point altitude            (km) =          -0.000000000
+%      Sub-solar planetographic longitude (deg) =          79.735277875
+%      Sun  planetographic longitude      (deg) =          79.735323904
+%      Sub-solar planetographic latitude  (deg) =          22.821527569
+%      Sun  planetographic latitude       (deg) =          22.580688291
+%      Sub-solar planetocentric longitude (deg) =         -79.735277875
+%      Sun  planetocentric longitude      (deg) =         -79.735323904
+%      Sub-solar planetocentric latitude  (deg) =          22.580684931
+%      Sun  planetocentric latitude       (deg) =          22.580684943
 %
 %      Computational Method Near point: ellipsoid
 %
-%        Sub-solar point altitude            (km) =           0.000000000
-%        Sub-solar planetographic longitude (deg) =         175.810721404
-%        Sun  planetographic longitude      (deg) =         175.810721402
-%        Sub-solar planetographic latitude  (deg) =          23.420823052
-%        Sun  planetographic latitude       (deg) =          23.420823052
-%        Sub-solar planetocentric longitude (deg) =        -175.810721404
-%        Sun  planetocentric longitude      (deg) =        -175.810721402
-%        Sub-solar planetocentric latitude  (deg) =          23.175085271
-%        Sun  planetocentric latitude       (deg) =          23.420819627
+%      Time (UTC):                          2008 AUG 11 00:00:00.000000
+%      Sub-solar point altitude            (km) =          -0.000000000
+%      Sub-solar planetographic longitude (deg) =         175.810675410
+%      Sun  planetographic longitude      (deg) =         175.810721522
+%      Sub-solar planetographic latitude  (deg) =          23.420823362
+%      Sun  planetographic latitude       (deg) =          23.420823372
+%      Sub-solar planetocentric longitude (deg) =        -175.810675410
+%      Sun  planetocentric longitude      (deg) =        -175.810721522
+%      Sub-solar planetocentric latitude  (deg) =          23.175085578
+%      Sun  planetocentric latitude       (deg) =          23.420819946
+%
+%         ...
+%
+%      Time (UTC):                          2008 AUG 21 00:00:00.000212
+%      Sub-solar point altitude            (km) =           0.000000000
+%      Sub-solar planetographic longitude (deg) =          79.735277779
+%      Sun  planetographic longitude      (deg) =          79.735323889
+%      Sub-solar planetographic latitude  (deg) =          22.580688279
+%      Sun  planetographic latitude       (deg) =          22.580688291
+%      Sub-solar planetocentric longitude (deg) =         -79.735277779
+%      Sun  planetocentric longitude      (deg) =         -79.735323889
+%      Sub-solar planetocentric latitude  (deg) =          22.341842299
+%      Sun  planetocentric latitude       (deg) =          22.580684943
 %
 %-Particulars
 %
@@ -467,6 +585,14 @@
 %   TIME.REQ
 %
 %-Version
+%
+%   -Mice Version 1.1.0, 12-JAN-2015, EDW (JPL)
+%
+%       Vectorized interface on input 'et'.
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
+%
+%       Update to Example section.
 %
 %   -Mice Version 1.0.1, 11-JUN-2013, EDW (JPL)
 %
@@ -494,8 +620,8 @@ function [subslr] = mice_subslr( method, target, et, fixref, abcorr, obsrvr )
          obsrvr = zzmice_str(obsrvr);
 
       otherwise
-         error ( ['Usage: [subslr] = '                   ...
-                  'mice_subslr( `method`, `target`, et,' ...
+         error ( ['Usage: [_subslr_] = '                   ...
+                  'mice_subslr( `method`, `target`, _et_,' ...
                   ' `fixref`, `abcorr`, `obsrvr`)'])
    end
 

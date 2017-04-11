@@ -352,11 +352,15 @@
 %
 %-Version
 %
+%   -Mice Version 1.0.1, 02-FEB-2017, BVS (JPL)
+%
+%     Shortened permutted index entry.
+%
 %   -Mice Version 1.0.0, 13-MAR-2012, EDW (JPL)
 %
 %-Index_Entries
 %
-%   compute the phase of two objects wrt an illumination source
+%   compute phase angle for arbitrary illumination source
 %
 %-&
 

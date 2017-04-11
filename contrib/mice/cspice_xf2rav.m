@@ -33,9 +33,11 @@
 %
 %   Given:
 %
-%      xform   a double precision 6x6 or double precision 6x6xN
-%              array of a state transformations from some frame
-%              "frame1" to another frame "frame2"
+%      xform   operator(s) that transform state vector(s) from some frame
+%              "frame1" to another frame "frame2."
+%
+%              Either [6,6]   = size(xform); double = class(xform)
+%              or     [6,6,n] = size(xform); double = class(xform)
 %
 %   the call:
 %
@@ -43,12 +45,22 @@
 %
 %   returns:
 %
-%      rot   a double precision 3x3 or double precision 3x3xN array of
-%            rotation matrices that gives the transformation from some
-%            frame "frame1" to another frame "frame2"
+%      rot   rotation matrix/matrices that gives the transformation from
+%            some frame "frame1" to another frame "frame2".
 %
-%      av    the double precision 3x1 array or double precision
-%            3xN array of angular velocities of the transformation
+%            If    [6,6]   = size(xform)
+%            then  [3,3]   = size(rot); double = class(rot)
+%
+%            If    [6,6,n] = size(xform)
+%            then  [3,3,n] = size(rot); double = class(rot)
+%
+%      av    the angular velocities vector/matrix of the transformation.
+%
+%            If    [6,6]   = size(xform)
+%            then  [3,1]   = size(av); double = class(av)
+%
+%            If    [6,6,n] = size(xform)
+%            then  [3,n]   = size(av); double = class(av)
 %
 %            If 'p' is the position of a fixed point in "frame2,"
 %            then from the point of view of "frame1," 'p' rotates
@@ -64,7 +76,7 @@
 %            The components of 'av' are given relative to "frame1."
 %
 %            'rot' and 'av' return with the same vectorization
-%            measure (N) as 'xform'.
+%            measure, N, as 'xform'.
 %
 %-Examples
 %
@@ -136,6 +148,10 @@
 %   MICE.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.2, 09-MAR-2015, EDW (JPL)
+%
+%      Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.0.1, 06-MAY-2009, EDW (JPL)
 %

@@ -33,23 +33,41 @@
 %
 %   Given:
 %
-%      name   the scalar string or NXM character array of names of a set
-%             of bodies or objects, such as planets, satellites, comets,
-%             asteroids, barycenters, DSN stations, spacecraft, or
-%             instruments, "known" to the SPICE system, whether through
-%             hard-coded registration or run-time registration in
-%             the SPICE kernel pool
+%      name   containing the name or ID code of a body or  object, such as a
+%             planet, satellite, comet, asteroid, barycenter, DSN station,
+%             spacecraft, or instrument.
 %
-%             If 'name' is a string representation of an integer,
-%             for example
+%             [n,m] = size(name); char = class(name)
+%
+%                  or
+%
+%             [1,n] = size(name); cell = class(name)
+%
+%             If 'name' contains the name of a body or object, that name must be
+%             "known" to the SPICE system, whether through hard-coded
+%             registration or run-time registration in the SPICE kernel pool.
+%
+%             Case and leading and trailing blanks in `name' are not
+%             significant. However when a name is made up of more than one
+%             word, they must be separated by at least one blank.  That is, all
+%             of the following strings are equivalent names:
+%
+%                     'JUPITER BARYCENTER'
+%                     'Jupiter Barycenter'
+%                     'JUPITER BARYCENTER   '
+%                     'JUPITER    BARYCENTER'
+%                     '   JUPITER BARYCENTER'
+%
+%             However, 'JUPITERBARYCENTER' is not equivalent to the names above.
+%
+%             If 'name' is a string representation of an integer, for example
 %
 %                '399'
 %
-%             the string will be translated to the equivalent integer
-%             datum.  The input integer need not be one recognized by
-%             the SPICE system:  the integer need not be a built-in
-%             NAIF ID code, nor need it be associated with a name via
-%             run-time registration.
+%             the string will be translated to the equivalent integer datum.
+%             The input integer need not be one recognized by the SPICE system:
+%             the integer need not be a built-in NAIF ID code, nor need it be
+%             associated with a name via run-time registration.
 %
 %   the call:
 %
@@ -57,22 +75,25 @@
 %
 %   returns:
 %
-%      ID   the scalar or 1xN array of structures containing
-%           two fields:
+%      ID   the structure(s) associating a body name with a corresponding 
+%           SPICE ID. 
 %
-%              name   the name or ID code of a particular body. If a mapping
-%                     does not exist or 'name' does not represent a
-%                     string version of an integer, the 'name' field returns
-%                     as NULL
+%           [1,n] = size(ID); struct = class(ID)
 %
-%              code   a scalar integer SPICE code assigned either
-%                     by SPICE or the user to 'name'. If the input argument
-%                    'name' represents an integer, the same integer
-%                     is returned. If neither mapping exists the 'code'
-%                     field returns as 0.
+%           Each structure consists of the fields:
 %
-%              'ID' returns with the same vectorization measure (N)
-%              as 'name'.
+%              name   the "name" of a particular body. If a mapping
+%                     does not exist, the 'name' field returns as NULL.
+%
+%                     [1,c1] = size(ID(i).name); char = class(ID(i).name)
+%
+%              code   the SPICE code assigned either
+%                     by SPICE or the user to 'name'. If a mapping
+%                     does not exist, the 'code' field returns as 0.
+%
+%                     [1,1] = size(ID(i).code); int32 = class(ID(i).code)
+%
+%      'ID' returns with the same vectorization measure, N, as 'name'.
 %
 %-Examples
 %
@@ -150,6 +171,10 @@
 %   NAIF_IDS.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.1, 01-DEC-2014, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.0.0, 22-NOV-2005, EDW (JPL)
 %

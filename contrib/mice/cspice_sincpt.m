@@ -37,36 +37,101 @@
 %
 %   Given:
 %
-%      method   a scalar string providing parameters defining
-%               the computation method to be used. Parameters
-%               include, but are not limited to, the shape model
-%               used to represent the surface of the target body.
+%      method   a short string providing parameters defining
+%               the computation method to be used. In the syntax
+%               descriptions below, items delimited by brackets
+%               are optional.
 %
-%               The only choice currently supported is
+%               [1,c1] = size(method); char = class(method)
 %
-%                  "Ellipsoid"        The intercept computation uses
-%                                     a triaxial ellipsoid to model
-%                                     the surface of the target body.
-%                                     The ellipsoid's radii must be
-%                                     available in the kernel pool.
+%                  or
+%
+%               [1,1] = size(method); cell = class(method)
+%
+%               `method' may be assigned the following values:
+%
+%                  'ELLIPSOID'
+%
+%                     The intercept computation uses a triaxial
+%                     ellipsoid to model the surface of the target
+%                     body. The ellipsoid's radii must be available
+%                     in the kernel pool.
+%
+%
+%                  'DSK/UNPRIORITIZED[/SURFACES = <surface list>]'
+%
+%                     The intercept computation uses topographic data
+%                     to model the surface of the target body. These
+%                     data must be provided by loaded DSK files.
+%
+%                     The surface list specification is optional. The
+%                     syntax of the list is
+%
+%                        <surface 1> [, <surface 2>...]
+%
+%                     If present, it indicates that data only for the
+%                     listed surfaces are to be used; however, data
+%                     need not be available for all surfaces in the
+%                     list. If absent, loaded DSK data for any surface
+%                     associated with the target body are used.
+%
+%                     The surface list may contain surface names or
+%                     surface ID codes. Names containing blanks must
+%                     be delimited by double quotes, for example
+%
+%                        'SURFACES = "Mars MEGDR 128 PIXEL/DEG"'
+%
+%                     If multiple surfaces are specified, their names
+%                     or IDs must be separated by commas.
+%
+%                     See the Particulars section below for details
+%                     concerning use of DSK data.
+%
 %
 %               Neither case nor white space are significant in
-%               'method'. For example, the string ' eLLipsoid ' is
-%               valid.
+%               `method', except within double-quoted strings. For
+%               example, the string " eLLipsoid " is valid.
 %
-%      target   the scalar string name of the target body. 'target' is
+%               Within double-quoted strings, blank characters are
+%               significant, but multiple consecutive blanks are
+%               considered equivalent to a single blank. Case is
+%               not significant. So
+%
+%                  "Mars MEGDR 128 PIXEL/DEG"
+%
+%               is equivalent to
+%
+%                  " mars megdr  128  pixel/deg "
+%
+%               but not to
+%
+%                  "MARS MEGDR128PIXEL/DEG"
+%
+%      target   the name of the target body. `target' is
 %               case-insensitive, and leading and trailing blanks in
-%               'target' are not significant. Optionally, you may
+%               `target' are not significant. Optionally, you may
 %               supply a string containing the integer ID code
-%               for the object. For example both "MOON" and "301"
+%               for the object. For example both 'MOON' and '301'
 %               are legitimate strings that indicate the moon is the
 %               target body.
 %
+%               [1,c2] = size(target); char = class(target)
 %
-%      et       the double precision scalar epoch of participation of
-%               the observer, expressed as ephemeris seconds past J2000
-%               TDB: 'et' is the epoch at which the observer's state
+%                  or
+%
+%               [1,1] = size(target); cell = class(target)
+%
+%               When the target body's surface is represented by a
+%               tri-axial ellipsoid, this routine assumes that a
+%               kernel variable representing the ellipsoid's radii is
+%               present in the kernel pool. Normally the kernel
+%               variable would be defined by loading a PCK file.
+%
+%      et       the epoch, expressed as seconds past J2000 TDB, of the
+%               observer: 'et' is the epoch at which the observer's state
 %               is computed.
+%
+%               [1,1] = size(et); double = class(et)
 %
 %               When aberration corrections are not used, 'et' is also
 %               the epoch at which the position and orientation of the
@@ -82,16 +147,34 @@
 %               selected correction. See the description of 'abcorr'
 %               below for details.
 %
-%      fixref   the scalar string name of the body-fixed, body-centered
-%               reference frame associated with the target body. The
-%               output intercept point 'spoint' and observer to
-%               intercept vector 'srfvec' expressed relative to
+%      fixref   the name of a body-fixed reference frame centered
+%               on the target body. `fixref' may be any such frame
+%               supported by the SPICE system, including built-in
+%               frames (documented in the Frames Required Reading)
+%               and frames defined by a loaded frame kernel (FK). The
+%               string `fixref' is case-insensitive, and leading and
+%               trailing blanks in `fixref' are not significant.
+%
+%               [1,c3] = size(fixref); char = class(fixref)
+%
+%                  or
+%
+%               [1,1] = size(fixref); cell = class(fixref)
+%
+%               The output intercept point `spoint' and the observer-to-
+%               intercept vector `srfvec' will be expressed relative to
 %               this reference frame.
 %
-%      abcorr   the scalar string aberration correction to be applied
-%               when computing the observer-target state and the
-%               orientation of the target body. 'abcorr' may be any of
-%               the following.
+%      abcorr   the aberration correction to apply when computing the
+%               observer-target state and the orientation of the target body.
+%
+%               [1,c4] = size(abcorr); char = class(abcorr)
+%
+%                  or
+%
+%               [1,1] = size(abcorr); cell = class(abcorr)
+%
+%               'abcorr' may be any of the following.
 %
 %                  "NONE"     Apply no correction. Return the
 %                             geometric surface intercept point on the
@@ -186,33 +269,49 @@
 %
 %               Case and embedded blanks are not significant in 'abcorr'.
 %
-%      obsrvr   the scalar string name of the observing body. This is
-%               typically a spacecraft, the earth, or a surface point on
-%               the earth. 'obsrvr' is case-insensitive, and leading and
+%      obsrvr   the name of the observing body. This is typically
+%               a spacecraft, the earth, or a surface point on the earth.
+%
+%               [1,c5] = size(obsrvr); char = class(obsrvr)
+%
+%                  or
+%
+%               [1,1] = size(obsrvr); cell = class(obsrvr)
+%
+%               'obsrvr' is case-insensitive, and leading and
 %               trailing blanks in 'obsrvr' are not significant.
 %               Optionally, you may supply a string containing the
 %               integer ID code for the object. For example both
 %               "MOON" and "301" are legitimate strings that indicate
 %               the moon is the observer.
 %
-%      dref     the scalar string name of the reference frame relative to
-%               which the input direction vector is expressed. This may be
+%      dref     the name of the reference frame relative to which
+%               the ray's direction vector is expressed. This may be
 %               any frame supported by the SPICE system, including
 %               built-in frames (documented in the Frames Required
 %               Reading) and frames defined by a loaded frame kernel
-%               (FK).
+%               (FK). The string `dref' is case-insensitive, and
+%               leading and trailing blanks in `dref' are not
+%               significant.
 %
-%               When 'dref' designates a non-inertial frame, the
+%               [1,c6] = size(dref); char = class(dref)
+%
+%                  or
+%
+%               [1,1] = size(dref); cell = class(dref)
+%
+%               When `dref' designates a non-inertial frame, the
 %               orientation of the frame is evaluated at an epoch
 %               dependent on the frame's center and, if the center is
 %               not the observer, on the selected aberration
 %               correction. See the description of the direction
-%               vector 'dvec' for details.
+%               vector `dvec' for details.
 %
-%      dvec     the double precision 3x1 array defining the pointing
-%               vector emanating from the observer. The intercept
-%               with the target body's surface of the ray
+%      dvec     the pointing vector emanating from the observer. The
+%               intercept with the target body's surface of the ray
 %               defined by the observer and 'dvec' is sought.
+%
+%               [3,1] = size(dvec); double = class(dvec)
 %
 %               'dvec' is specified relative to the reference frame
 %               designated by 'dref'.
@@ -239,13 +338,14 @@
 %
 %   returns:
 %
-%      spoint   double precision 3x1 array defining surface intercept
-%               point on the target body of the ray defined by the observer
-%               and the direction vector. If the ray intersects the target
-%               body in multiple points, the selected intersection point is
-%               the one closest to the observer. The output argument
-%               'found' (see below) indicates whether an intercept was
-%               found.
+%      spoint   the surface intercept point on the target body of the ray
+%               defined by the observer and the direction vector. If the ray
+%               intersects the target body in multiple points, the selected
+%               intersection point is the one closest to the observer. The
+%               output argument 'found' (see below) indicates whether an
+%               intercept was found.
+%
+%               [3,1] = size(spoint); double = class(spoint)
 %
 %               'spoint' is expressed in Cartesian coordinates,
 %               relative to the target body-fixed frame designated by
@@ -265,28 +365,32 @@
 %
 %               The components of 'spoint' are given in units of km.
 %
-%      trgepc   the scalar double precision "intercept epoch."  This is the
-%               epoch at which the ray defined by 'obsrvr' and 'dvec'
-%               intercepts the target surface at 'spoint'. 'trgepc' is defined
-%               as follows: letting 'lt' be the one-way light time between
-%               the observer and the intercept point, 'trgepc' is the
-%               epoch et-lt, et+lt, or 'et' depending on whether the
-%               requested aberration correction is, respectively, for
-%               received radiation, transmitted radiation, or
+%      trgepc   the "intercept epoch."
+%
+%               [1,1] = size(trgepc); double = class(trgepc)
+%
+%               This is the epoch at which the ray defined by 'obsrvr'
+%               and 'dvec' intercepts the target surface at 'spoint'.
+%               'trgepc' is defined as follows: letting 'lt' be the one-way
+%               light time between the observer and the intercept point,
+%               'trgepc' is the epoch et-lt, et+lt, or 'et' depending on
+%               whether the requested aberration correction is, respectively,
+%               for  received radiation, transmitted radiation, or
 %               omitted. 'lt' is computed using the method indicated by
 %               'abcorr'.
 %
 %               'trgepc' is expressed as seconds past J2000 TDB.
 %
-%      srfvec   a double precision 3x1 array defining the vector
-%               from the observer's position at 'et' to
+%      srfvec   the vector from the observer's position at 'et' to
 %               'spoint'. 'srfvec' is expressed in the target body-fixed
 %               reference frame designated by 'fixref', evaluated at
 %               'trgepc'.
 %
+%               [3,1] = size(srfvec); double = class(srfvec)
+%
 %               The components of 'srfvec' are given in units of km.
 %
-%               One can use the CSPICE function vnorm_c to obtain the
+%               One can use the CSPICE function cspice_vnorm to obtain the
 %               distance between the observer and 'spoint':
 %
 %                  dist = norm( srfvec )
@@ -294,14 +398,14 @@
 %               The observer's position 'obspos', relative to the
 %               target body's center, where the center's position is
 %               corrected for aberration effects as indicated by
-%               'abcorr', can be computed via the call:
+%               'abcorr', can be computed with:
 %
 %                  obspos = spoint - srfvec
 %
 %               To transform the vector 'srfvec' from a reference frame
 %               'fixref' at time 'trgepc' to a time-dependent reference
-%               frame 'ref' at time 'et', the routine 'cspice_pxfrm2' should be
-%               called. Let 'xform' be the 3x3 matrix representing the
+%               frame 'ref' at time 'et', call the routine 'cspice_pxfrm2'.
+%               Let 'xform' be the 3x3 matrix representing the
 %               rotation from the reference frame 'fixref' at time
 %               'trgepc' to the reference frame 'ref' at time 'et'. Then
 %               'srfvec' can be transformed to the result 'refvec' as
@@ -310,10 +414,12 @@
 %                  xform  = cspice_pxfrm2 ( fixref, ref, trgepc, et )
 %                  refvec = xform * srfvec
 %
-%      found    a scalar logical indicating whether or not the ray
+%      found    a flag indicating whether or not the ray
 %               intersects the target. If an intersection exists
-%               'found' will return as true If the ray misses
-%               the target, 'found' will return as false.
+%               'found' will return true If the ray misses
+%               the target, 'found' will return false.
+%
+%               [1,1] = size(found); logical = class(found)
 %
 %-Examples
 %
@@ -520,7 +626,234 @@
 %
 %-Particulars
 %
-%   None.
+%   Given a ray defined by a direction vector and the location of an
+%   observer, cspice_sincpt computes the surface intercept point of the ray
+%   on a specified target body. cspice_sincpt also determines the vector
+%   from the observer to the surface intercept point. If the ray
+%   intersects the target in multiple locations, the intercept
+%   closest to the observer is selected.
+%
+%   When aberration corrections are used, this routine finds the
+%   value of `spoint' such that, if `spoint' is regarded as an ephemeris
+%   object, after the selected aberration corrections are applied to
+%   the vector from the observer to `spoint', the resulting vector is
+%   parallel to the direction vector `dvec'.
+%
+%   This routine computes light time corrections using light time
+%   between the observer and the surface intercept point, as opposed
+%   to the center of the target. Similarly, stellar aberration
+%   corrections done by this routine are based on the direction of
+%   the vector from the observer to the light-time corrected
+%   intercept point, not to the target center. This technique avoids
+%   errors due to the differential between aberration corrections
+%   across the target body. Therefore it's valid to use aberration
+%   corrections with this routine even when the observer is very
+%   close to the intercept point, in particular when the
+%   observer-intercept point distance is much less than the
+%   observer-target center distance. It's also valid to use stellar
+%   aberration corrections even when the intercept point is near or
+%   on the limb (as may occur in occultation computations using a
+%   point target).
+%
+%   When comparing surface intercept point computations with results
+%   from sources other than SPICE, it's essential to make sure the
+%   same geometric definitions are used.
+%
+%
+%   Using DSK data
+%   ==============
+%
+%      DSK loading and unloading
+%      -------------------------
+%
+%      DSK files providing data used by this routine are loaded by
+%      calling cspice_furnsh and can be unloaded by calling cspice_unload or
+%      cspice_kclear. See the documentation of cspice_furnsh for limits on
+%      numbers of loaded DSK files.
+%
+%      For run-time efficiency, it's desirable to avoid frequent
+%      loading and unloading of DSK files. When there is a reason to
+%      use multiple versions of data for a given target body---for
+%      example, if topographic data at varying resolutions are to be
+%      used---the surface list can be used to select DSK data to be
+%      used for a given computation. It is not necessary to unload
+%      the data that are not to be used. This recommendation presumes
+%      that DSKs containing different versions of surface data for a
+%      given body have different surface ID codes.
+%
+%
+%      DSK data priority
+%      -----------------
+%
+%      A DSK coverage overlap occurs when two segments in loaded DSK
+%      files cover part or all of the same domain---for example, a
+%      given longitude-latitude rectangle---and when the time
+%      intervals of the segments overlap as well.
+%
+%      When DSK data selection is prioritized, in case of a coverage
+%      overlap, if the two competing segments are in different DSK
+%      files, the segment in the DSK file loaded last takes
+%      precedence. If the two segments are in the same file, the
+%      segment located closer to the end of the file takes
+%      precedence.
+%
+%      When DSK data selection is unprioritized, data from competing
+%      segments are combined. For example, if two competing segments
+%      both represent a surface as a set of triangular plates, the
+%      union of those sets of plates is considered to represent the
+%      surface.
+%
+%      Currently only unprioritized data selection is supported.
+%      Because prioritized data selection may be the default behavior
+%      in a later version of the routine, the UNPRIORITIZED keyword is
+%      required in the `method' argument.
+%
+%
+%      Syntax of the `method' input argument
+%      -----------------------------------
+%
+%      The keywords and surface list in the `method' argument
+%      are called "clauses." The clauses may appear in any
+%      order, for example
+%
+%         'DSK/<surface list>/UNPRIORITIZED'
+%         'DSK/UNPRIORITIZED/<surface list>'
+%         'UNPRIORITIZED/<surface list>/DSK'
+%
+%      The simplest form of the `method' argument specifying use of
+%      DSK data is one that lacks a surface list, for example:
+%
+%         'DSK/UNPRIORITIZED'
+%
+%      For applications in which all loaded DSK data for the target
+%      body are for a single surface, and there are no competing
+%      segments, the above string suffices. This is expected to be
+%      the usual case.
+%
+%      When, for the specified target body, there are loaded DSK
+%      files providing data for multiple surfaces for that body, the
+%      surfaces to be used by this routine for a given call must be
+%      specified in a surface list, unless data from all of the
+%      surfaces are to be used together.
+%
+%      The surface list consists of the string
+%
+%         'SURFACES = '
+%
+%      followed by a comma-separated list of one or more surface
+%      identifiers. The identifiers may be names or integer codes in
+%      string format. For example, suppose we have the surface
+%      names and corresponding ID codes shown below:
+%
+%         Surface Name                              ID code
+%         ------------                              -------
+%         "Mars MEGDR 128 PIXEL/DEG"                1
+%         "Mars MEGDR 64 PIXEL/DEG"                 2
+%         "Mars_MRO_HIRISE"                         3
+%
+%      If data for all of the above surfaces are loaded, then
+%      data for surface 1 can be specified by either
+%
+%         'SURFACES = 1'
+%
+%      or
+%
+%         'SURFACES = "Mars MEGDR 128 PIXEL/DEG"'
+%
+%      Double quotes are used to delimit the surface name because
+%      it contains blank characters.
+%
+%      To use data for surfaces 2 and 3 together, any
+%      of the following surface lists could be used:
+%
+%         'SURFACES = 2, 3'
+%
+%         'SURFACES = "Mars MEGDR  64 PIXEL/DEG", 3'
+%
+%         'SURFACES = 2, Mars_MRO_HIRISE'
+%
+%         'SURFACES = "Mars MEGDR 64 PIXEL/DEG", Mars_MRO_HIRISE'
+%
+%      An example of a `method' argument that could be constructed
+%      using one of the surface lists above is
+%
+%         'DSK/UNPRIORITIZED/SURFACES = "Mars MEGDR 64 PIXEL/DEG", 3'
+%
+%
+%      Round-off errors and mitigating algorithms
+%      ------------------------------------------
+%
+%      When topographic data are used to represent the surface of a
+%      target body, round-off errors can produce some results that
+%      may seem surprising.
+%
+%      Note that, since the surface in question might have mountains,
+%      valleys, and cliffs, the points of intersection found for
+%      nearly identical sets of inputs may be quite far apart from
+%      each other: for example, a ray that hits a mountain side in a
+%      nearly tangent fashion may, on a different host computer, be
+%      found to miss the mountain and hit a valley floor much farther
+%      from the observer, or even miss the target altogether.
+%
+%      Round-off errors can affect segment selection: for example, a
+%      ray that is expected to intersect the target body's surface
+%      near the boundary between two segments might hit either
+%      segment, or neither of them; the result may be
+%      platform-dependent.
+%
+%      A similar situation exists when a surface is modeled by a set
+%      of triangular plates, and the ray is expected to intersect the
+%      surface near a plate boundary.
+%
+%      To avoid having the routine fail to find an intersection when
+%      one clearly should exist, this routine uses two "greedy"
+%      algorithms:
+%
+%         1) If the ray passes sufficiently close to any of the
+%            boundary surfaces of a segment (for example, surfaces of
+%            maximum and minimum longitude or latitude), that segment
+%            is tested for an intersection of the ray with the
+%            surface represented by the segment's data.
+%
+%            This choice prevents all of the segments from being
+%            missed when at least one should be hit, but it could, on
+%            rare occasions, cause an intersection to be found in a
+%            segment other than the one that would be found if higher
+%            precision arithmetic were used.
+%
+%         2) For type 2 segments, which represent surfaces as
+%            sets of triangular plates, each plate is expanded very
+%            slightly before a ray-plate intersection test is
+%            performed. The default plate expansion factor is
+%
+%               1 + 1.e-10
+%
+%            In other words, the sides of the plate are lengthened by
+%            1/10 of a micron per km. The expansion keeps the centroid
+%            of the plate fixed.
+%
+%            Plate expansion prevents all plates from being missed
+%            in cases where clearly at least one should be hit.
+%
+%            As with the greedy segment selection algorithm, plate
+%            expansion can occasionally cause an intercept to be
+%            found on a different plate than would be found if higher
+%            precision arithmetic were used. It also can occasionally
+%            cause an intersection to be found when the ray misses
+%            the target by a very small distance.
+%
+%
+%      Aberration corrections
+%      ----------------------
+%
+%      For irregularly shaped target bodies, the distance between the
+%      observer and the nearest surface intercept need not be a
+%      continuous function of time; hence the one-way light time
+%      between the intercept and the observer may be discontinuous as
+%      well. In such cases, the computed light time, which is found
+%      using iterative algorithm, may converge slowly or not at all.
+%      In all cases, the light time computation will terminate, but
+%      the result may be less accurate than expected.
 %
 %-Required Reading
 %
@@ -528,6 +861,7 @@
 %   the CSPICE routine sincpt_c.
 %
 %   MICE.REQ
+%   DSK.REQ
 %   FRAMES.REQ
 %   NAIF_IDS.REQ
 %   PCK.REQ
@@ -536,20 +870,26 @@
 %
 %-Version
 %
+%   -Mice Version 2.0.0, 04-APR-2017, EDW (JPL), NJB (JPL)
+%
+%       Header update to reflect support for use of DSKs.
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
+%
 %   -Mice Version 1.0.3, 12-MAR-2012, SCK (JPL)
 %
-%      References to the new 'cspice_pxfrm2' routine were
-%      added to the 'I/O returns' section. A problem description was
-%      added to the 'Examples' section, and the references to
-%      'srfxpt_c' and the second example were removed.
+%       References to the new 'cspice_pxfrm2' routine were
+%       added to the 'I/O returns' section. A problem description was
+%       added to the 'Examples' section, and the references to
+%       'cspice_srfxpt' and the second example were removed.
 %
 %   -Mice Version 1.0.2, 14-JUL-2010, EDW (JPL)
 %
-%      Corrected minor typo in header.
+%       Corrected minor typo in header.
 %
 %   -Mice Version 1.0.1, 23-FEB-2009, EDW (JPL)
 %
-%      Added proper markers for usage string variable types.
+%       Added proper markers for usage string variable types.
 %
 %   -Mice Version 1.0.0, 11-FEB-2008, EDW (JPL)
 %

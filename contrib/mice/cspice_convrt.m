@@ -1,7 +1,8 @@
 %-Abstract
 %
-%   CSPICE_CONVRT converts a measurement in a specified unit
-%   to another specified unit.
+%   CSPICE_CONVRT performs a conversion from a measurement in
+%   one unit set to the corresponding measure in another unit
+%   set.
 %
 %-Disclaimer
 %
@@ -33,47 +34,64 @@
 %
 %   Given:
 %
-%      x     a double precision scalar or 1xN array representing a
-%            measurement in the units specified by 'in'
+%      x     value(s) representing a measurement in the units specified
+%            by 'in'.
 %
-%      in    the scalar sting specifying the units associated with
-%            measurement 'x'
+%            [1,n] = size(x); double = class(x)
 %
-%      out   represents the units desired for the measurement 'x'
+%      in    the string specifying the units associated with measurement 'x'.
+%
+%            [1,c1] = size(in); char = class(in)
+%
+%               or
+%
+%            [1,1] = size(in); cell = class(in)
+%
+%      out   the string specifying the units desired for the measurement 'x'.
+%
+%            [1,c2] = size(out); char = class(out)
+%
+%               or
+%
+%            [1,1] = size(out); cell = class(out)
 %
 %            Acceptable units for 'in' and 'out':
 %
-%              Angles:                 'RADIANS'
-%                                      'DEGREES'
-%                                      'ARCMINUTES'
-%                                      'ARCSECONDS'
-%                                      'HOURANGLE'
-%                                      'MINUTEANGLE'
-%                                      'SECONDANGLE'
+%                 Angles:                 "RADIANS"
+%                                         "DEGREES"
+%                                         "ARCMINUTES"
+%                                         "ARCSECONDS"
+%                                         "HOURANGLE"
+%                                         "MINUTEANGLE"
+%                                         "SECONDANGLE"
 %
-%              Metric Distances:       'METERS'
-%                                      'KM'
-%                                      'CM'
-%                                      'MM'
+%                 Metric Distances:       "METERS"
+%                                         "M"
+%                                         "KILOMETERS"
+%                                         "KM"
+%                                         "CENTIMETERS"
+%                                         "CM"
+%                                         "MILLIMETERS"
+%                                         "MM"
 %
-%              English Distances:      'FEET'
-%                                      'INCHES'
-%                                      'YARDS'
-%                                      'STATUTE_MILES'
-%                                      'NAUTICAL_MILES'
+%                 English Distances:      "FEET"
+%                                         "INCHES"
+%                                         "YARDS"
+%                                         "STATUTE_MILES"
+%                                         "NAUTICAL_MILES"
 %
-%              Astrometric Distances:  'AU'
-%                                      'PARSECS'
-%                                      'LIGHTSECS'
-%                                      'LIGHTYEARS' julian lightyears
+%                 Astrometric Distances:  "AU"
+%                                         "PARSECS"
+%                                         "LIGHTSECS"
+%                                         "LIGHTYEARS" julian lightyears
 %
-%              Time:                   'SECONDS'
-%                                      'MINUTES'
-%                                      'HOURS'
-%                                      'DAYS'
-%                                      'JULIAN_YEARS'
-%                                      'TROPICAL_YEARS'
-%                                      'YEARS' (same as julian years)
+%                 Time:                   "SECONDS"
+%                                         "MINUTES"
+%                                         "HOURS"
+%                                         "DAYS"
+%                                         "JULIAN_YEARS"
+%                                         "TROPICAL_YEARS"
+%                                         "YEARS" (same as julian years)
 %
 %      Neither 'in' nor 'out' are case sensitive.
 %
@@ -83,8 +101,10 @@
 %
 %   returns:
 %
-%      y   a double precision scalar or 1xN array representing the input
-%          'x' measurement converted to the units defined by 'out'
+%      y   the values representing the input 'x' measurement converted 
+%          to the units defined by 'out'.
+%
+%          [1,n] = size(y); double = class(y)
 %
 %-Examples
 %
@@ -122,7 +142,15 @@
 %
 %-Particulars
 %
-%   None.
+%   This routine converts a measurement x given in units specified by
+%   in to the equivalent value y in units specified by out.
+%
+%   If a unit is not recognized, an error message is produced that
+%   indicates which one was not recognized.
+%
+%   If input and output units are incompatible (for example angle
+%   and distance units) and error message will be produced stating
+%   the requested units and associated types.
 %
 %-Required Reading
 %
@@ -132,6 +160,14 @@
 %   MICE.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.3, 05-APR-2017, EDW (JPL)
+%
+%      Header update to correspond to current SPICELIB/CSPICE version.
+%      
+%   -Mice Version 1.0.2, 30-OCT-2014, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.0.1, 06-MAY-2009, EDW (JPL)
 %

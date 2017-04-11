@@ -38,7 +38,7 @@
 %
 %               [n,m] = size(frname); char = class(frname)
 %
-%                  of
+%                  or
 %
 %               [1,n] = size(frname); cell = class(frname)
 %
@@ -127,6 +127,10 @@
 %   FRAMES.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.1, 03-JAN-2016, EDW (JPL), ML (JPL)
+%
+%       Corrected minor typo, "or" rather than "of."
 %
 %   -Mice Version 1.0.0, 14-NOV-2014, EDW (JPL), SCK (JPL)
 %

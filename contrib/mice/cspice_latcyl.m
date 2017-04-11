@@ -33,16 +33,20 @@
 %
 %   Given:
 %
-%      radius   a double precision scalar or double precision 1xN array
-%               the distance of the position from origin
+%      radius   the value(s) describing the distance of the position
+%               from the origin.
 %
-%      lon      a double precision scalar or double precision 1xN array
-%               the angle of the position from the XZ plane
-%               measured in radians
+%               [1,n] = size(radius); double = class(radius)
 %
-%      lat      a double precision scalar or double precision 1xN array
-%               the angle of the position from the XY plane
-%               measured in radians
+%      lon      the value(s) describing the angle of the position from
+%               the XZ plane measured in radians.
+%
+%               [1,n] = size(lon); double = class(lon)
+%
+%      lat      the value(s) describing the angle of the position from the
+%               XY plane measured in radians.
+%
+%               [1,n] = size(lat); double = class(lat)
 %
 %   the call:
 %
@@ -50,21 +54,26 @@
 %
 %   returns:
 %
-%      r      a double precision scalar or double precision 1xN array
-%             describing the distance of the point of interest from z axis
+%      r      the value(s) describing the distance of the point of
+%             interest from z axis.
 %
-%      lonc   a double precision scalar or double precision 1xN array
-%             describing the cylindrical angle of the point of interest
-%             from the XZ plane measured in radians
+%             [1,n] = size(r); double = class(r)
 %
-%      z      a double precision scalar or double precision 1xN array
-%             describing the height of the point above the XY plane
+%      lonc   the value(s) describing the cylindrical angle of the point of
+%             interest from the XZ plane measured in radians.
+%
+%             [1,n] = size(lonc); double = class(lonc)
+%
+%      z      the value(s) describing the height of the point above
+%             the XY plane.
+%
+%             [1,n] = size(z); double = class(z)
 %
 %             The arguments 'r' and 'z' return in the same units associated
 %             with 'radius'.
 %
 %             'r', 'lonc', and 'z' return with the same vectorization
-%             measure (N) as the 'radius', 'lon', and 'lat'.
+%             measure, N, as the 'radius', 'lon', and 'lat'.
 %
 %-Examples
 %
@@ -191,6 +200,10 @@
 %   MICE.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.1, 01-DEC-2014, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.0.0, 09-DEC-2005, EDW (JPL)
 %

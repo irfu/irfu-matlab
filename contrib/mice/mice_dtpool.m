@@ -1,6 +1,6 @@
 %-Abstract
 %
-%   MICE_DTPOOL returns descriptive data about a kernel pool variable
+%   MICE_DTPOOL returns descriptive data about a kernel pool variable.
 %
 %-Disclaimer
 %
@@ -32,8 +32,13 @@
 %
 %   Given:
 %
-%     name   the scalar string or NxM character array of names of variables
-%            whose values are to be returned
+%     name   name(s) of variables whose values are to be returned
+%
+%            [n,c1] = size(name); char = class(name)
+%
+%                  or
+%
+%            [1,n] = size(name); cell = class(name)
 %
 %   the call:
 %
@@ -41,26 +46,35 @@
 %
 %   returns:
 %
-%      value   the scalar or 1xN array of structures associating a type
-%              and size to a pool variable name.  Each structure
-%              contains the fields:
+%      value   the structure(s) associating a type and size to a pool 
+%              variable name. 
 %
-%              found   returns as true if the variable 'name' exists
-%                      in the pool; false if not
+%              [1,n] = size(value); struct = class(value)
 %
-%              n      a double precision scalar describing number of values
-%                     associated with 'name'. If 'name' does not exist in the
-%                     pool, 'n' returns with the value 0
+%              Each structure consists of the fields:
 %
-%              type   a single character indicating the type of the variable
-%                     associated with 'name'
+%                 found   flag(s) returning as true if the variable 'name'
+%                         exists in the pool; false if not.
 %
-%                     'C' if the data is character data
-%                     'N' if the data is numeric
-%                     'X' if there is no variable name in the pool
+%                         [1,1] = size(value(i).found)
+%                         logical = class(value(i).found)
 %
-%              'value' returns with the same vectorization
-%               measure (N) as 'name'.
+%                 n       the number of values associated with 'name'. If
+%                        'name' does not exist in the pool, 'n' returns
+%                         with the value 0.
+% 
+%                         [1,1] = size(value(i).n); int32 = class(value(i).n)
+%
+%                type    indicating the variable type associated with 'name'.
+% 
+%                        [1,1] = size(value(i).type)
+%                        char = class(value(i).type)
+%  
+%                        C if the data is character data
+%                        N if the data is numeric
+%                        X if there is no variable name in the pool
+%
+%      'value' returns with the same vectorization measure, N, as 'name'.
 %
 %-Examples
 %
@@ -155,6 +169,10 @@
 %   the CSPICE routine dtpool_c.
 %
 %-Version
+%
+%   -Mice Version 1.0.1, 03-DEC-2014, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.0.0, 07-MAR-2007, EDW (JPL)
 %

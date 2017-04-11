@@ -33,9 +33,15 @@
 %
 %   Given:
 %
-%      sample   a representative scalar time string to use
-%               as a model to format time strings (the string need
-%               not describe an actual date - only format matters)
+%      sample   a representative time string to use as a model to 
+%               format time strings (the string need not describe 
+%               an actual date - only format matters).
+%
+%               [1,c1] = size(sample); char = class(sample)
+%
+%                  or
+%
+%               [1,1] = size(sample); cell = class(sample)
 %
 %   the call:
 %
@@ -43,15 +49,20 @@
 %
 %   returns:
 %
-%      pictur   a scalar format picture string suitable for
-%               use with the SPICE routine cspice_timout
+%      pictur   a format picture string suitable for use with the 
+%               SPICE routine cspice_timout.
 %
-%      ok       a scalar boolean indicating whether 'sample' parsed
-%               without error (TRUE) or some parse error occurred
-%               (FALSE)
+%               [1,c2] = size(pictur); char = class(pictur)
 %
-%      errmsg   a scalar string containing the explanation of
-%               the parse error
+%      ok       a boolean indicating whether 'sample' parsed
+%               without error, true, or some parse error occurred, false.
+%
+%               [1,1] = size(ok); logical = class(ok)
+%
+%      errmsg   a string containing the explanation of
+%               the parse error.
+%
+%               [1,c3] = size(errmsg); char = class(errmsg)
 %
 %-Examples
 %
@@ -98,6 +109,10 @@
 %   TIME.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.2, 09-MAR-2015, EDW (JPL)
+%
+%      Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.2.0, 10-MAY-2011, EDW (JPL)
 %

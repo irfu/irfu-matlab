@@ -34,8 +34,10 @@
 %
 %   Given:
 %
-%      et   the double precision scalar or 1xN array of ephemeris
-%           time expressed as ephemeris seconds past J2000
+%      et   the ephemeris time(s) expressed as ephemeris seconds
+%           past J2000.
+%
+%           [1,n] = size(et); double = class(et)
 %
 %   the call:
 %
@@ -43,11 +45,15 @@
 %
 %   returns:
 %
-%      string   the scalar string or NXM character array representing
-%               the input ephemeris epoch 'et'. This string is based upon
-%               extending the Gregorian Calendar backward and forward
-%               indefinitely keeping the same rules for determining leap
-%               years. Moreover, there is no accounting for leapseconds.
+%      string   the array of time string(s) representing the input ephemeris
+%               epoch 'et'.
+%
+%               [n,c1] = size(string); char = class(string)
+%
+%               This string is based upon extending the Gregorian Calendar
+%               backward and forward indefinitely keeping the same rules
+%               for determining leap years. Moreover, there is no accounting
+%               for leapseconds.
 %
 %-Examples
 %
@@ -106,6 +112,10 @@
 %   MICE.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.2, 05-NOV-2014, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.0.1, 06-MAY-2009, EDW (JPL)
 %

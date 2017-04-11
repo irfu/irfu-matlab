@@ -33,11 +33,13 @@
 %
 %   Given:
 %
-%      v1   an arbitrary double precision, 3-dimensional vector
-%           or 3xN array
+%      v1   is an arbitrary vector(s).
 %
-%      v2   also an arbitrary double precision, 3-dimensional vector
-%           or 3xN array
+%           [3,n] = size(v1); double = class(v1)
+%
+%      v2   also an arbitrary vector(s).
+%
+%           [3,n] = size(v2); double = class(v2)
 %
 %   the call:
 %
@@ -45,17 +47,18 @@
 %
 %   returns:
 %
-%      dist   the double precision, positive definite, scalar or 1xN array
-%             describing the distance(s) between 'v1' and 'v2', distance
-%             defined as:
+%      dist   the value(s) describing the distance(s) between 'v1' and 'v2',
+%             distance defined as:
 %
 %                ||  v1 - v2  ||,
 %
 %                      _                                               _
 %             where || x || indicates the Euclidean norm of the vector x.
 %
-%             'dist' returns with the same vectorization measure (N)
-%              as 'v1' and 'v2'.
+%             [1,n] = size(dist); double = class(dist)
+%
+%             'dist' returns with the same vectorization measure, N,
+%             as 'v1' and 'v2'.
 %
 %-Examples
 %
@@ -155,6 +158,10 @@
 %   MICE.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.1, 18-DEC-2014, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.0.0, 22-NOV-2005, EDW (JPL)
 %

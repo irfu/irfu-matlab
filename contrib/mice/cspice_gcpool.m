@@ -112,7 +112,7 @@
 %         % first element returned from "size".
 %         %
 %         for n=1:n_elements
-%            txt = sprintf( '   Element %d of %s: ``%s``', i, VAR, cvals(n,:) );
+%            txt = sprintf( '   Element %d of %s: ``%s``', n, VAR, cvals(n,:) );
 %            disp(txt)
 %         end
 %
@@ -149,6 +149,11 @@
 %   KERNEL.REQ
 %
 %-Version
+%
+%   -Mice Version 1.2.1, 01-JUN-2016, EDW (JPL)
+%
+%      Corrected typo in example code. Ouput loop showed use of "i" rather
+%      than "n."
 %
 %   -Mice Version 1.2.0, 12-MAR-2012, EDW (JPL), SCK (JPL)
 %

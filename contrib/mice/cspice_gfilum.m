@@ -59,6 +59,12 @@
 %                include, but are not limited to, the shape model
 %                used to represent the surface of the target body.
 %
+%                [1,c1] = size(method); char = class(method)
+%
+%                  or
+%
+%                [1,1] = size(method); cell = class(method)
+%
 %                The only choice currently supported is
 %
 %                   'Ellipsoid'        The illumination angle
@@ -72,14 +78,16 @@
 %                'method'. For example, the string ' eLLipsoid ' is
 %                valid.
 %
-%                [1,c1] = size(method); char = class(method)
+%      angtyp    name specifying the illumination angle for which a search
+%                is to be performed. 
+%
+%                [1,c2] = size(angtyp); char = class(angtyp)
 %
 %                  or
 %
-%                [1,1] = size(method); cell = class(method)
+%                [1,1] = size(angtyp); cell = class(angtyp)
 %
-%      angtyp    name specifying the illumination angle for which a search
-%                is to be performed. The possible values of 'angtyp' are:
+%                The possible values of 'angtyp' are:
 %
 %                   'PHASE'
 %                   'SOLAR INCIDENCE'
@@ -92,26 +100,20 @@
 %                'angtyp'. For example, the string ' Solar incidence ' is
 %                valid.
 %
-%                [1,c2] = size(angtyp); char = class(angtyp)
-%
-%                  or
-%
-%                [1,1] = size(angtyp); cell = class(angtyp)
-%
 %      target    name of the target body. The point at which the
 %                illumination angles are defined is located on the
 %                surface of this body.
-%
-%                Optionally, you may supply the integer ID code for
-%                the object as an integer string. For example both
-%                'MOON' and '301' are legitimate strings that indicate
-%                the moon is the target body.
 %
 %                [1,c3] = size(target); char = class(target)
 %
 %                  or
 %
 %                [1,1] = size(target); cell = class(target)
+%
+%                Optionally, you may supply the integer ID code for
+%                the object as an integer string. For example both
+%                'MOON' and '301' are legitimate strings that indicate
+%                the moon is the target body.
 %
 %      illmn     name of the illumination source. This source
 %                may be any ephemeris object. Case, blanks, and
@@ -131,14 +133,14 @@
 %                define the orientation of the target body as a
 %                function of time.
 %
-%                The string 'fixref' is case-insensitive, and leading
-%                and trailing blanks in 'fixref' are not significant.
-%
 %                [1,c5] = size(fixref); char = class(fixref)
 %
 %                  or
 %
 %                [1,1] = size(fixref); cell = class(fixref)
+%
+%                The string 'fixref' is case-insensitive, and leading
+%                and trailing blanks in 'fixref' are not significant.
 %
 %      abcorr    describes the aberration corrections to apply to the state
 %                evaluations to account for one-way light time and stellar
@@ -146,8 +148,15 @@
 %
 %                Any 'reception' correction accepted by spkezr_c can be
 %                used here. See the header of spkezr_c for a detailed
-%                description of the aberration correction options. For
-%                convenience, the options are listed below:
+%                description of the aberration correction options. 
+%
+%                [1,c6] = size(abcorr); char = class(abcorr)
+%
+%                  or
+%
+%                [1,1] = size(abcorr); cell = class(abcorr)
+%
+%                 For convenience, the options are listed below:
 %
 %                   'NONE'     Apply no correction.
 %
@@ -170,12 +179,6 @@
 %                Case and blanks are not significant in the string
 %                'abcorr'.
 %
-%                [1,c6] = size(abcorr); char = class(abcorr)
-%
-%                  or
-%
-%                [1,1] = size(abcorr); cell = class(abcorr)
-%
 %      obsrvr    name of the observing body. Optionally, you
 %                may supply the ID code of the object as an integer
 %                string. For example, both 'EARTH' and '399' are
@@ -192,6 +195,8 @@
 %                Cartesian coordinates, relative to the body-fixed
 %                target frame designated by 'fixref'.
 %
+%                [3,1] = size(spoint); double = class(spoint)
+%
 %                'spoint' need not be visible from the observer's
 %                location in order for the constraint specified by
 %                'relate' and 'refval' (see descriptions below) to be
@@ -199,13 +204,19 @@
 %
 %                The components of 'spoint' have units of km.
 %
-%                [3,1] = size(spoint); double = class(spoint)
-%
 %      relate    describes the constraint relational operator on a specified
 %                illumination angle. The result window found by this routine
 %                indicates the time intervals where the constraint is
-%                satisfied. Supported values of 'relate' and corresponding
-%                meanings are shown below:
+%                satisfied.
+%
+%                [1,c8] = size(relate); char = class(relate)
+%
+%                  or
+%
+%                [1,1] = size(relate); cell = class(relate)
+%
+%                Supported values of 'relate' and corresponding meanings 
+%                are shown below:
 %
 %                    '>'      The angle is greater than the reference
 %                           value 'refval'.
@@ -237,26 +248,22 @@
 %
 %                Case is not significant in the string 'relate'.
 %
-%                [1,c8] = size(relate); char = class(relate)
-%
-%                  or
-%
-%                [1,1] = size(relate); cell = class(relate)
-%
 %      refval    reference value used together with the argument
 %                'relate' to define an equality or inequality to be
 %                satisfied by the specified illumination angle. See the
 %                discussion of 'relate' above for further information.
 %
-%                The units of 'refval' are radians.
-%
 %                [1,1] = size(refval); double = class(refval)
+%
+%                The units of 'refval' are radians.
 %
 %      adjust    parameter used to modify searches for absolute
 %                extrema: when 'relate' is set to 'ABSMAX' or 'ABSMIN'
 %                and 'adjust' is set to a positive value, gfilum_c will
 %                find times when the observer-target distance is within
 %                'adjust' km of the specified extreme value.
+%
+%                [1,1] = size(adjust); double = class(adjust)
 %
 %                If 'adjust' is non-zero and a search for an absolute
 %                minimum 'min' is performed, the result window contains
@@ -269,14 +276,14 @@
 %                'adjust' is not used for searches for local extrema,
 %                equality or inequality conditions.
 %
-%               [1,1] = size(adjust); double = class(adjust)
-%
 %      step      step size to use in the search. 'step' must
 %                be short enough for a search using this step size to
 %                locate the time intervals where the specified
 %                illumination angle is monotone increasing or
 %                decreasing. However, 'step' must not be *too* short, or
 %                the search will take an unreasonable amount of time.
+%
+%                [1,1] = size(step); double = class(step)
 %
 %                The choice of 'step' affects the completeness but not
 %                the precision of solutions found by this routine; the
@@ -286,11 +293,11 @@
 %
 %                'step' has units of seconds.
 %
-%                [1,1] = size(step); double = class(step)
-%
 %      nintvls   is a parameter specifying the number of intervals that
 %                can be accommodated by each of the dynamically allocated
 %                workspace windows used internally by this routine.
+%
+%                [1,1] = size(nintvls); int32 = class(nintvls)
 %
 %                In many cases, it's not necessary to compute an accurate
 %                estimate of how many intervals are needed; rather, the
@@ -315,20 +322,18 @@
 %
 %                   step  is the search step size in seconds
 %
-%                [1,1] = size(nintvls); int32 = class(nintvls)
-%
 %      cnfine    a SPICE window that confines the time period over
 %                which the specified search is conducted. 'cnfine' may
 %                consist of a single interval or a collection of
 %                intervals.
+%
+%                [2r,1] = size(cnfine); double = class(cnfine)
 %
 %                The endpoints of the time intervals comprising 'cnfine'
 %                are interpreted as seconds past J2000 TDB.
 %
 %                See the Examples section below for a code example that
 %                shows how to create a confinement window.
-%
-%                [2r,1] = size(cnfine), double = class(cnfine)
 %
 %   the call:
 %
@@ -343,6 +348,8 @@
 %               confinement window 'cnfine', on which the specified
 %               constraint is satisfied.
 %
+%               [2s,1] = size(result); double = class(result)
+%
 %               If the search is for local extrema, or for absolute
 %               extrema with adjust set to zero, then normally each
 %               interval of result will be a singleton: the left and
@@ -350,8 +357,6 @@
 %
 %               If no times within the confinement window satisfy the
 %               constraint, 'result' will return with cardinality zero.
-%
-%               [2s,1] = size(result), double = class(result)
 %
 %-Examples
 %
@@ -890,6 +895,10 @@
 %   WINDOWS.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.1, 11-NOV-2014, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.0.0, 07-NOV-2013, EDW (JPL)
 %

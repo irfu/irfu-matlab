@@ -35,12 +35,20 @@
 %
 %      angle3
 %      angle2
-%      angle1    a set of scalar or 1xN arrays of double precision
-%                rotation angles measured in radians
+%      angle1    set(s) rotation angles measured in radians.
+%
+%                [1,n] = size(angle3); double = class(angle3)
+%                [1,n] = size(angle2); double = class(angle2)
+%                [1,n] = size(angle1); double = class(angle1)
+%
 %      axis3
 %      axis2
-%      axis1     the scaler integer indices defining the rotation axis
-%                corresponding to each angle
+%      axis1     the indices defining the rotation axis
+%                corresponding to each angle.
+%
+%                [1,1] = size(axis3); int32 = class(axis3)
+%                [1,1] = size(axis2); int32 = class(axis2)
+%                [1,1] = size(axis1); int32 = class(axis1)
 %
 %                The values of axisX may be 1, 2, or 3, indicating
 %                the x, y, and z axes respectively.
@@ -51,13 +59,17 @@
 %
 %   returns:
 %
-%      r   a 3x3 or 3x3xN array of double precision matrices defined by
-%          the Euler rotation scheme, with r defined as:
+%      r   the matrix/matrices defined by the Euler rotation scheme, 
+%          with r defined as:
 %
 %          r = [ angle3 ]     [ angle2 ]      [ angle1 ]
 %                        axis3          axis2           axis1
 %
-%         'r' return with the same vectorization measure (N) as
+%          If [1,1] = size(angle3) then [3,3]   = size(r)
+%          If [1,n] = size(angle3) then [3,3,n] = size(r)
+%                                         double = class(r)
+%
+%         'r' return with the same vectorization measure, n, as
 %         'angle3', 'angle2', and 'angle1'.
 %
 %      Note: the rotation defines a coordinate system rotation,
@@ -179,6 +191,10 @@
 %   ROTATION.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.1, 06-NOV-2014, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.0.0, 22-NOV-2005, EDW (JPL)
 %

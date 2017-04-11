@@ -55,14 +55,28 @@
 %
 %      Arguments-
 %
-%      targ1    the scalar string naming the first body of interest. You can
+%      targ1    the name of the first body of interest. You can
 %               also supply the integer ID code for the object as an
 %               integer string.  For example both 'MOON' and '301'
 %               are legitimate strings that indicate the moon is the
 %               target body.
 %
-%      shape1   the scalar string naming the geometric model used to represent
-%               the shape of the 'targ1' body. Models supported by this routine:
+%               [1,c1] = size(targ1); char = class(targ1)
+%
+%                  or
+%
+%               [1,1] = size(targ1); cell = class(targ1)
+%
+%      shape1   the name of the geometric model used to represent the shape
+%               of the 'targ1' body.
+%
+%               [1,c2] = size(shape1); char = class(shape1)
+%
+%                  or
+%
+%               [1,1] = size(shape1); cell = class(shape1)
+%
+%               Models supported by this routine:
 %
 %                  'SPHERE'        Treat the body as a sphere with radius
 %                                  equal to the maximum value of
@@ -71,23 +85,43 @@
 %                  'POINT'         Treat the body as a point;
 %                                  radius has value zero.
 %
-%                  The 'shape1' string lacks sensitivity to case, leading
-%                  and trailing blanks.
+%               The 'shape1' string lacks sensitivity to case, leading
+%               and trailing blanks.
 %
-%      frame1   the scalar string naming the body-fixed reference frame
+%      frame1   the name of the body-fixed reference frame
 %               corresponding to 'targ1'. cspice_gfsep does not currently use
 %               this argument's value, its use is reserved for future
 %               shape models. The value 'NULL' will suffice for
 %               "POINT" and "SPHERE" shaped bodies.
 %
-%      targ2    the scalar string naming the second body of interest. You can
+%               [1,c3] = size(frame1); char = class(frame1)
+%
+%                  or
+%
+%               [1,1] = size(frame1); cell = class(frame1)
+%
+%      targ2    the name of the second body of interest. You can
 %               also supply the integer ID code for the object as an
 %               integer string.  For example both 'MOON' and '301'
 %               are legitimate strings that indicate the moon is the
 %               target body.
 %
-%      shape2   the scalar string naming the geometric model used to represent
-%               the shape of the 'targ2.' Models supported by this routine:
+%               [1,c4] = size(targ2); char = class(targ2)
+%
+%                  or
+%
+%               [1,1] = size(targ2); cell = class(targ2)
+%
+%      shape2   the name of the geometric model used to represent
+%               the shape of the 'targ2.'
+%
+%               [1,c5] = size(shape2); char = class(shape2)
+%
+%                  or
+%
+%               [1,1] = size(shape2); cell = class(shape2)
+%
+%               Models supported by this routine:
 %
 %                 'SPHERE'        Treat the body as a sphere with radius
 %                                 equal to the maximum value of
@@ -99,23 +133,30 @@
 %               The 'shape2' string lacks sensitivity to case, leading
 %               and trailing blanks.
 %
-%      frame2   the scalar string naming the body-fixed reference frame
+%      frame2   the name of the body-fixed reference frame
 %               corresponding to 'targ2'. cspice_gfsep does not currently use
 %               this argument's value, its use is reserved for future
 %               shape models. The value 'NULL' will suffice for
 %               "POINT" and "SPHERE" shaped bodies.
 %
-%      abcorr   the string scalar indicating the aberration corrections to apply
-%               to the state evaluations to account for one-way light time and
-%               stellar aberration.
+%               [1,c6] = size(frame2); char = class(frame2)
+%
+%                  or
+%
+%               [1,1] = size(frame2); cell = class(frame2)
+%
+%      abcorr   describes the aberration corrections to apply to the state
+%               evaluations to account for one-way light time and stellar
+%               aberration.
+%
+%               [1,c7] = size(abcorr); char = class(abcorr)
+%
+%                  or
+%
+%               [1,1] = size(abcorr); cell = class(abcorr)
 %
 %               This routine accepts the same aberration corrections as does
 %               the routine spkezr_c. See the header of spkezr_c for a
-%               detailed description of the aberration correction options.
-%               For convenience, the options are listed below:
-%
-%               This routine accepts the same aberration corrections as does
-%               the SPICE routine SPKEZR. See the header of SPKEZR for a
 %               detailed description of the aberration correction options.
 %               For convenience, the options are listed below:
 %
@@ -156,17 +197,31 @@
 %               The 'abcorr' string lacks sensitivity to case, and to embedded,
 %               leading and trailing blanks.
 %
-%      obsrvr   the string scalar naming the observing body. Optionally, you
+%      obsrvr   the name of the observing body. Optionally, you
 %               may supply the ID code of the object as an integer
 %               string. For example, both 'EARTH' and '399' are
 %               legitimate strings to supply to indicate the
 %               observer is Earth.
 %
-%      relate   the string identifying the relational operator used to
-%               define a constraint on the angular separation. The result
-%               window found by this routine indicates the time intervals
-%               where the constraint is satisfied. Supported values of
-%               relate and corresponding meanings are shown below:
+%               [1,c8] = size(obsrvr); char = class(obsrvr)
+%
+%                  or
+%
+%               [1,1] = size(obsrvr); cell = class(obsrvr)
+%
+%      relate   the constraint relational operator on the angular separation.
+%               The result window found by this routine indicates the time
+%               intervals where the constraint is satisfied. 
+%
+%               [1,c9] = size(relate); char = class(relate)
+%
+%                  or
+%
+%               [1,1] = size(relate); cell = class(relate)
+%
+%
+%               Supported values of relate and corresponding meanings are 
+%               shown below:
 %
 %                  '>'      Separation is greater than the reference
 %                           value 'refval'.
@@ -177,13 +232,13 @@
 %                  '<'      Separation is less than the reference
 %                           value 'refval'.
 %
-%                 'ABSMAX'  Separation is at an absolute maximum.
+%                  'ABSMAX'  Separation is at an absolute maximum.
 %
-%                 'ABSMIN'  Separation is at an absolute  minimum.
+%                  'ABSMIN'  Separation is at an absolute  minimum.
 %
-%                 'LOCMAX'  Separation is at a local maximum.
+%                  'LOCMAX'  Separation is at a local maximum.
 %
-%                 'LOCMIN'  Separation is at a local minimum.
+%                  'LOCMIN'  Separation is at a local minimum.
 %
 %               The caller may indicate that the region of interest
 %               is the set of time intervals where the quantity is
@@ -205,19 +260,22 @@
 %               The 'relate' string lacks sensitivity to case, leading
 %               and trailing blanks.
 %
-%      refval   the double precision reference value used together with
-%               'relate' argument to define an equality or inequality to be
-%               satisfied by the angular separation between the specified target
-%               and observer. See the discussion of relate above for
-%               further information.
+%      refval   reference value used together with 'relate' argument to define
+%               an equality or inequality to be satisfied by the angular
+%               separation between the specified target and observer. See
+%               the discussion of relate above for further information.
+%
+%               [1,1] = size(refval); double = class(refval)
 %
 %               The units of 'refval' are radians.
 %
-%      adjust   a double precision value used to modify searches for
-%               absolute extrema: when 'relate' is set to ABSMAX or ABSMIN and
-%               adjust is set to a positive value, cspice_gfsep finds times when
-%               the angular separation between the bodies is within adjust
+%      adjust   value used to modify searches for absolute extrema: when
+%               'relate' is set to ABSMAX or ABSMIN and adjust is set to a
+%               positive value, cspice_gfsep finds times when the angular
+%               separation between the bodies is within adjust
 %               radians of the specified extreme value.
+%
+%               [1,1] = size(adjust); double = class(adjust)
 %
 %               For relate set to ABSMAX, the result window contains
 %               time intervals when the angular separation has
@@ -230,14 +288,14 @@
 %               'adjust' is not used for searches for local extrema,
 %               equality or inequality conditions.
 %
-%      step     the double precision time step size to use in the search.
-%
-%               'step' must be short enough to for a search using this step
-%               size to locate the time intervals where the
-%               specified angular separation function is monotone
-%               increasing or decreasing. However, 'step' must not be
-%               *too* short, or the search will take an unreasonable
+%      step     time step size to use in the search. 'step' must be short
+%               enough for a search using this step size to locate the time
+%               intervals where coordinate function of the observer-target
+%               vector is monotone increasing or decreasing. However, step must
+%               not be *too* short, or the search will take an unreasonable
 %               amount of time.
+%
+%               [1,1] = size(step); double = class(step)
 %
 %               The choice of step affects the completeness but not
 %               the precision of solutions found by this routine; the
@@ -247,19 +305,22 @@
 %
 %               'step' has units of TDB seconds.
 %
-%      nintvls  an integer scalar value specifying the number of intervals in
-%               the internal workspace array used by this routine. 'nintvls'
-%               should be at least as large as the number of intervals
-%               within the search region on which the specified observer-target
-%               vector coordinate function is monotone increasing or decreasing.
-%               It does no harm to pick a value of 'nintvls' larger than the
-%               minimum required to execute the specified search, but if chosen
-%               too small, the search will fail.
+%      nintvls  value specifying the number of intervals in the internal
+%               workspace array used by this routine. 'nintvls' should be at
+%               least as large as the number of intervals within the search
+%               region on which the specified observer-target vector coordinate
+%               function is monotone increasing or decreasing. It does no harm
+%               to pick a value of 'nintvls' larger than the minimum required
+%               to execute the specified search, but if chosen too small, the
+%               search will fail.
 %
-%      cnfine   a double precision SPICE window that confines the time
-%               period over which the specified search is conducted.
-%               cnfine may consist of a single interval or a collection
-%               of intervals.
+%               [1,1] = size(nintvls); int32 = class(nintvls)
+%
+%      cnfine   a SPICE window that confines the time period over which the
+%               specified search is conducted. 'cnfine' may consist of a
+%               single interval or a collection of intervals.
+%
+%               [2m,1] = size(cnfine); double = class(cnfine)
 %
 %               In some cases the confinement window can be used to
 %               greatly reduce the time period that must be searched
@@ -281,6 +342,8 @@
 %      result   the SPICE window of intervals, contained within the
 %               confinement window 'cnfine', on which the specified
 %               constraint is satisfied.
+%
+%               [2n,1] = size(result); double = class(result)
 %
 %               If the search is for local extrema, or for absolute
 %               extrema with adjust set to zero, then normally each
@@ -531,7 +594,13 @@
 %
 %-Version
 %
-%   -Mice Version 1.0.1, 05-SEP-2012, EDW (JPL)
+%   -Mice Version 1.0.3, 17-MAR-2015, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
+%
+%       Typo correction in version IDs in Version section.
+%
+%   -Mice Version 1.0.2, 05-SEP-2012, EDW (JPL)
 %
 %      Edit to comments to correct search description.
 %
@@ -543,7 +612,7 @@
 %      shape from 'shape1' and 'shape2' as that option is not yet
 %      implemented.
 %
-%   -Mice Version 1.0.0, 15-APR-2009, NJB EDW (JPL)
+%   -Mice Version 1.0.0, 15-APR-2009, NJB (JPL), EDW (JPL)
 %
 %-Index_Entries
 %

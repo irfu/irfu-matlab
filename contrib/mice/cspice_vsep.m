@@ -1,9 +1,8 @@
 %-Abstract
 %
-%   CSPICE_VSEP returns the scalar double precision
-%   separation angle in radians between two double precision,
-%   3-vectors.  This angle is defined as zero if either vector
-%   is zero.
+%   CSPICE_VSEP returns the separation angle in radians between
+%   two double precision, 3-vectors. This angle is defined as zero
+%   if either vector is zero.
 %
 %-Disclaimer
 %
@@ -35,17 +34,19 @@
 %
 %   Given:
 %
-%      v1   is an arbitrary double precision, 3-dimensional vector
-%           or 3xN array
+%      v1   an arbitrary vector(s).
 %
-%      v2   is also an arbitrary double precision, 3-dimensional
-%           vector or 3xN array
+%           [3,n] = size(v1); double = class(v1)
+%
+%      v2   another arbitrary vector(s).
+%
+%           [3,n] = size(v2); double = class(v2)
 %
 %              'v1' or 'v2' or both may be the zero vector.
 %
 %      An implicit assumption exists that 's1' and 's2' are specified
-%      in the same reference frame. If this is not the case, the numerical
-%      result has no meaning.
+%      in the same reference frame using the same coordinate system.
+%      If this is not the case, the numerical result has no meaning.
 %
 %   the call:
 %
@@ -53,12 +54,13 @@
 %
 %   returns:
 %
-%      vsep   the double precision, positive definite, scalar or
-%             1xN array of the angular separation(s) between 'v1' and 'v2'
+%      vsep   the value(s) of the angular separation between 'v1' and 'v2'
 %             expressed in radians. If either 'v1' or 'v2' is the zero
 %             vector, then cspice_vsep return value has value 0 radians.
 %
-%             'sep' returns with the same measure of vectorization (N) as
+%             [1,n] = size(vsep); double = class(vsep)
+%
+%             'sep' returns with the same vectorization measure, N, as
 %             'v1' and 'v2'
 %
 %-Examples
@@ -161,7 +163,14 @@
 %
 %-Version
 %
-%   -Mice Version 1.0.0, 10-APR-2010, EDW (JPL)
+%   -Mice Version 1.0.2, 17-DEC-2014, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
+%
+%       Corrections made to version section numbering. 10-APR-2010
+%       notation now numbered as 1.0.1.
+%
+%   -Mice Version 1.0.1, 10-APR-2010, EDW (JPL)
 %
 %      Edits to header I/O section.
 %

@@ -33,15 +33,20 @@
 %
 %   Given:
 %
-%      r      a double precision scalar or double precision 1xN array
-%             describing the distance of the point of interest from z axis.
+%      r      the value(s) describing the distance of the point of
+%             interest from z axis.
 %
-%      lonc   a double precision scalar or double precision 1xN array
-%             describing the cylindrical angle of the point of interest
-%             from the XZ plane measured in radians
+%             [1,n] = size(r); double = class(r)
 %
-%      z      a double precision scalar or double precision 1xN array
-%             describing the height of the point above the XY plane
+%      lonc   the value(s) describing the cylindrical angle of the point of
+%             interest from the XZ plane measured in radians.
+%
+%             [1,n] = size(lonc); double = class(lonc)
+%
+%      z      the value(s) describing the height of the point above
+%             the XY plane.
+%
+%             [1,n] = size(z); double = class(z)
 %
 %   the call:
 %
@@ -49,22 +54,26 @@
 %
 %   returns:
 %
-%      radius   a double precision scalar or double precision 1XN
-%               array describing the distance of the position from origin
+%      radius   the value(s) describing the distance of the position
+%               from the origin.
 %
-%      colat    a double precision scalar or double precision 1XN
-%               array describing the angle between the point and the
+%               [1,n] = size(radius); double = class(radius)
+%
+%      colat    the value(s) describing the angle between the point and the
 %               positive z-axis, measured in radians (also referred to
-%               as the polar angle)
+%               as the polar angle).
 %
-%      lon      a double precision scalar or double precision 1XN array
-%               describing the angle of the projection of the point to the XY
-%               plane from the positive X-axis, measured in radians,
-%               with range:
+%               [1,n] = size(colat); double = class(colat)
+%
+%      lon      the value(s) describing the angle of the projection of the
+%               point to the XY plane from the positive X-axis, measured
+%               in radians, with range:
 %
 %                   -pi < lon <= pi
 %
 %               The positive Y-axis is at longitude PI/2 radians.
+%
+%               [1,n] = size(lon); double = class(lon)
 %
 %               The argument 'radius' returns in the same units associated
 %               with 'r' and 'z'.
@@ -80,43 +89,43 @@
 %
 %   Example (1):
 %
-%         %
-%         % Load an SPK, leapseconds, and PCK kernel set.
-%         %
-%         cspice_furnsh( 'standard.tm' )
+%      %
+%      % Load an SPK, leapseconds, and PCK kernel set.
+%      %
+%      cspice_furnsh( 'standard.tm' )
 %
-%         %
-%         % Create a vector of scalar times.
-%         %
-%         et = [0:2]*2.*cspice_spd;
+%      %
+%      % Create a vector of scalar times.
+%      %
+%      et = [0:2]*2.*cspice_spd;
 %
-%         %
-%         % Retrieve the position of the moon seen from earth at 'et'
-%         % in the J2000 frame without aberration correction.
-%         %
-%         [pos, et] = cspice_spkpos( 'MOON', et, 'J2000', 'NONE', 'EARTH' );
+%      %
+%      % Retrieve the position of the moon seen from earth at 'et'
+%      % in the J2000 frame without aberration correction.
+%      %
+%      [pos, et] = cspice_spkpos( 'MOON', et, 'J2000', 'NONE', 'EARTH' );
 %
-%         %
-%         % Convert the array of position vectors 'pos' to cylindrical
-%         % coordinates.
-%         %
-%         [r, lon, z] = cspice_reccyl(pos);
+%      %
+%      % Convert the array of position vectors 'pos' to cylindrical
+%      % coordinates.
+%      %
+%      [r, lon, z] = cspice_reccyl(pos);
 %
-%         %
-%         % Convert the cylindrical coords to spherical.
-%         %
-%         [radius, colat, lon] = cspice_cylsph(r, lon, z);
+%      %
+%      % Convert the cylindrical coords to spherical.
+%      %
+%      [radius, colat, lon] = cspice_cylsph(r, lon, z);
 %
-%         %
-%         % Convert the spherical to rectangular.
-%         %
-%         [rectan] = cspice_sphrec(radius, colat, lon);
+%      %
+%      % Convert the spherical to rectangular.
+%      %
+%      [rectan] = cspice_sphrec(radius, colat, lon);
 %
-%         %
-%         % Calculate the relative error against the original position
-%         % vectors.
-%         %
-%         (rectan-pos) ./ pos
+%      %
+%      % Calculate the relative error against the original position
+%      % vectors.
+%      %
+%      (rectan-pos) ./ pos
 %
 %   MATLAB outputs:
 %
@@ -195,6 +204,10 @@
 %   MICE.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.1, 30-OCT-2014, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.0.0, 01-DEC-2005, EDW (JPL)
 %

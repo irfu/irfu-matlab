@@ -32,9 +32,13 @@
 %
 %   Given:
 %
-%     name   name(s) of variables whose values are to be returned
+%     name   name(s) of variables whose values are to be returned.
 %
-%            [n,m] = size(name); char = class(name)
+%            [n,c1] = size(name); char = class(name)
+%
+%                  or
+%
+%            [1,n] = size(name); cell = class(name)
 %
 %   the call:
 %
@@ -43,7 +47,7 @@
 %   returns:
 %
 %      found   flag(s) returning as true if the variable 'name' exists in the
-%              pool; false if not
+%              pool; false if not.
 %
 %              [1,n] = size(found); logical = class(found)
 %
@@ -52,16 +56,16 @@
 %
 %              [1,n] = size(n); int32 = class(n)
 %
-%      type    indicating the variable type associated with 'name'
+%      type    indicating the variable type associated with 'name'.
 %
-%              [n,m] = size(type); char = class(type)
+%              [n,1] = size(type); char = class(type)
 %
 %                  C if the data is character data
 %                  N if the data is numeric
 %                  X if there is no variable name in the pool
 %
 %              'found', 'n', and 'type' return with the same vectorization
-%               measure (N) as 'name'.
+%               measure, N, as 'name'.
 %
 %-Examples
 %
@@ -185,6 +189,10 @@
 %
 %-Version
 %
+%   -Mice Version 1.0.3, 03-DEC-2014, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
+%
 %   -Mice Version 1.0.2, 12-MAR-2012, EDW (JPL), SCK (JPL)
 %
 %      Edited I/O section to conform to NAIF standard for Mice documentation.
@@ -227,7 +235,7 @@ function [found, n, type] = cspice_dtpool(name)
    try
       [dtpool] = mice('dtpool_s',name);
       found    = reshape( [dtpool.found], 1, [] );
-      n        = reshape( [dtpool.n], 1, [] );
+      n        = reshape( [dtpool.n],     1, [] );
       type     = char( dtpool.type );
    catch
       rethrow(lasterror)

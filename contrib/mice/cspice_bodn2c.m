@@ -38,7 +38,11 @@
 %             "known" to the SPICE system, whether through hard-coded
 %             registration or run-time registration in the SPICE kernel pool
 %
-%             [n,m] = size(name); char = class(name)
+%             [n,c1] = size(name); char = class(name)
+%
+%                  or
+%
+%             [1,n] = size(bodynm); cell = class(bodynm)
 %
 %             Case and leading and trailing blanks in a name are not
 %             significant. However when a name is made up of more than one
@@ -71,7 +75,7 @@
 %              [1,n] = size(found); logical = class(found)
 %
 %              'found' and 'code' return with the same vectorization
-%              measure (N) as 'name'.
+%              measure, N, as 'name'.
 %
 %-Examples
 %
@@ -185,6 +189,10 @@
 %   NAIF_IDS.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.3, 01-DEC-2014, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.0.2, 12-MAR-2012 (EDW), SCK (JPL)
 %

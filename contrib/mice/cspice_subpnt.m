@@ -4,6 +4,9 @@
 %   sub-observer point on a target body at a specified epoch,
 %   optionally corrected for light time and stellar aberration.
 %
+%   The surface of the target body may be represented by a triaxial
+%   ellipsoid or by topographic data provided by DSK files.
+%
 %   This routine supersedes cspice_subpt, which does not have an input
 %   argument for the target body-fixed frame name.
 %
@@ -37,45 +40,138 @@
 %
 %   Given:
 %
-%      method   a scalar string providing parameters defining
-%               the computation method to be used.
+%      method   a short string providing parameters defining
+%               the computation method to be used. In the syntax
+%               descriptions below, items delimited by brackets
+%               are optional.
 %
-%               The supported values of 'method' are listed below.
-%               Please note that the colon is a required delimiter;
-%               using a blank will not work.
+%               [1,c1] = size(method); char = class(method)
 %
-%                     'Near point: ellipsoid'   The sub-observer point
-%                                               computation uses a
-%                                               triaxial ellipsoid to
-%                                               model the surface of the
-%                                               target body. The
-%                                               sub-observer point is
-%                                               defined as the nearest
-%                                               point on the target
-%                                               relative to the observer.
+%                  or
 %
-%                     'Intercept: ellipsoid'    The sub-observer point
-%                                               computation uses a
-%                                               triaxial ellipsoid to
-%                                               model the surface of the
-%                                               target body. The
-%                                               sub-observer point is
-%                                               defined as the target
-%                                               surface intercept of the
-%                                               line containing the
-%                                               observer and the
-%                                               target's center.
+%               [1,1] = size(method); cell = class(method)
 %
-%               Neither case nor white space are significant in
-%               'method'. For example, the string
+%               `method' may be assigned the following values:
 %
-%                    ' nearpoint:ELLIPSOID '
+%                  'NEAR POINT/ELLIPSOID'
 %
-%               is valid.
+%                     The sub-observer point computation uses a
+%                     triaxial ellipsoid to model the surface of the
+%                     target body. The sub-observer point is defined
+%                     as the nearest point on the target relative to
+%                     the observer.
 %
-%      target   the scalar string name of the target body. The target
+%                     The word 'NADIR' may be substituted for the phrase
+%                     'NEAR POINT' in the string above.
+%
+%                     For backwards compatibility, the older syntax
+%
+%                        'Near point: ellipsoid'
+%
+%                     is accepted as well.
+%
+%
+%                  'INTERCEPT/ELLIPSOID'
+%
+%                     The sub-observer point computation uses a
+%                     triaxial ellipsoid to model the surface of the
+%                     target body. The sub-observer point is defined
+%                     as the target surface intercept of the line
+%                     containing the observer and the target's
+%                     center.
+%
+%                     For backwards compatibility, the older syntax
+%
+%                        'Intercept: ellipsoid'
+%
+%                     is accepted as well.
+%
+%
+%                  'NADIR/DSK/UNPRIORITIZED[/SURFACES = <surface list>]'
+%
+%                     The sub-observer point computation uses DSK data
+%                     to model the surface of the target body. The
+%                     sub-observer point is defined as the intercept, on
+%                     the surface represented by the DSK data, of the
+%                     line containing the observer and the nearest point
+%                     on the target's reference ellipsoid. If multiple
+%                     such intercepts exist, the one closest to the
+%                     observer is selected.
+%
+%                     Note that this definition of the sub-observer
+%                     point is not equivalent to the "nearest point on
+%                     the surface to the observer." The phrase 'NEAR
+%                     POINT' may NOT be substituted for 'NADIR' in the
+%                     string above.
+%
+%                     The surface list specification is optional. The
+%                     syntax of the list is
+%
+%                        <surface 1> [, <surface 2>...]
+%
+%                     If present, it indicates that data only for the
+%                     listed surfaces are to be used; however, data
+%                     need not be available for all surfaces in the
+%                     list. If absent, loaded DSK data for any surface
+%                     associated with the target body are used.
+%
+%                     The surface list may contain surface names or
+%                     surface ID codes. Names containing blanks must
+%                     be delimited by double quotes, for example
+%
+%                        'SURFACES = "Mars MEGDR 128 PIXEL/DEG"'
+%
+%                     If multiple surfaces are specified, their names
+%                     or IDs must be separated by commas.
+%
+%                     See the Particulars section below for details
+%                     concerning use of DSK data.
+%
+%
+%                  'INTERCEPT/DSK/UNPRIORITIZED[/SURFACES = <surface list>]'
+%
+%                     The sub-observer point computation uses DSK data
+%                     to model the surface of the target body. The
+%                     sub-observer point is defined as the target
+%                     surface intercept of the line containing the
+%                     observer and the target's center.
+%
+%                     If multiple such intercepts exist, the one closest
+%                     to the observer is selected.
+%
+%                     The surface list specification is optional. The
+%                     syntax of the list is identical to that for the
+%                     NADIR option described above.
+%
+%
+%                  Neither case nor white space are significant in
+%                  `method', except within double-quoted strings. For
+%                  example, the string ' eLLipsoid/nearpoint ' is valid.
+%
+%                  Within double-quoted strings, blank characters are
+%                  significant, but multiple consecutive blanks are
+%                  considered equivalent to a single blank. Case is
+%                  not significant. So
+%
+%                     "Mars MEGDR 128 PIXEL/DEG"
+%
+%                  is equivalent to
+%
+%                     " mars megdr  128  pixel/deg "
+%
+%                  but not to
+%
+%                     "MARS MEGDR128PIXEL/DEG"
+%
+%      target   the name of the target body. The target
 %               body is an ephemeris object (its trajectory is given by
 %               SPK data), and is an extended object.
+%
+%               [1,c2] = size(target); char = class(target)
+%
+%                  or
+%
+%               [1,1] = size(target); cell = class(target)
 %
 %               The string 'target' is case-insensitive, and leading
 %               and trailing blanks in 'target' are not significant.
@@ -90,10 +186,11 @@
 %               present in the kernel pool. Normally the kernel
 %               variable would be defined by loading a PCK file.
 %
+%      et       the epoch(s), expressed as seconds past J2000 TDB, of the
+%               observer: 'et' is the epoch at which the observer's state
+%               is computed.
 %
-%      et       the double precision scalar epoch, expressed as seconds
-%               past J2000 TDB, of the observer: 'et' is
-%               the epoch at which the observer's state is computed.
+%               [1,n] = size(et); double = class(et)
 %
 %               When aberration corrections are not used, 'et' is also
 %               the epoch at which the position and orientation of
@@ -109,14 +206,32 @@
 %               selected correction. See the description of 'abcorr'
 %               below for details.
 %
-%      fixref   the scalar string name of the body-fixed, body-centered
-%               reference frame associated with the target body.
-%               The output sub-observer point 'spoint' will be
+%      fixref   the name of a body-fixed reference frame centered
+%               on the target body. `fixref' may be any such frame
+%               supported by the SPICE system, including built-in
+%               frames (documented in the Frames Required Reading)
+%               and frames defined by a loaded frame kernel (FK). The
+%               string `fixref' is case-insensitive, and leading and
+%               trailing blanks in `fixref' are not significant.
+%
+%               [1,c3] = size(fixref); char = class(fixref)
+%
+%                  or
+%
+%               [1,1] = size(fixref); cell = class(fixref)
+%
+%               The output sub-observer point `spoint' and the
+%               observer-to-sub-observer point vector `srfvec' will be
 %               expressed relative to this reference frame.
 %
-%      abcorr   the scalar string aberration correction to apply
-%               when computing the observer-target state and the
-%               orientation of the target body.
+%      abcorr   the aberration correction to apply when computing the
+%               observer-target state and the orientation of the target body.
+%
+%               [1,c4] = size(abcorr); char = class(abcorr)
+%
+%                  or
+%
+%               [1,1] = size(abcorr); cell = class(abcorr)
 %
 %               For remote sensing applications, where the apparent
 %               sub-observer point seen by the observer is desired,
@@ -195,8 +310,8 @@
 %               et+lt:
 %
 %                     'XLT'      "Transmission" case: correct for
-%                                 one-way light time using a Newtonian
-%                                 formulation. This correction yields the
+%                                one-way light time using a Newtonian
+%                                formulation. This correction yields the
 %                                sub-observer location at the moment it
 %                                receives photons emitted from the
 %                                observer's location at 'et'.
@@ -229,7 +344,7 @@
 %                                Newtonian light time and stellar
 %                                aberration corrections.
 %
-%      obsrvr   the scalar string name of the observing body. The
+%      obsrvr   the name of the observing body. The
 %               observing body is an ephemeris object: it typically
 %               is a spacecraft, the earth, or a surface point on the
 %               earth. 'obsrvr' is case-insensitive, and leading and
@@ -239,6 +354,12 @@
 %               are legitimate strings that indicate the Moon is the
 %               observer.
 %
+%               [1,c5] = size(obsrvr); char = class(obsrvr)
+%
+%                  or
+%
+%               [1,1] = size(obsrvr); cell = class(obsrvr)
+%
 %   the call:
 %
 %      [spoint, trgepc, srfvec] = cspice_subpnt( method, target, ...
@@ -247,38 +368,51 @@
 %
 %   returns:
 %
-%      spoint   a double precision 3x1 array defining the sub-observer point
+%      spoint   the array(s) defining the sub-observer point
 %               on the target body.
 %
-%               The sub-observer point is defined either as the point
-%               on the target body that is closest to the observer,
-%               or the target surface intercept of the line from the
-%               observer to the target's center; the input argument
-%               'method' selects the definition to be used.
+%               [3,n] = size(spoint); double = class(spoint)
 %
-%               'spoint' is expressed in Cartesian coordinates,
+%               For target shapes modeled by ellipsoids, the
+%               sub-observer point is defined either as the point on
+%               the target body that is closest to the observer, or
+%               the target surface intercept of the line from the
+%               observer to the target's center.
+%
+%               For target shapes modeled by topographic data
+%               provided by DSK files, the sub-observer point is
+%               defined as the target surface intercept of the line
+%               from the observer to either the nearest point on the
+%               reference ellipsoid, or to the target's center. If
+%               multiple such intercepts exist, the one closest to
+%               the observer is selected.
+%
+%               The input argument `method' selects the target shape
+%               model and sub-observer point definition to be used.
+%
+%               `spoint' is expressed in Cartesian coordinates,
 %               relative to the body-fixed target frame designated by
-%               'fixref'. The body-fixed target frame is evaluated at
-%               the sub-observer epoch 'trgepc' (see description below).
+%               `fixref'. The body-fixed target frame is evaluated at
+%               the sub-observer epoch `trgepc' (see description below).
 %
 %               When light time correction is used, the duration of
-%               light travel between 'spoint' to the observer is
+%               light travel between `spoint' to the observer is
 %               considered to be the one way light time.
 %
-%               When aberration corrections are used, 'spoint' is
+%               When aberration corrections are used, `spoint' is
 %               computed using target body position and orientation
 %               that have been adjusted for the corrections
-%               applicable to 'spoint' itself rather than to the target
+%               applicable to `spoint' itself rather than to the target
 %               body's center. In particular, if the stellar
-%               aberration correction applicable to 'spoint' is
-%               represented by a shift vector 's', then the light-time
-%               corrected position of the target is shifted by 's'
+%               aberration correction applicable to `spoint' is
+%               represented by a shift vector S, then the light-time
+%               corrected position of the target is shifted by S
 %               before the sub-observer point is computed.
 %
-%               The components of 'spoint' have units of km.
+%               The components of `spoint' have units of km.
 %
-%      trgepc   the scalar double precision "sub-observer point epoch."
-%              'trgepc' is defined as follows: letting 'lt' be the one-way
+%      trgepc   the "sub-observer point epoch(s)." 'trgepc' is
+%               defined as follows: letting 'lt' be the one-way
 %               light time between the observer and the sub-observer point,
 %               'trgepc' is the epoch et-lt, et+lt, or 'et' depending on
 %               whether the requested aberration correction is,
@@ -286,12 +420,16 @@
 %               radiation, or omitted. 'lt' is computed using the
 %               method indicated by 'abcorr'.
 %
+%               [1,n] = size(trgepc); double = class(trgepc)
+%
 %              'trgepc' is expressed as seconds past J2000 TDB.
 %
-%      srfvec   a double precision 3x1 array defining the position vector
-%               from the observer at 'et' to 'spoint'. 'srfvec'
+%      srfvec   the array(s) defining the position vector from
+%               the observer at 'et' to 'spoint'. 'srfvec'
 %               is expressed in the target body-fixed  reference frame
 %               designated by 'fixref', evaluated at  'trgepc'.
+%
+%               [3,n] = size(spoint); double = class(spoint)
 %
 %               The components of 'srfvec' are given in units of km.
 %
@@ -319,6 +457,9 @@
 %                  xform  = cspice_pxfrm2 ( fixref, ref, trgepc, et )
 %                  refvec = xform * srfvec
 %
+%               'spoint', 'trgepc', and 'srfvec' return with the same
+%               vectorization measure, N, as 'et'.
+%
 %-Examples
 %
 %   Any numerical results shown for this example may differ between
@@ -334,13 +475,19 @@
 %      %
 %      % Load kernel files via the meta-kernel.
 %      %
-%      cspice_furnsh( 'standard.tm' );
+%      cspice_furnsh( '/kernels/standard.tm' );
 %
 %      %
 %      % Convert the UTC request time to ET (seconds past
 %      % J2000, TDB).
 %      %
-%      et = cspice_str2et( '2008 aug 11 00:00:00' );
+%      et0 = cspice_str2et( '2008 aug 11 00:00:00' );
+%
+%      %
+%      % Create a vector of times. The code will also run for 'et'
+%      % a scalar.
+%      %
+%      et = [0:10]*cspice_spd + et0;
 %
 %      %
 %      % Look up the target body's radii. We'll use these to
@@ -372,6 +519,8 @@
 %
 %         [spoint, trgepc, srfvec] = cspice_subpnt( method(i), ...
 %                         'MARS', et, 'IAU_MARS', 'LT+S', 'EARTH' );
+%
+%         N = size(spoint, 2);
 %
 %         %
 %         % Compute the observer's distance from SPOINT.
@@ -420,31 +569,63 @@
 %         opclon = opclon * cspice_dpr;
 %         opclat = opclat * cspice_dpr;
 %
-%         fprintf( 'Computational Method %s\n\n', char(method(i)) )
+%         utcstr = cspice_et2utc( et, 'C', 6);
 %
-%         fprintf( 'Observer altitude                      (km) = %21.9f\n', ...
-%                                                                   opgalt )
-%         fprintf( 'Length of SRFVEC                       (km) = %21.9f\n', ...
-%                                                                   odist  )
-%         fprintf( 'Sub-observer point altitude            (km) = %21.9f\n', ...
-%                                                                   spgalt )
-%         fprintf( 'Sub-observer planetographic longitude (deg) = %21.9f\n', ...
-%                                                                   spglon )
-%         fprintf( 'Observer planetographic longitude     (deg) = %21.9f\n', ...
-%                                                                   opglon )
-%         fprintf( 'Sub-observer planetographic latitude  (deg) = %21.9f\n', ...
-%                                                                   spglat )
-%         fprintf( 'Observer planetographic latitude      (deg) = %21.9f\n', ...
-%                                                                   opglat )
-%         fprintf( 'Sub-observer planetocentric longitude (deg) = %21.9f\n', ...
-%                                                                   spclon )
-%         fprintf( 'Observer planetocentric longitude     (deg) = %21.9f\n', ...
-%                                                                   opclon )
-%         fprintf( 'Sub-observer planetocentric latitude  (deg) = %21.9f\n', ...
-%                                                                   spclat )
-%         fprintf( 'Observer planetocentric latitude      (deg) = %21.9f\n', ...
-%                                                                   opclat )
-%         fprintf( '\n')
+%         for j=1:N
+%
+%           fprintf( 'Computational Method %s\n\n', char(method(i)) )
+%
+%           fprintf( 'Time (UTC):                          %s\n',  ...
+%                                                        utcstr(j,:) )
+%
+%           fprintf(                                                  ...
+%           'Observer altitude                      (km) = %21.9f\n', ...
+%                                                        opgalt(j) )
+%
+%           fprintf(                                                  ...
+%           'Length of SRFVEC                       (km) = %21.9f\n', ...
+%                                               norm(srfvec(:,j))  )
+%
+%           fprintf(                                                  ...
+%           'Sub-observer point altitude            (km) = %21.9f\n', ...
+%                                                        spgalt(j) )
+%
+%           fprintf(                                                  ...
+%           'Sub-observer planetographic longitude (deg) = %21.9f\n', ...
+%                                                        spglon(j) )
+%
+%           fprintf(                                                  ...
+%           'Observer planetographic longitude     (deg) = %21.9f\n', ...
+%                                                        opglon(j) )
+%
+%           fprintf(                                                  ...
+%           'Sub-observer planetographic latitude  (deg) = %21.9f\n', ...
+%                                                        spglat(j) )
+%
+%           fprintf(                                                  ...
+%           'Observer planetographic latitude      (deg) = %21.9f\n', ...
+%                                                        opglat(j) )
+%
+%           fprintf(                                                  ...
+%           'Sub-observer planetocentric longitude (deg) = %21.9f\n', ...
+%                                                        spclon(j) )
+%
+%           fprintf(                                                  ...
+%           'Observer planetocentric longitude     (deg) = %21.9f\n', ...
+%                                                        opclon(j) )
+%
+%           fprintf(                                                  ...
+%           'Sub-observer planetocentric latitude  (deg) = %21.9f\n', ...
+%                                                        spclat(j) )
+%
+%           fprintf(                                                  ...
+%           'Observer planetocentric latitude      (deg) = %21.9f\n', ...
+%                                                        opclat(j) )
+%
+%           fprintf( '\n')
+%
+%         end
+%
 %
 %      end
 %
@@ -489,12 +670,187 @@
 %   A sister version of this routine exists named mice_subpnt that returns
 %   the output arguments as fields in a single structure.
 %
+%   For ellipsoidal target bodies, there are two different popular
+%   ways to define the sub-observer point: "nearest point on the
+%   target to the observer" or "target surface intercept of the line
+%   containing observer and target." These coincide when the target
+%   is spherical and generally are distinct otherwise.
+%
+%   For target body shapes modeled using topographic data provided by
+%   DSK files, the "surface intercept" notion is valid, but the
+%   "nearest point on the surface" computation is both inefficient to
+%   execute and may fail to yield a result that is "under" the
+%   observer in an intuitively clear way. The NADIR option for DSK
+%   shapes instead finds the surface intercept of a ray that passes
+%   through the nearest point on the target reference ellipsoid. For
+%   shapes modeled using topography, there may be multiple
+%   ray-surface intercepts; the closest one to the observer is
+%   selected.
+%
+%   The NADIR definition makes sense only if the target shape is
+%   reasonably close to the target's reference ellipsoid. If the
+%   target is very different---the nucleus of comet
+%   Churyumov-Gerasimenko is an example---the intercept definition
+%   should be used.
+%
+%   This routine computes light time corrections using light time
+%   between the observer and the sub-observer point, as opposed to
+%   the center of the target. Similarly, stellar aberration
+%   corrections done by this routine are based on the direction of
+%   the vector from the observer to the light-time corrected
+%   sub-observer point, not to the target center. This technique
+%   avoids errors due to the differential between aberration
+%   corrections across the target body. Therefore it's valid to use
+%   aberration corrections with this routine even when the observer
+%   is very close to the sub-observer point, in particular when the
+%   observer to sub-observer point distance is much less than the
+%   observer to target center distance.
+%
+%   When comparing sub-observer point computations with results from
+%   sources other than SPICE, it's essential to make sure the same
+%   geometric definitions are used.
+%
+%
+%   Using DSK data
+%   ==============
+%
+%      DSK loading and unloading
+%      -------------------------
+%
+%      DSK files providing data used by this routine are loaded by
+%      calling cspice_furnsh and can be unloaded by calling cspice_unload or
+%      cspice_kclear. See the documentation of cspice_furnsh for limits on
+%      numbers of loaded DSK files.
+%
+%      For run-time efficiency, it's desirable to avoid frequent
+%      loading and unloading of DSK files. When there is a reason to
+%      use multiple versions of data for a given target body---for
+%      example, if topographic data at varying resolutions are to be
+%      used---the surface list can be used to select DSK data to be
+%      used for a given computation. It is not necessary to unload
+%      the data that are not to be used. This recommendation presumes
+%      that DSKs containing different versions of surface data for a
+%      given body have different surface ID codes.
+%
+%
+%      DSK data priority
+%      -----------------
+%
+%      A DSK coverage overlap occurs when two segments in loaded DSK
+%      files cover part or all of the same domain---for example, a
+%      given longitude-latitude rectangle---and when the time
+%      intervals of the segments overlap as well.
+%
+%      When DSK data selection is prioritized, in case of a coverage
+%      overlap, if the two competing segments are in different DSK
+%      files, the segment in the DSK file loaded last takes
+%      precedence. If the two segments are in the same file, the
+%      segment located closer to the end of the file takes
+%      precedence.
+%
+%      When DSK data selection is unprioritized, data from competing
+%      segments are combined. For example, if two competing segments
+%      both represent a surface as sets of triangular plates, the
+%      union of those sets of plates is considered to represent the
+%      surface.
+%
+%      Currently only unprioritized data selection is supported.
+%      Because prioritized data selection may be the default behavior
+%      in a later version of the routine, the UNPRIORITIZED keyword is
+%      required in the `method' argument.
+%
+%
+%      Syntax of the `method' input argument
+%      -----------------------------------
+%
+%      The keywords and surface list in the `method' argument
+%      are called "clauses." The clauses may appear in any
+%      order, for example
+%
+%         'NADIR/DSK/UNPRIORITIZED/<surface list>'
+%         'DSK/NADIR/<surface list>/UNPRIORITIZED'
+%         'UNPRIORITIZED/<surface list>/DSK/NADIR'
+%
+%      The simplest form of the `method' argument specifying use of
+%      DSK data is one that lacks a surface list, for example:
+%
+%         'NADIR/DSK/UNPRIORITIZED'
+%         'INTERCEPT/DSK/UNPRIORITIZED'
+%
+%      For applications in which all loaded DSK data for the target
+%      body are for a single surface, and there are no competing
+%      segments, the above strings suffice. This is expected to be
+%      the usual case.
+%
+%      When, for the specified target body, there are loaded DSK
+%      files providing data for multiple surfaces for that body, the
+%      surfaces to be used by this routine for a given call must be
+%      specified in a surface list, unless data from all of the
+%      surfaces are to be used together.
+%
+%      The surface list consists of the string
+%
+%         'SURFACES = '
+%
+%      followed by a comma-separated list of one or more surface
+%      identifiers. The identifiers may be names or integer codes in
+%      string format. For example, suppose we have the surface
+%      names and corresponding ID codes shown below:
+%
+%         Surface Name                              ID code
+%         ------------                              -------
+%         "Mars MEGDR 128 PIXEL/DEG"                1
+%         "Mars MEGDR 64 PIXEL/DEG"                 2
+%         "Mars_MRO_HIRISE"                         3
+%
+%      If data for all of the above surfaces are loaded, then
+%      data for surface 1 can be specified by either
+%
+%         'SURFACES = 1'
+%
+%      or
+%
+%         'SURFACES = "Mars MEGDR 128 PIXEL/DEG"'
+%
+%      Double quotes are used to delimit the surface name
+%      because it contains blank characters.
+%
+%      To use data for surfaces 2 and 3 together, any
+%      of the following surface lists could be used:
+%
+%         'SURFACES = 2, 3'
+%
+%         'SURFACES = "Mars MEGDR  64 PIXEL/DEG", 3'
+%
+%         'SURFACES = 2, Mars_MRO_HIRISE'
+%
+%         'SURFACES = "Mars MEGDR 64 PIXEL/DEG", Mars_MRO_HIRISE'
+%
+%      An example of a `method' argument that could be constructed
+%      using one of the surface lists above is
+%
+%      'NADIR/DSK/UNPRIORITIZED/SURFACES= "Mars MEGDR 64 PIXEL/DEG",3'
+%
+%
+%      Aberration corrections
+%      ----------------------
+%
+%      For irregularly shaped target bodies, the distance between the
+%      observer and the nearest surface intercept need not be a
+%      continuous function of time; hence the one-way light time
+%      between the intercept and the observer may be discontinuous as
+%      well. In such cases, the computed light time, which is found
+%      using iterative algorithm, may converge slowly or not at all.
+%      In all cases, the light time computation will terminate, but
+%      the result may be less accurate than expected.
+%
 %-Required Reading
 %
 %   For important details concerning this module's function, please refer to
 %   the CSPICE routine subpnt_c.
 %
 %   MICE.REQ
+%   DSK.REQ
 %   FRAMES.REQ
 %   PCK.REQ
 %   SPK.REQ
@@ -502,22 +858,31 @@
 %
 %-Version
 %
+%   -Mice Version 2.0.0, 04-APR-2017, EDW (JPL), NJB (JPL)
+%
+%       Header update to reflect support for use of DSKs.
+%
+%       Vectorized interface on input 'et'.
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
+%
 %   -Mice Version 1.0.2, 25-OCT-2011, SCK (JPL)
 %
-%      References to the new 'cspice_pxfrm2' routine were
-%      added to the 'I/O returns' section.
+%       References to the new 'cspice_pxfrm2' routine were
+%       added to the 'I/O returns' section.
 %
 %   -Mice Version 1.0.1, 12-MAY-2009, EDW (JPL)
 %
-%      Corrected type in I/O call description. The call description
-%      lacked the 'fixref' argument.
+%       Corrected type in I/O call description. The call description
+%       lacked the 'fixref' argument.
 %
 %   -Mice Version 1.0.0, 30-JAN-2008, EDW (JPL)
 %
 %-Index_Entries
 %
-%   find sub-observer point on target body
-%   find nearest point to observer on target body
+%   find sub-observer point on target body 
+%   find sub-spacecraft point on target body 
+%   find nearest point to observer on target body 
 %
 %-&
 
@@ -536,9 +901,9 @@ function [spoint, trgepc, srfvec] = cspice_subpnt( method, target, et, ...
 
       otherwise
 
-         error ( ['Usage: [spoint, trgepc, srfvec] = '     ...
-                  'cspice_subpnt( `method`, `target`,'     ...
-                  ' et, `fixref`, `abcorr`, `obsrvr`)']  )
+         error ( ['Usage: [_spoint_, _trgepc_, _srfvec_] = ' ...
+                  'cspice_subpnt( `method`, `target`,'       ...
+                  ' _et_, `fixref`, `abcorr`, `obsrvr`)']  )
 
    end
 

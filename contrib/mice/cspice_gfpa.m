@@ -60,20 +60,17 @@
 %               'MOON' and '301' are legitimate strings that indicate the moon
 %               is the target body.
 %
-%               Case and leading or trailing blanks are not significant
-%               in the string 'target'.
-%
 %               [1,c1] = size(target); char = class(target)
 %
 %                  or
 %
 %               [1,1] = size(target); cell = class(target)
 %
+%               Case and leading or trailing blanks are not significant
+%               in the string 'target'.
+%
 %      illmn    name of the illuminating body. This will normally be "SUN" but
 %               the algorithm can use any ephemeris object
-%
-%               Case and leading or trailing blanks are not significant
-%               in the string 'illmn'.
 %
 %               [1,c2] = size(illmn); char = class(illmn)
 %
@@ -81,9 +78,18 @@
 %
 %               [1,1] = size(illmn); cell = class(illmn)
 %
+%               Case and leading or trailing blanks are not significant
+%               in the string 'illmn'.
+%
 %      abcorr   describes the aberration corrections to apply to the state
 %               evaluations to account for one-way light time and stellar
 %               aberration.
+%
+%               [1,c3] = size(abcorr); char = class(abcorr)
+%
+%                  or
+%
+%               [1,1] = size(abcorr); cell = class(abcorr)
 %
 %               This routine accepts only reception mode aberration
 %               corrections. See the header of spkezr_c for a detailed
@@ -112,19 +118,10 @@
 %               Case and leading or trailing blanks are not significant
 %               in the string 'abcorr'.
 %
-%               [1,c3] = size(abcorr); char = class(abcorr)
-%
-%                  or
-%
-%               [1,1] = size(abcorr); cell = class(abcorr)
-%
 %      obsrvr   name of the observing body. Optionally, you may supply the ID
 %               code of the object as an integer string. For example both
 %               "MOON" and "301" are legitimate strings that indicate the Moon
 %               is the observer.
-%
-%               Case and leading or trailing blanks are not significant
-%               in the string 'obsrvr'.
 %
 %               [1,c4] = size(obsrvr); char = class(obsrvr)
 %
@@ -132,10 +129,21 @@
 %
 %               [1,1] = size(obsrvr); cell = class(obsrvr)
 %
+%               Case and leading or trailing blanks are not significant
+%               in the string 'obsrvr'.
+%
 %      relate   describes the constraint relational operator on phase angle.
 %               The result window found  by this routine indicates the time
-%               intervals where the constraint is satisfied. Supported values
-%               of 'relate' and corresponding meanings are shown below:
+%               intervals where the constraint is satisfied. 
+%
+%               [1,c5] = size(relate); char = class(relate)
+%
+%                  or
+%
+%               [1,1] = size(relate); cell = class(relate)
+%
+%               Supported values of 'relate' and corresponding meanings are 
+%               shown below:
 %
 %                  '>'       The phase angle value is greater than the
 %                            reference value REFVAL.
@@ -172,12 +180,6 @@
 %               Case and leading or trailing blanks are not significant
 %               in the string 'relate'.
 %
-%               [1,c4] = size(relate); char = class(relate)
-%
-%                  or
-%
-%               [1,1] = size(relate); cell = class(relate)
-%
 %      refval   reference value used together with relate argument to
 %               define an equality or inequality to satisfy by the phase angle.
 %               See the discussion of relate above for further information.
@@ -192,6 +194,8 @@
 %               vector coordinate is within 'adjust' radians of the
 %               specified extreme value.
 %
+%               [1,1] = size(adjust); double = class(adjust)
+%
 %               For relate set to ABSMAX, the result window contains
 %               time intervals when the observer-target vector coordinate has
 %               values between ABSMAX - 'adjust' and ABSMAX.
@@ -203,8 +207,6 @@
 %               'adjust' is not used for searches for local extrema,
 %               equality or inequality conditions.
 %
-%               [1,1] = size(adjust); double = class(adjust)
-%
 %      step     time step size to use in the search. 'step' must be short
 %               enough for a search using this step size to locate the time
 %               intervals where coordinate function of the observer-target
@@ -212,13 +214,13 @@
 %               not be *too* short, or the search will take an unreasonable
 %               amount of time.
 %
+%               [1,1] = size(step); double = class(step)
+%
 %               The choice of 'step' affects the completeness but not
 %               the precision of solutions found by this routine; the
 %               precision is controlled by the convergence tolerance.
 %
 %               'step' has units of seconds.
-%
-%               [1,1] = size(step); double = class(step)
 %
 %      nintvls  value specifying the number of intervals in the internal
 %               workspace array used by this routine. 'nintvls' should be at
@@ -233,8 +235,10 @@
 %
 %      cnfine   a SPICE window that confines the time
 %               period over which the specified search is conducted.
-%               cnfine may consist of a single interval or a collection
+%               'cnfine' may consist of a single interval or a collection
 %               of intervals.
+%
+%               [2m,1] = size(cnfine); double = class(cnfine)
 %
 %               In some cases the confinement window can be used to
 %               greatly reduce the time period that must be searched
@@ -243,8 +247,6 @@
 %
 %               See the Examples section below for a code example
 %               that shows how to create a confinement window.
-%
-%               [2m,1] = size(cnfine), double = class(cnfine)
 %
 %   the call:
 %
@@ -257,6 +259,8 @@
 %               confinement window 'cnfine', on which the specified
 %               constraint is satisfied.
 %
+%               [2n,1] = size(result); double = class(result)
+%
 %               If the search is for local extrema, or for absolute
 %               extrema with adjust set to zero, then normally each
 %               interval of result will be a singleton: the left and
@@ -264,8 +268,6 @@
 %
 %               If no times within the confinement window satisfy the
 %               constraint, 'result' will return with cardinality zero.
-%
-%               [2n,1] = size(result), double = class(result)
 %
 %-Examples
 %
@@ -593,6 +595,10 @@
 %   WINDOWS.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.1, 13-NOV-2014, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.0.0, 15-JUL-2014, EDW (JPL)
 %

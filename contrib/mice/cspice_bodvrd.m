@@ -33,17 +33,31 @@
 %
 %   Given:
 %
-%      bodynm   the scalar string name of the body for which 'item'
-%               is requested. 'bodynm' is case-insensitive, and leading
+%      bodynm   the body name for which 'item' is requested.
+%
+%               [1,c1] = size(bodynm); char = class(bodynm)
+%
+%                  or
+%
+%               [1,1] = size(bodynm); cell = class(bodynm)
+%
+%               'bodynm' is case-insensitive, and leading
 %               and trailing  blanks in 'bodynm' are not significant.
 %               Optionally, you may supply the integer ID code for the
 %               object as an integer string.  For example both 'MOON'
 %               and '301' are legitimate strings that indicate the
 %               moon is the body of interest.
 %
-%      item     the scalar string item name to return. Together, the NAIF
-%               ID code of the body and the item name combine to form a
-%               kernel variable name, e.g.,
+%      item     the item name to return.
+%
+%               [1,c2] = size(item); char = class(item)
+%
+%                  or
+%
+%               [1,1] = size(item); cell = class(item)
+%
+%               Together, the NAIF ID code of the body and the item name
+%               combine to form a kernel variable name, e.g.,
 %
 %                    'BODY599_RADII'
 %                    'BODY401_POLE_RA'
@@ -57,8 +71,9 @@
 %               is inherited from the case-sensitivity of kernel
 %               variable names.
 %
-%      maxn     the scalar integer defining the maximum number of values
-%               the call returns.
+%      maxn     the maximum number of kernel pool values to returns.
+%
+%               [1,1] = size(maxn); int32 = class(maxn)
 %
 %   the call:
 %
@@ -66,8 +81,11 @@
 %
 %   returns:
 %
-%     values   an array of at most 'maxn' double precision values
-%              associated with the requested kernel variable.
+%     values   an array of at most 'maxn' values associated with the
+%              requested kernel variable.
+%
+%              [1,n] = size(values); double = class(values)
+%              with n <= 'maxn'.
 %
 %-Examples
 %
@@ -167,6 +185,10 @@
 %   NAIF_IDS.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.1, 29-OCT-2014, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.0.0, 22-NOV-2005, EDW (JPL)
 %

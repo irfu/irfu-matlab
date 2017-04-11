@@ -32,36 +32,59 @@
 %
 %   Given:
 %
-%      handle   scalar integer value of the file handle for
-%               an open CK file returned from cspice_ckopn
+%      handle   file handle for an open CK file, returned from cspice_ckopn.
 %
-%      begtim   double precision scalar encoded SCLK segment
-%               begin time
+%               [1,1] = size(handle); int32 = class(handle)
 %
-%      endtim   double precision scalar encoded SCLK segment
-%               end time
+%      begtim   encoded SCLK segment begin time.
 %
-%      inst     the scalar integer NAIF instrument ID code
+%               [1,1] = size(begtim); double = class(begtim)
 %
-%      ref      scalar string identifying the reference frame for the
-%               segment
+%      endtim   encoded SCLK segment end time.
 %
-%      segid    a scalar string to identify the segment
+%               [1,1] = size(endtim); double = class(endtim)
 %
-%      start    a double precision Nx1 array containing
-%               encoded SCLK interval start times
+%      inst     NAIF instrument ID code.
 %
-%      stop     a double precision Nx1 array containing
-%               the encoded SCLK interval stop times
+%               [1,1] = size(inst); int32 = class(inst)
 %
-%      quats    a double precision 4xN matrix of SPICE style quaternions
-%               representing instrument pointing
+%      ref      name of the reference frame for the segment.
 %
-%      avvs     a double precision 3xN  matrix of angular
-%               velocity vectors in units of radians per second
+%               [1,c1] = size(ref); char = class(ref)
 %
-%      rates    a double precision Nx1 array containing the
-%               number of seconds per tick for each interval
+%                  or
+%
+%               [1,1] = size(ref); cell = class(ref)
+%
+%      segid    name to identify the segment.
+%
+%               [1,c2] = size(segid); char = class(segid)
+%
+%                  or
+%
+%               [1,1] = size(segid); cell = class(segid)
+%
+%      start    an array containing encoded SCLK interval start times.
+%
+%               [n,1] = size(start); double = class(start)
+%
+%      stop     an array containing the encoded SCLK interval stop times.
+%
+%               [n,1] = size(stop); double = class(stop)
+%
+%      quats    array of SPICE style quaternions representing instrument
+%               pointing.
+%
+%               [4,n] = size(quats); double = class(quats)
+%
+%      avvs     array of angular velocity vectors in units of radians per
+%               second.
+%
+%               [3,n] = size(avvs); double = class(avvs)
+%
+%      rates    the number of seconds per tick for each interval.
+%
+%               [n,1] = size(rates); double = class(rates)
 %
 %   the call:
 %
@@ -172,7 +195,7 @@
 %
 %      %
 %      % Create an array of encoded tick values in increments of
-%      % 'SPACING_TICKS' with an initial value of 1000 ticks...
+%      % 'SPACING_TICKS' with an initial value of 1000 ticks.
 %      %
 %      sclkdp = [0:MAXREC-1]' * SPACING_TICKS + 1000;
 %
@@ -257,6 +280,10 @@
 %   SCLK.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.3, 29-OCT-2014, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.0.2, 11-JUN-2013, EDW (JPL)
 %

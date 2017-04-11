@@ -34,20 +34,30 @@
 %
 %   Given:
 %
-%      a,       the scalar double precision values of the ellipsoid's
-%      b,       triaxial radii ellipsoid, where:
-%      c
-%                  'a' is length in kilometers of the semi-axis of the ellipsoid
-%                   parallel to the x-axis of the body-fixed reference frame
+%      a,
+%      b,      
+%      c       the values of the ellipsoid's triaxial radii ellipsoid, where:
 %
-%                  'b' is length in kilometers of the semi-axis of the ellipsoid
-%                   parallel to the y-axis of the body-fixed reference frame
+%                 'a' is length in kilometers of the semi-axis of the ellipsoid
+%                 parallel to the x-axis of the body-fixed reference frame
 %
-%                  'c' is length in kilometers of the semi-axis of the ellipsoid
-%                   parallel to the z-axis of the body-fixed reference frame
+%                 'b' is length in kilometers of the semi-axis of the ellipsoid
+%                 parallel to the y-axis of the body-fixed reference frame
 %
-%      point   a double precision 3-vector or a 3xN array of 3-vectors defining
-%              some location(s) on the ellipsoid
+%                 'c' is length in kilometers of the semi-axis of the ellipsoid
+%                 parallel to the z-axis of the body-fixed reference frame
+%
+%              [1,1] = size(a); double = class(a)
+%              [1,1] = size(b); double = class(b)
+%              [1,1] = size(c); double = class(c)
+%
+%      point   location(s) on the ellipsoid.
+%
+%              [3,3]   = size(point); double = class(point)
+%              
+%              or     
+%
+%              [3,3,n] = size(point); double = class(point)
 %
 %   the call:
 %
@@ -55,12 +65,18 @@
 %
 %   returns:
 %
-%      normal   a double precision unit 3-vector or 3XN array of unit vectors
-%               normal to the ellipsoid at 'point' in the direction away
-%               from the ellipsoid
+%      normal   the unit normal(s) to the ellipsoid at 'point' in the direction
+%               away from the ellipsoid
 %
-%               'normal' returns with the same vectorization measure (N)
-%                as 'point'.
+%               If    [3,3]   = size(point)
+%               then  [3,3]   = size(normal); double = class(normal)
+%
+%               If    [3,3,n] = size(point)
+%               then  [3,3,n] = size(normal); double = class(normal)
+%
+%               'normal' returns with the same vectorization measure, N,
+%               as 'point'.
+%
 %-Examples
 %
 %   Any numerical results shown for this example may differ between
@@ -109,6 +125,10 @@
 %   MICE.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.1, 17-MAR-2015, EDW (JPL)
+%
+%      Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.0.0, 15-JUN-2006, EDW (JPL)
 %

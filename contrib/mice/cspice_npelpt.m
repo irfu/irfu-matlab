@@ -84,7 +84,7 @@
 %   one such closest point will be returned.
 %
 %   This routine returns a distance, rather than an altitude, in
-%   contrast to the Icy routine cspice_nearpt.  Because our ellipse is
+%   contrast to the Mice routine cspice_nearpt.  Because our ellipse is
 %   situated in 3-space and not 2-space, the input point is not
 %   `inside' or `outside' the ellipse, so the notion of altitude does
 %   not apply to the problem solved by this routine.  In the case of

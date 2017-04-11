@@ -33,10 +33,11 @@
 %
 %   Given:
 %
-%      code   a scalar integer SPICE code or 1XN array of integer SPICE
-%             codes for a set of bodies: planets, satellites, barycenters,
-%             DSN stations, spacecraft, asteroids, comets, or other
-%             ephemeris object
+%      code   SPICE code(s) for a set of bodies: planets, satellites,
+%             barycenters, DSN stations, spacecraft, asteroids, comets,
+%             or other ephemeris object.
+%
+%             [1,n] = size(code); int32 = class(code)
 %
 %   the call:
 %
@@ -44,20 +45,30 @@
 %
 %   returns:
 %
-%      ID   the scalar or 1xN array of structures associating
-%           a body name with a corresponding NAIF ID. Each structure
-%           contains two fields:
+%      ID   the structure(s) associating a body name with a corresponding 
+%           SPICE ID. 
+%
+%           [1,n] = size(ID); struct = class(ID)
+%
+%           Each structure consists of the fields:
 %
 %              name   the "name" of a particular body. If a mapping
-%                     does not exist, the 'name' field returns as NULL
+%                     does not exist, the 'name' field returns as NULL.
 %
-%              code   a scalar integer SPICE code assigned either
+%                     [1,c1] = size(ID(i).name); char = class(ID(i).name)
+%
+%              code   the SPICE code assigned either
 %                     by SPICE or the user to 'name'. If a mapping
 %                     does not exist, the 'code' field returns as 0.
 %
-%              found  a scalar boolean indicating if a mapping exists (true)
+%                     [1,1] = size(ID(i).code); int32 = class(ID(i).code)
 %
-%              'ID' returns with the same vectorization measure (N) as 'code'.
+%              found  flag indicating if the kernel subsystem translated
+%                     'code' to a corresponding 'name'.
+%
+%                     [1,n] = size(ID(i).found); logical = class(ID(i).found)
+%
+%      'ID' returns with the same vectorization measure, N, as 'code'.
 %
 %-Examples
 %
@@ -137,6 +148,10 @@
 %   NAIF_IDS.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.1, 01-DEC-2014, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.0.0, 22-NOV-2005, EDW (JPL)
 %

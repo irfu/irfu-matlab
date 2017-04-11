@@ -34,18 +34,23 @@
 %
 %   Given:
 %
-%      selidx   the scalar integer index for a column of interest
-%               satisfying the SELECT clause, the column indices
-%               range from 1 to number of columns in the SELECT clause.
+%      selidx   the index for a column of interest satisfying the SELECT 
+%               clause, the column indices range from 1 to number of 
+%               columns in the SELECT clause.
 %
-%      row      the scalar integer index for a row in the column
-%               identified by 'selidx', the column indices
-%               range from 1 to 'nmrows' where 'nmrows' equals the total
-%               number of rows satisfying the SELECT clause.
+%               [1,1] = size(selidx); int32 = class(selidx)
 %
-%      elment   the scalar integer index for an element of
-%               the data at the 'selidx','row' position; a scalar
-%               value at 'selidx', 'row' has 'elment' value one.
+%      row      the index for a row in the column identified by 'selidx',
+%               the column indices range from 1 to 'nmrows' where 'nmrows'
+%               equals the total number of rows satisfying the SELECT clause.
+%
+%               [1,1] = size(row); int32 = class(row)
+%
+%      elment   the index for an element of the data at the 'selidx','row' 
+%               position; a scalar value at 'selidx', 'row' has 'elment' 
+%               value one.
+%
+%               [1,1] = size(elment); int32 = class(elment)
 %
 %   the call:
 %
@@ -53,13 +58,19 @@
 %
 %   returns:
 %
-%      idata    the integer value of the requested element at
-%               data location 'selidx', 'row', 'elment'.
+%      idata    the value of the requested element at data location 
+%               'selidx', 'row', 'elment'.
 %
-%      null     a scalar boolean indicating if 'idata' has a null value.
+%               [1,1] = size(idata); int32 = class(idata)
 %
-%      found    a scalar boolean indicating whether the specified
-%               value at 'selidx', 'row', 'elment' was found.
+%      null     a boolean indicating if 'idata' has a null value.
+%
+%               [1,1] = size(null); logical = class(null)
+%
+%      found    a boolean indicating whether the specified value at 
+%               'selidx', 'row', 'elment' was found.
+%
+%               [1,1] = size(found); logical = class(found)
 %
 %-Examples
 %
@@ -212,6 +223,10 @@
 %   EK.REQ
 %
 %-Version
+%
+%   -Mice Version 1.2.1, 03-NOV-2014, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.2.0, 10-MAY-2011, EDW (JPL)
 %

@@ -33,21 +33,33 @@
 %
 %   Given:
 %
-%      et     the double precision scalar or 1xN array of ephemeris
-%             time expressed as ephemeris seconds past J2000 at which
-%             a local time is desired
+%      et     the ephemeris time(s) expressed as ephemeris seconds past
+%             J2000 at which a local time is desired.
 %
-%      body   an integer scalar SPICE ID-code of the body on which local
-%             time is to be measured
+%             [1,n] = size(et); double = class(et)
 %
-%      lon    the scalar double precision longitude (either planetocentric
-%             or planetographic) in radians of the site on the surface
-%             of body for which local time should be computed
+%      body   the SPICE ID-code of the body on which to measure local time.
 %
-%      type   is the form of longitude supplied by the variable
-%             lon.   Allowed values are "PLANETOCENTRIC" and
+%             [1,1] = size(body); int32 = class(body)
+%
+%      lon    longitude (either planetocentric or planetographic)
+%             in radians of the site on the surface
+%             of body for which local time should be computed.
+%
+%             [1,1] = size(lon); double = class(lon)
+%
+%      type   the name for the form of longitude supplied by the
+%             variable 'lon'.
+%
+%             [1,c1] = size(type); char = class(type)
+%
+%                or
+%
+%             [1,1] = size(type); cell = class(type)
+%
+%             Allowed values are "PLANETOCENTRIC" and
 %             "PLANETOGRAPHIC".  Note the case of the letters
-%             in type is insignificant.  Both "PLANETOCENTRIC"
+%             in type is insignificant. Both "PLANETOCENTRIC"
 %             and "planetocentric" are recognized.  Leading and
 %             trailing blanks in type are not significant.
 %
@@ -57,35 +69,40 @@
 %
 %   returns:
 %
-%      hr     a double precision scalar or double precision 1xN array describing
-%             the integral number of the local "hour" of the site specified
-%             at epoch 'et'
+%      hr     the value(s) describing the integral number of the local
+%             "hour" of the site specified at epoch 'et'.
+%
+%             [1,n] = size(et); double = class(et)
 %
 %             Note that an "hour" of local time does not have the same duration
 %             as an hour measured by conventional clocks. It is simply a
 %             representation of an angle.
 %
-%      mn     a double precision scalar or double precision 1xN array describing
-%             the integral number of "minutes" past the hour of the local time
-%             of the site at the epoch 'et'
+%      mn     the value(s) describing the integral number of "minutes" past
+%             the hour of the local time of the site at the epoch 'et'.
+%
+%             [1,n] = size(et); double = class(et)
 %
 %             Again note that a "local minute" is not the same as a minute you
-%             would measure with conventional clocks
+%             would measure with conventional clocks.
 %
-%      sc     a double precision scalar or double precision 1xN array describing
-%             the integral number of "seconds" past the minute of the local time
-%             of the site at the epoch `et'
+%      sc     the value(s) describing the integral number of "seconds" past
+%             the minute of the local time of the site at the epoch 'et'.
+%
+%             [1,n] = size(et); double = class(et)
 %
 %             Again note that a "local second" is not the same as a second
 %             you would measure with conventional clocks.
 %
-%      time   the scalar string or NXM character array of output local time
-%             on a "24 hour" local clock
+%      time   the array of local time(s) on a "24 hour" local clock.
 %
-%      ampm   the scalar string or NXM character array of output local time
-%             on a "12 hour" local clock together with the traditional AM/PM
-%             label to indicate whether the sun has crossed the local zenith
-%             meridian.
+%             [n,c1] = size(segid); char = class(segid)
+%
+%      ampm   array of local time(s) on a "12 hour" local clock together
+%             with the traditional AM/PM label to indicate whether the sun has
+%             crossed the local zenith meridian.
+%
+%             [n,c2] = size(segid); char = class(segid)
 %
 %             All output arguments return with the same measure of
 %             vectorization, N, as 'et'.
@@ -110,7 +127,7 @@
 %      %
 %      % Convert 'utc' the ephemeris time, 'et'
 %      %
-%      et                         = cspice_str2et(utc);
+%      et                      zz   = cspice_str2et(utc);
 %
 %      %
 %      % Define a planetographic longitude in degrees, convert the
@@ -157,6 +174,10 @@
 %   MICE.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.2, 05-NOV-2014, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.0.1, 06-MAY-2009, EDW (JPL)
 %
