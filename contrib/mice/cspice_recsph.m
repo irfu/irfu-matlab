@@ -34,9 +34,10 @@
 %
 %   Given:
 %
-%      rectan   a double precision 3x1 array or double precision
-%               3xN array containing the rectangular coordinates of the
-%               position or set of positions
+%      rectan   the array(s) containing the rectangular coordinates of the
+%               position or set of positions.
+%
+%               [3,n] = size(rectan); double = class(rectan)
 %
 %   the call:
 %
@@ -44,22 +45,26 @@
 %
 %   returns:
 %
-%      r       a double precision scalar or double precision 1XN
-%              array describing the distance of the position from origin
+%      r       the value(s) describing the distance of the position
+%              from the origin.
 %
-%      colat   a double precision scalar or double precision 1XN
-%              array describing the angle between the point and the
+%              [1,n] = size(radius); double = class(radius)
+%
+%      colat   the value(s) describing the angle between the point and the
 %              positive z-axis, measured in radians (also referred to
-%              as the polar angle)
+%              as the polar angle).
 %
-%      lon     a double precision scalar or double precision 1XN array
-%              describing the angle of the projection of the point to the XY
-%              plane from the positive X-axis, measured in radians,
-%              with range:
+%              [1,n] = size(colat); double = class(colat)
+%
+%      lon     the value(s) describing the angle of the projection of the
+%              point to the XY plane from the positive X-axis, measured
+%              in radians, with range:
 %
 %                  -pi < lon <= pi
 %
 %              The positive Y-axis is at longitude PI/2 radians.
+%
+%              [1,n] = size(lon); double = class(lon)
 %
 %              The argument 'r' returns with the same units associated
 %              with 'rectan'.
@@ -184,6 +189,10 @@
 %   MICE.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.1, 01-DEC-2014, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.0.0, 22-NOV-2005, EDW (JPL)
 %

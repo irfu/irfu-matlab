@@ -2,7 +2,7 @@
 %
 %   CSPICE_RECGEO converts rectangular coordinates to geodetic
 %   coordinates.
-%%
+%
 %-Disclaimer
 %
 %   THIS SOFTWARE AND ANY RELATED MATERIALS WERE CREATED BY THE
@@ -33,19 +33,24 @@
 %
 %   Given:
 %
-%      rectan   a double precision 3x1 array or double precision
-%               3xN array containing the rectangular coordinates of the
-%               position or set of positions
+%      rectan   the array(s) containing the rectangular coordinates of the
+%               position or set of positions.
 %
-%       re      the scalar, double precision equatorial radius of
-%               the body of interest
+%               [3,n] = size(rectan); double = class(rectan)
 %
-%       f       the scalar, double precision flattening coefficient
-%               of the body, a dimensionless value defined as:
+%       re      the value describing equatorial radius of the body
+%               of interest.
+%
+%               [1,1] = size(re); double = class(re)
+%
+%       f       the value describing flattening coefficient of the body,
+%               a dimensionless value defined as:
 %
 %                    equatorial_radius - polar_radius
 %                    --------------------------------
 %                           equatorial_radius
+%
+%               [1,1] = size(f); double = class(f)
 %
 %   the call:
 %
@@ -53,17 +58,23 @@
 %
 %   returns:
 %
-%       lon   a double precision scalar or 1XN-vector describing
-%             the geodetic longitude measured in radians.
+%       lon   the value(s) describing the geodetic longitude
+%             measured in radians.
 %
-%       lat   a double precision scalar or 1XN-vector describing
-%             the geodetic latitude measured in radians.
+%             [1,n] = size(lon); double = class(lon)
 %
-%       alt   a double precision scalar or 1XN-vector describing
-%             the altitude above the reference spheroid.
+%       lat   the value(s) describing the geodetic latitude
+%             measured in radians.
+%
+%             [1,n] = size(lat); double = class(lat)
+%
+%       alt   the value(s) describing the altitude above the
+%             reference spheroid.
+%
+%             [1,n] = size(alt); double = class(alt)
 %
 %             'lon', 'lat', and 'alt' return with the same vectorization
-%             measure (N) as 'rectan'.
+%             measure, N, as 'rectan'.
 %
 %-Examples
 %
@@ -175,6 +186,10 @@
 %   MICE.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.1, 01-DEC-2014, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.0.0, 22-NOV-2005, EDW (JPL)
 %

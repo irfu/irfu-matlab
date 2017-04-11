@@ -106,7 +106,7 @@
 %               description of the required parameters associated with
 %               an instrument.
 %
-%               [1,c1] = size(inst), char = class(inst)
+%               [1,c1] = size(inst); char = class(inst)
 %
 %      target   the string naming the 'target' body, the appearances
 %               of which in the specified instrument's field of view are
@@ -119,7 +119,7 @@
 %               The 'target' string lacks sensitivity to case, and to leading
 %               and trailing blanks.
 %
-%               [1,c2] = size(target), char = class(target)
+%               [1,c2] = size(target); char = class(target)
 %
 %      tshape   the string naming the geometric model used to
 %               represent the shape of the 'target' body. The supported
@@ -145,7 +145,7 @@
 %               The 'tshape' string lacks sensitivity to case, leading
 %               and trailing blanks.
 %
-%               [1,c3] = size(tshape), char = class(tshape)
+%               [1,c3] = size(tshape); char = class(tshape)
 %
 %      tframe   the string naming the body-fixed, body-centered
 %               reference frame associated with the target body. Examples of
@@ -158,7 +158,7 @@
 %               The 'tframe' string lacks sensitivity to case, and to leading
 %               and trailing blanks.
 %
-%               [1,c4] = size(tframe), char = class(tframe)
+%               [1,c4] = size(tframe); char = class(tframe)
 %
 %      abcorr   the string indicating the aberration corrections to apply
 %               to the state evaluations to account for one-way light time and
@@ -215,7 +215,7 @@
 %               The 'abcorr' string lacks sensitivity to case, and to leading
 %               and trailing blanks.
 %
-%               [1,c5] = size(abcorr), char = class(abcorr)
+%               [1,c5] = size(abcorr); char = class(abcorr)
 %
 %      obsrvr   the string naming the body from which the target is
 %               observed. The instrument designated by 'inst' is treated
@@ -226,7 +226,7 @@
 %               legitimate strings to supply to indicate the observer
 %               is Earth.
 %
-%               [1,c6] = size(abcorr), char = class(abcorr)
+%               [1,c6] = size(abcorr); char = class(abcorr)
 %
 %      step     the step size to use in the search to use in the search.
 %               'step' must be short enough for a search using step
@@ -243,7 +243,7 @@
 %
 %               'step' has units of TDB seconds.
 %
-%               [1,1] = size(step), double = class(step)
+%               [1,1] = size(step); double = class(step)
 %
 %      cnfine   the SPICE window that confines the time
 %               period over which the specified search is conducted.
@@ -255,14 +255,14 @@
 %               for the desired solution. See the Particulars section
 %               below for further discussion.
 %
-%               [2m,1] = size(cnfine), double = class(cnfine)
+%               [2m,1] = size(cnfine); double = class(cnfine)
 %
 %      room     the maximum number of intervals to return in 'result'.
 %               Note: this value should equal at least the number of expected
 %               intervals. Recall two double precision values define
 %               an interval.
 %
-%               [1,1] = size(room), int32 = class(room)
+%               [1,1] = size(room); int32 = class(room)
 %
 %   the call:
 %
@@ -283,7 +283,7 @@
 %               If no times within the confinement window satisfy the
 %               constraint, 'result' will return with cardinality zero.
 %
-%               [2n,1] = size(result), double = class(result)
+%               [2n,1] = size(result); double = class(result)
 %
 %-Examples
 %

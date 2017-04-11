@@ -33,9 +33,12 @@
 %
 %   Given:
 %
-%      elts    a double precision 8-vector or 8xN array containing the conic
-%              osculating elements describing the orbit of a body around
-%              a primary. The elements are, in order:
+%      elts    the array(s) containing the conic osculating elements describing
+%              the orbit of a body around a primary.
+%
+%              [8,n] = size(elts); double = class(elts)
+%
+%              The elements are, in order:
 %
 %                 RP      Perifocal distance.
 %                 ECC     Eccentricity.
@@ -52,8 +55,39 @@
 %                 T0 is the instant at which the state of the body is
 %                 specified by the elements.
 %
-%      et      the double precision scalar or 1XN-vector of ephemeris
-%              time(s) at which to determine the state of the orbiting body
+%      et      the ephemeris time(s) corresponding one-to-one and onto 
+%              to each 'elts' at which to determine the state of
+%              the orbiting body
+%
+%              [1,n] = size(et); double = class(et)
+%
+%               Note: The design of cspice_conics supposes the inputs 'elts'
+%               and 'et' originates as the output of another Mice routine
+%               and so will have the same vectorization measure.
+%
+%               Still, in the event the user requires an 'elts' constant over
+%               a vector of 'et', or an 'et' constant over an array of
+%               elts, construct the needed variables with the Matlab code:
+%
+%                  Given a constant 'epoch' for an array of 'elts', create the
+%                  vector 'et'.
+%
+%                  N          = size(elts,2);
+%                  et         = zeros(1, N) + epoch;
+%
+%                  Given a constant element set 'elt' for an array of 'et',
+%                  create the array 'elts'.
+%
+%                  N          = size(et,1);
+%                  elts       = zeros(8, N);
+%                  elts(1,:)  = elt(1);
+%                  elts(2,:)  = elt(2);
+%                  elts(3,:)  = elt(3);
+%                  elts(4,:)  = elt(4);
+%                  elts(5,:)  = elt(5);
+%                  elts(6,:)  = elt(6);
+%                  elts(7,:)  = elt(7);
+%                  elts(8,:)  = elt(8);
 %
 %   the call:
 %
@@ -61,14 +95,15 @@
 %
 %   returns
 %
-%      state   a double precision Cartesian 6-vector or 6xN array
-%              representing the state (position and velocity) of
+%      state   the array(s) representing the state (position and velocity) of
 %              the body at time 'et' in kilometers and kilometers-per-second
 %              (the first three components of 'state' represent the x-,
 %              y-, and z-components of the body's position; the last three
 %              components form the corresponding velocity vector)
 %
-%              'state' returns with the same vectorization measure (N) as
+%              [6,n] = size(state); double = class(state)
+
+%              'state' returns with the same vectorization measure, N, as
 %              'elts' and 'et'.
 %
 %-Examples
@@ -274,6 +309,15 @@
 %   MICE.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.1, 30-OCT-2014, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
+%
+%       Added to I/O section a description of creating vectorized variables
+%       from constant values, i.e. create a vectorized 'et' from a constant
+%       (non vectorized) epoch, or create a vectorized 'elts' from a
+%       constant (non vectorized) single set of elements.
 %
 %   -Mice Version 1.0.0, 22-NOV-2005, EDW (JPL)
 %

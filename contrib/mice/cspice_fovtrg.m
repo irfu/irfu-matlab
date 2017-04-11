@@ -30,7 +30,7 @@
 %
 %-I/O
 %
-%   Given:s
+%   Given:
 %
 %      Parameters-
 %
@@ -400,6 +400,10 @@
 %
 %-Version
 %
+%   -Mice Version 1.0.1, 13-APR-2015, EDW (JPL)
+%
+%      Edit to correct typos in "Usage" string.
+%
 %   -Mice Version 1.0.0, 16-FEB-2012, SCK (JPL)
 %
 %-Index_Entries
@@ -407,11 +411,10 @@
 %   Target in instrument FOV at specified time
 %   Target in instrument field_of_view at specified time
 %
-%
 %-&
 
-function visibl = cspice_fovtrg ( instrument, target, target_shape, ...
-                                  target_frame, abcorr, observer, et )
+function visibl = cspice_fovtrg( instrument, target, target_shape, ...
+                                 target_frame, abcorr, observer, et )
 
     switch nargin
         case 7
@@ -422,13 +425,13 @@ function visibl = cspice_fovtrg ( instrument, target, target_shape, ...
             target_frame = zzmice_str(target_frame);
             abcorr       = zzmice_str(abcorr);
             observer     = zzmice_str(observer);
-            et           = zzmice_dp (et);
+            et           = zzmice_dp(et);
 
         otherwise
 
             error ( ['Usage: [_visibl_] = ' ...
-                  'cspice_fovtrg( `instrument`, `target`, ' ...
-                  '`target_shape`, `target_frame`, `abcorr`), ' ...
+                  'cspice_fovtrg( `instrument`, `target`, '    ...
+                  '`target_shape`, `target_frame`, `abcorr`, ' ...
                   '`observer`, _et_]' ] )
 
    end
@@ -441,33 +444,8 @@ function visibl = cspice_fovtrg ( instrument, target, target_shape, ...
    try
       [visibl] = mice('fovtrg_c', instrument, target, target_shape, ...
                                   target_frame, abcorr, observer, et );
-      visibl = zzmice_logical ( visibl );
+      visibl = zzmice_logical( visibl );
    catch
       rethrow(lasterror)
    end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

@@ -37,40 +37,105 @@
 %
 %   Given:
 %
-%      target   the scalar string name of the target body. 'target' is
-%               case-insensitive, and leading and trailing blanks in
-%               'target' are not significant. Optionally, you may supply
+%      target   the name of the target body. Optionally, you may supply
 %               a string containing the integer ID code for the object.
 %               For example both 'MOON' and '301' are legitimate strings
 %               that indicate the moon is the target body.
 %
+%               [1,c1] = size(target); char = class(target)
+%
+%                  or
+%
+%               [1,1] = size(target); cell = class(target)
+%
 %               The target and observer define a state vector whose
 %               position component points from the observer to the target.
 %
-%      et       the double precision scalar or 1xN array of epochs,
-%               specified in ephemeris seconds past J2000, at which the
+%               Case and leading or trailing blanks are not significant
+%               in the string 'target'.
+%
+%      et       the  ephemeris time(s) at which to compute the
 %               apparent illumination angles at the specified surface
 %               point on the target body, as seen from the observing
-%               body, are to be computed.
+%               body.
 %
-%      abcorr   the aberration correction to be used in computing the
-%               location and orientation of the target body and the location
-%               of the Sun.
+%               [1,n] = size(et); double = class(et)
 %
-%      obsrvr   the scalar string name of the observing body, typically a
-%               spacecraft, the earth, or a surface point on the earth. 'obsrvr'
-%               is case-insensitive, and leading and trailing blanks in 'obsrvr'
-%               are not significant. Optionally, you may supply a string
-%               containing the integer ID code for the object.  For example
-%               both "EARTH" and "399" are legitimate strings that indicate
-%               the earth is the observer.
+%      abcorr   describes the aberration corrections to apply to the state
+%               evaluations to account for one-way light time and stellar
+%               aberration.
 %
-%      spoint   a double precision 3x1 or 3xN array representing a surface
-%               point or points on the target body, expressed in
-%               rectangular body-fixed (body equator and prime meridian)
-%               coordinates. Each 'spoint' element (spoint(:,i))
-%               corresponds to the same element index in 'et' (et(i)) and need
-%               not be visible from the observer's location at time 'et'.
+%               [1,c2] = size(abcorr); char = class(abcorr)
+%
+%                  or
+%
+%               [1,1] = size(abcorr); cell = class(abcorr)
+%
+%               This routine accepts the same aberration corrections as does
+%               the routine spkezr_c. See the header of spkezr_c for a
+%               detailed description of the aberration correction options.
+%               For convenience, the options are listed below:
+%
+%                  'NONE'     Apply no correction.
+%
+%                  'LT'       "Reception" case:  correct for
+%                             one-way light time using a Newtonian
+%                             formulation.
+%
+%                  'LT+S'     "Reception" case:  correct for
+%                             one-way light time and stellar
+%                             aberration using a Newtonian
+%                             formulation.
+%
+%                  'CN'       "Reception" case:  converged
+%                             Newtonian light time correction.
+%
+%                  'CN+S'     "Reception" case:  converged
+%                             Newtonian light time and stellar
+%                             aberration corrections.
+%
+%                  'XLT'      "Transmission" case:  correct for
+%                             one-way light time using a Newtonian
+%                             formulation.
+%
+%                  'XLT+S'    "Transmission" case:  correct for
+%                             one-way light time and stellar
+%                             aberration using a Newtonian
+%                             formulation.
+%
+%                  'XCN'      "Transmission" case:  converged
+%                             Newtonian light time correction.
+%
+%                  'XCN+S'    "Transmission" case:  converged
+%                             Newtonian light time and stellar
+%                             aberration corrections.
+%
+%               The 'abcorr' string lacks sensitivity to case, and to embedded,
+%               leading and trailing blanks.
+%
+%      obsrvr   the name of the observing body, typically a spacecraft,
+%               the earth, or a surface point on the earth. Optionally, 
+%               you may supply a string containing the integer ID code for
+%               the object.  For example both "EARTH" and "399" are legitimate
+%               strings that indicate the earth is the observer.
+%
+%               [1,c3] = size(obsrvr); char = class(obsrvr)
+%
+%                  or
+%
+%               [1,1] = size(obsrvr); cell = class(obsrvr)
+%
+%               Case and leading or trailing blanks are not significant
+%               in the string 'obsrvr'.
+%
+%      spoint   an array representing a surface point or points on the target
+%               body, expressed in rectangular body-fixed (body equator and
+%               prime meridian) coordinates. Each 'spoint' element
+%               (spoint(:,i)) corresponds to the same element index in 'et'
+%               (et(i)) and need not be visible from the observer's location
+%               at time 'et'.
+%
+%               [3,n] = size(spoint); double = class(spoint)
 %
 %               Note: The design of cspice_illum supposes the input 'spoint'
 %               originates as the output of another Mice routine. Still, in
@@ -91,26 +156,31 @@
 %
 %   returns:
 %
-%      phase    the double precision scalar or 1xN array of phase angles at
-%               'spoint', as seen from 'obsrvr' at time 'et'.  This is the
-%               angle between the  'spoint'-'obsrvr' vector and the
-%               'spoint'-sun vector. Units are radians.  The range of
-%               'phase' is [0, pi].
+%      phase    the values(s) of phase angle at 'spoint', as seen from
+%               'obsrvr' at time 'et'. This is the angle between the
+%               'spoint'-'obsrvr' vector and the 'spoint'-sun vector.
+%               Units are radians. The range of 'phase' is [0, pi].
 %
-%      solar    the double precision, scalar or 1xN array of solar incidence
-%               angles at `spoint', as seen from 'obsrvr' at time 'et'.
-%               This is the angle between the surface normal vector at
-%               'spoint' and the 'spoint'-sun vector.  Units are radians.
-%               The range of 'solar' is [0, pi].
+%               [1,n] = size(phase); double = class(phase)
 %
-%      emissn   the double precision, scalar or 1xN array of emission angles
-%               at 'spoint', as seen from  'obsrvr' at time 'et'.  This is the
-%               angle between the surface normal vector at 'spoint' and the
-%               'spoint'-observer vector.  Units are radians.  The range of
-%               'emissn' is [0, pi].
+%      solar    the values(s) of incidence angle at `spoint', as seen
+%               from 'obsrvr' at time 'et'. This is the angle between
+%               the surface normal vector at 'spoint' and the
+%               'spoint'-sun vector. Units are radians. The range of
+%               'solar' is [0, pi].
+%
+%               [1,n] = size(solar); double = class(solar)
+%
+%      emissn   the values(s) of the emission angle at 'spoint', as seen
+%               from  'obsrvr' at time 'et'. This is the angle between
+%               the surface normal vector at 'spoint' and the
+%               'spoint'-observer vector.  Units are radians.  The range
+%               of 'emissn' is [0, pi].
+%
+%               [1,n] = size(emissn); double = class(emissn)
 %
 %               'phase', 'solar', 'emissn' return with the same
-%               vectorization measure (N) as 'et'.
+%               vectorization measure, N, as 'et'.
 %
 %-Examples
 %
@@ -244,6 +314,10 @@
 %   TIME.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.3, 18-NOV-2014, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.0.2, 18-MAY-2010, BVS (JPL)
 %

@@ -55,20 +55,35 @@
 %
 %      Arguments-
 %
-%      target   the string scalar naming the target body.  Optionally,
-%               you may supply the integer ID code for the object as an
-%               integer string.  For example both 'MOON' and '301'
-%               are legitimate strings that indicate the moon is the
-%               target body.
+%      target   name of the target body. Optionally, you may supply the integer
+%               ID code for the object as an integer string.  For example both
+%               'MOON' and '301' are legitimate strings that indicate the moon
+%               is the target body.
 %
-%      abcorr   the string scalar indicating the aberration corrections to apply
-%               to the state evaluations to account for one-way light time and
-%               stellar aberration.
+%               [1,c1] = size(target); char = class(target)
 %
-%               This routine accepts the same aberration corrections as does
-%               the routine spkezr_c. See the header of spkezr_c for a
-%               detailed description of the aberration correction options.
-%               For convenience, the options are listed below:
+%                  or
+%
+%               [1,1] = size(target); cell = class(target)
+%
+%               Case and leading or trailing blanks are not significant
+%               in the string 'target'.
+%
+%      abcorr   describes the aberration corrections to apply to the state
+%               evaluations to account for one-way light time and stellar
+%               aberration.
+%
+%               [1,c2] = size(abcorr); char = class(abcorr)
+%
+%                  or
+%
+%               [1,1] = size(abcorr); cell = class(abcorr)
+%
+%               This routine accepts only reception mode aberration
+%               corrections. See the header of spkezr_c for a detailed
+%               description of the aberration correction options.
+%               For convenience, the allowed aberration options are
+%               listed below:
 %
 %                  'NONE'     Apply no correction.
 %
@@ -104,83 +119,107 @@
 %                             Newtonian light time and stellar
 %                             aberration corrections.
 %
-%               The 'abcorr' string lacks sensitivity to case, and to embedded,
-%               leading and trailing blanks.
+%               Case and leading or trailing blanks are not significant
+%               in the string 'abcorr'.
 %
-%      obsrvr   the string scalar naming the observing body. Optionally, you
-%               may supply the ID code of the object as an integer
-%               string. For example, both 'EARTH' and '399' are
-%               legitimate strings to supply to indicate the
-%               observer is earth.
+%      obsrvr   name of the observing body. Optionally, you may supply the ID
+%               code of the object as an integer string. For example both
+%               "MOON" and "301" are legitimate strings that indicate the Moon
+%               is the observer.
 %
-%      relate   the string or character scalar describing the constraint
-%               relational operator on observer-target distance. The result
-%               window found  by this routine indicates the time intervals
-%               where the constraint is satisfied. Supported values of
-%               'relate' and corresponding meanings are shown below:
+%               [1,c3] = size(obsrvr); char = class(obsrvr)
 %
-%                  '>'      Distance is greater than the reference
-%                           value 'refval'.
+%                  or
 %
-%                  '='      Distance is equal to the reference
-%                           value 'refval'.
+%               [1,1] = size(obsrvr); cell = class(obsrvr)
 %
-%                  '<'      Distance is less than the reference
-%                           value 'refval'.
+%               Case and leading or trailing blanks are not significant
+%               in the string 'obsrvr'.
 %
+%      relate   the constraint relational operator on observer-target 
+%               distance. The result window found  by this routine indicates 
+%               the time intervals where the constraint is satisfied.
 %
-%                  'ABSMAX'  Distance is at an absolute maximum.
+%               [1,c4] = size(relate); char = class(relate)
 %
-%                  'ABSMIN'  Distance is at an absolute  minimum.
+%                  or
 %
-%                  'LOCMAX'  Distance is at a local maximum.
+%               [1,1] = size(relate); cell = class(relate)
 %
-%                  'LOCMIN'  Distance is at a local minimum.
+%               Supported values of 'relate' and corresponding meanings are
+%               shown below:
+%
+%                  '>'       The phase angle value is greater than the
+%                            reference value REFVAL.
+%
+%                  '='       The phase angle value is equal to the
+%                            reference value REFVAL.
+%
+%                  '<'       The phase angle value is less than the
+%                            reference value REFVAL.
+%
+%                  'ABSMAX'  The phase angle value is at an absolute
+%                            maximum.
+%
+%                  'ABSMIN'  The phase angle value is at an absolute
+%                            minimum.
+%
+%                  'LOCMAX'  The phase angle value is at a local
+%                            maximum.
+%
+%                  'LOCMIN'  The phase angle value is at a local
+%                            minimum.
 %
 %               The caller may indicate that the region of interest
 %               is the set of time intervals where the quantity is
-%               within a specified distance of an absolute extremum.
+%               within a specified measure of an absolute extremum.
 %               The argument 'adjust' (described below) is used to
-%               specify this distance.
+%               specify this measure.
 %
 %               Local extrema are considered to exist only in the
 %               interiors of the intervals comprising the confinement
 %               window:  a local extremum cannot exist at a boundary
 %               point of the confinement window.
 %
-%               The 'relate' string lacks sensitivity to case, leading
-%               and trailing blanks.
+%               Case and leading or trailing blanks are not significant
+%               in the string 'relate'.
 %
-%      refval   the double precision scalar reference value used together
-%               with relate argument to define an equality or inequality to
-%               satisfy by the observer-target distance. See the discussion
-%               of relate above for further information.
+%      refval   reference value used together with relate argument to define 
+%               an equality or inequality to satisfy by the observer-target
+%               distance. See the discussion of relate above for further 
+%               information.
+%
+%               [1,1] = size(refval); double = class(refval)
 %
 %               The units of 'refval' are km.
 %
-%      adjust   a double precision scalar value used to modify searches for
-%               absolute extrema: when relate is set to ABSMAX or ABSMIN and
-%               adjust is set to a positive value, cspice_gfdist finds times
-%               when the observer-target vector coordinate is within 'adjust'
-%               radians/kilometers of the specified extreme value.
+%      adjust   value used to modify searches for absolute extrema: when relate
+%               is set to ABSMAX or ABSMIN and adjust is set to a positive
+%               value, cspice_gfdist finds times when the observer-target
+%               vector coordinate is within 'adjust' radians of the
+%               specified extreme value.
+%
+%               [1,1] = size(adjust); double = class(adjust)
 %
 %               For relate set to ABSMAX, the result window contains
 %               time intervals when the observer-target vector coordinate has
 %               values between ABSMAX - 'adjust' and ABSMAX.
 %
 %               For relate set to ABSMIN, the result window contains
-%               time intervals when the observer-target distance has
-%               values between ABSMIN and ABSMIN + 'adjust'.
+%               time intervals when the phase angle has values between
+%               ABSMIN and ABSMIN + 'adjust'.
 %
 %               'adjust' is not used for searches for local extrema,
 %               equality or inequality conditions.
 %
-%      step     the double precision scalar time step size to use in the search.
-%               'step' must be short enough for a search using this step
-%               size to locate the time intervals where coordinate function
-%               of the observer-target vector is monotone increasing or
-%               decreasing. However, step must not be *too* short, or the search
-%               will take an unreasonable amount of time.
+%      step     time step size to use in the search. 'step' must be short
+%               enough for a search using this step size to locate the time
+%               intervals where coordinate function of the observer-target
+%               vector is monotone increasing or decreasing. However, step must
+%               not be *too* short, or the search will take an unreasonable
+%               amount of time.
+%
+%               [1,1] = size(step); double = class(step)
 %
 %               The choice of 'step' affects the completeness but not
 %               the precision of solutions found by this routine; the
@@ -188,19 +227,22 @@
 %
 %               'step' has units of seconds.
 %
-%      nintvls  an integer scalar value specifying the number of intervals in
-%               the internal workspace array used by this routine. 'nintvls'
-%               should be at least as large as the number of intervals
-%               within the search region on which the specified observer-target
-%               vector coordinate function is monotone increasing or decreasing.
-%               It does no harm to pick a value of 'nintvls' larger than the
-%               minimum required to execute the specified search, but if chosen
-%               too small, the search will fail.
+%      nintvls  value specifying the number of intervals in the internal
+%               workspace array used by this routine. 'nintvls' should be at
+%               least as large as the number of intervals within the search
+%               region on which the specified observer-target vector coordinate
+%               function is monotone increasing or decreasing. It does no harm
+%               to pick a value of 'nintvls' larger than the minimum required
+%               to execute the specified search, but if chosen too small, the
+%               search will fail.
 %
-%      cnfine   a double precision SPICE window that confines the time
-%               period over which the specified search is conducted.
-%               cnfine may consist of a single interval or a collection
-%               of intervals.
+%               [1,1] = size(nintvls); int32 = class(nintvls)
+%
+%      cnfine   a SPICE window that confines the time period over which the 
+%               specified search is conducted. 'cnfine' may consist of a 
+%               single interval or a collection of intervals.
+%
+%               [2m,1] = size(cnfine); double = class(cnfine)
 %
 %               In some cases the confinement window can be used to
 %               greatly reduce the time period that must be searched
@@ -220,6 +262,8 @@
 %      result   the SPICE window of intervals, contained within the
 %               confinement window 'cnfine', on which the specified
 %               constraint is satisfied.
+%
+%               [2n,1] = size(result); double = class(result)
 %
 %               If the search is for local extrema, or for absolute
 %               extrema with adjust set to zero, then normally each
@@ -467,11 +511,15 @@
 %
 %-Version
 %
+%   -Mice Version 1.0.2, 11-NOV-2014, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
+%
 %   -Mice Version 1.0.1, 05-SEP-2012, EDW (JPL)
 %
-%      Edit to comments to correct search description.
+%       Edit to comments to correct search description.
 %
-%      Header updated to describe use of cspice_gfstol.
+%       Header updated to describe use of cspice_gfstol.
 %
 %   -Mice Version 1.0.0, 15-APR-2009, EDW (JPL)
 %

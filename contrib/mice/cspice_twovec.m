@@ -35,11 +35,14 @@
 %
 %   Given:
 %
-%      axdef    a double precision 3x1 array defining the principal
-%               axes of a coordinate frame
+%      axdef    the principal axes of a coordinate frame.
 %
-%      indexa   the integer scalar signifying which of the three coordinate
-%               axes contains 'axdef' (1, 2 or 3)
+%               [3,1] = size(axdef); double = class(axdef)
+%
+%      indexa   the index signifying which of the three coordinate
+%               axes contains 'axdef' (1, 2 or 3).
+%
+%               [1,1]   = size(indexa); int32 = class(indexa)
 %
 %                  If 'indexa' is 1 then axdef defines the X axis of the
 %                  coordinate frame.
@@ -48,13 +51,17 @@
 %                  coordinate frame.
 %
 %                  If 'indexa' is 3 then axdef defines the Z axis of the
-%                  coordinate frame
+%                  coordinate frame.
 %
-%      plndef   a double precision 3x1 array defining a vector in the same
-%               plane as 'axdef'
+%      plndef   a vector in the same plane as 'axdef'. 'axdef' and 
+%               'plndef' must be linearly independent.
 %
-%      indexp   the integer scalar signifying the second principle axis,
-%               orthogonal to 'axdef' (1, 2 or 3)
+%               [3,1] = size(plndef); double = class(plndef)
+%
+%      indexp   the index signifying the second principle axis,
+%               orthogonal to 'axdef' (1, 2 or 3).
+%
+%               [1,1]   = size(indexp); int32 = class(indexp)
 %
 %                  If 'indexp' is 1, the second axis of the principal
 %                  plane is the X-axis.
@@ -117,7 +124,22 @@
 %
 %-Particulars
 %
-%   None.
+%     Given two linearly independent vectors there is a unique
+%     right-handed coordinate frame having:
+%
+%        axdef lying along the indexa axis.
+%
+%        plndef lying in the axdef-indexp coordinate plane.
+%
+%     This routine determines the transformation matrix that transforms
+%     from coordinates used to represent the input vectors to the
+%     the system determined by axdef and plndef.  Thus a vector
+%     (x,y,z) in the input coordinate system will have coordinates
+%
+%                     t
+%        mout* (x,y,z)
+%
+%     in the frame determined by axdef and plndef.
 %
 %-Required Reading
 %
@@ -128,7 +150,11 @@
 %
 %-Version
 %
-%    -Mice Version 1.0.0, 10-JAN-2006, EDW (JPL)
+%   -Mice Version 1.0.1, 12-MAR-2015, EDW (JPL)
+%
+%      Edited I/O section to conform to NAIF standard for Mice documentation.
+%
+%   -Mice Version 1.0.0, 10-JAN-2006, EDW (JPL)
 %
 %-Index_Entries
 %

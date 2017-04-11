@@ -34,7 +34,11 @@
 %   Given:
 %
 %      x   an input numeric to convert to double precision
-%          window, i.e. an Nx1 double precision array.
+%          window.
+%
+%          [n,1] = size(x)
+%
+%          with 'n' even.
 %
 %   the call:
 %
@@ -43,7 +47,9 @@
 %   returns:
 %
 %      y   the double precision representation of 'x' confirmed
-%          having an even number of elements.
+%          to have an even number of elements.
+%
+%          [n,1] = size(y)
 %
 %-Examples
 %
@@ -58,6 +64,10 @@
 %   MICE.REQ
 %
 %-Version
+%
+%   -Mice Version 1.2.1, 12-FEB-2015, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.2.0, 27-JUL-2009, EDW (JPL)
 %

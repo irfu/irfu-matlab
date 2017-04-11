@@ -34,26 +34,26 @@
 %
 %   Given:
 %
-%      vin      a 3-vector.
+%      vin      an arbitrary 3-vector.
 %
 %               [3,1] = size(vin); double = class(vin)
 %
 %      projpl   a SPICE plane that represents the geometric plane containing
 %               'vin'. The structure has the fields:
 %
-%               SPICE plane STRUCTURE
+%               [1,1] = size(projpl); struct = class(projpl)
 %
-%                  normal     constant  
-%                             [3,1] = size(normal); double = class(normal)
+%                 normal:     [3,1] = size(normal); double = class(normal)
+%                 constant:   [1,1] = size(constant); double = class(constant)
 %
 %      invpl    a SPICE plane that represents the geometric plane containing
 %               the inverse image of 'vin' under orthogonal projection onto
 %               'projpl'. The structure has the fields:
 %
-%               SPICE plane STRUCTURE
+%               [1,1] = size(invpl); struct = class(invpl)
 %
-%                  normal     constant 
-%                             [3,1] = size(normal); double = class(normal)
+%                 normal:     [3,1] = size(normal); double = class(normal)
+%                 constant:   [1,1] = size(constant); double = class(constant)
 %
 %   the call:
 %
@@ -68,8 +68,9 @@
 %
 %               [3,1] = size(vout); double = class(vout)
 %
-%      found    indicating whether the inverse orthogonal projection of 'vin'
-%               could be computed. 'found' is true if so, false otherwise.
+%      found    flag(s) indicating whether the inverse orthogonal projection
+%               of 'vin' could be computed. 'found' is true if so, 
+%               false otherwise.
 %
 %               [1,1] = size(found); logical = class(found)
 %

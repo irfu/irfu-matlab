@@ -33,10 +33,11 @@
 %
 %   Given:
 %
-%      code   an integer scalar or integer 1XN array of SPICE codes
-%             for a set of bodies: planets, satellites, barycenters,
-%             DSN stations, spacecraft, asteroids, comets, or other
-%             ephemeris object.
+%      code   SPICE code(s) for a set of bodies: planets, satellites,
+%             barycenters, DSN stations, spacecraft, asteroids, comets,
+%             or other ephemeris object.
+%
+%             [1,n] = size(code); int32 = class(code)
 %
 %   the call:
 %
@@ -44,16 +45,24 @@
 %
 %   returns:
 %
-%      name    the scalar string or NXM character array of names associated
-%              with 'code' (if 'code' has more than one translation, then
-%              the most recently defined name corresponding to 'code'
-%              is returned).
+%      name    the name(s) corresponding to 'code' if a mapping between
+%              'code' and a body name exists within SPICE, assigned either
+%              in SPICE or by the user.
 %
-%      found   a boolean scalar or boolean 1XN array flagging if the kernel
-%              subsystem translated 'code' to a corresponding name.
+%              [n,c1] = size(name); char = class(name)
+%
+%              If 'code' has more than one translation, then the most recently
+%              defined 'name' corresponding to 'code' is returned. 'name' will
+%              have the exact format (case and blanks) as when the name/code
+%               pair was defined.
+%
+%      found   flag(s) indicating if the kernel subsystem translated 'code' to
+%              a corresponding 'name'.
+%
+%              [1,n] = size(found); logical = class(found)
 %
 %              'found' and 'name' return with the same vectorization
-%              measure (N) as 'code'.
+%              measure, N, as 'code'.
 %
 %-Examples
 %
@@ -157,6 +166,10 @@
 %   NAIF_IDS.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.2, 28-OCT-2014, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.0.1, 16-MAY-2009 (EDW)
 %

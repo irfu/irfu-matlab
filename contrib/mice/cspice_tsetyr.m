@@ -32,8 +32,10 @@
 %
 %   Given:
 %
-%      year   the scalar integer year associated with the lower
-%             bound on all year expansions
+%      year   the year associated with the lower bound on all year 
+%             expansions.
+%
+%             [1,1] = size(year); int32 = class(year)
 %
 %   the call:
 %
@@ -82,6 +84,10 @@
 %   TIME.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.1, 13-FEB-2015, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.0.0, 12-JAN-2006, EDW (JPL)
 %

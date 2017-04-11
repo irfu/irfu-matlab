@@ -92,10 +92,68 @@
 
    E.D. Wright        (JPL)
    G. Chinn           (JPL)
+   N. J. Bachman      (JPL)
 
 -Version
 
-   -Mice Mice 1.3.0 31-OCT-2012 (EDW)(SCK)
+   -Mice 1.4.0 05-JAN-2017 (EDW) (NJB)
+
+      Added interfaces:
+
+         cspice_bodfnd
+         cspice_ccifrm (mice_ccifrm)
+         cspice_dascls
+         cspice_dasec
+         cspice_dasopr
+         cspice_dlabfs
+         cspice_dlafns
+         cspice_dskb02
+         cspice_dskcls
+         cspice_dskd02
+         cspice_dskgd
+         cspice_dskgtl
+         cspice_dski02
+         cspice_dskmi2
+         cspice_dskn02
+         cspice_dskobj
+         cspice_dskopn
+         cspice_dskp02
+         cspice_dskrb2
+         cspice_dsksrf
+         cspice_dskstl
+         cspice_dskv02
+         cspice_dskw02
+         cspice_dskx02
+         cspice_dskxsi
+         cspice_dskz02
+         cspice_illum_pl02
+         cspice_illum_plid_pl02 (mice_illum_plid_pl02)
+         cspice_illumf (mice_illumf)
+         cspice_illumg (mice_illumg)
+         cspice_latsrf
+         cspice_limb_pl02
+         cspice_limbpt
+         cspice_llgrid_pl02
+         cspice_lspcn
+         cspice_pckcov
+         cspice_pckfrm
+         cspice_pltar
+         cspice_pltexp
+         cspice_pltnp
+         cspice_pltnrm
+         cspice_pltvol
+         cspice_srfc2s (mice_srfc2s)
+         cspice_srfcss (mice_srfcss)
+         cspice_srfnrm
+         cspice_srfrec
+         cspice_srfs2c (mice_srfs2c)
+         cspice_srfscc (mice_srfscc)
+         cspice_subpt_pl02
+         cspice_subsol_pl02
+         cspice_term_pl02
+         cspice_termpt
+
+   -Mice 1.3.0 31-OCT-2012 (EDW)(SCK)
 
       Added interfaces:
 
@@ -231,10 +289,12 @@ static struct npf
      { "bodc2n_s", &mice_bodc2n   },
      { "bodc2s_s", &mice_bodc2s   },
      { "boddef_c", &cspice_boddef },
+     { "bodfnd_c", &cspice_bodfnd },
      { "bodn2c_s", &mice_bodn2c   },
      { "bods2c_s", &mice_bods2c   },
      { "bodvcd_c", &cspice_bodvcd },
      { "bodvrd_c", &cspice_bodvrd },
+     { "ccifrm_s", &mice_ccifrm   },
      { "cgv2el_c", &cspice_cgv2el },
      { "cidfrm_s", &mice_cidfrm   },
      { "ckcls_c",  &cspice_ckcls  },
@@ -270,9 +330,14 @@ static struct npf
      { "dafopr_c", &cspice_dafopr },
      { "dafopw_c", &cspice_dafopw },
      { "dafus_c",  &cspice_dafus  },
+     { "dascls_c", &cspice_dascls },
+     { "dasec_c",  &cspice_dasec  },
+     { "dasopr_c", &cspice_dasopr },
      { "dcyldr_c", &cspice_dcyldr },
      { "deltet_c", &cspice_deltet },
      { "dgeodr_c", &cspice_dgeodr },
+     { "dlabfs_c", &cspice_dlabfs },
+     { "dlafns_c", &cspice_dlafns },
      { "dlatdr_c", &cspice_dlatdr },
      { "dpgrdr_c", &cspice_dpgrdr },
      { "dpr_c",    &cspice_dpr    },
@@ -281,6 +346,26 @@ static struct npf
      { "drdlat_c", &cspice_drdlat },
      { "drdpgr_c", &cspice_drdpgr },
      { "drdsph_c", &cspice_drdsph },
+     { "dskb02_c", &cspice_dskb02 },
+     { "dskcls_c", &cspice_dskcls },
+     { "dskd02_c", &cspice_dskd02 },
+     { "dskgd_c",  &cspice_dskgd  },
+     { "dskgtl_c", &cspice_dskgtl },
+     { "dski02_c", &cspice_dski02 },
+     { "dskmi2_c", &cspice_dskmi2 },
+     { "dskn02_c", &cspice_dskn02 },
+     { "dskobj_c", &cspice_dskobj },
+     { "dskopn_c", &cspice_dskopn },
+     { "dskp02_c", &cspice_dskp02 },
+     { "dskrb2_c", &cspice_dskrb2 },
+     { "dsksrf_c", &cspice_dsksrf },
+     { "dskstl_c", &cspice_dskstl },
+     { "dskv02_c", &cspice_dskv02 },
+     { "dskw02_c", &cspice_dskw02 },
+     { "dskx02_c", &cspice_dskx02 },
+     { "dskxsi_c", &cspice_dskxsi },
+     { "dskxv_c",  &cspice_dskxv  },
+     { "dskz02_c", &cspice_dskz02 },
      { "dsphdr_c", &cspice_dsphdr },
      { "dtpool_s", &mice_dtpool   },
      { "ducrss_c", &cspice_ducrss },
@@ -329,6 +414,10 @@ static struct npf
      { "gnpool_c", &cspice_gnpool },
      { "halfpi_c", &cspice_halfpi },
      { "illum_c",  &cspice_illum  },
+     { "illum_pl02",        &cspice_illum_pl02    },
+     { "illum_plid_pl02_s", &mice_illum_plid_pl02 },
+     { "illumf_s", &mice_illumf   },
+     { "illumg_s", &mice_illumg   },
      { "ilumin_s", &mice_ilumin   },
      { "inedpl_c", &cspice_inedpl },
      { "inelpl_c", &cspice_inelpl },
@@ -346,7 +435,12 @@ static struct npf
      { "latcyl_c", &cspice_latcyl },
      { "latrec_c", &cspice_latrec },
      { "latsph_c", &cspice_latsph },
+     { "latsrf_c", &cspice_latsrf },
+     { "limbpt_c", &cspice_limbpt },
+     { "limb_pl02",   &cspice_limb_pl02   },
+     { "llgrid_pl02", &cspice_llgrid_pl02 },
      { "lmpool_c", &cspice_lmpool },
+     { "lspcn_c",  &cspice_lspcn  },
      { "ltime_c",  &cspice_ltime  },
      { "m2eul_c",  &cspice_m2eul  },
      { "m2q_c",    &cspice_m2q    },
@@ -359,6 +453,8 @@ static struct npf
      { "nvp2pl_c", &cspice_nvp2pl },
      { "occult_c", &cspice_occult },
      { "oscelt_c", &cspice_oscelt },
+     { "pckcov_c", &cspice_pckcov },
+     { "pckfrm_c", &cspice_pckfrm },
      { "pcpool_c", &cspice_pcpool },
      { "pdpool_c", &cspice_pdpool },
      { "pgrrec_c", &cspice_pgrrec },
@@ -369,6 +465,11 @@ static struct npf
      { "pl2nvc_c", &cspice_pl2nvc },
      { "pl2nvp_c", &cspice_pl2nvp },
      { "pl2psv_c", &cspice_pl2psv },
+     { "pltar_c",  &cspice_pltar  },
+     { "pltexp_c", &cspice_pltexp },
+     { "pltnp_c",  &cspice_pltnp  },
+     { "pltnrm_c", &cspice_pltnrm },
+     { "pltvol_c", &cspice_pltvol },
      { "psv2pl_c", &cspice_psv2pl },
      { "pxform_c", &cspice_pxform },
      { "pxfrm2_c", &cspice_pxfrm2 },
@@ -411,18 +512,28 @@ static struct npf
      { "spkpvn_s", &mice_spkpvn   },
      { "spksfs_s", &mice_spksfs   },
      { "spkw08_c", &cspice_spkw08 },
+     { "srfc2s_s", &mice_srfc2s   },
+     { "srfcss_s", &mice_srfcss   },
+     { "srfnrm_c", &cspice_srfnrm },
+     { "srfrec_c", &cspice_srfrec },
+     { "srfs2c_s", &mice_srfs2c   },
+     { "srfscc_s", &mice_srfscc   },
      { "srfxpt_s", &mice_srfxpt   },
      { "stpool_c", &cspice_stpool },
      { "str2et_c", &cspice_str2et },
      { "subpnt_s", &mice_subpnt   },
+     { "subpt_pl02", &cspice_subpt_pl02  },
      { "subpt_s",  &mice_subpt    },
      { "subslr_s", &mice_subslr   },
      { "subsol_c", &cspice_subsol },
+     { "subsol_pl02", &cspice_subsol_pl02 },
      { "surfnm_c", &cspice_surfnm },
      { "surfpt_s", &mice_surfpt   },
      { "sxform_c", &cspice_sxform },
-     { "timdef_get_c", &cspice_timdef_get },
-     { "timdef_set_c", &cspice_timdef_set },
+     { "term_pl02", &cspice_term_pl02 },
+     { "termpt_c", &cspice_termpt },
+     { "timdef_get_c", &cspice_timdef_get  },
+     { "timdef_set_c", &cspice_timdef_set  },
      { "timout_c", &cspice_timout },
      { "tkvrsn_c", &cspice_tkvrsn },
      { "tpictr_c", &cspice_tpictr },
@@ -462,7 +573,6 @@ static struct npf
      { "xf2rav_c", &cspice_xf2rav },
      { "xfmsta_c", &cspice_xfmsta },
      };
-
 #endif
 
 

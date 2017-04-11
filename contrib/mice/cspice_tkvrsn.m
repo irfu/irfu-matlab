@@ -33,8 +33,13 @@
 %
 %   Given:
 %
-%      item   is the item for which a version string is to be
-%             returned.
+%      item   the item name for which to return the version string.
+%
+%             [1,c1] = size(item); char = class(item)
+%
+%                or
+%
+%             [1,1] = size(item); cell = class(item)
 %
 %             Currently, the only item supported is "toolkit"
 %             and it will return the toolkit version number.
@@ -47,8 +52,9 @@
 %
 %   returns:
 %
-%      value   a scalar string corresponding to the latest version
-%              string for the specified 'item'.
+%      value   latest version string for the specified 'item'.
+%
+%              [1,c2] = size(value); double = class(value)
 %
 %-Examples
 %
@@ -74,6 +80,10 @@
 %   MICE.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.2, 13-FEB-2015, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.0.1, 11-JUN-2013, EDW (JPL)
 %

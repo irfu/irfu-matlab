@@ -33,22 +33,26 @@
 %
 %   Given:
 %
-%      r       a double precision scalar or double precision 1XN
-%              array describing the distance of the position from origin
+%      r        the value(s) describing the distance of the position
+%               from the origin.
 %
-%      colat   a double precision scalar or double precision 1XN
-%              array describing the angle between the point and the
-%              positive z-axis, measured in radians (also referred to
-%              as the polar angle)
+%               [1,n] = size(r); double = class(r)
 %
-%      lons    a double precision scalar or double precision 1XN array
-%              describing the angle of the projection of the point to the XY
-%              plane from the positive X-axis, measured in radians,
-%              with range:
+%      colat    the value(s) describing the angle between the point and the
+%               positive z-axis, measured in radians (also referred to
+%               as the polar angle).
 %
-%                  -pi < lons <= pi
+%               [1,n] = size(colat); double = class(colat)
 %
-%              The positive Y-axis is at longitude PI/2 radians.
+%      lons     the value(s) describing the angle of the projection of the
+%               point to the XY plane from the positive X-axis, measured
+%               in radians, with range:
+%
+%                   -pi < lons <= pi
+%
+%               The positive Y-axis is at longitude PI/2 radians.
+%
+%               [1,n] = size(lons); double = class(lons)
 %
 %   the call:
 %
@@ -56,16 +60,20 @@
 %
 %   returns:
 %
-%      radius   a double precision scalar or double precision 1xN array
-%               describing the distance of the position from origin
+%      radius   the value(s) describing the distance of the position
+%               from the origin.
 %
-%      lon      a double precision scalar or double precision 1xN array
-%               describing the angle of the position from the XZ plane
-%               measured in radians
+%               [1,n] = size(radius); double = class(radius)
 %
-%      lat      a double precision scalar or double precision 1xN array
-%               describing the angle of the position from the XY plane
-%               measured in radians
+%      lon      the value(s) describing the angle of the position from
+%               the XZ plane measured in radians.
+%
+%               [1,n] = size(lon); double = class(lon)
+%
+%      lat      the value(s) describing the angle of the position from the
+%               XY plane measured in radians.
+%
+%               [1,n] = size(lat); double = class(lat)
 %
 %               The argument 'radius' returns in the same units associated
 %               with 'r'.
@@ -191,6 +199,10 @@
 %   MICE.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.1, 01-DEC-2014, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.0.0, 12-DEC-2005, EDW (JPL)
 %

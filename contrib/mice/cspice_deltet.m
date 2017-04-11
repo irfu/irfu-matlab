@@ -33,13 +33,21 @@
 %
 %   Given:
 %
-%      epoch    the double precision scalar or N-vector of
-%               epochs at which "delta ET" is to be computed.
+%      epoch    the epoch(s) at which "delta ET" is to be computed.
 %               'epoch' may be either UTC or ephemeris seconds
 %               past J2000, as specified by 'eptype'.
 %
-%      eptype   the scalar string indicating the type of input
-%               epoch. It may be either of the following:
+%               [1,n] = size(epoch); double = class(epoch)
+%
+%      eptype   the type of input epoch.
+%
+%               [1,c1] = size(eptype); char = class(eptype)
+%
+%                  or
+%
+%               [1,1] = size(eptype); cell = class(eptype)
+%
+%               It may be either of the following:
 %
 %                  'UTC'   UTC seconds past J2000 UTC.
 %
@@ -53,13 +61,14 @@
 %
 %   returns:
 %
-%      delta   the double precision scalar or N-vector
-%              values of
+%      delta   the value(s) of
 %
 %                 "delta ET" = ET - UTC
 %
 %              at the input 'epoch'. This is added to UTC to
 %              give ET, or subtracted from ET to give UTC.
+%
+%              [1,n] = size(delta); double = class(delta)
 %
 %              'delta' return with the same vectorization measure
 %              (N) as 'epoch'.
@@ -156,6 +165,10 @@
 %   KERNEL.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.1, 30-OCT-2014, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.0.0, 22-NOV-2005, EDW (JPL)
 %

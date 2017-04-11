@@ -33,22 +33,26 @@
 %
 %   Given:
 %
-%      r       a double precision scalar or double precision 1XN
-%              array describing the distance of the position from origin
+%      r        the value(s) describing the distance of the position
+%               from the origin.
 %
-%      colat   a double precision scalar or double precision 1XN
-%              array describing the angle between the point and the
-%              positive z-axis, measured in radians (also referred to
-%              as the polar angle)
+%               [1,n] = size(r); double = class(r)
 %
-%      lon     a double precision scalar or double precision 1XN array
-%              describing the angle of the projection of the point to the XY
-%              plane from the positive X-axis, measured in radians,
-%              with range:
+%      colat    the value(s) describing the angle between the point and the
+%               positive z-axis, measured in radians (also referred to
+%               as the polar angle).
 %
-%                  -pi < lon <= pi
+%               [1,n] = size(colat); double = class(colat)
 %
-%              The positive Y-axis is at longitude PI/2 radians.
+%      lon      the value(s) describing the angle of the projection of the
+%               point to the XY plane from the positive X-axis, measured
+%               in radians, with range:
+%
+%                   -pi < lon <= pi
+%
+%               The positive Y-axis is at longitude PI/2 radians.
+%
+%               [1,n] = size(lon); double = class(lon)
 %
 %   the call:
 %
@@ -56,14 +60,15 @@
 %
 %   returns:
 %
-%      rectan   a double precision 3x1 array or double precision
-%               3xN array containing the rectangular coordinates of the
+%      rectan   the array(s) containing the rectangular coordinates of the
 %               position or set of positions
+%
+%               [3,n] = size(rectan); double = class(rectan)
 %
 %               The argument 'rectan' returns in the same units associated
 %               with 'r'.
 %
-%               'rectan' returns with the same vectorization measure (N)
+%               'rectan' returns with the same vectorization measure, N,
 %                as 'r', 'colat', and 'lon'.
 %
 %-Examples
@@ -187,6 +192,10 @@
 %   MICE.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.1, 01-DEC-2014, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.0.0, 22-NOV-2005, EDW (JPL)
 %

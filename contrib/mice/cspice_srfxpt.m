@@ -39,98 +39,288 @@
 %
 %   Given:
 %
-%      method   the scalar string providing the parameters to define the
-%               computation method to use
+%      method   a string providing parameters defining
+%               the computation method to use.
 %
-%                  The only currently supported choice:
+%               [1,c1] = size(method); char = class(method)
 %
-%                     "Ellipsoid"   The intercept computation uses
-%                                   a triaxial ellipsoid to model
-%                                   the surface of the target body.
-%                                   The ellipsoid's radii must be
-%                                   available in the kernel pool.
+%                  or
 %
-%      target   the scalar string name of the target body, 'target' being
-%               case-insensitive, leading and trailing blanks are not
-%               significant
+%               [1,1] = size(method); cell = class(method)
 %
-%                  Optionally, you may supply a string containing the integer
-%                  ID code for the object. For example both "MOON" and "301"
-%                  are legitimate strings that indicate the moon is the
-%                  target body.
+%               The only currently supported choice:
 %
-%      et       the double precision, scalar or 1XN-vector of epochs,
-%               expressed as ephemeris seconds past J2000 TDB, at which to
-%               compute the surface intercept point on the target body (this
-%               epoch represents either the time of signal reception, or
-%               transmission, depending on the selected 'abcorr')
+%                  "Ellipsoid"   The intercept computation uses
+%                                a triaxial ellipsoid to model
+%                                the surface of the target body.
+%                                The ellipsoid's radii must be
+%                                available in the kernel pool.
 %
-%      abcorr   the scalar string name of the aberration correction to
-%               apply when computing the observer-target state and the target
-%               body orientation
+%               Neither case nor white space are significant in
+%               'method'.
+%
+%      target   the name of the target body. The target body is an
+%               ephemeris object (its trajectory is given by SPK data),
+%               and is an extended object. Optionally, you may supply the
+%               integer ID code for the object as an integer string, i.e.
+%               both 'MOON' and '301' are legitimate strings that indicate
+%               the Moon is the target body.
+%
+%               [1,c2] = size(target); char = class(target)
+%
+%                  or
+%
+%               [1,1] = size(target); cell = class(target)
+%
+%      et       the ephemeris time(s), expressed as seconds past J2000
+%               TDB, at which to compute the surface intercept point on
+%               the target body (this epoch represents either the time of
+%               signal reception, or transmission, depending on the
+%               selected 'abcorr')
+%
+%               [1,n] = size(et); double = class(et)
+%
+%      abcorr   the aberration correction to apply when computing the
+%               observer-target state and the target body orientation.
+%
+%               [1,c3] = size(abcorr); char = class(abcorr)
+%
+%                  or
+%
+%               [1,1] = size(abcorr); cell = class(abcorr)
 %
 %               For practical purposes, 'CN' (converged Newtonian)
 %               represents the best correction choice.
 %
-%      obsrvr   the scalar string name of the observing body, 'obsrvr' being
-%               case-insensitive, leading and trailing blanks are not
-%               significant.
+%               'abcorr' may be any of the following:
 %
-%                  Optionally, you may supply a string containing the integer
-%                  ID code for the object. For example both "MOON" and "301"
-%                  are legitimate strings that indicate the moon is the
-%                  target body.
+%                  'NONE'     Apply no correction. Return the
+%                             geometric surface intercept point on the
+%                             target body.
 %
-%      dref      the scalar string name of the reference frame containing the
-%                'dvec' direction vector
+%               Let 'lt' represent the one-way light time between the
+%               observer and the surface intercept point (note: NOT
+%               between the observer and the target body's center).
+%               The following values of 'abcorr' apply to the
+%               "reception" case in which photons depart from the
+%               intercept point's location at the light-time
+%               corrected epoch et-lt and *arrive* at the observer's
+%               location at 'et':
 %
-%      dvec      the double precision 3-vector emanating from the observer
 %
-%                  'dvec' is specified relative to the reference frame
-%                   designated by 'dref'.
+%                  'LT'       Correct for one-way light time (also
+%                             called "planetary aberration") using a
+%                             Newtonian formulation. This correction
+%                             yields the location of the surface
+%                             intercept point at the moment it
+%                             emitted photons arriving at the
+%                             observer at 'et'.
+%
+%                             The light time correction uses an
+%                             iterative solution of the light time
+%                             equation. The solution invoked by the
+%                             'LT' option uses one iteration.
+%
+%                             Both the target state as seen by the
+%                             observer, and rotation of the target
+%                             body, are corrected for light time.
+%
+%                  'LT+S'     Correct for one-way light time and
+%                             stellar aberration using a Newtonian
+%                             formulation. This option modifies the
+%                             state obtained with the 'LT' option to
+%                             account for the observer's velocity
+%                             relative to the solar system
+%                             barycenter. The result is the apparent
+%                             surface intercept point as seen by the
+%                             observer.
+%
+%                  'CN'       Converged Newtonian light time
+%                             correction.  In solving the light time
+%                             equation, the 'CN' correction iterates
+%                             until the solution converges. Both the
+%                             state and rotation of the target body
+%                             are corrected for light time.
+%
+%                  'CN+S'     Converged Newtonian light time
+%                             and stellar aberration corrections.
+%
+%               The following values of 'abcorr' apply to the
+%               "transmission" case in which photons *depart* from
+%               the observer's location at 'et' and arrive at the
+%               intercept point at the light-time corrected epoch
+%               et+lt:
+%
+%                  'XLT'      "Transmission" case:  correct for
+%                             one-way light time using a Newtonian
+%                             formulation. This correction yields the
+%                             intercept location at the moment it
+%                             receives photons emitted from the
+%                             observer's location at 'et'.
+%
+%                             The light time correction uses an
+%                             iterative solution of the light time
+%                             equation. The solution invoked by the
+%                             'LT' option uses one iteration.
+%
+%                             Both the target state as seen by the
+%                             observer, and rotation of the target
+%                             body, are corrected for light time.
+%
+%                  'XLT+S'    "Transmission" case:  correct for
+%                             one-way light time and stellar
+%                             aberration using a Newtonian
+%                             formulation  This option modifies the
+%                             intercept obtained with the 'XLT'
+%                             option to account for the observer's
+%                             velocity relative to the solar system
+%                             barycenter.
+%
+%                  'XCN'      Converged Newtonian light time
+%                             correction.  This is the same as 'XLT'
+%                             correction but with further iterations
+%                             to a converged Newtonian light time
+%                             solution.
+%
+%                  'XCN+S'    "Transmission" case:  converged
+%                             Newtonian light time and stellar
+%                             aberration corrections.
+%
+%      obsrvr   the name of a observing body. Optionally, you may supply
+%               the integer ID code for the object as an integer string,
+%               i.e. both 'MOON' and '301' are legitimate strings that
+%               indicate the Moon is the observing body.
+%
+%               [1,c4] = size(obsrvr); char = class(obsrvr)
+%
+%                  or
+%
+%               [1,1] = size(obsrvr); cell = class(obsrvr)
+%
+%      dref     the name of the reference frame relative to which the
+%               input direction vector is expressed. This may be any
+%               frame supported by the SPICE system, including built-in
+%               frames (documented in the Frames Required Reading) and
+%               frames defined by a loaded frame kernel (FK).
+%
+%               [1,c5] = size(dref); char = class(dref)
+%
+%                  or
+%
+%               [1,1] = size(dref); cell = class(dref)
+%
+%               When 'dref' designates a non-inertial frame, the
+%               orientation of the frame is evaluated at an epoch
+%               dependent on the frame's center and, if the center is
+%               not the observer, on the selected aberration
+%               correction. See the description of the direction
+%               vector 'dvec' for details.
+%
+%      dvec     Pointing vector emanating from the observer.  The
+%               intercept with the target body's surface of the ray
+%               defined by the observer and 'dvec' is sought.
+%
+%               [3,1] = size(dvec); double = class(dvec)
+%
+%               'dvec' is specified relative to the reference frame
+%               designated by 'dref'.
+%
+%               Non-inertial reference frames are treated as follows:
+%               if the center of the frame is at the observer's
+%               location, the frame is evaluated at 'et'.  If the
+%               frame's center is located elsewhere, then letting
+%               'ltcent' be the one-way light time between the observer
+%               and the central body associated with the frame, the
+%               orientation of the frame is evaluated at et-ltcent,
+%               et+ltcent, or 'et' depending on whether the requested
+%               aberration correction is, respectively, for received
+%               radiation, transmitted radiation, or is omitted.
+%               'ltcent' is computed using the method indicated by
+%               'abcorr'.
 %
 %   the call:
 %
 %      [ spoint, dist, trgepc, obspos, found ] = ...
-%                 cspice_srfxpt( method, target, et, abcorr, obsrvr, dref, dvec)
+%            cspice_srfxpt( method, target, et, abcorr, obsrvr, dref, dvec)
 %
 %   returns:
 %
-%      spoint   the double precision 3-vector or 3xN array identifying the
-%               surface intercept point on 'target' of the ray 'dvec' that
-%               emanates from 'obsrvr', with 'spoint' expressed in Cartesian
-%               coordinates relative to the body-fixed frame
-%               associated 'target'.
+%      spoint   the surface intercept point on the target body of
+%               the ray defined by the observer and the direction
+%               vector. If the ray intersects the target body in
+%               multiple points, the selected intersection point is
+%               the one closest to the observer.  The output
+%               argument 'found' (see below) indicates whether an
+%               intercept was found.
 %
-%                  The body-fixed target frame is evaluated at the epoch
-%                  'trgepc' NOT 'et'.
+%               [3,1] = size(spoint); double = class(spoint)
 %
-%                  The components of `spoint' are given in units of km.
+%               'spoint' is expressed in Cartesian coordinates,
+%               relative to the body-fixed frame associated with the
+%               target body.  The body-fixed target frame is
+%               evaluated at the intercept epoch 'trgepc' (see
+%               description below).
 %
-%      dist     the double precision, scalar or 1XN-vector distance in
-%               kilometers between the observer and surface intercept on the
-%               target body
+%               When light time correction is used, the duration of
+%               light travel between 'spoint' to the observer is
+%               considered to be the one way light time.  When both
+%               light time and stellar aberration corrections are
+%               used, 'spoint' is selected such that, when 'spoint'
+%               is corrected for light time and the vector from the
+%               observer to the light-time corrected location of
+%               'spoint' is corrected for stellar aberration, the
+%               resulting vector is parallel to the ray defined by
+%               the observer's location and 'dvec'.
 %
-%      trgepc   the double precision, scalar or 1XN-vector "intercept epoch"
-%               expressed as ephemeris seconds past J2000 TDB where "intercept
-%               epoch" means the epoch at which the ray defined by 'obsrvr'
-%               and 'dvec' intercepts 'target' surface at 'spoint'
+%               The components of 'spoint' are given in units of km.
 %
-%      obspos   the double precision 3-vector or 3xN array pointing from the
-%               center of 'target' at epoch 'trgepc' to 'obsrvr' at epoch 'et',
-%               with 'obspos' expressed in the target body-fixed
-%               reference frame
+%     dist      the distance between the observer and the surface
+%               intercept on the target body. 'dist' is given in
+%               units of km.
 %
-%                  The body-fixed target frame is evaluated at the epoch
-%                  'trgepc' NOT 'et'.
+%               [1,1] = size(dist); double = class(dist)
 %
-%                  The components of 'obspos' are given in units of km.
+%     trgepc    the "intercept epoch."  This is the epoch at which
+%               the ray defined by 'obsrvr' and 'dvec' intercepts the
+%               target surface at 'spoint'.  'trgepc' is defined as
+%               follows: letting 'lt' be the one-way light time
+%               between the observer and the intercept point,
+%               'trgepc' is the epoch et-lt, et+lt, or 'et' depending
+%               on whether the requested aberration correction is,
+%               respectively, for received radiation, transmitted
+%               radiation, or omitted. 'lt' is computed using the
+%               method indicated by 'abcorr'.
 %
-%      found    a logical scalar or 1XN-vector indicating whether or not
-%               the ray 'dvec' intersects 'target' (TRUE) or not (FALSE)
+%               [1,1] = size(trgepc); double = class(trgepc)
 %
-%               'spoint', 'dist', 'trgepc', 'obspos(3)', and 'found'
-%                return with the same vectorization measure (N) as 'et'.
+%               'trgepc' is expressed as seconds past J2000 TDB.
+%
+%     obspos    the vector from the center of the target body at
+%               epoch 'trgepc' to the observer at epoch 'et'.
+%               'obspos' is expressed in the target body-fixed
+%               reference frame evaluated at 'trgepc'.  (This is
+%               the frame relative to which 'spoint' is given.)
+%
+%               [3,1] = size(obspos); double = class(obspos)
+%
+%               'obspos' is returned to simplify various related
+%               computations that would otherwise be cumbersome. For
+%               example, the vector 'xvec' from the observer to
+%               'spoint' can be calculated via
+%
+%                  xvec = spoint - obspos
+%
+%               The components of 'obspos' are given in units of km.
+%
+%     found     the logical flag indicating whether or not the ray
+%               intersects the target.  If an intersection exists
+%               'found' will be returned as true. If the ray misses
+%               the target, 'found' will return as false.
+%
+%               [1,1] = size(found); logical = class(found)
+%
+%      'spoint', 'dist', 'trgepc', 'obspos(3)', and 'found' return with the
+%      same vectorization measure (N) as 'et'.
 %
 %-Examples
 %
@@ -384,6 +574,10 @@
 %   TIME.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.3, 12-FEB-2015, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.0.2, 18-MAY-2010, BVS (JPL)
 %

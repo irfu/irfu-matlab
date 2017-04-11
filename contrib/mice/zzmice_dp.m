@@ -34,6 +34,9 @@
 %
 %      x   an input numeric to convert to double precision
 %
+%          'x' may have any size or shape, but must be of class
+%          numeric.
+%
 %   the call:
 %
 %      y = zzmice_dp(x)
@@ -41,6 +44,9 @@
 %   returns:
 %
 %      y   the double precision representation of 'x'
+%
+%          'y' returns with the same size and shape of 'x' and
+%          class double.
 %
 %-Examples
 %
@@ -55,6 +61,10 @@
 %   MICE.REQ
 %
 %-Version
+%
+%   -Mice Version 1.1.1, 12-FEB-2015, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.1.0, 27-JUL-2009, EDW (JPL)
 %

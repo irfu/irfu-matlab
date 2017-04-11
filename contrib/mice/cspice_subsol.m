@@ -39,8 +39,15 @@
 %
 %   Given:
 %
-%      method   the scalar sting specifying the computation method
-%               to be used.  The choices are:
+%      method   the name for the computation method to use.
+%
+%               [1,c1] = size(method); char = class(method)
+%
+%                  or
+%
+%               [1,1] = size(method); cell = class(method)
+%
+%               The choices are:
 %
 %                  'Near point'    The sub-solar point is defined
 %                                  as the nearest point on the
@@ -60,27 +67,40 @@
 %               method.  For example, the string ' NEARPOINT' is
 %               valid.
 %
+%      target   the name of the target body. 'target' is case-insensitive,
+%               and leading and trailing blanks in 'target' are not
+%               significant. Optionally, you may supply a string containing
+%               the integer ID code for the object. For example both 'MOON'
+%               and '301' are legitimate strings that indicate the moon is
+%               the target body.
 %
-%      target   the scalar sting describing the name of the target body.
-%               'target' is case-insensitive, and leading and trailing
-%               blanks in 'target' are not significant. Optionally, you
-%               may supply a string containing the integer ID code for
-%               the object. For example both 'MOON' and '301' are legitimate
-%               strings that indicate the moon is the target body.
+%               [1,c2] = size(target); char = class(target)
+%
+%                  or
+%
+%               [1,1] = size(target); cell = class(target)
 %
 %               This routine assumes that the target body is modeled by
 %               a tri-axial ellipsoid, and that a PCK file containing
 %               its radii has been loaded into the kernel pool via
 %               cspice_furnsh.
 %
-%      et       the double precision scalar or 1xN array of ephemeris
-%               time expressed as ephemeris seconds past J2000 at which
-%               the sub-solar point on the target body is to be
-%               computed.
+%      et       the value(s) for ephemeris time expressed as ephemeris seconds
+%               past J2000 at which the sub-solar point on the target body
+%               is to be computed.
 %
-%      abcorr   the scalar string identifying the aberration corrections to
-%               apply when computing the observer-target state.  'abcorr'
-%               may be any of the following.
+%               [1,n] = size(et); double = class(et)
+%
+%      abcorr   the aberration corrections to apply when computing the
+%               observer-target state.
+%
+%               [1,c3] = size(abcorr); char = class(abcorr)
+%
+%                  or
+%
+%               [1,1] = size(abcorr); cell = class(abcorr)
+%
+%               'abcorr' may be any of the following.
 %
 %                  'NONE'   Apply no correction. Return the
 %                           geometric sub-solar point on the target
@@ -109,28 +129,35 @@
 %
 %                  'CN'     Converged Newtonian light time correction.
 %                           This option produces a solution that is at
-%                           least as accurate at that obtainable 
-%                           with the 'LT' option. Whether the 'CN' 
-%                           solution is substantially more accurate 
-%                           depends on the geometry of the 
-%                           participating objects and on the 
-%                           accuracy of the input data. In all 
-%                           cases this routine will execute more 
-%                           slowly when a converged solution is 
-%                           computed. See the section titled "The 
+%                           least as accurate at that obtainable
+%                           with the 'LT' option. Whether the 'CN'
+%                           solution is substantially more accurate
+%                           depends on the geometry of the
+%                           participating objects and on the
+%                           accuracy of the input data. In all
+%                           cases this routine will execute more
+%                           slowly when a converged solution is
+%                           computed. See the section titled "The
 %                           Computation of Light Time" in the SPK
-%                           Required Reading document spk.req for 
+%                           Required Reading document spk.req for
 %                           details.
 %
 %                  'CN+S'   Converged Newtonian light time
-%                           and stellar aberration corrections. 
+%                           and stellar aberration corrections.
 %                           Light time and stellar aberration
 %                           corrections are applied as in the
 %                           'LT+S' case.
 %
-%      obsrvr   the scalar sting describing the name of the observing body.
-%               This is typically a spacecraft, the earth, or a surface point
-%               on the earth.  `obsrvr' is case-insensitive, and leading and
+%      obsrvr   the name of the observing body. This is typically a
+%               spacecraft, the earth, or a surface point on the earth.
+%
+%               [1,c4] = size(obsrvr); char = class(obsrvr)
+%
+%                  or
+%
+%               [1,1] = size(obsrvr); cell = class(obsrvr)
+%
+%               `obsrvr' is case-insensitive, and leading and
 %               trailing blanks in `obsrvr' are not significant.
 %               Optionally, you may supply a string containing the
 %               integer ID code for the object.  For example both
@@ -143,10 +170,14 @@
 %
 %   returns:
 %
-%      spoint   the double precision 3x1 array or 3xN array describing the
-%               sub-solar point on the target body at 'et',
-%               expressed relative to the body-fixed frame of the
-%               target body.
+%      spoint   the array(s) describing the sub-solar point on the target
+%               body at 'et', expressed relative to the body-fixed frame
+%               of the target body.
+%
+%               [3,n] = size(rectan); double = class(rectan)
+%
+%               'spoint' returns with the same vectorization measure, N,
+%               as 'et'.
 %
 %-Examples
 %
@@ -243,6 +274,10 @@
 %   TIME.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.4, 30-OCT-2014, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.0.3, 23-JUN-2014, NJB (JPL)
 %

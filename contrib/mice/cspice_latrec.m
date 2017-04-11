@@ -33,31 +33,36 @@
 %
 %   Given:
 %
-%      radius      a double precision scalar or double precision 1xN array
-%                  describing the distance of the position from origin
+%      radius   the value(s) describing the distance of the position
+%               from the origin.
 %
-%      longitude   a double precision scalar or double precision 1xN array
-%                  describing the angle of the position from the XZ plane
-%                  measured in radians
+%               [1,n] = size(radius); double = class(radius)
 %
-%      latitude    a double precision scalar or double precision 1xN array
-%                  describing the angle of the position from the XY plane
-%                  measured in radians
+%      lon      the value(s) describing the angle of the position from
+%               the XZ plane measured in radians.
+%
+%               [1,n] = size(lon); double = class(lon)
+%
+%      lat      the value(s) describing the angle of the position from the
+%               XY plane measured in radians.
+%
+%               [1,n] = size(lat); double = class(lat)
 %
 %   the call:
 %
-%      rectan = cspice_latrec( radius, longitude, latitude)
+%      rectan = cspice_latrec( radius, lon, lat)
 %
 %   returns:
 %
-%      rectan   a double precision 3x1 array or double precision
-%               3xN array containing the rectangular coordinates of the
+%      rectan   the array(s) containing the rectangular coordinates of the
 %               position or set of positions
+%
+%               [3,n] = size(rectan); double = class(rectan)
 %
 %               'rectan' returns with the same units associated with 'radius'.
 %
-%               'rectan' returns with the vectorization measure (N) as
-%               'radius', 'longitude', and 'latitude'
+%               'rectan' returns with the vectorization measure, N, as
+%               'radius', 'lon', and 'lat'.
 %
 %-Examples
 %
@@ -183,6 +188,10 @@
 %   MICE.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.1, 01-DEC-2014, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.0.0, 22-NOV-2005, EDW (JPL)
 %

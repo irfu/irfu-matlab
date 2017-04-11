@@ -69,7 +69,7 @@
 %                      ds             1/2
 %                              < x, x >
 %
-%             'dvnorm' returns with the same measure of vectorization (N)
+%             'dvnorm' returns with the same vectorization measure (N)
 %             as 'state'.
 %
 %              [1,n] = size(dvnorm); double = class(dvnorm)

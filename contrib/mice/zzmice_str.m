@@ -37,6 +37,12 @@
 %      x   an input to confirm as a character array representing
 %          a scalar string, vector or strings, or a string cell.
 %
+%          [n,c1] = size(x); char = class(x)
+%
+%             or
+%
+%          [1,n] = size(x); cell = class(x)
+%
 %   the call:
 %
 %      y = zzmice_str(x)
@@ -44,6 +50,8 @@
 %   returns:
 %
 %      y   the character array form of 'x'
+%
+%          [n,c1] = size(y); char = class(y)
 %
 %-Examples
 %
@@ -58,6 +66,10 @@
 %   MICE.REQ
 %
 %-Version
+%
+%   -Mice Version 1.1.1, 12-FEB-2015, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.1.0, 27-JUL-2009, EDW (JPL)
 %

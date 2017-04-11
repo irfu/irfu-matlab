@@ -33,8 +33,15 @@
 %
 %   Given:
 %
-%      item   a scalar string identifying the compile value to return.
-%             Allowed values for 'item' :
+%      item   a string identifying the compile value to return.
+%
+%             [1,c1] = size(item); char = class(item)
+%
+%                or
+%
+%             [1,1] = size(item); cell = class(item)
+%
+%             Allowed values for 'item':
 %
 %                'DATE'    - the date of the Mice interface compile
 %
@@ -49,8 +56,7 @@
 %
 %   returns:
 %
-%      value   a scalar string corresponding to the quantity identified by
-%              'item'
+%      value   the string corresponding to the quantity identified by 'item'.
 %
 %-Examples
 %
@@ -75,6 +81,10 @@
 %   MICE.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.1, 13-FEB-2015, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.0.0, 26-JUN-2006, EDW (JPL)
 %

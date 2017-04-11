@@ -32,7 +32,9 @@
 %
 %   Given:
 %
-%      handle  the scalar integer file handle for an open CK file
+%      handle   the file handle for an open CK file.
+%
+%               [1,1] = size(handle); int32 = class(handle)
 %
 %   the call:
 %
@@ -82,6 +84,10 @@
 %   CK.REQ
 %
 %-Version
+%
+%   -Mice Version 1.1.1, 29-OCT-2014, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.1.0, 22-JUL-2009, EDW (JPL)
 %

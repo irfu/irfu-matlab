@@ -33,7 +33,10 @@
 %
 %   Given:
 %
-%      matrix   a double precision 3x3 array defining a rotation
+%      matrix   rotation matrix that gives the transformation from
+%               some frame "frame1" to another frame "frame2".
+%
+%               [3,3]   = size(matrix); double = class(matrix)
 %
 %   the call:
 %
@@ -41,19 +44,20 @@
 %
 %   returns:
 %
-%      axis   a double precision 3x1 unit array pointing along the axis
-%             of the rotation. In other words, 'axis' is a unit eigenvector
-%             of the input matrix, corresponding to the eigenvalue 1. If
-%             the input matrix is the identity matrix, 'axis' will be the
-%             vector (0, 0, 1). If the input rotation is a rotation by pi
-%             radians, both 'axis' and -axis may be regarded as the axis
-%             of the rotation.
+%      axis   the unit vector pointing along the axis of the rotation. In
+%             other words, 'axis' is a unit eigenvector of the input matrix,
+%             corresponding to the eigenvalue 1. If the input matrix is
+%             the identity matrix, 'axis' will be the vector (0, 0, 1).
+%             If the input rotation is a rotation by pi radians, both
+%             'axis' and -'axis' may be regarded as the axis of the rotation.
 %
-%      angle  a double precision scalar defining the angle
-%             between 'v' and matrix*'v' for any non-zero vector 'v'
-%             orthogonal to 'axis'.  'angle' is given in radians.
-%             The angle returned will be in the range from 0 to
-%             pi radians.
+%             [3,1] = size(axis); double = class(axis)
+%
+%      angle  the angle between 'v' and 'matrix'*'v' for any non-zero vector
+%             'v' orthogonal to 'axis'. 'angle' is given in radians.
+%             The angle returned will be in the range from 0 to pi radians.
+%
+%             [1,1] = size(angle); double = class(angle)
 %
 %-Examples
 %
@@ -111,6 +115,10 @@
 %
 %-Version
 %
+%   -Mice Version 1.0.2, 09-MAR-2015, EDW (JPL)
+%
+%      Edited I/O section to conform to NAIF standard for Mice documentation.
+%
 %   -Mice Version 1.0.0, 29-NOV-2005, EDW (JPL)
 %
 %-Index_Entries
@@ -128,8 +136,8 @@ function [axis, angle] = cspice_raxisa(matrix)
 
       otherwise
 
-         error ( [ 'Usage: [axis(3), angle] = ' ...
-                   'cspice_raxisa(matrix(3,3))' ] )
+         error ( [ 'Usage: [ axis(3), angle] = ' ...
+                   'cspice_raxisa( matrix(3,3) )' ] )
 
    end
 

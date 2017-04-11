@@ -33,13 +33,13 @@
 %
 %   Given:
 %
-%      spk     the string name, or cell of strings, of SPICE SPK files.
+%      spk     the name, or cell of names, of SPICE SPK file(s).
 %
-%              [1,c] = size(spk), char = class(spk)
+%              [n,c] = size(spk), char = class(spk)
 %
 %                 or
 %
-%              [1,m] = size(spk), cell = class(spk)
+%              [1,n] = size(spk), cell = class(spk)
 %
 %      room    an integer scalar defining the maximum number of SPK IDs to
 %              return from 'spk'.
@@ -51,7 +51,7 @@
 %              array consisting of a union of the data retrieved from
 %              the 'spk' kernels and the data in 'ids_i'.
 %
-%              [n,1] = size(ids_i), int32 = class(ids_i)
+%              [m,1] = size(ids_i), int32 = class(ids_i)
 %
 %                 or
 %
@@ -67,7 +67,7 @@
 %
 %   returns:
 %
-%      ids   a Nx1 integer array containing the set of unique NAIF ID
+%      ids   an array containing the set of unique NAIF ID
 %            codes for which ephemeris data exists in 'spk'. If 'ids_i'
 %            exists in the argument list, 'ids' returns as a union of
 %            the coverage data found in 'spk' and the data in 'ids_i'.
@@ -257,7 +257,9 @@
 %
 %-Particulars
 %
-%   None.
+%   This routine provides an API via which applications can determine
+%   the set of objects for which there are ephemeris data in a
+%   specified SPK file.
 %
 %-Required Reading
 %

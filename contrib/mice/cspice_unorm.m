@@ -58,7 +58,7 @@
 %
 %             [1,n] = size(vmag); double = class(vmag)
 %
-%             'vout' and 'vmag' return with the same measure of vectorization
+%             'vout' and 'vmag' return with the same vectorization measure
 %              (N) as 'v1'.
 %
 %-Examples

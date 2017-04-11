@@ -52,6 +52,10 @@
 %
 %-Version
 %
+%   -Mice Version 1.0.0, 11-MAR-2016, EDW (JPL)
+%
+%      Added DSKMiceUser for include.
+%
 %   -Mice Version 1.0.0, 14-FEB-2012, SCK (JPL)
 %
 %-Index_Entries
@@ -64,3 +68,4 @@
 %   Include occultation specific definitions.
 %
 MiceOccult;
+DSKMiceUser;

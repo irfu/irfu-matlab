@@ -1,7 +1,7 @@
 %-Abstract
 %
 %   CSPICE_M2Q calculates a unit quaternion corresponding to a
-%   specified 3x3 double precision, rotation matrix.
+%   specified rotation matrix.
 %
 %-Disclaimer
 %
@@ -33,8 +33,13 @@
 %
 %   Given:
 %
-%      r   a double precision 3x3 or 3x3xN array of rotation
-%          matrices
+%      r   the rotation matrix/matrices.
+%
+%          [3,3]   = size(r); double = class(r)
+%
+%          or
+%
+%          [3,3,n] = size(r); double = class(r)
 %
 %   the call:
 %
@@ -42,15 +47,45 @@
 %
 %   returns:
 %
-%      q   a double precision 4-vector or 4xN array, the quaternion
-%          representation of the matrix 'r'
+%      q   an array of unit-length SPICE-style quaternion(s) 
+%          representing 'r'.
+%
+%          If [3,3]   = size(r) then [4,1] = size(q)
+%          If [3,3,n] = size(r) then [4,n] = size(q)
+%                                   double = class(q)
 %
 %          Note that multiple styles of quaternions are in use.
 %          This routine returns a quaternion that conforms to
 %          the SPICE convention. See the Particulars section
 %          for details.
 %
-%          'q' returns with the same vectorization measure (N)
+%          If 'r' rotates vectors in the counterclockwise sense by 
+%          an angle of 'theta' radians about a unit vector 'a', where
+%
+%             0 < theta < pi
+%               -       -
+%
+%          then letting h = theta/2,
+%
+%             q = ( cos(h), sin(h)a ,  sin(h)a ,  sin(h)a ).
+%                                  1          2          3
+%
+%          The restriction that 'theta' must be in the range [0, pi]
+%          determines the output quaternion 'q' uniquely
+%          except when theta = pi; in this special case, both of
+%          the quaternions
+%
+%             q = ( 0,  a ,  a ,  a  )
+%                        1    2    3
+%
+%          and
+%
+%             q = ( 0, -a , -a , -a  )
+%                        1    2    3
+%
+%          are possible outputs.
+%
+%          'q' returns with the same vectorization measure, N,
 %          as 'r' .
 %
 %-Examples
@@ -123,7 +158,11 @@
 %
 %-Version
 %
-%    -Mice Version 1.0.0, 10-JAN-2006, EDW (JPL)
+%   -Mice Version 1.0.1, 09-MAR-2015, EDW (JPL)
+%
+%      Edited I/O section to conform to NAIF standard for Mice documentation.
+%
+%   -Mice Version 1.0.0, 10-JAN-2006, EDW (JPL)
 %
 %-Index_Entries
 %

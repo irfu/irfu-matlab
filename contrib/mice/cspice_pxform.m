@@ -35,15 +35,15 @@
 %
 %      from   the name of a reference frame in which a position is known.
 %
-%             [1,m] = size(from); char = class(from)
+%             [1,c1] = size(from); char = class(from)
 %
 %      to     the name of a reference frame in which it is desired to represent
 %             the position.
 %
-%             [1,l] = size(to); char = class(to)
+%             [1,c2] = size(to); char = class(to)
 %
-%      et     epoch in ephemeris seconds past the epoch of J2000 (TDB) at which
-%             the position transformation matrix should be evaluated.
+%      et     epoch(s) in ephemeris seconds past the epoch of J2000 (TDB)
+%             at which the to evaluate the position transformation operator(s).
 %
 %             [1,n] = size(et); double = class(et)
 %
@@ -60,7 +60,7 @@
 %               If [1,n] = size(et) then [3,3,n] = size(rotate)
 %                                         double = class(rotate)
 %
-%               'rotate' returns with the same vectorization measure (N)
+%               'rotate' returns with the same vectorization measure , N,
 %               as 'et'.
 %
 %-Examples
@@ -220,6 +220,11 @@
 %   FRAMES.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.2, 05-FEB-2015, EDW (JPL)
+%
+%       Minor edits to I/O header to match corresponding header 
+%       in cspice_sxform.
 %
 %   -Mice Version 1.0.1, 09-NOV-2012, EDW (JPL), SCK (JPL)
 %

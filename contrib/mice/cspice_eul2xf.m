@@ -34,9 +34,10 @@
 %
 %   Given:
 %
-%       eulang   the double precision 6x1 or double precision 6xN
-%                array of Euler angles corresponding to the
-%                specified factorization
+%       eulang   the array(s) of Euler angles corresponding to the
+%                specified factorization.
+%
+%                [6,n] = size(eulang); double = class(eulang)
 %
 %                If we represent r as shown here:
 %
@@ -54,17 +55,21 @@
 %
 %                or (6xN)
 %
-%                  eulang[:,N] = alpha_N
-%                  eulang[:,N] = beta_N
-%                  eulang[:,N] = gamma_N
-%                  eulang[:,N] = dalpha_N/dt
-%                  eulang[:,N] = dbeta_N/dt
-%                  eulang[:,N] = dgamma_N/dt
+%                  eulang[1,N] = alpha_N
+%                  eulang[2,N] = beta_N
+%                  eulang[3,N] = gamma_N
+%                  eulang[4,N] = dalpha_N/dt
+%                  eulang[5,N] = dbeta_N/dt
+%                  eulang[6,N] = dgamma_N/dt
 %
 %      axisa
 %      axisb
-%      axisc     the scalar integers defining the axes desired for the
-%                factorization of "r". All must be in the range from 1 to 3.
+%      axisc     the indices defining the axes desired for the factorization
+%                of "r". All must be in the range from 1 to 3.
+%
+%                [1,1] = size(axis3); int32 = class(axis3)
+%                [1,1] = size(axis2); int32 = class(axis2)
+%                [1,1] = size(axis1); int32 = class(axis1)
 %
 %                Every rotation matrix can be represented as a product
 %                of three rotation matrices about the principal axes
@@ -83,12 +88,15 @@
 %
 %   returns:
 %
-%      xform   a double precision 6x6 or double precision 6x6xN
-%              array of a state transformation matrices corresponding to
-%              'r' as described above
+%      xform   a  array(s) of a state transformation matrices corresponding to
+%              'r' as described above.
+%
+%              If [6,1] = size(eulang) then [3,3]   = size(xform)
+%              If [6,n] = size(eulang) then [3,3,n] = size(xform)
+%                                            double = class(xform)
 %
 %              'xform'  returns with the same vectorization
-%              measure (N) as 'eulang'.
+%              measure, N, as 'eulang'.
 %
 %-Examples
 %
@@ -143,6 +151,10 @@
 %   MICE.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.3, 06-NOV-2014, EDW (JPL)
+%
+%      Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.0.2, 29-FEB-2012, EDW (JPL)
 %

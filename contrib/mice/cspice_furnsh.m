@@ -292,6 +292,34 @@
 %   Kernel pool variable names are restricted to a length of 32
 %   characters or less.
 %
+%   In this version of the toolkit the maximum number of kernels that
+%   can loaded together is limited to 5300. Each time a kernel is loaded
+%   via cspice_furnsh, an internal kernel database entry is created for
+%   that kernel. If a meta-kernel is loaded, a database entry is created
+%   for the meta-kernel itself and for all files referenced in the
+%   meta-kernel's KERNELS_TO_LOAD specification. Unloading a kernel or
+%   meta-kernel deletes database entries created when the file was
+%   loaded.
+% 
+%   The value above is an upper bound on number of SPICE kernels that
+%   can be loaded at any time via cspice_furnsh, but the number of
+%   kernels that can be loaded may be smaller, since re-loading a loaded
+%   kernel or meta-kernel results in creation of additional database
+%   entries.
+% 
+%   Kernels loaded via cspice_furnsh are subject to constraints imposed
+%   by lower-level subsystems. The binary kernel systems (SPK, CK,
+%   binary PCK, EK, and DSK) have their own limits on the maximum number
+%   of kernels that may be loaded.
+% 
+%   The total number of DAF-based files (this set includes SPKs, CKs,
+%   and binary PCKs) and DAS-based files (this set includes EKs and
+%   DSKs) that may be loaded at any time may not exceed 5000. This limit
+%   applies whether the files are loaded via cspice_furnsh or
+%   lower-level loaders such as cspice_dafopr. File access performance
+%   normally will degrade slightly as the number of loaded kernels
+%   increases.
+%
 %-Required Reading
 %
 %   For important details concerning this module's function, please refer to
@@ -301,6 +329,11 @@
 %   KERNEL.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.3, 01-FEB-2017, BVS (JPL)
+%
+%      Added mention of the maximum number of kernels that can be loaded 
+%      together. 
 %
 %   -Mice Version 1.0.2, 03-DEC-2013, EDW (JPL), SCK (JPL)
 %

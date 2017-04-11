@@ -34,6 +34,13 @@
 %   Given:
 %
 %      item    is the Time subsystem parameter value to set.
+%
+%              [1,c1] = size(item); char = class(item)
+%
+%                 or
+%
+%              [1,1] = size(item); cell = class(item)
+%
 %              The parameters and corresponding values:
 %
 %              item          Allowed Values
@@ -60,6 +67,8 @@
 %              of allowed values for item. If it is not within
 %              the expected range and appropriate error message
 %              signals.
+%
+%              [1,1] = size(value); double = class(value)
 %
 %      The case of 'value' is not significant.
 %
@@ -227,6 +236,10 @@
 %   TIME.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.1, 13-FEB-2015, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.0.0, 14-NOV-2013, EDW (JPL)
 %

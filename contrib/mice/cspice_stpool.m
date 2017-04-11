@@ -34,12 +34,19 @@
 %
 %   Given:
 %
-%      item     the scalar string name of a kernel pool variable for
-%               which the caller wants to retrieve a full (potentially
-%               continued) string
+%      item     the name of a kernel pool variable for which the caller
+%               wants to retrieve a full (potentially continued) string.
 %
-%      nth      the scalar integer index of the string to retrieve from
-%               the kernel pool variable 'item' (index array base 1)
+%               [1,c1] = size(item); char = class(item)
+%
+%                  or
+%
+%               [1,1] = size(item); cell = class(item)
+%
+%      nth      the index of the string to retrieve from the kernel pool
+%               variable 'item' (index array base 1).
+%
+%               [1,1]   = size(nth); int32 = class(nth)
 %
 %      contin   a sequence of characters which (if they appear as the
 %               last non-blank sequence of characters in a component of a
@@ -47,6 +54,12 @@
 %               marker:  the marker indicates that the string associated
 %               with the component containing it is continued into the
 %               next literal component of the kernel pool variable
+%
+%               [1,c2] = size(contin); char = class(contin)
+%
+%                  or
+%
+%               [1,1] = size(contin); cell = class(contin)
 %
 %               If 'contin' is a blank, all of the components of 'item'
 %               will return as a single string.
@@ -60,9 +73,13 @@
 %      string   the 'nth' scalar string value corresponding to
 %               the kernel pool variable specified by 'item'
 %
-%      found    a scalar boolean indicating true if the request
+%               [1,c3] = size(string); char = class(string)
+%
+%      found    a boolean indicating true if the request
 %               to retrieve the 'nth' string associated with 'item'
-%               succeeds, false if not.
+%               succeeds, false, if not.
+%
+%               [1,1] = size(found); logical = class(found)
 %
 %-Examples
 %
@@ -145,6 +162,10 @@
 %   KERNEL.REQ
 %
 %-Version
+%
+%   -Mice Version 1.1.1, 12-MAR-2015, EDW (JPL)
+%
+%      Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.1.0, 10-MAY-2011, EDW (JPL)
 %
