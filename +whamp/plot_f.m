@@ -50,9 +50,10 @@ function [varargout]=plot_f(varargin)
 % WHAMP quick reference: https://github.com/irfu/whamp/blob/master/whamp_manual.pdf?raw=true
 % original WHAMP code: http://www.tp.umu.se/forskning/space/WHAMP/
 
-Me=9.1094e-31; % electron mass
-Mp=1.6726e-27; % proton mass
-e=1.6022e-19; % elementary charge
+Units = irf_units;
+Me = Units.me; % electron mass
+Mp = Units.mp; % proton mass
+e  = Units.e; % elementary charge
 
 %% Flags that can be overwritten by input parameters
 plotPSDvsV      = false;

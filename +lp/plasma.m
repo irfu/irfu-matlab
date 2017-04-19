@@ -38,11 +38,13 @@ classdef plasma
 	
 	methods
 		function m = get.m(Plasma)
-			m =  Plasma.mp*1.6726e-27;
-			m(m==0) = 9.1094e-31;
+			Units = irf_units;
+			m =  Plasma.mp*Units.mp;
+			m(m==0) = Units.me;
 		end
 		function q = get.q(Plasma)
-			q =  Plasma.qe*1.6022e-19;
+			Units = irf_units;
+			q =  Plasma.qe*Units.e;
 		end
 	end
 	

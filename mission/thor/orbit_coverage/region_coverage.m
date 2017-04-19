@@ -9,6 +9,8 @@ orb.theta = atan2d(y,x); % degrees
 % Plot
 % hp = polar(orb.theta*pi/180,orb.r); hp.Color = [0.2 0.2 0.2];    
 
+Units = irf_units;
+
 %% Solar wind dynamic pressure and 'alpha'
 % Get solar wind dynamic pressure and paramter alpha to calculate 
 % magnetopause shape. We find the values that correspond to the chosen
@@ -25,10 +27,10 @@ n = omni_data(:,2); % cc
 v = omni_data(:,3); v(v>1500) = NaN;% km/s 
 Bz = omni_data(:,4); % nT
 
-RE = 6371200; % m
-mu0 = 1.2566e-6; % 4*pi*1e-7
+RE = Units.R_Earth; % m
+mu0 = Units.mu0; % 4*pi*1e-7
 B0 = 7.94e22; % Am^2 Earth's dipole moment, B = B0/r^3
-mp = 1.6726e-27; % proton mass
+mp = Units.mp; % proton mass
 m = 0.98*mp+0.02*2*mp; % 98 percent hydrogen, 2 percent helium
 
 Dp = n.*1e6*m.*(v*1e3).^2*1e9; % Dynamic pressure, nPa
