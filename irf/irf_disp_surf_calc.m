@@ -157,9 +157,10 @@ function [wfinal,extraparam]=irf_disp_surf_calc(kc_x_max,kc_z_max,m_i,wp_e)
   extraparam(2,:,:,:)=Btot./Etot; % Degree of electromagnetism
   extraparam(3,:,:,:)=abs(EparK)./Etot; % Degree of longitudinality
   extraparam(4,:,:,:)=Ez./Etot; % Degree of parallelity
-  extraparam(5,:,:,:)=sqrt(v_x.*v_x+v_z.*v_z); % Value of the group vel.
-  extraparam(6,:,:,:)=Epolar; % Ellipticity
-  extraparam(7,:,:,:)=log10(Etot.^2./Btot.^2); % Degree of electromagnetism
-  extraparam(8,:,:,:)=log10(Ee./Ei); % Ratio of electron to ion energy
-  extraparam(9,:,:,:)=log10(ratiopf); % Ratio of field to particle energy densities
+  extraparam(5,:,:,:)=sqrt(Bz.*conj(Bz))./Btot; % Degree of parallelity
+  extraparam(6,:,:,:)=sqrt(v_x.*v_x+v_z.*v_z); % Value of the group vel.
+  extraparam(7,:,:,:)=Epolar; % Ellipticity
+  extraparam(8,:,:,:)=log10(Etot.^2./Btot.^2); % Degree of electromagnetism
+  extraparam(9,:,:,:)=log10(Ee./Ei); % Ratio of electron to ion energy
+  extraparam(10,:,:,:)=log10(ratiopf); % Ratio of field to particle energy densities
   warning on

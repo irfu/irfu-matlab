@@ -17,7 +17,26 @@ Example: C1, 2015-03-09T09:19:26Z
 
 1c) Data problems fixed
 =======================
-
+0701 18 - 0702 03 force to msphere offsets on C2
+0703 00 - 0704 18 force to msphere offsets
+0706 15-00 force to msphere offsets
+0707 18-21 force to msphere offsets
+0708 21 - 0709 03 force to msphere offsets on C2
+0710 15-21 force to msphere offsets
+0713 00-18 force to msphere offsets
+0714 09 - 0716 00 force to msphere offsets
+0716 12-15 force to msphere offsets
+0718 21 - 0719 03 force to msphere offsets on C2
+0719 15 - 0720 09 force to msphere offsets
+0720 12-15 force to msphere offsets
+0721 18-21 force to msphere offsets
+0722 00-24 force to msphere offsets
+0724 03-06 force to msphere offsets on C2
+0724 14-24 force to msphere offsets
+0726 21 - 0727 03 force to msphere offsets
+0729 12-15 force to msphere offsets
+0730 06-21 force to msphere offsets
+0731 00-18 force to msphere offsets
 
 2a) Software bugs to be fixed
 =============================
@@ -47,6 +66,8 @@ C4 saturation, 2015-04-12 16:47 - 18:53, 19:42:12 - 19:42:32, 21:52:48 - 21:53:0
 
 4) Ignored
 ==========
+
+No Es burst data in summary plots for C4. This is because one of the probes is very saturated.
 
 
 5) Unclassified

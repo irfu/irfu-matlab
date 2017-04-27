@@ -14,6 +14,7 @@ function [ax,hcb] = plot_skymap(varargin)
 %    'vectors' - Nx2 cell array with 1x3 vector in first column and
 %                textlabel in second column, eg. 
 %                vectors = {Bhat,'B';Ehat,'E'}
+%    'vectorlabelcolor' - 'k', 'r', [1 1 1];
 %    'flat' - plot a flat skymap (ie. not a sphere)
 %    'log' - plot log10 scale
 %    'energytable' - energytable from v1 data
@@ -30,6 +31,7 @@ plotSphere = 1;
 plotb = 0;
 flag_energy = 0;
 have_vectors = 0;
+vectorlabelcolor = [1 1 1];
 tId = 1:dist.length;
 eId = 1:32;
 [~,xi] = hist([log10(10),log10(30e3)],32); energyTable = 10.^xi;
@@ -77,6 +79,9 @@ while have_options
       l = 2;
       vectors = args{2};
       have_vectors = 1;
+    case 'vectorlabelcolor'
+        l = 2;
+        vectorlabelcolor = args{2};        
     case 'flat'
       plotSphere = 0;
     case 'log'
@@ -155,14 +160,14 @@ while have_vectors
     
     plot(ax,azim*180/pi,elev*180/pi+90,'o','linewidth',2,'markersize',12,'color',[1 0 0])
     plot(ax,azim*180/pi,elev*180/pi+90,'o','linewidth',0.5,'markersize',2,'color',[1 0 0],'markerfacecolor',[0 0 0])
-    axes(ax); text(double(azim*180/pi),double(elev*180/pi+90),['   ' vecTxt],'fontsize',14,'HorizontalAlignment','left', 'color', [1 1 1])
+    axes(ax); text(double(azim*180/pi),double(elev*180/pi+90),['   ' vecTxt],'fontsize',14,'HorizontalAlignment','left', 'color', vectorlabelcolor)
     
     [azim,elev,r] = cart2sph(-vecHat(1),-vecHat(2),-vecHat(3)); 
     if azim<0, azim = azim + 2*pi; end
     if azim>2*pi, azim = azim - 2*pi; end
     plot3(ax,azim*180/pi,elev*180/pi+90,0,'o','linewidth',2,'markersize',12,'color',[1 0 0])
     plot3(ax,azim*180/pi,elev*180/pi+90,0,'x','linewidth',2,'markersize',12,'color',[1 0 0])       
-    axes(ax); text(double(azim*180/pi),double(elev*180/pi+90),['   ' vecTxt],'fontsize',14,'HorizontalAlignment','left', 'color', [1 1 1])        
+    axes(ax); text(double(azim*180/pi),double(elev*180/pi+90),['   ' vecTxt],'fontsize',14,'HorizontalAlignment','left', 'color', vectorlabelcolor)        
   end  
   vectors = vectors(2:end,:);
   if isempty(vectors), break, end  
