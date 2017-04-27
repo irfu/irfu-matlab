@@ -1,4 +1,4 @@
-Copyright 2016
+Copyright 2017
 Space Physics Data Facility
 NASA/Goddard Space Flight Center
 
