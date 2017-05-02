@@ -92,29 +92,14 @@ for ii=[2:nph]
     end
 end
 
-zphasetime = zphase.time(find(norepeat == 1));
-zphasedata = zphase.data(find(norepeat == 1));
+zphasetime = zphase.time(norepeat == 1);
+zphasedata = zphase.data(norepeat == 1);
 
-zphase = TSeries(zphasetime,zphasedata,'to',1);
+zphase = irf.ts_scalar(zphasetime,zphasedata);
 zphase = zphase.resample(SCpot);
 
 %Perform rotation on Exyz into field-aligned coordinates 
-SCpos = [0 1 0];
-
-Bmag = Bxyz.abs.data;
-Rpar = Bxyz.data./[Bmag Bmag Bmag];
-Rperpy = irf_cross(Rpar,SCpos);
-Rmag   = irf_abs(Rperpy,1);
-Rperpy = Rperpy./[Rmag Rmag Rmag];
-Rperpx = irf_cross(Rperpy, Rpar);
-Rmag   = irf_abs(Rperpx,1);
-Rperpx = Rperpx./[Rmag Rmag Rmag];
-
-Epar = dot(Rpar,Exyz.data,2);
-Eperp = dot(Rperpx,Exyz.data,2);
-Eperp2 = dot(Rperpy,Exyz.data,2);
-
-Efac = TSeries(Exyz.time,[Eperp Eperp2 Epar],'to',1);
+Efac = irf_convert_fac(Exyz,Bxyz,[1 0 0]);
 
 % Probe angles in DSL or whatever
 phase_p1=zphase.data/180*pi + pi/6;
