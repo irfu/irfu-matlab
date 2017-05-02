@@ -51,9 +51,9 @@ maxk = wavenumbers(maxpos);
 
 vphguess = maxf/maxk;
 if (vphguess > 0.0)
-    powertemp(:,find(wavenumber < 0.0)) = 0;
+    powertemp(:,wavenumber < 0.0) = 0;
 else
-    powertemp(:,find(wavenumber > 0.0)) = 0;
+    powertemp(:,wavenumber > 0.0) = 0;
 end
 
 vphrange = [vphguess/3 vphguess*3];

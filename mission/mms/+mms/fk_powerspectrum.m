@@ -12,7 +12,8 @@ function [fkpower,freq,wavenumber] = fk_powerspectrum(varargin)
 % Written by D. B. Graham.
 %
 % Input: (All data must be in TSeries format)
-%       SCpot -     L2 probe potentials. 
+%       SCpot -     L2 probe potentials. Timing corrections are applied in this
+%       function. Do not apply them before running this function.
 %       Bxyz -      Magnetic field in DMPA coordinates.
 %       trange -    time interval over which the power spectrum is calculated. 
 %                   B should be closely aligned with one probe pair over this time. 
@@ -43,6 +44,27 @@ SCpot = varargin{1};
 Bxyz = varargin{2};
 zphase = varargin{3};
 
+% Correct for timing in spacecraft potential data. 
+E12 = TSeries(SCpot.time,(SCpot.data(:,1)-SCpot.data(:,2))/0.120); 
+E34 = TSeries(SCpot.time,(SCpot.data(:,3)-SCpot.data(:,4))/0.120); 
+E56 = TSeries(SCpot.time,(SCpot.data(:,5)-SCpot.data(:,6))/0.0292);
+V1 = TSeries(SCpot.time,SCpot.data(:,1));
+V3 = TSeries(SCpot.time+ 7.629e-6,SCpot.data(:,3)); 
+V5 = TSeries(SCpot.time+15.259e-6,SCpot.data(:,5));
+E12.time = E12.time + 26.703e-6;
+E34.time = E34.time + 30.518e-6;
+E56.time = E56.time + 34.332e-6;
+V3 = V3.resample(V1.time);
+V5 = V5.resample(V1.time);
+E12 = E12.resample(V1.time);
+E34 = E34.resample(V1.time);
+E56 = E56.resample(V1.time);
+V2 = V1 - E12 * 0.120;
+V4 = V3 - E34 * 0.120;
+V6 = V5 - E56 * 0.0292;
+% Make new SCpot with corrections
+SCpot = irf.ts_scalar(V1.time,[V1.data V2.data V3.data V4.data V5.data V6.data]);
+
 ts2=varargin{4};
 ts2l = ts2+[-1 1];
 SCpot = SCpot.tlim(ts2l);
@@ -70,8 +92,8 @@ for ii=[2:nph]
     end
 end
 
-zphasetime = zphase.time(find(norepeat == 1));
-zphasedata = zphase.data(find(norepeat == 1));
+zphasetime = zphase.time(norepeat == 1);
+zphasedata = zphase.data(norepeat == 1);
 
 zphase = TSeries(zphasetime,zphasedata,'to',1);
 
@@ -166,9 +188,9 @@ for m = [1:1:N+1]
 end
 end       
  
-disprel(find(disprel == 0)) = NaN;
+disprel(disprel == 0) = NaN;
 disprel = disprel/max(max(disprel));
-disprel(find(disprel < 1.0e-3)) = 1e-3;
+disprel(disprel < 1.0e-3) = 1e-3;
 
 wavenumber = kvec;
 freq = cross34x.f;
