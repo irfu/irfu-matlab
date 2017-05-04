@@ -1756,13 +1756,15 @@ classdef mms_sdp_dmgr < handle
           % position
           DATAC.l2a.dce.time = DATAC.dce.time;
           DATAC.l2a.phase = DATAC.phase;
-          DATAC.l2a.adc_off = DATAC.adc_off;
+          % Use spinfits from entrie L2a fast segment to determine ADC 
+          % offset and compute it for the burst time interval.
+          DATAC.l2a.adc_off = mms_sdp_adc_off(DATAC.dce.time, DATAC.l2a.spinfits);
           sdpProbes = fieldnames(DATAC.l2a.adc_off); % default {'e12', 'e34'}
           Etmp = struct('e12',DATAC.dce.e12.data,'e34',DATAC.dce.e34.data);
           for iProbe=1:numel(sdpProbes)
             % Remove ADC offset
             Etmp.(sdpProbes{iProbe}) = ...
-              Etmp.(sdpProbes{iProbe}) - DATAC.adc_off.(sdpProbes{iProbe});
+              Etmp.(sdpProbes{iProbe}) - DATAC.l2a.adc_off.(sdpProbes{iProbe});
           end
           MMS_CONST = DATAC.CONST;
           bitmask = mms_sdp_typecast('bitmask',bitor(DATAC.dce.e12.bitmask,DATAC.dce.e34.bitmask));
