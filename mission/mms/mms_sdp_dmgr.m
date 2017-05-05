@@ -1487,7 +1487,7 @@ classdef mms_sdp_dmgr < handle
       dE = mms_sdp_despin(Etmp.e12, Etmp.e34, Phase.data,...
         DeltaOffR.data(:,1) + DeltaOffR.data(:,2)*1j);
       % Get DSL offsets
-      offs = mms_sdp_get_offset(DATAC.scId, DATAC.procId, Dce.time);
+      offs = mms_sdp_get_offset(DATAC.scId, DATAC.procId, Dce.time, DATAC.tmMode);
       DATAC.calFile = offs.calFile; % Store name of cal file used.
       dE(:,1) = dE(:,1) - offs.ex; % Remove sunward
       dE(:,2) = dE(:,2) - offs.ey; % and duskward offsets
@@ -1579,7 +1579,7 @@ classdef mms_sdp_dmgr < handle
       end
       
       % Get probe to plasma potential (offs.p2p) for this time interval
-      offs = mms_sdp_get_offset(DATAC.scId, DATAC.procId, Probe2sc_pot.time);
+      offs = mms_sdp_get_offset(DATAC.scId, DATAC.procId, Probe2sc_pot.time, DATAC.tmMode);
       DATAC.calFile = offs.calFile; % Store name of cal file used.
       scPot = - Probe2sc_pot.data(:) .* offs.shortening(:) + offs.p2p;
       
@@ -1737,7 +1737,7 @@ classdef mms_sdp_dmgr < handle
           DeltaOff = irf.ts_vec_xy(DATAC.l2a.spinfits.time, [real(DATAC.l2a.delta_off), imag(DATAC.l2a.delta_off)]);
           DeltaOffR = DeltaOff.resample(EpochTT(DATAC.l2a.dce.time));
           dE = mms_sdp_despin(Etmp.e12, Etmp.e34, DATAC.l2a.phase.data, DeltaOffR.data(:,1) + DeltaOffR.data(:,2)*1j);
-          offs = mms_sdp_get_offset(DATAC.scId, DATAC.procId, DATAC.l2a.dce.time);
+          offs = mms_sdp_get_offset(DATAC.scId, DATAC.procId, DATAC.l2a.dce.time, DATAC.tmMode);
           DATAC.calFile = offs.calFile; % Store name of cal file used.
           dE(:,1) = dE(:,1) - offs.ex; % Remove sunward
           dE(:,2) = dE(:,2) - offs.ey; % and duskward offsets
@@ -1773,7 +1773,7 @@ classdef mms_sdp_dmgr < handle
           DeltaOff = irf.ts_vec_xy(DATAC.l2a.spinfits.time, [real(DATAC.l2a.delta_off), imag(DATAC.l2a.delta_off)]);
           DeltaOffR = DeltaOff.resample(EpochTT(DATAC.l2a.dce.time));
           dE = mms_sdp_despin(Etmp.e12, Etmp.e34, DATAC.phase.data, DeltaOffR.data(:,1) + DeltaOffR.data(:,2)*1j);
-          offs = mms_sdp_get_offset(DATAC.scId, DATAC.procId, DATAC.dce.time);
+          offs = mms_sdp_get_offset(DATAC.scId, DATAC.procId, DATAC.dce.time, DATAC.tmMode);
           DATAC.calFile = offs.calFile; % Store name of cal file used.
           dE(:,1) = dE(:,1) - offs.ex; % Remove sunward
           dE(:,2) = dE(:,2) - offs.ey; % and duskward offsets
