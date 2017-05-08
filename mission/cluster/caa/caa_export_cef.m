@@ -51,25 +51,31 @@ if DELIVERY_TO_CAA   % Check that files are midnight-to-midnight
    end
 end
 end
-ibsave=false;
+ibsave=true; % always create iburst data files even if they are all empty
 badibfound=false;
 result = []; dsc = []; vs = '';
 result_com = {};
 
 
 if lev==1
-	if strcmp(caa_vs, 'IB')
+    if strcmp(caa_vs, 'IB')
         vs = irf_ssub('IB?',cl_id);
 		v_size = 8;
         dataInfoAll='';
-    elseif regexp(caa_vs,'^P(1|2|3|4|12|32|34)?$')
+    elseif regexp(caa_vs,'^P(1|2|3|4|12|32|34)$','once')
 		id = str2double(caa_vs(2:end));
 		if id <=4, vs = irf_ssub('P10Hz?p!',cl_id,id);
-        else vs = irf_ssub('wE?p!',cl_id,id);
+		else vs = irf_ssub('wE?p!',cl_id,id);
 		end
 		v_size = 1;
-    else error('Must be P(1|2|3|4|12|32|34)')
-	end
+    elseif strcmp(caa_vs, 'P')
+		vs = 'PL1C';
+		v_size = 4;
+    elseif strcmp(caa_vs, 'E')
+		vs = 'EL1C';
+		v_size = 3;
+    else error([ 'Level 1 CAA_VS must be one of IB, P(1|2|3|4|12|32|34), P or E. CAA_VS:' caa_vs ])
+    end
 else
 	switch caa_vs
 	case 'P'
@@ -149,7 +155,7 @@ for dd = 1:length(dirs)
 
    % Set up spin fit related information.
    % Probe pair used can vary for each subinterval!
-   if strcmp(caa_vs, 'E') || strcmp(caa_vs, 'DER') || strcmp(caa_vs, 'SFIT')
+   if (strcmp(caa_vs, 'E') && (lev ~= 1)) || strcmp(caa_vs, 'DER') || strcmp(caa_vs, 'SFIT')
      [sfit_probe,flag_lx,probeS] = caa_sfit_probe(cl_id);
      if flag_lx, tS = '(LX)'; else tS = ''; end
      irf_log('proc',sprintf('L3_E probe pair : %s%s',probeS(1:2),tS))
@@ -170,7 +176,11 @@ for dd = 1:length(dirs)
    end
 
    % Load data
-   if strcmp(caa_vs, 'DER')
+   if strcmp(caa_vs, 'P') && lev == 1
+	data = caa_combine_l1_p(cl_id);
+   elseif strcmp(caa_vs, 'E') && lev == 1
+	data = caa_combine_l1_e(cl_id);
+   elseif strcmp(caa_vs, 'DER')
      ppList = [12, 32, 34, 42];
      [ok, data] = c_load('Dadc?p!',cl_id,'res',ppList(1:3)); % Try loading data for all probe pairs.
      ok(4) = 0; data = [data {[]}]; %#ok<AGROW> % p42 is LX only!
@@ -201,7 +211,6 @@ for dd = 1:length(dirs)
        c_ctl('load_aspoc_active', [c_ctl(5,'data_path') '/caa-control']);
        ASPOC = c_ctl(cl_id,'aspoc');
      end
-      
 
       if lev == 2
           pvar = 'P?';
@@ -288,7 +297,7 @@ for dd = 1:length(dirs)
          end
        end
      end % Load data
-     
+
      if no_p12 && no_p34, data = [];
      elseif no_p12
        % save time, NaN(fillval) and p34 spin-fit (B C sdev)
@@ -652,7 +661,7 @@ for dd = 1:length(dirs)
       [ok,data] = c_load(vs);
       if ~ok, irf_log('load',['Failed to load ' vs]); end
    end
-   
+
    if isempty(data)
         if ~regexp(caa_vs,'^(I|P|E|B)B$') 
             irf_log('load', ['No ' vs]);
@@ -660,7 +669,7 @@ for dd = 1:length(dirs)
         cd(old_pwd)
         continue
    end
-   
+
    % Make subinterval
    if ~isempty(st) && ~isempty(dt)  %  == ~(isempty(st) || isempty(dt)) == NOR
      t_int_full = st + [0 dt];
@@ -697,7 +706,7 @@ for dd = 1:length(dirs)
          t_int(1)=t_int(1)-120;
          t_int(2)=t_int(2)+300;
        end
-       
+
        % Limit data to both time interval given as input, and time interval read from file.
        data = irf_tlim(data,t_int_full);  % NOTE: Superfluous when using caa_get above. (ML)
        data = irf_tlim(data, t_int);
@@ -721,7 +730,7 @@ for dd = 1:length(dirs)
                  badibfound=true;
                  irf_log('save', [caa_vs num2str(cl_id) ' L2 iburst removed. Data marked as bad.'])
                end
-               
+
              end
            end
          end
@@ -737,33 +746,33 @@ for dd = 1:length(dirs)
      end
      clear iso_ts dtint
    end
-   
-   
+
+
    % Do magic on E-field
-   if strcmp(caa_vs,'E') && ~isempty(data)
-   	% Remove Ez, which is zero
-   	data = data(:, [1:3 5:end]);     % Remove column 4 (Ez data)
-   	
-   	% Get info on probe pair(s) in (sub)interval.
-   	if lev == 2
-   	   E_info = c_load('diE?p1234_info', cl_id, 'var');  % Load info; need list of probe pairs!
-   	   if isempty(E_info) || ~isfield(E_info, 'probe')
-   	      error('Could not load probe pair info!')
-   	   end
-   	   probe_info = E_info.probe;
-   	elseif lev == 3
-   	   probe_info = num2str(sfit_probe);
+   if strcmp(caa_vs,'E') && ~isempty(data) && (lev ~= 1)
+	% Remove Ez, which is zero
+	data = data(:, [1:3 5:end]);     % Remove column 4 (Ez data)
+	
+	% Get info on probe pair(s) in (sub)interval.
+	if lev == 2
+	   E_info = c_load('diE?p1234_info', cl_id, 'var');  % Load info; need list of probe pairs!
+	   if isempty(E_info) || ~isfield(E_info, 'probe')
+	      error('Could not load probe pair info!')
+	   end
+	   probe_info = E_info.probe;
+	elseif lev == 3
+	   probe_info = num2str(sfit_probe);
     end
-   	
-   	% Extend data array to accept bitmask and quality flag (2 columns at the end)
-   	data = [data zeros(size(data, 1), 2)]; %#ok<AGROW>
+	
+	% Extend data array to accept bitmask and quality flag (2 columns at the end)
+	data = [data zeros(size(data, 1), 2)]; %#ok<AGROW>
       data(:, end) = QUALITY;    % Default quality column to best quality, i.e. good data/no problems.
       quality_column = size(data, 2);
       bitmask_column = quality_column - 1;
 
-   	% Identify and flag problem areas in data with bitmask and quality factor:
-   	data = caa_identify_problems(data, lev, probe_info, cl_id, bitmask_column, quality_column);
-   	
+	% Identify and flag problem areas in data with bitmask and quality factor:
+	data = caa_identify_problems(data, lev, probe_info, cl_id, bitmask_column, quality_column);
+
     probe_str = 'Probe pair';
     nPp = fix(length(probe_info))/2;
     for iP=1:nPp
@@ -774,56 +783,56 @@ for dd = 1:length(dirs)
       else probe_str = [probe_str ',' pS]; %#ok<AGROW>
       end
     end
-   	com_str = sprintf('%s/%s %s', ...
-   	   epoch2iso(t_int(1),1), epoch2iso(t_int(2),1), probe_str);
-   	
-   	result_com{end+1} = com_str; %#ok<AGROW>
+	com_str = sprintf('%s/%s %s', ...
+	   epoch2iso(t_int(1),1), epoch2iso(t_int(2),1), probe_str);
+
+	result_com{end+1} = com_str; %#ok<AGROW>
     irf_log('calb',com_str)
-   	
-   	% Correct offsets
-   	if ~isempty(data)
-   		
-   		if lev==3
-   			% Delta offsets: remove automatic and apply CAA
-   			Del_caa = c_efw_delta_off(data(1,1),cl_id);
-   			if ~isempty(Del_caa)
-   				[ok,Delauto] = c_load('D?p12p34',cl_id);
-   				if ~ok || isempty(Delauto)
-   					irf_log('load',irf_ssub('Cannot load/empty D?p12p34',cl_id))
-   				else
-   					data = caa_corof_delta(data,sfit_probe,Delauto,'undo');
-   					data = caa_corof_delta(data,sfit_probe,Del_caa,'apply');
-   				end
-   			end
-   		end
-   		
-   		% Dsi offsets
-   		dsiof = c_ctl(cl_id,'dsiof');
-   		if isempty(dsiof)
-   			[ok,Ps,msg] = c_load('Ps?',cl_id);
-   			if ~ok, irf_log('load',msg), end
+
+	% Correct offsets
+	if ~isempty(data)
+		
+		if lev==3
+			% Delta offsets: remove automatic and apply CAA
+			Del_caa = c_efw_delta_off(data(1,1),cl_id);
+			if ~isempty(Del_caa)
+				[ok,Delauto] = c_load('D?p12p34',cl_id);
+				if ~ok || isempty(Delauto)
+					irf_log('load',irf_ssub('Cannot load/empty D?p12p34',cl_id))
+				else
+					data = caa_corof_delta(data,sfit_probe,Delauto,'undo');
+					data = caa_corof_delta(data,sfit_probe,Del_caa,'apply');
+				end
+			end
+		end
+
+		% Dsi offsets
+		dsiof = c_ctl(cl_id,'dsiof');
+		if isempty(dsiof)
+			[ok,Ps,msg] = c_load('Ps?',cl_id);
+			if ~ok, irf_log('load',msg), end
         % In the SW/SH we use a different set of offsets which are
         % independent of the spacecraft potential.
-   			if caa_is_sh_interval
-   				[dsiof_def, dam_def] = c_efw_dsi_off(t_int(1),cl_id,[]);
-   			else
-   				[dsiof_def, dam_def] = c_efw_dsi_off(t_int(1),cl_id,Ps);
-   			end
-   
-   			[ok1,Ddsi] = c_load('Ddsi?',cl_id); if ~ok1, Ddsi = dsiof_def; end
-   			[ok2,Damp] = c_load('Damp?',cl_id); if ~ok2, Damp = dam_def; end
-   			
-   			if ok1 || ok2, irf_log('calb','Using saved DSI offsets')
-   			else irf_log('calb','Using default DSI offsets')
-   			end 
-   			clear dsiof_def dam_def
-   		else
-   			Ddsi = dsiof(1); Damp = dsiof(2);
-   			irf_log('calb','Using user specified DSI offsets')
-   		end
-   		clear dsiof
-   	
-   		data = caa_corof_dsi(data,Ddsi,Damp);
+			if caa_is_sh_interval
+				[dsiof_def, dam_def] = c_efw_dsi_off(t_int(1),cl_id,[]);
+			else
+				[dsiof_def, dam_def] = c_efw_dsi_off(t_int(1),cl_id,Ps);
+			end
+
+			[ok1,Ddsi] = c_load('Ddsi?',cl_id); if ~ok1, Ddsi = dsiof_def; end
+			[ok2,Damp] = c_load('Damp?',cl_id); if ~ok2, Damp = dam_def; end
+			
+			if ok1 || ok2, irf_log('calb','Using saved DSI offsets')
+			else irf_log('calb','Using default DSI offsets')
+			end 
+			clear dsiof_def dam_def
+		else
+			Ddsi = dsiof(1); Damp = dsiof(2);
+			irf_log('calb','Using user specified DSI offsets')
+		end
+		clear dsiof
+
+		data = caa_corof_dsi(data,Ddsi,Damp);
       if length(Ddsi) == 1
         dsi_str = sprintf('%s/%s ISR2 offsets: dEx=%1.2f dEy=%1.2f, dAmp=%1.2f',...
           epoch2iso(t_int(1),1),epoch2iso(t_int(2),1),real(Ddsi),imag(Ddsi),Damp);
@@ -841,7 +850,7 @@ for dd = 1:length(dirs)
       irf_log('calb',dsi_str)
       clear Ddsi Damp
     end
-   	
+
     if lev==2
       [ok, d_info] = c_load([vs '_info'],'var');
       if ~ok
@@ -851,7 +860,7 @@ for dd = 1:length(dirs)
     else
       dsc = c_desc(vs); 
     end
-   
+
     [ok,Del] = c_load('D?p12p34',cl_id); if ~ok, Del = [0 0]; end
     if ~isreal(Del)
       Del = imag(Del);
@@ -869,15 +878,15 @@ for dd = 1:length(dirs)
       epoch2iso(t_int(1),1), epoch2iso(t_int(2),1), del_str);
     result_com{end+1} = del_str; %#ok<AGROW>
     irf_log('calb',del_str)
-   	
-   elseif lev==1 && ~isempty(regexp(caa_vs,'^P(12|32|34)?$','once'))
+
+   elseif lev==1 && ~isempty(regexp(caa_vs,'^P(12|32|34)$','once'))
    	if ~isempty(data)
    		% convert mV/m back to V
    		if id==32, data(:,2) = data(:,2)*.0622;
            else data(:,2) = data(:,2)*.088;
    		end
    	end
-   	
+
    % Combine ADC offsets from two probe pairs into one dataset:
    elseif strcmp(caa_vs, 'DER')
       if isempty(data1) && isempty(data2), data = [];
@@ -897,7 +906,7 @@ for dd = 1:length(dirs)
          timestamp = start_time:4:t_int(2);
          data_out = zeros(length(timestamp), 3) * NaN;
          data_out(:, 1) = timestamp;
-         
+
          if ~isempty(intersect(ppDER,[12 32 120 320 420]))
             [ind1, ind2] = irf_find_comm_idx(data_out, data1);
             data_out(ind1, 2) = data1(ind2, 2);
@@ -907,7 +916,7 @@ for dd = 1:length(dirs)
             data_out(ind1, 3) = data2(ind2, 2);
          end
          data = data_out;
-         
+
          % Extend description to cover data record for two probe pairs:
          adc_str = 'Probe pair';
          for iP = 1:length(ppDER)
@@ -925,7 +934,7 @@ for dd = 1:length(dirs)
          clear start_time timestamp ind1 ind2 data_out
       end
    end
-   
+
    if isempty(result), result = data;
    else
 	   if ~isempty(data)
@@ -939,7 +948,7 @@ for dd = 1:length(dirs)
 			   data = irf_tlim(data,tapp(1),t(end),1);
 		   end
 	   end
-	   
+
        if ~isempty(data)
            result = [result; data]; %#ok<AGROW>
        end
@@ -956,13 +965,28 @@ if isempty(data)
 else
   if isempty(dsc), dsc = c_desc(vs); end
   switch caa_vs
+    case 'P',
+      if lev == 1 % combined file
+        dsc.valtype = {'FLOAT', 'FLOAT', 'FLOAT', 'FLOAT'};
+        dsc.sigdig = [6 6 6 6];
+        dsc.size = [1 1 1 1];
+        dsc.com = 'P combined file.';
+      end
     case 'E',
-      % We export only X and Y, no need to export zeroes in Ez.
-      dsc.size(1) = 2;
-      % Extend variable description to include the new columns bitmask and quality:
-      dsc.size = [dsc.size, 1, 1];
-      dsc.valtype = [dsc.valtype, {'INT'}, {'INT'}];
-      dsc.sigdig = [dsc.sigdig, 5, 1];
+      if lev == 1 % combined file
+%        dsc = c_desc('wE1p12')
+        dsc.valtype = {'FLOAT', 'FLOAT', 'INT'};
+        dsc.sigdig = [6 6 1];
+        dsc.size = [1 1 1];
+        dsc.com = 'E combined file.';
+      else
+        % We export only X and Y, no need to export zeroes in Ez.
+        dsc.size(1) = 2;
+        % Extend variable description to include the new columns bitmask and quality:
+        dsc.size = [dsc.size, 1, 1];
+        dsc.valtype = [dsc.valtype, {'INT'}, {'INT'}];
+        dsc.sigdig = [dsc.sigdig, 5, 1];
+      end
     case 'DER',
       dsc.valtype = {'FLOAT', 'FLOAT'};
       dsc.sigdig = [6 6];
@@ -986,7 +1010,7 @@ if ~isempty(data)
 			if isempty(ii_left), ii_left=1; end
             ii_right=find(data(:,1) > (data(indx(i),1)   + 10.4), 1, 'first' );
 			if isempty(ii_right), ii_right=length(data(:,1)); end
-            data(ii_left:ii_right,:)=NaN;             
+            data(ii_left:ii_right,:)=NaN;
         end
         indx=isfinite(data(:,1));
         data=data(indx,:);
@@ -1064,7 +1088,7 @@ elseif ~isempty(regexp(caa_vs,'^(P|E|B)B$', 'once')) && ibsave && isempty(data)
         buf = pmeta(buf, 'FILE_CAVEATS', [ 'No iburst ' caa_vs ' data. ' dsc.com ]);    
 else
     buf = pmeta(buf, 'FILE_CAVEATS', dsc.com);
-end    
+end
 
 buf = sprintf('%s%s',buf,'!\n');
 buf = sprintf('%s%s',buf,'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n');
@@ -1107,7 +1131,6 @@ if ~isempty(data)
         i=i+dsc.size(j);
     end
     format=ctranspose(format);
-
     s = cefprint_mx([file_name ext_s],data, format);
 	if s~=0
 		if s==1, msg = 'problem writing CEF data';
@@ -1128,7 +1151,7 @@ else
 	   status = 1;
 	   return
    end
-   
+
    sta = fprintf(fid,'END_OF_DATA\n');
    fclose(fid);
    if sta<=0, irf_log('save','problem writing CEF tail'), status = 1; return, end 
