@@ -178,7 +178,9 @@ vars = {'R_gse','R_gsm','V_gse','V_gsm',...
   'Pe_gse_fpi_brst_l1b','Pe_gse_fpi_fast_l1b',...
   'Pe_gse_fpi_brst_l2',...
   'PDe_fpi_brst_l2','PDi_fpi_brst_l2',...
+  'PDERRe_fpi_brst_l2','PDERRi_fpi_brst_l2',...
   'PDe_fpi_fast_l2','PDi_fpi_fast_l2',...
+  'PDERRe_fpi_fast_l2','PDERRi_fpi_fast_l2',...
   'Nhplus_hpca_srvy_l2','Nheplus_hpca_srvy_l2','Nheplusplus_hpca_srvy_l2','Noplus_hpca_srvy_l2',...
   'Tshplus_hpca_srvy_l2','Tsheplus_hpca_srvy_l2','Tsheplusplus_hpca_srvy_l2','Tsoplus_hpca_srvy_l2',...
   'Vhplus_dbcs_hpca_srvy_l2','Vheplus_dbcs_hpca_srvy_l2','Vheplusplus_dbcs_hpca_srvy_l2','Voplus_dbcs_hpca_srvy_l2',...
@@ -365,7 +367,7 @@ switch Vr.inst
     end
     
     switch Vr.param
-      case {'PDe','PDi'}
+      case {'PDe','PDi', 'PDERRe', 'PDERRi'}
         switch Vr.lev
           case {'l2'}
             pref = ['mms' mmsIdS '_' sensor];        
@@ -644,7 +646,11 @@ end
       case 'skymap'
         switch Vr.tmmode
           case 'brst'
-            dist = mms.db_get_variable(dsetName,[pref '_dist_' Vr.tmmode],Tint);
+            if (length(Vr.param) == 3)  
+                dist = mms.db_get_variable(dsetName,[pref '_dist_' Vr.tmmode],Tint);
+            elseif (length(Vr.param) == 6 && strcmp(Vr.param(3:5), 'ERR'))
+                dist = mms.db_get_variable(dsetName,[pref '_disterr_' Vr.tmmode],Tint);
+            end
             theta = dist.DEPEND_2.data;
             dist = mms.variable2ts(dist);
             dist = dist.tlim(Tint);
@@ -668,7 +674,12 @@ end
             end
             res = irf.ts_skymap(dist.time,dist.data,[],phi.data,theta,'energy0',energy0,'energy1',energy1,'esteptable',stepTable.data);
           case 'fast'
-            dist = mms.db_get_variable(dsetName,[pref '_dist_' Vr.tmmode],Tint);
+            %dist = mms.db_get_variable(dsetName,[pref '_dist_' Vr.tmmode],Tint);
+            if (length(Vr.param) == 3)  
+                dist = mms.db_get_variable(dsetName,[pref '_dist_' Vr.tmmode],Tint);
+            elseif (length(Vr.param) == 6 && strcmp(Vr.param(3:5), 'ERR'))
+                dist = mms.db_get_variable(dsetName,[pref '_disterr_' Vr.tmmode],Tint);
+            end            
             phi = dist.DEPEND_1.data;
             theta = dist.DEPEND_2.data;
             dist = mms.variable2ts(dist);
@@ -722,7 +733,7 @@ phcaParamsTens = {'Vhplus','Vheplus','Vheplusplus','Voplus',...
   
 param = tk{1};
 switch param
-  case {'Ni', 'Ne', 'Nhplus', 'Tsi', 'Tperpi', 'Tparai', 'Tse', 'Tperpe', 'Tparae', 'PDe', 'PDi', 'V'}
+  case {'Ni', 'Ne', 'Nhplus', 'Tsi', 'Tperpi', 'Tparai', 'Tse', 'Tperpe', 'Tparae', 'PDe', 'PDi', 'PDERRe', 'PDERRi', 'V'}
     tensorOrder = 0;
   case {'Vi', 'Ve', 'B', 'E','E2d','Es12','Es34'}
     tensorOrder = 1;

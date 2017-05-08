@@ -46,7 +46,7 @@ xlabel(h(1),'E (eV)')
 set(h(1),'yscale','log');
 set(h(1),'xscale','log');
 irf_zoom(h(1),'y',yrange);
-irf_zoom(h(1),'x',[10 3e4]);
+irf_zoom(h(1),'x',[5 3e4]);
 irf_legend(h(1),{'0 deg'},[0.91 0.92],'color','k')
 irf_legend(h(1),{'90 deg'},[0.91 0.84],'color','r')
 irf_legend(h(1),{'180 deg'},[0.91 0.76],'color','b')    
