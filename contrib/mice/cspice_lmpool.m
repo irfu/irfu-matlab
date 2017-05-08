@@ -33,9 +33,14 @@
 %
 %   Given:
 %
-%      cvals   a scalar string (1xM array), NxM array of strings, or cell
-%              of N strings defining SPICE kernel variable assignments
+%      cvals   strings defining SPICE kernel variable assignments
 %              that could serve as a SPICE text kernel.
+%
+%              [n,c1] = size(cvals); char = class(cvals)
+%
+%                 or
+%
+%              [1,n] = size(cvals); cell = class(cvals)
 %
 %   the call:
 %
@@ -45,6 +50,10 @@
 %   kernel pool subsystem. Once inserted, the user can access the
 %   variables using the cspice_gcpool, cspice_gipool, or cspice_gdpool
 %   calls.
+%
+%   returns:
+%
+%      None.
 %
 %-Examples
 %
@@ -156,10 +165,14 @@
 %
 %-Version
 %
+%   -Mice Version 1.0.2, 13-FEB-2015, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
+%
 %   -Mice Version 1.0.1, 10-FEB-2010, EDW (JPL)
 %
-%      Added mention of the length restriction on kernel pool variable
-%      names.
+%       Added mention of the length restriction on kernel pool variable
+%       names.
 %
 %   -Mice Version 1.0.0, 23-FEB-2009, EDW (JPL)
 %

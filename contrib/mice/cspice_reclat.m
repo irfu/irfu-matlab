@@ -34,32 +34,37 @@
 %
 %   Given:
 %
-%      rectan   a double precision 3x1 array or double precision
-%               3xN array containing the rectangular coordinates of the
-%               position or set of positions
+%      rectan   the array(s) containing the rectangular coordinates of the
+%               position or set of positions.
+%
+%               [3,n] = size(rectan); double = class(rectan)
 %
 %   the call:
 %
-%      [radius, longitude, latitude] = cspice_reclat(rectan)
+%      [radius, lon, lat] = cspice_reclat(rectan)
 %
 %   returns:
 %
-%      radius      a double precision scalar or double precision 1xN array
-%                  describing the distance of the position from origin
+%      radius   the value(s) describing the distance of the position
+%               from the origin.
 %
-%      longitude   a double precision scalar or double precision 1xN array
-%                  describing the angle of the position from the XZ plane
-%                  measured in radians
+%               [1,n] = size(radius); double = class(radius)
 %
-%      latitude    a double precision scalar or double precision 1xN array
-%                  describing the angle of the position from the XY plane
-%                  measured in radians
+%      lon      the value(s) describing the angle of the position from
+%               the XZ plane measured in radians.
 %
-%                  The argument 'radius' returns in the same units associated
-%                  with 'rectan'.
+%               [1,n] = size(lon); double = class(lon)
 %
-%                  'radius', 'longitude', and 'latitude' return with
-%                  the same vectorization measure (N) as 'rectan'.
+%      lat      the value(s) describing the angle of the position from the
+%               XY plane measured in radians.
+%
+%               [1,n] = size(lat); double = class(lat)
+%
+%               The argument 'radius' returns in the same units associated
+%               with 'rectan'.
+%
+%               'radius', 'lon', and 'lat' return with
+%               the same vectorization measure, N, as 'rectan'.
 %
 %-Examples
 %
@@ -179,6 +184,10 @@
 %   MICE.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.1, 01-DEC-2014, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.0.0, 22-NOV-2005, EDW (JPL)
 %

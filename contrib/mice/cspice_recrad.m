@@ -33,9 +33,10 @@
 %
 %   Given:
 %
-%      rectan   a double precision 3x1 array or double precision
-%               3xN array containing the rectangular coordinates of the
-%               position or set of positions
+%      rectan   the array(s) containing the rectangular coordinates of the
+%               position(s).
+%
+%               [3,n] = size(rectan); double = class(rectan)
 %
 %   the call:
 %
@@ -43,18 +44,23 @@
 %
 %   returns:
 %
-%      radius   a double precision scalar or 1XN-vector describing
-%               the distance of the position from origin.
+%      range    the value(s) describing the distance of the position
+%               from the origin.
 %
-%      ra       a double precision scalar or 1XN-vector describing
-%               the right ascension of the position as measured in
-%               radians.
+%               [1,n] = size(range); double = class(range)
 %
-%      dec      a double precision scalar or 1XN-vector describing
-%               the declination of the position as measured in radians.
+%      ra       the value(s) describing the right ascension of the position
+%               as measured in radians.
 %
-%               'radius', 'ra', and 'dec' return with the same
-%               vectorization measure (N) as 'rectan'.
+%               [1,n] = size(ra); double = class(ra)
+%
+%      dec      the value(s) describing the declination of the position as
+%               measured in radians.
+%
+%               [1,n] = size(dec); double = class(dec)
+%
+%               'range', 'ra', and 'dec' return with the same
+%               vectorization measure, N, as 'rectan'.
 %
 %-Examples
 %
@@ -163,6 +169,10 @@
 %   MICE.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.1, 01-DEC-2014, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.0.0, 22-NOV-2005, EDW (JPL)
 %

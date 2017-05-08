@@ -3,6 +3,9 @@
 %   CSPICE_GFOCLT determines time intervals when an observer sees one target
 %   body occulted by, or in transit across, another.
 %
+%   The surfaces of the target bodies may be represented by triaxial
+%   ellipsoids or by topographic data provided by DSK files.
+%
 %-Disclaimer
 %
 %   THIS SOFTWARE AND ANY RELATED MATERIALS WERE CREATED BY THE
@@ -58,6 +61,8 @@
 %               Note that transits are considered to be a type of
 %               occultation.
 %
+%               [1,c1] = size(occtyp); char = class(occtyp)
+%
 %               Supported values and corresponding definitions are:
 %
 %                  'FULL'               denotes the full occultation
@@ -106,25 +111,24 @@
 %               Case and leading or trailing blanks are not significant in
 %               the string 'occtyp'.
 %
-%               [1,c1] = size(occtyp), char = class(occtyp)
-%
 %      front    the string naming the target body that occults---that
 %               is, passes in front of---the other. Optionally, you may
 %               supply the integer NAIF ID code for the body as a
 %               string. For example both 'MOON' and '301' are
 %               legitimate strings that designate the Moon.
 %
+%               [1,c2] = size(front); char = class(front)
+%
 %               The 'front' string lacks sensitivity to case, leading
 %               and trailing blanks.
 %
-%               [1,c2] = size(front), char = class(front)
-%
 %      fshape   the string naming the geometric model used
-%               to represent the shape of the front target body. The
-%               supported options are:
+%               to represent the shape of the front target body.
+%
+%               [1,c3] = size(fshape); char = class(fshape)
 %
 %                 'ELLIPSOID'     Use a triaxial ellipsoid model
-%                                 with radius values provided from the
+%                                 with radius values provided via the
 %                                 kernel pool. A kernel variable
 %                                 having a name of the form
 %
@@ -143,18 +147,51 @@
 %                                 the occultation type must be
 %                                 set to 'ANY'.
 %
-%               At least one of the target bodies 'front' and 'back' must
-%               be modeled as an ellipsoid.
+%                 'DSK/UNPRIORITIZED[/SURFACES = <surface list>]'
 %
-%               The 'fshape' string lacks sensitivity to case, leading
-%               and trailing blanks.
+%                     Use topographic data provided by DSK files to
+%                     model the body's shape. These data must be
+%                     provided by loaded DSK files.
 %
-%               [1,c3] = size(fshape), char = class(fshape)
+%                     The surface list specification is optional. The
+%                     syntax of the list is
+%
+%                        <surface 1> [, <surface 2>...]
+%
+%                     If present, it indicates that data only for the
+%                     listed surfaces are to be used; however, data
+%                     need not be available for all surfaces in the
+%                     list. If absent, loaded DSK data for any surface
+%                     associated with the target body are used.
+%
+%                     The surface list may contain surface names or
+%                     surface ID codes. Names containing blanks must
+%                     be delimited by double quotes, for example
+%
+%                        SURFACES = "Mars MEGDR 128 PIXEL/DEG"
+%
+%                     If multiple surfaces are specified, their names
+%                     or IDs must be separated by commas.
+%
+%                     See the Particulars section below for details
+%                     concerning use of DSK data.
+%
+%               The combinations of the shapes of the target bodies
+%               `front' and `back' must be one of:
+%
+%                  One ELLIPSOID, one POINT
+%                  Two ELLIPSOIDs
+%                  One DSK, one POINT
+%
+%               Case and leading or trailing blanks are not
+%               significant in the string `fshape'.
 %
 %      fframe   the string naming the body-fixed, body-centered reference
 %               frame associated with the front target body. Examples
 %               of such names are 'IAU_SATURN' (for Saturn) and
 %               'ITRF93' (for the Earth).
+%
+%               [1,c4] = size(fframe); char = class(fframe)
 %
 %               If the front target body is modeled as a point, 'fframe'
 %               should be left empty or blank.
@@ -162,30 +199,30 @@
 %               The 'fframe' string lacks sensitivity to case, leading
 %               and trailing blanks.
 %
-%               [1,c4] = size(fframe), char = class(fframe)
-%
 %      back     the string naming the target body that is occulted
 %               by---that is, passes in back of---the other.
 %               Optionally, you may supply the integer NAIF ID code
 %               for the body as a string. For example both 'MOON' and
 %               '301' are legitimate strings that designate the Moon.
 %
+%               [1,c5] = size(back); char = class(back)
+%
 %               The 'back' string lacks sensitivity to case, leading
 %               and trailing blanks.
-%
-%               [1,c5] = size(back), char = class(back)
 %
 %      bshape   the string naming the shape specification for the body
 %               designated by 'back'. The supported options are those for
 %                'fshape'. See the description of 'fshape' above for
 %                details.
 %
-%               [1,c6] = size(bshape), char = class(bshape)
+%               [1,c6] = size(bshape); char = class(bshape)
 %
 %      bframe   the string naming the body-fixed, body-centered
 %               reference frame associated with the ''back'' target body.
 %               Examples of such names are 'IAU_SATURN' (for Saturn)
 %               and 'ITRF93' (for the Earth).
+%
+%               [1,c7] = size(bframe); char = class(bframe)
 %
 %               If the back target body is modeled as a point, 'bframe'
 %               should be left empty or blank.
@@ -193,18 +230,18 @@
 %               The 'bframe' string lacks sensitivity to case, leading
 %               and trailing blanks.
 %
-%               [1,c7] = size(bframe), char = class(bframe)
-%
 %      abcorr   the string indicating the aberration corrections to to apply
 %               to the state of the target body to account for one-way
 %               light time.  Stellar aberration corrections are
 %               ignored if specified, since these corrections don't
 %               improve the accuracy of the occultation determination.
 %
+%               [1,c8] = size(abcorr); char = class(abcorr)
+%
 %               This routine accepts the same aberration corrections as does
-%               the CSPICE routine spkezr_c. See the header of spkezr_c for a
-%               detailed description of the aberration correction options.
-%               For convenience, the options are listed below:
+%               the CSPICE routine cspice_spkezr. See the abcorr.req
+%               for a detailed description of the aberration correction
+%               options.  For convenience, the options are listed below:
 %
 %                  'NONE'     Apply no correction.
 %
@@ -243,17 +280,15 @@
 %               The 'abcorr' string lacks sensitivity to case, and to embedded,
 %               leading and trailing blanks.
 %
-%               [1,c8] = size(abcorr), char = class(abcorr)
-%
-%      obsrvr   the scalar naming the observing body. Optionally, you
+%      obsrvr   the name of the observing body. Optionally, you
 %               may supply the ID code of the object as an integer string.
 %               For example, both 'EARTH' and '399' are legitimate
 %               strings to supply to indicate the observer is Earth.
 %
+%               [1,c9] = size(obsrvr); char = class(obsrvr)
+%
 %               Case and leading or trailing blanks are not significant in
 %               the string 'obsrvr'.
-%
-%               [1,c9] = size(obsrvr), char = class(obsrvr)
 %
 %      step     the step size to use in the search. 'step' must be shorter
 %               than any interval, within the confinement window, over which
@@ -265,6 +300,8 @@
 %               'step' must not be *too* short, or the search will take
 %               an unreasonable amount of time.
 %
+%               [1,1] = size(step); double = class(step)
+%
 %               The choice of 'step' affects the completeness but not
 %               the precision of solutions found by this routine; the
 %               precision is controlled by the convergence tolerance.
@@ -273,26 +310,24 @@
 %
 %               'step' has units of TDB seconds.
 %
-%               [1,1] = size(step), double = class(step)
-%
 %      cnfine   the SPICE window that confines the time
 %               period over which the specified search is conducted.
 %               'cnfine' may consist of a single interval or a collection
 %               of intervals.
+%
+%               [2m,1] = size(cnfine); double = class(cnfine)
 %
 %               In some cases the confinement window can be used to
 %               greatly reduce the time period that must be searched
 %               for the desired solution. See the Particulars section
 %               below for further discussion.
 %
-%               [2m,1] = size(cnfine), double = class(cnfine)
-%
 %      room     the maximum number of intervals to return in 'result'.
 %               Note: this value should equal at least the number of expected
 %               intervals. Recall two double precision values define
 %               an interval.
 %
-%               [1,1] = size(room), int32 = class(room)
+%               [1,1] = size(room); int32 = class(room)
 %
 %   the call:
 %
@@ -306,10 +341,10 @@
 %               confinement window 'cnfine', on which the specified
 %               constraint is satisfied.
 %
+%               [2n,1] = size(result); double = class(result)
+%
 %               If no times within the confinement window satisfy the
 %               constraint, 'result' will return with cardinality zero.
-%
-%               [2n,1] = size(result), double = class(result)
 %
 %-Examples
 %
@@ -731,13 +766,13 @@
 %   =========
 %
 %   Each interval of the confinement window is searched as follows:
-%   first, the input step size is used to determine the time
-%   separation at which the occultation state will be sampled.
-%   Starting at the left endpoint of an interval, samples will be
-%   taken at each step. If a state change is detected, a root has
-%   been bracketed; at that point, the "root"--the time at which the
-%   state change occurs---is found by a refinement process, for
-%   example, by a binary search.
+%   first, the input step size is used to determine the time separation
+%   at which the occultation state will be sampled. Starting at the left
+%   endpoint of the interval, samples of the occultation state will be
+%   taken at each step. If a state change is detected, a root has been
+%   bracketed; at that point, the "root"--the time at which the state
+%   change occurs---is found by a refinement process, for example, via
+%   binary search.
 %
 %   Note that the optimal choice of step size depends on the lengths
 %   of the intervals over which the occultation state is constant:
@@ -755,53 +790,168 @@
 %   the endpoints of the intervals of the result window are computed.
 %   That precision level is controlled by the convergence tolerance.
 %
+%
 %   Convergence Tolerance
 %   =====================
 %
-%   As described above, the root-finding process used by this routine
-%   involves first bracketing roots and then using a search process
-%   to locate them. "Roots" are both times when local extrema are
-%   attained and times when the distance function is equal to a
-%   reference value. All endpoints of the intervals comprising the
-%   result window are either endpoints of intervals of the
-%   confinement window or roots.
-%
 %   Once a root has been bracketed, a refinement process is used to
-%   narrow down the time interval within which the root must lie.
-%   This refinement process terminates when the location of the root
-%   has been determined to within an error margin called the
-%   "convergence tolerance." The convergence tolerance used by this
-%   routine is set by the parameter SPICE_GF_CNVTOL.
+%   narrow down the time interval within which the root must lie. This
+%   refinement process terminates when the location of the root has been
+%   determined to within an error margin called the "convergence
+%   tolerance." The convergence tolerance used by this routine is set
+%   via the parameter SPICE_GF_CNVTOL.
 %
 %   The value of SPICE_GF_CNVTOL is set to a "tight" value so that the
-%   tolerance doesn't become the limiting factor in the accuracy of
-%   solutions found by this routine. In general the accuracy of input
-%   data will be the limiting factor.
+%   tolerance doesn't limit the accuracy of solutions found by this
+%   routine. In general the accuracy of input data will be the limiting
+%   factor.
 %
-%   The user may change the convergence tolerance from the default
-%   SPICE_GF_CNVTOL value by calling the routine cspice_gfstol, e.g.
+%   To use a different tolerance value, a lower-level GF routine such as
+%   gfocce_c must be called. Making the tolerance tighter than
+%   SPICE_GF_CNVTOL is unlikely to be useful, since the results are
+%   unlikely to be more accurate. Making the tolerance looser will speed
+%   up searches somewhat, since a few convergence steps will be omitted.
+%   However, in most cases, the step size is likely to have a much
+%   greater effect on processing time than would the convergence
+%   tolerance.
 %
-%      cspice_gfstol( tolerance value in seconds )
-%
-%   Call cspice_gfstol prior to calling this routine. All subsequent
-%   searches will use the updated tolerance value.
-%
-%   Setting the tolerance tighter than SPICE_GF_CNVTOL is unlikely to be
-%   useful, since the results are unlikely to be more accurate.
-%   Making the tolerance looser will speed up searches somewhat,
-%   since a few convergence steps will be omitted. However, in most
-%   cases, the step size is likely to have a much greater affect on
-%   processing time than would the convergence tolerance.
 %
 %   The Confinement Window
 %   ======================
 %
 %   The simplest use of the confinement window is to specify a time
-%   interval within which a solution is sought. However, the
-%   confinement window can, in some cases, be used to make searches
+%   interval within which a solution is sought.
+%
+%   The confinement window also can be used to restrict a search to
+%   a time window over which required data (typically ephemeris
+%   data, in the case of occultation searches) are known to be
+%   available.
+%
+%   In some cases, the confinement window be used to make searches
 %   more efficient. Sometimes it's possible to do an efficient search
 %   to reduce the size of the time period over which a relatively
-%   slow search of interest must be performed.
+%   slow search of interest must be performed. See the "CASCADE"
+%   example program in gf.req for a demonstration.
+%
+%
+%   Using DSK data
+%   ==============
+%
+%      DSK loading and unloading
+%      -------------------------
+%
+%      DSK files providing data used by this routine are loaded by
+%      calling cspice_furnsh and can be unloaded by calling cspice_unload or
+%      cspice_kclear. See the documentation of cspice_furnsh for limits on
+%      numbers of loaded DSK files.
+%
+%      For run-time efficiency, it's desirable to avoid frequent
+%      loading and unloading of DSK files. When there is a reason to
+%      use multiple versions of data for a given target body---for
+%      example, if topographic data at varying resolutions are to be
+%      used---the surface list can be used to select DSK data to be
+%      used for a given computation. It is not necessary to unload
+%      the data that are not to be used. This recommendation presumes
+%      that DSKs containing different versions of surface data for a
+%      given body have different surface ID codes.
+%
+%
+%      DSK data priority
+%      -----------------
+%
+%      A DSK coverage overlap occurs when two segments in loaded DSK
+%      files cover part or all of the same domain---for example, a
+%      given longitude-latitude rectangle---and when the time
+%      intervals of the segments overlap as well.
+%
+%      When DSK data selection is prioritized, in case of a coverage
+%      overlap, if the two competing segments are in different DSK
+%      files, the segment in the DSK file loaded last takes
+%      precedence. If the two segments are in the same file, the
+%      segment located closer to the end of the file takes
+%      precedence.
+%
+%      When DSK data selection is unprioritized, data from competing
+%      segments are combined. For example, if two competing segments
+%      both represent a surface as a set of triangular plates, the
+%      union of those sets of plates is considered to represent the
+%      surface.
+%
+%      Currently only unprioritized data selection is supported.
+%      Because prioritized data selection may be the default behavior
+%      in a later version of the routine, the UNPRIORITIZED keyword is
+%      required in the `fshape' and `bshape' arguments.
+%
+%
+%      Syntax of the shape input arguments for the DSK case
+%      ----------------------------------------------------
+%
+%      The keywords and surface list in the target shape arguments
+%      `bshape' and `fshape' are called "clauses." The clauses may
+%      appear in any order, for example
+%
+%         "DSK/<surface list>/UNPRIORITIZED"
+%         "DSK/UNPRIORITIZED/<surface list>"
+%         "UNPRIORITIZED/<surface list>/DSK"
+%
+%      The simplest form of the `method' argument specifying use of
+%      DSK data is one that lacks a surface list, for example:
+%
+%         "DSK/UNPRIORITIZED"
+%
+%      For applications in which all loaded DSK data for the target
+%      body are for a single surface, and there are no competing
+%      segments, the above string suffices. This is expected to be
+%      the usual case.
+%
+%      When, for the specified target body, there are loaded DSK
+%      files providing data for multiple surfaces for that body, the
+%      surfaces to be used by this routine for a given call must be
+%      specified in a surface list, unless data from all of the
+%      surfaces are to be used together.
+%
+%      The surface list consists of the string
+%
+%         "SURFACES = "
+%
+%      followed by a comma-separated list of one or more surface
+%      identifiers. The identifiers may be names or integer codes in
+%      string format. For example, suppose we have the surface
+%      names and corresponding ID codes shown below:
+%
+%         Surface Name                              ID code
+%         ------------                              -------
+%         "Mars MEGDR 128 PIXEL/DEG"                1
+%         "Mars MEGDR 64 PIXEL/DEG"                 2
+%         "Mars_MRO_HIRISE"                         3
+%
+%      If data for all of the above surfaces are loaded, then
+%      data for surface 1 can be specified by either
+%
+%         'SURFACES = 1'
+%
+%      or
+%
+%         'SURFACES = "Mars MEGDR 128 PIXEL/DEG"'
+%
+%      Double quotes are used to delimit the surface name because
+%      it contains blank characters.
+%
+%      To use data for surfaces 2 and 3 together, any
+%      of the following surface lists could be used:
+%
+%         'SURFACES = 2, 3'
+%
+%         'SURFACES = "Mars MEGDR  64 PIXEL/DEG", 3'
+%
+%         'SURFACES = 2, Mars_MRO_HIRISE'
+%
+%         'SURFACES = "Mars MEGDR 64 PIXEL/DEG", Mars_MRO_HIRISE'
+%
+%      An example of a shape argument that could be constructed
+%      using one of the surface lists above is
+%
+%         'DSK/UNPRIORITIZED/SURFACES = "Mars MEGDR 64 PIXEL/DEG", 3'
 %
 %-Required Reading
 %
@@ -809,6 +959,7 @@
 %   the CSPICE routine gfoclt_c.
 %
 %   MICE.REQ
+%   DSK.REQ
 %   GF.REQ
 %   SPK.REQ
 %   CK.REQ
@@ -817,15 +968,21 @@
 %
 %-Version
 %
+%   -Mice Version 2.0.0, 04-APR-2017, EDW (JPL), NJB (JPL)
+%
+%       Header update to reflect support for use of DSKs. 
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
+%
 %   -Mice Version 1.1.0, 12-MAY-2012, EDW (JPL)
 %
-%      Renamed the argument 'size' to 'room'. "size" is a Matlab function
-%      name and it's seriously dumb to use a function name word as an argument
-%      name.
+%       Renamed the argument 'size' to 'room'. "size" is a Matlab function
+%       name and it's seriously dumb to use a function name word as an argument
+%       name.
 %
-%      Edited I/O section to conform to NAIF standard for Mice documentation.
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
-%      Header updated to describe use of cspice_gfstol.
+%       Header updated to describe use of cspice_gfstol.
 %
 %   -Mice Version 1.0.0, 15-APR-2009, EDW (JPL)
 %

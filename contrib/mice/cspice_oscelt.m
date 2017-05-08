@@ -34,18 +34,22 @@
 %
 %   Given:
 %
-%      state  a double precision 6-vector or 6xN array of
-%             states of the body at some epoch. Components
+%      state  state(s) of the body at some epoch. Components
 %             are x, y, z, dx/dt, dy/dt, dz/dt. `state' must be
 %             expressed relative to an inertial reference frame.
 %             Units are km and km/sec.
 %
-%      et     the double precision scalar or 1XN-vector of ephemeris
-%             time epochs corresponding to each 'state' in ephemeris
-%             seconds past J2000
+%             [6,n] = size(state); double = class(state)
+%
+%      et     the ephemeris time epoch(s) corresponding one-to-one
+%             and onto for each 'state' in ephemeris seconds past J2000.
+%
+%             [1,n] = size(et); double = class(et)
 %
 %      mu     the gravitational parameter of the primary
 %             body for 'state'
+%
+%             [1,1] = size(mu); double = class(mu)
 %
 %   the call:
 %
@@ -53,10 +57,12 @@
 %
 %   returns:
 %
-%      elts   a double precision 8-vector or 8xN array containing
-%             the equivalent conic elements describing the orbit
-%             of the body around its primary. The elements are,
-%             in order:
+%      elts   the array containing the equivalent conic elements describing
+%             the orbit of the body around its primary. 
+%
+%             [8,n] = size(elts); double = class(elts)
+%
+%             The elements are, in order:
 %
 %                 elts(1)  contains rp, perifocal distance.
 %                 elts(2)  contains ecc, eccentricity.
@@ -72,6 +78,8 @@
 %             are used to describe all three types (elliptic,
 %             hyperbolic, and parabolic) of conic orbit
 %
+%             'elts' returns with the same vectorization measure , N,
+%             as 'state' and 'et'.
 %-Examples
 %
 %   Any numerical results shown for this example may differ between
@@ -239,6 +247,10 @@
 %   MICE.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.1, 23-MAR-2015, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.0.0, 22-NOV-2005, EDW (JPL)
 %

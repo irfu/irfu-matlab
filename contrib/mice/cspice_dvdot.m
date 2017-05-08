@@ -62,7 +62,7 @@
 %      dvdot   the time derivative(s) of the dot product between the position
 %              components of 's1' and 's2'.
 %
-%              'dvdot' returns with the same measure of vectorization (N)
+%              'dvdot' returns with the same vectorization measure (N)
 %              as 's1' and 's2'.
 %
 %              [1,n] = size(dvdot); double = class(dvdot)

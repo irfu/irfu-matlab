@@ -39,7 +39,11 @@
 %
 %             [n,m] = size(name); char = class(name)
 %
-%             If `name' contains the name of a body or object, that name must be
+%                  or
+%
+%             [1,n] = size(name); cell = class(name)
+%
+%             If 'name' contains the name of a body or object, that name must be
 %             "known" to the SPICE system, whether through hard-coded
 %             registration or run-time registration in the SPICE kernel pool.
 %
@@ -56,7 +60,7 @@
 %
 %             However, 'JUPITERBARYCENTER' is not equivalent to the names above.
 %
-%             If NAME is a string representation of an integer, for example
+%             If 'name' is a string representation of an integer, for example
 %
 %                '399'
 %
@@ -85,7 +89,7 @@
 %              [1,n] = size(found); logical = class(found)
 %
 %              'found' and 'code' return with the same vectorization
-%              measure (N) as 'name'.
+%              measure, N, as 'name'.
 %
 %-Examples
 %

@@ -55,6 +55,7 @@ START_VARIABLE      = E_Vec_xy_INST__CXXX_CP_EFW_L1_E
   SI_CONVERSION     = "1.0e-3>V m^-1"
   UNITS             = "mV/m"
   FILLVAL           = -1000000000.000
+  QUALITY           = 3
   SIGNIFICANT_DIGITS= 6
   COORDINATE_SYSTEM = "Instrument"
   FRAME_VELOCITY    = "Observatory"
@@ -71,7 +72,7 @@ START_VARIABLE      = Flag_p32__CXXX_CP_EFW_L1_E
   VALUE_TYPE        = INT
   ENTITY            = "Electric_Field"
   PROPERTY          = "Status"
-  CATDESC           = "Electric field measurement quality flag (4=best)"
+  CATDESC           = "Probe flag for P12/32 (0=P12, 1=P32)"
   FIELDNAM          = "Probe flag for P12/32 (0=P12, 1=P32)"
   SI_CONVERSION     = "1>unitless"
   UNITS             = "unitless"

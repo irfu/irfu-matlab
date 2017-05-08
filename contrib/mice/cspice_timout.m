@@ -34,13 +34,21 @@
 %
 %   Given:
 %
-%     et       a double precision scalar or 1xN array of time values
-%              in seconds past the ephemeris epoch J2000.
+%     et       the ephemeris time(s) expressed as ephemeris seconds
+%              past J2000.
 %
-%     pictur   a scalar string that specifies how the output should be
-%              presented.  The string is made up of various markers
-%              that stand for various components associated with
+%              [1,n] = size(et); double = class(et)
+%
+%     pictur   the format picture string that specifies how the output
+%              should be presented. The string is made up of various 
+%              markers that stand for various components associated with
 %              a time.
+%
+%              [1,c1] = size(pictur); char = class(pictur)
+%
+%                 or
+%
+%              [1,1] = size(pictur); cell = class(pictur)
 %
 %   the call:
 %
@@ -48,12 +56,13 @@
 %
 %   returns:
 %
-%      output   the scalar string or NxM character array of output time strings
-%               equivalent to the input epoch 'et' in the format specified
-%               by 'pictur'
+%      output   the time strings equivalent to the input epoch 'et' 
+%               in the format specified by 'pictur'.
 %
-%               'output' returns with the same vectorization measure (N)
-%                as 'et'.
+%               [n,c2] = size(output); char = class(output)
+%
+%               'output' returns with the same vectorization 
+%               measure, n, as 'et'.
 %
 %-Examples
 %
@@ -165,6 +174,10 @@
 %   TIME.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.2, 10-MAR-2015, EDW (JPL)
+%
+%      Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.0.0, 22-NOV-2005, EDW (JPL)
 %

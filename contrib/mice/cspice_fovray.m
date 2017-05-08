@@ -299,6 +299,10 @@
 %
 %-Version
 %
+%   -Mice Version 1.0.1, 13-APR-2015, EDW (JPL)
+%
+%      Edit to correct typos in "Usage" string.
+%
 %   -Mice Version 1.0.0, 13-NOV-2013, SCK (JPL), EDW (JPL)
 %
 %-Index_Entries
@@ -308,8 +312,8 @@
 %
 %-&
 
-function visibl = cspice_fovray ( inst,   raydir, rframe,  ...
-                                  abcorr, obsrvr, et )
+function visibl = cspice_fovray( inst,   raydir, rframe,  ...
+                                 abcorr, obsrvr, et )
 
     switch nargin
         case 6
@@ -319,13 +323,13 @@ function visibl = cspice_fovray ( inst,   raydir, rframe,  ...
             rframe  = zzmice_str(rframe);
             abcorr  = zzmice_str(abcorr);
             obsrvr  = zzmice_str(obsrvr);
-            et      = zzmice_dp (et);
+            et      = zzmice_dp(et);
 
         otherwise
 
-            error ( ['Usage: [_visibl_] = ' ...
-                  'cspice_xfmsta( `inst`, _raydir[6], ' ...
-                  '`rframe`, `abcorr`), `obsrvr`, _et_]' ] )
+            error ( ['Usage: [_visibl_] = '              ...
+                  'cspice_xfmsta( `inst`, _raydir[6]_, ' ...
+                  '`rframe`, `abcorr`, `obsrvr`, _et_]' ] )
 
    end
 
@@ -336,7 +340,7 @@ function visibl = cspice_fovray ( inst,   raydir, rframe,  ...
    try
       [visibl] = mice('fovray_c', inst, raydir,   rframe, ...
                                   abcorr,     obsrvr, et );
-      visibl = zzmice_logical ( visibl );
+      visibl = zzmice_logical( visibl );
    catch
       rethrow(lasterror)
    end

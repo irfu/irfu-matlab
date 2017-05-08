@@ -147,9 +147,23 @@ classdef mms_local_file_db < mms_file_db
                 sss = irf_time(doy8, 'doy8>ttns');
                 epoch = EpochTT(sss);
               catch ME
-                errStr = ['Error reading times for ancillary file: ', ...
-                  e.name, ' got: ', sss, ' from :' out];
-                irf.log('critical', errStr); rethrow(ME);
+                try
+                  % Try for a second method. This is sligthly less accurate
+                  % but should be more stable if "out" contains any 
+                  % erroneous characters. This is limited to DOY strings in
+                  % the format of "YYYY-DOY*hh:mm:ss.mmm" where * is any
+                  % char.
+                  regStr = regexp(out, ...
+                    '(\d{4})-(\d{3}).(\d{2}):(\d{2}):(\d{2}).(\d{1,3})', ...
+                    'tokens');
+                  doy8 = [str2double(regStr{1}), 0, 0];
+                  sss = irf_time(doy8, 'doy8>ttns');
+                  epoch = EpochTT(sss);
+                catch ME2
+                  errStr = ['Error reading times for ancillary file: ', ...
+                    e.name, ' got: ', sss, ' from :' out];
+                  irf.log('critical', errStr); rethrow(ME2);
+                end
               end
             end
           end % ADD_SS

@@ -32,7 +32,7 @@
 %
 %   Given:
 %
-%      vin     the 3-vector to orthogonally project onto a specified plane.
+%      vin     the vector to orthogonally project onto a specified plane.
 %
 %              [3,1] = size(vin); double = class(vin)
 %
@@ -52,7 +52,7 @@
 %
 %   returns:
 %
-%      vout   3-vector resulting from the orthogonal projection of 'vin'
+%      vout   the vector resulting from the orthogonal projection of 'vin'
 %             onto 'plane'. 'vout' is the closest point in the specified
 %             plane to 'vin'.
 %
@@ -114,6 +114,10 @@
 %   MICE.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.1, 18-DEC-2014, EDW (JPL)
+%
+%      Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.0.0, 27-AUG-2012, EDW (JPL)
 %

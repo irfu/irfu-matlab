@@ -34,13 +34,18 @@
 %
 %   Given:
 %
-%      v       a double precision 3x1 array to rotate
+%      v       a vector to rotate.
 %
-%      axis    a double precision 3x1 array defining the axis about which
-%              to rotate 'v'
+%              [3,1] = size(v1); double = class(v1)
 %
-%      theta   a double precision scalar angle measured in radians through which
-%              which rotate 'v' about 'axis'
+%      axis    a vector defining the axis about which to rotate 'v'.
+%
+%              [3,1] = size(axis); double = class(axis)
+%
+%      theta   the value of the angle measured in radians through which
+%              which rotate 'v' about 'axis'.
+%
+%              [1,1] = size(theta); double = class(theta)
 %
 %   the call:
 %
@@ -48,8 +53,10 @@
 %
 %   returns:
 %
-%      r   a double precision 3x1 array, the result of rotating 'v' about
-%          'axis' through an angle of 'theta'.
+%      r   the vector result of rotating 'v' about 'axis' through an angle
+%          of 'theta'.
+%
+%          [3,1] = size(r); double = class(r)
 %
 %-Examples
 %
@@ -122,6 +129,10 @@
 %   ROTATION.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.2, 18-DEC-2014, EDW (JPL)
+%
+%      Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.0.1, 14-JUL-2010, EDW (JPL)
 %

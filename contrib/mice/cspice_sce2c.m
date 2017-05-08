@@ -34,11 +34,15 @@
 %
 %   Given:
 %
-%      sc   the scalar integer NAIF ID of the spacecraft clock whose
-%           encoded SCLK value at the epoch 'et' is desired
+%      sc   the NAIF ID of the spacecraft clock whose
+%           encoded SCLK value at the epoch 'et' is desired.
 %
-%      et   the scalar or N-vector of double precision epochs,
-%           specified as ephemeris seconds past J2000
+%           [1,1] = size(sc); int32 = class(sc)
+%
+%      et   the ephemeris time(s) expressed as ephemeris seconds
+%           past J2000.
+%
+%           [1,n] = size(et); double = class(et)
 %
 %   the call:
 %
@@ -46,11 +50,13 @@
 %
 %   returns:
 %
-%      sclkdp   the double precision scalar or double precision 1xN array
-%               of encoded SCLK value(s) corresponding to 'et' for 'sc'
+%      sclkdp   the encoded SCLK value(s) corresponding to 'et' 
+%               for 'sc'.
 %
-%               'sclkdp' returns with the same vectorization
-%                measure (N) as 'et'.
+%               [1,n] = size(sclkdp); double = class(sclkdp)
+%
+%               'sclkdp' returns with the same vectorization measure, N, 
+%               as 'et'.
 %
 %-Examples
 %
@@ -142,6 +148,10 @@
 %   TIME.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.1, 06-JAN-2015, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.0.0, 18-APR-2006, EDW (JPL)
 %

@@ -33,22 +33,26 @@
 %
 %   Given:
 %
-%      radius   a double precision scalar or double precision 1XN
-%               array describing the distance of the position from origin
+%      radius   the value(s) describing the distance of the position
+%               from the origin.
 %
-%      colat    a double precision scalar or double precision 1XN array
-%               describing the angle of the projection of the point to the XY
+%               [1,n] = size(radius); double = class(radius)
+%
+%      colat    the value(s) describing the angle between the point and the
 %               positive z-axis, measured in radians (also referred to
-%               as the polar angle)
+%               as the polar angle).
 %
-%      slon     a double precision scalar or 1XN array describing
-%               the angle of the projection of the point to the XY
-%               plane from the positive X-axis, measured in radians,
-%               with range:
+%               [1,n] = size(colat); double = class(colat)
+%
+%      slon     the value(s) describing the angle of the projection of the
+%               point to the XY plane from the positive X-axis, measured
+%               in radians, with range:
 %
 %                   -pi < slon <= pi
 %
 %               The positive Y-axis is at longitude PI/2 radians.
+%
+%               [1,n] = size(slon); double = class(slon)
 %
 %   the call:
 %
@@ -56,21 +60,26 @@
 %
 %   returns:
 %
-%      r      a double precision scalar or double precision 1xN array
-%             describing the distance of the point of interest from z axis
+%      r      the value(s) describing the distance of the point of
+%             interest from z axis.
 %
-%      lonc   a double precision scalar or double precision 1xN array
-%             describing the cylindrical angle of the point of interest
-%             from the XZ plane measured in radians
+%             [1,n] = size(r); double = class(r)
 %
-%      z      a double precision scalar or double precision 1xN array
-%             describing the height of the point above the XY plane
+%      lonc   the value(s) describing the cylindrical angle of the point of
+%             interest from the XZ plane measured in radians.
+%
+%             [1,n] = size(lonc); double = class(lonc)
+%
+%      z      the value(s) describing the height of the point above
+%             the XY plane.
+%
+%             [1,n] = size(z); double = class(z)
 %
 %             The arguments 'r' and 'z' return in the same units associated
 %             with 'radius'.
 %
 %             'r', 'lonc', and 'z' return with the same vectorization
-%             measure(N) as 'radius', 'colat', and 'slon'.
+%             measure, N, as 'radius', 'colat', and 'slon'.
 %
 %-Examples
 %
@@ -105,12 +114,12 @@
 %      %
 %      % Convert the spherical coords to cylindrical.
 %      %
-%      [r, lon, z] = cspice_sphcyl(radius, colat, lon);
+%      [r, lonc, z] = cspice_sphcyl(radius, colat, lon);
 %
 %      %
 %      % Convert the cylindrical to rectangular.
 %      %
-%      [rectan] = cspice_cylrec(r, lon, z);
+%      [rectan] = cspice_cylrec(r, lonc, z);
 %
 %      %
 %      % Calculate the relative error against the original position
@@ -194,6 +203,10 @@
 %   MICE.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.1, 01-DEC-2014, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.0.0, 12-DEC-2005, EDW (JPL)
 %

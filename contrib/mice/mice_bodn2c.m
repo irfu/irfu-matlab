@@ -33,12 +33,30 @@
 %
 %   Given:
 %
-%      name    the scalar string or NxM character array of names of a set
-%              of bodies or objects, such as planets, satellites, comets,
-%              asteroids, barycenters, DSN stations, spacecraft, or
-%              instruments, "known" to the SPICE system, whether through
-%              hard-coded registration or run-time registration in
-%              the SPICE kernel pool
+%      name   name(s) of a body or object,  such as a planet, satellite, comet,
+%             asteroid, barycenter, DSN station, spacecraft, or instrument,
+%             "known" to the SPICE system, whether through hard-coded
+%             registration or run-time registration in the SPICE kernel pool
+%
+%             [n,c1] = size(name); char = class(name)
+%
+%                  or
+%
+%             [1,1] = size(name); cell = class(name)
+%
+%             Case and leading and trailing blanks in a name are not
+%             significant. However when a name is made up of more than one
+%             word, they must be separated by at least one blank. That is,
+%             all of the following strings are equivalent names:
+%
+%                      'JUPITER BARYCENTER'
+%                      'Jupiter Barycenter'
+%                      'JUPITER BARYCENTER   '
+%                      'JUPITER    BARYCENTER'
+%                      '   JUPITER BARYCENTER'
+%
+%              However, 'JUPITERBARYCENTER' is not equivalent to the names
+%              above.
 %
 %   the call:
 %
@@ -46,20 +64,30 @@
 %
 %   returns:
 %
-%      ID   the scalar or 1xN array of structures associating
-%           a body name with a corresponding NAIF ID. Each structure
-%           contains two fields:
+%      ID   the structure(s) associating a body name with a corresponding 
+%           SPICE ID. 
+%
+%           [1,n] = size(ID); struct = class(ID)
+%
+%           Each structure consists of the fields:
 %
 %              name   the "name" of a particular body. If a mapping
 %                     does not exist, the 'name' field returns as NULL.
 %
-%              code   a scalar integer SPICE code assigned either
+%                     [1,c1] = size(ID(i).name); char = class(ID(i).name)
+%
+%              code   the SPICE code assigned either
 %                     by SPICE or the user to 'name'. If a mapping
 %                     does not exist, the 'code' field returns as 0.
 %
-%              found  a scalar boolean indicating if a mapping exists (true)
+%                     [1,1] = size(ID(i).code); int32 = class(ID(i).code)
 %
-%              'ID' returns with the same vectorization measure (N) as 'name'.
+%              found  flag indicating if the kernel subsystem translated
+%                     'code' to a corresponding 'name'.
+%
+%                     [1,n] = size(ID(i).found); logical = class(ID(i).found)
+%
+%      'ID' returns with the same vectorization measure, N, as 'name'.
 %
 %-Examples
 %
@@ -139,6 +167,10 @@
 %   NAIF_IDS.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.1, 01-DEC-2014, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.0.0, 22-NOV-2005, EDW (JPL)
 %

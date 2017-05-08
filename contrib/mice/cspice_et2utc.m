@@ -33,11 +33,13 @@
 %
 %   Given:
 %
-%      et       the double precision scalar or 1xN array of ephemeris
-%               time expressed as ephemeris seconds past J2000
+%      et       the ephemeris time(s) expressed as ephemeris seconds
+%               past J2000.
 %
-%      format   the scalar string format flag describing the output time
-%               string, it may be any of the following:
+%               [1,n] = size(et); double = class(et)
+%
+%      format   the format flag describing the output time string, it may
+%               be any of the following:
 %
 %                  'C'      Calendar format, UTC
 %
@@ -49,10 +51,18 @@
 %
 %                  'ISOD'   ISO Day-of-Year format, UTC
 %
-%      prec     the scalar integer number of decimal places of precision to
+%               [1,c1] = size(format); char = class(format)
+%
+%                  or
+%
+%               [1,1] = size(format); cell = class(format)
+%
+%      prec     the number of decimal places of precision to
 %               which fractional seconds (for Calendar and Day-of-Year
 %               formats) or days (for Julian Date format) are to be
 %               computed
+%
+%               [1,1] = size(prec); int32 = class(prec)
 %
 %   the call:
 %
@@ -60,11 +70,12 @@
 %
 %   returns:
 %
-%      utcstr    the scalar string or NXM character array of output time
-%                strings equivalent to the input epoch 'et', in the specified
-%                'format'
+%      utcstr    the array of time string(s) equivalent to the input
+%                epoch 'et', in the specified 'format'.
 %
-%                'utcstr' returns with the same vectorization measure (N)
+%                [n,c2] = size(segid); char = class(segid)
+%
+%                'utcstr' returns with the same vectorization measure, N,
 %                as 'et'.
 %
 %-Examples
@@ -171,6 +182,10 @@
 %   TIME.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.1, 05-NOV-2014, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.0.0, 22-NOV-2005, EDW (JPL)
 %

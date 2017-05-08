@@ -33,8 +33,14 @@
 %
 %   Given:
 %
-%      name   the scalar string defining the name to associate to the ID value
+%      name   the string defining the name to associate to the ID value
 %             'code'.
+%
+%             [1,c1] = size(name); char = class(name)
+%
+%                or
+%
+%             [1,1] = size(name); cell = class(name)
 %
 %             The case and positions of blanks in a name are significant.
 %             cspice_bodc2n returns the same string (case and space) most
@@ -58,8 +64,9 @@
 %
 %             However, 'JUPITERBARYCENTER' is distinct from the names above.
 %
-%      code   the integer defining the NAIF ID code corresponding
-%             to 'name'.
+%      code   the NAIF ID code corresponding to 'name'.
+%
+%             [1,1] = size(code); int32 = class(code)
 %
 %   the call:
 %
@@ -162,6 +169,10 @@
 %   NAIF_IDS.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.2, 28-OCT-2014, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.0.1, 16-MAY-2009 (EDW)
 %

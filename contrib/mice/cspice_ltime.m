@@ -35,18 +35,29 @@
 %
 %   Given:
 %
-%      etobs   a double precision scalar or 1xN vector defining the
-%              epoch in ephemeris seconds (TDB) of a signal at some
-%              observer
+%      etobs   the epoch(s) in ephemeris seconds (TDB) of a signal at some
+%              observer.
 %
-%      obs     the scalar integer NAIF ID code of the observer
+%              [1,n] = size(etobs); double = class(etobs)
 %
-%      dir     a character string pictograph defining the
-%              direction the signal travels, to target from
-%              observer "->", or from the target to the
-%              observer "<-"
+%      obs     the NAIF ID code of the observer.
 %
-%      targ    the scalar integer NAIF ID code of the target
+%              [1,1] = size(obs); int32 = class(obs)
+%
+%      dir     a pictograph defining the direction the signal travels.
+%
+%                 '->'  to target from observer
+%                 '<-'  from the target to the observer
+%
+%              [1,2] = size(dir); char = class(dir)
+%
+%                 or
+%
+%              [1,1] = size(dir); cell = class(dir)
+%
+%      targ    the NAIF ID code of the target.
+%
+%              [1,1] = size(targ); int32 = class(targ)
 %
 %   the call:
 %
@@ -54,21 +65,23 @@
 %
 %   returns:
 %
-%      ettarg   the double precision scalar or 1XN vector defining the
-%               epoch at which the electromagnetic signal is "at" the
-%               target body, expressed in ephemeris seconds (TDB)
+%      ettarg   the epoch(s) at which the electromagnetic signal is "at"
+%               the target body, expressed in ephemeris seconds (TDB).
+%
+%               [1,n] = size(etobs); double = class(etobs)
 %
 %                  Note 'ettarg' is computed using only Newtonian
 %                  assumptions about the propagation of light.
 %
-%      elapsd   the double precision scalar or 1XN vector defining the
-%               measure of ephemeris seconds (TDB) between transmission
+%      elapsd   the measure of ephemeris seconds (TDB) between transmission
 %               and receipt of the signal
+%
+%               [1,n] = size(elapsd); double = class(elapsd)
 %
 %                  elapsd = abs( etobs - ettarg )
 %
 %               'ettarg' and 'elapsd' return with the same
-%               vectorization measure (N) as 'etobs'.
+%               vectorization measure, N, as 'etobs'.
 %
 %-Examples
 %
@@ -166,6 +179,10 @@
 %   TIME.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.1, 10-MAR-2015, EDW (JPL)
+%
+%      Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.0.0, 22-JAN-2006, EDW (JPL)
 %

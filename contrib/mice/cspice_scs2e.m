@@ -33,13 +33,20 @@
 %
 %   Given:
 %
-%      sc       the scalar integer NAIF ID of the spacecraft clock
-%               whose clock value is represented by 'sclkch'
+%      sc       the NAIF ID of the spacecraft clock whose clock value is
+%               represented by 'sclkch'.
 %
-%      sclkch   the scalar string or NXM character array representation
-%               of spacecraft 'sc' clock count ('sclkch' is an absolute
-%               spacecraft clock time, so the string should include
-%               partition information)
+%               [1,1] = size(sc); int32 = class(sc)
+%
+%      sclkch   an array of spacecraft 'sc' clock count(s)
+%               ('sclkch' is an absolute  spacecraft clock time, so the 
+%               string should include partition information).
+%
+%               [n,c1] = size(sclkch); char = class(sclkch)
+%
+%                  or
+%
+%               [1,n] = size(sclkch); cell = class(sclkch)
 %
 %   the call:
 %
@@ -47,11 +54,13 @@
 %
 %   returns:
 %
-%      et    the double precision scalar or double precision 1xN array
-%            in ephemeris seconds past J2000, that corresponds to 'sclkch'
+%      et   the ephemeris time(s) expressed as ephemeris seconds
+%           past J2000 that correspond(s) to 'sclkch'.
 %
-%            'et' returns with the same vectorization measure
-%             (N) as 'sclkch'.
+%           [1,n] = size(et); double = class(et)
+%
+%           'et' returns with the same vectorization measure, N,
+%           as 'sclkch'.
 %
 %-Examples
 %
@@ -175,6 +184,10 @@
 %   SCLK.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.1, 06-JAN-2015, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.0.0, 18-APR-2006, EDW (JPL)
 %

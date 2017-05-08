@@ -547,7 +547,7 @@ if nargout==0, clear c; end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   function init_figure
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    if x>=1 && x<=20,
+    if x>=1 && x<=30,
       % check if there is 'newfigure' argument
       if numel(args)>=2 && ischar(args{2}) && strcmpi(args{2},'newfigure')
         c=initialize_figure(x,'newfigure');
@@ -555,7 +555,7 @@ if nargout==0, clear c; end
         c=initialize_figure(x,'reset');
       else c=initialize_figure(x);
       end
-    else irf.log('warning','Max 20 subplots supported ;)');
+    else irf.log('warning','Max 30 subplots supported ;)');
     end
   end
 end % IRF_PLOT
@@ -598,7 +598,7 @@ if isempty(get(0,'CurrentFigure')) % no current figures opened
 elseif isempty(get(gcf,'children')) && ~strcmpi(flag,'newfigure') && ~strcmpi(flag,'reset') % current figure is empty, display warning of new syntax (REMOVE THIS ELSE LOOP IN 2013)
 	disp('WARNING! use syntax irf_plot(number_of_subplots,''newfigure'') if you want new figure.')
 end
-if number_of_subplots>=1 && number_of_subplots<=20,
+if number_of_subplots>=1 && number_of_subplots<=30,
     number_of_subplots=floor(number_of_subplots);
     c=gobjects(1,number_of_subplots);
 	if strcmpi(flag,'newfigure'), % if to open new figure

@@ -33,15 +33,19 @@
 %
 %   Given:
 %
-%      selidx   the scalar integer index of the column in the
-%               SELECT from which to retrieve data. The range of
-%               'selidx' is 1:nsel inclusive, where 'nsel' is the
-%               number of items in the SELECT clause of the current
-%               query.
+%      selidx   the index of the column in the SELECT from which to retrieve 
+%               data. The range of 'selidx' is 1:nsel inclusive, where 
+%               'nsel' is the number of items in the SELECT clause of the 
+%               current query.
 %
-%      row      the scalar integer index of the row containing the element.
-%               This number refers to a member of the set of rows
-%               matching a query. 'row' must be in the range
+%               [1,1] = size(inst); int32 = class(inst)
+%
+%      row      the index of the row containing the element.
+%
+%               [1,1] = size(inst); int32 = class(inst)
+%
+%               This number refers to a member of the set of rows matching
+%               a query. 'row' must be in the range
 %
 %                  1:nmrows
 %
@@ -54,8 +58,11 @@
 %
 %   returns:
 %
-%      nelt    the scalar integer number of elements in the column entry
-%              belonging to the specified column in the specified row.
+%      nelt    the number of elements in the column entry belonging to the
+%              specified column in the specified row.
+%
+%               [1,1] = size(inst); int32 = class(inst)
+%
 %
 %      Null entries in variable-size columns are considered to have size 1.
 %
@@ -176,6 +183,10 @@
 %   EK.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.1, 03-NOV-2014, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.0.0, 10-APR-2010, EDW (JPL)
 %

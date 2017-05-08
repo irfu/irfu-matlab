@@ -34,6 +34,13 @@
 %   Given:
 %
 %      item   is the is the Time subsystem parameter value to retrieve.
+%
+%             [1,c1] = size(item); char = class(item)
+%
+%                or
+%
+%             [1,1] = size(item); cell = class(item)
+%
 %             The parameters that may be requested are:
 %
 %              item          Allowed Values
@@ -62,6 +69,8 @@
 %   returns:
 %
 %      value   the value currently associated to 'item'.
+%
+%              [1,1] = size(value); double = class(value)
 %
 %   Any numerical results shown for this example may differ between
 %   platforms as the results depend on the SPICE kernels used as input
@@ -219,6 +228,10 @@
 %   TIMDEF.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.1, 13-FEB-2015, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.0.0, 14-NOV-2013, EDW (JPL)
 %

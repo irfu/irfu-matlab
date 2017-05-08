@@ -20,7 +20,7 @@ kc_x_max=0.5; % Max k perpendicular
 m_i=1836; % Ion mass in terms of electron mass
 wp_e=0.32; % Electron plasma frequency
 surfchoice=ones(1,5); % All 5 surfaces will be plotted by default
-colorchoice=5; % The color is set by the group velocity
+colorchoice=6; % The color is set by the group velocity
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -181,7 +181,7 @@ h_colors = uicontrol( ...
     'HorizontalAlignment','center', ...
     'Value', colorchoice, ...
     'Callback','colorchoice=get(h_colors,''Value'');irf_disp_surf_pl(kc_x_max,kc_z_max,wfinal,extraparam,surfchoice,colorchoice)', ...
-    'String','dn/n|c B/E|Elong/E|Epar/E|v_g|polarization|log10(WE/WB)|log10(We/Wi)|log10(Wp/Wf)');
+    'String','dn/n|c B/E|Elong/E|Epar/E|Bpar/B|v_g|polarization|log10(WE/WB)|log10(We/Wi)|log10(Wp/Wf)');
 
 
 % Choose max k values, recalculate, and plot

@@ -20,7 +20,8 @@ function [starttime1,endtime1,starttime3,endtime3] = probe_align_times(varargin)
 % Input: (only works with TSeries format data.)
 %       Exyz -   Electric field in DSL coordinates, brst mode.
 %       Bxyz -   Magnetic field in DMPA coordinates.
-%       SCpot -  L2 SCpot data. 
+%       SCpot -  L2 SCpot data. Timing corrections are applied in this
+%       function. Do not apply them before running this function.
 %       zphase - Spacecraft phase (zphase). Obtained from ancillary_defatt.
 %       e.g. zphase = mms.db_get_variable('mms3_ancillary_defatt','zphase',tint);
 %            zphase = irf.ts_scalar(zphase.time, zphase.zphase);
@@ -29,9 +30,6 @@ function [starttime1,endtime1,starttime3,endtime3] = probe_align_times(varargin)
 %
 % Outputs: Start and end times of intervals which satisfy the probe
 % alignment conditions, for probe combinates p1-p2 and p3-p4. 
-% 
-% Temporary fix for axial field direction is used before running this function: 
-% Exyz.data(:,3) = -Exyz.data(:,3);
 
 if (numel(varargin) < 4)
     help mms.probe_align_times;
@@ -43,6 +41,27 @@ Exyz = varargin{1};
 Bxyz = varargin{2};
 SCpot = varargin{3};
 zphase = varargin{4};
+
+% Correct for timing in spacecraft potential data. 
+E12 = TSeries(SCpot.time,(SCpot.data(:,1)-SCpot.data(:,2))/0.120); 
+E34 = TSeries(SCpot.time,(SCpot.data(:,3)-SCpot.data(:,4))/0.120); 
+E56 = TSeries(SCpot.time,(SCpot.data(:,5)-SCpot.data(:,6))/0.0292);
+V1 = TSeries(SCpot.time,SCpot.data(:,1));
+V3 = TSeries(SCpot.time+ 7.629e-6,SCpot.data(:,3)); 
+V5 = TSeries(SCpot.time+15.259e-6,SCpot.data(:,5));
+E12.time = E12.time + 26.703e-6;
+E34.time = E34.time + 30.518e-6;
+E56.time = E56.time + 34.332e-6;
+V3 = V3.resample(V1.time);
+V5 = V5.resample(V1.time);
+E12 = E12.resample(V1.time);
+E34 = E34.resample(V1.time);
+E56 = E56.resample(V1.time);
+V2 = V1 - E12 * 0.120;
+V4 = V3 - E34 * 0.120;
+V6 = V5 - E56 * 0.0292;
+% Make new SCpot with corrections
+SCpot = irf.ts_scalar(V1.time,[V1.data V2.data V3.data V4.data V5.data V6.data]);
 
 if (numel(varargin)==5)
     plotfigure=varargin{5};
@@ -73,29 +92,14 @@ for ii=[2:nph]
     end
 end
 
-zphasetime = zphase.time(find(norepeat == 1));
-zphasedata = zphase.data(find(norepeat == 1));
+zphasetime = zphase.time(norepeat == 1);
+zphasedata = zphase.data(norepeat == 1);
 
-zphase = TSeries(zphasetime,zphasedata,'to',1);
+zphase = irf.ts_scalar(zphasetime,zphasedata);
 zphase = zphase.resample(SCpot);
 
 %Perform rotation on Exyz into field-aligned coordinates 
-SCpos = [0 1 0];
-
-Bmag = Bxyz.abs.data;
-Rpar = Bxyz.data./[Bmag Bmag Bmag];
-Rperpy = irf_cross(Rpar,SCpos);
-Rmag   = irf_abs(Rperpy,1);
-Rperpy = Rperpy./[Rmag Rmag Rmag];
-Rperpx = irf_cross(Rperpy, Rpar);
-Rmag   = irf_abs(Rperpx,1);
-Rperpx = Rperpx./[Rmag Rmag Rmag];
-
-Epar = dot(Rpar,Exyz.data,2);
-Eperp = dot(Rperpx,Exyz.data,2);
-Eperp2 = dot(Rperpy,Exyz.data,2);
-
-Efac = TSeries(Exyz.time,[Eperp Eperp2 Epar],'to',1);
+Efac = irf_convert_fac(Exyz,Bxyz,[1 0 0]);
 
 % Probe angles in DSL or whatever
 phase_p1=zphase.data/180*pi + pi/6;
@@ -126,12 +130,12 @@ E34 = (SCpot.data(:,3)-SCpot.data(:,4))*1e3/120;
 idxB = find(sqrt(Bxyz.data(:,1).^2+Bxyz.data(:,2).^2) < abs(Bxyz.data(:,3)));
 thresang = 25.0;
 
-E1(find(thetap1b > thresang)) = NaN;
-E2(find(thetap1b > thresang)) = NaN;
-E3(find(thetap3b > thresang)) = NaN;
-E4(find(thetap3b > thresang)) = NaN;
-SCV12(find(thetap3b > thresang)) = NaN;
-SCV34(find(thetap1b > thresang)) = NaN;
+E1(thetap1b > thresang) = NaN;
+E2(thetap1b > thresang) = NaN;
+E3(thetap3b > thresang) = NaN;
+E4(thetap3b > thresang) = NaN;
+SCV12(thetap3b > thresang) = NaN;
+SCV34(thetap1b > thresang) = NaN;
 E1(idxB) = NaN;
 E2(idxB) = NaN;
 E3(idxB) = NaN;
@@ -204,8 +208,8 @@ end
 
 %Find and print times when the probes satisfy alignment conditions
 E1temp = isnan(E1)-[-1; isnan(E1(3:length(E1))); 1];
-starttime1 = SCpot.time(find(E1temp == 1));
-endtime1 = SCpot.time(find(E1temp == -1));
+starttime1 = SCpot.time(E1temp == 1);
+endtime1 = SCpot.time(E1temp == -1);
 
 fprintf('Intervals when Probe 1 and 2 satisfy alignment conditions \n')
 for q = 1:length(starttime1)
@@ -213,8 +217,8 @@ for q = 1:length(starttime1)
 end
 
 E3temp = isnan(E3)-[-1; isnan(E3(3:length(E3))); 1];
-starttime3 = SCpot.time(find(E3temp == 1),1);
-endtime3 = SCpot.time(find(E3temp == -1),1);
+starttime3 = SCpot.time(E3temp == 1,1);
+endtime3 = SCpot.time(E3temp == -1,1);
 
 fprintf('Intervals when Probe 3 and 4 satisfy alignment conditions \n')
 for q = 1:length(starttime3)

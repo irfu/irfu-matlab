@@ -33,24 +33,33 @@
 %
 %   Given:
 %
-%       lon   a double precision scalar or 1xN array describing
-%             the geodetic longitude measured in radians
+%       lon   the value(s) describing the geodetic longitude measured
+%             in radians.
 %
-%       lat   a double precision scalar or 1xN array describing
-%             the geodetic latitude measured in radians
+%             [1,n] = size(lon); double = class(lon)
 %
-%       alt   a double precision scalar or 1xN array describing
-%             the altitude above the reference spheroid
+%       lat   the value(s) describing the geodetic latitude measured
+%             in radians.
 %
-%       re    the scalar, double precision equatorial radius of
-%             the body of interest
+%             [1,n] = size(lat); double = class(lat)
 %
-%       f     the scalar, double precision flattening coefficient
-%             of the body, a dimensionless value defined as:
+%       alt   the value(s) describing the altitude above the reference
+%             spheroid.
+%
+%             [1,n] = size(alt); double = class(alt)
+%
+%       re    the equatorial radius of the body of interest.
+%
+%             [1,1] = size(re); double = class(re)
+%
+%       f     the flattening coefficient of the body, a dimensionless
+%             value defined as:
 %
 %                    equatorial_radius - polar_radius
 %                    --------------------------------
 %                           equatorial_radius
+%
+%             [1,n] = size(f); double = class(f)
 %
 %   the call:
 %
@@ -58,15 +67,16 @@
 %
 %   returns:
 %
-%      rectan   a double precision 3x1 array or double precision
-%               3xN array containing the rectangular coordinates of the
-%               position or set of positions
+%      rectan   the array(s) containing the rectangular coordinates of the
+%               position or set of positions.
+%
+%               [3,n] = size(rectan); double = class(rectan)
 %
 %               'rectan' returns with the same units associated with
 %               'alt' and 're'
 %
-%               'rectan' returns with the same vectorization measure
-%                (N) as 'lon', 'lat', and 'alt'
+%               'rectan' returns with the same vectorization measure,
+%               n, as 'lon', 'lat', and 'alt'
 %
 %-Examples
 %
@@ -212,6 +222,10 @@
 %   MICE.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.1, 06-NOV-2014, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.0.0, 22-NOV-2005, EDW (JPL)
 %

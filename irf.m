@@ -135,27 +135,33 @@ switch lower(action)
 	case 'help'
 		help irfu-matlab
 	case 'mice'
-        if ~ispc
-		if exist('cspice_j2000','file') % mice is installed
-			if (cspice_j2000 == 2451545),
-				disp('SPICE/MICE is OK');
-				if nargout, out=true; end
-				return;
-			else
-				disp('SPICE/MICE is installed but NOT WORKING PROPERLY!');
-				if nargout, out=false; end
-				return;
-			end
-		else
-			micePath = [irf('path') filesep 'contrib' filesep  'mice'];
-			disp(['adding MICE path to matlab: ' micePath]);
-			addpath(micePath);
-			ok=irf('mice');
-			if ~ok,
-				disp('MICE  .. NOT OK. Please, contact irfu!');
-			end
-		end
+      if ~ispc
+        if exist('cspice_j2000','file') % mice is installed
+          try
+            if(cspice_j2000 == 2451545)
+              disp('SPICE/MICE is OK');
+              if nargout, out = true; end
+              return
+            else
+              disp('SPICE/MICE is installed but NOT WORKING PROPERLY!');
+              if nargout, out = false; end
+              return
+            end
+          catch
+            disp('SPICE/MICE is installed but NOT WORKING PROPERLY!');
+            if nargout, out = false; end
+            return
+          end
+        else
+          micePath = [irf('path') filesep 'contrib' filesep  'mice'];
+          disp(['adding MICE path to matlab: ' micePath]);
+          addpath(micePath);
+          ok = irf('mice');
+          if ~ok
+            disp('MICE  .. NOT OK. Please, contact irfu!');
+          end
         end
+      end
 	case 'mice_help'
 		disp('Kernel files at IRFU are located at spis:/share/SPICE');
 		disp('Kernels at irfu: general, Cassini, Rosetta, Solar Orbiter, JUICE');

@@ -1487,7 +1487,7 @@ classdef mms_sdp_dmgr < handle
       dE = mms_sdp_despin(Etmp.e12, Etmp.e34, Phase.data,...
         DeltaOffR.data(:,1) + DeltaOffR.data(:,2)*1j);
       % Get DSL offsets
-      offs = mms_sdp_get_offset(DATAC.scId, DATAC.procId, Dce.time);
+      offs = mms_sdp_get_offset(DATAC.scId, DATAC.procId, Dce.time, DATAC.tmMode);
       DATAC.calFile = offs.calFile; % Store name of cal file used.
       dE(:,1) = dE(:,1) - offs.ex; % Remove sunward
       dE(:,2) = dE(:,2) - offs.ey; % and duskward offsets
@@ -1579,7 +1579,7 @@ classdef mms_sdp_dmgr < handle
       end
       
       % Get probe to plasma potential (offs.p2p) for this time interval
-      offs = mms_sdp_get_offset(DATAC.scId, DATAC.procId, Probe2sc_pot.time);
+      offs = mms_sdp_get_offset(DATAC.scId, DATAC.procId, Probe2sc_pot.time, DATAC.tmMode);
       DATAC.calFile = offs.calFile; % Store name of cal file used.
       scPot = - Probe2sc_pot.data(:) .* offs.shortening(:) + offs.p2p;
       
@@ -1737,7 +1737,7 @@ classdef mms_sdp_dmgr < handle
           DeltaOff = irf.ts_vec_xy(DATAC.l2a.spinfits.time, [real(DATAC.l2a.delta_off), imag(DATAC.l2a.delta_off)]);
           DeltaOffR = DeltaOff.resample(EpochTT(DATAC.l2a.dce.time));
           dE = mms_sdp_despin(Etmp.e12, Etmp.e34, DATAC.l2a.phase.data, DeltaOffR.data(:,1) + DeltaOffR.data(:,2)*1j);
-          offs = mms_sdp_get_offset(DATAC.scId, DATAC.procId, DATAC.l2a.dce.time);
+          offs = mms_sdp_get_offset(DATAC.scId, DATAC.procId, DATAC.l2a.dce.time, DATAC.tmMode);
           DATAC.calFile = offs.calFile; % Store name of cal file used.
           dE(:,1) = dE(:,1) - offs.ex; % Remove sunward
           dE(:,2) = dE(:,2) - offs.ey; % and duskward offsets
@@ -1756,13 +1756,15 @@ classdef mms_sdp_dmgr < handle
           % position
           DATAC.l2a.dce.time = DATAC.dce.time;
           DATAC.l2a.phase = DATAC.phase;
-          DATAC.l2a.adc_off = DATAC.adc_off;
+          % Use spinfits from entrie L2a fast segment to determine ADC 
+          % offset and compute it for the burst time interval.
+          DATAC.l2a.adc_off = mms_sdp_adc_off(DATAC.dce.time, DATAC.l2a.spinfits);
           sdpProbes = fieldnames(DATAC.l2a.adc_off); % default {'e12', 'e34'}
           Etmp = struct('e12',DATAC.dce.e12.data,'e34',DATAC.dce.e34.data);
           for iProbe=1:numel(sdpProbes)
             % Remove ADC offset
             Etmp.(sdpProbes{iProbe}) = ...
-              Etmp.(sdpProbes{iProbe}) - DATAC.adc_off.(sdpProbes{iProbe});
+              Etmp.(sdpProbes{iProbe}) - DATAC.l2a.adc_off.(sdpProbes{iProbe});
           end
           MMS_CONST = DATAC.CONST;
           bitmask = mms_sdp_typecast('bitmask',bitor(DATAC.dce.e12.bitmask,DATAC.dce.e34.bitmask));
@@ -1771,7 +1773,7 @@ classdef mms_sdp_dmgr < handle
           DeltaOff = irf.ts_vec_xy(DATAC.l2a.spinfits.time, [real(DATAC.l2a.delta_off), imag(DATAC.l2a.delta_off)]);
           DeltaOffR = DeltaOff.resample(EpochTT(DATAC.l2a.dce.time));
           dE = mms_sdp_despin(Etmp.e12, Etmp.e34, DATAC.phase.data, DeltaOffR.data(:,1) + DeltaOffR.data(:,2)*1j);
-          offs = mms_sdp_get_offset(DATAC.scId, DATAC.procId, DATAC.dce.time);
+          offs = mms_sdp_get_offset(DATAC.scId, DATAC.procId, DATAC.dce.time, DATAC.tmMode);
           DATAC.calFile = offs.calFile; % Store name of cal file used.
           dE(:,1) = dE(:,1) - offs.ex; % Remove sunward
           dE(:,2) = dE(:,2) - offs.ey; % and duskward offsets

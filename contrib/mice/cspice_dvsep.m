@@ -64,7 +64,7 @@
 %
 %              [1,n] = size(dvsep); double = class(dvsep)
 %
-%              'dvsep' returns with the same measure of vectorization (N)
+%              'dvsep' returns with the same vectorization measure (N)
 %              as 's1' and 's2'.
 %
 %-Examples

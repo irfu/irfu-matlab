@@ -25,6 +25,7 @@ function h=irf_wave_detection_algorithm(tint,scId,varargin)
 %	
 
 save_plot=0;
+Units = irf_units;
 if isnumeric(scId), scId_s = sprintf('C%d',scId);
 else scId_s = ['TH' upper(scId)];
 end
@@ -230,9 +231,9 @@ ind_nan_pmr=isnan(power_median_removed); power_median_removed(ind_nan_pmr)=0;
 
 %% set cutoff frequencies and put a limit on the width of the emic event
 magB = irf_resamp(Btot,t);
-hCyclFreq = magB(:,2).*1e-9.*1.6e-19./1.67e-27./2./pi;
-heCyclFreq = magB(:,2).*1e-9.*1.6e-19./1.67e-27./2./pi./4;
-oCyclFreq = magB(:,2).*1e-9.*1.6e-19./1.67e-27./2./pi./16;
+hCyclFreq  = magB(:,2).*1e-9 .* Units.e/(2*pi*Units.mp);
+heCyclFreq = magB(:,2).*1e-9 .* Units.e/(2*pi*4*Units.mp);
+oCyclFreq  = magB(:,2).*1e-9 .* Units.e/(2*pi*16*Units.mp);
 
 %% wave detection
 P=[0 0 0 0 0]; %array for peaks [time, freq, peakValue, lowerBound, upperBound]

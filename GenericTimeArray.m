@@ -194,6 +194,27 @@ classdef (Abstract) GenericTimeArray
       res = subsref(obj,S);
     end
     
+    function res = horzcat(varargin)
+      % tt = [t1 t2];
+      % tt = [t1 t2:t3];
+      
+      objs = varargin;
+      nobj = numel(objs);
+      obj_ttns = int64([]);
+      for iobj = 1:nobj % an obj can be a single EpochTT or a list
+        nsubobj = numel(objs{iobj});
+        for isubobj = 1:nsubobj          
+          tmp_obj = objs{iobj};
+          obj_ttns = [obj_ttns; tmp_obj.ttns];
+        end
+      end
+      res = EpochTT(obj_ttns);   
+    end
+    
+    function res = vertcat(varargin)
+      res = horzcat(varargin{:});
+    end
+    
     function [varargout] = subsref(obj,idx)
       %SUBSREF handle indexing
 			switch idx(1).type

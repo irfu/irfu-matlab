@@ -8,11 +8,12 @@ function [fkpower,freq,wavenumber] = fk_powerspectrum(varargin)
 % electric fields aligned with B separated by 60 m. Wavelet based 
 % cross-spectral analysis is used to calculate the phase difference between 
 % and the fields, and hence the wave number. The power is then binned 
-% according to frequency and wave number (Graham et al., JGR, 2015).
+% according to frequency and wave number (Graham et al., JGR, 2016).
 % Written by D. B. Graham.
 %
 % Input: (All data must be in TSeries format)
-%       SCpot -     L2 probe potentials. 
+%       SCpot -     L2 probe potentials. Timing corrections are applied in this
+%       function. Do not apply them before running this function.
 %       Bxyz -      Magnetic field in DMPA coordinates.
 %       trange -    time interval over which the power spectrum is calculated. 
 %                   B should be closely aligned with one probe pair over this time. 
@@ -20,8 +21,13 @@ function [fkpower,freq,wavenumber] = fk_powerspectrum(varargin)
 %       zphase -    Spacecraft phase (zphase). Obtained from ancillary_defatt.
 %       probecomb - Probe combination to use (1 or 3). 1 for B aligned with
 %                   probes 1 and 2. 3 for B aligned with probes 3 and 4.
+%
+% Options: 
 %       cav -       Number of points in timeseries used to estimate phase.
 %                   Optional parameter. Default is cav = 128;
+%       field -     Set to 1 (default) to use electric fields calculated from
+%                   opposing probes and SCpot. Set to 0 to use only
+%                   opposing probe potentials.
 %
 % Output: 
 %       fkpower    - array of powers as a function of frequency and
@@ -30,9 +36,13 @@ function [fkpower,freq,wavenumber] = fk_powerspectrum(varargin)
 %       wavenumber - array of wavenumbers k in m^{-1}. Positive values are
 %                    aligned with B and negative values are anti-aligned with B.
 % 
-% Some testing still required but the routine seems to work well.
+% Example:
+%   [fkpower,freq,wavenumber] = mms.fk_powerspectrum(SCpot,Bxyz,zphase,trange,SCnum,probecomb,'cav',256,'field',0); 
+%
 % Directions and speeds are consistent with expectations based on time
-% delays.
+% delays. Work still in progress. Time corrections for the probes need to be
+% revised. 
+
 
 if (numel(varargin) < 5)
     help mms.fk_powerspectrum;
@@ -42,19 +52,69 @@ end
 SCpot = varargin{1};
 Bxyz = varargin{2};
 zphase = varargin{3};
-
 ts2=varargin{4};
+probe = varargin{5};
+cav = 128;
+fieldflag = 1;
+
+args=varargin(6:end);
+if numel(args)>0,
+    flag_have_options=1;
+    irf.log('notice','have options');
+else
+    flag_have_options=0;
+end
+
+while flag_have_options
+    l = 2;
+    switch(lower(args{1}))
+        case 'cav'
+            if numel(args)>1 && isnumeric(args{2})
+                cav = args{2};
+            end
+        case 'field'
+            if numel(args)>1 && isnumeric(args{2})
+                if args{2},
+                  fieldflag = 1;
+                  irf.log('notice','Using reconstructed electric field for computation.')
+                else
+                  fieldflag = 0;
+                  irf.log('notice','Using probe potentials for computation.')
+                end
+            end
+        otherwise
+            irf.log('warning',['Unknown flag: ' args{1}]);
+            l=1;
+            break;
+    end
+    args = args(l+1:end);
+    if isempty(args), flag_have_options=0; end
+end
+
+% Correct for timing in spacecraft potential data. 
+E12 = TSeries(SCpot.time,(SCpot.data(:,1)-SCpot.data(:,2))/0.120); 
+E34 = TSeries(SCpot.time,(SCpot.data(:,3)-SCpot.data(:,4))/0.120); 
+E56 = TSeries(SCpot.time,(SCpot.data(:,5)-SCpot.data(:,6))/0.0292);
+V1 = TSeries(SCpot.time,SCpot.data(:,1));
+V3 = TSeries(SCpot.time+ 7.629e-6,SCpot.data(:,3)); 
+V5 = TSeries(SCpot.time+15.259e-6,SCpot.data(:,5));
+E12.time = E12.time + 26.703e-6;
+E34.time = E34.time + 30.518e-6;
+E56.time = E56.time + 34.332e-6;
+V3 = V3.resample(V1.time);
+V5 = V5.resample(V1.time);
+E12 = E12.resample(V1.time);
+E34 = E34.resample(V1.time);
+E56 = E56.resample(V1.time);
+V2 = V1 - E12 * 0.120;
+V4 = V3 - E34 * 0.120;
+V6 = V5 - E56 * 0.0292;
+% Make new SCpot with corrections
+SCpot = irf.ts_scalar(V1.time,[V1.data V2.data V3.data V4.data V5.data V6.data]);
+
 ts2l = ts2+[-1 1];
 SCpot = SCpot.tlim(ts2l);
 Bxyz = Bxyz.tlim(ts2l);
-
-probe = varargin{5};
-
-if (numel(varargin)==5)
-    cav = 128;
-else 
-    cav = varargin{6};
-end
 
 zphase = zphase.tlim(ts2l);
 
@@ -70,18 +130,23 @@ for ii=[2:nph]
     end
 end
 
-zphasetime = zphase.time(find(norepeat == 1));
-zphasedata = zphase.data(find(norepeat == 1));
+zphasetime = zphase.time(norepeat == 1);
+zphasedata = zphase.data(norepeat == 1);
 
 zphase = TSeries(zphasetime,zphasedata,'to',1);
 
 zphase = zphase.resample(SCpot);
 Bxyz = Bxyz.resample(SCpot);
 
-%Construct fields
+%Construct fields or potentials (N.B. Amplitude is not important).
 time = SCpot.time;
 SCV12 = (SCpot.data(:,1)+SCpot.data(:,2))/2;
 SCV34 = (SCpot.data(:,3)+SCpot.data(:,4))/2;
+if ~fieldflag
+    SCV12 = zeros(size(SCV12));
+    SCV34 = zeros(size(SCV34));
+end
+  
 E1 = (SCpot.data(:,1)-SCV34)*1e3/60;
 E2 = (SCV34-SCpot.data(:,2))*1e3/60;
 E3 = (SCpot.data(:,3)-SCV12)*1e3/60;
@@ -166,9 +231,9 @@ for m = [1:1:N+1]
 end
 end       
  
-disprel(find(disprel == 0)) = NaN;
+disprel(disprel == 0) = NaN;
 disprel = disprel/max(max(disprel));
-disprel(find(disprel < 1.0e-3)) = 1e-3;
+disprel(disprel < 1.0e-3) = 1e-3;
 
 wavenumber = kvec;
 freq = cross34x.f;

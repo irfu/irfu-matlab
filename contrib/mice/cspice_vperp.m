@@ -33,14 +33,14 @@
 %
 %   Given:
 %
-%      a   the 3-vector(s) whose component orthogonal to 'b' is sought.
+%      a   the vector(s) whose component orthogonal to 'b' is sought.
 %
 %          [3,n] = size(a); double = class(a)
 %
 %          (There is a unique decomposition of a into a sum v + p, where v is
 %          parallel to b and p is orthogonal to b.  We want the component p.)
 %
-%      b   the second 3-vector(s) used as a reference for the decomposition
+%      b   the second vector(s) used as a reference for the decomposition
 %          of 'a'.
 %
 %          [3,n] = size(b); double = class(b)
@@ -59,6 +59,9 @@
 %              to 'b'.
 %
 %              [3,n] = size(vperp); double = class(vperp)
+%
+%             'vperp' returns with the same vectorization measure, N, as
+%             'a' and 'b'
 %
 %-Examples
 %

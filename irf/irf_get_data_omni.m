@@ -221,8 +221,10 @@ else
     % Matlab versions before R2017a does not include root certificate used
     % by "Let's encrypt".
     webOpt = weboptions('CertificateFilename','');
+    webOpt.Timeout = 10;
   else
     webOpt = weboptions();
+    webOpt.Timeout = 10;
   end
   try
     c = webread(url, webOpt);

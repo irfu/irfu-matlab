@@ -38,10 +38,6 @@
 %
 %               [1,1] = size(sc); int32 = class(sc)
 %
-%                 or
-%
-%               [1,1] = size(sc); double = class(sc)
-%
 %      sclkdp   the encoding of a clock time(s) in units of ticks since the
 %               spacecraft clock start time.
 %
@@ -53,13 +49,13 @@
 %
 %   returns:
 %
-%      et    the epoch in ephemeris seconds past J2000, that corresponds 
-%            to 'sclkdp'.
+%      et   the ephemeris time(s) expressed as ephemeris seconds
+%           past J2000 that correspond(s) to ''sclkdp'.
 %
-%            'et' returns with the same vectorization measure (N)
-%            as 'sclkdp'.
+%           [1,n] = size(et); double = class(et)
 %
-%            [1,n] = size(et); double = class(et)
+%           'et' returns with the same vectorization measure, N,
+%           as 'sclkdp'.
 %
 %-Examples
 %
@@ -191,6 +187,10 @@
 %   TIME.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.2, 06-JAN-2015, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.0.1, 04-SEP-2012, EDW (JPL)
 %

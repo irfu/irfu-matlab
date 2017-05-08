@@ -38,23 +38,32 @@
 %
 %   Given:
 %
-%      xform   a double precision 6x6 or double precision 6x6xN
-%              array of a state transformation matrices from some frame
-%              frame1 to another frame frame2
+%      xform   operator(s) that transform state vector(s) from some frame
+%              "frame1" to another frame "frame2."
+%
+%              [6,6]   = size(xform); double = class(xform)
+%              
+%              or     
+%
+%              [6,6,n] = size(xform); double = class(xform)
 %
 %      axisa
 %      axisb
-%      axisc   the scalar integers defining the axes desired for the
-%              factorization of "r". All must be in the range from 1 to 3.
-%              Moreover it must be the case that 'axisa' and 'axisb' are
-%              distinct and that 'axisb' and 'axisc' are distinct.
+%      axisc   the axes desired for the factorization of "r". All must
+%              be in the range from 1 to 3. Moreover it must be the
+%              case that 'axisa' and 'axisb' are distinct and that
+%              'axisb' and 'axisc' are distinct.
+%
+%              [1,1] = size(axisa); int32 = class(axisa)
+%              [1,1] = size(axisb); int32 = class(axisb)
+%              [1,1] = size(axisc); int32 = class(axisc)
 %
 %              Every rotation matrix can be represented as a product
 %              of three rotation matrices about the principal axes
 %              of a reference frame.
 %
-%                   r =  [ alpha ]     [ beta ]     [ gamma ]
-%                                 axisa        axisb         axisc
+%                 r =  [ alpha ]     [ beta ]     [ gamma ]
+%                              axisa        axisb         axisc
 %
 %              The value 1 corresponds to the X axis.
 %              The value 2 corresponds to the Y axis.
@@ -66,9 +75,14 @@
 %
 %   returns:
 %
-%       eulang   the double precision 6x1 or double precision 6xN
-%                array of Euler angles corresponding to the
-%                specified factorization
+%       eulang   the vector/matrix of Euler angles corresponding to the
+%                specified factorization.
+%
+%                If    [6,6]   = size(xform)
+%                then  [6,6]   = size(eulang); double = class(eulang)
+%
+%                If    [6,6,n] = size(xform)
+%                then  [6,6,n] = size(eulang); double = class(eulang)
 %
 %                If we represent r as shown here:
 %
@@ -77,21 +91,21 @@
 %
 %                then (6x1)
 %
-%                  eulang[1] = alpha
-%                  eulang[2] = beta
-%                  eulang[3] = gamma
-%                  eulang[4] = dalpha/dt
-%                  eulang[5] = dbeta/dt
-%                  eulang[6] = dgamma/dt
+%                   eulang[1] = alpha
+%                   eulang[2] = beta
+%                   eulang[3] = gamma
+%                   eulang[4] = dalpha/dt
+%                   eulang[5] = dbeta/dt
+%                   eulang[6] = dgamma/dt
 %
 %                or (6xN)
 %
-%                  eulang[:,N] = alpha_N
-%                  eulang[:,N] = beta_N
-%                  eulang[:,N] = gamma_N
-%                  eulang[:,N] = dalpha_N/dt
-%                  eulang[:,N] = dbeta_N/dt
-%                  eulang[:,N] = dgamma_N/dt
+%                   eulang[:,N] = alpha_N
+%                   eulang[:,N] = beta_N
+%                   eulang[:,N] = gamma_N
+%                   eulang[:,N] = dalpha_N/dt
+%                   eulang[:,N] = dbeta_N/dt
+%                   eulang[:,N] = dgamma_N/dt
 %
 %                The range of alpha and gamma is (-pi, pi].
 %
@@ -109,15 +123,18 @@
 %                always be set to zero; gamma and dgamma/dt are
 %                then uniquely determined.
 %
-%       unique   a boolean scalar or boolean 1XN array whether or not the
-%                values in 'eulang' are uniquely determined.  If
-%                the values are unique then 'unique' will be set to
-%                true.  If the values are not unique and some
+%       unique   flag(s) indicating whether the values in 'eulang' are
+%                uniquely determined.
+%
+%                [1,n] = size(found); logical = class(found)
+%
+%                If he values are unique then 'unique' will be set to
+%                true. If the values are not unique and some
 %                components ( eulang[1] and eulang[4] ) have value
 %                zero, then 'unique' will have the value false.
 %
 %                'eulang' and 'unique' return with the same vectorization
-%                measure (N) as 'xform'.
+%                measure, N, as 'xform'.
 %
 %-Examples
 %
@@ -171,10 +188,10 @@
 %      % from the state transformation matrix that transforms J2000
 %      % states to object fixed states.
 %      %
-%      % Using this routine with the routine sxform_c you can determine
+%      % Using this routine with the routine cspice_sxform_c you can determine
 %      % these instantaneous rates.
 %      %
-%      % Recall that the rotation component of tsipm is given by
+%      % Recall that the rotation component of 'tsipm' is given by
 %      %
 %      %  [w]  [halfpi_c-dec] [ra+halfpi_c]
 %      %     3               1             3
@@ -301,6 +318,12 @@
 %
 %-Version
 %
+%   -Mice Version 1.2.1, 19-SEP-2016, EDW (JPL)
+%
+%      Corrected usage string typo, 'xform' should show dimension as (6,6).
+%
+%      Edited I/O section to conform to NAIF standard for Mice documentation.
+%
 %   -Mice Version 1.2.0, 10-MAY-2011, EDW (JPL)
 %
 %      "logical" call replaced with "zzmice_logical."
@@ -330,7 +353,7 @@ function [eulang, unique] = cspice_xf2eul(xform,  axisa, axisb, axisc)
       otherwise
 
          error ( [ 'Usage: [_eulang(6)_, _unique_] = ' ...
-                   'cspice_xf2eul(_xform(3,3)_, axisa, axisb, axisc)'] )
+                   'cspice_xf2eul(_xform(6,6)_, axisa, axisb, axisc)'] )
 
    end
 

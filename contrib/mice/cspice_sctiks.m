@@ -33,11 +33,19 @@
 %
 %   Given:
 %
-%      sc       the scalar integer NAIF ID of the spacecraft clock
-%               whose time is being encoded
+%      sc       the NAIF ID of the spacecraft clock whose time is 
+%               to encode.
+%
+%               [1,1] = size(sc); int32 = class(sc)
 %
 %      clkstr   the scalar string or N-vector representation of the
-%               'sc' spacecraft's clock time, WITHOUT PARTITION NUMBER
+%               'sc' spacecraft's clock time, WITHOUT PARTITION NUMBER.
+%
+%               [n,c1] = size(clkstr); char = class(clkstr)
+%
+%                  or
+%
+%               [1,n] = size(clkstr); cell = class(clkstr)
 %
 %   the call:
 %
@@ -45,11 +53,13 @@
 %
 %   returns:
 %
-%      ticks   the double precision scalar or N-vector number of ticks
-%              represented by the spacecraft clock string 'clkstr'
+%      ticks   the tick values(s) represented by the spacecraft clock 
+%              string 'clkstr'.
 %
-%              'ticks' returns with the same vectorization measure (N)
-%               as 'clkstr'.
+%              [1,n] = size(ticks); double = class(ticks)
+%
+%              'ticks' returns with the same vectorization measure, N,
+%              as 'clkstr'.
 %
 %-Examples
 %
@@ -74,6 +84,10 @@
 %   SCLK.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.1, 06-JAN-2015, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.0.0, 07-JUN-2006, EDW (JPL)
 %

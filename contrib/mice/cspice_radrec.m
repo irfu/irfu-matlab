@@ -34,22 +34,25 @@
 %
 %   Given:
 %
-%      range   a double precision scalar or 1XN-vector describing
-%              distance of the point from the origin.
+%      range   the value(s) describing the distance of the position
+%              from the origin.
 %
-%      ra      a double precision scalar or 1XN-vector describing
-%              right ascension of the input point:  the angular
+%              [1,n] = size(range); double = class(range)
+%
+%      ra      the value(s) describing the right ascension of the 
+%              right ascension of the position:  the angular
 %              distance measured toward the east from the prime meridian
 %              to the meridian containing the input point. The direction
 %              of increasing right ascension is from the +X axis towards
 %              the +Y axis.
 %
-%              The range (i.e., the set of allowed values) of
-%              `ra' is unrestricted.  Units are radians.
+%              [1,n] = size(ra); double = class(ra)
 %
-%      dec     a double precision scalar or 1XN-vector describing
-%              declination of the point.  This is the angular
-%              distance from the XY plane to the point.
+%      dec     the value(s) describing the declination of the position as
+%              measured in radians. This is the angular distance from the 
+%              XY plane to the position.
+%
+%              [1,n] = size(dec); double = class(dec)
 %
 %              The range of `dec' is unrestricted.  Units are radians.
 %
@@ -59,14 +62,14 @@
 %
 %   returns:
 %
-%      rectan   a double precision 3x1 array or double precision
-%               3xN array containing the rectangular coordinates of the
-%               position or set of positions
+%      rectan   the array(s) containing the rectangular coordinates of the
+%               position(s).
 %
-%               'rectan' returns with the same units associated with
-%               'range'.
+%               [3,n] = size(rectan); double = class(rectan)
 %
-%               'rectan' returns with the same vectorization measure (N)
+%               'rectan' returns with the same units associated with 'range'.
+%
+%               'rectan' returns with the same vectorization measure, N,
 %                as 'range', 'ra', and 'dec'.
 %
 %-Examples
@@ -223,6 +226,10 @@
 %   MICE.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.2, 07-JAN-2015, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.0.0, 22-NOV-2005, EDW (JPL)
 %

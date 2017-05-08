@@ -50,11 +50,11 @@
 %
 %      ref      name of the reference frame for the segment.
 %
-%               [1,c1] = size(ref), char = class(ref)
+%               [1,c1] = size(ref); char = class(ref)
 %
 %                  or
 %
-%               [1,1] = size(ref), cell = class(ref)
+%               [1,1] = size(ref); cell = class(ref)
 %
 %      avflag   a boolean signifying if the segment will contain
 %               angular velocity.
@@ -63,31 +63,31 @@
 %
 %      segid    name to identify the segment.
 %
-%               [1,c2] = size(segid), char = class(segid)
+%               [1,c2] = size(segid); char = class(segid)
 %
 %                  or
 %
-%               [1,1] = size(segid), cell = class(segid)
+%               [1,1] = size(segid); cell = class(segid)
 %
 %      sclkdp   array containing the encoded SCLK times for the data.
 %
-%               [n,1] = size(endtim); double = class(endtim)
+%               [n,1] = size(sclkdp); double = class(sclkdp)
 %
 %      quats    array of SPICE style quaternions representing instrument
 %               pointing.
 %
-%               [4,n] = size(endtim); double = class(endtim)
+%               [4,n] = size(quats); double = class(quats)
 %
 %      avvs     array of angular velocity vectors in units of radians per
 %               second.
 %
-%               [3,n] = size(endtim); double = class(endtim)
+%               [3,n] = size(avvs); double = class(avvs)
 %
 %      starts   array containing the encoded SCLK interval start times of
 %               each interpolation interval, the times must be strictly
 %               increasing and coincide with pointing data times.
 %
-%               [m,1] = size(endtim); double = class(endtim)
+%               [m,1] = size(starts); double = class(starts)
 %
 %   the call:
 %
@@ -200,6 +200,10 @@
 %   SCLK.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.2, 29-OCT-2014, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.0.1, 11-JUL-2012, EDW (JPL)
 %
