@@ -17,6 +17,14 @@ if isempty(spinfits) || mms_is_error(spinfits)
   errStr='Bad SPINFITS input, cannot proceed.';
   irf.log('critical',errStr); error(errStr);
 end
+if isempty(spinfits.time)
+  % Empty spinfits could be caused by to short time series (Burst less than
+  % 5 seconds processed without L2a dce2d ready, ie "QL"). One example
+  % is mms2_edp_brst_l1b_dce_20161205125604_v1.4.0.cdf (size:344K, 6080
+  % reconds ie less than 1 second duration).
+  errStr='Empty spinfits, cannot proceed.';
+  irf.log('critical', errStr); error(errStr);
+end
 
 sdpProbes = fieldnames(spinfits.sfit); % default {'e12', 'e34'}
 
