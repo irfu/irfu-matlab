@@ -36,6 +36,11 @@ function particlemoments = psd_moments(varargin)
 %   in the moments calculation. pmomsarr must be a binary array (1s and 0s, 1s correspond to points used).
 %   Array (or data of TSeries) must be the same size as pdist.data. For
 %   examples see Example_MMS_partialmoments.
+%   'energy_minus' / 'energy_plus' - energy range: [energy - energy_minus,
+%   energy - energy_plus]; how to prepare data [example for electron]:
+%       c_eval('eenergy = mms.db_get_variable(''mms?_fpi_brst_l2_des-dist'', ''mms?_des_energy_brst'', Tint);',ic);    
+%       energy_minus = squeeze(eenergy.DELTA_MINUS_VAR.data(index, :));
+%       energy_plus = squeeze(eenergy.DELTA_PLUS_VAR.data(index, :));
 %
 % Output: 
 %   psd_moments - structure containing the particle moments: density, bulk
@@ -56,11 +61,21 @@ function particlemoments = psd_moments(varargin)
 % This correction is applied to v2 spacecraft potential so use 
 % c_eval('SCpot = mms.variable2ts(get_variable(tmpDataObj,''mms?_edp_scpot_fast_l2''));',ic);
 %
+% For Phase 1B electron density:
+%   tmpNe = irf.ts_scalar(epsd2mom.n_psd_e32.time,
+%   irf.nansum(epsd2mom.n_psd_e32.data(:, 2:32), 2)); close to the official
+%   data;           % 2017-05-08, irfu.
+%
 % Currently the heat flux vector does not match with the FPI ion moments. Currently
 % using Eq. (6.8) of Analysis Methods for Multi-Spacecraft Data. This needs
 % to be investigated further. 
 %
 
+% 1. basic
+    flag_eminus = 0;
+    flag_eplus = 0;
+    flag_same_e = 0;
+    
 % First input check
 if (nargin < 7)
     nargin
@@ -109,6 +124,8 @@ if isbrstdata
     if isstruct(energy1)
         energy1 = energy1.data;
     end
+    etmp = energy1 - energy0;
+    if (all(etmp) == 0); flag_same_e = 1; end
 else
     energy = varargin{4};
     SCpot = varargin{5};
@@ -186,6 +203,17 @@ while options
                     irf.log('notice','Size of partialmoms is wrong. Full moments will be calculated.');
                 end
             end
+        case 'energy_plus'
+            if numel(args)>1
+                energy_plus = args{2};
+                flag_eplus = 1;      
+            end         
+        case 'energy_minus'
+            if numel(args)>1
+                energy_minus = args{2};
+                
+                flag_eminus = 1;        
+            end
         otherwise
             irf.log('critical',['Unknown flag: ' args{1}]);
             l=1;
@@ -219,6 +247,7 @@ pdist.data = pdist.data*1e12; % convert to SI units
 
 % Define arrays for output
 n_psd = zeros(length(pdist.time), 1);
+    n_psd_e32 = zeros(length(pdist.time), 32);
 V_psd = zeros(length(pdist.time), 3);
 P_psd = zeros(length(pdist.time), 6);
 T_psd = zeros(length(pdist.time), 6);
@@ -245,6 +274,14 @@ end
 % Calculate speed widths associated with each energy channel. 
 % Lowest energy channels extended to reproduce fpi moments
 if isbrstdata % Burst mode energy/speed widths
+    if flag_same_e && flag_eminus && flag_eplus
+        energy = energy0;
+        energyupper = energy + energy_plus;
+        energylower = energy - energy_minus;
+        vupper = sqrt(2*qe*energyupper/pmass);
+        vlower = sqrt(2*qe*energylower/pmass);
+        deltav = (vupper-vlower);
+    else
     energyall = [energy0 energy1];
     energyall = log10(sort(energyall));
     temp0 = 2*energyall(1)-energyall(2);
@@ -263,6 +300,7 @@ if isbrstdata % Burst mode energy/speed widths
     deltav1 = (v1upper-v1lower)*2.0;
     deltav0(1) = deltav0(1)*2.7;
     deltav1(1) = deltav1(1)*2.7;
+    end
 else % Fast mode energy/speed widths
     energyall = log10((energy));
     temp0 = 2*energyall(1)-energyall(2);
@@ -279,12 +317,15 @@ end
     
 for nt = 1:length(pdist.time)
     if isbrstdata
-        energy = energy0;
-        deltav = deltav0;
-        if stepTable.data(nt) 
-            energy = energy1;
-            deltav = deltav1;
-        end 
+        if flag_same_e && flag_eminus && flag_eplus
+        else
+            energy = energy0;
+            deltav = deltav0;
+            if stepTable.data(nt) 
+                energy = energy1;
+                deltav = deltav1;
+            end            
+        end
     end
         
     v = real(sqrt(2*qe*(energy-SCpot.data(nt))/pmass));    
@@ -307,9 +348,12 @@ for nt = 1:length(pdist.time)
     Mpsdmfxz = cosd(phij) * (sind(thetak).^2.*cosd(thetak));
     Mpsdmfyz = sind(phij) * (sind(thetak).^2.*cosd(thetak));
    
-    for ii = intenergies 
+    for ii = intenergies
         tmp = squeeze(pdist.data(nt, ii, :, :));
-        n_psd(nt) = n_psd(nt) + irf.nansum(irf.nansum(tmp .* Mpsd2n, 1), 2) * v(ii)^2 * deltav(ii) * deltaang;
+        n_psd_tmp = irf.nansum(irf.nansum(tmp .* Mpsd2n, 1), 2) * v(ii)^2 * deltav(ii) * deltaang;
+        n_psd_e32(nt, ii) = n_psd_tmp;
+        n_psd(nt) = n_psd(nt) + n_psd_tmp;
+        %n_psd(nt) = n_psd(nt) + irf.nansum(irf.nansum(tmp .* Mpsd2n, 1), 2) * v(ii)^2 * deltav(ii) * deltaang;
         Vxtemp = irf.nansum(irf.nansum(tmp .* Mpsd2Vx, 1), 2) * v(ii)^3 * deltav(ii) * deltaang;
         Vytemp = irf.nansum(irf.nansum(tmp .* Mpsd2Vy, 1), 2) * v(ii)^3 * deltav(ii) * deltaang;
         Vztemp = irf.nansum(irf.nansum(tmp .* Mpsd2Vz, 1), 2) * v(ii)^3 * deltav(ii) * deltaang;
@@ -348,6 +392,7 @@ H_psd(:,3) = H_psd(:,3)-(V_psd(:,1).*P_psd(:,3)+V_psd(:,2).*P_psd(:,5)+V_psd(:,3
 
 % Convert to typical units (/cc, km/s, nP, eV, and ergs/s/cm^2).
 n_psd = n_psd/1e6;
+    n_psd_e32 = n_psd_e32 / 1e6;
 V_psd = V_psd/1e3;
 P_psd = P_psd*1e9;
 T_psd = T_psd*kb/qe;
@@ -355,12 +400,14 @@ H_psd = H_psd*1e3;
 
 % Construct TSeries'
 n_psd = irf.ts_scalar(pdist.time,n_psd);
+    n_psd_e32 = irf.ts_scalar(pdist.time, n_psd_e32);
 V_psd = irf.ts_vec_xyz(pdist.time,V_psd);
 P_psd = TSeries(pdist.time,P_psd);
 T_psd = TSeries(pdist.time,T_psd);
 H_psd = irf.ts_vec_xyz(pdist.time,H_psd);
 
 % make structure for output
-particlemoments =struct('n_psd',n_psd,'V_psd',V_psd,'P_psd',P_psd,'T_psd',T_psd,'H_psd',H_psd);
+particlemoments =struct('n_psd',n_psd,'V_psd',V_psd,'P_psd',P_psd, ...
+    'T_psd',T_psd,'H_psd',H_psd, 'n_psd_e32', n_psd_e32);
 
 end
