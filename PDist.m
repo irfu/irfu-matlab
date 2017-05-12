@@ -299,6 +299,7 @@ classdef PDist < TSeries
       %     'plot' - plots grid, color coded to polar angle 
       
       doReturnTSeries = 0;
+      doSqueeze = 0;
       doRotation = 0;
       have_options = 0;
       
@@ -325,6 +326,9 @@ classdef PDist < TSeries
         switch(lower(args{1}))   
           case 'ts'
             doReturnTSeries = 1;  
+            args = args(l+1:end);  
+          case 'squeeze'
+            doSqueeze = 1;  
             args = args(l+1:end);  
         end        
         if isempty(args), break, end    
@@ -353,22 +357,27 @@ classdef PDist < TSeries
 
                 
         if doRotation % Transform into different coordinate system
-          VxX = reshape(VX,size(VX,1)*size(VX,2),1);
-          VyY = reshape(VY,size(VY,1)*size(VY,2),1);
-          VzZ = reshape(VZ,size(VZ,1)*size(VZ,2),1);
+          VxX = reshape(VX,numel(VX),1);
+          VyY = reshape(VY,numel(VX),1);
+          VzZ = reshape(VZ,numel(VX),1);
 
           newTmpX = [VxX VyY VzZ]*newx';
           newTmpY = [VxX VyY VzZ]*newy';
           newTmpZ = [VxX VyY VzZ]*newz';
 
-          VX = reshape(newTmpX,size(X,1),size(X,2));
-          VY = reshape(newTmpY,size(X,1),size(X,2));
-          VZ = reshape(newTmpZ,size(X,1),size(X,2));     
+          VX = reshape(newTmpX,size(VX));
+          VY = reshape(newTmpY,size(VY));
+          VZ = reshape(newTmpZ,size(VZ));     
         end
         
         vx(ii,:,:,:) = VX;
         vy(ii,:,:,:) = VY;
         vz(ii,:,:,:) = VZ;
+      end
+      if doSqueeze
+        vx = squeeze(vx);
+        vy = squeeze(vy);
+        vz = squeeze(vz);
       end
       if doReturnTSeries
         vx = irf.ts_scalar(obj.time,vx);
