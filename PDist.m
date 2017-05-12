@@ -143,8 +143,7 @@ classdef PDist < TSeries
     end
     function value = get.ancillary(obj)
       value = obj.ancillary_;
-    end
-    
+    end    
     function obj = tlim(obj,tint)
       %TLIM  Returns data within specified time interval
       %
@@ -187,8 +186,196 @@ classdef PDist < TSeries
           eval(['obj.ancillary.' nameFields{iField} ' = obj.ancillary.' nameFields{iField} '(idx,:);'])
         end
       end
+    end    
+    function [x,y,z] = xyz(obj,varargin)
+      % PDIST.XYZ Get xyz coordinates of each detector bin. DSL
+      % coordinates. PLEASE REPORT ERRORS.
+      %
+      %   [x,y,z] = PDIST.xyz(options);
+      %    x, y, z - ntx32x16 matrices
+      %    options:
+      %     'ts' - return x, y, z as TSeries
+      %     xyz - transform x,y,z to new xyz = 3x3:          [x,y,z] = PDIST.xyz(xyz);
+      %     x,y,z - transform x,y,z to new x,y,z = 1x3 each: [x,y,z] = PDIST.xyz(x,y,z);
+      %     'plot' - plots grid, color coded to polar angle 
+      
+      doReturnTSeries = 0;
+      doRotation = 0;
+      have_options = 0;
+      
+      nargs = numel(varargin);      
+      if nargs > 0, have_options = 1; args = varargin(:); end
+      
+      while have_options
+        l = 1;
+        if isnumeric(args{l});
+          if size(args{l}) == [3 3];
+            newx = args{l}(1,:);
+            newy = args{l}(2,:);
+            newz = args{l}(3,:);
+            args = args(l+1:end);  
+            doRotation = 1;
+          elseif numel(args{l}) == 3 && numel(args{l+1}) && numel(args{l+2})
+            newx = args{l};
+            newy = args{l+1};
+            newz = args{l+2};
+            args = args(l+3:end);  
+            doRotation = 1;
+          end
+        end
+        switch(lower(args{1}))   
+          case 'ts'
+            doReturnTSeries = 1;  
+            args = args(l+1:end);  
+        end        
+        if isempty(args), break, end    
+      end
+
+      phi = TSeries(obj.time,obj.depend{1,2});
+      azimuthal = phi.data*pi/180;      
+      
+      theta = obj.depend{1,3};
+      polar = repmat(theta*pi/180,obj.length,1);      
+      
+      stepTable = TSeries(obj.time,obj.ancillary.esteptable);
+      if and(isfield(obj.ancillary, 'energy0'), isfield(obj.ancillary, 'energy1'))
+          energy0 = obj.ancillary.energy0;
+          energy1 = obj.ancillary.energy1;            
+      else    
+          if isfield(dist.ancillary, 'energy')
+              energy0 = obj.ancillary.energy(1, :);
+              energy1 = obj.ancillary.energy(2, :);
+          else
+              irf.log('warning', 'no data for energy0 & energy1.');
+          end
+      end
+      
+      x = nan(obj.length,size(azimuthal,2),size(polar,2));
+      y = nan(obj.length,size(azimuthal,2),size(polar,2));
+      z = nan(obj.length,size(azimuthal,2),size(polar,2));
+      
+      
+      for ii = 1:length(obj.time)
+        [POL,AZ] = meshgrid(polar(ii,:),azimuthal(ii,:));
+        X = -sin(POL).*cos(AZ); % '-' because the data shows which direction the particles were coming from
+        Y = -sin(POL).*sin(AZ);
+        Z = -cos(POL);
+
+                
+        if doRotation % Transform into different coordinate system
+          xX = reshape(X,size(X,1)*size(X,2),1);
+          yY = reshape(Y,size(Y,1)*size(Y,2),1);
+          zZ = reshape(Z,size(Z,1)*size(Z,2),1);
+
+          newTmpX = [xX yY zZ]*newx';
+          newTmpY = [xX yY zZ]*newy';
+          newTmpZ = [xX yY zZ]*newz';
+
+          X = reshape(newTmpX,size(X,1),size(X,2));
+          Y = reshape(newTmpY,size(X,1),size(X,2));
+          Z = reshape(newTmpZ,size(X,1),size(X,2));        
+        end
+        
+        x(ii,:,:) = X;
+        y(ii,:,:) = Y;
+        z(ii,:,:) = Z;
+      end
+      if doReturnTSeries
+        x = irf.ts_scalar(obj.time,x);
+        y = irf.ts_scalar(obj.time,y);
+        z = irf.ts_scalar(obj.time,z);
+      end
+    end    
+    function [vx,vy,vz] = v(obj,varargin)
+      % PDIST.V Get velocity corresponding to each detector bin. DSL
+      % coordinates. PLEASE REPORT ERRORS.
+      %
+      %   [vx,vy,vz] = PDIST.v(options);
+      %    vx, vy, vz - ntx32x32x16 matrices - km/s
+      %    options:
+      %     'ts' - return x, y, z as TSeries
+      %     xyz - transform x,y,z to new xyz = 3x3:          [x,y,z] = PDIST.xyz(xyz);
+      %     x,y,z - transform x,y,z to new x,y,z = 1x3 each: [x,y,z] = PDIST.xyz(x,y,z);
+      %     'plot' - plots grid, color coded to polar angle 
+      
+      doReturnTSeries = 0;
+      doRotation = 0;
+      have_options = 0;
+      
+      nargs = numel(varargin);      
+      if nargs > 0, have_options = 1; args = varargin(:); end
+      
+      while have_options
+        l = 1;
+        if isnumeric(args{l});
+          if size(args{l}) == [3 3];
+            newx = args{l}(1,:);
+            newy = args{l}(2,:);
+            newz = args{l}(3,:);
+            args = args(l+1:end);  
+            doRotation = 1;
+          elseif numel(args{l}) == 3 && numel(args{l+1}) && numel(args{l+2})
+            newx = args{l};
+            newy = args{l+1};
+            newz = args{l+2};
+            args = args(l+3:end);  
+            doRotation = 1;
+          end
+        end
+        switch(lower(args{1}))   
+          case 'ts'
+            doReturnTSeries = 1;  
+            args = args(l+1:end);  
+        end        
+        if isempty(args), break, end    
+      end
+
+      phi = TSeries(obj.time,obj.depend{1,2});
+      azimuthal = phi.data*pi/180;      
+      
+      theta = obj.depend{1,3};
+      polar = repmat(theta*pi/180,obj.length,1);      
+      
+      energy = obj.depend{1};
+      units = irf_units;
+      velocity = sqrt(energy*units.eV*2/units.me)/1000; % km/s
+      
+      vx = NaN*obj.data;
+      vy = NaN*obj.data;
+      vz = NaN*obj.data;
+      
+      
+      for ii = 1:length(obj.time)
+        [VEL,AZ,POL] = meshgrid(velocity(ii,:),azimuthal(ii,:),polar(ii,:));
+        VX = -VEL.*sin(POL).*cos(AZ); % '-' because the data shows which direction the particles were coming from
+        VY = -VEL.*sin(POL).*sin(AZ);
+        VZ = -VEL.*cos(POL);
+
+                
+        if doRotation % Transform into different coordinate system
+          VxX = reshape(VX,size(VX,1)*size(VX,2),1);
+          VyY = reshape(VY,size(VY,1)*size(VY,2),1);
+          VzZ = reshape(VZ,size(VZ,1)*size(VZ,2),1);
+
+          newTmpX = [VxX VyY VzZ]*newx';
+          newTmpY = [VxX VyY VzZ]*newy';
+          newTmpZ = [VxX VyY VzZ]*newz';
+
+          VX = reshape(newTmpX,size(X,1),size(X,2));
+          VY = reshape(newTmpY,size(X,1),size(X,2));
+          VZ = reshape(newTmpZ,size(X,1),size(X,2));     
+        end
+        
+        vx(ii,:,:,:) = VX;
+        vy(ii,:,:,:) = VY;
+        vz(ii,:,:,:) = VZ;
+      end
+      if doReturnTSeries
+        vx = irf.ts_scalar(obj.time,vx);
+        vy = irf.ts_scalar(obj.time,vy);
+        vz = irf.ts_scalar(obj.time,vz);
+      end
     end
-    
     function PD = palim(obj,palim,varargin)
       % PDIST.PALIM Picks out given pitchangles
       %   distribution type must be 'pitchangle'
