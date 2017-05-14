@@ -200,6 +200,7 @@ classdef PDist < TSeries
       %     'plot' - plots grid, color coded to polar angle 
       
       doReturnTSeries = 0;
+      doSqueeze = 0;
       doRotation = 0;
       have_options = 0;
       
@@ -221,12 +222,19 @@ classdef PDist < TSeries
             newz = args{l+2};
             args = args(l+3:end);  
             doRotation = 1;
-          end
+          end          
         end
+        if isempty(args), break, end
         switch(lower(args{1}))   
           case 'ts'
             doReturnTSeries = 1;  
+            args = args(l+1:end);
+          case 'squeeze'
+            doSqueeze = 1;  
             args = args(l+1:end);  
+          otherwise
+            irf.log('warning',sprintf('Input ''%s'' not recognized.',args{1}))
+            args = args(l+1:end);
         end        
         if isempty(args), break, end    
       end
@@ -279,6 +287,11 @@ classdef PDist < TSeries
         x(ii,:,:) = X;
         y(ii,:,:) = Y;
         z(ii,:,:) = Z;
+      end      
+      if doSqueeze
+        x = squeeze(x);
+        y = squeeze(y);
+        z = squeeze(z);
       end
       if doReturnTSeries
         x = irf.ts_scalar(obj.time,x);
@@ -323,13 +336,17 @@ classdef PDist < TSeries
             doRotation = 1;
           end
         end
+        if isempty(args), break, end
         switch(lower(args{1}))   
           case 'ts'
             doReturnTSeries = 1;  
             args = args(l+1:end);  
           case 'squeeze'
             doSqueeze = 1;  
-            args = args(l+1:end);  
+            args = args(l+1:end);
+          otherwise
+            irf.log('warning',sprintf('Input ''%s'' not recognized.',args{1}))
+            args = args(l+1:end);
         end        
         if isempty(args), break, end    
       end
@@ -354,7 +371,6 @@ classdef PDist < TSeries
         VX = -VEL.*sin(POL).*cos(AZ); % '-' because the data shows which direction the particles were coming from
         VY = -VEL.*sin(POL).*sin(AZ);
         VZ = -VEL.*cos(POL);
-
                 
         if doRotation % Transform into different coordinate system
           VxX = reshape(VX,numel(VX),1);
@@ -373,6 +389,15 @@ classdef PDist < TSeries
         vx(ii,:,:,:) = VX;
         vy(ii,:,:,:) = VY;
         vz(ii,:,:,:) = VZ;
+      end
+      if 0 % Diagnostics
+        step = 2;
+        subplot(1,3,1)
+        scatter3(VX(1:step:end),VY(1:step:end),VZ(1:step:end),VZ(1:step:end)*0+10,VEL(1:step:end)); axis equal
+        subplot(1,3,2)
+        scatter3(VX(1:step:end),VY(1:step:end),VZ(1:step:end),VZ(1:step:end)*0+10,AZ(1:step:end)); axis equal
+        subplot(1,3,3)
+        scatter3(VX(1:step:end),VY(1:step:end),VZ(1:step:end),VZ(1:step:end)*0+10,POL(1:step:end)); axis equal
       end
       if doSqueeze
         vx = squeeze(vx);
