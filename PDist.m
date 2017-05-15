@@ -108,6 +108,9 @@ classdef PDist < TSeries
             error('Depend has wrong dimensions.')
           end
         end
+        if isfield(obj.ancillary,'esteptable') && size(obj.ancillary.esteptable,1) == sizeData(1);
+          obj.ancillary.esteptable = obj.ancillary.esteptable(ii,:);
+        end
         if numel(idx) > 1
           obj = builtin('subsref',obj,idx(2:end));
         end
@@ -198,6 +201,8 @@ classdef PDist < TSeries
       %     xyz - transform x,y,z to new xyz = 3x3:          [x,y,z] = PDIST.xyz(xyz);
       %     x,y,z - transform x,y,z to new x,y,z = 1x3 each: [x,y,z] = PDIST.xyz(x,y,z);
       %     'plot' - plots grid, color coded to polar angle 
+      %     'squeeze' - squeezes output data [1 32 16] -> [32 16] if PDist      
+      %                 only has one time index for example
       
       doReturnTSeries = 0;
       doSqueeze = 0;
@@ -243,20 +248,7 @@ classdef PDist < TSeries
       azimuthal = phi.data*pi/180;      
       
       theta = obj.depend{1,3};
-      polar = repmat(theta*pi/180,obj.length,1);      
-      
-      stepTable = TSeries(obj.time,obj.ancillary.esteptable);
-      if and(isfield(obj.ancillary, 'energy0'), isfield(obj.ancillary, 'energy1'))
-          energy0 = obj.ancillary.energy0;
-          energy1 = obj.ancillary.energy1;            
-      else    
-          if isfield(dist.ancillary, 'energy')
-              energy0 = obj.ancillary.energy(1, :);
-              energy1 = obj.ancillary.energy(2, :);
-          else
-              irf.log('warning', 'no data for energy0 & energy1.');
-          end
-      end
+      polar = repmat(theta*pi/180,obj.length,1);            
       
       x = nan(obj.length,size(azimuthal,2),size(polar,2));
       y = nan(obj.length,size(azimuthal,2),size(polar,2));
@@ -287,7 +279,11 @@ classdef PDist < TSeries
         x(ii,:,:) = X;
         y(ii,:,:) = Y;
         z(ii,:,:) = Z;
-      end      
+      end 
+      %x = permute(x,[1 3 2]);
+      %y = permute(y,[1 3 2]);
+      %z = permute(z,[1 3 2]);
+      
       if doSqueeze
         x = squeeze(x);
         y = squeeze(y);
@@ -310,6 +306,18 @@ classdef PDist < TSeries
       %     xyz - transform x,y,z to new xyz = 3x3:          [x,y,z] = PDIST.xyz(xyz);
       %     x,y,z - transform x,y,z to new x,y,z = 1x3 each: [x,y,z] = PDIST.xyz(x,y,z);
       %     'plot' - plots grid, color coded to polar angle 
+      %     'squeeze' - squeezes output data [1 32 32 16] -> [32 32 16] 
+      %                 if PDist only has one time index for example
+      %
+      %   Example:
+      %     f = ePDist(100).convertto('s^3/km^6'); % single time PDist
+      %     f.data(f.data < 2e3) = NaN; % remove low values
+      %     [vx,vy,vz] = f.v('squeeze');
+      %     dotsize = 50;
+      %     scatter3(vx(:)*1e-3,vy(:)*1e-3,vz(:)*1e-3,f.data(:)*0+dotsize,log10(f.data(:)),'filled'); 
+      %     axis equal; colorbar;
+      %     vlim = [-5 5]; clim = [3 5];
+      %     set(gca,'clim',clim,'xlim',vlim,'ylim',vlim,'zlim',vlim)
       
       doReturnTSeries = 0;
       doSqueeze = 0;
@@ -368,6 +376,8 @@ classdef PDist < TSeries
       
       for ii = 1:length(obj.time)
         [VEL,AZ,POL] = meshgrid(velocity(ii,:),azimuthal(ii,:),polar(ii,:));
+        %[AZ,VEL,POL] = meshgrid(azimuthal(ii,:),velocity(ii,:),polar(ii,:));
+        
         VX = -VEL.*sin(POL).*cos(AZ); % '-' because the data shows which direction the particles were coming from
         VY = -VEL.*sin(POL).*sin(AZ);
         VZ = -VEL.*cos(POL);
@@ -390,6 +400,15 @@ classdef PDist < TSeries
         vy(ii,:,:,:) = VY;
         vz(ii,:,:,:) = VZ;
       end
+      % meshgrid permutes the 1st and 2nd indices, 
+      % see for example [I1,I2] = meshgrid(1:3,1:2); size(I1), size(I2)
+      % the following permutes them back
+      % (one can also leave this out and do the following above:
+      % [AZ,VEL,POL] = meshgrid(azimuthal(ii,:),velocity(ii,:),polar(ii,:));
+      vx = permute(vx,[1 3 2 4]);
+      vy = permute(vy,[1 3 2 4]);
+      vz = permute(vz,[1 3 2 4]);
+      
       if 0 % Diagnostics
         step = 2;
         subplot(1,3,1)
