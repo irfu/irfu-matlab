@@ -67,7 +67,7 @@ distunits = 's^3cm^{-6}'; % These used are assumed if data is not PDist format
 if isempty(dist); irf.log('warning','Empty input.'); return; end
 
 % Check inputs for angles and energies
-if isa(args{2},'TSeries')
+if nargs>1 && isa(args{2},'TSeries')
     irf.log('notice','Angles and energies passed.')
     phi = args{2};
     theta = args{3};
@@ -137,6 +137,7 @@ includescpot = 0;
 
 x = [1 0 0]; y = [0 1 0]; z = [0 0 1]; % default vectors
 
+have_options = 0;
 if nargs > 1, have_options = 1; end
 while have_options
   l = 1;
