@@ -105,7 +105,7 @@ X = -r*sin(THETA).*cos(PHI); % '-' because the data shows which direction the pa
 Y = -r*sin(THETA).*sin(PHI);
 Z = -r*cos(THETA);
 % dist.data has dimensions nT x nE x nAz x nPol
-C = squeeze(nanmean(nanmean(dist.data(tId,eId,:,:),2),1))';
+C = squeeze(mean(mean(dist.data(tId,eId,:,:),2,'omitnan'),1,'omitnan'))';
 
 % Plot skymap
 if isempty(ax), fig = figure; ax = axes; end

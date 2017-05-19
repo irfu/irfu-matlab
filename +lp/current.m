@@ -23,13 +23,13 @@ function J=current(Probe,vectorU,rSunAU,factorUV,Plasma)
 %  Plasma     - describes plasma components (structure or LP.PLASMA object)
 %    Plasma.qe - charge of species in e (the length of this vector corresponds to number of species)
 %    Plasma.m  - mass of species in kg
-%    Plasma.n  - density of species [cc]
+%    Plasma.n  - density of species [m^-3]
 %    Plasma.T  - temperature [eV]
 %    Plasma.v  - velocity of probe wrt. media, zero if not given. [m/s]
 %
 % See also: LP.PHOTOCURRENT, LP.THERMAL_CURRENT
 
-if isempty(Plasma), % calculate only photocurrent
+if isempty(Plasma) % calculate only photocurrent
     nPlasmaSpecies=0;
 else
     nPlasmaSpecies=numel(Plasma.qe);
@@ -43,10 +43,15 @@ else
 	areaSunlit = Probe.areaSunlit;
 end
 
-J.photo = -lp.photocurrent(areaSunlit, vectorU, rSunAU,Probe.surfacePhotoemission);
-J.photo = J.photo .* factorUV;
+if factorUV == 0
+	J.photo = zeros(size(vectorU));
+else
+	J.photo = -lp.photocurrent(areaSunlit, vectorU, rSunAU,Probe.surfacePhotoemission);
+	J.photo = J.photo .* factorUV;
+end
+
 J.total=J.photo; % initialize
-for ii=1:nPlasmaSpecies,
+for ii=1:nPlasmaSpecies
 	% density n
 	q=Plasma.qe(ii);
 	if numel(Plasma.n)<nPlasmaSpecies && ii > numel(Plasma.n)
@@ -142,10 +147,10 @@ end
 
 Ip = A*fluxIp;
 
-if q > 0,
+if q > 0
 	jThermalSphere(indPositiveU) = Ip .* exp(-X(indPositiveU));
 	jThermalSphere(indNegativeU) = Ip .* (1-X(indNegativeU));
-elseif q < 0,
+elseif q < 0
 	jThermalSphere(indPositiveU) = Ip .* (1+X(indPositiveU));
 	jThermalSphere(indNegativeU) = Ip .* exp(X(indNegativeU));
 end
@@ -165,11 +170,11 @@ if isprop(Lprobe,'Area')
 	sq(indPositiveU) = sqrt( abs(+X(indPositiveU)) );
 	erfv = erf( sq );
 	
-	if q > 0,
+	if q > 0
 		jThermalWire(indPositiveU) = Ip .* exp(-X(indPositiveU));
 		jThermalWire(indNegativeU) = Ip .* ( (2/sqrt(pi)) .* sq(indNegativeU) ...
 			+ exp(-X(indNegativeU)) .* (1.0 - erfv(indNegativeU)) );
-	elseif q < 0,
+	elseif q < 0
 		jThermalWire(indNegativeU) = Ip .* exp(X(indNegativeU));
 		jThermalWire(indPositiveU) = Ip .* ( (2.0/sqrt(pi)) .* sq(indPositiveU) ...
 			+ exp(+X(indPositiveU)) .* (1.0 - erfv(indPositiveU)) );
