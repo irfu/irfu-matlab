@@ -16,19 +16,12 @@
  * Compile with:
  *   mex -v irf_average_mx.c CFLAGS='$CFLAGS -O2 -mtune=opteron -funroll-loops'
  *
- * $Id$
  */
 
 #include <limits.h>
 #include "mex.h"
 #include <math.h>
 
-/*
- * This typedef is needed for MATLAB < 7.3
- */
-#ifndef MWSIZE_MAX
-typedef int mwSize;
-#endif
 
 void mexFunction(
 		 int nlhs,       mxArray *plhs[],
@@ -38,7 +31,7 @@ void mexFunction(
     mwSize ndata, ncomp, ntref, i, comp, start = 0, stop = 0;
     double *data, *tref, *res, dt2, thresh;
 	double NaN = mxGetNaN();
-	mwSize *starts;
+	mwSignedIndex *starts;
     
     
     /* Check for proper number of input and output arguments */    
