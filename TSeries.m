@@ -721,7 +721,7 @@
         %elseif obj.tensorBasis_ ~= obj1.tensorBasis_
         %  error('Inputs must have the same tensor basis, use transform()');
         elseif ~strcmpi(obj.units,obj1.units)
-          error('Inputs must have the same units')
+          warning('Inputs do not have the same units')
         end
         Ts = obj;
         if isempty(obj) || isempty(obj1)
