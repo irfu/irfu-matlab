@@ -43,11 +43,11 @@ for iProbe=1:numel(sdpProbes)
   if(FLAG_ADC_OFF_DESPIKE)
     max_off = 3*std(max_off(:,2));
     % if adc_despike, locate large adc_off
-    idx = find( abs(adc_off(:,2))-adc_off_mean > max_off);
+    idx = find( abs( adc_off(:,2) - adc_off_mean ) > max_off );
     if(~isempty(idx))
-      adc_off(idx,2) = 0;
-      adc_off_mean = mean(abs(adc_off(:,2))>0);
-      adc_off(idx,2) = adc_off_mean;
+      adc_off(idx, 2) = 0;
+      adc_off_mean = mean( adc_off( abs( adc_off(:, 2) )>0, 2) );
+      adc_off(idx, 2) = adc_off_mean;
     end
   end
 
