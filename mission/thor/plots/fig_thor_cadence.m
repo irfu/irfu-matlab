@@ -2,7 +2,9 @@
 % Generate two vectors of random numbers and plot a histogram for each
 %% THOR probability histogram frequencies - SW,MSH 1) get data
 %Using Jan's database
- cd('/Users/Cecilia/Google Drive/THOR/Figures/matlab/')
+dirTHORGoogleDrive = '/Users/andris/Google Drive/THOR';
+
+cd([dirTHORGoogleDrive '/Figures/matlab/'])
 
 units = irf_units;
 % get MSH data
@@ -33,7 +35,7 @@ f_roe_msh = v_msh./roe_msh; % doppler shifter electron cyclotron radius
 % get solar wind data
 tint=[irf_time([2006 01 01 1 1 0]) irf_time([2006 12 31 23 59 0])];
 load ff.mat
-load('/Users/Cecilia/MATLAB/irfu-matlab/mission/thor/orbit_coverage/omni_data/omni_BsnxBxByBzMsVNT_2006.mat')
+load([dirTHORGoogleDrive '/Figures/omni_BsnxBxByBzMsVNT_2006.mat'])
 
 %ff = irf_get_data_omni(tint,'n,v,b');
 n_sw = ff(:,2);
@@ -192,14 +194,14 @@ linewidth = 2;
 Ts = 0.050;
 %plot(h(1),log10(1./Ts).*[1 1],[ymin ymax],'linewidth',1,'color','r');
 plot(h(2),log10(1./Ts).*[1 1],[ymin ymax],'linewidth',linewidth,'color','r');
-text(log10(1./Ts),ymax-0.001,'Ts=150ms','rotation',90,...
+text(log10(1./Ts),ymax-0.001,'Ts=50ms','rotation',90,...
 	'verticalalignment','bottom','horizontalalignment','right',...
 	'fontsize',12,'Parent', h(2));
 
 Ts = 0.150;
 plot(h(1),log10(1./Ts).*[1 1],[ymin ymax],'linewidth',linewidth,'color','r');
 %plot(h(2),log10(1./Ts).*[1 1],[ymin ymax],'linewidth',1,'color','r');
-text(log10(1./Ts),ymax-0.001,'Ts=50ms','rotation',90,...
+text(log10(1./Ts),ymax-0.001,'Ts=150ms','rotation',90,...
 	'verticalalignment','bottom','horizontalalignment','right',...
 	'fontsize',12,'Parent', h(1));
 
