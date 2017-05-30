@@ -391,6 +391,7 @@ parfor ind_a=1:length(a), % Main loop over frequencies
                 We = irf_convert_fac([timeB0 We(:,1:2) wEz],facMatrix);
               end
               We(:,1) = [];
+          else We = [We(:,1:2) wEz];
           end
       end
       powerE = 2*pi*(We.*conj(We))./newfreqmat;
