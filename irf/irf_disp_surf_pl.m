@@ -66,6 +66,10 @@ function irf_disp_surfplot(kc_x_max,kc_z_max,wfinal,extraparam,surfchoice,colorc
     colorstring='<---- Most energy in particles     log10(Wp/Wf)      Most energy in fields ---->';
     colorlimits=[-3,3];
 		colorMap = 'bluered';
+  elseif colorchoice==11
+    colorstring='<---- Left handed              Right handed ---->';
+    colorlimits=[-1,1];
+		colorMap = 'bluered';
   else
     colorchoice=1;
     colorlimits=[0,1];

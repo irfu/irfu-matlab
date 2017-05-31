@@ -121,6 +121,8 @@ function [wfinal,extraparam]=irf_disp_surf_calc(kc_x_max,kc_z_max,m_i,wp_e)
   By=(KZ.*Ex-KX.*Ez)./wfinal;
   Bz=KX.*Ey./wfinal;
   Btot=sqrt(Bx.*conj(Bx)+By.*conj(By)+Bz.*conj(Bz));
+  Bperp=sqrt(Bx.*conj(Bx)+By.*conj(By));
+  Bpolar=-2*imag(Bx.*conj(By))./(Bperp.*Bperp);
   
   temp=length(kc_x);
   dk_x=kc_x(2);dk_z=kc_z(2);
@@ -163,4 +165,5 @@ function [wfinal,extraparam]=irf_disp_surf_calc(kc_x_max,kc_z_max,m_i,wp_e)
   extraparam(8,:,:,:)=log10(Etot.^2./Btot.^2); % Degree of electromagnetism
   extraparam(9,:,:,:)=log10(Ee./Ei); % Ratio of electron to ion energy
   extraparam(10,:,:,:)=log10(ratiopf); % Ratio of field to particle energy densities
+  extraparam(11,:,:,:)=Bpolar; % Ellipticity based on B
   warning on
