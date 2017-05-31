@@ -48,15 +48,6 @@ function [data, n_corrected, wakedesc] = mms_sdp_swwake(e, pair, phase_2, timeIn
 narginchk(5,5)
 global MMS_CONST;
 if(isempty(MMS_CONST)), MMS_CONST = mms_constants; end
-switch pair
-  case {'e12', 'e34'}
-    % Fix wake position
-    expPhase = round((-18:17) + 180/pi*MMS_CONST.Phaseshift.(pair))+1; % Symmetric test
-  otherwise
-    errStr = 'Pair must be one of: "e12" or "e34"';
-    irf.log('critical', errStr);
-    error(errStr);
-end
 
 n_corrected = 0;
 data = e;
@@ -74,6 +65,32 @@ WAKE_MAX_AMPLITUDE = 7; % mV/m, (Cluster was 7 mV/m)
 plot_step = 1;
 plot_i = 0;
 plotflag = false;
+
+switch pair
+  case {'e12', 'e34'}
+    % Fix wake position
+    expPhase = round((-18:17) + 180/pi*MMS_CONST.Phaseshift.(pair))+1; % Symmetric test
+    % As we process each spin separatly (as identified by shift at 360->0)
+    % check to see if any expected wake is split between two spins.
+    % If so then artificially shift the "phase_2" and "expPhase" by the
+    % overlapping amount to ensure it does not occur. This should hopefully
+    % avoid having problem with wake removed on a probe pair at spin "N" 
+    % while not removed from spin "N+1" in what is essentially the same
+    % wake on the same probe pair.
+    if ( min(expPhase) - WAKE_MAX_HALFWIDTH < 0 )
+      DELTA = -(min(expPhase)-WAKE_MAX_HALFWIDTH);
+      phase_2 = mod(phase_2 + DELTA, 360);
+      expPhase = expPhase + DELTA;
+    elseif ( max(expPhase) + 180 + WAKE_MAX_HALFWIDTH > 360 )
+      DELTA = -(max(expPhase)+WAKE_MAX_HALFWIDTH-180);
+      phase_2 = mod(phase_2 + DELTA, 360);
+      expPhase = expPhase + DELTA;
+    end
+  otherwise
+    errStr = 'Pair must be one of: "e12" or "e34"';
+    irf.log('critical', errStr);
+    error(errStr);
+end
 
 % Convert time from ttns (int64) to double keeping for interp1 to work,
 % while keeping original input variable "timeIn" (used debug/log messages).
@@ -485,7 +502,11 @@ end
 
 function res = isGoodShape(s)
   % check for shape of the wake fit
-  RATIO = 0.3; % (Cluster was 0.3)
+  RATIO = 0.4; % (Cluster was 0.3)
+% ThoNi: one testrun with 20170508 mms1 fast got a spike in frequency in
+% the interval 0.3->0.4 compared with intervals 0.4->0.5, 0.5->0.6 etc.
+% Therefor try increasing the permitted Ratio to 0.4 compared with 0.3
+% which was used for Cluster.
   res = true;
   if max(s)~=max(abs(s))
     s = -s;
