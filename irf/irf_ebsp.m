@@ -66,27 +66,27 @@ function res = irf_ebsp(e,dB,fullB,B0,xyz,freq_int,varargin)
 % under grant agreement n. 284520.
 
 % Begin temporary fix to convert TS format to older format (Must include spacecraft position)
-if isa(e,'TSeries'), 
+if isa(e,'TSeries') 
     ttemp = e.time.epochUnix;
     datatemp = double(e.data);
     e = [ttemp, double(datatemp)];
 end
-if isa(dB,'TSeries'), 
+if isa(dB,'TSeries') 
     ttemp = dB.time.epochUnix;
     datatemp = double(dB.data);
     dB = [ttemp, datatemp];
 end
-if isa(fullB,'TSeries'), 
+if isa(fullB,'TSeries') 
     ttemp = fullB.time.epochUnix;
     datatemp = double(fullB.data);
     fullB = [ttemp, datatemp];
 end
-if isa(B0,'TSeries'), 
+if isa(B0,'TSeries') 
     ttemp = B0.time.epochUnix;
     datatemp = double(B0.data);
     B0 = [ttemp, datatemp];
 end
-if isa(xyz,'TSeries'), 
+if isa(xyz,'TSeries') 
     ttemp = xyz.time.epochUnix;
     datatemp = double(xyz.data);
     xyz = [ttemp, datatemp];
@@ -100,9 +100,7 @@ facMatrix = []; % matrix for totation to FAC
 mwidthcoef = 1;
 
 wantPolarization = 0;
-if isempty(e), wantEE = 0;
-else wantEE = 1;
-end
+if isempty(e), wantEE = 0; else, wantEE = 1; end
 
 res = struct('t',[],'f',[],'flagFac',0,...
   'bb_xxyyzzss',[],'ee_xxyyzzss',[],'ee_ss',[],...
@@ -119,12 +117,11 @@ while 1
     case 'polarization'
       wantPolarization = 1;
     case 'mwidthcoef'
-            if numel(args)>1 && isnumeric(args{2})
-                mwidthcoef = args{2}; l = 2;
-            else
-                error('parameter ''mwidthcoef'' without parameter value')
-            end
-        mwidthcoef = args{2};
+      if numel(args)>1 && isnumeric(args{2})
+        mwidthcoef = args{2}; l = 2;
+      else
+        error('parameter ''mwidthcoef'' without parameter value')
+      end
     case 'noresamp'
       flag_no_resamp = 1;
     case 'fac'
@@ -216,7 +213,7 @@ if wantEE % Check the sampling rate
         elseif sampl_e > 1.5*sampl_b, dB=irf_resamp(dB,e); B0=irf_resamp(B0,e);...
                 inSampling=sampl_e; disp('irf_pl_ebs: interpolating b to e');
         elseif sampl_e == sampl_b && size(e,1)==size(dB,1),   inSampling=sampl_e;
-        else   inSampling=2*sampl_e;
+        else,   inSampling=2*sampl_e;
             t=max(e(1,1),dB(1,1)):1/inSampling:min(e(end,1),dB(end,1)); t=t';
             e=irf_resamp(e,t); dB=irf_resamp(dB,t); B0=irf_resamp(B0,t);
             fullB = irf_resamp(fullB,t);
@@ -277,12 +274,12 @@ if flag_want_fac
         error('E must be a 3D vector to be rotated to FAC')
       end
       if isempty(facMatrix), e=irf_convert_fac(e,B0,xyz);
-      else e=irf_convert_fac(e,facMatrix);
+      else, e=irf_convert_fac(e,facMatrix);
       end
     end
   end
   if isempty(facMatrix), dB = irf_convert_fac(dB,B0,xyz);
-  else dB=irf_convert_fac(dB,facMatrix);
+  else, dB=irf_convert_fac(dB,facMatrix);
   end
 end
 
@@ -340,7 +337,7 @@ phiSVD_fac = zeros(ndataOut,nfreq);
 % Get the correct frequencies for the wavelet transform
 frequencyVec=w0./a;
 censur = floor(2*a*outSampling/inSampling*nWavePeriodToAverage);
-parfor ind_a=1:length(a), % Main loop over frequencies
+parfor ind_a=1:length(a) % Main loop over frequencies
   %disp([num2str(ind_a) '. frequency, ' num2str(newfreq(ind_a)) ' Hz.']);
   
   %% resample to 1 second sampling for Pc1-2 or 1 minute sampling for Pc3-5
@@ -360,7 +357,7 @@ parfor ind_a=1:length(a), % Main loop over frequencies
   We = []; WeISR2 = [];
   if wantEE
       if size(Swe,2) == 2, We = ifft(sqrt(1).*Swe.*mWexp2,[],1);
-      else We = ifft(sqrt(1).*Swe.*mWexp,[],1);
+      else, We = ifft(sqrt(1).*Swe.*mWexp,[],1);
       end
       We(idxNanE) = NaN;
       if flag_want_fac && ~flag_dEdotB0
@@ -375,7 +372,7 @@ parfor ind_a=1:length(a), % Main loop over frequencies
       % Power spectrum of E, power = (2*pi)*conj(W).*W./newfreqmat
       if flag_want_fac && ~flag_dEdotB0
           SUMpowerEISR2 = sum( 2*pi*(WeISR2.*conj(WeISR2))./newfreqmat ,2);
-      else SUMpowerEISR2 = sum( 2*pi*(We.*conj(We))./newfreqmat ,2);
+      else, SUMpowerEISR2 = sum( 2*pi*(We.*conj(We))./newfreqmat ,2);
       end
       power2E_ISR2_plot(:,ind_a) = SUMpowerEISR2;
       
@@ -391,7 +388,7 @@ parfor ind_a=1:length(a), % Main loop over frequencies
                 We = irf_convert_fac([timeB0 We(:,1:2) wEz],facMatrix);
               end
               We(:,1) = [];
-          else We = [We(:,1:2) wEz];
+          else, We = [We(:,1:2) wEz];
           end
       end
       powerE = 2*pi*(We.*conj(We))./newfreqmat;
@@ -456,10 +453,10 @@ parfor ind_a=1:length(a), % Main loop over frequencies
       %R = zeros(3,3,ndata2); %spectral matrix in coordinate defined by V axes
       A(1:3,:,:) = real(permute(avSM,[2,3,1]));
       A(4:6,:,:) = -imag(permute(avSM,[2,3,1]));   
-      for i = 1:ndataOut,
+      for i = 1:ndataOut
           if any(any(isnan(A(:,:,i))))
               U(:,:,i) = NaN; W(:,:,i) = NaN; V(:,:,i) = NaN;
-          else [U(:,:,i),W(:,:,i),V(:,:,i)] = svd(A(:,:,i),0);
+          else, [U(:,:,i),W(:,:,i),V(:,:,i)] = svd(A(:,:,i),0);
           end
           %wSingularValues(:,i) = svd(A(:,:,i),0);
       end
@@ -470,8 +467,8 @@ parfor ind_a=1:length(a), % Main loop over frequencies
       V(2,3,:) = V(2,3,:).*signKz;
       V(1,3,:) = V(1,3,:).*signKz;
       thetaSVD_fac(:,ind_a) = ...
-          abs(squeeze(atand(sqrt(V(1,3,:).*V(1,3,:)+V(2,3,:).*V(2,3,:))./V(3,3,:))));
-      phiSVD_fac(:,ind_a) = squeeze(atan2d(V(2,3,:),V(1,3,:)));
+          abs(squeeze(atand(sqrt(V(1,3,:).*V(1,3,:)+V(2,3,:).*V(2,3,:))./V(3,3,:)))); %#ok<PFOUS>
+      phiSVD_fac(:,ind_a) = squeeze(atan2d(V(2,3,:),V(1,3,:))); %#ok<PFOUS>
       
       %% Calculate polarization parameters 
       planarityLocal = squeeze(1 - sqrt(W(3,3,:)./W(1,1,:)));
@@ -483,7 +480,6 @@ parfor ind_a=1:length(a), % Main loop over frequencies
           squeeze(W(2,2,:)./W(1,1,:)).*sign(imag(avSM(:,1,2))); 
       ellipticityLocal(censurIdx) = NaN;
       ellipticity(:,ind_a) = ellipticityLocal;
-
       
       % DOP = sqrt[(3/2.*trace(SM^2)./(trace(SM))^2 - 1/2)]; Samson, 1973, JGR
       dop = sqrt((3/2*(...
@@ -507,7 +503,7 @@ parfor ind_a=1:length(a), % Main loop over frequencies
 	  degreeOfPolarization2D(:,ind_a) = dop2dim;
       
    end % wantPolarization
-end % main loop
+end % main parfor loop
 fprintf('Done.\n');
 %% set data gaps to NaN and remove edge effects
 censur = floor(2*a);
@@ -536,16 +532,16 @@ idxNanB = sum(idxNanB,2)>0;
 idxNanEISR2 = sum(idxNanEISR2,2)>0;
 
 ndata2=size(power2B_plot,1);
-if pc12_range || other_range,
+if pc12_range || other_range
   censur3=floor(1.8*a);
 end
-if pc35_range,
+if pc35_range
   censur3=floor(.4*a);
 end
-for i=1:length(idxNanB)-1,
-    if idxNanB(i) < idxNanB(i+1),
-        for j=1:length(a),
-            censur_index_front=[max(i-censur3(j),1):i];
+for i=1:length(idxNanB)-1
+    if idxNanB(i) < idxNanB(i+1)
+        for j=1:length(a)
+            censur_index_front = max(i-censur3(j),1):i;
             powerBx_plot(censur_index_front,j) = NaN;
             powerBy_plot(censur_index_front,j) = NaN;
             powerBz_plot(censur_index_front,j) = NaN;
@@ -555,9 +551,9 @@ for i=1:length(idxNanB)-1,
             S_plot_z(censur_index_front,j) = NaN;
         end
     end
-    if idxNanB(i) > idxNanB(i+1),
-        for j=1:length(a),
-            censur_index_back=[i:min(i+censur3(j),ndata2)];
+    if idxNanB(i) > idxNanB(i+1)
+        for j=1:length(a)
+            censur_index_back = i:min(i+censur3(j),ndata2);
             powerBx_plot(censur_index_back,j) = NaN;
             powerBy_plot(censur_index_back,j) = NaN;
             powerBz_plot(censur_index_back,j) = NaN;
@@ -570,10 +566,10 @@ for i=1:length(idxNanB)-1,
 end
 
 ndata3=size(power2E_plot,1);
-for i=1:length(idxNanE)-1,
-    if idxNanE(i) < idxNanE(i+1),
-        for j=1:length(a),
-            censur_index_front=[max(i-censur3(j),1):i];
+for i=1:length(idxNanE)-1
+    if idxNanE(i) < idxNanE(i+1)
+        for j=1:length(a)
+            censur_index_front = max(i-censur3(j),1):i;
             powerEx_plot(censur_index_front,j) = NaN;
             powerEy_plot(censur_index_front,j) = NaN;
             powerEz_plot(censur_index_front,j) = NaN;
@@ -584,9 +580,9 @@ for i=1:length(idxNanE)-1,
             S_plot_z(censur_index_front,j) = NaN;
         end
     end
-    if idxNanE(i) > idxNanE(i+1),
-        for j=1:length(a),
-            censur_index_back=[i:min(i+censur3(j),ndata3)];
+    if idxNanE(i) > idxNanE(i+1)
+        for j=1:length(a)
+            censur_index_back = i:min(i+censur3(j),ndata3);
             powerEx_plot(censur_index_back,j) = NaN;
             powerEy_plot(censur_index_back,j) = NaN;
             powerEz_plot(censur_index_back,j) = NaN;
@@ -600,16 +596,16 @@ for i=1:length(idxNanE)-1,
 end
 
 ndata4=size(power2E_ISR2_plot,1);
-for i=1:length(idxNanEISR2)-1,
-    if idxNanEISR2(i) < idxNanEISR2(i+1),
-        for j=1:length(a),
-            censur_index_front=[max(i-censur3(j),1):i];
+for i=1:length(idxNanEISR2)-1
+    if idxNanEISR2(i) < idxNanEISR2(i+1)
+        for j=1:length(a)
+            censur_index_front = max(i-censur3(j),1):i;
             power2E_ISR2_plot(censur_index_front,j) = NaN;
         end
     end
-    if idxNanEISR2(i) > idxNanEISR2(i+1),
-        for j=1:length(a),
-            censur_index_back=[i:min(i+censur3(j),ndata4)];
+    if idxNanEISR2(i) > idxNanEISR2(i+1)
+        for j=1:length(a)
+            censur_index_back = i:min(i+censur3(j),ndata4);
             power2E_ISR2_plot(censur_index_back,j) = NaN;
         end
     end
@@ -728,8 +724,8 @@ out = inp;
 if numel(size(inp))==2 || (size(inp,2)~=size(inp,3))
 	error('not impemented');
 end
-for ii=1:size(inp,2),
-	for jj=ii+1:size(inp,2),
+for ii=1:size(inp,2)
+	for jj=ii+1:size(inp,2)
 		out(:,ii,jj) = inp(:,jj,ii);
 		out(:,jj,ii) = inp(:,ii,jj);
 	end
@@ -738,12 +734,12 @@ end
 function out = mult_mat(inp1,inp2)
 dimInp1 = numel(size(inp1));
 dimInp2 = numel(size(inp2));
-if (dimInp1==dimInp2),
+if (dimInp1==dimInp2)
 	numOfMult=size(inp1,3);
 	T = zeros(size(inp1,1),size(inp1,2),size(inp2,3));
-	for ii=1:size(inp1,2),
-		for jj=1:size(inp2,3),
-			for kk=1:numOfMult,
+	for ii=1:size(inp1,2)
+		for jj=1:size(inp2,3)
+			for kk=1:numOfMult
 				T(:,ii,jj)=T(:,ii,jj)+inp1(:,ii,kk).*inp2(:,kk,jj);
 			end
 		end
@@ -752,8 +748,8 @@ elseif (dimInp1==3) && (dimInp2==2)
 	numOfOutp=size(inp1,2);
 	numOfInp=size(inp2,2);
 	T = inp2(:,1)*zeros(1,numOfOutp);
-	for ii=1:numOfOutp,
-		for jj=1:numOfInp,
+	for ii=1:numOfOutp
+		for jj=1:numOfInp
 			T(:,ii)=T(:,ii)+inp1(:,ii,jj).*inp2(:,jj);
 		end
 	end
