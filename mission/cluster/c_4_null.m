@@ -24,7 +24,8 @@ function Nulls=c_4_null(R1,R2,R3,R4,B1,B2,B3,B4,varargin)
 %                 thresholdValue is given in units of percentage.If
 %                 threshold is 100% all points are accepted. Default value
 %                 is 40%.
-%     ['boxLim',boxLimValue]    - only nulls from box size less and equal to boxLim are returned.
+%     ['boxLim',boxLimValue]    - only nulls from box size less and equal to boxLim are returned
+%                 (center of box is considered spacecraft tetrahedron center).
 %                 Default is to have no limits on box size. Same units as
 %                 positional data should be used. If boxLimValue is set to
 %                 0 then the maximum and minimum distance in all direction
