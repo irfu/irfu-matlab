@@ -8,7 +8,7 @@ function magnetic_topology(R1,R2,R3,R4,B1,B2,B3,B4,varargin)
 %   IMPORTANT: Input must either be from just one time
 %              step or include the tint variable.
 %
-%   MAGNETIC_TOPOLOGY(R1,R2,R3,R4,B1,B2,B3,B4,[tint,'Boxsize', boxvalue,'startx', sx,'starty', sy, 'startz', sz,'FluxWidth', Fluxvalue])
+%   MAGNETIC_TOPOLOGY(R1,R2,R3,R4,B1,B2,B3,B4,[tint,'BLim', Blim,'Boxsize', boxvalue,'startx', sx,'starty', sy, 'startz', sz,'FluxWidth', Fluxvalue])
 %
 %
 %   INPUT
@@ -18,6 +18,8 @@ function magnetic_topology(R1,R2,R3,R4,B1,B2,B3,B4,varargin)
 %     R1..R4    - are position of 1..4 can be in Tseries or vector format (with or without the
 %                 time vector)
 %     [tint]      - time step to plot given in the format of EpochUnix. If given it must always be given as first variable. 
+%     ['BLim', Blim]      - removes extrapolated data points with B
+%     magnitude larger than Blim. Blim should be given in same units as B1..B4.
 %     ['Boxsize', boxvalue]      - give the size of the box where the magnetic
 %     flux tubes are plotted use same units as spacecraft position
 %     ['startx', sx]      - give the starting points for x can be a
@@ -29,7 +31,8 @@ function magnetic_topology(R1,R2,R3,R4,B1,B2,B3,B4,varargin)
 %     plotting the magnetic flux tubes. Can be given as a single value or
 %     as a meshgrid. ex: meshgrid(0:2:10,4,-2:2:10);
 %     ['FluxWidth', Fluxvalue]      - give the width of the flux tube (might
-%     need to decrease this when you have a lot of flux tubes)
+%     need to decrease this when you have a lot of flux tubes). Smaller
+%     value > thinner tubes.
 %     
 %     
 %
@@ -80,6 +83,7 @@ GivenSX=false;
 GivenSY=false;
 GivenSZ=false;
 GiventubeWidth=false;
+GivenBLim=false;
     
 if isempty(varargin)
     % Give default values
@@ -94,8 +98,16 @@ elseif ~mod(length(varargin),2)
         if i+1>length(varargin)
             break;
         else
+             %Case 'BLim'
+            if strcmp(varargin(i),'BLim')
+                if isnumeric(cell2mat(varargin(i+1)))
+                    Blim=cell2mat(varargin(i+1));
+                    GivenBLim=true;
+                else
+                    error('Unapproved combination of arguments. See usage: help 3D_magnetic_topology')
+                end
             %Case 'Boxsize'
-            if strcmp(varargin(i),'Boxsize')
+            elseif strcmp(varargin(i),'Boxsize')
                 if isnumeric(cell2mat(varargin(i+1)))
                     boxWidth=cell2mat(varargin(i+1));
                     GivenboxWidth=true;
@@ -138,6 +150,8 @@ elseif ~mod(length(varargin),2)
                 else
                     error('Unapproved combination of arguments. See usage: help 3D_magnetic_topology')
                 end
+            elseif isnumeric(cell2mat(varargin(i)))
+                continue
             else
                 error('Unapproved arguments. See usage: help 3D_magnetic_topology')
             end
@@ -157,8 +171,17 @@ elseif mod(length(varargin),2)
             if i+1>length(varargin)
                 break;
             else
+                %Case 'BLim'
+                if strcmp(varargin(i),'BLim')
+                    if isnumeric(cell2mat(varargin(i+1)))
+                        Blim=cell2mat(varargin(i+1));
+                        GivenBLim=true;
+                        
+                    else
+                        error('Unapproved combination of arguments. See usage: help 3D_magnetic_topology')
+                    end
                %Case 'Boxsize'
-                if strcmp(varargin(i),'Boxsize')
+                 elseif strcmp(varargin(i),'Boxsize')
                     if isnumeric(cell2mat(varargin(i+1)))
                         boxWidth=cell2mat(varargin(i+1));
                         GivenboxWidth=true;
@@ -202,6 +225,8 @@ elseif mod(length(varargin),2)
                     else
                         error('Unapproved combination of arguments. See usage: help 3D_magnetic_topology')
                     end
+                elseif isnumeric(cell2mat(varargin(i)))
+                    continue
                 else
                     error('Unapproved arguments. See usage: help 3D_magnetic_topology')
                 end
@@ -260,6 +285,10 @@ end
 if ~GiventubeWidth
     tubeWidth=100;
 end
+
+if ~GivenBLim
+    Blim=10000;
+end
 % Check if boxWidth is given
 
 
@@ -307,6 +336,9 @@ for i=1:length(x)
         end
     end
 end
+Bmag=irf_abs(B,1);
+IndexBlim=Bmag>Blim;
+B(IndexBlim,:)=NaN;
 for l=1:size(dR,1)
     [i,j,k]=ind2sub([10, 10, 10], l);
     Bx(i,j,k)=B(l,1);
@@ -314,7 +346,7 @@ for l=1:size(dR,1)
     Bz(i,j,k)=B(l,3);
 end
 
-
+%Bmag=Bx.^2+By.^2+
 %% Trace magnetic field lines
 
 
@@ -342,11 +374,19 @@ for i=1:size(XYZfront,2)
         rstepSizeback(k,1)=size(XYZback{i},1);
         for j=1:rstepSizefront(k,1)
         Blinefront=Bmean+(gradB*XYZfront{i}(j,:)')';
+        if irf_abs(Blinefront,1)>Blim
+            Bamplfront(j,1)=NaN;
+        else
         Bamplfront(j,1)=irf_abs(Blinefront,1);
+        end
         end
         for m=1:rstepSizeback(k,1)
         Blineback=Bmean+(gradB*XYZback{i}(m,:)')';
+        if irf_abs(Blineback,1)>Blim
+             Bamplback(m,1)=NaN;
+        else
         Bamplback(m,1)=irf_abs(Blineback,1);  
+        end
         end
 
         Bmagfront{k}=Bamplfront;
@@ -356,35 +396,12 @@ for i=1:size(XYZfront,2)
     end
 end
 
-% % Go through the field lines going backwards and only save the ones with certain
-% % data point size and calculates the magnetic field amplitude at each
-% % point so that the color of the line indicates B mag
-% 
-% k=1;
-% for i=1:size(XYZback,2)
-%     if size(XYZback{i},1)>2
-%         rline{k}=XYZback{i};
-%         rlineAbs{k}=irf_abs(XYZback{i},1);
-%         rstepSize(k,1)=size(XYZback{i},1);
-%         for j=1:rstepSize(k,1)
-%         Blineback=Bmean+(gradB*XYZback{i}(j,:)')';
-%         Bampl(j,1)=irf_abs(Blineback,1);
-%         end
-%         Bmagback{k}=Bampl;
-%         Bampl=[];
-%         k=k+1;
-%     end
-% end
 
 
 %% Plotting 3D magnetic flux tubes
 % S/C position
 mms_marker={{'ks','markersize',10},{'rd','markersize',10},...
 	{'go','markersize',10,'color',[0 0.6 0]},{'bv','markersize',10}};
-mms_marker_small={{'ks','markersize',8},{'rd','markersize',8},...
-	{'go','markersize',8,'color',[0 0.6 0]},{'bv','markersize',8}};
-mms_marker_shaded={{'ks','color',[0.3 0.3 0.3]},...
-	{'rd','color',[1 0.3 0.3]},{'go','color',[.3 1 .3]},{'bv','color',[.3 .3 1]}};
 
 SCpos = {idR{1,1},idR{1,2},idR{1,3},idR{1,4}};
 
