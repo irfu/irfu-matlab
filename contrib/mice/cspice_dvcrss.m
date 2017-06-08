@@ -63,7 +63,7 @@
 %               of 's1' and 's2' and the derivative of the cross product(s)
 %               with respect to time.
 %
-%               'dvcrss' returns with the same measure of vectorization (N)
+%               'dvcrss' returns with the same vectorization measure (N)
 %               as 's1' and 's2'
 %
 %               [6,n] = size(dvcrss); double = class(dvcrss)

@@ -1,10 +1,11 @@
-function off = mms_sdp_get_offset(scId, procId, time)
+function off = mms_sdp_get_offset(scId, procId, time, TMmode)
 % Return offsets etc. to be applied in MMS processing (currently only 
 % QL dce2d, L2Pre dce2d or Scpot.
 %
 % Example: 
 %   MMS_CONST = mms_constants;
-%   off = mms_sdp_dsl_offset(1, MMS_CONST.SDCProc.ql, dceTime);
+%   TMmode = MMS_CONST.TmMode.brst;
+%   off = mms_sdp_get_offset(1, MMS_CONST.SDCProc.ql, dceTime, TMmode);
 %  returns 
 %   off.ex         - Sunward offset (DSL Ex), for QL dce2d or L2Pre dce2d
 %   off.ey         - Duskward offset (DSL Ey), for QL dce2d or L2Pre dce2d
@@ -22,9 +23,10 @@ function off = mms_sdp_get_offset(scId, procId, time)
 %
 % See also: MMS_SDP_DMGR
 
-narginchk(3,3);
+narginchk(3,4);
 global MMS_CONST ENVIR
 if isempty(MMS_CONST), MMS_CONST = mms_constants(); end
+if ~exist('TMmode','var'), TMmode=[]; end
 % ENVIR gets loaded from mms_sdc_sdp_init, should not be empty here.
 if isempty(ENVIR)
   errStr='Empty ENVIR'; irf.log('critical',errStr); error(errStr); 
@@ -57,19 +59,61 @@ try
     fileID = fopen([calPath, filesep, list.name]);
     C = textscan(fileID, fmt, 'HeaderLines', 1);
     fclose(fileID);
+    % Interpret the time strings and convert it to int64 (tt2000).
     offTime = EpochTT(cell2mat(C{1}));
-    ind = offTime.ttns <= time(1); % Preceeding offsets only.
-    if(~any(ind)), ind = true; end % Sanity check if time was incorrect...
-    % Use only the last of the preceeding offset values for the entire data
-    % interval.
-    offIntrp = [C{2}(ind), C{3}(ind)];
+    % Offset start time (based on ROI).
+    time1 = offTime.ttns;
+    % Add margins to start time (ROI), negative values for fast/brst
+    % positive for slow to ensure same offset is used for continous
+    % segments (each ROI start close to switch from slow to fast tmmode).
+    % ROI region 2015-09-20T06:27:14Z/2015-09-20T20:26:54 UTC
+    % MMS1 edp fast l1b start 2015-09-20T06:13:45.097915313 UTC
+    % ie. continous fast mode start some 13 min 29 seconds before ROI.
+    switch TMmode
+      case MMS_CONST.TmMode.slow
+        Tmargin = +int64(15*60*10^9); % +15 minutes margin??
+        % (ThoNi: I have not seen any switch slow->fast after official ROI
+        % start but better to be sure than sorry).
+      case {MMS_CONST.TmMode.fast, MMS_CONST.TmMode.brst}
+        Tmargin = -int64(15*60*10^9); % -15 minutes margin??
+      otherwise % comm=?
+        Tmargin = int64(0);
+    end
+    time1 = time1 + Tmargin;
+    % Let each offset be valid until 5 us before next offset begin
+    % NOTE: While it could be as small as 1ns with int64 representation it 
+    % can in reallity not be that small as "interp1" in Matlab R2013b req.
+    % double representation.
+    % (Highest MMS burst rate used as of 2017/05/05 is 16384Hz => dt=61 us).
+    time2 = time1(2:end) - int64(5000);
+    % Let the last offset be valid "forever" after (interp1 with "linear"
+    % and "extrap" require one extra datapoint to ensure it is interpolated
+    % as a static value and not a linear trend between the penultimate and
+    % ultimate offset value.) Add one extra point one year after the last.
+    time2(end+1) = time2(end) + int64(365*86400e9);
+
+    data3 = [C{2}, C{3}; ...
+      C{2}, C{3}]; % Repeated data
+    [timeSort, indSort] = sort([time1; time2]); % Almost repeated time (5 us diff), then sorted
+    [timeComb, indUniq] = unique(timeSort); % Ensure no duplicated values
+    dataSort = data3(indSort, :); % Sorted data (based on time)
+    dataOff = dataSort(indUniq, :); % Ensure no duplicated values (based on time)
+
+    % Covert time and timeComb to double after subtracting the start time
+    % (2015/01/01) from both to ensure interp1 works as expected.
+    timeReq = double(time - timeComb(1));
+    timeOff = double(timeComb - timeComb(1));
+    % Interpolate offsets with linear and extrapolation to the requested
+    % time
+    offIntrp = interp1(timeOff, dataOff, timeReq, 'linear', 'extrap');
+
     switch procId
       case {MMS_CONST.SDCProc.ql, MMS_CONST.SDCProc.l2pre}
-        off.ex = offIntrp(end,1);
-        off.ey = offIntrp(end,2);
+        off.ex = offIntrp(:,1);
+        off.ey = offIntrp(:,2);
       case MMS_CONST.SDCProc.scpot
-        off.p2p = offIntrp(end,1);
-        off.shortening = offIntrp(end,2);
+        off.p2p = offIntrp(:,1);
+        off.shortening = offIntrp(:,2);
    end
   else
     off = useStaticOffset;

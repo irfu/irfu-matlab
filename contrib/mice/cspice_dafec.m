@@ -164,7 +164,7 @@
 %   the portion read will be returned to the caller, and the DONE
 %   flag will be set to false. This allows the comment area to be
 %   read in ``chunks,'' a buffer at a time. After all of the comment
-%   lines have been read, the `done' flag will be set to SPICETRUE.
+%   lines have been read, the `done' flag will be set to true.
 %
 %   This routine can be used to ``simultaneously'' extract comments
 %   from the comment areas of multiple binary DAFs.

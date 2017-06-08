@@ -167,7 +167,7 @@ function cspice_pipool( name, ivals )
 
       otherwise
 
-         error ( 'Usage: cspice_pipool( `name`, ivals[])' )
+         error ( 'Usage: cspice_pipool( `name`, ivals(n))' )
 
    end
 

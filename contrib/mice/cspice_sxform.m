@@ -33,15 +33,19 @@
 %
 %   Given:
 %
-%      from   the scalar string name of a reference frame in which
-%             a position is known.
+%      from   the name of a reference frame in which a state is known.
 %
-%      to     the scalar string name of a reference frame in which
-%             it is desired to represent the position.
+%             [1,c1] = size(from); char = class(from)
 %
-%      et     the double precision scalar or 1XN-vector of epochs in
-%             ephemeris seconds past the epoch of J2000 (TDB) at which
-%             the state transformation matrix should be evaluated.
+%      to     the name of a reference frame in which it is desired to represent
+%             the state.
+%
+%             [1,c2] = size(to); char = class(to)
+%
+%      et     epoch(s) in ephemeris seconds past the epoch of J2000 (TDB)
+%             at which to evaluate the state transformation operator(s).
+%
+%             [1,n] = size(et); double = class(et)
 %
 %   the call:
 %
@@ -49,11 +53,14 @@
 %
 %   returns:
 %
-%      xform   a double precision, 6x6 or 6x6xN array state
-%              transformation matrix that transforms states from the
+%      xform   operator(s) that transform state vector(s) from the
 %              reference frame 'from' to frame 'to' at epoch 'et'
 %
-%              'xform' returns with the same vectorization measure (N)
+%              If [1,1] = size(et) then [6,6]   = size(xform)
+%              If [1,n] = size(et) then [6,6,n] = size(xform)
+%                                        double = class(xform)
+%
+%              'xform' returns with the same vectorization measure, N,
 %               as 'et'.
 %
 %-Examples
@@ -251,6 +258,10 @@
 %   FRAMES.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.2, 05-FEB-2015, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.0.0, 22-NOV-2005, EDW (JPL)
 %

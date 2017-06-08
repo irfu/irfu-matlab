@@ -35,11 +35,14 @@
 %
 %   Given:
 %
-%      angle  the double precision scalar or 1XN-vector of rotation
-%             angles measured in radians
+%      angle  the rotation angle(s) measured in radians.
 %
-%      iaxis   the integer ID of the axis of rotation where
-%              X=1, Y=2, Z=3
+%             [1,1]   = size(angle); double = class(angle)
+%
+%      iaxis  the ID of the axis of rotation. 'iaxis' = 1, 2 or 3 
+%             respectively designates the x-, y-, or z-axis.
+%
+%             [1,1]   = size(iaxis); int32 = class(iaxis)
 %
 %   the call:
 %
@@ -47,11 +50,11 @@
 %
 %   returns:
 %
-%      mout   a double precision 3x3 or 3x3xN array of rotation matrices
-%             that describe a rotation of 'angle' radians about 'iaxis'
+%      mout   rotation matrix/matrices that describe a rotation of 'angle'
+%             radians about 'iaxis'
 %
-%             'mout' return with the same vectorization measure
-%             (N) as 'angle'.
+%             'mout' return with the same vectorization 
+%             measure, N, as 'angle'.
 %
 %-Examples
 %
@@ -99,7 +102,11 @@
 %
 %-Version
 %
-%    -Mice Version 1.0.0, 10-JAN-2006, EDW (JPL)
+%   -Mice Version 1.0.1, 10-MAR-2015, EDW (JPL)
+%
+%      Edited I/O section to conform to NAIF standard for Mice documentation.
+%
+%   -Mice Version 1.0.0, 10-JAN-2006, EDW (JPL)
 %
 %-Index_Entries
 %

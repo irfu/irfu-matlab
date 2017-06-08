@@ -32,7 +32,23 @@
 %
 %   Given:
 %
-%      x   a scalar or vector of structures representing a SPICE ellipse.
+%      x   structure(s) representing a SPICE ellipse.
+%
+%          [1,n] = size(x); struct = class(x)
+%
+%          'x' should contain the fields:
+%
+%             'center'
+%
+%             [3,1] = size(x.center); double = class(x.center)
+%
+%             'semiMajor'
+%
+%             [3,1] = size(x.semiMajor); double = class(x.semiMajor)
+%
+%             'semiMinor'
+%
+%             [3,1] = size(x.semiMinor); double = class(x.semiMinor)
 %
 %   the call:
 %
@@ -42,6 +58,8 @@
 %
 %      y   a copy of 'x', confirmed to have the proper fields,
 %          field types, and field dimensions of a SPICE ellipse
+%
+%          [1,n] = size(x); struct = class(x)
 %
 %-Examples
 %
@@ -56,6 +74,10 @@
 %   MICE.REQ
 %
 %-Version
+%
+%   -Mice Version 1.1.1, 12-FEB-2015, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.1.0, 27-JUL-2009, EDW (JPL)
 %
@@ -76,7 +98,7 @@ function [y] = zzmice_ell(x)
 
    if( ~isequal(nargin,1) )
 
-      error( 'MICE(USAGE): y = zzmice_ell( x)' )
+      error( 'MICE(USAGE): y = zzmice_ell(x)' )
 
    end
 

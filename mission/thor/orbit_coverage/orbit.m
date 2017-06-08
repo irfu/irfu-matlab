@@ -27,7 +27,7 @@ function [tt xx yy] = orbit(r_per,r_ap,Ttot,varargin)
 %                default timestep of 120 s is used.
 
 method = 'E'; % default
-    
+Units = irf_units;
 while ~isempty(varargin)
     if strcmp(varargin{1},'dt')        
         dt = varargin{2};
@@ -42,9 +42,9 @@ while ~isempty(varargin)
 end
 
 % Physical parameters
-G = 6.67384e-11; % m^3 kg^-1 s^-2 (N m^-2 kg^-2)
-ME = 5.9722e24; % kg
-RE = 6371*1e3; % m
+G = Units.G; % m^3 kg^-1 s^-2 (N m^-2 kg^-2)
+ME = Units.M_Earth; % kg
+RE = Units.R_Earth; % m
 
 r_ap = r_ap*RE; % m
 r_per = r_per*RE; % m

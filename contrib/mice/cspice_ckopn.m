@@ -33,14 +33,25 @@
 %
 %   Given:
 %
-%      fname    a scalar string defining the name of the CK file
-%               to open
+%      fname    the name of the CK file to open.
 %
-%      ifname   a scalar string defining the descriptive internal
-%               filename for the CK
+%               [1,c1] = size(fname); char = class(fname)
 %
-%      ncomch   the scalar integer number of characters to
-%               reserve for comments.
+%                  or
+%
+%               [1,1] = size(fname); cell = class(fname)
+%
+%      ifname   a descriptive internal filename for the CK.
+%
+%               [1,m2] = size(ifname); char = class(ifname)
+%
+%                  or
+%
+%               [1,1] = size(ifname); cell = class(ifname)
+%
+%      ncomch   the number of characters to reserve for comments.
+%
+%               [1,1] = size(ncomch); int32 = class(ncomch)
 %
 %   the call:
 %
@@ -48,7 +59,9 @@
 %
 %   returns:
 %
-%      handle   a scalar integer file handle assigned to 'fname'
+%      handle   the file handle assigned to 'fname'
+%
+%               [1,1] = size(handle); int32 = class(handle)
 %
 %-Examples
 %
@@ -92,6 +105,10 @@
 %
 %-Version
 %
+%   -Mice Version 1.0.1, 29-OCT-2014, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
+%
 %   -Mice Version 1.0.0, 22-NOV-2005, EDW (JPL)
 %
 %-Index_Entries
@@ -123,7 +140,4 @@ function [handle] = cspice_ckopn( fname, ifname, ncomch )
    catch
       rethrow(lasterror)
    end
-
-
-
 

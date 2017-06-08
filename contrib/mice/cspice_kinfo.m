@@ -33,8 +33,14 @@
 %
 %   Given:
 %
-%      file   the scalar string name of a kernel file for which descriptive
+%      file   the name of a kernel file for which descriptive
 %             information is desired.
+%
+%             [1,c1] = size(file); char = class(file)
+%
+%                or
+%
+%             [1,1] = size(file); cell = class(file)
 %
 %   the call:
 %
@@ -42,24 +48,32 @@
 %
 %   returns:
 %
-%      filtyp   the scalar string type name of the kernel specified by 'file'.
+%      filtyp   the type name of the kernel specified by 'file'.
 %               'filtyp' will be empty if file is not on the list of kernels
 %               loaded via cspice_furnsh.
 %
-%      source   the scalar string name of the source file used to
+%               [1,c2] = size(file); char = class(file)
+%
+%      source   the name of the source file used to
 %               specify 'file' as one to load.  If 'file' was loaded
 %               directly via a call to cspice_furnsh, 'source' will be empty.
 %               If file is not on the list of kernels loaded via
 %               cspice_furnsh, 'source' will be empty.
+%
+%               [1,c3] = size(file); char = class(file)
 %
 %      handle   the integer handle attached to 'file' if it is a binary
 %               kernel.  If file is a text kernel or meta-text kernel
 %               handle will be zero. If file is not on the list of
 %               kernels loaded via cspice_furnsh, 'handle' has value zero.
 %
+%               [1,1] = size(handle); int32 = class(handle)
+%
 %      found    returns true if the specified file exists.
 %               If there is no such file, 'found' will be set to
 %               false.
+%
+%               [1,1] = size(found); logical = class(found)
 %
 %-Examples
 %
@@ -148,8 +162,13 @@
 %   the CSPICE routine kinfo_c.
 %
 %   MICE.REQ
+%   DSK.REQ
 %
 %-Version
+%
+%   -Mice Version 1.2.1, 01-DEC-2014, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.2.0, 10-MAY-2011, EDW (JPL)
 %

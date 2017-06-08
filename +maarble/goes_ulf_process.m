@@ -26,10 +26,14 @@ for month=1:1
         [f, status]=urlwrite(filename_url, filename);
         display(strcat('downloading ', filename));
       else
-        % Set root certificate pem file to empty disables verification, as of
-        % version R2016b Matlab does not include root certificate used by "Let's
-        % encrypt". Bug reported to Mathworks 2017/02/01T13 CET.
-        webOpt = weboptions('CertificateFilename','');
+        if(verLessThan('matlab', '9.2')) % Version less than R2017a
+          % Set root certificate pem file to empty disables verification, 
+          % versions before R2017a does not include root certificate used
+          % by "Let's encrypt".
+          webOpt = weboptions('CertificateFilename','');
+        else
+          webOpt = weboptions();
+        end
         try
           f = websave(filename, filename_url, webOpt);
           display(strcat('downloading ', filename));

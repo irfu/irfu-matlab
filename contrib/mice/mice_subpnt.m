@@ -37,8 +37,14 @@
 %
 %   Given:
 %
-%      method   a scalar string providing parameters defining
-%               the computation method to be used.
+%      method   a string providing parameters defining
+%               the computation method to use.
+%
+%               [1,c1] = size(method); char = class(method)
+%
+%                  or
+%
+%               [1,1] = size(method); cell = class(method)
 %
 %               The supported values of 'method' are listed below.
 %               Please note that the colon is a required delimiter;
@@ -73,9 +79,15 @@
 %
 %               is valid.
 %
-%      target   the scalar string name of the target body. The target
+%      target   the name of the target body. The target
 %               body is an ephemeris object (its trajectory is given by
 %               SPK data), and is an extended object.
+%
+%               [1,c2] = size(target); char = class(target)
+%
+%                  or
+%
+%               [1,1] = size(target); cell = class(target)
 %
 %               The string 'target' is case-insensitive, and leading
 %               and trailing blanks in 'target' are not significant.
@@ -91,9 +103,11 @@
 %               variable would be defined by loading a PCK file.
 %
 %
-%      et       the double precision scalar epoch, expressed as seconds
-%               past J2000 TDB, of the observer: 'et' is
+%      et       the epoch(s), expressed as seconds past
+%               J2000 TDB, of the observer: 'et' is
 %               the epoch at which the observer's state is computed.
+%
+%               [1,n] = size(et); double = class(et)
 %
 %               When aberration corrections are not used, 'et' is also
 %               the epoch at which the position and orientation of
@@ -109,14 +123,26 @@
 %               selected correction. See the description of 'abcorr'
 %               below for details.
 %
-%      fixref   the scalar string name of the body-fixed, body-centered
+%      fixref   the name of the body-fixed, body-centered
 %               reference frame associated with the target body.
 %               The output sub-observer point 'spoint' will be
 %               expressed relative to this reference frame.
 %
-%      abcorr   the scalar string aberration correction to apply
+%               [1,c3] = size(fixref); char = class(fixref)
+%
+%                  or
+%
+%               [1,1] = size(fixref); cell = class(fixref)
+%
+%      abcorr   the aberration correction to apply
 %               when computing the observer-target state and the
 %               orientation of the target body.
+%
+%               [1,c4] = size(abcorr); char = class(abcorr)
+%
+%                  or
+%
+%               [1,1] = size(abcorr); cell = class(abcorr)
 %
 %               For remote sensing applications, where the apparent
 %               sub-observer point seen by the observer is desired,
@@ -188,47 +214,6 @@
 %                                slowly when a converged solution is
 %                                computed.
 %
-%               The following values of 'abcorr' apply to the
-%               "transmission" case in which photons *depart* from
-%               the observer's location at 'et' and arrive at the
-%               sub-observer point at the light-time corrected epoch
-%               et+lt:
-%
-%                     'XLT'      "Transmission" case: correct for
-%                                one-way light time using a Newtonian
-%                                formulation. This correction yields the
-%                                sub-observer location at the moment it
-%                                receives photons emitted from the
-%                                observer's location at 'et'.
-%
-%                                The light time correction uses an
-%                                iterative solution of the light time
-%                                equation. The solution invoked by the
-%                                'LT' option uses one iteration.
-%
-%                                Both the target position as seen by the
-%                                observer, and rotation of the target
-%                                body, are corrected for light time.
-%
-%                     'XLT+S'    "Transmission" case: correct for
-%                                one-way light time and stellar
-%                                aberration using a Newtonian
-%                                formulation  This option modifies the
-%                                sub-observer point obtained with the
-%                                'XLT' option to account for the
-%                                observer's velocity relative to the
-%                                solar system barycenter.
-%
-%                     'XCN'      Converged Newtonian light time
-%                                correction. This is the same as XLT
-%                                correction but with further iterations
-%                                to a converged Newtonian light time
-%                                solution.
-%
-%                     'XCN+S'    "Transmission" case: converged
-%                                Newtonian light time and stellar
-%                                aberration corrections.
-%
 %      obsrvr   the scalar string name of the observing body. The
 %               observing body is an ephemeris object: it typically
 %               is a spacecraft, the earth, or a surface point on the
@@ -239,6 +224,12 @@
 %               are legitimate strings that indicate the Moon is the
 %               observer.
 %
+%               [1,c5] = size(obsrvr); char = class(obsrvr)
+%
+%                  or
+%
+%               [1,1] = size(obsrvr); cell = class(obsrvr)
+%
 %   the call:
 %
 %      [subpnt] = mice_subpnt( method, target, et, fixref, ...
@@ -246,10 +237,17 @@
 %
 %   returns:
 %
-%      subpnt   a scalar structure, each structure consisting of three fields:
+%      subpnt  the structure(s) containing the results of the calculation.
 %
-%              'spoint'   a double precision 3x1 array defining the
-%                         sub-observer point on the target body.
+%              [1,n] = size(subpnt); struct = class(subpnt)
+%
+%              Each structure consists of the fields:
+%
+%              'spoint'   the array defining the sub-observer point on the
+%                         target body.
+%
+%                         [3,1] = size(subpnt(i).spoint)
+%                         double = class(subpnt(i).spoint)
 %
 %                         The sub-observer point is defined either as the point
 %                         on the target body that is closest to the observer,
@@ -280,35 +278,40 @@
 %
 %                         The components of 'spoint' have units of km.
 %
-%              'trgepc'   the scalar double precision "sub-observer point
-%                         epoch." 'trgepc' is defined   as follows: letting
-%                         'lt' be the one-way 'trgepc' is the epoch et-lt,
-%                         et+lt, or 'et' depending on  whether the requested
-%                         aberration correction is, respectively, for
-%                         received radiation, transmitted radiation, or
-%                         omitted. 'lt' is computed using the method
-%                         indicated by 'abcorr'.
+%              'trgepc'   the "sub-observer point epoch." 'trgepc' is defined
+%                         as follows: letting 'lt' be the one-way 'trgepc'
+%                         is the epoch et-lt, et+lt, or 'et' depending on
+%                         whether the requested aberration correction is,
+%                         respectively, for received radiation, transmitted
+%                         radiation, or omitted. 'lt' is computed using
+%                         the method indicated by 'abcorr'.
+%
+%                         [1,1] = size(subpnt(i).trgepc)
+%                         double = class(subpnt(i).trgepc)
 %
 %                         'trgepc' is expressed as seconds past J2000 TDB.
 %
-%              'srfvec'   a double precision 3x1 array defining the position
-%                         vector from the observer at 'et' to 'spoint'. 'srfvec'
-%                         is expressed in the target body-fixed  reference frame
-%                          designated by 'fixref', evaluated at  'trgepc'.
+%              'srfvec'   the array defining the position vector from
+%                         the observer at 'et' to 'spoint'. 'srfvec' is
+%                         expressed in the target body-fixed  reference frame
+%                         designated by 'fixref', evaluated at  'trgepc'.
+%
+%                         [3,1] = size(subpnt(i).srfvec)
+%                         double = class(subpnt(i).srfvec)
 %
 %                         The components of 'srfvec' are given in units of km.
 %
 %                         One can use the CSPICE function vnorm_c to obtain the
 %                         distance between the observer and 'spoint':
 %
-%                            dist = norm( srfvec )
+%                            dist = norm( subpnt(i).srfvec )
 %
 %                         The observer's position 'obspos', relative to the
 %                         target body's center, where the center's position is
 %                         corrected for aberration effects as indicated by
 %                         'abcorr', can be computed with:
 %
-%                            obspos = spoint - srfvec
+%                            obspos =  subpnt(i).spoint - subpnt(i).srfvec
 %
 %                         To transform the vector 'srfvec' to a time-dependent
 %                         reference frame 'ref' at 'et', a sequence of two
@@ -321,14 +324,17 @@
 %                         composition of 'mref' with 'mfix'. Then 'srfvec' can
 %                         be transformed to the result 'refvec' as follows:
 %
-%                            mfix   = cspice_pxform( fixref, 'j2000', trgepc )
-%                            mref   = cspice_pxform( 'j2000', ref,     et    )
+%                            mfix   = cspice_pxform( fixref,       ...
+%                                                    'j2000',      ...
+%                                                    subpnt(i).trgepc )
+%                            mref   = cspice_pxform( 'j2000', ref, et )
 %                            xform  = mref * mfix
-%                            refvec = xform * srfvec
+%                            refvec = xform * subpnt(i).srfvec
 %
+%      'subpnt' return with the same vectorization measure, N, as 'et'.
 %
-%   Note, If needed the user can extract the field data from vectorized
-%   'spoint' structures into separate arrays.
+%      Note, if needed, the user can extract the field data from vectorized
+%      'spoint' structures into separate arrays.
 %
 %      Extract the 'spoint' field data to a 3X1 array 'spoint':
 %
@@ -351,13 +357,19 @@
 %      %
 %      % Load kernel files via the meta-kernel.
 %      %
-%      cspice_furnsh( 'standard.tm' );
+%      cspice_furnsh( '/kernels/standard.tm' );
 %
 %      %
 %      % Convert the UTC request time to ET (seconds past
 %      % J2000, TDB).
 %      %
-%      et = cspice_str2et( '2008 aug 11 00:00:00' );
+%      et0 = cspice_str2et( '2008 aug 11 00:00:00' );
+%
+%      %
+%      % Create a vector of times. The code will also run for 'et'
+%      % a scalar.
+%      %
+%      et = [0:10]*cspice_spd + et0;
 %
 %      %
 %      % Look up the target body's radii. We'll use these to
@@ -390,17 +402,22 @@
 %         subpnt = mice_subpnt( method(i), 'MARS', et, ...
 %                              'IAU_MARS', 'LT+S', 'EARTH' );
 %
+%         N = length(subpnt);
+%
 %         %
-%         % Compute the observer's distance from SPOINT.
+%         % Expand the embedded data arrays to properly shaped
+%         % generic arrays.
 %         %
-%         odist = norm(subpnt.srfvec);
+%         spoint   = reshape( [subpnt.spoint], 3, [] );
+%         trgepc   = reshape( [subpnt.trgepc], 1, [] );
+%         srfvec   = reshape( [subpnt.srfvec], 3, [] );
 %
 %         %
 %         % Convert the sub-observer point's rectangular coordinates
 %         % to planetographic longitude, latitude and altitude.
 %         % Convert radians to degrees.
 %         %
-%         [ spglon, spglat, spgalt] = cspice_recpgr( 'mars', subpnt.spoint, ...
+%         [ spglon, spglat, spgalt] = cspice_recpgr( 'mars', spoint, ...
 %                                                     re,    f );
 %
 %         spglon = spglon * cspice_dpr;
@@ -411,7 +428,7 @@
 %         % planetocentric radius, longitude, and latitude. Convert
 %         % radians to degrees.
 %         %
-%         [ spcrad, spclon, spclat ] =cspice_reclat( subpnt.spoint ) ;
+%         [ spcrad, spclon, spclat ] =cspice_reclat( spoint ) ;
 %
 %         spclon = spclon * cspice_dpr;
 %         spclat = spclat * cspice_dpr;
@@ -422,7 +439,7 @@
 %         % the aberration corrections applicable to the sub-point.
 %         % Express the observer's location in geodetic coordinates.
 %         %
-%         obspos = subpnt.spoint - subpnt.srfvec;
+%         obspos = spoint - srfvec;
 %
 %         [ opglon, opglat, opgalt] = cspice_recpgr( 'mars', obspos, re, f );
 %
@@ -438,30 +455,61 @@
 %         opclon = opclon * cspice_dpr;
 %         opclat = opclat * cspice_dpr;
 %
-%         fprintf('Computational Method %s\n\n', char(method(i)) )
-%         fprintf('Observer altitude                      (km) = %21.9f\n', ...
-%                                                                   opgalt)
-%         fprintf('Length of SRFVEC                       (km) = %21.9f\n', ...
-%                                                                   odist  )
-%         fprintf('Sub-observer point altitude            (km) = %21.9f\n', ...
-%                                                                   spgalt )
-%         fprintf('Sub-observer planetographic longitude (deg) = %21.9f\n', ...
-%                                                                   spglon )
-%         fprintf('Observer planetographic longitude     (deg) = %21.9f\n', ...
-%                                                                   opglon )
-%         fprintf('Sub-observer planetographic latitude  (deg) = %21.9f\n', ...
-%                                                                   spglat )
-%         fprintf('Observer planetographic latitude      (deg) = %21.9f\n', ...
-%                                                                   opglat )
-%         fprintf('Sub-observer planetocentric longitude (deg) = %21.9f\n', ...
-%                                                                   spclon )
-%         fprintf('Observer planetocentric longitude     (deg) = %21.9f\n', ...
-%                                                                   opclon )
-%         fprintf('Sub-observer planetocentric latitude  (deg) = %21.9f\n', ...
-%                                                                   spclat )
-%         fprintf('Observer planetocentric latitude      (deg) = %21.9f\n', ...
-%                                                                   opclat )
-%         fprintf( '\n')
+%         utcstr = cspice_et2utc( et, 'C', 6);
+%
+%         for j=1:N
+%
+%           fprintf( 'Computational Method %s\n\n', char(method(i)) )
+%
+%           fprintf( 'Time (UTC):                          %s\n',  ...
+%                                                        utcstr(j,:) )
+%           fprintf(                                                  ...
+%           'Observer altitude                      (km) = %21.9f\n', ...
+%                                                        opgalt(j) )
+%
+%           fprintf(                                                  ...
+%           'Length of SRFVEC                       (km) = %21.9f\n', ...
+%                                               norm(srfvec(:,j))  )
+%
+%           fprintf(                                                  ...
+%           'Sub-observer point altitude            (km) = %21.9f\n', ...
+%                                                        spgalt(j) )
+%
+%           fprintf(                                                  ...
+%           'Sub-observer planetographic longitude (deg) = %21.9f\n', ...
+%                                                        spglon(j) )
+%
+%           fprintf(                                                  ...
+%           'Observer planetographic longitude     (deg) = %21.9f\n', ...
+%                                                        opglon(j) )
+%
+%           fprintf(                                                  ...
+%           'Sub-observer planetographic latitude  (deg) = %21.9f\n', ...
+%                                                        spglat(j) )
+%
+%           fprintf(                                                  ...
+%           'Observer planetographic latitude      (deg) = %21.9f\n', ...
+%                                                        opglat(j) )
+%
+%           fprintf(                                                  ...
+%           'Sub-observer planetocentric longitude (deg) = %21.9f\n', ...
+%                                                        spclon(j) )
+%
+%           fprintf(                                                  ...
+%           'Observer planetocentric longitude     (deg) = %21.9f\n', ...
+%                                                        opclon(j) )
+%
+%           fprintf(                                                  ...
+%           'Sub-observer planetocentric latitude  (deg) = %21.9f\n', ...
+%                                                        spclat(j) )
+%
+%           fprintf(                                                  ...
+%           'Observer planetocentric latitude      (deg) = %21.9f\n', ...
+%                                                        opclat(j) )
+%
+%           fprintf( '\n')
+%
+%         end
 %
 %      end
 %
@@ -475,31 +523,67 @@
 %
 %      Computational Method Intercept:  ellipsoid
 %
-%      Observer altitude                      (km) =   349199089.604656994
-%      Length of SRFVEC                       (km) =   349199089.641352594
-%      Sub-observer point altitude            (km) =          -0.000000000
-%      Sub-observer planetographic longitude (deg) =         199.302304818
-%      Observer planetographic longitude     (deg) =         199.302304818
-%      Sub-observer planetographic latitude  (deg) =          26.262401078
-%      Observer planetographic latitude      (deg) =          25.994936593
-%      Sub-observer planetocentric longitude (deg) =         160.697695182
-%      Observer planetocentric longitude     (deg) =         160.697695182
-%      Sub-observer planetocentric latitude  (deg) =          25.994934013
-%      Observer planetocentric latitude      (deg) =          25.994934013
+%      Time (UTC):                          2008 AUG 11 00:00:00.000000
+%      Observer altitude                      (km) =   349199089.540775955
+%      Length of SRFVEC                       (km) =   349199089.577471614
+%      Sub-observer point altitude            (km) =           0.000000000
+%      Sub-observer planetographic longitude (deg) =         199.302305032
+%      Observer planetographic longitude     (deg) =         199.302305032
+%      Sub-observer planetographic latitude  (deg) =          26.262401237
+%      Observer planetographic latitude      (deg) =          25.994936751
+%      Sub-observer planetocentric longitude (deg) =         160.697694968
+%      Observer planetocentric longitude     (deg) =         160.697694968
+%      Sub-observer planetocentric latitude  (deg) =          25.994934171
+%      Observer planetocentric latitude      (deg) =          25.994934171
+%
+%         ...
+%
+%      Computational Method Intercept:  ellipsoid
+%
+%      Time (UTC):                          2008 AUG 21 00:00:00.000212
+%      Observer altitude                      (km) =   355208039.374441564
+%      Length of SRFVEC                       (km) =   355208039.410808742
+%      Sub-observer point altitude            (km) =           0.000000000
+%      Sub-observer planetographic longitude (deg) =         101.105921254
+%      Observer planetographic longitude     (deg) =         101.105921254
+%      Sub-observer planetographic latitude  (deg) =          26.097147650
+%      Observer planetographic latitude      (deg) =          25.830877512
+%      Sub-observer planetocentric longitude (deg) =        -101.105921254
+%      Observer planetocentric longitude     (deg) =        -101.105921254
+%      Sub-observer planetocentric latitude  (deg) =          25.830874987
+%      Observer planetocentric latitude      (deg) =          25.830874987
 %
 %      Computational Method Near point: ellipsoid
 %
-%      Observer altitude                      (km) =   349199089.604648590
-%      Length of SRFVEC                       (km) =   349199089.604648590
+%      Time (UTC):                          2008 AUG 11 00:00:00.000000
+%      Observer altitude                      (km) =   349199089.540767729
+%      Length of SRFVEC                       (km) =   349199089.540767789
 %      Sub-observer point altitude            (km) =          -0.000000000
-%      Sub-observer planetographic longitude (deg) =         199.302304819
-%      Observer planetographic longitude     (deg) =         199.302304819
-%      Sub-observer planetographic latitude  (deg) =          25.994936593
-%      Observer planetographic latitude      (deg) =          25.994936593
-%      Sub-observer planetocentric longitude (deg) =         160.697695181
-%      Observer planetocentric longitude     (deg) =         160.697695181
-%      Sub-observer planetocentric latitude  (deg) =          25.729407071
-%      Observer planetocentric latitude      (deg) =          25.994934013
+%      Sub-observer planetographic longitude (deg) =         199.302305032
+%      Observer planetographic longitude     (deg) =         199.302305032
+%      Sub-observer planetographic latitude  (deg) =          25.994936751
+%      Observer planetographic latitude      (deg) =          25.994936751
+%      Sub-observer planetocentric longitude (deg) =         160.697694968
+%      Observer planetocentric longitude     (deg) =         160.697694968
+%      Sub-observer planetocentric latitude  (deg) =          25.729407227
+%      Observer planetocentric latitude      (deg) =          25.994934171
+%
+%         ...
+%
+%      Computational Method Near point: ellipsoid
+%
+%      Time (UTC):                          2008 AUG 21 00:00:00.000212
+%      Observer altitude                      (km) =   355208039.374358773
+%      Length of SRFVEC                       (km) =   355208039.374358773
+%      Sub-observer point altitude            (km) =          -0.000000000
+%      Sub-observer planetographic longitude (deg) =         101.105921255
+%      Observer planetographic longitude     (deg) =         101.105921255
+%      Sub-observer planetographic latitude  (deg) =          25.830877512
+%      Observer planetographic latitude      (deg) =          25.830877512
+%      Sub-observer planetocentric longitude (deg) =        -101.105921255
+%      Observer planetocentric longitude     (deg) =        -101.105921255
+%      Sub-observer planetocentric latitude  (deg) =          25.566547790
+%      Observer planetocentric latitude      (deg) =          25.830874987
 %
 %-Particulars
 %
@@ -519,10 +603,16 @@
 %
 %-Version
 %
+%   -Mice Version 1.1.0, 12-JAN-2015, EDW (JPL)
+%
+%       Vectorized interface on input 'et'.
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
+%
 %   -Mice Version 1.0.1, 12-MAY-2009, EDW (JPL)
 %
-%      Corrected type in I/O call description. The call description
-%      lacked the 'fixref' argument.
+%       Corrected type in I/O call description. The call description
+%       lacked the 'fixref' argument.
 %
 %   -Mice Version 1.0.0, 30-JAN-2008, EDW (JPL)
 %
@@ -546,8 +636,8 @@ function [subpnt] = mice_subpnt( method, target, et, fixref, abcorr, obsrvr )
          obsrvr = zzmice_str(obsrvr);
 
       otherwise
-         error ( ['Usage: [subnt] = '                            ...
-                  'mice_subpnt( `method`, `target`, et,'         ...
+         error ( ['Usage: [_subnt_] = '                          ...
+                  'mice_subpnt( `method`, `target`, _et_,'       ...
                   ' `fixref`, `abcorr`, `obsrvr`)'])
    end
 

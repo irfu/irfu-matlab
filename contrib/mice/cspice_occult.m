@@ -4,6 +4,9 @@
 %   partially, etc.) of one target relative to another target as seen
 %   by an observer at a given time.
 %
+%   The surfaces of the target bodies may be represented by triaxial
+%   ellipsoids or by topographic data provided by DSK files.
+%
 %-Disclaimer
 %
 %   THIS SOFTWARE AND ANY RELATED MATERIALS WERE CREATED BY THE
@@ -46,28 +49,61 @@
 %
 %                 The supported options are:
 %
-%                    'ELLIPSOID'     Use a triaxial ellipsoid model
-%                                    with radius values provided via the
-%                                    kernel pool. A kernel variable
-%                                    having a name of the form
-%
-%                                       'BODYnnn_RADII'
-%
-%                                    where nnn represents the NAIF
-%                                    integer code associated with the
-%                                    body, must be present in the kernel
-%                                    pool. This variable must be
-%                                    associated with three numeric
-%                                    values giving the lengths of the
-%                                    ellipsoid's X, Y, and Z semi-axes.
-%
-%                    'POINT'         Treat the body as a single point.
-%                                    When a point target is specified,
-%                                    the occultation type must be
-%                                    set to 'ANY'.
-%
-%                 At least one of the target bodies 'target1' or 'target2'
-%                 must be modeled as an ellipsoid.
+%                    'ELLIPSOID'     
+%   
+%                       Use a triaxial ellipsoid model with radius values
+%                       provided via the kernel pool. A kernel variable
+%                       having a name of the form
+%      
+%                          'BODYnnn_RADII'
+%      
+%                       where nnn represents the NAIF integer code
+%                       associated with the body, must be present in the
+%                       kernel pool. This variable must be associated with
+%                       three numeric values giving the lengths of the
+%                       ellipsoid's X, Y, and Z semi-axes.
+%      
+%                    'POINT'     
+%   
+%                       Treat the body as a single point. When a point
+%                       target is specified, the occultation conditions
+%                       can only be total, annular, or none.   
+%                 
+%                    'DSK/UNPRIORITIZED[/SURFACES = <surface list>]'
+%   
+%                        Use topographic data provided by DSK files to
+%                        model the body's shape. These data must be
+%                        provided by loaded DSK files.
+%   
+%                        The surface list specification is optional. The
+%                        syntax of the list is
+%   
+%                           <surface 1> [, <surface 2>...]
+%   
+%                        If present, it indicates that data only for the
+%                        listed surfaces are to be used; however, data
+%                        need not be available for all surfaces in the
+%                        list. If absent, loaded DSK data for any surface
+%                        associated with the target body are used.
+%   
+%                        The surface list may contain surface names or
+%                        surface ID codes. Names containing blanks must
+%                        be delimited by double quotes, for example
+%   
+%                           SURFACES = "Mars MEGDR 128 PIXEL/DEG"
+%   
+%                        If multiple surfaces are specified, their names
+%                        or IDs must be separated by commas.
+%   
+%                        See the Particulars section below for details
+%                        concerning use of DSK data.
+%   
+%                 The combinations of the shapes of the target bodies
+%                 `targ1' and `targ2' must be one of:
+%   
+%                    One ELLIPSOID, one POINT
+%                    Two ELLIPSOIDs
+%                    One DSK, one POINT 
 %
 %                 Case and leading or trailing blanks are not
 %                 significant in the string.
@@ -364,12 +400,138 @@
 %   ellipsoids is adequate for determining whether one body is
 %   occulted by another as seen from a specified observer.
 %
+%   Using DSK data
+%   ==============
+%
+%      DSK loading and unloading
+%      -------------------------
+%
+%      DSK files providing data used by this routine are loaded by
+%      calling cspice_furnsh and can be unloaded by calling cspice_unload or
+%      cspice_kclear. See the documentation of cspice_furnsh for limits on
+%      numbers of loaded DSK files.
+%
+%      For run-time efficiency, it's desirable to avoid frequent
+%      loading and unloading of DSK files. When there is a reason to
+%      use multiple versions of data for a given target body---for
+%      example, if topographic data at varying resolutions are to be
+%      used---the surface list can be used to select DSK data to be
+%      used for a given computation. It is not necessary to unload
+%      the data that are not to be used. This recommendation presumes
+%      that DSKs containing different versions of surface data for a
+%      given body have different surface ID codes.
+%
+%
+%      DSK data priority
+%      -----------------
+%
+%      A DSK coverage overlap occurs when two segments in loaded DSK
+%      files cover part or all of the same domain---for example, a
+%      given longitude-latitude rectangle---and when the time
+%      intervals of the segments overlap as well.
+%
+%      When DSK data selection is prioritized, in case of a coverage
+%      overlap, if the two competing segments are in different DSK
+%      files, the segment in the DSK file loaded last takes
+%      precedence. If the two segments are in the same file, the
+%      segment located closer to the end of the file takes
+%      precedence.
+%
+%      When DSK data selection is unprioritized, data from competing
+%      segments are combined. For example, if two competing segments
+%      both represent a surface as a set of triangular plates, the
+%      union of those sets of plates is considered to represent the
+%      surface.
+%
+%      Currently only unprioritized data selection is supported.
+%      Because prioritized data selection may be the default behavior
+%      in a later version of the routine, the UNPRIORITIZED keyword is
+%      required in the `shape1' and `shape2' arguments.
+%
+%
+%      Syntax of the shape input arguments for the DSK case
+%      ----------------------------------------------------
+%
+%      The keywords and surface list in the target shape arguments
+%      `shape1' and `shape2' are called "clauses." The clauses may
+%      appear in any order, for example
+%
+%         'DSK/<surface list>/UNPRIORITIZED'
+%         'DSK/UNPRIORITIZED/<surface list>'
+%         'UNPRIORITIZED/<surface list>/DSK'
+%
+%      The simplest form of the `method' argument specifying use of
+%      DSK data is one that lacks a surface list, for example:
+%
+%         'DSK/UNPRIORITIZED'
+%
+%      For applications in which all loaded DSK data for the target
+%      body are for a single surface, and there are no competing
+%      segments, the above string suffices. This is expected to be
+%      the usual case.
+%
+%      When, for the specified target body, there are loaded DSK
+%      files providing data for multiple surfaces for that body, the
+%      surfaces to be used by this routine for a given call must be
+%      specified in a surface list, unless data from all of the
+%      surfaces are to be used together.
+%
+%      The surface list consists of the string
+%
+%         'SURFACES = '
+%
+%      followed by a comma-separated list of one or more surface
+%      identifiers. The identifiers may be names or integer codes in
+%      string format. For example, suppose we have the surface
+%      names and corresponding ID codes shown below:
+%
+%         Surface Name                              ID code
+%         ------------                              -------
+%         "Mars MEGDR 128 PIXEL/DEG"                1
+%         "Mars MEGDR 64 PIXEL/DEG"                 2
+%         "Mars_MRO_HIRISE"                         3
+%
+%      If data for all of the above surfaces are loaded, then
+%      data for surface 1 can be specified by either
+%
+%         'SURFACES = 1'
+%
+%      or
+%
+%         'SURFACES = "Mars MEGDR 128 PIXEL/DEG"'
+%
+%      Double quotes are used to delimit the surface name because
+%      it contains blank characters.
+%
+%      To use data for surfaces 2 and 3 together, any
+%      of the following surface lists could be used:
+%
+%         'SURFACES = 2, 3'
+%
+%         'SURFACES = "Mars MEGDR  64 PIXEL/DEG", 3'
+%
+%         'SURFACES = 2, Mars_MRO_HIRISE'
+%
+%         'SURFACES = "Mars MEGDR 64 PIXEL/DEG", Mars_MRO_HIRISE'
+%
+%      An example of a shape argument that could be constructed
+%      using one of the surface lists above is
+%
+%         'DSK/UNPRIORITIZED/SURFACES = "Mars MEGDR 64 PIXEL/DEG", 3'
+%
 %-Required Reading
 %
 %   For important details concerning this module's function, please refer to
 %   the CSPICE routine occult_c.
 %
+%   MICE.REQ
+%   DSK.REQ
+%
 %-Version
+%
+%   -Mice Version 2.0.0, 04-APR-2017, EDW (JPL), NJB (JPL)
+%
+%       Header update to reflect support for use of DSKs. 
 %
 %   -Mice Version 1.0.0, 14-NOV-2013, SCK (JPL)
 %

@@ -34,12 +34,22 @@
 %
 %   Given:
 %
-%      rot   a double precision 3x3 array or double precision 3x3xN
-%            array of rotation matrices that gives the transformation
-%            from some frame "frame1" to another frame "frame2"
+%      rot   rotation matrix/matrices that give the transformation from
+%            some frame "frame1" to another frame "frame2".
 %
-%      av    the double precision 3x1 array or double precision
-%            3xN array of angular velocities of the transformation
+%            [3,3]   = size(rot); double = class(rot)
+%
+%            or
+%
+%            [3,3,n] = size(rot); double = class(rot)
+%
+%      av    the angular velocities vector/array of the transformation(s).
+%
+%            [3,1]   = size(av); double = class(av)
+%
+%            or
+%
+%            [3,n]   = size(av); double = class(av)
 %
 %            If 'p' is the position of a fixed point in "frame2,"
 %            then from the point of view of "frame1," 'p' rotates
@@ -60,17 +70,24 @@
 %
 %   returns:
 %
-%      xform   a double precision 6x6 or double precision 3x3xN
-%              array of a state transformations associated
-%              with 'rot' and 'av'.  If 's1' is the state of an object
-%              with respect to "frame1", then the state 's2' of the
-%              object with respect to "frame2" is given by
+%      xform   the matrix/matrices of state transformations associated
+%              with 'rot' and 'av'. 
+%
+%              If    [3,3]   = size(rot)
+%              then  [6,6]   = size(xform); double = class(xform)
+%
+%              If    [3,3,n] = size(rot)
+%              then  [6,6,n] = size(xform); double = class(xform)
+%
+%              If 's1' is the state of an object with respect to "frame1",
+%              then the state 's2' of the object with respect to "frame2"
+%             is given by
 %
 %                 s2  =  xform * s1
 %
 %              where "*" denotes matrix-vector multiplication.
 %
-%              'xform' returns with the same vectorization measure (N)
+%              'xform' returns with the same vectorization measure, N,
 %              as 'rot' and 'av'.
 %
 %-Examples
@@ -194,6 +211,10 @@
 %   MICE.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.2, 09-MAR-2015, EDW (JPL)
+%
+%      Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.0.1, 06-MAY-2009, EDW (JPL)
 %

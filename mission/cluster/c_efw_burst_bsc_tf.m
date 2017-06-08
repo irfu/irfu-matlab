@@ -16,8 +16,10 @@ function bout = c_efw_burst_bsc_tf(binp,cl_id,component)
 % ----------------------------------------------------------------------------
 
 nfft = size(binp,1);
-if nfft/2==fix(nfft/2), nf = nfft/2;
-else nf = nfft/2 + 1;
+
+% Set "nf"
+if nfft/2==fix(nfft/2), nf = nfft/2;       % Even number of samples.
+else                    nf = nfft/2 + 1;   % Odd  number of samples.
 end
 
 fsamp = c_efw_fsample(binp,'ib');
@@ -39,14 +41,15 @@ for comp=col
     tf =         interp1(tfinp(:,1),tfinp(:,2),f,'linear','extrap');   % Add real part.
     tf = tf + 1i*interp1(tfinp(:,1),tfinp(:,3),f,'linear','extrap');   % Add imaginary part.
 
-    Pxx = fft(binp(:,comp+1));
+    Pxx = fft(binp(:,comp+1));    % DFT
+    
     if size(Pxx,1)+1==size(tf,1)*2
         Pxy = Pxx./[tf;fliplr(tf(2:end))];
     else
         Pxy = Pxx./[tf;fliplr(tf)];
     end
     
-    bout(:,comp+1) = ifft(Pxy,'symmetric');
+    bout(:,comp+1) = ifft(Pxy,'symmetric');    % IDFT
 end
 
 %% STAFF transfer function

@@ -54,23 +54,41 @@
 %
 %      Arguments-
 %
-%      target   the string scalar naming the target body.  Optionally,
+%      target   name of the target body. Optionally,
 %               you may supply the integer ID code for the object as an
 %               integer string.  For example both 'MOON' and '301'
 %               are legitimate strings that indicate the moon is the
 %               target body.
 %
+%               [1,c1] = size(target); char = class(target)
+%
+%                  or
+%
+%               [1,1] = size(target); cell = class(target)
+%
 %               The target and observer define a position vector
 %               that points from the observer to the target.
 %
-%      frame    the string scalar naming the reference frame in which to perform
+%      frame    name of the  reference frame in which to perform
 %               state look-ups and coordinate calculations.
+%
+%               [1,c2] = size(frame); char = class(frame)
+%
+%                  or
+%
+%               [1,1] = size(frame); cell = class(frame)
 %
 %               The SPICE frame subsystem must recognize the 'frame' name.
 %
-%      abcorr   the string scalar indicating the aberration corrections to apply
-%               to the state evaluations to account for one-way light time and
-%               stellar aberration.
+%      abcorr   describes the aberration corrections to apply to the state
+%               evaluations to account for one-way light time and stellar
+%               aberration.
+%
+%               [1,c3] = size(abcorr); char = class(abcorr)
+%
+%                  or
+%
+%               [1,1] = size(abcorr); cell = class(abcorr)
 %
 %               This routine accepts the same aberration corrections as does
 %               the routine spkezr_c. See the header of spkezr_c for a
@@ -114,16 +132,34 @@
 %               The 'abcorr' string lacks sensitivity to case, and to embedded,
 %               leading and trailing blanks.
 %
-%      obsrvr   the string scalar naming the observing body. Optionally, you
+%      obsrvr   name of the observing body. Optionally, you
 %               may supply the ID code of the object as an integer
 %               string. For example, both 'EARTH' and '399' are
 %               legitimate strings to supply to indicate the
 %               observer is earth.
 %
-%      crdsys   the string scalar naming the coordinate system for which the
+%               [1,c4] = size(obsrvr); char = class(obsrvr)
+%
+%                  or
+%
+%               [1,1] = size(obsrvr); cell = class(obsrvr)
+%
+%      crdsys   name of the of the coordinate system for which the
 %               coordinate of interest is a member.
 %
-%      coord    the string scalar naming the coordinate of interest in 'crdsys'.
+%               [1,c5] = size(crdsys); char = class(crdsys)
+%
+%                  or
+%
+%               [1,1] = size(crdsys); cell = class(crdsys)
+%
+%      coord    name of the coordinate of interest in 'crdsys'.
+%
+%               [1,c6] = size(coord); char = class(coord)
+%
+%                  or
+%
+%               [1,1] = size(coord); cell = class(coord)
 %
 %               The supported coordinate systems and coordinate names are:
 %
@@ -162,12 +198,19 @@
 %                  axial symmetry in the equatorial plane, i.e. equality
 %                  of the body X and Y radii (oblate or prolate spheroids).
 %
-%      relate   the string or character scalar describing the relational
-%               operator used to define a constraint on the selected coordinate
-%               of the observer-target vector. The result window found by this
+%      relate   describes the constraint relational on the selected coordinate
+%               of the observer-target vector. The result window found  by this
 %               routine indicates the time intervals where the constraint is
-%               satisfied. Supported values of relate and corresponding meanings
-%               are shown below:
+%               satisfied. 
+%
+%               [1,c7] = size(relate); char = class(relate)
+%
+%                  or
+%
+%               [1,1] = size(relate); cell = class(relate)
+%
+%               Supported values of 'relate' and corresponding meanings are 
+%               shown below:
 %
 %                  '>'      Separation is greater than the reference
 %                           value refval.
@@ -200,21 +243,25 @@
 %               The 'relate' string lacks sensitivity to case, and to leading
 %               and trailing blanks.
 %
-%      refval   the double precision scalar reference value used together
-%               with relate argument to define an equality or inequality to
+%      refval   reference value used together with relate argument to
+%               define an equality or inequality to
 %               satisfy by the selected coordinate of the observer-target
 %               vector. See the discussion of relate above for further
 %               information.
+%
+%               [1,1] = size(refval); double = class(refval)
 %
 %               The units of 'refval' correspond to the type as defined
 %               by 'coord', radians for angular measures, kilometers for
 %               distance measures.
 %
-%      adjust   a double precision scalar value used to modify searches for
-%               absolute extrema: when relate is set to ABSMAX or ABSMIN and
+%      adjust   value used to modify searches for absolute extrema: when 
+%               relate is set to ABSMAX or ABSMIN and
 %               adjust is set to a positive value, cspice_gfposc finds times
 %               when the observer-target vector coordinate is within 'adjust'
 %               radians/kilometers of the specified extreme value.
+%
+%               [1,1] = size(adjust); double = class(adjust)
 %
 %               For relate set to ABSMAX, the result window contains
 %               time intervals when the observer-target vector coordinate has
@@ -227,13 +274,15 @@
 %               'adjust' is not used for searches for local extrema,
 %               equality or inequality conditions.
 %
-%      step     the double precision time step size to use in the search.
+%      step     time step size to use in the search.
 %
 %               'step' must be short enough to for a search using this step
 %               size to locate the time intervals where coordinate
 %               function of the observer-target vector is monotone increasing or
 %               decreasing. However, 'step' must not be *too* short, or
 %               the search will take an unreasonable amount of time.
+%
+%               [1,1] = size(step); double = class(step)
 %
 %               For coordinates other than LONGITUDE and RIGHT ASCENSION,
 %               the step size must be shorter than the shortest interval,
@@ -253,7 +302,7 @@
 %
 %               'step' has units of TDB seconds.
 %
-%      nintvls  an integer scalar value specifying the number of intervals in
+%      nintvls  value specifying the number of intervals in
 %               the internal workspace array used by this routine. 'nintvls'
 %               should be at least as large as the number of intervals
 %               within the search region on which the specified observer-target
@@ -262,10 +311,14 @@
 %               minimum required to execute the specified search, but if chosen
 %               too small, the search will fail.
 %
-%      cnfine   a double precision SPICE window that confines the time
+%               [1,1] = size(nintvls); int32 = class(nintvls)
+%
+%      cnfine   a SPICE window that confines the time
 %               period over which the specified search is conducted.
-%               cnfine may consist of a single interval or a collection
+%               'cnfine' may consist of a single interval or a collection
 %               of intervals.
+%
+%               [2m,1] = size(cnfine); double = class(cnfine)
 %
 %               In some cases the confinement window can be used to
 %               greatly reduce the time period that must be searched
@@ -286,6 +339,8 @@
 %      result   the SPICE window of intervals, contained within the
 %               confinement window 'cnfine', on which the specified
 %               constraint is satisfied.
+%
+%               [2n,1] = size(result); double = class(result)
 %
 %               If the search is for local extrema, or for absolute
 %               extrema with adjust set to zero, then normally each
@@ -664,15 +719,19 @@
 %
 %-Version
 %
+%   -Mice Version 1.0.1, 13-NOV-2014, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
+%
 %   -Mice Version 1.0.2, 05-SEP-2012, EDW (JPL)
 %
-%      Edit to comments to correct search description.
+%       Edit to comments to correct search description.
 %
-%      Header updated to describe use of cspice_gfstol.
+%       Header updated to describe use of cspice_gfstol.
 %
 %   -Mice Version 1.0.1, 10-JUN-2009, EDW (JPL)
 %
-%      Minor header edit "cosin" -> "cos".
+%       Minor header edit "cosin" -> "cos".
 %
 %   -Mice Version 1.0.0, 15-APR-2009, EDW (JPL)
 %

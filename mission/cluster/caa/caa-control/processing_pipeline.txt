@@ -157,6 +157,7 @@ The ISDAT index files may need re-generation to avoid missing data intervals.
 
 3.5 Get recent FGM calibration files
 =====================================
+*** Not used anymore. FGM files are auto downloaded from CAA/CSA during processing. ***
 As user Yuri:
 ssh db
 cd /data/cluster/cal/fgm
@@ -302,9 +303,9 @@ new group=201012_L012 st=2010-12-01T00:00:00Z dt=2678400 lev=0 maxlev=2 ddt=1080
 =========================
 7. Find the delta offsets
 =========================
-Updated to 2013-12-31. No update on C1 possible since 2009-10-14 (no p4).
-No data on C3 from 2011-03-05 -> ???
-No data on C4 from 2013-06-30 -> ???
+No delta on C1 possible since 2009-10-14.
+No delta on C3 possible since 2011-06-01.
+No delta on C4 possible since 2013-07-01.
 The delta offsets are the difference between the spin fits for pair 12 vs. pair 34.
 The delta offsets must be computed before L2 processing.
 1. Load the delta offsets computed during the runs. Example for C2 (D2p12p34 from mEDSI.mat):
@@ -361,15 +362,17 @@ to the end of August. Example:
      save OffAmp2008.mat dE dAmp dt weight
 2. Plot the offsets:
     caa_sh_pl_xoff(dE,dAmp,dt,weight)
-   and read out the mean offsets for all 4 spacecraft. (Under Table of SW/SH offsets)
+   and read out the mean offsets for all 4 spacecraft.
+   Update table SW/SH offsets in c_efw_dsi_off.m.
 3. Determine the DSI offsets in the magnetosphere for all 4 spacecraft. Note: we run the 
 code from 1st of April to the end of March next year.
 (Note that caa_ms_pl_xoff_stats uses a function from the curve-fitting toolbox)
      DdsiX1=caa_get('2008-04-01T00:00:00Z','2009-03-31T23:59:59Z',1,'DdsiX?');
      save Ddsi2008.mat DdsiX1 DdsiX2 DdsiX3 DdsiX4
-     (Edit line 18 of caa_ms_pl_xoff_stats)
+     plot the data: irf_pl_tx('DdsiX?')
+     (Edit yy=20... (year) line of caa_ms_pl_xoff_stats if necessary)
      caa_ms_pl_xoff_stats(DdsiX1)
-4. If all looks OK, update the tables in c_efw_dsi_off.m (Under Table of MS offsets).
+4. If all looks OK, update table MS offsets in c_efw_dsi_off.m.
    Check it into git and update on db.
 
 

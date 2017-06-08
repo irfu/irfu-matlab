@@ -33,24 +33,24 @@
 %
 %   Given:
 %
-%      spk       tthe string name, or cell of strings, of SPICE CK files.
+%      spk       the name, or cell of names, of SPICE SPK file(s).
 %
-%                [1,c] = size(spk), char = class(spk)
+%                [n,c1] = size(spk); char = class(spk)
 %
 %                  or
 %
-%                [1,m] = size(spk), cell = class(spk)
+%                [1,n] = size(spk); cell = class(spk)
 %
-%      idcode    the integer scalar NAIF ID code of an object for which
-%                ephemeris data are expected to exist in the specified SPK file.
+%      idcode    the SPK ID code of an object for which ephemeris
+%                data are expected to exist in the specified SPK file.
 %
-%                [1,1] = size(idcode), int32 = class(idcode)
+%                [1,1] = size(idcode); int32 = class(idcode)
 %
-%      room      an integer scalar defining the number of intervals for use
-%                as a workspace by the routine. This value should equal at least
-%                the number of intervals corresponding to 'idcode' in 'spk'.
+%      room      the number of intervals for use as a workspace by the
+%                routine. This value should equal at least the number
+%                of intervals corresponding to 'idcode' in 'spk'.
 %
-%                [1,1] = size(room), int32 = class(room)
+%                [1,1] = size(room); int32 = class(room)
 %
 %      cover_i   an optional input describing a either an empty window or a
 %                window array created from a previous cspice_spkcov call.
@@ -58,7 +58,7 @@
 %                window consisting of a union of the data retrieved from the
 %                'spk' kernels and the data in 'cover_i'.
 %
-%                [2m,1] = size(cover_i), double = class(cover_i)
+%                [2m,1] = size(cover_i); double = class(cover_i)
 %
 %                   or
 %
@@ -74,18 +74,24 @@
 %
 %   returns:
 %
-%      cover   a double precision 2Nx1 array (window) containing the coverage
-%              for 'idcode'', i.e. the set of time intervals for which 'idcode'
+%      cover   the window containing the coverage for 'idcode'', i.e.
+%              the set of time intervals for which 'idcode'
 %              data exist in the file 'spk'. The array 'cover'
 %              contains the pairs of endpoints of these intervals.
 %
-%               Each window defined as a pair of endpoints such that:
+%              [2p,1] = size(cover), double = class(cover)
+%
+%                 or
+%
+%              [0,1] = size(cover), double = class(cover)
+%
+%              Each window defined as a pair of endpoints such that:
 %
 %                  window 1 = cover(1:2)
 %                  window 2 = cover(3:4)
 %                  window 3 = cover(5:6)
 %                           ...
-%                  window N = cover(2N-1,2N)
+%                  window p = cover(2p-1,2p)
 %
 %              The interval endpoints contained in 'cover' are ephemeris
 %              times, expressed as seconds past J2000 TDB.
@@ -94,12 +100,6 @@
 %              'idcode'.  If 'cover_i' exists in the argument list, 'cover'
 %              returns as a union of the coverage data found in 'spk' and
 %              the data in 'cover_i'. 'cover' can overwrite 'cover_i'.
-%
-%              [2p,1] = size(cover), double = class(cover)
-%
-%                 or
-%
-%              [0,1] = size(cover), double = class(cover)
 %
 %-Examples
 %
@@ -189,87 +189,72 @@
 %
 %   Example (1):
 %
-%      Assign an SPK kernel list as:
+%   Matlab outputs:
 %
-%      >> SPK = { '/kernels/gen/spk/de405_2000-2050.bsp', ...
-%                 '/kernels/gen/spk/jup100.bsp' };
-%
-%      >> spkobj_t(SPK)
-%
-%   MATLAB outputs:
-%
-%      ========================================
-%      Coverage for object 1
-%      Interval: 1
-%         Start: 2000 JAN 01 00:01:04.183 (TDB)
-%          Stop: 2050 JAN 01 00:01:04.183 (TDB)
-%
-%      ========================================
-%      Coverage for object 2
-%      Interval: 1
-%         Start: 2000 JAN 01 00:01:04.183 (TDB)
-%          Stop: 2050 JAN 01 00:01:04.183 (TDB)
+%      spkobj_t ( {'/sat393.bsp', 'ura112.bsp'} )
 %
 %      ========================================
 %      Coverage for object 3
 %      Interval: 1
-%         Start: 1973 NOV 01 00:00:00.000 (TDB)
-%          Stop: 2050 JAN 01 00:01:04.183 (TDB)
+%         Start: 1900 JAN 01 00:00:41.183 (TDB)
+%          Stop: 2099 DEC 24 00:01:07.183 (TDB)
 %
 %      ========================================
-%      Coverage for object 4
+%      Coverage for object 6
 %      Interval: 1
-%         Start: 2000 JAN 01 00:01:04.183 (TDB)
-%          Stop: 2050 JAN 01 00:01:04.183 (TDB)
+%         Start: 1950 JAN 01 00:00:41.183 (TDB)
+%          Stop: 2050 JAN 01 00:01:08.183 (TDB)
 %
 %      ========================================
-%      Coverage for object 5
+%      Coverage for object 7
 %      Interval: 1
-%         Start: 1973 NOV 01 00:00:00.000 (TDB)
-%          Stop: 2050 JAN 01 00:01:04.183 (TDB)
-%
-%             ... continued ...
+%         Start: 1900 JAN 01 00:00:41.183 (TDB)
+%          Stop: 2099 DEC 24 00:01:07.183 (TDB)
 %
 %      ========================================
-%      Coverage for object 501
+%      Coverage for object 10
 %      Interval: 1
-%         Start: 1973 NOV 01 00:00:00.000 (TDB)
-%          Stop: 2023 NOV 03 00:00:00.000 (TDB)
+%         Start: 1900 JAN 01 00:00:41.183 (TDB)
+%          Stop: 2099 DEC 24 00:01:07.183 (TDB)
 %
 %      ========================================
-%      Coverage for object 502
+%      Coverage for object 399
 %      Interval: 1
-%         Start: 1973 NOV 01 00:00:00.000 (TDB)
-%          Stop: 2023 NOV 03 00:00:00.000 (TDB)
+%         Start: 1900 JAN 01 00:00:41.183 (TDB)
+%          Stop: 2099 DEC 24 00:01:07.183 (TDB)
 %
 %      ========================================
-%      Coverage for object 503
+%      Coverage for object 610
 %      Interval: 1
-%         Start: 1973 NOV 01 00:00:00.000 (TDB)
-%          Stop: 2023 NOV 03 00:00:00.000 (TDB)
+%         Start: 1950 JAN 01 00:00:41.183 (TDB)
+%          Stop: 2050 JAN 01 00:01:08.183 (TDB)
+%
+%         ...
 %
 %      ========================================
-%      Coverage for object 504
+%      Coverage for object 723
 %      Interval: 1
-%         Start: 1973 NOV 01 00:00:00.000 (TDB)
-%          Stop: 2023 NOV 03 00:00:00.000 (TDB)
+%         Start: 1900 JAN 01 00:00:41.183 (TDB)
+%          Stop: 2099 DEC 24 00:01:07.183 (TDB)
 %
 %      ========================================
-%      Coverage for object 599
+%      Coverage for object 724
 %      Interval: 1
-%         Start: 1973 NOV 01 00:00:00.000 (TDB)
-%          Stop: 2023 NOV 03 00:00:00.000 (TDB)
+%         Start: 1900 JAN 01 00:00:41.183 (TDB)
+%          Stop: 2099 DEC 24 00:01:07.183 (TDB)
+%
+%      ========================================
+%      Coverage for object 799
+%      Interval: 1
+%         Start: 1900 JAN 01 00:00:41.183 (TDB)
+%          Stop: 2099 DEC 24 00:01:07.183 (TDB)
 %
 %   Example (2):
 %
-%      Assign the SPK kernel list as:
-%
-%      >> SPK = { '/kernels/Hubble/1990-01-01_1996-01-01.bsp', ...
-%                 '/kernels/Hubble/2002-01-01_2006-12-31.bsp' };
-%
-%      >> spkobj_t(SPK)
-%
 %   MATLAB outputs:
+%
+%      >> spkobj_t( { '/kernels/Hubble/1990-01-01_1996-01-01.bsp', ...
+%                     '/kernels/Hubble/2002-01-01_2006-12-31.bsp' } )
 %
 %      ========================================
 %      Coverage for object -48
@@ -283,7 +268,9 @@
 %
 %-Particulars
 %
-%   None.
+%   This routine provides an API via which applications can determine
+%   the coverage a specified SPK file provides for a specified
+%   ephemeris object.
 %
 %-Required Reading
 %
@@ -298,6 +285,10 @@
 %   WINDOWS.REQ
 %
 %-Version
+%
+%   -Mice Version 1.2.1, 10-MAR-2015, EDW (JPL)
+%
+%      Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.2.0, 03-APR-2012, EDW (JPL)
 %

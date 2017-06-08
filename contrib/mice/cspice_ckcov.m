@@ -33,21 +33,21 @@
 %
 %   Given:
 %
-%      ck        the string name, or cell of strings, of SPICE CK files.
+%      ck        the name(s) of SPICE CK files.
 %
-%                [1,c] = size(ck), char = class(ck)
+%                [n,c1] = size(ck), char = class(ck)
 %
 %                  or
 %
-%                [1,m] = size(ck), cell = class(ck)
+%                [1,n] = size(ck), cell = class(ck)
 %
-%      idcode    the integer CK ID code of an object, normally a
-%                spacecraft structure or instrument, for which pointing data
-%                are expected to exist in the specified CK file
+%      idcode    the CK ID code of an object, normally a spacecraft
+%                structure or instrument, for which pointing data are
+%                expected to exist in the specified CK file.
 %
 %                [1,1] = size(idcode), int32 = class(idcode)
 %
-%      needav    a boolean scalar indicating whether to consider segments
+%      needav    a flag indicating whether to consider segments
 %                having angular velocity when determining coverage. When
 %                'needav' is true, segments without angular velocity don't
 %                contribute to the coverage window; when 'needav' is false,
@@ -57,8 +57,11 @@
 %                [1,1] = size(needav), logical = class(needav)
 %
 %      level     the string defining the level (granularity) at which
-%                the coverage is examined.  Allowed values and corresponding
-%                meanings are:
+%                the coverage is examined.
+%
+%                [1,c] = size(level), char = class(level)
+%
+%                Allowed values and corresponding meanings are:
 %
 %                     'SEGMENT'    The output coverage window contains
 %                                  intervals defined by the start and
@@ -85,29 +88,27 @@
 %                                  coverage interval is considered to
 %                                  contribute to the total coverage.
 %
-%                [1,c] = size(level), char = class(level)
-%
-%      tol       a double precision scalar defining the tolerance value
-%                expressed in ticks of the spacecraft clock associated with
-%                'idcode'. Before each interval is inserted into the coverage
-%                window, the interval is intersected with the segment coverage
-%                interval, then and if the intersection is non-empty, it is
-%                expanded by 'tol': the left endpoint of the intersection
-%                interval is reduced by and the right endpoint is increased by
-%                'tol'. Adjusted interval 'tol' endpoints, when expressed as
-%                encoded SCLK, never are less than zero ticks. Any intervals
-%                that overlap as a result of the expansion are merged.
-%
-%                The coverage window returned when tol > 0 indicates the
-%                coverage provided by the file to the CK readers cspice_ckgpav
-%                and cspice_ckgp when that value of 'tol' is passed to them as
-%                an input.
+%      tol       the tolerance value expressed in ticks of the spacecraft
+%                clock associated with 'idcode'. Before each interval is
+%                inserted into the coverage window, the interval is
+%                intersected with the segment coverage interval, then and
+%                if the intersection is non-empty, it is expanded by
+%                'tol': the left endpoint of the intersection interval is
+%                reduced by and the right endpoint is increased by 'tol'.
+%                Adjusted interval 'tol' endpoints, when expressed as
+%                encoded SCLK, never are less than zero ticks. Any
+%                intervals that overlap as a result of the expansion
+%                are merged.
 %
 %                [1,1] = size(tol), double = class(tol)
 %
-%      timsys    the string scalar indicating the time system used in the
-%                output coverage window. 'timsys' may have the
-%                values:
+%                The coverage window returned when tol > 0 indicates the
+%                coverage provided by the file to the CK readers cspice_ckgpav
+%                and cspice_ckgp when that value of 'tol' is passed to them
+%                as an input.
+%
+%      timsys    the name of the time system to use in the output coverage
+%                window. 'timsys' may have the values:
 %
 %                      'SCLK'    Elements of 'cov' are expressed in
 %                                encoded SCLK ("ticks"), where the
@@ -119,9 +120,9 @@
 %
 %                [1,c] = size(timsys), char = class(timsys)
 %
-%      room      an integer scalar defining the number of intervals for use
-%                as a workspace by the routine. This value should equal at least
-%                the number of intervals corresponding to 'idcode' in 'ck'.
+%      room      the number of intervals for use as a workspace by the
+%                routine. This value should equal at least the number of
+%                intervals corresponding to 'idcode' in 'ck'.
 %
 %                [1,1] = size(room), int32 = class(room)
 %
@@ -147,11 +148,17 @@
 %
 %   returns:
 %
-%      cov   a double precision 2Nx1 array containing the coverage for 'idcode'
-%            available from 'ck'.  When the coverage level is 'INTERVAL', this
-%            is the set of time intervals for which data for 'idcode' are
-%            present in the file 'ck', The array 'cov' contains the pairs of
+%      cov   the window containing the coverage for 'idcode' available from
+%            'ck'.  When the coverage level is 'INTERVAL', this is the set
+%            of time intervals for which data for 'idcode' are present in
+%            the file 'ck', The array 'cov' contains the pairs of
 %            endpoints of these intervals.
+%
+%            [2p,1] = size(cov), double = class(cov)
+%
+%               or
+%
+%            [0,1] = size(cov), double = class(cov)
 %
 %            Each window defined as a pair of endpoints such that:
 %
@@ -159,7 +166,7 @@
 %               window 2 = cover(3:4)
 %               window 3 = cover(5:6)
 %                           ...
-%               window N = cover(2N-1,2N)
+%               window p = cover(2p-1,2p)
 %
 %            When the coverage 'level' is 'SEGMENT', 'cov' is computed in a
 %            manner similar to that described above, but the coverage intervals
@@ -180,12 +187,6 @@
 %            'cover_i' exists in the argument list, 'cov' returns as a union of
 %            the coverage data found in 'ck' and the data in 'cover_i'. 'cov'
 %            can overwrite 'cover_i'.
-%
-%            [2p,1] = size(cov), double = class(cov)
-%
-%               or
-%
-%            [0,1] = size(cov), double = class(cov)
 %
 %-Examples
 %
@@ -357,6 +358,10 @@
 %   WINDOWS.REQ
 %
 %-Version
+%
+%   -Mice Version 1.2.1, 10-MAR-2015, EDW (JPL)
+%
+%      Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.2.0, 03-APR-2012, EDW (JPL)
 %

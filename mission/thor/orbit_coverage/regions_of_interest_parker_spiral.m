@@ -123,6 +123,8 @@ h_sw = plot3(h,SW.data(:,1)/(units.RE*1e-3),SW.data(:,2)/(units.RE*1e-3),SW.data
 h_fs = plot3(h,FS.data(:,1)/(units.RE*1e-3),FS.data(:,2)/(units.RE*1e-3),FS.data(:,3)/(units.RE*1e-3));
 h_bs = plot3(h,BS.data(:,1)/(units.RE*1e-3),BS.data(:,2)/(units.RE*1e-3),BS.data(:,3)/(units.RE*1e-3));
 
+
+
 view([0 0 1])
 hold(h,'off')
 

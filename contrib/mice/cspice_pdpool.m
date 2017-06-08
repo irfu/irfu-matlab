@@ -166,7 +166,7 @@ function cspice_pdpool( name, dvals )
 
       otherwise
 
-         error ( 'Usage: cspice_pdpool( `name`, dvals)' )
+         error ( 'Usage: cspice_pdpool( `name`, dvals(n))' )
 
    end
 

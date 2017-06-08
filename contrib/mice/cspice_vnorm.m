@@ -49,7 +49,7 @@
 %
 %              [1,n] = size(vnorm); double = class(vnorm)
 %
-%              'vnorm' returns with the same measure of vectorization (N)
+%              'vnorm' returns with the same vectorization measure, N,
 %              as 'v1'.
 %
 %-Examples
@@ -166,6 +166,10 @@
 %   MICE.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.1, 18-DEC-2014, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.0.0, 24-APR-2010 (EDW)
 %

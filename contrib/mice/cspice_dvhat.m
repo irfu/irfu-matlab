@@ -33,12 +33,13 @@
 %
 %   Given:
 %
-%      s1   a double precision 6x1-array or 6xN array defining a
-%           state or states;
+%      s1   the array(s) defining a state or states;
 %
 %              s1 = (r1, dr1 ).
 %                         --
 %                         dt
+%
+%           [6,n] = size(s1); double = class(s1)
 %
 %   the call:
 %
@@ -46,7 +47,7 @@
 %
 %   returns:
 %
-%      dvhat   a double precision 6x1 array or 6xN array containing the unit
+%      dvhat   the array(s) containing the unit
 %              vector(s) pointing in the direction of the position component(s)
 %              of 's1' and the derivative of the unit vector with respect
 %              to time;
@@ -55,7 +56,9 @@
 %                          --             -----
 %                          dt             ||r1||
 %
-%              'dvhat' returns with the same measure of vectorization (N)
+%              [6,n] = size(dvhat); double = class(dvhat)
+%
+%              'dvhat' returns with the same vectorization measure (N)
 %              as 's1'.
 %
 %-Examples
@@ -136,6 +139,10 @@
 %   MICE.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.1, 03-NOV-2014, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.0.0, 04-MAY-2010, EDW (JPL)
 %

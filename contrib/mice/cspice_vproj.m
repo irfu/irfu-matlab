@@ -57,6 +57,9 @@
 %
 %              [3,n] = size(vproj); double = class(vproj)
 %
+%             'vproj' returns with the same vectorization measure, N, as
+%             'a' and 'b'
+%
 %-Examples
 %
 %   Any numerical results shown for this example may differ between

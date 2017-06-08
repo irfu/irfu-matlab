@@ -91,6 +91,8 @@
 %               ray intersects the region of space bounded by the FOV
 %               are sought.
 %
+%               [1,c1] = size(inst); char = class(inst)
+%
 %               The position of the instrument designated by 'inst' is
 %               considered to coincide with that of the ephemeris
 %               object designated by the input argument 'obsrvr' (see
@@ -107,15 +109,13 @@
 %               description of the required parameters associated with
 %               an instrument.
 %
-%               [1,c1] = size(inst), char = class(inst)
-%
 %      raydir   the ray pointing toward a target. The ray emanates from
 %               the location of the ephemeris object designated by the
 %               input argument 'obsrvr' and is expressed relative to the
 %               reference frame designated by 'rframe' (see descriptions
 %               below).
 %
-%                [3,1] = size(raydir), double = class(raydir)
+%                [3,1] = size(raydir); double = class(raydir)
 %
 %      rframe   the string naming the reference frame associated with
 %               the input ray's direction vector 'raydir'.
@@ -126,13 +126,15 @@
 %               to the epoch associated with the light-time corrected
 %               position of the frame center.
 %
+%               [1,c2] = size(rframe); char = class(rframe)
+%
 %               Case and leading or trailing blanks bracketing a non-blank
 %               frame name are not significant in the string 'rframe'.
 %
-%               [1,c2] = size(rframe), char = class(rframe)
-%
 %      abcorr   the string indicating the aberration corrections
 %               to apply when computing the 'raydir' direction.
+%
+%               [1,c3] = size(abcorr); char = class(abcorr)
 %
 %               The supported aberration correction options are
 %
@@ -148,18 +150,16 @@
 %               Case, leading and trailing blanks are not significant
 %               in the string 'abcorr'.
 %
-%               [1,c3] = size(abcorr), char = class(abcorr)
-%
 %      obsrvr   the string naming the body from which the target
 %               represented by 'raydir' is observed. The instrument designated
 %               by 'inst' is treated as if it were co-located with the observer.
+%
+%               [1,c4] = size(obsrvr); char = class(obsrvr)
 %
 %               Optionally, you may supply the ID code of the object as an
 %               integer string. For example, both 'EARTH' and '399' are
 %               legitimate strings to supply to indicate the observer
 %               is Earth.
-%
-%               [1,c4] = size(obsrvr), char = class(obsrvr)
 %
 %      step     the step size to use in the search. 'step' must be shorter
 %               than any interval, within the confinement window, over which
@@ -171,6 +171,8 @@
 %               'step' must not be *too* short, or the search will take
 %               an unreasonable amount of time.
 %
+%               [1,1] = size(step); double = class(step)
+%
 %               The choice of 'step' affects the completeness but not
 %               the precision of solutions found by this routine; the
 %               precision is controlled by the convergence tolerance.
@@ -179,26 +181,24 @@
 %
 %               'step' has units of TDB seconds.
 %
-%               [1,1] = size(step), double = class(step)
-%
 %      cnfine   the SPICE window that confines the time
 %               period over which the specified search is conducted.
 %               'cnfine' may consist of a single interval or a collection
 %               of intervals.
+%
+%               [2m,1] = size(cnfine); double = class(cnfine)
 %
 %               In some cases the confinement window can be used to
 %               greatly reduce the time period that must be searched
 %               for the desired solution. See the Particulars section
 %               below for further discussion.
 %
-%               [2m,1] = size(cnfine), double = class(cnfine)
-%
 %      nintvls  the maximum number of intervals to return in 'result'.
 %               Note: this value should equal at least the number of expected
 %               intervals. Recall two double precision values define
 %               an interval.
 %
-%               [1,1] = size(nintvls), int32 = class(nintvls)
+%               [1,1] = size(nintvls); int32 = class(nintvls)
 %
 %   the call:
 %
@@ -211,6 +211,8 @@
 %               confinement window 'cnfine', on which the specified
 %               constraint is satisfied.
 %
+%               [2n,1] = size(result); double = class(result)
+%
 %               If the search is for local extrema, or for absolute
 %               extrema with adjust set to zero, then normally each
 %               interval of result will be a singleton: the left and
@@ -218,8 +220,6 @@
 %
 %               If no times within the confinement window satisfy the
 %               constraint, 'result' will return with cardinality zero.
-%
-%               [2n,1] = size(result), double = class(result)
 %
 %-Examples
 %
@@ -540,17 +540,21 @@
 %
 %-Version
 %
+%   -Mice Version 1.0.1, 13-NOV-2014, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
+%
 %   -Mice Version 1.0.1, 05-NOV-2013, EDW (JPL)
 %
-%      Corrected minor typos in header.
+%       Corrected minor typos in header.
 %
-%      Renamed the argument 'size' to 'nintvls'. "size" is a Matlab function
-%      name and it's seriously dumb to use a function name word as an argument
-%      name.
+%       Renamed the argument 'size' to 'nintvls'. "size" is a Matlab function
+%       name and it's seriously dumb to use a function name word as an
+%       argument name.
 %
-%      Edited I/O section to conform to NAIF standard for Mice documentation.
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
-%      Header updated to describe use of cspice_gfstol.
+%       Header updated to describe use of cspice_gfstol.
 %
 %   -Mice Version 1.0.0, 15-APR-2009, EDW (JPL)
 %

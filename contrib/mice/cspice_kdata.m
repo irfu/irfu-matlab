@@ -45,18 +45,29 @@
 %              Examples section for an illustrative code fragment.
 %
 %     kind     list of types of kernels to consider when fetching kernels from
-%              the list of loaded kernels. 'kind' should consist of a list of
-%              words of kernels to examine. Recognized types are
+%              the list of loaded kernels.
 %
-%              [1,m] = size(kind); char = class(kind)
+%              [1,c1] = size(kind), char = class(kind)
 %
-%                 SPK
-%                 CK
-%                 PCK
-%                 EK
-%                 TEXT
-%                 META
-%                 ALL
+%                 or
+%
+%              [1,1] = size(kind), cell = class(kind)
+%
+%              'kind' should consist of a list of words of kernels to
+%              examine. Recognized types are
+%
+%                 'SPK'  --- All SPK files are counted in the total.
+%                 'CK'   --- All CK files are counted in the total.
+%                 'PCK'  --- All binary PCK files are counted in the
+%                          total.
+%                 'DSK'  --- All DSK files are counted in the total.
+%                 'EK'   --- All EK files are counted in the total.
+%                 'TEXT' --- All text kernels that are not meta-text
+%                          kernels are included in the total.
+%                 'META' --- All meta-text kernels are counted in the
+%                          total.
+%                 'ALL'  --- Every type of kernel is counted in the
+%                          total.
 %
 %              'kind' lacks case sensitivity. The cspice_kdata algorithm
 %              ignores words in 'kind' if not one of those listed above.
@@ -219,14 +230,22 @@
 %   the CSPICE routine kdata_c.
 %
 %   MICE.REQ
+%   DSK.REQ
 %
 %-Version
+%
+%   -Mice Version 2.0.0, 20-JAN-2016, EDW (JPL), NJB (JPL)
+%
+%       Correected "Usage" string to include 'found'.
+%
+%       Header update to expand argument descriptions and
+%       reflect support for use of DSKs
 %
 %   -Mice Version 1.2.0, 12-MAR-2012, EDW (JPL), SCK (JPL)
 %
 %      "logical" call replaced with "zzmice_logical."
 %
-%      I/O descriptions edits to parallel to Icy version.
+%      I/O descriptions edits to parallel the Icy version.
 %
 %      Edited I/O section to conform to NAIF standard for Mice documentation.
 %
@@ -255,7 +274,7 @@ function [ file, filtyp, source, handle, found ] = cspice_kdata( which, kind )
 
       otherwise
 
-         error( [ 'Usage: [ `file`, `filtyp`, `source`, handle ] = ' ...
+         error( [ 'Usage: [ `file`, `filtyp`, `source`, handle, found ] = ' ...
                                          'cspice_kdata( which, `kind` )']  )
 
    end

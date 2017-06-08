@@ -55,23 +55,34 @@
 %
 %      Arguments-
 %
-%      target   the scalar string naming the target body.  Optionally,
-%               you may supply the integer ID code for the object as an
-%               integer string.  For example both 'MOON' and '301'
-%               are legitimate strings that indicate the moon is the
-%               target body.
+%      target   name of the target body. Optionally, you may supply the integer
+%               ID code for the object as an integer string.  For example both
+%               'MOON' and '301' are legitimate strings that indicate the moon
+%               is the target body.
 %
-%               The string `target' is case-insensitive, and leading
-%               and trailing blanks in `target' are not significant.
+%               [1,c1] = size(target); char = class(target)
+%
+%                  or
+%
+%               [1,1] = size(target); cell = class(target)
+%
+%               Case and leading or trailing blanks are not significant
+%               in the string 'target'.
 %
 %               The target and observer define a position vector which
 %               points from the observer to the target; the time derivative
 %               length of this vector is the "range rate" that serves as
 %               the subject of the search performed by this routine.
 %
-%      abcorr   the scalar string indicating the aberration corrections to apply
-%               to the state evaluations to account for one-way light time and
-%               stellar aberration.
+%      abcorr   describes the aberration corrections to apply to the state
+%               evaluations to account for one-way light time and stellar
+%               aberration.
+%
+%               [1,c2] = size(abcorr); char = class(abcorr)
+%
+%                  or
+%
+%               [1,1] = size(abcorr); cell = class(abcorr)
 %
 %               This routine accepts the same aberration corrections as does
 %               the CSPICE routine spkezr_c. See the header of spkezr_c for a
@@ -115,17 +126,32 @@
 %               The 'abcorr' string lacks sensitivity to case, and to embedded,
 %               leading and trailing blanks.
 %
-%      obsrvr   the scalar string naming the observing body. Optionally, you
-%               may supply the ID code of the object as an integer
-%               string. For example, both 'EARTH' and '399' are
-%               legitimate strings to supply to indicate the
-%               observer is earth.
+%      obsrvr   name of the observing body. Optionally, you may supply the ID
+%               code of the object as an integer string. For example both
+%               "MOON" and "301" are legitimate strings that indicate the Moon
+%               is the observer.
 %
-%      relate   the string or character scalar describing the constraint
-%               relational operator on observer-target range rate. The result
-%               window found  by this routine indicates the time intervals
-%               where the constraint is satisfied. Supported values of
-%               'relate' and corresponding meanings are shown below:
+%               [1,c3] = size(obsrvr); char = class(obsrvr)
+%
+%                  or
+%
+%               [1,1] = size(obsrvr); cell = class(obsrvr)
+%
+%               Case and leading or trailing blanks are not significant
+%               in the string 'obsrvr'.
+%
+%      relate   the constraint relational operator on observer-target
+%               distance. The result window found  by this routine indicates
+%               the time intervals where the constraint is satisfied.
+%
+%               [1,c4] = size(relate); char = class(relate)
+%
+%                  or
+%
+%               [1,1] = size(relate); cell = class(relate)
+%
+%               Supported values of 'relate' and corresponding meanings are
+%               shown below:
 %
 %                  '>'      Range rate is greater than the reference
 %                           value 'refval'.
@@ -159,36 +185,42 @@
 %               The 'relate' string lacks sensitivity to case, leading
 %               and trailing blanks.
 %
-%      refval   the scalar double precision reference value used together
-%               with relate argument to define an equality or inequality to
-%               satisfy by the observer-target range rate. See the discussion
-%               of relate above for further information.
+%      refval   reference value used together with relate argument to define
+%               an equality or inequality to satisfy by the observer-target
+%               distance. See the discussion of relate above for further
+%               information.
+%
+%               [1,1] = size(refval); double = class(refval)
 %
 %               The units of 'refval' are km.
 %
-%      adjust   a scalar double precision value used to modify searches for
-%               absolute extrema: when relate is set to ABSMAX or ABSMIN and
-%               adjust is set to a positive value, cspice_gfrr finds times when
-%               the observer-target vector coordinate is within 'adjust'
-%               kilometers/second of the specified extreme value.
+%      adjust   value used to modify searches for absolute extrema: when relate
+%               is set to ABSMAX or ABSMIN and adjust is set to a positive
+%               value, cspice_gfrr finds times when the observer-target
+%               vector coordinate is within 'adjust'  kilometers/second of
+%               the specified extreme value.
+%
+%               [1,1] = size(adjust); double = class(adjust)
 %
 %               For relate set to ABSMAX, the result window contains
 %               time intervals when the observer-target vector coordinate has
 %               values between ABSMAX - 'adjust' and ABSMAX.
 %
 %               For relate set to ABSMIN, the result window contains
-%               time intervals when the observer-target range rate has
-%               values between ABSMIN and ABSMIN + 'adjust'.
+%               time intervals when the phase angle has values between
+%               ABSMIN and ABSMIN + 'adjust'.
 %
 %               'adjust' is not used for searches for local extrema,
 %               equality or inequality conditions.
 %
-%      step     the scalar double precision time step size to use in the search.
-%               'step' must be short enough for a search using this step
-%               size to locate the time intervals where coordinate function
-%               of the observer-target vector is monotone increasing or
-%               decreasing. However, step must not be *too* short, or the
-%               search will take an unreasonable amount of time.
+%      step     time step size to use in the search. 'step' must be short
+%               enough for a search using this step size to locate the time
+%               intervals where coordinate function of the observer-target
+%               vector is monotone increasing or decreasing. However, step must
+%               not be *too* short, or the search will take an unreasonable
+%               amount of time.
+%
+%               [1,1] = size(step); double = class(step)
 %
 %               The choice of 'step' affects the completeness but not
 %               the precision of solutions found by this routine; the
@@ -196,23 +228,27 @@
 %
 %               'step' has units of TDB seconds.
 %
-%      nintvls  a scalar integer value specifying the number of intervals in
-%               the internal workspace array used by this routine. 'nintvls'
-%               should be at least as large as the number of intervals
-%               within the search region on which the specified observer-target
-%               vector coordinate function is monotone increasing or decreasing.
-%               It does no harm to pick a value of 'nintvls' larger than the
-%               minimum required to execute the specified search, but if chosen
-%               too small, the search will fail.
+%      nintvls  value specifying the number of intervals in the internal
+%               workspace array used by this routine. 'nintvls' should be at
+%               least as large as the number of intervals within the search
+%               region on which the specified observer-target vector coordinate
+%               function is monotone increasing or decreasing. It does no harm
+%               to pick a value of 'nintvls' larger than the minimum required
+%               to execute the specified search, but if chosen too small, the
+%               search will fail.
 %
-%      cnfine   a scalar double precision SPICE window that confines the time
-%               period over which the specified search is conducted. 'cnfine'
-%               may consist of a single interval or a collection of intervals.
+%               [1,1] = size(nintvls); int32 = class(nintvls)
 %
-%               In some cases the confinement window can be used to greatly
-%               reduce the time period that must be searched for the desired
-%               solution. See the Particulars section below for further
-%               discussion.
+%      cnfine   a SPICE window that confines the time period over which the
+%               specified search is conducted. 'cnfine' may consist of a
+%               single interval or a collection of intervals.
+%
+%               [2m,1] = size(cnfine); double = class(cnfine)
+%
+%               In some cases the confinement window can be used to
+%               greatly reduce the time period that must be searched
+%               for the desired solution. See the Particulars section
+%               below for further discussion.
 %
 %               See the Examples section below for a code example
 %               that shows how to create a confinement window.
@@ -224,9 +260,11 @@
 %
 %   returns:
 %
-%      result   the scalar double precision window of intervals, contained
-%               within the confinement window 'cnfine', on which the specified
+%      result   the SPICE window of intervals, contained within the
+%               confinement window 'cnfine', on which the specified
 %               constraint is satisfied.
+%
+%               [2n,1] = size(result); double = class(result)
 %
 %               If the search is for local extrema, or for absolute
 %               extrema with adjust set to zero, then normally each
@@ -565,13 +603,17 @@
 %
 %-Version
 %
+%   -Mice Version 1.0.1, 13-NOV-2014, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
+%
 %   -Mice Version 1.0.1, 05-SEP-2012, EDW (JPL)
 %
-%      Edit to comments to correct search description.
+%       Edit to comments to correct search description.
 %
-%      Corrected minor typo in header.
+%       Corrected minor typo in header.
 %
-%      Header updated to describe use of cspice_gfstol.
+%       Header updated to describe use of cspice_gfstol.
 %
 %   -Mice Version 1.0.0, 16-FEB-2010, EDW (JPL)
 %
@@ -600,7 +642,7 @@ function [result] = cspice_gfrr( target, abcorr, obsrvr,  relate, refval, ...
 
       otherwise
 
-         error ( [ 'Usage: [result] = cspice_gfrr( `target`, `abcorr`, '  ...
+         error ( [ 'Usage: [result] = cspice_gfrr( `target`, `abcorr`, '    ...
                                      '`obsrvr`, `relate`, refval, adjust, ' ...
                                      'step, nintvls, cnfine )' ] )
 

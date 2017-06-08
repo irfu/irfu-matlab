@@ -1,6 +1,6 @@
 %-Abstract
 %
-%   ZZMICE_CELL converts an numeric input to double precision format,
+%   ZZMICE_CELL converts a numeric input to double precision format,
 %   enforcing an Nx1 dimension.
 %
 %-Disclaimer
@@ -33,14 +33,18 @@
 %
 %   Given:
 %
-%      x           an input numeric to convert to double precision
-%                  cell, i.e. an Nx1 double precision array
+%      x           a numeric array to convert to double precision
+%                  cell.
+%
+%                  [n,1] = size(x)
 %
 %      cell_type   string naming the type of data for the output cell.
 %                  Most likely values for 'cell_type':
 %
 %                     'double'
 %                     'int32'
+%
+%                  [1,c1] = size(cell_type); char = class(cell_type)
 %
 %   the call:
 %
@@ -49,6 +53,8 @@
 %   returns:
 %
 %      y   the double precision representation of 'x'
+%
+%          [n,1] = size(y)
 %
 %-Examples
 %
@@ -63,6 +69,10 @@
 %   MICE.REQ
 %
 %-Version
+%
+%   -Mice Version 1.1.1, 12-FEB-2015, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.1.0, 27-JUL-2009, EDW (JPL)
 %

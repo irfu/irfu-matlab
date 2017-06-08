@@ -35,6 +35,9 @@
 %
 %      x       an input numeric to convert to integer 32.
 %
+%              'x' may have any size or shape, but must be of class
+%              numeric.
+%
 %      range   an optional description on the range of 'x',
 %              define as a 1x2 array. When used, 'range' must
 %              satisfy dimension of 1x2 and range(1) < range(2).
@@ -52,6 +55,9 @@
 %      y   the 32 bit integer representation of 'x' with the
 %          property range(1) <= x <= range(2) if 'range' included
 %          as an input.
+%
+%          'y' returns with the same size and shape of 'x' and
+%          class int32.
 %
 %-Examples
 %
@@ -73,6 +79,10 @@
 %   MICE.REQ
 %
 %-Version
+%
+%   -Mice Version 1.3.1, 12-FEB-2015, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.3.0, 11-MAY-2011, EDW (JPL)
 %

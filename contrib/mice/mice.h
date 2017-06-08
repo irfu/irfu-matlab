@@ -112,6 +112,9 @@
 
 -Version
 
+   -Mice Version 1.0.2 27-APR-2016 (EDW)
+
+      Extended number of *_OUT aliases.
 
    -Mice Version 1.0.2 18-JUN-2012 (EDW)
 
@@ -185,6 +188,9 @@ Index aliases.
 #define       SIX_OUT            5
 #define       SEVEN_OUT          6
 #define       EIGHT_OUT          7
+#define       NINE_OUT           8
+#define       TEN_OUT            9
+#define       ELEVEN_OUT         10
 
 
 

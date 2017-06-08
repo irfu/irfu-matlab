@@ -33,9 +33,15 @@
 %
 %   Given:
 %
-%      file   the string scalar or NXM character array of SPICE
-%             kernel file names, 'file' (or any kernel listed in 'file')
-%             should be one loaded through the interface cspice_furnsh
+%      file   the SPICE kernel file name(s, 'file' (or any kernel listed
+%             in 'file') should be one loaded through the interface
+%             cspice_furnsh
+%
+%             [n,c1] = size(file); char = class(file)
+%
+%                or
+%
+%             [1,n] = size(file); cell = class(file)
 %
 %   the call:
 %
@@ -50,6 +56,10 @@
 %      load  call, i.e. cspice_unload erases kernel variables placed
 %      in the pool by the pool functions: cspice_pipool, cspice_pdpool,
 %      and cspice_pcpool.
+%
+%   returns:
+%
+%      None.
 %
 %-Examples
 %
@@ -107,11 +117,15 @@
 %
 %-Version
 %
+%   -Mice Version 1.1.1, 13-FEB-2015, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
+%
 %   -Mice Version 1.1.0, 17-DEC-2008, EDW (JPL)
 %
-%      Added zzmice_str call on input 'file' to convert string cells to
-%      character arrays if 'file' has type string cells. Properly
-%      identified 'file' as a vectorizable string/character array.
+%       Added zzmice_str call on input 'file' to convert string cells to
+%       character arrays if 'file' has type string cells. Properly
+%       identified 'file' as a vectorizable string/character array.
 %
 %   -Mice Version 1.0.0, 22-NOV-2005, EDW (JPL)
 %

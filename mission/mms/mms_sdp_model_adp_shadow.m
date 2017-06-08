@@ -6,10 +6,12 @@ function modelOut = mms_sdp_model_adp_shadow(dce,phase,signals)
 %  Created a model to a disturbace signal caused by the ADP shadow by
 %  looking at many spins.
 %
-%  Input : DCE     - structure with fields time, e12, e34
+%  Input : DCE     - structure with fields time, e12, e34,
+%                    or time, v1, v2, v3 and v4.
 %          PHASE   - phase corresponding to DCE time. 
 %          SIGNALS - cell array with list of signals to proceess, 
-%                    e.g {'e12', 'e34'} or {'e12', 'p123'}
+%                    e.g {'e12', 'e34'} or {'e12', 'p123'} or
+%                    {'v1','v2','v3','v4'}
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):
@@ -46,6 +48,14 @@ for iSig = 1:length(signals)
     case 'p234'
       expShadow = [MMS_CONST.Phaseshift.p2, MMS_CONST.Phaseshift.p3, MMS_CONST.Phaseshift.p4] + pi; % p1 lost
       sig = 'e12';
+    case 'v1'
+      expShadow = MMS_CONST.Phaseshift.p1 + pi; % p1
+    case 'v2'
+      expShadow = MMS_CONST.Phaseshift.p2 + pi; % p2
+    case 'v3'
+      expShadow = MMS_CONST.Phaseshift.p3 + pi; % p3
+    case 'v4'
+      expShadow = MMS_CONST.Phaseshift.p4 + pi; % p4
     otherwise
       errS = 'unrecognized SIG';
       irf.log('critical',errS), error(errS)

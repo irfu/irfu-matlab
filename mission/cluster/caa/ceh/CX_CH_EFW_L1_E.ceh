@@ -1,0 +1,84 @@
+!
+! Source : CX_CH_EFW_L1_E.ceh
+! Generated: DDD
+!
+START_META     =   DATA_TYPE
+   ENTRY       =   "CP"
+END_META       =   DATA_TYPE
+START_META     =   DATASET_ID
+   ENTRY       =   "CXXX_CP_EFW_L1_E"
+END_META       =   DATASET_ID
+START_META     =   DATASET_TITLE
+   ENTRY       =   "Electric field measured by probes 12/32 and 34"
+END_META       =   DATASET_TITLE
+START_META     =   DATASET_DESCRIPTION
+   ENTRY       =   "This dataset contains measurements of the"
+   ENTRY       =   "electric field measured by probes 12/32 and 34"
+   ENTRY       =   "from the EFW experiment on the Cluster CXXX spacecraft."
+   ENTRY       =   "Flag_p32 indicates whether P12 (Flag_p32=0) of P32 (Flag_p32=0)"
+   ENTRY       =   "is used for E12/32."
+END_META       =   DATASET_DESCRIPTION
+START_META     =   TIME_RESOLUTION
+   ENTRY       =   0.04 
+END_META       =   TIME_RESOLUTION
+START_META     =   MIN_TIME_RESOLUTION
+   ENTRY       =   0.04
+END_META       =   MIN_TIME_RESOLUTION
+START_META     =   MAX_TIME_RESOLUTION
+   ENTRY       =   0.0022222
+END_META       =   MAX_TIME_RESOLUTION
+START_META     =   PROCESSING_LEVEL
+   ENTRY       =   "Calibrated"
+END_META       =   PROCESSING_LEVEL
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!                   Variables                         !
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+START_VARIABLE    = time_tags__CXXX_CP_EFW_L1_E
+  PARAMETER_TYPE    = "Support_Data"
+  VALUE_TYPE      = ISO_TIME
+  DELTA_PLUS      = 0
+  DELTA_MINUS     = 0
+  FILLVAL         = 9999-12-31T23:59:59Z
+  LABLAXIS        = "UT"
+  FIELDNAM        = "Universal Time"
+END_VARIABLE      = time_tags__CXXX_CP_EFW_L1_E
+!
+START_VARIABLE      = E_Vec_xy_INST__CXXX_CP_EFW_L1_E
+  PARAMETER_TYPE    = "Data"
+  SIZES             = 2
+  VALUE_TYPE        = FLOAT
+  ENTITY            = "Electric_Field"
+  PROPERTY          = "Vector"
+  FLUCTUATIONS      = "Waveform"
+  CATDESC           = "Electric field"
+  FIELDNAM          = "Electric field"
+  SI_CONVERSION     = "1.0e-3>V m^-1"
+  UNITS             = "mV/m"
+  FILLVAL           = -1000000000.000
+  QUALITY           = 3
+  SIGNIFICANT_DIGITS= 6
+  COORDINATE_SYSTEM = "Instrument"
+  FRAME_VELOCITY    = "Observatory"
+  TENSOR_ORDER      = 1
+  REPRESENTATION_1  = "x", "y"
+  LABEL_1           = "E12/32", "E34"
+  LABLAXIS          = "E"
+  DEPEND_0          = time_tags__CXXX_CP_EFW_L1_E
+END_VARIABLE        = E_Vec_xy_INST__CXXX_CP_EFW_L1_E
+!
+START_VARIABLE      = Flag_p32__CXXX_CP_EFW_L1_E
+  PARAMETER_TYPE    = "Support_Data"
+  SIZES             = 1
+  VALUE_TYPE        = INT
+  ENTITY            = "Electric_Field"
+  PROPERTY          = "Status"
+  CATDESC           = "Probe flag for P12/32 (0=P12, 1=P32)"
+  FIELDNAM          = "Probe flag for P12/32 (0=P12, 1=P32)"
+  SI_CONVERSION     = "1>unitless"
+  UNITS             = "unitless"
+  FILLVAL           = 0
+  QUALITY           = 0
+  SIGNIFICANT_DIGITS= 1
+  LABLAXIS          = "P12/32 flag"
+  DEPEND_0          = time_tags__CXXX_CP_EFW_L1_E
+END_VARIABLE        = Flag_p32__CXXX_CP_EFW_L1_E

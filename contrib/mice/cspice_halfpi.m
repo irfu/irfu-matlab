@@ -36,11 +36,13 @@
 %
 %   the call:
 %
-%      halfpi_double = cspice_halfpi
+%      halfpi = cspice_halfpi
 %
 %   returns:
 %
-%      A double precision scalar, the value of half the value of pi.
+%      The value of half the value of pi (pi/2).
+%
+%      [1,1] = size(halfpi); double = class(halfpi)
 %
 %-Examples
 %

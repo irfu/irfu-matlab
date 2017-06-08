@@ -34,9 +34,11 @@
 %
 %   Given:
 %
-%      code   an integer scalar or integer 1XN array of SPICE ID codes
-%             for a body: planet, satellite, barycenter, spacecraft,
-%             asteroid, comet, or other ephemeris object.
+%      code   SPICE code(s) for a set of bodies: planets, satellites,
+%             barycenters, DSN stations, spacecraft, asteroids, comets,
+%             or other ephemeris object.
+%
+%             [1,n] = size(code); int32 = class(code)
 %
 %   the call:
 %
@@ -44,9 +46,11 @@
 %
 %   returns:
 %
-%      name   the scalar string or NXM character array of names of the
-%             bodies identified by 'code' if a mapping between 'code' and
-%             a body name exists within SPICE.
+%      name   the name(s) corresponding to 'code' if a mapping between
+%             'code' and a body name exists within SPICE, assigned either
+%             in SPICE or by the user.
+%
+%             [n,c2] = size(name); char = class(name)
 %
 %             If 'code' has more than one translation, then the most recently
 %             defined 'name' corresponding to 'code' is returned. 'name' will
@@ -128,6 +132,10 @@
 %   NAIF_IDS.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.1, 28-OCT-2014, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.0.0, 01-JUN-2009, EDW (JPL)
 %

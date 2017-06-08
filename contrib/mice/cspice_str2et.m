@@ -34,8 +34,13 @@
 %
 %   Given:
 %
-%      str   any scalar or NxM character array of strings recognized by
-%            SPICE as an epoch.
+%      str   an array of strings recognized by SPICE as an epoch.
+%
+%            [n,c1] = size(str); char = class(str)
+%
+%               or
+%
+%            [1,n] = size(str); cell = class(str)
 %
 %   the call:
 %
@@ -43,11 +48,12 @@
 %
 %   returns:
 %
-%      et   the scalar or 1XN-vector of double precision number of
-%           TDB seconds past the J2000 epoch that corresponds to
-%           the input 'str'.
+%      et   the value(s) representing TDB seconds past the J2000 epoch that 
+%           corresponds to the 'str'.
 %
-%           'et' returns with the same vectorization measure (N) as 'str'.
+%           [1,n] = size(et); double = class(et)
+%
+%           'et' returns with the same vectorization measure, N, as 'str'.
 %
 %   Note: Reference the function cspice_tsetyr for information concerning
 %   the translation of two digit representations of the century count.
@@ -126,8 +132,12 @@
 %
 %   MICE.REQ
 %   TIME.REQ
-%
 %-Version
+%
+%
+%   -Mice Version 1.0.1, 06-JAN-2015, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.0.0, 22-NOV-2005, EDW (JPL)
 %

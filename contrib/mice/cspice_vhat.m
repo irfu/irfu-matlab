@@ -33,8 +33,9 @@
 %
 %   Given:
 %
-%      v1   an arbitrary double precision, 3-dimensional vector
-%           or 3xN array
+%      v1   is an arbitrary vector(s).
+%
+%           [3,n] = size(v1); double = class(v1)
 %
 %   the call:
 %
@@ -42,8 +43,9 @@
 %
 %   returns:
 %
-%      vout   contains the unit 3-vector or 3xN array of unit vectors
-%             in the direction of 'v1'.
+%      vout   contains the unit vector(s) in the direction of 'v1'.
+%
+%             [3,n] = size(vout); double = class(vout)
 %
 %                   ^       --
 %                 vhat =    v1
@@ -57,7 +59,8 @@
 %             If 'v1' represents the zero vector, then 'vout' will
 %             also be the zero vector.
 %
-%             'vout' returns with the same vectorization measure as 'v1'.
+%             'vout' returns with the same vectorization measure, N,
+%             as 'v1'.
 %
 %-Examples
 %
@@ -133,6 +136,10 @@
 %   MICE.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.2, 18-DEC-2014, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.0.1, 30-DEC-2008, EDW (JPL)
 %

@@ -32,7 +32,19 @@
 %
 %   Given:
 %
-%      x   a scalar structure representing a SPICE plane
+%      x   a structure representing a SPICE plane.
+%
+%          [1,1] = size(x); struct = class(x)
+%
+%          'x' should contain the fields:
+%
+%             'normal'
+%
+%             [3,1] = size(x.normal); double = class(x.normal)
+%
+%             'constant'
+%
+%             [1,1] = size(x.constant); double = class(x.constant)
 %
 %   the call:
 %
@@ -42,6 +54,8 @@
 %
 %      y   a copy of 'x', confirmed to have the proper fields,
 %          field types, and field dimensions of a SPICE plane
+%
+%          [1,1] = size(y); struct = class(y)
 %
 %-Examples
 %
@@ -56,6 +70,10 @@
 %   MICE.REQ
 %
 %-Version
+%
+%   -Mice Version 1.2.1, 12-FEB-2015, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.2.0, 05-AUG-2010, EDW (JPL)
 %

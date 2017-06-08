@@ -169,7 +169,7 @@
 %      BODY399_PGR_POSITIVE_LON = 'WEST'
 %
 %   Normally such assignments are made by placing them in a text
-%   kernel and loading that kernel via furnsh_c.
+%   kernel and loading that kernel via cspice_furnsh.
 %
 %   The definition of this kernel variable controls the behavior of
 %   the CSPICE planetographic routines

@@ -70,7 +70,7 @@
 %               be the derivative of the cross product of the position
 %               components of 's1' and 's2'.
 %
-%               'ducrss' returns with the same measure of vectorization (N)
+%               'ducrss' returns with the same vectorization measure (N)
 %               as 's1' and 's2'
 %
 %               Programmatically:

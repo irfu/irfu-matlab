@@ -33,21 +33,30 @@
 %
 %   Given:
 %
-%     kind   a scalar string list of types of kernels to count when
-%            checking the loaded kernels. 'kind' should consist of a list of
-%            words of kernels to examine.  Recognized types are
+%     kind   a list of types of kernels to count when checking the
+%            loaded kernels. 
 %
-%                 SPK  --- All SPK files are counted in the total.
-%                 CK   --- All CK files are counted in the total.
-%                 PCK  --- All binary PCK files are counted in the
-%                          total.
-%                 EK   --- All EK files are counted in the total.
-%                 TEXT --- All text kernels that are not meta-text.
-%                          kernels are included in the total.
-%                 META --- All meta-text kernels are counted in the
-%                          total.
-%                 ALL  --- Every type of kernel is counted in the
-%                          total.
+%            [1,c1] = size(kind); char = class(kind)
+%
+%               or
+%
+%            [1,1] = size(kind); cell = class(kind)
+%
+%            'kind' should consist of a list of words of kernels to 
+%            examine.  Recognized types are
+%
+%                 'SPK'  --- All SPK files are counted in the total.
+%                 'CK'   --- All CK files are counted in the total. 
+%                 'PCK'  --- All binary PCK files are counted in the 
+%                          total. 
+%                 'DSK'  --- All DSK files are counted in the total. 
+%                 'EK'   --- All EK files are counted in the total. 
+%                 'TEXT' --- All text kernels that are not meta-text. 
+%                          kernels are included in the total. 
+%                 'META' --- All meta-text kernels are counted in the 
+%                          total. 
+%                 'ALL'  --- Every type of kernel is counted in the 
+%                          total. 
 %
 %            'kind' lacks case sensitivity. The cspice_ktotal algorithm ignores
 %            words in 'kind' if not one of those listed above.
@@ -61,9 +70,10 @@
 %
 %   returns:
 %
-%      count   a double precision scalar describing the number of kernels
-%              loaded through cspice_furnsh belonging to the list
-%              specified by 'kind'
+%      count   the number of kernels loaded through cspice_furnsh 
+%              belonging to the list specified by 'kind'.
+%
+%              [1,1] = size(count); double = class(count)
 %
 %-Examples
 %
@@ -112,12 +122,22 @@
 %   the CSPICE routine ktotal_c.
 %
 %   MICE.REQ
+%   DSK.REQ
 %
 %-Version
 %
+%   -Mice Version 2.0.0, 20-JAN-2016, EDW (JPL), NJB (JPL)
+%
+%       Header update to reflect support for use of DSKs. Corrected
+%       class type description for output argument `count', to double.
+%
+%   -Mice Version 1.0.2, 01-DEC-2014, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
+%
 %   -Mice Version 1.0.1, 06-MAY-2009, EDW (JPL)
 %
-%      Added MICE.REQ reference to the Required Reading section.
+%       Added MICE.REQ reference to the Required Reading section.
 %
 %   -Mice Version 1.0.0, 01-DEC-2006, EDW (JPL)
 %
@@ -136,7 +156,7 @@ function [count] = cspice_ktotal( kind )
 
       otherwise
 
-         error ( 'Usage: [count] = cspice_ktotal(`kind`)' )
+         error ( 'Usage: count = cspice_ktotal(`kind`)' )
 
    end
 

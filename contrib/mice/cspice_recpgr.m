@@ -33,26 +33,36 @@
 %
 %   Given:
 %
-%      body     the scalar string name of the body with which the
-%               planetographic coordinate system is associated,
-%               optionally, you may supply the integer ID code
-%               for the object as an integer string, i.e. both
-%               'MOON' and '301' are legitimate strings that
+%      body     the body name with which the planetographic coordinate
+%               system is associated, optionally, you may supply the
+%               integer ID code for the object as an integer string,
+%               i.e. both 'MOON' and '301' are legitimate strings that
 %               indicate the Moon is the target body
 %
-%      rectan   a double precision 3x1 array or double precision
-%               3xN array containing the body-fixed rectangular
-%               coordinates of the position or set of positions
+%               [1,c1] = size(body); char = class(body)
 %
-%       re      the scalar, double precision equatorial radius of
-%               the body of interest
+%                  or
 %
-%       f       the scalar, double precision flattening coefficient
-%               of the body, a dimensionless value defined as:
+%               [1,1] = size(body); cell = class(body)
+%
+%      rectan   the array(s) containing the rectangular coordinates of the
+%               position or set of positions.
+%
+%               [3,n] = size(rectan); double = class(rectan)
+%
+%       re      the value describing equatorial radius of the body
+%               of interest.
+%
+%               [1,1] = size(re); double = class(re)
+%
+%       f       the value describing flattening coefficient of the body,
+%               a dimensionless value defined as:
 %
 %                    equatorial_radius - polar_radius
 %                    --------------------------------
 %                           equatorial_radius
+%
+%               [1,1] = size(f); double = class(f)
 %
 %   the call:
 %
@@ -60,9 +70,12 @@
 %
 %   returns:
 %
-%       lon   a double precision scalar or 1XN-vector describing
-%             the planetographic longitude of the input point.  This is
-%             the angle between the prime meridian and the meridian
+%       lon   the value(s) describing the planetographic longitude of the
+%             input point.  
+%
+%             [1,n] = size(lon); double = class(lon)
+%
+%             This is the angle between the prime meridian and the meridian
 %             containing 'rectan'.  For bodies having prograde (aka
 %             direct) rotation, the direction of increasing
 %             longitude is positive west:  from the +X axis of the
@@ -87,9 +100,12 @@
 %
 %             However, round-off error could cause 'lon' to equal 2*pi.
 %
-%       lat   a double precision scalar or 1XN-vector describing
-%             the planetographic latitude of the input point.  For a
-%             point P on the reference spheroid, this is the angle
+%       lat   the value(s) describing the planetographic latitude of the
+%             input point.
+%
+%             [1,n] = size(lat); double = class(lat)
+%
+%             For a point P on the reference spheroid, this is the angle
 %             between the XY plane and the outward normal vector at
 %             P. For a point P not on the reference spheroid, the
 %             planetographic latitude is that of the closest point
@@ -101,11 +117,13 @@
 %                -pi/2  <  lat  <  pi/2
 %                       -       -
 %
-%       alt   a double precision scalar or 1XN-vector describing
-%             the altitude above the reference spheroid
+%       alt   the value(s) describing the altitude above the
+%             reference spheroid.
+%
+%             [1,n] = size(alt); double = class(alt)
 %
 %             'lon', 'lat', and 'alt' return with the same vectorization
-%             measure (N) as 'rectan'.
+%             measure, N, as 'rectan'.
 %
 %-Examples
 %
@@ -122,8 +140,8 @@
 %
 %      %
 %      % Example 1: convert a single set of bodyfixed
-%      %           coordinates to planetographic
-%      %           coordinates.
+%      %            coordinates to planetographic
+%      %            coordinates.
 %      %
 %      % Look up the radii for Mars.  Although we
 %      % omit it here, we could check the kernel pool
@@ -291,7 +309,7 @@
 %      BODY399_PGR_POSITIVE_LON = 'WEST'
 %
 %   Normally such assignments are made by placing them in a text
-%   kernel and loading that kernel via furnsh_c.
+%   kernel and loading that kernel via cspice_furnsh.
 %
 %   The definition of this kernel variable controls the behavior of
 %   the CSPICE planetographic routines
@@ -307,6 +325,10 @@
 %   MICE.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.2, 01-DEC-2014, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.0.1, 30-DEC-2008, EDW (JPL)
 %

@@ -33,23 +33,34 @@
 %
 %   Given:
 %
-%      r       is a 3x3 or 3x3xN array of rotation matrices to factor as
-%              a product of three rotations about a specified
-%              coordinate axes.  The angles of these rotations are
-%              called "Euler angles".
+%      r        the rotation matrix/matrices to factor as a product of three
+%               rotations about specified coordinate axes.  The angles of
+%               these rotations are called "Euler angles".
+%
+%               [3,3]   = size(r); double = class(r)
+%
+%               or
+%
+%               [3,3,n] = size(r); double = class(r)
 %
 %      axis3
 %      axis2
-%      axis1   are the scalar integer indices of the rotation axes of the
+%      axis1   the indices defining the rotation axes of the
 %              "factor" rotations, whose product is 'r'. 'r' is
 %              factored as
 %
 %                 r = [ angle3 ]     [ angle2 ]     [ angle1 ]
-%                               axis3          axis2          axis1
+%                              axis3          axis2          axis1
 %
 %              The axis numbers must belong to the set {1, 2, 3}.
-%              The second axis number MUST differ from the first
-%              and third axis numbers.
+%
+%              [1,1] = size(axis3); int32 = class(axis3)
+%              [1,1] = size(axis2); int32 = class(axis2)
+%              [1,1] = size(axis1); int32 = class(axis1)
+%
+%              The values of axisX may be 1, 2, or 3, indicating
+%              the x, y, and z axes respectively. The second axis number
+%              MUST differ from the first and third axis numbers.
 %
 %   the call:
 %
@@ -59,38 +70,51 @@
 %
 %      angle3
 %      angle2
-%      angle1   the scalar or 1xN arrays of double precision
-%               Euler angles measured where the angle satisfy
+%      angle1   the Euler angles measured where the angles satisfy
 %
-%                   r = [ angle3 ]     [ angle2 ]     [ angle1 ]
-%                                axis3           axis2          axis1
+%                  r = [ angle3 ]     [ angle2 ]     [ angle1 ]
+%                               axis3          axis2          axis1
 %
-%                  The range of 'angle3' and 'angle1' is (-pi, pi].
+%               If [3,3] = size(r)
+%               then
 %
-%                  The range of 'angle2' depends on the exact set of
-%                  axes used for the factorization.  For
-%                  factorizations in which the first and third axes
-%                  are the same,
+%               [1,1] = size(angle3); double = class(angle3)
+%               [1,1] = size(angle2); double = class(angle2)
+%               [1,1] = size(angle1); double = class(angle1)
 %
-%                     r = [R]  [S]  [T]
-%                            a    b    a
+%               If [3,3,n] = size(r)
+%               then
 %
-%                  the range of 'angle2' is [0, pi].
+%               [1,n] = size(angle3); double = class(angle3)
+%               [1,n] = size(angle2); double = class(angle2)
+%               [1,n] = size(angle1); double = class(angle1)
 %
-%                  For factorizations in which the first and third
-%                  axes are different,
+%               The range of 'angle3' and 'angle1' is (-pi, pi].
 %
-%                     r = [R]  [S]  [T] ,
-%                            a    b    c
+%               The range of 'angle2' depends on the exact set of
+%               axes used for the factorization.  For
+%               factorizations in which the first and third axes
+%               are the same,
 %
-%                  the range of angle2 is [-pi/2, pi/2].
+%                  r = [ angle3 ]  [ angle2 ]  [ angle1 ]
+%                               a           b           a
 %
-%                  For rotations such that 'angle3' and 'angle1' are not
-%                  uniquely determined, 'angle3' will always be set to
-%                  zero; 'angle1' is then uniquely determined.
+%               the range of 'angle2' is [0, pi].
+%
+%               For factorizations in which the first and third
+%               axes are different,
+%
+%                  r = [ angle3 ]  [ angle2 ]  [ angle1 ],
+%                               a           b           c
+%
+%               the range of angle2 is [-pi/2, pi/2].
+%
+%               For rotations such that 'angle3' and 'angle1' are not
+%               uniquely determined, 'angle3' will always be set to
+%               zero; 'angle1' is then uniquely determined.
 %
 %               'angle3', 'angle2', and 'angle1' return with the same
-%               vectorization measure (N) as 'r'.
+%               vectorization measure, N, as 'r'.
 %
 %      Note, the call sequence:
 %
@@ -102,7 +126,7 @@
 %      Yet, the call sequence:
 %
 %         r = cspice_eul2m(angle3, angle2, angle1, axis3, axis2, axis1)
-%        [angle3, angle2, angle1] = cspice_m2eul(r, axis3, axis2, axis1)
+%         [angle3, angle2, angle1] = cspice_m2eul(r, axis3, axis2, axis1)
 %
 %      preserves 'angle3', 'angle2', and 'angle1' only if the initial
 %      values of the angle existed within the range of cspice_m2eul's
@@ -221,6 +245,10 @@
 %   ROTATION.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.2, 09-MAR-2015, EDW (JPL)
+%
+%      Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.0.1, 30-DEC-2008, EDW (JPL)
 %

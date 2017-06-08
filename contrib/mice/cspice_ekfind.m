@@ -32,9 +32,16 @@
 %
 %   Given:
 %
-%      query   a string scalar specifying the data to locate from data
-%              available in all loaded EK files. The general form of a
-%              query general form:
+%      query   a string specifying the data to locate from data
+%              available in all loaded EK files.
+%
+%              [1,c1] = size(query); char = class(query)
+%
+%                 or
+%
+%              [1,1] = size(query); cell = class(query)
+%
+%              The general form of a query general form:
 %
 %                 SELECT   <column list>
 %                 FROM     <table list>
@@ -49,15 +56,19 @@
 %
 %   returns:
 %
-%      nmrows   a scalar integer containing the number of rows matching
-%               the query.
+%      query    the number of rows matching the query.
 %
-%      ok       a scalar boolean indicating whether the query parsed
-%               correctly (TRUE) or not (FALSE).
+%               [1,1] = size(query); int32 = class(query)
 %
-%      errmsg   a string scalar containing a description of the parse
-%               error should one occur, otherwise the string returns
-%               as blank.
+%      ok       a boolean indicating whether the query parsed correctly, 
+%               true, or not, false.
+%
+%               [1,1] = size(ok); logical = class(ok)
+%
+%      errmsg   the description of the parse error, should one occur,
+%               otherwise the string returns as blank.
+%
+%               [1,c2] = size(errmsg); char = class(errmsg)
 %
 %-Examples
 %
@@ -133,6 +144,10 @@
 %   EK.REQ
 %
 %-Version
+%
+%   -Mice Version 1.2.1, 03-NOV-2014, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.2.0, 10-MAY-2011, EDW (JPL)
 %

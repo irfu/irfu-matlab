@@ -35,23 +35,32 @@
 %
 %   Given:
 %
-%      positn   a double precision position 3-vector or 3XN array defining the
-%               position of a point with respect to the center of an
-%               ellipsoid. The vector is expressed in a body-fixed reference
-%               frame. The semi-axes of the ellipsoid are aligned with the
-%               x, y, and z-axes of the body-fixed frame.
+%      positn   the array(s) defining the Cartesian position of a point with
+%               respect to the center of an ellipsoid. The vector is expressed
+%               in a body-fixed reference frame. The semi-axes of the
+%               ellipsoid are aligned with the x, y, and z-axes of the
+%               body-fixed frame.
 %
-%      a,       the scalar double precision values of the ellipsoid's
-%      b,       triaxial radii ellipsoid, where:
-%      c
+%               [3,n] = size(rectan); double = class(rectan)
+%
+%      a,       
+%      b,
+%      c           values of the ellipsoid's triaxial radii ellipsoid, where:
+%
 %                  'a' is length in kilometers of the semi-axis of the ellipsoid
-%                   parallel to the x-axis of the body-fixed reference frame
+%                  parallel to the x-axis of the body-fixed reference frame.
+%
+%                  [1,1] = size(a); double = class(a)
 %
 %                  'b' is length in kilometers of the semi-axis of the ellipsoid
-%                   parallel to the y-axis of the body-fixed reference frame
+%                  parallel to the y-axis of the body-fixed reference frame.
+%
+%                  [1,1] = size(b); double = class(b)
 %
 %                  'c' is length in kilometers of the semi-axis of the ellipsoid
-%                   parallel to the z-axis of the body-fixed reference frame
+%                  parallel to the z-axis of the body-fixed reference frame.
+%
+%                  [1,1] = size(c); double = class(c)
 %
 %   the call:
 %
@@ -59,16 +68,20 @@
 %
 %   returns:
 %
-%      npoint   the double precision 3-vector or 3xN array defining the
-%               location on the ellipsoid closest to 'positn'
+%      npoint   the array(s) defining the location on the ellipsoid closest
+%               to 'positn'.
 %
-%      alt      the double precision scalar or 1xN array of altitudes of
-%              'positn' above the ellipsoid.  If 'positn' is inside the
-%               ellipsoid, 'alt' will be negative and have magnitude
-%               equal to the distance between 'pos' and 'positn'.
+%               [3,n] = size(npoint); double = class(npoint)
+%
+%      alt      the value(s) of the altitudes of 'positn' above the ellipsoid.
+%               If 'positn' is inside the ellipsoid, 'alt' will be negative
+%               and have magnitude equal to the distance between 'pos' and
+%               'positn'.
+%
+%               [1,n] = size(alt); double = class(alt)
 %
 %               'npoint' and 'alt' return with the same vectorization
-%               measure (N) as 'positn'
+%               measure, N, as 'positn'.
 %
 %-Examples
 %
@@ -159,6 +172,10 @@
 %   MICE.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.1, 03-DEC-2014, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.0.0, 21-DEC-2005, EDW (JPL)
 %

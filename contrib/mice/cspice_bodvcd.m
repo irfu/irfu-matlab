@@ -34,13 +34,21 @@
 %
 %   Given:
 %
-%      bodyid   the scalar NAIF integer ID code for a body of interest.
-%               For example, if the body is the earth, the code is
-%               399.
+%      bodyid   SPICE ID code for a body of interest. For example, if the
+%               body is the earth, the code is 399.
 %
-%      item     the scalar string item name to return. Together, the NAIF
-%               ID code of the body and the item name combine to form a
-%               kernel variable name, e.g.,
+%               [1,1] = size(bodyid); int32 = class(bodyid)
+%
+%      item     the item name to return.
+%
+%               [1,c1] = size(item); char = class(item)
+%
+%                  or
+%
+%               [1,1] = size(item); cell = class(item)
+%
+%               Together, the NAIF ID code of the body and the item name
+%               combine to form a kernel variable name, e.g.,
 %
 %                    'BODY599_RADII'
 %                    'BODY401_POLE_RA'
@@ -54,8 +62,9 @@
 %               is inherited from the case-sensitivity of kernel
 %               variable names.
 %
-%      maxn     the scalar integer defining the maximum number of values
-%               the call returns.
+%      maxn     the maximum number of kernel pool values to returns.
+%
+%               [1,1] = size(maxn); int32 = class(maxn)
 %
 %   the call:
 %
@@ -63,8 +72,11 @@
 %
 %   returns:
 %
-%     values   an array of at most 'maxn' double precision values
-%              associated with the requested kernel variable.
+%     values   an array of at most 'maxn' values associated with the
+%              requested kernel variable.
+%
+%              [1,n] = size(values); double = class(values)
+%              with n <= 'maxn'.
 %
 %-Examples
 %
@@ -151,6 +163,10 @@
 %   NAIF_IDS.REQ
 %
 %-Version
+%
+%   -Mice Version 1.1.1, 29-OCT-2014, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.1.0, 23-FEB-2009, EDW (JPL)
 %

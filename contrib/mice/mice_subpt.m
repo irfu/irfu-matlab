@@ -35,16 +35,211 @@
 %
 %   Given:
 %
-%      method   a string defining the method to use in the calculation
+%      method   a string providing parameters defining the 
+%               computation method to use.
 %
-%      target   the string name of the observed target body
+%               [1,c1] = size(method); char = class(method)
 %
-%      et       the double precision ephemeris time of interest
+%                  or
 %
-%      abcorr   the string defining the aberration correction to use in
-%               the calculation
+%               [1,1] = size(method); cell = class(method)
 %
-%      obsrvr   the string name of the observing body
+%               The choices are:
+%
+%                  'Near point'       The sub-observer point is
+%                                     defined as the nearest point on
+%                                     the target relative to the
+%                                     observer.
+%
+%                  'Intercept'        The sub-observer point is
+%                                     defined as the target surface
+%                                     intercept of the line
+%                                     containing the observer and the
+%                                     target's center.
+%
+%               In both cases, the intercept computation treats the
+%               surface of the target body as a triaxial ellipsoid.
+%               The ellipsoid's radii must be available in the kernel
+%               pool.
+%
+%               Neither case nor white space are significant in
+%               'method'.  For example, the string ' NEARPOINT' is
+%               valid.
+%
+%      target   the name of the observed target body. 'target'
+%               is case-insensitive, and leading and trailing blanks in
+%               'target' are not significant. Optionally, you may supply
+%               a string containing the integer ID code for the object.
+%               For example both 'MOON' and '301' are legitimate strings
+%               that indicate the moon is the target body.
+%
+%               [1,c2] = size(target); char = class(target)
+%
+%                  or
+%
+%               [1,1] = size(target); cell = class(target)
+%
+%               This routine assumes that the target body is modeled by
+%               a tri-axial ellipsoid, and that a PCK file containing
+%               its radii has been loaded into the kernel pool via
+%               cspice_furnsh.
+%
+%      et       the epoch(s), expressed as seconds past J2000 TDB, of the
+%               observer: 'et' is the epoch at which the observer's state 
+%               is computed.
+%
+%               [1,n] = size(et); double = class(et)
+%
+%               When aberration corrections are not used, 'et' is also
+%               the epoch at which the position and orientation of
+%               the target body are computed.
+%
+%               When aberration corrections are used, 'et' is the epoch
+%               at which the observer's state relative to the solar
+%               system barycenter is computed; in this case the
+%               position and orientation of the target body are
+%               computed at et-lt or et+lt, where 'lt' is the one-way
+%               light time between the sub-observer point and the
+%               observer, and the sign applied to 'lt' depends on the
+%               selected correction. See the description of 'abcorr'
+%               below for details.
+%
+%      abcorr   the aberration correction to apply
+%               when computing the observer-target state and the
+%               orientation of the target body.
+%
+%               [1,c3] = size(abcorr); char = class(abcorr)
+%
+%                  or
+%
+%               [1,1] = size(abcorr); cell = class(abcorr)
+%
+%               For remote sensing applications, where the apparent
+%               sub-observer point seen by the observer is desired,
+%               normally either of the corrections
+%
+%                     'LT+S'
+%                     'CN+S'
+%
+%               should be used. These and the other supported options
+%               are described below. 'abcorr' may be any of the
+%               following:
+%
+%                     'NONE'     Apply no correction. Return the
+%                                geometric sub-observer point on the
+%                                target body.
+%
+%               Let 'lt' represent the one-way light time between the
+%               observer and the sub-observer point (note: NOT
+%               between the observer and the target body's center).
+%               The following values of 'abcorr' apply to the
+%               "reception" case in which photons depart from the
+%               sub-observer point's location at the light-time
+%               corrected epoch et-lt and *arrive* at the observer's
+%               location at 'et':
+%
+%                     'LT'       Correct for one-way light time (also
+%                                called "planetary aberration") using a
+%                                Newtonian formulation. This correction
+%                                yields the location of sub-observer
+%                                point at the moment it emitted photons
+%                                arriving at the observer at 'et'.
+%
+%                                The light time correction uses an
+%                                iterative solution of the light time
+%                                equation. The solution invoked by the
+%                                'LT' option uses one iteration.
+%
+%                                Both the target position as seen by the
+%                                observer, and rotation of the target
+%                                body, are corrected for light time.
+%
+%                     'LT+S'     Correct for one-way light time and
+%                                stellar aberration using a Newtonian
+%                                formulation. This option modifies the
+%                                state obtained with the 'LT' option to
+%                                account for the observer's velocity
+%                                relative to the solar system
+%                                barycenter. The result is the apparent
+%                                sub-observer point as seen by the
+%                                observer.
+%
+%                     'CN'       Converged Newtonian light time
+%                                correction. In solving the light time
+%                                equation, the 'CN' correction iterates
+%                                until the solution converges. Both the
+%                                position and rotation of the target
+%                                body are corrected for light time.
+%
+%                     'CN+S'     Converged Newtonian light time and
+%                                stellar aberration corrections. This
+%                                option produces a solution that is at
+%                                least as accurate at that obtainable
+%                                with the 'LT+S' option. Whether the 'CN+S'
+%                                solution is substantially more accurate
+%                                depends on the geometry of the
+%                                participating objects and on the
+%                                accuracy of the input data. In all
+%                                cases this routine will execute more
+%                                slowly when a converged solution is
+%                                computed.
+%
+%               The following values of 'abcorr' apply to the
+%               "transmission" case in which photons *depart* from
+%               the observer's location at 'et' and arrive at the
+%               sub-observer point at the light-time corrected epoch
+%               et+lt:
+%
+%                     'XLT'      "Transmission" case: correct for
+%                                one-way light time using a Newtonian
+%                                formulation. This correction yields the
+%                                sub-observer location at the moment it
+%                                receives photons emitted from the
+%                                observer's location at 'et'.
+%
+%                                The light time correction uses an
+%                                iterative solution of the light time
+%                                equation. The solution invoked by the
+%                                'LT' option uses one iteration.
+%
+%                                Both the target position as seen by the
+%                                observer, and rotation of the target
+%                                body, are corrected for light time.
+%
+%                     'XLT+S'    "Transmission" case: correct for
+%                                one-way light time and stellar
+%                                aberration using a Newtonian
+%                                formulation  This option modifies the
+%                                sub-observer point obtained with the
+%                                'XLT' option to account for the
+%                                observer's velocity relative to the
+%                                solar system barycenter.
+%
+%                     'XCN'      Converged Newtonian light time
+%                                correction. This is the same as XLT
+%                                correction but with further iterations
+%                                to a converged Newtonian light time
+%                                solution.
+%
+%                     'XCN+S'    "Transmission" case: converged
+%                                Newtonian light time and stellar
+%                                aberration corrections.
+%
+%      obsrvr   the scalar string name of the observing body. The
+%               observing body is an ephemeris object: it typically
+%               is a spacecraft, the earth, or a surface point on the
+%               earth. 'obsrvr' is case-insensitive, and leading and
+%               'obsrvr' are not significant. Optionally, you may
+%               trailing blanks in supply a string containing the integer
+%               ID code for the object. For example both 'MOON' and '301'
+%               are legitimate strings that indicate the Moon is the
+%               observer.
+%
+%               [1,c4] = size(obsrvr); char = class(obsrvr)
+%
+%                  or
+%
+%               [1,1] = size(obsrvr); cell = class(obsrvr)
 %
 %   the call:
 %
@@ -52,20 +247,59 @@
 %
 %   returns:
 %
-%      spoint   the scalar or 1xN array of structures, each structure
-%               consisting of two fields:
+%      spoint   the structure(s) containing the results of the calculation.
 %
-%                  'pos'   the double-precision 3-vector containing the
-%                          coordinates of the 'obsrvr' subpoint on 'target'
-%                          relative to the body-fixed frame of 'target'
+%               [1,n] = size(spoint); struct = class(spoint)
 %
-%                  'alt'   the double precision scalar altitude of 'obsrvr'
-%                          above 'target'
+%               Each structure consists of the fields:
 %
-%              'spoint' returns with the same vectorization measure (N)
-%               as 'et'.
+%                  'pos'   the array(s) defining the sub-observer point
+%                          on the target body.
+%        
+%                          [3,1] = size(spoint(i).pos)
+%                          double = class(spoint(i).pos(i))
 %
-%      Note, If needed the user can extract the field data from vectorized
+%                          The sub-observer point is defined either as the 
+%                          point on the target body that is closest to the 
+%                          observer, or the target surface intercept of the 
+%                          line from the observer to the target's center; 
+%                          the input argument 'method' selects the 
+%                          definition to be used.
+%
+%                          The body-fixed frame, which is time-dependent, is
+%                          evaluated at 'et' if 'abcorr' is 'NONE'; otherwise
+%                          the frame is evaluated at et-lt, where 'lt' is the
+%                          one-way light time from target to observer.
+%
+%                          The state of the target body is corrected for
+%                          aberration as specified by 'abcorr'; the corrected
+%                          state is used in the geometric computation.  As
+%                          indicated above, the rotation of the target is
+%                          retarded by one-way light time if 'abcorr'
+%                          specifies that light time correction is to be done.
+%
+%                  'alt'   the values(s) of the altitude(s) of  'obsrvr' above
+%                          'target'.
+%
+%                          [1,1] = size(spoint(i).alt)
+%                          double = class(spoint(i).alt)
+%
+%                          When 'method' specifies a "near point" computation,
+%                          'alt' is truly altitude in the standard geometric
+%                          sense:  the length of a segment dropped from the
+%                          observer to the target's surface, such that the
+%                          segment is perpendicular to the surface at the
+%                          contact point 'spoint'.
+%
+%                          When 'method' specifies an "intercept" computation,
+%                          'alt' is still the length of the segment from the
+%                          observer to the surface point 'spoint', but this
+%                          segment in general is not perpendicular to
+%                          the surface.
+%
+%      'spoint' returns with the same vectorization measure, N, as 'et'.
+%
+%      Note, if needed, the user can extract the field data from vectorized
 %      'spoint' structures into separate arrays.
 %
 %      Extract the N 'pos' field data to a 3XN array 'position':
@@ -248,6 +482,10 @@
 %   TIME.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.1, 12-JAN-2015, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.0.0, 16-DEC-2005, EDW (JPL)
 %

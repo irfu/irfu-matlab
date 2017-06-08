@@ -31,48 +31,55 @@
 %
 %-I/O
 %
-%    Given:
+%   Given:
 %
-%       Arguments-
+%      positn   the position of an observer with respect to the center
+%               of an ellipsoid expressed in the body fixed coordinates of
+%               the ellipsoid
+% 
+%               [3,1] = size(positn); double = class(positn)
 %
-%       positn   the double precision position 3-vector position
-%                of an observer with respect to the center of an
-%                ellipsoid expressed in the body fixed coordinates of
-%                the ellipsoid
+%      u        the direction vector emanating from 'positn'.
 %
-%       u        the double precision direction 3-vector emanating from
-%                'positn'
+%               [3,1] = size(u); double = class(u)
 %
-%       a,       the scalar double precision values of the ellipsoid's
-%       b,       triaxial radii ellipsoid, where:
-%       c
-%                   'a' is length in kilometers of the semi-axis of the
-%                    ellipsoid parallel to the x-axis of the body-fixed
-%                    reference frame
+%      a,       the ellipsoid's triaxial radii, where:
+%      b,       
+%      c
+%                  'a' is length in kilometers of the semi-axis of the
+%                   ellipsoid parallel to the x-axis of the body-fixed
+%                   reference frame
 %
-%                   'b' is length in kilometers of the semi-axis of the
-%                    ellipsoid parallel to the y-axis of the body-fixed
-%                    reference frame
+%                  [1,1] = size(a); double = class(a)
 %
-%                   'c' is length in kilometers of the semi-axis of the
-%                    ellipsoid parallel to the z-axis of the body-fixed
-%                    reference frame
+%                  'b' is length in kilometers of the semi-axis of the
+%                   ellipsoid parallel to the y-axis of the body-fixed
+%                   reference frame
 %
-%    the call:
+%                  [1,1] = size(b); double = class(b)
 %
-%       [point, found] = cspice_surfpt ( positn, u, a, b, c )
+%                  'c' is length in kilometers of the semi-axis of the
+%                   ellipsoid parallel to the z-axis of the body-fixed
+%                   reference frame
 %
+%                  [1,1] = size(c); double = class(c)
 %
-%    returns:
+%   the call:
 %
-%       point   a double precision 3-vector defining the location
-%               on the ellipsoid at which the 'u' intercepts
-%               the ellipsoid if the interception exists, 'point' returns
-%               (0.d, 0.d, 0.d) if 'u' does not intersect the ellipsoid
+%      [point, found] = cspice_surfpt ( positn, u, a, b, c )
 %
-%       found   a boolean indicating whether the intersection
-%               between the ellipse and 'u' exists (TRUE) or
-%               not (FALSE)
+%   returns:
+%
+%      point   the location on the ellipsoid at which the 'u' intercepts
+%              the ellipsoid if the interception exists, 'point' returns
+%              (0.d, 0.d, 0.d) if 'u' does not intersect the ellipsoid
+%
+%              [3,1] = size(point); double = class(point)
+%
+%      found   a flag indicating whether the intersection between the 
+%              ellipse and 'u' exists (TRUE) or not (FALSE).
+%
+%              [1,1] = size(found); logical = class(found)
 %
 %-Examples
 %
@@ -123,9 +130,6 @@
 %             direction vectors associated with each pixel would be
 %             calculated from the geometric camera model.
 %
-%       Example program starts here.
-%
-%         % --------------------- Program Setup ---------------------
 %
 %         metakr = 'mgs_ex.tm';
 %         camera = 'MGS_MOC_NA';
@@ -171,9 +175,9 @@
 %
 %         %
 %         % 'cspice_getfov' will return the name of the camera-fixed frame
-%         % in the string OBSREF, the camera boresight vector in
-%         % the array BSIGHT, and the FOV corner vectors in the
-%         % array BOUNDS.
+%         % in the string 'obsref', the camera boresight vector in
+%         % the array 'bsight', and the FOV corner vectors in the
+%         % array 'bounds'.
 %         %
 %         [shape, obsref, bsight, bounds] = cspice_getfov( camid, NCORNR);
 %
@@ -261,7 +265,7 @@
 %         %
 %         [surface_point, found] = cspice_surfpt ( pos_mgs_wrt_mars, ...
 %                                                  bndvec, radii(1), ...
-%                                                  radii(2), radii(3) );s
+%                                                  radii(2), radii(3) );
 %
 %         if ( ~found )
 %             txt = 'SPICE(NOTFOUND)Could not calculate surface point.';
@@ -385,11 +389,19 @@
 %
 %-Version
 %
+%   -Mice Version 1.0.1, 05-NOV-2015, EDW (JPL)
+%
+%      Corrected Index_Entries and Usage string.
+%
+%      Edited I/O section to conform to NAIF standard for Mice documentation.
+%
 %   -Mice Version 1.0.0, 24-OCT-2011, SCK (JPL)
 %
 %-Index_Entries
 %
-%   GF distance search
+%   line of sight intercept with body 
+%   point of intersection between ray and ellipsoid 
+%   surface point of intersection of ray and ellipsoid 
 %
 %-&
 
@@ -407,8 +419,8 @@ function [point, found] = cspice_surfpt ( positn, u, a, b, c )
 
       otherwise
 
-         error ( [ 'Usage: [point, found] = cspice_surfpt( `positn`, ' ...
-                                                  '`u`, `a`, `b`, c )' ] )
+         error ( [ 'Usage: [point(3), found] = cspice_surfpt( positn(3), ' ...
+                                                  'u(3), a, b, c )' ] )
 
    end
 
@@ -423,54 +435,3 @@ function [point, found] = cspice_surfpt ( positn, u, a, b, c )
    catch
       rethrow(lasterror)
    end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

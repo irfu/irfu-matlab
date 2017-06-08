@@ -36,6 +36,9 @@
 %      x   an input logical or numeric representation of a logical
 %          to convert to logical.
 %
+%          'x' may have any size or shape, but must be of class
+%          numeric or logical.
+%
 %   the call:
 %
 %      y = zzmice_dp(x)
@@ -43,6 +46,9 @@
 %   returns:
 %
 %      y   the logical representation of 'x'.
+%
+%          'y' returns with the same size and shape of 'x' and
+%          class logical.
 %
 %-Examples
 %
@@ -61,6 +67,10 @@
 %   MICE.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.1, 12-FEB-2015, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.0.0, 08-MAY-2011, EDW (JPL)
 %

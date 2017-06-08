@@ -1,7 +1,7 @@
 %-Abstract
 %
-%   CSPICE_Q2M calculates the 3x3 double precision, rotation matrix
-%   corresponding to a specified unit quaternion.
+%   CSPICE_Q2M calculates the rotation matrix corresponding to a
+%   specified unit quaternion.
 %
 %-Disclaimer
 %
@@ -33,8 +33,9 @@
 %
 %   Given:
 %
-%      q   a double precision, unit length 4-vector or 4xN array of
-%          unit 4-vectors
+%      q   an array of unit-length SPICE-style quaternion(s).
+%
+%          [4,n] = size(q); double = class(q)
 %
 %          Note that multiple styles of quaternions are in use.
 %          This routine returns a quaternion that conforms to
@@ -47,8 +48,11 @@
 %
 %   returns:
 %
-%      r   a double precision 3x3 or 3X3XN array of rotation
-%          matrices corresponding to 'q'
+%      r   the rotation matrix/matrices corresponding to 'q'
+%
+%          If [4,1] = size(q) then [3,3]   = size(r)
+%          If [4,n] = size(q) then [3,3,n] = size(r)
+%                                   double = class(r)
 %
 %-Examples
 %
@@ -85,7 +89,11 @@
 %
 %-Version
 %
-%    -Mice Version 1.0.0, 10-JAN-2006, EDW (JPL)
+%   -Mice Version 1.0.1, 09-MAR-2015, EDW (JPL)
+%
+%      Edited I/O section to conform to NAIF standard for Mice documentation.
+%
+%   -Mice Version 1.0.0, 10-JAN-2006, EDW (JPL)
 %
 %-Index_Entries
 %

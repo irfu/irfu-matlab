@@ -33,13 +33,15 @@
 %
 %   Given:
 %
-%      sc       the integer scalar NAIF ID of the spacecraft clock
-%               whose encoded clock value is represented by
-%               'sclkdp'
+%      sc       the NAIF ID of the spacecraft clock whose encoded clock 
+%               value is represented by 'sclkdp'.
 %
-%      sclkdp   the double precision scalar or double precision 1xN array
-%               encoding of a clock time(s) in units of ticks since the
-%               spacecraft clock start time
+%               [1,1] = size(sc); int32 = class(sc)
+%
+%      sclkdp   the encoding of clock time(s) in units of ticks since the
+%               spacecraft clock start time.
+%
+%               [1,n] = size(sclkdp); double = class(sclkdp)
 %
 %   the call:
 %
@@ -47,11 +49,12 @@
 %
 %   returns:
 %
-%      sclkch   the scalar string or NXM character array representation(s)
-%               of the clock count 'sclkdp' for 'sc'
+%      sclkch   the representation(s) of the clock count 'sclkdp' for 'sc'.
 %
-%               'sclkch' returns with the same vectorization measure (N)
-%                as 'sclkdp'.
+%               [n,c1] = size(sclkch); char = class(sclkch)
+%
+%               'sclkch' returns with the same vectorization measure, N,
+%               as 'sclkdp'.
 %
 %-Examples
 %
@@ -178,6 +181,10 @@
 %   SCLK.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.1, 06-JAN-2015, EDW (JPL)
+%
+%       Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.0.0, 18-APR-2006, EDW (JPL)
 %

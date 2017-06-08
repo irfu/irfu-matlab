@@ -106,12 +106,12 @@ save_list = '';
 
 old_pwd = pwd;
 
-if flag_save,
+if flag_save
     %Create the storage directory if it does not exist
     if ~exist(cdb.sp, 'dir')
         [SUCCESS,MESSAGE] = mkdir(cdb.sp);
         if SUCCESS, irf_log('save',['Created storage directory ' cdb.sp])
-        else error(MESSAGE)
+        else, error(MESSAGE)
         end
     end
 
@@ -347,7 +347,7 @@ elseif strcmp(quantity,'fdm')
 	if isempty(data)
 		irf_log('dsrc',irf_ssub('No data for FDM?',cl_id))
 		out_data = []; cd(old_pwd), return
-    else c_eval('FDM?=[t data''];',cl_id);
+  else, c_eval('FDM?=[t data''];',cl_id);
 	end
 	
 	c_eval('save_list=[save_list '' FDM? ''];',cl_id);
@@ -381,7 +381,7 @@ elseif strcmp(quantity,'ibias')
 		end
 	end
 	
-	for probe=probe_list;
+	for probe=probe_list
 		[t,data] = caa_is_get(cdb.db, start_time, dt, cl_id, ...
 			'efw', 'E', ['p' num2str(probe)],'bias'); %#ok<ASGLU>
 		if isempty(data)
@@ -394,7 +394,7 @@ elseif strcmp(quantity,'ibias')
 	end
 	
 	if isempty(p_ok), out_data = []; cd(old_pwd), return, end
-	for probe=p_ok;
+	for probe=p_ok
 		eval(irf_ssub('save_list=[save_list ''IBIAS?p! ''];',cl_id,probe)) 
 	end
 	
@@ -452,7 +452,7 @@ elseif strcmp(quantity,'tmode')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif strcmp(quantity,'e') || strcmp(quantity,'eburst')
 	
-	if strcmp(quantity,'eburst'), do_burst = 1; else do_burst = 0; end
+	if strcmp(quantity,'eburst'), do_burst = 1; else, do_burst = 0; end
 	if do_burst 
 		save_file = './mEFWburstR.mat';
 		tmmode='burst';
@@ -483,43 +483,54 @@ elseif strcmp(quantity,'e') || strcmp(quantity,'eburst')
 			irf_log('dsrc','data interval will be truncated')
 		end
 		tm = tm(1);
-		if tm<1e-30, param='10Hz'; else param='180Hz'; end
+		if tm<1e-30, param='10Hz'; else, param='180Hz'; end
 		clear tm
 		
 		%%%%%%%%%%%%%%%%%%%%%%%%% FILTER MAGIC %%%%%%%%%%%%%%%%%%%%%%
-		if cl_id==2 && start_time>toepoch([2001 07 23 13 54 18])
-			% 10Hz filter problem on SC2
-			param='180Hz';
+    switch cl_id
+      case 1
+        if start_time>toepoch([2015 02 26 09 35 00])
+          param='180Hz';
+        end
+      case 2
+        if start_time>toepoch([2001 07 23 13 54 18])
+          % 10Hz filter problem on SC2
+          param='180Hz';
         elseif cl_id==2 && start_time<toepoch([2001 07 23 13 54 18]) && ...
             start_time+dt>toepoch([2001 07 23 13 54 18])
-            % Request interval overlaps with the time when the 10Hz filter
-            % got broken on SC2. We truncate the request.
-            dt = toepoch([2001 07 23 13 54 17]) - start_time;
-            for in=1:length(start_time)
-                if start_time(in)<toepoch([2001 07 23 13 54 18]) && ...
-                    start_time(in)+dt(in)>toepoch([2001 07 23 13 54 18])
-                    dt(in) = toepoch([2001 07 23 13 54 17]) ...
-                        - start_time(in);
-                end
+          % Request interval overlaps with the time when the 10Hz filter
+          % got broken on SC2. We truncate the request.
+          dt = toepoch([2001 07 23 13 54 17]) - start_time;
+          for in=1:length(start_time)
+            if start_time(in)<toepoch([2001 07 23 13 54 18]) && ...
+                start_time(in)+dt(in)>toepoch([2001 07 23 13 54 18])
+              dt(in) = toepoch([2001 07 23 13 54 17]) ...
+                - start_time(in);
             end
-            irf_log('proc', ...
-                '10Hz filter got broken inside the requested interval')
-            irf_log('proc',	['truncating interval: setting DT to ' num2str(dt)])
+          end
+          irf_log('proc', ...
+            '10Hz filter got broken inside the requested interval')
+          irf_log('proc',	['truncating interval: setting DT to ' num2str(dt)])
         elseif (((cl_id==1 && start_time>toepoch([2001 07 30 17 05 54.9])) || ...
-			(cl_id==3 && start_time>toepoch([2001 07 31 00 12 29.5]))) && ...
-			start_time<toepoch([2001 09 02 23 15 00])) || ...
-			(cl_id==4 && ((start_time>toepoch([2001 07 31 04 55 33.15]) && ...
-			start_time<toepoch([2001 08 02 11 25 40])) || ...
-			(start_time>toepoch([2001 08 06 23 58 50.7]) && ...
-			start_time<toepoch([2001 09 02 23 15 00]))))
-			% all sc run on 180Hz filter in august 2001 most of the time
-			param='180Hz';
-		elseif start_time>toepoch([2001 09 10 04 21 57.6]) && ...
-			start_time<toepoch([2001 09 17 05 27 54])
-			% this needs to be investigated.... 
-			param='180Hz';
-		end
-		%%%%%%%%%%%%%%%%%%%%%%% END FILTER MAGIC %%%%%%%%%%%%%%%%%%%%
+            (cl_id==3 && start_time>toepoch([2001 07 31 00 12 29.5]))) && ...
+            start_time<toepoch([2001 09 02 23 15 00])) || ...
+            (cl_id==4 && ((start_time>toepoch([2001 07 31 04 55 33.15]) && ...
+            start_time<toepoch([2001 08 02 11 25 40])) || ...
+            (start_time>toepoch([2001 08 06 23 58 50.7]) && ...
+            start_time<toepoch([2001 09 02 23 15 00]))))
+          % all sc run on 180Hz filter in august 2001 most of the time
+          param='180Hz';
+        elseif start_time>toepoch([2001 09 10 04 21 57.6]) && ...
+            start_time<toepoch([2001 09 17 05 27 54])
+          % this needs to be investigated....
+          param='180Hz';
+        end
+      case 4
+        if start_time>toepoch([2015 02 28 13 00 00])
+          param='180Hz';
+        end
+    end
+    %%%%%%%%%%%%%%%%%%%%%%% END FILTER MAGIC %%%%%%%%%%%%%%%%%%%%
 	end
 	
 	%%%%%%%%%%%%%%%%%%%%%%%%% PROBE MAGIC %%%%%%%%%%%%%%%%%%%%%%
@@ -615,7 +626,7 @@ elseif strcmp(quantity,'e') || strcmp(quantity,'eburst')
 					t = t - err_t;
 					irf_log('dsrc',...
 						['burst start time was corrected by ' num2str(err_t) ' sec'])
-                else irf_log('dsrc','burst start time was not corrected')
+        else, irf_log('dsrc','burst start time was not corrected')
 				end
 			end
 			
@@ -640,7 +651,7 @@ elseif strcmp(quantity,'e') || strcmp(quantity,'eburst')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
 	
-	if strcmp(quantity,'pburst'), do_burst = 1; else do_burst = 0; end
+	if strcmp(quantity,'pburst'), do_burst = 1; else, do_burst = 0; end
 	if do_burst 
 		save_file = './mEFWburstR.mat';
 		tmmode='burst';
@@ -739,7 +750,7 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
 	
 	n_ok = 0;
 	for j=1:length(param)
-		for probe=probe_list;
+		for probe=probe_list
 			irf_log('dsrc',['EFW...sc' num2str(cl_id) '...probe' num2str(probe)...
 				'->P' param{j} num2str(cl_id) 'p' num2str(probe)]);
 			t = [];	data = [];
@@ -788,7 +799,7 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
 				end
 				n_ok = n_ok + 1;
 
-			else irf_log('dsrc', irf_ssub(['No data for P' param{j} '?p!'],cl_id,probe));
+      else, irf_log('dsrc', irf_ssub(['No data for P' param{j} '?p!'],cl_id,probe));
 			end
 			clear t data
 		end
@@ -907,13 +918,13 @@ elseif strcmp(quantity,'v')
 		if isempty(tempv)
 			irf_log('dsrc',irf_ssub('Cannot load SAX?',cl_id))
 			sax = [];
-        else sax = tempv{2};
+    else, sax = tempv{2};
 		end
 		clear tempv
 	end
 	if ~isempty(sax)
 		c_eval('diV?=c_gse2dsi(V?,sax);save_list=[save_list '' diV? ''];',cl_id);
-    else irf_log('dsrc',irf_ssub('No data for diV?',cl_id))
+  else, irf_log('dsrc',irf_ssub('No data for diV?',cl_id))
 	end
 	
 %{ 
@@ -966,13 +977,13 @@ elseif strcmp(quantity,'bfgmlocal')
 		if isempty(tempv)
 			irf_log('dsrc',irf_ssub('Cannot load SAX?',cl_id))
 			sax = [];
-        else sax = tempv{2};
+    else, sax = tempv{2};
 		end
 		clear tempv
 	end
 	if ~isempty(sax)
 		c_eval('diB?=c_gse2dsi(B?,sax);save_list=[save_list '' diB? ''];',cl_id);
-    else irf_log('dsrc',irf_ssub('No data for diB?',cl_id))
+  else, irf_log('dsrc',irf_ssub('No data for diB?',cl_id))
   end
   
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1054,7 +1065,7 @@ elseif strcmp(quantity,'bsc')
 		irf_log('dsrc','data interval will be truncated')
 	end
 	tm = tm(1);
-	if tm<1e-30, param='10Hz'; else param='180Hz'; end
+	if tm<1e-30, param='10Hz'; else, param='180Hz'; end
 	clear tm
 		
 	[t,data] = caa_is_get(cdb.db, start_time, dt, ...
@@ -1096,7 +1107,7 @@ elseif strcmp(quantity,'bscburst')
         t = t - err_t;
         irf_log('dsrc',...
             ['burst start time was corrected by ' num2str(err_t) ' sec'])
-    else irf_log('dsrc','burst start time was not corrected')
+    else, irf_log('dsrc','burst start time was not corrected')
     end
     
     B = rm_ib_spike([t B]);
@@ -1182,7 +1193,7 @@ elseif strcmp(quantity,'b') || strcmp(quantity,'edi') || ...
 				if isempty(tempv)
 					irf_log('dsrc',irf_ssub('Cannot load SAX?',cl_id))
 					sax = [];
-                else sax = tempv{2};
+        else, sax = tempv{2};
 				end
 				clear tempv
 			end
@@ -1278,7 +1289,7 @@ elseif strcmp(quantity,'whinat')
 	clear t data specrec
 	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-else error('caa:noSuchQuantity','Quantity ''%s'' unknown',quantity)
+else, error('caa:noSuchQuantity','Quantity ''%s'' unknown',quantity)
 end %main QUANTITY
 
 % saving
@@ -1337,7 +1348,7 @@ end
 function ss = prob_s(ns_ops_rec,warn)
   if nargin<2, warn=0; end
   if warn, s = 'WARNING: ';
-  else s = 'PROBLEM: ';
+  else, s = 'PROBLEM: ';
   end
   ss = [s caa_errid2str(ns_ops_rec(4)) ' ' epoch2iso(ns_ops_rec(1),1)...
   	' -- ' epoch2iso(ns_ops_rec(1)+ns_ops_rec(2),1)];

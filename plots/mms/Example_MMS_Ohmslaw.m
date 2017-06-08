@@ -5,8 +5,8 @@
 % coordinates.
 
 Tint = irf.tint('2015-10-30T05:15:40.00Z/2015-10-30T05:15:55.00Z');
-Tintlong = irf.tint('2015-10-30T05:15:00.00Z/2015-10-30T05:16:30.00Z'); % Take longer time interval for loading position data
-
+Tintlong = Tint+[-60 60]; % Take longer time interval for loading position data
+%%
 ic = 1:4; % Use all MMS spacecraft
 
 % Define constants
@@ -15,12 +15,12 @@ qe = Units.e;
 me = Units.me;
 
 % Load FPI data
-c_eval('ne? = mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_numberdensity_dbcs_brst'',Tint);',ic);
-c_eval('Ve? = mms.get_data(''Ve_dbcs_fpi_brst_l2'',Tint,?);',ic);
-c_eval('Pe? = mms.get_data(''Pe_dbcs_fpi_brst_l2'',Tint,?);',ic);
+c_eval('ne? = mms.get_data(''Ne_fpi_brst_l2'',Tint,?);',ic);
+c_eval('Ve? = mms.get_data(''Ve_gse_fpi_brst_l2'',Tint,?);',ic);
+c_eval('Pe? = mms.get_data(''Pe_gse_fpi_brst_l2'',Tint,?);',ic);
 c_eval('Pe?.data = Pe?.data/1e9;',ic); % Unit conversion
-c_eval('ni? = mms.db_get_ts(''mms?_fpi_brst_l2_dis-moms'',''mms?_dis_numberdensity_dbcs_brst'',Tint);',ic);
-c_eval('Vi? = mms.get_data(''Vi_dbcs_fpi_brst_l2'',Tint,?);',ic);
+c_eval('ni? = mms.get_data(''Ni_fpi_brst_l2'',Tint,?);',ic);
+c_eval('Vi? = mms.get_data(''Vi_gse_fpi_brst_l2'',Tint,?);',ic);
 c_eval('ne? = ne?.resample(ne1);',2:4);
 c_eval('Ve? = Ve?.resample(ne1);',ic);
 c_eval('Pe? = Pe?.resample(ne1);',ic);
@@ -46,16 +46,6 @@ c_eval('Exyz? = Exyz?.resample(ne1);',ic);
 % Average Electric field
 Exyzav = (Exyz1.data+Exyz2.data+Exyz3.data+Exyz4.data)/4;
 Exyzav = irf.ts_vec_xyz(Exyz1.time,Exyzav);
-
-% Load defatt files
-c_eval('defatt? = mms.db_get_variable(''mms?_ancillary_defatt'',''zra'',Tint);',ic);
-c_eval('defatt?.zdec = mms.db_get_variable(''mms?_ancillary_defatt'',''zdec'',Tint).zdec;',ic);
-
-% Rotate pressure tensor and vectosrs into GSE coordinates. This can be removed when L3
-% data are available.
-c_eval('Pe? = mms.rotate_tensor(Pe?,''gse'',?);',ic);
-c_eval('Vi? = mms_dsl2gse(Vi?,defatt?);',ic);
-c_eval('Ve? = mms_dsl2gse(Ve?,defatt?);',ic);
 
 % Compute ion convection term (MMS average)
 c_eval('EvxBi? = cross(Vi?,Bxyz?);',ic);

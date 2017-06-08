@@ -45,21 +45,24 @@ function irf_disp_surfplot(kc_x_max,kc_z_max,wfinal,extraparam,surfchoice,colorc
     colorstring='<---- Perpendicular                   Parallel ---->';
     colorlimits=[0,1];
   elseif colorchoice==5
-    colorstring='v_g/c';
+    colorstring='<---- Perpendicular                   Parallel ---->';
     colorlimits=[0,1];
   elseif colorchoice==6
+    colorstring='v_g/c';
+    colorlimits=[0,1];
+  elseif colorchoice==7
     colorstring='<---- Left handed              Right handed ---->';
     colorlimits=[-1,1];
 		colorMap = 'bluered';
-  elseif colorchoice==7
+  elseif colorchoice==8
     colorstring='<---- Most energy in B    log10(eps0 E^2/(B^2/mu0))  Most energy in E ---->';
     colorlimits=[-3,3];
 		colorMap = 'bluered';
-  elseif colorchoice==8
+  elseif colorchoice==9
     colorstring='<---- Most energy in ions     log10(We/Wi)      Most energy in electrons ---->';
     colorlimits=[-3,3];
 		colorMap = 'bluered';
-  elseif colorchoice==9
+  elseif colorchoice==10
     colorstring='<---- Most energy in particles     log10(Wp/Wf)      Most energy in fields ---->';
     colorlimits=[-3,3];
 		colorMap = 'bluered';

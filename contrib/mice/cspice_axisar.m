@@ -33,11 +33,14 @@
 %
 %   Given:
 %
-%      axis    an arbitrary, non-zero, double precision 3x1 array
-%              defining a rotation axis
+%      axis    the vector defining a rotation axis.
 %
-%      angle   the double precision scalar angle in radians
-%              defining the measure of rotation about 'axis'
+%              [3,1] = size(axis); double = class(axis)
+%
+%      angle   the angle in radians defining the measure of rotation
+%              about 'axis'.
+%
+%              [1,1] = size(angle); double = class(angle)
 %
 %   the call:
 %
@@ -45,10 +48,12 @@
 %
 %   returns:
 %
-%      r   a double precision 3x3 array representing the coordinate
-%          transformation determined by 'axis' and 'angle', i.e. the
-%          application of 'r' to a 3x1 array returns the result
-%          of rotating the vector about 'axis' through 'angle' radians
+%      r   the operator for the coordinate transformation determined by
+%          'axis' and 'angle', i.e. the application of 'r' to a 3x1
+%          array returns the result of rotating the vector about 'axis'
+%          through 'angle' radians
+%
+%           [3,3] = size(r); double = class(r)
 %
 %   Please note cspice_raxisa is not guaranteed to invert the
 %   operation of cspice_axisar.
@@ -109,6 +114,10 @@
 %   ROTATION.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.1, 28-OCT-2014, EDW (JPL)
+%
+%      Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.0.0, 29-NOV-2005, EDW (JPL)
 %

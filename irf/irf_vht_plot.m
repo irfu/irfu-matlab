@@ -22,13 +22,17 @@ if isa(e,'TSeries') && isa(b,'TSeries')
 	b=[b.time.epochUnix double(b.data)];
 end
 
-if nargin < 3 || isempty(tint)
-    tint=[min([e(1,1),b(1,1)]) max([e(end,1),b(end,1)])];
+if nargin < 3 || isempty(tint)   
+  tint=[min([e(1,1),b(1,1)]) max([e(end,1),b(end,1)])];
 end
 if nargin < 4, vht_flag=2;end
 if nargin == 5, vht_is='given'; else vht_is='calculated';end
 
+if isa(tint,'EpochTT')
+  tint = tint.epochUnix';
+end
 strint = irf_disp_iso_range(tint,1);
+%strint = tint.utc;
 disp(strint);
 
 e=irf_tlim(e,tint);
