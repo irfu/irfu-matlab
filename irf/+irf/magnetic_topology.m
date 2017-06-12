@@ -237,6 +237,9 @@ else
     error('Unapproved arguments. See usage: help 3D_magnetic_topology')
 end
 
+if isa(tint, 'EpochTT')
+    tint=tint.epochUnix;
+end
 
 %% Resample all input vectors to B1 timeline and remove time column
 if timeInd
