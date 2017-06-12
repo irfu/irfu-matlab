@@ -87,10 +87,20 @@ switch scId
        dac.max(13) = -75; dac.min(13) = -95; %p3 -80, p1,2,4 -90
        og.max(13)  = -3.9; og.min(13) = -4.1;
        ig.max(13)  = -7.9; ig.min(13) = -8.1;
-    timeTmp(14,:) = [2016 11 18 14 48 10];
-       dac.max(14) = -75; dac.min(14) = -95; %p3 -80, p1,2,4 -90
+    % Bias changed to -70nA on p3 and -80nA on p1,2 and -90 on p4 on
+    % 2017/05/24T19:32:01
+    timeTmp(14,:) = [2017 05 24 19 32 00];
+       dac.max(14) = -75; dac.min(14) = -95;
        og.max(14)  = -3.9; og.min(14) = -4.1;
        ig.max(14)  = -7.9; ig.min(14) = -8.1;
+    timeTmp(15,:) = [2017 05 24 19 32 01];
+       dac.max(15) = -65; dac.min(15) = -95; %p3 -70, p1,2 -80, p4 -90
+       og.max(15)  = -3.9; og.min(15) = -4.1;
+       ig.max(15)  = -7.9; ig.min(15) = -8.1;
+    timeTmp(16,:) = [2017 06 24 19 32 01];
+       dac.max(16) = -65; dac.min(16) = -95;
+       og.max(16)  = -3.9; og.min(16) = -4.1;
+       ig.max(16)  = -7.9; ig.min(16) = -8.1;
 
   case 2
     % Define new limits for good bias setting on MMS 2
@@ -141,10 +151,19 @@ switch scId
        dac.max(11) = -65; dac.min(11) = -95;
        og.max(11)  = -3.9; og.min(11) = -4.1;
        ig.max(11)  = -7.9; ig.min(11) = -8.1;
-    timeTmp(12,:) = [2016 10 07 17 35 29];
+    % Bias change -90nA on p1, -60nA on p2,p3,p4 on 2017/05/24T22:48:09
+    timeTmp(12,:) = [2017 05 24 22 48 08];
        dac.max(12) = -65; dac.min(12) = -95;
        og.max(12)  = -3.9; og.min(12) = -4.1;
        ig.max(12)  = -7.9; ig.min(12) = -8.1;
+    timeTmp(13,:) = [2017 05 24 22 48 09]; % p1 -90, p234 -60
+       dac.max(13) = -55; dac.min(13) = -95;
+       og.max(13)  = -3.9; og.min(13) = -4.1;
+       ig.max(13)  = -7.9; ig.min(13) = -8.1;
+    timeTmp(14,:) = [2017 06 24 22 48 09];
+       dac.max(14) = -55; dac.min(14) = -95;
+       og.max(14)  = -3.9; og.min(14) = -4.1;
+       ig.max(14)  = -7.9; ig.min(14) = -8.1;
 
   case 3
     % Define new limits for good bias setting on MMS 3
@@ -196,10 +215,20 @@ switch scId
        dac.max(11) = -85; dac.min(11) = -115;
        og.max(11)  = -3.9; og.min(11) = -4.1;
        ig.max(11)  = -7.9; ig.min(11) = -8.1;
-    timeTmp(12,:) = [2016 10 07 18 52 24];
+    % Bias changed to -80nA on p1, -90nA on p2, -100nA on p3, -110nA on p4
+    % on 2017/05/25T00:56:16
+    timeTmp(12,:) = [2017 05 25 00 56 15];
        dac.max(12) = -85; dac.min(12) = -115;
        og.max(12)  = -3.9; og.min(12) = -4.1;
        ig.max(12)  = -7.9; ig.min(12) = -8.1;
+    timeTmp(13,:) = [2017 05 25 00 56 16]; %p1 -80, p2 -90, p3 -100, p4 -110
+       dac.max(13) = -75; dac.min(13) = -115;
+       og.max(13)  = -3.9; og.min(13) = -4.1;
+       ig.max(13)  = -7.9; ig.min(13) = -8.1;
+    timeTmp(14,:) = [2017 06 25 00 56 16];
+       dac.max(14) = -75; dac.min(14) = -115;
+       og.max(14)  = -3.9; og.min(14) = -4.1;
+       ig.max(14)  = -7.9; ig.min(14) = -8.1;
 
   case 4
     % Define new limits for good bias setting on MMS 4
@@ -232,10 +261,19 @@ switch scId
         dac.max(7) = -135; dac.min(7) = -145;
         og.max(7)  = -3.9;  og.min(7) = -4.1;
         ig.max(7)  = -7.9;  ig.min(7) = -8.1;
-    timeTmp(8,:) = [2016 10 07 20 05 00];
+    % Bias changed to -130nA on 2017/05/25T03:00:55
+    timeTmp(8,:) = [2017 05 25 03 00 54];
         dac.max(8) = -135; dac.min(8) = -145;
         og.max(8)  = -3.9;  og.min(8) = -4.1;
         ig.max(8)  = -7.9;  ig.min(8) = -8.1;
+    timeTmp(9,:) = [2017 05 25 03 00 55]; % p1234 -130
+        dac.max(9) = -125; dac.min(9) = -135;
+        og.max(9)  = -3.9;  og.min(9) = -4.1;
+        ig.max(9)  = -7.9;  ig.min(9) = -8.1;
+    timeTmp(10,:) = [2017 06 25 03 00 55]; 
+        dac.max(10) = -125; dac.min(10) = -135;
+        og.max(10)  = -3.9;  og.min(10) = -4.1;
+        ig.max(10)  = -7.9;  ig.min(10) = -8.1;
 
   otherwise
     errStr = 'Invalid scId, only numerical 1, 2, 3 or 4 allowed.';
