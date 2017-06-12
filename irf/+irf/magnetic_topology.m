@@ -262,7 +262,7 @@ if SpecificTime
 t=t(minpos,1);
 idB{1,1}=idB{1,1}(minpos,:);
 idB{1,2}=idB{1,2}(minpos,:);
-idB{1,3}=idB{1,4}(minpos,:);
+idB{1,3}=idB{1,3}(minpos,:);
 idB{1,4}=idB{1,4}(minpos,:);
 
 idR{1,1}=idR{1,1}(minpos,:);
@@ -346,7 +346,7 @@ for l=1:size(dR,1)
     Bz(i,j,k)=B(l,3);
 end
 
-%Bmag=Bx.^2+By.^2+
+
 %% Trace magnetic field lines
 
 
