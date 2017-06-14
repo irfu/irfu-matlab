@@ -1084,7 +1084,7 @@ classdef mms_sdp_dmgr < handle
             if any(ind)
               sen = sensors{iSen};
               % Correct (subtract) sw wake
-              DATAC.dce.(sen).data(ind) = eBrst.data(ind,iSen) - swWake.data(ind,iSen);
+              DATAC.dce.(sen).data(ind) = DATAC.dce.(sen).data(ind) - swWake.data(ind,iSen);
               % Set bitmasks for data where SW wake was removed
               irf.log('notice', sprintf('%i datapoint(-s) with sw wake(-s) corrected for %s, based on L2a file', sum(ind), sen));
               DATAC.dce.(sen).bitmask(ind) = bitor(DATAC.dce.(sen).bitmask(ind), MMS_CONST.Bitmask.SW_WAKE_REMOVED);

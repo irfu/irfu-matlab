@@ -8,7 +8,7 @@ function [data, n_corrected, wakedesc] = mms_sdp_swwake(e, pair, phase_2, timeIn
 %   pair       - probe pair ('e12' or 'e34')
 %   phase_2    - spinphase corresponding to measurements
 %   timeIn     - time of measurement (int64, tt2000 ns)
-%   sampleRate - 
+%   sampleRate - nominal sample rate of data (Hz)
 %
 % Output:
 %   data - corrected data
@@ -123,6 +123,9 @@ wakedesc = NaN(n_spins*2, 4);
 ttime = tt;
 iok = [];
 
+ddt = 10^9/sampleRate; % timeIn is in ns (tt2000), sampleRate in Hz.
+MARG = 0.05*10^9;
+
 for in = 1:n_spins
   ts = time(i0(in));
   i360 = find( time > ts & ...
@@ -144,39 +147,32 @@ for in = 1:n_spins
   if empty
     tt(:, in) = NaN;
   else
-    MARG = 0.05*10^9;
     eind = find((time > ts-MARG) & (time < te+MARG));
     eind(isnan(data_corr(eind))) = [];
     % Check for data gaps inside one spin.
     if sampleRate>0 && length(eind)<N_EMPTY*(te-ts +MARG*2)*sampleRate/10^9
       irf.log('debug',['Data gap at ', irf_time(timeIn(i0(in)),'ttns>utc')]);
       tt(:, in) = NaN;
-    else 
-      if sampleRate==450 % Sample freq=450 Hz, then resample data
-%         dtmp = irf_resamp(data_corr(eind,:), ttime(:,in));
-% Should perhaps be done for Burst??
-      else
-        ddt = 1/sampleRate;
-        dtmp = [time(eind), data_corr(eind,:)];
-        % We linearly extrapolate missing data at at edges
-        if dtmp(1,1)>=ts+ddt
-          % We miss points at the beginning of the spin
-          nm = ceil( (dtmp(1,1)-ts)/ddt );
-          t_temp = dtmp(1,1) + ((1:nm) - nm-1)*ddt;
-          data_temp = irf_resamp(dtmp, [t_temp'; dtmp(1:2,1)], 'linear');
-          dtmp = [data_temp(1:end-2,:); dtmp]; %#ok<AGROW>
-          clear nm t_temp data_temp
-        end
-        if dtmp(end,1)<=te-ddt
-          % We miss points at the end of the spin
-          nm = ceil( (te-dtmp(end,1))/ddt );
-          t_temp = dtmp(end,1) + (1:nm)*ddt;
-          data_temp = irf_resamp(dtmp, [dtmp(end-1:end,1); t_temp'], 'linear');
-          dtmp = [dtmp; data_temp(3:end,:)]; %#ok<AGROW>
-          clear nm t_temp data_temp
-        end
-        dtmp = irf_resamp(dtmp, ttime(:,in), 'spline');
+    else
+      dtmp = [time(eind), data_corr(eind,:)];
+      % We linearly extrapolate missing data at at edges
+      if dtmp(1,1)>=ts+ddt
+        % We miss points at the beginning of the spin
+        nm = ceil( (dtmp(1,1)-ts)/ddt );
+        t_temp = dtmp(1,1) + ((1:nm) - nm-1)*ddt;
+        data_temp = irf_resamp(dtmp, [t_temp'; dtmp(1:2,1)], 'linear');
+        dtmp = [data_temp(1:end-2,:); dtmp]; %#ok<AGROW>
+        clear nm t_temp data_temp
       end
+      if dtmp(end,1)<=te-ddt
+        % We miss points at the end of the spin
+        nm = ceil( (te-dtmp(end,1))/ddt );
+        t_temp = dtmp(end,1) + (1:nm)*ddt;
+        data_temp = irf_resamp(dtmp, [t_temp'; dtmp(end-1:end, 1)], 'linear');
+        dtmp = [dtmp; data_temp(3:end,:)]; %#ok<AGROW>
+        clear nm t_temp data_temp
+      end
+      dtmp = irf_resamp(dtmp, ttime(:,in), 'spline');
       % Fill small gaps (at edges only?) with zeroes
       % This has a minor influence on the correction procedure
       dtmp(isnan(dtmp(:,2)), 2) = 0;
