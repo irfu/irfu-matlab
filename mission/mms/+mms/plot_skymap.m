@@ -123,7 +123,7 @@ if plotSphere
   shading(ax,'flat');
 else % plot flat map
   [~,theta] = hist(theta_edges,16);
-  [~,phi] = hist(phi_edges,32);   
+  [~,phi] = hist(phi_edges,32);  
   hs = surf(ax,PHI*180/pi,THETA*180/pi,THETA*0,[fC(:,17:32) fC(:,1:16)]);  
   ax.XLabel.String = 'Azimuthal angle (deg)';
   ax.YLabel.String = 'Polar angle (deg)';
