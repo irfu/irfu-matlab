@@ -183,7 +183,7 @@ classdef mms_sdp_dmgr < handle
           apply_nom_amp_corr() % AFTER all V values was calculated but before most processing.
           sensors = {'e12','e34'};
           corr_adp_spikes()
-          corr_swwake() % TEST CORRECT SW WAKE (after ADP spikes).
+          corr_swwake()
           
         case('dcv')
           sensors = {'v1','v2','v3','v4','v5','v6'};
@@ -201,7 +201,7 @@ classdef mms_sdp_dmgr < handle
           apply_nom_amp_corr() % AFTER all V values was calculated but before most processing.
           sensors = {'e12','e34'};
           corr_adp_spikes()
-          corr_swwake() % TEST CORRECT SW WAKE (after ADP spikes).
+          corr_swwake()
           
         case('dfg')
           % DFG - Dual fluxgate magn. B-field.
@@ -778,7 +778,9 @@ classdef mms_sdp_dmgr < handle
           for iSen = 1:2:numel(sensors)
             senA = sensors{iSen};  senB = sensors{iSen+1};
             senE = ['e' senA(2) senB(2)]; % E-field sensor
-            
+            % Do not care about ADP booms and their biases
+            if(strcmp(senA(2),'5')), continue; end
+
             % InnerGuard, OuterGuard (bias voltages), DAC (tracking current)
             hk10eParam = {'ig','og','dac'};
             for iiParam = 1:length(hk10eParam)
@@ -1058,15 +1060,12 @@ classdef mms_sdp_dmgr < handle
       
       function corr_swwake()
         % Correct Solar wind wake from s/c
-% TESTING not ready for MASTER/production
-        keyboard
         if( DATAC.procId == MMS_CONST.SDCProc.scpot)
           % Don't correct e-field when computing scpot. Appears to not do
           % much...
           return;
         elseif( DATAC.tmMode == MMS_CONST.TmMode.brst && ~isempty(DATAC.l2a) ...
             && isfield(DATAC.l2a,'sw_wake'))
-          % FIXME: TO BE DONE
           % Brst mode and a L2A file has been loaded and it is a new file
           % containing "swwake". Use corresponding segments of it, then and
           % bitmask its data.
