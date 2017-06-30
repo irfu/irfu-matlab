@@ -24,8 +24,12 @@ function Nulls=c_4_null(R1,R2,R3,R4,B1,B2,B3,B4,varargin)
 %                 thresholdValue is given in units of percentage.If
 %                 threshold is 100% all points are accepted. Default value
 %                 is 40%.
-%     ['boxLim',boxLimValue]    - only nulls from box size less than boxLim are returned.
-%                 Default is to have no limits on box size.
+%     ['boxLim',boxLimValue]    - only nulls from box size less and equal to boxLim are returned
+%                 (center of box is considered spacecraft tetrahedron center).
+%                 Default is to have no limits on box size. Same units as
+%                 positional data should be used. If boxLimValue is set to
+%                 0 then the maximum and minimum distance in all direction
+%                 given by the spacecraft tetrahedron is used.
 %
 %
 %   OUTPUT
@@ -72,11 +76,13 @@ function Nulls=c_4_null(R1,R2,R3,R4,B1,B2,B3,B4,varargin)
 %
 %   c_4_null(R1,R2,R3,R4,B1,B2,B3,B4,'threshold',thresholdValue) - Tries to
 %   locate nulls and returns the output for all nulls found where the
-%   threshold is set to thresholdValue. boxLimValue is no box.
+%   threshold is set to thresholdValue. thresholdValue needs to be given in %. 
+%   boxLimValue is no box. 
 %
 %   c_4_null(R1,R2,R3,R4,B1,B2,B3,B4,'boxLim',boxLimValue) - Tries to
 %   locate nulls and returns the output for all nulls found where the
-%   threshold is set to default. boxLim is set to boxLimValue.
+%   threshold is set to default. boxLim is set to boxLimValue. boxLim needs
+%   to be set with same units as the s/c position.
 %
 %   c_4_null(R1,R2,R3,R4,B1,B2,B3,B4,'strong',currentLim) - Tries to
 %   locate nulls with default thresholdValue, no box limit and returns the
@@ -249,10 +255,11 @@ Bmean=0.25.*(idB{1,1}+idB{1,2}+idB{1,3}+idB{1,4});
 
 for i=1:nPoints
     deltaBnull = reshape(gradB(i,:),3,3)';
+    % distance from tetrahedron center to null
     dR(i,:) = Bmean(i,:)/deltaBnull;
 end
 
-R = Rmean - dR;
+R = Rmean - dR; %position of null
 
 
 % 2) Determinant of gradB
@@ -277,32 +284,34 @@ l4 = sqrt(sum(l4vec.^2,2))./detB;
 dB_AB(:,1)=1./(max(([l1 l2 l3 l4]),[],2));
 
 %% Check if box satisfies boxLim conditions and null is within box
-% Calculate the minimum and maximum values for all s/c's in each direction
+
+
+%For each eigenvalue corresponding to the tolerance level (the two errors
+%less or equal to 40%) break out their corresponding time and dR value
+%(the minimum distance from all s/c to the null)
+if noBox
+    disp('Sorting based on the null located anywhere');
+    okNulls    = true(length(R(:,1)));
+elseif boxLim==0
+    % Calculate the minimum and maximum values for all s/c's in each direction
 % to see the distance among s/c's
+disp('Sorting based on the null inside the size given by s/c tetrahedron');
 minX = min(([idR{1,1}(:,1) idR{1,2}(:,1) idR{1,3}(:,1) idR{1,4}(:,1)]),[],2);
 maxX = max(([idR{1,1}(:,1) idR{1,2}(:,1) idR{1,3}(:,1) idR{1,4}(:,1)]),[],2);
 minY = min(([idR{1,1}(:,2) idR{1,2}(:,2) idR{1,3}(:,2) idR{1,4}(:,2)]),[],2);
 maxY = max(([idR{1,1}(:,2) idR{1,2}(:,2) idR{1,3}(:,2) idR{1,4}(:,2)]),[],2);
 minZ = min(([idR{1,1}(:,3) idR{1,2}(:,3) idR{1,3}(:,3) idR{1,4}(:,3)]),[],2);
 maxZ = max(([idR{1,1}(:,3) idR{1,2}(:,3) idR{1,3}(:,3) idR{1,4}(:,3)]),[],2);
-
-%For each eigenvalue corresponding to the tolerance level (the two errors
-%less or equal to 40%) break out their corresponding time and dR value
-%(the minimum distance from all s/c to the null)
-disp('Sorting based on the null located within the s/c box made up of the maximum and minimum values for each direction of all satellites');
-if noBox
     sortNullDx = R(:,1) >= minX & R(:,1) <= maxX;
     sortNullDy = R(:,2) >= minY & R(:,2) <= maxY;
     sortNullDz = R(:,3) >= minZ & R(:,3) <= maxZ;
     okNulls    = sortNullDx & sortNullDy & sortNullDz;
 else
-    sortsizedX = (maxX-minX) <= boxLim;
-    sortsizedY = (maxY-minY) <= boxLim;
-    sortsizedZ = (maxZ-minZ) <= boxLim;
-    sortNullDx = R(:,1) >= minX & R(:,1) <= maxX;
-    sortNullDy = R(:,2) >= minY & R(:,2) <= maxY;
-    sortNullDz = R(:,3) >= minZ & R(:,3) <= maxZ;
-    okNulls    = sortsizedX & sortsizedY & sortsizedZ & sortNullDx & sortNullDy & sortNullDz;
+    disp(['Sorting based on the null located inside the box ', num2str(-1*boxLim,3), ' and ',num2str(boxLim,3), ' in each direction']);
+    sortNullDx = dR(:,1) >= -1*boxLim & dR(:,1) <= boxLim;
+    sortNullDy = dR(:,2) >= -1*boxLim & dR(:,2) <= boxLim;
+    sortNullDz = dR(:,3) >= -1*boxLim & dR(:,3) <= boxLim;
+    okNulls    = sortNullDx & sortNullDy & sortNullDz;
 end
 
 %Removes nulls not within spacecraft box

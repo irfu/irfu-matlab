@@ -113,7 +113,7 @@ slope=p(1);
 if nargout>0
     disp(strint);
     disp(['Offset: ' num2str(p(2))])
-    return
+   % return         % why RETURN; wyli @ IRFU 2015-11-21;
 end
 figure(117), clf
 plot(valfv(:,2),vtransf(:,2),'b.',valfv(:,3),vtransf(:,3),'g.',valfv(:,4),vtransf(:,4),'r.');
@@ -134,7 +134,7 @@ text(xx(1)+dx,yy(1)+dy,    ['offset: ' num2str(p(2),'%1.2f')])
 text(xx(1)+dx,yy(1)+.5*dy, ['   vht: [' num2str(vht) '] km/s GSE'])
 
 figure(118), clf
-irf_plot({valfv,vtransf},'comp','.')
+irf_plot({valfv,vtransf},'comp','-')            % change '.' to '_'
 legend('V_A','V-V_{HT}')
 ylabel('V [km/s]');
 
