@@ -72,22 +72,23 @@ Ie = (1e12*qe*Ssurf/(2*sqrt(pi)))*ne.data.*veth.*(1+SCpotr.data./Te.data); % The
 
 % First a simple fit of Iph to Ie using 1 photoelectron population
 if ASPOCon,
-    fsimp = @(x) sum((Ie+Iasp.data-(x(1).*exp(-SCpotr.data./x(2)))).^2,'omitnan');
+    fsimp = @(x) sum(abs(Ie+Iasp.data-(x(1).*exp(-SCpotr.data./x(2)))),'omitnan');
 else
-    fsimp = @(x) sum((Ie-(x(1).*exp(-SCpotr.data./x(2)))).^2,'omitnan');
+    fsimp = @(x) sum(abs(Ie-(x(1).*exp(-SCpotr.data./x(2)))),'omitnan');
 end
 
-[Xsimp,~] = fminsearch(@(x) fsimp(x),[200;3]); % Nelder-Mead method
-g1 = Xsimp(1)
-g2 = Xsimp(2)
+options = optimset('MaxFunEvals',5000);
+[Xsimp,~] = fminsearch(@(x) fsimp(x),[500;3],options); % Nelder-Mead method
+g1 = Xsimp(1);
+g2 = Xsimp(2);
 
 % Fit of Iph to Ie for two photoelectron populations
 if ASPOCon,
-    f = @(x) sum((Ie+Iasp.data-(x(1).*exp(-SCpotr.data./x(2)) + x(3).*exp(-SCpotr.data./x(4)))).^2,'omitnan');
+    f = @(x) sum(abs(Ie+Iasp.data-(x(1).*exp(-SCpotr.data./x(2)) + x(3).*exp(-SCpotr.data./x(4)))),'omitnan');
 else
-    f = @(x) sum((Ie-(x(1).*exp(-SCpotr.data./x(2)) + x(3).*exp(-SCpotr.data./x(4)))).^2,'omitnan');
+    f = @(x) sum(abs(Ie-(x(1).*exp(-SCpotr.data./x(2)) + x(3).*exp(-SCpotr.data./x(4)))),'omitnan');
 end
-[X,~] = fminsearch(@(x) f(x),[g1;g2;10;10]);
+[X,~] = fminsearch(@(x) f(x),[g1;g2;10;10],options);
 
 Iph0 = X(1);
 Tph0 = X(2);
