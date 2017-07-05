@@ -79,8 +79,8 @@ if ~isempty(regexp(v.name,'^mms[1-4]_d[ei]s_','once'))
             end                
             %toffset = (int64(v.DEPEND_0.DELTA_PLUS_VAR.data)-int64(v.DEPEND_0.DELTA_MINUS_VAR.data))*1e6/2;
             %tdiff = (int64(v.DEPEND_0.DELTA_PLUS_VAR.data)+int64(v.DEPEND_0.DELTA_MINUS_VAR.data))*1e6/2;
-            toffset = (int64(v.DEPEND_0.DELTA_PLUS_VAR.data*flag_PLUS)-int64(v.DEPEND_0.DELTA_MINUS_VAR.data*flag_MINUS))*1e6/2;
-            tdiff = (int64(v.DEPEND_0.DELTA_PLUS_VAR.data*flag_PLUS)+int64(v.DEPEND_0.DELTA_MINUS_VAR.data*flag_MINUS))*1e6/2;              
+            toffset = int64((v.DEPEND_0.DELTA_PLUS_VAR.data*flag_PLUS-v.DEPEND_0.DELTA_MINUS_VAR.data*flag_MINUS)*1e6/2);
+            tdiff = int64((v.DEPEND_0.DELTA_PLUS_VAR.data*flag_PLUS+v.DEPEND_0.DELTA_MINUS_VAR.data*flag_MINUS)*1e6/2);   
             v.DEPEND_0.DELTA_MINUS_VAR.data = tdiff;
             v.DEPEND_0.DELTA_PLUS_VAR.data = tdiff;
             v.DEPEND_0.data = v.DEPEND_0.data+toffset;
