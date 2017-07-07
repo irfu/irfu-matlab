@@ -44,6 +44,8 @@ Example: C1, 2015-03-09T09:19:26Z
 2b) Data problems to be fixed/investigated
 ==========================================
 
+C1, 2015-12-08 12:57:24 - 18:15:00 probe 3 stuck, but probe 4 appeared.
+Same problem on 2015-12-31, starting at 14:18
 
 3) Major data problems
 ======================
@@ -68,6 +70,8 @@ C4 saturation, 2015-04-12 16:47 - 18:53, 19:42:12 - 19:42:32, 21:52:48 - 21:53:0
 ==========
 
 No Es burst data in summary plots for C4. This is because one of the probes is very saturated.
+
+
 
 
 5) Unclassified
