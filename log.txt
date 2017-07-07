@@ -1,3 +1,4 @@
+2017-07-07 v1.13.0 MMS swwake removal code and some minor other fixes.
 2017-05-30 v1.12.9 Fix to irf_average_mx (MacOs 10.12.3 and R2017a), MMS correct typo in adc spike removal, and some minor other fixes.
 2017-05-08 v1.12.8 New CDF patch, new Mice, MMS improved offset computations and some minor other fixes.
 2017-03-20 v1.12.7 MMS improved ADP shadow for L2 scpot and corrected meta data, and some minor other fixes.
