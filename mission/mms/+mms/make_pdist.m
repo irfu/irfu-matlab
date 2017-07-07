@@ -104,9 +104,21 @@ if ~isempty(regexp(tmpDist.name,'^mms[1-4]_d[ei]s_','once'))
                 end
             else
                 irf.log('warning','Epoch_plus_var/Epoch_minus_var units are not clear, assume s');
-            end                
-            toffset = (int64(tmpDist.DEPEND_0.DELTA_PLUS_VAR.data*flag_PLUS)-int64(tmpDist.DEPEND_0.DELTA_MINUS_VAR.data*flag_MINUS))*1e6/2;
-            tdiff = (int64(tmpDist.DEPEND_0.DELTA_PLUS_VAR.data*flag_PLUS)+int64(tmpDist.DEPEND_0.DELTA_MINUS_VAR.data*flag_MINUS))*1e6/2;    
+            end
+            toffset = int64((tmpDist.DEPEND_0.DELTA_PLUS_VAR.data*flag_PLUS-tmpDist.DEPEND_0.DELTA_MINUS_VAR.data*flag_MINUS)*1e6/2);
+            tdiff = int64((tmpDist.DEPEND_0.DELTA_PLUS_VAR.data*flag_PLUS+tmpDist.DEPEND_0.DELTA_MINUS_VAR.data*flag_MINUS)*1e6/2);            
+            tdiff_data = median(diff(tmpDist.DEPEND_0.data)) / 2;                   % ns
+            if ~(tdiff_data == tdiff)
+                str1 = num2str(tmpDist.DEPEND_0.DELTA_PLUS_VAR.data*flag_PLUS);
+                str2 = num2str(tmpDist.DEPEND_0.DELTA_MINUS_VAR.data*flag_MINUS);
+                str0 = num2str(double(tdiff_data * 2) * 1e-6);
+                str_warning = ['Epoch_plus_var (' str1 ') and Epoch_minus_var (' str2 ') donot match data sampling time (' str0 '), assume tdiff_data; '];
+                irf.log('warning', str_warning);
+                tdiff = tdiff_data;
+                toffset = tdiff_data;
+            end
+            %toffset = (int64(tmpDist.DEPEND_0.DELTA_PLUS_VAR.data*flag_PLUS)-int64(tmpDist.DEPEND_0.DELTA_MINUS_VAR.data*flag_MINUS))*1e6/2;
+            %tdiff = (int64(tmpDist.DEPEND_0.DELTA_PLUS_VAR.data*flag_PLUS)+int64(tmpDist.DEPEND_0.DELTA_MINUS_VAR.data*flag_MINUS))*1e6/2;              
             %toffset = (int64(tmpDist.DEPEND_0.DELTA_PLUS_VAR.data)-int64(tmpDist.DEPEND_0.DELTA_MINUS_VAR.data))*1e6/2;
             %tdiff = (int64(tmpDist.DEPEND_0.DELTA_PLUS_VAR.data)+int64(tmpDist.DEPEND_0.DELTA_MINUS_VAR.data))*1e6;
             tmpDist.DEPEND_0.DELTA_MINUS_VAR.data = tdiff;
