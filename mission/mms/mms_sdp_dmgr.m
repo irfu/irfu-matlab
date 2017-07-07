@@ -26,6 +26,7 @@ classdef mms_sdp_dmgr < handle
     probe2sc_pot = [];% comp probe to sc potential
     sc_pot = [];      % comp sc potential
     spinfits = [];    % comp spinfits
+    sw_wake = [];     % comp solar wind wake
     timelineXML = []; % List of timeline files used to bitmask maneuvers.
   end
   properties (SetAccess = immutable)
@@ -182,6 +183,7 @@ classdef mms_sdp_dmgr < handle
           apply_nom_amp_corr() % AFTER all V values was calculated but before most processing.
           sensors = {'e12','e34'};
           corr_adp_spikes()
+          corr_swwake()
           
         case('dcv')
           sensors = {'v1','v2','v3','v4','v5','v6'};
@@ -199,6 +201,7 @@ classdef mms_sdp_dmgr < handle
           apply_nom_amp_corr() % AFTER all V values was calculated but before most processing.
           sensors = {'e12','e34'};
           corr_adp_spikes()
+          corr_swwake()
           
         case('dfg')
           % DFG - Dual fluxgate magn. B-field.
@@ -535,6 +538,12 @@ classdef mms_sdp_dmgr < handle
               tmp(tmp==getfield(mms_sdp_typecast('dce'),'fillval')) = NaN;
               DATAC.(param).CMDModel = tmp;
             end
+            if(isfield(dataObj.data, [varPre, 'sw_wake_', varSuf]))
+              % SW wake removed, to be used in Brst processing.
+              tmp = dataObj.data.([varPre, 'sw_wake_', varSuf]).data;
+              tmp(tmp==getfield(mms_sdp_typecast('dce'),'fillval')) = NaN;
+              DATAC.(param).sw_wake = tmp;
+            end
           end
           
         case('aspoc')
@@ -769,7 +778,9 @@ classdef mms_sdp_dmgr < handle
           for iSen = 1:2:numel(sensors)
             senA = sensors{iSen};  senB = sensors{iSen+1};
             senE = ['e' senA(2) senB(2)]; % E-field sensor
-            
+            % Do not care about ADP booms and their biases
+            if(strcmp(senA(2),'5')), continue; end
+
             % InnerGuard, OuterGuard (bias voltages), DAC (tracking current)
             hk10eParam = {'ig','og','dac'};
             for iiParam = 1:length(hk10eParam)
@@ -1044,6 +1055,73 @@ classdef mms_sdp_dmgr < handle
             DATAC.dce.(sen).bitmask(idx) = ...
               bitor(DATAC.dce.(sen).bitmask(idx), MSK_SHADOW);
           end
+        end
+      end
+      
+      function corr_swwake()
+        % Correct Solar wind wake from s/c
+        if( DATAC.procId == MMS_CONST.SDCProc.scpot)
+          % Don't correct e-field when computing scpot. Appears to not do
+          % much...
+          return;
+        elseif( DATAC.tmMode == MMS_CONST.TmMode.brst && ~isempty(DATAC.l2a) ...
+            && isfield(DATAC.l2a,'sw_wake'))
+          % Brst mode and a L2A file has been loaded and it is a new file
+          % containing "swwake". Use corresponding segments of it, then and
+          % bitmask its data.
+          if isempty(DATAC.dce)
+            irf.log('warning', 'Empty DCE, cannot proceed');
+            return
+          end
+          irf.log('notice', 'Using SW wake from L2a file');
+          swWake = irf.ts_vec_xy(DATAC.l2a.dce.time, DATAC.l2a.sw_wake);
+          eBrst = irf.ts_vec_xy(DATAC.dce.time, [DATAC.dce.e12.data, DATAC.dce.e34.data]);
+          % Resample to time of eBrst then subtract the wake from the data.
+          swWake = swWake.resample(eBrst);
+          for iSen = 1:length(sensors)
+            ind = abs(swWake.data(:,iSen))>0;
+            if any(ind)
+              sen = sensors{iSen};
+              % Correct (subtract) sw wake
+              DATAC.dce.(sen).data(ind) = DATAC.dce.(sen).data(ind) - swWake.data(ind,iSen);
+              % Set bitmasks for data where SW wake was removed
+              irf.log('notice', sprintf('%i datapoint(-s) with sw wake(-s) corrected for %s, based on L2a file', sum(ind), sen));
+              DATAC.dce.(sen).bitmask(ind) = bitor(DATAC.dce.(sen).bitmask(ind), MMS_CONST.Bitmask.SW_WAKE_REMOVED);
+            end
+          end
+        else
+          % Fast/Slow or Brst e-field processing without previous L2a swwake.
+          % Try to compute wake and correct for it.
+          if isempty(DATAC.dce)
+            irf.log('warning', 'Empty DCE, cannot proceed');
+            return
+          end
+          Phase = DATAC.phase;
+          if isempty(Phase)
+            errStr='Bad PHASE input, cannot proceed.';
+            irf.log('critical',errStr); error(errStr);
+          end
+          diffWake = zeros(length(Phase.data), length(sensors), ...
+            getfield(mms_sdp_typecast('dce'),'matlab'));
+          for iSen=1:length(sensors)
+            sen = sensors{iSen};
+            % Compute corrected data
+            [data_corr, n_corr, ~] = mms_sdp_swwake(DATAC.dce.(sen).data, ...
+              sen, Phase.data, DATAC.dce.time, DATAC.samplerate);
+            % Difference between raw data and corrected
+            diffWake(:, iSen) = DATAC.dce.(sen).data - data_corr;
+            irf.log('notice', sprintf('%i sw wake(-s) found in %s', n_corr, sen));
+            % Bitmask values indicating SW_Wake was removed.
+            ind = abs( diffWake(:, iSen) ) > 0;
+            DATAC.dce.(sen).bitmask(ind) = bitor(DATAC.dce.(sen).bitmask(ind), ...
+              MMS_CONST.Bitmask.SW_WAKE_REMOVED);
+            % Save the new corrected data in DATAC replacing the
+            % uncorrected dce data
+            DATAC.dce.(sen).data = data_corr;
+          end
+          % Save the difference. Important for Fast L2a dce2d files as
+          % these are used by corresponding Burst segments.
+          DATAC.sw_wake = diffWake;
         end
       end
       

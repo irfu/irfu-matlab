@@ -333,25 +333,32 @@ if nargout, out = h; end % Return here
   end
   function SetColorMap
     cmapPoy = irf_colormap('poynting'); cmapSpace = irf_colormap('space');
+    matlabVer = version; matlabVer = num2str(matlabVer(1)); 
     for iPanel = 1:nPanels
-      axes(h(iPanel)) %#ok<LAXES>
-      if cmapPoyList(iPanel), colormap(cmapPoy)
-      else colormap(cmapSpace)
+      if matlabVer>=9
+        if cmapPoyList(iPanel), colormap(h(iPanel),cmapPoy)
+        else, colormap(h(iPanel),cmapSpace)
+        end
+      else % old matlab
+        axes(h(iPanel)) %#ok<LAXES>
+        if cmapPoyList(iPanel), colormap(cmapPoy)
+        else, colormap(cmapSpace)
+        end
+        freezeColors
+        if ishandle(hcbList(iPanel))
+          set(hcbList(iPanel),'YTick',yTickList{iPanel},'TickDir','out');
+          pos = get(hcbList(iPanel),'Position');
+          hYLabel = get(hcbList(iPanel),'ylabel');
+          yLabelStr = get(hYLabel,'string'); yLabelFontSize = get(hYLabel,'fontsize');
+          hcbNew = cbfreeze(hcbList(iPanel));
+        end
+        set(hcbNew,'Position',[pos(1)-pos(3)*0.25 pos(2:4)])
+        hYLabel = get(hcbNew,'ylabel');
+        set(hYLabel,'string',yLabelStr,'fontsize',yLabelFontSize);
+        l = get(hcbNew,'YTickLabel');
+        if ~isempty(l), l=[l(:,1) l]; l(:,1)=' '; set(hcbNew,'YTickLabel',l); end
       end
-      freezeColors
-      if ishandle(hcbList(iPanel))
-        set(hcbList(iPanel),'YTick',yTickList{iPanel},'TickDir','out');
-        pos = get(hcbList(iPanel),'Position');
-        hYLabel = get(hcbList(iPanel),'ylabel');
-        yLabelStr = get(hYLabel,'string'); yLabelFontSize = get(hYLabel,'fontsize');
-        hcbNew = cbfreeze(hcbList(iPanel));
-      end
-      set(hcbNew,'Position',[pos(1)-pos(3)*0.25 pos(2:4)])
-      hYLabel = get(hcbNew,'ylabel');
-      set(hYLabel,'string',yLabelStr,'fontsize',yLabelFontSize);
-      l = get(hcbNew,'YTickLabel'); 
-      if ~isempty(l), l=[l(:,1) l]; l(:,1)=' '; set(hcbNew,'YTickLabel',l); end
-    end
+    end % old matlab
   end
 end
     

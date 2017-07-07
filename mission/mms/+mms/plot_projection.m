@@ -93,7 +93,12 @@ else
             irf.log('critical','PDist must be skymap format.');
             return;
         end
-        phi = TSeries(dist.time,dist.depend{1,2});
+        tmpPhi = dist.depend{1,2};
+        if size(tmpPhi,1) == 1 % only one value for one time or for all times
+          phi = TSeries(dist.time,repmat(dist.depend{1,2},dist.length,1));
+        else
+          phi = TSeries(dist.time,dist.depend{1,2});
+        end
         theta = dist.depend{1,3};
         polar = theta*pi/180;
         stepTable = TSeries(dist.time,dist.ancillary.esteptable);

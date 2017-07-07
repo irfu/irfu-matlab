@@ -61,7 +61,7 @@ function unfreezeColors(h)
 %   POSSIBILITY OF SUCH DAMAGE.
 % END OF LICENSE
 
-narginchk(0,1)
+error(nargchk(0,1,nargin,'struct'))
 
 appdatacode = 'JRI__freezeColorsData';
 
