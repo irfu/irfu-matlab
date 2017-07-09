@@ -99,7 +99,7 @@ time = double(timeIn-timeIn(1));
 % Find numer of spins using the fact that Z-phase is monotonically
 % increasing, except for it being modulo 360.
 i0 = find(diff(phase_2)<0);
-if length(i0)<5
+if length(i0)<=5
   irf.log('notice', 'Not enough spins for correction.');
   return
 end
