@@ -99,7 +99,7 @@ time = double(timeIn-timeIn(1));
 % Find numer of spins using the fact that Z-phase is monotonically
 % increasing, except for it being modulo 360.
 i0 = find(diff(phase_2)<0);
-if length(i0)<5
+if length(i0)<=5
   irf.log('notice', 'Not enough spins for correction.');
   return
 end
@@ -346,7 +346,14 @@ for in = iok
   % Wake half-width
   ii =    find( abs(ccdav2) <  max(abs(ccdav2))/2 );
   iimax = find( abs(ccdav2) == max(abs(ccdav2))   );
-  wakedesc(in*2-fw,4) = min(ii(ii>iimax))-max(ii(ii<iimax));
+  iiDiff = min(ii(ii>iimax)) - max(ii(ii<iimax));
+  if ~isempty(iiDiff)
+    wakedesc(in*2-fw,4) = iiDiff;
+  else
+    irf.log('debug',['wrong wake shape at ', ...
+      irf_time(int64(ts)+timeIn(1),'ttns>utc'), ' (spike corner case)']);
+    continue
+  end
   clear ii iimax
 	
   if min(wakedesc(in*2-fw,4),wakedesc(in*2-1+fw,4))< WAKE_MIN_HALFWIDTH
