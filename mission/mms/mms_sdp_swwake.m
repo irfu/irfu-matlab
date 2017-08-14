@@ -132,12 +132,12 @@ for in = 1:n_spins
     time < ts+MAX_SPIN_PERIOD & ...
     [diff(phase_2) <= 0; 1]);
   if isempty(i360)
-    irf.log('notice', ['gap in phase at ', irf_time(timeIn(i0(in)),'ttns>utc')]);
+    irf.log('debug', ['gap in phase at ', irf_time(timeIn(i0(in)),'ttns>utc')]);
     te = ts + 20.0; %FIXME + 20 (was "+4" for Cluster)?
     empty = 1;
   else
     if length(i360)~=1
-      irf.log('notice', ['bogus phase at ', irf_time(timeIn(i0(in)),'ttns>utc')]);
+      irf.log('debug', ['bogus phase at ', irf_time(timeIn(i0(in)),'ttns>utc')]);
     end
     te = time(i360(end));
     empty = 0;
@@ -357,7 +357,7 @@ for in = iok
   clear ii iimax
 	
   if min(wakedesc(in*2-fw,4),wakedesc(in*2-1+fw,4))< WAKE_MIN_HALFWIDTH
-    irf.log('notice', sprintf('wake is too narrow (%d deg) at %s', ...
+    irf.log('debug', sprintf('wake is too narrow (%d deg) at %s', ...
       min(wakedesc(in*2-fw,4), wakedesc(in*2-1+fw,4)), ...
       irf_time(int64(ts)+timeIn(1),'ttns>utc')));
     wakedesc([in*2-1 in*2], :) = NaN;
