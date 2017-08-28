@@ -99,7 +99,7 @@ time = double(timeIn-timeIn(1));
 % Find numer of spins using the fact that Z-phase is monotonically
 % increasing, except for it being modulo 360.
 i0 = find(diff(phase_2)<0);
-if length(i0)<5
+if length(i0)<=5
   irf.log('notice', 'Not enough spins for correction.');
   return
 end
@@ -132,12 +132,12 @@ for in = 1:n_spins
     time < ts+MAX_SPIN_PERIOD & ...
     [diff(phase_2) <= 0; 1]);
   if isempty(i360)
-    irf.log('notice', ['gap in phase at ', irf_time(timeIn(i0(in)),'ttns>utc')]);
+    irf.log('debug', ['gap in phase at ', irf_time(timeIn(i0(in)),'ttns>utc')]);
     te = ts + 20.0; %FIXME + 20 (was "+4" for Cluster)?
     empty = 1;
   else
     if length(i360)~=1
-      irf.log('notice', ['bogus phase at ', irf_time(timeIn(i0(in)),'ttns>utc')]);
+      irf.log('debug', ['bogus phase at ', irf_time(timeIn(i0(in)),'ttns>utc')]);
     end
     te = time(i360(end));
     empty = 0;
@@ -346,11 +346,18 @@ for in = iok
   % Wake half-width
   ii =    find( abs(ccdav2) <  max(abs(ccdav2))/2 );
   iimax = find( abs(ccdav2) == max(abs(ccdav2))   );
-  wakedesc(in*2-fw,4) = min(ii(ii>iimax))-max(ii(ii<iimax));
+  iiDiff = min(ii(ii>iimax)) - max(ii(ii<iimax));
+  if ~isempty(iiDiff)
+    wakedesc(in*2-fw,4) = iiDiff;
+  else
+    irf.log('debug',['wrong wake shape at ', ...
+      irf_time(int64(ts)+timeIn(1),'ttns>utc'), ' (spike corner case)']);
+    continue
+  end
   clear ii iimax
 	
   if min(wakedesc(in*2-fw,4),wakedesc(in*2-1+fw,4))< WAKE_MIN_HALFWIDTH
-    irf.log('notice', sprintf('wake is too narrow (%d deg) at %s', ...
+    irf.log('debug', sprintf('wake is too narrow (%d deg) at %s', ...
       min(wakedesc(in*2-fw,4), wakedesc(in*2-1+fw,4)), ...
       irf_time(int64(ts)+timeIn(1),'ttns>utc')));
     wakedesc([in*2-1 in*2], :) = NaN;
