@@ -206,12 +206,15 @@ end
 
 %% Request data
 if(verLessThan('matlab','8.4')) % Version less than R2014b
-  % Soon this will fail as all US Gov is moving to HTTPS only as per
+  % This will fail as all US Gov have moved to HTTPS only as per
   % https://obamawhitehouse.archives.gov/blog/2015/06/08/https-everywhere-government
-  httpRequest = [httpRequest(1:4), httpRequest(6:end)]; % excl. "s" from https
   url=[httpRequest 'start_date=' startDate '&end_date=' endDate vars];
-  disp(['url:' url]);
-  [c,getDataSuccess]=urlread(url);
+  disp(['url: ' url]);
+  errStr = ['You appear to be running a too old version of Matlab. ', ...
+    'Unable to automatically access the HTTPS url: ', url];
+  irf.log('critical', errStr);
+  error(['Unable to access the HTTPS-only server with OMNI data, ',...
+    'please consider upgrading Matlab or downloading data manually.']);
 else
   % Download data from HTTPS
   url=[httpRequest 'start_date=' startDate '&end_date=' endDate vars];
