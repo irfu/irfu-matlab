@@ -33,6 +33,8 @@ if ( ~islogical(bashRun) || ...
     ( bashRun && ~exist(outPath, 'dir') ) )
   error('Incorrect usage. See help.');
 end
+YLimits.dce = [-15, 15];
+YLimits.dcv = [-50, 15];
 
 mms.db_init('local_file_db',dataPathRoot);
 
@@ -80,7 +82,7 @@ legend(h.dcv(1), 'DCV 1', 'DCV 3', 'DCV 5');
 % Improve readability
 % Zoom in to aviod Sweep spikes (typically probe potential should be less
 % than this absolute value in normal operations).
-rescaleY(h.dce); rescaleY(h.dcv);
+rescaleY(h.dce,YLimits.dce); rescaleY(h.dcv,YLimits.dcv);
 for ii=1:4
   % Split YLabel to use two lines with "units" on the second line.
   ylabel(h.dce(ii), sprintf('MMS%i\n[mV/m]', ii));
@@ -99,7 +101,7 @@ if(bashRun)
     tint = irf.tint([DayOfInterest,'T00:01:00Z'], [DayOfInterest,'T00:11:00Z']);
     irf_zoom(h.(iData{ii}), 'x', tint);
     irf_zoom(h.(iData{ii}), 'y');
-    rescaleY(h.(iData{ii}));
+    rescaleY(h.(iData{ii}), YLimits.(iData{ii}));
     title(h.(iData{ii})(1),{['Plot created: ', nowStr, '. ', upper(iData{ii}), ' raw for all four s/c.'],...
       'Zoom in: 00:01:00 to 00:11:00 UTC'});
     disp('Saving 00:01:00 to 00:11:00');
@@ -109,7 +111,7 @@ if(bashRun)
     tint = irf.tint([DayOfInterest,'T06:00:00Z'], [DayOfInterest,'T06:10:00Z']);
     irf_zoom(h.(iData{ii}), 'x', tint);
     irf_zoom(h.(iData{ii}),'y');
-    rescaleY(h.(iData{ii}));
+    rescaleY(h.(iData{ii}), YLimits.(iData{ii}));
     title(h.(iData{ii})(1),{['Plot created: ',nowStr,'. ', upper(iData{ii}), ' raw for all four s/c.'],...
       'Zoom in: 06:00:00 to 06:10:00 UTC.'});
     disp('Saving 06:00:00 to 06:10:00');
@@ -119,7 +121,7 @@ if(bashRun)
     tint = irf.tint([DayOfInterest,'T12:00:00Z'], [DayOfInterest,'T12:01:00Z']);
     irf_zoom(h.(iData{ii}), 'x', tint);
     irf_zoom(h.(iData{ii}),'y');
-    rescaleY(h.(iData{ii}));
+    rescaleY(h.(iData{ii}), YLimits.(iData{ii}));
     title(h.(iData{ii})(1),{['Plot created: ',nowStr,'. ', upper(iData{ii}), ' raw for all four s/c.'],...
       'Zoom in: 12:00:00 to 12:01:00 UTC.'});
     disp('Saving 12:00:00 to 12:01:00');
@@ -129,7 +131,7 @@ if(bashRun)
     tint = irf.tint([DayOfInterest,'T18:00:00Z'], [DayOfInterest,'T18:10:00Z']);
     irf_zoom(h.(iData{ii}), 'x', tint);
     irf_zoom(h.(iData{ii}), 'y');
-    rescaleY(h.(iData{ii}));
+    rescaleY(h.(iData{ii}), YLimits.(iData{ii}));
     title(h.(iData{ii})(1),{['Plot created: ',nowStr,'. ', upper(iData{ii}), ' raw for all four s/c.'],...
       'Zoom in: 18:00:00 to 18:10:00 UTC.'});
     disp('Saving 18:00:00 to 18:10:00');
@@ -137,16 +139,16 @@ if(bashRun)
   end
 end
 
-  function rescaleY(h)
+  function rescaleY(h,MinMax)
     % Rescale h so its max/min is +/-15 or less.
-    narginchk(1,1);
+    narginchk(2,2);
     for id=1:4
       % Get currently used limits
       ylimits = ylim(h(id));
       % If outside region -15 to +15, rescale.
-      if(ylimits(1)<-15 || ylimits(2)>15)
-        ylimits(1) = max(-15, ylimits(1));
-        ylimits(2) = min(15, ylimits(2));
+      if(ylimits(1)<-MinMax(1) || ylimits(2)>MinMax(2))
+        ylimits(1) = max(MinMax(1), ylimits(1));
+        ylimits(2) = min(MinMax(2), max(ylimits(2),MinMax(1)+1));
         ylim(h(id), ylimits);
       end
     end
