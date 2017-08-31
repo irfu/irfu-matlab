@@ -61,11 +61,30 @@ c_eval('Dcv_fast_ts_?=mms.db_get_ts(''mms?_edp_fast_l1b_dce'', ''mms?_edp_dcv_se
 c_eval('Dce_slow_ts_?=mms.db_get_ts(''mms?_edp_slow_l1b_dce'', ''mms?_edp_dce_sensor'', Tint);', 1:4);
 c_eval('Dcv_slow_ts_?=mms.db_get_ts(''mms?_edp_slow_l1b_dce'', ''mms?_edp_dcv_sensor'', Tint);', 1:4);
 
+emptyFast=false; emptySlow=false;
+
 % Combine (sort data based on time)
-c_eval('dce_ts_?=combine(Dce_fast_ts_?, Dce_slow_ts_?);',1:4);
-c_eval('dcv_ts_?=combine(Dcv_fast_ts_?, Dcv_slow_ts_?);',1:4);
-
-
+for ii=1:4
+  c_eval('emptyFast=isempty(Dce_fast_ts_?);', ii);
+  c_eval('emptySlow=isempty(Dce_slow_ts_?);', ii);
+  if ~emptyFast && ~emptySlow
+    % Fast and slow data available (combine them)
+    c_eval('dce_ts_?=combine(Dce_fast_ts_?,Dce_slow_ts_?);', ii);
+    c_eval('dcv_ts_?=combine(Dcv_fast_ts_?,Dcv_slow_ts_?);', ii);
+  elseif ~emptyFast && emptySlow
+    % Fast data only
+    c_eval('dce_ts_?=Dce_fast_ts_?;', ii);
+    c_eval('dcv_ts_?=Dcv_fast_ts_?;', ii);
+  elseif emptyFast && ~emptySlow
+    % Slow data only
+    c_eval('dce_ts_?=Dce_slow_ts_?;', ii);
+    c_eval('dcv_ts_?=Dcv_slow_ts_?;', ii);
+  else
+    % Fill with one NaN point to ensure plot function has something to plot.
+    c_eval('dce_ts_?=TSeries(EpochTT([DayOfInterest,''T00:00:00.000000000Z'']),NaN);', ii);
+    c_eval('dcv_ts_?=TSeries(EpochTT([DayOfInterest,''T00:00:00.000000000Z'']),NaN);', ii);
+  end
+end
 
 %% Plot All results.
 disp('Plotting all data from all S/C.');
