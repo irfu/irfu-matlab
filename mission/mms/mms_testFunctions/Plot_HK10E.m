@@ -48,6 +48,14 @@ for id=1:length(SCid)
   hk10eDB.(SCid{id}) = list_files(dbList,[SCid{id},'_fields_hk_l1b_10e'],tint);
   if(isempty(hk10eDB.(SCid{id})))
     warning(['No ',SCid{id},' HK_10E file found for this day.']);
+    % Fill one datapoint with NaN to ensure plot function have something
+    % to plot.
+    hk10eDB.(SCid{id}).time = tint.start.epochUnix;
+    for ii=1:length(probes)
+      hk10eDB.(SCid{id}).dac.(probes{ii}) = NaN;
+      hk10eDB.(SCid{id}).og.(probes{ii}) = NaN;
+      hk10eDB.(SCid{id}).ig.(probes{ii}) = NaN;
+    end
   else
     % Load files
     hk10eDB.(SCid{id}).obj = dataobj([hk10eDB.(SCid{id}).path, filesep, hk10eDB.(SCid{id}).name]);
