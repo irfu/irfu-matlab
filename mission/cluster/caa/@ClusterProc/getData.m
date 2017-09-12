@@ -949,9 +949,9 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 
 	% Load ADC offsets
 	for probe = p_ok
-		if probe==12, ps=p12; else ps=probe; end
+		if probe==12, ps=p12; else, ps=probe; end
         if flag_lx, wStr = 'DadcLX?p!';
-        else wStr = 'Dadc?p!';
+        else, wStr = 'Dadc?p!';
         end
             
 		[ok,dadc] = c_load(irf_ssub(wStr,cl_id,ps));
@@ -1789,12 +1789,11 @@ elseif strcmp(quantity,'probesa')
   
   % SAA saturation
   shadow_2 = atand(8/150); % angular width with 8 cm puck, 150 cm thin wire
-  SAA_MIN = 90 - shadow_2;
   saa = atan2d(-SAX(3),SAX(1));
   saasa_se_all = []; saasa_di_all = [];
-  if saa<SAA_MIN, irf_log('proc','no shadow (SAA)') 
+  if abs(saa-90) > shadow_2, irf_log('proc','no shadow (SAA)') 
   else
-    irf_log('proc',sprintf('Probe shadow (SAA=%.1f > %.1f)',saa,SAA_MIN))
+    irf_log('proc',sprintf('Probe shadow (|90-%.1f(SAA)| > %.1f)',saa,shadow_2))
     tTmp = fix(start_time):0.5:(ceil(start_time)+ceil(dt));
     [phaTmp, tInts] = c_phase(tTmp', pha);
     if ~isempty(phaTmp)
@@ -2683,7 +2682,7 @@ elseif strcmp(quantity,'br') || strcmp(quantity,'brs')
 			del_f = 1.5;
 			if (fgm_sf > 22.5 - del_f) && (fgm_sf < 22.5 + del_f), fgm_sf = 22.5;
 			elseif (fgm_sf > 67.5 - del_f) && (fgm_sf < 67.5 + del_f), fgm_sf = 67.5;
-            else irf_log('proc','cannot guess sampling frequency for B')
+      else, irf_log('proc','cannot guess sampling frequency for B')
 			end
 			cover = length(B_tmp(:,1))/((dt+1/e_sf)*fgm_sf);
 			% We allow for 10% of data gaps. (should we??)
@@ -2744,7 +2743,7 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
   if strcmp(quantity,'pburst') 
     do_burst = 1; save_file = './mEFWburst.mat';
     param={'180Hz','4kHz','32kHz'};
-  else do_burst = 0; save_file = './mP.mat'; param={'10Hz'};
+  else, do_burst = 0; save_file = './mP.mat'; param={'10Hz'};
   end
   P = struct('p1',[],'p2',[],'p3',[],'p4',[]);
 	n_ok = 0; loaded = 0;
@@ -2765,7 +2764,7 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
   if ~n_ok, data = []; cd(old_pwd), return, end
 
   if do_burst, problems = 'reset|bbias|sweep|probesa|nsops|spike';
-  else problems = 'reset|bbias|sweep|saasa|probesa|nsops';
+  else, problems = 'reset|bbias|sweep|saasa|probesa|nsops';
   end
   if flag_rmwhip, problems = [problems '|whip']; end %#ok<NASGU>
 
@@ -2804,18 +2803,18 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
     irf_log('dsrc','Cannot compute P'), data=[]; cd(old_pwd); return
   end
   tComb = []; pList = [];
-  for iProbe = 1:4, 
+  for iProbe = 1:4 
     ps = probeS(iProbe);
     if isempty(P.(ps)), continue, end
     tComb = [tComb; P.(ps)(:,1)]; pList = [pList; iProbe]; %#ok<AGROW>
   end
-  if length(pList)==1,
-    Pinfo.probe = pList; ps = probeS(pList);
+  if length(pList)==1
+    Pinfo.probe = pList; ps = probeS(pList); %#ok<STRNU>
 		irf_log('proc',['computing from ' ps])
-    p = P.(ps);
+    p = P.(ps); %#ok<NASGU>
   else
     tComb = sort(unique(tComb));
-    for iProbe = 1:4,
+    for iProbe = 1:4
       ps = probeS(iProbe); pTmp = zeros(1,length(tComb))*NaN;
       if ~isempty(P.(ps))
         [~,ia,ib] = intersect(tComb,P.(ps)(:,1)); pTmp(ia) = P.(ps)(ib,2);
@@ -2857,7 +2856,7 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
       irf_log('dsrc','Cannot compute P'), data=[]; cd(old_pwd); return
     end
     ps = sprintf('%d',pList);
-    Pinfo.probe = str2double(ps); irf_log('proc',['computing from ' ps])
+    Pinfo.probe = str2double(ps); irf_log('proc',['computing from ' ps]) %#ok<STRNU>
     p = [tComb, irf.nanmean([P.p1; P.p2; P.p3; P.p4])']; %#ok<NASGU>
   end
   
