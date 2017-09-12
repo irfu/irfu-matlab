@@ -4,7 +4,7 @@ function [res,dEx] = c_efw_lobewake(cl_id,diE,diB,Ps,R,diEDI,ecorr)
 % [wake,dEx] = C_EFW_LOBEWAKE(cl_id,[diEs,diBrs,Ps,R,diEDI, e_corr_flag])
 %
 % Detect wakes using conditions on large parallel and penrpendicular
-% electric fields. X-tra Ex offset offset dEx) is computed from difference
+% electric fields. X-tra Ex offset (dEx) is computed from difference
 % between EFW and EDI/Ex=0.
 %
 % e_corr_flag = 1, use dEx(X-tra offset) when detecting wakes
@@ -12,8 +12,6 @@ function [res,dEx] = c_efw_lobewake(cl_id,diE,diB,Ps,R,diEDI,ecorr)
 % C_EFW_LOBEWAKE(cl_id,'plot')
 % 
 % Do a plot illustrating wake detection
-%
-% $Id$
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):
@@ -38,7 +36,7 @@ DEX_MAX = 2.0;         % maximum reasonable dEx
 EDI_COVERAGE_MIN = 0.5;% minimum EDI coverage
 
 if ischar(diE) && strcmp(diE,'plot'), DOPLOT = 1;
-else DOPLOT = 0;
+else, DOPLOT = 0;
 end
 
 % Load data
@@ -246,7 +244,7 @@ elseif ~isempty(wind)
 	if ~isempty(wind)
 		for j=wind'
 			if res(end,2)>=t(j)-DT2*2, res(end,2) = t(j) + DT2; % throw away one good point in between bad (DT2*2)
-			else res = [res; t(j)-DT2 t(j)+DT2]; %#ok<AGROW>
+      else, res = [res; t(j)-DT2 t(j)+DT2]; %#ok<AGROW>
 			end
 		end
 	end
