@@ -109,7 +109,7 @@ classdef PDist < TSeries
           end
         end
         if isfield(obj.ancillary,'esteptable') && size(obj.ancillary.esteptable,1) == sizeData(1);
-          obj.ancillary.esteptable = obj.ancillary.esteptable(ii,:);
+          obj.ancillary.esteptable = obj.ancillary.esteptable(idxTmp{1},:);
         end
         if numel(idx) > 1
           obj = builtin('subsref',obj,idx(2:end));
