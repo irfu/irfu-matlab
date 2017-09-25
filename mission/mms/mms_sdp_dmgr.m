@@ -604,8 +604,8 @@ classdef mms_sdp_dmgr < handle
           % TODO: Check overlapping stuck values, if senA stuck but not senB..
         end
         function sen = latched_mask(sen)
-          % Locate data latched for at least 1 second (=1*samplerate).
-          idx = irf_latched_idx(sen.data, 1*DATAC.samplerate);
+          % Locate data latched for at least 5 second (=5*samplerate).
+          idx = irf_latched_idx(sen.data, 5*DATAC.samplerate);
           if ~isempty(idx)
             sen.bitmask(idx) = bitor(sen.bitmask(idx),...
               MMS_CONST.Bitmask.PROBE_SATURATION);
@@ -1054,6 +1054,7 @@ classdef mms_sdp_dmgr < handle
             idx = abs(model.(sen))>MODEL_THRESHOLD;
             DATAC.dce.(sen).bitmask(idx) = ...
               bitor(DATAC.dce.(sen).bitmask(idx), MSK_SHADOW);
+            irf.log('debug', sprintf('%i ADP spikes removed from %s', sum(idx), sen));
           end
         end
       end
@@ -1101,26 +1102,34 @@ classdef mms_sdp_dmgr < handle
             errStr='Bad PHASE input, cannot proceed.';
             irf.log('critical',errStr); error(errStr);
           end
+          % Check to see if time is right for S/W wakes or not (based on orbits)
+          indSW = mms_sdp_swwake_enabled_time(DATAC.dce.time, DATAC.scId);
           diffWake = zeros(length(Phase.data), length(sensors), ...
             getfield(mms_sdp_typecast('dce'),'matlab'));
-          for iSen=1:length(sensors)
-            sen = sensors{iSen};
-            % Compute corrected data
-            [data_corr, n_corr, ~] = mms_sdp_swwake(DATAC.dce.(sen).data, ...
-              sen, Phase.data, DATAC.dce.time, DATAC.samplerate);
-            % Difference between raw data and corrected
-            diffWake(:, iSen) = DATAC.dce.(sen).data - data_corr;
-            irf.log('notice', sprintf('%i sw wake(-s) found in %s', n_corr, sen));
-            % Bitmask values indicating SW_Wake was removed.
-            ind = abs( diffWake(:, iSen) ) > 0;
-            DATAC.dce.(sen).bitmask(ind) = bitor(DATAC.dce.(sen).bitmask(ind), ...
-              MMS_CONST.Bitmask.SW_WAKE_REMOVED);
-            % Save the new corrected data in DATAC replacing the
-            % uncorrected dce data
-            DATAC.dce.(sen).data = data_corr;
+          if any(indSW)
+              % Run code and remove wakes
+              for iSen=1:length(sensors)
+                sen = sensors{iSen};
+                % Compute corrected data (using all datapoints)
+                [data_corr, n_corr, ~] = mms_sdp_swwake(DATAC.dce.(sen).data, ...
+                  sen, Phase.data, DATAC.dce.time, DATAC.samplerate);
+                % Difference between raw data and corrected, for time of
+                % expected wakes only.
+                diffWake(indSW, iSen) = DATAC.dce.(sen).data(indSW) - data_corr(indSW);
+                irf.log('notice', sprintf('%i sw wake(-s) found in %s', n_corr, sen));
+                % Bitmask values indicating SW_Wake was removed.
+                ind = abs( diffWake(indSW, iSen) ) > 0;
+                DATAC.dce.(sen).bitmask(ind) = bitor(DATAC.dce.(sen).bitmask(ind), ...
+                  MMS_CONST.Bitmask.SW_WAKE_REMOVED);
+                % Save the new corrected data in DATAC replacing the
+                % uncorrected dce data
+                DATAC.dce.(sen).data(indSW) = data_corr(indSW);
+              end
           end
-          % Save the difference. Important for Fast L2a dce2d files as
-          % these are used by corresponding Burst segments.
+          % Save the difference (only zeros if time was wrong for wakes or
+          % no wakes found).
+          % Important for Fast L2a dce2d files as these are used by 
+          % corresponding Burst segments.
           DATAC.sw_wake = diffWake;
         end
       end
@@ -1516,7 +1525,7 @@ classdef mms_sdp_dmgr < handle
         errStr='Bad DCE input, cannot proceed.';
         irf.log('critical',errStr); error(errStr);
       end
-      res = mms_sdp_adc_off(DATAC.dce.time,DATAC.spinfits);
+      res = mms_sdp_adc_off(DATAC.dce.time, DATAC.spinfits, DATAC.scId);
       DATAC.adc_off = res;
     end
     
@@ -1836,7 +1845,7 @@ classdef mms_sdp_dmgr < handle
           DATAC.l2a.phase = DATAC.phase;
           % Use spinfits from entrie L2a fast segment to determine ADC 
           % offset and compute it for the burst time interval.
-          DATAC.l2a.adc_off = mms_sdp_adc_off(DATAC.dce.time, DATAC.l2a.spinfits);
+          DATAC.l2a.adc_off = mms_sdp_adc_off(DATAC.dce.time, DATAC.l2a.spinfits, DATAC.scId);
           sdpProbes = fieldnames(DATAC.l2a.adc_off); % default {'e12', 'e34'}
           Etmp = struct('e12',DATAC.dce.e12.data,'e34',DATAC.dce.e34.data);
           for iProbe=1:numel(sdpProbes)
