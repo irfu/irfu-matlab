@@ -24,18 +24,20 @@ SPIN_PERIOD_NOMINAL = 4; % rpm
 DT_MAX = 2*SPIN_PERIOD_MAX; % allow extrapolation for max DT_MAX seconds
 SPIN_GAP_MAX = 1200; % max gap in phase we tolerate
 MAX_SPIN_PERIOD_CHANGE = SPIN_PERIOD_NOMINAL*0.001;
-ERR_PHA_MAX = 0.5; % Error in phase (deg) from fitting
+ERR_PHA_MAX = 0.2; % Error in phase (deg) from fitting
 
 %% Prepare
+phaInp = [];
 verify_input();
 tInts = []; % Output
 t0 = phaInp(1,1); tPhase_2 = phaInp(:,1) - t0; targetTime = time - t0;
 tPhase_2(tPhase_2<targetTime(1)-DT_MAX/2|tPhase_2>targetTime(end)+DT_MAX/2)=[];
+flagSpinRateStable = false; angleError = [];
 
 %% Main loop
 tStart = targetTime(1); tStep = targetTime(end) - tStart; 
-phaseOut = zeros(size(targetTime))*NaN; 
-spinPeriodLast = []; iLastOkPoint = []; spinPeriod = [];
+phaseOut = zeros(size(targetTime))*NaN; prevIntExtended = false;
+spinPeriodLast = []; iLastOkPoint = []; spinPeriod = []; 
 while tStart<targetTime(end)
   tStop = tStart + tStep;
   iPhaTmp = tPhase_2>=tStart-DT_MAX/2 & tPhase_2<tStop+DT_MAX/2;
@@ -43,27 +45,44 @@ while tStart<targetTime(end)
   if length(tPhaTmp)<=1, tStart = tStop; continue; end
   
   if isempty(iLastOkPoint), iOutTmp = targetTime <= tStop;
-  else iOutTmp = targetTime<=tStop & targetTime>targetTime(iLastOkPoint);
+  else, iOutTmp = targetTime<=tStop & targetTime>targetTime(iLastOkPoint);
   end
-  if ~any(iOutTmp), 
+  if ~any(iOutTmp) 
     tStart = tStop; tStep = targetTime(end) - tStart; 
     continue; 
   end
   
   gaps = find(diff(tPhaTmp)>SPIN_GAP_MAX, 1);
-  if ~isempty(gaps),
+  if ~isempty(gaps)
     irf_log('proc','Gaps in phase_2, cannot compute phase'), 
     res = []; return
   end
   irf_log('proc',sprintf('Processing %d points (%s -- %s)',...
     length(tPhaTmp),epoch2iso(tStart+t0), epoch2iso(tStop+t0)))
   comp_spin_rate()
-  if ~flagSpinRateStable || ~isempty(spinPeriodLast) &&...
+  if ~flagSpinRateStable || length(tPhaTmp)>2 && ~isempty(spinPeriodLast) &&...
       abs(spinPeriod-spinPeriodLast) > MAX_SPIN_PERIOD_CHANGE
     if tStep > SPIN_PERIOD_MAX, tStep = tStep/2; continue % Reduce the time step
-    else irf_log('proc','Advancing to next data point')
+    else, irf_log('proc','Advancing to next data point')
     end  
   else % All good
+    % Extend the interval with times of stable spin
+    if tStop<targetTime(end) && ~prevIntExtended
+      sAEOld = std(angleError); mAEOld = median(angleError);
+      idxStart = find(tPhase_2>=tStart-DT_MAX/2,1,'first');
+      angleError = comp_angle_error(tPhase_2(idxStart:end));
+      iSpinup = find(abs(angleError-mAEOld)>3*sAEOld,1,'first');
+      if ~isempty(iSpinup) && iSpinup>3
+        tStepTmp = tPhase_2(idxStart+iSpinup-3)-tStart; 
+        if tStepTmp>tStep
+          irf_log('proc',...
+            sprintf('Extending the interval by %.1f sec',tStepTmp-tStep))
+          tStep = tStepTmp; prevIntExtended = true; 
+          continue
+        end
+      end 
+    end
+    prevIntExtended = false;
     polyfit_phase()
     irf_log('proc',sprintf('Spin period %.4f sec (%s -- %s)',...
       spinPeriod,epoch2iso(tStart+t0), epoch2iso(tStop+t0)))
@@ -76,22 +95,23 @@ res = [time phaseOut];
 
 %% Help functions
   function comp_spin_rate()
-    flagSpinRateStable = 0;
+    flagSpinRateStable = false;
     while true
       comp_spin_period()
       if isempty(spinPeriod)
         irf_log('proc','Cannot determine spin period!'), return
       end
-      comp_angle_error()
+      angleError = comp_angle_error(tPhaTmp);
       medianAngErr = median(angleError); stdAngErr = std(angleError);
-      if stdAngErr>ERR_PHA_MAX, 
+      if stdAngErr>ERR_PHA_MAX 
         irf_log('proc',...
           sprintf('Std(angleError): %.4f \n',stdAngErr))
         return;
-      elseif medianAngErr<ERR_PHA_MAX, flagSpinRateStable = 1; return, 
+      elseif medianAngErr<ERR_PHA_MAX, flagSpinRateStable = true; return, 
       end
       irf_log('proc',...
         sprintf('Median(angleError): %.4f \n',medianAngErr))
+      iOut = [];
       find_outliers()
       if isempty(iOut), return, end
       tPhaTmp(iOut) = [];
@@ -115,11 +135,11 @@ res = [time phaseOut];
         spinPeriod = [];
       end
     end
-    function comp_angle_error()
-      angleError = mod(360.0*(tPhaTmp-tPhaTmp(1))/spinPeriod,360);
-      angleError = abs(angleError);
-      angleError = min([angleError';360-angleError']);
-    end
+  end
+  function angleError = comp_angle_error(pha)
+    angleError = mod(360.0*(pha-pha(1))/spinPeriod,360);
+    angleError = abs(angleError);
+    angleError = min([angleError';360-angleError']);
   end
   function polyfit_phase()
     phaseOut(iOutTmp) = ...

@@ -1,4 +1,4 @@
-function ADC_off = mms_sdp_adc_off(time,spinfits)
+function ADC_off = mms_sdp_adc_off(time, spinfits, scId)
 %MMS_SDP_ADC_OFF  Compute ADC (raw data) offsets
 %
 % Compute ADC offset for each time stamp in DCE from spinfits
@@ -9,6 +9,7 @@ FLAG_ADC_OFF_DESPIKE = true;
 %nPointsADCOffset = 5; %or 7 or 9 or...?;
 nPointsADCOffset = 21; % MMS
 
+narginchk(3,3);
 if isempty(time) || mms_is_error(time)
   errStr='Bad TIME input, cannot proceed.';
   irf.log('critical',errStr); error(errStr);
@@ -39,15 +40,19 @@ for iProbe=1:numel(sdpProbes)
   
   % Replace NaN with mean value
   adc_off(isnan(adc_off(:,2)),2) = adc_off_mean;
-
+  
   if(FLAG_ADC_OFF_DESPIKE)
-    max_off = 3*std(max_off(:,2));
-    % if adc_despike, locate large adc_off
-    idx = find( abs( adc_off(:,2) - adc_off_mean ) > max_off );
-    if(~isempty(idx))
-      adc_off(idx, 2) = 0;
-      adc_off_mean = mean( adc_off( abs( adc_off(:, 2) )>0, 2) );
-      adc_off(idx, 2) = adc_off_mean;
+    if( scId==4 && time(1) >= EpochTT('2016-06-12T05:28:48.200Z').ttns && strcmp(sdpProbes{iProbe},'e34') )
+      irf.log('debug', 'ADC offset is not despiked for MMS4 on probe pair E34 after reconstruction from p123.');
+    else
+      max_off = 3*std(max_off(:,2));
+      % if adc_despike, locate large adc_off
+      idx = find( abs( adc_off(:,2) - adc_off_mean ) > max_off );
+      if(~isempty(idx))
+        adc_off(idx, 2) = 0;
+        adc_off_mean = mean( adc_off( abs( adc_off(:, 2) )>0, 2) );
+        adc_off(idx, 2) = adc_off_mean;
+      end
     end
   end
 
