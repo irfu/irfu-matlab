@@ -42,14 +42,14 @@ elseif t>=toepoch([2011 04 30 06 40 0]), Ddsi = [ 0.03  4.0+0.65+0.25i  2.04  0.
 elseif t>=toepoch([2011 03 01 16 50 0]), Ddsi = [ 0.03  0.65+0.25i  2.04  0.51 ];
 elseif t>=toepoch([2011 02 28 17 00 0]), Ddsi = [ 0.03  0.65+0.25i  2.04+0.6  0.51 ];
 elseif t>=toepoch([2011 01 01 00 00 0]), Ddsi = [ 0.03  0.65+0.25i  2.04  0.51 ];
-elseif t>=toepoch([2010 12 01 00 00 0]), Ddsi = [ 0.4  1.1  2.72 0.84  ]; % Force MS offset for months when don't enter SW.
-elseif t>=toepoch([2010 11 01 00 00 0]), Ddsi = [ 0.4  1.3  2.42 0.84  ]; % Force MS offset for months when don't enter SW.
-elseif t>=toepoch([2010 07 12 00 00 0]), Ddsi = [ 0.4  1.6  1.22 0.84  ]; % Force MS offset for months when don't enter SW.
+elseif t>=toepoch([2010 12 01 00 00 0]), Ddsi = [ 0.4   1.1  2.72 0.82 ]; % Force MS offset for months when don't enter SW.
+elseif t>=toepoch([2010 11 01 00 00 0]), Ddsi = [ 0.4   1.3  2.42 0.82 ]; % Force MS offset for months when don't enter SW.
+elseif t>=toepoch([2010 07 12 00 00 0]), Ddsi = [ 0.4   1.6  1.22 0.82 ]; % Force MS offset for months when don't enter SW.
 elseif t>=toepoch([2010 07 08 18 00 0]), Ddsi = [ -0.27 0.8  1.66 0.25 ]; % These orbits need the variable offset
-elseif t>=toepoch([2010 07 01 00 00 0]), Ddsi = [ 0.4  1.6  1.22 0.84  ]; % Force MS offsets.
+elseif t>=toepoch([2010 07 01 00 00 0]), Ddsi = [ 0.4  1.58  1.21 0.82 ]; % Force MS offsets.
 elseif t>=toepoch([2010 06 01 00 00 0]), Ddsi = [ -0.27 0.8  1.66 0.25 ];
-elseif t>=toepoch([2010 02 01 00 00 0]), Ddsi = [ -0.34  0.67 1.50  0.17 ];
-elseif t>=toepoch([2010 01 01 00 00 0]), Ddsi = [ -0.34  0.67 2.00  0.17 ];
+elseif t>=toepoch([2010 02 01 00 00 0]), Ddsi = [ -0.34 0.67 1.50 0.17 ];
+elseif t>=toepoch([2010 01 01 00 00 0]), Ddsi = [ -0.34 0.67 2.00 0.17 ];
 elseif t>=toepoch([2009 12 01 00 00 0]), Ddsi = [-0.12    0.46 2.0 0.05];   % Increase C3 offset to bring in line with C124
 elseif t>=toepoch([2009 11 13 00 00 0]), Ddsi = [-0.12    0.46 1.53 0.05];  % Back to variable offsets
 elseif t>=toepoch([2009 07 01 00 00 0]), Ddsi = [ 0.46  1.33 1.27  0.65 ];  % Force MS offset for months when don't enter SW.
@@ -127,7 +127,7 @@ elseif t>=toepoch([2012 01 01 00 0 0]), Ddsi = [ 0.1  2.4  0.47  0.45 ];
 elseif t>=toepoch([2011 11 01 00 0 0]), Ddsi = [ 0.49  0.78  1.18  0.84 ];
 elseif t>=toepoch([2011 06 01 00 0 0]), Ddsi = [ 0.49  0.78-2.78  1.18  0.84 ];
 elseif t>=toepoch([2011 01 01 00 0 0]), Ddsi = [ 0.49  0.78  1.18  0.84 ]; % C2 strange curve limited data
-elseif t>=toepoch([2010 01 01 00 0 0]), Ddsi = [ 0.4  1.6  1.22 0.84 ];
+elseif t>=toepoch([2010 01 01 00 0 0]), Ddsi = [ 0.4   1.58 1.21  0.82 ];
 elseif t>=toepoch([2009 01 01 00 0 0]), Ddsi = [ 0.46  1.33 1.27  0.65 ];
 elseif t>=toepoch([2008 01 01 00 0 0]), Ddsi = [ 0.59  1.31 1.36  0.68 ];
 elseif t>=toepoch([2007 11 01 00 0 0]), Ddsi = [ 0.70  1.45 1.69  0.85 ];
