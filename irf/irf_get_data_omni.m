@@ -241,7 +241,7 @@ try
         elseif strcmp(prog, 'curl')
           % Extra argument to curl (silent progress bar, and output in
           % stdout)
-          prog = 'curl -s';
+          prog = 'curl --insecure -s';
         end
         [status, c] = system([prog, ' ', urlExternal]);
         if status
