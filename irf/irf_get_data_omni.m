@@ -248,6 +248,7 @@ try
           error(['Unable to access the HTTPS-only server with OMNI data, ',...
             'please consider upgrading Matlab or downloading data manually.']);
         end
+        getDataSuccess = true;
       end
     else
       % Windows system, no wget / curl per default.
