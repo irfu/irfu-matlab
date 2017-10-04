@@ -238,6 +238,10 @@ try
           % Extra arguments to wget (do not check certificate, and output in
           % stdout)
           prog = 'wget --no-check-certificate -qO-';
+        elseif strcmp(prog, 'curl')
+          % Extra argument to curl (silent progress bar, and output in
+          % stdout)
+          prog = 'curl -s';
         end
         [status, c] = system([prog, ' ', urlExternal]);
         if status
