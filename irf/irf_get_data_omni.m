@@ -234,6 +234,11 @@ try
         % Replace "&" with "\&" to avoid expantion problem in various shell
         % environments.
         urlExternal = strrep(url, '&', '\&');
+        if strcmp(prog,'wget')
+          % Extra arguments to wget (do not check certificate, and output in
+          % stdout)
+          prog = 'wget --no-check-certificate -qO-';
+        end
         [status, c] = system([prog, ' ', urlExternal]);
         if status
           % Failed to run "prog" to download url.
