@@ -71,7 +71,7 @@ end
 		Sc.name  = 'MMS';
 		Sc.probe = lp.default_lprobe('Cluster');
 		Sc.surface = 'themis';
-		Sc.areaTotal = 2*pi*3.5^2+3.5*1.2;% diam: 3.5?m, height: 1.2?m
+		Sc.areaTotal = 0.5*pi*3.5^2+pi*3.5*1.2;% diam: 3.5?m, height: 1.2?m
 		Sc.areaSunlit = 3.5*1.2;
 		Sc.areaSunlitGuard = 0.039;
 		Sc.probeRefPotVsSatPot = 0.2;
