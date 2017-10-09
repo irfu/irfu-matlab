@@ -26,9 +26,9 @@ function result = caa_identify_problems(result, data_level, probe, spacecraft_id
 narginchk(4, 7)
 if nargin < 7, mask_type = 0; end
 
-if isempty(result)
-  warning('Data is empty: Cannot identify problems in empty data set.'), 
-  return, 
+if size(result,1) <= 1
+  warning('Short Data: Cannot identify problems in data set.'),
+  return,
 end
 columns = size(result,2);
 [data_start_time, data_time_span] = irf_stdt(result(1,1), result(end,1));

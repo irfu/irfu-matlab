@@ -1,15 +1,22 @@
-function [varargout] = irf_shock_normal(spec,leq90)
+function [nd] = irf_shock_normal(spec,leq90)
 %IRF_SHOCK_NORMAL Calculates shock normals with different methods.
 %
 %   Normal vectors are calculated by methods described in ISSI Scientific
 %   Report SR-001 Ch 10. (Schwartz 1998), and references therein.
 %   
 %   nst = IRF_SHOCK_NORMAL(spec) returns structure nst which contains data
-%   on shock normal vectors given input with plasma parameters spec.
+%   on shock normal vectors given input with plasma parameters spec. The
+%   data can be averaged values or values from the time series in matrix
+%   format. If series is from time series all parameters are calculated
+%   from a random upstream and a random downstream point. This can help set
+%   errorbars on shock angle etc. The time series input must have the same
+%   size (up- and downstream can be different), so generally the user needs
+%   to resample the data first.
 % 
 %   nst = IRF_SHOCK_NORMAL(spec,leq90) for leq90 = 1 angles are forced to
 %   be less than 90 (default). For leq90 = 0, angles can be between 0 and
-%   180 deg.
+%   180 deg. For time series input and quasi-perp shocks,leq90 = 0 is
+%   recommended. 
 %
 %   Input spec contains:
 %
@@ -26,6 +33,8 @@ function [varargout] = irf_shock_normal(spec,leq90)
 %       d2u -   Down-to-up, is 1 or -1.
 %       dTf -   Time duration of shock foot (s).
 %       Fcp -   Reflected ion gyrofrequency (Hz).
+%       N   -   Number of Monte Carlo particles used in determining
+%               errorbars (default 100)
 %       
 %
 %   Output nd contains:
@@ -86,6 +95,7 @@ function [varargout] = irf_shock_normal(spec,leq90)
 % 
 %   See also: IRF_SHOCK_GUI, IRF_SHOCK_PARAMETERS
 % 
+
 %   Written by: Andreas Johlander, andreasj@irfu.se
 %
 %   TODO:   -Determine which solution in Smith & Burton velocity estimate is
@@ -93,10 +103,7 @@ function [varargout] = irf_shock_normal(spec,leq90)
 %           -Should allow for vector input and calculate standard deviations
 %           of all parameters.
 
-
-% normal vector, according to different models
-nd = [];
-n = [];
+%% Check if input are timeseries
 
 % leq90 = 1 if angles should be less or equal to 90 deg. 0 is good if doing
 % statistics
@@ -104,6 +111,105 @@ if nargin == 1
     leq90 = 1;
 end
 
+% checks only Bu and Bd (one can be a scalar)
+if size(spec.Bu,1)>1 || size(spec.Bu,1)>1 
+    Nu = size(spec.Bu,1); % number of points, must be same for all parameters
+    Nd = size(spec.Bd,1);
+    
+    % randomize points upstream and downstream
+    if isfield(spec,'N'); N = spec.N; else; N = 10; end
+    % sort of "indices" from 0 to 1
+    idtu = rand(1,N); idtd = rand(1,N);
+    
+    % copy spec
+    tempSpec = spec;
+
+    
+    % loop with up/downstream values randomly picked
+    for i = 1:N
+        % get value from given point
+        tempSpec.Bu = interp1(linspace(0,1,Nu),spec.Bu,idtu(i));
+        tempSpec.Vu = interp1(linspace(0,1,Nu),spec.Vu,idtu(i));
+        tempSpec.nu = interp1(linspace(0,1,Nu),spec.nu,idtu(i));
+        
+        tempSpec.Bd = interp1(linspace(0,1,Nd),spec.Bd,idtd(i));
+        tempSpec.Vd = interp1(linspace(0,1,Nd),spec.Vd,idtd(i));
+        tempSpec.nd = interp1(linspace(0,1,Nd),spec.nd,idtd(i));
+        
+        if i == 1
+            % run once to get structure
+            nd = irf_shock_normal(tempSpec);
+            % replace all content in fields with zeros of appropriate size
+            fn1 = fieldnames(nd); % first layer names
+            fn2 = [];
+            % get field names for Vsh (if Vsh is ever changed, this
+            % needs to change as well)
+            fnVsh = fieldnames(nd.Vsh.mf); % only field with 3 layers
+            % get second layer names
+            for k = 1:length(fn1)
+                % get second layer names, Vsh does not have two layers
+                fn2.(fn1{k}) = fieldnames(nd.(fn1{k}));
+            end
+            
+            disp('lol')
+            % do a double loop 
+            for k = 1:length(fn1) % fist layer
+                strl1 = fn1{k}; % first layer string
+                if ~strcmp(strl1,'Vsh')
+                    for l = 1:length(fn2.(fn1{k})) % second layer
+                        strl2 = fn2.(fn1{k}){l}; % second layer string
+                        % this really messes up cmat
+                        % replace with zero-arrays
+                        nd.(strl1).(strl2) = zeros(N,size(nd.(strl1).(strl2),2)); 
+                    end
+                else % special case for Vsh
+                    for l = 1:length(fn2.(fn1{k})) % second layer
+                        strl2 = fn2.(fn1{k}){l}; % second layer string
+                        for m = 1:length(fnVsh) % third layer
+                            nd.(strl1).(strl2).(fnVsh{m}) = zeros(N,size(nd.(strl1).(strl2).(fnVsh{m}),2));
+                        end
+                    end
+                end
+            end
+            
+            
+        end
+        
+        % get shock normal for this point
+        tempNd = irf_shock_normal(tempSpec,leq90);
+        
+        % do another double loop
+        for k = 1:length(fn1) % fist layer
+            strl1 = fn1{k}; % first layer string
+            if ~strcmp(strl1,'Vsh')
+                for l = 1:length(fn2.(fn1{k})) % second layer
+                    strl2 = fn2.(fn1{k}){l}; % second layer string
+                    % add value from temporary structure
+                    if ~strcmp(strl2,'cmat') % cmat is not that important anyway
+                        nd.(strl1).(strl2)(i,:) = tempNd.(strl1).(strl2);
+                    end
+                end
+            else % special case for Vsh
+                for l = 1:length(fn2.(fn1{k})) % second layer
+                    strl2 = fn2.(fn1{k}){l}; % second layer string
+                    for m = 1:length(fnVsh) % third layer
+                        nd.(strl1).(strl2).(fnVsh{m})(i,:) = tempNd.(strl1).(strl2).(fnVsh{m});
+                    end
+                end
+            end
+        end
+        
+        
+    end
+    return; % return results with vector
+end
+
+
+%% Actual program (single input)
+
+% normal vector, according to different models
+nd = [];
+n = [];
 
 Bu = spec.Bu;
 Bd = spec.Bd;
@@ -174,15 +280,14 @@ nd.thBn = thBn;
 nd.thVn = thVn;
 nd.Vsh = Vsh;
 
-if nargout >= 1
-    varargout{1} = nd;
-else
+if nargout == 0
     fnames = fieldnames(n);
     for i = 1:length(fnames)
         fprintf(['n_',fnames{i},'\t = \t',num2str(n.(fnames{i})),'\n'])
     end
 end
-        
+
+
 end
 
 

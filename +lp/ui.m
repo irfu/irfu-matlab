@@ -645,7 +645,7 @@ classdef ui < handle
 					' fcr =' num2str(fcr,3) 'Hz.'];
 			end
 			
-			if min(J.total)<0 && max(J.total)>0, % display information on Ufloat
+			if min(J.total)<0 && max(J.total)>0 % display information on Ufloat
 				Ufloat=interp1(J.total,vecU,0);    % floating potential
 				ii=isfinite(U__dUdI);
 				Rfloat=interp1(U__dUdI(ii),dUdI(ii),Ufloat);
@@ -656,7 +656,7 @@ classdef ui < handle
 					' fcr=' num2str(fcr,3) 'Hz.'];
 				disp(['Probe: Ufloat=' num2str(Ufloat,3) ' V, Rfloat=' num2str(Rfloat,3) ' Ohm, C=' num2str(probe.capacitance*1e12,3) 'pF, fcr=' num2str(fcr,3) 'Hz.']);
 			end
-			if flagBias,%flag_add_bias_point_values,
+			if flagBias %flag_add_bias_point_values,
 				biasCurrentA = obj.InputParameters.biasCurrent;
 				Ubias=interp1(J.total,vecU,-biasCurrentA); % floating potential
 				ii=isfinite(U__dUdI);
@@ -667,14 +667,14 @@ classdef ui < handle
 					' C =' num2str(probe.capacitance*1e12,3) 'pF,' ...
 					' fcr=' num2str(fcr,3) 'Hz.'];
 				disp(['Rbias=' num2str(Rbias,3) ' Ohm, C=' num2str(probe.capacitance*1e12,3) 'pF, fcr=' num2str(fcr,3) 'Hz.']);
-				if doModelSpacecraft,
+				if doModelSpacecraft
 					Uscbias=interp1(J.total,obj.Output.UI.Usatsweep,-biasCurrentA); % floating potential
 					ii=isfinite(vecU);
 					Rscbias=interp1(vecU(ii),obj.Output.UI.dUdIsat(ii),Uscbias);
-					cSat = irf_estimate('capacitance_sphere',sqrt(obj.SpacecraftList(obj.spacecraftUsed).areaTotal/pi));
+					cSat = irf_estimate('capacitance_sphere',sqrt(obj.SpacecraftList(obj.spacecraftUsed).areaTotal/(4*pi)));
 					fcr=1/2/pi/Rscbias/cSat;
 					disp(['Spacecraft (biased): Rbias=' num2str(Rbias,3) ' Ohm, C=' num2str(cSat*1e12,3) 'pF, fcr=' num2str(fcr,3) 'Hz.']);
-					InfoTxt.biasedSpacecraft =['Spacecraft (biased): Ubias=' num2str(Uscbias,3)  ', Rbias=' num2str(Rscbias,3) 'Ohm, fcr=' num2str(fcr,3) 'Hz.'];
+					InfoTxt.biasedSpacecraft =['Spacecraft (biased): Ubias=' num2str(Uscbias,3)  ', Rbias=' num2str(Rscbias,3) 'Ohm, C=' num2str(cSat*1e12,3) 'pF, fcr=' num2str(fcr,3) 'Hz.'];
 					Usp=-interp1(obj.Output.UI.Ibias,obj.Output.UI.Uprobe2sc,-biasCurrentA); % floating potential
 					disp(['Spacecraft to Probe: Usp=' num2str(Usp,3) 'V.']);
 					InfoTxt.spacecraftToProbe = ['Spacecraft to Probe: Usp=' num2str(Usp,3)  ' V.'];
