@@ -212,8 +212,8 @@ try
     % Old Matlab unable to disable certificate
     if isunix
       % Try external program, "curl" or "wget".
-      prog = '';
-      reqSoftware = {'curl', 'wget'};
+      prog = ''; args='';
+      reqSoftware = {'wget', 'curl'};
       for ii = 1:length(reqSoftware)
         [status, ~] = system(['command -v ', reqSoftware{ii}, ' >/dev/null 2>&1 || { exit 100; }']);
         if(status == 0)
@@ -237,13 +237,13 @@ try
         if strcmp(prog,'wget')
           % Extra arguments to wget (do not check certificate, and output in
           % stdout)
-          prog = 'wget --no-check-certificate -qO-';
+          args = '--no-check-certificate -qO- ';
         elseif strcmp(prog, 'curl')
           % Extra argument to curl (silent progress bar, and output in
           % stdout)
-          prog = 'curl --insecure -s';
+          args = '--insecure -s ';
         end
-        [status, c] = system([prog, ' ', urlExternal]);
+        [status, c] = system([prog, ' ', args, urlExternal]);
         if status
           % Failed to run "prog" to download url.
           errStr = ['You appear to be running a too old version of Matlab, and program ', ...
