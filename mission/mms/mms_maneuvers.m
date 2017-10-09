@@ -127,7 +127,7 @@ for ii = length(list):-1:1
               tmp2 = maneuvers.(['mms',num2str(kk)]);
               if(tmp2{1}.start.ttns ~= tmp{ll}.start.ttns)
                 maneuvers.(['mms',num2str(kk)]) = [tmp(ll); tmp2];
-                tmpTimeline = [tmpTimeline; list(ii).name];
+                tmpTimeline = [tmpTimeline; list(ii).name]; %#ok<AGROW>
               else
                 irf.log('debug', 'Maneuver already included.');
               end
