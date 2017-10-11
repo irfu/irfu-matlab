@@ -153,7 +153,7 @@ u = irf_units;
 if isDes == 1; M = u.me; else; M = u.mp; end
 
 % find closest time
-it = anjo.fci(t.epochUnix,dist.time.epochUnix);
+it = interp1(dist.time.epochUnix,1:length(dist.time.epochUnix),t.epochUnix,'nearest');
 
 % 3d data matrix for time index it
 F3d = squeeze(double(dist.data(it,:,:,:)))*1e12; % s^3/m^6
