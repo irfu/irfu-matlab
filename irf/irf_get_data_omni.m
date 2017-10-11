@@ -205,37 +205,83 @@ for jj=1:length(iStart)
 end
 
 %% Request data
-if(verLessThan('matlab','8.4')) % Version less than R2014b
-  % This will fail as all US Gov have moved to HTTPS only as per
-  % https://obamawhitehouse.archives.gov/blog/2015/06/08/https-everywhere-government
-  url=[httpRequest 'start_date=' startDate '&end_date=' endDate vars];
-  disp(['url: ' url]);
-  errStr = ['You appear to be running a too old version of Matlab. ', ...
-    'Unable to automatically access the HTTPS url: ', url];
-  irf.log('critical', errStr);
-  error(['Unable to access the HTTPS-only server with OMNI data, ',...
-    'please consider upgrading Matlab or downloading data manually.']);
-else
-  % Download data from HTTPS
-  url=[httpRequest 'start_date=' startDate '&end_date=' endDate vars];
-  disp(['url:' url]);
-  if(verLessThan('matlab','9.2')) % Version less than R2017a
-    % Set root certificate pem file to empty disables verification, as
-    % Matlab versions before R2017a does not include root certificate used
-    % by "Let's encrypt".
-    webOpt = weboptions('CertificateFilename','');
-    webOpt.Timeout = 10;
+url = [httpRequest 'start_date=' startDate '&end_date=' endDate vars];
+disp(['url: ' url]);
+try
+  if verLessThan('matlab','9.1') % < Version less than R2016b
+    % Old Matlab unable to disable certificate
+    if isunix
+      % Try external program, "curl" or "wget".
+      prog = ''; args='';
+      reqSoftware = {'wget', 'curl'};
+      for ii = 1:length(reqSoftware)
+        [status, ~] = system(['command -v ', reqSoftware{ii}, ' >/dev/null 2>&1 || { exit 100; }']);
+        if(status == 0)
+          prog = reqSoftware{ii};
+          break
+        end
+      end
+      if isempty(prog)
+        % Neither wget or curl is installed.
+        errStr = ['You appear to be running a too old version of Matlab, ', ...
+          'and did not locate system program to download files. Unable to ', ...
+          'automatically access the HTTPS url: ', url];
+        irf.log('critical', errStr);
+        error(['Unable to access the HTTPS-only server with OMNI data, ',...
+          'please consider upgrading Matlab or downloading data manually.']);
+      else
+        % Download using wget or curl
+        % Replace "&" with "\&" to avoid expantion problem in various shell
+        % environments.
+        urlExternal = strrep(url, '&', '\&');
+        if strcmp(prog,'wget')
+          % Extra arguments to wget (do not check certificate, and output in
+          % stdout)
+          args = '--no-check-certificate -qO- ';
+        elseif strcmp(prog, 'curl')
+          % Extra argument to curl (silent progress bar, and output in
+          % stdout)
+          args = '--insecure -s ';
+        end
+        [status, c] = system([prog, ' ', args, urlExternal]);
+        if status
+          % Failed to run "prog" to download url.
+          errStr = ['You appear to be running a too old version of Matlab, and program ', ...
+            prog, ' failed. Unable to automatically access the HTTPS url: ', url];
+          irf.log('critical', errStr);
+          error(['Unable to access the HTTPS-only server with OMNI data, ',...
+            'please consider upgrading Matlab or downloading data manually.']);
+        end
+        getDataSuccess = true;
+      end
+    else
+      % Windows system, no wget / curl per default.
+      % Fail as all US Gov have moved to HTTPS only as per
+      % https://obamawhitehouse.archives.gov/blog/2015/06/08/https-everywhere-government
+      errStr = ['You appear to be running a too old version of Matlab. ', ...
+        'Unable to automatically access the HTTPS url: ', url];
+      irf.log('critical', errStr);
+      error(['Unable to access the HTTPS-only server with OMNI data, ',...
+      'please consider upgrading Matlab or downloading data manually.']);
+    end
   else
-    webOpt = weboptions();
+    % Download from HTTPS using Matlab's webread.
+    if verLessThan('matlab','9.2') % Version less than R2017a
+      % Set root certificate pem file to empty disables verification, as
+      % Matlab versions before R2017a does not include root certificate
+      % used by "Let's encrypt".
+      webOpt = weboptions('CertificateFilename', '');
+    else
+      webOpt = weboptions();
+    end
     webOpt.Timeout = 10;
-  end
-  try
     c = webread(url, webOpt);
     getDataSuccess = true;
-  catch
-    getDataSuccess = false;
   end
-end
+catch
+  getDataSuccess = false;
+end  
+
 
 %% Analyze returned data
 if getDataSuccess, % success in downloading from internet

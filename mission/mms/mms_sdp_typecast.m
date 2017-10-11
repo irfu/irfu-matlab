@@ -36,7 +36,7 @@ function [out] = mms_sdp_typecast(dataName, data)
 % char   <-> cdf_char (or cdf_uchar)
 
 narginchk(1,2);
-if(nargin==1), data=[]; end;
+if(nargin==1), data=[]; end
 
 switch(lower(dataName))
   case 'epoch'
