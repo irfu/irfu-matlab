@@ -407,7 +407,7 @@ for k = 1:length(fn)
     W = spec.Fcp*2*pi;
     t1 = acos((1-2*cos(th).^2)./(2*sin(th).^2))/W;
     
-    f = @(th)W*t1*(2*cos(th).^2-1)+2*sin(th).^2.*sind(W*t1);
+    f = @(th)W*t1*(2*cos(th).^2-1)+2*sin(th).^2.*sin(W*t1);
     x0 = f(th)/(W*spec.dTf);
     
     Vsp.(fn{k}) = dot(spec.Vu,nvec)*(x0/(1+spec.d2u*x0));
