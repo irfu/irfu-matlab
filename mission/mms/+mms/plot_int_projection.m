@@ -1,4 +1,4 @@
-function [ax,dens,velmom,plspec] = plot_int_projection(varargin)
+function [hsf,pst] = plot_int_projection(varargin)
 %MMS.PLOT_INT_PROJECTION Plots integrated FPI data on a specified plane.
 %
 %   MMS.PLOT_INT_PROJECTION(dist,'Opt1',OptVal1,...) plots projection of
@@ -7,14 +7,16 @@ function [ax,dens,velmom,plspec] = plot_int_projection(varargin)
 %   MMS.PLOT_INT_PROJECTION(AX,...) plots in axes AX instead of current
 %   axes.
 %
-%   [ax,dens,velmom,plspec] = MMS.PLOT_INT_PROJECTION(...) returns axis
-%   handle, density, 2D velocity derived from the projected data in SI
-%   units and a structure plspec with data used for plotting.
+%   [hsf,plspec] = MMS.PLOT_INT_PROJECTION(...) returns surface
+%   handle, and a structure plspec with data used for plotting.
 %   plspec contains:
 %       F   - the particle flux, for PSD, typically the unit is [s^2m^-5],
 %           which is the same as [s^2cm^-3^km^-2]
-%       vx  - vx grid in [m/s]
-%       vy  - vy grid in [m/s]
+%       vx      - vx grid in [m/s]
+%       vy      - vy grid in [m/s]
+%       dens    - number density, derived from the projected data in m^-3.
+%       vel     - 2D velocity, derived from the projected data in m/s.
+%
 %   To recreate plot elsewhere use: 
 %       pcolor(plspec.vx,plspec.vy,log10(plspec.F'))
 % 
@@ -36,31 +38,32 @@ function [ax,dens,velmom,plspec] = plot_int_projection(varargin)
 %               corresponding to x, y, and z
 %   'flipx'/'flipy' - boolean value where 1 flips the x/y axis 
 %
-%   Description of method:
-%   The function goes through all instrument bins and finds the best match
-%   on the projection bin. The value in the projection bin, F, is updated
-%   as F = F+f*dTau/dA, where f is the instrument value in the bin, dTau is
-%   the volume element in velocity space of the instrument bin and dA is
-%   the area element in the projection bin. 
-%   An instrument bin can actually cover several projection bin and the
-%   value should be added to all those bins, scaled to the area the
-%   instrument bin covers of a given projection bin. This area is
-%   calculated with a Monte Carlo integration scheme, where many
-%   "particles" are generated somewhere inside the instrument bin, each
-%   assigned a fraction of f. The "particles" are then projected onto the
-%   plane.
+%   Examples:
+%       tint = irf.tint('2015-10-16T13:07:02/2015-10-16T13:07:03');
+%       t = irf.time_array('2015-10-16T13:07:02.226',0);
+%       db_info = datastore('mms_db');
+%       file  = [db_info.local_file_db_root,...
+%           '/mms4/fpi/brst/l2/des-dist/2015/10/16/mms4_fpi_brst_l2_des-dist_20151016130524_v3.1.1.cdf'];
+%       ePDist = mms.make_pdist(file);
+%       mms.plot_int_projection(ePDist,'t',t,'vlim',1e4,'xyz',[0,1,0;-1,0,0; 0,0,1],'vzint',2000*[-1,1],'nmc',100);
+%
+%
+%   The function uses a Monte Carlo integration method. To read more about
+%   it:
+% 
+%   See also: IRF_INT_SPH_DIST
 
 %   Written by: Andreas Johlander, andreasj@irfu.se
 % 
 %   TODO:   Add time interval averaging
 %           Recalculate energies given spacecraft potential input
-%           In great need of optimization
 %
 %   Generally, the code deals with quantities in SI units until plotting.
 
 %% Input
 
 [ax,args,nargs] = axescheck(varargin{:});
+if isempty(ax); ax = gca; end
 
 irf.log('warning','Please verify that you think the projection is done properly!');
 
@@ -199,10 +202,10 @@ phig = linspace(0,2*pi-dPhig,nAzg)+dPhig/2;
 vg = v; % same as instrument
 
 %% perform projection
-[Fg,vx_mesh,vy_mesh,dens,velmom] = project_sph_distr(F3d,v,phi,th,zphat,xphat,vg,phig,nMC,vzint*1e3);
+pst = irf_int_sph_dist(F3d,v,phi,th,vg,'z',zphat,'x',xphat,'phig',phig,'nMC',nMC,'vzint',vzint*1e3);
 
 % put nans instead of 0s
-Fg(Fg==0) = NaN;
+pst.F(pst.F==0) = NaN;
 
 %% Plot projection
 
@@ -212,7 +215,7 @@ else % ion velocities km/s
     vUnitStr= '(km/s)'; vUnitFactor = 1e-3;
 end
 
-pcolor(ax,vx_mesh*vUnitFactor,vy_mesh*vUnitFactor,log10(Fg')); 
+hsf = pcolor(ax,pst.vx*vUnitFactor,pst.vy*vUnitFactor,log10(pst.F')); 
 shading(ax,'flat')
 
 ax.XLabel.String = [vlabelx ' ' vUnitStr];
@@ -233,136 +236,4 @@ if doFlipY; ax.YDir = 'reverse'; end
 
 title(ax,dist.time(it).toUtc)
 
-% last output
-if nargout == 4
-   plspec = []; plspec.F = Fg; plspec.vx = vx_mesh; plspec.vy = vy_mesh; 
 end
-
-end
-
-
-
-function [Fg,vxMesh,vyMesh,dens,velmom] = project_sph_distr(F,v,phi,th,zphat,xphat,vg,phig,nMC,vzint)
-%PROJECT_SPH_DISTR The function that performs the integration
-
-% complete RH system
-yphat = cross(zphat,xphat);
-
-% diffs
-dV = diff(v); dV = [dV(1),dV]; % quick and dirty
-dPhi = abs(median(diff(phi))); % constant
-dTh = abs(median(diff(th))); % constant
-
-% primed diffs
-dVg = diff(vg); dVg = [dVg(1),dVg]; % quick and dirty
-dPhig = median(diff(phig)); % constant
-
-% Number of projection bins
-nVg = length(vg);
-nAzg = length(phig);
-
-% bin edges
-phig_edges = [phig-dPhig/2,phig(end)+dPhig/2];
-vg_edges = [vg(1)-dVg(1)/2,vg+dVg/2]; % quick and dirty
-
-% convert to cartesian
-[phiMesh,vMesh] = meshgrid(phig_edges+dPhig/2,vg); % Creates the mesh
-[vxMesh,vyMesh] = pol2cart(phiMesh-pi/nAzg,vMesh);    % Converts to cartesian
-
-
-% Number of instrument bins
-nV = length(v);
-nAz = length(phi);
-nEle = length(th);
-
-% 3D matrices for bin centers
-TH = repmat(th,nV,1,nAz);       % [phi,th,v]
-TH = permute(TH,[1,3,2]);       % [v,phi,th]
-PHI = repmat(phi,nV,1,nEle);    % [v,phi,th]
-VEL = repmat(v,nAz,1,nEle);     % [phi,v,th]
-VEL = permute(VEL,[2,1,3]);     % [v,phi,th]
-DV = repmat(dV,nAz,1,nEle);     % [phi,v,th]
-DV = permute(DV,[2,1,3]);       % [v,phi,th]
-
-
-% init Fp
-Fg = zeros(nAzg+1,nVg);
-% Volume element
-dtau = ( VEL.^2.*cos(TH).*DV*dPhi*dTh );
-% Area element (primed)
-dAg = vg.*dVg*dPhig;
-
-% Loop through all instrument bins
-for i = 1:nV % velocity (energy)
-    for j = 1:nAz % phi
-        for k = 1:nEle % theta
-            % generate MC points
-            % first is not random
-            dV_MC = [0;(rand(nMC-1,1)-.5)*dV(i)];
-            dPHI_MC = [0;(rand(nMC-1,1)-.5)*dPhi];
-            dTH_MC = [0;(rand(nMC-1,1)-.5)*dTh];
-            
-            % convert instrument bin to cartesian velocity
-            [vx,vy,vz] = sph2cart(PHI(i,j,k)+dPHI_MC,TH(i,j,k)+dTH_MC,VEL(i,j,k)+dV_MC);
-            
-            % Get velocities in primed coordinate system
-            vxp = sum([vx,vy,vz].*xphat,2);
-            vyp = sum([vx,vy,vz].*yphat,2);
-            vzp = dot([vx(1),vy(1),vz(1)],zphat);
-            
-            if vzp < vzint(1) || vzp > vzint(2); F(i,j,k) = 0; end
-            
-            % convert to polar coordinates (phip could become negative)
-            [phip,vp] = cart2pol(vxp,vyp);
-            
-            % not so good but better than throwing away data? Should be
-            % very rare anyway.
-            vp(vp<vg_edges(1)*1.01) = vg_edges(1)*1.01;
-            vp(vp>vg_edges(end)*.99) = vg_edges(end)*.99;
-            
-            % fix if negative
-            phip(phip<0) = 2*pi+phip(phip<0);
-            
-            % get best indices. these two lines are the slowest in the
-            % function so they should be optimized first!
-            iAzg = interp1([phig(1)-dPhig,phig,phig(end)+dPhig],0:nAzg+1,phip,'nearest');
-            iVg = interp1([vg(1)-dVg(1),vg,vg(end)+dVg(end)],0:nVg+1,vp,'nearest');
-            
-            % Loop through MC points and add value of instrument bin to the
-            % appropriate projection bin
-            for l = 1:nMC
-                try
-                    Fg(iAzg(l),iVg(l)) = Fg(iAzg(l),iVg(l))+F(i,j,k)*dtau(i,j,k)/dAg(iVg(l))/nMC;
-                catch
-                    disp(['Something went wrong. iAzg = ',num2str(iAzg(l)),',  iVg = ',num2str(iVg(l))])
-                end
-            end
-        end
-    end
-end
-
-% fix for interp shading, otherwise the last row can be whatever
-Fg(end,:) = mean([Fg(end-1,:);Fg(1,:)]);
-
-% Calculate density if requested
-if nargout >= 4
-    dAG = repmat(dAg,nAzg,1);
-    dens = nansum(nansum(Fg(1:end-1,:).*dAG));
-end
-% Calculate velocity moment if requested
-if nargout >= 5
-    VG = repmat(vg',1,nVg);
-    PHIG = repmat(phig,nAzg,1);
-    [VXG,VYG] = pol2cart(PHIG,VG);
-    
-    velmom = [0,0];
-    for l = 1:nVg
-        for m = 1:nAzg
-            velmom = velmom+[VXG(l,m),VYG(l,m)]*Fg(m,l)*dAg(l);
-        end
-    end
-    velmom = velmom/dens;
-end
-
-end
-
