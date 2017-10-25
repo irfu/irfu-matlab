@@ -256,13 +256,24 @@ try
       end
     else
       % Windows system, no wget / curl per default.
-      % Fail as all US Gov have moved to HTTPS only as per
-      % https://obamawhitehouse.archives.gov/blog/2015/06/08/https-everywhere-government
-      errStr = ['You appear to be running a too old version of Matlab. ', ...
-        'Unable to automatically access the HTTPS url: ', url];
-      irf.log('critical', errStr);
-      error(['Unable to access the HTTPS-only server with OMNI data, ',...
-      'please consider upgrading Matlab or downloading data manually.']);
+      % However PowerShell should probably work on most modern Windows
+      % systems, on some versions this may fail as the powershell may have
+      % changed its built in functionallity over the years...
+      % This has only been tested on a Win 7 machine as of 2017/10/25.
+      urlExternal = strrep(url, '&', '^&'); % Escape ampersand with "^".
+      cmd = ['powershell -inputformat none $source = ''', ...
+        urlExternal, '''; $dest = [System.IO.Path]::GetTempFileName(); ', ...
+        '$wc = New-Object System.Net.WebClient; ', ...
+        '$wc.DownloadFile($source, $dest); cat $dest; Remove-Item $dest'];
+      [status, c] = system(cmd);
+      if status
+        errStr = ['You appear to be running a too old version of Matlab. ', ...
+          'Unable to automatically access the HTTPS url: ', url];
+        irf.log('critical', errStr);
+        error(['Unable to access the HTTPS-only server with OMNI data, ',...
+          'please consider upgrading Matlab or downloading data manually.']);
+      end
+      getDataSuccess = true;
     end
   else
     % Download from HTTPS using Matlab's webread.
