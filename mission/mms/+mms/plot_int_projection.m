@@ -159,10 +159,10 @@ if isDes == 1; M = u.me; else; M = u.mp; end
 it = interp1(dist.time.epochUnix,1:length(dist.time.epochUnix),t.epochUnix,'nearest');
 
 % 3d data matrix for time index it
-F3d = squeeze(double(dist.data(it,:,:,:)))*1e12; % s^3/m^6
+F3d = double(squeeze(double(dist.data(it,:,:,:)))*1e12); % s^3/m^6
 
 
-emat = dist.energy; % in eV
+emat = double(dist.energy); % in eV
 energy = emat(it,:);
 v = sqrt(2*energy*u.e/M); % m/s
 
@@ -171,7 +171,7 @@ if length(v) ~= 32
 end
 
 % azimuthal angle
-phi = dist.depend{2}(it,:); % in degrees
+phi = double(dist.depend{2}(it,:)); % in degrees
 %phi = phi+180;
 %phi(phi>360) = phi(phi>360)-360;
 phi = phi-180;
@@ -182,7 +182,7 @@ if length(phi) ~= 32
 end
 
 % elevation angle
-th = dist.depend{3}; % polar angle in degrees
+th = double(dist.depend{3}); % polar angle in degrees
 th = th-90; % elevation angle in degrees
 th = th*pi/180; % in radians
 
