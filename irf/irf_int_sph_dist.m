@@ -182,13 +182,15 @@ for i = 1:nV % velocity (energy)
             
             % not so good but better than throwing away data? Should be
             % very rare anyway.
-            vp(vp<vg_edges(1)*1.01) = vg_edges(1)*1.01;
-            vp(vp>vg_edges(end)*.99) = vg_edges(end)*.99;
             
             % Loop through MC points and add value of instrument bin to the
             % appropriate projection bin
             for l = 1:nMC
                 iVg = find(vp(l)>vg_edges,1,'last');
+                % Add to closest bin if it falls outside
+                if isempty(iVg) && vp(l)<vg_edges(1); iVg = 1; end
+                if iVg == nVg+1 && vp(l)>vg_edges(end); iVg = nVg; end
+                    
                 if projDim == 2
                     iAzg = find(phip(l)>phig_edges,1,'last');
                 else
