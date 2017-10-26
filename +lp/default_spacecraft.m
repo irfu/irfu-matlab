@@ -21,7 +21,7 @@ scNamesList = scList(:,1);
 ScFunc      = scList(:,2);
 
 if nargin == 0 && nargout == 0
-	for iSc = 1:numel(scNamesList),
+	for iSc = 1:numel(scNamesList)
 		disp([num2str(iSc) '. ' scNamesList{iSc}]);
 	end
 	return;
@@ -31,7 +31,7 @@ end
 if ischar(scNames), scNames = {scNames};   end
 
 iFoundSc = [];
-for iSc = 1:numel(scNames),
+for iSc = 1:numel(scNames)
 	iFoundSc = [iFoundSc find(strcmp(scNames(iSc),scNamesList))]; %#ok<AGROW>
 end
 
