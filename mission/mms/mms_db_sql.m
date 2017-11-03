@@ -24,7 +24,10 @@ classdef mms_db_sql < handle
       javaPath = [irf('path'), filesep, 'contrib', filesep, 'java', filesep];
       listDir = dir([javaPath, 'sqlite-jdbc*.jar']);
       if(isempty(listDir)), error('Missing sqlite-jdbc.jar'); end
-      javaaddpath([javaPath, listDir(end).name]);
+      jarFile = [javaPath, listDir(end).name];
+      if ~ismember(jarFile, javaclasspath('-dynamic'))
+        javaaddpath(jarFile);
+      end
       if nargin == 1
         [dirPath,file,ext] = fileparts(fileName);
         if isempty(dirPath) || strcmp(dirPath,'.')
