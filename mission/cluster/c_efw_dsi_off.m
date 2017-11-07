@@ -48,10 +48,7 @@ elseif t>=toepoch([2010 07 12 00 00 0]), Ddsi = [ 0.4   1.6  1.22 0.82 ]; % Forc
 elseif t>=toepoch([2010 07 08 18 00 0]), Ddsi = [ -0.27 0.8  1.66 0.25 ]; % These orbits need the variable offset
 elseif t>=toepoch([2010 07 01 00 00 0]), Ddsi = [ 0.4  1.58  1.21 0.82 ]; % Force MS offsets.
 elseif t>=toepoch([2010 06 01 00 00 0]), Ddsi = [ -0.27 0.8  1.66 0.25 ];
-elseif t>=toepoch([2010 02 01 00 00 0]), Ddsi = [ -0.34 0.67 1.50 0.17 ];
-elseif t>=toepoch([2010 01 01 00 00 0]), Ddsi = [ -0.34 0.67 2.00 0.17 ];
-elseif t>=toepoch([2009 12 01 00 00 0]), Ddsi = [-0.15  0.44 2.0  0.0  ]; % Increase C3 offset to bring in line with C124
-elseif t>=toepoch([2009 11 13 00 00 0]), Ddsi = [-0.15  0.44 1.48 0.0  ]; % Back to variable offsets
+elseif t>=toepoch([2009 11 13 00 00 0]), Ddsi = [ -0.34 0.67 1.50-0.25i 0.17 ]; % Back to variable offsets, Adjust Ey on C3
 elseif t>=toepoch([2009 07 01 00 00 0]), Ddsi = [ 0.46 1.31 1.23  0.64 ]; % Force MS offset for months when don't enter SW.
 elseif t>=toepoch([2008 12 01 00 00 0]), Ddsi = [-0.15  0.44 1.48 0.0  ]; % Back to variable offsets
 elseif t>=toepoch([2008 07 01 00 00 0]), Ddsi = [ 0.59    1.31 1.36  0.68]; % Force MS offset for months when don't enter SW.
