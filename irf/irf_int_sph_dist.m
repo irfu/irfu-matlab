@@ -225,8 +225,8 @@ end
 if projDim == 1
     vel = nansum(Fg.*dAg.*vg);
 else
-    VG = repmat(vg',1,nVg);
-    PHIG = repmat(phig,nAzg,1);
+    VG = repmat(vg',1,nAzg);
+    PHIG = repmat(phig,nVg,1);
     [VXG,VYG] = pol2cart(PHIG,VG);
     
     vel = [0,0];

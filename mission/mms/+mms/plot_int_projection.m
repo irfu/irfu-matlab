@@ -37,6 +37,9 @@ function [hsf,pst] = plot_int_projection(varargin)
 %   'vlabel'    - 1x3 cell array containing strings for axis labels
 %               corresponding to x, y, and z
 %   'flipx'/'flipy' - boolean value where 1 flips the x/y axis 
+%   'colorbar'  - boolean value where 1 adds a colorbar to plot
+%   'vg'        - array with center values for the projection velocity
+%               grid in [km/s], determined by instrument if omitted
 %
 %   Examples:
 %       tint = irf.tint('2015-10-16T13:07:02/2015-10-16T13:07:03');
@@ -57,6 +60,7 @@ function [hsf,pst] = plot_int_projection(varargin)
 % 
 %   TODO:   Add time interval averaging
 %           Recalculate energies given spacecraft potential input
+%           Account for other quantities than psd, e.g. diff energy flux
 %
 %   Generally, the code deals with quantities in SI units until plotting.
 
@@ -99,6 +103,8 @@ have_clim = 0;
 have_vlim = 0;
 nMC = 100; % number of Monte Carlo iterations
 vzint = [-inf,inf];
+showColorbar = 0;
+vgInput = 0;
 
 have_options = nargs > 1;
 while have_options
@@ -131,7 +137,11 @@ while have_options
             nMC = args{2};
         case 'vzint' % limit on out-of-plane velocity
             vzint = args{2};
-            
+        case 'colorbar' % 1 if show colorbar
+            showColorbar = args{2};
+        case 'vg' % define velocity grid
+            vgInput = 1;
+            vg = args{2}*1e3;
     end
     args = args(3:end);
     if isempty(args), break, end
@@ -197,9 +207,9 @@ nAzg = 32;
 % diffs
 dPhig = 2*pi/nAzg;
 
-% bin centers
+% bin centers defined by user or set to same as instrument
 phig = linspace(0,2*pi-dPhig,nAzg)+dPhig/2;
-vg = v; % same as instrument
+if ~vgInput; vg = v; end % same as instrument if no input
 
 %% perform projection
 pst = irf_int_sph_dist(F3d,v,phi,th,vg,'z',zphat,'x',xphat,'phig',phig,'nMC',nMC,'vzint',vzint*1e3);
@@ -228,8 +238,19 @@ if have_clim; ax.CLim = clim; end
 % set vlim in km
 if have_vlim, ax.YLim = vlim*[-1 1]*vUnitFactor*1e3; pause(.01); ax.XLim = ax.YLim; end
 
+% show colorbar with appropriate units
+if showColorbar
+    fVarStr = 'log_1_0 F ';
+    % chose unit string (add more if needed)
+    if strcmp(dist.units,'s^3/cm^6'); fUnitStr = '[s^2/m^5]';
+    else; fUnitStr = '';
+    end
+    hcb = colorbar(ax); 
+    ylabel(hcb,[fVarStr,fUnitStr])
+end
+
 hold(ax,'on')
-axis(ax,'equal')
+axis(ax,'square')
 
 if doFlipX; ax.XDir = 'reverse'; end
 if doFlipY; ax.YDir = 'reverse'; end
