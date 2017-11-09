@@ -55,49 +55,115 @@ try
     % Load the txt file
     list = list(end);
     [~, off.calFile, ~] = fileparts(list.name);
-    fmt = '%s\t%f\t%f';
-    fileID = fopen([calPath, filesep, list.name]);
-    C = textscan(fileID, fmt, 'HeaderLines', 1);
-    fclose(fileID);
-    % Interpret the time strings and convert it to int64 (tt2000).
-    offTime = EpochTT(cell2mat(C{1}));
-    % Offset start time (based on ROI).
-    time1 = offTime.ttns;
-    % Add margins to start time (ROI), negative values for fast/brst
-    % positive for slow to ensure same offset is used for continous
-    % segments (each ROI start close to switch from slow to fast tmmode).
-    % ROI region 2015-09-20T06:27:14Z/2015-09-20T20:26:54 UTC
-    % MMS1 edp fast l1b start 2015-09-20T06:13:45.097915313 UTC
-    % ie. continous fast mode start some 13 min 29 seconds before ROI.
-    switch TMmode
-      case MMS_CONST.TmMode.slow
-        Tmargin = +int64(15*60*10^9); % +15 minutes margin??
-        % (ThoNi: I have not seen any switch slow->fast after official ROI
-        % start but better to be sure than sorry).
-      case {MMS_CONST.TmMode.fast, MMS_CONST.TmMode.brst}
-        Tmargin = -int64(15*60*10^9); % -15 minutes margin??
-      otherwise % comm=?
-        Tmargin = int64(0);
-    end
-    time1 = time1 + Tmargin;
-    % Let each offset be valid until 5 us before next offset begin
-    % NOTE: While it could be as small as 1ns with int64 representation it 
-    % can in reallity not be that small as "interp1" in Matlab R2013b req.
-    % double representation.
-    % (Highest MMS burst rate used as of 2017/05/05 is 16384Hz => dt=61 us).
-    time2 = time1(2:end) - int64(5000);
-    % Let the last offset be valid "forever" after (interp1 with "linear"
-    % and "extrap" require one extra datapoint to ensure it is interpolated
-    % as a static value and not a linear trend between the penultimate and
-    % ultimate offset value.) Add one extra point one year after the last.
-    time2(end+1) = time2(end) + int64(365*86400e9);
 
-    data3 = [C{2}, C{3}; ...
-      C{2}, C{3}]; % Repeated data
-    [timeSort, indSort] = sort([time1; time2]); % Almost repeated time (5 us diff), then sorted
-    [timeComb, indUniq] = unique(timeSort); % Ensure no duplicated values
-    dataSort = data3(indSort, :); % Sorted data (based on time)
-    dataOff = dataSort(indUniq, :); % Ensure no duplicated values (based on time)
+    verStr = regexp(off.calFile, ['mms[1-4]_edp_sdp_', calStr, '_\d{8,8}_v(?<VERSION>\d{1,}.\d{1,}.\d{1,})'],'tokens');
+    if is_version_geq(verStr{1}{1}, '1.0.0')
+      % NEW format of Calibration files
+      % As discussed during meeting at KTH, 2017/10/?? the new calibration
+      % files have two extra columns providing the time margins to be
+      % applied before and after each timestamp.
+      %         __________
+      %        /
+      %      ./
+      %_____/
+      % 
+      %      | <-- Times given by first column, but the value does not come
+      %      into full effect until after the margin of the last column.
+      %      But it starts to come into effect before the margin of the
+      %      second to last column. If margins are zero, then the old value
+      %      is used until the timestamp in the first column and after this
+      %      timestamp the new offsets are used. Otherwise a linear
+      %      interpolation is applied in the intermediate interval, before
+      %      which the previous offset is used and correspondingly after
+      %      the margin the new offset is fully used.
+      fmt = '%s\t%f\t%f\t%f\t%f';
+      fileID = fopen([calPath, filesep, list.name]);
+      C = textscan(fileID, fmt, 'HeaderLines', 1);
+      fclose(fileID);
+      % Interpret the time strings and convert it to int64 (tt2000).
+      offTime = EpochTT(cell2mat(C{1}));
+      % Offset start time (based on ROI).
+      time1 = offTime.ttns;
+      % Add margins to start time (ROI),
+      % positive for slow to ensure same offset is used for continous
+      % segments (each ROI start close to switch from slow to fast tmmode).
+      % ROI region 2015-09-20T06:27:14Z/2015-09-20T20:26:54 UTC
+      % MMS1 edp fast l1b start 2015-09-20T06:13:45.097915313 UTC
+      % ie. continous fast mode start some 13 min 29 seconds before ROI.
+      if TMmode == MMS_CONST.TmMode.slow
+         % +15 minutes margin (undo the built in margin written into calibration files (ROI start time has been adjusted).
+         time1 = time1 + int64(15*60*10^9);
+      end
+      % Ensure we have at least a margin of 5 us, even if zero was entered
+      % for both margins.
+      % NOTE: While it could be as small as 1ns with int64 representation it 
+      % can in reallity not be that small as "interp1" in Matlab R2013b req.
+      % double representation. And must be kept as distinct value or offset
+      % values will not have the same number of elements as our offset time
+      % (Highest MMS burst rate used as of 2017/05/05 is 16384Hz => dt=61 us).
+      ind = (abs(C{4}) + abs(C{5}) <= 5e-6);
+      if any(ind)
+        irf.log('notice', 'Increasing time margins read from file to at least 5e-6 seconds.');
+        C{5}(ind) = 5e-6;
+      end
+      if any(C{4}>0)
+        errStr = 'Expected negative or zero values for the negative time margin "-dt". Aborting and using static values';
+        irf.log('warning', errStr); error(errStr);
+      end
+      time_end   = time1 + int64(10^9 * C{4}); % The previous offsets end here (and interpolation start)
+      time_start = time1 + int64(10^9 * C{5}); % The new offset fully start here (and interpolation ends)
+      ind = repmat(1:length(C{2}), 2, 1); % 1 1 2 2 3 3 4 4 ...
+      dataOff = [C{2}(ind(:)), C{3}(ind(:))]; % Repeated data      
+      % Let the last offset be valid "forever" after (interp1 with "linear"
+      % and "extrap" require one extra datapoint to ensure it is interpolated
+      % as a static value and not a linear trend between the penultimate and
+      % ultimate offset value.) Add one extra point one year after the last.
+      time_end(1) = time_start(end) + int64(365*86400e9);
+      timeComb = unique(sort([time_start, time_end]));
+
+    else
+      % OLD format of Calibration files
+      fmt = '%s\t%f\t%f';
+      fileID = fopen([calPath, filesep, list.name]);
+      C = textscan(fileID, fmt, 'HeaderLines', 1);
+      fclose(fileID);
+      % Interpret the time strings and convert it to int64 (tt2000).
+      offTime = EpochTT(cell2mat(C{1}));
+      % Offset start time (based on ROI).
+      time1 = offTime.ttns;
+      % Add margins to start time (ROI),
+      % positive for slow to ensure same offset is used for continous
+      % segments (each ROI start close to switch from slow to fast tmmode).
+      % ROI region 2015-09-20T06:27:14Z/2015-09-20T20:26:54 UTC
+      % MMS1 edp fast l1b start 2015-09-20T06:13:45.097915313 UTC
+      % ie. continous fast mode start some 13 min 29 seconds before ROI.
+      switch TMmode
+        case MMS_CONST.TmMode.slow
+          Tmargin = +int64(15*60*10^9); % +15 minutes margin (undo the built in margin written into calibration files (ROI start time has been adjusted).
+        otherwise % fast, brst have a built in correction to times in the offset files compared with official ROI start time.
+          Tmargin = int64(0);
+      end
+      time1 = time1 + Tmargin;
+      % Let each offset be valid until 5 us before next offset begin
+      % NOTE: While it could be as small as 1ns with int64 representation it 
+      % can in reallity not be that small as "interp1" in Matlab R2013b req.
+      % double representation.
+      % (Highest MMS burst rate used as of 2017/05/05 is 16384Hz => dt=61 us).
+      time2 = time1(2:end) - int64(5000);
+      % Let the last offset be valid "forever" after (interp1 with "linear"
+      % and "extrap" require one extra datapoint to ensure it is interpolated
+      % as a static value and not a linear trend between the penultimate and
+      % ultimate offset value.) Add one extra point one year after the last.
+      time2(end+1) = time2(end) + int64(365*86400e9);
+
+      data3 = [C{2}, C{3}; ...
+        C{2}, C{3}]; % Repeated data
+      [timeSort, indSort] = sort([time1; time2]); % Almost repeated time (5 us diff), then sorted
+      [timeComb, indUniq] = unique(timeSort); % Ensure no duplicated values
+      dataSort = data3(indSort, :); % Sorted data (based on time)
+      dataOff = dataSort(indUniq, :); % Ensure no duplicated values (based on time)
+
+    end
 
     % Covert time and timeComb to double after subtracting the start time
     % (2015/01/01) from both to ensure interp1 works as expected.
@@ -107,6 +173,7 @@ try
     % time
     offIntrp = interp1(timeOff, dataOff, timeReq, 'linear', 'extrap');
 
+    
     switch procId
       case {MMS_CONST.SDCProc.ql, MMS_CONST.SDCProc.l2pre}
         off.ex = offIntrp(:,1);
