@@ -92,7 +92,27 @@ function [nd] = irf_shock_normal(spec,leq90)
 %       mx2: [0.9889 -8.2406e-04 -0.1483]
 %       mx3: [0.9889 -0.0017 -0.1483]
 %
+%
+%   shp = [];
+%   shp.Bu = [.1,-.02,3;.3,-.05,2.8];
+%   shp.Bd = [1,.05,9;1,-.05,10];
+%   shp.Vu = [-300,5,-2;-310,2,2];
+%   shp.Vd = [-100,5,-2;-90,10,10];
+%   shp.nu = [5;4];
+%   shp.nd = [15;16];
+%   shp.N = 5;
+%   nd = irf_shock_normal(shp);
+%   nd.n.mx3
 % 
+% ans =
+% 
+%     0.9904    0.0044   -0.1384
+%     0.9917    0.0143   -0.1276
+%     0.9924    0.0169   -0.1216
+%     0.9903    0.0026   -0.1389
+%     0.9922    0.0150   -0.1239
+%
+%
 %   See also: IRF_SHOCK_GUI, IRF_SHOCK_PARAMETERS
 % 
 
@@ -151,7 +171,6 @@ if size(spec.Bu,1)>1 || size(spec.Bu,1)>1
                 fn2.(fn1{k}) = fieldnames(nd.(fn1{k}));
             end
             
-            disp('lol')
             % do a double loop 
             for k = 1:length(fn1) % fist layer
                 strl1 = fn1{k}; % first layer string
@@ -388,7 +407,7 @@ for k = 1:length(fn)
     W = spec.Fcp*2*pi;
     t1 = acos((1-2*cos(th).^2)./(2*sin(th).^2))/W;
     
-    f = @(th)W*t1*(2*cos(th).^2-1)+2*sin(th).^2.*sind(W*t1);
+    f = @(th)W*t1*(2*cos(th).^2-1)+2*sin(th).^2.*sin(W*t1);
     x0 = f(th)/(W*spec.dTf);
     
     Vsp.(fn{k}) = dot(spec.Vu,nvec)*(x0/(1+spec.d2u*x0));

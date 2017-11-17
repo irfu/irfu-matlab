@@ -101,10 +101,12 @@ elseif nargin > 1
 end
 
 %% Run the analysis
+if ~exist('L','var')
 if doConstraint
 	[L,V,U] = irf_generic_minimum_residue_analysis_engine('eta',eta,'q',q,'constraint',nConstraint);
 else
 	[L,V,U] = irf_generic_minimum_residue_analysis_engine('eta',eta,'q',q);
+end
 end
 %% Calculate normal velocity
 

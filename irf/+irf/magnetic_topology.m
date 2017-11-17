@@ -3,7 +3,9 @@ function magnetic_topology(R1,R2,R3,R4,B1,B2,B3,B4,varargin)
 %given time step
 %
 %   MAGNETIC_TOPOLOGY extrapolates the magnetic flux tubes by assuming linearly
-%   varying magnetic field and plots it for a single time step.
+%   varying magnetic field and plots it for a single time step. The plot is
+%   made in the coordinate system of input, so if input is LMN where x is N, y is M and z is L
+%   then X axis is N axis, Y axis is M axis, and Z axis is L axis.
 %   
 %   IMPORTANT: Input must either be from just one time
 %              step or include the tint variable.
@@ -17,6 +19,9 @@ function magnetic_topology(R1,R2,R3,R4,B1,B2,B3,B4,varargin)
 %                 time vector). 
 %     R1..R4    - are position of 1..4 can be in Tseries or vector format (with or without the
 %                 time vector)
+%     bStart    - B field point from where the interpolation should be
+%     calculated in same d units as B1..B4. Give in vector format [x y z].
+%     Need to be a value inside the spacecraft tetrahedron.
 %     [tint]      - time step to plot given in the format of EpochUnix. If given it must always be given as first variable. 
 %     ['BLim', Blim]      - removes extrapolated data points with B
 %     magnitude larger than Blim. Blim should be given in same units as B1..B4.
@@ -32,7 +37,7 @@ function magnetic_topology(R1,R2,R3,R4,B1,B2,B3,B4,varargin)
 %     as a meshgrid. ex: meshgrid(0:2:10,4,-2:2:10);
 %     ['FluxWidth', Fluxvalue]      - give the width of the flux tube (might
 %     need to decrease this when you have a lot of flux tubes). Smaller
-%     value > thinner tubes.
+%     value => thinner tubes.
 %     
 %     
 %
@@ -43,16 +48,16 @@ function magnetic_topology(R1,R2,R3,R4,B1,B2,B3,B4,varargin)
 %
 % Examples:
 %   tint = irf_time('2015-11-30T00:24:22.244870000Z','utc>epoch');
-%   irf.magnetic_topology(R1,R2,R3,R4,B1,B2,B3,B4,tint) - plots the
+%   irf.magnetic_topology(R1,R2,R3,R4,B1,B2,B3,B4,bStart,tint) - plots the
 %   magnetic field topology around the spacecraft tetrahedron center at the
-%   specific time given in tint.
-%   irf.magnetic_topology(R1,R2,R3,R4,B1,B2,B3,B4,tint,'Boxsize',Boxvalue) - plots the
+%   specific time given in tint from magnetic field point bStart.
+%   irf.magnetic_topology(R1,R2,R3,R4,B1,B2,B3,B4,bStart,tint,'Boxsize',Boxvalue) - plots the
 %   magnetic field topology around the spacecraft tetrahedron center at the
 %   specific time given in tint and in a box of size +- Boxvalue.
 %
-%   irf.magnetic_topology(R1,R2,R3,R4,B1,B2,B3,B4) - plots the
+%   irf.magnetic_topology(R1,R2,R3,R4,B1,B2,B3,B4,bStart) - plots the
 %   magnetic field topology around the spacecraft tetrahedron center at the
-%   time of the data.
+%   time of the data. OBS: needs to be data for just one time step.
 
 
 
@@ -61,7 +66,9 @@ idR = {R1,R2,R3,R4};
 idB = {B1,B2,B3,B4};
 timeInd=false; %Is time included in the data
 if isa(B1,'TSeries') || isa(R1,'TSeries')
+    if size(B1.data,1)>1
     timeInd=true;
+    end
     for i=1:4
         if isa(idR{i},'TSeries') 
             idR{i} = [idR{i}.time.epochUnix double(idR{i}.data)];
@@ -91,6 +98,9 @@ if isempty(varargin)
 end
 if length(varargin)==1
     tint=varargin{1};
+    if isa(tint, 'EpochTT')
+        tint=tint.epochUnix;
+    end
     SpecificTime=true;
 elseif ~mod(length(varargin),2)
     % Time to check the combination of elements and change the default values for the given ones.
@@ -161,11 +171,17 @@ elseif mod(length(varargin),2)
     % Time to check the combination of elements and change the default values for the given ones.
     if length(varargin)==1 && isa(varargin{1},'Tseries')
         tint=varargin{1};
+        if isa(tint, 'EpochTT')
+            tint=tint.epochUnix;
+        end
         SpecificTime=true;
     elseif length(varargin)==1
         error('Unapproved combination of arguments. See usage: help 3D_magnetic_topology')
     else
         tint=varargin{1};
+        if isa(tint, 'EpochTT')
+            tint=tint.epochUnix;
+        end
         SpecificTime=true;
         for i=2:length(varargin)
             if i+1>length(varargin)
@@ -237,9 +253,6 @@ else
     error('Unapproved arguments. See usage: help 3D_magnetic_topology')
 end
 
-if isa(tint, 'EpochTT')
-    tint=tint.epochUnix;
-end
 
 %% Resample all input vectors to B1 timeline and remove time column
 if timeInd
@@ -252,6 +265,16 @@ idR{1,1} = irf_resamp(idR{1,1},t);idR{1,1}(:,1)=[];
 idR{1,2} = irf_resamp(idR{1,2},t);idR{1,2}(:,1)=[];
 idR{1,3} = irf_resamp(idR{1,3},t);idR{1,3}(:,1)=[];
 idR{1,4} = irf_resamp(idR{1,4},t);idR{1,4}(:,1)=[];
+else
+t = idB{1,1}(:,1);
+idB{1,1}(:,1)=[];
+idB{1,2}(:,1)=[];
+idB{1,3}(:,1)=[];
+idB{1,4}(:,1)=[];
+idR{1,1}(:,1)=[];
+idR{1,2}(:,1)=[];
+idR{1,3}(:,1)=[];
+idR{1,4}(:,1)=[];
 end
 
 Rmean=0.25.*(idR{1,1}+idR{1,2}+idR{1,3}+idR{1,4});
@@ -277,7 +300,7 @@ Bmean=Bmean(minpos,:);
 gradB=gradB(minpos,:);
 end
 
-gradB = reshape(gradB(1,:),3,3)';
+gradB = reshape(gradB(1,:),3,3);
 
 if ~GivenboxWidth  
     % Give default for box width
@@ -458,11 +481,11 @@ hold('off')
 h=colorbar;
 ylabel(h,'|B| [nT]')
 %colormap('jet')
-ylabel('Y [km]');
-zlabel('Z [km]');
-xlabel('X [km]');
+ylabel('Y_{coord} [km]');
+zlabel('Z_{coord} [km]');
+xlabel('X_{coord} [km]');
 if SpecificTime
-tintlab = irf_time(tint,'utc');
+tintlab = irf_time(t,'utc');
 title({'3D Magnetic topology',[tintlab(12:23),'UT']});
 end
 

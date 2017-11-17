@@ -212,6 +212,10 @@ else
     ud.use_omni.Ti = 0;
     % plot data in panels
     ud = get_avg_field(ud,scd,[]);
+    % align time axis
+    fnp = fieldnames(scd);
+    tint = scd.(fnp{1}).time([1,end]); % not optimal
+    irf_zoom(ud.ax,'x',tint)
     % fix labels
     ud = set_labels(ud);
     % t_start_epoch
@@ -532,7 +536,6 @@ end
 
 
 function [ud] = mark_times(ud) % mark times, str is 'u' or 'd'
-
 ucol = [0.7,0.7,0];
 dcol = [0,0.7,0.7];
 for k = 1:ud.Nin
@@ -669,9 +672,7 @@ function [ud] = get_avg_field(ud,par,fin)
 fnp = fieldnames(par);
 nin = numel(fnp);
 
-
 N = numel(fin);
-
 
 % Plot all inputs only first time
 if isempty(ud.ax(1).Tag)
@@ -682,10 +683,6 @@ if isempty(ud.ax(1).Tag)
         end
     end
 end
-
-% align time axis
-tint = par.(fnp{1}).time([1,end]); % not optimal
-irf_zoom(ud.ax,'x',tint)
 
 % Set color order (this is done twice for some reason)
 color_order = zeros(nargout*3,3);

@@ -12,15 +12,16 @@ c_eval('ePDist = mms.get_data(''PDe_fpi_brst_l2'',Tint,?);',ic)
 c_eval('iPDist = mms.get_data(''PDi_fpi_brst_l2'',Tint,?);',ic)
 
 % Particle moments
-c_eval('ne = mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_numberdensity_dbcs_brst'',Tint);',ic);
-c_eval('Ve = mms.get_data(''Ve_dbcs_fpi_brst_l2'',Tint,?);',ic);
-c_eval('Te = mms.get_data(''Te_dbcs_fpi_brst_l2'',Tint,?);',ic);
-c_eval('ni = mms.db_get_ts(''mms?_fpi_brst_l2_dis-moms'',''mms?_dis_numberdensity_dbcs_brst'',Tint);',ic);
-c_eval('Vi = mms.get_data(''Vi_dbcs_fpi_brst_l2'',Tint,?);',ic);
-c_eval('Ti = mms.get_data(''Ti_dbcs_fpi_brst_l2'',Tint,?);',ic);
+c_eval('ne = mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_numberdensity_brst'',Tint);',ic);
+c_eval('Ve = mms.get_data(''Ve_gse_fpi_brst_l2'',Tint,?);',ic);
+c_eval('Te = mms.get_data(''Te_gse_fpi_brst_l2'',Tint,?);',ic);
+c_eval('ni = mms.db_get_ts(''mms?_fpi_brst_l2_dis-moms'',''mms?_dis_numberdensity_brst'',Tint);',ic);
+c_eval('Vi = mms.get_data(''Vi_gse_fpi_brst_l2'',Tint,?);',ic);
+c_eval('Ti = mms.get_data(''Ti_gse_fpi_brst_l2'',Tint,?);',ic);
 
 % Other variables
 c_eval('Bxyz=mms.db_get_ts(''mms?_fgm_srvy_l2'',''mms?_fgm_b_dmpa_srvy_l2'',Tint);',ic);
+c_eval('Bgse=mms.db_get_ts(''mms?_fgm_srvy_l2'',''mms?_fgm_b_gse_srvy_l2'',Tint);',ic);
 c_eval('SCpot=mms.db_get_ts(''mms?_edp_brst_l2_scpot'',''mms?_edp_scpot_brst_l2'',Tint);',ic);
 
 %% Compute parallel and perpendicular electron and ion temperatures
@@ -125,8 +126,8 @@ xSize=750; ySize=750;
 set(gcf,'Position',[10 10 xSize ySize]);
 
 h(1)=irf_panel('Bxyz');
-irf_plot(h(1),Bxyz);
-ylabel(h(1),'B_{DMPA} (nT)','Interpreter','tex');
+irf_plot(h(1),Bgse);
+ylabel(h(1),'B (nT)','Interpreter','tex');
 irf_legend(h(1),{'B_{x}','B_{y}','B_{z}'},[0.1 0.12])
 irf_legend(h(1),'(a)',[0.99 0.98],'color','k','fontsize',12)
 
