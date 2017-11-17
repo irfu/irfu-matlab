@@ -45,8 +45,7 @@ function particlemoments = psd_moments(varargin)
 % Output: 
 %   psd_moments - structure containing the particle moments: density, bulk
 %   velocity, pressure, temperature, and particle heat flux (n_psd, V_psd, P_psd, T_psd, and H_psd,
-%   respectively) as TSeries'. For temperature and
-%   pressure tensors the order of the columns is XX, XY, XZ, YY, YZ, ZZ.
+%   respectively) as TSeries'.
 %
 % Notes: 
 % Regarding the spacecraft potential, the best estimate of is -1.2*(probe
@@ -384,25 +383,25 @@ P2_psd(:,2,3) = P_psd(:,2,3);
 P2_psd(:,3,3) = P_psd(:,3,3);
 P2_psd(:,2,1) = P2_psd(:,1,2); P2_psd(:,3,1) = P2_psd(:,1,3); P2_psd(:,3,2) = P2_psd(:,2,3);
 
-P_psd(:,1) = P_psd(:,1)-pmass*n_psd.*V_psd(:,1).*V_psd(:,1);
-P_psd(:,2) = P_psd(:,2)-pmass*n_psd.*V_psd(:,1).*V_psd(:,2);
-P_psd(:,3) = P_psd(:,3)-pmass*n_psd.*V_psd(:,1).*V_psd(:,3);
-P_psd(:,4) = P_psd(:,4)-pmass*n_psd.*V_psd(:,2).*V_psd(:,2);
-P_psd(:,5) = P_psd(:,5)-pmass*n_psd.*V_psd(:,2).*V_psd(:,3);
-P_psd(:,6) = P_psd(:,6)-pmass*n_psd.*V_psd(:,3).*V_psd(:,3);
+P_psd(:,1,1) = P_psd(:,1,1)-pmass*n_psd.*V_psd(:,1).*V_psd(:,1);
+P_psd(:,1,2) = P_psd(:,1,2)-pmass*n_psd.*V_psd(:,1).*V_psd(:,2);
+P_psd(:,1,3) = P_psd(:,1,3)-pmass*n_psd.*V_psd(:,1).*V_psd(:,3);
+P_psd(:,2,2) = P_psd(:,2,2)-pmass*n_psd.*V_psd(:,2).*V_psd(:,2);
+P_psd(:,2,3) = P_psd(:,2,3)-pmass*n_psd.*V_psd(:,2).*V_psd(:,3);
+P_psd(:,3,3) = P_psd(:,3,3)-pmass*n_psd.*V_psd(:,3).*V_psd(:,3);
 P_psd(:,2,1) = P_psd(:,1,2); P_psd(:,3,1) = P_psd(:,1,3); P_psd(:,3,2) = P_psd(:,2,3);
 
 ntemp = reshape([n_psd n_psd n_psd;n_psd n_psd n_psd;n_psd n_psd n_psd],length(n_psd),3,3);
 
-Ptrace = (P_psd(:,1)+P_psd(:,4)+P_psd(:,6));
+Ptrace = (P_psd(:,1,1)+P_psd(:,2,2)+P_psd(:,3,3));
 T_psd = P_psd./ntemp/kb;
 T_psd(:,2,1) = T_psd(:,1,2); T_psd(:,3,1) = T_psd(:,1,3); T_psd(:,3,2) = T_psd(:,2,3);
 
 H_psd = pmass/2*H_psd;
 Vabs2 = V_psd(:,1).^2+V_psd(:,2).^2+V_psd(:,3).^2;
-H_psd(:,1) = H_psd(:,1)-(V_psd(:,1).*P_psd(:,1)+V_psd(:,2).*P_psd(:,2)+V_psd(:,3).*P_psd(:,3))-0.5*V_psd(:,1).*Ptrace-0.5*pmass*n_psd.*Vabs2.*V_psd(:,1);
-H_psd(:,2) = H_psd(:,2)-(V_psd(:,1).*P_psd(:,2)+V_psd(:,2).*P_psd(:,4)+V_psd(:,3).*P_psd(:,5))-0.5*V_psd(:,2).*Ptrace-0.5*pmass*n_psd.*Vabs2.*V_psd(:,2);
-H_psd(:,3) = H_psd(:,3)-(V_psd(:,1).*P_psd(:,3)+V_psd(:,2).*P_psd(:,5)+V_psd(:,3).*P_psd(:,6))-0.5*V_psd(:,3).*Ptrace-0.5*pmass*n_psd.*Vabs2.*V_psd(:,3);
+H_psd(:,1) = H_psd(:,1)-(V_psd(:,1).*P_psd(:,1,1)+V_psd(:,2).*P_psd(:,1,2)+V_psd(:,3).*P_psd(:,1,3))-0.5*V_psd(:,1).*Ptrace-0.5*pmass*n_psd.*Vabs2.*V_psd(:,1);
+H_psd(:,2) = H_psd(:,2)-(V_psd(:,1).*P_psd(:,1,2)+V_psd(:,2).*P_psd(:,2,2)+V_psd(:,3).*P_psd(:,2,3))-0.5*V_psd(:,2).*Ptrace-0.5*pmass*n_psd.*Vabs2.*V_psd(:,2);
+H_psd(:,3) = H_psd(:,3)-(V_psd(:,1).*P_psd(:,1,3)+V_psd(:,2).*P_psd(:,2,3)+V_psd(:,3).*P_psd(:,3,3))-0.5*V_psd(:,3).*Ptrace-0.5*pmass*n_psd.*Vabs2.*V_psd(:,3);
 
 % Convert to typical units (/cc, km/s, nP, eV, and ergs/s/cm^2).
 n_psd = n_psd/1e6;
