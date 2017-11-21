@@ -5,10 +5,9 @@ function mms_sdc_sdp_proc( procName, varargin)
 %
 % 	See also MMS_SDC_SDP_INIT, MMS_SDP_DMGR.
 
-% Store runTime when script was called. To ease for SDC, create an empty
-% file with name being the same as output file created and suffix
-% _runTime.txt placed in "($LOG_PATH_ROOT)/mmsX/edp/"
-runTime = datestr(now,'yyyymmddHHMMSS'); 
+% Store runTime when script was called. To ease for SDC, keep track of
+% start time (logs are written with this time in their file name).
+runTime = datestr(now,'yyyymmddTHHMMSS');
 
 global ENVIR MMS_CONST;
 
@@ -357,14 +356,6 @@ end
 % Write the output
 filename_output = mms_sdp_cdfwrite(HdrInfo, Dmgr);
 
-%% Write out filename as empty logfile so it can be easily found by SDC
-% scripts.
-if ~isempty(ENVIR.LOG_PATH_ROOT)
-  unix(['touch', ' ', ENVIR.LOG_PATH_ROOT, filesep 'mms', ...
-    HdrInfo.scIdStr, filesep, 'edp', filesep, filename_output, ...
-    '_',runTime,'.log']);
-end
-
 
 %% Help functions
   function init_matlab_path()
@@ -406,9 +397,11 @@ end
       end
   
       if j==1
-        % Setup log and environment.
+        % Setup environment.
         HdrInfo.scIdStr = fileIn(4);
-        ENVIR = mms_sdc_sdp_init(HdrInfo.scIdStr);
+        ENVIR = mms_sdc_sdp_init;
+        % Setup log
+        mms_sdc_sdp_log_init(procName, fileIn, runTime);
       elseif(~strcmp(HdrInfo.scIdStr, fileIn(4)))
         errStr = ['MMS_SDC_SDP_PROC called using MMS S/C: ', ...
           HdrInfo.scIdStr, ' and another file from MMS S/C: ', fileIn(4),'.'];
