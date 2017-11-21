@@ -20,7 +20,6 @@ if isempty(MMS_CONST), MMS_CONST = mms_constants(); end
 HK_101_File = ''; % HK with sunpulse, etc.
 HK_105_File = ''; % HK with sweep status etc.
 HK_10E_File = ''; % HK with bias guard settings etc.
-ACE_File = '';
 ASPOC_File = '';
 DFG_File = ''; % B-field, L2Pre
 DCV_File = '';
@@ -527,13 +526,6 @@ filename_output = mms_sdp_cdfwrite(HdrInfo, Dmgr);
         end
         DCE_File = varargin{j};
         irf.log('notice', ['DCE input file: ', DCE_File]);
-      elseif regexpi(fileIn, '_ace_') % _ace_
-        if ~isempty(ACE_File)
-          errStr = ['Multiple AC E files in input (',ACE_File,' and ',varargin{j},')'];
-          irf.log('critical', errStr); error(errStr);
-        end
-        ACE_File = varargin{j};
-        irf.log('notice', ['ACE input file: ', ACE_File]);
       elseif regexpi(fileIn, '_l2a_') % L2A file (produced by QL Fast/slow)
         if ~isempty(L2A_File)
           errStr = ['Multiple L2A files in input (',L2A_File,' and ',varargin{j},')'];

@@ -1213,15 +1213,15 @@ classdef mms_sdp_dmgr < handle
         if(DATAC.scId ~=4), return, end
         
         %PROBE MAGIC
-        %MMS4, Probe 4 bias fail, 2016-06-12T05:28:48.2
+        %MMS4, Probe 4 fail, 2016-06-12T05:28:48.2
         TTFail = EpochTT('2016-06-12T05:28:48.200Z');
         indFail = DATAC.dcv.time > TTFail.ttns;
         if ~any(indFail), return, end
         
         senV = 'v4';
-        irf.log('notice',['Bad bias on ' senV ' starting at ' TTFail.utc]);
+        irf.log('notice',['Biasing failed on ' senV ' starting at ' TTFail.utc]);
         DATAC.dcv.(senV).bitmask(indFail) = ...
-          bitor(DATAC.dcv.(senV).bitmask(indFail), MMS_CONST.Bitmask.BAD_BIAS);
+          bitor(DATAC.dcv.(senV).bitmask(indFail), MMS_CONST.Bitmask.ASYMM_CONF);
         if(DATAC.procId == MMS_CONST.SDCProc.scpot), return, end
 
         % Compute asymmetric E34
@@ -1434,19 +1434,6 @@ classdef mms_sdp_dmgr < handle
         end
       end
       
-%       function res = are_probes_enabled
-%         % Use FILLVAL of each sensor to determine if probes are enabled or not.
-%         % Returns logical of size correspondig to sensor.
-%         sensorData = dataObj.data.([vPfx param '_sensor']).data;
-%         FILLVAL = getfillval(dataObj, [vPfx, param, '_sensor']);
-%         if( ~ischar(FILLVAL) )
-%           % Return 'true' for all data not equal to specified FILLVAL
-%           res = (sensorData ~= FILLVAL);
-%         else
-%           errStr = 'Unable to get FILLVAL.';
-%           irf.log('critical',errStr); error(errStr);
-%         end
-%       end
       
       function res = resample_probe_enable(fields)
         % resample probe_enabled data to E-field cadense
@@ -2022,9 +2009,9 @@ classdef mms_sdp_dmgr < handle
       Dcv.v4.data = mask_bits(Dcv.v4.data, Dcv.v4.bitmask, sweepBit);
       
       % Probe 4 bias failure
-      badBias = MMS_CONST.Bitmask.BAD_BIAS;
-      Dcv.v3.data = mask_bits(Dcv.v3.data, Dcv.v4.bitmask, badBias);
-      Dcv.v4.data = mask_bits(Dcv.v4.data, Dcv.v4.bitmask, badBias);
+      assymConf = MMS_CONST.Bitmask.ASYMM_CONF;
+      Dcv.v3.data = mask_bits(Dcv.v3.data, Dcv.v4.bitmask, assymConf);
+      Dcv.v4.data = mask_bits(Dcv.v4.data, Dcv.v4.bitmask, assymConf);
       
       % Compute average of all spin plane probes, ignoring data identified
       % as bad (NaN).
