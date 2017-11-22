@@ -158,7 +158,7 @@ try
 
       data3 = [C{2}, C{3}; ...
         C{2}, C{3}]; % Repeated data
-      [timeSort, indSort] = sort([time1; time2]); % Almost repeated time (5 us diff), then sorted
+      [timeSort, indSort] = sort([time1(:); time2(:)]); % Almost repeated time (5 us diff), then sorted
       [timeComb, indUniq] = unique(timeSort); % Ensure no duplicated values
       dataSort = data3(indSort, :); % Sorted data (based on time)
       dataOff = dataSort(indUniq, :); % Ensure no duplicated values (based on time)
