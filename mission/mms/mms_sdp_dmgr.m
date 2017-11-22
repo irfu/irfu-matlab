@@ -1557,7 +1557,15 @@ classdef mms_sdp_dmgr < handle
       MMS_CONST = DATAC.CONST;
       bitmask = mms_sdp_typecast('bitmask',bitor(Dce.e12.bitmask,Dce.e34.bitmask));
       Etmp.e12 = mask_bits(Etmp.e12, bitmask, MMS_CONST.Bitmask.SWEEP_DATA);
-      Etmp.e34 = mask_bits(Etmp.e34, bitmask, MMS_CONST.Bitmask.SWEEP_DATA);   
+      Etmp.e34 = mask_bits(Etmp.e34, bitmask, MMS_CONST.Bitmask.SWEEP_DATA);
+      % Ensure no MANUEVERS or BAD_BIAS (eclipse) data is used by SITL. For
+      % instace 2017/11/19T14.50 was selected as interesting electric
+      % field, but it is only a moon eclipse. (Second time SITL selected a
+      % moon eclipse as interesting).
+      bits = bitor(MMS_CONST.Bitmask.MANEUVERS, MMS_CONST.Bitmask.BAD_BIAS);
+      Etmp.e12 = mask_bits(Etmp.e12, bitmask, bits);
+      Etmp.e34 = mask_bits(Etmp.e34, bitmask, bits);
+      
       dE = mms_sdp_despin(Etmp.e12, Etmp.e34, Phase.data,...
         DeltaOffR.data(:,1) + DeltaOffR.data(:,2)*1j);
       % Get DSL offsets
@@ -1645,18 +1653,23 @@ classdef mms_sdp_dmgr < handle
     
     function res = get.sc_pot(DATAC)
       if ~isempty(DATAC.sc_pot), res = DATAC.sc_pot; return, end
-      
+
       Probe2sc_pot = DATAC.probe2sc_pot;
       if isempty(Probe2sc_pot)
         errStr='Bad PROBE2SC_POT input, cannot proceed.';
         irf.log('critical',errStr); error(errStr);
       end
-      
+      MMS_CONST = DATAC.CONST;
       % Get probe to plasma potential (offs.p2p) for this time interval
       offs = mms_sdp_get_offset(DATAC.scId, DATAC.procId, Probe2sc_pot.time, DATAC.tmMode);
       DATAC.calFile = offs.calFile; % Store name of cal file used.
       scPot = - Probe2sc_pot.data(:) .* offs.shortening(:) + offs.p2p;
-      
+      % Ensure no MANUEVERS or BAD_BIAS (eclipse) data is used by SITL,
+      % however keep individual probes should anyone be interest in the
+      % data.
+      bits = bitor(MMS_CONST.Bitmask.MANEUVERS, MMS_CONST.Bitmask.BAD_BIAS);
+      scPot = mask_bits(scPot, Probe2sc_pot.bitmask, bits);
+
       DATAC.sc_pot = struct('time',Probe2sc_pot.time,'data',scPot,...
         'bitmask',Probe2sc_pot.bitmask);
       res = DATAC.sc_pot;
@@ -2017,27 +2030,22 @@ classdef mms_sdp_dmgr < handle
       % as bad (NaN).
       avPot = irf.nanmean([Dcv.v1.data, Dcv.v2.data, Dcv.v3.data, Dcv.v4.data], 2);
       
-      % Combine bitmask so that bit 0 = 0 (either four or two probes was
-      % used), bit 0 = 1 (either one probe or no probe (if no probe => NaN
-      % output in data). The other bits are a bitor comination of those
-      % probes that were used (i.e. bitmask = 2 (dec), would mean at least
-      % one probe that was used).
-      badBits = false(length(Dcv.v1.bitmask), 4);
-      badBits(:,1) = isnan(Dcv.v1.data); badBits(:,2) = isnan(Dcv.v2.data);
-      badBits(:,3) = isnan(Dcv.v3.data); badBits(:,4) = isnan(Dcv.v4.data);
-      % Start with bit 0
-      bitmask = uint16(sum(badBits,2)>=3); % Three or more badBits on each row.
-      % Extract probe bitmask, excluding the lowest bit (signal off)
+      % Combine bitmask, of the probe(-s) used to derive avPot. By first
+      % identifying probes which were not used (NaN valued).
+      probeUsed = ~isnan([Dcv.v1.data, Dcv.v2.data, Dcv.v3.data, Dcv.v4.data]);
+      % Start with no bits set
+      bitmask = mms_sdp_typecast('bitmask', zeros(size(Dcv.v1.bitmask)));
+      % Extract bitmask of each probe, excluding the lowest bit (signal off)
       bits = intmax(class(bitmask)) - MMS_CONST.Bitmask.SIGNAL_OFF;
-      vBit = zeros(length(Dcv.v1.bitmask),4,'like',MMS_CONST.Bitmask.SIGNAL_OFF);
+      vBit = mms_sdp_typecast('bitmask', zeros(length(Dcv.v1.bitmask),4));
       vBit(:,1) = bitand(Dcv.v1.bitmask, bits);
       vBit(:,2) = bitand(Dcv.v2.bitmask, bits);
       vBit(:,3) = bitand(Dcv.v3.bitmask, bits);
       vBit(:,4) = bitand(Dcv.v4.bitmask, bits);
       % Combine bitmasks with bitor of times when probe was used to derive
-      % mean. (I.e. not marked by badBits).
+      % mean. (i.e. when probeUsed was true).
       for ii=1:4
-        bitmask(~badBits(:,ii)) = bitor(bitmask(~badBits(:,ii)), vBit(~badBits(:,ii),ii));
+        bitmask(probeUsed(:,ii)) = bitor(bitmask(probeUsed(:,ii)), vBit(probeUsed(:,ii),ii));
       end
       
       probe2sc_pot = struct('time',Dcv.time,'data',avPot,'bitmask',bitmask);
