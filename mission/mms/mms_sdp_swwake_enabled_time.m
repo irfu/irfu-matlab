@@ -13,7 +13,7 @@ calStr = 'regions';
 calPath = [ENVIR.CAL_PATH_ROOT, filesep 'mms', num2str(scId), filesep, ...
     'edp', filesep, 'sdp', filesep, calStr];
 calFiles = ['mms', num2str(scId), '_edp_sdp_', calStr, '_*v*.txt' ];
-list = dir(calPath, filesep, calFiles);
+list = dir([calPath, filesep, calFiles]);
 if(~isempty(list))
   % Found at least one cal file. Use the last version, ie. end of list.
   list = list(end);
