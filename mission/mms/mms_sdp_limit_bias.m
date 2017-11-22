@@ -94,11 +94,11 @@ switch scId
        og.max(14)  = -3.9; og.min(14) = -4.1;
        ig.max(14)  = -7.9; ig.min(14) = -8.1;
     timeTmp(15,:) = [2017 05 24 19 32 01];
-       dac.max(15) = -65; dac.min(15) = -95; %p3 -70, p1,2 -80, p4 -90
+       dac.max(15) = -10; dac.min(15) = -200; %p3 -70, p1,2 -80, p4 -90
        og.max(15)  = -3.9; og.min(15) = -4.1;
        ig.max(15)  = -7.9; ig.min(15) = -8.1;
     timeTmp(16,:) = [2017 06 24 19 32 01];
-       dac.max(16) = -65; dac.min(16) = -95;
+       dac.max(16) = -10; dac.min(16) = -200;
        og.max(16)  = -3.9; og.min(16) = -4.1;
        ig.max(16)  = -7.9; ig.min(16) = -8.1;
 
@@ -157,11 +157,11 @@ switch scId
        og.max(12)  = -3.9; og.min(12) = -4.1;
        ig.max(12)  = -7.9; ig.min(12) = -8.1;
     timeTmp(13,:) = [2017 05 24 22 48 09]; % p1 -90, p234 -60
-       dac.max(13) = -55; dac.min(13) = -95;
+       dac.max(13) = -10; dac.min(13) = -200;
        og.max(13)  = -3.9; og.min(13) = -4.1;
        ig.max(13)  = -7.9; ig.min(13) = -8.1;
     timeTmp(14,:) = [2017 06 24 22 48 09];
-       dac.max(14) = -55; dac.min(14) = -95;
+       dac.max(14) = -10; dac.min(14) = -200;
        og.max(14)  = -3.9; og.min(14) = -4.1;
        ig.max(14)  = -7.9; ig.min(14) = -8.1;
 
@@ -222,11 +222,11 @@ switch scId
        og.max(12)  = -3.9; og.min(12) = -4.1;
        ig.max(12)  = -7.9; ig.min(12) = -8.1;
     timeTmp(13,:) = [2017 05 25 00 56 16]; %p1 -80, p2 -90, p3 -100, p4 -110
-       dac.max(13) = -75; dac.min(13) = -115;
+       dac.max(13) = -10; dac.min(13) = -200;
        og.max(13)  = -3.9; og.min(13) = -4.1;
        ig.max(13)  = -7.9; ig.min(13) = -8.1;
     timeTmp(14,:) = [2017 06 25 00 56 16];
-       dac.max(14) = -75; dac.min(14) = -115;
+       dac.max(14) = -10; dac.min(14) = -200;
        og.max(14)  = -3.9; og.min(14) = -4.1;
        ig.max(14)  = -7.9; ig.min(14) = -8.1;
 
@@ -267,11 +267,11 @@ switch scId
         og.max(8)  = -3.9;  og.min(8) = -4.1;
         ig.max(8)  = -7.9;  ig.min(8) = -8.1;
     timeTmp(9,:) = [2017 05 25 03 00 55]; % p1234 -130
-        dac.max(9) = -125; dac.min(9) = -135;
+        dac.max(9) = -10; dac.min(9) = -200;
         og.max(9)  = -3.9;  og.min(9) = -4.1;
         ig.max(9)  = -7.9;  ig.min(9) = -8.1;
     timeTmp(10,:) = [2017 06 25 03 00 55]; 
-        dac.max(10) = -125; dac.min(10) = -135;
+        dac.max(10) = -10; dac.min(10) = -200;
         og.max(10)  = -3.9;  og.min(10) = -4.1;
         ig.max(10)  = -7.9;  ig.min(10) = -8.1;
 
