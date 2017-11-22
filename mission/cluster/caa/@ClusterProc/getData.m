@@ -213,7 +213,7 @@ save_list = '';
 
 old_pwd = pwd;
 cd(cp.sp) %enter the storage directory
-if cp.sp~='.', irf_log('save',['Storage directory is ' cp.sp]), end
+if cp.sp~='.', irf_log('save',[quantity ' Storage directory is ' cp.sp]), end
    
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % ec - correct raw Electric field
