@@ -1,8 +1,9 @@
 function out = mms_region_times(varargin)
-%MMS_REGION_INTERVALS Return times when MMS is in SW, MSH, or other
+%MMS_REGION_TIMES Return times when MMS is in SW, MSH, or other
 %
 % Input:
-%     Tint - Time interval over which regions are identified
+%     Tint - Time interval over which regions are identified, TSeries or
+%     string.
 %
 % Options: 
 %     SWVx - set solar wind speed threshold
@@ -19,6 +20,10 @@ function out = mms_region_times(varargin)
 %     region (flag values: 0 - Magnetosheath, 1 - Solar wind, 2 - other, usually magnetosphere)
 %
 % Notes: function uses 4 spacecraft average
+% 
+% Example:
+%     roiList = mms_sci_roi();
+%     outTS = mms_region_times(roiList(14,:),'plot',1,'table',1,'SWTe',30)
 
 % Check the input
 if nargin == 0,
@@ -143,12 +148,20 @@ c_eval('Vefpi? = Vefpi?.resample(EpochS,''median'');',ic)
 
 % Take averages
 B = (B1+B2+B3+B4)/4;
-Nifpi = (Nifpi1+Nifpi2+Nifpi3+Nifpi4)/4;
-Vifpi = (Vifpi1+Vifpi2+Vifpi3+Vifpi4)/4;
-Tifpi = (Tifpi1+Tifpi2+Tifpi3+Tifpi4)/4;
-Nefpi = (Nefpi1+Nefpi2+Nefpi3+Nefpi4)/4;
-Vefpi = (Vefpi1+Vefpi2+Vefpi3+Vefpi4)/4;
-Tefpi = (Tefpi1+Tefpi2+Tefpi3+Tefpi4)/4;
+c_eval('idxnotnan? = ~isnan(Nifpi?.data);',ic)
+idxnotnan = idxnotnan1+idxnotnan2+idxnotnan3+idxnotnan4;
+c_eval('Nifpi?.data(~idxnotnan?) = 0.0;',ic);
+c_eval('Vifpi?.data(~idxnotnan?,:) = 0.0;',ic);
+c_eval('Tifpi?.data(~idxnotnan?) = 0.0;',ic);
+c_eval('Nefpi?.data(~idxnotnan?) = 0.0;',ic);
+c_eval('Vefpi?.data(~idxnotnan?,:) = 0.0;',ic);
+c_eval('Tefpi?.data(~idxnotnan?) = 0.0;',ic);
+Nifpi = irf.ts_scalar(EpochS,(Nifpi1.data+Nifpi2.data+Nifpi3.data+Nifpi4.data)./idxnotnan);
+Vifpi = irf.ts_vec_xyz(EpochS,(Vifpi1.data+Vifpi2.data+Vifpi3.data+Vifpi4.data)./[idxnotnan idxnotnan idxnotnan]);
+Tifpi = irf.ts_scalar(EpochS,(Tifpi1.data+Tifpi2.data+Tifpi3.data+Tifpi4.data)./idxnotnan);
+Nefpi = irf.ts_scalar(EpochS,(Nefpi1.data+Nefpi2.data+Nefpi3.data+Nefpi4.data)./idxnotnan);
+Vefpi = irf.ts_vec_xyz(EpochS,(Vefpi1.data+Vefpi2.data+Vefpi3.data+Vefpi4.data)./[idxnotnan idxnotnan idxnotnan]);
+Tefpi = irf.ts_scalar(EpochS,(Tefpi1.data+Tefpi2.data+Tefpi3.data+Tefpi4.data)./idxnotnan);
 
 % Find solar wind and magnetosheath change times
 if length(SWn) < 2
@@ -262,7 +275,7 @@ irf_legend(h(4),'(d)',[0.99 0.98],'color','k','fontsize',12)
 
 h(5)=irf_panel('Te');
 irf_plot(h(5),Tefpi);
-ylabel(h(5),'T_{i} (eV)','Interpreter','tex');
+ylabel(h(5),'T_{e} (eV)','Interpreter','tex');
 irf_legend(h(5),'(e)',[0.99 0.98],'color','k','fontsize',12)
 
 h(6)=irf_panel('SWF1');
