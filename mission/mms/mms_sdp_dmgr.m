@@ -836,15 +836,15 @@ classdef mms_sdp_dmgr < handle
       end
       
       function chk_maneuvers()
-        % Check to see if any maneuvers are planned to occur during the
-        % interval we have data. If so, then bitmask it.
+        % Check to see if any maneuvers or eclipse are planned to occur
+        % during the interval we have data. If so, then bitmask it.
         if isempty(DATAC.dce)
           irf.log('warning','Empty DCE, cannot proceed')
           return
         end
         Tint = irf.tint(DATAC.dce.time(1), DATAC.dce.time(end));
         try
-          [maneuvers, timeline] = mms_maneuvers(Tint, DATAC.scId);
+          [maneuvers, timeline, eclipse] = mms_maneuvers(Tint, DATAC.scId);
           scIdStr = sprintf('mms%d', DATAC.scId);
           if(isfield(maneuvers, scIdStr) && ...
               ~isempty(maneuvers.(scIdStr)))
@@ -856,6 +856,31 @@ classdef mms_sdp_dmgr < handle
                 maneuvers.(scIdStr){ii}.stop.toUtc]);
               ind = (DATAC.dce.time >= maneuvers.(scIdStr){ii}.start.ttns ...
                 & DATAC.dce.time <= maneuvers.(scIdStr){ii}.stop.ttns);
+              for iSen = 1:2:numel(sensors)
+                senA = sensors{iSen};  senB = sensors{iSen+1};
+                senE = ['e' senA(2) senB(2)]; % E-field sensor
+                DATAC.dcv.(senA).bitmask(ind) = ...
+                    bitor(DATAC.dcv.(senA).bitmask(ind), bits);
+                DATAC.dcv.(senB).bitmask(ind) = ...
+                  bitor(DATAC.dcv.(senB).bitmask(ind), bits);
+                DATAC.dce.(senE).bitmask(ind) = ...
+                  bitor(DATAC.dce.(senE).bitmask(ind), bits);
+              end
+            end
+            DATAC.timelineXML = timeline;
+          else
+            irf.log('debug', 'No maneuvers found during data interval.');
+          end
+          if(isfield(eclipse, scIdStr) && ...
+              ~isempty(eclipse.(scIdStr)))
+            irf.log('notice', 'Some eclipse found during data interval');
+            bits = MMS_CONST.Bitmask.ECLIPSE;
+            for ii=1:length(eclipse.(scIdStr))
+              irf.log('notice', ['Bitmasking eclipse: ', ...
+                eclipse.(scIdStr){ii}.start.toUtc, '/', ...
+                eclipse.(scIdStr){ii}.stop.toUtc]);
+              ind = (DATAC.dce.time >= eclipse.(scIdStr){ii}.start.ttns ...
+                & DATAC.dce.time <= eclipse.(scIdStr){ii}.stop.ttns);
               for iSen = 1:2:numel(sensors)
                 senA = sensors{iSen};  senB = sensors{iSen+1};
                 senE = ['e' senA(2) senB(2)]; % E-field sensor
@@ -1558,11 +1583,11 @@ classdef mms_sdp_dmgr < handle
       bitmask = mms_sdp_typecast('bitmask',bitor(Dce.e12.bitmask,Dce.e34.bitmask));
       Etmp.e12 = mask_bits(Etmp.e12, bitmask, MMS_CONST.Bitmask.SWEEP_DATA);
       Etmp.e34 = mask_bits(Etmp.e34, bitmask, MMS_CONST.Bitmask.SWEEP_DATA);
-      % Ensure no MANUEVERS or BAD_BIAS (eclipse) data is used by SITL. For
+      % Ensure no MANUEVERS or ECLIPSE data is used by SITL. For
       % instace 2017/11/19T14.50 was selected as interesting electric
       % field, but it is only a moon eclipse. (Second time SITL selected a
       % moon eclipse as interesting).
-      bits = bitor(MMS_CONST.Bitmask.MANEUVERS, MMS_CONST.Bitmask.BAD_BIAS);
+      bits = bitor(MMS_CONST.Bitmask.MANEUVERS, MMS_CONST.Bitmask.ECLIPSE);
       Etmp.e12 = mask_bits(Etmp.e12, bitmask, bits);
       Etmp.e34 = mask_bits(Etmp.e34, bitmask, bits);
       
@@ -1664,10 +1689,10 @@ classdef mms_sdp_dmgr < handle
       offs = mms_sdp_get_offset(DATAC.scId, DATAC.procId, Probe2sc_pot.time, DATAC.tmMode);
       DATAC.calFile = offs.calFile; % Store name of cal file used.
       scPot = - Probe2sc_pot.data(:) .* offs.shortening(:) + offs.p2p;
-      % Ensure no MANUEVERS or BAD_BIAS (eclipse) data is used by SITL,
+      % Ensure no MANUEVERS or ECLIPSE data is used by SITL,
       % however keep individual probes should anyone be interest in the
       % data.
-      bits = bitor(MMS_CONST.Bitmask.MANEUVERS, MMS_CONST.Bitmask.BAD_BIAS);
+      bits = bitor(MMS_CONST.Bitmask.MANEUVERS, MMS_CONST.Bitmask.ECLIPSE);
       scPot = mask_bits(scPot, Probe2sc_pot.bitmask, bits);
 
       DATAC.sc_pot = struct('time',Probe2sc_pot.time,'data',scPot,...

@@ -1,12 +1,14 @@
-function [maneuvers, fileInterval] = mms_read_timeline(xmlFile, scIdstr)
-% MMS_READ_TIMELINE get maneuver information from mms timeline xml files
-%	[maneuvers, fileInfo] = MMS_READ_TIMELINE(xmlFile, scIdstr) reads the
-%   FDOA xmlFile and extract maneuvers for scIdstr.
+function [maneuvers, fileInterval, eclipse] = mms_read_timeline(xmlFile, scIdstr)
+% MMS_READ_TIMELINE get maneuver and eclipse information from mms timeline
+% xml files.
+%	[maneuvers, fileInfo, eclipse] = MMS_READ_TIMELINE(xmlFile, scIdstr)
+% reads the FDOA xmlFile and extract maneuvers and optionally eclipses for 
+% the selected scIdstr.
 %
 %   Note: This function uses XPath directly to extract the interested
-%   maneuver information from the FDOA xml files and is thefore less
-%   general purpose then things like XML2STRUCT. Should FDOA change their
-%   file structure this function may require changes. The time required for
+%   information from the FDOA xml files and is thefore less general purpose
+%   than things like XML2STRUCT. Should FDOA change their file structure
+%   this function may require changes. The time required for
 %   one xml file to be processed is greatly reduces compared with
 %   xml2struct, (0.042 seconds as opposed to 24.93 seconds).
 %
@@ -21,6 +23,8 @@ function [maneuvers, fileInterval] = mms_read_timeline(xmlFile, scIdstr)
 %       .mms3      = corresponding on MMS3.
 %       .mms4      = corresponding on MMS4.
 %     fileInterval = irf.tint time interval of file coverage.
+%   Optional output:
+%     eclipse      = struct containing similar cells to maneuvers.
 %
 %   Example:
 %
@@ -45,7 +49,7 @@ else
   irf.log('warning', 'scId not specified, processing all MMS 1234.');
   scIdstr='1234';
 end
-nargoutchk(1,2);
+nargoutchk(1,3);
 
 irf.log('debug', ['Loading timeline file: ', xmlFile,'.']);
 
@@ -96,6 +100,27 @@ for scId=1:length(scIdstr)
     stopTimeStr = char(childNode.getElementsByTagName('stoptime').item(0).getTextContent);
     % Tint interval
     maneuvers.(['mms',scIdstr(scId)]){ii+1,1} = irf.tint(convertTime(startTimeStr), convertTime(stopTimeStr));
+  end
+  if nargout>=3
+    % Eclipse information was also requested
+    query = sprintf('timeline/node[@id=''Predicted Shadows (FDOA-13)'']/node[@id=''Shadow - Spacecraft %s'']/event', scIdstr(scId));
+    expr = xpath.compile(query);
+    res = expr.evaluate(doc, XPathConstants.NODESET);
+    eclipseLen = res.getLength();
+    if(eclipseLen==0)
+      irf.log('warning',[xmlFile,' did not contain any eclipses for MMS',scIdstr(scId),'.']);
+    end
+    eclipse.(['mms',scIdstr(scId)]) = cell(eclipseLen,1);
+    for ii = 0:eclipseLen-1
+      % Note: Java start with index 0.
+      childNode = res.item(ii).getChildNodes;
+      % Get start time of eclipse
+      startTimeStr = char(childNode.getElementsByTagName('starttime').item(0).getTextContent);
+      % Get stop time of eclipse
+      stopTimeStr = char(childNode.getElementsByTagName('stoptime').item(0).getTextContent);
+      % Tint interval
+      eclipse.(['mms',scIdstr(scId)]){ii+1,1} = irf.tint(convertTime(startTimeStr), convertTime(stopTimeStr));
+    end
   end
 end
 
