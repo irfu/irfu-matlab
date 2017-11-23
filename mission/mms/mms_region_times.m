@@ -113,7 +113,6 @@ if isempty(B1)
     c_eval('B? = mms.get_data(''B_dmpa_dfg_srvy_ql'',Tint,?);',ic)
 end
 c_eval('Vifpi? = mms.get_data(''Vi_dbcs_fpi_fast_l2'',Tint,?);',ic)
-Vifpi1
 if isempty(Vifpi1)
 	c_eval('Nifpi? = mms.get_data(''Ni_fpi_ql'',Tint,?);',ic)
   c_eval('Vifpi? = mms.get_data(''Vi_dbcs_fpi_ql'',Tint,?);',ic)
@@ -211,7 +210,7 @@ end
 
 idxMS = irf.ts_scalar(EpochS,2*single(idxMS));
 idxSWf = irf.ts_scalar(EpochS,single(idxSWf));
-idxfinal = irf.ts_scalar(B.time,idxSWf.data+idxMS.data);
+idxfinal = irf.ts_scalar(B.time,abs(idxSWf.data+idxMS.data-2));
 idxt = abs(diff(idxfinal.data)) > 0.5;
 times = [(Tint(1)+-900); EpochS(idxt)+10];
 idxx = idxfinal.data([true; idxt]);
@@ -286,7 +285,7 @@ hold(h(8),'off')
 irf_zoom(h(8),'y',[0 2.2]);
 ylabel(h(8),'Flag','Interpreter','tex');
 irf_legend(h(8),'(h)',[0.99 0.98],'color','k','fontsize',12)
-irf_legend(h(8),'0 - MSH, 1 - SW, 2 - other',[0.5 0.98],'color','k','fontsize',12)
+irf_legend(h(8),'0 - other, 1 - SW, 2 - MSH',[0.5 0.1],'color','k','fontsize',12)
 
 irf_plot_axis_align(h(1:8));
 irf_zoom(h(1:8),'x',Tint);
@@ -295,7 +294,7 @@ end
 
 if savetable,
   fid = fopen(['mms_region_times_' irf_fname(Tint.start.epochUnix,3) '_v0.0.0.txt'],'w');
-  fprintf(fid,'%s\n','% UTC time [yyyy-mm-ddThh:mm:ss.mmmuuunnnZ]     Region Flag [0 - MSH, 1 - SW, 2 - other], TAB Separated');
+  fprintf(fid,'%s\n','% UTC time [yyyy-mm-ddThh:mm:ss.mmmuuunnnZ]     Region Flag [0 - other, 1 - SW, 2 - MSH], TAB Separated');
   for ii = 1:length(out.data)
     fprintf(fid,'%s\t%.0f\n',out.time(ii).utc(),out.data(ii));
   end
