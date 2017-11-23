@@ -13,6 +13,7 @@
 # Updated: 2015/12/03, new return codes 198 if I/O error reading zlib compressed cdf file (mainly aspoc), and 197 if error reading DEFATT ascii file.
 # Updated: 2015/12/16, new return code 196 if L1b dce file in empty ("Epoch" variable contains zero Written records).
 # Updated: 2017/01/09, reading XML files (containing information about manuevers) require jvm.
+# Updated: 2017/11/23, force first file argument to Matlab to be the lowest datalevel source file (L1b dce) as this is used to determine log name and path.
 #
 # Usage: place script in the same folder as has irfu-matlab as a subfolder, then run
 #  "./script.sh <mmsX_dce_filename> <mmsX_dcv_filename> <mmsX_101_filename> <mmsX_10e_filename> <mmsX_105_filename>", with the following
@@ -22,7 +23,7 @@
 #    <mmsX_***_101_filename.cdf> = Filename of HK 101 data (with sunpulse) to be processed for 'xyz'. Including path and extention.
 #    <mmsX_***_105_filename.cdf> = Filename of HK 105 data to be processed for 'xyz'. Including path and extention.
 #    <mmsX_***_10e_filename.cdf> = Filename of HK 10E data (with guard settings) to be processed for 'xyz'. Including path and extention.
-#    <mmsX_***_aspoc_filename.cdf> = Filename of ASPOC L2 srvy data (with aspoc status) to be used in processing for 'xyz'. Including path and extention. (Optional input). 
+#    <mmsX_***_aspoc_filename.cdf> = Filename of ASPOC L2 srvy data (with aspoc status) to be used in processing for 'xyz'. Including path and extention. (Optional input).
 # if using multiple HK input files, separate these by a colon (:) without additional spaces,
 # ie. two HK 101 data files would be the following
 # <mmsX_***_101_filename.cdf>:<mmsX_***_101_filename2.cdf>
@@ -69,7 +70,7 @@ if [ ${#} -lt 2 ] || [ ${#} -gt 6 ] ; then
 fi
 
 # test that Matlab binary (startup script) is executable
-if [ ! -x $MATLAB_EXE ] ; then 
+if [ ! -x $MATLAB_EXE ] ; then
 	echo "ERROR: Matlab [$MATLAB_EXE] not found/not executable"
 	exit 166  # SDC-defined error code for "incorrect usage"
 fi
@@ -86,8 +87,8 @@ if [ "$awkExist"==true ] && [ "$cdfdumpExist"==true ]; then
          if [[ $var =~ mms[1-4]_edp_(fast|slow|brst|comm)_l1b_dce[0-9]{0,3}_20[0-9]{6,12}_v[0-9]+.[0-9]+.[0-9]+.cdf ]]; then
             # File matches the MMS L1b dce file naming convention.
             # Dump one record of variable "Epoch" in the file along with some metadata
-	    # awk for line with "Written records  12345/12345(max)" and print only the 
-	    # number (before the "/" sign).
+            # awk for line with "Written records  12345/12345(max)" and print only the
+            # number (before the "/" sign).
             nrec=`$CDF_BASE/bin/cdfdump -dump data -recordrange "1,1" -vars "Epoch" $var | awk -F"[ /]+" '/Written/ {print $3}'`
             if [ "$nrec" == 0 ]; then
                exit 196
@@ -96,6 +97,23 @@ if [ "$awkExist"==true ] && [ "$cdfdumpExist"==true ]; then
       fi # if -f var
    done # for var
 fi # if awk & cdfdump exist
+
+# Re-order input arguments to ensure lowest datalevel file is the first argument
+# as this is used to determine where to write logs (name and path).
+for ((i=2;i<=$#;i++))
+do
+  echo ${!i}
+  if [ -f ${!i} ]; then
+    # It is a single file (not multiple hk, etc.), check pattern
+    if [[ ${!i} =~ mms[1-4]_edp_(fast|slow|brst|comm)_l1b_dce[0-9]{0,3}_20[0-9]{6,12}_v[0-9]+.[0-9]+.[0-9]+.cdf ]]; then
+      # File matches the MMS L1b dce, ie it is our lowest datalevel file.
+      # Set argument list with this as first argument.
+      before=$((i-1))
+      after=$((i+1))
+      set -- "${!i}" "${@:1:$before}" "${@:$after}"
+    fi
+  fi
+done
 
 # RUN Matlab and try to run mms_sdc_sdp_proc, and if any errors are caught
 # get file name of log file created, check if that file exist,
@@ -128,4 +146,3 @@ $MATLAB_EXE $MATLAB_FLAGS -r\
     exit(199);\
  end,\
  exit(0)"
-
