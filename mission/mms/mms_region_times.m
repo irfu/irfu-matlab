@@ -1,4 +1,4 @@
-function out = mms_region_intervals(varargin)
+function out = mms_region_times(varargin)
 %MMS_REGION_INTERVALS Return times when MMS is in SW, MSH, or other
 %
 % Input:
@@ -18,7 +18,7 @@ function out = mms_region_intervals(varargin)
 %     out - TSeries with times flags corresponding to the start of a new
 %     region (flag values: 0 - Magnetosheath, 1 - Solar wind, 2 - other, usually magnetosphere)
 %
-% Notes: function uses 4 spacecraft
+% Notes: function uses 4 spacecraft average
 
 % Check the input
 if nargin == 0,
