@@ -355,16 +355,35 @@ end % Main function
   end
 
   function fix_order_of_array_dimensions
-    for iDimension=3:4,
+%    oldPermute=true;
+%    if oldPermute
+    for iDimension=3:4
       indDatasets=find(cellfun(@(x) numel(size(x)),data(:))==iDimension); % find iDimension datasets
       for iDataset=1:numel(indDatasets)
-        if iDimension==3,
+        if iDimension==3
           data{indDatasets(iDataset)}=permute(data{indDatasets(iDataset)},[3 1 2]);
-        elseif iDimension==4,
+        elseif iDimension==4
           data{indDatasets(iDataset)}=permute(data{indDatasets(iDataset)},[4 3 1 2]);
         end
       end
     end
+%     else
+%       % NEW METHOD; TO BE TESTED
+%       for iDimension=3:4   %#ok<UNRCH>
+%         % Check if dimensions match expected (ignoring Depend_0) and that
+%         % it is not a single vector (which could be "Nx1").
+%         indDatasets = find(cellfun(@(x) all(x(:) > 1) && numel(x)==iDimension-1, info.Variables(:,2)));
+%         for iDataset=1:numel(indDatasets)
+%           if iDimension==3
+%             % permutate it to N x m x n, where N corrsponds to record (ie Depend_0).
+%             data{indDatasets(iDataset)} = permute(data{indDatasets(iDataset)}, [3 1 2]);
+%           elseif iDimension==4
+%             data{indDatasets(iDataset)} = permute(data{indDatasets(iDataset)}, [4 3 1 2]);
+%           end
+%         end
+%       end
+%       % END OF NEW METHOD
+%     end
   end
 
   function update_variable_attributes_time % nested function
