@@ -165,11 +165,12 @@ for i = 1:nV % velocity (energy)
                 vzp = sqrt(vyp^2+vzp^2); % call it vzp
             else % get y and z for 2D
                 vyp = sum([vx,vy,vz].*yphat,2); % all MC points
-                vzp = dot([vx(1),vy(1),vz(1)],zphat); % only bin center
+                vzp = sum([vx,vy,vz].*zphat,2); % all MC points
             end
             
-            % If bin center outside allowed interval, set F to zero
-            if vzp < vzint(1) || vzp > vzint(2); F(i,j,k) = 0; end
+            % If "particle" is outside allowed interval, don't use point
+            usePoint = (vzp >= vzint(1) & vzp <= vzint(2));
+            
             
             if projDim == 1
                 vp = vxp;
@@ -184,9 +185,9 @@ for i = 1:nV % velocity (energy)
             % appropriate projection bin
             for l = 1:nMC
                 iVg = find(vp(l)>vg_edges,1,'last');
-                %                 % Add to closest bin if it falls outside
-                %                 if isempty(iVg) && vp(l)<vg_edges(1); iVg = 1; end
-                %                 if iVg == nVg+1 && vp(l)>vg_edges(end); iVg = nVg; end
+                % % Add to closest bin if it falls outside
+                % if isempty(iVg) && vp(l)<vg_edges(1); iVg = 1; end
+                % if iVg == nVg+1 && vp(l)>vg_edges(end); iVg = nVg; end
                 
                 if projDim == 2
                     iAzg = find(phip(l)>phig_edges,1,'last');
@@ -195,7 +196,7 @@ for i = 1:nV % velocity (energy)
                 end
                 
                 % add value to appropriate projection bin
-                if ~isempty(iAzg) && ~isempty(iVg) && (iAzg<nAzg+1 || iAzg==1) && iVg<nVg+1
+                if usePoint(l) && ~isempty(iAzg) && ~isempty(iVg) && (iAzg<nAzg+1 || iAzg==1) && iVg<nVg+1
                     Fg(iAzg,iVg) = Fg(iAzg,iVg)+F(i,j,k)*dtau(i,j,k)/dAg(iVg)/nMC;
                 end
             end
