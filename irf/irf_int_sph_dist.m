@@ -15,12 +15,12 @@ function [pst] = irf_int_sph_dist(F,v,phi,th,vg,varargin)
 %               will be 1D.
 %   'x'     -   axis that is not integrated along in 1D and x-axis
 %               (phig = 0) in 2D. x = [1,0,0] if omitted.
-%   'z'     -   Axis that is integrated along in 2D. Has no use in 1D.
-%               z = [0,0,1] if omitted.
+%   'z'     -   Axis that is integrated along in 2D. z = [0,0,1] if omitted.
 %   'nMC'   -   number of Monte Carlo iterations used for integration,
 %               default is 10.
 %   'vzint' -   set limits on the out-of-plane velocity interval in 2D and
 %               "transverse" velocity in 1D.
+%   'aint'  -   angular limit in degrees, can be combined with vzlim
 %
 %   Output is a structure that contains the fields:
 %   'F'     -   integrated flux. For 2D, F(end,:) contains no information
@@ -59,6 +59,7 @@ xphat = [1,0,0]; % axes projection is done against in 1D, x-axis in 2D
 zphat = [0,0,1]; % integrate along this axes in 2D, has no use in 1D
 nMC = 10; % number of Monte Carlo iterations
 vzint = [-inf,inf]; % limit on out-of-plane velocity
+aint = [-180,180]; % limit on out-of-plane velocity
 projDim = 1; % number of dimensions of the projection
 
 args = varargin;
@@ -80,6 +81,8 @@ while have_options
             nMC = args{2};
         case 'vzint'
             vzint = args{2};
+        case 'aint'
+            aint = args{2};
     end
     args = args(3:end);
     if isempty(args), break, end
@@ -159,18 +162,16 @@ for i = 1:nV % velocity (energy)
             
             % Get velocities in primed coordinate system
             vxp = sum([vx,vy,vz].*xphat,2); % all MC points
+            vyp = sum([vx,vy,vz].*yphat,2);
+            vzp = sum([vx,vy,vz].*zphat,2); % all MC points
+            vabsp = sqrt(vxp.^2+vyp.^2+vzp.^2);
             if projDim == 1 % get transverse velocity sqrt(vy^2+vz^2)
-                vzp = dot([vx(1),vy(1),vz(1)],zphat); % only bin center
-                vyp = dot([vx(1),vy(1),vz(1)],yphat); % only bin center
-                vzp = sqrt(vyp^2+vzp^2); % call it vzp
-            else % get y and z for 2D
-                vyp = sum([vx,vy,vz].*yphat,2); % all MC points
-                vzp = sum([vx,vy,vz].*zphat,2); % all MC points
+                vzp = sqrt(vyp.^2+vzp.^2); % call it vzp
             end
+            alpha = asind(vzp./vabsp);
             
             % If "particle" is outside allowed interval, don't use point
-            usePoint = (vzp >= vzint(1) & vzp <= vzint(2));
-            
+            usePoint = (vzp >= vzint(1) & vzp <= vzint(2) & alpha >= aint(1) & alpha <= aint(2));
             
             if projDim == 1
                 vp = vxp;
