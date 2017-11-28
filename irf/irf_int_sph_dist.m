@@ -31,13 +31,13 @@ function [pst] = irf_int_sph_dist(F,v,phi,th,vg,varargin)
 %               density).
 %   'vel'   -   first order moment of projected distribution divided by the
 %               zeroth order moment (flow velocity).
-%   
+%
 %   Description of method:
 %   The function goes through all instrument bins and finds the best match
 %   on the projection bin. The value in the projection bin, F, is updated
 %   as F = F+f*dTau/dA, where f is the instrument value in the bin, dTau is
 %   the volume element in velocity space of the instrument bin and dA is
-%   the area or line element in the projection bin. 
+%   the area or line element in the projection bin.
 %   An instrument bin can actually cover several projection bin and the
 %   value should be added to all those bins, scaled to the area the
 %   instrument bin covers of a given projection bin. This area is
@@ -45,7 +45,7 @@ function [pst] = irf_int_sph_dist(F,v,phi,th,vg,varargin)
 %   "particles" are generated somewhere inside the instrument bin, each
 %   assigned a fraction of f. The "particles" are then projected onto the
 %   line or plane.
-% 
+%
 %   See also: MMS.PLOT_INT_PROJECTION
 
 %   Written by: Andreas Johlander, andreasj@irfu.se
@@ -180,27 +180,23 @@ for i = 1:nV % velocity (energy)
                 phip(phip<0) = 2*pi+phip(phip<0);
             end
             
-            % not so good but better than throwing away data? Should be
-            % very rare anyway.
-            
             % Loop through MC points and add value of instrument bin to the
             % appropriate projection bin
             for l = 1:nMC
                 iVg = find(vp(l)>vg_edges,1,'last');
-                % Add to closest bin if it falls outside
-                if isempty(iVg) && vp(l)<vg_edges(1); iVg = 1; end
-                if iVg == nVg+1 && vp(l)>vg_edges(end); iVg = nVg; end
-                    
+                %                 % Add to closest bin if it falls outside
+                %                 if isempty(iVg) && vp(l)<vg_edges(1); iVg = 1; end
+                %                 if iVg == nVg+1 && vp(l)>vg_edges(end); iVg = nVg; end
+                
                 if projDim == 2
                     iAzg = find(phip(l)>phig_edges,1,'last');
                 else
                     iAzg = 1;
                 end
                 
-                try % add value to appropriate projection bin
+                % add value to appropriate projection bin
+                if ~isempty(iAzg) && ~isempty(iVg) && (iAzg<nAzg+1 || iAzg==1) && iVg<nVg+1
                     Fg(iAzg,iVg) = Fg(iAzg,iVg)+F(i,j,k)*dtau(i,j,k)/dAg(iVg)/nMC;
-                catch
-                    irf.log('w',['Something went wrong. iAzg = ',num2str(iAzg),',  iVg = ',num2str(iVg)])
                 end
             end
         end
