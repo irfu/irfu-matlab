@@ -64,7 +64,7 @@ else
     aperp(:,2) = a(:,2).*b0(:,3) - a(:,3).*b0(:,2);
     if rtrnTS,
       aperp = irf.ts_scalar(aTime,aperp(:,2));
-      alpha = irf.ts_scalar(b0Time,alpha(:,2));
+      alpha = irf.ts_scalar(aTime,alpha(:,2));
     end
 end
 
