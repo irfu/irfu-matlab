@@ -299,7 +299,6 @@ limits.og.name = 'InnerGuard bias limits ([max, min]) for good data.';
 limits.ig = TSeries(timeTT,[ig.max, ig.min]);
 limits.ig.name = 'OuterGuard bias limits ([max, min]) for good data.';
 
-
 % Help functions to verify sanity of limits.
   function verify_time(timeTT)
     % Verify time is monotonically increasing and not FillVal. This can
