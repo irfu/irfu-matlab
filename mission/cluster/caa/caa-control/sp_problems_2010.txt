@@ -53,7 +53,7 @@ Early in 02, C3 is too low by about 0.3 mV/m or so. C3 offset quite good mid-Feb
   skinny little wake. Added lobe_wake to manual_problems and reprocessed.
 
 0327 0525-0810 something weird in C1 data
-  SPLIT interval not initially caught by Anders. Added to nsops as bad_p32 and reprocessed. 
+  SPLIT interval not initially caught by Anders. Added to nsops as bad_p32 and reprocessed.
 
 0330 04:32:18 (2 seconds) spike in C1
   bad packet. Added to nsops and reprocess.
@@ -78,6 +78,9 @@ Early in 02, C3 is too low by about 0.3 mV/m or so. C3 offset quite good mid-Feb
 0619 12-18 force to msphere offsets
 0621 12-6 force to msphere offsets
   Added to special_processing and ran special processing.
+
+0622 13:17:30 - 14:14:27 C3 increase noise in E due to EDI interference.
+  Added to ns_ops.
 
 0708 18-12+ should enable SW offsets
 0711 03-21 should enable SW offsets
@@ -149,10 +152,10 @@ From 2010-03: Wow, there are a lot of DAC problems on C4!!!
 0602 03:30 interesting natural signal
 0608 09:00 what's the matter with C1?
     Also: 0610 12:00, 0619 11:30, 0929 09:00
-    WHISPER signatures are unusually large at these times. 
+    WHISPER signatures are unusually large at these times.
     Not quite sure why.
 0601 00:00-12:30 missed wake? in the sheath? Odd.
-   Also 0607 06 , 0612 03 
+   Also 0607 06 , 0612 03
    Yes. this is a "cold ion" wake in the sheath.
    Clear nonsinusoidal wake signal (e.g. 2010-06-12 03:07).
    CIS reports about 4/cc at about 400 eV.
@@ -203,16 +206,3 @@ No data delivered for 2010-10-19.
 	Set this manually in c_efw_dsi_off, rerun summary plots.
 1110 18- should be starting to use solar wind offsets again
 	Set this manually in c_efw_dsi_off, rerun summary plots for rest of Nov and Dec.
-
-
-
-
-
-
-
-
-
-
-
-
-
