@@ -90,6 +90,7 @@ MMS_CONST.Bitmask.ASPOC_RUNNING          = mms_sdp_typecast('bitmask',64); % Bit
 MMS_CONST.Bitmask.ASYMM_CONF             = mms_sdp_typecast('bitmask',256); % Bit 9
 MMS_CONST.Bitmask.MANEUVERS              = mms_sdp_typecast('bitmask',512); % Bit 10
 MMS_CONST.Bitmask.SW_WAKE_REMOVED        = mms_sdp_typecast('bitmask',1024); % Bit 11
+MMS_CONST.Bitmask.ECLIPSE                = mms_sdp_typecast('bitmask',2048); % Bit 12
 
 MMS_CONST.Error = -Inf; % Indicates error in computation
 
