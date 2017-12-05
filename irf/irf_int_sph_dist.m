@@ -15,12 +15,12 @@ function [pst] = irf_int_sph_dist(F,v,phi,th,vg,varargin)
 %               will be 1D.
 %   'x'     -   axis that is not integrated along in 1D and x-axis
 %               (phig = 0) in 2D. x = [1,0,0] if omitted.
-%   'z'     -   Axis that is integrated along in 2D. Has no use in 1D.
-%               z = [0,0,1] if omitted.
+%   'z'     -   Axis that is integrated along in 2D. z = [0,0,1] if omitted.
 %   'nMC'   -   number of Monte Carlo iterations used for integration,
 %               default is 10.
 %   'vzint' -   set limits on the out-of-plane velocity interval in 2D and
 %               "transverse" velocity in 1D.
+%   'aint'  -   angular limit in degrees, can be combined with vzlim
 %
 %   Output is a structure that contains the fields:
 %   'F'     -   integrated flux. For 2D, F(end,:) contains no information
@@ -31,13 +31,13 @@ function [pst] = irf_int_sph_dist(F,v,phi,th,vg,varargin)
 %               density).
 %   'vel'   -   first order moment of projected distribution divided by the
 %               zeroth order moment (flow velocity).
-%   
+%
 %   Description of method:
 %   The function goes through all instrument bins and finds the best match
 %   on the projection bin. The value in the projection bin, F, is updated
 %   as F = F+f*dTau/dA, where f is the instrument value in the bin, dTau is
 %   the volume element in velocity space of the instrument bin and dA is
-%   the area or line element in the projection bin. 
+%   the area or line element in the projection bin.
 %   An instrument bin can actually cover several projection bin and the
 %   value should be added to all those bins, scaled to the area the
 %   instrument bin covers of a given projection bin. This area is
@@ -45,7 +45,7 @@ function [pst] = irf_int_sph_dist(F,v,phi,th,vg,varargin)
 %   "particles" are generated somewhere inside the instrument bin, each
 %   assigned a fraction of f. The "particles" are then projected onto the
 %   line or plane.
-% 
+%
 %   See also: MMS.PLOT_INT_PROJECTION
 
 %   Written by: Andreas Johlander, andreasj@irfu.se
@@ -59,6 +59,7 @@ xphat = [1,0,0]; % axes projection is done against in 1D, x-axis in 2D
 zphat = [0,0,1]; % integrate along this axes in 2D, has no use in 1D
 nMC = 10; % number of Monte Carlo iterations
 vzint = [-inf,inf]; % limit on out-of-plane velocity
+aint = [-180,180]; % limit on out-of-plane velocity
 projDim = 1; % number of dimensions of the projection
 
 args = varargin;
@@ -80,6 +81,8 @@ while have_options
             nMC = args{2};
         case 'vzint'
             vzint = args{2};
+        case 'aint'
+            aint = args{2};
     end
     args = args(3:end);
     if isempty(args), break, end
@@ -159,17 +162,16 @@ for i = 1:nV % velocity (energy)
             
             % Get velocities in primed coordinate system
             vxp = sum([vx,vy,vz].*xphat,2); % all MC points
+            vyp = sum([vx,vy,vz].*yphat,2);
+            vzp = sum([vx,vy,vz].*zphat,2); % all MC points
+            vabsp = sqrt(vxp.^2+vyp.^2+vzp.^2);
             if projDim == 1 % get transverse velocity sqrt(vy^2+vz^2)
-                vzp = dot([vx(1),vy(1),vz(1)],zphat); % only bin center
-                vyp = dot([vx(1),vy(1),vz(1)],yphat); % only bin center
-                vzp = sqrt(vyp^2+vzp^2); % call it vzp
-            else % get y and z for 2D
-                vyp = sum([vx,vy,vz].*yphat,2); % all MC points
-                vzp = dot([vx(1),vy(1),vz(1)],zphat); % only bin center
+                vzp = sqrt(vyp.^2+vzp.^2); % call it vzp
             end
+            alpha = asind(vzp./vabsp);
             
-            % If bin center outside allowed interval, set F to zero
-            if vzp < vzint(1) || vzp > vzint(2); F(i,j,k) = 0; end
+            % If "particle" is outside allowed interval, don't use point
+            usePoint = (vzp >= vzint(1) & vzp <= vzint(2) & alpha >= aint(1) & alpha <= aint(2));
             
             if projDim == 1
                 vp = vxp;
@@ -180,27 +182,23 @@ for i = 1:nV % velocity (energy)
                 phip(phip<0) = 2*pi+phip(phip<0);
             end
             
-            % not so good but better than throwing away data? Should be
-            % very rare anyway.
-            
             % Loop through MC points and add value of instrument bin to the
             % appropriate projection bin
             for l = 1:nMC
                 iVg = find(vp(l)>vg_edges,1,'last');
-                % Add to closest bin if it falls outside
-                if isempty(iVg) && vp(l)<vg_edges(1); iVg = 1; end
-                if iVg == nVg+1 && vp(l)>vg_edges(end); iVg = nVg; end
-                    
+                % % Add to closest bin if it falls outside
+                % if isempty(iVg) && vp(l)<vg_edges(1); iVg = 1; end
+                % if iVg == nVg+1 && vp(l)>vg_edges(end); iVg = nVg; end
+                
                 if projDim == 2
                     iAzg = find(phip(l)>phig_edges,1,'last');
                 else
                     iAzg = 1;
                 end
                 
-                try % add value to appropriate projection bin
+                % add value to appropriate projection bin
+                if usePoint(l) && ~isempty(iAzg) && ~isempty(iVg) && (iAzg<nAzg+1 || iAzg==1) && iVg<nVg+1
                     Fg(iAzg,iVg) = Fg(iAzg,iVg)+F(i,j,k)*dtau(i,j,k)/dAg(iVg)/nMC;
-                catch
-                    irf.log('w',['Something went wrong. iAzg = ',num2str(iAzg),',  iVg = ',num2str(iVg)])
                 end
             end
         end

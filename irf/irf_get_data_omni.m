@@ -34,6 +34,9 @@ function f = irf_get_data_omni( tint, parameter , database)
 %               'ae'    - AE index
 %               'al'    - AL index
 %               'au'    - AL index
+%               'imfid' - Spacecraft ID for IMF, 50=IMP8, 51=WIND,
+%                         60=Geotail, 71=ACE
+%               'swid'  - Spacecraft ID for SW
 %
 % f=IRF_GET_DATA_OMNI(tint,parameter,database) download from specified database
 %
@@ -189,6 +192,8 @@ for jj=1:length(iStart)
 		case 'kp',     varOmni2=38;varOmni1min=-1;
 		case 'pc',     varOmni2=51;varOmni1min=44;
 		case 'f10.7',  varOmni2=50;varOmni1min=-1;
+        case 'imfid',  varOmni2=-1;varOmni1min= 4;
+        case 'swid',   varOmni2=-1;varOmni1min= 5;
 		otherwise,     varOmni2=0 ;varOmni1min=-1;
 	end
 	if strcmp(dataSource,'omni2'),
