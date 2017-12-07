@@ -60,9 +60,6 @@ else
       sw.time(end+1) = EpochTT('2017-08-31T19:00:00.000000000Z').ttns; sw.wake(end+1) = 1; % Enable for one hour (S/W interactions seen in data).
       sw.time(end+1) = EpochTT('2017-08-31T19:59:59.000000000Z').ttns; sw.wake(end+1) = 1;   % (enabled to a second before change)
       sw.time(end+1) = EpochTT('2017-08-31T20:00:00.000000000Z').ttns; sw.wake(end+1) = 0; % Disabled until further notice.
-  % TEST TIMES FOR MMSdevel only
-      sw.time(end+1) = EpochTT('2017-10-08T23:59:59.000000000Z').ttns; sw.wake(end+1) = 0;   % (disabled to a second before change)
-      sw.time(end+1) = EpochTT('2017-10-09T00:00:00.000000000Z').ttns; sw.wake(end+1) = 1; % Enable from this point on wards
 
       sw.time(end+1) = EpochTT('2057-08-31T00:00:00.000000000Z').ttns; sw.wake(end+1) = sw.wake(end); % (repeat last entry until end of time...)
     otherwise
