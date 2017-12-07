@@ -247,11 +247,11 @@ classdef PDist < TSeries
         if isempty(args), break, end    
       end
 
-      phi = TSeries(obj.time,obj.depend{1,2});
-      azimuthal = phi.data*pi/180;      
+      phi = TSeries(obj.time, obj.phi); % FIXME: Why is it made into a TSeries? Could it not be simply repmat?
+      azimuthal = phi.data*pi/180;
       
-      theta = obj.depend{1,3};
-      polar = repmat(theta*pi/180,obj.length,1);            
+      theta = obj.theta;
+      polar = repmat(theta*pi/180,obj.length,1);
       
       x = nan(obj.length,size(azimuthal,2),size(polar,2));
       y = nan(obj.length,size(azimuthal,2),size(polar,2));
@@ -897,11 +897,23 @@ classdef PDist < TSeries
           error('Species not supported.')
       end 
     end
-    function [e, indE] = energy(obj)
-      % Get energy of object and its column number in data
-      indE = find(cellfun(@(x) strcmp(x,'energy'),obj.representation));
-      e = obj.depend{indE};
-      if(nargout>1), indE=indE+1; end % If requested return its column number in the data (+1 since first column is time).
+    function [en, indEn] = energy(obj)
+      % Get energy (Depend_i) of object and its column number (i) in data
+      indEn = find(cellfun(@(x) strcmp(x,'energy'),obj.representation));
+      en = obj.depend{indEn};
+      if(nargout>1), indEn=indEn+1; end % If requested return its column number in the data (+1 since first column is time).
+    end
+    function [ph, indPh] = phi(obj)
+      % Get phi (Depend_i) of object and its column number (i) in data
+      indPh = find(cellfun(@(x) strcmp(x,'phi'),obj.representation));
+      ph = obj.depend{indPh};
+      if(nargout>1), indPh=indPh+1; end % If requested return its column number in the data (+1 since first column is time).
+    end
+    function [th, indTh] = theta(obj)
+      % Get phi (Depend_i) of object and its column number (i) in data
+      indTh = find(cellfun(@(x) strcmp(x,'theta'),obj.representation));
+      th = obj.depend{indTh};
+      if(nargout>1), indTh=indTh+1; end % If requested return its column number in the data (+1 since first column is time).
     end
     function moms = moments(obj,varargin)
       % MOMENTS compute moments from the FPI particle phase-space densities 
