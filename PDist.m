@@ -480,7 +480,7 @@ classdef PDist < TSeries
       
       PD = obj;
       PD.data_ = tmpData;
-      PD.depend{2} = tmpPA; 
+      PD.depend{indPitch-1} = tmpPA;
     end
     function PD = elim(obj, eint)
       % Limit PD based on energies in eint
@@ -531,7 +531,7 @@ classdef PDist < TSeries
 
       PD = obj;
       PD.data_ = tmpData;
-      PD.depend{indE} = tmpEnergy;
+      PD.depend{indE-1} = tmpEnergy;
       if or(isempty(PD.ancillary), or(~isfield(PD.ancillary, 'energy0'), ~isfield(PD.ancillary, 'energy1')))
         PD.ancillary.energy0 = energytmp0(elevels);
         PD.ancillary.energy1 = energytmp1(elevels);
@@ -592,7 +592,7 @@ classdef PDist < TSeries
           [~, indEn] = obj.energy;
           spec.p = double(squeeze(nanmean(obj.data, indEn))); % nanmean over energies
           %spec.p_label = {'dEF',obj.units};
-          spec.f = single(obj.depend{2});
+          spec.f = single(obj.pitchangle);
           spec.f_label = {'\theta (deg.)'};
         otherwise % energy is default          
           spec.t = obj.time.epochUnix;
@@ -632,13 +632,14 @@ classdef PDist < TSeries
       end    
       energy = obj.energy;
       sizeData = size(tmpData);
+%FIXME: Change after correction in commit 944056878faae266f94bc422ac54a8e5a3d203f0
       reshapedData = reshape(tmpData,sizeData(1),sizeData(2),prod(sizeData(3:end)));
       if size(energy,1) == 1
         matEnergy = repmat(energy,obj.length,1,prod(sizeData(3:end)));
       elseif size(energy,1) == obj.length
         matEnergy = repmat(energy,1,1,prod(sizeData(3:end)));
       end
-       
+
       if nargin<2 || flagdir ~= -1
         reshapedData = reshapedData.*matEnergy.^2;
         tmpData = reshape(reshapedData,sizeData);
@@ -655,6 +656,7 @@ classdef PDist < TSeries
       	irf.log('warning','No change to PDist');
       	PD = obj;
       end
+%FIXME END
     end
     function PD = dpflux(obj,flagdir)
       % Changes units to differential particle flux
@@ -686,6 +688,7 @@ classdef PDist < TSeries
       
       energy = obj.energy;
       sizeData = size(tmpData);
+%FIXME: Change after correction in commit 944056878faae266f94bc422ac54a8e5a3d203f0
       reshapedData = reshape(tmpData,sizeData(1),sizeData(2),prod(sizeData(3:end)));
       if size(energy,1) == 1
         matEnergy = repmat(energy,obj.length,1,prod(sizeData(3:end)));
@@ -709,6 +712,7 @@ classdef PDist < TSeries
         irf.log('warning','No change to PDist');
         PD = obj;
       end
+%FIXME END
     end
     function PD = convertto(obj,newunits)
       % Changes units of Pdist. 
@@ -848,11 +852,12 @@ classdef PDist < TSeries
       if isempty(varargin); method = 'pchip'; else, method = varargin{1}; end
         
       nt = obj.length;
-      old_energies = obj.energy;
+      [old_energies, indEn] = obj.energy;
       unique_energies = unique(old_energies,'rows');
       new_energy = sort(torow(unique_energies(:)));
       new_energies = repmat(new_energy,nt,1);
       old_data = obj.data;
+%FIXME: Change after correction in commit 944056878faae266f94bc422ac54a8e5a3d203f0
       new_data = nan(size(old_data,1),numel(new_energy),size(old_data,3),size(old_data,4));
       for it = 1:nt
         for iaz = 1:size(new_data,3)
@@ -861,13 +866,13 @@ classdef PDist < TSeries
           end
         end
       end
+%FIXME END
       new_data(new_data<0) = 0; % pchip sometimes give negative values, set these to zero
-      PD = obj.clone(obj.time,new_data);      
-      PD.depend{1} = new_energies;
-      PD.ancillary.energy = PD.depend{1};
+      PD = obj.clone(obj.time, new_data);
+      PD.depend{indEn-1} = new_energies;
+      PD.ancillary.energy = PD.depend{indEn-1};
       PD.ancillary.energy0 = new_energy;
       PD.ancillary.energy1 = new_energy;
-      
     end
     function PD = e64(obj)
       % E64 recompile data into 64 energy channels. Time resolution is
@@ -880,11 +885,11 @@ classdef PDist < TSeries
       
       if ~any([isfield(obj.ancillary,'energy0') isfield(obj.ancillary,'energy1') isfield(obj.ancillary,'esteptable')]) % construct energy0, energy1, and esteptable 
         esteptable = zeros(obj.length,1);
-        [energies,~,esteptable] = unique(obj.depend{1},'rows'); % consider using legacy
+        [energies,~,esteptable] = unique(obj.energy,'rows'); % consider using legacy
         energy0 = obj.depend{1}(1,:);
         energy1 = obj.depend{1}(2,:);
       end
-      
+%FIXME: Change after correction in commit 944056878faae266f94bc422ac54a8e5a3d203f0
       [pdistr,phir,energyr] = mms.psd_rebin(obj,TSeries(obj.time,obj.depend{2}),obj.ancillary.energy0,obj.ancillary.energy1,TSeries(obj.time,obj.ancillary.esteptable));
       PD = obj.clone(pdistr.time,pdistr.data);      
       PD.depend{1} = repmat(energyr,PD.length,1);
@@ -896,6 +901,7 @@ classdef PDist < TSeries
         PD.ancillary.energy1 = PD.depend{1};
       end
       if isfield(PD.ancillary,'esteptable'); PD.ancillary.esteptable = zeros(PD.length,1); end
+%FIXME END
     end
     function m = mass(obj)
       % Get mass of species
