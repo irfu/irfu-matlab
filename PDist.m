@@ -472,52 +472,62 @@ classdef PDist < TSeries
       PD.data_ = tmpData;
       PD.depend{2} = tmpPA; 
     end
-    function PD = elim(obj,eint)  
-      energy = obj.depend{1};
-      
+    function PD = elim(obj, eint)
+      % Limit PD based on energies in eint
+      [energy, indE] = obj.energy;
       % Picks out energies in an interval, or the closest energy (to be implemented!)
       if numel(eint) == 2
-       if or(isempty(obj.ancillary), or(~isfield(obj.ancillary, 'energy0'), ~isfield(obj.ancillary, 'energy1')))
-            energytmp0 = energy(1,:);
-            energytmp1 = energy(2,:);
-            if energytmp0(1) > energytmp1(1)
-                tmp = energytmp0;
-                energytmp0 = energytmp1;
-                energytmp1 = tmp;
-            end
-            elevels0 = intersect(find(energytmp0>eint(1)),find(energytmp0<eint(2)));
-            elevels1 = intersect(find(energytmp1>eint(1)),find(energytmp1<eint(2)));            
-       else
-            elevels0 = intersect(find(obj.ancillary.energy0>eint(1)),find(obj.ancillary.energy0<eint(2)));
-            elevels1 = intersect(find(obj.ancillary.energy1>eint(1)),find(obj.ancillary.energy1<eint(2)));        
-       end
-       if numel(elevels0) ~= numel(elevels1)
+        if or(isempty(obj.ancillary), or(~isfield(obj.ancillary, 'energy0'), ~isfield(obj.ancillary, 'energy1')))
+          energytmp0 = energy(1,:);
+          energytmp1 = energy(2,:);
+          if energytmp0(1) > energytmp1(1)
+            tmp = energytmp0;
+            energytmp0 = energytmp1;
+            energytmp1 = tmp;
+          end
+          elevels0 = intersect(find(energytmp0>eint(1)),find(energytmp0<eint(2)));
+          elevels1 = intersect(find(energytmp1>eint(1)),find(energytmp1<eint(2)));
+        else
+          elevels0 = intersect(find(obj.ancillary.energy0>eint(1)),find(obj.ancillary.energy0<eint(2)));
+          elevels1 = intersect(find(obj.ancillary.energy1>eint(1)),find(obj.ancillary.energy1<eint(2)));
+        end
+        if numel(elevels0) ~= numel(elevels1)
           warning('Energy levels differ for different times. Including the largest interval.')
           elevels = unique([elevels0,elevels1]);
         else
           elevels = elevels0;
-        end         
+        end
         disp(['Effective eint = [' num2str(min(min(energy(:,elevels))),'%g') ' ' num2str(max(max(energy(:,elevels))),'%g') ']'])
       else
         ediff0 = abs(energy(1,:)-eint);
         ediff1 = abs(energy(2,:)-eint);
-        if min(ediff0)<min(ediff1); ediff = ediff0;
-        else, ediff = ediff1; end
+        if min(ediff0)<min(ediff1)
+          ediff = ediff0;
+        else
+          ediff = ediff1;
+        end
         elevels = find(ediff==min(ediff));
         disp(['Effective energies alternate in time between ' num2str(energy(1,elevels),'%g') ' and ' num2str(energy(2,elevels),'%g') ''])
-      end      
+      end
       tmpEnergy = energy(:,elevels);
-      tmpData = obj.data(:,elevels,:,:);      
-      
+      switch indE
+        case 2
+          tmpData = obj.data(:,elevels,:,:);
+        case 3
+          tmpData = obj.data(:,:,elevels,:);
+        case 4
+          tmpData = obj.data(:,:,:,elevels);
+      end
+
       PD = obj;
       PD.data_ = tmpData;
-      PD.depend{1} = tmpEnergy;
-      if or(isempty(PD.ancillary), or(~isfield(PD.ancillary, 'energy0'), ~isfield(PD.ancillary, 'energy1')))    
-          PD.ancillary.energy0 = energytmp0(elevels);
-          PD.ancillary.energy1 = energytmp1(elevels);      
+      PD.depend{indE} = tmpEnergy;
+      if or(isempty(PD.ancillary), or(~isfield(PD.ancillary, 'energy0'), ~isfield(PD.ancillary, 'energy1')))
+        PD.ancillary.energy0 = energytmp0(elevels);
+        PD.ancillary.energy1 = energytmp1(elevels);
       else
-          PD.ancillary.energy0 = PD.ancillary.energy0(elevels);
-          PD.ancillary.energy1 = PD.ancillary.energy1(elevels);
+        PD.ancillary.energy0 = PD.ancillary.energy0(elevels);
+        PD.ancillary.energy1 = PD.ancillary.energy1(elevels);
       end
     end
     function PD = omni(obj)
@@ -887,10 +897,11 @@ classdef PDist < TSeries
           error('Species not supported.')
       end 
     end
-    function e = energy(obj)
-      % Get energy of object
-      %indE = find(strcmp(obj.representation,'energy'))
-      e = obj.depend{1};
+    function [e, indE] = energy(obj)
+      % Get energy of object and its column number in data
+      indE = find(cellfun(@(x) strcmp(x,'energy'),obj.representation));
+      e = obj.depend{indE};
+      if(nargout>1), indE=indE+1; end % If requested return its column number in the data (+1 since first column is time).
     end
     function moms = moments(obj,varargin)
       % MOMENTS compute moments from the FPI particle phase-space densities 
