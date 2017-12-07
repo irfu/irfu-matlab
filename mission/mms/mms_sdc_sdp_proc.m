@@ -567,7 +567,6 @@ filename_output = mms_sdp_cdfwrite(HdrInfo, Dmgr);
     Dmgr.set_param(dataType, fullFilename);
   end
 
-
   function update_header(src)
     % Update header info
     if(~isempty(regexpi(src.filename,'dce')) && ~isfield(HdrInfo,'startTime'))

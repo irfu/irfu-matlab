@@ -31,7 +31,7 @@ function [maneuvers, fileInterval, eclipse] = mms_read_timeline(xmlFile, scIdstr
 %	[maneuvers, fileInterval] = MMS_READ_TIMELINE('/path/to/mms_timeline_2016011_2016073_v02.xml','1');
 %    returns a struct maneuvers containing
 %       .mms1 = Cell with time intervals of maneuvers for MMS1, in irf.tint
-%    and a time interval fileInfo containing with start and stop time of
+%    and a time interval fileInterval containing with start and stop time of
 %    the xml file coverage, in irf.tint.
 %
 % 	See also MMS_MANEUVERS.
