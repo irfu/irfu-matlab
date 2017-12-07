@@ -23,10 +23,10 @@ classdef ui < handle
 			%% Check input
 			args=varargin;
 			while ~isempty(args)
-				if isa(args{1},'lp.spacecraft'),
+				if isa(args{1},'lp.spacecraft')
 					obj.SpacecraftList = args{1};
 					args(1) =[];
-				elseif isa(args{1},'lp.lprobe'),
+				elseif isa(args{1},'lp.lprobe')
 					obj.ProbeList = args{1};
 					args(1) =[];
 				elseif isa(args{1},'lp.plasma')
@@ -36,13 +36,13 @@ classdef ui < handle
 					error('lp.ui input unknown!');
 				end
 			end
-			if ~isa(obj.SpacecraftList,'lp.spacecraft'),
+			if ~isa(obj.SpacecraftList,'lp.spacecraft')
 				obj.SpacecraftList = lp.default_spacecraft;
 			end
-			if ~isa(obj.ProbeList,'lp.probe'),
+			if ~isa(obj.ProbeList,'lp.probe')
 				obj.ProbeList = lp.default_lprobe;
 			end
-			if ~isa(obj.PlasmaList,'lp.plasma'),
+			if ~isa(obj.PlasmaList,'lp.plasma')
 				obj.PlasmaList = lp.default_plasma;
 			end
 			obj.SpacecraftList = [obj.SpacecraftList(1) obj.SpacecraftList];
@@ -180,13 +180,13 @@ classdef ui < handle
 		end
 		
 		function set_plasma_model(obj,varargin)
-			if nargin == 2 && any(strcmpi('user defined',varargin{1})),  %set_plasma_model(obj,'user defined')
+			if nargin == 2 && any(strcmpi('user defined',varargin{1}))  %set_plasma_model(obj,'user defined')
 				obj.plasmaUsed = 1;
 				set(obj.UserData.inp.plasma.typeValue,'Value',1);
 				return;
-			elseif nargin == 2 && isnumeric(varargin{1}), %set_plasma_model(obj,numberInPlasmaList)
+			elseif nargin == 2 && isnumeric(varargin{1}) %set_plasma_model(obj,numberInPlasmaList)
 				idPlasma = varargin{1};
-			elseif nargin == 3, %set_plasma_type(obj,hEvent,event)
+			elseif nargin == 3 %set_plasma_type(obj,hEvent,event)
 				hEvent = varargin{1};
 				event = varargin{2};
 				disp(event);
@@ -235,13 +235,13 @@ classdef ui < handle
 		end
 		
 		function set_sc_model(obj,varargin)
-			if nargin == 2 && any(strcmpi('user defined',varargin{1})),  %set_sc_model(obj,'user defined')
+			if nargin == 2 && any(strcmpi('user defined',varargin{1}))  %set_sc_model(obj,'user defined')
 				obj.spacecraftUsed = 1;
 				set(obj.UserData.inp.spacecraft.typeValue,'Value',1);
 				return;
-			elseif nargin == 2 && isnumeric(varargin{1}), %set_sc_model(obj,numberInSpacecraftList)
+			elseif nargin == 2 && isnumeric(varargin{1}) %set_sc_model(obj,numberInSpacecraftList)
 				idSpacecraft = varargin{1};
-			elseif nargin == 3, %set_plasma_type(obj,hEvent,event)
+			elseif nargin == 3 %set_plasma_type(obj,hEvent,event)
 				hEvent = varargin{1};
 				event = varargin{2};
 				disp(event);
@@ -269,7 +269,7 @@ classdef ui < handle
 		end
 		function get_factor_uv(obj)
 			factorUvString = get(obj.UserData.inp.factorUvValue,'String'); % in cm
-			if isempty(factorUvString),
+			if isempty(factorUvString)
 				factorUvString = '1';
 				set(obj.UserData.inp.factorUvValue,'String','1')
 			end
@@ -277,7 +277,7 @@ classdef ui < handle
 		end
 		function get_distance_to_sun_au(obj)
 			rSunString = get(obj.UserData.inp.rSunValue,'String'); % in cm
-			if isempty(rSunString),
+			if isempty(rSunString)
 				rSunString = '1';
 				set(obj.UserData.inp.rSunValue,'String','1')
 			end
@@ -286,13 +286,13 @@ classdef ui < handle
 		function get_u_interval(obj)
 			vectorUString = get(obj.UserData.inp.vectorUValue,'String'); % in cm
 			obj.InputParameters.vectorUonlyMinMaxGiven = false;
-			if isempty(vectorUString),
+			if isempty(vectorUString)
 				vectorUString = '-5:10';
 				set(obj.UserData.inp.vectorUValue,'String',vectorUString);
 			end
 			obj.InputParameters.vectorUString = vectorUString;
 			obj.InputParameters.vectorU = eval(['[' vectorUString ']']);
-			if numel(obj.InputParameters.vectorU) == 2, % only min and max are given
+			if numel(obj.InputParameters.vectorU) == 2 % only min and max are given
 				obj.InputParameters.vectorU = obj.InputParameters.vectorU(1)*[1 0.75 0.5 0.25 0] +...
 					obj.InputParameters.vectorU(2)*[0 0.25 0.5 0.75 1];
 				obj.InputParameters.vectorUonlyMinMaxGiven = true;
@@ -300,11 +300,11 @@ classdef ui < handle
 		end
 		
 		function set_probe_model(obj,varargin)
-			if nargin == 2 && any(strcmpi('user defined',varargin{1})),  %set_probe_model(obj,'user defined')
+			if nargin == 2 && any(strcmpi('user defined',varargin{1}))  %set_probe_model(obj,'user defined')
 				idProbe = 1;
-			elseif nargin == 2 && isnumeric(varargin{1}), %set_probe_model(obj,numberOfProbe)
+			elseif nargin == 2 && isnumeric(varargin{1}) %set_probe_model(obj,numberOfProbe)
 				idProbe = varargin{1};
-			elseif nargin == 3, %set_probe_model(obj,hEvent,event)
+			elseif nargin == 3 %set_probe_model(obj,hEvent,event)
 				hEvent = varargin{1};
 				idProbe = get(hEvent,'Value');
 			end
@@ -317,20 +317,20 @@ classdef ui < handle
 			set(obj.UserData.inp.probe.type.value,'Value',idProbe);
 		end
 		function set_probe_surface(obj,varargin)
-			if nargin == 1,
+			if nargin == 1
 				probeParameters = obj.ProbeList(obj.probeUsed);
 				idProbeSurface = find(strcmp(probeParameters.surface,obj.ProbeSurfaceList));
-				if idProbeSurface,
+				if idProbeSurface
 					obj.set_probe_surface(idProbeSurface);
 				else
 					irf.log('critical',[surface '''' probeParameters.surface ''' is unknown by lp.photocurrent.']);
 				end
-			elseif nargin == 2 && isnumeric(varargin{1}), %set_probe_model(obj,numberOfSurface)
+			elseif nargin == 2 && isnumeric(varargin{1}) %set_probe_model(obj,numberOfSurface)
 				obj.probeSurfaceUsed = varargin{1};
 				set(obj.UserData.inp.probe.surface.value,'value',obj.probeSurfaceUsed);
 				set(obj.UserData.inp.probe.surfacePhotoemission.value,...
 					'String',num2str(obj.ProbeSurfacePhotoemission(obj.probeSurfaceUsed)*1e6));
-			elseif nargin == 3, %set_probe_model(obj,hEvent,event)
+			elseif nargin == 3 %set_probe_model(obj,hEvent,event)
 				hEvent = varargin{1};
 				idProbeSurface = get(hEvent,'Value');
 				obj.set_probe_surface(idProbeSurface);
@@ -419,7 +419,7 @@ classdef ui < handle
 						ii = find(slopeChanges<1);
 						slopeChanges(ii) = 1./slopeChanges(ii);
 						iMin = find(slopeChanges < slopeChangeMin)+1; % find points where slope changes little in both directions from the point
-						if any(iMin),
+						if any(iMin)
 							vecUnew(iMin(1:2:end)) = [];
 							I(iMin(1:2:end)) =[];
 						else
@@ -484,7 +484,7 @@ classdef ui < handle
 			Jprobeplasmagrid=lp.current(Probe,probepotgrid,obj.InputParameters.rSunAU,0,obj.PlasmaList(obj.plasmaUsed));
 			jProbegrid=Jprobeplasmagrid.total+Jprobephotogrid.total;
 			jProbephotoe2scgrid=Jprobephotogrid.total-Jprobephotoescapingscgrid.total;
-			for ii=1:numel(Iprobe),
+			for ii=1:numel(Iprobe)
 				% plasma current with UV factor zero
 				satpot=Usatsweep(ii);
 				uprobe=interp1(jProbe,Upot,Ibias(ii))+satpot*Sc.probeRefPotVsSatPot;
@@ -595,7 +595,7 @@ classdef ui < handle
 				irf_legend(h,'probe photo e- to s/c',[0.02 1.05],'color',[0 0.5 0]);
 				irf_legend(h,'Satellite potential',[0.98 0.03],'color',[0.5 0 0.5]);
 				axis(h,'auto x');
-				if flagBias, % draw bias current line
+				if flagBias % draw bias current line
 					plot(h,[obj.Output.UI.Uprobe2sc(1) obj.Output.UI.Uprobe2plasma(end)],biasCurrentMicroA.*[-1 -1],'k-.','linewidth',0.5);
 					text(obj.Output.UI.Uprobe2sc(1),-biasCurrentMicroA,'bias','parent',h,'horizontalalignment','left','verticalalignment','bottom');
 					%flag_add_bias_point_values=1; % TODO
@@ -605,7 +605,7 @@ classdef ui < handle
 				irf_legend(h,'    total',      [0.98 0.03],'color','k');
 				irf_legend(h,' photoelectrons',[0.98 0.08],'color','r');
 				clr=[0.5 0 0; 0 0.5 0; 0 0 0.5];
-				for ii=1:length(J.plasma),
+				for ii=1:length(J.plasma)
 					plot(h,vecU,J.plasma{ii}*1e6,'linewidth',.5,'color',clr(:,ii));
 					irf_legend(h,['plasma ' num2str(ii)],[0.98 0.08+ii*0.05],'color',clr(:,ii));
 				end
@@ -635,7 +635,7 @@ classdef ui < handle
 			fcr=1/2/pi/Rmin/probe.capacitance;
 			disp(['Rmin=' num2str(Rmin,3) ' Ohm, C=' num2str(probe.capacitance*1e12,3) 'pF, f_{CR}=' num2str(fcr,3) 'Hz.']);
 			InfoTxt = struct();
-			if doModelSpacecraft,
+			if doModelSpacecraft
 				InfoTxt.probeToPlasma =['probe to plasma Rmin=' num2str(min(abs(obj.Output.UI.dUdI_probe2plasma)),3) ' Ohm'];
 				InfoTxt.probeToRef    =['probe to reference Rmin=' num2str(min(abs(obj.Output.UI.dUdI)),3) ' Ohm'];
 				InfoTxt.probeToSc     =['probe to spacecraft Rmin=' num2str(min(abs(obj.Output.UI.dUdI_probe2sc)),3) ' Ohm'];
@@ -645,7 +645,7 @@ classdef ui < handle
 					' fcr =' num2str(fcr,3) 'Hz.'];
 			end
 			
-			if min(J.total)<0 && max(J.total)>0, % display information on Ufloat
+			if min(J.total)<0 && max(J.total)>0 % display information on Ufloat
 				Ufloat=interp1(J.total,vecU,0);    % floating potential
 				ii=isfinite(U__dUdI);
 				Rfloat=interp1(U__dUdI(ii),dUdI(ii),Ufloat);
@@ -656,7 +656,7 @@ classdef ui < handle
 					' fcr=' num2str(fcr,3) 'Hz.'];
 				disp(['Probe: Ufloat=' num2str(Ufloat,3) ' V, Rfloat=' num2str(Rfloat,3) ' Ohm, C=' num2str(probe.capacitance*1e12,3) 'pF, fcr=' num2str(fcr,3) 'Hz.']);
 			end
-			if flagBias,%flag_add_bias_point_values,
+			if flagBias %flag_add_bias_point_values,
 				biasCurrentA = obj.InputParameters.biasCurrent;
 				Ubias=interp1(J.total,vecU,-biasCurrentA); % floating potential
 				ii=isfinite(U__dUdI);
@@ -667,14 +667,14 @@ classdef ui < handle
 					' C =' num2str(probe.capacitance*1e12,3) 'pF,' ...
 					' fcr=' num2str(fcr,3) 'Hz.'];
 				disp(['Rbias=' num2str(Rbias,3) ' Ohm, C=' num2str(probe.capacitance*1e12,3) 'pF, fcr=' num2str(fcr,3) 'Hz.']);
-				if doModelSpacecraft,
+				if doModelSpacecraft
 					Uscbias=interp1(J.total,obj.Output.UI.Usatsweep,-biasCurrentA); % floating potential
 					ii=isfinite(vecU);
 					Rscbias=interp1(vecU(ii),obj.Output.UI.dUdIsat(ii),Uscbias);
-					cSat = irf_estimate('capacitance_sphere',sqrt(obj.SpacecraftList(obj.spacecraftUsed).areaTotal/pi));
+					cSat = irf_estimate('capacitance_sphere',sqrt(obj.SpacecraftList(obj.spacecraftUsed).areaTotal/(4*pi)));
 					fcr=1/2/pi/Rscbias/cSat;
 					disp(['Spacecraft (biased): Rbias=' num2str(Rbias,3) ' Ohm, C=' num2str(cSat*1e12,3) 'pF, fcr=' num2str(fcr,3) 'Hz.']);
-					InfoTxt.biasedSpacecraft =['Spacecraft (biased): Ubias=' num2str(Uscbias,3)  ', Rbias=' num2str(Rscbias,3) 'Ohm, fcr=' num2str(fcr,3) 'Hz.'];
+					InfoTxt.biasedSpacecraft =['Spacecraft (biased): Ubias=' num2str(Uscbias,3)  ', Rbias=' num2str(Rscbias,3) 'Ohm, C=' num2str(cSat*1e12,3) 'pF, fcr=' num2str(fcr,3) 'Hz.'];
 					Usp=-interp1(obj.Output.UI.Ibias,obj.Output.UI.Uprobe2sc,-biasCurrentA); % floating potential
 					disp(['Spacecraft to Probe: Usp=' num2str(Usp,3) 'V.']);
 					InfoTxt.spacecraftToProbe = ['Spacecraft to Probe: Usp=' num2str(Usp,3)  ' V.'];
@@ -688,12 +688,12 @@ classdef ui < handle
 			end
 			if 0%ud.UV_factor>0,                                     % display photoelectron saturation current
 				infoTxt=[info_txt '\newline Probe: photo e- Io = ' num2str(ud.UV_factor*lp.photocurrent(1,-1,ud.R_sun,ud.probe.surface)*1e6,3) '[\mu A/m^2]'];
-				if ud.R_sun~=1,
+				if ud.R_sun~=1
 					info_txt=[info_txt '  (' num2str(ud.UV_factor*lp.photocurrent(1,-1,1,ud.probe.surface)*1e6,3) ' \mu A/m^2 at 1 AU)'];
 				end
-				if ud.flag_use_sc,
+				if ud.flag_use_sc
 					info_txt=[info_txt '\newline Spacecraft: photo e- Io = ' num2str(ud.UV_factor*lp.photocurrent(1,-1,ud.R_sun,ud.sc.surface)*1e6,3) '[\mu A/m^2]'];
-					if ud.R_sun~=1,
+					if ud.R_sun~=1
 						info_txt=[info_txt '  (' num2str(ud.UV_factor*lp.photocurrent(1,-1,1,ud.sc.surface)*1e6,3) ' \mu A/m^2 at 1 AU)'];
 					end
 				end
@@ -747,12 +747,12 @@ classdef ui < handle
 		function popupText = popup_list(inp)
 			if iscell(inp) && (numel(inp) > 0)
 				popupText =inp{1};
-				for ii=2:numel(inp),
+				for ii=2:numel(inp)
 					popupText(end+1:end+1+numel(inp{ii}))=['|' inp{ii}];
 				end
 			elseif numel(inp) > 0 && all(isprop(inp,'name'))
 				popupText ='';
-				for ii=1:numel(inp),
+				for ii=1:numel(inp)
 					probeName = inp(ii).name;
 					if ~isempty(probeName)
 						popupText(end+1:end+1+numel(probeName))=[probeName '|'];
@@ -763,16 +763,16 @@ classdef ui < handle
 		end
 		function str = field_to_vector_string(o,field,multFactor)
 			str = '';
-			if nargin == 2,
+			if nargin == 2
 				multFactor = 1;
 			end
-			for ii = 1:numel(o),
+			for ii = 1:numel(o)
 				str = [str num2str(o(ii).(field)*multFactor) ' ']; %#ok<AGROW>
 			end
 			str(end) = [];
 		end
 		function OutputGui = update_input_fields(InputGui,fieldsToUpdate,InputObject)
-			for iField = 1:numel(fieldsToUpdate),
+			for iField = 1:numel(fieldsToUpdate)
 				field = fieldsToUpdate{iField};
 				if isfield(InputGui.(field),'SIconversion')
 					SIconversion = InputGui.(field).('SIconversion');

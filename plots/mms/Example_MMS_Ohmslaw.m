@@ -6,7 +6,7 @@
 
 Tint = irf.tint('2015-10-30T05:15:40.00Z/2015-10-30T05:15:55.00Z');
 Tintlong = Tint+[-60 60]; % Take longer time interval for loading position data
-%%
+%% Load all data and constants
 ic = 1:4; % Use all MMS spacecraft
 
 % Define constants
@@ -18,35 +18,34 @@ me = Units.me;
 c_eval('ne? = mms.get_data(''Ne_fpi_brst_l2'',Tint,?);',ic);
 c_eval('Ve? = mms.get_data(''Ve_gse_fpi_brst_l2'',Tint,?);',ic);
 c_eval('Pe? = mms.get_data(''Pe_gse_fpi_brst_l2'',Tint,?);',ic);
-c_eval('Pe?.data = Pe?.data/1e9;',ic); % Unit conversion
 c_eval('ni? = mms.get_data(''Ni_fpi_brst_l2'',Tint,?);',ic);
 c_eval('Vi? = mms.get_data(''Vi_gse_fpi_brst_l2'',Tint,?);',ic);
+
+% Load FGM data
+c_eval('Bxyz? = mms.db_get_ts(''mms?_fgm_brst_l2'',''mms?_fgm_b_gse_brst_l2'',Tint);',ic);
+
+% Load spacecraft position
+R  = mms.get_data('R_gse',Tintlong);
+c_eval('Rxyz? = irf.ts_vec_xyz(R.time,R.gseR?);',ic);
+
+% Load Electric field
+c_eval('Exyz? = mms.db_get_ts(''mms?_edp_brst_l2_dce'',''mms?_edp_dce_gse_brst_l2'',Tint);',ic);
+
+%% Resample and compute averages
 c_eval('ne? = ne?.resample(ne1);',2:4);
 c_eval('Ve? = Ve?.resample(ne1);',ic);
 c_eval('Pe? = Pe?.resample(ne1);',ic);
 c_eval('ni? = ni?.resample(ne1);',ic);
 c_eval('Vi? = Vi?.resample(ne1);',ic);
-neav = irf.ts_scalar(ne1.time,(ne1.data+ne2.data+ne3.data+ne4.data)/4);
-
-% Load FGM data
-c_eval('Bxyz? = mms.db_get_ts(''mms?_fgm_brst_l2'',''mms?_fgm_b_dmpa_brst_l2'',Tint);',ic);
+c_eval('Exyz? = Exyz?.resample(ne1);',ic);
 c_eval('Bxyz? = Bxyz?.resample(ne1);',ic);
-Bxyzav = (Bxyz1.data+Bxyz2.data+Bxyz3.data+Bxyz4.data)/4;
-Bxyzav = irf.ts_vec_xyz(Bxyz1.time,Bxyzav);
-
-% Load spacecraft position
-R  = mms.get_data('R_gse',Tintlong);
-c_eval('Rxyz? = irf.ts_vec_xyz(R.time,R.gseR?);',ic);
 c_eval('Rxyz? = Rxyz?.resample(ne1);',ic);
 
-% Load Electric field
-c_eval('Exyz? = mms.db_get_ts(''mms?_edp_brst_l2_dce'',''mms?_edp_dce_gse_brst_l2'',Tint);',ic);
-c_eval('Exyz? = Exyz?.resample(ne1);',ic);
+neav = irf.ts_scalar(ne1.time,(ne1.data+ne2.data+ne3.data+ne4.data)/4);
+Bxyzav = irf.ts_vec_xyz(Bxyz1.time,(Bxyz1.data+Bxyz2.data+Bxyz3.data+Bxyz4.data)/4);
+Exyzav = irf.ts_vec_xyz(Exyz1.time,(Exyz1.data+Exyz2.data+Exyz3.data+Exyz4.data)/4);
 
-% Average Electric field
-Exyzav = (Exyz1.data+Exyz2.data+Exyz3.data+Exyz4.data)/4;
-Exyzav = irf.ts_vec_xyz(Exyz1.time,Exyzav);
-
+%% Compute convection terms
 % Compute ion convection term (MMS average)
 c_eval('EvxBi? = cross(Vi?,Bxyz?);',ic);
 c_eval('EvxBi?.data = -EvxBi?.data*1e-3;',ic);
@@ -57,7 +56,8 @@ c_eval('EvxBe? = cross(Ve?,Bxyz?);',ic);
 c_eval('EvxBe?.data = -EvxBe?.data*1e-3;',ic);
 EvxBe = irf.ts_vec_xyz(EvxBe1.time,(EvxBe1.data+EvxBe2.data+EvxBe3.data+EvxBe4.data)/4);
 
-% Compute pressure divergence term
+%% Compute pressure divergence term
+c_eval('Pe?.data = Pe?.data/1e9;',ic); % Unit conversion
 EPeXX = c_4_grad('Rxyz?','Pe?.xx','grad');
 EPeXY = c_4_grad('Rxyz?','Pe?.xy','grad');
 EPeXZ = c_4_grad('Rxyz?','Pe?.xz','grad');
@@ -69,7 +69,7 @@ EPeY = -(EPeXY.data(:,1)+EPeYY.data(:,2)+EPeYZ.data(:,3))./(neav.data*1e6*qe);
 EPeZ = -(EPeXZ.data(:,1)+EPeYZ.data(:,2)+EPeZZ.data(:,3))./(neav.data*1e6*qe);
 EPe = irf.ts_vec_xyz(EPeXX.time,[EPeX EPeY EPeZ]);
 
-% Compute Hall term and current density using curlometer
+%% Compute Hall term and current density using curlometer
 [j,divB,B,jxB,divTshear,divPb] = c_4_j('Rxyz?','Bxyz?');
 jxB = cross(j,Bxyzav);
 jxB.data = jxB.data*1e-9;

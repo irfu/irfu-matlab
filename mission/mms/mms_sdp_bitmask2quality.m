@@ -21,7 +21,6 @@ switch lower(dataType)
     error('Matlab:MMS_SDP_BITMASK2QUALITY:INPUT', err_str);
 end
 
-
 function quality = comp_quality(bitmask)
   % Assume Good data to begin with. And use the same type as bitmask at
   % first (for bitand comparison to work).
@@ -37,13 +36,14 @@ function quality = comp_quality(bitmask)
   % Set quality to 1 (bad)
   bits_1 = MMS_CONST.Bitmask.LOW_DENSITY_SATURATION + ...
     MMS_CONST.Bitmask.SWEEP_DATA + ...
-    MMS_CONST.Bitmask.ADP_SHADOW + ...
-    MMS_CONST.Bitmask.MANEUVERS;
+    MMS_CONST.Bitmask.ADP_SHADOW;
   ind_1 = logical(bitand(bitmask, bits_1));
   quality(ind_1) = 1;
   % Set quality to 0 (really bad)
-  bits_0 = bitor(MMS_CONST.Bitmask.SIGNAL_OFF, ...
-    MMS_CONST.Bitmask.PROBE_SATURATION);
+  bits_0 = MMS_CONST.Bitmask.SIGNAL_OFF + ...
+    MMS_CONST.Bitmask.PROBE_SATURATION + ...
+    MMS_CONST.Bitmask.ECLIPSE + ...
+    MMS_CONST.Bitmask.MANEUVERS;
   ind_0 = logical(bitand(bitmask, bits_0));
   quality(ind_0) = 0;
   % Recast to proper quality datatype.

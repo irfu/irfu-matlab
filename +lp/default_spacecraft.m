@@ -21,7 +21,7 @@ scNamesList = scList(:,1);
 ScFunc      = scList(:,2);
 
 if nargin == 0 && nargout == 0
-	for iSc = 1:numel(scNamesList),
+	for iSc = 1:numel(scNamesList)
 		disp([num2str(iSc) '. ' scNamesList{iSc}]);
 	end
 	return;
@@ -31,7 +31,7 @@ end
 if ischar(scNames), scNames = {scNames};   end
 
 iFoundSc = [];
-for iSc = 1:numel(scNames),
+for iSc = 1:numel(scNames)
 	iFoundSc = [iFoundSc find(strcmp(scNames(iSc),scNamesList))]; %#ok<AGROW>
 end
 
@@ -71,7 +71,7 @@ end
 		Sc.name  = 'MMS';
 		Sc.probe = lp.default_lprobe('Cluster');
 		Sc.surface = 'themis';
-		Sc.areaTotal = 2*pi*3.5^2+3.5*1.2;% diam: 3.5?m, height: 1.2?m
+		Sc.areaTotal = 0.5*pi*3.5^2+pi*3.5*1.2;% diam: 3.5?m, height: 1.2?m
 		Sc.areaSunlit = 3.5*1.2;
 		Sc.areaSunlitGuard = 0.039;
 		Sc.probeRefPotVsSatPot = 0.2;
