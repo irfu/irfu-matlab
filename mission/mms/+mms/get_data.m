@@ -699,13 +699,12 @@ end
             elseif (length(Vr.param) == 6 && strcmp(Vr.param(3:5), 'ERR'))
                 dist = mms.db_get_variable(dsetName,[pref '_disterr_' Vr.tmmode],Tint);
             end            
-            phi = dist.DEPEND_1.data;
-            theta = dist.DEPEND_2.data;
+            phi    = dist.DEPEND_1.data;
+            theta  = dist.DEPEND_2.data;
+            energy = dist.DEPEND_3.data;
             dist = mms.variable2ts(dist);
-            dist = dist.tlim(Tint);            
-            energy = mms.db_get_ts(dsetName,[pref '_energy_' Vr.tmmode],Tint);            
-            energy = energy.tlim(Tint);
-            res = irf.ts_skymap(dist.time, dist.data, energy.data, phi, theta);
+            res = irf.ts_skymap(dist.time, dist.data, energy, phi, theta);
+            res = res.tlim(Tint);
         end
         res.units = 's^3/cm^6';
         if strcmp(sensor(2),'e')          

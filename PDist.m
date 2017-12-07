@@ -58,7 +58,7 @@ classdef PDist < TSeries
         case {'skymap'} % construct skymap distribution                
           obj.depend{1} = args{1}; args(1) = []; obj.representation{1} = {'energy'};
           obj.depend{2} = args{1}; args(1) = []; obj.representation{2} = {'phi'};
-          obj.depend{3} = args{1}; args(1) = []; obj.representation{3} = {'theta'};             
+          obj.depend{3} = args{1}; args(1) = []; obj.representation{3} = {'theta'};
         case {'pitchangle'} % construct pitchangle distribution
           obj.depend{1} = args{1}; args(1) = []; obj.representation{1} = {'energy'};
           obj.depend{2} = args{1}; args(1) = []; obj.representation{2} = {'pitchangle'};                            
@@ -108,7 +108,7 @@ classdef PDist < TSeries
             error('Depend has wrong dimensions.')
           end
         end
-        if isfield(obj.ancillary,'esteptable') && size(obj.ancillary.esteptable,1) == sizeData(1);
+        if isfield(obj.ancillary,'esteptable') && size(obj.ancillary.esteptable,1) == sizeData(1)
           obj.ancillary.esteptable = obj.ancillary.esteptable(idxTmp{1},:);
         end
         if numel(idx) > 1
@@ -181,12 +181,14 @@ classdef PDist < TSeries
         end
       end
       % on ancillary data
-      nameFields = fieldnames(obj.ancillary);
-      nFields = numel(nameFields);
-      for iField = 1:nFields
-        eval(['sizeField = size(obj.ancillary.' nameFields{iField} ');'])
-        if sizeField(1) == sizeData(1)
-          eval(['obj.ancillary.' nameFields{iField} ' = obj.ancillary.' nameFields{iField} '(idx,:);'])
+      if ~isempty(obj.ancillary)
+        nameFields = fieldnames(obj.ancillary);
+        nFields = numel(nameFields);
+        for iField = 1:nFields
+          eval(['sizeField = size(obj.ancillary.' nameFields{iField} ');'])
+          if sizeField(1) == sizeData(1)
+            eval(['obj.ancillary.' nameFields{iField} ' = obj.ancillary.' nameFields{iField} '(idx,:);'])
+          end
         end
       end
     end    
@@ -214,8 +216,8 @@ classdef PDist < TSeries
       
       while have_options
         l = 1;
-        if isnumeric(args{l});
-          if size(args{l}) == [3 3];
+        if isnumeric(args{l})
+          if size(args{l}) == [3 3]
             newx = args{l}(1,:);
             newy = args{l}(2,:);
             newz = args{l}(3,:);
@@ -329,8 +331,8 @@ classdef PDist < TSeries
       
       while have_options
         l = 1;
-        if isnumeric(args{l});
-          if size(args{l}) == [3 3];
+        if isnumeric(args{l})
+          if size(args{l}) == [3 3]
             newx = args{l}(1,:);
             newy = args{l}(2,:);
             newz = args{l}(3,:);
@@ -820,7 +822,7 @@ classdef PDist < TSeries
       %     irf_spectrogram(h(3),ePDist1(tind).einterp('pchip').pitchangles(gseB1,15).specrec('pa'),'log');
       
       if ~strcmp(obj.type_,'skymap'); error('PDist must be a skymap.'); end 
-      if isempty(varargin); method = 'pchip'; else method = varargin{1}; end
+      if isempty(varargin); method = 'pchip'; else, method = varargin{1}; end
         
       nt = obj.length;
       old_energies = obj.depend{1};
