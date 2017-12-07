@@ -48,7 +48,7 @@ classdef PDist < TSeries
       
       obj@TSeries(t,data,'to',0);           
       
-      args = varargin;     
+      args = varargin;
       if isa(args{1},'char'); obj.type_ = args{1}; args(1) = [];
       else, error('3rd input must specify distribution type')
       end
@@ -77,48 +77,48 @@ classdef PDist < TSeries
           case {'energy1'}
             obj.ancillary.energy1 = args{1}; args(1) = [];
           case {'esteptable'}
-            obj.ancillary.esteptable = args{1}; args(1) = [];  
-        end     
+            obj.ancillary.esteptable = args{1}; args(1) = [];
+        end
       end
     end    
     
     function [varargout] = subsref(obj,idx)
-    %SUBSREF handle indexing
-    switch idx(1).type
-      % Use the built-in subsref for dot notation
-      case '.'
-        [varargout{1:nargout}] = builtin('subsref',obj,idx);
-      case '()'
-        tmpEpoch = builtin('subsref',obj.time,idx(1));        
-        obj.t_ = tmpEpoch;
-        idxTmp = repmat({':'}, ndims(obj.data), 1);
-        idxTmp(1) = idx(1).subs;
-        sizeData = size(obj.data_);
-        obj.data_ = obj.data_(idxTmp{:});
-        % on depend data      
-        
-        nDepend = numel(obj.depend);
-        for ii = 1:nDepend
-          sizeDepend =  size(obj.depend{ii});
-          if sizeDepend(1) == 1 % same dependence for all times
-            obj.depend_{ii} = obj.depend{ii};
-          elseif sizeDepend(1) == sizeData(1)
-            obj.depend_{ii} = obj.depend_{ii}(idxTmp{:},:);
-          else
-            error('Depend has wrong dimensions.')
+      %SUBSREF handle indexing
+      switch idx(1).type
+        % Use the built-in subsref for dot notation
+        case '.'
+          [varargout{1:nargout}] = builtin('subsref',obj,idx);
+        case '()'
+          tmpEpoch = builtin('subsref',obj.time,idx(1));
+          obj.t_ = tmpEpoch;
+          idxTmp = repmat({':'}, ndims(obj.data), 1);
+          idxTmp(1) = idx(1).subs;
+          sizeData = size(obj.data_);
+          obj.data_ = obj.data_(idxTmp{:});
+          % on depend data
+
+          nDepend = numel(obj.depend);
+          for ii = 1:nDepend
+            sizeDepend =  size(obj.depend{ii});
+            if sizeDepend(1) == 1 % same dependence for all times
+              obj.depend_{ii} = obj.depend{ii};
+            elseif sizeDepend(1) == sizeData(1)
+              obj.depend_{ii} = obj.depend_{ii}(idxTmp{:},:);
+            else
+              error('Depend has wrong dimensions.')
+            end
           end
-        end
-        if isfield(obj.ancillary,'esteptable') && size(obj.ancillary.esteptable,1) == sizeData(1)
-          obj.ancillary.esteptable = obj.ancillary.esteptable(idxTmp{1},:);
-        end
-        if numel(idx) > 1
-          obj = builtin('subsref',obj,idx(2:end));
-        end
-        [varargout{1:nargout}] = obj;
-      case '{}'
-        error('irf:TSeries:subsref',...
-          'Not a supported subscripted reference')
-    end
+          if isfield(obj.ancillary,'esteptable') && size(obj.ancillary.esteptable,1) == sizeData(1)
+            obj.ancillary.esteptable = obj.ancillary.esteptable(idxTmp{1},:);
+          end
+          if numel(idx) > 1
+            obj = builtin('subsref',obj,idx(2:end));
+          end
+          [varargout{1:nargout}] = obj;
+        case '{}'
+          error('irf:TSeries:subsref',...
+            'Not a supported subscripted reference')
+      end
     end
     
     % set
@@ -146,7 +146,8 @@ classdef PDist < TSeries
     end
     function value = get.ancillary(obj)
       value = obj.ancillary_;
-    end    
+    end
+
     function obj = tlim(obj,tint)
       %TLIM  Returns data within specified time interval
       %
