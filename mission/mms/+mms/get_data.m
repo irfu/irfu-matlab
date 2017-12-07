@@ -416,7 +416,7 @@ switch Vr.inst
             suf = ['_dbcs_' Vr.tmmode];
             compS = struct('xx','xx','yy','yy','zz','zz');
           case {'l1b','ql'}
-            pref = ['mms' mmsIdS '_' sensor '_Temp']
+            pref = ['mms' mmsIdS '_' sensor '_Temp'];
           case 'sitl'
             pref = ['mms' mmsIdS '_fpi_' upper(sensor) 'temp'];
             getQ = 'ts';
@@ -678,9 +678,9 @@ end
             phi = mms.db_get_ts(dsetName,[pref '_phi_' Vr.tmmode],Tint);
             %theta = mms.db_get_variable(dsetName,[pref '_theta_' Vr.tmmode],Tint);
             stepTable = mms.db_get_ts(dsetName,[pref '_steptable_parity_' Vr.tmmode],Tint);
-            if isempty(energy0),
+            if isempty(energy0)
               energymat = mms.db_get_ts(dsetName,[pref '_energy_' Vr.tmmode],Tint);
-              if stepTable.data(1),
+              if stepTable.data(1)
                 energy1 = energymat.data(1,:);
                 energy0 = energymat.data(2,:);
               else

@@ -153,7 +153,7 @@ if is_version_geq(tmpDist.GlobalAttributes.Data_version{:}, '3.1.0')
   energy1 = energy(find(stepTable==1,1,'first'),:); if isempty(energy1), energy1 = energy0; end
   
   % Construct PDist
-  PD = PDist(time,Dist,'skymap',energy,phi,theta);
+  PD = PDist(time,Dist,'skymap',phi,theta,energy);
   PD.userData = ud;
   PD.name = tmpDist.name;
   %PD.units = tmpDist.units;
@@ -194,7 +194,7 @@ else
   
 
   % Construct PDist
-  PD = PDist(time,Dist,'skymap',energy,phi,theta);
+  PD = PDist(time,Dist,'skymap',phi,theta,energy);
   PD.userData = ud;
   PD.name = tmpDist.name;
   %PD.units = tmpDist.units;

@@ -16,7 +16,7 @@ c_eval('[ePDist?,ePDistError?] = mms.make_pdist(filepath_and_filename);',ic)
 c_eval('[iPDist?,iPDistError?] = mms.make_pdist(filepath_and_filename);',ic)
 
 %% Make skymap directly with PDist
-c_eval('ePDist? = PDist(desDist?.time,desDist?.data,''skymap'',energy,ephi?.data,etheta?.data);',ic)
+c_eval('ePDist? = PDist(desDist?.time,desDist?.data,''skymap'',ephi?.data,etheta?.data,energy);',ic)
 c_eval('ePDist?.userData = desDist?.userData; ePDist?.name = desDist?.name; ePDist?.units = desDist?.units;',ic)
 c_eval('ePDist?.units = ''s^3/cm^6'';',ic)
 c_eval('ePDist?',ic)

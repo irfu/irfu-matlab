@@ -56,9 +56,9 @@ classdef PDist < TSeries
       % collect required data, depend        
       switch obj.type_
         case {'skymap'} % construct skymap distribution                
-          obj.depend{1} = args{1}; args(1) = []; obj.representation{1} = {'energy'};
-          obj.depend{2} = args{1}; args(1) = []; obj.representation{2} = {'phi'};
-          obj.depend{3} = args{1}; args(1) = []; obj.representation{3} = {'theta'};
+          obj.depend{1} = args{1}; args(1) = []; obj.representation{1} = {'phi'};
+          obj.depend{2} = args{1}; args(1) = []; obj.representation{2} = {'theta'};
+          obj.depend{3} = args{1}; args(1) = []; obj.representation{3} = {'energy'};
         case {'pitchangle'} % construct pitchangle distribution
           obj.depend{1} = args{1}; args(1) = []; obj.representation{1} = {'energy'};
           obj.depend{2} = args{1}; args(1) = []; obj.representation{2} = {'pitchangle'};                            
