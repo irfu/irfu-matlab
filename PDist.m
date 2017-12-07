@@ -853,20 +853,36 @@ classdef PDist < TSeries
         
       nt = obj.length;
       [old_energies, indEn] = obj.energy;
+      [~, indPh] = obj.phi;
+      [~, indTh] = obj.theta;
+      if ~( (indPh==2 && indTh==3) || (indPh==3 && indTh==4) )
+        error('Not yet implemented');
+      end
       unique_energies = unique(old_energies,'rows');
       new_energy = sort(torow(unique_energies(:)));
       new_energies = repmat(new_energy,nt,1);
       old_data = obj.data;
-%FIXME: Change after correction in commit 944056878faae266f94bc422ac54a8e5a3d203f0
-      new_data = nan(size(old_data,1),numel(new_energy),size(old_data,3),size(old_data,4));
+      old_size = size(old_data);
+      switch indEn
+        case 2
+          new_data = NaN(old_size(1), numel(new_energy), old_size(3), old_size(4));
+        case 3
+          error('Not yet implemented.');
+        case 4
+          new_data = NaN(old_size(1), old_size(2), old_size(3), numel(new_energy));
+      end
       for it = 1:nt
-        for iaz = 1:size(new_data,3)
-          for ipol = 1:size(new_data,4)
-            new_data(it,:,iaz,ipol) = interp1(old_energies(it,:),old_data(it,:,iaz,ipol),new_energies(it,:),method);
+        for iaz = 1:old_size(indPh)
+          for ipol = 1:old_size(indTh)
+            switch indEn
+              case 2
+                new_data(it,:,iaz,ipol) = interp1(old_energies(it,:), old_data(it,:,iaz,ipol), new_energies(it,:), method);
+              case 4
+                new_data(it,iaz,ipol,:) = interp1(old_energies(it,:), squeeze(old_data(it,iaz,ipol,:)), new_energies(it,:), method);
+            end
           end
         end
       end
-%FIXME END
       new_data(new_data<0) = 0; % pchip sometimes give negative values, set these to zero
       PD = obj.clone(obj.time, new_data);
       PD.depend{indEn-1} = new_energies;
