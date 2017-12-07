@@ -417,7 +417,7 @@ switch Vr.inst
             suf = ['_dbcs_' Vr.tmmode];
             compS = struct('xx','xx','yy','yy','zz','zz');
           case {'l1b','ql'}
-            pref = ['mms' mmsIdS '_' sensor '_Temp']
+            pref = ['mms' mmsIdS '_' sensor '_Temp'];
           case 'sitl'
             pref = ['mms' mmsIdS '_fpi_' upper(sensor) 'temp'];
             getQ = 'ts';
@@ -680,9 +680,9 @@ end
             phi = mms.db_get_ts(dsetName,[pref '_phi_' Vr.tmmode],Tint);
             %theta = mms.db_get_variable(dsetName,[pref '_theta_' Vr.tmmode],Tint);
             stepTable = mms.db_get_ts(dsetName,[pref '_steptable_parity_' Vr.tmmode],Tint);
-            if isempty(energy0),
+            if isempty(energy0)
               energymat = mms.db_get_ts(dsetName,[pref '_energy_' Vr.tmmode],Tint);
-              if stepTable.data(1),
+              if stepTable.data(1)
                 energy1 = energymat.data(1,:);
                 energy0 = energymat.data(2,:);
               else
@@ -701,13 +701,12 @@ end
             elseif (length(Vr.param) == 6 && strcmp(Vr.param(3:5), 'ERR'))
                 dist = mms.db_get_variable(dsetName,[pref '_disterr_' Vr.tmmode],Tint);
             end            
-            phi = dist.DEPEND_1.data;
-            theta = dist.DEPEND_2.data;
+            phi    = dist.DEPEND_1.data;
+            theta  = dist.DEPEND_2.data;
+            energy = dist.DEPEND_3.data;
             dist = mms.variable2ts(dist);
-            dist = dist.tlim(Tint);            
-            energy = mms.db_get_ts(dsetName,[pref '_energy_' Vr.tmmode],Tint);            
-            energy = energy.tlim(Tint);
-            res = irf.ts_skymap(dist.time, dist.data, energy.data, phi, theta);
+            res = irf.ts_skymap(dist.time, dist.data, energy, phi, theta);
+            res = res.tlim(Tint);
         end
         res.units = 's^3/cm^6';
         if strcmp(sensor(2),'e')          
