@@ -362,13 +362,13 @@ classdef PDist < TSeries
         if isempty(args), break, end    
       end
 
-      phi = TSeries(obj.time,obj.depend{1,2});
-      azimuthal = phi.data*pi/180;      
+      phi = TSeries(obj.time, obj.phi); % FIXME: Why TSeries and not simply repmat?
+      azimuthal = phi.data*pi/180;
       
-      theta = obj.depend{1,3};
-      polar = repmat(theta*pi/180,obj.length,1);      
+      theta = obj.theta;
+      polar = repmat(theta*pi/180,obj.length,1);
       
-      energy = obj.depend{1};
+      energy = obj.energy;
       units = irf_units;
       velocity = sqrt(energy*units.eV*2/units.me)/1000; % km/s
       
@@ -537,8 +537,8 @@ classdef PDist < TSeries
       
       dist = obj;
       % define angles
-      energysize = size(obj.depend{1});
-      theta = obj.depend{3};
+      energysize = size(obj.energy);
+      theta = obj.theta;
       dangle = pi/16;
       lengthphi = 32;
 
@@ -618,7 +618,7 @@ classdef PDist < TSeries
         irf.log('warning','Converting DEFlux to PSD in SI units');
         tmpData = obj.data/1e12*mm^2*0.53707;
       end    
-      energy = obj.depend{1};
+      energy = obj.energy;
       sizeData = size(tmpData);
       reshapedData = reshape(tmpData,sizeData(1),sizeData(2),prod(sizeData(3:end)));
       if size(energy,1) == 1
@@ -672,7 +672,7 @@ classdef PDist < TSeries
         tmpData = obj.data/1e12*mm^2*0.53707;
       end   
       
-      energy = obj.depend{1};
+      energy = obj.energy;
       sizeData = size(tmpData);
       reshapedData = reshape(tmpData,sizeData(1),sizeData(2),prod(sizeData(3:end)));
       if size(energy,1) == 1
@@ -836,7 +836,7 @@ classdef PDist < TSeries
       if isempty(varargin); method = 'pchip'; else, method = varargin{1}; end
         
       nt = obj.length;
-      old_energies = obj.depend{1};
+      old_energies = obj.energy;
       unique_energies = unique(old_energies,'rows');
       new_energy = sort(torow(unique_energies(:)));
       new_energies = repmat(new_energy,nt,1);
@@ -864,7 +864,7 @@ classdef PDist < TSeries
       %   see also MMS.PSD_REBIN
       
       if ~strcmp(obj.type_,'skymap'); error('PDist must be a skymap.'); end 
-      if size(obj.depend{1},2) == 64; irf_log(proc,'PDist already has 64 energy levels.'); end 
+      if size(obj.energy,2) == 64; irf.log('warning','PDist already has 64 energy levels.'); end 
       
       if ~any([isfield(obj.ancillary,'energy0') isfield(obj.ancillary,'energy1') isfield(obj.ancillary,'esteptable')]) % construct energy0, energy1, and esteptable 
         esteptable = zeros(obj.length,1);
