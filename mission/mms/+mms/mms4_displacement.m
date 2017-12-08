@@ -5,6 +5,8 @@ function [Rpar,Rperp,thetaBR] = mms4_displacement(varargin)
 % Input:
 %     'B?' - Magnetic fields for the four spacecraft.
 %     'R?' - Positions of the four spacecraft.
+%     'Tint' - Time interval (TSeries) to use if 'B?' and 'R?' are not
+%     given.
 %
 % Output:
 %     Rpar - TSeries of parallel displacements between spacecraft.
@@ -16,11 +18,14 @@ function [Rpar,Rperp,thetaBR] = mms4_displacement(varargin)
 %
 % Notes:
 %     Rpar, Rperp, thetaBR orders are 12, 13, 14, 23, 24, 34.
+%     If Tint is longer than 10 minutes survey data is used, otherwise
+%     burst mode B is used if it spans Tint. 
 %
 % Example:
 %     [Rpar,Rperp,thetaBR] = mms.mms4_displacement('B?','R?','plot',1);
+%     [Rpar,Rperp,thetaBR] = mms.mms4_displacement(Tint,'plot',0);
 
-if (nargin < 2)
+if (nargin < 1)
     help mms.mms4_displacement;
     Rpar = NaN;
     Rperp = NaN;
@@ -29,12 +34,43 @@ if (nargin < 2)
 end
 
 ic = 1:4;
+getBR = false;
 plotfig = false;
 
-c_eval('B?=evalin(''base'',irf_ssub(varargin{1},?));',ic);
-c_eval('R?=evalin(''base'',irf_ssub(varargin{2},?));',ic);
+if isa(varargin{1},'EpochTT')
+	if length(varargin{1}) == 2,
+    Tint = varargin{1};
+    getBR = true;
+    argsstart = 2;
+    irf.log('notice','Tint passed.')
+  end
+else
+  c_eval('B?=evalin(''base'',irf_ssub(varargin{1},?));',ic);
+  c_eval('R?=evalin(''base'',irf_ssub(varargin{2},?));',ic);
+  irf.log('notice','B and R are passed.')
+  argsstart = 3;
+end
 
-args=varargin(3:end);
+if getBR,
+  Tintl = Tint+[-60 60];
+  R = mms.get_data('R_gse',Tintl);
+  c_eval('R? = irf.ts_vec_xyz(R.time,R.gseR?);',ic);
+  if Tint(2)-Tint(1) > 600
+    c_eval('B? = mms.get_data(''B_gse_fgm_srvy_l2'',Tint,?);',ic);
+    irf.log('notice','Survey mode B is used.');
+  else
+    c_eval('B? = mms.get_data(''B_gse_fgm_brst_l2'',Tint,?);',ic);
+    if B1.time.stop-B1.time.start < (Tint(2)-Tint(1))/1.2
+      c_eval('B? = mms.get_data(''B_gse_fgm_srvy_l2'',Tint,?);',ic);
+      irf.log('notice','Survey mode B is used.')
+    else
+      irf.log('notice','Burst mode B is used.')
+    end
+  end
+end
+
+
+args=varargin(argsstart:end);
 if numel(args)>0,
 	haveoptions=1;
 else

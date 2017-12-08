@@ -372,16 +372,25 @@ classdef PDist < TSeries
       vx = NaN*obj.data;
       vy = NaN*obj.data;
       vz = NaN*obj.data;
-      
-      
+            
       for ii = 1:length(obj.time)
         [VEL,AZ,POL] = meshgrid(velocity(ii,:),azimuthal(ii,:),polar(ii,:));
         %[AZ,VEL,POL] = meshgrid(azimuthal(ii,:),velocity(ii,:),polar(ii,:));
         
+        
         VX = -VEL.*sin(POL).*cos(AZ); % '-' because the data shows which direction the particles were coming from
         VY = -VEL.*sin(POL).*sin(AZ);
         VZ = -VEL.*cos(POL);
-                
+        
+        % meshgrid permutes the 1st and 2nd indices, 
+        % see for example [I1,I2] = meshgrid(1:3,1:2); size(I1), size(I2)
+        % the following permutes them back
+        % (one can also leave this out and do the following above:
+        % [AZ,VEL,POL] = meshgrid(azimuthal(ii,:),velocity(ii,:),polar(ii,:));      
+        VX = permute(VX,[2 1 3]);
+        VY = permute(VY,[2 1 3]);
+        VZ = permute(VZ,[2 1 3]);
+        
         if doRotation % Transform into different coordinate system
           VxX = reshape(VX,numel(VX),1);
           VyY = reshape(VY,numel(VX),1);
@@ -399,15 +408,7 @@ classdef PDist < TSeries
         vx(ii,:,:,:) = VX;
         vy(ii,:,:,:) = VY;
         vz(ii,:,:,:) = VZ;
-      end
-      % meshgrid permutes the 1st and 2nd indices, 
-      % see for example [I1,I2] = meshgrid(1:3,1:2); size(I1), size(I2)
-      % the following permutes them back
-      % (one can also leave this out and do the following above:
-      % [AZ,VEL,POL] = meshgrid(azimuthal(ii,:),velocity(ii,:),polar(ii,:));
-      vx = permute(vx,[1 3 2 4]);
-      vy = permute(vy,[1 3 2 4]);
-      vz = permute(vz,[1 3 2 4]);
+      end    
       
       if 0 % Diagnostics
         step = 2;
@@ -727,7 +728,7 @@ classdef PDist < TSeries
           error('Units not supported.');
       end
     end          
-    function PD = pitchangles(obj,obj1,obj2)
+    function PD = pitchangles(obj,obj1,obj2) %,method
       %PITCHANGLES Calculate pitchangle distribution
       % PitchangleDistribution = Distribution.pitchangles(B,[nangles])
       % PitchangleDistribution = pitchangles(Distribution,B,[nangles])
@@ -737,13 +738,112 @@ classdef PDist < TSeries
       %               default number of pitchangles is 12
       %   See also MMS.GET_PITCHANGLEDIST     
       
+      if ~strcmp(obj.type_,'skymap'); error('PDist must be a skymap.'); end 
+      
       if nargin<3 || isempty(obj2)
         nangles = 12;
       else 
         nangles = obj2; 
       end       
-      [PD,~,~,~] = mms.get_pitchangledist(obj,obj1,'angles',nangles); % - For v1.0.0 or higher data      
+%       if method % try new method to try to get away the stripes         
+%         data_size = size(obj.data);
+%         B = obj1.resample(obj.time);
+%         [VX,VY,VZ] = obj.v('squeeze');        
+%         vx = squeeze(VX(:,1,:,:));
+%         vy = squeeze(VY(:,1,:,:));
+%         vz = squeeze(VZ(:,1,:,:));
+%         vabs = sqrt(vx.^2 + vy.^2 + vz.^2);
+%         vxnorm = vx./vabs;
+%         vynorm = vy./vabs;
+%         vznorm = vz./vabs;
+%         Bnorm = irf_norm(B.data);
+%         Bxnorm = squeeze(repmat(Bnorm(:,1),1,1,data_size(3),data_size(4)));
+%         Bynorm = squeeze(repmat(Bnorm(:,2),1,1,data_size(3),data_size(4)));
+%         Bznorm = squeeze(repmat(Bnorm(:,3),1,1,data_size(3),data_size(4)));
+%         
+%         % pitch angle for each bin (dimension only includes one energy level)
+%         pitchangle = acosd(vxnorm.*Bxnorm + vynorm.*Bynorm + vznorm.*Bznorm);
+%         pitchangles = nan(data_size);
+%         for iE = 1:data_size(2)          
+%           pitchangles(:,iE,:,:) = pitchangle;
+%         end
+%         % sum up f and sort them into the right pitch angle bin
+%         pitchangle_edges = linspace(0,180,nangles+1);
+% %         %[count,edges,mid,loc] = histcn(pitchangle,pitchangle_edges,pitchangle_edges,pitchangle_edges);        
+% %         [count,edges,mid,loc] = histcn(pitchangles(:),pitchangle_edges);
+% %         locs = reshape(loc,data_size);
+% %         [loc_t,loc_E,loc_az,loc_pol] = ind2sub(data_size,loc);
+%         % use irf.nanmean to sum up f for each new bin
+%         new_data = nan(obj.length,size(obj.data,2),nangles);
+%             
+%         for it = 1:data_size(1)
+%           for iE = 1:data_size(2)          
+%             pitchangles_ = pitchangles(it,iE,:,:);
+%             [count,edges,mid,loc] = histcn(pitchangles_(:),pitchangle_edges); 
+%             locs = reshape(loc,data_size(3:4));
+%             for ipa = 1:nangles         
+%               locs_ipa = find(loc == ipa);
+%               new_data(it,iE,ipa) = irf.nanmean(obj.data(it,iE,locs_ipa));    
+%             end
+%           end
+%         end
+%         
+% %         for ipa = 1:nangles      
+% %           locs_ = find(loc == ipa);
+% %           new_data(:,:,ipa) = irf.nanmean(obj.data(loc==ipa));          
+% %         end
+%         PD = obj.clone(obj.time,new_data);                
+%         PD.depend = {PD.depend{1},repmat(mid{1},obj.length,1)};        
+%       else
+        [PD,~,~,~] = mms.get_pitchangledist(obj,obj1,'angles',nangles); % - For v1.0.0 or higher data      
+%       end
     end  
+    function PD = einterp(obj,varargin)
+      % PDIST.EINTERP Interpolates f to 64 energy channels. 
+      %   OBS: ONLY FOR COSMETICS, it makes pitchangle spectrograms 
+      %   smoother. Use with caution and always compare to unmodified 
+      %   spectrograms and PDist.e64.
+      %
+      %   PD = PDIST.EINTERP(method);
+      %   PD = PDIST.EINTERP;  
+      %   method - interpolation method, see interp1, if left empty, default
+      %            is 'pchip' which preserves the shape better than 'linear'
+      %            and therefore makes pitchangle spectrograms smoother
+      %   
+      %   Example:
+      %     h = irf_plot(3);
+      %     tind = 850:950; % memory consuming on long time intervals, and
+      %                     % only meaningful to do on shorter times where
+      %                     % one can see the jump between energylevels
+      %     irf_spectrogram(h(1),ePDist1(tind).pitchangles(gseB1,15).specrec('pa'),'log');
+      %     irf_spectrogram(h(2),ePDist1(tind).e64.pitchangles(gseB1,15).specrec('pa'),'log');
+      %     irf_spectrogram(h(3),ePDist1(tind).einterp('pchip').pitchangles(gseB1,15).specrec('pa'),'log');
+      
+      if ~strcmp(obj.type_,'skymap'); error('PDist must be a skymap.'); end 
+      if isempty(varargin); method = 'pchip'; else method = varargin{1}; end
+        
+      nt = obj.length;
+      old_energies = obj.depend{1};
+      unique_energies = unique(old_energies,'rows');
+      new_energy = sort(torow(unique_energies(:)));
+      new_energies = repmat(new_energy,nt,1);
+      old_data = obj.data;
+      new_data = nan(size(old_data,1),numel(new_energy),size(old_data,3),size(old_data,4));
+      for it = 1:nt
+        for iaz = 1:size(new_data,3)
+          for ipol = 1:size(new_data,4)
+            new_data(it,:,iaz,ipol) = interp1(old_energies(it,:),old_data(it,:,iaz,ipol),new_energies(it,:),method);
+          end
+        end
+      end
+      new_data(new_data<0) = 0; % pchip sometimes give negative values, set these to zero
+      PD = obj.clone(obj.time,new_data);      
+      PD.depend{1} = new_energies;
+      PD.ancillary.energy = PD.depend{1};
+      PD.ancillary.energy0 = new_energy;
+      PD.ancillary.energy1 = new_energy;
+      
+    end
     function PD = e64(obj)
       % E64 recompile data into 64 energy channels. Time resolution is
       % halved. Only applies to skymap.
@@ -762,7 +862,7 @@ classdef PDist < TSeries
       
       [pdistr,phir,energyr] = mms.psd_rebin(obj,TSeries(obj.time,obj.depend{2}),obj.ancillary.energy0,obj.ancillary.energy1,TSeries(obj.time,obj.ancillary.esteptable));
       PD = obj.clone(pdistr.time,pdistr.data);      
-      PD.depend{1} = energyr;
+      PD.depend{1} = repmat(energyr,PD.length,1);
       PD.ancillary.energy = PD.depend{1}; 
       PD.depend{2} = phir.data;  
       
@@ -855,6 +955,7 @@ classdef PDist < TSeries
  
     end
   end
+  
   methods (Static)
     function newUnits = changeunits(from,to)
       

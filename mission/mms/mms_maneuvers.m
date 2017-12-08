@@ -1,10 +1,10 @@
 function [maneuvers, timelineXML, eclipse] = mms_maneuvers( Tint, scIdStr )
-% MMS_MANEUVERS get maneuver information
+% MMS_MANEUVERS get maneuver and eclipse information
 %	[maneuvers, timelineXML, eclipse] = MMS_MANEUVERS(Tint, [scIdStr]) reads the
 %   appropriate FDOA timeline files and extract all maneuvers and eclipses
 %   that took place during the time interval "Tint".
-%   If "scIdStr" is specified, only the manuevers / eclipses on that 
-%   occured during the time interval "Tint" on spacecraft "scIdStr".
+%   If "scIdStr" is specified, then it only returns the manuevers / eclipses that
+%   occured during the time interval "Tint" on the spacecraft "scIdStr".
 %
 %   Note: This function relies on MMS_READ_TIMELINE and therefor indirectly
 %   on XPath, should FDOA change their file structure this function may

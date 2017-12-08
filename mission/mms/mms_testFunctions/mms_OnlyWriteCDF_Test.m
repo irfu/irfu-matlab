@@ -21,7 +21,7 @@ function tests = mms_OnlyWriteCDF_Test
     end
     global ENVIR MMS_CONST;
     if isempty(MMS_CONST), MMS_CONST = mms_constants(); end
-    ENVIR = mms_sdc_sdp_init('2'); % dummy scNumber used for this test..
+    ENVIR = mms_sdc_sdp_init; % dummy scNumber used for this test..
     tests = functiontests(localfunctions);
 end
 
