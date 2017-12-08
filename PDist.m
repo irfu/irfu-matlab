@@ -635,9 +635,14 @@ classdef PDist < TSeries
         irf.log('warning','Converting DEFlux to PSD in SI units');
         tmpData = obj.data/1e12*mm^2*0.53707;
       end    
-      energy = obj.energy;
+      [energy, indEn] = obj.energy;
+      if(indEn==4) % Correct dataobj(), but a quick workaround is to permute back to the old incorrect data. Remeber to permute back..
+        tmpData = permute(tmpData, [1, 4, 2, 3]);
+      elseif(indEn==2) % old format
+      else
+        error('Not yet implemented');
+      end
       sizeData = size(tmpData);
-%FIXME: Change after correction in commit 944056878faae266f94bc422ac54a8e5a3d203f0
       reshapedData = reshape(tmpData,sizeData(1),sizeData(2),prod(sizeData(3:end)));
       if size(energy,1) == 1
         matEnergy = repmat(energy,obj.length,1,prod(sizeData(3:end)));
@@ -648,12 +653,24 @@ classdef PDist < TSeries
       if nargin<2 || flagdir ~= -1
         reshapedData = reshapedData.*matEnergy.^2;
         tmpData = reshape(reshapedData,sizeData);
+        if(indEn==4) % Correct dataobj(), permute back!
+          tmpData = permute(tmpData, [1, 3, 4, 2]);
+        elseif(indEn==2) % old format
+        else
+          error('Not yet implemented');
+        end
         PD = obj;
         PD.data_ = tmpData;
         PD.units = 'keV/(cm^2 s sr keV)';
       elseif flagdir == -1 && strcmp(obj.units,'keV/(cm^2 s sr keV)')
         reshapedData = reshapedData./(matEnergy.^2);
         tmpData = reshape(reshapedData,sizeData);
+        if(indEn==4) % Correct dataobj(), permute back!
+          tmpData = permute(tmpData, [1, 3, 4, 2]);
+        elseif(indEn==2) % old format
+        else
+          error('Not yet implemented');
+        end
         PD = obj;
         PD.data_ = tmpData;
         PD.units = 's^3/m^6';  
@@ -661,7 +678,6 @@ classdef PDist < TSeries
       	irf.log('warning','No change to PDist');
       	PD = obj;
       end
-%FIXME END
     end
     function PD = dpflux(obj,flagdir)
       % Changes units to differential particle flux
@@ -691,9 +707,14 @@ classdef PDist < TSeries
         tmpData = obj.data/1e12*mm^2*0.53707;
       end   
       
-      energy = obj.energy;
+      [energy, indEn] = obj.energy;
+      if(indEn==4) % Correct dataobj(), but a quick workaround is to permute back to the old incorrect data. Remeber to permute back..
+        tmpData = permute(tmpData, [1, 4, 2, 3]);
+      elseif(indEn==2) % old format
+      else
+        error('Not yet implemented');
+      end
       sizeData = size(tmpData);
-%FIXME: Change after correction in commit 944056878faae266f94bc422ac54a8e5a3d203f0
       reshapedData = reshape(tmpData,sizeData(1),sizeData(2),prod(sizeData(3:end)));
       if size(energy,1) == 1
         matEnergy = repmat(energy,obj.length,1,prod(sizeData(3:end)));
@@ -704,12 +725,24 @@ classdef PDist < TSeries
       if nargin<2 || flagdir ~= -1
         reshapedData = reshapedData.*matEnergy;
         tmpData = reshape(reshapedData,sizeData);
+        if(indEn==4) % Correct dataobj(), permute back!
+          tmpData = permute(tmpData, [1, 3, 4, 2]);
+        elseif(indEn==2) % old format
+        else
+          error('Not yet implemented');
+        end
         PD = obj;
         PD.data_ = tmpData;
         PD.units = '1/(cm^2 s sr keV)';  
       elseif flagdir == -1 && strcmp(obj.units,'1/(cm^2 s sr keV)')
         reshapedData = reshapedData./matEnergy;
         tmpData = reshape(reshapedData,sizeData);
+        if(indEn==4) % Correct dataobj(), permute back!
+          tmpData = permute(tmpData, [1, 3, 4, 2]);
+        elseif(indEn==2) % old format
+        else
+          error('Not yet implemented');
+        end
         PD = obj;
         PD.data_ = tmpData;
         PD.units = 's^3/m^6';  
@@ -717,7 +750,6 @@ classdef PDist < TSeries
         irf.log('warning','No change to PDist');
         PD = obj;
       end
-%FIXME END
     end
     function PD = convertto(obj,newunits)
       % Changes units of Pdist. 
