@@ -56,12 +56,12 @@ if getBR,
   R = mms.get_data('R_gse',Tintl);
   c_eval('R? = irf.ts_vec_xyz(R.time,R.gseR?);',ic);
   if Tint(2)-Tint(1) > 600
-    c_eval('B? = mms.get_data(''B_gsm_fgm_srvy_l2'',Tint,?);',ic);
+    c_eval('B? = mms.get_data(''B_gse_fgm_srvy_l2'',Tint,?);',ic);
     irf.log('notice','Survey mode B is used.');
   else
-    c_eval('B? = mms.get_data(''B_gsm_fgm_brst_l2'',Tint,?);',ic);
+    c_eval('B? = mms.get_data(''B_gse_fgm_brst_l2'',Tint,?);',ic);
     if B1.time.stop-B1.time.start < (Tint(2)-Tint(1))/1.2
-      c_eval('B? = mms.get_data(''B_gsm_fgm_srvy_l2'',Tint,?);',ic);
+      c_eval('B? = mms.get_data(''B_gse_fgm_srvy_l2'',Tint,?);',ic);
       irf.log('notice','Survey mode B is used.')
     else
       irf.log('notice','Burst mode B is used.')
