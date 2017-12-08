@@ -46,22 +46,22 @@ classdef PDist < TSeries
     function obj = PDist(t,data,varargin) % constructor
       if nargin<2, error('2 inputs required'), end
       
-      obj@TSeries(t,data,'to',0);           
+      obj@TSeries(t,data,'to',0);
       
       args = varargin;     
       if isa(args{1},'char'); obj.type_ = args{1}; args(1) = [];
       else, error('3rd input must specify distribution type')
       end
             
-      % collect required data, depend        
+      % collect required data, depend
       switch obj.type_
         case {'skymap'} % construct skymap distribution                
           obj.depend{1} = args{1}; args(1) = []; obj.representation{1} = {'energy'};
           obj.depend{2} = args{1}; args(1) = []; obj.representation{2} = {'phi'};
-          obj.depend{3} = args{1}; args(1) = []; obj.representation{3} = {'theta'};             
+          obj.depend{3} = args{1}; args(1) = []; obj.representation{3} = {'theta'};
         case {'pitchangle'} % construct pitchangle distribution
           obj.depend{1} = args{1}; args(1) = []; obj.representation{1} = {'energy'};
-          obj.depend{2} = args{1}; args(1) = []; obj.representation{2} = {'pitchangle'};                            
+          obj.depend{2} = args{1}; args(1) = []; obj.representation{2} = {'pitchangle'};
         case {'omni'} % construct omni directional distribution
           obj.depend{1} = args{1}; args(1) = []; obj.representation{1} = {'energy'};
         otherwise 
@@ -77,10 +77,10 @@ classdef PDist < TSeries
           case {'energy1'}
             obj.ancillary.energy1 = args{1}; args(1) = [];
           case {'esteptable'}
-            obj.ancillary.esteptable = args{1}; args(1) = [];  
-        end     
+            obj.ancillary.esteptable = args{1}; args(1) = [];
+        end
       end
-    end    
+    end
     
     function [varargout] = subsref(obj,idx)
     %SUBSREF handle indexing
@@ -146,7 +146,8 @@ classdef PDist < TSeries
     end
     function value = get.ancillary(obj)
       value = obj.ancillary_;
-    end    
+    end
+
     function obj = tlim(obj,tint)
       %TLIM  Returns data within specified time interval
       %
@@ -159,7 +160,7 @@ classdef PDist < TSeries
       [idx,obj.t_] = obj.time.tlim(tint);
       sizeData = size(obj.data_);
       nd = ndims(obj.data_);
-      if nd>6, error('we cannot support more than 5 dimensions'), end % we cannot support more than 5 dimensions      
+      if nd>6, error('we cannot support more than 5 dimensions'), end % we cannot support more than 5 dimensions
       switch nd
         case 2, obj.data_ = obj.data_(idx,:);
         case 3, obj.data_ = obj.data_(idx,:,:,:);
@@ -168,7 +169,7 @@ classdef PDist < TSeries
         case 6, obj.data_ = obj.data_(idx,:,:,:,:,:,:);
         otherwise, error('should no be here')
       end      
-      % on depend data      
+      % on depend data
       nDepend = numel(obj.depend);
       for ii = 1:nDepend
         sizeDepend =  size(obj.depend{ii});
@@ -181,15 +182,18 @@ classdef PDist < TSeries
         end
       end
       % on ancillary data
-      nameFields = fieldnames(obj.ancillary);
-      nFields = numel(nameFields);
-      for iField = 1:nFields
-        eval(['sizeField = size(obj.ancillary.' nameFields{iField} ');'])
-        if sizeField(1) == sizeData(1)
-          eval(['obj.ancillary.' nameFields{iField} ' = obj.ancillary.' nameFields{iField} '(idx,:);'])
+      if ~isempty(obj.ancillary)
+        nameFields = fieldnames(obj.ancillary);
+        nFields = numel(nameFields);
+        for iField = 1:nFields
+          eval(['sizeField = size(obj.ancillary.' nameFields{iField} ');'])
+          if sizeField(1) == sizeData(1)
+            eval(['obj.ancillary.' nameFields{iField} ' = obj.ancillary.' nameFields{iField} '(idx,:);'])
+          end
         end
       end
-    end    
+    end
+
     function [x,y,z] = xyz(obj,varargin)
       % PDIST.XYZ Get xyz coordinates of each detector bin. DSL
       % coordinates. PLEASE REPORT ERRORS.
@@ -214,7 +218,7 @@ classdef PDist < TSeries
       
       while have_options
         l = 1;
-        if isnumeric(args{l});
+        if isnumeric(args{l})
           if size(args{l}) == [3 3];
             newx = args{l}(1,:);
             newy = args{l}(2,:);
@@ -225,35 +229,34 @@ classdef PDist < TSeries
             newx = args{l};
             newy = args{l+1};
             newz = args{l+2};
-            args = args(l+3:end);  
+            args = args(l+3:end);
             doRotation = 1;
-          end          
+          end
         end
         if isempty(args), break, end
-        switch(lower(args{1}))   
+        switch(lower(args{1}))
           case 'ts'
-            doReturnTSeries = 1;  
+            doReturnTSeries = 1;
             args = args(l+1:end);
           case 'squeeze'
-            doSqueeze = 1;  
-            args = args(l+1:end);  
+            doSqueeze = 1;
+            args = args(l+1:end);
           otherwise
             irf.log('warning',sprintf('Input ''%s'' not recognized.',args{1}))
             args = args(l+1:end);
         end        
-        if isempty(args), break, end    
+        if isempty(args), break, end
       end
 
       phi = TSeries(obj.time,obj.depend{1,2});
-      azimuthal = phi.data*pi/180;      
+      azimuthal = phi.data*pi/180;
       
       theta = obj.depend{1,3};
-      polar = repmat(theta*pi/180,obj.length,1);            
+      polar = repmat(theta*pi/180,obj.length,1);
       
       x = nan(obj.length,size(azimuthal,2),size(polar,2));
       y = nan(obj.length,size(azimuthal,2),size(polar,2));
       z = nan(obj.length,size(azimuthal,2),size(polar,2));
-      
       
       for ii = 1:length(obj.time)
         [POL,AZ] = meshgrid(polar(ii,:),azimuthal(ii,:));
@@ -261,7 +264,6 @@ classdef PDist < TSeries
         Y = -sin(POL).*sin(AZ);
         Z = -cos(POL);
 
-                
         if doRotation % Transform into different coordinate system
           xX = reshape(X,size(X,1)*size(X,2),1);
           yY = reshape(Y,size(Y,1)*size(Y,2),1);
@@ -273,7 +275,7 @@ classdef PDist < TSeries
 
           X = reshape(newTmpX,size(X,1),size(X,2));
           Y = reshape(newTmpY,size(X,1),size(X,2));
-          Z = reshape(newTmpZ,size(X,1),size(X,2));        
+          Z = reshape(newTmpZ,size(X,1),size(X,2));
         end
         
         x(ii,:,:) = X;
@@ -294,7 +296,8 @@ classdef PDist < TSeries
         y = irf.ts_scalar(obj.time,y);
         z = irf.ts_scalar(obj.time,z);
       end
-    end    
+    end
+
     function [vx,vy,vz] = v(obj,varargin)
       % PDIST.V Get velocity corresponding to each detector bin. DSL
       % coordinates. PLEASE REPORT ERRORS.
@@ -324,12 +327,12 @@ classdef PDist < TSeries
       doRotation = 0;
       have_options = 0;
       
-      nargs = numel(varargin);      
+      nargs = numel(varargin);
       if nargs > 0, have_options = 1; args = varargin(:); end
       
       while have_options
         l = 1;
-        if isnumeric(args{l});
+        if isnumeric(args{l})
           if size(args{l}) == [3 3];
             newx = args{l}(1,:);
             newy = args{l}(2,:);
@@ -340,30 +343,30 @@ classdef PDist < TSeries
             newx = args{l};
             newy = args{l+1};
             newz = args{l+2};
-            args = args(l+3:end);  
+            args = args(l+3:end);
             doRotation = 1;
           end
         end
         if isempty(args), break, end
-        switch(lower(args{1}))   
+        switch(lower(args{1}))
           case 'ts'
-            doReturnTSeries = 1;  
-            args = args(l+1:end);  
+            doReturnTSeries = 1;
+            args = args(l+1:end);
           case 'squeeze'
-            doSqueeze = 1;  
+            doSqueeze = 1;
             args = args(l+1:end);
           otherwise
             irf.log('warning',sprintf('Input ''%s'' not recognized.',args{1}))
             args = args(l+1:end);
-        end        
-        if isempty(args), break, end    
+        end
+        if isempty(args), break, end
       end
 
       phi = TSeries(obj.time,obj.depend{1,2});
-      azimuthal = phi.data*pi/180;      
+      azimuthal = phi.data*pi/180;
       
       theta = obj.depend{1,3};
-      polar = repmat(theta*pi/180,obj.length,1);      
+      polar = repmat(theta*pi/180,obj.length,1);
       
       energy = obj.depend{1};
       units = irf_units;
@@ -402,7 +405,7 @@ classdef PDist < TSeries
 
           VX = reshape(newTmpX,size(VX));
           VY = reshape(newTmpY,size(VY));
-          VZ = reshape(newTmpZ,size(VZ));     
+          VZ = reshape(newTmpZ,size(VZ));
         end
         
         vx(ii,:,:,:) = VX;
@@ -430,6 +433,7 @@ classdef PDist < TSeries
         vz = irf.ts_scalar(obj.time,vz);
       end
     end
+
     function PD = palim(obj,palim,varargin)
       % PDIST.PALIM Picks out given pitchangles
       %   distribution type must be 'pitchangle'
@@ -452,10 +456,10 @@ classdef PDist < TSeries
           doAverage = 0;
         else 
           doAverage = 1;
-        end                
+        end
       else
         indPA = intersect(find(pitchangles(1,:)>palim(1)),find(pitchangles(1,:)<palim(2)));
-      end                  
+      end
       
       if doAverage
         tmpPA = mean(pitchangles(indPA));
@@ -463,12 +467,13 @@ classdef PDist < TSeries
       else
         tmpPA = pitchangles(indPA);
         tmpData = obj.data(:,:,indPA);
-      end      
+      end
       
       PD = obj;
       PD.data_ = tmpData;
       PD.depend{2} = tmpPA; 
     end
+
     function PD = elim(obj,eint)  
       energy = obj.depend{1};
       
@@ -483,17 +488,17 @@ classdef PDist < TSeries
                 energytmp1 = tmp;
             end
             elevels0 = intersect(find(energytmp0>eint(1)),find(energytmp0<eint(2)));
-            elevels1 = intersect(find(energytmp1>eint(1)),find(energytmp1<eint(2)));            
+            elevels1 = intersect(find(energytmp1>eint(1)),find(energytmp1<eint(2)));
        else
             elevels0 = intersect(find(obj.ancillary.energy0>eint(1)),find(obj.ancillary.energy0<eint(2)));
-            elevels1 = intersect(find(obj.ancillary.energy1>eint(1)),find(obj.ancillary.energy1<eint(2)));        
+            elevels1 = intersect(find(obj.ancillary.energy1>eint(1)),find(obj.ancillary.energy1<eint(2)));
        end
        if numel(elevels0) ~= numel(elevels1)
           warning('Energy levels differ for different times. Including the largest interval.')
           elevels = unique([elevels0,elevels1]);
         else
           elevels = elevels0;
-        end         
+       end
         disp(['Effective eint = [' num2str(min(min(energy(:,elevels))),'%g') ' ' num2str(max(max(energy(:,elevels))),'%g') ']'])
       else
         ediff0 = abs(energy(1,:)-eint);
@@ -504,7 +509,7 @@ classdef PDist < TSeries
         disp(['Effective energies alternate in time between ' num2str(energy(1,elevels),'%g') ' and ' num2str(energy(2,elevels),'%g') ''])
       end      
       tmpEnergy = energy(:,elevels);
-      tmpData = obj.data(:,elevels,:,:);      
+      tmpData = obj.data(:,elevels,:,:);
       
       PD = obj;
       PD.data_ = tmpData;
@@ -517,6 +522,7 @@ classdef PDist < TSeries
           PD.ancillary.energy1 = PD.ancillary.energy1(elevels);
       end
     end
+
     function PD = omni(obj)
       % Makes omnidirectional distribution, conserving units.
       
@@ -530,7 +536,7 @@ classdef PDist < TSeries
       lengthphi = 32;
 
       z2 = ones(lengthphi,1)*sind(theta);
-      solida = dangle*dangle*z2;      
+      solida = dangle*dangle*z2;
       allsolida = repmat(solida,1,1,length(dist.time), energysize(2));
       allsolida = squeeze(permute(allsolida,[3 4 1 2]));
       dists = dist.data.*allsolida;
@@ -544,7 +550,8 @@ classdef PDist < TSeries
       PD.units = obj.units;
       PD.name = 'omni';
     end
-    function spec = specrec(obj,varargin)      
+
+    function spec = specrec(obj,varargin)
       if isempty(varargin); spectype = 'energy'; else, spectype = varargin{1}; end % set default
       
       switch obj.units
@@ -553,14 +560,14 @@ classdef PDist < TSeries
         case {'keV/(cm^2 s sr keV)'}
           spec.p_label = {'DEF',obj.units};
         case {'1/(cm^2 s sr keV)'}
-          spec.p_label = {'PEF',obj.units};  
+          spec.p_label = {'PEF',obj.units};
         otherwise
           spec.p_label = {obj.units};
       end
       switch spectype
         case 'energy'
           spec.t = obj.time.epochUnix;
-          spec.p = double(obj.data);          
+          spec.p = double(obj.data);
           spec.f = single(obj.depend{1});
           spec.f_label = {['E_' obj.species(1) ' (eV)']};
         case {'pitchangle','pa'}
@@ -569,7 +576,7 @@ classdef PDist < TSeries
           %spec.p_label = {'dEF',obj.units};
           spec.f = single(obj.depend{2});
           spec.f_label = {'\theta (deg.)'};
-        otherwise % energy is default          
+        otherwise % energy is default
           spec.t = obj.time.epochUnix;
           spec.p = double(obj.data);
           spec.p_label = {'dEF',obj.units};
@@ -577,13 +584,14 @@ classdef PDist < TSeries
           spec.f_label = {'E (eV)'};
       end
     end
+
     function PD = deflux(obj,flagdir)
       % Changes units to differential energy flux
       
       units = irf_units;
       switch obj.species
         case {'e','electrons','electron'}
-          mm = units.me/units.mp;          
+          mm = units.me/units.mp;
         case {'i','p','ions','ion'}
           mm = 1;
         otherwise
@@ -631,12 +639,13 @@ classdef PDist < TSeries
       	PD = obj;
       end
     end
+
     function PD = dpflux(obj,flagdir)
       % Changes units to differential particle flux
       units = irf_units;
       switch obj.species
         case {'e','electrons','electron'}
-          mm = units.me/units.mp;          
+          mm = units.me/units.mp;
         case {'i','p','ions','ion'}
           mm = 1;
         otherwise
@@ -657,7 +666,7 @@ classdef PDist < TSeries
       elseif flagdir == -1 && strcmp(obj.units,'1/(cm^2 s sr keV)')
         irf.log('warning','Converting DPFlux to PSD');
         tmpData = obj.data/1e12*mm^2*0.53707;
-      end   
+      end
       
       energy = obj.depend{1};
       sizeData = size(tmpData);
@@ -685,6 +694,7 @@ classdef PDist < TSeries
         PD = obj;
       end
     end
+
     function PD = convertto(obj,newunits)
       % Changes units of Pdist. 
       % Accepted inputs 's^3/cm^6', 's^3/km^6', 's^3/m^6', 'keV/(cm^2 s sr keV)',
@@ -727,7 +737,8 @@ classdef PDist < TSeries
         otherwise
           error('Units not supported.');
       end
-    end          
+    end
+
     function PD = pitchangles(obj,obj1,obj2) %,method
       %PITCHANGLES Calculate pitchangle distribution
       % PitchangleDistribution = Distribution.pitchangles(B,[nangles])
@@ -797,7 +808,8 @@ classdef PDist < TSeries
 %       else
         [PD,~,~,~] = mms.get_pitchangledist(obj,obj1,'angles',nangles); % - For v1.0.0 or higher data      
 %       end
-    end  
+    end
+
     function PD = einterp(obj,varargin)
       % PDIST.EINTERP Interpolates f to 64 energy channels. 
       %   OBS: ONLY FOR COSMETICS, it makes pitchangle spectrograms 
@@ -820,8 +832,8 @@ classdef PDist < TSeries
       %     irf_spectrogram(h(3),ePDist1(tind).einterp('pchip').pitchangles(gseB1,15).specrec('pa'),'log');
       
       if ~strcmp(obj.type_,'skymap'); error('PDist must be a skymap.'); end 
-      if isempty(varargin); method = 'pchip'; else method = varargin{1}; end
-        
+      if isempty(varargin); method = 'pchip'; else, method = varargin{1}; end
+
       nt = obj.length;
       old_energies = obj.depend{1};
       unique_energies = unique(old_energies,'rows');
@@ -837,13 +849,13 @@ classdef PDist < TSeries
         end
       end
       new_data(new_data<0) = 0; % pchip sometimes give negative values, set these to zero
-      PD = obj.clone(obj.time,new_data);      
+      PD = obj.clone(obj.time,new_data);
       PD.depend{1} = new_energies;
       PD.ancillary.energy = PD.depend{1};
       PD.ancillary.energy0 = new_energy;
       PD.ancillary.energy1 = new_energy;
-      
     end
+
     function PD = e64(obj)
       % E64 recompile data into 64 energy channels. Time resolution is
       % halved. Only applies to skymap.
@@ -872,6 +884,7 @@ classdef PDist < TSeries
       end
       if isfield(PD.ancillary,'esteptable'); PD.ancillary.esteptable = zeros(PD.length,1); end
     end
+
     function m = mass(obj)
       % Get mass of species
       units = irf_units;
@@ -884,11 +897,32 @@ classdef PDist < TSeries
           error('Species not supported.')
       end 
     end
-    function e = energy(obj)
-      % Get energy of object
-      %indE = find(strcmp(obj.representation,'energy'))
-      e = obj.depend{1};
+
+    function [en, indEn] = energy(obj)
+      % Get energy (Depend_i) of object and its column number (i) in data
+      indEn = find(cellfun(@(x) strcmp(x,'energy'),obj.representation));
+      en = obj.depend{indEn};
+      if(nargout>1), indEn=indEn+1; end % If requested return its column number in the data (+1 since first column is time).
     end
+    function [ph, indPh] = phi(obj)
+      % Get phi (Depend_i) of object and its column number (i) in data
+      indPh = find(cellfun(@(x) strcmp(x,'phi'),obj.representation));
+      ph = obj.depend{indPh};
+      if(nargout>1), indPh=indPh+1; end % If requested return its column number in the data (+1 since first column is time).
+    end
+    function [th, indTh] = theta(obj)
+      % Get phi (Depend_i) of object and its column number (i) in data
+      indTh = find(cellfun(@(x) strcmp(x,'theta'),obj.representation));
+      th = obj.depend{indTh};
+      if(nargout>1), indTh=indTh+1; end % If requested return its column number in the data (+1 since first column is time).
+    end
+    function [pitchangle, indPitch] = pitchangle(obj)
+      % Get pitchangles (Depend_i) of object and its column number (i) in data
+      indPitch = find(cellfun(@(x) strcmp(x,'pitchangle'), obj.representation));
+      pitchangle = obj.depend{indPitch};
+      if(nargout>1), indPitch=indPitch+1; end % If requested return its column number in the data (+1 since first column is time).
+    end
+
     function moms = moments(obj,varargin)
       % MOMENTS compute moments from the FPI particle phase-space densities 
       %
@@ -954,6 +988,7 @@ classdef PDist < TSeries
       % to be investigated further. 
  
     end
+
   end
   
   methods (Static)
