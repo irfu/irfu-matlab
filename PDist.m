@@ -108,7 +108,7 @@ classdef PDist < TSeries
             error('Depend has wrong dimensions.')
           end
         end
-        if isfield(obj.ancillary,'esteptable') && size(obj.ancillary.esteptable,1) == sizeData(1);
+        if isfield(obj.ancillary,'esteptable') && size(obj.ancillary.esteptable,1) == sizeData(1)
           obj.ancillary.esteptable = obj.ancillary.esteptable(idxTmp{1},:);
         end
         if numel(idx) > 1
@@ -362,13 +362,13 @@ classdef PDist < TSeries
         if isempty(args), break, end
       end
 
-      phi = TSeries(obj.time,obj.depend{1,2});
+      phi = TSeries(obj.time, obj.phi);
       azimuthal = phi.data*pi/180;
       
-      theta = obj.depend{1,3};
+      theta = obj.theta;
       polar = repmat(theta*pi/180,obj.length,1);
       
-      energy = obj.depend{1};
+      energy = obj.energy;
       units = irf_units;
       velocity = sqrt(energy*units.eV*2/units.me)/1000; % km/s
       
@@ -447,7 +447,7 @@ classdef PDist < TSeries
       %   PADist.palim(90,'noav')
       
       if ~strcmp(obj.type,'pitchangle'); error('PDist type must be pitchangle.'); end      
-      pitchangles = obj.depend{2};
+      pitchangles = obj.pitchangle;
       doAverage = 0;
         
       if numel(palim) == 1        
@@ -475,7 +475,7 @@ classdef PDist < TSeries
     end
 
     function PD = elim(obj,eint)  
-      energy = obj.depend{1};
+      energy = obj.energy;
       
       % Picks out energies in an interval, or the closest energy (to be implemented!)
       if numel(eint) == 2
@@ -530,8 +530,9 @@ classdef PDist < TSeries
       
       dist = obj;
       % define angles
-      energysize = size(obj.depend{1});
-      theta = obj.depend{3};
+      [energy, indEnergy] = obj.energy;
+      energysize = size(energy);
+      theta = obj.theta;
       dangle = pi/16;
       lengthphi = 32;
 
@@ -545,8 +546,8 @@ classdef PDist < TSeries
       PD = obj;
       PD.type = 'omni';
       PD.data_ = omni;
-      PD.depend = {obj.depend{1}};
-      PD.representation = {obj.representation{1}};
+      PD.depend = {obj.energy};
+      PD.representation = {obj.representation{indEnergy-1}};
       PD.units = obj.units;
       PD.name = 'omni';
     end
@@ -568,13 +569,13 @@ classdef PDist < TSeries
         case 'energy'
           spec.t = obj.time.epochUnix;
           spec.p = double(obj.data);
-          spec.f = single(obj.depend{1});
+          spec.f = single(obj.energy);
           spec.f_label = {['E_' obj.species(1) ' (eV)']};
         case {'pitchangle','pa'}
           spec.t = obj.time.epochUnix;
           spec.p = double(squeeze(nanmean(obj.data,2))); % nanmean over energies
           %spec.p_label = {'dEF',obj.units};
-          spec.f = single(obj.depend{2});
+          spec.f = single(obj.pitchangle);
           spec.f_label = {'\theta (deg.)'};
         otherwise % energy is default
           spec.t = obj.time.epochUnix;
@@ -613,7 +614,7 @@ classdef PDist < TSeries
         irf.log('warning','Converting DEFlux to PSD in SI units');
         tmpData = obj.data/1e12*mm^2*0.53707;
       end    
-      energy = obj.depend{1};
+      energy = obj.energy;
       sizeData = size(tmpData);
       reshapedData = reshape(tmpData,sizeData(1),sizeData(2),prod(sizeData(3:end)));
       if size(energy,1) == 1
@@ -668,7 +669,7 @@ classdef PDist < TSeries
         tmpData = obj.data/1e12*mm^2*0.53707;
       end
       
-      energy = obj.depend{1};
+      energy = obj.energy;
       sizeData = size(tmpData);
       reshapedData = reshape(tmpData,sizeData(1),sizeData(2),prod(sizeData(3:end)));
       if size(energy,1) == 1
@@ -835,7 +836,7 @@ classdef PDist < TSeries
       if isempty(varargin); method = 'pchip'; else, method = varargin{1}; end
 
       nt = obj.length;
-      old_energies = obj.depend{1};
+      old_energies = obj.energy;
       unique_energies = unique(old_energies,'rows');
       new_energy = sort(torow(unique_energies(:)));
       new_energies = repmat(new_energy,nt,1);
@@ -863,17 +864,19 @@ classdef PDist < TSeries
       %   see also MMS.PSD_REBIN
       
       if ~strcmp(obj.type_,'skymap'); error('PDist must be a skymap.'); end 
-      if size(obj.depend{1},2) == 64; irf_log(proc,'PDist already has 64 energy levels.'); end 
+      if size(obj.energy,2) == 64; irf.log('warning','PDist already has 64 energy levels.'); end 
       
       if ~any([isfield(obj.ancillary,'energy0') isfield(obj.ancillary,'energy1') isfield(obj.ancillary,'esteptable')]) % construct energy0, energy1, and esteptable 
         esteptable = zeros(obj.length,1);
-        [energies,~,esteptable] = unique(obj.depend{1},'rows'); % consider using legacy
+        [energies,~,esteptable] = unique(obj.energy,'rows'); % consider using legacy
         energy0 = obj.depend{1}(1,:);
         energy1 = obj.depend{1}(2,:);
       end
       
-      [pdistr,phir,energyr] = mms.psd_rebin(obj,TSeries(obj.time,obj.depend{2}),obj.ancillary.energy0,obj.ancillary.energy1,TSeries(obj.time,obj.ancillary.esteptable));
-      PD = obj.clone(pdistr.time,pdistr.data);      
+      [pdistr,phir,energyr] = mms.psd_rebin(obj, ...
+        TSeries(obj.time, obj.phi), obj.ancillary.energy0, ...
+        obj.ancillary.energy1, TSeries(obj.time, obj.ancillary.esteptable));
+      PD = obj.clone(pdistr.time, pdistr.data);
       PD.depend{1} = repmat(energyr,PD.length,1);
       PD.ancillary.energy = PD.depend{1}; 
       PD.depend{2} = phir.data;  
