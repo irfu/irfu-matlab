@@ -549,17 +549,22 @@ classdef PDist < TSeries
       % define angles
       [energy, indEn] = obj.energy;
       energysize = size(energy);
-      theta = obj.theta;
+      [theta, indTh] = obj.theta;
       dangle = pi/16;
+      [~, indPh] = obj.phi;
       lengthphi = 32;
-%FIXME: Change after correction in commit 944056878faae266f94bc422ac54a8e5a3d203f0
       z2 = ones(lengthphi,1)*sind(theta);
-      solida = dangle*dangle*z2;      
-      allsolida = repmat(solida,1,1,length(dist.time), energysize(2));
-      allsolida = squeeze(permute(allsolida,[3 4 1 2]));
+      solida = dangle*dangle*z2;
+      allsolida = repmat(solida,1,1,length(dist.time), energysize(2)); % [solida (2d) x time (1d) x energy (1d)]
+      if(indEn==4)
+        allsolida = squeeze(permute(allsolida,[3 1 2 4])); % Make it [time x solida x energy] (ie same as data)
+      elseif(indEn==2)
+        allsolida = squeeze(permute(allsolida,[3 4 1 2])); % Make it [time x energy x solida] (ie same as data)
+      else
+        error('Not implemeted yet');
+      end
       dists = dist.data.*allsolida;
-      omni = squeeze(irf.nanmean(irf.nanmean(dists,3),4))/(mean(mean(solida)));
-%FIXME END      
+      omni = squeeze(irf.nanmean(irf.nanmean(dists,indPh), indTh))/(mean(mean(solida)));
       PD = obj;
       PD.type = 'omni';
       PD.data_ = omni;
