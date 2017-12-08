@@ -248,10 +248,10 @@ classdef PDist < TSeries
         if isempty(args), break, end
       end
 
-      phi = TSeries(obj.time,obj.depend{1,2});
+      phi = TSeries(obj.time, obj.phi); % FIXME: Why is it made into a TSeries?
       azimuthal = phi.data*pi/180;
       
-      theta = obj.depend{1,3};
+      theta = obj.theta;
       polar = repmat(theta*pi/180,obj.length,1);
       
       x = nan(obj.length,size(azimuthal,2),size(polar,2));
@@ -362,7 +362,7 @@ classdef PDist < TSeries
         if isempty(args), break, end
       end
 
-      phi = TSeries(obj.time, obj.phi);
+      phi = TSeries(obj.time, obj.phi); % FIXME: Why is it made into a TSeries?
       azimuthal = phi.data*pi/180;
       
       theta = obj.theta;
@@ -722,7 +722,7 @@ classdef PDist < TSeries
       % Convert to new units
       switch newunits
         case {'s^3/cm^6'}
-        	PD.data_ = PD.data*1e-12;
+          PD.data_ = PD.data*1e-12;
           PD.units = 's^3/cm^6';
           PD.siConversion = 1e12;
         case {'s^3/km^6'}
