@@ -48,7 +48,7 @@ classdef PDist < TSeries
       
       obj@TSeries(t,data,'to',0);           
       
-      args = varargin;
+      args = varargin;     
       if isa(args{1},'char'); obj.type_ = args{1}; args(1) = [];
       else, error('3rd input must specify distribution type')
       end
@@ -56,9 +56,9 @@ classdef PDist < TSeries
       % collect required data, depend        
       switch obj.type_
         case {'skymap'} % construct skymap distribution                
-          obj.depend{1} = args{1}; args(1) = []; obj.representation{1} = {'phi'};
-          obj.depend{2} = args{1}; args(1) = []; obj.representation{2} = {'theta'};
-          obj.depend{3} = args{1}; args(1) = []; obj.representation{3} = {'energy'};
+          obj.depend{1} = args{1}; args(1) = []; obj.representation{1} = {'energy'};
+          obj.depend{2} = args{1}; args(1) = []; obj.representation{2} = {'phi'};
+          obj.depend{3} = args{1}; args(1) = []; obj.representation{3} = {'theta'};             
         case {'pitchangle'} % construct pitchangle distribution
           obj.depend{1} = args{1}; args(1) = []; obj.representation{1} = {'energy'};
           obj.depend{2} = args{1}; args(1) = []; obj.representation{2} = {'pitchangle'};                            
@@ -77,48 +77,48 @@ classdef PDist < TSeries
           case {'energy1'}
             obj.ancillary.energy1 = args{1}; args(1) = [];
           case {'esteptable'}
-            obj.ancillary.esteptable = args{1}; args(1) = [];
-        end
+            obj.ancillary.esteptable = args{1}; args(1) = [];  
+        end     
       end
     end    
     
     function [varargout] = subsref(obj,idx)
-      %SUBSREF handle indexing
-      switch idx(1).type
-        % Use the built-in subsref for dot notation
-        case '.'
-          [varargout{1:nargout}] = builtin('subsref',obj,idx);
-        case '()'
-          tmpEpoch = builtin('subsref',obj.time,idx(1));
-          obj.t_ = tmpEpoch;
-          idxTmp = repmat({':'}, ndims(obj.data), 1);
-          idxTmp(1) = idx(1).subs;
-          sizeData = size(obj.data_);
-          obj.data_ = obj.data_(idxTmp{:});
-          % on depend data
-
-          nDepend = numel(obj.depend);
-          for ii = 1:nDepend
-            sizeDepend =  size(obj.depend{ii});
-            if sizeDepend(1) == 1 % same dependence for all times
-              obj.depend_{ii} = obj.depend{ii};
-            elseif sizeDepend(1) == sizeData(1)
-              obj.depend_{ii} = obj.depend_{ii}(idxTmp{:},:);
-            else
-              error('Depend has wrong dimensions.')
-            end
+    %SUBSREF handle indexing
+    switch idx(1).type
+      % Use the built-in subsref for dot notation
+      case '.'
+        [varargout{1:nargout}] = builtin('subsref',obj,idx);
+      case '()'
+        tmpEpoch = builtin('subsref',obj.time,idx(1));        
+        obj.t_ = tmpEpoch;
+        idxTmp = repmat({':'}, ndims(obj.data), 1);
+        idxTmp(1) = idx(1).subs;
+        sizeData = size(obj.data_);
+        obj.data_ = obj.data_(idxTmp{:});
+        % on depend data      
+        
+        nDepend = numel(obj.depend);
+        for ii = 1:nDepend
+          sizeDepend =  size(obj.depend{ii});
+          if sizeDepend(1) == 1 % same dependence for all times
+            obj.depend_{ii} = obj.depend{ii};
+          elseif sizeDepend(1) == sizeData(1)
+            obj.depend_{ii} = obj.depend_{ii}(idxTmp{:},:);
+          else
+            error('Depend has wrong dimensions.')
           end
-          if isfield(obj.ancillary,'esteptable') && size(obj.ancillary.esteptable,1) == sizeData(1)
-            obj.ancillary.esteptable = obj.ancillary.esteptable(idxTmp{1},:);
-          end
-          if numel(idx) > 1
-            obj = builtin('subsref',obj,idx(2:end));
-          end
-          [varargout{1:nargout}] = obj;
-        case '{}'
-          error('irf:TSeries:subsref',...
-            'Not a supported subscripted reference')
-      end
+        end
+        if isfield(obj.ancillary,'esteptable') && size(obj.ancillary.esteptable,1) == sizeData(1);
+          obj.ancillary.esteptable = obj.ancillary.esteptable(idxTmp{1},:);
+        end
+        if numel(idx) > 1
+          obj = builtin('subsref',obj,idx(2:end));
+        end
+        [varargout{1:nargout}] = obj;
+      case '{}'
+        error('irf:TSeries:subsref',...
+          'Not a supported subscripted reference')
+    end
     end
     
     % set
@@ -146,8 +146,7 @@ classdef PDist < TSeries
     end
     function value = get.ancillary(obj)
       value = obj.ancillary_;
-    end
-
+    end    
     function obj = tlim(obj,tint)
       %TLIM  Returns data within specified time interval
       %
@@ -182,14 +181,12 @@ classdef PDist < TSeries
         end
       end
       % on ancillary data
-      if ~isempty(obj.ancillary)
-        nameFields = fieldnames(obj.ancillary);
-        nFields = numel(nameFields);
-        for iField = 1:nFields
-          eval(['sizeField = size(obj.ancillary.' nameFields{iField} ');'])
-          if sizeField(1) == sizeData(1)
-            eval(['obj.ancillary.' nameFields{iField} ' = obj.ancillary.' nameFields{iField} '(idx,:);'])
-          end
+      nameFields = fieldnames(obj.ancillary);
+      nFields = numel(nameFields);
+      for iField = 1:nFields
+        eval(['sizeField = size(obj.ancillary.' nameFields{iField} ');'])
+        if sizeField(1) == sizeData(1)
+          eval(['obj.ancillary.' nameFields{iField} ' = obj.ancillary.' nameFields{iField} '(idx,:);'])
         end
       end
     end    
@@ -217,8 +214,8 @@ classdef PDist < TSeries
       
       while have_options
         l = 1;
-        if isnumeric(args{l})
-          if size(args{l}) == [3 3]
+        if isnumeric(args{l});
+          if size(args{l}) == [3 3];
             newx = args{l}(1,:);
             newy = args{l}(2,:);
             newz = args{l}(3,:);
@@ -247,11 +244,11 @@ classdef PDist < TSeries
         if isempty(args), break, end    
       end
 
-      phi = TSeries(obj.time, obj.phi); % FIXME: Why is it made into a TSeries? Could it not be simply repmat?
-      azimuthal = phi.data*pi/180;
+      phi = TSeries(obj.time,obj.depend{1,2});
+      azimuthal = phi.data*pi/180;      
       
-      theta = obj.theta;
-      polar = repmat(theta*pi/180,obj.length,1);
+      theta = obj.depend{1,3};
+      polar = repmat(theta*pi/180,obj.length,1);            
       
       x = nan(obj.length,size(azimuthal,2),size(polar,2));
       y = nan(obj.length,size(azimuthal,2),size(polar,2));
@@ -332,8 +329,8 @@ classdef PDist < TSeries
       
       while have_options
         l = 1;
-        if isnumeric(args{l})
-          if size(args{l}) == [3 3]
+        if isnumeric(args{l});
+          if size(args{l}) == [3 3];
             newx = args{l}(1,:);
             newy = args{l}(2,:);
             newz = args{l}(3,:);
@@ -362,13 +359,13 @@ classdef PDist < TSeries
         if isempty(args), break, end    
       end
 
-      phi = TSeries(obj.time, obj.phi); % FIXME: Why TSeries and not simply repmat?
-      azimuthal = phi.data*pi/180;
+      phi = TSeries(obj.time,obj.depend{1,2});
+      azimuthal = phi.data*pi/180;      
       
-      theta = obj.theta;
-      polar = repmat(theta*pi/180,obj.length,1);
+      theta = obj.depend{1,3};
+      polar = repmat(theta*pi/180,obj.length,1);      
       
-      energy = obj.energy;
+      energy = obj.depend{1};
       units = irf_units;
       velocity = sqrt(energy*units.eV*2/units.me)/1000; % km/s
       
@@ -472,62 +469,52 @@ classdef PDist < TSeries
       PD.data_ = tmpData;
       PD.depend{2} = tmpPA; 
     end
-    function PD = elim(obj, eint)
-      % Limit PD based on energies in eint
-      [energy, indE] = obj.energy;
+    function PD = elim(obj,eint)  
+      energy = obj.depend{1};
+      
       % Picks out energies in an interval, or the closest energy (to be implemented!)
       if numel(eint) == 2
-        if or(isempty(obj.ancillary), or(~isfield(obj.ancillary, 'energy0'), ~isfield(obj.ancillary, 'energy1')))
-          energytmp0 = energy(1,:);
-          energytmp1 = energy(2,:);
-          if energytmp0(1) > energytmp1(1)
-            tmp = energytmp0;
-            energytmp0 = energytmp1;
-            energytmp1 = tmp;
-          end
-          elevels0 = intersect(find(energytmp0>eint(1)),find(energytmp0<eint(2)));
-          elevels1 = intersect(find(energytmp1>eint(1)),find(energytmp1<eint(2)));
-        else
-          elevels0 = intersect(find(obj.ancillary.energy0>eint(1)),find(obj.ancillary.energy0<eint(2)));
-          elevels1 = intersect(find(obj.ancillary.energy1>eint(1)),find(obj.ancillary.energy1<eint(2)));
-        end
-        if numel(elevels0) ~= numel(elevels1)
+       if or(isempty(obj.ancillary), or(~isfield(obj.ancillary, 'energy0'), ~isfield(obj.ancillary, 'energy1')))
+            energytmp0 = energy(1,:);
+            energytmp1 = energy(2,:);
+            if energytmp0(1) > energytmp1(1)
+                tmp = energytmp0;
+                energytmp0 = energytmp1;
+                energytmp1 = tmp;
+            end
+            elevels0 = intersect(find(energytmp0>eint(1)),find(energytmp0<eint(2)));
+            elevels1 = intersect(find(energytmp1>eint(1)),find(energytmp1<eint(2)));            
+       else
+            elevels0 = intersect(find(obj.ancillary.energy0>eint(1)),find(obj.ancillary.energy0<eint(2)));
+            elevels1 = intersect(find(obj.ancillary.energy1>eint(1)),find(obj.ancillary.energy1<eint(2)));        
+       end
+       if numel(elevels0) ~= numel(elevels1)
           warning('Energy levels differ for different times. Including the largest interval.')
           elevels = unique([elevels0,elevels1]);
         else
           elevels = elevels0;
-        end
+        end         
         disp(['Effective eint = [' num2str(min(min(energy(:,elevels))),'%g') ' ' num2str(max(max(energy(:,elevels))),'%g') ']'])
       else
         ediff0 = abs(energy(1,:)-eint);
         ediff1 = abs(energy(2,:)-eint);
-        if min(ediff0)<min(ediff1)
-          ediff = ediff0;
-        else
-          ediff = ediff1;
-        end
+        if min(ediff0)<min(ediff1); ediff = ediff0;
+        else, ediff = ediff1; end
         elevels = find(ediff==min(ediff));
         disp(['Effective energies alternate in time between ' num2str(energy(1,elevels),'%g') ' and ' num2str(energy(2,elevels),'%g') ''])
-      end
+      end      
       tmpEnergy = energy(:,elevels);
-      switch indE
-        case 2
-          tmpData = obj.data(:,elevels,:,:);
-        case 3
-          tmpData = obj.data(:,:,elevels,:);
-        case 4
-          tmpData = obj.data(:,:,:,elevels);
-      end
-
+      tmpData = obj.data(:,elevels,:,:);      
+      
       PD = obj;
       PD.data_ = tmpData;
-      PD.depend{indE} = tmpEnergy;
-      if or(isempty(PD.ancillary), or(~isfield(PD.ancillary, 'energy0'), ~isfield(PD.ancillary, 'energy1')))
-        PD.ancillary.energy0 = energytmp0(elevels);
-        PD.ancillary.energy1 = energytmp1(elevels);
+      PD.depend{1} = tmpEnergy;
+      if or(isempty(PD.ancillary), or(~isfield(PD.ancillary, 'energy0'), ~isfield(PD.ancillary, 'energy1')))    
+          PD.ancillary.energy0 = energytmp0(elevels);
+          PD.ancillary.energy1 = energytmp1(elevels);      
       else
-        PD.ancillary.energy0 = PD.ancillary.energy0(elevels);
-        PD.ancillary.energy1 = PD.ancillary.energy1(elevels);
+          PD.ancillary.energy0 = PD.ancillary.energy0(elevels);
+          PD.ancillary.energy1 = PD.ancillary.energy1(elevels);
       end
     end
     function PD = omni(obj)
@@ -537,8 +524,8 @@ classdef PDist < TSeries
       
       dist = obj;
       % define angles
-      energysize = size(obj.energy);
-      theta = obj.theta;
+      energysize = size(obj.depend{1});
+      theta = obj.depend{3};
       dangle = pi/16;
       lengthphi = 32;
 
@@ -618,7 +605,7 @@ classdef PDist < TSeries
         irf.log('warning','Converting DEFlux to PSD in SI units');
         tmpData = obj.data/1e12*mm^2*0.53707;
       end    
-      energy = obj.energy;
+      energy = obj.depend{1};
       sizeData = size(tmpData);
       reshapedData = reshape(tmpData,sizeData(1),sizeData(2),prod(sizeData(3:end)));
       if size(energy,1) == 1
@@ -672,7 +659,7 @@ classdef PDist < TSeries
         tmpData = obj.data/1e12*mm^2*0.53707;
       end   
       
-      energy = obj.energy;
+      energy = obj.depend{1};
       sizeData = size(tmpData);
       reshapedData = reshape(tmpData,sizeData(1),sizeData(2),prod(sizeData(3:end)));
       if size(energy,1) == 1
@@ -833,10 +820,10 @@ classdef PDist < TSeries
       %     irf_spectrogram(h(3),ePDist1(tind).einterp('pchip').pitchangles(gseB1,15).specrec('pa'),'log');
       
       if ~strcmp(obj.type_,'skymap'); error('PDist must be a skymap.'); end 
-      if isempty(varargin); method = 'pchip'; else, method = varargin{1}; end
+      if isempty(varargin); method = 'pchip'; else method = varargin{1}; end
         
       nt = obj.length;
-      old_energies = obj.energy;
+      old_energies = obj.depend{1};
       unique_energies = unique(old_energies,'rows');
       new_energy = sort(torow(unique_energies(:)));
       new_energies = repmat(new_energy,nt,1);
@@ -864,7 +851,7 @@ classdef PDist < TSeries
       %   see also MMS.PSD_REBIN
       
       if ~strcmp(obj.type_,'skymap'); error('PDist must be a skymap.'); end 
-      if size(obj.energy,2) == 64; irf.log('warning','PDist already has 64 energy levels.'); end 
+      if size(obj.depend{1},2) == 64; irf_log(proc,'PDist already has 64 energy levels.'); end 
       
       if ~any([isfield(obj.ancillary,'energy0') isfield(obj.ancillary,'energy1') isfield(obj.ancillary,'esteptable')]) % construct energy0, energy1, and esteptable 
         esteptable = zeros(obj.length,1);
@@ -897,23 +884,10 @@ classdef PDist < TSeries
           error('Species not supported.')
       end 
     end
-    function [en, indEn] = energy(obj)
-      % Get energy (Depend_i) of object and its column number (i) in data
-      indEn = find(cellfun(@(x) strcmp(x,'energy'),obj.representation));
-      en = obj.depend{indEn};
-      if(nargout>1), indEn=indEn+1; end % If requested return its column number in the data (+1 since first column is time).
-    end
-    function [ph, indPh] = phi(obj)
-      % Get phi (Depend_i) of object and its column number (i) in data
-      indPh = find(cellfun(@(x) strcmp(x,'phi'),obj.representation));
-      ph = obj.depend{indPh};
-      if(nargout>1), indPh=indPh+1; end % If requested return its column number in the data (+1 since first column is time).
-    end
-    function [th, indTh] = theta(obj)
-      % Get phi (Depend_i) of object and its column number (i) in data
-      indTh = find(cellfun(@(x) strcmp(x,'theta'),obj.representation));
-      th = obj.depend{indTh};
-      if(nargout>1), indTh=indTh+1; end % If requested return its column number in the data (+1 since first column is time).
+    function e = energy(obj)
+      % Get energy of object
+      %indE = find(strcmp(obj.representation,'energy'))
+      e = obj.depend{1};
     end
     function moms = moments(obj,varargin)
       % MOMENTS compute moments from the FPI particle phase-space densities 
