@@ -446,7 +446,7 @@ classdef PDist < TSeries
       %   PADist.palim(90,'noav')
       
       if ~strcmp(obj.type,'pitchangle'); error('PDist type must be pitchangle.'); end      
-      [pitchangles, indPitch] = obj.pitchangle;
+      pitchangles = obj.depend{2};
       doAverage = 0;
         
       if numel(palim) == 1        
@@ -458,24 +458,14 @@ classdef PDist < TSeries
         end                
       else
         indPA = intersect(find(pitchangles(1,:)>palim(1)),find(pitchangles(1,:)<palim(2)));
-      end
+      end                  
       
       if doAverage
         tmpPA = mean(pitchangles(indPA));
-        switch indPitch
-          case 2
-            tmpData = irf.nanmean(obj.data(:,indPA,:),2);
-          case 3
-            tmpData = irf.nanmean(obj.data(:,:,indPA),3);
-        end
+        tmpData = irf.nanmean(obj.data(:,:,indPA),3);
       else
         tmpPA = pitchangles(indPA);
-        switch indPitch
-          case 2
-            tmpData = obj.data(:,indPA,:);
-          case 3
-            tmpData = obj.data(:,:,indPA);
-        end
+        tmpData = obj.data(:,:,indPA);
       end      
       
       PD = obj;
@@ -547,24 +537,23 @@ classdef PDist < TSeries
       
       dist = obj;
       % define angles
-      [energy, indEn] = obj.energy;
-      energysize = size(energy);
+      energysize = size(obj.energy);
       theta = obj.theta;
       dangle = pi/16;
       lengthphi = 32;
-%FIXME: Change after correction in commit 944056878faae266f94bc422ac54a8e5a3d203f0
+
       z2 = ones(lengthphi,1)*sind(theta);
       solida = dangle*dangle*z2;      
       allsolida = repmat(solida,1,1,length(dist.time), energysize(2));
       allsolida = squeeze(permute(allsolida,[3 4 1 2]));
       dists = dist.data.*allsolida;
       omni = squeeze(irf.nanmean(irf.nanmean(dists,3),4))/(mean(mean(solida)));
-%FIXME END      
+      
       PD = obj;
       PD.type = 'omni';
       PD.data_ = omni;
-      PD.depend = {obj.energy};
-      PD.representation = {obj.representation{indEn-1}};
+      PD.depend = {obj.depend{1}};
+      PD.representation = {obj.representation{1}};
       PD.units = obj.units;
       PD.name = 'omni';
     end
@@ -585,12 +574,11 @@ classdef PDist < TSeries
         case 'energy'
           spec.t = obj.time.epochUnix;
           spec.p = double(obj.data);          
-          spec.f = single(obj.energy);
+          spec.f = single(obj.depend{1});
           spec.f_label = {['E_' obj.species(1) ' (eV)']};
         case {'pitchangle','pa'}
           spec.t = obj.time.epochUnix;
-          [~, indEn] = obj.energy;
-          spec.p = double(squeeze(nanmean(obj.data, indEn))); % nanmean over energies
+          spec.p = double(squeeze(nanmean(obj.data,2))); % nanmean over energies
           %spec.p_label = {'dEF',obj.units};
           spec.f = single(obj.depend{2});
           spec.f_label = {'\theta (deg.)'};
@@ -598,7 +586,7 @@ classdef PDist < TSeries
           spec.t = obj.time.epochUnix;
           spec.p = double(obj.data);
           spec.p_label = {'dEF',obj.units};
-          spec.f = single(obj.energy);
+          spec.f = single(obj.depend{1});
           spec.f_label = {'E (eV)'};
       end
     end
@@ -926,12 +914,6 @@ classdef PDist < TSeries
       indTh = find(cellfun(@(x) strcmp(x,'theta'),obj.representation));
       th = obj.depend{indTh};
       if(nargout>1), indTh=indTh+1; end % If requested return its column number in the data (+1 since first column is time).
-    end
-    function [pitchangle, indPitch] = pitchangle(obj)
-      % Get pitchangles (Depend_i) of object and its column number (i) in data
-      indPitch = find(cellfun(@(x) strcmp(x,'pitchangle'), obj.representation));
-      pitchangle = obj.depend{indPitch};
-      if(nargout>1), indPitch=indPitch+1; end % If requested return its column number in the data (+1 since first column is time).
     end
     function moms = moments(obj,varargin)
       % MOMENTS compute moments from the FPI particle phase-space densities 
