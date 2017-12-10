@@ -98,7 +98,7 @@ while have_options
 end
 
 if strcmp(dist.type, 'skymap')
-    energyTable_all = dist.depend{1};
+    energyTable_all = dist.energy;
     energyTable = irf.nanmean(energyTable_all(tId, :), 1);  
     if flag_energy
       eId = find(abs(energyTable-energy)==min(abs(energyTable-energy)));    

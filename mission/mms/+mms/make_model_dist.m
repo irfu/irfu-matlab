@@ -74,7 +74,7 @@ n.data = n.data*1e6;
 
 % Defines dimensions of array below
 lengthphi = length(PDist.depend{1,2}(1,:));
-lengththeta = length(PDist.depend{1,3});
+lengththeta = length(PDist.theta);
 lengthenergy = length(PDist.ancillary.energy0);
 
 % Get energy array
@@ -87,9 +87,9 @@ z = zeros(length(PDist.time),lengthphi,lengththeta);
 r = zeros(length(PDist.time),lengthenergy);
 
 for ii = 1:length(PDist.time)
-	x(ii,:,:) = -cosd(PDist.depend{1,2}(ii,:)')*sind(PDist.depend{1,3});
-	y(ii,:,:) = -sind(PDist.depend{1,2}(ii,:)')*sind(PDist.depend{1,3});
-	z(ii,:,:) = -ones(lengthphi,1)*cosd(PDist.depend{1,3});
+	x(ii,:,:) = -cosd(PDist.depend{1,2}(ii,:)')*sind(PDist.theta);
+	y(ii,:,:) = -sind(PDist.depend{1,2}(ii,:)')*sind(PDist.theta});
+	z(ii,:,:) = -ones(lengthphi,1)*cosd(PDist.theta);
   r(ii,:) = real(sqrt(2*(energyarr(ii,:)-SCpot.data(ii))*qe/pmass));
 end
 r(r == 0) = 0.0;

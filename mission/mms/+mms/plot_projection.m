@@ -93,15 +93,15 @@ else
             irf.log('critical','PDist must be skymap format.');
             return;
         end
-        tmpPhi = dist.depend{1,2};
+        tmpPhi = dist.phi;
         if size(tmpPhi,1) == 1 % only one value for one time or for all times
-          phi = TSeries(dist.time,repmat(dist.depend{1,2},dist.length,1));
+          phi = TSeries(dist.time, repmat(tmpPhi, dist.length, 1));
         else
-          phi = TSeries(dist.time,dist.depend{1,2});
+          phi = TSeries(dist.time, tmpPhi);
         end
-        theta = dist.depend{1,3};
+        theta = dist.theta;
         polar = theta*pi/180;
-        stepTable = TSeries(dist.time,dist.ancillary.esteptable);
+        stepTable = TSeries(dist.time, dist.ancillary.esteptable);
         if and(isfield(dist.ancillary, 'energy0'), isfield(dist.ancillary, 'energy1'))
             energy0 = dist.ancillary.energy0;
             energy1 = dist.ancillary.energy1;            

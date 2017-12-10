@@ -124,7 +124,7 @@ v(v < 0) = 0;
 
 % Calculate density of Pdiff
 deltaang = (11.25*pi/180)^2;
-thetak = PDist.depend{1,3};
+thetak = PDist.theta;
 
 epsilon = zeros(length(PDist.time), 1);
 

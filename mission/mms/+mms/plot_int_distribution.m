@@ -214,7 +214,7 @@ for i = 1:length(it)
     end
     
     % elevation angle
-    th = double(dist.depend{3}); % polar angle in degrees
+    th = double(dist.theta); % polar angle in degrees
     th = th-90; % elevation angle in degrees
     th = th*pi/180; % in radians
     
