@@ -248,23 +248,23 @@ classdef PDist < TSeries
         if isempty(args), break, end
       end
 
-      phi = TSeries(obj.time, obj.phi); % FIXME: Why is it made into a TSeries?
-      azimuthal = phi.data*pi/180;
+      nLength = obj.length;
+      phi = obj.phi;
+      azimuthal = repmat(phi*pi/180, nLength, 1);
       
       theta = obj.theta;
-      polar = repmat(theta*pi/180,obj.length,1);
+      polar = repmat(theta*pi/180, nLength, 1);
       
-      x = nan(obj.length,size(azimuthal,2),size(polar,2));
-      y = nan(obj.length,size(azimuthal,2),size(polar,2));
-      z = nan(obj.length,size(azimuthal,2),size(polar,2));
+      x = NaN(nLength, size(azimuthal,2), size(polar,2));
+      y = NaN(nLength, size(azimuthal,2), size(polar,2));
+      z = NaN(nLength, size(azimuthal,2), size(polar,2));
       
-      for ii = 1:length(obj.time)
-        [POL,AZ] = meshgrid(polar(ii,:),azimuthal(ii,:));
+      for ii = 1:nLength
+        [POL, AZ] = meshgrid(polar(ii,:), azimuthal(ii,:));
         X = -sin(POL).*cos(AZ); % '-' because the data shows which direction the particles were coming from
         Y = -sin(POL).*sin(AZ);
         Z = -cos(POL);
-
-        if doRotation % Transform into different coordinate system
+        if doRotation % Transform into different coordinate system, (which could be time dependend)
           xX = reshape(X,size(X,1)*size(X,2),1);
           yY = reshape(Y,size(Y,1)*size(Y,2),1);
           zZ = reshape(Z,size(Z,1)*size(Z,2),1);
@@ -276,12 +276,18 @@ classdef PDist < TSeries
           X = reshape(newTmpX,size(X,1),size(X,2));
           Y = reshape(newTmpY,size(X,1),size(X,2));
           Z = reshape(newTmpZ,size(X,1),size(X,2));
+
+          x(ii,:,:) = X;
+          y(ii,:,:) = Y;
+          z(ii,:,:) = Z;
+        else
+          % Static
+          x = permute(repmat(X, 1, 1, nLength), [3, 1, 2]);
+          y = permute(repmat(Y, 1, 1, nLength), [3, 1, 2]);
+          z = permute(repmat(Z, 1, 1, nLength), [3, 1, 2]);
+          break % Only run through the first "ii"
         end
-        
-        x(ii,:,:) = X;
-        y(ii,:,:) = Y;
-        z(ii,:,:) = Z;
-      end 
+      end
       %x = permute(x,[1 3 2]);
       %y = permute(y,[1 3 2]);
       %z = permute(z,[1 3 2]);
