@@ -922,24 +922,28 @@ classdef PDist < TSeries
     function [en, indEn] = energy(obj)
       % Get energy (Depend_i) of object and its column number (i) in data
       indEn = find(cellfun(@(x) strcmp(x,'energy'),obj.representation));
+      if isempty(indEn), error('Did not find "energy" among the dependencies.'); end
       en = obj.depend{indEn};
       if(nargout>1), indEn=indEn+1; end % If requested return its column number in the data (+1 since first column is time).
     end
     function [ph, indPh] = phi(obj)
       % Get phi (Depend_i) of object and its column number (i) in data
       indPh = find(cellfun(@(x) strcmp(x,'phi'),obj.representation));
+      if isempty(indPh), error('Did not find "phi" among the dependencies.'); end
       ph = obj.depend{indPh};
       if(nargout>1), indPh=indPh+1; end % If requested return its column number in the data (+1 since first column is time).
     end
     function [th, indTh] = theta(obj)
       % Get phi (Depend_i) of object and its column number (i) in data
       indTh = find(cellfun(@(x) strcmp(x,'theta'),obj.representation));
+      if isempty(indTh), error('Did not find "theta" among the dependencies.'); end
       th = obj.depend{indTh};
       if(nargout>1), indTh=indTh+1; end % If requested return its column number in the data (+1 since first column is time).
     end
     function [pitchangle, indPitch] = pitchangle(obj)
       % Get pitchangles (Depend_i) of object and its column number (i) in data
       indPitch = find(cellfun(@(x) strcmp(x,'pitchangle'), obj.representation));
+      if isempty(indPitch), error('Did not find "pitchangle" among the dependencies.'); end
       pitchangle = obj.depend{indPitch};
       if(nargout>1), indPitch=indPitch+1; end % If requested return its column number in the data (+1 since first column is time).
     end
