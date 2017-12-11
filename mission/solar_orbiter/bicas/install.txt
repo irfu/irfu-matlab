@@ -50,6 +50,7 @@ Example using moving commands:
 Note: This procedure is only meant to show the setup one wants to achieve.
 
 
+
 ==========================
  Step 2: Master CDF files
 ==========================
@@ -66,4 +67,3 @@ Make sure that BICAS uses the right MATLAB version (important if there are multi
 The shell command used to launch MATLAB is specified in the configuration file. By default, BICAS uses the configuration file
 <BICAS root dir>/config/bicas.conf . See "System requirements" for MATLAB version.
 NOTE: One can manually specify a configuration file using a command-line flag.
-

@@ -81,8 +81,13 @@ try
     
     % Among other things: Sets up paths to within irfu-matlab (excluding .git/).
     % NOTE: Prints to stdout. Can not deactivate this behaviour!
+    % NOTE: Should not call irf('check') which looks for updates to irfu-matlab (can not distinguish between updates to
+    %       BICAS or the rest of irfu-matlab).
     irf('check_path');
+    irf('check_os');       % Maybe not strictly needed.    
+    irf('matlab');         % Maybe not strictly needed.
     irf.log('notice')      % Set initial log level value until it is later overridden by the config value.
+    irf('version')         % Print e.g. "irfu-matlab version: 2017-02-21,  v1.12.6".
     
     %======================
     % Check MATLAB version
@@ -92,6 +97,7 @@ try
         error('BICAS:BadMATLABVersion', 'Using bad MATLAB version. Found version "%s". BICAS requires version "%s".\n', ...
             matlabVersionString, REQUIRED_MATLAB_VERSION)
     end
+    fprintf(1, 'Using MATLAB, version %s.\n', matlabVersionString);
     
     %=======================================================================
     % Derive the root path of the software (BICAS directory structure root)
@@ -111,7 +117,7 @@ try
     % Should preferably not use irf.log before here so that the right logging level is used.
     CONSTANTS = bicas.constants(bicasRootPath);
     SETTINGS  = bicas.settings;
-    irf.log(SETTINGS.get('LOGGING.IRF_LOG_LEVEL'));
+    irf.log(SETTINGS.get('LOGGING.IRF_LOG_LEVEL'));   % NOTE: May set the logging level to the same level as before.
 
     
     
@@ -356,9 +362,10 @@ function print_version(DataManager)
 % IMPLEMENTATION NOTE: Uses the software version in the S/W descriptor rather than the in the BICAS
 % constants since the RCS ICD specifies that it should be that specific version.
 % This is in principle inefficient but "precise".
+% NOTE: Uses the s/w name from the s/w descriptor too (instead of SETTINGS) since available anyway.
 
 swd = bicas.get_sw_descriptor(DataManager);
-bicas.stdout_printf('Version %s\n', swd.release.version)
+bicas.stdout_printf('%s version %s\n', swd.identification.name, swd.release.version)
 
 end
 
@@ -391,11 +398,11 @@ function print_help(ERROR_CODES, DataManager)
 %    PROPOSAL: Define error codes with description strings?! Map?!! Check for doubles?!
 % PROPOSAL: Print CLI syntax incl. for all modes? More easy to parse than the S/W descriptor.
 
-global SETTINGS
 
 % Print software name & description
 swd = bicas.get_sw_descriptor(DataManager);
-bicas.stdout_printf('%s\n%s\n', swd.identification.name, swd.identification.description)
+print_version(DataManager)
+bicas.stdout_printf('%s\n', swd.identification.description)
 
 % Print error codes.
 bicas.stdout_printf('\nError codes (internal constants):\n')
@@ -407,6 +414,8 @@ end
 
 % Print settings
 bicas.stdout_disp(bicas.sprint_settings)   % Includes title
+
+
 
 bicas.stdout_printf('\nSee "readme.txt" and user manual for more help.\n')
 end

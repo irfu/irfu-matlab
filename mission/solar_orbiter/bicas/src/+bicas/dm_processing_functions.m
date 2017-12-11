@@ -509,19 +509,21 @@ classdef dm_processing_functions
         % PROPOSAL: Incorporate into processing function process_demuxing_calibration.
         
             bicas.dm_utils.assert_unvaried_N_rows(DemuxerInput)
-            nRecords = length(MUX_SET);
             
             % Create empty structure to which new components can be added.
             DemuxerOutput = struct(...
                 'V1',     [], 'V2',     [], 'V3',     [], ...
                 'V12',    [], 'V23',    [], 'V13',    [], ...
                 'V12_AC', [], 'V23_AC', [], 'V13_AC', []);
-            
-            iFirst = 1;    % First record in sequence of records with constant settings.
-            while iFirst <= nRecords;
-                
-                % Find continuous sequence of records (i_first to i_last) having identical settings.
-                iLast = bicas.dm_utils.find_last_same_sequence(iFirst, DIFF_GAIN, MUX_SET);
+
+
+
+            % Find continuous sequences of records having identical settings then
+            % process data separately for those sequences.
+            [iFirstList, iLastList] = bicas.dm_utils.find_sequences(MUX_SET, DIFF_GAIN);            
+            for iSequence = 1:length(iFirstList)
+                iFirst = iFirstList(iSequence);
+                iLast  = iLastList (iSequence);
                 
                 % Extract SCALAR settings to use for entire subsequence of records.
                 MUX_SET_value   = MUX_SET  (iFirst);
@@ -530,20 +532,18 @@ classdef dm_processing_functions
                     iFirst, iLast, MUX_SET_value, DIFF_GAIN_value))    % "%-3" since value might be NaN.
                 
                 % Extract subsequence of DATA records to "demux".
-                demuxerInputSubseq = bicas.dm_utils.select_subset_from_struct(DemuxerInput, iFirst, iLast);
+                DemuxerInputSubseq = bicas.dm_utils.select_subset_from_struct(DemuxerInput, iFirst, iLast);
                 
                 %=================================================
                 % CALL DEMUXER - See method/function for comments
                 %=================================================
-                demuxerOutputSubseq = bicas.dm_processing_functions.simple_demultiplex_subsequence(...
-                    demuxerInputSubseq, MUX_SET_value, DIFF_GAIN_value);
+                DemuxerOutputSubseq = bicas.dm_processing_functions.simple_demultiplex_subsequence(...
+                    DemuxerInputSubseq, MUX_SET_value, DIFF_GAIN_value);
                 
                 % Add demuxed sequence to the to-be complete set of records.
-                DemuxerOutput = bicas.dm_utils.add_components_to_struct(DemuxerOutput, demuxerOutputSubseq);
+                DemuxerOutput = bicas.dm_utils.add_components_to_struct(DemuxerOutput, DemuxerOutputSubseq);
                 
-                iFirst = iLast + 1;
-                
-            end   % while
+            end
             
         end   % simple_demultiplex
 
@@ -555,6 +555,8 @@ classdef dm_processing_functions
         %
         % This function implements Table 3 and Table 4 in "RPW-SYS-MEB-BIA-SPC-00001-IRF", iss1rev16.
         % Variable names are chosen according to these tables.
+        %
+        % NOTE/BUG: Does not handle latching relay.
         %
         % NOTE: Conceptually, this function mixes demuxing with calibration which can (and most likely should) be separated.
         % - Demuxing is done on individual samples at a specific point in time.

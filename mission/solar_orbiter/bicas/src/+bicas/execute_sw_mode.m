@@ -445,7 +445,7 @@ irf.log('n', sprintf('File: Skeleton_version = "%s"', fileSkeletonVersionStr))
 %===================================================
 % NOTE: Does print file name since it has only been previously been logged as "notice".
 %bicas.dm_utils.assert_unvaried_N_rows(processData);
-InputInfo = bicas.utils.select_structs(CONSTANTS.INPUTS_INFO_LIST, 'PDID', {pdid});
+InputInfo = bicas.utils.select_cell_array_structs(CONSTANTS.INPUTS_INFO_LIST, 'PDID', {pdid});
 InputInfo = InputInfo{1};
 bicas.utils.assert_strings_equal(...
     SETTINGS.get('INPUT_CDF_ASSERTIONS.STRICT_DATASET_ID'), ...

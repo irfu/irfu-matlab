@@ -275,20 +275,20 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
 
             global CONSTANTS
 
-            ExtendedSwModeInfo = bicas.utils.select_structs(CONSTANTS.SW_MODES_INFO_LIST, 'CLI_PARAMETER', {swModeCliParameter});            
+            ExtendedSwModeInfo = bicas.utils.select_cell_array_structs(CONSTANTS.SW_MODES_INFO_LIST, 'CLI_PARAMETER', {swModeCliParameter});            
             ExtendedSwModeInfo = ExtendedSwModeInfo{1};
 
             % Collect all associated elementary input PDIDs.
             %input_PDIDs = obj.get_elementary_input_PDIDs(C_sw_mode.OUTPUT_PDID_LIST, C_sw_mode.ID);
 
             try   % Assign INPUTS
-                ExtendedSwModeInfo.inputs = bicas.utils.select_structs(CONSTANTS.INPUTS_INFO_LIST,  'PDID', ExtendedSwModeInfo.INPUT_PDID_LIST);
+                ExtendedSwModeInfo.inputs = bicas.utils.select_cell_array_structs(CONSTANTS.INPUTS_INFO_LIST,  'PDID', ExtendedSwModeInfo.INPUT_PDID_LIST);
             catch exception
                 error('BICAS:Assertion:IllegalConfiguration', ...
                     'Can not identify all input PDIDs associated with S/W mode CLI parameter "%s".', swModeCliParameter)
             end
             try   % Assign OUTPUTS
-                ExtendedSwModeInfo.outputs = bicas.utils.select_structs(CONSTANTS.OUTPUTS_INFO_LIST, 'PDID', ExtendedSwModeInfo.OUTPUT_PDID_LIST);
+                ExtendedSwModeInfo.outputs = bicas.utils.select_cell_array_structs(CONSTANTS.OUTPUTS_INFO_LIST, 'PDID', ExtendedSwModeInfo.OUTPUT_PDID_LIST);
             catch exception
                 error('BICAS:Assertion:IllegalConfiguration', ...
                     'Can not identify all output PDIDs associated with S/W mode CLI parameter "%s".', swModeCliParameter)

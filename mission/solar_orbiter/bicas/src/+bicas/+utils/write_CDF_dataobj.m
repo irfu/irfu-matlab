@@ -31,7 +31,7 @@ function write_CDF_dataobj(filePath, dataobj_GlobalAttributes, dataobj_data, dat
 %
 % LIMITATIONS
 % ===========
-% NOTE/PROBLEM: spdfcdfread and scpdfcdfinfo may crash MATLAB(!) when reading files written with spdfcdfwrite (which
+% NOTE/PROBLEM: spdfcdfread and spdfcdfinfo may crash MATLAB(!) when reading files written with spdfcdfwrite (which
 % this function uses). It appears that this happens when spdfcdfwrite receives various forms of "incomplete" input data.
 % spdfcdfwrite appears to often not give any warning/error message when receiving such data and writes a file anyway
 % with neither error nor warning. Before passing data to spdfcdfwrite, this function tries to give errors for, or

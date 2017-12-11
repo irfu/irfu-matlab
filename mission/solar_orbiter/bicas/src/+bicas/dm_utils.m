@@ -39,10 +39,11 @@ classdef dm_utils
     methods(Static, Access=public)
 
         function s = select_subset_from_struct(s, iFirst, iLast)
-        % Given a struct, select a subset of that struct defined by a range of COLUMN indicies for every field.
+        % Given a struct, select a subset of that struct defined by a range of ROW indices for every field.
         % Generic utility function.
         
         % PROPOSAL: Use ~assert_unvaried_N_rows.
+        % PROPOSAL: Better name. select_struct_columns_subset/range/interval.
         
             fieldNameList = fieldnames(s);
             nRows = NaN;                   % Initial non-sensical value which is later replaced.
@@ -69,7 +70,7 @@ classdef dm_utils
         % Add values to every struct field by adding components after their highest row index (let them grow in
         % the row index).
         
-        % PROPOSAL: Better name. ~rows, ~fields
+        % PROPOSAL: Better name. ~rows, ~fields, ~records
         %   Ex: add_row_components_to_struct_fields
             
             % Generic utility function.
@@ -202,45 +203,45 @@ classdef dm_utils
         
         
         
-        function iLast = find_last_same_sequence(iFirst, varargin)
-        % Finds the greatest iLast such that all varargin{k}(i) are equal for iFirst <= i <= iLast separately for every k.
-        % Useful for finding a continuous sequence of records with the same data.
-        %
-        % ASSUMES: varargin{i} are all column arrays of the same size.
-        % ASSUMES: At least one record. (Algorithm does not work for zero records. Output is ill-defined.)
-        
-        % PROPOSAL: Better name?
-        % PROPOSAL: Replace by function that returns list of sequences.
-        %   PRO: Can naturally handle zero records.
-            
-            % ASSERTIONS
-            if isempty(varargin)
-                error('BICAS:dm_utils:Assertion:IllegalArgument', 'There are no vectors to look for sequences in.')
-            end
-            for kArg = 1:length(varargin)
-                if ~iscolumn(varargin{kArg})
-                    error('BICAS:dm_utils:Assertion:IllegalArgument', 'varargins are not all column vectors.')
-                end
-            end                
-            nRecords = size(varargin{1}, 1);
-            if nRecords == 0
-                error('BICAS:dm_utils:Assertion:IllegalArgument', 'Vectors are empty.')
-            end
+%         function iLast = find_last_same_sequence(iFirst, varargin)
+%         % Finds the greatest iLast such that all varargin{k}(i) are equal for iFirst <= i <= iLast separately for every k.
+%         % Useful for finding a continuous sequence of records with the same data.
+%         %
+%         % ASSUMES: varargin{i} are all column arrays of the same size.
+%         % ASSUMES: At least one record. (Algorithm does not work for zero records. Output is ill-defined.)
+%         
+%         % PROPOSAL: Better name?
+%         % PROPOSAL: Replace by function that returns list of sequences.
+%         %   PRO: Can naturally handle zero records.
+%             
+%             % ASSERTIONS
+%             if isempty(varargin)
+%                 error('BICAS:dm_utils:Assertion:IllegalArgument', 'There are no vectors to look for sequences in.')
+%             end
+%             for kArg = 1:length(varargin)
+%                 if ~iscolumn(varargin{kArg})
+%                     error('BICAS:dm_utils:Assertion:IllegalArgument', 'varargins are not all column vectors.')
+%                 end
+%             end                
+%             nRecords = size(varargin{1}, 1);
+%             if nRecords == 0
+%                 error('BICAS:dm_utils:Assertion:IllegalArgument', 'Vectors are empty.')
+%             end
+% 
+%             % NOTE: Algorithm does not work for nRecords==0.
+%             iLast = iFirst;
+%             while iLast+1 <= nRecords       % For as long as there is another row...
+%                 for kArg = 1:length(varargin)
+%                     if ~isequaln(varargin{kArg}(iFirst), varargin{kArg}(iLast+1))    % NOTE: Use "isequaln" that treats NaN as any other value.
+%                         % CASE: This row is different from the previous one.
+%                         return
+%                     end
+%                 end
+%                 iLast = iLast + 1;
+%             end
+%             iLast = nRecords;
+%         end
 
-            % NOTE: Algorithm does not work for nRecords==0.
-            iLast = iFirst;
-            while iLast+1 <= nRecords       % For as long as there is another row...
-                for kArg = 1:length(varargin)
-                    if ~isequaln(varargin{kArg}(iFirst), varargin{kArg}(iLast+1))    % NOTE: Use "isequaln" that treats NaN as any other value.
-                        % CASE: This row is different from the previous one.
-                        return
-                    end
-                end
-                iLast = iLast + 1;
-            end
-            iLast = nRecords;
-        end
-        
         
         
         % EXPERIMENTAL
@@ -266,13 +267,11 @@ classdef dm_utils
                 end
             end                
             
-            % NOTE: Works also for nRecords == 0. Never calls find_last_same_sequence for nRecords == 0.
             iFirstList = [];
             iLastList  = [];
             iFirst = 1;
             iLast = iFirst;
             while iFirst <= nRecords
-%                 iLast = find_last_same_sequence(iFirst, varargin{:});
                 
                 while iLast+1 <= nRecords       % For as long as there is another row...
                     foundLast = false;

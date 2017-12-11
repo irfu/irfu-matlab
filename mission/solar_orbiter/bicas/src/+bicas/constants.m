@@ -39,7 +39,7 @@ classdef constants < handle
 %
 % PROPOSAL: Use arrays of structs instead of cells.
 %    PRO: Forces the use of the same struct fields.
-%    NOTE: Would need to create new version of "select_structs" that works on arrays instead.
+%    NOTE: Would need to create new version of "select_cell_array_structs" that works on arrays instead.
 %
 % PROPOSAL: Use (nested) function to set every input in produce_inputs_constants. Reduce to one-liners.
 %     PROPOSAL: Same for produce_inputs_constants.

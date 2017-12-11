@@ -1,12 +1,22 @@
 classdef calibration
 % Class for (1) loading calibration data from file, and (2) library/utility functions that calibrate data.
 %
-% UNFINISHED. NOT USED BY MAIN PROGRAM YET.
+% UNFINISHED. NOT USED BY MAIN PROGRAM YET. NOT ENTIRELY CLEAR WHAT IT SHOULD INCLUDE.
 %
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
 % First created 2017-02-15
 %
+%
+%
+% VARIABLE NAMING CONVENTION
+% --------------------------
 % TF = Transfer function
+% ("spectrum") transfer functions, i.e. transfer functions which modify the spectrum content of a signal, are
+% represented in the pure mathematical form as Z=Z(omega), where Z is a complex number (multiply frequency component of
+% the signal in Volt; not Volt^2) and omega is a frequency (radians/s).
+
+
+
 
 % BOGIQ:
 % ------
@@ -29,6 +39,15 @@ classdef calibration
 %   PROPOSAL: Filenames to TFs.
 %   PROPOSAL: Offsets?
 % QUESTION: How implement the parasitic capacitance TF? Use analytical TF directly, or convert to TF table?
+% PROPOSAL: Separate class for handling calibration based directly on classifying, locating, reading standalone calibration files?
+%       Load path patterns from settings.
+%
+% PROPOSAL: convert_TF_Hz_energy_dB_phase, convert_TF_radPerSec_z
+%   1) Separately split into two functions for frequency and z/phase&dB.
+%   2) Move to separate functions in utils/.
+%   3) Rename z --> h, as in H(s)?
+%   NOTE: There are functions mag2db, db2mag, rad2deg, deg2rad.
+%   PRO: Useful for plotting, not just calibration.
 
     properties(Access=private)
         
@@ -42,12 +61,13 @@ classdef calibration
         biasAcLoGainTf
         biasAcHiGainTf
         
+        BiasDcRecordList = [];
     end
 
     %###################################################################################################################
 
     methods(Access=public)
-        
+
         function obj = calibration(...
             biasAcLoGainTfFilePath, ...
             biasAcHiGainTfFilePath)
@@ -56,98 +76,43 @@ classdef calibration
             
             %obj.biasDcAbsGain  = 
             %obj.biasDcDiffGain = 
-            obj.biasAcLoGainTf = bicas.calibration.read_TF_file( biasAcLoGainTfFilePath );
-            obj.biasAcHiGainTf = bicas.calibration.read_TF_file( biasAcHiGainTfFilePath );
+            
+            obj.BiasDcRecordList    = init_biasDcRecordList();
+
         end
+
+
         
-    end
+%         % TEST
+%         function inputSignalVolt = calibrate_DC(obj, temperatureCelsius, stimuli, antennaCh, lfrCh, outputSignalVolt)
+%             %if numel(antennaCh) == 2
+%             %    antennaCh = sort(antennaCh);
+%             %end
+%             
+%             if     isequal(antennaCh, [1])
+%             elseif isequal(antennaCh, [2])
+%             elseif isequal(antennaCh, [3])
+%             elseif isequal(antennaCh, [1,2])
+%             elseif isequal(antennaCh, [1,3])
+%             elseif isequal(antennaCh, [1,3])
+%             else
+%                 error('BICAS:Assertion', 'Can not interpret antenna channels.')
+%             end
+%             
+%             inputSignalVolt = offset + slope .* outputSignalVolt;
+%         end
+%         
+% 
+    end    % methods(Access=public)
     
     %###################################################################################################################
 
     %methods(Static, Access=private)
     methods(Static, Access=public)   % Temporarily public for testing purposes.
-    
-        function [tfOmega, tfZ] = convert_TF_Hz_energy_dB_phase(tfFrequencyHz, tfAmplitudeEnergyDb, tfPhaseDegrees)
-        % Effectively convert TF on the format found in the BIAS stand-alone calibrations to the "mathematically
-        % pure" TF format, a complex Z=Z(omega).
-        %
-        %
-        % ARGUMENTS AND RETURN VALUES
-        % ===========================
-        % tfFrequencyHz       : TF frequencies. Unit: Hz.
-        % tfAmplitudeEnergyDb : Amplitude change on the form of dB __energy__, i.e. 20 dB change corresponds to a factor
-        %                       of 10. Motivation: If a signal U (Volt) is amplified by X dB, then the power P~U^2
-        %                       (W) is amplified by 2*X dB.
-        % tfPhaseDegrees      : TF phase in degrees. (360 degrees per revolution.)
-        % tfOmega             : TF frequencies. Unit: radians/s
-        % tfZ                 : Complex TF amplitudes (DFT component multiplication factors).
         
-        % TODO: Assertions? Implicit check on file format.
-            
-            tfOmega = tfFrequencyHz * 2*pi;
-            tfZ     = 10.^(tfAmplitudeEnergyDb / 20) .* exp(1i*2*pi * tfPhaseDegrees*pi/180);
-        end
-
-
-
-        function [tfOmega, tfZ] = read_TF_file(filePath)
-        % Read BIAS standalone calibration TF file.
-        
-        % TODO: Assertions? Implicit check on file format.
-        
-            COLUMN_FIELD_NAMES_LIST = {'tfFrequencyHz', 'tfAmplitudeEnergyDb', 'tfPhaseDegrees'};
-            fileData = bicas.calibration.read_calib_file(filePath, COLUMN_FIELD_NAMES_LIST);
-            
-            [tfOmega, tfZ] = bicas.calibration.convert_TF_Hz_energy_dB_phase(...
-                fileData.tfFrequencyHz, ...
-                fileData.tfAmplitudeEnergyDb, ...
-                fileData.tfPhaseDegrees);
-        end
-        
-        
-        
-        function data = read_calib_file(filePath, columnFieldNamesList)
-        % Read BIAS standalone calibration file (TF or other).
-        %
-        % Reads files generated during the actual calibration campaign, and NOT files later converted into any more
-        % "convenient" format. Reads a numeric table in a text file with a certain comment style.
-        %
-        %
-        % ARGUMENTS AND RETURN VALUE
-        % ==========================
-        % columnFieldNamesList : Cell array of strings, one per file table column.
-        % data                 : struct with one field per column.
-        %
-        %
-        % IMPLEMENTATION NOTE: Code needs to be able to handle files with different numbers of columns.
-        
-            fId = fopen(filePath, 'r');
-            if fId == -1
-                error('BICAS:calibration:PathNotFound', 'Can not open file "%s".', filePath)
-            end
-            fileContents = textscan(fId, '%f', 'CommentStyle', 'mheader');   % Format specification will read all numbers into one long 1D array.
-            fileContents = fileContents{1};
-            fclose(fId);
-            
-            nColumns = length(columnFieldNamesList);
-            
-            % ASSERTION. Tries to check for the number of columns, but is not a perfect test.
-            if mod(length(fileContents), nColumns) ~= 0
-                error('BICAS:calibration:UnexpectedFileFormat', 'Number of specificed columns does not match file contents.')
-            end
-            fileContents = reshape(fileContents, [nColumns, length(fileContents)/nColumns])';
-            
-            data = struct;
-            for iColumn = 1:nColumns
-                fieldName = columnFieldNamesList{iColumn};
-                data.(fieldName) = fileContents(:, iColumn);
-            end
-        end
-
-
-
 %         function tfZ = parasitic_capacitance_TF(tfOmega)
-%
+%             % Calucalte Z(omega) values for TF representing parasitic capacitances (based on analytic function).
+% 
 %             % Function name? "Input capacitance"?
 %             % Not read R & C from constants here? Submit as arguments?
 %             capacitanceFarad =
@@ -178,10 +143,61 @@ classdef calibration
     %###################################################################################################################
 
     methods(Static, Access=public)
+
+        function [frequencyRadPerSec, z] = convert_TF_Hz_energy_dB_phase(frequencyHz, gainEnergyDb, phaseShiftDegrees)
+        % Effectively convert TF on the format found in the BIAS stand-alone calibrations to the "mathematically
+        % pure" TF format, a complex Z=Z(omega).
+        %
+        %
+        % ARGUMENTS AND RETURN VALUES
+        % ===========================
+        % frequencyHz         : TF frequencies. Unit: Hz.
+        % gainEnergyDb        : Amplitude change on the form of dB __energy__, i.e. 20 dB change corresponds to a factor
+        %                       of 10. Motivation: If a signal U (Volt) is amplified by X dB, then the power P~U^2
+        %                       (W) is amplified by 2*X dB.
+        % phaseShiftDegrees   : TF phase in degrees. (360 degrees per revolution.)
+        % frequencyRadPerSec  : TF frequencies. Unit: radians/s
+        % z                   : Complex TF amplitudes (DFT component multiplication factors).
         
+        % TODO: Assertions? Implicit check on file format.
+            
+            frequencyRadPerSec = frequencyHz * 2*pi;   % (Convert revolutions to radians = factor 2*pi)
+            z                  = db2mag(gainEnergyDb) .* exp(1i * deg2rad(phaseShiftDegrees));
+        end
+
+
+
+        function [frequencyHz, gainEnergyDb, phaseShiftDegrees] = convert_TF_radPerSec_z(frequencyRadPerSec, z)
+        % Effectively convert TF on "mathematically pure" z(omega) format, to "human-readable" quantitities.
+        % Inverse of convert_TF_Hz_energy_dB_phase
+        %
+        %
+        % ARGUMENTS AND RETURN VALUES
+        % ===========================
+        % Same as convert_TF_Hz_energy_dB_phase.
+        % NOTE: phaseShiftDegrees will be uncertain up to n*360 degrees.
+        
+        % TODO: Better choice of angles ("wrapping")?
+        % TODO: Assertions? Implicit check on file format.
+        % PROPOSAL: Try to prevent phaseShiftDegrees from wrapping around.
+        %   PROPOSAL: Add/subtract 360 degrees to minimize difference between successive values.
+        % PROPOSAL: Use own unwrap function.
+            
+            frequencyHz       = frequencyRadPerSec / (2*pi);
+            gainEnergyDb      = mag2db(abs(z));
+            phaseShiftDegrees = rad2deg(angle(z));     % NOTE: "angle" returns angle in interval [-pi, pi].
+            %phaseShiftDegrees2 = rad2deg(unwrap(angle(z)));     % NOTE: "angle" returns angle in interval [-pi, pi].
+            
+            % NOTE: unwrap does not seem to work as intended here. Unknown why.
+            % Ex: Plotting the invfreqs fit for
+            % Dropbox/Solar_Orbiter/Tests/SO_FM1/FM1_Backup/TEMP0C/4_5_TRANSFER_FUNCTION/SO_BIAS_AC_VOLTAGE_ID00_Ver_00_FM1_0_4.5.txt
+        end
+
+
+
         function y2 = apply_transfer_function_in_freq(dt, y1, tfOmega, tfZ, varargin)
         % y2 = apply_transfer_function_in_freq(dt, y1, tfOmega, tfZ, varargin)
-        % Apply TF to sequence of samples (real-valued).
+        % Generic general-purpose function for applying a spectrum TF to a sequence of samples (real-valued).
         %
         % Algorithm:
         % (1) de-trend (if enabled)
