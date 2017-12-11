@@ -368,24 +368,28 @@ classdef PDist < TSeries
         if isempty(args), break, end
       end
 
-      phi = TSeries(obj.time, obj.phi); % FIXME: Why is it made into a TSeries?
-      azimuthal = phi.data*pi/180;
-      
+      nLength = obj.length;
+      phi = obj.phi;
+      azimuthal = repmat(phi*pi/180, nLength, 1);
+
       theta = obj.theta;
-      polar = repmat(theta*pi/180,obj.length,1);
-      
+      polar = repmat(theta*pi/180, nLength, 1);
+
       energy = obj.energy;
       units = irf_units;
+      % FIXME: Should we not make sure units of data is as expected? (km/s)
+      % FIXME: Should we not use the obj.mass? (ie depending on species of
+      % object)
       velocity = sqrt(energy*units.eV*2/units.me)/1000; % km/s
-      
-      vx = NaN*obj.data;
-      vy = NaN*obj.data;
-      vz = NaN*obj.data;
-            
-      for ii = 1:length(obj.time)
+      if(size(unique(velocity),2)==1), staticEnergy=true; else, staticEnergy=false; end
+
+      vx = NaN(size(obj.data));
+      vy = NaN(size(obj.data));
+      vz = NaN(size(obj.data));
+
+      for ii = 1:nLength
         [VEL,AZ,POL] = meshgrid(velocity(ii,:),azimuthal(ii,:),polar(ii,:));
         %[AZ,VEL,POL] = meshgrid(azimuthal(ii,:),velocity(ii,:),polar(ii,:));
-        
         
         VX = -VEL.*sin(POL).*cos(AZ); % '-' because the data shows which direction the particles were coming from
         VY = -VEL.*sin(POL).*sin(AZ);
@@ -413,14 +417,22 @@ classdef PDist < TSeries
           VY = reshape(newTmpY,size(VY));
           VZ = reshape(newTmpZ,size(VZ));
         end
-        
         vx(ii,:,:,:) = VX;
         vy(ii,:,:,:) = VY;
         vz(ii,:,:,:) = VZ;
-      end    
-      
+
+        if(ii==1 && ~doRotation && staticEnergy)
+          % No rotation (which could be time dependent) and no changing
+          % energy/velocity. Use simple static values.
+          vx = permute(repmat(VX, 1, 1, 1, nLength), [4, 1, 2, 3]);
+          vy = permute(repmat(VY, 1, 1, 1, nLength), [4, 1, 2, 3]);
+          vz = permute(repmat(VZ, 1, 1, 1, nLength), [4, 1, 2, 3]);
+          break % exit for loop
+        end
+      end
+
       if 0 % Diagnostics
-        step = 2;
+        step = 2; %#ok<UNRCH>
         subplot(1,3,1)
         scatter3(VX(1:step:end),VY(1:step:end),VZ(1:step:end),VZ(1:step:end)*0+10,VEL(1:step:end)); axis equal
         subplot(1,3,2)
