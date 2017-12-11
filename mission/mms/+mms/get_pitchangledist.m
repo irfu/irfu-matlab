@@ -232,11 +232,7 @@ else
         z(ii,:,:) = -ones(lengthphi,1)*cosd(theta);
     end
     energy = ones(length(pdist.time),1)*energy0;
-    for ii = 1:length(pdist.time)
-        if stepTable.data(ii)
-        	energy(ii,:) = energy1;
-        end
-    end
+    energy(stepTable.data>0,:) = repmat(energy1, sum(stepTable.data>0), 1);
 end
 
 xt = repmat(x,1,1,1,numechannels);
