@@ -39,14 +39,14 @@ c_eval('dslE?=mms.db_get_ts(''mms?_edp_brst_l2_dce'',''mms?_edp_dce_dsl_brst_l2'
 %dmpaB1=mms.db_get_ts('mms1_fgm_brst_l2','mms1_fgm_b_dmpa_brst_l2',tint);
 
 %% Example operations
-ePdist_omni = ePDist1.omni; % omnidirectional differential energy flux
-ePDist_pa = ePDist1.pitchangles(dmpaB1,24); % construt pitchangle distribution
-ePDist_lowE = ePDist1.elim([0 200]); % limit energy range
-ePDist_deflux = ePDist1.deflux; % change units to differential energy flux
-ePDist_dpflux = ePDist1.dpflux; % change units to particle energy flux
-ePDist_skm = ePDist1.convertto('s^3/km^6'); % change units to particle energy flux
-ePDist_e64 = ePDist1.e64; % resample energy to 64 energy levels, reduces the time resolution
-ePDist_specrec = ePDist1.specrec; % change format to specrec, to be used as input to irf_plot or irf_spectrogram
+c_eval('ePdist_omni = ePDist?.omni;', ic); % omnidirectional differential energy flux
+c_eval('ePDist_pa = ePDist?.pitchangles(dmpaB?,24);', ic); % construt pitchangle distribution
+c_eval('ePDist_lowE = ePDist?.elim([0 200]);', ic); % limit energy range
+c_eval('ePDist_deflux = ePDist?.deflux;', ic); % change units to differential energy flux
+c_eval('ePDist_dpflux = ePDist?.dpflux;', ic); % change units to particle energy flux
+c_eval('ePDist_skm = ePDist?.convertto(''s^3/km^6'');', ic); % change units to particle energy flux
+c_eval('ePDist_e64 = ePDist?.e64;', ic); % resample energy to 64 energy levels, reduces the time resolution
+c_eval('ePDist_specrec = ePDist?.specrec;', ic); % change format to specrec, to be used as input to irf_plot or irf_spectrogram
 
 %% Example plots: time series
 nPanels = 7;
