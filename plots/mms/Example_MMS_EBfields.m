@@ -5,7 +5,9 @@
 
 ic = 1; % Spacecraft number
 
-Tint = irf.tint('2015-10-30T05:15:20.00Z/2015-10-30T05:16:20.00Z');
+%Tint = irf.tint('2015-10-30T05:15:20.00Z/2015-10-30T05:16:20.00Z');
+Tint = irf.tint('2017-01-27T12:05:00.000Z/2017-01-27T12:06:00.000Z');    
+
 
 %% Load Data 
 c_eval('Bxyz=mms.db_get_ts(''mms?_fgm_brst_l2'',''mms?_fgm_b_gse_brst_l2'',Tint);',ic);

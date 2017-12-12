@@ -521,6 +521,20 @@ dss2bcs = -76;
 inrange = find( ~isnan(per) & per < length(pulse) );
 n_inrange = length(inrange);
 
+if isempty(inrange)
+  % Empty overlap meaning HK 101 sunpulses do not cover any of the
+  % EDP data, may even be hours off... This was the case for 
+  % mms4_edp_fast_l1b_dce_20170904_v1.4.0.cdf (covering 00.00-00.30 UTC) 
+  % while the corresponding HK 101 file
+  % mms4_fields_hk_l1b_101_20170904_v0.5.0.cdf 
+  % covering 08:25:21 to 08:44:42 UTC.
+  % Interpolation  is not an option for these cases, return error and wait
+  % for more instrument data along with more hk data (or final DEFATT).
+  logStr = 'Missmatch between hk101 sunpulses and L1b data, no overlap in time.';
+  irf.log('critical', logStr);
+  error(logStr);
+end
+
 if n_inrange > 0
 
   % ; linear interpolate between each pulse

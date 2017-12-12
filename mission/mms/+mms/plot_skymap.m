@@ -1,7 +1,7 @@
 function [ax,hcb] = plot_skymap(varargin)
 % MMS.PLOT_SKYMAP Plots skymap.
 %
-%  [ax,hcb] = MMS.PLOT_SKYMAP(TSeriesDesDist,'Opt1',OptVal1,...);
+%  [ax,hcb] = MMS.PLOT_SKYMAP(PDist,'Opt1',OptVal1,...);
 %     ax - handle to axes
 %     hcb - handle to colorbar
 %  MMS.PLOT_SKYMAP(AX,...); - plot in axes AX.
@@ -15,7 +15,7 @@ function [ax,hcb] = plot_skymap(varargin)
 %                textlabel in second column, eg. 
 %                vectors = {Bhat,'B';Ehat,'E'}
 %    'vectorlabelcolor' - 'k', 'r', [1 1 1];
-%    'flat' - plot a flat skymap (ie. not a sphere)
+%    'flat' - plot a flat skymap with polar angle 0 at the top (ie. not a sphere)
 %    'log' - plot log10 scale
 %    'energytable' - energytable from v1 data
 %    'phi' - phi data froom V1 data, vary from time to time, ax.XLim = [-10 370]; 
@@ -26,7 +26,8 @@ function [ax,hcb] = plot_skymap(varargin)
 dist = args{1}; args = args(2:end);
 if isempty(dist); irf.log('warning','Empty input.'); return; end
 
-plotLog = 0; fString = 'f (s^3km^{-6})';
+plotLog = 0; 
+fString = ['(' dist.units ')'];
 plotSphere = 1;
 plotb = 0;
 flag_energy = 0;
@@ -46,8 +47,8 @@ while have_options
   l = 1;
   switch(lower(args{1}))
     case 'energytables'
-        l = 2;
-        energyTable = args{2};       
+      l = 2;
+      energyTable = args{2};       
     case 'energy'
       l = 2;
       energy = args{2};
@@ -80,13 +81,17 @@ while have_options
       vectors = args{2};
       have_vectors = 1;
     case 'vectorlabelcolor'
-        l = 2;
-        vectorlabelcolor = args{2};        
+      l = 2;
+      vectorlabelcolor = args{2};        
     case 'flat'
       plotSphere = 0;
-    case 'log'
-      plotLog = 1;
-      fString = 'log_{10} f (s^3km^{-6})';
+    case 'sphere'
+      plotSphere = 1;
+    case {'log'}
+      if plotLog ~= 1;
+        plotLog = 1;
+        fString = ['log_{10}' fString];
+      end
   end
   args = args(l+1:end);
   if isempty(args), break, end  
@@ -109,28 +114,26 @@ C = squeeze(mean(mean(dist.data(tId,eId,:,:),2,'omitnan'),1,'omitnan'))';
 
 % Plot skymap
 if isempty(ax), fig = figure; ax = axes; end
-if plotLog, fC = log10(C*1e30); % s+3*km-6 
-else, fC = (C*1e30); end % s+3*km-6; 
-  
-if plotSphere
-  hs = surf(ax,X,Y,Z,fC); % 
+if plotLog, C = log10(C); end % units are whatever the input units were
+
+if plotSphere  
+  hs = surf(ax,X,Y,Z,C);
   axis(ax,'square')
   axis(ax,'equal')
   ax.XLabel.String = 'X';
   ax.YLabel.String = 'Y';
   ax.ZLabel.String = 'Z';
-  %titleString = {tint(1).utc,tint(2).utc,['Energy level = ' num2str(electronEnergyLevels(k))]};  
   shading(ax,'flat');
 else % plot flat map
-  [~,theta] = hist(theta_edges,16);
-  [~,phi] = hist(phi_edges,32);   
-  hs = surf(ax,PHI*180/pi,THETA*180/pi,THETA*0,[fC(:,17:32) fC(:,1:16)]);  
+  % change matrix so it corresponds to where the particles are going to, not coming from  
+  plotC = flipdim([C(:,17:32) C(:,1:16)],1);
+  hs = surf(ax,PHI*180/pi,THETA*180/pi,THETA*0,plotC);    
   ax.XLabel.String = 'Azimuthal angle (deg)';
   ax.YLabel.String = 'Polar angle (deg)';
   shading(ax,'flat');
-  view(ax,[0 0 1])  
+  view(ax,[0 0 -1])  
   ax.YLim = [0 180];
-  ax.XLim = [-10 370];
+  ax.XLim = [0 360];
   ax.Box = 'on';
 end
 hcb = colorbar('peer',ax);
@@ -154,20 +157,21 @@ while have_vectors
   else % plot flat skymap
     vecHat = vectors{1,1}/norm(vectors{1,1});
     vecTxt = vectors{1,2};
-    [azim,elev,r] = cart2sph(vecHat(1),vecHat(2),vecHat(3));
-    if azim<0, azim = azim + 2*pi; end
-    if azim>2*pi, azim = azim - 2*pi; end
+    [azim,elev,r] = cart2sph(vecHat(1),vecHat(2),vecHat(3)); % tip of arrow
+    if azim<0, azim = azim + 2*pi; end % from [-180 180] to [0 360]
+    if elev<0; pol = pi/2 + abs(elev); else pol = pi/2 - elev; end % from elevation to polar    
     
-    plot(ax,azim*180/pi,elev*180/pi+90,'o','linewidth',2,'markersize',12,'color',[1 0 0])
-    plot(ax,azim*180/pi,elev*180/pi+90,'o','linewidth',0.5,'markersize',2,'color',[1 0 0],'markerfacecolor',[0 0 0])
-    axes(ax); text(double(azim*180/pi),double(elev*180/pi+90),['   ' vecTxt],'fontsize',14,'HorizontalAlignment','left', 'color', vectorlabelcolor)
+    plot(ax,azim*180/pi,pol*180/pi,'o','linewidth',2,'markersize',12,'color',[1 0 0])
+    plot(ax,azim*180/pi,pol*180/pi,'o','linewidth',0.5,'markersize',2,'color',[1 0 0],'markerfacecolor',[0 0 0])
+    axes(ax); text(double(azim*180/pi),double(pol*180/pi),['   ' vecTxt],'fontsize',14,'HorizontalAlignment','left', 'color', vectorlabelcolor)
     
-    [azim,elev,r] = cart2sph(-vecHat(1),-vecHat(2),-vecHat(3)); 
-    if azim<0, azim = azim + 2*pi; end
-    if azim>2*pi, azim = azim - 2*pi; end
-    plot3(ax,azim*180/pi,elev*180/pi+90,0,'o','linewidth',2,'markersize',12,'color',[1 0 0])
-    plot3(ax,azim*180/pi,elev*180/pi+90,0,'x','linewidth',2,'markersize',12,'color',[1 0 0])       
-    axes(ax); text(double(azim*180/pi),double(elev*180/pi+90),['   ' vecTxt],'fontsize',14,'HorizontalAlignment','left', 'color', vectorlabelcolor)        
+    [azim,elev,r] = cart2sph(-vecHat(1),-vecHat(2),-vecHat(3)); % back of arrow
+    if azim<0, azim = azim + 2*pi; end % from [-180 180] to [0 360]
+    if elev<0; pol = pi/2 + abs(elev); else pol = pi/2 - elev; end % from elevation to polar  
+    
+    plot3(ax,azim*180/pi,pol*180/pi,0,'o','linewidth',2,'markersize',12,'color',[1 0 0])
+    plot3(ax,azim*180/pi,pol*180/pi,0,'x','linewidth',2,'markersize',12,'color',[1 0 0])       
+    axes(ax); text(double(azim*180/pi),double(pol*180/pi),['   ' vecTxt],'fontsize',14,'HorizontalAlignment','left', 'color', vectorlabelcolor)        
   end  
   vectors = vectors(2:end,:);
   if isempty(vectors), break, end  

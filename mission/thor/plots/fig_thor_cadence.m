@@ -240,3 +240,104 @@ end
 % text(log10(1./Ts),ymax-0.01,'Ts=30ms','rotation',90,...
 % 	'verticalalignment','bottom','horizontalalignment','right',...
 % 	'fontsize',12);
+
+%% Single panel with only 3 peaks
+
+% THOR histogram 2 plot
+figure('Position',[10 10 800 300]);
+set(gcf,'defaultAxesFontSize',18);
+set(gcf,'defaultTextFontSize',18);
+
+color_ions  = [1 0.5 0.5];
+color_e     = [0.5 0.5 0.9];
+color_fp    = [0.7 0.7 0.7];
+color_de    = [0.6 0.8 0.5];
+
+xmin = -0.8;
+xmax = 5.3;
+ymin = 0;
+ymax = 0.179;
+
+% Magnetosheath
+hca = subplot(1,1,1);
+h(1) = hca;
+
+h1 = histogram(hca,log10(f_cwpi_msh));
+h1.Normalization = 'probability';
+h1.BinWidth = 0.05;
+h1.FaceColor = color_ions;
+
+hold on;
+h2 = histogram(hca,log10(f_cwpe_msh));
+h2.Normalization = 'probability';
+h2.BinWidth = 0.05;
+h2.FaceColor = color_e;
+
+h3 = histogram(hca,log10(f_pe_msh));
+h3.Normalization = 'probability';
+h3.BinWidth = 0.05;
+h3.FaceColor = color_fp;
+
+ylabel('probability')
+
+xlim([xmin xmax])
+ylim([ymin ymax])
+
+grid on;
+set(hca,'XMinorGrid','off')
+set(hca,'YMinorGrid','off')
+
+%text(5.1,0.15,{'Debye','scales'},'color',color_de.^3);
+fontsize = 18;
+text(0.05,0.16,{'protons'},'color',color_ions.^3,'fontsize',fontsize);
+text(1.52,0.16,{'electrons'},'color',color_e.^3,'fontsize',fontsize);
+text(4.1,0.15,{'plasma','frequency'},'color',color_fp.^3,'fontsize',fontsize);
+
+irf_legend('Magnetosheath',[0.6 1.03]);
+
+
+xlabel('V_{flow} / L_{kinetic} [1/s]                                        frequency [Hz]')
+
+h(1).XTickLabel = '';
+h(1).XTick = (fix(xmin):fix(xmax));
+h(1).XTick = h(1).XTick;
+h(1).XTickLabel = arrayfun(@(x) {['10^{' num2str(x) '}']}, h(1).XTick);
+
+% Add instrument sampling
+linewidth = 2;
+
+Ts = 0.150;
+plot(h(1),log10(1./Ts).*[1 1],[ymin ymax],'linewidth',linewidth,'color','r');
+
+Ts = 0.005;
+plot(h(1),log10(1./Ts).*[1 1],[ymin ymax],'linewidth',linewidth,'color','b');
+
+Ts = 1e-5;
+plot(h(1),log10(1./Ts).*[1 1],[ymin ymax],'linewidth',linewidth,'color','k');
+
+Ts = 0.15
+  text(log10(1./Ts),ymax-0.01,'Requirement','rotation',90,...
+	'verticalalignment','top','horizontalalignment','right',...
+	'fontsize',16,'Parent', h(1));
+Ts = 1e-5
+  text(log10(1./Ts),ymax-0.01,'E & B','rotation',90,...
+	'verticalalignment','top','horizontalalignment','right',...
+	'fontsize',16,'fontweight','bold','Parent', h(1));
+
+Ts = 30e-3;
+plot(h(1),log10(1./Ts).*[1 1],[ymin ymax],'linewidth',linewidth,'color','b','linestyle',':');
+text(log10(1./Ts),ymin+0.01,'MMS','rotation',90,...
+	'verticalalignment','top','horizontalalignment','left',...
+	'fontsize',14,'Parent', h(1));
+
+Ts = 4;
+plot(h(1),log10(1./Ts).*[1 1],[ymin ymax],'linewidth',linewidth,'color','r','linestyle',':');
+text(log10(1./Ts),ymin+0.01,'Cluster','rotation',90,...
+	'verticalalignment','top','horizontalalignment','left',...
+	'fontsize',14,'Parent', h(1));
+
+Ts = 1e-4;
+plot(h(1),log10(1./Ts).*[1 1],[ymin ymax],'linewidth',linewidth,'color','k','linestyle',':');
+text(log10(1./Ts),ymin+0.01,'MMS??','rotation',90,...
+	'verticalalignment','top','horizontalalignment','left',...
+	'fontsize',14,'Parent', h(1));

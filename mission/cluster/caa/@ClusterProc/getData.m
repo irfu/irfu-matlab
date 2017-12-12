@@ -98,7 +98,7 @@ function data = getData(cp,cl_id,quantity,varargin)
 
 narginchk(3,15)
 if nargin > 3, have_options = 1; args = varargin;
-else have_options = 0;
+else, have_options = 0;
 end
 
 % default options
@@ -154,9 +154,9 @@ while have_options
 			if isnumeric(args{2})
 				ang_limit = args{2};
 				l = 2;
-            else irf_log('fcal,','wrongArgType : ang_limit must be numeric')
+      else, irf_log('fcal,','wrongArgType : ang_limit must be numeric')
 			end
-        else irf_log('fcal,','wrongArgType : ang_limit value is missing')
+    else, irf_log('fcal,','wrongArgType : ang_limit value is missing')
 		end
 	case 'ang_blank'
 		flag_edb = 1;	% [default]
@@ -170,23 +170,23 @@ while have_options
 			if isnumeric(args{2})
 				probe_p_tmp = args{2};
 				l = 2;
-            else probe_p_tmp = str2double(args{2});
+      else, probe_p_tmp = str2double(args{2});
 			end
 			if (probe_p_tmp==12 || probe_p_tmp==34), probe_p = probe_p_tmp;
-            else irf_log('fcal,','wrongArgType : probe_p must be 12 or 34')
+      else, irf_log('fcal,','wrongArgType : probe_p must be 12 or 34')
 			end
-        else irf_log('fcal,','wrongArgType : probe_p value is missing')
+    else, irf_log('fcal,','wrongArgType : probe_p value is missing')
 		end
 	case 'sfit_ver'
 		if length(args)>1
 			if isnumeric(args{2})
 				l = 2;
 				if	args{2}>=0 && args{2}<2, sfit_ver = args{2};
-                else irf_log('fcal,','wrongArgType : sfit_ver must be 0 or 1')
+        else, irf_log('fcal,','wrongArgType : sfit_ver must be 0 or 1')
 				end
-            else irf_log('fcal,','wrongArgType : sfit_ver must be numeric')
+      else, irf_log('fcal,','wrongArgType : sfit_ver must be numeric')
 			end
-        else irf_log('fcal,','wrongArgType : sfit_ver value is missing')
+    else, irf_log('fcal,','wrongArgType : sfit_ver value is missing')
 		end
 	case 'correct_sw_wake'
         correct_sw_wake = 1;
@@ -197,15 +197,15 @@ while have_options
 			if iscell(args{2})
 				ec_extraparams = args{2};
 				l = 2;
-            else irf_log('fcal,','wrongArgType : ec_extraparams must be a cell array')
+      else, irf_log('fcal,','wrongArgType : ec_extraparams must be a cell array')
 			end
-        else irf_log('fcal,','wrongArgType : ec_extraparams value is missing')
+    else, irf_log('fcal,','wrongArgType : ec_extraparams value is missing')
 		end		
     otherwise
 		irf_log('fcal,',['Option ''' args{1} '''not recognized'])
 	end
 	if length(args) > l, args = args(l+1:end);
-	else break
+  else, break
 	end
 end
 
@@ -213,7 +213,7 @@ save_list = '';
 
 old_pwd = pwd;
 cd(cp.sp) %enter the storage directory
-if cp.sp~='.', irf_log('save',['Storage directory is ' cp.sp]), end
+if cp.sp~='.', irf_log('save',[quantity ' Storage directory is ' cp.sp]), end
    
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % ec - correct raw Electric field
@@ -757,10 +757,10 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 	strcmp(quantity,'diespec') || strcmp(quantity,'dieburst') || ...
     strcmp(quantity,'dielx') || strcmp(quantity,'dielxspec')
 	
-	if strcmp(quantity,'dieburst'), do_burst = 1; else do_burst = 0; end
-	if strcmp(quantity,'dief'), do_filter = 1; else do_filter = 0; end
+	if strcmp(quantity,'dieburst'), do_burst = 1; else, do_burst = 0; end
+	if strcmp(quantity,'dief'), do_filter = 1; else, do_filter = 0; end
     if strcmp(quantity,'dielx') || strcmp(quantity,'dielxspec'), flag_lx = 1;
-    else flag_lx = 0; 
+    else, flag_lx = 0; 
     end
 	if do_burst
 		save_file = './mEFWburst.mat';
@@ -846,7 +846,7 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
                             end
                             if ~ok
                                 if flag_lx, irf_log('load', irf_ssub(['No P' param{k} '?p1/3/4'],cl_id));
-                                else irf_log('load', irf_ssub(['No P' param{k} '?p1/3'],cl_id));
+                                else, irf_log('load', irf_ssub(['No P' param{k} '?p1/3'],cl_id));
                                 end
                                 continue
                             end
@@ -949,9 +949,9 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 
 	% Load ADC offsets
 	for probe = p_ok
-		if probe==12, ps=p12; else ps=probe; end
+		if probe==12, ps=p12; else, ps=probe; end
         if flag_lx, wStr = 'DadcLX?p!';
-        else wStr = 'Dadc?p!';
+        else, wStr = 'Dadc?p!';
         end
             
 		[ok,dadc] = c_load(irf_ssub(wStr,cl_id,ps));
@@ -983,7 +983,7 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
                     tmp_adc = irf_resamp(dadc,tt,'fsample',c_efw_fsample(tt,'ib'));
                     tt(:,2) = tt(:,2) - tmp_adc(:,2);
                     clear tmp_adc
-                else irf_log('calb','saved ADC offset empty')
+                else, irf_log('calb','saved ADC offset empty')
                 end
             end
             problems = 'reset|bbias|probesa|probeld|sweep|bdump|nsops|whip'; %#ok<NASGU>
@@ -997,7 +997,7 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 	
         else
             if flag_lx, fsamp = c_efw_fsample(tt,'lx');
-			else fsamp = c_efw_fsample(tt,'hx');
+            else, fsamp = c_efw_fsample(tt,'hx');
             end
 			if ~fsamp, error('no sampling frequency'),end
 			
@@ -1031,7 +1031,7 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 				if ~isempty(dadc)
 					irf_log('calb','using saved ADC offset')
 					if size(dadc,1)==1, tmp_adc = dadc;
-					else tmp_adc = irf_resamp(dadc,tt,'fsample',fsamp);
+          else, tmp_adc = irf_resamp(dadc,tt,'fsample',fsamp);
 					end
 					tt(:,2) = tt(:,2) - tmp_adc(:,2);
 					clear tmp_adc
@@ -1105,7 +1105,7 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 		ii12 = find(~isnan(e12(:,2)));
 		ii34 = find(~isnan(e34(:,2)));
         if do_burst, fsamp = c_efw_fsample(e12,'ib');
-        else fsamp = c_efw_fsample(e12,'hx');
+        else, fsamp = c_efw_fsample(e12,'hx');
         end
 		% If more than 50% of data missing on one probe
 		% we base timeline on the probe pair which has more data
@@ -1150,9 +1150,9 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 		E_info.deltaoff = Del;
 		
 		if ~isempty(Del)
-			if (E_info.deltaoffauto), dos = 'auto'; else dos='caa'; end
+			if (E_info.deltaoffauto), dos = 'auto'; else, dos='caa'; end
 			for comp=1:2
-				if comp==1, x='x'; else x='y'; end
+				if comp==1, x='x'; else, x='y'; end
 				if isreal(Del(comp))
 					% Real Del means we must correct p12/p32.
 					irf_log('calb',['corr E' x ' delta offset(' dos ') on p' num2str(p12)])
@@ -1165,7 +1165,7 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 					i_c = 2; % p34
 				end
 				if comp==1, coef(i_c,3) = coef(i_c,3) + Del(1);
-				else        coef(i_c,3) = coef(i_c,3) - Del(2)*1j;
+        else,       coef(i_c,3) = coef(i_c,3) - Del(2)*1j;
 				end
 			end
 		end
@@ -1188,7 +1188,7 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 		full_e = zeros(length(EE),4);
 		full_e(:,1) = EE(:,1);
 		if pp==12, full_e(:,4) = EE(:,2);
-        else full_e(:,3) = EE(:,2);
+    else, full_e(:,3) = EE(:,2);
 		end
 		clear EE pp
 	end
@@ -1219,18 +1219,18 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 		end
 		
 		full_e=c_efw_despin(full_e,aa,coef,'asym');
-    else full_e=c_efw_despin(full_e,aa,coef);
+  else, full_e=c_efw_despin(full_e,aa,coef);
 	end
 	
 	if strcmp(quantity,'diespec') || strcmp(quantity,'dielxspec')
 		% Make a spectrum and save it.
         if flag_lx, sfreq = c_efw_fsample(full_e(:,1),'lx');
-        else sfreq = c_efw_fsample(full_e(:,1),'hx');
+        else, sfreq = c_efw_fsample(full_e(:,1),'hx');
         end
 		if ~sfreq, error('no sampling frequency'),end
 		if sfreq < 6, nfft = 128; %#ok<NASGU>
     elseif sfreq < 26, nfft = 512; %#ok<NASGU>
-    else nfft = 8192; %#ok<NASGU>
+    else, nfft = 8192; %#ok<NASGU>
 		end
 		c_eval([var1_name...
             '=irf_powerfft(full_e(:,1:3),nfft,sfreq);save_list=[save_list '''...
@@ -1285,7 +1285,7 @@ elseif strcmp(quantity,'idie') || strcmp(quantity,'idies')
 		[ok,diE] = c_load(var_s{k},cl_id);
 		if ~ok
 			if isempty(err_s), err_s = var_s{k};
-            else err_s = [err_s ', ' var_s{k}]; %#ok<AGROW>
+      else, err_s = [err_s ', ' var_s{k}]; %#ok<AGROW>
 			end
 			continue 
 		end
@@ -1312,11 +1312,11 @@ elseif strcmp(quantity,'edb') || strcmp(quantity,'edbs') || ...
 	strcmp(quantity,'iedb') || strcmp(quantity,'iedbs')
 	
 	if strcmp(quantity,'iedb') || strcmp(quantity,'iedbs'), inert = 1; 
-    else inert = 0; 
+  else, inert = 0; 
 	end
 	
 	if inert, save_file = './mEdBI.mat';
-    else save_file = './mEdB.mat';
+  else, save_file = './mEdB.mat';
 	end
 	
 	if strcmp(quantity,'edb') || strcmp(quantity,'iedb')
@@ -1396,7 +1396,7 @@ elseif strcmp(quantity,'edb') || strcmp(quantity,'edbs') || ...
 	dsiof = c_ctl(cl_id,'dsiof');
 	if isempty(dsiof)
 		st = diE(~isnan(diE(:,1)),1);
-		if ~isempty(st), st = st(1); else st = 0; end
+		if ~isempty(st), st = st(1); else, st = 0; end
 		
 		[ok,Ps,msg] = c_load('Ps?',cl_id);
 		if ~ok, irf_log('load',msg), end
@@ -1406,7 +1406,7 @@ elseif strcmp(quantity,'edb') || strcmp(quantity,'edbs') || ...
 		[ok2,Damp] = c_load('Damp?',cl_id); if ~ok2, Damp = dam_def; end
 
 		if ok1 || ok2, irf_log('calb','Using saved DSI offsets')
-		else irf_log('calb','Using default DSI offsets')
+    else, irf_log('calb','Using default DSI offsets')
 		end
 		clear dsiof_def dam_def
 	else
@@ -1441,7 +1441,7 @@ elseif strcmp(quantity,'edb') || strcmp(quantity,'edbs') || ...
 		evxb = irf_resamp(evxb,diE(:,1));
 		diE(:,2:4) = diE(:,2:4) - evxb(:,2:4); clear evxb %#ok<NASGU>
 		s = 'i';
-    else s = '';
+  else, s = '';
 	end
 	
  	% DSI->GSE
@@ -1604,7 +1604,7 @@ elseif strcmp(quantity,'sweep')
 				if isempty(jj)
 					bdump(k,2) = t_e(ii(k)) +1;
 					irf_log('dsrc','no dump after sweep')
-                else bdump(k,2) = t_e_px(jj(end)) +1;
+        else, bdump(k,2) = t_e_px(jj(end)) +1;
 				end
 			end
 		end
@@ -1639,7 +1639,7 @@ elseif strcmp(quantity,'badbias')
       irf_log('proc', ['EFW reset at ' epoch2iso(t0,1)]);
       c_eval('BADBIASRESET?=[double(t0-DELTA_MINUS)'' double(t0+DELTA_PLUS)''];',cl_id);
     end
-    else irf_log('dsrc',irf_ssub('Cannot load EFWT?',cl_id))
+  else, irf_log('dsrc',irf_ssub('Cannot load EFWT?',cl_id))
 	end
     clear t0 ii
 	
@@ -1665,7 +1665,7 @@ elseif strcmp(quantity,'badbias')
         % Adjust GOOD_BIAS
         if isempty(startTime)
             if efwtok, startTime = efwt(1,1);
-            else startTime = ibias(1,1);
+            else, startTime = ibias(1,1);
             end
               
             if (cl_id == 2) && (startTime>iso2epoch('2011-04-30T00:00:00Z'))
@@ -1789,12 +1789,11 @@ elseif strcmp(quantity,'probesa')
   
   % SAA saturation
   shadow_2 = atand(8/150); % angular width with 8 cm puck, 150 cm thin wire
-  SAA_MIN = 90 - shadow_2;
   saa = atan2d(-SAX(3),SAX(1));
   saasa_se_all = []; saasa_di_all = [];
-  if saa<SAA_MIN, irf_log('proc','no shadow (SAA)') 
+  if abs(saa-90) > shadow_2, irf_log('proc','no shadow (SAA)') 
   else
-    irf_log('proc',sprintf('Probe shadow (SAA=%.1f > %.1f)',saa,SAA_MIN))
+    irf_log('proc',sprintf('Probe shadow (|90-%.1f(SAA)| > %.1f)',saa,shadow_2))
     tTmp = fix(start_time):0.5:(ceil(start_time)+ceil(dt));
     [phaTmp, tInts] = c_phase(tTmp', pha);
     if ~isempty(phaTmp)
@@ -1803,13 +1802,13 @@ elseif strcmp(quantity,'probesa')
           phaTmpTmp = irf_tlim(phaTmp,tInts(idxTInt,:));
           irf_log('proc',...
             ['processing shadow : ' irf_disp_iso_range(tInts(idxTInt,:))])
-        else phaTmpTmp = phaTmp;
+        else, phaTmpTmp = phaTmp;
         end
         [spin_period,err_angle,err_angle_mean,phc_coef] = c_spin_period(phaTmpTmp,1);
         if isempty(spin_period)
           irf_log('proc','cannot find spin period'),data = [];cd(old_pwd); return
         end
-        if err_angle>1 || err_angle_mean>1,
+        if err_angle>1 || err_angle_mean>1
           irf_log('proc','This is not yet implemented, need to do spin-by-spin');
           error('This is not yet implemented, need to do spin-by-spin')
         end
@@ -2043,7 +2042,7 @@ elseif strcmp(quantity,'probesa')
 						else
 							ll = find(kk>bad_i(end));
 							if isempty(ll), break
-                            else jj = ll(1);
+              else, jj = ll(1);
 							end
 						end
 					end
@@ -2208,7 +2207,7 @@ elseif strcmp(quantity,'hbiassa')
             irf_log('proc','Removing Vsc x B at perigee')
         end
 		
-		[HBIASSA,wakedesc] = c_efw_hbias_satur(da,probe,pha); 
+		[HBIASSA,wakedesc] = c_efw_hbias_satur(da,probe,pha);  %#ok<ASGLU>
         
         % Below 2RE we can have real large fields
         if ~isempty(HBIASSA) && ~isempty(r)
@@ -2683,13 +2682,13 @@ elseif strcmp(quantity,'br') || strcmp(quantity,'brs')
 			del_f = 1.5;
 			if (fgm_sf > 22.5 - del_f) && (fgm_sf < 22.5 + del_f), fgm_sf = 22.5;
 			elseif (fgm_sf > 67.5 - del_f) && (fgm_sf < 67.5 + del_f), fgm_sf = 67.5;
-            else irf_log('proc','cannot guess sampling frequency for B')
+      else, irf_log('proc','cannot guess sampling frequency for B')
 			end
 			cover = length(B_tmp(:,1))/((dt+1/e_sf)*fgm_sf);
 			% We allow for 10% of data gaps. (should we??)
 			if cover < .9, bad_coverage = 1; end
 		end
-    else bad_coverage = 1; cover = 0;
+  else, bad_coverage = 1; cover = 0;
 	end
 	
 	% Try to use BPP as a backup
@@ -2711,7 +2710,7 @@ elseif strcmp(quantity,'br') || strcmp(quantity,'brs')
 			fgm_sf = 1/(BPP_tmp(2,1)-BPP_tmp(1,1));
 			del_f = .1;
 			if (fgm_sf > .25 - del_f) && (fgm_sf < .25 + del_f), fgm_sf = .25;
-            else irf_log('proc','cannot guess sampling frequency for B PP')
+      else, irf_log('proc','cannot guess sampling frequency for B PP')
 			end
 			cover_pp = length(BPP_tmp(:,1))/((dt+1/e_sf)*fgm_sf);
 			
@@ -2721,7 +2720,7 @@ elseif strcmp(quantity,'br') || strcmp(quantity,'brs')
 				B_tmp = BPP_tmp;
 				Binfo = 'PP'; %#ok<NASGU>
 				irf_log('proc','Using B PP to calculate Br')
-            else irf_log('proc',sprintf('Use B has %2.2f%% coverage',cover*100))
+      else, irf_log('proc',sprintf('Use B has %2.2f%% coverage',cover*100))
 			end
 		end
 	end
@@ -2744,7 +2743,7 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
   if strcmp(quantity,'pburst') 
     do_burst = 1; save_file = './mEFWburst.mat';
     param={'180Hz','4kHz','32kHz'};
-  else do_burst = 0; save_file = './mP.mat'; param={'10Hz'};
+  else, do_burst = 0; save_file = './mP.mat'; param={'10Hz'};
   end
   P = struct('p1',[],'p2',[],'p3',[],'p4',[]);
 	n_ok = 0; loaded = 0;
@@ -2765,7 +2764,7 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
   if ~n_ok, data = []; cd(old_pwd), return, end
 
   if do_burst, problems = 'reset|bbias|sweep|probesa|nsops|spike';
-  else problems = 'reset|bbias|sweep|saasa|probesa|nsops';
+  else, problems = 'reset|bbias|sweep|saasa|probesa|nsops';
   end
   if flag_rmwhip, problems = [problems '|whip']; end %#ok<NASGU>
 
@@ -2804,18 +2803,18 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
     irf_log('dsrc','Cannot compute P'), data=[]; cd(old_pwd); return
   end
   tComb = []; pList = [];
-  for iProbe = 1:4, 
+  for iProbe = 1:4 
     ps = probeS(iProbe);
     if isempty(P.(ps)), continue, end
     tComb = [tComb; P.(ps)(:,1)]; pList = [pList; iProbe]; %#ok<AGROW>
   end
-  if length(pList)==1,
-    Pinfo.probe = pList; ps = probeS(pList);
+  if length(pList)==1
+    Pinfo.probe = pList; ps = probeS(pList); %#ok<STRNU>
 		irf_log('proc',['computing from ' ps])
-    p = P.(ps);
+    p = P.(ps); %#ok<NASGU>
   else
     tComb = sort(unique(tComb));
-    for iProbe = 1:4,
+    for iProbe = 1:4
       ps = probeS(iProbe); pTmp = zeros(1,length(tComb))*NaN;
       if ~isempty(P.(ps))
         [~,ia,ib] = intersect(tComb,P.(ps)(:,1)); pTmp(ia) = P.(ps)(ib,2);
@@ -2857,7 +2856,7 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
       irf_log('dsrc','Cannot compute P'), data=[]; cd(old_pwd); return
     end
     ps = sprintf('%d',pList);
-    Pinfo.probe = str2double(ps); irf_log('proc',['computing from ' ps])
+    Pinfo.probe = str2double(ps); irf_log('proc',['computing from ' ps]) %#ok<STRNU>
     p = [tComb, irf.nanmean([P.p1; P.p2; P.p3; P.p4])']; %#ok<NASGU>
   end
   
@@ -3041,7 +3040,7 @@ elseif strcmp(quantity,'manproblems')
 				eval(['[ok,' C{4}{i} ',msg]=c_load(C{4}{i});'])
 				if ~ok %#ok<NODEF>
 					irf_log('load',['Load failed of ' C{4}{i}])
-				else irf_log('load',msg) %#ok<NODEF>
+        else, irf_log('load',msg) %#ok<NODEF>
 				end
 				clear ok hbsa msg
 			end
@@ -3066,7 +3065,7 @@ elseif strcmp(quantity,'manproblems')
                     if any(idx), prob(idx,1:2)=0;end 
                     idx=find(prob(:,1) ~= 0);
                     if any(idx), prob=prob(idx,:);
-                    else prob=[];
+                    else, prob=[];
                     end
                     eval([C{4}{i} '=prob;'])
                     eval('save_list=[save_list C{4}{i} '' ''];');
@@ -3082,7 +3081,7 @@ elseif strcmp(quantity,'manproblems')
 elseif strcmp(quantity,'hk')
 	save_file='./mEFW.mat';
 
-    global c_ct % includes hk calib values
+    global c_ct %#ok<TLEV> % includes hk calib values
     if isempty(c_ct)
         disp('c_ct undefined');
     end
@@ -3178,7 +3177,7 @@ elseif strcmp(quantity,'hk')
     c_eval('save_list=[save_list ''HK?''];',cl_id);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-else error('caa:noSuchQuantity','Quantity ''%s'' unknown',quantity)
+else, error('caa:noSuchQuantity','Quantity ''%s'' unknown',quantity)
 end %main QUANTITY
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % END OF DATA MANIPULATIONS

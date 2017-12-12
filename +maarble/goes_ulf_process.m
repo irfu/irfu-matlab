@@ -22,9 +22,12 @@ for month=1:1
     
     if exist(filename,'file')==0
       if(verLessThan('matlab','8.4')) % Version less than R2014b
-        filename_url = [filename_url(1:4), filename_url(6:end)]; % excl. "s" from https
-        [f, status]=urlwrite(filename_url, filename);
-        display(strcat('downloading ', filename));
+        % HTTPS-only server cannot be accessed.
+        errStr = ['You appear to be running a too old version of Matlab. ', ...
+          'Unable to automatically access the HTTPS url: ', filename_url];
+        irf.log('critical', errStr);
+        error(['Unable to access the HTTPS-only server with data, ',...
+          'please consider upgrading Matlab or downloading data manually.']);
       else
         if(verLessThan('matlab', '9.2')) % Version less than R2017a
           % Set root certificate pem file to empty disables verification, 

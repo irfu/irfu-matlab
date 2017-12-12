@@ -47,8 +47,12 @@ if isa(e,'TSeries') && isa(b,'TSeries')
 	
 	ExB=cross(e,b);
 	indData=find(~isnan(ExB.x.data)); % exclude NaN from calculation
-	averExB=sum(ExB(indData).data,1)/nSamples;
-	VHT=K\ averExB'.*1e3; % 9.12 in ISSI book
+%   revised by Wenya LI; 2015-11-21, wyli @ irfu
+    tmp1 = ExB(indData);
+    averExB=sum(tmp1.data,1)/nSamples;
+    % averExB=sum(ExB(indData).data,1)/nSamples;
+%   end revise.     
+    VHT=K\ averExB'.*1e3; % 9.12 in ISSI book
 	vht=VHT';
 	strvht=['V_{HT}=' num2str(irf_abs(vht,1),3) ' [ ' num2str(irf_norm(vht),' %5.2f') '] =[' num2str(vht,' %5.2f') '] km/s'];
 	disp(comm)

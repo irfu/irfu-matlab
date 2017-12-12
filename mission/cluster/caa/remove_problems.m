@@ -23,7 +23,7 @@ if probe>10
     otherwise, error('Unknown probe')
 	end
 elseif probe>0 && probe <=4, p_list = probe;
-else error('Unknown probe')
+else, error('Unknown probe')
 end
 
 param = tokenize(problems,'|');
@@ -38,7 +38,7 @@ for i=1:length(param)
 					irf_log('proc','blanking bad bias due to EFW reset')
 					res = caa_rm_blankt(res,bbias);
 				end
-			else irf_log('load',msg)
+      else, irf_log('load',msg)
 			end
 			clear ok bbias msg
 
@@ -51,7 +51,7 @@ for i=1:length(param)
 						irf_log('proc',['blanking bad bias on P' num2str(kk)])
 						res = caa_rm_blankt(res,bbias);
 					end
-				else irf_log('load',msg)
+        else, irf_log('load',msg)
 				end
 				clear ok bbias msg
 			end
@@ -65,13 +65,13 @@ for i=1:length(param)
 					res = caa_rm_blankt(res,wake);
 					clear wake
 				end
-			else irf_log('load',msg)
+      else, irf_log('load',msg)
 			end
 			clear ok wake msg
 
 		case 'saasa'
 			% Remove probe saturation due to SAA
-      if probe>10,
+      if probe>10
         [ok,saasa,msg] = c_load('SAASADI?',cl_id);
         if ~isempty(saasa)
           saasa = saasa(:,2*find(probe==allProbes) -[1 0]);
@@ -80,7 +80,7 @@ for i=1:length(param)
         end
       else
         [ok,saasa,msg] = c_load('SAASASE?',cl_id);
-        if ~isempty(saasa), 
+        if ~isempty(saasa) 
           saasa = saasa(:,2*probe-[1 0]);
           irf_log('proc',['blanking SAA saturation on P' num2str(probe)])
 						res = caa_rm_blankt(res,saasa);
@@ -96,7 +96,7 @@ for i=1:length(param)
 						irf_log('proc',['blanking saturated P' num2str(kk)])
 						res = caa_rm_blankt(res,sa);
 					end
-				else irf_log('load',msg)
+        else, irf_log('load',msg)
 				end
 				clear ok sa msg
 			end
@@ -111,7 +111,7 @@ for i=1:length(param)
 							['blanking low density saturation on P' num2str(kk)])
 						res = caa_rm_blankt(res,sa);
 					end
-				else irf_log('load',msg)
+        else, irf_log('load',msg)
 				end
 				clear ok sa msg
 			end
@@ -124,7 +124,7 @@ for i=1:length(param)
 					irf_log('proc','blanking Whisper pulses')
 					res = caa_rm_blankt(res,whip);
 				end
-			else irf_log('load',msg)
+      else, irf_log('load',msg)
 			end
 			clear ok whip msg
 
@@ -137,7 +137,7 @@ for i=1:length(param)
 					res = caa_rm_blankt(res,sweep);
 					clear sweep
 				end
-			else irf_log('load',msg)
+      else, irf_log('load',msg)
 			end
 			clear ok sweep msg
 
@@ -150,7 +150,7 @@ for i=1:length(param)
 					res = caa_rm_blankt(res,spike);
 					clear spike
 				end
-			else irf_log('load',msg)
+      else, irf_log('load',msg)
 			end
 			clear ok spike msg
 
@@ -163,7 +163,7 @@ for i=1:length(param)
 					res = caa_rm_blankt(res,bdump);
 					clear bdump
 				end
-			else irf_log('load',msg)
+      else, irf_log('load',msg)
 			end
 			clear ok bdump msg
 			
@@ -183,7 +183,7 @@ for i=1:length(param)
 						end
 					end
 				end
-			else irf_log('load',msg)
+      else, irf_log('load',msg)
 			end
 			clear ok nsops msg opcode
 			
@@ -196,7 +196,7 @@ for i=1:length(param)
 					res = caa_rm_blankt(res,wake);
 					clear wake
 				end
-			else irf_log('load',msg)
+      else, irf_log('load',msg)
 			end
 			clear ok wake msg
 			
@@ -207,7 +207,7 @@ for i=1:length(param)
 					res = caa_rm_blankt(res,wake);
 					clear wake
 				end
-			else irf_log('load',msg)
+      else, irf_log('load',msg)
 			end
 			clear ok wake msg
 

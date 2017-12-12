@@ -355,16 +355,49 @@ end % Main function
   end
 
   function fix_order_of_array_dimensions
-    for iDimension=3:4,
+%     oldPermute=true;
+%     if oldPermute
+    for iDimension=3:4   %#ok<UNRCH>
       indDatasets=find(cellfun(@(x) numel(size(x)),data(:))==iDimension); % find iDimension datasets
       for iDataset=1:numel(indDatasets)
-        if iDimension==3,
+        if iDimension==3
           data{indDatasets(iDataset)}=permute(data{indDatasets(iDataset)},[3 1 2]);
-        elseif iDimension==4,
+        elseif iDimension==4
           data{indDatasets(iDataset)}=permute(data{indDatasets(iDataset)},[4 3 1 2]);
         end
       end
     end
+%     else
+%       % NEW METHOD; TO BE TESTED
+%       for iDimension=3:4   %#ok<UNRCH>
+%         % Check if dimensions match expected (ignoring Depend_0) and that
+%         % it is not a single vector (which could be "Nx1").
+%         indDatasets = find(cellfun(@(x) all(x(:) > 1) && numel(x)==iDimension-1, info.Variables(:,2)));
+%         for iDataset=1:numel(indDatasets)
+%           if iDimension==3
+%             % permutate it to N x m x n, where N corrsponds to record (ie Depend_0).
+%             data{indDatasets(iDataset)} = permute(data{indDatasets(iDataset)}, [3 1 2]);
+%           elseif iDimension==4
+%             % Check if it should be simple cyclic permutation (MMS), data 
+%             % was read into "recSize x nRec". Also possibly a matrix of 
+%             % size "recSize" if it only contained one single record.
+%             % Or if the data should be more complexly permuted (Cluster),
+%             % ie where the recSize does not match the data.
+%             recSize = info.Variables{indDatasets(iDataset), 2}; % Expected record size, (m x n x p)
+%             nRec = info.Variables{indDatasets(iDataset), 3}; % Numer of records, (N)
+%             dataSize = size(data{indDatasets(iDataset)}); % Size of data, as it was read
+%             if isequal([recSize, nRec], dataSize) || (nRec==1 && isequal(recSize, dataSize) )
+%               % Simple cyclic permutation to get N x m x n x p
+%               data{indDatasets(iDataset)} = permute(data{indDatasets(iDataset)}, [4 1 2 3]);
+%             else
+%               % Re-order Cluster data, from (n x p x m x N) to (N x m x n x p).
+%               data{indDatasets(iDataset)} = permute(data{indDatasets(iDataset)}, [4 3 1 2]);
+%             end
+%           end
+%         end
+%       end
+%       % END OF NEW METHOD
+%     end
   end
 
   function update_variable_attributes_time % nested function

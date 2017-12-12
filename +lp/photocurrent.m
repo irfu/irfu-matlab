@@ -32,7 +32,7 @@ function [jPhoto] = photocurrent( iluminatedArea, U, distanceSunAU ,flag)
 narginchk(0,4)
 
 surface_materials={'default','cluster','themis','cassini','aluminium','aquadag','gold','graphite','solar cells','1eV','TiN','elgiloy'};
-if nargin==0 && nargout == 0,
+if nargin==0 && nargout == 0
 	for ii=1:numel(surface_materials)
 		surf=surface_materials{ii};
 		j0=lp.photocurrent(1,0,1,surf);
@@ -40,7 +40,7 @@ if nargin==0 && nargout == 0,
 	end
 	return
 end
-if nargin==0 && nargout == 1,
+if nargin==0 && nargout == 1
 	jPhoto=surface_materials;
 	return
 end

@@ -52,7 +52,7 @@ Effect on the CAA processing:
 <table>
 	<title>Cluster EFW Operations</title>
 	<description>
-		This list is intended to cover all non-standard operations of EFW, 
+		This list is intended to cover all non-standard operations of EFW,
 		planned or accidental, from 2001-02-01.
 	</description>
 	<operation start="2001-02-23T05:18:00Z" dt="11700" c1="yes" plan="no" sdesc="info">
@@ -194,9 +194,9 @@ Effect on the CAA processing:
 	</operation>
 	<operation start="2001-10-01T07:30:00Z" dt="2100"
 			c1="yes" c2="yes" c3="yes" c4="yes" plan="yes" sdesc="no_spin_fits">
-		<desc>Verify sweep interval settings. Will cause loss of spin fits for 25 minutes. 
-			07:30 After reset at start of AI, do not uplink spin patch or set burst. Start sweeps every 30 s (SC1), 1 
-			min (SC2), 90 s (SC3), 2 min (SC4). 07:45 Setup burst (SWECJ349). 07:55 Spinfit patch (SWECJ354). 
+		<desc>Verify sweep interval settings. Will cause loss of spin fits for 25 minutes.
+			07:30 After reset at start of AI, do not uplink spin patch or set burst. Start sweeps every 30 s (SC1), 1
+			min (SC2), 90 s (SC3), 2 min (SC4). 07:45 Setup burst (SWECJ349). 07:55 Spinfit patch (SWECJ354).
 			08:05 Test completed: change sweep interval to 30 mins on all. (SWECJ340 and 339).</desc>
 		<res>
 			<link href="010913_aie_iw.txt">Ieuan</link>
@@ -251,11 +251,11 @@ Effect on the CAA processing:
 			<link href="esoc011121.txt">ESOC 011121</link>
 		</res>
 	</operation>
-	
+
 	<operation start="2001-11-18T06:07:14Z" dt="39496" c2="yes" plan="no" sdesc="no_p1">
 		<desc>Probe 1 latched at +68 V. Probe 1 problem cured by EFW reset.</desc>
 		<res>
-			<link href="pal011120.txt">Per-Arne 011120</link> 
+			<link href="pal011120.txt">Per-Arne 011120</link>
 			<link href="aie011129.txt">Anders 011129</link>
 		</res>
 	</operation>
@@ -268,7 +268,7 @@ Effect on the CAA processing:
 	<operation start="2001-12-28T03:02:57Z" dt="-1" c1="yes" plan="no" sdesc="no_p1">
 		<desc>Probe 1 effectively lost from this time.</desc>
 		<res>
-			<link href="pal020102b.txt">Per-Arne 020102</link> 
+			<link href="pal020102b.txt">Per-Arne 020102</link>
 			<link href="pal020104.txt">Per-Arne 020104</link>
 			<link href="ma020108.txt">Mats 020108</link>
 		</res>
@@ -309,7 +309,7 @@ Effect on the CAA processing:
 	<operation start="2002-01-08T09:50:00Z" dt="-157" c1="yes" plan="no" sdesc="no_p2">
 		<desc>P2 bias went to 0xB2 (-300 nA), causing saturation at -68 V; later to 0 bias. Probable explanation is timing conflict between regular sweep command and extra bias command for probe 1.</desc>
 		<res>
-			<link href="pal020109a.txt">Per-Arne 010209</link> 
+			<link href="pal020109a.txt">Per-Arne 010209</link>
 			<link href="pal020109b.txt">Per-Arne 010209</link>
 		</res>
 	</operation>
@@ -354,7 +354,7 @@ Effect on the CAA processing:
 	<operation start="2002-02-17T22:00:00Z" dt="120" c3="yes" plan="yes" sdesc="spec_bias">
 		<desc>Test different bias currents at perigee eclipse.</desc>
 		<res>
-			<link href="aie020125b.txt">Anders 020125</link> 
+			<link href="aie020125b.txt">Anders 020125</link>
 			<link href="aie020125a.txt">Anders 020125</link>
 		</res>
 	</operation>
@@ -394,7 +394,7 @@ Effect on the CAA processing:
 	<operation start="2002-05-08T08:31:00Z" dt="2280" c3="yes" plan="yes" sdesc="no_tm">
 		<desc>WEC power cycled to clear up DWP memory latchup</desc>
 		<res>
-			<link href="ky020507a.txt">Keith 020507</link> 
+			<link href="ky020507a.txt">Keith 020507</link>
 			<link href="sm020508a.txt">Silvano 020508</link>
 		</res>
 	</operation>
@@ -408,7 +408,7 @@ Effect on the CAA processing:
 	<operation start="2002-05-26T10:27:00Z" dt="54180" c3="yes" plan="yes" sdesc="spec_bias">
 		<desc>Corrupted WEC TM triggered s/c to reset WEC 020526 10:27. EFW then operated with default settings (e.g. non-ideal bias) until 020527 01:30.</desc>
 		<res>
-			<link href="pal020527a.txt">Per-Arne 020527</link> 
+			<link href="pal020527a.txt">Per-Arne 020527</link>
 			<link href="sm020527a.txt">Silvano 020527</link>
 		</res>
 	</operation>
@@ -422,7 +422,7 @@ Effect on the CAA processing:
 	<operation start="2002-06-29T05:05:00Z" dt="180" c4="yes" plan="no" sdesc="no_tm">
 		<desc>EFW telemetry completely confused.</desc>
 		<res>
-			<link href="sm020704.txt">Silvano 020704</link> 
+			<link href="sm020704.txt">Silvano 020704</link>
 			<link href="aie020704a.txt">Anders 020704</link>
 			<link href="ky020710a.txt">Keith 020710</link>
 		</res>
@@ -442,7 +442,7 @@ Effect on the CAA processing:
 	<operation start="2002-08-06T18:20:00Z" dt="10800" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="bad_tm">
 		<desc>BM1 data intermittent (period about 20 s ???) due to wrong STAFF SA mode (TM overflow).</desc>
 		<res>
-			<link href="ky020808a.txt">Keith 020808</link> 
+			<link href="ky020808a.txt">Keith 020808</link>
 			<link href="pal020821a.txt">Per-Arne 020821</link>
 		</res>
 	</operation>
@@ -464,7 +464,7 @@ Effect on the CAA processing:
 	<operation start="2002-08-29T22:52:00Z" dt="59880" c2="yes" plan="no" sdesc="no_tm">
 		<desc>SC2 reebooted by mistake at 22:5WEC not fully recovered until the end of a BM1 period at 2002-08-30 15:30.</desc>
 		<res>
-			<link href="jv020830a.txt">ESOC 020830</link> 
+			<link href="jv020830a.txt">ESOC 020830</link>
 			<link href="sm020830a.txt">Silvano 020830</link>
 			<link href="ky020902a.txt">Keith 020902</link>
 		</res>
@@ -523,7 +523,7 @@ Effect on the CAA processing:
 	<operation start="2002-10-02T16:00:00Z" dt="34200" c1="yes" c2="yes" c3="yes" c4="yes" plan="yes" sdesc="info">
 		<desc>Testing the FGM burst trig flag</desc>
 		<res>
-			<link href="aie020910a.txt">Anders 020910</link> 
+			<link href="aie020910a.txt">Anders 020910</link>
 			<link href="aie020910b.txt">Anders 020910</link>
 			<link href="aie021104.txt">Anders 021104</link>
 		</res>
@@ -531,7 +531,7 @@ Effect on the CAA processing:
 	<operation start="2002-10-05T02:30:00Z" dt="23400" c1="yes" c2="yes" c3="yes" c4="yes" plan="yes" sdesc="info">
 		<desc>Testing the FGM burst trig flag</desc>
 		<res>
-			<link href="aie020910a.txt">Anders 020910</link> 
+			<link href="aie020910a.txt">Anders 020910</link>
 			<link href="aie020910b.txt">Anders 020910</link>
 			<link href="aie021104.txt">Anders 021104</link>
 		</res>
@@ -687,7 +687,7 @@ Effect on the CAA processing:
 	</operation>
 	<operation start="2002-12-10T12:04:00Z" dt="6420" c1="yes" plan="yes" sdesc="bad_tm">
 		<desc>
-			Attempting to get P1 back to life by deploying 16 both s/c cm more. 
+			Attempting to get P1 back to life by deploying 16 both s/c cm more.
 			Deployment worked, but P1 remains unfunctional on SC13.
 		</desc>
 		<res>
@@ -696,7 +696,7 @@ Effect on the CAA processing:
 	</operation>
 	<operation start="2002-12-10T14:30:00Z" dt="5160" c3="yes" plan="yes" sdesc="bad_tm">
 		<desc>
-			Attempting to get P1 back to life by deploying 16 both s/c cm more. 
+			Attempting to get P1 back to life by deploying 16 both s/c cm more.
 			Deployment worked, but P1 remains unfunctional on SC13.
 		</desc>
 		<res>
@@ -856,7 +856,7 @@ Effect on the CAA processing:
 		</res>
 	</operation>
 	<operation start="2003-03-22T19:32:00Z" dt="54396" c1="yes" c3="yes" plan="yes" sdesc="TBD">
-		<desc>Testing 16 bit sweeps and new WEC sequences. Test 
+		<desc>Testing 16 bit sweeps and new WEC sequences. Test
 		should have run on SC13, but note problems on SC1 on line above.</desc>
 		<res><link href="aie030307a.txt">Anders 030307</link></res>
 	</operation>
@@ -864,7 +864,7 @@ Effect on the CAA processing:
 		<desc>EFW in HXONLY mode (by spurious command?). In addition, the HX data for 23:59 - 02:06 are bad because of a bad burst dump.</desc>
 	</operation>
 	<operation start="2003-03-24T23:01:27Z" dt="85221" c2="yes" plan="no" sdesc="no_p1">
-		<desc>P1 first stuck at +70 V, then bad guard voltage causing 
+		<desc>P1 first stuck at +70 V, then bad guard voltage causing
 			strange data from 00:07:01 until reset.</desc>
 		<res><link href="aie060412a.txt">Anders 060412</link></res>
 	</operation>
@@ -881,17 +881,17 @@ Effect on the CAA processing:
 		<desc>EFW in HXONLY mode (by spurious command?). In addition, HX data are bad 02:50-04:57 because of a bad burst dump.</desc>
 	</operation>
 	<operation start="2003-04-08T01:30:00Z" dt="90060" c1="yes" c3="yes" plan="yes" sdesc="TBD">
-		<desc>Testing flight software 2.4 and new WEC sequences (NM1/TM0, BM1/TM1 and 
-			BM1/TM2). We have TM2 (22 kbit/s) for the last ten minutes of the BM1 
-			interval. Functions used on each spacecraft in the different sampling 
-			mode: 
-			SC1: 
-			TM0: V23V34L (0x9E) 
-			TM1: V23V34M (0x9E) 
-			TM2: V2V3V4M (0x1E) 
-			SC3: 
-			TM0: V2V34L  (0x94) 
-			TM1: V2V34M  (0x9F) 
+		<desc>Testing flight software 2.4 and new WEC sequences (NM1/TM0, BM1/TM1 and
+			BM1/TM2). We have TM2 (22 kbit/s) for the last ten minutes of the BM1
+			interval. Functions used on each spacecraft in the different sampling
+			mode:
+			SC1:
+			TM0: V23V34L (0x9E)
+			TM1: V23V34M (0x9E)
+			TM2: V2V3V4M (0x1E)
+			SC3:
+			TM0: V2V34L  (0x94)
+			TM1: V2V34M  (0x9F)
 			TM2: V2V3V34M (0x1F)</desc>
 		<res><link href="pal060411qqq.txt">Per-Arne 060411</link></res>
 	</operation>
@@ -998,7 +998,7 @@ Effect on the CAA processing:
 		</res>
 	</operation>
 	<operation start="2003-07-12T19:00:00Z" dt="180" c1="yes" c2="yes" c3="yes" c4="yes" plan="yes" sdesc="bad_tm">
-		<desc>Sweep tests, bad bias -424 nA on p3,4. 
+		<desc>Sweep tests, bad bias -424 nA on p3,4.
 			Intermediate sweeps on P34, internal burst.</desc>
 		<res>
 			<link href="aie030623a.txt">Anders 030623</link>
@@ -1029,7 +1029,7 @@ Effect on the CAA processing:
 		</res>
 	</operation>
 	<operation start="2003-07-23T21:30:39Z" dt="9" c4="yes"  plan="no" sdesc="bad_tm">
-		<desc>Bad sweep handling. The EFW telemetry has bad packets from DWP such that the FDM is not properly decoded for all 
+		<desc>Bad sweep handling. The EFW telemetry has bad packets from DWP such that the FDM is not properly decoded for all
 	packets. In this case one FDM containing a sweep=on flag is missing so the sweep data are not removed as they should.</desc>
 	</operation>
 	<operation start="2003-07-24T01:16:00Z" dt="53040" c2="yes" c4="yes" plan="yes" sdesc="spec_bias">
@@ -1174,9 +1174,9 @@ Effect on the CAA processing:
 		<desc>Bad data after spontaneous reset.</desc>
 	</operation>
 	<operation start="2003-11-27T10:26:00Z" dt="30960" c1="yes" plan="no" sdesc="no_p3">
-		<desc>Probe 3 stuck at around -10 V (just like probe 1). 
-			It is interesting that the problem went away at the 
-			first Whisper sounding in BM (the Whisper soundings in NM did 
+		<desc>Probe 3 stuck at around -10 V (just like probe 1).
+			It is interesting that the problem went away at the
+			first Whisper sounding in BM (the Whisper soundings in NM did
 			not help)! Both p3, p34 and p32 are affected.</desc>
 	</operation>
 	<operation start="2003-12-11T20:55:00Z" dt="10800" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="bad_tm">
@@ -1280,7 +1280,7 @@ Effect on the CAA processing:
 		</res>
 	</operation>
 	<operation start="2004-02-26T07:32:00Z" dt="197940" c1="yes" plan="no" sdesc="bad_tm">
-		<desc>Bad EFW data. It is not clear what happened to EFW, 
+		<desc>Bad EFW data. It is not clear what happened to EFW,
 			but all quantities are stuck at fixed values.</desc>
 	</operation>
 	<operation dt="72780" plan="no" sdesc="no_tm" start="2004-02-27T14:00:00Z" c3="yes">
@@ -1307,8 +1307,8 @@ Effect on the CAA processing:
 		but not quite stuck</desc>
 	</operation>
 	<operation start="2004-04-08T06:58:32Z" dt="960" c4="yes" plan="no" sdesc="no_p1">
-		<desc>Probe 1 suddenly goes positive (saturated) and then comes back but 
-		still stays bad at positive values until it is restored by 
+		<desc>Probe 1 suddenly goes positive (saturated) and then comes back but
+		still stays bad at positive values until it is restored by
 		a bias sweep.</desc>
 	</operation>
 	<operation start="2004-04-11T00:45:26Z" dt="876" c2="yes" plan="no" sdesc="bad_data">
@@ -1328,11 +1328,11 @@ Effect on the CAA processing:
 		<desc>Radial delta-v manoeuvre</desc>
 	</operation>
 	<operation start="2004-05-04T06:20:00Z" dt="254400" c2="yes" plan="no" sdesc="bad_data">
-		<desc>Shadow pulses in data due to Solar 
+		<desc>Shadow pulses in data due to Solar
 			Aspect Angle (SAA) less than 93.2 degrees</desc>
 	</operation>
 	<operation start="2004-05-04T06:20:00Z" dt="276000" c4="yes" plan="no" sdesc="bad_data">
-		<desc>Shadow pulses in data due to Solar 
+		<desc>Shadow pulses in data due to Solar
 			Aspect Angle (SAA) less than 93.2 degrees</desc>
 	</operation>
 	<operation start="2004-05-07T05:00:00Z" dt="320" c2="yes" plan="yes" sdesc="bad_data">
@@ -1371,10 +1371,10 @@ Effect on the CAA processing:
 		<res><link href="esoc040527w.txt">ESOC 040527</link> </res>
 	</operation>
 	<operation start="2004-05-20T01:45:00Z" dt="30120" c1="yes" plan="no" sdesc="bad_tm">
-		<desc>Bad data. It looks like we have a lot 
-		of digital bit errors in the telemetry, which causes spikes 
-		in the measured data but also timing errors. It is probably 
-		an internal DWP problem, since it is cleared by the "stop 
+		<desc>Bad data. It looks like we have a lot
+		of digital bit errors in the telemetry, which causes spikes
+		in the measured data but also timing errors. It is probably
+		an internal DWP problem, since it is cleared by the "stop
 		macro" command at 10:07.</desc>
 	</operation>
 	<operation start="2004-05-21T05:00:00Z" dt="60" c2="yes" plan="yes" sdesc="bad_data">
@@ -1390,7 +1390,7 @@ Effect on the CAA processing:
 		<desc>Spin-down manoeuvre</desc>
 	</operation>
 	<operation start="2004-05-21T09:34:00Z" dt="37020" c1="yes" plan="no" sdesc="no_p1">
-		<desc>Probe 1 at large positive potential but 
+		<desc>Probe 1 at large positive potential but
 		not quite stuck, problem was cleared by EFW reset</desc>
 	</operation>
 	<operation start="2004-05-29T09:35:00Z" dt="10800" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="bad_tm">
@@ -1464,30 +1464,30 @@ Effect on the CAA processing:
 	</operation>
 	<operation start="2004-07-19T22:59:44Z" dt="3" c4="yes"  plan="no" sdesc="bad_tm">
 		<desc>Single bad HX packet</desc>
-	</operation>	
+	</operation>
 	<operation start="2004-07-21T01:07:00Z" dt="26760" c4="yes"  plan="no" sdesc="bad_tm">
 		<desc>NULL sampling mode</desc>
-	</operation>	
+	</operation>
 	<operation start="2004-07-21T19:20:04Z" dt="3" c1="yes"  plan="no" sdesc="bad_tm">
 		<desc>Single bad TM packet</desc>
-	</operation>	
+	</operation>
 	<operation start="2004-07-26T05:12:00Z" dt="8280" c2="yes"  plan="no" sdesc="no_p1">
-		<desc>Probe 1 at large positive potential but 
+		<desc>Probe 1 at large positive potential but
 		not quite stuck, problem was cleared by sweep</desc>
-	</operation>	
+	</operation>
 	<operation start="2004-07-28T11:19:00Z" dt="9060" c2="yes"  plan="no" sdesc="no_p1">
-		<desc>Probe 1 at large positive potential but 
+		<desc>Probe 1 at large positive potential but
 		not quite stuck, problem was cleared by sweep</desc>
-	</operation>	
+	</operation>
 	<operation start="2004-08-09T10:05:00Z" dt="6600" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="bad_tm">
 		<desc>Bad data due to DWP buffer overflow in BM</desc>
-	</operation>	
+	</operation>
 	<operation start="2004-08-14T04:10:00Z" dt="7200" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="bad_tm">
 		<desc>Bad data due to DWP buffer overflow in BM</desc>
-	</operation>	
+	</operation>
 	<operation start="2004-08-14T17:44:43Z" dt="3" c3="yes" plan="no" sdesc="bad_tm">
 		<desc>Single bad TM packet</desc>
-	</operation>	
+	</operation>
 	<operation start="2004-08-14T23:00:00Z" dt="69180" c3="yes"  plan="no" sdesc="bad_tm">
 		<desc>NULL sampling mode</desc>
 		<res>
@@ -1855,11 +1855,11 @@ Effect on the CAA processing:
 		<desc>Single bad HX packet</desc>
 	</operation>
 	<operation start="2005-05-17T01:08:00Z" dt="7500" c2="yes" plan="no" sdesc="no_p1">
-		<desc>Probe 1 at large positive potential but not 
+		<desc>Probe 1 at large positive potential but not
 			quite stuck, problem was cleared by sweep</desc>
 	</operation>
 	<operation start="2005-05-17T01:14:00Z" dt="7140" c4="yes" plan="no" sdesc="no_p1">
-		<desc>Probe 1 at large positive potential but not 
+		<desc>Probe 1 at large positive potential but not
 			quite stuck, problem was cleared by sweep</desc>
 	</operation>
 	<operation start="2005-05-17T16:16:00Z" dt="51060" c2="yes" plan="no" sdesc="no_tm">
@@ -1893,15 +1893,15 @@ Effect on the CAA processing:
 		<desc>Apparent DWP buffer overflow</desc>
 	</operation>
 	<operation start="2005-06-12T07:26:00Z" dt="31560" c1="yes" plan="no" sdesc="no_p1">
-		<desc>Probe 1 incorrectly set to E-field mode with zero bias (used wrong 
-			sequence SWECJ305 after interval of no data taking) and stuck 
+		<desc>Probe 1 incorrectly set to E-field mode with zero bias (used wrong
+			sequence SWECJ305 after interval of no data taking) and stuck
 			at -68 V</desc>
 	</operation>
 	<operation start="2005-06-12T07:47:00Z" dt="34140" c2="yes" plan="no" sdesc="info">
 		<desc>Very bad data due to high density</desc>
 	</operation>
 	<operation start="2005-06-14T00:35:00Z" dt="368700" c2="yes" plan="yes" sdesc="bad_data">
-		<desc>Shadow pulses in data due to Solar 
+		<desc>Shadow pulses in data due to Solar
 			Aspect Angle (SAA) less than 93.2 degrees</desc>
 	</operation>
 	<operation start="2005-06-15T09:08:00Z" dt="9000" c4="yes" plan="no" sdesc="bad_tm">
@@ -2033,7 +2033,7 @@ Effect on the CAA processing:
 		<desc>Very bad data due to high density</desc>
 	</operation>
 	<operation start="2005-10-01T03:31:00Z" dt="151140" c2="yes" plan="no" sdesc="bad_data">
-		<desc>WEC problem, switched off by onboard monitoring at 
+		<desc>WEC problem, switched off by onboard monitoring at
 			2005-10-01 05:49</desc>
 		<res><link href="esoc051003gw.txt">ESOC 051003</link></res>
 	</operation>
@@ -2123,7 +2123,7 @@ Effect on the CAA processing:
 		</res>
 	</operation>
 	<operation start="2005-12-08T13:17:00Z" dt="7560" c4="yes" plan="no" sdesc="no_p1">
-		<desc>Probe 1 positive, starts slightly positive 
+		<desc>Probe 1 positive, starts slightly positive
 			and gradually increases to +68 V, problem cleared by sweep</desc>
 	</operation>
 	<operation start="2005-12-09T06:22:00Z" dt="94080" c2="yes" c3="yes" c4="yes" plan="no" sdesc="info">
@@ -2133,7 +2133,7 @@ Effect on the CAA processing:
 		<desc>Very bad data due to high density</desc>
 	</operation>
 	<operation start="2005-12-13T05:25:00Z" dt="1500" c1="yes" c3="yes" plan="yes" sdesc="spec_bias">
-		<desc>Slow sweeps on P2 SC13 in plasmasphere/plasmapause. 
+		<desc>Slow sweeps on P2 SC13 in plasmasphere/plasmapause.
 			Sampled V2 and V34 2005-12-12 01:30 - 2005-12-13 09:32.</desc>
 		<res>
 		<link href="aie051117a.txt">Anders 051117</link>
@@ -2225,12 +2225,12 @@ Effect on the CAA processing:
 		</res>
 	</operation>
 	<operation dt="236717" plan="no" sdesc="no_tm" start="2006-02-11T21:02:00Z" c1="yes">
-		<desc>Several, probably connected, issues: (1) 
-			EFW data missing from 2006-02-10 21:14:20, 
-			probably DWP problem. (2) 
-			WEC off due to DWP latchup 2006-02-11 21:02 until manual 
-			reconfiguration. 
-			The raindance procedure (see below) at 2006-02-10 21:22:18 
+		<desc>Several, probably connected, issues: (1)
+			EFW data missing from 2006-02-10 21:14:20,
+			probably DWP problem. (2)
+			WEC off due to DWP latchup 2006-02-11 21:02 until manual
+			reconfiguration.
+			The raindance procedure (see below) at 2006-02-10 21:22:18
 			does no change to the lack of EFW data.</desc>
 		<res>
 		<link href="pal060211a.txt">Per-Arne 060211</link>
@@ -2563,7 +2563,7 @@ Effect on the CAA processing:
                 <desc>Bad packet.</desc>
         </operation>
 	<operation dt="230400" plan="no" sdesc="no_tm" start="2006-08-27T20:55:00Z" c3="yes">
-		<desc>WEC off by DWP voltage monitoring, combined with 
+		<desc>WEC off by DWP voltage monitoring, combined with
 			DWP memory latchup.</desc>
 		<res>
 		<link href="esoc060829a.txt">ESOC 060829</link>
@@ -2729,8 +2729,8 @@ Effect on the CAA processing:
 		<desc>V2V34M instead of V23V34M in BM1.</desc>
 	</operation>
 	<operation sdesc="no_tm" start="2006-10-12T16:55:58Z" dt="101069" plan="no" c2="yes">
-		<desc>No EFW TM from 16:55:58; all WEC off by DWP voltage 
-			monitoring from 20:56. Some details in mail from Keith, apparently 
+		<desc>No EFW TM from 16:55:58; all WEC off by DWP voltage
+			monitoring from 20:56. Some details in mail from Keith, apparently
 			with some confusion of times and s/c number.</desc>
 		<res>
 		<link href="ky061013a.txt">Keith 061013</link>
@@ -2973,7 +2973,7 @@ Effect on the CAA processing:
                 <desc>Corrupt DWP packets. Data gap until 2007-02-22 10:22.</desc>
         </operation>
         <operation dt="113456" plan="no" sdesc="bad_data" start="2007-02-25T05:59:04Z"  c4="yes">
-                <desc>Data is incomprehensible after DWP watchdog reset. 
+                <desc>Data is incomprehensible after DWP watchdog reset.
 			Perhaps EFW was running in a strange mode? Cured by planned reset.</desc>
                 <res>
                 <link href="http://www.acse.shef.ac.uk/wec-ops/old_mail/msg07434.html">ESOC 070226</link>
@@ -3097,7 +3097,7 @@ Effect on the CAA processing:
                 <desc>Bad packet.</desc>
         </operation>
         <operation dt="24660" plan="no" sdesc="no_tm" start="2007-04-30T21:06:00Z" c2="yes">
-                <desc>WEC OFF on SC2 from 120.21.06 to 121.03.58. Cluster Anomaly AR-114 SC2: 
+                <desc>WEC OFF on SC2 from 120.21.06 to 121.03.58. Cluster Anomaly AR-114 SC2:
 			"CTU Switchover caused by EDAC Double Error".</desc>
                 <res>
                 <link href="esoc070510kq.eml">ESOC 070510</link>
@@ -3135,7 +3135,7 @@ Effect on the CAA processing:
 	<operation start="2007-05-13T03:23:59Z" dt="-1" c2="yes" plan="no" sdesc="no_p1">
 		<desc>Probe 1 effectively lost from this time.</desc>
 		<res>
-			<link href="pal070525qa.txt">Per-Arne 070525</link> 
+			<link href="pal070525qa.txt">Per-Arne 070525</link>
 			<link href="aie070530qa.txt">Anders 070530</link>
 			<link href="aie070604qa.eml">Anders 070604</link>
 		</res>
@@ -3195,9 +3195,9 @@ Effect on the CAA processing:
 		</res>
 	</operation>
 	<operation dt="744" plan="yes" sdesc="no_p1" start="2007-05-30T06:30:00Z"  c2="yes">
-		<desc>Further P1 diagnostics for hardware failure. Note commanding 
-			error for burst test: we used mux position rather than burst 
-			list position as argument, resulting in bad burst data. The 
+		<desc>Further P1 diagnostics for hardware failure. Note commanding
+			error for burst test: we used mux position rather than burst
+			list position as argument, resulting in bad burst data. The
 			burst test was rerun on 2007-06-01.
 		</desc>
 		<res>
@@ -3218,8 +3218,8 @@ Effect on the CAA processing:
 		</res>
 	</operation>
 	<operation dt="162" plan="yes" sdesc="no_p1" start="2007-06-13T07:51:56Z"  c2="yes">
-		<desc>Further P1 diagnostics for hardware failure. EFW P2 in Langmuir 
-			mode, WHI/WBD switching Ey/Ez antennas every few spins, STAFF 
+		<desc>Further P1 diagnostics for hardware failure. EFW P2 in Langmuir
+			mode, WHI/WBD switching Ey/Ez antennas every few spins, STAFF
 			SA despin off. The test as a whole starts 07:49:36.</desc>
 		<res>
 		<link href="aie070604a.eml">Anders 070604</link>
@@ -3754,7 +3754,7 @@ Effect on the CAA processing:
 	</operation>
 	<operation dt="16800" plan="no" sdesc="no_tm" start="2008-05-20T00:20:00Z" c3="yes">
 		<desc>Data gap affecting all instruments. May be explained in MOR 407 (missing).</desc>
-	</operation> 
+	</operation>
 	<operation dt="8400" plan="no" sdesc="bad_data" start="2008-05-29T07:22:00Z"  c1="yes">
 		<desc>EFW loss of TM because of spurious switch to NULL mode.</desc>
 		<res>
@@ -3957,7 +3957,7 @@ Effect on the CAA processing:
 		<res><link href="pal100426.txt">Per-Arne 100426</link></res>
 	</operation>
 	<operation c1="yes" start="2008-10-24T02:42:00Z" dt="417600" plan="no" sdesc="no_tm">
-                <desc>EFW digital problem: instrument stopped working, 
+                <desc>EFW digital problem: instrument stopped working,
 		recovering at next reset. (dt is approximate)</desc>
                 <res>
                 <link href="pal081028a.txt">Per-Arne 081027</link>
@@ -4141,7 +4141,7 @@ Effect on the CAA processing:
                 <desc>Bias at default -40 nA.</desc>
         </operation>
 	<operation c3="yes" start="2009-02-13T09:45:39Z" dt="629" plan="yes" sdesc="no_tm">
-                <desc>ESOC rain dance procedure.</desc>    
+                <desc>ESOC rain dance procedure.</desc>
                 <res>
                 <link href="esoc090213a.txt">ESOC 090213</link>
                 </res>
@@ -4158,7 +4158,7 @@ Effect on the CAA processing:
                 <res><link href="http://www.acse.shef.ac.uk/wec-ops/mail/msg00962.html">Keith 090219</link></res>
         </operation>
 	<operation c3="yes" start="2009-02-18T17:06:11Z" dt="3900" plan="no" sdesc="no_tm">
-                <desc>Data loss due to s/c SSR anomaly.</desc>    
+                <desc>Data loss due to s/c SSR anomaly.</desc>
                 <res>
                 <link href="esoc090224a.txt">ESOC 090224</link>
                 </res>
@@ -4167,7 +4167,7 @@ Effect on the CAA processing:
                 <desc>Probe latchup.</desc>
         </operation>
 	<operation c4="yes" start="2009-03-01T06:23:01Z" dt="600" plan="no" sdesc="bad_data">
-                <desc>S/c battery leak.</desc>    
+                <desc>S/c battery leak.</desc>
                 <res>
                 <link href="pal090309a.eml">Per-Arne 090303</link>
                 </res>
@@ -4193,14 +4193,14 @@ Effect on the CAA processing:
 		<res><link href="http://www.acse.shef.ac.uk/wec-ops/mail/msg01104.html">Per-Arne 090326</link></res>
         </operation>
 	<operation c1="yes" start="2009-03-13T23:17:05Z" dt="22140" plan="no" sdesc="no_tm">
-                <desc>S/c problem: CTU/RTU switch-over.</desc>    
+                <desc>S/c problem: CTU/RTU switch-over.</desc>
                 <res>
                 <link href="esoc090314a.txt">ESOC 090314</link>
                 <link href="ar-142.pdf">AR-142</link>
                 </res>
         </operation>
 	<operation c4="yes" start="2009-03-15T12:29:31Z" dt="39000" plan="no" sdesc="no_tm">
-                <desc>WEC turned off by onboard monitoring.</desc>    
+                <desc>WEC turned off by onboard monitoring.</desc>
                 <res>
                 <link href="ky090316a.txt">Keith 090316</link>
                 </res>
@@ -4226,13 +4226,13 @@ Effect on the CAA processing:
                 <desc>Bad packet.</desc>
         </operation>
 	<operation c3="yes" start="2009-04-06T08:56:33Z" dt="57000" plan="no" sdesc="bad_tm">
-                <desc>TM overflow following DWP watchdog reset.</desc>    
+                <desc>TM overflow following DWP watchdog reset.</desc>
                 <res>
                 <link href="ky090420an.txt">Keith 090420</link>
                 </res>
         </operation>
 	<operation c3="yes" start="2009-04-08T04:43:00Z" dt="19020" plan="no" sdesc="no_tm">
-                <desc>EFW in TM mode NULL for unknown reason.</desc>    
+                <desc>EFW in TM mode NULL for unknown reason.</desc>
                 <res>
                 <link href="pal090408a.txt">Per-Arne 090408</link>
                 </res>
@@ -4249,7 +4249,7 @@ Effect on the CAA processing:
                 <desc>Default -40 nA bias.</desc>
         </operation>
 	<operation c1="yes" start="2009-04-24T10:53:19Z" dt="11598" plan="no" sdesc="no_tm">
-                <desc>EFW powered off following DWP watchdog reset.</desc>    
+                <desc>EFW powered off following DWP watchdog reset.</desc>
                 <res>
                 <link href="ky090424a.txt">Keith 090424a</link>
                 </res>
@@ -4278,7 +4278,7 @@ Effect on the CAA processing:
                 <res><link href="http://www.acse.shef.ac.uk/wec-ops/mail/msg01258.html">Per-Arne 090511</link></res>
         </operation>
 	<operation c1="yes" start="2009-05-09T08:15:06Z" dt="114300" plan="yes" sdesc="no_p4">
-                <desc>P4 switched into density mode (V=0) when it was thought to be dead, then switched back to E-field mode the next day when it was discovered to be working.</desc>    
+                <desc>P4 switched into density mode (V=0) when it was thought to be dead, then switched back to E-field mode the next day when it was discovered to be working.</desc>
                 <res>
                 <link href="esoc090508a.txt">ESOC 090508</link>
                 </res>
@@ -4328,13 +4328,13 @@ Effect on the CAA processing:
                 </res>
         </operation>
 	<operation c1="yes" start="2009-06-13T12:05:00Z" dt="857460" plan="no" sdesc="TBD">
-                <desc>DWP latchup: EFW appears unaffected.</desc>    
+                <desc>DWP latchup: EFW appears unaffected.</desc>
                 <res>
                 <link href="ky090623a.txt">Keith 090623</link>
                 </res>
         </operation>
 	<operation c4="yes" start="2009-06-19T18:47:00Z" dt="327180" plan="no" sdesc="TBD">
-                <desc>DWP latchup: EFW appears unaffected, except for the interval below.</desc>    
+                <desc>DWP latchup: EFW appears unaffected, except for the interval below.</desc>
                 <res>
                 <link href="ky090623a.txt">Keith 090623</link>
                 </res>
@@ -5117,6 +5117,9 @@ Effect on the CAA processing:
                     <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02588.html">Juergen 1006622</link>
                 </res>
         </operation>
+				<operation start="2010-06-22T13:17:30Z" dt="3417" c3="yes" plan="no" sdesc="TBD">
+					<desc>EDI interference resulting in strong noise.</desc>
+				</operation>
 <operation c3="yes" start="2010-06-22T17:30:24Z" dt="69882" plan="no" sdesc="no_p32">
         <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
@@ -5846,13 +5849,13 @@ plan="yes" sdesc ="TBD">
                 <res>
                 </res>
         </operation>
-                        
+
 <operation start="2012-02-25T09:05:00Z" dt="77100" c2="yes" plan="yes" sdesc="no_p2">
         <desc>P2 at maximum positive bias voltage +39 V.</desc>
                 <res>
                 </res>
         </operation>
-                        
+
 <operation start="2012-02-27T15:05:00Z" dt="85200" c2="yes" plan="yes" sdesc="no_p2">
         <desc>P2 at maximum positive bias voltage +39 V.</desc>
                 <res>
@@ -5863,7 +5866,7 @@ plan="yes" sdesc ="TBD">
                 <res>
                 </res>
         </operation>
-                        
+
 <operation start="2012-03-03T05:35:00Z" dt="75500" c2="yes" plan="yes" sdesc="no_p2">
         <desc>P2 at maximum positive bias voltage +39 V.</desc>
                 <res>
@@ -6018,7 +6021,7 @@ plan="yes" sdesc ="TBD">
         <desc>P2 and P4 bias current test.</desc>
 	</operation>
 <operation start="2012-09-10T16:48:00Z" dt="720" c1="yes" c4="yes" plan="yes" sdesc="bad_bias">
-        <desc>WBD interference test (guard stepping).</desc> 
+        <desc>WBD interference test (guard stepping).</desc>
         <res><link href="aie120817a.txt">Anders 120817</link>
         </res>
 	</operation>
@@ -6074,7 +6077,7 @@ plan="yes" sdesc ="TBD">
 	</operation>
 <operation start="2015-02-15T02:12:00Z" dt="17880" c4="yes" plan="no" sdesc="bad_data">
 	<desc>Probes saturated in dense plasma due to high bias.</desc>
-	</operation>	
+	</operation>
 <operation start="2015-02-17T07:36:30Z" dt="-1" c4="yes" plan="no" sdesc="no_p3">
 	<desc>Probe 3 effectively lost from this time.</desc>
 	</operation>
@@ -6113,7 +6116,7 @@ plan="yes" sdesc ="TBD">
 	</operation>
 <operation start="2015-03-31T14:54:30Z" dt="120" c4="yes" plan="no" sdesc="bad_data">
 	<desc>Probes saturated in dense plasma due to high bias.</desc>
-	</operation>	
+	</operation>
 <operation start="2015-03-31T17:14:00Z" dt="540" c1="yes" c2="yes" c4="yes" plan="no" sdesc="bad_data">
 	<desc>Probes saturated in dense plasma due to high bias.</desc>
 	</operation>
@@ -6159,7 +6162,7 @@ plan="yes" sdesc ="TBD">
 	</operation>
 <operation start="2015-04-11T16:46:25Z" dt="20" c4="yes" plan="no" sdesc="bad_data">
 	<desc>Probes saturated in dense plasma due to high bias.</desc>
-	</operation>	
+	</operation>
 <operation start="2015-04-11T21:45:00Z" dt="300" c4="yes" plan="no" sdesc="bad_data">
 	<desc>Probes saturated in dense plasma due to high bias.</desc>
 	</operation>
@@ -7260,4 +7263,438 @@ plan="yes" sdesc ="TBD">
 <operation start="2015-08-30T12:06:48Z" dt="2862" c4="yes" plan="no" sdesc="bad_data">
 	<desc>Probes saturated in dense plasma due to high bias.</desc>
 	</operation>
+
+<operation start="2015-09-06T10:38:28Z" dt="7" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-09-06T11:04:29Z" dt="6" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+
+<operation start="2015-09-08T01:27:30Z" dt="557" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-09-08T11:38:56Z" dt="1263" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+
+<operation start="2015-09-11T01:15:10Z" dt="8" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+
+<operation start="2015-09-21T06:52:09Z" dt="20596" c1="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+
+<operation start="2015-09-26T14:14:14Z" dt="13281" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+
+<operation start="2015-10-05T12:53:03Z" dt="34" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+
+<operation start="2015-10-07T10:05:42Z" dt="10" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-10-07T12:23:50Z" dt="412" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-10-07T12:51:10Z" dt="8" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-10-07T13:11:46Z" dt="256" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-10-07T13:54:14Z" dt="808" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-10-07T14:19:50Z" dt="349" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-10-07T15:38:26Z" dt="8" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-10-07T15:41:38Z" dt="8" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-10-07T15:42:14Z" dt="8" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-10-07T16:53:30Z" dt="32" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-10-07T16:54:30Z" dt="32" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-10-07T17:00:02Z" dt="12" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+
+<operation start="2015-10-30T16:12:22Z" dt="536" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+
+
+<operation start="2015-11-02T23:30:00Z" dt="558" c1="yes" c2="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-11-03T00:51:54Z" dt="8" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-11-03T01:02:14Z" dt="12" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-11-03T01:04:30Z" dt="25188" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-11-03T01:38:30Z" dt="23146" c1="yes" c2="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+
+
+<operation start="2015-11-07T00:40:46Z" dt="984" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+
+<operation start="2015-11-10T10:49:02Z" dt="344" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-11-10T11:02:01Z" dt="368" c2="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+
+<operation start="2015-11-17T17:53:14Z" dt="68" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+
+<operation start="2015-11-19T10:52:22Z" dt="20" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+
+<operation start="2015-11-27T10:27:06Z" dt="1224" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-11-27T11:18:18Z" dt="8" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-11-27T11:21:54Z" dt="1948" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-11-27T12:11:42Z" dt="116" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-11-27T12:59:38Z" dt="60913" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-11-28T08:57:58Z" dt="16192" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-11-28T11:35:29Z" dt="3237" c1="yes" c2="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-11-28T20:27:14Z" dt="61" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-11-28T20:36:16Z" dt="4742" c1="yes" c2="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+
+<operation start="2015-11-29T18:42:50Z" dt="54088" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-11-29T19:42:45Z" dt="105" c2="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-11-29T19:51:00Z" dt="651" c1="yes" c2="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-11-29T20:24:06Z" dt="419" c2="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-11-29T21:28:41Z" dt="199" c2="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+
+<operation start="2015-11-30T00:01:42Z" dt="1218" c2="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-11-30T00:32:30Z" dt="260" c2="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-11-30T01:45:10Z" dt="644" c2="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-11-30T02:11:42Z" dt="1209" c2="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-11-30T02:57:26Z" dt="545" c2="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-11-30T03:49:02Z" dt="14492" c2="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-11-30T08:10:14Z" dt="185" c2="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-11-30T08:33:49Z" dt="269" c2="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-11-30T08:44:41Z" dt="85" c2="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+
+<operation start="2015-12-05T08:47:22Z" dt="989" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-12-05T09:13:46Z" dt="48" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-12-05T19:24:58Z" dt="656" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+
+<operation start="2015-12-07T21:49:01Z" dt="66" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+
+<operation start="2015-12-08T00:48:25Z" dt="437" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+
+<operation start="2015-12-10T08:09:14Z" dt="1932" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+
+<operation start="2015-12-14T15:42:42Z" dt="1668" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-12-14T16:43:32Z" dt="217" c2="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-12-14T16:53:29Z" dt="349" c2="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-12-14T17:44:06Z" dt="849" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-12-14T17:44:06Z" dt="849" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-12-14T18:13:10Z" dt="486" c1="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-12-14T18:29:54Z" dt="635" c1="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-12-14T18:33:18Z" dt="32" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-12-14T18:47:42Z" dt="64" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-12-14T18:50:54Z" dt="699" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-12-14T19:07:02Z" dt="3532" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+
+<operation start="2015-12-19T18:03:42Z" dt="21903" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-12-19T18:05:38Z" dt="21192" c1="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+
+<operation start="2015-12-20T00:26:58Z" dt="3664" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-12-20T00:35:34Z" dt="1700" c1="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-12-20T03:17:30Z" dt="10540" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-12-20T06:26:30Z" dt="49" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-12-20T13:55:46Z" dt="1372" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-12-20T14:00:46Z" dt="44" c1="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-12-20T14:11:42Z" dt="48" c1="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-12-20T14:17:03Z" dt="71" c1="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-12-20T14:43:42Z" dt="104" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-12-20T14:51:14Z" dt="10976" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-12-20T15:06:34Z" dt="91" c1="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-12-20T21:54:18Z" dt="312" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+
+<operation start="2015-12-22T07:00:15Z" dt="769" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-12-22T10:16:26Z" dt="2764" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+
+<operation start="2015-12-27T13:12:34Z" dt="10" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-12-27T17:13:22Z" dt="8" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-12-27T17:41:30Z" dt="8" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-12-27T18:16:50Z" dt="8" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-12-27T18:32:34Z" dt="83" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-12-27T19:56:50Z" dt="10" c1="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-12-27T19:58:04Z" dt="74" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-12-27T20:02:06Z" dt="12" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+
+<operation start="2015-12-28T08:02:34Z" dt="865" c2="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-12-28T10:35:37Z" dt="193" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+
+<operation start="2015-12-29T02:00:18Z" dt="27" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-12-29T02:26:54Z" dt="46" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-12-29T08:40:42Z" dt="164" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-12-29T08:48:14Z" dt="16" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-12-29T08:53:14Z" dt="20" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-12-29T08:53:14Z" dt="20" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-12-29T09:08:22Z" dt="366" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-12-29T10:23:18Z" dt="728" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-12-29T11:00:47Z" dt="3371" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-12-29T12:51:22Z" dt="1912" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-12-29T14:51:34Z" dt="20" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-12-29T14:55:42Z" dt="12" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-12-29T15:17:58Z" dt="28" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-12-29T17:09:50Z" dt="2499" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-12-29T18:08:38Z" dt="96" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+
+<operation start="2015-12-30T02:49:29Z" dt="245" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-12-30T03:01:42Z" dt="567" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-12-30T03:47:46Z" dt="648" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-12-30T04:13:50Z" dt="48" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-12-30T04:25:02Z" dt="268" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+
+<operation start="2015-12-31T05:34:05Z" dt="1722" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-12-31T06:26:18Z" dt="4692" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-12-31T08:33:37Z" dt="597" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-12-31T08:33:37Z" dt="597" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-12-31T09:55:01Z" dt="3301" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-12-31T13:44:10Z" dt="2384" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-12-31T15:19:22Z" dt="1040" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-12-31T16:13:26Z" dt="248" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-12-31T16:25:00Z" dt="78" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-12-31T16:35:17Z" dt="133" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-12-31T16:59:54Z" dt="8" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-12-31T17:13:33Z" dt="85" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-12-31T17:28:18Z" dt="78" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-12-31T17:48:13Z" dt="81" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-12-31T17:51:41Z" dt="9" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-12-31T18:08:46Z" dt="244" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+<operation start="2015-12-31T18:29:18Z" dt="8" c4="yes" plan="no" sdesc="bad_data">
+	<desc>Probes saturated in dense plasma due to high bias.</desc>
+	</operation>
+
 </table>

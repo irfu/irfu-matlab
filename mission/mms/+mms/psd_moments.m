@@ -45,8 +45,7 @@ function particlemoments = psd_moments(varargin)
 % Output: 
 %   psd_moments - structure containing the particle moments: density, bulk
 %   velocity, pressure, temperature, and particle heat flux (n_psd, V_psd, P_psd, T_psd, and H_psd,
-%   respectively) as TSeries'. For temperature and
-%   pressure tensors the order of the columns is XX, XY, XZ, YY, YZ, ZZ.
+%   respectively) as TSeries'.
 %
 % Notes: 
 % Regarding the spacecraft potential, the best estimate of is -1.2*(probe
@@ -249,8 +248,8 @@ pdist.data = pdist.data*1e12; % convert to SI units
 n_psd = zeros(length(pdist.time), 1);
     n_psd_e32 = zeros(length(pdist.time), 32);
 V_psd = zeros(length(pdist.time), 3);
-P_psd = zeros(length(pdist.time), 6);
-T_psd = zeros(length(pdist.time), 6);
+P_psd = zeros(length(pdist.time), 3, 3);
+P2_psd = zeros(length(pdist.time), 3, 3);
 H_psd = zeros(length(pdist.time), 3);
 
 tic
@@ -360,12 +359,12 @@ for nt = 1:length(pdist.time)
         V_psd(nt, 1) = V_psd(nt, 1) + Vxtemp;
         V_psd(nt, 2) = V_psd(nt, 2) + Vytemp;
         V_psd(nt, 3) = V_psd(nt, 3) + Vztemp;
-        P_psd(nt, 1) = P_psd(nt, 1) + irf.nansum(irf.nansum(tmp .* Mpsdmfxx, 1), 2) * v(ii)^4 * deltav(ii) * deltaang;
-        P_psd(nt, 2) = P_psd(nt, 2) + irf.nansum(irf.nansum(tmp .* Mpsdmfxy, 1), 2) * v(ii)^4 * deltav(ii) * deltaang;
-        P_psd(nt, 3) = P_psd(nt, 3) + irf.nansum(irf.nansum(tmp .* Mpsdmfxz, 1), 2) * v(ii)^4 * deltav(ii) * deltaang;
-        P_psd(nt, 4) = P_psd(nt, 4) + irf.nansum(irf.nansum(tmp .* Mpsdmfyy, 1), 2) * v(ii)^4 * deltav(ii) * deltaang;
-        P_psd(nt, 5) = P_psd(nt, 5) + irf.nansum(irf.nansum(tmp .* Mpsdmfyz, 1), 2) * v(ii)^4 * deltav(ii) * deltaang;
-        P_psd(nt, 6) = P_psd(nt, 6) + irf.nansum(irf.nansum(tmp .* Mpsdmfzz, 1), 2) * v(ii)^4 * deltav(ii) * deltaang;
+        P_psd(nt, 1, 1) = P_psd(nt, 1, 1) + irf.nansum(irf.nansum(tmp .* Mpsdmfxx, 1), 2) * v(ii)^4 * deltav(ii) * deltaang;
+        P_psd(nt, 1, 2) = P_psd(nt, 1, 2) + irf.nansum(irf.nansum(tmp .* Mpsdmfxy, 1), 2) * v(ii)^4 * deltav(ii) * deltaang;
+        P_psd(nt, 1, 3) = P_psd(nt, 1, 3) + irf.nansum(irf.nansum(tmp .* Mpsdmfxz, 1), 2) * v(ii)^4 * deltav(ii) * deltaang;
+        P_psd(nt, 2, 2) = P_psd(nt, 2, 2) + irf.nansum(irf.nansum(tmp .* Mpsdmfyy, 1), 2) * v(ii)^4 * deltav(ii) * deltaang;
+        P_psd(nt, 2, 3) = P_psd(nt, 2, 3) + irf.nansum(irf.nansum(tmp .* Mpsdmfyz, 1), 2) * v(ii)^4 * deltav(ii) * deltaang;
+        P_psd(nt, 3, 3) = P_psd(nt, 3, 3) + irf.nansum(irf.nansum(tmp .* Mpsdmfzz, 1), 2) * v(ii)^4 * deltav(ii) * deltaang;
         H_psd(nt, 1) = H_psd(nt, 1) + Vxtemp * v(ii)^2;
         H_psd(nt, 2) = H_psd(nt, 2) + Vytemp * v(ii)^2;
         H_psd(nt, 3) = H_psd(nt, 3) + Vztemp * v(ii)^2;
@@ -376,38 +375,54 @@ toc
 % Compute moments in SI units    
 P_psd = pmass*P_psd;
 V_psd = V_psd./[n_psd n_psd n_psd];
-P_psd(:,1) = P_psd(:,1)-pmass*n_psd.*V_psd(:,1).*V_psd(:,1);
-P_psd(:,2) = P_psd(:,2)-pmass*n_psd.*V_psd(:,1).*V_psd(:,2);
-P_psd(:,3) = P_psd(:,3)-pmass*n_psd.*V_psd(:,1).*V_psd(:,3);
-P_psd(:,4) = P_psd(:,4)-pmass*n_psd.*V_psd(:,2).*V_psd(:,2);
-P_psd(:,5) = P_psd(:,5)-pmass*n_psd.*V_psd(:,2).*V_psd(:,3);
-P_psd(:,6) = P_psd(:,6)-pmass*n_psd.*V_psd(:,3).*V_psd(:,3);
-Ptrace = (P_psd(:,1)+P_psd(:,4)+P_psd(:,6));
-T_psd = P_psd./([n_psd n_psd n_psd n_psd n_psd n_psd])/kb;
+P2_psd(:,1,1) = P_psd(:,1,1);
+P2_psd(:,1,2) = P_psd(:,1,2);
+P2_psd(:,1,3) = P_psd(:,1,3);
+P2_psd(:,2,2) = P_psd(:,2,2);
+P2_psd(:,2,3) = P_psd(:,2,3);
+P2_psd(:,3,3) = P_psd(:,3,3);
+P2_psd(:,2,1) = P2_psd(:,1,2); P2_psd(:,3,1) = P2_psd(:,1,3); P2_psd(:,3,2) = P2_psd(:,2,3);
+
+P_psd(:,1,1) = P_psd(:,1,1)-pmass*n_psd.*V_psd(:,1).*V_psd(:,1);
+P_psd(:,1,2) = P_psd(:,1,2)-pmass*n_psd.*V_psd(:,1).*V_psd(:,2);
+P_psd(:,1,3) = P_psd(:,1,3)-pmass*n_psd.*V_psd(:,1).*V_psd(:,3);
+P_psd(:,2,2) = P_psd(:,2,2)-pmass*n_psd.*V_psd(:,2).*V_psd(:,2);
+P_psd(:,2,3) = P_psd(:,2,3)-pmass*n_psd.*V_psd(:,2).*V_psd(:,3);
+P_psd(:,3,3) = P_psd(:,3,3)-pmass*n_psd.*V_psd(:,3).*V_psd(:,3);
+P_psd(:,2,1) = P_psd(:,1,2); P_psd(:,3,1) = P_psd(:,1,3); P_psd(:,3,2) = P_psd(:,2,3);
+
+ntemp = reshape([n_psd n_psd n_psd;n_psd n_psd n_psd;n_psd n_psd n_psd],length(n_psd),3,3);
+
+Ptrace = (P_psd(:,1,1)+P_psd(:,2,2)+P_psd(:,3,3));
+T_psd = P_psd./ntemp/kb;
+T_psd(:,2,1) = T_psd(:,1,2); T_psd(:,3,1) = T_psd(:,1,3); T_psd(:,3,2) = T_psd(:,2,3);
+
 H_psd = pmass/2*H_psd;
 Vabs2 = V_psd(:,1).^2+V_psd(:,2).^2+V_psd(:,3).^2;
-H_psd(:,1) = H_psd(:,1)-(V_psd(:,1).*P_psd(:,1)+V_psd(:,2).*P_psd(:,2)+V_psd(:,3).*P_psd(:,3))-0.5*V_psd(:,1).*Ptrace-0.5*pmass*n_psd.*Vabs2.*V_psd(:,1);
-H_psd(:,2) = H_psd(:,2)-(V_psd(:,1).*P_psd(:,2)+V_psd(:,2).*P_psd(:,4)+V_psd(:,3).*P_psd(:,5))-0.5*V_psd(:,2).*Ptrace-0.5*pmass*n_psd.*Vabs2.*V_psd(:,2);
-H_psd(:,3) = H_psd(:,3)-(V_psd(:,1).*P_psd(:,3)+V_psd(:,2).*P_psd(:,5)+V_psd(:,3).*P_psd(:,6))-0.5*V_psd(:,3).*Ptrace-0.5*pmass*n_psd.*Vabs2.*V_psd(:,3);
+H_psd(:,1) = H_psd(:,1)-(V_psd(:,1).*P_psd(:,1,1)+V_psd(:,2).*P_psd(:,1,2)+V_psd(:,3).*P_psd(:,1,3))-0.5*V_psd(:,1).*Ptrace-0.5*pmass*n_psd.*Vabs2.*V_psd(:,1);
+H_psd(:,2) = H_psd(:,2)-(V_psd(:,1).*P_psd(:,1,2)+V_psd(:,2).*P_psd(:,2,2)+V_psd(:,3).*P_psd(:,2,3))-0.5*V_psd(:,2).*Ptrace-0.5*pmass*n_psd.*Vabs2.*V_psd(:,2);
+H_psd(:,3) = H_psd(:,3)-(V_psd(:,1).*P_psd(:,1,3)+V_psd(:,2).*P_psd(:,2,3)+V_psd(:,3).*P_psd(:,3,3))-0.5*V_psd(:,3).*Ptrace-0.5*pmass*n_psd.*Vabs2.*V_psd(:,3);
 
 % Convert to typical units (/cc, km/s, nP, eV, and ergs/s/cm^2).
 n_psd = n_psd/1e6;
-    n_psd_e32 = n_psd_e32 / 1e6;
+n_psd_e32 = n_psd_e32/1e6;
 V_psd = V_psd/1e3;
 P_psd = P_psd*1e9;
+P2_psd = P2_psd*1e9;
 T_psd = T_psd*kb/qe;
 H_psd = H_psd*1e3;
 
 % Construct TSeries'
 n_psd = irf.ts_scalar(pdist.time,n_psd);
-    n_psd_e32 = irf.ts_scalar(pdist.time, n_psd_e32);
+n_psd_e32 = irf.ts_scalar(pdist.time, n_psd_e32);
 V_psd = irf.ts_vec_xyz(pdist.time,V_psd);
-P_psd = TSeries(pdist.time,P_psd);
-T_psd = TSeries(pdist.time,T_psd);
+P_psd = irf.ts_tensor_xyz(pdist.time,P_psd);
+P2_psd = irf.ts_tensor_xyz(pdist.time,P2_psd);
+T_psd = irf.ts_tensor_xyz(pdist.time,T_psd);
 H_psd = irf.ts_vec_xyz(pdist.time,H_psd);
 
 % make structure for output
-particlemoments =struct('n_psd',n_psd,'V_psd',V_psd,'P_psd',P_psd, ...
+particlemoments =struct('n_psd',n_psd,'V_psd',V_psd,'P_psd',P_psd,'P2_psd',P2_psd, ...
     'T_psd',T_psd,'H_psd',H_psd, 'n_psd_e32', n_psd_e32);
 
 end

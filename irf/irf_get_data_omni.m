@@ -34,6 +34,9 @@ function f = irf_get_data_omni( tint, parameter , database)
 %               'ae'    - AE index
 %               'al'    - AL index
 %               'au'    - AL index
+%               'imfid' - Spacecraft ID for IMF, 50=IMP8, 51=WIND,
+%                         60=Geotail, 71=ACE
+%               'swid'  - Spacecraft ID for SW
 %
 % f=IRF_GET_DATA_OMNI(tint,parameter,database) download from specified database
 %
@@ -189,6 +192,8 @@ for jj=1:length(iStart)
 		case 'kp',     varOmni2=38;varOmni1min=-1;
 		case 'pc',     varOmni2=51;varOmni1min=44;
 		case 'f10.7',  varOmni2=50;varOmni1min=-1;
+        case 'imfid',  varOmni2=-1;varOmni1min= 4;
+        case 'swid',   varOmni2=-1;varOmni1min= 5;
 		otherwise,     varOmni2=0 ;varOmni1min=-1;
 	end
 	if strcmp(dataSource,'omni2'),
@@ -205,34 +210,94 @@ for jj=1:length(iStart)
 end
 
 %% Request data
-if(verLessThan('matlab','8.4')) % Version less than R2014b
-  % Soon this will fail as all US Gov is moving to HTTPS only as per
-  % https://obamawhitehouse.archives.gov/blog/2015/06/08/https-everywhere-government
-  httpRequest = [httpRequest(1:4), httpRequest(6:end)]; % excl. "s" from https
-  url=[httpRequest 'start_date=' startDate '&end_date=' endDate vars];
-  disp(['url:' url]);
-  [c,getDataSuccess]=urlread(url);
-else
-  % Download data from HTTPS
-  url=[httpRequest 'start_date=' startDate '&end_date=' endDate vars];
-  disp(['url:' url]);
-  if(verLessThan('matlab','9.2')) % Version less than R2017a
-    % Set root certificate pem file to empty disables verification, as
-    % Matlab versions before R2017a does not include root certificate used
-    % by "Let's encrypt".
-    webOpt = weboptions('CertificateFilename','');
-    webOpt.Timeout = 10;
+url = [httpRequest 'start_date=' startDate '&end_date=' endDate vars];
+disp(['url: ' url]);
+try
+  if verLessThan('matlab','9.1') % < Version less than R2016b
+    % Old Matlab unable to disable certificate
+    if isunix
+      % Try external program, "curl" or "wget".
+      prog = ''; args='';
+      reqSoftware = {'wget', 'curl'};
+      for ii = 1:length(reqSoftware)
+        [status, ~] = system(['command -v ', reqSoftware{ii}, ' >/dev/null 2>&1 || { exit 100; }']);
+        if(status == 0)
+          prog = reqSoftware{ii};
+          break
+        end
+      end
+      if isempty(prog)
+        % Neither wget or curl is installed.
+        errStr = ['You appear to be running a too old version of Matlab, ', ...
+          'and did not locate system program to download files. Unable to ', ...
+          'automatically access the HTTPS url: ', url];
+        irf.log('critical', errStr);
+        error(['Unable to access the HTTPS-only server with OMNI data, ',...
+          'please consider upgrading Matlab or downloading data manually.']);
+      else
+        % Download using wget or curl
+        % Replace "&" with "\&" to avoid expantion problem in various shell
+        % environments.
+        urlExternal = strrep(url, '&', '\&');
+        if strcmp(prog,'wget')
+          % Extra arguments to wget (do not check certificate, and output in
+          % stdout)
+          args = '--no-check-certificate -qO- ';
+        elseif strcmp(prog, 'curl')
+          % Extra argument to curl (silent progress bar, and output in
+          % stdout)
+          args = '--insecure -s ';
+        end
+        [status, c] = system([prog, ' ', args, urlExternal]);
+        if status
+          % Failed to run "prog" to download url.
+          errStr = ['You appear to be running a too old version of Matlab, and program ', ...
+            prog, ' failed. Unable to automatically access the HTTPS url: ', url];
+          irf.log('critical', errStr);
+          error(['Unable to access the HTTPS-only server with OMNI data, ',...
+            'please consider upgrading Matlab or downloading data manually.']);
+        end
+        getDataSuccess = true;
+      end
+    else
+      % Windows system, no wget / curl per default.
+      % However PowerShell should probably work on most modern Windows
+      % systems, on some versions this may fail as the powershell may have
+      % changed its built in functionallity over the years...
+      % This has only been tested on a Win 7 machine as of 2017/10/25.
+      urlExternal = strrep(url, '&', '^&'); % Escape ampersand with "^".
+      cmd = ['powershell -inputformat none $source = ''', ...
+        urlExternal, '''; $dest = [System.IO.Path]::GetTempFileName(); ', ...
+        '$wc = New-Object System.Net.WebClient; ', ...
+        '$wc.DownloadFile($source, $dest); cat $dest; Remove-Item $dest'];
+      [status, c] = system(cmd);
+      if status
+        errStr = ['You appear to be running a too old version of Matlab. ', ...
+          'Unable to automatically access the HTTPS url: ', url];
+        irf.log('critical', errStr);
+        error(['Unable to access the HTTPS-only server with OMNI data, ',...
+          'please consider upgrading Matlab or downloading data manually.']);
+      end
+      getDataSuccess = true;
+    end
   else
-    webOpt = weboptions();
+    % Download from HTTPS using Matlab's webread.
+    if verLessThan('matlab','9.2') % Version less than R2017a
+      % Set root certificate pem file to empty disables verification, as
+      % Matlab versions before R2017a does not include root certificate
+      % used by "Let's encrypt".
+      webOpt = weboptions('CertificateFilename', '');
+    else
+      webOpt = weboptions();
+    end
     webOpt.Timeout = 10;
-  end
-  try
     c = webread(url, webOpt);
     getDataSuccess = true;
-  catch
-    getDataSuccess = false;
   end
-end
+catch
+  getDataSuccess = false;
+end  
+
 
 %% Analyze returned data
 if getDataSuccess, % success in downloading from internet

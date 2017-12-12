@@ -208,7 +208,7 @@ specrec=struct('t',time);
 specrec.f=frequency;
 specrec.p=pfluxz;
 specrec.f_label='';
-specrec.p_label={'S_{z}/|S|'};
+specrec.p_label={'S_{||}/|S|'};
 irf_spectrogram(h(8),specrec,'lin','donotfitcolorbarlabel');
 irf_legend(h(8),'(h)',[0.99 0.98],'color','w','fontsize',12)
 hold(h(8),'on');

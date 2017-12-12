@@ -23,7 +23,7 @@ function [phiEB,vbest,dirbest,thetas,corrs] = lhwaveanalysis(varargin)
 %   Bxyz=mms.db_get_ts('mms2_fgm_brst_l2','mms2_fgm_b_gse_brst_l2',Tintl);
 %   Exyz=mms.db_get_ts('mms2_edp_brst_l2_dce','mms2_edp_dce_gse_brst_l2',Tintl);
 %   Bscm=mms.db_get_ts('mms2_scm_brst_l2_scb','mms2_scm_acb_gse_scb_brst_l2',Tintl);
-%   ne = mms.db_get_ts('mms2_fpi_brst_l2_des-moms','mms2_des_numberdensity_dbcs_brst',Tintl);
+%   ne = mms.db_get_ts('mms2_fpi_brst_l2_des-moms','mms2_des_numberdensity_brst',Tintl);
 %   Tint = irf.tint('2015-12-14T01:17:40.20Z/2015-12-14T01:17:41.50Z');
 %   [phiEB,vbest,dirbest,thetas,corrs] = mms.lhwaveanalysis(Tint,Exyz,Bscm,Bxyz,ne,'lhfilt',[5 100],'blpass',5,'plot',1);
 %

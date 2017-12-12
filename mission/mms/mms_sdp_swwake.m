@@ -8,7 +8,7 @@ function [data, n_corrected, wakedesc] = mms_sdp_swwake(e, pair, phase_2, timeIn
 %   pair       - probe pair ('e12' or 'e34')
 %   phase_2    - spinphase corresponding to measurements
 %   timeIn     - time of measurement (int64, tt2000 ns)
-%   sampleRate - 
+%   sampleRate - nominal sample rate of data (Hz)
 %
 % Output:
 %   data - corrected data
@@ -48,15 +48,6 @@ function [data, n_corrected, wakedesc] = mms_sdp_swwake(e, pair, phase_2, timeIn
 narginchk(5,5)
 global MMS_CONST;
 if(isempty(MMS_CONST)), MMS_CONST = mms_constants; end
-switch pair
-  case {'e12', 'e34'}
-    % Fix wake position
-    expPhase = round((-18:17) + 180/pi*MMS_CONST.Phaseshift.(pair))+1; % Symmetric test
-  otherwise
-    errStr = 'Pair must be one of: "e12" or "e34"';
-    irf.log('critical', errStr);
-    error(errStr);
-end
 
 n_corrected = 0;
 data = e;
@@ -75,6 +66,32 @@ plot_step = 1;
 plot_i = 0;
 plotflag = false;
 
+switch pair
+  case {'e12', 'e34'}
+    % Fix wake position
+    expPhase = round((-18:17) + 180/pi*MMS_CONST.Phaseshift.(pair))+1; % Symmetric test
+    % As we process each spin separatly (as identified by shift at 360->0)
+    % check to see if any expected wake is split between two spins.
+    % If so then artificially shift the "phase_2" and "expPhase" by the
+    % overlapping amount to ensure it does not occur. This should hopefully
+    % avoid having problem with wake removed on a probe pair at spin "N" 
+    % while not removed from spin "N+1" in what is essentially the same
+    % wake on the same probe pair.
+    if ( min(expPhase) - WAKE_MAX_HALFWIDTH < 0 )
+      DELTA = -(min(expPhase)-WAKE_MAX_HALFWIDTH);
+      phase_2 = mod(phase_2 + DELTA, 360);
+      expPhase = expPhase + DELTA;
+    elseif ( max(expPhase) + 180 + WAKE_MAX_HALFWIDTH > 360 )
+      DELTA = -(max(expPhase)+WAKE_MAX_HALFWIDTH-180);
+      phase_2 = mod(phase_2 + DELTA, 360);
+      expPhase = expPhase + DELTA;
+    end
+  otherwise
+    errStr = 'Pair must be one of: "e12" or "e34"';
+    irf.log('critical', errStr);
+    error(errStr);
+end
+
 % Convert time from ttns (int64) to double keeping for interp1 to work,
 % while keeping original input variable "timeIn" (used debug/log messages).
 time = double(timeIn-timeIn(1));
@@ -82,7 +99,7 @@ time = double(timeIn-timeIn(1));
 % Find numer of spins using the fact that Z-phase is monotonically
 % increasing, except for it being modulo 360.
 i0 = find(diff(phase_2)<0);
-if length(i0)<5
+if length(i0)<=5
   irf.log('notice', 'Not enough spins for correction.');
   return
 end
@@ -106,18 +123,21 @@ wakedesc = NaN(n_spins*2, 4);
 ttime = tt;
 iok = [];
 
+ddt = 10^9/sampleRate; % timeIn is in ns (tt2000), sampleRate in Hz.
+MARG = 0.05*10^9;
+
 for in = 1:n_spins
   ts = time(i0(in));
   i360 = find( time > ts & ...
     time < ts+MAX_SPIN_PERIOD & ...
     [diff(phase_2) <= 0; 1]);
   if isempty(i360)
-    irf.log('notice', ['gap in phase at ', irf_time(timeIn(i0(in)),'ttns>utc')]);
+    irf.log('debug', ['gap in phase at ', irf_time(timeIn(i0(in)),'ttns>utc')]);
     te = ts + 20.0; %FIXME + 20 (was "+4" for Cluster)?
     empty = 1;
   else
     if length(i360)~=1
-      irf.log('notice', ['bogus phase at ', irf_time(timeIn(i0(in)),'ttns>utc')]);
+      irf.log('debug', ['bogus phase at ', irf_time(timeIn(i0(in)),'ttns>utc')]);
     end
     te = time(i360(end));
     empty = 0;
@@ -127,39 +147,32 @@ for in = 1:n_spins
   if empty
     tt(:, in) = NaN;
   else
-    MARG = 0.05*10^9;
     eind = find((time > ts-MARG) & (time < te+MARG));
     eind(isnan(data_corr(eind))) = [];
     % Check for data gaps inside one spin.
     if sampleRate>0 && length(eind)<N_EMPTY*(te-ts +MARG*2)*sampleRate/10^9
       irf.log('debug',['Data gap at ', irf_time(timeIn(i0(in)),'ttns>utc')]);
       tt(:, in) = NaN;
-    else 
-      if sampleRate==450 % Sample freq=450 Hz, then resample data
-%         dtmp = irf_resamp(data_corr(eind,:), ttime(:,in));
-% Should perhaps be done for Burst??
-      else
-        ddt = 1/sampleRate;
-        dtmp = [time(eind), data_corr(eind,:)];
-        % We linearly extrapolate missing data at at edges
-        if dtmp(1,1)>=ts+ddt
-          % We miss points at the beginning of the spin
-          nm = ceil( (dtmp(1,1)-ts)/ddt );
-          t_temp = dtmp(1,1) + ((1:nm) - nm-1)*ddt;
-          data_temp = irf_resamp(dtmp, [t_temp'; dtmp(1:2,1)], 'linear');
-          dtmp = [data_temp(1:end-2,:); dtmp]; %#ok<AGROW>
-          clear nm t_temp data_temp
-        end
-        if dtmp(end,1)<=te-ddt
-          % We miss points at the end of the spin
-          nm = ceil( (te-dtmp(end,1))/ddt );
-          t_temp = dtmp(end,1) + (1:nm)*ddt;
-          data_temp = irf_resamp(dtmp, [dtmp(end-1:end,1); t_temp'], 'linear');
-          dtmp = [dtmp; data_temp(3:end,:)]; %#ok<AGROW>
-          clear nm t_temp data_temp
-        end
-        dtmp = irf_resamp(dtmp, ttime(:,in), 'spline');
+    else
+      dtmp = [time(eind), data_corr(eind,:)];
+      % We linearly extrapolate missing data at at edges
+      if dtmp(1,1)>=ts+ddt
+        % We miss points at the beginning of the spin
+        nm = ceil( (dtmp(1,1)-ts)/ddt );
+        t_temp = dtmp(1,1) + ((1:nm) - nm-1)*ddt;
+        data_temp = irf_resamp(dtmp, [t_temp'; dtmp(1:2,1)], 'linear');
+        dtmp = [data_temp(1:end-2,:); dtmp]; %#ok<AGROW>
+        clear nm t_temp data_temp
       end
+      if dtmp(end,1)<=te-ddt
+        % We miss points at the end of the spin
+        nm = ceil( (te-dtmp(end,1))/ddt );
+        t_temp = dtmp(end,1) + (1:nm)*ddt;
+        data_temp = irf_resamp(dtmp, [t_temp'; dtmp(end-1:end, 1)], 'linear');
+        dtmp = [dtmp; data_temp(3:end,:)]; %#ok<AGROW>
+        clear nm t_temp data_temp
+      end
+      dtmp = irf_resamp(dtmp, ttime(:,in), 'spline');
       % Fill small gaps (at edges only?) with zeroes
       % This has a minor influence on the correction procedure
       dtmp(isnan(dtmp(:,2)), 2) = 0;
@@ -333,11 +346,18 @@ for in = iok
   % Wake half-width
   ii =    find( abs(ccdav2) <  max(abs(ccdav2))/2 );
   iimax = find( abs(ccdav2) == max(abs(ccdav2))   );
-  wakedesc(in*2-fw,4) = min(ii(ii>iimax))-max(ii(ii<iimax));
+  iiDiff = min(ii(ii>iimax)) - max(ii(ii<iimax));
+  if ~isempty(iiDiff)
+    wakedesc(in*2-fw,4) = iiDiff;
+  else
+    irf.log('debug',['wrong wake shape at ', ...
+      irf_time(int64(ts)+timeIn(1),'ttns>utc'), ' (spike corner case)']);
+    continue
+  end
   clear ii iimax
 	
   if min(wakedesc(in*2-fw,4),wakedesc(in*2-1+fw,4))< WAKE_MIN_HALFWIDTH
-    irf.log('notice', sprintf('wake is too narrow (%d deg) at %s', ...
+    irf.log('debug', sprintf('wake is too narrow (%d deg) at %s', ...
       min(wakedesc(in*2-fw,4), wakedesc(in*2-1+fw,4)), ...
       irf_time(int64(ts)+timeIn(1),'ttns>utc')));
     wakedesc([in*2-1 in*2], :) = NaN;
@@ -485,7 +505,11 @@ end
 
 function res = isGoodShape(s)
   % check for shape of the wake fit
-  RATIO = 0.3; % (Cluster was 0.3)
+  RATIO = 0.4; % (Cluster was 0.3)
+% ThoNi: one testrun with 20170508 mms1 fast got a spike in frequency in
+% the interval 0.3->0.4 compared with intervals 0.4->0.5, 0.5->0.6 etc.
+% Therefor try increasing the permitted Ratio to 0.4 compared with 0.3
+% which was used for Cluster.
   res = true;
   if max(s)~=max(abs(s))
     s = -s;
