@@ -250,7 +250,15 @@ classdef PDist < TSeries
 
       nLength = obj.length;
       phi = obj.phi;
-      azimuthal = repmat(phi*pi/180, nLength, 1);
+      if(size(phi,1)==nLength)
+        % Burst data or single data point??
+        staticPhi = false;
+        azimuthal = phi*pi/180;
+      else
+        % Srvy data
+        staticPhi = true;
+        azimuthal = repmat(phi*pi/180, nLength, 1);
+      end
       
       theta = obj.theta;
       polar = repmat(theta*pi/180, nLength, 1);
@@ -268,19 +276,17 @@ classdef PDist < TSeries
           xX = reshape(X,size(X,1)*size(X,2),1);
           yY = reshape(Y,size(Y,1)*size(Y,2),1);
           zZ = reshape(Z,size(Z,1)*size(Z,2),1);
-
           newTmpX = [xX yY zZ]*newx';
           newTmpY = [xX yY zZ]*newy';
           newTmpZ = [xX yY zZ]*newz';
-
           X = reshape(newTmpX,size(X,1),size(X,2));
           Y = reshape(newTmpY,size(X,1),size(X,2));
           Z = reshape(newTmpZ,size(X,1),size(X,2));
-
-          x(ii,:,:) = X;
-          y(ii,:,:) = Y;
-          z(ii,:,:) = Z;
-        else
+        end
+        x(ii,:,:) = X;
+        y(ii,:,:) = Y;
+        z(ii,:,:) = Z;
+        if ii==1 && ~doRotation && staticPhi
           % Static
           x = permute(repmat(X, 1, 1, nLength), [3, 1, 2]);
           y = permute(repmat(Y, 1, 1, nLength), [3, 1, 2]);
@@ -370,7 +376,15 @@ classdef PDist < TSeries
 
       nLength = obj.length;
       phi = obj.phi;
-      azimuthal = repmat(phi*pi/180, nLength, 1);
+      if(size(phi,1)==nLength)
+        % Burst data or single data point??
+        staticPhi = false;
+        azimuthal = phi*pi/180;
+      else
+        % Srvy data with constant Phi for all datapoints
+        staticPhi = true;
+        azimuthal = repmat(phi*pi/180, nLength, 1);
+      end
 
       theta = obj.theta;
       polar = repmat(theta*pi/180, nLength, 1);
@@ -421,9 +435,10 @@ classdef PDist < TSeries
         vy(ii,:,:,:) = VY;
         vz(ii,:,:,:) = VZ;
 
-        if(ii==1 && ~doRotation && staticEnergy)
+        if(ii==1 && ~doRotation && staticEnergy && staticPhi)
           % No rotation (which could be time dependent) and no changing
-          % energy/velocity. Use simple static values.
+          % energy/velocity as well as static Phi angles for all
+          % datapoints. Use simple static values.
           vx = permute(repmat(VX, 1, 1, 1, nLength), [4, 1, 2, 3]);
           vy = permute(repmat(VY, 1, 1, 1, nLength), [4, 1, 2, 3]);
           vz = permute(repmat(VZ, 1, 1, 1, nLength), [4, 1, 2, 3]);
