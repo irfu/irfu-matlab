@@ -523,52 +523,54 @@ classdef PDist < TSeries
       PD.depend{indPitch-1} = tmpPA;
     end
 
-    function PD = elim(obj,eint)  
-      energy = obj.energy;
-      
+    function PD = elim(obj,eint)
+      [energy, indEn] = obj.energy;
       % Picks out energies in an interval, or the closest energy (to be implemented!)
       if numel(eint) == 2
-       if or(isempty(obj.ancillary), or(~isfield(obj.ancillary, 'energy0'), ~isfield(obj.ancillary, 'energy1')))
-            energytmp0 = energy(1,:);
-            energytmp1 = energy(2,:);
-            if energytmp0(1) > energytmp1(1)
-                tmp = energytmp0;
-                energytmp0 = energytmp1;
-                energytmp1 = tmp;
-            end
-            elevels0 = intersect(find(energytmp0>eint(1)),find(energytmp0<eint(2)));
-            elevels1 = intersect(find(energytmp1>eint(1)),find(energytmp1<eint(2)));
-       else
-            elevels0 = intersect(find(obj.ancillary.energy0>eint(1)),find(obj.ancillary.energy0<eint(2)));
-            elevels1 = intersect(find(obj.ancillary.energy1>eint(1)),find(obj.ancillary.energy1<eint(2)));
-       end
-       if numel(elevels0) ~= numel(elevels1)
-          warning('Energy levels differ for different times. Including the largest interval.')
-          elevels = unique([elevels0,elevels1]);
+        if or(isempty(obj.ancillary), or(~isfield(obj.ancillary, 'energy0'), ~isfield(obj.ancillary, 'energy1')))
+          energytmp0 = energy(1,:);
+          energytmp1 = energy(2,:);
+          if energytmp0(1) > energytmp1(1)
+            tmp = energytmp0;
+            energytmp0 = energytmp1;
+            energytmp1 = tmp;
+          end
+          elevels0 = find( bitand(energytmp0>=eint(1), energytmp0<=eint(2)));
+          elevels1 = find( bitand(energytmp1>=eint(1), energytmp1<=eint(2)));
+        else
+          elevels0 = find( bitand(obj.ancillary.energy0>=eint(1), obj.ancillary.energy0<=eint(2)) );
+          elevels1 = find( bitand(obj.ancillary.energy1>=eint(1), obj.ancillary.energy1<=eint(2)) );
+        end
+        if numel(elevels0) ~= numel(elevels1)
+          warning('Energy levels differ for different times. Including the largest interval.');
+          elevels = unique([elevels0, elevels1]);
         else
           elevels = elevels0;
-       end
+        end
         disp(['Effective eint = [' num2str(min(min(energy(:,elevels))),'%g') ' ' num2str(max(max(energy(:,elevels))),'%g') ']'])
       else
         ediff0 = abs(energy(1,:)-eint);
         ediff1 = abs(energy(2,:)-eint);
-        if min(ediff0)<min(ediff1); ediff = ediff0;
-        else, ediff = ediff1; end
+        if min(ediff0)<min(ediff1)
+          ediff = ediff0;
+        else
+          ediff = ediff1;
+        end
         elevels = find(ediff==min(ediff));
         disp(['Effective energies alternate in time between ' num2str(energy(1,elevels),'%g') ' and ' num2str(energy(2,elevels),'%g') ''])
-      end      
+      end
       tmpEnergy = energy(:,elevels);
       tmpData = obj.data(:,elevels,:,:);
       
       PD = obj;
       PD.data_ = tmpData;
-      PD.depend{1} = tmpEnergy;
-      if or(isempty(PD.ancillary), or(~isfield(PD.ancillary, 'energy0'), ~isfield(PD.ancillary, 'energy1')))    
-          PD.ancillary.energy0 = energytmp0(elevels);
-          PD.ancillary.energy1 = energytmp1(elevels);      
+      PD.depend{indEn-1} = tmpEnergy;
+      if or(isempty(PD.ancillary), or(~isfield(PD.ancillary, 'energy0'), ~isfield(PD.ancillary, 'energy1')))
+        PD.ancillary.energy0 = energytmp0(elevels);
+        PD.ancillary.energy1 = energytmp1(elevels);
       else
-          PD.ancillary.energy0 = PD.ancillary.energy0(elevels);
-          PD.ancillary.energy1 = PD.ancillary.energy1(elevels);
+        PD.ancillary.energy0 = PD.ancillary.energy0(elevels);
+        PD.ancillary.energy1 = PD.ancillary.energy1(elevels);
       end
     end
 
