@@ -1,10 +1,10 @@
-function [maneuvers, timelineXML] = mms_maneuvers( Tint, scIdStr )
-% MMS_MANEUVERS get maneuver information
-%	[maneuvers, timelineXML] = MMS_MANEUVERS(Tint, [scIdStr]) reads the
-%   appropriate FDOA timeline files and extract all maneuvers that took
-%   place during the time interval "Tint".
-%   If "scIdStr" is specified, only the manuevers on that occured during 
-%   the time interval "Tint" on spacecraft "scIdStr".
+function [maneuvers, timelineXML, eclipse] = mms_maneuvers( Tint, scIdStr )
+% MMS_MANEUVERS get maneuver and eclipse information
+%	[maneuvers, timelineXML, eclipse] = MMS_MANEUVERS(Tint, [scIdStr]) reads the
+%   appropriate FDOA timeline files and extract all maneuvers and eclipses
+%   that took place during the time interval "Tint".
+%   If "scIdStr" is specified, then it only returns the manuevers / eclipses that
+%   occured during the time interval "Tint" on the spacecraft "scIdStr".
 %
 %   Note: This function relies on MMS_READ_TIMELINE and therefor indirectly
 %   on XPath, should FDOA change their file structure this function may
@@ -24,6 +24,9 @@ function [maneuvers, timelineXML] = mms_maneuvers( Tint, scIdStr )
 %                    Note: Only files containing maneuvers, not a complete
 %                    list of all xml files read if they do not contain any
 %                    relevant manuevers for the requested interval.
+%   Optional output:
+%     eclipse     = struct similar to maneuvers but intervals of eclipses
+%                   instead of maneuvers.
 %
 %   Example:
 %
@@ -45,6 +48,12 @@ if(~isa(Tint,'GenericTimeArray') || ~all(size(Tint)==[2,1])), error('Unexpected 
 if(nargin<2), scIdStr = '1234'; end
 % Ensure output
 maneuvers.mms1={}; maneuvers.mms2={}; maneuvers.mms3={}; maneuvers.mms4={};
+if(nargout>=3)
+  lookForEclipse=true;
+  eclipse.mms1={}; eclipse.mms2={}; eclipse.mms3={}; eclipse.mms4={};
+else
+  lookForEclipse=false;
+end
 
 % List timeline files (can cover up to over 100 days...) The following is a
 % quick fix, should be integrated into mms db list_files.
@@ -91,7 +100,11 @@ for ii = length(list):-1:1
     % should not be included in our final list.
     irf.log('notice',['Processing file: ',list(ii).name]);
     try
-      [maneuv, fileInterval] = mms_read_timeline([dataPath, list(ii).name], scIdStr);
+      if lookForEclipse
+        [maneuv, fileInterval, eclip] = mms_read_timeline([dataPath, list(ii).name], scIdStr);
+      else
+        [maneuv, fileInterval] = mms_read_timeline([dataPath, list(ii).name], scIdStr);
+      end
     catch ME
       errStr = ['Failed to read file: ', dataPath,list(ii).name, ' with error message: ',...
         ME.message, ' Trying the next file.'];
@@ -138,6 +151,38 @@ for ii = length(list):-1:1
           end
         end % for ll
       end % isfield
+      if(lookForEclipse)
+        % Eclipse
+        if(isfield(eclip, ['mms',num2str(kk)]))
+          tmp = eclip.(['mms',num2str(kk)]);
+          for ll=length(tmp):-1:1
+            % Check if it is outside of Tint2
+            if( tmp{ll}.start.ttns >= Tint2.stop.ttns || ...
+                tmp{ll}.stop.ttns < Tint2.start.ttns )
+              irf.log('debug',['Skipping eclipse outside of interval ', ...
+                Tint2.start.toUtc(1), '/', Tint2.stop.toUtc(1)]);
+              continue
+            else
+              % Append
+              irf.log('debug', ['Eclipse on MMS', num2str(kk), ' ', ...
+                tmp{ll}.start.toUtc(1), '/', tmp{ll}.stop.toUtc(1), ...
+                ' inside of requested interval.']);
+              if(~isempty(eclipse.(['mms',num2str(kk)])))
+                tmp2 = eclipse.(['mms',num2str(kk)]);
+                if(tmp2{1}.start.ttns ~= tmp{ll}.start.ttns)
+                  eclipse.(['mms',num2str(kk)]) = [tmp(ll); tmp2];
+                  tmpTimeline = [tmpTimeline; list(ii).name]; %#ok<AGROW>
+                else
+                  irf.log('debug', 'Eclipse already included.');
+                end
+              else
+                eclipse.(['mms',num2str(kk)]) = tmp(ll);
+                tmpTimeline = list(ii).name;
+              end
+            end
+          end % for ll
+        end % isfield
+      end % Eclipse
     end % for kk
     % Replace Tint2 interval to look for maneuvers in next file to cover
     % times up to the start of this previous file (ie. events that have
