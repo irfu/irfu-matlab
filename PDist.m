@@ -480,7 +480,7 @@ classdef PDist < TSeries
       %   PADist.palim(90,'noav')
       
       if ~strcmp(obj.type,'pitchangle'); error('PDist type must be pitchangle.'); end      
-      pitchangles = obj.pitchangle;
+      [pitchangles, indPitch] = obj.pitchangle;
       doAverage = 0;
         
       if numel(palim) == 1        
@@ -491,20 +491,36 @@ classdef PDist < TSeries
           doAverage = 1;
         end
       else
-        indPA = intersect(find(pitchangles(1,:)>palim(1)),find(pitchangles(1,:)<palim(2)));
+        % verify palim
+        if(palim(1)>=palim(2)), error('Unexpected palim, should be [minLimit maxLimit] was: [%d %d]', palim(1), palim(2)); end
+        indPA = find(bitand(pitchangles(1,:)>=palim(1), pitchangles(1,:)<=palim(2)));
       end
       
       if doAverage
         tmpPA = mean(pitchangles(indPA));
-        tmpData = irf.nanmean(obj.data(:,:,indPA),3);
+        switch indPitch
+          case 2
+            tmpData = irf.nanmean(obj.data(:,indPA,:), indPitch);
+          case 3
+            tmpData = irf.nanmean(obj.data(:,:,indPA), indPitch);
+          otherwise
+            error('Not yet implemented');
+        end
       else
         tmpPA = pitchangles(indPA);
-        tmpData = obj.data(:,:,indPA);
+        switch indPitch
+          case 2
+            tmpData = obj.data(:,indPA,:);
+          case 3
+            tmpData = obj.data(:,:,indPA);
+          otherwise
+            error('Not yet implemented');
+        end
       end
       
       PD = obj;
       PD.data_ = tmpData;
-      PD.depend{2} = tmpPA; 
+      PD.depend{indPitch-1} = tmpPA;
     end
 
     function PD = elim(obj,eint)  
