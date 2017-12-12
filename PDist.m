@@ -541,7 +541,7 @@ classdef PDist < TSeries
           elevels0 = find( bitand(obj.ancillary.energy0>=eint(1), obj.ancillary.energy0<=eint(2)) );
           elevels1 = find( bitand(obj.ancillary.energy1>=eint(1), obj.ancillary.energy1<=eint(2)) );
         end
-        if numel(elevels0) ~= numel(elevels1)
+        if ~isequal(elevels0, elevels1)
           warning('Energy levels differ for different times. Including the largest interval.');
           elevels = unique([elevels0, elevels1]);
         else
