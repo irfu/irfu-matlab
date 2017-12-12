@@ -35,8 +35,7 @@ end
 stepTable = stepTable.data;
 
 % Sort energy levels
-energyr = [energy0 energy1];
-energyr = sort(energyr);
+energyr = sort([energy0, energy1]);
 
 % Define new times
 deltat = median(diff(pdist.time.epochUnix))/2;
@@ -49,30 +48,21 @@ phis = circshift(phi.data,1,2);
 phis(:,1) = phis(:,1)-360;
 
 for ii=1:2:length(pdist.time)-1
-    if phi.data(ii,1) > phi.data(ii+1,1)
-        phir(newelnum,:) = (phi.data(ii,:)+phis(ii+1,:))/2;
-        pdisttemp = circshift(squeeze(pdist.data(ii+1,:,:,:)),1,2);
-        
-        if stepTable(ii)
-            pdistr(newelnum,[2:2:64],:,:) = pdist.data(ii,:,:,:);
-            pdistr(newelnum,[1:2:63],:,:) = pdisttemp;
-        else
-            pdistr(newelnum,[1:2:63],:,:) = pdist.data(ii,:,:,:);
-            pdistr(newelnum,[2:2:64],:,:) = pdisttemp;        
-        end        
-    else
-        phir(newelnum,:) = (phi.data(ii,:)+phi.data(ii+1,:))/2;
-    
-        if stepTable(ii)
-            pdistr(newelnum,[2:2:64],:,:) = pdist.data(ii,:,:,:);
-            pdistr(newelnum,[1:2:63],:,:) = pdist.data(ii+1,:,:,:);
-        else
-            pdistr(newelnum,[1:2:63],:,:) = pdist.data(ii,:,:,:);
-            pdistr(newelnum,[2:2:64],:,:) = pdist.data(ii+1,:,:,:);        
-        end
-    end
-    
-    newelnum = newelnum+1;
+  if phi.data(ii,1) > phi.data(ii+1,1)
+    phir(newelnum,:) = ( phi.data(ii,:) + phis(ii+1,:) )/2;
+    pdisttemp = circshift(squeeze(pdist.data(ii+1, :,:,:)), 1, 2);
+  else
+    phir(newelnum,:) = ( phi.data(ii,:) + phi.data(ii+1,:) )/2;
+    pdisttemp = pdist.data(ii+1, :,:,:);
+  end
+  if stepTable(ii)
+    pdistr(newelnum, 1:2:63, :,:) = pdisttemp;
+    pdistr(newelnum, 2:2:64, :,:) = pdist.data(ii, :,:,:);
+  else
+    pdistr(newelnum, 1:2:63, :,:) = pdist.data(ii, :,:,:);
+    pdistr(newelnum, 2:2:64, :,:) = pdisttemp;
+  end
+  newelnum = newelnum+1;
 end
 
 phir = TSeries(newtimes,phir);
@@ -80,4 +70,3 @@ pdistr = TSeries(newtimes,pdistr);
 toc;
 
 end
-
