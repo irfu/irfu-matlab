@@ -367,18 +367,18 @@ classdef dm_utils
         
         
         
-        function newTt2000 = convert_N_to_1_SPR_Epoch( oldTt2000, nSpr, frequencyHzWithinRecords )
+        function newTt2000 = convert_N_to_1_SPR_Epoch( oldTt2000, nSpr, freqHzWithinRecords )
         % Convert time series zVariable (column) equivalent to converting N-->1 samples/record, assuming time increments
         % with frequency in each snapshot.
         %
         % oldTt2000  : Nx1 vector.
         % newTt2000  : Nx1 vector. Like oldTt2000 but each single time (row) has been replaced by a constantly
         %              incrementing sequence of times (rows). Every such sequence begins with the original value, has
-        %              length nSpr with frequency frequencyWithinRecords(i).
+        %              length nSpr with frequency freqWithinRecords(i).
         %              NOTE: There is no check that the entire sequence is monotonic. LFR data can have snapshots (i.e.
         %              snapshot records) that overlap in time!
         % nSpr                    : Positive integer. Scalar. Number of values/samples per record (SPR).
-        % frequencyWithinRecords  : Nx1 vector. Frequency of samples within a subsequence (CDF record). Unit: Hz.
+        % freqWithinRecords  : Nx1 vector. Frequency of samples within a subsequence (CDF record). Unit: Hz.
             
         % PROPOSAL: Turn into more generic function, working on number sequences in general.
         % PROPOSAL: N_sequence should be a column vector.
@@ -391,8 +391,8 @@ classdef dm_utils
             bicas.dm_utils.assert_Epoch(oldTt2000)
             if numel(nSpr) ~= 1
                 error('BICAS:dm_utils:Assertion:IllegalArgument', 'nSpr not scalar.')
-            elseif size(frequencyHzWithinRecords, 1) ~= size(oldTt2000, 1)
-                error('BICAS:dm_utils:Assertion:IllegalArgument', 'frequencyWithinRecords and oldTt2000 do not have the same number of rows.')
+            elseif size(freqHzWithinRecords, 1) ~= size(oldTt2000, 1)
+                error('BICAS:dm_utils:Assertion:IllegalArgument', 'freqWithinRecords and oldTt2000 do not have the same number of rows.')
             end
             
             nRecords = numel(oldTt2000);
@@ -400,7 +400,7 @@ classdef dm_utils
             % Express frequency as period length in ns (since tt2000 uses ns as a unit).
             % Use the same MATLAB class as tt.
             % Unique frequency per record.
-            periodNsColVec = int64(1e9 ./ frequencyHzWithinRecords);   
+            periodNsColVec = int64(1e9 ./ freqHzWithinRecords);   
             periodNsMatrix = repmat(periodNsColVec, [1, nSpr]);
                         
             % Conventions:
@@ -426,7 +426,7 @@ classdef dm_utils
         
         
         
-        function ACQUISITION_TIME_2 = convert_N_to_1_SPR_ACQUISITION_TIME(  ACQUISITION_TIME_1, nSpr, frequencyWithinRecords  )
+        function ACQUISITION_TIME_2 = convert_N_to_1_SPR_ACQUISITION_TIME(  ACQUISITION_TIME_1, nSpr, freqWithinRecords  )
         % Function intended for converting ACQUISITION_TIME (always one time per record) from many samples/record to one
         % sample/record. See convert_N_to_1_SPR_Epoch which is analogous.
         % 
@@ -440,7 +440,7 @@ classdef dm_utils
             bicas.dm_utils.assert_ACQUISITION_TIME(ACQUISITION_TIME_1)
 
             tt2000_1 = bicas.dm_utils.ACQUISITION_TIME_to_tt2000(ACQUISITION_TIME_1);
-            tt2000_2 = bicas.dm_utils.convert_N_to_1_SPR_Epoch(tt2000_1, nSpr, frequencyWithinRecords);
+            tt2000_2 = bicas.dm_utils.convert_N_to_1_SPR_Epoch(tt2000_1, nSpr, freqWithinRecords);
             ACQUISITION_TIME_2 = bicas.dm_utils.tt2000_to_ACQUISITION_TIME(tt2000_2);
         end
         

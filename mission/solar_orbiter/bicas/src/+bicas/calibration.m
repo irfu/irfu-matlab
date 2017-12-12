@@ -17,7 +17,6 @@ classdef calibration
 
 
 
-
 % BOGIQ:
 % ------
 % PROPOSAL: Need multiple functions
@@ -25,29 +24,18 @@ classdef calibration
 %   Convert TF from frequency domain to time domain (and maybe reverse for debugging)
 %   Invert TF function.
 %   Multiply/combine transfer functions.
-%   Convert TF: abs+arg --> complex
-%       Load TSs from file(s).
-%       Convert different TF formats (TDS/LFR vs BIAS): Hz-->radians, 20 db/faktor 10-->abs, abs+arg-->Complex numbers(?), handle positive/negative frequencies?!!
-%       Convert files data to time-domain transfer functions?
-%       (Select one BIAS TF of many? Interpolate between transfer functions?!!!)
-%       Select a TDS/LFR TF
-%       Combine TFs: TDS/LFR, BIAS, possibly capacitance-TF.
-%       Apply TF (inverse)
-%       Add TF for (arbitrary) capacitance. (Needed for ~debugging/testing.)
-%       Special treatment of 0 Hz?!
-% QUESTION: How much calibration data should be in constants?
-%   PROPOSAL: Filenames to TFs.
-%   PROPOSAL: Offsets?
-% QUESTION: How implement the parasitic capacitance TF? Use analytical TF directly, or convert to TF table?
-% PROPOSAL: Separate class for handling calibration based directly on classifying, locating, reading standalone calibration files?
-%       Load path patterns from settings.
+%   Convert files data to time-domain transfer functions?
+%   (Select one BIAS TF of many? Interpolate between transfer functions?!!!)
+%   Select a TDS/LFR TF
+%   Combine TFs: TDS/LFR, BIAS, possibly capacitance-TF.
+%   Apply TF (inverse)
+%   Add TF for (arbitrary) capacitance. (Needed for ~debugging/testing.)
+%   Special treatment of 0 Hz?!
 %
-% PROPOSAL: convert_TF_Hz_energy_dB_phase, convert_TF_radPerSec_z
-%   1) Separately split into two functions for frequency and z/phase&dB.
-%   2) Move to separate functions in utils/.
-%   3) Rename z --> h, as in H(s)?
-%   NOTE: There are functions mag2db, db2mag, rad2deg, deg2rad.
-%   PRO: Useful for plotting, not just calibration.
+% QUESTION: How implement the parasitic capacitance TF? Use analytical TF directly, or convert to TF table?
+% TODO: Read RCT
+%
+% PROPOSAL: apply_transfer_function_in_freq as separate utility function?
 
     properties(Access=private)
         
@@ -68,9 +56,7 @@ classdef calibration
 
     methods(Access=public)
 
-        function obj = calibration(...
-            biasAcLoGainTfFilePath, ...
-            biasAcHiGainTfFilePath)
+        function obj = calibration()
         
             % QUESTION: Is it wise to specify the paths in the constructor? Read the filenames (and relative directory) from the constants instead?
             
@@ -144,54 +130,6 @@ classdef calibration
 
     methods(Static, Access=public)
 
-        function [frequencyRadPerSec, z] = convert_TF_Hz_energy_dB_phase(frequencyHz, gainEnergyDb, phaseShiftDegrees)
-        % Effectively convert TF on the format found in the BIAS stand-alone calibrations to the "mathematically
-        % pure" TF format, a complex Z=Z(omega).
-        %
-        %
-        % ARGUMENTS AND RETURN VALUES
-        % ===========================
-        % frequencyHz         : TF frequencies. Unit: Hz.
-        % gainEnergyDb        : Amplitude change on the form of dB __energy__, i.e. 20 dB change corresponds to a factor
-        %                       of 10. Motivation: If a signal U (Volt) is amplified by X dB, then the power P~U^2
-        %                       (W) is amplified by 2*X dB.
-        % phaseShiftDegrees   : TF phase in degrees. (360 degrees per revolution.)
-        % frequencyRadPerSec  : TF frequencies. Unit: radians/s
-        % z                   : Complex TF amplitudes (DFT component multiplication factors).
-        
-        % TODO: Assertions? Implicit check on file format.
-            
-            frequencyRadPerSec = frequencyHz * 2*pi;   % (Convert revolutions to radians = factor 2*pi)
-            z                  = db2mag(gainEnergyDb) .* exp(1i * deg2rad(phaseShiftDegrees));
-        end
-
-
-
-        function [frequencyHz, gainEnergyDb, phaseShiftDegrees] = convert_TF_radPerSec_z(frequencyRadPerSec, z)
-        % Effectively convert TF on "mathematically pure" z(omega) format, to "human-readable" quantitities.
-        % Inverse of convert_TF_Hz_energy_dB_phase
-        %
-        %
-        % ARGUMENTS AND RETURN VALUES
-        % ===========================
-        % Same as convert_TF_Hz_energy_dB_phase.
-        % NOTE: phaseShiftDegrees will be uncertain up to n*360 degrees.
-        
-        % TODO: Better choice of angles ("wrapping")?
-        % TODO: Assertions? Implicit check on file format.
-        % PROPOSAL: Try to prevent phaseShiftDegrees from wrapping around.
-        %   PROPOSAL: Add/subtract 360 degrees to minimize difference between successive values.
-        % PROPOSAL: Use own unwrap function.
-            
-            frequencyHz       = frequencyRadPerSec / (2*pi);
-            gainEnergyDb      = mag2db(abs(z));
-            phaseShiftDegrees = rad2deg(angle(z));     % NOTE: "angle" returns angle in interval [-pi, pi].
-            %phaseShiftDegrees2 = rad2deg(unwrap(angle(z)));     % NOTE: "angle" returns angle in interval [-pi, pi].
-            
-            % NOTE: unwrap does not seem to work as intended here. Unknown why.
-            % Ex: Plotting the invfreqs fit for
-            % Dropbox/Solar_Orbiter/Tests/SO_FM1/FM1_Backup/TEMP0C/4_5_TRANSFER_FUNCTION/SO_BIAS_AC_VOLTAGE_ID00_Ver_00_FM1_0_4.5.txt
-        end
 
 
 
@@ -364,9 +302,9 @@ classdef calibration
             if omegaDftLookupHighest > max(tfOmega)
                 error('BICAS:calibration:Assertion', 'Transfer function does not cover the highest frequency %d [rad/s] in the data samples.', omegaDftLookupHighest)
             end
-            
-                
-            
+
+
+
             % Find complex TF values, i.e. complex factors to be multiplied with every DFT component
             % --------------------------------------------------------------------------------------
             % NOTE: interp1 does NOT seem to require that submitted table of (x,y) values is sorted in x.
@@ -402,7 +340,7 @@ classdef calibration
             end
             
         end
-    end
+        
+    end    % methods(Static, Access=public)
 
 end
-
