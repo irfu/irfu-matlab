@@ -888,18 +888,25 @@ classdef PDist < TSeries
 
       nt = obj.length;
       old_energies = obj.energy;
+      %phi = obj.phi; theta = obj.theta;
       unique_energies = unique(old_energies,'rows');
       new_energy = sort(torow(unique_energies(:)));
       new_energies = repmat(new_energy,nt,1);
       old_data = obj.data;
-      new_data = nan(size(old_data,1),numel(new_energy),size(old_data,3),size(old_data,4));
+      old_size = size(old_data);
+      new_data = NaN(old_size(1), numel(new_energy), old_size(3), old_size(4));
+      % FIXME: Why is this done with multiple for loops instead of a single
+      % multidimesional interpn? Possible reason is that 'pchip' is only
+      % available in interp1...
       for it = 1:nt
-        for iaz = 1:size(new_data,3)
-          for ipol = 1:size(new_data,4)
-            new_data(it,:,iaz,ipol) = interp1(old_energies(it,:),old_data(it,:,iaz,ipol),new_energies(it,:),method);
+        for iaz = 1:old_size(3)
+          for ipol = 1:old_size(4)
+            new_data(it,:,iaz,ipol) = interp1(old_energies(it,:), ...
+              old_data(it,:,iaz,ipol), new_energies(it,:), method);
           end
         end
       end
+
       new_data(new_data<0) = 0; % pchip sometimes give negative values, set these to zero
       PD = obj.clone(obj.time,new_data);
       PD.depend{1} = new_energies;
