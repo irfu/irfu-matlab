@@ -702,14 +702,15 @@ end
                 dist = mms.db_get_variable(dsetName,[pref '_dist_' Vr.tmmode],Tint);
             elseif (length(Vr.param) == 6 && strcmp(Vr.param(3:5), 'ERR'))
                 dist = mms.db_get_variable(dsetName,[pref '_disterr_' Vr.tmmode],Tint);
-            end            
-            phi = dist.DEPEND_1.data;
-            theta = dist.DEPEND_2.data;
-            dist = mms.variable2ts(dist);
-            dist = dist.tlim(Tint);            
-            energy = mms.db_get_ts(dsetName,[pref '_energy_' Vr.tmmode],Tint);            
-            energy = energy.tlim(Tint);
-            res = irf.ts_skymap(dist.time, dist.data, energy.data, phi, theta);
+            end
+            %phi = dist.DEPEND_1.data;
+            %theta = dist.DEPEND_2.data;
+            %energy = dist.DEPEND_3.data;
+            distTmp = mms.variable2ts(dist); % <- shifting time to center.
+%FIXME: SHOULD ACTUALLY BE DEPEND_1 DEPEND_2 DEPEND_3, when dataobj have been fixed!! See issue 41.
+            res = irf.ts_skymap(distTmp.time, dist.data, dist.DEPEND_3.data, dist.DEPEND_1.data, dist.DEPEND_2.data);
+            res = res.tlim(Tint);
+            dist = distTmp;
         end
         res.units = 's^3/cm^6';
         if strcmp(sensor(2),'e')          
