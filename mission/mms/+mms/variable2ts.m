@@ -18,10 +18,7 @@ ud.FIELDNAM         = v.FIELDNAM;
 if isfield(v,'VALIDMIN'), ud.VALIDMIN = v.VALIDMIN; end
 if isfield(v,'VALIDMAX'), ud.VALIDMAX = v.VALIDMAX; end
 if isfield(v,'LABLAXIS'), ud.LABLAXIS = v.LABLAXIS; end
-if isfield(v,'LABL_PTR_1'), ud.LABL_PTR_1 = v.LABL_PTR_1;
-elseif isfield(v,'LABL_PTR_2'), ud.LABL_PTR_2 = v.LABL_PTR_2;
-elseif isfield(v,'LABL_PTR_3'), ud.LABL_PTR_3 = v.LABL_PTR_3;
-end
+c_eval('if isfield(v, ''LABL_PTR_?''), ud.LABL_PTR_?=v.LABL_PTR_?; end', 1:size(v.dim,2));
 
 data = v.data; siConversion = '';
 if v.dim(1)==3 && v.dim(2)==1, varType = 'vec_xyz';
