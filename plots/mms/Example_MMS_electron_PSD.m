@@ -5,26 +5,24 @@
 
 ic = 1; % Spacecraft number
 
-Tintr = irf.tint('2015-12-30T00:30:00.00Z/2015-12-30T00:30:33.00Z');
+Tintr = irf.tint('2015-10-30T05:15:20.00Z/2015-10-30T05:16:20.00Z');
 
 %% Load data
 
 tic;
-c_eval('diste = mms.db_get_ts(''mms?_fpi_brst_l1b_des-dist'',''mms?_des_brstSkyMap_dist'',Tintr);',ic);
-c_eval('energy0=mms.db_get_variable(''mms?_fpi_brst_l1b_des-dist'',''mms?_des_brstSkyMap_energy0'',Tintr);',ic);
-c_eval('energy1=mms.db_get_variable(''mms?_fpi_brst_l1b_des-dist'',''mms?_des_brstSkyMap_energy1'',Tintr);',ic);
-c_eval('phi=mms.db_get_ts(''mms?_fpi_brst_l1b_des-dist'',''mms?_des_brstSkyMap_phi'',Tintr);',ic);
-c_eval('theta=mms.db_get_variable(''mms?_fpi_brst_l1b_des-dist'',''mms?_des_brstSkyMap_theta'',Tintr);',ic);
-c_eval('stepTable=mms.db_get_ts(''mms?_fpi_brst_l1b_des-dist'',''mms?_des_stepTable_parity'',Tintr);',ic);
+c_eval('ePDist = mms.get_data(''PDe_fpi_brst_l2'',Tintr,?);',ic)
+c_eval('Bxyz=mms.get_data(''B_dmpa_brst_l2'',Tintr,?);',ic);
+c_eval('SCpot=mms.get_data(''V_edp_brst_l2'',Tintr,?);',ic);
 toc;
-
-c_eval('Bxyz=mms.db_get_ts(''mms?_dfg_srvy_ql'',''mms?_dfg_srvy_dmpa'',tint);',ic);
+ePDist = ePDist.convertto('s^3/km^6');
+SCpot = SCpot.resample(ePDist);
 
 %% Produce a single PAD at a selected time
 
-tint = irf_time('2015-12-30T00:30:11.010000Z','utc>epochTT');
-[paddist,thetapad,energypad,tintpad] = mms.get_pitchangledist(diste,phi,theta,stepTable,energy0,energy1,Bxyz,tint); 
-paddist = paddist*1e30; %convert to commonly used s^3 km^-6
+tint = irf_time('2015-10-30T05:15:45.740000Z','utc>epochTT');
+[paddist,thetapad,energypad,tintpad] = mms.get_pitchangledist(ePDist,Bxyz,tint,'angles',13); 
+[~,idx] = min(abs(SCpot.time-tint));
+energypad = energypad-SCpot.data(idx);
 
 %% Plot PAD
 
@@ -40,13 +38,13 @@ set(fn,'Position',[10 10 600 250])
 ymin = 10^-4;
 ymax = ceil(max(max(log10(paddist))));
 yrange = [ymin 10^ymax];
-plot(h(1),energypad,paddist(:,1),'k',energypad,mean(paddist(:,[6 7]),2),'r',energypad,paddist(:,12),'b');
+plot(h(1),energypad,paddist(:,1),'k',energypad,paddist(:,7),'r',energypad,paddist(:,13),'b');
 ylabel(h(1),'f_e (s^3 km^{-6})');
 xlabel(h(1),'E (eV)')
 set(h(1),'yscale','log');
 set(h(1),'xscale','log');
-irf_zoom(h(1),'y',yrange);
-irf_zoom(h(1),'x',[5 3e4]);
+axis(h(1),[5 3e4 yrange])
+set(h(1),'xtick',[1e0 1e1 1e2 1e3 1e4 1e5])
 irf_legend(h(1),{'0 deg'},[0.91 0.92],'color','k')
 irf_legend(h(1),{'90 deg'},[0.91 0.84],'color','r')
 irf_legend(h(1),{'180 deg'},[0.91 0.76],'color','b')    
@@ -63,7 +61,8 @@ hold(h(2),'off')
 ylabel(h(2),'f_e (s^3 km^{-6})');
 xlabel(h(2),'\theta (deg.)')
 set(h(2),'yscale','log');
-irf_zoom(h(2),'x',[0 180]);
+axis(h(2),[0 180 yrange])
+set(h(2),'xtick',[0 45 90 135 180])
 irf_zoom(h(2),'y',yrange);
 tintutc = tintpad.utc;
 
