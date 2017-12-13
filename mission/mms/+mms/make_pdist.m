@@ -72,11 +72,7 @@ ud.FIELDNAM         = tmpDist.FIELDNAM;
 ud.VALIDMIN         = tmpDist.VALIDMIN;
 ud.VALIDMAX         = tmpDist.VALIDMAX;
 if isfield(tmpDist,'LABLAXIS'), ud.LABLAXIS = tmpDist.LABLAXIS; end
-if isfield(tmpDist,'LABL_PTR_1'), ud.LABL_PTR_1 = tmpDist.LABL_PTR_1;
-elseif isfield(tmpDist,'LABL_PTR_2'), ud.LABL_PTR_2 = tmpDist.LABL_PTR_2;
-elseif isfield(tmpDist,'LABL_PTR_3'), ud.LABL_PTR_3 = tmpDist.LABL_PTR_3;
-end
-
+c_eval('if isfield(tmpDist, ''LABL_PTR_?''), ud.LABL_PTR_?=tmpDist.LABL_PTR_?; end', 1:size(tmpDist.dim,2));
 
 % Shift times to center of deltat- and deltat+ for l2 particle
 % distributions and moments
