@@ -676,16 +676,15 @@ end
             elseif (length(Vr.param) == 6 && strcmp(Vr.param(3:5), 'ERR'))
                 dist = mms.db_get_variable(dsetName,[pref '_disterr_' Vr.tmmode],Tint);
             end
+%FIXME: SHOULD CHANGE DEPEND_i, when dataobj have been fixed!! See issue 41.
             theta = dist.DEPEND_2.data;
-            dist = mms.variable2ts(dist);
-            dist = dist.tlim(Tint);
+            phi = dist.DEPEND_1.data;
+            dist = mms.variable2ts(dist); % <- shifting time to center.
             energy0 = mms.db_get_variable(dsetName,[pref '_energy0_' Vr.tmmode],Tint);
             energy1 = mms.db_get_variable(dsetName,[pref '_energy1_' Vr.tmmode],Tint);
-            phi = mms.db_get_ts(dsetName,[pref '_phi_' Vr.tmmode],Tint);
-            %theta = mms.db_get_variable(dsetName,[pref '_theta_' Vr.tmmode],Tint);
-            stepTable = mms.db_get_ts(dsetName,[pref '_steptable_parity_' Vr.tmmode],Tint);
+            stepTable = mms.db_get_variable(dsetName,[pref '_steptable_parity_' Vr.tmmode],Tint);
             if isempty(energy0)
-              energymat = mms.db_get_ts(dsetName,[pref '_energy_' Vr.tmmode],Tint);
+              energymat = mms.db_get_variable(dsetName,[pref '_energy_' Vr.tmmode],Tint);
               if stepTable.data(1)
                 energy1 = energymat.data(1,:);
                 energy0 = energymat.data(2,:);
@@ -697,7 +696,10 @@ end
               energy0 = energy0.data;
               energy1 = energy1.data;
             end
-            res = irf.ts_skymap(dist.time,dist.data,[],phi.data,theta,'energy0',energy0,'energy1',energy1,'esteptable',stepTable.data);
+            res = irf.ts_skymap(dist.time, dist.data, [], phi, theta, ...
+              'energy0', energy0, 'energy1', energy1, ...
+              'esteptable', stepTable.data);
+            res = res.tlim(Tint);
           case 'fast'
             %dist = mms.db_get_variable(dsetName,[pref '_dist_' Vr.tmmode],Tint);
             if (length(Vr.param) == 3)  
