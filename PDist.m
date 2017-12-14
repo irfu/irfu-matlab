@@ -24,11 +24,10 @@ classdef PDist < TSeries
   end
   
   properties (Constant = true, Hidden = true)
-%     MAX_TENSOR_ORDER = 2;
-%     BASIS = {'xyz','rtp','rlp','rpz','xy','rp'};
-%     BASIS_NAMES = {...
-%       'Cartesian','Spherical,colatitude', 'Spherical,latitude','Cylindrical',...
-%       'Cartesian 2D','Polar 2D'};
+    % Constant properties
+
+    % Units must be one of the following:
+    VALID_UNITS = {'s^3/cm^6','s^3/km^6','s^3/m^6','keV/(cm^2 s sr keV)','1/(cm^2 s sr keV)'};
   end
   
   properties (SetAccess = protected)
@@ -651,16 +650,16 @@ classdef PDist < TSeries
       end  
       
       if nargin<2 || flagdir ~= -1
-      switch obj.units
-        case {'s^3/cm^6'}
-          tmpData = obj.data*1e30/1e6/mm^2/0.53707;
-        case {'s^3/m^6'}
-          tmpData = obj.data*1e18/1e6/mm^2/0.53707;
-        case {'s^3/km^6'}
-          tmpData = obj.data/1e6/mm^2/0.53707;
-        otherwise
-          error('Units not supported.')
-      end  
+        switch obj.units
+          case {'s^3/cm^6'}
+            tmpData = obj.data*1e30/1e6/mm^2/0.53707;
+          case {'s^3/m^6'}
+            tmpData = obj.data*1e18/1e6/mm^2/0.53707;
+          case {'s^3/km^6'}
+            tmpData = obj.data/1e6/mm^2/0.53707;
+          otherwise
+            error('Units not supported.')
+        end
       elseif flagdir == -1 && strcmp(obj.units,'keV/(cm^2 s sr keV)')
         irf.log('warning','Converting DEFlux to PSD in SI units');
         tmpData = obj.data/1e12*mm^2*0.53707;
@@ -705,16 +704,16 @@ classdef PDist < TSeries
       end 
       
       if nargin<2 || flagdir ~= -1
-      switch obj.units
-        case {'s^3/cm^6'}
-          tmpData = obj.data*1e30/1e6/mm^2/0.53707;
-        case {'s^3/m^6'}
-          tmpData = obj.data*1e18/1e6/mm^2/0.53707;
-        case {'s^3/km^6'}
-          tmpData = obj.data/1e6/mm^2/0.53707;
-        otherwise
-          error('Units not supported.')
-      end
+        switch obj.units
+          case {'s^3/cm^6'}
+            tmpData = obj.data*1e30/1e6/mm^2/0.53707;
+          case {'s^3/m^6'}
+            tmpData = obj.data*1e18/1e6/mm^2/0.53707;
+          case {'s^3/km^6'}
+            tmpData = obj.data/1e6/mm^2/0.53707;
+          otherwise
+            error('Units not supported.')
+        end
       elseif flagdir == -1 && strcmp(obj.units,'1/(cm^2 s sr keV)')
         irf.log('warning','Converting DPFlux to PSD');
         tmpData = obj.data/1e12*mm^2*0.53707;
@@ -751,8 +750,11 @@ classdef PDist < TSeries
       % Changes units of Pdist. 
       % Accepted inputs 's^3/cm^6', 's^3/km^6', 's^3/m^6', 'keV/(cm^2 s sr keV)',
       % and '1/(cm^2 s sr keV)'
-        
+
+      % Verify input
+      if ~ismember(newunits, obj.VALID_UNITS), error(['Unknown units: ', newunits]); end
       PD = obj;
+      if isequal(obj.units, newunits), return; end
       % Convert to SI units
       switch obj.units
         case {'s^3/cm^6'}
