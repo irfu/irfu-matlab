@@ -187,15 +187,36 @@ classdef mms_local_file_db < mms_file_db
               if year==TStart.year && mo==TStart.month
                 dStart = TStart.day;
               end
-              if year==TStop.year && mo==TStop.month, dStop = TStop.day;end
+              if year==TStop.year && mo==TStop.month, dStop = TStop.day; end
               for day = dStart:dStop
                 if strcmpi(C{3},'brst')
                   curDir = [moDir filesep sprintf('%02d',day)]; % BRST files are in daily subdirs
+                  % If tint was selected and burst, if possible try to
+                  % locate files based on filename. The burst file names
+                  % should relate to the start time in seconds of the
+                  % interval (but could be slightly off).
+                  % FIXME: Do something smart with different dates and
+                  % possibly look into a smaller interval (now goes down to
+                  % hours of interest).
+                  if(TStart.year==TStop.year && TStart.month==TStop.month ...
+                      && TStart.day==TStop.day )
+                    % Check files for each hour of interest, start slightly
+                    % before TStart.hour as the files are named related to
+                    % start time not entire interval.
+                    for iHour = max(TStart.hour-1,0):TStop.hour
+                      % List all files matching the hours.
+                      dPref = sprintf('%s_%d%02d%02d%02d',filePrefix,year,mo,day,iHour);
+                      listingD = mms_find_latest_version_cdf([curDir filesep dPref '*.cdf']);
+                      if isempty(listingD), continue, end
+                      arrayfun(@(x) add2list_sci(x.name,curDir), listingD)
+                    end
+                  end
+                else
+                  dPref = sprintf('%s_%d%02d%02d',filePrefix,year,mo,day);
+                  listingD = mms_find_latest_version_cdf([curDir filesep dPref '*.cdf']);
+                  if isempty(listingD), continue, end
+                  arrayfun(@(x) add2list_sci(x.name,curDir), listingD)
                 end
-                dPref = sprintf('%s_%d%02d%02d',filePrefix,year,mo,day);
-                listingD = mms_find_latest_version_cdf([curDir filesep dPref '*.cdf']);
-                if isempty(listingD), continue, end
-                arrayfun(@(x) add2list_sci(x.name,curDir), listingD)
               end
             else % List all files
               dPref = sprintf('%s_%d%02d',filePrefix,year,mo);
