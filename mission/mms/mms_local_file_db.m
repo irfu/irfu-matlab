@@ -210,13 +210,35 @@ classdef mms_local_file_db < mms_file_db
                       if isempty(listingD), continue, end
                       arrayfun(@(x) add2list_sci(x.name,curDir), listingD)
                     end
+                  elseif(TStart.year == year && TStart.month == mo && ...
+                      TStart.day == day)
+                    % dStart iHour from one hour before start to end of day.
+                    for iHour = max(TStart.hour-1,0):23
+                      % List all files matching the hours.
+                      dPref = sprintf('%s_%d%02d%02d%02d',filePrefix,year,mo,day,iHour);
+                      listingD = mms_find_latest_version_cdf([curDir filesep dPref '*.cdf']);
+                      if isempty(listingD), continue, end
+                      arrayfun(@(x) add2list_sci(x.name,curDir), listingD)
+                    end
+                  elseif(TStop.year == year && TStop.month == mo && ...
+                      TStop.day == day)
+                    % dStop iHour from start of day to stop hour.
+                    for iHour = 0:TStop.hour
+                      % List all files matching the hours.
+                      dPref = sprintf('%s_%d%02d%02d%02d',filePrefix,year,mo,day,iHour);
+                      listingD = mms_find_latest_version_cdf([curDir filesep dPref '*.cdf']);
+                      if isempty(listingD), continue, end
+                      arrayfun(@(x) add2list_sci(x.name,curDir), listingD)
+                    end
                   else
+                    % All brst segments of the day
                     dPref = sprintf('%s_%d%02d%02d',filePrefix,year,mo,day);
                     listingD = mms_find_latest_version_cdf([curDir filesep dPref '*.cdf']);
                     if isempty(listingD), continue, end
                     arrayfun(@(x) add2list_sci(x.name,curDir), listingD)
                   end
                 else
+                  % Fast / Slow / Srvy / Comm
                   dPref = sprintf('%s_%d%02d%02d',filePrefix,year,mo,day);
                   listingD = mms_find_latest_version_cdf([curDir filesep dPref '*.cdf']);
                   if isempty(listingD), continue, end
