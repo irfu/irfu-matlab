@@ -52,19 +52,19 @@ classdef mms_local_file_db < mms_file_db
         list_ancillary();
         if isempty(fileList) || isempty(tint), return, end
         pick_ancillary();
-			else
-				if mms.db_index && ~isempty(obj.index)
-					irf.log('notice','Using index');
-					fileList = obj.index.search_files_with_dataset(filePrefix,tint);
-					return
-				else
-					if ~isempty(tint)
-						list_sci_tint()
-					else
-						irf.log('warning','THIS MAY TAKE SOME TIME')
-						list_sci()
-					end
-				end
+      else
+        if mms.db_index && ~isempty(obj.index)
+          irf.log('notice','Using index');
+          fileList = obj.index.search_files_with_dataset(filePrefix,tint);
+          return
+        else
+          if ~isempty(tint)
+            list_sci_tint();
+          else
+            irf.log('warning','THIS MAY TAKE SOME TIME');
+            list_sci();
+          end
+        end
       end
       % END LIST_FILES
       %% PICK ANCILLARY
@@ -270,13 +270,10 @@ classdef mms_local_file_db < mms_file_db
         hasFile = arrayfun(@(x) ~isempty(strfind(x.name,fName)),fileList);
         if ~any(hasFile), fileList = [fileList add_ss(Entry)]; return, end
         iSame = find(hasFile);
-        if length(iSame) > 1
-          error('multiple files with same name'),
+        if length(iSame)>1, error('multiple files with same name'); end
+        if is_version_larger(fnd.vXYZ,fileList(iSame).ver)
+          fileList(iSame) = add_ss(Entry); % replace file
         end
-        
-				if is_version_larger(fnd.vXYZ,fileList(iSame).ver)
-					fileList(iSame) = add_ss(Entry); % replace file
-				end
         function entry = add_ss(entry)
           entryTmp = obj.cache.get_by_key(entry.name);
           if ~isempty(entryTmp)
@@ -326,12 +323,12 @@ classdef mms_local_file_db < mms_file_db
       narginchk(2,3)
       
       irf.log('notice',['loading ' fileName])
-			if mms.db_index
-				fileNameFullPath = fileName;
-			else
-				p = obj.get_path_to_file(fileName);
-				fileNameFullPath = [p filesep fileName];
-			end
+      if mms.db_index
+        fileNameFullPath = fileName;
+      else
+        p = obj.get_path_to_file(fileName);
+        fileNameFullPath = [p filesep fileName];
+      end
       if mms_local_file_db.is_cdf_file(fileName)
         res = dataobj(fileNameFullPath);
         return
@@ -354,13 +351,13 @@ classdef mms_local_file_db < mms_file_db
         res = any(cellfun(@(x) strcmp(x,varName), entryTmp.vars(:,1)));
         return
       end
-			if mms.db_index
-				irf.log('notice','Using index to check if file ok');
-				fullPath = fileName;
-			else
-				p = obj.get_path_to_file(fileName); 
-				fullPath = [p filesep fileName];
-			end
+      if mms.db_index
+        irf.log('notice','Using index to check if file ok');
+        fullPath = fileName;
+      else
+        p = obj.get_path_to_file(fileName);
+        fullPath = [p filesep fileName];
+      end
       if ~exist(fullPath,'file')
         irf.log('warning', ['Fies does not exist: ' fullPath])
         return
@@ -379,18 +376,18 @@ classdef mms_local_file_db < mms_file_db
         return
       end
       % cdf
-			if mms.db_index
-				res = obj.index.file_has_var(fileName,varName);
-			else
-				info = spdfcdfinfo(fullPath);
-                if ispc
-                  % Add a very short delay to ensure consecutive files are not
-                  % accessed TOO quickly as this may cause Matlab to experince a
-                  % hard crash on Win10 regardless of the try&catch.
-                  pause(0.0001);
-                end
-				res = any(cellfun(@(x) strcmp(x,varName), info.Variables(:,1)));
-			end
+      if mms.db_index
+        res = obj.index.file_has_var(fileName,varName);
+      else
+        info = spdfcdfinfo(fullPath);
+        if ispc
+          % Add a very short delay to ensure consecutive files are not
+          % accessed TOO quickly as this may cause Matlab to experince a
+          % hard crash on Win10 regardless of the try&catch.
+          pause(0.0001);
+        end
+        res = any(cellfun(@(x) strcmp(x,varName), info.Variables(:,1)));
+      end
     end
   end
   
