@@ -474,7 +474,27 @@
       Ts.data_ = data;
       Ts.t_ = t;
     end
-
+    
+    function Ts = norm(obj)
+      % NORM Make into unit vector.
+      % Ts = Ts/Ts.abs;      
+      %
+      % Example:
+      %   B = B.resample(E);
+      %   irf_plot({B,...                       % B xyz
+      %             B.norm,...                  % B xyz norm
+      %             E,...                       % E xyz
+      %             E.dot(B.norm),...           % E par
+      %             E.dot(B.norm)*B.norm,...    % E par xyz
+      %             E - E.dot(B.norm)*B.norm})  % E perp xyz
+      %
+            
+      if obj.tensorOrder~=1
+        error('Only tensororder = 1 implemented'); 
+      end
+      Ts = obj/obj.abs;
+    end
+    
     function Ts = sqrt(obj)
       %SQRT Square root
       if obj.tensorOrder~=0, error('Square root requires tensorOrder = 0'); end      
