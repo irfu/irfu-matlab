@@ -210,6 +210,11 @@ classdef mms_local_file_db < mms_file_db
                       if isempty(listingD), continue, end
                       arrayfun(@(x) add2list_sci(x.name,curDir), listingD)
                     end
+                  else
+                    dPref = sprintf('%s_%d%02d%02d',filePrefix,year,mo,day);
+                    listingD = mms_find_latest_version_cdf([curDir filesep dPref '*.cdf']);
+                    if isempty(listingD), continue, end
+                    arrayfun(@(x) add2list_sci(x.name,curDir), listingD)
                   end
                 else
                   dPref = sprintf('%s_%d%02d%02d',filePrefix,year,mo,day);
