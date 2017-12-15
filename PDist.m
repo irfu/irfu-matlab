@@ -28,6 +28,8 @@ classdef PDist < TSeries
 
     % Units must be one of the following:
     VALID_UNITS = {'s^3/cm^6','s^3/km^6','s^3/m^6','keV/(cm^2 s sr keV)','1/(cm^2 s sr keV)'};
+    % Type must be one of the following:
+    VALID_TYPES = {'skymap', 'pitchangle', 'omni'};
   end
   
   properties (SetAccess = protected)
@@ -42,14 +44,17 @@ classdef PDist < TSeries
   end
   
   methods
-    function obj = PDist(t,data,varargin) % constructor
-      if nargin<2, error('2 inputs required'), end
+    function obj = PDist(time, data, type, varargin) % constructor
       
-      obj@TSeries(t,data,'to',0);
-      
-      args = varargin;     
-      if isa(args{1},'char'); obj.type_ = args{1}; args(1) = [];
-      else, error('3rd input must specify distribution type')
+      narginchk(3, inf);
+      args = varargin;
+
+      obj@TSeries(time, data, 'to', 0);
+      if ~ischar(type) || ~ismember(type, obj.VALID_TYPES)
+        error(['3rd input must specify distribution type and be one of "', ...
+          strjoin(obj.VALID_TYPES,'", "'), '".']);
+      else
+        obj.type_ = type;
       end
             
       % collect required data, depend
@@ -1059,8 +1064,6 @@ classdef PDist < TSeries
   end
   
   methods (Static)
-    function newUnits = changeunits(from,to)
-      
-    end
+
   end
 end
