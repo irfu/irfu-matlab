@@ -226,10 +226,49 @@ classdef mms_local_file_db < mms_file_db
                   end
                 else
                   % Fast / Slow / Srvy / Comm
-                  dPref = sprintf('%s_%d%02d%02d',filePrefix,year,mo,day);
-                  listingD = mms_find_latest_version_cdf([curDir filesep dPref '*.cdf']);
-                  if isempty(listingD), continue, end
-                  arrayfun(@(x) add2list_sci(x.name,curDir), listingD)
+                  if regexp(filePrefix,'fpi|hpca')
+                    % Speed up by looking only for files with names
+                    % accoring to hours of interest
+                    if(TStart.year==TStop.year && TStart.month==TStop.month ...
+                      && TStart.day==TStop.day)
+                      % Interval in same day, beging to look for files up
+                      % to three hours before (HPCA and FPI have two hour
+                      % interval files) and up to one hour after end of the
+                      % requested interval. This is to help ensure any
+                      % overlap is captured and detected... (Could perhaps
+                      % look into minutes as well and only do this if
+                      % requested intervals are close enough to the limits
+                      % of the files).
+                      iHourStart = max(TStart.hour-3, 0);
+                      iHourStop = min(TStop.hour+1, 23);
+                    elseif(TStart.year == year && TStart.month == mo && ...
+                        TStart.day == day)
+                      % dStart iHour from three hour before start to end of day.
+                      iHourStart = max(TStart.hour-3,0);
+                      iHourStop = 23;
+                    elseif(TStop.year == year && TStop.month == mo && ...
+                        TStop.day == day)
+                      % dStop iHour from start of day to stop hour.
+                      iHourStart = 0;
+                      iHourStop = min(TStop.hour+1, 23);
+                    else
+                      % All hours of the day.
+                      iHourStart = 0;
+                      iHourStop = 23;
+                    end
+                    for iHour = iHourStart:iHourStop
+                      % List all files matching the hours.
+                      dPref = sprintf('%s_%d%02d%02d%02d',filePrefix,year,mo,day,iHour);
+                      listingD = mms_find_latest_version_cdf([curDir filesep dPref '*.cdf']);
+                      if isempty(listingD), continue, end
+                      arrayfun(@(x) add2list_sci(x.name,curDir), listingD)
+                    end
+                  else
+                    dPref = sprintf('%s_%d%02d%02d',filePrefix,year,mo,day);
+                    listingD = mms_find_latest_version_cdf([curDir filesep dPref '*.cdf']);
+                    if isempty(listingD), continue, end
+                    arrayfun(@(x) add2list_sci(x.name,curDir), listingD)
+                  end
                 end
               end
             else % List all files
