@@ -195,44 +195,31 @@ classdef mms_local_file_db < mms_file_db
                   % locate files based on filename. The burst file names
                   % should relate to the start time in seconds of the
                   % interval (but could be slightly off).
-                  % FIXME: Do something smart with different dates and
-                  % possibly look into a smaller interval (now goes down to
+                  % Possibly look into a smaller interval (now goes down to
                   % hours of interest).
                   if(TStart.year==TStop.year && TStart.month==TStop.month ...
-                      && TStart.day==TStop.day )
-                    % Check files for each hour of interest, start slightly
-                    % before TStart.hour as the files are named related to
-                    % start time not entire interval.
-                    for iHour = max(TStart.hour-1,0):TStop.hour
-                      % List all files matching the hours.
-                      dPref = sprintf('%s_%d%02d%02d%02d',filePrefix,year,mo,day,iHour);
-                      listingD = mms_find_latest_version_cdf([curDir filesep dPref '*.cdf']);
-                      if isempty(listingD), continue, end
-                      arrayfun(@(x) add2list_sci(x.name,curDir), listingD)
-                    end
+                      && TStart.day==TStop.day)
+                    % Interval in same day
+                    iHourStart = max(TStart.hour-1,0);
+                    iHourStop = TStop.hour;
                   elseif(TStart.year == year && TStart.month == mo && ...
                       TStart.day == day)
                     % dStart iHour from one hour before start to end of day.
-                    for iHour = max(TStart.hour-1,0):23
-                      % List all files matching the hours.
-                      dPref = sprintf('%s_%d%02d%02d%02d',filePrefix,year,mo,day,iHour);
-                      listingD = mms_find_latest_version_cdf([curDir filesep dPref '*.cdf']);
-                      if isempty(listingD), continue, end
-                      arrayfun(@(x) add2list_sci(x.name,curDir), listingD)
-                    end
+                    iHourStart = max(TStart.hour-1,0);
+                    iHourStop = 23;
                   elseif(TStop.year == year && TStop.month == mo && ...
                       TStop.day == day)
                     % dStop iHour from start of day to stop hour.
-                    for iHour = 0:TStop.hour
-                      % List all files matching the hours.
-                      dPref = sprintf('%s_%d%02d%02d%02d',filePrefix,year,mo,day,iHour);
-                      listingD = mms_find_latest_version_cdf([curDir filesep dPref '*.cdf']);
-                      if isempty(listingD), continue, end
-                      arrayfun(@(x) add2list_sci(x.name,curDir), listingD)
-                    end
+                    iHourStart = 0;
+                    iHourStop = TStop.hour;
                   else
-                    % All brst segments of the day
-                    dPref = sprintf('%s_%d%02d%02d',filePrefix,year,mo,day);
+                    % All hours of the day.
+                    iHourStart = 0;
+                    iHourStop = 23;
+                  end
+                  for iHour = iHourStart:iHourStop
+                    % List all files matching the hours.
+                    dPref = sprintf('%s_%d%02d%02d%02d',filePrefix,year,mo,day,iHour);
                     listingD = mms_find_latest_version_cdf([curDir filesep dPref '*.cdf']);
                     if isempty(listingD), continue, end
                     arrayfun(@(x) add2list_sci(x.name,curDir), listingD)
