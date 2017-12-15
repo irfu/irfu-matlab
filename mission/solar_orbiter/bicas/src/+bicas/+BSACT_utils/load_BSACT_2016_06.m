@@ -6,7 +6,9 @@
 % First created 2017-12-12
 function [TcDcv, TcTf] = load_BSACT_2016_06(bsactRootPath)
 
-MEB_TEMPERATURE_CELSIUS = 22;  % Guessing ~room temperature. /Erik P G Johansson 2017-12-12.
+% NOTE: The MEB temperature used for this calibration test is not yet known (2017-12-12).
+%MEB_TEMPERATURE_CELSIUS = 22;  % Guessing ~room temperature. /Erik P G Johansson 2017-12-12.
+MEB_TEMPERATURE_CELSIUS = NaN;
 
 %=================================
 % Register DCV calibration tables

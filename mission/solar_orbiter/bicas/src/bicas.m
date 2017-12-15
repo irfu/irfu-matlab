@@ -84,10 +84,11 @@ try
     % NOTE: Should not call irf('check') which looks for updates to irfu-matlab (can not distinguish between updates to
     %       BICAS or the rest of irfu-matlab).
     irf('check_path');
-    irf('check_os');       % Maybe not strictly needed.    
-    irf('matlab');         % Maybe not strictly needed.
-    irf.log('notice')      % Set initial log level value until it is later overridden by the config value.
-    irf('version')         % Print e.g. "irfu-matlab version: 2017-02-21,  v1.12.6".
+    irf('check_os');              % Maybe not strictly needed.    
+    irf('matlab');                % Maybe not strictly needed.
+    irf('cdf_leapsecondstable');
+    irf.log('notice')             % Set initial log level value until it is later overridden by the config value.
+    irf('version')                % Print e.g. "irfu-matlab version: 2017-02-21,  v1.12.6".
     
     %======================
     % Check MATLAB version

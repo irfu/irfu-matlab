@@ -1,5 +1,3 @@
-% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
-% First created 2016-06-02
 %
 % Initialize (some) global constants.
 %
@@ -8,6 +6,9 @@
 %
 % IMPLEMENTATION NOTE: It is useful to have this code separate so that it can be called separately
 % before calling other functions separately (for testing; without launching the main function).
+%
+% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% First created 2016-06-02
 %
 function [ERROR_CODES, REQUIRED_MATLAB_VERSION] = error_safe_constants
 %

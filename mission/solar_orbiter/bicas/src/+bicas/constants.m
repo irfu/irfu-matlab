@@ -25,11 +25,12 @@
 classdef constants < handle
 %
 % PROPOSAL: Include SW root path?! How?
-%    PRO: Needs to be universally accessible.
-%    CON: Not hardcoded. ==> Mixes code with manually set constants.
-%    QUESTION: Is there anything analogous? output dir?
-%    PROPOSAL: Some functionality for setting "properties", in reality named ~global variables as key-value pairs. cf OVT.
-%    PROPOSAL: Handle "manually" through function parameters.
+%   PRO: Needs to be universally accessible.
+%   CON: Not hardcoded. ==> Mixes code with manually set/hardcoded constants.
+%   QUESTION: Is there anything analogous? output dir?
+%   PROPOSAL: Some functionality for setting "properties", in reality named ~global variables as key-value pairs. cf OVT.
+%   PROPOSAL: Handle "manually" through function parameters.
+%   TODO-NEED-INFO: There is a ROC-defined environment variable for this?
 %
 % PROPOSAL: Get rid of BICAS_ROOT_PATH somehow. Does not fit in.
 %
@@ -37,19 +38,24 @@ classdef constants < handle
 %   PROPOSAL: Check that data types are unique.
 %       NOTE: Requires access to the lists.
 %
-% PROPOSAL: Use arrays of structs instead of cells.
-%    PRO: Forces the use of the same struct fields.
-%    NOTE: Would need to create new version of "select_cell_array_structs" that works on arrays instead.
-%
-% PROPOSAL: Use (nested) function to set every input in produce_inputs_constants. Reduce to one-liners.
+% PROPOSAL: Use (nested) function to set every input in produce_inputs_constants.
 %     PROPOSAL: Same for produce_inputs_constants.
 %     PROPOSAL: Use struct statement instead.
 %        CON: Does not make use of the similarities between assignments.
 %        CON: Want to "extract values from a table".
 %     PROPOSAL: Use functions to produce equivalent S/W modes for different input dataset versions (V01-->V02, V02-->V02).
 %
-% PROPOSAL: Convert constant cell arrays of structs to arrays of structs: S/W modes, CDF/PDID inputs/outputs.
-%   PRO: Simplifies code that constructs cell arrays of the same struct field in multiple cell structs.
+% PROPOSAL: Create records (structs) via internal function instead of manually specifying fields.
+%   Ex: produce_sw_modes_constants, produce_inputs_constants (partially implemented), produce_outputs_constants.
+%   PRO: Forces identical structs: same field names, same set of fields.
+%   PRO: Easier to change field names.
+%   PRO: Can include assertions(?) on assignment.
+%   PRO: More compact assignment code.
+%   PRO: Easier to create struct array (where now uses cell array).
+%
+% PROPOSAL: Use arrays of structs instead of cells.
+%    PRO: Forces the use of the same struct fields.
+%    NOTE: Would need to create new version of "select_cell_array_structs" that works on arrays instead.
 %
 % PROPOSAL: Change name to ~dm_constants.
 %   NOTE: Should then get rid of BICAS_ROOT_PATH first.
