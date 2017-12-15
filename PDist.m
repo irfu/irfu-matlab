@@ -657,7 +657,7 @@ classdef PDist < TSeries
       if nargin<2 || flagdir ~= -1
         switch obj.units
           case {'s^3/cm^6'}
-            tmpData = obj.data*1e30/1e6/mm^2/0.53707;
+            tmpData = obj.data*1e30/1e6/mm^2/0.53707; % FIXME: From where comes this "0.53707" ???
           case {'s^3/m^6'}
             tmpData = obj.data*1e18/1e6/mm^2/0.53707;
           case {'s^3/km^6'}
