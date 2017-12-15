@@ -141,6 +141,7 @@ vars = {'R_gse','R_gsm','V_gse','V_gsm',...
   'E2d_dsl_edp_l2pre','E2d_dsl_edp_fast_l2pre','E2d_dsl_edp_brst_l2pre',...
   'E_dsl_edp_l2pre','E_dsl_edp_fast_l2pre','E_dsl_edp_brst_l2pre',...
   'E_ssc_edp_brst_l1b','E_ssc_edp_fast_l1b','E_ssc_edp_slow_l1b',...
+  'Epar_edp_l2','Epar_edp_brst_l2','Epar_edp_fast_l2',...
   'V_edp_brst_l1b','V_edp_fast_l1b','V_edp_slow_l1b','V_edp_fast_sitl','V_edp_slow_sitl'...
   'V_edp_fast_l2','V_edp_brst_l2',...
   'V6_edp_fast_l2','V6_edp_brst_l2',...
@@ -417,7 +418,7 @@ switch Vr.inst
             suf = ['_dbcs_' Vr.tmmode];
             compS = struct('xx','xx','yy','yy','zz','zz');
           case {'l1b','ql'}
-            pref = ['mms' mmsIdS '_' sensor '_Temp']
+            pref = ['mms' mmsIdS '_' sensor '_Temp'];
           case 'sitl'
             pref = ['mms' mmsIdS '_fpi_' upper(sensor) 'temp'];
             getQ = 'ts';
@@ -554,6 +555,7 @@ switch Vr.inst
       otherwise
         switch Vr.param
           case 'E', dset = 'dce'; param = ['dce_' Vr.cs];
+          case 'Epar', dset = 'dce'; param = 'dce_par_epar';
           case 'E2d', dset = 'dce2d'; param = ['dce_' Vr.cs];
           case 'Phase', dset = 'dce2d'; param = 'phase';
           case {'Es12','Es34'}, dset = 'dce2d'; param = ['espin_p' Vr.param(3:4)];
@@ -680,9 +682,9 @@ end
             phi = mms.db_get_ts(dsetName,[pref '_phi_' Vr.tmmode],Tint);
             %theta = mms.db_get_variable(dsetName,[pref '_theta_' Vr.tmmode],Tint);
             stepTable = mms.db_get_ts(dsetName,[pref '_steptable_parity_' Vr.tmmode],Tint);
-            if isempty(energy0),
+            if isempty(energy0)
               energymat = mms.db_get_ts(dsetName,[pref '_energy_' Vr.tmmode],Tint);
-              if stepTable.data(1),
+              if stepTable.data(1)
                 energy1 = energymat.data(1,:);
                 energy0 = energymat.data(2,:);
               else
@@ -722,13 +724,6 @@ end
         error('data type not implemented')
     end
   end
-  function d = my_tlim(d)
-    idx = tlim(EpochTT(d.time),Tint);
-    f = fields(d);
-    for iF = 1:length(f)
-      d.(f{iF}) = d.(f{iF})(idx,:);
-    end
-  end
 end %% MAIN
 
 function TsOut = comb_ts(TsIn)
@@ -755,7 +750,8 @@ phcaParamsTens = {'Vhplus','Vheplus','Vheplusplus','Voplus',...
 param = tk{1};
 switch param
   case {'Ni', 'Ne', 'Nhplus', 'Tsi', 'Tperpi', 'Tparai', 'Tse', 'Tperpe', 'Tparae', ...
-          'PDe', 'PDi', 'PDERRe', 'PDERRi', 'V', 'V6', 'Enfluxi', 'Enfluxe', 'Energyi', 'Energye'}
+      'PDe', 'PDi', 'PDERRe', 'PDERRi', 'V', 'V6', ...
+      'Enfluxi', 'Enfluxe', 'Energyi', 'Energye', 'Epar'}
     tensorOrder = 0;
   case {'Vi', 'Ve', 'B', 'E','E2d','Es12','Es34'}
     tensorOrder = 1;
@@ -773,7 +769,7 @@ coordinateSystem = []; idx = 1;
 if tensorOrder > 0
   coordinateSystem = tk{idx+1}; idx = idx + 1;
   switch coordinateSystem
-    case {'gse','gsm','dsl','dbcs','dmpa','ssc','bcs'}
+    case {'gse','gsm','dsl','dbcs','dmpa','ssc','bcs','par'}
     otherwise
       error('invalid COORDINATE_SYS')
   end

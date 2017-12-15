@@ -10,10 +10,10 @@ Tint = irf.tint('2017-01-27T12:05:00.000Z/2017-01-27T12:06:00.000Z');
 
 
 %% Load Data 
-c_eval('Bxyz=mms.db_get_ts(''mms?_fgm_brst_l2'',''mms?_fgm_b_gse_brst_l2'',Tint);',ic);
-c_eval('Exyz=mms.db_get_ts(''mms?_edp_brst_l2_dce'',''mms?_edp_dce_gse_brst_l2'',Tint);',ic);
-c_eval('Bscm=mms.db_get_ts(''mms?_scm_brst_l2_scb'',''mms?_scm_acb_gse_scb_brst_l2'',Tint);',ic);
-c_eval('ne = mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_numberdensity_brst'',Tint);',ic);
+c_eval('Bxyz=mms.get_data(''B_gse_brst_l2'',Tint,?);',ic);
+c_eval('Exyz=mms.get_data(''E_gse_edp_brst_l2'',Tint,?);',ic);
+c_eval('Bscm=mms.get_data(''B_gse_scm_brst_l2'',Tint,?);',ic);
+c_eval('ne = mms.get_data(''Ne_fpi_brst_l2'',Tint,?);',ic);
 magB = Bxyz.abs;
 Bxyzmag = TSeries(Bxyz.time,[Bxyz.data magB.data]);
 
@@ -24,9 +24,10 @@ Bscmfac = irf_convert_fac(Bscm,Bxyz,[1 0 0]);
 %% Bandpass filter E and B waveforms
 dfE = 1/median(diff(Exyz.time.epochUnix));
 dfB = 1/median(diff(Bscm.time.epochUnix));
-Exyzfachf = Exyzfac.filt(10,0,dfE,5);
-Exyzfaclf = Exyzfac.filt(0,10,dfE,5);
-Bscmfachf = Bscmfac.filt(10,0,dfB,5);
+fCut = 4; % Hz
+Exyzfachf = Exyzfac.filt(fCut,0,dfE,5);
+Exyzfaclf = Exyzfac.filt(0,fCut,dfE,5);
+Bscmfachf = Bscmfac.filt(fCut,0,dfB,5);
 
 %% Wavelet transforms
 nf = 100;
@@ -114,7 +115,7 @@ set(h(7),'position',[0.10 0.97-7*ywidth xwidth ywidth]);
 
 h(1)=irf_panel('Bxyz');
 irf_plot(h(1),Bxyzmag);
-ylabel(h(1),{'B','(nT)'},'Interpreter','tex');
+ylabel(h(1),{'B (nT)'},'Interpreter','tex');
 irf_zoom(h(1),'y',[-50 60]);
 irf_legend(h(1),{'B_{x}','B_{y}','B_{z}','|B|'},[0.98 0.12])
 irf_legend(h(1),'(a)',[0.99 0.94],'color','k','fontsize',12)
@@ -130,7 +131,7 @@ irf_plot(h(3),Exyzfachf);
 ylabel(h(3),{'\delta E (mV m^{-1})'},'Interpreter','tex');
 irf_legend(h(3),{'E_{\perp 1}','E_{\perp 2}','E_{||}'},[0.98 0.12])
 irf_legend(h(3),'(c)',[0.99 0.94],'color','k','fontsize',12)
-irf_legend(h(3),'f > 10 Hz',[0.1 0.1],'color','k','fontsize',12)
+irf_legend(h(3),sprintf('f > %d Hz',fCut),[0.1 0.1],'color','k','fontsize',12)
 
 h(4)=irf_panel('Especperp');
 irf_spectrogram(h(4),specperpE,'log');
@@ -169,7 +170,7 @@ irf_plot(h(6),Bscmfachf);
 ylabel(h(6),{'\delta B (nT)'},'Interpreter','tex');
 irf_legend(h(6),{'B_{\perp 1}','B_{\perp 2}','B_{||}'},[0.98 0.12])
 irf_legend(h(6),'(f)',[0.99 0.94],'color','k','fontsize',12)
-irf_legend(h(6),'f > 10 Hz',[0.1 0.1],'color','k','fontsize',12)
+irf_legend(h(6),sprintf('f > %d Hz',fCut),[0.1 0.1],'color','k','fontsize',12)
 
 h(7)=irf_panel('Bspec');
 irf_spectrogram(h(7),specB,'log');
@@ -185,7 +186,7 @@ irf_legend(h(7),'f_{pi}',[0.25 0.60],'color','b','fontsize',12)
 caxis(h(7),[-8 -1]);
 set(h(7),'yscale','log');
 set(h(7),'ytick',[1e1 1e2 1e3 1e4]);
-ylabel(h(7),{'f','(Hz)'},'fontsize',12,'Interpreter','tex');
+ylabel(h(7),{'f (Hz)'},'fontsize',12,'Interpreter','tex');
 
 load('caa/cmap.mat');
 colormap(h(4),cmap);
