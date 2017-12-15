@@ -726,6 +726,11 @@ classdef mms_db_sql < handle
           warning(errStr); out = []; return;
         end
         if isinteger(epoch), epoch = {epoch}; end % only one time variable
+        if isempty(epoch)
+          % Not a single record written. Replace with NaN.
+          epoch = {NaN};
+          irf.log('notice',['!!! No records in the Depend_0 in file:', cdfFileName]);
+        end
         for iT = numel(indGoodTVarName):-1:1
           out(iT).epochVarName = tVarNames{iT};
           out(iT).varNames = dep(IC == iT,1);
@@ -767,9 +772,9 @@ classdef mms_db_sql < handle
             catch ME
               irf.log('warning', ['Failed to read: ', cdfFileName]);
               irf.log('warning', ['Message: ', ME.message]);
-	      if(~isempty(timeStr)), irf.log('warning',['Got timeStr: ', timeStr]); end
+              if(~isempty(timeStr)), irf.log('warning',['Got timeStr: ', timeStr]); end
               out = [];
-	      return
+              return
             end
           case 'defeph'
             out.epochVarName = 'Time';
@@ -788,7 +793,7 @@ classdef mms_db_sql < handle
             catch ME
               irf.log('warning', ['Failed to read: ', cdfFileName]);
               irf.log('warning', ['Message: ', ME.message]);
-	      if(~isempty(timeStr)), irf.log('warning',['Got timeStr: ', timeStr]); end
+              if(~isempty(timeStr)), irf.log('warning',['Got timeStr: ', timeStr]); end
               out = [];
               return
             end
@@ -814,7 +819,7 @@ classdef mms_db_sql < handle
             catch ME
               irf.log('warning', ['Failed to read: ', cdfFileName]);
               irf.log('warning', ['Message: ', ME.message]);
-	      if(~isempty(timeStr)), irf.log('warning',['Got timeStr: ', timeStr]); end
+              if(~isempty(timeStr)), irf.log('warning',['Got timeStr: ', timeStr]); end
               out = [];
               return
             end
