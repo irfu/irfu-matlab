@@ -371,7 +371,7 @@ switch lower(action)
       out1 = versionTime;
     end
 
-	otherwise
-		error('unknown input argument');
+  otherwise
+    error('unknown input argument');
 end
 
