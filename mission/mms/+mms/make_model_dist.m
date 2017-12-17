@@ -97,7 +97,8 @@ r(r == 0) = 0.0;
 % Define rotation vectors based on B and Ve directions
 Rz = Bdir.data;
 Rx = Vpdir.data;
-Ry = cross(Bdir.data,Vpdir.data);
+Ry = cross(Bdir,Vpdir);
+Ry = Ry.data;
 
 % Rotated coordinate system for computing bi-Maxwellian distribution
 xp = zeros(length(PDist.time),lengthphi,lengththeta);
