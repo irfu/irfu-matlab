@@ -1003,9 +1003,13 @@ if ~isempty(data)
     end
     indx=find(diff(data(:,1)) < tdiff);
     if ~isempty(indx)
-        irf_log('save',['WARNING: detected ' num2str(length(indx)) ' non-monotonic time stamp.'])
-        for i=1:length(indx)
-            irf_log('save',['Removing data near non-monotonic time stamp at ' epoch2iso(data(indx(i),1))])
+       irf_log('save',['WARNING: detected ' num2str(length(indx)) ' non-monotonic time stamp.'])
+       for i=1:length(indx)
+            if (i > 1) && (ii_left <= indx(i)) && (ii_right >= indx(i))
+                irf_log('proc',['Skip overlapping non-monotonic time stamp at index ' num2str(indx(i))]);
+                continue
+            end
+            irf_log('proc',['Removing data near non-monotonic time stamp at ' epoch2iso(data(indx(i),1))])
             ii_left =find(data(:,1) < (data(indx(i)+1,1) - 10.4), 1, 'last' );
 			if isempty(ii_left), ii_left=1; end
             ii_right=find(data(:,1) > (data(indx(i),1)   + 10.4), 1, 'first' );
