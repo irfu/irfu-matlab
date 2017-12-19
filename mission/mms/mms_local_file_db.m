@@ -243,7 +243,11 @@ classdef mms_local_file_db < mms_file_db
           indLast = find(indBeforeStop, 1, 'last');
           if(indLast<length(listingD)), indBeforeStop(indLast+1) = true; end
           indFirst = find(indAfterStart, 1, 'first');
-          if(indFirst>1), indAfterStart(indFirst-1) = true; end
+          if isempty(indFirst)
+            indAfterStart(end) = true;
+          elseif indFirst>1
+            indAfterStart(indFirst-1) = true;
+          end
           tmpIndex= find(bitand(indBeforeStop, indAfterStart));
           if isempty(tmpIndex), return, end
           listingD = listingD(tmpIndex);
