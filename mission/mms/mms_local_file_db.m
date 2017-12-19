@@ -237,7 +237,7 @@ classdef mms_local_file_db < mms_file_db
           % Find index of files with names which timewise are sorted
           % between our "startFile" and "stopFile" names.
           indAfterStart = arrayfun(@(x) isequal({startFile; x.name}, sort({startFile; x.name})), listingD);
-          indBeforeStop =  arrayfun(@(x) isequal({x.name; stopFile}, sort({x.name; stopFile})), listingD);
+          indBeforeStop = arrayfun(@(x) isequal({x.name;  stopFile}, sort({x.name;  stopFile})), listingD);
           % Also look at files just before and after as it might be some
           % overlap.
           indLast = find(indBeforeStop, 1, 'last');
@@ -247,7 +247,6 @@ classdef mms_local_file_db < mms_file_db
           tmpIndex= find(bitand(indBeforeStop, indAfterStart));
           if isempty(tmpIndex), return, end
           listingD = listingD(tmpIndex);
-          if isempty(listingD), return, end
           arrayfun(@(x) add2list_sci(x.name,curDir), listingD)
         end
       end
