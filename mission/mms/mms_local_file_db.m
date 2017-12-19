@@ -189,84 +189,15 @@ classdef mms_local_file_db < mms_file_db
               if year==TStop.year && mo==TStop.month, dStop = TStop.day; end
               if strcmp(C{3}, 'brst')
                 for day = dStart:dStop
-                  curDir = [moDir filesep sprintf('%02d',day)]; % BRST files are in daily subdirs
+                  % BRST files are in daily subdirs
+                  curDir = [moDir filesep sprintf('%02d',day)];
                   dPref = sprintf('%s_%d%02d%02d',filePrefix,year,mo,day);
-                  listingD = mms_find_latest_version_cdf([curDir filesep dPref '*.cdf']);
-                  if isempty(listingD), continue, end
-                  if isempty(dateFormat)
-                    % Are we looking for files with 8 or the full 14 digits
-                    % in the date and time.
-                    fileformat = regexp(listingD(1).name, '_(?<dateFormat>\d{8,})_v','names');
-                    switch length(fileformat.dateFormat)
-                      case 8
-                        dateFormat = 'yyyymmdd';
-                      case 14
-                        dateFormat = 'yyyymmddHHMMSS';
-                      otherwise
-                        dateFormat = 'yyyymmddHHMMSS';
-                    end
-                    % Create reconstructed file names for our interval
-                    startFile = [filePrefix, '_', tint.start.toUtc(dateFormat), '_v0.0.0.cdf'];
-                    stopFile = [filePrefix, '_', tint.stop.toUtc(dateFormat), '_v9999999.999999.999999.cdf'];
-                  end
-                  % Find index of files with names which timewise are 
-                  % sorted between our "startFile" and "stopFile" names.
-                  tmpIndex = find(arrayfun(@(x) isequal({startFile; x.name; stopFile}, sort({startFile; x.name; stopFile})), listingD));
-                  if isempty(tmpIndex), continue, end
-                  if(tmpIndex(1)-1 > 1)
-                    % If there is a file just before our start time, then
-                    % look inside this file as well.
-                    tmpIndex = [tmpIndex(1)-1, tmpIndex]; %#ok<AGROW>
-                  end
-                  if(tmpIndex(end)+1 <= length(listingD))
-                    % If there is a file just after our stop time, then
-                    % look inside this file as well. (could be some overlap
-                    % at midnight).
-                    tmpIndex = [tmpIndex, tmpIndex(end)+1]; %#ok<AGROW>
-                  end
-                  listingD = listingD(tmpIndex);
-                  if isempty(listingD), continue, end
-                  arrayfun(@(x) add2list_sci(x.name,curDir), listingD);
+                  limited_sci_list;
                 end
               else
                 %Fast, slow, srvy, comm
                 dPref = sprintf('%s_%d%02d',filePrefix,year,mo);
-                listingD = mms_find_latest_version_cdf([curDir filesep dPref '*.cdf']);
-                if isempty(listingD), continue, end
-                if isempty(dateFormat)
-                  % Are we looking for files with 8 or the full 14 digits
-                  % in the date and time.
-                  fileformat = regexp(listingD(1).name, '_(?<dateFormat>\d{8,})_v','names');
-                  switch length(fileformat.dateFormat)
-                    case 8
-                      dateFormat = 'yyyymmdd';
-                    case 14
-                      dateFormat = 'yyyymmddHHMMSS';
-                    otherwise
-                      dateFormat = 'yyyymmddHHMMSS';
-                  end
-                  % Create reconstructed file names for our interval
-                  startFile = [filePrefix, '_', tint.start.toUtc(dateFormat), '_v0.0.0.cdf'];
-                  stopFile = [filePrefix, '_', tint.stop.toUtc(dateFormat), '_v9999999.999999.999999.cdf'];
-                end
-                % Find index of files with names which timewise are sorted
-                % between our "startFile" and "stopFile" names.
-                tmpIndex = find(arrayfun(@(x) isequal({startFile; x.name; stopFile}, sort({startFile; x.name; stopFile})), listingD));
-                if isempty(tmpIndex), continue, end
-                if(tmpIndex(1)-1 > 1)
-                  % If there is a file just before our start time, then
-                  % look inside this file as well.
-                  tmpIndex = [tmpIndex(1)-1, tmpIndex]; %#ok<AGROW>
-                end
-                if(tmpIndex(end)+1 <= length(listingD))
-                  % If there is a file just after our stop time, then
-                  % look inside this file as well. (could be some overlap 
-                  % at midnight).
-                  tmpIndex = [tmpIndex, tmpIndex(end)+1]; %#ok<AGROW>
-                end
-                listingD = listingD(tmpIndex);
-                if isempty(listingD), continue, end
-                arrayfun(@(x) add2list_sci(x.name,curDir), listingD)
+                limited_sci_list;
               end
             end
           end
@@ -283,6 +214,43 @@ classdef mms_local_file_db < mms_file_db
           t.hour  = str2double(utc(12:13));
           t.min   = str2double(utc(15:16));
           t.sec   = str2double(utc(18:end-1));
+        end
+        function limited_sci_list()
+          listingD = mms_find_latest_version_cdf([curDir filesep dPref '*.cdf']);
+          if isempty(listingD), return, end
+          if isempty(dateFormat)
+            % Are we looking for files with 8 or the full 14 digits
+            % in the date and time.
+            fileformat = regexp(listingD(1).name, '_(?<dateFormat>\d{8,})_v','names');
+            switch length(fileformat.dateFormat)
+              case 8
+                dateFormat = 'yyyymmdd';
+              case 14
+                dateFormat = 'yyyymmddHHMMSS';
+              otherwise
+                dateFormat = 'yyyymmddHHMMSS';
+            end
+            % Create reconstructed file names for our interval
+            startFile = [filePrefix, '_', tint.start.toUtc(dateFormat), '_v0.0.0.cdf'];
+            stopFile = [filePrefix, '_', tint.stop.toUtc(dateFormat), '_v9999999.999999.999999.cdf'];
+          end
+          % Find index of files with names which timewise are sorted
+          % between our "startFile" and "stopFile" names.
+          tmpIndex = find(arrayfun(@(x) isequal({startFile; x.name; stopFile}, sort({startFile; x.name; stopFile})), listingD));
+          if isempty(tmpIndex), return, end
+          if(tmpIndex(1)-1 >= 1)
+            % If there is a file just before our start time, then look
+            % inside this file as well.
+            tmpIndex = [tmpIndex(1)-1, tmpIndex];
+          end
+          if(tmpIndex(end)+1 <= length(listingD))
+            % If there is a file just after our stop time, then look inside
+            % this file as well. (could be some overlap at midnight).
+            tmpIndex = [tmpIndex, tmpIndex(end)+1];
+          end
+          listingD = listingD(tmpIndex);
+          if isempty(listingD), return, end
+          arrayfun(@(x) add2list_sci(x.name,curDir), listingD)
         end
       end
       
