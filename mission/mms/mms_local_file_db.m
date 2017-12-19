@@ -174,7 +174,7 @@ classdef mms_local_file_db < mms_file_db
       function list_sci_tint()
         fDir = get_prefix();
         TStart = get_times(tint.start); TStop = get_times(tint.stop);
-        dateFormat=[];
+        dateFormat=[]; startFile=[]; stopFile=[];
         for year = TStart.year:TStop.year
           moStart = 1; moStop = 12;
           if year==TStart.year, moStart = TStart.month; end
@@ -236,18 +236,16 @@ classdef mms_local_file_db < mms_file_db
           end
           % Find index of files with names which timewise are sorted
           % between our "startFile" and "stopFile" names.
-          tmpIndex = find(arrayfun(@(x) isequal({startFile; x.name; stopFile}, sort({startFile; x.name; stopFile})), listingD));
+          indAfterStart = arrayfun(@(x) isequal({startFile; x.name}, sort({startFile; x.name})), listingD);
+          indBeforeStop =  arrayfun(@(x) isequal({x.name; stopFile}, sort({x.name; stopFile})), listingD);
+          % Also look at files just before and after as it might be some
+          % overlap.
+          indLast = find(indBeforeStop, 1, 'last');
+          if(indLast<length(listingD)), indBeforeStop(indLast+1) = true; end
+          indFirst = find(indAfterStart, 1, 'first');
+          if(indFirst>1), indAfterStart(indFirst-1) = true; end
+          tmpIndex= find(bitand(indBeforeStop, indAfterStart));
           if isempty(tmpIndex), return, end
-          if(tmpIndex(1)-1 >= 1)
-            % If there is a file just before our start time, then look
-            % inside this file as well.
-            tmpIndex = [tmpIndex(1)-1, tmpIndex];
-          end
-          if(tmpIndex(end)+1 <= length(listingD))
-            % If there is a file just after our stop time, then look inside
-            % this file as well. (could be some overlap at midnight).
-            tmpIndex = [tmpIndex, tmpIndex(end)+1];
-          end
           listingD = listingD(tmpIndex);
           if isempty(listingD), return, end
           arrayfun(@(x) add2list_sci(x.name,curDir), listingD)
