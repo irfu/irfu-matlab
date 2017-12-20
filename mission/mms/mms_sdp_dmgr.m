@@ -1085,9 +1085,25 @@ classdef mms_sdp_dmgr < handle
               % Run code and remove wakes
               for iSen=1:length(sensors)
                 sen = sensors{iSen};
-                % Compute corrected data (using all datapoints)
-                [data_corr, n_corr, ~] = mms_sdp_swwake(DATAC.dce.(sen).data, ...
+                % Compute corrected data (using all datapoints, except
+                % sweeping data).
+                Etmp = mask_bits(DATAC.dce.(sen).data, ...
+                  DATAC.dce.(sen).bitmask, DATAC.CONST.Bitmask.SWEEP_DATA);
+                [data_corr, n_corr, wakedesc] = mms_sdp_swwake(Etmp, ...
                   sen, Phase.data, DATAC.dce.time, DATAC.samplerate);
+                if(false)
+                  irf.log('notice','saving wakedesc'); %#ok<UNRCH>
+                  wakedesc_TS.(sen)=irf.ts_vec_xyz(EpochTT(int64(wakedesc(:,1))+DATAC.dce.time(1)),wakedesc(:,2:end)); %#ok<STRNU>
+                  % SAVE "wakedesc_TS" i mat fil baserat på process namn
+                  % och datum
+                  if iSen==length(sensors)
+                    % end of loop, write result
+                    [logPath, logName]=fileparts(irf.log('log_out'));
+                    save([logPath,filesep,logName,'_wakeDescTs.mat'], 'wakedesc_TS');
+                  end
+                end
+                % Use original data for sweep interval
+                data_corr(isnan(Etmp)) = DATAC.dce.(sen).data(isnan(Etmp));
                 % Difference between raw data and corrected, for time of
                 % expected wakes only.
                 diffWake(indSW, iSen) = DATAC.dce.(sen).data(indSW) - data_corr(indSW);
