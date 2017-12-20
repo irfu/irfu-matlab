@@ -18,31 +18,31 @@ time = [];
 for v=vars
   vv = v{:};
   if ~isempty(vv), time = [time; vv(:,1)]; end %#ok<AGROW>
-end
+end; timemem=time;
 time = sort(unique(time));
 
 %%
 idx = cell(length(vars),1);
-if nOk > 1
+if nOk > 0
   for iv=1:length(vars)
     vv = vars{iv};
     if isempty(vv), continue, end
     [~,idxTmp,~] = intersect(time,vv(:,1));
     idx{iv} = idxTmp;
-  end
+  end 
 end
 %%
 out = NaN(length(time),3);
 out(:,4) = 0;
 if nOk ==1
   if ~isempty(p12)
-    out(:,1:2) = p12(:,1:2);
+    out(:,1:2) = p12(idx{1},1:2);
   elseif ~isempty(p32)
-    out(:,1:2) = p32(:,1:2);
+    out(:,1:2) = p32(idx{2},1:2);
     out(:,4) = 1;
   else
-    out(:,1) = p34(:,1);
-    out(:,3) = p34(:,2);
+    out(:,1) = p34(idx{3},1);
+    out(:,3) = p34(idx{3},2);
   end
 else
   out(:,1) = time;
