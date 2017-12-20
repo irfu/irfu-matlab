@@ -59,7 +59,7 @@ N_EMPTY = 0.9; % (Cluster was 0.9)
 %MAX_SPIN_PERIOD = 4.3; % sec for Cluster
 MAX_SPIN_PERIOD = 10^9*60/MMS_CONST.Spinrate.min; % = 20 sec
 WAKE_MAX_HALFWIDTH = 45; % degrees, (Cluster was 45 deg)
-WAKE_MIN_HALFWIDTH = 11;  % degrees, (Cluster was 11 deg)
+WAKE_MIN_HALFWIDTH = 9; %11;  % degrees, (Cluster was 11 deg)
 WAKE_MIN_AMPLITUDE = 0.4; % mV/m, (Cluster was 0.4 mV/m)
 WAKE_MAX_AMPLITUDE = 7; % mV/m, (Cluster was 7 mV/m)
 plot_step = 1;
@@ -242,9 +242,10 @@ for in = iok
 % wakes at 8 deg (when running with limit +/-5 deg) at times with clearly
 % visible wakes (ie 10:00 UTC). Therefor try to run with +/-8 deg instead
 % of +/-5 deg as used by Cluster.
+% ThoNi: one testrun with 20171115 mms2 fast, allow up to +/-15 deg.
   ind1 = find(d12 == min(d12(expPhase))) -1;
   ind2 = find(d12 == max(d12(expPhase+180))) -1;
-  if abs(ind2-ind1-180)>8
+  if abs(ind2-ind1-180)>15
     irf.log('debug', ['Wake displaced by ', num2str(abs(ind2-ind1-180)'), ...
       ' deg at ', irf_time(int64(ts)+timeIn(1),'ttns>utc')]);
     wakedesc([in*2-1 in*2], :) = NaN;
