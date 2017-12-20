@@ -174,6 +174,7 @@ classdef mms_local_file_db < mms_file_db
       function list_sci_tint()
         fDir = get_prefix();
         TStart = get_times(tint.start); TStop = get_times(tint.stop);
+        dateFormat=[]; startFile=[]; stopFile=[];
         for year = TStart.year:TStop.year
           moStart = 1; moStop = 12;
           if year==TStart.year, moStart = TStart.month; end
@@ -184,105 +185,26 @@ classdef mms_local_file_db < mms_file_db
             if (year==TStart.year && mo==TStart.month) || ...
                 (year==TStop.year && mo==TStop.month)
               dStart = 1; dStop = 31;
-              if year==TStart.year && mo==TStart.month
-                dStart = TStart.day;
-              end
+              if year==TStart.year && mo==TStart.month, dStart=TStart.day; end
               if year==TStop.year && mo==TStop.month, dStop = TStop.day; end
-              for day = dStart:dStop
-                if strcmpi(C{3},'brst')
-                  curDir = [moDir filesep sprintf('%02d',day)]; % BRST files are in daily subdirs
-                  % If tint was selected and burst, if possible try to
-                  % locate files based on filename. The burst file names
-                  % should relate to the start time in seconds of the
-                  % interval (but could be slightly off).
-                  % Possibly look into a smaller interval (now goes down to
-                  % hours of interest).
-                  if(TStart.year==TStop.year && TStart.month==TStop.month ...
-                      && TStart.day==TStop.day)
-                    % Interval in same day
-                    iHourStart = max(TStart.hour-1,0);
-                    iHourStop = TStop.hour;
-                  elseif(TStart.year == year && TStart.month == mo && ...
-                      TStart.day == day)
-                    % dStart iHour from one hour before start to end of day.
-                    iHourStart = max(TStart.hour-1,0);
-                    iHourStop = 23;
-                  elseif(TStop.year == year && TStop.month == mo && ...
-                      TStop.day == day)
-                    % dStop iHour from start of day to stop hour.
-                    iHourStart = 0;
-                    iHourStop = TStop.hour;
-                  else
-                    % All hours of the day.
-                    iHourStart = 0;
-                    iHourStop = 23;
-                  end
-                  for iHour = iHourStart:iHourStop
-                    % List all files matching the hours.
-                    dPref = sprintf('%s_%d%02d%02d%02d',filePrefix,year,mo,day,iHour);
-                    listingD = mms_find_latest_version_cdf([curDir filesep dPref '*.cdf']);
-                    if isempty(listingD), continue, end
-                    arrayfun(@(x) add2list_sci(x.name,curDir), listingD)
-                  end
-                else
-                  % Fast / Slow / Srvy / Comm
-                  if regexp(filePrefix,'fpi|hpca')
-                    % Speed up by looking only for files with names
-                    % accoring to hours of interest
-                    if(TStart.year==TStop.year && TStart.month==TStop.month ...
-                      && TStart.day==TStop.day)
-                      % Interval in same day, beging to look for files up
-                      % to three hours before (HPCA and FPI have two hour
-                      % interval files) and up to one hour after end of the
-                      % requested interval. This is to help ensure any
-                      % overlap is captured and detected... (Could perhaps
-                      % look into minutes as well and only do this if
-                      % requested intervals are close enough to the limits
-                      % of the files).
-                      iHourStart = max(TStart.hour-3, 0);
-                      iHourStop = min(TStop.hour+1, 23);
-                    elseif(TStart.year == year && TStart.month == mo && ...
-                        TStart.day == day)
-                      % dStart iHour from three hour before start to end of day.
-                      iHourStart = max(TStart.hour-3,0);
-                      iHourStop = 23;
-                    elseif(TStop.year == year && TStop.month == mo && ...
-                        TStop.day == day)
-                      % dStop iHour from start of day to stop hour.
-                      iHourStart = 0;
-                      iHourStop = min(TStop.hour+1, 23);
-                    else
-                      % All hours of the day.
-                      iHourStart = 0;
-                      iHourStop = 23;
-                    end
-                    for iHour = iHourStart:iHourStop
-                      % List all files matching the hours.
-                      dPref = sprintf('%s_%d%02d%02d%02d',filePrefix,year,mo,day,iHour);
-                      listingD = mms_find_latest_version_cdf([curDir filesep dPref '*.cdf']);
-                      if isempty(listingD), continue, end
-                      arrayfun(@(x) add2list_sci(x.name,curDir), listingD)
-                    end
-                  else
-                    dPref = sprintf('%s_%d%02d%02d',filePrefix,year,mo,day);
-                    listingD = mms_find_latest_version_cdf([curDir filesep dPref '*.cdf']);
-                    if isempty(listingD), continue, end
-                    arrayfun(@(x) add2list_sci(x.name,curDir), listingD)
-                  end
+              if strcmp(C{3}, 'brst')
+                for day = dStart:dStop
+                  % BRST files are in daily subdirs
+                  curDir = [moDir filesep sprintf('%02d',day)];
+                  dPref = sprintf('%s_%d%02d%02d',filePrefix,year,mo,day);
+                  limited_sci_list;
                 end
+              else
+                %Fast, slow, srvy, comm
+                dPref = sprintf('%s_%d%02d',filePrefix,year,mo);
+                limited_sci_list;
               end
-            else % List all files
-              dPref = sprintf('%s_%d%02d',filePrefix,year,mo);
-              listingD = mms_find_latest_version_cdf([curDir filesep dPref '*.cdf']);
-              if isempty(listingD), continue, end
-              arrayfun(@(x) add2list_sci(x.name,curDir), listingD)
             end
           end
         end
-        
+
         function p = get_prefix()
-          p = obj.dbRoot;
-          for ix=1:length(C), p = [p filesep C{ix}]; end %#ok<AGROW>
+          p = [obj.dbRoot, filesep, strjoin(C, filesep)];
         end
         function t = get_times(tt)
           utc = tt.toUtc();
@@ -293,12 +215,49 @@ classdef mms_local_file_db < mms_file_db
           t.min   = str2double(utc(15:16));
           t.sec   = str2double(utc(18:end-1));
         end
+        function limited_sci_list()
+          listingD = mms_find_latest_version_cdf([curDir filesep dPref '*.cdf']);
+          if isempty(listingD), return, end
+          if isempty(dateFormat)
+            % Are we looking for files with 8 or the full 14 digits
+            % in the date and time.
+            fileformat = regexp(listingD(1).name, '_(?<dateFormat>\d{8,})_v','names');
+            switch length(fileformat.dateFormat)
+              case 8
+                dateFormat = 'yyyymmdd';
+              case 14
+                dateFormat = 'yyyymmddHHMMSS';
+              otherwise
+                dateFormat = 'yyyymmddHHMMSS';
+            end
+            % Create reconstructed file names for our interval
+            startFile = [filePrefix, '_', tint.start.toUtc(dateFormat), '_v0.0.0.cdf'];
+            stopFile = [filePrefix, '_', tint.stop.toUtc(dateFormat), '_v9999999.999999.999999.cdf'];
+          end
+          % Find index of files with names which timewise are sorted
+          % between our "startFile" and "stopFile" names.
+          indAfterStart = arrayfun(@(x) isequal({startFile; x.name}, sort({startFile; x.name})), listingD);
+          indBeforeStop = arrayfun(@(x) isequal({x.name;  stopFile}, sort({x.name;  stopFile})), listingD);
+          % Also look at files just before and after as it might be some
+          % overlap.
+          indLast = find(indBeforeStop, 1, 'last');
+          if(indLast<length(listingD)), indBeforeStop(indLast+1) = true; end
+          indFirst = find(indAfterStart, 1, 'first');
+          if isempty(indFirst)
+            indAfterStart(end) = true;
+          elseif indFirst>1
+            indAfterStart(indFirst-1) = true;
+          end
+          tmpIndex= find(bitand(indBeforeStop, indAfterStart));
+          if isempty(tmpIndex), return, end
+          listingD = listingD(tmpIndex);
+          arrayfun(@(x) add2list_sci(x.name,curDir), listingD)
+        end
       end
       
       %% LIST SCI
       function list_sci()
-        fileDir = obj.dbRoot;
-        for i=1:length(C), fileDir = [fileDir filesep C{i}]; end %#ok<AGROW>
+        fileDir = [obj.dbRoot, filesep, strjoin(C, filesep)];
         if exist(fileDir,'dir')~=7, return, end
         listingY = dir(fileDir); listingY(~[listingY.isdir]) = [];
         for iDir = 1:length(listingY)
