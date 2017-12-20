@@ -473,8 +473,10 @@ for in = iok
 end
 
 % Save wake position only inside 0-180 degrees
-wakedesc(wakedesc(:,2)>180, 2) = wakedesc(wakedesc(:,2)>180, 2)-180;
+%wakedesc(wakedesc(:,2)>180, 2) = wakedesc(wakedesc(:,2)>180, 2)-180;
 wakedesc(isnan(wakedesc(:,1)), :) = [];
+% store phase
+wakedesc(:,2)=wakedesc(:,2)-expPhase(floor(length(expPhase)/2));
 
 irf.log('notice', ['Corrected ', num2str(n_corrected), ' out of ', ...
 	num2str(n_spins), ' spins.']);
