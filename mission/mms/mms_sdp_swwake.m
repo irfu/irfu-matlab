@@ -35,7 +35,7 @@ function [data, n_corrected, wakedesc] = mms_sdp_swwake(e, pair, phase_2, timeIn
 % ----------------------------------------------------------------------------
 
 % Original idea by Anders Eriksson.
-% Many useful suggestion by Per-Arne Lindqvist.
+% Many useful suggestions by Per-Arne Lindqvist.
 % Re-written for MMS by Thomas Nilsson.
 
 % ThoNi NOTES:
@@ -64,7 +64,7 @@ WAKE_MIN_AMPLITUDE = 0.4; % mV/m, (Cluster was 0.4 mV/m)
 WAKE_MAX_AMPLITUDE = 7; % mV/m, (Cluster was 7 mV/m)
 plot_step = 1;
 plot_i = 0;
-plotflag = false;
+plotflag = true;
 
 switch pair
   case {'e12', 'e34'}
@@ -95,6 +95,7 @@ end
 % Convert time from ttns (int64) to double keeping for interp1 to work,
 % while keeping original input variable "timeIn" (used debug/log messages).
 time = double(timeIn-timeIn(1));
+epoch0 = EpochTT(timeIn(1)).epochUnix;
 
 % Find numer of spins using the fact that Z-phase is monotonically
 % increasing, except for it being modulo 360.
@@ -370,31 +371,28 @@ for in = iok
   wake( i2 ) = ccdav2;
 	
   if plotflag_now
-    clf
-    subplot(4,1,1)
+    h = irf_plot(4,'reset');
     ts = ttime(1,in);
     te = ttime(end,in);
-    plot(ttime(:,in)-ts, tt(:, in), 'b',...
+    plot(h(1),ttime(:,in)-ts, tt(:, in), 'b',...
       ttime(:,in)-ts, tt(:, in + ([-2 -1 1 2]) ), 'g',...
       ttime(:,in)-ts, av12, 'k',...
       ttime(ind1,in)*[1 1]-ts, [-2 2], 'r',...
       ttime(ind2,in)*[1 1]-ts, [-2 2], 'r',...
       ttime(:,in)-ts, av12-wake,'r');
-    ylabel('E12 [mV/m]');
-    irf_timeaxis(gca,ts); xlabel('');
-    set(gca,'XLim',[0 te-ts])
+    ylabel(h(1),'E12 [mV/m]');
+    irf_timeaxis(h(1),ts); xlabel(h(1),'');
+    set(h(1),'XLim',[0 te-ts])
 
-    subplot(4,1,2)
-    plot(ttime(:,in)-ts,d12_tmp,'g',ttime(:,in)-ts, d12,'b');
-    ylabel(['D2(E' num2str(pair) ') [mV/m]']);
-    irf_timeaxis(gca,ts); xlabel('');
-    set(gca,'XLim',[0 te-ts])
+    plot(h(2),ttime(:,in)-ts,d12_tmp,'g',ttime(:,in)-ts, d12,'b');
+    ylabel(h(2),['D2(E' num2str(pair) ') [mV/m]']);
+    irf_timeaxis(h(2),ts); xlabel(h(2),'');
+    set(h(2),'XLim',[0 te-ts])
 
-    subplot(4,1,3)
-    plot(ttime(:,in)-ts, wake)
-    ylabel('Wake [mV/m]');
-    irf_timeaxis(gca,ts);
-    set(gca,'XLim',[0 te-ts])
+    plot(h(3),ttime(:,in)-ts, wake)
+    ylabel(h(3),'Wake [mV/m]');
+    irf_timeaxis(h(3),ts);
+    set(h(3),'XLim',[0 te-ts])
   end
 	
   % Correct the spin in the middle	
@@ -405,10 +403,7 @@ for in = iok
     n_corrected = n_corrected + 1;
 
     if plotflag_now
-      subplot(4,1,4)
-      irf_plot({[time(ind), e(ind,:)],[time(ind), data(ind,:)]},'comp')
-      ylabel(['E' num2str(pair) ' [mV/m]']);
-      irf_zoom([ts te],'x',gca)
+      PlotED(h(4))
     end
   end
 
@@ -452,13 +447,11 @@ for in = iok
       wake_e = irf_resamp([ttime(:,in+cx) wake], time(ind));
       data(ind) = data(ind) - wake_e(:,2);
       if plotflag_now
-        hold on
-        irf_plot({e(ind,:),data(ind,:)},'comp')
-        ylabel(['E', num2str(pair), ' [mV/m]']);
-        hold off
         if ttime(1,in+cx)<ts, ts = ttime(1,in+cx); end
         if ttime(end,in+cx)>te, te = ttime(end,in+cx); end
-        irf_zoom([ts te],'x',gca)
+        hold(h(4),'on')
+        PlotED(h(4))
+        hold(h(4),'off')
       end
     end
   end
@@ -480,6 +473,15 @@ wakedesc(:,2)=wakedesc(:,2)-expPhase(floor(length(expPhase)/2));
 
 irf.log('notice', ['Corrected ', num2str(n_corrected), ' out of ', ...
 	num2str(n_spins), ' spins.']);
+
+  function PlotED(hca)
+    irf_plot(hca,{[getEpoch(time(ind)), double(e(ind,:))],[getEpoch(time(ind)), double(data(ind,:))]},'comp')
+    ylabel(hca,['E' num2str(pair) ' [mV/m]']);
+    irf_zoom(hca,'x',getEpoch([ts te]))
+    function epo = getEpoch(t)
+      epo = double(t)*1e-9 + epoch0;
+    end
+  end
 end
 
 function av = w_ave(x, np, NPOINTS)
@@ -543,3 +545,4 @@ function res = isGoodShape(s)
       sprintf('BAD FIT: second max is %0.2f of the main max', smax/maxmax) );
   end
 end
+
