@@ -64,7 +64,7 @@ WAKE_MIN_AMPLITUDE = 0.4; % mV/m, (Cluster was 0.4 mV/m)
 WAKE_MAX_AMPLITUDE = 7; % mV/m, (Cluster was 7 mV/m)
 plot_step = 1;
 plot_i = 0;
-plotflag = true;
+plotflag = false;
 
 switch pair
   case {'e12', 'e34'}
@@ -244,8 +244,8 @@ for in = iok
 % visible wakes (ie 10:00 UTC). Therefor try to run with +/-8 deg instead
 % of +/-5 deg as used by Cluster.
 % ThoNi: one testrun with 20171115 mms2 fast, allow up to +/-15 deg.
-  ind1 = find(d12 == min(d12(expPhase))) -1;
-  ind2 = find(d12 == max(d12(expPhase+180))) -1;
+  ind1 = find(d12 == max(d12(expPhase))) -1;
+  ind2 = find(d12 == min(d12(expPhase+180))) -1;
   if abs(ind2-ind1-180)>15
     irf.log('debug', ['Wake displaced by ', num2str(abs(ind2-ind1-180)'), ...
       ' deg at ', irf_time(int64(ts)+timeIn(1),'ttns>utc')]);
