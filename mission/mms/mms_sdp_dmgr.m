@@ -1104,7 +1104,7 @@ classdef mms_sdp_dmgr < handle
                 diffWake(indSW, iSen) = DATAC.dce.(sen).data(indSW) - data_corr(indSW);
                 irf.log('notice', sprintf('%i sw wake(-s) found in %s', n_corr, sen));
                 % Bitmask values indicating SW_Wake was removed.
-                ind = abs( diffWake(indSW, iSen) ) > 0;
+                ind = bitand(indSW, abs( diffWake(:, iSen) ) > 0);
                 DATAC.dce.(sen).bitmask(ind) = bitor(DATAC.dce.(sen).bitmask(ind), ...
                   MMS_CONST.Bitmask.SW_WAKE_REMOVED);
                 % Save the new corrected data in DATAC replacing the
