@@ -1005,6 +1005,13 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
       c_eval('e?=tt;',p)
       
     else
+      % Check if we have at least 2 data points to start with
+      if size(tt,1)<2
+        irf_log('proc',irf_ssub('p? data too short',ps))
+        c_eval('e?=[];',p)
+        continue
+      end
+      
       if flag_lx, fsamp = c_efw_fsample(tt,'lx');
       else, fsamp = c_efw_fsample(tt,'hx');
       end
