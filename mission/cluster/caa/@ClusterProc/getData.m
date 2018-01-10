@@ -427,6 +427,15 @@ elseif strcmp(quantity,'dies') || strcmp(quantity,'diehxs') || strcmp(quantity,'
       irf_log('proc',sprintf('Spin fit w%sE%dp%d %s -> diE%ss%dp%d',...
         ss,cl_id,wE{iPr}.probe,lx_str,lx_str,cl_id,wE{iPr}.probe))
       
+      % Check if we have at least 3 data points to start with
+      if length(wE{iPr}.e(:,1)) < 3
+        irf_log('proc',irf_ssub('p? data too short',wE{iPr}.probe));
+        if     wE{iPr}.probe==34, flag_have_p34 = 0;
+        elseif wE{iPr}.probe==p12, p12=[]; 
+        end
+        continue
+      end
+      
       aa = c_phase(wE{iPr}.e(:,1),pha);
       if isempty(aa)
         irf_log('proc', sprintf('Empty phase, skipping w%sE%dp%d %s',...
