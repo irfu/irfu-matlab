@@ -54,6 +54,7 @@ if(~isempty(list))
     % indicator at the end of segment (on or off), 1 second before
     % change...
     sw.time = []; sw.wake=[];
+    irf.log('warning', 'Fall back to static times as regions file starts after our interval');
     sw.time(1)     = EpochTT('2015-03-13T00:00:00.000000000Z').ttns; sw.wake(1)     = 1; % Before start of mission
     sw.time(end+1) = EpochTT('2017-04-19T23:59:59.000000000Z').ttns; sw.wake(end+1) = 1;   % (enabled to a second before change)
     sw.time(end+1) = EpochTT('2017-04-20T00:00:00.000000000Z').ttns; sw.wake(end+1) = 0; % Disable, (orbit is such that no S/W interactions are expected)
@@ -73,6 +74,7 @@ else
       % Note: SDC run on an old Matlab, so add a duplicate time and wake
       % indicator at the end of segment (on or off), 1 second before
       % change...
+      irf.log('warning', 'Fall back to static times as no regions file was found.');
       sw.time(1)     = EpochTT('2015-03-13T00:00:00.000000000Z').ttns; sw.wake(1)     = 1; % Before start of mission
       sw.time(end+1) = EpochTT('2017-04-19T23:59:59.000000000Z').ttns; sw.wake(end+1) = 1;   % (enabled to a second before change)
       sw.time(end+1) = EpochTT('2017-04-20T00:00:00.000000000Z').ttns; sw.wake(end+1) = 0; % Disable, (orbit is such that no S/W interactions are expected)
