@@ -49,6 +49,10 @@ dceFixedPha = irf_resamp([dce,aspocBit,scPot(:,2)],tFixedPha,...
 
 %% B
 bfgm = irf.ts2mat(mms.get_data('B_dmpa_srvy_l2',Tint,mmsId));
+if isempty(bfgm)
+  irf.log('warn','No L2 FGM data, skipping this day')
+  out = []; return
+end
 bfgmFixedPha = irf_resamp(bfgm,tFixedPha,'window',dtAv,'median');
 
 %% FPI Ions
