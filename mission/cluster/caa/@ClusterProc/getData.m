@@ -1184,7 +1184,7 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
     % We have one probe pair
     if ~isempty(e12)
       pp = 12;
-      E_info.probe = num2str(p12);
+      E_info.probe = num2str(p12); %#ok<STRNU>
       EE = e12;
       clear e12
     else
