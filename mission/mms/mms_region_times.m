@@ -225,10 +225,16 @@ idxMS = irf.ts_scalar(EpochS,2*single(idxMS));
 idxSWf = irf.ts_scalar(EpochS,single(idxSWf));
 idxfinal = irf.ts_scalar(B.time,abs(idxSWf.data+idxMS.data-2));
 idxt = abs(diff(idxfinal.data)) > 0.5;
-times = [(Tint(1)+-900); EpochS(idxt)+10];
-idxx = idxfinal.data([true; idxt]);
-out = irf.ts_scalar(times,idxx);
-
+if sum(idxt) > 0.5
+  times = [(Tint(1)+-900); EpochS(idxt)+10];
+  idxx = idxfinal.data([true; idxt]);
+  out = irf.ts_scalar(times,idxx);
+else
+  times = (Tint(1)+-900);
+  idxx = idxfinal.data(true);
+  out = irf.ts_scalar(times,idxx);
+end
+  
 if plotfig,
 h=irf_plot(8,'newfigure');
 %h=irf_figure(540+ic,8);

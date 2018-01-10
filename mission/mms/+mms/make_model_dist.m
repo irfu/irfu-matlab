@@ -97,7 +97,8 @@ r(r == 0) = 0.0;
 % Define rotation vectors based on B and Ve directions
 Rz = Bdir.data;
 Rx = Vpdir.data;
-Ry = cross(Bdir.data,Vpdir.data);
+Ry = cross(Bdir,Vpdir);
+Ry = Ry.data;
 
 % Rotated coordinate system for computing bi-Maxwellian distribution
 xp = zeros(length(PDist.time),lengthphi,lengththeta);
@@ -112,11 +113,14 @@ end
 
 % Make 4D position matrix
 xp = repmat(xp,1,1,1,lengthenergy);
-xp = squeeze(permute(xp,[1 4 2 3]));
+%xp = squeeze(permute(xp,[1 4 2 3]));
+xp = permute(xp,[1 4 2 3]);
 yp = repmat(yp,1,1,1,lengthenergy);
-yp = squeeze(permute(yp,[1 4 2 3]));
+%yp = squeeze(permute(yp,[1 4 2 3]));
+yp = permute(yp,[1 4 2 3]);
 zp = repmat(zp,1,1,1,lengthenergy);
-zp = squeeze(permute(zp,[1 4 2 3]));
+%zp = squeeze(permute(zp,[1 4 2 3]));
+zp = permute(zp,[1 4 2 3]);
 rmat = repmat(r,1,1,lengthphi,lengththeta);
 
 % Can use 4D matrices. Too much memory is used for my computer; too
