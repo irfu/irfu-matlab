@@ -43,6 +43,26 @@ if(~isempty(list))
   [sw.time, indUniq] = unique(timeSort); % Ensure no duplicated values
   dataSort = data3(indSort, :); % Sorted data (based on time)
   sw.wake = dataSort(indUniq, :); % Ensure no duplicated values (based on time)
+  
+  % Check to see if we are reprocessing any old times, before our "regions"
+  % calibration file starts. In that case fall back to the old enabled
+  % times for wake removal.
+  if sw.time(1) > tInp(1)
+    % SW.wake = 1; <-- run sw_wake code, from time and "onwards"
+    % SW.wake = 0; <-- don't run sw_wake code, from time and "onwards"
+    % Note: SDC run on an old Matlab, so add a duplicate time and wake
+    % indicator at the end of segment (on or off), 1 second before
+    % change...
+    sw.time = []; sw.wake=[];
+    sw.time(1)     = EpochTT('2015-03-13T00:00:00.000000000Z').ttns; sw.wake(1)     = 1; % Before start of mission
+    sw.time(end+1) = EpochTT('2017-04-19T23:59:59.000000000Z').ttns; sw.wake(end+1) = 1;   % (enabled to a second before change)
+    sw.time(end+1) = EpochTT('2017-04-20T00:00:00.000000000Z').ttns; sw.wake(end+1) = 0; % Disable, (orbit is such that no S/W interactions are expected)
+    sw.time(end+1) = EpochTT('2017-08-31T18:59:59.000000000Z').ttns; sw.wake(end+1) = 0;   % (disabled to a second before change)
+    sw.time(end+1) = EpochTT('2017-08-31T19:00:00.000000000Z').ttns; sw.wake(end+1) = 1; % Enable for one hour (S/W interactions seen in data).
+    sw.time(end+1) = EpochTT('2017-08-31T19:59:59.000000000Z').ttns; sw.wake(end+1) = 1;   % (enabled to a second before change)
+    sw.time(end+1) = EpochTT('2017-08-31T20:00:00.000000000Z').ttns; sw.wake(end+1) = 0; % Disabled until further notice.
+    sw.time(end+1) = EpochTT('2057-08-31T00:00:00.000000000Z').ttns; sw.wake(end+1) = sw.wake(end); % (repeat last entry until end of time...)
+  end
 
 else
   % Did not locate any file, use old hard coded values
