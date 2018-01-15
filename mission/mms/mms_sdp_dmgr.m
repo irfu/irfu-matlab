@@ -1085,15 +1085,26 @@ classdef mms_sdp_dmgr < handle
               % Run code and remove wakes
               for iSen=1:length(sensors)
                 sen = sensors{iSen};
-                % Compute corrected data (using all datapoints)
-                [data_corr, n_corr, ~] = mms_sdp_swwake(DATAC.dce.(sen).data, ...
+                % Compute corrected data
+                [data_corr, n_corr, wakedesc] = mms_sdp_swwake(DATAC.dce.(sen).data, ...
                   sen, Phase.data, DATAC.dce.time, DATAC.samplerate);
+                if(false)
+                  irf.log('notice','saving wakedesc'); %#ok<UNRCH>
+                  wakedesc_TS.(sen)=irf.ts_vec_xyz(EpochTT(int64(wakedesc(:,1))+DATAC.dce.time(1)),wakedesc(:,2:end)); %#ok<STRNU>
+                  % SAVE "wakedesc_TS" i mat fil baserat på process namn
+                  % och datum
+                  if iSen==length(sensors)
+                    % end of loop, write result
+                    [logPath, logName]=fileparts(irf.log('log_out'));
+                    save([logPath,filesep,logName,'_wakeDescTs.mat'], 'wakedesc_TS');
+                  end
+                end
                 % Difference between raw data and corrected, for time of
                 % expected wakes only.
                 diffWake(indSW, iSen) = DATAC.dce.(sen).data(indSW) - data_corr(indSW);
                 irf.log('notice', sprintf('%i sw wake(-s) found in %s', n_corr, sen));
                 % Bitmask values indicating SW_Wake was removed.
-                ind = abs( diffWake(indSW, iSen) ) > 0;
+                ind = bitand(indSW, abs( diffWake(:, iSen) ) > 0);
                 DATAC.dce.(sen).bitmask(ind) = bitor(DATAC.dce.(sen).bitmask(ind), ...
                   MMS_CONST.Bitmask.SW_WAKE_REMOVED);
                 % Save the new corrected data in DATAC replacing the

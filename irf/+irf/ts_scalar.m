@@ -16,7 +16,7 @@ end
 
 if size(data,1) == epoch.length
 	TS = TSeries(epoch,data,'TensorOrder',0);
-elseif (ndim(data)==2) && (size(data,2) == epoch.length)
+elseif (ndims(data)==2) && (size(data,2) == epoch.length)
 	data = data';
 	TS = TSeries(epoch,data,'TensorOrder',0);
 end
