@@ -109,7 +109,7 @@ for OutputInfo = ExtendedSwModeInfo.inputs
     SwdInput.version    = SwModeInputInfo.SKELETON_VERSION_STR;
     SwdInput.identifier = SwModeInputInfo.DATASET_ID;
     
-    SwdMode.inputs.(SwModeInputInfo.CLI_PARAMETER) = SwdInput;
+    SwdMode.inputs.(SwModeInputInfo.OPTION_HEADER_SH) = SwdInput;
 end
 
 

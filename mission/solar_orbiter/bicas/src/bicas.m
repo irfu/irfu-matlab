@@ -381,7 +381,7 @@ else
         
         % Configure one option.
         OptionConfig = [];
-        OptionConfig.optionHeader          = ['--', inputsInfoList{iInput}.CLI_PARAMETER];
+        OptionConfig.optionHeader          = ['--', inputsInfoList{iInput}.OPTION_HEADER_SH];
         OptionConfig.occurrenceRequirement = '1';
         OptionConfig.nValues               = 1;
         

@@ -330,7 +330,7 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
                 ExtendedSwModeInfo = obj.get_extended_sw_mode_info(swModeCliParameter);
                 
                 % Check unique inputs CLI_PARAMETER.
-                inputsCliParameterList = cellfun(@(s) ({s.CLI_PARAMETER}), ExtendedSwModeInfo.inputs);
+                inputsCliParameterList = cellfun(@(s) ({s.OPTION_HEADER_SH}), ExtendedSwModeInfo.inputs);
                 bicas.utils.assert_strings_unique(inputsCliParameterList)
                 
                 % Check unique outputs SWD_OUTPUT_FILE_IDENTIFIER.
