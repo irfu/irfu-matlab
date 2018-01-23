@@ -1,54 +1,65 @@
 %
-% Initialize (some) global constants.
+% Initialize (some) hardcoded constants which are needed early, before regular settings constants are initialized, and
+% thus need to be initialized in a way which is unlikely to trigger errors.
 %
-% IMPORTANT: Only intented for initialization which is so trivial that no error handling (try-catch) is
-% necessary so that its constants can be used in the error handling and be called outside try-catch.
 %
-% IMPLEMENTATION NOTE: It is useful to have this code separate so that it can be called separately
-% before calling other functions separately (for testing; without launching the main function).
+% NOTE: This file contains the authoritative definitions of the meaning of error codes that should be used in
+% documentation.
+%
+%
+% RETURN VALUES
+% =============
+% ERROR_TYPES_INFO : containers.Map
+%                   key = Any one of the colon-separated parts of a error message identifier string (see "error" function).
+%                   value = Struct with fields representing a type of error:
+%                       .code        = The error code/number to be returned from BICAS' main function.
+%                       .description = English human-readable text describing the error. Implicitly defines what kinds
+%                                           of errors this error code should cover.
+%                   IMPORTANT NOTE: A MATLAB error message identifier may match multiple "error types" (keys). The
+%                   error-handling code (try-catch) should decide whether every message identifier should be used to
+%                   identify only one error type if there are multiple ones to choose from.
+% REQUIRED_MATLAB_VERSION : String value that should be identical to the value returned by "version('-release')" when
+%                           using the correct MATLAB version.
+%
 %
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
 % First created 2016-06-02
 %
-function [ERROR_CODES, REQUIRED_MATLAB_VERSION] = error_safe_constants
-%
-% PROPOSAL: Return structure used for initializing global variables. Rename ~"safe_constants", "error_safe_constants".
-%    PROPOSAL: Return one "SCONSTANT", "SCONST" containing ".ERROR_CODES" and ".REQUIRED_MATLAB_VERSION".
-%       PRO: "global SCONST" shorter than "global ERROR_CODES".
-%       CON: Longer error commands.
-%       --
-%       PROPOSAL: ".ERR_CODES", ".ERRORS".
-%
-% QUESTION: How distinguish between assertion errors and other errors?
+function [ERROR_TYPES_INFO, REQUIRED_MATLAB_VERSION] = error_safe_constants
 %
 % PROPOSAL: Redefine CDF_ERROR as CDF_READ_VALIDATION_ERROR - Something is wrong with the data in a read CDF (input CDF, master CDF).
 % PROPOSAL: I/O error.
 %
-
-% NOTE: These constants are used by the error handling (the main function's catch section) and should therefore be
-% available in that code.
+% PROPOSAL: Separate error code for hardcoded config error.
+% PROPOSAL: Separate error code for not being able to identify error from error message identifier.
 %
-% NOTE: These constants are MATLAB exit error codes which are passed to the wrapper bash script which uses them as exit
-% codes.
-ERROR_CODES = [];
+% NOTE: Uses capital letter for initialisms in message identifiers: CLI, SW.
 
-ERROR_CODES.NO_ERROR                       = 0;          % NOTE: The RCS ICD specifies error code==0 <==> no error.
+MAP = containers.Map('KeyType', 'char', 'ValueType', 'any');
 
-ERROR_CODES.MISC_ERROR                     = 1;
-ERROR_CODES.ERROR_IN_MATLAB_ERROR_HANDLING = 2;          % QUESTION: Not for the launch scripts error handling?
-%ERROR_CODES.UNKNOWN_ERROR                  = 3;          % Error, and does not know how to translate error identifer to error code. Rename? Abolish?
+MAP('NoError')                      = info_struct(0, 'No error');  % NOTE: The RCS ICD specifies error code==0 <==> no error.
 
-ERROR_CODES.CLI_SYNTAX_ERROR          = 100;             % Can not interpret command-line arguments syntax.
-ERROR_CODES.OPERATION_NOT_IMPLEMENTED = 101;             % Execution has reached a portion of the code that has not been implemented yet.
-ERROR_CODES.ASSERTION_ERROR           = 102;             % Detected an internal state that should never be possible in a bug-free code, ideally even with any possibly input.
-                                                         % This should ideally indicate a pure code bug.
-ERROR_CODES.PATH_NOT_FOUND            = 103;             % Directory or file does not exist.
-ERROR_CODES.SW_MODE_PROCESSING_ERROR  = 104;
-ERROR_CODES.DATASET_FORMAT_ERROR      = 105;             % Error when interpreting (official CDF) datasets, including master CDF files.
-ERROR_CODES.CONFIGURATION_ERROR       = 106;             % Bad configuration (in particular hard-coded), e.g. constants, S/W descriptor.
+MAP('BadMatlabVersion')             = info_struct(100, 'Using the wrong MATLAB version.');
+MAP('UntranslatableErrorMsgId')     = info_struct(101, 'Error occurred, but code can not translate the error''s MATLAB message identifier into any of BICAS'' internal standard error codes.');
+MAP('MatlabCodeErrorHandlingError') = info_struct(102, 'The MATLAB code''s own error handling failed.');
+MAP('CLISyntax')                    = info_struct(103, 'Can not interpret command-line interface (CLI) arguments syntax.');
+MAP('PathNotFound')                 = info_struct(104, 'A specified directory or file does not exist.');
+MAP('OperationNotImplemented')      = info_struct(105, 'Execution has reached a portion of the code that has not been implemented yet.');
+MAP('Assertion')                    = info_struct(106, 'Detected an internal state that should never be possible in a bug-free code that receives correct inputs.');
+MAP('IllegalArgument')              = info_struct(107, 'Argument passed to internal function had an illegal value.');
+MAP('SWModeProcessing')             = info_struct(108, 'Error in s/w mode processing (processing data sets).');
+MAP('DatasetFormat')                = info_struct(109, 'Error when interpreting (official CDF) datasets, including master CDF files.');
+MAP('IllegalConfiguration')         = info_struct(110, 'Bad configuration (in particular hard-coded), e.g. constants, S/W descriptor. This should ideally indicate a pure code bug, i.e. it is not triggered by certain input.');
+
+                     
+ERROR_TYPES_INFO = MAP;
+
+REQUIRED_MATLAB_VERSION = '2016a';   
+
+end
 
 
 
-REQUIRED_MATLAB_VERSION = '2016a';   % Value returned from "version('-release')".
-
+function errorTypeInfo = info_struct(errorCode, errorDescription)
+    errorTypeInfo = struct('code', errorCode, 'description', errorDescription);
 end

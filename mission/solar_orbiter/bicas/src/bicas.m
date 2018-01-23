@@ -1,38 +1,39 @@
 % errorCode = bicas( varargin )   Main function that launches BICAS.
 %
-% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
-% First created 2016-03-xx
-%
 % BICAS = BIAS CAlibration Software
 %
+% This function is BICAS' main MATLAB function, i.e. it is called by no other MATLAB code during regular use. It is
+% intended to be wrapped in, and called from, non-MATLAB code, e.g. a bash script.
 %
 %
-% IMPORTANT NOTE: INFORMATION IMPORTANT FOR JUST USING THIS CODE CAN BE FOUND IN "readme.txt" AND OTHER DOCUMENTATION
-% TEXT FILES (*.txt). To prevent the duplication of documentation, comments in this file tries to only cover subjects
-% important for understanding the implementation and information not already present in other documentation text files.
+% IMPORTANT NOTE: DOCUMENTATION
+% =============================
+% Documentation important for using BICAS as a whole can be found in
+% (1) "readme.txt" and other documentation text files (*.txt), and
+% (2) the RCS SUM document.
+% To prevent the duplication of documentation, comments in the source code tries to only cover subjects important for
+% understanding the implementation and information not already present in other documentation text files.
 %
 %
-%
-% This function is the main MATLAB function, i.e. it is called by no other MATLAB code during regular use. It is
-% intended to be wrapped in, and called from non-MATLAB code, e.g. a bash script.
-%
-%
-% ASSUMES: The current file is in the <BICAS>/src directory.
-%
-%
-% ARGUMENTS AND RETURN VALUE:
-% ---------------------------
-% This function expects exactly the CLI arguments submitted to the bash launcher script. This function therefore expects
-% the arguments defined in the RCS ICD and possibly additional inoffical arguments.
+% ARGUMENTS AND RETURN VALUE
+% ==========================
+% ARGUMENTS: This function expects exactly the CLI arguments submitted to the bash launcher script as a sequence of
+% MATLAB strings. This function therefore expects the arguments defined in the RCS ICD and possibly additional inoffical
+% arguments.
 %
 % RETURN VALUE: errorCode = The error code that is to be passed on to the OS/shell.
 %
 % Notes:
-% - The official parameter syntax for S/W modes must be in agreement with "roc_sw_descriptor.js" as specified by the RCS ICD.
-% - The parameter syntax may contain additional inofficial parameters, which are useful for development/debugging, but which are still compatible with the RCS ICD.
-% - The (MATLAB) code ignore but permits the CLI flags --log and --config.
+% - The official parameter syntax for S/W modes must be in agreement with "roc_sw_descriptor.js" as specified by
+%   the RCS ICD.
+% - The parameter syntax may contain additional inofficial parameters, which are useful for development/debugging, but
+%   which are still compatible with the RCS ICD.
+% - The (MATLAB) code ignores but permits the CLI flags --log and --config.
 %
 %
+% NOTES
+% =====
+% ASSUMES: The current file is in the <BICAS>/src directory.
 %
 % NOTE: This code is designed for MATLAB 2016a (as of 2016-06-02) but may very well work with other
 % versions of MATLAB.
@@ -41,44 +42,68 @@
 % always exits all of MATLAB which is undesirable when developing in the MATLAB IDE. The function
 % returns the error code to make it possible for the bash wrapper to quit with an exit code instead.
 %
-% IMPLEMENTATION NOTE: The RCS ICD specifies tightly what should go to stdout. This code
+% IMPLEMENTATION NOTE: The RCS ICD specifies tightly what should go to stdout. BICAS
 % 1) prints all log messages to stdout, and
-% 2) prints all messages intended for the final stdout to stdout but with a prefix so they can be filtered
-% out by the calling wrapper bash script.
+% 2) prints all messages intended for BICAS' final, actual stdout (as produced by the bash wrapper) to stdout but with a
+% prefix so they can be filtered out by the calling wrapper bash script.
 % Reasons: See the bash wrapper script.
+%
+%
+% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% First created 2016-03-xx
 %
 function errorCode = bicas( varargin )
 %
 % PROPOSAL: Set flag for MATLAB warnings. Disable?
 %    NOTE: TN claims warnings are sent to stdout.
 % PROPOSAL: Extra (inofficial) flag for setting the log level.
-% QUESTION: Is the applicaton allowed to overwrite output files?
+% TODO-NEED-INFO: Is the applicaton allowed to overwrite output files?
 %
 % PROPOSAL: Check that all master cdf files are present/available.
 %
 % PROPOSAL: Rename to "bicas_main.m", or bicas.main (+bicas/main.m).
-% PROPOSAL: Move prescribed MATLAB version to the config file.
 % PROPOSAL: Put a summarized version of CLI syntax in "bicas --help" (somethinger easier that the S/W descriptor).
 %    PRO: Useful when S/W descriptor becomes big and complex.
 %
-% PROPOSAL: Do not print just one error message based on msgID, pick several possible one.
-%   CON: Does not match with picking exactly one error code to return.
+% NOTE: Implementation of the parsing of CLI arguments is problematic for when processing s/w mode.
+%   Present: The s/w mode argument influences which succeeding arguments are permitted (depends on the s/w mode).
+%   ==> Must invoke DataManager before SETTINGS is fully initialized (from the CLI arguments)
+%   Anticipated future changes: Arguments after s/w mode argument (choice of pipeline, test modes) influences which s/w
+%   modes are allowed, and also which arguments those s/w modes in turn allow.
+%   PROPOSAL: Make it possible to separate sequence of inofficial arguments from other arguments before parsing individual flags.
+%       PRO: Makes it possible to first parse the inofficial arguments and modofy SETTINGS, before parsing anything
+%               s/w modes which might require an updated SETTINGS variable.
+%       PROPOSAL: Inofficial arguments can only be added before s/w mode.
+%           PRO: Does not need separator argument.
+%           CON: Can not parse reliably since does not know where sequence of inofficial arguments ends.
+%       PROPOSAL: Inofficial arguments can only be added after (inofficial, optional) separator argument, e.g. "---".
+%           NOTE: Separator argument can be placed in SETTINGS itself, but not be read from CLI arguments.
+%           PRO: Smoother for just adding/appending inofficial arguments after existing arguments.
+%   PROPOSAL: Somehow try all possible interpretation of arguments to see if any one of them matches, e.g. try all s/w
+%       modes.
+%
+% PROPOSAL: Re-write to minimize the contents of the try-catch segment. Outsource the contents to internal/external
+%           function.
+% PROPOSAL: Not declare SETTINGS as a global variable until it is certain that it has been updated/finalized.
+%   PROPOSAL: Different names for global and local SETTINGS variable, even if temporary.
 
 
 
-clear -global CONSTANTS SETTINGS  % Clear any previous instance of global variables. This is useful to avoid
-                                  % mistakenly using a previously initialized version of CONSTANTS or SETTTINGS when the
-                                  % initialization has failed and when developing in MATLAB.
+% Clear any previous instance of global variables.
+% This is useful to avoid mistakenly using a previously initialized version of CONSTANTS or SETTINGS when the
+% initialization has failed and when developing in MATLAB.
+clear -global CONSTANTS SETTINGS
+
 global CONSTANTS                  % Gobal structure "CONSTANTS" is initialized later.
-global SETTINGS                   % Gobal structure "SETTINGS" is initialized later.
-[ERROR_CODES, REQUIRED_MATLAB_VERSION] = bicas.error_safe_constants();
+global SETTINGS                   % Gobal structure "SETTINGS"  is initialized later.
+[ERROR_TYPES_INFO, REQUIRED_MATLAB_VERSION] = bicas.error_safe_constants();
 
 
 
 try
-    
+
     startTimeTicSeconds = tic;
-    
+
     % Among other things: Sets up paths to within irfu-matlab (excluding .git/).
     % NOTE: Prints to stdout. Can not deactivate this behaviour!
     % NOTE: Should not call irf('check') which looks for updates to irfu-matlab (can not distinguish between updates to
@@ -89,13 +114,14 @@ try
     irf('cdf_leapsecondstable');
     irf.log('notice')             % Set initial log level value until it is later overridden by the config value.
     irf('version')                % Print e.g. "irfu-matlab version: 2017-02-21,  v1.12.6".
-    
+
     %======================
     % Check MATLAB version
     %======================
     matlabVersionString = version('-release');
     if ~strcmp(matlabVersionString, REQUIRED_MATLAB_VERSION)
-        error('BICAS:BadMATLABVersion', 'Using bad MATLAB version. Found version "%s". BICAS requires version "%s".\n', ...
+        error('BICAS:BadMatlabVersion', ...
+            'Using bad MATLAB version. Found version "%s". BICAS requires version "%s".\n', ...
             matlabVersionString, REQUIRED_MATLAB_VERSION)
     end
     fprintf(1, 'Using MATLAB, version %s.\n', matlabVersionString);
@@ -106,6 +132,7 @@ try
     % ASSUMES: The current file is in the <BICAS>/src directory.
     [matlabSrcPath, ~, ~] = fileparts(mfilename('fullpath'));
     bicasRootPath = bicas.utils.get_abs_path(fullfile(matlabSrcPath, '..'));
+    
     
     
     %=============================
@@ -126,8 +153,9 @@ try
     % Configure permitted flags COMMON for all BICAS modes of operation
     %===================================================================
     FlagsConfigMap = containers.Map;
-    FlagsConfigMap('log_path')          = struct('cliFlagString', '--log',     'occurrenceRequirement', '0-1',   'nValues', 1);   % NOTE: Flag+value to permit but ignore since handled by bash launcher script.
-    FlagsConfigMap('config_file_path')  = struct('cliFlagString', '--config',  'occurrenceRequirement', '0-1',   'nValues', 1);   % NOTE: Flag+value to permit but ignore since handled by bash launcher script.
+    % NOTE: log_path and config_file_path are both flag+value to permit but ignore since they are handled by bash launcher script.
+    FlagsConfigMap('log_path')          = struct('cliFlagString', '--log',     'occurrenceRequirement', '0-1',   'nValues', 1);
+    FlagsConfigMap('config_file_path')  = struct('cliFlagString', '--config',  'occurrenceRequirement', '0-1',   'nValues', 1);
     FlagsConfigMap('modified_settings') = struct('cliFlagString', '--setting', 'occurrenceRequirement', '0-inf', 'nValues', 2);
 
 
@@ -160,8 +188,8 @@ try
         % CASE: Should be a S/W mode (error otherwise)
         %==============================================
         try
-            ExtendedSwModeInfo = DataManager.get_extended_sw_mode_info(cliArgumentsList{1});
-        catch exception
+            ExtendedSwModeInfo = DataManager.get_extended_sw_mode_info(cliArgumentsList{1});    % NOTE: FIRST USE OF DataManager.
+        catch exception1
             % NOTE: Argument "--verson" (misspelled "--version") etc. would have produced error here too.
             error('BICAS:CLISyntax', 'Can not interpret first argument "%s" as a S/W mode (or any other legal first argument).', cliArgumentsList{1});
         end
@@ -176,18 +204,26 @@ try
         % (1) identifiers for misc. flags e.g. "output_dir", "log_path".
         % (2) dataset IDs!
         % This is not really appropriate but works as long as there is no overlap between the two sets of strings.
+        %
+        % PROPOSAL: Assertion for checking whether the map key has previously used.
         %==============================================================================================================
         FlagsConfigMap('output_dir') = struct('cliFlagString', '--output', 'occurrenceRequirement', '1', 'nValues', 1);
         inputsInfoList = ExtendedSwModeInfo.inputs;      % C = Constants structure.
         inputPdidsList = {};                  % List of keys used for input files.
-        for iInput = 1:length(inputsInfoList)
+        
+        for iInput = 1:length(inputsInfoList)    % For every input dataset...
             pdid = inputsInfoList{iInput}.PDID;
             
-            % Configure one flag+value pair
+            % Configure one flag+value pair.
             FlagConfig = [];
             FlagConfig.cliFlagString         = ['--', inputsInfoList{iInput}.CLI_PARAMETER];
             FlagConfig.occurrenceRequirement = '1';
             FlagConfig.nValues               = 1;
+            
+            % ASSERTION
+            if FlagsConfigMap.isKey(pdid)
+                error('BICAS:Assertion:IllegalConfiguration', 'Dataset ID used as flag identifier conflicts with other flag identifier. Bad hardcoding.')
+            end
             FlagsConfigMap(pdid) = FlagConfig;
             
             inputPdidsList{end+1} = pdid;
@@ -251,7 +287,7 @@ try
         %============================
         % CASE: Print help
         %============================
-        print_help(ERROR_CODES, DataManager)
+        print_help(ERROR_TYPES_INFO, DataManager)
 
     elseif strcmp(bicasModeOfOperation, 'Processing S/W mode')
 
@@ -277,53 +313,50 @@ try
         error('BICAS:Assertion', 'Can not interpret bicasModeOfOperation. This indicates a pure code bug.')
     end
 
-        
+
 
     executionWallTimeSeconds = toc(startTimeTicSeconds);
     irf.log('n', sprintf('Execution took %g s (wall time).', executionWallTimeSeconds));    % Always log (-->critical)?
-        
-        
-        
+
+
+
     % EXIT
-    errorCode = ERROR_CODES.NO_ERROR;   % Default RETURN value.
+    errorCode = ERROR_TYPES_INFO('NoError').code;   % Default RETURN value.
 
-
-
-catch exception
+catch exception1
     
     try
         irf.log('critical', 'Main function caught an exception. Beginning error handling.');   % Print to stdout.
+        fprintf(2, 'exception1.identifier = "%s"\n', exception1.identifier);    % Print to stderr.        
+        fprintf(2, 'exception1.message    = "%s"\n', exception1.message);       % Print to stderr.
         
-        message = exception.message;
-        
-        %==================================================================
-        % Convert MATLAB error message identifiers into return error codes
-        %==================================================================
-        % NOTE: The order in which tests occur matters since the same error message identifier may contain multiple
-        % matching components. Therefore, the matching of msg IDs with error codes is also not an exact science.
-        errorId = strsplit(exception.identifier, ':');
-        if     any(strcmpi(errorId, 'OperationNotImplemented'));   errorCode = ERROR_CODES.OPERATION_NOT_IMPLEMENTED;
-        elseif any(strcmpi(errorId, 'PathNotFound'));              errorCode = ERROR_CODES.PATH_NOT_FOUND;
-        elseif any(strcmpi(errorId, 'CLISyntax'));                 errorCode = ERROR_CODES.CLI_SYNTAX_ERROR;
-        elseif any(strcmpi(errorId, 'SWModeProcessing'));          errorCode = ERROR_CODES.SW_MODE_PROCESSING_ERROR;
-        elseif any(strcmpi(errorId, 'DatasetFormat'));             errorCode = ERROR_CODES.DATASET_FORMAT_ERROR;
-        elseif any(strcmpi(errorId, 'IllegalConfiguration'));      errorCode = ERROR_CODES.CONFIGURATION_ERROR;
-        elseif any(strcmpi(errorId, 'Assertion')) ;                errorCode = ERROR_CODES.ASSERTION_ERROR;
-        %elseif any(strcmpi(errorId, ''))
-        %    errorCode = ERROR_CODES.;
-        else
-            errorCode = ERROR_CODES.MISC_ERROR;
-            %errorCode = ERROR_CODES.ERROR_IN_MATLAB_ERROR_HANDLING;
+        %=================================================================================
+        % Use MATLAB error message identifiers to identify one or multiple "error types".
+        %=================================================================================
+        msgIdentifierParts = strsplit(exception1.identifier, ':');
+        errorTypesList = msgIdentifierParts(ERROR_TYPES_INFO.isKey(msgIdentifierParts));    % Cell array of error types (strings) only.
+        if isempty(errorTypesList)
+            errorTypesList = {'UntranslatableErrorMsgId'};
         end
+        
+        %===================================
+        % Print all identified error types.
+        %===================================
+        fprintf(2, 'Matching error types:\n');% Print to stderr.
+        for i = 1:numel(errorTypesList)
+            fprintf(2, '    %s\n', ERROR_TYPES_INFO(errorTypesList{i}).description);   % Print to stderr.
+        end
+        % NOTE: Choice - Uses the last part of the message ID for determining error code to return.
+        errorCode = ERROR_TYPES_INFO(errorTypesList{end}).code;
         
         %======================
         % Print the call stack
         %======================
-        callStackLength = length(exception.stack);
+        callStackLength = length(exception1.stack);
         fprintf(2, 'MATLAB call stack:\n');    % Print to stderr.
         if (~isempty(callStackLength))
             for i=1:callStackLength
-                stackCall = exception.stack(i);
+                stackCall = exception1.stack(i);
                 temp      = strsplit(stackCall.file, filesep);
                 filename  = temp{end};
                 
@@ -331,22 +364,24 @@ catch exception
             end
         end
         
-        fprintf(2, [message, '\n']);    % Print to stderr.
+
         
-        fprintf(2, 'Exiting MATLAB application with error code %i.\n', errorCode);        % Print to stderr.
-        
+        fprintf(2, 'Exiting MATLAB application with error code %i.\n', errorCode);        % Print to stderr.        
         return
         
-    catch exception
+    catch exception2    % Deliberately use different variable name to distinguish the exception from the previous one.
         %===================================================
         % CASE: There was an error in the error handling(!)
         %===================================================
         
-        % NOTE: Only use very, very error safe code here.
-        fprintf(2, 'Unknown error. Error in the MATLAB code''s error handling.\nException message: "%s"\n', ...
-            exception.message');   % Print to stderr.
+        % NOTE: Only use very, very error-safe code here.
+        fprintf(2, 'Error in the MATLAB code''s error handling.\n');   % Print to stderr.
+        fprintf(2, 'exception2.identifier = "%s"\n', exception2.identifier);          % Print to stderr.        
+        fprintf(2, 'exception2.message    = "%s"\n', exception2.message);             % Print to stderr.
         
-        errorCode = ERROR_CODES.ERROR_IN_MATLAB_ERROR_HANDLING;   % Not even use hardcoded constant for this error?!!
+        errorCode = ERROR_TYPES_INFO('MatlabCodeErrorHandlingError').code;             % Use hardcoded constant for this error?!!
+        
+        fprintf(2, 'Exiting MATLAB application with error code %i.\n', errorCode);    % Print to stderr.
         return
     end
 end
@@ -357,7 +392,6 @@ end
 
 
 
-%===================================================================================================
 function print_version(DataManager)
 
 % IMPLEMENTATION NOTE: Uses the software version in the S/W descriptor rather than the in the BICAS
@@ -372,7 +406,6 @@ end
 
 
 
-%===================================================================================================
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
 % First created 2016-06-07
 %
@@ -392,12 +425,14 @@ end
 
 
 
-%===================================================================================================
-function print_help(ERROR_CODES, DataManager)
+% Print "help text".
+% 
+% NOTE: Useful if this can be used for copy-pasting into RCS User Manual (RUM).
 %
-% PROPOSAL: Print error codes. Can use implementation to list them?
-%    PROPOSAL: Define error codes with description strings?! Map?!! Check for doubles?!
+function print_help(ERROR_TYPES_INFO, DataManager)
+%
 % PROPOSAL: Print CLI syntax incl. for all modes? More easy to parse than the S/W descriptor.
+
 
 
 % Print software name & description
@@ -405,18 +440,20 @@ swd = bicas.get_sw_descriptor(DataManager);
 print_version(DataManager)
 bicas.stdout_printf('%s\n', swd.identification.description)
 
-% Print error codes.
-bicas.stdout_printf('\nError codes (internal constants):\n')
-for sfn = fieldnames(ERROR_CODES)'
-    errorCode = ERROR_CODES.(sfn{1});
-    errorName = sfn{1};
-    bicas.stdout_printf('   %3i = %s\n', errorCode, errorName)
+%==========================
+% Print error codes & types
+%==========================
+errorCodesList = cellfun(@(x) (x.code), ERROR_TYPES_INFO.values);   % Array of (unsorted) error codes.
+[~, iSort] = sort(errorCodesList);
+errorTypesInfoList = ERROR_TYPES_INFO.values;      % Cell array of structs (unsorted).
+errorTypesInfoList = errorTypesInfoList(iSort);    % Cell array of structs sorted by error code.
+bicas.stdout_printf('\nError codes:\n')
+for i = 1:numel(errorTypesInfoList)    
+    bicas.stdout_printf('   %3i = %s\n', errorTypesInfoList{i}.code, errorTypesInfoList{i}.description)
 end
 
 % Print settings
 bicas.stdout_disp(bicas.sprint_settings)   % Includes title
-
-
 
 bicas.stdout_printf('\nSee "readme.txt" and user manual for more help.\n')
 end
