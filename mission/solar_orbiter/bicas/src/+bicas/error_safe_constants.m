@@ -10,22 +10,24 @@
 % RETURN VALUES
 % =============
 % ERROR_TYPES_INFO : containers.Map
-%                   key = Any one of the colon-separated parts of a error message identifier string (see "error" function).
-%                   value = Struct with fields representing a type of error:
-%                       .code        = The error code/number to be returned from BICAS' main function.
-%                       .description = English human-readable text describing the error. Implicitly defines what kinds
-%                                           of errors this error code should cover.
-%                   IMPORTANT NOTE: A MATLAB error message identifier may match multiple "error types" (keys). The
-%                   error-handling code (try-catch) should decide whether every message identifier should be used to
-%                   identify only one error type if there are multiple ones to choose from.
-% REQUIRED_MATLAB_VERSION : String value that should be identical to the value returned by "version('-release')" when
-%                           using the correct MATLAB version.
+%                    key = Any one of the colon-separated parts of a error message identifier string (see "error" function).
+%                    value = Struct with fields representing a type of error:
+%                        .code        = The error code/number to be returned from BICAS' main function.
+%                        .description = English human-readable text describing the error. Implicitly defines what kinds
+%                                            of errors this error code should cover.
+%                    IMPORTANT NOTE: A MATLAB error message identifier may match multiple "error types" (keys). The
+%                    error-handling code (try-catch) should decide whether every message identifier should be used to
+%                    identify only one error type if there are multiple ones to choose from.
+% REQUIRED_MATLAB_VERSION        : String value that should be identical to the value returned by "version('-release')"
+%                                  when using the correct MATLAB version.
+% INOFFICIAL_ARGUMENTS_SEPARATOR : String. Argument that separates the official (ICD) arguments from inofficial
+%                                  arguments.
 %
 %
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
 % First created 2016-06-02
 %
-function [ERROR_TYPES_INFO, REQUIRED_MATLAB_VERSION] = error_safe_constants
+function [ERROR_TYPES_INFO, REQUIRED_MATLAB_VERSION, INOFFICIAL_ARGUMENTS_SEPARATOR] = error_safe_constants
 %
 % PROPOSAL: Redefine CDF_ERROR as CDF_READ_VALIDATION_ERROR - Something is wrong with the data in a read CDF (input CDF, master CDF).
 % PROPOSAL: I/O error.
@@ -54,7 +56,9 @@ MAP('IllegalConfiguration')         = info_struct(110, 'Bad configuration (in pa
                      
 ERROR_TYPES_INFO = MAP;
 
-REQUIRED_MATLAB_VERSION = '2016a';   
+REQUIRED_MATLAB_VERSION = '2016a';
+
+INOFFICIAL_ARGUMENTS_SEPARATOR = '--';
 
 end
 
