@@ -1,11 +1,12 @@
-% str = sprint_settings()
-% Create human-readable multi-line string to represent settings. Meant for logging and printing to stdout.
+% str = sprint_SETTINGS()
+%
+% Create human-readable multi-line string to represent SETTINGS. Meant for logging and printing to stdout.
 %
 %
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
 % First created 2017-02-22
 %
-function str = sprint_settings()
+function str = sprint_SETTINGS()
 
 % QUESTION: Should include header/title?
 % PROPOSAL: Better handling of different data types (MATLAB classes). Let settings.m do conversions to strings?!
