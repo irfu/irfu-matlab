@@ -47,6 +47,8 @@
 # PROPOSAL: Better error message when can not find MATLAB_COMMAND. Common error.
 # PROPOSAL: Detect presence of bicas within irfu-matlab (avoid there being two bicas).
 #
+# TODO: Detect root path from new environment variable specified in new/upcoming RCS ICD.
+#
 # BUG: If mistakenly uses bad "--config" flag, i.e. "--conf", then the script itself will use the wrong
 # MATLAB version ==> Can not launch MATLAB (which would have checked if "--conf" was a bad flag).
 #====================================================================================================
@@ -60,16 +62,21 @@ declare -r STDOUT_PATTERN='^STDOUT: '    # NOTE: Regex. Includes "^" = beginning
 # Prefix added to stdout when it is added to the log.
 declare -r STDERR_PREFIX='STDERR: '   # NOTE: Not a regex (but will code will misbehave for regex commands)!
 
-# Name of script such as it is called from inside MATLAB, i.e. WITHOUT file extension ".m".
+# Name of MATLAB script that launches the MATLAB part of BICAS, such as it is called from inside MATLAB,
+# i.e. WITHOUT the file extension ".m".
 declare -r MATLAB_SCRIPT_NAME="bicas"
 
 # The two alternatives for where the root irfu-matlab directory may be relative to the BICAS root directory.
 declare -r INNER_IRFUMATLAB_RELATIVE_PATH="lib/irfu-matlab"    # Needed to detect the presence/absence of the directory.
 declare -r OUTER_IRFUMATLAB_RELATIVE_PATH="../../.."
 
+# Error codes for errors that do not occur in MATLAB.
+declare -r ERROR_CODE_CAN_NOT_FIND_LOG_DIR=2
+declare -r ERROR_CODE_CAN_NOT_WRITE_LOG_FILE=3
+declare -r ERROR_CODE_CAN_NOT_FIND_CONFIG_FILE=4
 
-
-
+# Default config file, relative to the BICAS root path.
+declare -r DEFAULT_CONFIG_FILE_RELATIVE_PATH="config/bicas.conf"
 
 
 
@@ -84,7 +91,7 @@ do
     then
         let i=i+1
         declare -r log_dir="${!i}"
-    elif [[ "${!i}" == "--config" ]]
+    elif [[ "${!i}" == "--config" ]]               # NOTE: Hardcoded CLI option that is defined in RCS ICD.
     then
         let i=i+1
         declare -r config_file_argument="${!i}"
@@ -97,15 +104,16 @@ done
 
 
 
-#===================================================================================
+#==============================================================================================
 # Find (absolute) paths by using the path to this executable + relative paths.
-# Assumes that this executable is located under a subdirectory of $BICAS_ROOT_PATH.
+#
+# ASSUMES: This executable is located under a subdirectory of $BICAS_ROOT_PATH.
 #
 # NOTE: Some paths might not exist on disk and one can not use readlink on non-existent paths.
-#===================================================================================
+#==============================================================================================
 temp=$(dirname "$0")/..
 declare -r BICAS_ROOT_PATH=$(readlink -f "$temp")
-declare -r DEFAULT_CONFIG_FILE="${BICAS_ROOT_PATH}/config/bicas.conf"
+declare -r DEFAULT_CONFIG_FILE="${BICAS_ROOT_PATH}/${DEFAULT_CONFIG_FILE_RELATIVE_PATH}"
 declare -r INNER_IRFUMATLAB_PATH=$(readlink -f "${BICAS_ROOT_PATH}/${INNER_IRFUMATLAB_RELATIVE_PATH}")  
 declare -r OUTER_IRFUMATLAB_PATH=$(readlink -f "${BICAS_ROOT_PATH}/${OUTER_IRFUMATLAB_RELATIVE_PATH}")
 
@@ -130,7 +138,7 @@ if [[ ! -z "$log_dir" ]]
 then
     if [[ ! -d "$log_dir" ]] ; then
         echo "Can not find specified log directory \"$log_dir\"." >> /dev/stderr
-        exit 1
+        exit $ERROR_CODE_CAN_NOT_FIND_LOG_DIR
     fi
     base=$(basename "$0")
     timestamp=$(date +%Y-%m-%d_%H.%M.%S)   # LOCAL time, not UTC.
@@ -145,7 +153,7 @@ then
     touch "$log_file"
     if [[ $? != 0 ]] ; then
         echo "Can not write to log file \"$log_file\"." >> /dev/stderr
-        exit 1
+        exit $ERROR_CODE_CAN_NOT_WRITE_LOG_FILE
     fi
 
 
@@ -187,7 +195,7 @@ else
 fi
 if [[ ! -f "$config_file" ]] ; then
     echo "Can not find configuration file \"$config_file\"." >> /dev/stderr
-    exit 1
+    exit $ERROR_CODE_CAN_NOT_FIND_CONFIG_FILE
 fi
 source "$config_file"   # Sets MATLAB_COMMAND.
 
@@ -197,7 +205,7 @@ source "$config_file"   # Sets MATLAB_COMMAND.
 
 
 
-# DEBUG: Always piped to the actual stdout. Useful for debugging.
+# DEBUG: Always piped to the actual stdout (in violation of RCS ICD). Useful for debugging.
 #echo log_dir           = "$log_dir"
 #echo log_file          = "$log_file"
 #echo log_file_symlink  = "$log_file_symlink"
