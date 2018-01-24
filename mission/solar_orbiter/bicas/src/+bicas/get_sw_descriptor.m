@@ -1,7 +1,14 @@
 % Return MATLAB structure that "exactly" corresponds to the S/W descriptor specified by the RCS ICD.
+% Return result can be used for generating a string that can be printed.
+%
 %
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
 % First created ~2016-06-01
+%
+%
+% RETURN VALUE
+% ============
+% swDescriptor : See JSON_object_str for the exact format.
 %
 %
 % IMPLEMENTATION NOTE

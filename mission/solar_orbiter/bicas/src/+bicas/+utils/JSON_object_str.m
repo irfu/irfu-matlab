@@ -1,11 +1,4 @@
-% str = JSON_object_str(obj, settings)   Interprets a MATLAB variable as a JSON object and turns it into a string.
-%
-%
-% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
-% First created 2016-05-31
-%
-% NOTE: This is not a rigorous implementation based on a good understanding of JSON objects and therefore does not
-% check for permitted characters.
+% Interprets a MATLAB variable as a JSON object and turns it into a string.
 %
 %
 % ARGUMENTS AND RETURN VALUE
@@ -16,13 +9,21 @@
 % indentSize         : Number of whitespace per indentation level.
 % valuePosition      : The minimum number of characters between the beginning of a "name" and the beginning of the
 %                      corresponding value. This setting can make the final string more readable.
-% str                : Indented multi-line string with that is suitable for printing and human reading.
+% str                : Indented multi-line string that is suitable for printing and human reading.
 %                      NOTE: Uses line feed character for line breaks.
+%
+%
+% NOTE: This is NOT a rigorous implementation based on a good understanding of JSON objects and therefore does not
+% check for permitted characters.
 %
 % NOTE: Since MATLAB structure field names are used for "JSON parameter name strings", the characters that can be used
 % are likely more limited than what JSON permits.
 %
-function str = JSON_object_str(obj, indentSize, valuePosition)
+%
+% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% First created 2016-05-31
+%
+function str = JSON_object_str(jsonObj, indentSize, valuePosition)
 %
 % NOTE: Concerning the JSON syntax: "Whitespace is allowed and ignored around or between syntactic elements (values and
 % punctuation, but not within a string value). Four specific characters are considered whitespace for this purpose:
@@ -35,7 +36,7 @@ settings.LINE_BREAK     = char(10);    % Should be same as sprintf('\n').
 settings.INDENT_SIZE    = indentSize;
 settings.VALUE_POSITION = valuePosition;
 
-str = print_JSON_object_recursive(obj, 0, false, settings);
+str = print_JSON_object_recursive(jsonObj, 0, false, settings);
 str = [str, settings.LINE_BREAK];
 
 end
@@ -49,7 +50,7 @@ end
 %
 % indentFirstLine : True/false; Determines whether the first line should be indented.
 %                   Can be useful for some layouts (placement of whitespace and line feeds).
-function str = print_JSON_object_recursive(obj, indentationLevel, indentFirstLine, settings)
+function str = print_JSON_object_recursive(jsonObj, indentationLevel, indentFirstLine, settings)
 
 %LINE_BREAK = char(10);    % Should be same as sprintf('\n').
 INDENT_0_STR = repmat(' ', 1, settings.INDENT_SIZE *  indentationLevel   );
@@ -58,7 +59,7 @@ INDENT_1_STR = repmat(' ', 1, settings.INDENT_SIZE * (indentationLevel+1));
 str = '';
 
 
-if iscell(obj)
+if iscell(jsonObj)
     % CASE: Cell array - Interpret as a JSON array of (unnamed) JSON objects.
     
     if indentFirstLine
@@ -66,17 +67,17 @@ if iscell(obj)
     end
     str = [str, '[', settings.LINE_BREAK];
     
-    for i = 1:length(obj)
-        str = [str, print_JSON_object_recursive(obj{i}, indentationLevel+1, true, settings)];
+    for i = 1:length(jsonObj)
+        str = [str, print_JSON_object_recursive(jsonObj{i}, indentationLevel+1, true, settings)];
         
-        if i < length(obj)
+        if i < length(jsonObj)
             str = [str, ','];
         end
         str = [str, settings.LINE_BREAK];
     end
     str = [str, INDENT_0_STR, ']'];   % NOTE: No line break.
     
-elseif isstruct(obj)
+elseif isstruct(jsonObj)
     % CASE: Struct - Interpret every field as value as (named) JSON object.
     
     if indentFirstLine
@@ -84,10 +85,10 @@ elseif isstruct(obj)
     end
     str = [str, '{', settings.LINE_BREAK];
     
-    names = fieldnames(obj);
+    names = fieldnames(jsonObj);
     for i = 1:length(names)
         name = names{i};
-        value = obj.(name);
+        value = jsonObj.(name);
         
         nameStr = sprintf('"%s":', name);
         str = [str, INDENT_1_STR, nameStr];

@@ -39,10 +39,9 @@ function [ERROR_TYPES_INFO, REQUIRED_MATLAB_VERSION, INOFFICIAL_ARGUMENTS_SEPARA
 
 MAP = containers.Map('KeyType', 'char', 'ValueType', 'any');
 
-MAP('NoError')                      = info_struct(0, 'No error');  % NOTE: The RCS ICD specifies error code==0 <==> no error.
-
+MAP('NoError')                      = info_struct(  0, 'No error');  % NOTE: The RCS ICD specifies error code==0 <==> no error.
 MAP('BadMatlabVersion')             = info_struct(100, 'Using the wrong MATLAB version.');
-MAP('UntranslatableErrorMsgId')     = info_struct(101, 'Error occurred, but code can not translate the error''s MATLAB message identifier into any of BICAS'' internal standard error codes.');
+MAP('UntranslatableErrorMsgId')     = info_struct(101, 'Error occurred, but code can not translate the error''s MATLAB message identifier into any of BICAS''s internal standard error codes.');
 MAP('MatlabCodeErrorHandlingError') = info_struct(102, 'The MATLAB code''s own error handling failed.');
 MAP('CLISyntax')                    = info_struct(103, 'Can not interpret command-line interface (CLI) arguments syntax.');
 MAP('PathNotFound')                 = info_struct(104, 'A specified directory or file does not exist.');
@@ -52,9 +51,10 @@ MAP('IllegalArgument')              = info_struct(107, 'Argument passed to inter
 MAP('SWModeProcessing')             = info_struct(108, 'Error in s/w mode processing (processing data sets).');
 MAP('DatasetFormat')                = info_struct(109, 'Error when interpreting (official CDF) datasets, including master CDF files.');
 MAP('IllegalConfiguration')         = info_struct(110, 'Bad configuration (in particular hard-coded), e.g. constants, S/W descriptor. This should ideally indicate a pure code bug, i.e. it is not triggered by certain input.');
-
                      
 ERROR_TYPES_INFO = MAP;
+
+
 
 REQUIRED_MATLAB_VERSION = '2016a';
 

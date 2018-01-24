@@ -1,10 +1,10 @@
-% Constants - Singleton class for global constants used by BICAS.
+% Settings - Singleton class for global constants used by BICAS.
 % 
 % Class for storing 
 % 1) settings (variable values) which could reasonably be set via some user interface (CLI, configuration file), and
 % 2) settings and constants which could reasonably be printed for the user.
 %
-% The class completely encapsulates the settings. Settings are identfied by arbitrary strings. Settings can only be
+% The class completely encapsulates the settings. Settings are identified by arbitrary strings. Settings can only be
 % obtained and set via methods.
 % 
 %
@@ -30,6 +30,22 @@ classdef settings < handle
 %   Ex: Default value (so can display it if overridden)
 %   Ex: Flag for origin of current value: default, config file, CLI argument.
 %   Ex: Flag for write-protection
+%
+% PROPOSAL: Special "finalized" option (true/false).
+%       False: Can modify, but not read.
+%       True : Can read, but not modify.
+%
+% PROPOSAL: Separate code for setting default values and defining setting keys.
+%   PROPOSAL: Separate
+%       (1) Defining a key: Defining the existence of a value. Set any (future) metadata: description, value type, value
+%       range etc.
+%       (2) Setting a key value: Can only set keys that exist.
+%       PROPOSAL: Methods for
+%           (1) define key and set value: 
+%           (2) set value of pre-defined (pre-existing) key:
+%   PROPOSAL: Separate code that both defines keys and sets default values
+%
+% PROPOSAL: Convention for "empty"/"not set"?!
     
     properties(Access=private)
         map = containers.Map('KeyType', 'char', 'ValueType', 'any')    % Bad name. "storage"? "SETTINGS.g"?
@@ -57,7 +73,7 @@ classdef settings < handle
             obj.set('AUTHOR_NAME',  D.AUTHOR_NAME);
             obj.set('AUTHOR_EMAIL', D.AUTHOR_EMAIL);
             obj.set('INSTITUTE',    D.INSTITUTE);
-            obj.set('MASTER_CDFS_RELATIVE_DIR', 'data');    % Location of master CDF files. Relative to the software directory structure root.
+            obj.set('MASTER_CDFS_RELATIVE_DIR', 'data');    % Directory with master CDF files. Relative to the software directory structure root.
             
             % Value that shows up in EOut dataset GlobalAttributes.Calibration_version.
             % String value.
@@ -77,7 +93,7 @@ classdef settings < handle
             obj.set('SWD_IDENTIFICATION.description', 'BIAS Calibration Software (BICAS) which derives the BIAS L2S input signals (plus some) from the BIAS L2R output signals.');
             %
             obj.set('SWD_RELEASE.version',      '0.1.0');
-            obj.set('SWD_RELEASE.date',         '2017-02-22');
+            obj.set('SWD_RELEASE.date',         '2018-01-22');
             obj.set('SWD_RELEASE.author',       D.AUTHOR_NAME);
             obj.set('SWD_RELEASE.contact',      D.AUTHOR_EMAIL);
             obj.set('SWD_RELEASE.institute',    D.INSTITUTE);
@@ -208,16 +224,17 @@ classdef settings < handle
                 % Overwrite old setting.
                 obj.set(key, newValue);
             end
-            
+
         end
         
-    end
+    end    % methods(Access=public)
     
     %###################################################################################################################
     
     methods(Access=private)
         
         % Set a key-value pair. Only meant to be set from inside the class.
+        % NOTE: Can create new keys. Does not require key to preexist.
         function set(obj, key, value)
             obj.map(key) = value;
         end

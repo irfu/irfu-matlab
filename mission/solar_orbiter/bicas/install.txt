@@ -21,23 +21,23 @@ NOTE: BICAS can also be run directly from inside MATLAB, without the bash launch
 ====================================
 
 IMPORTANT NOTE: BICAS __CAN__ be run using any one of two different directory structures.
-(1) As it is in the irfu-matlab git repository.
-(2) As it should be run in the RPW pipeline. This is compliant with the ROC ICD.
+Alternative 1: As it is in the irfu-matlab git repository.
+Alternative 2: As it should be run in the RPW pipeline. This is compliant with the RCS ICD.
 
 
 Rationale: Why BICAS can be run using two different directory structures
 ------------------------------------------------------------------------
-(1) The ROC Engineering Guidelines iss01rev01 (and maybe the ROC ICD iss02rev02)
+(1) The ROC Engineering Guidelines iss01rev01 (and maybe the RCS ICD iss02rev02)
     requires BICAS to have a certain directory structure, or at least where the start script should be (bicas/roc/).
-(2) BICAS is developed as a subset of the irfu-matlab git repository (used by IRF-U, Uppsala, Sweden). irfu-matlab
+(2) BICAS is developed as a subset of the irfu-matlab git repository (used by IRF, Uppsala, Sweden). irfu-matlab
     requires BICAS to be in a certain subdirectory within it.
 (3) When BICAS is a part of irfu-matlab, BICAS uses irfu-matlab function files located outside of BICAS' own subdirectories.
 Therefore one can NEITHER (1) just copy all of irfu-matlab to the location where BICAS is
 to be officially run, NOR (2) just copy the BICAS subdirectory from within irfu-matlab.
 
 
-ONLY IF YOU NEED IT: How to convert an irfu-matlab repository into a ROC ICD-compliant software
------------------------------------------------------------------------------------------------
+ONLY IF YOU NEED IT: How to convert an irfu-matlab repository into an RCS ICD-compliant software
+------------------------------------------------------------------------------------------------
 Procedure in principle: Move the bicas/ directory (irfu-matlab/mission/solar_orbiter/bicas) out of irfu-matlab to where you want BICAS to be located.
 Use bicas/ as a root directory and put the remainder of irfu-matlab/ under bicas/lib/.
 

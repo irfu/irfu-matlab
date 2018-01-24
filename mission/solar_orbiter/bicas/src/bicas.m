@@ -73,7 +73,7 @@ function errorCode = bicas( varargin )
 %   PROBLEM: --config (ICD option) could influence which ICD options that are permissible (e.g. pipeline).
 %   --
 %   PROPOSAL: Make it possible to separate sequence of inofficial arguments from other arguments before parsing individual options.
-%       PRO: Makes it possible to first parse the inofficial arguments and modofy SETTINGS, before parsing anything
+%       PRO: Makes it possible to first parse the inofficial arguments and modify SETTINGS, before parsing anything
 %               s/w modes which might require an updated SETTINGS variable.
 %       PROPOSAL: Inofficial arguments can only be added before s/w mode.
 %           PRO: Does not need separator argument.
@@ -94,11 +94,13 @@ function errorCode = bicas( varargin )
 % PROPOSAL: Not declare SETTINGS as a global variable until it is certain that it has been updated/finalized.
 %   PROPOSAL: Different names for global and local SETTINGS variable, even if temporary.
 %
-% TODO: Add getenv('ROC_PIP_VERSION');   % RGTS or RODP depending on pipeline.
+% PROPOSAL: Replace one-setting-calls to SETTINGS.modify_settings_from_strings with a call to public SETTINGS.set method.
+%
+% PROPOSAL: Function for loading environment variables to SETTINGS.
+%   NOTE: Should a function require env. vars to exist or not?
 
 
-
-% Clear any previous instance of global variables.
+% Clear any previous instance of global variables (as early as possible).
 % This is useful to avoid mistakenly using a previously initialized version of CONSTANTS or SETTINGS when the
 % initialization has failed and when developing in MATLAB.
 clear -global CONSTANTS SETTINGS
@@ -176,7 +178,7 @@ end
 
 
 
-end
+end    % bicas
 
 
 
@@ -358,9 +360,9 @@ elseif (strcmp(icdCliArgumentsList{1}, '--help'))
     print_help(ERROR_TYPES_INFO, DataManager)
 
 else
-    %======================================================================
-    % CASE: Should be a S/W mode (from elimination of other possibilities)
-    %======================================================================
+    %==============================================================================
+    % CASE: Should be a S/W mode (deduced from elimination of other possibilities)
+    %==============================================================================
     try
         ExtendedSwModeInfo = DataManager.get_extended_sw_mode_info(icdCliArgumentsList{1});    % NOTE: FIRST USE OF DataManager.
     catch exception1
@@ -426,7 +428,7 @@ else
     %==================
     bicas.execute_sw_mode( DataManager, ExtendedSwModeInfo.CLI_PARAMETER, InputFilesMap, outputDir )
     
-end
+end    % main
 
 
 
@@ -455,10 +457,10 @@ end
 
 
 
+% Print the JSON S/W descriptor.
+%
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
 % First created 2016-06-07
-%
-% Print the JSON S/W descriptor.
 %
 function print_identification(DataManager)
 
