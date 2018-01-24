@@ -93,11 +93,6 @@ function errorCode = bicas( varargin )
 %
 % PROPOSAL: Not declare SETTINGS as a global variable until it is certain that it has been updated/finalized.
 %   PROPOSAL: Different names for global and local SETTINGS variable, even if temporary.
-%
-% PROPOSAL: Replace one-setting-calls to SETTINGS.modify_settings_from_strings with a call to public SETTINGS.set method.
-%
-% PROPOSAL: Function for loading environment variables to SETTINGS.
-%   NOTE: Should a function require env. vars to exist or not?
 
 
 % Clear any previous instance of global variables (as early as possible).
@@ -249,8 +244,9 @@ end
 global CONSTANTS
 global SETTINGS
 CONSTANTS = bicas.constants(bicasRootPath);
-SETTINGS  = bicas.settings;
-irf.log(SETTINGS.get('LOGGING.IRF_LOG_LEVEL'));   % NOTE: May set the logging level to the same level as before.
+%SETTINGS  = bicas.settings;
+SETTINGS = bicas.create_default_SETTINGS();
+irf.log(SETTINGS.get_tv('LOGGING.IRF_LOG_LEVEL'));   % NOTE: May set the logging level to the same level as before. Remove?
 
 
 
@@ -316,12 +312,13 @@ for iSetting = 1:length(valuesListsLists)
     ModifiedSettingsMap(valuesListsLists{iSetting}{1}) = valuesListsLists{iSetting}{2};
 end
 % Should preferably not use irf.log before here so that the right logging level is used.
-SETTINGS.modify_settings_from_strings(ModifiedSettingsMap);    % Modify SETTINGS
+SETTINGS.set_preexisting_from_strings(ModifiedSettingsMap);    % Modify SETTINGS
+SETTINGS.make_read_only();
 % CASE: SETTINGS has now been finalized and will never change after this.
 
 
 
-irf.log(SETTINGS.get('LOGGING.IRF_LOG_LEVEL'));
+irf.log(SETTINGS.get_fv('LOGGING.IRF_LOG_LEVEL'));
 irf.log('n', bicas.sprint_SETTINGS)                 % Prints the contents of SETTINGS.
 
 
@@ -468,8 +465,8 @@ global SETTINGS
 
 swd = bicas.get_sw_descriptor(DataManager);
 str = bicas.utils.JSON_object_str(swd, ...
-    SETTINGS.get('JSON_OBJECT_STR.INDENT_SIZE'), ...
-    SETTINGS.get('JSON_OBJECT_STR.VALUE_POSITION'));
+    SETTINGS.get_fv('JSON_OBJECT_STR.INDENT_SIZE'), ...
+    SETTINGS.get_fv('JSON_OBJECT_STR.VALUE_POSITION'));
 bicas.stdout_disp(str);
 
 end
@@ -522,6 +519,6 @@ global SETTINGS
 
 envVarValue = getenv(envVarName);
 if ~isempty(envVarValue)
-    SETTINGS.modify_settings_from_strings(containers.Map({settingsKey}, {envVarValue}));
+    SETTINGS.set_prexisting(settingsKey, envVarValue);
 end
 end

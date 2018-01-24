@@ -21,7 +21,7 @@ global SETTINGS
 % NOTE: Also used for line breaks in the string sent to "disp".
 ARGUMENT_LINE_BREAK_CHAR = char(10);
 
-STDOUT_PREFIX = SETTINGS.get('STDOUT_PREFIX');
+STDOUT_PREFIX = SETTINGS.get_fv('STDOUT_PREFIX');
 
 
 % ASSERTION: Require there to be a last character which represents a line break.

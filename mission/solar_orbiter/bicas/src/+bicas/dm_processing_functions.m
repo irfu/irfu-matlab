@@ -111,7 +111,7 @@ classdef dm_processing_functions
             % 2) Effectively also chooses which time to use for the purpose of processing:
             %    ACQUISITION_TIME or Epoch.
             %=========================================================================================================
-            if SETTINGS.get('PROCESSING.USE_AQUISITION_TIME_FOR_HK_TIME_INTERPOLATION')
+            if SETTINGS.get_fv('PROCESSING.USE_AQUISITION_TIME_FOR_HK_TIME_INTERPOLATION')
                 irf.log('n', 'Using HK & SCI zVariable ACQUISITION_TIME (not Epoch) for interpolating HK data to SCI time.')
                 hkInterpolationTimeTt2000  = hkAtTt2000;
                 sciInterpolationTimeTt2000 = sciAtTt2000;
@@ -622,8 +622,8 @@ classdef dm_processing_functions
                 error('BICAS:data_manager:Assertion:IllegalArgument', 'Illegal argument value "MUX_SET" or "DIFF_GAIN". Must be scalars (not arrays).')
             end
             
-            ALPHA = SETTINGS.get('SIMPLE_DEMUXER.ALPHA');
-            BETA  = SETTINGS.get('SIMPLE_DEMUXER.BETA');
+            ALPHA = SETTINGS.get_fv('SIMPLE_DEMUXER.ALPHA');
+            BETA  = SETTINGS.get_fv('SIMPLE_DEMUXER.BETA');
             GAMMA = bicas.dm_utils.get_simple_demuxer_gamma(DIFF_GAIN);   % NOTE: GAMMA can be NaN iff DIFF_GAIN is.
             
             % Set default values which will be returned for

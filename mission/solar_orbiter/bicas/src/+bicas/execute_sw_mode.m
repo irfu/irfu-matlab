@@ -159,7 +159,10 @@ end
 % ----------------------------------------------------------
 % Required by the RCS ICD iss2rev2, section 3.3.
 %============================================================
-str = bicas.utils.JSON_object_str(JsonOutputCdfFilenameListStruct, SETTINGS.get('JSON_OBJECT_STR.INDENT_SIZE'), SETTINGS.get('JSON_OBJECT_STR.VALUE_POSITION'));
+str = bicas.utils.JSON_object_str(...
+    JsonOutputCdfFilenameListStruct, ...
+    SETTINGS.get_fv('JSON_OBJECT_STR.INDENT_SIZE'), ...
+    SETTINGS.get_fv('JSON_OBJECT_STR.VALUE_POSITION'));
 bicas.stdout_disp(str);
 
 end   % execute_sw_mode
@@ -180,7 +183,7 @@ function GlobalAttributesSubset = derive_output_dataset_GlobalAttributes(GlobalA
 %                          have the exact names of CDF global attributes.
 
 global SETTINGS
-ASSERT_MATCHING_TEST_ID = SETTINGS.get('INPUT_CDF_ASSERTIONS.MATCHING_TEST_ID');
+ASSERT_MATCHING_TEST_ID = SETTINGS.get_fv('INPUT_CDF_ASSERTIONS.MATCHING_TEST_ID');
 
 GlobalAttributesSubset.Parents        = {};            % Array in which to collect value for this file's GlobalAttributes (array-sized GlobalAttribute).
 GlobalAttributesSubset.Parent_version = {};
@@ -286,19 +289,19 @@ end
 %==========================
 % Set CDF GlobalAttributes
 %==========================
-DataObj.GlobalAttributes.Software_name       = SETTINGS.get('SWD_IDENTIFICATION.name');
-DataObj.GlobalAttributes.Software_version    = SETTINGS.get('SWD_RELEASE.version');
-DataObj.GlobalAttributes.Calibration_version = SETTINGS.get('CALIBRATION_VERSION');         % "Static"?!!
+DataObj.GlobalAttributes.Software_name       = SETTINGS.get_fv('SWD_IDENTIFICATION.name');
+DataObj.GlobalAttributes.Software_version    = SETTINGS.get_fv('SWD_RELEASE.version');
+DataObj.GlobalAttributes.Calibration_version = SETTINGS.get_fv('CALIBRATION_VERSION');         % "Static"?!!
 DataObj.GlobalAttributes.Generation_date     = datestr(now, 'yyyy-mm-ddTHH:MM:SS');         % BUG? Assigns local time, not UTC!!! ROC DFMD does not mention time zone.
 DataObj.GlobalAttributes.Logical_file_id     = logical_file_id(...
     datasetId, GlobalAttributesSubset.Test_Id, ...
     GlobalAttributesSubset.Provider, ...
-    SETTINGS.get('OUTPUT_CDF.DATA_VERSION'));
+    SETTINGS.get_fv('OUTPUT_CDF.DATA_VERSION'));
 DataObj.GlobalAttributes.Parents             = GlobalAttributesSubset.Parents;
 DataObj.GlobalAttributes.Parent_version      = GlobalAttributesSubset.Parent_version;
-DataObj.GlobalAttributes.Data_version        = SETTINGS.get('OUTPUT_CDF.DATA_VERSION');     % ROC DFMD says it should be updated in a way which can not be automatized?!!!
+DataObj.GlobalAttributes.Data_version        = SETTINGS.get_fv('OUTPUT_CDF.DATA_VERSION');     % ROC DFMD says it should be updated in a way which can not be automatized?!!!
 DataObj.GlobalAttributes.Provider            = GlobalAttributesSubset.Provider;             % ROC DFMD contradictive if it should be set.
-if SETTINGS.get('OUTPUT_CDF.SET_TEST_ID')
+if SETTINGS.get_fv('OUTPUT_CDF.SET_TEST_ID')
     DataObj.GlobalAttributes.Test_id         = GlobalAttributesSubset.Test_Id;              % ROC DFMD says that it should really be set by ROC.
 end
 %DataObj.GlobalAttributes.SPECTRAL_RANGE_MIN
@@ -322,7 +325,7 @@ for fn = fieldnames(DataObj.data)'
             'processing data to the master CDF. This should only happen for incomplete processing.'], ...
             zVariableName);
         
-        if SETTINGS.get('OUTPUT_CDF.EMPTY_ZVARIABLES_SET_TO_FILL')
+        if SETTINGS.get_fv('OUTPUT_CDF.EMPTY_ZVARIABLES_SET_TO_FILL')
             irf.log('w', logMsg)
             matlabClass = bicas.utils.convert_CDF_type_to_MATLAB_class(DataObj.data.(zVariableName).type, 'Permit MATLAB classes');
             
@@ -356,7 +359,7 @@ end
 % Write to CDF file using write_CDF_dataobj
 %===========================================
 outputFilename = FilenamingFunction(...
-    datasetId, GlobalAttributesSubset.Test_Id, GlobalAttributesSubset.Provider, SETTINGS.get('OUTPUT_CDF.DATA_VERSION'));
+    datasetId, GlobalAttributesSubset.Test_Id, GlobalAttributesSubset.Provider, SETTINGS.get_fv('OUTPUT_CDF.DATA_VERSION'));
 filePath = fullfile(outputFileParentDir, outputFilename);
 irf.log('n', sprintf('Writing dataset CDF file: %s', filePath))
 bicas.utils.write_CDF_dataobj( filePath, ...
@@ -448,11 +451,11 @@ irf.log('n', sprintf('File: Skeleton_version = "%s"', fileSkeletonVersionStr))
 InputInfo = bicas.utils.select_cell_array_structs(CONSTANTS.INPUTS_INFO_LIST, 'PDID', {pdid});
 InputInfo = InputInfo{1};
 bicas.utils.assert_strings_equal(...
-    SETTINGS.get('INPUT_CDF_ASSERTIONS.STRICT_DATASET_ID'), ...
+    SETTINGS.get_fv('INPUT_CDF_ASSERTIONS.STRICT_DATASET_ID'), ...
     {fileDatasetId, InputInfo.DATASET_ID}, ...
     sprintf('The input CDF file''s stated DATASET_ID does not match the value expected for the S/W mode.\n    File: %s\n    ', filePath))
 bicas.utils.assert_strings_equal(...
-    SETTINGS.get('INPUT_CDF_ASSERTIONS.STRICT_SKELETON_VERSION'), ...
+    SETTINGS.get_fv('INPUT_CDF_ASSERTIONS.STRICT_SKELETON_VERSION'), ...
     {fileSkeletonVersionStr, InputInfo.SKELETON_VERSION_STR}, ...
     sprintf('The input CDF file''s stated Skeleton_version does not match the value expected for the S/W mode.\n    File: (%s)\n    ', filePath))
 

@@ -21,7 +21,7 @@ str = sprintf('\nSettings & constants:\n');
 keyList = sort(SETTINGS.get_keys());   % Values seem sorted from the method, but sort again just to be sure.
 for iKey = 1:length(keyList)
     key   = keyList{iKey};
-    value = SETTINGS.get(key);
+    value = SETTINGS.get_fv(key);
     
     if ischar(value)
         strValue = ['"', value, '"'];

@@ -58,19 +58,19 @@ global CONSTANTS SETTINGS
 % which must follow the RCS ICD.
 
 Swd = [];
-Swd.identification.project     = SETTINGS.get('SWD_IDENTIFICATION.project');
-Swd.identification.name        = SETTINGS.get('SWD_IDENTIFICATION.name');
-Swd.identification.identifier  = SETTINGS.get('SWD_IDENTIFICATION.identifier');
-Swd.identification.description = SETTINGS.get('SWD_IDENTIFICATION.description');
+Swd.identification.project     = SETTINGS.get_fv('SWD_IDENTIFICATION.project');
+Swd.identification.name        = SETTINGS.get_fv('SWD_IDENTIFICATION.name');
+Swd.identification.identifier  = SETTINGS.get_fv('SWD_IDENTIFICATION.identifier');
+Swd.identification.description = SETTINGS.get_fv('SWD_IDENTIFICATION.description');
             
-Swd.release.version            = SETTINGS.get('SWD_RELEASE.version');
-Swd.release.date               = SETTINGS.get('SWD_RELEASE.date');
-Swd.release.author             = SETTINGS.get('SWD_RELEASE.author');
-Swd.release.contact            = SETTINGS.get('SWD_RELEASE.contact');
-Swd.release.institute          = SETTINGS.get('SWD_RELEASE.institute');
-Swd.release.modification       = SETTINGS.get('SWD_RELEASE.modification');
+Swd.release.version            = SETTINGS.get_fv('SWD_RELEASE.version');
+Swd.release.date               = SETTINGS.get_fv('SWD_RELEASE.date');
+Swd.release.author             = SETTINGS.get_fv('SWD_RELEASE.author');
+Swd.release.contact            = SETTINGS.get_fv('SWD_RELEASE.contact');
+Swd.release.institute          = SETTINGS.get_fv('SWD_RELEASE.institute');
+Swd.release.modification       = SETTINGS.get_fv('SWD_RELEASE.modification');
 
-Swd.environment                = SETTINGS.get('SWD_ENVIRONMENT.executable');
+Swd.environment                = SETTINGS.get_fv('SWD_ENVIRONMENT.executable');
 Swd.modes = {};
 
 for i = 1:length(CONSTANTS.SW_MODES_INFO_LIST)
@@ -132,9 +132,9 @@ for iOutput = 1:length(ExtendedSwModeInfo.outputs)
     SwdOutputInfo.level                = OutputInfo.SWD_LEVEL;
     SwdOutputInfo.release.date         = OutputInfo.SWD_RELEASE_DATE;
     SwdOutputInfo.release.version      = OutputInfo.SKELETON_VERSION_STR;
-    SwdOutputInfo.release.author       = SETTINGS.get('AUTHOR_NAME');
-    SwdOutputInfo.release.contact      = SETTINGS.get('AUTHOR_EMAIL');
-    SwdOutputInfo.release.institute    = SETTINGS.get('INSTITUTE');
+    SwdOutputInfo.release.author       = SETTINGS.get_fv('AUTHOR_NAME');
+    SwdOutputInfo.release.contact      = SETTINGS.get_fv('AUTHOR_EMAIL');
+    SwdOutputInfo.release.institute    = SETTINGS.get_fv('INSTITUTE');
     SwdOutputInfo.release.modification = OutputInfo.SWD_RELEASE_MODIFICATION;
     SwdOutputInfo.release.file         = masterFilename;
     
