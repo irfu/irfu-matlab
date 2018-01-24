@@ -107,7 +107,8 @@ classdef settings < handle
             obj.set('OUTPUT_CDF.DATA_VERSION', '01');        % Set CDF GlobalAttribute "Data_version". ROC DFMD says it should be updated in a way which can not be automatized?!!! Set here for now.
 
             obj.set('PROCESSING.USE_AQUISITION_TIME_FOR_HK_TIME_INTERPOLATION', 1);
-            
+            obj.set('PROCESSING.ROC_PIP_NAME', 'RGTS');   % Corresponds to environment variable ROC_PIP_NAME defined in RCS ICD. "RGTS" or "RODP".
+            obj.set('PROCESSING.ROC_RCS_CAL_PATH', '');   % Corresponds to environment variable ROC_RCS_CAL_PATH defined in RCS ICD. Path to the RCS calibration files.
             % zVariables which are still empty after copying data into the master CDF assigned a correctly sized array
             % with fill values. This should only be necessary for S/W modes with incomplete processing.
             obj.set('OUTPUT_CDF.EMPTY_ZVARIABLES_SET_TO_FILL', 0);
@@ -169,27 +170,33 @@ classdef settings < handle
         %
         % ARGUMENTS
         % =========
-        % ModifiedSettingsAsStrings : containers.Map with
-        %   keys   = Recursive struct names / settings names
-        %   values = Settings values as strings.
+        % ModifiedSettingsAsStrings : containers.Map
+        %   <keys>   = Settings keys (strings). Must pre-exist as a SETTINGS key.
+        %   <values> = Settings values AS STRINGS. If the pre-existing value is numeric, then it will converted to a
+        %              number.
         %
         %
-        % NOTE: This function is only supposed to be called only once, and as soon as possible after the constants
+        % NOTE: This function is only supposed to be called as soon as possible after the CONSTANTS
         % object has been initialized.
         %
         % IMPLEMENTATION NOTE: This function can NOT be trivially merged with the constructor since
         % (1) "constants" have to be initialized before parsing CLI arguments (for S/W modes).
         % (2) "constants"/settings can be modified by the CLI arguments.
         %
-        function modify_settings(obj, ModifiedSettingsAsStrings)
+        function modify_settings_from_strings(obj, ModifiedSettingsMap)
             
-            keysList = ModifiedSettingsAsStrings.keys;
-            for iModifSetting = 1:length(keysList)
-                key = keysList{iModifSetting};
-                newValueAsString = ModifiedSettingsAsStrings(key);
+            keysList = ModifiedSettingsMap.keys;
+            for iModifSetting = 1:numel(keysList)
+                key              = keysList{iModifSetting};
+                newValueAsString = ModifiedSettingsMap(key);
+                
+                % ASSERTION
+                if ~isa(newValueAsString, 'char')
+                    error('BICAS:settings:Assertion:IllegalArgument', 'Map value is not a string.')
+                end
                 
                 % Use old value to convert string value to appropriate MATLAB class.
-                oldValue = obj.get(key);
+                oldValue = obj.get(key);   % ASSERTS: Key pre-exists
                 if isnumeric(oldValue)
                     newValue = str2double(newValueAsString);
                 elseif ischar(oldValue)

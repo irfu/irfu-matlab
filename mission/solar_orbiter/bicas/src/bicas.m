@@ -252,19 +252,6 @@ irf.log(SETTINGS.get('LOGGING.IRF_LOG_LEVEL'));   % NOTE: May set the logging le
 
 
 
-%====================================================================
-% Configure permitted options COMMON for all BICAS modes of operation.
-%====================================================================
-IcdOptionsConfigMap = containers.Map;
-% NOTE: log_path and config_file_path are both options to permit but ignore since they are handled by bash launcher script.
-IcdOptionsConfigMap('log_path')            = struct('optionHeader', '--log',     'occurrenceRequirement', '0-1',   'nValues', 1);
-IcdOptionsConfigMap('config_file_path')    = struct('optionHeader', '--config',  'occurrenceRequirement', '0-1',   'nValues', 1);
-%
-InoffOptionsConfigMap = containers.Map;
-InoffOptionsConfigMap('modified_settings') = struct('optionHeader', '--setting', 'occurrenceRequirement', '0-inf', 'nValues', 2);
-
-
-
 %===============================================================================
 % Separate CLI arguments into two different sequences/lists:
 % (1) icdCliArgumentsList   = List of official arguments, as defined in RCS ICD.
@@ -286,30 +273,52 @@ end
 
 
 
+%=============================================================================
+% Configure permitted ICD CLI options COMMON for all BICAS modes of operation
+%=============================================================================
+IcdOptionsConfigMap = containers.Map;
+% NOTE: log_path and config_file_path are both options to permit but ignore since they are handled by bash launcher script.
+IcdOptionsConfigMap('log_path')            = struct('optionHeader', '--log',     'occurrenceRequirement', '0-1',   'nValues', 1);
+IcdOptionsConfigMap('config_file_path')    = struct('optionHeader', '--config',  'occurrenceRequirement', '0-1',   'nValues', 1);
+
+
+
+%=========================================================================================================
+% Read environment variables specified by RCS ICD and store them in SETTINGS.
+%
+% NOTE: The placement of this code determines the precedence of other ways of setting the SETTINGS value.
+% The placement of this code is chosen in anticipation of also reading SETTINGS from a config file.
+%=========================================================================================================
+env_var_2_SETTINGS('ROC_PIP_NAME',     'PROCESSING.ROC_PIP_NAME');
+env_var_2_SETTINGS('ROC_RCS_CAL_PATH', 'PROCESSING.ROC_RCS_CAL_PATH');
+
+
+
+InoffOptionsConfigMap = containers.Map;
+InoffOptionsConfigMap('modified_settings') = struct('optionHeader', '--setting', 'occurrenceRequirement', '0-inf', 'nValues', 2);
 % Parse inofficial CLI arguments.
 InoffOptionValuesMap = bicas.utils.parse_CLI_options(inoffCliArgumentsList, InoffOptionsConfigMap);
 
-
-
-% Extract the modified settings from the CLI arguments.
+%=======================================================================================================================
+% Extract the modified settings from the inofficial CLI arguments.
 %
-% NOTE: ModifiedSettings is filled with values in the order of the CLI arguments.
-%       ==> A later option (for the same setting) overwrites the value of a former option.
-ModifiedSettingsAsStrings = containers.Map;
-valuesListsLists = InoffOptionValuesMap('modified_settings');   % Should contain multiple occurrences of the same option.
+% NOTE: ModifiedSettingsMap corresponds to one definition of ONE option (in the meaning of parse_CLI_options) and is
+% filled with the corresponding option values in the order of the CLI arguments.
+%       ==> A later occurrence of an option with the same first option value, overwrites previous occurrences of the
+%       option with the same first option value.
+%       E.g. --setting LOGGING.IRF_LOG_LEVEL w --setting LOGGING.IRF_LOG_LEVEL n
+%=======================================================================================================================
+ModifiedSettingsMap = containers.Map;
+valuesListsLists = InoffOptionValuesMap('modified_settings');   % Should contain multiple occurrences of the same option. Is hence a "list of lists".
 for iSetting = 1:length(valuesListsLists)
-    ModifiedSettingsAsStrings(valuesListsLists{iSetting}{1}) = valuesListsLists{iSetting}{2};
+    ModifiedSettingsMap(valuesListsLists{iSetting}{1}) = valuesListsLists{iSetting}{2};
 end
-
-
-
-% Modify settings
 % Should preferably not use irf.log before here so that the right logging level is used.
-SETTINGS.modify_settings(ModifiedSettingsAsStrings)
-
-
-
+SETTINGS.modify_settings_from_strings(ModifiedSettingsMap);    % Modify SETTINGS
 % CASE: SETTINGS has now been finalized and will never change after this.
+
+
+
 irf.log(SETTINGS.get('LOGGING.IRF_LOG_LEVEL'));
 irf.log('n', bicas.sprint_SETTINGS)                 % Prints the contents of SETTINGS.
 
@@ -496,4 +505,21 @@ end
 bicas.stdout_disp(bicas.sprint_SETTINGS)   % Includes title
 
 bicas.stdout_printf('\nSee "readme.txt" and user manual for more help.\n')
+end
+
+
+
+% Read value of environment variable and use its value to set a corresponding value in SETTINGS.
+%
+% NOTE: Will only modify SETTINGS if the environment variable exists/is non-empty.
+% NOTE: Will only set the SETTINGS value as a string value (not numeric).
+%
+% IMPLEMENTATION NOTE: Function may seem superfluous but it clarifies the code, and removes some mistyping risks.
+function env_var_2_SETTINGS(envVarName, settingsKey)
+global SETTINGS
+
+envVarValue = getenv(envVarName);
+if ~isempty(envVarValue)
+    SETTINGS.modify_settings_from_strings(containers.Map({settingsKey}, {envVarValue}));
+end
 end
