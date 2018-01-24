@@ -275,9 +275,34 @@ end
 % Configure permitted ICD CLI options COMMON for all BICAS modes of operation
 %=============================================================================
 IcdOptionsConfigMap = containers.Map;
+CONFIG_OPTION_HEADER = '--config';
 % NOTE: log_path and config_file_path are both options to permit but ignore since they are handled by bash launcher script.
-IcdOptionsConfigMap('log_path')            = struct('optionHeader', '--log',     'occurrenceRequirement', '0-1',   'nValues', 1);
-IcdOptionsConfigMap('config_file_path')    = struct('optionHeader', '--config',  'occurrenceRequirement', '0-1',   'nValues', 1);
+IcdOptionsConfigMap('log_path')            = struct('optionHeader', '--log',               'occurrenceRequirement', '0-1',   'nValues', 1);
+IcdOptionsConfigMap('config_file_path')    = struct('optionHeader', CONFIG_OPTION_HEADER,  'occurrenceRequirement', '0-1',   'nValues', 1);
+
+
+
+%==============================================================================================================
+% Find the --config option among the ICD arguments in order to load the config file before parsing
+% the remaining ICD CLI arguments.
+% 
+% NOTE: Implementation assumes that --config option is optional.
+% ASSUMES: ICD CLI syntax implies that the option header can only be found at even index (2,4, ...) positions.
+%==============================================================================================================
+iArg = find(strcmp('CONFIG_OPTION_HEADER', icdCliArgumentsList));
+if numel(iArg) > 1
+    error('BICAS:bicas:CLISyntax', 'Found multiple instances of %s option.', CONFIG_OPTION_HEADER)
+elseif numel(iArg) == 1
+    % ASSERTION
+    if ~((mod(iArg, 2) == 0) && (iArg < numel(icdCliArgumentsList)))
+        error('BICAS:bicas:CLISyntax', 'Found %s option at illegal position.', CONFIG_OPTION_HEADER)
+    end
+    % CASE: There is one --config option.
+    configFilePath = icdCliArgumentsList{iArg+1};
+else
+    % CASE: There is no --config option.
+    configFilePath = fullfile(bicasRootPath, SETTINGS.get_tv('DEFAULT_CONFIG_FILE_RELATIVE_PATH'));
+end
 
 
 
