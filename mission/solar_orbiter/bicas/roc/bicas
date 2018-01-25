@@ -47,7 +47,7 @@
 # PROPOSAL: Better error message when can not find MATLAB_COMMAND. Common error.
 # PROPOSAL: Detect presence of bicas within irfu-matlab (avoid there being two bicas).
 #
-# TODO: Detect root path from new environment variable specified in new/upcoming RCS ICD.
+# TODO?: Detect root path from new environment variable specified in new/upcoming RCS ICD.
 #
 # BUG: If mistakenly uses bad "--config" flag, i.e. "--conf", then the script itself will use the wrong
 # MATLAB version ==> Can not launch MATLAB (which would have checked if "--conf" was a bad flag).
@@ -66,7 +66,14 @@ declare -r STDERR_PREFIX='STDERR: '   # NOTE: Not a regex (but will code will mi
 # i.e. WITHOUT the file extension ".m".
 declare -r MATLAB_SCRIPT_NAME="bicas"
 
-# The two alternatives for where the root irfu-matlab directory may be relative to the BICAS root directory.
+# The name of the settings key in the config file, which value is the path to the MATLAB executable.
+# Should technically not contain anything that can be interpreted as regex, but period is probably fine anyway.
+declare -r MATLAB_COMMAND_SETTINGS_KEY="MATLAB_COMMAND"  
+
+# Default config file, relative to the BICAS root path.
+declare -r DEFAULT_CONFIG_FILE_RELATIVE_PATH="config/bicas.conf"
+
+# The two alternatives for where the root irfu-matlab directory may be, relative to the BICAS root directory.
 declare -r INNER_IRFUMATLAB_RELATIVE_PATH="lib/irfu-matlab"    # Needed to detect the presence/absence of the directory.
 declare -r OUTER_IRFUMATLAB_RELATIVE_PATH="../../.."
 
@@ -74,9 +81,7 @@ declare -r OUTER_IRFUMATLAB_RELATIVE_PATH="../../.."
 declare -r ERROR_CODE_CAN_NOT_FIND_LOG_DIR=2
 declare -r ERROR_CODE_CAN_NOT_WRITE_LOG_FILE=3
 declare -r ERROR_CODE_CAN_NOT_FIND_CONFIG_FILE=4
-
-# Default config file, relative to the BICAS root path.
-declare -r DEFAULT_CONFIG_FILE_RELATIVE_PATH="config/bicas.conf"
+declare -r ERROR_CODE_MATLAB_COMMAND_FILE_NOT_EXECUTABLE=5
 
 
 
@@ -182,9 +187,9 @@ fi
 
 
 
-#==================================
-# Determine config file and run it
-#==================================
+#=======================
+# Determine config file
+#=======================
 if [[ -z "$config_file_argument" ]] ; then
     # CASE: No config file argument set (or it is an empty string).
     config_file="$DEFAULT_CONFIG_FILE"
@@ -197,11 +202,35 @@ if [[ ! -f "$config_file" ]] ; then
     echo "Can not find configuration file \"$config_file\"." >> /dev/stderr
     exit $ERROR_CODE_CAN_NOT_FIND_CONFIG_FILE
 fi
-source "$config_file"   # Sets MATLAB_COMMAND.
 
 
 
+#==============================================
+# Read MATLAB_COMMAND setting from config file
+#==============================================
+# ASSUMES/NOTE: The syntax here must be in agreement with the MATLAB code.
+# IMPLEMENTATION NOTE: Needs some ~ugly code to handle the config file syntax, but should be quite flexible.
+# Uses "tail" to reduce multiple matches to one. NOTE: MATLAB code should give error for setting the same key multiple times.
+MATLAB_COMMAND_row_str=$(grep '^'"${MATLAB_COMMAND_SETTINGS_KEY}"' *= *"' "$config_file" | tail -n 1)      
+MATLAB_COMMAND=$(echo "$MATLAB_COMMAND_row_str" | awk -F '"' '{ print $2 }' | awk -F '"' '{ print $1 }' )
+# NOTE: Does not find any matching row. ==> Empty string ==> Must test for empty string before checking path.
 
+
+
+# ASSERTIONS: Test MATLAB_COMMAND
+# -z  String is empty
+if [[ -z "$MATLAB_COMMAND" ]] ; then
+    echo "Can not read setting MATLAB_COMMAND in configuration file \"$config_file\"." >> /dev/stderr
+    exit $ERROR_CODE_CAN_NOT_FIND_CONFIG_FILE
+fi
+# -f  File is a regular file (not directory, not symlink).
+# -x  File/directory has execute permission.
+# NOTE: If testing a symlink, then -f and -x test the pointed-to object.
+if [[ ! -f "$MATLAB_COMMAND" ]] || [[ ! -x "$MATLAB_COMMAND" ]] ; then
+    echo "\"${MATLAB_COMMAND_row_str}\" in configuration file \"$config_file\" does not refer to an executable file." >> /dev/stderr
+    echo "MATLAB_COMMAND=\"${MATLAB_COMMAND}\"" >> /dev/stderr
+    exit $ERROR_CODE_MATLAB_COMMAND_FILE_NOT_EXECUTABLE
+fi
 
 
 
