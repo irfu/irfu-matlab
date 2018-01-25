@@ -143,7 +143,9 @@ classdef settings < handle
                 % Use old value to convert string value to appropriate MATLAB class.
                 oldValue = obj.get_tv(key);   % ASSERTS: Key pre-exists
                 if isnumeric(oldValue)
-                    newValue = str2double(newValueAsString);
+                    %newValue = str2double(newValueAsString);
+                    newValue = textscan(newValueAsString, '%f', 'Delimiter', ',');
+                    newValue = newValue{1}';   % Row vector.
                 elseif ischar(oldValue)
                     newValue = newValueAsString;
                 else

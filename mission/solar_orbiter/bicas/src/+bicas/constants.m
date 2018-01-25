@@ -159,7 +159,7 @@ classdef constants < handle
                 % NOTE: Implicitly checks that cliParameter does NOT begin with "--".
                 disallowedCharsFound = setdiff(cliParameter, INPUT_CLI_OPTION_HEADER_SH_PERMITTED_CHARACTERS);
                 if ~isempty(disallowedCharsFound)
-                    error('BICAS:constants:Assertion:IllegalConfiguration', ...
+                    error('BICAS:constants:Assertion:IllegalCodeConfiguration', ...
                         'Constants value contains illegal character(s). This indicates a pure configuration bug (hard-coded).');
                 end
             end
@@ -177,7 +177,7 @@ classdef constants < handle
                 cliParameter = obj.SW_MODES_INFO_LIST{iMode}.CLI_PARAMETER;
                 
                 if isempty(regexp(cliParameter, SW_MODE_CLI_PARAMETER_REGEX, 'once'))
-                    error('BICAS:constants:Assertion:IllegalConfiguration', ...
+                    error('BICAS:constants:Assertion:IllegalCodeConfiguration', ...
                         'Illegal S/W mode CLI parameter definition. This indicates a pure (hard-coded) configuration bug.');
                 end
             end

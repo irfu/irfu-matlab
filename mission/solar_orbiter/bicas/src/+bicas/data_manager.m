@@ -284,13 +284,13 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
             try   % Assign INPUTS
                 ExtendedSwModeInfo.inputs = bicas.utils.select_cell_array_structs(CONSTANTS.INPUTS_INFO_LIST,  'PDID', ExtendedSwModeInfo.INPUT_PDID_LIST);
             catch exception
-                error('BICAS:Assertion:IllegalConfiguration', ...
+                error('BICAS:Assertion:IllegalCodeConfiguration', ...
                     'Can not identify all input PDIDs associated with S/W mode CLI parameter "%s".', swModeCliParameter)
             end
             try   % Assign OUTPUTS
                 ExtendedSwModeInfo.outputs = bicas.utils.select_cell_array_structs(CONSTANTS.OUTPUTS_INFO_LIST, 'PDID', ExtendedSwModeInfo.OUTPUT_PDID_LIST);
             catch exception
-                error('BICAS:Assertion:IllegalConfiguration', ...
+                error('BICAS:Assertion:IllegalCodeConfiguration', ...
                     'Can not identify all output PDIDs associated with S/W mode CLI parameter "%s".', swModeCliParameter)
             end
         end

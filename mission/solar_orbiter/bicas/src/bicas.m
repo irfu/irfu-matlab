@@ -64,6 +64,7 @@ function errorCode = bicas( varargin )
 % PROPOSAL: Put a summarized version of CLI syntax in "bicas --help" (somethinger easier that the S/W descriptor).
 %    PRO: Useful when S/W descriptor becomes big and complex.
 %
+% -------- OLD --------
 % NOTE: Implementation of the parsing of CLI arguments is problematic for when processing s/w mode.
 %   PROBLEM: Present, ICD & inofficial options mixed: The s/w mode argument influences which succeeding arguments are
 %   permitted (depends on the s/w mode).
@@ -306,14 +307,20 @@ end
 
 
 
-%=========================================================================================================
-% Read environment variables specified by RCS ICD and store them in SETTINGS.
-%
-% NOTE: The placement of this code determines the precedence of other ways of setting the SETTINGS value.
-% The placement of this code is chosen in anticipation of also reading SETTINGS from a config file.
-%=========================================================================================================
-env_var_2_SETTINGS('ROC_PIP_NAME',     'PROCESSING.ROC_PIP_NAME');
-env_var_2_SETTINGS('ROC_RCS_CAL_PATH', 'PROCESSING.ROC_RCS_CAL_PATH');
+%=================================================
+% Modify settings according to configuration file
+%=================================================
+rowList = bicas.utils.read_text_file(configFilePath);
+ConfigFileSettingsVsMap = bicas.interpret_config_file(rowList);
+SETTINGS.set_preexisting_from_strings(ConfigFileSettingsVsMap);    % Modify SETTINGS
+
+
+
+%====================================================
+% Modify settings according to environment variables
+%====================================================
+env_var_2_SETTINGS(SETTINGS, 'ROC_PIP_NAME',     'PROCESSING.ROC_PIP_NAME');
+env_var_2_SETTINGS(SETTINGS, 'ROC_RCS_CAL_PATH', 'PROCESSING.ROC_RCS_CAL_PATH');
 
 
 
@@ -331,20 +338,24 @@ InoffOptionValuesMap = bicas.utils.parse_CLI_options(inoffCliArgumentsList, Inof
 %       option with the same first option value.
 %       E.g. --setting LOGGING.IRF_LOG_LEVEL w --setting LOGGING.IRF_LOG_LEVEL n
 %=======================================================================================================================
-ModifiedSettingsMap = containers.Map;
+CliSettingsVsMap = containers.Map;
 valuesListsLists = InoffOptionValuesMap('modified_settings');   % Should contain multiple occurrences of the same option. Is hence a "list of lists".
 for iSetting = 1:length(valuesListsLists)
-    ModifiedSettingsMap(valuesListsLists{iSetting}{1}) = valuesListsLists{iSetting}{2};
+    CliSettingsVsMap(valuesListsLists{iSetting}{1}) = valuesListsLists{iSetting}{2};
 end
-% Should preferably not use irf.log before here so that the right logging level is used.
-SETTINGS.set_preexisting_from_strings(ModifiedSettingsMap);    % Modify SETTINGS
+
+
+%============================================
+% Modify settings according to CLI arguments
+%============================================
+SETTINGS.set_preexisting_from_strings(CliSettingsVsMap);    % Modify SETTINGS
 SETTINGS.make_read_only();
-% CASE: SETTINGS has now been finalized and will never change after this.
+% CASE: SETTINGS has now been finalized and is read-only after this (assertion).
 
 
 
 irf.log(SETTINGS.get_fv('LOGGING.IRF_LOG_LEVEL'));
-irf.log('n', bicas.sprint_SETTINGS)                 % Prints the contents of SETTINGS.
+irf.log('n', bicas.sprint_SETTINGS)                 % Prints/log the contents of SETTINGS.
 
 
 
@@ -420,7 +431,7 @@ else
         
         % ASSERTION
         if IcdOptionsConfigMap.isKey(pdid)
-            error('BICAS:Assertion:IllegalConfiguration', 'Dataset ID used as option identifier conflicts with other option identifier. Bad hardcoding.')
+            error('BICAS:Assertion:IllegalCodeConfiguration', 'Dataset ID used as option identifier conflicts with other option identifier. Bad hardcoding.')
         end
         IcdOptionsConfigMap(pdid) = OptionConfig;
         
@@ -539,8 +550,7 @@ end
 % NOTE: Will only set the SETTINGS value as a string value (not numeric).
 %
 % IMPLEMENTATION NOTE: Function may seem superfluous but it clarifies the code, and removes some mistyping risks.
-function env_var_2_SETTINGS(envVarName, settingsKey)
-global SETTINGS
+function env_var_2_SETTINGS(SETTINGS, envVarName, settingsKey)
 
 envVarValue = getenv(envVarName);
 if ~isempty(envVarValue)

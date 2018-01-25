@@ -90,7 +90,7 @@ end
 % release-->version-->pattern (not to be confused with release_dataset-->version--pattern).
 %===========================================================================================
 if isempty(regexp(Swd.release.version, '^(\d+\.)?(\d+\.)?(\d+)$', 'once'))
-    error('BICAS:get_sw_descriptor:IllegalConfiguration', 'Illegal S/W descriptor release version "%s". This indicates a hard-coded configuration bug.', Swd.release.version)
+    error('BICAS:get_sw_descriptor:IllegalCodeConfiguration', 'Illegal S/W descriptor release version "%s". This indicates a hard-coded configuration bug.', Swd.release.version)
 end
 
 SwDescriptor = Swd;    % Assign return value.
@@ -144,7 +144,7 @@ for iOutput = 1:length(ExtendedSwModeInfo.outputs)
     % NOTE: It is hard to thoroughly follow the description, but the end result should be under
     % release_dataset-->version-->pattern (not to be confused with release-->version--pattern).
     if isempty(regexp(SwdOutputInfo.release.version, '^[0-9]{2}$', 'once'))
-        error('BICAS:get_sw_descriptor:Assertion:IllegalConfiguration', ...
+        error('BICAS:get_sw_descriptor:Assertion:IllegalCodeConfiguration', ...
             'Illegal S/W descriptor output release version "%s". This indicates a hard-coded configuration bug.', SwdOutputInfo.release.version)
     end
         

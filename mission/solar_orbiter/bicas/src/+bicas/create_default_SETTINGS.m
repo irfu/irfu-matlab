@@ -36,17 +36,19 @@ D.INSTITUTE    = 'IRF-U';
 
 S = bicas.settings();
 
+S.define_setting('MATLAB_COMMAND', '');
+
 S.define_setting('AUTHOR_NAME',  D.AUTHOR_NAME);
 S.define_setting('AUTHOR_EMAIL', D.AUTHOR_EMAIL);
 S.define_setting('INSTITUTE',    D.INSTITUTE);
-S.define_setting('MASTER_CDFS_RELATIVE_DIR', 'data');    % Directory with master CDF files. Relative to the software directory structure root.
+S.define_setting('MASTER_CDFS_RELATIVE_DIR', 'data');    % Directory with master CDF files. Relative to BICAS's directory root.
 
 % Value that shows up in EOut dataset GlobalAttributes.Calibration_version.
-% String value.
+% String value. TEMPORARY SOLUTION.
 S.define_setting('CALIBRATION_VERSION', '0.1; Only proportionality constants i.e. no voltage offset tables, no transfer functions; No bias currents');
 
 S.define_setting('DEFAULT_CONFIG_FILE_RELATIVE_PATH', fullfile('config', 'bicas.conf'));   % Path (incl. filename) to default config file. Relative to BICAS's directory root.
-
+ 
 
 %===========================================================================================================
 % Various S/W descriptor release data for the entire software (not specific outputs)
