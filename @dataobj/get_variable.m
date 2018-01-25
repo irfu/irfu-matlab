@@ -57,8 +57,8 @@ for iName=1:length(varAttNames),
   attrMatName = variable_mat_name(attr);
   % Detect recursive deps
   if strcmp(parent,attrMatName)
-    warning('databj:get_variable:cyclic_dep',...
-      ['Cyclic dependecy: ' parent ' <-> ' varName]);
+    irf.log('warning',['databj:get_variable:cyclic_dep',...
+      ['Cyclic dependecy: ' parent ' <-> ' varName]]);
     continue
   end
   varTmp = get_variable(dobj,attr,varName);
