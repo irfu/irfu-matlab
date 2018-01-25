@@ -284,7 +284,16 @@ if isbrstdata % Burst mode energy/speed widths
     energyall = [energy0 energy1];
     energyall = log10(sort(energyall));
     temp0 = 2*energyall(1)-energyall(2);
-    temp65 = 2*energyall(64)-energyall(63);
+    if abs(energyall(2) - energyall(1)) > 0.0001
+        temp0 = 2*energyall(1)-energyall(2);
+    else
+        temp0 = 2*energyall(2)-energyall(3); 
+    end
+    if abs(energyall(64) - energyall(63)) > 0.0001
+        temp65 = 2*energyall(64)-energyall(63);
+    else
+        temp65 = 2*energyall(64)-energyall(62); 
+    end    
     energyall = [temp0 energyall temp65];
     diffenall = diff(energyall);
     energy0upper = 10.^(log10(energy0)+diffenall(2:2:64)/2);
