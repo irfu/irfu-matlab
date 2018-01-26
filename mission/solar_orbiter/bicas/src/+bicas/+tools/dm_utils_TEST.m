@@ -1,4 +1,4 @@
-% dm_utils_TEST - Automated test code for dm_utils.
+% dm_utils_TEST - Automated test code for functions in dm_utils. Does not necessarily test all functions.
 % 
 %
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
@@ -10,61 +10,13 @@
 %   NOTE: Has to handle approximate numeric results.
 
 function dm_utils_TEST
-    %find_last_same_sequence_TEST
-    %convert_N_to_1_SPR_ACQUISITION_TIME_TEST
-    %convert_N_to_1_SPR_Epoch_TEST
-    %convert_N_to_1_SPR_redistribute_TEST
-    %convert_N_to_1_SPR_repeat_TEST
+    find_last_same_sequence_TEST
+    convert_N_to_1_SPR_ACQUISITION_TIME_TEST
+    convert_N_to_1_SPR_Epoch_TEST
+    convert_N_to_1_SPR_redistribute_TEST
+    convert_N_to_1_SPR_repeat_TEST
     find_sequences_TEST
 end
-
-
-
-% function find_last_same_sequence_TEST
-% 
-%     function i = split_into_sequences(varargin)
-% 	% Utility function
-%         i = [];
-%         i_first = 1;        
-%         while i_first <= length(varargin{1})
-%             i(end+1) = i_first;
-%             i_last = bicas.dm_utils.find_last_same_sequence(i_first, varargin{:});            
-%             i_first = i_last + 1;
-%         end
-%         i(end+1) = i_first;
-%     end
-% 
-%     i_res = {};
-%     i_exp = {};
-%     i_res{end+1} = split_into_sequences([1,1,1]');
-%     i_exp{end+1} = [1,4];
-%     i_res{end+1} = split_into_sequences([1,5]');
-%     i_exp{end+1} = [1,2,3];
-%     i_res{end+1} = split_into_sequences([1,1,1,5,6,6]');
-%     i_exp{end+1} = [1,4,5,7];
-%     i_res{end+1} = split_into_sequences([1,1,1,5,6,6]', [2,2,2,7,4,4]');
-%     i_exp{end+1} = [1,4,5,7];
-%     i_res{end+1} = split_into_sequences([1,1,5,5,6,6]', [2,2,2,7,4,4]');
-%     i_exp{end+1} = [1,3,4,5,7];
-%     i_res{end+1} = split_into_sequences([NaN]');
-%     i_exp{end+1} = [1,2];
-%     i_res{end+1} = split_into_sequences([NaN,NaN]');
-%     i_exp{end+1} = [1,3];
-%     i_res{end+1} = split_into_sequences([NaN,1,1,5,6,6]');
-%     i_exp{end+1} = [1,2,4,5,7];
-%     i_res{end+1} = split_into_sequences([1,1,NaN,6,6]');
-%     i_exp{end+1} = [1,3,4,6];
-%     i_res{end+1} = split_into_sequences([1,1,6,6,NaN]');
-%     i_exp{end+1} = [1,3,5,6];
-%     
-%     for k = 1:length(i_res)
-%         if ~bicas.utils.equals_tolerance(i_res{k}, i_exp{k}, 0)
-%             i_res{k}
-%             i_exp{k}
-%             error('FAIL')
-%         end
-%     end
-% end
 
 
 

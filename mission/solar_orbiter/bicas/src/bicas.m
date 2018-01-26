@@ -56,7 +56,7 @@ function errorCode = bicas( varargin )
 %
 % PROPOSAL: Set option for MATLAB warnings. Disable?
 %    NOTE: TN claims warnings are sent to stdout.
-% TODO-NEED-INFO: Is the applicaton allowed to overwrite output files?
+% TODO-NEED-INFO: Is the application allowed to overwrite output files?
 %
 % PROPOSAL: Check that all master cdf files are present/available.
 %
@@ -91,9 +91,6 @@ function errorCode = bicas( varargin )
 %               NOTE: Does not need to know anything else about other options since this determines possible positions of
 %                   the sought option: index = 1 + (N+1)*m, m=integer.
 %               CON: Can still not mix inofficial and ICD arguments.
-%
-% PROPOSAL: Not declare SETTINGS as a global variable until it is certain that it has been updated/finalized.
-%   PROPOSAL: Different names for global and local SETTINGS variable, even if temporary.
 
 
 % Clear any previous instance of global variables (as early as possible).
@@ -211,13 +208,15 @@ irf('cdf_leapsecondstable');
 irf('version')                % Print e.g. "irfu-matlab version: 2017-02-21,  v1.12.6".
 irf.log('notice')             % Set initial log level value until it is later overridden by the config value.
 
-%=======================================================================
-% Derive the root path of the software (BICAS directory structure root)
-%=======================================================================
+
+
+%===============================
+% Derive BICAS's directory root
+%===============================
 %ROC_RCS_PATH = getenv('ROC_RCS_PATH');     % Use environment variable.
 %irf.log('n', sprintf('ROC_RCS_PATH = "%s"', ROC_RCS_PATH));
 % ASSUMES: The current file is in the <BICAS>/src directory.
-[matlabSrcPath, ~, ~] = fileparts(mfilename('fullpath'));   % Use path of the current MATLAB file.
+[matlabSrcPath, junk1, junk2] = fileparts(mfilename('fullpath'));   % Use path of the current MATLAB file.
 bicasRootPathFromCode = bicas.utils.get_abs_path(fullfile(matlabSrcPath, '..'));
 bicasRootPath = bicasRootPathFromCode;    % Select which path to use as BICAS root path.
 
@@ -226,17 +225,17 @@ bicasRootPath = bicasRootPathFromCode;    % Select which path to use as BICAS ro
 %=======================================
 % Log misc. paths and all CLI arguments
 %=======================================
-irf.log('n', sprintf('BICAS software root path:                    "%s"', bicasRootPath))
-irf.log('n', sprintf('Current working directory:                   "%s"', pwd));   % Useful for debugging the use of relative directory arguments.
+irf.log('n', sprintf('BICAS software root path:  "%s"', bicasRootPath))
+irf.log('n', sprintf('Current working directory: "%s"', pwd));   % Useful for debugging the use of relative directory arguments.
 for i = 1:length(cliArgumentsList)
     irf.log('n', sprintf('CLI argument %2i: "%s"', i, cliArgumentsList{i}))    % PROPOSAL: Combine into a single multiline log message?
 end
 
 
 
-%=============================
-% Initialize global constants
-%=============================
+%========================================
+% Initialize global settings & constants
+%========================================
 % IMPLEMENTATION NOTE: Does not initialize CONSTANTS until here because:
 %    1) MATLAB version should have been checked for first. The initialization code could otherwise fail.
 %    2) Needs BICAS root path.
@@ -245,9 +244,7 @@ end
 global CONSTANTS
 global SETTINGS
 CONSTANTS = bicas.constants(bicasRootPath);
-%SETTINGS  = bicas.settings;
 SETTINGS = bicas.create_default_SETTINGS();
-irf.log(SETTINGS.get_tv('LOGGING.IRF_LOG_LEVEL'));   % NOTE: May set the logging level to the same level as before. Remove?
 
 
 
@@ -375,21 +372,24 @@ elseif (strcmp(icdCliArgumentsList{1}, '--version'))
     %============================
     % CASE: Print version
     %============================
-    %IcdOptionValuesMap = bicas.utils.parse_CLI_options(icdCliArgumentsList(2:end), IcdOptionsConfigMap);
+    % Parse CLI arguments for the syntax check, even if does not use the results.
+    IcdOptionValuesMap = bicas.utils.parse_CLI_options(icdCliArgumentsList(2:end), IcdOptionsConfigMap);
     print_version(DataManager)
     
 elseif (strcmp(icdCliArgumentsList{1}, '--identification'))
     %============================
     % CASE: Print s/w descriptor
     %============================
-    %IcdOptionValuesMap = bicas.utils.parse_CLI_options(icdCliArgumentsList(2:end), IcdOptionsConfigMap);
+    % Parse CLI arguments for the syntax check, even if does not use the results.
+    IcdOptionValuesMap = bicas.utils.parse_CLI_options(icdCliArgumentsList(2:end), IcdOptionsConfigMap);
     print_identification(DataManager)
     
 elseif (strcmp(icdCliArgumentsList{1}, '--help'))
     %============================
     % CASE: Print help
     %============================
-    %IcdOptionValuesMap = bicas.utils.parse_CLI_options(icdCliArgumentsList(2:end), IcdOptionsConfigMap);
+    % Parse CLI arguments for the syntax check, even if does not use the results.
+    IcdOptionValuesMap = bicas.utils.parse_CLI_options(icdCliArgumentsList(2:end), IcdOptionsConfigMap);
     print_help(ERROR_TYPES_INFO, DataManager)
 
 else
@@ -528,7 +528,7 @@ bicas.stdout_printf('%s\n', swd.identification.description)
 % Print error codes & types
 %==========================
 errorCodesList = cellfun(@(x) (x.code), ERROR_TYPES_INFO.values);   % Array of (unsorted) error codes.
-[~, iSort] = sort(errorCodesList);
+[junk1, iSort] = sort(errorCodesList);
 errorTypesInfoList = ERROR_TYPES_INFO.values;      % Cell array of structs (unsorted).
 errorTypesInfoList = errorTypesInfoList(iSort);    % Cell array of structs sorted by error code.
 bicas.stdout_printf('\nError codes:\n')

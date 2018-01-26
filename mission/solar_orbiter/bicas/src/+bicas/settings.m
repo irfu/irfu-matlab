@@ -33,9 +33,15 @@ classdef settings < handle
 %   Ex: Default value (so can display it if overridden)
 %   Ex: Flag for origin of current value: default, config file, CLI argument.
 %   Ex: Flag for write-protection (always use default value).
+%       NOTE: Some settings (one?) make no sense to modify: config file path, STDOUT_PREFIX.
+%   Ex: Flag for values which have not been set but must later be set.
+%       Ex: MATLAB_COMMAND
+%           CON: Is not really needed by BICAS.
 %
 % PROPOSAL: Convention for "empty"/"not set"?!
 %   TODO-DECISION/CON: Not really needed? Depends too much on the variable/setting.
+%
+% PROPOSAL: Move out interpretation of strings as numeric values?!
     
     properties(Access=private)
         defineDisabledForever = false;   % Whether defining new keys is disallowed. True if readOnlyForever==true.
@@ -122,6 +128,12 @@ classdef settings < handle
         %   <values> = Settings values AS STRINGS.
         %              Preserves the type of settings value for strings and numerics. If the pre-existing value is
         %              numeric, then the argument value will be converted to a number.
+        %              Numeric row vectors are represented as a comma separated-list (no brackets), e.g. "1,2,3".
+        %              Empty numeric vectors can not be represented.
+        %
+        % 
+        % NOTE/BUG: No good checking (assertion) of whether the string format of a vector makes sense.
+        % NOTE: Does not check if numeric vectors have the same size as old value.
         %
         function set_preexisting_from_strings(obj, ModifiedSettingsMap)
             

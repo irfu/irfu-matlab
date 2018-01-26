@@ -203,47 +203,6 @@ classdef dm_utils
         
         
         
-%         function iLast = find_last_same_sequence(iFirst, varargin)
-%         % Finds the greatest iLast such that all varargin{k}(i) are equal for iFirst <= i <= iLast separately for every k.
-%         % Useful for finding a continuous sequence of records with the same data.
-%         %
-%         % ASSUMES: varargin{i} are all column arrays of the same size.
-%         % ASSUMES: At least one record. (Algorithm does not work for zero records. Output is ill-defined.)
-%         
-%         % PROPOSAL: Better name?
-%         % PROPOSAL: Replace by function that returns list of sequences.
-%         %   PRO: Can naturally handle zero records.
-%             
-%             % ASSERTIONS
-%             if isempty(varargin)
-%                 error('BICAS:dm_utils:Assertion:IllegalArgument', 'There are no vectors to look for sequences in.')
-%             end
-%             for kArg = 1:length(varargin)
-%                 if ~iscolumn(varargin{kArg})
-%                     error('BICAS:dm_utils:Assertion:IllegalArgument', 'varargins are not all column vectors.')
-%                 end
-%             end                
-%             nRecords = size(varargin{1}, 1);
-%             if nRecords == 0
-%                 error('BICAS:dm_utils:Assertion:IllegalArgument', 'Vectors are empty.')
-%             end
-% 
-%             % NOTE: Algorithm does not work for nRecords==0.
-%             iLast = iFirst;
-%             while iLast+1 <= nRecords       % For as long as there is another row...
-%                 for kArg = 1:length(varargin)
-%                     if ~isequaln(varargin{kArg}(iFirst), varargin{kArg}(iLast+1))    % NOTE: Use "isequaln" that treats NaN as any other value.
-%                         % CASE: This row is different from the previous one.
-%                         return
-%                     end
-%                 end
-%                 iLast = iLast + 1;
-%             end
-%             iLast = nRecords;
-%         end
-
-        
-        
         % EXPERIMENTAL
         function [iFirstList, iLastList] = find_sequences(varargin)
         % For a non-empty set of column vectors, find all subsequences of continuously constant values in all the vectors.

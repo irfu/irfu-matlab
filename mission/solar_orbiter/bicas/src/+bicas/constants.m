@@ -33,6 +33,8 @@ classdef constants < handle
 %   TODO-NEED-INFO: There is a ROC-defined environment variable for this?
 %
 % PROPOSAL: Get rid of BICAS_ROOT_PATH somehow. Does not fit in.
+%   PROPOSAL: Move to SETTINGS?
+%   PROPOSAL: Use as regular variable submitted through arguments.
 %
 % PROPOSAL: More validation.
 %   PROPOSAL: Check that data types are unique.

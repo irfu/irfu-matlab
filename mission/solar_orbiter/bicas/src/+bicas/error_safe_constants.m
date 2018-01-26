@@ -51,7 +51,7 @@ MAP('IllegalArgument')              = info_struct(107, 'Argument passed to inter
 MAP('SWModeProcessing')             = info_struct(108, 'Error in s/w mode processing (processing data sets).');
 MAP('DatasetFormat')                = info_struct(109, 'Error when interpreting (official CDF) datasets, including master CDF files.');
 MAP('IllegalCodeConfiguration')     = info_struct(110, 'Bad hard-coded configuration (or possibly configurable setting but should not be), e.g. constants, S/W descriptor. This should ideally indicate a pure code bug, i.e. it is not triggered by certain user-controlled input.');
-MAP('CannotInterpretConfigFile')    = info_struct(111, 'Can not interpret the content of the configuration file. This implies a problem with the syntax.')
+MAP('CannotInterpretConfigFile')    = info_struct(111, 'Can not interpret the content of the configuration file. This implies a problem with the syntax.');
                      
 ERROR_TYPES_INFO = MAP;
 
