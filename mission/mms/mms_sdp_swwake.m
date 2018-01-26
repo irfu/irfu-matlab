@@ -290,7 +290,7 @@ for in = iok
   av12_corr = av12 - wake;
   % Find the ground tone and remove it from the data
   x = fft(av12_corr);
-  x(3:359) = 0;
+  x(5:359) = 0;
   av12_corr = av12 -ifft(x, 'symmetric');
 
   % Now find the final fit	
@@ -310,9 +310,11 @@ for in = iok
   cdav = cumsum(d12(i1));
   cdav = cdav - mean(cdav);
   ccdav1 = cumsum(cdav);
+  ccdav1 = crop_wake(ccdav1);
   cdav = cumsum(d12(i2));
   cdav = cdav - mean(cdav);
   ccdav2 = cumsum(cdav);
+  ccdav2 = crop_wake(ccdav2);
 	
   if max(max(abs(ccdav1)),max(abs(ccdav2)))< WAKE_MIN_AMPLITUDE ||...
       max(max(abs(ccdav1)),max(abs(ccdav2)))>WAKE_MAX_AMPLITUDE
@@ -544,5 +546,32 @@ function res = isGoodShape(s)
     irf.log('debug', ...
       sprintf('BAD FIT: second max is %0.2f of the main max', smax/maxmax) );
   end
+end
+
+function wake = crop_wake(wake)
+% Crop wake side lobes below a defined fraction of the maximum.
+% Use spline interpoltion to reach smooth transition to the zero level
+% outside.
+
+AMP_FRAC = 0.15; % fraction of amplitude bewlo which we neew to crop
+GAP_WIDTH = 4; % number of points ower which the wake is required to reach zero
+
+idx=(1:length(wake))';
+imax=find(abs(wake)==max(abs(wake)));
+wamp=wake(imax);
+
+if wamp<0, iout = wake>wamp*AMP_FRAC;
+else, iout = wake<wamp*AMP_FRAC;
+end
+
+ist = find(((idx<imax) & iout),1,'last');
+ien = find(((idx>imax) & iout),1,'first');
+
+wake(idx>=ien+GAP_WIDTH+1 | idx<=ist-GAP_WIDTH-1) = 0;
+
+iexcl = [ist-GAP_WIDTH:ist, ien:ien+GAP_WIDTH]; % indeces over which to interpolate
+itmp = setxor(idx,iexcl);
+
+wake = interp1(itmp,wake(itmp),idx,'spline');
 end
 
