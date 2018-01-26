@@ -551,14 +551,16 @@ end
 function wake = crop_wake(wake)
 % Crop wake side lobes below a defined fraction of the maximum.
 % Use spline interpoltion to reach smooth transition to the zero level
-% outside.
+% outside. If lobes are not located or too close to the beggining or 
+% end of the wake segment it is returned unaltered.
 
 AMP_FRAC = 0.15; % fraction of amplitude bewlo which we neew to crop
 GAP_WIDTH = 4; % number of points ower which the wake is required to reach zero
+lenWake = length(wake);
 
-idx=(1:length(wake))';
-imax=find(abs(wake)==max(abs(wake)));
-wamp=wake(imax);
+idx = (1:lenWake)';
+imax = find(abs(wake)==max(abs(wake)));
+wamp = wake(imax);
 
 if wamp<0, iout = wake>wamp*AMP_FRAC;
 else, iout = wake<wamp*AMP_FRAC;
@@ -566,6 +568,10 @@ end
 
 ist = find(((idx<imax) & iout),1,'last');
 ien = find(((idx>imax) & iout),1,'first');
+if (ist<=GAP_WIDTH) || (ien>=lenWake-GAP_WIDTH)
+  irf.log('debug', 'Avoiding cropping wake, too close to beginning/end.');
+  return
+end
 
 wake(idx>=ien+GAP_WIDTH+1 | idx<=ist-GAP_WIDTH-1) = 0;
 
