@@ -202,6 +202,7 @@ if ppeq
     irf.log('notice','Rotating tensor so perpendicular diagonal components are equal.');
     theta = 0.5*atan((Ptensorp(:,3,3)-Ptensorp(:,2,2))./(2*Ptensorp(:,2,3)));
     for ii = 1:length(Petimes)
+        if isnan(theta(ii));    theta(ii) = 0;  end
         rottemp = [1 0 0; 0 cos(theta(ii)) sin(theta(ii)); 0 -sin(theta(ii)) cos(theta(ii))];
         Ptensorp(ii,:,:) = rottemp*(squeeze(Ptensorp(ii,:,:))*transpose(rottemp));
     end

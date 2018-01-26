@@ -68,12 +68,14 @@ Problems seen when looking through the summary plots for 2008
   added to special_processing
 0603 0403-1030+  blank C1 P maybe should start 2009-06-02 18:32:00
 0608 06-12 force MS offsets
+0612 06-09 force MS offsets
 0614 15-18 force MS offsets
 0617 0130-300 force MS offsets
 0619 9-15 force MS offsets
   added to special_processing
 0624 0130-0629 C2 hbiassa (also 134)
   added to manual_problems 
+0627 09-15 force SH offsets
 07* entire month: force MS offset
   changed in c_efw_dsi_off.m
 0718 07:46:05 C2 glitch (660 s)

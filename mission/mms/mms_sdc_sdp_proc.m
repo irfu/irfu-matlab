@@ -141,7 +141,7 @@ switch procId
     % Similar for ASPOC.
     if(isempty(ASPOC_File))
       % Go looking for ASPOC to match tint.
-      list = mms.db_list_files(['mms',HdrInfo.scIdStr,'_aspoc_srvy_l2'],tint);
+      list = mms.db_list_files(['mms',HdrInfo.scIdStr,'_aspoc_srvy_l2'],tint+[-100 0]);
       if(isempty(list) || list(1).start > tint.start)
         % If no ASPOC was found or it did not cover start of tint. Simply
         % issue warning.
