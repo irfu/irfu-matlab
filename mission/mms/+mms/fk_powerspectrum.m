@@ -101,6 +101,7 @@ while flag_have_options
     if isempty(args), flag_have_options=0; end
 end
 
+
 % Correct for timing in spacecraft potential data.
 E12 = TSeries(SCpot.time,(SCpot.data(:,1)-SCpot.data(:,2))/0.120);
 E34 = TSeries(SCpot.time,(SCpot.data(:,3)-SCpot.data(:,4))/0.120);
@@ -111,16 +112,30 @@ V5 = TSeries(SCpot.time+15.259e-6,SCpot.data(:,5));
 E12.time = E12.time + 26.703e-6;
 E34.time = E34.time + 30.518e-6;
 E56.time = E56.time + 34.332e-6;
-V3 = V3.resample(V1.time);
-V5 = V5.resample(V1.time);
-E12 = E12.resample(V1.time);
-E34 = E34.resample(V1.time);
-E56 = E56.resample(V1.time);
+
+test_resamp=1;
+if test_resamp
+    V3 = mms.dft_timeshift(V3,-7.629e-6);
+    V5 = mms.dft_timeshift(V5,-15.259e-6);
+    E12 = mms.dft_timeshift(E12,-26.703e-6);
+    E34 = mms.dft_timeshift(E34,-30.518e-6);
+    E56 = mms.dft_timeshift(E56,-34.332e-6);
+else
+    V3 = V3.resample(V1.time);
+    V5 = V5.resample(V1.time);
+    E12 = E12.resample(V1.time); %These resamples need to be changed.
+    E34 = E34.resample(V1.time);
+    E56 = E56.resample(V1.time);
+    
+end
+
 V2 = V1 - E12 * 0.120;
 V4 = V3 - E34 * 0.120;
 V6 = V5 - E56 * 0.0292;
 % Make new SCpot with corrections
 SCpot = irf.ts_scalar(V1.time,[V1.data V2.data V3.data V4.data V5.data V6.data]);
+
+
 
 ts2l = ts2+[-1 1];
 SCpot = SCpot.tlim(ts2l);
@@ -168,7 +183,6 @@ E4 = (SCV12-SCpot.data(:,4))*1e3/60;
 E5 = (SCpot.data(:,5)-(SCV34+SCV12)/2)*1e3/14.6; %Added
 E6 = ((SCV34+SCV12)/2-SCpot.data(:,6))*1e3/14.6; %Added
 
-
 c_eval('E? = TSeries(time,E?,''to'',1);',[1:6]); %Generalized
 
 if ~use_56 %Added third dimension to work with 5-6, does not affect 12,34.
@@ -179,7 +193,7 @@ if ~use_56 %Added third dimension to work with 5-6, does not affect 12,34.
     phase_p4=zphase.data/180*pi + 5*pi/3;
     c_eval('rp?=[60*cos(phase_p?) 60*sin(phase_p?), zeros(length(phase_p?),1)];',[1:4]);
     probe_nr = [1 3];
-else 
+else
     probe_nr = 5;
     phase_p5=ones(length(Bxyz.data(:,1)),1);
     phase_p6=-1*ones(length(Bxyz.data(:,1)),1);
@@ -195,7 +209,7 @@ if mod(length(idx),2)
 end
 
 c_eval('thetatest = irf.nanmean(thetap?b(idx));',probe);
-c_eval('thetap?b = abs(thetap?b);',probe_nr);           
+c_eval('thetap?b = abs(thetap?b);',probe_nr);
 c_eval('thetap?b = TSeries(Bxyz.time,thetap?b,''to'',1);',probe_nr);
 
 if (thetatest > 0)
