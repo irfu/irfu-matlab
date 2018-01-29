@@ -568,7 +568,10 @@ end
 
 ist = find(((idx<imax) & iout),1,'last');
 ien = find(((idx>imax) & iout),1,'first');
-if (ist<=GAP_WIDTH) || (ien>=lenWake-GAP_WIDTH)
+if isempty(ist) || isempty(ien)
+  irf.log('debug', 'Avoiding cropping wake, empty "ist" or "ein".');
+  return
+elseif (ist<=GAP_WIDTH) || (ien>=lenWake-GAP_WIDTH)
   irf.log('debug', 'Avoiding cropping wake, too close to beginning/end.');
   return
 end
