@@ -201,7 +201,11 @@ if isempty(iok)
   return
 end
 
+prevSpinGood = false; currentSpinGood = false;
 for in = iok
+  prevPrevSpinGood = prevSpinGood;
+  prevSpinGood = currentSpinGood; currentSpinGood = true;
+  
   % Do we need to plot the current interval?
   if plotflag
     plot_i = plot_i + 1;
@@ -250,152 +254,144 @@ for in = iok
     irf.log('debug', ['Wake displaced by ', num2str(abs(ind2-ind1-180)'), ...
       ' deg at ', irf_time(int64(ts)+timeIn(1),'ttns>utc')]);
     wakedesc([in*2-1 in*2], :) = NaN;
-    continue
+    currentSpinGood = false;
   end
 
-  % The proxy wake is naroow (1/2 of the final fit)	
-  wake_width = fix(WAKE_MAX_HALFWIDTH/2);
-  i1 = mod( (ind1-wake_width:ind1+wake_width) -1, NPOINTS) +1;
-  i2 = mod( (ind2-wake_width:ind2+wake_width) -1, NPOINTS) +1;
-
-  % The proxy wake is symmetric	
-  dav = (d12(i1)-d12(i2))/2;
-  cdav = cumsum(dav);
-  cdav = cdav - mean(cdav);
-  ccdav = cumsum(cdav);
-	
-  % Save wake description
-  fw = (mod(ind2,NPOINTS)+1<mod(ind1,NPOINTS)+1);
-  wakedesc(in*2-1+fw, 1)     = ttime(mod(ind1,NPOINTS)+1, in);
-  wakedesc(in*2-1+fw, 2)     = ind1;
-  wakedesc(in*2-fw, 1)       = ttime(mod(ind2,NPOINTS)+1, in);
-  wakedesc(in*2-fw, 2)       = ind2;
-  wakedesc([in*2-1 in*2], 3) = max(abs(ccdav));
-  % Wake half-width
-  ii = find(abs(ccdav)<max(abs(ccdav))/2);
-  wampl = min(ii(ii>23))-max(ii(ii<23));
-  if isempty(wampl) || wampl<WAKE_MIN_AMPLITUDE
+  if currentSpinGood
+    % The proxy wake is naroow (1/2 of the final fit)
+    wake_width = fix(WAKE_MAX_HALFWIDTH/2);
+    i1 = mod( (ind1-wake_width:ind1+wake_width) -1, NPOINTS) +1;
+    i2 = mod( (ind2-wake_width:ind2+wake_width) -1, NPOINTS) +1;
+    
+    % The proxy wake is symmetric
+    dav = (d12(i1)-d12(i2))/2;
+    cdav = cumsum(dav);
+    cdav = cdav - mean(cdav);
+    ccdav = cumsum(cdav);
+    
+    % Save wake description
+    fw = (mod(ind2,NPOINTS)+1<mod(ind1,NPOINTS)+1);
+    wakedesc(in*2-1+fw, 1)     = ttime(mod(ind1,NPOINTS)+1, in);
+    wakedesc(in*2-1+fw, 2)     = ind1;
+    wakedesc(in*2-fw, 1)       = ttime(mod(ind2,NPOINTS)+1, in);
+    wakedesc(in*2-fw, 2)       = ind2;
+    wakedesc([in*2-1 in*2], 3) = max(abs(ccdav));
+    % Wake half-width
+    ii = find(abs(ccdav)<max(abs(ccdav))/2);
+    wampl = min(ii(ii>23))-max(ii(ii<23));
+  end
+  
+  if currentSpinGood && (isempty(wampl) || wampl<WAKE_MIN_AMPLITUDE)
     irf.log('debug', ['Proxy wake is too small at ', ...
       irf_time(int64(ts)+timeIn(1),'ttns>utc')]);
     wakedesc([in*2-1 in*2], :) = NaN;
-    continue
+    currentSpinGood = false;
   end
-  wakedesc([in*2-1 in*2], 4) = wampl;
-
-  wake = zeros(NPOINTS,1);
-  wake( i1 ) = ccdav;
-  wake( i2 ) = -ccdav;
-
-  % Correct for the proxy wake
-  av12_corr = av12 - wake;
-  % Find the ground tone and remove it from the data
-  x = fft(av12_corr);
-  x(5:359) = 0;
-  av12_corr = av12 -ifft(x, 'symmetric');
-
-  % Now find the final fit	
-  d12 = [av12_corr(1)-av12_corr(end); diff(av12_corr)];
-  d12 = [d12(1)-d12(end); diff(d12)];
-  if plotflag_now
-    d12_tmp = d12; % save for plotting
+  
+  if currentSpinGood
+    wakedesc([in*2-1 in*2], 4) = wampl;
+    
+    wakeProxy = zeros(NPOINTS,1);
+    wakeProxy( i1 ) = ccdav;
+    wakeProxy( i2 ) = -ccdav;
+    
+    % Correct for the proxy wake
+    av12_corr = av12 - wakeProxy;
+    % Find the ground tone and remove it from the data
+    x = fft(av12_corr);
+    x(3:359) = 0;
+    av12_corr = av12 -ifft(x, 'symmetric');
+    
+    % Now find the final fit
+    d12 = [av12_corr(1)-av12_corr(end); diff(av12_corr)];
+    d12 = [d12(1)-d12(end); diff(d12)];
+    if plotflag_now
+      d12_tmp = d12; % save for plotting
+    end
+    % Average with only 5 points to get a more fine fit
+    d12 = w_ave(d12, 5, NPOINTS);
+    
+    wake_width = WAKE_MAX_HALFWIDTH;
+    i1 = mod( (ind1-wake_width:ind1+wake_width) -1, NPOINTS) +1;
+    i2 = mod( (ind2-wake_width:ind2+wake_width) -1, NPOINTS) +1;
+    
+    % Allow the final fit to be asymmetric
+    cdav = cumsum(d12(i1));
+    cdav = cdav - mean(cdav);
+    ccdav1 = cumsum(cdav);
+    ccdav1 = crop_wake(ccdav1);
+    cdav = cumsum(d12(i2));
+    cdav = cdav - mean(cdav);
+    ccdav2 = cumsum(cdav);
+    ccdav2 = crop_wake(ccdav2);
   end
-  % Average with only 5 points to get a more fine fit
-  d12 = w_ave(d12, 5, NPOINTS);
-
-  wake_width = WAKE_MAX_HALFWIDTH;
-  i1 = mod( (ind1-wake_width:ind1+wake_width) -1, NPOINTS) +1;
-  i2 = mod( (ind2-wake_width:ind2+wake_width) -1, NPOINTS) +1;
-
-  % Allow the final fit to be asymmetric
-  cdav = cumsum(d12(i1));
-  cdav = cdav - mean(cdav);
-  ccdav1 = cumsum(cdav);
-  ccdav1 = crop_wake(ccdav1);
-  cdav = cumsum(d12(i2));
-  cdav = cdav - mean(cdav);
-  ccdav2 = cumsum(cdav);
-  ccdav2 = crop_wake(ccdav2);
 	
-  if max(max(abs(ccdav1)),max(abs(ccdav2)))< WAKE_MIN_AMPLITUDE ||...
-      max(max(abs(ccdav1)),max(abs(ccdav2)))>WAKE_MAX_AMPLITUDE
+  if currentSpinGood && ...
+      ( max(max(abs(ccdav1)),max(abs(ccdav2)))< WAKE_MIN_AMPLITUDE ||...
+      max(max(abs(ccdav1)),max(abs(ccdav2)))>WAKE_MAX_AMPLITUDE )
     irf.log('debug', ...
       sprintf('Wake too small/big(%.2f mV/m) at %s', ...
       max(max(abs(ccdav1)), max(abs(ccdav2))), ...
       irf_time(int64(ts)+timeIn(1),'ttns>utc')));
     wakedesc([in*2-1 in*2], :) = NaN;
-    continue
+    currentSpinGood = false;
   end
-  if ~(isGoodShape(ccdav1) && isGoodShape(ccdav2))
+  if currentSpinGood && ( ~(isGoodShape(ccdav1) && isGoodShape(ccdav2)) )
     irf.log('debug', ['Wrong wake shape at ', ...
       irf_time(int64(ts)+timeIn(1),'ttns>utc')]);
     wakedesc([in*2-1 in*2], :) = NaN;
-    continue
+    currentSpinGood = false;
   end
 	
-  % Save wake description
-  wakedesc(in*2-1+fw, 3) = max(abs(ccdav1));
-  % Wake half-width
-  ii =    find( abs(ccdav1) <  max(abs(ccdav1))/2 );
-  iimax = find( abs(ccdav1) == max(abs(ccdav1))   );
-  iimax = min(ii(ii>iimax))-max(ii(ii<iimax));
-  if ~isempty(iimax)
-    wakedesc(in*2-1+fw, 4) = iimax;
-  else
-    irf.log('debug', ['wrong wake shape at ', ...
-      irf_time(int64(ts)+timeIn(1),'ttns>utc'), ' (spike corner case)']);
-    wakedesc([in*2-1 in*2], :) = NaN;
-    continue		
+  if currentSpinGood
+    % Save wake description
+    wakedesc(in*2-1+fw, 3) = max(abs(ccdav1));
+    % Wake half-width
+    ii =    find( abs(ccdav1) <  max(abs(ccdav1))/2 );
+    iimax = find( abs(ccdav1) == max(abs(ccdav1))   );
+    iimax = min(ii(ii>iimax))-max(ii(ii<iimax));
+    if ~isempty(iimax)
+      wakedesc(in*2-1+fw, 4) = iimax;
+    else
+      irf.log('debug', ['wrong wake shape at ', ...
+        irf_time(int64(ts)+timeIn(1),'ttns>utc'), ' (spike corner case)']);
+      wakedesc([in*2-1 in*2], :) = NaN;
+      continue
+    end
+    wakedesc(in*2-fw,3) = max(abs(ccdav2));
+    % Wake half-width
+    ii =    find( abs(ccdav2) <  max(abs(ccdav2))/2 );
+    iimax = find( abs(ccdav2) == max(abs(ccdav2))   );
+    iiDiff = min(ii(ii>iimax)) - max(ii(ii<iimax));
+    if ~isempty(iiDiff)
+      wakedesc(in*2-fw,4) = iiDiff;
+    else
+      irf.log('debug',['wrong wake shape at ', ...
+        irf_time(int64(ts)+timeIn(1),'ttns>utc'), ' (spike corner case)']);
+      continue
+    end
+    clear ii iimax
   end
-  wakedesc(in*2-fw,3) = max(abs(ccdav2));
-  % Wake half-width
-  ii =    find( abs(ccdav2) <  max(abs(ccdav2))/2 );
-  iimax = find( abs(ccdav2) == max(abs(ccdav2))   );
-  iiDiff = min(ii(ii>iimax)) - max(ii(ii<iimax));
-  if ~isempty(iiDiff)
-    wakedesc(in*2-fw,4) = iiDiff;
-  else
-    irf.log('debug',['wrong wake shape at ', ...
-      irf_time(int64(ts)+timeIn(1),'ttns>utc'), ' (spike corner case)']);
-    continue
-  end
-  clear ii iimax
 	
-  if min(wakedesc(in*2-fw,4),wakedesc(in*2-1+fw,4))< WAKE_MIN_HALFWIDTH
+  if currentSpinGood && ...
+      min(wakedesc(in*2-fw,4),wakedesc(in*2-1+fw,4))< WAKE_MIN_HALFWIDTH
     irf.log('debug', sprintf('wake is too narrow (%d deg) at %s', ...
       min(wakedesc(in*2-fw,4), wakedesc(in*2-1+fw,4)), ...
       irf_time(int64(ts)+timeIn(1),'ttns>utc')));
     wakedesc([in*2-1 in*2], :) = NaN;
-    continue
+    currentSpinGood = false;
   end
 
-  wake = zeros(NPOINTS,1);
-  wake( i1 ) = ccdav1;
-  wake( i2 ) = ccdav2;
+  if currentSpinGood
+    wake = zeros(NPOINTS,1); wake( i1 ) = ccdav1; wake( i2 ) = ccdav2;
+    wakePrev = wake;
+  elseif prevSpinGood && prevPrevSpinGood 
+    wake = wakePrev;
+    irf.log('debug','using wake shape from the previous spin')
+  else, continue
+  end
 	
-  if plotflag_now
-    h = irf_plot(4,'reset');
-    ts = ttime(1,in);
-    te = ttime(end,in);
-    plot(h(1),ttime(:,in)-ts, tt(:, in), 'b',...
-      ttime(:,in)-ts, tt(:, in + ([-2 -1 1 2]) ), 'g',...
-      ttime(:,in)-ts, av12, 'k',...
-      ttime(ind1,in)*[1 1]-ts, [-2 2], 'r',...
-      ttime(ind2,in)*[1 1]-ts, [-2 2], 'r',...
-      ttime(:,in)-ts, av12-wake,'r');
-    ylabel(h(1),'E12 [mV/m]');
-    irf_timeaxis(h(1),ts); xlabel(h(1),'');
-    set(h(1),'XLim',[0 te-ts])
-
-    plot(h(2),ttime(:,in)-ts,d12_tmp,'g',ttime(:,in)-ts, d12,'b');
-    ylabel(h(2),['D2(E' num2str(pair) ') [mV/m]']);
-    irf_timeaxis(h(2),ts); xlabel(h(2),'');
-    set(h(2),'XLim',[0 te-ts])
-
-    plot(h(3),ttime(:,in)-ts, wake)
-    ylabel(h(3),'Wake [mV/m]');
-    irf_timeaxis(h(3),ts);
-    set(h(3),'XLim',[0 te-ts])
-  end
+  if plotflag_now, h = irf_plot(4,'reset'); PlotPanels13, end
 	
   % Correct the spin in the middle	
   ind = find(time>=ttime(1,in) & time<ttime(end,in));
@@ -409,7 +405,7 @@ for in = iok
     end
   end
 
-  % Correct edge spins	
+  % Correct edge spinsat start
   cox = [];
   if in==iok(1) || (in~=iok(1) && in-1~=iok(find(iok==in)-1))
     % If the previous spin was not corrected
@@ -423,7 +419,12 @@ for in = iok
       cox = - (1:2);
       n_corrected = n_corrected + 2;
     end
+    prevSpinGood = true;
+  elseif currentSpinGood && prevSpinGood && ~prevPrevSpinGood % Correct previous spin if in was bad
+    irf.log('debug','correcting the prev-previous spin')
+    cox = -2; n_corrected = n_corrected + 1; wake = wakePrev;
   end
+    
   if in==iok(end) || (in~=iok(end) && in+1~=iok(find(iok==in)+1))
     if ~isempty(cox)
       irf.log('notice', ['single at ', irf_time(int64(ts)+timeIn(1),'ttns>utc')]);
@@ -476,6 +477,30 @@ wakedesc(:,2)=wakedesc(:,2)-expPhase(floor(length(expPhase)/2));
 irf.log('notice', ['Corrected ', num2str(n_corrected), ' out of ', ...
 	num2str(n_spins), ' spins.']);
 
+  function PlotPanels13
+    ts = ttime(1,in);
+    te = ttime(end,in);
+    plot(h(1),ttime(:,in)-ts, tt(:, in), 'b',...
+      ttime(:,in)-ts, tt(:, in + ([-2 -1 1 2]) ), 'g',...
+      ttime(:,in)-ts, av12, 'k',...
+      ttime(ind1,in)*[1 1]-ts, [-2 2], 'r',...
+      ttime(ind2,in)*[1 1]-ts, [-2 2], 'r',...
+      ttime(:,in)-ts, av12-wake,'r');
+    ylabel(h(1),'E12 [mV/m]');
+    irf_timeaxis(h(1),ts); xlabel(h(1),'');
+    set(h(1),'XLim',[0 te-ts])
+    
+    plot(h(2),ttime(:,in)-ts,d12_tmp,'g',ttime(:,in)-ts, d12,'b');
+    ylabel(h(2),['D2(E' num2str(pair) ') [mV/m]']);
+    irf_timeaxis(h(2),ts); xlabel(h(2),'');
+    set(h(2),'XLim',[0 te-ts])
+    
+    plot(h(3),ttime(:,in)-ts, wake)
+    ylabel(h(3),'Wake [mV/m]');
+    irf_timeaxis(h(3),ts);
+    set(h(3),'XLim',[0 te-ts])
+  end
+
   function PlotED(hca)
     irf_plot(hca,{[getEpoch(time(ind)), double(e(ind,:))],[getEpoch(time(ind)), double(data(ind,:))]},'comp')
     ylabel(hca,['E' num2str(pair) ' [mV/m]']);
@@ -484,7 +509,7 @@ irf.log('notice', ['Corrected ', num2str(n_corrected), ' out of ', ...
       epo = double(t)*1e-9 + epoch0;
     end
   end
-end
+end % main
 
 function av = w_ave(x, np, NPOINTS)
   % Weighted average
@@ -554,8 +579,8 @@ function wake = crop_wake(wake)
 % outside. If lobes are not located or too close to the beggining or 
 % end of the wake segment it is returned unaltered.
 
-AMP_FRAC = 0.15; % fraction of amplitude bewlo which we neew to crop
-GAP_WIDTH = 4; % number of points ower which the wake is required to reach zero
+AMP_FRAC = 0.1; % fraction of amplitude bewlo which we neew to crop
+GAP_WIDTH = 8; % number of points ower which the wake is required to reach zero
 lenWake = length(wake);
 
 idx = (1:lenWake)';
