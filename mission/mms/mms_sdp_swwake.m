@@ -203,6 +203,8 @@ end
 
 prevSpinGood = false; currentSpinGood = false;
 for in = iok
+  irf.log('debug', sprintf('processing spin nr: %i', in));
+%   if(in == 325), keyboard; end
   prevPrevSpinGood = prevSpinGood;
   prevSpinGood = currentSpinGood; currentSpinGood = true;
   
@@ -262,13 +264,13 @@ for in = iok
     wake_width = fix(WAKE_MAX_HALFWIDTH/2);
     i1 = mod( (ind1-wake_width:ind1+wake_width) -1, NPOINTS) +1;
     i2 = mod( (ind2-wake_width:ind2+wake_width) -1, NPOINTS) +1;
-    
+
     % The proxy wake is symmetric
     dav = (d12(i1)-d12(i2))/2;
     cdav = cumsum(dav);
     cdav = cdav - mean(cdav);
     ccdav = cumsum(cdav);
-    
+
     % Save wake description
     fw = (mod(ind2,NPOINTS)+1<mod(ind1,NPOINTS)+1);
     wakedesc(in*2-1+fw, 1)     = ttime(mod(ind1,NPOINTS)+1, in);
@@ -290,18 +292,18 @@ for in = iok
   
   if currentSpinGood
     wakedesc([in*2-1 in*2], 4) = wampl;
-    
+
     wakeProxy = zeros(NPOINTS,1);
     wakeProxy( i1 ) = ccdav;
     wakeProxy( i2 ) = -ccdav;
-    
+
     % Correct for the proxy wake
     av12_corr = av12 - wakeProxy;
     % Find the ground tone and remove it from the data
     x = fft(av12_corr);
     x(3:359) = 0;
     av12_corr = av12 -ifft(x, 'symmetric');
-    
+
     % Now find the final fit
     d12 = [av12_corr(1)-av12_corr(end); diff(av12_corr)];
     d12 = [d12(1)-d12(end); diff(d12)];
@@ -310,11 +312,11 @@ for in = iok
     end
     % Average with only 5 points to get a more fine fit
     d12 = w_ave(d12, 5, NPOINTS);
-    
+
     wake_width = WAKE_MAX_HALFWIDTH;
     i1 = mod( (ind1-wake_width:ind1+wake_width) -1, NPOINTS) +1;
     i2 = mod( (ind2-wake_width:ind2+wake_width) -1, NPOINTS) +1;
-    
+
     % Allow the final fit to be asymmetric
     cdav = cumsum(d12(i1));
     cdav = cdav - mean(cdav);
@@ -336,7 +338,9 @@ for in = iok
     wakedesc([in*2-1 in*2], :) = NaN;
     currentSpinGood = false;
   end
-  if currentSpinGood && ( ~(isGoodShape(ccdav1) && isGoodShape(ccdav2)) )
+  [goodShapeCcdav1, maxmax1, smax1] = isGoodShape(ccdav1);
+  [goodShapeCcdav2, maxmax2, smax2] = isGoodShape(ccdav2);
+  if currentSpinGood && ~(goodShapeCcdav1 && goodShapeCcdav2)
     irf.log('debug', ['Wrong wake shape at ', ...
       irf_time(int64(ts)+timeIn(1),'ttns>utc')]);
     wakedesc([in*2-1 in*2], :) = NaN;
@@ -459,6 +463,7 @@ for in = iok
     end
   end
   if plotflag_now && in~=iok(end)
+    title(['Plot created: ',datestr(now,'yyyy/mm/dd'),'. Wakes on pair: ', pair, ' spin: ', num2str(in)]);
     plot_step = irf_ask('Step? (0-continue, -1 return) [%]>','plot_step',1);
     if plot_step==0
       plotflag = 0;
@@ -489,13 +494,19 @@ irf.log('notice', ['Corrected ', num2str(n_corrected), ' out of ', ...
     ylabel(h(1),'E12 [mV/m]');
     irf_timeaxis(h(1),ts); xlabel(h(1),'');
     set(h(1),'XLim',[0 te-ts])
-    
+
     plot(h(2),ttime(:,in)-ts,d12_tmp,'g',ttime(:,in)-ts, d12,'b');
     ylabel(h(2),['D2(E' num2str(pair) ') [mV/m]']);
     irf_timeaxis(h(2),ts); xlabel(h(2),'');
     set(h(2),'XLim',[0 te-ts])
-    
-    plot(h(3),ttime(:,in)-ts, wake)
+
+    plot(h(3),ttime(:,in)-ts, wake, ...
+      [ttime(1,in) ttime(end,in)] -ts, [maxmax1 maxmax1],'--g', ...
+      [ttime(1,in) ttime(end,in)] -ts, [maxmax2 maxmax2],'--b', ...
+      [ttime(1,in) ttime(end,in)] -ts, [smax1 smax1],'--r', ...
+      [ttime(1,in) ttime(end,in)] -ts, [smax2 smax2],'--y')
+    if strcmp(pair,'e12'), location='west'; else, location='east'; end
+    legend(h(3), 'Wake', 'W1 G Max', 'W2 G Max', 'W1 2nd Max', 'W2 2nd Max','location',location);
     ylabel(h(3),'Wake [mV/m]');
     irf_timeaxis(h(3),ts);
     set(h(3),'XLim',[0 te-ts])
@@ -535,22 +546,24 @@ function av = w_ave(x, np, NPOINTS)
   end
 end
 
-function res = isGoodShape(s)
+function [res, maxmax, smax] = isGoodShape(s)
   % check for shape of the wake fit
   RATIO = 0.4; % (Cluster was 0.3)
 % ThoNi: one testrun with 20170508 mms1 fast got a spike in frequency in
 % the interval 0.3->0.4 compared with intervals 0.4->0.5, 0.5->0.6 etc.
 % Therefor try increasing the permitted Ratio to 0.4 compared with 0.3
 % which was used for Cluster.
-  res = true;
+  res = true; smax=0; negMax=false;
   if max(s)~=max(abs(s))
     s = -s;
+    negMax=true;
   end
   maxmax = max(s); % global maxima
   d1 = diff(s);
   imax = find( (d1(1:end-1).*d1(2:end))<0 ) + 1;
   if length(imax)==1
     if s(imax)==maxmax
+      if negMax, maxmax=-maxmax; smax=-smax; end
       return
     else
       % Signal has a minumum
@@ -571,6 +584,9 @@ function res = isGoodShape(s)
     irf.log('debug', ...
       sprintf('BAD FIT: second max is %0.2f of the main max', smax/maxmax) );
   end
+  if negMax
+    maxmax=-maxmax; smax=-smax;
+  end
 end
 
 function wake = crop_wake(wake)
@@ -579,6 +595,7 @@ function wake = crop_wake(wake)
 % outside. If lobes are not located or too close to the beggining or 
 % end of the wake segment it is returned unaltered.
 
+%DEBUG=false;
 AMP_FRAC = 0.1; % fraction of amplitude bewlo which we neew to crop
 GAP_WIDTH = 8; % number of points ower which the wake is required to reach zero
 lenWake = length(wake);
@@ -600,15 +617,31 @@ elseif (ist<=GAP_WIDTH) || (ien>=lenWake-GAP_WIDTH)
   irf.log('debug', 'Avoiding cropping wake, too close to beginning/end.');
   return
 end
-
+%if DEBUG
+%  figure;
+%  subplot(2,1,1);
+%  plot(idx, wake, '-black', imax, wamp, '-rO');
+%end
 wake(idx>=ien+GAP_WIDTH+1 | idx<=ist-GAP_WIDTH-1) = 0;
 
-iexcl = [ist-GAP_WIDTH:ist, ien:ien+GAP_WIDTH]; % indeces over which to interpolate
+%iexcl = [ist-GAP_WIDTH:ist, ien:ien+GAP_WIDTH]; % indeces over which to interpolate
+iexcl = [max(GAP_WIDTH, ist-GAP_WIDTH):ist, ien:min(ien+GAP_WIDTH,lenWake-GAP_WIDTH)];
 itmp = setxor(idx,iexcl);
 
 % Pad with zeros at the edges before interpolating
 wakeTmp = interp1([-1; 0; itmp; 92; 93],[0; 0; wake(itmp); 0; 0],...
   [-1; 0; idx; 92; 93],'spline');
 wake = wakeTmp(3:end-2);
-end
 
+%if DEBUG
+%  subplot(2,1,1);
+%  hold on;
+%  plot(idx, wake, '-green');
+%  legend('wake original', 'wake max', 'wake edges set to zero');
+%  ylabel('Wake [mV/m]');
+%  subplot(2,1,2);
+%  plot(idx, iout, '-blue*', ist, 1,'-rO', ien, 1, '-rO', itmp, ones(size(itmp)), '-greenO');
+%  legend('iout', 'ist', 'iend', 'itmp');
+%  ylim([-0.1 1.1]); ylabel('indicator true/false');
+%end
+end
