@@ -606,6 +606,9 @@ wake(idx>=ien+GAP_WIDTH+1 | idx<=ist-GAP_WIDTH-1) = 0;
 iexcl = [ist-GAP_WIDTH:ist, ien:ien+GAP_WIDTH]; % indeces over which to interpolate
 itmp = setxor(idx,iexcl);
 
-wake = interp1(itmp,wake(itmp),idx,'spline');
+% Pad with zeros at the edges before interpolating
+wakeTmp = interp1([-1; 0; itmp; 92; 93],[0; 0; wake(itmp); 0; 0],...
+  [-1; 0; idx; 92; 93],'spline');
+wake = wakeTmp(3:end-2);
 end
 
