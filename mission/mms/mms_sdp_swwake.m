@@ -204,6 +204,7 @@ end
 prevSpinGood = false; currentSpinGood = false;
 for in = iok
   irf.log('debug', sprintf('processing spin nr: %i', in));
+%   if(in == 325), keyboard; end
   prevPrevSpinGood = prevSpinGood;
   prevSpinGood = currentSpinGood; currentSpinGood = true;
   
@@ -594,6 +595,7 @@ function wake = crop_wake(wake)
 % outside. If lobes are not located or too close to the beggining or 
 % end of the wake segment it is returned unaltered.
 
+%DEBUG=false;
 AMP_FRAC = 0.1; % fraction of amplitude bewlo which we neew to crop
 GAP_WIDTH = 8; % number of points ower which the wake is required to reach zero
 lenWake = length(wake);
@@ -615,12 +617,26 @@ elseif (ist<=GAP_WIDTH) || (ien>=lenWake-GAP_WIDTH)
   irf.log('debug', 'Avoiding cropping wake, too close to beginning/end.');
   return
 end
-
+%if DEBUG
+%  figure;
+%  subplot(2,1,1);
+%  plot(idx, wake, '-black', imax, wamp, '-rO');
+%end
 wake(idx>=ien+GAP_WIDTH+1 | idx<=ist-GAP_WIDTH-1) = 0;
 
-iexcl = [ist-GAP_WIDTH:ist, ien:ien+GAP_WIDTH]; % indeces over which to interpolate
+%iexcl = [ist-GAP_WIDTH:ist, ien:ien+GAP_WIDTH]; % indeces over which to interpolate
+iexcl = [max(GAP_WIDTH, ist-GAP_WIDTH):ist, ien:min(ien+GAP_WIDTH,lenWake-GAP_WIDTH)];
 itmp = setxor(idx,iexcl);
-
+%if DEBUG
+%  subplot(2,1,1);
+%  hold on;
+%  plot(idx, wake, '-green');
+%  legend('wake original', 'wake max', 'wake edges set to zero');
+%  ylabel('Wake [mV/m]');
+%  subplot(2,1,2);
+%  plot(idx, iout, '-blue*', ist, 1,'-rO', ien, 1, '-rO', itmp, ones(size(itmp)), '-greenO');
+%  legend('iout', 'ist', 'iend', 'itmp');
+%  ylim([-0.1 1.1]); ylabel('indicator true/false');
+%end
 wake = interp1(itmp,wake(itmp),idx,'spline');
 end
-
