@@ -32,7 +32,7 @@ function [fkpower,freq,wavenumber] = fk_powerspectrum(varargin)
 %                   opposing probe potentials.
 %       numk -      Set number of wave numbers used in spectrogram.
 %       linear -    Linearly spaced frequencies. Set number to df (default is logarithmic spacing).
-%       field -     Set number of frequencies used in spectrogram.
+%       numf -     Set number of frequencies used in spectrogram.
 %
 % Output:
 %       fkpower    - array of powers as a function of frequency and
@@ -43,7 +43,7 @@ function [fkpower,freq,wavenumber] = fk_powerspectrum(varargin)
 %
 % Example:
 %   [fkpower,freq,wavenumber] = mms.fk_powerspectrum(probecomb,trange,V6,Bxyz,zphase,'cav',256,'field',0);
-%   [fkpower,freq,wavenumber] = mms.fk_powerspectrum(probecomb,trange,V6,Bxyz,zphase,'cav',256,'linear',50);
+%   [fkpower,freq,wavenumber] = mms.fk_powerspectrum(probecomb,trange,V6,Bxyz,zphase,'cav',256,'linear',50,'numk',500);
 %
 % Directions and speeds are consistent with expectations based on time
 % delays. Work still in progress. Time corrections for the probes need to be
@@ -97,7 +97,7 @@ while flag_have_options
             if numel(args)>1 && isnumeric(args{2})
                 numf = floor(args{2});
             end
-            case 'linear'
+        case 'linear'
             if numel(args)>1 && isnumeric(args{2})
                 df = args{2};
                 uselinear = 1;
