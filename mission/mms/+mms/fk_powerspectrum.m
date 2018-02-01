@@ -30,6 +30,9 @@ function [fkpower,freq,wavenumber] = fk_powerspectrum(varargin)
 %       field -     Set to 1 (default) to use electric fields calculated from
 %                   opposing probes and SCpot. Set to 0 to use only
 %                   opposing probe potentials.
+%       numk -      Set number of wave numbers used in spectrogram.
+%       linear -    Linearly spaced frequencies. Set number to df (default is logarithmic spacing).
+%       field -     Set number of frequencies used in spectrogram.
 %
 % Output:
 %       fkpower    - array of powers as a function of frequency and
@@ -40,6 +43,7 @@ function [fkpower,freq,wavenumber] = fk_powerspectrum(varargin)
 %
 % Example:
 %   [fkpower,freq,wavenumber] = mms.fk_powerspectrum(probecomb,trange,V6,Bxyz,zphase,'cav',256,'field',0);
+%   [fkpower,freq,wavenumber] = mms.fk_powerspectrum(probecomb,trange,V6,Bxyz,zphase,'cav',256,'linear',50);
 %
 % Directions and speeds are consistent with expectations based on time
 % delays. Work still in progress. Time corrections for the probes need to be
@@ -65,7 +69,10 @@ else
 end
 
 cav = 128;
+numk = 101;
+numf = 200;
 fieldflag = 1;
+uselinear = 0;
 
 
 if numel(args)>0,
@@ -81,6 +88,20 @@ while flag_have_options
         case 'cav'
             if numel(args)>1 && isnumeric(args{2})
                 cav = args{2};
+            end
+        case 'numk'
+            if numel(args)>1 && isnumeric(args{2})
+                numk = floor(args{2});
+            end
+        case 'numf'
+            if numel(args)>1 && isnumeric(args{2})
+                numf = floor(args{2});
+            end
+            case 'linear'
+            if numel(args)>1 && isnumeric(args{2})
+                df = args{2};
+                uselinear = 1;
+                irf.log('notice','Using linearly spaced frequencies');
             end
         case 'field'
             if numel(args)>1 && isnumeric(args{2})
@@ -212,12 +233,23 @@ c_eval('thetatest = irf.nanmean(thetap?b(idx));',probe);
 c_eval('thetap?b = abs(thetap?b);',probe_nr);
 c_eval('thetap?b = TSeries(Bxyz.time,thetap?b,''to'',1);',probe_nr);
 
-if (thetatest > 0)
-    c_eval('W1c = irf_wavelet(E?,''returnpower'',0,''cutedge'',0);',probe+1);
-    c_eval('W2c = irf_wavelet(E?,''returnpower'',0,''cutedge'',0);',probe);
+if ~uselinear
+  if (thetatest > 0)
+    c_eval('W1c = irf_wavelet(E?,''returnpower'',0,''cutedge'',0,''nf'',numf);',probe+1);
+    c_eval('W2c = irf_wavelet(E?,''returnpower'',0,''cutedge'',0,''nf'',numf);',probe);
+  else
+    c_eval('W1c = irf_wavelet(E?,''returnpower'',0,''cutedge'',0,''nf'',numf);',probe);
+    c_eval('W2c = irf_wavelet(E?,''returnpower'',0,''cutedge'',0,''nf'',numf);',probe+1);
+  end
 else
-    c_eval('W1c = irf_wavelet(E?,''returnpower'',0,''cutedge'',0);',probe);
-    c_eval('W2c = irf_wavelet(E?,''returnpower'',0,''cutedge'',0);',probe+1);
+  if (thetatest > 0)
+    c_eval('W1c = irf_wavelet(E?,''returnpower'',0,''cutedge'',0,''linear'',df);',probe+1);
+    c_eval('W2c = irf_wavelet(E?,''returnpower'',0,''cutedge'',0,''linear'',df);',probe);
+  else
+    c_eval('W1c = irf_wavelet(E?,''returnpower'',0,''cutedge'',0,''linear'',df);',probe);
+    c_eval('W2c = irf_wavelet(E?,''returnpower'',0,''cutedge'',0,''linear'',df);',probe+1);
+  end  
+  numf = length(W1c.f);
 end
 
 L = length(idx);
@@ -230,7 +262,6 @@ W2c.t = times;
 
 fkPower = 0.5*(cell2mat(W1c.p).*conj(cell2mat(W1c.p)) + cell2mat(W2c.p).*conj(cell2mat(W2c.p)));
 
-numf = 200;
 N = floor(L/cav)-1;
 posav = cav/2 + [0:1:N]*cav;
 avtimes = times(posav);
@@ -263,8 +294,6 @@ kval = zeros(N+1,numf);
 for q = [1:1:numf]
     kval(:,q) = th(:,q)./rcos;
 end
-
-numk = 101;
 
 disprel = zeros(numk,numf);
 mink = -pi/min(rcos);
