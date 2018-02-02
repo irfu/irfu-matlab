@@ -3640,13 +3640,13 @@ Effect on the CAA processing:
 		<desc>Data gap related to WEC latchup at 2008-02-12T05:43:55Z.</desc>
 		<res><link href="http://www.acse.shef.ac.uk/wec-ops/old_mail/msg08552.html">Keith 082018</link></res>
 	</operation>
-	<operation dt="203100" plan="no" sdesc="TBD" start="2008-02-25T07:50:00Z" c3="yes">
-		<desc>Multiple isolated telemetry glitches (spikes in E data). Also, sending p12 rather than p34 until 02-26 14:29.</desc>
+	<operation dt="203100" plan="no" sdesc="bad_tm" start="2008-02-25T07:50:00Z" c3="yes">
+		<desc>Bad data after spontaneous reset. Multiple isolated telemetry glitches (spikes in E data). Also, sending p12 rather than p34 until 02-26 14:29.</desc>
 	</operation>
-	<operation dt="1" plan="no" sdesc="bad_data" start="2008-02-27T22:31:33Z" c2="yes">
+	<operation dt="1" plan="no" sdesc="bad_tm" start="2008-02-27T22:31:33Z" c2="yes">
 		<desc>Bad packet.</desc>
 	</operation>
-	<operation dt="1" plan="no" sdesc="bad_data" start="2008-02-27T22:36:35Z" c2="yes">
+	<operation dt="1" plan="no" sdesc="bad_tm" start="2008-02-27T22:36:35Z" c2="yes">
 		<desc>Bad packet.</desc>
 	</operation>
 	<operation dt="59280" plan="no" sdesc="bad_tm" start="2008-03-11T05:50:00Z" c1="yes">

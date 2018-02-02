@@ -867,8 +867,8 @@ classdef PDist < TSeries
       PD.depend{2} = phir.data;  
       
       if isfield(PD.ancillary,'energy0')
-        PD.ancillary.energy0 = PD.depend{1};
-        PD.ancillary.energy1 = PD.depend{1};
+        PD.ancillary.energy0 = PD.depend{1}(1,:);
+        PD.ancillary.energy1 = PD.depend{1}(1,:);
       end
       if isfield(PD.ancillary,'esteptable'); PD.ancillary.esteptable = zeros(PD.length,1); end
     end

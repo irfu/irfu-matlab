@@ -41,7 +41,7 @@ function [downloadStatus,downloadFile]=caa_download(tint,dataset,varargin)
 %   'nolog'			- [default] do not log into .caa file (good for batch processing)
 %   'log'			- do log into .caa file (more for interactive work)
 %   'downloadDirectory=..'	- define directory for downloaded datasets (instead of default 'CAA/')
-%   '&USERNAME=csaUser&PASSWORD=csaPassword'	- load data from csa using username 'uuu' and password 'ppp'
+%   '&USERNAME=uuu&PASSWORD=ppp'	- load data from csa using CSA username 'uuu' and CSA password 'ppp'
 %	'cdf'           - alias of 'format=cdf'
 %	'cef'           - alias of 'format=cef'
 %	'json'			- return csa query in JSON format
@@ -51,7 +51,7 @@ function [downloadStatus,downloadFile]=caa_download(tint,dataset,varargin)
 %	'ingestedsince=YYYYMMDD' - download only data ingested since YYYY MM DD
 %	'test'		    - test downloading some example datasets
 %
-%  To store your CSA user & password as defaults (e.g. 'uuu'/'ppp'):
+%  To store your CSA username & password as defaults (e.g. 'uuu'/'ppp'):
 %		datastore('csa','user','uuu')
 %		datastore('csa','pwd','ppp')
 %
@@ -97,7 +97,13 @@ function [downloadStatus,downloadFile]=caa_download(tint,dataset,varargin)
 %   caa_download(tint,'CL_SP_AUX');            % position,attitude.. for all sc
 %   caa_download(tint,'C?_CP_AUX_SPIN_TIME');  % spin period, sun pulse time,..
 %   caa_download(tint,'C?_JP_PMP');            % invariant latitude, MLT, L shell.
-
+%
+%
+% NOTE: In order to download data from ESA you must first register an
+% account. This is done via: https://www.cosmos.esa.int/web/csa
+% You can then provide the username and password to caa_download() as 
+% described above. Or if you prefer you could store them locally on your
+% machine using datastore() as described above.
 
 %% Check if latest irfu-matlab
 % The check is appropriate to make when scientist is downloading data from CAA
@@ -126,6 +132,7 @@ Default.Csa.urlNotifyOff        = '&NO_NOTIFY';
 Default.Csa.urlDataset          = '&DATASET_ID=';
 Default.Csa.urlDataFormat       = '&DELIVERY_FORMAT=CDF';
 Default.Csa.urlFileInterval     = '&DELIVERY_INTERVAL=ALL';
+Default.Csa.urlRegistration     = 'https://www.cosmos.esa.int/web/csa';
 
 %% Defaults that can be overwritten by input parameters
 checkDownloadStatus     = false;
@@ -763,18 +770,31 @@ end
 	function urlIdentity = get_url_identity
 		csaUser = datastore('csa','user');
 		if isempty(csaUser)
-			csaUser = input('Input csa username [default:avaivads]:','s');
-			if isempty(csaUser),
-				disp('Please register at ______? and later use your username and password.');
-				csaUser='avaivads';
+			csaUser = input('Input csa username:','s');
+			if isempty(csaUser)
+				disp(['Please register at ESA: ', Default.Csa.urlRegistration, ...
+				  ' and then use your own credentials in irfu-matlab to download data from CSA.']);
 			end
 			datastore('csa','user',csaUser);
 		end
 		csaPwd = datastore('csa','pwd');
 		if isempty(csaPwd)
-			csaPwd = input('Input csa password [default:!kjUY88lm]:','s');
-			if isempty(csaPwd), csaPwd='!kjUY88lm';end
+			csaPwd = input('Input csa password:','s');
+			if isempty(csaPwd) && ~isempty(csaUser)
+				disp(['Please register at ESA: ', Default.Csa.urlRegistration, ...
+				  ' and then use your own credentials in irfu-matlab to download data from CSA.']);
+			end
 			datastore('csa','pwd',csaPwd);
+		end
+		if strcmp(csaUser, 'avaivads') && strcmp(csaPwd,'!kjUY88lm')
+			% Old password used by irfu-matlab, very soon to be deprecated!
+			% Every user must from now on use their own credentials with ESA.
+			%datastore('csa','user',[]); datastore('csa','pwd',[]); % <-- Remove comment when it has been deprecated
+			errStr = ['Please register at ESA: ', Default.Csa.urlRegistration, ...
+			  ' and then use your own credentials in irfu-matlab to download data from CSA.'];
+			irf.log('critical', errStr);
+			%error(errStr); % <-- When deprecated, change from warning to error.
+			warning(errStr);
 		end
 		urlIdentity = ['&USERNAME=' csaUser '&PASSWORD=' csaPwd];
 	end

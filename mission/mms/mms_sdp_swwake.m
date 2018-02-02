@@ -35,7 +35,7 @@ function [data, n_corrected, wakedesc] = mms_sdp_swwake(e, pair, phase_2, timeIn
 % ----------------------------------------------------------------------------
 
 % Original idea by Anders Eriksson.
-% Many useful suggestion by Per-Arne Lindqvist.
+% Many useful suggestions by Per-Arne Lindqvist.
 % Re-written for MMS by Thomas Nilsson.
 
 % ThoNi NOTES:
@@ -59,7 +59,7 @@ N_EMPTY = 0.9; % (Cluster was 0.9)
 %MAX_SPIN_PERIOD = 4.3; % sec for Cluster
 MAX_SPIN_PERIOD = 10^9*60/MMS_CONST.Spinrate.min; % = 20 sec
 WAKE_MAX_HALFWIDTH = 45; % degrees, (Cluster was 45 deg)
-WAKE_MIN_HALFWIDTH = 11;  % degrees, (Cluster was 11 deg)
+WAKE_MIN_HALFWIDTH = 9; %11;  % degrees, (Cluster was 11 deg)
 WAKE_MIN_AMPLITUDE = 0.4; % mV/m, (Cluster was 0.4 mV/m)
 WAKE_MAX_AMPLITUDE = 7; % mV/m, (Cluster was 7 mV/m)
 plot_step = 1;
@@ -95,6 +95,7 @@ end
 % Convert time from ttns (int64) to double keeping for interp1 to work,
 % while keeping original input variable "timeIn" (used debug/log messages).
 time = double(timeIn-timeIn(1));
+epoch0 = EpochTT(timeIn(1)).epochUnix;
 
 % Find numer of spins using the fact that Z-phase is monotonically
 % increasing, except for it being modulo 360.
@@ -242,9 +243,10 @@ for in = iok
 % wakes at 8 deg (when running with limit +/-5 deg) at times with clearly
 % visible wakes (ie 10:00 UTC). Therefor try to run with +/-8 deg instead
 % of +/-5 deg as used by Cluster.
-  ind1 = find(d12 == min(d12(expPhase))) -1;
-  ind2 = find(d12 == max(d12(expPhase+180))) -1;
-  if abs(ind2-ind1-180)>8
+% ThoNi: one testrun with 20171115 mms2 fast, allow up to +/-15 deg.
+  ind1 = find(d12 == max(d12(expPhase))) -1;
+  ind2 = find(d12 == min(d12(expPhase+180))) -1;
+  if abs(ind2-ind1-180)>15
     irf.log('debug', ['Wake displaced by ', num2str(abs(ind2-ind1-180)'), ...
       ' deg at ', irf_time(int64(ts)+timeIn(1),'ttns>utc')]);
     wakedesc([in*2-1 in*2], :) = NaN;
@@ -288,7 +290,7 @@ for in = iok
   av12_corr = av12 - wake;
   % Find the ground tone and remove it from the data
   x = fft(av12_corr);
-  x(3:359) = 0;
+  x(5:359) = 0;
   av12_corr = av12 -ifft(x, 'symmetric');
 
   % Now find the final fit	
@@ -308,9 +310,11 @@ for in = iok
   cdav = cumsum(d12(i1));
   cdav = cdav - mean(cdav);
   ccdav1 = cumsum(cdav);
+  ccdav1 = crop_wake(ccdav1);
   cdav = cumsum(d12(i2));
   cdav = cdav - mean(cdav);
   ccdav2 = cumsum(cdav);
+  ccdav2 = crop_wake(ccdav2);
 	
   if max(max(abs(ccdav1)),max(abs(ccdav2)))< WAKE_MIN_AMPLITUDE ||...
       max(max(abs(ccdav1)),max(abs(ccdav2)))>WAKE_MAX_AMPLITUDE
@@ -369,31 +373,28 @@ for in = iok
   wake( i2 ) = ccdav2;
 	
   if plotflag_now
-    clf
-    subplot(4,1,1)
+    h = irf_plot(4,'reset');
     ts = ttime(1,in);
     te = ttime(end,in);
-    plot(ttime(:,in)-ts, tt(:, in), 'b',...
+    plot(h(1),ttime(:,in)-ts, tt(:, in), 'b',...
       ttime(:,in)-ts, tt(:, in + ([-2 -1 1 2]) ), 'g',...
       ttime(:,in)-ts, av12, 'k',...
       ttime(ind1,in)*[1 1]-ts, [-2 2], 'r',...
       ttime(ind2,in)*[1 1]-ts, [-2 2], 'r',...
       ttime(:,in)-ts, av12-wake,'r');
-    ylabel('E12 [mV/m]');
-    irf_timeaxis(gca,ts); xlabel('');
-    set(gca,'XLim',[0 te-ts])
+    ylabel(h(1),'E12 [mV/m]');
+    irf_timeaxis(h(1),ts); xlabel(h(1),'');
+    set(h(1),'XLim',[0 te-ts])
 
-    subplot(4,1,2)
-    plot(ttime(:,in)-ts,d12_tmp,'g',ttime(:,in)-ts, d12,'b');
-    ylabel(['D2(E' num2str(pair) ') [mV/m]']);
-    irf_timeaxis(gca,ts); xlabel('');
-    set(gca,'XLim',[0 te-ts])
+    plot(h(2),ttime(:,in)-ts,d12_tmp,'g',ttime(:,in)-ts, d12,'b');
+    ylabel(h(2),['D2(E' num2str(pair) ') [mV/m]']);
+    irf_timeaxis(h(2),ts); xlabel(h(2),'');
+    set(h(2),'XLim',[0 te-ts])
 
-    subplot(4,1,3)
-    plot(ttime(:,in)-ts, wake)
-    ylabel('Wake [mV/m]');
-    irf_timeaxis(gca,ts);
-    set(gca,'XLim',[0 te-ts])
+    plot(h(3),ttime(:,in)-ts, wake)
+    ylabel(h(3),'Wake [mV/m]');
+    irf_timeaxis(h(3),ts);
+    set(h(3),'XLim',[0 te-ts])
   end
 	
   % Correct the spin in the middle	
@@ -404,10 +405,7 @@ for in = iok
     n_corrected = n_corrected + 1;
 
     if plotflag_now
-      subplot(4,1,4)
-      irf_plot({[time(ind), e(ind,:)],[time(ind), data(ind,:)]},'comp')
-      ylabel(['E' num2str(pair) ' [mV/m]']);
-      irf_zoom([ts te],'x',gca)
+      PlotED(h(4))
     end
   end
 
@@ -451,13 +449,11 @@ for in = iok
       wake_e = irf_resamp([ttime(:,in+cx) wake], time(ind));
       data(ind) = data(ind) - wake_e(:,2);
       if plotflag_now
-        hold on
-        irf_plot({e(ind,:),data(ind,:)},'comp')
-        ylabel(['E', num2str(pair), ' [mV/m]']);
-        hold off
         if ttime(1,in+cx)<ts, ts = ttime(1,in+cx); end
         if ttime(end,in+cx)>te, te = ttime(end,in+cx); end
-        irf_zoom([ts te],'x',gca)
+        hold(h(4),'on')
+        PlotED(h(4))
+        hold(h(4),'off')
       end
     end
   end
@@ -472,11 +468,22 @@ for in = iok
 end
 
 % Save wake position only inside 0-180 degrees
-wakedesc(wakedesc(:,2)>180, 2) = wakedesc(wakedesc(:,2)>180, 2)-180;
+%wakedesc(wakedesc(:,2)>180, 2) = wakedesc(wakedesc(:,2)>180, 2)-180;
 wakedesc(isnan(wakedesc(:,1)), :) = [];
+% store phase
+wakedesc(:,2)=wakedesc(:,2)-expPhase(floor(length(expPhase)/2));
 
 irf.log('notice', ['Corrected ', num2str(n_corrected), ' out of ', ...
 	num2str(n_spins), ' spins.']);
+
+  function PlotED(hca)
+    irf_plot(hca,{[getEpoch(time(ind)), double(e(ind,:))],[getEpoch(time(ind)), double(data(ind,:))]},'comp')
+    ylabel(hca,['E' num2str(pair) ' [mV/m]']);
+    irf_zoom(hca,'x',getEpoch([ts te]))
+    function epo = getEpoch(t)
+      epo = double(t)*1e-9 + epoch0;
+    end
+  end
 end
 
 function av = w_ave(x, np, NPOINTS)
@@ -540,3 +547,40 @@ function res = isGoodShape(s)
       sprintf('BAD FIT: second max is %0.2f of the main max', smax/maxmax) );
   end
 end
+
+function wake = crop_wake(wake)
+% Crop wake side lobes below a defined fraction of the maximum.
+% Use spline interpoltion to reach smooth transition to the zero level
+% outside. If lobes are not located or too close to the beggining or 
+% end of the wake segment it is returned unaltered.
+
+AMP_FRAC = 0.15; % fraction of amplitude bewlo which we neew to crop
+GAP_WIDTH = 4; % number of points ower which the wake is required to reach zero
+lenWake = length(wake);
+
+idx = (1:lenWake)';
+imax = find(abs(wake)==max(abs(wake)));
+wamp = wake(imax);
+
+if wamp<0, iout = wake>wamp*AMP_FRAC;
+else, iout = wake<wamp*AMP_FRAC;
+end
+
+ist = find(((idx<imax) & iout),1,'last');
+ien = find(((idx>imax) & iout),1,'first');
+if isempty(ist) || isempty(ien)
+  irf.log('debug', 'Avoiding cropping wake, empty "ist" or "ein".');
+  return
+elseif (ist<=GAP_WIDTH) || (ien>=lenWake-GAP_WIDTH)
+  irf.log('debug', 'Avoiding cropping wake, too close to beginning/end.');
+  return
+end
+
+wake(idx>=ien+GAP_WIDTH+1 | idx<=ist-GAP_WIDTH-1) = 0;
+
+iexcl = [ist-GAP_WIDTH:ist, ien:ien+GAP_WIDTH]; % indeces over which to interpolate
+itmp = setxor(idx,iexcl);
+
+wake = interp1(itmp,wake(itmp),idx,'spline');
+end
+

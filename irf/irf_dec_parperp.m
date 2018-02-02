@@ -24,12 +24,12 @@ function [apar,aperp,alpha]=irf_dec_parperp(b0,a,flagspinplane)
 
 % Begin temporary fix to convert TS format to older format
 rtrnTS = 0;
-if isa(b0,'TSeries'), 
+if isa(b0,'TSeries')
     b0Time = b0.time;
     datatemp = double(b0.data);
     b0 = [b0Time.epochUnix(), double(datatemp)];
 end
-if isa(a,'TSeries'), 
+if isa(a,'TSeries')
     aTime = a.time;
     datatemp = double(a.data);
     a = [aTime.epochUnix(), datatemp];
@@ -49,7 +49,7 @@ if nargin<3 || flagspinplane==0
     aperp = a;
     aperp(:,2:4) = a(:,2:4) - normb(:,2:4).*(apar(:,2)*[1 1 1]);
     alpha = [];
-    if rtrnTS,
+    if rtrnTS
       aperp = irf.ts_vec_xyz(aTime,aperp(:,2:4));
     end
 else
@@ -62,7 +62,7 @@ else
     apar = a(:,1:2); aperp = apar;
     apar(:,2) = a(:,2).*b0(:,2) + a(:,3).*b0(:,3);
     aperp(:,2) = a(:,2).*b0(:,3) - a(:,3).*b0(:,2);
-    if rtrnTS,
+    if rtrnTS
       aperp = irf.ts_scalar(aTime,aperp(:,2));
       alpha = irf.ts_scalar(aTime,alpha(:,2));
     end

@@ -7,8 +7,9 @@
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
 
-yymmList = {'201511','201512','201601','201602','201610','201611','201612','201701'};
-mmsId = 'mms4'; dataPath = '/data/mms';
+%yymmList = {'201511','201512','201601','201602','201610','201611','201612','201701'};
+yymmList = {'201706','201707','201708'};
+mmsId = 'mms2'; dataPath = '/data/mms';
 for idxMo=yymmList
   yymm = idxMo{:};
   %%
@@ -23,7 +24,7 @@ for idxMo=yymmList
     
     disp(['Processing: ' fName.name])
     [out,Tint] = mms_sdp_1sec_db(fName.name,dataDir);
-    
+    if isempty(out), continue, end
     if isempty(db.data), db.data = out;
     else
       % Append data
