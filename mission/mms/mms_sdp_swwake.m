@@ -58,7 +58,7 @@ wakedesc = [];
 N_EMPTY = 0.9; % (Cluster was 0.9)
 %MAX_SPIN_PERIOD = 4.3; % sec for Cluster
 MAX_SPIN_PERIOD = 10^9*60/MMS_CONST.Spinrate.min; % = 20 sec
-WAKE_MAX_HALFWIDTH = 45; % degrees, (Cluster was 45 deg)
+WAKE_MAX_HALFWIDTH = 35; % degrees, (Cluster was 45 deg)
 WAKE_MIN_HALFWIDTH = 9; %11;  % degrees, (Cluster was 11 deg)
 WAKE_MIN_AMPLITUDE = 0.4; % mV/m, (Cluster was 0.4 mV/m)
 WAKE_MAX_AMPLITUDE = 7; % mV/m, (Cluster was 7 mV/m)
@@ -624,8 +624,7 @@ end
 %end
 wake(idx>=ien+GAP_WIDTH+1 | idx<=ist-GAP_WIDTH-1) = 0;
 
-%iexcl = [ist-GAP_WIDTH:ist, ien:ien+GAP_WIDTH]; % indeces over which to interpolate
-iexcl = [max(GAP_WIDTH, ist-GAP_WIDTH):ist, ien:min(ien+GAP_WIDTH,lenWake-GAP_WIDTH)];
+iexcl = [ist-GAP_WIDTH:ist, ien:ien+GAP_WIDTH]; % indeces over which to interpolate
 itmp = setxor(idx,iexcl);
 
 % Pad with zeros at the edges before interpolating
