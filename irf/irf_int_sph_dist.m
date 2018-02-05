@@ -16,8 +16,9 @@ function [pst] = irf_int_sph_dist(F,v,phi,th,vg,varargin)
 %   'x'     -   axis that is not integrated along in 1D and x-axis
 %               (phig = 0) in 2D. x = [1,0,0] if omitted.
 %   'z'     -   Axis that is integrated along in 2D. z = [0,0,1] if omitted.
-%   'nMC'   -   number of Monte Carlo iterations used for integration,
-%               default is 10.
+%   'nMC'   -   average number of Monte Carlo iterations used per bin for 
+%               integration, default is 10. Number of iterations is
+%               weighted to the logarithm of the data value in each bin.
 %   'vzint' -   set limits on the out-of-plane velocity interval in 2D and
 %               "transverse" velocity in 1D.
 %   'aint'  -   angular limit in degrees, can be combined with vzlim
@@ -89,6 +90,8 @@ while have_options
 end
 
 
+%% Initiate initiate various things
+
 % complete RH system
 yphat = cross(zphat,xphat);
 
@@ -139,6 +142,11 @@ VEL = permute(VEL,[2,1,3]);     % [v,phi,th]
 DV = repmat(dV,nAz,1,nEle);     % [phi,v,th]
 DV = permute(DV,[2,1,3]);       % [v,phi,th]
 
+% Number of Monte Carlo particles is weighted to log10(F)
+Nsum = nMC*numel(F); % total number of Monte Carlo particles
+% 3D matrix with values of nMC for each bin
+NMC = ceil(Nsum/(sum(sum(sum(log10(F+1)))))*log10(F+1));
+
 
 % init Fp
 Fg = zeros(nAzg+1,nVg);
@@ -147,15 +155,18 @@ dtau = ( VEL.^2.*cos(TH).*DV*dPhi*dTh );
 % Area or line element (primed)
 dAg = vg.^(projDim-1).*dVg*dPhig;
 
+
+%% Perform projection
 % Loop through all instrument bins
 for i = 1:nV % velocity (energy)
     for j = 1:nAz % phi
         for k = 1:nEle % theta
             % generate MC points
+            nMCt = NMC(i,j,k); % temporary number
             % first is not random
-            dV_MC = [0;(rand(nMC-1,1)-.5)*dV(i)];
-            dPHI_MC = [0;(rand(nMC-1,1)-.5)*dPhi];
-            dTH_MC = [0;(rand(nMC-1,1)-.5)*dTh];
+            dV_MC = [0;(rand(nMCt-1,1)-.5)*dV(i)];
+            dPHI_MC = [0;(rand(nMCt-1,1)-.5)*dPhi];
+            dTH_MC = [0;(rand(nMCt-1,1)-.5)*dTh];
             
             % convert instrument bin to cartesian velocity
             [vx,vy,vz] = sph2cart(PHI(i,j,k)+dPHI_MC,TH(i,j,k)+dTH_MC,VEL(i,j,k)+dV_MC);
@@ -184,7 +195,7 @@ for i = 1:nV % velocity (energy)
             
             % Loop through MC points and add value of instrument bin to the
             % appropriate projection bin
-            for l = 1:nMC
+            for l = 1:nMCt
                 iVg = find(vp(l)>vg_edges,1,'last');
                 % % Add to closest bin if it falls outside
                 % if isempty(iVg) && vp(l)<vg_edges(1); iVg = 1; end
@@ -198,13 +209,15 @@ for i = 1:nV % velocity (energy)
                 
                 % add value to appropriate projection bin
                 if usePoint(l) && ~isempty(iAzg) && ~isempty(iVg) && (iAzg<nAzg+1 || iAzg==1) && iVg<nVg+1
-                    Fg(iAzg,iVg) = Fg(iAzg,iVg)+F(i,j,k)*dtau(i,j,k)/dAg(iVg)/nMC;
+                    Fg(iAzg,iVg) = Fg(iAzg,iVg)+F(i,j,k)*dtau(i,j,k)/dAg(iVg)/nMCt;
                 end
             end
         end
     end
 end
 
+
+%% Output
 if projDim == 2
     % fix for interp shading, otherwise the last row can be whatever
     Fg(end,:) = mean([Fg(end-1,:);Fg(1,:)]);
