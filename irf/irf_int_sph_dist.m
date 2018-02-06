@@ -62,6 +62,7 @@ nMC = 10; % number of Monte Carlo iterations
 vzint = [-inf,inf]; % limit on out-of-plane velocity
 aint = [-180,180]; % limit on out-of-plane velocity
 projDim = 1; % number of dimensions of the projection
+weight = 'none'; % how number of MC points is weighted to data
 
 args = varargin;
 nargs = length(varargin);
@@ -84,6 +85,8 @@ while have_options
             vzint = args{2};
         case 'aint'
             aint = args{2};
+        case 'weight'
+            weight = args{2};
     end
     args = args(3:end);
     if isempty(args), break, end
@@ -142,11 +145,18 @@ VEL = permute(VEL,[2,1,3]);     % [v,phi,th]
 DV = repmat(dV,nAz,1,nEle);     % [phi,v,th]
 DV = permute(DV,[2,1,3]);       % [v,phi,th]
 
-% Number of Monte Carlo particles is weighted to log10(F)
-Nsum = nMC*numel(F); % total number of Monte Carlo particles
-% 3D matrix with values of nMC for each bin
-NMC = ceil(Nsum/(sum(sum(sum(log10(F+1)))))*log10(F+1));
-
+% Weighting of number of Monte Carlo particles
+Nsum = nMC*numel(find(F)); % total number of Monte Carlo particles
+switch weight
+    case 'none'
+        % 3D matrix with values of nMC for each bin
+        NMC = zeros(size(F)); % no points when data is 0
+        NMC(F~=0) = nMC;
+    case 'lin'
+        NMC = ceil(Nsum/sum(sum(sum(F)))*F);
+    case 'log'
+        NMC = ceil(Nsum/(sum(sum(sum(log10(F+1)))))*log10(F+1));
+end
 
 % init Fp
 Fg = zeros(nAzg+1,nVg);
