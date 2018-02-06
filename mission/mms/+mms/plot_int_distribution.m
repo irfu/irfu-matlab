@@ -239,14 +239,6 @@ for i = 1:length(it)
      Fg(i,:) = tmpst.F;
      dens(i) = tmpst.dens;
      vel(i) = tmpst.vel;
-    
-    % cheat and interpolate if there's a hole
-    for j = 2:length(vg)-1
-        if Fg(i,j)==0 && Fg(i,j-1)~=0 && Fg(i,j+1)~=0
-            Fg(i,j) = (Fg(i,j-1)+Fg(i,j+1))/2;
-        end
-    end
-
 end
 
 

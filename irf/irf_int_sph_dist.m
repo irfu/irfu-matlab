@@ -104,7 +104,7 @@ dPhi = abs(median(diff(phi))); % constant
 dTh = abs(median(diff(th))); % constant
 
 % primed (grid) diffs
-dVg = diff(vg); dVg = [dVg(1),dVg]; % quick and dirty
+% dVg = diff(vg); dVg = [dVg(1),dVg]; % quick and dirty
 if projDim == 2
     dPhig = median(diff(phig)); % constant
 else
@@ -119,10 +119,18 @@ else
 end
 
 % bin edges
-vg_edges = [vg(1)-dVg(1)/2,vg+dVg/2]; % quick and dirty
+% vg_edges = [vg(1)-dVg(1)/2,vg+dVg/2]; % quick and dirty
+vg_edges = zeros(1,length(vg)+1);
+vg_edges(1) = vg(1)-diff(vg(1:2))/2;
+vg_edges(2:end-1) = vg(1:end-1)+diff(vg)/2;
+vg_edges(end) = vg(end)+diff(vg(end-1:end))/2;
+
 if projDim == 2
     phig_edges = [phig-dPhig/2,phig(end)+dPhig/2];
 end
+
+% primed (grid) diffs
+dVg = diff(vg_edges);
 
 % convert to cartesian mesh, only for output
 if projDim == 2
