@@ -193,23 +193,21 @@ for i = 1:nV % velocity (energy)
                 phip(phip<0) = 2*pi+phip(phip<0);
             end
             
+            % get indicies for all MC points
+            iVg = discretize(vp,vg_edges);
+            
+            if projDim == 2
+                iAzg = discretize(phip,phig_edges);
+            else
+                iAzg = ones(1,nMCt);
+            end
+            
             % Loop through MC points and add value of instrument bin to the
             % appropriate projection bin
             for l = 1:nMCt
-                iVg = find(vp(l)>vg_edges,1,'last');
-                % % Add to closest bin if it falls outside
-                % if isempty(iVg) && vp(l)<vg_edges(1); iVg = 1; end
-                % if iVg == nVg+1 && vp(l)>vg_edges(end); iVg = nVg; end
-                
-                if projDim == 2
-                    iAzg = find(phip(l)>phig_edges,1,'last');
-                else
-                    iAzg = 1;
-                end
-                
                 % add value to appropriate projection bin
-                if usePoint(l) && ~isempty(iAzg) && ~isempty(iVg) && (iAzg<nAzg+1 || iAzg==1) && iVg<nVg+1
-                    Fg(iAzg,iVg) = Fg(iAzg,iVg)+F(i,j,k)*dtau(i,j,k)/dAg(iVg)/nMCt;
+                if usePoint(l) && ~isempty(iAzg(l)) && ~isempty(iVg(l)) && (iAzg(l)<nAzg+1 || iAzg(l)==1) && iVg(l)<nVg+1
+                    Fg(iAzg(l),iVg(l)) = Fg(iAzg(l),iVg(l))+F(i,j,k)*dtau(i,j,k)/dAg(iVg(l))/nMCt;
                 end
             end
         end
