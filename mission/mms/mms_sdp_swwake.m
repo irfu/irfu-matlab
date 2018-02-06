@@ -338,13 +338,15 @@ for in = iok
     wakedesc([in*2-1 in*2], :) = NaN;
     currentSpinGood = false;
   end
-  [goodShapeCcdav1, maxmax1, smax1] = isGoodShape(ccdav1);
-  [goodShapeCcdav2, maxmax2, smax2] = isGoodShape(ccdav2);
-  if currentSpinGood && ~(goodShapeCcdav1 && goodShapeCcdav2)
-    irf.log('debug', ['Wrong wake shape at ', ...
-      irf_time(int64(ts)+timeIn(1),'ttns>utc')]);
-    wakedesc([in*2-1 in*2], :) = NaN;
-    currentSpinGood = false;
+  if currentSpinGood
+    [goodShapeCcdav1, maxmax1, smax1] = isGoodShape(ccdav1);
+    [goodShapeCcdav2, maxmax2, smax2] = isGoodShape(ccdav2);
+    if ~(goodShapeCcdav1 && goodShapeCcdav2)
+      irf.log('debug', ['Wrong wake shape at ', ...
+        irf_time(int64(ts)+timeIn(1),'ttns>utc')]);
+      wakedesc([in*2-1 in*2], :) = NaN;
+      currentSpinGood = false;
+    end
   end
 	
   if currentSpinGood
