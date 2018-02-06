@@ -204,7 +204,7 @@ end
 prevSpinGood = false; currentSpinGood = false;
 for in = iok
   irf.log('debug', sprintf('processing spin nr: %i', in));
-%   if(in == 325), keyboard; end
+%   if(in == 5), keyboard; irf.log('debug'); end
   prevPrevSpinGood = prevSpinGood;
   prevSpinGood = currentSpinGood; currentSpinGood = true;
   
@@ -362,6 +362,7 @@ for in = iok
       irf.log('debug', ['wrong wake shape at ', ...
         irf_time(int64(ts)+timeIn(1),'ttns>utc'), ' (spike corner case)']);
       wakedesc([in*2-1 in*2], :) = NaN;
+      currentSpinGood = false;
       continue
     end
     wakedesc(in*2-fw,3) = max(abs(ccdav2));
@@ -374,6 +375,7 @@ for in = iok
     else
       irf.log('debug',['wrong wake shape at ', ...
         irf_time(int64(ts)+timeIn(1),'ttns>utc'), ' (spike corner case)']);
+      currentSpinGood = false;
       continue
     end
     clear ii iimax
@@ -393,7 +395,8 @@ for in = iok
     wakePrev = wake;
   elseif prevSpinGood && prevPrevSpinGood 
     wake = wakePrev;
-    irf.log('debug','using wake shape from the previous spin')
+    irf.log('debug','using wake shape from the previous spin');
+    currentSpinGood = false;
   else, continue
   end
 	
