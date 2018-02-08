@@ -5,9 +5,9 @@
 % This function is meant to collect definitions of frequently used hardcoded values and do nothing else.
 %
 %
-% Created 2018-01-02 by Erik Johansson, IRF Uppsala.
+% Initially created 2018-01-02 by Erik Johansson, IRF Uppsala.
 %
-function [InSituModes, RadioModes] = default_instrument_modes
+function [InsModeDescrList, RadModeDescrList] = default_instrument_modes
 % TODO: Separate survey data and rich data.
 % Survey and rich data production rates from
 % https://docs.google.com/spreadsheets/d/1OTSdC_eI7N-mA29RaMZR-VnD4CaauRnuR8f4rVGBBoY/edit#gid=1675236151
@@ -27,26 +27,26 @@ function [InSituModes, RadioModes] = default_instrument_modes
 % powerSC = [2559, 5489, 5489, 5489, 1673, 1673, 6149,  6149];
 % ----------------------------------------------------------------
 
-EmptyStructArray = struct('id', {}, 'survDataBps', {}, 'richDataBps', {}, 'powerWatt', {});
+EmptyStructArray = struct('id', {}, 'prodSurvBps', {}, 'prodRichBps', {}, 'powerWatt', {});
 
-InSituModes = EmptyStructArray;
-InSituModes(end+1) = create_record('In-situ_low',     979, 0, 2.559);
-InSituModes(end+1) = create_record('In-situ_slow',   2097, 0, 5.489);
-InSituModes(end+1) = create_record('In-situ_normal', (90+112+120+170), (1669+ 3823+3058+ 765), 5.489);
-InSituModes(end+1) = create_record('In-situ_burst',  (90+112+480+170), (1669+53406+7646+1911), 5.489);
+InsModeDescrList = EmptyStructArray;
+InsModeDescrList(end+1) = create_record('In-situ_low',     979, 0, 2.559);
+InsModeDescrList(end+1) = create_record('In-situ_slow',   2097, 0, 5.489);
+InsModeDescrList(end+1) = create_record('In-situ_normal', (90+112+120+170), (1669+ 3823+3058+ 765), 5.489);
+InsModeDescrList(end+1) = create_record('In-situ_burst',  (90+112+480+170), (1669+53406+7646+1911), 5.489);
 
-RadioModes = EmptyStructArray;
-RadioModes(end+1) = create_record('Radio_low',       135, 0, 1.673);
-RadioModes(end+1) = create_record('Radio_full',      230, 0, 1.673);
-RadioModes(end+1) = create_record('Radio_burst',   43200, 0, 6.149);
-RadioModes(end+1) = create_record('Radar_mode-3', 143616, 0, 6.149);
+RadModeDescrList = EmptyStructArray;
+RadModeDescrList(end+1) = create_record('Radio_low',       135, 0, 1.673);
+RadModeDescrList(end+1) = create_record('Radio_full',      230, 0, 1.673);
+RadModeDescrList(end+1) = create_record('Radio_burst',   43200, 0, 6.149);
+RadModeDescrList(end+1) = create_record('Radar_mode-3', 143616, 0, 6.149);
 end
 
 
 
-function m = create_record(id, survDataBps, richDataBps, powerWatt)
+function m = create_record(id, prodSurvBps, prodRichBps, powerWatt)
 m.id          = id;
-m.survDataBps = survDataBps;
-m.richDataBps = richDataBps;
+m.prodSurvBps = prodSurvBps;
+m.prodRichBps = prodRichBps;
 m.powerWatt   = powerWatt;
 end
