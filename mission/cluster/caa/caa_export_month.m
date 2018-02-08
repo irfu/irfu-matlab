@@ -28,8 +28,8 @@ function caa_export_month(year,month,startday,stopday,sats,varargin)
   old_pwd=pwd;
   cd(sprintf('/data/caa/cef/%4.4i',year))
   if P_L23_only
-	  datatypes={ 'P' 'P' };
-	  levels= [2 3];
+	  datatypes={ 'P' 'P' 'HK' };
+	  levels= [2 3 2];
   else
 % all new
 	  datatypes={ 'P' 'P' 'P' 'E' 'E' 'E' 'HK' 'DER' 'SFIT' };
@@ -117,6 +117,8 @@ function caa_export_month(year,month,startday,stopday,sats,varargin)
 			  exceptions={{3 'DER'} {3 'SFIT'} {3 'E' 2} {3 'E' 3} {1 'P1'} {1 'P4'} {2 'P1'} {2 'P3'} {3 'P1'} {3 'P2'} {3 'P3'} {3 'P4'} {4 'P4'} {1 'P12'} {2 'P12'} {3 'P12'} {3 'P32'} {3 'P34'} {4 'P32'} {4 'P34'}};
 		  end
 	  case 2016
+		  exceptions={{3 'DER'} {3 'SFIT'} {3 'E' 2} {3 'E' 3} {1 'P1'} {1 'P4'} {2 'P1'} {2 'P3'} {3 'P1'} {3 'P2'} {3 'P3'} {3 'P4'} {4 'P4'} {1 'P12'} {2 'P12'} {3 'P12'} {3 'P32'} {3 'P34'} {4 'P32'} {4 'P34'}};
+	  case 2017
 		  exceptions={{3 'DER'} {3 'SFIT'} {3 'E' 2} {3 'E' 3} {1 'P1'} {1 'P4'} {2 'P1'} {2 'P3'} {3 'P1'} {3 'P2'} {3 'P3'} {3 'P4'} {4 'P4'} {1 'P12'} {2 'P12'} {3 'P12'} {3 'P32'} {3 'P34'} {4 'P32'} {4 'P34'}};
 	  otherwise
 		  error('Year out of range.')
