@@ -33,7 +33,9 @@ function [hsf,pst] = plot_int_projection(varargin)
 %   'vzint'     - set limits on the out-of-plane velocity interval [km/s],
 %               useful for i.e. electron crescent distributions
 %   'nMC'       - number of Monte Carlo iterations used for integration,
-%               default is 100
+%               default is 500
+%   'weight'-   how the number of MC iterations per bin is weighted, can be
+%               'none' (default), 'lin' or 'log'
 %   'vlabel'    - 1x3 cell array containing strings for axis labels
 %               corresponding to x, y, and z
 %   'flipx'/'flipy' - boolean value where 1 flips the x/y axis 
@@ -101,10 +103,11 @@ doFlipY = 0;
 have_vlabels = 0;
 have_clim = 0;
 have_vlim = 0;
-nMC = 100; % number of Monte Carlo iterations
+nMC = 500; % number of Monte Carlo iterations
 vzint = [-inf,inf];
 showColorbar = 0;
 vgInput = 0;
+weight = 'none';
 
 have_options = nargs > 1;
 while have_options
@@ -142,6 +145,8 @@ while have_options
         case 'vg' % define velocity grid
             vgInput = 1;
             vg = args{2}*1e3;
+        case 'weight' % how data is weighted
+            weight = args{2};
     end
     args = args(3:end);
     if isempty(args), break, end
@@ -212,7 +217,7 @@ phig = linspace(0,2*pi-dPhig,nAzg)+dPhig/2;
 if ~vgInput; vg = v; end % same as instrument if no input
 
 %% perform projection
-pst = irf_int_sph_dist(F3d,v,phi,th,vg,'z',zphat,'x',xphat,'phig',phig,'nMC',nMC,'vzint',vzint*1e3);
+pst = irf_int_sph_dist(F3d,v,phi,th,vg,'z',zphat,'x',xphat,'phig',phig,'nMC',nMC,'vzint',vzint*1e3,'weight',weight);
 
 % put nans instead of 0s
 pst.F(pst.F==0) = NaN;

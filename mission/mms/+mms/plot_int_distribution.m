@@ -44,7 +44,9 @@ function [ax,pst] = plot_int_distribution(varargin)
 %   'vint'      - set limits on the from-line velocity to get cut-like
 %               distribution
 %   'nMC'       - number of Monte Carlo iterations used for integration,
-%               default is 10
+%               default is 100
+%   'weight'-   how the number of MC iterations per bin is weighted, can be
+%               'none' (default), 'lin' or 'log'
 %   'vlabel'    - string for axis label corresponding to v
 %   'flipx'     - boolean value where 1 flips the x axis 
 %   'vg'        - array with center values for the projection velocity
@@ -118,11 +120,12 @@ doFlipX = 0;
 have_vlabels = 0;
 have_vlim = 0;
 have_clim = 0;
-nMC = 10; % number of Monte Carlo iterations
+nMC = 100; % number of Monte Carlo iterations
 vint = [-Inf,Inf];
 aint = [-180,180];
 plotMode = 'line';
 vgInput = 0;
+weight = 'none';
 
 have_options = nargs > 1;
 while have_options
@@ -159,6 +162,8 @@ while have_options
         case 'vg' % define velocity grid
             vgInput = 1;
             vg = args{2}*1e3;
+        case 'weight' % how data is weighted
+            weight = args{2};
     end
     args = args(3:end);
     if isempty(args), break, end
@@ -235,7 +240,7 @@ for i = 1:length(it)
         vel = zeros(length(it),1);
     end
     % perform projection
-     tmpst = irf_int_sph_dist(F3d,v,phi,th,vg,'x',xphat,'z',zphat,'nMC',nMC,'vzint',vint*1e3,'aint',aint);
+     tmpst = irf_int_sph_dist(F3d,v,phi,th,vg,'x',xphat,'z',zphat,'nMC',nMC,'vzint',vint*1e3,'aint',aint,'weight',weight);
      Fg(i,:) = tmpst.F;
      dens(i) = tmpst.dens;
      vel(i) = tmpst.vel;
