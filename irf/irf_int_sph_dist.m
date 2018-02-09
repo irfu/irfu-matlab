@@ -192,9 +192,9 @@ for i = 1:nV % velocity (energy)
             [vx,vy,vz] = sph2cart(PHI(i,j,k)+dPHI_MC,TH(i,j,k)+dTH_MC,VEL(i,j,k)+dV_MC);
             
             % Get velocities in primed coordinate system
-            vxp = sum([vx,vy,vz].*xphat,2); % all MC points
-            vyp = sum([vx,vy,vz].*yphat,2);
-            vzp = sum([vx,vy,vz].*zphat,2); % all MC points
+            vxp = [vx,vy,vz]*xphat'; % all MC points
+            vyp = [vx,vy,vz]*yphat';
+            vzp = [vx,vy,vz]*zphat'; % all MC points
             vabsp = sqrt(vxp.^2+vyp.^2+vzp.^2);
             if projDim == 1 % get transverse velocity sqrt(vy^2+vz^2)
                 vzp = sqrt(vyp.^2+vzp.^2); % call it vzp
@@ -243,10 +243,10 @@ end
 
 % Calculate density
 if projDim == 1
-    dens = nansum(Fg.*dAg);
+    dens = sum(Fg.*dAg);
 else
     dAG = repmat(dAg,nAzg,1);
-    dens = nansum(nansum(Fg(1:end-1,:).*dAG));
+    dens = sum(sum(Fg(1:end-1,:).*dAG));
 end
 
 % Calculate velocity moment
