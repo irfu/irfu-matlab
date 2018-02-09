@@ -17,8 +17,10 @@ function [pst] = irf_int_sph_dist(F,v,phi,th,vg,varargin)
 %               (phig = 0) in 2D. x = [1,0,0] if omitted.
 %   'z'     -   Axis that is integrated along in 2D. z = [0,0,1] if omitted.
 %   'nMC'   -   average number of Monte Carlo iterations used per bin for 
-%               integration, default is 10. Number of iterations is
-%               weighted to the logarithm of the data value in each bin.
+%               integration, default is 10. Number of iterations can be
+%               weighted data value in each bin.
+%   'weight'-   how the number of MC iterations per bin is weighted, can be
+%               'none' (default), 'lin' or 'log'
 %   'vzint' -   set limits on the out-of-plane velocity interval in 2D and
 %               "transverse" velocity in 1D.
 %   'aint'  -   angular limit in degrees, can be combined with vzlim
