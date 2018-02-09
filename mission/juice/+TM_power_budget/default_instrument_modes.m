@@ -30,12 +30,14 @@ function [InsModeDescrList, RadModeDescrList] = default_instrument_modes
 EmptyStructArray = struct('id', {}, 'prodSurvBps', {}, 'prodRichBps', {}, 'powerWatt', {});
 
 InsModeDescrList = EmptyStructArray;
+InsModeDescrList(end+1) = create_record('Off',               0, 0, 0);
 InsModeDescrList(end+1) = create_record('In-situ_low',     979, 0, 2.559);
 InsModeDescrList(end+1) = create_record('In-situ_slow',   2097, 0, 5.489);
 InsModeDescrList(end+1) = create_record('In-situ_normal', (90+112+120+170), (1669+ 3823+3058+ 765), 5.489);
 InsModeDescrList(end+1) = create_record('In-situ_burst',  (90+112+480+170), (1669+53406+7646+1911), 5.489);
 
 RadModeDescrList = EmptyStructArray;
+RadModeDescrList(end+1) = create_record('Off',               0, 0, 0);
 RadModeDescrList(end+1) = create_record('Radio_low',       135, 0, 1.673);
 RadModeDescrList(end+1) = create_record('Radio_full',      230, 0, 1.673);
 RadModeDescrList(end+1) = create_record('Radio_burst',   43200, 0, 6.149);

@@ -2,8 +2,8 @@ function [StorageState1, StateArrays, Clf] = engine(Constants, StorageState0, Co
 % Engine for JUICE TM/power budget simulation.
 %
 %
-% INTENTION FOR CODE
-% ==================
+% PROBLEM INTENDED TO BE SOLVED
+% =============================
 % The main purpose of this code is to function as an "engine" for estimating/calculating/simulating:
 % (1) The "flow of data" i.e.
 %   (a) amount of data produced when
@@ -18,8 +18,8 @@ function [StorageState1, StateArrays, Clf] = engine(Constants, StorageState0, Co
 % downlink bandwidth.
 %
 %
-% IMPLEMENTATION NOTES
-% ====================
+% DESIGN GOALS
+% ============
 % * The code is meant to be an "engine" only, i.e. only solve an abstract task and not have any human-user-friendly UI,
 % in particular NOT a GUI but also NOT a UI for easy use from the MATLAB command-line. Such UIs should be provided by
 % other code that calls this code.
@@ -91,13 +91,13 @@ function [StorageState1, StateArrays, Clf] = engine(Constants, StorageState0, Co
 %   .prodRichBps
 %   .usedStorageBytes   : Not on StorageStates, since can be derived from it (redundant).
 %   .powerWatt
-% Clf                   : Struct with cluster loss factors (>=1), the ratio between allocated storage and data in file.
+% Clf                   : Struct with cluster loss factors.
 %   .surv
 %   .rich
 %
 %
-% VARIABLE NAMING CONVENTIONS
-% ===========================
+% VARIABLE NAMING CONVENTIONS, DEFINITIONS OF TERMS
+% ===============================================
 % bps = Bits per second (not BYTES per second)
 % Int = Integrated over time
 % Rad = Radio (mode)
@@ -105,27 +105,34 @@ function [StorageState1, StateArrays, Clf] = engine(Constants, StorageState0, Co
 % Surv = Survey (data)
 % Rich = Rich (data)
 % Seq = Sequence
+% CLF = Cluster Loss Factor = The ratio between allocated storage and data in file (>=1).
 %
 %
 % NOTES
 % =====
-% * Not running any instrument mode is modelled by defining and "running" a made-up "No-instrument-mode instrument mode"
-% which produces zero data.
-% * Not having any downlink is modelled by setting Downlink(i).bandwidthBps == 0.
-% * Only includes the power consumption from the in situ and radio modes, not from "powerDPU = 1912; powerXtra = 1100;" as
-% in "ju_rpwi_tm_power.m".
+% ** Not running any instrument mode is modelled by defining and "running" a made-up "No-instrument-mode instrument
+% mode" which produces zero data.
+% ** Not having any downlink is modelled by setting Downlink(i).bandwidthBps == 0.
+% ** Only includes the power consumption from the in situ and radio modes, not from "powerDPU = 1912; powerXtra = 1100;"
+% as in "ju_rpwi_tm_power.m".
+% ** Classification events are handled if-and-only-if they occur at times timeSec0 <= timeSec < timeSec1.
 %
 %
 % IMPLEMENTATION NOTES
 % ====================
-% * Amount of stored data is specified in bytes since MB, GB etc would be slightly ambiguous.
-% * Only permitting two file sizes, for survey and rich data separately, to keep the model simple. Having more file sizes
-% (e.g. one per mode) complicates the representation of stored data since the relationship between (1) amount of
+% ** Classification events instantly influence the storage state (which is returned) and must therefore be handled
+% properly at the ends of the time interval to avoid executing the same classification events twice or never when
+% chaining calls to this function (indirectly through the main function "engine"), one after another to evolve a longer
+% time interval. The implementation MUST therefore EITHER execute classification events at (1) timeSec0, OR (2)
+% timeSec1, but not at both, nor neither. Note also behaviour for the special case of zero-length time interval.
+% ** Amount of stored data is specified in bytes since MB, GB etc would be slightly ambiguous.
+% ** Only permitting two file sizes, for survey and rich data separately, to keep the model simple. Having more file
+% sizes (e.g. one per mode) complicates the representation of stored data since the relationship between (1) amount of
 % data stored, and (2) the amount of storage space used, is no longer a constant ratio, i.e. one has to separately
 % represent data with different file sizes with different scalars. Additionally, it then becomes important what is the
 % file size of the data that is specified in the TC when it implies deleting data from onboard storage (downlink, and
 % when selecting rich data), so that one can compute the amount of freed onboard storage space.
-% 
+%
 %
 % Initially created 2017-12-15 by Erik Johansson, IRF Uppsala.
 %
@@ -170,24 +177,6 @@ function [StorageState1, StateArrays, Clf] = engine(Constants, StorageState0, Co
 %       (1) Runs out of queued survey & rich data to download. ==> Excess downlink unused.
 %       (2) Runs out of storage space. ==> Stop filling up storage space (rich data first, then survey?)
 %
-% PROPOSAL: Change to an implementation model which works in steps of time sequences uninterrupted by "events", i.e. time
-%           sequences, i.e. mode changes, downlink changes, select/reject rich data events.
-%   PRO: Can more naturally introduce new discrete "events".
-%   ~CON: Must merge together the information from multiple sequences to produce long arrays of ~state values.
-%   TODO-DECISION: How create long, multi-interval state value arrays.
-%       PROPOSAL: Interpolate.
-%           NOTE: Different kinds of interpolation for different data: Linear interpolation, latest-value interpolation.
-%           PRO: Can be done once, after end of interval loop using all the storage states (at interval ends).
-%
-% PROPOSAL: Use numerical methods to solve differential equations.
-%   TODO-DECISION: How generalize to multiple file sizes? Arbitrary files size changes? Arbitrary rules for downlinking
-%   different file size data?
-%   CON: Numerical methods do not work for discontinuous functions?
-%
-% PROPOSAL: Use specially crafted functions for working with step functions (and maybe ramp functions, min-max function
-%           etc) to solve differential equations analytically.
-%   CON: Can not solve for M_s (stored survey data) etc since occurs twice in equation, of which one occurrence is derivative.
-%
 % PROPOSAL: Have the caller set cluster loss factors, INSTEAD OF files sizes and cluster size.
 %
 % PROPOSAL: Return quantities for creating "XB-like corridor plot".
@@ -209,30 +198,36 @@ function [StorageState1, StateArrays, Clf] = engine(Constants, StorageState0, Co
 %   PRO: Less risk of bugs.
 % PROPOSAL: Shorten notation: Q=Queued, U=Unclassified, ClusterLossFactor-->aboveMax
 % TODO: Clarify how handling commanded events at beginning and end. Needed for chaining.
+%
+% PROPOSAL: evolve --> integrate
+%
+% PROPOSAL: Separate name for "State" (Storage State+mode+downlink), to distinguish from "Storage State".
+%   PROPOSAL: SystemState
+%       CON: Will have identical shortening, "SS"
+%           PROPOSAL: "SyS" vs "StS".
+%   PROPOSAL: InstrumentState.
+%       CON: Could be interpreted as only instrument modes (no downlink, no storage state; storage could be seen as
+%       separate from instrument)
+%   PROPOSAL: Flow State
+%   PROPOSAL: StorageState-->DataState
+%       CON: Does not imply anything with the actual drive on the s/c. Too generic.
 
 
-% Variable naming conventions
-% ---------------------------
-% S = State
-% (0,1 = Initial and final state/time for the call to this function)
-% 2,3 = Refers to beginning and end of time interval which includes at most one commanded event which can only take place at time 3.
-% CLF = Cluster loss factor (>=1)
 
-%========================
-% Shorten variable names
-%========================
-SystemPrps       = Constants.SystemPrps;
-InsModeDescrList = Constants.InsModeDescrList;
-RadModeDescrList = Constants.RadModeDescrList;
-clear Constants;
-InsModeSeq  = CommEvents.InsModeSeq;
-RadModeSeq  = CommEvents.RadModeSeq;
-DownlinkSeq = CommEvents.DownlinkSeq;
-ClassifSeq  = CommEvents.ClassifSeq;
-clear CommEvents;
+% Internal variable naming conventions
+% ------------------------------------
+% S      = State (not storage state)
+% CS     = Complemented state (a state + derived variables)
+% 0, 1   = Initial and final state/time for call to function that evolves state.
+% 0b, 1b = Like 0, 1 but for a subset of the evolution.
+% CLF    = Cluster Loss Factor (>=1)
 
 
-EMPTY_ARRAY_FIELDS = {'unclasRichBytes', 'queuedRichBytes', 'queuedSurvBytes', 'iInsModeDescr', 'iRadModeDescr', 'prodSurvBps', 'prodRichBps', 'powerWatt', 'usedStorageBytes', 'downlinkBps'};
+
+% Initialize StateArrays.
+% Initialize fields with NaN to be able to detect unset values before exiting.
+EMPTY_ARRAY_FIELDS = {'unclasRichBytes', 'queuedRichBytes', 'queuedSurvBytes', 'iInsModeDescr', 'iRadModeDescr', ...
+    'prodSurvBps', 'prodRichBps', 'powerWatt', 'usedStorageBytes', 'downlinkBps', 'downlinkSurvBps', 'downlinkRichBps', 'downlinkExceBps'};  % State array fields to initialize.
 tempEmptyArray = zeros(size(timeArraySec)) * NaN;
 StateArrays = [];
 StateArrays.timeArraySec = timeArraySec;
@@ -240,282 +235,332 @@ for i = 1:numel(EMPTY_ARRAY_FIELDS)
     StateArrays.(EMPTY_ARRAY_FIELDS{i}) = tempEmptyArray;
 end
 
-SystemPrps.survClf = cluster_loss_factor(SystemPrps.survFileSizeBytes, SystemPrps.clusterSizeBytes);
-SystemPrps.richClf = cluster_loss_factor(SystemPrps.richFileSizeBytes, SystemPrps.clusterSizeBytes);
+% Derive CLFs.
+Constants.SystemPrps.survClf = cluster_loss_factor(Constants.SystemPrps.survFileSizeBytes, Constants.SystemPrps.clusterSizeBytes);
+Constants.SystemPrps.richClf = cluster_loss_factor(Constants.SystemPrps.richFileSizeBytes, Constants.SystemPrps.clusterSizeBytes);
+
+
+
+%====================
+% Initialize state 0
+%====================
+State0 = StorageState0;   % Incomplete as is. Fields will be added to it.
+% Find initial mode and downlink, by finding the corresponding most recent timeSec <= timeSec0 events.
+State0.iInsModeSeq  = prev_lower_equal_value([CommEvents.InsModeSeq.beginSec],  timeSec0);
+State0.iRadModeSeq  = prev_lower_equal_value([CommEvents.RadModeSeq.beginSec],  timeSec0);
+State0.iDownlinkSeq = prev_lower_equal_value([CommEvents.DownlinkSeq.beginSec], timeSec0);
+% ASSERTIONS
+if isempty(State0.iInsModeSeq)
+    error('Can not find in-situ mode covering beginning of time interval.')
+elseif isempty(State0.iRadModeSeq)
+    error('Can not find radio mode covering beginning of time interval.')
+elseif isempty(State0.iDownlinkSeq)
+    error('Can not find downlink covering beginning of time interval.')
+end
+
+
+
+[State1, StateArrays] = evolve_state(Constants, CommEvents, State0, StateArrays, timeSec0, timeSec1);
+
+
+
+% Construct additional return values.
+StorageState1 = [];
+StorageState1.unclasRichBytes = State1.unclasRichBytes;
+StorageState1.queuedRichBytes = State1.queuedRichBytes;
+StorageState1.queuedSurvBytes = State1.queuedSurvBytes;
+%
+Clf.surv = Constants.SystemPrps.survClf;
+Clf.rich = Constants.SystemPrps.richClf;
+
+end
+
+
+
+function [State1, StateArrays] = evolve_state(Constants, CommEvents, State0, StateArrays, timeSec0, timeSec1)
+% Evolve the state over arbitrary time period.
+%
+% This function 
+% (1) calls evolve_state_wo_CE.
+% (2) handles commanded events
+%
+% NOTE: Classification events are handled if-and-only-if they occur at times timeSec0 <= timeSec < timeSec1.
+% NOTE: The most recent non-classification events at timeSec<timeSec0 are handled outside of this function in order to
+% initialize the submitted state.
+% 
+
+assert_state(State0);
+fprintf('evolve_state: %g -- %g\n', timeSec0, timeSec1)   % DEBUG
 
 % Create one single, time-ordered list of commanded events.
-[commEventTimesSec, iEventType, jEvent] = merge_seq([InsModeSeq.beginSec], [RadModeSeq.beginSec], [ClassifSeq.timeSec], [DownlinkSeq.beginSec]);
-
+[commEventTimesSec, iEventType, jEventTypeSeq] = merge_seq(...
+    [CommEvents.InsModeSeq.beginSec], ...
+    [CommEvents.RadModeSeq.beginSec], ...
+    [CommEvents.ClassifSeq.timeSec], ...
+    [CommEvents.DownlinkSeq.beginSec]);
 
 % Find first commanded event.
 iCommEvent = find(commEventTimesSec >= timeSec0, true, 'first');
 
 
+timeSec0b = timeSec0;
+State0b   = State0;
 
-%=======================================================
-% Evolve state 0-->1
-% Split evolution into smaller steps 2-->3.
-%=======================================================
-S2 = StorageState0;
-timeSec2 = timeSec0;
-
-% Find initial mode and downlink
-% NOTE: It does not matter if setting in situ/radio mode or downlink twice (at the same timestamp) as opposed to
-% classification events.
-S2.iInsModeSeq  = prev_lower_equal_value([InsModeSeq.beginSec],  timeSec0);
-S2.iRadModeSeq  = prev_lower_equal_value([RadModeSeq.beginSec],  timeSec0);
-S2.iDownlinkSeq = prev_lower_equal_value([DownlinkSeq.beginSec], timeSec0);
-% ASSERTIONS
-if isempty(S2.iInsModeSeq)
-    error('Can not find in-situ mode at beginning of time interval.')
-elseif isempty(S2.iRadModeSeq)
-    error('Can not find radio mode at beginning of time interval.')
-elseif isempty(S2.iDownlinkSeq)
-    error('Can not find downlink at beginning of time interval.')
-end
-
-% Obtain actual mode descriptions and downlink value.
-% TODO-NEED-INFO: Are these modes descriptions at all really used??!!!
-[S2.InsModeDescr, S2.iInsModeDescr] = get_mode_descr(InsModeDescrList, InsModeSeq(S2.iInsModeSeq).id);
-[S2.RadModeDescr, S2.iRadModeDescr] = get_mode_descr(RadModeDescrList, RadModeSeq(S2.iRadModeSeq).id);
-S2.downlinkBps = DownlinkSeq(S2.iDownlinkSeq).bandwidthBps;
-
-lastTimeInterval = false;
+noMoreCommEvent = false;
 while true
-    % BUG?!!: Need way of exiting while loop if timeSec3 == timeSec1?!!
+    timeSec0b
+    State0b   % DEBUG
 
-    % Set end of interval (timestamp 3), generally being the next commanded event.
+    %================================================================
+    % Set timeSec1b
+    % -------------
+    % Set timeSec1b to be the value that comes first of
+    % (1) end of interval,
+    % (2) the next commanded event.
+    %
+    % NOTE: May have timeSec0b == timeSec1b if
+    % (1) there is a commanded event at timeSec0, or
+    % (2) there are multiple commanded events at the same timestamp.
+    %================================================================
     if (iCommEvent > numel(commEventTimesSec)) || (commEventTimesSec(iCommEvent) > timeSec1)
-        % CASE: (1) There is no more commanded event, or (2) the next commanded event takes place after timeSec1.
-        timeSec3         = timeSec1;
-        lastTimeInterval = true;
+        % CASE: (1) There is no more (caller-specified) commanded event, or
+        %       (2) the next commanded event takes place after timeSec1.
+        noMoreCommEvent = true;
+        timeSec1b = timeSec1;
     else
-        timeSec3 = commEventTimesSec(iCommEvent);
+        % CASE: There is at least one relevant, future commanded event.
+        % ==> Evolve until it.
+        timeSec1b = commEventTimesSec(iCommEvent);
     end
 
-    %===========================================
-    % Evolve system 2-->3
-    % Split evolution into smaller steps 4-->5.
-    %===========================================
-    timeSec4 = timeSec2;
-    timeSec5 = timeSec3;
-    S4 = S2;
-    while true
-        %S4 = complement_state(S4, SystemPrps);
+    % Evolve state 0b-->1b
+    [State1b, StateArrays] = evolve_state_wo_CE(Constants, CommEvents, State0b, StateArrays, timeSec0b, timeSec1b);
     
-        %=============================================
-        % Try to evolve system into the future, 4-->5
-        %=============================================
-        %timeSec4
-        %timeSec5
-        [S5, timeSecP, StateArrays] = evolve_state_linearly(SystemPrps, S4, timeSec4, timeSec5, StateArrays);
-        
-        % DEBUG
-        %S5 = complement_state(S5, SystemPrps);
-        % Find time C, where system reached some sort of "bounds".
-        %timeSecC = timeSec5;
-            
-        % Decide what to do next.
-        if timeSecP < timeSec5
-            % CASE: Did NOT evolve all the way.
-            timeSec5 = timeSecP;
-            % ==> Try evolving again, but for shorter time interval.
-        else
-            % CASE: Did succeed in evolving until timeSec5.
-            if timeSec3 == timeSec5
-                % CASE: Did evolve until timeSec3.
-                S3 = S5;
-                break
-            else
-                % CASE: Did not evolve until timeSec3.
-                S4 = S5;
-                timeSec4 = timeSec5;
-                timeSec5 = timeSec3;
-                % ==> Try evolving again, but starting at 4.
-            end
-        end
-    end    
-    
-    if lastTimeInterval
-        break
+    timeSec1b
+    State1b   % DEBUG
+
+    if (timeSec1b == timeSec1) && noMoreCommEvent
+        State0b = State1b;   % Value that will be read outside of loop, and which must be initialized if zero iterations.
+        break   % EXIT LOOP
     end
-    
-    %===========================================================
-    % Handle event specified in caller-submitted time sequences
-    %===========================================================
-    j3 = jEvent(iCommEvent);
+
+    % ASSERTION
+    if timeSec1b > timeSec1
+        error('engine:Assertion', 'timeSec1b > timeSec1')
+    end
+
+    %=============================================
+    % Handle ONE commanded event (modify State1b)
+    %=============================================
+    jSeq = jEventTypeSeq(iCommEvent);
     switch iEventType(iCommEvent)
         
         case 1  % In situ mode change
             
-            id = InsModeSeq(j3).id;
-            [S3.InsModeDescr, S3.iInsModeDescr] = get_mode_descr(InsModeDescrList, id);
-            S3.iInsModeSeq = j3;
+            State1b.iInsModeSeq = jSeq;
             
         case 2  % Radio mode change
             
-            id = RadModeSeq(j3).id;
-            [S3.RadModeDescr, S3.iRadModeDescr] = get_mode_descr(RadModeDescrList, id);
-            S3.iRadModeSeq = j3;
+            State1b.iRadModeSeq = jSeq;
             
         case 3  % Classification (selection/rejection) of (unclassified) rich data
             
-            Classif = ClassifSeq(j3);
+            Classif = CommEvents.ClassifSeq(jSeq);
             
             % ASSERTIONS
+            % NOTE: Assertion for checking the configuration of the classification event, NOT the final state.
+            % The final state is checked via assert_state (not max storage limit).
             if (Classif.selectedRichBytes < 0) || (Classif.rejectedRichBytes < 0)
                 error('Illegally configured rich data classification event: negative amount of bytes.')
             end
-            if (Classif.rejectedRichBytes + Classif.selectedRichBytes) > S3.unclasRichBytes
+            if (Classif.rejectedRichBytes + Classif.selectedRichBytes) > State1b.unclasRichBytes
                 error('Illegally configured classification event: rejecting and selecting (sum) more data than available.')
                 %Classif.rejectedRichBytes = S3.unclasRichBytes / 2;
                 %Classif.selectedRichBytes = S3.unclasRichBytes / 2;
             end
-            
-            S3.unclasRichBytes = S3.unclasRichBytes - (Classif.selectedRichBytes + Classif.rejectedRichBytes);
-            S3.queuedRichBytes = S3.unclasRichBytes + (Classif.selectedRichBytes);
-            
+
+            State1b.unclasRichBytes = State1b.unclasRichBytes - (Classif.selectedRichBytes + Classif.rejectedRichBytes);
+            State1b.queuedRichBytes = State1b.queuedRichBytes + (Classif.selectedRichBytes);
+
             % NOTE: Event could lead to
             %   (1) on storage limit --> not on storage limit
             %   (2) ... --> reaching zero bytes (unclasRichBytes)
             % Could be important for setting flags.
             
         case 4  % Downlink change
-
-            % ASSERTION. Remove?
-            if DownlinkSeq(j3).bandwidthBps < 0
-                error('Illegal negative downlink bandwidth.')
-            end
-            
-            S3.downlinkBps = DownlinkSeq(j3).bandwidthBps;
-            S3.iDownlinkSeq = j3;
-    end
-    iCommEvent = iCommEvent + 1;
     
-    timeSec2 = timeSec3;
-    S2 = S3;
+            State1b.iDownlinkSeq = jSeq;
+    end
+
+    iCommEvent = iCommEvent + 1;
+
+    timeSec0b = timeSec1b;
+    State0b   = State1b;
+    assert_state(State0b);
+    
 end    % while
+% CASE: State0b contains the latest state. NOTE: Must also work if no loop iteration!
 
-S1 = S3;
-
-StorageState1 = [];
-StorageState1.unclasRichBytes = S1.unclasRichBytes;
-StorageState1.queuedRichBytes = S1.queuedRichBytes;
-StorageState1.queuedSurvBytes = S1.queuedSurvBytes;
-
-Clf.surv = SystemPrps.survClf;
-Clf.rich = SystemPrps.richClf;
+State1 = State0b;
+assert_state(State1);
+assert_state_arrays(StateArrays);
 
 end
 
 
 
-function [state1, timeSecP, StateArrays] = evolve_state_linearly(SystemPrps, state0, timeSec0, timeSec1, StateArrays)
-% Evolve (integrate, extrapolate) the state of system over time period when there is no commanded event.
+function [State1, StateArrays] = evolve_state_wo_CE(Constants, CommEvents, State0, StateArrays, timeSec0, timeSec1)
+% Evolve the state over time period where
+% (1) there is no commanded event.
+%
+% In practice, this function is a wrapper around evolve_state_wo_CE_discont. This function will chain calls to that
+% function in order to ALWAYS COMPLETE the entire specified time period.
+%
+% NOTE: Permits zero-length time period.
+%
+
+
+assert_state(State0)
+fprintf('evolve_state_wo_CE: %g -- %g\n', timeSec0, timeSec1)   % DEBUG
+
+timeSec0b = timeSec0;
+State0b   = State0;
+while timeSec0b < timeSec1      % timeSec0 == timeSec1 ==> No iteration, avoid calling evolve_state_wo_CE_discont.
+    % TRY to evolve system for 0b-->1.
+    [State1b, timeSec1b, StateArrays] = evolve_state_wo_CE_discont(Constants, CommEvents, ...
+        State0b, StateArrays, timeSec0b, timeSec1);
+    % SUCCEEDED in evolving system for 0b-->1b.
+    
+    if timeSec1b < timeSec1
+        % CASE: Did not evolve until 1, only part of the way.
+        % ==> Try again for the remaining time period.
+        timeSec0b = timeSec1b;
+        State0b   = State1b;
+    else
+        % CASE: Succeeded in evolving until 1.
+        % ==> Quit
+        State0b = State1b;
+        break
+    end
+end
+% CASE: State0b is the latest state. NOTE: Must also work with zero iterations.
+
+State1 = State0b;
+end
+
+
+
+function [StateP, timeSecP, StateArrays] = evolve_state_wo_CE_discont(Constants, CommEvents, State0, StateArrays, timeSec0, timeSec1)
+% Evolve (integrate, extrapolate) the state of system over time period
+% (1) without commanded events (CE), and
+% (2) without discontinuities (discont), i.e. system evolves analytically (linearly) without sudden jumps due to
+% reaching limits.
+%
+% The function stops early when it can not satisfy (2) (interrupts when reaching zero bytes in any data category; when
+% reaching storage max limit).
+%
 % This function defines very much of how the system evolves over time and is as such central.
+%
 % NOTE: This function defines which bounds (maximum storage, amount of data always positive) are followed.
-% NOTE: This function defines how data is prioritized oat downlinking and destruction.
+% NOTE: This function defines how data is prioritized at downlinking and destruction (producing too much data).
+%
 %
 % ARGUMENTS
 % =========
-% state0, timeSec0   : Initial state at timeSec1.
-% timeSec1           : Time to which the function will attempt to evolve the state.
+% State0    : Initial state at timeSec0.
+% timeSec0
+% timeSec1  : Time to which the function will TRY to evolve the state.
+%
 %
 % RETURN VALUES
 % =============
-% state1   : State at timeSec1. If timeSecP < timeSec1, then empty.
-% timeSecP : The time until which evolution was successful. timeSecP <= timeSec1.
-%
-% BUG?: Numerical inexactness could lead to setting non-zero destroy* variables which is NOT enough to make usedStorageBps == 0.
+% StateP   : State at timeSecP.
+% timeSecP : The time until which the evolution was successful. timeSecP <= timeSec1.
 
-% TODO: Add state arrays.
-% TODO: New name? evolve_state, ~linear_step, ~step
-%   NOTE: Not really a linear step since destroy* and excess downlink change abruptly (discontinuous).
+fprintf('evolve_state_wo_CE_discont: %.18g -- %.18g\n', timeSec0, timeSec1)   % DEBUG
 
-% DEBUG
-%timeSec0
-%timeSec1
+assert_state(State0);
 
-S0 = state0; clear state0
+S0 = State0;      clear State0
 Sa = StateArrays; clear StateArrays
 
-%==================================
-% Initialize the state at timeSec0
-%=================================
-S0 = complement_state(S0, SystemPrps);
-
-
-%===============================================
-% Evolve non-constant state variables over time
-%
-% Use linear extrapolation to evolve those variables which values are determined by bounds.
-% Check if they exceed those bounds.
-%===============================================
-
-% Reach maximum storage limit?
-% NOTE: S1.usedStorageBytes is calculated from other variables (rather than integrated over time here; this avoids
-% errors/inconsistencies with other variables).
-S0.usedStorageBytes = min(S0.usedStorageBytes, SystemPrps.storageBytes);
-[timeStorageMaxSec, ~, Sa.usedStorageBytes] = linear_extrapolate_limit(...
-    timeSec0, S0.usedStorageBytes, timeSec1, S0.usedStorageBps/8, ...
-    Sa.timeArraySec, Sa.usedStorageBytes, -Inf, SystemPrps.storageBytes);
-S1 = [];
-
-% Reach zero unclassified rich data?
-%unclasRichBytes0     = S0.unclasRichBytes         % DEBUG
-%changeUnclasRichBps0 = S0.changeUnclasRichBps     % DEBUG
-S0.unclasRichBytes = max(S0.unclasRichBytes, 0);
-[timeUnclasifRichMinSec, S1.unclasRichBytes, Sa.unclasRichBytes] = linear_extrapolate_limit(...
-    timeSec0, S0.unclasRichBytes, timeSec1, S0.changeUnclasRichBps/8, ...
-    Sa.timeArraySec, Sa.unclasRichBytes, 0, Inf);
-
-% Reach zero queued rich data?
-S0.queuedRichBytes = max(S0.queuedRichBytes, 0);
-[timeQueuedRichMin, S1.queuedRichBytes, Sa.queuedRichBytes] = linear_extrapolate_limit(...
-    timeSec0, S0.queuedRichBytes, timeSec1, S0.changeQueuedRichBps/8, ...
-    Sa.timeArraySec, Sa.queuedRichBytes, 0, Inf);
-
-% Reach zero survey data?
-[timeQueuedSurvMinSec, S1.queuedSurvBytes, Sa.queuedSurvBytes] = linear_extrapolate_limit(...
-    timeSec0, S0.queuedSurvBytes, timeSec1, S0.changeQueuedSurvBps/8, ...
-    Sa.timeArraySec, Sa.queuedSurvBytes, 0, Inf);
-
-timeSecP = min([timeSec1, timeStorageMaxSec, timeUnclasifRichMinSec, timeQueuedRichMin, timeQueuedSurvMinSec], [], 'omitnan');
+CS0 = complement_state(S0, Constants, CommEvents);   % CS = Complemented State.
 
 
 
-%============================================================
-% Handle variables which are constant over the time interval
-%============================================================
-CONSTANT_STATE_VARIABLES = {'downlinkBps', 'prodSurvBps', 'prodRichBps', 'iInsModeDescr', 'iRadModeDescr', 'powerWatt'};
-%CONSTANT_ARRAY_FIELDS = {'iInsModeDescr', 'iRadModeDescr', 'prodSurvBps', 'prodRichBps', 'powerWatt'};
-CONSTANT_ARRAY_FIELDS = CONSTANT_STATE_VARIABLES;
-for i = 1:numel(CONSTANT_ARRAY_FIELDS)
-    fn = CONSTANT_ARRAY_FIELDS{i};
-    Sa.(fn) = fill_array_interval(timeSec0, timeSec1, S0.(fn), Sa.timeArraySec, Sa.(fn));
-end
-% Copy state variables that have not changed.
-%CONSTANT_STATE_FIELDS = {'downlinkBps', 'prodSurvBps', 'prodRichBps', 'InsModeDescr', 'RadModeDescr', 'iInsModeDescr', 'iRadModeDescr'};
-CONSTANT_STATE_FIELDS = {CONSTANT_STATE_VARIABLES{:}, 'InsModeDescr', 'RadModeDescr'};
-for i = 1:numel(CONSTANT_STATE_FIELDS)
-    fn = CONSTANT_STATE_FIELDS{i};
-    S1.(fn) = S0.(fn);
+timeSecP = timeSec1;
+SP = [];
+nbrOfTries = 0;
+while true
+    fprintf('Try 4 * linear_extrapolate_limit: %.18g -- %.18g\n', timeSec0, timeSecP);    % DEBUG
+
+    % ASSERTION
+    % Prevent algorithm from getting stuck in a loop. Wrapper function should handle case of evolving over a zero-length
+    % time interval so this function should never have to.
+    %if (timeSec0 == timeSecP)
+    %    error('evolve_state_wo_CE_discont:Assertion', 'linear_extrapolate_limit:Assertion', 'timeSec0 <= timeSecP')
+    %end
+    % NOTE: linear_extrapolate_limit requires non-zero time period (assertion). -- NOT?!
+
+    % Evolve ALLOCATED STORAGE.
+    % NOTE: This purpose is
+    % * NOT to update any actual state variable
+    % * to check if allocated storage is within limits
+    % * to update a corresponding state array
+    [timeStorageMaxSec, ~, Sa.usedStorageBytes] = TM_power_budget.engine_utils.linear_extrapolate_limit(...
+        timeSec0, timeSecP, CS0.usedStorageBytes, CS0.usedStorageBps/8, ...
+        Sa.timeArraySec, Sa.usedStorageBytes, -Inf, Constants.SystemPrps.storageBytes);
+
+    % Evolve UNCLASSIFIED RICH data
+    [timeUnclasifRichMinSec, SP.unclasRichBytes, Sa.unclasRichBytes] = TM_power_budget.engine_utils.linear_extrapolate_limit(...
+        timeSec0, timeSecP, CS0.unclasRichBytes, CS0.changeUnclasRichBps/8, ...
+        Sa.timeArraySec, Sa.unclasRichBytes, 0, Inf);
+
+    % Evolve QUEUED RICH data.
+    [timeQueuedRichMinSec, SP.queuedRichBytes, Sa.queuedRichBytes] = TM_power_budget.engine_utils.linear_extrapolate_limit(...
+        timeSec0, timeSecP, CS0.queuedRichBytes, CS0.changeQueuedRichBps/8, ...
+        Sa.timeArraySec, Sa.queuedRichBytes, 0, Inf);
+    
+    % Evolve (QUEUED) SURVEY data.
+    [timeQueuedSurvMinSec, SP.queuedSurvBytes, Sa.queuedSurvBytes] = TM_power_budget.engine_utils.linear_extrapolate_limit(...
+        timeSec0, timeSecP, CS0.queuedSurvBytes, CS0.changeQueuedSurvBps/8, ...
+        Sa.timeArraySec, Sa.queuedSurvBytes, 0, Inf);
+
+    nbrOfTries = nbrOfTries + 1;
+    timeSecP = min(...
+        [timeStorageMaxSec, timeUnclasifRichMinSec, timeQueuedRichMinSec, timeQueuedSurvMinSec], ...
+        [], 'omitnan');   % The time until which the evolution was successful.
+    if (timeSecP == timeSec1) || (nbrOfTries >=2)
+        break
+    end
 end
 
-% Should not be necessary. Just for safety.
-if timeSecP < timeSec1
-    S1 = [];
+SP.iInsModeSeq  = S0.iInsModeSeq;
+SP.iRadModeSeq  = S0.iRadModeSeq;
+SP.iDownlinkSeq = S0.iDownlinkSeq;
+
+
+
+%======================================================
+% Create state arrays for variables which are constant
+%======================================================
+CONSTANT_STATE_ARRAYS = {'downlinkBps', 'downlinkSurvBps', 'downlinkRichBps', 'downlinkExceBps', 'prodSurvBps', 'prodRichBps', 'iInsModeDescr', 'iRadModeDescr', ...
+    'powerWatt'};
+for i = 1:numel(CONSTANT_STATE_ARRAYS)
+    fn = CONSTANT_STATE_ARRAYS{i};
+    Sa.(fn) = fill_array_interval(timeSec0, timeSec1, CS0.(fn), Sa.timeArraySec, Sa.(fn));
 end
 
 
 
-state1 = S1;
+StateP = SP;
 StateArrays = Sa;
+assert_state(StateP);
 end
 
 
 
-function State = complement_state(State, SystemPrps)
+function ComplementedState = complement_state(State, Constants, CommEvents)
 % Using existing state variables to derive additional state variables, valid at the same instant:
 %   (1) downlink distributed on data types
 %   (2) destroy*
@@ -523,80 +568,107 @@ function State = complement_state(State, SystemPrps)
 %   (4) total survey and rich data production rates
 %   (5) total power
 
-S = State;
+assert_state(State);
+
+CS = State; clear State
+SystemPrps = Constants.SystemPrps;
+
+
+
+% Look up values in CommEvents.
+[CS.iInsModeDescr, InsModeDescr] = get_mode_descr(CommEvents.InsModeSeq, Constants.InsModeDescrList, CS.iInsModeSeq);
+[CS.iRadModeDescr, RadModeDescr] = get_mode_descr(CommEvents.RadModeSeq, Constants.RadModeDescrList, CS.iRadModeSeq);
+CS.downlinkBps = CommEvents.DownlinkSeq(CS.iDownlinkSeq).bandwidthBps;
 
 % Compile total production of survey & rich data respectively.
-S.prodSurvBps = S.InsModeDescr.prodSurvBps + S.RadModeDescr.prodSurvBps;
-S.prodRichBps = S.InsModeDescr.prodRichBps + S.RadModeDescr.prodRichBps;
-S.powerWatt   = S.InsModeDescr.powerWatt   + S.RadModeDescr.powerWatt;
-
+CS.prodSurvBps = InsModeDescr.prodSurvBps + RadModeDescr.prodSurvBps;
+CS.prodRichBps = InsModeDescr.prodRichBps + RadModeDescr.prodRichBps;
+CS.powerWatt   = InsModeDescr.powerWatt   + RadModeDescr.powerWatt;
 
 % Choose how downlink is distributed over different types of stored data.
-[S.downlinkSurvBps, S.downlinkRichBps, S.downlinkExceBps] = distribute_value(...
-    S.downlinkBps, ...
-    S.queuedSurvBytes <= 0, S.prodSurvBps, ...
-    S.queuedRichBytes <= 0, S.prodRichBps);
+[CS.downlinkSurvBps, CS.downlinkRichBps, CS.downlinkExceBps] = distribute_value(...
+    CS.downlinkBps, ...
+    CS.queuedSurvBytes <= 0, CS.prodSurvBps, ...
+    CS.queuedRichBytes <= 0, 0);    % NOTE: No QUEUED rich data is produced. Can therefore not be downlinked if zero.
 
-S.usedStorageBytes = ...
-    SystemPrps.survClf * (S.queuedSurvBytes) + ...
-    SystemPrps.richClf * (S.queuedRichBytes + S.unclasRichBytes);
+CS.usedStorageBytes = ...
+    SystemPrps.survClf * (CS.queuedSurvBytes) + ...
+    SystemPrps.richClf * (CS.queuedRichBytes + CS.unclasRichBytes);
+CS.usedStorageBytes = min(CS.usedStorageBytes, SystemPrps.storageBytes);
 
-S.destroyQueuedSurvBps = 0;
-S.destroyUnclasRichBps = 0;
-S.destroyQueuedRichBps = 0;   % Longer variable name just to keep it analogous with other destroy* variables.
+CS.destroyQueuedSurvBps = 0;
+CS.destroyUnclasRichBps = 0;
+CS.destroyQueuedRichBps = 0;   % Longer variable name just to keep it analogous with other destroy* variables.
 
-S = calc_used_storage_and_change_bps(S, SystemPrps);
+CS.changeQueuedSurvBps = CS.prodSurvBps - CS.downlinkSurvBps - CS.destroyQueuedSurvBps;
+CS.changeUnclasRichBps = CS.prodRichBps                      - CS.destroyUnclasRichBps;
+CS.changeQueuedRichBps =                - CS.downlinkRichBps - CS.destroyQueuedRichBps;
+
+CS.usedStorageBps = ...
+   SystemPrps.survClf * (CS.changeQueuedSurvBps) + ...
+   SystemPrps.richClf * (CS.changeUnclasRichBps + CS.changeQueuedRichBps);
+
+%CS = calc_used_storage_and_change_bps(CS, SystemPrps);
 
 % If used storage about to exceed storage limit, then set destroy* variables to cancel out.
-if (S.usedStorageBytes >= SystemPrps.storageBytes) && (S.usedStorageBps > 0)
+if (CS.usedStorageBytes >= SystemPrps.storageBytes) && (CS.usedStorageBps > 0)
     % CASE: Used storage about to exceed storage limit.
 
     % Set destroy* values depending on usedStorageBps.
-    S.destroyStorageBps = S.usedStorageBps;
+    CS.destroyStorageBps = CS.usedStorageBps;
     
     % Choose how data destruction is distributed over different types of stored data.
     [destroyUnclasRichStorageBps, destroyQueuedRichStorageBps, destroySurvStorageBps] = distribute_value(...
-       S.destroyStorageBps, ...
-        S.unclasRichBytes <= 0, S.prodRichBps*SystemPrps.richClf, ...
-        S.queuedRichBytes <= 0, 0);
+        CS.destroyStorageBps, ...
+        CS.unclasRichBytes <= 0, CS.prodRichBps*SystemPrps.richClf, ...
+        CS.queuedRichBytes <= 0, 0);
     
-    S.destroyUnclasRichBps = destroyUnclasRichStorageBps / SystemPrps.richClf;
-    S.destroyQueuedRichBps = destroyQueuedRichStorageBps / SystemPrps.richClf;
-    S.destroyQueuedSurvBps = destroySurvStorageBps       / SystemPrps.survClf;
+    CS.destroyUnclasRichBps = destroyUnclasRichStorageBps / SystemPrps.richClf;
+    CS.destroyQueuedRichBps = destroyQueuedRichStorageBps / SystemPrps.richClf;
+    CS.destroyQueuedSurvBps = destroySurvStorageBps       / SystemPrps.survClf;
+
+    % POTENTIAL BUG? Calculated values may be slightly wrong due to numerical inaccuracies?!! Exact values are required
+    % (more or less for sensible assertions) for evolution of state?!
+    % NOTE: Copy-pasted calculation as above. ==> PROPOSAL: Move to nested (enclosed) function?!
+    CS.changeQueuedSurvBps = CS.prodSurvBps - CS.downlinkSurvBps - CS.destroyQueuedSurvBps;
+    CS.changeUnclasRichBps = CS.prodRichBps                      - CS.destroyUnclasRichBps;
+    CS.changeQueuedRichBps =                - CS.downlinkRichBps - CS.destroyQueuedRichBps;
+    CS.usedStorageBps = 0;
     
-    % ASSERTION
-    S = calc_used_storage_and_change_bps(S, SystemPrps);
-    if S.usedStorageBps ~= 0
-        error('usedStorageBps ~= 0 after setting destroy* variables.')
-    end
+    %CS = calc_used_storage_and_change_bps(CS, SystemPrps);
+    
+    % ASSERTION. Can be triggered due to numerical inaccuracy.
+    %if CS.usedStorageBps ~= 0
+    %    error('usedStorageBps ~= 0 after setting destroy* variables.')
+    %end
 end
 
-State = S;
+ComplementedState = CS;
 end
 
 
 
-function State = calc_used_storage_and_change_bps(State, SystemPrps)
-S = State;
-
-S.changeQueuedSurvBps = S.prodSurvBps - S.downlinkSurvBps - S.destroyQueuedSurvBps;
-S.changeUnclasRichBps = S.prodRichBps                     - S.destroyUnclasRichBps;
-S.changeQueuedRichBps =               - S.downlinkRichBps - S.destroyQueuedRichBps;
-
-S.usedStorageBps = ...
-    SystemPrps.survClf * (S.changeQueuedSurvBps) + ...
-    SystemPrps.richClf * (S.changeUnclasRichBps + S.changeQueuedRichBps);
-
-State= S;
-end
+%function State = calc_used_storage_and_change_bps(State, SystemPrps)
+%S = State;
+%
+%S.changeQueuedSurvBps = S.prodSurvBps - S.downlinkSurvBps - S.destroyQueuedSurvBps;
+%S.changeUnclasRichBps = S.prodRichBps                     - S.destroyUnclasRichBps;
+%S.changeQueuedRichBps =               - S.downlinkRichBps - S.destroyQueuedRichBps;
+%
+%S.usedStorageBps = ...
+%    SystemPrps.survClf * (S.changeQueuedSurvBps) + ...
+%    SystemPrps.richClf * (S.changeUnclasRichBps + S.changeQueuedRichBps);
+%
+%State= S;
+%end
 
 
     
 % Distribute (split, spread) a finite positive value over three variables.
 %
 % Prioritize val1, then val2, then val3.
-% If corresponding conditions maxCond1, maxCond2 are true, then the corresponding variable can only be set to the
-% corresponding positive maximum value.
+% If corresponding conditions maxCond1, maxCond2 are true, then the corresponding variable can not be set to anything
+% higher than corresponding positive maximum value.
 %
 % val1+val2+val3 == value
 function [val1, val2, val3] = distribute_value(value, maxCond1, max1, maxCond2, max2)
@@ -626,81 +698,13 @@ end
 
 
 
-function [xp, y1, yArray] = linear_extrapolate_limit(x0, y0, x1, dydx, xArray, yArray, yMin, yMax)
-% Assume function y=y(x). Linearly extrapolate y values from x0,y0 to x1,y1 but keep track of when exceeding bounds.
-%
-% ARGUMENTS
-% =========
-% x0, y0     : Starting point for extrapolation
-% dydx       : Constant derivative used for the extrapolation.
-% x1              : Maximum end point for extrapolation.
-% yMin, yMax      : Interval of y values which the extrapolation x0,y0 to xp,yp must stay within.
-% xArray, yArray  : Arrays with x and (potentially) y values.
-%
-%
-% RETURN VALUES
-% =============
-% xp     : Point where extrapolation reached min or max limit. If y0 is outside the yMin-yMax interval, then xp==x0,
-%          yp==y0, i.e. yp is OUTSIDE the yMin-yMax interval for this special case.
-% y1     : y value for x=x1. Can be outside bounds.
-% yArray : Argument yArray, but with the y values for the range x0-x1 (in xArray) set to yArray(i)==y(xArray(i)).
-%
-%
+function [iModeDescr, ModeDescr] = get_mode_descr(ModeSeq, ModeDescrList, iModeSeq)
+% ASSUMES: ModeSeq.id exists.
 
-% TODO-DECISION: Inconsistent to NOT treat y0 out-of-bounds as special case, with special flag?
-%
-% PROPOSAL: Add flag for whether y0 is outside bounds.
-% PROPOSAL: Add assertions.
-
-% Set return values which apply regardless of min-max boundaries.
-i = (x0 <= xArray) & (xArray <= x1);
-yArray(i) = y0 + (xArray(i) - x0) * dydx;
-y1        = y0 + (x1        - x0) * dydx;
-
-%============
-% Set xp, yp
-%============
-% Check for y0 being out of bounds.
-[~, reachedMin, reachedMax] = outside_boundaries(y0, yMin, yMax);
-if (reachedMin || reachedMax)
-    xp = x0;
-    return
-end
-% Check for y0 < y <= y1 being out of bounds (knowing that we are working with a linear function y=y(x)).
-[yp, reachedMin, reachedMax] = outside_boundaries(y1, yMin, yMax);
-if (reachedMin || reachedMax)
-    % NOTE: Does not work for dydx==0, but that should never happen here, since
-    % dydx==0   ==>   y0==y1   ==>   out-of-boundaries for y1, if ever.
-    xp = x0 + (yp - y0) / dydx;
-else
-    xp = x1;
-end
-end
-
-
-
-% yp : If inside yMin-yMax, then equal to y, otherwise that value yMin, yMax which is closest/exceeded.
-function [yp, belowMin, aboveMax] = outside_boundaries(y, yMin, yMax)
-belowMin = false;
-aboveMax = false;
-
-if y < yMin
-    belowMin = true;
-    yp       = yMin;
-elseif y > yMax
-    aboveMax = true;
-    yp       = yMax;
-else
-    yp = y;
-end
-end
-
-
-
-function [ModeDescr, iModeDescr] = get_mode_descr(ModeDescrList, id)
+id = ModeSeq(iModeSeq).id;
 iModeDescr = find(strcmp(id, {ModeDescrList.id}));
 if numel(iModeDescr) ~= 1
-    error('Can not find exactly one mode description for a given mode ID.')
+    error('Can not find exactly one mode description for a given mode ID="%s".', id)
 end
 ModeDescr = ModeDescrList(iModeDescr);
 end
@@ -759,4 +763,38 @@ jUnsorted = [jList{:}];   % Merge row vectors into one.
 [y, kSort] = sort(yUnsorted);
 i = iUnsorted(kSort);
 j = jUnsorted(kSort);
+end
+
+
+
+function assert_state(State)
+% PROPOSAL: Check max storage limit.
+%   CON: Requires more arguments: CLFs, maxStorageBytes
+%   CON: That is a derived quantity. ==> Too "model dependent". Not a true assertion. Should be checked when/where the
+%        quantity is derived, maybe.
+%   CON: ~Too complicated (for an assertion).
+
+STATE_FIELDS = {...
+    'iRadModeSeq', 'iInsModeSeq', 'iDownlinkSeq', ...
+    'unclasRichBytes', 'queuedRichBytes', 'queuedSurvBytes'};
+
+if ~isempty(setxor(fieldnames(State), STATE_FIELDS))
+    error('assert_state:Assertion', 'Illegal set of fields.')
+end
+if (State.unclasRichBytes < 0) || (State.queuedRichBytes < 0) || (State.queuedSurvBytes < 0)
+    error('assert_state:Assertion', 'Data type has less than zero bytes stored.')
+end
+end
+
+
+
+function assert_state_arrays(StateArrays)
+fieldNamesList = fieldnames(StateArrays);
+
+for i = 1:numel(fieldNamesList)
+    fn = fieldNamesList{i};
+    if any(isnan(StateArrays.(fn)))
+        error('State arrays field "%s" contains at least one NaN.', fn)
+    end
+end
 end
