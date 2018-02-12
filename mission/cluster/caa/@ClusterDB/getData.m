@@ -999,7 +999,7 @@ elseif strcmp(quantity,'bfgm')
     end
   end
   
-  currentDir = pwd; tempDir = tempname;
+  currentDir = pwd; tempDir = tempname; dat = [];
   try
     dsetName = irf_ssub('C?_CP_FGM_FULL',cl_id);
     mkdir(tempDir);

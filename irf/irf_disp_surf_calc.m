@@ -102,6 +102,9 @@ function [wfinal,extraparam]=irf_disp_surf_calc(kc_x_max,kc_z_max,m_i,wp_e)
   end
   
   n2=KC2./(wfinal.*wfinal);
+  vphase_to_c = sqrt(1./n2);
+  vA_to_c = 1/wp_e/sqrt(m_i);
+  vphase_to_vA = vphase_to_c/vA_to_c;
   
   dielxx=dielS-n2.*cos(THETA).*cos(THETA);
   dielxy=-i*dielD;
@@ -166,4 +169,5 @@ function [wfinal,extraparam]=irf_disp_surf_calc(kc_x_max,kc_z_max,m_i,wp_e)
   extraparam(9,:,:,:)=log10(Ee./Ei); % Ratio of electron to ion energy
   extraparam(10,:,:,:)=log10(ratiopf); % Ratio of field to particle energy densities
   extraparam(11,:,:,:)=Bpolar; % Ellipticity based on B
+  extraparam(12,:,:,:)=log10(vphase_to_vA); % Phase speed divided by Alfven speed
   warning on

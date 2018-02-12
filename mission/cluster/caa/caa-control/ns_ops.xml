@@ -7696,5 +7696,8 @@ plan="yes" sdesc ="TBD">
 <operation start="2015-12-31T18:29:18Z" dt="8" c4="yes" plan="no" sdesc="bad_data">
 	<desc>Probes saturated in dense plasma due to high bias.</desc>
 	</operation>
-
+<operation start="2016-11-02T01:31:55Z" dt="111971" c2="yes" plan="no" sdesc="bad_lx">
+        <desc>Bad LX setup probably due to a glitch in the commanding.</desc>
+        <res><link href="pal20180208.txt">Per-Arne 180208</link></res>
+        </operation>
 </table>

@@ -70,6 +70,10 @@ function irf_disp_surfplot(kc_x_max,kc_z_max,wfinal,extraparam,surfchoice,colorc
     colorstring='<---- Left handed              Right handed ---->';
     colorlimits=[-1,1];
 		colorMap = 'bluered';
+  elseif colorchoice==12
+    colorstring='log10(v_{phase}/v_A)';
+    colorlimits=[-2,2];
+    colorMap = 'bluered';
   else
     colorchoice=1;
     colorlimits=[0,1];
