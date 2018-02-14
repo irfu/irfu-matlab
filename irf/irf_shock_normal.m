@@ -49,6 +49,7 @@ function [nd] = irf_shock_normal(spec,leq90)
 %           Models (only if R is included in spec):
 %               farris  -   Farris, M. H., et al., 1991
 %               slho    -   Slavin, J. A. and Holzer, R. E., 1981 (corrected)
+%               per     -   Peredo et al., z = 0
 %               fa4o    -   Fairfield, D. H., 1971
 %               fan4o   -   Fairfield, D. H., 1971
 %               foun    -   Formisano, V., 1979
@@ -258,6 +259,8 @@ if isfield(spec,'R')
     n.farris = farris_model(spec);
     % Slavin and Holzer mean
     n.slho = slavin_holzer_model(spec);
+    % Peredo et al., z = 0
+    n.per = peredo_model(spec);
     % Fairfield Meridian 4o
     n.fa4o = fairfield_meridian_4o_model(spec);
     % Fairfield Meridian No 4o
@@ -466,6 +469,16 @@ L = 23.3; % in RE
 x0 = 3.0;
 y0 = 0;
 alpha = atand(spec.Vu(2)/spec.Vu(1));
+
+n = shock_model(spec,eps,L,x0,y0,alpha);
+end
+
+function n = peredo_model(spec) %
+eps = 0.98;
+L = 26.1; % in RE
+x0 = 2.0;
+y0 = 0.3;
+alpha = 3.8-0.6;
 
 n = shock_model(spec,eps,L,x0,y0,alpha);
 end
