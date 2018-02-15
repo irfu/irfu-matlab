@@ -1,7 +1,9 @@
-function [dataFixedPha,fixedPha,epoch2000FixedPha] = mms_interp_fixed_pha(data, tEpoch2000, phaseDeg)
+function [dataFixedPha,fixedPha,epoch2000FixedPha] = mms_interp_fixed_pha(data, tEpoch2000, phaseDeg, STEPS_PER_DEG)
 
-STEPS_PER_DEG = 0.5; phaShift = 0; %phaShift=STEPS_PER_DEG/2;
-PHASE_OFF = 30; % offset the phase so that the boom is 45 deg to the sun
+if nargin<4, STEPS_PER_DEG = 0.5; end
+
+phaShift = 0; %phaShift=STEPS_PER_DEG/2;
+PHASE_OFF = -15; % offset the phase so that the boom is 45 deg to the sun
 
 epoch0 = tEpoch2000(1); epochTmp = double(tEpoch2000-epoch0);
 
@@ -25,8 +27,8 @@ end
     phaFixed = ((phaDegUnw(1)-rem(phaDegUnw(1),360)):STEPS_PER_DEG:...
       (phaDegUnw(end)-rem(phaDegUnw(end),360)+360))' + phaShift;
     epochFixedPhaSeg = interp1(phaDegUnw,epochSeg,phaFixed,'linear');
-    %phaFixed(isnan(epochFixedPhaSeg)) = []; 
-    %epochFixedPhaSeg(isnan(epochFixedPhaSeg)) = [];
+    phaFixed(isnan(epochFixedPhaSeg)) = []; 
+    epochFixedPhaSeg(isnan(epochFixedPhaSeg)) = [];
     phaFixedWrpSeg = mod(phaFixed,360);
     dataFixedPhaSeg = interp1(epochSeg,double(dataSeg),epochFixedPhaSeg,'spline');
   end
