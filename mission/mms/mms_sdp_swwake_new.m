@@ -57,7 +57,7 @@ wakedesc = [];
 %N_EMPTY = 0.9; % (Cluster was 0.9)
 %MAX_SPIN_PERIOD = 4.3; % sec for Cluster
 %MAX_SPIN_PERIOD = 10^9*60/MMS_CONST.Spinrate.min; % = 20 sec
-WAKE_MAX_HALFWIDTH = 45; % degrees, (Cluster was 45 deg)
+WAKE_MAX_HALFWIDTH = 55; % degrees, (Cluster was 45 deg)
 WAKE_MIN_HALFWIDTH = 9; %11;  % degrees, (Cluster was 11 deg)
 WAKE_MIN_AMPLITUDE = 0.4; % mV/m, (Cluster was 0.4 mV/m)
 WAKE_MAX_AMPLITUDE = 7; % mV/m, (Cluster was 7 mV/m)
@@ -110,13 +110,19 @@ for idx = idx0
   %d5spinsAC = d5spins -ifft(xxx, 'symmetric');
 
   % Spin in the middle has maximum weigth
-  av12 = sum(d5spins .* repmat([.1, .25, .3, .25, .1], NPOINTS, 1), 2);
-  
+  Ki = [.1, .25, .3, .25, .1];
+  Ni = Ki;
+  if 1 % add more weighting
+    av12Prel = sum(d5spins .* repmat(Ki, NPOINTS, 1), 2);
+    %Wi = sum(abs(d5spins-repmat(av12Prel,1,5))); % linear weight
+    Wi = sum((d5spins-repmat(av12Prel,1,5)).^2); % squared
+    Ni([1 2 4 5]) = Ki([1 2 4 5])./Wi([1 2 4 5])/...
+      (sum(Ki([1 2 4 5])./Wi([1 2 4 5]))/(1-Ki(3)));
+  end
+  av12 = sum(d5spins .* repmat(Ni, NPOINTS, 1), 2);
+
   [wake,ind1,ind2] = getProxyWake();
   if isempty(wake), continue, end
-
-  % Correct for the proxy wake
-  av12_corr = av12 - wake;
   
   [wake1,wake2, ~, d12, d12Plot] = getFinalWake();
   if isempty(wake1) && isempty(wake2), continue, end
@@ -264,9 +270,11 @@ return
 
   function [wake1,wake2,wakedesc,d12,d12Plot] = getFinalWake() 
     % Find final wake shape
-    wake1 = []; wake2 = [];
     wakedesc = NaN(1, 4);
    
+    % Correct for the proxy wake
+    av12_corr = av12 - wake;
+    
     % Find the ground tone and remove it from the data
     x = fft(av12_corr);
     x(3:359) = 0;
@@ -283,73 +291,8 @@ return
     i1 = mod( (ind1-wake_width:ind1+wake_width) -1, NPOINTS) +1;
     i2 = mod( (ind2-wake_width:ind2+wake_width) -1, NPOINTS) +1;
     
-    % Allow the final fit to be asymmetric
-    cdav = cumsum(d12(i1));
-    cdav = cdav - mean(cdav);
-    ccdav1 = cumsum(cdav);
-    ccdav1 = crop_wake(ccdav1);
-    cdav = cumsum(d12(i2));
-    cdav = cdav - mean(cdav);
-    ccdav2 = cumsum(cdav);
-    ccdav2 = crop_wake(ccdav2);
-    
-    if max(abs(ccdav1))< WAKE_MIN_AMPLITUDE ||...
-        max(abs(ccdav1))>WAKE_MAX_AMPLITUDE
-      irf.log('debug', ...
-        sprintf('Wake too small/big(%.2f mV/m) at %s', ...
-        max(abs(ccdav1)), tStUTC));
-      return
-    end
-    
-    if max(abs(ccdav2))< WAKE_MIN_AMPLITUDE ||...
-        max(abs(ccdav2))>WAKE_MAX_AMPLITUDE
-      irf.log('debug', ...
-        sprintf('Wake too small/big(%.2f mV/m) at %s', ...
-        max(abs(ccdav2)), tStUTC));
-      return
-    end
-    
-    if ~isGoodShape(ccdav1)
-      irf.log('debug', ['Wrong wake shape at ' tStUTC]);
-      return
-    end
-    if ~isGoodShape(ccdav2)
-      irf.log('debug', ['Wrong wake shape at ' tStUTC]);
-      return
-    end
-    
-    % Wake half-width
-    ii =    find( abs(ccdav1) <  max(abs(ccdav1))/2 );
-    iimax = find( abs(ccdav1) == max(abs(ccdav1))   );
-    hw1 = idx2deg(min(ii(ii>iimax))-max(ii(ii<iimax)));
-    if isempty(hw1)
-      irf.log('debug', ['wrong wake shape at ', ...
-        tStUTC ' (spike corner case)']);
-      return
-    elseif hw1 < WAKE_MIN_HALFWIDTH
-      irf.log('debug', sprintf('wake is too narrow (%d deg) at %s', ...
-        hw1, tStUTC));
-      return
-    end
-    
-    % Wake half-width
-    ii =    find( abs(ccdav2) <  max(abs(ccdav2))/2 );
-    iimax = find( abs(ccdav2) == max(abs(ccdav2))   );
-    hw2 = idx2deg(min(ii(ii>iimax)) - max(ii(ii<iimax)));
-    if isempty(hw2)  
-      irf.log('debug',['wrong wake shape at ', ...
-        tStUTC ' (spike corner case)']);
-      return
-    elseif hw2 < WAKE_MIN_HALFWIDTH
-      irf.log('debug', sprintf('wake is too narrow (%d deg) at %s', ...
-        hw2, tStUTC));
-      return
-    end
-    clear ii iimax
-    
-    
-    wake1 = zeros(NPOINTS,1); wake1( i1 ) = ccdav1;
-    wake2 = zeros(NPOINTS,1); wake2( i2 ) = ccdav2;
+    wake1 = getOneWake(i1);
+    wake2 = getOneWake(i2);
     
     % Save wake description
     %fw = (mod(ind2,NPOINTS)+1<mod(ind1,NPOINTS)+1);
@@ -363,6 +306,45 @@ return
     %wakedesc([idx*2-1 idx*2], 4) = wampl;
     %wakedesc(idx*2-1+fw, 4) = hw1;
     %wakedesc(idx*2-fw,4) = hw2;
+    
+    function wake = getOneWake(idx)
+      wake = [];
+      
+      % Allow the final fit to be asymmetric
+      cdav = cumsum(d12(idx));
+      cdav = cdav - mean(cdav);
+      ccdav = cumsum(cdav);
+      ccdav = crop_wake(ccdav);
+      
+      if max(abs(ccdav))< WAKE_MIN_AMPLITUDE ||...
+          max(abs(ccdav))>WAKE_MAX_AMPLITUDE
+        irf.log('debug', ...
+          sprintf('Wake too small/big(%.2f mV/m) at %s', ...
+          max(abs(ccdav)), tStUTC));
+        return
+      end
+      
+      if ~isGoodShape(ccdav)
+        irf.log('debug', ['Wrong wake shape at ' tStUTC]);
+        return
+      end
+      
+      % Wake half-width
+      ii =    find( abs(ccdav) <  max(abs(ccdav))/2 );
+      iimax = find( abs(ccdav) == max(abs(ccdav))   );
+      hw = idx2deg(min(ii(ii>iimax))-max(ii(ii<iimax)));
+      if isempty(hw)
+        irf.log('debug', ['wrong wake shape at ', ...
+          tStUTC ' (spike corner case)']);
+        return
+      elseif hw < WAKE_MIN_HALFWIDTH
+        irf.log('debug', sprintf('wake is too narrow (%d deg) at %s', ...
+          hw, tStUTC));
+        return
+      end
+      
+      wake = zeros(NPOINTS,1); wake( idx ) = ccdav;
+    end
   end
 
   function idx = deg2idx(deg)
@@ -442,8 +424,9 @@ function wake = crop_wake(wake)
 % outside. If lobes are not located or too close to the beggining or 
 % end of the wake segment it is returned unaltered.
 
-AMP_FRAC = 0.15; % fraction of amplitude bewlo which we neew to crop
-GAP_WIDTH = 4; % number of points ower which the wake is required to reach zero
+%DEBUG=false;
+AMP_FRAC = 0.1; % fraction of amplitude bewlo which we neew to crop
+GAP_WIDTH = 10; % number of points ower which the wake is required to reach zero
 lenWake = length(wake);
 
 idx = (1:lenWake)';
@@ -463,12 +446,31 @@ elseif (ist<=GAP_WIDTH) || (ien>=lenWake-GAP_WIDTH)
   irf.log('debug', 'Avoiding cropping wake, too close to beginning/end.');
   return
 end
-
+%if DEBUG
+%  figure;
+%  subplot(2,1,1);
+%  plot(idx, wake, '-black', imax, wamp, '-rO');
+%end
 wake(idx>=ien+GAP_WIDTH+1 | idx<=ist-GAP_WIDTH-1) = 0;
 
 iexcl = [ist-GAP_WIDTH:ist, ien:ien+GAP_WIDTH]; % indeces over which to interpolate
 itmp = setxor(idx,iexcl);
 
-wake = interp1(itmp,wake(itmp),idx,'spline');
+% Pad with zeros at the edges before interpolating
+wakeTmp = interp1([-1; 0; itmp; lenWake+1; lenWake+2],[0; 0; wake(itmp); 0; 0],...
+  [-1; 0; idx; lenWake+1; lenWake+2],'spline');
+wake = wakeTmp(3:end-2);
+
+%if DEBUG
+%  subplot(2,1,1);
+%  hold on;
+%  plot(idx, wake, '-green');
+%  legend('wake original', 'wake max', 'wake edges set to zero');
+%  ylabel('Wake [mV/m]');
+%  subplot(2,1,2);
+%  plot(idx, iout, '-blue*', ist, 1,'-rO', ien, 1, '-rO', itmp, ones(size(itmp)), '-greenO');
+%  legend('iout', 'ist', 'iend', 'itmp');
+%  ylim([-0.1 1.1]); ylabel('indicator true/false');
+%end
 end
 
