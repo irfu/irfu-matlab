@@ -211,7 +211,14 @@ function [StorageState1, StateArrays, Clf] = engine(Constants, StorageState0, Co
 %   PROPOSAL: Flow State
 %   PROPOSAL: StorageState-->DataState
 %       CON: Does not imply anything with the actual drive on the s/c. Too generic.
-
+%
+% PROPOSAL: Make sure to have variables for total (integrated) amount of data generated for any data type, regardless of whether some of it has been destroyed or not.
+%   NOTE: Basically possible with the old version of engine, and with step_func.
+%   PRO: Useful for checking realism of commanded modes.
+% 
+% PROPOSAL: Have function chose the timestamps.
+%   PROPOSAL: Choose only (1) all discrete events, and (2) beginning and end.
+%   PROBLEM: How handle (true) step functions?
 
 
 % Internal variable naming conventions
@@ -290,7 +297,7 @@ function [State1, StateArrays] = evolve_state(Constants, CommEvents, State0, Sta
 % 
 
 assert_state(State0);
-fprintf('evolve_state: %g -- %g\n', timeSec0, timeSec1)   % DEBUG
+%fprintf('evolve_state: %g -- %g\n', timeSec0, timeSec1)   % DEBUG
 
 % Create one single, time-ordered list of commanded events.
 [commEventTimesSec, iEventType, jEventTypeSeq] = merge_seq(...
@@ -308,8 +315,8 @@ State0b   = State0;
 
 noMoreCommEvent = false;
 while true
-    timeSec0b
-    State0b   % DEBUG
+    %timeSec0b
+    %State0b   % DEBUG
 
     %================================================================
     % Set timeSec1b
@@ -336,8 +343,8 @@ while true
     % Evolve state 0b-->1b
     [State1b, StateArrays] = evolve_state_wo_CE(Constants, CommEvents, State0b, StateArrays, timeSec0b, timeSec1b);
     
-    timeSec1b
-    State1b   % DEBUG
+    %timeSec1b
+    %State1b   % DEBUG
 
     if (timeSec1b == timeSec1) && noMoreCommEvent
         State0b = State1b;   % Value that will be read outside of loop, and which must be initialized if zero iterations.
@@ -421,7 +428,7 @@ function [State1, StateArrays] = evolve_state_wo_CE(Constants, CommEvents, State
 
 
 assert_state(State0)
-fprintf('evolve_state_wo_CE: %g -- %g\n', timeSec0, timeSec1)   % DEBUG
+%fprintf('evolve_state_wo_CE: %g -- %g\n', timeSec0, timeSec1)   % DEBUG
 
 timeSec0b = timeSec0;
 State0b   = State0;
@@ -477,7 +484,7 @@ function [StateP, timeSecP, StateArrays] = evolve_state_wo_CE_discont(Constants,
 % StateP   : State at timeSecP.
 % timeSecP : The time until which the evolution was successful. timeSecP <= timeSec1.
 
-fprintf('evolve_state_wo_CE_discont: %.18g -- %.18g\n', timeSec0, timeSec1)   % DEBUG
+%fprintf('evolve_state_wo_CE_discont: %.18g -- %.18g\n', timeSec0, timeSec1)   % DEBUG
 
 assert_state(State0);
 
@@ -563,14 +570,16 @@ end
 function ComplementedState = complement_state(State, Constants, CommEvents)
 % Using existing state variables to derive additional state variables, valid at the same instant:
 %   (1) downlink distributed on data types
-%   (2) destroy*
+%   (2) destroyQueuedSurvBps
+%       destroyUnclasRichBps
+%       destroyQueuedRichBps
 %   (3) usedStorageBps
 %   (4) total survey and rich data production rates
 %   (5) total power
 
 assert_state(State);
 
-CS = State; clear State
+CS = State; clear State   % CS = Complemented State
 SystemPrps = Constants.SystemPrps;
 
 
@@ -580,7 +589,7 @@ SystemPrps = Constants.SystemPrps;
 [CS.iRadModeDescr, RadModeDescr] = get_mode_descr(CommEvents.RadModeSeq, Constants.RadModeDescrList, CS.iRadModeSeq);
 CS.downlinkBps = CommEvents.DownlinkSeq(CS.iDownlinkSeq).bandwidthBps;
 
-% Compile total production of survey & rich data respectively.
+% Compile total production of survey & rich data respectively + power consumption.
 CS.prodSurvBps = InsModeDescr.prodSurvBps + RadModeDescr.prodSurvBps;
 CS.prodRichBps = InsModeDescr.prodRichBps + RadModeDescr.prodRichBps;
 CS.powerWatt   = InsModeDescr.powerWatt   + RadModeDescr.powerWatt;
@@ -608,15 +617,13 @@ CS.usedStorageBps = ...
    SystemPrps.survClf * (CS.changeQueuedSurvBps) + ...
    SystemPrps.richClf * (CS.changeUnclasRichBps + CS.changeQueuedRichBps);
 
-%CS = calc_used_storage_and_change_bps(CS, SystemPrps);
-
 % If used storage about to exceed storage limit, then set destroy* variables to cancel out.
 if (CS.usedStorageBytes >= SystemPrps.storageBytes) && (CS.usedStorageBps > 0)
     % CASE: Used storage about to exceed storage limit.
 
     % Set destroy* values depending on usedStorageBps.
     CS.destroyStorageBps = CS.usedStorageBps;
-    
+
     % Choose how data destruction is distributed over different types of stored data.
     [destroyUnclasRichStorageBps, destroyQueuedRichStorageBps, destroySurvStorageBps] = distribute_value(...
         CS.destroyStorageBps, ...
@@ -648,22 +655,6 @@ end
 
 
 
-%function State = calc_used_storage_and_change_bps(State, SystemPrps)
-%S = State;
-%
-%S.changeQueuedSurvBps = S.prodSurvBps - S.downlinkSurvBps - S.destroyQueuedSurvBps;
-%S.changeUnclasRichBps = S.prodRichBps                     - S.destroyUnclasRichBps;
-%S.changeQueuedRichBps =               - S.downlinkRichBps - S.destroyQueuedRichBps;
-%
-%S.usedStorageBps = ...
-%    SystemPrps.survClf * (S.changeQueuedSurvBps) + ...
-%    SystemPrps.richClf * (S.changeUnclasRichBps + S.changeQueuedRichBps);
-%
-%State= S;
-%end
-
-
-    
 % Distribute (split, spread) a finite positive value over three variables.
 %
 % Prioritize val1, then val2, then val3.
@@ -671,6 +662,9 @@ end
 % higher than corresponding positive maximum value.
 %
 % val1+val2+val3 == value
+%
+% NOTE: If one needs to distribute over two variables instead of three, just set maxCond1=true and max1=0, and ignore val1.
+%
 function [val1, val2, val3] = distribute_value(value, maxCond1, max1, maxCond2, max2)
     if maxCond1
         val1 = min(max1, value);
@@ -691,6 +685,13 @@ end
 
 % Set parts of array to constant value.
 % Should be identical to linear_extrapolate_limit with dydx==0, yMin==-Inf, yMax==Inf.
+%
+% ARGUMENTS
+% =========
+% x0, x1    : Scalars. Min & max of specified interval of xArray elements (not indices). Indirectly specifies a set of
+%             indicies in yArray (and xArray).
+% xArray    : 1D array.
+% yArray    : 1D array of same size as xArray.
 function [yArray] = fill_array_interval(x0, x1, y0, xArray, yArray)
 i = (x0 <= xArray) & (xArray <= x1);
 yArray(i) = y0;

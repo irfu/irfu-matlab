@@ -1,4 +1,11 @@
+% Miscellaneous functions used by "engine" or to be used in association with calls to "engine".
+%
+%
+% Created 2018-02-1x by Erik Johansson, IRF Uppsala.
+%
 classdef engine_utils
+    
+% PROPOSAL: Move more functions from engine to here.
     
     methods(Static, Access=public)
         
@@ -29,7 +36,8 @@ classdef engine_utils
             %
             %
             % IMPLEMENTATION NOTE: Many subtle and hard to resolve bugs in "engine" have been associated with this
-            % function. It therefore has many assertions and its own test code.
+            % function. It therefore has many assertions and its own test code which is part of the reason why this
+            % function is not part of "engine".
 
 
             % ASSERTIONS
@@ -123,5 +131,26 @@ classdef engine_utils
             end
         end
         
-    end
+        
+        
+        % Convert cell array into 1D struct array that can be used for a call to "engine".
+        % Intended for simplifying hardcoded assignments.
+        function ModeSeq = table2ModeSeq(table)
+            % NOTE: column 1 = Time in minutes.
+            ModeSeq = struct('beginSec', num2cell(cell2mat(table(:, 1))*60), 'id', table(:, 2));
+        end
+        % Convert cell array into 1D struct array that can be used for a call to "engine".
+        % Intended for simplifying hardcoded assignments.
+        function ClassifSeq = table2ClassifSeq(table)
+            % NOTE: column 1 = Time in minutes.
+            ClassifSeq = struct('timeSec',  num2cell(cell2mat(table(:, 1))*60), 'selectedRichBytes', table(:, 2), 'rejectedRichBytes', table(:, 3));
+        end
+        % Convert cell array into 1D struct array that can be used for a call to "engine".
+        % Intended for simplifying hardcoded assignments.
+        function DownlinkSeq = table2DownlinkSeq(table)
+            % NOTE: column 1 = Time in minutes.
+            DownlinkSeq = struct('beginSec',  num2cell(cell2mat(table(:, 1))*60), 'bandwidthBps', table(:, 2));
+        end        
+        
+    end    % methods(Static, Access=public)
 end

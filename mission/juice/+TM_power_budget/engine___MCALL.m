@@ -56,20 +56,7 @@ function data = engine___MCALL
 EngineConstants = TM_power_budget.default_constants();
 
 tBegin = 0;
-InitialStorageState    = struct('queuedSurvBytes', 0, 'queuedRichBytes', 0, 'unclasRichBytes', 0);
-
-    function ModeSeq = table2ModeSeq(table)
-        % NOTE: column 1 = Time in minutes.
-        ModeSeq = struct('beginSec', num2cell(cell2mat(table(:, 1))*60), 'id', table(:, 2));
-    end
-    function ClassifSeq = table2ClassifSeq(table)
-        % NOTE: column 1 = Time in minutes.
-        ClassifSeq = struct('timeSec',  num2cell(cell2mat(table(:, 1))*60), 'selectedRichBytes', table(:, 2), 'rejectedRichBytes', table(:, 3));
-    end
-    function DownlinkSeq = table2DownlinkSeq(table)
-        % NOTE: column 1 = Time in minutes.
-        DownlinkSeq = struct('beginSec',  num2cell(cell2mat(table(:, 1))*60), 'bandwidthBps', table(:, 2));
-    end
+InitialStorageState = struct('queuedSurvBytes', 0, 'queuedRichBytes', 0, 'unclasRichBytes', 0);
 
 scenarioNbr = 1;
 switch scenarioNbr
@@ -77,7 +64,7 @@ switch scenarioNbr
         %==============================================================================
         % GCO500. NOTE: Specifying time in minutes but later converts it into seconds.
         %==============================================================================
-        InsModeSeq = table2ModeSeq({
+        InsModeSeq = TM_power_budget.engine_utils.table2ModeSeq({
             0    'In-situ_slow';
             20   'In-situ_burst';
             25   'In-situ_slow';
@@ -89,7 +76,7 @@ switch scenarioNbr
             430  'In-situ_slow';
             960  'In-situ_low';
             });
-        RadModeSeq = table2ModeSeq({
+        RadModeSeq = TM_power_budget.engine_utils.table2ModeSeq({
             0    'Radio_full';
             62   'Radio_burst';
             72   'Radio_full';
@@ -98,16 +85,16 @@ switch scenarioNbr
             500  'Radio_burst';
             510  'Radio_full';
             });
-        ClassifSeq = table2ClassifSeq({
+        ClassifSeq = TM_power_budget.engine_utils.table2ClassifSeq({
             9*60,   2*2^20,   0;
             });
-        DownlinkSeq = table2DownlinkSeq({
+        DownlinkSeq = TM_power_budget.engine_utils.table2DownlinkSeq({
             0         0
             16*60     3*1740
             });
-        
+
         % Repeat sequence.
-        nDays = 3;
+        nDays = 1;
         InsModeSeq  = TM_power_budget.repeat_struct_array(InsModeSeq,  'beginSec', 24*60*60, nDays);
         RadModeSeq  = TM_power_budget.repeat_struct_array(RadModeSeq,  'beginSec', 24*60*60, nDays);
         ClassifSeq  = TM_power_budget.repeat_struct_array(ClassifSeq,  'timeSec',  24*60*60, nDays);
@@ -120,18 +107,22 @@ switch scenarioNbr
         %============================
         EngineConstants.SystemPrps.storageBytes = 100;
         EngineConstants.InsModeDescrList(end+1) = struct('id', 'test_burst_10+20Byph', 'prodSurvBps', 10*8 / 3600, 'prodRichBps', 20*8 / 3600, 'powerWatt', 5);
-        InsModeSeq = table2ModeSeq({
+        InsModeSeq = TM_power_budget.engine_utils.table2ModeSeq({
             0   'test_burst_10+20Byph';
             });
-        RadModeSeq = table2ModeSeq({
+        RadModeSeq = TM_power_budget.engine_utils.table2ModeSeq({
             0    'Off';
             });
-        ClassifSeq = table2ClassifSeq({
+        ClassifSeq = TM_power_budget.engine_utils.table2ClassifSeq({
             3*60,   10,   0;
             4*60,    0,  10;
             });
         %seqClassif = cell(0,3);
-        DownlinkSeq = struct('beginSec', {0, 6*3600}, 'bandwidthBps', {0, 100*8/3600});
+        %DownlinkSeq = struct('beginSec', {0, 6*3600}, 'bandwidthBps', {0, 100*8/3600});
+        DownlinkSeq = TM_power_budget.engine_utils.table2DownlinkSeq({
+            0         0
+            6*60      100*8/3600
+            });
         tEnd = 24*3600;  % Too high value triggers bug?
 end
 tSec   = tBegin:10:tEnd;
@@ -149,25 +140,50 @@ XTICK = [0:2:(30*24)];
 data = StateArrays;
 
 
-
 if 1
-    %=====
+    %#####
     figure
-    %=====
-    h = subplot(3,1,1);
-    plot(h, tHours, data.iInsModeDescr, '.');
-    ylabel(h, 'In situ mode')
-    set(h, 'XTick', XTICK)
-    set(h, 'XTickLabel', [])
-    set(h, 'YTick', [min(data.iInsModeDescr):max(data.iInsModeDescr)])
+    %#####
+    %------------------
+    h = subplot(2,1,1);
+    %------------------
+        
+    legendList = {};
+    yList = [];
+    y = 0;
+    LINE_WIDTH = 10;
     
-    h = subplot(3,1,2);
-    plot(h, tHours, data.iRadModeDescr, '.');
-    ylabel(h, 'Radio mode')
-    set(h, 'XTick', XTICK)
-    set(h, 'YTick', [min(data.iRadModeDescr):max(data.iRadModeDescr)])
+    InsModeMap = TM_power_budget.modeSeq2plotSeqMap(InsModeSeq, tBegin, tEnd);
+    RadModeMap = TM_power_budget.modeSeq2plotSeqMap(RadModeSeq, tBegin, tEnd);
     
-    h = subplot(3,1,3);
+    for idCell=InsModeMap.keys
+        arrayHours = InsModeMap(idCell{1}) / 3600;
+        y = y + 1;
+        plot(arrayHours, zeros(size(arrayHours)) + y, 'LineWidth', LINE_WIDTH)
+        hold on
+        
+        legendList{end+1} = idCell{1};
+        yList(end+1) = y;
+    end
+    for idCell=RadModeMap.keys
+        arrayHours = RadModeMap(idCell{1}) / 3600;
+        y = y + 1;
+        plot(arrayHours, zeros(size(arrayHours)) + y, 'LineWidth', LINE_WIDTH)
+        hold on
+        
+        legendList{end+1} = idCell{1};
+        yList(end+1) = y;
+    end
+    
+    legendList = strrep(legendList, '_', '\_');   % Prevent underscore from being interpreted as subscript.
+    ylabel(h, 'In situ/radio mode')
+    set(h, 'XTick', XTICK, 'XTickLabel', [])
+    set(h, 'YLim', [min(yList)-0.5, max(yList)+0.5], 'ytick', yList, 'yticklabel', legendList, 'Ydir', 'reverse')
+    
+    
+    %------------------
+    h = subplot(2,1,2);
+    %------------------
     plot(h, tHours, data.powerWatt)
     xlabel('Time [h]')
     ylabel('Power [W]')
@@ -203,7 +219,7 @@ if 1
     
     h = subplot(3,1,3);
     plot(h, tHours, [data.downlinkBps; data.downlinkSurvBps; data.downlinkRichBps; data.downlinkExceBps])
-    legend('Total', 'Survey', 'Rich', 'Exceed')
+    legend('Total', 'Survey', 'Rich', 'Unused')
     ylabel(h, 'Downlink [bits/s]')
     set(h, 'XTickLabel', XTICK)
     set(h, 'XTick', XTICK)
