@@ -19,7 +19,7 @@ function data = engine___MCALL
 %       60   4; ...
 %       65   2; ...
 %       385  4; ...
-%       390  2; ...
+%       390  2; ... (as in the source)
 %       425  4;
 %       430  2;
 %       960  1; ...
@@ -56,21 +56,28 @@ function data = engine___MCALL
 EngineConstants = TM_power_budget.default_constants();
 
 tBegin = 0;
-tEnd   = 24*3600;
 InitialStorageState    = struct('queuedSurvBytes', 0, 'queuedRichBytes', 0, 'unclasRichBytes', 0);
 
-    function t = convert_table_min2sec(t)
-        t(:,1) = cellfun(@(x) (x*60), t(:,1), 'UniformOutput', false);
+    function ModeSeq = table2ModeSeq(table)
+        % NOTE: column 1 = Time in minutes.
+        ModeSeq = struct('beginSec', num2cell(cell2mat(table(:, 1))*60), 'id', table(:, 2));
+    end
+    function ClassifSeq = table2ClassifSeq(table)
+        % NOTE: column 1 = Time in minutes.
+        ClassifSeq = struct('timeSec',  num2cell(cell2mat(table(:, 1))*60), 'selectedRichBytes', table(:, 2), 'rejectedRichBytes', table(:, 3));
+    end
+    function DownlinkSeq = table2DownlinkSeq(table)
+        % NOTE: column 1 = Time in minutes.
+        DownlinkSeq = struct('beginSec',  num2cell(cell2mat(table(:, 1))*60), 'bandwidthBps', table(:, 2));
     end
 
-scenarioNbr = 2;
+scenarioNbr = 1;
 switch scenarioNbr
     case 1
-        %InitialStorageState.unclasRichBytes = 1000*2^20;
-        %InitialStorageState.queuedRichBytes = 1000*2^20;
-        %InitialStorageState.queuedSurvBytes = 1000*2^20;
-        % GCO500. NOTE: Time in minutes but converted into seconds.
-        seqIns = convert_table_min2sec({
+        %==============================================================================
+        % GCO500. NOTE: Specifying time in minutes but later converts it into seconds.
+        %==============================================================================
+        InsModeSeq = table2ModeSeq({
             0    'In-situ_slow';
             20   'In-situ_burst';
             25   'In-situ_slow';
@@ -82,7 +89,7 @@ switch scenarioNbr
             430  'In-situ_slow';
             960  'In-situ_low';
             });
-        seqRad = convert_table_min2sec({
+        RadModeSeq = table2ModeSeq({
             0    'Radio_full';
             62   'Radio_burst';
             72   'Radio_full';
@@ -91,32 +98,42 @@ switch scenarioNbr
             500  'Radio_burst';
             510  'Radio_full';
             });
-        seqClassif = convert_table_min2sec({
-            9*60, 2*2^20, 0;
-            }); 
-        DownlinkSeq = struct('beginSec', {0, 16*3600, 24*3600, (24+16)*3600}, 'bandwidthBps', {0, 3*1740, 0, 3*1740});
-        tEnd = 1.5*24*3600;
+        ClassifSeq = table2ClassifSeq({
+            9*60,   2*2^20,   0;
+            });
+        DownlinkSeq = table2DownlinkSeq({
+            0         0
+            16*60     3*1740
+            });
+        
+        % Repeat sequence.
+        nDays = 3;
+        InsModeSeq  = TM_power_budget.repeat_struct_array(InsModeSeq,  'beginSec', 24*60*60, nDays);
+        RadModeSeq  = TM_power_budget.repeat_struct_array(RadModeSeq,  'beginSec', 24*60*60, nDays);
+        ClassifSeq  = TM_power_budget.repeat_struct_array(ClassifSeq,  'timeSec',  24*60*60, nDays);
+        DownlinkSeq = TM_power_budget.repeat_struct_array(DownlinkSeq, 'beginSec', 24*60*60, nDays);
+        
+        tEnd = nDays*24*60*60;
     case 2
+        %============================
         % Informal, manual test case
+        %============================
         EngineConstants.SystemPrps.storageBytes = 100;
         EngineConstants.InsModeDescrList(end+1) = struct('id', 'test_burst_10+20Byph', 'prodSurvBps', 10*8 / 3600, 'prodRichBps', 20*8 / 3600, 'powerWatt', 5);
-        seqIns = {
+        InsModeSeq = table2ModeSeq({
             0   'test_burst_10+20Byph';
-            };
-        seqRad = {
+            });
+        RadModeSeq = table2ModeSeq({
             0    'Off';
-            };
-        seqClassif = {
-            3*3600,   10,   0;
-            4*3600,    0,  10;
-            };        
+            });
+        ClassifSeq = table2ClassifSeq({
+            3*60,   10,   0;
+            4*60,    0,  10;
+            });
         %seqClassif = cell(0,3);
         DownlinkSeq = struct('beginSec', {0, 6*3600}, 'bandwidthBps', {0, 100*8/3600});
-        tEnd = 12*3600;  % Too high value triggers bug.
+        tEnd = 24*3600;  % Too high value triggers bug?
 end
-InsModeSeq = struct('beginSec', seqIns(:, 1), 'id', seqIns(:, 2));
-RadModeSeq = struct('beginSec', seqRad(:, 1), 'id', seqRad (:, 2));
-ClassifSeq = struct('timeSec',  seqClassif(:, 1), 'selectedRichBytes', seqClassif(:, 2), 'rejectedRichBytes', seqClassif(:, 3));
 tSec   = tBegin:10:tEnd;
 tHours = tSec / 60^2;
 
@@ -128,7 +145,7 @@ CommEvents.DownlinkSeq = DownlinkSeq;
 [FinalStorageState, StateArrays, Clf] = TM_power_budget.engine(EngineConstants, InitialStorageState, CommEvents, tBegin, tEnd, tSec);
 
 close all
-XTICK = [0:2:48];
+XTICK = [0:2:(30*24)];
 data = StateArrays;
 
 
@@ -185,8 +202,8 @@ if 1
     set(h, 'XTick', XTICK)
     
     h = subplot(3,1,3);
-    plot(h, tHours, [data.downlinkBps; data.downlinkSurvBps; data.downlinkRichBps])
-    legend('Total', 'Survey', 'Rich')
+    plot(h, tHours, [data.downlinkBps; data.downlinkSurvBps; data.downlinkRichBps; data.downlinkExceBps])
+    legend('Total', 'Survey', 'Rich', 'Exceed')
     ylabel(h, 'Downlink [bits/s]')
     set(h, 'XTickLabel', XTICK)
     set(h, 'XTick', XTICK)
