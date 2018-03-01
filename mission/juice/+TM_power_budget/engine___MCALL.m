@@ -85,19 +85,20 @@ switch scenarioNbr
             500  'Radio_burst';
             510  'Radio_full';
             });
-        ClassifSeq = TM_power_budget.engine_utils.table2ClassifSeq({
-            9*60,   2*2^20,   0;
-            });
+        %ClassifSeq = TM_power_budget.engine_utils.table2ClassifSeq({
+        %    9*60,   2*2^20,   0;
+        %    });
         DownlinkSeq = TM_power_budget.engine_utils.table2DownlinkSeq({
             0         0
             16*60     3*1740
             });
 
         % Repeat sequence.
-        nDays = 1;
+        nDays = 2;
         InsModeSeq  = TM_power_budget.repeat_struct_array(InsModeSeq,  'beginSec', 24*60*60, nDays);
         RadModeSeq  = TM_power_budget.repeat_struct_array(RadModeSeq,  'beginSec', 24*60*60, nDays);
-        ClassifSeq  = TM_power_budget.repeat_struct_array(ClassifSeq,  'timeSec',  24*60*60, nDays);
+        %ClassifSeq  = TM_power_budget.repeat_struct_array(ClassifSeq,  'timeSec',  24*60*60, nDays);
+        ClassifSeq = [];
         DownlinkSeq = TM_power_budget.repeat_struct_array(DownlinkSeq, 'beginSec', 24*60*60, nDays);
         
         tEnd = nDays*24*60*60;
@@ -113,12 +114,11 @@ switch scenarioNbr
         RadModeSeq = TM_power_budget.engine_utils.table2ModeSeq({
             0    'Off';
             });
-        ClassifSeq = TM_power_budget.engine_utils.table2ClassifSeq({
-            3*60,   10,   0;
-            4*60,    0,  10;
-            });
-        %seqClassif = cell(0,3);
-        %DownlinkSeq = struct('beginSec', {0, 6*3600}, 'bandwidthBps', {0, 100*8/3600});
+        %ClassifSeq = TM_power_budget.engine_utils.table2ClassifSeq({
+        %    3*60,   10,   0;
+        %    4*60,    0,  10;
+        %    });
+        ClassifSeq = [];
         DownlinkSeq = TM_power_budget.engine_utils.table2DownlinkSeq({
             0         0
             6*60      100*8/3600
@@ -208,11 +208,11 @@ if 1
     storageUnclasRichMiB = data.unclasRichBytes / 2^20 * Clf.rich;
     storageQueuedRichMiB = data.queuedRichBytes / 2^20 * Clf.rich;
     storageQueuedSurvMiB = data.queuedSurvBytes / 2^20 * Clf.surv;
-    storageSizeMiB = EngineConstants.SystemPrps.storageBytes / 2^20 * ones(size(usedStorageMiB));
-    %plot(h, tHours, [storageSizeMiB; usedStorageMiB; storageQueuedSurvMiB; storageUnclasRichMiB; storageQueuedRichMiB])
-    %legend('Storage size', 'Total', 'Queued survey', 'Unclas. rich', 'Queued rich')
-    plot(h, tHours, [usedStorageMiB; storageQueuedSurvMiB; storageUnclasRichMiB; storageQueuedRichMiB])
-    legend('Total', 'Queued survey', 'Unclas. rich', 'Queued rich')
+    %storageSizeMiB = EngineConstants.SystemPrps.storageBytes / 2^20 * ones(size(usedStorageMiB));    % Total storage
+    %plot(h, tHours, [usedStorageMiB; storageQueuedSurvMiB; storageUnclasRichMiB; storageQueuedRichMiB])
+    plot(h, tHours, [usedStorageMiB; storageQueuedSurvMiB; storageQueuedRichMiB])
+    %legend('Total', 'Queued survey', 'Unclas. rich', 'Queued rich')
+    legend('Total', 'Queued survey', 'Queued rich')
     ylabel(h, 'Used storage [MiB]')
     set(h, 'XTickLabel', [])
     set(h, 'XTick', XTICK)

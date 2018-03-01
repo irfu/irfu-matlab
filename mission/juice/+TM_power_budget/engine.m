@@ -2,6 +2,10 @@ function [StorageState1, StateArrays, Clf] = engine(Constants, StorageState0, Co
 % Engine for JUICE TM/power budget simulation.
 %
 %
+%   IMPORTANT NOTE: Classification events have been disabled. Rich data production is directed to
+%                   queued rich data. CommEvents.ClassifSeq has been disabled and must be set to [].
+%
+%
 % PROBLEM INTENDED TO BE SOLVED
 % =============================
 % The main purpose of this code is to function as an "engine" for estimating/calculating/simulating:
@@ -228,6 +232,14 @@ function [StorageState1, StateArrays, Clf] = engine(Constants, StorageState0, Co
 % 0, 1   = Initial and final state/time for call to function that evolves state.
 % 0b, 1b = Like 0, 1 but for a subset of the evolution.
 % CLF    = Cluster Loss Factor (>=1)
+
+
+
+% ASSERTION
+if ~isempty(CommEvents.ClassifSeq)
+    error('engine:Assertion', 'CommEvents.ClassifSeq is not empty. NOTE: Classification events have been disabled. Rich data production is directed to queued rich data.')
+end
+CommEvents.ClassifSeq = struct('timeSec',  {}, 'selectedRichBytes', {}, 'rejectedRichBytes', {});
 
 
 
@@ -595,10 +607,17 @@ CS.prodRichBps = InsModeDescr.prodRichBps + RadModeDescr.prodRichBps;
 CS.powerWatt   = InsModeDescr.powerWatt   + RadModeDescr.powerWatt;
 
 % Choose how downlink is distributed over different types of stored data.
-[CS.downlinkSurvBps, CS.downlinkRichBps, CS.downlinkExceBps] = distribute_value(...
-    CS.downlinkBps, ...
-    CS.queuedSurvBytes <= 0, CS.prodSurvBps, ...
-    CS.queuedRichBytes <= 0, 0);    % NOTE: No QUEUED rich data is produced. Can therefore not be downlinked if zero.
+if 0
+    [CS.downlinkSurvBps, CS.downlinkRichBps, CS.downlinkExceBps] = distribute_value(...
+        CS.downlinkBps, ...
+        CS.queuedSurvBytes <= 0, CS.prodSurvBps, ...
+        CS.queuedRichBytes <= 0, 0);    % NOTE: No QUEUED rich data is produced. Can therefore not be downlinked if zero.
+else
+    [CS.downlinkSurvBps, CS.downlinkRichBps, CS.downlinkExceBps] = distribute_value(...
+        CS.downlinkBps, ...
+        CS.queuedSurvBytes <= 0, CS.prodSurvBps, ...
+        CS.queuedRichBytes <= 0, CS.prodRichBps);    % NOTE: QUEUED rich data is produced.
+end
 
 CS.usedStorageBytes = ...
     SystemPrps.survClf * (CS.queuedSurvBytes) + ...
@@ -609,9 +628,7 @@ CS.destroyQueuedSurvBps = 0;
 CS.destroyUnclasRichBps = 0;
 CS.destroyQueuedRichBps = 0;   % Longer variable name just to keep it analogous with other destroy* variables.
 
-CS.changeQueuedSurvBps = CS.prodSurvBps - CS.downlinkSurvBps - CS.destroyQueuedSurvBps;
-CS.changeUnclasRichBps = CS.prodRichBps                      - CS.destroyUnclasRichBps;
-CS.changeQueuedRichBps =                - CS.downlinkRichBps - CS.destroyQueuedRichBps;
+CS = set_change_fields(CS);
 
 CS.usedStorageBps = ...
    SystemPrps.survClf * (CS.changeQueuedSurvBps) + ...
@@ -625,10 +642,17 @@ if (CS.usedStorageBytes >= SystemPrps.storageBytes) && (CS.usedStorageBps > 0)
     CS.destroyStorageBps = CS.usedStorageBps;
 
     % Choose how data destruction is distributed over different types of stored data.
-    [destroyUnclasRichStorageBps, destroyQueuedRichStorageBps, destroySurvStorageBps] = distribute_value(...
-        CS.destroyStorageBps, ...
-        CS.unclasRichBytes <= 0, CS.prodRichBps*SystemPrps.richClf, ...
-        CS.queuedRichBytes <= 0, 0);
+    if 0
+        [destroyUnclasRichStorageBps, destroyQueuedRichStorageBps, destroySurvStorageBps] = distribute_value(...
+            CS.destroyStorageBps, ...
+            CS.unclasRichBytes <= 0, CS.prodRichBps*SystemPrps.richClf, ...
+            CS.queuedRichBytes <= 0, 0);
+    else
+        [destroyUnclasRichStorageBps, destroyQueuedRichStorageBps, destroySurvStorageBps] = distribute_value(...
+            CS.destroyStorageBps, ...
+            CS.unclasRichBytes <= 0, 0, ...
+            CS.queuedRichBytes <= 0, CS.prodRichBps*SystemPrps.richClf);
+    end
     
     CS.destroyUnclasRichBps = destroyUnclasRichStorageBps / SystemPrps.richClf;
     CS.destroyQueuedRichBps = destroyQueuedRichStorageBps / SystemPrps.richClf;
@@ -636,13 +660,9 @@ if (CS.usedStorageBytes >= SystemPrps.storageBytes) && (CS.usedStorageBps > 0)
 
     % POTENTIAL BUG? Calculated values may be slightly wrong due to numerical inaccuracies?!! Exact values are required
     % (more or less for sensible assertions) for evolution of state?!
-    % NOTE: Copy-pasted calculation as above. ==> PROPOSAL: Move to nested (enclosed) function?!
-    CS.changeQueuedSurvBps = CS.prodSurvBps - CS.downlinkSurvBps - CS.destroyQueuedSurvBps;
-    CS.changeUnclasRichBps = CS.prodRichBps                      - CS.destroyUnclasRichBps;
-    CS.changeQueuedRichBps =                - CS.downlinkRichBps - CS.destroyQueuedRichBps;
-    CS.usedStorageBps = 0;
+    CS = set_change_fields(CS)
     
-    %CS = calc_used_storage_and_change_bps(CS, SystemPrps);
+    CS.usedStorageBps = 0;
     
     % ASSERTION. Can be triggered due to numerical inaccuracy.
     %if CS.usedStorageBps ~= 0
@@ -651,6 +671,19 @@ if (CS.usedStorageBytes >= SystemPrps.storageBytes) && (CS.usedStorageBps > 0)
 end
 
 ComplementedState = CS;
+end
+
+
+
+function CS = set_change_fields(CS)
+    CS.changeQueuedSurvBps = CS.prodSurvBps - CS.downlinkSurvBps - CS.destroyQueuedSurvBps;
+    if 0
+        CS.changeUnclasRichBps = CS.prodRichBps                      - CS.destroyUnclasRichBps;
+        CS.changeQueuedRichBps =                - CS.downlinkRichBps - CS.destroyQueuedRichBps;
+    else
+        CS.changeUnclasRichBps =                                       CS.destroyUnclasRichBps;
+        CS.changeQueuedRichBps = CS.prodRichBps - CS.downlinkRichBps - CS.destroyQueuedRichBps;
+    end
 end
 
 
