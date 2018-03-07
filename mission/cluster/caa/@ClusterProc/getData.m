@@ -1028,9 +1028,9 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
         nsops_errlist = [nsops_errlist caa_str2errid('bad_lx')]; %#ok<AGROW,NASGU>
       else
         nsops_errlist = [nsops_errlist caa_str2errid('bad_hx')]; %#ok<AGROW,NASGU>
-        if ~fsamp, error('no sampling frequency'),end
-        fsamp = c_efw_fsample(tt,'hx');
         
+        fsamp = c_efw_fsample(tt,'hx');
+        if ~fsamp, error('no sampling frequency'),end
         % Always remove Whisper when we use 180Hz filter
         if (fsamp == 450) || ...
             ( cl_id == 2 && tt(1,1)>toepoch([2001 07 23 13 54 18]) ) || ...
