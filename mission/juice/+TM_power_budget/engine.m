@@ -1,4 +1,4 @@
-function [StorageState1, StateArrays, Clf] = engine(Constants, StorageState0, CommEvents, timeSec0, timeSec1, timeArraySec)
+function [State1, StateArrays] = engine(Constants, State0, CommEvents, timeSec0, timeSec1, timeArraySec)
 % Engine for JUICE TM/power budget simulation.
 %
 %
@@ -44,12 +44,11 @@ function [StorageState1, StateArrays, Clf] = engine(Constants, StorageState0, Co
 %       .prodRichBps                        : Rich   data production rate. bits/s, after compression.
 %       .powerWatt                          : Power consumption.
 %   .SystemPrps                             : Struct with constants definining the static properties of the system.
-%       .storageBytes                : Total size of onboard storage memory available for storing instrument data (rich & survey). 
-%       .clusterSizeBytes                   : Size of which every file is an integer multiple.
-%       .survDataFileSizeBytes              : Influences cluster loss.
-%       .richDataFileSizeBytes              : Influences cluster loss.
+%       .storageBytes                       : Total size of onboard storage memory available for storing instrument data (rich & survey). 
+%       .survSef                            : Survey data SEF.
+%       .richSef                            : Rich   data SEF.
 %
-% InitialStorageState                       : State of the storage at time timeSec0.
+% State0                                    : State at time timeSec0.
 %   .queuedSurvBytes                        : Stored survey data that is waiting to be downlinked (automatically all survey data).
 %   .queuedRichBytes                        : Stored rich   data that is waiting to be downlinked (and has already been
 %                                             selected for being downlinked).
@@ -57,6 +56,9 @@ function [StorageState1, StateArrays, Clf] = engine(Constants, StorageState0, Co
 %                                             (unclas=unclassified).
 %                                             NOTE: All these measures refer to amount of data stored, NOT the amount of
 %                                             storage space used (which is subject to cluster loss).
+%   .prodSurvIntBytes                       : Produced survey data integrated over time (effectively an integration constant).
+%   .prodRichIntBytes                       : ----"--- rich   --------------------------------"------------------------------- 
+%   .downlinkIntBytes                       : Downlinked      --------------------------------"------------------------------- 
 %
 % CommEvents                                : Struct (not 1D array) describing (tele)commanded events occurring at specified timestamps.
 %   .InsModeSeq, .RadModeSeq                : 1D struct arrays.
@@ -83,7 +85,7 @@ function [StorageState1, StateArrays, Clf] = engine(Constants, StorageState0, Co
 %
 % RETURN VALUES
 % =============
-% StorageState1         : Same format as StorageState0. Valid at timeSec0.
+% State1                : Same format as State0. Valid at timeSec1.
 % StateArrays           : Non-array struct with 1D array fields. Each array element is valid at time timeArraySec.
 %   .timeArraySec
 %   .iInsModeDescr      : Index into InsModeDescrList, representing the in situ mode.
@@ -95,21 +97,21 @@ function [StorageState1, StateArrays, Clf] = engine(Constants, StorageState0, Co
 %   .prodRichBps
 %   .usedStorageBytes   : Not on StorageStates, since can be derived from it (redundant).
 %   .powerWatt
-% Clf                   : Struct with cluster loss factors.
-%   .surv
-%   .rich
+%   .prodSurvIntBytes
+%   .prodRichIntBytes
+%   .downlinkIntBytes
 %
 %
 % VARIABLE NAMING CONVENTIONS, DEFINITIONS OF TERMS
 % ===============================================
-% bps = Bits per second (not BYTES per second)
-% Int = Integrated over time
-% Rad = Radio (mode)
-% Ins = In situ (mode)
-% Surv = Survey (data)
-% Rich = Rich (data)
-% Seq = Sequence
-% CLF = Cluster Loss Factor = The ratio between allocated storage and data in file (>=1).
+% bps      = Bits per second (not BYTES per second)
+% IntBytes = A bit rate integrated over time (in units of bytes, NOT bit/s)
+% Rad      = Radio (mode)
+% Ins      = In situ (mode)
+% Surv     = Survey (data)
+% Rich     = Rich (data)
+% Seq      = Sequence
+% SEF      = Storage Efficiency Factor = The ratio between data in file, and the allocated storage for the file (0<SEF<=1).
 %
 %
 % NOTES
@@ -136,21 +138,22 @@ function [StorageState1, StateArrays, Clf] = engine(Constants, StorageState0, Co
 % represent data with different file sizes with different scalars. Additionally, it then becomes important what is the
 % file size of the data that is specified in the TC when it implies deleting data from onboard storage (downlink, and
 % when selecting rich data), so that one can compute the amount of freed onboard storage space.
+% ** The implementation relies heavily on using a standardized struct named "State", shortened "S" in many variable names.
+% Such a variable describes the state of the system at any given instant. It is effectively defined by the function
+% "assert_internal_state". This struct should not be confused with the input argument "State0" and return value "State1".
+%
+%
+% Internal variable naming conventions
+% ------------------------------------
+% S      = State (not storage state)
+% CS     = Complemented state (a state + derived variables)
+% 0, 1   = Initial and final state/time for call to function that evolves state.
+% 0b, 1b = Like 0, 1 but for a subset of the evolution.
 %
 %
 % Initially created 2017-12-15 by Erik Johansson, IRF Uppsala.
 %
 
-% PROPOSAL: Change name of package.
-%   PROPOSAL: Imply both TM and power.
-%   PROPOSAL: Something with "budget". budget_simulator, budget_sim
-%   PROPOSAL: Something that implies evolving over time: simulator, evolve, update.
-%   PROPOSAL: TM_power_budget, tm_power_budget
-%   PROPOSAL: Something that implies JUICE.
-%       PROPOSAL: Parent package named "juice"? JUICE? JUI?
-% PROPOSAL: Change name of file/module/function.
-%   PROPOSAL: Should imply "engine".
-%
 % TODO-DECISION: Define (and document) exact model for TM and power.
 %   TODO-NEED-INFO: Only one power budget? (one scalar?)
 %   TODO-NEED-INFO: Is no input variable truly ever a response to an output variable?
@@ -164,15 +167,16 @@ function [StorageState1, StateArrays, Clf] = engine(Constants, StorageState0, Co
 %                 for all data produced by a specific instrument mode.
 %       PROPOSAL: Have upper & lower limit depending on compression.
 %
-% PROPOSAL: Add for every mode: File size for survey & rich data respectively (two numbers).
-%
 % TODO-DECISION: Use 1D struct arrays, or structs with array fields?
-%   NOTE: Can not (conveniently) use 1D struct arrays for structs within structs. (?)
+%   NOTE: 1D arrays of structs: Can not (conveniently) use structs within structs.
 %
-% PROPOSAL: Begin with ju_rpwi_tm_power.m, and rewrite it to use this engine.
+% PROPOSAL: Use containers.Map for mode description lists.
+%   CON: Can not return StateArrays.iInsModeDescr and .iRadModeDescr as arrays of indices. Close analogue would be
+%        arrays of ID strings.
+%       CON: Can abolish. Not used anyway.
+%   CON: Can not automatically merge to containers.Map objects.
+%
 % PROPOSAL: Automatic test code?
-%
-% PROPOSAL: Somehow add warning for "error states" (term?).
 %
 % NOTE: There are discrete events that can occur which are not in the preprogrammed sequences.
 %   NOTE: Non-error events. ==> Must be able to handle to avoid negative queued data values.
@@ -180,8 +184,6 @@ function [StorageState1, StateArrays, Clf] = engine(Constants, StorageState0, Co
 %   NOTE: Error states
 %       (1) Runs out of queued survey & rich data to download. ==> Excess downlink unused.
 %       (2) Runs out of storage space. ==> Stop filling up storage space (rich data first, then survey?)
-%
-% PROPOSAL: Have the caller set cluster loss factors, INSTEAD OF files sizes and cluster size.
 %
 % PROPOSAL: Return quantities for creating "XB-like corridor plot".
 %   (1) Lower limit = Accumulated downlink integrated.
@@ -192,61 +194,61 @@ function [StorageState1, StateArrays, Clf] = engine(Constants, StorageState0, Co
 %       PROPOSAL: Let ackumulated downlink include rejected data.
 %           CON: Not as predictable as downlink sequence.
 %
-% PROPOSAL: Ignore error states for now.
-%   CON/NOTE: Still not enough to only rely on step_function because of
-%       (1) data rejection. ==> ~downlink-like spikes
-%       (2) Queud survey data > 0 still creates discrete events (beyond time sequence events)
-%
 % PROPOSAL: Only use bytes per second.
 %   PRO: Consistent
 %   PRO: Less risk of bugs.
-% PROPOSAL: Shorten notation: Q=Queued, U=Unclassified, ClusterLossFactor-->aboveMax
+% PROPOSAL: Shorten notation: Q=Queued, U=Unclassified
 % TODO: Clarify how handling commanded events at beginning and end. Needed for chaining.
 %
 % PROPOSAL: evolve --> integrate
 %
-% PROPOSAL: Separate name for "State" (Storage State+mode+downlink), to distinguish from "Storage State".
+% PROPOSAL: Separate names for
+%       (1) Storage state+mode+downlink+integrated quantities (used internally), and
+%       (2) storage state+integrated quantities (argument/return value) .
+%       Now both are called "State".
 %   PROPOSAL: SystemState
 %       CON: Will have identical shortening, "SS"
 %           PROPOSAL: "SyS" vs "StS".
 %   PROPOSAL: InstrumentState.
 %       CON: Could be interpreted as only instrument modes (no downlink, no storage state; storage could be seen as
 %       separate from instrument)
-%   PROPOSAL: Flow State
-%   PROPOSAL: StorageState-->DataState
+%   PROPOSAL: FlowState
+%   PROPOSAL: DataState
 %       CON: Does not imply anything with the actual drive on the s/c. Too generic.
+%   PROPOSAL: AlgorithmState
 %
 % PROPOSAL: Make sure to have variables for total (integrated) amount of data generated for any data type, regardless of whether some of it has been destroyed or not.
 %   NOTE: Basically possible with the old version of engine, and with step_func.
 %   PRO: Useful for checking realism of commanded modes.
 % 
-% PROPOSAL: Have function chose the timestamps.
+% PROPOSAL: Have function chose the timestamps for returned arrays.
 %   PROPOSAL: Choose only (1) all discrete events, and (2) beginning and end.
 %   PROBLEM: How handle (true) step functions?
-
-
-% Internal variable naming conventions
-% ------------------------------------
-% S      = State (not storage state)
-% CS     = Complemented state (a state + derived variables)
-% 0, 1   = Initial and final state/time for call to function that evolves state.
-% 0b, 1b = Like 0, 1 but for a subset of the evolution.
-% CLF    = Cluster Loss Factor (>=1)
+%
+% PROPOSAL: Return average quantities: production rates, downlink rates
+%   CON-PROPOSAL: Have separate code for this.
+%
+% PROPOSAL: Return data to make it possible to diagnose overproduction of data. To determine what modes, what runs
+%           of modes produces what amount of data.
+%   CON-PROPOSAL: Have separate code for this.
 
 
 
-% ASSERTION
+% ASSERTIONS
+assert_AR_state(State0)
+% Forbid any classification events, even an empty list.
 if ~isempty(CommEvents.ClassifSeq)
     error('engine:Assertion', 'CommEvents.ClassifSeq is not empty. NOTE: Classification events have been disabled. Rich data production is directed to queued rich data.')
 end
-CommEvents.ClassifSeq = struct('timeSec',  {}, 'selectedRichBytes', {}, 'rejectedRichBytes', {});
+CommEvents.ClassifSeq = struct('timeSec',  {}, 'selectedRichBytes', {}, 'rejectedRichBytes', {});   % Create empty list to use internally.
 
 
 
 % Initialize StateArrays.
 % Initialize fields with NaN to be able to detect unset values before exiting.
 EMPTY_ARRAY_FIELDS = {'unclasRichBytes', 'queuedRichBytes', 'queuedSurvBytes', 'iInsModeDescr', 'iRadModeDescr', ...
-    'prodSurvBps', 'prodRichBps', 'powerWatt', 'usedStorageBytes', 'downlinkBps', 'downlinkSurvBps', 'downlinkRichBps', 'downlinkExceBps'};  % State array fields to initialize.
+    'prodSurvBps', 'prodRichBps', 'prodSurvIntBytes', 'prodRichIntBytes', ...
+    'powerWatt', 'usedStorageBytes', 'downlinkBps', 'downlinkIntBytes', 'downlinkSurvBps', 'downlinkRichBps', 'downlinkExceBps'};  % State array fields to initialize.
 tempEmptyArray = zeros(size(timeArraySec)) * NaN;
 StateArrays = [];
 StateArrays.timeArraySec = timeArraySec;
@@ -254,44 +256,41 @@ for i = 1:numel(EMPTY_ARRAY_FIELDS)
     StateArrays.(EMPTY_ARRAY_FIELDS{i}) = tempEmptyArray;
 end
 
-% Derive CLFs.
-Constants.SystemPrps.survClf = cluster_loss_factor(Constants.SystemPrps.survFileSizeBytes, Constants.SystemPrps.clusterSizeBytes);
-Constants.SystemPrps.richClf = cluster_loss_factor(Constants.SystemPrps.richFileSizeBytes, Constants.SystemPrps.clusterSizeBytes);
 
 
-
-%====================
-% Initialize state 0
-%====================
-State0 = StorageState0;   % Incomplete as is. Fields will be added to it.
+%===============================
+% Initialize (internal) state 0
+%===============================
+InternalState0 = State0;   clear State0
 % Find initial mode and downlink, by finding the corresponding most recent timeSec <= timeSec0 events.
-State0.iInsModeSeq  = prev_lower_equal_value([CommEvents.InsModeSeq.beginSec],  timeSec0);
-State0.iRadModeSeq  = prev_lower_equal_value([CommEvents.RadModeSeq.beginSec],  timeSec0);
-State0.iDownlinkSeq = prev_lower_equal_value([CommEvents.DownlinkSeq.beginSec], timeSec0);
+InternalState0.iInsModeSeq  = prev_lower_equal_value([CommEvents.InsModeSeq.beginSec],  timeSec0);
+InternalState0.iRadModeSeq  = prev_lower_equal_value([CommEvents.RadModeSeq.beginSec],  timeSec0);
+InternalState0.iDownlinkSeq = prev_lower_equal_value([CommEvents.DownlinkSeq.beginSec], timeSec0);
 % ASSERTIONS
-if isempty(State0.iInsModeSeq)
-    error('Can not find in-situ mode covering beginning of time interval.')
-elseif isempty(State0.iRadModeSeq)
-    error('Can not find radio mode covering beginning of time interval.')
-elseif isempty(State0.iDownlinkSeq)
-    error('Can not find downlink covering beginning of time interval.')
+if isempty(InternalState0.iInsModeSeq)
+    error('Can not find in-situ mode covering beginning of specified time interval.')
+elseif isempty(InternalState0.iRadModeSeq)
+    error('Can not find radio mode covering beginning of specified time interval.')
+elseif isempty(InternalState0.iDownlinkSeq)
+    error('Can not find downlink covering beginning of specified time interval.')
 end
 
 
 
-[State1, StateArrays] = evolve_state(Constants, CommEvents, State0, StateArrays, timeSec0, timeSec1);
+[InternalState1, StateArrays] = evolve_state(Constants, CommEvents, InternalState0, StateArrays, timeSec0, timeSec1);
 
 
 
 % Construct additional return values.
-StorageState1 = [];
-StorageState1.unclasRichBytes = State1.unclasRichBytes;
-StorageState1.queuedRichBytes = State1.queuedRichBytes;
-StorageState1.queuedSurvBytes = State1.queuedSurvBytes;
-%
-Clf.surv = Constants.SystemPrps.survClf;
-Clf.rich = Constants.SystemPrps.richClf;
+State1 = [];
+State1.unclasRichBytes  = InternalState1.unclasRichBytes;
+State1.queuedRichBytes  = InternalState1.queuedRichBytes;
+State1.queuedSurvBytes  = InternalState1.queuedSurvBytes;
+State1.prodSurvIntBytes = InternalState1.prodSurvIntBytes;
+State1.prodRichIntBytes = InternalState1.prodRichIntBytes;
+State1.downlinkIntBytes = InternalState1.downlinkIntBytes;
 
+assert_AR_state(State1)
 end
 
 
@@ -308,7 +307,7 @@ function [State1, StateArrays] = evolve_state(Constants, CommEvents, State0, Sta
 % initialize the submitted state.
 % 
 
-assert_state(State0);
+assert_internal_state(State0);
 %fprintf('evolve_state: %g -- %g\n', timeSec0, timeSec1)   % DEBUG
 
 % Create one single, time-ordered list of commanded events.
@@ -415,13 +414,13 @@ while true
 
     timeSec0b = timeSec1b;
     State0b   = State1b;
-    assert_state(State0b);
+    assert_internal_state(State0b);
     
 end    % while
 % CASE: State0b contains the latest state. NOTE: Must also work if no loop iteration!
 
 State1 = State0b;
-assert_state(State1);
+assert_internal_state(State1);
 assert_state_arrays(StateArrays);
 
 end
@@ -439,7 +438,7 @@ function [State1, StateArrays] = evolve_state_wo_CE(Constants, CommEvents, State
 %
 
 
-assert_state(State0)
+assert_internal_state(State0)
 %fprintf('evolve_state_wo_CE: %g -- %g\n', timeSec0, timeSec1)   % DEBUG
 
 timeSec0b = timeSec0;
@@ -498,7 +497,7 @@ function [StateP, timeSecP, StateArrays] = evolve_state_wo_CE_discont(Constants,
 
 %fprintf('evolve_state_wo_CE_discont: %.18g -- %.18g\n', timeSec0, timeSec1)   % DEBUG
 
-assert_state(State0);
+assert_internal_state(State0);
 
 S0 = State0;      clear State0
 Sa = StateArrays; clear StateArrays
@@ -511,7 +510,7 @@ timeSecP = timeSec1;
 SP = [];
 nbrOfTries = 0;
 while true
-    fprintf('Try 4 * linear_extrapolate_limit: %.18g -- %.18g\n', timeSec0, timeSecP);    % DEBUG
+    %fprintf('Try 4 * linear_extrapolate_limit: %.18g -- %.18g\n', timeSec0, timeSecP);    % DEBUG
 
     % ASSERTION
     % Prevent algorithm from getting stuck in a loop. Wrapper function should handle case of evolving over a zero-length
@@ -521,9 +520,13 @@ while true
     %end
     % NOTE: linear_extrapolate_limit requires non-zero time period (assertion). -- NOT?!
 
+    %===================================
+    % Try to evolve timeSec0-->timeSecP
+    %===================================
+
     % Evolve ALLOCATED STORAGE.
-    % NOTE: This purpose is
-    % * NOT to update any actual state variable
+    % NOTE: The purpose of this command is
+    % * NOT to update any actual state variable (there is none corresponding to allocated storage)
     % * to check if allocated storage is within limits
     % * to update a corresponding state array
     [timeStorageMaxSec, ~, Sa.usedStorageBytes] = TM_power_budget.engine_utils.linear_extrapolate_limit(...
@@ -545,11 +548,30 @@ while true
         timeSec0, timeSecP, CS0.queuedSurvBytes, CS0.changeQueuedSurvBps/8, ...
         Sa.timeArraySec, Sa.queuedSurvBytes, 0, Inf);
 
+    % Evolve INTEGRATED SURVEY data - NO LIMITS ON EVOLUTION
+    [~, SP.prodSurvIntBytes, Sa.prodSurvIntBytes] = TM_power_budget.engine_utils.linear_extrapolate_limit(...
+        timeSec0, timeSecP, CS0.prodSurvIntBytes, CS0.prodSurvBps/8, ...
+        Sa.timeArraySec, Sa.prodSurvIntBytes, -Inf, Inf);
+
+    % Evolve INTEGRATED RICH data - NO LIMITS ON EVOLUTION
+    [~, SP.prodRichIntBytes, Sa.prodRichIntBytes] = TM_power_budget.engine_utils.linear_extrapolate_limit(...
+        timeSec0, timeSecP, CS0.prodRichIntBytes, CS0.prodRichBps/8, ...
+        Sa.timeArraySec, Sa.prodRichIntBytes, -Inf, Inf);
+
+    % Evolve INTEGRATED DOWNLINK - NO LIMITS ON EVOLUTION
+    [~, SP.downlinkIntBytes, Sa.downlinkIntBytes] = TM_power_budget.engine_utils.linear_extrapolate_limit(...
+        timeSec0, timeSecP, CS0.downlinkIntBytes, CS0.downlinkBps/8, ...
+        Sa.timeArraySec, Sa.downlinkIntBytes, -Inf, Inf);
+
+    %==================================================================================
+    % Try to figure out if all variables were successfully evolved timeSec0-->timeSecP
+    %==================================================================================
     nbrOfTries = nbrOfTries + 1;
     timeSecP = min(...
         [timeStorageMaxSec, timeUnclasifRichMinSec, timeQueuedRichMinSec, timeQueuedSurvMinSec], ...
         [], 'omitnan');   % The time until which the evolution was successful.
     if (timeSecP == timeSec1) || (nbrOfTries >=2)
+        % CASE: 
         break
     end
 end
@@ -563,8 +585,8 @@ SP.iDownlinkSeq = S0.iDownlinkSeq;
 %======================================================
 % Create state arrays for variables which are constant
 %======================================================
-CONSTANT_STATE_ARRAYS = {'downlinkBps', 'downlinkSurvBps', 'downlinkRichBps', 'downlinkExceBps', 'prodSurvBps', 'prodRichBps', 'iInsModeDescr', 'iRadModeDescr', ...
-    'powerWatt'};
+CONSTANT_STATE_ARRAYS = {'downlinkBps', 'downlinkSurvBps', 'downlinkRichBps', 'downlinkExceBps', ...
+    'prodSurvBps', 'prodRichBps', 'iInsModeDescr', 'iRadModeDescr', 'powerWatt'};
 for i = 1:numel(CONSTANT_STATE_ARRAYS)
     fn = CONSTANT_STATE_ARRAYS{i};
     Sa.(fn) = fill_array_interval(timeSec0, timeSec1, CS0.(fn), Sa.timeArraySec, Sa.(fn));
@@ -574,7 +596,7 @@ end
 
 StateP = SP;
 StateArrays = Sa;
-assert_state(StateP);
+assert_internal_state(StateP);
 end
 
 
@@ -589,7 +611,10 @@ function ComplementedState = complement_state(State, Constants, CommEvents)
 %   (4) total survey and rich data production rates
 %   (5) total power
 
-assert_state(State);
+% PROPOSAL: Do not amend to "State". Return separate variable "ComplementaryState".
+%   PRO: Reduces confusion.
+
+assert_internal_state(State);
 
 CS = State; clear State   % CS = Complemented State
 SystemPrps = Constants.SystemPrps;
@@ -620,8 +645,8 @@ else
 end
 
 CS.usedStorageBytes = ...
-    SystemPrps.survClf * (CS.queuedSurvBytes) + ...
-    SystemPrps.richClf * (CS.queuedRichBytes + CS.unclasRichBytes);
+    1/SystemPrps.survSef * (CS.queuedSurvBytes) + ...
+    1/SystemPrps.richSef * (CS.queuedRichBytes + CS.unclasRichBytes);
 CS.usedStorageBytes = min(CS.usedStorageBytes, SystemPrps.storageBytes);
 
 CS.destroyQueuedSurvBps = 0;
@@ -631,8 +656,8 @@ CS.destroyQueuedRichBps = 0;   % Longer variable name just to keep it analogous 
 CS = set_change_fields(CS);
 
 CS.usedStorageBps = ...
-   SystemPrps.survClf * (CS.changeQueuedSurvBps) + ...
-   SystemPrps.richClf * (CS.changeUnclasRichBps + CS.changeQueuedRichBps);
+   1/SystemPrps.survSef * (CS.changeQueuedSurvBps) + ...
+   1/SystemPrps.richSef * (CS.changeUnclasRichBps + CS.changeQueuedRichBps);
 
 % If used storage about to exceed storage limit, then set destroy* variables to cancel out.
 if (CS.usedStorageBytes >= SystemPrps.storageBytes) && (CS.usedStorageBps > 0)
@@ -645,22 +670,22 @@ if (CS.usedStorageBytes >= SystemPrps.storageBytes) && (CS.usedStorageBps > 0)
     if 0
         [destroyUnclasRichStorageBps, destroyQueuedRichStorageBps, destroySurvStorageBps] = distribute_value(...
             CS.destroyStorageBps, ...
-            CS.unclasRichBytes <= 0, CS.prodRichBps*SystemPrps.richClf, ...
+            CS.unclasRichBytes <= 0, CS.prodRichBps/SystemPrps.richSef, ...
             CS.queuedRichBytes <= 0, 0);
     else
         [destroyUnclasRichStorageBps, destroyQueuedRichStorageBps, destroySurvStorageBps] = distribute_value(...
             CS.destroyStorageBps, ...
             CS.unclasRichBytes <= 0, 0, ...
-            CS.queuedRichBytes <= 0, CS.prodRichBps*SystemPrps.richClf);
+            CS.queuedRichBytes <= 0, CS.prodRichBps/SystemPrps.richSef);
     end
     
-    CS.destroyUnclasRichBps = destroyUnclasRichStorageBps / SystemPrps.richClf;
-    CS.destroyQueuedRichBps = destroyQueuedRichStorageBps / SystemPrps.richClf;
-    CS.destroyQueuedSurvBps = destroySurvStorageBps       / SystemPrps.survClf;
+    CS.destroyUnclasRichBps = destroyUnclasRichStorageBps * SystemPrps.richSef;
+    CS.destroyQueuedRichBps = destroyQueuedRichStorageBps * SystemPrps.richSef;
+    CS.destroyQueuedSurvBps = destroySurvStorageBps       * SystemPrps.survSef;
 
     % POTENTIAL BUG? Calculated values may be slightly wrong due to numerical inaccuracies?!! Exact values are required
     % (more or less for sensible assertions) for evolution of state?!
-    CS = set_change_fields(CS)
+    CS = set_change_fields(CS);
     
     CS.usedStorageBps = 0;
     
@@ -745,16 +770,6 @@ end
 
 
 
-% Return factor describing how much onboard storage space is used for a file of a given size.
-% clusterLossFactor = <bytes allocated on storage> / <bytes of data stored in file>   >=   1
-function clusterLossFactor = cluster_loss_factor(fileDataSize, clusterSize)
-nClusters         = fileDataSize / clusterSize;
-fileStorageUse    = ceil(nClusters) * clusterSize;
-clusterLossFactor = fileStorageUse / fileDataSize;
-end
-
-
-
 % In an array y, find the last value that is smaller than or equal to y0.
 function [i] = prev_lower_equal_value(y, y0)
 i  = find(y <= y0, 1, 'last');
@@ -801,22 +816,41 @@ end
 
 
 
-function assert_state(State)
+% Check that a given variable is a "State" variable (struct) that is used as argument and return value (AR).
+function assert_AR_state(State)
+
+STATE_FIELDS = {...
+    'unclasRichBytes', 'queuedRichBytes', 'queuedSurvBytes', ...
+    'prodSurvIntBytes', 'prodRichIntBytes', 'downlinkIntBytes'};
+
+if ~isempty(setxor(fieldnames(State), STATE_FIELDS))
+    error('assert_AR_state:Assertion', 'State variable (struct) contains an illegal set of fields.')
+end
+if (State.unclasRichBytes < 0) || (State.queuedRichBytes < 0) || (State.queuedSurvBytes < 0)
+    error('assert_AR_state:Assertion', 'Data type has less than zero bytes stored.')
+end
+end
+
+
+
+% Check that a given variable is a "State" variable (struct).
+function assert_internal_state(State)
 % PROPOSAL: Check max storage limit.
-%   CON: Requires more arguments: CLFs, maxStorageBytes
+%   CON: Requires more arguments: SEFs, maxStorageBytes
 %   CON: That is a derived quantity. ==> Too "model dependent". Not a true assertion. Should be checked when/where the
 %        quantity is derived, maybe.
 %   CON: ~Too complicated (for an assertion).
 
 STATE_FIELDS = {...
     'iRadModeSeq', 'iInsModeSeq', 'iDownlinkSeq', ...
-    'unclasRichBytes', 'queuedRichBytes', 'queuedSurvBytes'};
+    'unclasRichBytes', 'queuedRichBytes', 'queuedSurvBytes', ...
+    'prodSurvIntBytes', 'prodRichIntBytes', 'downlinkIntBytes'};
 
 if ~isempty(setxor(fieldnames(State), STATE_FIELDS))
-    error('assert_state:Assertion', 'Illegal set of fields.')
+    error('assert_internal_state:Assertion', 'Illegal set of fields.')
 end
 if (State.unclasRichBytes < 0) || (State.queuedRichBytes < 0) || (State.queuedSurvBytes < 0)
-    error('assert_state:Assertion', 'Data type has less than zero bytes stored.')
+    error('assert_internal_state:Assertion', 'Data type has less than zero bytes stored.')
 end
 end
 

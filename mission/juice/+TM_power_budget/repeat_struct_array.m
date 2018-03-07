@@ -26,10 +26,15 @@ function StructArray = repeat_struct_array(StructArray0, numFieldName, nRepetiti
 %   (1) repeating struct arrays. and
 %   (2) adding to scalar field in struct array.
 %   CON: Can wait until actually needed.
+%
+% PROPOSAL: Assertion for nRepetitions being integer.
 
 
 
 % ASSERTIONS
+if mod(nRepetitions, 1)~=0    % Test for integer. Can handle +-Inf, NaN.
+    error('repeat_struct_array:Assertion', 'nRepetitions=%g is not an integer.', nRepetitions)
+end
 if nRepetitions < 1
     error('repeat_struct_array:Assertion', 'Non-positive nRepetitions=%i.', nRepetitions)
 end

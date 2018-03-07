@@ -1,10 +1,10 @@
+%
 % Miscellaneous functions used by "engine" or to be used in association with calls to "engine".
 %
 %
 % Created 2018-02-1x by Erik Johansson, IRF Uppsala.
 %
 classdef engine_utils
-    
 % PROPOSAL: Move more functions from engine to here.
     
     methods(Static, Access=public)

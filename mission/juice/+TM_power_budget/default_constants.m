@@ -14,9 +14,9 @@ Constants = [];
 [Constants.InsModeDescrList, Constants.RadModeDescrList] = TM_power_budget.default_instrument_modes();
 
 Constants.SystemPrps = [];
-Constants.SystemPrps.storageBytes = 0.25 * 1/8 * 2^40;   % 0.25 Tbit. Probably not certain. TBit or TByte?
-Constants.SystemPrps.clusterSizeBytes    = 2 * 2^20;            % 2 MiB.
-Constants.SystemPrps.survFileSizeBytes   = 1.0 * Constants.SystemPrps.clusterSizeBytes;   % Arbitrarily chosen
-Constants.SystemPrps.richFileSizeBytes   = 0.5 * Constants.SystemPrps.clusterSizeBytes;   % Arbitrarily chosen
+Constants.SystemPrps.storageBytes = 0.25 * 1/8 * 2^40;   % 0.25 Tibit. Probably not certain. TiBit or TiByte?
+%Constants.SystemPrps.clusterSizeBytes    = 2 * 2^20;     % 2 MiB.
+Constants.SystemPrps.survSef = 1.0;   % Arbitrarily chosen, but makes sense to maximize since everything should be downlinked anyway.
+Constants.SystemPrps.richSef = 0.5;   % Arbitrarily chosen
 
 end

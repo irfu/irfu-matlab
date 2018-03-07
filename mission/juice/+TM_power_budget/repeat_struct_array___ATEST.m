@@ -28,5 +28,3 @@ function repeat_struct_array___ATEST()
 
 
 end
-
- 

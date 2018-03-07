@@ -1,5 +1,5 @@
-% "Manual" test/demo of using other files in this package. MCALL = Manual call (convention).
 %
+% "Manual" test/demo of using other files in this package. MCALL = Manual call (convention).
 %
 %
 % Created 2017-12-15 by Erik Johansson, IRF Uppsala.
@@ -7,8 +7,6 @@
 function data = engine___MCALL
 % PROPOSAL: Replace file by proper "demo"?
 % PROPOSAL: Replace file by proper "scenario"?
-% PROPOSAL: Add title to figures, ~"GCO500".
-% PROPOSAL: Good functionality for repeating commanded events.
 %=======================================================================================
 % Copied from Dropbox/JUICE/Engineering/Budget_Tables/ju_rpwi_tm_power.m 2018-01-02.
 %   case 'GCO500'
@@ -56,7 +54,7 @@ function data = engine___MCALL
 EngineConstants = TM_power_budget.default_constants();
 
 tBegin = 0;
-InitialStorageState = struct('queuedSurvBytes', 0, 'queuedRichBytes', 0, 'unclasRichBytes', 0);
+InitialStorageState = struct('queuedSurvBytes', 0, 'queuedRichBytes', 0, 'unclasRichBytes', 0, 'prodSurvIntBytes', 0, 'prodRichIntBytes', 0, 'downlinkIntBytes', 0);
 
 scenarioNbr = 1;
 switch scenarioNbr
@@ -133,7 +131,7 @@ CommEvents.InsModeSeq  = InsModeSeq;
 CommEvents.RadModeSeq  = RadModeSeq;
 CommEvents.ClassifSeq  = ClassifSeq;
 CommEvents.DownlinkSeq = DownlinkSeq;
-[FinalStorageState, StateArrays, Clf] = TM_power_budget.engine(EngineConstants, InitialStorageState, CommEvents, tBegin, tEnd, tSec);
+[State1, StateArrays] = TM_power_budget.engine(EngineConstants, InitialStorageState, CommEvents, tBegin, tEnd, tSec);
 
 close all
 XTICK = [0:2:(30*24)];
@@ -205,22 +203,22 @@ if 1
     
     h = subplot(3,1,2);
     usedStorageMiB = data.usedStorageBytes / 2^20;
-    storageUnclasRichMiB = data.unclasRichBytes / 2^20 * Clf.rich;
-    storageQueuedRichMiB = data.queuedRichBytes / 2^20 * Clf.rich;
-    storageQueuedSurvMiB = data.queuedSurvBytes / 2^20 * Clf.surv;
+    storageUnclasRichMiB = data.unclasRichBytes / 2^20 / EngineConstants.SystemPrps.richSef;
+    storageQueuedRichMiB = data.queuedRichBytes / 2^20 / EngineConstants.SystemPrps.richSef;
+    storageQueuedSurvMiB = data.queuedSurvBytes / 2^20 / EngineConstants.SystemPrps.survSef;
     %storageSizeMiB = EngineConstants.SystemPrps.storageBytes / 2^20 * ones(size(usedStorageMiB));    % Total storage
     %plot(h, tHours, [usedStorageMiB; storageQueuedSurvMiB; storageUnclasRichMiB; storageQueuedRichMiB])
     plot(h, tHours, [usedStorageMiB; storageQueuedSurvMiB; storageQueuedRichMiB])
     %legend('Total', 'Queued survey', 'Unclas. rich', 'Queued rich')
-    legend('Total', 'Queued survey', 'Queued rich')
+    legend('Total', 'Queued survey', 'Queued rich', 'Location', 'NorthWest')
     ylabel(h, 'Used storage [MiB]')
     set(h, 'XTickLabel', [])
     set(h, 'XTick', XTICK)
     
     h = subplot(3,1,3);
-    plot(h, tHours, [data.downlinkBps; data.downlinkSurvBps; data.downlinkRichBps; data.downlinkExceBps])
-    legend('Total', 'Survey', 'Rich', 'Unused')
-    ylabel(h, 'Downlink [bits/s]')
+    plot(h, tHours, [data.downlinkBps; data.downlinkSurvBps; data.downlinkRichBps; data.downlinkExceBps] / 1024)
+    legend('Total', 'Survey', 'Rich', 'Unused', 'Location', 'NorthWest')
+    ylabel(h, 'Downlink [Kibit/s]')
     set(h, 'XTickLabel', XTICK)
     set(h, 'XTick', XTICK)
     xlabel(h, 'Time [h]')    
