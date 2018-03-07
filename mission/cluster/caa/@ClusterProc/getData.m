@@ -473,7 +473,7 @@ elseif strcmp(quantity,'dies') || strcmp(quantity,'diehxs') || strcmp(quantity,'
         if ~fsamp, error('no sampling frequency'),end
         
         % Check if we have at least 1 spin of data left
-        if length(find(~isnan(wE{iPr}.e(:,2)))) < 4*fsamp, noData = true; end
+        if nDataPoints < 4*fsamp, noData = true; end
       end
       
       if noData
@@ -1020,20 +1020,23 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
         continue
       end
       
-      if flag_lx, fsamp = c_efw_fsample(tt,'lx');
-      else, fsamp = c_efw_fsample(tt,'hx');
-      end
-      if ~fsamp, error('no sampling frequency'),end
+      
       
       problems = 'reset|bbias|probesa|probeld|sweep|bdump|nsops';
       nsops_errlist = [caa_str2errid('bad_bias') caa_str2errid(irf_ssub('no_p?',ps))];
-      if ~flag_lx, nsops_errlist = [nsops_errlist caa_str2errid('bad_hx')]; end %#ok<AGROW,NASGU>
-      
-      % Always remove Whisper when we use 180Hz filter
-      if (fsamp == 450) || ...
-          ( cl_id == 2 && tt(1,1)>toepoch([2001 07 23 13 54 18]) ) || ...
-          ( flag_rmwhip && flag_rmwhip_force )
-        problems = [problems '|whip']; %#ok<AGROW>
+      if flag_lx
+        nsops_errlist = [nsops_errlist caa_str2errid('bad_lx')]; %#ok<AGROW,NASGU>
+      else
+        nsops_errlist = [nsops_errlist caa_str2errid('bad_hx')]; %#ok<AGROW,NASGU>
+        if ~fsamp, error('no sampling frequency'),end
+        fsamp = c_efw_fsample(tt,'hx');
+        
+        % Always remove Whisper when we use 180Hz filter
+        if (fsamp == 450) || ...
+            ( cl_id == 2 && tt(1,1)>toepoch([2001 07 23 13 54 18]) ) || ...
+            ( flag_rmwhip && flag_rmwhip_force )
+          problems = [problems '|whip']; %#ok<AGROW>
+        end
       end
       if flag_rmhbsa, problems = [problems '|hbiassa']; end %#ok<AGROW,NASGU>
       signal = tt; %#ok<NASGU>
@@ -1042,8 +1045,20 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
       tt = res; %#ok<NODEF>
       clear res signal problems probe
       
-      % Check if we have at least 1 sec of data left
-      if length(find(~isnan(tt(:,2)))) < fsamp
+      noData = false;
+      nDataPoints = length(find(~isnan(tt(:,2))));
+      
+      if ~nDataPoints, noData = true;
+      else
+        if flag_lx, tmode = 'lx'; else, tmode = 'hx'; end
+        fsamp = c_efw_fsample(tt,tmode);
+        if ~fsamp, error('no sampling frequency'),end
+        
+        % Check if we have at least 1 sec of data left
+        if nDataPoints < fsamp, noData = true; end
+      end
+      
+      if noData
         irf_log('proc',irf_ssub('No p? data after removals',ps))
         c_eval('e?=[];',p)
         continue
