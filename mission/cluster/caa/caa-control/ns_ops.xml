@@ -7700,4 +7700,7 @@ plan="yes" sdesc ="TBD">
         <desc>Bad LX setup probably due to a glitch in the commanding.</desc>
         <res><link href="pal20180208.txt">Per-Arne 180208</link></res>
         </operation>
+<operation start="2017-08-19T00:14:20Z" dt="30" c2="yes" plan="no" sdesc="bad_data">
+	<desc>Corrupt data, backwards jump in time.</desc>
+	</operation>
 </table>

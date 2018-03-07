@@ -258,6 +258,10 @@ switch varStr
       res = mms.db_get_ts(...
         ['mms' mmsIdS '_dfg_srvy_l2pre'],['mms' mmsIdS '_pos_' cS],Tint);
       if ~isempty(res), return, end
+      % Load from L2 B
+      res = mms.db_get_ts(...
+        ['mms' mmsIdS '_fgm_srvy_l2'],['mms' mmsIdS '_fgm_r_' cS '_srvy_l2'],Tint);
+      if ~isempty(res), return, end
       % Load from QL B
       res = mms.db_get_ts(...
         ['mms' mmsIdS '_dfg_srvy_ql'],['mms' mmsIdS '_ql_pos_' cS],Tint);
@@ -284,6 +288,11 @@ switch varStr
         % Load from L2pre B
         dTmp = mms.db_get_ts(['mms' mmsIdS '_dfg_srvy_l2pre'],...
           ['mms' mmsIdS '_pos_' cS],TintTmp);
+        if isempty(dTmp)
+          % Load from L2 B
+          dTmp = mms.db_get_ts(['mms' mmsIdS '_fgm_srvy_l2'],...
+            ['mms' mmsIdS '_fgm_r_' cS  '_srvy_l2'],TintTmp);
+        end
         if isempty(dTmp)
           % Load from QL B
           dTmp = mms.db_get_ts(['mms' mmsIdS '_dfg_srvy_ql'],...
