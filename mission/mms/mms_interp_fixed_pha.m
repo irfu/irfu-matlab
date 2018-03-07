@@ -1,9 +1,19 @@
-function [dataFixedPha,fixedPha,epoch2000FixedPha] = mms_interp_fixed_pha(data, tEpoch2000, phaseDeg, STEPS_PER_DEG)
+function [dataFixedPha,fixedPha,epoch2000FixedPha,PHASE_OFF] = mms_interp_fixed_pha(data, tEpoch2000, phaseDeg, STEPS_PER_DEG,pair)
 
 if nargin<4, STEPS_PER_DEG = 0.5; end
 
 phaShift = 0; %phaShift=STEPS_PER_DEG/2;
-PHASE_OFF = -15; % offset the phase so that the boom is 45 deg to the sun
+if nargin>4
+switch pair
+  case 'e12', PHASE_OFF = -55; % offset the phase for convenience
+  case 'e34', PHASE_OFF = +30; % offset the phase for convenience
+  otherwise
+    errStr = 'Pair must be one of: "e12" or "e34"';
+    irf.log('critical', errStr);
+    error(errStr);
+end
+else, PHASE_OFF = 0;
+end
 
 epoch0 = tEpoch2000(1); epochTmp = double(tEpoch2000-epoch0);
 

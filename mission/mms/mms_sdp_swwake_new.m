@@ -65,9 +65,6 @@ if nargin < 5
   NPOINTS = 360; % Number of points per spin
 end
 NWSPINS = 5; % number of spins we work on
-expPhase = 180/pi*MMS_CONST.Phaseshift.(pair) - 15; % XXX 15 deg here is the shift introduce by mms_interp_fixed_pha()
-expPhaseIdx = deg2idx(expPhase + WAKE_MAX_HALFWIDTH/2*[-1 1]);
-expPhaseIdx = expPhaseIdx(1):expPhaseIdx(2);
 
 plot_step = 1;
 plot_i = 0;
@@ -89,8 +86,12 @@ if length(i0)<=5
   return
 end
 
-[dataFixedPha,fixedPha,epochFixedPha] = ...
-  mms_interp_fixed_pha(e, timeIn, phaseDeg,360/NPOINTS);
+[dataFixedPha,fixedPha,epochFixedPha,PHASE_OFF] = ...
+  mms_interp_fixed_pha(e, timeIn, phaseDeg,360/NPOINTS, pair);
+
+expPhase = 180/pi*MMS_CONST.Phaseshift.(pair) + PHASE_OFF; % XXX PHASE_OFF here is the shift introduce by mms_interp_fixed_pha()
+expPhaseIdx = deg2idx(expPhase + WAKE_MAX_HALFWIDTH/2*[-1 1]);
+expPhaseIdx = expPhaseIdx(1):expPhaseIdx(2);
 
 wakeModel = zeros(size(dataFixedPha));
 
@@ -128,16 +129,28 @@ for idx = idx0
   if isempty(wake1) && isempty(wake2), continue, end
   
   idxModel = (idx:idx+NPOINTS-1) + NPOINTS*2;
+  idx1=1:(NPOINTS/2); idx2=(NPOINTS/2+1):NPOINTS;
   wake = wakeModel(idxModel);
+  wExprap = imag(wake); wake = real(wake);
   if ~isempty(wake1)
-    if any(abs(wake)>0), wake = 0.5*(wake+wake1); % average with prev spin
+    if any(abs(wake(idx1))>0), wake = 0.5*(wake+wake1); % average with prev spin
     else, wake = wake1;
     end
+    wExprap(idx1) = 0;
   end
-  if ~isempty(wake2), wake = wake + wake2; end
-  wakeModel(idxModel) = wake;
-  
+  if ~isempty(wake2) 
+    wake = wake + wake2; 
+    wExprap(idx2) = 0;
+  end
+  wakeModel(idxModel) = wake + 1i*wExprap;
   n_corrected = n_corrected + 1;
+  
+  % Preliminary apply to prev spin if no wake was found there
+  if ~any(abs(wakeModel(idxModel-NPOINTS))>0)
+    wakeModel(idxModel-NPOINTS) = real(wake)*1i;
+  end
+  % Preliminary apply to next spin, which can be owerwitten on next step
+  wakeModel(idxModel+NPOINTS) =  real(wake)*1i;
   	
   plotNow()
   if plotflag_now && idx~=idx0(end)
@@ -168,12 +181,15 @@ end
 % store phase
 %wakedesc(:,2)=wakedesc(:,2)-expPhaseIdx(floor(length(expPhaseIdx)/2));
 
-irf.log('notice', ['Corrected ', num2str(n_corrected), ' out of ', ...
-	num2str(length(idx0)), ' spins.']);
-
 epoch0 = timeIn(1); epochFixedPhaTmp = double(epochFixedPha-epoch0);
 epochTmp = double(timeIn-epoch0);
+if ~isreal(wakeModel)
+  wakeModel = real(wakeModel) + imag(wakeModel);
+end
 wakeModelOut = interp1(epochFixedPhaTmp,wakeModel,epochTmp,'spline');
+
+irf.log('notice', ['Corrected ', num2str(n_corrected), ' out of ', ...
+	num2str(length(idx0)), ' spins.']);
 return
 
   function plotNow()
@@ -354,6 +370,62 @@ return
   function deg = idx2deg(idx)
     deg = idx/NPOINTS*360;
   end
+
+  function wake = crop_wake(wake)
+    % Crop wake side lobes below a defined fraction of the maximum.
+    % Use spline interpoltion to reach smooth transition to the zero level
+    % outside. If lobes are not located or too close to the beggining or
+    % end of the wake segment it is returned unaltered.
+    
+    %DEBUG=false;
+    AMP_FRAC = 0.1; % fraction of amplitude below which we neew to crop
+    GAP_WIDTH = round(4*NPOINTS/360); % number of points ower which the wake is required to reach zero
+    lenWake = length(wake);
+    
+    idxx = (1:lenWake)';
+    imax = find(abs(wake)==max(abs(wake)));
+    wamp = wake(imax);
+    
+    if wamp<0, iout = wake>wamp*AMP_FRAC;
+    else, iout = wake<wamp*AMP_FRAC;
+    end
+    
+    ist = find(((idxx<imax) & iout),1,'last');
+    ien = find(((idxx>imax) & iout),1,'first');
+    if isempty(ist) || isempty(ien)
+      irf.log('debug', 'Avoiding cropping wake, empty "ist" or "ein".');
+      return
+    elseif (ist<=GAP_WIDTH) || (ien>=lenWake-GAP_WIDTH)
+      irf.log('debug', 'Avoiding cropping wake, too close to beginning/end.');
+      return
+    end
+    %if DEBUG
+    %  figure;
+    %  subplot(2,1,1);
+    %  plot(idx, wake, '-black', imax, wamp, '-rO');
+    %end
+    wake(idxx>=ien+GAP_WIDTH+1 | idxx<=ist-GAP_WIDTH-1) = 0;
+    
+    iexcl = [ist-GAP_WIDTH:ist, ien:ien+GAP_WIDTH]; % indeces over which to interpolate
+    itmp = setxor(idxx,iexcl);
+    
+    % Pad with zeros at the edges before interpolating
+    wakeTmp = interp1([-1; 0; itmp; lenWake+1; lenWake+2],[0; 0; wake(itmp); 0; 0],...
+      [-1; 0; idxx; lenWake+1; lenWake+2],'spline');
+    wake = wakeTmp(3:end-2);
+    
+    %if DEBUG
+    %  subplot(2,1,1);
+    %  hold on;
+    %  plot(idx, wake, '-green');
+    %  legend('wake original', 'wake max', 'wake edges set to zero');
+    %  ylabel('Wake [mV/m]');
+    %  subplot(2,1,2);
+    %  plot(idx, iout, '-blue*', ist, 1,'-rO', ien, 1, '-rO', itmp, ones(size(itmp)), '-greenO');
+    %  legend('iout', 'ist', 'iend', 'itmp');
+    %  ylim([-0.1 1.1]); ylabel('indicator true/false');
+    %end
+  end
 end
 
 function av = w_ave(x, np, NPOINTS)
@@ -416,61 +488,7 @@ function res = isGoodShape(s)
     irf.log('debug', ...
       sprintf('BAD FIT: second max is %0.2f of the main max', smax/maxmax) );
   end
-end
 
-function wake = crop_wake(wake)
-% Crop wake side lobes below a defined fraction of the maximum.
-% Use spline interpoltion to reach smooth transition to the zero level
-% outside. If lobes are not located or too close to the beggining or 
-% end of the wake segment it is returned unaltered.
 
-%DEBUG=false;
-AMP_FRAC = 0.1; % fraction of amplitude bewlo which we neew to crop
-GAP_WIDTH = 10; % number of points ower which the wake is required to reach zero
-lenWake = length(wake);
-
-idx = (1:lenWake)';
-imax = find(abs(wake)==max(abs(wake)));
-wamp = wake(imax);
-
-if wamp<0, iout = wake>wamp*AMP_FRAC;
-else, iout = wake<wamp*AMP_FRAC;
-end
-
-ist = find(((idx<imax) & iout),1,'last');
-ien = find(((idx>imax) & iout),1,'first');
-if isempty(ist) || isempty(ien)
-  irf.log('debug', 'Avoiding cropping wake, empty "ist" or "ein".');
-  return
-elseif (ist<=GAP_WIDTH) || (ien>=lenWake-GAP_WIDTH)
-  irf.log('debug', 'Avoiding cropping wake, too close to beginning/end.');
-  return
-end
-%if DEBUG
-%  figure;
-%  subplot(2,1,1);
-%  plot(idx, wake, '-black', imax, wamp, '-rO');
-%end
-wake(idx>=ien+GAP_WIDTH+1 | idx<=ist-GAP_WIDTH-1) = 0;
-
-iexcl = [ist-GAP_WIDTH:ist, ien:ien+GAP_WIDTH]; % indeces over which to interpolate
-itmp = setxor(idx,iexcl);
-
-% Pad with zeros at the edges before interpolating
-wakeTmp = interp1([-1; 0; itmp; lenWake+1; lenWake+2],[0; 0; wake(itmp); 0; 0],...
-  [-1; 0; idx; lenWake+1; lenWake+2],'spline');
-wake = wakeTmp(3:end-2);
-
-%if DEBUG
-%  subplot(2,1,1);
-%  hold on;
-%  plot(idx, wake, '-green');
-%  legend('wake original', 'wake max', 'wake edges set to zero');
-%  ylabel('Wake [mV/m]');
-%  subplot(2,1,2);
-%  plot(idx, iout, '-blue*', ist, 1,'-rO', ien, 1, '-rO', itmp, ones(size(itmp)), '-greenO');
-%  legend('iout', 'ist', 'iend', 'itmp');
-%  ylim([-0.1 1.1]); ylabel('indicator true/false');
-%end
 end
 
