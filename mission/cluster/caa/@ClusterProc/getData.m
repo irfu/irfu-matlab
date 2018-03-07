@@ -446,10 +446,6 @@ elseif strcmp(quantity,'dies') || strcmp(quantity,'diehxs') || strcmp(quantity,'
         continue
       end
       
-      if flag_lx, tmode = 'lx'; else, tmode = 'hx'; end
-      fsamp = c_efw_fsample(wE{iPr}.e,tmode);
-      if ~fsamp, error('no sampling frequency'),end
-      
       problems = 'reset|bbias|probesa|probeld|sweep|bdump|nsops|whip';
       if flag_lx
         ps = sprintf('%d',wE{iPr}.probe);
@@ -468,9 +464,21 @@ elseif strcmp(quantity,'dies') || strcmp(quantity,'diehxs') || strcmp(quantity,'
       wE{iPr}.e = res; %#ok<AGROW,NODEF>
       clear res signal problems
       
-      % Check if we have at least 1 spin of data left
-      if length(find(~isnan(wE{iPr}.e(:,2)))) < 4*fsamp
-        irf_log('proc',irf_ssub('No p? data after removals',wE{iPr}.probe));
+      noData = false;
+      nDataPoints = length(find(~isnan(wE{iPr}.e(:,2))));
+      if ~nDataPoints, noData = true;
+      else
+        if flag_lx, tmode = 'lx'; else, tmode = 'hx'; end
+        fsamp = c_efw_fsample(wE{iPr}.e,tmode);
+        if ~fsamp, error('no sampling frequency'),end
+        
+        % Check if we have at least 1 spin of data left
+        if length(find(~isnan(wE{iPr}.e(:,2)))) < 4*fsamp, noData = true; end
+      end
+      
+      if noData
+        irf_log('proc',...
+          irf_ssub('No p?%s data after removals',wE{iPr}.probe,lx_str));
         if     wE{iPr}.probe==34, flag_have_p34 = 0;
         elseif wE{iPr}.probe==p12, p12=[];
         end
