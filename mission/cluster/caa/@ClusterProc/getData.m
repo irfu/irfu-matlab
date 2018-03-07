@@ -478,7 +478,7 @@ elseif strcmp(quantity,'dies') || strcmp(quantity,'diehxs') || strcmp(quantity,'
       
       if noData
         irf_log('proc',...
-          irf_ssub('No p?%s data after removals',wE{iPr}.probe,lx_str));
+          sprintf('No p%d%s data after removals',wE{iPr}.probe,lx_str));
         if     wE{iPr}.probe==34, flag_have_p34 = 0;
         elseif wE{iPr}.probe==p12, p12=[];
         end
