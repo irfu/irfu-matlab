@@ -160,20 +160,24 @@ switch lower(action)
                 end
             end
             if data.getB % try to get B data from caa files full resolution
-                c_eval('b=mms.db_get_ts(''mms?_dfg_srvy_l2pre'',''mms?_dfg_srvy_l2pre_dmpa'',irf_time(tint,''epoch>epochtt''));',data.ic);
-                c_eval('bgse=mms.db_get_ts(''mms?_dfg_srvy_l2pre'',''mms?_dfg_srvy_l2pre_gse'',irf_time(tint,''epoch>epochtt''));',data.ic);
+              TintTmp = irf_time(tint,'epoch>epochtt');
+              b=mms.get_data('B_dmpa_fgm_srvy_l2',TintTmp,data.ic);
+              if isempty(b), data.getB = false;
+              else
+                bgse=mms.get_data('B_gse_fgm_srvy_l2',TintTmp,data.ic);
                 ttemp = b.time.epochUnix;
                 datatemp = double(b.data);
-                data.b = [ttemp, double(datatemp)];    
+                data.b = [ttemp, double(datatemp)];
                 ttemp = bgse.time.epochUnix;
                 datatemp = double(bgse.data);
-                data.bgse = [ttemp, double(datatemp)];    
+                data.bgse = [ttemp, double(datatemp)];
                 if ~isempty(b)
-                    %data.b=c_coord_trans('GSE','DSC',b,'cl_id',data.ic);
-                    if data.t>=data.b(1,1) && data.t<=data.b(end,1) % time within interval of B
-                        data.getB = false;
-                    end
+                  %data.b=c_coord_trans('GSE','DSC',b,'cl_id',data.ic);
+                  if data.t>=data.b(1,1) && data.t<=data.b(end,1) % time within interval of B
+                    data.getB = false;
+                  end
                 end
+              end
             end
             if data.getB % did not succeed to read B data
                 irf.log('warning','Could not read B field data');
