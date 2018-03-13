@@ -6,10 +6,12 @@
 % (1) sqrt(Q) - Based on Swisdak, GRL ,2016. Values around 0.1 indicate 
 % electron agyrotropies. Computed based on the off-diagonal
 % terms in the pressure tensor for Pe_perp1 = Pe_perp2. 
-% (2) Dng - Based on Aunia et al., 2013; Computed based on the off-diagonal
+% (1a) Dng - Based on Aunia et al., 2013; Computed based on the off-diagonal
 % terms in the pressure tensor for Pe_perp1 = Pe_perp2. Similar to sqrt(Q)
-% but with different normalization. 
-% (3) A phi_e = 2 abs(Perp1-Perp2)/(Perp1+Perp2). 
+% but with different normalization. Calculated but not plotted. 
+% (2) AG^(1/3) - Based on Che et al., POP, 2018. Constructed from determinant of
+% field-aligned rotation of the electron pressure tensor (Pe_perp1 = Pe_perp2). 
+% (3) A phi_e/2 = abs(Perp1-Perp2)/(Perp1+Perp2). 
 % This is a measure of electron agyrotropy. Values of 
 % O(1) are expected for EDRs. We transform the pressure tensor into 
 % field-aligned coordinates such that the difference in Pe_perp1 and Pe_perp2
@@ -22,15 +24,15 @@
 % Scudder says A n_e ~ 7 at IDR-EDR boundary, but this is extremely large
 % for MP reconnection.
 % (5) Mperp e - electron Mach number: bulk velocity divided by the electron
-% thermal speed perpendicular to B. Values of O(1) are expected in EDRs. 
-% (6) J.E - J.E > 0 is expected in the electron diffusion region,
+% thermal speed perpendicular to B. Values of O(1) are expected in EDRs (Scudder et al., 2012, 2015). 
+% (6) J.E' - J.E > 0 is expected in the electron diffusion region,
 % corresponding to dissipation of field energy. J is calculated on each
-% spacecraft using the particle moments. 
+% spacecraft using the particle moments (Zenitani et al., PRL, 2011). 
 % (7) epsilon_e - Energy gain per cyclotron period. Values of O(1) are
-% expected in EDRs. 
+% expected in EDRs (Scudder et al., 2012, 2015). 
 % (8) delta_e - Relative strength of the electric and magnetic force in the
 % bulk electron rest frame. N. B. Very sensitive to electron moments and
-% electric field. Check version of these quantities. 
+% electric field. Check version of these quantities (Scudder et al., 2012, 2015). 
 %
 % Notes: kappa_e (not yet included) is taken to be the largest value of
 % epsilon_e and delta_e at any given point. 
@@ -40,7 +42,7 @@
 % Agyrotropies are removed for n_e < 1 cm^-3
 
 %% Time interval selection
-Tint = irf.tint('2015-10-30T05:15:20.00Z/2015-10-30T05:16:20.00Z');
+Tint = irf.tint('2015-12-14T01:17:38.00Z/2015-12-14T01:17:41.00Z');
 
 %% Load data
 ic = 1:4;
@@ -73,21 +75,31 @@ c_eval('Q? = irf.ts_scalar(ne?.time,sqrt(Q?));',ic);
 c_eval('Dng? = sqrt(8*(Pepp?.xy.data.^2+Pepp?.xz.data.^2+Pepp?.yz.data.^2))./(Pepp?.xx.data+2*Pepp?.yy.data);',ic);
 c_eval('Dng? = irf.ts_scalar(ne?.time,Dng?);',ic);
 
+% Compute agyrotropy measure AG1/3
+c_eval('detP? = Pepp?.xx.data.*Pepp?.yy.data.^2 - Pepp?.xx.data.*Pepp?.yz.data.^2 - Pepp?.yy.data.*(Pepp?.xy.data.^2 + Pepp?.xz.data.^2) + 2*Pepp?.xy.data.*Pepp?.xz.data.*Pepp?.yz.data;',ic);
+c_eval('detG? = Pepp?.xx.data.*Pepp?.yy.data.^2;',ic);
+c_eval('AG? = abs(detP? - detG?)./(detP? + detG?);',ic);
+c_eval('AGcr? = irf.ts_scalar(ne?.time,AG?.^(1/3));',ic);
+c_eval('AG? = irf.ts_scalar(ne?.time,AG?);',ic);
+
 % Compute agyrotropy Aphi from Peqq
-c_eval('agyro? = 2*abs(Peqq?.yy.data-Peqq?.zz.data)./(Peqq?.yy.data+Peqq?.zz.data);',ic);
+c_eval('agyro? = abs(Peqq?.yy.data-Peqq?.zz.data)./(Peqq?.yy.data+Peqq?.zz.data);',ic);
 c_eval('agyro? = irf.ts_scalar(ne?.time,agyro?);',ic);
 
 % Simple fix to remove spurious points
 for xx=1:4
-c_eval('Qdata? = Q?.data;',xx);
-c_eval('for ii=2:1:length(Q?.data)-1;if (Q?.data(ii) > 1.5*Q?.data(ii-1)) && (Q?.data(ii) > 1.5*Q?.data(ii+1)); Qdata?(ii) = NaN; end; end;',xx);
-c_eval('Q?.data = Qdata?;',xx);
-c_eval('Dngdata? = Dng?.data;',xx);
-c_eval('for ii=2:1:length(Dng?.data)-1;if (Dng?.data(ii) > 1.5*Dng?.data(ii-1)) && (Dng?.data(ii) > 1.5*Dng?.data(ii+1)); Dngdata?(ii) = NaN; end; end;',xx);
-c_eval('Dng?.data = Dngdata?;',xx);
-c_eval('agyrodata? = agyro?.data;',xx);
-c_eval('for ii=2:1:length(agyro?.data)-1;if (agyro?.data(ii) > 1.5*agyro?.data(ii-1)) && (agyro?.data(ii) > 1.5*agyro?.data(ii+1)); agyrodata?(ii) = NaN; end; end;',xx);
-c_eval('agyro?.data = agyrodata?;',xx);
+  c_eval('Qdata? = Q?.data;',xx);
+  c_eval('for ii=2:1:length(Q?.data)-1;if (Q?.data(ii) > 2*Q?.data(ii-1)) && (Q?.data(ii) > 2*Q?.data(ii+1)); Qdata?(ii) = NaN; end; end;',xx);
+  c_eval('Q?.data = Qdata?;',xx);
+  c_eval('Dngdata? = Dng?.data;',xx);
+  c_eval('for ii=2:1:length(Dng?.data)-1;if (Dng?.data(ii) > 2*Dng?.data(ii-1)) && (Dng?.data(ii) > 2*Dng?.data(ii+1)); Dngdata?(ii) = NaN; end; end;',xx);
+  c_eval('Dng?.data = Dngdata?;',xx);
+  c_eval('agyrodata? = agyro?.data;',xx);
+  c_eval('for ii=2:1:length(agyro?.data)-1;if (agyro?.data(ii) > 2*agyro?.data(ii-1)) && (agyro?.data(ii) > 2*agyro?.data(ii+1)); agyrodata?(ii) = NaN; end; end;',xx);
+  c_eval('agyro?.data = agyrodata?;',xx);
+  c_eval('AGcrdata? = AGcr?.data;',xx);
+  c_eval('for ii=2:1:length(AGcr?.data)-1;if (AGcr?.data(ii) > 2*AGcr?.data(ii-1)) && (AGcr?.data(ii) > 2*AGcr?.data(ii+1)); AGcrdata?(ii) = NaN; end; end;',xx);
+  c_eval('AGcr?.data = AGcrdata?;',xx);
 end
 
 % remove all points corresponding to densities below 1cm^-3
@@ -96,6 +108,7 @@ c_eval('rmpnts?(ne?.data < 1) = NaN;',ic);
 c_eval('Q?.data = Q?.data.*rmpnts?;',ic);
 c_eval('agyro?.data = agyro?.data.*rmpnts?;',ic);
 c_eval('Dng?.data = Dng?.data.*rmpnts?;',ic);
+c_eval('AGcr?.data = AGcr?.data.*rmpnts?;',ic);
 
 % Compute temperature ratio An
 c_eval('Temprat? = Pepp?.xx/(Pepp?.yy);',ic);
@@ -147,14 +160,14 @@ irf_pl_tx(h(2),'Q?',1);
 ylabel(h(2),'$$\sqrt{Q}$$','Interpreter','latex');
 irf_legend(h(2),'(b)',[0.99 0.98],'color','k')
 
-h(3)=irf_panel('Dng'); set(h(2),'ColorOrder',mmsColors)
-irf_pl_tx(h(3),'Dng?',1);
-ylabel(h(3),'D_{ng}','Interpreter','tex');
+h(3)=irf_panel('AGcr'); set(h(2),'ColorOrder',mmsColors)
+irf_pl_tx(h(3),'AGcr?',1);
+ylabel(h(3),'AG^{1/3}','Interpreter','tex');
 irf_legend(h(3),'(c)',[0.99 0.98],'color','k')
 
 h(4)=irf_panel('agyro'); set(h(3),'ColorOrder',mmsColors)
 irf_pl_tx(h(4),'agyro?',1);
-ylabel(h(4),'A\phi_{e}','Interpreter','tex');
+ylabel(h(4),'A\phi_{e}/2','Interpreter','tex');
 irf_legend(h(4),'(d)',[0.99 0.98],'color','k')
 
 h(5)=irf_panel('temprat'); set(h(4),'ColorOrder',mmsColors)

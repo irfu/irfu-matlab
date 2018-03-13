@@ -55,15 +55,23 @@ classdef PDist < TSeries
             
       % collect required data, depend        
       switch obj.type_
-        case {'skymap'} % construct skymap distribution                
+        case {'skymap'} % construct skymap distribution
           obj.depend{1} = args{1}; args(1) = []; obj.representation{1} = {'energy'};
           obj.depend{2} = args{1}; args(1) = []; obj.representation{2} = {'phi'};
           obj.depend{3} = args{1}; args(1) = []; obj.representation{3} = {'theta'};             
         case {'pitchangle'} % construct pitchangle distribution
           obj.depend{1} = args{1}; args(1) = []; obj.representation{1} = {'energy'};
-          obj.depend{2} = args{1}; args(1) = []; obj.representation{2} = {'pitchangle'};                            
+          obj.depend{2} = args{1}; args(1) = []; obj.representation{2} = {'pitchangle'};                       
         case {'omni'} % construct omni directional distribution
           obj.depend{1} = args{1}; args(1) = []; obj.representation{1} = {'energy'};
+        case {'line (reduced)'} % % construct 1D distribution, through integration over the other 2 dimensions
+          obj.depend{1} = args{1}; args(1) = []; obj.representation{1} = {'velocity'};          
+        case {'plane (reduced)'} % construct 2D distribution, either through integration or by taking a slice
+          obj.depend{1} = args{1}; args(1) = []; obj.representation{1} = {'velocity1'};
+          obj.depend{2} = args{1}; args(1) = []; obj.representation{2} = {'velocity2'};      
+        case {'plane (slice)'} % construct 2D distribution, either through integration or by taking a slice
+          obj.depend{1} = args{1}; args(1) = []; obj.representation{1} = {'velocity1'};
+          obj.depend{2} = args{1}; args(1) = []; obj.representation{2} = {'velocity2'};        
         otherwise 
           warning('Unknown distribution type')
       end
@@ -430,6 +438,179 @@ classdef PDist < TSeries
         vz = irf.ts_scalar(obj.time,vz);
       end
     end
+    function PD = reduce(obj,dim,x,varargin) 
+      %PDIST.REDUCE Reduces (integrates) 3D distribution to 1D (line).      
+      %   Example:
+      %     f1D = iPDist1.reduce('1D',gseB1,'vint',[0 10000]);
+      %
+      %   Options:
+      %     'vint'   - set limits on the from-line velocity to get cut-like
+      %                distribution
+      %     'nMC'    - number of Monte Carlo iterations used for integration,
+      %                default is 100
+      %     'weight' - how the number of MC iterations per bin is weighted, can be
+      %                'none' (default), 'lin' or 'log'
+      %     'vg'     - array with center values for the projection velocity
+      %                grid in [km/s], determined by instrument if omitted
+      %
+      %   Reduction to 2D (plane) is to be implemented.
+      %
+      % This is a shell function for irf_int_sph_dist
+      % See also: MMS.PLOT_INT_DISTRIBUTION, IRF_INT_SPH_DIST
+      % MMS.PLOT_INT_PROJECTION
+      
+      %% Input, expand this
+      [ax,args,nargs] = axescheck(varargin{:});
+      irf.log('warning','Please verify that you think the projection is done properly!');
+      if isempty(obj); irf.log('warning','Empty input.'); return; else, dist = obj; end
+      
+      % make input distribution to SI units, s^3/m^6
+      dist = dist.convertto('s^3/m^6');
+      if isa(x,'TSeries')
+        xphat_mat = x.resample(obj).norm.data; 
+      elseif isnumeric(x) && numel(size(x) == 3)
+        xphat_mat = repmat(x,dist.length,1);
+      elseif isnumeric(x) && all(numel(size(x) == [dist.length 3]))
+        xphat_mat = x;        
+      end
+            
+      %% Check for input flags
+      nMC = 100; % number of Monte Carlo iterations
+      vint = [-Inf,Inf];
+      aint = [-180,180]; % azimuthal intherval
+      vgInput = 0;
+      weight = 'none';
+      tint = dist.time([1 dist.length-1]);
+      isDes = 1;
+      if strcmp(dist.species,'electrons'); isDes = 1; else, isDes = 0; end
+      
+      ancillary_data = {};
+      
+      have_options = nargs > 1;
+      while have_options
+        switch(lower(args{1}))
+          case {'t','tint'} % time
+              tint = args{2};
+          case 'xvec' % vector to plot data against
+              xphat = args{2};
+              xphat = xphat/norm(xphat);
+              if acosd(dot([0,1,0],xphat)) > 10 && acosd(dot([0,1,0],xphat)) < 170
+                  zphat = cross([0,1,0],xphat)/norm(cross([0,1,0],xphat));
+              else
+                  zphat = cross([0,0,1],xphat)/norm(cross([0,0,1],xphat));
+              end
+          case 'nmc' % number of Monte Carlo iterations
+            nMC = args{2};
+            ancillary_data{end+1} = 'nMC';
+            ancillary_data{end+1} = nMC;
+          case 'vint' % limit on transverse velocity (like a cylinder) [km/s]
+            vint = args{2};
+            ancillary_data{end+1} = 'vint';
+            ancillary_data{end+1} = vint;
+            ancillary_data{end+1} = 'vint_units';
+            ancillary_data{end+1} = 'km/s';
+          case 'aint'
+            aint = args{2};
+          case 'vg' % define velocity grid
+              vgInput = 1;
+              vg = args{2}*1e3;
+          case 'weight' % how data is weighted
+            weight = args{2};
+            ancillary_data{end+1} = 'weight';
+            ancillary_data{end+1} = weight;    
+        end
+        args = args(3:end);
+        if isempty(args), break, end
+      end
+
+      %% Get angles and velocities for spherical instrument grid, set projection
+      %  grid and perform projection
+
+      u = irf_units;
+
+      if isDes == 1; M = u.me; else; M = u.mp; end
+
+      % get all time indicies
+      if length(tint) == 1 % single time
+        it = interp1(dist.time.epochUnix,1:length(dist.time),tint.epochUnix,'nearest');
+      else % time interval
+        it1 = interp1(dist.time.epochUnix,1:length(dist.time),tint(1).epochUnix,'nearest');
+        it2 = interp1(dist.time.epochUnix,1:length(dist.time),tint(2).epochUnix,'nearest');
+        it = it1:it2;
+      end
+
+
+      % loop to get projection
+      for i = 1:length(it)
+        if length(it)>1;disp([num2str(i),'/',num2str(length(it))]); end
+        xphat = xphat_mat(i,:);
+        %fprintf('%g %g %g',xphat)
+        % 3d data matrix for time index it
+        F3d = double(squeeze(double(dist.data(it(i),:,:,:)))); % s^3/m^6
+
+        emat = double(dist.energy); % in eV
+        energy = emat(it(i),:);
+        v = sqrt(2*energy*u.e/M); % m/s
+
+        if length(v) ~= 32 % shopuld be made possible for general number, e.g. 64 (dist.e64)
+            error('something went wrong')
+        end
+
+        % azimuthal angle
+        phi = double(dist.depend{2}(it(i),:)); % in degrees
+        %phi = phi+180;
+        %phi(phi>360) = phi(phi>360)-360;
+        phi = phi-180;
+        phi = phi*pi/180; % in radians
+
+        if length(phi) ~= 32
+            error('something went wrong')
+        end
+
+        % elevation angle
+        th = double(dist.depend{3}); % polar angle in degrees
+        th = th-90; % elevation angle in degrees
+        th = th*pi/180; % in radians
+
+        if length(th) ~= 16
+            error('something went wrong')
+        end
+
+
+        % Set projection grid after the first distribution function
+        if i == 1
+            % bin centers
+            if ~vgInput
+                vg = [-fliplr(v),v];
+            end
+            % initiate projected f
+            Fg = zeros(length(it),length(vg));
+            dens = zeros(length(it),1);
+            vel = zeros(length(it),1);
+        end
+        % perform projection
+         tmpst = irf_int_sph_dist(F3d,v,phi,th,vg,'x',xphat,'nMC',nMC,'vzint',vint*1e3,'aint',aint,'weight',weight);
+         Fg(i,:) = tmpst.F;
+         dens(i) = tmpst.dens;
+         vel(i) = tmpst.vel;
+         all_vg(i,:) = vg;
+      end
+      % vg is m/s, transform to km/s
+      PD = PDist(dist.time(it),Fg,'line (reduced)',all_vg*1d-3);
+      PD.ancillary.projection_direction = xphat_mat(it,:);
+      PD.species = dist.species;
+      PD.userData = dist.userData;
+      PD.units = 's/m^2';
+      
+      while ~isempty(ancillary_data)
+        PD.ancillary.(ancillary_data{1}) = ancillary_data{2};
+        ancillary_data(1:2) = [];
+      end
+        
+      
+      % Must add xphat to ancillary data!
+      
+    end
     function PD = palim(obj,palim,varargin)
       % PDIST.PALIM Picks out given pitchangles
       %   distribution type must be 'pitchangle'
@@ -569,7 +750,12 @@ classdef PDist < TSeries
           %spec.p_label = {'dEF',obj.units};
           spec.f = single(obj.depend{2});
           spec.f_label = {'\theta (deg.)'};
-        otherwise % energy is default          
+        case{'1D_velocity'}
+          spec.t = obj.time.epochUnix;
+          spec.p = double(squeeze(obj.data));
+          spec.f = obj.depend{1};
+          spec.f_label = {'v (km/s)'};
+        otherwise % energy is default
           spec.t = obj.time.epochUnix;
           spec.p = double(obj.data);
           spec.p_label = {'dEF',obj.units};
