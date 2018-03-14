@@ -52,8 +52,8 @@ elseif t>=toepoch([2008 12 01 00 00 0]), Ddsi = [-0.18  0.40 1.33 -0.07 ]; % Bac
 elseif t>=toepoch([2008 07 01 00 00 0]), Ddsi = [ 0.59  1.32 1.38  0.69 ]; % Force MS offset for months when don't enter SW.
 elseif t>=toepoch([2008 01 01 00 00 0]), Ddsi = [-0.18  0.40 1.33 -0.07 ];
 elseif t>=toepoch([2007 11 01 01 01 0]), Ddsi = [ 0.20  0.76 1.77  0.28 ];
-elseif t>=toepoch([2007 08 05 01 01 0]), Ddsi = [ 0.70  1.45 1.49  0.85 ]; % Force MS offset for months when don't enter SW.
-elseif t>=toepoch([2007 08 01 00 00 0]), Ddsi = [0.70 1.45+1.4 1.49 0.85]; % Force MS offset for months when don't enter SW.
+elseif t>=toepoch([2007 08 05 01 01 0]), Ddsi = [ 0.72  1.46 1.53  0.87 ]; % Force MS offset for months when don't enter SW.
+elseif t>=toepoch([2007 08 01 00 00 0]), Ddsi = [0.72 1.46+1.4 1.53 0.87]; % Force MS offset for months when don't enter SW.
 elseif t>=toepoch([2007 07 21 18 45 0]), Ddsi = [-0.08     .46+1.4 1.65 .13 ]; % problem with guard settings on C2
 elseif t>=toepoch([2007 02 01 00 00 0]), Ddsi = [-0.08     .46 1.65  .13 ]; % very approximate due to high-speed solar wind streams
 elseif t>=toepoch([2007 01 01 00 00 0]), Ddsi = [-0.08     .46 1.95  .13 ]; % very approximate due to high-speed solar wind streams
@@ -126,10 +126,10 @@ elseif t>=toepoch([2010 10 30 00 0 0]), Ddsi = [ 0.03  0.78  2.04  0.51 ]; % for
 elseif t>=toepoch([2010 01 01 00 0 0]), Ddsi = [ 0.4   1.58 1.21  0.82 ];
 elseif t>=toepoch([2009 01 01 00 0 0]), Ddsi = [ 0.46  1.31 1.23  0.64 ];
 elseif t>=toepoch([2008 01 01 00 0 0]), Ddsi = [ 0.59  1.32 1.38  0.69 ];
-elseif t>=toepoch([2007 11 01 00 0 0]), Ddsi = [ 0.70  1.45 1.69  0.85 ];
-elseif t>=toepoch([2007 08 05 01 1 0]), Ddsi = [ 0.70  1.45 1.49  0.85 ];
-elseif t>=toepoch([2007 07 21 18 45 0]), Ddsi = [ 0.70  1.45+1.4 1.49  0.85 ]; % problem with guard settings on C2
-elseif t>=toepoch([2007 01 01 00 0 0]), Ddsi = [ 0.70  1.45 1.49  0.85 ];
+elseif t>=toepoch([2007 11 01 00 0 0]), Ddsi = [ 0.72  1.46 1.69  0.87 ];
+elseif t>=toepoch([2007 08 05 01 1 0]), Ddsi = [ 0.72  1.46 1.53  0.87 ];
+elseif t>=toepoch([2007 07 21 18 45 0]), Ddsi = [ 0.72  1.46+1.4 1.53 0.87 ]; % problem with guard settings on C2
+elseif t>=toepoch([2007 01 01 00 0 0]), Ddsi = [ 0.72  1.46 1.53  0.87 ];
 elseif t>=toepoch([2006 10 01 00 0 0]), Ddsi = [ 0.83  1.53 1.68  1.00 ];
 elseif t>=toepoch([2006 07 01 00 0 0]), Ddsi = [ 0.83  1.53 1.18  1.00 ];
 elseif t>=toepoch([2006 01 01 00 0 0]), Ddsi = [ 0.83  1.53 1.68  1.00 ];
