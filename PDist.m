@@ -452,6 +452,10 @@ classdef PDist < TSeries
       %                'none' (default), 'lin' or 'log'
       %     'vg'     - array with center values for the projection velocity
       %                grid in [km/s], determined by instrument if omitted
+      %     'scpot'  - sets all values below scpot to zero. If a
+      %                significant photoelectron population remains, try
+      %                applying some margin on scPot: scPot -> scPot*1.5
+      %                To be implemented: correct energy table: energy -> energy-scpot
       %
       %   Reduction to 2D (plane) is to be implemented.
       %
@@ -481,6 +485,7 @@ classdef PDist < TSeries
       vgInput = 0;
       weight = 'none';
       tint = dist.time([1 dist.length-1]);
+      correct4scpot = 0;
       isDes = 1;
       if strcmp(dist.species,'electrons'); isDes = 1; else, isDes = 0; end
       
@@ -492,40 +497,65 @@ classdef PDist < TSeries
           case {'t','tint'} % time
               tint = args{2};
           case 'xvec' % vector to plot data against
-              xphat = args{2};
-              xphat = xphat/norm(xphat);
-              if acosd(dot([0,1,0],xphat)) > 10 && acosd(dot([0,1,0],xphat)) < 170
+            l = 2;
+            xphat = args{2};
+            xphat = xphat/norm(xphat);
+            if acosd(dot([0,1,0],xphat)) > 10 && acosd(dot([0,1,0],xphat)) < 170
                   zphat = cross([0,1,0],xphat)/norm(cross([0,1,0],xphat));
               else
                   zphat = cross([0,0,1],xphat)/norm(cross([0,0,1],xphat));
               end
           case 'nmc' % number of Monte Carlo iterations
+            l = 2;
             nMC = args{2};
             ancillary_data{end+1} = 'nMC';
             ancillary_data{end+1} = nMC;
           case 'vint' % limit on transverse velocity (like a cylinder) [km/s]
+            l = 2;
             vint = args{2};
             ancillary_data{end+1} = 'vint';
             ancillary_data{end+1} = vint;
             ancillary_data{end+1} = 'vint_units';
             ancillary_data{end+1} = 'km/s';
           case 'aint'
+            l = 2;
             aint = args{2};
           case 'vg' % define velocity grid
-              vgInput = 1;
-              vg = args{2}*1e3;
+            l = 2;
+            vgInput = 1;
+            vg = args{2}*1e3;
           case 'weight' % how data is weighted
+            l = 2;
             weight = args{2};
             ancillary_data{end+1} = 'weight';
             ancillary_data{end+1} = weight;    
+          case 'scpot'
+            l = 2;
+            scpot = args{2};
+            ancillary_data{end+1} = 'scpot';
+            ancillary_data{end+1} = scpot; 
+            correct4scpot = 1;
         end
-        args = args(3:end);
+        args = args((l+1):end);
         if isempty(args), break, end
       end
 
       %% Get angles and velocities for spherical instrument grid, set projection
       %  grid and perform projection
-
+      emat = double(dist.depend{1});
+      if correct4scpot
+        scpot = scpot.tlim(dist.time).resample(dist.time);
+        scpot_mat = repmat(scpot.data,[size(emat(1,:))]);
+        [it_below_scpot,ie_below_scpot] = find(emat < scpot_mat);
+        %dist.data(it_below_scpot,ie_below_scpot,:,:) = 0;
+        %dist.data(:,1:6,:,:) = 0;
+        %emat = emat - scpot_mat;                
+        
+        % must also remove all tabler energies below zero
+        
+        %ind_below_scpot = find(emat<scpot_mat);
+      end
+      
       u = irf_units;
 
       if isDes == 1; M = u.me; else; M = u.mp; end
@@ -538,21 +568,34 @@ classdef PDist < TSeries
         it2 = interp1(dist.time.epochUnix,1:length(dist.time),tint(2).epochUnix,'nearest');
         it = it1:it2;
       end
-
-
+    
       % loop to get projection
       for i = 1:length(it)
         if length(it)>1;disp([num2str(i),'/',num2str(length(it))]); end
         xphat = xphat_mat(i,:);
         %fprintf('%g %g %g',xphat)
+        
+
+        
+        
+        if correct4scpot
+          if 0
+            dist.data(it(i),emat(it(i),:) < 0,:,:) = 0;
+          else
+            ie_below_scpot = find(abs(emat(it(i),:)-scpot_mat(it(1),:))); % energy channel below 
+            ie_below_scpot = find(abs(emat(it(i),:)-scpot_mat(it(1),:)) == min(abs(emat(it(i),:)-scpot_mat(it(1),:)))); % closest energy channel
+            remove_extra_ind = 0; % for margin, remove extra energy channels
+            dist.data(it(i),1:(max(ie_below_scpot) + remove_extra_ind),:,:) = 0; 
+            
+          end
+        end
         % 3d data matrix for time index it
         F3d = double(squeeze(double(dist.data(it(i),:,:,:)))); % s^3/m^6
 
-        emat = double(dist.energy); % in eV
         energy = emat(it(i),:);
-        v = sqrt(2*energy*u.e/M); % m/s
+        v = sqrt(2*energy*u.e/M); % m/s       
 
-        if length(v) ~= 32 % shopuld be made possible for general number, e.g. 64 (dist.e64)
+        if 0%length(v) ~= 32 % shopuld be made possible for general number, e.g. 64 (dist.e64)
             error('something went wrong')
         end
 
@@ -729,7 +772,7 @@ classdef PDist < TSeries
       if isempty(varargin); spectype = 'energy'; else, spectype = varargin{1}; end % set default
       
       switch obj.units
-        case {'s^3/km^6','s^3/cm^6','s^3/m^6'}
+        case {'s^3/km^6','s^3/cm^6','s^3/m^6','s^2/km^4','s^2/cm^4','s^2/m^4','s^1/km^2','s^1/cm^2','s^1/m^2','s/km^2','s/cm^2','s/m^2'}
           spec.p_label = {'PSD',obj.units};
         case {'keV/(cm^2 s sr keV)'}
           spec.p_label = {'DEF',obj.units};
@@ -750,7 +793,8 @@ classdef PDist < TSeries
           %spec.p_label = {'dEF',obj.units};
           spec.f = single(obj.depend{2});
           spec.f_label = {'\theta (deg.)'};
-        case{'1D_velocity'}
+        case{'velocity','1D_velocity','velocity_1D'}
+          if ~strcmp(obj.type_,'line (reduced)'); error('PDist must be projected unto a vector: type: ''line (reduced)'', see PDist.reduce.'); end      
           spec.t = obj.time.epochUnix;
           spec.p = double(squeeze(obj.data));
           spec.f = obj.depend{1};
