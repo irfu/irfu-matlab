@@ -5,7 +5,7 @@ if nargin<4, STEPS_PER_DEG = 0.5; end
 phaShift = 0; %phaShift=STEPS_PER_DEG/2;
 if nargin>4
 switch pair
-  case 'e12', PHASE_OFF = -55; % offset the phase for convenience
+  case 'e12', PHASE_OFF = -60; % offset the phase for convenience
   case 'e34', PHASE_OFF = +30; % offset the phase for convenience
   otherwise
     errStr = 'Pair must be one of: "e12" or "e34"';
