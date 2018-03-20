@@ -1,8 +1,8 @@
-function [h]=polarplot(t,Ex,Ey,steplength,avnumber,threshold,plotflag)
+function [h]=polarplot3(t,Ex,Ey,steplength,avnumber,threshold,plotflag)
   
-%POLARPLOT  Plot polarization parameters for a given signal
+%POLARPLOT3  Plot polarization parameters for a given signal
 %
-% [h]=POLARPLOT(t,Ex,Ey,step,av,thresh,plotflag) plots the polarization
+% [h]=POLARPLOT3(t,Ex,Ey,step,av,thresh,plotflag) plots the polarization
 % parameters for a given signal. The polarisation parameters are the
 % Horizontal Spectral Intensity, the Horizontal Degree of
 % Polarization, the Degree of Pure Circular Polarization and the
@@ -21,7 +21,6 @@ function [h]=polarplot(t,Ex,Ey,steplength,avnumber,threshold,plotflag)
 %
 % See also POLARPLOT2
 %
-% $Id$
 
 % By Anders Tjulin (Last update 23/10-2002)
 %  

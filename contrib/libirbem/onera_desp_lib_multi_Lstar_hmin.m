@@ -50,6 +50,8 @@ header = char(zeros(100,1)); % 100-byte header
 header(1:length(magic)) = magic; % magic string
 
 % control for maginput varying
+% use first byte in header after magic string
+% other header bytes will be used for similar things
 maginput_varies = numel(maginput)>25;
 if maginput_varies,
     header(length(magic)+1) = char(1); % maginput varies with time

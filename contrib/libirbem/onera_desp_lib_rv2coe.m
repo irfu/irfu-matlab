@@ -42,7 +42,7 @@ function elements = onera_desp_lib_rv2coe(r,v)
 % l0 - true longitude at epoch (deg)
 
 onera_desp_lib_load;
-Re =  6378.137;
+Re =  6371.2; % mean Earth Radius used in GDZ calculation in IRBEM
 elements.r = r;
 elements.v = v;
 
