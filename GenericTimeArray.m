@@ -194,6 +194,32 @@ classdef (Abstract) GenericTimeArray
       res = subsref(obj,S);
     end
     
+    function [res,varargout] = sort(obj)
+      %SORT   sorts time array in ascending order
+      %  T2 = T1.sort;
+      %  [T2, I] = T1.sort; 
+      %     I - index matrix
+      %     T2 = T1(I);
+      
+      if isempty(obj)
+        error('irf:GenericTimeArray:sort:badInputs',...
+          'empty input')
+      end
+      nout = max(nargout,1) - 1;      
+      
+      [sorted_obj,sorted_ind] = sort(obj.ttns);
+      res = feval(class(obj),sorted_obj);
+      
+      if nout == 0 
+        varargout = {};
+      elseif nout == 1
+        varargout = {sorted_ind};
+      else
+        error('irf:GenericTimeArray:tlim:badOutputs',...
+          'unknown output format')
+      end
+    end
+    
     function res = horzcat(varargin)
       % tt = [t1 t2];
       % tt = [t1 t2:t3];
