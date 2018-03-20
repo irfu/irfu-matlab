@@ -42,7 +42,7 @@ function [wakeModelOut, n_corrected, wakedesc] = mms_sdp_swwake_new(e, pair, pha
 % Resampling data to resolution 1 deg, sorting data from multiple spins in
 % bins of same phase. For MMS however it should be possible to use 0.5
 % degrees resolution instead of 1 deg, as MMS Fast mode data have 32 Hz and
-% one spin takes about 19-20 second (approx phase resolution = 360/(19??32)
+% one spin takes about 19-20 second (approx phase resolution = 360/(19x32)
 % = 0.59 deg per sample).
 
 narginchk(4,5)
@@ -107,7 +107,7 @@ for idx = idx0
   pha5spins = reshape(fixedPha(idx:(idx+NPOINTS*NWSPINS-1)),NPOINTS,NWSPINS);
   %epoch5spins = reshape(epochFixedPha(idx:(idx+NPOINTS*NWSPINS-1)),NPOINTS,NWSPINS);
   d5spins = reshape(dataFixedPha(idx:(idx+NPOINTS*NWSPINS-1)),NPOINTS,NWSPINS);
-  %xxx = fft(d5spins); xxx(5:359) = 0;
+  %xxx = fft(d5spins); xxx(5:end-1) = 0;
   %d5spinsAC = d5spins -ifft(xxx, 'symmetric');
 
   % Spin in the middle has maximum weigth
@@ -293,7 +293,7 @@ return
     
     % Find the ground tone and remove it from the data
     x = fft(av12_corr);
-    x(3:359) = 0;
+    x(3:end-1) = 0;
     av12_corr = av12 -ifft(x, 'symmetric');
     
     % Now find the final fit
