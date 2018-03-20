@@ -18,13 +18,13 @@ function [out,l,v]=irf_minvar(inp,flag)
 % See also IRF_MINVAR_GUI, IRF_MINVAR_NEST, IRF_MINVAR_NEST_GUI
 % Works with TSeries as input
 
-if nargin==1,
+if nargin==1
     flag='mvar'; % default is to do unconstrained minimum variance
 end
 
 rtrnTS = 0;
 isaTSeries = isa(inp,'TSeries');
-if isaTSeries,
+if isaTSeries
     inptemp = inp;
     inp = inptemp.data;
     rtrnTS = 1;
@@ -33,7 +33,7 @@ end
 ooo=inp;
 qx = size(inp(1,:)); lx=qx(2); % the number of vector components
 if lx > 3, inp=inp(:,[2  3 4]);
-elseif lx < 3,
+elseif lx < 3
     disp('not enough components for x vector');
 end
 
@@ -85,7 +85,7 @@ if strcmpi(flag,'<bn>=0') % <Bn>=0 requires further calculations
     [~,l,v]=irf_minvar(inp_2,'mvar');
     l(3)=lmin;
     out=(v*inp')';
-elseif strcmpi(flag,'td'), % 'td' method
+elseif strcmpi(flag,'td') % 'td' method
     ln=l(3);
     bn=sum(inp.*repmat(v(3,:),size(inp,1),1),2);
     inp_2=inp-repmat(bn,1,3).*repmat(v(3,:),size(inp,1),1);
@@ -96,7 +96,7 @@ else % 'mvar' method (default)
     out=(v*inp')';
 end
 
-if nargout < 1,
+if nargout < 1
     disp(strcat('   max l1=',num2str(l(1),3),'v1=[',num2str(v(1,1),3),', ',num2str(v(1,2),3),', ',num2str(v(1,3),3),']'))
     disp(strcat('interm l2=',num2str(l(2),3),'v2=[',num2str(v(2,1),3),', ',num2str(v(2,2),3),', ',num2str(v(2,3),3),']'))
     disp(strcat('   min l3=',num2str(l(3),3),'v3=[',num2str(v(3,1),3),', ',num2str(v(3,2),3),', ',num2str(v(3,3),3),']'))

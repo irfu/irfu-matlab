@@ -66,7 +66,7 @@ labelVelocity   = 'm/s';
 
 %% Check input 
 [ax,args,nargs] = axescheck(varargin{:});
-if isempty(ax),
+if isempty(ax)
 	figure;
 	h=gca;
 else
@@ -74,15 +74,15 @@ else
 end
 
 x=args{1};
-if isempty(x), % nothing to plot, first input parameter empty
+if isempty(x) % nothing to plot, first input parameter empty
   return;
 end
 
 isPlasmaModelDefined = false; % default
 while ~isempty(args)
-	if 	isstruct(args{1}) && isfield(args{1},'Species'), % whamp.run_f(PlasmaModel)
+	if 	isstruct(args{1}) && isfield(args{1},'Species') % whamp.run_f(PlasmaModel)
 		plasmaModel = args{1};
-		for iSpecies = numel(plasmaModel.Species):-1:1,
+		for iSpecies = numel(plasmaModel.Species):-1:1
 			species = plasmaModel.Species{iSpecies};
 			n(iSpecies)  = species.n;
 			m(iSpecies)  = species.m;
@@ -94,7 +94,7 @@ while ~isempty(args)
 		end
 		isPlasmaModelDefined = true;
 		args(1)=[];
-	elseif isstruct(args{1}) && isfield(args{1},'m'),  % whamp.run_f(Species)
+	elseif isstruct(args{1}) && isfield(args{1},'m')  % whamp.run_f(Species)
 		species = args{1};
 		n  = species.n;
 		m  = species.m;
@@ -105,7 +105,7 @@ while ~isempty(args)
 		b = species.b;
 		isPlasmaModelDefined = true;
 		args(1)=[];
-	elseif nargs < 1 && isnumeric(args{1}) &&	size(args{1},2)==7,   % whamp.run_f([i x 7]) matrix with all values
+	elseif nargs < 1 && isnumeric(args{1}) &&	size(args{1},2)==7   % whamp.run_f([i x 7]) matrix with all values
 		species = args{1};
 		n =species(:,1);
 		m =species(:,2);
@@ -116,7 +116,7 @@ while ~isempty(args)
 		b=species(:,7);
 		isPlasmaModelDefined = true;
 		args(1)=[];
-	elseif nargs >= 7 && isnumeric(args{1}),   % whamp.run_f(n,m,t,vd,d,a1,a2,...) matrix with all values
+	elseif nargs >= 7 && isnumeric(args{1})   % whamp.run_f(n,m,t,vd,d,a1,a2,...) matrix with all values
 		n =args{1};
 		m =args{2};
 		t =args{3};
@@ -126,26 +126,26 @@ while ~isempty(args)
 		b=args{7};
 		isPlasmaModelDefined = true;
 		args(1:7)=[];
-	elseif ischar(args{1}) && strcmpi(args{1},'notitle'),
+	elseif ischar(args{1}) && strcmpi(args{1},'notitle')
 		printTitle = false;
 		args(1) = [];
-	elseif ischar(args{1}) && strcmpi(args{1},'PSDvsV'),
+	elseif ischar(args{1}) && strcmpi(args{1},'PSDvsV')
 		plotPSDvsV = true;
 		args(1) = [];
-	elseif ischar(args{1}) && strcmpi(args{1},'PSDvsE'),
+	elseif ischar(args{1}) && strcmpi(args{1},'PSDvsE')
 		plotPSDvsE = true;
 		args(1) = [];
-	elseif ischar(args{1}) && strcmpi(args{1},'FredvsVz'),
+	elseif ischar(args{1}) && strcmpi(args{1},'FredvsVz')
 		plotFredvsVz = true;
 		args(1) = [];
-	elseif ischar(args{1}) && strcmpi(args{1},'km/s'),
+	elseif ischar(args{1}) && strcmpi(args{1},'km/s')
 		unitsVelocity = 1e3;
 		labelVelocity = 'km/s';
 		args(1) = [];
-	elseif ischar(args{1}) && strcmpi(args{1},'pitchangles'),
+	elseif ischar(args{1}) && strcmpi(args{1},'pitchangles')
 		plotPitchangles = true;
 		args(1) = [];
-		if numel(args) > 0 && isnumeric(args{1}),
+		if numel(args) > 0 && isnumeric(args{1})
 			pitchangles = args{1};
 			args(1) = [];
 		else
@@ -160,31 +160,31 @@ while ~isempty(args)
 	nargs = numel(args);
 end
 
-if ~isPlasmaModelDefined,
+if ~isPlasmaModelDefined
 	irf.log('critical','ERROR: WHAMP plasma model not specified!');
   help whamp.plot_f;
 	return
 end
 
 %% Check which plot to make
-if plotPSDvsV,
+if plotPSDvsV
 	plotPSDvsE      = false;
 	plotFredvsVz    = false;
 elseif plotPSDvsE
 	plotFredvsVz    = false;
-elseif ~plotFredvsVz,
+elseif ~plotFredvsVz
 	plotPSDvsV = true;
 end
 %% Calculate distribution function
 
-for j=length(n):-1:1,
+for j=length(n):-1:1
   % estimate thermal velocity in m/s
   if m(j)==0, mm(j)=Me;else mm(j)=Mp*m(j);end
   vt(j)=sqrt(2*e * 1000*t(j)/mm(j)); % [m/s] (t in keV therefore *1000)
 end
 
 
-if plotPitchangles,
+if plotPitchangles
 	pitchangles=pitchangles*pi/180;
 	for I=length(pitchangles):-1:1
 		vvec(I,:)=0:vt(1)/20:10*vt(1);
@@ -208,18 +208,18 @@ f=vp.*0;
 vz_reduced=min([-3*vt(1) -3*vt(1)+vd(1)]):vt(1)/20:max([vt(1)*3 vt(1)*3+vd(1)]);
 F_reduced=vz_reduced.*0; % reduced distribution function
 
-for j=1:length(n),
-  if a(j)==0, 
+for j=1:length(n)
+  if a(j)==0 
     ea1=vp.*0;
   else
     ea1=exp(-1*(vp.^2./a(j)./vt(j)./vt(j)));
   end
-  if b(j)==0, 
+  if b(j)==0 
     ea2=vp.*0;
   else
     ea2=exp(-1*(vp.^2./b(j)./vt(j)./vt(j)));
   end
-  if a(j)==b(j) || d(j)==1,
+  if a(j)==b(j) || d(j)==1
     K=0;
   else
     K=(1-d(j))/(a(j)-b(j));
@@ -234,7 +234,7 @@ end
 
 f = f*unitsVelocity^6;
 
-if plotFredvsVz,
+if plotFredvsVz
         % E_reduced=(1/e)*mm(1)/2*vz_reduced.^2;	%normalized to first species, Etot[eV]
         semilogy(h,vz_reduced/unitsVelocity,F_reduced);
         grid(h,'on');
@@ -249,7 +249,7 @@ elseif plotPitchangles
         xlabel(h,'Etot [eV]')
         ylabel(h,['PSD [s^3/' labelVelocity	'^6]'])
         legend(h,M)
-		elseif plotPSDvsV,
+		elseif plotPSDvsV
         plot(h,vtot'/unitsVelocity,f');
         grid(h,'on');
         xlabel(h,['Vtot [' labelVelocity	']'])
@@ -271,21 +271,21 @@ end
 
 %% Output definition
 
-if nargout >= 1, 
+if nargout >= 1 
 	varargout{1} = h;
 end
-if nargout == 2,
-	if plotPSDvsE,
+if nargout == 2
+	if plotPSDvsE
 		varargout{2}=f;
 		varargout{3}=vtot/unitsVelocity;
-	elseif plotPSDvsE,
+	elseif plotPSDvsE
 		varargout{2}=f;
 		varargout{3}=Etot;
-	elseif plotFredvsVz,
+	elseif plotFredvsVz
 		varargout{2}=F_reduced;
 		varargout{3}=vz_reduced/unitsVelocity;
 	end
-elseif nargout ==3,
+elseif nargout ==3
 	varargout{2}=f;
 	varargout{3}=vp/unitsVelocity;
 	varargout{4}=vz/unitsVelocity;

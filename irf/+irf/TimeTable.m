@@ -49,9 +49,9 @@ classdef TimeTable
 			TT.Comment={};		%	short comment for each time interval
 			TT.Description={};	%	description lines for each interval
 			TT.UserData=struct([]);	%	user can put different info in this structure
-			if numel(varargin)==1,
+			if numel(varargin)==1
 				source = varargin{1};
-			elseif numel(varargin)==0,
+			elseif numel(varargin)==0
 				return;
 			else
 				irf.log('critical','max 1 argument supported');
@@ -97,12 +97,12 @@ classdef TimeTable
 						isHeader=0;
 						nTimeInterval=nTimeInterval+1;
 						TT.TimeInterval(nTimeInterval,:) = [irf_time(timeInterval.start,'utc>epoch') irf_time(timeInterval.end,'utc>epoch')];
-						if isfield(timeInterval,'comment'),
+						if isfield(timeInterval,'comment')
 							TT.Comment{nTimeInterval}	= timeInterval.comment;
 						else
 							TT.Comment{nTimeInterval}	= [];
 						end
-						if nTimeInterval>1,
+						if nTimeInterval>1
 							TT.Description{nTimeInterval-1}	= description(1:iDescriptionLine);
 						end
 						iDescriptionLine				= 0;  % reset counter of description lines for the next time interval
@@ -143,25 +143,25 @@ classdef TimeTable
 			if nargin<3, description={};end
 			if nargin<2, irf.log('critical','not enough arguments');return;end
 			nElement=size(TT.TimeInterval,1)+1;
-			if isnumeric(tint),
-				if numel(tint)==0,
+			if isnumeric(tint)
+				if numel(tint)==0
 					irf.log('critical','Time interval not specified. Returning.');
 					return;
-				elseif numel(tint)==1, % only time instant give, end the same as start time
+				elseif numel(tint)==1 % only time instant give, end the same as start time
 					tint(2)=tint(1);
 				end
 			elseif ischar(tint) % assume iso format
 				tint=irf_time(tint,'utc>tint');
 			end
 			TT.TimeInterval(nElement,:)=tint;
-			if ~iscellstr(description), % description should be cellstr
+			if ~iscellstr(description) % description should be cellstr
 				if ischar(description)
 					description={description};
 				else
 				end
 			end
 			TT.Description{nElement}=description;
-			if ischar(comment),
+			if ischar(comment)
 				TT.Comment{nElement}=comment;
 			else
 				TT.Comment{nElement}=[];
@@ -193,14 +193,14 @@ classdef TimeTable
 				out{currentLine}=sprintf(fmt,tstartIso(iTT,:),...
 					tendIso(iTT,:),comment{iTT});
 				currentLine=currentLine+1;
-				for j=1:numel(description{iTT}),
+				for j=1:numel(description{iTT})
 					out{currentLine}=description{iTT}{j};
 					currentLine=currentLine+1;
 				end
 			end
-			if nargout == 0, % interactive calling from command line
+			if nargout == 0 % interactive calling from command line
 				out=char(out);
-				if size(out,1)>nHeaderLines+10,
+				if size(out,1)>nHeaderLines+10
 					disp(out(1:nHeaderLines+3,:));
 					disp(['.... ' num2str(size(out,1)-nHeaderLines-5) ' lines ommitted.....']);
 					disp(out(end-2:end,:));
@@ -216,22 +216,22 @@ classdef TimeTable
 			out=ascii(TT);
 			if ischar(filename) % read from file
 				fid = fopen(filename,'w');
-				if fid == -1,
+				if fid == -1
 					irf.log('critical',['Cannot open file:' filename]);
 					ok=0;
 					return;
 				end
-				for j=1:numel(out),
+				for j=1:numel(out)
 					fprintf(fid,'%s\n',out{j});
 				end
 				fclose(fid);
 				ok=1;
-				if nargout==0, clear ok, end;
+				if nargout==0, clear ok, end
 			end
 		end
 		function TTout  = remove(TTin,index) % remove entries
             % TTout  = remove(TTin,index) remove entries 
-            if isempty(index),
+            if isempty(index)
                 TTout=TTin;
                 return;
             end
@@ -240,26 +240,26 @@ classdef TimeTable
 				irf.log('critical','Index not number');
 				return;
 			end
-			if max(index(:)) > numel(TTin) || min(index(:)) < 1,
+			if max(index(:)) > numel(TTin) || min(index(:)) < 1
 				irf.log('critical','Index out of range');
 				return;
 			end
 			TTout				           = TTin;
 			TTout.TimeInterval(index(:),:) = [];
-            if ~isempty(TTout.Comment),
+            if ~isempty(TTout.Comment)
                TTout.Comment(index(:))     = []; 
             end
-            if ~isempty(TTout.Description),
+            if ~isempty(TTout.Description)
 			    TTout.Description(index(:))    = [];
             end
 			TTout.Header                   = TTin.Header;
-            if ~isempty(TTout.UserData),
+            if ~isempty(TTout.UserData)
 			    TTout.UserData(index)          = [];
             end
 		end
 		function TTout = select(TTin,index) % return index
 			if islogical(index)
-				if numel(index) == size(TTin.TimeInterval,1),
+				if numel(index) == size(TTin.TimeInterval,1)
 					index = find(index);
 				else
 					error('select(TTin,index): index wrong size');
@@ -273,7 +273,7 @@ classdef TimeTable
 				irf.log('critical','index empty, returning empty timetable');
 				return;
 			end
-			if max(index(:)) > numel(TTin) || min(index(:)) < 1,
+			if max(index(:)) > numel(TTin) || min(index(:)) < 1
 				irf.log('critical','Index out of range');
 				return;
 			end
@@ -289,7 +289,7 @@ classdef TimeTable
 			TTout.TimeInterval = TTin.TimeInterval(inew,:);
 			TTout.Comment = TTin.Comment(inew);
 			TTout.Description = TTin.Description;
-			if isfield(TTout,'UserData'),
+			if isfield(TTout,'UserData')
 				TTout.UserData = TTin.UserData(inew);
 			end
 		end
@@ -302,14 +302,14 @@ classdef TimeTable
 			ttnew=tt(inew,:);
 			iJoinedLines=zeros(numel(inew),1);
 			for j=numel(inew):-1:2
-				if ttnew(j,1)<ttnew(j-1,2),
+				if ttnew(j,1)<ttnew(j-1,2)
 					iJoinedLines(j)=1;
 					ttnew(j-1,2)=max(ttnew(j-1,2),ttnew(j,2));
 					ttnew(j,:)=[];
 				end
 			end
 			TTout.TimeInterval = ttnew;
-			if ~isempty(com),
+			if ~isempty(com)
 				com = com(inew);
 				TTout.Comment = com(~iJoinedLines);
 			end
@@ -327,20 +327,20 @@ classdef TimeTable
 			iInterval=0;
 			i2=1;
 			endOfTT2 = false; % flag to know when end of time series 2
-			for j= 1:size(t1,1),
+			for j= 1:size(t1,1)
 				while (t1(j,1)>t2(i2,2))
 					i2=i2+1;
 					endOfTT2 = i2>size(t2,1); % check end of 2nd time series
 					if endOfTT2, break; end % if end of 2nd time series stop
 				end
 				if endOfTT2, break; end % if end of 2nd time series stop
-				if t1(j,2) < t2(i2,1),
+				if t1(j,2) < t2(i2,1)
 					continue;
 				end
 				while t2(i2,1)<t1(j,2)
 					iInterval=iInterval+1;
 					tout(iInterval,:)=[max(t1(j,1),t2(i2,1)) min(t1(j,2),t2(i2,2))];
-					if t1(j,2) > t2(i2,2), % take next i2
+					if t1(j,2) > t2(i2,2) % take next i2
 						i2=i2+1;
 						endOfTT2 = i2>size(t2,1); % check end of 2nd time series
 						if endOfTT2, break; end % if end of 2nd time series stop
@@ -350,7 +350,7 @@ classdef TimeTable
 				end
 				if endOfTT2, break; end % if end of 2nd time series stop
 			end
-			if iInterval == 0, 
+			if iInterval == 0 
 				irf.log('warning','There were no intersecting intervals, returning empty time table.');
 			end
 			tout(iInterval+1:end,:)=[];
@@ -377,7 +377,7 @@ classdef TimeTable
 			% i is indices of overlapping intervals of TT1
 			t1=TT1.TimeInterval;
 			t2=TT2.TimeInterval;
-			if isempty(t1) || isempty(t2), 
+			if isempty(t1) || isempty(t2) 
 				TT=irf.TimeTable; 
 				i1=[]; 
 				return;
@@ -393,16 +393,16 @@ classdef TimeTable
 			tList = sortrows([t1List;t2List]);
 			tList(:,5) = cumsum(tList(:,2)); % number of open TT1 intervals
 			tList(:,6) = cumsum(tList(:,3)); % number of open TT2 intervals
-			for i = 1:size(tList,1),
-				if tList(i,2) == 0, % TT2 interval
-					if tList(i,3) == -1 && tList(i,6) == 0, % all TT2 intervals are closed
-						if tList(i,5) > 0, % there are open TT1 intervals
+			for i = 1:size(tList,1)
+				if tList(i,2) == 0 % TT2 interval
+					if tList(i,3) == -1 && tList(i,6) == 0 % all TT2 intervals are closed
+						if tList(i,5) > 0 % there are open TT1 intervals
 							i1(i1Open) = true; % all open TT1 intervals are overlapping
 						end
 					end
 				else %% TT1 interval
 					ind=tList(i,4);
-					if tList(i,2) == 1, % interval start
+					if tList(i,2) == 1 % interval start
 						i1Open(ind)=true;
 					else % interval end
 						i1Open(ind)=false;

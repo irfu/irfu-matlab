@@ -139,12 +139,12 @@ switch lower(flag)
 		irf.log('critical',['Transformation ''' flag ''' is unknown!']);
 		error('Fix transformation!');
 end
-if size(inp,2)>=3, % input is time and 3 components
+if size(inp,2)>=3 % input is time and 3 components
 	out = mult(T(tInd),inp(:,1:3));
-elseif size(inp,2)==0, % input is time, return only transformation matrix
+elseif size(inp,2)==0 % input is time, return only transformation matrix
 	out=T(tInd);
 end
-if size(inp,2) > 3, % more columns than 3 components
+if size(inp,2) > 3 % more columns than 3 components
 	irf.log('warning','Input has more columns than 3 components! Replicating last columns in output');
 	out(:,4:size(inp,2))=inp(:,4:end); % replicate last columns in output
 end
@@ -183,7 +183,7 @@ end
 				Ttemp1 = triang(eps,1);
 				Ttemp2 = triang(lSun,3);
 				T = mult(Ttemp2,Ttemp1);
-				if tNum==-2, 
+				if tNum==-2 
 					T = inverse(T);
 				end
 			elseif tNum == 3 || tNum == -3 % T3
@@ -210,11 +210,11 @@ end
 			elseif tNum == 5 || tNum == -5 % T5
 				[lambda,phi]=model.igrf(t,'dipole');
 				T=mult(triang(phi-90,2),triang(lambda,3));
-				if tNum == -5,
+				if tNum == -5
 					T=inverse(T);
 				end
 			end			
-			if j==numel(tInd),
+			if j==numel(tInd)
 				Tout=T;
 			else
 				Tout=mult(T,Tout);
@@ -261,8 +261,8 @@ end
 		dimInp2 = numel(size(inp2));
 		if (dimInp1==3) && (dimInp2==3)
 			T = inp1;
-			for ii=1:3,
-				for jj=1:3,
+			for ii=1:3
+				for jj=1:3
 					T(:,ii,jj)=...
 						inp1(:,ii,1).*inp2(:,1,jj)+...
 						inp1(:,ii,2).*inp2(:,2,jj)+...
@@ -271,7 +271,7 @@ end
 			end
 		elseif (dimInp1==3) && (dimInp2==2)
 			T = inp2;
-			for ii=1:3,
+			for ii=1:3
 				T(:,ii)=inp1(:,ii,1).*inp2(:,1)+...
 						inp1(:,ii,2).*inp2(:,2)+...
 						inp1(:,ii,3).*inp2(:,3);
@@ -280,7 +280,7 @@ end
 		out = T;
 	end
 
-if isInpTSeries,
+if isInpTSeries
 	outData = out;
 	out = inpTs;
 	out.data = outData;

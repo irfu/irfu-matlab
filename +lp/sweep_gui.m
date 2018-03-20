@@ -13,12 +13,12 @@ function sweep_gui(action)
 %
 Units=irf_units;
 persistent message;
-if isempty(message), % run only the first time during the session
+if isempty(message) % run only the first time during the session
     message='You can anytime access all the results from get(gcf,''userdata'').';
     disp(message);
 end
 if      nargin == 0, action='initialize';end
-switch action,
+switch action
     case 'initialize'
         %% default values
         ud=struct();
@@ -157,7 +157,7 @@ switch action,
         % if scflag read in sc parameters
         ud.flag_use_sc=get(inp.flag_sc,'Value');
         ud.toppanel=get(inp.toppanel.plot,'Value');
-        if ud.flag_use_sc,
+        if ud.flag_use_sc
             ud.probe_refpot_as_fraction_of_scpot=str2double(get(inp.sc.probe_refpot_as_fraction_of_scpot_value,'string'));
             ud.sc.number_of_probes=str2double(get(inp.sc.number_of_probes_value,'string')); % in cm
             ud.sc.cross_section_area=str2double(get(inp.sc.sunlit_area_value,'string'));
@@ -200,14 +200,14 @@ switch action,
         ud.I=J_probe;
         ud.dUdI=dUdI;
         % if scflag then calculate s/c IU curve
-        if ud.flag_use_sc,
+        if ud.flag_use_sc
             J_sc=lp.probe_current(ud.sc,Upot,ud.R_sun,ud.UV_factor,ud);
             ud.I_sc=J_sc;
             ud.U_sc=Upot;
             ud.dUdI_sc=gradient(Upot,J_sc);
         end
         % if scflag calculate probe to sc IU curve
-        if ud.flag_use_sc,
+        if ud.flag_use_sc
             % reduce probe curve to reasonable number of points (derivative does
             % not change more than 10% between points
             ind=ones(size(Upot));
@@ -243,7 +243,7 @@ switch action,
             Jprobeplasmagrid=lp.probe_current(probe,probepotgrid,ud.R_sun,0,ud);
             Jprobegrid=Jprobeplasmagrid+Jprobephotogrid;
             Jprobephotoe2scgrid=Jprobephotogrid-Jprobephotoescapingscgrid;
-            for ii=1:numel(Iprobe),
+            for ii=1:numel(Iprobe)
                 % plasma current with UV factor zero
                 satpot=Usatsweep(ii);
                 uprobe=interp1(J_probe,Upot,Ibias(ii))+satpot*ud.probe_refpot_as_fraction_of_scpot;
@@ -291,7 +291,7 @@ switch action,
         xlabel(h(1),'U [V]');
         ylabel(h(1),'I [\mu A]');
 				hold(h(1),'on');
-				if ud.flag_use_sc, % add probe potential wrt s/c and plasma
+				if ud.flag_use_sc % add probe potential wrt s/c and plasma
 					plot(h(1),Ubias,Ibias*1e6,'k','linewidth',0.5);
 					plot(h(1),Uprobe2plasma,Ibias*1e6,'r.','linewidth',1.5);
 					plot(h(1),Uprobe2sc,Ibias*1e6,'b','linewidth',1.5);
@@ -303,7 +303,7 @@ switch action,
 					irf_legend(h(1),'probe photo e- to s/c',[0.02 1.05],'color',[0 0.5 0]);
 					irf_legend(h(1),'Satellite potential',[0.98 0.03],'color',[0.5 0 0.5]);
 					axis(h(1),'auto x');
-					if ud.probe.bias_current ~= 0 && -ud.probe.bias_current>min(Ibias) && -ud.probe.bias_current<max(Ibias), % draw bias current line
+					if ud.probe.bias_current ~= 0 && -ud.probe.bias_current>min(Ibias) && -ud.probe.bias_current<max(Ibias) % draw bias current line
 						plot(h(1),[Uprobe2sc(1) Uprobe2plasma(end)],ud.probe.bias_current.*[-1 -1].*1e6,'k-.','linewidth',0.5);
 						text(Uprobe2sc(1),ud.probe.bias_current*(-1)*1e6,'bias','parent',h(1),'horizontalalignment','left','verticalalignment','bottom');
 						flag_add_bias_point_values=1;
@@ -313,11 +313,11 @@ switch action,
 					irf_legend(h(1),'    total',      [0.98 0.03],'color','k');
 					irf_legend(h(1),' photoelectrons',[0.98 0.08],'color','r');
 					clr=[0.5 0 0; 0 0.5 0; 0 0 0.5];
-					for ii=1:length(J_plasma),
+					for ii=1:length(J_plasma)
 						plot(h(1),Upot,J_plasma{ii}*1e6,'linewidth',.5,'color',clr(:,ii));
 						irf_legend(h(1),['plasma ' num2str(ii)],[0.98 0.08+ii*0.05],'color',clr(:,ii));
 					end
-					if ud.probe.bias_current ~= 0 && -ud.probe.bias_current>min(J_probe) && -ud.probe.bias_current<max(J_probe), % draw bias current line
+					if ud.probe.bias_current ~= 0 && -ud.probe.bias_current>min(J_probe) && -ud.probe.bias_current<max(J_probe) % draw bias current line
 						plot(h(1),[Upot(1) Upot(end)],ud.probe.bias_current.*[-1 -1].*1e6,'k-.','linewidth',0.5);
 						text(Upot(1),ud.probe.bias_current*(-1)*1e6,'-bias','parent',h(1),'horizontalalignment','left','verticalalignment','bottom');
 						flag_add_bias_point_values=1;
@@ -332,7 +332,7 @@ switch action,
         Rmin = min(abs(dUdI)); % minimum resistance
         fcr=1/2/pi/Rmin/probe.capacitance;
         disp(['Rmin=' num2str(Rmin,3) ' Ohm, C=' num2str(probe.capacitance*1e12,3) 'pF, f_{CR}=' num2str(fcr,3) 'Hz.']);
-        if ud.flag_use_sc,
+        if ud.flag_use_sc
             info_txt=[info_txt '\newline probe to plasma Rmin=' num2str(min(abs(dUdI_probe2plasma)),3) ' Ohm'];
             info_txt=[info_txt '\newline probe to reference Rmin=' num2str(min(abs(dUdI)),3) ' Ohm'];
             info_txt=[info_txt '\newline probe to spacecraft Rmin=' num2str(min(abs(dUdI_probe2sc)),3) ' Ohm'];
@@ -340,21 +340,21 @@ switch action,
             info_txt=[info_txt '\newline Rmin=' num2str(Rmin,3) ' Ohm, C=' num2str(probe.capacitance*1e12,3) 'pF, fcr=' num2str(fcr,3) 'Hz.'];
         end
 
-        if min(J_probe)<0 && max(J_probe)>0,                   % display information on Ufloat
+        if min(J_probe)<0 && max(J_probe)>0                   % display information on Ufloat
             Ufloat=interp1(J_probe,Upot,0); % floating potential
             ii=isfinite(Upot);Rfloat=interp1(Upot(ii),dUdI(ii),Ufloat);
 			fcr=1/2/pi/Rfloat/probe.capacitance;
             info_txt=[info_txt '\newline Probe: Ufloat=' num2str(Ufloat,3) 'V, Rfloat= ' num2str(Rfloat,3) ' Ohm, C=' num2str(probe.capacitance*1e12,3) 'pF, fcr=' num2str(fcr,3) 'Hz.'];
             disp(['Probe: Ufloat=' num2str(Ufloat,3) ' V, Rfloat=' num2str(Rfloat,3) ' Ohm, C=' num2str(probe.capacitance*1e12,3) 'pF, fcr=' num2str(fcr,3) 'Hz.']);
         end
-        if flag_add_bias_point_values, 
+        if flag_add_bias_point_values 
             Ubias=interp1(J_probe,Upot,-ud.probe.bias_current); % floating potential
             ii=isfinite(Upot);
             Rbias=interp1(Upot(ii),dUdI(ii),Ubias);
             fcr=1/2/pi/Rbias/probe.capacitance;
             disp(['Rbias=' num2str(Rbias,3) ' Ohm, C=' num2str(probe.capacitance*1e12,3) 'pF, fcr=' num2str(fcr,3) 'Hz.']);
             info_txt=[info_txt '\newline Probe: (without s/c) Ubias=' num2str(Ubias,3)  ', Rbias=' num2str(Rbias,3) 'Ohm, fcr=' num2str(fcr,3) 'Hz.'];
-            if ud.flag_use_sc,
+            if ud.flag_use_sc
                 Uscbias=interp1(J_probe,Usatsweep,-ud.probe.bias_current); % floating potential
                 ii=isfinite(Upot);
                 Rscbias=interp1(ud.U_sc(ii),ud.dUdI_sc(ii),Uscbias);
@@ -366,20 +366,20 @@ switch action,
                 info_txt=[info_txt '\newline Spacecraft to Probe: Usp=' num2str(Usp,3)  ' V.'];
             end
         end
-        if ud.flag_use_sc && min(ud.I_sc)<0 && max(ud.I_sc)>0, % display information on Ufloat
+        if ud.flag_use_sc && min(ud.I_sc)<0 && max(ud.I_sc)>0 % display information on Ufloat
             Uscfloat=interp1(ud.I_sc,ud.U_sc,0); % floating potential
             ii=isfinite(ud.U_sc);Rscfloat=interp1(ud.U_sc(ii),ud.dUdI_sc(ii),Uscfloat);
             info_txt=[info_txt '\newline Spacecraft: Ufloat=' num2str(Uscfloat,3) 'V, Rfloat= ' num2str(Rscfloat,3) ' Ohm, C=' num2str(ud.sc.capacitance*1e12,3) 'pF'];
             disp(['Spacecraft: Ufloat=' num2str(Uscfloat,3) ' V, Rfloat=' num2str(Rscfloat,3) ' Ohm, C=' num2str(ud.sc.capacitance*1e12,3) 'pF']);
         end
-        if ud.UV_factor>0,                                     % display photoelectron saturation current
+        if ud.UV_factor>0                                     % display photoelectron saturation current
             info_txt=[info_txt '\newline Probe: photo e- Io = ' num2str(ud.UV_factor*lp.photocurrent(1,-1,ud.R_sun,ud.probe.surface)*1e6,3) '[\mu A/m^2]'];
-            if ud.R_sun~=1,
+            if ud.R_sun~=1
                 info_txt=[info_txt '  (' num2str(ud.UV_factor*lp.photocurrent(1,-1,1,ud.probe.surface)*1e6,3) ' \mu A/m^2 at 1 AU)'];
             end
-            if ud.flag_use_sc,
+            if ud.flag_use_sc
                 info_txt=[info_txt '\newline Spacecraft: photo e- Io = ' num2str(ud.UV_factor*lp.photocurrent(1,-1,ud.R_sun,ud.sc.surface)*1e6,3) '[\mu A/m^2]'];
-                if ud.R_sun~=1,
+                if ud.R_sun~=1
                     info_txt=[info_txt '  (' num2str(ud.UV_factor*lp.photocurrent(1,-1,1,ud.sc.surface)*1e6,3) ' \mu A/m^2 at 1 AU)'];
                 end
             end
@@ -392,11 +392,11 @@ switch action,
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         % TOP PANEL
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        if ud.toppanel==1, % plot resistance 
+        if ud.toppanel==1 % plot resistance 
             plot(h(2),Upot,dUdI,'k');
             grid(h(2),'on');xlabel(h(2),'U [V]');
             ylabel(h(2),'dU/dI [\Omega]');
-            if ud.flag_use_sc, % add probe resistance wrt plasma and s/c
+            if ud.flag_use_sc % add probe resistance wrt plasma and s/c
                 hold(h(2),'on');
                 plot(h(2),Uprobe2plasma,dUdI_probe2plasma,'r','linewidth',1.5);
                 plot(h(2),Uprobe2sc,dUdI_probe2sc,'b','linewidth',1.5);
@@ -405,12 +405,12 @@ switch action,
             axis(h(2),'auto y');
             set(h(2),'yscale','log')
             linkaxes(ud.h(1:2),'x');
-        elseif ud.toppanel==2 && ud.flag_use_sc, % plot spacecraft IU
+        elseif ud.toppanel==2 && ud.flag_use_sc % plot spacecraft IU
             plot(h(2),ud.U_sc,ud.I_sc*1e6,'k');
             grid(h(2),'on');xlabel(h(2),'U [V]');
             ylabel(h(2),'I [\mu A/m^2]');
             linkaxes(ud.h(1:2),'x');
-        elseif ud.toppanel==3, % plot probe noise levels
+        elseif ud.toppanel==3 % plot probe noise levels
             E_int_range=[1e-18 1e-8]; % range of E intensity
             f_range=[1e-3 9.9e5];      % frequencies in Hz
             f_noise_range=10.^(log10(f_range(1)):.1:log10(f_range(2)));
@@ -452,7 +452,7 @@ switch action,
                 noise_shot_photoelectrons_nobias=2*nu*Units.e^2*Rfloat^2./(1+(2*pi*f).^2*Rfloat^2*C_antenna^2)/antenna_eff_length^2;
                 noise_total_nobias=noise_shot_photoelectrons_nobias+noise_shot_plasma_nobias+noise_thermal_nobias;
             end
-            if 1, % plot
+            if 1 % plot
                 linkaxes(ud.h(1:2),'off');hold(h(2),'off');
                 plot(h(2),noise_instr_X,noise_instr_Y,'k');
                 set(h(2),'xscale','log','yscale','log','xlim',f_range,'ylim',E_int_range);
@@ -463,7 +463,7 @@ switch action,
                 ht=text(1e3,noise_preamp_level*1.5,'instrument');set(ht,'fontsize',14,'color','k');
                 hold(h(2),'on');
                 ax=h(2);
-                if exist('Rfloat','var'),
+                if exist('Rfloat','var')
                     plot(h(2),f,noise_shot_plasma_nobias,'k:')
                     plot(h(2),f,noise_shot_photoelectrons_nobias,'LineStyle',':','Color',[0 .5 0])
                     plot(h(2),f,noise_thermal_nobias,'b:', ...
@@ -476,7 +476,7 @@ switch action,
                     ht=text(f_range(1),noise_total_nobias(1),'total noise (nobias)','parent',ax);
                     set(ht,'fontsize',14,'verticalalignment','bottom','horizontalalignment','left','color','r');
                 end
-                if exist('Rbias','var'),
+                if exist('Rbias','var')
                     plot(h(2),f,noise_shot_plasma_bias,'k', ...
                         f,noise_shot_photoelectrons_bias,'g', ...
                         f,noise_thermal_bias,'b',...
@@ -526,7 +526,7 @@ Units=irf_units;
 val = get(hObj,'Value');
 data=get(gcf,'userdata');
 if val ==1 % do nothing, shows in menu 'Example spacecraft'
-elseif val ==2, % Cluster s/c diameter 2.9, height 1.3m
+elseif val ==2 % Cluster s/c diameter 2.9, height 1.3m
     data.probe.type='spherical';
     set(data.inp.probe.type,'Value',1);
     data.probe.surface='themis';
@@ -609,7 +609,7 @@ Units=irf_units;
 val = get(hObj,'Value');
 data=get(gcf,'userdata');
 if val ==1 % do nothing, shows in menu 'Example spacecraft'
-elseif val ==2, % solar wind at 1AU
+elseif val ==2 % solar wind at 1AU
     set(data.inp.Rsun_value,'string','1');
     set(data.inp.probe.total_vs_sunlit_area_value,'string','4');
     data.probe.total_vs_sunlit_area=4;

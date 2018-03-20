@@ -44,7 +44,7 @@ end
 if inputNumeric
 	if estimateExB
 		e = v;
-		if size(b,1) ~= size(e,1),
+		if size(b,1) ~= size(e,1)
 			b = irf_resamp(b,e);
 		end
 		res = irf_vec_x_scal( irf_cross(e,b), [b(:,1) irf_abs(b,1)], -2 );
@@ -69,7 +69,7 @@ end
 if inputTSeries
 	if estimateExB
 		e = v;
-		if e.length ~= b.length,
+		if e.length ~= b.length
 			b = b.resample(e.time);
 		end
 		res = cross(e,b);

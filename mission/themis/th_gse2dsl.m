@@ -46,12 +46,12 @@ end
 function out = mult_mat(inp1,inp2)
 dimInp1 = numel(size(inp1));
 dimInp2 = numel(size(inp2));
-if (dimInp1==dimInp2),
+if (dimInp1==dimInp2)
   numOfMult=size(inp1,3);
   T = zeros(size(inp1,1),size(inp1,2),size(inp2,3));
-  for ii=1:size(inp1,2),
-    for jj=1:size(inp2,3),
-      for kk=1:numOfMult,
+  for ii=1:size(inp1,2)
+    for jj=1:size(inp2,3)
+      for kk=1:numOfMult
         T(:,ii,jj)=T(:,ii,jj)+inp1(:,ii,kk).*inp2(:,kk,jj);
       end
     end
@@ -60,8 +60,8 @@ elseif (dimInp1==3) && (dimInp2==2)
   numOfOutp=size(inp1,2);
   numOfInp=size(inp2,2);
   T = inp2(:,1)*zeros(1,numOfOutp);
-  for ii=1:numOfOutp,
-    for jj=1:numOfInp,
+  for ii=1:numOfOutp
+    for jj=1:numOfInp
       T(:,ii)=T(:,ii)+inp1(:,ii,jj).*inp2(:,jj);
     end
   end

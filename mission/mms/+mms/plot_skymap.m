@@ -88,7 +88,7 @@ while have_options
     case 'sphere'
       plotSphere = 1;
     case {'log'}
-      if plotLog ~= 1;
+      if plotLog ~= 1
         plotLog = 1;
         fString = ['log_{10}' fString];
       end

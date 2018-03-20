@@ -59,7 +59,7 @@ case 'direction' % gif with normalized phi_B and intEdt for different propagatio
     index0=find(corr_dir(:,1)==max(corr_dir(:,1))); % mark highest correlation with red indicator
     ind=0;
 
-    for k=fix(linspace(1,n_frames,n_ims));
+    for k=fix(linspace(1,n_frames,n_ims))
         ind=ind+1;  
         
         % normalized potential match plot
@@ -109,7 +109,7 @@ case 'direction' % gif with normalized phi_B and intEdt for different propagatio
         % collect frames    
         f=getframe(fig);
         A(:,ind)=f;
-        if k==1, % initialize animated gif matrix
+        if k==1 % initialize animated gif matrix
             [im,map] = rgb2ind(f.cdata,256,'nodither');
             im(1,1,1,n_ims) = 0;
         else
@@ -154,7 +154,7 @@ case 'velocity' % gif with phi_B and phi_E for different v
          % collect frames    
         f=getframe(fig);
         A(:,k)=f;
-        if k==1, % initialize animated gif matrix
+        if k==1 % initialize animated gif matrix
             [im,map] = rgb2ind(f.cdata,256,'nodither');
             im(1,1,1,k) = 0;
         else

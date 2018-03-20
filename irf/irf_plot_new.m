@@ -41,8 +41,8 @@ return % return from main function
   end
 
   function plot_in_single_panel()
-    if isempty(ax), % if empty axis use current axis GCA
-      if isempty(get(0,'CurrentFigure')), % there is no figure open
+    if isempty(ax) % if empty axis use current axis GCA
+      if isempty(get(0,'CurrentFigure')) % there is no figure open
         ax = irf_panel(randStr);
       else ax = gca;
       end
@@ -145,7 +145,7 @@ return % return from main function
     end
   end
   function init_figure
-    if x>=1 && x<=20,
+    if x>=1 && x<=20
       % check if there is 'newfigure' argument
       if numel(args)>=2 && ischar(args{2}) && strcmpi(args{2},'newfigure')
         hax=initialize_figure(x,'newfigure');

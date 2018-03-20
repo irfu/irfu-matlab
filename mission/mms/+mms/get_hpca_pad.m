@@ -111,7 +111,7 @@ function [PAdistspec, emin, emax] = get_hpca_pad(varargin)
         num2str(ienergy.data(jelim), '%.2f') ' [eV].']);
     c_eval('dist? =  squeeze(irf.nanmean(dist?(:, ielim: jelim),2));', 1: length(anglevec));     % [nt, ner] --> [nt]
     PAdist = dist1;
-    for ii = 2: length(anglevec);
+    for ii = 2: length(anglevec)
         c_eval('PAdist = cat(2, PAdist, dist?);',ii);      % iPADHep: [nt, ner, npitcha12]
     end
     

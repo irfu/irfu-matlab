@@ -26,11 +26,11 @@ output_string = input_string;
 symb = '?!$';
 
 for j=nargin-1:-1:1
-    if ischar(varargin{j}),
+    if ischar(varargin{j})
         output_string=strrep(output_string,symb(j),varargin{j});
-    elseif isnumeric(varargin{j}),
+    elseif isnumeric(varargin{j})
         output_string=strrep(output_string,symb(j),num2str(varargin{j}));
-    elseif iscell(varargin{j}), % use only the first cell
+    elseif iscell(varargin{j}) % use only the first cell
         output_string=strrep(output_string,symb(j),varargin{j}{1});
 	else
 		errStr = 'irf_ssub() cannot understand input, see help!';

@@ -26,7 +26,7 @@ function out = mms_region_times(varargin)
 %     outTS = mms_region_times(roiList(14,:),'plot',1,'table',1,'SWTe',30)
 
 % Check the input
-if nargin == 0,
+if nargin == 0
     help irf_region_intervals;
     return;
 end
@@ -49,7 +49,7 @@ if isa(Tint,'char')
 end
 
 args=varargin(2:end);
-if numel(args)>0,
+if numel(args)>0
 	haveoptions=1;
 else
 	haveoptions=0;
@@ -68,9 +68,9 @@ while haveoptions
       end
     case lower('SWn')
       if numel(args)>1 && isnumeric(args{2})
-        if numel(args{2})== 2,
+        if numel(args{2})== 2
         	SWn = sort(args{2});
-        elseif numel(args{2})== 1,
+        elseif numel(args{2})== 1
           SWn = args{2};
         else
           irf.log('warning','SWn format not recognized. Using default');
@@ -235,7 +235,7 @@ else
   out = irf.ts_scalar(times,idxx);
 end
   
-if plotfig,
+if plotfig
 h=irf_plot(8,'newfigure');
 %h=irf_figure(540+ic,8);
 xSize=750; ySize=750;
@@ -311,7 +311,7 @@ irf_zoom(h(1:8),'x',Tint);
 set(h(1:8),'fontsize',12);
 end
 
-if savetable,
+if savetable
   fid = fopen(['mms_region_times_' irf_fname(Tint.start.epochUnix,3) '_v0.0.0.txt'],'w');
   fprintf(fid,'%s\n','% UTC time [yyyy-mm-ddThh:mm:ss.mmmuuunnnZ]     Region Flag [0 - other, 1 - SW, 2 - MSH], TAB Separated');
   for ii = 1:length(out.data)

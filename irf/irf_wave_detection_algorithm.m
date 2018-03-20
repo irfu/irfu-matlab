@@ -110,7 +110,7 @@ else
     ndata = size(b,1); nfreq = length(a);
     powerCrossCov_SM_plot = zeros(ndata,nfreq);
 
-    parfor ind_a=1:length(a),
+    parfor ind_a=1:length(a)
       mWexp = exp(-sigma*sigma*((a(ind_a).*w'-w0).^2)/2);
       mWexp = repmat(mWexp,1,3);
       Wwb = sqrt(1).*Swb.*mWexp;
@@ -150,9 +150,9 @@ else
     powerCrossCov_avg = zeros(ndata,nfreq);
     smoothwidth = 200;
     halfw = 100;
-    for j=1:nfreq,
+    for j=1:nfreq
         sumPower = nansum(powerCrossCov_SM_plot(1:smoothwidth,j));
-        for i=1:ndata-smoothwidth,
+        for i=1:ndata-smoothwidth
             powerCrossCov_avg(i+halfw-1,j) = sumPower;
             sumPower=sumPower-powerCrossCov_SM_plot(i,j);
             sumPower=sumPower+powerCrossCov_SM_plot(i+smoothwidth,j);
@@ -167,7 +167,7 @@ else
     powerCrossCov_SM_plot(idx_nan_b,:) = NaN;
 
     %% Remove data possibly influenced by edge effects
-    for ind_a=1:length(a),  
+    for ind_a=1:length(a)  
       censur=floor(2*a);
       censur_indexes=[1:min(censur(ind_a),size(b,1)) max(1,size(b,1)-censur(ind_a)):size(b,1)];
       SMpermute(censur_indexes,:,:) = NaN;
@@ -195,28 +195,28 @@ halftind = floor(toaind/2);
 totalt = t(end)-t(1);
 totaltind = ceil(totalt*sampl);
 
-if totalt <= halft,
+if totalt <= halft
     medianPower = nanmedian(powerCrossCov_SM_plot);
     medianPower = repmat(medianPower,ndata,1);
-elseif totalt <= toa && totalt > halft,
+elseif totalt <= toa && totalt > halft
     edgetind = totaltind-halftind;
     medianPower = zeros(size(powerCrossCov_SM_plot));
     medianPower(edgetind+1:ndata-edgetind,:) = repmat(nanmedian(powerCrossCov_SM_plot),ndata-2*edgetind,1);
-    for i = 1:edgetind,
+    for i = 1:edgetind
         medianPower(i,:) = nanmedian(powerCrossCov_SM_plot(1:i+halftind,:));
     end
-    for i = ndata-edgetind+1:ndata,
+    for i = ndata-edgetind+1:ndata
         medianPower(i,:) = nanmedian(powerCrossCov_SM_plot(i-halftind:end,:));
     end
 else
     medianPower = zeros(size(powerCrossCov_SM_plot));
-    for i = 1:halftind,
+    for i = 1:halftind
         medianPower(i,:) = nanmedian(powerCrossCov_SM_plot(1:i+halftind,:));
     end
-    for i = halftind+1:ndata-halftind,
+    for i = halftind+1:ndata-halftind
         medianPower(i,:) = nanmedian(powerCrossCov_SM_plot(i-halftind:i+halftind,:));
     end
-    for i = ndata-halftind+1:ndata,
+    for i = ndata-halftind+1:ndata
         medianPower(i,:) = nanmedian(powerCrossCov_SM_plot(i-halftind:end,:));
     end
     
@@ -238,42 +238,42 @@ oCyclFreq  = magB(:,2).*1e-9 .* Units.e/(2*pi*16*Units.mp);
 %% wave detection
 P=[0 0 0 0 0]; %array for peaks [time, freq, peakValue, lowerBound, upperBound]
 peak = 1;
-for i=1:ndata,
+for i=1:ndata
     Y = power_median_removed(i,:);
     dY = zeros(size(Y));
-    for j=1:nfreq-1,
+    for j=1:nfreq-1
         dY(j) = (Y(j+1)-Y(j))/(newfreq(j+1)-newfreq(j));
     end 
-    for j=2:nfreq,
-        if sign(dY(j)) > sign(dY(j-1)),
+    for j=2:nfreq
+        if sign(dY(j)) > sign(dY(j-1))
             peakValue = Y(j);
             peakFreq = newfreq(j);
             lowerBound = peakFreq;
             upperBound = peakFreq;
             k=0;
             eventThresh = (powerCrossCov_SM_plot(i,:)./medianPower(i,:)) > 4;
-            while (j-k > 1) && eventThresh(j-k) == 1,
+            while (j-k > 1) && eventThresh(j-k) == 1
                 upperBound = newfreq((j-k));
                 k=k+1;
             end
             k=0;
-            while eventThresh(j+k) == 1 && j+k < nfreq,
+            while eventThresh(j+k) == 1 && j+k < nfreq
                 lowerBound = newfreq((j+k));
                 k=k+1;
-                if j+k == nfreq,
+                if j+k == nfreq
                     lowerBound = upperBound;
                 end
             end
-            if j+k+1 < numel(eventThresh) && eventThresh(j+k+1) == 1,
+            if j+k+1 < numel(eventThresh) && eventThresh(j+k+1) == 1
                 lowerBound = upperBound;
             end
-            if lowerBound == newfreq(end-1) && eventThresh(end) == 1,
+            if lowerBound == newfreq(end-1) && eventThresh(end) == 1
                 lowerBound = upperBound;
             end
 
             if eventThresh(j) == 1 && upperBound < 4*lowerBound && ...
                     upperBound > 1.25*lowerBound && peakFreq < hCyclFreq(i) ...
-                    && peakFreq ~= newfreq(end) && peakFreq > oCyclFreq(i)/4,
+                    && peakFreq ~= newfreq(end) && peakFreq > oCyclFreq(i)/4
                 P(peak,:) = [t(i) peakFreq peakValue lowerBound upperBound];
                 peak = peak+1;
             end
@@ -301,28 +301,28 @@ try
 catch
     createTTemic = 1;   
 end
-if createTTemic,
+if createTTemic
     TTemic = irf.TimeTable;
     TTemic.Header={[scId_s ' EMIC events for Maarble']};
 end
-while counter < nPeaks,
+while counter < nPeaks
     startTime = P(counter,1);
     lowFreq = P(counter,4);
     highFreq = P(counter,5);
     endTime = P(counter,1);
     npeaks=1;
-    while counter < nPeaks && P(counter+1,1)-P(counter,1) < 10*60,
+    while counter < nPeaks && P(counter+1,1)-P(counter,1) < 10*60
         endTime = P(counter+1,1);
-        if P(counter+1,4) < lowFreq,
+        if P(counter+1,4) < lowFreq
             lowFreq = P(counter+1,4);
         end
-        if P(counter+1,5) > highFreq,
+        if P(counter+1,5) > highFreq
             highFreq = P(counter+1,5);
         end
         counter=counter+1;
         npeaks=npeaks+1;
     end
-    if (npeaks)/(endTime-startTime) > 24/3600 && npeaks > 4,
+    if (npeaks)/(endTime-startTime) > 24/3600 && npeaks > 4
         waveEvent(nevents,:) = [startTime endTime];
         timeInt = [startTime-300 endTime+300]; %include 5 minutes on either side for the time table
         TTemic=add(TTemic,timeInt,{num2str(lowFreq),num2str(highFreq)});
@@ -333,7 +333,7 @@ while counter < nPeaks,
     
 end
 
-if waveEvent(1) > 0,
+if waveEvent(1) > 0
  ascii(TTemic)
  TTemic=unique(TTemic);
  export_ascii(TTemic,[scId_s '_MAARBLE_PC12_wave_events'])
@@ -413,7 +413,7 @@ cmapSpace = irf_colormap('space');
       irf_legend(h(1),[scId_s '           ' time_label],[0 1.05],'fontsize',10,'color','cluster');
       irf_pl_number_subplots(h,[0.02,0.97],'fontsize',14);
 
-  if save_plot,
+  if save_plot
     print('-dpng',[scId_s '_MAARBLE_PC12_wave_detection_' irf_fname(tint,5)])
   end
 end
@@ -427,16 +427,16 @@ function t_start_epoch=get_t_start_epoch(t)
 % if not  set, sets t_start_epoch of the figure
 ud=get(gcf,'userdata');
 ii = find(~isnan(t));
-if ii,
+if ii
   valid_time_stamp=t(ii(1));
 else
   valid_time_stamp=[];
 end
 
-if isfield(ud,'t_start_epoch'),
+if isfield(ud,'t_start_epoch')
   t_start_epoch=ud.t_start_epoch;
-elseif valid_time_stamp,
-  if valid_time_stamp > 1e8, % set start_epoch if time is in isdat epoch, warn about changing t_start_epoch
+elseif valid_time_stamp
+  if valid_time_stamp > 1e8 % set start_epoch if time is in isdat epoch, warn about changing t_start_epoch
     t_start_epoch=valid_time_stamp;
     ud.t_start_epoch=t_start_epoch;
     set(gcf,'userdata',ud);
@@ -469,7 +469,7 @@ x = sort(x); % NaNs are forced to the bottom of each column
 nans = isnan(x);
 i = find(nans);
 x(i) = zeros(size(i));
-if min(size(x))==1,
+if min(size(x))==1
   n = length(x)-sum(nans);
   if n == 0
     y = NaN;

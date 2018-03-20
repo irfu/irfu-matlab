@@ -5,7 +5,7 @@ function timetable_cluster(varargin)
 %		generate time tables when Cluster is in tailbox
 %
 
-if nargin == 0,
+if nargin == 0
 	help local.timetable_cluster;
 	return;
 end

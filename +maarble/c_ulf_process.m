@@ -46,7 +46,7 @@ end
 % Still accept single time interval as input
 if ~isa(TT,'irf.TimeTable'), TT=irf.TimeTable(TT); end
 
-for ievent=1:numel(TT),
+for ievent=1:numel(TT)
 tint=[TT.TimeInterval(ievent) TT.TimeInterval(ievent+numel(TT))];
 %try
 
@@ -117,7 +117,7 @@ if wantPC35
         'mat','tint',tint+DT_PC5*[-1 1]);
     E_4SEC_Quality = c_caa_var_get(['E_quality__C' cl_s '_CP_EFW_L3_E'],...
       'mat','tint',tint+DT_PC5*[-1 1]);
-  if size(E_4SEC_Quality) ~= [0,0],
+  if size(E_4SEC_Quality) ~= [0,0]
     E_4SEC(E_4SEC_Quality(:,2)<MIN_E_QUALITY,2:end) = NaN;
   end
 end
@@ -129,7 +129,7 @@ if wantPC12
         'mat','tint',tint+DT_PC2*[-1 1]);
     E_L2_Quality = c_caa_var_get(['E_quality__C' cl_s '_CP_EFW_L2_E'],...
         'mat','tint',tint+DT_PC2*[-1 1]);
-  if size(E_L2_Quality) ~= [0,0],
+  if size(E_L2_Quality) ~= [0,0]
     E_L2(E_L2_Quality(:,2)<MIN_E_QUALITY,2:end) = NaN; 
   end
 end
@@ -144,7 +144,7 @@ if ~wantPC35 && ~wantPC12
     end
 end
 
-if wantPC35,
+if wantPC35
   checkDataExist=(~isempty(B_5VPS) && ~isempty(E_4SEC) && size(E_4SEC,2)>2);
 elseif wantPC12
   checkDataExist=(~isempty(B_5VPS) && ~isempty(E_L2) && size(E_L2,2)>2);
@@ -246,7 +246,7 @@ else
     catch
         createTTnodata = 1;   
     end
-    if createTTnodata,
+    if createTTnodata
         TTnodata = irf.TimeTable;
         TTnodata.Header={'C' cl_s ' Maarble time with no data'};
     end

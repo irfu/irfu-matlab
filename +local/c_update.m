@@ -16,7 +16,7 @@ function c_update(varargin)
 filterDataSet = false; % default assume datasetName not given as input
 %% define local data directory
 dirCaa = datastore('caa','localDataDirectory');
-if isempty(dirCaa),
+if isempty(dirCaa)
 	dirCaa='/data/caalocal';	% default
 end
 %% Check inputs
@@ -64,7 +64,7 @@ for iDataSet=1:numel(dataSetArray)
 	listFiles=dir([dataSet '/*.cdf']);
 	iDir = [listFiles(:).isdir]; %# returns logical vector
 	listFiles(iDir)=[];
-	if numel(listFiles)==0, 
+	if numel(listFiles)==0 
 		irf.log('warning',[dataSet ': no data files']);
 		index=[];
 	else
@@ -86,8 +86,8 @@ for iDataSet=1:numel(dataSetArray)
 end
 
 	function dataSetOut=replace_minus_in_cis_names(dataSet)
-		if strfind(dataSet,'CIS'),
-			if strfind(dataSet,'-'),
+		if strfind(dataSet,'CIS')
+			if strfind(dataSet,'-')
 				irf.log('debug',['Replacing minus signs in dataset: ' dataSet]),
 				dataSetNew=strrep(dataSet,'-','_');
 				irf.log('debug',['New data set: ' dataSetNew]);
@@ -104,11 +104,11 @@ end
 			listFiles(iDir)=[];
 			%% read in file time intervals
 			listFileNames=vertcat(listFiles.name);
-			if strfind(listFileNames(:)','-'), % files names to be updated
+			if strfind(listFileNames(:)','-') % files names to be updated
 				cd(dataSet);
-				for j=1:size(listFileNames),
+				for j=1:size(listFileNames)
 					fileName=listFileNames(j,:);
-					if strfind(fileName,'-'),
+					if strfind(fileName,'-')
 						fileNameNew=strrep(fileName,'-','_');
 						irf.log('debug',['moving: ' fileName ' >> ' fileNameNew]);
 						movefile(fileName,fileNameNew);

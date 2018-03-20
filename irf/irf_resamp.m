@@ -113,7 +113,7 @@ if numel(x)==0 || numel(y)==0
 end
 
 % construct output time axis
-if isstruct(y),
+if isstruct(y)
     if isfield(y,'t'), t=y.t; t=t(:);
     else
         msgS = 'Input is structure without time field';
@@ -130,9 +130,9 @@ if 0 && length(x(:,1))==length(t) && all(x(:,1)==t)
   return
 end
 
-if size(x,1) == 1,            % if X has only one point, this is a trivial
+if size(x,1) == 1            % if X has only one point, this is a trivial
                               % case and we return directly
-  if numel(x) == 1,           % there is only one number
+  if numel(x) == 1           % there is only one number
       out = [t (t*0+1)*x];
   else                        % assume x(1) to be time
       out = [t (t*0+1)*x(:,2:end)];
@@ -141,7 +141,7 @@ if size(x,1) == 1,            % if X has only one point, this is a trivial
 end
 
 ndata = length(t);
-if strcmp(flag_do,'check'), % Check if interpolation or average
+if strcmp(flag_do,'check') % Check if interpolation or average
 	if ndata>1 
 		% If more than one output time check sampling frequencies
 		% to decide interpolation/average
@@ -213,7 +213,7 @@ if strcmp(flag_do,'average')
             out = irf_average_mx(x,t,dt2,thresh);
         end
     end
-elseif strcmp(flag_do,'interpolation'),
+elseif strcmp(flag_do,'interpolation')
   if any([mean_flag median_flag max_flag])
     errS = 'cannot mix interpolation and averaging flags';
     irf.log('critical',errS), error(errS)

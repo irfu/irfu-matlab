@@ -9,7 +9,7 @@ function out = irf_estimate(what_to_estimate,varargin)
 % To see all possibilities execute
 %   irf_estimate 
 
-if nargin==0,
+if nargin==0
     disp(' ');
     disp('out=irf_estimate(what_to_estimate,flag);');
     disp('Possible ''what_to_estimate'' values:');
@@ -18,7 +18,7 @@ if nargin==0,
     while 1
         tline = fgetl(fid);
         if ~ischar(tline), break, end
-        if ~isempty(regexp(tline,'case\s''.*''.*$','match'));
+        if ~isempty(regexp(tline,'case\s''.*''.*$','match'))
             disp(tline(10:end))
         end
     end
@@ -39,7 +39,7 @@ switch what_to_estimate
         length=varargin{2};
 				if isempty(radius) || radius == 0 || isempty(length)
 					out = [];
-				elseif length < 10*radius,
+				elseif length < 10*radius
 					error('capacitance_wire requires length at least 10 times the radius!');
 				else
 					L=log(length/radius);
@@ -53,7 +53,7 @@ switch what_to_estimate
         if h/a>.5 && h/a < 4
             C1=pi*h/2./a*1./(log(16*h./a).^2+pi^2/12);
             out=coef*C1;
-        elseif h/a >= 4,
+        elseif h/a >= 4
             Om=2*(log(4*h./a)-1);
             C1=2*h/pi./a.*(1./Om+(4-pi^2)./Om.^3);
             out=coef*C1;

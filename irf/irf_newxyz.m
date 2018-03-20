@@ -33,7 +33,7 @@ if isa(inp,'TSeries')
   if inp.tensorOrder==0, error('Does not work on scalars'),
   elseif inp.tensorOrder>1, error('Not implemented yet')
   end
-  if strcmp(inp.tensorBasis(1:3),'xyz'),
+  if strcmp(inp.tensorBasis(1:3),'xyz')
     out.data(:,1)=inp.data(:,1:3)*x';
     out.data(:,2)=inp.data(:,1:3)*y';
     out.data(:,3)=inp.data(:,1:3)*z';
@@ -43,11 +43,11 @@ if isa(inp,'TSeries')
   return
 end
   
-if size(out,2)==3,
+if size(out,2)==3
   out(:,1)=inp(:,1:3)*x';
   out(:,2)=inp(:,1:3)*y';
   out(:,3)=inp(:,1:3)*z';
-elseif size(out,2)>3,
+elseif size(out,2)>3
   out(:,2)=inp(:,2:4)*x';
   out(:,3)=inp(:,2:4)*y';
   out(:,4)=inp(:,2:4)*z';

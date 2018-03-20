@@ -1087,12 +1087,12 @@ if 1
 end
   
 %
-for iP = [3];
+for iP = [3]
   %irf_zoom(h(iP),'y',[0 1001]);  
 end
 cmap = mms_colors('2b34'); cmap(2,:) = [1 0.8 0]; %cmap = cmap(end:-1:1,:);
 %cmap = colormap('hot');
-for iP = [1 2 3 4];
+for iP = [1 2 3 4]
   colormap(h(iP),cmap);  
 end
 
@@ -1390,7 +1390,7 @@ end
 
 c_eval('h(?).YLim = [0 8000];',1:2)
 %c_eval('h(?).YLim = [0 13000];',1:2)
-for iP = [1 2 3 4];
+for iP = [1 2 3 4]
   colormap(h(iP),cmap);  
 end
 linkaxes(h,'x')
@@ -1483,7 +1483,7 @@ if 1
 end
 
 c_eval('h(?).YLim = [0 7000];',1:2)
-for iP = [1 2 3 4];
+for iP = [1 2 3 4]
   colormap(h(iP),cmap);  
 end
 linkaxes(h,'x')

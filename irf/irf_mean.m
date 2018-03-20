@@ -17,7 +17,7 @@ function [out]=irf_mean(inp,r,b,z)
 % Z axis is along b, Y axis is zxb.sign(b.r), X=YxZ
 
 out=inp;flag_dipole=0;
-if nargin > 3,
+if nargin > 3
  flag_dipole=1;
  if size(z,1) ~= size(inp,1)
   zz=irf_resamp(z,inp);
@@ -36,7 +36,7 @@ else
     bb=b;
 end
 zv=irf_norm(bb);
-if flag_dipole == 0,
+if flag_dipole == 0
  yv=irf_norm(irf_cross(zv,rr));
 else
  ss=irf_dot(b,r);ind= ss(:,2) > 0;

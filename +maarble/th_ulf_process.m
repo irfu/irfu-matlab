@@ -57,7 +57,7 @@ clear tmpR dtR
 
 if ~isa(TT,'irf.TimeTable'), TT=irf.TimeTable(TT); end
 
-for ievent=1:numel(TT),
+for ievent=1:numel(TT)
 tint=TT.TimeInterval(ievent,:);
 irf.log('warning',sprintf('processing %s\n',irf_disp_iso_range(tint,1)))
 
@@ -73,7 +73,7 @@ bs = th_read_l2(['th' thId '_fgs_dsl'],tint+DT_PC5*[-1 1]);
 % Clean backward time jumps, example THD 
 bs = clear_backward_jump(bs,'BS');
 [bs,~,ttGap] = th_clean_eb(bs);
-if isempty(bs), 
+if isempty(bs) 
     irf.log('warning','skipping, no BS data'),continue, 
 end
 if wantPC35

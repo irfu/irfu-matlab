@@ -70,8 +70,8 @@ if min(size(xx))==1, xx=xx(:); end % make sure x is column vector
 [msg,nfft,Fs,window,noverlap,p,dflag]=psdchk(varargin(2:end),xx(:,1));
 error(msg)
 
-if Fs==2, % test sampling frequency in case Fs not given
-    if xx(1,1)> 9e8, % most probably first column is isdat time
+if Fs==2 % test sampling frequency in case Fs not given
+    if xx(1,1)> 9e8 % most probably first column is isdat time
         Fs=1./(xx(2,1)-xx(1,1));
         ii_start=2;
     else
@@ -114,8 +114,8 @@ for ii=ii_start:size(xx,2) % cycle over the columns of x
     end
 
     % Select first half
-    if ~any(any(imag(x)~=0)),   % if x is not complex
-        if rem(nfft,2),    % nfft odd
+    if ~any(any(imag(x)~=0))   % if x is not complex
+        if rem(nfft,2)    % nfft odd
             select = (1:(nfft+1)/2)';
         else
             select = (1:nfft/2+1)';
@@ -127,8 +127,8 @@ for ii=ii_start:size(xx,2) % cycle over the columns of x
     freq_vector = (select - 1)*Fs/nfft;
 
     % find confidence interval if needed
-    if (nargout == 3) || ((nargout == 0) && ~isempty(p)),
-        if isempty(p),
+    if (nargout == 3) || ((nargout == 0) && ~isempty(p))
+        if isempty(p)
             p = .95;    % default
         end
         % Confidence interval from Kay, p. 76, eqn 4.16:
@@ -148,17 +148,17 @@ for ii=ii_start:size(xx,2) % cycle over the columns of x
     Spec = Spec*(1/KMU);   % normalize
 
     % set up output parameters
-    if (nargout == 3),
+    if (nargout == 3)
         Pxx = Spec;
         Pxxc = confid;
         f = freq_vector;
-    elseif (nargout == 2),
+    elseif (nargout == 2)
         Pxx = Spec;
         Pxxc = freq_vector;
-    elseif (nargout == 1),
+    elseif (nargout == 1)
         Pxx = Spec;
-    elseif (nargout == 0),
-        if ~isempty(p),
+    elseif (nargout == 0)
+        if ~isempty(p)
             P = [Spec confid];
         else
             P = Spec;
@@ -301,17 +301,17 @@ elseif length(P) == 6
 end
 
 % NOW do error checking
-if (nfft<length(window)),
+if (nfft<length(window))
     msg = 'Requires window''s length to be no greater than the FFT length.';
 end
-if (noverlap >= length(window)),
+if (noverlap >= length(window))
     msg = 'Requires NOVERLAP to be strictly less than the window length.';
 end
-if (nfft ~= abs(round(nfft))) || (noverlap ~= abs(round(noverlap))),
+if (nfft ~= abs(round(nfft))) || (noverlap ~= abs(round(noverlap)))
     msg = 'Requires positive integer values for NFFT and NOVERLAP.';
 end
-if ~isempty(p),
-    if (numel(p)>1) || (p(1,1)>1) || (p(1,1)<0),
+if ~isempty(p)
+    if (numel(p)>1) || (p(1,1)>1) || (p(1,1)<0)
         msg = 'Requires confidence parameter to be a scalar between 0 and 1.';
     end
 end

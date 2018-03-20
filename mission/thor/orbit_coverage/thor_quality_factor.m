@@ -35,7 +35,7 @@ else % download data from omni database, change the years as is appropriate
 
   omni_orig = [];
   tic;
-  for iy = 1:numel(tintUTC);  
+  for iy = 1:numel(tintUTC)  
     tint = irf.tint(tintUTC{iy});
     tmp_omni = irf_get_data_omni(tint,'bsnx,Bx,By,Bz,Ms','omni_min');
     omni_orig = [omni_orig; tmp_omni];
@@ -238,7 +238,7 @@ if 1 % B angle
   hca.FontSize = fontsize;
 end
 
-for ii = 1:nRows*nCols; 
+for ii = 1:nRows*nCols 
   axis(h(ii),'equal')
   h(ii).XGrid = 'on';
   h(ii).YGrid = 'on';
@@ -344,7 +344,7 @@ if 1 % QB par
 end  
 
 
-for ii = 1:nRows*nCols; 
+for ii = 1:nRows*nCols 
   axis(h(ii),'equal')
   h(ii).XGrid = 'on';
   h(ii).YGrid = 'on';
@@ -489,7 +489,7 @@ for ih = 4
   axis(h(ii),'square')
 end
 
-for ii = 1:3; 
+for ii = 1:3 
   axis(h(ii),'equal')
   h(ii).XGrid = 'on';
   h(ii).YGrid = 'on';
@@ -622,7 +622,7 @@ if 1 % Qpar
   hca.FontSize = fontsize;
 end
 
-for ii = 1:6; 
+for ii = 1:6 
   axis(h(ii),'equal')
   h(ii).XGrid = 'on';
   h(ii).YGrid = 'on';
@@ -808,7 +808,7 @@ for ih = 1:2
   h(ih).XGrid = 'on';
 end
 
-for ii = 3:8; 
+for ii = 3:8 
   axis(h(ii),'equal')
   h(ii).XGrid = 'on';
   h(ii).YGrid = 'on';
@@ -925,7 +925,7 @@ if 1
   hca.FontSize = fontsize;
 end
 
-for ii = 3:4; 
+for ii = 3:4 
   axis(h(ii),'equal')
   h(ii).XGrid = 'on';
   h(ii).YGrid = 'on';

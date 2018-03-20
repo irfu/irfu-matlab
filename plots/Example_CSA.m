@@ -16,7 +16,7 @@ tint = irf_time(tintIso,'utc>tint');
 
 %%%%%%%%%%%%%%%%%%%%%%%%
 % download data from CAA or CSA (needed only once!!!!!)
-if 1, % put to 0 if data already downloaded !!!!
+if 1 % put to 0 if data already downloaded !!!!
 	dataArchive = 'csa'; % can be 'caa' 
     caa_download(tint,'C1_CP_FGM_5VPS'             ,dataArchive)
     caa_download(tint,'C1_CP_PEA_PITCH_SPIN_DEFlux',dataArchive)

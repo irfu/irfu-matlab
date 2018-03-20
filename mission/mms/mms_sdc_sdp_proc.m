@@ -571,7 +571,7 @@ filename_output = mms_sdp_cdfwrite(HdrInfo, Dmgr);
     % Update header info
     if(~isempty(regexpi(src.filename,'dce')) && ~isfield(HdrInfo,'startTime'))
       HdrInfo.startTime = src.startTime;
-    end;
+    end
     % Initialization. Store startTime and first filename as parents_1.
     if(~isfield(HdrInfo,'parents_1'))
       HdrInfo.parents_1 = src.filename;

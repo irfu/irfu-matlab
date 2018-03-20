@@ -45,7 +45,7 @@ case 'N'
   nl=irf_cross(nm,nn);
 
 case 'LMN'
-  if abs(dot(cross(L,M),N)-norm(L)*norm(M)*norm(N))>1e-5, 
+  if abs(dot(cross(L,M),N)-norm(L)*norm(M)*norm(N))>1e-5 
     disp('irf_lmn: L,M,N does not satisfy M=LxN,N=MxL! using L=(NxL)xN; M=NxL;');
     L=cross(cross(N,L),N);
     M=cross(N,L);

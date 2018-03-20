@@ -12,12 +12,12 @@ function [z]=irf_vec_x_scal(x,y,p)
 if nargin==2,p=1;end
 if size(y)==[1 1],y=[x(:,1) ones(size(x(:,1)))*y];end
         
-if size(x,1) ~= size(y,1),
+if size(x,1) ~= size(y,1)
  irf_log('fcal','interpolating y to x')
  y = irf_resamp(y,x);
 end
 
 z=x;
-for j=2:size(x,2);
+for j=2:size(x,2)
  z(:,j)=x(:,j).*y(:,2).^p;
 end

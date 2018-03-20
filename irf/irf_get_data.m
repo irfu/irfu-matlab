@@ -24,10 +24,10 @@ function f = irf_get_data(varargin)
 
 % https://omniweb.gsfc.nasa.gov/html/ow_data.html
 nargs=nargin; % number of defined input arguments
-if nargs == 0,
+if nargs == 0
   help irf_get_data;
   return;
-elseif nargs >= 2 && ischar(varargin{1}), % tint not specified
+elseif nargs >= 2 && ischar(varargin{1}) % tint not specified
   tint = [];
 	parameter=varargin{1};
 	database=varargin{2};

@@ -235,7 +235,7 @@ cd(oldPwd);
     dataPathRoot = getenv('DATA_PATH_ROOT');
     if isempty(dataPathRoot)
       dataPathRoot = [filesep,'data',filesep,'mms']; % default MMS path at IRFU
-    end;
+    end
     default.dataPathRoot = dataPathRoot;
     % Validation functions
     validScId = @(x) assert(all(ismember(x,{'1','2','3','4'})) && ...

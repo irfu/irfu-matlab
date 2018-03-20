@@ -37,7 +37,7 @@ Te = varargin{3};
 
 nargin
 ASPOCon = 0;
-if nargin == 4,
+if nargin == 4
     Iasp = varargin{4};
     ASPOCon = 1;
     Iasp = Iasp.resample(ne);
@@ -71,7 +71,7 @@ SCpotr = SCpot.resample(ne);
 Ie = (1e12*qe*Ssurf/(2*sqrt(pi)))*ne.data.*veth.*(1+SCpotr.data./Te.data); % Thermal current in muA
 
 % First a simple fit of Iph to Ie using 1 photoelectron population
-if ASPOCon,
+if ASPOCon
     fsimp = @(x) sum(abs(Ie+Iasp.data-(x(1).*exp(-SCpotr.data./x(2)))),'omitnan');
 else
     fsimp = @(x) sum(abs(Ie-(x(1).*exp(-SCpotr.data./x(2)))),'omitnan');
@@ -83,7 +83,7 @@ g1 = Xsimp(1);
 g2 = Xsimp(2);
 
 % Fit of Iph to Ie for two photoelectron populations
-if ASPOCon,
+if ASPOCon
     f = @(x) sum(abs(Ie+Iasp.data-(x(1).*exp(-SCpotr.data./x(2)) + x(3).*exp(-SCpotr.data./x(4)))),'omitnan');
 else
     f = @(x) sum(abs(Ie-(x(1).*exp(-SCpotr.data./x(2)) + x(3).*exp(-SCpotr.data./x(4)))),'omitnan');

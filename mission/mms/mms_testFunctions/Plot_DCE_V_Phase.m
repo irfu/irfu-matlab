@@ -130,7 +130,7 @@ function checkFile(inFile)
       error('Different SC');
     else
       scID = scIDtmp;
-    end;
+    end
   else
     error('File not found');
   end

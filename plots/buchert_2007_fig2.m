@@ -1,4 +1,4 @@
-function [h]=buchert_2007_fig2(tint,Vmp,L,Nsign,flagEdotB);
+function [h]=buchert_2007_fig2(tint,Vmp,L,Nsign,flagEdotB)
 % function [h]=buchert_2007_fig2(tint,Vmp,L,Nsign,flagEdotB);
 % 
 % based on p1052.m
@@ -27,20 +27,20 @@ c_load('P?');
 c_load('NVps?');
 %load mP P1 P2 P3 P4 NVps1 NVps2 NVps3 NVps4;
 
-if nargin <1, 
+if nargin <1 
   help buchert_2007_fig2;
   tint_str=irf_ask('Time interval [%]>','tint_str','toepoch([2002 03 04 09 48 34])+[0 6]');
   tint=eval(tint_str);
 end
-if nargin <2,
+if nargin <2
    Vmp_str=irf_ask('Magnetopause velocty Vmp (N=Nsign*norm(Vmp)) [%]>','Vmp_str','-90.3 -38.7 13.9');
    Vmp=eval(['[' Vmp_str ']']);
 end
-if nargin <3,
+if nargin <3
    L_str=irf_ask('Input L vector, (M=NxL,L=MxN) [%]>','L_str','0.13 0.06 0.99');
    L=eval(['[' L_str ']']);
 end
-if nargin <4,
+if nargin <4
    Nsign=irf_ask('Input Nsign [%]>','Nsign',1);
 end
 
@@ -58,7 +58,7 @@ c_eval('diB?=irf_tlim(diB?,tint_data);');
 c_eval('dvE?=irf_tlim(diE?p1234,tint_data);');
 c_eval('NVps?=irf_tlim(NVps?,tint_data);');
 
-if flag_EdotB==1, 
+if flag_EdotB==1 
   c_eval('[dvE?,d?]=irf_edb(dvE?,diB?,10);');
 end
 
@@ -73,7 +73,7 @@ c_eval('dNsp?=c_gse2dsc([B?(1,1) N],?,2);dNsp?(1,4)=0;dNsp?=irf_norm(dNsp?);dMsp
 c_eval('dN?=c_gse2dsc([B?(1,1) N],?,2);dN?=irf_norm(dN?);');
 c_eval('dM?=c_gse2dsc([B?(1,1) M],?,2);dM?=irf_norm(dM?);'); 
 c_eval('dEn?=irf_dot(dvE?,dNsp?);dEm?=irf_dot(dvE?,dMsp?);');  % the direction in spin plane closest to the magnetopause normal
-if flag_EdotB==1, 
+if flag_EdotB==1 
   c_eval('dEn?=irf_dot(dvE?,dN?);dEm?=irf_dot(dvE?,dM?);');
 end
 
@@ -110,9 +110,9 @@ axes(h(1));cla
   c_eval('irf_plot(Blnm?(:,[1 5])); ylabel(''B [nT] sc?''); ',ic);
 
   axes(h(3));
-  if strcmp(ib,'y'),
+  if strcmp(ib,'y')
      c_eval('irf_plot({dEn?,dejbn?,egradn,egradn_burst},''comp''); ylabel(''E,jxB/ne,\nabla p/ne [mV/m] sc?'');',ic);
-  else,
+  else
     c_eval('irf_plot({dEn?,dejbn?,egradn},''comp''); ylabel(''E,jxB/ne,\nabla p/ne [mV/m] sc?'');',ic);
   end
   irf_zoom([-12 7],'y')
@@ -125,7 +125,7 @@ irf_zoom(tint,'x',h);
 irf_timeaxis(h);
 
 numb={'a','b','c','d','e','f','g','h','i','j','k','l','mf'};
-for ip=1:4,
+for ip=1:4
   axes(h(ip));
   ht=irf_pl_info(numb{ip},gca,[0.01,.8]);
   set(ht,'fontsize',12);

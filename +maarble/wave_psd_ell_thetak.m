@@ -26,7 +26,7 @@ Out = struct('time',[],'fPeak',[],'psdBpeak',[],'ellipticity',[],'thetaK',[],...
   'header',TT.Header{1},'created',irf_time(now,'date>utc'));
 
 oldPwd = pwd;
-for ievent=1:numel(TT),
+for ievent=1:numel(TT)
     fprintf('Event #%d (out of %d) : %s\n',ievent,numel(TT),...
       irf_disp_iso_range(TT.TimeInterval(ievent,:),1));
     lowerFreqBound = str2double(TT.Description{ievent}{1});
@@ -208,7 +208,7 @@ cd (oldPwd)
         d = [d; d1];
       end
       m=0; i=1;
-      while i <= length(d) && m == 0,
+      while i <= length(d) && m == 0
         if isempty(th_s), tend = d(i).name(45:59);
         else tend = d(i).name(49:63);
         end

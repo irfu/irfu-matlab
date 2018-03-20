@@ -37,14 +37,14 @@ flag_old_syntax=0;
 
 %% check axes
 [ax,args,nargs] = irf.axescheck(varargin{:});
-if isempty(ax),
-    if any(ishandle(args{1})), % first argument is axis handles
+if isempty(ax)
+    if any(ishandle(args{1})) % first argument is axis handles
         ax=args{1};
         args=args(2:end);
         nargs=nargs-1;
     else
-        if nargs >= 3, % check the OLD syntax
-            if any(ishandle(args{3})), % OLD syntax
+        if nargs >= 3 % check the OLD syntax
+            if any(ishandle(args{3})) % OLD syntax
                 disp('WARNING!!!!!!!!!!!!!!!!!!!!!!!!')
                 disp('you use old syntax of IRF_ZOOM!')
                 disp('will be disabled soon! see help')
@@ -52,7 +52,7 @@ if isempty(ax),
                 ax=args{3};
                 c=args{2};
                 interval=args{1};
-                if nargs==5, % tref in OLD syntax
+                if nargs==5 % tref in OLD syntax
                     t_ref=args{5};
                     flag_tref=1;
                 end
@@ -66,22 +66,22 @@ if isempty(ax),
 end
 
 %% NEW syntax case
-if ~flag_old_syntax,
+if ~flag_old_syntax
     c=args{1};
-    if nargs == 1 && c=='y', % auto y zooming
+    if nargs == 1 && c=='y' % auto y zooming
         interval=[]; % empty interval is auto y-zooming
     else
         interval=args{2};
     end
-    if nargs==4, % check if tref
-        if strcmpi(args{3},'tref'),
+    if nargs==4 % check if tref
+        if strcmpi(args{3},'tref')
             t_ref=args{4};
         end
     end
 end
 
 %% Set tref
-if ~flag_tref && nargs <4, % no tref specified
+if ~flag_tref && nargs <4 % no tref specified
     % Try to read the reference time from figures user_data variable
     user_data=get(gcf,'userdata');
     if isfield(user_data,'t_start_epoch')
@@ -94,10 +94,10 @@ end
 
 axis_handles = reshape(ax,1,numel(ax));
 
-if strcmpi(c,'x'),
-	if iscell(interval),  % Simplified time zooming
+if strcmpi(c,'x')
+	if iscell(interval)  % Simplified time zooming
         ax=get(axis_handles(1),'xlim');
-        if ( ax(1)+t_ref>1e8 && ax(1)+t_ref<1e10 ),
+        if ( ax(1)+t_ref>1e8 && ax(1)+t_ref<1e10 )
             int_min=fromepoch(ax(1)+t_ref);
             int_max=fromepoch(ax(2)+t_ref);
             int_min(7-size(interval{1},2):6)=interval{1};
@@ -115,13 +115,13 @@ if strcmpi(c,'x'),
 		irf.log('critical',errStr);
 		error('irf_zoom:time_zoom:wrong_format',errStr);
 	end
-	if flag_use_t_start_epoch, % Account for reference time from userdata.t_start_epoch
+	if flag_use_t_start_epoch % Account for reference time from userdata.t_start_epoch
 		interval=interval-t_ref;
 	end
 end
 
 % Make interval finite if it has only one point
-if isnumeric(interval),
+if isnumeric(interval)
     if diff(interval)==0, interval(2)=interval(1)+1e-10; end
 end
 
@@ -148,8 +148,8 @@ for hii=axis_handles
             if t_ref>1e8 && t_ref<1e10
                 if flag_use_t_start_epoch % Read t_ref from userdata.t_start_epoch
                     p = get(h,'position');
-                    if numel(axis_handles)>1, % in case of multiple handles only last handle gets date label
-                        if p(2)==pymin,
+                    if numel(axis_handles)>1 % in case of multiple handles only last handle gets date label
+                        if p(2)==pymin
                             irf_timeaxis(h);
                         else
                             irf_timeaxis(h,'nolabels');
@@ -170,8 +170,8 @@ for hii=axis_handles
             set(h,'userdata',ud);
         case 'y'
             ud=get(h,'userdata');
-            if isempty(interval), % auto y zooming
-                if isfield(ud,'zoom_y'),
+            if isempty(interval) % auto y zooming
+                if isfield(ud,'zoom_y')
                     interval_to_use=ud.zoom_y;
                 else
                     zoom_y_auto(h)
@@ -182,16 +182,16 @@ for hii=axis_handles
                 interval_to_use=interval;
                 set(h,'userdata',ud);
             end
-            if interval_to_use(1)>0,
+            if interval_to_use(1)>0
                 interval_to_use(1)=interval_to_use(1)*(1+1e-9);
-            elseif interval_to_use(1)==0,
+            elseif interval_to_use(1)==0
                 interval_to_use(1)=interval_to_use(1)+1e-9*diff(interval_to_use(1:2));
             else
                 interval_to_use(1)=interval_to_use(1)*(1-1e-9);
             end
-            if interval_to_use(2)>0,
+            if interval_to_use(2)>0
                 interval_to_use(2)=interval_to_use(2)*(1-1e-9);
-            elseif interval_to_use(2)==0,
+            elseif interval_to_use(2)==0
                 interval_to_use(2)=interval_to_use(2)-1e-9*diff(interval_to_use(1:2));
             else
                 interval_to_use(2)=interval_to_use(2)*(1+1e-9);
@@ -218,30 +218,30 @@ for ih=1:numel(hlines)
   hh=hlines(ih);
   xd=get(hh,'XData')+xzero;
   yd=get(hh,'YData');
-  if isfield(ud,'zoom_x'), % use zoom x values
+  if isfield(ud,'zoom_x') % use zoom x values
     xlims=ud.zoom_x;
     ydlim=yd(xd>xlims(1) & xd<xlims(2));
   else
     ydlim=yd;
   end
   ydlim=ydlim(isfinite(ydlim)); % remove NaN and Inf points
-  if numel(ydlim)<2,
+  if numel(ydlim)<2
     ylimd=ylims; % dont change if zooming to 1 or less points
   else
     ylimd=[min(ydlim) max(ydlim)];
   end
-  if isempty(ylims),
+  if isempty(ylims)
     ylims=ylimd;
   else
-    if ylimd(1)<ylims(1),
+    if ylimd(1)<ylims(1)
       ylims(1)=ylimd(1);
     end
-    if ylimd(2)>ylims(2),
+    if ylimd(2)>ylims(2)
       ylims(2)=ylimd(2);
     end
   end
 end
-if isempty(ylims), % has been to few data points to estimate limits
+if isempty(ylims) % has been to few data points to estimate limits
   ylims=get(h,'ylim');
 end
 
@@ -250,8 +250,8 @@ yscale=get(h,'yscale');
 switch lower(yscale)
     case 'linear'
         diffy=diff(ylims);
-        if diffy==0,
-            if ylims(1)==0, 
+        if diffy==0
+            if ylims(1)==0 
                 ymin=-1;ymax=1;
             else
              ymin=ylims(1)-abs(ylims(1))/10;
@@ -261,12 +261,12 @@ switch lower(yscale)
             dy=double(diffy)/4; % 1st approx
             dy10power=10^(floor(log10(dy)));
             dy1stcipher=floor(dy/dy10power);
-            if dy1stcipher>5,
+            if dy1stcipher>5
                 dy = 5*dy10power;
             else
                 dy=dy1stcipher*dy10power;
             end
-            if ylims(1)<dy && ylims(2)>-dy,
+            if ylims(1)<dy && ylims(2)>-dy
                 ymin=dy*floor(ylims(1)/dy);
                 ymax=dy*ceil(ylims(2)/dy);
             else % needs to be explanded

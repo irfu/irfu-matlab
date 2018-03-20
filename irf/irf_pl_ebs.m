@@ -42,7 +42,7 @@ function h=irf_pl_ebs(e,b,B,parameters)
 % parameter definitions
 persistent freq_int freq_number Morlet_width q_colormap plot_type colorbar_scale panel q_detrend q_spectra_width
 
-if nargin == 4,
+if nargin == 4
   q_spectra_width=parameters(1);
   freq_int=[parameters(2) parameters(3)];
   freq_number=parameters(4);
@@ -51,13 +51,13 @@ if nargin == 4,
   colorbar_scale=parameters(7);
   plot_type=parameters(8);
   panel=parameters(9);
-  if plot_type == 0,
+  if plot_type == 0
     if panel == 1, plot_param='e'; end
     if panel == 2, plot_param='b'; end
     if panel == 3, plot_param='s'; end
     if panel == 4, plot_param='eb'; end
   end
-elseif nargin == 3,
+elseif nargin == 3
   q_spectra_width=irf_ask('Maximum pixel width of spectrogram (0 for all points) [%]>','q_spectra_width',1000);
   freq_int=irf_ask('Frequency interval to analyze [fmin fmax]? [%]>','freq_int',[2 10]);
   freq_number=irf_ask('Number of frequency steps? [%]>','freq_number',100);
@@ -65,7 +65,7 @@ elseif nargin == 3,
   q_detrend=irf_ask('Shall I detrend the data y/n? [%]>','q_detrend','y');
   colorbar_scale=irf_ask('Colorbar 1) green to red with the white in the middle 2) default ''jet''. [%]','colorbar_scale',2);
   plot_type=irf_ask('Plot: \n 0) one panel with ... \n 1) spectra e/b/Spar/e2b \n 2) time series e/b/B and spectra e/b/Spar/e2b \n 3) spectra Ex/Ey/Ez/Etot \n [%]>','plot_type',1);
-  if plot_type == 0,
+  if plot_type == 0
     plot_param=irf_ask(' s) Poyn flux \n e) E spectra \n b) B spectra \n eb) E/B spectra \n [%]>','plot_param','s');
   end
 else
@@ -124,7 +124,7 @@ t=e(:,1);
 w0=sampl/2; % The maximum frequency
 %  sigma=5.36/w0; % The width of the Morlet wavelet
 sigma=Morlet_width/w0; % The width of the Morlet wavelet
-if strcmp(q_detrend,'y'),
+if strcmp(q_detrend,'y')
   e(:,2:4)=detrend(e(:,2:4));
   b(:,2:4)=detrend(b(:,2:4));
 end
@@ -148,7 +148,7 @@ powerBy_plot = zeros(ndata,nfreq);
 powerBz_plot = zeros(ndata,nfreq);
 power2B_plot = zeros(ndata,nfreq);
 Spar_plot = zeros(ndata,nfreq);
-parfor ind_a=1:length(a),
+parfor ind_a=1:length(a)
  % if debug, disp([num2str(ind_a) '. frequency, ' num2str(newfreq(ind_a)) ' Hz.']);end
   mWexp = exp(-sigma*sigma*((a(ind_a).*w'-w0).^2)/2);
   mWexp = repmat(mWexp,1,3);
@@ -239,13 +239,13 @@ case 3,   npl=4;clf;
 end
 ipl=1;
 
-if colorbar_scale==1,
+if colorbar_scale==1
       it=0:.02:1;it=it'; xcm=[ [0*it flipud(it) it];[it it it*0+1];[it*0+1 flipud(it) flipud(it)]; [flipud(it) 0*it 0*it]]; clear it;
 else
       colormap('default');xcm=colormap;
 end
 
-if plot_type == 2,
+if plot_type == 2
 %%%%%% E time series %%%%%%%%
   h(ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1;
   irf_plot(e);ylabel('E_{wave} [mV/m]');
@@ -263,11 +263,11 @@ if plot_type == 2,
   irf_timeaxis(gca,'nodate');
 end
 
-if plot_type == 1 || plot_type == 2 || plot_type == 0,
+if plot_type == 1 || plot_type == 2 || plot_type == 0
    t_start_epoch=get_t_start_epoch(t(1,1));
 %%%%%%%%% E spectra %%%%%%%%%%%%
   if plot_type ~= 0, h(ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1; end
-  if plot_type ~= 0 || (plot_type == 0 && strcmp(plot_param,'e')),
+  if plot_type ~= 0 || (plot_type == 0 && strcmp(plot_param,'e'))
 %    pcolor(t-t0,newfreq,log10(abs(power2E.'))) % With edge effects removed
     pcolor(t-t_start_epoch,newfreq,log10(abs(power2E_plot.'))) % With edge effects removed
     shading flat
@@ -281,7 +281,7 @@ if plot_type == 1 || plot_type == 2 || plot_type == 0,
   end
 %%%%%%%%% B spectra %%%%%%%%%%%%
   if plot_type ~= 0, h(ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1; end
-  if plot_type ~= 0 || (plot_type == 0 && strcmp(plot_param,'b')),
+  if plot_type ~= 0 || (plot_type == 0 && strcmp(plot_param,'b'))
     pcolor(t-t_start_epoch,newfreq,log10(abs(power2B_plot.'))) % With edge effects removed
     shading flat
     ylabel('f [Hz]')
@@ -296,7 +296,7 @@ if plot_type == 1 || plot_type == 2 || plot_type == 0,
   end
 %%%%%%%%% S spectra %%%%%%%%%%%%
   if plot_type ~= 0, h(ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1; end
-  if plot_type ~= 0 || (plot_type == 0 && strcmp(plot_param,'s')),
+  if plot_type ~= 0 || (plot_type == 0 && strcmp(plot_param,'s'))
     pcolor(t-t_start_epoch,newfreq,(sign(Spar_plot).*sqrt(abs(Spar_plot))).') % With edge effects removed
     shading flat
     ylabel('f [Hz]')
@@ -311,7 +311,7 @@ if plot_type == 1 || plot_type == 2 || plot_type == 0,
   end
 %%%%%%%%% E/B spectra %%%%%%%%%%%%
   if plot_type ~= 0, h(ipl)=irf_subplot(npl,1,-ipl); end
-  if plot_type ~= 0 || (plot_type == 0 && strcmp(plot_param,'eb')),
+  if plot_type ~= 0 || (plot_type == 0 && strcmp(plot_param,'eb'))
     pcolor(t-t_start_epoch,newfreq,log10(abs(EtoB_plot.'))) % With edge effects removed
     shading flat
     ylabel('f [Hz]')
@@ -322,7 +322,7 @@ if plot_type == 1 || plot_type == 2 || plot_type == 0,
     hca = colorbar;
     ylabel(hca,'log10(E/B) [(1e3 km/s)]');
   end
-elseif plot_type == 3,
+elseif plot_type == 3
     t_start_epoch=get_t_start_epoch(t(1,1));
     %%%%%%%%% Ex spectra %%%%%%%%%%%%
     h(ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1;
@@ -368,7 +368,7 @@ elseif plot_type == 3,
     irf_timeaxis(h);
 end
 
-if plot_type ~=0,
+if plot_type ~=0
   axes(h(1));
   title(['Width Morlet wavelet = ' num2str(Morlet_width)]);
   %ht=irf_pl_info([mfilename '  ' datestr(now)]); set(ht,'interpreter','none'); % add information to the plot
@@ -384,16 +384,16 @@ function t_start_epoch=get_t_start_epoch(t)
 % if not  set, sets t_start_epoch of the figure
 ud=get(gcf,'userdata');
 ii = find(~isnan(t));
-if ii,
+if ii
   valid_time_stamp=t(ii(1));
 else
   valid_time_stamp=[];
 end
 
-if isfield(ud,'t_start_epoch'),
+if isfield(ud,'t_start_epoch')
   t_start_epoch=ud.t_start_epoch;
-elseif valid_time_stamp,
-  if valid_time_stamp > 1e8, % set start_epoch if time is in isdat epoch, warn about changing t_start_epoch
+elseif valid_time_stamp
+  if valid_time_stamp > 1e8 % set start_epoch if time is in isdat epoch, warn about changing t_start_epoch
     t_start_epoch=valid_time_stamp;
     ud.t_start_epoch=t_start_epoch;
     set(gcf,'userdata',ud);

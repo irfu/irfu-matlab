@@ -8,7 +8,7 @@ function res = get_ts(dobj,var_s)
 %  See also: TSeries
 
 data = get_variable(dobj,var_s);
-if isempty(data), % no such variable, return empty
+if isempty(data) % no such variable, return empty
 	res=[];
 	return;
 end
@@ -56,7 +56,7 @@ else % guessing for Non-CAA data
   switch tensorOrder
     case 0 % scalar
     case 1 % vector
-      if data.dim(1)==2,
+      if data.dim(1)==2
         repres = {'x','y'};
       elseif data.dim(1)==3
         repres = {'x','y','z'};
@@ -77,7 +77,7 @@ res.name = data.name;
 if isfield(data,'UNITS'), res.units = data.UNITS;
 else res.units = 'unitless';
 end
-if isfield(ud,'SI_CONVERSION'), 
+if isfield(ud,'SI_CONVERSION') 
   res.siConversion = ud.SI_CONVERSION;  
 	ud = rmfield(ud,'SI_CONVERSION');
 end

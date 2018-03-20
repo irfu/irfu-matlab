@@ -33,8 +33,8 @@ else
   end
 
   % if flag=1 only abs(y) should be returned
-  if nargin == 2,
-    if flag == 1,
+  if nargin == 2
+    if flag == 1
       yy=y(:,lx+1);clear y;y=yy;
     end
   end

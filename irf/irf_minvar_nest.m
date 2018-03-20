@@ -1,4 +1,4 @@
-function [b_n l2_l3_ratio v1_mv_nest v2_mv_nest v3_mv_nest]=irf_minvar_nest(data,cs_centre,tint)
+function [b_n, l2_l3_ratio, v1_mv_nest, v2_mv_nest v3_mv_nest]=irf_minvar_nest(data,cs_centre,tint)
 %IRF_MINVAR_NEST performs the minimum variance technique for an assymetric
 %interval defined from the centre of the current sheet and in the interval tint
 %

@@ -7,7 +7,7 @@ function irf_plot_ylabels_align(h)
 
 narginchk(0,1)
 
-if nargin==0, % get subplot handles and align all of them
+if nargin==0 % get subplot handles and align all of them
     h=irf_plot_get_subplot_handles;
 end
 

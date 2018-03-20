@@ -3,7 +3,7 @@
 dataDir = '/data/themis';
 thIds = 'abcde';
 
-for thId=thIds, 
+for thId=thIds 
   R = [];
   for year=2007:2020
     fullPath = sprintf('%s%sth%s%sssc%s%02d',...
@@ -29,7 +29,7 @@ for thId=thIds,
   ii = find(diff(R(:,1))==0); R(ii,:) = []; 
   eval(['Rth' thId '=R;'])
   fprintf('Rth%s >> mRth.mat\n',thId);
-  if exist('./mRth.mat','file'),
+  if exist('./mRth.mat','file')
     eval(['save(''mRth'',''Rth' thId ''',''-append'')'])
   else eval(['save(''mRth'',''Rth' thId ''')'])
   end

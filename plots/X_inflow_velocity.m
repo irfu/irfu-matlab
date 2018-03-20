@@ -13,7 +13,7 @@ Bx=[0.05 0.1 0.2 0.5 1.]; % different cases
 Bz=0:0.01:1; Bz=Bz(:);
 clear vin vout;
 legend_str='legend(';
-for j=1:length(Bx),
+for j=1:length(Bx)
     vin(:,j)=Bz./(Bz.*Bz+Bx(j)*Bx(j));
     vout(:,j)=Bx(j)./(Bz.*Bz+Bx(j)*Bx(j));
     legend_str=[legend_str '''Bx=' num2str(Bx(j),2) ''','];

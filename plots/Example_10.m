@@ -7,7 +7,7 @@ tint=[toepoch([2006 9 27 17 27 0]) toepoch([2006 9 27 17 28 30])];
 % caa_download(tint,'*PEA*PITCH_*');
 
 % loops "if 1,... end" are convenient when folding is enabled to fast browse the code 
-if 1, % initialize figure
+if 1 % initialize figure
     close 61; fn=figure(61);
     set(fn,'Position',[10 400 500 700])
     h(1)=axes('position',[0.15 0.75 0.7 0.2]); % [x y dx dy]
@@ -20,7 +20,7 @@ if 1, % initialize figure
     set(fn,'defaultLineLineWidth',1);
 end
 
-if 1,   % PANEL: PEACE PITCH_SPIN_DEFlux spectrogram omni
+if 1   % PANEL: PEACE PITCH_SPIN_DEFlux spectrogram omni
     hca=irf_panel('C3 PEACE energy spectra');
     varname='Data__C3_CP_PEA_PITCH_SPIN_PSD';
     [~,dobj,~,varunits]=c_caa_var_get(varname);
@@ -31,20 +31,20 @@ if 1,   % PANEL: PEACE PITCH_SPIN_DEFlux spectrogram omni
     set(hca,'ytick',[1 1e1 1e2 1e3 1e4 1e5])
     ylabel(hca,'E [eV]');
 end
-if 1,   % PANEL: PEACE PEA_PITCH_3DRH_PSD high res
+if 1   % PANEL: PEACE PEA_PITCH_3DRH_PSD high res
     hca=irf_panel('C3 PEACE 3DR energy spectra');
     varname='Data__C3_CP_PEA_PITCH_3DRH_PSD';
     res=c_caa_construct_subspin_res_data(varname);
     [delmett,ind]=irf_tlim(res.tt,tint);
     specrec=struct('t',res.tt(ind),'dt',res.dtsampling/2,'p_label',['log10 PSD [' res.dataunits ']']);
-    if 1, % energy spectorgram (integrated over polar angles)
+    if 1 % energy spectorgram (integrated over polar angles)
         specrec.f=(res.en);
         specrec.p=res.omni(ind,:);
         specrec.f_label=[res.enlabel];
         irf_spectrogram(hca,specrec);
         set(hca,'ytick',[1 1e1 1e2 1e3 1e4 1e5])
         ylabel(hca,'E [eV]');
-    elseif 0, % pitch angle spectrogram for given energy
+    elseif 0 % pitch angle spectrogram for given energy
         specrec.f=res.theta;specrec.f_label='Pitch angle';
         specrec.p=res.pitch_angle(ind,:);
         enindex=15;
@@ -59,7 +59,7 @@ if 1,   % PANEL: PEACE PEA_PITCH_3DRH_PSD high res
     set(hca,'yscale','log');
 end
 irf_colormap(hca,'default');
-if 1, % plotting 1st distribution function 
+if 1 % plotting 1st distribution function 
     hca=irf_panel('fdistr');
     tt=irf_time([2006 9 27 17 27 03]) ; % time around which check for 3DR and other
     [p1,~,p1m]=c_caa_var_get('Data__C3_CP_PEA_PITCH_SPIN_PSD');
@@ -70,12 +70,12 @@ if 1, % plotting 1st distribution function
     [p2,~,p2m]=c_caa_var_get('Data__C3_CP_PEA_PITCH_3DRH_PSD');
     ind1=find(abs(p1m.t-tt)<3); % find time within 3s of tt
     ind2=find(abs(p2m.t-tt)<3);
-    for j=1:size(p2.data,2),
-        for jj=1:size(p2.data,3),
+    for j=1:size(p2.data,2)
+        for jj=1:size(p2.data,3)
             loglog(hca,en2,squeeze(p2.data(ind2,j,jj,ind_en2)),'r.');hold(hca,'on');
         end
     end
-    for j=1:size(p1.data,2),
+    for j=1:size(p1.data,2)
         loglog(hca,en1,squeeze(p1.data(ind1,j,ind_en1)),'b.');hold(hca,'on');
     end
     irf_legend(hca,'3DR',[0.9,0.98],'color','r');
@@ -86,7 +86,7 @@ if 1, % plotting 1st distribution function
     xlabel(hca,'Energy [eV]');
     ylabel(hca,'PSD [s^3/km^6]');
 end
-if 1, % plotting 3DRH distribution functions
+if 1 % plotting 3DRH distribution functions
     hca=irf_panel('fdistr2');
     tt=irf_time([2006 9 27 17 28 20]) ; % time around which check for 3DR and other
     [p1,~,p1m]=c_caa_var_get('Data__C3_CP_PEA_PITCH_SPIN_PSD');
@@ -97,12 +97,12 @@ if 1, % plotting 3DRH distribution functions
     [p2,~,p2m]=c_caa_var_get('Data__C3_CP_PEA_PITCH_3DRH_PSD');
     ind1=find(abs(p1m.t-tt)<3);
     ind2=find(abs(p2m.t-tt)<3);
-    for j=1:size(p2.data,2),
-        for jj=1:size(p2.data,3),
+    for j=1:size(p2.data,2)
+        for jj=1:size(p2.data,3)
             loglog(hca,en2,squeeze(p2.data(ind2,j,jj,ind_en2)),'r.');hold(hca,'on');
         end
     end
-    for j=1:size(p1.data,2),
+    for j=1:size(p1.data,2)
         loglog(hca,en1,squeeze(p1.data(ind1,j,ind_en1)),'b.');hold(hca,'on');
     end
     irf_legend(hca,'3DR',[0.9,0.98],'color','r');

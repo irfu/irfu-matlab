@@ -31,15 +31,15 @@ function [emp,nl,nm,nn]=irf_eb_nrf(e,b,v,flag)
 
 if nargin ==3, flag_case='A';end
 if (nargin ==4)
-  if length(flag)==3,
+  if length(flag)==3
     L_direction=flag;clear flag;flag_case='C';
-  elseif length(flag)==1,
+  elseif length(flag)==1
     if (flag ~= 1), flag_case='A';end
     if (flag == 1), flag_case='B';end
   end
 end
 
-if flag_case == 'A',
+if flag_case == 'A'
   be=irf_resamp(b,e);
 
   nl=irf_norm(be); % along the B
@@ -53,7 +53,7 @@ if flag_case == 'A',
 
 %  emp=[e(:,1) el em en];
     emp=e; emp(:,end-2)=el;emp(:,end-1)=em;emp(:,end)=en;
-elseif flag_case == 'B',
+elseif flag_case == 'B'
   nn=irf_norm(v);
   nm=irf_norm(irf_cross(nn,mean(b)));
   nl=irf_cross(nm,nn);
@@ -64,7 +64,7 @@ elseif flag_case == 'B',
   em=irf_dot(e,nm,1);
 
   emp=e; emp(:,[end-2 end-1 end])=[el em en];
-elseif flag_case == 'C',
+elseif flag_case == 'C'
   nn=irf_norm(v);
   nm=irf_norm(irf_cross(nn,L_direction));
   nl=irf_cross(nm,nn);

@@ -35,7 +35,7 @@ function r = log(logLevel,logMsg)
 
 persistent logOut loggingLevel outputShort
 
-if isempty(loggingLevel),
+if isempty(loggingLevel)
     loggingLevel=2;
 end
 if isempty(logOut)
@@ -45,15 +45,15 @@ if isempty(outputShort)
 	outputShort = false;
 end
 
-if nargin == 0,
-  if nargout, 
+if nargin == 0
+  if nargout 
 	  r = loggingLevel;
   else
     irf.log('warning',['Current logging level is ' num2str(loggingLevel)]);
   end
   return;
-elseif nargin == 1, 
-	if ischar(logLevel),
+elseif nargin == 1 
+	if ischar(logLevel)
 		switch lower(logLevel(1)) % switch/case is case sensitive
 			case 'o'
 				loggingLevel = 0;
@@ -108,7 +108,7 @@ if nargin == 2
 			case 'd'
 				logLevel = 4;
 			case 'l'
-				if strcmpi(logLevel,'log_out'), % irf.log('log_out',file)
+				if strcmpi(logLevel,'log_out') % irf.log('log_out',file)
 					logOut = logMsg;
 					irf.log('warning',['Writing log to ' logOut]);
 					return
@@ -117,7 +117,7 @@ if nargin == 2
 				irf.log('critical','Error! Unrecognized input, see help.');
 				error('Unrecognized input.');
 		end
-		if logLevel > loggingLevel,
+		if logLevel > loggingLevel
 			return;
 		end
 	else
@@ -129,7 +129,7 @@ else
 	error('Unrecognized input, max 2 input parameters.');
 end	
 
-if ~outputShort || ~strcmp(logOut,'screen') || (outputShort && logLevel==4),
+if ~outputShort || ~strcmp(logOut,'screen') || (outputShort && logLevel==4)
 	[sta,curr] = dbstack;
 	% if irf.log is called from the main env, then use curr,
 	% otherwise we are interested in callers name (curr+1)
@@ -168,13 +168,13 @@ function logMsg = log_level_to_msg(logLevel,flag)
 % return string describing logLevel
 % flag = 'short' (default) 1 > critical
 % flag = 'long'            1 > Showing 'critical' messages.
-	if nargin == 1,
+	if nargin == 1
 		flag = 'short';
 	end
 	logMsg = ''; % default
 	if ischar(flag)
 		if strcmpi(flag,'short')
-			if logLevel == 1,
+			if logLevel == 1
 				logMsg = 'critical';
 			elseif logLevel == 2
 				logMsg = 'warning';
@@ -184,7 +184,7 @@ function logMsg = log_level_to_msg(logLevel,flag)
 				logMsg = 'debug';
 			end
 		elseif strcmpi(flag,'long')
-			if logLevel == 1,
+			if logLevel == 1
 				logMsg = 'Showing ''critical'' log messages.';
 			elseif logLevel == 2
 				logMsg = 'Showing ''critical'' and ''warning'' messages.';

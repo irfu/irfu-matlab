@@ -63,7 +63,7 @@ if numel(args) == 3 && ischar(args{3})
 end
 
 
-if iscell(args{1});
+if iscell(args{1})
   patch1 = args{1}{1};
   if isa(args{1}{2},'TSeries')
     patch2 = args{1}{2};

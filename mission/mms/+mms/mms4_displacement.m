@@ -38,7 +38,7 @@ getBR = false;
 plotfig = false;
 
 if isa(varargin{1},'EpochTT')
-	if length(varargin{1}) == 2,
+	if length(varargin{1}) == 2
     Tint = varargin{1};
     getBR = true;
     argsstart = 2;
@@ -51,7 +51,7 @@ else
   argsstart = 3;
 end
 
-if getBR,
+if getBR
   Tintl = Tint+[-60 60];
   R = mms.get_data('R_gse',Tintl);
   c_eval('R? = irf.ts_vec_xyz(R.time,R.gseR?);',ic);
@@ -71,7 +71,7 @@ end
 
 
 args=varargin(argsstart:end);
-if numel(args)>0,
+if numel(args)>0
 	haveoptions=1;
 else
 	haveoptions=0;
@@ -128,7 +128,7 @@ Rpar = irf.ts_scalar(R_par_12.time,[R_par_12.data R_par_13.data R_par_14.data ..
 Rperp = irf.ts_scalar(R_perp_12.time,[R_perp_12.data R_perp_13.data R_perp_14.data ...
     R_perp_23.data R_perp_24.data R_perp_34.data]);
 
-if plotfig,
+if plotfig
 h = irf_plot(3,'newfigure');
 xSize=750; ySize=700;
 set(gcf,'Position',[10 10 xSize ySize]);

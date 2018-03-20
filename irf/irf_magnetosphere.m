@@ -26,21 +26,21 @@ function [x,y,omni] = irf_magnetosphere(model,Dp,Bz)
 
 persistent dpbz
 
-if nargout>0, % default return empty variables
+if nargout>0 % default return empty variables
     x=[];y=[];omni=[];
 end
 
-if nargin == 1, % use default solar wind values
+if nargin == 1 % use default solar wind values
     Dp=2;
     Bx=0;By=0;Bz=0;
     M=4;
-elseif nargin == 2, % IRF_MAGNETOPAUSE(model, time)
+elseif nargin == 2 % IRF_MAGNETOPAUSE(model, time)
     t=Dp;
     tint=t + [-2 2]*3600;
-    if isempty(dpbz) || t<dpbz(1,1) || t>dpbz(end,1),
+    if isempty(dpbz) || t<dpbz(1,1) || t>dpbz(end,1)
         dpbz=irf_get_data(tint,'P,bzgsm,bx,bygsm,Ma','omni');
     end
-    if isempty(dpbz), % no OMNI data, return empty 
+    if isempty(dpbz) % no OMNI data, return empty 
         return
     else
         dpbz_t=irf_resamp(dpbz,t);
@@ -53,7 +53,7 @@ elseif nargin == 2, % IRF_MAGNETOPAUSE(model, time)
             return
         end
     end
-elseif nargin==3, % specified Dp and Bz
+elseif nargin==3 % specified Dp and Bz
     Bx=0;By=0;M=4;
 end
 omni.Dp=Dp;omni.Bz=Bz;omni.Bx=Bx;omni.By=By;

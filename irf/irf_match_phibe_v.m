@@ -63,8 +63,8 @@ phi_E=[intEdt(:,1) intEdt(:,2:end)*torow(v)]; % depends on v
 phi_B=[Bz(:,1) Bz(:,2)*B0*1e-18/mu0/e*(1./torow(n))]; % depends on n
 
 % Get correlation
-for k=1:nn;
-    for p=1:nv;
+for k=1:nn
+    for p=1:nv
         %correlation(k,p)=sum((phi_E(:,1+p)-phi_B(:,1+k)).^2);
         correlation(k,p)=sum((log10(abs(phi_E(:,1+p)./phi_B(:,1+k)))));        
         %correlation3(k,p)=sum((phi_E(:,1+p)-phi_B(:,1+k)).^2./((phi_E(:,1+p)+phi_B(:,1+k)).^2));

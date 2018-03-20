@@ -39,21 +39,21 @@ end
 % Calculate Poynting flux
 S=irf_tappl(irf_cross(e,b),'/(4*pi/1e7)*1e-9');
 
-if flag_Sz,
+if flag_Sz
   bm=irf_resamp(Bo,e);
   Sz=irf_dot(irf_norm(bm),S);
   if nargout ==1,S=Sz;end
 end
 
 % time integral of Poynting flux along ambient magnetic field
-if flag_intSz,
+if flag_intSz
  ssz=Sz;
  ssz(isnan(Sz))=0; % set to zero points where Sz=NaN
  intSz=ssz;
  intSz(:,2)=cumsum(ssz(:,2))/Fs;
 end
 
-if flag_intS,% time integral of all Poynting flux components
+if flag_intS% time integral of all Poynting flux components
  ss=S;
  ss(isnan(S))=0; % set to zero points where Sz=NaN
  intS=ss;

@@ -8,7 +8,7 @@ global ud hf
 persistent flag_calculate_v
 
 gcbf=hf;
-if gcbf,
+if gcbf
   ud = get(gcbf, 'userdata');
 else
   par=get(gca,'parent');ud = get(par, 'userdata');
@@ -27,7 +27,7 @@ switch arg
 
 end
 
-if flag_calculate_v==1,
+if flag_calculate_v==1
   flag_fitzero=get(ud.vfitzero,'Value');
   sampling_distance=str2num(get(ud.sampling_distance_h,'string'));
   fmin=str2num(get(ud.fminh,'string'));
@@ -43,28 +43,28 @@ if flag_calculate_v==1,
   ind2=find(freqgood2 < fmin | freqgood2 > fmax);
   freqgood2(ind2)=[];phgood2(ind2)=[];
   
-  if flag_fitzero == 1,    % least square fit
-    if size(phgood1), 
+  if flag_fitzero == 1    % least square fit
+    if size(phgood1) 
       [vphase1, flag_lsqr_1]=lsqr(freqgood1,phgood1,[],20);
     else
       vphase1=NaN;
     end
-    if size(phgood2), 
+    if size(phgood2) 
       [vphase2, flag_lsqr_2]=lsqr(freqgood2,phgood2,[],20);
     else
       vphase2=NaN;
     end
     line1y=[fmin*vphase1 fmax*vphase1];
     line2y=[fmin*vphase2 fmax*vphase2];
-  elseif flag_fitzero == 0, % polynomial fit
-    if size(phgood1), 
+  elseif flag_fitzero == 0 % polynomial fit
+    if size(phgood1) 
       p=polyfit(freqgood1,phgood1,1);
       vphase1=p(1);
       line1y=[polyval(p,fmin) polyval(p,fmax)];
     else
       vphase1=NaN;line1y=[NaN NaN];
     end
-    if size(phgood1), 
+    if size(phgood1) 
       p=polyfit(freqgood2,phgood2,1);
       vphase2=p(1);
       line2y=[polyval(p,fmin) polyval(p,fmax)];

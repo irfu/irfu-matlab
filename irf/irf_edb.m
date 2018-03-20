@@ -15,8 +15,8 @@ function [ed,d]=irf_edb(e,b,angle_lim,flag)
 %  angle_lim - B angle with respect to the spin plane should be less than
 %              angle_lim degrees otherwise Ez is set to 0.
 
-if isa(e,'TSeries'),
-  if ~isa(b,'TSeries'),
+if isa(e,'TSeries')
+  if ~isa(b,'TSeries')
     errS = 'Both E and B must be of the same class';
     irf.log('critical',errS), error(errS)
   end
@@ -30,11 +30,11 @@ end
 flag_method='E.B=0'; % default method for Ez calculation
 defaultValue = 0;
 if nargin==0, help irf_edb;return;end
-if nargin == 2,
+if nargin == 2
   angle_lim=20;
   irf_log('fcal','Using limiting angle of 20 degrees');
 end
-if nargin==4,
+if nargin==4
   if strcmpi(flag,'epar'), flag_method='Epar';
   elseif strcmpi(flag,'Eperp+NaN'), defaultValue = NaN;
   end
@@ -50,7 +50,7 @@ if flagTs
   if le < 2 || lb < 3, error('E || B has not enough components'), end
   ed = [e.x.data e.y.data e.y.data*defaultValue];
   bd = [b.x.data b.y.data b.z.data];
-elseif size(b,1) ~= size(e,1),
+elseif size(b,1) ~= size(e,1)
   irf.log('warn','E and B are not of the same length. Interpolating B.');
   b = irf_resamp(b,e);
   le = size(e,2); lb = size(b,2);

@@ -75,7 +75,7 @@ fieldflag = 1;
 uselinear = 0;
 
 
-if numel(args)>0,
+if numel(args)>0
     flag_have_options=1;
     irf.log('notice','have options');
 else
@@ -105,7 +105,7 @@ while flag_have_options
             end
         case 'field'
             if numel(args)>1 && isnumeric(args{2})
-                if args{2},
+                if args{2}
                     fieldflag = 1;
                     irf.log('notice','Using reconstructed electric field for computation.')
                 else

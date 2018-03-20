@@ -87,7 +87,7 @@ classdef (Abstract) GenericTimeArray
       if ~isa(obj1,'GenericTimeArray')
         error('irf:GenericTimeArray:le:badInputs',...
             'inpus must be subclasses of GenericTimeArray')
-      elseif length(obj1)~=1,
+      elseif length(obj1)~=1
         error('irf:GenericTimeArray:le:badInputs',...
             'second argument must have length 1')
       end
@@ -100,7 +100,7 @@ classdef (Abstract) GenericTimeArray
       if ~isa(obj1,'GenericTimeArray')
         error('irf:GenericTimeArray:ge:badInputs',...
             'inpus must be subclasses of GenericTimeArray')
-      elseif length(obj1)~=1,
+      elseif length(obj1)~=1
         error('irf:GenericTimeArray:ge:badInputs',...
             'second argument must have length 1')
       end
@@ -113,7 +113,7 @@ classdef (Abstract) GenericTimeArray
       if ~isa(obj1,'GenericTimeArray')
         error('irf:GenericTimeArray:le:badInputs',...
             'inpus must be subclasses of GenericTimeArray')
-      elseif length(obj1)~=1,
+      elseif length(obj1)~=1
         error('irf:GenericTimeArray:le:badInputs',...
             'second argument must have length 1')
       end
@@ -126,7 +126,7 @@ classdef (Abstract) GenericTimeArray
       if ~isa(obj1,'GenericTimeArray')
         error('irf:GenericTimeArray:gt:badInputs',...
             'inpus must be subclasses of GenericTimeArray')
-      elseif length(obj1)~=1,
+      elseif length(obj1)~=1
         error('irf:GenericTimeArray:gt:badInputs',...
             'second argument must have length 1')
       end
@@ -146,7 +146,7 @@ classdef (Abstract) GenericTimeArray
       end
 			
 			objTmp = convert_epoch(obj1,class(obj));
-			if len1==1,
+			if len1==1
 				res = obj.epoch == objTmp.epoch;
       elseif len1==len
 				res = obj.epoch == objTmp.epoch;
@@ -250,7 +250,7 @@ classdef (Abstract) GenericTimeArray
 				case '()'
 					tmpEpoch = builtin('subsref',obj.epoch,idx(1));
 					out = feval(class(obj),tmpEpoch);
-					if numel(idx) > 1,
+					if numel(idx) > 1
 						out = builtin('subsref',out,idx(2:end));
 					end
 					[varargout{1:nargout}] = out;
@@ -310,7 +310,7 @@ classdef (Abstract) GenericTimeArray
     end
     
 		function res = convert_epoch(obj,className)
-			if isa(obj,className), 
+			if isa(obj,className) 
 				res = obj;
 			else
 				res = feval(className,obj.ttns);
@@ -357,7 +357,7 @@ classdef (Abstract) GenericTimeArray
       else
         idxLim = find((obj.epoch < inp.epoch(1)) | (obj.epoch > inp.epoch(end)));
       end
-      if nargout>1,
+      if nargout>1
         S.type = '()'; S.subs={idxLim};
         tmpEpoch = builtin('subsref',obj.epoch,S);
         res = feval(class(obj),tmpEpoch);
@@ -451,7 +451,7 @@ classdef (Abstract) GenericTimeArray
 				switch format
 					case 0, utc = utc(:,1:26);
 					case 1, utc = utc(:,1:23);
-					case 2,
+					case 2
 					otherwise
 						error('irf:EpochUnix:toUtc:badInputs',...
 							'wrong format value')

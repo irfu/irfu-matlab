@@ -41,7 +41,7 @@ FORMAT_R = '%10.2f,' ; % distance in km < 20 RE
 FILLVAL            = -999;
 FILLVAL_EXP        = -1.00E+31;
 
-if ~isstruct(ebsp), 
+if ~isstruct(ebsp) 
   error('expecting sturcture output of irf_ebsp or irf_convert_fac')
 end
 
@@ -168,7 +168,7 @@ end
         if ischar(cl_id) && cl_id(1)=='g', numberOfFreq = 12; % GOES
         else numberOfFreq = 21; % Cluster and THEMIS
         end
-      case 'pc35';
+      case 'pc35'
         %DT2 = 30; % time resolution
         datasetID = 'ULF_PC35';
         numberOfFreq = 21;

@@ -29,12 +29,12 @@ function [out] = irf_filt(inp,fmin,fmax,Fs,order)
 % Revised to accept TS format. 
 
 isaTSeries = isa(inp,'TSeries');
-if isaTSeries,
+if isaTSeries
     inptemp = inp;
 end
 
-if ((nargin < 4) || (isempty(Fs))), 
-    if isaTSeries,
+if ((nargin < 4) || (isempty(Fs))) 
+    if isaTSeries
         Fs = 1/(inp.time(2)-inp.time(1));
     else
         Fs=1/(inp(2,1)-inp(1,1));
@@ -48,7 +48,7 @@ end
 fmin=fmin/(Fs/2);
 fmax=fmax/(Fs/2);if (fmax > 1);fmax=1;end
 
-if isaTSeries,
+if isaTSeries
     out=double(inp.data);
 else
     out=inp;
@@ -57,7 +57,7 @@ end
 Rp=.5;Rs=60;fact=1.1; % fact defines the width between stopband and passband
 if fmin==0
   if fmax == 1, return;end
-    if nargin < 5,
+    if nargin < 5
         n=ellipord(fmax,min(fmax*fact,0.9999),Rp,Rs);
     end
 	irf_log('proc',['using ' num2str(n) '-th order ellip lowpass filter']);
@@ -84,7 +84,7 @@ else
 	[B2,A2] = ellip(n,Rp,Rs,fmin,'high');
 end
 
-if isaTSeries,
+if isaTSeries
     inp = double(inp.data);
 end
 
@@ -98,7 +98,7 @@ if nColumnsToFilter>1 % assume that first column is time
     iStartColumn=2;
 end
 
-if isaTSeries,
+if isaTSeries
     iStartColumn=1;
 end
 
@@ -114,7 +114,7 @@ else
 end
 out(ind_NaN)=NaN;
 
-if isaTSeries,
+if isaTSeries
     inptemp.data = out;
     out = inptemp;
 end

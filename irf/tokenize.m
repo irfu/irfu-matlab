@@ -30,7 +30,7 @@ e_ind = [ind-1 length(str)];       % end indexes
 
 tokens = {};
 i_string = 1;
-for j=1:length(s_ind),
+for j=1:length(s_ind)
   str_val = str(s_ind(j):e_ind(j));
   if str_val
     tokens{i_string} = str_val;

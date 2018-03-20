@@ -1,4 +1,4 @@
-function [tt xx yy] = orbit(r_per,r_ap,Ttot,varargin)
+function [tt, xx, yy] = orbit(r_per,r_ap,Ttot,varargin)
 % ORBIT  Calculates Kepler orbit as a function of time.
 %   Orbit starts at perihelion at t = 0.
 %   
@@ -88,7 +88,7 @@ switch lower(method)
         %f = 2*atan2(sqrt(1+e)*sin(E/2),sqrt(1-e)*cos(E/2));
 end        
                       
-if Ttot<T; 
+if Ttot<T 
     rr = r;
     ff = f;
     tt = t;
@@ -97,7 +97,7 @@ else % copy orbit
     rr = repmat(r,1,nT);
     ff = repmat(f,1,nT);
     tt = [];
-    for kk=1:nT;
+    for kk=1:nT
         tt = [tt t+(kk-1)*T];        
     end
     %tt = linspace(0,nT*T,nT*nt);

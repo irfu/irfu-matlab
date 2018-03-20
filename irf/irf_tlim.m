@@ -11,14 +11,14 @@ function [x,in]=irf_tlim(x,tStart,tEnd,mode)
 % [Y,IND]=IRF_TLIM(...)
 %	IND contains indexes of rows that were returned 
 
-if nargin == 0, 
+if nargin == 0 
 	help irf_tlim;
 	return;
 end
 
 if isempty(x), in = []; return, end
 
-if ischar(tStart), % time interval specified as string
+if ischar(tStart) % time interval specified as string
 	tStart=irf_time(tStart,'utc>tint');
 end
 

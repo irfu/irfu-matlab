@@ -210,7 +210,7 @@ ylabel(h(5),'dn [cm^-3]');
 ylabel(h(6),'dn dE [cc mV/m]');axis(h(6),'tight');
 
 numb={'a)','b)','c)','d)','e)','f)','g)','h)','i)','j)','k)','l)','m)'};
-for ip=1:6,
+for ip=1:6
   ht=irf_pl_info(numb{ip},h(ip),[0.05,.7]);
   set(ht,'interpreter','none','FontSize', 10);
 end

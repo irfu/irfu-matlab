@@ -26,7 +26,7 @@ narginchk(3,4);
 if nargin<4, overlap = 0; end
 if overlap<0 || overlap>100, error('OVERLAP must be in a range 0..99'), end
 
-if(isa(data,'TSeries')), tseries = true; else tseries = false; end;
+if(isa(data,'TSeries')), tseries = true; else tseries = false; end
 
 if(tseries)
   % New Time series approach
@@ -89,11 +89,11 @@ for jj=1:nint
 end
 
 if nargout==1, outspecrec = specrec;
-elseif nargout==3,
+elseif nargout==3
   outspecrec = specrec.t;
   outPxx = specrec.p;
   outF = specrec.f;
-elseif nargout==0,
+elseif nargout==0
   irf_spectrogram(specrec)
 else
   error('irf_powerfft: unknown number of output parameters');
@@ -120,7 +120,7 @@ function out = order_data(in, ndata, sfreq, ts)
     % if data has less than 90% return NaN, else replace with mean (excl. NaN).
     m = irf.nanmean(out, 1, 0.9);
     for col=1:ncomp2
-      if(any(indNaN(:,col))), out(indNaN(:,col),col) = m(col); end;
+      if(any(indNaN(:,col))), out(indNaN(:,col),col) = m(col); end
     end
   end
 end

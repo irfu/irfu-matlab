@@ -1,4 +1,4 @@
-function [t1_d,t2_d,t1_dd,t2_dd]=irf_corr_deriv(x1,x2,fla);
+function [t1_d,t2_d,t1_dd,t2_dd]=irf_corr_deriv(x1,x2,fla)
 %IRF_CORR_DERIV  Correlate the derivatives of two time series
 %
 % [t1_d,t2_d,t1_dd,t2_dd]=irf_corr_deriv(x1,x2,[flag]);

@@ -14,11 +14,11 @@ function [d]=irf_ang(t1,p1,t2,p2)
 
 if nargin ==3 % two vectors in XYZ
   nt=size(t1,2);
-  if (nt>3),
+  if (nt>3)
     time=t1(:,1);
   else
     time=[];
-  end;
+  end
   d=[time acos(irf_dot(irf_norm(t1),irf_norm(p1),1))*180/pi];
 else
   if nargin ==2  % angles supplied as two radial vectors

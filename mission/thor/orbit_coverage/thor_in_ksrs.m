@@ -178,7 +178,7 @@ function [isOutside,isInside,isCrossing] = foreshock(rTHOR,B,BSNX)
   % Bowshock surface      
   [Y,Z,X] = sph2cart(AZ,ELEV,repmat(r,numel(azim),1)');
   % Forshock normal
-  [nX nY nZ] = surfnorm(X,Y,Z);
+  [nX, nY, nZ] = surfnorm(X,Y,Z);
   % Find point where magnetic field is tangent to surface
   tangentNormal = cross(B0/norm(B0),[0 0 1]); % 45 deg to parker spiral, in xy-plane
   tangNormalAngle = acosd(-(nX*tangentNormal(1) + nY*tangentNormal(2) + nZ*tangentNormal(3)));

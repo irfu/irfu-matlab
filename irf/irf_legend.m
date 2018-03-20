@@ -30,14 +30,14 @@ function ht=irf_legend(varargin)
 
 [axis_handle,args,nargs] = axescheck(varargin{:});
 
-if nargs == 0, % show only help
+if nargs == 0 % show only help
     help irf_legend;
     return
 end
 
-if isempty(axis_handle),
-    if any(ishandle(args{1})), % first argument is axis handles
-        if args{1}==0, % add to the whole figure
+if isempty(axis_handle)
+    if any(ishandle(args{1})) % first argument is axis handles
+        if args{1}==0 % add to the whole figure
             axis_handle = axes('Units','normalized', 'Position',[0 0 1 1], 'Visible','off', ...
                 'Tag','BackgroundAxes', 'HitTest','off');
             uistack(axis_handle,'bottom') % move axis to background
@@ -47,8 +47,8 @@ if isempty(axis_handle),
         args=args(2:end);
         nargs=nargs-1;
     else % no axis handles
-        if isnumeric(args{1}), %
-            if args{1}==0, % add to the whole figure
+        if isnumeric(args{1}) %
+            if args{1}==0 % add to the whole figure
                 axis_handle = axes('Units','normalized', 'Position',[0 0 1 1], 'Visible','off', ...
                     'Tag','BackgroundAxes', 'HitTest','off');
                 uistack(axis_handle,'bottom') % move axis to background
@@ -63,7 +63,7 @@ if isempty(axis_handle),
     end
 end
 
-if nargs<2, 
+if nargs<2 
     error('IRFU_MATLAB:irf_legend:InvalidNumberOfInputs','Incorrect number of input arguments')
 else
     labels=args{1};
@@ -89,7 +89,7 @@ if position(1)>1e8 % assume that position specifued in axis units
     end
 end
 
-if position(1)<0,
+if position(1)<0
     value_horizontal_alignment='right';
 elseif position(1) < 0.5
     value_horizontal_alignment='left';
@@ -99,7 +99,7 @@ else
     value_horizontal_alignment='left';
 end
 
-if position(2)<0,
+if position(2)<0
     value_vertical_alignment='top';
 elseif position(2) < 0.5
     value_vertical_alignment='baseline';
@@ -110,7 +110,7 @@ else
 end
 
 
-if ischar(labels), % Try to get variable labels from string (space separates).
+if ischar(labels) % Try to get variable labels from string (space separates).
     lab=labels;clear labels;
     labels{1}=lab;
     colord=[0 0 0];
@@ -136,7 +136,7 @@ ht=gobjects(1,length(labels)); % allocate handles
 tmp_ref_pos=position(1); % reference position in x
 tmp_ref_ext_y=0; % if vertical add this to ht(i).Postion(2)
 % loop through labels
-for i=label_order, % start with first label first
+for i=label_order % start with first label first
     ht(i)=text(position(1),position(2),labels{i},'parent',axis_handle,'units',unit_format,'fontweight','normal');
     set(ht(i),'color',colord(i,:));
     set(ht(i),'verticalalignment',value_vertical_alignment);
@@ -145,15 +145,15 @@ for i=label_order, % start with first label first
     for j=1:size(pvpairs,2)/2
         textprop=pvpairs{2*j-1};
         textvalue=pvpairs{2*j};
-        if strcmpi(textprop,'verticalalignment'), 
+        if strcmpi(textprop,'verticalalignment') 
             value_vertical_alignment=textvalue; % value has been reset manually by input parameter
         end
-        if strcmpi(textprop,'horizontalalignment'), 
+        if strcmpi(textprop,'horizontalalignment') 
             value_horizontal_alignment=textvalue; % value has been reset manually by input parameter
         end
-        if strcmpi(textprop,'color') && strcmp(textvalue,'cluster') && i<=4,
+        if strcmpi(textprop,'color') && strcmp(textvalue,'cluster') && i<=4
             set(ht(i),'color',cluster_colors(i,:));
-        elseif strcmpi(textprop,'color') && strcmp(textvalue,'mms') && i<=4,
+        elseif strcmpi(textprop,'color') && strcmp(textvalue,'mms') && i<=4
             set(ht(i),'color',mms_colors(i,:));
         else
             set(ht(i),textprop,textvalue);

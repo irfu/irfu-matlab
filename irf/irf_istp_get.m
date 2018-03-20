@@ -104,7 +104,7 @@ end
 
 st = start_time;
 start_time_a = fromepoch(start_time);
-if month_step ~= 0,
+if month_step ~= 0
 	start_time_a(2)=fix((start_time_a(2)-1)/month_step)*month_step + 1;
 	start_time_a(3)=1;
 end

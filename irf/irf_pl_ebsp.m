@@ -261,7 +261,7 @@ if nargout, out = h; end % Return here
     if isempty(lim), return, end
     for idx = 1:length(lim)
       limStruct = lim{idx};
-      if isstruct(ebsp.(limStruct.param)),
+      if isstruct(ebsp.(limStruct.param))
         limData = ebsp.(limStruct.param).data(:,:,limStruct.comp);
       else limData = ebsp.(limStruct.param)(:,:,limStruct.comp);
       end
@@ -279,7 +279,7 @@ if nargout, out = h; end % Return here
     else B = ebsp.B0; 
     end
     if isstruct(B), B = double(B.data); end
-    if size(B,2) == 1,
+    if size(B,2) == 1
       B = [timeVec B];
     else
       B = irf_abs(B);  B = [B(:,1) B(:,5)];

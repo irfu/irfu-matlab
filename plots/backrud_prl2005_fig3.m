@@ -182,7 +182,7 @@ irf_figmenu
 
 %irf_zoom(tint,'x',h)
 numb={'A','B','C','D','E','F','G','H','I'};
-for ip=1:ipanel-1,
+for ip=1:ipanel-1
   axes(h(ip));
   ht=irf_pl_info(numb{ip},gca,[0.02,.8]);
   set(ht,'fontsize',12);

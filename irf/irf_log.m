@@ -63,7 +63,7 @@ if isempty(encourageSwitchToIrfLog)
 	encourageSwitchToIrfLog = false;
 end
 	
-if isempty(flag_irf_log_ON),
+if isempty(flag_irf_log_ON)
     flag_irf_log_ON=1;
 end
 if ~flag_irf_log_ON % if irf_log is off return

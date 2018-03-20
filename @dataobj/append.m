@@ -17,7 +17,7 @@ function dataObject = append(dataObject1,dataObject2)
 % ----------------------------------------------------------------------------
 persistent usingNasaPatchCdf
 
-if isempty(usingNasaPatchCdf), % check only once if using NASA cdf
+if isempty(usingNasaPatchCdf) % check only once if using NASA cdf
 	usingNasaPatchCdf=irf.check_if_using_nasa_cdf;
 end
 
@@ -32,7 +32,7 @@ end
 
 % compare if dataobjects have the same variables
 ok=compare_cell_arrays(dataObject1.Variables(:,[1 2 4 5 6]),dataObject2.Variables(:,[1 2 4 5 6]));
-if ~ok, 
+if ~ok 
 	irf_log('fcal','Databojects do not have the same variables');
 	return;
 end

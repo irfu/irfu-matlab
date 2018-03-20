@@ -47,7 +47,7 @@ if nvars>0
                 if isfield(dobj.VariableAttributes,'DEPEND_0')
                     va = dobj.VariableAttributes.DEPEND_0;
                     tvar = [];
-                    for vv=1:size(va,1);
+                    for vv=1:size(va,1)
                         if strcmp(va{vv,1},v1_s)
                             tvar = getv(dobj,va{vv,2});
                         end

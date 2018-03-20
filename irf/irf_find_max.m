@@ -26,7 +26,7 @@ res_t = zeros(s,1);
 
 for i=1:s
 	ix=ii(i);
-	if (ix==1 || ix==n);
+	if (ix==1 || ix==n)
 		res_m(i) = data(ix);
 		res_t(i) = t(ix);
 	elseif ix>n-3 || ix<4
@@ -34,14 +34,14 @@ for i=1:s
 			res_m(i) = data(ix);
 			res_t(i) = t(ix);
 		else
-			[res_t(i) res_m(i)] = quad_max(t(ix-1:ix+1),data(ix-1:ix+1));
+			[res_t(i), res_m(i)] = quad_max(t(ix-1:ix+1),data(ix-1:ix+1));
 		end
 	elseif data(ix+2)<data(ix+1) 
-		[res_t(i) res_m(i)] = cub_max(t(ix-1:ix+2),data(ix-1:ix+2));
+		[res_t(i), res_m(i)] = cub_max(t(ix-1:ix+2),data(ix-1:ix+2));
 	elseif data(ix-2)<data(ix-1) 
-		[res_t(i) res_m(i)] = cub_max(t(ix-2:ix+1),data(ix-2:ix+1));
+		[res_t(i), res_m(i)] = cub_max(t(ix-2:ix+1),data(ix-2:ix+1));
 	elseif data(ix)>data(ii(i+1))
-		[res_t(i) res_m(i)] = quad_max(t(ix-1:ix+1),data(ix-1:ix+1));
+		[res_t(i), res_m(i)] = quad_max(t(ix-1:ix+1),data(ix-1:ix+1));
 	else
 		res_m(i) = data(ix);
 		res_t(i) = t(ix);

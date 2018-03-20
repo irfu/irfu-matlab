@@ -161,14 +161,14 @@ if k==9 % ========================== k=9 ===
 		hold on; disp(' HOLD ON ')
 	else 
 		hold off; disp('HOLD OFF')
-	end;
+	end
 end
 if k==10 % ========================== k=10 ===
 	q2 = ['disp(''matlab session, q-exit'')'];
 	while(q2~='q')	
 		eval(q2);
 		q2=input('matlab>','s');
-	end;
+	end
 end
 end % ==== MAIN LOOP ====
 

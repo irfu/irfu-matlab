@@ -83,7 +83,7 @@ end
 
 %% Set figure handle
 if(handleInput)
-    switch x1.Type;
+    switch x1.Type
         case 'figure'
             irf.log('warning','figure input')
             f = x1;

@@ -34,12 +34,12 @@ function out=irf_pl_tx(varargin)
 % See also IRF_PLOT, PLOT
 
 [ax,args,nargs] = axescheck(varargin{:});
-if isempty(ax), % if empty axes
+if isempty(ax) % if empty axes
     ax=gca;
 end
 %hcf=get(ax,'parent'); % get figure handle
 
-if nargs == 0, % show help if no input parameters
+if nargs == 0 % show help if no input parameters
     help IRF_PL_TX;
     return
 end
@@ -110,7 +110,7 @@ while ~isempty(args)
         if strcmp(args{1},'sc_list')
             args(1) = [];
             sc_list=args{1};
-			if isempty(sc_list),
+			if isempty(sc_list)
 				irf_log('fcal','sc_list empty');
 				return;
 			end
@@ -141,8 +141,8 @@ end
 if isempty(delta_t), delta_t = [0 0 0 0 0]; end
 
 % Get variable values from caller if needed
-if getVariablesFromCaller,
-    for cl_id=sc_list,
+if getVariablesFromCaller
+    for cl_id=sc_list
         ttt = evalin('caller',irf_ssub(variableNameInCaller,cl_id),'[]');
         X.(sprintf('x%d',cl_id)) = ttt; clear ttt
     end
@@ -205,7 +205,7 @@ if nargout > 0, out = ax; end
 
   function res = assignField()
     res = false;
-    if isfield(args{1},f),
+    if isfield(args{1},f)
       X.(['x' cc']) =  args{1}.(f);
       res = true; return
     end

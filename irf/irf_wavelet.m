@@ -25,13 +25,13 @@ function specrec=irf_wavelet(varargin)
 % See also IRF_SPECTROGRAM
 
 %% Check the input
-if nargin == 0,
+if nargin == 0
     help irf_wavelet;
     return;
 end
 data=varargin{1};
 args=varargin(2:end);
-if numel(args)>0,
+if numel(args)>0
     flag_have_options=1;
 else
     flag_have_options=0;
@@ -50,7 +50,7 @@ if isa(data,'TSeries')
     data = data.data;
 else
     irf.log('debug','Old format used');
-    if size(data,1)==1, % no time axis specified and row vector input
+    if size(data,1)==1 % no time axis specified and row vector input
         Fs=1;
         t=1:numel(data);
         t=t(:);
@@ -121,7 +121,7 @@ while flag_have_options
             end
         case 'f'
             if numel(args)>1 && isnumeric(args{2})
-                if numel(args{2})== 2,
+                if numel(args{2})== 2
                     %fmin=max(fmin,args{2}(1)); 
                     %fmax=min(fmax,args{2}(2));
                     fmin = args{2}(1);
@@ -145,7 +145,7 @@ sampl=Fs;
 w0=sampl/2; % The maximum frequency
 anumber=nf; % The number of frequencies
 sigma=wavelet_width/(Fs/2); % The width of the Morlet wavelet
-if lineardf,
+if lineardf
     fmin = deltaf;
     anumber = floor(w0/deltaf);
     fmax = anumber*deltaf;
@@ -182,7 +182,7 @@ newfreq=w0./a;
 specrec.f=newfreq(:);
 [newfreqmat,temp]=meshgrid(newfreq,w);
 [temp,ww]=meshgrid(a,w); % Matrix form
-for i=1:size(data,2), % go through all the datacolumns
+for i=1:size(data,2) % go through all the datacolumns
     %% Make the FFT of all data
     datacol=data(:,i);
     Sw=fft(datacol);
@@ -199,16 +199,16 @@ for i=1:size(data,2), % go through all the datacolumns
     power = W;
     
     %% Calculate the power spectrum
-    if returnpower,
+    if returnpower
         power=abs((2*pi)*conj(W).*W./newfreqmat);
     end
     
     %% Remove data possibly influenced by edge effects
     
     power2=power;   
-    if cutedge,
+    if cutedge
         censur=floor(2*a);
-        for j=1:anumber;
+        for j=1:anumber
             power2(1:censur(j),j)=NaN;
         	power2(numel(datacol)-censur(j):numel(datacol),j)=NaN;
         end
@@ -221,6 +221,6 @@ for i=1:size(data,2), % go through all the datacolumns
 	specrec.p{i}(inan(:,i),:)=NaN;
 end
 
-if nargout==0,
+if nargout==0
     irf_spectrogram(specrec)
 end

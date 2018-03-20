@@ -5,7 +5,7 @@
 % Load ion skymap data...
 
 x = zeros(length(dist.time),32,16);
-for ii = 1:length(dist.time);
+for ii = 1:length(dist.time)
 	x(ii,:,:) = -cosd(phi.data(ii,:)')*sind(theta.data);
 end
 x = repmat(x,1,1,1,32);
@@ -30,7 +30,7 @@ x = zeros(length(dist.time),32,16);
 y = zeros(length(dist.time),32,16);
 z = zeros(length(dist.time),32,16);
 
-for ii = 1:length(dist.time);
+for ii = 1:length(dist.time)
 	x(ii,:,:) = -cosd(phi.data(ii,:)')*sind(theta.data);
 	y(ii,:,:) = -sind(phi.data(ii,:)')*sind(theta.data);
 	z(ii,:,:) = -ones(32,1)*cosd(theta.data);

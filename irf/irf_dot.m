@@ -14,7 +14,7 @@ function [z]=irf_dot(x,y,flag_output)
 
 z=x;
 
-if size(x,2) < 3,
+if size(x,2) < 3
   errS = 'not enough components for y vector.';
   irf.log('critical',errS), error(errS)
 elseif size(x,2) == 3, xx=x;
@@ -42,13 +42,13 @@ end
 zout=xx(:,1).*yy(:,1)+xx(:,2).*yy(:,2)+xx(:,3).*yy(:,3);
 
 z(:,end)=[];z(:,end)=[];z(:,end)=zout;
-if size(z,2)>2,  % if input is vector [t x y z r ...], result should be [t dotproduct]
+if size(z,2)>2  % if input is vector [t x y z r ...], result should be [t dotproduct]
   z(:,2:end-1)=[];
 end
 
 % if flag=1 only abs(y) should be returned
-if exist('flag_output','var'),
-  if (flag_output == 1) && size(z,2)>1,
+if exist('flag_output','var')
+  if (flag_output == 1) && size(z,2)>1
     z=z(:,end);  
   end
 end

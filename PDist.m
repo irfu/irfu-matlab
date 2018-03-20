@@ -116,7 +116,7 @@ classdef PDist < TSeries
             error('Depend has wrong dimensions.')
           end
         end
-        if isfield(obj.ancillary,'esteptable') && size(obj.ancillary.esteptable,1) == sizeData(1);
+        if isfield(obj.ancillary,'esteptable') && size(obj.ancillary.esteptable,1) == sizeData(1)
           obj.ancillary.esteptable = obj.ancillary.esteptable(idxTmp{1},:);
         end
         if numel(idx) > 1
@@ -222,8 +222,8 @@ classdef PDist < TSeries
       
       while have_options
         l = 1;
-        if isnumeric(args{l});
-          if size(args{l}) == [3 3];
+        if isnumeric(args{l})
+          if size(args{l}) == [3 3]
             newx = args{l}(1,:);
             newy = args{l}(2,:);
             newz = args{l}(3,:);
@@ -337,8 +337,8 @@ classdef PDist < TSeries
       
       while have_options
         l = 1;
-        if isnumeric(args{l});
-          if size(args{l}) == [3 3];
+        if isnumeric(args{l})
+          if size(args{l}) == [3 3]
             newx = args{l}(1,:);
             newy = args{l}(2,:);
             newz = args{l}(3,:);

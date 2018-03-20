@@ -37,11 +37,11 @@ disp(strint);
 
 e=irf_tlim(e,tint);
 b=irf_resamp(b,e);
-if strcmp(vht_is,'given'),  % VHT is given
+if strcmp(vht_is,'given')  % VHT is given
     vht=vht(1,end-2:end); % assume that vht=[[t] vx vy vz]; use GSE notation
     eht=irf_e_vxb([0 vht],b); % evht=irf_add(1,e,-1,eht); evht would be E field in VHT frame
     ind_nan=find(isnan([e(:,2) + b(:,2)])); % remove NaN in B or E from calculation
-    if vht_flag == 2,
+    if vht_flag == 2
         ep=[e(ind_nan,2);e(ind_nan,3)];
         ehtp=[eht(ind_nan,2);eht(ind_nan,3)];
     else
@@ -51,8 +51,8 @@ if strcmp(vht_is,'given'),  % VHT is given
     p=polyfit( ehtp,ep,1);
     cc=corrcoef(ep,ehtp);
     corr_coef=cc(1,2);
-elseif strcmp(vht_is,'calculated');
-    if vht_flag == 2,
+elseif strcmp(vht_is,'calculated')
+    if vht_flag == 2
         [vht,eht,dvht,p,cc]=irf_vht(e,b,2);
     else
         [vht,eht,dvht,p,cc]=irf_vht(e,b,1);
@@ -63,7 +63,7 @@ end
 strvht=['V_{HT}=' num2str(irf_abs(vht,1),3) ' [ ' num2str(irf_norm(vht),' %5.2f') '] km/s GSE'];
 strdvht=['\Delta V_{HT}=' num2str(irf_abs(dvht,1),3) ' [ ' num2str(irf_norm(dvht),' %5.2f') '] km/s GSE'];
 
-if vht_flag == 2,
+if vht_flag == 2
     plot(eht(:,2),e(:,2),'b.',eht(:,3),e(:,3),'r.');
 else
     plot(eht(:,2),e(:,2),'b.',eht(:,3),e(:,3),'r.',eht(:,4),e(:,4),'g.');
@@ -88,7 +88,7 @@ plot(xp,polyval(p,xp),'k-');
 axis(ax);
 text(xtext,ytext,['slope=' num2str(p(1),3) '  offs=' num2str(p(2),2)]);ytext=ytext-dy;
 text(xtext,ytext,['cc=' num2str(cc(1,2),3)]);ytext=ytext-dy;
-if strcmp(vht_is,'given'),
+if strcmp(vht_is,'given')
     text(xtext,ytext,'V_{HT} given as input');
 end
 

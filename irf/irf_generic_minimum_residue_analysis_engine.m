@@ -32,10 +32,10 @@ doCalculateVelocity = true;
 doCalculateQ        = true;
 haveConstraint      = false;
 %% Input check
-if nargin == 0 && nargout == 0,
+if nargin == 0 && nargout == 0
 	help irf_generic_minimum_residue_analysis_engine;
 	return;
-elseif nargin == 1 && isstruct(varargin{1}),
+elseif nargin == 1 && isstruct(varargin{1})
 	InputParameters = varargin{1};
 	inputParameterFields = fieldnames(InputParameters);
 	for j=1:numel(inputParameterFields)
@@ -65,7 +65,7 @@ elseif nargin > 1
 	end
 end
 %% Check inputs
-if numel(eta) == 1, % scalar
+if numel(eta) == 1 % scalar
 	eta = repmat(eta,size(q,1),1);
 end
 %% Calculate Q from eta and q
@@ -81,7 +81,7 @@ if doCalculateQ
 	% Q estimate
 	dqdqAver = shiftdim(irf.nanmean(matrix_dot(dq,1,dq,1),1),1);
 	detadqAver2Matrix = detadqAver' *detadqAver;
-	if eta==0,
+	if eta==0
 		Q = dqdqAver; % Eq. 19
 	else
 		Q = dqdqAver - detadqAver2Matrix / deta2Aver; % Eq. 15b (see correction in Sonnerup 2007)
@@ -123,7 +123,7 @@ if nargout == 0
 end
 
 %% Define output
-if nargout == 0,
+if nargout == 0
 	clear L V U;
 end
 

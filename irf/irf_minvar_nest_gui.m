@@ -30,23 +30,23 @@ global ud
 persistent tlim message t0;
 %persistent ud tlim;
 
-if isempty(message), % run only the first time during the session
+if isempty(message) % run only the first time during the session
     message='You can anytime access all the results from the variable "ud".';
     disp(message);
 end
 
 if      nargin < 1, help irf_minvar_nest_gui;return;
 elseif  (nargin==1 & isstr(x)), action=x;%disp(['action=' action]);
-elseif  isnumeric(x),
+elseif  isnumeric(x)
     if size(x,2)<3, disp('Vector has too few components');return;end
-    if nargin < 2,
+    if nargin < 2
         if size(x,2)==3, column=[1 2 3];end
         if size(x,2)>3, column=[2 3 4];end
     end
     action='initialize';
 end
 
-switch action,
+switch action
     case 'initialize'
         % X is used for minimum variance estimates
         tlim = [];
@@ -221,11 +221,11 @@ switch action,
 					disp('f/Fs must be <1!!!')
 					set(ud.filter,'string','1')
 				end
-      [ud.bn ud.l2_l3_ratio ud.v1_nest ud.v2_nest ud.v3_nest]=irf_minvar_nest(X,ud.csc,tlim);
+      [ud.bn, ud.l2_l3_ratio, ud.v1_nest, ud.v2_nest ud.v3_nest]=irf_minvar_nest(X,ud.csc,tlim);
       irf_minvar_nest_gui('update_mva_axis');
       
       case 'update_mva_axis'
-      if tlim==ud.tlim_mva, % plot first time after 'mva'
+      if tlim==ud.tlim_mva % plot first time after 'mva'
       axes(ud.h(2));
             plot(ud.v3_nest(:,1),ud.v3_nest(:,2));
 	    xlabel('Nest size (M)');ylabel('n_X');

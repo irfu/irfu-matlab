@@ -19,12 +19,12 @@ function res = getmat(dobj,var_s)
 % ----------------------------------------------------------------------------
 
 data = getv(dobj,var_s);
-if isempty(data), % no such variable, return empty
+if isempty(data) % no such variable, return empty
 	res=[];
 	return;
 end
 fillv = getfillval(dobj,var_s);
-if ~ischar(fillv),
+if ~ischar(fillv)
     data.data(data.data==fillv) = NaN;
 else
     irf_log('dsrc','fill value is character: discarding')
@@ -35,7 +35,7 @@ dim = length(data.variance(3:end));
 
 if dim <=1
     plot_data = double(data.data)';
-    if isfield(dep,'DEPEND_O'), % add time column as first column
+    if isfield(dep,'DEPEND_O') % add time column as first column
       if strcmpi(dep.DEPEND_O.type,'tt2000')
         timeLine = EpochTT(dep.DEPEND_O.data).epochUnix;
       else timeLine = dep.DEPEND_O.data;
@@ -50,7 +50,7 @@ else
         dep_x{d} = getv(dobj,dep.DEPEND_X{d,1});
         dep_x{d}.s = dep.DEPEND_X{d,1};
         dep_x{d}.fillv = getfillval(dobj,dep_x{d}.s);
-        if isnumeric(dep_x{d}.fillv), % only implemented for numeric data 
+        if isnumeric(dep_x{d}.fillv) % only implemented for numeric data 
             dep_x{d}.data(dep_x{d}.data==dep_x{d}.fillv) = NaN;
         end
         dep_x{d}.units = getunits(dobj,dep_x{d}.s);
@@ -92,7 +92,7 @@ else
     else
         dt=[];
     end
-    if isnumeric(data.FILLVAL), % put fillvalues to NaN
+    if isnumeric(data.FILLVAL) % put fillvalues to NaN
         data.data(data.data==data.FILLVAL) = NaN;
     end
     if isempty(dt)

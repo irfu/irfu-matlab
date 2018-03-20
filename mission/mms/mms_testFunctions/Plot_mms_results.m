@@ -292,7 +292,7 @@ end % End of plot figure with DSL spectra
 
 %% Help function to locate and load MMS data into TSeries
 function outTs = getDATA(dataID)
-  if(dataID>size(dataSuf)), error('Incorrect usage'); end;
+  if(dataID>size(dataSuf)), error('Incorrect usage'); end
   for ii=1:length(SCid)
     disp(['Loading and converting data from ',SCid{ii},' for ',dataSuf{dataID}]);
 

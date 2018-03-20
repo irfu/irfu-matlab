@@ -24,7 +24,7 @@ ss2=S2(:,ind);
 ph2=Phase2(:,ind);
 ch2=Coh2(:,ind);
 
-if isempty(flag_new_figure),
+if isempty(flag_new_figure)
   freq_lim=get(gca,'Ylim');
   hf=figure;flag_new_figure=1;clf;
 else
@@ -58,7 +58,7 @@ hl1=line([0 0],[0 0]);set(hl1,'color','k');
 hl2=line([0 0],[0 0]);set(hl2,'color','b');
 ylabel('Phase');
 
-if flag_new_figure==1,
+if flag_new_figure==1
  h2(4)=subplot(4,1,4);axis off;
 
   dgud.h2=h2;

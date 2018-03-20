@@ -30,13 +30,13 @@ useFiguresTEpochStart = false;
 if nargin == 0
     h = gca;
 end
-if nargin > 2,
+if nargin > 2
     addXtraXlabels = true;
-		if nargin == 3,
+		if nargin == 3
 			xlabeltitle = xlabels; % TODO bad style, redo all input with varargin
 			xlabels = t_start_epoch;
 			t_start_epoch =[];
-			if isa(xlabels,'TSeries'),
+			if isa(xlabels,'TSeries')
 				xlabels = [xlabels.time.epochUnix xlabels.data];
 			end
 			useFiguresTEpochStart = true;
@@ -63,7 +63,7 @@ if (nargin >= 2) && (ischar(t_start_epoch))
         addLabelsToLastHandle = false;
         addDateLabel = true;
         remove_extra_xlabel_handles(h);
-        for j=1:numel(h), % clean extra xlabels if present
+        for j=1:numel(h) % clean extra xlabels if present
             ud=get(h(j),'UserData');
             if isfield(ud,'xlabels'), ud=rmfield(ud,'xlabels');end
             if isfield(ud,'xlabeltitle'), ud=rmfield(ud,'xlabeltitle');end
@@ -89,10 +89,10 @@ for j=1:numel(h)
     tint = get(h(j),'xlim') + t_start_epoch;
     res  = timeaxis(tint);
     set( h(j), 'XTick', res{1} - t_start_epoch );
-    if j == numel(h),
-        if ~addXtraXlabels,
+    if j == numel(h)
+        if ~addXtraXlabels
             ud=get(h(j),'UserData');
-            if isfield(ud,'xlabels'), % add extra labels
+            if isfield(ud,'xlabels') % add extra labels
                 addXtraXlabels = true;
                 xlabels=ud.xlabels;
                 xlabeltitle=ud.xlabeltitle;
@@ -104,7 +104,7 @@ for j=1:numel(h)
         set( h(j), 'XTickLabel','');
     end
     
-    if addXtraXlabels,  % xlabels should be added
+    if addXtraXlabels  % xlabels should be added
         set( h(j), 'XTickLabel','');
         lab    = res{2};
         xcoord = res{1};
@@ -118,7 +118,7 @@ for j=1:numel(h)
 								end
                 mm = irf_resamp( xlabels, xcoord(ii));
                 for jj = 1:length(mm)
-                    if jj==1, % the first line is time
+                    if jj==1 % the first line is time
                         str = lab(ii);
                     else % other lines are xlabels
                         str = [repmat(' \newline',1,jj-1) num2str(mm(jj),3)];
@@ -136,8 +136,8 @@ for j=1:numel(h)
         % Add titles
         h_xlabeltitle=1:size(xlabeltitle,2); % allocated handles for text labels
         str = 'UT      ';
-        for jj = 0:size(xlabeltitle,2),
-            if jj>0,
+        for jj = 0:size(xlabeltitle,2)
+            if jj>0
                 addDateLabel=0; % if more than one line in xlabels, remove date
                 str      = [repmat(' \newline',1,jj) xlabeltitle{jj} '     '];
             end
@@ -153,25 +153,25 @@ end
 
 xlimlast=get(h(end),'xlim');
 time_label = irf_time(xlimlast(1) + t_start_epoch,'epoch>utc_yyyy-mm-dd UTC');
-if addDateLabel == 1 && addXtraXlabels ~= 1 && diff(xlimlast)<=3600*24*100, 
+if addDateLabel == 1 && addXtraXlabels ~= 1 && diff(xlimlast)<=3600*24*100 
     xlabel(h(end),time_label);  % add data only if no extra xlabels
 end
-if addLabelsToLastHandle == 0, 
+if addLabelsToLastHandle == 0 
     set(h(end),'XTickLabel',' ');
 end
 return;
 
 function remove_extra_xlabel_handles(h)
-for j=1:numel(h), % clean extra xlabels if present
+for j=1:numel(h) % clean extra xlabels if present
     hca=h(j);
     ud=get(hca,'UserData');
-    if isfield(ud,'h_xlabels'), % remove old handles
+    if isfield(ud,'h_xlabels') % remove old handles
         for jj=1:numel(ud.h_xlabels)
             if ishandle(ud.h_xlabels(jj)) && ud.h_xlabels(jj)~=0, delete(ud.h_xlabels(jj));end
         end
         ud=rmfield(ud,'h_xlabels');
     end
-    if isfield(ud,'h_xlabeltitle'), % remove old handles
+    if isfield(ud,'h_xlabeltitle') % remove old handles
         for jj=1:numel(ud.h_xlabeltitle)
             if ishandle(ud.h_xlabeltitle(jj)) && ud.h_xlabeltitle(jj)~=0, delete(ud.h_xlabeltitle(jj));end
         end

@@ -13,7 +13,7 @@ tint = irf.tint('2015-10-16T10:33:30.20Z/2015-10-16T10:33:30.50Z');
 c_eval('times = desDist?.tlim(tint).time;',ic)
 
 % Make one plot for each time or time interval
-for ii = 1:times.length;  
+for ii = 1:times.length  
   tint = times(ii);
   
   % Mark the time in the time panels
@@ -21,7 +21,7 @@ for ii = 1:times.length;
   hTimeMark = irf_pl_mark(h1,tint.epochUnix','black');  
 
   % Plot same plot for the four spacecraft
-  for ic = 1:4;
+  for ic = 1:4
     % Plot pitchangles/projection/skymap using handles h2
   end
   
@@ -69,7 +69,7 @@ tintDist = irf.tint('2015-10-16T10:33:30.20Z/2015-10-16T10:33:30.50Z');
 c_eval('times = desDist?.tlim(tintDist).time;',ic)
 
 
-for ii = 1:times.length;  
+for ii = 1:times.length  
   tint = times(ii)+[-1 1]*0.5*0.03*0.5;
   if exist('hmark'); delete(hmark); end
   hmark = irf_pl_mark(h1,tint.epochUnix','green');
@@ -81,7 +81,7 @@ for ii = 1:times.length;
   palim = [1e-3 1e6];
   skymapEnergy = [65 278];
 
-  for ic = 1:4;
+  for ic = 1:4
     c_eval('dist = desDist?;',ic)
 
     c_eval('Ve0 = mean(ve?brst.resample(dslE?brst.tlim(tint+[-0.01 0.01]).time).data);',ic); 
@@ -605,7 +605,7 @@ for it = 119;1:times.length  % 644 - ring distributions
     skymapEnergy = [65 278];
 
 
-  for ic = 1:4;
+  for ic = 1:4
       c_eval('dist = desDist?;',ic)
 
       c_eval('Ve0 = gseVe?.resample(time).data;',ic); 
@@ -721,7 +721,7 @@ tintZoom = irf.tint('2015-10-16T10:33:22.00Z/2015-10-16T10:33:35.00Z');
 times = disDist1.tlim(tintZoom).time;
 
 
-for it = 1:times.length;
+for it = 1:times.length
   time = times(it);
   tint = time;
   tt = time;
@@ -759,7 +759,7 @@ for it = 1:times.length;
     skymapEnergy = [65 278];
 
 
-  for ic = 1:4;
+  for ic = 1:4
       c_eval('dist = disDist?;',ic)
 
       c_eval('Ve0 = gseVe?.resample(time).data;',ic); 
@@ -890,7 +890,7 @@ for ii = 100;1:times.length;
   palim = [1e-3 1e6];
   skymapEnergy = [65 278];
 
-  for ic = 1:4;
+  for ic = 1:4
     c_eval('dist = disDist?;',ic)
 
     c_eval('Ve0 = mean(ve?brst.resample(dslE?brst.tlim(tint+[-0.01 0.01]).time).data);',ic); 

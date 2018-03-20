@@ -235,11 +235,11 @@ switch lower(action)
         
         if data.flag_v1==1
             data.v1=eval(['[' get(data.vec1Hndl,'string') ']']);
-            if length(data.v1)==1, data.flag_v1=0;end;
+            if length(data.v1)==1, data.flag_v1=0;end
         end
         if data.flag_v2==1
             data.v2=eval(['[' get(data.vec2Hndl,'string') ']']);
-            if length(data.v2)==1, data.flag_v2=0;end;
+            if length(data.v2)==1, data.flag_v2=0;end
         end
 %% USE MMS_CONST.Phaseshift.p1 etc..
         phase_p1=data.phase/180*pi + pi/6;

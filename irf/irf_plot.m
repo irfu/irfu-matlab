@@ -67,7 +67,7 @@ x=args{1};
 if isempty(x), irf.log('warning','nothing to plot'), return, end
 
 % Check if single number argument, then use syntax IRF_PLOT(number)
-if isnumeric(x) && numel(x)==1,
+if isnumeric(x) && numel(x)==1
   init_figure()
   if nargout==0, clear c; end % if no output required do not return anything
   return
@@ -94,11 +94,11 @@ check_input_options()
 if (strcmp(plot_type,'subplot') || strcmp(plot_type,'comp') ) && ...
     (isnumeric(x) || isa(x,'TSeries')), flag_subplot = 1; 
 end
-if ischar(x), % Try to get variable labels etc.
+if ischar(x) % Try to get variable labels etc.
     var_nam = tokenize(x); % White space separates variables
     jj = 1;var_names=cell(1,4*length(var_nam));
-    for ii=1:length(var_nam), % construct varibale names var_names
-        if regexp(var_nam{ii},'?'),
+    for ii=1:length(var_nam) % construct varibale names var_names
+        if regexp(var_nam{ii},'?')
             c_eval(['var_names{jj}=''' var_nam{ii} ''';jj=jj+1;']);
         else
             var_names{jj} = var_nam{ii}; jj=jj+1;
@@ -110,11 +110,11 @@ if ischar(x), % Try to get variable labels etc.
     var_desc=x;                    % preallocate non-caa variable description
     ix = 1;
     for ii=1:length(var_names) % get variables
-      if evalin('caller',['exist(''' var_names{ii} ''')']), % Try to get variable from calling workspace
+      if evalin('caller',['exist(''' var_names{ii} ''')']) % Try to get variable from calling workspace
         x{ix} = evalin('caller',var_names{ii});
       elseif strfind(var_names{ii},'__') % CAA variable
         caa_varname{ix}=var_names{ii};
-        if flag_plot_all_data,
+        if flag_plot_all_data
           [~,caa_dataobject{ix},x{ix}]=evalin('caller',...
             ['c_caa_var_get(''' var_names{ii} ''')']);
         else
@@ -131,7 +131,7 @@ if ischar(x), % Try to get variable labels etc.
             var_names{ii}]);
         end
       end
-      if ~isempty(x{ix}), % has succeeded to get new variable
+      if ~isempty(x{ix}) % has succeeded to get new variable
         var_desc{ix} = c_desc(var_names{ii});
         ix = ix +1;
       end
@@ -141,7 +141,7 @@ if ischar(x), % Try to get variable labels etc.
     var_desc(ix:end)=[];
 end
 
-if iscell(x), % Plot several variables
+if iscell(x) % Plot several variables
     
     % No ylabels are given
     % But no way to now the name of variables
@@ -183,15 +183,15 @@ if ~isempty(caa_dataobject{1}) % plot CAA variable
     flag_subplot=-1; % dont make more plots
 end
 
-if isempty(ax), % if empty axis use current axis GCA
-    if isempty(get(0,'CurrentFigure')), % there is no figure open
+if isempty(ax) % if empty axis use current axis GCA
+    if isempty(get(0,'CurrentFigure')) % there is no figure open
         irf_plot(1);
     end
     ax=gca;
 end
 
 %% One subplot only
-if flag_subplot==0,  % One subplot
+if flag_subplot==0  % One subplot
   if isstruct(x)
     % Plot a spectrogram
     irf_spectrogram(ax,x);
@@ -226,7 +226,7 @@ if flag_subplot==0,  % One subplot
   else return % empty matrix or does not know what to do
   end
     
-elseif flag_subplot==1, % Separate subplot for each component
+elseif flag_subplot==1 % Separate subplot for each component
   if isstruct(x), error('cannot plot spectra in COMP mode'), end
   if isa(x,'TSeries'), time = x.time.epochUnix; data = x.data;
   else time = x(:,1); data = x(:,2:end);
@@ -245,7 +245,7 @@ elseif flag_subplot==1, % Separate subplot for each component
   end
   firstTimeStamp = time(~isnan(time)); firstTimeStamp = firstTimeStamp(1);
   
-elseif flag_subplot==2, % Separate subplot for each variable
+elseif flag_subplot==2 % Separate subplot for each variable
     if isempty(x), return, end
     
     %   t_start_epoch is saved in figures user_data variable
@@ -331,7 +331,7 @@ elseif flag_subplot==2, % Separate subplot for each variable
     
     firstTimeStamp = firstTimeStamp(1);
     
-elseif flag_subplot==3,  % components of vectors in separate panels
+elseif flag_subplot==3  % components of vectors in separate panels
     if isstruct(x), error('cannot plot spectra in COMP mode'), end
     idxEmpty = cellfun(@isempty, x); 
     if all(idxEmpty)
@@ -347,7 +347,7 @@ elseif flag_subplot==3,  % components of vectors in separate panels
     else ts = t_start_epoch(x{idx}(:,1)); npl = size(x{idx},2) -1;
     end
     
-    if npl==1,     % We make new figure with subplots only if more than 1 component to plot
+    if npl==1     % We make new figure with subplots only if more than 1 component to plot
         c = ax;
     else
         c=initialize_figure(npl);
@@ -367,7 +367,7 @@ elseif flag_subplot==3,  % components of vectors in separate panels
             end
             if isempty(x{jj}), data = [];
             else
-              if isa(x{jj},'TSeries'),
+              if isa(x{jj},'TSeries')
                 time = x{jj}.time.epochUnix; data = x{jj}.data;
               else time = x{jj}(:,1); data = x{jj}(:,2:end);
               end
@@ -547,7 +547,7 @@ if nargout==0, clear c; end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   function init_figure
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    if x>=1 && x<=30,
+    if x>=1 && x<=30
       % check if there is 'newfigure' argument
       if numel(args)>=2 && ischar(args{2}) && strcmpi(args{2},'newfigure')
         c=initialize_figure(x,'newfigure');
@@ -598,10 +598,10 @@ if isempty(get(0,'CurrentFigure')) % no current figures opened
 elseif isempty(get(gcf,'children')) && ~strcmpi(flag,'newfigure') && ~strcmpi(flag,'reset') % current figure is empty, display warning of new syntax (REMOVE THIS ELSE LOOP IN 2013)
 	disp('WARNING! use syntax irf_plot(number_of_subplots,''newfigure'') if you want new figure.')
 end
-if number_of_subplots>=1 && number_of_subplots<=30,
+if number_of_subplots>=1 && number_of_subplots<=30
     number_of_subplots=floor(number_of_subplots);
     c=gobjects(1,number_of_subplots);
-	if strcmpi(flag,'newfigure'), % if to open new figure
+	if strcmpi(flag,'newfigure') % if to open new figure
 		hcf = figure;
 		xSize = 11;
 		ySize = 5+5*sqrt(number_of_subplots);
@@ -632,7 +632,7 @@ if number_of_subplots>=1 && number_of_subplots<=30,
     all_axis_position=[0.17 0.1 0.9 0.95]; % xmin ymin xmax ymax
     subplot_width=all_axis_position(3)-all_axis_position(1);
     subplot_height=(all_axis_position(4)-all_axis_position(2))/number_of_subplots;
-    for j=1:number_of_subplots,
+    for j=1:number_of_subplots
         c(j)=axes('position',[all_axis_position(1) ...
             all_axis_position(4)-j*subplot_height ...
             subplot_width subplot_height]); % [x y dx dy]
@@ -652,10 +652,10 @@ end
 function zoom_in_if_necessary(h)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ud=get(h,'userdata');
-if isfield(ud,'zoom_x'),
+if isfield(ud,'zoom_x')
     irf.log('debug','zooming in the updated plot')
     irf_zoom(h,'x',ud.zoom_x);
-    if ud.zoom_x(1) > 1e8 && ud.zoom_x(1) < 1e10, % isdat epoch
+    if ud.zoom_x(1) > 1e8 && ud.zoom_x(1) < 1e10 % isdat epoch
         irf_timeaxis(h,'nolabel');
     end
 end

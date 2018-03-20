@@ -27,7 +27,7 @@ if isempty(irfNasaCdfDir)
   addpath(patchPath);
   disp(['Added to path: ' patchPath]);
   ok = irf.check_if_using_nasa_cdf;
-  if ~ok,
+  if ~ok
     disp(['ERROR: could not add to path: ' patchPath]);
   end
 else

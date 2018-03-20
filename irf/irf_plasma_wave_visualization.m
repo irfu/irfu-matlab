@@ -66,11 +66,11 @@ axis_view=[-45 45]; % 'XZ' view
 %% check input axes
 [ax,args,nargs] = axescheck(varargin{:});
 %% check input
-if nargs == 0 , % show help
+if nargs == 0  % show help
     help irf_plasma_wave_visualization;
     return
 end
-if (rem(nargs,2) ~= 0), % input not in pair forms, demos if necessary
+if (rem(nargs,2) ~= 0) % input not in pair forms, demos if necessary
     error('IRFU_MATLAB:irf_plasma_wave_visualization:InvalidNumberOfInputs','Incorrect number of input arguments')
 end
 while 1
@@ -150,7 +150,7 @@ while 1
             end
         case 'view'
             if ischar(args{2})
-                switch lower(args{2}), % expecting 'XZ','XY' or 'YZ'
+                switch lower(args{2}) % expecting 'XZ','XY' or 'YZ'
                     case 'xy'
                         axis_view=[0 90];
                         flag_axis_view_given=1;
@@ -166,7 +166,7 @@ while 1
                     otherwise
                         irf_log('fcal,','wrongArgType : view string can be XY, XZ or YZ')
                 end
-            elseif isnumeric(args{2}), % specifies AZ EL
+            elseif isnumeric(args{2}) % specifies AZ EL
                 axis_view=args{2};
                 flag_axis_view_given=1;
             else
@@ -174,7 +174,7 @@ while 1
             end
         case 'demo'
             if ischar(args{2})
-                switch lower(args{2}), % expecting 'XZ','XY' or 'YZ'
+                switch lower(args{2}) % expecting 'XZ','XY' or 'YZ'
                     case 'whistler'
                         E = [5 5i 0];
                         qm=[1 -1836];
@@ -255,9 +255,9 @@ end
 if ~flag_T, T=1/abs(f); end % default period is 3 wave periods
 k=[kx 0 kz];
 %% initialize figure
-if isempty(ax), % axis not defined
+if isempty(ax) % axis not defined
     set(0,'defaultLineLineWidth', 1.5);
-    if any(get(0,'children') == 101), % reuse existing window
+    if any(get(0,'children') == 101) % reuse existing window
         figure(101);
         cla;
         h=gca;
@@ -292,7 +292,7 @@ end
 % construct velocity disturbance and gyrofrequencies
 Omega_c=zeros(numel(qm),1); % allocate gyrofrequencies
 V=zeros(numel(qm),3);     % allocate particle velocity disturbance
-for j=1:numel(qm), % step through all particles
+for j=1:numel(qm) % step through all particles
     Omega_c(j)=qm(j)*B0; %  gyrofrequencies
     V(j,1) = 1i* qm(j) / (2*pi*f.^2 - Omega_c(j)^2) ...
         * (2*pi*f*E(1) + 1i*Omega_c(j)*E(2)); % x component
@@ -308,7 +308,7 @@ dR=1i*V/(2*pi*f); % position disturbances
 % r = i / (2 pi f) w =  i / (2 pi f) (ExB) / B^2
 bvec= [0 0 B0]/B0^2;
 dRfieldline=1i*cross(E,bvec)/(2*pi*f); % field line disturbance vector
-for j=1:numel(qm), % display information on disturbances
+for j=1:numel(qm) % display information on disturbances
     fprintf('%d. ===== q/m = %5.1f =====\n',j,qm(j));
     disp(['dR = ' num2str(dR(j,:),'%6.2f')]);
     disp(['dV = ' num2str(V(j,:),'%6.2f')]);
@@ -317,7 +317,7 @@ disp('3. ===== field lines =====');
 disp(['dR = ' num2str(dRfieldline,'%6.2f')]);
 %% initialize location of particles
 r_init=cell(numel(qm),1); % initial positions cell for each species
-if init_type==0 || init_type==1, % random particles in
+if init_type==0 || init_type==1 % random particles in
     for j=1:numel(qm)
         r_init{j}=rand(N,3); % random positions
         r_init{j}(:,1)=r_init{j}(:,1)*X;
@@ -326,11 +326,11 @@ if init_type==0 || init_type==1, % random particles in
         %        dVxlim=max(abs(dVi(1)),abs(dVi(1)));
         %        dVylim=max(abs(dVi(2)),abs(dVi(2)));
     end
-    if init_type==0,
+    if init_type==0
         Xplot_lim=[0 X];
         Yplot_lim=[-Y/2 Y/2];
         Zplot_lim=[0 Z];
-    elseif init_type==1,
+    elseif init_type==1
         dVxlim=max(abs(V(:,1)));
         dVylim=max(abs(V(:,2)));
         dVzlim=max(abs(V(:,3)));
@@ -338,7 +338,7 @@ if init_type==0 || init_type==1, % random particles in
         Yplot_lim=[-Y/2-dVylim/f Y/2+dVylim/f];
         Zplot_lim=[-dVzlim/f Z+dVzlim/f];
     end
-elseif init_type==2, % spread depending on disturbance amplitude
+elseif init_type==2 % spread depending on disturbance amplitude
     for j=1:numel(qm)
         r_init{j}=rand(N,3); % random positions
         r_init{j}(:,1)=r_init{j}(:,1)*(X+2*abs(V(j,1))/real(f))-abs(V(j,1))/real(f);
@@ -354,7 +354,7 @@ end
 %% initialize field lines
 field_lines_init=zeros(Nfield,Nfieldlinepoints,3); % x and y coordinates of field lines
 xfield=0:X/Nfield:X;
-for j=1:Nfield,
+for j=1:Nfield
     field_lines_init(j,:,1)=xfield(j);
     field_lines_init(j,:,2)=0;
     field_lines_init(j,:,3)=0:Z/(Nfieldlinepoints-1):Z;
@@ -366,24 +366,24 @@ set(h,'xlim',Xplot_lim,'ylim',Yplot_lim,'zlim',Zplot_lim);
 %xlabel(h,'x');ylabel(h,'y');zlabel(h,'z');
 hold(h,'on');
 flag_plot_initiated=1;
-if ~flag_axis_view_given, % allow to adjust axes interactively
+if ~flag_axis_view_given % allow to adjust axes interactively
     input('Press enter to continue:','s');
 end
 %% step through wave
 dt=(1/abs(f))/30; % 20 frames per period
 time_steps=0:dt:T;
 r=cell(length(time_steps),1); % initialize position of particles
-for jj=1:numel(qm),
+for jj=1:numel(qm)
     k_phase_factor=1i*dot(repmat(k,N,1),r_init{jj},2);
     rep_dR=repmat(dR(jj,:),N,1);
-    for j=1:length(time_steps), % calculate particle positions
+    for j=1:length(time_steps) % calculate particle positions
         t=time_steps(j);
         phasefactor=exp(-1i*2*pi*f*t+k_phase_factor); % size Npart x 1
         rep_phasefactor=repmat(phasefactor,1,3); % size Npart x 3
         r{j}{jj}=r_init{jj} + real(rep_dR.*rep_phasefactor);
     end
 end
-if 1, % calculate field line position
+if 1 % calculate field line position
     % v = -i w r > r = i v / w
     % v = E x B / B^2
     % B x v = [B^2 E - (E.B)B] / B^2
@@ -394,7 +394,7 @@ if 1, % calculate field line position
     rep_k=repmat(shiftdim(k,-1),[Nfield,Nfieldlinepoints,1]); % replicated k vector the size of field_lines_init
     rep_dRfieldline = repmat((shiftdim(repmat(dRfieldline,Nfieldlinepoints,1),-1)),[Nfield 1 1]); % replicated to size Nfield x Nfieldlinepoints x 3
     k_phase_factor=1i*dot(rep_k,field_lines_init,3); % position phase factor
-    for j=1:length(time_steps), % calculate field lines position
+    for j=1:length(time_steps) % calculate field lines position
         t=time_steps(j);
         phasefactor = exp(-1i*2*pi*f*t+k_phase_factor); % size Nfield x Nfieldlinepoints
         rep_phasefactor = shiftdim(repmat(shiftdim(phasefactor,-1),3,1),1); % create phase in matrix Nfield x Nfieldlinepoints x 3
@@ -426,9 +426,9 @@ end
         if nargin==5, marks=markers; end % marks passed as argument
         if nargin<4, field_lines=[]; end
         if nargin<1, h=gca;end
-        if ~flag_plot_initiated,      % first run
-            if nargin<5,              % marks not defined
-                for ii=1:numel(qm),
+        if ~flag_plot_initiated      % first run
+            if nargin<5              % marks not defined
+                for ii=1:numel(qm)
                     marks{ii}.markersize=10+10*((log(qm(ii))-log(min(qm)))/(log(max(qm))-log(min(qm))));
                     if sign(qm(ii))>0 % positive charge
                         marks{ii}.color='red';
@@ -439,28 +439,28 @@ end
                 end
             end
             cla(h);
-            for ii=1:length(r),       % plot particles
+            for ii=1:length(r)       % plot particles
                 hparticles(ii)=line(r{ii}(:,1),r{ii}(:,2),r{ii}(:,3),'linestyle','none',...
                     'markersize',marks{ii}.markersize,...
                     'marker',marks{ii}.marker,...
                     'color',marks{ii}.color);
             end
-            if ~isempty(field_lines), % plot field lines
-                for jjj=1:size(field_lines,1),
+            if ~isempty(field_lines) % plot field lines
+                for jjj=1:size(field_lines,1)
                     hlines(jjj)=line(field_lines(jjj,:,1),field_lines(jjj,:,2),field_lines(jjj,:,3),'linestyle','-',...
                         'color','black');
                 end
             end
         else                          % repeated run, reuse handles
-            for ii=1:length(r),       % replot particles
+            for ii=1:length(r)       % replot particles
                 delete(hparticles(ii));
                 hparticles(ii)=line(r{ii}(:,1),r{ii}(:,2),r{ii}(:,3),'linestyle','none',...
                     'markersize',marks{ii}.markersize,...
                     'marker',marks{ii}.marker,...
                     'color',marks{ii}.color);
             end
-            if ~isempty(field_lines), % replot field lines
-                for jjj=1:size(field_lines,1),
+            if ~isempty(field_lines) % replot field lines
+                for jjj=1:size(field_lines,1)
                     delete(hlines(jjj));
                     hlines(jjj)=line(field_lines(jjj,:,1),field_lines(jjj,:,2),field_lines(jjj,:,3),'linestyle','-',...
                         'color','black');

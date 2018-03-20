@@ -16,7 +16,7 @@ else
 end
 
 % check if autoY field exists, if not put it to 1
-if ~isfield(ud_fig,'autoY'),
+if ~isfield(ud_fig,'autoY')
     ud_fig.autoY=1;set(ud.figure,'userdata',ud_fig);
 end
 
@@ -61,7 +61,7 @@ switch fromto
       ud.from = 1;
     end
   case 'from'
-    [tlim step]= get_fromto(ud);
+    [tlim, step]= get_fromto(ud);
     if tlim(1) > tlim(2)
       tlim(2)=tlim(1)+step;
     else
@@ -69,7 +69,7 @@ switch fromto
     end
     update_fromto(ud,tlim);
   case 'to'
-    [tlim step]= get_fromto(ud);
+    [tlim, step]= get_fromto(ud);
     if tlim(2)< tlim(1) % end time smaller than start time
       tlim(1)=tlim(2);
       step=0;
@@ -78,20 +78,20 @@ switch fromto
     end
     update_fromto(ud,tlim);
   case 'step'
-    [tlim step]=get_fromto(ud);
+    [tlim, step]=get_fromto(ud);
     tlim(2) = tlim(1)+step;
     update_fromto(ud,tlim);
   case 'update'
-    [tlim step]=get_fromto(ud);
+    [tlim, step]=get_fromto(ud);
     irf_zoom(SUBPLOT_HANDLES,'x',tlim);
     irf_timeaxis(SUBPLOT_HANDLES);
   case 'prev'
-    [tlim step]=get_fromto(ud);
+    [tlim, step]=get_fromto(ud);
     tlim = tlim-step;
     update_fromto(ud,tlim)
     irf_fromto('update')
   case 'next'
-    [tlim step]=get_fromto(ud);
+    [tlim, step]=get_fromto(ud);
     tlim = tlim+step;
     update_fromto(ud,tlim)
     irf_fromto('update')
@@ -100,7 +100,7 @@ switch fromto
     %xd=get(hc(1),'XData');minx=min(xd);maxx=max(xd);clear xd;
     %if length(hc)>1, for ii=2:length(hc), xd=get(hc(1),'XData');minx=min([minx xd]);maxx=max([maxx xd]);clear xd;end;end
     minx=[];maxx=[];
-    for ii=1:length(hc), 
+    for ii=1:length(hc) 
       if isgraphics(hc( ii ),'axes') || isgraphics(hc( ii ),'line')
         minx=[minx min(get(hc(ii),'xdata'))];
         maxx=[maxx max(get(hc(ii),'xdata'))];
@@ -116,7 +116,7 @@ switch fromto
     tlim=[xl(1) xl(2)]+t_start_epoch;step=diff(tlim);
     update_fromto(ud,tlim);
   case 'autoY'
-    for h=SUBPLOT_HANDLES,
+    for h=SUBPLOT_HANDLES
       set(h,'YLimMode','auto');
     end
   case 'ylabel'
@@ -128,7 +128,7 @@ switch fromto
     if strcmp(label,'enter'); label=input('Input Y label>','s');end
     axes(ud.h(h_select));
     ylabel(label,'verticalalignment','bottom');
-    if size(label_and_legend,2)>1, legend(label_and_legend(2:end));end;
+    if size(label_and_legend,2)>1, legend(label_and_legend(2:end));end
   case 'toggle'
     if ud.from
       set(gcbf, 'pointer', 'right');
@@ -146,8 +146,8 @@ switch fromto
 end
 set(gcbf, 'userdata', ud);
 
-if ud.autoY==1,
-  for h=SUBPLOT_HANDLES,
+if ud.autoY==1
+  for h=SUBPLOT_HANDLES
     set(h,'YLimMode','auto');
   end
 end
@@ -167,7 +167,7 @@ set(ud.step, 'string', regexp(epoch2iso(diff(tlim)),'\d+:\d+:\d+\.\d{4}','match'
 set(ud.lnh, 'xdata', tlim);
 end
 
-function [tlim step]=get_fromto(ud)
+function [tlim, step]=get_fromto(ud)
 xx=get(ud.fromh, 'string');tstr=[strrep(xx,'_','T') 'Z'];
 tlim(1) = iso2epoch(tstr);
 xx=get(ud.toh, 'string');tstr=[strrep(xx,'_','T') 'Z'];

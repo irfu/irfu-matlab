@@ -17,18 +17,18 @@ function irf_plot_axis_align(nsubplot,h)
 narginchk(0,2)
 
 % calculate the size of axis to which align
-if nargin==0, % no subplot number given, find smallest common limit for all axis
+if nargin==0 % no subplot number given, find smallest common limit for all axis
     h=irf_plot_get_subplot_handles;
     hpostmp=zeros(numel(h),4);
-    for j=1:length(h);
+    for j=1:length(h)
         hpostmp(j,:)=get(h(j),'position');
     end
     xpos=[max(hpostmp(:,1)) min(hpostmp(:,3))];
-elseif nargin==1, % subplot number or handles to align are specified
+elseif nargin==1 % subplot number or handles to align are specified
     if any(ishandle(nsubplot)) % syntax irf_plot_axis_align(handles) has been used
         h=nsubplot;
         hpostmp=zeros(numel(h),4);
-        for j=1:length(h);
+        for j=1:length(h)
             hpostmp(j,:)=get(h(j),'position');
         end
         xpos=[max(hpostmp(:,1)) min(hpostmp(:,3))];
@@ -43,7 +43,7 @@ else
 end
 
 % align subplots
-for jj=1:length(h),
+for jj=1:length(h)
     hpos=get(h(jj),'position');
     hpos(1)=xpos(1);
     hpos(3)=xpos(2);

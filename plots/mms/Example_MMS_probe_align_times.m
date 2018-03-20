@@ -10,7 +10,7 @@ ic = 3;
 
 % Load data from MMS database. Kinda slow; much faster to load from a local
 % directory.
-if 1,
+if 1
 %load background magnetic field data
 tint = irf.tint('2015-09-02T15:20:00.00Z/2015-09-02T15:30:00.00Z');
 c_eval('Bxyz=mms.db_get_ts(''mms?_dfg_srvy_ql'',''mms?_dfg_srvy_dmpa'',tint);',ic);
@@ -38,10 +38,10 @@ end
     
 [starttime1,endtime1,starttime3,endtime3] = mms.probe_align_times(Exyz,Bxyz,SCpot,zphase,1);
 
-if 0, % Set to 1 to plot all fk power spectra
+if 0 % Set to 1 to plot all fk power spectra
 probecomb = 1;
 
-for ii=[1:length(starttime1)];
+for ii=[1:length(starttime1)]
     
 if (endtime1(ii)-starttime1(ii) > 0.2)
     tint = irf.tint(strcat(starttime1(ii).utc,'/',endtime1(ii).utc));
@@ -59,7 +59,7 @@ if (endtime1(ii)-starttime1(ii) > 0.2)
     vph = mms.estimate_phase_speed(fkpower,freq,wavenumber);
     kfit = [0.0001:0.0001:0.1];
     ffit = abs(vph/(2*pi)*kfit);
-    if(vph < 0);
+    if(vph < 0)
         kfit = -kfit;
     end
     hold(h(1),'on');
@@ -81,7 +81,7 @@ end
 
 probecomb = 3;
 
-for ii=[1:length(starttime3)];
+for ii=[1:length(starttime3)]
     
 if (endtime3(ii)-starttime3(ii) > 0.2)
     tint = irf.tint(strcat(starttime3(ii).utc,'/',endtime3(ii).utc));
@@ -99,7 +99,7 @@ if (endtime3(ii)-starttime3(ii) > 0.2)
     vph = mms.estimate_phase_speed(fkpower,freq,wavenumber);
     kfit = [0.0001:0.0001:0.1];
     ffit = abs(vph/(2*pi)*kfit);
-    if(vph < 0);
+    if(vph < 0)
         kfit = -kfit;
     end
         hold(h(1),'on');
