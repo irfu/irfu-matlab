@@ -66,28 +66,28 @@ isPlot=0;		% default not to plot
 fDefault=10.^(-1:.03:log10(30))*1e6; % default frequency vector
 
 	% [S,f]=IRF_MODEL_GALACTIC_BACKGROUND_RADIATION() 
-if nargin == 0 && nargout == 2, 
+if nargin == 0 && nargout == 2 
 	isWUnits=0; 
 	f=fDefault;		% 0.1 - 30 MHz
 	%
 	% [S]=IRF_MODEL_GALACTIC_BACKGROUND_RADIATION(f) 
-elseif nargin == 1 && isnumeric(varargin{:}) && nargout == 1, 
+elseif nargin == 1 && isnumeric(varargin{:}) && nargout == 1 
 	isWUnits=0;
 	f=varargin{1};
 	%
 	% [S]=IRF_MODEL_GALACTIC_BACKGROUND_RADIATION(f,'W')
-elseif nargin == 1 && isnumeric(varargin{:}) && nargout == 2 && strcmp(varargin{2},'W'),
+elseif nargin == 1 && isnumeric(varargin{:}) && nargout == 2 && strcmp(varargin{2},'W')
 	f=varargin{1};
 	%
 	% IRF_MODEL_GALACTIC_BACKGROUND_RADIATION('plot')
-elseif nargin == 1 && strcmp(varargin{1},'plot'),
+elseif nargin == 1 && strcmp(varargin{1},'plot')
 	f=fDefault;
 	isWUnits=0;
 	isPlot=1;
 	%
 	% IRF_MODEL_GALACTIC_BACKGROUND_RADIATION('plot','W')
 elseif nargin == 2 && strcmp(varargin{1},'plot') && ...
-		strcmp(varargin{2},'W'),
+		strcmp(varargin{2},'W')
 	f=fDefault;
 	isPlot=1;
 else
@@ -109,7 +109,7 @@ Units=irf_units;
 s_in_volts_per_meter = @(f) s_total(f)*4/3*pi/Units.c/Units.eps0;
 
 frequencyMHz=f./1e6;
-if isWUnits,
+if isWUnits
 	S=s_total(frequencyMHz);
 else
 	S=s_in_volts_per_meter(frequencyMHz);
@@ -117,7 +117,7 @@ end
 
 %% Plotting if required
 
-if isPlot,
+if isPlot
 	h=irf_plot(1,'newfigure');
     plot(h,f/1e6,S,'-');
 	grid(h,'on');
@@ -125,7 +125,7 @@ if isPlot,
 	set(h,'yscale','log');
 	title(h,'Galactic background radiation');
 	xlabel(h,'frequency [MHz]');
-	if isWUnits,
+	if isWUnits
 		ylabel(h,'S [W/m^2/Hz/s]');
 	else
 		ylabel(h,'S [V^2/m^2/Hz]');

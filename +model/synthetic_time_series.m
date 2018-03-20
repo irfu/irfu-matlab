@@ -48,10 +48,10 @@ randomPhaseForEachComponent = false;
 gyrotropicSignal = false;
 
 %% Input check
-if nargin == 0 && nargout == 0,
+if nargin == 0 && nargout == 0
 	help model.synthetic_time_series;
 	return;
-elseif nargin == 1 && isstruct(varargin{1}),
+elseif nargin == 1 && isstruct(varargin{1})
 	InputParameters = varargin{1};
 	inputParameterFields = fieldnames(InputParameters);
 	for j=1:numel(inputParameterFields)
@@ -95,8 +95,8 @@ nPoints = numel(ts);
 amplitude = amplitude/sqrt(norm(amplitude))*sqrt(1/timeInterval)*sqrt(2); 
 
 %% Initialize fftSignal
-if numel(amplitude) ~= components,
-	if numel(amplitude) == 1, % use the same amplitude for all components
+if numel(amplitude) ~= components
+	if numel(amplitude) == 1 % use the same amplitude for all components
 		fftSignal = amplitude(ones(nPoints,components));
 		randomPhaseForEachComponent = true; 
 	else
@@ -110,7 +110,7 @@ end
 
 %% Apply gyrotropization if needed
 if gyrotropicSignal
-	if components == 1,
+	if components == 1
 		irf.log('critical','should be at least 2 components for gyrotropic signal!');
 		error('should be at least 2 components for gyrotropic signal!');
 	end
