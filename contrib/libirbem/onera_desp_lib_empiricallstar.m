@@ -33,17 +33,17 @@ onera_desp_lib_load;
 ntime = length(matlabd);
 kext = onera_desp_lib_kext(kext);
 options = onera_desp_lib_options(options);
-if isempty(maginput),
+if isempty(maginput)
     maginput = nan(ntime,25);
 end
 
-if (size(maginput,1)==25) && (size(maginput,2)~=25), % 25xN
+if (size(maginput,1)==25) && (size(maginput,2)~=25) % 25xN
     maginput = maginput'; % Nx25
 end
-if size(maginput,1) ~= ntime,
+if size(maginput,1) ~= ntime
     maginput = repmat(maginput,ntime,1);
 end
-if length(matlabd)==1,
+if length(matlabd)==1
     matlabd = repmat(matlabd,ntime,1);
 end
 
@@ -54,9 +54,9 @@ siz_in = size(matlabd);
 
 Nmax = onera_desp_lib_ntime_max; % maximum array size in fortran library
 Lstar = repmat(nan,Nmax,1);
-if ntime>Nmax,
+if ntime>Nmax
     % break up the calculation into chunks the libarary can handle
-    for i = 1:Nmax:ntime,
+    for i = 1:Nmax:ntime
         ii = i:min(i+Nmax-1,ntime);
         Lstar(ii)= ...
             onera_desp_lib_empiricallstar(kext,options,matlabd(ii),maginput(ii,:),Lm(ii),J(ii));

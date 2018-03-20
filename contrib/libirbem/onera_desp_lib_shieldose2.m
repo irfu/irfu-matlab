@@ -66,20 +66,20 @@ EUNIT = 1; % dummy--energy must be in MeV
 DURATN = 1; % dummy--shieldose treats flares as fluence & duration but we're not doing that
 pad = false;
 
-for i = 1:2:length(varargin),
+for i = 1:2:length(varargin)
     var = varargin{i};
-    if ~ischar(var),
+    if ~ischar(var)
         error('Non-string provided as option keyword to "%s"',mfilename);
     end
     val = varargin{i+1};
-    switch(lower(var)),
-        case {'inuc'},
+    switch(lower(var))
+        case {'inuc'}
             INUC = val;
-        case {'npts'},
+        case {'npts'}
             NPTS = val;
-        case {'pad'},
+        case {'pad'}
             pad = val;
-        case {'peryear'},
+        case {'peryear'}
             perYear = val;
         otherwise
             error('Unknown option "%s" in "%s"',var,mfilename);
@@ -89,14 +89,14 @@ end
 depth = Target.depth(:);
 
 % compute maximum number of depths
-if pad,
+if pad
     max_Nd = floor(71/5);
 else
     max_Nd = 71;
 end
 
 
-if length(depth)>max_Nd,
+if length(depth)>max_Nd
     % break up into multiple calls for too many depths
     ProtDose = nan(length(depth),3);
     ElecDose = ProtDose;
@@ -104,7 +104,7 @@ if length(depth)>max_Nd,
     SolDose = ProtDose;
     TotDose = ProtDose;
     tmpTarget = Target;
-    for i = 1:max_Nd:length(depth),
+    for i = 1:max_Nd:length(depth)
         idep = i:min(length(depth),i+max_Nd-1);
         tmpTarget.depth = Target.depth(idep);
         [ProtDose(idep,:),ElecDose(idep,:),BremDose(idep,:),SolDose(idep,:),TotDose(idep,:)] = ...
@@ -113,7 +113,7 @@ if length(depth)>max_Nd,
     return
 end
 
-if pad,
+if pad
     depth = unique(cat(1,depth(:)*0.98,depth(:)*0.99,...
         depth(:),depth(:)*1.01,depth(:)*1.02));
 end
@@ -155,7 +155,7 @@ ElecDose = get(ElecDosePtr,'value');
 BremDose = get(BremDosePtr,'value');
 TotDose = get(TotDosePtr,'value');
 
-if pad,
+if pad
     % trim, re-order, restore duplicates
     [du,~,ju] = unique(Target.depth); % du(ju) = Target.depths
     [I,J] = ismember(depth,du); % depth(I) = du(J(I))
@@ -171,7 +171,7 @@ ElecDose = ElecDose(iRetrieve,:);
 BremDose = BremDose(iRetrieve,:);
 TotDose = TotDose(iRetrieve,:);
 
-if perYear,
+if perYear
     yearseconds = 365*24*60*60;
     SolDose = SolDose*yearseconds;
     ProtDose = ProtDose*yearseconds;
@@ -182,8 +182,8 @@ end
 
 function IDET = shieldose2_idet(IDET)
 
-if ~isnumeric(IDET),
-    switch(lower(IDET)),
+if ~isnumeric(IDET)
+    switch(lower(IDET))
         case {'al','aluminum','aluminium'}, IDET = 1;
         case {'c','carbon','graph','graphite'}, IDET = 2;
         case {'si','silicon'}, IDET = 3;
@@ -202,8 +202,8 @@ end
 
 function IUNIT = shieldose2_iunit(IUNIT)
 
-if ~isnumeric(IUNIT),
-    switch(lower(IUNIT)),
+if ~isnumeric(IUNIT)
+    switch(lower(IUNIT))
         case {'mil','mils'}, IUNIT = 1;
         case {'g/cm^2','g/cm2','gcm2','gpercm2'}, IUNIT = 2;
         case {'mm','millimeters'}, IUNIT = 3;
@@ -213,29 +213,29 @@ if ~isnumeric(IUNIT),
 end
 
 function [EMIN,EMAX,Ein,FLUXin,NPTS] = shieldose2_spect(Spect)
-if isempty(Spect),
+if isempty(Spect)
     EMIN = 0.1;
     EMAX = 1e4;
     Ein = 0;
     FLUXin = 0;
     NPTS = 0;
-elseif isfield(Spect,'E0'),
+elseif isfield(Spect,'E0')
     EMIN = Spect.Erange(1);
     EMAX = Spect.Erange(end);
     Ein = [0 0 0];
     FLUXin = [Spect.E0 Spect.N0 0];
-    if lower(Spect.form(1))=='r',
+    if lower(Spect.form(1))=='r'
         FLUXin(3) = 1; % exponential in rigidity
     end
     NPTS = 3;
 else
     Ein = Spect.E;
     FLUXin = Spect.Flux;
-    while ~isempty(FLUXin) && (FLUXin(end)<=0),
+    while ~isempty(FLUXin) && (FLUXin(end)<=0)
         FLUXin = FLUXin(1:(end-1));
         Ein = Ein(1:(end-1));
     end
-    if isempty(FLUXin) || all(FLUXin==0), % all zeros or negative!
+    if isempty(FLUXin) || all(FLUXin==0) % all zeros or negative!
         [EMIN,EMAX,Ein,FLUXin,NPTS] = shieldose2_spect([]);
         return;
     end
@@ -244,7 +244,7 @@ else
     % might screw up.
     FLUXin(FLUXin==0) = min(FLUXin(FLUXin>0))/10;
     NPTS = length(Ein);
-    if isfield(Spect,'Erange'),
+    if isfield(Spect,'Erange')
         EMIN = Spect.Erange(1);
         EMAX = Spect.Erange(end);
     else

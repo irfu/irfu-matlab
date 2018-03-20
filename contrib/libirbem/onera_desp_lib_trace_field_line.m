@@ -60,11 +60,11 @@ function [Lm,Blocal,Bmin,J,POSIT] = onera_desp_lib_trace_field_line(kext,options
 % if maginput is omitted, [] is assumed
 % if R0 is omitted, R0=1 is assumed
 
-if nargin < 8,
+if nargin < 8
     maginput = [];
 end
 
-if nargin < 9,
+if nargin < 9
     R0 = 1;
 end
 
@@ -75,10 +75,10 @@ onera_desp_lib_load;
 kext = onera_desp_lib_kext(kext);
 options = onera_desp_lib_options(options);
 sysaxes = onera_desp_lib_sysaxes(sysaxes);
-if isempty(maginput),
+if isempty(maginput)
     maginput = nan(1,25);
 end
-if size(maginput,2) == 1, % make column vector into row vector
+if size(maginput,2) == 1 % make column vector into row vector
     maginput = maginput';
 end
 

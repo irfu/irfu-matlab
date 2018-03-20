@@ -60,16 +60,16 @@ function [Bgeo,B,gradBmag,diffB] = onera_desp_lib_get_bderivs(kext,options,sysax
 % IMPORTANT: all inputs must be present. For those which are not used a dummy value can be provided.
 %
 
-if nargin < 8,
+if nargin < 8
     maginput = [];
 end
 
 dX = 1E-3;
 
 i = 1;
-while i <= length(varargin),
-    switch(upper(varargin{i})),
-        case 'DX',
+while i <= length(varargin)
+    switch(upper(varargin{i}))
+        case 'DX'
             i = i+1;
             dX = varargin{i};
     end
@@ -84,35 +84,35 @@ ntime = length(x1);
 kext = onera_desp_lib_kext(kext);
 options = onera_desp_lib_options(options);
 sysaxes = onera_desp_lib_sysaxes(sysaxes);
-if isempty(maginput),
+if isempty(maginput)
     maginput = nan(ntime,25);
 end
-if (size(maginput,1)==25) && (size(maginput,2)~=25), % 25xN
+if (size(maginput,1)==25) && (size(maginput,2)~=25) % 25xN
     maginput = maginput'; % Nx25
 end
-if size(maginput,1) ~= ntime,
+if size(maginput,1) ~= ntime
     maginput = repmat(maginput,ntime,1);
 end
-if length(matlabd)==1,
+if length(matlabd)==1
     matlabd = repmat(matlabd,ntime,1);
 end
 maginput = onera_desp_lib_maginputs(maginput); % NaN to baddata
 
 
 Nmax = onera_desp_lib_ntime_max; % maximum array size in fortran library
-if ntime > Nmax, % break up into multiple calls
+if ntime > Nmax % break up into multiple calls
     Bgeo = nan(ntime,3);
     B = nan(ntime,1);
     gradBmag = nan(ntime,3);
     diffB = nan(ntime,3,3);
-    for i = 1:Nmax:ntime,
+    for i = 1:Nmax:ntime
         ii = i:min(i+Nmax-1,ntime);
         [Bgeo(ii,:),B(ii),gradBmag(ii,:),diffB(ii,:,:)] = onera_desp_lib_get_field(kext,options,sysaxes,matlabd(ii),x1(ii),x2(ii),x3(ii),maginput(ii,:),'dX',dX);
     end
     return
 end
 
-if ntime<Nmax, % pad maginput b/c of impending transpose
+if ntime<Nmax % pad maginput b/c of impending transpose
     maginput = [maginput;nan(Nmax-ntime,25)];
 end
 

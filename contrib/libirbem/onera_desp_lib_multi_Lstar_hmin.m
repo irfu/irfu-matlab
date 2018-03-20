@@ -5,43 +5,43 @@ function varargout = onera_desp_lib_multi_Lstar_hmin(what,varargin)
 % default alpha = 90, default maginput = [] = zeros(25,1), default R0=1
 
 varargout = cell(1,nargout);
-switch(lower(what)),
-    case {'write','save'},
+switch(lower(what))
+    case {'write','save'}
         write_inputs(varargin{:});
-    case {'read','load'},
+    case {'read','load'}
         [varargout{:}] = read_outputs(varargin{:});
     otherwise
         error('Unknown action (what) = <%s>',what);
 end
 
 function write_inputs(filename,kext,options,sysaxes,dates,x1,x2,x3,alpha,maginput,R0)
-if nargin < 9,
+if nargin < 9
     alpha = 90;
 end
 
-if nargin < 10,
+if nargin < 10
     maginput = [];
 end
 
-if nargin < 11,
+if nargin < 11
     R0 = 1;
 end
 
-if isempty(maginput),
+if isempty(maginput)
     maginput = nan(25,1);
 end
 
-if numel(maginput)==25,
+if numel(maginput)==25
     maginput = reshape(maginput,1,25); % row vector
 end
 
-if size(maginput,2) ~= 25,
+if size(maginput,2) ~= 25
     error('maginput is wrong size. dim 2 should be 25 elements');
 end
 
 ntimes = numel(dates);
 
-if numel(alpha)==1,
+if numel(alpha)==1
     alpha = repmat(alpha,ntimes,1);
 end
 
@@ -53,7 +53,7 @@ header(1:length(magic)) = magic; % magic string
 % use first byte in header after magic string
 % other header bytes will be used for similar things
 maginput_varies = numel(maginput)>25;
-if maginput_varies,
+if maginput_varies
     header(length(magic)+1) = char(1); % maginput varies with time
 end
 

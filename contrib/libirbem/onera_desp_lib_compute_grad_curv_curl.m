@@ -39,7 +39,7 @@ onera_desp_lib_load;
 ntime = numel(B);
 
 Nmax = onera_desp_lib_ntime_max; % maximum array size in fortran library
-if ntime > Nmax, % break up into multiple calls
+if ntime > Nmax % break up into multiple calls
     grad_par = nan(ntime,1);
     grad_perp = nan(ntime,3);
     grad_drift = nan(ntime,3);
@@ -48,7 +48,7 @@ if ntime > Nmax, % break up into multiple calls
     curv_drift = nan(ntime,3);
     curlB = nan(ntime,3);
     divB = nan(ntime,1);
-    for i = 1:Nmax:ntime,
+    for i = 1:Nmax:ntime
         ii = i:min(i+Nmax-1,ntime);
         [grad_par(ii),grad_perp(ii,:),grad_drift(ii,:),curvature(ii,:),Rcurv(ii),curv_drift(ii,:),curlB(ii,:),divB(ii)] = ...
             onera_desp_lib_comput_grad_curv_curl(Bgeo(ii,:),B(ii),gradBmag(ii,:),diffB(ii,:,:));

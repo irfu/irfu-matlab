@@ -56,7 +56,7 @@ function POSIT = onera_desp_lib_trace_field_line_towards_earth(kext,options,sysa
 % 
 % ds: Integration step along field line (in Re). 
 
-if (nargin < 8) && (isscalar(maginput)),
+if (nargin < 8) && (isscalar(maginput))
     ds = maginput;
     maginput = [];
 end
@@ -69,10 +69,10 @@ kext = onera_desp_lib_kext(kext);
 options = onera_desp_lib_options(options);
 sysaxes = onera_desp_lib_sysaxes(sysaxes);
 
-if isempty(maginput),
+if isempty(maginput)
     maginput = nan(1,25);
 end
-if size(maginput,2) == 1, % make column vector into row vector
+if size(maginput,2) == 1 % make column vector into row vector
     maginput = maginput';
 end
 

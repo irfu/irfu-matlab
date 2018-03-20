@@ -1,4 +1,4 @@
-function [partIntrvlStart, partIntrvlDur]=isPartitionInterval(intrvlStart,intrvldur,partLen,cntLstStart,cntLstDur);
+function [partIntrvlStart, partIntrvlDur]=isPartitionInterval(intrvlStart,intrvldur,partLen,cntLstStart,cntLstDur)
 % isPartitionInterval - Partition time intervals.
 %
 %   [PS,PD]=isPartitionInterval(S,D,L) partitions the time interval, given by

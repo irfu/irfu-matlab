@@ -831,7 +831,7 @@ if doAnalyzeFile
         disp(['* ' ffn]);
         if numel(anaFileErr)==0
             sr_display_str = '';
-            for idx = 1:numRC;
+            for idx = 1:numRC
                 sr_display_str = [sr_display_str ' �' repChar{idx} '�']; %#ok<AGROW>
             end
             disp(['* read mode: ' readMode]);
@@ -1628,7 +1628,7 @@ if strcmpi(readMode,'line') || ~isempty(errmsg)
     if arg.val.InfoLevel >= 2
         if numColon>=0
             reference = numColon;
-        elseif numColon == -1;
+        elseif numColon == -1
             reference = width_A;
         else
             reference = -numColon;

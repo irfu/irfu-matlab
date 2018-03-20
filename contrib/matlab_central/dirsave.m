@@ -27,7 +27,7 @@ end
 jFile = java.io.File(file);
 if ~jFile.exists()
     ok = mkdir(file);
-    if ~ok; 
+    if ~ok 
         error('failed creating dirsave dir %s', file);
     end
 elseif ~jFile.isDirectory()

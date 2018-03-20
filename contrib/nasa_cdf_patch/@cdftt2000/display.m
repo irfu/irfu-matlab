@@ -5,24 +5,24 @@ if strcmp(get(0, 'FormatSpacing'), 'loose')
     loose = 1;
 else
     loose = 0;
-end;
+end
 
 %
 % Name or ans
 %
 if loose ~= 0
     disp(' ');
-end;
+end
 
 if isempty(inputname(1))
     disp('ans =');
 else
     disp([inputname(1) ' =']);
-end;
+end
 
 if loose ~= 0
     disp(' ');
-end;
+end
 
 tt2000 = todatenum(obj);
 if isempty(tt2000)

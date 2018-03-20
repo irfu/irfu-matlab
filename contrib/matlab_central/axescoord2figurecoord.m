@@ -20,14 +20,14 @@ function [xfigure, yfigure]=axescoord2figurecoord(varargin)
 % Acknowledgments are due to Scott Hirsch (shirsch@mathworks.com) for is
 % function ds2nfu. Some part of the present function derived from ds2nfu.
 %
-% Valley Benoît / Jan 2007
+% Valley Benoï¿½ / Jan 2007
 % valley@erdw.ethz.ch
 
 % Source: Matlab Central File Exchange
 % https://www.mathworks.com/matlabcentral/fileexchange/13634-axescoord2figurecoord/
 
 % LICENSE
-% Copyright (c) 2009, Benoît Valley
+% Copyright (c) 2009, Benoï¿½ Valley
 % All rights reserved.
 %
 % Redistribution and use in source and binary forms, with or without
@@ -125,7 +125,7 @@ if strcmp(xd , 'normal')==1
 else
     xfigure = xab+xwb*(x_axislimits(2)-xaxes)/x_axislength;
 end
-if strcmp(funit,'normalized');
+if strcmp(funit,'normalized')
     xfigure(find(xfigure>1))=1;
     xfigure(find(xfigure<0))=0;
 end
@@ -136,7 +136,7 @@ if strcmp(yd , 'normal')==1
 else
     yfigure = yab+ywb*(y_axislimits(2)-yaxes)/y_axislength;
 end
-if strcmp(funit,'normalized');
+if strcmp(funit,'normalized')
     yfigure(find(yfigure>1))=1;
     yfigure(find(yfigure<0))=0;
 end

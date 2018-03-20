@@ -54,19 +54,19 @@ X = onera_desp_lib_coord_trans(X,[sysaxes 0],date); % get alt, lat, lon, sysaxes
 
 Nmax = onera_desp_lib_ntime_max;
 N = length(date);
-if N > Nmax,
-    for i = 1:Nmax:N,
+if N > Nmax
+    for i = 1:Nmax:N
         ii = (i:min(i+Nmax-1,N))';
         % change the call to sysaxes below to 'gdz', since we rotated to
         % GDZ above.  
         tmpout = onera_desp_lib_msis(whichm,date(ii),X(ii,:),'gdz',F107A(ii),F107(ii),Ap(ii,:));
-        if isempty(out),
+        if isempty(out)
             out = tmpout;
         else
             fldnames = fieldnames(tmpout);
-            for ifld = 1:length(fldnames),
+            for ifld = 1:length(fldnames)
                 var = fldnames{ifld};
-                if size(tmpout.(var),1)==length(ii),
+                if size(tmpout.(var),1)==length(ii)
                     out.(var) = [out.(var);tmpout.(var)];
                 end
             end
@@ -74,14 +74,14 @@ if N > Nmax,
     end
 else
 
-    switch(lower(whichm)),
-        case {'86','msis86'},
+    switch(lower(whichm))
+        case {'86','msis86'}
             libfunc_str = 'msis86_';
             DensVars = {'He','O','N2','O2','Ar','TotalMass','H','N'};
-        case {'90','msise90'},
+        case {'90','msise90'}
             libfunc_str = 'msise90_';
             DensVars = {'He','O','N2','O2','Ar','TotalMass','H','N'};
-        case {'00','nrlmsise00'},
+        case {'00','nrlmsise00'}
             libfunc_str = 'nrlmsise00_';
             % NRLMSISE-00 has one additional component, AnomalousOxygen.
             DensVars = {'He','O','N2','O2','Ar','TotalMass','H','N','AnomalousOxygen'};
@@ -91,9 +91,9 @@ else
 
     nSpecies = length(DensVars);  % generalize the number of components to accomodate NRLMSISE-00
     
-    if size(Ap,2)==7,
+    if size(Ap,2)==7
         WhichAp = 2;
-    elseif size(Ap,2) ==1,
+    elseif size(Ap,2) ==1
         WhichAp = 1;
     else
         error('%s: Ap wrong size. Must be Nx1 or Nx7',mfilename);
@@ -103,7 +103,7 @@ else
     date = [date(:);nanpad];
     [iyear,idoy,UT] = onera_desp_lib_matlabd2yds(date);
     Ap = [Ap;repmat(nanpad,1,size(Ap,2))];
-    if WhichAp==1,
+    if WhichAp==1
         Ap = [Ap,nan(Nmax,6)]; % add extra columns
     end
     % Ap in FORTRAN is 7 x Nmax
@@ -120,7 +120,7 @@ else
     Dens(Dens < 0) = nan; % flag is -1e30
     Temp = Temp(1:N,:);
     Temp(Temp < 0) = nan; % flag is -1e30
-    for i = 1:length(DensVars),
+    for i = 1:length(DensVars)
         out.(DensVars{i}) = Dens(:,i);
     end
     out.ExoTemp = Temp(:,1);

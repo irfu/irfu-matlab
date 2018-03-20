@@ -94,9 +94,9 @@ elements.u0 = get(u0Ptr,'value');
 elements.l0 = get(l0Ptr,'value');
 elements.Pi = get(PiPtr,'value');
 fnames = fieldnames(elements);
-for i = 1:length(fnames),
+for i = 1:length(fnames)
     var = fnames{i};
-    if abs(elements.(var)-undef)<abs(undef)/100,
+    if abs(elements.(var)-undef)<abs(undef)/100
         elements = rmfield(elements,var);
     end
 end
@@ -107,9 +107,9 @@ elements.a = elements.a/Re;
 
 % turn the remaining angles into degrees
 angles = {'i','Omega','omega','nu0','M0','u0','l0','Pi'};
-for i = 1:length(angles),
+for i = 1:length(angles)
     var = angles{i};
-    if isfield(elements,var),
+    if isfield(elements,var)
         elements.(var) = elements.(var)*180/pi;
     end
 end

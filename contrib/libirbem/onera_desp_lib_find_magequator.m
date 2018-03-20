@@ -55,7 +55,7 @@ function [Bmin,xGEO] = onera_desp_lib_find_magequator(kext,options,sysaxes,matla
 % IMPORTANT: all inputs must be present. For those which are not used a dummy value can be provided.
 %
 
-if nargin < 8,
+if nargin < 8
     maginput = [];
 end
 
@@ -67,16 +67,16 @@ ntime = length(x1);
 kext = onera_desp_lib_kext(kext);
 options = onera_desp_lib_options(options);
 sysaxes = onera_desp_lib_sysaxes(sysaxes);
-if isempty(maginput),
+if isempty(maginput)
     maginput = nan(ntime,25);
 end
-if (size(maginput,1)==25) && (size(maginput,2)~=25), % 25xN
+if (size(maginput,1)==25) && (size(maginput,2)~=25) % 25xN
     maginput = maginput'; % Nx25
 end
-if size(maginput,1) ~= ntime,
+if size(maginput,1) ~= ntime
     maginput = repmat(maginput,ntime,1);
 end
-if length(matlabd)==1,
+if length(matlabd)==1
     matlabd = repmat(matlabd,ntime,1);
 end
 
@@ -90,7 +90,7 @@ bmin = nan;
 xgeo = repmat(nan,1,3);
 bminPtr = libpointer('doublePtr',bmin);
 xgeoPtr = libpointer('doublePtr',xgeo);
-for i = 1:ntime,
+for i = 1:ntime
     calllib('onera_desp_lib','find_magequator1_',kext,options,sysaxes,iyear(i),idoy(i),UT(i),x1(i),x2(i),x3(i),maginput(i,:),...
         bminPtr,xgeoPtr);
     % have to do this next bit because Ptr's aren't really pointers

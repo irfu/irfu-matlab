@@ -29,32 +29,32 @@ function info = onera_desp_lib_load(libfile,headerfile)
 % checks the environment variable IRBEM_THUNK_TMP_PATH to specify where to 
 % create the thunkfile (64-bit systems only), otherwise let's matlab decide
 
-if ~libisloaded('onera_desp_lib'),
-    if nargin < 2,
+if ~libisloaded('onera_desp_lib')
+    if nargin < 2
         headerfile = 'onera_desp_lib.h';
     end
     
     % determine DLL extension
-    if ispc,
+    if ispc
         libext = 'dll';
-    elseif ismac,
+    elseif ismac
         libext = 'dylib';
     else
         libext = 'so';
     end
 
-    if nargin < 1,
-        if ~isempty(getenv('IRBEM_LIB_DLL')),
+    if nargin < 1
+        if ~isempty(getenv('IRBEM_LIB_DLL'))
             libfile = getenv('IRBEM_LIB_DLL');
         else
             libfile = ['onera_desp_lib_',lower(computer),'.',libext];
         end
     end
-    if ~exist(libfile,'file'),
+    if ~exist(libfile,'file')
         error('libfile %s not found',libfile);
     end
     %fprintf('Loading %s\n',libfile);
-    if isempty(getenv('IRBEM_THUNK_TMP_PATH')),
+    if isempty(getenv('IRBEM_THUNK_TMP_PATH'))
         loadlibrary(libfile,headerfile,'alias','onera_desp_lib'); % let matlab choose the thunkfile name and location
     else % use user specifiedlocation
         old_pwd = pwd; % current wd

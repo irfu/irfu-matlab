@@ -57,7 +57,7 @@ function [Blocal,Bmirror,xGEO] = onera_desp_lib_find_mirror_point(kext,options,s
 % IMPORTANT: all inputs must be present. For those which are not used a dummy value can be provided.
 %
 
-if nargin < 9,
+if nargin < 9
     maginput = [];
 end
 
@@ -70,16 +70,16 @@ nipa = length(alpha);
 kext = onera_desp_lib_kext(kext);
 options = onera_desp_lib_options(options);
 sysaxes = onera_desp_lib_sysaxes(sysaxes);
-if isempty(maginput),
+if isempty(maginput)
     maginput = nan(ntime,25);
 end
-if (size(maginput,1)==25) && (size(maginput,2)~=25), % 25xN
+if (size(maginput,1)==25) && (size(maginput,2)~=25) % 25xN
     maginput = maginput'; % Nx25
 end
-if size(maginput,1) ~= ntime,
+if size(maginput,1) ~= ntime
     maginput = repmat(maginput,ntime,1);
 end
-if length(matlabd)==1,
+if length(matlabd)==1
     matlabd = repmat(matlabd,ntime,1);
 end
 
@@ -96,8 +96,8 @@ xgeo = repmat(nan,1,3);
 blPtr = libpointer('doublePtr',bl);
 bmirPtr = libpointer('doublePtr',bmir);
 xgeoPtr = libpointer('doublePtr',xgeo);
-for i = 1:ntime,
-    for j = 1:nipa,
+for i = 1:ntime
+    for j = 1:nipa
         calllib('onera_desp_lib','find_mirror_point1_',kext,options,sysaxes,iyear(i),idoy(i),UT(i),x1(i),x2(i),x3(i),alpha(j),maginput(i,:),...
             blPtr,bmirPtr,xgeoPtr);
         % have to do this next bit because Ptr's aren't really pointers

@@ -48,13 +48,13 @@ function kext = onera_desp_lib_kext(kext)
 % when the magnetic field model inputs are outside the allowed range bad data values are returned. 
 % When solar wind inputs are required they must be taken in the vicinity of the day side magnetopause and not at L1.
 % 
-if isempty(kext), % do this first because isnumeric([])==1
+if isempty(kext) % do this first because isnumeric([])==1
     kext = 0;
 end
-if isnumeric(kext),
+if isnumeric(kext)
     return
 end
-switch(upper(kext)),
+switch(upper(kext))
     case {'','IGRF'}, kext = 0;
     case {'MF'}, kext = 1;
     case {'T87','T87SHORT'}, kext = 2;

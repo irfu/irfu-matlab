@@ -117,7 +117,7 @@ cax = caxis;
 
 % convert object color indexes into colormap to true-color data using 
 %  current colormap
-for hh = cdatah',
+for hh = cdatah'
     g = get(hh);
     
     %preserve parent axis clim
@@ -127,14 +127,14 @@ for hh = cdatah',
     %   Note: Special handling of patches: For some reason, setting
     %   cdata on patches created by bar() yields an error,
     %   so instead we'll set facevertexcdata instead for patches.
-    if ~strcmp(g.Type,'patch'),
+    if ~strcmp(g.Type,'patch')
         cdata = g.CData;
     else
         cdata = g.FaceVertexCData; 
     end
     
     %get cdata mapping (most objects (except scattergroup) have it)
-    if isfield(g,'CDataMapping'),
+    if isfield(g,'CDataMapping')
         scalemode = g.CDataMapping;
     else
         scalemode = 'scaled';
@@ -145,7 +145,7 @@ for hh = cdatah',
     setappdata(hh, appdatacode, {cdata scalemode});
 
     %convert cdata to indexes into colormap
-    if strcmp(scalemode,'scaled'),
+    if strcmp(scalemode,'scaled')
         %4/19/06 JRI, Accommodate scaled display of integer cdata:
         %       in MATLAB, uint * double = uint, so must coerce cdata to double
         %       Thanks to O Yamashita for pointing this need out
@@ -168,7 +168,7 @@ for hh = cdatah',
 
     %make true-color data--using current colormap
     realcolor = zeros(siz);
-    for i = 1:3,
+    for i = 1:3
         c = cmap(idx,i);
         c = reshape(c,siz);
         c(nanmask) = nancolor(i); %restore Nan (or nancolor if specified)
@@ -178,19 +178,19 @@ for hh = cdatah',
     %apply new true-color color data
     
     %true-color is not supported in painters renderer, so switch out of that
-    if strcmp(get(gcf,'renderer'), 'painters'),
+    if strcmp(get(gcf,'renderer'), 'painters')
         set(gcf,'renderer','zbuffer');
     end
     
     %replace original CData with true-color data
-    if ~strcmp(g.Type,'patch'),
+    if ~strcmp(g.Type,'patch')
         set(hh,'CData',realcolor);
     else
         set(hh,'faceVertexCData',permute(realcolor,[1 3 2]))
     end
     
     %restore clim (so colorbar will show correct limits)
-    if ~isempty(parentAx),
+    if ~isempty(parentAx)
         set(parentAx,'clim',originalClim)
     end
     
@@ -221,9 +221,9 @@ if isempty(h),return;end
 ch = get(h,'children');
 for hh = ch'
     g = get(hh);
-    if isfield(g,'CData'),     %does object have CData?
+    if isfield(g,'CData')     %does object have CData?
         %is it indexed/scaled?
-        if ~isempty(g.CData) && isnumeric(g.CData) && size(g.CData,3)==1, 
+        if ~isempty(g.CData) && isnumeric(g.CData) && size(g.CData,3)==1 
             hout = [hout; hh]; %#ok<AGROW> %yes, add to list
         end
     else %no CData, see if object has any interesting children
@@ -239,13 +239,13 @@ function hAx = getParentAxes(h)
 
 error(nargchk(1,1,nargin,'struct'))
 %object itself may be an axis
-if strcmp(get(h,'type'),'axes'),
+if strcmp(get(h,'type'),'axes')
     hAx = h;
     return
 end
 
 parent = get(h,'parent');
-if (strcmp(get(parent,'type'), 'axes')),
+if (strcmp(get(parent,'type'), 'axes'))
     hAx = parent;
 else
     hAx = getParentAxes(parent);
@@ -264,15 +264,15 @@ error(nargchk(0,3,nargs,'struct'))
 nancolor = [nan nan nan];
 
 %grab handle from first argument if we have an odd number of arguments
-if mod(nargs,2),
+if mod(nargs,2)
     h = args{1};
-    if ~ishandle(h),
+    if ~ishandle(h)
         error('JRI:freezeColors:checkArgs:invalidHandle',...
             'The first argument must be a valid graphics handle (to an axis)')
     end
     % 4/2010 check if object to be frozen is a colorbar
-    if strcmp(get(h,'Tag'),'Colorbar'),
-      if ~exist('cbfreeze.m'),
+    if strcmp(get(h,'Tag'),'Colorbar')
+      if ~exist('cbfreeze.m')
         warning('JRI:freezeColors:checkArgs:cannotFreezeColorbar',...
             ['You seem to be attempting to freeze a colorbar. This no longer'...
             'works. Please read the help for freezeColors for the solution.'])
@@ -288,10 +288,10 @@ else
 end
 
 %set nancolor if that option was specified
-if nargs == 2,
-    if strcmpi(args{end-1},'nancolor'),
+if nargs == 2
+    if strcmpi(args{end-1},'nancolor')
         nancolor = args{end};
-        if ~all(size(nancolor)==[1 3]),
+        if ~all(size(nancolor)==[1 3])
             error('JRI:freezeColors:checkArgs:badColorArgument',...
                 'nancolor must be [r g b] vector');
         end

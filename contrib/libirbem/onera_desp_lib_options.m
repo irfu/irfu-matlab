@@ -54,32 +54,32 @@ function options  = onera_desp_lib_options(varargin)
 % 'DIPOLE' 5 = centered dipole
 
 options = zeros(5,1);
-if nargin==0,
+if nargin==0
     return;
 end
 inoptions = varargin{1};
-if isnumeric(inoptions) && (length(inoptions)==5),
+if isnumeric(inoptions) && (length(inoptions)==5)
     options = inoptions;
     return;
 end
 
-if isnumeric(inoptions) && (nargin==5),
-    for i = 1:5,
-        if isnumeric(varargin{i}),
+if isnumeric(inoptions) && (nargin==5)
+    for i = 1:5
+        if isnumeric(varargin{i})
             options(i) = varargin{i};
         end
     end
 end
 
-if ~iscell(inoptions),
+if ~iscell(inoptions)
     inoptions = varargin;
 end
 
 i = 1;
-while i <= length(inoptions),
+while i <= length(inoptions)
     opt = inoptions{i};
-    if ~isempty(opt) && ischar(opt),
-        switch(upper(opt)),
+    if ~isempty(opt) && ischar(opt)
+        switch(upper(opt))
             case {'NOLSTAR'}, options(1) = 0;
             case {'DOLSTAR'}, options(1) = 1;
             case {'MAKEPHI'}, options(1) = 2;
@@ -100,10 +100,10 @@ while i <= length(inoptions),
 end
 
 function n = eval_pair(inoptions,i)
-if i>=length(inoptions),
+if i>=length(inoptions)
     error('Expected another option after "%s" in %s',inoptions{i},mfilename);
 end
 n = inoptions{i+1};
-if ~isnumeric(n),
+if ~isnumeric(n)
     n = str2num(n);
 end
