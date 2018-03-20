@@ -34,7 +34,7 @@ function [hout,jout,divBout,jparout,jperpout]=c_pl_j(varargin)
 
 B1 = [];
 
-if nargin==0, 
+if nargin==0 
   help c_pl_j;return;
 end
  if nargin~=2 && nargin~=3 && nargin~=4 && nargin~=8 && nargin~=9 && nargin~=10

@@ -241,7 +241,7 @@ while(q ~= 'q')
 		end
   	flag_replot=1;
 	end
-	if flag_replot,
+	if flag_replot
 		diE_tmp = diE;
     	diE_tmp(:,2) = diE_tmp(:,2) - real(offset(1));
     	diE_tmp(:,3) = diE_tmp(:,3) - imag(offset(1));

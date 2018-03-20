@@ -90,7 +90,7 @@ if bestguess(3)<0
     irf_log('proc','None of the signals match the ref data!!!')
 else
     sh = bestguess(3) -1; % Shift
-    if sh==0,
+    if sh==0
         irf_log('proc','Order OK')
     else
         newidx = mod((1:nv)+sh-1,nv) + 1;

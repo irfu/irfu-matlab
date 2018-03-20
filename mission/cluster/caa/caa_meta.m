@@ -32,7 +32,7 @@ indexFileDefault = 'indexCaaMeta_v3'; % default file name, v2 added in 20130618
 linkUrlFile = ['http://www.space.irfu.se/cluster/matlab/' ...
 	indexFileDefault '.mat'];
 %% empty arguments > show help
-if nargin==0,
+if nargin==0
 	help caa_meta;
 	return;
 end
@@ -56,7 +56,7 @@ if nargin>=1 && ischar(varargin{1}) && strcmp(varargin{1},'create')
 	tempFileTar   = [tempFileName '.tar'];
 	[tempFileTarGz,isOk] = urlwrite(urlMetaData, tempFileTarGz, ...
       'Authentication', 'Basic', 'Get', tempGetRequest );
-	if isOk,
+	if isOk
 		gunzip(tempFileTarGz);
 		%untar(tempFileTar,'./');
 		if( any( strcmp(version, {'8.6.0.267246 (R2015b)','9.0.0.307022 (R2016a) Prerelease'}) ) )
@@ -101,10 +101,10 @@ if nargin>=1 && ischar(varargin{1}) && strcmp(varargin{1},'create')
 		nameDatasetList{iFile} = [nameDataset ' ']; % need to add space at end because it is used concatenating for save
 		disp(nameDataset);
 		s=xml2struct([xmlDir '/' fileName]);
-		if isfield(s,'DATASETS'),
+		if isfield(s,'DATASETS')
 			s=s.DATASETS;
 		end
-		if isfield(s,'DATASET_METADATA'),
+		if isfield(s,'DATASET_METADATA')
 			s=s.DATASET_METADATA;
 		end
 		meta.(nameDataset) = s;  %#ok<STRNU>
@@ -127,7 +127,7 @@ end
 	
 %% Locating index file
 if isempty(indexFile) || ~exist(indexFile,'file')
-	if exist(indexFile,'file'), % first usage
+	if exist(indexFile,'file') % first usage
 		indexFileName = load(indexFile,'indexFileName');
 		if isempty(indexFileName) ...% indexFileName is not save (old version)
 				|| ~strcmpi(indexFileName,indexFileDefault) % file is not the newest version
@@ -136,7 +136,7 @@ if isempty(indexFile) || ~exist(indexFile,'file')
 			if isempty(reply)
 				reply = 'Y';
 			end
-			if strcmpi(reply,'Y');
+			if strcmpi(reply,'Y')
 				indexFile = irf.get_file(linkUrlFile,'caa',indexFileDefault);
 			else
 				irf.log('warning','Using old verison of index file');
@@ -144,7 +144,7 @@ if isempty(indexFile) || ~exist(indexFile,'file')
 		end
 	else % file does not exist and has to be downloaded
 		indexFile = [indexFileDefault '.mat']; % default file name
-		if ~exist(indexFile,'file');
+		if ~exist(indexFile,'file')
 			indexFile = irf.get_file(linkUrlFile,'caa',indexFileDefault);
 		end
 	end
@@ -164,7 +164,7 @@ if 	nargin==1 && ischar(varargin{1}) && any(strfind(varargin{1},'__')) % CAA var
 	display_fields(parVar);
 	if nargout==1, out=parVar;end
 else % dataset
-	if isempty(datasetNames),
+	if isempty(datasetNames)
 		datasetNames = getfield(load(indexFile,'datasetList'),'datasetList');
 	end
 	iSelected = true(numel(datasetNames),1);
@@ -175,13 +175,13 @@ else % dataset
 		if ischar(filter)
 			iFind=cellfun(@(x) any(strfind(lower(x),lower(filter))),datasetNames);
 			iSelected=iSelected & iFind(:);
-			if nargin==1, % check if there is identifcal fit
+			if nargin==1 % check if there is identifcal fit
 				iEqual=cellfun(@(x) strcmpi(x,filter),datasetNames);
 			end
 		end
 	end
 	if sum(iSelected)>0
-		if nargout == 1,
+		if nargout == 1
 			if sum(iSelected)==1
 				out = load(indexFile,datasetNames{iSelected});
 			elseif any(iEqual)
@@ -193,8 +193,8 @@ else % dataset
 			end
 			return;
 		end
-		if sum(iSelected)==1 ||  any(iEqual),
-			if any(iEqual),
+		if sum(iSelected)==1 ||  any(iEqual)
+			if any(iEqual)
 				ind=find(iEqual);
 			else
 				ind=find(iSelected);
@@ -204,14 +204,14 @@ else % dataset
 				display_fields(dataSet);
 				parameters=dataSet.PARAMETERS.PARAMETER;
 				disp('PARAMETERS:');
-				for j=1:numel(parameters),
+				for j=1:numel(parameters)
 					disp([num2str(j) '. ' mat_output(parameters{j}.PARAMETER_ID.Text)]);
 				end
 			catch
 			end
 			disp(' ');
 		end
-		if sum(iSelected) > 1,
+		if sum(iSelected) > 1
 			disp('----');
 			disp([num2str(sum(iSelected)) ' datasets correspond selection']);
 			cellfun(@(x) fprintf('%s\n',x),vertcat(mat_output(datasetNames(iSelected),1)), 'UniformOutput',false);
@@ -226,7 +226,7 @@ function display_fields(dataSet)
 disp(' ');
 fn=fieldnames(dataSet);
 for j=1:numel(fn)
-	if isfield(dataSet.(fn{j}),'Text'),
+	if isfield(dataSet.(fn{j}),'Text')
 		if strfind(dataSet.(fn{j}).Text,' ') % text includes many words
 			disp([fn{j} ': ' dataSet.(fn{j}).Text]);
 		else
@@ -238,14 +238,14 @@ end
 function outStr=mat_output(inStr,forceFlag)
 % if string is caa variable output link
 % if forceFlag defined and equal to one, force matlab linked output
-if nargin == 1, 
+if nargin == 1 
 	forceFlag = false;
 end
-if ~forceFlag && any(strfind(inStr,'__')),
+if ~forceFlag && any(strfind(inStr,'__'))
 	forceFlag = true;
 end
 
-if forceFlag,
+if forceFlag
 	if ischar(inStr)
 		outStr=['<a href="matlab: caa_meta ' ...
 			inStr '">' inStr '</a>' ];

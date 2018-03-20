@@ -499,7 +499,7 @@ elseif isempty(imax)
 end
 maxima = abs(s(imax));
 smax = max( maxima(maxima < maxmax) );
-if smax>maxmax*RATIO,
+if smax>maxmax*RATIO
 	res = 0; 
 	%irf_log('proc',...
 	%	sprintf('BAD FIT: second max is %0.2f of the main max',smax/maxmax))

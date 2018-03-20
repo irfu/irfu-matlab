@@ -23,7 +23,7 @@ try
     res = [];
   else
     res = c_caa_cef_var_get(varName,d.name);
-  end;
+  end
 catch
   irf_log('dsrc',['Error downloading from CAA: ' dsetName '/' varName])
 end

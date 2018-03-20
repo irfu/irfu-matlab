@@ -61,7 +61,7 @@ curl_B=c_4_grad('r?','b?','curl');
 j=irf_tappl(curl_B,'/1.0e3*1e-9/(4*pi*1e-7)');   % to get right units [A/m2]
 
 % estimate jxB force [T A/m2]
-if useTSeries,
+if useTSeries
     jxB=irf_tappl(cross(j,B),'*1e-9'); % to get units [T A/m2]
 else
     jxB=irf_tappl(irf_cross(j,B),'*1e-9'); % to get units [T A/m2]
@@ -76,7 +76,7 @@ divPb=irf_add(-1,jxB,1,divTshear);
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  OUTPUT %%%%%%%%%%%%%%%%%%%%%%%%%
-if nargout==0 && size(b1,1)==1,
+if nargout==0 && size(b1,1)==1
        strj=['j= ' num2str(norm(j(1,2:4)),3) ' [ ' num2str(j(1,2:4)/norm(j(1,2:4)),' %5.2f') '] A/m^2 '];
        strdivB=['divB/mu0 = ' num2str(divB(1,2),3) ' A/m^2 '];
        disp(strj);disp(strdivB);

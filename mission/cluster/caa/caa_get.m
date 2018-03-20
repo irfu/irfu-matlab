@@ -103,7 +103,7 @@ if isempty(mode_list), cd(old_pwd), return, end
 % Concatenate intervals
 [starts,ii] = sort([mode_list.st]);
 dts = [mode_list.dt]; dts = dts(ii);
-for j = ii;
+for j = ii
 	cd(mode_list(j).dir);
     if HAVE_LOAD_ARGS
         eval(['[ok, tt, msg] = c_load(' eval_str ');']);

@@ -34,26 +34,26 @@ function e = R_c_despin(es,phase,coef,db)
 %  = total field (complex, real along DSC_X and imaginary along DSC_Y)
 %
 t=es(:,1);
-if nargin == 2,
+if nargin == 2
  coef=[[1 0 0];[1 0 0]];
 end
 
-if nargin == 4,
-  if isnumeric(coef),
+if nargin == 4
+  if isnumeric(coef)
     ref_frame='wec';
-   if size(coef,1) == 1,
+   if size(coef,1) == 1
     ic=coef;
     [c1,c2,c3,c4]=c_efw_calib(es(1,1));
     clear coef;
     eval(av_ssub('coef=c?;',ic));
    end
-  elseif strcmp(coef,'sat'),
+  elseif strcmp(coef,'sat')
     ref_frame='sat';
     coef=[[1 0 0];[1 0 0]];
   end
 end
 
-if prod(size(phase))==1, % load phase from isdat database
+if prod(size(phase))==1 % load phase from isdat database
   ic=phase;phase=[]; %disp(['load phase for sc' num2str(ic)]);
   start_time=ceil(fromepoch(es(1,1))); % time of the first point
   Dt=floor(es(end,1)-es(1,1)+1);
@@ -66,14 +66,14 @@ end
 switch ref_frame
 case 'wec'
   phi_12=3*pi/4;phi_34=pi/4; % angles when phase =0
-  if size(es,2)==3,
+  if size(es,2)==3
    p12=es(:,2);p34=es(:,3);
   elseif size(es,2)==4
    p12=es(:,4);p34=es(:,3);
   end
 case 'sat'
   phi_12=pi/2;phi_34=0; % angles when phase =0
-  if size(es,2)==3,
+  if size(es,2)==3
    p12=es(:,2);p34=es(:,3);
   elseif size(es,2)==4
    p12=es(:,3);p34=es(:,2);
@@ -119,7 +119,7 @@ dp34=coef(2,1)*dp34;
 % create the final field
 e=[t real(dp12+dp34) imag(dp12+dp34)];
 
-if size(es,2)==4,
+if size(es,2)==4
   switch ref_frame
   case 'wec'
    e(:,4)=es(:,2);

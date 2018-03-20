@@ -56,14 +56,14 @@ if ~isempty(ii)
 	ends = [ii(ju)+1; ii(end)+1];
 	switch lower(method)
 		case 'linear'
-			for idx=1:length(begs);
+			for idx=1:length(begs)
 				res(begs(idx)+1:ends(idx)-1,2) = interp1(...
 					[res(begs(idx),1); res(ends(idx),1)],...
 					[res(begs(idx),2); res(ends(idx),2)],...
 					res(begs(idx)+1:ends(idx)-1,1),'linear');
 			end
 		case 'prevspin'
-			for idx=1:length(begs);
+			for idx=1:length(begs)
 				prevs = res( res(:,1) >= res(begs(idx)+1,1)-4 , :);
 				res(begs(idx)+1:ends(idx)-1,2) = ...
 					prevs( 1:ends(idx)-begs(idx)-1 , 2);

@@ -965,14 +965,14 @@ if isempty(data)
 else
   if isempty(dsc), dsc = c_desc(vs); end
   switch caa_vs
-    case 'P',
+    case 'P'
       if lev == 1 % combined file
         dsc.valtype = {'FLOAT', 'FLOAT', 'FLOAT', 'FLOAT'};
         dsc.sigdig = [6 6 6 6];
         dsc.size = [1 1 1 1];
         dsc.com = 'P combined file.';
       end
-    case 'E',
+    case 'E'
       if lev == 1 % combined file
 %        dsc = c_desc('wE1p12')
         dsc.valtype = {'FLOAT', 'FLOAT', 'INT'};
@@ -987,7 +987,7 @@ else
         dsc.valtype = [dsc.valtype, {'INT'}, {'INT'}];
         dsc.sigdig = [dsc.sigdig, 5, 1];
       end
-    case 'DER',
+    case 'DER'
       dsc.valtype = {'FLOAT', 'FLOAT'};
       dsc.sigdig = [6 6];
       dsc.size = [1 1];

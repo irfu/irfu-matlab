@@ -36,7 +36,7 @@ for b = 2:b_end-1
 	if t2~=0
 	nr_no_zero = nr_no_zero +1;
 	end
-	if nr_no_zero ~= 0;
+	if nr_no_zero ~= 0
 	B_out(b,c) = (t1+t2)/nr_no_zero;
 	end
   end

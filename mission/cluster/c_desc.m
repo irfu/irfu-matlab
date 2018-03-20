@@ -416,7 +416,7 @@ elseif regexp(vs,'^RSPEC[1-4]p(12|32|34|42)$')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif regexp(vs,'^(i)?diEs[1-4]p(12|32|34)$')==1
 	v.data = 1;
-	if vvs(1)=='i',
+	if vvs(1)=='i'
 		vvs = vvs(2:end);
 		v.frame = 'inertial';
 		v.file = 'mEIDSI';
@@ -477,7 +477,7 @@ elseif regexp(vs,'^(i)?diEs[1-4]p(12|32|34)$')==1
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif regexp(vs,'^(i)?diELXs[1-4]p(12|32|34|42)$')==1
 	v.data = 1;
-	if vvs(1)=='i',
+	if vvs(1)=='i'
 		vvs = vvs(2:end);
 		v.frame = 'inertial';
 		v.file = 'mEIDSI';
@@ -639,7 +639,7 @@ elseif regexp(vs,'^(i)?di(b)?E(F|LX)?[1-4]p1234$')==1
             v.frame = 'sc';
             v.file = 'mEDSIf';
             v.quant = 'die';
-        case 'idi',
+        case 'idi'
             v.frame = 'inertial';
             v.file = 'mEIDSI';
             v.quant = 'idie';
@@ -1164,7 +1164,7 @@ elseif regexp(vs,'^Damp[1-4]$')==1
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif regexp(vs,'^(i)?diE(s)?[1-4]$')
 	v.data = 1;
-	if vvs(1)=='i', 
+	if vvs(1)=='i' 
 		vvs = vvs(2:end);
 		v.frame = 'inertial'; 
 		v.file = 'mEdBI';
@@ -1197,7 +1197,7 @@ elseif regexp(vs,'^(i)?diE(s)?[1-4]$')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif regexp(vs,'^(i)?E(s)?[1-4]$')
 	v.data = 1;
-	if vvs(1)=='i', 
+	if vvs(1)=='i' 
 		vvs = vvs(2:end);
 		v.frame = 'inertial'; 
 		v.file = 'mEdBI';
@@ -1545,7 +1545,7 @@ elseif regexp(vs,'^(di)?VCE(h|p)[1-4]$')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif regexp(vs,'^(i)?(di)?EDI[1-4]$')
 	v.data = 1;
-	if vvs(1)=='i', 
+	if vvs(1)=='i' 
 		vvs = vvs(2:end);
 		v.frame = 'inertial'; 
 		v.lev = 0;

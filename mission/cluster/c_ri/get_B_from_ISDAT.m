@@ -93,7 +93,7 @@ end
 Mat_DbClose(db);
 
 %if the hole intervall is empty
-if B == 0;
+if B == 0
 B = [-1 0 0 0];
 end 
 

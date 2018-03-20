@@ -34,19 +34,19 @@ ss = bitand(data(19),48);
 SS = bitshift(ss,-4);
 
 switch SS
-    case 0,
+    case 0
         switch fff
-            case 0,
+            case 0
                 output=[450  8];
-            case 1,
+            case 1
                 output=[900 8];
-            case 2,
+            case 2
                 output=[2250 8];
-            case 3,
+            case 3
                 output=[4500 8];
-            case 4,
+            case 4
                 output=[9000 4];
-            case 7,
+            case 7
                 output=[25000 2];
             otherwise
                 output=[0 0];

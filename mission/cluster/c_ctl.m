@@ -137,10 +137,10 @@ if ischar(args{1})
 
 % Read from (/Volumes)/data/cluster/cal
         
-        [c_ct{1}.ibias c_ct{1}.puck c_ct{1}.guard] = readhkcalmatrix('C1_CT_EFW_20001128_V002.cal');
-        [c_ct{2}.ibias c_ct{2}.puck c_ct{2}.guard] = readhkcalmatrix('C2_CT_EFW_20001128_V002.cal');
-        [c_ct{3}.ibias c_ct{3}.puck c_ct{3}.guard] = readhkcalmatrix('C3_CT_EFW_20001128_V002.cal');
-        [c_ct{4}.ibias c_ct{4}.puck c_ct{4}.guard] = readhkcalmatrix('C4_CT_EFW_20001128_V002.cal');
+        [c_ct{1}.ibias, c_ct{1}.puck, c_ct{1}.guard] = readhkcalmatrix('C1_CT_EFW_20001128_V002.cal');
+        [c_ct{2}.ibias, c_ct{2}.puck, c_ct{2}.guard] = readhkcalmatrix('C2_CT_EFW_20001128_V002.cal');
+        [c_ct{3}.ibias, c_ct{3}.puck, c_ct{3}.guard] = readhkcalmatrix('C3_CT_EFW_20001128_V002.cal');
+        [c_ct{4}.ibias, c_ct{4}.puck, c_ct{4}.guard] = readhkcalmatrix('C4_CT_EFW_20001128_V002.cal');
 	elseif strcmp(args{1},'load_aspoc_active')
 
         global c_ct
@@ -439,7 +439,7 @@ function aspa = readaspocactive( filen, datapath )
     s = '';
     while not(strncmp(s,'DATA_UNTIL',10))
         s = fgets(fid);
-    end;
+    end
 
     fposmem=ftell(fid);
     s = fgets(fid);

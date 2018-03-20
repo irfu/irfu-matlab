@@ -53,7 +53,7 @@ while have_options
     if length(args)>=1
         switch(args{1})
             case 'cs'
-                if ischar(args{2}),
+                if ischar(args{2})
                     cs = args{2};
                     if ~strcmp(cs,'dsi') && ~strcmp(cs,'gse')
                         irf_log('fcal','unknown CS. defaulting to DSI')

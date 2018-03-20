@@ -119,7 +119,7 @@ if ~flag_local
     end
 end
 
-for out = 1:varsbsize;
+for out = 1:varsbsize
     [field,sen,filter] = get_ib_props(varsb{out});
     instrument = 'efw';
     

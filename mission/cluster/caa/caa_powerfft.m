@@ -41,7 +41,7 @@ nint = fix(((data(ii(end),1)-ts)*sfreq+1)*(1+overlap*.01)/nfft);
 ncomp = size(data,2) - 1;
 
 % Check if there is enough data
-if nint<1,
+if nint<1
 	outF = [];
 	outPxx = [];
 	outspecrec = [];

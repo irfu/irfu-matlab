@@ -51,13 +51,13 @@ if nargin == 4, flag_db=1; else flag_db=0;                           end
      t  = spin_axis(1);
      ic = spin_axis(2);
      clear spin_axis;
-     if exist('./maux.mat','file');
+     if exist('./maux.mat','file')
          irf.log('notice','Loading maux.mat file');
          try c_eval('load maux sc_at?_lat__CL_SP_AUX sc_at?_long__CL_SP_AUX; lat=sc_at?_lat__CL_SP_AUX; long = sc_at?_long__CL_SP_AUX;', ic);
          catch
              irf.log('warning','Loading maux.mat file failed'); flag_read_isdat=1;
          end
-         if flag_read_isdat==0, % if reading maux file suceeded
+         if flag_read_isdat==0 % if reading maux file suceeded
              tmin = lat(1,1);
              tmax = lat(end,1);
              if (t > tmin) || (t < tmax)
@@ -73,7 +73,7 @@ if nargin == 4, flag_db=1; else flag_db=0;                           end
      else
          flag_read_isdat=1;
      end
-     if flag_read_isdat,  % try if there is SP CDF file, otherwise continue to isdat
+     if flag_read_isdat  % try if there is SP CDF file, otherwise continue to isdat
          cdf_files=dir(['CL_SP_AUX_' irf_time(t,'epoch>yyyymmdd') '*']);
          switch numel(cdf_files)
              case 1
@@ -83,25 +83,25 @@ if nargin == 4, flag_db=1; else flag_db=0;                           end
                  irf.log('warning',['Loading from CDF file:' cdf_file '. Next time will use maux.mat']);
                  c_eval('lat=irf_cdf_read(cdf_file,{''sc_at?_lat__CL_SP_AUX''});',ic);
                  c_eval('long=irf_cdf_read(cdf_file,{''sc_at?_long__CL_SP_AUX''});',ic);
-                 if (t > lat(1,1)) && (t < lat(end,1)),
+                 if (t > lat(1,1)) && (t < lat(end,1))
                      flag_read_isdat=0;
                      latlong   = irf_resamp([lat long(:,2)],t);
                  end
          end
      end
-     if flag_read_isdat,  % try if there are auxilaruy files from CAA
+     if flag_read_isdat  % try if there are auxilaruy files from CAA
        caa_load CL_SP_AUX
-       if exist('CL_SP_AUX','var'), % succeeded to load CAA data files
+       if exist('CL_SP_AUX','var') % succeeded to load CAA data files
          c_eval('lat=getmat(CL_SP_AUX,''sc_at?_lat__CL_SP_AUX'');',ic);
          c_eval('long=getmat(CL_SP_AUX,''sc_at?_long__CL_SP_AUX'');',ic);
-         if (t > lat(1,1)-60) && (t < lat(end,1)+60),
+         if (t > lat(1,1)-60) && (t < lat(end,1)+60)
            flag_read_isdat=0;
            latlong   = irf_resamp([lat long(:,2)],t);
          end
        end
      end
-     if flag_read_isdat,  % try if there are SAX variables in mEPH
-         if exist('./mEPH.mat','file'),
+     if flag_read_isdat  % try if there are SAX variables in mEPH
+         if exist('./mEPH.mat','file')
              try
                  c_eval('load mEPH SAX?',ic);
                  c_eval('spin_axis=SAX?;',ic);
@@ -111,11 +111,11 @@ if nargin == 4, flag_db=1; else flag_db=0;                           end
              end
          end
      end
-     if flag_read_isdat,  % load from isdat satellite ephemeris
+     if flag_read_isdat  % load from isdat satellite ephemeris
       irf.log('notice','loading spin axis orientation from isdat database');
        start_time=t; % time of the first point
        Dt=600; % 10 min, in file they are saved with 1 min resolution
-        if flag_db==0, % open ISDAT database
+        if flag_db==0 % open ISDAT database
 					DB_S = c_ctl(0,'isdat_db');
           irf.log('debug',['Starting connection to ' DB_S]);
           db = Mat_DbOpen(DB_S);
@@ -128,11 +128,11 @@ if nargin == 4, flag_db=1; else flag_db=0;                           end
           latlong=xxx(1,:);
         end
         irf.log('notice',['lat=' num2str(latlong(2)) '  long=' num2str(latlong(3))]);
-        if flag_db==0,
+        if flag_db==0
           Mat_DbClose(db);
         end
      end
-     if ~exist('spin_axis','var'),
+     if ~exist('spin_axis','var')
          [xspin,yspin,zspin]=sph2cart(latlong(3)*pi/180,latlong(2)*pi/180,1);
          spin_axis=[xspin yspin zspin];
      end

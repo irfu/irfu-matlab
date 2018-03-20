@@ -103,7 +103,7 @@ irf_log('dsrc',['Reading FGM ' d_s ' ' fhhmmss '-' thhmmss ', s/c' num2str(cl_id
 FGMPATH = sprintf('%s/cal/fgm/',c_ctl(0,'data_path'));
 if ~exist(FGMPATH,'dir'), error('FGMPATH does not exist'), end
 
-if nargout,  % return B
+if nargout  % return B
     to_file=tempname;
     unix_command = ['export FGMPATH; FGMPATH=' FGMPATH '; ' fgmtel ' ' d_source ' | ' fgmcal ' | ' fgmhrt ' -a ' d_path d_s '*ga.0' num2str(cl_id) ' > ' to_file];
     [stat, res] = unix(['/bin/sh -c ''' unix_command '''']);

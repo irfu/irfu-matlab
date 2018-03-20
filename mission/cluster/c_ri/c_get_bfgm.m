@@ -6,7 +6,7 @@ function [varargout]=c_get_bfgm(tint,sc_list)
 if nargin ==1, sc_list=1:4; end
 
 c_eval('B?=[];',sc_list)
-for j=1:length(sc_list),
+for j=1:length(sc_list)
   ic=sc_list(j);
   [b_table, n_table] = create_timetable(tint(1),tint(2),ic);
 
@@ -14,7 +14,7 @@ for j=1:length(sc_list),
     [b_s, col] = size(b_table);
     for k = 1:b_s
       B=c_ri_get_B( b_table(k,1), b_table(k,2), ic, 'b');
-      if ~isempty(B),
+      if ~isempty(B)
         eval(irf_ssub('B?=[B?;B];',ic));
       end
     end
@@ -24,7 +24,7 @@ for j=1:length(sc_list),
     [n_s, col] = size(n_table);
     for i = 1:2:n_s
       B=c_ri_get_B( n_table(i,1), n_table(i,2), ic, 'n');
-      if ~isempty(B),
+      if ~isempty(B)
         eval(irf_ssub('B?=[B?;B];',ic));
       end
     end

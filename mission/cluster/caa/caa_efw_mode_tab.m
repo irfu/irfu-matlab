@@ -30,7 +30,7 @@ t_start_save = [];
 t_stop_save = [];
 fdm_save = {};
 
-if ~isempty(t_fdm);
+if ~isempty(t_fdm)
 	% this info is needed if next interval has no data
 	prev_ok = 1;
 	t_end_last_interv = t_fdm(end);

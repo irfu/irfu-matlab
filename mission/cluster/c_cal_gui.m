@@ -1934,7 +1934,7 @@ if data.visible
 	% Calculate Ez, convert V->E and V->E
 	switch data.type
 	case 'E'
-		if any(p_data(:,4))==0,
+		if any(p_data(:,4))==0
 			if isempty(data.B)
 				irf_log('proc','B is empty. No Ez')
 			else

@@ -63,7 +63,7 @@ if  nargin == 1
         load '.c_ri_parameters.mat'
         flag_continue=1;
     else
-        if exist('.c_ri_parameters.mat','file');
+        if exist('.c_ri_parameters.mat','file')
             irf_log('load','loading path information from .c_ri_parameters.mat');
             load .c_ri_events p_E p_R
         end
@@ -100,7 +100,7 @@ while 1
     disp(['                          period  = ''' num2str(period) '''; % overlap period in seconds to be one event']);
     disp(['                            d2MP  = ''' num2str(d2MP) '''; % distance to magnetopause RE']);
     disp(['                             psw  = ''' num2str(psw) '''; % solar wind pressure in nPa (2 is average) ']);
-    if size(st_m,1) ==1,
+    if size(st_m,1) ==1
         disp(['                            st_m  = ''' num2str(st_m) '''; % start time ']);
         disp(['                            et_m  = ''' num2str(et_m) '''; % start time ']);
     end
@@ -111,7 +111,7 @@ while 1
     if strcmp(path_ok,'c'), break; end
     eval(path_ok);
 end
-if exist('.c_ri_parameters.mat','file'),
+if exist('.c_ri_parameters.mat','file')
     try save -append .c_ri_parameters.mat p_E p_R st_m et_m min_angle min_ampl period d2MP psw run_steps;
     catch disp('Parameter values could not be saved and therefore valid only for this run!');
     end
@@ -126,12 +126,12 @@ if ~exist(p_R,'dir'), irf_log('save',['creating p_E directory: ' p_R]); mkdir(p_
 
 [i_end,c] = size(st_m);
 
-if flag_continue,
-    if exist('time_interval_start'),
+if flag_continue
+    if exist('time_interval_start')
         i_start=time_interval_start;
         disp(['Sarting at ' num2str(i_start) '. time interval']);
     end
-    if exist('MP_interval_start'),
+    if exist('MP_interval_start')
         j_start=MP_interval_start;
         disp(['Sarting at ' num2str(j_start) '. MP crossing interval']);
     end
@@ -176,18 +176,18 @@ for i = i_start:i_end
             disp([num2str(j) '. ' datestr(epoch2date(passing_MP(j,1))) ' - ' datestr(epoch2date(passing_MP(j,2)))]);
             disp('????????????????????????????????????????????????????????????');
             [B1,B2,B3,B4]=c_get_bfgm(passing_MP(j,:),1:4);
-            if ~isempty(B1)>0,
+            if ~isempty(B1)>0
                 c_eval('try Binterp?=irf_resamp(B?,B1); catch Binterp?=[]; end;',2:4);
-                if ~isempty(Binterp2) & ~isempty(Binterp3) & ~isempty(Binterp4),
+                if ~isempty(Binterp2) & ~isempty(Binterp3) & ~isempty(Binterp4)
                     [angles_tmp, ampl_tmp] = c_ri_angles_and_ampl(B1,Binterp2,Binterp3,Binterp4);
-                    if ~isempty(angles_tmp),
+                    if ~isempty(angles_tmp)
                         [time_of_events,angles_out,ampl_out] = class_angle_as_event(angles_tmp,ampl_tmp, min_angle, min_ampl,-1) ; % -1 is mode (no idea which)
-                        if ~isempty(time_of_events),
+                        if ~isempty(time_of_events)
                             sort_events=1;
                             while sort_events
                                 dt_events=diff(time_of_events(:,1),1,1); % find distance between events
                                 ind=find(dt_events<period/2); % find which events are closer than period/2
-                                if isempty(ind),
+                                if isempty(ind)
                                     sort_events=0;
                                 else
                                     time_of_events(ind(1),:)=[];
@@ -217,16 +217,16 @@ for i = i_start:i_end
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %%%%%%%%%%%%% Constraint on event being burst mode
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        if flag_events_in_burst_mode==1,
+        if flag_events_in_burst_mode==1
             ind_bad_events=[];j_good=0;
-            for j=1:size(events,1),
+            for j=1:size(events,1)
                 ttt=events(j,1);
                 c_eval('[ts,te,tm?]=caa_efw_mode_tab(B?,''ss'')');
-                if tm1==1 | tm2 == 1 | tm3 == 1 | tm4 ==1,
+                if tm1==1 | tm2 == 1 | tm3 == 1 | tm4 ==1
                     % do nothing
                     c_log('dsrc',[num2str(j_good) '. event in burst mode. ' epoch2iso(ttt)]);
                     j_good=j_good+1;
-                else,
+                else
                     ind_bad_events = [ind_bad_events;j];
                 end
             end
@@ -245,8 +245,8 @@ for i = i_start:i_end
     if run_steps(4) == 1
         if run_steps(2) == 0; load mMP;load mEvents; end
         disp('==============  STEP 4. Plotting data for events ====================');
-        if exist('events'),
-            if ~isempty(events),
+        if exist('events')
+            if ~isempty(events)
                 c_ri_event_picture(events,period,angles,amplitude,p_R)
             end
         end

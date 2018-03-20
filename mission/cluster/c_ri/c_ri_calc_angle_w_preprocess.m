@@ -46,7 +46,7 @@ if b1_max == b2_max & b1_max == b3_max & b1_max == b4_max
 p_and_f = sprintf('%sA%s',path_output,filename(2:length(filename)));
 save(p_and_f,'angles','ampl')
 
-if angles == 0;
+if angles == 0
 disp('angles and ampl = 0 ')
 end
 

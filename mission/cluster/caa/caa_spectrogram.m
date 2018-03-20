@@ -35,7 +35,7 @@ disp('');
 
 narginchk(1,6)
 
-if nargin==1, 
+if nargin==1 
     specrec = h; h = [];
     if ~isfield(specrec,'dt'), specrec.dt=[];end
     if ~isfield(specrec,'df'), specrec.df=[];end
@@ -122,9 +122,9 @@ for comp=1:min(length(h),ncomp)
 	
     ud = get(gcf,'userdata');
 	ii = find(~isnan(specrec.t));
-    if isfield(ud,'t_start_epoch'),
+    if isfield(ud,'t_start_epoch')
         t_start_epoch = double(ud.t_start_epoch);
-    elseif specrec.t(ii(1))> 1e8,
+    elseif specrec.t(ii(1))> 1e8
         % Set start_epoch if time is in isdat epoch
         % Warn about changing t_start_epoch
         t_start_epoch = double(specrec.t(ii(1)));
@@ -141,8 +141,8 @@ for comp=1:min(length(h),ncomp)
         %		specrec.t = [specrec.t-dt; specrec.t+dt];
         %		specrec.p(comp) = {[specrec.p{comp}; specrec.p{comp}]};
     end
-    if ~isfield(specrec,'f_unit'), % if not specified assume units are Hz
-        if max(specrec.f) > 2000, % check whether to use kHz
+    if ~isfield(specrec,'f_unit') % if not specified assume units are Hz
+        if max(specrec.f) > 2000 % check whether to use kHz
             specrec.f=specrec.f*double(1e-3);
             specrec.f_unit='kHz';
         else
@@ -204,7 +204,7 @@ for comp=1:min(length(h),ncomp)
         pp=ppnew;
     end
 
-    if min(size(ff))==1, % frequency is vector
+    if min(size(ff))==1 % frequency is vector
         if any(min(pp)<0) % spectra include negative values linear spectrogram
             pcolor(h(comp),double(tt-t_start_epoch),ff,double(pp'))
         else
@@ -225,7 +225,7 @@ for comp=1:min(length(h),ncomp)
     set(h(comp),'TickDir','out')
     %check ylabel
     if ~isfield(specrec,'f_label')
-        if ~isfield(specrec,'f_unit'),
+        if ~isfield(specrec,'f_unit')
             specrec.f_unit='a.u.';
         end
         specrec.f_label=['[' specrec.f_unit ']'];

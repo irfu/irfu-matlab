@@ -778,7 +778,7 @@ function plot_quality(h, dataset, st)
 
 function t_start_epoch = figure_start_epoch(st)
 ud = get(gcf,'userdata');
-if isfield(ud,'t_start_epoch'), 
+if isfield(ud,'t_start_epoch') 
 	t_start_epoch = ud.t_start_epoch;
 else
 	t_start_epoch = st;

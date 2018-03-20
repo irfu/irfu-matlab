@@ -34,12 +34,12 @@ function out=c_pl_tx(varargin)
 % See also IRF_PLOT, PLOT
 
 [ax,args,nargs] = axescheck(varargin{:});
-if isempty(ax), % if empty axes
+if isempty(ax) % if empty axes
     ax=gca;
 end
 %hcf=get(ax,'parent'); % get figure handle
 
-if nargs == 0, % show help if no input parameters
+if nargs == 0 % show help if no input parameters
     help c_pl_tx;
     return
 end
@@ -90,7 +90,7 @@ while ~isempty(args)
         if strcmp(args{1},'sc_list')
             args(1) = [];
             sc_list=args{1};
-			if isempty(sc_list),
+			if isempty(sc_list)
 				irf_log('fcal','sc_list empty');
 				return;
 			end
@@ -120,8 +120,8 @@ while ~isempty(args)
 end
 
 % Get variable values from caller if needed
-if getVariablesFromCaller,
-    for cl_id=sc_list,
+if getVariablesFromCaller
+    for cl_id=sc_list
         ttt = evalin('caller',irf_ssub(variableNameInCaller,cl_id),'[]');  %#ok<NASGU>
         c_eval('x? =ttt;',cl_id); clear ttt
     end
@@ -132,7 +132,7 @@ if isempty(column)
 	for ic=sc_list
 		eval(['nCol = size(x' num2str(ic) ',2);']);
 		if ~isempty(nCol) && nCol > 0
-			if nCol >= 2,
+			if nCol >= 2
 				column = 2:nCol;
 			end
 			break;
@@ -147,7 +147,7 @@ end
 % define Cluster colors
 cluster_colors={'[0 0 0]';'[1 0 0]';'[0 0.5 0]';'[0 0 1]'};
 l_style=cell(1,4);
-if isempty(line_style),
+if isempty(line_style)
     for ic=1:4, l_style(ic)={['''color'','  cluster_colors{ic}]};end
 else
     for ic=1:4, l_style(ic)={['''' line_style{ic} ''',''color'','  cluster_colors{ic}]};end

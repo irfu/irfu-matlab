@@ -96,7 +96,7 @@ if any([strfind(variable_name,'PADLAR') strfind(variable_name,'PADMAR') strfind(
     phi = reshape(phi',ndata*AR_MODE,1);
     cosphi=cosd(phi);sinphi=sind(phi);
     cospolar=cosd(polar);sinpolar=sind(polar);
-    for jpolar=1:length(polar),
+    for jpolar=1:length(polar)
         % n-vector of given sector in ISR2 ref rframe
         nsector = [sinpolar(jpolar).*cosphi sinpolar(jpolar).*sinphi ones(ndata*AR_MODE,1)*cospolar(jpolar)];
         nparticle = -nsector;
@@ -148,7 +148,7 @@ elseif any([strfind(variable_name,'PITCH_3DR') strfind(variable_name,'PITCH_3DX'
     peace.data(:,nan_phi,:,:)=[]; % remove NaN energy data
     dataraw=peace.data;
     t=peace.t(:);    
-elseif any([strfind(variable_name,'3DXPL') strfind(variable_name,'3DXPH')]),
+elseif any([strfind(variable_name,'3DXPL') strfind(variable_name,'3DXPH')])
     %% PEACE_3DXPH does not have pitch angle matrix data, therefore rebinning
     % necessary
     % PEACE sector angles are given in SR2 reference frame!
@@ -177,8 +177,8 @@ elseif any([strfind(variable_name,'3DXPL') strfind(variable_name,'3DXPH')]),
     b_ISR2=irf_norm(B_ISR2);
     cosphi=cos(phi/180*pi);sinphi=sin(phi/180*pi);
     cospolar=cos(polar/180*pi);sinpolar=sin(polar/180*pi);
-    for jphi=1:length(phi),
-        for jpolar=1:length(polar),
+    for jphi=1:length(phi)
+        for jpolar=1:length(polar)
             % nn vector of given sector in ISR2 ref rframe
             nsector=[sinpolar(jpolar).*cosphi(jphi) sinpolar(jpolar).*sinphi(jphi) cospolar(jpolar)];
             nparticle=-nsector;
@@ -189,7 +189,7 @@ elseif any([strfind(variable_name,'3DXPL') strfind(variable_name,'3DXPH')]),
     variable=fillval_to_nan(variable); % FILLVALs put to NaN
     dataraw=ftheta(variable.data,pitchangle,theta);
     dataraw=permute(dataraw,[1 3 2 4]); % permute in order [time, azimuth, pitch, energy]
-elseif any([strfind(variable_name,'RAP_L3DD') strfind(variable_name,'RAP_E3DD')]), % RAPID variable
+elseif any([strfind(variable_name,'RAP_L3DD') strfind(variable_name,'RAP_E3DD')]) % RAPID variable
     %% RAPID does not have pitch angle matrix data, therefore rebinning
     % necessary
     [variable,dataobject,rapid,dataunits]=c_caa_var_get(variable_name); % check that it is loaded in memory
@@ -242,8 +242,8 @@ elseif any([strfind(variable_name,'CODIF_HS') strfind(variable_name,'CODIF_LS') 
     b_ISR2=irf_norm(B_ISR2);
     cosphi=cos(phi/180*pi);sinphi=sin(phi/180*pi);
     cospolar=cos(polar/180*pi);sinpolar=sin(polar/180*pi);
-    for jphi=1:length(phi),
-        for jpolar=1:length(polar),
+    for jphi=1:length(phi)
+        for jpolar=1:length(polar)
             % nn vector of given sector in SR2 ref rframe
             nparticle=[cospolar(jpolar).*cosphi(jphi) cospolar(jpolar).*sinphi(jphi) sinpolar(jpolar)];
             pitchsector=acos(dot(b_ISR2(jphi:length(phi):end,2:4),repmat(nparticle,[length(t) 1]),2))*180/pi;
@@ -270,7 +270,7 @@ phiphi=tt;
 % Fix permutations of matrix to get high time resolution
 [tt,dtsampling]=subspintime(dataobject,phi);
 
-for j=length(phi):-1:1,
+for j=length(phi):-1:1
     phiphi(:,j)=phi(j);
 end
 
@@ -309,7 +309,7 @@ ftheta=zeros(ftheta_dim);
 thetahalfstep=(theta(2)-theta(1))/2;
 thetamin=theta-thetahalfstep;
 thetamax=theta+thetahalfstep;
-for j=1:length(theta),
+for j=1:length(theta)
     ind=(thetapol>thetamin(j)) & (thetapol<thetamax(j));
     fpoltemp=fpol.*ind;
     ind(isnan(fpoltemp))=0;
@@ -337,7 +337,7 @@ if isfield(timevar,'DELTA_PLUS') && isfield(timevar,'DELTA_MINUS')
     if ischar(timevar.DELTA_PLUS)
         deltaplus= getv(dataobject,timevar.DELTA_PLUS);
         dtplus=deltaplus.data(1,:);
-        if dtplus>5, % temporary solution for CIS problems
+        if dtplus>5 % temporary solution for CIS problems
             if (dtplus/2>3.5) && (dtplus/2 < 4.5), dtplus=dtplus/2;
             elseif (dtplus/3>3.5) && (dtplus/3 < 4.5), dtplus=dtplus/3;
             elseif (dtplus/4>3.5) && (dtplus/4 < 4.5), dtplus=dtplus/4;
@@ -358,7 +358,7 @@ else
 end
 spin_period=double(dtplus+dtminus);
 dtsampling=spin_period/length(phi);
-for j=length(phi):-1:1,
+for j=length(phi):-1:1
     tt(:,j)=tt(:,1)+double(-dtminus+(j-0.5)*dtsampling);
 end
 tt=reshape(tt',numel(tt),1);

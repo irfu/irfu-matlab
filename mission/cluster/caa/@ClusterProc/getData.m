@@ -3176,7 +3176,7 @@ elseif strcmp(quantity,'hk')
           end
           if cnt>=31
             break;
-          end;
+          end
           cnt = cnt + 1;
         end
         romid=HK(j,80); % Does checking romid really work for a reset?

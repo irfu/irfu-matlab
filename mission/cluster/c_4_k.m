@@ -22,9 +22,9 @@ function [k1,k2,k3,k4]=c_4_k(r1,r2,r3,r4)
 
 %% Prepare input
 isOutputStructure = false;
-if nargin==0;
+if nargin==0
 	help c_4_k;return;
-elseif nargin == 1,
+elseif nargin == 1
 	R=r1;
 	if isstruct(R) && all(isfield(R,{'C1','C2','C3','C4'}))
 		isOutputStructure = true;
@@ -33,7 +33,7 @@ elseif nargin == 1,
 		irf.log('critica',errStr);
 		error(errStr);
 	end
-elseif nargin == 4,
+elseif nargin == 4
 	R.C1 = r1;R.C2 = r2;R.C3 = r3;R.C4 = r4;
 else
 	errStr = 'wrong syntax';
@@ -41,7 +41,7 @@ else
 	error(errStr);
 end
 
-if size(R.C1,2)>3,
+if size(R.C1,2)>3
 	isTimeSpecified=true;
 	tVec = R.C1(:,1);
 	R.C1(:,1) = [];
@@ -57,7 +57,7 @@ k.C1 = zeros(size(R.C1));
 k.C2 = k.C1; k.C2 = k.C1; k.C4 = k.C1;
 
 id = {'C1','C2','C3','C4','C1','C2','C3'};
-for j=1:4,
+for j=1:4
 	cc        = cross(R.(id{2+j})-R.(id{1+j}),...
 		              R.(id{3+j})-R.(id{1+j}),2);
 	dr12      = R.(id{j})-R.(id{1+j});
@@ -74,17 +74,17 @@ end
 
 if isOutputStructure
 	k1 = k;
-elseif nargout == 1, % output is one big matrix
+elseif nargout == 1 % output is one big matrix
 	K=zeros([4 size(k.C1)]);
-	for j=1:4,
+	for j=1:4
 		K(j,:,:)=k.(id{j});
 	end
 	k1=K;
-elseif nargout==4,
+elseif nargout==4
 	k1=k.C1;k2=k.C2;k3=k.C3;k4=k.C4;
-elseif nargout==0,
+elseif nargout==0
 	if size(r1,1)>1; disp('Reciprocal vectors for the first data point');end
-	for j=1:4,
+	for j=1:4
 		strk=['k' num2str(j) '=' num2str(norm(k.(id{j})(1,:)),3)...
 			' [ ' num2str(k.(id{j})(1,:)/norm(k.(id{j}(1,:))),...
 			' %5.2f') '] '];

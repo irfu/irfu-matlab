@@ -1,4 +1,4 @@
-function status=cdf2mat(cdf_wildcard,mat_file);
+function status=cdf2mat(cdf_wildcard,mat_file)
 % cdf2mat convert cdf filel to matlab file (only vectors and scalar time series)
 % function status=cdf2mat(cdf_file,mat_file);
 %
@@ -16,20 +16,20 @@ switch prod(size(cdf_files))
         n_cdf_files=1;
     otherwise
         n_cdf_files=size(cdf_files,1);
-        for i_file=1:n_cdf_files,
+        for i_file=1:n_cdf_files
             ttt=cdf_files(i_file);
             cdf_file{i_file}=ttt.name;
         end
         irf_log('load',['converting ' num2str(n_cdf_files) ' cdf files.']);
 end
 
-for i_file=1:n_cdf_files,
+for i_file=1:n_cdf_files
     irf_log('load',['Loading ' num2str(i_file) '. cdf file>' cdf_file{i_file}]);
     cdf_file_info=spdfcdfinfo(cdf_file{i_file});
     variable_names=cdf_file_info.Variables(:,1);
     % keep only variables that have time axis
 
-    for j=1:size(variable_names,1),
+    for j=1:size(variable_names,1)
         if findstr(variable_names{j,1},'Epoch')
             epoch_variable=variable_names(j,1);
             % disp(['epoch variable: ' epoch_variable{1}]);

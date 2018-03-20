@@ -44,7 +44,7 @@ end
 diff = est_dt/2;
 found_dt = 0;
 
-while nr < k & i < i_max & found_dt == 0;
+while nr < k & i < i_max & found_dt == 0
 
 B_old = B(i,1);
 i = i+1;

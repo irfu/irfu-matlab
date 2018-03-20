@@ -11,18 +11,18 @@ function out=c_4_v_gui(x1,x2,x3,x4,column)
 
 flag_first_call=0;
 
-if       (nargin<=2 && ischar(x1)), % either action as parameter or string variable
-	if strfind(x1,'?'),
+if       (nargin<=2 && ischar(x1)) % either action as parameter or string variable
+	if strfind(x1,'?')
 		figure;ud=[]; % intialize
 		ud.variable_str=x1;
-		if nargin == 1, ud.var_col=1;else ud.var_col=x2;end;
+		if nargin == 1, ud.var_col=1;else ud.var_col=x2;end
 		action='new_var';
 		flag_first_call=1;
 	else
 		action=x1;
 		ud=get(gcf,'userdata');
 	end
-elseif   (nargin ==4) || (nargin == 5),
+elseif   (nargin ==4) || (nargin == 5)
 	if nargin ==4, irf.log('notice','Using second column');column=2;end
 	if isempty(x1) &&  isempty(x2) && isempty(x3) && isempty(x4)
 		irf.log('warning','Empty input');
@@ -38,7 +38,7 @@ else      help c_4_v_gui
 end
 
 irf.log('debug',['action=' action]);
-switch action,
+switch action
 	case {'c1','c2','c3','c4','c5','c6'}
 		ud.var_col=str2double(action(2:end));
 		set(gcf,'userdata',ud);
@@ -63,14 +63,14 @@ switch action,
 		evalin('base',['if ~exist(''' irf_ssub(ud.variable_str,1) '''), c_load(''' ud.variable_str ''');end' ]);
 		c_eval('ud.var?=evalin(''base'',irf_ssub(ud.variable_str,?));');
 		if ud.var_col > size(ud.var1,2), ud.var_col=2;end % in case new variable has less columns
-		if flag_first_call,
+		if flag_first_call
 			set(gcf,'userdata',ud);
 			c_4_v_gui('initialize');
 		else
-			if ishandle(ud.h(1)),
+			if ishandle(ud.h(1))
 				for j_col=2:size(ud.var1,2)
-					if j_col<=length(ud.hcol),
-						if ishandle(ud.hcol(j_col)),
+					if j_col<=length(ud.hcol)
+						if ishandle(ud.hcol(j_col))
 							set(ud.hcol(j_col),'enable','on')
 						else
 							eval_str=['ud.hcol(j_col)=uimenu(ud.columns,''label'',''' num2str(j_col) ''',''callback'',''c_4_v_gui(''''c' num2str(j_col) ''''')'');'];
@@ -217,13 +217,13 @@ switch action,
 			dt=dt-dt(ref_satellite);
 		end
 		tstr=['[' num2str(dt,'%9.2f') ']'];
-		if norm(v) > 0,
+		if norm(v) > 0
 			vstr=[num2str(norm(v),3) ' * [' num2str(v./norm(v),'%6.2f') ']'];
 		else
 			vstr='0*[0 0 0]';
 		end
 		set(ud.dt_input,'string',tstr);
-		if eval(get(ud.filter,'string'))<1,
+		if eval(get(ud.filter,'string'))<1
 			x1=ud.var1;Fs=1/(x1(2,1)-x1(1,1));
 			flim=Fs*eval(get(ud.filter,'string'));
 			c_eval('x?=irf_tlim(var?,xl+[-20/Fs 20/Fs]);x?=irf_filt(x?,0,flim,Fs,5);');
@@ -238,7 +238,7 @@ switch action,
 	case 'click_times'
 		zoom(ud.h(1),'off');
 		if (~isfield(ud,'ic') || isempty(ud.ic)), ud.ic=0;ud.dtv=[];end
-		if ud.ic==0,
+		if ud.ic==0
 			set(gcf,'windowbuttondownfcn', 'c_4_v_gui(''click_times'')');
 			ud.ic=1;
 		else
@@ -247,7 +247,7 @@ switch action,
 			ud.ic=ud.ic+1;
 		end
 		title(['click on s/c ' num2str(ud.ic)]);
-		if ud.ic==5,
+		if ud.ic==5
 			set(gcf,'windowbuttondownfcn', '');
 			title('');
 			ud.ic=0;
@@ -274,7 +274,7 @@ switch action,
 		set(ud.h(2),'xtick',xticks,'xticklabel',xticklabels);
 		xlabel('km');
 	case 'autoY'
-		for h=ud.h(1:2),
+		for h=ud.h(1:2)
 			set(h,'YLimMode','auto');
 		end
 	case 'ylabel'
@@ -309,12 +309,12 @@ dd=c_desc(irf_ssub(var_str,1));
 if isempty(dd)
 	label=[var_str '[' num2str(iVecComponent) ']'];
 else
-	if numel(dd.units)==1, 
+	if numel(dd.units)==1 
 		labUnit = dd.units{1};
 	else
 		labUnit = dd.units{iVecComponent};
 	end
-	if numel(dd.labels)==1, 
+	if numel(dd.labels)==1 
 		labVar = dd.labels{1};
 	else
 		labVar = dd.labels{iVecComponent};

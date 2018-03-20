@@ -25,7 +25,7 @@ if nargin == 0, help c_4_v_xcorr; return; end
 if isa(tint,'GenericTimeArray')
   tint = [tint.start.utc '/' tint.stop.utc];
 end
-if ischar(tint), % assume time interval input in character format
+if ischar(tint) % assume time interval input in character format
 	tint=irf_time(tint,'utc>tint');
 end
 

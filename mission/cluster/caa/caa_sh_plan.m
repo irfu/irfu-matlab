@@ -8,7 +8,7 @@ function caa_sh_plan(yyyy,mm)
 %
 % See also CAA_FIND_MP
 
-if nargin <2,
+if nargin <2
 	if yyyy==2001, mm=2:12;
 	else mm = 1:12;
 	end

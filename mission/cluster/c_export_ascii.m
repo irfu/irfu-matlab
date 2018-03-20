@@ -60,7 +60,7 @@ while have_options
             else irf_log('fcal','wrong ArgType : f_name must be string')
 			end
 		case 'mode'
-			if ischar(args{2}), 
+			if ischar(args{2}) 
 				switch(args{2})
 				case 'plain'
 				case 'cef'

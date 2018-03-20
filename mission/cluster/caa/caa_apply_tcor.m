@@ -48,7 +48,7 @@ for dir_i=1:length(dir_list)
 					i1=1;
 					i2=0;
 					valid_indx=find(isfinite(var(:,1)));
-					while i2 < length(valid_indx);
+					while i2 < length(valid_indx)
 						if tcor_i < length(tcor_time)
 							i2=caa_locate_bisect(var(valid_indx,1),tcor_time(tcor_i+1),1);
 						else

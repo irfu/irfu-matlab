@@ -41,12 +41,12 @@ function e = c_efw_despin(es,phase,coef,options)
 
 t=es(:,1);
 if numel(phase)==1, ic=phase;end  % if only one number then it is sc number
-if nargin == 2,
+if nargin == 2
  coef=[[1 0 0];[1 0 0]];
  ref_frame='wec';
 end
 
-if size(es,2)==3, % if input is [t p12 p34] convert to [t 0 p34 p12]
+if size(es,2)==3 % if input is [t p12 p34] convert to [t 0 p34 p12]
   es=es(:,[1 3 3 2]);es(:,2)=0;
 end
 use_asym = 0;
@@ -54,63 +54,63 @@ use_interf = 0;
 if nargin == 4
     if strcmp(options,'asym') || strcmp(options,'asym32'), use_asym = 32;
     elseif strcmp(options,'asym42'), use_asym = 42;
-    elseif strcmp(options,'interf'), 
+    elseif strcmp(options,'interf') 
         use_interf = 1;
         ref_frame='wec';
     end
 end
 		
-if nargin >= 3,
-  if isnumeric(coef),
+if nargin >= 3
+  if isnumeric(coef)
     ref_frame='wec';
-   if size(coef,1) == 1,
+   if size(coef,1) == 1
     ic=coef;
     [c1,c2,c3,c4]=c_efw_calib(es(1,1)); %#ok<NASGU>
     clear coef;
     eval(irf_ssub('coef=c?;',ic));
     if nargin == 4
-      if strcmp(options,'efw_b'),
+      if strcmp(options,'efw_b')
         coef(1,2)=mean(es(:,4));
         coef(2,2)=mean(es(:,3));
-      elseif strcmp(options,'efw_a'),
+      elseif strcmp(options,'efw_a')
         coef=[[1 0 0];[1 0 0]];
         coef(1,2)=mean(es(:,4));
         coef(2,2)=mean(es(:,3));
       end
     end
    end
-  elseif strcmp(coef,'sat'),
+  elseif strcmp(coef,'sat')
     ref_frame='sat';
     coef=[[1 0 0];[1 0 0]];
-  elseif strcmp(coef,'wec'),
+  elseif strcmp(coef,'wec')
     ref_frame='wec';
     coef=[[1 0 0];[1 0 0]];
-  elseif strcmp(coef,'efw'),
+  elseif strcmp(coef,'efw')
     ref_frame='wec';
     [c1,c2,c3,c4]=c_efw_calib(es(1,1)); %#ok<NASGU>
     eval(irf_ssub('coef=c?;',ic));
-  elseif strcmp(coef,'efw_b'),
+  elseif strcmp(coef,'efw_b')
     ref_frame='wec';
     [c1,c2,c3,c4]=c_efw_calib(es(1,1)); %#ok<NASGU>
     eval(irf_ssub('coef=c?;',ic));
     coef(1,2)=mean(es(:,4));
     coef(2,2)=mean(es(:,3));
-  elseif strcmp(coef,'efw_a'),
+  elseif strcmp(coef,'efw_a')
     ref_frame='wec';
     coef=[[1 0 0];[1 0 0]];
     coef(1,2)=mean(es(:,4));
     coef(2,2)=mean(es(:,3));
-  elseif strcmp(coef,'staff'),
+  elseif strcmp(coef,'staff')
     ref_frame='wec';
     coef=[[1 0 0];[1 0 0]];
-  elseif strcmp(coef,'interf'),
+  elseif strcmp(coef,'interf')
       use_interf = 1;
       ref_frame='wec';
       coef=[[1 0 0];[1 0 0]];
   end
 end
 
-if numel(phase)==1, % load phase from isdat database
+if numel(phase)==1 % load phase from isdat database
   ic=phase;disp(['load phase for sc' num2str(ic)]);
   start_time=fromepoch(es(1,1)); % time of the first point
   Dt=es(end,1)-es(1,1)+1;
@@ -170,19 +170,19 @@ diffangle=abs(diffangle);
 diffangle=min([diffangle';360-diffangle']);
 err_angle_mean=mean(diffangle);
 err_angle=std(diffangle);
-if err_angle>1 || err_angle_mean>1,
+if err_angle>1 || err_angle_mean>1
   irf_log('proc',['Using standard despinning! Polyn. fit despinning errors would be >1deg. err=' num2str(err_angle) 'deg.']);
   unwrap_phase=phase;
-  if max(diff(phase(:,1)))>4,
+  if max(diff(phase(:,1)))>4
    disp('There are data gaps in the phase data.Despinned data can have problems near data gaps.');
-   for j=2:length(phase(:,1)),
+   for j=2:length(phase(:,1))
     ddphase=unwrap_phase(j,:)-unwrap_phase(j-1,:);
     if ddphase(2)<0 || ddphase(1)>3.9 
       unwrap_phase(j:end,2)=unwrap_phase(j:end,2)+360*round((ddphase(1)*360/4-ddphase(2))/360);
     end
    end
   else % no data gaps in phase
-   for j=2:length(phase(:,1)),
+   for j=2:length(phase(:,1))
     ddphase=unwrap_phase(j,:)-unwrap_phase(j-1,:);
     if ddphase(2)<0
       unwrap_phase(j:end,2)=unwrap_phase(j:end,2)+360;
