@@ -73,7 +73,7 @@ if isnumeric(x) && numel(x)==1
   return
 end
 
-if isempty(ax), inp_name=inputname(1); else inp_name=inputname(2); end
+if isempty(ax), inp_name=inputname(1); else, inp_name=inputname(2); end
 args=args(2:end); original_args=args;
 
 var_desc{1} = '';
@@ -88,6 +88,7 @@ plot_type = '';
 marker = '-';
 flag_plot_all_data=1;
 flag_colorbar=1;
+tint=[];
 check_input_options()
 
 %% Plot separate subplots for all x components
@@ -177,7 +178,7 @@ if ~isempty(caa_dataobject{1}) % plot CAA variable
     end
     if isstruct(x), firstTimeStamp=x.t(1);
     elseif iscell(x), firstTimeStamp=x{1}(1,1);
-    else firstTimeStamp=x(1,1);
+    else, firstTimeStamp=x(1,1);
     end
     c=ax; % axis to which apply irf_timeaxis
     flag_subplot=-1; % dont make more plots
@@ -207,13 +208,13 @@ if flag_subplot==0  % One subplot
     firstTimeStamp = x.t(~isnan(x.t),1);firstTimeStamp = firstTimeStamp(1);
   elseif ~isempty(x) % x is nonempty matrix
     if isa(x,'TSeries'), time = x.time.epochUnix; data = x.data;
-    else time = x(:,1); data = x(:,2:end);
+    else, time = x(:,1); data = x(:,2:end);
     end
     ts = t_start_epoch(time); % t_start_epoch is saved in figures user_data variable
     hca = ax;
     tag=get(hca,'tag'); ud=get(hca,'userdata'); % keep tag/userdata during plotting
     if flag_yy == 0, h = plot(hca, time-ts-dt, data, marker, args{:});
-    else h = plotyy(hca, time-ts, data, time-ts, data.*scaleyy);
+    else, h = plotyy(hca, time-ts, data, time-ts, data.*scaleyy);
     end
     grid(hca,'on');
     set(hca,'tag',tag); set(hca,'userdata',ud); % restore
@@ -223,17 +224,18 @@ if flag_subplot==0  % One subplot
     set_ylabel(hca,x);
     c=h;
     firstTimeStamp = time(~isnan(time)); firstTimeStamp = firstTimeStamp(1);
-  else return % empty matrix or does not know what to do
+  else
+    return % empty matrix or does not know what to do
   end
     
 elseif flag_subplot==1 % Separate subplot for each component
   if isstruct(x), error('cannot plot spectra in COMP mode'), end
   if isa(x,'TSeries'), time = x.time.epochUnix; data = x.data;
-  else time = x(:,1); data = x(:,2:end);
+  else, time = x(:,1); data = x(:,2:end);
   end
   ts = t_start_epoch(time); npl = size(data,2);
   % We make new figure with subplots only if more than 1 component to plot
-  if npl==1, c = ax; else c=initialize_figure(npl); end
+  if npl==1, c = ax; else, c=initialize_figure(npl); end
   for ipl=1:npl
     hca = c(ipl);
     tag=get(hca,'tag'); ud=get(hca,'userdata');     % save
@@ -251,7 +253,7 @@ elseif flag_subplot==2 % Separate subplot for each variable
     %   t_start_epoch is saved in figures user_data variable
     if isa(x{1},'TSeries'), ts = t_start_epoch(x{1}.time.epochUnix);
     elseif isstruct(x{1}), ts = t_start_epoch(x{1}.t);
-    else ts = t_start_epoch(x{1}(:,1));
+    else, ts = t_start_epoch(x{1}(:,1));
     end
     
     t_st = []; t_end = [];
@@ -264,7 +266,7 @@ elseif flag_subplot==2 % Separate subplot for each variable
         if isa(y,'TSeries')
           time = y.time.epochUnix; data = y.data;
         elseif isstruct(y), time = double(y.t); data = y(:,2:end);
-        else time = double(y(:,1)); data = y(:,2:end);
+        else, time = double(y(:,1)); data = y(:,2:end);
         end
         if numel(time)==0
             irf.log('critical',['Can not plot data ' num2str(ipl)]);
@@ -273,10 +275,10 @@ elseif flag_subplot==2 % Separate subplot for each variable
         t_tmp = time -double(ts) -double(dt(ipl));
         firstTimeStamp = t_tmp(~isnan(t_tmp));
         if isempty(t_st), t_st = firstTimeStamp(1);
-        else if firstTimeStamp(1)<t_st, t_st = firstTimeStamp(1); end
+        else, if firstTimeStamp(1)<t_st, t_st = firstTimeStamp(1); end
         end
         if isempty(t_end), t_end = firstTimeStamp(end);
-        else if firstTimeStamp(end)>t_end, t_end = firstTimeStamp(end); end
+        else, if firstTimeStamp(end)>t_end, t_end = firstTimeStamp(end); end
         end
         clear tt
         
@@ -344,7 +346,8 @@ elseif flag_subplot==3  % components of vectors in separate panels
       npl = size(x{idx}.data,2);
     elseif isstruct(x{idx})
       ts = t_start_epoch(x{idx}.t); npl = size(x{idx}.data,2);
-    else ts = t_start_epoch(x{idx}(:,1)); npl = size(x{idx},2) -1;
+    else
+      ts = t_start_epoch(x{idx}(:,1)); npl = size(x{idx},2) -1;
     end
     
     if npl==1     % We make new figure with subplots only if more than 1 component to plot
@@ -361,15 +364,16 @@ elseif flag_subplot==3  % components of vectors in separate panels
             use_color = 1;
             if iscell(marker)
                 if length(marker)==size(x,2), marker_cur = marker{jj};  use_color = 0;
-                else marker_cur = marker{1};
+                else, marker_cur = marker{1};
                 end
-            else marker_cur = marker;
+            else, marker_cur = marker;
             end
             if isempty(x{jj}), data = [];
             else
               if isa(x{jj},'TSeries')
                 time = x{jj}.time.epochUnix; data = x{jj}.data;
-              else time = x{jj}(:,1); data = x{jj}(:,2:end);
+              else
+                time = x{jj}(:,1); data = x{jj}(:,2:end);
               end
             end
             if size(data,2)>=ipl
@@ -428,9 +432,9 @@ if nargout==0, clear c; end
   function marker_cur = get_marker()
     if iscell(marker)
       if length(marker)==npl, marker_cur = marker{ipl};
-      else marker_cur = marker{1};
+      else, marker_cur = marker{1};
       end
-    else marker_cur = marker;
+    else, marker_cur = marker;
     end
   end
   function hLabel = set_ylabel(ax,inp,plot_ind)
@@ -470,7 +474,7 @@ if nargout==0, clear c; end
           else % Vector data
             % Vector component
             if isz==1, comp = ipl;
-            else comp = ipl -scu(isz-1);
+            else, comp = ipl -scu(isz-1);
             end
             lab = [var_desc{1}.labels{isz} ...
               '_{' var_desc{1}.col_labels{isz}{comp} '} ['...
@@ -502,7 +506,8 @@ if nargout==0, clear c; end
               irf.log('critical','wrongArgType : dt must be numeric')
               error('dt must be numeric');
             end
-          else irf.log('critical','wrongArgType : dt value is missing')
+          else
+            irf.log('critical','wrongArgType : dt value is missing')
             error('dt value missing');
           end
         case 'tint'
@@ -553,9 +558,10 @@ if nargout==0, clear c; end
         c=initialize_figure(x,'newfigure');
       elseif numel(args)>=2 && ischar(args{2}) && strcmpi(args{2},'reset')
         c=initialize_figure(x,'reset');
-      else c=initialize_figure(x);
+      else
+        c=initialize_figure(x);
       end
-    else irf.log('warning','Max 30 subplots supported ;)');
+    else, irf.log('warning','Max 30 subplots supported ;)');
     end
   end
 end % IRF_PLOT
@@ -567,7 +573,7 @@ function t_st_e = t_start_epoch(t)
 % if not  set, sets t_start_epoch of the figure
 ud = get(gcf,'userdata');
 ii = find(~isnan(t));
-if ~isempty(ii), valid_time_stamp = t(ii(1)); else valid_time_stamp = []; end
+if ~isempty(ii), valid_time_stamp = t(ii(1)); else, valid_time_stamp = []; end
 
 if isfield(ud,'t_start_epoch')
     t_st_e = double(ud.t_start_epoch);
