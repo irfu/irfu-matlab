@@ -245,11 +245,16 @@ else
         y(ii,:,:) = -sind(phi.data(ii,:)')*sind(theta);
         z(ii,:,:) = -ones(lengthphi,1)*cosd(theta);
     end
-    energy = ones(length(pdist.time),1)*energy0;
-    for ii = 1:length(pdist.time)
-        if stepTable.data(ii)
-        	energy(ii,:) = energy1;
-        end
+
+    if size(pdist.depend{1},1) == pdist.length
+      energy = pdist.depend{1};
+    else % make energy table from ancillary data
+      energy = ones(length(pdist.time),1)*energy0;
+      for ii = 1:length(pdist.time)
+          if stepTable.data(ii)
+           energy(ii,:) = energy1;
+          end
+      end
     end
 end
 
@@ -260,7 +265,8 @@ yt = squeeze(permute(yt,[1 4 2 3]));
 zt = repmat(z,1,1,1,numechannels);
 zt = squeeze(permute(zt,[1 4 2 3]));
 
-thetab = acosd(xt.*Bvecx+yt.*Bvecy+zt.*Bvecz);
+%thetab = acosd(xt.*Bvecx+yt.*Bvecy+zt.*Bvecz);
+thetab = acosd(xt.*squeeze(Bvecx)+yt.*squeeze(Bvecy)+zt.*squeeze(Bvecz));
 
 c_eval('dist? = pdist.data;',1:length(anglevec));
 dist1(thetab > anglevec(1)) = NaN;
