@@ -28,7 +28,7 @@ if isempty(DayOfInterest)
 end
 if nargin==1, bashRun=false; end % Default to GUI run
 dataPathRoot = getenv('DATA_PATH_ROOT'); % Default to "/data/mms/"
-outPath = ['/home/thoni/MMS/Plots/RawData',filesep];
+outPath = ['/data/mms/irfu/plots/edp/RawData/'];
 if ( ~islogical(bashRun) || ...
     ( bashRun && ~exist(outPath, 'dir') ) )
   error('Incorrect usage. See help.');
@@ -114,7 +114,7 @@ if(bashRun)
   for ii=1:length(iData)
     % Entire day:
     % savefig(fig.(iData{ii}), [outPath, DayOfInterest, '_', iData{ii}, '_000000_235959'], 'compact'); %R2013b or later
-    print(fig.(iData{ii}), '-dpng', [outPath, DayOfInterest, '_', iData{ii}, '_000000_235959']);
+    print(fig.(iData{ii}), '-dpng', [outPath, iData{ii}, filesep, DayOfInterest, '_', iData{ii}, '_000000_235959']);
   
     % Interval 00:01:00 to 00:11:00 UTC
     tint = irf.tint([DayOfInterest,'T00:01:00Z'], [DayOfInterest,'T00:11:00Z']);
@@ -124,7 +124,7 @@ if(bashRun)
     title(h.(iData{ii})(1),{['Plot created: ', nowStr, '. ', upper(iData{ii}), ' raw for all four s/c.'],...
       'Zoom in: 00:01:00 to 00:11:00 UTC'});
     disp('Saving 00:01:00 to 00:11:00');
-    print(fig.(iData{ii}), '-dpng', [outPath, DayOfInterest, '_', iData{ii}, '_000100_001100']);
+    print(fig.(iData{ii}), '-dpng', [outPath, iData{ii}, filesep, DayOfInterest, '_', iData{ii}, '_000100_001100']);
     
     % Interval 06:00:00 to 06:10:00 UTC
     tint = irf.tint([DayOfInterest,'T06:00:00Z'], [DayOfInterest,'T06:10:00Z']);
@@ -134,7 +134,7 @@ if(bashRun)
     title(h.(iData{ii})(1),{['Plot created: ',nowStr,'. ', upper(iData{ii}), ' raw for all four s/c.'],...
       'Zoom in: 06:00:00 to 06:10:00 UTC.'});
     disp('Saving 06:00:00 to 06:10:00');
-    print(fig.(iData{ii}), '-dpng', [outPath, DayOfInterest, '_', iData{ii}, '_060000_061000']);
+    print(fig.(iData{ii}), '-dpng', [outPath, iData{ii}, filesep, DayOfInterest, '_', iData{ii}, '_060000_061000']);
     
     % Interval 12:00:00 to 12:01:00 UTC (ie a shorter interval as well).
     tint = irf.tint([DayOfInterest,'T12:00:00Z'], [DayOfInterest,'T12:01:00Z']);
@@ -144,7 +144,7 @@ if(bashRun)
     title(h.(iData{ii})(1),{['Plot created: ',nowStr,'. ', upper(iData{ii}), ' raw for all four s/c.'],...
       'Zoom in: 12:00:00 to 12:01:00 UTC.'});
     disp('Saving 12:00:00 to 12:01:00');
-    print(fig.(iData{ii}), '-dpng', [outPath, DayOfInterest, '_', iData{ii}, '_120000_120100']);
+    print(fig.(iData{ii}), '-dpng', [outPath, iData{ii}, filesep, DayOfInterest, '_', iData{ii}, '_120000_120100']);
     
     % Interval 18:00:00 to 18:10:00 UTC
     tint = irf.tint([DayOfInterest,'T18:00:00Z'], [DayOfInterest,'T18:10:00Z']);
@@ -154,7 +154,7 @@ if(bashRun)
     title(h.(iData{ii})(1),{['Plot created: ',nowStr,'. ', upper(iData{ii}), ' raw for all four s/c.'],...
       'Zoom in: 18:00:00 to 18:10:00 UTC.'});
     disp('Saving 18:00:00 to 18:10:00');
-    print(fig.(iData{ii}), '-dpng', [outPath, DayOfInterest,'_', iData{ii}, '_180000_181000']);
+    print(fig.(iData{ii}), '-dpng', [outPath, iData{ii}, filesep, DayOfInterest,'_', iData{ii}, '_180000_181000']);
   end
 end
 

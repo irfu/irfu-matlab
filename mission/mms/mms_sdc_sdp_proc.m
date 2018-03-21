@@ -27,6 +27,7 @@ DCE_File = '';
 L2A_File = ''; % L2A file, contain offsets from fast/slow to be used by brst and for L2Pre process.
 DEFATT_File = ''; % Defatt file used for l2pre or reprocessing of QL.
 HdrInfo = [];
+procId=[]; Dmgr = [];
 
 parse_input(procName, varargin{:});
 
