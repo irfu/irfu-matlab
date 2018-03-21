@@ -135,8 +135,9 @@ dt_plus = tmpDist.DEPEND_0.DELTA_MINUS_VAR.data;
 
 if is_version_geq(tmpDist.GlobalAttributes.Data_version{:}, '3.1.0')
   % FPI version 3.1.z files or newer
-  energy = get_variable(tmpDataObj,['mms' fileInfo.mmsId '_' fileInfo.detector '_energy_' fileInfo.tmMode]);
-  energy = energy.data;
+  energy_data = get_variable(tmpDataObj,['mms' fileInfo.mmsId '_' fileInfo.detector '_energy_' fileInfo.tmMode]);
+  energy = energy_data.data;
+  
   phi = get_variable(tmpDataObj,['mms' fileInfo.mmsId '_' fileInfo.detector '_phi_' fileInfo.tmMode]);
   phi = phi.data;
   theta = get_variable(tmpDataObj,['mms' fileInfo.mmsId '_' fileInfo.detector '_theta_' fileInfo.tmMode]);
@@ -152,6 +153,10 @@ if is_version_geq(tmpDist.GlobalAttributes.Data_version{:}, '3.1.0')
   energy0 = energy(find(stepTable==0,1,'first'),:);
   energy1 = energy(find(stepTable==1,1,'first'),:); if isempty(energy1), energy1 = energy0; end
   
+  % energy delta_minus/plus  
+  energy_minus = squeeze(energy_data.DELTA_MINUS_VAR.data);
+  energy_plus = squeeze(energy_data.DELTA_PLUS_VAR.data);
+  
   % Construct PDist
   PD = PDist(time,Dist,'skymap',energy,phi,theta);
   PD.userData = ud;
@@ -166,6 +171,8 @@ if is_version_geq(tmpDist.GlobalAttributes.Data_version{:}, '3.1.0')
   PD.ancillary.energy0 = energy0;
   PD.ancillary.energy1 = energy1;
   PD.ancillary.esteptable = stepTable;
+  PD.ancillary.delta_energy_minus = energy_minus;
+  PD.ancillary.delta_energy_plus = energy_plus;
 else
   if strcmp(fileInfo.tmMode,'fast') % fast
     energy0 = get_variable(tmpDataObj,['mms' fileInfo.mmsId '_' fileInfo.detector '_energy_' fileInfo.tmMode]);
