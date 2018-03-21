@@ -219,7 +219,7 @@ elseif length(P) == 1
     % psd(x,dflag)
 	if isempty(P{1}),   dflag = 'none'; nfft = min(length(x),256);
 	elseif ischar(P{1}), dflag = P{1};       nfft = min(length(x),256);
-	else              dflag = 'none'; nfft = P{1};   
+	else,              dflag = 'none'; nfft = P{1};   
 	end
     Fs = 2;
     window = hanning(nfft);
@@ -231,7 +231,7 @@ elseif length(P) == 2
     if isempty(P{1}), nfft = min(length(x),256); else, nfft=P{1};     end
 	if isempty(P{2}),   dflag = 'none'; Fs = 2;
 	elseif ischar(P{2}), dflag = P{2};       Fs = 2;
-	else              dflag = 'none'; Fs = P{2};
+	else,              dflag = 'none'; Fs = P{2};
 	end
     window = hanning(nfft);
     noverlap = 0;
@@ -240,7 +240,7 @@ elseif length(P) == 3
     % psd(x,nfft,Fs,window)
     % psd(x,nfft,Fs,dflag)
     if isempty(P{1}), nfft = min(length(x),256); else, nfft=P{1};     end
-    if isempty(P{2}), Fs = 2;     else    Fs = P{2}; end
+    if isempty(P{2}), Fs = 2;     else,    Fs = P{2}; end
     if ischar(P{3})
         dflag = P{3};
         window = hanning(nfft);
@@ -256,7 +256,7 @@ elseif length(P) == 4
     % psd(x,nfft,Fs,window,noverlap)
     % psd(x,nfft,Fs,window,dflag)
     if isempty(P{1}), nfft = min(length(x),256); else, nfft=P{1};     end
-    if isempty(P{2}), Fs = 2;     else    Fs = P{2}; end
+    if isempty(P{2}), Fs = 2;     else,    Fs = P{2}; end
     window = P{3};
     if length(window) == 1, window = hanning(window); end
     if isempty(window), window = hanning(nfft); end
@@ -272,7 +272,7 @@ elseif length(P) == 5
     % psd(x,nfft,Fs,window,noverlap,p)
     % psd(x,nfft,Fs,window,noverlap,dflag)
     if isempty(P{1}), nfft = min(length(x),256); else, nfft=P{1};     end
-    if isempty(P{2}), Fs = 2;     else    Fs = P{2}; end
+    if isempty(P{2}), Fs = 2;     else,    Fs = P{2}; end
     window = P{3};
     if length(window) == 1, window = hanning(window); end
     if isempty(window), window = hanning(nfft); end
@@ -282,17 +282,17 @@ elseif length(P) == 5
         p = [];
     else
         dflag = 'none';
-        if isempty(P{5}), p = .95;    else    p = P{5}; end
+        if isempty(P{5}), p = .95;    else,    p = P{5}; end
     end
 elseif length(P) == 6
     % psd(x,nfft,Fs,window,noverlap,p,dflag)
     if isempty(P{1}), nfft = min(length(x),256); else, nfft=P{1};     end
-    if isempty(P{2}), Fs = 2;     else    Fs = P{2}; end
+    if isempty(P{2}), Fs = 2;     else,    Fs = P{2}; end
     window = P{3};
     if length(window) == 1, window = hanning(window); end
     if isempty(window), window = hanning(nfft); end
     if isempty(P{4}), noverlap = 0; else, noverlap = P{4}; end
-    if isempty(P{5}), p = .95;    else    p = P{5}; end
+    if isempty(P{5}), p = .95;    else,    p = P{5}; end
     if ischar(P{6})
         dflag = P{6};
     else

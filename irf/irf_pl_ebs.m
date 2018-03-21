@@ -78,7 +78,7 @@ end
   if     sampl_b > 1.5*sampl_e, e=irf_resamp(e,b); sampl=sampl_b; disp('irf_pl_ebs: interpolating e to b');
   elseif sampl_e > 1.5*sampl_b, b=irf_resamp(b,e); sampl=sampl_e; disp('irf_pl_ebs: interpolating b to e');
   elseif sampl_e == sampl_b && size(e)==size(b),   sampl=sampl_e;
-  else   sampl=2*sampl_e; 
+  else, sampl=2*sampl_e; 
       t=max(e(1,1),b(1,1)):1/sampl:min(e(end,1),b(end,1)); t=t'; 
       e=irf_resamp(e,t); b=irf_resamp(b,t); 
       irf_log('proc','interpolating b and e to 2x e sampling');

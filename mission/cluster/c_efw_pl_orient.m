@@ -36,7 +36,7 @@ if strcmp(action,'initialize')
         ok=c_load('B?',ic);
         if ok, c_eval('magnetic_field=c_gse2dsc(B?,?);clear B?',ic);end
     elseif exist('mBPP.mat'), eval(irf_ssub('load mBPP dBPP?;magnetic_field=dBPP?;clear dBPP?',ic));
-    else   irf_log('load','Could not read B field, using B=[0 0 1] nT in DS ref frame');magnetic_field=[1 0 0 1]; % first col is time
+    else,  irf_log('load','Could not read B field, using B=[0 0 1] nT in DS ref frame');magnetic_field=[1 0 0 1]; % first col is time
     end
   end
   if nargin<3, eval(irf_ssub('load mA.mat Atwo?;phase_time_series=Atwo?;clear Atwo?',ic));          end
