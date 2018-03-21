@@ -686,6 +686,10 @@ end
             theta = dist.DEPEND_2.data;
             dist = mms.variable2ts(dist);
             dist = dist.tlim(Tint);
+            energy_data = mms.db_get_variable(dsetName,[pref '_energy_' Vr.tmmode],Tint);   
+            % energy delta_minus/plus  
+            energy_minus = squeeze(energy_data.DELTA_MINUS_VAR.data);
+            energy_plus = squeeze(energy_data.DELTA_PLUS_VAR.data);
             energy0 = mms.db_get_variable(dsetName,[pref '_energy0_' Vr.tmmode],Tint);
             energy1 = mms.db_get_variable(dsetName,[pref '_energy1_' Vr.tmmode],Tint);
             phi = mms.db_get_ts(dsetName,[pref '_phi_' Vr.tmmode],Tint);
@@ -705,6 +709,8 @@ end
               energy1 = energy1.data;
             end
             res = irf.ts_skymap(dist.time,dist.data,[],phi.data,theta,'energy0',energy0,'energy1',energy1,'esteptable',stepTable.data);
+            res.ancillary.delta_energy_minus = energy_minus;
+            res.ancillary.delta_energy_plus = energy_plus;
           case 'fast'
             %dist = mms.db_get_variable(dsetName,[pref '_dist_' Vr.tmmode],Tint);
             if (length(Vr.param) == 3)  
