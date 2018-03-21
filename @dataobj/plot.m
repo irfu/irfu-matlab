@@ -252,7 +252,7 @@ elseif dim == 2
 		  data.data = irf.nanmean(double(data.data),sum_dim+1);
 	  end
     if sum_dim == 1, comp_dim = 2;
-    else  comp_dim = 1;
+    else, comp_dim = 1;
     end
   end
   

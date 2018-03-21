@@ -34,7 +34,7 @@ elseif   (nargin ==4) || (nargin == 5)
 	ud.variable_str=[inputname(1) '..' inputname(4)];
 	ud.var_col=column;
 	action='initialize';
-else      help c_4_v_gui
+else,     help c_4_v_gui
 end
 
 irf.log('debug',['action=' action]);
