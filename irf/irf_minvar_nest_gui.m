@@ -221,7 +221,7 @@ switch action
 					disp('f/Fs must be <1!!!')
 					set(ud.filter,'string','1')
 				end
-      [ud.bn, ud.l2_l3_ratio, ud.v1_nest, ud.v2_nest ud.v3_nest]=irf_minvar_nest(X,ud.csc,tlim);
+      [ud.bn, ud.l2_l3_ratio, ud.v1_nest, ud.v2_nest, ud.v3_nest]=irf_minvar_nest(X,ud.csc,tlim);
       irf_minvar_nest_gui('update_mva_axis');
       
       case 'update_mva_axis'
