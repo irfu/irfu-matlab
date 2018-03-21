@@ -15,7 +15,7 @@ function Out = wave_psd_ell_thetak(TT)
 %    gseR, mlt, mLat - position
 
 ULF_PATH = '/data/caa/MAARBLE/WaveDatabase/ULF/';
-
+cl_s=''; th_s = '';
 chk_input()
 if ~isempty(th_s) % load THEMIS positions 1min resolution
   Rth = load('/data/caalocal/THEMIS/mRth',['Rth' lower(th_s)]);

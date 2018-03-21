@@ -41,6 +41,7 @@ FORMAT_R = '%10.2f,' ; % distance in km < 20 RE
 FILLVAL            = -999;
 FILLVAL_EXP        = -1.00E+31;
 
+dataToExport = []; nData = [];
 if ~isstruct(ebsp) 
   error('expecting sturcture output of irf_ebsp or irf_convert_fac')
 end
