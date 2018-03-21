@@ -70,7 +70,7 @@ caaDir = datastore('caa','localDataDirectory');
 caaDirDefault = '/data/caalocal';  % value to suggest if caaDir not defined
 
 %% Default index is empty, read in only those indees that are used
-
+data=[];
 if isempty(index) 
 	index=struct('dummy',[]);
 end
