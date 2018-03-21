@@ -335,8 +335,8 @@ end
       if isempty(ebsp.(fName{:})), continue, end
       if strcmpi(fName{:}(1:2),'ee'), idx = idxE;
       elseif strcmpi(fName{:}(1:2),'pf') %Poynting flux
-        if fSampB>fSampE, idx = idxE; else idx = idxB; end
-      else idx = idxB;
+        if fSampB>fSampE, idx = idxE; else, idx = idxB; end
+      else, idx = idxB;
       end
       s = size(ebsp.(fName{:}));
       switch numel(s)
@@ -352,7 +352,7 @@ end
 end
 
 function data = clear_backward_jump(data,name)
-if nargin <2, name = ''; else name = [' in ' name]; end
+if nargin <2, name = ''; else, name = [' in ' name]; end
 while true
   if isempty(data), break, end
   iJump = find( diff(data(:,1))<=0 );

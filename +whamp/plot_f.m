@@ -179,7 +179,7 @@ end
 
 for j=length(n):-1:1
   % estimate thermal velocity in m/s
-  if m(j)==0, mm(j)=Me;else mm(j)=Mp*m(j);end
+  if m(j)==0, mm(j)=Me;else, mm(j)=Mp*m(j);end
   vt(j)=sqrt(2*e * 1000*t(j)/mm(j)); % [m/s] (t in keV therefore *1000)
 end
 

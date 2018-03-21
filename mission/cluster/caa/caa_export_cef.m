@@ -65,7 +65,7 @@ if lev==1
     elseif regexp(caa_vs,'^P(1|2|3|4|12|32|34)$','once')
 		id = str2double(caa_vs(2:end));
 		if id <=4, vs = irf_ssub('P10Hz?p!',cl_id,id);
-		else vs = irf_ssub('wE?p!',cl_id,id);
+		else, vs = irf_ssub('wE?p!',cl_id,id);
 		end
 		v_size = 1;
     elseif strcmp(caa_vs, 'P')
@@ -74,7 +74,7 @@ if lev==1
     elseif strcmp(caa_vs, 'E')
 		vs = 'EL1C';
 		v_size = 3;
-    else error([ 'Level 1 CAA_VS must be one of IB, P(1|2|3|4|12|32|34), P or E. CAA_VS:' caa_vs ])
+    else, error([ 'Level 1 CAA_VS must be one of IB, P(1|2|3|4|12|32|34), P or E. CAA_VS:' caa_vs ])
     end
 else
 	switch caa_vs
@@ -157,7 +157,7 @@ for dd = 1:length(dirs)
    % Probe pair used can vary for each subinterval!
    if (strcmp(caa_vs, 'E') && (lev ~= 1)) || strcmp(caa_vs, 'DER') || strcmp(caa_vs, 'SFIT')
      [sfit_probe,flag_lx,probeS] = caa_sfit_probe(cl_id);
-     if flag_lx, tS = '(LX)'; else tS = ''; end
+     if flag_lx, tS = '(LX)'; else, tS = ''; end
      irf_log('proc',sprintf('L3_E probe pair : %s%s',probeS(1:2),tS))
      if lev == 3
        switch sfit_probe
@@ -169,7 +169,7 @@ for dd = 1:length(dirs)
        end
        if strcmp(caa_vs, 'E')
          if flag_lx, vs = irf_ssub('diELXs?p!',cl_id,sfit_probe);
-         else vs = irf_ssub('diEs?p!',cl_id,sfit_probe);
+         else, vs = irf_ssub('diEs?p!',cl_id,sfit_probe);
          end
        end
      end
@@ -202,7 +202,7 @@ for dd = 1:length(dirs)
      ppDER = ppList(logical(ok));   % Keep list of probe pairs actually loaded.
      if numel(ppDER) > 0
        if ppDER(1)<100, vs = sprintf('Dadc%dp%d', cl_id,ppDER(1));
-       else vs = sprintf('DadcLX%dp%d', cl_id,ppDER(1)/10);
+       else, vs = sprintf('DadcLX%dp%d', cl_id,ppDER(1)/10);
        end
      end
    elseif strcmp(caa_vs, 'P')
@@ -399,7 +399,7 @@ for dd = 1:length(dirs)
          r = load(mfn);
          dataInfo = r.(sprintf('ib%d_info',cl_id));
          if isempty(dataInfoAll), dataInfoAll=dataInfo;
-         else dataInfoAll=[dataInfoAll ', ' dataInfo]; %#ok<AGROW>
+         else, dataInfoAll=[dataInfoAll ', ' dataInfo]; %#ok<AGROW>
          end
          data = r.(sprintf('iburst%d',cl_id));
        else
@@ -675,7 +675,7 @@ for dd = 1:length(dirs)
      t_int_full = st + [0 dt];
      [iso_ts,dtint] = caa_read_interval;
      if isempty(iso_ts), t_int = data([1 end],1);
-     else clear t_int; t_int(1) = iso2epoch(iso_ts); t_int(2) = t_int(1) + dtint;
+     else, clear t_int; t_int(1) = iso2epoch(iso_ts); t_int(2) = t_int(1) + dtint;
      end
      if (size(t_int,1) == 2)
         irf_log('save', 'No interval or data time found.')
@@ -689,7 +689,7 @@ for dd = 1:length(dirs)
        if ~isempty(data{1}), data1 = data{1};
        elseif  ~isempty(data{2}), data1 = data{2};
        elseif  ~isempty(data{4}), data1 = data{4};
-       else data1 = [];
+       else, data1 = [];
        end
        % Limit data to both time interval given as input, and time interval read from file.
        if ~isempty(data1)
@@ -780,7 +780,7 @@ for dd = 1:length(dirs)
       pS = ['p' probe_info(iP*2 + [-1 0])];
       if lev == 3 && flag_lx, pS = [pS '(LX)']; end %#ok<AGROW>
       if iP==1, probe_str = [probe_str ' ' pS]; %#ok<AGROW>
-      else probe_str = [probe_str ',' pS]; %#ok<AGROW>
+      else, probe_str = [probe_str ',' pS]; %#ok<AGROW>
       end
     end
 	com_str = sprintf('%s/%s %s', ...
@@ -823,7 +823,7 @@ for dd = 1:length(dirs)
 			[ok2,Damp] = c_load('Damp?',cl_id); if ~ok2, Damp = dam_def; end
 			
 			if ok1 || ok2, irf_log('calb','Using saved DSI offsets')
-			else irf_log('calb','Using default DSI offsets')
+			else, irf_log('calb','Using default DSI offsets')
 			end 
 			clear dsiof_def dam_def
 		else
@@ -883,7 +883,7 @@ for dd = 1:length(dirs)
    	if ~isempty(data)
    		% convert mV/m back to V
    		if id==32, data(:,2) = data(:,2)*.0622;
-           else data(:,2) = data(:,2)*.088;
+           else, data(:,2) = data(:,2)*.088;
    		end
    	end
 
@@ -924,7 +924,7 @@ for dd = 1:length(dirs)
            sP = sprintf('p%i', ppDER(iP));
            if ppDER(iP)>99, sP(end)=''; sP = [sP '(LX)']; end %#ok<AGROW>
            if iP==1, adc_str = [adc_str ' ' sP]; %#ok<AGROW>
-           else adc_str = [adc_str ',' sP]; %#ok<AGROW>
+           else, adc_str = [adc_str ',' sP]; %#ok<AGROW>
            end
          end
          adc_str = sprintf('%s/%s %s', ...
@@ -1139,7 +1139,7 @@ if ~isempty(data)
 	if s~=0
 		if s==1, msg = 'problem writing CEF data';
 		elseif s==2, msg = 'problem compressing CEF';
-		else msg = 'unknown error';
+		else, msg = 'unknown error';
 		end
 		irf_log('save',msg)
 		status = 1;
@@ -1178,14 +1178,14 @@ function obuf = pmeta(buf,m_s,s,cl_id)
 obuf = sprintf('%s%s',buf,['START_META     =   ' m_s '\n']);
 if iscell(s)
 	for j=1:length(s)
-		if isnumeric(s{j}), q = ''; ss = num2str(s{j}); else q = '"'; ss = s{j};end
+		if isnumeric(s{j}), q = ''; ss = num2str(s{j}); else, q = '"'; ss = s{j};end
 		obuf = sprintf('%s%s',obuf,['   ENTRY       =   ' q ss q '\n']); 
 	end
 else
 	if nargin==4, ss = irf_ssub(s,cl_id); 
-    else ss = s;
+    else, ss = s;
 	end
-	if isnumeric(ss), q = ''; ss = num2str(ss); else q = '"'; end
+	if isnumeric(ss), q = ''; ss = num2str(ss); else, q = '"'; end
 	obuf = sprintf('%s%s',obuf,['   ENTRY       =   ' q ss q '\n']);
 end
 obuf = sprintf('%s%s',obuf,['END_META       =   ' m_s '\n']);

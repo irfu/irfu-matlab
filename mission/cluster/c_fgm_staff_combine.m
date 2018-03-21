@@ -22,7 +22,7 @@ function [bout]=c_fgm_staff_combine(bFgm,bStaff,varargin)
 if nargout==0 && nargin == 0, help c_fgm_staff_combine;return;end
 
 args = varargin;
-if ~isempty(args), have_options = 1; else have_options = 0; end
+if ~isempty(args), have_options = 1; else, have_options = 0; end
 
 %% Default values that can be override by options
 fCut = 1.3; % cut Frequency (Hz)
@@ -63,7 +63,7 @@ bStaff=irf_tlim(bStaff,tint); % limit time series to common time interval
 
 %% check if FGM and STAFF are in normal mode
 if isempty(cl_id), fsStaff = c_efw_fsample(bStaff,'hx');
-else fsStaff = c_efw_fsample(bStaff,'hx',cl_id);
+else, fsStaff = c_efw_fsample(bStaff,'hx',cl_id);
 end
 if fsStaff < 400 % STAFF in normal mode, not implemented
     N = 127;  % FIR filter order (have to be odd number!!!)

@@ -194,7 +194,7 @@ switch plot_type
         shading(ax,'flat');
         grid(ax,'off');
         if isa(ax,'handle'), cb = colorbar(ax); % HG2
-        else cb = colorbar('peer',ax);
+        else, cb = colorbar('peer',ax);
         end
         ylabel(cb,to_plot{1}.p_label)
         

@@ -43,7 +43,7 @@ for dir_i=1:length(dir_list)
 				eval(['var=' vars(vars_i).name ';']);
 				if var(1,1) > 946684800 % iso2epoch('2000-01-01T00:00:00Z')
 					sz=size(var);
-					if sz(2) == 2 && var(1,2) > 946684800,is_interval=1;else is_interval=0;end
+					if sz(2) == 2 && var(1,2) > 946684800,is_interval=1;else, is_interval=0;end
 					tcor_i=caa_locate_bisect(tcor_time,var(1,1),1);
 					i1=1;
 					i2=0;

@@ -136,10 +136,10 @@ if strcmpi(spec.ref_sys,'nif')
     end
 end
 
-if find(ismember(fn,['V',rgs{1}])); hasV = 1; else hasV = 0; end
-if find(ismember(fn,['n',rgs{1}])); hasN = 1; else hasN = 0; end
-if find(ismember(fn,['Ti',rgs{1}])); hasTi = 1; else hasTi = 0; end
-if find(ismember(fn,['Te',rgs{1}])); hasTe = 1; else hasTe = 0; end
+if find(ismember(fn,['V',rgs{1}])); hasV = 1; else, hasV = 0; end
+if find(ismember(fn,['n',rgs{1}])); hasN = 1; else, hasN = 0; end
+if find(ismember(fn,['Ti',rgs{1}])); hasTi = 1; else, hasTi = 0; end
+if find(ismember(fn,['Te',rgs{1}])); hasTe = 1; else, hasTe = 0; end
 
 
 %% Calculate parameters

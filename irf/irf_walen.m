@@ -27,7 +27,7 @@ function [slope,cc]=irf_walen(v,b,n,vht,tpar,tperp,tint,tint_ex)
 if nargin < 5, anys_mode = 0;
 else
 	if ~isempty(tperp) &&  ~isempty(tpar), anys_mode = 1;
-	else anys_mode = 0;
+	else, anys_mode = 0;
 	end
 end
 

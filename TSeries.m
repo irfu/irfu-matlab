@@ -309,7 +309,7 @@
           d = setdiff(s,tb); s1 = sprintf('%s',char(d)');
           msg = sprintf(...
             'Unrecognized entries (%s) for representation ''%s''',s1,tb);
-        else error('should not be here')
+        else, error('should not be here')
         end
       end
     end
@@ -601,17 +601,17 @@
       function update_name_units()
         if ~isempty(obj.name) || ~isempty(obj1.name)
           if isempty(obj.name), s = 'untitled';
-          else s = obj.name;
+          else, s = obj.name;
           end
           if isempty(obj1.name), s1 = 'untitled';
-          else s1 = obj1.name;
+          else, s1 = obj1.name;
           end
           Ts.name = sprintf('cross(%s,%s)',s,s1);
         end
         if ~isempty(obj.units) || ~isempty(obj1.units)
           if isempty(obj.units), Ts.units = obj1.units;
           elseif isempty(obj1.units), Ts.units = obj.units;
-          else Ts.units = [obj.units ' ' obj1.units];
+          else, Ts.units = [obj.units ' ' obj1.units];
           end
         end
       end
@@ -622,7 +622,7 @@
 			%
 			% LENGTH(TS) - number of data points in TS
       if isempty(obj.t_), l = 0;
-      else l = obj.t_.length();
+      else, l = obj.t_.length();
       end
     end
     
@@ -688,7 +688,7 @@
       [ST,~] = dbstack; % see if plus() was called from within minus()
       if numel(ST)>1 && strcmp(ST(2).name,'TSeries.minus')
             operationStr = 'Minus'; operationSymbol = '-';
-      else operationStr = 'Plus';  operationSymbol = '+';
+      else, operationStr = 'Plus';  operationSymbol = '+';
       end        
       
       if isnumeric(obj1) % then obj is TSeries
@@ -760,10 +760,10 @@
       function update_name()
         if ~isempty(obj.name) || ~isempty(obj1.name)
           if isempty(obj.name), s = 'untitled';
-          else s = obj.name;
+          else, s = obj.name;
           end
           if ~isa(obj1,'TSeries') || isempty(obj1.name), s1 = 'untitled';
-          else s1 = obj1.name;
+          else, s1 = obj1.name;
           end
           Ts.name = sprintf(['(%s' operationSymbol '%s)'],s,s1);                              
         end
@@ -866,18 +866,18 @@
       function update_name_units()
         if ~isempty(obj.name) || (isa(obj1,'TSeries') && ~isempty(obj1.name))
           if isempty(obj.name), s = 'untitled';
-          else s = obj.name;
+          else, s = obj.name;
           end
           if ~isa(obj1,'TSeries') || isempty(obj1.name), s1 = 'untitled';
-          else s1 = obj1.name;
+          else, s1 = obj1.name;
           end
           Ts.name = sprintf('dot(%s,%s)',s,s1);
         end
         if isempty(obj.units), s = '';
-        else s = obj.units;
+        else, s = obj.units;
         end
         if ~isa(obj1,'TSeries') || isempty(obj1.units), s1 = '';
-          else s1 = obj1.units;
+          else, s1 = obj1.units;
         end
         Ts.units = sprintf('%s %s',s,s1);
         Ts.userData = [];
@@ -904,18 +904,18 @@
       function update_name_units()
         if ~isempty(obj.name) || ~isempty(obj1.name)
           if isempty(obj.name), s = 'untitled';
-          else s = obj.name;
+          else, s = obj.name;
           end
           if isempty(obj1.name), s1 = 'untitled';
-          else s1 = obj1.name;
+          else, s1 = obj1.name;
           end
           Ts.name = sprintf('%s * %s',s,s1);
         end
         if isempty(obj.units), s = '';
-        else s = obj.units;
+        else, s = obj.units;
         end
         if isempty(obj1.units), s1 = '';
-          else s1 = obj1.units;
+          else, s1 = obj1.units;
         end
         Ts.units = sprintf('%s %s',s,s1);
         Ts.userData = [];
@@ -1016,7 +1016,7 @@
           Ts = construct_new_ts;
           update_name_units;
         end
-      else error('Only scalar multiplication supported.')
+      else, error('Only scalar multiplication supported.')
       end        
       
       % Nested functions
@@ -1052,7 +1052,7 @@
       end
       function newTime = new_time
         if isa(obj1,'TSeries'), newTime = obj1.time;
-        else newTime = obj2.time;
+        else, newTime = obj2.time;
         end
       end
       function newData = multiply(multiplication_type)
@@ -1191,12 +1191,12 @@
       function update_name_units()
         if ~isempty(obj.name)
           if isempty(obj.name), s = 'untitled';
-          else s = obj.name;
+          else, s = obj.name;
           end          
           Ts.name = sprintf('(%s).^%g',s,obj1);
         end
         if isempty(obj.units), s = '';
-        else s = obj.units;
+        else, s = obj.units;
         end
         Ts.units = sprintf('(%s)*%g',s,obj1);
         Ts.userData = [];
@@ -1260,18 +1260,18 @@
       function update_name_units()
         if ~isempty(obj.name) || ~isempty(obj1.name)
           if isempty(obj.name), s = 'untitled';
-          else s = obj.name;
+          else, s = obj.name;
           end
           if ~isa(obj1,'TSeries') || isempty(obj1.name), s1 = 'untitled';
-          else s1 = obj1.name;
+          else, s1 = obj1.name;
           end
           Ts.name = sprintf('%s/(%s)',s,s1);
         end
         if isempty(obj.units), s = '';
-        else s = obj.units;
+        else, s = obj.units;
         end
         if ~isa(obj1,'TSeries') || isempty(obj1.units), s1 = '';
-          else s1 = obj1.units;
+          else, s1 = obj1.units;
         end
         Ts.units = sprintf('%s/(%s)',s,s1);
         Ts.userData = [];
@@ -1523,7 +1523,7 @@
           args = {obj.t_,dataNew,'TensorOrder',teno,'TensorBasis',basis};
           for i=1:nd
             if i==iDim, args = [args {'repres',{comp}}]; %#ok<AGROW>
-            else args = [args {'repres',{}}]; %#ok<AGROW>
+            else, args = [args {'repres',{}}]; %#ok<AGROW>
             end
           end
           res = TSeries(args{:}); res.name = sprintf('%s_%s',obj.name,comp);
@@ -1554,7 +1554,7 @@
           indDim = 1;
           for i=1:nd
             if i==iDim(indDim),  args = [args {'repres',{comp(indDim)}}]; indDim = indDim+1;%#ok<AGROW>
-            else args = [args {'repres',{}}]; %#ok<AGROW>
+            else, args = [args {'repres',{}}]; %#ok<AGROW>
             end
           end
           res = TSeries(args{:}); res.name = sprintf('%s_%s',obj.name,comp);
@@ -1566,7 +1566,7 @@
         if rep{1}==c, res = 1;
         elseif lRep>1 && rep{2}==c, res = 2;
         elseif lRep>2 && rep{3}==c, res = 3;
-        else res = [];
+        else, res = [];
         end        
       end
     end

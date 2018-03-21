@@ -52,9 +52,9 @@ while have_options
 					method = args{2};
 					l = 2;
 					flag_do='interpolation'; % if method is given do interpolation
-				else irf.log('critical','wrongArgType : METHOD must be numeric')
+				else, irf.log('critical','wrongArgType : METHOD must be numeric')
 				end
-			else irf.log('critical','wrongArgType : METHOD value is missing')
+			else, irf.log('critical','wrongArgType : METHOD value is missing')
 			end
 		case {'fs','fsample'}
 			if length(args)>1
@@ -65,9 +65,9 @@ while have_options
 				if isnumeric(args{2})
 					sfy = args{2};
 					l = 2;
-				else irf.log('critical','wrongArgType : FSAMPLE must be numeric')
+				else, irf.log('critical','wrongArgType : FSAMPLE must be numeric')
 				end
-			else irf.log('critical','wrongArgType : FSAMPLE value is missing')
+			else, irf.log('critical','wrongArgType : FSAMPLE value is missing')
 			end
 		case {'win','window'}
 			if length(args)>1
@@ -78,18 +78,18 @@ while have_options
 				if isnumeric(args{2})
 					sfy = 1/args{2};
 					l = 2;
-				else irf.log('critical','wrongArgType : WINDOW must be numeric')
+				else, irf.log('critical','wrongArgType : WINDOW must be numeric')
 				end
-			else irf.log('critical','wrongArgType : WINDOW value is missing')
+			else, irf.log('critical','wrongArgType : WINDOW value is missing')
 			end
     case {'thresh','threshold'}
       if length(args)>1
         if isnumeric(args{2})
           thresh = args{2};
           l = 2;
-        else irf.log('critical','wrongArgType : THRESHOLD must be numeric')
+        else, irf.log('critical','wrongArgType : THRESHOLD must be numeric')
         end
-      else irf.log('critical','wrongArgType : THRESHOLD value is missing')
+      else, irf.log('critical','wrongArgType : THRESHOLD value is missing')
       end
     case 'mean'
       mean_flag=1; flag_do='average';
@@ -120,7 +120,7 @@ if isstruct(y)
         irf.log('critical',msgS), error(msgS)
     end
 elseif size(y,2)==1, t = y(:); % y is only time
-else t = y(:,1); t = t(:);   % first column of y is time
+else, t = y(:,1); t = t(:);   % first column of y is time
 end
 
 % Same timeline - no need to do anything
@@ -189,18 +189,18 @@ if strcmp(flag_do,'average')
                                 if ~isempty(kk)
                                     if median_flag, out(j,k+1) = median(x(ii(kk),k+1));
                                     elseif max_flag, out(j,k+1) = max(x(ii(kk),k+1));
-                                    else out(j,k+1) = mean(x(ii(kk),k+1));
+                                    else, out(j,k+1) = mean(x(ii(kk),k+1));
                                     end
                                 end
-                            else out(j,k+1) = NaN;
+                            else, out(j,k+1) = NaN;
                             end
                         end
-                    else out(j,2:end) = NaN;
+                    else, out(j,2:end) = NaN;
                     end
                 else
                     if median_flag, out(j,2:end) = median(x(ii,2:end));
                     elseif max_flag, out(j,2:end) = max(x(ii,2:end));
-                    else out(j,2:end) = mean(x(ii,2:end));
+                    else, out(j,2:end) = mean(x(ii,2:end));
                     end
                 end
             end

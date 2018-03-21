@@ -124,7 +124,7 @@ case 'velocity' % gif with phi_B and phi_E for different v
     phi_E=varargin{1};
     phi_B=varargin{2};    
     v=varargin{3};
-    if ~isempty(varargin{4}); str_n=num2str(varargin{4},'%.2f'); else str_n='?'; end
+    if ~isempty(varargin{4}); str_n=num2str(varargin{4},'%.2f'); else, str_n='?'; end
     nv=length(v);
     
     % Adjust title_str and add density and B0

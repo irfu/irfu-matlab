@@ -149,7 +149,7 @@ for i=(-ndata+1):ndata-1
     S = ( data1 - data2(i+ndata:i+2*ndata-1,:) ).^2;
     if any(~isnan(S))
         corr(i+ndata) = sum(S(~isnan(S)))/(ndata - abs(i))/ncomp;
-    else corr(i+ndata) = NaN;
+    else, corr(i+ndata) = NaN;
     end
 end
 

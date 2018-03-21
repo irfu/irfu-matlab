@@ -259,7 +259,7 @@ elseif strcmp(q,'x')
 % E ASCII
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  elseif strcmp(q,'ea')||strcmp(q,'esa') % create E ascii files
-	 if strcmp(q,'ea'), s = ''; else s = 's'; end
+	 if strcmp(q,'ea'), s = ''; else, s = 's'; end
   for ic=sc_list
      eval(irf_ssub(['if ~exist(''E' s '?'') & exist(''mEdB.mat'',''file''), load mEdB E' s '? ang_limit?;disp(''Loading E' s '?, ang_limit? from mEdB'');end'],ic));
      eval(irf_ssub('if ~exist(''D?p12p34'') & ~exist(''Ddsi?''), load mEDSI D?p12p34 Ddsi? Da?p12 Da?p34 Damp?;disp(''Loading offset values from mEDSI.mat'');end',ic));
@@ -301,7 +301,7 @@ elseif strcmp(q,'x')
 % V=ExB ASCII
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  elseif strcmp(q,'va') || strcmp(q,'vsa') 
-	 if strcmp(q,'va'), s = ''; else s = 's'; end
+	 if strcmp(q,'va'), s = ''; else, s = 's'; end
 	 for ic=sc_list
 		 % GSE
 		 eval(irf_ssub(['if ~exist(''VExB' s '?'') & exist(''mEdB.mat'',''file''), load mEdB VExB' s '? ang_limit?;disp(''Loading VExB' s '?, ang_limit? from mEdB'');end'],ic));

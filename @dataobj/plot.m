@@ -107,7 +107,7 @@ while ~isempty(args)
         if all(ishandle(args{2}))
           ax = args{2};
           create_axes = 0;
-        else disp('invalid value for AX')
+        else, disp('invalid value for AX')
         end
       case 'comp'
         l = 2;
@@ -123,7 +123,7 @@ while ~isempty(args)
         elseif strfind(var_s,'C2'), line_color='r';
         elseif strfind(var_s,'C3'), line_color='g';
         elseif strfind(var_s,'C4'), line_color='b';
-        else flag_use_cluster_colors = 0;
+        else, flag_use_cluster_colors = 0;
         end
       case 'nolabels'
         flag_labels_is_on = 0;
@@ -194,11 +194,11 @@ end
 if dim ==3
   switch comp_dim
     case 1
-      if sum_dim == 2, ydim = 3; else ydim = 2; end
+      if sum_dim == 2, ydim = 3; else, ydim = 2; end
     case 2
-      if sum_dim == 1, ydim = 3; else ydim = 1; end
+      if sum_dim == 1, ydim = 3; else, ydim = 1; end
     case 3
-      if sum_dim == 1, ydim = 2; else ydim = 1; end
+      if sum_dim == 1, ydim = 2; else, ydim = 1; end
   end
 end
 
@@ -273,7 +273,7 @@ elseif dim == 2
           error('smth wrong')
       end
     end
-    if comp_dim == 2, ydim =1; else ydim = 2; end
+    if comp_dim == 2, ydim =1; else, ydim = 2; end
   end
   
   plot_f = 2;
@@ -328,7 +328,7 @@ if flag_lineplot
   if isfield(dep,'DEPEND_O')
     if strcmpi(dep.DEPEND_O.type,'tt2000')
       timeLine = EpochTT(dep.DEPEND_O.data).epochUnix;
-    else timeLine = dep.DEPEND_O.data;
+    else, timeLine = dep.DEPEND_O.data;
     end
     h = irf_plot(ax,[timeLine plot_data{:}],line_color,plot_properties{:});
   else
@@ -362,7 +362,7 @@ if flag_lineplot
     text_s = [dobj.GlobalAttributes.OBSERVATORY{1} ' > '];
   elseif isfield(dobj.GlobalAttributes,'Source_name')
     text_s = [dobj.GlobalAttributes.Source_name{1} ' > '];
-  else text_s = '';
+  else, text_s = '';
   end
   if isfield(dobj.GlobalAttributes,'INSTRUMENT_NAME')
     text_s = [text_s ...
@@ -399,7 +399,7 @@ elseif flag_spectrogram
         dep_x{d}.df.plus=deltaplus.data;
         dep_x{d}.df.minus=deltaminus.data;
       end
-    else dep_x{d}.df=[];
+    else, dep_x{d}.df=[];
     end
   end
   
@@ -407,7 +407,7 @@ elseif flag_spectrogram
   % Also do necessary tome conversion if needed
   if strcmpi(dep.DEPEND_O.type,'tt2000')
     timeLine = EpochTT(dep.DEPEND_O.data).epochUnix; factor = 1e9;
-  else timeLine = dep.DEPEND_O.data; factor = 1;
+  else, timeLine = dep.DEPEND_O.data; factor = 1;
   end
   timevar=getv(dobj,dobj.VariableAttributes.DEPEND_0{1,2});
   if isfield(timevar,'DELTA_PLUS') && isfield(timevar,'DELTA_MINUS')
@@ -432,7 +432,7 @@ elseif flag_spectrogram
     irf.log('notice',sprintf('Summing over dimension %d (%s)\n', ...
       sum_dim, dep_x{sum_dim}.lab));
   end
-  if flag_log, plot_type='log'; else plot_type='lin'; end 
+  if flag_log, plot_type='log'; else, plot_type='lin'; end 
   specrec = struct('t',timeLine,'f',dep_x{1}.data,'f_unit',...
       dep_x{1}.units,'p',[],'df',dep_x{1}.df,'plot_type',plot_type);
   if isfield(dep,'dt')
@@ -458,7 +458,7 @@ elseif flag_spectrogram
     text_s = [dobj.GlobalAttributes.OBSERVATORY{1} ' > '];
   elseif isfield(dobj.GlobalAttributes,'Source_name')
     text_s = [dobj.GlobalAttributes.Source_name{1} ' > '];
-  else text_s = '';
+  else, text_s = '';
   end
   if isfield(dobj.GlobalAttributes,'INSTRUMENT_NAME')
     text_s = [text_s ...
@@ -489,7 +489,7 @@ elseif flag_spectrogram
     if frange > 80 && frange <=150, da = 15;
     elseif frange > 150 && frange <=200, da = 45;
     elseif frange > 200 && frange <=380, da = 90;
-    else da = [];
+    else, da = [];
     end
     if ~isempty(da)
       ytick = round(min(specrec.f(:))/da):round(max(specrec.f(:))/da);
@@ -509,13 +509,13 @@ elseif flag_spectrogram
       if ncomp<=LCOMP % Small number of components
         ylabel(h(i),sprintf('%s [%s]', dep_x{ydim}.lab, dep_x{ydim}.units))
         if ~isempty(lab_2), lab_2s = [text_s ' > ' lab_2(i,:)];
-        else lab_2s = text_s;
+        else, lab_2s = text_s;
         end
         add_text(h(i),lab_2s);
       else % Large number of components
         if i==1, title(h(i),text_s), end
         if i==fix(ncomp/2)+1, ylabel(h(i),sprintf('%s [%s]', dep_x{ydim}.lab, dep_x{ydim}.units))
-        else ylabel('')
+        else, ylabel('')
         end
         add_text(h(i),lab_2(i,:));
       end
@@ -525,7 +525,7 @@ elseif flag_spectrogram
   if flag_colorbar_is_on
       i=fix(ncomp/2)+1;
       if isa(h(i),'handle'), hcb = colorbar(h(i)); % HG2
-      else hcb = colorbar('peer',h(i));
+      else, hcb = colorbar('peer',h(i));
       end
       posCb = get(hcb,'Position');
       posAx = get(ax(i),'Position');
@@ -593,7 +593,7 @@ for i=1:length(expr)
     l = length(s);
     s_tmp = [s(1:ii) '{' s(ii+1:ii+exprl(i)) '}'];
     if l > ii+2, s = [s_tmp s(ii+exprl(i)+1:end)];
-    else s = s_tmp;
+    else, s = s_tmp;
     end
   end
 end

@@ -90,7 +90,7 @@ if isnan(m), error('data still contains NaNs'), end
 f = fft(res(:,2) - m);
 nff = length(f);
 if(rem(nff,2)==0), kfft=nff/2 +1;
-else kfft=(nff+1)/2;
+else, kfft=(nff+1)/2;
 end
 freq = c_efw_fsample(res)*(1:(kfft-1))'/nff;
 a = abs(f(1:kfft-1));

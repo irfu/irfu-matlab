@@ -9,7 +9,7 @@ function y=irf_ask(question,variable_name_of_old_value, default_value, seconds_t
 
 useWaitInput=0;
 if nargin < 3, disp('ERROR using irf_ask');help irf_ask;return;end
-if nargin >= 3, def=default_value;else def=[];end
+if nargin >= 3, def=default_value;else, def=[];end
 if nargin==4, useWaitInput = 1; end
 if evalin('caller',['exist(''' variable_name_of_old_value ''')'])==1
 	defvalue=evalin('caller', variable_name_of_old_value);
@@ -34,7 +34,7 @@ while ask_for_input
 		end
 		if isempty(y);y=defvalue;end
 	elseif isnumeric(default_value)
-		if ~isempty(defvalue), s=num2str(defvalue(1));else s='';end
+		if ~isempty(defvalue), s=num2str(defvalue(1));else, s='';end
 		for i=2:length(defvalue);s=[s ' ' num2str(defvalue(i))];end
 		question_to_ask=strrep(question,'%',s);
 		if useWaitInput

@@ -105,7 +105,7 @@ for idxField = 1:length(plotFields)
     lim = limFields{idxField};
     [paramStr,compStr] = GetCompStrings();
     if isempty(compStr), panelStr = paramStr;
-    else panelStr = [paramStr '_' compStr]; 
+    else, panelStr = [paramStr '_' compStr]; 
     end
     hca = irf_panel(panelStr); 
     if ~isempty(ebsp.(field))
@@ -114,7 +114,7 @@ for idxField = 1:length(plotFields)
         if ischar(ebsp.(field).units), tmpUnits = ebsp.(field).units;
         elseif isstruct(ebsp.(field).units)
           tmpUnits = ebsp.(field).units.data(comp,:);
-        else error('cannot treat units')
+        else, error('cannot treat units')
         end
         while tmpUnits(end)==' ' && length(tmpUnits) > 1
           tmpUnits(end) = []; % Remove trailing spaces
@@ -160,7 +160,7 @@ if nargout, out = h; end % Return here
     if length(a) ==1, return, end 
     r = a{2};
     if length(unique(r)) == length(r), c = r(comp);
-    else c = r((comp-1)*2+(1:2));
+    else, c = r((comp-1)*2+(1:2));
     end
     if strcmpi(c,'ss'), c = 'sum'; end
   end
@@ -183,7 +183,7 @@ if nargout, out = h; end % Return here
         nComps = length(comps);
       else
         if isstruct(ebsp.(p{1})), nComps = size(ebsp.(p{1}).data,3);
-        else nComps = size(ebsp.(p{1}),3);
+        else, nComps = size(ebsp.(p{1}),3);
         end
         comps = 1:nComps;
       end
@@ -263,7 +263,7 @@ if nargout, out = h; end % Return here
       limStruct = lim{idx};
       if isstruct(ebsp.(limStruct.param))
         limData = ebsp.(limStruct.param).data(:,:,limStruct.comp);
-      else limData = ebsp.(limStruct.param)(:,:,limStruct.comp);
+      else, limData = ebsp.(limStruct.param)(:,:,limStruct.comp);
       end
       switch lower(limStruct.type)
         case 'low'
@@ -276,7 +276,7 @@ if nargout, out = h; end % Return here
   function PlotCyclotronFrequency
     if isempty(ebsp.fullB) && isempty(ebsp.B0), return, end
     if ~isempty(ebsp.fullB), B = ebsp.fullB; 
-    else B = ebsp.B0; 
+    else, B = ebsp.B0; 
     end
     if isstruct(B), B = double(B.data); end
     if size(B,2) == 1
@@ -302,7 +302,7 @@ if nargout, out = h; end % Return here
         flagCmapPoy = 1;
       case 'bb'
         if isstruct(ebsp.(field)), data = ebsp.(field).data(:,:,comp);
-        else data = ebsp.(field)(:,:,comp);
+        else, data = ebsp.(field)(:,:,comp);
         end
         cmax = max(max(log10(abs(data))));
         cmin = min(min(log10(abs(data))));

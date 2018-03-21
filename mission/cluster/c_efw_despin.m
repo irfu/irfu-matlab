@@ -214,7 +214,7 @@ elseif use_asym==42
 	p12 = p12-abs(coef(1,3))*cos(angle(coef(1,3))-phase-phi_42);
 	p12 = 1.4142*p12 - p34;
 	irf_log('proc','Using ASYMMETRIC probe 42 conf')
-else p12 = p12-abs(coef(1,3))*cos(angle(coef(1,3))-phase-phi_12);
+else, p12 = p12-abs(coef(1,3))*cos(angle(coef(1,3))-phase-phi_12);
 end
 
 % despin each component separately

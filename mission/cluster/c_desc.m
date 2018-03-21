@@ -120,13 +120,13 @@ elseif regexp(vs,'^PB[1-4]$')==1
 elseif regexp(vs,'^(b)?P(s)?[1-4]$')==1
 	v.data = 1;
 	if vs(2)=='s' || vs(1)=='b' , v.cl_id = vs(3);
-    else v.cl_id = vs(2);
+    else, v.cl_id = vs(2);
 	end
 	v.inst = 'EFW';
 	v.frame = 'sc';
 	v.sig = 'P';
 	if ~isempty(v_info) && isfield(v_info,'probe'), v.sen = num2str(v_info.probe);
-    else v.sen = '1234';
+    else, v.sen = '1234';
 	end 
 	v.cs = {'na'};
 	v.rep = {'scalar'};
@@ -153,18 +153,18 @@ elseif regexp(vs,'^(b)?P(s)?[1-4]$')==1
 	v.fluc = {'Waveform'};
 	v.com = ['this signal is averaged from probes ' v.sen];
 	if vs(1)=='b', v.file = 'mEFWburst';
-	else v.file = 'mP';
+	else, v.file = 'mP';
 	end
 	v.lev = 1;
 elseif regexp(vs,'^(b)?P(s)?[1-4]_info$')==1
 	v.data = 0;
 	if vs(2)=='s' || vs(1)=='b', v.cl_id = vs(3);
-    else v.cl_id = vs(2);
+    else, v.cl_id = vs(2);
 	end
 	v.inst = 'EFW';
 	v.com = 'Spacecraft potential INFO';
 	if vs(1)=='b', v.file = 'mEFWburst';
-	else v.file = 'mP';
+	else, v.file = 'mP';
 	end
 	if vs(2)=='s'
 		v.quant = 'ps';
@@ -344,7 +344,7 @@ elseif regexp(vs,'^(NONSIN|PS|LO)WAKE[1-4]p(12|32|34|42)$')==1
 	v.size = 1;
 	if vs(1)=='P', reg = 'Plasmaspheric';
 	elseif vs(1)=='N', reg = 'Non-sinusoidal';
-	else reg = 'Lobe';
+	else, reg = 'Lobe';
 	end
 	v.name = {[reg ' wake-p' v.sen]};
 	v.labels = {['Wake-p' v.sen ' stop']};
@@ -610,7 +610,7 @@ elseif regexp(vs,'^EB[1-4]$')==1
 	v.frame = 'sc';
 	v.sig = 'E';
 	if ~isempty(v_info) && isfield(v_info,'probe'), v.sen = num2str(v_info.probe);
-    else v.sen = '1234';
+    else, v.sen = '1234';
 	end
 	v.cs = {'na','na','na','na'};
 	v.rep = {'scalar','scalar','scalar','scalar'};
@@ -679,7 +679,7 @@ elseif regexp(vs,'^(i)?di(b)?E(F|LX)?[1-4]p1234$')==1
 	v.inst = 'EFW';
 	v.sig = 'E';
 	if ~isempty(v_info) && isfield(v_info,'probe'), v.sen = num2str(v_info.probe);
-    else v.sen = '1234';
+    else, v.sen = '1234';
 	end
 	v.cs = {'ISR2'};
 	v.rep = {'xy'};
@@ -729,7 +729,7 @@ elseif regexp(vs,'^diESPEC[1-4]p1234$')==1
 	v.frame = 'sc';
 	v.sig = 'E';
 	if ~isempty(v_info) && isfield(v_info,'probe'), v.sen = num2str(v_info.probe);
-    else v.sen = '1234';
+    else, v.sen = '1234';
 	end
 	v.size = 2;
 	v.labels = {'E'};
@@ -757,7 +757,7 @@ elseif regexp(vs,'^diELXSPEC[1-4]p1234$')==1
 	v.frame = 'sc';
 	v.sig = 'E';
 	if ~isempty(v_info) && isfield(v_info,'probe'), v.sen = num2str(v_info.probe);
-    else v.sen = '1234';
+    else, v.sen = '1234';
 	end
 	v.size = 2;
 	v.labels = {'E'};
@@ -993,7 +993,7 @@ elseif regexp(vs,'^SAASA(SE|DI)[1-4]$')==1
 	v.cl_id = vs(end);
 	v.sen = '';
 	v.inst = 'EFW';
-  if vs(6)=='S', sTmp = 'Single ended'; else sTmp = 'Differential'; end
+  if vs(6)=='S', sTmp = 'Single ended'; else, sTmp = 'Differential'; end
 	v.com = ['Saturation due to high SAA (' sTmp ' signals)'];
 	v.file = 'mEFW';
 	v.quant = 'probesa';
@@ -1168,16 +1168,16 @@ elseif regexp(vs,'^(i)?diE(s)?[1-4]$')
 		vvs = vvs(2:end);
 		v.frame = 'inertial'; 
 		v.file = 'mEdBI';
-		if vvs(4)=='s', v.quant = 'iedbs'; else v.quant = 'iedb'; end
+		if vvs(4)=='s', v.quant = 'iedbs'; else, v.quant = 'iedb'; end
 	else
 		v.frame = 'sc';
 		v.file = 'mEdB';
-		if vvs(4)=='s', v.quant = 'edbs'; else v.quant = 'edb'; end
+		if vvs(4)=='s', v.quant = 'edbs'; else, v.quant = 'edb'; end
 	end
 	v.cl_id = vs(end);
 	v.inst = 'EFW';
 	v.sig = 'E';
-	if vvs(4)=='s', v.sen = 's'; else v.sen = ''; end
+	if vvs(4)=='s', v.sen = 's'; else, v.sen = ''; end
 	v.cs = {'ISR2', 'na', 'na'};
  	v.units =  {'mV/m','deg','unitless'};
 	v.si_conv = {'1.0e-3>V m^-1','1>degree','1>unitless'};
@@ -1201,16 +1201,16 @@ elseif regexp(vs,'^(i)?E(s)?[1-4]$')
 		vvs = vvs(2:end);
 		v.frame = 'inertial'; 
 		v.file = 'mEdBI';
-		if vvs(4)=='s', v.quant = 'iedbs'; else v.quant = 'iedb'; end
+		if vvs(4)=='s', v.quant = 'iedbs'; else, v.quant = 'iedb'; end
 	else
 		v.frame = 'sc';
 		v.file = 'mEdB';
-		if vvs(4)=='s', v.quant = 'edbs'; else v.quant = 'edb'; end
+		if vvs(4)=='s', v.quant = 'edbs'; else, v.quant = 'edb'; end
 	end
 	v.cl_id = vs(end);
 	v.inst = 'EFW';
 	v.sig = 'E';
-	if vs(2)=='s', v.sen = 's'; else v.sen = ''; end
+	if vs(2)=='s', v.sen = 's'; else, v.sen = ''; end
 	v.cs = {'GSE', 'na','na'};
  	v.units =  {'mV/m','deg','unitless'};
 	v.si_conv = {'1.0e-3>V m^-1','1>degree','1>unitless'};
@@ -1235,7 +1235,7 @@ elseif regexp(vs,'^(di)?VExB(s)?[1-4]$')
 	v.frame = 'sc';
 	v.sig = 'V=ExB';
 	if vvs(5)=='s' || vvs(7)=='s', v.sen = 's';
-    else v.sen = ''; 
+    else, v.sen = ''; 
 	end
 	if strcmp(vvs(1:2),'di')
 		v.cs = {'ISR2', 'na'};
@@ -1256,7 +1256,7 @@ elseif regexp(vs,'^(di)?VExB(s)?[1-4]$')
 	v.com = com_Ez;
 	v.file = 'mEdB';
 	if vvs(5)=='s' || vvs(7)=='s', v.quant = 'vedbs';
-    else v.quant = 'vedb';
+    else, v.quant = 'vedb';
 	end
 	v.lev = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1354,7 +1354,7 @@ elseif regexp(vs,'^(di)?V[1-4]$')
 	v.sig = 'Velocity';
 	v.sen = '';
 	if strcmp(vvs(1:2),'di'), v.cs = {'ISR2'};
-    else v.cs = {'GSE'};
+    else, v.cs = {'GSE'};
 	end
 	v.units =  {'km/s'};
 	v.si_conv = {'1e3>m/s'};
@@ -1382,7 +1382,7 @@ elseif regexp(vs,'^(di)?R[1-4]$')
 	v.sig = 'Position';
 	v.sen = '';
 	if strcmp(vvs(1:2),'di'), v.cs = {'ISR2'};
-    else v.cs = {'GSE'};
+    else, v.cs = {'GSE'};
 	end
 	v.units =  {'km'};
 	v.si_conv = {'1e3>m'};
@@ -1440,7 +1440,7 @@ elseif regexp(vs,'^T(perp|par)?C(h|p)[1-4]$')
 	v.frame = 'na';
 	v.cs = {'na'};
 	if strcmp(vs(2:4),'per'), comp = 'perp'; cf = 'Perpendicular'; lcomp='\perp';
-    else comp = 'par'; cf = 'Parallel'; lcomp='{||}';
+    else, comp = 'par'; cf = 'Parallel'; lcomp='{||}';
 	end
 	if vvs(strfind(vvs,'C')+1)=='h' % characters after 'C'
 		v.sig = ['T_' comp];
@@ -1877,7 +1877,7 @@ else
 	if v.lev<2
 		disp(['getData q   : ' v.quant ]);
 		if v.lev, disp('getData cl  : ClusterProc');
-		else disp('getData cl  : ClusterDB');
+		else, disp('getData cl  : ClusterDB');
 		end
 	else
 		disp('getData     : manual processing');

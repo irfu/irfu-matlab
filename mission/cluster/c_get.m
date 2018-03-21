@@ -566,7 +566,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
       c_eval(['P' param '?(:,1)=P' param '?(:,1)+dtburst;'],ic);
     end
   end
-  if exist('./mP.mat'), eval(['save mP ' save_list ' -append']); else eval(['save mP ' save_list]); end
+  if exist('./mP.mat'), eval(['save mP ' save_list ' -append']); else, eval(['save mP ' save_list]); end
   save_list = '';
 
  elseif strcmp(q,'pa') % create V_sc n ascii files

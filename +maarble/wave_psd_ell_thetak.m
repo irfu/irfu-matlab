@@ -48,8 +48,8 @@ for ievent=1:numel(TT)
       gseR = irf_tlim(Rth.(['Rth' lower(th_s)]),tintDl);
     end
     
-    if flagSkipPC35, ebspPC35 = []; else ebspPC35 = get_ebsp('PC35'); end
-    if flagSkipPC12, ebspPC12 = []; else ebspPC12 = get_ebsp('PC12'); end
+    if flagSkipPC35, ebspPC35 = []; else, ebspPC35 = get_ebsp('PC35'); end
+    if flagSkipPC12, ebspPC12 = []; else, ebspPC12 = get_ebsp('PC12'); end
     
     if isempty(ebspPC35) && isempty(ebspPC12)
       irf.log('warning','No data')
@@ -173,9 +173,9 @@ cd (oldPwd)
         if strcmp(fieldName,'bb_xxyyzzss')
           tmpVar = get_variable(dobj,['BB_xxyyzz__' productName]);
           if isempty(tmpVar), continue
-          else res.flagFac = 0;
+          else, res.flagFac = 0;
           end
-        else continue
+        else, continue
         end
       end
       if isnumeric(tmpVar.FILLVAL)
@@ -210,14 +210,14 @@ cd (oldPwd)
       m=0; i=1;
       while i <= length(d) && m == 0
         if isempty(th_s), tend = d(i).name(45:59);
-        else tend = d(i).name(49:63);
+        else, tend = d(i).name(49:63);
         end
         tenddate = datenum(tend,'yyyymmdd_HHMMSS');
         if tenddate > epoch2date(tintDl(1)), m=i; end
         i=i+1;
       end
       if m, fn = d(m).name; 
-      else irf.log('warning', ['no files found for ' range]);
+      else, irf.log('warning', ['no files found for ' range]);
       end
     end
   end % GET_EBSP

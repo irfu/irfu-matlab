@@ -159,7 +159,7 @@ for in = iok
 	if plotflag && plot_i == plot_step
 		plotflag_now = 1;
 		plot_i = 0;
-	else plotflag_now = 0;
+	else, plotflag_now = 0;
 	end
 	
 	wakedesc(in,1) = ttime(1,in);
@@ -171,7 +171,7 @@ for in = iok
 	
 	[min1,imin1,wmin1,max1,imax1,wmax1,min2,max2] = find4minmax(tt(:, in));
 	if abs(min1)>abs(max1), w = wmin1; im = imin1;
-	else w = wmax1; im = imax1;
+	else, w = wmax1; im = imax1;
 	end
 	mm = max(abs(min1),abs(max1));
 	

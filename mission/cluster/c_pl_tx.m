@@ -97,13 +97,13 @@ while ~isempty(args)
         else
             % assume that argument defines Linestyle
             if isempty(line_style), c_eval('line_style(?)={args{1}};')
-            else irf_log('fcal','L_STYLE is already set')
+            else, irf_log('fcal','L_STYLE is already set')
             end
         end
     elseif iscell(args{1}) && length(args{1})==4
         % Individual linestyles for each sc
         if isempty(line_style), line_style = args{1};
-        else irf_log('fcal','L_STYLE is already set')
+        else, irf_log('fcal','L_STYLE is already set')
         end
     elseif iscell(args{1})
         % Individual linestyles for each sc
@@ -111,7 +111,7 @@ while ~isempty(args)
     elseif isnumeric(args{1}) && length(args{1})==4
         % dt1..dt4
         if isempty(delta_t), delta_t = args{1};
-        else irf_log('fcal','DELTA_T is already set')
+        else, irf_log('fcal','DELTA_T is already set')
         end
     else
         irf_log('fcal',['ignoring input argument: ' args{1}])

@@ -13,7 +13,7 @@ function caa_apply_manproblems(st,dt,cli,extraprocessing,redo_sp_dir)
 %
 narginchk(2,5)
 if nargin < 5,redo_sp_dir=[];end
-if (nargin < 4) || isempty(extraprocessing),varsproc='manproblems'; else varsproc=['manproblems|' extraprocessing]; end
+if (nargin < 4) || isempty(extraprocessing),varsproc='manproblems'; else, varsproc=['manproblems|' extraprocessing]; end
 if nargin < 3, cli=1:4; end
 if isa(st,'char'),st=iso2epoch(st); end
 if isa(dt,'char'),dt=iso2epoch(dt); end

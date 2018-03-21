@@ -117,13 +117,13 @@ while ~isempty(args)
         else
             % assume that argument defines Linestyle
             if isempty(line_style), c_eval('line_style(?)={args{1}};')
-            else irf_log('fcal','L_STYLE is already set')
+            else, irf_log('fcal','L_STYLE is already set')
             end
         end
     elseif iscell(args{1}) && length(args{1})==4
         % Individual linestyles for each sc
         if isempty(line_style), line_style = args{1};
-        else irf_log('fcal','L_STYLE is already set')
+        else, irf_log('fcal','L_STYLE is already set')
         end
     elseif iscell(args{1})
         % Individual linestyles for each sc
@@ -131,7 +131,7 @@ while ~isempty(args)
     elseif isnumeric(args{1}) && length(args{1})==4
         % dt1..dt4
         if isempty(delta_t), delta_t = args{1};
-        else irf_log('fcal','DELTA_T is already set')
+        else, irf_log('fcal','DELTA_T is already set')
         end
     else
         irf_log('fcal',['ignoring input argument: ' args{1}])
@@ -152,7 +152,7 @@ end
 if isempty(column)
 	for cl_id=sc_list
     if isa(X.(fId),'TSeries'), nCol = size(X.(fId).data,2);
-    else nCol = size(X.(fId),2) - 1;
+    else, nCol = size(X.(fId),2) - 1;
     end
 		if ~isempty(nCol) && nCol > 0, column = 1:nCol; break, end
 	end
@@ -182,7 +182,7 @@ for j=1:length(column)
     if isa(X.(fId),'TSeries')
       dataTmp = [X.(fId).time.epochUnix-delta_t(cl_id) ...
         double(X.(fId).data(:,column(j)))];
-    else dataTmp = [X.(fId)(:,1)-delta_t(cl_id), X.(fId)(:,column(j)+1)];
+    else, dataTmp = [X.(fId)(:,1)-delta_t(cl_id), X.(fId)(:,column(j)+1)];
     end
     if isempty(line_style)
       hl = irf_plot(ax(j), dataTmp, 'color', cluster_colors{cl_id});

@@ -27,7 +27,7 @@ function h=irf_wave_detection_algorithm(tint,scId,varargin)
 save_plot=0;
 Units = irf_units;
 if isnumeric(scId), scId_s = sprintf('C%d',scId);
-else scId_s = ['TH' upper(scId)];
+else, scId_s = ['TH' upper(scId)];
 end
 if isstruct(tint)
     ebsp=tint;
@@ -366,7 +366,7 @@ cmapSpace = irf_colormap('space');
     caxis([-6.5 2.5]);
     colormap(cmapSpace);
     if isa(h(1),'handle'), hca2 = colorbar(h(1)); % HG2
-    else hca2 = colorbar('peer',h(1));
+    else, hca2 = colorbar('peer',h(1));
     end
     ylabel(hca2,{'log(B)'; '[nT^2/Hz]'});
 
@@ -391,7 +391,7 @@ cmapSpace = irf_colormap('space');
     caxis([-3.5 2.5]);
     colormap(cmapSpace);
     if isa(h(1),'handle'), hca2 = colorbar(h(1)); % HG2
-    else hca2 = colorbar('peer',h(1));
+    else, hca2 = colorbar('peer',h(1));
     end
     ylabel(hca2,{'log(B)'; '[nT^2/Hz]'});
 

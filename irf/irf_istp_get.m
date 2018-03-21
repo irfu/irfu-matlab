@@ -124,7 +124,7 @@ if start_time+dt_int > toepoch(eof_a)
 		if toepoch(eof_a) > start_time+dt_int
 			dt(end+1) = start_time+dt_int -st(end);
 			break
-		else dt(end+1) = toepoch(eof_a)-toepoch(st_a);
+		else, dt(end+1) = toepoch(eof_a)-toepoch(st_a);
 		end
 	end
 else
@@ -156,7 +156,7 @@ for k=1:length(st)
 	if ~isempty(data_tmp)
 		if dt(k) > 0, if k==1 || k==length(st), data_tmp = irf_tlim(data_tmp,st(k) + [0 dt(k)]); end, end
 		if ~isempty(data), data = [data; data_tmp];
-		else data = data_tmp;
+		else, data = data_tmp;
 		end
 	end
 end

@@ -34,7 +34,7 @@ flag_read_isdat=0;
 
 if nargin <  2, disp('Not enough arguments'); help c_gse2dsc; return; end
 if nargin <  3, direction=1;                                          end
-if nargin == 4, flag_db=1; else flag_db=0;                           end
+if nargin == 4, flag_db=1; else, flag_db=0;                           end
 
   % Spin_axis gives only s/c number
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

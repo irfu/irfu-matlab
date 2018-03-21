@@ -29,7 +29,7 @@ elseif nargin==3
 	if length(tStart)==2 && length(tEnd)==1
 		mode = tEnd;
 		tEnd = tStart(2) + 1e-7; tStart = tStart(1) - 1e-7;
-	else mode = 0;
+	else, mode = 0;
 	end
 elseif nargin == 1 && nargin > 4
 	irf.log('critical','incorrect number of input arguments');
@@ -47,7 +47,7 @@ else
 end
 
 if mode==0, in = find((t >= tStart) & (t < tEnd));
-else in = find((t < tStart) | (t > tEnd));
+else, in = find((t < tStart) | (t > tEnd));
 end
 
 if isstruct(x)

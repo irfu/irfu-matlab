@@ -34,7 +34,7 @@ while have_options
         data.t=tstart;
         set(gcf,'userdata',data);
         l = 2;
-      else irf.log('warning','wrongArgType : tint must be numeric')
+      else, irf.log('warning','wrongArgType : tint must be numeric')
       end
   end
   args = args(l+1:end);

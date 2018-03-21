@@ -642,7 +642,7 @@ if 0   % PANEL: RAPID spectrogram anisotropy
       dep_x{d}.df.plus=deltaplus.data(1,:);
       dep_x{d}.df.minus=deltaminus.data(1,:);
     end
-  else specrec.df=[];
+  else, specrec.df=[];
   end
   
   specrec.t=l3dd.t;

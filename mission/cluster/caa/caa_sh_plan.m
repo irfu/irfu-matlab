@@ -10,7 +10,7 @@ function caa_sh_plan(yyyy,mm)
 
 if nargin <2
 	if yyyy==2001, mm=2:12;
-	else mm = 1:12;
+	else, mm = 1:12;
 	end
 end
 	
@@ -31,11 +31,11 @@ for cl_id = 1:4
 		
 			irf_log('proc',sprintf('Getting R%d for %d-%d',cl_id,yyyy,mo))
 			if ~isempty(et), st = et;
-			else st = toepoch([yyyy mo 01 00 00 00]);
+			else, st = toepoch([yyyy mo 01 00 00 00]);
 			end
 			
 			if mo==12, et = toepoch([yyyy+1 01 01 00 00 00]);
-			else et = toepoch([yyyy mo+1 01 00 00 00]);
+			else, et = toepoch([yyyy mo+1 01 00 00 00]);
 			end
 			
 			data = getData(ClusterDB, st, et-st, cl_id, 'r', 'nosave');
@@ -46,7 +46,7 @@ for cl_id = 1:4
 					data2=getData(ClusterDB, st1, 86400, cl_id, 'r', 'nosave');
 					if ~isempty(data2)
 						if isempty(data),data=data2;
-						else data{2}=[data{2}' data2{2}']'; end
+						else, data{2}=[data{2}' data2{2}']'; end
 					end
 				end
 			end
@@ -59,7 +59,7 @@ for cl_id = 1:4
 		
 		irf_log('save',[v_s ' -> mR.mat'])
 		if exist('./mR.mat','file'), eval([v_s '=R; save ./mR.mat ' v_s ' -append'])
-		else eval([v_s '=R; save ./mR.mat ' v_s])
+		else, eval([v_s '=R; save ./mR.mat ' v_s])
 		end
 	else
 		eval([ 'R=' v_s ';'])
@@ -100,9 +100,9 @@ for cl_id = 1:4
 		irf_log('save',[v_s ' -> mPlan.mat'])
 		if exist('./mPlan.mat','file')
 			eval([v_s '=ORB; save ./mPlan.mat ' v_s ' -append'])
-		else eval([v_s '=ORB; save ./mPlan.mat ' v_s])
+		else, eval([v_s '=ORB; save ./mPlan.mat ' v_s])
 		end
-	else eval([ 'ORB=' v_s ';'])
+	else, eval([ 'ORB=' v_s ';'])
   end
 	
   % Find magnetopause crossings
@@ -126,15 +126,15 @@ for cl_id = 1:4
 		irf_log('save',[v_s ' -> mPlan.mat'])
 		if exist('./mPlan.mat','file')
 			eval([v_s '=MP; save ./mPlan.mat ' v_s ' -append'])
-		else eval([v_s '=MP; save ./mPlan.mat ' v_s])
+		else, eval([v_s '=MP; save ./mPlan.mat ' v_s])
 		end
-	else eval([ 'MP=' v_s ';'])
+	else, eval([ 'MP=' v_s ';'])
 	end
 	
 	v_s = sprintf('MPauseY%d',yyyy);
 	if exist('./mPlan.mat','file'), eval(['load ./mPlan.mat ' v_s]), end
 	if ~exist(v_s,'var'), MP3h = [];
-	else eval([ 'MP3h=' v_s ';'])
+	else, eval([ 'MP3h=' v_s ';'])
   end
 	
   % Plot

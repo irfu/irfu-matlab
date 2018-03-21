@@ -68,7 +68,7 @@ switch action
         h(1)=subplot(4,1,1);
         irf_plot(X);axis tight;
         uf=get(dgh,'userdata');
-        if isfield(uf,'t_start_epoch'), t0=uf.t_start_epoch;else t0=0; end
+        if isfield(uf,'t_start_epoch'), t0=uf.t_start_epoch;else, t0=0; end
 	ud.h=h;
 
         set(gcf,    'windowbuttondownfcn', 'irf_minvar_nest_gui(''ax'')');zoom off;
@@ -125,7 +125,7 @@ switch action
     case 'csc'
     title(['Click on the current sheet center' ]);
     uf=get(gcf,'userdata');
-    if isfield(uf,'t_start_epoch'), t0=uf.t_start_epoch;else t0=0; end
+    if isfield(uf,'t_start_epoch'), t0=uf.t_start_epoch;else, t0=0; end
     temp=ginput(1);
     ud.csc=temp(1)+t0;
     p(1)=ud.csc;
@@ -180,7 +180,7 @@ switch action
     case 'ax'
         tlim = get(ud.patch_mvar_intervals, 'xdata'); tlim=tlim(:)';tlim(3:4)=[];
         uf=get(gcf,'userdata');
-        if isfield(uf,'t_start_epoch'), t0=uf.t_start_epoch;else t0=0; end
+        if isfield(uf,'t_start_epoch'), t0=uf.t_start_epoch;else, t0=0; end
         tlim=tlim+t0;
         p = get(gca, 'currentpoint')+t0;
         tlim_interval=get(gca,'xlim')+t0;

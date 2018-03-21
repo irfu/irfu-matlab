@@ -68,7 +68,7 @@ elseif nargs==3 % irf_spectrogram(t,Pxx,F)
     t=args{1};Pxx=args{2};F=args{3};
 	if size(Pxx,2) == length(t), Pxx = Pxx'; end
 	if iscell(Pxx), specrec.p = Pxx;
-	else specrec.p = {Pxx};
+	else, specrec.p = {Pxx};
 	end
 	specrec.f = F;
 	specrec.t = t;
@@ -79,7 +79,7 @@ elseif	nargs==4 % irf_spectrogram(t,Pxx,F,dt)
 	specrec.t = t;
 	if (size(Pxx,1) ~= length(t)) && (size(Pxx,2) == length(t)), Pxx = Pxx'; end
 	if iscell(Pxx),specrec.p = Pxx;
-	else specrec.p = {Pxx};
+	else, specrec.p = {Pxx};
 	end
 	specrec.f = F;
 	specrec.dt = dt;
@@ -89,7 +89,7 @@ elseif	nargin==5 % irf_spectrogram(t,Pxx,F,dt,df)
     specrec.t = t;
 	if (size(Pxx,1) ~= length(t)) && (size(Pxx,2) == length(t)), Pxx = Pxx'; end
 	if iscell(Pxx),specrec.p = Pxx;
-	else specrec.p = {Pxx};
+	else, specrec.p = {Pxx};
 	end
 	specrec.f = F;
 	specrec.dt = dt;
@@ -283,7 +283,7 @@ for comp=1:min(length(h),ncomp)
 	
 	if isfield(specrec,'p_label')
     if isa(h(comp),'handle'), hcb = colorbar(h(comp)); % HG2
-    else hcb = colorbar('peer',h(comp));
+    else, hcb = colorbar('peer',h(comp));
     end
     drawnow
 		posCb = get(hcb,'Position');
@@ -298,7 +298,7 @@ for comp=1:min(length(h),ncomp)
         end
 	end
 	if comp==min(length(h),ncomp), irf_timeaxis;
-	else set(h(comp),'XTicklabel','')
+	else, set(h(comp),'XTicklabel','')
 	end
 end
 

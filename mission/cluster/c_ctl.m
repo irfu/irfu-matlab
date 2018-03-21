@@ -118,7 +118,7 @@ if ischar(args{1})
 				eval(['out=c_ct{cl_id}.' c ';'])
 			else
 				if cl_id < 5, disp(['C' num2str(cl_id) '->' c ':'])
-                else disp(['GLOBAL->' c ':'])
+                else, disp(['GLOBAL->' c ':'])
 				end
 				eval(['disp(c_ct{cl_id}.' c ');'])
 			end
@@ -151,7 +151,7 @@ if ischar(args{1})
         end
         
         if nargin>1, d = args{2};
-		else d = '.';
+		else, d = '.';
 		end
 
         c_ct{1}.aspoc = readaspocactive('/C1_CP_ASP_ACTIVE__20010101_000000_20100101_000000_V081030.cef', d);
@@ -168,7 +168,7 @@ if ischar(args{1})
         end
         
         if nargin>1, d = args{2};
-		else d = '.';
+		else, d = '.';
 		end
 
         badiblist=ibfn2epoch('/BAD_IB_L2_LIST_C1-4.txt', d);
@@ -185,7 +185,7 @@ if ischar(args{1})
 		end
 		
 		if nargin>1, d = args{2};
-		else d = '.';
+		else, d = '.';
 		end
 		
 		for j=1:4
@@ -196,7 +196,7 @@ if ischar(args{1})
 					
 					% remove lines with undefined dt
 					c_ct{j}.ns_ops(find(c_ct{j}.ns_ops(:,2)==-157),:) = [];
-				else irf_log('load',['file ' f_name ' not found'])
+				else, irf_log('load',['file ' f_name ' not found'])
 				end
 			catch
 				disp(lasterr)
@@ -212,7 +212,7 @@ if ischar(args{1})
 		end
 		
 		if nargin>1, d = args{2};
-		else d = '.';
+		else, d = '.';
 		end
 		
 		for j=1:4
@@ -223,7 +223,7 @@ if ischar(args{1})
 					
 					% remove lines with undefined dt
 					c_ct{j}.man_int(find(c_ct{j}.man_int(:,2)==-157),:) = [];      % TODO: Is this valid for man_int as well?
-				else irf_log('load',['file ' f_name ' not found'])
+				else, irf_log('load',['file ' f_name ' not found'])
 				end
 			catch
 				disp(lasterr)
@@ -235,7 +235,7 @@ if ischar(args{1})
 			sc_list = args{2};
 			ii = find(sc_list==0);
 			if ~isempty(ii), sc_list(ii) = 5; end
-		else sc_list=1:5;
+		else, sc_list=1:5;
 		end
 		global c_ct
 		if isempty(c_ct), disp('CTL is not initialized.'), return, end
@@ -244,7 +244,7 @@ if ischar(args{1})
 			if length(c)>0
 				for j=1:length(c)
 					if cl_id < 5, disp(['C' num2str(cl_id) '->' c{j} ':'])
-					else disp(['GLOBAL->' c{j} ':'])
+					else, disp(['GLOBAL->' c{j} ':'])
 					end
 					eval(['disp(c_ct{cl_id}.' c{j} ');'])
 				end
@@ -293,7 +293,7 @@ if ischar(args{1})
 				error('bad option')
 			end	
 			if cl_id < 5, disp(['C' num2str(cl_id) '->' c ':'])
-			else disp(['GLOBAL->' c ':'])
+			else, disp(['GLOBAL->' c ':'])
 			end
 			eval(['disp(c_ct{cl_id}.' c ');'])
 		end
@@ -310,9 +310,9 @@ elseif isnumeric(args{1})
 	elseif nargin==2
 		have_options = 0;
 		if nargout>0, out=c_ctl('get',sc_list,args{2});
-		else c_ctl('get',sc_list,args{2});
+		else, c_ctl('get',sc_list,args{2});
 		end
-	else have_options = 0;
+	else, have_options = 0;
 	end
 	
 	while have_options
@@ -325,7 +325,7 @@ elseif isnumeric(args{1})
 			if length(args) >= 2
 				args = args(3:end);
 				if isempty(args), break, end
-			else break
+			else, break
 			end
 		else
 			disp('Usage: c_ctl(sc_list,''ctl_name'',value)')

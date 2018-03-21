@@ -63,7 +63,7 @@ for d=1:length(dirs)
 	
 	for sdi = 1:length(sdirs)
 		if isempty(sdirs{sdi}), curr_d = dir_s;
-		else curr_d = [dir_s '/' sdirs{sdi}];
+		else, curr_d = [dir_s '/' sdirs{sdi}];
 		end
 			
 		cd( [BASE_DIR '/' curr_d])
@@ -109,7 +109,7 @@ for d=1:length(dirs)
 
 			% Create .caa_ms/sh_interval
 			if exist('./.caa_sh_interval','file'), lf = '.caa_sh_interval';
-			else lf = '.caa_ms_interval';
+			else, lf = '.caa_ms_interval';
 			end
 			
 			fid = fopen(lf,'w');

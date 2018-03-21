@@ -501,10 +501,10 @@ classdef PDist < TSeries
             xphat = args{2};
             xphat = xphat/norm(xphat);
             if acosd(dot([0,1,0],xphat)) > 10 && acosd(dot([0,1,0],xphat)) < 170
-                  zphat = cross([0,1,0],xphat)/norm(cross([0,1,0],xphat));
-              else
-                  zphat = cross([0,0,1],xphat)/norm(cross([0,0,1],xphat));
-              end
+                zphat = cross([0,1,0],xphat)/norm(cross([0,1,0],xphat));
+            else
+                zphat = cross([0,0,1],xphat)/norm(cross([0,0,1],xphat));
+            end
           case 'nmc' % number of Monte Carlo iterations
             l = 2;
             nMC = args{2};
@@ -1050,7 +1050,7 @@ classdef PDist < TSeries
       %     irf_spectrogram(h(3),ePDist1(tind).einterp('pchip').pitchangles(gseB1,15).specrec('pa'),'log');
       
       if ~strcmp(obj.type_,'skymap'); error('PDist must be a skymap.'); end 
-      if isempty(varargin); method = 'pchip'; else method = varargin{1}; end
+      if isempty(varargin); method = 'pchip'; else, method = varargin{1}; end
         
       nt = obj.length;
       old_energies = obj.depend{1};

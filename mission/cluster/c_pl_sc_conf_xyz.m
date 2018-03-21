@@ -54,7 +54,7 @@ if nargin==0 % default time (with time can make smarter solution)
 	t=irf_time(time);
 end
 if nargin==4, sc_list=spacecraft;
-else sc_list=1:4;
+else, sc_list=1:4;
 end
 if nargin>=2 % t,coord_sys
 	coord_label=upper(coord_sys);
@@ -269,15 +269,15 @@ switch lower(action)
 		callbackStr='c_pl_sc_conf_xyz(''plot'')';
 		data.LMN_text_hndl=uicontrol('string',['LMN vectors in ' data.coord_label '. One of L/M/N can be zero.'],'style','text','units','normalized','Position',[0.5 0.25 .35 .05]);
 		uicontrol('string','L','style','text','units','normalized','Position',[0.5 0.2 .05 .04])
-		if isfield(data,'Lstr'), Lstr=data.Lstr;else Lstr='[1 0 0]';end
+		if isfield(data,'Lstr'), Lstr=data.Lstr;else, Lstr='[1 0 0]';end
 		data.L_hndl=uicontrol('Style','edit','Units','normalized', ...
 			'Position',[0.55 0.2 .3 .05],'String',Lstr,'Callback',callbackStr);
 		uicontrol('string','M','style','text','units','normalized','Position',[0.5 0.15 .05 .04])
-		if isfield(data,'Lstr'), Mstr=data.Mstr;else Mstr='[0 1 0]';end
+		if isfield(data,'Lstr'), Mstr=data.Mstr;else, Mstr='[0 1 0]';end
 		data.M_hndl=uicontrol('Style','edit','Units','normalized', ...
 			'Position',[0.55 0.15 .3 .05],'String',Mstr,'Callback',callbackStr);
 		uicontrol('string','N','style','text','units','normalized','Position',[0.5 0.1 .05 .04])
-		if isfield(data,'Nstr'), Nstr=data.Nstr;else Nstr='0';end
+		if isfield(data,'Nstr'), Nstr=data.Nstr;else, Nstr='0';end
 		data.N_hndl=uicontrol('Style','edit','Units','normalized', ...
 			'Position',[0.55 0.1 .3 .05],'String',Nstr,'Callback',callbackStr);
 		set(gcf,'userdata',data);
@@ -625,7 +625,7 @@ end
 		colY = plotAxes(2)-'W'+1;
 		if drref>10000, REform='%6.1f';
 		elseif drref<100, REform='%6.3f';
-		else REform='%6.2f';
+		else, REform='%6.2f';
 		end
 		xlim_ax1=get(axis1,'XLim');ylim_ax1=get(axis1,'YLim');
 		xtick_ax1=get(axis1,'XTick');ytick_ax1=get(axis1,'YTick');

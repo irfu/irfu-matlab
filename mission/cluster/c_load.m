@@ -93,20 +93,20 @@ case 2
 	elseif ischar(cl_id)
 		mode_s = cl_id;
 		if regexp(vs,'?'), cl_id = 1:4; 
-        else cl_id = 1;
+        else, cl_id = 1;
 		end
-    else error('Second input argument must be eather a number 1..4 or a string.')
+    else, error('Second input argument must be eather a number 1..4 or a string.')
 	end
 case 1
 	mode_s = 'res';
 	if regexp(vs,'?'), cl_id = 1:4;
-    else cl_id = 1;
+    else, cl_id = 1;
 	end
 end
 
 if strcmp(mode_s,'var'), ret_var = 1;
 elseif strcmp(mode_s,'res'), ret_var = 0;
-else irf.log('warning','Invalid value of MODE_S. Defaulting to ''res''')
+else, irf.log('warning','Invalid value of MODE_S. Defaulting to ''res''')
 end
 
 kk = 1;
@@ -131,15 +131,15 @@ for cli=cl_id
 		case {2,3}
 			res(kk) = 1; %#ok<AGROW>
 			if length(cl_id)>1, v(kk) = {eval(vs_tmp)};  %#ok<AGROW>
-      else v = eval(vs_tmp);
+      else, v = eval(vs_tmp);
 			end
 			msg = ['sucessfully loaded ' vs_tmp];
 		case 1
 			if ret_var
 				if length(cl_id)>1, res(kk) = {eval(vs_tmp)}; %#ok<AGROW>
-                else res = eval(vs_tmp);
+                else, res = eval(vs_tmp);
 				end
-      else res(kk) = 1; assignin('caller',vs_tmp,eval(vs_tmp)); %#ok<AGROW>
+      else, res(kk) = 1; assignin('caller',vs_tmp,eval(vs_tmp)); %#ok<AGROW>
 			end
 		case 0
 			assignin('caller',vs_tmp,eval(vs_tmp));
@@ -149,19 +149,19 @@ for cli=cl_id
 		case {2,3}
 			res(kk) = 0;  %#ok<AGROW>
 			if length(cl_id)>1, v(kk) = {[]}; %#ok<AGROW>
-      else v = [];
+      else, v = [];
 			end
 			if d.lev, OBJ = 'ClusterProc';
-			else OBJ = 'ClusterDB';
+			else, OBJ = 'ClusterDB';
 			end
 			msg = ['No ' vs_tmp ' in ' d.file '. Use getData(' OBJ...
 				',...,cl_id,''' d.quant ''')'];
 		case 1
 			if ret_var
 				if length(cl_id)>1, res(kk) = {ERR_RET};  %#ok<AGROW>
-        else res = ERR_RET;
+        else, res = ERR_RET;
 				end
-      else res(kk) = 0;  %#ok<AGROW>
+      else, res(kk) = 0;  %#ok<AGROW>
 			end
 		case 0
 			irf.log('warning',['cannot load ' vs_tmp])

@@ -6,7 +6,7 @@ function TS = ts_skymap(time,data,energy,phi,theta,varargin)
 % Create TSeries object - skymap
 
 if ~isa(time,'GenericTimeArray'), epoch = EpochTT(time);
-else epoch = time;
+else, epoch = time;
 end
 args = varargin;
 if isempty(energy) % must check that energy0, energy1 and esteptable is given

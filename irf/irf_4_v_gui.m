@@ -239,7 +239,7 @@ ud.columns=uimenu('label','&Columns','accelerator','c');
 %uimenu(ud.column
 
 if isa(ud.var1,'TSeries'), nCol = size(ud.var1.data,2);
-else nCol = size(ud.var1,2);
+else, nCol = size(ud.var1,2);
 end
 
 for j_col=1:nCol
@@ -380,7 +380,7 @@ xl=get(hh,'XLim');
 v=eval(['[' get(ud.v,'string') ']']);
 tcenter = mean(xl);distance=norm(v)*diff(xl)/2;logd=log10(distance);
 if logd>round(logd), dx=10^(round(logd))/2;
-else dx=10^(round(logd))/5;
+else, dx=10^(round(logd))/5;
 end
 xticks=(-30:30)*dx/norm(v)/5+tcenter;
 xticklabels=cell(size(-30:30));

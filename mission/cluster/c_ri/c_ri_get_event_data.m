@@ -16,7 +16,7 @@ function flag=c_ri_get_event_data(time_interval,path_Events,path_Out, data_list,
 %
 %Written by Andris Vaivads Sep 2003 -
 
-global AV_DEBUG; if isempty(AV_DEBUG), debug=0;else debug=AV_DEBUG; end
+global AV_DEBUG; if isempty(AV_DEBUG), debug=0;else, debug=AV_DEBUG; end
 
 %--------------------- the beginning --------------------------
 sc_list=1:4; % get data for all 4 s/c
@@ -71,7 +71,7 @@ for i_event=2:size(event_time_intervals,1)
 end
 disp(['From ' num2str(size(event_time_intervals,1)) ' events constructed ' num2str(size(events,1)) ' nonoverlapping events.']);
 
-if exist('mWork.mat'), save -append mWork events, else save mWork events; end
+if exist('mWork.mat'), save -append mWork events, else, save mWork events; end
 
 for i_event=1:size(events,1)
   start_time_epoch=events(i_event,1);start_time=fromepoch(start_time_epoch);
@@ -106,7 +106,7 @@ for i_event=1:size(events,1)
         [tA,A] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic), 'ephemeris', 'phase', ' ', ' ', ' ');if debug,disp('Position R, velocity V, Phase A ...ready!');end
         eval(av_ssub('A?=[double(tA) double(A)];',ic));
         eval(av_ssub('LT?=[double(tlt) double(lt)];MLT?=[double(tmlt) double(mlt)];L?=[double(tL) double(Lshell)];ILAT?=[double(tilat) double(ilat)];R?=[double(tr) double(r)''];V?=[double(tv) double(v)''];',ic));clear tlt tmlt tL tilat lt mlt Lshell ilat tr r tv v;
-        if exist(file_name,'file'), flag_append='-append';else flag_append='';end
+        if exist(file_name,'file'), flag_append='-append';else, flag_append='';end
         stric=num2str(ic);
         save(file_name,['A' stric],['L' stric],['LT' stric],['MLT' stric],['ILAT' stric],['R' stric],['V' stric],flag_append);
           if debug, disp(['saving ephemeris for sc' num2str(ic)]);end
@@ -117,7 +117,7 @@ for i_event=1:size(events,1)
       file_name=[path_Out file_prefix deblank(R_datestring(start_time)) '_T' deblank(R_datestring(end_time)) '.mat'];
       [B1,B2,B3,B4]=c_get_bfgm(time_interval);
       for ic=sc_list,eval(av_ssub('dB?=c_gse2dsc(B?,?);',ic)),end
-      if exist(file_name,'file'), flag_append='-append';else flag_append='';end
+      if exist(file_name,'file'), flag_append='-append';else, flag_append='';end
       save(file_name,'B1','B2','B3','B4','dB1','dB2','dB3','dB4',flag_append);
           if debug, disp(['saving B1 B2 B3 B4']);end
 
@@ -126,7 +126,7 @@ for i_event=1:size(events,1)
       file_name=[path_Out file_prefix deblank(R_datestring(start_time)) '_T' deblank(R_datestring(end_time)) '.mat'];
       EFW_P=c_isdat_get_EFW(time_interval,[],[],sc_mode,1:4,db,'P');
       P1=EFW_P{1};P2=EFW_P{2};P3=EFW_P{3};P4=EFW_P{4};
-      if exist(file_name,'file'), flag_append='-append';else flag_append='';end
+      if exist(file_name,'file'), flag_append='-append';else, flag_append='';end
       save(file_name,'P1','P2','P3','P4',flag_append);        if debug, disp(['saving ' flag_append ' P1,P2,P3,P4 ->' file_name]);end
 
     case 'EFW_E'
@@ -138,7 +138,7 @@ for i_event=1:size(events,1)
         eval(av_ssub('dE?=c_despin(wE?,?,''efw'');',ic)),
         eval(av_ssub('deg=20;[dE?,d?]=av_ed(dE?,dB?,deg);E?=c_gse2dsc(dE?,[dE?(1,1) ?],-1);indzero=find(abs(d?)<deg);E?(indzero,4)=0;',ic));
         eval(av_ssub('ExB?=av_e_vxb(E?,B?,-1);',ic));
-        if exist(file_name,'file'), flag_append='-append';else flag_append='';end
+        if exist(file_name,'file'), flag_append='-append';else, flag_append='';end
         eval(av_ssub('save(file_name,''wE?'',''dE?'',''d?'',''E?'',''ExB?'',flag_append);',ic));
           if debug, disp(['saving wE dE d E ExB for sc' num2str(ic)]);end
       end

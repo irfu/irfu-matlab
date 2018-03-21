@@ -19,7 +19,7 @@ if nargin < 2 % estimate time step
     time_step=min(time_steps);
 end
 
-if size(x,2)==1, data_columns=1; else data_columns=2:size(x,2);end
+if size(x,2)==1, data_columns=1; else, data_columns=2:size(x,2);end
     
 data_gaps=find(dt>3*time_step);
 dt(data_gaps)=0;

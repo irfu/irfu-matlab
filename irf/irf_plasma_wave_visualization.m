@@ -80,39 +80,39 @@ while 1
         case 'z'
             if isnumeric(args{2})
                 Z = args{2};
-            else irf_log('fcal,','wrongArgType : Z must be numeric')
+            else, irf_log('fcal,','wrongArgType : Z must be numeric')
             end
         case 'x'
             if isnumeric(args{2})
                 X = args{2};
-            else irf_log('fcal,','wrongArgType : Z must be numeric')
+            else, irf_log('fcal,','wrongArgType : Z must be numeric')
             end
         case 't'
             if isnumeric(args{2})
                 T = args{2};
-            else irf_log('fcal,','wrongArgType : T must be numeric')
+            else, irf_log('fcal,','wrongArgType : T must be numeric')
             end
         case 'kz'
             if isnumeric(args{2})
                 kz = args{2};
 %                kz = 2*pi*kz; % input kz is only 1/L_z
-            else irf_log('fcal,','wrongArgType : kz must be numeric')
+            else, irf_log('fcal,','wrongArgType : kz must be numeric')
             end
         case 'kx'
             if isnumeric(args{2})
                 kx = args{2};
 %                kx = 2*pi*kx; % input kx is only 1/L_z
-            else irf_log('fcal,','wrongArgType : kz must be numeric')
+            else, irf_log('fcal,','wrongArgType : kz must be numeric')
             end
         case 'f'
             if isnumeric(args{2})
                 f = args{2};
-            else irf_log('fcal,','wrongArgType : f must be numeric')
+            else, irf_log('fcal,','wrongArgType : f must be numeric')
             end
         case 'n' % number of particles in every species
             if isnumeric(args{2})
                 N = args{2};
-            else irf_log('fcal,','wrongArgType : N must be numeric')
+            else, irf_log('fcal,','wrongArgType : N must be numeric')
             end
         case 'e'
             if isnumeric(args{2})
@@ -126,27 +126,27 @@ while 1
                     otherwise
                         irf_log('fcal,','wrongArgType : E must be numeric with 1-3 elements')
                 end
-            else irf_log('fcal,','wrongArgType : E must be numeric')
+            else, irf_log('fcal,','wrongArgType : E must be numeric')
             end
         case 'qm'
             if isnumeric(args{2})
                 qm = args{2};
-            else irf_log('fcal,','wrongArgType : qm must be numeric vector')
+            else, irf_log('fcal,','wrongArgType : qm must be numeric vector')
             end
         case 'nfield' % number of field lines
             if isnumeric(args{2})
                 Nfield = args{2};
-            else irf_log('fcal,','wrongArgType : Nfield must be numeric')
+            else, irf_log('fcal,','wrongArgType : Nfield must be numeric')
             end
         case 'nfieldlinepoints' % number of field lines
             if isnumeric(args{2})
                 Nfieldlinepoints = args{2};
-            else irf_log('fcal,','wrongArgType : Nfieldlinepoints must be numeric')
+            else, irf_log('fcal,','wrongArgType : Nfieldlinepoints must be numeric')
             end
         case 'init_type'
             if isnumeric(args{2})
                 init_type = args{2};
-            else irf_log('fcal,','wrongArgType : init_type must be numeric')
+            else, irf_log('fcal,','wrongArgType : init_type must be numeric')
             end
         case 'view'
             if ischar(args{2})

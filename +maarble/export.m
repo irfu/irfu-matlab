@@ -166,7 +166,7 @@ end
         %DT2 = 0.5; % time resolution
         datasetID = 'ULF_PC12';
         if ischar(cl_id) && cl_id(1)=='g', numberOfFreq = 12; % GOES
-        else numberOfFreq = 21; % Cluster and THEMIS
+        else, numberOfFreq = 21; % Cluster and THEMIS
         end
       case 'pc35'
         %DT2 = 30; % time resolution
@@ -183,7 +183,7 @@ end
     
     %% Prepare data array
     % B0
-    if isempty(ebsp.fullB), magB = ebsp.B0; else magB = ebsp.fullB; end
+    if isempty(ebsp.fullB), magB = ebsp.B0; else, magB = ebsp.fullB; end
     magB = irf_abs(magB); magB = magB(:,[1 5]); magB = irf_resamp(magB,ebsp.t);
     magB = magB(:,2);
     
@@ -275,7 +275,7 @@ end %export
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function obuf = pmeta(metaID,metaValue)
 % Print META
-if isnumeric(metaValue), q = ''; metaValue = num2str(metaValue); else q = '"'; end
+if isnumeric(metaValue), q = ''; metaValue = num2str(metaValue); else, q = '"'; end
 obuf = [...
     'START_META     =   ' metaID '\n'...
     '   ENTRY       =   ' q metaValue q '\n'...

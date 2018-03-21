@@ -26,7 +26,7 @@ for d=1:length(dirs)
 	
     for sdi = 1:length(sdirs)
         if isempty(sdirs{sdi}), curr_d = dir_s;
-        else curr_d = [dir_s '/' sdirs{sdi}];
+        else, curr_d = [dir_s '/' sdirs{sdi}];
         end
         
         cd( [BASE_DIR '/' curr_d])

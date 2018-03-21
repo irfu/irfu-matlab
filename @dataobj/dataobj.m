@@ -78,7 +78,7 @@ switch action
             cdf_file = [directory_name cdf_files(j).name];
         end
         clear cdf_files
-      else cdf_file = varargin{1};
+      else, cdf_file = varargin{1};
       end
       if ~exist(cdf_file,'file')
         error(['File ' cdf_file ' does not exist']);
@@ -179,7 +179,7 @@ switch action
             if strcmpi(info.Variables(iTimeVar,4),'tt2000')
               tintTmp(1) = spdfparsett2000(epoch2iso(tint(1)));
               tintTmp(2) = spdfparsett2000(epoch2iso(tint(2)));
-            else tintTmp = tint;
+            else, tintTmp = tint;
             end
             records{i} = (timeline >= tintTmp(1)) & (timeline < tintTmp(2));
             recsTmp = [recsTmp; {timeVarName,iTimeVar,records{i}}]; %#ok<AGROW>
@@ -280,7 +280,7 @@ switch action
             dobj.data.(varName).data = dataAllRecords;
             dobj.data.(varName).nrec = info.Variables{v,3};
           else
-            if iscell(records), recsTmp = records{v}; else recsTmp = records; end
+            if iscell(records), recsTmp = records{v}; else, recsTmp = records; end
             nDim=numel(size(dataAllRecords));
             switch nDim
               case 2

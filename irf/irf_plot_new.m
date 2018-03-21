@@ -44,7 +44,7 @@ return % return from main function
     if isempty(ax) % if empty axis use current axis GCA
       if isempty(get(0,'CurrentFigure')) % there is no figure open
         ax = irf_panel(randStr);
-      else ax = gca;
+      else, ax = gca;
       end
     end
     hca = ax(1);
@@ -53,7 +53,7 @@ return % return from main function
     
     %if length(x)==2 && strcmp(get_units(x{1}),get_units(x{2}))
     flagHold = ishold(hca); 
-    if flagHold, flagHolding = true; else flagHolding = false; end
+    if flagHold, flagHolding = true; else, flagHolding = false; end
     for iVar = 1:length(x)
       h = plot(hca, x{iVar}.time.epochUnix-ts-dt, x{iVar}.data, marker, args{:});
       hl=[hl; h];
@@ -102,7 +102,7 @@ return % return from main function
               irf.log('critical','wrongArgType : dt must be numeric')
               error('dt must be numeric');
             end
-          else irf.log('critical','wrongArgType : dt value is missing')
+          else, irf.log('critical','wrongArgType : dt value is missing')
             error('dt value missing');
           end
         case 'tint'
@@ -151,9 +151,9 @@ return % return from main function
         hax=initialize_figure(x,'newfigure');
       elseif numel(args)>=2 && ischar(args{2}) && strcmpi(args{2},'reset')
         hax=initialize_figure(x,'reset');
-      else hax=initialize_figure(x);
+      else, hax=initialize_figure(x);
       end
-    else irf.log('warning','Max 20 subplots supported ;)');
+    else, irf.log('warning','Max 20 subplots supported ;)');
     end
   end
 

@@ -67,9 +67,9 @@ for iField = 1:length(fields)
     if strcmp(fieldName,'bb_xxyyzzss')
       tmpVar = get_variable(d,['BB_xxyyzz__' productName]);
       if isempty(tmpVar), continue
-      else ebsp.flagFac = 0;
+      else, ebsp.flagFac = 0;
       end
-    else continue
+    else, continue
     end
   end
   if isnumeric(tmpVar.FILLVAL)

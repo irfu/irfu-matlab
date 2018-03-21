@@ -28,7 +28,7 @@ function c_export_ps(st,varargin)
 
 
 if nargin>2, have_options = 1; args = varargin;
-else have_options = 0;
+else, have_options = 0;
 end
 
 sp = '.';
@@ -43,17 +43,17 @@ while have_options
         case 'sc_list'
 			if length(args) < 2, error('SC_LIST requires a value'), end
 			if isnumeric(args{2}), sc_list = args{2};
-			else irf_log('fcal','wrong ArgType : suf must be numeric')
+			else, irf_log('fcal','wrong ArgType : suf must be numeric')
 			end
 		case 'sp'
 			if length(args) < 2, error('SP requires a value'), end
 			if ischar(args{2}), sp = args{2};
-			else irf_log('fcal','wrong ArgType : sp must be string')
+			else, irf_log('fcal','wrong ArgType : sp must be string')
 			end
 		case 'suf'
 			if length(args) < 2, error('SUF requires a value'), end
 			if ischar(args{2}), suf = ['_' args{2}];
-			else irf_log('fcal','wrong ArgType : suf must be string')
+			else, irf_log('fcal','wrong ArgType : suf must be string')
 			end
 		case {'pdf','nops'}
 			ex_ps = 0;
@@ -65,7 +65,7 @@ while have_options
 			irf_log('fcal',['Option ''' args{1} '''not recognized'])
 	end
 	if length(args) > l, args = args(l+1:end);
-	else break
+	else, break
 	end
 end
 
@@ -75,7 +75,7 @@ if nargin<1
     figs=get(0,'children');if length(figs)<4,sc_list=figs;end
 	ud=get(figs(1),'userdata');
 	if isfield(ud,'t_start_epoch'), st=ud.t_start_epoch;
-	else error('please specify ts')
+	else, error('please specify ts')
 	end
 else
 	if ischar(st), st = iso2epoch(st); end

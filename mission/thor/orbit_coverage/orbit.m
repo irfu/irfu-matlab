@@ -76,7 +76,7 @@ switch lower(method)
             dt = 120; % s, 120s=2min
         end
         if Ttot<T; t = 0:dt:Ttot;   
-        else t = 0:dt:T;
+        else, t = 0:dt:T;
         end
         nt = numel(t);
         tau = 0; % time of perihelion passage

@@ -40,7 +40,7 @@ function [jz,jp,nj,angle]=irf_jz(v,B,dB,deg_p,deg_z,n_av)
 
 if size(v,2)==3, v=[v(:,1)*0+B(1,1) v];end
 
-if nargout<=2, method='B'; else method='A';end
+if nargout<=2, method='B'; else, method='A';end
 if nargin <3, dB=B;end
 flag_average=0;
 if strcmp(method,'A')

@@ -56,7 +56,7 @@ switch action
 		axis(h(1),'tight');
 		zoom(h(1),'off');
 		ud=get(gcf,'userdata');
-		if isfield(ud,'t_start_epoch'), ud.t0=ud.t_start_epoch;else ud.t0=0; end
+		if isfield(ud,'t_start_epoch'), ud.t0=ud.t_start_epoch;else, ud.t0=0; end
 		
 		ud.X=X;
 		ud.from = 1; % first click with mouse is 'from', second is 'to'

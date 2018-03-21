@@ -77,7 +77,7 @@ if ~isempty(ii)
               idxModeCh((idx-count):idx) = []; idx = idx - count;
             end
             count = 0;
-          else count = count + 1; idx = idx + 1;
+          else, count = count + 1; idx = idx + 1;
           end
           %fprintf('idx:%d count:%d \n',idx,count)
         end
@@ -127,7 +127,7 @@ if ~isempty(ii)
   for i=1:length(idxGap)
     iiStart = ii(idxGap(i));
     if i==length(idxGap), iiEnd = ii(end);
-    else iiEnd = ii(idxGap(i+1)-1);
+    else, iiEnd = ii(idxGap(i+1)-1);
     end
     ttGap = add(ttGap,[t(iiStart) t(iiEnd)],{},...
       sprintf('gap #%d : %d points',i,iiEnd-iiStart+1));

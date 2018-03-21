@@ -120,7 +120,7 @@ if length(ii)>1
             else
                 ll = find(kk>bad_i(end));
                 if isempty(ll), break
-                else jj = ll(1);
+                else, jj = ll(1);
                 end
             end
         end

@@ -24,7 +24,7 @@ if isa(e,'TSeries')
 elseif isa(b,'TSeries')
   errS = 'Both E and B must be of the same class';
   irf.log('critical',errS), error(errS)
-else flagTs = false;
+else, flagTs = false;
 end
 
 flag_method='E.B=0'; % default method for Ez calculation

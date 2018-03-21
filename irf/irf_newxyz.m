@@ -38,7 +38,7 @@ if isa(inp,'TSeries')
     out.data(:,2)=inp.data(:,1:3)*y';
     out.data(:,3)=inp.data(:,1:3)*z';
     out.coordinateSystem = 'new_xyz';
-  else error('Not implemented yet')
+  else, error('Not implemented yet')
   end
   return
 end

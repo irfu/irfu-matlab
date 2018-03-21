@@ -31,7 +31,7 @@ for thId=thIds
   fprintf('Rth%s >> mRth.mat\n',thId);
   if exist('./mRth.mat','file')
     eval(['save(''mRth'',''Rth' thId ''',''-append'')'])
-  else eval(['save(''mRth'',''Rth' thId ''')'])
+  else, eval(['save(''mRth'',''Rth' thId ''')'])
   end
 end
 

@@ -13,7 +13,7 @@ pos = 0;
 count = 0;
 
 if nargout > 1, ncol = 2;
-else ncol = 1;
+else, ncol = 1;
 end
 detailed_spec = zeros(fix(size(data,1)/STEP),ncol);
 

@@ -74,7 +74,7 @@ else
 	
     for j=1:length(mins)
         if j==length(mins), ii = find(t>=mins(j));
-        else ii = find(t>=mins(j) & t<mins(j+1));
+        else, ii = find(t>=mins(j) & t<mins(j+1));
         end
         if isempty(ii), continue, end
         if j_start

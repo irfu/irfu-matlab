@@ -43,7 +43,7 @@ while have_options
         	irf_log('fcal',['Option ''' args{i} '''not recognized'])
     	end
 		if length(args) > l, args = args(l+1:end);
-		else break
+		else, break
 		end
 	else
 		error('caa:wrongArgType','use c_export_ps(..,''option'',''value'')')

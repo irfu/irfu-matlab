@@ -467,7 +467,7 @@ switch ibvarstr(1)
                 filter='32kHz';
             case 'H'
                 if length(probe)==1, filter='4kHz';
-                else filter='8kHz';
+                else, filter='8kHz';
                 end
             case 'M'
                 filter='180Hz';

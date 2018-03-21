@@ -18,7 +18,7 @@ if size(x,2) < 3
   errS = 'not enough components for y vector.';
   irf.log('critical',errS), error(errS)
 elseif size(x,2) == 3, xx=x;
-else xx=x(:,2:4);
+else, xx=x(:,2:4);
 end
 
 if size(y,2) > 3, yy=y(:,2:4);

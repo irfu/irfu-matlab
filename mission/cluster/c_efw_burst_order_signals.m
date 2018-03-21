@@ -66,7 +66,7 @@ for di=1:2:nv
         continue
     end
     
-    if ref_probep==32, distance = 62; else distance = 88;end
+    if ref_probep==32, distance = 62; else, distance = 88;end
     eburst=1000*0.00212*(p2(:,2)-p1(:,2))/distance; % Burst electric field in mV/m
     bsfit=c_efw_sfit(ref_probep,3,10,20,p2(:,1),eburst,bpha(:,1),bpha(:,2),1,'ib');
     if isempty(nmsfit) || isempty(bsfit)

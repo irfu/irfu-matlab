@@ -64,7 +64,7 @@ if exist('diE','var')
 	have_hres = 1;
 	% remove points larger then 1 V/m
 	for j=2:3, diE(abs(diE(:,j)) > 1000, j) = NaN; end
-else have_hres = 0;
+else, have_hres = 0;
 end
 % we load full res data, but plot only spin.
 var_list = 'diEs_tmp';
@@ -163,7 +163,7 @@ for co=1:2
 	irf_timeaxis
 	grid
 	set(gca,'XTickLabel',[])
-	if co==1, ylabel('E_x DSI'), else ylabel('E_y DSI'), end
+	if co==1, ylabel('E_x DSI'), else, ylabel('E_y DSI'), end
 	xlabel('')
 	zoom on
 end
@@ -235,9 +235,9 @@ while(q ~= 'q')
 				offset(1) = o_tmp(1)+1i*o_tmp(2);
 				offset(2) = o_tmp(3);
 			elseif length(o_tmp) > 1, offset(1) = o_tmp(1)+1i*o_tmp(2);
-			else offset(1) = o_tmp(1)+1i*imag(offset(1));
+			else, offset(1) = o_tmp(1)+1i*imag(offset(1));
 			end
-		else disp('invalid command')
+		else, disp('invalid command')
 		end
   	flag_replot=1;
 	end
@@ -269,7 +269,7 @@ while(q ~= 'q')
 			set(h(co),'position',ax_pos);
 			irf_timeaxis(h(co))
 			grid(h(co)), set(h(co),'XTickLabel',[]), xlabel('')
-			if co==1, ylabel('E_x DSI'), else ylabel('E_y DSI'), end
+			if co==1, ylabel('E_x DSI'), else, ylabel('E_y DSI'), end
 		end
 
 		axes(h(1))

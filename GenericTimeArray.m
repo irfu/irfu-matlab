@@ -305,7 +305,7 @@ classdef (Abstract) GenericTimeArray
       className = class(obj);
       lim = convert_epoch(inp,className);
       if nargout>1, [idxLim,res] = tlimPrivate(obj,lim,mode);
-      else idxLim = tlimPrivate(obj,lim,mode);
+      else, idxLim = tlimPrivate(obj,lim,mode);
       end
     end
     
@@ -319,7 +319,7 @@ classdef (Abstract) GenericTimeArray
 		
 		function res = epochUnix(obj)
       if isempty(obj), res = [];
-      else res = EpochUnix.from_ttns(obj.ttns);
+      else, res = EpochUnix.from_ttns(obj.ttns);
       end
 		end
 		function s = utc(obj,varargin)

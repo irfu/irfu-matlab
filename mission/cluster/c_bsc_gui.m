@@ -19,7 +19,7 @@ main_fig_id = 28;
 main_fig_title = 'Cluster B-SC GUI';
 
 if nargin, action = varargin{1};
-else action = 'init';
+else, action = 'init';
 end
 
 if regexp(action,'^click_[X-Z]axes$')
@@ -382,7 +382,7 @@ switch action
         end
         title(h(1), ['Cluster ' num2str(hnd.cl_id) ' DSI'])
         if isempty(hnd.BSCDataAppend), legend(h(3),{'orig','fgm'})
-        else legend(h(3),{'orig','new','fgm'})
+        else, legend(h(3),{'orig','new','fgm'})
         end
         
         guidata(h0,hnd);

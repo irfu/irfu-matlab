@@ -34,7 +34,7 @@ function c_export_ascii(var,varargin)
 
 if nargin<1, help c_export_ascii; return, end
 if nargin>2, have_options = 1; args = varargin;
-else have_options = 0;
+else, have_options = 0;
 end
 
 CEF = 0;
@@ -49,15 +49,15 @@ while have_options
 		switch(args{1})
 		case 'var_name'
 			if ischar(args{2}), vs = args{2};
-            else irf_log('fcal','wrong ArgType : var_name must be string')
+            else, irf_log('fcal','wrong ArgType : var_name must be string')
 			end
 		case 'comm'
 			if ischar(args{2}), comment = args{2};
-            else irf_log('fcal','wrong ArgType : comm must be string')
+            else, irf_log('fcal','wrong ArgType : comm must be string')
 			end
 		case 'f_name'
 			if ischar(args{2}), file_name = args{2};
-            else irf_log('fcal','wrong ArgType : f_name must be string')
+            else, irf_log('fcal','wrong ArgType : f_name must be string')
 			end
 		case 'mode'
 			if ischar(args{2}) 
@@ -75,14 +75,14 @@ while have_options
 						'wrong ArgType : mode must be one of : ''plain'', ''cef'' or ''caa''')
 					irf_log('fcal','Using default mode : ''plain''');
 				end
-            else irf_log('fcal',...
+            else, irf_log('fcal',...
 				'wrong ArgType : mode must be one of : ''plain'', ''cef'' or ''caa''')
 			end
 		otherwise
 			irf_log('fcal',['Option ''' args{i} '''not recognized'])
 		end
 		if length(args) > l, args = args(l+1:end);
-		else break
+		else, break
 		end
 	else
 		error('caa:wrongArgType','use c_export_ascii(..,''option'',''value'')')
@@ -254,7 +254,7 @@ elseif regexp(vs,'^(i)?(diE[1-4]|diEs[1-4])$')==1
 	inst = 'EFW';
 	sig = 'E';
 	if CEF
-		if vs(4)=='s', sen = 's'; else sen = ''; end
+		if vs(4)=='s', sen = 's'; else, sen = ''; end
 		var_units =  {'mV/m'};
 		var_name = {['E' sen]};
 		field_name = {'Electric field'};
@@ -278,7 +278,7 @@ elseif regexp(vs,'^(i)?(diE[1-4]|diEs[1-4])$')==1
 		end
 	else
 		if vs(4)=='s', sen = 'spin fit';
-        else sen = 'p1234';
+        else, sen = 'p1234';
 		end
 		var_labels = {'Ex','Ey','Ez','(B,spin)','sdev'};
 		var_units =  {'mV/m','mV/m','mV/m','deg','unitless'};
@@ -301,7 +301,7 @@ elseif regexp(vs,'^(di)?B(r)?[1-4]$')==1
 	sig = 'B';
 	sen = '';
 	if strcmp(vs(1:2),'di'), frame = 'DSI,  approximately the same as GSE';
-	else frame = 'GSE';
+	else, frame = 'GSE';
 	end
 	var_labels = {'Bx','By','Bz'};
 	var_units =  {'nT','nT','nT'};
@@ -330,7 +330,7 @@ elseif regexp(vs,'^(i)?(E[1-4]|Es[1-4])$')==1
 	inst = 'EFW';
 	sig = 'E';
 	if CEF
-		if vs(2)=='s', sen = 's'; else sen = ''; end
+		if vs(2)=='s', sen = 's'; else, sen = ''; end
 		var_units =  {'mV/m'};
 		var_name = {['E' sen]};
 		field_name = {'Electric field'};
@@ -354,7 +354,7 @@ elseif regexp(vs,'^(i)?(E[1-4]|Es[1-4])$')==1
 		end
 	else
 		if vs(2)=='s', sen = 'spin fit';
-        else sen = 'p1234';
+        else, sen = 'p1234';
 		end
 		var_labels = {'Ex','Ey','Ez','(B,spin)'};
 		var_units =  {'mV/m','mV/m','mV/m','deg'};
@@ -536,7 +536,7 @@ elseif strcmp(vs,'dump')
 		if var(j,1)>5e8 % assume first column time in isdat epoch
       d=sprintf('%4.0f %2.0f %2.0f %2.0f %2.0f %7.4f ',fromepoch(var(j,1)));
 	  		fprintf(fid,[d num2str(var(j,2:end)) '\n']);
-        else fprintf(fid,[num2str(var(j,1:end)) '\n']);
+        else, fprintf(fid,[num2str(var(j,1:end)) '\n']);
 		end
 	end
 	fclose(fid);
@@ -585,12 +585,12 @@ else
 end
 
 % construct filename
-if CEF, ext_s = '.cef'; else ext_s = '.dat'; end
+if CEF, ext_s = '.cef'; else, ext_s = '.dat'; end
 if isempty(file_name)
 	if CAA % we have special names for CAA
 		file_name = ...
 		['C' num2str(cl_id) '_CAA_EFW_' var_name{1} '_' irf_fname(var(1,1)) '_V' DATA_VERSION];
-    else file_name = vs;
+    else, file_name = vs;
 	end
 end
 fid = fopen([file_name ext_s],'w');

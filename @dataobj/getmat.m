@@ -38,7 +38,7 @@ if dim <=1
     if isfield(dep,'DEPEND_O') % add time column as first column
       if strcmpi(dep.DEPEND_O.type,'tt2000')
         timeLine = EpochTT(dep.DEPEND_O.data).epochUnix;
-      else timeLine = dep.DEPEND_O.data;
+      else, timeLine = dep.DEPEND_O.data;
       end
       res = [timeLine plot_data'];
     else                        % time variable requested, return column vector
@@ -72,7 +72,7 @@ else
     % Also do necessary tome conversion if needed 
     if strcmpi(dep.DEPEND_O.type,'tt2000')
       timeLine = EpochTT(dep.DEPEND_O.data).epochUnix; factor = 1e9;
-    else timeLine = dep.DEPEND_O.data; factor = 1;
+    else, timeLine = dep.DEPEND_O.data; factor = 1;
     end
     timevar=getv(dobj,dobj.VariableAttributes.DEPEND_0{1,2});
     if isfield(timevar,'DELTA_PLUS') && isfield(timevar,'DELTA_MINUS')

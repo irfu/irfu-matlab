@@ -21,7 +21,7 @@ end
 
 ii = find(~isnan(epochUnix));
 if ~isempty(ii), valid_time_stamp = epochUnix(ii(1)); 
-else valid_time_stamp = EpochUnix('2010-01-01T00:00:00Z').epochUnix;
+else, valid_time_stamp = EpochUnix('2010-01-01T00:00:00Z').epochUnix;
 end
 
 t_st_e = double(valid_time_stamp);

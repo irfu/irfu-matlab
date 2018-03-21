@@ -65,7 +65,7 @@ if nvars>0
                 end
             else
                 if found_any, res = struct('DEPEND_X',{dep_x});
-                else res = struct('DEPEND_X',[]);
+                else, res = struct('DEPEND_X',[]);
                 end
             end
             return

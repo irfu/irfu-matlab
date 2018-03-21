@@ -35,7 +35,7 @@ DP_S = c_ctl(0,'data_path');
 if ~exist(sdir, 'dir')
 	[SUCCESS,MESSAGE] = mkdir(sdir);
 	if SUCCESS, irf_log('save',['Created storage directory ' sdir])
-    else error(MESSAGE)
+    else, error(MESSAGE)
 	end
 end
 
@@ -77,7 +77,7 @@ for cl_id=sc_list
 				tm(end+1,:) = [st_tmp tm_cur]; %#ok<AGROW>
 				count_skip = 0;
 			end
-        else count_skip = 0;
+        else, count_skip = 0;
 		end
 		
 		st_tmp = st_tmp + REQ_INT;
@@ -108,7 +108,7 @@ for cl_id=sc_list
 	if ~exist(cdir, 'dir')
 		[SUCCESS,MESSAGE] = mkdir(cdir);
 		if SUCCESS, irf_log('save',['Created storage directory ' cdir])
-        else error(MESSAGE)
+        else, error(MESSAGE)
 		end
 	end
 	c_eval('tm=tm?;',cl_id);
@@ -119,7 +119,7 @@ for cl_id=sc_list
 		st_tmp = tm(j,1);
 		tm_cur = tm(j,2);
 		if j==size(tm,1), dt_tmp = st + dt - st_tmp;
-        else dt_tmp = tm(j+1,1) - st_tmp;
+        else, dt_tmp = tm(j+1,1) - st_tmp;
 		end
 		% For BM1 we take SPLIT_INT/3 intervals
 		if dt_tmp > SPLIT_INT*4/3*(1-tm_cur*2/3)
@@ -130,7 +130,7 @@ for cl_id=sc_list
 			end
 		end
 		if j>=size(tm,1), break
-        else j = j + 1;
+        else, j = j + 1;
 		end
 	end
 	
@@ -171,7 +171,7 @@ for cl_id=sc_list
     for inter=1:size(tm,1)
 		t1 = tm(inter,1);
 		if inter==size(tm,1), dt1 = st +dt -t1;
-        else dt1 = tm(inter+1,1) -t1;
+        else, dt1 = tm(inter+1,1) -t1;
 		end
 		
 		% Disregard bad NS_OPS intervals directly here

@@ -61,7 +61,7 @@ classdef EpochUnix < GenericTimeArray
         epoch = obj.start.epochUnix:1:varargin{1}.stop.epochUnix;
       elseif nargin == 3 && isa(varargin{2},'GenericTimeArray') && isnumeric(varargin{1})
         epoch = obj.start.epochUnix:double(varargin{1}):varargin{2}.stop.epochUnix;
-      else error('Invalid input(s)')
+      else, error('Invalid input(s)')
       end
       outObj = EpochUnix(epoch);
     end

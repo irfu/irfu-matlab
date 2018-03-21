@@ -182,7 +182,7 @@ h(ip)=irf_subplot(np,1,-ip);ip=ip+1;
       c_pl_tx(P1,P2,P3,P4,3);
       hold on;
       ud=get(gcf,'userdata');
-      if isfield(ud,'t_start_epoch'), 	ts=ud.t_start_epoch;else ts=0;end
+      if isfield(ud,'t_start_epoch'), 	ts=ud.t_start_epoch;else, ts=0;end
       plot(t-ts,0,'xk');
       ylabel('Vps, [cc]')
       

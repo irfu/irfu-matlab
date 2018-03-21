@@ -44,8 +44,8 @@ for comp=1:2
 	if (isreal(dof(comp)) && probe_p~=34) || (~isreal(dof(comp)) && probe_p==34)
 		if ~isreal(dof(comp)), dof(comp) = imag(dof(comp)); end
 		data(:,comp+1) = data(:,comp+1) - action*dof(comp);
-		if action==1, do='applying'; else do='removing'; end
-		if comp==1, x='x'; else x='y'; end
+		if action==1, do='applying'; else, do='removing'; end
+		if comp==1, x='x'; else, x='y'; end
 		irf_log('proc',sprintf('%s %.2f mV/m delta E%s on p%d',do,dof(comp),x,probe_p))
 	end
 end

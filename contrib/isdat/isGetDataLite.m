@@ -51,7 +51,7 @@ end
 
 request = zeros(17,1);
 if length(starttime) > 1, request(1) = toepoch(starttime);
-else request(1) = starttime; end
+else, request(1) = starttime; end
 request(2) = 0;
 request(3) = duration;
 request(4) = 0;

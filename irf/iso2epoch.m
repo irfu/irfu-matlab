@@ -19,7 +19,7 @@ mask = '%4d-%2d-%2dT%2d:%2d:%fZ';
 if min(size(s))>1
 	if any(size(s,2) == [30 27 24 20]), s=s'; end
 	n_column = size(s,2);
-else n_column = 1;
+else, n_column = 1;
 end
 
 a = sscanf(s,mask);

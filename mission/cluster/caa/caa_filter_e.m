@@ -52,7 +52,7 @@ if 0
 	
 	n_start = 1;
 	if ndata>MAXDATA; n_end = MAXDATA;
-	else n_end = ndata;
+	else, n_end = ndata;
 	end
 	
 	EE = zeros(n_end,2*nw2+1);

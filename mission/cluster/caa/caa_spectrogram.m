@@ -46,7 +46,7 @@ elseif nargin==2 % caa_spectrogram(h,t)
 elseif nargin==3 % caa_spectrogram(t,Pxx,F)
 	if size(t,2) == length(h), t = t'; end
 	if iscell(t), specrec.p = t;
-	else specrec.p = {t};
+	else, specrec.p = {t};
 	end
 	specrec.f = Pxx; 
 	specrec.t = h; 
@@ -61,7 +61,7 @@ elseif	nargin==4 % caa_spectrogram(h,t,Pxx,F)
 	specrec.t = t;
 	if (size(Pxx,1) ~= length(t)) && (size(Pxx,2) == length(t)), Pxx = Pxx'; end
 	if iscell(Pxx),specrec.p = Pxx;
-	else specrec.p = {Pxx};
+	else, specrec.p = {Pxx};
 	end
 	specrec.f = F;
     if length(specrec.t)>1 % assume equidistant times 
@@ -74,7 +74,7 @@ elseif	nargin==5 % caa_spectrogram(h,t,Pxx,F,dt)
 	specrec.t = t;
 	if (size(Pxx,1) ~= length(t)) && (size(Pxx,2) == length(t)), Pxx = Pxx'; end
 	if iscell(Pxx),specrec.p = Pxx;
-	else specrec.p = {Pxx};
+	else, specrec.p = {Pxx};
 	end
 	specrec.f = F;
 	specrec.dt = dt;
@@ -83,7 +83,7 @@ elseif	nargin==6 % caa_spectrogram(h,t,Pxx,F,dt,df)
 	specrec.t = t;
 	if (size(Pxx,1) ~= length(t)) && (size(Pxx,2) == length(t)), Pxx = Pxx'; end
 	if iscell(Pxx),specrec.p = Pxx;
-	else specrec.p = {Pxx};
+	else, specrec.p = {Pxx};
 	end
 	specrec.f = F;
 	specrec.dt = dt;
@@ -234,13 +234,13 @@ for comp=1:min(length(h),ncomp)
     
     if isfield(specrec,'p_label')
       if isa(h(comp),'handle'), hcb = colorbar(h(comp)); % HG2
-      else hcb = colorbar('peer',h(comp));
+      else, hcb = colorbar('peer',h(comp));
       end
       ylabel(hcb,specrec.p_label);
       irf_colorbar_fit_label_height(hcb);
     end
     if comp==min(length(h),ncomp), irf_timeaxis;
-    else set(h(comp),'XTicklabel','')
+    else, set(h(comp),'XTicklabel','')
     end
 end
 

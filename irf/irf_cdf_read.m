@@ -56,7 +56,7 @@ end
 
 if strfind(cdf_file,'*') % use wilcard '*' expansion
   ii=strfind(cdf_file,filesep);
-  if ii, cdf_directory=cdf_file(1:max(ii)); else cdf_directory=''; end
+  if ii, cdf_directory=cdf_file(1:max(ii)); else, cdf_directory=''; end
   ff=dir(cdf_file);
   switch size(ff,1)
   case 0
@@ -153,9 +153,9 @@ elseif ischar(var_name) % one specifies the name of variable
                       dd=spdfcdfread(cdf_file,'Variables',{cdf_var});
                       if size(dd,1)>10
                           disp([num2str(size(dd,1)) ' samples. 1st sample below.']);
-                          if iscell(dd), disp(dd{1}), else disp(dd(1,:)), end
+                          if iscell(dd), disp(dd{1}), else, disp(dd(1,:)), end
                       else
-                          if iscell(dd), disp(dd{1}), else disp(dd), end
+                          if iscell(dd), disp(dd{1}), else, disp(dd), end
                       end
                   end
               case 'r'
@@ -239,7 +239,7 @@ if isempty(old_cdfread_call)
   end
 else
   if(old_cdfread_call), DATA = cdfread(cdf_file, 'VARIABLES', variables);
-  else DATA = spdfcdfread(cdf_file, 'VARIABLES', variables,'CombineRecords', true,'ConvertEpochToDatenum', true); end
+  else, DATA = spdfcdfread(cdf_file, 'VARIABLES', variables,'CombineRecords', true,'ConvertEpochToDatenum', true); end
 end
 
 if(old_cdfread_call)

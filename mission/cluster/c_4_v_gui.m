@@ -15,7 +15,7 @@ if       (nargin<=2 && ischar(x1)) % either action as parameter or string variab
 	if strfind(x1,'?')
 		figure;ud=[]; % intialize
 		ud.variable_str=x1;
-		if nargin == 1, ud.var_col=1;else ud.var_col=x2;end
+		if nargin == 1, ud.var_col=1;else, ud.var_col=x2;end
 		action='new_var';
 		flag_first_call=1;
 	else
@@ -165,7 +165,7 @@ switch action
 		%uimenu(ud.columns,'label','1 (time)');
     nCol = 0;
     if isa(ud.var1,'TSeries'), nCol = size(ud.var1.data,2); 
-    else nCol = size(ud.var1,2);
+    else, nCol = size(ud.var1,2);
     end
 		for j_col=1:nCol
 			%    hcol(j_col)=uimenu(ud.columns,'label',num2str(j_col));
@@ -265,7 +265,7 @@ switch action
 		v=eval(['[' get(ud.v,'string') ']']);
 		tcenter = mean(xl);distance=norm(v)*diff(xl)/2;logd=log10(distance);
 		if logd>round(logd), dx=10^(round(logd))/2;
-		else dx=10^(round(logd))/5;
+		else, dx=10^(round(logd))/5;
 		end
 		xticks=(-30:30)*dx/norm(v)/5+tcenter;
 		xticklabels=cell(size(-30:30));

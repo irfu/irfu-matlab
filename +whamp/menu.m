@@ -20,7 +20,7 @@ if k==1 % ========================== k=1 ===
 	disp('Loading wh file into variable wh');
 	q=input('File name (default ./wh):','s');
 	if size(q) eval(['load ' q '; wh=' q ';']); 
-	else load .\wh; 
+	else, load .\wh; 
 	end
 	clear q;
 	disp('preparing p,z vectors and f,fim matrices')
@@ -150,7 +150,7 @@ if k==7 % ========================== k=7 ===
 	zp_scale=irf_ask('lin/log scale [%]','zp_scale','lin');
 	if zp_scale == 'lin', z=zlin;p=plin;zlabel='k_{par}';plabel='k_{perp}';
 	elseif zp_scale == 'log', z=zlog;p=plog;zlabel='log_{10} k_{par}';plabel='log_{10} k_{perp}';
-    else disp(['scale not changed. scale: ' zp_scale]);
+    else, disp(['scale not changed. scale: ' zp_scale]);
 	end
 end
 if k==8 % ========================== k=8 ===

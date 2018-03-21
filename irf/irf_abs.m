@@ -16,7 +16,7 @@ if isempty(x), y=[];return;end % empty output for empty input
 if isa(x,'TSeries') % Time series
   Ts = x.abs(); 
   if nargin == 2 && flag == 1, y = Ts.data;
-  else y = Ts;
+  else, y = Ts;
   end
 else
   lx = size(x,2); % the number of vector components

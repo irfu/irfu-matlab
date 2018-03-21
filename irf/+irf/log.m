@@ -134,7 +134,7 @@ if ~outputShort || ~strcmp(logOut,'screen') || (outputShort && logLevel==4)
 	% if irf.log is called from the main env, then use curr,
 	% otherwise we are interested in callers name (curr+1)
 	if curr == length(sta), idx = curr;
-	else idx = curr +1;
+	else, idx = curr +1;
 	end
 	logMarker = sprintf('%s(%d)',...
 		sta(idx).name,...

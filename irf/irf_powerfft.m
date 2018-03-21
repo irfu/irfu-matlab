@@ -26,7 +26,7 @@ narginchk(3,4);
 if nargin<4, overlap = 0; end
 if overlap<0 || overlap>100, error('OVERLAP must be in a range 0..99'), end
 
-if(isa(data,'TSeries')), tseries = true; else tseries = false; end
+if(isa(data,'TSeries')), tseries = true; else, tseries = false; end
 
 if(tseries)
   % New Time series approach
@@ -36,7 +36,7 @@ if(tseries)
 else
   ii = find(~isnan(data(:,1)));
   if isempty(ii), error('time is NaN');
-  else ts = data(ii(1),1);
+  else, ts = data(ii(1),1);
   end
   % Number of intervals must be computed from time
   nint = fix(((data(ii(end),1)-ts)*sfreq+1)*(1+overlap*.01)/nfft);
@@ -53,7 +53,7 @@ if( nint<1 )
 end
 
 if nfft/2==fix(nfft/2), nf = nfft/2;
-else nf = (nfft+1)/2;
+else, nf = (nfft+1)/2;
 end
 
 specrec.f = sfreq*((1:nf) -1)'/nfft;

@@ -102,7 +102,7 @@ switch lower(log_ids)
         % if irf_log is called from the main env, then use curr,
         % otherwise we are interested in callers name (curr+1)
         if curr == length(sta), idx = curr;
-        else idx = curr +1;
+        else, idx = curr +1;
         end
         log_ids = sprintf('%s(%d) : %s',sta(idx).name,sta(idx).line,log_ids);
         disp(['unknown LOG_ID at ' log_ids])
@@ -121,7 +121,7 @@ if log_ok
         % if irf_log is called from the main env, then use curr,
         % otherwise we are interested in callers name (curr+1)
         if curr == length(sta), idx = curr;
-        else idx = curr +1;
+        else, idx = curr +1;
         end
         log_ids = sprintf('%s(%d) : %s',sta(idx).name,sta(idx).line,log_ids);
         clear sta curr
