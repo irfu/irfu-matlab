@@ -18,7 +18,7 @@ DT_MAX = 60/SPIN_RATE_NOMINAL; % allow extrapolation for max DT_MAX seconds
 STEP_NSPINS_DEF = 30;  TSTEP_MAX = STEP_NSPINS_DEF*60/SPIN_RATE_NOMINAL;
 MAX_SPIN_RATE_CHANGE = SPIN_RATE_NOMINAL*0.001;
 ERR_PHA_MAX = 0.05; % Error in phase (deg) from fitting
-
+flagSpinRateStable = 1; spinRate = SPIN_RATE_NOMINAL;
 %% Prepare
 verify_input();
 
