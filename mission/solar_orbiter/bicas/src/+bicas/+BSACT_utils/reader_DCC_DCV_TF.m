@@ -1,19 +1,26 @@
 %
 % Class that collects calibration data and the corresponding metadata from BSACT. An object can and should contain
-% either DCV or TF data. Metadata are collected by parsing the testlogbook*.txt files.
+% either DCC, DCV, _or_ TF data. Metadata are collected by parsing the testlogbook*.txt files.
 %
-%
+% 
 %
 % NOTES
 % =====
-% NOTE: The implementation does not force one to use either DCV or TF test in a given object, one can mix them, but
-% that form uf usage makes little sense and is not intended.
+% IMPLEMENTATION NOTE: The current implementation really "only" collects a list of metadata and paths to the
+% corresponding calibration table files. When this metadata has been retrieved, the object is no longer needed. The
+% class could therefor in principle be replaced by a function. However, the thought behind the current design is to make
+% it possible to easily modify it in the future so that data can be loaded retrieved through the class. This design may
+% be changed in the future though.
+% NOTE: The implementation does not force one to use either DCC, DCV, or TF test in a given object. One can mix them,
+% but that form uf usage makes little sense and is not intended.
 % NOTE: There is a slight difference between BSACT TFs (without inverted diffs).
 %   2016 June: Has TF phase shift ~180 degrees at low frequencies.
 %   2016 July: Has TF phase shift   ~0 degrees at low frequencies.
 % NOTE: The class name is chosen to reflect the types of calibration data that it may contain in anticipation of 
-% eventually creating another analogous class for other calibration data (bias current calibration data).
-% 
+% eventually creating another analogous class for other calibration data.
+% NOTE: Does NOT read the mheader.regX fields above the actual text table.
+% NOTE: For DCC log files: Does not read the BIAS output channel (LFR_1/2/3) since requires reading "Header1" rows.
+% Should be the same as the antenna channels (which are read).
 %
 %
 % RATIONALE
@@ -36,7 +43,7 @@
 % VARIABLE NAMING CONVENTIONS / DEFINITIONS OF TERMS
 % ==================================================
 % BSACT             BIAS StandAlone Calibration Tables. The raw files generated at the BIAS standalone calibration, in
-%                   particular taken June 2016 and July 2016.
+%                   particular those taken (1) June 2016 and (2) July 2016.
 %
 % CTable:           Calibration table. Equal to the contents of one BIAS standalone calibration file.
 %
@@ -61,8 +68,9 @@
 %
 % RPS               Radians per second
 %
-%
-% Types of calibration data:
+% Types of calibration data
+% -------------------------
+% DCC (DC_CURRENT):         Calibration data for determining offset and slope for bias currents.
 % DCV (DC_VOLTAGE):         Calibration data for determining offset and slope for DC voltages.
 % TF  (TRANSFER_FUNCTION):  Transfer functions (amplification and phase shift over frequencies).
 %
@@ -74,19 +82,23 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden.
 % First created 2017-12-11
 %
-classdef reader_DCV_TF < handle     % Explicitly declare it as a handle class to avoid IDE warnings.
+classdef reader_DCC_DCV_TF < handle     % Explicitly declare it as a handle class to avoid IDE warnings.
 % BOGIQ
 % =====
-% PROPOSAL: Force user to only use DCV or TF tests.
+% PROPOSAL: Force user to only use one data type: DCC, DCV, or TF tests.
 %   PROPOSAL: Internal flag that selects which.
 %   PROPOSAL: Subclasses for each case.
 % PROPOSAL: Implement pre-loading of data.
 %   CON: Code does not know whether to load DCV or TF.
 %
-% PROPOSAL: Exchange calibType 'TF' --> 'FTF'.
+% PROPOSAL: Split into multiple classes, one per calibration data type.
+%   NOTE: Want to reuse "add_test_directory".
+% 
+% PROPOSAL: Rename to exclude "DCC_DCV_TF".
+%   PRO: Already includes all data types so mentioning them is superfluous.
 %
-% TODO: Reader for calibrating bias currents (other class).
-% QUESTION: Can somehow share code with future class for bias current calibration data? Should be similar.
+% PROPOSAL: Replace class with functions for retrieving metadata. If one also wants functionality for loading all calibration
+% data at once (and saving it memory), or caching, then that should be done by other function/class which calls those functions.
 
 
 
@@ -104,9 +116,9 @@ classdef reader_DCV_TF < handle     % Explicitly declare it as a handle class to
     methods(Access=public)
 
         % CONSTRUCTOR
-        function obj = reader_DCV_TF(varargin)
+        function obj = reader_DCC_DCV_TF(varargin)
 %             if nargin > 1
-%                 error('BICAS:reader_DCV_TF:IllegalArgument', 'Illegal number of arguments')
+%                 error('BICAS:reader_DCC_DCV_TF:IllegalArgument', 'Illegal number of arguments')
 %             end
 %             
 %             obj.doPreload = ismember('preload', varargin);
@@ -114,8 +126,9 @@ classdef reader_DCV_TF < handle     % Explicitly declare it as a handle class to
 
 
         
-        function metadataList = add_test_directory(obj, cTableFilesPattern, testLogbookFile, mebTemperatureCelsius)
-        % Add directory with tests (calibration tables).
+        function metadataList = add_test_directory(obj, dataType, cTableFilesPattern, testLogbookFile, mebTemperatureCelsius)
+        % Add directory with tests (calibration tables). Automatically parse the test logbook and associate each
+        % calibration table file with the corresponding metadata, mostly from the logbook.
         % Example: TEMP25C/4_4_DC_VOLTAGE_TEST/ or 4-5_TRANSFER_FUNCTION/.
         %
         % ARGUMENTS
@@ -129,13 +142,14 @@ classdef reader_DCV_TF < handle     % Explicitly declare it as a handle class to
         % mebTemperatureCelsius : The MEB temperature at which the tests are made.
             
             testLogbookRowList = bicas.utils.read_text_file(testLogbookFile);
-            metadataList = bicas.BSACT_utils.parse_testlogbook_DCV_TF(testLogbookRowList);
+            metadataList = bicas.BSACT_utils.parse_testlogbook_DCC_DCV_TF(testLogbookRowList, dataType);
             
+            % TODO-NEED-INFO: Necessary to use special function here? Can replace call with one-liner?
             metadataList = bicas.utils.merge_structs(metadataList, struct('mebTempCelsius', mebTemperatureCelsius));
             
             
             
-            % IMPLEMENTATION NOTE: Does not read entire files since does not know whether they are DCV or TF files.
+            % IMPLEMENTATION NOTE: Does not read entire files since does not know whether they are DCC, DCV, or TF files.
             [metadataList.filePath] = deal([]);
             for i = 1:numel(metadataList)
                 filePath = sprintf(cTableFilesPattern, metadataList(i).testIdNbr);
@@ -156,6 +170,8 @@ classdef reader_DCV_TF < handle     % Explicitly declare it as a handle class to
         
         
         function metadataList = get_metadataList(obj)
+        % Return the internal list of metadata for every calibration table file that has been registered by this
+        % instance of this class.
             metadataList = obj.metadataList;
         end
 
@@ -169,30 +185,58 @@ classdef reader_DCV_TF < handle     % Explicitly declare it as a handle class to
 
     methods(Static, Access=public)
 
-        function Data = read_DCV_calib_file(filePath)
-        % Read BSACT DCV file.
-            
-            if ~ischar(filePath); error('BICAS:reader_DCV_TF:IllegalArgument', 'Argument is not a string.'); end
-            
-            % Variable naming convention to distinguish columns with very similar meanings (and values):
-            % EOO = Excluding output offset (offset removed)
-            % IOO = Including output offset (offset not removed)
-            % BST = Before stimuli
-            % AST = After stimuli (after voltage drop due to stimuli)
-            Data = bicas.BSACT_utils.read_BSACT_file(filePath, ...
-                    {'inputBstVolt', 'outputIooVolt', 'antennaCurrentAmpere', 'inputAstVolt', 'outputEooVolt', ...
-                    'hkInput1AstVolt', 'hkInput2AstVolt', 'hkInput3AstVolt'});
+        function Data = read_DCC_calib_file(filePath)
+        % Read one BSACT DCC table (text file) into a struct.
+        
+            if ~ischar(filePath); error('BICAS:reader_DCC_DCV_TF:IllegalArgument', 'Argument is not a string.'); end
+        
+            Data = bicas.BSACT_utils.read_BSACT_file(filePath, {...
+                'setCurrentMikroAmpere', ...   % Set current/design current. Exactly proportional to digital current.
+                'setCurrentDigital', ...       % Signed integer value representing current. If not identical to TM,
+                ...                            % then at least very-very similar (signed/unsigned?).
+                'biasCurrentAmpere', ...       % Measured bias current. NOTE: Opposite sign compared to set current.
+                'inputVoltageVolt', ...        % Measured bias voltage.
+                'controlVoltageVolt'});        % Measured voltage multiplied by factor, to approximate what is is sent to
+                                               % LFR/TDS. Not meant to be used for actual calibration. Only a reality check.
         end
 
 
 
-        function Data = read_TF_calib_file(filePath)
-        % Read BSACT TF file.
+        function Data = read_DCV_calib_file(filePath)
+        % Read one BSACT DCV table (text file) into a struct.
+        %
+        % Column naming convention to distinguish columns with very similar meanings (and values):
+        % EOO = Excluding output offset (offset removed)
+        % IOO = Including output offset (offset not removed)
+        % BST = Before stimuli
+        % AST = After stimuli (after voltage drop due to stimuli)
         
-            if ~ischar(filePath) ; error('BICAS:reader_DCV_TF:IllegalArgument', 'Argument is not a string.') ; end
+        % PROPOSAL: Change shortening: EOO-->OOR (Output offset removed), IOO-->OOK (Output offset kept)
             
-            Data = bicas.BSACT_utils.read_BSACT_file(filePath, ...
-                {'freqHz', 'gainEnergyDb', 'phaseShiftDeg'});
+            if ~ischar(filePath); error('BICAS:reader_DCC_DCV_TF:IllegalArgument', 'Argument is not a string.'); end
+            
+            Data = bicas.BSACT_utils.read_BSACT_file(filePath, {...
+                'inputBstVolt', ...
+                'outputIooVolt', ...
+                'antennaCurrentAmpere', ...
+                'inputAstVolt', ...
+                'outputEooVolt', ...
+                'hkInput1AstVolt', ...
+                'hkInput2AstVolt', ...
+                'hkInput3AstVolt'});
+        end
+        
+        
+        
+        function Data = read_TF_calib_file(filePath)
+        % Read one BSACT TF table (text file) into a struct.
+        
+            if ~ischar(filePath) ; error('BICAS:reader_DCC_DCV_TF:IllegalArgument', 'Argument is not a string.') ; end
+            
+            Data = bicas.BSACT_utils.read_BSACT_file(filePath, {...
+                'freqHz', ...
+                'gainEnergyDb', ...
+                'phaseShiftDeg'});
             
             % Add fields to Data, fields which are likely to be used for plotting.
             [Data.freqRps, Data.z] = bicas.utils.convert_TF_human2math(...
