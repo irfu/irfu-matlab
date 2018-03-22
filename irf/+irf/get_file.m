@@ -9,7 +9,7 @@ function filePath=get_file(fileUrlLink,varargin)
 %		the next matlab session. Uses DATASTORE.
 %
 %	Example:
-%		linkUrlFile = 'http://www.space.irfu.se/cluster/matlab/indexCaaMeta.mat';
+%		linkUrlFile = 'https://www.space.irfu.se/cluster/matlab/indexCaaMeta.mat';
 %		fileIndexCaa = irf.get_file(linkUrlFile,'caa','indexFile');
 %
 

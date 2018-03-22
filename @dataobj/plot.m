@@ -22,7 +22,7 @@ function res = plot(dobj,varargin)
 % See also
 %		CAA_META
 %
-% for common cluster variables see: http://bit.ly/pKWVKh
+% for common cluster variables see: https://bit.ly/pKWVKh
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):

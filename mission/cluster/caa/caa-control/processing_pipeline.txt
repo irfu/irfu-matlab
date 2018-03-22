@@ -53,7 +53,7 @@ Then deliver the following data to the CAA: *_L*_P, *_L2_HK (see step 16)
 2. Update the ns_ops tables (Anders/Per-Arne)
 ===========================
 Non-standard operations are stored in the XML table at /home/www/cluster/efw/ops on hq.
-The present ns ops list can also be viewed at http://www.cluster.irfu.se/efw/ops/ns_ops.html
+The present ns ops list can also be viewed at https://www.cluster.irfu.se/efw/ops/ns_ops.html
 Matlab accesses a text version of this on db when processing the data.
 
 1. Check through ns_ops.xml (git controlled at irfu-matlab/caa/caa-control/), and make sure it's complete and OK.
@@ -400,7 +400,7 @@ Create them straight from Matlab (new): use caa_pl_summary_l1_batch
 12. Update the eclipse/maneuvers list
 =====================================
 It's useful to know the times of the eclipses and maneuvers before looking through the summary plots.
-Extract the maneuver times from the Mission Ops Reports (http://www.cluster.irfu.se/efw/ops/ops_files/ESOC_MOR/), and add them to the eclipse list (git controlled version at: irfu-matlab/caa/caa-control/eclipses_manoeuvres.txt).
+Extract the maneuver times from the Mission Ops Reports (https://www.cluster.irfu.se/efw/ops/ops_files/ESOC_MOR/), and add them to the eclipse list (git controlled version at: irfu-matlab/caa/caa-control/eclipses_manoeuvres.txt).
 A relatively small fraction of these maneuvers (those that occured while EFW was on) will need to be added to ns_ops in the next step.
 
 
@@ -421,7 +421,7 @@ There will be problems. Look particularly for:
 1. Unexplained data gaps. In later years, there are very few unexplained large data gaps. Mostly, these are either:
     1. Eclipses or maneuvers (check the eclipse/maneuvers list from step 12)
     2. ns_ops intervals (check the nsops page)
-    3. Something missed in ns_ops: check the Mission Ops reports at http://www.cluster.irfu.se/efw/ops/ops_files/ESOC_MOR/ and the WEC Ops mailing list at http://www.acse.shef.ac.uk/wec-ops/at to find intervals that should be in ns_ops but aren't. In this case, update ns_ops accordingly, and re-run any jobs that should be re-run (step 6).
+    3. Something missed in ns_ops: check the Mission Ops reports at https://www.cluster.irfu.se/efw/ops/ops_files/ESOC_MOR/ and the WEC Ops mailing list at http://www.acse.shef.ac.uk/wec-ops/at to find intervals that should be in ns_ops but aren't. In this case, update ns_ops accordingly, and re-run any jobs that should be re-run (step 6).
     4. Planned intervals of no data collection (rare in later years). Check www.jsoc.rl.ac.uk/msp/, (click on "ASCII list of overall plan").  Look for Housekeeping only (HK) or No data taking (D0).
    Any long data gap that doesn't fall into the above categories should be further investigated. Very rarely, the DDS files may be corrupt or missing.
 2. Missing phase information after maneuvers (thick blue line at 0.5 Hz). Enter into ns_ops, use caa_join_phase to fix the phase problems, and then re-run the L1/L2 processing. Take care to set the permissions properly when re-running things.
@@ -522,7 +522,7 @@ Edit /data/caa/sp/make_sp_www.sh
 sudo su
 . make_sp_www.sh
 . splot_to_html.sh YYYY > www/2010/index.html
-Check output at http://www.cluster.irfu.se/efw/data/caa-splots/2010/
+Check output at https://www.cluster.irfu.se/efw/data/caa-splots/2010/
 
 
 =============================================

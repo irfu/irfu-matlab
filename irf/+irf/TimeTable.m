@@ -6,7 +6,7 @@ classdef TimeTable
 	%			1st column start time and 2nd column end times in isdat epoch 
 	%     or nanoseconds of TT2000 if tint is int64
 	% TT=irf.TimeTable('demo') - generate short example time table
-	% TT=irf.TimeTable('http://..') - load ascii time table from internet link 
+	% TT=irf.TimeTable('https://..') - load ascii time table from internet link 
 	% TT=irf.TimeTable(filename) - load ascii time table from file
 	% TT=irf.TimeTable(ascii_text) - load time table from cell string array ascii_text
 	%
@@ -65,7 +65,7 @@ classdef TimeTable
 					TT=add(TT,tint,{'These are several lines','describing the time interval'},'this is comment');
 					TT=add(TT,tint+7200,{},'this is comment, there is no description for this time interval');
 					TT=add(TT,tint+600,{},'this is overlapping interval');
-				elseif strfind(source,'http:')==1 % start with http://
+				elseif regexp(source,'^https?://')==1 % start with http:// or https://
 					tempTT = urlread(source);
 					TT	 = irf.TimeTable(tempTT);
 				elseif exist(source,'file') % check if file

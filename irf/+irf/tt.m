@@ -84,7 +84,7 @@ switch lower(action)
 	case 'display'
 		ascii(tt);
 	case 'read_irf'
-        out=irf.TimeTable(['http://www.space.irfu.se/TT/' tt_id]);
+        out=irf.TimeTable(['https://www.space.irfu.se/TT/' tt_id]);
 	case 'read_amda'
 		httpLink=['http://cdpp-amda.cesr.fr/DDHTML/SHARED/' tt_id '.txt'];
 		out=irf.TimeTable(httpLink);
@@ -95,15 +95,9 @@ switch lower(action)
 		eval(['!scp ' tempFile ' ' remoteFile]);
 		delete(tempFile);
 	case 'list_irf'
-		s=urlread('http://www.space.irfu.se/TT/');
-		A = strread(s, '%s', 'delimiter', sprintf('\n'));
-		A(1:10)=[];
-		A(end-2:end)=[];
-		for i=1:numel(A)
-			A{i}(1:49)=[];
-			ii=strfind(A{i},'"');
-			A{i}(ii:end)=[];
-		end
+		s = urlread('https://www.space.irfu.se/TT/');
+		A = regexp(s,'a href="(?<entry>\w+)"','tokens');
+		A = [A{:}]';
 		disp(A)
 %		eval('!ssh hq.irfu.se ls /usr/home/www/space/TT');
 end

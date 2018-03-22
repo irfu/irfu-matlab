@@ -42,7 +42,7 @@ if flag_get_all_Cluster_positions_from_isdat
 end
 if flag_get_all_Cluster_positions_from_www
 	disp('Downloading from internet file with all Cluster orbits ...');
-	[f,status]=urlwrite('http://space.irfu.se/~andris/cluster/mR.mat','mR.mat');
+	[f,status]=urlwrite('https://space.irfu.se/~andris/cluster/mR.mat','mR.mat');
 end
 
 %% Get all Cluster position from isdat

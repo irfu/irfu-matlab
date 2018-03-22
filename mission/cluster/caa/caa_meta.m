@@ -29,7 +29,7 @@ persistent s datasetNames indexFile
 % If you are generating new index file for the irfu server
 %   then please increase the version number
 indexFileDefault = 'indexCaaMeta_v3'; % default file name, v2 added in 20130618
-linkUrlFile = ['http://www.space.irfu.se/cluster/matlab/' ...
+linkUrlFile = ['https://www.space.irfu.se/cluster/matlab/' ...
 	indexFileDefault '.mat'];
 %% empty arguments > show help
 if nargin==0
