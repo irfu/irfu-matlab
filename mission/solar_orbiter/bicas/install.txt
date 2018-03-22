@@ -38,16 +38,16 @@ to be officially run, NOR (2) just copy the BICAS subdirectory from within irfu-
 
 ONLY IF YOU NEED IT: How to convert an irfu-matlab repository into an RCS ICD-compliant software
 ------------------------------------------------------------------------------------------------
-Procedure in principle: Move the bicas/ directory (irfu-matlab/mission/solar_orbiter/bicas) out of irfu-matlab to where you want BICAS to be located.
-Use bicas/ as a root directory and put the remainder of irfu-matlab/ under bicas/lib/.
+Procedure in principle: Move the bicas/ directory (irfu-matlab/mission/solar_orbiter/bicas) out of irfu-matlab to where you want
+BICAS to be located. Use bicas/ as a root directory and put the remainder of irfu-matlab/ under bicas/lib/.
 
 Example using moving commands:
-   rm -rf ~/irfu-matlab/.git                             # NOTE: Destroys the git repository versioning information. Optional.
+   rm -rf ~/irfu-matlab/.git*                            # NOTE: Destroys the git repository versioning information. Optional.
    mv     ~/irfu-matlab/mission/solar_orbiter/bicas/   ~
-   mkdir  ~/bicas/lib                                    # Only needed if directory lib/ does not already exist.
    mv     ~/irfu-matlab/   ~/bicas/lib/
 
-Note: This procedure is only meant to show the setup one wants to achieve.
+Note: This procedure described avove is only meant to show the setup (configuration of directories) one wants to achieve.
+The BICAS root directory does not need to be located under the user directory.
 
 
 
