@@ -116,7 +116,7 @@ if flag_save
     end
 
     cd(cdb.sp) %enter the storage directory
-    irf_log('save',['Storage directory is ' cdb.sp])
+    irf_log('save',[quantity ' Storage directory is ' cdb.sp])
 
     % Create .interval
     if ~exist('./.interval','file')
