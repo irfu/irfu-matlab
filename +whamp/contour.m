@@ -36,7 +36,7 @@ else
 	colorbar;
 	clear q2
 	q2 = input('Color axis (if nothing automatically) cmin cmax =','s');
-	if (length(q2)~=0)
+	if (~isempty(q2))
 		caxis(eval(['[' q2 ']']));
 	else
 		caxis('auto')

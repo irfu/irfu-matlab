@@ -545,7 +545,7 @@ classdef PDist < TSeries
       emat = double(dist.depend{1});
       if correct4scpot
         scpot = scpot.tlim(dist.time).resample(dist.time);
-        scpot_mat = repmat(scpot.data,[size(emat(1,:))]);
+        scpot_mat = repmat(scpot.data, size(emat(1,:)));
         [it_below_scpot,ie_below_scpot] = find(emat < scpot_mat);
         %dist.data(it_below_scpot,ie_below_scpot,:,:) = 0;
         %dist.data(:,1:6,:,:) = 0;

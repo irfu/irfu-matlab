@@ -19,7 +19,7 @@ if k==1 % ========================== k=1 ===
 	clear q;
 	disp('Loading wh file into variable wh');
 	q=input('File name (default ./wh):','s');
-	if size(q) eval(['load ' q '; wh=' q ';']); 
+	if size(q), eval(['load ' q '; wh=' q ';']); 
 	else, load .\wh; 
 	end
 	clear q;
@@ -89,8 +89,8 @@ if k==4 % ========================== k=4 ===
 		s = size(wh);
 		q3 = 13841^2*5.686e-12/2;
 		q4=input('e,H,O (default-e) >','s');
-		if ((q4 == 'H') | (q4 == 'h')) q3=q3*1836.2;end
-		if ((q4 == 'O') | (q4 == 'o')) q3=q3*1836.2*4;end
+		if ((q4 == 'H') | (q4 == 'h')), q3=q3*1836.2;end
+		if ((q4 == 'O') | (q4 == 'o')), q3=q3*1836.2*4;end
 		wh(:,s(2)+1)=log10((wh(:,3)./wh(:,2)).^2*q3);
 		[d1,d2,d3,xx]=whamp.m2xyz(wh(:,[1 2 3 s(2)+1]));
 	end	
@@ -164,7 +164,7 @@ if k==9 % ========================== k=9 ===
 	end
 end
 if k==10 % ========================== k=10 ===
-	q2 = ['disp(''matlab session, q-exit'')'];
+	q2 = 'disp(''matlab session, q-exit'')';
 	while(q2~='q')	
 		eval(q2);
 		q2=input('matlab>','s');

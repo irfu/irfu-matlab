@@ -69,7 +69,7 @@ fpowers2 = [];
 kpowers2 = [];
 elnum = 1;
 
-for ii = [1:length(ppowers)]
+for ii = 1:length(ppowers)
     if (abs(fpowers(ii)/kpowers(ii)) > abs(vphrange(1)) && abs(fpowers(ii)/kpowers(ii)) < abs(vphrange(2)))
         ppowers2(elnum) = ppowers(ii);
         fpowers2(elnum) = fpowers(ii);

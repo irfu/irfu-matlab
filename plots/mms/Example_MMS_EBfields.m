@@ -36,15 +36,15 @@ Bwavelet = irf_wavelet(Bscmfac,'nf',nf,'f',[5 4000]);
 
 %compress wavelet transform data 10 point average
 nc = 20;
-idx = [nc/2:nc:length(Ewavelet.t)-nc/2];
+idx = nc/2:nc:length(Ewavelet.t)-nc/2;
 Ewavelettimes = Ewavelet.t(idx);
 Ewaveletx = zeros(length(idx),nf);
 Ewavelety = zeros(length(idx),nf);
 Ewaveletz = zeros(length(idx),nf);
-for ii = [1:length(idx)]
-        Ewaveletx(ii,:) = squeeze(irf.nanmean(Ewavelet.p{1,1}([idx(ii)-nc/2+1:idx(ii)+nc/2-1],:),1));
-        Ewavelety(ii,:) = squeeze(irf.nanmean(Ewavelet.p{1,2}([idx(ii)-nc/2+1:idx(ii)+nc/2-1],:),1));
-        Ewaveletz(ii,:) = squeeze(irf.nanmean(Ewavelet.p{1,3}([idx(ii)-nc/2+1:idx(ii)+nc/2-1],:),1));
+for ii = 1:length(idx)
+        Ewaveletx(ii,:) = squeeze(irf.nanmean(Ewavelet.p{1,1}(idx(ii)-nc/2+1:idx(ii)+nc/2-1,:),1));
+        Ewavelety(ii,:) = squeeze(irf.nanmean(Ewavelet.p{1,2}(idx(ii)-nc/2+1:idx(ii)+nc/2-1,:),1));
+        Ewaveletz(ii,:) = squeeze(irf.nanmean(Ewavelet.p{1,3}(idx(ii)-nc/2+1:idx(ii)+nc/2-1,:),1));
 end
 specperpE=struct('t',Ewavelettimes);
 specperpE.f=Ewavelet.f;
@@ -59,15 +59,15 @@ specparE.f_label='';
 specparE.p_label={'log_{10} E_{||}^2','mV^2 m^{-2} Hz^{-1}'};
 
 
-idx = [nc/2:nc:length(Bwavelet.t)-nc/2];
+idx = nc/2:nc:length(Bwavelet.t)-nc/2;
 Bwavelettimes = Bwavelet.t(idx);
 Bwaveletx = zeros(length(idx),nf);
 Bwavelety = zeros(length(idx),nf);
 Bwaveletz = zeros(length(idx),nf);
-for ii = [1:length(idx)]
-        Bwaveletx(ii,:) = squeeze(irf.nanmean(Bwavelet.p{1,1}([idx(ii)-nc/2+1:idx(ii)+nc/2-1],:),1));
-        Bwavelety(ii,:) = squeeze(irf.nanmean(Bwavelet.p{1,2}([idx(ii)-nc/2+1:idx(ii)+nc/2-1],:),1));
-        Bwaveletz(ii,:) = squeeze(irf.nanmean(Bwavelet.p{1,3}([idx(ii)-nc/2+1:idx(ii)+nc/2-1],:),1));
+for ii = 1:length(idx)
+        Bwaveletx(ii,:) = squeeze(irf.nanmean(Bwavelet.p{1,1}(idx(ii)-nc/2+1:idx(ii)+nc/2-1,:),1));
+        Bwavelety(ii,:) = squeeze(irf.nanmean(Bwavelet.p{1,2}(idx(ii)-nc/2+1:idx(ii)+nc/2-1,:),1));
+        Bwaveletz(ii,:) = squeeze(irf.nanmean(Bwavelet.p{1,3}(idx(ii)-nc/2+1:idx(ii)+nc/2-1,:),1));
 end
 specB=struct('t',Bwavelettimes);
 specB.f=Bwavelet.f;

@@ -54,10 +54,10 @@ function [hax, hcb] = plot_hpca_projection(varargin)
     
     % 2. check species
     species = '0';
-    if ~isempty(strfind(dist.name, 'hplus'))  species = 'H+'; end
-    if ~isempty(strfind(dist.name, 'heplus'))  species = 'He+'; end
-    if ~isempty(strfind(dist.name, 'heplusplus'))  species = 'He++'; end
-    if ~isempty(strfind(dist.name, 'oplus'))  species = 'O+'; end    
+    if ~isempty(strfind(dist.name, 'hplus')),  species = 'H+'; end
+    if ~isempty(strfind(dist.name, 'heplus')),  species = 'He+'; end
+    if ~isempty(strfind(dist.name, 'heplusplus')),  species = 'He++'; end
+    if ~isempty(strfind(dist.name, 'oplus')),  species = 'O+'; end    
     if strcmp(species, '0');     error('Can''t recognize species');  end
     distunits = dist.units;        % These used are assumed if data is not PDist format
     

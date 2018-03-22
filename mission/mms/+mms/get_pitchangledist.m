@@ -44,7 +44,7 @@ tic;
 numechannels = 32;
 lengthphi = 32;
 lengththeta = 16;
-anglevec = [15:15:180]; % Default pitch angles. 15 degree angle widths
+anglevec = 15:15:180; % Default pitch angles. 15 degree angle widths
 dangle = median(diff(anglevec))*ones(1,length(anglevec));
 tmpnargin = nargin;
 meanorsum = 'mean';
@@ -59,7 +59,7 @@ while have_char
                 nangles = varargin{tmpnargin};
                 nangles = floor(nangles); % Make sure input is integer
                 dangle = 180/nangles;
-                anglevec = [dangle:dangle:180];
+                anglevec = dangle:dangle:180;
                 dangle = dangle*ones(1,length(anglevec));
                 irf.log('notice','User defined number of pitch angles.')
             elseif (length(varargin{tmpnargin}) > 1)

@@ -168,7 +168,7 @@ if ~use_56 %Unnecessary if probes 5 & 6 are used.
     
     norepeat = ones(length(zphase.time),1);
     nph = length(zphase.data);
-    for ii=[2:nph]
+    for ii=2:nph
         if(zphase.time(ii) > zphase.time(ii-1))
             if(zphase.data(ii) < zphase.data(ii-1))
                 zphase.data(ii:end) = zphase.data(ii:end)+double(360.0);

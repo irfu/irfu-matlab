@@ -676,7 +676,7 @@ for it = 119;1:times.length  % 644 - ring distributions
         hca.Title.String = '';
         colormap(hca,strCMap)
       end
-    end
+  end
     pause(1)
     %cn.print([irf_ssub('ohm_sc_pos_4sc',1) irf_time(time,'epochtt>utc_yyyymmddTHHMMSS.mmm')]);
 end
@@ -838,7 +838,7 @@ for it = 1:times.length
         hca.Title.String = '';
         colormap(hca,strCMap)
       end
-    end
+  end
     pause(1)
     cn.print([irf_ssub('ohm_sc_pos_4sc_ions',1) irf_time(time,'epochtt>utc_yyyymmddTHHMMSS.mmm')]);
 end
@@ -1215,6 +1215,6 @@ for ii = 1%:tint.length;
     hca.Title.String = titleStr;
     colormap(hca,strCMap)
 
-  end
+end
   pause(1)
   %cn.print([irf_ssub('BvnP_1proj_mms1234_gseish',1) irf_time(times(ii),'epochtt>utc_yyyymmddTHHMMSS.mmm')]);

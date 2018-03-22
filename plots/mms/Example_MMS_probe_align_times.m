@@ -41,7 +41,7 @@ end
 if 0 % Set to 1 to plot all fk power spectra
 probecomb = 1;
 
-for ii=[1:length(starttime1)]
+for ii=1:length(starttime1)
     
 if (endtime1(ii)-starttime1(ii) > 0.2)
     tint = irf.tint(strcat(starttime1(ii).utc,'/',endtime1(ii).utc));
@@ -57,7 +57,7 @@ if (endtime1(ii)-starttime1(ii) > 0.2)
     
     %Overplot phase speed estimate
     vph = mms.estimate_phase_speed(fkpower,freq,wavenumber);
-    kfit = [0.0001:0.0001:0.1];
+    kfit = 0.0001:0.0001:0.1;
     ffit = abs(vph/(2*pi)*kfit);
     if(vph < 0)
         kfit = -kfit;
@@ -81,7 +81,7 @@ end
 
 probecomb = 3;
 
-for ii=[1:length(starttime3)]
+for ii=1:length(starttime3)
     
 if (endtime3(ii)-starttime3(ii) > 0.2)
     tint = irf.tint(strcat(starttime3(ii).utc,'/',endtime3(ii).utc));
@@ -97,7 +97,7 @@ if (endtime3(ii)-starttime3(ii) > 0.2)
     
     %Overplot phase speed estimate
     vph = mms.estimate_phase_speed(fkpower,freq,wavenumber);
-    kfit = [0.0001:0.0001:0.1];
+    kfit = 0.0001:0.0001:0.1;
     ffit = abs(vph/(2*pi)*kfit);
     if(vph < 0)
         kfit = -kfit;

@@ -162,7 +162,7 @@ else
     options=0;
 end
 
-intenergies = [1:32];
+intenergies = 1:32;
 while options
     l = 2;
     switch(lower(args{1}))
