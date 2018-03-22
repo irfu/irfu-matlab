@@ -26,43 +26,8 @@ function find_sequences_TEST
     % numel(unique(A(iFirst(i):iLast(i)))) == 1
     % A(iLast(1:end-1)) ~= A(iFirst(2:end))    // if only one vector.
 
-    args = {};
-    exp = {};
-    args{end+1} = {zeros(0,1)};
-    exp{end+1} = zeros(0,2);
-    args{end+1} = {[1,1,1]'};
-    exp{end+1} = [1,3];
-    args{end+1} = {[1,5]'};
-    exp{end+1} = [1,1; 2,2];
-    args{end+1} = {[1,1,1,5,6,6]'};
-    exp{end+1} = [1,3; 4,4; 5,6];
-    args{end+1} = {[1,1,1,5,6,6]', [2,2,2,7,4,4]'};
-    exp{end+1} = [1,3;4,4;5,6];
-    args{end+1} = {[1,1,5,5,6,6]', [2,2,2,7,4,4]'};
-    exp{end+1} = [1,2; 3,3; 4,4; 5,6];
-    args{end+1} = {[1,1, NaN,NaN, 6,6,6]', [2,2,2, 7, 4,4,4]'};
-    exp{end+1} = [1,2; 3,3; 4,4; 5,7];
-    args{end+1} = {[NaN]'};
-    exp{end+1} = [1,1];
-    args{end+1} = {[NaN,NaN]'};
-    exp{end+1} = [1,2];
-    args{end+1} = {[NaN,1,1,5,6,6]'};
-    exp{end+1} = [1,1; 2,3; 4,4; 5,6];
-    args{end+1} = {[1,1,NaN,6,6]'};
-    exp{end+1} = [1,2; 3,3; 4,5];
-    args{end+1} = {[1,1,6,6,NaN]'};
-    exp{end+1} = [1,2; 3,4; 5,5];
-    
-    for k = 1:length(args)
-        [res1, res2] = bicas.dm_utils.find_sequences(args{k}{:});
-        res = [res1(:), res2(:)];
-        if ~bicas.utils.equals_tolerance(res, exp{k}, 0)
-            args{k}{:}
-            exp{k}
-            res
-            error('FAIL')
-        end
-    end
+
+
 end
 
 

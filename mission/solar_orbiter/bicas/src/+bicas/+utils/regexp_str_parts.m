@@ -6,7 +6,7 @@
 % NOTE: A regexp that does match an empty string (e.g. 'a*'), may return an empty substring. This is natural in this
 % application, but is maybe not default regexp behaviour.
 %
-% The primary purpose of this function is to make it easy to parse a string syntax, in particular a config file.
+% The primary purpose of this function is to make it easy to parse a string syntax.
 %
 %
 % ARGUMENTS

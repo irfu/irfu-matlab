@@ -367,7 +367,7 @@ bicas.utils.write_CDF_dataobj( filePath, ...
     DataObj.data, ...
     DataObj.VariableAttributes, ...
     DataObj.Variables ...
-    )    % NOTE: No "fill_empty" option.
+    )
 
 end
 
@@ -377,9 +377,23 @@ end
 
 
 
-function [processData, GlobalAttributes] = read_dataset_CDF(pdid, filePath)
+function [ProcessData, GlobalAttributes] = read_dataset_CDF(pdid, filePath)
 % Read elementary input process data from a CDF file and convert it to a format suitable as a data_manager "process data".
 % Copies all zVariables into fields of a regular structure.
+%
+%
+% ARGUMENTS
+% =========
+% pdid
+% filePath
+%
+%
+% RETURN VALUES
+% =============
+% ProcessData      : Struct with one field per zVar (named after the zVar). The content of every such field equals the
+%                    content of the corresponding zVar.
+% GlobalAttributes : Struct returned from "dataobj".
+%
 %
 % NOTE: Fill & pad values are replaced with NaN for numeric data types.
 %       Other CDF data (attributes) are ignored.
@@ -397,11 +411,13 @@ irf.log('n', sprintf('pdid=%s', pdid))    % NOTE: irf.log adds the method name.
 irf.log('n', sprintf('Reading CDF file: "%s"', filePath))
 do = dataobj(filePath);                 % do=dataobj, i.e. irfu-matlab's dataobj!!!
 
+
+
 %=========================================================================
 % Copy zVariables (only the data) into analogous fields in smaller struct
 %=========================================================================
 irf.log('n', 'Converting dataobj (CDF data structure) to PDV.')
-processData       = struct();
+ProcessData       = struct();
 zVariableNameList = fieldnames(do.data);
 %bicas.dm_utils.log_array('explanation')
 for i = 1:length(zVariableNameList)
@@ -431,7 +447,7 @@ for i = 1:length(zVariableNameList)
         %irf.log('w', sprintf('Can not handle replace fill/pad values for zVariable "%s" when reading "%s".', zVariableName, filePath))
     end
     
-    processData.(zVariableName) = zVariableData;
+    ProcessData.(zVariableName) = zVariableData;
 end
 
 

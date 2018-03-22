@@ -200,10 +200,9 @@ classdef dm_utils
             ACQUISITION_TIME(:, 2) = uint32((atSeconds - atSecondsFloor) * 65536);
             % NOTE: Should not be able to produce ACQUISITION_TIME(:, 2)==65536 (2^16) since atSeconds already rounded (to parts of 2^-16).
         end
-        
-        
-        
-        % EXPERIMENTAL
+
+
+
         function [iFirstList, iLastList] = find_sequences(varargin)
         % For a non-empty set of column vectors, find all subsequences of continuously constant values in all the vectors.
         % Useful for finding continuous sequences of (CDF) records with identical settings.

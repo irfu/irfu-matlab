@@ -61,8 +61,11 @@ function errorCode = bicas( varargin )
 % PROPOSAL: Check that all master cdf files are present/available.
 %
 % PROPOSAL: Rename to bicas.main (+bicas/main.m).
+%   NOTE: Function already has an internal function named "main".
 % PROPOSAL: Put a summarized version of CLI syntax in "bicas --help" (somethinger easier that the S/W descriptor).
 %    PRO: Useful when S/W descriptor becomes big and complex.
+%
+% PROPOSAL: Split up the "main" function in several functions (outsource chunks of its code to smaller functions which are called).
 %
 % -------- OLD --------
 % NOTE: Implementation of the parsing of CLI arguments is problematic for when processing s/w mode.
@@ -91,6 +94,9 @@ function errorCode = bicas( varargin )
 %               NOTE: Does not need to know anything else about other options since this determines possible positions of
 %                   the sought option: index = 1 + (N+1)*m, m=integer.
 %               CON: Can still not mix inofficial and ICD arguments.
+%
+% PROPOSAL: Better handling of errors in dataobj (reading CDF files).
+%   PROPOSAL: Wrap dataobj in function and catch and rethrow errors with BICAS' error IDs.
 
 
 % Clear any previous instance of global variables (as early as possible).
@@ -107,6 +113,9 @@ try
     errorCode = main(REQUIRED_MATLAB_VERSION, ERROR_TYPES_INFO, INOFFICIAL_ARGUMENTS_SEPARATOR, varargin);
 
 catch exception1
+    %================================================================
+    % CASE: Caught an error in the regular execution of the software
+    %================================================================
     
     try
         irf.log('critical', 'Main function caught an exception. Beginning error handling.');   % Print to stdout.
@@ -153,10 +162,10 @@ catch exception1
         return
         
     catch exception2    % Deliberately use different variable name to distinguish the exception from the previous one.
-        %===================================================
-        % CASE: There was an error in the error handling(!)
-        %===================================================
-        
+        %========================================================
+        % CASE: Caught an error in the regular error handling(!)
+        %========================================================
+
         % NOTE: Only use very, very error-safe code here.
         fprintf(2, 'Error in the MATLAB code''s error handling.\n');   % Print to stderr.
         fprintf(2, 'exception2.identifier = "%s"\n', exception2.identifier);          % Print to stderr.        
@@ -216,7 +225,7 @@ irf.log('notice')             % Set initial log level value until it is later ov
 %ROC_RCS_PATH = getenv('ROC_RCS_PATH');     % Use environment variable.
 %irf.log('n', sprintf('ROC_RCS_PATH = "%s"', ROC_RCS_PATH));
 % ASSUMES: The current file is in the <BICAS>/src directory.
-[matlabSrcPath, junk1, junk2] = fileparts(mfilename('fullpath'));   % Use path of the current MATLAB file.
+[matlabSrcPath, ~, ~] = fileparts(mfilename('fullpath'));   % Use path of the current MATLAB file.
 bicasRootPathFromCode = bicas.utils.get_abs_path(fullfile(matlabSrcPath, '..'));
 bicasRootPath = bicasRootPathFromCode;    % Select which path to use as BICAS root path.
 
@@ -244,7 +253,7 @@ end
 global CONSTANTS
 global SETTINGS
 CONSTANTS = bicas.constants(bicasRootPath);
-SETTINGS = bicas.create_default_SETTINGS();
+SETTINGS  = bicas.create_default_SETTINGS();
 
 
 
@@ -342,6 +351,7 @@ for iSetting = 1:length(valuesListsLists)
 end
 
 
+
 %============================================
 % Modify settings according to CLI arguments
 %============================================
@@ -369,10 +379,10 @@ if (length(icdCliArgumentsList) < 1)
     error('BICAS:CLISyntax', 'Not enough arguments found.')
     
 elseif (strcmp(icdCliArgumentsList{1}, '--version'))
-    %============================
+    %=====================
     % CASE: Print version
-    %============================
-    % Parse CLI arguments for the syntax check, even if does not use the results.
+    %=====================
+    % IMPLEMENTATION NOTE: Parse CLI arguments for the syntax check, even if does not use the results.
     IcdOptionValuesMap = bicas.utils.parse_CLI_options(icdCliArgumentsList(2:end), IcdOptionsConfigMap);
     print_version(DataManager)
     
@@ -380,15 +390,15 @@ elseif (strcmp(icdCliArgumentsList{1}, '--identification'))
     %============================
     % CASE: Print s/w descriptor
     %============================
-    % Parse CLI arguments for the syntax check, even if does not use the results.
+    % IMPLEMENTATION NOTE: Parse CLI arguments for the syntax check, even if does not use the results.
     IcdOptionValuesMap = bicas.utils.parse_CLI_options(icdCliArgumentsList(2:end), IcdOptionsConfigMap);
     print_identification(DataManager)
     
 elseif (strcmp(icdCliArgumentsList{1}, '--help'))
-    %============================
+    %==================
     % CASE: Print help
-    %============================
-    % Parse CLI arguments for the syntax check, even if does not use the results.
+    %==================
+    % IMPLEMENTATION NOTE: Parse CLI arguments for the syntax check, even if does not use the results.
     IcdOptionValuesMap = bicas.utils.parse_CLI_options(icdCliArgumentsList(2:end), IcdOptionsConfigMap);
     print_help(ERROR_TYPES_INFO, DataManager)
 
@@ -528,7 +538,7 @@ bicas.stdout_printf('%s\n', swd.identification.description)
 % Print error codes & types
 %==========================
 errorCodesList = cellfun(@(x) (x.code), ERROR_TYPES_INFO.values);   % Array of (unsorted) error codes.
-[junk1, iSort] = sort(errorCodesList);
+[~, iSort] = sort(errorCodesList);
 errorTypesInfoList = ERROR_TYPES_INFO.values;      % Cell array of structs (unsorted).
 errorTypesInfoList = errorTypesInfoList(iSort);    % Cell array of structs sorted by error code.
 bicas.stdout_printf('\nError codes:\n')

@@ -46,13 +46,17 @@ classdef constants < handle
 %    PRO: Forces the use of the same struct fields.
 %    NOTE: Would need to create new version of "select_cell_array_structs" that works on arrays instead.
 %
-% PROPOSAL: Change name
+% PROPOSAL: Change name to which is more specific. Current name is too generic.
 %   PROPOSAL: ~dm_constants.
 %       NOTE: Should then get rid of BICAS_ROOT_PATH first.
 %   PROPOSAL: ~datasets_modes_constants
 % PROPOSAL: Split into code for
 %   (1) storing the data, and
 %   (2) initializing the data
+%
+% PROPOSAL: Use containers.Map
+%   NOTE: Only suitable for structs with exactly one field which is always unique and is "always" used for look-up.
+%   PROPOSAL: S/w modes list.
 %###################################################################################################################
 
     properties(Access=public)
@@ -439,7 +443,6 @@ classdef constants < handle
             'RPW LFR L2s SWF science electric (potential difference) data in survey mode, time-tagged');
             
             % -------- TDS --------
-
             outputsInfoList{end+1} = create_OI('ROC-SGSE_L2S_RPW-TDS-LFM-CWF-E', '02', ...
                 'TDS L2s CWF science electric data in low frequency mode', ...
             'RPW TDS L2s CWF science electric (potential difference) data in low frequency mode, time-tagged');

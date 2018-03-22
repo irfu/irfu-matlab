@@ -17,7 +17,7 @@
 %
 % SOME PDVs
 % =========
-% - Pre-Demuxing-Calibration Data (PreDC)
+% - PreDC = Pre-Demuxing-Calibration Data
 %       Generic data format that can represent all forms of input datasets before demuxing and calibration. Can use an
 %       arbitrary number of samples per record. Some variables are therefore not used in CWF output datasets.
 %       Consists of struct with fields:
@@ -33,7 +33,7 @@
 %           DELTA_PLUS_MINUS
 %           SAMP_DTIME          % Only important for SWF.
 %       Fields are "CDF-like": rows=records, all have same number of rows.
-% - Post-Demuxing-Calibration Data (PostDC)
+% - PostDC = Post-Demuxing-Calibration Data
 %       Like PreDC but with additional fields. Tries to capture a superset of the information that goes into any
 %       dataset produced by BICAS.
 %       Has extra fields:
@@ -76,6 +76,8 @@ classdef dm_processing_functions
 %   PRO: Uses flag for selecting interpolation time in one place.
 %--
 % NOTE: Both BIAS HK and LFR SURV CWF contain MUX data (only LFR has one timestamp per snapshot). True also for other input datasets?
+%
+% PROPOSAL: Assertion functions for PreDCD and PostDCD formats.
 %#######################################################################################################################
     
     methods(Static, Access=public)
@@ -85,8 +87,8 @@ classdef dm_processing_functions
         
             global SETTINGS
             
-            SciPd   = InputsMap('SCI_cdf').pd;
-            HkPd    = InputsMap('HK_cdf').pd;
+            SciPd = InputsMap('SCI_cdf').pd;
+            HkPd  = InputsMap('HK_cdf' ).pd;
             
             hkOnSciTimePd = [];
             
@@ -371,11 +373,11 @@ classdef dm_processing_functions
             PreDcd = InputsMap('PreDC').pd;
             bicas.dm_processing_functions.assert_PreDC(PreDcd);
                     
-            PostDcd = PreDcd;
             
             %=======
             % DEMUX
             %=======
+            PostDcd = PreDcd;    % Copy all values, to later overwrite a subset of them.
             PostDcd.DemuxerOutput = bicas.dm_processing_functions.simple_demultiplex(...
                 PreDcd.DemuxerInput, PreDcd.MUX_SET, PreDcd.DIFF_GAIN);
             
