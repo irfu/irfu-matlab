@@ -183,6 +183,10 @@ for i = 1:nV % velocity (energy)
         for k = 1:nEle % theta
             % generate MC points
             nMCt = NMC(i,j,k); % temporary number
+            % Ignore bin if value of F is zero to save computations
+            if F(i,j,k) == 0
+                continue;
+            end
             % first is not random
             dV_MC = [0;(rand(nMCt-1,1)-.5)*dV(i)];
             dPHI_MC = [0;(rand(nMCt-1,1)-.5)*dPhi];
