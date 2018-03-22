@@ -56,7 +56,7 @@ cd(outdir)
 
 fid = fopen(fname,'w');
 fprintf(fid,'<?xml version="1.0"?>\n');
-fprintf(fid,'<!DOCTYPE regions SYSTEM "http://www.space.irfu.se/regions.dtd">\n');
+fprintf(fid,'<!DOCTYPE regions SYSTEM "https://www.space.irfu.se/regions.dtd">\n');
 fprintf(fid,'\n<!--\nList of regions crossed by Cluster for %s\n-->\n<regions>\n',tit);
 fprintf(fid,'<title>%s</title>\n',tit);
 if ts~=plan(1)
