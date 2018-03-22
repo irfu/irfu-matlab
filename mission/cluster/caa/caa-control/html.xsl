@@ -17,7 +17,7 @@ $Id$
 		<META http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>
 		<META http-equiv="Content-Language" content="en-us"/>
 		<TITLE><xsl:value-of select="//title"/></TITLE>
-		<LINK rel="StyleSheet" href="http://www.cluster.irfu.se/efw.css" type="text/css" media="screen"/>
+		<LINK rel="StyleSheet" href="https://www.cluster.irfu.se/efw.css" type="text/css" media="screen"/>
 	</HEAD>
 	<BODY>
 	<H1 ALIGN="center">
@@ -49,7 +49,7 @@ $Id$
 	<xsl:for-each select="child::link">
 		<xsl:number count="*" format="1"/>
 		<xsl:text>. </xsl:text>
-		<A HREF="http://www.cluster.irfu.se/efw/ops/ops_files/{@href}">
+		<A HREF="https://www.cluster.irfu.se/efw/ops/ops_files/{@href}">
 			<xsl:apply-templates/>
 		</A><BR/>
 	</xsl:for-each>
