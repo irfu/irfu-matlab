@@ -419,7 +419,7 @@ classdef PDist < TSeries
       end    
       
       if 0 % Diagnostics
-        step = 2;
+        step = 2; %#ok<UNRCH>
         subplot(1,3,1)
         scatter3(VX(1:step:end),VY(1:step:end),VZ(1:step:end),VZ(1:step:end)*0+10,VEL(1:step:end)); axis equal
         subplot(1,3,2)
@@ -603,7 +603,7 @@ classdef PDist < TSeries
         v = sqrt(2*energy*u.e/M); % m/s       
 
         if 0%length(v) ~= 32 % shopuld be made possible for general number, e.g. 64 (dist.e64)
-            error('something went wrong')
+            error('something went wrong') %#ok<UNRCH>
         end
 
         % azimuthal angle

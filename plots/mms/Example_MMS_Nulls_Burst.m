@@ -147,7 +147,7 @@ end
 %% Only picks out a smaller time interval around the nulls (to keep filesize small)
 %Possibility to pick out interesting time interval to keep the file size small
 if smallInterval
-    if isempty(Nulls.t)
+    if isempty(Nulls.t) %#ok<UNRCH>
         error('No Nulls are found')
     else
         index=B1.time(:,1).epochUnix>(Nulls.t(1,1)-1) & B1.time(:,1).epochUnix<Nulls.t(end,1)+1;

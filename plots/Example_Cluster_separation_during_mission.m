@@ -32,7 +32,7 @@ tend=irf_time(tint(2,:),'vector>epoch');
 
 %% download the data using command line (works only when isdat/iscmd installed)
 if flag_get_all_Cluster_positions_from_isdat
-	[status,result]=system('iscmd');
+	[status,result]=system('iscmd'); %#ok<UNRCH>
 	if status~=0
 		disp('WARNING!!!')
 		disp('You dont have isdat/iscmd installed!');
@@ -41,7 +41,7 @@ if flag_get_all_Cluster_positions_from_isdat
 	end
 end
 if flag_get_all_Cluster_positions_from_www
-	disp('Downloading from internet file with all Cluster orbits ...');
+	disp('Downloading from internet file with all Cluster orbits ...');  %#ok<UNRCH>
 	[f,status]=urlwrite('https://space.irfu.se/~andris/cluster/mR.mat','mR.mat');
 end
 

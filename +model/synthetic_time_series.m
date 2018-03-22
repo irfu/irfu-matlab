@@ -44,7 +44,7 @@ peakFrequency = 10;
 peakHalfWidth = 1;
 components = 1;
 amplitude = 1;
-randomPhaseForEachComponent = false;
+randomPhaseForEachComponent = false; %#ok<NASGU>
 gyrotropicSignal = false;
 
 %% Input check

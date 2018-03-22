@@ -556,7 +556,7 @@ classdef ui < handle
 			xlabel(h,'U [V]');
 			ylabel(h,'dU/dI [\Omega]');
 			if 0%ud.flag_use_sc, % add probe resistance wrt plasma and s/c
-				hold(h(2),'on');
+				hold(h(2),'on'); %#ok<UNRCH>
 				plot(h(2),Uprobe2plasma,dUdI_probe2plasma,'r','linewidth',1.5);
 				plot(h(2),Uprobe2sc,dUdI_probe2sc,'b','linewidth',1.5);
 				hold(h(2),'off');
@@ -681,13 +681,13 @@ classdef ui < handle
 				end
 			end
 			if 0%ud.flag_use_sc && min(ud.I_sc)<0 && max(ud.I_sc)>0, % display information on Ufloat
-				Uscfloat=interp1(ud.I_sc,ud.U_sc,0); % floating potential
+				Uscfloat=interp1(ud.I_sc,ud.U_sc,0); % floating potential 
 				ii=isfinite(ud.U_sc);Rscfloat=interp1(ud.U_sc(ii),ud.dUdI_sc(ii),Uscfloat);
 				info_txt=[info_txt '\newline Spacecraft: Ufloat=' num2str(Uscfloat,3) 'V, Rfloat= ' num2str(Rscfloat,3) ' Ohm, C=' num2str(ud.sc.capacitance*1e12,3) 'pF'];
 				disp(['Spacecraft: Ufloat=' num2str(Uscfloat,3) ' V, Rfloat=' num2str(Rscfloat,3) ' Ohm, C=' num2str(ud.sc.capacitance*1e12,3) 'pF']);
 			end
 			if 0%ud.UV_factor>0,                                     % display photoelectron saturation current
-				infoTxt=[info_txt '\newline Probe: photo e- Io = ' num2str(ud.UV_factor*lp.photocurrent(1,-1,ud.R_sun,ud.probe.surface)*1e6,3) '[\mu A/m^2]'];
+				infoTxt=[info_txt '\newline Probe: photo e- Io = ' num2str(ud.UV_factor*lp.photocurrent(1,-1,ud.R_sun,ud.probe.surface)*1e6,3) '[\mu A/m^2]'];  %#ok<UNRCH>
 				if ud.R_sun~=1
 					info_txt=[info_txt '  (' num2str(ud.UV_factor*lp.photocurrent(1,-1,1,ud.probe.surface)*1e6,3) ' \mu A/m^2 at 1 AU)'];
 				end

@@ -456,8 +456,8 @@ switch action
                 linkaxes(ud.h(1:2),'off');hold(h(2),'off');
                 plot(h(2),noise_instr_X,noise_instr_Y,'k');
                 set(h(2),'xscale','log','yscale','log','xlim',f_range,'ylim',E_int_range);
-                set(h(2),'xtick',10.^[floor(log10(f_range(1))):ceil(log10(f_range(2)))]);
-                set(h(2),'ytick',10.^[floor(log10(E_int_range(1))):ceil(log10(E_int_range(2)))]);
+                set(h(2),'xtick',10.^( floor(log10(f_range(1))):ceil(log10(f_range(2))) ) );
+                set(h(2),'ytick',10.^( floor(log10(E_int_range(1))):ceil(log10(E_int_range(2))) ) );
                 set(h(2),'MinorGridLineStyle','none','FontSize',12)
                 grid(h(2),'on');
                 ht=text(1e3,noise_preamp_level*1.5,'instrument');set(ht,'fontsize',14,'color','k');
@@ -605,7 +605,7 @@ end
 set(gcf,'userdata',data);
 end
 function setplasmaexample(hObj,event) %#ok<INUSD>
-Units=irf_units;
+Units=irf_units; %#ok<NASGU>
 val = get(hObj,'Value');
 data=get(gcf,'userdata');
 if val ==1 % do nothing, shows in menu 'Example spacecraft'

@@ -39,7 +39,7 @@ end
 [starttime1,endtime1,starttime3,endtime3] = mms.probe_align_times(Exyz,Bxyz,SCpot,zphase,1);
 
 if 0 % Set to 1 to plot all fk power spectra
-probecomb = 1;
+probecomb = 1; %#ok<UNRCH>
 
 for ii=1:length(starttime1)
     

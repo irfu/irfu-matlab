@@ -20,7 +20,7 @@ persistent Rth
 
 %% Load data
 if 0
-  cd /Users/yuri/Dropbox/Projects/MAARBLE/WP3/HeadersAndExamples/CAA-Test-Files-Cluster-ULF/C1_CP_AUX_MAARBLE_ULF_PC12
+  cd /Users/yuri/Dropbox/Projects/MAARBLE/WP3/HeadersAndExamples/CAA-Test-Files-Cluster-ULF/C1_CP_AUX_MAARBLE_ULF_PC12  %#ok<UNRCH>
   fname='C1_CP_AUX_MAARBLE_ULF_PC12__20101013_120000_20101013_150000_V130628.cdf';
 end
 

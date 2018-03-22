@@ -10,9 +10,9 @@
 % under grant agreement n. 284520.
 
 %% Cluster
-Units=irf_units;
+Units=irf_units; %#ok<NASGU>
 tintIso='2001-01-01T00:00:00.000Z/2013-01-01T00:00:00.000Z';
-tint=irf_time(tintIso,'utc>tint');
+tint=irf_time(tintIso,'utc>tint'); %#ok<NASGU>
 disp(['Using time interval: ' tintIso]);
 
 disp('Loading Cluster 1-min positions');
@@ -31,7 +31,7 @@ c_eval('clear R?;');
 
 %load /data/caa/CAA/matMlat
 disp('Finding when Cluster satisfies MAARBLE conditions');
-tStep=median(diff(RRE1(:,1))); % time step
+tStep=median(diff(RRE1(:,1))); % time step 
 minR=3;  % minimum distance from Earth 
 maxR=10;  % minimum distance from Earth 
 maxMlat=60; % maximum magnetic latitude

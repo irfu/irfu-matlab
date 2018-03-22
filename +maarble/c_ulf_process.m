@@ -81,7 +81,7 @@ DT_PC5 = 80*60; DT_PC2 = 120;
 
 %% Download data
 if 0
-    caa_download(tint+DT_PC5*[-1 1],['C' cl_s '_CP_FGM_5VPS'],'nowildcard');
+    caa_download(tint+DT_PC5*[-1 1],['C' cl_s '_CP_FGM_5VPS'],'nowildcard');  %#ok<UNRCH>
     caa_download(tint+DT_PC5*[-1 1],['C' cl_s '_CP_EFW_L3_E'],'nowildcard');
     caa_download(tint+DT_PC5*[-1 1],['C' cl_s '_CP_AUX_POSGSE_1M'],'nowildcard');
     caa_download(tint+DT_PC5*[-1 1],'CL_SP_AUX','nowildcard');
