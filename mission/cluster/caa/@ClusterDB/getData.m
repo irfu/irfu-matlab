@@ -1320,26 +1320,67 @@ cd(old_pwd)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function out=check_timeline(data)
-% This function is aimed at removing pieces of data
-% with time jumping back
+% This function is aimed at finding negative time jumps
+% 1) if it is a single misplaced pachet - correct it
+% 2) otherwise blank +/- 10 sec of data around the jump
 % ISDAT BUG 11 http://squid.irfu.se/bugzilla/show_bug.cgi?id=11
 
 out = data;
 
 % Find jumps back larger than BAD_DT sec.
-BAD_DT = 0.5;
+BAD_DT = 0;
 % Remove BAD_MARGIN from each side
-BAD_MARGIN = 10;
+BAD_MARGIN = 4.5;
+MAX_JITTER = 0.0005;
 
 while 1
-	ii = find(diff(out(:,1))<-BAD_DT);
-	if isempty(ii), return, end
+	iNegative = find(diff(out(:,1))<=-BAD_DT);
+	if isempty(iNegative), return, end
+  iNegative = iNegative(1);
 	
-	tbj = out(ii(1),1) + BAD_MARGIN;
-	taj = out(ii(1)+1,1) - BAD_MARGIN;	
-	out(out(:,1) > taj & out(:,1) < tbj,:) = [];
-	irf_log('proc',...
-		sprintf('Bad time %s - %s',epoch2iso(taj,1),epoch2iso(tbj,1)));
+	tbj = out(iNegative,1) + BAD_MARGIN;
+	taj = out(iNegative+1,1) - BAD_MARGIN;
+  idx = find(out(:,1) > taj & out(:,1) < tbj);
+  ttmp = out(idx,1); ddt = diff(ttmp); mddt = median(ddt);
+  iiPositive = find( ddt - mddt > mddt*MAX_JITTER );
+  
+  i1secJump = [];
+  if ~isempty(iiPositive)
+    dtJump = abs(out(iNegative+1,1)-ttmp(iiPositive));
+    nSec = round(dtJump);
+    idx1secOK = abs(dtJump-nSec)<0.05;
+    i1secJump = iiPositive(idx1secOK) + idx(1) -1; % absolute index
+    if any(idx1secOK)
+      if length(i1secJump) > 1
+        nSec = nSec(idx1secOK);
+        i1secJump = i1secJump(nSec == min(nSec));
+        i1secJump = i1secJump(1); nSec = min(nSec);
+      end
+      
+      dtNeg = out(iNegative+1,1)-out(iNegative,1);
+      dtPos = out(i1secJump+1,1) - out(i1secJump,1);
+      if abs(dtNeg)>1e-6 && abs(dtNeg+dtPos)>3*mddt % expected to diff by 2 nominal time steps
+        i1secJump = [];
+      else
+        if abs(dtNeg)<1e-6, dt = -mddt; % shift by one data point
+        else, dt = (dtNeg-dtPos)/2;
+        end
+        if iNegative>i1secJump, iCorr = (i1secJump+1):iNegative; % shift backward
+        else, dt = -dt; iCorr = (iNegative+1):i1secJump; % shift forward
+        end
+        out(iCorr,1) = out(iCorr,1) + dt;
+        irf_log('proc',...
+          sprintf('Correcting %d misplaced packet(s) at %s by %.4f sec',...
+          nSec,epoch2iso(out(iCorr(1),1)),dt));
+      end
+    end
+  end
+  
+  if isempty(i1secJump)
+    out(out(:,1) > taj & out(:,1) < tbj,:) = [];
+    irf_log('proc',...
+      sprintf('Bad time %s - %s',epoch2iso(taj,1),epoch2iso(tbj,1)));
+  end
 		
 	if isempty(out), return, end % extra precaution to avoid a dead loop
 end
