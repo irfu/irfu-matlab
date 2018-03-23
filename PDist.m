@@ -441,7 +441,8 @@ classdef PDist < TSeries
     function PD = reduce(obj,dim,x,varargin) 
       %PDIST.REDUCE Reduces (integrates) 3D distribution to 1D (line).      
       %   Example:
-      %     f1D = iPDist1.reduce('1D',gseB1,'vint',[0 10000]);
+      %     f1D = iPDist1.reduce('1D',dmpaB1,'vint',[0 10000]);
+      %     irf_spectrogram(irf_panel('f1D'),f1D.specrec('velocity_1D'));
       %
       %   Options:
       %     'vint'   - set limits on the from-line velocity to get cut-like
@@ -574,8 +575,10 @@ classdef PDist < TSeries
       % try to make initialization and scPot correction outside time-loop
       
       % loop to get projection
+      disp('Integrating distribution')
+      fprintf('it = %4.0f/%4.0f\n',0,nt) % display progress
       for i = 1:nt
-        if length(it)>1;disp([num2str(i),'/',num2str(length(it))]); end
+        if mod(i,1) == 0, fprintf([repmat('\b', 1, 10) '%4.0f/%4.0f\n'],i,nt); end % display progress
         xphat = xphat_mat(i,:);
         %fprintf('%g %g %g',xphat)
         
