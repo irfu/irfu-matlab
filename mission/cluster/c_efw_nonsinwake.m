@@ -288,7 +288,7 @@ for in = iok
 	wampl = min(ii(ii>23))-max(ii(ii<23));
 	if isempty(wampl) || wampl<WAKE_MIN_AMPLITUDE
 		if DEBUG
-			irf_log('proc',['proxy wake is too small at ' epoch2iso(ts,1)])
+			irf_log('proc',['proxy wake is too small at ' epoch2iso(ts,1)]) %#ok<UNRCH>
 		end
 		wakedesc([in*2-1 in*2],:) = NaN;
 		continue
@@ -334,21 +334,21 @@ for in = iok
 		if DEBUG
 			irf_log('proc',...
 				sprintf('wake too small/big(%.2f, %.2f mV/m) at %s',...
-				max(abs(ccdav1)),max(abs(ccdav2)), epoch2iso(ts,1)))
+				max(abs(ccdav1)),max(abs(ccdav2)), epoch2iso(ts,1))) %#ok<UNRCH>
 		end
 		wakedesc([in*2-1 in*2],:) = NaN;
 		continue
 	end
 	if median(ccdav1)*median(ccdav2) > 0
 		if DEBUG
-			irf_log('proc',['wakes corrections have same sign at  ' epoch2iso(ts,1)])
+			irf_log('proc',['wakes corrections have same sign at  ' epoch2iso(ts,1)]) %#ok<UNRCH>
 		end
 		wakedesc([in*2-1 in*2],:) = NaN;
 		continue
 	end
 	if ~(c_efw_nonsinwake_isGoodShape(ccdav1) && c_efw_nonsinwake_isGoodShape(ccdav2))
 		if DEBUG
-			irf_log('proc',['wrong wake shape at  ' epoch2iso(ts,1)])
+			irf_log('proc',['wrong wake shape at  ' epoch2iso(ts,1)]) %#ok<UNRCH>
 		end
 		wakedesc([in*2-1 in*2],:) = NaN;
 		continue
@@ -364,7 +364,7 @@ for in = iok
 		wakedesc(in*2-1+fw,4) = iimax;
 	else
 		if DEBUG
-			irf_log('proc',['wrong wake shape at  ' epoch2iso(ts,1) ' (spike corner case)'])
+			irf_log('proc',['wrong wake shape at  ' epoch2iso(ts,1) ' (spike corner case)']) %#ok<UNRCH>
 		end
 		wakedesc([in*2-1 in*2],:) = NaN;
 		continue		

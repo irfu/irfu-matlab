@@ -217,7 +217,7 @@ for comp=1:min(length(h),ncomp)
         else
             pcolor(h(comp),double(ttt-t_start_epoch),ff,log10(double(pp)))
         end
-        end
+    end
 %	colormap(cmap)
     shading(h(comp),'flat')
     %	colorbar('vert')

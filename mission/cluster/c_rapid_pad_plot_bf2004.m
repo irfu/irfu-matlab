@@ -66,7 +66,7 @@ for kk=1:length(ttt)
             
 				Flux(kk,index)=Flux(kk,index)+Flux_each(ii,jj);
 				count(kk,index)=count(kk,index)+1;
-            end
+			end
 		end
 	end
 	for jj=1:length(Pitang)

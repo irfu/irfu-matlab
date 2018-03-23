@@ -224,13 +224,13 @@ if(p.Results.plotUsc || p.Results.plotDSL)
 
   if(p.Results.bashRun)
     % Save plots in 3 hour segments, ie 00:00:00 to 03:00:00 and so on
-    for ii=0:3:21
-      tintZoom = {[yyyy, mm, dd, ii, 00, 00], ...
-        [yyyy, mm, dd, ii+3, 00, 00]};
+    for iZoom=0:3:21
+      tintZoom = {[yyyy, mm, dd, iZoom, 00, 00], ...
+        [yyyy, mm, dd, iZoom+3, 00, 00]};
       irf_zoom(h,'x',tintZoom);
       % Save segment
       print(gcf, '-dpng', sprintf('%s%sT%02d0000_%02d0000_Usc_and_DSLxy',...
-        outPath, Day, ii, ii+3) );
+        outPath, Day, iZoom, iZoom+3) );
       toc;
     end
   end
@@ -274,13 +274,13 @@ if(p.Results.plotSpect)
 
   if(p.Results.bashRun)
     % Save plots in 3 hour segments, ie 00:00:00 to 03:00:00 and so on
-    for ii=0:3:21
-      tintZoom = {[yyyy, mm, dd, ii, 00, 00], ...
-        [yyyy, mm, dd, ii+3, 00, 00]};
+    for iZoom=0:3:21
+      tintZoom = {[yyyy, mm, dd, iZoom, 00, 00], ...
+        [yyyy, mm, dd, iZoom+3, 00, 00]};
       irf_zoom(h,'x',tintZoom);
       % Save segment
       print(gcf, '-dpng', sprintf('%s%sT%02d0000_%02d0000_DSLxy_spectra',...
-        outPath, Day, ii, ii+3) );
+        outPath, Day, iZoom, iZoom+3) );
       toc;
     end
   end

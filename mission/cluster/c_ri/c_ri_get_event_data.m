@@ -119,7 +119,7 @@ for i_event=1:size(events,1)
       for ic=sc_list,eval(av_ssub('dB?=c_gse2dsc(B?,?);',ic)),end
       if exist(file_name,'file'), flag_append='-append';else, flag_append='';end
       save(file_name,'B1','B2','B3','B4','dB1','dB2','dB3','dB4',flag_append);
-          if debug, disp(['saving B1 B2 B3 B4']);end
+          if debug, disp('saving B1 B2 B3 B4');end
 
     case 'EFW_P'
       file_prefix='F';

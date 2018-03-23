@@ -83,11 +83,11 @@ else, hh=get(c_bar,'ylabel');
 end
 
 if k==3
-	set(hh,'string',['(pT)^2/Hz']);
+	set(hh,'string','(pT)^2/Hz');
 elseif k==2
-	set(hh,'string',['(mV/m)^2/Hz']);
+	set(hh,'string','(mV/m)^2/Hz');
 else
-	set(hh,'string',['(X)^2/Hz']);
+	set(hh,'string','(X)^2/Hz');
 end
 
 

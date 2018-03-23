@@ -119,10 +119,10 @@ if flag_print | flag_jpg
     for jj=1:n_panels, panel_str=[panel_str '_' panels{jj}];end
     orient tall;
     if flag_print
-      print_file_name=[file_list(i_file).name '_' panel_str '.ps'];
+      print_file_name=[file_list(i_file).name '_' panel_str '.ps']; %#ok<UNRCH>
       print('-dpsc2',print_file_name);
     elseif flag_jpg
-      print_file_name=[file_list(i_file).name '_' panel_str '.jpg'];
+      print_file_name=[file_list(i_file).name '_' panel_str '.jpg']; %#ok<UNRCH>
       print('-djpg',print_file_name);
     end
   end

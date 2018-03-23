@@ -123,7 +123,7 @@ end
 
 
 if 0
-vis.type='direction';
+vis.type='direction'; %#ok<UNRCH>
 vis.x=x;
 vis.y=y;
 vis.z=z;

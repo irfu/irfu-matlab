@@ -108,7 +108,7 @@ while 1
                         eval([data_name '= get(current_caa_file,''' data_name ''');']);
                         nelem_data=eval(['numel(' data_name '.data);']);
                         if nelem_data < 50
-                            disp(['Value: ']);
+                            disp('Value: ');
                             eval(['xx=' data_name '.data;']);
                             disp(xx);clear xx;
                         else
@@ -147,7 +147,7 @@ while 1
                                 case 'p'
                                     plot(current_caa_file, data_name);
                                 otherwise
-                                    try eval(var_caa_data_menu); catch end
+                                    try eval(var_caa_data_menu); catch, end
                             end
                         end
 
@@ -181,7 +181,7 @@ while 1
                             eval(['disp(ga.' ssf{jj} ')'])
                         end
                     otherwise
-                        try eval(var_caa_file_menu); catch end
+                        try eval(var_caa_file_menu); catch ,end
                 end
             end
         otherwise

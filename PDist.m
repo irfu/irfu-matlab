@@ -588,7 +588,7 @@ classdef PDist < TSeries
         
         if correct4scpot
           if 0
-            dist.data(it(i),emat(it(i),:) < 0,:,:) = 0;
+            dist.data(it(i),emat(it(i),:) < 0,:,:) = 0; %#ok<UNRCH>
           else
             ie_below_scpot = find(abs(emat(it(i),:)-scpot_mat(it(i),:))); % energy channel below 
             ie_below_scpot = find(abs(emat(it(i),:)-scpot_mat(it(i),:)) == min(abs(emat(it(i),:)-scpot_mat(it(i),:)))); % closest energy channel

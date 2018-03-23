@@ -30,9 +30,9 @@ function res = irf_pres_anis(Pi, B)
         res = irf.ts_scalar(res.time, res.data);        % tensorOrder from '2' to '0'        
         if strcmp(Pi.units, 'nPa') && strcmp (B.units,'nT')
 			res.units = '1';
-		else
+        else
 			irf.log('warning','irf_pres_anis: units not correct!'); % TODO: implement units
-		end
+        end
 		res.name = 'ion pressure anisotropy';
 		res.userData.LABLAXIS = 'alpha';
     end

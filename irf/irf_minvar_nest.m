@@ -27,7 +27,7 @@ fromepoch(tint);
 
 b=irf_tlim(data,tint);
 n_elem=length(b(:,1));
-arr=[1:n_elem];
+arr= 1:n_elem;
 ind_c=find(abs(b(:,1)-cs_centre) == min(abs(b(:,1)-cs_centre)));
 min_int=ind_c;
 plus_int=n_elem-ind_c;

@@ -204,7 +204,7 @@ E4 = (SCV12-SCpot.data(:,4))*1e3/60;
 E5 = (SCpot.data(:,5)-(SCV34+SCV12)/2)*1e3/14.6; %Added
 E6 = ((SCV34+SCV12)/2-SCpot.data(:,6))*1e3/14.6; %Added
 
-c_eval('E? = TSeries(time,E?,''to'',1);',[1:6]); %Generalized
+c_eval('E? = TSeries(time,E?,''to'',1);',1:6); %Generalized
 
 if ~use_56 %Added third dimension to work with 5-6, does not affect 12,34.
     %Get spacecraft phase
@@ -212,13 +212,13 @@ if ~use_56 %Added third dimension to work with 5-6, does not affect 12,34.
     phase_p3=zphase.data/180*pi + 2*pi/3;
     phase_p2=zphase.data/180*pi + 7*pi/6;
     phase_p4=zphase.data/180*pi + 5*pi/3;
-    c_eval('rp?=[60*cos(phase_p?) 60*sin(phase_p?), zeros(length(phase_p?),1)];',[1:4]);
+    c_eval('rp?=[60*cos(phase_p?) 60*sin(phase_p?), zeros(length(phase_p?),1)];', 1:4);
     probe_nr = [1 3];
 else
     probe_nr = 5;
     phase_p5=ones(length(Bxyz.data(:,1)),1);
     phase_p6=-1*ones(length(Bxyz.data(:,1)),1);
-    c_eval('rp?=[zeros(length(Bxyz.data(:,1)),1) zeros(length(Bxyz.data(:,1)),1) phase_p?*14.6];',[5:6]);
+    c_eval('rp?=[zeros(length(Bxyz.data(:,1)),1) zeros(length(Bxyz.data(:,1)),1) phase_p?*14.6];', 5:6);
 end
 
 c_eval('thetap?b = (rp?(:,1).*Bxyz.data(:,1)+rp?(:,2).*Bxyz.data(:,2)+rp?(:,3).*Bxyz.data(:,3))./(sqrt(rp?(:,1).^2+rp?(:,2).^2+rp?(:,3).^2).*Bxyz.abs.data);',probe_nr);
@@ -291,7 +291,7 @@ tempi = imag(c34x);
 th = (atan2(tempi,tempr));
 kval = zeros(N+1,numf);
 
-for q = [1:1:numf]
+for q = 1:numf
     kval(:,q) = th(:,q)./rcos;
 end
 
@@ -303,7 +303,7 @@ kvec = mink + [0:1:numk-1]*dk;
 
 if 1
     for m = [1:1:N+1]
-        for q = [1:1:numf]
+        for q = 1:numf
             knumber = floor((kval(m,q)-mink)/dk)+1;
             disprel(knumber,q) = disprel(knumber,q) + Powerav(m,q);
         end

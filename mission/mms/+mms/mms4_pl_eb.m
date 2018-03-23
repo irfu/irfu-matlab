@@ -83,7 +83,7 @@ toc
 return
 
 %% B/V
-c_eval('if ~isempty(E?) && ~isempty(B?), EdB? = irf_edb(irf.ts_vec_xy(E?.time,E?.data(:,1:2)),B?); EdB?.units = ''mV/m''; VExB? = irf_e_vxb(EdB?,B?,-1); else VExB?=[]; end') 
+c_eval('if ~isempty(E?) && ~isempty(B?), EdB? = irf_edb(irf.ts_vec_xy(E?.time,E?.data(:,1:2)),B?); EdB?.units = ''mV/m''; VExB? = irf_e_vxb(EdB?,B?,-1); else VExB?=[]; end')  %#ok<UNRCH>
 
 h = irf_figure(8);
 

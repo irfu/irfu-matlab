@@ -244,6 +244,6 @@ switch action
 	    xlabel('Nest size (M)');
 	    set(get(ud.AX(1),'Ylabel'),'String','B_n [nT]') 
             set(get(ud.AX(2),'Ylabel'),'String','L2/L3')
-        end
+      end
 
 end

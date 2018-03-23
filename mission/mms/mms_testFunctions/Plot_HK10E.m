@@ -25,7 +25,7 @@ nowStr = irf_time(now,'datenum>utc_yyyy-mm-dd');
 if((numel(sscanf(DayOfInterest,'%4d-%2d-%2d%s'))~=3)||(length(DayOfInterest)~=10))
   error('Incorrect day string, format should be "YYYY-MM-DD".');
 end
-DD = str2double(DayOfInterest(9:10));
+
 dataPathRoot = getenv('DATA_PATH_ROOT'); % Default to "/data/mms/"
 dbList = mms_local_file_db(dataPathRoot);
 

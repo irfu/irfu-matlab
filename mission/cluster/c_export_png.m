@@ -41,7 +41,7 @@ while have_options
 			end
 		otherwise
         	irf_log('fcal',['Option ''' args{i} '''not recognized'])
-    	end
+		end
 		if length(args) > l, args = args(l+1:end);
 		else, break
 		end
@@ -56,7 +56,7 @@ if nargin<1
 	ud=get(1,'userdata');
     if isfield(ud,'t_start_epoch'), st=ud.t_start_epoch;
     else, error('please specify ts')
-	end
+    end
 end
 
 for cl_id=sc_list

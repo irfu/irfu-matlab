@@ -31,9 +31,9 @@ c_eval('clear R?;');
 
 %load /data/caa/CAA/matMlat
 disp('Finding when Cluster satisfies MAARBLE conditions');
-tStep=median(diff(RRE1(:,1))); % time step 
-minR=3;  % minimum distance from Earth 
-maxR=10;  % minimum distance from Earth 
+tStep=median(diff(RRE1(:,1))); %#ok<NASGU> % time step 
+minR=3; %#ok<NASGU> % minimum distance from Earth 
+maxR=10; %#ok<NASGU>  % minimum distance from Earth 
 maxMlat=60; % maximum magnetic latitude
 
 % maarble definition

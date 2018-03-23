@@ -132,7 +132,7 @@ elseif regexp(vs,'^P10Hz[1-4]p[1-4]$')==1
 	else
 		frame = 'sc';
 		var_labels = {['P' sen]};
-    end
+	end
 elseif regexp(vs,'^P32kHz[1-4]p[1-4]$')==1
 	cl_id = vs(7);
 	inst = 'EFW';

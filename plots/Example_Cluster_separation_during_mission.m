@@ -113,7 +113,7 @@ end
 %% Get Cluster file from internet 
 if flag_get_Cluster_file_from_www
 	disp('Downloading from internet Cluster orbit parameter file mRcluster.mat ...');
-	[f,status]=urlwrite('http://space.irfu.se/~andris/cluster/mRcluster.mat','mRcluster.mat');
+	[f,status]=urlwrite('https://space.irfu.se/~andris/cluster/mRcluster.mat','mRcluster.mat');
 end
 
 %% Create the figure
