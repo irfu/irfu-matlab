@@ -41,6 +41,7 @@ end
 flagLog = true;            % want log10(data) dy default
 f_multiplier=1;         % default value using Hz units when units not specified, can be overwritten later if kHz makes labels more reasonable
 fitColorbarLabel = true;% fit font size of colorbar label to fit into axes size
+showColorbar = true;
 
 %% Check input
 if nargs==1 || ischar(args{2})    % irf_spectrogram(specrec,[options])
@@ -57,6 +58,8 @@ if nargs==1 || ischar(args{2})    % irf_spectrogram(specrec,[options])
                     flagLog = true;
                 case 'lin'
                     flagLog = false;
+                case 'donotshowcolorbar'
+                    showColorbar = false;
 				otherwise
 					errStr= ['irf_spectrogram(), unknown flag:' flagValue];
                     irf.log('critical',errStr);
@@ -279,27 +282,29 @@ for comp=1:min(length(h),ncomp)
 		end
 		specrec.f_label=['[' specrec.f_unit ']'];
 	end
-	ylabel(h(comp),specrec.f_label)
-	
-	if isfield(specrec,'p_label')
-    if isa(h(comp),'handle'), hcb = colorbar(h(comp)); % HG2
-    else, hcb = colorbar('peer',h(comp));
-    end
-    drawnow
-		posCb = get(hcb,'Position');
-    posAx = get(h(comp),'Position');
-    drawnow
-		set(hcb,'TickDir','out','Position',...
-			[posCb(1) posCb(2)+posCb(4)*0.05 posCb(3)*.75 posCb(4)*0.9])
-		set(h(comp),'Position',[posAx(1) posAx(2) (posCb(1)-posAx(1))*0.97 posAx(4)])
-		ylabel(hcb,specrec.p_label);
-        if fitColorbarLabel
-            irf_colorbar_fit_label_height(hcb);
+    ylabel(h(comp),specrec.f_label)
+    
+    if showColorbar
+        if isfield(specrec,'p_label')
+            if isa(h(comp),'handle'), hcb = colorbar(h(comp)); % HG2
+            else, hcb = colorbar('peer',h(comp));
+            end
+            drawnow
+            posCb = get(hcb,'Position');
+            posAx = get(h(comp),'Position');
+            drawnow
+            set(hcb,'TickDir','out','Position',...
+                [posCb(1) posCb(2)+posCb(4)*0.05 posCb(3)*.75 posCb(4)*0.9])
+            set(h(comp),'Position',[posAx(1) posAx(2) (posCb(1)-posAx(1))*0.97 posAx(4)])
+            ylabel(hcb,specrec.p_label);
+            if fitColorbarLabel
+                irf_colorbar_fit_label_height(hcb);
+            end
         end
-	end
-	if comp==min(length(h),ncomp), irf_timeaxis;
-	else, set(h(comp),'XTicklabel','')
-	end
+    end
+    if comp==min(length(h),ncomp), irf_timeaxis;
+    else, set(h(comp),'XTicklabel','')
+    end
 end
 
 if nargout>0, hout=h; end
