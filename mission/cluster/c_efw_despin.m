@@ -87,7 +87,7 @@ if nargin >= 3
     coef=[[1 0 0];[1 0 0]];
   elseif strcmp(coef,'efw')
     ref_frame='wec';
-    [c1,c2,c3,c4]=c_efw_calib(es(1,1)); %#ok<NASGU>
+    [c1,c2,c3,c4]=c_efw_calib(es(1,1)); %#ok<NASGU> %#ok<NASGU>
     eval(irf_ssub('coef=c?;',ic));
   elseif strcmp(coef,'efw_b')
     ref_frame='wec';

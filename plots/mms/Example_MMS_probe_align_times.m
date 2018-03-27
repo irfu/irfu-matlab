@@ -21,8 +21,8 @@ zphase = irf.ts_scalar(zphase.time, zphase.zphase);
 tints = irf.tint('2015-09-02T15:26:00.00Z/2015-09-02T15:28:00.00Z');
 c_eval('Exyz=mms.db_get_ts(''mms?_edp_brst_ql_dce2d'',''mms?_edp_dce_xyz_dsl'',tints);',ic);
 c_eval('SCpot=mms.db_get_ts(''mms?_edp_brst_l2_scpot'',''mms?_edp_dcv'',tints);',ic);
-Exyz.data(find(abs(Exyz.data) > 100)) = NaN;
-SCpot.data(find(abs(SCpot.data) > 100)) = NaN;
+Exyz.data(abs(Exyz.data) > 100) = NaN;
+SCpot.data(abs(SCpot.data) > 100) = NaN;
 end
 
 %load brst mode interval from file 

@@ -44,7 +44,7 @@ if 1   % PANEL: PEACE PEA_PITCH_3DRH_PSD high res
         irf_spectrogram(hca,specrec);
         set(hca,'ytick',[1 1e1 1e2 1e3 1e4 1e5])
         ylabel(hca,'E [eV]');
-    elseif 0 % pitch angle spectrogram for given energy
+    elseif 0  %#ok<UNRCH> % pitch angle spectrogram for given energy
         specrec.f=res.theta;specrec.f_label='Pitch angle';
         specrec.p=res.pitch_angle(ind,:);
         enindex=15;

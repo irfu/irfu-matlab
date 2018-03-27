@@ -13,6 +13,4 @@
 %	Variable.[abs]    - absolute value of vector in case exists Variable.vec
 % variableMat    - matrix where first column is time and the other columns are data [DEPRECATED]
 
-if nargin == 0
-	help irf.datatypes;
-end
+help irf.datatypes;

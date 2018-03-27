@@ -123,7 +123,7 @@ switch action
         ud.result_text=text(0.3,0.8,'result','FontSize',14);
 	
     case 'csc'
-    title(['Click on the current sheet center' ]);
+    title('Click on the current sheet center');
     uf=get(gcf,'userdata');
     if isfield(uf,'t_start_epoch'), t0=uf.t_start_epoch;else, t0=0; end
     temp=ginput(1);
@@ -134,7 +134,7 @@ switch action
     
     case 'avg'
     axes(ud.h(2));
-    title(['Click the averaging limits' ]);
+    title('Click the averaging limits');
     set(ud.h(2),'layer','top');
     grid on;
     avglim=ginput(2);

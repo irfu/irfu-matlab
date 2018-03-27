@@ -74,7 +74,7 @@ classdef TimeTable
 					fclose(fid);
 					TT=irf.TimeTable(fileContents);
 				else % assume source is ascii text of time table
-					ttAscii=textscan(source,'%s','delimiter',sprintf('\n'));
+					ttAscii=textscan(source,'%s','delimiter',sprintf('\n')); %#ok<SPRINTFN>
 					TT=irf.TimeTable(ttAscii{1});
 					return;
 				end

@@ -32,7 +32,7 @@ if nargin<1, disp('Not enough arguments. See usage:');help irf_pl_eb_nrf;return;
 
 if length(vngse) == 3, vngse=[tint(1) vngse];end
 
-if nargin==1 | isempty(tint),   load mE dE1;tint=[E(1,1) E(end,1)]; end
+if nargin==1 || isempty(tint),   load mE dE1;tint=[E(1,1) E(end,1)]; end
 if nargin == 3;  sc_list=e; end
 if nargin<3, sc_list=1:4; end
 if nargin<=3

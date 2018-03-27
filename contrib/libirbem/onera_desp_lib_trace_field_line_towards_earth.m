@@ -81,7 +81,7 @@ maginput = onera_desp_lib_maginputs(maginput); % NaN to baddata
 
 Nbounce = 20*150; % maximum size of bounce array
 [iyear,idoy,UT] = onera_desp_lib_matlabd2yds(matlabd);
-POSIT = repmat(nan,[3 Nbounce]);
+POSIT = nan([3 Nbounce]);
 POSITPtr = libpointer('doublePtr',POSIT);
 NPOSIT = 0;
 NPOSITPtr = libpointer('int32Ptr',NPOSIT);

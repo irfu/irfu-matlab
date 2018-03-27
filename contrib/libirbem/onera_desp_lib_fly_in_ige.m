@@ -101,7 +101,7 @@ else
 
     if size(energy,2)==1
         whatf = 1; % differential flux
-        energy = [energy,repmat(nan,NE,1)];
+        energy = [energy,nan(NE,1)];
     elseif (size(energy,2)==2) && any(isinf(energy(:,2)))        
         whatf = 3; % integral flux
         if ~all(isinf(energy(:,2)))

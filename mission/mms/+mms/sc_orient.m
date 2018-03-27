@@ -248,10 +248,10 @@ switch lower(action)
         phase_p4=data.phase/180*pi + 5*pi/3;
         phase_b1=data.phase/180*pi + pi/4;
         phase_b2=data.phase/180*pi + 5*pi/4;
-        rp1=[60*cos(phase_p1) 60*sin(phase_p1) 0]; 
-        rp2=[60*cos(phase_p2) 60*sin(phase_p2) 0];
-        rp3=[60*cos(phase_p3) 60*sin(phase_p3) 0];
-        rp4=[60*cos(phase_p4) 60*sin(phase_p4) 0];
+        rp1=[60*cos(phase_p1) 60*sin(phase_p1) 0]; %#ok<NASGU>
+        rp2=[60*cos(phase_p2) 60*sin(phase_p2) 0]; %#ok<NASGU>
+        rp3=[60*cos(phase_p3) 60*sin(phase_p3) 0]; %#ok<NASGU>
+        rp4=[60*cos(phase_p4) 60*sin(phase_p4) 0]; %#ok<NASGU>
         % Boom lengths are 5m. Exaggerated in plot.
         rb1=[20*cos(phase_b1) 20*sin(phase_b1) 0];
         rb2=[20*cos(phase_b2) 20*sin(phase_b2) 0];

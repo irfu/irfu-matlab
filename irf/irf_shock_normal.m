@@ -353,11 +353,11 @@ fnames = fieldnames(n);
 num = length(fnames);
 cmat = zeros(5,num);
 
-fun1 = @(nvec)dot(spec.delB,nvec)/norm(spec.delB);
-fun2 = @(nvec)dot(cross(spec.Bd,spec.Bu),nvec)/norm(cross(spec.Bd,spec.Bu));
-fun3 = @(nvec)dot(cross(spec.Bu,spec.delV),nvec)/norm(cross(spec.Bu,spec.delV));
-fun4 = @(nvec)dot(cross(spec.Bd,spec.delV),nvec)/norm(cross(spec.Bd,spec.delV));
-fun5 = @(nvec)dot(cross(spec.delB,spec.delV),nvec)/norm(cross(spec.delB,spec.delV));
+fun1 = @(nvec)dot(spec.delB,nvec)/norm(spec.delB); %#ok<NASGU>
+fun2 = @(nvec)dot(cross(spec.Bd,spec.Bu),nvec)/norm(cross(spec.Bd,spec.Bu)); %#ok<NASGU>
+fun3 = @(nvec)dot(cross(spec.Bu,spec.delV),nvec)/norm(cross(spec.Bu,spec.delV)); %#ok<NASGU>
+fun4 = @(nvec)dot(cross(spec.Bd,spec.delV),nvec)/norm(cross(spec.Bd,spec.delV)); %#ok<NASGU>
+fun5 = @(nvec)dot(cross(spec.delB,spec.delV),nvec)/norm(cross(spec.delB,spec.delV)); %#ok<NASGU>
 
 c_eval('cmat(?,:) = structfun(fun?,n);',1:5)
 

@@ -38,7 +38,7 @@ if length(matlabd)==1
     matlabd = repmat(matlabd,ntime,1);
 end
 
-MLT = repmat(nan,ntime,1);
+MLT = nan(ntime,1);
 [iyear,idoy,UT] = onera_desp_lib_matlabd2yds(matlabd);
 mlt = nan;
 MLTPtr = libpointer('doublePtr',mlt);

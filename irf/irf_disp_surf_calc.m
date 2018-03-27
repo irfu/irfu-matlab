@@ -107,7 +107,7 @@ function [wfinal,extraparam]=irf_disp_surf_calc(kc_x_max,kc_z_max,m_i,wp_e)
   vphase_to_vA = vphase_to_c/vA_to_c;
   
   dielxx=dielS-n2.*cos(THETA).*cos(THETA);
-  dielxy=-i*dielD;
+  dielxy=-1i*dielD;
   dielxz=n2.*cos(THETA).*sin(THETA);
   dielyy=dielS-n2;
   dielzz=dielP-n2.*sin(THETA).*sin(THETA);

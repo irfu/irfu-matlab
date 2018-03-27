@@ -147,7 +147,7 @@ cross34x.f = W1c.f;
      
      kval = zeros(N+1,numf);
      
-for q = [1:1:numf]
+for q = 1:numf
      kval(:,q) = th(:,q)./rcos;
 end
 
@@ -161,7 +161,7 @@ kvec = mink + [0:1:numk-1]*dk;
 
 if 1
 for m = [1:1:N+1]
-    for q = [1:1:numf]
+    for q = 1:numf
         knumber = floor((kval(m,q)-mink)/dk)+1;
         disprel(knumber,q) = disprel(knumber,q) + Powerav(m,q);
     end

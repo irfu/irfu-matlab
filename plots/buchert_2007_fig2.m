@@ -52,7 +52,7 @@ flag_EdotB=1; % assume E.B=0 to calculate spin axis E component
 v=-Vmp; % velocity of sc with respect to discontinuity
 dt =c_v([tint(1) Vmp]);
 
-tint_data=tint+[min(dt) max(dt)];
+tint_data=tint+[min(dt) max(dt)]; %#ok<NASGU>
 c_eval('B?=irf_tlim(irf_abs(B?),tint_data);');
 c_eval('diB?=irf_tlim(diB?,tint_data);');
 c_eval('dvE?=irf_tlim(diE?p1234,tint_data);');

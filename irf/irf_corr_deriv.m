@@ -32,7 +32,7 @@ c_eval('t_zeros?_plus(find(diff(t_zeros?_plus)==0)) = [];',k)
 
 % Define identical pairs of two time axis
 [t1_d_plus,t2_d_plus]=irf_find_closest(t_zeros1_plus,t_zeros2_plus);
-[t1_d_minu,t2_d_minu]=irf_find_closest(t_zeros1_minu,t_zeros2_minu); 
+[t1_d_minu,t2_d_minu]=irf_find_closest(t_zeros1_minu,t_zeros2_minu);
 
 c_eval('t?_d = sortrows([t?_d_plus;t?_d_minu]);',k)
 

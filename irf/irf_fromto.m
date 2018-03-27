@@ -1,4 +1,4 @@
-function ui_fromto(fromto)
+function irf_fromto(fromto)
 % UI_FROMTO - callback for the buttons in the time selection window
 %   fromto - action to do
 %
@@ -156,10 +156,10 @@ end
 
 function update_fromto(ud,tlim)
 % update input strings
-t_from_str=epoch2iso(tlim(1));
-t_from_str=[t_from_str(1:findstr(t_from_str,'T')-1) '_' t_from_str(findstr(t_from_str,'T')+1:end-3)];
-t_to_str=epoch2iso(tlim(2));
-t_to_str=[t_to_str(1:findstr(t_to_str,'T')-1) '_' t_to_str(findstr(t_to_str,'T')+1:end-3)];
+t_from_str = epoch2iso(tlim(1));
+t_from_str = strrep(t_from_str(1:end-3), 'T', '_');
+t_to_str = epoch2iso(tlim(2));
+t_to_str = strrep(t_to_str(1:end-3), 'T', '_');
 set(ud.fromh, 'string', t_from_str);
 set(ud.toh, 'string', t_to_str);
 set(ud.step, 'string', regexp(epoch2iso(diff(tlim)),'\d+:\d+:\d+\.\d{4}','match'));

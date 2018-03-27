@@ -65,7 +65,7 @@ irf_zoom(h1(:),'x',tint)
 irf_plot_axis_align
 %% Example 2: Plot particle distributions
 ic = 1;
-tintDist = irf.tint('2015-10-16T10:33:30.20Z/2015-10-16T10:33:30.50Z');
+tintDist = irf.tint('2015-10-16T10:33:30.20Z/2015-10-16T10:33:30.50Z'); %#ok<NASGU>
 c_eval('times = desDist?.tlim(tintDist).time;',ic)
 
 
@@ -874,7 +874,7 @@ hca.ZLabel.String = 'L';
 end
 %%
 ic = 1;
-tintDist = irf.tint('2015-10-16T10:33:23.20Z/2015-10-16T10:33:34.50Z');
+tintDist = irf.tint('2015-10-16T10:33:23.20Z/2015-10-16T10:33:34.50Z'); %#ok<NASGU>
 c_eval('times = desDist?.tlim(tintDist).time;',ic)
 
 
@@ -1131,7 +1131,7 @@ if 0 % P
   irf_legend(hca,{'P_{LL}','P_{MM}','P_{NN}','P_{LM}','P_{LN}','P_{MN}'},[0.98 0.9],'fontsize',12);  
 end
 if 0 % Ohms law electrons: N
-  hca = irf_panel('Ohms law electrons: N');
+  hca = irf_panel('Ohms law electrons: N'); %#ok<UNRCH>
   set(hca,'ColorOrder',mms_colors('xyzb'))
   c_eval('irf_plot(hca,{mvaE?.z,-1*mvaOhmVexB?.z,-1*mvaOhmGradPe?.z,-1*mvaOhmVexB?.z.resample(mvaE?.time)-mvaOhmGradPe?.z.resample(mvaE?.time)},''comp'');',ic)
   hca.YLabel.String = {'E_N','(mV/m)'};

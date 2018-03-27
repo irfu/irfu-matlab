@@ -87,12 +87,12 @@ maginput = onera_desp_lib_maginputs(maginput); % NaN to baddata
 
 
 [iyear,idoy,UT] = onera_desp_lib_matlabd2yds(matlabd);
-Blocal = repmat(nan,ntime,nipa);
-Bmirror = repmat(nan,ntime,nipa);
-xGEO = repmat(nan,[ntime,nipa,3]);
+Blocal = nan(ntime,nipa);
+Bmirror = nan(ntime,nipa);
+xGEO = nan([ntime,nipa,3]);
 bl = nan;
 bmir = nan;
-xgeo = repmat(nan,1,3);
+xgeo = nan(1,3);
 blPtr = libpointer('doublePtr',bl);
 bmirPtr = libpointer('doublePtr',bmir);
 xgeoPtr = libpointer('doublePtr',xgeo);

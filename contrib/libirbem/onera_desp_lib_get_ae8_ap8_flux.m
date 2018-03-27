@@ -62,7 +62,7 @@ NEmax = 25; % maximum number of energies
 
 ntime = length(BBo);
 Nmax = onera_desp_lib_ntime_max; % maximum array size in fortran library
-Flux = repmat(nan,ntime,NE);
+Flux = nan(ntime,NE);
 if (ntime>Nmax) || (NE>NEmax)
     % break up the calculation into chunks the libarary can handle
     for i = 1:Nmax:ntime
@@ -84,7 +84,7 @@ else
 
     if size(energy,2)==1
         whatf = 1; % differential flux
-        energy = [energy,repmat(nan,NE,1)];
+        energy = [energy,nan(NE,1)];
     elseif (size(energy,2)==2) && any(isinf(energy(:,2)))        
         whatf = 3; % integral flux
         if ~all(isinf(energy(:,2)))
@@ -96,10 +96,10 @@ else
         error('%s: "energy" argument of size %d x %d uninterpretable',mfilename,size(energy,1),size(energy,2));
     end
 
-    nanpad = repmat(nan,Nmax-ntime,1);
+    nanpad = nan(Nmax-ntime,1);
     BBo = [BBo(:);nanpad];
     L = [L(:);nanpad];
-    flux = repmat(nan,Nmax,NEmax);
+    flux = nan(Nmax,NEmax);
     
     FluxPtr = libpointer('doublePtr',flux);
     calllib('onera_desp_lib','get_ae8_ap8_flux_',ntime,iwhichm,whatf,NE,energy',BBo,L,FluxPtr);

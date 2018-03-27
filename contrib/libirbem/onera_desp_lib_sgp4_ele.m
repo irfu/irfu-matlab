@@ -100,7 +100,7 @@ switch(lower(elements.type(1)))
         e_names = {'n','e','i','Omega','omega','M0'};
 end
 
-eles = repmat(nan,6,1);
+eles = nan(6,1);
 
 if rv
     if ~isfield(elements,'r')
@@ -158,8 +158,8 @@ stopsfe = (enddate-elements.epoch)*24*60*60; % seconds from epoch
 nmax = onera_desp_lib_ntime_max;
 ntimes = floor((stopsfe-startsfe)/deltasec);
 
-pos.date = repmat(nan,ntimes,1);
-pos.X = repmat(nan,ntimes,3);
+pos.date = nan(ntimes,1);
+pos.X = nan(ntimes,3);
 
 i0 = 1;
 while i0 <= ntimes
@@ -167,17 +167,17 @@ while i0 <= ntimes
     ii0 = ii-i0+1;
     vstartsfe = startsfe + (ii(1)-1)*deltasec;
     vstopsfe = startsfe + (ii(end))*deltasec;
-    iYr = repmat(nan,nmax,1);
+    iYr = nan(nmax,1);
     iYrPtr = libpointer('int32Ptr',iYr);
-    iDoy = repmat(nan,nmax,1);
+    iDoy = nan(nmax,1);
     iDoyPtr = libpointer('int32Ptr',iDoy);
-    UT = repmat(nan,nmax,1);
+    UT = nan(nmax,1);
     UTptr = libpointer('doublePtr',UT);
-    x1 = repmat(nan,nmax,1);
+    x1 = nan(nmax,1);
     x1Ptr = libpointer('doublePtr',x1);
-    x2 = repmat(nan,nmax,1);
+    x2 = nan(nmax,1);
     x2Ptr = libpointer('doublePtr',x2);
-    x3 = repmat(nan,nmax,1);
+    x3 = nan(nmax,1);
     x3Ptr = libpointer('doublePtr',x3);
     calllib('onera_desp_lib','sgp4_ele1_',sysAxesOUT,Yr,Mon,Day,Hr,Minute,Sec,...
         eles(1),eles(2),eles(3),eles(4),eles(5),eles(6),ele_opts,...
