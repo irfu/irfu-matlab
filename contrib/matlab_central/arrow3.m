@@ -446,7 +446,7 @@ else
   if c=='x'                              % random named color (less white)
     [ignore,i]=sort(rand(1,23)); c=cn(i,:);        %#ok
   elseif c=='o'                                    % ColorOrder
-    if length(ColorOrder)
+    if ~isempty(ColorOrder)
       [c,failed]=LocalColorMap(lower(ColorOrder),vc,cn,beta);
       if failed, ColorOrderWarning=['Invalid ColorOrder ',...
         'variable, current ColorOrder property will be used'];
@@ -469,7 +469,7 @@ end
 set(ax,'ColorOrder',c); c=LocalRepmat(c,[ceil(n/size(c,1)),1]);
 if ls~='*', set(ax,'LineStyleOrder',ls); end       % LineStyleOrder
 if lw=='/'                                         % LineWidthOrder
-  if length(LineWidthOrder)
+  if ~isempty(LineWidthOrder)
     lw=LocalRepmat(LineWidthOrder(:),[ceil(n/length(LineWidthOrder)),1]);
   else, lw=0.5; LineWidthOrderWarning=['Undefined LineWidthOrder, ',...
     'default width (0.5) will be used'];
@@ -778,7 +778,8 @@ end
 % Repmat
 function B=LocalRepmat(A,siz)
 if length(A)==1, B(prod(siz))=A; B(:)=A; B=reshape(B,siz);
-else [m,n]=size(A); mind=(1:m)'; nind=(1:n)';
+else
+  [m,n]=size(A); mind=(1:m)'; nind=(1:n)';
   mind=mind(:,ones(1,siz(1))); nind=nind(:,ones(1,siz(2)));
   B=A(mind,nind);
 end
@@ -809,25 +810,25 @@ function [c,ls,lw]=LocalValidateCLSW(s)
 if nargin<1, c='k'; ls='-'; lw=0.5;
 else
   % identify linestyle
-  if findstr(s,'--'), ls='--'; s=strrep(s,'--','');
-  elseif findstr(s,'-.'), ls='-.'; s=strrep(s,'-.','');
-  elseif findstr(s,'-'), ls='-'; s=strrep(s,'-','');
-  elseif findstr(s,':'), ls=':'; s=strrep(s,':','');
-  elseif findstr(s,'*'), ls='*'; s=strrep(s,'*','');
+  if strfind(s,'--'), ls='--'; s=strrep(s,'--','');
+  elseif strfind(s,'-.'), ls='-.'; s=strrep(s,'-.','');
+  elseif strfind(s,'-'), ls='-'; s=strrep(s,'-','');
+  elseif strfind(s,':'), ls=':'; s=strrep(s,':','');
+  elseif strfind(s,'*'), ls='*'; s=strrep(s,'*','');
   else, ls='-';
   end
 
   % identify linewidth
   tmp=double(s);
   tmp=find(tmp>45 & tmp<58);
-  if length(tmp)
+  if ~isempty(tmp)
     if any(s(tmp)=='/'), lw='/'; else, lw=str2double(s(tmp)); end
     s(tmp)='';
   else, lw=0.5;
   end
 
   % identify color
-  if length(s), s=lower(s);
+  if ~isempty(s), s=lower(s);
     if length(s)>1, c=s(1:2);
     else, c=s(1); end
   else, c='k';

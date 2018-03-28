@@ -95,7 +95,7 @@ switch lower(action)
 		eval(['!scp ' tempFile ' ' remoteFile]);
 		delete(tempFile);
 	case 'list_irf'
-		s = urlread('https://www.space.irfu.se/TT/');
+		s = urlread('https://www.space.irfu.se/TT/'); %#ok<URLRD> webread instruduced in R2014b
 		A = regexp(s,'a href="(?<entry>\w+)"','tokens');
 		A = [A{:}]';
 		disp(A)

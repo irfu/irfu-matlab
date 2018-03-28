@@ -156,13 +156,13 @@ if isempty(ARROW_PERSP_WARN  ), ARROW_PERSP_WARN  =1; end
 if isempty(ARROW_STRETCH_WARN), ARROW_STRETCH_WARN=1; end
 
 % Handle callbacks
-if (nargin>0 & isstr(varargin{1}) & strcmp(lower(varargin{1}),'callback'))
+if (nargin>0 && ischar(varargin{1}) && strcmpi(varargin{1},'callback'))
 	arrow_callback(varargin{2:end}); return;
 end
 
 % Are we doing the demo?
 c = sprintf('\n');
-if (nargin==1 & isstr(varargin{1}))
+if (nargin==1 && ischar(varargin{1}))
 	arg1 = lower(varargin{1});
 	if strncmp(arg1,'prop',4), arrow_props;
 	elseif strncmp(arg1,'demo',4)
@@ -197,7 +197,7 @@ lastnumeric = firstprop-1;
 if (firstprop<=nargin)
 	for k=firstprop:2:nargin
 		curarg = varargin{k};
-		if ~isstr(curarg) | sum(size(curarg)>1)>1
+		if ~ischar(curarg) || sum(size(curarg)>1)>1
 			error([upper(mfilename) ' requires that a property name be a single string.']);
 		end
 	end
@@ -267,7 +267,7 @@ for k=firstprop:2:nargin
 	elseif strncmp(prop,'wid'   ,3),   wid        = val(:);
 	elseif strncmp(prop,'page'  ,4),   page       = val;
 	elseif strncmp(prop,'cross' ,5),   crossdir   = val;
-	elseif strncmp(prop,'norm'  ,4),   if (isstr(val)), crossdir=val; else, crossdir=val*sqrt(-1); end
+	elseif strncmp(prop,'norm'  ,4),   if (ischar(val)), crossdir=val; else, crossdir=val*sqrt(-1); end
 	elseif strncmp(prop,'end'   ,3),   ends       = val;
 	elseif strncmp(prop,'object',6),   oldh       = val(:);
 	elseif strncmp(prop,'handle',6),   oldh       = val(:);
@@ -282,7 +282,7 @@ for k=firstprop:2:nargin
 			try
 				get(0,['DefaultLine' varargin{k}]);
 			catch
-				errstr(1:max(find(errstr==char(13)|errstr==char(10)))) = '';
+				errstr(1:find(errstr==char(13)|errstr==char(10),'last')) = '';
 				error([upper(mfilename) ' got ' errstr]);
 			end
 		end
@@ -304,12 +304,12 @@ oldh      = arrow_defcheck(oldh     ,[]          ,'ObjectHandles');
 ispatch   = arrow_defcheck(ispatch  ,defispatch  ,''             );
 
 % check transpose on arguments
-[m,n]=size(start   );   if any(m==[2 3])&(n==1|n>3),   start    = start';      end
-[m,n]=size(stop    );   if any(m==[2 3])&(n==1|n>3),   stop     = stop';       end
-[m,n]=size(crossdir);   if any(m==[2 3])&(n==1|n>3),   crossdir = crossdir';   end
+[m,n]=size(start   );   if any(m==[2 3])&&(n==1||n>3),   start    = start';      end
+[m,n]=size(stop    );   if any(m==[2 3])&&(n==1||n>3),   stop     = stop';       end
+[m,n]=size(crossdir);   if any(m==[2 3])&&(n==1||n>3),   crossdir = crossdir';   end
 
 % convert strings to numbers
-if ~isempty(ends) & isstr(ends)
+if ~isempty(ends) && ischar(ends)
 	endsorig = ends;
 	[m,n] = size(ends);
 	col = lower([ends(:,1:min(3,n)) ones(m,max(0,3-n))*' ']);
@@ -320,18 +320,18 @@ if ~isempty(ends) & isstr(ends)
 	ii=find(all(col'==['sta']'*oo)'); if ~isempty(ii), ends(ii)=ones(length(ii),1)*2; end
 	ii=find(all(col'==['bot']'*oo)'); if ~isempty(ii), ends(ii)=ones(length(ii),1)*3; end
 	if any(isnan(ends))
-		ii = min(find(isnan(ends)));
+		ii = find(isnan(ends), 1 );
 		error([upper(mfilename) ' does not recognize ''' deblank(endsorig(ii,:)) ''' as a valid ''Ends'' value.']);
 	end
 else
 	ends = ends(:);
 end
-if ~isempty(ispatch) & isstr(ispatch)
+if ~isempty(ispatch) && ischar(ispatch)
 	col = lower(ispatch(:,1));
 	patchchar='p'; linechar='l'; defchar=' ';
 	mask = col~=patchchar & col~=linechar & col~=defchar;
 	if any(mask)
-		error([upper(mfilename) ' does not recognize ''' deblank(ispatch(min(find(mask)),:)) ''' as a valid ''Type'' value.']);
+		error([upper(mfilename) ' does not recognize ''' deblank(ispatch(find(mask, 1 ),:)) ''' as a valid ''Type'' value.']);
 	end
 	ispatch = (col==patchchar)*1 + (col==linechar)*0 + (col==defchar)*defispatch;
 else
@@ -357,7 +357,7 @@ if ~isempty(oldh)
 end
 
 % largest argument length
-[mstart,junk]=size(start); [mstop,junk]=size(stop); [mcrossdir,junk]=size(crossdir);
+[mstart,~]=size(start); [mstop,~]=size(stop); [mcrossdir,~]=size(crossdir);
 argsizes = [length(oldh) mstart mstop                              ...
             length(len) length(baseangle) length(tipangle)         ...
 			length(wid) length(page) mcrossdir length(ends) ];
@@ -385,7 +385,7 @@ if (narrows<=0), narrows=1; end
 ii = find((argsizes~=0)&(argsizes~=1)&(argsizes~=narrows));
 if ~isempty(ii)
 	s = args(ii',:);
-	while ((size(s,2)>1)&((abs(s(:,size(s,2)))==0)|(abs(s(:,size(s,2)))==abs(' '))))
+	while ((size(s,2)>1)&&((abs(s(:,size(s,2)))==0)||(abs(s(:,size(s,2)))==abs(' '))))
 		s = s(:,1:size(s,2)-1);
 	end
 	s = [ones(length(ii),1)*[upper(mfilename) ' requires that  '] s ...
@@ -393,7 +393,7 @@ if ~isempty(ii)
 	s = s';
 	s = s(:)';
 	s = s(1:length(s)-1);
-	error(setstr(s));
+	error(char(s));
 end
 
 % check element length in Start, Stop, and CrossDir
@@ -479,7 +479,7 @@ if ~isempty(oldh)
 			if (isinf(crossdir(k,2))),    crossdir(k,2) = ud(13);   end
 			if (isinf(crossdir(k,3))),    crossdir(k,3) = ud(14);   end
 			if (isinf(ends(k))),          ends(k)       = ud(15);   end
-		elseif strcmp(ohtype,'line')|strcmp(ohtype,'patch') % it's a non-arrow line or patch
+		elseif strcmp(ohtype,'line')||strcmp(ohtype,'patch') % it's a non-arrow line or patch
 			convLineToPatch = 1; %set to make arrow patches when converting from lines.
 			if isinf(ispatch(k)), ispatch(k)=convLineToPatch|strcmp(ohtype,'patch'); end
 			x=get(oh,'XData');  x=x(~isnan(x(:)));  if isempty(x), x=NaN; end
@@ -530,19 +530,19 @@ else
 	T    = zeros(16,narrows);
 	invT = zeros(16,narrows);
 end
-axnotdone = logical(ones(size(ax)));
+axnotdone = true(size(ax));
 while (any(axnotdone))
-	ii = min(find(axnotdone));
+	ii = find(axnotdone, 1 );
 	curax = ax(ii);
 	curpage = page(ii);
 	% get axes limits and aspect ratio
 	axl = [get(curax,'XLim'); get(curax,'YLim'); get(curax,'ZLim')];
     if verLessThan('matlab','8.4')
       % R2014a and earlier
-      oldaxlims(min(find(oldaxlims(:,1)==0)),:) = [curax reshape(axl',1,6)];
+      oldaxlims(find(oldaxlims(:,1)==0, 1 ),:) = [curax reshape(axl',1,6)];
     else
       % R2014b and later
-      oldaxlims(min(find(oldaxlims(:,1)==0)),:) = [ii reshape(axl',1,6)];
+      oldaxlims(find(oldaxlims(:,1)==0, 1 ),:) = [ii reshape(axl',1,6)];
     end
 	% get axes size in pixels (points)
 	u = get(curax,'Units');
@@ -577,7 +577,7 @@ while (any(axnotdone))
 	manualcamera = strcmp(get(curax,str_camera),'manual');
 	if ~arrow_WarpToFill(notstretched,manualcamera,curax)
 		% give a warning that this has not been thoroughly tested
-		if 0 & ARROW_STRETCH_WARN
+		if 0 && ARROW_STRETCH_WARN
 			ARROW_STRETCH_WARN = 0;
 			strs = {str_stretch{1:2},str_camera{:}};
 			strs = [char(ones(length(strs),1)*sprintf('\n    ')) char(strs)]';
@@ -604,7 +604,7 @@ while (any(axnotdone))
 			curap = [curap(1:2)+(curap(3:4)-textpos)/2 textpos];
 		end
 	end
-	if ARROW_PERSP_WARN & ~strcmp(get(curax,'Projection'),'orthographic')
+	if ARROW_PERSP_WARN && ~strcmp(get(curax,'Projection'),'orthographic')
 		ARROW_PERSP_WARN = 0;
 		warning([upper(mfilename) ' does not yet work right for 3-D perspective projection.']);
 	end
@@ -731,7 +731,8 @@ if ~isempty(ii)
 		if (oneax), twoD=T*tmp1;
 		else, tmp1=[tmp1;tmp1;tmp1;tmp1]; tmp1=T(:,ii).*tmp1;
 		      tmp2=zeros(4,4*length(ii)); tmp2(:)=tmp1(:);
-		      twoD=zeros(4,length(ii)); twoD(:)=sum(tmp2)'; end
+		      twoD=zeros(4,length(ii)); twoD(:)=sum(tmp2)'; 
+		end
 		twoD=twoD./(ones(4,1)*twoD(4,:));
 	%	move the start point down just slightly
 		tmp1 = twoD + [0;-1/1000;0;0]*(limrange(2,ii)./ap(2,ii));
@@ -739,7 +740,8 @@ if ~isempty(ii)
 		if (oneax), threeD=invT*tmp1;
 		else, tmp1=[tmp1;tmp1;tmp1;tmp1]; tmp1=invT(:,ii).*tmp1;
 		      tmp2=zeros(4,4*length(ii)); tmp2(:)=tmp1(:);
-		      threeD=zeros(4,length(ii)); threeD(:)=sum(tmp2)'; end
+		      threeD=zeros(4,length(ii)); threeD(:)=sum(tmp2)';
+		end
 		start(:,ii) = (threeD(1:3,:)./(ones(3,1)*threeD(4,:))).*axr(:,ii)+axm(:,ii);
 end
 
@@ -749,14 +751,16 @@ end
 	if (oneax), X0=T*tmp1;
 	else, tmp1=[tmp1;tmp1;tmp1;tmp1]; tmp1=T.*tmp1;
 	      tmp2=zeros(4,4*narrows); tmp2(:)=tmp1(:);
-	      X0=zeros(4,narrows); X0(:)=sum(tmp2)'; end
+	      X0=zeros(4,narrows); X0(:)=sum(tmp2)';
+  end
 	X0=X0./(ones(4,1)*X0(4,:));
 %	transform Stop points
 	tmp1=[(stop-axm)./axr;ones(1,narrows)];
 	if (oneax), Xf=T*tmp1;
 	else, tmp1=[tmp1;tmp1;tmp1;tmp1]; tmp1=T.*tmp1;
 	      tmp2=zeros(4,4*narrows); tmp2(:)=tmp1(:);
-	      Xf=zeros(4,narrows); Xf(:)=sum(tmp2)'; end
+	      Xf=zeros(4,narrows); Xf(:)=sum(tmp2)';
+  end
 	Xf=Xf./(ones(4,1)*Xf(4,:));
 %	compute pixel distance between points
 	D = sqrt(sum(((Xf(1:2,:)-X0(1:2,:)).*(ap./limrange)).^2));
@@ -794,42 +798,48 @@ end
 	if (oneax), tmp3=invT*tmp1;
 	else, tmp1=[tmp1;tmp1;tmp1;tmp1]; tmp1=invT.*tmp1;
 	      tmp2=zeros(4,4*narrows); tmp2(:)=tmp1(:);
-	      tmp3=zeros(4,narrows); tmp3(:)=sum(tmp2)'; end
+	      tmp3=zeros(4,narrows); tmp3(:)=sum(tmp2)';
+  end
 	stoppoint = tmp3(1:3,:)./(ones(3,1)*tmp3(4,:)).*axr+axm;
 %	compute tippoints
 	tmp1=X0.*(ones(4,1)*(len1./D))+Xf.*(ones(4,1)*(1-len1./D));
 	if (oneax), tmp3=invT*tmp1;
 	else, tmp1=[tmp1;tmp1;tmp1;tmp1]; tmp1=invT.*tmp1;
 	      tmp2=zeros(4,4*narrows); tmp2(:)=tmp1(:);
-	      tmp3=zeros(4,narrows); tmp3(:)=sum(tmp2)'; end
+	      tmp3=zeros(4,narrows); tmp3(:)=sum(tmp2)';
+  end
 	tippoint = tmp3(1:3,:)./(ones(3,1)*tmp3(4,:)).*axr+axm;
 %	compute basepoints
 	tmp1=X0.*(ones(4,1)*(len2./D))+Xf.*(ones(4,1)*(1-len2./D));
 	if (oneax), tmp3=invT*tmp1;
 	else, tmp1=[tmp1;tmp1;tmp1;tmp1]; tmp1=invT.*tmp1;
 	      tmp2=zeros(4,4*narrows); tmp2(:)=tmp1(:);
-	      tmp3=zeros(4,narrows); tmp3(:)=sum(tmp2)'; end
+	      tmp3=zeros(4,narrows); tmp3(:)=sum(tmp2)';
+  end
 	basepoint = tmp3(1:3,:)./(ones(3,1)*tmp3(4,:)).*axr+axm;
 %	compute startpoints
 	tmp1=X0.*(ones(4,1)*(1-slen0./D))+Xf.*(ones(4,1)*(slen0./D));
 	if (oneax), tmp3=invT*tmp1;
 	else, tmp1=[tmp1;tmp1;tmp1;tmp1]; tmp1=invT.*tmp1;
 	      tmp2=zeros(4,4*narrows); tmp2(:)=tmp1(:);
-	      tmp3=zeros(4,narrows); tmp3(:)=sum(tmp2)'; end
+	      tmp3=zeros(4,narrows); tmp3(:)=sum(tmp2)';
+  end
 	startpoint = tmp3(1:3,:)./(ones(3,1)*tmp3(4,:)).*axr+axm;
 %	compute stippoints
 	tmp1=X0.*(ones(4,1)*(1-slen1./D))+Xf.*(ones(4,1)*(slen1./D));
 	if (oneax), tmp3=invT*tmp1;
 	else, tmp1=[tmp1;tmp1;tmp1;tmp1]; tmp1=invT.*tmp1;
 	      tmp2=zeros(4,4*narrows); tmp2(:)=tmp1(:);
-	      tmp3=zeros(4,narrows); tmp3(:)=sum(tmp2)'; end
+	      tmp3=zeros(4,narrows); tmp3(:)=sum(tmp2)';
+  end
 	stippoint = tmp3(1:3,:)./(ones(3,1)*tmp3(4,:)).*axr+axm;
 %	compute sbasepoints
 	tmp1=X0.*(ones(4,1)*(1-slen2./D))+Xf.*(ones(4,1)*(slen2./D));
 	if (oneax), tmp3=invT*tmp1;
 	else, tmp1=[tmp1;tmp1;tmp1;tmp1]; tmp1=invT.*tmp1;
 	      tmp2=zeros(4,4*narrows); tmp2(:)=tmp1(:);
-	      tmp3=zeros(4,narrows); tmp3(:)=sum(tmp2)'; end
+	      tmp3=zeros(4,narrows); tmp3(:)=sum(tmp2)';
+  end
 	sbasepoint = tmp3(1:3,:)./(ones(3,1)*tmp3(4,:)).*axr+axm;
 
 % compute cross-arrow directions for arrows with NormalDir specified
@@ -854,7 +864,8 @@ if ~isempty(ii)
 		if (oneax), X0=T*tmp1;
 		else, tmp1=[tmp1;tmp1;tmp1;tmp1]; tmp1=T(:,[ii ii ii ii]).*tmp1;
 		      tmp2=zeros(4,16*numii); tmp2(:)=tmp1(:);
-		      X0=zeros(4,4*numii); X0(:)=sum(tmp2)'; end
+		      X0=zeros(4,4*numii); X0(:)=sum(tmp2)'; 
+		end
 		X0=X0./(ones(4,1)*X0(4,:));
 	%	transform stop points
 		tmp1 = [(2*stop(:,ii)-start(:,ii)-axm(:,ii))./axr(:,ii);ones(1,numii)];
@@ -862,8 +873,9 @@ if ~isempty(ii)
 		if (oneax), Xf=T*tmp1;
 		else, tmp1=[tmp1;tmp1;tmp1;tmp1]; tmp1=T(:,[ii ii ii ii]).*tmp1;
 		      tmp2=zeros(4,16*numii); tmp2(:)=tmp1(:);
-		      Xf=zeros(4,4*numii); Xf(:)=sum(tmp2)'; end
-		Xf=Xf./(ones(4,1)*Xf(4,:));
+		      Xf=zeros(4,4*numii); Xf(:)=sum(tmp2)';
+		end
+    Xf=Xf./(ones(4,1)*Xf(4,:));
 	%	compute perpendicular directions
 		pixfact = ((limrange(1,ii)./limrange(2,ii)).*(ap(2,ii)./ap(1,ii))).^2;
 		pixfact = [pixfact pixfact pixfact pixfact];
@@ -880,7 +892,8 @@ if ~isempty(ii)
 		if (oneax), Xp=invT*Xp;
 		else, tmp1=[Xp;Xp;Xp;Xp]; tmp1=invT(:,[ii ii ii ii]).*tmp1;
 		      tmp2=zeros(4,16*numii); tmp2(:)=tmp1(:);
-		      Xp=zeros(4,4*numii); Xp(:)=sum(tmp2)'; end
+		      Xp=zeros(4,4*numii); Xp(:)=sum(tmp2)';
+		end
 		Xp=(Xp(1:3,:)./(ones(3,1)*Xp(4,:))).*axr(:,[ii ii ii ii])+axm(:,[ii ii ii ii]);
 		basecross(:,ii)  = Xp(:,0*numii+(1:numii));
 		tipcross(:,ii)   = Xp(:,1*numii+(1:numii));
@@ -898,7 +911,8 @@ end
 	if (oneax), X0=T*tmp1;
 	else, tmp1=[tmp1;tmp1;tmp1;tmp1]; tmp1=[T T T T T T T T T T T].*tmp1;
 	      tmp2=zeros(4,44*narrows); tmp2(:)=tmp1(:);
-	      X0=zeros(4,11*narrows); X0(:)=sum(tmp2)'; end
+	      X0=zeros(4,11*narrows); X0(:)=sum(tmp2)';
+  end
 	X0=X0./(ones(4,1)*X0(4,:));
 %	compute stop points
 	tmp1 = ([start tipcross basecross sbasecross stipcross stop stipcross sbasecross basecross tipcross start] ...
@@ -907,7 +921,8 @@ end
 	if (oneax), Xf=T*tmp1;
 	else, tmp1=[tmp1;tmp1;tmp1;tmp1]; tmp1=[T T T T T T T T T T T].*tmp1;
 	      tmp2=zeros(4,44*narrows); tmp2(:)=tmp1(:);
-	      Xf=zeros(4,11*narrows); Xf(:)=sum(tmp2)'; end
+	      Xf=zeros(4,11*narrows); Xf(:)=sum(tmp2)';
+  end
 	Xf=Xf./(ones(4,1)*Xf(4,:));
 %	compute lengths
 	len0  = len.*((ends==1)|(ends==3)).*tan(tipangle/180*pi);
@@ -922,7 +937,8 @@ end
 	if (oneax), tmp3=invT*tmp1;
 	else, tmp1=[tmp1;tmp1;tmp1;tmp1]; tmp1=[invT invT invT invT invT invT invT invT invT invT invT].*tmp1;
 	      tmp2=zeros(4,44*narrows); tmp2(:)=tmp1(:);
-	      tmp3=zeros(4,11*narrows); tmp3(:)=sum(tmp2)'; end
+	      tmp3=zeros(4,11*narrows); tmp3(:)=sum(tmp2)';
+  end
 	pts = tmp3(1:3,:)./(ones(3,1)*tmp3(4,:)) .* axr11 + axm11;
 
 % correct for ones where the crossdir was specified
@@ -969,7 +985,7 @@ if (nargout<=1)
 	if isempty(oldh), H=zeros(narrows,1); else, H=oldh; end
 %	% make or modify the arrows
 	for k=1:narrows
-		if all(isnan(ud(k,[3 6])))&arrow_is2DXY(ax(k)), zz=[]; else, zz=z(:,k); end
+		if all(isnan(ud(k,[3 6])))&&arrow_is2DXY(ax(k)), zz=[]; else, zz=z(:,k); end
 		xx=x(:,k); yy=y(:,k);
 		if (0) % this fix didn't work, so let's not use it -- 8/26/03
 			% try to work around a MATLAB 6.x OpenGL bug -- 7/28/02
@@ -978,7 +994,7 @@ if (nargout<=1)
 		end
 		% plot the patch or line
 		xyz = {'XData',xx,'YData',yy,'ZData',zz,'Tag',ArrowTag};
-		if newpatch(k)|newline(k)
+		if newpatch(k)||newline(k)
 			if newpatch(k)
 				H(k) = patch(xyz{:});
 			else
@@ -994,7 +1010,7 @@ if (nargout<=1)
 %	% additional properties
 	set(H,'Clipping','off');
 	set(H,{'UserData'},num2cell(ud,2));
-	if (length(extraprops)>0), set(H,extraprops{:}); end
+	if (~isempty(extraprops)), set(H,extraprops{:}); end
 	% handle choosing arrow Start and/or Stop locations if unspecified
 	[H,oldaxlims,errstr] = arrow_clicks(H,ud,x,y,z,ax,oldaxlims);
 	if ~isempty(errstr), error([upper(mfilename) ' got ' errstr]); end
@@ -1008,12 +1024,12 @@ if (nargout<=1)
           % R2014a and earlier
           lims = get(oldaxlims(:,1),{'XLim','YLim','ZLim'})';
           mask = arrow_is2DXY(oldaxlims(:,1));
-        else
+		else
           % R2014b and later
           lims = get(ax(oldaxlims(:,1)),{'XLim','YLim','ZLim'})';
           mask = arrow_is2DXY(ax(oldaxlims(:,1)));
-        end
-        lims = reshape(cat(2,lims{:}),6,size(lims,2));
+		end
+		lims = reshape(cat(2,lims{:}),6,size(lims,2));
 		oldaxlims(mask,6:7) = lims(5:6,mask)';
 		ARROW_AXLIMITS = oldaxlims(find(any(oldaxlims(:,2:7)'~=lims)),:);
 		if ~isempty(ARROW_AXLIMITS)
@@ -1032,8 +1048,8 @@ end
 function out = arrow_defcheck(in,def,prop)
 % check if we got 'default' values
 	out = in;
-	if ~isstr(in), return; end
-	if size(in,1)==1 & strncmp(lower(in),'def',3)
+	if ~ischar(in), return; end
+	if size(in,1)==1 && strncmpi(in,'def',3)
 		out = def;
 	elseif ~isempty(prop)
 		error([upper(mfilename) ' does not recognize ''' in(:)' ''' as a valid ''' prop ''' string.']);
@@ -1044,7 +1060,7 @@ function out = arrow_defcheck(in,def,prop)
 function [H,oldaxlims,errstr] = arrow_clicks(H,ud,x,y,z,ax,oldaxlims)
 % handle choosing arrow Start and/or Stop locations if necessary
 	errstr = '';
-	if isempty(H)|isempty(ud)|isempty(x), return; end
+	if isempty(H)||isempty(ud)||isempty(x), return; end
 	% determine which (if any) need Start and/or Stop
 	needStart = all(isnan(ud(:,1:3)'))';
 	needStop  = all(isnan(ud(:,4:6)'))';
@@ -1101,7 +1117,7 @@ function [wasInterrupted,errstr] = arrow_click(lockStart,H,prop,ax)
 	% wait for the button to be pressed
 	[wasKeyPress,wasInterrupted,errstr] = arrow_wfbdown(fig);
 	% if we wanted to click-drag, set the Start point
-	if lockStart & ~wasInterrupted
+	if lockStart && ~wasInterrupted
 		pt = arrow_point(ARROW_CLICK_AX,ARROW_CLICK_USE_Z);
 		feval(mfilename,H,'Start',pt,'Stop',pt);
 		set(H,'Visible','on');
@@ -1124,9 +1140,8 @@ function arrow_callback(varargin)
 % handle redrawing callbacks
 	if nargin==0, return; end
 	str = varargin{1};
-	if ~isstr(str), error([upper(mfilename) ' got an invalid Callback command.']); end
-	s = lower(str);
-	if strcmp(s,'motion')
+	if ~ischar(str), error([upper(mfilename) ' got an invalid Callback command.']); end
+	if strcmpi(str,'motion')
 		% motion callback
 		global ARROW_CLICK_H ARROW_CLICK_PROP ARROW_CLICK_AX ARROW_CLICK_USE_Z
 		feval(mfilename,ARROW_CLICK_H,ARROW_CLICK_PROP,arrow_point(ARROW_CLICK_AX,ARROW_CLICK_USE_Z));
@@ -1176,7 +1191,7 @@ function [wasKeyPress,wasInterrupted,errstr] = arrow_wfbdown(fig)
 function [out,is2D] = arrow_is2DXY(ax)
 % check if axes are 2-D X-Y plots
 	% may not work for modified camera angles, etc.
-	out = logical(zeros(size(ax))); % 2-D X-Y plots
+	out = false(size(ax)); % 2-D X-Y plots
 	is2D = out;                     % any 2-D plots
 	views = get(ax(:),{'View'});
 	views = cat(1,views{:});
@@ -1185,14 +1200,14 @@ function [out,is2D] = arrow_is2DXY(ax)
 
 function out = arrow_planarkids(ax)
 % check if axes descendents all have empty ZData (lines,patches,surfaces)
-	out = logical(ones(size(ax)));
+	out = true(size(ax));
 	allkids = get(ax(:),{'Children'});
 	for k=1:length(allkids)
 		kids = get([findobj(allkids{k},'flat','Type','line')
 		            findobj(allkids{k},'flat','Type','patch')
 		            findobj(allkids{k},'flat','Type','surface')],{'ZData'});
 		for j=1:length(kids)
-			if ~isempty(kids{j}), out(k)=logical(0); break; end
+			if ~isempty(kids{j}), out(k)=false; break; end
 		end
 	end
 
@@ -1323,7 +1338,7 @@ function h = arrow_demo3(in)
 	zlabel('z');
 	%set(in.hs,'FaceColor','interp');
 	view(3); % view(viewmtx(-37.5,30,20));
-	title(['Demo of the capabilities of the ARROW function in 3-D']);
+	title('Demo of the capabilities of the ARROW function in 3-D');
 	
 	% Normal blue arrow
 	h1 = feval(mfilename,[axlim(1) axlim(4) 4],[-.8 1.2 4], ...
@@ -1408,7 +1423,7 @@ function h = arrow_demo2(in)
 	if (dolog), set(in.hs,'YData',10.^get(in.hs,'YData')); end
 	shading('interp');
 	view(2);
-	title(['Demo of the capabilities of the ARROW function in 2-D']);
+	title('Demo of the capabilities of the ARROW function in 2-D');
 	hold on; [C,H]=contour(in.x,in.y,in.z,20,'-'); hold off;
 	for k=H'
 		set(k,'ZData',(axlim(6)+1)*ones(size(get(k,'XData'))),'Color','k');

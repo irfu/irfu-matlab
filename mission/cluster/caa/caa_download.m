@@ -464,7 +464,7 @@ if any(strfind(dataset,'list')) || any(strfind(dataset,'inventory'))     % list 
 	end
 	urlListDatasets = csa_parse_url(urlListDatasets);
 	irf.log('warning',['Patience! Requesting "' dataset '" ' urlListDatasets]);
-	caalog=urlread(urlListDatasets);
+	caalog=urlread(urlListDatasets); %#ok<URLRD> webread instruduced in R2014b
 	if isempty(caalog) % return empty output
 		downloadStatus = [];
 		return
@@ -491,7 +491,7 @@ if checkDataInventory
 	urlListDatasets = csa_parse_url(urlListDatasets);
 	irf.log('warning','Patience! Requesting list of files.');
 	irf.log('notice',['URL: ' urlListDatasets]);
-	caalist=urlread(urlListDatasets);
+	caalist=urlread(urlListDatasets); %#ok<URLRD> webread instruduced in R2014b
 	irf.log('debug',['returned: ' caalist]);
 	if isempty(caalist) % no datasets available
 		irf.log('warning','There are no data sets available!');
@@ -580,10 +580,10 @@ end
 			tempFilePathGz = [tempFilePath '.gz'];
 			[urlLink, tmpGetRequest] = splitUrlLink(urlLink);
 			if(isempty(tmpGetRequest))
-			  [downloadedFile,isReady] = urlwrite(urlLink, tempFilePathGz);
+			  [downloadedFile,isReady] = urlwrite(urlLink, tempFilePathGz); %#ok<URLWR> websave instruduced in R2014b
 			else
 			  [downloadedFile,isReady] = urlwrite(urlLink, tempFilePathGz, ...
-			    'Authentication', 'Basic', 'Get', tmpGetRequest);
+			    'Authentication', 'Basic', 'Get', tmpGetRequest); %#ok<URLWR> websave instruduced in R2014b
 			end
 			if isReady
 				gunzip(tempFilePathGz);
@@ -616,10 +616,10 @@ end
 		downloadedFile = [tempname '.gz'];
 		[urlLink, tmpGetRequest] = splitUrlLink(urlLink);
 		if(isempty(tmpGetRequest))
-		  [downloadedFile,isZipFileReady] = urlwrite(urlLink, downloadedFile);
+		  [downloadedFile,isZipFileReady] = urlwrite(urlLink, downloadedFile); %#ok<URLWR> websave instruduced in R2014b
 		else
 		  [downloadedFile,isZipFileReady] = urlwrite(urlLink, downloadedFile, ...
-		    'Authentication', 'Basic', 'Get', tmpGetRequest);
+		    'Authentication', 'Basic', 'Get', tmpGetRequest); %#ok<URLWR> websave instruduced in R2014b
 		end
 		
 		if isZipFileReady %

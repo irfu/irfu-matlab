@@ -62,7 +62,7 @@ switch lower(action)
     disp(['irfu-matlab version: ' currentVersion]);
     fprintf('Checking if you have latest irfu-matlab... ');
     try
-      logText      = urlread(logFileUrl);
+      logText = urlread(logFileUrl); %#ok<URLRD> webread instruduced in R2014b
     catch
       disp('Not connected to internet');
       disp(['  Your irfu-matlab: ' currentVersion ...

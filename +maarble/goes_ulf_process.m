@@ -47,7 +47,7 @@ for month=1:1
       end
     end
     if exist(filename,'file')~=0
-      display('processing file');
+      disp('processing file');
       display(filename);
       % read in Bgsm
       d=dataobj(filename);

@@ -48,7 +48,7 @@ if (nargin == 0)
 		'*.*', ...
 		'All Files (*.*)'}, ...
 	       'Select image file');
-     if isequal(filename,0) | isequal(pathname,0)
+     if isequal(filename,0) || isequal(pathname,0)
 	  return
      else
 	  imagename = fullfile(pathname, filename);
@@ -225,7 +225,7 @@ numberformat = '%6.2f';
 nXY = [];
 ng = 0;
 while 1
-     fprintf(['\n INFO >> Click with RIGHT mouse button to QUIT \n\n']);
+     fprintf('\n INFO >> Click with RIGHT mouse button to QUIT \n\n');
      n = 0;
      disp(sprintf('\n %s \n',' Index          X            Y'))
      
@@ -272,7 +272,7 @@ while 1
      if nargout  == 0
 	  % Save data to file
 	  [writefname, writepname] = uiputfile('*.dat','Save data as');
-	  if (writefname == 0) | (writepname == 0)
+	  if (writefname == 0) || (writepname == 0)
 	       close(FigName)
 	       break
 	       return

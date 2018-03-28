@@ -34,7 +34,7 @@ switch timetableToGenerate
 		load(clusterPositionFileGSE); % load Cluster positions 1min resolution
 		
 		disp('Preparing data');
-		tStep=median(diff(R1(:,1))); % time step
+		tStep=median(diff(R1(:,1))); %#ok<NASGU> % time step
 		tailBoxX=-5; % tailbox is at X less than this value, in REdd
 		tailBoxDZ=5; % tailbox distance halfwidth in Z, in RE
 		tailBoxS=0.88;% |Y| < |X|^tailBoxS, for X=-5, |Y|<4.12 and for X=-20, |Y|<13.96
