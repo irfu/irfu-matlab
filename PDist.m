@@ -778,10 +778,55 @@ classdef PDist < TSeries
       PD.units = obj.units;
       PD.name = 'omni';
     end
-    function spec = specrec(obj,varargin)      
-      if isempty(varargin); spectype = 'energy'; else, spectype = varargin{1}; end % set default
+    function spec = specrec(obj,varargin)    
+      % PDIST.SPECREC Prepares structure to be used with irf_spectrogram or irf_plot
+      %   sr = PDIST.SPECREC(spectype)
+      %     spectype - 'energy' - default for PDist.type 'omni'
+      %                   Ex: PDist.omni.SPECREC
+      %                       PDist.pitchangles(dmpaB).SPECREC('energy',pitchangles_indices_to_average_over)
+      %                             (pitchangles_indices_to_average_over default is all the indices)                             
+      %                'pitchangle'/'pa' - default for PDist.type 'pitchangle'
+      %                   Ex: PDist.pitchangles(dmpaB).SPECREC
+      %                'velocity'/'1D_velocity'/'velocity_1D' - default for PDist.type 'line (reduced)' 
+      %                   Ex: PDist.reduce('1D',[1 0 0]).SPECREC
+      %                       PDist.reduce('1D',[1 0 0]).SPECREC('velocity_1D','10^3 km/s')
       
-      switch obj.units
+      % supported spectrogram types
+      supported_spectypes = {'energy','pitchangle','pa','velocity','1D_velocity','velocity_1D'};      
+%       
+%       % check input      
+%       have_input = 1;
+%       while have_input        
+%         switch varargin{1}
+%           case supported_spectypes            
+%             spectype = varargin{1};
+%             l = 1;
+%           case '10^3 km/s'
+%             l = 1
+%             change_velocity_axis = 1;
+%       end
+      if ~isempty(varargin) && any(strcmp(supported_spectypes,varargin{1})) % check if first argument is one of supported spectypes
+         spectype = varargin{1};  
+         varargin = varargin(2:end); % remove from varargin
+      else % if argument is not one of supported spectypes, set default based on PDist.type
+        switch obj.type
+          case 'omni'
+            spectype = 'energy';
+            irf.log('warning',sprintf('Spectype not given, default spectype for distribution type ''%s'' is ''%s''.',obj.type, spectype));
+          case 'line (reduced)'
+            spectype = '1D_velocity';
+            irf.log('warning',sprintf('Spectype not given, default spectype for distribution type ''%s'' is ''%s''.',obj.type, spectype));
+          case 'pitchangle'
+            spectype = 'pitchangle';
+            irf.log('warning',sprintf('Spectype not given, default spectype for distribution type ''%s'' is ''%s''.',obj.type, spectype));
+          otherwise
+            irf.log('warning',sprintf('Distribution type ''%s'' not supported. Using spectype ''energy'' for whatever backwards compatibility there might be. This option will be removed in a future version.',obj.type));
+            spectype = 'energy';
+            %error(sprintf('Distribution type ''%s'' not supported.',obj.type));
+        end          
+      end
+      
+      switch obj.units % set to p_label according to units of PDist
         case {'s^3/km^6','s^3/cm^6','s^3/m^6','s^2/km^5','s^2/cm^5','s^2/m^5','s^1/km^4','s^1/cm^4','s^1/m^4','s/km^4','s/cm^4','s/m^4'}
           spec.p_label = {'PSD',obj.units};
         case {'keV/(cm^2 s sr keV)'}
@@ -791,24 +836,51 @@ classdef PDist < TSeries
         otherwise
           spec.p_label = {obj.units};
       end
-      switch spectype
+      
+      switch spectype % make specrec structure
         case 'energy'
-          spec.t = obj.time.epochUnix;
-          spec.p = double(obj.data);          
+          switch obj.type
+            case 'pitchangle'
+              if ~isempty(varargin) % assume next argument is the pitchangle level/levels we want to average over
+                iPA = varargin{2};              
+              else
+                iPA = 1:size(obj.depend{2},2);
+              end
+              irf.log('warning',['Averaging over pitch angles [' sprintf(' %g',obj.depend{2}(iPA)) ']']);
+              spec.p = squeeze(double(nanmean(obj.data(:,:,iPA),3)));
+            case 'omni'
+              spec.p = double(obj.data);  
+            otherwise
+              error(sprintf('Spectype ''%s'' not yet implemented for distribution type ''%s''.',spectype,obj.type));
+          end          
+          spec.t = obj.time.epochUnix;          
           spec.f = single(obj.depend{1});
           spec.f_label = {['E_' obj.species(1) ' (eV)']};
         case {'pitchangle','pa'}
+          if ~isempty(varargin) % assume next argument is the pitchangle level/levels we want to average over
+            iE = varargin{1};              
+          else
+            iE = 1:size(obj.depend{1},2);
+          end
           spec.t = obj.time.epochUnix;
-          spec.p = double(squeeze(nanmean(obj.data,2))); % nanmean over energies
+          irf.log('warning',['Averaging over energy levels [' sprintf(' %g',obj.depend{1}(1,iE)) ']']);
+          irf.log('warning',['Averaging over energy levels [' sprintf(' %g',obj.depend{1}(2,iE)) ']']);
+          spec.p = double(squeeze(nanmean(obj.data(:,iE,:),2))); % nanmean over energies
           %spec.p_label = {'dEF',obj.units};
           spec.f = single(obj.depend{2});
           spec.f_label = {'\theta (deg.)'};
-        case{'velocity','1D_velocity','velocity_1D'}
+        case {'velocity','1D_velocity','velocity_1D'}
           if ~strcmp(obj.type_,'line (reduced)'); error('PDist must be projected unto a vector: type: ''line (reduced)'', see PDist.reduce.'); end      
+          % check for additional argument given
+          if ~isempty(varargin) && strcmp(varargin{1},'10^3 km/s') % make y (v) units in 10^3 km/s (because they often go up 10^4)
+            spec.f = obj.depend{1}*1e-3;
+            spec.f_label = {'v (10^3 km/s)'};
+          else
+            spec.f = obj.depend{1};
+            spec.f_label = {'v (km/s)'};
+          end
           spec.t = obj.time.epochUnix;
-          spec.p = double(squeeze(obj.data));
-          spec.f = obj.depend{1};
-          spec.f_label = {'v (km/s)'};
+          spec.p = double(squeeze(obj.data));          
         otherwise % energy is default
           spec.t = obj.time.epochUnix;
           spec.p = double(obj.data);
