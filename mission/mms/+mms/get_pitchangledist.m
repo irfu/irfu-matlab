@@ -221,8 +221,8 @@ end
 if noangles
     % Define angles
     dangle = 180/16;
-    phi = dangle*[0:31]+dangle/2;
-    theta = dangle*[0:15]+dangle/2;
+    phi = dangle*(0:31)+dangle/2;
+    theta = dangle*(0:15)+dangle/2;
     x = -cosd(phi')*sind(theta);
     y = -sind(phi')*sind(theta);
     z = -ones(lengthphi,1)*cosd(theta);

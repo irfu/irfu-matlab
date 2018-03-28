@@ -53,7 +53,7 @@ end
 
 if getBR
   Tintl = Tint+[-60 60];
-  R = mms.get_data('R_gse',Tintl);
+  R = mms.get_data('R_gse',Tintl); %#ok<NASGU>
   c_eval('R? = irf.ts_vec_xyz(R.time,R.gseR?);',ic);
   if Tint(2)-Tint(1) > 600
     c_eval('B? = mms.get_data(''B_gse_fgm_srvy_l2'',Tint,?);',ic);
@@ -98,19 +98,19 @@ end
 c_eval('B? = B?.resample(B1);',ic);
 c_eval('R? = R?.resample(B1);',ic);
 
-R_12=R1-R2;
-R_13=R1-R3;
-R_14=R1-R4;
-R_23=R2-R3;
-R_24=R2-R4;
-R_34=R3-R4;
+R_12=R1-R2; %#ok<NASGU>
+R_13=R1-R3; %#ok<NASGU>
+R_14=R1-R4; %#ok<NASGU>
+R_23=R2-R3; %#ok<NASGU>
+R_24=R2-R4; %#ok<NASGU>
+R_34=R3-R4; %#ok<NASGU>
 
-B_12=(B1+B2)/2;
-B_13=(B1+B3)/2;
-B_14=(B1+B4)/2;
-B_23=(B2+B3)/2;
-B_24=(B2+B4)/2;
-B_34=(B3+B4)/2;
+B_12=(B1+B2)/2; %#ok<NASGU>
+B_13=(B1+B3)/2; %#ok<NASGU>
+B_14=(B1+B4)/2; %#ok<NASGU>
+B_23=(B2+B3)/2; %#ok<NASGU>
+B_24=(B2+B4)/2; %#ok<NASGU>
+B_34=(B3+B4)/2; %#ok<NASGU>
 
 c_eval('absR? = median(R_?.abs.data);',[12 13 14 23 24 34]);
 c_eval('Rnorm_? = R_?/R_?.abs;',[12 13 14 23 24 34]);

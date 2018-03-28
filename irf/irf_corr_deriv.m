@@ -31,8 +31,8 @@ c_eval('ind=ind_zeros?(ind_zeros?_minu);xx=dx?;t_zeros?_minu=xx(ind,1)+(xx(ind+1
 c_eval('t_zeros?_plus(find(diff(t_zeros?_plus)==0)) = [];',k)
 
 % Define identical pairs of two time axis
-[t1_d_plus,t2_d_plus]=irf_find_closest(t_zeros1_plus,t_zeros2_plus);
-[t1_d_minu,t2_d_minu]=irf_find_closest(t_zeros1_minu,t_zeros2_minu);
+[t1_d_plus,t2_d_plus]=irf_find_closest(t_zeros1_plus,t_zeros2_plus); %#ok<ASGLU>
+[t1_d_minu,t2_d_minu]=irf_find_closest(t_zeros1_minu,t_zeros2_minu); %#ok<ASGLU>
 
 c_eval('t?_d = sortrows([t?_d_plus;t?_d_minu]);',k)
 
@@ -55,7 +55,7 @@ else
 end 
 	
 % Define identical pairs of two time axis
-[t1_dd_plus,t2_dd_plus]=irf_find_closest(t_zeros1_plus,t_zeros2_plus);
-[t1_dd_minu,t2_dd_minu]=irf_find_closest(t_zeros1_minu,t_zeros2_minu); 
+[t1_dd_plus,t2_dd_plus]=irf_find_closest(t_zeros1_plus,t_zeros2_plus); %#ok<ASGLU>
+[t1_dd_minu,t2_dd_minu]=irf_find_closest(t_zeros1_minu,t_zeros2_minu); %#ok<ASGLU>
 
 c_eval('t?_dd = sortrows([t?_dd_plus;t?_dd_minu]);',k)

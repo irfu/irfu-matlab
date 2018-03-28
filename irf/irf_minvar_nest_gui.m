@@ -36,7 +36,7 @@ if isempty(message) % run only the first time during the session
 end
 
 if      nargin < 1, help irf_minvar_nest_gui;return;
-elseif  (nargin==1 & isstr(x)), action=x;%disp(['action=' action]);
+elseif  (nargin==1 && ischar(x)), action=x;%disp(['action=' action]);
 elseif  isnumeric(x)
     if size(x,2)<3, disp('Vector has too few components');return;end
     if nargin < 2

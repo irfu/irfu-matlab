@@ -231,7 +231,7 @@ classdef (Abstract) GenericTimeArray
         nsubobj = numel(objs{iobj});
         for isubobj = 1:nsubobj          
           tmp_obj = objs{iobj};
-          obj_ttns = [obj_ttns; tmp_obj.ttns];
+          obj_ttns = [obj_ttns; tmp_obj.ttns]; %#ok<AGROW>
         end
       end
       res = EpochTT(obj_ttns);   

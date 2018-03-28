@@ -604,7 +604,7 @@ elseif val == 5 % Cassini, sensor - 50mm sphere on 10.9 cm stub (diameter 6.35 m
 end
 set(gcf,'userdata',data);
 end
-function setplasmaexample(hObj,event) %#ok<INUSD>
+function setplasmaexample(hObj,event) %#ok<DEFNU,INUSD>
 Units=irf_units; %#ok<NASGU>
 val = get(hObj,'Value');
 data=get(gcf,'userdata');

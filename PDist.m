@@ -223,7 +223,7 @@ classdef PDist < TSeries
       while have_options
         l = 1;
         if isnumeric(args{l})
-          if size(args{l}) == [3 3]
+          if all(size(args{l}) == [3 3])
             newx = args{l}(1,:);
             newy = args{l}(2,:);
             newz = args{l}(3,:);
@@ -338,7 +338,7 @@ classdef PDist < TSeries
       while have_options
         l = 1;
         if isnumeric(args{l})
-          if size(args{l}) == [3 3]
+          if all(size(args{l}) == [3 3])
             newx = args{l}(1,:);
             newy = args{l}(2,:);
             newz = args{l}(3,:);

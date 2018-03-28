@@ -124,7 +124,7 @@ for int=1:length(timeIntervalMMS(:,1))
         timeStop=min([B1.time.stop.epochUnix B2.time.stop.epochUnix B3.time.stop.epochUnix B4.time.stop.epochUnix],[],2);
         timeStop=EpochUnix(timeStop);
         timeLog=B1.time >= timeStart & B1.time <=timeStop;
-        newTime=B1.time(timeLog,:);
+        newTime=B1.time(timeLog,:); %#ok<NASGU>
         c_eval('B? = B?.resample(newTime);',1:4);
         % Spacecraft Position
         disp('Loading Spacecraft Position');
@@ -150,7 +150,7 @@ if isempty(quality.quality)
 else
     quality=irf.ts_scalar(EpochTT(quality.time),quality.quality);
     quality=quality.resample(B1);
-    tetrahedronGood= quality.data > 0.7;
+    tetrahedronGood= quality.data > 0.7; %#ok<NASGU>
     % Removes all time steps with bad tetrahedron quality
     c_eval('R.C? = R?(tetrahedronGood);',1:4);
     c_eval('B.C? = B?(tetrahedronGood);',1:4);

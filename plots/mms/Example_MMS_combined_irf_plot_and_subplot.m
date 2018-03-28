@@ -9,7 +9,7 @@
 % Plot your irf_plot panels here using axes handles h1
 %% Example 1 (empty): Plot particle distributions
 % Define which time(s) you want to plot the detailed distrubtions for
-tint = irf.tint('2015-10-16T10:33:30.20Z/2015-10-16T10:33:30.50Z');
+tint = irf.tint('2015-10-16T10:33:30.20Z/2015-10-16T10:33:30.50Z'); %#ok<NASGU>
 c_eval('times = desDist?.tlim(tint).time;',ic)
 
 % Make one plot for each time or time interval
@@ -17,7 +17,7 @@ for ii = 1:times.length
   tint = times(ii);
   
   % Mark the time in the time panels
-  if exist('hTimeMark'); delete(hTimeMark); end % take away mark if plotted before
+  if exist('hTimeMark','var'); delete(hTimeMark); end % take away mark if plotted before
   hTimeMark = irf_pl_mark(h1,tint.epochUnix','black');  
 
   % Plot same plot for the four spacecraft
@@ -71,7 +71,7 @@ c_eval('times = desDist?.tlim(tintDist).time;',ic)
 
 for ii = 1:times.length  
   tint = times(ii)+[-1 1]*0.5*0.03*0.5;
-  if exist('hmark'); delete(hmark); end
+  if exist('hmark','var'); delete(hmark); end
   hmark = irf_pl_mark(h1,tint.epochUnix','green');
   vlim = 15*1e3;
   elevlim = 20;
@@ -239,7 +239,7 @@ mvaOhmJxB = mvaOhmJxB_c;
 %[h1,h2] = initialize_combined_plot(5,2,2,0.4,'vertical');
 %% Example 3 (Ohm's law, 4 sc): Plot timeseries with Ohm's terms
 tint = irf.tint('2015-10-16T10:33:20.00Z/2015-10-16T10:34:00.00Z');
-tintZoom = irf.tint('2015-10-16T10:33:26.00Z/2015-10-16T10:33:31.00Z');
+%tintZoom = irf.tint('2015-10-16T10:33:26.00Z/2015-10-16T10:33:31.00Z');
 tintZoom = irf.tint('2015-10-16T10:33:22.00Z/2015-10-16T10:33:33.00Z');
 
 if 1 % BL
@@ -339,7 +339,7 @@ irf_plot_axis_align
 %[h1,h2] = initialize_combined_plot(5,2,2,0.4,'vertical');
 %% Example 3 (Ohm's law, 4 sc): Plot timeseries with other terms
 tint = irf.tint('2015-10-16T10:33:20.00Z/2015-10-16T10:34:00.00Z');
-tintZoom = irf.tint('2015-10-16T10:33:26.00Z/2015-10-16T10:33:31.00Z');
+%tintZoom = irf.tint('2015-10-16T10:33:26.00Z/2015-10-16T10:33:31.00Z');
 tintZoom = irf.tint('2015-10-16T10:33:22.00Z/2015-10-16T10:33:33.00Z');
 
 if 1 % BL
@@ -450,7 +450,7 @@ irf_plot_axis_align
 %[h1,h2] = initialize_combined_plot(5,2,2,0.4,'vertical');
 %% Example 3 (Ohm's law, 4 sc): Plot timeseries with other terms
 tint = irf.tint('2015-10-16T10:33:20.00Z/2015-10-16T10:34:00.00Z');
-tintZoom = irf.tint('2015-10-16T10:33:26.00Z/2015-10-16T10:33:31.00Z');
+%tintZoom = irf.tint('2015-10-16T10:33:26.00Z/2015-10-16T10:33:31.00Z');
 tintZoom = irf.tint('2015-10-16T10:33:22.00Z/2015-10-16T10:33:33.00Z');
 
 if 1 % BL
@@ -573,7 +573,7 @@ for it = 119;1:times.length  % 644 - ring distributions
   tt = time;
   
   
-  if exist('hmark'); delete(hmark); end
+  if exist('hmark','var'); delete(hmark); end
   hmark = irf_pl_mark(h1,tt.epochUnix','green');
 
   vectors = {'B',{mvaB1.resample(tt(1)),mvaB2.resample(tt(1)),mvaB3.resample(tt(1)),mvaB4.resample(tt(1))},2;...
@@ -727,7 +727,7 @@ for it = 1:times.length
   tt = time;
   
   
-  if exist('hmark'); delete(hmark); end
+  if exist('hmark','var'); delete(hmark); end
   hmark = irf_pl_mark(h1,tt.epochUnix','green');
 
   vectors = {'B',{mvaB1.resample(tt(1)),mvaB2.resample(tt(1)),mvaB3.resample(tt(1)),mvaB4.resample(tt(1))},2;...
@@ -880,7 +880,7 @@ c_eval('times = desDist?.tlim(tintDist).time;',ic)
 
 for ii = 100;1:times.length;  
   tint = times(ii)+[-1 1]*0.5*0.03*0.5;
-  if exist('hmark'); delete(hmark); end
+  if exist('hmark','var'); delete(hmark); end
   hmark = irf_pl_mark(h1,tint.epochUnix','green');
   vlim = 15*1e3;
   elevlim = 20;
@@ -1175,7 +1175,7 @@ tint = irf.tint('2015-10-16T10:33:29.50Z',0.3)+2.4*[1 1];
 
 for ii = 1%:tint.length;  
   %tint = times(ii)+[-1 1]*0.5*0.03*0.5;
-  if exist('hmark'); delete(hmark); end
+  if exist('hmark','var'); delete(hmark); end
   hmark = irf_pl_mark(h1,tint.epochUnix','green');     
 
   isub = 1;

@@ -80,8 +80,8 @@ if d<0, error('no roots'), end
 t1 = (-2*p(2) + sqrt(d))/p(1)/6;
 t2 = (-2*p(2) - sqrt(d))/p(1)/6;
 
-if (t1>=t(1) & t1<=t(end)), tm = t1;
-elseif (t2>=t(1) & t2<=t(end)), tm = t2;
+if (t1>=t(1) && t1<=t(end)), tm = t1;
+elseif (t2>=t(1) && t2<=t(end)), tm = t2;
 else
 	error('quad_max: max is outside the region'), 
 end

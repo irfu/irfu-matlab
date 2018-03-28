@@ -44,7 +44,7 @@ for j=1:int-1
   end
   [out,l,v]=irf_minvar(b(ind_s:ind_e,:));
   if (v(coord,1)<0), v=-v; end % change sign so that min var always has  positive x
-  if (v(coord,3)>0.5 & v(coord,3)>2*v(coord,1)), v=-v; end % change sign so that z is  negative if z is dominating
+  if (v(coord,3)>0.5 && v(coord,3)>2*v(coord,1)), v=-v; end % change sign so that z is  negative if z is dominating
   l2_l3_ratio(j,2)=l(2)/l(3);
   v1_mv_nest(j,2:4)=v(1,:);
   v2_mv_nest(j,2:4)=v(2,:);

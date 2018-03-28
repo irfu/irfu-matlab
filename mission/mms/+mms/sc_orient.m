@@ -268,7 +268,7 @@ switch lower(action)
             bfield=irf_resamp(data.b,data.t);
             bgsefield=irf_resamp(data.bgse,data.t);
             bxs=irf_norm(irf_cross(bfield,[0 0 0 1]));
-            bxsxb=irf_norm(irf_cross(bxs,bfield)); % (bxs)xb
+            bxsxb=irf_norm(irf_cross(bxs,bfield)); %#ok<NASGU> % (bxs)xb
             bn=irf_norm(bfield);
             bn_gse = bgsefield;
             b_elevation=-asin(bn(4))*180/pi;
@@ -337,7 +337,7 @@ switch lower(action)
         line(12*cos(scoctogon),12*sin(scoctogon),'Linewidth',2,'Color','r');
         % Plot Booms
         c_eval('line([0 rb?(1)],[0 rb?(2)],''Linewidth'',3,''Color'',''k'');',1:2);
-        boomlabels = ['DFG';'AFG'];
+        boomlabels = ['DFG';'AFG']; %#ok<NASGU>
         c_eval('text(rb?(1)*1.5,rb?(2)*1.5,boomlabels(?,:));',1:2);
         for ip=1:4 % plot probes
             c_eval('line([0 rp?(1)],[0 rp?(2)]);',ip);

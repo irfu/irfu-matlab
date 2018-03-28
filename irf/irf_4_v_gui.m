@@ -618,7 +618,7 @@ irf.log('warning','Trying to read Cluster position')
 tint = ud.tlim + ud.t_start_epoch + [-120, 120];
 if ~is_pos_ok(ud) && exist('./mR.mat','file')
     irf.log('warning','Trying to read position from mR.mat')
-    load mR R1 R2 R3 R4;
+    load mR R1 R2 R3 R4; %#ok<NASGU>
     c_eval('R.R?=R?;');
 end
 if ~is_pos_ok(ud)
