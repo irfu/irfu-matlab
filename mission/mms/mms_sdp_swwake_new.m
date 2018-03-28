@@ -1,7 +1,7 @@
-function [wakeModelOut, n_corrected, wakedesc] = mms_sdp_swwake_new(e, pair, phaseDeg, timeIn, NPOINTS)
+function [wakeModelOut, n_corrected, wakedesc] = mms_sdp_swwake_new(e, pair, phaseDeg, timeIn, NPOINTS,swFlag)
 %C_EFW_SWWAKE  Correct raw EFW E data for wake in the solar wind
 %
-% [data, n_corrected, wakedesc] = mms_sdp_swwake(e, pair, phase_2, timeIn, sampleRate)
+% [data, n_corrected, wakedesc] = mms_sdp_swwake(e, pair, phase_2, timeIn, sampleRate, solarWindFlag)
 %
 % Input:
 %   e          - raw E-field data
@@ -9,6 +9,7 @@ function [wakeModelOut, n_corrected, wakedesc] = mms_sdp_swwake_new(e, pair, pha
 %   phase_2    - spinphase corresponding to measurements
 %   timeIn     - time of measurement (int64, tt2000 ns)
 %   sampleRate - nominal sample rate of data (Hz)
+%   solarWindFlag - flag(1/0) indicating solar wind per datapoint (e)
 %
 % Output:
 %   data - corrected data
@@ -45,7 +46,7 @@ function [wakeModelOut, n_corrected, wakedesc] = mms_sdp_swwake_new(e, pair, pha
 % one spin takes about 19-20 second (approx phase resolution = 360/(19x32)
 % = 0.59 deg per sample).
 
-narginchk(4,5)
+narginchk(4,6)
 global MMS_CONST;
 if(isempty(MMS_CONST)), MMS_CONST = mms_constants; end
 
@@ -59,16 +60,19 @@ wakedesc = [];
 %MAX_SPIN_PERIOD = 10^9*60/MMS_CONST.Spinrate.min; % = 20 sec
 WAKE_MAX_HALFWIDTH = 55; % degrees, (Cluster was 45 deg)
 WAKE_MIN_HALFWIDTH = 9; %11;  % degrees, (Cluster was 11 deg)
-WAKE_MIN_AMPLITUDE = 0.4; % mV/m, (Cluster was 0.4 mV/m)
+WAKE_MIN_AMPLITUDE = 0.35; % mV/m, (Cluster was 0.4 mV/m)
 WAKE_MAX_AMPLITUDE = 7; % mV/m, (Cluster was 7 mV/m)
 if nargin < 5
   NPOINTS = 360; % Number of points per spin
+end
+if nargin < 6
+  swFlag = []; % Number of points per spin
 end
 NWSPINS = 5; % number of spins we work on
 
 plot_step = 1;
 plot_i = 0;
-plotflag = false; plotflag_now = false;
+plotflag = true; plotflag_now = false;
 
 switch pair
   case {'e12', 'e34'}
@@ -93,6 +97,13 @@ expPhase = 180/pi*MMS_CONST.Phaseshift.(pair) + PHASE_OFF; % XXX PHASE_OFF here 
 expPhaseIdx = deg2idx(expPhase + WAKE_MAX_HALFWIDTH/2*[-1 1]);
 expPhaseIdx = expPhaseIdx(1):expPhaseIdx(2);
 
+if ~isempty(swFlag)
+  epoch0 = timeIn(1); epochFixedPhaTmp = double(epochFixedPha-epoch0);
+  epochTmp = double(timeIn-epoch0);
+  swFlag = interp1(epochTmp,double(swFlag),epochFixedPhaTmp,'linear');
+  swFlag = logical(swFlag>0); 
+end
+
 wakeModel = zeros(size(dataFixedPha));
 
 idx0 = (find(fixedPha==0 | fixedPha==180))';
@@ -110,6 +121,12 @@ for idx = idx0
   %xxx = fft(d5spins); xxx(5:end-1) = 0;
   %d5spinsAC = d5spins -ifft(xxx, 'symmetric');
 
+  idxSpin = (idx:idx+NPOINTS-1) + NPOINTS*2;
+  idx1=1:(NPOINTS/2); idx2=(NPOINTS/2+1):NPOINTS;
+  idxSpin1 = idxSpin(1) -1 + idx1;
+  idxSpin2 = idxSpin(1) -1 + idx2;
+  flagSWSpin = isSW(idxSpin);
+  
   % Spin in the middle has maximum weigth
   Ki = [.1, .25, .3, .25, .1];
   Ni = Ki;
@@ -122,15 +139,14 @@ for idx = idx0
   end
   av12 = sum(d5spins .* repmat(Ni, NPOINTS, 1), 2);
 
-  [wake,ind1,ind2] = getProxyWake();
-  if isempty(wake), continue, end
+  [wakeProxy,ind1,ind2] = getProxyWake();
+  if isempty(wakeProxy), continue, end
   
+  flagSWSpin1 = isSW(idxSpin1); flagSWSpin2 = isSW(idxSpin2);
   [wake1,wake2, ~, d12, d12Plot] = getFinalWake();
   if isempty(wake1) && isempty(wake2), continue, end
   
-  idxModel = (idx:idx+NPOINTS-1) + NPOINTS*2;
-  idx1=1:(NPOINTS/2); idx2=(NPOINTS/2+1):NPOINTS;
-  wake = wakeModel(idxModel);
+  wake = wakeModel(idxSpin);
   wExprap = imag(wake); wake = real(wake);
   if ~isempty(wake1)
     if any(abs(wake(idx1))>0), wake = 0.5*(wake+wake1); % average with prev spin
@@ -142,16 +158,35 @@ for idx = idx0
     wake = wake + wake2; 
     wExprap(idx2) = 0;
   end
-  wakeModel(idxModel) = wake + 1i*wExprap;
+  wakeModel(idxSpin) = wake + 1i*wExprap;
   n_corrected = n_corrected + 1;
   
-  % Preliminary apply to prev spin if no wake was found there
-  if ~any(abs(wakeModel(idxModel-NPOINTS))>0)
-    wakeModel(idxModel-NPOINTS) = real(wake)*1i;
+  % Preliminary apply to the next spin, which can be owerwitten on next step
+  wakeModel(idxSpin+NPOINTS) =  real(wake)*1i;
+  % Preliminary apply to the spin after the next one, if Solar Wind
+  %idx2plus = idxCurrSpin(1) -1 +NPOINTS*2 +idx1;
+  %if isSW(idx2plus)
+  %  wakeModel(idx2plus) =  real(wake(idx1))*1i;
+  %end
+  WAMP_THRESHOLD = 1e-4;
+  % Apply to prev spin if no wake was found there
+  idx1minus = idxSpin1 -NPOINTS;
+  if ~any(abs(wakeModel(idx1minus))>WAMP_THRESHOLD) %% chk if 0 is a good threshold;
+    wakeModel(idx1minus) = real(wake(idx1))*1i;
   end
-  % Preliminary apply to next spin, which can be owerwitten on next step
-  wakeModel(idxModel+NPOINTS) =  real(wake)*1i;
-  	
+  % Apply two spins back, if Solar Wind
+  %idx2minus = idxCurrSpin(1) -1 -NPOINTS*2 +idx1;
+  %if isSW(idx2minus) && ~any(abs(wakeModel(idx2minus))>WAMP_THRESHOLD)
+  %  wakeModel(idx2minus) =  real(wake(idx1))*1i;
+  %end
+  
+  % If no wake1, but ok wake2 from the current and prev spin, copy 
+  % extrapolated (imaginary) wake1 to next spin
+  if ~isempty(wake2) && isempty(wake1) && ...
+      any(abs(real(wakeModel(idxSpin2 -NPOINTS)))>WAMP_THRESHOLD) % prev wake2 was good
+  	wakeModel(idxSpin1 +NPOINTS) = wakeModel(idxSpin1);
+  end
+  
   plotNow()
   if plotflag_now && idx~=idx0(end)
     plot_step = irf_ask('Step? (0-continue, -1 return) [%]>','plot_step',1);
@@ -162,14 +197,14 @@ for idx = idx0
   
   % Fist spins of the segment
   if idx2deg(idx)<360
-     wakeModel(idxModel-NPOINTS) = wake;
-     wakeModel(idxModel-NPOINTS*2) = wake;
+     wakeModel(idxSpin-NPOINTS) = wake;
+     wakeModel(idxSpin-NPOINTS*2) = wake;
      n_corrected = n_corrected + 4;
   end
   % Last spins of the segment
   if length(wakeModel)-idx<NPOINTS*(NWSPINS+.5)-1
-    wakeModel(idxModel+NPOINTS) = wake;
-    wakeModel(idxModel+NPOINTS*2) = wake;
+    wakeModel(idxSpin+NPOINTS) = wake;
+    wakeModel(idxSpin+NPOINTS*2) = wake;
     n_corrected = n_corrected + 4;
     break
   end
@@ -191,6 +226,13 @@ wakeModelOut = interp1(epochFixedPhaTmp,wakeModel,epochTmp,'spline');
 irf.log('notice', ['Corrected ', num2str(n_corrected), ' out of ', ...
 	num2str(length(idx0)), ' spins.']);
 return
+% End MAIN
+
+  function res = isSW(idx)
+    res = [];
+    if isempty(swFlag), return; end
+    if any(swFlag(idx)), res = true; else, res = false; end
+  end
 
   function plotNow()
     % Do we need to plot the current interval?
@@ -202,7 +244,7 @@ return
     if ~plotflag_now, return, end
     
     h = irf_plot(4,'reset');
-    phaPlot = unwrap(pha5spins(:,5)*pi/180)*180/pi - expPhase;
+    phaPlot = unwrap(pha5spins(:,3)*pi/180)*180/pi - expPhase;
     off = median(d5spins(:,3));
     plot(h(1),phaPlot,d5spins(:,1), 'g',...
       phaPlot,d5spins(:,2), 'g',...
@@ -215,24 +257,43 @@ return
       phaPlot, d5spins(:,3)-wake,'r');
     ylabel(h(1),[pair ' [mV/m]']);
     title(h(1),tStUTC)
+    set(h(1),'XAxisLocation','top')
     
     plot(h(2),phaPlot,d12Plot,'g',phaPlot, d12,'b');
     ylabel(h(2),['D2(' num2str(pair) ') [mV/m]']);
     
     plot(h(3),phaPlot, wake)
     ylabel(h(3),'Wake [mV/m]');
+    set(h(1:3),'XLim',phaPlot([1 end]),'XTick',-360:45:360*2)
     
-    plot(h(4),phaPlot, d5spins(:,3), 'k', phaPlot, d5spins(:,3)-wake,'r');
+    wakeModelTmp = zeros(length(idxSpin),5);
+    for i=1:5
+      ii = idxSpin + (i-3)*NPOINTS;
+      wakeModelTmp(:,i) = real(wakeModel(ii)) + imag(wakeModel(ii));
+    end
+    plot(h(4),phaPlot, d5spins(:,3), 'k', phaPlot, d5spins(:,3)-wake,'r',...
+      phaPlot, d5spins(:,3)-wakeModelTmp(:,3),'m');
     ylabel(h(4),[pair ' [mV/m]']);
+    hold(h(4), 'on')
+    for i=1:5
+      if i==3, continue, end
+      plot(h(4),phaPlot+360*(i-3), d5spins(:,i), 'k', ...
+        phaPlot+360*(i-3), d5spins(:,i)-wakeModelTmp(:,i),'b')
+    end
     
-    set(h,'XLim',phaPlot([1 end])), set(h(1:3),'XTickLabel',[])
-    set(h(4),'XTick',-360:45:360*2)
+    set(h(4),'XLim',phaPlot([1 end])+[-720; 720]), set(h(2:3),'XTickLabel',[])
+    set(h(4),'XTick',-360*3:90:360*4)
     set(h(4),'XTickLabel',mod(get(h(4),'XTick'),360))
   end % plotNow
 
   function [wake,ind1,ind2]  = getProxyWake()
     % First find a proxy wake fit
     % Identify wakes by max second derivative
+    
+    if isempty(flagSWSpin), FACTOR_SW_AMP = 1; FACTOR_SW_ANG = 1;
+    elseif flagSWSpin, FACTOR_SW_AMP = 1.3; FACTOR_SW_ANG = 1.3;
+    else, FACTOR_SW_AMP = 0.8; FACTOR_SW_ANG = 0.8;
+    end
     
     wake = [];
     d12 = [av12(1)-av12(end); diff(av12)];
@@ -254,7 +315,7 @@ return
       irf.log('debug', ['No wake at ' tStUTC]);
       return
     end
-    if abs(ind2-ind1-deg2idx(180)) > 15
+    if abs(ind2-ind1-deg2idx(180)) > 15*FACTOR_SW_ANG
       irf.log('debug', ['Wake displaced by '...
         num2str(abs(idx2deg(ind2-ind1)-180)') ' deg at ' tStUTC]);
       return
@@ -273,8 +334,8 @@ return
     
     % Wake half-width
     iiTmp = find(abs(ccdav)<max(abs(ccdav))/2);
-    wampl = min(iiTmp(iiTmp>23))-max(iiTmp(iiTmp<23));
-    if isempty(wampl) || wampl<WAKE_MIN_AMPLITUDE
+    wampl = min(iiTmp(iiTmp>23))-max(iiTmp(iiTmp<23)); % XXX: what are these 23s??
+    if isempty(wampl) || wampl<WAKE_MIN_AMPLITUDE/FACTOR_SW_AMP
       irf.log('debug', ['Proxy wake is too small at ' tStUTC]);
       return
     end
@@ -289,7 +350,7 @@ return
     wakedesc = NaN(1, 4);
    
     % Correct for the proxy wake
-    av12_corr = av12 - wake;
+    av12_corr = av12 - wakeProxy;
     
     % Find the ground tone and remove it from the data
     x = fft(av12_corr);
@@ -307,8 +368,12 @@ return
     i1 = mod( (ind1-wake_width:ind1+wake_width) -1, NPOINTS) +1;
     i2 = mod( (ind2-wake_width:ind2+wake_width) -1, NPOINTS) +1;
     
-    wake1 = getOneWake(i1);
-    wake2 = getOneWake(i2);
+    if fixedPha(idx) == 0, w1 = 'min'; w2 = 'max';  
+    elseif fixedPha(idx) == 180, w1 = 'max';  w2 = 'min';
+    end
+    
+    wake1 = getOneWake(i1,w1,flagSWSpin1);
+    wake2 = getOneWake(i2,w2,flagSWSpin2);
     
     % Save wake description
     %fw = (mod(ind2,NPOINTS)+1<mod(ind1,NPOINTS)+1);
@@ -323,16 +388,28 @@ return
     %wakedesc(idx*2-1+fw, 4) = hw1;
     %wakedesc(idx*2-fw,4) = hw2;
     
-    function wake = getOneWake(idx)
+    function wake = getOneWake(idx,wMode,flag_solar_wind)
       wake = [];
+      if nargin<2, flag_solar_wind = []; end
+      
+      if isempty(flag_solar_wind), FACTOR_SW_AMP = 1; FACTOR_SW_SHAPE = 1;
+      elseif flag_solar_wind, FACTOR_SW_AMP = 1.3; FACTOR_SW_SHAPE = 1.3;
+      else, FACTOR_SW_AMP = .8; FACTOR_SW_SHAPE = 0.8;
+      end
       
       % Allow the final fit to be asymmetric
       cdav = cumsum(d12(idx));
       cdav = cdav - mean(cdav);
       ccdav = cumsum(cdav);
+      switch wMode
+        case 'max', ccdav(ccdav<0) = 0;
+        case 'min', ccdav(ccdav>0) = 0;
+        otherwise
+          error('bad mode for getOneWake')
+      end
       ccdav = crop_wake(ccdav);
       
-      if max(abs(ccdav))< WAKE_MIN_AMPLITUDE ||...
+      if max(abs(ccdav))< WAKE_MIN_AMPLITUDE/FACTOR_SW_AMP ||...
           max(abs(ccdav))>WAKE_MAX_AMPLITUDE
         irf.log('debug', ...
           sprintf('Wake too small/big(%.2f mV/m) at %s', ...
@@ -340,7 +417,7 @@ return
         return
       end
       
-      if ~isGoodShape(ccdav)
+      if ~isGoodShape(ccdav,FACTOR_SW_SHAPE)
         irf.log('debug', ['Wrong wake shape at ' tStUTC]);
         return
       end
@@ -353,7 +430,7 @@ return
         irf.log('debug', ['wrong wake shape at ', ...
           tStUTC ' (spike corner case)']);
         return
-      elseif hw < WAKE_MIN_HALFWIDTH
+      elseif hw < WAKE_MIN_HALFWIDTH/FACTOR_SW_AMP
         irf.log('debug', sprintf('wake is too narrow (%d deg) at %s', ...
           hw, tStUTC));
         return
@@ -452,7 +529,7 @@ function av = w_ave(x, np, NPOINTS)
   end
 end
 
-function res = isGoodShape(s)
+function res = isGoodShape(s,FACTOR_SW)
   % check for shape of the wake fit
   RATIO = 0.4; % (Cluster was 0.3)
 % ThoNi: one testrun with 20170508 mms1 fast got a spike in frequency in
@@ -483,7 +560,7 @@ function res = isGoodShape(s)
   end
   maxima = abs(s(imax));
   smax = max( maxima(maxima < maxmax) ); % Second maxima
-  if smax>maxmax*RATIO
+  if smax>maxmax*RATIO*FACTOR_SW
     res = false;
     irf.log('debug', ...
       sprintf('BAD FIT: second max is %0.2f of the main max', smax/maxmax) );
