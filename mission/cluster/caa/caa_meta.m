@@ -275,5 +275,15 @@ function csaID = get_url_identity()
     if isempty(csaPwd), csaPwd='!kjUY88lm';end
     datastore('csa','pwd',csaPwd);
   end
+  if strcmp(csaUser, 'avaivads') && strcmp(csaPwd,'!kjUY88lm')
+    % Old password used by irfu-matlab, very soon to be deprecated!
+    % Every user must from now on use their own credentials with ESA.
+    %datastore('csa','user',[]); datastore('csa','pwd',[]); % <-- Remove comment when it has been deprecated
+    errStr = ['Please register at ESA: https://www.cosmos.esa.int/web/csa', ...
+      ' and then use your own credentials in irfu-matlab to download data from CSA.'];
+    irf.log('critical', errStr);
+    %error(errStr); % <-- When deprecated, change from warning to error.
+    warning(errStr);
+  end
   csaID = struct('csaUser', csaUser, 'csaPwd', csaPwd);
 end
