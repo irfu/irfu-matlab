@@ -140,6 +140,7 @@ vars = {'R_gse','R_gsm','V_gse','V_gsm',...
   'E2d_dsl_edp_brst_l2pre','E2d_dsl_edp_fast_l2pre','E2d_dsl_edp_brst_ql','E2d_dsl_edp_fast_ql',...
   'E2d_dsl_edp_l2pre','E2d_dsl_edp_fast_l2pre','E2d_dsl_edp_brst_l2pre',...
   'E_dsl_edp_l2pre','E_dsl_edp_fast_l2pre','E_dsl_edp_brst_l2pre',...
+  'E_ssc_edp_brst_l2a','E_ssc_edp_fast_l2a','E_ssc_edp_slow_l2a',...
   'E_ssc_edp_brst_l1b','E_ssc_edp_fast_l1b','E_ssc_edp_slow_l1b',...
   'Epar_edp_l2','Epar_edp_brst_l2','Epar_edp_fast_l2',...
   'V_edp_brst_l1b','V_edp_fast_l1b','V_edp_slow_l1b','V_edp_fast_sitl','V_edp_slow_sitl'...
@@ -561,14 +562,20 @@ switch Vr.inst
           case 'V', dset = 'dce'; param = 'dcv_sensor';
         end
         pref = ['mms' mmsIdS '_edp_' param];
+      case 'l2a'
+        dset = 'dce2d';
+        switch Vr.param
+          case 'Phase', param = 'phase';
+          case {'Es12','Es34'}, param = ['espin_p' Vr.param(3:4)];
+          case 'Adcoff', param = 'adc_offset';
+          case 'E', param = 'dce'; 
+        end
+        pref = ['mms' mmsIdS '_edp_' param '_' Vr.tmmode '_' Vr.lev];
       otherwise
         switch Vr.param
           case 'E', dset = 'dce'; param = ['dce_' Vr.cs];
           case 'Epar', dset = 'dce'; param = 'dce_par_epar';
-          case 'E2d', dset = 'dce2d'; param = ['dce_' Vr.cs];
-          case 'Phase', dset = 'dce2d'; param = 'phase';
-          case {'Es12','Es34'}, dset = 'dce2d'; param = ['espin_p' Vr.param(3:4)];
-          case 'Adcoff', dset = 'dce2d'; param = 'adc_offset';
+          case 'E2d', dset = 'dce2d'; param = ['dce_' Vr.cs]; 
           case 'V', dset = 'scpot'; param = 'scpot';
           case 'V6', dset = 'scpot';  param = 'dcv';
           otherwise, error('unrecognized param')
