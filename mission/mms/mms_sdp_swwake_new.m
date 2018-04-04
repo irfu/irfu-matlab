@@ -72,7 +72,7 @@ NWSPINS = 5; % number of spins we work on
 
 plot_step = 1;
 plot_i = 0;
-plotflag = true; plotflag_now = false;
+plotflag = false; plotflag_now = false;
 
 switch pair
   case {'e12', 'e34'}
