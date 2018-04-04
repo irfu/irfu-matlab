@@ -1,5 +1,5 @@
-function [shifted_signal]=dft_timeshift(varargin)
-% [shifted_signal]=dft_timeshift(sig, tau, Freq)
+function shifted_signal = dft_timeshift(sig, tau, Freq)
+% shifted_signal = dft_timeshift(sig, tau, [Freq])
 %
 % Shifts the input signal "sig" by "tau" seconds using discrete fourier
 % transform (DFT). Particularly useful when calculating the frequency-wavenumber 
@@ -9,8 +9,8 @@ function [shifted_signal]=dft_timeshift(varargin)
 %
 %           tau - Applied shift in time. Positive: T->T+tau, Negative:
 %                 T->T-tau.
-%           Freq - Frequency of data sample. If unspecified calculated
-%                  using TSeries time data.
+%           Freq - Optional, Frequency of data sample.
+%                  If unspecified calculated using TSeries time data.
 %                  If input signal is a normal array, Freq must be
 %                  specified for time shifts, otherwise tau is assumed to
 %                  be a shift in index rather than time.
@@ -25,69 +25,45 @@ function [shifted_signal]=dft_timeshift(varargin)
 % shift = -4; %Shift the TSeries back 4 seconds.
 % Input_TSeries = TSeries(EpochTT(time),data');
 % Output_TSeries = mms.dft_timeshift(Input_TSeries,shift);
-% h=irf_plot(2,'newfigure');
-% irf_plot(h(1),Input_TSeries);
-% irf_plot(h(2),Output_TSeries);
+% h=irf_plot({Input_TSeries, Output_TSeries});
 % irf_zoom(h,'x',[Output_TSeries.time(1),Input_TSeries.time(end)]);
 
 % Input check and variable assignment:
-if isempty(varargin)
-    help mms.dft_timeshift;
-    return
-end
-if numel(varargin) < 2
-    disp('Too few input arguments, see >help mms.dft_timeshift');
-    return;
-elseif numel(varargin) > 3
-    disp('Too many input arguments, see >help mms.dft_timeshift');
-    return;
-end
-if isa(varargin{1},'TSeries')
-    tseries_flag=1;
+narginchk(2,3);
+if isa(sig,'TSeries')
+  tseries_flag=true;
+  inTime = sig.time;
+  sig = sig.data;
+  if nargin<3
+    Freq = round(1/(median(inTime(2:end)-inTime(1:end-1))));
+  end
 else
-    tseries_flag=0;
+  tseries_flag=false;
 end
 
-sig=varargin{1};
-tau=varargin{2};
-
-if numel(varargin)==3
-    Freq=varargin{3};
+if exist('Freq','var')
+  dT = 1/Freq;   % Frequency and time between samples in Hz and s.
+  dS = tau/dT;   % Applied delay in samples.
 else
-    if tseries_flag
-        Freq=round(1/(median(sig.time(2:end)-sig.time(1:end-1))));
-    end
-end
-
-if tseries_flag
-    dT=1/Freq;   % Frequency and time between samples in Hz and s.
-    dS = tau/dT; % Applied delay in samples.
-    a=sig.data;
-else
-    if numel(varargin)==3
-        dT=1/Freq;
-        dS=tau/dT;
-        a=sig;
-    else
-        dS=tau; % If input is not a TSeries, and the sample frequency is unspecified,
-        a=sig;  % the shift "tau" is assumed to be in samples, and not time.
-    end
+  % If input is not a TSeries, and the sample frequency is unspecified,
+  % the shift "tau" is assumed to be in samples, and not time.
+  dS = tau;
 end
 
 % Performing the DFT:
-U=fft(a);
-N_p=numel(a);
-if (mod(N_p, 2) == 0)
-    U(length(U)/2+1)=0; % Disregard Nyquist frequency for even-sized dft
-end
-f=(mod(((0:N_p-1)+floor(N_p/2)), N_p)-floor(N_p/2))/N_p;
-A=ifft(U.*exp(-2i*pi*dS.*f)');
+U = fft(sig);
+N_p = numel(sig);
+
+if mod(N_p,2)==0, U(N_p/2+1)=0; end % Disregard Nyquist frequency for even-sized dft
+
+f = (mod( ( (0:N_p-1) + floor(N_p/2) ), N_p) - floor(N_p/2))/N_p;
+outData = ifft(U.*exp(-2i*pi*dS.*f)');
 
 % Output:
 if tseries_flag
-    shifted_signal=TSeries(sig.time+tau,A);
+  shifted_signal = TSeries(inTime+tau, outData);
 else
-    shifted_signal=A;
+  shifted_signal = outData;
 end
 
 end
