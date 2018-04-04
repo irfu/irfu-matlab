@@ -5,7 +5,7 @@ function [t,res]=irf_isdat_get(datasource,start_time,dt_interval)
 % irf_stdt to get st,dt
 
 %% Fix path
-if isempty(strfind(javaclasspath,'ISDAT.jar')) %#ok<STREMP>
+if ~any(cellfun(@(x) ~isempty(x), regexpi(javaclasspath,'ISDAT.jar')))
   wdir = fileparts(which('isGetDataLite.m'));
   javaclasspath([wdir, filesep, 'ISDAT.jar']);
 end
