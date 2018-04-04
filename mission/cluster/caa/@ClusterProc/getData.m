@@ -758,7 +758,7 @@ elseif strcmp(quantity,'dies') || strcmp(quantity,'diehxs') || strcmp(quantity,'
     if ~any(strfind(save_list,sprintf('diEs%dp',cl_id))) && ...
         any(strfind(save_list,sprintf('diELXs%dp',cl_id)))
       for pp = [34 12 32 42]
-        if strfind(save_list,sprintf('diELXs%dp%d',cl_id,pp))
+        if strfind(save_list,sprintf('diELXs%dp%d',cl_id,pp)) %#ok<STRIFCND>
           caa_sfit_probe(cl_id,pp*10);
           irf_log('calb',irf_ssub('Will use p?LX for spin res data',pp))
           break

@@ -310,10 +310,10 @@ switch lower(action)
         phase_rapid=data.phase/180*pi + 60.167/180*pi; % rapid phase
         phase_sunsensor=data.phase/180*pi + 26.367/180*pi; % the location o fsun sensor
         
-        rp1=[44*cos(phase_p1) 44*sin(phase_p1) 0]; % in DS reference frame
-        rp2=[44*cos(phase_p2) 44*sin(phase_p2) 0];
-        rp3=[44*cos(phase_p3) 44*sin(phase_p3) 0];
-        rp4=[44*cos(phase_p4) 44*sin(phase_p4) 0];
+        rp1=[44*cos(phase_p1) 44*sin(phase_p1) 0]; %#ok<NASGU> % in DS reference frame
+        rp2=[44*cos(phase_p2) 44*sin(phase_p2) 0]; %#ok<NASGU>
+        rp3=[44*cos(phase_p3) 44*sin(phase_p3) 0]; %#ok<NASGU>
+        rp4=[44*cos(phase_p4) 44*sin(phase_p4) 0]; %#ok<NASGU>
         dphi=5/180*pi; % the half size of heea leea rapid azimuthal sectors that are plotted
         sec_length=15; % the length of plotted sectors (the length of efw booms is 44)
         rheea=sec_length*[cos(phase_heea) sin(phase_heea);cos(phase_heea-dphi) sin(phase_heea-dphi);cos(phase_heea+dphi) sin(phase_heea+dphi)];
@@ -326,7 +326,7 @@ switch lower(action)
         if data.flag_b==1
             bfield=irf_resamp(data.b,data.t);
             bxs=irf_norm(irf_cross(bfield,[0 0 0 1]));
-            bxsxb=irf_norm(irf_cross(bxs,bfield)); % (bxs)xb
+            bxsxb=irf_norm(irf_cross(bxs,bfield)); %#ok<NASGU> % (bxs)xb
             bn=irf_norm(bfield);
             bn_gse=c_coord_trans('DSC','GSE',bn,'cl_id',data.ic);
             b_elevation=-asin(bn(4))*180/pi;

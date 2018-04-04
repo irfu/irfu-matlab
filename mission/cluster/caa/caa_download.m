@@ -223,13 +223,13 @@ if ~isempty(varargin) % check for additional flags
 			urlListFormat = '&RETURN_TYPE=CSV';
 		elseif strcmpi('votable',flag) % set query format to VOTABLE
 			urlListFormat = '&RETURN_TYPE=votable';
-		elseif strfind(lower(flag),'downloaddirectory=')
+		elseif strfind(lower(flag),'downloaddirectory=') %#ok<STRIFCND>
 			downloadDirectory = flag(strfind(flag,'=')+1:end);
 			if downloadDirectory(end) ~= filesep...
 					|| ~strcmp(downloadDirectory(end),'/')
 				downloadDirectory(end+1) = filesep; %#ok<AGROW>
 			end
-		elseif strfind(lower(flag),'ingestedsince=')
+		elseif strfind(lower(flag),'ingestedsince=') %#ok<STRIFCND>
 			specifiedIngestedSince = true;
 			ingestedSinceYYYYMMDD = flag(strfind(flag,'=')+1:end);
 		elseif any(strcmpi('stream',flag)) % data streaming
@@ -464,7 +464,7 @@ if any(strfind(dataset,'list')) || any(strfind(dataset,'inventory'))     % list 
 	end
 	urlListDatasets = csa_parse_url(urlListDatasets);
 	irf.log('warning',['Patience! Requesting "' dataset '" ' urlListDatasets]);
-	caalog=urlread(urlListDatasets); %#ok<URLRD> webread instruduced in R2014b
+	caalog=urlread(urlListDatasets); %#ok<URLRD> webread introduced in R2014b
 	if isempty(caalog) % return empty output
 		downloadStatus = [];
 		return
@@ -491,7 +491,7 @@ if checkDataInventory
 	urlListDatasets = csa_parse_url(urlListDatasets);
 	irf.log('warning','Patience! Requesting list of files.');
 	irf.log('notice',['URL: ' urlListDatasets]);
-	caalist=urlread(urlListDatasets); %#ok<URLRD> webread instruduced in R2014b
+	caalist=urlread(urlListDatasets); %#ok<URLRD> webread introduced in R2014b
 	irf.log('debug',['returned: ' caalist]);
 	if isempty(caalist) % no datasets available
 		irf.log('warning','There are no data sets available!');
@@ -565,7 +565,7 @@ end
 		% download data file, if success status=1 and file is uncompressed and moved
 		% to data directory, downloadedFile is set to empty. If there is no
 		% gz- data file , status=0 and downloadedFile is set to the downloaded file.
-		if  ~strfind(urlLink,'.gz');  error('urlLink is not gz file!') ; end
+		if  ~strfind(urlLink,'.gz');  error('urlLink is not gz file!') ; end %#ok<STRIFCND>
 		
 		status = 0; % default
 		if doDataStreaming
@@ -580,10 +580,10 @@ end
 			tempFilePathGz = [tempFilePath '.gz'];
 			[urlLink, tmpGetRequest] = splitUrlLink(urlLink);
 			if(isempty(tmpGetRequest))
-			  [downloadedFile,isReady] = urlwrite(urlLink, tempFilePathGz); %#ok<URLWR> websave instruduced in R2014b
+			  [downloadedFile,isReady] = urlwrite(urlLink, tempFilePathGz); %#ok<URLWR> websave introduced in R2014b
 			else
 			  [downloadedFile,isReady] = urlwrite(urlLink, tempFilePathGz, ...
-			    'Authentication', 'Basic', 'Get', tmpGetRequest); %#ok<URLWR> websave instruduced in R2014b
+			    'Authentication', 'Basic', 'Get', tmpGetRequest); %#ok<URLWR> websave introduced in R2014b
 			end
 			if isReady
 				gunzip(tempFilePathGz);
@@ -591,7 +591,7 @@ end
 				fid   = fopen(tempFilePath); % remove .gz at the end
 				tline = fgetl(fid);
 				while ischar(tline)
-					if strfind(tline,'FILE_NAME')
+					if strfind(tline,'FILE_NAME') %#ok<STRIFCND>
 						i = strfind(tline,'"');
 						fileNameCefGz = [tline(i(1)+1:i(2)-1) '.gz'];
 						irf.log('debug',['CEF.gz file name: ' fileNameCefGz]);
@@ -616,10 +616,10 @@ end
 		downloadedFile = [tempname '.gz'];
 		[urlLink, tmpGetRequest] = splitUrlLink(urlLink);
 		if(isempty(tmpGetRequest))
-		  [downloadedFile,isZipFileReady] = urlwrite(urlLink, downloadedFile); %#ok<URLWR> websave instruduced in R2014b
+		  [downloadedFile,isZipFileReady] = urlwrite(urlLink, downloadedFile); %#ok<URLWR> websave introduced in R2014b
 		else
 		  [downloadedFile,isZipFileReady] = urlwrite(urlLink, downloadedFile, ...
-		    'Authentication', 'Basic', 'Get', tmpGetRequest); %#ok<URLWR> websave instruduced in R2014b
+		    'Authentication', 'Basic', 'Get', tmpGetRequest); %#ok<URLWR> websave introduced in R2014b
 		end
 		
 		if isZipFileReady %

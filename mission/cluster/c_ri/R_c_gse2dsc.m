@@ -47,7 +47,7 @@ if nargin == 4, flag_db=1; else, flag_db=0;                           end
   if size(spin_axis,2) == 2
      t  = spin_axis(1);
      ic = spin_axis(2);
-     if exist('./maux.mat')
+     if exist('./maux.mat','file')
       if debug_flag, disp('Using maux.mat file');end
         load maux Epoch__CL_SP_AUX;
         tlat   = (Epoch__CL_SP_AUX-62167219200000)/1000;   % isdat time
@@ -56,7 +56,7 @@ if nargin == 4, flag_db=1; else, flag_db=0;                           end
         if x1(1:3) == x2(1:3)  % maux file is from the right day
           tmin = tlat(1);
           tmax = tlat(end);
-          if (t > tmin) | (t < tmax)
+          if (t > tmin) || (t < tmax)
             eval( av_ssub('load maux sc_at?_lat__CL_SP_AUX sc_at?_long__CL_SP_AUX; lat=sc_at?_lat__CL_SP_AUX; long = sc_at?_long__CL_SP_AUX;', ic) );
             latlong   = av_interp([tlat lat long],t);
           end

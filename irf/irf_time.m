@@ -60,7 +60,7 @@ elseif nargin==1
 end
 if isempty(tInput),tOutput=[];return;end
 flagTint=strfind(flag,'tint'); % check if we work with time interval (special case)
-if isempty(flagTint)          % default transformation
+if isempty(flagTint)   %#ok<STREMP>       % default transformation
 	flag2=strfind(flag,'2');   % see if flag has number 2 in it
 	if isempty(flag2)
 		flag2=strfind(flag,'>');   % see if flag has '>' in it

@@ -66,7 +66,7 @@ classdef TimeTable
 					TT=add(TT,tint+7200,{},'this is comment, there is no description for this time interval');
 					TT=add(TT,tint+600,{},'this is overlapping interval');
 				elseif regexp(source,'^https?://')==1 % start with http:// or https://
-					tempTT = urlread(source); %#ok<URLRD> webread instruduced in R2014b
+					tempTT = urlread(source); %#ok<URLRD> webread introduced in R2014b
 					TT	 = irf.TimeTable(tempTT);
 				elseif exist(source,'file') % check if file
 					fid = fopen(source);

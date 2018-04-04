@@ -71,7 +71,7 @@ for i_event=2:size(event_time_intervals,1)
 end
 disp(['From ' num2str(size(event_time_intervals,1)) ' events constructed ' num2str(size(events,1)) ' nonoverlapping events.']);
 
-if exist('mWork.mat'), save -append mWork events, else, save mWork events; end
+if exist('mWork.mat','file'), save -append mWork events, else, save mWork events; end
 
 for i_event=1:size(events,1)
   start_time_epoch=events(i_event,1);start_time=fromepoch(start_time_epoch);

@@ -79,14 +79,14 @@ if  nargin == 1
     end
 end
 
-if ~exist('st_m'), error('Start time not defined');end
-if ~exist('et_m'), error('End time not defined');end
+if ~exist('st_m','var'), error('Start time not defined');end
+if ~exist('et_m','var'), error('End time not defined');end
 [r , c] = size(st_m);
-if ~exist('min_angle'), min_angle(1:r) = 150;disp(['min_angle not defined, using min_angle=' num2str(min_angle)]);end
-if ~exist('min_ampl'), min_ampl(1:r) = 5;disp(['min_ampl not defined, using min_ampl=' num2str(min_ampl)]);end
-if ~exist('period'), period(1:r) = 3;disp(['period not defined, using period=' num2str(period)]);end
-if ~exist('d2MP'), d2MP = 3;disp(['distance to MP not defined, using d2MP=' num2str(d2MP)]);end
-if ~exist('psw'), psw = 2;disp(['SW pressure not defined, using psw=' num2str(psw)]);end
+if ~exist('min_angle','var'), min_angle(1:r) = 150;disp(['min_angle not defined, using min_angle=' num2str(min_angle)]);end
+if ~exist('min_ampl','var'), min_ampl(1:r) = 5;disp(['min_ampl not defined, using min_ampl=' num2str(min_ampl)]);end
+if ~exist('period','var'), period(1:r) = 3;disp(['period not defined, using period=' num2str(period)]);end
+if ~exist('d2MP','var'), d2MP = 3;disp(['distance to MP not defined, using d2MP=' num2str(d2MP)]);end
+if ~exist('psw','var'), psw = 2;disp(['SW pressure not defined, using psw=' num2str(psw)]);end
 
 if ~exist('p_E'),  p_E = './E/'; end % path for events
 if ~exist('p_R'),  p_R = './R/'; end % path for results
@@ -113,11 +113,11 @@ while 1
 end
 if exist('.c_ri_parameters.mat','file')
     try save -append .c_ri_parameters.mat p_E p_R st_m et_m min_angle min_ampl period d2MP psw run_steps;
-    catch disp('Parameter values could not be saved and therefore valid only for this run!');
+    catch, disp('Parameter values could not be saved and therefore valid only for this run!');
     end
 else
     try save .c_ri_parameters.mat p_E p_R st_m et_m min_angle min_ampl period d2MP psw run_steps;
-    catch disp('Parameter values could not be saved and therefore valid only for this run!');
+    catch, disp('Parameter values could not be saved and therefore valid only for this run!');
     end
 end
 
@@ -127,23 +127,23 @@ if ~exist(p_R,'dir'), irf_log('save',['creating p_E directory: ' p_R]); mkdir(p_
 [i_end,c] = size(st_m);
 
 if flag_continue
-    if exist('time_interval_start')
+    if exist('time_interval_start','var')
         i_start=time_interval_start;
         disp(['Sarting at ' num2str(i_start) '. time interval']);
     end
-    if exist('MP_interval_start')
+    if exist('MP_interval_start','var')
         j_start=MP_interval_start;
         disp(['Sarting at ' num2str(j_start) '. MP crossing interval']);
     end
 end
 
-if ~exist('i_start'),i_start=1;end
-if ~exist('j_start'),j_start=1;end
+if ~exist('i_start','var'),i_start=1;end
+if ~exist('j_start','var'),j_start=1;end
 
 for i = i_start:i_end
     time_interval_start=i;
     try save -append '.c_ri_parameters.mat' time_interval_start;
-    catch disp('Could not save time_interval_start');
+    catch, disp('Could not save time_interval_start');
     end
 
     disp([num2str(i) '. time interval. ' datestr(st_m(i,:),31) ' -- ' datestr(et_m(i,:),31)]);
@@ -178,7 +178,7 @@ for i = i_start:i_end
             [B1,B2,B3,B4]=c_get_bfgm(passing_MP(j,:),1:4);
             if ~isempty(B1)>0
                 c_eval('try Binterp?=irf_resamp(B?,B1); catch Binterp?=[]; end;',2:4);
-                if ~isempty(Binterp2) & ~isempty(Binterp3) & ~isempty(Binterp4)
+                if ~isempty(Binterp2) && ~isempty(Binterp3) && ~isempty(Binterp4)
                     [angles_tmp, ampl_tmp] = c_ri_angles_and_ampl(B1,Binterp2,Binterp3,Binterp4);
                     if ~isempty(angles_tmp)
                         [time_of_events,angles_out,ampl_out] = class_angle_as_event(angles_tmp,ampl_tmp, min_angle, min_ampl,-1) ; % -1 is mode (no idea which)
@@ -210,7 +210,7 @@ for i = i_start:i_end
     if run_steps(3) == 1
         disp('==============  STEP 3. Checking for additional constraints ====================');
         try load mEvents events angles amplitude;
-        catch disp('there are no events in mEvents.mat file');
+        catch, disp('there are no events in mEvents.mat file');
         end
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %%%%%%%%%%%%% Any additional constraints should come here
@@ -222,7 +222,7 @@ for i = i_start:i_end
             for j=1:size(events,1)
                 ttt=events(j,1);
                 c_eval('[ts,te,tm?]=caa_efw_mode_tab(B?,''ss'')');
-                if tm1==1 | tm2 == 1 | tm3 == 1 | tm4 ==1
+                if tm1==1 || tm2 == 1 || tm3 == 1 || tm4 ==1
                     % do nothing
                     c_log('dsrc',[num2str(j_good) '. event in burst mode. ' epoch2iso(ttt)]);
                     j_good=j_good+1;
@@ -245,7 +245,7 @@ for i = i_start:i_end
     if run_steps(4) == 1
         if run_steps(2) == 0; load mMP;load mEvents; end
         disp('==============  STEP 4. Plotting data for events ====================');
-        if exist('events')
+        if exist('events','var')
             if ~isempty(events)
                 c_ri_event_picture(events,period,angles,amplitude,p_R)
             end

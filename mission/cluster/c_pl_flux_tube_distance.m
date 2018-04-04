@@ -1,4 +1,4 @@
-function [d1,d2,d3,d4]=c_pl_flux_tube_distance(r1,r2,r3,r4,b1,b2,b3,b4,n_skip)
+function [d1,d2,d3,d4]=c_pl_flux_tube_distance(r1,r2,r3,r4,b1,b2,b3,b4,n_skip) %#ok<INUSL>
 %C_PL_FLUX_TUBE_DISTANCE  estimate the distance between flux tubes
 %
 %   [d1,d2,d3,d4]= C_PL_FLUX_TUBE_DISTANCE(r1,r2,r3,r4,b1,b2,b3,b4,n_skip);
@@ -19,25 +19,25 @@ flag_distance_along_B=1; % to plot also distance along B
 
 if nargin == 1
   n_skip = r1;
-  load mR R1 R2 R3 R4; r1=R1;r2=R2;r3=R3;r4=R4;
-  load mB B1 B2 B3 B4; b1=B1;b2=B2;b3=B3;b4=B4;
+  load mR R1 R2 R3 R4; r1=R1;r2=R2;r3=R3;r4=R4; %#ok<NASGU>
+  load mB B1 B2 B3 B4; b1=B1;b2=B2;b3=B3;b4=B4; %#ok<NASGU>
 elseif nargin == 3
 	r_s = r1;
 	b_s = r2;
 	n_skip = r3;
 	for cl_id=1:4
-		ttt = evalin('caller',irf_ssub(r_s,cl_id),'[]'); 
+		ttt = evalin('caller',irf_ssub(r_s,cl_id),'[]'); %#ok<NASGU>
 		eval(irf_ssub('r? =ttt;',cl_id)); clear ttt
 	end
 	for cl_id=1:4
-		ttt = evalin('caller',irf_ssub(b_s,cl_id),'[]'); 
+		ttt = evalin('caller',irf_ssub(b_s,cl_id),'[]');  %#ok<NASGU>
 		eval(irf_ssub('b? =ttt;',cl_id)); clear ttt
 	end
 	clear r_s b_s
 end
 
 if nargin<1, disp('See usage:');help c_pl_flux_tube_distance; return; end
-if nargin==9 | nargin == 1
+if nargin==9 || nargin == 1
   ind=1:n_skip:size(b1,1);
   b1=b1(ind,:);
 end

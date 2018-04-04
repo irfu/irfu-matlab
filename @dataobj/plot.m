@@ -119,10 +119,10 @@ while ~isempty(args)
         end
       case 'clustercolors'
         flag_use_cluster_colors = 1;
-        if strfind(var_s,'C1'), line_color='k';
-        elseif strfind(var_s,'C2'), line_color='r';
-        elseif strfind(var_s,'C3'), line_color='g';
-        elseif strfind(var_s,'C4'), line_color='b';
+        if strfind(var_s,'C1'), line_color='k'; %#ok<STRIFCND>
+        elseif strfind(var_s,'C2'), line_color='r'; %#ok<STRIFCND>
+        elseif strfind(var_s,'C3'), line_color='g'; %#ok<STRIFCND>
+        elseif strfind(var_s,'C4'), line_color='b'; %#ok<STRIFCND>
         else, flag_use_cluster_colors = 0;
         end
       case 'nolabels'

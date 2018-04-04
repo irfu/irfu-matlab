@@ -50,12 +50,12 @@ end
 
 
 %finds the start row
-if (start_time <= B_start & start_row == -1 & B_start < end_time) | (start_time >= B_start & start_time < B_end)
+if (start_time <= B_start && start_row == -1 && B_start < end_time) || (start_time >= B_start && start_time < B_end)
 start_row = i;
 end
 
 %finds the end row
-if (end_time <= B_end & end_row == -1 & start_row ~= -1) | (B_end < end_time & end_time < B_n & start_row ~= -1)
+if (end_time <= B_end && end_row == -1 && start_row ~= -1) || (B_end < end_time && end_time < B_n && start_row ~= -1)
 end_row = i;
 return
 end
@@ -63,6 +63,6 @@ end
 end % for-loop
 
 %if the end of the passing_MP is outside the possible data
-if end_row == -1 & start_row ~= -1
+if end_row == -1 && start_row ~= -1
 end_row = B_length;
 end

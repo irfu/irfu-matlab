@@ -25,9 +25,9 @@ te = toepoch([nexty nextm 1 00 00 00]);
 [onoff,cover] = caa_read_coverage('/data/cluster/caa');
 [plan, plan_ind] = caa_pl_coverage(onoff,cover, [ts te],0);
 
-if isempty(plan) & isempty(plan_ind), disp('plans are empty. nothing to do'), return, end
+if isempty(plan) && isempty(plan_ind), disp('plans are empty. nothing to do'), return, end
 
-if ~isempty(plan_ind) & ~isempty(plan)
+if ~isempty(plan_ind) && ~isempty(plan)
 	plan = sortrows([plan; plan_ind(:,1:2)],1);
 end
 

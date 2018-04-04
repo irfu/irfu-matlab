@@ -12,7 +12,7 @@ function out=c_4_v_gui(x1,x2,x3,x4,column)
 flag_first_call=0;
 
 if       (nargin<=2 && ischar(x1)) % either action as parameter or string variable
-	if strfind(x1,'?')
+	if strfind(x1,'?') %#ok<STRIFCND>
 		figure;ud=[]; % intialize
 		ud.variable_str=x1;
 		if nargin == 1, ud.var_col=1;else, ud.var_col=x2;end

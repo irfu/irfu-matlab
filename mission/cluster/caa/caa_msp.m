@@ -18,7 +18,7 @@ if nargin == 4 % filename specified
   fileName = varargin{4};
 end
 %% check filter
-if strfind(filterString,'PSE:')
+if strfind(filterString,'PSE:') %#ok<STRIFCND>
 	dataObj = ['C' num2str(cl_id) '_JP_PSE'];
 	regionFilter = filterString(strfind(filterString,':')+1 : end);
 else 

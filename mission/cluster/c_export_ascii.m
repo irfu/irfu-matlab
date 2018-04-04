@@ -79,7 +79,7 @@ while have_options
 				'wrong ArgType : mode must be one of : ''plain'', ''cef'' or ''caa''')
 			end
 		otherwise
-			irf_log('fcal',['Option ''' args{i} '''not recognized'])
+			irf_log('fcal',['Option ''' args{1} '''not recognized'])
 		end
 		if length(args) > l, args = args(l+1:end);
 		else, break

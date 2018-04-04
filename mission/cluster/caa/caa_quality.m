@@ -39,20 +39,20 @@ while(q ~= 'q') % ====== MAIN LOOP =========
 	q = input('input command or data level 1..3/all(a)>','s');
 	if isempty(q), q = '0'; end
 	if strcmp(q,'q'), return,
-	elseif q == '0' | strcmp(q,'h'), disp('commands:'), disp(mmm)
+	elseif q == '0' || strcmp(q,'h'), disp('commands:'), disp(mmm)
 	elseif strcmp(q,'d'), disp_q(caa_q)
 	elseif strcmp(q,'s')
 		if exist('./mInfo.mat','file'), save mInfo caa_q -append
 		else, save mInfo caa_q
 		end
 		irf_log('save','caa_q -> mInfo.mat')
-	elseif strcmp(q,'1') | strcmp(q,'2') | strcmp(q,'3')
+	elseif strcmp(q,'1') || strcmp(q,'2') || strcmp(q,'3')
 		disp(sprintf('modifying level %s',q))
 		lev = str2num(q);
 		ok = 0;
 		while ~ok
 			sc_list = input('cl_id 1..4, all(a)>','s');
-			if strcmp(sc_list,'a') | strcmp(sc_list,'all') | isempty(sc_list)
+			if strcmp(sc_list,'a') || strcmp(sc_list,'all') || isempty(sc_list)
 				sc_list = 1:4;
 				ok = 1;
 			else
@@ -68,7 +68,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
 		ok = 0;
 		while ~ok
 			vars = input('e/p/all(a)>','s');
-			if strcmp(vars,'a') | strcmp(vars,'all'), vars = [1 2]; ok = 1;
+			if strcmp(vars,'a') || strcmp(vars,'all'), vars = [1 2]; ok = 1;
 			elseif strcmp(vars,'p'), vars = 1; ok = 1;
 			elseif strcmp(vars,'e'), vars = 2; ok = 1;
 			else,disp('wrong input')
@@ -80,7 +80,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
 			qfac = input('Q-factor 1..4>','s');
 			try
 				qfac = str2num(qfac);
-				if qfac>4 | qfac<1, disp('wrong input')
+				if qfac>4 || qfac<1, disp('wrong input')
 				else, ok = 1;
 				end
 			end

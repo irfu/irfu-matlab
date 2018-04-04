@@ -35,7 +35,7 @@ if(nargin==2), Hapgood = true; end % Default to old method.
 
 isInpTSeries = isa(inp,'TSeries');
 
-if strfind(flag,'>') % if input and output reference frames are the same return input
+if strfind(flag,'>')  %#ok<STRIFCND>% if input and output reference frames are the same return input
   refSystIn  = flag(1:strfind(flag,'>')-1);
   refSystOut = flag(strfind(flag,'>')+1:end);
 else

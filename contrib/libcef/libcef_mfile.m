@@ -33,5 +33,5 @@ fcns.thunkname{fcnNum}='voidPtrvoidThunk';fcns.name{fcnNum}='cef_varnames'; fcns
 % mxArray * cef_depends ( char * varname ); 
 fcns.thunkname{fcnNum}='voidPtrcstringThunk';fcns.name{fcnNum}='cef_depends'; fcns.calltype{fcnNum}='Thunk'; fcns.LHS{fcnNum}='MATLAB array'; fcns.RHS{fcnNum}={'cstring'};fcnNum=fcnNum+1;
 % mxArray * milli_to_isotime ( mxArray * var , int digits ); 
-fcns.thunkname{fcnNum}='voidPtrvoidPtrint32Thunk';fcns.name{fcnNum}='milli_to_isotime'; fcns.calltype{fcnNum}='Thunk'; fcns.LHS{fcnNum}='MATLAB array'; fcns.RHS{fcnNum}={'MATLAB array', 'int32'};fcnNum=fcnNum+1;
+fcns.thunkname{fcnNum}='voidPtrvoidPtrint32Thunk';fcns.name{fcnNum}='milli_to_isotime'; fcns.calltype{fcnNum}='Thunk'; fcns.LHS{fcnNum}='MATLAB array'; fcns.RHS{fcnNum}={'MATLAB array', 'int32'};fcnNum=fcnNum+1; %#ok<NASGU>
 methodinfo=fcns;

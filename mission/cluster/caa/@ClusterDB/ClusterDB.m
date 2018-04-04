@@ -40,7 +40,7 @@ case 1
 		error('Wrong argument type')
 	end 
 case 2
-	if ischar(varargin{1}) & ischar(varargin{2})
+	if ischar(varargin{1}) && ischar(varargin{2})
 		cdb.db = varargin{1};
 		cdb.dp = varargin{2};
 		cdb.sp = '.';

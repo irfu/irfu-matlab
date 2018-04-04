@@ -810,11 +810,11 @@ function [c,ls,lw]=LocalValidateCLSW(s)
 if nargin<1, c='k'; ls='-'; lw=0.5;
 else
   % identify linestyle
-  if strfind(s,'--'), ls='--'; s=strrep(s,'--','');
-  elseif strfind(s,'-.'), ls='-.'; s=strrep(s,'-.','');
-  elseif strfind(s,'-'), ls='-'; s=strrep(s,'-','');
-  elseif strfind(s,':'), ls=':'; s=strrep(s,':','');
-  elseif strfind(s,'*'), ls='*'; s=strrep(s,'*','');
+  if strfind(s,'--'), ls='--'; s=strrep(s,'--',''); %#ok<STRIFCND>
+  elseif strfind(s,'-.'), ls='-.'; s=strrep(s,'-.',''); %#ok<STRIFCND>
+  elseif strfind(s,'-'), ls='-'; s=strrep(s,'-',''); %#ok<STRIFCND>
+  elseif strfind(s,':'), ls=':'; s=strrep(s,':',''); %#ok<STRIFCND>
+  elseif strfind(s,'*'), ls='*'; s=strrep(s,'*',''); %#ok<STRIFCND>
   else, ls='-';
   end
 

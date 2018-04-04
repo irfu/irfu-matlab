@@ -24,13 +24,9 @@ handleInput = 0;
 posFileTypes = {'eps','pdf','png'};
 
 if(nargin == 1)         % only name
-    if isempty(strfind(x1,'.'))
-        fileName = x1;
-        fileType = 'eps';
-    else
-        fileName = x1(1:strfind(x1,'.')-1);
-        fileType = x1(strfind(x1,'.')+1:end);
-    end
+  [filePath, fileName, fileType] = fileparts(x1);
+  if ~isempty(fileType), fileType=fileType(1:end-1); else, fileType='eps'; end
+  fileName = [filePath, filesep, fileName];
 elseif(nargin == 2)
     if(ischar(x1))      % name and type
         fileName = x1;

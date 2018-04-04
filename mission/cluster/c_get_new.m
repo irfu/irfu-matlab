@@ -368,7 +368,7 @@ elseif strcmp(q,'x')
  end
  
 % If flag_save is set, save variables to specified file
- if flag_save==1 && length(save_file)>0 && ~isempty(save_list)
+ if flag_save==1 && ~isempty(save_file) && ~isempty(save_list)
   if exist(save_file,'file') 
    eval(['save -append ' save_file ' ' save_list]); 
   else

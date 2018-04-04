@@ -133,7 +133,7 @@ if ischar(args{1})
 			irf_log('fcal','CTL is not initialized. Initializing...') 
 			c_ctl('init') 
 			global c_ct
-        end
+		end
 
 % Read from (/Volumes)/data/cluster/cal
         
@@ -148,9 +148,9 @@ if ischar(args{1})
 			irf_log('fcal','CTL is not initialized. Initializing...') 
 			c_ctl('init') 
 			global c_ct
-        end
+		end
         
-        if nargin>1, d = args{2};
+		if nargin>1, d = args{2};
 		else, d = '.';
 		end
 
@@ -165,9 +165,9 @@ if ischar(args{1})
 			irf_log('fcal','CTL is not initialized. Initializing...') 
 			c_ctl('init') 
 			global c_ct
-        end
+		end
         
-        if nargin>1, d = args{2};
+		if nargin>1, d = args{2};
 		else, d = '.';
 		end
 

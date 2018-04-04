@@ -35,7 +35,7 @@ function ang = vector_angles(v1 , v2)
 %Written by Robert Isaksson in the summer of -03
 %--------------------- the beginning --------------------------
 % error check
-if norm(v1) == 0 | norm(v2) == 0
+if norm(v1) == 0 || norm(v2) == 0
 %'Error, zero-vector as input, returning 0-angle'
 ang = 0;
 

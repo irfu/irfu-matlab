@@ -35,7 +35,7 @@ while ask_for_input
 		if isempty(y);y=defvalue;end
 	elseif isnumeric(default_value)
 		if ~isempty(defvalue), s=num2str(defvalue(1));else, s='';end
-		for i=2:length(defvalue);s=[s ' ' num2str(defvalue(i))];end
+		for i=2:length(defvalue);s=[s ' ' num2str(defvalue(i))];end %#ok<AGROW>
 		question_to_ask=strrep(question,'%',s);
 		if useWaitInput
 			q=waitinput(question_to_ask,seconds_to_wait,'s');

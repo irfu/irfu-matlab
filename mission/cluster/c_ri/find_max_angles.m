@@ -27,7 +27,7 @@ function max_angles = find_max_angles(A,AP, min_ampl)
 [i_end,cA] = size( A );
 [rAP, cAP] = size (AP);
 
-if cA == 7 & cAP == 4 & i_end == rAP
+if cA == 7 && cAP == 4 && i_end == rAP
 for i = 1:i_end
 
 A_i = A(i,2:7);
@@ -39,7 +39,7 @@ A_max = 0;
 for k = 1:6
 [nr1, nr2] = ind2nr(k);
 
-if ampl_i(nr1) > min_ampl & ampl_i(nr2) > min_ampl & A_i(k) > A_max
+if ampl_i(nr1) > min_ampl && ampl_i(nr2) > min_ampl && A_i(k) > A_max
 max_angles(i,2) = A_i(k);
 A_max = A_i(k);
 end

@@ -45,7 +45,7 @@ switch nargin
 case 1 % return time interval
  within =[f_t t_t];
 case 2 % return flag if time string is within specified time interval
-  if st_e <= t_t & f_t <= et_e
+  if st_e <= t_t && f_t <= et_e
    within = 1;
   else
    within = 0;

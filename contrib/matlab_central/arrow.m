@@ -161,7 +161,7 @@ if (nargin>0 && ischar(varargin{1}) && strcmpi(varargin{1},'callback'))
 end
 
 % Are we doing the demo?
-c = sprintf('\n');
+c = sprintf('\n'); %#ok<SPRINTFN>
 if (nargin==1 && ischar(varargin{1}))
 	arg1 = lower(varargin{1});
 	if strncmp(arg1,'prop',4), arrow_props;
@@ -248,8 +248,8 @@ if (firstprop==2)
 elseif (firstprop>9)
 	error([upper(mfilename) ' takes at most 8 non-property arguments.']);
 elseif (firstprop>2)
-	{start,stop,len,baseangle,tipangle,wid,page,crossdir};
-	args = [varargin(1:firstprop-1) cell(1,length(ans)-(firstprop-1))];
+	tmp={start,stop,len,baseangle,tipangle,wid,page,crossdir};
+	args = [varargin(1:firstprop-1) cell(1,length(tmp)-(firstprop-1))];
 	[start,stop,len,baseangle,tipangle,wid,page,crossdir] = deal(args{:});
 end
 
@@ -282,7 +282,7 @@ for k=firstprop:2:nargin
 			try
 				get(0,['DefaultLine' varargin{k}]);
 			catch
-				errstr(1:find(errstr==char(13)|errstr==char(10),'last')) = '';
+				errstr(1:find(errstr==char(13)|errstr==char(10),'last')) = ''; %#ok<CHARTEN>
 				error([upper(mfilename) ' got ' errstr]);
 			end
 		end
@@ -989,7 +989,7 @@ if (nargout<=1)
 		xx=x(:,k); yy=y(:,k);
 		if (0) % this fix didn't work, so let's not use it -- 8/26/03
 			% try to work around a MATLAB 6.x OpenGL bug -- 7/28/02
-			  mask=any([ones(1,2+size(zz,2));diff([xx yy zz],[],1)],2);
+			  mask=any([ones(1,2+size(zz,2));diff([xx yy zz],[],1)],2); %#ok<UNRCH>
 			  xx=xx(mask); yy=yy(mask); if ~isempty(zz), zz=zz(mask); end
 		end
 		% plot the patch or line
@@ -1244,7 +1244,7 @@ function out = arrow_warnlimits(axlimits,narrows)
 	       'when adding the arrow'];
 	if (narrows>1), msg=[msg 's']; end
 	out = [msg '.' sprintf('\n') '         Call ' upper(mfilename) ...
-	       ' FIXLIMITS to reset them now.'];
+	       ' FIXLIMITS to reset them now.']; %#ok<SPRINTFN>
 
 
 
@@ -1268,7 +1268,7 @@ function arrow_copyprops(fm,to)
 
 function arrow_props
 % display further help info about ARROW properties
-	c = sprintf('\n');
+	c = sprintf('\n'); %#ok<SPRINTFN>
 	disp([c ...
 	'ARROW Properties:  Default values are given in [square brackets], and other' c ...
 	'                   acceptable equivalent property names are in (parenthesis).' c c ...
@@ -1430,7 +1430,7 @@ function h = arrow_demo2(in)
 		if (dolog), set(k,'YData',10.^get(k,'YData')); end
 	end
 	if (dolog), axis([axlim(1:2) 10.^axlim(3:4)]); set(gca,'YScale','log');
-	else,       axis(axlim(1:4)); end
+	else,       axis(axlim(1:4)); end %#ok<UNRCH>
 	
 	% Normal blue arrow
 	start = [axlim(1) axlim(4) axlim(6)+2];

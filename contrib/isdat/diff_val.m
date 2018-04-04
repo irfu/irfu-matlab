@@ -4,4 +4,5 @@ function val=diff_val(vec)
 
 if length(vec)<=1, val=vec; return, end
 val=sort(vec);
-val(find(diff(val)==0))=[];
+val(diff(val)==0)=[];
+end

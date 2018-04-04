@@ -1,4 +1,4 @@
-function h=c_pl_sc_pos_mf(t,R1,R2,R3,R4,Vref,Bref)
+function h=c_pl_sc_pos_mf(t,R1,R2,R3,R4,Vref,Bref) %#ok<INUSL>
 %C_PL_SC_POS_MF   Plot spacecraft position in mean field coordinates
 %
 % that are defined usign spacecraft position and magnetic field.
@@ -42,8 +42,8 @@ Vref_MF=irf_mean(Vref,r3,Bref);
 Vscaling=.5*drref/irf_abs(Vref_MF,1);Vscale=Vscaling*Vref_MF(:,2:4);
 c_eval('dr_MF?=irf_mean(dr?,r3,Bref);');
 
-view1=[90 90];
-view2=[90 0];
+view1=[90 90]; %#ok<NASGU>
+view2=[90 0]; %#ok<NASGU>
 npl=2;ypl=2;xpl=1;
 for ipl=1:npl
   h(ipl)=subplot(ypl,xpl,ipl);

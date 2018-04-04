@@ -16,7 +16,7 @@ threshold=POLARPLOT_RESULTS{10};
 p = get(gca, 'currentpoint');
 phase_lim=get(gca,'Clim');
 
-ii=find(p(1)>t); ind=max(ii);
+ind=find(p(1)>t, 1, 'last');
 ss1=S1(:,ind);
 ph1=Phase1(:,ind);
 ch1=Coh1(:,ind);

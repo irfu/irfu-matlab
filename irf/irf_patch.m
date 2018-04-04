@@ -104,7 +104,7 @@ if iscell(args{1})
   
     hp = patch(xPatch,yPatch,'k','Parent', ax);
     hp.FaceAlpha = 0.2;
-    hp.EdgeColor = hl(iComp).Color;0.7*[1 1 1];
+    hp.EdgeColor = hl(iComp).Color;
     hp.FaceColor = hl(iComp).Color;
     hp_out(iComp) = hp;
   end

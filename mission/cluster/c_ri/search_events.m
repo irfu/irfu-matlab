@@ -84,14 +84,14 @@ dist_t(dist_pos,2) = dist;
 end
 
 % gets the timetag when the satellite enters the MP
-if dist < dist_to_MP & inside == 0
+if dist < dist_to_MP && inside == 0
 b=b+1;
 inside = 1;
 time_of_events(b,1) = pos(i,1);
 end
 
 % gets the timetag when the satellite leaves the MP
-if dist > dist_to_MP & inside == 1
+if dist > dist_to_MP && inside == 1
 inside = 0;
 time_of_events(b,2) = pos(i,1);
 end

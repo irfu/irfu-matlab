@@ -851,8 +851,8 @@ classdef PDist < TSeries
             case 'omni'
               spec.p = double(obj.data);  
             otherwise
-              error(sprintf('Spectype ''%s'' not yet implemented for distribution type ''%s''.',spectype,obj.type));
-          end          
+              error('Spectype ''%s'' not yet implemented for distribution type ''%s''.',spectype,obj.type);
+          end
           spec.t = obj.time.epochUnix;          
           spec.f = single(obj.depend{1});
           spec.f_label = {['E_' obj.species(1) ' (eV)']};

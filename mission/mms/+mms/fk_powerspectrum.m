@@ -99,7 +99,7 @@ while flag_have_options
             end
         case 'linear'
             if numel(args)>1 && isnumeric(args{2})
-                df = args{2};
+                df = args{2}; %#ok<NASGU>
                 uselinear = 1;
                 irf.log('notice','Using linearly spaced frequencies');
             end
@@ -249,7 +249,7 @@ else
     c_eval('W1c = irf_wavelet(E?,''returnpower'',0,''cutedge'',0,''linear'',df);',probe);
     c_eval('W2c = irf_wavelet(E?,''returnpower'',0,''cutedge'',0,''linear'',df);',probe+1);
   end  
-  numf = length(W1c.f);
+  numf = length(W1c.f); %#ok<NODEF>
 end
 
 L = length(idx);
@@ -257,13 +257,13 @@ times = time(idx);
 
 W1c.p = {W1c.p{1,1}(idx,:)};
 W1c.t = times;
-W2c.p = {W2c.p{1,1}(idx,:)};
+W2c.p = {W2c.p{1,1}(idx,:)}; %#ok<NODEF>
 W2c.t = times;
 
 fkPower = 0.5*(cell2mat(W1c.p).*conj(cell2mat(W1c.p)) + cell2mat(W2c.p).*conj(cell2mat(W2c.p)));
 
 N = floor(L/cav)-1;
-posav = cav/2 + [0:1:N]*cav;
+posav = cav/2 + (0:1:N)*cav;
 avtimes = times(posav);
 Bs = Bxyz.resample(avtimes);
 c_eval('thetap?b = thetap?b.resample(avtimes);',probe_nr);
@@ -276,7 +276,7 @@ end
 c34x = zeros(N+1,numf);
 Powerav = zeros(N+1,numf);
 
-for m = [1:1:N+1]
+for m = 1:N+1
     c34x(m,:) = irf.nanmean(W1c.p{1,1}([posav(m)-cav/2+1:posav(m)+cav/2],:).*conj(W2c.p{1,1}([posav(m)-cav/2+1:posav(m)+cav/2],:)));
     Powerav(m,:) = irf.nansum(fkPower([posav(m)-cav/2+1:posav(m)+cav/2],:));
 end

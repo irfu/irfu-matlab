@@ -54,11 +54,11 @@ fgm_data=double(fgm_data);
 [c, d] = size(fgm_t);
 
 % to solve the situation if there are only zeros... error in download
-if a == 0 & b == 0 & c == 0 & d == 0
+if a == 0 && b == 0 && c == 0 && d == 0
 fgm_t = -1;
 end
 
-if fgm_t(1) ~= -1 & a == 3 & b > 1 
+if fgm_t(1) ~= -1 && a == 3 && b > 1 
 
 %to reduce sensitivity in R_c_despin in the aspect of start and end points
 % the first point and the last points are thrown away

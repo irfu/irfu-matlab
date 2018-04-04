@@ -55,7 +55,7 @@ if nargin>=1 && ischar(varargin{1}) && strcmp(varargin{1},'create')
 	tempFileTarGz = [tempFileName '.tar.gz'];
 	tempFileTar   = [tempFileName '.tar'];
 	[tempFileTarGz,isOk] = urlwrite(urlMetaData, tempFileTarGz, ...
-      'Authentication', 'Basic', 'Get', tempGetRequest ); %#ok<URLWR> websave instruduced in R2014b
+      'Authentication', 'Basic', 'Get', tempGetRequest ); %#ok<URLWR> websave introduced in R2014b
 	if isOk
 		gunzip(tempFileTarGz);
 		%untar(tempFileTar,'./');

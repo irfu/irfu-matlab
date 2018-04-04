@@ -32,7 +32,7 @@ angles_out = [];
 ampl_out = [];
 
 [r_ang, c_ang] = size(angles);
-if r_ang == 1 & c_ang == 1
+if r_ang == 1 && c_ang == 1
   angles = [-1 0 0 0 0 0 0 0];
   disp('no data in the file')
 end
@@ -42,7 +42,7 @@ end
 ar_pos = b_angles_pos(biggest_angle_pos);
 tba = angles(ar_pos,1);
 tt = isnan(tba);
-if tt == 1 | tba == -1
+if tt == 1 || tba == -1
   tba = 0;
 end
 

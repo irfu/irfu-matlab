@@ -124,7 +124,7 @@ for d=1:length(dirs)
 			end
 			
 			if write_caa_reproc
-                lf = '.caa_reproc';
+                lf = '.caa_reproc'; %#ok<UNRCH>
                 fid = fopen(lf,'w');
                 if fid<0
                     irf_log('save',['problem creating ' lf])

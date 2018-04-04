@@ -33,7 +33,7 @@ t_s = time_line(1);
 for i = 1:i_end
 t_line_pos = round((B(i,1)-t_s)/s_per);
 
-if t_line_pos > 0 & t_line_pos <= t_end
+if t_line_pos > 0 && t_line_pos <= t_end
 B_c(t_line_pos,2:4) = B(i,2:4);
 end
 
