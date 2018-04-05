@@ -248,10 +248,10 @@ switch lower(action)
         phase_p4=data.phase/180*pi + 5*pi/3;
         phase_b1=data.phase/180*pi + pi/4;
         phase_b2=data.phase/180*pi + 5*pi/4;
-        rp1=[60*cos(phase_p1) 60*sin(phase_p1) 0]; 
-        rp2=[60*cos(phase_p2) 60*sin(phase_p2) 0];
-        rp3=[60*cos(phase_p3) 60*sin(phase_p3) 0];
-        rp4=[60*cos(phase_p4) 60*sin(phase_p4) 0];
+        rp1=[60*cos(phase_p1) 60*sin(phase_p1) 0]; %#ok<NASGU>
+        rp2=[60*cos(phase_p2) 60*sin(phase_p2) 0]; %#ok<NASGU>
+        rp3=[60*cos(phase_p3) 60*sin(phase_p3) 0]; %#ok<NASGU>
+        rp4=[60*cos(phase_p4) 60*sin(phase_p4) 0]; %#ok<NASGU>
         % Boom lengths are 5m. Exaggerated in plot.
         rb1=[20*cos(phase_b1) 20*sin(phase_b1) 0];
         rb2=[20*cos(phase_b2) 20*sin(phase_b2) 0];
@@ -268,7 +268,7 @@ switch lower(action)
             bfield=irf_resamp(data.b,data.t);
             bgsefield=irf_resamp(data.bgse,data.t);
             bxs=irf_norm(irf_cross(bfield,[0 0 0 1]));
-            bxsxb=irf_norm(irf_cross(bxs,bfield)); % (bxs)xb
+            bxsxb=irf_norm(irf_cross(bxs,bfield)); %#ok<NASGU> % (bxs)xb
             bn=irf_norm(bfield);
             bn_gse = bgsefield;
             b_elevation=-asin(bn(4))*180/pi;
@@ -337,7 +337,7 @@ switch lower(action)
         line(12*cos(scoctogon),12*sin(scoctogon),'Linewidth',2,'Color','r');
         % Plot Booms
         c_eval('line([0 rb?(1)],[0 rb?(2)],''Linewidth'',3,''Color'',''k'');',1:2);
-        boomlabels = ['DFG';'AFG'];
+        boomlabels = ['DFG';'AFG']; %#ok<NASGU>
         c_eval('text(rb?(1)*1.5,rb?(2)*1.5,boomlabels(?,:));',1:2);
         for ip=1:4 % plot probes
             c_eval('line([0 rp?(1)],[0 rp?(2)]);',ip);

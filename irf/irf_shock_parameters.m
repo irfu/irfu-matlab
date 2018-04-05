@@ -109,7 +109,7 @@ function dspec = irf_shock_parameters(spec)
 fn = fieldnames(spec);
 
 % find Bs
-idB = ~cellfun(@isempty,strfind(fn,'B'));
+idB = ~cellfun(@isempty,strfind(fn,'B')); %#ok<STRCLFH>
 % regions
 rgsB = fn(idB);
 nR = numel(rgsB);

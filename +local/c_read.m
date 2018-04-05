@@ -169,7 +169,7 @@ switch lower(varName)
 		end
 	otherwise
 		irf.log('warning',['local.c_read() reading variable: ' varName]);
-		if strfind(varName,'CIS'),specialCaseCis=1;end
+		if strfind(varName,'CIS'),specialCaseCis=1;end %#ok<STRIFCND>
 		varToRead={varName};
 		ok=read_data;
 		if ok && iscell(data) && numel(data) == 1

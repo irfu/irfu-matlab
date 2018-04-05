@@ -194,7 +194,7 @@ ylabel('E_{N} [mV/m]');
 
 axes(h(9))
 c_eval('fs?=c_efw_fsample(dEn?);',sc_list)
-dd1=0;dd2=0;dd3=.5;dd4=-.5;
+dd1=0;dd2=0;dd3=.5;dd4=-.5; %#ok<NASGU>
 c_eval('eint?=[dEn?(:,1) 1e-3*irf_abs(Vmp,1)/fs?*cumsum(dEn?(:,2))+dd?];',sc_list)
 c_pl_tx('eint?',2,dt,'sc_list',sc_list);
 ylabel('U [kV]')
@@ -253,8 +253,8 @@ for ic=sc_list
   axes(h(4));
   c_eval('irf_plot(irf_tappl([jz? jperp?(:,2)],''*1e6''));ylabel(''j_{||},jperp [\mu A/m^2] sc?'');',ic);
   leg_coord=[.1,.6];font_size=13;figure_labels={'j_{||}', 'j_{perp}'};line_colors='bg';
-  for ic=1:2
-      ht=irf_pl_info(figure_labels{ic},gca,leg_coord);set(ht,'color',line_colors(ic),'Fontsize',font_size,'FontWeight','demi');
+  for iPlot=1:2
+      ht=irf_pl_info(figure_labels{iPlot},gca,leg_coord);set(ht,'color',line_colors(iPlot),'Fontsize',font_size,'FontWeight','demi');
       ext=get(ht,'extent'); leg_coord=leg_coord+[ext(3)*1.1 0];
   end
 

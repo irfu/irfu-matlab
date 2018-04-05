@@ -94,7 +94,7 @@ varsb = c_efw_burst_param([DP '/burst/' filename]);
 varsbsize = length(varsb);
 
 if 0    % Exit if no V43M/H or V12H parameter
-found=false;
+found=false; %#ok<UNRCH>
 for i=1:varsbsize
     if strcmp(varsb(i),'V43M') || strcmp(varsb(i),'V43H') || strcmp(varsb(i),'V12H')
         found=true;

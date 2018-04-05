@@ -22,7 +22,7 @@ switch arg
   case 'fpl'
     fplmin=str2num(get(ud.fplminh,'string'));
     fplmax=str2num(get(ud.fplmaxh,'string'));
-    irf_zoom([fplmin fplmax],'x',ud.h2([1:3]));set(h2(1),'ylim','auto');
+    irf_zoom([fplmin fplmax],'x',ud.h2(1:3));set(h2(1),'ylim','auto');
 
 
 end

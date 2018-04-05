@@ -153,10 +153,13 @@ if is_version_geq(tmpDist.GlobalAttributes.Data_version{:}, '3.1.0')
   energy0 = energy(find(stepTable==0,1,'first'),:);
   energy1 = energy(find(stepTable==1,1,'first'),:); if isempty(energy1), energy1 = energy0; end
   
-  % energy delta_minus/plus  
-  energy_minus = squeeze(energy_data.DELTA_MINUS_VAR.data);
-  energy_plus = squeeze(energy_data.DELTA_PLUS_VAR.data);
-  
+  % energy delta_minus/plus; currently DELTA_?_VAR.data only aviable for electron 
+  if isfield(energy_data, 'DELTA_MINUS_VAR')
+    energy_minus = squeeze(energy_data.DELTA_MINUS_VAR.data);
+  end
+  if isfield(energy_data, 'DELTA_PLUS_VAR')
+    energy_plus = squeeze(energy_data.DELTA_PLUS_VAR.data);
+  end
   % Construct PDist
   PD = PDist(time,Dist,'skymap',energy,phi,theta);
   PD.userData = ud;
@@ -171,8 +174,12 @@ if is_version_geq(tmpDist.GlobalAttributes.Data_version{:}, '3.1.0')
   PD.ancillary.energy0 = energy0;
   PD.ancillary.energy1 = energy1;
   PD.ancillary.esteptable = stepTable;
-  PD.ancillary.delta_energy_minus = energy_minus;
+  if isfield(energy_data, 'DELTA_MINUS_VAR')
+    PD.ancillary.delta_energy_minus = energy_minus;
+  end
+  if isfield(energy_data, 'DELTA_PLUS_VAR')
   PD.ancillary.delta_energy_plus = energy_plus;
+  end
 else
   if strcmp(fileInfo.tmMode,'fast') % fast
     energy0 = get_variable(tmpDataObj,['mms' fileInfo.mmsId '_' fileInfo.detector '_energy_' fileInfo.tmMode]);

@@ -9,7 +9,7 @@
 % Plot your irf_plot panels here using axes handles h1
 %% Example 1 (empty): Plot particle distributions
 % Define which time(s) you want to plot the detailed distrubtions for
-tint = irf.tint('2015-10-16T10:33:30.20Z/2015-10-16T10:33:30.50Z');
+tint = irf.tint('2015-10-16T10:33:30.20Z/2015-10-16T10:33:30.50Z'); %#ok<NASGU>
 c_eval('times = desDist?.tlim(tint).time;',ic)
 
 % Make one plot for each time or time interval
@@ -17,7 +17,7 @@ for ii = 1:times.length
   tint = times(ii);
   
   % Mark the time in the time panels
-  if exist('hTimeMark'); delete(hTimeMark); end % take away mark if plotted before
+  if exist('hTimeMark','var'); delete(hTimeMark); end % take away mark if plotted before
   hTimeMark = irf_pl_mark(h1,tint.epochUnix','black');  
 
   % Plot same plot for the four spacecraft
@@ -65,13 +65,13 @@ irf_zoom(h1(:),'x',tint)
 irf_plot_axis_align
 %% Example 2: Plot particle distributions
 ic = 1;
-tintDist = irf.tint('2015-10-16T10:33:30.20Z/2015-10-16T10:33:30.50Z');
+tintDist = irf.tint('2015-10-16T10:33:30.20Z/2015-10-16T10:33:30.50Z'); %#ok<NASGU>
 c_eval('times = desDist?.tlim(tintDist).time;',ic)
 
 
 for ii = 1:times.length  
   tint = times(ii)+[-1 1]*0.5*0.03*0.5;
-  if exist('hmark'); delete(hmark); end
+  if exist('hmark','var'); delete(hmark); end
   hmark = irf_pl_mark(h1,tint.epochUnix','green');
   vlim = 15*1e3;
   elevlim = 20;
@@ -102,7 +102,7 @@ for ii = 1:times.length
       y = hatExB0;
       z = cross(x,y);
     else
-      x = [1 0 0];
+      x = [1 0 0]; %#ok<UNRCH>
       y = [0 1 0];
       z = [0 0 1];
     end
@@ -112,7 +112,7 @@ for ii = 1:times.length
     isub = ic;
 
     if 0 % Plot psd 0 90 180
-      hca = h2(isub); isub = isub + 1;
+      hca = h2(isub); isub = isub + 1; %#ok<UNRCH>
       psdtint = tint;%+[-1 1]*0.03;
       c_eval('mms.plot_cross_section_psd(hca,dist,dmpaB?l2pre,''tint'',psdtint,''scPot'',P?brst,''ylim'',palim,''energies'',skymapEnergy);',ic)
       TitleStr = {irf_ssub('MMS ?',ic),[irf_time(psdtint.start.utc,'utc>utc_yyyy-mm-ddTHH:MM:SS.mmm') ' + ' num2str(psdtint.stop-psdtint.start) ' s']};
@@ -122,7 +122,7 @@ for ii = 1:times.length
     end
 
     if 0 % Plot skymap for a given energy
-      hca = h2(isub); isub = isub + 1;      
+      hca = h2(isub); isub = isub + 1;       %#ok<UNRCH>
       c_eval('mms.plot_skymap(hca,dist,''tint'',tint,''energy'',skymapEnergy(1),''vectors'',vectors,''flat'');',ic)
       %hca.Title.String = hca.Title.String{2};
 
@@ -134,7 +134,7 @@ for ii = 1:times.length
 
     % Plot project ion onto a plane
     if 0
-      hca = h2(isub); isub = isub + 1; 
+      hca = h2(isub); isub = isub + 1;  %#ok<UNRCH>
       mms.plot_projection(hca,dist,'tint',tint(1),'xyz',[x;y;z],'elevationlim',elevlim,'vlim',vlim,'vectors',vectors,'clim',projclim);
       hca.Title.String = '';
       colormap(hca,strCMap)
@@ -147,7 +147,7 @@ for ii = 1:times.length
     colormap(hca,strCMap)
 
     if 0
-      hca = h2(isub); isub = isub + 1; 
+      hca = h2(isub); isub = isub + 1;  %#ok<UNRCH>
       mms.plot_projection(hca,dist,'tint',tint(1),'xyz',[y;z;x],'elevationlim',elevlim,'vlim',vlim,'vectors',vectors,'clim',projclim);
       hca.Title.String = '';
       colormap(hca,strCMap)
@@ -239,7 +239,7 @@ mvaOhmJxB = mvaOhmJxB_c;
 %[h1,h2] = initialize_combined_plot(5,2,2,0.4,'vertical');
 %% Example 3 (Ohm's law, 4 sc): Plot timeseries with Ohm's terms
 tint = irf.tint('2015-10-16T10:33:20.00Z/2015-10-16T10:34:00.00Z');
-tintZoom = irf.tint('2015-10-16T10:33:26.00Z/2015-10-16T10:33:31.00Z');
+%tintZoom = irf.tint('2015-10-16T10:33:26.00Z/2015-10-16T10:33:31.00Z');
 tintZoom = irf.tint('2015-10-16T10:33:22.00Z/2015-10-16T10:33:33.00Z');
 
 if 1 % BL
@@ -319,7 +319,7 @@ if 1 % Ohms law 2: N
   hca.YLim = [-10 10];
 end
 if 0 % JN
-  hca = irf_panel('JL');
+  hca = irf_panel('JL'); %#ok<UNRCH>
   set(hca,'ColorOrder',mms_colors('1234ab'))
   lines = irf_plot(hca,{mvaJ1.x,mvaJ2.x,mvaJ3.x,mvaJ4.x,mvaAvJ.x,mvaJcurl.x},'comp');   
   hca.YLabel.String = {'J_L','(nA/m^2)'};
@@ -339,7 +339,7 @@ irf_plot_axis_align
 %[h1,h2] = initialize_combined_plot(5,2,2,0.4,'vertical');
 %% Example 3 (Ohm's law, 4 sc): Plot timeseries with other terms
 tint = irf.tint('2015-10-16T10:33:20.00Z/2015-10-16T10:34:00.00Z');
-tintZoom = irf.tint('2015-10-16T10:33:26.00Z/2015-10-16T10:33:31.00Z');
+%tintZoom = irf.tint('2015-10-16T10:33:26.00Z/2015-10-16T10:33:31.00Z');
 tintZoom = irf.tint('2015-10-16T10:33:22.00Z/2015-10-16T10:33:33.00Z');
 
 if 1 % BL
@@ -430,7 +430,7 @@ if 1 % Ohms law ions: N
   hca.YLim = [-10 10];
 end
 if 0 % JN
-  hca = irf_panel('JL');
+  hca = irf_panel('JL'); %#ok<UNRCH>
   set(hca,'ColorOrder',mms_colors('1234ab'))
   lines = irf_plot(hca,{mvaJ1.x,mvaJ2.x,mvaJ3.x,mvaJ4.x,mvaAvJ.x,mvaJcurl.x},'comp');   
   hca.YLabel.String = {'J_L','(nA/m^2)'};
@@ -450,7 +450,7 @@ irf_plot_axis_align
 %[h1,h2] = initialize_combined_plot(5,2,2,0.4,'vertical');
 %% Example 3 (Ohm's law, 4 sc): Plot timeseries with other terms
 tint = irf.tint('2015-10-16T10:33:20.00Z/2015-10-16T10:34:00.00Z');
-tintZoom = irf.tint('2015-10-16T10:33:26.00Z/2015-10-16T10:33:31.00Z');
+%tintZoom = irf.tint('2015-10-16T10:33:26.00Z/2015-10-16T10:33:31.00Z');
 tintZoom = irf.tint('2015-10-16T10:33:22.00Z/2015-10-16T10:33:33.00Z');
 
 if 1 % BL
@@ -541,7 +541,7 @@ if 1 % Ohms law ions: N
   hca.YLim = [-10 10];
 end
 if 0 % JN
-  hca = irf_panel('JL');
+  hca = irf_panel('JL'); %#ok<UNRCH>
   set(hca,'ColorOrder',mms_colors('1234ab'))
   lines = irf_plot(hca,{mvaJ1.x,mvaJ2.x,mvaJ3.x,mvaJ4.x,mvaAvJ.x,mvaJcurl.x},'comp');   
   hca.YLabel.String = {'J_L','(nA/m^2)'};
@@ -573,7 +573,7 @@ for it = 119;1:times.length  % 644 - ring distributions
   tt = time;
   
   
-  if exist('hmark'); delete(hmark); end
+  if exist('hmark','var'); delete(hmark); end
   hmark = irf_pl_mark(h1,tt.epochUnix','green');
 
   vectors = {'B',{mvaB1.resample(tt(1)),mvaB2.resample(tt(1)),mvaB3.resample(tt(1)),mvaB4.resample(tt(1))},2;...
@@ -626,7 +626,7 @@ for it = 119;1:times.length  % 644 - ring distributions
         y = hatExB0;
         z = cross(x,y);
       else
-        x = [1 0 0];
+        x = [1 0 0]; %#ok<UNRCH>
         y = [0 1 0];
         z = [0 0 1];
       end
@@ -636,7 +636,7 @@ for it = 119;1:times.length  % 644 - ring distributions
       %isub = ic;
 
       if 0 % Plot psd 0 90 180
-        hca = h2(isub); isub = isub + 1;
+        hca = h2(isub); isub = isub + 1; %#ok<UNRCH>
         psdtint = tint;%+[-1 1]*0.03;
         c_eval('mms.plot_cross_section_psd(hca,dist,dmpaB?l2pre,''tint'',psdtint,''scPot'',P?brst,''ylim'',palim,''energies'',skymapEnergy);',ic)
         TitleStr = {irf_ssub('MMS ?',ic),[irf_time(psdtint.start.utc,'utc>utc_yyyy-mm-ddTHH:MM:SS.mmm') ' + ' num2str(psdtint.stop-psdtint.start) ' s']};
@@ -646,7 +646,7 @@ for it = 119;1:times.length  % 644 - ring distributions
       end
 
       if 0 % Plot skymap for a given energy
-        hca = h2(isub); isub = isub + 1;      
+        hca = h2(isub); isub = isub + 1;      %#ok<UNRCH> 
         c_eval('mms.plot_skymap(hca,dist,''tint'',tint,''energy'',skymapEnergy(1),''vectors'',vectors,''flat'');',ic)
         %hca.Title.String = hca.Title.String{2};
 
@@ -658,7 +658,7 @@ for it = 119;1:times.length  % 644 - ring distributions
 
       % Plot project ion onto a plane
       if 0
-        hca = h2(isub); isub = isub + 1; 
+        hca = h2(isub); isub = isub + 1;  %#ok<UNRCH>
         mms.plot_projection(hca,dist,'tint',tint(1),'xyz',[x;y;z],'elevationlim',elevlim,'vlim',vlim,'vectors',vectors,'clim',projclim);
         hca.Title.String = '';
         colormap(hca,strCMap)
@@ -671,18 +671,18 @@ for it = 119;1:times.length  % 644 - ring distributions
       colormap(hca,strCMap)
 
       if 0
-        hca = h2(isub); isub = isub + 1; 
+        hca = h2(isub); isub = isub + 1;  %#ok<UNRCH>
         mms.plot_projection(hca,dist,'tint',tint(1),'xyz',[y;z;x],'elevationlim',elevlim,'vlim',vlim,'vectors',vectors,'clim',projclim);
         hca.Title.String = '';
         colormap(hca,strCMap)
       end
-    end
+  end
     pause(1)
     %cn.print([irf_ssub('ohm_sc_pos_4sc',1) irf_time(time,'epochtt>utc_yyyymmddTHHMMSS.mmm')]);
 end
   
 if 0
-hca = h2(3);
+hca = h2(3); %#ok<UNRCH>
 tintQuiver = irf.tint('2015-10-16T10:33:25.00Z/2015-10-16T10:33:31.00Z');
 mvaR0 = (mvaR1+mvaR2.resample(mvaR1)+mvaR3.resample(mvaR1)+mvaR4.resample(mvaR1))/4;
 c_eval('tts? = double((mvaB?.tlim(tintQuiver).time.ttns-mvaB?.tlim(tintQuiver).time.ttns(1)))*1e-9;')
@@ -727,7 +727,7 @@ for it = 1:times.length
   tt = time;
   
   
-  if exist('hmark'); delete(hmark); end
+  if exist('hmark','var'); delete(hmark); end
   hmark = irf_pl_mark(h1,tt.epochUnix','green');
 
   vectors = {'B',{mvaB1.resample(tt(1)),mvaB2.resample(tt(1)),mvaB3.resample(tt(1)),mvaB4.resample(tt(1))},2;...
@@ -778,11 +778,11 @@ for it = 1:times.length
 
       % Projection coordinate system
       if 0
-        x = hatB0;
+        x = hatB0; %#ok<UNRCH>
         y = hatExB0;
         z = cross(x,y);
       elseif 0
-        x = [1 0 0];
+        x = [1 0 0]; %#ok<UNRCH>
         y = [0 1 0];
         z = [0 0 1];        
       else        
@@ -796,7 +796,7 @@ for it = 1:times.length
       %isub = ic;
 
       if 0 % Plot psd 0 90 180
-        hca = h2(isub); isub = isub + 1;
+        hca = h2(isub); isub = isub + 1; %#ok<UNRCH>
         psdtint = tint;%+[-1 1]*0.03;
         c_eval('mms.plot_cross_section_psd(hca,dist,dmpaB?l2pre,''tint'',psdtint,''scPot'',P?brst,''ylim'',palim,''energies'',skymapEnergy);',ic)
         TitleStr = {irf_ssub('MMS ?',ic),[irf_time(psdtint.start.utc,'utc>utc_yyyy-mm-ddTHH:MM:SS.mmm') ' + ' num2str(psdtint.stop-psdtint.start) ' s']};
@@ -806,7 +806,7 @@ for it = 1:times.length
       end
 
       if 0 % Plot skymap for a given energy
-        hca = h2(isub); isub = isub + 1;      
+        hca = h2(isub); isub = isub + 1;       %#ok<UNRCH>
         c_eval('mms.plot_skymap(hca,dist,''tint'',tint,''energy'',skymapEnergy(1),''vectors'',vectors,''flat'');',ic)
         %hca.Title.String = hca.Title.String{2};
 
@@ -818,7 +818,7 @@ for it = 1:times.length
 
       % Plot project ion onto a plane
       if 0
-        hca = h2(isub); isub = isub + 1; 
+        hca = h2(isub); isub = isub + 1;  %#ok<UNRCH>
         mms.plot_projection(hca,dist,'tint',tint(1),'xyz',[x;y;z],'elevationlim',elevlim,'vlim',vlim,'vectors',vectors,'clim',projclim);
         hca.Title.String = '';
         colormap(hca,strCMap)
@@ -833,18 +833,18 @@ for it = 1:times.length
       colormap(hca,strCMap)
 
       if 0
-        hca = h2(isub); isub = isub + 1; 
+        hca = h2(isub); isub = isub + 1;  %#ok<UNRCH>
         mms.plot_projection(hca,dist,'tint',tint(1),'xyz',[y;z;x],'elevationlim',elevlim,'vlim',vlim,'vectors',vectors,'clim',projclim);
         hca.Title.String = '';
         colormap(hca,strCMap)
       end
-    end
+  end
     pause(1)
     cn.print([irf_ssub('ohm_sc_pos_4sc_ions',1) irf_time(time,'epochtt>utc_yyyymmddTHHMMSS.mmm')]);
 end
   
 if 0
-hca = h2(3);
+hca = h2(3); %#ok<UNRCH>
 tintQuiver = irf.tint('2015-10-16T10:33:25.00Z/2015-10-16T10:33:31.00Z');
 mvaR0 = (mvaR1+mvaR2.resample(mvaR1)+mvaR3.resample(mvaR1)+mvaR4.resample(mvaR1))/4;
 c_eval('tts? = double((mvaB?.tlim(tintQuiver).time.ttns-mvaB?.tlim(tintQuiver).time.ttns(1)))*1e-9;')
@@ -874,13 +874,13 @@ hca.ZLabel.String = 'L';
 end
 %%
 ic = 1;
-tintDist = irf.tint('2015-10-16T10:33:23.20Z/2015-10-16T10:33:34.50Z');
+tintDist = irf.tint('2015-10-16T10:33:23.20Z/2015-10-16T10:33:34.50Z'); %#ok<NASGU>
 c_eval('times = desDist?.tlim(tintDist).time;',ic)
 
 
 for ii = 100;1:times.length;  
   tint = times(ii)+[-1 1]*0.5*0.03*0.5;
-  if exist('hmark'); delete(hmark); end
+  if exist('hmark','var'); delete(hmark); end
   hmark = irf_pl_mark(h1,tint.epochUnix','green');
   vlim = 15*1e3;
   elevlim = 20;
@@ -911,7 +911,7 @@ for ii = 100;1:times.length;
       y = hatExB0;
       z = cross(x,y);
     else
-      x = [1 0 0];
+      x = [1 0 0]; %#ok<UNRCH>
       y = [0 1 0];
       z = [0 0 1];
     end
@@ -921,7 +921,7 @@ for ii = 100;1:times.length;
     isub = ic;
 
     if 0 % Plot psd 0 90 180
-      hca = h2(isub); isub = isub + 1;
+      hca = h2(isub); isub = isub + 1; %#ok<UNRCH>
       psdtint = tint;%+[-1 1]*0.03;
       c_eval('mms.plot_cross_section_psd(hca,dist,dmpaB?l2pre,''tint'',psdtint,''scPot'',P?brst,''ylim'',palim,''energies'',skymapEnergy);',ic)
       TitleStr = {irf_ssub('MMS ?',ic),[irf_time(psdtint.start.utc,'utc>utc_yyyy-mm-ddTHH:MM:SS.mmm') ' + ' num2str(psdtint.stop-psdtint.start) ' s']};
@@ -931,7 +931,7 @@ for ii = 100;1:times.length;
     end
 
     if 0 % Plot skymap for a given energy
-      hca = h2(isub); isub = isub + 1;      
+      hca = h2(isub); isub = isub + 1;       %#ok<UNRCH>
       c_eval('mms.plot_skymap(hca,dist,''tint'',tint,''energy'',skymapEnergy(1),''vectors'',vectors,''flat'');',ic)
       %hca.Title.String = hca.Title.String{2};
 
@@ -943,7 +943,7 @@ for ii = 100;1:times.length;
 
     % Plot project ion onto a plane
     if 0
-      hca = h2(isub); isub = isub + 1; 
+      hca = h2(isub); isub = isub + 1;  %#ok<UNRCH>
       mms.plot_projection(hca,dist,'tint',tint(1),'xyz',[x;y;z],'elevationlim',elevlim,'vlim',vlim,'vectors',vectors,'clim',projclim);
       hca.Title.String = '';
       colormap(hca,strCMap)
@@ -956,7 +956,7 @@ for ii = 100;1:times.length;
     colormap(hca,strCMap)
 
     if 0
-      hca = h2(isub); isub = isub + 1; 
+      hca = h2(isub); isub = isub + 1;  %#ok<UNRCH>
       mms.plot_projection(hca,dist,'tint',tint(1),'xyz',[y;z;x],'elevationlim',elevlim,'vlim',vlim,'vectors',vectors,'clim',projclim);
       hca.Title.String = '';
       colormap(hca,strCMap)
@@ -1061,7 +1061,7 @@ if 1 % Ions, anis
   colormap(hca,cn.cmap('bluered3'))
 end
 if 0 % Anisotropy, electrons
-  hca = irf_panel('B');
+  hca = irf_panel('B'); %#ok<UNRCH>
   set(hca,'ColorOrder',mms_colors('xyz'))
   c_eval('irf_plot(hca,{mvaB?.x,mvaB?.y,mvaB?.z},''comp'');',ic)  
   hca.YLabel.String = {'B','(nT)'};
@@ -1070,13 +1070,13 @@ if 0 % Anisotropy, electrons
 end
 
 if 0 % ne
-  hca = irf_panel('ne');
+  hca = irf_panel('ne'); %#ok<UNRCH>
   set(hca,'ColorOrder',mms_colors(irf_ssub('?',ic)))
   c_eval('irf_plot(hca,ne?);',ic)
   hca.YLabel.String = {irf_ssub('n_{e}',ic),'(cm^{-3})'};
 end
 if 0 % Ve LMN
-  hca = irf_panel('Ve');
+  hca = irf_panel('Ve'); %#ok<UNRCH>
   set(hca,'ColorOrder',mms_colors('xyz'))
   c_eval('irf_plot(hca,{mvaVe?.x,mvaVe?.y,mvaVe?.z},''comp'');',ic)  
   hca.YLabel.String = {'v_e','(km/s)'};
@@ -1084,7 +1084,7 @@ if 0 % Ve LMN
   irf_legend(hca,{'v_L','v_M','v_N'},[0.98 0.9],'fontsize',12);
 end
 if 0 % E
-  hca = irf_panel('E');
+  hca = irf_panel('E'); %#ok<UNRCH>
   set(hca,'ColorOrder',mms_colors('xyz'))
   c_eval('irf_plot(hca,{mvaE?.x,mvaE?.y,mvaE?.z},''comp'');',ic)  
   hca.YLabel.String = {'E','(mV/m)'};
@@ -1092,7 +1092,7 @@ if 0 % E
   irf_legend(hca,{'E_L','E_M','E_N'},[0.98 0.9],'fontsize',12);
 end
 if 0 % J, comparing with curl and 4 sc av, 3 panels
-  hca = irf_panel('JL');
+  hca = irf_panel('JL'); %#ok<UNRCH>
   set(hca,'ColorOrder',mms_colors('1234ab'))
   c_eval('lines = irf_plot(hca,{mvaJ?.x,mvaAvJ.x,mvaJcurl.x},''comp'');',ic)
   hca.YLabel.String = {'J_L','(nA/m^2)'};
@@ -1114,7 +1114,7 @@ if 0 % J, comparing with curl and 4 sc av, 3 panels
   irf_legend(hca,{irf_ssub('J_?',ic),'J_{av,fpi}','J_{curl}'},[0.02 0.9],'fontsize',12);    
 end
 if 0 % J
-  hca = irf_panel('J');
+  hca = irf_panel('J'); %#ok<UNRCH>
   set(hca,'ColorOrder',mms_colors('xyz'))
   c_eval('lines = irf_plot(hca,mvaJ?);',ic)
   hca.YLabel.String = {'J','(nA/m^2)'};
@@ -1123,7 +1123,7 @@ if 0 % J
   %hca.YLim = [-1200 2000];
 end
 if 0 % P
-  hca = irf_panel('Pe');
+  hca = irf_panel('Pe'); %#ok<UNRCH>
   %set(hca,'ColorOrder',mms_colors('xyz'))
   c_eval('lines = irf_plot(hca,{mvaPe?.xx,mvaPe?.yy,mvaPe?.zz,mvaPe?.xy,mvaPe?.xz,mvaPe?.yz},''comp'');',ic)
   hca.YLabel.String = {'P_e','(nPa/km^2)'};
@@ -1131,7 +1131,7 @@ if 0 % P
   irf_legend(hca,{'P_{LL}','P_{MM}','P_{NN}','P_{LM}','P_{LN}','P_{MN}'},[0.98 0.9],'fontsize',12);  
 end
 if 0 % Ohms law electrons: N
-  hca = irf_panel('Ohms law electrons: N');
+  hca = irf_panel('Ohms law electrons: N'); %#ok<UNRCH>
   set(hca,'ColorOrder',mms_colors('xyzb'))
   c_eval('irf_plot(hca,{mvaE?.z,-1*mvaOhmVexB?.z,-1*mvaOhmGradPe?.z,-1*mvaOhmVexB?.z.resample(mvaE?.time)-mvaOhmGradPe?.z.resample(mvaE?.time)},''comp'');',ic)
   hca.YLabel.String = {'E_N','(mV/m)'};
@@ -1140,7 +1140,7 @@ if 0 % Ohms law electrons: N
   irf_legend(hca,['v = ' num2str(velocity,'%.0f') ' km/s'],[0.98 0.95],'color',[0 0 0],'fontsize',12);
 end
 if 0 % Ohms law ions: N
-  hca = irf_panel('Ohms law ions: N');
+  hca = irf_panel('Ohms law ions: N'); %#ok<UNRCH>
   set(hca,'ColorOrder',mms_colors('xyazb'))
   c_eval('irf_plot(hca,{mvaE?.z,mvaOhmJxB?.z,-1*mvaOhmVixB?.z,-1*mvaOhmGradPe?.z,mvaOhmJxB?.z.resample(mvaE?.time)-1*mvaOhmVixB?.z.resample(mvaE?.time)-mvaOhmGradPe?.z.resample(mvaE?.time)},''comp'');',ic)
   hca.YLabel.String = {'E_N','(mV/m)'};
@@ -1149,7 +1149,7 @@ if 0 % Ohms law ions: N
   irf_legend(hca,['v = ' num2str(velocity,'%.0f') ' km/s'],[0.98 0.95],'color',[0 0 0],'fontsize',12);
 end
 if 0 % Ohms law, E+vexB: N
-  hca = irf_panel('Ohms law 2: N');
+  hca = irf_panel('Ohms law 2: N'); %#ok<UNRCH>
   set(hca,'ColorOrder',mms_colors('xyzba'))
   c_eval('irf_plot(hca,{mvaE?.z+1*mvaOhmVexB?.resample(mvaE?.time).z,-1*mvaOhmGradPe?.z},''comp'');',ic) 
   hca.YLabel.String = {'E_N','(mV/m)'};
@@ -1175,7 +1175,7 @@ tint = irf.tint('2015-10-16T10:33:29.50Z',0.3)+2.4*[1 1];
 
 for ii = 1%:tint.length;  
   %tint = times(ii)+[-1 1]*0.5*0.03*0.5;
-  if exist('hmark'); delete(hmark); end
+  if exist('hmark','var'); delete(hmark); end
   hmark = irf_pl_mark(h1,tint.epochUnix','green');     
 
   isub = 1;
@@ -1194,7 +1194,7 @@ for ii = 1%:tint.length;
       hca.Title.String = TitleStr;
     end
     if 0 % Plot skymap for a given energy
-      hca = h2(isub); isub = isub + 1;      
+      hca = h2(isub); isub = isub + 1;       %#ok<UNRCH>
       c_eval('mms.plot_skymap(hca,dist,''tint'',tint,''energy'',skymapEnergy(1),''vectors'',vectors,''flat'');',ic)
       %hca.Title.String = hca.Title.String{2};
 
@@ -1204,7 +1204,7 @@ for ii = 1%:tint.length;
       %hca.Title.String = hca.Title.String{2};
     end   
     if 0 % Plot project ion onto a plane
-      hca = h2(isub); isub = isub + 1; 
+      hca = h2(isub); isub = isub + 1;  %#ok<UNRCH>
       mms.plot_projection(hca,dist,'tint',tint(1),'xyz',[x;y;z],'elevationlim',elevlim,'vlim',vlim,'vectors',vectors,'clim',projclim);
       hca.Title.String = '';
       colormap(hca,strCMap)
@@ -1215,6 +1215,6 @@ for ii = 1%:tint.length;
     hca.Title.String = titleStr;
     colormap(hca,strCMap)
 
-  end
+end
   pause(1)
   %cn.print([irf_ssub('BvnP_1proj_mms1234_gseish',1) irf_time(times(ii),'epochtt>utc_yyyymmddTHHMMSS.mmm')]);

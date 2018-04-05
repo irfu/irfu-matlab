@@ -45,7 +45,7 @@ t_display='given';
 
 % Read input
 n_toplot=0;
-while length(args)>0
+while ~isempty(args)
     if isstruct(args{1})
         n_toplot=n_toplot+1;
         to_plot{n_toplot}=args{1};  
@@ -200,8 +200,8 @@ switch plot_type
         
         if 1 % Energy ticks
             xticks=log10([1e-1 1e0 1e1 1e2 1e3 1e4 1e5 1e6 1e7]*1e-3)-r0log;            
-            xticks=xticks(find(xticks>0));
-            xticks=xticks(find(xticks<max([max(r{1}) max(r{2})])));
+            xticks=xticks(xticks>0);
+            xticks=xticks(xticks<max([max(r{1}) max(r{2})]));
             xticklabels=cell(size(xticks));
             for k=1:length(xticklabels)
                 xticklabels{k}=num2str(10.^(xticks(k)+r0log)*1e-3);
@@ -315,6 +315,6 @@ switch n_toplot % Next line is the product plotted
         titleStr{end+1}=['Right: ', to_plot{2}.product,to_plot{1}.detector];                   
 end
 % Change underscores to spaces
-for k=1:length(titleStr) titleStr{k}(strfind(titleStr{k},'_'))=' '; end
+for k=1:length(titleStr), titleStr{k}(strfind(titleStr{k},'_'))=' '; end
 title(ax,titleStr);
 end

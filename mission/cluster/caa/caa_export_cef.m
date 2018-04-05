@@ -289,7 +289,7 @@ for dd = 1:length(dirs)
          if ~ok || isempty(spfD), no_p12 = 1; irf_log('load'), end
        else
          if ppOther==42, ok = false; % Only LX for p42
-         else [ok,spfD] = c_load(irf_ssub('diEs?p!',cl_id,ppOther));
+         else, [ok,spfD] = c_load(irf_ssub('diEs?p!',cl_id,ppOther));
          end
          if ~ok || isempty(spfD)
            [ok,spfD] = c_load(irf_ssub('diELXs?p!',cl_id,ppOther));
@@ -762,7 +762,7 @@ for dd = 1:length(dirs)
 	   probe_info = E_info.probe;
 	elseif lev == 3
 	   probe_info = num2str(sfit_probe);
-    end
+	end
 	
 	% Extend data array to accept bitmask and quality flag (2 columns at the end)
 	data = [data zeros(size(data, 1), 2)]; %#ok<AGROW>
@@ -849,7 +849,7 @@ for dd = 1:length(dirs)
       result_com{end+1} = dsi_str; %#ok<AGROW>
       irf_log('calb',dsi_str)
       clear Ddsi Damp
-    end
+	end
 
     if lev==2
       [ok, d_info] = c_load([vs '_info'],'var');

@@ -57,7 +57,7 @@ edi_e_dsl_ts.data(abs(edi_e_dsl_ts.data)>20) = NaN;
 
 if(false) %% Very quickly examine data, compare EDI with closest, in time, EDP datapoint.
   % Simply use the EDP datapoint closest in time to the EDI datapoint.
-  edp_t_norm = double(edp_l2pre_ts.time.ttns - edp_l2pre_ts.time.start.ttns);
+  edp_t_norm = double(edp_l2pre_ts.time.ttns - edp_l2pre_ts.time.start.ttns);%#ok<UNRCH>
   edi_t_norm = double(edi_e_dsl_ts.time.ttns - edp_l2pre_ts.time.start.ttns);
   edp_l2pre_tmp = interp1(edp_t_norm, edp_l2pre_ts.data, edi_t_norm, 'nearest');
   
@@ -125,7 +125,7 @@ end
 edp_mean = compute_edp_mean(edi_e_dsl_ts, edp_l2pre_ts); % Somewhat quicker.
 
 if(false) %% Plot Timeseries of EDI, EDP mean values and EDP measurements used
-  figure;
+  figure; %#ok<UNRCH>
   irf_plot({edi_e_dsl_ts.x, ...
     irf.ts_scalar(edi_e_dsl_ts.time, edp_mean), ...
     edp_raw}, ...
@@ -146,7 +146,7 @@ if(true) %% Scatterplot similar to the ones Ivan produced.
 end
   
 if(false) %% Plot heat map.
-  figure;
+  figure;%#ok<UNRCH>
   xb = linspace(-15, 15, 50);
   yb = linspace(-10, 10, 50);
   n = hist3([edp_mean, edi_e_dsl_ts.x.data], {xb, yb});

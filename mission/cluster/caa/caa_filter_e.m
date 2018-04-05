@@ -42,7 +42,7 @@ value = 1e10;
 ind = round((data(:,1)-data(1,1))*sf+1);
 
 if 0
-	E = ones(ndata,nkomp)*value;
+	E = ones(ndata,nkomp)*value; %#ok<UNRCH>
 	E(ind,:) = data(:,2:end);
 	E( E(:,1)==value ,:) = NaN;
 

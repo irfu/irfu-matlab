@@ -95,7 +95,7 @@ if iscell(inp)
 		end
 		out{j}=calculate_out(inp{j});
         if isinpTS
-            inptemp.data =  out(:,[2:4]);
+            inptemp.data =  out(:, 2:4);
             out = inptemp;
         end
 	end

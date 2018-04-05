@@ -82,8 +82,8 @@ if nargin==2 || nargin==3 % input is in form 'R?' and 'B?'
 				doOutputTSeries = true;
 				Bunits = B.(id).units;
 				B.(id) = [B.(id).time.epochUnix double(B.(id).data)];
-            end
-        end
+			end
+		end
 	elseif isstruct(r1) && isstruct(r2)
 		R=r1; B=r2;
 		for iC=1:4

@@ -121,7 +121,7 @@ Power = 0.5*(cell2mat(W1c.p).*conj(cell2mat(W1c.p)) + cell2mat(W2c.p).*conj(cell
 numf = 200;
 cav = 128;
 N = floor(L/cav)-1;
-posav = cav/2 + [0:1:N]*cav;
+posav = cav/2 + (0:1:N)*cav;
 avtimes = times(posav);
 Bs = irf_resamp(B,avtimes);
 thetap1b = irf_resamp(thetap1b,avtimes);
@@ -147,7 +147,7 @@ cross34x.f = W1c.f;
      
      kval = zeros(N+1,numf);
      
-for q = [1:1:numf]
+for q = 1:numf
      kval(:,q) = th(:,q)./rcos;
 end
 
@@ -161,7 +161,7 @@ kvec = mink + [0:1:numk-1]*dk;
 
 if 1
 for m = [1:1:N+1]
-    for q = [1:1:numf]
+    for q = 1:numf
         knumber = floor((kval(m,q)-mink)/dk)+1;
         disprel(knumber,q) = disprel(knumber,q) + Powerav(m,q);
     end

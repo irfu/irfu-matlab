@@ -52,7 +52,7 @@ case 'b'
       r.var	= ['B_xyz_gse__C' cl_id_s '_UP_' r.inst];
       r.pr	= 'CSDS_PP';
       pp_infix='UP';
-    else
+	else
       if ((start_time+dt) > 1136073600)
         warning('c_csds_read:PP_UP_transition',...
             '***** Interval spans both PP and UP files. Data truncated at 2006-01-01.')
@@ -60,7 +60,7 @@ case 'b'
       r.inst  = 'FGM';
       r.var	= ['B_xyz_gse__C' cl_id_s '_PP_' r.inst];
       r.pr	= 'CSDS_PP';
-    end
+	end
 case 'edi'
 	r.inst  = 'EDI';
 	r.var	= ['E_xyz_gse__C' cl_id_s '_PP_' r.inst];

@@ -1565,8 +1565,8 @@ case 'show_raw'
 			set(h2,'YLimMode','auto')
 			ylabel(h2,'V [V]')
 			legend(h2,legp_tmp{:},'Location','NorthEastOutside')
-        end
-        irf_plot_axis_align;
+		end
+		irf_plot_axis_align;
 		clear d_tmp dp_tmp leg_tmp legp_tmp s sid dp_sid ok
 	else % Display V CIS
 		if strcmp(hnd.Data{j}.sen,'HIA'), v_s = irf_ssub('VCh?',hnd.Data{j}.cl_id);

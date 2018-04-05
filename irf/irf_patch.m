@@ -104,7 +104,7 @@ if iscell(args{1})
   
     hp = patch(xPatch,yPatch,'k','Parent', ax);
     hp.FaceAlpha = 0.2;
-    hp.EdgeColor = hl(iComp).Color;0.7*[1 1 1];
+    hp.EdgeColor = hl(iComp).Color;
     hp.FaceColor = hl(iComp).Color;
     hp_out(iComp) = hp;
   end
@@ -112,7 +112,7 @@ if iscell(args{1})
 elseif isa(args{1},'TSeries')
   tsData = args{1};
   tmpData = tsData.data;
-  tsData = irf.ts_scalar(tsData.time,[repmat(0,tsData.length,1) tmpData]); % add zero level
+  tsData = irf.ts_scalar(tsData.time,[zeros(tsData.length,1) tmpData]); % add zero level
   nDim2 = size(tsData.data,2);  
   cmap = colormap('jet'); cmap = flipdim(cmap(fix(linspace(1,64,nDim2-1)),:),1);
   tPatch = tsData.time-tsData.time.start;

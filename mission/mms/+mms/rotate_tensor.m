@@ -166,10 +166,10 @@ elseif (rotflag(1) == 'r')
 elseif (rotflag(1) == 'g')
     irf.log('notice','Transforming tensor into GSE coordinates.');
     SCnum = varargin{rotflagpos+1};
-	Tint = irf.tint(Petimes.start.utc,Petimes.stop.utc);
+	Tint = irf.tint(Petimes.start.utc,Petimes.stop.utc); %#ok<NASGU>
 	c_eval('defatt = mms.db_get_variable(''mms?_ancillary_defatt'',''zra'',Tint);',SCnum);
 	c_eval('defatt.zdec = mms.db_get_variable(''mms?_ancillary_defatt'',''zdec'',Tint).zdec;',SCnum);
-    defatt = mms_removerepeatpnts(defatt);
+    defatt = mms_removerepeatpnts(defatt); %#ok<NODEF>
     
     % Development of transformation matrix follows modified version of mms_dsl2gse.m
     ttDefatt = EpochTT(defatt.time);

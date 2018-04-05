@@ -105,9 +105,9 @@ maginput = onera_desp_lib_maginputs(maginput); % NaN to baddata
 
 
 [iyear,idoy,UT] = onera_desp_lib_matlabd2yds(matlabd);
-Xfoot = repmat(nan,ntime,3);
-Bfoot = repmat(nan,ntime,3);
-BfootMag = repmat(nan,ntime,1);
+Xfoot = nan(ntime,3);
+Bfoot = nan(ntime,3);
+BfootMag = nan(ntime,1);
 XfootPtr = libpointer('doublePtr',nan(3,1));
 BfootPtr = libpointer('doublePtr',nan(3,1));
 BfootMagPtr = libpointer('doublePtr',nan);

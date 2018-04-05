@@ -43,18 +43,18 @@ DB=Mat_DbOpen('disco:10');
 
 
 
-if EBflag==1 | EBflag==3
+if EBflag==1 || EBflag==3
 	[timeB,dataB]=isGetDataLite(DB,time,dt,'Cluster',num2str(SC),'staff','B_SA','a_B','8-4096Hz','');
 	dataB=double(dataB);
 end
-if EBflag==2 | EBflag==3
+if EBflag==2 || EBflag==3
 	[timeE,dataE]=isGetDataLite(DB,time,dt,'Cluster',num2str(SC),'staff','E_SA','a_E','8-4096Hz','');
 	dataE=double(dataE);
 end
 
 %fix data since staff data comes in k x l x m matrices arranged in a strange way..
 
-if EBflag==1 | EBflag==3
+if EBflag==1 || EBflag==3
 [k,l,m]=size(dataB);
 if l==3
 	%we have B data
@@ -80,7 +80,7 @@ if l==3
 end
 end
 
-if EBflag==2 | EBflag==3
+if EBflag==2 || EBflag==3
 [k,l,m]=size(dataE);
 	odd=1:2:54;
 	even=2:2:54;

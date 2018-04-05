@@ -76,7 +76,7 @@ if strcmpi(flag,'<bn>=0') % <Bn>=0 requires further calculations
     r=roots([a b c]);
     lmin=min(r);
     c_eval('n?=inp_mvar_?_mean/(l(?)-lmin);',1:3); % normal in MVAR reference frame
-    nnorm=norm([n1 n2 n3]);
+    nnorm=norm([n1 n2 n3]); %#ok<NASGU>
     c_eval('n?=n?/nnorm;',1:3);
     n=[0 0 0];
     c_eval('n=n+n?*v(?,:);',1:3); % calculate normal in input reference frame

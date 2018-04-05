@@ -20,7 +20,7 @@ end
 switch timetableToGenerate
 	case 'tailbox'
 		%% find time intervals when Cluster is in tailbox
-		Units=irf_units;
+		Units=irf_units; %#ok<NASGU>
 		clusterPositionFileGSE = '/data/caalocal/mR_1min.mat';
 		workDir=tempname;
 		mkdir(workDir);
@@ -34,11 +34,11 @@ switch timetableToGenerate
 		load(clusterPositionFileGSE); % load Cluster positions 1min resolution
 		
 		disp('Preparing data');
-		tStep=median(diff(R1(:,1))); % time step
+		tStep=median(diff(R1(:,1))); %#ok<NASGU> % time step
 		tailBoxX=-5; % tailbox is at X less than this value, in REdd
 		tailBoxDZ=5; % tailbox distance halfwidth in Z, in RE
 		tailBoxS=0.88;% |Y| < |X|^tailBoxS, for X=-5, |Y|<4.12 and for X=-20, |Y|<13.96
-		izero=find(R1(:,1)==0);
+		izero=find(R1(:,1)==0); %#ok<NASGU>
 		sclist={'','1','2','3','4'}; % include also center of configuration
 		c_eval('R?(izero,:)=[];',sclist);
 		c_eval('R?=irf_abs(R?);',sclist);

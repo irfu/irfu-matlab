@@ -61,7 +61,7 @@ file_name = fgetl(fp);
 f_length = length(file_name);
 
 %excluding bad filenames
-if strcmp(file_name(1:3),file_prefix) & strcmp(file_name(f_length-3:f_length), '.mat')
+if strcmp(file_name(1:3),file_prefix) && strcmp(file_name(f_length-3:f_length), '.mat')
 
 if c_ri_timestr_within_intervall(file_name,s_t,e_t) == 1
 
@@ -81,7 +81,7 @@ end
 
 [r_t,c_t] = size(time_of_events);
 
-if r_t == 1 & c_t == 1
+if r_t == 1 && c_t == 1
 disp('no events found, nothing saved to file')
 else
 f_date = c_ri_datestring_file(s_t);

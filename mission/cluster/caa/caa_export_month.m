@@ -140,7 +140,7 @@ function caa_export_month(year,month,startday,stopday,sats,varargin)
               excepted=0;
               for j=1:length(exceptions)
                   if (exceptions{j}{1} == sat) && (strcmp(exceptions{j}{2},datatype)==1)
-                      if (datatype == 'E') | (datatype == 'P')	% special (P/E) {3 'E' 2} type exeption where 2 is the level
+                      if (datatype == 'E') || (datatype == 'P')	% special (P/E) {3 'E' 2} type exeption where 2 is the level
                           if (exceptions{j}{3} == level)
                               excepted=1;
                               break

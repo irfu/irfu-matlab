@@ -53,7 +53,7 @@ maginput = onera_desp_lib_maginputs(maginput); % NaN to baddata
 siz_in = size(matlabd);
 
 Nmax = onera_desp_lib_ntime_max; % maximum array size in fortran library
-Lstar = repmat(nan,Nmax,1);
+Lstar = nan(Nmax,1);
 if ntime>Nmax
     % break up the calculation into chunks the libarary can handle
     for i = 1:Nmax:ntime
@@ -66,11 +66,11 @@ else
     LstarPtr = libpointer('doublePtr',Lstar);
     maginput = maginput';
     % expand arrays
-    iyear = [iyear(:)', repmat(nan,1,Nmax-ntime)];
-    idoy = [idoy(:)', repmat(nan,1,Nmax-ntime)];
-    maginput = [maginput, repmat(nan,25,Nmax-ntime)];
-    Lm = [Lm(:)', repmat(nan,1,Nmax-ntime)];
-    J = [J(:)', repmat(nan,1,Nmax-ntime)];
+    iyear = [iyear(:)', nan(1,Nmax-ntime)];
+    idoy = [idoy(:)', nan(1,Nmax-ntime)];
+    maginput = [maginput, nan(25,Nmax-ntime)];
+    Lm = [Lm(:)', nan(1,Nmax-ntime)];
+    J = [J(:)', nan(1,Nmax-ntime)];
     
     calllib('onera_desp_lib','empiricallstar1_',ntime,kext,options,iyear,idoy,maginput,Lm,J,LstarPtr);
     % have to do this next bit because Ptr's aren't really pointers

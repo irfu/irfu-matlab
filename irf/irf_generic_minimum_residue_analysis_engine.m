@@ -162,7 +162,7 @@ if ndimsInp1 == 1
 			end
 		end
 	else
-		error; % not implemented
+		error('Not yet implemented'); % not implemented
 	end
 elseif ndimsInp1 == 2 && ndimsInp2 == 1 && ind1 == 1
 	for jj = 1:szinp1(2)
@@ -185,5 +185,5 @@ elseif ndimsInp1 == 2 && ndimsInp2 == 2 && ind1 == 1 && ind2 == 1
 		end
 	end
 else
-	error; % not implemented
+	error('Not yet implemented'); % not implemented
 end

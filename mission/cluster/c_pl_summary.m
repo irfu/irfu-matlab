@@ -62,7 +62,7 @@ end
 
 while have_options
 	l = 2;
-	if length(args)>0
+	if ~isempty(args)
 		switch(args{1})
 			case 'sp'
 				if ischar(args{2}), sp = args{2};

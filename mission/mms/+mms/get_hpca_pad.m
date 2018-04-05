@@ -60,7 +60,7 @@ function [PAdistspec, emin, emax] = get_hpca_pad(varargin)
     
     % 3. compute PAD
     % 3.1. pitchangle
-    anglevec = [15: 15: 180];      % Default pitch angles. 15 degree angle widths
+    anglevec = 15:15:180;      % Default pitch angles. 15 degree angle widths
     dangle = median(diff(anglevec))*ones(1,length(anglevec));
     pitchangle = anglevec-dangle/2;
     
@@ -116,12 +116,12 @@ function [PAdistspec, emin, emax] = get_hpca_pad(varargin)
     end
     
     % 3.6. make spectrum
-    if ~isempty(strfind(dist.name, 'flux'))   distname = 'log(dF)'; end
-    if ~isempty(strfind(dist.name, 'phase_space_density'))   distname = 'log(PSD)'; end
-    if ~isempty(strfind(dist.name, 'hplus'))  species = 'H+'; end
-    if ~isempty(strfind(dist.name, 'heplus'))  species = 'He+'; end
-    if ~isempty(strfind(dist.name, 'heplusplus'))  species = 'He++'; end
-    if ~isempty(strfind(dist.name, 'oplus'))  species = 'O+'; end
+    if ~isempty(strfind(dist.name, 'flux')),   distname = 'log(dF)'; end
+    if ~isempty(strfind(dist.name, 'phase_space_density')),   distname = 'log(PSD)'; end
+    if ~isempty(strfind(dist.name, 'hplus')),  species = 'H+'; end
+    if ~isempty(strfind(dist.name, 'heplus')),  species = 'He+'; end
+    if ~isempty(strfind(dist.name, 'heplusplus')),  species = 'He++'; end
+    if ~isempty(strfind(dist.name, 'oplus')),  species = 'O+'; end
     PAdistspec = struct('t', tt.epochUnix);
     PAdistspec.p = double(PAdist);
     PAdistspec.p_label = {distname,dist.units};

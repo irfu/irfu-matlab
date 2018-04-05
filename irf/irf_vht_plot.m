@@ -40,7 +40,7 @@ b=irf_resamp(b,e);
 if strcmp(vht_is,'given')  % VHT is given
     vht=vht(1,end-2:end); % assume that vht=[[t] vx vy vz]; use GSE notation
     eht=irf_e_vxb([0 vht],b); % evht=irf_add(1,e,-1,eht); evht would be E field in VHT frame
-    ind_nan=find(isnan([e(:,2) + b(:,2)])); % remove NaN in B or E from calculation
+    ind_nan=find(isnan(e(:,2) + b(:,2))); % remove NaN in B or E from calculation
     if vht_flag == 2
         ep=[e(ind_nan,2);e(ind_nan,3)];
         ehtp=[eht(ind_nan,2);eht(ind_nan,3)];

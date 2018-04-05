@@ -98,9 +98,9 @@ for num = 1:size(time_int, 1)    % Set for each time interval in turn.
    % each interval.
    lower=caa_locate_bisect(result,time_int(num, 1)+delta_time-1e-6,1);
    upper=caa_locate_bisect(result,time_int(num, 2)+delta_time-1e-6,1);
-   if time_int(num, 1) > (result(lower,1)+delta_time) , lower=lower+1; , end
+   if time_int(num, 1) > (result(lower,1)+delta_time) , lower=lower+1; end
    if upper < length(result(:,1))
-       if time_int(num, 2) >= (result(upper+1,1)-delta_time) , upper=upper+1; , end
+       if time_int(num, 2) >= (result(upper+1,1)-delta_time) , upper=upper+1; end
    end
    
    if (upper-lower)==0

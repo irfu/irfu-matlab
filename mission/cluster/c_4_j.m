@@ -1,4 +1,4 @@
-function [j,divB,B,jxB,divTshear,divPb]=c_4_j(r1,r2,r3,r4,b1,b2,b3,b4)
+function [j,divB,B,jxB,divTshear,divPb]=c_4_j(r1,r2,r3,r4,b1,b2,b3,b4) %#ok<INUSL,INUSD>
 %C_4_J  Calculate current from using 4 spacecraft technique
 %  in addition one can obtain average magnetic field and jxB values
 %
@@ -39,9 +39,9 @@ if nargin==2
 	rs = r1;
 	bs = r2;
 	for cl_id=1:4
-		ttt = evalin('caller',irf_ssub(rs,cl_id)); 
+		ttt = evalin('caller',irf_ssub(rs,cl_id)); %#ok<NASGU>
 		eval(irf_ssub('r? =ttt;',cl_id)); clear ttt
-		ttt = evalin('caller',irf_ssub(bs,cl_id)); 
+		ttt = evalin('caller',irf_ssub(bs,cl_id)); %#ok<NASGU>
 		eval(irf_ssub('b? =ttt;',cl_id)); clear ttt
 	end
 	clear bs rs

@@ -131,8 +131,8 @@ for kk = 1:length(dirs)
    			   fprintf(fid, '%s\n', ['Export returned error for ' l1p{k} ' in ' cur_dir]);
    			   fclose(fid);
    			end
-   		end
-   	end
+   	   end
+      end
 %   	if exist([sp '/mER.mat'],'file')
       if any(checkFileExists_subfunc('mER.mat', cur_dir, sp))
    		for k=1:length(l1e)
@@ -144,7 +144,7 @@ for kk = 1:length(dirs)
    			   fclose(fid);
    			end
    		end
-   	end
+      end
 %   	lev_list(ii) = [];
    end
 %   if isempty(lev_list), cd(sp), return, end
@@ -178,7 +178,7 @@ for kk = 1:length(dirs)
    					numErrors = numErrors + 1;
    		   end
 %   		end
-   	end
+         end
 %   	if exist([sp '/mP.mat'],'file')
       if any(checkFileExists_subfunc('mP.mat', cur_dir, sp))
          if findCellString_subfunc(l2, 'P')
@@ -189,8 +189,8 @@ for kk = 1:length(dirs)
    		      fprintf(fid, '%s\n', ['Export returned error for L2P in ' cur_dir]);
    			   fclose(fid);
    		   end
-   		end
-   	end
+         end
+      end
 %   	lev_list(ii) = [];
    end
 %   if isempty(lev_list), cd(sp), return, end
@@ -236,7 +236,7 @@ for kk = 1:length(dirs)
    					numErrors = numErrors + 1;
    		   end
    		end
-   	end
+         end
    	% P
 %   	if exist([sp '/mP.mat'],'file')
      if any(checkFileExists_subfunc('mP.mat', cur_dir, sp))
@@ -248,7 +248,7 @@ for kk = 1:length(dirs)
    		      fprintf(fid, '%s\n', ['Export returned error for L3P in ' cur_dir]);
    			   fclose(fid);
    		   end
-   		end
+         end
    	end
    end   % lev == 3
    

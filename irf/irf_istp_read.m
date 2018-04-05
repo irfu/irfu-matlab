@@ -41,7 +41,7 @@ elseif strcmp(info.Variables{6,1},'BGSM') %IMF H2 data
 		time(i) = todatenum(dt{i,1});
 		data(i,:) = dt{i,6}';
 	end
-elseif strcmp(info.Variables{6,1},'Np') & strcmp(info.Variables{7,1},'Vp')
+elseif strcmp(info.Variables{6,1},'Np') && strcmp(info.Variables{7,1},'Vp')
 %SW data
 	data = zeros(ndata,1);
 	for i = 1:ndata

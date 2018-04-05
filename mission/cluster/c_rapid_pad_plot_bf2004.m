@@ -60,13 +60,13 @@ for kk=1:length(ttt)
 	Pitang_each=squeeze(bbb(kk,:,:));
 	for ii=1:16
 		for jj=1:9
-			if isnan(Flux_each(ii,jj))==0 & isnan(Pitang_each(ii,jj))==0
+			if isnan(Flux_each(ii,jj))==0 && isnan(Pitang_each(ii,jj))==0
                 ind=find(angtemp>=Pitang_each(ii,jj)); index=ind(1)-1;
 			    if index==0; index=1; end
             
 				Flux(kk,index)=Flux(kk,index)+Flux_each(ii,jj);
 				count(kk,index)=count(kk,index)+1;
-            end
+			end
 		end
 	end
 	for jj=1:length(Pitang)

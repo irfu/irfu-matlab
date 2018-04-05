@@ -86,8 +86,8 @@ for iDataSet=1:numel(dataSetArray)
 end
 
 	function dataSetOut=replace_minus_in_cis_names(dataSet)
-		if strfind(dataSet,'CIS')
-			if strfind(dataSet,'-')
+		if strfind(dataSet,'CIS') %#ok<STRIFCND>
+			if strfind(dataSet,'-') %#ok<STRIFCND>
 				irf.log('debug',['Replacing minus signs in dataset: ' dataSet]),
 				dataSetNew=strrep(dataSet,'-','_');
 				irf.log('debug',['New data set: ' dataSetNew]);
@@ -104,11 +104,11 @@ end
 			listFiles(iDir)=[];
 			%% read in file time intervals
 			listFileNames=vertcat(listFiles.name);
-			if strfind(listFileNames(:)','-') % files names to be updated
+			if strfind(listFileNames(:)','-')  %#ok<STRIFCND> % files names to be updated
 				cd(dataSet);
 				for j=1:size(listFileNames)
 					fileName=listFileNames(j,:);
-					if strfind(fileName,'-')
+					if strfind(fileName,'-') %#ok<STRIFCND>
 						fileNameNew=strrep(fileName,'-','_');
 						irf.log('debug',['moving: ' fileName ' >> ' fileNameNew]);
 						movefile(fileName,fileNameNew);

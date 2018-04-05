@@ -10,7 +10,8 @@
 edit irfnotes; return
 %% Initialize figure
 % fast way
-h=irf_plot(5,'newfigure'); % h= irf_plot(number_of_subplots,'newfigure');
+h=irf_plot(5,'newfigure'); %#ok<UNRCH>
+% h= irf_plot(number_of_subplots,'newfigure');
 % example to set subplot position manually
 h(1)=axes('position',[0.65 0.78 0.2 0.2]); % [x y dx dy]
 

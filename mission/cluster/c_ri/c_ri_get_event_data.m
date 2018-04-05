@@ -71,7 +71,7 @@ for i_event=2:size(event_time_intervals,1)
 end
 disp(['From ' num2str(size(event_time_intervals,1)) ' events constructed ' num2str(size(events,1)) ' nonoverlapping events.']);
 
-if exist('mWork.mat'), save -append mWork events, else, save mWork events; end
+if exist('mWork.mat','file'), save -append mWork events, else, save mWork events; end
 
 for i_event=1:size(events,1)
   start_time_epoch=events(i_event,1);start_time=fromepoch(start_time_epoch);
@@ -119,7 +119,7 @@ for i_event=1:size(events,1)
       for ic=sc_list,eval(av_ssub('dB?=c_gse2dsc(B?,?);',ic)),end
       if exist(file_name,'file'), flag_append='-append';else, flag_append='';end
       save(file_name,'B1','B2','B3','B4','dB1','dB2','dB3','dB4',flag_append);
-          if debug, disp(['saving B1 B2 B3 B4']);end
+          if debug, disp('saving B1 B2 B3 B4');end
 
     case 'EFW_P'
       file_prefix='F';

@@ -10,7 +10,7 @@ function [z]=irf_vec_x_scal(x,y,p)
 % $Id$
 
 if nargin==2,p=1;end
-if size(y)==[1 1],y=[x(:,1) ones(size(x(:,1)))*y];end
+if isscalar(y), y=[x(:,1) ones(size(x(:,1)))*y]; end
         
 if size(x,1) ~= size(y,1)
  irf_log('fcal','interpolating y to x')

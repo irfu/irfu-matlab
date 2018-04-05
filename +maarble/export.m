@@ -83,7 +83,7 @@ end
 
 % Add END_OF_RECORD markers in the end of each line
 out_CharArray(:,end)='$';
-out_CharArray(:,end+1)=sprintf('\n');
+out_CharArray(:,end+1)=sprintf('\n'); %#ok<SPRINTFN>
 out_CharArray = out_CharArray';
 out_CharArray=out_CharArray(:)';
 

@@ -32,14 +32,14 @@ if nargin<1, disp('Not enough arguments. See usage:');help irf_pl_eb_nrf;return;
 
 if length(vngse) == 3, vngse=[tint(1) vngse];end
 
-if nargin==1 | isempty(tint),   load mE dE1;tint=[E(1,1) E(end,1)]; end
+if nargin==1 || isempty(tint),   load mE dE1;tint=[E(1,1) E(end,1)]; end
 if nargin == 3;  sc_list=e; end
 if nargin<3, sc_list=1:4; end
 if nargin<=3
   for ic=sc_list,eval(irf_ssub('load mEDSI diE?p1234;die?=irf_tlim(diE?p1234,tint);clear diEp?1234;disp(''..diE?p1234'');',ic)),end
   for ic=sc_list,eval(irf_ssub('load mB diB?;dib?=irf_tlim(diB?,tint);clear diB?;disp(''..diB?'')',ic)),end
 end
-if nargin == 4,  sc_list=1;die1=e;dib1=b; end
+if nargin == 4,  sc_list=1;die1=e;dib1=b; end %#ok<NASGU>
 if nargin == 5,  eval(irf_ssub('die?=irf_tlim(e,tint);dib?=irf_tlim(b,tint);',sc_list));  end
 
 for ic=sc_list % which satellite
@@ -63,7 +63,7 @@ enml=ebv_lmn;
 figure(ic);clf
 npl=7;ipl=1;
 h(ic,ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1;
-if exist('mP.mat'), eval(irf_ssub('load mP P?;p=irf_tlim(P?,tint);',ic));irf_plot(p);end
+if exist('mP.mat','file'), eval(irf_ssub('load mP P?;p=irf_tlim(P?,tint);',ic));irf_plot(p);end
 title(['sc ' num2str(ic) ' vn_{GSE}=' num2str(irf_abs(vngse,1),3) ' [' num2str(irf_norm(vngse(1,2:4)),2) '] km/s. ' title_lmn]);
 ylabel('Vps [V]');
 irf_pl_info(['c\_e\_mp() ' datestr(now)]); % add information to the plot

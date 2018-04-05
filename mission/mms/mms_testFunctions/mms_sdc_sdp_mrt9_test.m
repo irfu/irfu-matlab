@@ -28,7 +28,7 @@ procs    = {'scpot','ql','sitl','l2pre'};
 dates    = {'20160101'};
 defattdate = {'2015365_2016001'}; % Defatt Date corresponding to each date in "dates".
 %dates   = {'20150410','20160101'};
-scList   = [1];
+scList   = 1;
 
 %% Tests
 for scId = scList

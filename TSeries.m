@@ -1075,10 +1075,10 @@
             elseif obj1.datasize('dataonly') == obj2.datasize('dataonly')
               newData = obj1.data.*obj2.data;    
             elseif all(obj1.datasize('dataonly') == [1 1]) && any(obj2.datasize('dataonly') ~= [1 1])
-              data1 = repmat(data1,[obj2.datasize('dataonly')]);
+              data1 = repmat(data1, obj2.datasize('dataonly') );
               newData = data1.*data2;
             elseif any(obj1.datasize('dataonly') ~= [1 1]) && all(obj2.datasize('dataonly') == [1 1])
-              data2 = repmat(data2,[obj1.datasize('dataonly')]);
+              data2 = repmat(data2, obj1.datasize('dataonly'));
               newData = data1.*data2;
             else
               error('Not supported.')
@@ -1086,7 +1086,7 @@
           otherwise % tensor multiplication
             %error('Tensor multiplication not yet implemented.')
             %reshapedData1 = permute(data1,[]);
-            newData = zeros(sizeData1(1),sizeData2(2),newTime.length);
+            %newData = zeros(sizeData1(1),sizeData2(2),newTime.length);
             newTmpData = zeros(sizeData1(1),sizeData2(2),newTime.length);
             for i1 = 1:sizeData1(1)
               for i2 = 1:sizeData2(2)
@@ -1243,7 +1243,7 @@
             && obj.tensorOrder>0 ...
             && all(obj.datasize('dataonly')==[1 1]) ...
             && all(obj1.datasize('dataonly')==[1 1]) 
-          sizeData = size(obj.data);
+          %sizeData = size(obj.data);
           newData  = obj.data./obj1.data;          
           Ts = irf.ts_scalar(obj.time,newData);
         else % Retain tensor order of numerator

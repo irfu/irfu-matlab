@@ -112,7 +112,7 @@ else
     xwb=axesoffsets(3);
 end
 
-if strcmp(darm,'auto') & strcmp(pbarm,'auto')
+if strcmp(darm,'auto') && strcmp(pbarm,'auto')
     xab=axesoffsets(1);
     yab=axesoffsets(2);
     xwb=axesoffsets(3);

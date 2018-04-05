@@ -30,7 +30,7 @@ for ii = 1:length(testsToRun)
   try
     test = eval([testsToRun{ii},';']);
     results = test.run;
-    if DEBUG, display(results); end
+    if DEBUG, display(results); end  %#ok<UNRCH>
     if any([results.Failed]), failed = true; end
   catch ME
     display(getReport(ME, 'extended'));

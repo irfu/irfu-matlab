@@ -81,7 +81,7 @@ DT_PC5 = 80*60; DT_PC2 = 120;
 
 %% Download data
 if 0
-    caa_download(tint+DT_PC5*[-1 1],['C' cl_s '_CP_FGM_5VPS'],'nowildcard');
+    caa_download(tint+DT_PC5*[-1 1],['C' cl_s '_CP_FGM_5VPS'],'nowildcard');  %#ok<UNRCH>
     caa_download(tint+DT_PC5*[-1 1],['C' cl_s '_CP_EFW_L3_E'],'nowildcard');
     caa_download(tint+DT_PC5*[-1 1],['C' cl_s '_CP_AUX_POSGSE_1M'],'nowildcard');
     caa_download(tint+DT_PC5*[-1 1],'CL_SP_AUX','nowildcard');
@@ -117,7 +117,7 @@ if wantPC35
         'mat','tint',tint+DT_PC5*[-1 1]);
     E_4SEC_Quality = c_caa_var_get(['E_quality__C' cl_s '_CP_EFW_L3_E'],...
       'mat','tint',tint+DT_PC5*[-1 1]);
-  if size(E_4SEC_Quality) ~= [0,0]
+  if ~isempty(E_4SEC_Quality)
     E_4SEC(E_4SEC_Quality(:,2)<MIN_E_QUALITY,2:end) = NaN;
   end
 end
@@ -129,7 +129,7 @@ if wantPC12
         'mat','tint',tint+DT_PC2*[-1 1]);
     E_L2_Quality = c_caa_var_get(['E_quality__C' cl_s '_CP_EFW_L2_E'],...
         'mat','tint',tint+DT_PC2*[-1 1]);
-  if size(E_L2_Quality) ~= [0,0]
+  if ~isempty(E_L2_Quality)
     E_L2(E_L2_Quality(:,2)<MIN_E_QUALITY,2:end) = NaN; 
   end
 end

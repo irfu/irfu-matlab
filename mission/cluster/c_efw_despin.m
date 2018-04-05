@@ -65,7 +65,7 @@ if nargin >= 3
     ref_frame='wec';
    if size(coef,1) == 1
     ic=coef;
-    [c1,c2,c3,c4]=c_efw_calib(es(1,1)); %#ok<NASGU>
+    [c1,c2,c3,c4]=c_efw_calib(es(1,1)); %#ok<NASGU,ASGLU>
     clear coef;
     eval(irf_ssub('coef=c?;',ic));
     if nargin == 4
@@ -87,11 +87,11 @@ if nargin >= 3
     coef=[[1 0 0];[1 0 0]];
   elseif strcmp(coef,'efw')
     ref_frame='wec';
-    [c1,c2,c3,c4]=c_efw_calib(es(1,1)); %#ok<NASGU>
+    [c1,c2,c3,c4]=c_efw_calib(es(1,1)); %#ok<NASGU,ASGLU>
     eval(irf_ssub('coef=c?;',ic));
   elseif strcmp(coef,'efw_b')
     ref_frame='wec';
-    [c1,c2,c3,c4]=c_efw_calib(es(1,1)); %#ok<NASGU>
+    [c1,c2,c3,c4]=c_efw_calib(es(1,1)); %#ok<NASGU,ASGLU>
     eval(irf_ssub('coef=c?;',ic));
     coef(1,2)=mean(es(:,4));
     coef(2,2)=mean(es(:,3));

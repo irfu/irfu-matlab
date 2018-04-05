@@ -83,7 +83,7 @@ function Y = coord_trans_type(istart,iend,matlabd,X)
 [iyear,idoy,secs] = onera_desp_lib_matlabd2yds(matlabd);
 ntime = length(iyear);
 nmax = onera_desp_lib_ntime_max;
-Y = repmat(nan,ntime,3);
+Y = nan(ntime,3);
 nstart = 1;
 while nstart <= ntime
     % void coord_trans_vec1_(long int *ntime, long int *sysaxesIN,long int *sysaxesOUT,
@@ -91,7 +91,7 @@ while nstart <= ntime
     % 		   double *xINV,double *xOUTV);
     %
     ii = nstart:min(nstart+nmax-1,ntime);
-    Ynmax = repmat(nan,3,nmax); % place holder
+    Ynmax = nan(3,nmax); % place holder
     YPtr = libpointer('doublePtr',Ynmax);
     calllib('onera_desp_lib','coord_trans_vec1_',length(ii),istart,iend,iyear(ii),idoy(ii),secs(ii),X(ii,:)',YPtr);
     Ynmax = get(YPtr,'value');

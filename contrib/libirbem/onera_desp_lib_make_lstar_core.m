@@ -82,12 +82,12 @@ if length(matlabd)==1
 end
 maginput = onera_desp_lib_maginputs(maginput); % NaN to baddata
 
-Lm = repmat(nan,ntime,nipa);
-Lstar = repmat(nan,ntime,nipa);
-Bmirror = repmat(nan,ntime,nipa);
-Bmin = repmat(nan,ntime,1);
-J = repmat(nan,ntime,nipa);
-MLT = repmat(nan,ntime,1);
+Lm = nan(ntime,nipa);
+Lstar = nan(ntime,nipa);
+Bmirror = nan(ntime,nipa);
+Bmin = nan(ntime,1);
+J = nan(ntime,nipa);
+MLT = nan(ntime,1);
 Nmax = onera_desp_lib_ntime_max; % maximum array size in fortran library
 if ntime>Nmax
     % break up the calculation into chunks the libarary can handle
@@ -119,12 +119,12 @@ elseif nipa>Nmaxpa
     end
 else
     % reinitialize Lm, etc for full size
-    Lm = repmat(nan,Nmax,Nmaxpa);
-    Lstar = repmat(nan,Nmax,Nmaxpa);
-    Bmirror = repmat(nan,Nmax,Nmaxpa);
-    Bmin = repmat(nan,Nmax,1);
-    J = repmat(nan,Nmax,Nmaxpa);
-    MLT = repmat(nan,Nmax,1);
+    Lm = nan(Nmax,Nmaxpa);
+    Lstar = nan(Nmax,Nmaxpa);
+    Bmirror = nan(Nmax,Nmaxpa);
+    Bmin = nan(Nmax,1);
+    J = nan(Nmax,Nmaxpa);
+    MLT = nan(Nmax,1);
     
     [iyear,idoy,UT] = onera_desp_lib_matlabd2yds(matlabd);
     LmPtr = libpointer('doublePtr',Lm);
@@ -134,17 +134,17 @@ else
     JPtr = libpointer('doublePtr',J);
     MLTPtr = libpointer('doublePtr',MLT);
     if nipa<Nmaxpa
-        alpha = [alpha(:)',repmat(nan,1,Nmaxpa-nipa)]; % pad alpha
+        alpha = [alpha(:)',nan(1,Nmaxpa-nipa)]; % pad alpha
     end
     maginput = maginput';
     % expand arrays
-    iyear = [iyear(:)', repmat(nan,1,Nmax-ntime)];
-    idoy = [idoy(:)', repmat(nan,1,Nmax-ntime)];
-    UT = [UT(:)', repmat(nan,1,Nmax-ntime)];
-    x1 = [x1(:)', repmat(nan,1,Nmax-ntime)];
-    x2 = [x2(:)', repmat(nan,1,Nmax-ntime)];
-    x3 = [x3(:)', repmat(nan,1,Nmax-ntime)];
-    maginput = [maginput, repmat(nan,25,Nmax-ntime)];
+    iyear = [iyear(:)', nan(1,Nmax-ntime)];
+    idoy = [idoy(:)', nan(1,Nmax-ntime)];
+    UT = [UT(:)', nan(1,Nmax-ntime)];
+    x1 = [x1(:)', nan(1,Nmax-ntime)];
+    x2 = [x2(:)', nan(1,Nmax-ntime)];
+    x3 = [x3(:)', nan(1,Nmax-ntime)];
+    maginput = [maginput, nan(25,Nmax-ntime)];
     
     if splitting
         calllib('onera_desp_lib',libfunc_name,ntime,nipa,kext,options,sysaxes,iyear,idoy,UT,x1,x2,x3,alpha,maginput,...

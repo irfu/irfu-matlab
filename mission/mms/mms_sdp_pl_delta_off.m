@@ -57,7 +57,7 @@ else % QL
     Tifpi = mms.get_data('Tsi_fpi_ql',Tint,mmsId);
   else %isempty(Vifpi)
     res = []; return
-    Nifpi = []; Tifpi = []; Efpi = []; IonSpc = [];
+    Nifpi = []; Tifpi = []; Efpi = []; IonSpc = []; %#ok<UNRCH>
   end
 end
   
@@ -292,7 +292,7 @@ ylabel('E FPI [mV/m]'), xlabel('SDP 34 [mV/m]')
 %Es34AspocOffResidual1 = irf.ts_vec_xy(Es34AspocOffR.time(idxMSH),residuals(:,1:2));
 
 if 0
-subplot(4,2,7)
+subplot(4,2,7) %#ok<UNRCH>
 [~,res.p1234,residuals] = plot_mvregress(...
   [Es12AspocOffR.data(idxMSH,:) Es34AspocOffR.data(idxMSH,:)],...
   [EfpiR.data(idxMSH,1:2) EfpiR.data(idxMSH,1:2)]);
@@ -334,7 +334,7 @@ else
   Es12Corr = Es12AspocOn; Es34Corr = Es34AspocOn;
 end
 if 0
-  Es12Corr.data = Es12Corr.data*res.p1234.slope;
+  Es12Corr.data = Es12Corr.data*res.p1234.slope; %#ok<UNRCH>
   Es12Corr.data(:,1) = Es12Corr.data(:,1) + res.p1234.offs(1);
   Es12Corr.data(:,2) = Es12Corr.data(:,2) + res.p1234.offs(2);
   Es34Corr.data = Es34Corr.data*res.p1234.slope;

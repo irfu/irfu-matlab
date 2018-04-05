@@ -32,10 +32,10 @@ if strcmp(action,'initialize')
   if nargin<6, flag_v=1;                                                                   end
   if nargin<5, flag_v=0;                                                                   end
   if nargin<4
-    if  exist('mB.mat')  
+    if  exist('mB.mat','file')  
         ok=c_load('B?',ic);
         if ok, c_eval('magnetic_field=c_gse2dsc(B?,?);clear B?',ic);end
-    elseif exist('mBPP.mat'), eval(irf_ssub('load mBPP dBPP?;magnetic_field=dBPP?;clear dBPP?',ic));
+    elseif exist('mBPP.mat','file'), eval(irf_ssub('load mBPP dBPP?;magnetic_field=dBPP?;clear dBPP?',ic));
     else,  irf_log('load','Could not read B field, using B=[0 0 1] nT in DS ref frame');magnetic_field=[1 0 0 1]; % first col is time
     end
   end
@@ -143,15 +143,15 @@ elseif strcmp(action,'plot')
   phase_p3=phase_p1     - pi/2   ;
   phase_p2=phase_p1     + pi     ;
   phase_p4=phase_p1     + pi/2 ;
-  rp1=[44*cos(phase_p1) 44*sin(phase_p1) 0]; % in DS reference frame
-  rp2=[44*cos(phase_p2) 44*sin(phase_p2) 0];
-  rp3=[44*cos(phase_p3) 44*sin(phase_p3) 0];
-  rp4=[44*cos(phase_p4) 44*sin(phase_p4) 0];
+  rp1=[44*cos(phase_p1) 44*sin(phase_p1) 0]; %#ok<NASGU> % in DS reference frame
+  rp2=[44*cos(phase_p2) 44*sin(phase_p2) 0]; %#ok<NASGU> 
+  rp3=[44*cos(phase_p3) 44*sin(phase_p3) 0]; %#ok<NASGU> 
+  rp4=[44*cos(phase_p4) 44*sin(phase_p4) 0]; %#ok<NASGU> 
 
   for ip=1:4,eval(irf_ssub('rp?_gse=c_gse2dsc([t rp?],ic,-1);rp?_gse(1)=[];',ip)),end
   bfield=irf_resamp(b,t);
   bxs=irf_norm(irf_cross(bfield,[0 0 0 1]));
-  bxsxb=irf_norm(irf_cross(bxs,bfield)); % (bxs)xb
+  bxsxb=irf_norm(irf_cross(bxs,bfield)); %#ok<NASGU>  % (bxs)xb
   bn=irf_norm(bfield);
   bn_gse=c_gse2dsc(bn,ic,-1);
   b_elevation=-asin(bn(4))*180/pi;

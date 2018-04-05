@@ -99,7 +99,7 @@ while flag_have_options
             end
         case 'linear'
             if numel(args)>1 && isnumeric(args{2})
-                df = args{2};
+                df = args{2}; %#ok<NASGU>
                 uselinear = 1;
                 irf.log('notice','Using linearly spaced frequencies');
             end
@@ -142,7 +142,7 @@ if test_resamp
     E34 = mms.dft_timeshift(E34,-30.518e-6);
     E56 = mms.dft_timeshift(E56,-34.332e-6);
 else
-    V3 = V3.resample(V1.time);
+    V3 = V3.resample(V1.time); %#ok<UNRCH>
     V5 = V5.resample(V1.time);
     E12 = E12.resample(V1.time); %These resamples need to be changed.
     E34 = E34.resample(V1.time);
@@ -168,7 +168,7 @@ if ~use_56 %Unnecessary if probes 5 & 6 are used.
     
     norepeat = ones(length(zphase.time),1);
     nph = length(zphase.data);
-    for ii=[2:nph]
+    for ii=2:nph
         if(zphase.time(ii) > zphase.time(ii-1))
             if(zphase.data(ii) < zphase.data(ii-1))
                 zphase.data(ii:end) = zphase.data(ii:end)+double(360.0);
@@ -197,28 +197,28 @@ if ~fieldflag
     SCV34 = zeros(size(SCV34));
 end
 
-E1 = (SCpot.data(:,1)-SCV34)*1e3/60;
-E2 = (SCV34-SCpot.data(:,2))*1e3/60;
-E3 = (SCpot.data(:,3)-SCV12)*1e3/60;
-E4 = (SCV12-SCpot.data(:,4))*1e3/60;
-E5 = (SCpot.data(:,5)-(SCV34+SCV12)/2)*1e3/14.6; %Added
-E6 = ((SCV34+SCV12)/2-SCpot.data(:,6))*1e3/14.6; %Added
+E1 = (SCpot.data(:,1)-SCV34)*1e3/60; %#ok<NASGU>
+E2 = (SCV34-SCpot.data(:,2))*1e3/60; %#ok<NASGU>
+E3 = (SCpot.data(:,3)-SCV12)*1e3/60; %#ok<NASGU>
+E4 = (SCV12-SCpot.data(:,4))*1e3/60; %#ok<NASGU>
+E5 = (SCpot.data(:,5)-(SCV34+SCV12)/2)*1e3/14.6; %#ok<NASGU> %Added
+E6 = ((SCV34+SCV12)/2-SCpot.data(:,6))*1e3/14.6; %#ok<NASGU> %Added
 
-c_eval('E? = TSeries(time,E?,''to'',1);',[1:6]); %Generalized
+c_eval('E? = TSeries(time,E?,''to'',1);',1:6); %Generalized
 
 if ~use_56 %Added third dimension to work with 5-6, does not affect 12,34.
     %Get spacecraft phase
-    phase_p1=zphase.data/180*pi + pi/6;
-    phase_p3=zphase.data/180*pi + 2*pi/3;
-    phase_p2=zphase.data/180*pi + 7*pi/6;
-    phase_p4=zphase.data/180*pi + 5*pi/3;
-    c_eval('rp?=[60*cos(phase_p?) 60*sin(phase_p?), zeros(length(phase_p?),1)];',[1:4]);
+    phase_p1=zphase.data/180*pi + pi/6; %#ok<NASGU>
+    phase_p3=zphase.data/180*pi + 2*pi/3; %#ok<NASGU>
+    phase_p2=zphase.data/180*pi + 7*pi/6; %#ok<NASGU>
+    phase_p4=zphase.data/180*pi + 5*pi/3; %#ok<NASGU>
+    c_eval('rp?=[60*cos(phase_p?) 60*sin(phase_p?), zeros(length(phase_p?),1)];', 1:4);
     probe_nr = [1 3];
 else
     probe_nr = 5;
-    phase_p5=ones(length(Bxyz.data(:,1)),1);
-    phase_p6=-1*ones(length(Bxyz.data(:,1)),1);
-    c_eval('rp?=[zeros(length(Bxyz.data(:,1)),1) zeros(length(Bxyz.data(:,1)),1) phase_p?*14.6];',[5:6]);
+    phase_p5=ones(length(Bxyz.data(:,1)),1); %#ok<NASGU>
+    phase_p6=-1*ones(length(Bxyz.data(:,1)),1); %#ok<NASGU>
+    c_eval('rp?=[zeros(length(Bxyz.data(:,1)),1) zeros(length(Bxyz.data(:,1)),1) phase_p?*14.6];', 5:6);
 end
 
 c_eval('thetap?b = (rp?(:,1).*Bxyz.data(:,1)+rp?(:,2).*Bxyz.data(:,2)+rp?(:,3).*Bxyz.data(:,3))./(sqrt(rp?(:,1).^2+rp?(:,2).^2+rp?(:,3).^2).*Bxyz.abs.data);',probe_nr);
@@ -249,7 +249,7 @@ else
     c_eval('W1c = irf_wavelet(E?,''returnpower'',0,''cutedge'',0,''linear'',df);',probe);
     c_eval('W2c = irf_wavelet(E?,''returnpower'',0,''cutedge'',0,''linear'',df);',probe+1);
   end  
-  numf = length(W1c.f);
+  numf = length(W1c.f); %#ok<NODEF>
 end
 
 L = length(idx);
@@ -257,13 +257,13 @@ times = time(idx);
 
 W1c.p = {W1c.p{1,1}(idx,:)};
 W1c.t = times;
-W2c.p = {W2c.p{1,1}(idx,:)};
+W2c.p = {W2c.p{1,1}(idx,:)}; %#ok<NODEF>
 W2c.t = times;
 
 fkPower = 0.5*(cell2mat(W1c.p).*conj(cell2mat(W1c.p)) + cell2mat(W2c.p).*conj(cell2mat(W2c.p)));
 
 N = floor(L/cav)-1;
-posav = cav/2 + [0:1:N]*cav;
+posav = cav/2 + (0:1:N)*cav;
 avtimes = times(posav);
 Bs = Bxyz.resample(avtimes);
 c_eval('thetap?b = thetap?b.resample(avtimes);',probe_nr);
@@ -276,7 +276,7 @@ end
 c34x = zeros(N+1,numf);
 Powerav = zeros(N+1,numf);
 
-for m = [1:1:N+1]
+for m = 1:N+1
     c34x(m,:) = irf.nanmean(W1c.p{1,1}([posav(m)-cav/2+1:posav(m)+cav/2],:).*conj(W2c.p{1,1}([posav(m)-cav/2+1:posav(m)+cav/2],:)));
     Powerav(m,:) = irf.nansum(fkPower([posav(m)-cav/2+1:posav(m)+cav/2],:));
 end
@@ -291,7 +291,7 @@ tempi = imag(c34x);
 th = (atan2(tempi,tempr));
 kval = zeros(N+1,numf);
 
-for q = [1:1:numf]
+for q = 1:numf
     kval(:,q) = th(:,q)./rcos;
 end
 
@@ -302,8 +302,8 @@ dk = (maxk - mink)/numk;
 kvec = mink + [0:1:numk-1]*dk;
 
 if 1
-    for m = [1:1:N+1]
-        for q = [1:1:numf]
+    for m = 1:N+1
+        for q = 1:numf
             knumber = floor((kval(m,q)-mink)/dk)+1;
             disprel(knumber,q) = disprel(knumber,q) + Powerav(m,q);
         end

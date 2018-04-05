@@ -30,7 +30,7 @@ for i_file=1:n_cdf_files
     % keep only variables that have time axis
 
     for j=1:size(variable_names,1)
-        if findstr(variable_names{j,1},'Epoch')
+        if strfind(variable_names{j,1},'Epoch')
             epoch_variable=variable_names(j,1);
             % disp(['epoch variable: ' epoch_variable{1}]);
             epoch_column=j;
@@ -58,7 +58,7 @@ for i_file=1:n_cdf_files
             temp=DATA{j,k};temp=temp(:)';var(j,:)=temp;
         end
         var=[DATA{:,k}]';
-        i=find(var<-1e30);var(i)=NaN;
+        var(var<-1e30)=NaN;
         eval([variables_time_vectors{k} '=[t double(var)];' ]);
         variable_list=[variable_list ' ' variables_time_vectors{k}];
     end

@@ -1,4 +1,4 @@
-function Plot_dcedcv_new(DayOfInterest, bashRun)
+function Plot_dcecomm_daily(DayOfInterest, bashRun)
 % Plot_dcedcv_new is a short function used to plot a full day of all DCE
 % and DCV data RAW from our source cdf files. It uses the latest cdf file
 % version downloaded from SDC and comine data for an entire day into one 
@@ -28,7 +28,7 @@ if isempty(DayOfInterest)
 end
 if nargin==1, bashRun=false; end % Default to GUI run
 dataPathRoot = getenv('DATA_PATH_ROOT'); % Default to "/data/mms/"
-outPath = ['/data/mms/irfu/plots/edp/RawData/'];
+outPath = '/data/mms/irfu/plots/edp/RawData/';
 if ( ~islogical(bashRun) || ...
     ( bashRun && ~exist(outPath, 'dir') ) )
   error('Incorrect usage. See help.');

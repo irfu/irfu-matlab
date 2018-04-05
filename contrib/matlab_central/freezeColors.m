@@ -272,7 +272,7 @@ if mod(nargs,2)
     end
     % 4/2010 check if object to be frozen is a colorbar
     if strcmp(get(h,'Tag'),'Colorbar')
-      if ~exist('cbfreeze.m')
+      if ~exist('cbfreeze.m','file')
         warning('JRI:freezeColors:checkArgs:cannotFreezeColorbar',...
             ['You seem to be attempting to freeze a colorbar. This no longer'...
             'works. Please read the help for freezeColors for the solution.'])

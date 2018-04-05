@@ -24,7 +24,7 @@ for i=1:i_end
 v1 = B1(i,2:4);
 v2 = B2(i,2:4);
 
-if v1== [0 0 0] | v2 == [0 0 0] 
+if v1== [0 0 0] || v2 == [0 0 0] 
 angles(i) = 0;
 ampl1(i) = norm(v1);
 ampl2(i) = norm(v2);
@@ -54,7 +54,7 @@ end
 
 [r,c] = size(angles)
 
-if r == 1 & c ~= 1
+if r == 1 && c ~= 1
 angles= angles';
 end
 

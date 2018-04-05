@@ -26,7 +26,7 @@ disp('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
 
 %% Defaults and variables
 persistent s metaNames datasetNames indexFile
-linkUrlFile = 'http://www.space.irfu.se/cluster/matlab/indexCaaMeta.mat';
+linkUrlFile = 'https://www.space.irfu.se/cluster/matlab/indexCaaMeta.mat';
 
 %% empty arguments > show help
 if nargin==0

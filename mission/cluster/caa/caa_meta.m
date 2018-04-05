@@ -29,7 +29,7 @@ persistent s datasetNames indexFile
 % If you are generating new index file for the irfu server
 %   then please increase the version number
 indexFileDefault = 'indexCaaMeta_v3'; % default file name, v2 added in 20130618
-linkUrlFile = ['http://www.space.irfu.se/cluster/matlab/' ...
+linkUrlFile = ['https://www.space.irfu.se/cluster/matlab/' ...
 	indexFileDefault '.mat'];
 %% empty arguments > show help
 if nargin==0
@@ -55,7 +55,7 @@ if nargin>=1 && ischar(varargin{1}) && strcmp(varargin{1},'create')
 	tempFileTarGz = [tempFileName '.tar.gz'];
 	tempFileTar   = [tempFileName '.tar'];
 	[tempFileTarGz,isOk] = urlwrite(urlMetaData, tempFileTarGz, ...
-      'Authentication', 'Basic', 'Get', tempGetRequest );
+      'Authentication', 'Basic', 'Get', tempGetRequest ); %#ok<URLWR> websave introduced in R2014b
 	if isOk
 		gunzip(tempFileTarGz);
 		%untar(tempFileTar,'./');
@@ -274,6 +274,16 @@ function csaID = get_url_identity()
     csaPwd = input('Input csa password [default:!kjUY88lm]:','s');
     if isempty(csaPwd), csaPwd='!kjUY88lm';end
     datastore('csa','pwd',csaPwd);
+  end
+  if strcmp(csaUser, 'avaivads') && strcmp(csaPwd,'!kjUY88lm')
+    % Old password used by irfu-matlab, very soon to be deprecated!
+    % Every user must from now on use their own credentials with ESA.
+    %datastore('csa','user',[]); datastore('csa','pwd',[]); % <-- Remove comment when it has been deprecated
+    errStr = ['Please register at ESA: https://www.cosmos.esa.int/web/csa', ...
+      ' and then use your own credentials in irfu-matlab to download data from CSA.'];
+    irf.log('critical', errStr);
+    %error(errStr); % <-- When deprecated, change from warning to error.
+    warning(errStr);
   end
   csaID = struct('csaUser', csaUser, 'csaPwd', csaPwd);
 end

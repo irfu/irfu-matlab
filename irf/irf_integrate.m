@@ -51,7 +51,7 @@ if nargin>=2 % other origo for integration
 end
 
 if isinpTS
-	xintd = xint(:,[2:end]);
+	xintd = xint(:, 2:end);
 	xintt = irf_time(xint(:,1),'epoch>epochtt');
     xint = TSeries(xintt,xintd);
 end

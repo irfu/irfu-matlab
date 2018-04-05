@@ -48,14 +48,14 @@ if (nargin == 0)
 		'*.*', ...
 		'All Files (*.*)'}, ...
 	       'Select image file');
-     if isequal(filename,0) | isequal(pathname,0)
+     if isequal(filename,0) || isequal(pathname,0)
 	  return
      else
 	  imagename = fullfile(pathname, filename);
      end
 elseif nargin == 1
      imagename = varargin{1};
-     [path, file,ext] = fileparts(imagename);
+     [~, file,ext] = fileparts(imagename);
      filename = strcat(file,ext);
 end   
 
@@ -225,9 +225,9 @@ numberformat = '%6.2f';
 nXY = [];
 ng = 0;
 while 1
-     fprintf(['\n INFO >> Click with RIGHT mouse button to QUIT \n\n']);
+     fprintf('\n INFO >> Click with RIGHT mouse button to QUIT \n\n');
      n = 0;
-     disp(sprintf('\n %s \n',' Index          X            Y'))
+     fprintf('\n %s \n\n',' Index          X            Y')
      
 % %%%%%%%%%%%%%% DATA ACQUISITION LOOP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
      while 1
@@ -250,7 +250,7 @@ while 1
 	       n = n+1;
 	       xpt(n) = x;
 	       ypt(n) = y;
-	       disp(sprintf(' %4d         %f      %f',n, x, y))
+	       fprintf(' %4d         %f      %f\n',n, x, y)
 	       ng = ng+1;
 	       nXY(ng,:) = [n x y];
 	  else
@@ -260,7 +260,7 @@ while 1
 	       drawnow
 	       switch upper(query)
 		    case 'YES'
-			 disp(sprintf('\n'))
+			 fprintf('\n\n')
 			 break
 		    case 'NO'
 			 
@@ -272,10 +272,10 @@ while 1
      if nargout  == 0
 	  % Save data to file
 	  [writefname, writepname] = uiputfile('*.dat','Save data as');
-	  if (writefname == 0) | (writepname == 0)
+	  if (writefname == 0) || (writepname == 0)
 	       close(FigName)
 	       break
-	       return
+	       return %#ok<UNRCH>
 	  end
 	  writepfname = fullfile(writepname, writefname);
 	  writedata = [xpt' ypt'];
@@ -283,7 +283,7 @@ while 1
 	  fprintf(fid,'  %g     %g\n',writedata');
 	  fclose(fid);
 	  close(FigName)
-	  disp(sprintf('\n'))
+	  fprintf('\n\n')
      elseif nargout == 1
 	  outputdata = [xpt' ypt'];
 	  varargout{1} = outputdata;

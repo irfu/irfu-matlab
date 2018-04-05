@@ -93,7 +93,7 @@ for i_file=1:size(file_list,1)
     for j=1:n_panels,plot_comms{j}=eval(['plot_command.' panels{j}]);end
     load_comm=['load(''' path_events file_list(i_file).name ''');'];
     fig_comm=['i_fig=' num2str(i_fig) '; n_panels=' num2str(n_panels) '; figure(i_fig); i_panel=1;clear h;'];
-    loop_comm=['for i_panel=1:n_panels,h(i_fig,i_panel)=irf_subplot(n_panels,1,-i_panel);eval(plot_comms{i_panel});end'];
+    loop_comm = 'for i_panel=1:n_panels,h(i_fig,i_panel)=irf_subplot(n_panels,1,-i_panel);eval(plot_comms{i_panel});end';
     if flag_base
       assignin('base','plot_comms',plot_comms);
       evalin('base',load_comm);
@@ -112,17 +112,17 @@ for i_file=1:size(file_list,1)
   end
 end
 
-if flag_print | flag_jpg
+if flag_print || flag_jpg
   for j=1:i_fig-1
     figure(j);
     panel_str='';
     for jj=1:n_panels, panel_str=[panel_str '_' panels{jj}];end
     orient tall;
     if flag_print
-      print_file_name=[file_list(i_file).name '_' panel_str '.ps'];
+      print_file_name=[file_list(i_file).name '_' panel_str '.ps']; %#ok<UNRCH>
       print('-dpsc2',print_file_name);
     elseif flag_jpg
-      print_file_name=[file_list(i_file).name '_' panel_str '.jpg'];
+      print_file_name=[file_list(i_file).name '_' panel_str '.jpg']; %#ok<UNRCH>
       print('-djpg',print_file_name);
     end
   end

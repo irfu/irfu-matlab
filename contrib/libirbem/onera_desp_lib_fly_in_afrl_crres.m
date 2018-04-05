@@ -112,13 +112,13 @@ NEmax = 25; % maximum number of energies
 
 ntime = length(x1);
 Nmax = onera_desp_lib_ntime_max; % maximum array size in fortran library
-Flux = repmat(nan,Nmax,1);
+Flux = nan(Nmax,1);
 if isempty(Ap15)
-    Ap15 = repmat(nan,1,Nmax);
+    Ap15 = nan(1,Nmax);
 elseif length(Ap15)==1
     Ap15 = repmat(Ap15,1,Nmax);
 else
-    Ap15 = [Ap15(:)', repmat(nan,1,Nmax-ntime)];
+    Ap15 = [Ap15(:)', nan(1,Nmax-ntime)];
 end
 if (ntime>Nmax) || (NE>NEmax)
     % break up the calculation into chunks the libarary can handle
@@ -142,7 +142,7 @@ else
 
     if size(energy,2)==1
         whatf = 1; % differential flux
-        energy = [energy,repmat(nan,NE,1)];
+        energy = [energy,nan(NE,1)];
     elseif (size(energy,2)==2) && any(isinf(energy(:,2)))        
         whatf = 3; % integral flux
         if ~all(isinf(energy(:,2)))
@@ -154,12 +154,12 @@ else
         error('%s: "energy" argument of size %d x %d uninterpretable',mfilename,size(energy,1),size(energy,2));
     end
 
-    nanpad = repmat(nan,Nmax-ntime,1);
+    nanpad = nan(Nmax-ntime,1);
     [iyear,idoy,secs] = onera_desp_lib_matlabd2yds([matlabd(:);nanpad]);
     x1 = [x1(:);nanpad];
     x2 = [x2(:);nanpad];
     x3 = [x3(:);nanpad];
-    flux = repmat(nan,Nmax,NEmax);
+    flux = nan(Nmax,NEmax);
     
     FluxPtr = libpointer('doublePtr',flux);
     crres_pathlen = length(crres_path);

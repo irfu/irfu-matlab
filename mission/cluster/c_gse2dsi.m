@@ -41,7 +41,7 @@ if nargin<3, direction = 1; end
 if abs(direction)~=1, direction = 1; warning('irf:gse2dsi','using GSE->DSI'), end
 	
 spin_axis=spin_axis/norm(spin_axis);
-if debug_flag, disp('Spin axis orientation');spin_axis, end
+if debug_flag, disp('Spin axis orientation');spin_axis, end %#ok<UNRCH>
 
 % invert the spin axis
 spin_axis = -spin_axis;

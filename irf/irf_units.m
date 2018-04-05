@@ -31,7 +31,7 @@ if nargin==1 % display matching units
         tline = fgetl(fid);
         if ~ischar(tline), break, end
 		if ~isempty(tline) && ~strcmp(tline(1),'%') % check that not comment line
-			if strfind(lower(tline),lower(varargin{:}))
+			if strfind(lower(tline),lower(varargin{:})) %#ok<STRIFCND>
 				disp(tline);
 			end
 		end

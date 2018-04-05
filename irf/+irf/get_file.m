@@ -9,7 +9,7 @@ function filePath=get_file(fileUrlLink,varargin)
 %		the next matlab session. Uses DATASTORE.
 %
 %	Example:
-%		linkUrlFile = 'http://www.space.irfu.se/cluster/matlab/indexCaaMeta.mat';
+%		linkUrlFile = 'https://www.space.irfu.se/cluster/matlab/indexCaaMeta.mat';
 %		fileIndexCaa = irf.get_file(linkUrlFile,'caa','indexFile');
 %
 
@@ -59,7 +59,7 @@ end
 			fileDir = tempname;
 			mkdir(fileDir);
 			filePath = [fileDir filesep fileName];
-			[f,status]=urlwrite(fileUrlLink,filePath);
+			[f,status]=urlwrite(fileUrlLink,filePath); %#ok<URLWR> websave introduced in R2014b
 			if status
 				disp('Success!');
 				if useDatastore

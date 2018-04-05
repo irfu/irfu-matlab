@@ -123,7 +123,7 @@ for i_subplot=1:(nrow*ncol)
     hold off;
     
     set(gca,'yscale','lin'); 
-    set(gca,'xtick',[1:2:16],'ytick',[1:8]);
+    set(gca,'xtick', 1:2:16, 'ytick', 1:8);
     set(gca,'YDir','reverse');
     ylabel(gca,'Polar ang');
     Time=epoch2iso(T_eve); tlab=Time(12:23);

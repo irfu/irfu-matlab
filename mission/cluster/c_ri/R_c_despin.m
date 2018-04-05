@@ -43,7 +43,7 @@ if nargin == 4
     ref_frame='wec';
    if size(coef,1) == 1
     ic=coef;
-    [c1,c2,c3,c4]=c_efw_calib(es(1,1));
+    [c1,c2,c3,c4]=c_efw_calib(es(1,1)); %#ok<ASGLU>
     clear coef;
     eval(av_ssub('coef=c?;',ic));
    end

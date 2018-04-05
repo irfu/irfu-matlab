@@ -19,7 +19,7 @@ if k==1 % ========================== k=1 ===
 	clear q;
 	disp('Loading wh file into variable wh');
 	q=input('File name (default ./wh):','s');
-	if size(q) eval(['load ' q '; wh=' q ';']); 
+	if size(q), eval(['load ' q '; wh=' q ';']); 
 	else, load .\wh; 
 	end
 	clear q;
@@ -34,7 +34,7 @@ if k==11 % ========================== k=11 ===
 	load .\wh
 	for i1=1:length(wh(:,1))
 	for i2=1:length(wh_temp(:,1))
-		if ((wh(i1,1)==wh_temp(i2,1)) & (wh(i1,2)==wh_temp(i2,2)))
+		if ((wh(i1,1)==wh_temp(i2,1)) && (wh(i1,2)==wh_temp(i2,2)))
 			wh_temp(i2,:)=wh(i1,:);
 		end
 	end
@@ -89,8 +89,8 @@ if k==4 % ========================== k=4 ===
 		s = size(wh);
 		q3 = 13841^2*5.686e-12/2;
 		q4=input('e,H,O (default-e) >','s');
-		if ((q4 == 'H') | (q4 == 'h')) q3=q3*1836.2;end
-		if ((q4 == 'O') | (q4 == 'o')) q3=q3*1836.2*4;end
+		if ((q4 == 'H') || (q4 == 'h')), q3=q3*1836.2; end
+		if ((q4 == 'O') || (q4 == 'o')), q3=q3*1836.2*4; end
 		wh(:,s(2)+1)=log10((wh(:,3)./wh(:,2)).^2*q3);
 		[d1,d2,d3,xx]=whamp.m2xyz(wh(:,[1 2 3 s(2)+1]));
 	end	
@@ -119,13 +119,13 @@ if k==5 % ========================== k=5 ===
 		colorbar;
 	end
 	if q2 == 2
-		cc = caxis	% use default caxis
+		cc = caxis;	% use default caxis
 		q3=input('For min/max input 0/1');
 		if q3==0, cc(1)=-min(abs(cc));cc(2)=min(abs(cc));end
 		if q3==1, cc(1)=-max(abs(cc));cc(2)=max(abs(cc));end
 		caxis(cc);
 
-		cm = [cc(1):(cc(2)-cc(1))/100:cc(2)];
+		cm = cc(1):(cc(2)-cc(1))/100:cc(2);
 		cm = rot90(cm,-1);
 		xcm = ones(length(cm),3);	% colormap matrice
 		q1=input('gray scale y/n? ','s');
@@ -148,8 +148,8 @@ if k==5 % ========================== k=5 ===
 end
 if k==7 % ========================== k=7 ===
 	zp_scale=irf_ask('lin/log scale [%]','zp_scale','lin');
-	if zp_scale == 'lin', z=zlin;p=plin;zlabel='k_{par}';plabel='k_{perp}';
-	elseif zp_scale == 'log', z=zlog;p=plog;zlabel='log_{10} k_{par}';plabel='log_{10} k_{perp}';
+	if strcmp(zp_scale, 'lin'), z=zlin;p=plin;zlabel='k_{par}';plabel='k_{perp}';
+	elseif strcmp(zp_scale, 'log'), z=zlog;p=plog;zlabel='log_{10} k_{par}';plabel='log_{10} k_{perp}';
     else, disp(['scale not changed. scale: ' zp_scale]);
 	end
 end
@@ -164,7 +164,7 @@ if k==9 % ========================== k=9 ===
 	end
 end
 if k==10 % ========================== k=10 ===
-	q2 = ['disp(''matlab session, q-exit'')'];
+	q2 = 'disp(''matlab session, q-exit'')';
 	while(q2~='q')	
 		eval(q2);
 		q2=input('matlab>','s');

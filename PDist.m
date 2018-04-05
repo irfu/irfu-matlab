@@ -223,7 +223,7 @@ classdef PDist < TSeries
       while have_options
         l = 1;
         if isnumeric(args{l})
-          if size(args{l}) == [3 3]
+          if all(size(args{l}) == [3 3])
             newx = args{l}(1,:);
             newy = args{l}(2,:);
             newz = args{l}(3,:);
@@ -338,7 +338,7 @@ classdef PDist < TSeries
       while have_options
         l = 1;
         if isnumeric(args{l})
-          if size(args{l}) == [3 3]
+          if all(size(args{l}) == [3 3])
             newx = args{l}(1,:);
             newy = args{l}(2,:);
             newz = args{l}(3,:);
@@ -419,7 +419,7 @@ classdef PDist < TSeries
       end    
       
       if 0 % Diagnostics
-        step = 2;
+        step = 2; %#ok<UNRCH>
         subplot(1,3,1)
         scatter3(VX(1:step:end),VY(1:step:end),VZ(1:step:end),VZ(1:step:end)*0+10,VEL(1:step:end)); axis equal
         subplot(1,3,2)
@@ -441,7 +441,8 @@ classdef PDist < TSeries
     function PD = reduce(obj,dim,x,varargin) 
       %PDIST.REDUCE Reduces (integrates) 3D distribution to 1D (line).      
       %   Example:
-      %     f1D = iPDist1.reduce('1D',gseB1,'vint',[0 10000]);
+      %     f1D = iPDist1.reduce('1D',dmpaB1,'vint',[0 10000]);
+      %     irf_spectrogram(irf_panel('f1D'),f1D.specrec('velocity_1D'));
       %
       %   Options:
       %     'vint'   - set limits on the from-line velocity to get cut-like
@@ -545,7 +546,7 @@ classdef PDist < TSeries
       emat = double(dist.depend{1});
       if correct4scpot
         scpot = scpot.tlim(dist.time).resample(dist.time);
-        scpot_mat = repmat(scpot.data,[size(emat(1,:))]);
+        scpot_mat = repmat(scpot.data, size(emat(1,:)));
         [it_below_scpot,ie_below_scpot] = find(emat < scpot_mat);
         %dist.data(it_below_scpot,ie_below_scpot,:,:) = 0;
         %dist.data(:,1:6,:,:) = 0;
@@ -569,34 +570,43 @@ classdef PDist < TSeries
         it = it1:it2;
       end
     
+      
+      nt = length(it);
+      % try to make initialization and scPot correction outside time-loop
+      
       % loop to get projection
-      for i = 1:length(it)
-        if length(it)>1;disp([num2str(i),'/',num2str(length(it))]); end
+      disp('Integrating distribution')
+      fprintf('it = %4.0f/%4.0f\n',0,nt) % display progress
+      for i = 1:nt
+        if mod(i,1) == 0, fprintf([repmat('\b', 1, 10) '%4.0f/%4.0f\n'],i,nt); end % display progress
         xphat = xphat_mat(i,:);
         %fprintf('%g %g %g',xphat)
         
-
-        
+        % 3d data matrix for time index it
+        F3d = double(squeeze(double(dist.data(it(i),:,:,:)))); % s^3/m^6
+        energy = emat(it(i),:);
         
         if correct4scpot
           if 0
-            dist.data(it(i),emat(it(i),:) < 0,:,:) = 0;
+            dist.data(it(i),emat(it(i),:) < 0,:,:) = 0; %#ok<UNRCH>
           else
-            ie_below_scpot = find(abs(emat(it(i),:)-scpot_mat(it(1),:))); % energy channel below 
-            ie_below_scpot = find(abs(emat(it(i),:)-scpot_mat(it(1),:)) == min(abs(emat(it(i),:)-scpot_mat(it(1),:)))); % closest energy channel
+            ie_below_scpot = find(abs(emat(it(i),:)-scpot_mat(it(i),:))); % energy channel below 
+            ie_below_scpot = find(abs(emat(it(i),:)-scpot_mat(it(i),:)) == min(abs(emat(it(i),:)-scpot_mat(it(i),:)))); % closest energy channel
             remove_extra_ind = 0; % for margin, remove extra energy channels
-            dist.data(it(i),1:(max(ie_below_scpot) + remove_extra_ind),:,:) = 0; 
-            
+            F3d(it(i),1:(max(ie_below_scpot) + remove_extra_ind),:,:) = 0; 
+            %disp(sprintf('%8.1g ',energy))
+            energy = energy-scpot_mat(it(i),:);
+            %disp(sprintf('%8.1g ',energy))
+            energy(energy<0) = 0;
+            %disp(sprintf('%8.1g ',energy))
           end
         end
-        % 3d data matrix for time index it
-        F3d = double(squeeze(double(dist.data(it(i),:,:,:)))); % s^3/m^6
-
-        energy = emat(it(i),:);
+        
+        
         v = sqrt(2*energy*u.e/M); % m/s       
 
         if 0%length(v) ~= 32 % shopuld be made possible for general number, e.g. 64 (dist.e64)
-            error('something went wrong')
+            error('something went wrong') %#ok<UNRCH>
         end
 
         % azimuthal angle
@@ -621,11 +631,11 @@ classdef PDist < TSeries
 
 
         % Set projection grid after the first distribution function
-        if i == 1
-            % bin centers
-            if ~vgInput
-                vg = [-fliplr(v),v];
-            end
+        % bin centers
+        if ~vgInput
+            vg = [-fliplr(v),v];
+        end
+        if i == 1            
             % initiate projected f
             Fg = zeros(length(it),length(vg));
             dens = zeros(length(it),1);
@@ -643,7 +653,7 @@ classdef PDist < TSeries
       PD.ancillary.projection_direction = xphat_mat(it,:);
       PD.species = dist.species;
       PD.userData = dist.userData;
-      PD.units = 's/m^2';
+      PD.units = 's/m^4';
       
       while ~isempty(ancillary_data)
         PD.ancillary.(ancillary_data{1}) = ancillary_data{2};
@@ -768,11 +778,56 @@ classdef PDist < TSeries
       PD.units = obj.units;
       PD.name = 'omni';
     end
-    function spec = specrec(obj,varargin)      
-      if isempty(varargin); spectype = 'energy'; else, spectype = varargin{1}; end % set default
+    function spec = specrec(obj,varargin)    
+      % PDIST.SPECREC Prepares structure to be used with irf_spectrogram or irf_plot
+      %   sr = PDIST.SPECREC(spectype)
+      %     spectype - 'energy' - default for PDist.type 'omni'
+      %                   Ex: PDist.omni.SPECREC
+      %                       PDist.pitchangles(dmpaB).SPECREC('energy',pitchangles_indices_to_average_over)
+      %                             (pitchangles_indices_to_average_over default is all the indices)                             
+      %                'pitchangle'/'pa' - default for PDist.type 'pitchangle'
+      %                   Ex: PDist.pitchangles(dmpaB).SPECREC
+      %                'velocity'/'1D_velocity'/'velocity_1D' - default for PDist.type 'line (reduced)' 
+      %                   Ex: PDist.reduce('1D',[1 0 0]).SPECREC
+      %                       PDist.reduce('1D',[1 0 0]).SPECREC('velocity_1D','10^3 km/s')
       
-      switch obj.units
-        case {'s^3/km^6','s^3/cm^6','s^3/m^6','s^2/km^4','s^2/cm^4','s^2/m^4','s^1/km^2','s^1/cm^2','s^1/m^2','s/km^2','s/cm^2','s/m^2'}
+      % supported spectrogram types
+      supported_spectypes = {'energy','pitchangle','pa','velocity','1D_velocity','velocity_1D'};      
+%       
+%       % check input      
+%       have_input = 1;
+%       while have_input        
+%         switch varargin{1}
+%           case supported_spectypes            
+%             spectype = varargin{1};
+%             l = 1;
+%           case '10^3 km/s'
+%             l = 1
+%             change_velocity_axis = 1;
+%       end
+      if ~isempty(varargin) && any(strcmp(supported_spectypes,varargin{1})) % check if first argument is one of supported spectypes
+         spectype = varargin{1};  
+         varargin = varargin(2:end); % remove from varargin
+      else % if argument is not one of supported spectypes, set default based on PDist.type
+        switch obj.type
+          case 'omni'
+            spectype = 'energy';
+            irf.log('warning',sprintf('Spectype not given, default spectype for distribution type ''%s'' is ''%s''.',obj.type, spectype));
+          case 'line (reduced)'
+            spectype = '1D_velocity';
+            irf.log('warning',sprintf('Spectype not given, default spectype for distribution type ''%s'' is ''%s''.',obj.type, spectype));
+          case 'pitchangle'
+            spectype = 'pitchangle';
+            irf.log('warning',sprintf('Spectype not given, default spectype for distribution type ''%s'' is ''%s''.',obj.type, spectype));
+          otherwise
+            irf.log('warning',sprintf('Distribution type ''%s'' not supported. Using spectype ''energy'' for whatever backwards compatibility there might be. This option will be removed in a future version.',obj.type));
+            spectype = 'energy';
+            %error(sprintf('Distribution type ''%s'' not supported.',obj.type));
+        end          
+      end
+      
+      switch obj.units % set to p_label according to units of PDist
+        case {'s^3/km^6','s^3/cm^6','s^3/m^6','s^2/km^5','s^2/cm^5','s^2/m^5','s^1/km^4','s^1/cm^4','s^1/m^4','s/km^4','s/cm^4','s/m^4'}
           spec.p_label = {'PSD',obj.units};
         case {'keV/(cm^2 s sr keV)'}
           spec.p_label = {'DEF',obj.units};
@@ -781,24 +836,51 @@ classdef PDist < TSeries
         otherwise
           spec.p_label = {obj.units};
       end
-      switch spectype
+      
+      switch spectype % make specrec structure
         case 'energy'
-          spec.t = obj.time.epochUnix;
-          spec.p = double(obj.data);          
+          switch obj.type
+            case 'pitchangle'
+              if ~isempty(varargin) % assume next argument is the pitchangle level/levels we want to average over
+                iPA = varargin{2};              
+              else
+                iPA = 1:size(obj.depend{2},2);
+              end
+              irf.log('warning',['Averaging over pitch angles [' sprintf(' %g',obj.depend{2}(iPA)) ']']);
+              spec.p = squeeze(double(nanmean(obj.data(:,:,iPA),3)));
+            case 'omni'
+              spec.p = double(obj.data);  
+            otherwise
+              error('Spectype ''%s'' not yet implemented for distribution type ''%s''.',spectype,obj.type);
+          end
+          spec.t = obj.time.epochUnix;          
           spec.f = single(obj.depend{1});
           spec.f_label = {['E_' obj.species(1) ' (eV)']};
         case {'pitchangle','pa'}
+          if ~isempty(varargin) % assume next argument is the pitchangle level/levels we want to average over
+            iE = varargin{1};              
+          else
+            iE = 1:size(obj.depend{1},2);
+          end
           spec.t = obj.time.epochUnix;
-          spec.p = double(squeeze(nanmean(obj.data,2))); % nanmean over energies
+          irf.log('warning',['Averaging over energy levels [' sprintf(' %g',obj.depend{1}(1,iE)) ']']);
+          irf.log('warning',['Averaging over energy levels [' sprintf(' %g',obj.depend{1}(2,iE)) ']']);
+          spec.p = double(squeeze(nanmean(obj.data(:,iE,:),2))); % nanmean over energies
           %spec.p_label = {'dEF',obj.units};
           spec.f = single(obj.depend{2});
           spec.f_label = {'\theta (deg.)'};
-        case{'velocity','1D_velocity','velocity_1D'}
+        case {'velocity','1D_velocity','velocity_1D'}
           if ~strcmp(obj.type_,'line (reduced)'); error('PDist must be projected unto a vector: type: ''line (reduced)'', see PDist.reduce.'); end      
+          % check for additional argument given
+          if ~isempty(varargin) && strcmp(varargin{1},'10^3 km/s') % make y (v) units in 10^3 km/s (because they often go up 10^4)
+            spec.f = obj.depend{1}*1e-3;
+            spec.f_label = {'v (10^3 km/s)'};
+          else
+            spec.f = obj.depend{1};
+            spec.f_label = {'v (km/s)'};
+          end
           spec.t = obj.time.epochUnix;
-          spec.p = double(squeeze(obj.data));
-          spec.f = obj.depend{1};
-          spec.f_label = {'v (km/s)'};
+          spec.p = double(squeeze(obj.data));          
         otherwise % energy is default
           spec.t = obj.time.epochUnix;
           spec.p = double(obj.data);

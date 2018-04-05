@@ -14,7 +14,7 @@ function y=irf_gradient(x,time_step)
 dt=[0 ; diff(x(:,1))];
 if nargin < 2 % estimate time step
     time_steps=diff(x(:,1));
-    [time_step,ind_min]=min(time_steps);
+    [~,ind_min]=min(time_steps);
     time_steps(ind_min)=[]; % remove the smallest time step in case some problems
     time_step=min(time_steps);
 end

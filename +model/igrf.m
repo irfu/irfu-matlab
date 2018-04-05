@@ -9,7 +9,7 @@ if isempty(hIGRF)
 	irf.log('warning',['Reading IGRF coeficients from file:' fileIGRF]);
 	%file reading
 	fid = fopen(fileIGRF);
-	out = textscan(fid, '%s', 'delimiter',sprintf('\n')); % cell array with lines
+	out = textscan(fid, '%s', 'delimiter',sprintf('\n')); %#ok<SPRINTFN> % cell array with lines
 	out = out{1};
 	fclose(fid);
 	% construct IGRF coefficient matrices

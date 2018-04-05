@@ -570,7 +570,7 @@ if true % dipole
     kext = '';
     maginput = [];
 else % T89, Kp=2
-    field_model = 'T89, Kp=2';
+    field_model = 'T89, Kp=2'; %#ok<UNRCH>
     options = {};
     kext = 'T89';
     maginput = onera_desp_lib_maginputs(2); % Kp=2
@@ -587,7 +587,7 @@ for ivar = 1:length(zvar)
             extras{end+1} = 'G'; % force Gauss in Bunit
             iplot = 1:length(z); % which z to plot
         case 'a0' % a0 grid
-            z = [2:2:90]; % deg
+            z = 2:2:90; % deg
             iplot = length(z):-2:1; % which z to plot
         case 'Bm' % Bmirror grid
             z = [0.3e3;1e3;3e3;10e3;30e3]; % nT

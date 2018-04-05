@@ -79,7 +79,7 @@ while have_options
 				'wrong ArgType : mode must be one of : ''plain'', ''cef'' or ''caa''')
 			end
 		otherwise
-			irf_log('fcal',['Option ''' args{i} '''not recognized'])
+			irf_log('fcal',['Option ''' args{1} '''not recognized'])
 		end
 		if length(args) > l, args = args(l+1:end);
 		else, break
@@ -132,7 +132,7 @@ elseif regexp(vs,'^P10Hz[1-4]p[1-4]$')==1
 	else
 		frame = 'sc';
 		var_labels = {['P' sen]};
-    end
+	end
 elseif regexp(vs,'^P32kHz[1-4]p[1-4]$')==1
 	cl_id = vs(7);
 	inst = 'EFW';

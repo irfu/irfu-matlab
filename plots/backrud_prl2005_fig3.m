@@ -14,7 +14,7 @@ mode = 0; % correlating p23->p41
 dist=.062; % distance in km between p23 and p41
 disp('p23->p41, p42->p13 interferometry');
 
-flag_corr_deriv = 0; % Use max gradient for correlation
+%flag_corr_deriv = 0; % Use max gradient for correlation
 flag_corr_deriv = 1; % Use zero crossings for correlation
 
 ic=2; % sc number

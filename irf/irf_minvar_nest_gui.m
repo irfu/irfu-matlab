@@ -36,7 +36,7 @@ if isempty(message) % run only the first time during the session
 end
 
 if      nargin < 1, help irf_minvar_nest_gui;return;
-elseif  (nargin==1 & isstr(x)), action=x;%disp(['action=' action]);
+elseif  (nargin==1 && ischar(x)), action=x;%disp(['action=' action]);
 elseif  isnumeric(x)
     if size(x,2)<3, disp('Vector has too few components');return;end
     if nargin < 2
@@ -123,7 +123,7 @@ switch action
         ud.result_text=text(0.3,0.8,'result','FontSize',14);
 	
     case 'csc'
-    title(['Click on the current sheet center' ]);
+    title('Click on the current sheet center');
     uf=get(gcf,'userdata');
     if isfield(uf,'t_start_epoch'), t0=uf.t_start_epoch;else, t0=0; end
     temp=ginput(1);
@@ -134,7 +134,7 @@ switch action
     
     case 'avg'
     axes(ud.h(2));
-    title(['Click the averaging limits' ]);
+    title('Click the averaging limits');
     set(ud.h(2),'layer','top');
     grid on;
     avglim=ginput(2);
@@ -244,6 +244,6 @@ switch action
 	    xlabel('Nest size (M)');
 	    set(get(ud.AX(1),'Ylabel'),'String','B_n [nT]') 
             set(get(ud.AX(2),'Ylabel'),'String','L2/L3')
-        end
+      end
 
 end

@@ -1,6 +1,6 @@
-function calc_angle_w_preprocess(path_input,filename,path_output) 
+function c_ri_calc_angle_w_preprocess(path_input,filename,path_output) 
 %
-% calc_angle_w_preprocess(path_input,filename,path_output) 
+% c_ri_calc_angle_w_preprocess(path_input,filename,path_output) 
 %
 %Input:
 % path_input -
@@ -39,7 +39,7 @@ load(p_and_f)
 [b4_max,c] = size(B4);
 
 %only if they all have the same size this will work
-if b1_max == b2_max & b1_max == b3_max & b1_max == b4_max
+if b1_max == b2_max && b1_max == b3_max && b1_max == b4_max
 
 [angles, ampl] = c_ri_angles_and_ampl(B1,B2,B3,B4);
 

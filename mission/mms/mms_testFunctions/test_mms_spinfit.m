@@ -28,11 +28,11 @@ classdef test_mms_spinfit < matlab.unittest.TestCase
       e34 = Ex*cos(phaseRad34) + Ey*sin(phaseRad34) + adcOff_34;
       
       % Check with despin
-      dE = mms_sdp_despin(e12-adcOff_12,e34-adcOff_34,phaseComputed.data);
+      dE = mms_sdp_despin(e12-adcOff_12,e34-adcOff_34,phaseComputed.data); %#ok<NASGU>
 
       if(DEBUG)
         % Plot
-        irf_plot([EpochTT(timeEpochTT200Req).epochUnix e12 e34]);
+        irf_plot([EpochTT(timeEpochTT200Req).epochUnix e12 e34]); %#ok<UNRCH>
         irf_plot([EpochTT(timeEpochTT200Req).epochUnix dE])
         legend('Ex','Ey')
       end
@@ -88,7 +88,7 @@ classdef test_mms_spinfit < matlab.unittest.TestCase
       diffB = median(sfit(:,2)) - expected_B;
       diffC = median(sfit(:,3)) - expected_C;
       if(DEBUG)
-        timeEpoch = irf_time(int64(timeTT2000),'ttns>epoch');
+        timeEpoch = irf_time(int64(timeTT2000),'ttns>epoch'); %#ok<UNRCH>
         extrapResult = median(sfit(:,1)) + median(sfit(:,2))*cosd(zphase) + median(sfit(:,3))*sind(zphase);
         figure; h=irf_plot({[timeEpoch, zphase],[timeEpoch, dataInput],[timeEpoch, extrapResult]});
         title(h(1),'Comparison of phase, input data and extrapolated data from median of spinfit coeff.');

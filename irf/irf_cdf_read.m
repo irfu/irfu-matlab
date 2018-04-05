@@ -54,7 +54,7 @@ if nargin==0
   end
 end
 
-if strfind(cdf_file,'*') % use wilcard '*' expansion
+if strfind(cdf_file,'*')  %#ok<STRIFCND> % use wilcard '*' expansion
   ii=strfind(cdf_file,filesep);
   if ii, cdf_directory=cdf_file(1:max(ii)); else, cdf_directory=''; end
   ff=dir(cdf_file);

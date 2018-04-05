@@ -1,4 +1,4 @@
-function irf_disp_surfplot(kc_x_max,kc_z_max,wfinal,extraparam,surfchoice,colorchoice)
+function irf_disp_surf_pl(kc_x_max,kc_z_max,wfinal,extraparam,surfchoice,colorchoice)
 %IRF_DISP_SURF_PL   Plot the cold plasma dispersion surfaces
 %
 %  IRF_DISP_SURF_PL(K_PERP_MAX,K_PAR_MAX,W,EXTRAPAR,SURFCHOICE,COLCHOICE)

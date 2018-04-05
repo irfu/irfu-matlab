@@ -37,7 +37,7 @@ if nargin == 0
     help irf_4_v_gui
     return;
 elseif nargin == 1
-    error;
+    error('Unknown input type.');
 elseif nargin==2 && ~ischar(varargin{1}) &&  all(ishandle(varargin{1}))
     % Only action input
     hfig=varargin{1};
@@ -56,8 +56,8 @@ else
         if ischar(varargin{2}) && ~isempty(strfind(varargin{2},'?'))
             ud.pos_str = varargin{2};
             c_eval('R?=evalin(''base'',irf_ssub(ud.pos_str,?));');
-            if isa(R1,'TSeries')
-                ud = r_ts2mat(ud,R1,R2,R3,R4);
+            if isa(R1,'TSeries') %#ok<NODEF>
+                ud = r_ts2mat(ud,R1,R2,R3,R4); %#ok<NODEF>
             else
                 c_eval('ud.pos?=R?;',1:4)
             end
@@ -275,7 +275,7 @@ set(ud.v,'string',vstr);
 ud.vVector=v;
 ud.nVector=v./norm(v);
 if eval(get(ud.filter,'string'))<1
-    x1=ud.var1;Fs=1/(x1(2,1)-x1(1,1));flim=Fs*eval(get(ud.filter,'string'));
+    x1=ud.var1;Fs=1/(x1(2,1)-x1(1,1));flim=Fs*eval(get(ud.filter,'string')); %#ok<NASGU>
     c_eval('x?=irf_tlim(ud.var?,xl+[-20/Fs 20/Fs]);x?=irf_filt(x?,0,flim,Fs,5);');
     irf_pl_tx(ud.h(2),'x?',ud.var_col,ud.dt);
 else
@@ -322,7 +322,7 @@ end
 set(ud.dt_input,'string',tstr);
 if eval(get(ud.filter,'string'))<1
     x1=ud.var1;Fs=1/(x1(2,1)-x1(1,1));
-    flim=Fs*eval(get(ud.filter,'string'));
+    flim=Fs*eval(get(ud.filter,'string')); %#ok<NASGU>
     c_eval('x?=irf_tlim(var?,xl+[-20/Fs 20/Fs]);x?=irf_filt(x?,0,flim,Fs,5);');
     irf_pl_tx(ud.h(2),x1,x2,x3,x4,ud.var_col,dt);
 else
@@ -582,7 +582,7 @@ end
 end
 
 % Position TSeries to Matricies
-function ud = r_ts2mat(ud,R1,R2,R3,R4)
+function ud = r_ts2mat(ud,R1,R2,R3,R4) %#ok<INUSD>
 c_eval('ud.pos?=[R?.time.epochUnix,double(R?.data(:,1:3))];',1:4)
 end
 
@@ -618,7 +618,7 @@ irf.log('warning','Trying to read Cluster position')
 tint = ud.tlim + ud.t_start_epoch + [-120, 120];
 if ~is_pos_ok(ud) && exist('./mR.mat','file')
     irf.log('warning','Trying to read position from mR.mat')
-    load mR R1 R2 R3 R4;
+    load mR R1 R2 R3 R4; %#ok<NASGU>
     c_eval('R.R?=R?;');
 end
 if ~is_pos_ok(ud)

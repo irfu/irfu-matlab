@@ -98,8 +98,8 @@ if ntime<Nmax % pad maginput b/c of impending transpose
 end
 
 [iyear,idoy,UT] = onera_desp_lib_matlabd2yds(matlabd);
-Bgeo = repmat(nan,Nmax,3)'; % transpose b/c fortran has it 3xntime, pad b/c of transpose
-B = repmat(nan,ntime,1);
+Bgeo = nan(Nmax,3)'; % transpose b/c fortran has it 3xntime, pad b/c of transpose
+B = nan(ntime,1);
 BgeoPtr = libpointer('doublePtr',Bgeo);
 BPtr = libpointer('doublePtr',B);
 calllib('onera_desp_lib','get_field_multi_',ntime,kext,options,sysaxes,iyear,idoy,UT,x1,x2,x3,maginput',...

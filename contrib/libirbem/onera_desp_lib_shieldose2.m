@@ -132,7 +132,7 @@ NPTSE = max([JEMAX,NPTS]);
 onera_desp_lib_load;
 
 IMAXI = 71;
-ProtDose = repmat(nan,IMAXI,3);
+ProtDose = nan(IMAXI,3);
 ElecDose = ProtDose;
 BremDose = ProtDose;
 SolDose = ProtDose;

@@ -11,7 +11,7 @@ old_pwd = pwd;
 if nargin<1, path_s = pwd; end
 cd(path_s)
 
-if ~exist('EFWONOFF_COMM.dat','file') | ~exist('COVERAGE_COMM.dat','file')
+if ~exist('EFWONOFF_COMM.dat','file') || ~exist('COVERAGE_COMM.dat','file')
 	error('COVERAGE_COMM.dat and/or EFWONOFF_COMM.dat are not found')
 end
 
