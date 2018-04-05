@@ -119,9 +119,16 @@ if(p.Results.plotSpect)
     dslFastTs.(SCid{kk})=[]; % Empty to save memory.
 
     disp(['Computing slow spectra for DSL xyz for ',SCid{kk}]);
+    slowRate = MMS_CONST.Samplerate.slow{1};
+    dtSlow = round(10^9/median(double(diff(dslSlowTs.(SCid{kk}).time.ttns))));
+    for iSmplrate=1:length(MMS_CONST.Samplerate.slow)
+      if(MMS_CONST.Samplerate.slow{iSmplrate}*0.9 <= dtSlow && dtSlow <= MMS_CONST.Samplerate.slow{iSmplrate}*1.1)
+        slowRate = MMS_CONST.Samplerate.slow{iSmplrate};
+      end
+    end
     dslSlowSpect.(SCid{kk}) = irf_powerfft(dslSlowTs.(SCid{kk}), ...
       128, ...
-      MMS_CONST.Samplerate.slow);
+      slowRate);
     if(isempty(dslSlowSpect.(SCid{kk})))
       % FIXME better..
       warning(['Empty spectra from DSL on ', SCid{kk}]);
