@@ -27,7 +27,7 @@ for i=length(fList):-1:1 % Reversed order of "dir"
   end
   if prevDate == filenameData.date
     if is_version_larger(filenameData.vXYZ, prevVer)
-      fNameTmp = fList(i);
+      fNameTmp(end) = fList(i);
       prevVer = filenameData.vXYZ;
     end
   else
