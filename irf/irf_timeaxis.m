@@ -151,8 +151,17 @@ for j=1:numel(h)
     end
 end
 
-xlimlast=get(h(end),'xlim');
-time_label = irf_time(xlimlast(1) + t_start_epoch,'epoch>utc_yyyy-mm-dd UTC');
+% determine the time stamp corrsponding to first labeled XTick, so that
+% xlabel will have the date corresponding to that tick.
+xTickLast=get(h(end),'XTick');  xTickLabelLast=get(h(end),'XTickLabel');
+tFirstTick = [];
+for i=1:length(xTickLast)
+  if strcmp(xTickLabelLast{i},' '), continue, end
+  tFirstTick = xTickLast(i); break
+end
+xlimlast=get(h(end),'XLim'); 
+if isempty(tFirstTick), tFirstTick = xlimlast(1); end
+time_label = irf_time(tFirstTick + t_start_epoch,'epoch>utc_yyyy-mm-dd UTC');
 if addDateLabel == 1 && addXtraXlabels ~= 1 && diff(xlimlast)<=3600*24*100 
     xlabel(h(end),time_label);  % add data only if no extra xlabels
 end
