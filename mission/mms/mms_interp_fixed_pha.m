@@ -1,6 +1,6 @@
-function [dataFixedPha,fixedPha,epoch2000FixedPha,PHASE_OFF] = mms_interp_fixed_pha(data, tEpoch2000, phaseDeg, STEPS_PER_DEG,pair)
+function [dataFixedPha,fixedPha,epoch2000FixedPha,PHASE_OFF] = mms_interp_fixed_pha(data, tEpoch2000, phaseDeg, STEP_DEG,pair)
 
-if nargin<4, STEPS_PER_DEG = 0.5; end
+if nargin<4, STEP_DEG = 0.5; end
 
 phaShift = 0; %phaShift=STEPS_PER_DEG/2;
 if nargin>4
@@ -34,7 +34,7 @@ end
     phaDegUnw = unwrap(phaDegSeg*pi/180)*180/pi + PHASE_OFF;
     %phaFixed = (fix(phaDegUnw(1)):STEPS_PER_DEG:fix(phaDegUnw(end)))' ...
     %  + phaShift;
-    phaFixed = ((phaDegUnw(1)-rem(phaDegUnw(1),360)):STEPS_PER_DEG:...
+    phaFixed = ((phaDegUnw(1)-rem(phaDegUnw(1),360)):STEP_DEG:...
       (phaDegUnw(end)-rem(phaDegUnw(end),360)+360))' + phaShift;
     epochFixedPhaSeg = interp1(phaDegUnw,epochSeg,phaFixed,'linear');
     phaFixed(isnan(epochFixedPhaSeg)) = []; 
