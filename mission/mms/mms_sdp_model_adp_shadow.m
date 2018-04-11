@@ -51,11 +51,11 @@ for iSig = 1:length(signals)
       repmat(x(1,:),length(find(idxDetr1>0)),1) - phaOne(idxDetr1)*x(2,:);
     % Compute moving median
     iModel = (phaOne>sha-SHA_DPHA & phaOne<sha+SHA_DPHA);
-    model(iModel,:) = movmedian(eResM(iModel,:),N_SPINS_MEDIAN,2,'omitnan');  
+    model(iModel,:) = movmedian(eResM(iModel,:),N_SPINS_MEDIAN,2,'omitnan');  %FIXME: movmedian() is not part of Matlab R2013a installed at SDC!!
   end
   model = reshape(model,numel(model),1);
   idxOK = ~isnan(tFxPha); 
-  modelOut.(sig) = interp1(tFxPha(idxOK),model(idxOK),epochTmp,'linear');
+  modelOut.(sig) = interp1(tFxPha(idxOK),model(idxOK),epochTmp,'linear','extrap');
 end
 
   function expShadow = getExpShadow()
