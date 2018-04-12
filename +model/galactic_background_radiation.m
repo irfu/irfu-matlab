@@ -20,7 +20,7 @@ function [S,f]=galactic_background_radiation(varargin)
 %
 
 
-%% based on Dulk et al., AAP, 2001. http://dx.doi.org/10.1051/0004-6361:20000006
+%% based on Dulk et al., AAP, 2001. https://dx.doi.org/10.1051/0004-6361:20000006
 %
 % For the direction of the galactic poles, in particular the south galactic pole
 % (SGP), the resulting spectrum of specific intensity in units of W m?2 Hz?1

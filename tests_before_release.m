@@ -7,7 +7,7 @@ function tests_before_release
 % code. And thereby running this combine tests on multiple release versions
 % of Matlab. As of 2016/10/ this would include at least R2013a and upwards.
 
-% http://blogs.mathworks.com/developer/2015/01/20/the-other-kind-of-continuous-integration/
+% https://blogs.mathworks.com/developer/2015/01/20/the-other-kind-of-continuous-integration/
 
 failed = false;
 DEBUG = false; % Display some extra information or not.

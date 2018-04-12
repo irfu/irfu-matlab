@@ -16,7 +16,7 @@ function [out,out1]=irf(varargin)
 % [out] = IRF('irbem')
 %
 % Check if ONERA IRBEM library is installed
-% http://craterre.onecert.fr/prbem/irbem/description.html
+% https://craterre.onecert.fr/prbem/irbem/description.html
 %
 % [out] = IRF('ceflib')
 %
@@ -36,7 +36,7 @@ logFileUrl = 'https://raw.githubusercontent.com/irfu/irfu-matlab/master/log.txt'
 
 %% Input check
 if nargin == 0
-  setenv('LC_ALL','C'); % temporar fix for R2014a problems on Unix http://goo.gl/Sq1it7
+  setenv('LC_ALL','C'); % temporar fix for R2014a problems on Unix, https://www.mathworks.com/matlabcentral/answers/126994-locale-system-error
   irf('check_path');
   irf('check');
   irf('ceflib');
