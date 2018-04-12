@@ -17,7 +17,7 @@ Coding style
 
 Git
 ---
-1. Workflow according to http://nvie.com/posts/a-successful-git-branching-model/
+1. Workflow according to https://nvie.com/posts/a-successful-git-branching-model/
 2. Routines in [master](https://github.com/irfu/irfu-matlab/tree/master) branch should do not less and not more than written in their help!
 3. Our [devel](https://github.com/irfu/irfu-matlab/tree/devel) branch includes latest delivered development changes for the next release.
 4. Semantic release numbering https://semver.org/

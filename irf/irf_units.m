@@ -21,8 +21,8 @@ function Units=irf_units(varargin)
 %   CODATA 2014 - DOI: 10.1103/RevModPhys.88.035009
 %   IAU 2012    - https://www.iau.org/static/resolutions/IAU2012_English.pdf
 %   IAU 2015    - https://www.iau.org/static/resolutions/IAU2015_English.pdf
-%   CGPM 1903   - http://www.bipm.org/en/CGPM/db/3/2/
-%   CGPM 1954   - http://www.bipm.org/en/CGPM/db/10/4/
+%   CGPM 1903   - https://www.bipm.org/en/CGPM/db/3/2/
+%   CGPM 1954   - https://www.bipm.org/en/CGPM/db/10/4/
 %   IAU WG 2009 - DOI 10.1007/s10569-010-9320-4
 
 if nargin==1 % display matching units
