@@ -5,7 +5,7 @@ classdef mms_sdp_dmgr < handle
   %  DATAC = mms_sdp_dmgr(scId[,procId,tmMode,samplerate])
   %
   %  See also: mms_constants
-  
+
   properties (SetAccess = protected )
     adc_off = [];     % comp ADC offsets
     aspoc = [];       % src ASPOC file
@@ -36,7 +36,7 @@ classdef mms_sdp_dmgr < handle
     tmMode = [];      % telemetry mode
     scId = [];        % spacecraft ID
   end
-  
+
   methods
     function DATAC = mms_sdp_dmgr(scId,procId,tmMode,samplerate)
       %MMS_SDP_DMGR  conctructor for mms_sdp_dmgr class
@@ -46,14 +46,14 @@ classdef mms_sdp_dmgr < handle
         errStr = 'Invalid input for scId';
         irf.log('critical', errStr); error(errStr);
       end
-      
+
       if  ~isnumeric(scId) || ...
           isempty(intersect(scId, MMS_CONST.MMSids))
         errStr = 'Invalid input for scId';
         irf.log('critical', errStr); error(errStr);
       end
       DATAC.scId = scId;
-      
+
       if nargin < 2 || isempty(procId)
         DATAC.procId = 1;
         irf.log('warning',['procId not specified, defaulting to '''...
@@ -64,7 +64,7 @@ classdef mms_sdp_dmgr < handle
         irf.log('critical', errStr); error(errStr);
       else, DATAC.procId = procId;
       end
-      
+
       if nargin < 3 || isempty(tmMode)
         DATAC.tmMode = 1;
         irf.log('warning',['tmMode not specified, defaulting to '''...
@@ -75,7 +75,7 @@ classdef mms_sdp_dmgr < handle
         irf.log('critical', errStr); error(errStr);
       else, DATAC.tmMode = tmMode;
       end
-      
+
       if nargin < 4 || isempty(samplerate)
         % Normal operations, try to identify sample rate from TmMode
         if(~isfield(MMS_CONST.Samplerate, MMS_CONST.TmModes{DATAC.tmMode}))
@@ -104,17 +104,17 @@ classdef mms_sdp_dmgr < handle
         DATAC.samplerate = samplerate;
       end
     end % mms_sdp_dmgr
-    
+
     function set_param(DATAC,param,dataObj)
       %SET_PARAM  assign a parameteter do dataobj
       %
       %  set_param(DATAC,param,dataObj)
       MMS_CONST = DATAC.CONST;
-      
+
       % Make sure first argument is a dataobj class object,
       % otherwise a read cdf file.
       if isa(dataObj,'dataobj') % do nothing
-      elseif ischar(dataObj) 
+      elseif ischar(dataObj)
         if ~exist(dataObj, 'file')
           errStr = ['File not found: ' dataObj];
           irf.log('critical', errStr);
@@ -131,7 +131,7 @@ classdef mms_sdp_dmgr < handle
         irf.log('critical', errStr);
         error('MATLAB:MMS_SDP_DMGR:INPUT', errStr);
       end
-      
+
       if( ~isempty(DATAC.(param)) )
         % Error, Warning or Notice for replacing the data variable?
         if(~any(strcmp(param,{'hk_101', 'hk_105', 'hk_10e', 'defatt', 'aspoc'})))
@@ -144,14 +144,14 @@ classdef mms_sdp_dmgr < handle
           irf.log('warning',['Multiple files for ' param ' detected. Will try to sort them by time.']);
         end
       end
-      
+
       vPfx = sprintf('mms%d_edp_',DATAC.scId);
-      
+
       switch(param)
         case('dce')
           sensors = {'e12','e34','e56'};
           init_param()
-          
+
           % Since v1.0.0 DCE files contain also DCV data
           if ~isfield(dataObj.data, [vPfx, 'dcv_sensor']) || ...
               DATAC.dce.fileVersion.major<1
@@ -161,10 +161,10 @@ classdef mms_sdp_dmgr < handle
             end
             return
           end
-          
+
           % It appears to be a combined file, extract DCV variables.
           irf.log('notice','Combined DCE & DCV file.');
-          
+
           param = 'dcv';
           sensors = {'v1','v2','v3','v4','v5','v6'};
           init_param()
@@ -184,7 +184,7 @@ classdef mms_sdp_dmgr < handle
           sensors = {'e12','e34'};
           corr_adp_spikes()
           corr_swwake()
-          
+
         case('dcv')
           sensors = {'v1','v2','v3','v4','v5','v6'};
           init_param()
@@ -202,7 +202,7 @@ classdef mms_sdp_dmgr < handle
           sensors = {'e12','e34'};
           corr_adp_spikes()
           corr_swwake()
-          
+
         case('dfg')
           % DFG - Dual fluxgate magn. B-field.
           if(strcmp('v',dataObj.GlobalAttributes.Data_version{1}(1)))
@@ -239,7 +239,7 @@ classdef mms_sdp_dmgr < handle
             % Combine the two into one, based on unique timestamps.
             DATAC.(param).B_dmpa = combine(DATAC.(param).B_dmpa, B_dmpa);
           end
-          
+
         case('hk_101')
           % HK 101, contains sunpulses.
           vPfx = sprintf('mms%d_101_',DATAC.scId);
@@ -270,12 +270,12 @@ classdef mms_sdp_dmgr < handle
             % Ensure sorted unique timestamps and store the resulting time,
             % sunpulse, sunssps and iisunper.
             [srt_time, srt] = sort(Comb_time);
-            [DATAC.(param).time, usrt] = unique(srt_time); 
+            [DATAC.(param).time, usrt] = unique(srt_time);
             DATAC.(param).sunpulse = Comb_sunpulse(srt(usrt));
             DATAC.(param).sunssps = Comb_sunssps(srt(usrt));
             DATAC.(param).iifsunper = Comb_iifsunper(srt(usrt));
           end
-          
+
         case('hk_105')
           % HK 101, contains sunpulses.
           vPfx = sprintf('mms%d_105_',DATAC.scId);
@@ -300,10 +300,10 @@ classdef mms_sdp_dmgr < handle
             % Ensure sorted unique timestamps and store the resulting time
             % and sweepstatus.
             [srt_time, srt] = sort(Comb_time);
-            [DATAC.(param).time, usrt] = unique(srt_time); 
+            [DATAC.(param).time, usrt] = unique(srt_time);
             DATAC.(param).sweepstatus = Comb_sweepstatus(srt(usrt));
           end
-          
+
         case('hk_10e')
           % HK 10E, contains bias.
           vPfx = sprintf('mms%d_10e_',DATAC.scId);
@@ -353,7 +353,7 @@ classdef mms_sdp_dmgr < handle
             % Ensure sorted unique timestamps and store the resulting time
             % and sweepstatus.
             [srt_time, srt] = sort(Comb_time);
-            [DATAC.(param).time, usrt] = unique(srt_time); 
+            [DATAC.(param).time, usrt] = unique(srt_time);
             % Go through each probe and store values for easy access,
             % for instance probe 1 dac values as: "DATAC.hk_10e.beb.dac.v1".
             for iParam=1:length(hk10eParam)
@@ -386,7 +386,7 @@ classdef mms_sdp_dmgr < handle
               end % for jj=1:6
             end % for iParam=1:length(hk10eParam)
           end
-          
+
         case('defatt')
           % DEFATT, contains Def Attitude (Struct with 'time' and 'zphase' etc)
           % As per e-mail discussion of 2015/04/07, duplicated timestamps can
@@ -414,20 +414,20 @@ classdef mms_sdp_dmgr < handle
             end
             check_monoton_timeincrease(DATAC.(param).time); % Verify combined defatt
           end
-          
+
         case('defeph')
           % DEFEPH, contains Def Ephemeris (Struct with 'time', 'Pos_X', 'Pos_Y'
           % and 'Pos_Z')
           DATAC.(param) = dataObj;
           check_monoton_timeincrease(DATAC.(param).time);
-          
+
         case('l2a')
           % L2A, contain dce data, spinfits, etc. for L2Pre processing or
           % Fast data/offsets to be used by Brst QL processing.
           DATAC.(param) = [];
           DATAC.(param).dataObj = dataObj;
           % Split up the various parts (spinfits [sdev, e12, e34], dce data
-          % [e12, e34, e56], dce bitmask [e12, e34, e56], phase, adc & delta 
+          % [e12, e34, e56], dce bitmask [e12, e34, e56], phase, adc & delta
           % offsets).
           varPre = ['mms', num2str(DATAC.scId), '_edp_'];
           typePos = strfind(dataObj.GlobalAttributes.Data_type{1},'_');
@@ -495,7 +495,7 @@ classdef mms_sdp_dmgr < handle
             tmp(tmp==getfield(mms_sdp_typecast('dce'),'fillval')) = NaN;
             DATAC.(param).sw_wake = tmp;
           end
-          
+
         case('aspoc')
           % ASPOC, have an adverse impact on E-field mesurements.
           vars = fields(dataObj.data);
@@ -533,14 +533,14 @@ classdef mms_sdp_dmgr < handle
           irf.log('critical',errStr);
           error('MATLAB:MMS_SDP_DMGR:INPUT', errStr);
       end
-      
+
       function chk_latched_p()
         % Check that probe values are varying. If there are 3 identical points,
         % or more, after each other mark this as latched data. If it is latched
         % and the data has a value below MMS_CONST.Limit.LOW_DENSITY_SATURATION
         % it will be Bitmasked with Low density saturation otherwise it will be
         % bitmasked with just Probe saturation.
-        
+
         % For each sensor, check each pair, i.e. V_1 & V_2 and E_12.
         for iSen = 1:2:numel(sensors)
           senA = sensors{iSen};  senB = sensors{iSen+1};
@@ -567,7 +567,7 @@ classdef mms_sdp_dmgr < handle
           end
         end
       end
-      
+
       function chk_timeline()
         % Check that DCE time and DCV time overlap and are measured at the same
         % time (within insturument delays). Throw away datapoint which does not
@@ -589,16 +589,16 @@ classdef mms_sdp_dmgr < handle
         % 122 us between consecutive measurements. The maximum theoretically
         % allowed jitter would be half of this (60us) for the dcv & dce
         % measurements to be completely unambiguous, use 1/3 margin on this.
-        
+
         %This is a HACK. We just take the nearest time, assuming times in DCE
         %and DCV must be identical.
         tE = DATAC.dce.time; tV = DATAC.dcv.time;
-        
+
         if ~(all(median(diff(tE))==diff(tE)) && all(median(diff(tV))==diff(tV)))
           errStr1 = 'Do not know how to handle gaps';
           irf.log('critical',errStr1), error(errStr1)
         end
-        
+
         % Bring together the DCE and DCV time series
         % NOTE: No gaps allowed below this line
         dt = median(diff(tE));
@@ -625,7 +625,7 @@ classdef mms_sdp_dmgr < handle
         idxVonOld = (1:length(tV))'-1 +iDcvStartOld;
         idxVonNew = (1:length(tV))'-1 +iDcvStartNew;
         idxVoffNew = setxor(1:length(tV),idxVonNew);
-        
+
         for iSen = 1:2:numel(sensors)  % Loop over e12, e34, e56
           senA = sensors{iSen};  senB = sensors{iSen+1};
           senE = ['e' senA(2) senB(2)]; % E-field sensor
@@ -634,7 +634,7 @@ classdef mms_sdp_dmgr < handle
           save_restore('dcv',senB,idxVonOld,idxVonNew,idxVoffNew)
         end
         DATAC.dce.time = newTime; DATAC.dcv.time = newTime;
-        
+
         function save_restore(sig,sen,idxOnOld,idxOnNew,idxOffNew)
           % Save old values, expand the variables and restore the old values
           SAVE = DATAC.(sig).(sen);
@@ -645,7 +645,7 @@ classdef mms_sdp_dmgr < handle
           DATAC.(sig).(sen).bitmask(idxOffNew) = MMS_CONST.Bitmask.SIGNAL_OFF;
         end
       end % CHK_TIMELINE
-      
+
 %       function interp_time()
 %         % Measurements are not done at same instance but with a delay of
 %         % 3.8us between each channel. Adjust V[2-6] and E12, E34, E56 with
@@ -654,7 +654,7 @@ classdef mms_sdp_dmgr < handle
 %         % Epoch variable).
 %         % Source used: E-mail from Mark dated 2017/01/11T19:21 CET, and the
 %         % "Document No. 108328revE".
-% 
+%
 %         % Only Burst mode should be interpolated
 %         if(DATAC.tmMode == DATAC.CONST.TmMode.brst)
 %           irf.log('notice', 'Resampling burst measurements to align with first channel ("epoch").');
@@ -662,14 +662,14 @@ classdef mms_sdp_dmgr < handle
 %           irf.log('debug', 'Not in burst mode, not doing resample of measurements to align with first channel ("epoch")');
 %           return;
 %         end
-% 
+%
 %         keyboard
 %         % NOTE THIS FUNCTION IS NOT READY for production, added here as to
 %         % create test files to see what impact it has on our files. Mainly
 %         % burst 16'384 Hz may be impacted, but this is TBD. Also "to be
 %         % checked" is the commissioning data with separate dce and dcv
 %         % files.
-% 
+%
 %         % Offset between each channel in ADC
 %         Dt = int64(3.8e3); % 3.8 us expressed in ns (TT2000, int64)
 %         % V1 is start of nominal Epoch (when combined dce&dcv file)
@@ -685,7 +685,7 @@ classdef mms_sdp_dmgr < handle
 %         tV = DATAC.dcv.time;
 %         t1 = tV - tV(1);
 %         %tE = DATAC.dce.time; % Separate time for DCE file?
-% 
+%
 %         % Interpolate each data to align in time with V1, convert int64 and
 %         % single data into double first than back again after interpolation
 %         DATAC.dcv.v2.data = single( interp1(double(t1 + 1*Dt), ...
@@ -718,7 +718,7 @@ classdef mms_sdp_dmgr < handle
         % Check that bias/guard setting, found in HK_10E, are nominal. If any
         % are found to be non nominal set bitmask value in both V and E.
         if(~isempty(DATAC.hk_10e))  % is a hk_10e file loaded?
-          
+
           % Get limit struct with primary fields 'ig', 'og' and 'dac',
           % limits stored as TSeries with [max, min] limits and is s/c
           % dependent.
@@ -734,21 +734,21 @@ classdef mms_sdp_dmgr < handle
             % InnerGuard, OuterGuard (bias voltages), DAC (tracking current)
             hk10eParam = {'ig','og','dac'};
             for iiParam = 1:length(hk10eParam)
-              
+
               % FIXME, proper test of existing fields?
               if( ~isempty(DATAC.hk_10e.beb.(hk10eParam{iiParam}).(senA)) && ...
                   ~isempty(DATAC.hk_10e.beb.(hk10eParam{iiParam}).(senB)) )
-                
+
                 % Interpolate HK_10E to match with DCV timestamps, using the
                 % previous HK value.
                 interp_DCVa = interp1(double(DATAC.hk_10e.time), ...
                   double(DATAC.hk_10e.beb.(hk10eParam{iiParam}).(senA)), ...
                   double(DATAC.dcv.time), 'previous', 'extrap');
-                
+
                 interp_DCVb = interp1(double(DATAC.hk_10e.time), ...
                   double(DATAC.hk_10e.beb.(hk10eParam{iiParam}).(senB)), ...
                   double(DATAC.dcv.time), 'previous', 'extrap');
-                
+
                 % Interpolate the limits to match the the DCE timestamps as
                 % well, using the previous limit.
                 interp_MaxMin = interp1(double(NomBias.(hk10eParam{iiParam}).time.epoch),...
@@ -759,11 +759,11 @@ classdef mms_sdp_dmgr < handle
                 indA = interp_MaxMin(:,2) >= interp_DCVa | interp_DCVa >= interp_MaxMin(:,1);
                 indB = interp_MaxMin(:,2) >= interp_DCVb | interp_DCVb >= interp_MaxMin(:,1);
                 indE = or(indA,indB); % Either senA or senB => senE non nominal.
-                
+
                 if(any(indE))
                   irf.log('notice',['Bad bias on ',...
                     senE,' from ',hk10eParam{iiParam}]);
-                  
+
                   % Add bitmask values to SenA, SenB and SenE for these ind.
                   bits = MMS_CONST.Bitmask.BAD_BIAS;
                   % Add value to the bitmask, leaving other bits untouched.
@@ -784,7 +784,7 @@ classdef mms_sdp_dmgr < handle
           irf.log('Warning','No HK_10E file : cannot perform bias/guard check');
         end % if ~isempty(hk_10e)
       end
-      
+
       function chk_maneuvers()
         % Check to see if any maneuvers or eclipse are planned to occur
         % during the interval we have data. If so, then bitmask it.
@@ -852,22 +852,22 @@ classdef mms_sdp_dmgr < handle
           return
         end
       end % CHK_MANEUVERS
-      
+
       function chk_sweep_on()
         % Check if sweep is on for all probes
         % if yes, set bit in both V and E bitmask
-        
+
         if isempty(DATAC.dce)
           irf.log('warning','Empty DCE, cannot proceed')
           return
         end
-        
+
         varPref = sprintf('mms%d_sweep_', DATAC.scId);
         if ~isfield(DATAC.dce.dataObj.data,[varPref 'start'])
           errS = ['Did not find ',varPref,'start'];
           irf.log('critical',errS); error(errS)
         end
-        
+
         % Get sweep status and sweep Start/Stop
         % Add extra 0.1 sec to Stop for safety and remove 0.05 sec to Start
         sweepStart = DATAC.dce.dataObj.data.([varPref 'start']).data - 5e7;
@@ -882,7 +882,7 @@ classdef mms_sdp_dmgr < handle
           sweepStop = DATAC.dce.dataObj.data.([varPref 'stop']).data + 1e8;
         end
         sweepSwept = DATAC.dce.dataObj.data.([varPref 'swept']).data;
-        
+
         if isempty(sweepStart)
           irf.log('warning','No sweep status in DCE file');
           % Alternative approach for finding sweep times using hk_105
@@ -907,7 +907,7 @@ classdef mms_sdp_dmgr < handle
           % No info on which probe is swept in hk_105, can be any pair
           sweepSwept = zeros(size(sweepStart));
         end
-        
+
         % For each pair, E_12, E_34, E_56.
         for iSen = 1:2:numel(sensors)
           senA = sensors{iSen};  senB = sensors{iSen+1};
@@ -942,7 +942,7 @@ classdef mms_sdp_dmgr < handle
           end % if any(sweeping)
         end % for iSen
       end
-      
+
       function chk_aspoc_on()
         % Check if aspoc is on if yes, set bit in both V and E bitmask
         if isempty(DATAC.dce)
@@ -985,10 +985,10 @@ classdef mms_sdp_dmgr < handle
         % check if probe-to-spacecraft potentials  averaged over one spin for
         % all probes are similar (within TBD %, or V).
         % If not, set bit in both V and E bitmask.
-        
+
         %XXX: Does nothing at the moment
       end
-      
+
       function corr_adp_spikes()
         % correct ADP shadow spikes
         MSK_SHADOW = MMS_CONST.Bitmask.ADP_SHADOW;
@@ -1033,7 +1033,7 @@ classdef mms_sdp_dmgr < handle
           end
         end
       end
-      
+
       function corr_swwake()
         % Correct Solar wind wake from s/c
         if( DATAC.procId == MMS_CONST.SDCProc.scpot)
@@ -1079,47 +1079,57 @@ classdef mms_sdp_dmgr < handle
           end
           % Check to see if time is right for S/W wakes or not (based on orbits)
           indSW = mms_sdp_swwake_enabled_time(DATAC.dce.time, DATAC.scId);
-          diffWake = zeros(length(Phase.data), length(sensors), ...
-            getfield(mms_sdp_typecast('dce'),'matlab'));
+          diffWake = zeros(length(Phase.data), length(sensors));
           if any(indSW)
-              % Run code and remove wakes
-              for iSen=1:length(sensors)
-                sen = sensors{iSen};
-                % Compute corrected data
-                [data_corr, n_corr, wakedesc] = mms_sdp_swwake(DATAC.dce.(sen).data, ...
-                  sen, Phase.data, DATAC.dce.time, DATAC.samplerate);
-                if(false)
-                  irf.log('notice','saving wakedesc'); %#ok<UNRCH>
-                  wakedesc_TS.(sen)=irf.ts_vec_xyz(EpochTT(int64(wakedesc(:,1))+DATAC.dce.time(1)),wakedesc(:,2:end)); %#ok<STRNU>
-                  % SAVE "wakedesc_TS" i mat fil baserat på process namn
-                  % och datum
-                  if iSen==length(sensors)
-                    % end of loop, write result
-                    [logPath, logName]=fileparts(irf.log('log_out'));
-                    save([logPath,filesep,logName,'_wakeDescTs.mat'], 'wakedesc_TS');
-                  end
-                end
-                % Difference between raw data and corrected, for time of
-                % expected wakes only.
-                diffWake(indSW, iSen) = DATAC.dce.(sen).data(indSW) - data_corr(indSW);
-                irf.log('notice', sprintf('%i sw wake(-s) found in %s', n_corr, sen));
-                % Bitmask values indicating SW_Wake was removed.
-                ind = bitand(indSW, abs( diffWake(:, iSen) ) > 0);
-                DATAC.dce.(sen).bitmask(ind) = bitor(DATAC.dce.(sen).bitmask(ind), ...
-                  MMS_CONST.Bitmask.SW_WAKE_REMOVED);
-                % Save the new corrected data in DATAC replacing the
-                % uncorrected dce data
-                DATAC.dce.(sen).data(indSW) = data_corr(indSW);
-              end
-          end
+            % Wakes are expected, go through sensors then go through them 
+            % again with wake flag indicator from the first run as input.
+            for iSen=1:length(sensors)
+              sen = sensors{iSen};
+              [wakeModelOut, n_corr, ~] = mms_sdp_swwake_new(DATAC.dce.(sen).data, ...
+                sen, Phase.data, DATAC.dce.time, 360);
+              irf.log('debug',sprintf('%i sw wake(-s) found in %s first run', n_corr, sen));
+              diffWake(:, iSen) = abs(wakeModelOut); % Save intermediate wake absolute values
+            end
+            WAMP_THRESHOLD = 1e-9; % mV/m
+            SHORT_DT = 20; % seconds
+            swFlag = sum(diffWake, 2)>WAMP_THRESHOLD;
+            iStart = find(diff(swFlag)==-1);
+            if ~swFlag(1), iStart = [1; iStart]; end
+            iEnd = find(diff(swFlag)==1);
+            if ~swFlag(end), iEnd = [iEnd; length(swFlag)]; end
+            iShort = DATAC.dce.time(iEnd)-DATAC.dce.time(iStart)<SHORT_DT*1e9;
+            if any(iShort)
+              iStart = iStart(iShort); iEnd = iEnd(iShort);
+              for i = 1:length(iStart), swFlag(iStart(i):iEnd(i)) = true; end
+            end
+            % Reset "diffWake" so that it can be used to store final SW wake
+            diffWake = zeros(length(Phase.data), length(sensors), ...
+              getfield(mms_sdp_typecast('dce'),'matlab'));
+            % Now re-run the S/W wake code once more, using the swFlag derived above.
+            for iSen=1:length(sensors)
+              sen = sensors{iSen};
+              [wakeModelOut, n_corr, ~] = mms_sdp_swwake_new(DATAC.dce.(sen).data, ...
+                sen, Phase.data, DATAC.dce.time, 360, swFlag);
+              % For time of expected wakes only.
+              diffWake(indSW, iSen) = wakeModelOut(indSW);
+              irf.log('notice', sprintf('%i sw wake(-s) found in %s', n_corr, sen));
+              % Bitmask values indicating SW_Wake was removed.
+              ind = bitand(indSW, abs( diffWake(:, iSen) ) > 0);
+              DATAC.dce.(sen).bitmask(ind) = bitor(DATAC.dce.(sen).bitmask(ind), ...
+                MMS_CONST.Bitmask.SW_WAKE_REMOVED);
+              % Save the new corrected data in DATAC replacing the
+              % uncorrected dce data
+              DATAC.dce.(sen).data = DATAC.dce.(sen).data - diffWake(:,iSen);
+            end % for iSen=1:length(sensors), second run throguh.
+          end % ANY indSW
           % Save the difference (only zeros if time was wrong for wakes or
           % no wakes found).
-          % Important for Fast L2a dce2d files as these are used by 
+          % Important for Fast L2a dce2d files as these are used by
           % corresponding Burst segments.
-          DATAC.sw_wake = diffWake;
+          DATAC.sw_wake = mms_sdp_typecast('dce', diffWake);
         end
       end
-      
+
       function apply_nom_amp_corr()
         % Apply a nominal amplitude correction factor to DCE for p1..6
         % values after cleanup but before any major processing has occured.
@@ -1140,7 +1150,7 @@ classdef mms_sdp_dmgr < handle
           end
           senDist = sensor_dist(boomLen);
         end
-        
+
         factor = MMS_CONST.NominalAmpCorr; NOM_DIST = 120.0;
         for iSen = 1:numel(sensors)
           senE = sensors{iSen};
@@ -1155,12 +1165,12 @@ classdef mms_sdp_dmgr < handle
           end
           DATAC.dce.(senE).data = DATAC.dce.(senE).data .* distF * factor.(senE);
         end
-        
+
         function l = sensor_dist(len)
           l = 1.67 + len + .07 + 1.75  + .04; % meters, sc+boom+preAmp+wire+probe
         end
       end
-      
+
       function e_corr_cmd()
         % Correct E for CMD
         Phase = DATAC.phase;
@@ -1181,7 +1191,7 @@ classdef mms_sdp_dmgr < handle
             DATAC.dce.e34.data = single( double(DATAC.dce.e34.data) - ...
               (SpinModel.v3 - SpinModel.v4)/NOM_BOOM_L );
           else % using CMD
-            CmdModel = mms_sdp_model_spin_residual_cmd312(DATAC.dcv,... 
+            CmdModel = mms_sdp_model_spin_residual_cmd312(DATAC.dcv,...
               Phase, DATAC.samplerate,'e12'); %#ok<UNRCH>
             DATAC.dce.e12.data = single( ...
               double(DATAC.dce.e12.data) - CmdModel/NOM_BOOM_L );
@@ -1190,20 +1200,20 @@ classdef mms_sdp_dmgr < handle
             DATAC.dce.e34.data = single( ...
               double(DATAC.dce.e34.data) - CmdModel/NOM_BOOM_L );
           end
-        end   
+        end
       end
-      
+
       function e_from_asym()
         % Compute E in asymmetric configuration
-        
+
         if(DATAC.scId ~=4), return, end
-        
+
         %PROBE MAGIC
         %MMS4, Probe 4 fail, 2016-06-12T05:28:48.2
         TTFail = EpochTT('2016-06-12T05:28:48.200Z');
         indFail = DATAC.dcv.time > TTFail.ttns;
         if ~any(indFail), return, end
-        
+
         senV = 'v4';
         irf.log('notice',['Biasing failed on ' senV ' starting at ' TTFail.utc]);
         DATAC.dcv.(senV).bitmask(indFail) = ...
@@ -1213,7 +1223,7 @@ classdef mms_sdp_dmgr < handle
         % Compute asymmetric E34
         % Data with no v3 cannot be reconstructed
         sen3_off = bitand(DATAC.dcv.v3.bitmask, MMS_CONST.Bitmask.SIGNAL_OFF);
-        DATAC.dce.e34.data(indFail & sen3_off) = NaN; 
+        DATAC.dce.e34.data(indFail & sen3_off) = NaN;
         % E34 = (V3 - 0.5*(V1 + V2))/(L/2)
         idx = indFail & ~sen3_off;
         NOM_BOOM_L = .12; % 120 m
@@ -1256,7 +1266,7 @@ classdef mms_sdp_dmgr < handle
               irf.log('warning','Burst but no L2a (fast) CMD model loaded.');
               CmdModel = mms_sdp_model_spin_residual_cmd312(DATAC.dcv,...
                 Phase, DATAC.samplerate);
-            end           
+            end
             tempE34 = single((...
             double(DATAC.dcv.v3.data(idx)) - ...
             0.5*(double(DATAC.dcv.v1.data(idx)) + ...
@@ -1286,7 +1296,7 @@ classdef mms_sdp_dmgr < handle
         DATAC.dce.e34.bitmask(idx) = bitor(DATAC.dce.e34.bitmask(idx), ...
           MMS_CONST.Bitmask.ASYMM_CONF);
       end
-      
+
       function v_from_e_and_v
         % Compute V from E and the other V
         % typical situation is V2 off, V1 on
@@ -1295,11 +1305,11 @@ classdef mms_sdp_dmgr < handle
           irf.log('warning','Empty DCE, cannot proceed')
           return
         end
-        
+
         % Nominal boom length used in L1b processor
         NOM_BOOM_L = .12; % 120 m
         NOM_BOOM_L_ADP = .0292; % 29.2m
-        
+
         MSK_OFF = MMS_CONST.Bitmask.SIGNAL_OFF;
         for iSen = 1:2:numel(sensors)
           if iSen == 5, NOM_BOOM_L = NOM_BOOM_L_ADP; end
@@ -1344,7 +1354,7 @@ classdef mms_sdp_dmgr < handle
           end % if any(idxBoth)
         end % for iSen
       end
-      
+
       function init_param
         DATAC.(param) = [];
         if(isfield(dataObj.data, [vPfx 'samplerate_' param]))
@@ -1419,8 +1429,8 @@ classdef mms_sdp_dmgr < handle
           end
         end
       end
-      
-      
+
+
       function res = resample_probe_enable(fields)
         % resample probe_enabled data to E-field cadense
         probe = fields{1};
@@ -1436,7 +1446,7 @@ classdef mms_sdp_dmgr < handle
             irf.log('critical',errS), error(errS)
         end
         dtNominal = int64(dtNominal*1e9); % convert to ns
-        
+
         flagOK = false;
         for i=1:numel(dtNominal)
           if dtSampling > dtNominal(i)*.95 && dtSampling < dtNominal(i)*1.05
@@ -1481,7 +1491,7 @@ classdef mms_sdp_dmgr < handle
           irf.log('critical', errS); error(errS);
         end
       end
-      
+
       function check_monoton_timeincrease(time, dataType)
         % Short function for verifying Time is increasing.
         if(any(diff(time)<=0))
@@ -1491,7 +1501,7 @@ classdef mms_sdp_dmgr < handle
         end
       end
     end
-    
+
     function res = get.adc_off(DATAC)
       if ~isempty(DATAC.adc_off), res = DATAC.adc_off; return, end
       if isempty(DATAC.dce)
@@ -1501,10 +1511,10 @@ classdef mms_sdp_dmgr < handle
       res = mms_sdp_adc_off(DATAC.dce.time, DATAC.spinfits, DATAC.scId);
       DATAC.adc_off = res;
     end
-    
+
     function res = get.dce_xyz_dsl(DATAC)
       if ~isempty(DATAC.dce_xyz_dsl), res = DATAC.dce_xyz_dsl; return, end
-      
+
       Dce = DATAC.dce;
       if isempty(Dce)
         errStr='Bad DCE input, cannot proceed.';
@@ -1551,7 +1561,7 @@ classdef mms_sdp_dmgr < handle
       bits = bitor(MMS_CONST.Bitmask.MANEUVERS, MMS_CONST.Bitmask.ECLIPSE);
       Etmp.e12 = mask_bits(Etmp.e12, bitmask, bits);
       Etmp.e34 = mask_bits(Etmp.e34, bitmask, bits);
-      
+
       dE = mms_sdp_despin(Etmp.e12, Etmp.e34, Phase.data,...
         DeltaOffR.data(:,1) + DeltaOffR.data(:,2)*1j);
       % Get DSL offsets
@@ -1564,10 +1574,10 @@ classdef mms_sdp_dmgr < handle
         'bitmask',bitmask);
       res = DATAC.dce_xyz_dsl;
     end
-    
+
     function res = get.delta_off(DATAC)
       if ~isempty(DATAC.delta_off), res = DATAC.delta_off; return, end
-      
+
       % QL brst should use delta offset from Fast L2A file
       if(DATAC.tmMode == DATAC.CONST.TmMode.brst)
         if(isfield(DATAC.l2a,'delta_off'))
@@ -1587,22 +1597,22 @@ classdef mms_sdp_dmgr < handle
       DATAC.delta_off = mms_sdp_dmgr.comp_delta_off(Spinfits,...
         DATAC.dce.time, DATAC.dce.e12.bitmask, DATAC.dce.e34.bitmask,...
         MMS_CONST);
-      
+
       if DATAC.delta_off == MMS_CONST.Error
         irf.log('warning','Delta offset could not be computed.');
       end
       res = DATAC.delta_off;
     end
-    
+
     function res = get.phase(DATAC)
       if ~isempty(DATAC.phase), res = DATAC.phase; return, end
-      
+
       Dce = DATAC.dce;
       if isempty(Dce)
         errStr='Bad DCE input, cannot proceed.';
         irf.log('critical',errStr); error(errStr);
       end
-      
+
       % Begin trying to use DEFATT
       Defatt = DATAC.defatt;
       if(~isempty(Defatt))
@@ -1622,21 +1632,21 @@ classdef mms_sdp_dmgr < handle
       end
       res = DATAC.phase;
     end
-    
+
     function res = get.probe2sc_pot(DATAC)
       if ~isempty(DATAC.probe2sc_pot), res = DATAC.probe2sc_pot; return, end
-      
+
       Dcv = DATAC.dcv;
       if isempty(Dcv)
         errStr='Bad DCV input, cannot proceed.';
         irf.log('critical',errStr); error(errStr);
       end
-      
+
       DATAC.probe2sc_pot = ...
         mms_sdp_dmgr.comp_probe2sc_pot(Dcv,DATAC.CONST);
       res = DATAC.probe2sc_pot;
     end
-    
+
     function res = get.sc_pot(DATAC)
       if ~isempty(DATAC.sc_pot), res = DATAC.sc_pot; return, end
 
@@ -1660,10 +1670,10 @@ classdef mms_sdp_dmgr < handle
         'bitmask',Probe2sc_pot.bitmask);
       res = DATAC.sc_pot;
     end
-    
+
     function res = get.spinfits(DATAC)
       if ~isempty(DATAC.spinfits), res = DATAC.spinfits; return, end
-      
+
       Dce = DATAC.dce;
       if isempty(Dce)
         errStr='Bad DCE input, cannot proceed.';
@@ -1679,25 +1689,25 @@ classdef mms_sdp_dmgr < handle
         errStr='Bad SAMPLERATE input, cannot proceed.';
         irf.log('critical',errStr); error(errStr);
       end
-      
+
       MMS_CONST = DATAC.CONST;
-      
+
       % Some default settings
       MAX_IT = 3;      % Maximum of iterations to run fit
       N_TERMS = 3;     % Number of terms to fit, Y = A + B*sin(wt) + C*cos(wt) +..., must be odd.
       MIN_FRAC = 0.20; % Minumum fraction of points required for one fit (minPts = minFraction * fitInterv [s] * samplerate [smpl/s] )
       FIT_EVERY = 5*10^9;   % Fit every X nanoseconds.
       FIT_INTERV = double(MMS_CONST.Limit.SPINFIT_INTERV); % Fit over X nanoseconds interval.
-      
+
       sdpPair = {'e12', 'e34'}; time = [];
       Sfit = struct(sdpPair{1}, [],sdpPair{2}, []);
       Sdev = struct(sdpPair{1}, [],sdpPair{2}, []);
       Iter = struct(sdpPair{1}, [],sdpPair{2}, []);
       NBad = struct(sdpPair{1}, [],sdpPair{2}, []);
-      
+
       % Calculate minumum number of points req. for one fit covering fitInterv
       minPts = MIN_FRAC * sampleRate * FIT_INTERV/10^9; % "/10^9" as fitInterv is in [ns].
-      
+
       % Calculate first timestamp of spinfits to be after start of dce time
       % and evenly divisable with fitEvery.
       % I.e. if fitEvery = 5 s, then spinfit timestamps would be like
@@ -1715,7 +1725,7 @@ classdef mms_sdp_dmgr < handle
       t3.ns  = floor(t2-t3.sec*10^9-t3.ms*10^6-t3.us*10^3);
       % Compute what TT2000 time that corresponds to, using spdfcomputeTT2000.
       t0 = spdfcomputett2000([t1(1) t1(2) t1(3) t1(4) t1(5) t3.sec t3.ms t3.us t3.ns]);
-      
+
       if( (Dce.time(1)<=t0) && (t0<=Dce.time(end)))
         for iPair=1:numel(sdpPair)
           sigE = sdpPair{iPair};
@@ -1726,7 +1736,7 @@ classdef mms_sdp_dmgr < handle
           idxBad = isnan(dataIn); dataIn(idxBad) = [];
           timeIn = Dce.time; timeIn(idxBad) = [];
           probePhaseRad(idxBad) = [];
-          
+
           % It is possible that the time (default 5 sec evenly) differs
           % between the probe pairs as they do not sweep at the same time.
           % Store the previous "time" and find common timestamps if they
@@ -1774,10 +1784,10 @@ classdef mms_sdp_dmgr < handle
       % Store output.
       DATAC.spinfits = struct('time', int64(time), 'sfit', Sfit,...
         'sdev', Sdev, 'iter', Iter, 'nBad', NBad);
-      
+
       res = DATAC.spinfits;
     end
-    
+
     function reset_prop(DATAC,propName,newVal)
       if nargin<3, newVal = []; end
       if isprop(DATAC,propName)
@@ -1788,7 +1798,7 @@ classdef mms_sdp_dmgr < handle
         irf.log('critical',errS), error(errS)
       end
     end
-    
+
     function process_l2a_to_l2pre(DATAC, MMS_CONST)
       if(DATAC.procId == MMS_CONST.SDCProc.l2a || DATAC.procId == MMS_CONST.SDCProc.l2pre)
         if(DATAC.tmMode ~= MMS_CONST.TmMode.brst)
@@ -1829,7 +1839,7 @@ classdef mms_sdp_dmgr < handle
           % position
           DATAC.l2a.dce.time = DATAC.dce.time;
           DATAC.l2a.phase = DATAC.phase;
-          % Use spinfits from entrie L2a fast segment to determine ADC 
+          % Use spinfits from entrie L2a fast segment to determine ADC
           % offset and compute it for the burst time interval.
           DATAC.l2a.adc_off = mms_sdp_adc_off(DATAC.dce.time, DATAC.l2a.spinfits, DATAC.scId);
           sdpProbes = fieldnames(DATAC.l2a.adc_off); % default {'e12', 'e34'}
@@ -1859,7 +1869,7 @@ classdef mms_sdp_dmgr < handle
         end
       end
     end % process_l2a_to_l2pre
-    
+
   end % public Methods
   methods (Static)
     function delta_off = comp_delta_off(Spinfits, ...
@@ -1874,7 +1884,7 @@ classdef mms_sdp_dmgr < handle
       mask = bitand(bitmaskP12,bits) > 0;
       % XXX this will not be nescesary when we will have a reliable ASPOC bit
       mask = mask | (bitand(bitmaskP34,bits) > 0);
-      
+
       % Resample bitmask
       spinSize = MMS_CONST.Limit.SPINFIT_INTERV;
       mskAsponOnSpin = zeros(size(Spinfits.time));
@@ -1897,7 +1907,7 @@ classdef mms_sdp_dmgr < handle
       end
 
       delta_off = Delta_p12_p34_smooth(:,1) + Delta_p12_p34_smooth(:,2)*1j;
-             
+
       function out = new_delta_off(inp)
         %%
         flagStd = false;
@@ -1910,12 +1920,12 @@ classdef mms_sdp_dmgr < handle
         %win = chebwin(WIN_SIZE); sWin = sum(win);
 	    % use chebwin_talbe (tabular values)
 	    win = chebwin_table(WIN_SIZE); sWin = sum(win);
-        
+
         [nData, nCol]=size(inp);
         if nCol~=2, error('expecting INP with 2 columns'), end
         data = [NaN(winW2,nCol); inp ; NaN(winW2,nCol)];
         out = NaN(nData, nCol);
-        
+
         %% reove spikes
         one_iter(); %plot(out), hold on
         NR = 6; NITER = 3;
@@ -1926,7 +1936,7 @@ classdef mms_sdp_dmgr < handle
           data(winW2+(1:nData),:) = inpTmp;
           one_iter();
         end
-        
+
         function one_iter
           %%
           for i = 1:nData
@@ -1950,7 +1960,7 @@ classdef mms_sdp_dmgr < handle
           end
           %%
         end
-        
+
         function w = chebwin_table(L)
           % Tablular values for L=119 only.
           if(L==119)
@@ -1978,7 +1988,7 @@ classdef mms_sdp_dmgr < handle
             errStr='Unexpected window size in hard coded filter table.';
             irf.log('critical', errStr); error(errStr);
           end
-          w = [chebwinTable; 1; flipud(chebwinTable)]; 
+          w = [chebwinTable; 1; flipud(chebwinTable)];
         end
       end % DEL_MY
       function ints = find_on()
@@ -1987,15 +1997,15 @@ classdef mms_sdp_dmgr < handle
         ints = []; iStop = [];
         for idxJmp=1:length(idxJump)+1
           if isempty(iStop), iStart = 1; else, iStart = iStop + 1; end
-          if idxJmp==length(idxJump)+1, iStop = length(mask); 
-          else, iStop = idxJump(idxJmp); 
+          if idxJmp==length(idxJump)+1, iStop = length(mask);
+          else, iStop = idxJump(idxJmp);
           end
           if ~mask(iStart), continue, end
           ints = [ ints; iStart iStop]; %#ok<AGROW>
-        end 
+        end
       end % FIND_ON
     end % COMP_DELTA_OFF
-    
+
     function probe2sc_pot = comp_probe2sc_pot(Dcv,MMS_CONST)
       % COMP_PROBE2SC_POT  compute probe to SC potential
       %
@@ -2006,16 +2016,16 @@ classdef mms_sdp_dmgr < handle
       Dcv.v2.data = mask_bits(Dcv.v2.data, Dcv.v2.bitmask, sweepBit);
       Dcv.v3.data = mask_bits(Dcv.v3.data, Dcv.v3.bitmask, sweepBit);
       Dcv.v4.data = mask_bits(Dcv.v4.data, Dcv.v4.bitmask, sweepBit);
-      
+
       % Probe 4 bias failure
       assymConf = MMS_CONST.Bitmask.ASYMM_CONF;
       Dcv.v3.data = mask_bits(Dcv.v3.data, Dcv.v4.bitmask, assymConf);
       Dcv.v4.data = mask_bits(Dcv.v4.data, Dcv.v4.bitmask, assymConf);
-      
+
       % Compute average of all spin plane probes, ignoring data identified
       % as bad (NaN).
       avPot = irf.nanmean([Dcv.v1.data, Dcv.v2.data, Dcv.v3.data, Dcv.v4.data], 2);
-      
+
       % Combine bitmask, of the probe(-s) used to derive avPot. By first
       % identifying probes which were not used (NaN valued).
       probeUsed = ~isnan([Dcv.v1.data, Dcv.v2.data, Dcv.v3.data, Dcv.v4.data]);
@@ -2033,7 +2043,7 @@ classdef mms_sdp_dmgr < handle
       for ii=1:4
         bitmask(probeUsed(:,ii)) = bitor(bitmask(probeUsed(:,ii)), vBit(probeUsed(:,ii),ii));
       end
-      
+
       probe2sc_pot = struct('time',Dcv.time,'data',avPot,'bitmask',bitmask);
     end
 
@@ -2060,13 +2070,13 @@ classdef mms_sdp_dmgr < handle
       % Design the N'th order lowpass FIR filter
       ff = [0;fcut;fcut;1];
       aa = [1;1;0;0];
-      W = double(ones(length(ff)/2,1));                 
-      ff=ff(:)/2; 
+      W = double(ones(length(ff)/2,1));
+      ff=ff(:)/2;
       L=(N-1)/2;
       m=(0:L);
       k=m';
       k=k(2:length(k));
-      b0=0;  
+      b0=0;
       b=zeros(size(k));
       for s=1:2:length(ff)
         m=(aa(s+1)-aa(s))/(ff(s+1)-ff(s));
@@ -2088,10 +2098,10 @@ classdef mms_sdp_dmgr < handle
       a(1) = a(1)/2;
       hh=[a(L+1:-1:2)/2; a(1); a(2:L+1)/2].';
       LoP = hh.*kwindow;
-      LoP = LoP/sum(LoP); 
-      
+      LoP = LoP/sum(LoP);
+
       % Apply filter to lowfield and highfield
-      nfact = max(1,3*(N-1)); 
+      nfact = max(1,3*(N-1));
       a = 1.0;
       a = a(:);
       LoP = LoP(:);
@@ -2105,16 +2115,16 @@ classdef mms_sdp_dmgr < handle
       [~,zo] = filter(LoP,a(:), xt, zi(:)*xt(1));
       [yc2,zo] = filter(LoP,a(:), lowfield, zo);
       xt = -lowfield(end-1:-1:end-nfact) + 2*lowfield(end);
-      yc3 = filter(LoP,a(:), xt, zo);   
+      yc3 = filter(LoP,a(:), xt, zo);
       [~,zo] = filter(LoP,a(:), yc3(end:-1:1), zi(:)*yc3(end));
       yc5 = filter(LoP,a(:), yc2(end:-1:1), zo);
-      lowfieldfilt = yc5(end:-1:1); 
+      lowfieldfilt = yc5(end:-1:1);
       % Apply lowpass filter to highfield
       xt = -highfield(nfact+1:-1:2) + 2*highfield(1);
       [~,zo] = filter(LoP,a(:), xt, zi(:)*xt(1));
       [yc2,zo] = filter(LoP,a(:), highfield, zo);
       xt = -highfield(end-1:-1:end-nfact) + 2*highfield(end);
-      yc3 = filter(LoP,a(:), xt, zo);  
+      yc3 = filter(LoP,a(:), xt, zo);
       [~,zo] = filter(LoP,a(:), yc3(end:-1:1), zi(:)*yc3(end));
       yc5 = filter(LoP,a(:), yc2(end:-1:1), zo);
       highfieldfilt = yc5(end:-1:1);
@@ -2123,8 +2133,7 @@ classdef mms_sdp_dmgr < handle
       % Merge measured and reconstructed fields
       res = single(lowfieldfilt+highfieldfilt);
     end
-    
-  end % static methods
-  
-end
 
+  end % static methods
+
+end
