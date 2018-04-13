@@ -39,6 +39,7 @@ function [out] = irf_shock_gui(scd,varName)
 %   See also: 
 %       IRF_SHOCK_NORMAL, IRF_SHOCK_PARAMETERS, IRF_4_V_GUI, IRF_MINVAR_GUI
 %
+
 %   Written by: Andreas Johlander, andreasj@irfu.se
 % 
 %   TODO: Add legends for components in plot
@@ -137,7 +138,9 @@ if ischar(scd)
         case 'calc' % click calculate
             % time is set between up- and downstream intervals
             ud.params.t = irf_time(mean([ud.tu(2),ud.td(1)]),'epoch>epochtt');
-            % set temperatures to NaN if not set
+            % return up and downstream tints for output
+            ud.params.tintu = irf_time(ud.tu,'epoch>epochtt');
+            ud.params.tintd = irf_time(ud.td,'epoch>epochtt');
             
             ud.shp.nvec = irf_shock_normal(ud.params);
             ud.shp.par = irf_shock_parameters(ud.params);
