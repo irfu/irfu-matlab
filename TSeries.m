@@ -1569,6 +1569,7 @@
         else, res = [];
         end        
       end
+      res.units = obj.units; res.siConversion = obj.siConversion;
     end
     
     function Ts = changeBasis(obj, flag)
