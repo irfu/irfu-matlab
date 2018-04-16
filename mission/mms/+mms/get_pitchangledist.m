@@ -246,7 +246,7 @@ else
         z(ii,:,:) = -ones(lengthphi,1)*cosd(theta);
     end
 
-    if size(pdist.depend{1},1) == pdist.length
+    if isa(pdist,'PDist') && size(pdist.depend{1},1) == pdist.length
       energy = pdist.depend{1};
     else % make energy table from ancillary data
       energy = ones(length(pdist.time),1)*energy0;
