@@ -36,11 +36,11 @@ nSpins = length(fxPha)/360/STEPS_PER_DEG;
 
 for iSig = 1:length(signals)
   sig = signals{iSig};
+  expShadow = getExpShadow();
   eRes = interp1(epochTmp,double(dce.(sig).data),tFxPha);
   eResM = reshape(eRes,360*STEPS_PER_DEG,nSpins);
   model = zeros(size(eResM));
   phaOne = (0:1/STEPS_PER_DEG:360)'; phaOne(end) = [];
-  expShadow = getExpShadow();
   for sha = expShadow
     % Detrend the data
     idxDetr = (phaOne>sha-DETR_DPHA & phaOne<sha-SHA_DPHA) | ...
