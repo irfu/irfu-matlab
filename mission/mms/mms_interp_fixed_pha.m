@@ -1,5 +1,7 @@
 function [dataFixedPha,fixedPha,epoch2000FixedPha,PHASE_OFF] = mms_interp_fixed_pha(data, tEpoch2000, phaseDeg, STEP_DEG,pair)
 
+global MMS_CONST
+if isempty(MMS_CONST), MMS_CONST=mms_constants; end
 if nargin<4, STEP_DEG = 0.5; end
 
 phaShift = 0; %phaShift=STEPS_PER_DEG/2;
@@ -17,18 +19,22 @@ end
 
 epoch0 = tEpoch2000(1); epochTmp = double(tEpoch2000-epoch0);
 
-if max(diff(epochTmp))>1e9*60/3.1/2 % Gap > 1/ spin period
-  irf.log('critical','long data gap')
-  error('long data gap')
-else % no gaps
-  phaDegSeg = phaseDeg;
-  epochSeg = epochTmp;
-  dataSeg = data;
+phaDegSeg = phaseDeg;
+epochSeg = epochTmp;
+dataSeg = data;
   
-  [dataFixedPha,fixedPha,epochFixedPha] = interp_cont_segment();
-  epoch2000FixedPha = epoch0 + int64(epochFixedPha);
-  return
+[dataFixedPha,fixedPha,epochFixedPha] = interp_cont_segment();
+epoch2000FixedPha = epoch0 + int64(epochFixedPha);
+% Do we have any gaps >= 1/spin period
+indGap = find([0; diff(epochTmp)] >= 1e9*60/MMS_CONST.Spinrate.max/2);
+for iGap=1:length(indGap)
+  % Set NaN for the dataFixedPha corresponding to the datagap
+  indNaN = bitand(epochFixedPha>=epochTmp(indGap(iGap)-1), ...
+    epochFixedPha <= epochTmp(indGap(iGap)));
+ dataFixedPha(indNaN) = NaN;
 end
+
+return
 
   function [dataFixedPhaSeg,phaFixedWrpSeg,epochFixedPhaSeg] = interp_cont_segment()
     phaDegUnw = unwrap(phaDegSeg*pi/180)*180/pi + PHASE_OFF;
