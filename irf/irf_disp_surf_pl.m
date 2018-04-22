@@ -74,6 +74,14 @@ function irf_disp_surf_pl(kc_x_max,kc_z_max,wfinal,extraparam,surfchoice,colorch
     colorstring='log10(v_{phase}/v_A)';
     colorlimits=[-2,2];
     colorMap = 'bluered';
+  elseif colorchoice==13
+    colorstring='log10(v_{e,par}/v_{e,perp})';
+    colorlimits=[-2,2];
+    colorMap = 'bluered';
+  elseif colorchoice==14
+    colorstring='log10(v_{i,par}/v_{i,perp})';
+    colorlimits=[-2,2];
+    colorMap = 'bluered';
   else
     colorchoice=1;
     colorlimits=[0,1];

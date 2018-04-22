@@ -146,6 +146,10 @@ function [wfinal,extraparam]=irf_disp_surf_calc(kc_x_max,kc_z_max,m_i,wp_e)
   viy = 1i*qi./(m_i*(wfinal.*wfinal - wci^2)).*(-1i*wci*Ex + wfinal.*Ey);
   viz = 1i*qi*Ez./(m_i*wfinal);
   
+  % Ratio of parallel and perpendicular to B speed
+  veparoperp = vez.*conj(vez)./(vex.*conj(vex)+vey.*conj(vey));
+  viparoperp = viz.*conj(viz)./(vix.*conj(vix)+viy.*conj(viy));
+  
   % Ion and electron energies
   Ee = 0.5*m_e*(vex.*conj(vex)+vey.*conj(vey)+vez.*conj(vez));
   Ei = 0.5*m_i*(vix.*conj(vix)+viy.*conj(viy)+viz.*conj(viz));
@@ -170,4 +174,6 @@ function [wfinal,extraparam]=irf_disp_surf_calc(kc_x_max,kc_z_max,m_i,wp_e)
   extraparam(10,:,:,:)=log10(ratiopf); % Ratio of field to particle energy densities
   extraparam(11,:,:,:)=Bpolar; % Ellipticity based on B
   extraparam(12,:,:,:)=log10(vphase_to_vA); % Phase speed divided by Alfven speed
+  extraparam(13,:,:,:)=log10(veparoperp); % Ratio of parallel to perpendicular electron speed
+  extraparam(14,:,:,:)=log10(viparoperp); % Ratio of parallel to perpendicular ion speed
   warning on
