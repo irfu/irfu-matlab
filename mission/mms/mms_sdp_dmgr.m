@@ -1081,6 +1081,7 @@ classdef mms_sdp_dmgr < handle
           indSW = mms_sdp_swwake_enabled_time(DATAC.dce.time, DATAC.scId);
           diffWake = zeros(length(Phase.data), length(sensors));
           if any(indSW)
+            saveWakeDesc = false; % Should wakeDescTs be saved to log path? DO NOT enable on SDC!
             % Wakes are expected, go through sensors then go through them 
             % again with wake flag indicator from the first run as input.
             for iSen=1:length(sensors)
@@ -1108,10 +1109,16 @@ classdef mms_sdp_dmgr < handle
             % Now re-run the S/W wake code once more, using the swFlag derived above.
             for iSen=1:length(sensors)
               sen = sensors{iSen};
-              [wakeModelOut, n_corr, ~] = mms_sdp_swwake_new(DATAC.dce.(sen).data, ...
-                sen, Phase.data, DATAC.dce.time, 360, swFlag);
+              [wakeModelOut, n_corr, wakeDesc] = mms_sdp_swwake_new(DATAC.dce.(sen).data, ...
+                sen, Phase.data, DATAC.dce.time, 360, swFlag); %#ok<ASGLU>
               % For time of expected wakes only.
               diffWake(indSW, iSen) = wakeModelOut(indSW);
+              if saveWakeDesc
+                % construct wakeDescTs
+                wakeDescTs.(sen) = irf.ts_vec_xyz(int64(wakeDesc(:,1)), wakeDesc(:,2:4)); %#ok<UNRCH>
+                indDesc = mms_sdp_swwake_enabled_time(wakeDescTs.(sen).time, DATAC.scId);
+                wakeDescTs.(sen) = wakeDescTs.(sen)(indDesc); % Only time stamps when we expect wakes
+              end
               irf.log('notice', sprintf('%i sw wake(-s) found in %s', n_corr, sen));
               % Bitmask values indicating SW_Wake was removed.
               ind = bitand(indSW, abs( diffWake(:, iSen) ) > 0);
@@ -1127,6 +1134,11 @@ classdef mms_sdp_dmgr < handle
           % Important for Fast L2a dce2d files as these are used by
           % corresponding Burst segments.
           DATAC.sw_wake = mms_sdp_typecast('dce', diffWake);
+          if saveWakeDesc
+            % save wakeDescTs
+            [logPath, logName, ~] = fileparts(irf.log('log_out')); %#ok<UNRCH>
+            save([logPath,filesep,logName,'_wakeDescTs.mat'], 'wakeDescTs');
+          end
         end
       end
 

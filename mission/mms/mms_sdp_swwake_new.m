@@ -1,7 +1,7 @@
 function [wakeModelOut, n_corrected, wakedesc] = mms_sdp_swwake_new(e, pair, phaseDeg, timeIn, NPOINTS,swFlag)
-%C_EFW_SWWAKE  Correct raw EFW E data for wake in the solar wind
+% MMS_SDP_SWWAKE_NEW Correct SDP data for wake in the solar wind
 %
-% [data, n_corrected, wakedesc] = mms_sdp_swwake(e, pair, phase_2, timeIn, sampleRate, solarWindFlag)
+% [data, n_corrected, wakedesc] = mms_sdp_swwake_new(e, pair, phase_2, timeIn, sampleRate, solarWindFlag)
 %
 % Input:
 %   e          - raw E-field data
@@ -14,7 +14,8 @@ function [wakeModelOut, n_corrected, wakedesc] = mms_sdp_swwake_new(e, pair, pha
 % Output:
 %   data - corrected data
 %   n_corrected - numer of spins corrected for wake
-%   wakedesc - wake description
+%   wakedesc - wake description,
+%              as matrix of columns: [time, phase, amplitude, half width]
 %
 % Wakes are identified by max derivative. First we find a narrow proxy
 % wake, correct for it and find a proxy DC field (ground tone). Then we
@@ -113,6 +114,8 @@ for idx = idx0
   if isnan(dataFixedPha(idx)), continue, end
   if length(wakeModel)-idx<NPOINTS*(NWSPINS)-1, break, end
   ts = epochFixedPha(idx);
+  % wakedesc first column is the time stamp of wake.
+  wakedesc(find(idx==idx0,1,'first'), 1) = ts;
   tStUTC = irf_time(ts,'ttns>utc');
   
   pha5spins = reshape(fixedPha(idx:(idx+NPOINTS*NWSPINS-1)),NPOINTS,NWSPINS);
@@ -143,9 +146,11 @@ for idx = idx0
   if isempty(wakeProxy), continue, end
   
   flagSWSpin1 = isSW(idxSpin1); flagSWSpin2 = isSW(idxSpin2);
-  [wake1,wake2, ~, d12, d12Plot] = getFinalWake();
+  [wake1,wake2, wakeDescIdx1, d12, d12Plot] = getFinalWake();
   if isempty(wake1) && isempty(wake2), continue, end
-  
+  wakeDescIdx1(1) = wakeDescIdx1(1)-expPhase; % probe phase of max wake
+  wakedesc(find(idx==idx0,1,'first'), 2:4) = wakeDescIdx1;
+
   wake = wakeModel(idxSpin);
   wExprap = imag(wake); wake = real(wake);
   if ~isempty(wake1)
@@ -210,11 +215,6 @@ for idx = idx0
   end
 end
 
-% Save wake position only inside 0-180 degrees
-%wakedesc(wakedesc(:,2)>180, 2) = wakedesc(wakedesc(:,2)>180, 2)-180;
-%wakedesc(isnan(wakedesc(:,1)), :) = [];
-% store phase
-%wakedesc(:,2)=wakedesc(:,2)-expPhaseIdx(floor(length(expPhaseIdx)/2));
 
 epoch0 = timeIn(1); epochFixedPhaTmp = double(epochFixedPha-epoch0);
 epochTmp = double(timeIn-epoch0);
@@ -345,9 +345,8 @@ return
     wake( i2 ) = -ccdav;
   end % getProxyWake
 
-  function [wake1,wake2,wakedesc,d12,d12Plot] = getFinalWake() 
+  function [wake1,wake2,wakedesc1,d12,d12Plot] = getFinalWake()
     % Find final wake shape
-    wakedesc = NaN(1, 4);
    
     % Correct for the proxy wake
     av12_corr = av12 - wakeProxy;
@@ -372,24 +371,12 @@ return
     elseif fixedPha(idx) == 180, w1 = 'max';  w2 = 'min';
     end
     
-    wake1 = getOneWake(i1,w1,flagSWSpin1);
+    [wake1, wakedesc1] = getOneWake(i1,w1,flagSWSpin1);
     wake2 = getOneWake(i2,w2,flagSWSpin2);
     
-    % Save wake description
-    %fw = (mod(ind2,NPOINTS)+1<mod(ind1,NPOINTS)+1);
-    %wakedesc(idx*2-1+fw, 1)     = ttime(mod(ind1,NPOINTS)+1, idx);
-    %wakedesc(idx*2-1+fw, 2)     = ind1;
-    %wakedesc(idx*2-fw, 1)       = ttime(mod(ind2,NPOINTS)+1, idx);
-    %wakedesc(idx*2-fw, 2)       = ind2;
-    %wakedesc([idx*2-1 idx*2], 3) = max(abs(ccdav));
-    %wakedesc(idx*2-1+fw, 3) = max(abs(ccdav1));
-    %wakedesc(idx*2-fw,3) = max(abs(ccdav2));
-    %wakedesc([idx*2-1 idx*2], 4) = wampl;
-    %wakedesc(idx*2-1+fw, 4) = hw1;
-    %wakedesc(idx*2-fw,4) = hw2;
-    
-    function wake = getOneWake(idx,wMode,flag_solar_wind)
+    function [wake, wakeDesc] = getOneWake(idx,wMode,flag_solar_wind)
       wake = [];
+      wakeDesc = NaN(1,3); % to store [phase, amplitude, half width]
       if nargin<2, flag_solar_wind = []; end
       
       if isempty(flag_solar_wind), FACTOR_SW_AMP = 1; FACTOR_SW_SHAPE = 1;
@@ -408,12 +395,12 @@ return
           error('bad mode for getOneWake')
       end
       ccdav = crop_wake(ccdav);
-      
-      if max(abs(ccdav))< WAKE_MIN_AMPLITUDE/FACTOR_SW_AMP ||...
-          max(abs(ccdav))>WAKE_MAX_AMPLITUDE
+      wakeDesc(2) = max(abs(ccdav)); % save amplitude of wake
+      if wakeDesc(2)< WAKE_MIN_AMPLITUDE/FACTOR_SW_AMP ||...
+          wakeDesc(2)>WAKE_MAX_AMPLITUDE
         irf.log('debug', ...
           sprintf('Wake too small/big(%.2f mV/m) at %s', ...
-          max(abs(ccdav)), tStUTC));
+          wakeDesc(2), tStUTC));
         return
       end
       
@@ -435,7 +422,8 @@ return
           hw, tStUTC));
         return
       end
-      
+      wakeDesc(1) = idx2deg(idx(iimax)); % save angle of max wake
+      wakeDesc(3) = hw; % save half width
       wake = zeros(NPOINTS,1); wake( idx ) = ccdav;
     end
   end
