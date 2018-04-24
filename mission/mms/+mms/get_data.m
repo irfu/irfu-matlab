@@ -91,7 +91,9 @@ function res = get_data(varStr, Tint, mmsId)
 %     'Vhplus_gsm_hpca_srvy_l2','Vheplus_gsm_hpca_srvy_l2','Vheplusplus_gsm_hpca_srvy_l2','Voplus_gsm_hpca_srvy_l2',...
 %     'Phplus_gsm_hpca_srvy_l2','Pheplus_gsm_hpca_srvy_l2','Pheplusplus_gsm_hpca_srvy_l2','Poplus_gsm_hpca_srvy_l2',...
 %     'Thplus_gsm_hpca_srvy_l2','Theplus_gsm_hpca_srvy_l2','Theplusplus_gsm_hpca_srvy_l2','Toplus_gsm_hpca_srvy_l2',...
-%     'Nhplus_hpca_sitl'
+%     'Nhplus_hpca_sitl'.
+%  ASPOC:
+%     'aspoc_status'.
 %
 % Example:
 %   Tint = irf.tint('2015-09-21T00:00:00Z/2015-09-21T17:00:00Z');
@@ -229,7 +231,7 @@ vars = {'R_gse','R_gsm','V_gse','V_gsm',...
   'Vhplus_gsm_hpca_srvy_sitl','Vheplus_gsm_hpca_srvy_sitl','Vheplusplus_gsm_hpca_srvy_sitl','Voplus_gsm_hpca_srvy_sitl',...
   'Phplus_gsm_hpca_srvy_sitl','Pheplus_gsm_hpca_srvy_sitl','Pheplusplus_gsm_hpca_srvy_sitl','Poplus_gsm_hpca_srvy_sitl',...
   'Thplus_gsm_hpca_srvy_sitl','Theplus_gsm_hpca_srvy_sitl','Theplusplus_gsm_hpca_srvy_sitl','Toplus_gsm_hpca_srvy_sitl',...
-  'Nhplus_hpca_sitl'}; % XXX THESE MUST BE THE SAME VARS AS BELOW
+  'Nhplus_hpca_sitl','aspoc_status'}; % XXX THESE MUST BE THE SAME VARS AS BELOW
 if isempty(intersect(varStr,vars))
   errS = ['variable not recognized: ' varStr];
   irf.log('critical',errS);
@@ -322,6 +324,11 @@ switch varStr
       rTs = irf.ts_scalar(EpochTT(quality.time), quality.quality);
       res = rTs.tlim(Tint);
     end
+    return
+  case 'aspoc_status'
+    dsetName = ['mms', mmsIdS, '_aspoc_srvy_l2'];
+    pref = ['mms', mmsIdS, '_aspoc_status'];
+    res = mms.db_get_ts(dsetName, pref, Tint);
     return
 end
 
