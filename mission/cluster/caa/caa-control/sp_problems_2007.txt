@@ -231,6 +231,7 @@ It would be nice to have a quick way of applying all manual_problems within a ti
 1030 1849-2030 C4 Extreme (30V) spin-dependent swings in probe potentials. Cause unknown.
   added to nsops 
 
+1102 18-24 force SW
 1123 18:12:03 maneuver C3 (300 s)
 1129 10:02:56 maneuver on C2 (300 s)
 1130 15:27:19 maneuver C3 (120 s)
@@ -267,6 +268,8 @@ It would be nice to have a quick way of applying all manual_problems within a ti
   1110 15-03 force offsets to MS
   1124 21-03 force offsets to MS
 
+
+1202 18-24 force MS
 1204 0350 maneuver C3
 1206 1230 maneuver C1
   fixed

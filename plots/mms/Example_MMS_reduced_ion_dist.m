@@ -8,8 +8,7 @@
 
 %% Set parameters and get data
 % time interval
-tint = irf.tint('2015-12-28T03:57:1/2015-12-28T03:59:00');
-
+tint = irf.tint('2015-12-28T03:57:10/2015-12-28T03:59:00');
 
 % sc number
 ic = 4;
@@ -26,12 +25,11 @@ vlim = 800; % km/s
 
 % make two PDist objects to get longer time
 % also get errors
-c_eval('[iPDistA,iPDistAerr] = mms.make_pdist(mms.get_filepath(''mms?_fpi_brst_l2_dis-dist'',tint(1)));',ic)
-c_eval('[iPDistB,iPDistBerr] = mms.make_pdist(mms.get_filepath(''mms?_fpi_brst_l2_dis-dist'',tint(2)));',ic)
+iPDist = mms.get_data('PDi_fpi_brst_l2',tint,ic);
+iPDistErr = mms.get_data('PDERRi_fpi_brst_l2',tint,ic);
 
 % ignore flux where count is 1 (also makes function faster)
-iPDistA.data(iPDistA.data<1.1*iPDistAerr.data) = 0;
-iPDistB.data(iPDistB.data<1.1*iPDistBerr.data) = 0;
+iPDist.data(iPDist.data<1.1*iPDistErr.data) = 0;
 
 % get magnetic field in dmpa
 c_eval('B = mms.get_data(''B_dmpa_fgm_brst_l2'',tint,?);',ic)
@@ -51,8 +49,7 @@ c_eval('nDMPA = mms_dsl2gse(nGSE,defatt?);', ic);
 %% Reduce distribution
 tic
 % reduced distribution along B
-f1DA = iPDistA.reduce('1D',nDMPA,'vg',vg,'nMC',nMC); 
-f1DB = iPDistB.reduce('1D',nDMPA,'vg',vg,'nMC',nMC); 
+f1D = iPDist.reduce('1D',nDMPA,'vg',vg,'nMC',nMC); 
 toc
 
 %% Plot reduced distribution as a time series
@@ -86,9 +83,8 @@ irf_legend(hca,{'B_x';'B_y';'B_z';'|B|'},[1.02,0.9])
 
 % Plot reduced distribution
 hca = irf_panel(h,'pdist');
-irf_spectrogram(hca,f1DA.specrec,'donotshowcolorbar');
+irf_spectrogram(hca,f1D.specrec,'donotshowcolorbar');
 hold(hca,'on')
-irf_spectrogram(hca,f1DB.specrec,'donotshowcolorbar');
 hcb = colorbar(hca);
 ylabel(hcb,'$\log_{10} F_i$ [s m$^{-4}$]','interpreter','latex')
 ylabel(hca,'$V_{n}$ [km/s]','interpreter','latex')
@@ -97,7 +93,7 @@ irf_zoom(hca,'y',[min(vg),max(vg)])
 
 % More figure things
 irf_plot_axis_align(h)
-irf_zoom(h,'x',[iPDistA.time(1),iPDistB.time(end)])
+irf_zoom(h,'x',tint)
 for ii = 1:length(h)
     h(ii).FontSize = 15;
     h(ii).LineWidth = 1.3;

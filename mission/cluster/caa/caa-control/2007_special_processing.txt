@@ -73,6 +73,16 @@
  Ddsi = c_efw_dsi_off(st,cli,[st+[-1 1]' [-20 -20]']); c_eval('Ddsi?=Ddsi;',cli);  
  if exist('mEDSI.mat','file'), c_eval('save mEDSI.mat Ddsi? -append',cli); end
 
+2007-11-02T18:00:00Z 2007-11-02T21:00:00Z 12 % force SW offsets
+ [st,dt] = caa_read_interval(pwd); st=iso2epoch(st);
+ Ddsi = c_efw_dsi_off(st,cli,[st+[-1 1]' [0 0]']); c_eval('Ddsi?=Ddsi;',cli);  
+ if exist('mEDSI.mat','file'), c_eval('save mEDSI.mat Ddsi? -append',cli); end
+
+2007-11-02T21:00:00Z 2007-11-03T00:00:00Z 34 % force SW offsets
+ [st,dt] = caa_read_interval(pwd); st=iso2epoch(st);
+ Ddsi = c_efw_dsi_off(st,cli,[st+[-1 1]' [0 0]']); c_eval('Ddsi?=Ddsi;',cli);  
+ if exist('mEDSI.mat','file'), c_eval('save mEDSI.mat Ddsi? -append',cli); end
+
 2007-11-05T21:00:00Z 2007-11-06T06:00:00Z 1234 % force offsets to MS
  [st,dt] = caa_read_interval(pwd); st=iso2epoch(st);
  Ddsi = c_efw_dsi_off(st,cli,[st+[-1 1]' [-20 -20]']); c_eval('Ddsi?=Ddsi;',cli);  
@@ -89,6 +99,11 @@
  if exist('mEDSI.mat','file'), c_eval('save mEDSI.mat Ddsi? -append',cli); end
 
 2007-11-24T21:00:00Z 2007-11-25T03:00:00Z 1234 % force offsets to MS
+ [st,dt] = caa_read_interval(pwd); st=iso2epoch(st);
+ Ddsi = c_efw_dsi_off(st,cli,[st+[-1 1]' [-20 -20]']); c_eval('Ddsi?=Ddsi;',cli);  
+ if exist('mEDSI.mat','file'), c_eval('save mEDSI.mat Ddsi? -append',cli); end
+
+2007-12-02T03:00:00Z 2007-12-02T12:00:00Z 2 % force offsets to MS
  [st,dt] = caa_read_interval(pwd); st=iso2epoch(st);
  Ddsi = c_efw_dsi_off(st,cli,[st+[-1 1]' [-20 -20]']); c_eval('Ddsi?=Ddsi;',cli);  
  if exist('mEDSI.mat','file'), c_eval('save mEDSI.mat Ddsi? -append',cli); end

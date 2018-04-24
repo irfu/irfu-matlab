@@ -136,8 +136,11 @@ dVg = diff(vg_edges);
 
 % convert to cartesian mesh, only for output
 if projDim == 2
-    [phiMesh,vMesh] = meshgrid(phig_edges+dPhig/2,vg); % Creates the mesh
+    [phiMesh,vMesh] = meshgrid(phig_edges+dPhig/2,vg); % Creates the mesh, center of bins, phi has one extra bin at the end
     [vxMesh,vyMesh] = pol2cart(phiMesh-pi/nAzg,vMesh);    % Converts to cartesian
+    
+    [phiMesh_edges,vMesh_edges] = meshgrid(phig_edges,vg_edges); % Creates the mesh, edges of bins
+    [vxMesh_edges,vyMesh_edges] = pol2cart(phiMesh_edges,vMesh_edges); % Converts to cartesian, edges
 end
 
 % Number of instrument bins
@@ -146,7 +149,7 @@ nAz = length(phi);
 nEle = length(th);
 
 
-% 3D matrices for bin centers
+% 3D matrices for instrumental bin centers
 TH = repmat(th,nV,1,nAz);       % [phi,th,v]
 TH = permute(TH,[1,3,2]);       % [v,phi,th]
 PHI = repmat(phi,nV,1,nEle);    % [v,phi,th]
@@ -170,6 +173,7 @@ end
 
 % init Fp
 Fg = zeros(nAzg+1,nVg);
+Fg_ = zeros(nAzg,nVg); % use this one with 'edges bins'
 % Volume element
 dtau = ( VEL.^2.*cos(TH).*DV*dPhi*dTh );
 % Area or line element (primed)
@@ -232,6 +236,9 @@ for i = 1:nV % velocity (energy)
                 % add value to appropriate projection bin
                 if usePoint(l) && ~isempty(iAzg(l)) && ~isempty(iVg(l)) && (iAzg(l)<nAzg+1 || iAzg(l)==1) && iVg(l)<nVg+1
                     Fg(iAzg(l),iVg(l)) = Fg(iAzg(l),iVg(l))+F(i,j,k)*dtau(i,j,k)/dAg(iVg(l))/nMCt;
+                    if projDim == 2
+                      Fg_(iAzg(l),iVg(l)) = Fg(iAzg(l),iVg(l))+F(i,j,k)*dtau(i,j,k)/dAg(iVg(l))/nMCt;
+                    end
                 end
             end
         end
@@ -280,6 +287,9 @@ if projDim == 1
 else
     pst.vx = vxMesh;
     pst.vy = vyMesh;
+    pst.F_using_edges = Fg_;
+    pst.vx_edges = vxMesh_edges;
+    pst.vy_edges = vyMesh_edges;
 end
 pst.dens = dens;
 pst.vel = vel;

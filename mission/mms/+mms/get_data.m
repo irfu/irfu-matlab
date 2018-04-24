@@ -701,9 +701,17 @@ end
             dist = mms.variable2ts(dist);
             dist = dist.tlim(Tint);
             energy_data = mms.db_get_variable(dsetName,[pref '_energy_' Vr.tmmode],Tint);   
-            % energy delta_minus/plus  
-            energy_minus = squeeze(energy_data.DELTA_MINUS_VAR.data);
-            energy_plus = squeeze(energy_data.DELTA_PLUS_VAR.data);
+            % energy delta_minus/plus 
+            % no 'DELTA_MINUS_VAR' or 'DELTA_PLUS_VAR' when loading
+            % 'PDi_fpi_brst_l2' from mms.get_data; please let wenya know if
+            % you change the following if ... else ... end section.
+            % 2018-04-19.
+            if (isfield(energy_data, 'DELTA_MINUS_VAR') && isfield(energy_data, 'DELTA_PLUS_VAR'))
+                energy_minus = squeeze(energy_data.DELTA_MINUS_VAR.data);
+                energy_plus = squeeze(energy_data.DELTA_PLUS_VAR.data);
+            else
+                irf.log('warning','DELTA_MINUS_VAR/DELTA_PLUS_VAR is not loaded.')                
+            end
             energy0 = mms.db_get_variable(dsetName,[pref '_energy0_' Vr.tmmode],Tint);
             energy1 = mms.db_get_variable(dsetName,[pref '_energy1_' Vr.tmmode],Tint);
             phi = mms.db_get_ts(dsetName,[pref '_phi_' Vr.tmmode],Tint);
@@ -723,8 +731,10 @@ end
               energy1 = energy1.data;
             end
             res = irf.ts_skymap(dist.time,dist.data,[],phi.data,theta,'energy0',energy0,'energy1',energy1,'esteptable',stepTable.data);
-            res.ancillary.delta_energy_minus = energy_minus;
-            res.ancillary.delta_energy_plus = energy_plus;
+            if (exist('energy_minus','var') && exist('energy_plus','var'))
+                res.ancillary.delta_energy_minus = energy_minus;
+                res.ancillary.delta_energy_plus = energy_plus;
+            end
           case 'fast'
             %dist = mms.db_get_variable(dsetName,[pref '_dist_' Vr.tmmode],Tint);
             if (length(Vr.param) == 3)  
