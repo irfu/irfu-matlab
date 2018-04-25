@@ -1080,8 +1080,8 @@ classdef mms_sdp_dmgr < handle
           % Check to see if time is right for S/W wakes or not (based on orbits)
           indSW = mms_sdp_swwake_enabled_time(DATAC.dce.time, DATAC.scId);
           diffWake = zeros(length(Phase.data), length(sensors));
+          saveWakeDesc = false; % Should wakeDescTs be saved to log path? DO NOT enable on SDC!
           if any(indSW)
-            saveWakeDesc = false; % Should wakeDescTs be saved to log path? DO NOT enable on SDC!
             % Wakes are expected, go through sensors then go through them 
             % again with wake flag indicator from the first run as input.
             for iSen=1:length(sensors)
