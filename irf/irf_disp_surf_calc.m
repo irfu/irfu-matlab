@@ -160,7 +160,7 @@ function [wfinal,extraparam]=irf_disp_surf_calc(kc_x_max,kc_z_max,m_i,wp_e)
   Ein = Ei*ne;
   EE = 0.5*Etot.^2;
   EB = 0.5*Btot.^2;
-  ratiopf = (EE+EB)./(Een+Ein);
+  ratiopf = (Een+Ein)./(EE+EB);
   
   
   extraparam(2,:,:,:)=log10(Btot./Etot); % Degree of electromagnetism
@@ -171,7 +171,7 @@ function [wfinal,extraparam]=irf_disp_surf_calc(kc_x_max,kc_z_max,m_i,wp_e)
   extraparam(7,:,:,:)=Epolar; % Ellipticity
   extraparam(8,:,:,:)=log10(Etot.^2./Btot.^2); % Degree of electromagnetism
   extraparam(9,:,:,:)=log10(Ee./Ei); % Ratio of electron to ion energy
-  extraparam(10,:,:,:)=log10(ratiopf); % Ratio of field to particle energy densities
+  extraparam(10,:,:,:)=log10(ratiopf); % Ratio of particle to field energy densities
   extraparam(11,:,:,:)=Bpolar; % Ellipticity based on B
   extraparam(12,:,:,:)=log10(vphase_to_vA); % Phase speed divided by Alfven speed
   extraparam(13,:,:,:)=log10(veparoperp); % Ratio of parallel to perpendicular electron speed
