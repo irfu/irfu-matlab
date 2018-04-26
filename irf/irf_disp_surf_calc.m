@@ -163,7 +163,7 @@ function [wfinal,extraparam]=irf_disp_surf_calc(kc_x_max,kc_z_max,m_i,wp_e)
   ratiopf = (EE+EB)./(Een+Ein);
   
   
-  extraparam(2,:,:,:)=Btot./Etot; % Degree of electromagnetism
+  extraparam(2,:,:,:)=log10(Btot./Etot); % Degree of electromagnetism
   extraparam(3,:,:,:)=abs(EparK)./Etot; % Degree of longitudinality
   extraparam(4,:,:,:)=Ez./Etot; % Degree of parallelity
   extraparam(5,:,:,:)=sqrt(Bz.*conj(Bz))./Btot; % Degree of parallelity
@@ -176,4 +176,5 @@ function [wfinal,extraparam]=irf_disp_surf_calc(kc_x_max,kc_z_max,m_i,wp_e)
   extraparam(12,:,:,:)=log10(vphase_to_vA); % Phase speed divided by Alfven speed
   extraparam(13,:,:,:)=log10(veparoperp); % Ratio of parallel to perpendicular electron speed
   extraparam(14,:,:,:)=log10(viparoperp); % Ratio of parallel to perpendicular ion speed
+  extraparam(15,:,:,:)=log10(Een./(EE+EB));
   warning on
