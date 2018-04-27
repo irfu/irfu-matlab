@@ -36,7 +36,7 @@ function irf_disp_surf_pl(kc_x_max,kc_z_max,wfinal,extraparam,surfchoice,colorch
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  
 	colorMap = 'parula'; % default colorbar
   if colorchoice==2
-    colorstring='<---- Electrostatic  log10(cE/B)   Electromagnetic ---->';
+    colorstring='<---- Electrostatic  log10(cB/E)   Electromagnetic ---->';
     colorlimits=[-2,2];
     colorMap = 'bluered';
   elseif colorchoice==3
