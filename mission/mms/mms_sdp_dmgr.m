@@ -1134,7 +1134,7 @@ classdef mms_sdp_dmgr < handle
           % Important for Fast L2a dce2d files as these are used by
           % corresponding Burst segments.
           DATAC.sw_wake = mms_sdp_typecast('dce', diffWake);
-          if saveWakeDesc
+          if saveWakeDesc && exist('wakeDescTs','var')
             % save wakeDescTs
             [logPath, logName, ~] = fileparts(irf.log('log_out')); %#ok<UNRCH>
             save([logPath,filesep,logName,'_wakeDescTs.mat'], 'wakeDescTs');
