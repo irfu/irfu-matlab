@@ -64,7 +64,7 @@ irf_legend(hca,{'Bx';'By';'Bz'},[1.02,0.9])
 
 % Plot reduced distribution
 hca = irf_panel(h,'pdist');
-[~,hcb] = irf_spectrogram(hca,f1D.specrec);
+[~,hcb] = irf_spectrogram(hca,f1D.specrec('1D_velocity'));
 hcb.Label.String = 'log_{10}F_e [s m^{-4}]';
 ylabel(hca,'V_{||} [km/s]')
 colormap('jet')
