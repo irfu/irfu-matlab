@@ -1173,27 +1173,20 @@ classdef PDist < TSeries
       %                'velocity'/'1D_velocity'/'velocity_1D' - default for PDist.type 'line (reduced)' 
       %                   Ex: PDist.reduce('1D',[1 0 0]).SPECREC
       %                       PDist.reduce('1D',[1 0 0]).SPECREC('velocity_1D','10^3 km/s')
+      %                'v_f1D*v' - multiplies f by v^2
+      %                'v_f1D*v^2' - multiplies f by v
       
       % supported spectrogram types
+      set_default_spectype = 0;
       supported_spectypes = {'energy','pitchangle','pa','velocity','1D_velocity','velocity_1D','v_f1D*v','v_f1D*v^2'};      
-%       
-%       % check input      
-%       have_input = 1;
-%       while have_input        
-%         switch varargin{1}
-%           case supported_spectypes            
-%             spectype = varargin{1};
-%             l = 1;
-%           case '10^3 km/s'
-%             l = 1
-%             change_velocity_axis = 1;
-%       end
-      if isempty(varargin)
-        spectype = 'energy';
-      elseif ~isempty(varargin) && any(strcmp(supported_spectypes,varargin{1})) % check if first argument is one of supported spectypes
-         spectype = varargin{1};  
-         varargin = varargin(2:end); % remove from varargin
-      else % if argument is not one of supported spectypes, set default based on PDist.type
+      
+      if isempty(varargin) % no spectype given
+        set_default_spectype = 1;
+      elseif ~isempty(varargin) && ~any(strcmp(supported_spectypes,varargin{1})) % given spectype not supported
+        set_default_spectype = 1;
+      end      
+
+      if set_default_spectype
         switch obj.type
           case 'omni'
             spectype = 'energy';
@@ -1207,8 +1200,10 @@ classdef PDist < TSeries
           otherwise
             irf.log('warning',sprintf('Distribution type ''%s'' not supported. Using spectype ''energy'' for whatever backwards compatibility there might be. This option will be removed in a future version.',obj.type));
             spectype = 'energy';
-            %error(sprintf('Distribution type ''%s'' not supported.',obj.type));
-        end          
+        end  
+      else
+         spectype = varargin{1};  
+         varargin = varargin(2:end); % remove from varargin
       end
       
       switch obj.units % set to p_label according to units of PDist
