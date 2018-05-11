@@ -1,4 +1,4 @@
-function [hax,hcb] = plot_projection(varargin)
+function [hax,hcb, FF] = plot_projection(varargin)
 %MMS.PLOT_PROJECTION Plots projection on a specified plane.
 %
 % [ax,hcb] = MMS.PLOT_PROJECTION(dist,'Opt1',OptVal1,...) For PDist format
