@@ -1,14 +1,17 @@
-function out = irf_spin_epoch(data,phase, fCut)
+function out = irf_spin_epoch(varargin)
 %IRF_SPIN_EPOCH  compute a spin epoch
 %
-%  Out = irf_spin_epoch(Data,Phase, fCut)
+%  Out = irf_spin_epoch(Data,Phase,'fCut',fCut)
 %
 %  Created a model to a disturbace signal caused by the ADP shadow by
 %  looking at many spins.
 %
 %  Input : DATA    - tseries of data (vector, scalar)
 %          PHASE   - phase corresponding to DATA time. 
+%          
+%  Options:
 %          FCUT    - frequency for high-pass filter
+%          NSPINS  - number of spins used to construct spin epoch (default is 31)
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):
@@ -17,10 +20,51 @@ function out = irf_spin_epoch(data,phase, fCut)
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
 
-if nargin<3, fCut = []; end
+N_SPINS_MEDIAN = 31; % number of spins for moving median
+fCut = []; % Default, no high-pass filter
+
+if (nargin < 2)
+    nargin
+    help irf_spin_epoch;
+    return;
+end
+
+data=varargin{1};
+phase=varargin{2};
+args=varargin(3:end);
+
+if numel(args)>0
+    flag_have_options=1;
+else
+    flag_have_options=0;
+end
+
+while flag_have_options
+	l = 2;
+	switch(lower(args{1}))
+    case 'fcut'
+      if numel(args)>1 && isnumeric(args{2})
+        fCut = args{2};
+        irf.log('notice',['fCut is set to ' num2str(fCut)]);
+      end
+    case 'nspins'
+      if numel(args)>1 && isnumeric(args{2})
+        N_SPINS_MEDIAN = args{2};
+        irf.log('notice',['Number of spins is set to ' num2str(N_SPINS_MEDIAN)]);
+      end
+    otherwise
+      irf.log('warning',['Unknown flag: ' args{1}]);
+      l=1;
+      break
+	end
+    args = args(l+1:end);
+    if isempty(args) 
+      flag_have_options=0; 
+    end
+end
+
 
 STEPS_PER_DEG=10;
-N_SPINS_MEDIAN = 31; % number of spins for moving median
 
 phaUnw = unwrap(double(phase.data)*pi/180)*180/pi;
 fxPha = ((phaUnw(1)-rem(phaUnw(1),360)):1/STEPS_PER_DEG:...
