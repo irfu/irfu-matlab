@@ -1195,7 +1195,12 @@ classdef PDist < TSeries
             spectype = '1D_velocity';
             irf.log('warning',sprintf('Spectype not given, default spectype for distribution type ''%s'' is ''%s''.',obj.type, spectype));
           case 'pitchangle'
-            spectype = 'pitchangle';
+             if numel(obj.depend{2}) == 1
+               spectype = 'energy';
+             else
+               spectype = 'pitchangle';
+             end
+%            spectype = 'pitchangle';
             irf.log('warning',sprintf('Spectype not given, default spectype for distribution type ''%s'' is ''%s''.',obj.type, spectype));
           otherwise
             irf.log('warning',sprintf('Distribution type ''%s'' not supported. Using spectype ''energy'' for whatever backwards compatibility there might be. This option will be removed in a future version.',obj.type));
