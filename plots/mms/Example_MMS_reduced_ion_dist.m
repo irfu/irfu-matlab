@@ -23,7 +23,7 @@ nMC = 2e2;
 % velocity limit in plot
 vlim = 800; % km/s
 
-% make two PDist objects to get longer time
+% get ion distribution (mms.get_data is somewhat slow)
 % also get errors
 iPDist = mms.get_data('PDi_fpi_brst_l2',tint,ic);
 iPDistErr = mms.get_data('PDERRi_fpi_brst_l2',tint,ic);
@@ -48,7 +48,7 @@ c_eval('nDMPA = mms_dsl2gse(nGSE,defatt?);', ic);
 
 %% Reduce distribution
 tic
-% reduced distribution along B
+% reduced distribution along normal vector
 f1D = iPDist.reduce('1D',nDMPA,'vg',vg,'nMC',nMC); 
 toc
 
@@ -83,7 +83,7 @@ irf_legend(hca,{'B_x';'B_y';'B_z';'|B|'},[1.02,0.9])
 
 % Plot reduced distribution
 hca = irf_panel(h,'pdist');
-irf_spectrogram(hca,f1D.specrec,'donotshowcolorbar');
+irf_spectrogram(hca,f1D.specrec('1D_velocity'),'donotshowcolorbar');
 hold(hca,'on')
 hcb = colorbar(hca);
 ylabel(hcb,'$\log_{10} F_i$ [s m$^{-4}$]','interpreter','latex')

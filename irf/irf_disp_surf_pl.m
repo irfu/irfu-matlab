@@ -36,8 +36,9 @@ function irf_disp_surf_pl(kc_x_max,kc_z_max,wfinal,extraparam,surfchoice,colorch
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  
 	colorMap = 'parula'; % default colorbar
   if colorchoice==2
-    colorstring='<---- Electrostatic                Electromagnetic ---->';
-    colorlimits=[0,1];
+    colorstring='<---- Electrostatic  log10(cB/E)   Electromagnetic ---->';
+    colorlimits=[-2,2];
+    colorMap = 'bluered';
   elseif colorchoice==3
     colorstring='<---- Transversal                 Longitudinal ---->';
     colorlimits=[0,1];
@@ -63,7 +64,7 @@ function irf_disp_surf_pl(kc_x_max,kc_z_max,wfinal,extraparam,surfchoice,colorch
     colorlimits=[-3,3];
 		colorMap = 'bluered';
   elseif colorchoice==10
-    colorstring='<---- Most energy in particles     log10(Wp/Wf)      Most energy in fields ---->';
+    colorstring='<---- Most energy in fields     log10(Wp/Wf)      Most energy in particles ---->';
     colorlimits=[-3,3];
 		colorMap = 'bluered';
   elseif colorchoice==11
@@ -80,6 +81,10 @@ function irf_disp_surf_pl(kc_x_max,kc_z_max,wfinal,extraparam,surfchoice,colorch
     colorMap = 'bluered';
   elseif colorchoice==14
     colorstring='log10(v_{i,par}/v_{i,perp})';
+    colorlimits=[-2,2];
+    colorMap = 'bluered';
+	elseif colorchoice==15
+    colorstring='<---- Most energy in fields     log10(W_e/W_f)      Most energy in electrons ---->';
     colorlimits=[-2,2];
     colorMap = 'bluered';
   else

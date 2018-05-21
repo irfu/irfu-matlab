@@ -1173,25 +1173,20 @@ classdef PDist < TSeries
       %                'velocity'/'1D_velocity'/'velocity_1D' - default for PDist.type 'line (reduced)' 
       %                   Ex: PDist.reduce('1D',[1 0 0]).SPECREC
       %                       PDist.reduce('1D',[1 0 0]).SPECREC('velocity_1D','10^3 km/s')
+      %                'v_f1D*v' - multiplies f by v^2
+      %                'v_f1D*v^2' - multiplies f by v
       
       % supported spectrogram types
-      supported_spectypes = {'energy','pitchangle','pa','velocity','1D_velocity','velocity_1D'};      
-%       
-%       % check input      
-%       have_input = 1;
-%       while have_input        
-%         switch varargin{1}
-%           case supported_spectypes            
-%             spectype = varargin{1};
-%             l = 1;
-%           case '10^3 km/s'
-%             l = 1
-%             change_velocity_axis = 1;
-%       end
-      if ~isempty(varargin) && any(strcmp(supported_spectypes,varargin{1})) % check if first argument is one of supported spectypes
-         spectype = varargin{1};  
-         varargin = varargin(2:end); % remove from varargin
-      else % if argument is not one of supported spectypes, set default based on PDist.type
+      set_default_spectype = 0;
+      supported_spectypes = {'energy','pitchangle','pa','velocity','1D_velocity','velocity_1D','v_f1D*v','v_f1D*v^2'};      
+      
+      if isempty(varargin) % no spectype given
+        set_default_spectype = 1;
+      elseif ~isempty(varargin) && ~any(strcmp(supported_spectypes,varargin{1})) % given spectype not supported
+        set_default_spectype = 1;
+      end      
+
+      if set_default_spectype
         switch obj.type
           case 'omni'
             spectype = 'energy';
@@ -1200,13 +1195,20 @@ classdef PDist < TSeries
             spectype = '1D_velocity';
             irf.log('warning',sprintf('Spectype not given, default spectype for distribution type ''%s'' is ''%s''.',obj.type, spectype));
           case 'pitchangle'
-            spectype = 'pitchangle';
+             if numel(obj.depend{2}) == 1
+               spectype = 'energy';
+             else
+               spectype = 'pitchangle';
+             end
+%            spectype = 'pitchangle';
             irf.log('warning',sprintf('Spectype not given, default spectype for distribution type ''%s'' is ''%s''.',obj.type, spectype));
           otherwise
             irf.log('warning',sprintf('Distribution type ''%s'' not supported. Using spectype ''energy'' for whatever backwards compatibility there might be. This option will be removed in a future version.',obj.type));
             spectype = 'energy';
-            %error(sprintf('Distribution type ''%s'' not supported.',obj.type));
-        end          
+        end  
+      else
+         spectype = varargin{1};  
+         varargin = varargin(2:end); % remove from varargin
       end
       
       switch obj.units % set to p_label according to units of PDist
@@ -1263,7 +1265,36 @@ classdef PDist < TSeries
             spec.f_label = {'v (km/s)'};
           end
           spec.t = obj.time.epochUnix;
-          spec.p = double(squeeze(obj.data));          
+          spec.p = double(squeeze(obj.data));  
+        case {'v_f1D*v'}
+          if ~strcmp(obj.type_,'line (reduced)'); error('PDist must be projected unto a vector: type: ''line (reduced)'', see PDist.reduce.'); end      
+          % check for additional argument given
+          if ~isempty(varargin) && strcmp(varargin{1},'10^3 km/s') % make y (v) units in 10^3 km/s (because they often go up 10^4)
+            spec.f = obj.depend{1}*1e-3;
+            spec.f_label = {'v (10^3 km/s)'};            
+          else
+            spec.f = obj.depend{1};
+            spec.f_label = {'v (km/s)'};
+          end
+          spec.t = obj.time.epochUnix;
+         % vscale = 
+          spec.p = double(squeeze(obj.data)).*obj.depend{1};
+          spec.p_label{2} = [spec.p_label{2} '*km/s'];
+          spec.p_label{1} = [spec.p_label{1} '*v'];
+        case {'v_f1D*v^2'}
+          if ~strcmp(obj.type_,'line (reduced)'); error('PDist must be projected unto a vector: type: ''line (reduced)'', see PDist.reduce.'); end      
+          % check for additional argument given
+          if ~isempty(varargin) && strcmp(varargin{1},'10^3 km/s') % make y (v) units in 10^3 km/s (because they often go up 10^4)
+            spec.f = obj.depend{1}*1e-3;
+            spec.f_label = {'v (10^3 km/s)'};            
+          else
+            spec.f = obj.depend{1};
+            spec.f_label = {'v (km/s)'};
+          end
+          spec.t = obj.time.epochUnix;
+          spec.p = double(squeeze(obj.data)).*obj.depend{1}.^2;
+          spec.p_label{2} = [spec.p_label{2} '*(km/s)^2'];
+          spec.p_label{1} = [spec.p_label{1} '*v^2'];
         otherwise % energy is default
           spec.t = obj.time.epochUnix;
           spec.p = double(obj.data);

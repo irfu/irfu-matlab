@@ -35,6 +35,8 @@ for j=1:length(s_ind)
   if str_val
     tokens{i_string} = str_val;
     i_string = i_string + 1;
+  else
+    tokens(i_string) = [];
   end
 end
 
