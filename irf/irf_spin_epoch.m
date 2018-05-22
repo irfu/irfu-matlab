@@ -1,7 +1,7 @@
 function out = irf_spin_epoch(varargin)
 %IRF_SPIN_EPOCH  compute a spin epoch
 %
-%  Out = irf_spin_epoch(Data,Phase,'fCut',fCut)
+%  Out = irf_spin_epoch(Data,Phase,'fCut',fCut,'samplefreq',samplefreq)
 %
 %  Created a model to a disturbace signal caused by the ADP shadow by
 %  looking at many spins.
@@ -12,7 +12,7 @@ function out = irf_spin_epoch(varargin)
 %  Options:
 %          FCUT    - frequency for high-pass filter
 %          NSPINS  - number of spins used to construct spin epoch (default is 31)
-
+%          SAMPLEFREQ - sample frequency
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):
 % <yuri@irfu.se> wrote this file.  As long as you retain this notice you
@@ -22,6 +22,7 @@ function out = irf_spin_epoch(varargin)
 
 N_SPINS_MEDIAN = 31; % number of spins for moving median
 fCut = []; % Default, no high-pass filter
+SAMPLEFREQ = []; % Default
 
 if (nargin < 2)
     nargin
@@ -52,6 +53,11 @@ while flag_have_options
         N_SPINS_MEDIAN = args{2};
         irf.log('notice',['Number of spins is set to ' num2str(N_SPINS_MEDIAN)]);
       end
+    case 'samplefreq'
+      if numel(args)>1 && isnumeric(args{2})
+        SAMPLEFREQ = args{2};
+        irf.log('notice',['samplefreq is set to ' num2str(SAMPLEFREQ)]);
+      end
     otherwise
       irf.log('warning',['Unknown flag: ' args{1}]);
       l=1;
@@ -75,7 +81,7 @@ tFxPha = interp1(phaUnw,epochTmp,fxPha);
 nSpins = length(fxPha)/360/STEPS_PER_DEG;
 
 out = data; 
-if ~isempty(fCut), out = out.filt(fCut,0,[],5); end
+if ~isempty(fCut), out = out.filt(fCut,0,SAMPLEFREQ,5); end
 eRes = interp1(epochTmp,double(out.data),tFxPha);
 idxOK = ~isnan(tFxPha); nComps = size(eRes,2);
 modelOut = zeros(length(epochTmp),nComps);
