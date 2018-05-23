@@ -59,7 +59,7 @@ wakedesc = [];
 %N_EMPTY = 0.9; % (Cluster was 0.9)
 %MAX_SPIN_PERIOD = 4.3; % sec for Cluster
 %MAX_SPIN_PERIOD = 10^9*60/MMS_CONST.Spinrate.min; % = 20 sec
-WAKE_MAX_HALFWIDTH = 55; % degrees, (Cluster was 45 deg)
+WAKE_MAX_HALFWIDTH = 25; % degrees, (Cluster was 45 deg)
 WAKE_MIN_HALFWIDTH = 9; %11;  % degrees, (Cluster was 11 deg)
 WAKE_MIN_AMPLITUDE = 0.35; % mV/m, (Cluster was 0.4 mV/m)
 WAKE_MAX_AMPLITUDE = 7; % mV/m, (Cluster was 7 mV/m)
