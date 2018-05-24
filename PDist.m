@@ -1088,50 +1088,57 @@ classdef PDist < TSeries
     end
     function PD = elim(obj,eint)  
       energy = obj.depend{1};
-      
-      % Picks out energies in an interval, or the closest energy (to be implemented!)
-      if numel(eint) == 2
-       if or(isempty(obj.ancillary), or(~isfield(obj.ancillary, 'energy0'), ~isfield(obj.ancillary, 'energy1')))
-            energytmp0 = energy(1,:);
-            energytmp1 = energy(2,:);
-            if energytmp0(1) > energytmp1(1)
-                tmp = energytmp0;
-                energytmp0 = energytmp1;
-                energytmp1 = tmp;
-            end
-            elevels0 = intersect(find(energytmp0>eint(1)),find(energytmp0<eint(2)));
-            elevels1 = intersect(find(energytmp1>eint(1)),find(energytmp1<eint(2)));            
-       else
-            elevels0 = intersect(find(obj.ancillary.energy0>eint(1)),find(obj.ancillary.energy0<eint(2)));
-            elevels1 = intersect(find(obj.ancillary.energy1>eint(1)),find(obj.ancillary.energy1<eint(2)));        
-       end
-       if numel(elevels0) ~= numel(elevels1)
-          warning('Energy levels differ for different times. Including the largest interval.')
-          elevels = unique([elevels0,elevels1]);
-        else
-          elevels = elevels0;
-        end         
-        disp(['Effective eint = [' num2str(min(min(energy(:,elevels))),'%g') ' ' num2str(max(max(energy(:,elevels))),'%g') ']'])
-      else
+      unique_etables = unique(obj.depend{1},'rows','stable');
+      netables = size(unique_etables,1); % netables = 2 for older dta and 1 for newer data
+        
+      % find new elevels
+      if numel(eint) == 2 % energy interval        
+        elevels = [];
+        for ietable = 1:netables % loop over 1 or 2 and saves all the unique indices, i.e. max range
+          tmp_elevels = intersect(find(unique_etables(ietable,:)>eint(1)),find(unique_etables(ietable,:)<eint(2)));
+          elevels = unique([elevels tmp_elevels]);
+        end
+        disp(['Effective eint = [' num2str(min(min(energy(:,elevels))),'%g') ' ' num2str(max(max(energy(:,elevels))),'%g') ']'])      
+      else % pick closest energy level
         ediff0 = abs(energy(1,:)-eint);
         ediff1 = abs(energy(2,:)-eint);
         if min(ediff0)<min(ediff1); ediff = ediff0;
         else, ediff = ediff1; end
         elevels = find(ediff==min(ediff));
         disp(['Effective energies alternate in time between ' num2str(energy(1,elevels),'%g') ' and ' num2str(energy(2,elevels),'%g') ''])
-      end      
+      end
+      
       tmpEnergy = energy(:,elevels);
       tmpData = obj.data(:,elevels,:,:);      
       
       PD = obj;
       PD.data_ = tmpData;
       PD.depend{1} = tmpEnergy;
-      if or(isempty(PD.ancillary), or(~isfield(PD.ancillary, 'energy0'), ~isfield(PD.ancillary, 'energy1')))    
-          PD.ancillary.energy0 = energytmp0(elevels);
-          PD.ancillary.energy1 = energytmp1(elevels);      
-      else
-          PD.ancillary.energy0 = PD.ancillary.energy0(elevels);
-          PD.ancillary.energy1 = PD.ancillary.energy1(elevels);
+      
+      % update ancillary data
+      if isempty(PD.ancillary) % if ancillary data is empty, this is just for backwards compatibility
+        if netables == 1          
+          PD.ancillary.esteptable = zeros(size(energy,1),0);
+          PD.ancillary.energy0 = unique_etables(1,elevels);
+          PD.ancillary.energy1 = unique_etables(1,elevels);
+        elseif netables == 2
+          [esteptable,~] = ismember(energy,unique_etables(2,:),'rows'); % where row is not unique_etables(2,:), '0' is returned
+          PD.ancillary.esteptable = esteptable;
+          PD.ancillary.energy0 = unique_etables(1,elevels);
+          PD.ancillary.energy1 = unique_etables(2,elevels);
+        end
+      else % check what fields ancillary have, and update them
+        if isfield(PD.ancillary, 'energy0'), PD.ancillary.energy0 = PD.ancillary.energy0(elevels);
+          else PD.ancillary.energy0 = energy(1,elevels); end
+        if isfield(PD.ancillary, 'energy1'), PD.ancillary.energy1 = PD.ancillary.energy1(elevels);
+          else PD.ancillary.energy1 = energy(2,elevels); end
+        if ~isfield(PD.ancillary, 'esteptable')
+          [esteptable,~] = ismember(energy,PD.ancillary.energy1,'rows');
+          PD.ancillary.esteptable = esteptable;
+        end          
+        if isfield(PD.ancillary,'energy'), PD.ancillary.energy = PD.ancillary.energy(:,elevels); end                
+        if isfield(PD.ancillary,'delta_energy_minus'), PD.ancillary.delta_energy_minus = PD.ancillary.delta_energy_minus(:,elevels); end                
+        if isfield(PD.ancillary,'delta_energy_plus'), PD.ancillary.delta_energy_plus = PD.ancillary.delta_energy_plus(:,elevels); end                
       end
     end
     function PD = omni(obj)
