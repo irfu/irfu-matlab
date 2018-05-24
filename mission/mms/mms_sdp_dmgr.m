@@ -22,6 +22,7 @@ classdef mms_sdp_dmgr < handle
     hk_105 = [];      % src HK_105 file
     hk_10e = [];      % src HK_10E file
     l2a = [];         % src L2A file
+    l2pre = [];       % src L2Pre file
     phase = [];       % comp phase
     probe2sc_pot = [];% comp probe to sc potential
     sc_pot = [];      % comp sc potential
@@ -496,6 +497,28 @@ classdef mms_sdp_dmgr < handle
             DATAC.(param).sw_wake = tmp;
           end
 
+        case('l2pre')
+          % L2pre, containing spinEpoch (spin residue) from the Fast 
+          % L2pre processing to be used in corresponding brst L2pre process
+          DATAC.(param).dataObj = dataObj;
+          varPre = ['mms', num2str(DATAC.scId), '_edp_'];
+          typePos = strfind(dataObj.GlobalAttributes.Data_type{1},'_');
+          varSuf = dataObj.GlobalAttributes.Data_type{1}(1:typePos(2)-1);
+          spinResidueTs = get_ts(dataObj,[varPre, 'spin_residue_', varSuf]);
+          if isempty(spinResidueTs)
+            irf.log('notice','L2pre dce2d files contained no spin residue. Assuming zeros.');
+            % Old file which may not have "spin residue", use zeros
+            time = dataObj.data.([varPre, 'epoch_', varSuf]).data;
+            spinResidueTs = irf.ts_vec_xyz(time, zeros(length(time),3));
+          end
+          if isfield(DATAC.(param),'spinEpoch')
+            % Already have a spinEpoch (multiple L2pre files), combine
+            % TSeries based on time.
+            DATAC.(param).spinEpoch = combine(DATAC.(param).spinEpoch, spinResidueTs);
+          else
+            DATAC.(param).spinEpoch = spinResidueTs;
+          end
+          
         case('aspoc')
           % ASPOC, have an adverse impact on E-field mesurements.
           vars = fields(dataObj.data);
@@ -645,74 +668,6 @@ classdef mms_sdp_dmgr < handle
           DATAC.(sig).(sen).bitmask(idxOffNew) = MMS_CONST.Bitmask.SIGNAL_OFF;
         end
       end % CHK_TIMELINE
-
-%       function interp_time()
-%         % Measurements are not done at same instance but with a delay of
-%         % 3.8us between each channel. Adjust V[2-6] and E12, E34, E56 with
-%         % interp1() to align with timestamp of V1 (which is the first
-%         % channel and for the combined DCE&DCV file this is the time of the
-%         % Epoch variable).
-%         % Source used: E-mail from Mark dated 2017/01/11T19:21 CET, and the
-%         % "Document No. 108328revE".
-%
-%         % Only Burst mode should be interpolated
-%         if(DATAC.tmMode == DATAC.CONST.TmMode.brst)
-%           irf.log('notice', 'Resampling burst measurements to align with first channel ("epoch").');
-%         else
-%           irf.log('debug', 'Not in burst mode, not doing resample of measurements to align with first channel ("epoch")');
-%           return;
-%         end
-%
-%         keyboard
-%         % NOTE THIS FUNCTION IS NOT READY for production, added here as to
-%         % create test files to see what impact it has on our files. Mainly
-%         % burst 16'384 Hz may be impacted, but this is TBD. Also "to be
-%         % checked" is the commissioning data with separate dce and dcv
-%         % files.
-%
-%         % Offset between each channel in ADC
-%         Dt = int64(3.8e3); % 3.8 us expressed in ns (TT2000, int64)
-%         % V1 is start of nominal Epoch (when combined dce&dcv file)
-%         % V2 is Dt later (included here, but NaN unless in comm.)
-%         % V3 is Dt later again (ie 2*Dt)
-%         % V4 is 3*Dt (NaN unless in comm.)
-%         % V5 is 4*Dt
-%         % V6 is 5*Dt (NaN unless in comm.)
-%         % Dt for one empty "Nap of the ADC"
-%         % E12 is 7*Dt
-%         % E34 is 8*Dt
-%         % E56 is 9*Dt
-%         tV = DATAC.dcv.time;
-%         t1 = tV - tV(1);
-%         %tE = DATAC.dce.time; % Separate time for DCE file?
-%
-%         % Interpolate each data to align in time with V1, convert int64 and
-%         % single data into double first than back again after interpolation
-%         DATAC.dcv.v2.data = single( interp1(double(t1 + 1*Dt), ...
-%           double(DATAC.dcv.v2.data), ...
-%           double(t1), 'linear', 'extrap') ); % V2 is nominally NaN
-%         DATAC.dcv.v3.data = single( interp1(double(t1 + 2*Dt), ...
-%           double(DATAC.dcv.v3.data), ...
-%           double(t1), 'linear', 'extrap') );
-%         DATAC.dcv.v4.data = single( interp1(double(t1 + 3*Dt), ...
-%           double(DATAC.dcv.v4.data), ...
-%           double(t1), 'linear', 'extrap') ); % V4 is nominally NaN
-%         DATAC.dcv.v5.data = single( interp1(double(t1 + 4*Dt), ...
-%           double(DATAC.dcv.v5.data), ...
-%           double(t1), 'linear', 'extrap') );
-%         DATAC.dcv.v6.data = single( interp1(double(t1 + 5*Dt), ...
-%           double(DATAC.dcv.v6.data), ...
-%           double(t1), 'linear', 'extrap') ); % V6 is nominally NaN
-%         DATAC.dce.e12.data = single( interp1(double(t1 + 7*Dt), ...
-%           double(DATAC.dce.e12.data), ...
-%           double(t1), 'linear', 'extrap') );
-%         DATAC.dce.e34.data = single( interp1(double(t1 + 8*Dt), ...
-%           double(DATAC.dce.e34.data), ...
-%           double(t1), 'linear', 'extrap') );
-%         DATAC.dce.e56.data = single( interp1(double(t1 + 9*Dt), ...
-%           double(DATAC.dce.e56.data), ...
-%           double(t1), 'linear', 'extrap') );
-%       end % INTERP_TIME
 
       function chk_bias_guard()
         % Check that bias/guard setting, found in HK_10E, are nominal. If any
@@ -1065,6 +1020,7 @@ classdef mms_sdp_dmgr < handle
               DATAC.dce.(sen).bitmask(ind) = bitor(DATAC.dce.(sen).bitmask(ind), MMS_CONST.Bitmask.SW_WAKE_REMOVED);
             end
           end
+          DATAC.sw_wake = mms_sdp_typecast('dce', swWake.data);
         else
           % Fast/Slow or Brst e-field processing without previous L2a swwake.
           % Try to compute wake and correct for it.
@@ -1128,6 +1084,25 @@ classdef mms_sdp_dmgr < handle
               % uncorrected dce data
               DATAC.dce.(sen).data = DATAC.dce.(sen).data - diffWake(:,iSen);
             end % for iSen=1:length(sensors), second run throguh.
+            % Ensure Bitmask is set "true" for SW_WAKE_REMOVED for each 90
+            % degree segment (each probe anti-sunward +/-45 deg) if it is
+            % "true" for any datapoint in this segment.
+            % + 30deg offset of probe 1 from Z-phase, +45 deg and mod(,90)
+            % give each 90 deg segment (+/-45 deg from when probe is sunward)
+            uPhase90 = mod(unwrap(Phase.data) + 30 + 45, 90);
+            indPhase = find([0; diff(uPhase90)]<0); % Jump => new segment of 90 deg (or jump in data)
+            for iBitSeg=1:length(indPhase)
+              for iSen=1:length(sensors)
+                sen = sensors{iSen};
+                if iBitSeg==1, iSeg=1:indPhase(iBitSeg);
+                elseif iBitSeg==length(indPhase), iSeg=indPhase(iBitSeg):length(uPhase90);
+                else, iSeg=(indPhase(iBitSeg-1)+1):indPhase(iBitSeg);
+                end
+                if any(bitand(DATAC.dce.(sen).bitmask(iSeg), MMS_CONST.Bitmask.SW_WAKE_REMOVED))
+                  DATAC.dce.(sen).bitmask(iSeg) = bitor(DATAC.dce.(sen).bitmask(iSeg), MMS_CONST.Bitmask.SW_WAKE_REMOVED);
+                end
+              end
+            end %
           end % ANY indSW
           % Save the difference (only zeros if time was wrong for wakes or
           % no wakes found).
@@ -1840,8 +1815,21 @@ classdef mms_sdp_dmgr < handle
           B_tmp = DATAC.dfg.B_dmpa;
           B_tmp.data((abs(B_tmp.z.data) <= 1), :) = NaN;
           dEz = irf_edb(TSeries(EpochTT(DATAC.l2a.dce.time),dE,'vec_xy'), B_tmp, 10, 'E.B=0');
-          DATAC.l2a.dsl = struct('data',[dEz.data],...
-            'bitmask',bitmask);
+          DATAC.l2a.dsl = struct('data', [dEz.data], 'bitmask', bitmask);
+          % Compute "Spin epoch"
+          DATAC.l2a.spinEpoch = irf_spin_epoch( ...
+            irf.ts_vec_xyz(DATAC.l2a.dce.time, DATAC.l2a.dsl.data), ...
+            DATAC.l2a.phase, 'fCut', 1/40, 'nspins', 31, ...
+            'samplefreq', DATAC.samplerate);
+          DATAC.l2a.dsl.data = DATAC.l2a.dsl.data - DATAC.l2a.spinEpoch.data;
+          % Simply despin sw wakes as if it were a linearly independent
+          % variable subtracted from the fields, and not a more complex
+          % situtation (wakes removed, then spinfits computed, 
+          % then dc levels computed and subtracted, then delta offsets
+          % computed, and so on).
+          DATAC.l2a.sw_wake_despun = mms_sdp_despin(DATAC.l2a.sw_wake(:,1), ...
+            DATAC.l2a.sw_wake(:,2), DATAC.l2a.phase.data);
+
 
         else
           % L1b data combined with L2A fast to be processed for L2Pre
@@ -1849,6 +1837,7 @@ classdef mms_sdp_dmgr < handle
           DATAC.l2a.adp = -DATAC.dce.e56.data; % Note: minus (L1b dce e56) to align with DSL Z
           % Compute values from DCE and store in intermediate l2a
           % position
+          %L2aFastTime = DATAC.l2a.dce.time;
           DATAC.l2a.dce.time = DATAC.dce.time;
           DATAC.l2a.phase = DATAC.phase;
           % Use spinfits from entrie L2a fast segment to determine ADC
@@ -1876,8 +1865,18 @@ classdef mms_sdp_dmgr < handle
           B_tmp = DATAC.dfg.B_dmpa;
           B_tmp.data((abs(B_tmp.z.data) <= 1), :) = NaN;
           dEz = irf_edb(TSeries(EpochTT(DATAC.dce.time),dE,'vec_xy'), B_tmp, 10, 'E.B=0');
-          DATAC.l2a.dsl = struct('data',[dEz.data],...
-            'bitmask',bitmask);
+          DATAC.l2a.dsl = struct('data', [dEz.data], 'bitmask', bitmask);
+          if isfield(DATAC.l2pre,'spinEpoch')
+            DATAC.l2a.spinEpoch = DATAC.l2pre.spinEpoch.resample(EpochTT(DATAC.dce.time));
+            DATAC.l2a.dsl.data = DATAC.l2a.dsl.data - DATAC.l2a.spinEpoch.data;
+          else
+            % Old processing or no corresponding L2pre dce2d fast file
+            % found
+            DATAC.l2a.spinEpoch = irf.ts_vec_xyz(DATAC.l2a.dce.time, zeros(size(DATAC.l2a.dsl)));
+          end
+          % Simply despin sw wakes as if it were a linearly independent
+          % variable subtracted from the fields
+          DATAC.l2a.sw_wake_despun = mms_sdp_despin(DATAC.sw_wake(:,1), DATAC.sw_wake(:,2), DATAC.l2a.phase.data);
         end
       end
     end % process_l2a_to_l2pre
