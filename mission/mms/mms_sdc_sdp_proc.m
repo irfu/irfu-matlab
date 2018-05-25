@@ -436,8 +436,8 @@ filename_output = mms_sdp_cdfwrite(HdrInfo, Dmgr);
 
       if regexpi(fileIn,'_dce')
         if( (procId == MMS_CONST.SDCProc.l2pre || procId == MMS_CONST.SDCProc.ql) ...
-            && ~isempty(regexpi(fileIn,'_l2a_')) && any(cell2mat(regexp(varargin(:),'_brst_'))) )
-          % L2A file (from fast mode) for "QL Brst" or "L2A Brst" process.
+            && ~isempty(regexpi(fileIn,'_l2(a|pre)_')) && any(cell2mat(regexp(varargin(:),'_brst_'))) )
+          % L2A or L2Pre file (from fast mode) for "QL Brst" or "L2A Brst" process.
         else
 % Alternative to multiple regexpi() in commissioning data.
 %           expr = ['mms(?<SCid>\d{0,1})_edp_(?<tmModeStr>(', ...
