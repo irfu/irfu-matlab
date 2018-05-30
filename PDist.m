@@ -130,10 +130,22 @@ classdef PDist < TSeries
         end
         obj.ancillary = new_ancillary_data;
                 
-        if numel(idx) > 1 
-          obj = builtin('subsref',obj,idx(2:end));
-        end        
-        [varargout{1:nargout}] = obj;                
+        if numel(idx) > 1  
+          nargout_str = [];
+          if nargout == 0 % dont give varargout
+            obj = builtin('subsref',obj,idx(2:end));            
+          else
+            for inout = 1:nargout % create [out1,out2,...outN] to get the correct number or nargout for rest of subsrefs (idx)
+              c_eval('nargout_str = [nargout_str ''tmp_vout?,''];',inout)
+            end
+            nargout_str = ['[' nargout_str(1:end-1) ']'];
+            varargout_str = ['{' nargout_str(2:end-1) '}'];             
+            eval(sprintf('%s = builtin(''subsref'',obj,idx(2:end));',nargout_str)) % disp(sprintf('%s = builtin(''subsref'',obj,idx(2:end));',nargout_str))           
+            eval(sprintf('varargout = %s;',varargout_str)); % varargout = {out1,out2,...outN}; % disp(sprintf('varargout = %s;',varargout_str))
+            end
+        else
+          [varargout{1:nargout}] = obj;
+        end                      
       case '{}'
         error('irf:TSeries:subsref',...
           'Not a supported subscripted reference')
