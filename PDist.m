@@ -549,7 +549,8 @@ classdef PDist < TSeries
       while have_options
         switch(lower(args{1}))
           case {'t','tint'} % time
-              tint = args{2};
+            l = 2;
+            tint = args{2};
           case 'nmc' % number of Monte Carlo iterations
             l = 2;
             nMC = args{2};
@@ -558,10 +559,6 @@ classdef PDist < TSeries
           case 'vint' % limit on transverse velocity (like a cylinder) [km/s]
             l = 2;
             vint = args{2};
-            ancillary_data{end+1} = 'vint';
-            ancillary_data{end+1} = vint;
-            ancillary_data{end+1} = 'vint_units';
-            ancillary_data{end+1} = 'km/s';
           case 'aint'
             l = 2;
             aint = args{2};
@@ -587,7 +584,13 @@ classdef PDist < TSeries
         args = args((l+1):end);
         if isempty(args), break, end
       end
-
+      
+      % set vint ancillary data      
+      ancillary_data{end+1} = 'vint';
+      ancillary_data{end+1} = vint;
+      ancillary_data{end+1} = 'vint_units';
+      ancillary_data{end+1} = 'km/s';
+      
       %% Get angles and velocities for spherical instrument grid, set projection
       %  grid and perform projection
       emat = double(dist.depend{1});
@@ -758,12 +761,38 @@ classdef PDist < TSeries
       % Must add xphat to ancillary data!
       
     end
-    function varargout = surf(varargin)
-      % Surface/pcolor plot of PDist of type 'plane (reduced)'.
-      %   PDist.surf(...)
-      %   h_surf = PDist.surf(...)
-      %   [h_surf,h_axis] = PDist.surf(...)
-      %   [h_surf,h_axis,h_all] = PDist.surf(...)
+    function [ax,args,nargs] = axescheck_pdist(varargin)
+      %[ax,args,nargs] = axescheck_pdist(varargin{:});
+      % MATLAB's axescheck only checks if the first argument is an axis handle, but
+      % PDist.surf can be called as both PDist.surf(ax) and surf(ax,PDist),
+      % where the first option has the axis as the second argument while
+      % the second option has the axis as the first argument. Instead we
+      % search until we find the first axis handle.
+      have_axes = 0;
+      ax = [];
+      orig_args = varargin;
+      args = orig_args;
+      nargs = numel(args);
+      iArg = 0;
+      while ~have_axes
+        iArg = iArg + 1; 
+        if iArg > nargs, break; end
+        if ((isscalar(orig_args{iArg}) && isgraphics(orig_args{iArg},'axes')) ...
+          || isa(orig_args{iArg},'matlab.graphics.axis.AbstractAxes') || isa(orig_args{iArg},'matlab.ui.control.UIAxes'))
+          ax = orig_args{iArg};
+          axes(ax); % set current axis to ax, needed for text(), which does not accept ax as input
+          have_axes = 1;          
+          args(iArg) = []; % remove axes from args
+          nargs = nargs - 1;
+        end        
+      end
+    end
+    function varargout = plot_plane(varargin)
+      % PDIST.PLOT_PLANE Surface/pcolor plot of PDist of type 'plane (reduced)'.
+      %   PDist.PLOT_PLANE(...)
+      %   h_surf = PDist.PLOT_PLANE(...)
+      %   [h_surf,h_axis] = PDist.PLOT_PLANE(...)
+      %   [h_surf,h_axis,h_all] = PDist.PLOT_PLANE(...)
       %
       %   Output:
       %      h_all - structure with all the used handles, useful for 
@@ -809,36 +838,16 @@ classdef PDist < TSeries
       %       iPlane2 = iLine.cross(iPlane1);      
       %       if2D = iDist.reduce('2D',iPlane1,iPlane2,'vint',vint); % reduced distribution perp to B
       %       h1 = subplot(3,1,1);
-      %       if2D.surf(h1,'printinfo','tint',tint_plot(1))
+      %       if2D.PLOT_PLANE(h1,'printinfo','tint',tint_plot(1))
       %       h2 = subplot(3,1,2);
-      %       if2D.surf(h2,'printinfo','tint',tint_plot(2))
+      %       if2D.PLOT_PLANE(h2,'printinfo','tint',tint_plot(2))
       %       h3 = subplot(3,1,3);
-      %       if2D.surf(h3,'printinfo','tint',tint_plot)
+      %       if2D.PLOT_PLANE(h3,'printinfo','tint',tint_plot)
       %       
       %   See also mms.plot_int_projection, PDist.reduce
       
-      %[ax,args,nargs] = axescheck(varargin{:});
-      % axescheck only checks if the first argument is an axis handle, but
-      % PDist.surf can be called as both PDist.surf(ax) and surf(ax,PDist),
-      % where the first option has the axis as the second argument while
-      % the second option has the axis as the first argument. Instead we
-      % search untilwe find the first axis handle.
-      have_axes = 0;
-      orig_args = varargin;
-      iArg = 0;
-      while ~have_axes
-        iArg = iArg + 1; 
-        if ((isscalar(orig_args{iArg}) && isgraphics(orig_args{iArg},'axes')) ...
-          || isa(orig_args{iArg},'matlab.graphics.axis.AbstractAxes') || isa(orig_args{iArg},'matlab.ui.control.UIAxes'))
-          ax = orig_args{iArg};
-          axes(ax); % set current axis to ax, needed for text(), which does not accept ax as input
-          have_axes = 1;
-          args = orig_args;
-          args(iArg) = [];
-          nargs = numel(args);
-        end
-      end
-            
+      % Check for axes
+      [ax,args,nargs] = axescheck_pdist(varargin{:});             
       if isempty(ax); ax = gca; end
       all_handles.Axes = ax;
             
@@ -1048,6 +1057,248 @@ classdef PDist < TSeries
         all_handles.Infotext = h_text;
       end
       
+      % output
+      if nargout == 0
+        varargout = {};
+      elseif nargout == 1 % return surface handle, this is how pcolor does it       
+        varargout = {ax_surface};
+      elseif nargout == 2 % return surface handle and axis handle
+        varargout = {ax_surface,ax};
+      elseif nargout == 3 % return all handles in a structure
+        varargout = {ax_surface,ax,all_handles};
+      end
+    end
+    function varargout = plot_pad_polar(varargin)
+      % PDIST.PLOT_PAD_POLAR polar pitchangle plot
+      
+      % Check for axes
+      [ax,args,nargs] = axescheck_pdist(varargin{:});                   
+      if isempty(ax); ax = gca; end
+      all_handles.Axes = ax;
+            
+      % Make sure first non axes-handle input is PDist of the right type.
+      if isa(args{1},'PDist') && any(strcmp(args{1}.type,{'pitchangle'}))
+        dist_orig = args{1};
+      else
+        error('First input that is not an axes handle must be a PDist of type ''pitchangle'', see PDist.pitchangles.')
+      end
+      args = args(2:end);
+      nargs = nargs - 1;
+      
+      dist = dist_orig;
+            
+      % default plotting parameters
+      doMirrorData = 1;
+      doAxesV = 0; % default is to do energy
+      doLog10 = 1;
+      doLogAxes = 1;
+      doColorbar = 1;
+      doAxisLabels = 1;
+      doPrintInfo = 0;
+      doContour = 0;
+      doCircles = 0;      
+      doFLim = 1; flim = [0 Inf];
+      
+      if strcmp(dist.species,'electrons') 
+        v_scale = 1e-3;
+        v_label_units = '10^3 km/s';
+      elseif strcmp(dist.species,'ions') 
+        v_scale = 1;
+        v_label_units = 'km/s';
+      else
+        error(sprintf('Species %s not supported',dist.species))
+      end
+      
+      tId = 1:dist.length; % if tint is not given as input (check below) default is to include all the time indices of input distribution
+      
+      % check for input, try to keep it at a minimum, so that the
+      % functionality is similar to Matlabs plot function, all the details
+      % can then be fixed outside the function using ax.XLim, ax.YLim, 
+      % ax.CLim, etc...
+      if nargs > 0; have_options = 1; else have_options = 0; end
+      while have_options
+        l = 1;
+        switch(lower(args{1}))   
+          case 'tint'
+            l = 2;
+            tint = args{2};
+            if tint.length == 1 % find closest time
+              [~,tId] = min(abs(dist.time-tint));                         
+            else % take everything within time interval
+              [tId,~] = dist.time.tlim(tint);                            
+            end         
+          case 'scpot'
+            l = 2;
+            scpot = args{2};
+            if isa(scpot,'TSeries')
+              includescpot = 1;
+              irf.log('notice','Spacecraft potential passed.')
+            else
+                includescpot = 0;
+                irf.log('notice','scpot not recognized. Not using it.')
+            end
+          case 'nolog10'
+            l = 1;
+            doLog10 = 0;   
+          case 'contour'
+            l = 2;
+            contour_levels = args{2};  
+            doContour = 1;
+%           case 'circles_origin'
+%             l = 2;
+%             v_levels = args{2};
+%             doCirclesOrigin = 1;
+%           case 'circles_drifting'
+%             l = 2;
+%             v_levels = args{2};
+%             doCirclesDrifting = 1;
+          case '10^3 km/s'
+            l = 1;
+            v_scale = 1e-3;
+            v_label_units = '10^3 km/s';
+            doAxesV = 1;
+          case 'km/s'
+            l = 1;
+            v_scale = 1;
+            v_label_units = 'km/s';
+            doAxesV = 1;
+          case 'printinfo'
+            doPrintInfo = 1;
+          case 'flim'
+            l = 2;
+            doFLim = 1;
+            flim = args{2};
+        end
+        args = args(l+1:end);  
+        if isempty(args), break, end    
+      end
+      
+      % select time indices
+      % due to Matlab functionality, we must explicitly call the overloaded
+      % subsref (defined within this subclass), otherwise it will call the 
+      % builtin function
+      subs.type = '()';
+      subs.subs = {tId};
+      dist = dist_orig.subsref(subs);
+      %dist = dist_orig(tId);
+      if (length(dist.time)<1); irf.log('warning','No data for given time interval.'); return; end
+      
+      % prepare data to be plotted
+      data = squeeze(mean(dist.data,1)); % average data over time indices
+      data(data==0) = NaN; % put zero values to NaN
+      if doFLim % put values outside given interval to NaN, default is [0 Inf]
+        plot_data(data<=flim(1)) = NaN;
+        plot_data(data>flim(2)) = NaN;
+      end
+      if doLog10 % take log10 of data
+        data = log10(data);      
+      end
+      
+      % main surface plot
+      % NOTE, PCOLOR and SURF uses flipped dimensions of (x,y) and (z), but PDist.reduce does not, there we need to flip the dim of the data
+      rho_edges = [dist.depend{1}-dist.ancillary.delta_energy_minus dist.depend{1}(:,end)+dist.ancillary.delta_energy_plus(:,end)];
+      theta = dist.depend{2}; dtheta = theta(2)-theta(1); theta_edges = [theta(1)-dtheta/2 theta+dtheta/2];
+      if doLogAxes, rho_edges = log10(rho_edges); end
+      theta_edges = theta_edges + 90; % rotate data      
+      [RHO,THETA] = meshgrid(rho_edges,theta_edges);            
+      X = RHO.*cosd(THETA);
+      Y = RHO.*sind(THETA);
+      if doMirrorData % mirror data
+        plot_X = [X; -flipdim(X(1:end-1,:),1)];
+        plot_Y = [Y; flipdim(Y(1:end-1,:),1)];
+        plot_data = [data flipdim(data,2)];
+      end
+      ax_surface = surf(ax,plot_X,plot_Y,plot_X*0,plot_data');
+      
+%       plot_x_edges = squeeze(irf.nanmean(dist.ancillary.vx_edges,1))*v_scale; % v_scale, default 1e-3 for electrons to put axes in 10^3 km/s
+%       plot_y_edges = squeeze(irf.nanmean(dist.ancillary.vy_edges,1))*v_scale;
+%       plot_z_edges = plot_x_edges*0;                  
+%       ax_surface = surf(ax,plot_x_edges,plot_y_edges,plot_z_edges,plot_data'); 
+      all_handles.Surface = ax_surface;      
+      view(ax,[0 0 1])
+      ax.Box = 'on';
+      
+
+      if doContour
+        hold(ax,'on')
+        if numel(contour_levels) == 1
+          contour_levels = [contour_levels contour_levels];
+        end
+        plot_x = squeeze(irf.nanmean(dist.depend{1},1))*v_scale; % v_scale, default 1e-3 for electrons to put axes in 10^3 km/s
+        plot_y = squeeze(irf.nanmean(dist.depend{2},1))*v_scale;        
+        [~,h_contour] = contour(ax,plot_x,plot_y,plot_data',contour_levels,'k');
+        h_contour.LineWidth = 1.5;
+        hold(ax,'off')
+        all_handles.Contour = h_contour;
+      end            
+      if doColorbar
+        hcb = colorbar('peer',ax);
+        if doLog10
+          hcb.YLabel.String = sprintf('log_{10} f (%s)',dist.units);
+        else
+          hcb.YLabel.String = sprintf('f (%s)',dist.units);
+        end
+        all_handles.Colorbar = hcb;
+      end
+      if doCircles
+        hold(ax,'on')
+        nAngles = 100; 
+        angles = linspace(0,2*pi,nAngles);
+        vx_drift = v_levels(:,1);
+        vy_drift = v_levels(:,2);
+        v_circle = v_levels(:,3);
+        if numel(v_circle) == 1
+          vx_levels = v_circle*cos(angles);
+          vy_levels = v_circle*sin(angles);
+          vx_drifts = vx_drift;
+          vy_drifts = vy_drift;
+        else
+          vx_levels = tocolumn(v_circle)*sin(angles);
+          vy_levels = tocolumn(v_circle)*cos(angles);
+          vx_drifts = repmat(vx_drift',nAngles',1);
+          vy_drifts = repmat(vy_drift',nAngles',1);
+        end
+        h_levels = plot(ax,vx_drifts+vx_levels',vy_drifts+vy_levels','k','LineWidth',1.5);                          
+        hold(ax,'off')
+        all_handles.Circles = h_levels;
+      end
+      if doAxisLabels
+        ax.XLabel.String = sprintf('v (%s)',v_label_units);
+        ax.YLabel.String = sprintf('v (%s)',v_label_units);
+      end
+      if doPrintInfo
+        s1 = '';%sprintf('v int (out-of-plane) = [%g %g] %s',dist.ancillary.vint(1),dist.ancillary.vint(1),dist.ancillary.vint_units);
+        if numel(tId) == 1
+          s2 = sprintf('time = %s',dist.time.utc);
+        else
+          s2 = sprintf('tint = %s - %s',dist.time(1).utc,dist.time(end).utc);
+        end
+        s3 = sprintf('nDist = %g',numel(tId));
+        
+        % check projection direction to see if they are varying or not
+        %n_proj_dirs_1 = size(unique(dist.ancillary.projection_dir_1,'rows'),1);
+        %n_proj_dirs_2 = size(unique(dist.ancillary.projection_dir_2,'rows'),1);
+%         if n_proj_dirs_1 == 1
+%           s4 = sprintf('v_{1,dir} = [%.2f %.2f %.2f]',dist.ancillary.projection_dir_1);
+%         else
+%           s4 = 'v_{1,dir} = varying';
+%         end
+%         if n_proj_dirs_2 == 1
+%           s5 = sprintf('v_{2,dir} = [%.2f %.2f %.2f]',dist.ancillary.projection_dir_2);
+%         else
+%           s5 = 'v_{2,dir} = varying';
+%         end
+        
+        h_text = text(ax.XLim(1),ax.YLim(2),sprintf('%s\n%s\n%s\n%s\n%s',s3,s2,'','',''));
+        h_text.VerticalAlignment = 'top';
+        h_text.HorizontalAlignment = 'left';
+        h_text.BackgroundColor = [1 1 1];
+        all_handles.Infotext = h_text;
+      end
+      
+      %dbstack        
+      %nargout
+        
       % output
       if nargout == 0
         varargout = {};
