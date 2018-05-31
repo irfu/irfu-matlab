@@ -463,9 +463,14 @@ classdef PDist < TSeries
     end
     function PD = reduce(obj,dim,x,varargin) 
       %PDIST.REDUCE Reduces (integrates) 3D distribution to 1D (line).      
-      %   Example:
+      %   Example (1D):
       %     f1D = iPDist1.reduce('1D',dmpaB1,'vint',[0 10000]);
       %     irf_spectrogram(irf_panel('f1D'),f1D.specrec('velocity_1D'));
+      %
+      %   Example (2D):
+      %     f2D = iPDist1.reduce('2D',[1 0 0],[0 1 0]);
+      %     f2D(100).plot_plane      
+      %     [h_surf,h_axis,h_all] = f2D(100).plot_plane;
       %
       %   Options:
       %     'vint'   - set limits on the from-line velocity to get cut-like
@@ -480,20 +485,25 @@ classdef PDist < TSeries
       %                significant photoelectron population remains, try
       %                applying some margin on scPot: scPot -> scPot*1.5
       %                To be implemented: correct energy table: energy -> energy-scpot
+      %    
+      % This is a shell function for irf_int_sph_dist.m
       %
-      %   Reduction to 2D (plane) is to be implemented.
-      %
-      % This is a shell function for irf_int_sph_dist
       % See also: MMS.PLOT_INT_DISTRIBUTION, IRF_INT_SPH_DIST
-      % MMS.PLOT_INT_PROJECTION
+      % MMS.PLOT_INT_PROJECTION, PDIST.PLOT_PLANE, PDIST.SPECREC,
+      % IRF_SPECTROGRAM
       
       %% Input
       [ax,args,nargs] = axescheck(varargin{:});
       irf.log('warning','Please verify that you think the projection is done properly!');
       if isempty(obj); irf.log('warning','Empty input.'); return; else, dist = obj; end
       
-      % Check to what dimension the distribution is to be reduced
-      dim = str2num(dim(1)); % input dim can either be '1D' or '2D'
+      % Check to what dimension the distribution is to be reduced   
+      if any(strcmp(dim,{'1D','2D'}))
+        dim = str2num(dim(1)); % input dim can either be '1D' or '2D'
+      else
+        error('First input must be a string deciding projection type, either ''1D'' or ''2D''.')
+      end      
+      
       if dim == 1 % 1D: projection to line
         if isa(x,'TSeries')
           xphat_mat = x.resample(obj).norm.data; 
@@ -502,8 +512,7 @@ classdef PDist < TSeries
         elseif isnumeric(x) && all(numel(size(x) == [dist.length 3]))
           xphat_mat = x;        
         end
-      elseif dim == 2 % 2D: projection to plane
-        %phig = linsp;
+      elseif dim == 2 % 2D: projection to plane        
         if isa(x,'TSeries') && isa(varargin{1},'TSeries')
           y = varargin{1}; varargin = varargin(2:end); % assume other coordinate for perpendicular plane is given after and in same format
           xphat_mat = x.resample(obj).norm.data;          
@@ -533,12 +542,14 @@ classdef PDist < TSeries
       dist = dist.convertto('s^3/m^6');
                
       %% Check for input flags
+      % Default options and values
+      doTint = 0;
       nMC = 100; % number of Monte Carlo iterations
       vint = [-Inf,Inf];
       aint = [-180,180]; % azimuthal intherval
       vgInput = 0;
       weight = 'none';
-      tint = dist.time([1 dist.length-1]);
+      %tint = dist.time([1 dist.length-1]);
       correct4scpot = 0;
       isDes = 1;
       if strcmp(dist.species,'electrons'); isDes = 1; else, isDes = 0; end
@@ -548,9 +559,10 @@ classdef PDist < TSeries
       have_options = nargs > 1;
       while have_options
         switch(lower(args{1}))
-          case {'t','tint'} % time
+          case {'t','tint','time'} % time
             l = 2;
             tint = args{2};
+            doTint = 1;
           case 'nmc' % number of Monte Carlo iterations
             l = 2;
             nMC = args{2};
@@ -611,13 +623,21 @@ classdef PDist < TSeries
 
       if isDes == 1; M = u.me; else; M = u.mp; end
 
-      % get all time indicies
-      if length(tint) == 1 % single time
-        it = interp1(dist.time.epochUnix,1:length(dist.time),tint.epochUnix,'nearest');
-      else % time interval
-        it1 = interp1(dist.time.epochUnix,1:length(dist.time),tint(1).epochUnix,'nearest');
-        it2 = interp1(dist.time.epochUnix,1:length(dist.time),tint(2).epochUnix,'nearest');
-        it = it1:it2;
+      if doTint % get time indicies
+        if length(tint) == 1 % single time
+          it = interp1(dist.time.epochUnix,1:length(dist.time),tint.epochUnix,'nearest');
+        else % time interval
+          it1 = interp1(dist.time.epochUnix,1:length(dist.time),tint(1).epochUnix,'nearest');
+          it2 = interp1(dist.time.epochUnix,1:length(dist.time),tint(2).epochUnix,'nearest');
+          it = it1:it2;
+        end
+      else % use entire PDist
+        it = 1:dist.length;
+      end
+    
+      nt = length(it);
+      if ~nt % nt = 0
+        error('Empty time array. Please verify the time(s) given.')
       end
     
       
@@ -891,7 +911,7 @@ classdef PDist < TSeries
       while have_options
         l = 1;
         switch(lower(args{1}))   
-          case 'tint'
+          case {'tint','time','t'}
             l = 2;
             notint = 0;
             tint = args{2};
