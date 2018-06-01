@@ -87,7 +87,7 @@ idxOK = ~isnan(tFxPha); nComps = size(eRes,2);
 modelOut = zeros(length(epochTmp),nComps);
 for iComp = 1:nComps
   eResM = reshape(eRes(:,iComp),360*STEPS_PER_DEG,nSpins);
-  model = movmedian(eResM,N_SPINS_MEDIAN,2,'omitnan');  %FIXME: movmedian() is not part of Matlab R2013a installed at SDC!!
+  model = movmedian(eResM,N_SPINS_MEDIAN,2,'omitnan');
   model = reshape(model,numel(model),1);
   modelOut(:,iComp) = interp1(tFxPha(idxOK),model(idxOK),epochTmp,'linear','extrap');
 end

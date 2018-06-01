@@ -51,7 +51,7 @@ for iSig = 1:length(signals)
       repmat(x(1,:),length(find(idxDetr1>0)),1) - phaOne(idxDetr1)*x(2,:);
     % Compute moving median
     iModel = (phaOne>sha-SHA_DPHA & phaOne<sha+SHA_DPHA);
-    model(iModel,:) = movmedian(eResM(iModel,:),N_SPINS_MEDIAN,2,'omitnan');  %FIXME: movmedian() is not part of Matlab R2013a installed at SDC!!
+    model(iModel,:) = movmedian(eResM(iModel,:),N_SPINS_MEDIAN,2,'omitnan');
   end
   model = reshape(model,numel(model),1);
   idxOK = ~isnan(tFxPha); 
