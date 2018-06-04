@@ -117,21 +117,21 @@ end
 if isempty(B1)
     c_eval('B? = mms.get_data(''B_dmpa_dfg_srvy_ql'',Tint,?);',ic)
 end
-%c_eval('Vifpi? = mms.get_data(''Vi_dbcs_fpi_fast_l2'',Tint,?);',ic)
-%if isempty(Vifpi1)
+c_eval('Vifpi? = mms.get_data(''Vi_dbcs_fpi_fast_l2'',Tint,?);',ic)
+if isempty(Vifpi1)
 	c_eval('Nifpi? = mms.get_data(''Ni_fpi_ql'',Tint,?);',ic)
   c_eval('Vifpi? = mms.get_data(''Vi_dbcs_fpi_ql'',Tint,?);',ic)
   c_eval('Tifpi? = mms.get_data(''Ti_dbcs_fpi_ql'',Tint,?);',ic)
   c_eval('Nefpi? = mms.get_data(''Ne_fpi_ql'',Tint,?);',ic)
   c_eval('Vefpi? = mms.get_data(''Ve_dbcs_fpi_ql'',Tint,?);',ic)
 	c_eval('Tefpi? = mms.get_data(''Te_dbcs_fpi_ql'',Tint,?);',ic)
-%else
-  %c_eval('Nifpi? = mms.get_data(''Ni_fpi_fast_l2'',Tint,?);',ic)
-  %c_eval('Tifpi? = mms.get_data(''Ti_dbcs_fpi_fast_l2'',Tint,?);',ic)
-  %c_eval('Vefpi? = mms.get_data(''Ve_dbcs_fpi_fast_l2'',Tint,?);',ic)
-  %c_eval('Nefpi? = mms.get_data(''Ne_fpi_fast_l2'',Tint,?);',ic)
-  %c_eval('Tefpi? = mms.get_data(''Te_dbcs_fpi_fast_l2'',Tint,?);',ic)
-%end
+else
+  c_eval('Nifpi? = mms.get_data(''Ni_fpi_fast_l2'',Tint,?);',ic)
+  c_eval('Tifpi? = mms.get_data(''Ti_dbcs_fpi_fast_l2'',Tint,?);',ic)
+  c_eval('Vefpi? = mms.get_data(''Ve_dbcs_fpi_fast_l2'',Tint,?);',ic)
+  c_eval('Nefpi? = mms.get_data(''Ne_fpi_fast_l2'',Tint,?);',ic)
+  c_eval('Tefpi? = mms.get_data(''Te_dbcs_fpi_fast_l2'',Tint,?);',ic)
+end
 c_eval('Tifpi? = Tifpi?.trace/3;',ic)
 c_eval('Tefpi? = Tefpi?.trace/3;',ic)
 
