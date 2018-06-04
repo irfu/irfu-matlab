@@ -117,34 +117,44 @@ end
 if isempty(B1)
     c_eval('B? = mms.get_data(''B_dmpa_dfg_srvy_ql'',Tint,?);',ic)
 end
-c_eval('Vifpi? = mms.get_data(''Vi_dbcs_fpi_fast_l2'',Tint,?);',ic)
-if isempty(Vifpi1)
+%c_eval('Vifpi? = mms.get_data(''Vi_dbcs_fpi_fast_l2'',Tint,?);',ic)
+%if isempty(Vifpi1)
 	c_eval('Nifpi? = mms.get_data(''Ni_fpi_ql'',Tint,?);',ic)
   c_eval('Vifpi? = mms.get_data(''Vi_dbcs_fpi_ql'',Tint,?);',ic)
   c_eval('Tifpi? = mms.get_data(''Ti_dbcs_fpi_ql'',Tint,?);',ic)
   c_eval('Nefpi? = mms.get_data(''Ne_fpi_ql'',Tint,?);',ic)
   c_eval('Vefpi? = mms.get_data(''Ve_dbcs_fpi_ql'',Tint,?);',ic)
 	c_eval('Tefpi? = mms.get_data(''Te_dbcs_fpi_ql'',Tint,?);',ic)
-else
-  c_eval('Nifpi? = mms.get_data(''Ni_fpi_fast_l2'',Tint,?);',ic)
-  c_eval('Tifpi? = mms.get_data(''Ti_dbcs_fpi_fast_l2'',Tint,?);',ic)
-  c_eval('Vefpi? = mms.get_data(''Ve_dbcs_fpi_fast_l2'',Tint,?);',ic)
-  c_eval('Nefpi? = mms.get_data(''Ne_fpi_fast_l2'',Tint,?);',ic)
-  c_eval('Tefpi? = mms.get_data(''Te_dbcs_fpi_fast_l2'',Tint,?);',ic)
-end
+%else
+  %c_eval('Nifpi? = mms.get_data(''Ni_fpi_fast_l2'',Tint,?);',ic)
+  %c_eval('Tifpi? = mms.get_data(''Ti_dbcs_fpi_fast_l2'',Tint,?);',ic)
+  %c_eval('Vefpi? = mms.get_data(''Ve_dbcs_fpi_fast_l2'',Tint,?);',ic)
+  %c_eval('Nefpi? = mms.get_data(''Ne_fpi_fast_l2'',Tint,?);',ic)
+  %c_eval('Tefpi? = mms.get_data(''Te_dbcs_fpi_fast_l2'',Tint,?);',ic)
+%end
 c_eval('Tifpi? = Tifpi?.trace/3;',ic)
 c_eval('Tefpi? = Tefpi?.trace/3;',ic)
 
+% Load E
+Exy1 = mms.get_data('E2d_dsl_edp_fast_ql',Tint,1);
+Ex = irf.ts_scalar(Exy1.time,Exy1.data(:,1));
+
 % Resample to spin resolution
-epoch20 = fix(Tint.start.epochUnix/60)*60:20:ceil(Tint.stop.epochUnix/60)*60;
+epoch20 = fix(Tint.start.epochUnix/60)*60:5:ceil(Tint.stop.epochUnix/60)*60;
 EpochS = EpochUnix(epoch20);
 c_eval('B? = B?.resample(EpochS,''median'');',ic)
-c_eval('Nifpi? = Nifpi?.resample(EpochS,''median'');',ic)
-c_eval('Vifpi? = Vifpi?.resample(EpochS,''median'');',ic)
-c_eval('Tifpi? = Tifpi?.resample(EpochS,''median'');',ic)
-c_eval('Tefpi? = Tefpi?.resample(EpochS,''median'');',ic)
-c_eval('Nefpi? = Nefpi?.resample(EpochS,''median'');',ic)
-c_eval('Vefpi? = Vefpi?.resample(EpochS,''median'');',ic)
+%c_eval('Nifpi? = Nifpi?.resample(EpochS,''median'');',ic)
+%c_eval('Vifpi? = Vifpi?.resample(EpochS,''median'');',ic)
+%c_eval('Tifpi? = Tifpi?.resample(EpochS,''median'');',ic)
+%c_eval('Tefpi? = Tefpi?.resample(EpochS,''median'');',ic)
+%c_eval('Nefpi? = Nefpi?.resample(EpochS,''median'');',ic)
+%c_eval('Vefpi? = Vefpi?.resample(EpochS,''median'');',ic)
+c_eval('Nifpi? = Nifpi?.resample(EpochS);',ic)
+c_eval('Vifpi? = Vifpi?.resample(EpochS);',ic)
+c_eval('Tifpi? = Tifpi?.resample(EpochS);',ic)
+c_eval('Tefpi? = Tefpi?.resample(EpochS);',ic)
+c_eval('Nefpi? = Nefpi?.resample(EpochS);',ic)
+c_eval('Vefpi? = Vefpi?.resample(EpochS);',ic)
 
 % Take averages
 B = (B1+B2+B3+B4)/4;
@@ -180,7 +190,7 @@ idxSW = idxSW > 3.5;
 idxSWf = idxSW;
 idxchange = diff(idxSW);
 idxcpos = find(abs(idxchange) > 0.5);
-numpntthres = 5;
+numpntthres = 20;
 while min(diff(idxcpos)) < numpntthres
     [numpoints,rmpoint] = min(diff(idxcpos));
     startidx = idxcpos(rmpoint);
@@ -193,10 +203,12 @@ if ~isempty(idxcpos)
       idxSWf(1:idxcpos(1)) = idxSWf(idxcpos(1)+1);
       idxcpos(1) = [];
   end
+  %if ~isempty(idxcpos)
   if length(idxSWf)-idxcpos(end) < numpntthres
       idxSWf(idxcpos(end):end) = idxSWf(idxcpos(end));
       idxcpos(end) = [];
   end
+  %end
 end
 
 % Find magnetosheath and magnetosphere or whatever change times
@@ -215,9 +227,11 @@ if ~isempty(idxcposMSP)
       idxMS(1:idxcposMSP(1)) = idxMS(idxcposMSP(1)+1);
       idxcposMSP(1) = [];
   end
+  if ~isempty(idxcposMSP)
   if length(idxMS)-idxcposMSP(end) < numpntthres
       idxMS(idxcposMSP(end):end) = idxMS(idxcposMSP(end));
       idxcposMSP(end) = [];
+  end
   end
 end
 
@@ -226,7 +240,7 @@ idxSWf = irf.ts_scalar(EpochS,single(idxSWf));
 idxfinal = irf.ts_scalar(B.time,abs(idxSWf.data+idxMS.data-2));
 idxt = abs(diff(idxfinal.data)) > 0.5;
 if sum(idxt) > 0.5
-  times = [(Tint(1)+-900); EpochS(idxt)+10];
+  times = [(Tint(1)+-900); EpochS(idxt)];
   idxx = idxfinal.data([true; idxt]);
   out = irf.ts_scalar(times,idxx);
 else
@@ -284,17 +298,22 @@ irf_plot(h(5),Tefpi);
 ylabel(h(5),'T_{e} (eV)','Interpreter','tex');
 irf_legend(h(5),'(e)',[0.99 0.98],'color','k','fontsize',12)
 
-h(6)=irf_panel('SWF1');
-irf_plot(h(6),idxSWint);
-irf_zoom(h(6),'y',[0 5.5]);
-ylabel(h(6),'SW flag1','Interpreter','tex');
+h(6)=irf_panel('Ex');
+irf_plot(h(6),Ex);
+ylabel(h(6),'E_x (mV m^{-1})','Interpreter','tex');
 irf_legend(h(6),'(f)',[0.99 0.98],'color','k','fontsize',12)
 
-h(7)=irf_panel('SWF2');
-irf_plot(h(7),idxSWf);
-irf_zoom(h(7),'y',[0 1.2]);
-ylabel(h(7),'SW flag2','Interpreter','tex');
+h(7)=irf_panel('SWF1');
+irf_plot(h(7),idxSWint);
+irf_zoom(h(7),'y',[0 5.5]);
+ylabel(h(7),'SW flag1','Interpreter','tex');
 irf_legend(h(7),'(g)',[0.99 0.98],'color','k','fontsize',12)
+
+%h(7)=irf_panel('SWF2');
+%irf_plot(h(7),idxSWf);
+%irf_zoom(h(7),'y',[0 1.2]);
+%ylabel(h(7),'SW flag2','Interpreter','tex');
+%irf_legend(h(7),'(g)',[0.99 0.98],'color','k','fontsize',12)
 
 h(8)=irf_panel('idxfinal');
 irf_plot(h(8),idxfinal);
