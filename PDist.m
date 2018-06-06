@@ -481,10 +481,11 @@ classdef PDist < TSeries
       %                'none' (default), 'lin' or 'log'
       %     'vg'     - array with center values for the projection velocity
       %                grid in [km/s], determined by instrument if omitted
-      %     'scpot'  - sets all values below scpot to zero. If a
-      %                significant photoelectron population remains, try
-      %                applying some margin on scPot: scPot -> scPot*1.5
-      %                To be implemented: correct energy table: energy -> energy-scpot
+      %     'scpot'  - sets all values below scpot to zero and changes the
+      %                energy correspondingly
+      %     'lowerelim' - sets all values below lowerelim to zero, does not
+      %                change the energy. Can be single value, vector or
+      %                Tseries, for example 2*scpot
       %    
       % This is a shell function for irf_int_sph_dist.m
       %
@@ -544,6 +545,7 @@ classdef PDist < TSeries
       %% Check for input flags
       % Default options and values
       doTint = 0;
+      doLowerElim = 0;
       nMC = 100; % number of Monte Carlo iterations
       vint = [-Inf,Inf];
       aint = [-180,180]; % azimuthal intherval
@@ -592,6 +594,21 @@ classdef PDist < TSeries
             ancillary_data{end+1} = 'scpot';
             ancillary_data{end+1} = scpot; 
             correct4scpot = 1;
+          case 'lowerelim'
+            l = 2;
+            lowerelim = args{2};
+            ancillary_data{end+1} = 'lowerelim';
+            ancillary_data{end+1} = lowerelim; 
+            doLowerElim = 1;
+            if isnumeric(lowerelim) && numel(lowerelim) == 1
+              lowerelim = repmat(lowerelim,dist.length,1);
+            elseif isnumeric(lowerelim) && numel(lowerelim) == dist.length
+              lowerlim = lowerelim;
+            elseif isa(lowerelim,'TSeries')
+              lowerelim = lowerelim.resample(dist).data;
+            else
+              error(sprintf('Can not recognize input for flag ''%s'' ',args{1}))
+            end            
         end
         args = args((l+1):end);
         if isempty(args), break, end
@@ -609,7 +626,7 @@ classdef PDist < TSeries
       if correct4scpot
         scpot = scpot.tlim(dist.time).resample(dist.time);
         scpot_mat = repmat(scpot.data, size(emat(1,:)));
-        [it_below_scpot,ie_below_scpot] = find(emat < scpot_mat);
+        %[it_below_scpot,ie_below_scpot] = find(emat < scpot_mat);
         %dist.data(it_below_scpot,ie_below_scpot,:,:) = 0;
         %dist.data(:,1:6,:,:) = 0;
         %emat = emat - scpot_mat;                
@@ -618,7 +635,9 @@ classdef PDist < TSeries
         
         %ind_below_scpot = find(emat<scpot_mat);
       end
-      
+      if doLowerElim
+        lowerelim_mat = repmat(lowerelim, size(emat(1,:)));
+      end
       u = irf_units;
 
       if isDes == 1; M = u.me; else; M = u.mp; end
@@ -661,14 +680,20 @@ classdef PDist < TSeries
         F3d = double(squeeze(double(dist.data(it(i),:,:,:)))); % s^3/m^6
         energy = emat(it(i),:);
         
+        if doLowerElim
+          remove_extra_ind = 0; % for margin, remove extra energy channels
+          ie_below_elim = find(abs(emat(it(i),:)-lowerelim_mat(it(i),:)) == min(abs(emat(it(i),:)-lowerelim_mat(it(i),:)))); % closest energy channel
+          F3d(1:(max(ie_below_elim) + remove_extra_ind),:,:) = 0;           
+        end
+       
         if correct4scpot
           if 0
             dist.data(it(i),emat(it(i),:) < 0,:,:) = 0; %#ok<UNRCH>
           else
-            ie_below_scpot = find(abs(emat(it(i),:)-scpot_mat(it(i),:))); % energy channel below 
+            %ie_below_scpot = find(abs(emat(it(i),:)-scpot_mat(it(i),:))); % energy channel below 
             ie_below_scpot = find(abs(emat(it(i),:)-scpot_mat(it(i),:)) == min(abs(emat(it(i),:)-scpot_mat(it(i),:)))); % closest energy channel
             remove_extra_ind = 0; % for margin, remove extra energy channels
-            F3d(it(i),1:(max(ie_below_scpot) + remove_extra_ind),:,:) = 0; 
+            F3d(1:(max(ie_below_scpot) + remove_extra_ind),:,:) = 0; 
             %disp(sprintf('%8.1g ',energy))
             energy = energy-scpot_mat(it(i),:);
             %disp(sprintf('%8.1g ',energy))
