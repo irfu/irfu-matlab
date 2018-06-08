@@ -130,10 +130,22 @@ classdef PDist < TSeries
         end
         obj.ancillary = new_ancillary_data;
                 
-        if numel(idx) > 1 
-          obj = builtin('subsref',obj,idx(2:end));
-        end        
-        [varargout{1:nargout}] = obj;                
+        if numel(idx) > 1  
+          nargout_str = [];
+          if nargout == 0 % dont give varargout
+            obj = builtin('subsref',obj,idx(2:end));            
+          else
+            for inout = 1:nargout % create [out1,out2,...outN] to get the correct number or nargout for rest of subsrefs (idx)
+              c_eval('nargout_str = [nargout_str ''tmp_vout?,''];',inout)
+            end
+            nargout_str = ['[' nargout_str(1:end-1) ']'];
+            varargout_str = ['{' nargout_str(2:end-1) '}'];             
+            eval(sprintf('%s = builtin(''subsref'',obj,idx(2:end));',nargout_str)) % disp(sprintf('%s = builtin(''subsref'',obj,idx(2:end));',nargout_str))           
+            eval(sprintf('varargout = %s;',varargout_str)); % varargout = {out1,out2,...outN}; % disp(sprintf('varargout = %s;',varargout_str))
+            end
+        else
+          [varargout{1:nargout}] = obj;
+        end                      
       case '{}'
         error('irf:TSeries:subsref',...
           'Not a supported subscripted reference')
@@ -451,9 +463,14 @@ classdef PDist < TSeries
     end
     function PD = reduce(obj,dim,x,varargin) 
       %PDIST.REDUCE Reduces (integrates) 3D distribution to 1D (line).      
-      %   Example:
+      %   Example (1D):
       %     f1D = iPDist1.reduce('1D',dmpaB1,'vint',[0 10000]);
       %     irf_spectrogram(irf_panel('f1D'),f1D.specrec('velocity_1D'));
+      %
+      %   Example (2D):
+      %     f2D = iPDist1.reduce('2D',[1 0 0],[0 1 0]);
+      %     f2D(100).plot_plane      
+      %     [h_surf,h_axis,h_all] = f2D(100).plot_plane;
       %
       %   Options:
       %     'vint'   - set limits on the from-line velocity to get cut-like
@@ -464,24 +481,30 @@ classdef PDist < TSeries
       %                'none' (default), 'lin' or 'log'
       %     'vg'     - array with center values for the projection velocity
       %                grid in [km/s], determined by instrument if omitted
-      %     'scpot'  - sets all values below scpot to zero. If a
-      %                significant photoelectron population remains, try
-      %                applying some margin on scPot: scPot -> scPot*1.5
-      %                To be implemented: correct energy table: energy -> energy-scpot
+      %     'scpot'  - sets all values below scpot to zero and changes the
+      %                energy correspondingly
+      %     'lowerelim' - sets all values below lowerelim to zero, does not
+      %                change the energy. Can be single value, vector or
+      %                Tseries, for example 2*scpot
+      %    
+      % This is a shell function for irf_int_sph_dist.m
       %
-      %   Reduction to 2D (plane) is to be implemented.
-      %
-      % This is a shell function for irf_int_sph_dist
       % See also: MMS.PLOT_INT_DISTRIBUTION, IRF_INT_SPH_DIST
-      % MMS.PLOT_INT_PROJECTION
+      % MMS.PLOT_INT_PROJECTION, PDIST.PLOT_PLANE, PDIST.SPECREC,
+      % IRF_SPECTROGRAM
       
       %% Input
       [ax,args,nargs] = axescheck(varargin{:});
       irf.log('warning','Please verify that you think the projection is done properly!');
       if isempty(obj); irf.log('warning','Empty input.'); return; else, dist = obj; end
       
-      % Check to what dimension the distribution is to be reduced
-      dim = str2num(dim(1)); % input dim can either be '1D' or '2D'
+      % Check to what dimension the distribution is to be reduced   
+      if any(strcmp(dim,{'1D','2D'}))
+        dim = str2num(dim(1)); % input dim can either be '1D' or '2D'
+      else
+        error('First input must be a string deciding projection type, either ''1D'' or ''2D''.')
+      end      
+      
       if dim == 1 % 1D: projection to line
         if isa(x,'TSeries')
           xphat_mat = x.resample(obj).norm.data; 
@@ -490,8 +513,7 @@ classdef PDist < TSeries
         elseif isnumeric(x) && all(numel(size(x) == [dist.length 3]))
           xphat_mat = x;        
         end
-      elseif dim == 2 % 2D: projection to plane
-        %phig = linsp;
+      elseif dim == 2 % 2D: projection to plane        
         if isa(x,'TSeries') && isa(varargin{1},'TSeries')
           y = varargin{1}; varargin = varargin(2:end); % assume other coordinate for perpendicular plane is given after and in same format
           xphat_mat = x.resample(obj).norm.data;          
@@ -521,12 +543,15 @@ classdef PDist < TSeries
       dist = dist.convertto('s^3/m^6');
                
       %% Check for input flags
+      % Default options and values
+      doTint = 0;
+      doLowerElim = 0;
       nMC = 100; % number of Monte Carlo iterations
       vint = [-Inf,Inf];
       aint = [-180,180]; % azimuthal intherval
       vgInput = 0;
       weight = 'none';
-      tint = dist.time([1 dist.length-1]);
+      %tint = dist.time([1 dist.length-1]);
       correct4scpot = 0;
       isDes = 1;
       if strcmp(dist.species,'electrons'); isDes = 1; else, isDes = 0; end
@@ -536,8 +561,10 @@ classdef PDist < TSeries
       have_options = nargs > 1;
       while have_options
         switch(lower(args{1}))
-          case {'t','tint'} % time
-              tint = args{2};
+          case {'t','tint','time'} % time
+            l = 2;
+            tint = args{2};
+            doTint = 1;
           case 'nmc' % number of Monte Carlo iterations
             l = 2;
             nMC = args{2};
@@ -546,10 +573,6 @@ classdef PDist < TSeries
           case 'vint' % limit on transverse velocity (like a cylinder) [km/s]
             l = 2;
             vint = args{2};
-            ancillary_data{end+1} = 'vint';
-            ancillary_data{end+1} = vint;
-            ancillary_data{end+1} = 'vint_units';
-            ancillary_data{end+1} = 'km/s';
           case 'aint'
             l = 2;
             aint = args{2};
@@ -571,18 +594,39 @@ classdef PDist < TSeries
             ancillary_data{end+1} = 'scpot';
             ancillary_data{end+1} = scpot; 
             correct4scpot = 1;
+          case 'lowerelim'
+            l = 2;
+            lowerelim = args{2};
+            ancillary_data{end+1} = 'lowerelim';
+            ancillary_data{end+1} = lowerelim; 
+            doLowerElim = 1;
+            if isnumeric(lowerelim) && numel(lowerelim) == 1
+              lowerelim = repmat(lowerelim,dist.length,1);
+            elseif isnumeric(lowerelim) && numel(lowerelim) == dist.length
+              lowerlim = lowerelim;
+            elseif isa(lowerelim,'TSeries')
+              lowerelim = lowerelim.resample(dist).data;
+            else
+              error(sprintf('Can not recognize input for flag ''%s'' ',args{1}))
+            end            
         end
         args = args((l+1):end);
         if isempty(args), break, end
       end
-
+      
+      % set vint ancillary data      
+      ancillary_data{end+1} = 'vint';
+      ancillary_data{end+1} = vint;
+      ancillary_data{end+1} = 'vint_units';
+      ancillary_data{end+1} = 'km/s';
+      
       %% Get angles and velocities for spherical instrument grid, set projection
       %  grid and perform projection
       emat = double(dist.depend{1});
       if correct4scpot
         scpot = scpot.tlim(dist.time).resample(dist.time);
         scpot_mat = repmat(scpot.data, size(emat(1,:)));
-        [it_below_scpot,ie_below_scpot] = find(emat < scpot_mat);
+        %[it_below_scpot,ie_below_scpot] = find(emat < scpot_mat);
         %dist.data(it_below_scpot,ie_below_scpot,:,:) = 0;
         %dist.data(:,1:6,:,:) = 0;
         %emat = emat - scpot_mat;                
@@ -591,18 +635,28 @@ classdef PDist < TSeries
         
         %ind_below_scpot = find(emat<scpot_mat);
       end
-      
+      if doLowerElim
+        lowerelim_mat = repmat(lowerelim, size(emat(1,:)));
+      end
       u = irf_units;
 
       if isDes == 1; M = u.me; else; M = u.mp; end
 
-      % get all time indicies
-      if length(tint) == 1 % single time
-        it = interp1(dist.time.epochUnix,1:length(dist.time),tint.epochUnix,'nearest');
-      else % time interval
-        it1 = interp1(dist.time.epochUnix,1:length(dist.time),tint(1).epochUnix,'nearest');
-        it2 = interp1(dist.time.epochUnix,1:length(dist.time),tint(2).epochUnix,'nearest');
-        it = it1:it2;
+      if doTint % get time indicies
+        if length(tint) == 1 % single time
+          it = interp1(dist.time.epochUnix,1:length(dist.time),tint.epochUnix,'nearest');
+        else % time interval
+          it1 = interp1(dist.time.epochUnix,1:length(dist.time),tint(1).epochUnix,'nearest');
+          it2 = interp1(dist.time.epochUnix,1:length(dist.time),tint(2).epochUnix,'nearest');
+          it = it1:it2;
+        end
+      else % use entire PDist
+        it = 1:dist.length;
+      end
+    
+      nt = length(it);
+      if ~nt % nt = 0
+        error('Empty time array. Please verify the time(s) given.')
       end
     
       
@@ -626,14 +680,20 @@ classdef PDist < TSeries
         F3d = double(squeeze(double(dist.data(it(i),:,:,:)))); % s^3/m^6
         energy = emat(it(i),:);
         
+        if doLowerElim
+          remove_extra_ind = 0; % for margin, remove extra energy channels
+          ie_below_elim = find(abs(emat(it(i),:)-lowerelim_mat(it(i),:)) == min(abs(emat(it(i),:)-lowerelim_mat(it(i),:)))); % closest energy channel
+          F3d(1:(max(ie_below_elim) + remove_extra_ind),:,:) = 0;           
+        end
+       
         if correct4scpot
           if 0
             dist.data(it(i),emat(it(i),:) < 0,:,:) = 0; %#ok<UNRCH>
           else
-            ie_below_scpot = find(abs(emat(it(i),:)-scpot_mat(it(i),:))); % energy channel below 
+            %ie_below_scpot = find(abs(emat(it(i),:)-scpot_mat(it(i),:))); % energy channel below 
             ie_below_scpot = find(abs(emat(it(i),:)-scpot_mat(it(i),:)) == min(abs(emat(it(i),:)-scpot_mat(it(i),:)))); % closest energy channel
             remove_extra_ind = 0; % for margin, remove extra energy channels
-            F3d(it(i),1:(max(ie_below_scpot) + remove_extra_ind),:,:) = 0; 
+            F3d(1:(max(ie_below_scpot) + remove_extra_ind),:,:) = 0; 
             %disp(sprintf('%8.1g ',energy))
             energy = energy-scpot_mat(it(i),:);
             %disp(sprintf('%8.1g ',energy))
@@ -746,12 +806,38 @@ classdef PDist < TSeries
       % Must add xphat to ancillary data!
       
     end
-    function varargout = surf(varargin)
-      % Surface/pcolor plot of PDist of type 'plane (reduced)'.
-      %   PDist.surf(...)
-      %   h_surf = PDist.surf(...)
-      %   [h_surf,h_axis] = PDist.surf(...)
-      %   [h_surf,h_axis,h_all] = PDist.surf(...)
+    function [ax,args,nargs] = axescheck_pdist(varargin)
+      %[ax,args,nargs] = axescheck_pdist(varargin{:});
+      % MATLAB's axescheck only checks if the first argument is an axis handle, but
+      % PDist.surf can be called as both PDist.surf(ax) and surf(ax,PDist),
+      % where the first option has the axis as the second argument while
+      % the second option has the axis as the first argument. Instead we
+      % search until we find the first axis handle.
+      have_axes = 0;
+      ax = [];
+      orig_args = varargin;
+      args = orig_args;
+      nargs = numel(args);
+      iArg = 0;
+      while ~have_axes
+        iArg = iArg + 1; 
+        if iArg > nargs, break; end
+        if ((isscalar(orig_args{iArg}) && isgraphics(orig_args{iArg},'axes')) ...
+          || isa(orig_args{iArg},'matlab.graphics.axis.AbstractAxes') || isa(orig_args{iArg},'matlab.ui.control.UIAxes'))
+          ax = orig_args{iArg};
+          axes(ax); % set current axis to ax, needed for text(), which does not accept ax as input
+          have_axes = 1;          
+          args(iArg) = []; % remove axes from args
+          nargs = nargs - 1;
+        end        
+      end
+    end
+    function varargout = plot_plane(varargin)
+      % PDIST.PLOT_PLANE Surface/pcolor plot of PDist of type 'plane (reduced)'.
+      %   PDist.PLOT_PLANE(...)
+      %   h_surf = PDist.PLOT_PLANE(...)
+      %   [h_surf,h_axis] = PDist.PLOT_PLANE(...)
+      %   [h_surf,h_axis,h_all] = PDist.PLOT_PLANE(...)
       %
       %   Output:
       %      h_all - structure with all the used handles, useful for 
@@ -797,36 +883,16 @@ classdef PDist < TSeries
       %       iPlane2 = iLine.cross(iPlane1);      
       %       if2D = iDist.reduce('2D',iPlane1,iPlane2,'vint',vint); % reduced distribution perp to B
       %       h1 = subplot(3,1,1);
-      %       if2D.surf(h1,'printinfo','tint',tint_plot(1))
+      %       if2D.PLOT_PLANE(h1,'printinfo','tint',tint_plot(1))
       %       h2 = subplot(3,1,2);
-      %       if2D.surf(h2,'printinfo','tint',tint_plot(2))
+      %       if2D.PLOT_PLANE(h2,'printinfo','tint',tint_plot(2))
       %       h3 = subplot(3,1,3);
-      %       if2D.surf(h3,'printinfo','tint',tint_plot)
+      %       if2D.PLOT_PLANE(h3,'printinfo','tint',tint_plot)
       %       
       %   See also mms.plot_int_projection, PDist.reduce
       
-      %[ax,args,nargs] = axescheck(varargin{:});
-      % axescheck only checks if the first argument is an axis handle, but
-      % PDist.surf can be called as both PDist.surf(ax) and surf(ax,PDist),
-      % where the first option has the axis as the second argument while
-      % the second option has the axis as the first argument. Instead we
-      % search untilwe find the first axis handle.
-      have_axes = 0;
-      orig_args = varargin;
-      iArg = 0;
-      while ~have_axes
-        iArg = iArg + 1; 
-        if ((isscalar(orig_args{iArg}) && isgraphics(orig_args{iArg},'axes')) ...
-          || isa(orig_args{iArg},'matlab.graphics.axis.AbstractAxes') || isa(orig_args{iArg},'matlab.ui.control.UIAxes'))
-          ax = orig_args{iArg};
-          axes(ax); % set current axis to ax, needed for text(), which does not accept ax as input
-          have_axes = 1;
-          args = orig_args;
-          args(iArg) = [];
-          nargs = numel(args);
-        end
-      end
-            
+      % Check for axes
+      [ax,args,nargs] = axescheck_pdist(varargin{:});             
       if isempty(ax); ax = gca; end
       all_handles.Axes = ax;
             
@@ -870,7 +936,7 @@ classdef PDist < TSeries
       while have_options
         l = 1;
         switch(lower(args{1}))   
-          case 'tint'
+          case {'tint','time','t'}
             l = 2;
             notint = 0;
             tint = args{2};
@@ -1047,6 +1113,248 @@ classdef PDist < TSeries
         varargout = {ax_surface,ax,all_handles};
       end
     end
+    function varargout = plot_pad_polar(varargin)
+      % PDIST.PLOT_PAD_POLAR polar pitchangle plot
+      
+      % Check for axes
+      [ax,args,nargs] = axescheck_pdist(varargin{:});                   
+      if isempty(ax); ax = gca; end
+      all_handles.Axes = ax;
+            
+      % Make sure first non axes-handle input is PDist of the right type.
+      if isa(args{1},'PDist') && any(strcmp(args{1}.type,{'pitchangle'}))
+        dist_orig = args{1};
+      else
+        error('First input that is not an axes handle must be a PDist of type ''pitchangle'', see PDist.pitchangles.')
+      end
+      args = args(2:end);
+      nargs = nargs - 1;
+      
+      dist = dist_orig;
+            
+      % default plotting parameters
+      doMirrorData = 1;
+      doAxesV = 0; % default is to do energy
+      doLog10 = 1;
+      doLogAxes = 1;
+      doColorbar = 1;
+      doAxisLabels = 1;
+      doPrintInfo = 0;
+      doContour = 0;
+      doCircles = 0;      
+      doFLim = 1; flim = [0 Inf];
+      
+      if strcmp(dist.species,'electrons') 
+        v_scale = 1e-3;
+        v_label_units = '10^3 km/s';
+      elseif strcmp(dist.species,'ions') 
+        v_scale = 1;
+        v_label_units = 'km/s';
+      else
+        error(sprintf('Species %s not supported',dist.species))
+      end
+      
+      tId = 1:dist.length; % if tint is not given as input (check below) default is to include all the time indices of input distribution
+      
+      % check for input, try to keep it at a minimum, so that the
+      % functionality is similar to Matlabs plot function, all the details
+      % can then be fixed outside the function using ax.XLim, ax.YLim, 
+      % ax.CLim, etc...
+      if nargs > 0; have_options = 1; else have_options = 0; end
+      while have_options
+        l = 1;
+        switch(lower(args{1}))   
+          case 'tint'
+            l = 2;
+            tint = args{2};
+            if tint.length == 1 % find closest time
+              [~,tId] = min(abs(dist.time-tint));                         
+            else % take everything within time interval
+              [tId,~] = dist.time.tlim(tint);                            
+            end         
+          case 'scpot'
+            l = 2;
+            scpot = args{2};
+            if isa(scpot,'TSeries')
+              includescpot = 1;
+              irf.log('notice','Spacecraft potential passed.')
+            else
+                includescpot = 0;
+                irf.log('notice','scpot not recognized. Not using it.')
+            end
+          case 'nolog10'
+            l = 1;
+            doLog10 = 0;   
+          case 'contour'
+            l = 2;
+            contour_levels = args{2};  
+            doContour = 1;
+%           case 'circles_origin'
+%             l = 2;
+%             v_levels = args{2};
+%             doCirclesOrigin = 1;
+%           case 'circles_drifting'
+%             l = 2;
+%             v_levels = args{2};
+%             doCirclesDrifting = 1;
+          case '10^3 km/s'
+            l = 1;
+            v_scale = 1e-3;
+            v_label_units = '10^3 km/s';
+            doAxesV = 1;
+          case 'km/s'
+            l = 1;
+            v_scale = 1;
+            v_label_units = 'km/s';
+            doAxesV = 1;
+          case 'printinfo'
+            doPrintInfo = 1;
+          case 'flim'
+            l = 2;
+            doFLim = 1;
+            flim = args{2};
+        end
+        args = args(l+1:end);  
+        if isempty(args), break, end    
+      end
+      
+      % select time indices
+      % due to Matlab functionality, we must explicitly call the overloaded
+      % subsref (defined within this subclass), otherwise it will call the 
+      % builtin function
+      subs.type = '()';
+      subs.subs = {tId};
+      dist = dist_orig.subsref(subs);
+      %dist = dist_orig(tId);
+      if (length(dist.time)<1); irf.log('warning','No data for given time interval.'); return; end
+      
+      % prepare data to be plotted
+      data = squeeze(mean(dist.data,1)); % average data over time indices
+      data(data==0) = NaN; % put zero values to NaN
+      if doFLim % put values outside given interval to NaN, default is [0 Inf]
+        plot_data(data<=flim(1)) = NaN;
+        plot_data(data>flim(2)) = NaN;
+      end
+      if doLog10 % take log10 of data
+        data = log10(data);      
+      end
+      
+      % main surface plot
+      % NOTE, PCOLOR and SURF uses flipped dimensions of (x,y) and (z), but PDist.reduce does not, there we need to flip the dim of the data
+      rho_edges = [dist.depend{1}-dist.ancillary.delta_energy_minus dist.depend{1}(:,end)+dist.ancillary.delta_energy_plus(:,end)];
+      theta = dist.depend{2}; dtheta = theta(2)-theta(1); theta_edges = [theta(1)-dtheta/2 theta+dtheta/2];
+      if doLogAxes, rho_edges = log10(rho_edges); end
+      theta_edges = theta_edges + 90; % rotate data      
+      [RHO,THETA] = meshgrid(rho_edges,theta_edges);            
+      X = RHO.*cosd(THETA);
+      Y = RHO.*sind(THETA);
+      if doMirrorData % mirror data
+        plot_X = [X; -flipdim(X(1:end-1,:),1)];
+        plot_Y = [Y; flipdim(Y(1:end-1,:),1)];
+        plot_data = [data flipdim(data,2)];
+      end
+      ax_surface = surf(ax,plot_X,plot_Y,plot_X*0,plot_data');
+      
+%       plot_x_edges = squeeze(irf.nanmean(dist.ancillary.vx_edges,1))*v_scale; % v_scale, default 1e-3 for electrons to put axes in 10^3 km/s
+%       plot_y_edges = squeeze(irf.nanmean(dist.ancillary.vy_edges,1))*v_scale;
+%       plot_z_edges = plot_x_edges*0;                  
+%       ax_surface = surf(ax,plot_x_edges,plot_y_edges,plot_z_edges,plot_data'); 
+      all_handles.Surface = ax_surface;      
+      view(ax,[0 0 1])
+      ax.Box = 'on';
+      
+
+      if doContour
+        hold(ax,'on')
+        if numel(contour_levels) == 1
+          contour_levels = [contour_levels contour_levels];
+        end
+        plot_x = squeeze(irf.nanmean(dist.depend{1},1))*v_scale; % v_scale, default 1e-3 for electrons to put axes in 10^3 km/s
+        plot_y = squeeze(irf.nanmean(dist.depend{2},1))*v_scale;        
+        [~,h_contour] = contour(ax,plot_x,plot_y,plot_data',contour_levels,'k');
+        h_contour.LineWidth = 1.5;
+        hold(ax,'off')
+        all_handles.Contour = h_contour;
+      end            
+      if doColorbar
+        hcb = colorbar('peer',ax);
+        if doLog10
+          hcb.YLabel.String = sprintf('log_{10} f (%s)',dist.units);
+        else
+          hcb.YLabel.String = sprintf('f (%s)',dist.units);
+        end
+        all_handles.Colorbar = hcb;
+      end
+      if doCircles
+        hold(ax,'on')
+        nAngles = 100; 
+        angles = linspace(0,2*pi,nAngles);
+        vx_drift = v_levels(:,1);
+        vy_drift = v_levels(:,2);
+        v_circle = v_levels(:,3);
+        if numel(v_circle) == 1
+          vx_levels = v_circle*cos(angles);
+          vy_levels = v_circle*sin(angles);
+          vx_drifts = vx_drift;
+          vy_drifts = vy_drift;
+        else
+          vx_levels = tocolumn(v_circle)*sin(angles);
+          vy_levels = tocolumn(v_circle)*cos(angles);
+          vx_drifts = repmat(vx_drift',nAngles',1);
+          vy_drifts = repmat(vy_drift',nAngles',1);
+        end
+        h_levels = plot(ax,vx_drifts+vx_levels',vy_drifts+vy_levels','k','LineWidth',1.5);                          
+        hold(ax,'off')
+        all_handles.Circles = h_levels;
+      end
+      if doAxisLabels
+        ax.XLabel.String = sprintf('v (%s)',v_label_units);
+        ax.YLabel.String = sprintf('v (%s)',v_label_units);
+      end
+      if doPrintInfo
+        s1 = '';%sprintf('v int (out-of-plane) = [%g %g] %s',dist.ancillary.vint(1),dist.ancillary.vint(1),dist.ancillary.vint_units);
+        if numel(tId) == 1
+          s2 = sprintf('time = %s',dist.time.utc);
+        else
+          s2 = sprintf('tint = %s - %s',dist.time(1).utc,dist.time(end).utc);
+        end
+        s3 = sprintf('nDist = %g',numel(tId));
+        
+        % check projection direction to see if they are varying or not
+        %n_proj_dirs_1 = size(unique(dist.ancillary.projection_dir_1,'rows'),1);
+        %n_proj_dirs_2 = size(unique(dist.ancillary.projection_dir_2,'rows'),1);
+%         if n_proj_dirs_1 == 1
+%           s4 = sprintf('v_{1,dir} = [%.2f %.2f %.2f]',dist.ancillary.projection_dir_1);
+%         else
+%           s4 = 'v_{1,dir} = varying';
+%         end
+%         if n_proj_dirs_2 == 1
+%           s5 = sprintf('v_{2,dir} = [%.2f %.2f %.2f]',dist.ancillary.projection_dir_2);
+%         else
+%           s5 = 'v_{2,dir} = varying';
+%         end
+        
+        h_text = text(ax.XLim(1),ax.YLim(2),sprintf('%s\n%s\n%s\n%s\n%s',s3,s2,'','',''));
+        h_text.VerticalAlignment = 'top';
+        h_text.HorizontalAlignment = 'left';
+        h_text.BackgroundColor = [1 1 1];
+        all_handles.Infotext = h_text;
+      end
+      
+      %dbstack        
+      %nargout
+        
+      % output
+      if nargout == 0
+        varargout = {};
+      elseif nargout == 1 % return surface handle, this is how pcolor does it       
+        varargout = {ax_surface};
+      elseif nargout == 2 % return surface handle and axis handle
+        varargout = {ax_surface,ax};
+      elseif nargout == 3 % return all handles in a structure
+        varargout = {ax_surface,ax,all_handles};
+      end
+    end
     function PD = palim(obj,palim,varargin)
       % PDIST.PALIM Picks out given pitchangles
       %   distribution type must be 'pitchangle'
@@ -1088,50 +1396,57 @@ classdef PDist < TSeries
     end
     function PD = elim(obj,eint)  
       energy = obj.depend{1};
-      
-      % Picks out energies in an interval, or the closest energy (to be implemented!)
-      if numel(eint) == 2
-       if or(isempty(obj.ancillary), or(~isfield(obj.ancillary, 'energy0'), ~isfield(obj.ancillary, 'energy1')))
-            energytmp0 = energy(1,:);
-            energytmp1 = energy(2,:);
-            if energytmp0(1) > energytmp1(1)
-                tmp = energytmp0;
-                energytmp0 = energytmp1;
-                energytmp1 = tmp;
-            end
-            elevels0 = intersect(find(energytmp0>eint(1)),find(energytmp0<eint(2)));
-            elevels1 = intersect(find(energytmp1>eint(1)),find(energytmp1<eint(2)));            
-       else
-            elevels0 = intersect(find(obj.ancillary.energy0>eint(1)),find(obj.ancillary.energy0<eint(2)));
-            elevels1 = intersect(find(obj.ancillary.energy1>eint(1)),find(obj.ancillary.energy1<eint(2)));        
-       end
-       if numel(elevels0) ~= numel(elevels1)
-          warning('Energy levels differ for different times. Including the largest interval.')
-          elevels = unique([elevels0,elevels1]);
-        else
-          elevels = elevels0;
-        end         
-        disp(['Effective eint = [' num2str(min(min(energy(:,elevels))),'%g') ' ' num2str(max(max(energy(:,elevels))),'%g') ']'])
-      else
+      unique_etables = unique(obj.depend{1},'rows','stable');
+      netables = size(unique_etables,1); % netables = 2 for older dta and 1 for newer data
+        
+      % find new elevels
+      if numel(eint) == 2 % energy interval        
+        elevels = [];
+        for ietable = 1:netables % loop over 1 or 2 and saves all the unique indices, i.e. max range
+          tmp_elevels = intersect(find(unique_etables(ietable,:)>eint(1)),find(unique_etables(ietable,:)<eint(2)));
+          elevels = unique([elevels tmp_elevels]);
+        end
+        disp(['Effective eint = [' num2str(min(min(energy(:,elevels))),'%g') ' ' num2str(max(max(energy(:,elevels))),'%g') ']'])      
+      else % pick closest energy level
         ediff0 = abs(energy(1,:)-eint);
         ediff1 = abs(energy(2,:)-eint);
         if min(ediff0)<min(ediff1); ediff = ediff0;
         else, ediff = ediff1; end
         elevels = find(ediff==min(ediff));
         disp(['Effective energies alternate in time between ' num2str(energy(1,elevels),'%g') ' and ' num2str(energy(2,elevels),'%g') ''])
-      end      
+      end
+      
       tmpEnergy = energy(:,elevels);
       tmpData = obj.data(:,elevels,:,:);      
       
       PD = obj;
       PD.data_ = tmpData;
       PD.depend{1} = tmpEnergy;
-      if or(isempty(PD.ancillary), or(~isfield(PD.ancillary, 'energy0'), ~isfield(PD.ancillary, 'energy1')))    
-          PD.ancillary.energy0 = energytmp0(elevels);
-          PD.ancillary.energy1 = energytmp1(elevels);      
-      else
-          PD.ancillary.energy0 = PD.ancillary.energy0(elevels);
-          PD.ancillary.energy1 = PD.ancillary.energy1(elevels);
+      
+      % update ancillary data
+      if isempty(PD.ancillary) % if ancillary data is empty, this is just for backwards compatibility
+        if netables == 1          
+          PD.ancillary.esteptable = zeros(size(energy,1),0);
+          PD.ancillary.energy0 = unique_etables(1,elevels);
+          PD.ancillary.energy1 = unique_etables(1,elevels);
+        elseif netables == 2
+          [esteptable,~] = ismember(energy,unique_etables(2,:),'rows'); % where row is not unique_etables(2,:), '0' is returned
+          PD.ancillary.esteptable = esteptable;
+          PD.ancillary.energy0 = unique_etables(1,elevels);
+          PD.ancillary.energy1 = unique_etables(2,elevels);
+        end
+      else % check what fields ancillary have, and update them
+        if isfield(PD.ancillary, 'energy0'), PD.ancillary.energy0 = PD.ancillary.energy0(elevels);
+          else PD.ancillary.energy0 = energy(1,elevels); end
+        if isfield(PD.ancillary, 'energy1'), PD.ancillary.energy1 = PD.ancillary.energy1(elevels);
+          else PD.ancillary.energy1 = energy(2,elevels); end
+        if ~isfield(PD.ancillary, 'esteptable')
+          [esteptable,~] = ismember(energy,PD.ancillary.energy1,'rows');
+          PD.ancillary.esteptable = esteptable;
+        end          
+        if isfield(PD.ancillary,'energy'), PD.ancillary.energy = PD.ancillary.energy(:,elevels); end                
+        if isfield(PD.ancillary,'delta_energy_minus'), PD.ancillary.delta_energy_minus = PD.ancillary.delta_energy_minus(:,elevels); end                
+        if isfield(PD.ancillary,'delta_energy_plus'), PD.ancillary.delta_energy_plus = PD.ancillary.delta_energy_plus(:,elevels); end                
       end
     end
     function PD = omni(obj)
