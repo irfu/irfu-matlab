@@ -20,7 +20,7 @@ if nargin<3, flag_amp = 0; end
 if flag_amp~=0, flag_amp = 1; end
 
 if exist('./mPlan.mat','file'), load ./mPlan.mat
-else error('No MPlan.mat found')
+else, error('No MPlan.mat found')
 end
 
 MP = [];

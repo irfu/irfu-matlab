@@ -33,7 +33,7 @@ if ~isempty(ii)
 			st_out = [];
 			dt_out = [];
 			return
-		else irf_log('proc',prob_s(ns_ops(ii(j),:),1))
+		else, irf_log('proc',prob_s(ns_ops(ii(j),:),1))
 		end
 	end
 end
@@ -48,7 +48,7 @@ while 1
 		irf_log('proc',prob_s(ns_ops(ii(1),:)))
 		dt = ns_ops(ii(1),1) - st;
 		irf_log('proc',	['truncating interval: setting DT to ' num2str(dt)])
-	else irf_log('proc',prob_s(ns_ops(ii(1),:),1))
+	else, irf_log('proc',prob_s(ns_ops(ii(1),:),1))
 	end
 	% clear already processed records
 	ns_ops(ii(1),:) = [];
@@ -65,7 +65,7 @@ while 1
 		st = ns_ops(ii(1),1) + ns_ops(ii(1),2);
 		dt = et - st;
 		irf_log('proc',	['truncating interval: setting START_TIME to ' epoch2iso(st,1)])
-	else irf_log('proc',prob_s(ns_ops(ii(1),:),1))
+	else, irf_log('proc',prob_s(ns_ops(ii(1),:),1))
 	end
 	% clear already processed records
 	ns_ops(ii(1),:) = [];
@@ -117,7 +117,7 @@ res = (opcode<10 && opcode>0) || (~isempty(errlist) && any(opcode==errlist));
 function ss = prob_s(ns_ops_rec,warn)
 if nargin<2, warn=0; end
 if warn, s = 'WARNING: ';
-else s = 'PROBLEM: ';
+else, s = 'PROBLEM: ';
 end
 ss = [s caa_errid2str(ns_ops_rec(4)) ' ' epoch2iso(ns_ops_rec(1),1)...
 	' -- ' epoch2iso(ns_ops_rec(1)+ns_ops_rec(2),1)];

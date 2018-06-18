@@ -27,7 +27,7 @@ t_name = sprintf('%s%s',name1(1:n1-1),f_end);
 name2 = 0;
 
 cont = 1;
-while feof(fp) == 0 & cont == 1
+while feof(fp) == 0 && cont == 1
 temp_l = fgetl(fp);
 t = length(temp_l);
 

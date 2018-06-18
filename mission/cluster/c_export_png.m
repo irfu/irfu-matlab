@@ -40,10 +40,10 @@ while have_options
 			else, irf_log('fcal','wrong ArgType : suf must be string')
 			end
 		otherwise
-        	irf_log('fcal',['Option ''' args{i} '''not recognized'])
-    	end
+        	irf_log('fcal',['Option ''' args{1} '''not recognized'])
+		end
 		if length(args) > l, args = args(l+1:end);
-		else break
+		else, break
 		end
 	else
 		error('caa:wrongArgType','use c_export_ps(..,''option'',''value'')')
@@ -56,7 +56,7 @@ if nargin<1
 	ud=get(1,'userdata');
     if isfield(ud,'t_start_epoch'), st=ud.t_start_epoch;
     else, error('please specify ts')
-	end
+    end
 end
 
 for cl_id=sc_list

@@ -12,7 +12,7 @@ BASE_DIR = '/data/caa/l1';
 dirs = textread(fname,'%s'); MP=[];
 
 if exist('./mPlan.mat','file'), load ./mPlan.mat
-else error('No MPlan.mat found')
+else, error('No MPlan.mat found')
 end
 
 if isempty(dirs), disp('NO DIRS'), cd(old_pwd), return, end
@@ -60,7 +60,7 @@ for d=1:length(dirs)
 				cd(old_pwd), return
 			end
 			
-		else irf_log('proc',[ '-- INSIDE MP -- : ' curr_d]);
+		else, irf_log('proc',[ '-- INSIDE MP -- : ' curr_d]);
 		end
 
 	else

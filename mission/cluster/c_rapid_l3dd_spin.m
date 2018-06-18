@@ -76,7 +76,7 @@ i_flux=ind_flux(1);
  
 minval=zeros(1,nrow*ncol); maxval=zeros(1,nrow*ncol);
 
-for i_subplot=1:(nrow*ncol),
+for i_subplot=1:(nrow*ncol)
     h(i_subplot)=irf_subplot(nrow,ncol,-i_subplot);
     
     T_eve=Time_lab(i_flux);
@@ -107,23 +107,23 @@ for i_subplot=1:(nrow*ncol),
     Bsc(3)=Rot(3,1)*Bgse(1)+Rot(3,2)*Bgse(2)+Rot(3,3)*Bgse(3);
 
     pit_ang=zeros(length(Yaxis),length(Xaxis));
-    for ix=1:length(Xaxis),
-      for iy=1:length(Yaxis),
+    for ix=1:length(Xaxis)
+      for iy=1:length(Yaxis)
           AZ=Xaxis(ix)*(pi/180);
           Pol=Yaxis(iy)*(pi/180);
-          [xfsc yfsc zfsc]=sph2cart(AZ-pi,Pol-(pi/2),1.0);
+          [xfsc, yfsc, zfsc]=sph2cart(AZ-pi,Pol-(pi/2),1.0);
           v1=[xfsc yfsc zfsc];
           v2=Bsc;
         pit_ang(iy,ix)=acosd(dot(v1,v2)/(norm(v1)*norm(v2)));
       end
     end
     
-    [C PAcontour]=contour(pit_ang,[7 20 60 90 120 160 173]); 
+    [C, PAcontour]=contour(pit_ang,[7 20 60 90 120 160 173]); 
     clabel(C, PAcontour, [7 60 90 120 173], 'Rotation',0);
     hold off;
     
     set(gca,'yscale','lin'); 
-    set(gca,'xtick',[1:2:16],'ytick',[1:8]);
+    set(gca,'xtick', 1:2:16, 'ytick', 1:8);
     set(gca,'YDir','reverse');
     ylabel(gca,'Polar ang');
     Time=epoch2iso(T_eve); tlab=Time(12:23);
@@ -140,7 +140,7 @@ left=lhp(1); low=lhp(2)+lhp(4)+0.01;
 width=rhp(1)+rhp(3)-lhp(1); height=0.04;
 set(hcol,'Position',[left low width height]);
 
-for i_subplot=1:(nrow*ncol),
+for i_subplot=1:(nrow*ncol)
     caxis(h(i_subplot),[min(minval) max(maxval)]);
 end
 

@@ -36,8 +36,8 @@ if nargin == 0
     % Display help
     help irf_4_v_gui
     return;
-elseif nargin == 1,
-    error;
+elseif nargin == 1
+    error('Unknown input type.');
 elseif nargin==2 && ~ischar(varargin{1}) &&  all(ishandle(varargin{1}))
     % Only action input
     hfig=varargin{1};
@@ -56,8 +56,8 @@ else
         if ischar(varargin{2}) && ~isempty(strfind(varargin{2},'?'))
             ud.pos_str = varargin{2};
             c_eval('R?=evalin(''base'',irf_ssub(ud.pos_str,?));');
-            if isa(R1,'TSeries')
-                ud = r_ts2mat(ud,R1,R2,R3,R4);
+            if isa(R1,'TSeries') %#ok<NODEF>
+                ud = r_ts2mat(ud,R1,R2,R3,R4); %#ok<NODEF>
             else
                 c_eval('ud.pos?=R?;',1:4)
             end
@@ -239,7 +239,7 @@ ud.columns=uimenu('label','&Columns','accelerator','c');
 %uimenu(ud.column
 
 if isa(ud.var1,'TSeries'), nCol = size(ud.var1.data,2);
-else nCol = size(ud.var1,2);
+else, nCol = size(ud.var1,2);
 end
 
 for j_col=1:nCol
@@ -275,7 +275,7 @@ set(ud.v,'string',vstr);
 ud.vVector=v;
 ud.nVector=v./norm(v);
 if eval(get(ud.filter,'string'))<1
-    x1=ud.var1;Fs=1/(x1(2,1)-x1(1,1));flim=Fs*eval(get(ud.filter,'string'));
+    x1=ud.var1;Fs=1/(x1(2,1)-x1(1,1));flim=Fs*eval(get(ud.filter,'string')); %#ok<NASGU>
     c_eval('x?=irf_tlim(ud.var?,xl+[-20/Fs 20/Fs]);x?=irf_filt(x?,0,flim,Fs,5);');
     irf_pl_tx(ud.h(2),'x?',ud.var_col,ud.dt);
 else
@@ -314,15 +314,15 @@ else
     dt=dt-dt(ref_satellite);
 end
 tstr=['[' num2str(dt,'%9.4f') ']'];
-if norm(v) > 0,
+if norm(v) > 0
     vstr=[num2str(norm(v),3) ' * [' num2str(v./norm(v),'%6.2f') ']'];
 else
     vstr='0*[0 0 0]';
 end
 set(ud.dt_input,'string',tstr);
-if eval(get(ud.filter,'string'))<1,
+if eval(get(ud.filter,'string'))<1
     x1=ud.var1;Fs=1/(x1(2,1)-x1(1,1));
-    flim=Fs*eval(get(ud.filter,'string'));
+    flim=Fs*eval(get(ud.filter,'string')); %#ok<NASGU>
     c_eval('x?=irf_tlim(var?,xl+[-20/Fs 20/Fs]);x?=irf_filt(x?,0,flim,Fs,5);');
     irf_pl_tx(ud.h(2),x1,x2,x3,x4,ud.var_col,dt);
 else
@@ -340,7 +340,7 @@ function ud = click_times(ud)
 
 zoom(ud.h(1),'off');
 if (~isfield(ud,'ic') || isempty(ud.ic)), ud.ic=0;ud.dtv=[];end
-if ud.ic==0,
+if ud.ic==0
     set(ud.hfig,'windowbuttondownfcn', 'irf_4_v_gui(gcf,''click_times'')');
     ud.ic=1;
 else
@@ -349,7 +349,7 @@ else
     ud.ic=ud.ic+1;
 end
 title(['click on s/c ' num2str(ud.ic)]);
-if ud.ic==5,
+if ud.ic==5
     set(ud.hfig,'windowbuttondownfcn', '');
     title('');
     ud.ic=0;
@@ -366,7 +366,7 @@ end
 function ud = auto_y(ud) 
 %   Updates the limits of the y-axis for both panels.
 
-for h=ud.h(1:2),
+for h=ud.h(1:2)
     set(h,'YLimMode','auto');
 end
 end
@@ -380,7 +380,7 @@ xl=get(hh,'XLim');
 v=eval(['[' get(ud.v,'string') ']']);
 tcenter = mean(xl);distance=norm(v)*diff(xl)/2;logd=log10(distance);
 if logd>round(logd), dx=10^(round(logd))/2;
-else dx=10^(round(logd))/5;
+else, dx=10^(round(logd))/5;
 end
 xticks=(-30:30)*dx/norm(v)/5+tcenter;
 xticklabels=cell(size(-30:30));
@@ -407,14 +407,14 @@ function ud = new_var(ud)
 evalin('base',['if ~exist(''' irf_ssub(ud.variable_str,1) '''), c_load(''' ud.variable_str ''');end' ]);
 c_eval('ud.var?=evalin(''base'',irf_ssub(ud.variable_str,?));');
 if ud.var_col > size(ud.var1,2), ud.var_col=2;end % in case new variable has less columns
-if ud.flag_first_call,
+if ud.flag_first_call
     set(ud.hfig,'userdata',ud);
     irf_4_v_gui(ud.hfig,'init');
 else
-    if ishandle(ud.h(1)),
+    if ishandle(ud.h(1))
         for j_col=2:size(ud.var1,2)
-            if j_col<=length(ud.hcol),
-                if ishandle(ud.hcol(j_col)),
+            if j_col<=length(ud.hcol)
+                if ishandle(ud.hcol(j_col))
                     set(ud.hcol(j_col),'enable','on')
                 else
                     eval_str=['ud.hcol(j_col)=uimenu(ud.columns,''label'',''' num2str(j_col) ''',''callback'',''irf_4_v_gui(gcf,''''c' num2str(j_col) ''''')'');'];
@@ -461,12 +461,12 @@ dd=c_desc(irf_ssub(var_str,1));
 if isempty(dd)
     label=[var_str '[' num2str(iVecComponent) ']'];
 else
-    if numel(dd.units)==1,
+    if numel(dd.units)==1
         labUnit = dd.units{1};
     else
         labUnit = dd.units{iVecComponent};
     end
-    if numel(dd.labels)==1,
+    if numel(dd.labels)==1
         labVar = dd.labels{1};
     else
         labVar = dd.labels{iVecComponent};
@@ -582,7 +582,7 @@ end
 end
 
 % Position TSeries to Matricies
-function ud = r_ts2mat(ud,R1,R2,R3,R4)
+function ud = r_ts2mat(ud,R1,R2,R3,R4) %#ok<INUSD>
 c_eval('ud.pos?=[R?.time.epochUnix,double(R?.data(:,1:3))];',1:4)
 end
 
@@ -616,9 +616,9 @@ function ud = get_c_pos(ud)
 
 irf.log('warning','Trying to read Cluster position')
 tint = ud.tlim + ud.t_start_epoch + [-120, 120];
-if ~is_pos_ok(ud) && exist('./mR.mat','file'),
+if ~is_pos_ok(ud) && exist('./mR.mat','file')
     irf.log('warning','Trying to read position from mR.mat')
-    load mR R1 R2 R3 R4;
+    load mR R1 R2 R3 R4; %#ok<NASGU>
     c_eval('R.R?=R?;');
 end
 if ~is_pos_ok(ud)
@@ -627,7 +627,7 @@ if ~is_pos_ok(ud)
     ttt=c_caa_var_get(var,'mat','tint',tint);
     ud.pos1 = ttt{1}; ud.pos2 = ttt{2}; ud.pos3 = ttt{3}; ud.pos4 = ttt{4};
 end
-if ~is_pos_ok(ud) && exist('CAA/CL_SP_AUX','dir')==7,
+if ~is_pos_ok(ud) && exist('CAA/CL_SP_AUX','dir')==7
     irf.log('warning','Trying to read CAA files CL_CP_AUX ...')
     R.R=irf_get_data('sc_r_xyz_gse__CL_SP_AUX','caa','mat');
     if ~isempty(R.R)

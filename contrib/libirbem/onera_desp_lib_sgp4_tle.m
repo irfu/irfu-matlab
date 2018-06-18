@@ -34,21 +34,21 @@ function pos = onera_desp_lib_sgp4_tle(varargin)
 % InFile: provides the path and name to locate the input TLE to be propagated.
 %
 
-if nargin == 1,
+if nargin == 1
     % (InFile)
     runtype = 0;
     startsfe = 0;
     stopsfe = 0;
     deltasec = 0;
     InFile = varargin{1};
-elseif nargin == 4,
+elseif nargin == 4
     %    startsfe,stopsfe,deltasec,InFile
     runtype = 1;
     startsfe = varargin{1};
     stopsfe = varargin{2};
     deltasec = varargin{3};
     InFile = varargin{4};
-elseif nargin == 2,
+elseif nargin == 2
     % (InFile,OutFile)
     runtype = 0;
     startsfe = 0;
@@ -60,17 +60,17 @@ else
     error('%s: Incorrect number of input arguments',mfilename);
 end
 
-if ~exist(InFile,'file'),
+if ~exist(InFile,'file')
     error('%s: InFile "%s" not found',mfilename,InFile);
 end
 
 onera_desp_lib_load;
 strlenIn = length(InFile);
 
-if ~exist('OutFile','var'),
+if ~exist('OutFile','var')
     delOutFile = 1; % delete the output file
     OutFile = 'onera_desp_lib_sgp4_tle.tmp';
-    while exist(OutFile,'file'),
+    while exist(OutFile,'file')
         OutFile = sprintf('onera_desp_lib_sgp4_tle.tmp.%.0f',10000*rand(1));
     end
 else
@@ -81,7 +81,7 @@ strlenOut = length(OutFile);
 % void sgp4_tle1_ ( long int * runtype , double * startsfe , double * stopsfe , double * deltasec , char * InFileByte , long int * strlenIn , char * OutFileByte , long int * strlenOut );
 calllib('onera_desp_lib','sgp4_tle1_',runtype,startsfe,stopsfe,deltasec,InFile,strlenIn,OutFile,strlenOut);
 
-if delOutFile,
+if delOutFile
     % read the OutFile and then delete it
 
     % 1: date (dd/mm/yyyy)

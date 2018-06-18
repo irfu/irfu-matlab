@@ -72,14 +72,14 @@ doDailyFileDownload   = false; % default is to go by inventory time
 doMonthlyFileDownload = false; % default is to go by inventory time
 
 %% check input: get inventory and construct time table if dataset
-if nargin == 0,
+if nargin == 0
 	help local.caa_download
 	return
 end
 args=varargin;
 if ischar(varargin{1})
 	dataSet=varargin{1};
-	if isempty(dataSet),
+	if isempty(dataSet)
 		irf.log('warning','local.caa_download: dataset name empty!')
 		return;
 	end
@@ -145,10 +145,10 @@ while ~isempty(args)
 end
 %% If sending email check that all servers and addresses defined
 % datastore('local',..) keeps info on email and servers
-if sendEmailWhenFinished,
-	if exist('sendmail','file')==2,
+if sendEmailWhenFinished
+	if exist('sendmail','file')==2
 		sendEmailFrom = datastore('local','sendEmailFrom');
-		if isempty(sendEmailFrom),
+		if isempty(sendEmailFrom)
 			disp('Please define email from which MATLAB should send email');
 			disp('This should be your local email where you are running MATLAB.');
 			disp('For example in IRFU: username@irfu.se');
@@ -159,7 +159,7 @@ if sendEmailWhenFinished,
 			return;
 		end
 		sendEmailSmtp = datastore('local','sendEmailSmtp');
-		if isempty(sendEmailSmtp),
+		if isempty(sendEmailSmtp)
 			disp('Please define your local SMTP server. ');
 			disp('For example in IRFU: sol.irfu.se');
 			disp('Execute in matlab (adjust accordingly):')
@@ -169,7 +169,7 @@ if sendEmailWhenFinished,
 			return;
 		end
 		sendEmailTo = datastore('local','email');
-		if isempty(sendEmailTo),
+		if isempty(sendEmailTo)
 			disp('Please specify your email.');
 			disp('For example: name@gmail.com');
 			disp('Execute in matlab (adjust accordingly):')
@@ -198,9 +198,9 @@ end
 %  check also if daily files are downloaded
 if isInputDatasetName
 	irf.log('warning','Checking list of available times');
-	if doMonthlyFileDownload,
+	if doMonthlyFileDownload
 		TT=caa_download(['list:' dataSet]);
-		if numel(TT)==0,
+		if numel(TT)==0
 			disp('Dataset does not exist or there are no data');
 			return;
 		end
@@ -210,22 +210,22 @@ if isInputDatasetName
 		startMonth  = tminDatenum(2);
 		endYear     = tmaxDatenum(1);
 		endMonth    = tmaxDatenum(2)+1;
-		if endMonth == 13,
+		if endMonth == 13
 			endYear  = endYear + 1;
 			endMonth = 1;
 		end
 		tVec = zeros((1 + endYear - startYear)*12,1);
-		for iYear = startYear:endYear,
-			for iMonth = 1:12,
+		for iYear = startYear:endYear
+			for iMonth = 1:12
 				tVec((iYear-startYear)*12+iMonth) = irf_time([iYear iMonth 1 0 0 0],'vector>epoch');
 			end
 		end
 		tStart      = tVec(startMonth  :end-(12-endMonth)-1);
 		tEnd        = tVec(startMonth+1:end-(12-endMonth)  );
 		TTRequest   = irf.TimeTable([tStart tEnd]);
-	elseif doDailyFileDownload,
+	elseif doDailyFileDownload
 		TT=caa_download(['list:' dataSet]);
-		if numel(TT)==0,
+		if numel(TT)==0
 			disp('Dataset does not exist or there are no data');
 			return;
 		end
@@ -238,7 +238,7 @@ if isInputDatasetName
 		TTRequest   = irf.TimeTable([tStart tEnd]);
 	else
 		TT=caa_download(['inventory:' dataSet]);
-		if numel(TT)==0,
+		if numel(TT)==0
 			disp('Dataset does not exist or there are no data');
 			return;
 		end
@@ -249,11 +249,11 @@ end
 %% check which time intervals are already downloaded, remove obsolete ones
 dataSetDir = [dataDir filesep dataSet];
 indNewIntervals = true( numel(TTRequest),1); % default
-if exist(dataSetDir,'dir'),
+if exist(dataSetDir,'dir')
 	% read index of already present dataset files
 	indexDataSetName = ['index_' dataSet];
 	indexDataSetFileName = [dataSetDir filesep indexDataSetName  '.mat'];
-	if ~exist(indexDataSetFileName,'file'),
+	if ~exist(indexDataSetFileName,'file')
 		local.c_update(dataSet);
 	end
 	dirload(dataSetDir,indexDataSetName);
@@ -278,9 +278,9 @@ if exist(dataSetDir,'dir'),
 		% obtain file list that are ingested since the last data file
 		TTfileList=caa_download(['fileinventory:' dataSet]);
 		indNewFiles = false(1,numel(TTfileList));
-		for j = 1:numel(indNewFiles),
+		for j = 1:numel(indNewFiles)
 			newVersion = str2double(TTfileList.UserData(j).caaIngestionDate([3 4 6 7 9 10]));
-			if newVersion > lastVersion,
+			if newVersion > lastVersion
 				indNewFiles(j) = true;
 				irf.log('debug',['Ingested since last #' num2str(j) ...
 					' time interval: ' irf_time(TTfileList.TimeInterval(j,:),'tint>utc_yyyy-mm-dd')]);
@@ -300,14 +300,14 @@ if exist(dataSetDir,'dir'),
 		indOldToUpdateIntervals = false(numel(TTindex),1);
 		nOldIntervals = numel(TTindex);
 		jIndex        = nOldIntervals;
-		for iReq=numel(TTRequest):-1:1,
-			if tintInd(jIndex,2) < tintReq(iReq,1), % new time interval
+		for iReq=numel(TTRequest):-1:1
+			if tintInd(jIndex,2) < tintReq(iReq,1) % new time interval
 				continue;
 			else
 				while(tintInd(jIndex,2)>tintReq(iReq,1))
 					if	abs(tintInd(jIndex,2)-tintReq(iReq,2))<=5 && ...% interval comparison to 5s (1spin) precision
 							abs(tintInd(jIndex,1)-tintReq(iReq,1))<=5
-						if indNewIntervals(iReq), % new files available for interval
+						if indNewIntervals(iReq) % new files available for interval
 							indOldToUpdateIntervals(jIndex) = true;
 							irf.log('debug',['Old interval to update #' num2str(jIndex) ' '...
 								irf_time(tintInd(jIndex,:),'tint>utc')]);
@@ -359,12 +359,12 @@ end
 
 %% Assign work
 assignin('base','TTRequest',TTRequest); % TTRequest assign so that one can work
-if doSimulateDownload,
+if doSimulateDownload
 	return;
 end
 %% loop through request time table
 iRequest=max(indexStart,find_first_non_processed_time_interval(TTRequest));
-if ~exist('indexList','var'),
+if ~exist('indexList','var')
 	nRequest	= numel(TTRequest)-iRequest+1;
 	indexList	= iRequest:numel(TTRequest);
 else
@@ -373,7 +373,7 @@ end
 while 1
 	while 1 % submit next unsubmitted job
 		if isempty(indexList), break; end % no more jobs
-		if n_submitted_jobs(TTRequest)>=maxSubmittedJobs,
+		if n_submitted_jobs(TTRequest)>=maxSubmittedJobs
 			irf.log('warning','Maximum allowed number of submitted jobs is reached.');
 			irf.log('warning','Pausing 10s');
 			pause(10);
@@ -407,14 +407,14 @@ while 1
 				irf.log('notice','**** caa_download() DID NOT SUCCEED! ****');
 			end
 			
-			if download_status == 0, % scheduling succeeded
+			if download_status == 0 % scheduling succeeded
 				TTRequest.UserData(iRequest).Status=0;
 				TTRequest.UserData(iRequest).Downloadfile=downloadfile;
 				TTRequest.UserData(iRequest).TimeOfRequest=now;
 				TTRequest.UserData(iRequest).TimeOfDownload=now;
 				TTRequest.UserData(iRequest).NumberOfAttemptsToDownload=0;
 				break
-			elseif download_status == -1,
+			elseif download_status == -1
 				TTRequest.UserData(iRequest).Status=-1;
 				TTRequest.UserData(iRequest).Downloadfile=[];
 				TTRequest.UserData(iRequest).TimeOfRequest=now;
@@ -423,12 +423,12 @@ while 1
 	end
 	while 1 % check submitted jobs
 		irf.log('notice',['Checking downloads. ' num2str(n_submitted_jobs(TTRequest)) ' jobs submitted.']);
-		if n_submitted_jobs(TTRequest) == 0,
+		if n_submitted_jobs(TTRequest) == 0
 			irf.log('notice','No more submitted jobs');
 			break;
 		end
 		iSubmitted=find_first_submitted_time_interval(TTRequest);
-		if isempty(iSubmitted),
+		if isempty(iSubmitted)
 			irf.log('notice','No more submitted jobs');
 			break;
 		end
@@ -441,7 +441,7 @@ while 1
 			irf.log('notice',['pause ' num2str(waitTimeSec) ' s']);
 			pause(waitTimeSec);
 		end
-		if waitTimeSec > 0, % Avoid requesting file too fast 
+		if waitTimeSec > 0 % Avoid requesting file too fast 
 			break;
 		end
 		try
@@ -452,7 +452,7 @@ while 1
 			download_status = -1; % something wrong with internet
 			irf.log('warning','**** DID NOT SUCCEED! ****');
 		end
-		if download_status==1,
+		if download_status==1
 			TTRequest.UserData(iSubmitted).Status=1; % submitted > downloaded
 			irf.log('warning',['Jobs downloaded so far: ' num2str(n_downloaded_jobs(TTRequest))]);
 			if mod(n_downloaded_jobs(TTRequest),10)==0 || ...%save after every 10th request
@@ -479,7 +479,7 @@ while 1
 			end
 		end
 		assignin('base','TTRequest',TTRequest);
-		if n_submitted_jobs(TTRequest) < maxSubmittedJobs; % check next request only if less than max allowed submitted
+		if n_submitted_jobs(TTRequest) < maxSubmittedJobs % check next request only if less than max allowed submitted
 			break
 		end
 	end % checking submitted jobs end
@@ -503,7 +503,7 @@ function remove_datafiles(TT,iIndex,dataDir)
 % remove data files of dataset in request TT and indices iIndex (logical
 % matrix)
 if isa(TT,'irf.TimeTable') && islogical(iIndex)
-	if numel(TT)==0,
+	if numel(TT)==0
 		irf.log('warning','No time intervals in request');
 		return;
 	elseif ~any(iIndex)
@@ -538,7 +538,7 @@ function i=find_first_submitted_time_interval(TT)
 ud=TT.UserData;
 i=[]; % default empty return
 if isfield(ud,'Status')
-	for j=1:numel(ud),
+	for j=1:numel(ud)
 		if ud(j).Status==0
 			i=j;
 			return;

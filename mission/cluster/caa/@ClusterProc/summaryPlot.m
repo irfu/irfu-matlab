@@ -34,7 +34,7 @@ function out=summaryPlot(cp,cl_id,varargin)
 narginchk(2,10)
 
 if nargin>2, have_options = 1; args = varargin;
-else have_options = 0;
+else, have_options = 0;
 end
 
 % Default values
@@ -53,21 +53,21 @@ while have_options
     if length(args)>=1
         switch(args{1})
             case 'cs'
-                if ischar(args{2}),
+                if ischar(args{2})
                     cs = args{2};
                     if ~strcmp(cs,'dsi') && ~strcmp(cs,'gse')
                         irf_log('fcal','unknown CS. defaulting to DSI')
                         cs = 'dsi';
                     end
-                else irf_log('fcal','wrongArgType : CS must be a string')
+                else, irf_log('fcal','wrongArgType : CS must be a string')
                 end
             case 'st'
                 if isnumeric(args{2}), st = args{2};
-                else irf_log('fcal','wrongArgType : ST must be numeric')
+                else, irf_log('fcal','wrongArgType : ST must be numeric')
                 end
             case 'dt'
                 if isnumeric(args{2}), dt = args{2};
-                else irf_log('fcal','wrongArgType : DT must be numeric')
+                else, irf_log('fcal','wrongArgType : DT must be numeric')
                 end
             case 'fullb'
                 use_fullb = '';	l = 1;
@@ -92,7 +92,7 @@ while have_options
                 irf_log('fcal',['Option ''' args{1} '''not recognized'])
         end
         if length(args) > l, args = args(l+1:end);
-        else break
+        else, break
         end
     else
         error('caa:wrongArgType','use summaryPlot(..,''option'',''value'')')
@@ -182,7 +182,7 @@ for k=1:length(q_list)
                             c_eval(['st=' q_list{k} '(:,1);'],cl_id)
                             st = st(~isnan(st));
                             if isempty(st), st = 0;
-                            else st = st(1);
+                            else, st = st(1);
                             end
                         end
                         
@@ -194,7 +194,7 @@ for k=1:length(q_list)
                         [ok2,Damp] = c_load('Damp?',cl_id); if ~ok2, Damp = dam_def; end %#ok<NASGU>
                         
                         if ok1 || ok2, irf_log('calb','Using saved DSI offsets')
-                        else irf_log('calb','Using default DSI offsets')
+                        else, irf_log('calb','Using default DSI offsets')
                         end
                         clear dsiof_def dam_def;
                     else
@@ -221,7 +221,7 @@ for k=1:length(q_list)
                             st = E_ib(:,1);
                             st = st(~isnan(st));
                             if isempty(st), st = 0;
-                            else st = st(1);
+                            else, st = st(1);
                             end
                         end
                         
@@ -231,7 +231,7 @@ for k=1:length(q_list)
                         [ok2,Damp] = c_load('Damp?',cl_id); if ~ok2, Damp = dam_def; end
                         
                         if ok1 || ok2, irf_log('calb','Using saved DSI offsets');
-                        else irf_log('calb','Using default DSI offsets');
+                        else, irf_log('calb','Using default DSI offsets');
                         end
                         clear dsiof_def dam_def;
                     else
@@ -325,7 +325,7 @@ for k=1:n_plots
         continue
     end
     if iscell(data{k}), irf_plot(h(k),data{k},'comp');
-    else irf_plot(h(k),data{k})
+    else, irf_plot(h(k),data{k})
     end
     %axis(h(k),'tight');
     irf_zoom(h(k),'x',[t_st t_end]);

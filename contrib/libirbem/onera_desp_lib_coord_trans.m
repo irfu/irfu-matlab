@@ -29,7 +29,7 @@ function Y = onera_desp_lib_coord_trans(X,rotation,matlabd)
 % also can specify numerical coordinate IDs like in sysaxes rotation = [num1 num2]
 % matlabd (date) is optional, since many coordinate systems are time invariant
 
-if nargin < 3,
+if nargin < 3
     matlabd = now;
 end
 
@@ -38,28 +38,28 @@ matlabd = datenum(matlabd);
 onera_desp_lib_load;
 
 [r,c] = size(X);
-if r==3 && c==1,
+if r==3 && c==1
     X = X';
     c = 3;
     r = 1;
 end
-if c ~=3,
+if c ~=3
     error('Argument X must be size n x 3 in %s',mfilename);
 end
 ntime = r;
-if length(matlabd)==1,
+if length(matlabd)==1
     matlabd = repmat(matlabd,ntime,1);
 end
 
-if length(matlabd)~=r,
-    if r==1,
+if length(matlabd)~=r
+    if r==1
         X = repmat(X,length(matlabd),1);
     else
         error('Size of X argument and size of matlabd argument are not commensurate in %s',mfilename);
     end
 end
 
-if isnumeric(rotation(1)),
+if isnumeric(rotation(1))
     istart = rotation(1);
     iend = rotation(2);
 else
@@ -83,15 +83,15 @@ function Y = coord_trans_type(istart,iend,matlabd,X)
 [iyear,idoy,secs] = onera_desp_lib_matlabd2yds(matlabd);
 ntime = length(iyear);
 nmax = onera_desp_lib_ntime_max;
-Y = repmat(nan,ntime,3);
+Y = nan(ntime,3);
 nstart = 1;
-while nstart <= ntime,
+while nstart <= ntime
     % void coord_trans_vec1_(long int *ntime, long int *sysaxesIN,long int *sysaxesOUT,
     % 		   long int *iyr,long int *idoy,double *secs,
     % 		   double *xINV,double *xOUTV);
     %
     ii = nstart:min(nstart+nmax-1,ntime);
-    Ynmax = repmat(nan,3,nmax); % place holder
+    Ynmax = nan(3,nmax); % place holder
     YPtr = libpointer('doublePtr',Ynmax);
     calllib('onera_desp_lib','coord_trans_vec1_',length(ii),istart,iend,iyear(ii),idoy(ii),secs(ii),X(ii,:)',YPtr);
     Ynmax = get(YPtr,'value');

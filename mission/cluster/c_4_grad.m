@@ -55,21 +55,21 @@ end
 
 % first identify what should be calculated
 toCalculate='grad'; % default to calculate grad
-if nargin==9,
-	if ischar(option),
+if nargin==9
+	if ischar(option)
 		toCalculate=option;
 	end
-elseif nargin==8 || nargin==2,
+elseif nargin==8 || nargin==2
 	toCalculate='grad';
-elseif nargin==3, % if 3 input arguments, the 3rd is option
+elseif nargin==3 % if 3 input arguments, the 3rd is option
 	toCalculate=r3;
 else
 	irf.log('warning','Too many input parameters.');
 	return;
 end
 
-if nargin==2 || nargin==3, % input is in form 'R?' and 'B?'
-	if ischar(r1) && ischar(r2),
+if nargin==2 || nargin==3 % input is in form 'R?' and 'B?'
+	if ischar(r1) && ischar(r2)
 		for iC=1:4
 			id = idC{iC};
 			R.(id) = evalin('caller',irf_ssub(r1,iC));
@@ -82,8 +82,8 @@ if nargin==2 || nargin==3, % input is in form 'R?' and 'B?'
 				doOutputTSeries = true;
 				Bunits = B.(id).units;
 				B.(id) = [B.(id).time.epochUnix double(B.(id).data)];
-            end
-        end
+			end
+		end
 	elseif isstruct(r1) && isstruct(r2)
 		R=r1; B=r2;
 		for iC=1:4
@@ -108,7 +108,7 @@ if nargin==2 || nargin==3, % input is in form 'R?' and 'B?'
 		irf.log('warning','For two input parameters, both should be strings');
 		return;
 	end
-elseif nargin >= 8, 
+elseif nargin >= 8 
 	R.C1 = r1; R.C2 = r2; R.C3 = r3; R.C4 = r4;
 	B.C1 = b1; B.C2 = b2; B.C3 = b3; B.C4 = b4;
 end
@@ -122,7 +122,7 @@ if (size(B.C1,2)>=4 || size(B.C1,2)==2) && size(R.C1,2)>3 % input is vector usin
 	isTimeSpecified = true; % default assume first column is time
 	tB = B.C1(:,1); % time vector
 	tR = R.C1(:,1); % time vector
-	if  size(B.C1,2)>=4,
+	if  size(B.C1,2)>=4
 		isFieldVector = true;
 	else
 		isFieldScalar = true;
@@ -173,15 +173,15 @@ for iC=1:4
 end
 
 %% Calculate gradient if necessary (grad,curvature) 
-if strcmp(toCalculate,'grad')||strcmp(toCalculate,'curvature')||strcmp(toCalculate,'bdivb'),
-	if isFieldScalar,  % scalar field, gradient is vector
+if strcmp(toCalculate,'grad')||strcmp(toCalculate,'curvature')||strcmp(toCalculate,'bdivb')
+	if isFieldScalar  % scalar field, gradient is vector
 		gradB=B.C1(:,1)*[0 0 0];
 		for iC=1:4
 			id=idC{iC};
 			gradB = gradB + K.(id).*(B.(id)(:,1)*[1 1 1]);
 		end
 		result=gradB;
-	elseif isFieldVector, % vector field, gradient is matrix 1->(1,1),2->(1,2),3>(1,3),...
+	elseif isFieldVector % vector field, gradient is matrix 1->(1,1),2->(1,2),3>(1,3),...
 		gradB      = B.C1(:,1)*zeros(1,9);
 		gradB(:,1) = K.C1(:,1).*B.C1(:,1)+K.C2(:,1).*B.C2(:,1)+K.C3(:,1).*B.C3(:,1)+K.C4(:,1).*B.C4(:,1);%dxBx
 		gradB(:,2) = K.C1(:,1).*B.C1(:,2)+K.C2(:,1).*B.C2(:,2)+K.C3(:,1).*B.C3(:,2)+K.C4(:,1).*B.C4(:,2);%dxBy
@@ -264,16 +264,16 @@ end
 if isTimeSpecified % add time if given
 	if doOutputTSeries
     torder = 0; repr = {};
-    if length(result(1,:))==3; 
+    if length(result(1,:))==3 
       torder = 1; 
       repr = {'x','y','z'}; 
       result = TSeries(EpochUnix(tB),result,'TensorOrder',torder,'repres',repr);
     else
       result = TSeries(EpochUnix(tB),result,'TensorOrder',torder);
     end    
-		if nargout == 2,
+		if nargout == 2
       torder = 0;
-      if length(b(1,:))==3; 
+      if length(b(1,:))==3 
         torder = 1; 
         repr = {'x','y','z'}; 
         b = TSeries(EpochUnix(tB),b,'TensorOrder',torder,'repres',repr);

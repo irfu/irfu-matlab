@@ -1,8 +1,8 @@
-function OUT = R_datestring(date)
+function OUT = R_datestring2(date)
 
-%DATESTRING Makes a string containing the date
+%R_DATESTRING2 Makes a string containing the date
 %
-% DATESTRING(date) make a string of the date.
+% R_DATESTRING2(date) make a string of the date.
 % The date is of form [Year Month Day Hour Min Sec].
 %
 % By Anders Tjulin

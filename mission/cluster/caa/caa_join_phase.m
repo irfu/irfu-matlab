@@ -23,11 +23,11 @@ irf_log('proc',['interval: ' epoch2iso(st,1) ' -- ' epoch2iso(st+dt,1) ])
 
 if isnumeric(gap)
     if AtwoOK, old_end = Atwo_old(end,1);
-    else old_end = st;
+    else, old_end = st;
     end
     st_refetch = old_end + gap;
 elseif ischar(gap), st_refetch = iso2epoch(gap);
-else error('invalid input')
+else, error('invalid input')
 end
 
 if st_refetch < st || st_refetch > st+dt

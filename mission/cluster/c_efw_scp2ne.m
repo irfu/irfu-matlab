@@ -43,7 +43,7 @@ switch nargin
         coef=1;
 end
 
-if flag==-1, 
+if flag==-1 
     % Ne -> Vps
     warning off
     n(:,colind) = interp1( log10(Ne_ref), Vps_ref, log10(Vps(:,colind)/coef), 'linear', 'extrap' );

@@ -16,9 +16,9 @@ a=c_load('A?',ic,'var');
 phase=irf_resamp([a(:,1) unwrap(a(:,2)/180*pi)],t);
 phase=mod(phase(:,2)*180/pi,360); % take away time column
 
-phase_rapid=phase/180*pi + 60.167/180*pi; % rapid phase   
+phase_rapid=phase/180*pi + 60.167/180*pi; %#ok<NASGU> % rapid phase   
 
-polar_angles=[170:-20:10]*pi/180;
+polar_angles=(170:-20:10)*pi/180; %#ok<NASGU>
 sector_numbers=1:9;
 
 c_eval('sector_?_dsi=[t sin(polar_angles(?))*cos(phase_rapid) -sin(polar_angles(?))*sin(phase_rapid) cos(polar_angles(?)*ones(size(t)))];',1:9);

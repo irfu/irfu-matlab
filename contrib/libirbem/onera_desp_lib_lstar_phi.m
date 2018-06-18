@@ -27,13 +27,13 @@ function out = onera_desp_lib_lstar_phi(which,options,matlabd,in)
 % in: Lstar or Phi (N x 1), depending on which
 % out: Lstar or Phi (N x 1), depending on which
 
-switch(lower(which)),
-    case {1,'lstar2phi'},
+switch(lower(which))
+    case {1,'lstar2phi'}
         whichinv = 1;
-    case {2,'phi2lstar'},
+    case {2,'phi2lstar'}
         whichinv = 2;
     otherwise
-        if isnumeric(which),
+        if isnumeric(which)
             error('which = "%g" not supported',which);
         else
             error('which = "%s" not supported',which);
@@ -44,11 +44,11 @@ matlabd = datenum(matlabd);
 
 onera_desp_lib_load;
 
-if (numel(matlabd)==1) && (numel(in)>1),
+if (numel(matlabd)==1) && (numel(in)>1)
     matlabd = repmat(matlabd,size(in));
 end
 
-if (numel(in)==1) && (numel(matlabd)>1),
+if (numel(in)==1) && (numel(matlabd)>1)
     in = repmat(in,size(matlabd));
 end
 
@@ -57,9 +57,9 @@ ntime = numel(in);
 options = onera_desp_lib_options(options);
 
 Nmax = onera_desp_lib_ntime_max; % maximum array size in fortran library
-if ntime > Nmax, % break up into multiple calls
+if ntime > Nmax % break up into multiple calls
     out = nan(ntime,1);
-    for i = 1:Nmax:ntime,
+    for i = 1:Nmax:ntime
         ii = i:min(i+Nmax-1,ntime);
         [out(ii)] = onera_desp_lib_get_field(which,options,matlabd(ii),in(ii));
     end
@@ -73,7 +73,7 @@ PhiPtr = libpointer('doublePtr',in);
 calllib('onera_desp_lib','lstar_phi1_',ntime,whichinv,options,iyear,idoy,LstarPtr,PhiPtr);
 % have to do this next bit because Ptr's aren't really pointers
 
-if (whichinv == 1),%lstar2phi
+if (whichinv == 1)%lstar2phi
     out = get(PhiPtr,'value');
 else % phi2lstar
     out = get(LstarPtr,'value');

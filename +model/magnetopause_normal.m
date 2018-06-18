@@ -30,9 +30,9 @@ function [mindist,nvec] = magnetopause_normal(pos_Re_gsm, IMF_Bz_nT, swp_nPa, mo
 
 % TODO: vectorize, so that input can be vectors
 
-if nargin == 0,
+if nargin == 0
     help model.magnetopause_normal;return;
-elseif nargin==3,
+elseif nargin==3
     modelFlag = 'mp_shue1997';
     Alfv_Mach = 4;
 elseif nargin==4
@@ -60,7 +60,7 @@ else
     alpha = ( 0.58 -0.01*IMF_Bz_nT)*( 1.0 +0.01*swp_nPa);
  
     if IMF_Bz_nT>=0, r0 = (11.4 +0.013*IMF_Bz_nT)*swp_nPa^(-1.0/6.6);
-    else             r0 = (11.4 +0.140*IMF_Bz_nT)*swp_nPa^(-1.0/6.6);
+    else,            r0 = (11.4 +0.140*IMF_Bz_nT)*swp_nPa^(-1.0/6.6);
     end
     irf.log ('warning','Shue et al., 1997 model used.')
 end

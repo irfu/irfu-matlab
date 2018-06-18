@@ -26,18 +26,18 @@ disp('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
 
 %% Defaults and variables
 persistent s metaNames datasetNames indexFile
-linkUrlFile = 'http://www.space.irfu.se/cluster/matlab/indexCaaMeta.mat';
+linkUrlFile = 'https://www.space.irfu.se/cluster/matlab/indexCaaMeta.mat';
 
 %% empty arguments > show help
-if nargin==0,
+if nargin==0
 	help c_caa_meta;
 	return;
 end
 	
 %% Locating index file
-if isempty(indexFile) || ~exist(indexFile,'file'), % first usage or file removed
+if isempty(indexFile) || ~exist(indexFile,'file') % first usage or file removed
 	indexFile = 'indexCaaMeta.mat'; % default file name
-	if ~exist(indexFile,'file');
+	if ~exist(indexFile,'file')
 		indexFile = irf.get_file(linkUrlFile,'caa','indexCaaMetaFile');
 	end
 end
@@ -55,7 +55,7 @@ if 	nargin==1 && ischar(varargin{1}) && any(strfind(varargin{1},'__')) % CAA var
 	display_fields(parVar);
 	if nargout==1, out=parVar;end
 else
-	if isempty(s),
+	if isempty(s)
 		load(indexFile,'s');
 		metaNames={s(:).name};
 		datasetNames=arrayfun(@(x) x.name(6:end),s,'uniformoutput',false);
@@ -67,13 +67,13 @@ else
 		if ischar(filter)
 			iFind=cellfun(@(x) any(strfind(lower(x),lower(filter))),datasetNames);
 			iSelected=iSelected & iFind(:);
-			if nargin==1, % check if there is identifcal fit
+			if nargin==1 % check if there is identifcal fit
 				iEqual=cellfun(@(x) strcmpi(x,filter),datasetNames);
 			end
 		end
 	end
 	if sum(iSelected)>0
-		if nargout == 1,
+		if nargout == 1
 			if sum(iSelected)==1
 				load(indexFile,metaNames{iSelected});
 				eval(['out = ' metaNames{iSelected} ';']);
@@ -87,8 +87,8 @@ else
 			end
 			return;
 		end
-		if sum(iSelected)==1 ||  any(iEqual),
-			if any(iEqual),
+		if sum(iSelected)==1 ||  any(iEqual)
+			if any(iEqual)
 				ind=find(iEqual);
 			else
 				ind=find(iSelected);
@@ -100,14 +100,14 @@ else
 				display_fields(dataSet);
 				parameters=dataSet.PARAMETERS.PARAMETER;
 				disp('PARAMETERS:');
-				for j=1:numel(parameters),
+				for j=1:numel(parameters)
 					disp([num2str(j) '. ' mat_output(parameters{j}.PARAMETER_ID.Text)]);
 				end
 			catch
 			end
 			disp(' ');
 		end
-		if sum(iSelected) > 1,
+		if sum(iSelected) > 1
 			disp('----');
 			disp([num2str(sum(iSelected)) ' datasets correspond selection']);
 			cellfun(@(x) fprintf('%s\n',x),vertcat(mat_output(datasetNames(iSelected),1)), 'UniformOutput',false);
@@ -122,7 +122,7 @@ function display_fields(dataSet)
 disp(' ');
 fn=fieldnames(dataSet);
 for j=1:numel(fn)
-	if isfield(dataSet.(fn{j}),'Text'),
+	if isfield(dataSet.(fn{j}),'Text')
 		if strfind(dataSet.(fn{j}).Text,' ') % text includes many words
 			disp([fn{j} ': ' dataSet.(fn{j}).Text]);
 		else
@@ -134,14 +134,14 @@ end
 function outStr=mat_output(inStr,forceFlag)
 % if string is caa variable output link
 % if forceFlag defined and equal to one, force matlab linked output
-if nargin == 1, 
+if nargin == 1 
 	forceFlag = false;
 end
-if ~forceFlag && any(strfind(inStr,'__')),
+if ~forceFlag && any(strfind(inStr,'__'))
 	forceFlag = true;
 end
 
-if forceFlag,
+if forceFlag
 	if ischar(inStr)
 		outStr=['<a href="matlab: c_caa_meta ' ...
 			inStr '">' inStr '</a>' ];

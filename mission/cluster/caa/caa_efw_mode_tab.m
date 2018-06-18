@@ -30,7 +30,7 @@ t_start_save = [];
 t_stop_save = [];
 fdm_save = {};
 
-if ~isempty(t_fdm);
+if ~isempty(t_fdm)
 	% this info is needed if next interval has no data
 	prev_ok = 1;
 	t_end_last_interv = t_fdm(end);
@@ -107,7 +107,7 @@ if ~isempty(t_fdm);
 				t_start_save(l+1) = t_fdm_last;
 				% if the change happened exactly at the boundary between intervals
 				if ii_all(jj)-1 >= 1, t_stop_save(l+1) = t_fdm(ii_all(jj)-1);
-				else t_stop_save(l+1) = t_end_last_interv; 
+				else, t_stop_save(l+1) = t_end_last_interv; 
 				end
 		
 				for j=1:length(var_list)
@@ -147,6 +147,6 @@ if length(var_list)>1
 else
 	if exist(['fdm_save_' var_list{1}],'var')
 		eval(['fdm_save=fdm_save_' var_list{1} ';']);
-	else fdm_save = [];
+	else, fdm_save = [];
 	end
 end

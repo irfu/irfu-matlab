@@ -9,28 +9,28 @@ function filePath=get_file(fileUrlLink,varargin)
 %		the next matlab session. Uses DATASTORE.
 %
 %	Example:
-%		linkUrlFile = 'http://www.space.irfu.se/cluster/matlab/indexCaaMeta.mat';
+%		linkUrlFile = 'https://www.space.irfu.se/cluster/matlab/indexCaaMeta.mat';
 %		fileIndexCaa = irf.get_file(linkUrlFile,'caa','indexFile');
 %
 
 ii = strfind(fileUrlLink,'/');
 fileName = fileUrlLink(ii(end)+1:end);
 
-if nargin==1,
+if nargin==1
 	useDatastore = false;
-elseif nargin==3,
+elseif nargin==3
 	useDatastore = true;
 	appName = varargin{1};
 	keyName = varargin{2};
 end
 if useDatastore
-	if ~exist(fileName,'file'); % file is not on matlab path
+	if ~exist(fileName,'file') % file is not on matlab path
 		temp = datastore(appName,keyName); % returned saved file path
 		if isempty(temp) % no path saved from earlier sessions
 			[filePath,status] = get_index_file();
 			if ~status, return; end
 		else
-			if ~exist(temp,'file'), % check if there is no file at the specified location
+			if ~exist(temp,'file') % check if there is no file at the specified location
 				datastore('@delete',appName,keyName); % remove the keyname because points to nonexisting file
 				[filePath,status] = get_index_file();
 				if ~status, return; end
@@ -43,7 +43,7 @@ else
 	
 end
 
-if nargout == 0,
+if nargout == 0
 	clear filePath;
 end
 
@@ -59,8 +59,8 @@ end
 			fileDir = tempname;
 			mkdir(fileDir);
 			filePath = [fileDir filesep fileName];
-			[f,status]=urlwrite(fileUrlLink,filePath);
-			if status,
+			[f,status]=urlwrite(fileUrlLink,filePath); %#ok<URLWR> websave introduced in R2014b
+			if status
 				disp('Success!');
 				if useDatastore
 					datastore(appName,keyName,f);

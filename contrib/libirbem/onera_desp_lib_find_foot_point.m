@@ -64,11 +64,11 @@ function [Xfoot,Bfoot,BfootMag] = onera_desp_lib_find_foot_point(kext,options,sy
 % IMPORTANT: all inputs must be present. For those which are not used a dummy value can be provided.
 %
 
-if nargin < 10,
+if nargin < 10
     maginput = [];
 end
 
-if ischar(hemi_flag),
+if ischar(hemi_flag)
     switch(upper(hemi_flag))
         case {'','SAME'}, hemi_flag = 0;
         case {'N','NORTH'}, hemi_flag = +1;
@@ -88,16 +88,16 @@ ntime = length(x1);
 kext = onera_desp_lib_kext(kext);
 options = onera_desp_lib_options(options);
 sysaxes = onera_desp_lib_sysaxes(sysaxes);
-if isempty(maginput),
+if isempty(maginput)
     maginput = nan(ntime,25);
 end
-if (size(maginput,1)==25) && (size(maginput,2)~=25), % 25xN
+if (size(maginput,1)==25) && (size(maginput,2)~=25) % 25xN
     maginput = maginput'; % Nx25
 end
-if size(maginput,1) ~= ntime,
+if size(maginput,1) ~= ntime
     maginput = repmat(maginput,ntime,1);
 end
-if length(matlabd)==1,
+if length(matlabd)==1
     matlabd = repmat(matlabd,ntime,1);
 end
 
@@ -105,13 +105,13 @@ maginput = onera_desp_lib_maginputs(maginput); % NaN to baddata
 
 
 [iyear,idoy,UT] = onera_desp_lib_matlabd2yds(matlabd);
-Xfoot = repmat(nan,ntime,3);
-Bfoot = repmat(nan,ntime,3);
-BfootMag = repmat(nan,ntime,1);
+Xfoot = nan(ntime,3);
+Bfoot = nan(ntime,3);
+BfootMag = nan(ntime,1);
 XfootPtr = libpointer('doublePtr',nan(3,1));
 BfootPtr = libpointer('doublePtr',nan(3,1));
 BfootMagPtr = libpointer('doublePtr',nan);
-for i = 1:ntime,
+for i = 1:ntime
     calllib('onera_desp_lib','find_foot_point1_',kext,options,sysaxes,iyear(i),idoy(i),UT(i),x1(i),x2(i),x3(i),stop_alt,hemi_flag,maginput(i,:),...
         XfootPtr,BfootPtr,BfootMagPtr);
     % have to do this next bit because Ptr's aren't really pointers

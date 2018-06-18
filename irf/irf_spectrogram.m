@@ -33,7 +33,7 @@ function [hout,hcb] = irf_spectrogram(varargin)
 % ----------------------------------------------------------------------------
 
 [h,args,nargs] = axescheck(varargin{:});
- if isempty(h),
+ if isempty(h)
   fig = get(groot,'CurrentFigure'); h = get(fig,'Children');
 end
 
@@ -41,6 +41,7 @@ end
 flagLog = true;            % want log10(data) dy default
 f_multiplier=1;         % default value using Hz units when units not specified, can be overwritten later if kHz makes labels more reasonable
 fitColorbarLabel = true;% fit font size of colorbar label to fit into axes size
+showColorbar = true;
 
 %% Check input
 if nargs==1 || ischar(args{2})    % irf_spectrogram(specrec,[options])
@@ -49,7 +50,7 @@ if nargs==1 || ischar(args{2})    % irf_spectrogram(specrec,[options])
 	if ~isfield(specrec,'df'), specrec.df=[];end
     for iArgs = 2:numel(args)
         flagValue = args{iArgs};
-        if ischar(flagValue),
+        if ischar(flagValue)
             switch lower(flagValue)
                 case 'donotfitcolorbarlabel'
                     fitColorbarLabel = false;
@@ -57,6 +58,8 @@ if nargs==1 || ischar(args{2})    % irf_spectrogram(specrec,[options])
                     flagLog = true;
                 case 'lin'
                     flagLog = false;
+                case 'donotshowcolorbar'
+                    showColorbar = false;
 				otherwise
 					errStr= ['irf_spectrogram(), unknown flag:' flagValue];
                     irf.log('critical',errStr);
@@ -68,7 +71,7 @@ elseif nargs==3 % irf_spectrogram(t,Pxx,F)
     t=args{1};Pxx=args{2};F=args{3};
 	if size(Pxx,2) == length(t), Pxx = Pxx'; end
 	if iscell(Pxx), specrec.p = Pxx;
-	else specrec.p = {Pxx};
+	else, specrec.p = {Pxx};
 	end
 	specrec.f = F;
 	specrec.t = t;
@@ -79,7 +82,7 @@ elseif	nargs==4 % irf_spectrogram(t,Pxx,F,dt)
 	specrec.t = t;
 	if (size(Pxx,1) ~= length(t)) && (size(Pxx,2) == length(t)), Pxx = Pxx'; end
 	if iscell(Pxx),specrec.p = Pxx;
-	else specrec.p = {Pxx};
+	else, specrec.p = {Pxx};
 	end
 	specrec.f = F;
 	specrec.dt = dt;
@@ -89,7 +92,7 @@ elseif	nargin==5 % irf_spectrogram(t,Pxx,F,dt,df)
     specrec.t = t;
 	if (size(Pxx,1) ~= length(t)) && (size(Pxx,2) == length(t)), Pxx = Pxx'; end
 	if iscell(Pxx),specrec.p = Pxx;
-	else specrec.p = {Pxx};
+	else, specrec.p = {Pxx};
 	end
 	specrec.f = F;
 	specrec.dt = dt;
@@ -121,7 +124,7 @@ if ndata<1, if nargout>0, hout=h; end, return, end
 load caa/cmap.mat
 
 % Initiate figure if handles not given
-if isempty(h),
+if isempty(h)
 	h=irf_plot(ncomp,'newfigure');
 end
 
@@ -133,9 +136,9 @@ for comp=1:min(length(h),ncomp)
 	
 	ud = get(gcf,'userdata');
 	ii = find(~isnan(specrec.t));
-	if isfield(ud,'t_start_epoch'),
+	if isfield(ud,'t_start_epoch')
 		t_start_epoch = double(ud.t_start_epoch);
-	elseif specrec.t(ii(1))> 1e8,
+	elseif specrec.t(ii(1))> 1e8
 		% Set start_epoch if time is in isdat epoch
 		% Warn about changing t_start_epoch
 		t_start_epoch = double(specrec.t(ii(1)));
@@ -152,8 +155,8 @@ for comp=1:min(length(h),ncomp)
 		%		specrec.t = [specrec.t-dt; specrec.t+dt];
 		%		specrec.p(comp) = {[specrec.p{comp}; specrec.p{comp}]};
 	end
-	if ~isfield(specrec,'f_unit') && ~isfield(specrec,'f_label'), % if not specified assume units are Hz
-		if max(specrec.f) > 2000, % check whether to use kHz
+	if ~isfield(specrec,'f_unit') && ~isfield(specrec,'f_label') % if not specified assume units are Hz
+		if max(specrec.f) > 2000 % check whether to use kHz
 			specrec.f=specrec.f*double(1e-3);
 			f_multiplier=1e-3;
 			specrec.f_unit='kHz';
@@ -180,24 +183,24 @@ for comp=1:min(length(h),ncomp)
 		ff=fnew;
 	else                   % if frequency steps are given
 		if isstruct(specrec.df)                % if df is structure df.plus and df.minus should be specified
-			if numel(specrec.df.plus)==1,           % if df.plus is scalar
+			if numel(specrec.df.plus)==1           % if df.plus is scalar
 				dfplus=double(specrec.df.plus);   %    assign it
-			elseif min(size(specrec.df.plus))==1,   % if df.plus is vector 
+			elseif min(size(specrec.df.plus))==1   % if df.plus is vector 
 				dfplus=double(specrec.df.plus(:))'; %    make df.plus row vector
 				dfplus=repmat(dfplus,size(ff,1),1); %    replicate to size of ff
 			else                                    % if df.plus is matrix
 				dfplus=double(specrec.df.plus);     %    assign it
 			end
-			if numel(specrec.df.minus)==1,          % if df.minus is scalar
+			if numel(specrec.df.minus)==1          % if df.minus is scalar
 				dfminus=double(specrec.df.minus); %    assign it
-			elseif min(size(specrec.df.minus))==1,  % if df.minus is vector
+			elseif min(size(specrec.df.minus))==1  % if df.minus is vector
 				dfminus=double(specrec.df.minus(:))';%    make df.minus row vector
 				dfminus=repmat(dfminus,size(ff,1),1);%    replicate to size of ff
 			else                                    % if df.minus is matrix
 				dfminus=double(specrec.df.minus);   %     assign it
 			end
 		else
-			if min(size(specrec.df))==1,       % if df is vector or scalar
+			if min(size(specrec.df))==1       % if df is vector or scalar
 				dfplus=double(specrec.df(:))'; %    make df row vector
 			else                               % if df is matrix
 				dfplus=double(specrec.df);     %    assign it
@@ -243,7 +246,7 @@ for comp=1:min(length(h),ncomp)
     ppnew(1:2:end,:)=pp;
     ppnew(2:2:end,:)=NaN;
     pp=ppnew;
-    if min(size(ff))~= 1, % ff is matrix
+    if min(size(ff))~= 1 % ff is matrix
         ffnew=zeros(size(ff).*[2 1]);
         ffnew(1:2:end,:)=ff;
         ffnew(2:2:end,:)=ff;
@@ -252,7 +255,7 @@ for comp=1:min(length(h),ncomp)
     
 	tag=get(h(comp),'tag'); % keep tag during plotting
 	ud=get(h(comp),'userdata'); % keep tag during plotting
-	if min(size(ff))==1, % frequency is vector
+	if min(size(ff))==1 % frequency is vector
 		if ~flagLog || any(min(pp)<0) % spectra include negative values linear spectrogram
 			pcolor(h(comp),double(tt-t_start_epoch),ff,double(pp'))
 		else
@@ -274,42 +277,44 @@ for comp=1:min(length(h),ncomp)
 	set(h(comp),'TickDir','out')
 	%check ylabel
 	if ~isfield(specrec,'f_label')
-		if ~isfield(specrec,'f_unit'),
+		if ~isfield(specrec,'f_unit')
 			specrec.f_unit='a.u.';
 		end
 		specrec.f_label=['[' specrec.f_unit ']'];
 	end
-	ylabel(h(comp),specrec.f_label)
-	
-	if isfield(specrec,'p_label')
-    if isa(h(comp),'handle'), hcb = colorbar(h(comp)); % HG2
-    else hcb = colorbar('peer',h(comp));
-    end
-    drawnow
-		posCb = get(hcb,'Position');
-    posAx = get(h(comp),'Position');
-    drawnow
-		set(hcb,'TickDir','out','Position',...
-			[posCb(1) posCb(2)+posCb(4)*0.05 posCb(3)*.75 posCb(4)*0.9])
-		set(h(comp),'Position',[posAx(1) posAx(2) (posCb(1)-posAx(1))*0.97 posAx(4)])
-		ylabel(hcb,specrec.p_label);
-        if fitColorbarLabel
-            irf_colorbar_fit_label_height(hcb);
+    ylabel(h(comp),specrec.f_label)
+    
+    if showColorbar
+        if isfield(specrec,'p_label')
+            if isa(h(comp),'handle'), hcb = colorbar(h(comp)); % HG2
+            else, hcb = colorbar('peer',h(comp));
+            end
+            drawnow
+            posCb = get(hcb,'Position');
+            posAx = get(h(comp),'Position');
+            drawnow
+            set(hcb,'TickDir','out','Position',...
+                [posCb(1) posCb(2)+posCb(4)*0.05 posCb(3)*.75 posCb(4)*0.9])
+            set(h(comp),'Position',[posAx(1) posAx(2) (posCb(1)-posAx(1))*0.97 posAx(4)])
+            ylabel(hcb,specrec.p_label);
+            if fitColorbarLabel
+                irf_colorbar_fit_label_height(hcb);
+            end
         end
-	end
-	if comp==min(length(h),ncomp), irf_timeaxis;
-	else set(h(comp),'XTicklabel','')
-	end
+    end
+    if comp==min(length(h),ncomp), irf_timeaxis;
+    else, set(h(comp),'XTicklabel','')
+    end
 end
 
 if nargout>0, hout=h; end
 
 function zoom_in_if_necessary(h)
 ud=get(h,'userdata');
-if isfield(ud,'zoom_x'),
+if isfield(ud,'zoom_x')
 	disp('zooming in the updated plot')
 	irf_zoom(h,'x',ud.zoom_x);
-	if ud.zoom_x(1) > 1e8 && ud.zoom_x(1) < 1e10, % isdat epoch
+	if ud.zoom_x(1) > 1e8 && ud.zoom_x(1) < 1e10 % isdat epoch
 		irf_timeaxis(h,'nolabel');
 	end
 end

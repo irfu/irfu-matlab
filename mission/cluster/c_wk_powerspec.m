@@ -39,17 +39,17 @@ function [power,freq,wavenumber] = c_wk_powerspec(VL1,B,trange, SCnum, probecomb
 % If data is TSeries, data is converted to the older format
 
 % Begin temporary fix to convert TS format to older format
-if isa(VL1,'TSeries'), 
+if isa(VL1,'TSeries') 
     ttemp = VL1.time.epochUnix;
     datatemp = double(VL1.data);
     VL1 = [ttemp, double(datatemp)];
 end
-if isa(B,'TSeries'), 
+if isa(B,'TSeries') 
     ttemp = B.time.epochUnix;
     datatemp = double(B.data);
     B = [ttemp, datatemp];
 end
-if isa(trange,'EpochTT'), 
+if isa(trange,'EpochTT') 
     trange = trange.epochUnix;
 end
 % End of temporary fix
@@ -121,7 +121,7 @@ Power = 0.5*(cell2mat(W1c.p).*conj(cell2mat(W1c.p)) + cell2mat(W2c.p).*conj(cell
 numf = 200;
 cav = 128;
 N = floor(L/cav)-1;
-posav = cav/2 + [0:1:N]*cav;
+posav = cav/2 + (0:1:N)*cav;
 avtimes = times(posav);
 Bs = irf_resamp(B,avtimes);
 thetap1b = irf_resamp(thetap1b,avtimes);
@@ -147,7 +147,7 @@ cross34x.f = W1c.f;
      
      kval = zeros(N+1,numf);
      
-for q = [1:1:numf]
+for q = 1:numf
      kval(:,q) = th(:,q)./rcos;
 end
 
@@ -159,9 +159,9 @@ maxk = pi/min(rcos);
 dk = (maxk - mink)/numk; 
 kvec = mink + [0:1:numk-1]*dk;
 
-if 1,
+if 1
 for m = [1:1:N+1]
-    for q = [1:1:numf];
+    for q = 1:numf
         knumber = floor((kval(m,q)-mink)/dk)+1;
         disprel(knumber,q) = disprel(knumber,q) + Powerav(m,q);
     end

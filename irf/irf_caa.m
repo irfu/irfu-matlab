@@ -8,7 +8,7 @@ flag_show_menu=1;
 flag_variable_menu=1;
 flag_show_data_menu=1;
 while 1
-    if flag_show_menu,
+    if flag_show_menu
         disp('************************************************************************************')
         disp('********** IRF CAA *********')
         disp('m) menu')
@@ -54,7 +54,7 @@ while 1
             xx=whos;
             for j=1:size(xx,1)
                 if strcmp(xx(j).class,'dataobj')
-                    if ~strcmp(xx(j).name,'current_caa_file'),
+                    if ~strcmp(xx(j).name,'current_caa_file')
                         disp(xx(j).name)
                     end
                 end
@@ -63,7 +63,7 @@ while 1
             xx=whos;i_dataobj=[];name_dataobj={};
             for j=1:size(xx,1)
                 if strcmp(xx(j).class,'dataobj')
-                    if ~strcmp(xx(j).name,'current_caa_file'),
+                    if ~strcmp(xx(j).name,'current_caa_file')
                         i_dataobj=[i_dataobj j];
                         disp([num2str(numel(i_dataobj)) '. ' [xx(j).name]])
                     end
@@ -73,8 +73,8 @@ while 1
             name_caa_file=xx(i_dataobj(var_caa_file_num)).name;
             eval(['current_caa_file=' name_caa_file ';']);
             flag_caa_file_menu=1;
-            while flag_caa_file_menu,
-                if flag_variable_menu,
+            while flag_caa_file_menu
+                if flag_variable_menu
                     disp('************************************************************************************')
                     disp(['********** IRF CAA. CAA_OBJECT: ' name_caa_file])
                     disp('m) menu')
@@ -98,7 +98,7 @@ while 1
                     case 'r'
                         param=getfield(get(current_caa_file,'VariableAttributes'),'PARAMETER_TYPE');
                         i_data=[];
-                        for j=1:size(param,1),
+                        for j=1:size(param,1)
                             yy=param(j,1);i_data=[i_data j]; data_name=yy{1};
                             disp([num2str(numel(i_data)) '. ' data_name]);
                         end
@@ -107,8 +107,8 @@ while 1
                         disp(['Reading: ' data_name]);
                         eval([data_name '= get(current_caa_file,''' data_name ''');']);
                         nelem_data=eval(['numel(' data_name '.data);']);
-                        if nelem_data < 50,
-                            disp(['Value: ']);
+                        if nelem_data < 50
+                            disp('Value: ');
                             eval(['xx=' data_name '.data;']);
                             disp(xx);clear xx;
                         else
@@ -117,8 +117,8 @@ while 1
                     case 'd'
                         param=getfield(get(current_caa_file,'VariableAttributes'),'PARAMETER_TYPE');
                         i_data=[];
-                        for j=1:size(param,1),
-                            if strcmp(param(j,2),'Data'),
+                        for j=1:size(param,1)
+                            if strcmp(param(j,2),'Data')
                                 yy=param(j,1);i_data=[i_data j]; data_name=yy{1};
                                 disp([num2str(numel(i_data)) '. ' data_name]);
                             end
@@ -126,8 +126,8 @@ while 1
                         var_data_num=irf_ask('Choose data>','var_data_num',1);
                         yy=param(i_data(var_data_num),1);data_name=yy{1};
                         flag_caa_data_menu=1;
-                        while flag_caa_data_menu,
-                            if flag_show_data_menu,
+                        while flag_caa_data_menu
+                            if flag_show_data_menu
                                 disp('************************************************************************************')
                                 disp(['********** IRF CAA. CAA_OBJECT: ' name_caa_file '.' data_name])
                                 disp('m) menu')
@@ -147,15 +147,15 @@ while 1
                                 case 'p'
                                     plot(current_caa_file, data_name);
                                 otherwise
-                                    try eval(var_caa_data_menu); catch end
+                                    try eval(var_caa_data_menu); catch, end
                             end
                         end
 
                     case 's'
                         param=getfield(get(current_caa_file,'VariableAttributes'),'PARAMETER_TYPE');
                         i_data=[];
-                        for j=1:size(param,1),
-                            if strcmp(param(j,2),'Support_Data'),
+                        for j=1:size(param,1)
+                            if strcmp(param(j,2),'Support_Data')
                                 yy=param(j,1);i_data=[i_data j]; data_name=yy{1};
                                 disp([num2str(numel(i_data)) '. ' data_name]);
                             end
@@ -164,7 +164,7 @@ while 1
                         get(current_caa_file,'VariableAttributes')
                         ga=get(current_caa_file,'VariableAttributes');
                         ssf=fieldnames(ga);
-                        for jj=1:length(ssf),
+                        for jj=1:length(ssf)
                             disp('*************************************')
                             disp(ssf{jj});
                             disp('*************************************')
@@ -174,14 +174,14 @@ while 1
                         get(current_caa_file,'GlobalAttributes')
                         ga=get(current_caa_file,'GlobalAttributes');
                         ssf=fieldnames(ga);
-                        for jj=1:length(ssf),
+                        for jj=1:length(ssf)
                             disp('*************************************')
                             disp(ssf{jj});
                             disp('*************************************')
                             eval(['disp(ga.' ssf{jj} ')'])
                         end
                     otherwise
-                        try eval(var_caa_file_menu); catch end
+                        try eval(var_caa_file_menu); catch ,end
                 end
             end
         otherwise
@@ -206,13 +206,13 @@ if 1
           var_additional_item=irf_ask('Variable? [%]>','var_additional_item','v');
           switch var_additional_item
                     case 'vv'
-                        for jj=1:size(cdf_file_info.Variables,1);
+                        for jj=1:size(cdf_file_info.Variables,1)
                             cdf_var=cdf_file_info.Variables{jj,1};
                             disp('======================================')
                             disp(cdf_var);
                             disp('======================================')
                             dd=spdfcdfread(cdf_file,'Variables',{cdf_var});
-                            if size(dd,1)>10,
+                            if size(dd,1)>10
                                 disp([num2str(size(dd,1)) ' samples. 1st sample below.']);
                                 if iscell(dd), disp(dd{1}), else, disp(dd(1,:)), end
                             else
@@ -223,7 +223,7 @@ if 1
                   var_to_read=irf_ask('Variable name? [%]>','var_to_read','');
                   eval([var_to_read '= spdfcdfread(''' cdf_file ''', ''VARIABLES'', ''' var_to_read ''');']);
               case 't'
-                  if i_time_series_variable == 0,
+                  if i_time_series_variable == 0
                       irf_log('load','there are no time variables identified')
                   elseif i_time_series_variable == 1
                       var_name='all';
@@ -231,18 +231,18 @@ if 1
                   else
                       disp('=== Choose time dependant variable ===');
                       disp('0) all time time dependant variables');
-                      for j=1:i_time_series_variable,
+                      for j=1:i_time_series_variable
                           disp([num2str(j) ') ' time_series_variables{j}]);
                       end
                       var_item=irf_ask('Variable? [%]>','var_item',0);
-                      if var_item==0, % read all
+                      if var_item==0 % read all
                           var_name='all';
-                      elseif var_item==-2,
+                      elseif var_item==-2
                           return;
-                      elseif var_item==-1,
+                      elseif var_item==-1
                       else
                           var_name={''};
-                          for j=1:length(var_item),
+                          for j=1:length(var_item)
                               var_name(j)=time_series_variables(var_item(j));
                           end
                       end
@@ -253,7 +253,7 @@ if 1
           end
       end
   end
-  if strcmp(var_name,'all'),
+  if strcmp(var_name,'all')
     var_name=time_series_variables;
   end
 else
@@ -294,7 +294,7 @@ for k=2:numel(variables)
   eval([variables{k} '=[t double(var)];' ]);
 end
 
-if nargout==0,
+if nargout==0
  for k=2:numel(variables)
    assignin('caller',variables{k},eval(variables{k}));
  end

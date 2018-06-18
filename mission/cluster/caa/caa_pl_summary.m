@@ -15,7 +15,7 @@ elseif nargin==1
 	if strcmp(sp,'noexport'), sp = pwd; do_export = 0; end
 elseif nargin==2
 	if strcmp(op,'noexport'), do_export = 0; 
-	else irf_log('fcal',['unknown option ' op])
+	else, irf_log('fcal',['unknown option ' op])
 	end
 end
 
@@ -25,13 +25,13 @@ cd(sp);
 % Save the screen size
 	sc_s = get(0,'ScreenSize');
 	if sc_s(3)==1600 && sc_s(4)==1200, scrn_size = 2;
-	else scrn_size = 1;
+	else, scrn_size = 1;
 	end
 	
 for j=1:4
 	figure(j)
 	if scrn_size==1 ,set(gcf,'position',[91  40 909 640])
-	else set(gcf,'position',[691   159   909   916])
+	else, set(gcf,'position',[691   159   909   916])
 	end
 end
 

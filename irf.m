@@ -16,7 +16,7 @@ function [out,out1]=irf(varargin)
 % [out] = IRF('irbem')
 %
 % Check if ONERA IRBEM library is installed
-% http://craterre.onecert.fr/prbem/irbem/description.html
+% https://craterre.onecert.fr/prbem/irbem/description.html
 %
 % [out] = IRF('ceflib')
 %
@@ -36,7 +36,7 @@ logFileUrl = 'https://raw.githubusercontent.com/irfu/irfu-matlab/master/log.txt'
 
 %% Input check
 if nargin == 0
-  setenv('LC_ALL','C'); % temporar fix for R2014a problems on Unix http://goo.gl/Sq1it7
+  setenv('LC_ALL','C'); % temporar fix for R2014a problems on Unix, https://www.mathworks.com/matlabcentral/answers/126994-locale-system-error
   irf('check_path');
   irf('check');
   irf('ceflib');
@@ -62,7 +62,7 @@ switch lower(action)
     disp(['irfu-matlab version: ' currentVersion]);
     fprintf('Checking if you have latest irfu-matlab... ');
     try
-      logText      = urlread(logFileUrl);
+      logText = urlread(logFileUrl); %#ok<URLRD> webread introduced in R2014b
     catch
       disp('Not connected to internet');
       disp(['  Your irfu-matlab: ' currentVersion ...
@@ -200,7 +200,9 @@ switch lower(action)
         if ismac
           disp('IRBEM .. not OK. Please check that:');
           disp('1) you have Xcode installed');
-          disp('2) open /Applications/MATLAB_R2013b.app/bin/mexopts.sh');
+          disp('2) you have GFortran installed');
+          disp('   if not, download GF 5.1 from http://hpc.sourceforge.net');
+          disp('3) open /Applications/MATLAB_R2017b.app/bin/mexopts.sh');
           disp('   check that in maci64 section MAC OS version number');
           disp('   corresponds to your OS version, e.g. 10.9 for Mavericks.');
           disp('   run in matlab > mex -setup');

@@ -17,7 +17,7 @@ classdef EpochCdf16 < GenericTimeArray
 		function obj = EpochCdf16(inp,inp2)
 			if nargin==0, return, end
 			if nargin==2, obj.ps = inp2; end
-			if isa(inp,'double'),
+			if isa(inp,'double')
 				if min(size(inp))>1
 					error('irf:EpochCdf:EpochCdf:badInputs',...
 						'double input (CDF epoch) must be a columt or row vector')

@@ -52,11 +52,11 @@ irf_legend(h(1),{'180 deg'},[0.91 0.76],'color','b')
 jetcolor = colormap('jet');
 lll = length(jetcolor(:,1));
 vcolors = floor(lll/length(energypad));
-vcolors = [1:length(energypad)]*vcolors;
+vcolors = (1:length(energypad))*vcolors;
     
 c_eval('plot(h(2),thetapad,squeeze(paddist(?,:)),''color'',jetcolor(vcolors(?),:));',1);
 hold(h(2),'on');
-c_eval('plot(h(2),thetapad,squeeze(paddist(?,:)),''color'',jetcolor(vcolors(?),:));',[2:32]);
+c_eval('plot(h(2),thetapad,squeeze(paddist(?,:)),''color'',jetcolor(vcolors(?),:));', 2:32);
 hold(h(2),'off')
 ylabel(h(2),'f_e (s^3 km^{-6})');
 xlabel(h(2),'\theta (deg.)')

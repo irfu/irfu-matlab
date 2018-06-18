@@ -65,5 +65,5 @@ switch nAveragePoints
 end
 cor = sum(m(x==0)); % find missing points==0
 if cor==1, av = 0;
-else av = sum(x.*m)/(1-cor);
+else, av = sum(x.*m)/(1-cor);
 end

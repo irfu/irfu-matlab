@@ -7,7 +7,7 @@ units=get(hy,'units');
 set(hy,'units','normalized');
 temp=get(hy,'Extent');
 colorbarlabelheight = temp(4);
-while colorbarlabelheight>1.1,
+while colorbarlabelheight>1.1
   colorbar_label_fontsize=colorbar_label_fontsize*0.95;
   %set(hy,'fontsize',colorbar_label_fontsize,'position',labelposition);
   set(hy,'fontsize',colorbar_label_fontsize);

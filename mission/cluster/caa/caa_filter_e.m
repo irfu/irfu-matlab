@@ -42,7 +42,7 @@ value = 1e10;
 ind = round((data(:,1)-data(1,1))*sf+1);
 
 if 0
-	E = ones(ndata,nkomp)*value;
+	E = ones(ndata,nkomp)*value; %#ok<UNRCH>
 	E(ind,:) = data(:,2:end);
 	E( E(:,1)==value ,:) = NaN;
 
@@ -52,7 +52,7 @@ if 0
 	
 	n_start = 1;
 	if ndata>MAXDATA; n_end = MAXDATA;
-	else n_end = ndata;
+	else, n_end = ndata;
 	end
 	
 	EE = zeros(n_end,2*nw2+1);

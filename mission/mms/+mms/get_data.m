@@ -91,7 +91,9 @@ function res = get_data(varStr, Tint, mmsId)
 %     'Vhplus_gsm_hpca_srvy_l2','Vheplus_gsm_hpca_srvy_l2','Vheplusplus_gsm_hpca_srvy_l2','Voplus_gsm_hpca_srvy_l2',...
 %     'Phplus_gsm_hpca_srvy_l2','Pheplus_gsm_hpca_srvy_l2','Pheplusplus_gsm_hpca_srvy_l2','Poplus_gsm_hpca_srvy_l2',...
 %     'Thplus_gsm_hpca_srvy_l2','Theplus_gsm_hpca_srvy_l2','Theplusplus_gsm_hpca_srvy_l2','Toplus_gsm_hpca_srvy_l2',...
-%     'Nhplus_hpca_sitl'
+%     'Nhplus_hpca_sitl'.
+%  ASPOC:
+%     'aspoc_status'.
 %
 % Example:
 %   Tint = irf.tint('2015-09-21T00:00:00Z/2015-09-21T17:00:00Z');
@@ -140,6 +142,7 @@ vars = {'R_gse','R_gsm','V_gse','V_gsm',...
   'E2d_dsl_edp_brst_l2pre','E2d_dsl_edp_fast_l2pre','E2d_dsl_edp_brst_ql','E2d_dsl_edp_fast_ql',...
   'E2d_dsl_edp_l2pre','E2d_dsl_edp_fast_l2pre','E2d_dsl_edp_brst_l2pre',...
   'E_dsl_edp_l2pre','E_dsl_edp_fast_l2pre','E_dsl_edp_brst_l2pre',...
+  'E_ssc_edp_brst_l2a','E_ssc_edp_fast_l2a','E_ssc_edp_slow_l2a',...
   'E_ssc_edp_brst_l1b','E_ssc_edp_fast_l1b','E_ssc_edp_slow_l1b',...
   'Epar_edp_l2','Epar_edp_brst_l2','Epar_edp_fast_l2',...
   'V_edp_brst_l1b','V_edp_fast_l1b','V_edp_slow_l1b','V_edp_fast_sitl','V_edp_slow_sitl'...
@@ -228,7 +231,7 @@ vars = {'R_gse','R_gsm','V_gse','V_gsm',...
   'Vhplus_gsm_hpca_srvy_sitl','Vheplus_gsm_hpca_srvy_sitl','Vheplusplus_gsm_hpca_srvy_sitl','Voplus_gsm_hpca_srvy_sitl',...
   'Phplus_gsm_hpca_srvy_sitl','Pheplus_gsm_hpca_srvy_sitl','Pheplusplus_gsm_hpca_srvy_sitl','Poplus_gsm_hpca_srvy_sitl',...
   'Thplus_gsm_hpca_srvy_sitl','Theplus_gsm_hpca_srvy_sitl','Theplusplus_gsm_hpca_srvy_sitl','Toplus_gsm_hpca_srvy_sitl',...
-  'Nhplus_hpca_sitl'}; % XXX THESE MUST BE THE SAME VARS AS BELOW
+  'Nhplus_hpca_sitl','aspoc_status'}; % XXX THESE MUST BE THE SAME VARS AS BELOW
 if isempty(intersect(varStr,vars))
   errS = ['variable not recognized: ' varStr];
   irf.log('critical',errS);
@@ -258,6 +261,10 @@ switch varStr
       res = mms.db_get_ts(...
         ['mms' mmsIdS '_dfg_srvy_l2pre'],['mms' mmsIdS '_pos_' cS],Tint);
       if ~isempty(res), return, end
+      % Load from L2 B
+      res = mms.db_get_ts(...
+        ['mms' mmsIdS '_fgm_srvy_l2'],['mms' mmsIdS '_fgm_r_' cS '_srvy_l2'],Tint);
+      if ~isempty(res), return, end
       % Load from QL B
       res = mms.db_get_ts(...
         ['mms' mmsIdS '_dfg_srvy_ql'],['mms' mmsIdS '_ql_pos_' cS],Tint);
@@ -284,6 +291,11 @@ switch varStr
         % Load from L2pre B
         dTmp = mms.db_get_ts(['mms' mmsIdS '_dfg_srvy_l2pre'],...
           ['mms' mmsIdS '_pos_' cS],TintTmp);
+        if isempty(dTmp)
+          % Load from L2 B
+          dTmp = mms.db_get_ts(['mms' mmsIdS '_fgm_srvy_l2'],...
+            ['mms' mmsIdS '_fgm_r_' cS  '_srvy_l2'],TintTmp);
+        end
         if isempty(dTmp)
           % Load from QL B
           dTmp = mms.db_get_ts(['mms' mmsIdS '_dfg_srvy_ql'],...
@@ -312,6 +324,11 @@ switch varStr
       rTs = irf.ts_scalar(EpochTT(quality.time), quality.quality);
       res = rTs.tlim(Tint);
     end
+    return
+  case 'aspoc_status'
+    dsetName = ['mms', mmsIdS, '_aspoc_srvy_l2'];
+    pref = ['mms', mmsIdS, '_aspoc_status'];
+    res = mms.db_get_ts(dsetName, pref, Tint);
     return
 end
 
@@ -552,14 +569,20 @@ switch Vr.inst
           case 'V', dset = 'dce'; param = 'dcv_sensor';
         end
         pref = ['mms' mmsIdS '_edp_' param];
+      case 'l2a'
+        dset = 'dce2d';
+        switch Vr.param
+          case 'Phase', param = 'phase';
+          case {'Es12','Es34'}, param = ['espin_p' Vr.param(3:4)];
+          case 'Adcoff', param = 'adc_offset';
+          case 'E', param = 'dce'; 
+        end
+        pref = ['mms' mmsIdS '_edp_' param '_' Vr.tmmode '_' Vr.lev];
       otherwise
         switch Vr.param
           case 'E', dset = 'dce'; param = ['dce_' Vr.cs];
           case 'Epar', dset = 'dce'; param = 'dce_par_epar';
-          case 'E2d', dset = 'dce2d'; param = ['dce_' Vr.cs];
-          case 'Phase', dset = 'dce2d'; param = 'phase';
-          case {'Es12','Es34'}, dset = 'dce2d'; param = ['espin_p' Vr.param(3:4)];
-          case 'Adcoff', dset = 'dce2d'; param = 'adc_offset';
+          case 'E2d', dset = 'dce2d'; param = ['dce_' Vr.cs]; 
           case 'V', dset = 'scpot'; param = 'scpot';
           case 'V6', dset = 'scpot';  param = 'dcv';
           otherwise, error('unrecognized param')
@@ -677,6 +700,18 @@ end
             theta = dist.DEPEND_2.data;
             dist = mms.variable2ts(dist);
             dist = dist.tlim(Tint);
+            energy_data = mms.db_get_variable(dsetName,[pref '_energy_' Vr.tmmode],Tint);   
+            % energy delta_minus/plus 
+            % no 'DELTA_MINUS_VAR' or 'DELTA_PLUS_VAR' when loading
+            % 'PDi_fpi_brst_l2' from mms.get_data; please let wenya know if
+            % you change the following if ... else ... end section.
+            % 2018-04-19.
+            if (isfield(energy_data, 'DELTA_MINUS_VAR') && isfield(energy_data, 'DELTA_PLUS_VAR'))
+                energy_minus = squeeze(energy_data.DELTA_MINUS_VAR.data);
+                energy_plus = squeeze(energy_data.DELTA_PLUS_VAR.data);
+            else
+                irf.log('warning','DELTA_MINUS_VAR/DELTA_PLUS_VAR is not loaded.')                
+            end
             energy0 = mms.db_get_variable(dsetName,[pref '_energy0_' Vr.tmmode],Tint);
             energy1 = mms.db_get_variable(dsetName,[pref '_energy1_' Vr.tmmode],Tint);
             phi = mms.db_get_ts(dsetName,[pref '_phi_' Vr.tmmode],Tint);
@@ -696,6 +731,10 @@ end
               energy1 = energy1.data;
             end
             res = irf.ts_skymap(dist.time,dist.data,[],phi.data,theta,'energy0',energy0,'energy1',energy1,'esteptable',stepTable.data);
+            if (exist('energy_minus','var') && exist('energy_plus','var'))
+                res.ancillary.delta_energy_minus = energy_minus;
+                res.ancillary.delta_energy_plus = energy_plus;
+            end
           case 'fast'
             %dist = mms.db_get_variable(dsetName,[pref '_dist_' Vr.tmmode],Tint);
             if (length(Vr.param) == 3)  

@@ -6,19 +6,19 @@ function out=caa_msp(varargin)
 
 %% check inputs
 writeToFile = false;
-if nargin >= 3, 
+if nargin >= 3 
 	tint = varargin{1};
 	cl_id = varargin{2};
 	filterString = varargin{3};
 else
 	return;
 end
-if nargin == 4, % filename specified
+if nargin == 4 % filename specified
   writeToFile = true;
   fileName = varargin{4};
 end
 %% check filter
-if strfind(filterString,'PSE:')
+if strfind(filterString,'PSE:') %#ok<STRIFCND>
 	dataObj = ['C' num2str(cl_id) '_JP_PSE'];
 	regionFilter = filterString(strfind(filterString,':')+1 : end);
 else 

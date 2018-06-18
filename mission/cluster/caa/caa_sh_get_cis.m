@@ -16,7 +16,7 @@ c_ctl('init')
 c_ctl('set',5,'isdat_db','130.238.30.32:8')
 
 if exist('/data/caa/l1/mPlan.mat','file'), load /data/caa/l1//mPlan.mat
-else error('No MPlan.mat found')
+else, error('No MPlan.mat found')
 end
 
 if isempty(dirs), disp('NO DIRS'), cd(old_pwd), return, end
@@ -50,7 +50,7 @@ for d=1:length(dirs)
             getData(ClusterDB,st,dt,cl_id,'v');
 %            getData(ClusterProc(pwd),cl_id,'vce');
             
-        else irf_log('proc',[ '-- INSIDE MP -- : ' curr_d]);
+        else, irf_log('proc',[ '-- INSIDE MP -- : ' curr_d]);
         end
 	else
 		irf_log('proc',[ '-- SKIPPING -- : ' curr_d]);

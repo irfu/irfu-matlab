@@ -9,7 +9,7 @@ if isempty(hIGRF)
 	irf.log('warning',['Reading IGRF coeficients from file:' fileIGRF]);
 	%file reading
 	fid = fopen(fileIGRF);
-	out = textscan(fid, '%s', 'delimiter',sprintf('\n')); % cell array with lines
+	out = textscan(fid, '%s', 'delimiter',sprintf('\n')); %#ok<SPRINTFN> % cell array with lines
 	out = out{1};
 	fclose(fid);
 	% construct IGRF coefficient matrices
@@ -40,7 +40,7 @@ end
 
 timeVec = irf_time(t,'vector');
 yearRef = timeVec(:,1);
-if min(yearRef) < min(yearsIGRF),
+if min(yearRef) < min(yearsIGRF)
 	irf.log('warning',...
 		['requested time is earlier than the first available IGRF model from ' ...
 		num2str(min(yearRef)) ', extrapolating in past.. ']);
@@ -57,7 +57,7 @@ switch flag
 		h11 = interp1(yearsIGRF,hIGRF(1,3:end),year,'linear','extrap');
 		lambda = atand(h11./g11);
 		phi = 90-asind((g11.*cosd(lambda)+h11.*sind(lambda))./g01);
-		if nargout == 2, 
+		if nargout == 2 
 			out1 = lambda;
 			out2 = phi;
 		else

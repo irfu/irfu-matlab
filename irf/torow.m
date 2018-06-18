@@ -12,7 +12,7 @@ if isempty(vector)                     % input is empty
   col = vector;
 else
   s = size(vector);
-  if (max(size(s)) < 3) & find(s == 1) % input is a vector (or scalar)
+  if (max(size(s)) < 3) && find(s == 1) % input is a vector (or scalar)
     if s(1) > 1                        % input is column vector
       col = vector';
     else                               % input is row vector (or scalar)

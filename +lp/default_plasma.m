@@ -20,7 +20,7 @@ plasmaNamesList = plasmaList(:,1);
 PlasmaFunc      = plasmaList(:,2);
 
 if nargin == 0 && nargout == 0
-	for iPlasma = 1:numel(plasmaNamesList),
+	for iPlasma = 1:numel(plasmaNamesList)
 		disp([num2str(iPlasma) '. ' plasmaNamesList{iPlasma}]);
 	end
 	return;
@@ -30,7 +30,7 @@ end
 if ischar(plasmaNames), plasmaNames = {plasmaNames};   end
 
 iFoundPlasma = [];
-for iPlasma = 1:numel(plasmaNames),
+for iPlasma = 1:numel(plasmaNames)
 	iFoundPlasma = [iFoundPlasma find(strcmp(plasmaNames(iPlasma),plasmaNamesList))]; %#ok<AGROW>
 end
 

@@ -10,7 +10,7 @@ ic = 3;
 
 % Load data from MMS database. Kinda slow; much faster to load from a local
 % directory.
-if 1,
+if 1
 %load background magnetic field data
 tint = irf.tint('2015-09-02T15:20:00.00Z/2015-09-02T15:30:00.00Z');
 c_eval('Bxyz=mms.db_get_ts(''mms?_dfg_srvy_ql'',''mms?_dfg_srvy_dmpa'',tint);',ic);
@@ -21,8 +21,8 @@ zphase = irf.ts_scalar(zphase.time, zphase.zphase);
 tints = irf.tint('2015-09-02T15:26:00.00Z/2015-09-02T15:28:00.00Z');
 c_eval('Exyz=mms.db_get_ts(''mms?_edp_brst_ql_dce2d'',''mms?_edp_dce_xyz_dsl'',tints);',ic);
 c_eval('SCpot=mms.db_get_ts(''mms?_edp_brst_l2_scpot'',''mms?_edp_dcv'',tints);',ic);
-Exyz.data(find(abs(Exyz.data) > 100)) = NaN;
-SCpot.data(find(abs(SCpot.data) > 100)) = NaN;
+Exyz.data(abs(Exyz.data) > 100) = NaN;
+SCpot.data(abs(SCpot.data) > 100) = NaN;
 end
 
 %load brst mode interval from file 
@@ -38,10 +38,10 @@ end
     
 [starttime1,endtime1,starttime3,endtime3] = mms.probe_align_times(Exyz,Bxyz,SCpot,zphase,1);
 
-if 0, % Set to 1 to plot all fk power spectra
-probecomb = 1;
+if 0 % Set to 1 to plot all fk power spectra
+probecomb = 1; %#ok<UNRCH>
 
-for ii=[1:length(starttime1)];
+for ii=1:length(starttime1)
     
 if (endtime1(ii)-starttime1(ii) > 0.2)
     tint = irf.tint(strcat(starttime1(ii).utc,'/',endtime1(ii).utc));
@@ -57,9 +57,9 @@ if (endtime1(ii)-starttime1(ii) > 0.2)
     
     %Overplot phase speed estimate
     vph = mms.estimate_phase_speed(fkpower,freq,wavenumber);
-    kfit = [0.0001:0.0001:0.1];
+    kfit = 0.0001:0.0001:0.1;
     ffit = abs(vph/(2*pi)*kfit);
-    if(vph < 0);
+    if(vph < 0)
         kfit = -kfit;
     end
     hold(h(1),'on');
@@ -81,7 +81,7 @@ end
 
 probecomb = 3;
 
-for ii=[1:length(starttime3)];
+for ii=1:length(starttime3)
     
 if (endtime3(ii)-starttime3(ii) > 0.2)
     tint = irf.tint(strcat(starttime3(ii).utc,'/',endtime3(ii).utc));
@@ -97,9 +97,9 @@ if (endtime3(ii)-starttime3(ii) > 0.2)
     
     %Overplot phase speed estimate
     vph = mms.estimate_phase_speed(fkpower,freq,wavenumber);
-    kfit = [0.0001:0.0001:0.1];
+    kfit = 0.0001:0.0001:0.1;
     ffit = abs(vph/(2*pi)*kfit);
-    if(vph < 0);
+    if(vph < 0)
         kfit = -kfit;
     end
         hold(h(1),'on');

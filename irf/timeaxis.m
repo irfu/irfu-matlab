@@ -127,7 +127,7 @@ end
 % calculate the time value of the first major tick
 % tbeg = dticv*ceil(limit(1)/dticv);
 
-if ischar(dticv), % dticv = 'year','3years','month'
+if ischar(dticv) % dticv = 'year','3years','month'
     tstart=irf_time(limit(1),'epoch>vector');
     tend=irf_time(limit(2),'epoch>vector');
     switch dticv
@@ -242,20 +242,20 @@ else              % dticv in seconds
     
     ind_labels=find(abs(mod(tictv,dticv))<1e-6); % NOTE does not work for tick distance below a few microseconds
     for j=n,ticstr{j} = ' ';end
-    if dticv>=3600*24,
+    if dticv>=3600*24
         for j=ind_labels, ticstr{j} = eval(hhmmss);end
     else
         for j=ind_labels, ticstr{j} = sprintf(format, hhmmss(:,j));end
     end
     
-    if dticv>=.1,
+    if dticv>=.1
         ind_ms_labels=find(abs(mod(tictv(ind_labels),1))>1e-6);
-        if length(ind_ms_labels) < length(ind_labels),
+        if length(ind_ms_labels) < length(ind_labels)
             for j=ind_labels(ind_ms_labels), ticstr{j} = sprintf('.%01.0f', mod(tictv(j),1)*10);end
         end
-    elseif dticv>=.01,
+    elseif dticv>=.01
         ind_ms_labels=find(abs(mod(tictv(ind_labels),.1))>1e-6);
-        if length(ind_ms_labels) < length(ind_labels),
+        if length(ind_ms_labels) < length(ind_labels)
             for j=ind_labels(ind_ms_labels), ticstr{j} = sprintf('.%02.0f', mod(tictv(j),1)*100);end
         end
     end

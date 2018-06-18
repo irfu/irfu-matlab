@@ -3,7 +3,7 @@ plotId='ttbrowse_plot_1';
 numOfPanels=5; 
 if diff(tint)==0, return; end % if zero time interval return
 hcfTag = get(hcf,'Tag');
-if isempty(hcfTag),
+if isempty(hcfTag)
 	h=irf_plot(numOfPanels,'reset');
 	ud.subplot_handles=h;
 	set(hcf,'tag',plotId);
@@ -34,7 +34,7 @@ c_eval('gsmVCIS=irf_gse2gsm(VCIS);',ic);
 % plot
 irf_zoom(h,'x',tint);
 zoom reset;
-if 1,   % PANEL: C?       FGM Bx,By,Bz,B GSM
+if 1   % PANEL: C?       FGM Bx,By,Bz,B GSM
 	hca=irf_panel(h,'C? FGM B GSM');
 	c_eval('irf_plot(hca,gsmB?);',ic);
 	irf_zoom(hca,'y');
@@ -44,9 +44,9 @@ if 1,   % PANEL: C?       FGM Bx,By,Bz,B GSM
 end
 dd=irf_time(tint(1),'epoch>yyyy-mm-dd hh:mm:ss');
 title(hca,dd(1:10));
-if 1,   % PANEL: C?       CIS Vx,Vy,Vz,V CODIF(HIA) GSM
+if 1   % PANEL: C?       CIS Vx,Vy,Vz,V CODIF(HIA) GSM
   hca=irf_panel('C? CIS V GSM');
-  if ic ~=2, % on s/c 2 there is no CIS
+  if ic ~=2 % on s/c 2 there is no CIS
     irf_plot(hca,gsmVCIS);
     % c_eval('irf_plot(hca,gsmVCIS?);',ic); % HIA 
     ylabel(hca,'V_p [km/s] GSM');
@@ -55,14 +55,14 @@ if 1,   % PANEL: C?       CIS Vx,Vy,Vz,V CODIF(HIA) GSM
     irf_legend(hca,{['C' num2str(ic)]},[0.98 0.98],'color','k')
   end
 end
-if 1,   % PANEL: C1..C4   FGM BZ GSM
+if 1   % PANEL: C1..C4   FGM BZ GSM
 	hca=irf_panel(h,'PANEL: C1..C4, FGM BZ');
 	c_pl_tx(hca,'gsmB?',4)
 	irf_zoom(hca,'y');
 	ylabel(hca,'B_Z [nT] GSM');
 	irf_legend(hca,{'C1','C2','C3','C4'},[0.98 0.98],'color','cluster');
 end
-if 1,   % PANEL: C?       RAPID electron spectrogram
+if 1   % PANEL: C?       RAPID electron spectrogram
 	hca=irf_panel(h,'C?_CP_RAP_ESPCT6');
 	%varname=irf_ssub('Electron_Dif_flux__C?_CP_RAP_ESPCT6',ic);
 	%varunits=irf_get_data(varname,'caa','unit');
@@ -74,7 +74,7 @@ if 1,   % PANEL: C?       RAPID electron spectrogram
 	set(hca,'ytick',[1 1e1 2e1 5e1 1e2 2e2 1e3 1e4 1e5])
 	irf_legend(hca,{['C' num2str(ic)]},[0.98 0.98],'color','k')
 end
-if 1,   % PANEL: C?       PEACE PITCH_SPIN_DEFlux spectrogram omni
+if 1   % PANEL: C?       PEACE PITCH_SPIN_DEFlux spectrogram omni
     hca=irf_panel('C? PEACE energy spectra');
     %varname=irf_ssub('Data__C?_CP_PEA_PITCH_SPIN_DPFlux',ic);
     %varunits=irf_get_data(varname,'caa','units');

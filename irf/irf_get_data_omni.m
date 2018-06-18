@@ -104,9 +104,9 @@ function f = irf_get_data_omni( tint, parameter , database)
 % Magnetosonic mach number    F5.1    See  footnote G below
 
 %% Define selected database
-if nargin < 3, % database not specified defaulting to omni2
+if nargin < 3 % database not specified defaulting to omni2
 	omniDatabase    = 'omni_hour';
-elseif nargin == 3 && ischar(database), % database specified
+elseif nargin == 3 && ischar(database) % database specified
 	if strcmpi(database,'omni2') || strcmpi(database,'omni_hour')
 		omniDatabase  = 'omni_hour';
 	elseif strcmpi(database,'omni_min') || strcmpi(database,'min')
@@ -196,13 +196,13 @@ for jj=1:length(iStart)
         case 'swid',   varOmni2=-1;varOmni1min= 5;
 		otherwise,     varOmni2=0 ;varOmni1min=-1;
 	end
-	if strcmp(dataSource,'omni2'),
-		if varOmni2>0,
+	if strcmp(dataSource,'omni2')
+		if varOmni2>0
 			vars=[vars '&vars=' num2str(varOmni2)]; %#ok<AGROW>
 			nVar=nVar+1;
 		end
 	else % datasource omni_min
-		if varOmni1min>0,
+		if varOmni1min>0
 			vars=[vars '&vars=' num2str(varOmni1min)]; %#ok<AGROW>
 			nVar=nVar+1;
 		end
@@ -300,12 +300,12 @@ end
 
 
 %% Analyze returned data
-if getDataSuccess, % success in downloading from internet
+if getDataSuccess % success in downloading from internet
 	cstart=strfind(c,'YEAR'); % returned by omni2 databse
-	if isempty(cstart),
+	if isempty(cstart)
 		cstart=strfind(c,'YYYY'); % returned by omni_min database
 	end
-	if isempty(cstart), % no data returned
+	if isempty(cstart) % no data returned
 		irf.log('warning','Can not get OMNI data from internet!');
 		f=[];
 		return
@@ -316,7 +316,7 @@ if getDataSuccess, % success in downloading from internet
 		cc=textscan(c(cstart:cend),fmt,'headerlines',1);
 		xx=double([cc{1} repmat(cc{1}.*0+1,1,2) repmat(cc{1}.*0,1,3)]);
 		f(:,1)=irf_time(xx)+(cc{2}-1)*3600*24+cc{3}*3600;
-		for jj=1:nVar,
+		for jj=1:nVar
 			f(:,jj+1)=cc{jj+3};
 		end
 	else
@@ -324,7 +324,7 @@ if getDataSuccess, % success in downloading from internet
 		cc=textscan(c(cstart:cend),fmt,'headerlines',1);
 		xx=double([cc{1} repmat(cc{1}.*0+1,1,2) repmat(cc{1}.*0,1,3)]);
 		f(:,1)=irf_time(xx)+(cc{2}-1)*3600*24+cc{3}*3600+cc{4}*60;
-		for jj=1:nVar,
+		for jj=1:nVar
 			f(:,jj+1)=cc{jj+4};
 		end
 	end

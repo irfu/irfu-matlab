@@ -64,15 +64,15 @@ if N==0 || T==0,    return;end
 
 % Spherical body case.
 %%%%%%%%%%%%%%%%%%%%%%
-  if p_type == 1,
+  if p_type == 1
 
         pos_ind = find( U >= 0 );
         neg_ind = find( U < 0 );
 
-        if Z > 0,
+        if Z > 0
            j_thermal(pos_ind) = Ip .* exp(-X(pos_ind));
            j_thermal(neg_ind) = Ip .* (1-X(neg_ind));
-        elseif Z < 0,
+        elseif Z < 0
            j_thermal(pos_ind) = Ip .* (1+X(pos_ind));
            j_thermal(neg_ind) = Ip .* exp(X(neg_ind));
         end
@@ -80,7 +80,7 @@ if N==0 || T==0,    return;end
 
 % Cylindrical body case.
 %%%%%%%%%%%%%%%%%%%%%%%%
-  elseif p_type == 2,
+  elseif p_type == 2
 
      pos_ind = find( U >= 0 );
      neg_ind = find( U < 0 );
@@ -92,11 +92,11 @@ if N==0 || T==0,    return;end
      sq(pos_ind) = sqrt( abs(+X(pos_ind)) );
      erfv = erf( sq );
 
-     if Z > 0,
+     if Z > 0
         j_thermal(pos_ind) = Ip .* exp(-X(pos_ind));
         j_thermal(neg_ind) = Ip .* ( (2/sqrt(pi)) .* sq(neg_ind) ...
                              + exp(-X(neg_ind)) .* (1.0 - erfv(neg_ind)) );
-     elseif Z < 0,
+     elseif Z < 0
         j_thermal(neg_ind) = Ip .* exp(X(neg_ind));
         j_thermal(pos_ind) = Ip .* ( (2.0/sqrt(pi)) .* sq(pos_ind) ...
 	                     + exp(+X(pos_ind)) .* (1.0 - erfv(pos_ind)) );

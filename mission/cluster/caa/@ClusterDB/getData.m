@@ -116,7 +116,7 @@ if flag_save
     end
 
     cd(cdb.sp) %enter the storage directory
-    irf_log('save',['Storage directory is ' cdb.sp])
+    irf_log('save',[quantity ' Storage directory is ' cdb.sp])
 
     % Create .interval
     if ~exist('./.interval','file')
@@ -158,13 +158,13 @@ if strcmp(quantity,'caa_int')
         irf_log('proc','Wrote .caa_ms_interval.')
     end
     flag_save=0;
-    
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % nsops - check nonstandard operations table
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif strcmp(quantity,'nsops')
 	save_file = './mEFW.mat';
-	
+
 	% Read list of nonstandard operations and see if we have one of those
 	% during the requested period. Permanent problems (as loss of
 	% probes, filters, etc.) must be programmed separately
@@ -181,7 +181,7 @@ elseif strcmp(quantity,'nsops')
 	bad_start=[];
 	bad_stop=[];
 	bad_opcode=[];
-	
+
 	% Problem covers the whole interval
 	ii = find( ns_ops(:,1)<=start_time & ns_ops(:,1)+ns_ops(:,2)>=start_time+dt );
 	if ~isempty(ii)
@@ -196,7 +196,7 @@ elseif strcmp(quantity,'nsops')
 	end
 	% clear already processed records
 	ns_ops(ii,:) = [];
-	
+
 	% Problem starts inside the interval and ends after the interval
 	while 1
 		ii = find( ns_ops(:,1)<start_time+dt & ns_ops(:,1)>start_time & ns_ops(:,1)+ns_ops(:,2)>=start_time+dt);
@@ -209,7 +209,7 @@ elseif strcmp(quantity,'nsops')
 		% clear already processed records
 		ns_ops(ii(1),:) = [];
 	end
-	
+
 	% Problem starts before the interval and ends inside the interval
 	while 1
 		ii = find( ns_ops(:,1)<=start_time & ns_ops(:,1)+ns_ops(:,2)>start_time & ns_ops(:,1)+ns_ops(:,2)<=start_time+dt);
@@ -221,7 +221,7 @@ elseif strcmp(quantity,'nsops')
 		bad_opcode =[bad_opcode ns_ops(ii(1),4)]; %#ok<AGROW>
 		ns_ops(ii(1),:) = [];
 	end
-	
+
 	% Problem is inside the interval
 	while 1
 		ii = find( ns_ops(:,1)>start_time & ns_ops(:,1)+ns_ops(:,2)<start_time+dt);
@@ -232,8 +232,8 @@ elseif strcmp(quantity,'nsops')
 		bad_stop =[bad_stop  ns_ops(ii(1),1)+ns_ops(ii(1),2)]; %#ok<AGROW>
 		bad_opcode =[bad_opcode ns_ops(ii(1),4)]; %#ok<AGROW>
 		ns_ops(ii(1),:) = [];
-	end	
-	
+	end
+
 	bad_intervals = [bad_start' bad_stop' bad_opcode']; %#ok<NASGU>
 	c_eval('NSOPS?=bad_intervals;save_list=[save_list '' NSOPS? ''];',cl_id);
 
@@ -242,13 +242,13 @@ elseif strcmp(quantity,'nsops')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif strcmp(quantity,'dscold')
 	save_file = './mEFWR.mat';
-	
+
 	[t,dsc] = caa_is_get(cdb.db, start_time, dt, cl_id, 'efw', 'DSC');
 	if isempty(dsc)
 		irf_log('dsrc',irf_ssub('No data for DSC?',cl_id))
 		out_data = []; cd(old_pwd), return
 	end
-	
+
 	% DSC fields we want to save
 	% 0:55 - format tables
 	% 64:68 - HX, LX format pointers
@@ -260,19 +260,19 @@ elseif strcmp(quantity,'dscold')
 	% 210:249 - sweep settings
 	dsc_is = [0:55 64:68 73 78 79 80:84 128:139 210:249] + 1;
 	dsc_i = [0:55 64:68 73 78 79 128:139] + 1;
-	
+
 	% storage variables
 	t_start_save = [];
 	dsc_save = [];
 	jump_flag = [];
 	n_good = 0;
 	n_jumpy = 0;
-	
+
 	% temporal variables
 	t_st = [];
 	t_end = [];
 	dsc_good = [];
-	
+
 	dsc_last = dsc(:,1); 
 	t_dsc_last = t(1); 
 	count_good = -1;
@@ -317,7 +317,7 @@ elseif strcmp(quantity,'dscold')
 		n_good = n_good + 1;					
 		irf_log('dsrc',['Saving good from ' epoch2iso(t_st,1) '-' epoch2iso(t_end,1)])
 	end
-	
+
 	irf_log('dsrc',sprintf('\nFound total %d good and %d jumpy intervals',...
 		n_good, n_jumpy))
 	c_eval('DSC?=[t_start_save'' dsc_save'']'';save_list=[save_list '' DSC? ''];',cl_id);
@@ -342,14 +342,14 @@ elseif strcmp(quantity,'dsc')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif strcmp(quantity,'fdm')
 	save_file = './mEFWR.mat';
-	
+
 	[t,data] = caa_is_get(cdb.db, start_time, dt, cl_id, 'efw', 'FDM'); %#ok<ASGLU>
 	if isempty(data)
 		irf_log('dsrc',irf_ssub('No data for FDM?',cl_id))
 		out_data = []; cd(old_pwd), return
   else, c_eval('FDM?=[t data''];',cl_id);
 	end
-	
+
 	c_eval('save_list=[save_list '' FDM? ''];',cl_id);
 	clear t data
 
@@ -358,17 +358,17 @@ elseif strcmp(quantity,'fdm')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif strcmp(quantity,'ibias')
 	save_file = './mEFWR.mat';
-	
+
 	probe_list = 1:4;
 	p_ok = [];
-	
+
 	% Check for p1 problems on SC2,3
 	if (start_time>toepoch([2002 07 29 09 06 59 ]) && cl_id==3) || ...
 		(start_time>toepoch([2007 05 13 03 23 30]) && cl_id==2)
 		probe_list = 2:4;
 		irf_log('dsrc',sprintf('p1 is BAD on sc%d',cl_id));
 	end
-	
+
 	% Check for p1, p4 problems on SC1
 	if cl_id==1
 		if start_time > toepoch([2009 10 14 07 00 00]) || ...
@@ -380,7 +380,7 @@ elseif strcmp(quantity,'ibias')
 			irf_log('dsrc',sprintf('p1 is BAD on sc%d',cl_id));
 		end
 	end
-	
+
 	for probe=probe_list
 		[t,data] = caa_is_get(cdb.db, start_time, dt, cl_id, ...
 			'efw', 'E', ['p' num2str(probe)],'bias'); %#ok<ASGLU>
@@ -392,18 +392,18 @@ elseif strcmp(quantity,'ibias')
 		end
 		clear t data
 	end
-	
+
 	if isempty(p_ok), out_data = []; cd(old_pwd), return, end
 	for probe=p_ok
 		eval(irf_ssub('save_list=[save_list ''IBIAS?p! ''];',cl_id,probe)) 
 	end
-	
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % efwt - EFW clock
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif strcmp(quantity,'efwt')
 	save_file = './mEFWR.mat';
-	
+
 	% Read EFW clock to check for time since last reset
 	t = []; out_data = []; efwtime = [];
 	for st_tmp = start_time-16:32:start_time+dt+16
@@ -415,7 +415,7 @@ elseif strcmp(quantity,'efwt')
 			t = [t t_tmp']; %#ok<AGROW>
 		end
 	end
-	
+
 	if isempty(efwtime)
 		irf_log('dsrc',irf_ssub('No data for EFWT?',cl_id))
 		out_data = []; cd(old_pwd), return
@@ -423,13 +423,13 @@ elseif strcmp(quantity,'efwt')
 	c_eval(['EFWT?=[t; efwtime]'';'...
 		'save_list=[save_list '' EFWT? ''];'],cl_id);
 	clear t data efwtime
-	
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % tmode - EFW tape mode
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif strcmp(quantity,'tmode')
 	save_file = './mEFWR.mat';
-	
+
 	% Find TapeMode
 	% We read FDM from isdat and 5-th column contains the HX mode
 	% (undocumented feature)
@@ -442,11 +442,11 @@ elseif strcmp(quantity,'tmode')
 		irf_log('dsrc',irf_ssub('No data for mTMode?',cl_id))
 		out_data = []; cd(old_pwd), return
 	end
-	
+
 	c_eval(['mTMode?=data(5,:);'...
 		'save_list=[save_list '' mTMode? ''];'],cl_id)
 	clear t data
-	
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % e - Electric field
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -660,9 +660,9 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
 		save_file = './mPR.mat';
 		param={'10Hz'}; tmmode='lx';
 	end
-	
+
 	probe_list = 1:4;
-	
+
 	%%%%%%%%%%%%%%%%%%%%%%%%% PROBE MAGIC %%%%%%%%%%%%%%%%%%%%%%
 	switch cl_id
 		case 1
@@ -804,9 +804,9 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
 			clear t data
 		end
 	end
-	
+
     if ~n_ok, out_data = []; cd(old_pwd), return, end
-	
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % aux data - Phase, etc.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -872,7 +872,7 @@ elseif strcmp(quantity,'a')
     c_eval('Atwo?=[];save_list=[save_list '' Atwo? ''];',cl_id);
     irf_log('dsrc',irf_ssub('No/short data for Atwo?',cl_id))
   end
-	
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % aux data - Position
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -985,21 +985,21 @@ elseif strcmp(quantity,'bfgmlocal')
 		c_eval('diB?=c_gse2dsi(B?,sax);save_list=[save_list '' diB? ''];',cl_id);
   else, irf_log('dsrc',irf_ssub('No data for diB?',cl_id))
   end
-  
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % B FGM - full res from CAA
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif strcmp(quantity,'bfgm')
   save_file = './mB.mat';
-  
+
   if check_caa_sh_interval
     if ~exist('./.caa_ms_interval','file')
       irf_log('proc','Outside magnetosphere. No bfgm data fetched.')
       out_data = []; cd(old_pwd), return
     end
   end
-  
-  currentDir = pwd; tempDir = tempname;
+
+  currentDir = pwd; tempDir = tempname; dat = [];
   try
     dsetName = irf_ssub('C?_CP_FGM_FULL',cl_id);
     mkdir(tempDir);
@@ -1013,14 +1013,14 @@ elseif strcmp(quantity,'bfgm')
   end
   cd(currentDir);
   if exist(tempDir,'dir'), rmdir(tempDir,'s'); end
-  
+
   if isempty(dat)
     irf_log('dsrc',irf_ssub('No data for B, diB?',cl_id))
     out_data = []; cd(old_pwd), return
   end
   c_eval('B?=dat;save_list=[save_list '' B? ''];',cl_id);
   clear dat
-  
+
   % Transform vector data to DSI
   [ok,sax] = c_load('SAX?',cl_id);
   if ~ok
@@ -1040,11 +1040,11 @@ elseif strcmp(quantity,'bfgm')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % B STAFF SC
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	
+
 elseif strcmp(quantity,'bsc')
-	
+
 	save_file = './mBSCR.mat';
-	
+
 	[ok,tm] = c_load('mTMode?',cl_id);
 	if ~ok
 		tmode = getData(cdb,start_time,dt,cl_id,'tmode');
@@ -1074,7 +1074,7 @@ elseif strcmp(quantity,'bsc')
 		irf_log('dsrc',irf_ssub('No data for wBSC?',cl_id))
 		out_data = []; cd(old_pwd), return
 	end
-	
+
 	c_eval('wBSC?=[t data''];save_list=[save_list '' wBSC? ''];',cl_id);
 	clear t data
     
@@ -1224,7 +1224,7 @@ elseif strcmp(quantity,'sax')
 	lat = c_csds_read([cdb.db '|' cdb.dp],start_time,dt,cl_id,'slat');
 	long = c_csds_read([cdb.db '|' cdb.dp],start_time,dt,cl_id,'slong');
 	if ~isempty(lat), lat(isnan(lat(:,2)),:) = []; end
-  if ~isempty(long), long(isnan(long(:,2)),:) = []; end
+	if ~isempty(long), long(isnan(long(:,2)),:) = []; end
 	if isempty(lat) || isempty(long)
 		% Try ISDAT which does not handle data gaps
 		[t,data] = caa_is_get(cdb.db, start_time, dt, ...
@@ -1239,7 +1239,7 @@ elseif strcmp(quantity,'sax')
 			out_data = []; cd(old_pwd), return
 		end
   end
-  if ~all(lat(:,1)==long(:,1))
+  if (length(lat) ~= length(long)) || ~all(lat(:,1)==long(:,1))
     [ii1,ii2]=irf_find_comm_idx(lat,long);
     lat = lat(ii1,:); long = long(ii2,:);
   end
@@ -1320,26 +1320,67 @@ cd(old_pwd)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function out=check_timeline(data)
-% This function is aimed at removing pieces of data
-% with time jumping back
+% This function is aimed at finding negative time jumps
+% 1) if it is a single misplaced pachet - correct it
+% 2) otherwise blank +/- 10 sec of data around the jump
 % ISDAT BUG 11 http://squid.irfu.se/bugzilla/show_bug.cgi?id=11
 
 out = data;
 
 % Find jumps back larger than BAD_DT sec.
-BAD_DT = 0.5;
+BAD_DT = 0;
 % Remove BAD_MARGIN from each side
-BAD_MARGIN = 10;
+BAD_MARGIN = 4.5;
+MAX_JITTER = 0.0005;
 
 while 1
-	ii = find(diff(out(:,1))<-BAD_DT);
-	if isempty(ii), return, end
+	iNegative = find(diff(out(:,1))<=-BAD_DT);
+	if isempty(iNegative), return, end
+  iNegative = iNegative(1);
 	
-	tbj = out(ii(1),1) + BAD_MARGIN;
-	taj = out(ii(1)+1,1) - BAD_MARGIN;	
-	out(out(:,1) > taj & out(:,1) < tbj,:) = [];
-	irf_log('proc',...
-		sprintf('Bad time %s - %s',epoch2iso(taj,1),epoch2iso(tbj,1)));
+	tbj = out(iNegative,1) + BAD_MARGIN;
+	taj = out(iNegative+1,1) - BAD_MARGIN;
+  idx = find(out(:,1) > taj & out(:,1) < tbj);
+  ttmp = out(idx,1); ddt = diff(ttmp); mddt = median(ddt);
+  iiPositive = find( ddt - mddt > mddt*MAX_JITTER );
+  
+  i1secJump = [];
+  if ~isempty(iiPositive)
+    dtJump = abs(out(iNegative+1,1)-ttmp(iiPositive));
+    nSec = round(dtJump);
+    idx1secOK = abs(dtJump-nSec)<0.05;
+    i1secJump = iiPositive(idx1secOK) + idx(1) -1; % absolute index
+    if any(idx1secOK)
+      if length(i1secJump) > 1
+        nSec = nSec(idx1secOK);
+        i1secJump = i1secJump(nSec == min(nSec));
+        i1secJump = i1secJump(1); nSec = min(nSec);
+      end
+      
+      dtNeg = out(iNegative+1,1)-out(iNegative,1);
+      dtPos = out(i1secJump+1,1) - out(i1secJump,1);
+      if abs(dtNeg)>1e-6 && abs(dtNeg+dtPos)>3*mddt % expected to diff by 2 nominal time steps
+        i1secJump = [];
+      else
+        if abs(dtNeg)<1e-6, dt = -mddt; % shift by one data point
+        else, dt = (dtNeg-dtPos)/2;
+        end
+        if iNegative>i1secJump, iCorr = (i1secJump+1):iNegative; % shift backward
+        else, dt = -dt; iCorr = (iNegative+1):i1secJump; % shift forward
+        end
+        out(iCorr,1) = out(iCorr,1) + dt;
+        irf_log('proc',...
+          sprintf('Correcting %d misplaced packet(s) at %s by %.4f sec',...
+          nSec,epoch2iso(out(iCorr(1),1)),dt));
+      end
+    end
+  end
+  
+  if isempty(i1secJump)
+    out(out(:,1) > taj & out(:,1) < tbj,:) = [];
+    irf_log('proc',...
+      sprintf('Bad time %s - %s',epoch2iso(taj,1),epoch2iso(tbj,1)));
+  end
 		
 	if isempty(out), return, end % extra precaution to avoid a dead loop
 end
@@ -1374,16 +1415,16 @@ while i < ndata
     end
     x = data(i:i2,2:4);
     y = x;
-    
+
     x = detrend(x);
     s = std(x);
     for comp=3:-1:1
         ii = find(abs(x(:,comp))>THR*s(comp));
         if ~isempty(ii), y(ii,:) = y(ii+1,:); end
     end
-    
+
     dataout(i:i2,2:4) = y;
-    
+
     i = i2 + 1;
 end
 

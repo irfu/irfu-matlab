@@ -31,22 +31,22 @@ tstart=irf_time(tint(1,:),'vector>epoch');
 tend=irf_time(tint(2,:),'vector>epoch');
 
 %% download the data using command line (works only when isdat/iscmd installed)
-if flag_get_all_Cluster_positions_from_isdat,
-	[status,result]=system('iscmd');
-	if status~=0,
+if flag_get_all_Cluster_positions_from_isdat
+	[status,result]=system('iscmd'); %#ok<UNRCH>
+	if status~=0
 		disp('WARNING!!!')
 		disp('You dont have isdat/iscmd installed!');
 		flag_get_all_Cluster_positions_from_isdat=0;
 		flag_get_all_Cluster_positions_from_www=1;
 	end
 end
-if flag_get_all_Cluster_positions_from_www,
-	disp('Downloading from internet file with all Cluster orbits ...');
-	[f,status]=urlwrite('http://space.irfu.se/~andris/cluster/mR.mat','mR.mat');
+if flag_get_all_Cluster_positions_from_www
+	disp('Downloading from internet file with all Cluster orbits ...');  %#ok<UNRCH>
+	[f,status]=urlwrite('https://space.irfu.se/~andris/cluster/mR.mat','mR.mat'); %#ok<URLWR> websave introduced in R2014b
 end
 
 %% Get all Cluster position from isdat
-if flag_get_all_Cluster_positions_from_isdat==1, % using command line
+if flag_get_all_Cluster_positions_from_isdat==1 % using command line
 	R1=zeros(ceil((tend-tstart)/step_save),4);
 	R2=R1;R3=R1;R4=R1;
 	ii=1;icstr='1234';
@@ -111,13 +111,13 @@ if flag_create_Cluster_file
 end
 
 %% Get Cluster file from internet 
-if flag_get_Cluster_file_from_www,
+if flag_get_Cluster_file_from_www
 	disp('Downloading from internet Cluster orbit parameter file mRcluster.mat ...');
-	[f,status]=urlwrite('http://space.irfu.se/~andris/cluster/mRcluster.mat','mRcluster.mat');
+	[f,status]=urlwrite('https://space.irfu.se/~andris/cluster/mRcluster.mat','mRcluster.mat'); %#ok<URLWR> websave introduced in R2014b
 end
 
 %% Create the figure
-if flag_create_figure, % create the figure
+if flag_create_figure % create the figure
 	load mRcluster
 	dtmark_season=365/24*2*24*3600; % seconds corresponding to 2h drift of perigee
 	cluster_color=[[0 0 0];[1 0 0];[0 0.5 0];[0 0 1]];

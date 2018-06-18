@@ -25,22 +25,22 @@ function c_eval(ev_str,sc_list_1,sc_list_2)
 %
 % See also IRF_SSUB, EVALIN
 
-if nargin==0,
+if nargin==0
     help c_eval;
-elseif nargin==1,
+elseif nargin==1
     sc_list_1=1:4;
     sc_list_2=1:4;
-elseif nargin==2,
+elseif nargin==2
     sc_list_2=1:4;
 elseif nargin > 3
 	irf_log('fcal','cannot be more than 3 input arguments')
 	return
 end
 
-if strfind(ev_str,'?'),
-	if strfind(ev_str,'!'),
-		for num1=sc_list_1,
-			for num2=sc_list_2,
+if strfind(ev_str,'?') %#ok<STRIFCND>
+	if strfind(ev_str,'!') %#ok<STRIFCND>
+		for num1=sc_list_1
+			for num2=sc_list_2
 				evalin('caller', irf_ssub(ev_str, num1,num2)),
 			end
 		end

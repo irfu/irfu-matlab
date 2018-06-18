@@ -22,7 +22,7 @@ disp('_______________');
 disp(['VARIABLE : ' var_s]);
 disp(var);
 for j=0:3 % maximum number of dependencies
-    if isfield(var,['DEPEND_' num2str(j)]), % there is dependency
+    if isfield(var,['DEPEND_' num2str(j)]) % there is dependency
         dep_variable_name = eval(['var.DEPEND_' num2str(j)]);
         disp('_______________');
         disp(['DEPEND_' num2str(j) ': ' dep_variable_name]);
@@ -30,7 +30,7 @@ for j=0:3 % maximum number of dependencies
         disp(dep);
         disp('Values:');
         disp(num2str([(1:length(dep.data(1,:))); dep.data(1,:)]',3));
-    elseif isfield(var,['LABEL_' num2str(j)]), % there is labels
+    elseif isfield(var,['LABEL_' num2str(j)]) % there is labels
         dep_variable_name = eval(['var.LABEL_' num2str(j)]);
         disp('_______________');
         disp(['LABEL_' num2str(j) ': ' dep_variable_name]);

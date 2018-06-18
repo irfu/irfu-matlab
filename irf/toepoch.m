@@ -1,8 +1,8 @@
 function [secs]=toepoch(x)
 % toepoch - Convert a [YYYY MM DD hh mm ss] time specification to seconds since 1970.
 [m,n]=size(x);
-if n~=2 && n~=3 && n~=6,
-  if m==2 || m==3 || n==6,
+if n~=2 && n~=3 && n~=6
+  if m==2 || m==3 || n==6
      x=x'; n=size(x,2);
   else
     irf.log('warning','Illegal argument:\n')
@@ -11,16 +11,16 @@ if n~=2 && n~=3 && n~=6,
   end
 end
 
-if n==2,
+if n==2
   y=x;
   x(:,[3,6])=rem(y,100);
   x(:,[2,5])=rem(floor(y/100),100); 
   x(:,[1,4])=floor(y/10000);   
-elseif n==3,
+elseif n==3
   x(:,6)=rem(x(:,3),100); x(:,5)=floor(x(:,3)/100);
   x(:,4)=rem(x(:,2),100); x(:,3)=floor(x(:,2)/100);
   x(:,2)=rem(x(:,1),100); x(:,1)=floor(x(:,1)/100)+1900;
-elseif n==6,
+elseif n==6
   if x(1,1)<100, x(:,1)=1900+x(:,1); end
 end 
 

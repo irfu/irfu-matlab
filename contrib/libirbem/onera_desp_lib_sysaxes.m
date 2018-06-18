@@ -36,15 +36,15 @@ function sysaxes = onera_desp_lib_sysaxes(sysaxes)
 % 9: HEE
 % 10: HAE
 % 11: HEEQ
-if isempty(sysaxes),
+if isempty(sysaxes)
     sysaxes = 0;
     return
 end
-if isnumeric(sysaxes),
+if isnumeric(sysaxes)
     return
 end
 
-switch(upper(sysaxes)),
+switch(upper(sysaxes))
     case {'GDZ'},  sysaxes = 0;
     case {'GEO'},  sysaxes = 1;
     case {'GSM'},  sysaxes = 2;

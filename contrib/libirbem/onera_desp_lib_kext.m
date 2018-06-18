@@ -17,6 +17,7 @@ function kext = onera_desp_lib_kext(kext)
 %    You should have received a copy of the GNU Lesser General Public License
 %    along with IRBEM-LIB.  If not, see <http://www.gnu.org/licenses/>.
 %
+% Last modified by A. C. Kellerman - added TS07d functionality - March 2016
 %***************************************************************************************************
 %
 % function kext = onera_desp_lib_kext(kext)
@@ -38,6 +39,7 @@ function kext = onera_desp_lib_kext(kext)
 % T01S           : 10  = Tsyganenko [2001] storm  (uses Dst, Pdyn, ByIMF, BzIMF, G2, G3 - there is no upper or lower limit for those inputs - Valid for xGSM?-15. Re) 
 % T04            : 11  = Tsyganenko [2004] storm  (uses Dst, Pdyn, ByIMF, BzIMF, W1, W2, W3, W4, W5, W6 - there is no upper or lower limit for those inputs - Valid for xGSM?-15. Re) 
 % A00,Paraboloid : 12 =Alexeev [2000] - also known as Paraboloid model - Submitted to ISO  (uses Dens, velo, Dst, BzIMF, AL) 
+% TS07d         : 13 - Tsyganenko and Sitnov [2007] - data-based empirical field model (uses Pdyn);
 % 
 % 
 % Notes: 
@@ -46,13 +48,13 @@ function kext = onera_desp_lib_kext(kext)
 % when the magnetic field model inputs are outside the allowed range bad data values are returned. 
 % When solar wind inputs are required they must be taken in the vicinity of the day side magnetopause and not at L1.
 % 
-if isempty(kext), % do this first because isnumeric([])==1
+if isempty(kext) % do this first because isnumeric([])==1
     kext = 0;
 end
-if isnumeric(kext),
+if isnumeric(kext)
     return
 end
-switch(upper(kext)),
+switch(upper(kext))
     case {'','IGRF'}, kext = 0;
     case {'MF'}, kext = 1;
     case {'T87','T87SHORT'}, kext = 2;
@@ -66,6 +68,7 @@ switch(upper(kext)),
     case {'T01S'}, kext = 10;
     case {'T04'}, kext = 11;
     case {'A00','PARABOLOID'}, kext = 12;
+    case {'TS07D'}, kext = 13;
     otherwise
         error('Unknown value for kext "%s" in %s',kext,mfilename);
 end

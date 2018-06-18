@@ -1,4 +1,4 @@
-function status=polarplot_manager(arg)
+function status=polarplot2_manager(arg)
 persistent flag_new_figure h2 dgud;
 global hf
 global POLARPLOT_RESULTS   % POLARPLOT_RESULTS={t0, T-t0,freq,2*n*Imean1/sampl,coh1,phase1,2*n*Imean2/sampl,coh2,phase2,threshold};
@@ -16,7 +16,7 @@ threshold=POLARPLOT_RESULTS{10};
 p = get(gca, 'currentpoint');
 phase_lim=get(gca,'Clim');
 
-ii=find(p(1)>t); ind=max(ii);
+ind=find(p(1)>t, 1, 'last');
 ss1=S1(:,ind);
 ph1=Phase1(:,ind);
 ch1=Coh1(:,ind);
@@ -24,7 +24,7 @@ ss2=S2(:,ind);
 ph2=Phase2(:,ind);
 ch2=Coh2(:,ind);
 
-if isempty(flag_new_figure),
+if isempty(flag_new_figure)
   freq_lim=get(gca,'Ylim');
   hf=figure;flag_new_figure=1;clf;
 else
@@ -58,7 +58,7 @@ hl1=line([0 0],[0 0]);set(hl1,'color','k');
 hl2=line([0 0],[0 0]);set(hl2,'color','b');
 ylabel('Phase');
 
-if flag_new_figure==1,
+if flag_new_figure==1
  h2(4)=subplot(4,1,4);axis off;
 
   dgud.h2=h2;

@@ -52,7 +52,7 @@ function Output = run(PlasmaModel,InputParameters)
 if nargin==0
 	help whamp.run;
 	return;
-elseif nargin ~= 2,
+elseif nargin ~= 2
 	disp('whamp.run: incorrect number of input parameters, see help');
 	return;
 end
@@ -178,9 +178,9 @@ zfirstWHAMP = InputParameters.varyKzFirst;
 fstartWHAMP = InputParameters.fstart;
 
 % define p
-if numel(InputParameters.kperp) == 1,
+if numel(InputParameters.kperp) == 1
 	pWHAMP = [InputParameters.kperp*[1 1] 10];
-elseif numel(InputParameters.kperp) == 3,
+elseif numel(InputParameters.kperp) == 3
 	pWHAMP = InputParameters.kperp([1 3 2]);
 else
 	disp('ERROR: InputParameters.kperp wrong format');
@@ -188,9 +188,9 @@ else
 end
 
 % define z
-if numel(InputParameters.kpar) == 1,
+if numel(InputParameters.kpar) == 1
 	zWHAMP = [InputParameters.kpar*[1 1] 10];
-elseif numel(InputParameters.kpar) == 3,
+elseif numel(InputParameters.kpar) == 3
 	zWHAMP = InputParameters.kpar([1 3 2]);
 else
 	disp('ERROR: InputParameters.kpar wrong format');

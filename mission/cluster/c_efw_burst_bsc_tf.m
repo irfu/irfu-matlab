@@ -19,7 +19,7 @@ nfft = size(binp,1);
 
 % Set "nf"
 if nfft/2==fix(nfft/2), nf = nfft/2;       % Even number of samples.
-else                    nf = nfft/2 + 1;   % Odd  number of samples.
+else,                   nf = nfft/2 + 1;   % Odd  number of samples.
 end
 
 fsamp = c_efw_fsample(binp,'ib');

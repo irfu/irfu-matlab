@@ -55,7 +55,7 @@ function [Bgeo,B] = onera_desp_lib_get_field(kext,options,sysaxes,matlabd,x1,x2,
 % IMPORTANT: all inputs must be present. For those which are not used a dummy value can be provided.
 %
 
-if nargin < 8,
+if nargin < 8
     maginput = [];
 end
 
@@ -67,39 +67,39 @@ ntime = length(x1);
 kext = onera_desp_lib_kext(kext);
 options = onera_desp_lib_options(options);
 sysaxes = onera_desp_lib_sysaxes(sysaxes);
-if isempty(maginput),
+if isempty(maginput)
     maginput = nan(ntime,25);
 end
-if (size(maginput,1)==25) && (size(maginput,2)~=25), % 25xN
+if (size(maginput,1)==25) && (size(maginput,2)~=25) % 25xN
     maginput = maginput'; % Nx25
 end
-if size(maginput,1) ~= ntime,
+if size(maginput,1) ~= ntime
     maginput = repmat(maginput,ntime,1);
 end
-if length(matlabd)==1,
+if length(matlabd)==1
     matlabd = repmat(matlabd,ntime,1);
 end
 
 maginput = onera_desp_lib_maginputs(maginput); % NaN to baddata
 
 Nmax = onera_desp_lib_ntime_max; % maximum array size in fortran library
-if ntime > Nmax, % break up into multiple calls
+if ntime > Nmax % break up into multiple calls
     Bgeo = nan(ntime,3);
     B = nan(ntime,1);
-    for i = 1:Nmax:ntime,
+    for i = 1:Nmax:ntime
         ii = i:min(i+Nmax-1,ntime);
         [Bgeo(ii,:),B(ii)] = onera_desp_lib_get_field(kext,options,sysaxes,matlabd(ii),x1(ii),x2(ii),x3(ii),maginput(ii,:));
     end
     return
 end
 
-if ntime<Nmax, % pad maginput b/c of impending transpose
+if ntime<Nmax % pad maginput b/c of impending transpose
     maginput = [maginput;nan(Nmax-ntime,25)];
 end
 
 [iyear,idoy,UT] = onera_desp_lib_matlabd2yds(matlabd);
-Bgeo = repmat(nan,Nmax,3)'; % transpose b/c fortran has it 3xntime, pad b/c of transpose
-B = repmat(nan,ntime,1);
+Bgeo = nan(Nmax,3)'; % transpose b/c fortran has it 3xntime, pad b/c of transpose
+B = nan(ntime,1);
 BgeoPtr = libpointer('doublePtr',Bgeo);
 BPtr = libpointer('doublePtr',B);
 calllib('onera_desp_lib','get_field_multi_',ntime,kext,options,sysaxes,iyear,idoy,UT,x1,x2,x3,maginput',...

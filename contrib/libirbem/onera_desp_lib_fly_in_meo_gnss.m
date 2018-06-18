@@ -21,7 +21,7 @@ function [Lower_flux,Mean_flux,Upper_flux] = onera_desp_lib_fly_in_meo_gnss(laun
 %
 % [Lower_flux,Mean_flux,Upper_flux] = onera_desp_lib_fly_in_meo_gnss(launch_year,duration,whichm,energy)
 % This function allows one to fly any MEO GNSS type spacecraft in MEO ONERA
-% models. The use of the model is limited to GPS altitude (~20000 km - 55°
+% models. The use of the model is limited to GPS altitude (~20000 km - 55ï¿½
 % inclination).
 %
 % launch_year: year of launch (uses integer part only)
@@ -54,15 +54,15 @@ function [Lower_flux,Mean_flux,Upper_flux] = onera_desp_lib_fly_in_meo_gnss(laun
 
 onera_desp_lib_load;
 
-if isnumeric(whichm),
+if isnumeric(whichm)
     iwhichm = whichm;
 else
     mname = lower(whichm); % lower case
     mname = mname(~ismember(mname,[' ','-'])); % remove spaces and dashes
-    switch(mname),
-        case {'v1','meov1','meo1'},
+    switch(mname)
+        case {'v1','meov1','meo1'}
             iwhichm = 1;
-        case {'v2','meov2','meo2'},
+        case {'v2','meov2','meo2'}
             iwhichm = 2;
         otherwise
             error('Unknown model whichm="%s" in %s',whichm,mfilename);

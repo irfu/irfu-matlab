@@ -12,7 +12,7 @@ classdef EpochCdf < GenericTimeArray
   methods
     function obj = EpochCdf(inp)
       if nargin==0, return, end
-      if isa(inp,'double'), 
+      if isa(inp,'double') 
         if min(size(inp))>1
           error('irf:EpochCdf:EpochCdf:badInputs',...
             'double input (CDF epoch) must be a columt or row vector')

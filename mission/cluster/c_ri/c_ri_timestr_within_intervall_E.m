@@ -40,7 +40,7 @@ v_thms = datevec(thms);
 f_t = toepoch([v_ymd(1:3) v_fhms(4:6)]);
 t_t = toepoch([v_tymd(1:3) v_thms(4:6)]);
 
-if st_e <= t_t & f_t <= et_e
+if st_e <= t_t && f_t <= et_e
 within = 1;
 else
 within = 0;

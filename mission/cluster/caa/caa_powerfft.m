@@ -33,7 +33,7 @@ if overlap<0 || overlap>100, error('OVERLAP must be in a range 0..99'), end
 
 ii = find(~isnan(data(:,1)));
 if isempty(ii), error('time is NaN')
-else ts = data(ii(1),1);
+else, ts = data(ii(1),1);
 end
 
 % Number of intervals must be computed from time
@@ -41,7 +41,7 @@ nint = fix(((data(ii(end),1)-ts)*sfreq+1)*(1+overlap*.01)/nfft);
 ncomp = size(data,2) - 1;
 
 % Check if there is enough data
-if nint<1,
+if nint<1
 	outF = [];
 	outPxx = [];
 	outspecrec = [];
@@ -49,7 +49,7 @@ if nint<1,
 end
 
 if nfft/2==fix(nfft/2), nf = nfft/2;
-else nf = nfft/2 + 1;
+else, nf = nfft/2 + 1;
 end
 specrec.f = sfreq*((1:nf) -1)'/nfft;
 for jj=1:ncomp, specrec.p(jj) = {zeros(nint,nf)}; end
@@ -71,7 +71,7 @@ for jj=1:nint
 				ff = fft(detrend(X(:,comp)) .* w,nfft);
 				pf = ff .*conj(ff) *nnorm;
 				specrec.p{comp-1}(jj,:) = pf(1:nf);
-			else specrec.p{comp-1}(jj,:) = NaN;
+			else, specrec.p{comp-1}(jj,:) = NaN;
 			end
 		end
 	end

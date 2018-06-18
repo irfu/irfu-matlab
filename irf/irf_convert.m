@@ -13,7 +13,7 @@ function out = irf_convert(in,flag)
 %
 % $Id$
 
-if nargin==0,
+if nargin==0
     disp(' ');
     disp('out=irf_convert(in,flag); % flag is in format ''in2out''');
     disp('Possible flag values:');

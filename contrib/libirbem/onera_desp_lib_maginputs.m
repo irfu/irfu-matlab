@@ -50,19 +50,19 @@ function maginputs = onera_desp_lib_maginputs(varargin)
 % NaN's are replaced with the library bad data value, -1e31
 baddata=-1.0E31;
 
-if (length(varargin)==1) && (size(varargin{1},2)==25), % first/only arg is maginputs
+if (length(varargin)==1) && (size(varargin{1},2)==25) % first/only arg is maginputs
     maginputs = varargin{1};
 else % multiple args
     n = max(arrayfun(@(x)length(x{1}),varargin)); % get length of longest list
     maginputs = nan(n,25);
     % special handling for Kp
     Kp = varargin{1};
-    if ~isempty(Kp),
+    if ~isempty(Kp)
         maginputs(:,1) = floor(Kp*10);
     end
     % all the rest are straight copies
-    for i = 2:length(varargin),
-        if ~isempty(varargin{i}),
+    for i = 2:length(varargin)
+        if ~isempty(varargin{i})
             maginputs(:,i) = varargin{i}; % broadcasts scalar if needed
         end
     end

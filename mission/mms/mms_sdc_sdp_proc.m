@@ -25,8 +25,10 @@ DFG_File = ''; % B-field, L2Pre
 DCV_File = '';
 DCE_File = '';
 L2A_File = ''; % L2A file, contain offsets from fast/slow to be used by brst and for L2Pre process.
+L2Pre_File = ''; % L2Pre file, containing spin residue from Fast to be used by brst for L2pre process.
 DEFATT_File = ''; % Defatt file used for l2pre or reprocessing of QL.
 HdrInfo = [];
+procId=[]; Dmgr = [];
 
 parse_input(procName, varargin{:});
 
@@ -330,6 +332,28 @@ switch procId
           update_header(src_fileData); % Update header with file info.
         end
       end
+      %% L2Pre Fast mode file
+      if(~isempty(L2Pre_File))
+        irf.log('notice', [procName ' proc using: ' L2Pre_File]);
+        src_fileData = load_file(L2Pre_File,'l2pre');
+        update_header(src_fileData); % Update header with file info.
+      else
+        irf.log('warning',[procName ' but no L2Pre file from Fast. Looking for it..']);
+        list = mms.db_list_files(['mms',HdrInfo.scIdStr,'_edp_fast_l2pre_dce2d'], tint);
+        if(isempty(list) || list(1).start > tint.start)
+          % If no L2Pre dce2d was found or it did not cover start of tint.
+          % Simply issue warning.
+          irf.log('critical','No Fast L2Pre dce2d file located.');
+          error('NO L2Pre fast dce2d file in input and no file found!!');
+        else
+          for ii=1:length(list)
+            irf.log('notice', [procName ' proc using: ',list(ii).name]);
+            src_fileData = load_file([list(ii).path, filesep, list(ii).name],...
+              'l2pre');
+            update_header(src_fileData); % Update header with file info.
+          end
+        end
+      end
       %% L1B dce file
       Dmgr.set_param('dce',dce_obj);
       Dmgr.process_l2a_to_l2pre(MMS_CONST);
@@ -412,8 +436,8 @@ filename_output = mms_sdp_cdfwrite(HdrInfo, Dmgr);
 
       if regexpi(fileIn,'_dce')
         if( (procId == MMS_CONST.SDCProc.l2pre || procId == MMS_CONST.SDCProc.ql) ...
-            && ~isempty(regexpi(fileIn,'_l2a_')) && any(cell2mat(regexp(varargin(:),'_brst_'))) )
-          % L2A file (from fast mode) for "QL Brst" or "L2A Brst" process.
+            && ~isempty(regexpi(fileIn,'_l2(a|pre)_')) && any(cell2mat(regexp(varargin(:),'_brst_'))) )
+          % L2A or L2Pre file (from fast mode) for "QL Brst" or "L2A Brst" process.
         else
 % Alternative to multiple regexpi() in commissioning data.
 %           expr = ['mms(?<SCid>\d{0,1})_edp_(?<tmModeStr>(', ...
@@ -532,6 +556,12 @@ filename_output = mms_sdp_cdfwrite(HdrInfo, Dmgr);
           irf.log('critical', errStr); error(errStr);
         end
         L2A_File = varargin{j};
+      elseif regexpi(fileIn, '_l2pre_dce2d_') % L2Pre file
+        if ~isempty(L2Pre_File)
+          errStr = ['Multiple L2Pre dce2d files in input (',L2Pre_File,' and ',varargin{j},')'];
+          irf.log('critical', errStr); error(errStr);
+        end
+        L2Pre_File = varargin{j};
       elseif regexpi(fileIn, '_DEFATT_') % DEFATT
         if ~isempty(DEFATT_File)
           errStr = ['Multiple DEFATT files in input (',DEFATT_File,' and ',varargin{j},')'];
@@ -571,7 +601,7 @@ filename_output = mms_sdp_cdfwrite(HdrInfo, Dmgr);
     % Update header info
     if(~isempty(regexpi(src.filename,'dce')) && ~isfield(HdrInfo,'startTime'))
       HdrInfo.startTime = src.startTime;
-    end;
+    end
     % Initialization. Store startTime and first filename as parents_1.
     if(~isfield(HdrInfo,'parents_1'))
       HdrInfo.parents_1 = src.filename;

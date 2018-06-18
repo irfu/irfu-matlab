@@ -1,4 +1,4 @@
-function h=c_pl_sc_pos_mf(t,R1,R2,R3,R4,Vref,Bref)
+function h=c_pl_sc_pos_mf(t,R1,R2,R3,R4,Vref,Bref) %#ok<INUSL>
 %C_PL_SC_POS_MF   Plot spacecraft position in mean field coordinates
 %
 % that are defined usign spacecraft position and magnetic field.
@@ -20,11 +20,11 @@ function h=c_pl_sc_pos_mf(t,R1,R2,R3,R4,Vref,Bref)
 if nargin < 1, help c_pl_sc_pos_mf;return; end
 
 figure;clf
-if nargin == 1,
+if nargin == 1
   c_eval('load mR R?; r?=irf_resamp(R?,t,''spline'');clear R?;');
   c_load('V3');Vref=irf_resamp(V3,t);clear V3;
   c_load('B3');Bref=irf_resamp(B3,t);clear B3;
-elseif nargin==7,
+elseif nargin==7
   c_eval('r?=irf_resamp(R?,t,''spline'');clear R?;')
   Vref=irf_resamp(Vref,t);
   Bref=irf_resamp(Bref,t);
@@ -42,10 +42,10 @@ Vref_MF=irf_mean(Vref,r3,Bref);
 Vscaling=.5*drref/irf_abs(Vref_MF,1);Vscale=Vscaling*Vref_MF(:,2:4);
 c_eval('dr_MF?=irf_mean(dr?,r3,Bref);');
 
-view1=[90 90];
-view2=[90 0];
+view1=[90 90]; %#ok<NASGU>
+view2=[90 0]; %#ok<NASGU>
 npl=2;ypl=2;xpl=1;
-for ipl=1:npl,
+for ipl=1:npl
   h(ipl)=subplot(ypl,xpl,ipl);
   c_eval('x?=dr_MF?;');
   xl='outward [km] MF';yl='east [km] MF';zl='along B [km] MF';

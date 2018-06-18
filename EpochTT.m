@@ -16,13 +16,13 @@ classdef EpochTT < GenericTimeArray
   methods
     function obj = EpochTT(inp)
       if nargin==0, return, end
-      if isa(inp,'double'),
+      if isa(inp,'double')
         if min(size(inp))>1
           error('irf:EpochTT:EpochTT:badInputs',...
             'input must be a column or row vector')
         end
         obj.epoch = int64(inp(:)*1e9); % column vector
-      elseif isa(inp,'int64'),
+      elseif isa(inp,'int64')
         if min(size(inp))>1
           error('irf:EpochTT:EpochTT:badInputs',...
             'int64 input (nanoseconds since 2000) must be a columt or row vector')
@@ -35,7 +35,7 @@ classdef EpochTT < GenericTimeArray
         end
 				obj.epoch = GenericTimeArray.utc2ttns(inp);
 			elseif isa(inp,'GenericTimeArray')
-				if isa(inp,'EpochTT'),
+				if isa(inp,'EpochTT')
 					obj = inp;
 				else
 					obj = EpochTT(inp.ttns);
@@ -47,9 +47,9 @@ classdef EpochTT < GenericTimeArray
     end
     function objOut = plus(obj,arg)
       if isnumeric(arg)
-        if isa(arg,'double'),
+        if isa(arg,'double')
           inp = int64(arg*1e9);
-        elseif isa(arg,'int64'),
+        elseif isa(arg,'int64')
           inp = arg;
         else
           error('Input type not defined');
@@ -71,14 +71,14 @@ classdef EpochTT < GenericTimeArray
 	
 	methods (Static)
 		function output = from_ttns(input,index) % for consistency with other GenericTimeArray routines
-			if nargin == 1,
+			if nargin == 1
 				output = input;
 			else
 				output = input(index);
 			end
 		end
 		function output = to_ttns(input,index)
-			if nargin == 1,
+			if nargin == 1
 				output = input;
 			else
 				output = input(index);

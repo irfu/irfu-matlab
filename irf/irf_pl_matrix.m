@@ -22,7 +22,7 @@ function hout = irf_pl_matrix(x,y,F,dx,dy,Flab,xlab,ylab)
 
 narginchk(1,6)
 
-if nargin==1,
+if nargin==1
     specrec = x; x = [];
     if ~isfield(specrec,'dx'), specrec.dx=[];end
     if ~isfield(specrec,'dy'), specrec.dy=[];end

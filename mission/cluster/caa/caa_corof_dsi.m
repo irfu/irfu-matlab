@@ -47,7 +47,7 @@ else
 	for in=1:size(Dx,1)
 		if in ==1, ii = find( data(:,1)<Dx(2,1) );
 		elseif in == size(Dx,1), ii = find( data(:,1)>=Dx(end,1) );
-		else ii = find( data(:,1)<Dx(in+1,1) & data(:,1)>=Dx(in,1) );
+		else, ii = find( data(:,1)<Dx(in+1,1) & data(:,1)>=Dx(in,1) );
 		end
 		data(ii,:) = corr_local(data(ii,:),Dx(in,2),Dy(in,2),Da);
 	end

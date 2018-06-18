@@ -49,12 +49,12 @@ if strcmpi(from,'ISR2'), from = 'DSI'; end
 if strcmpi(from,'SR2'), from = 'DSC'; end
 if strcmpi(to,'ISR2'), to = 'DSI'; end
 if strcmpi(to,'SR2'), to = 'DSC'; end
-if strcmpi(to,'GSM'),
+if strcmpi(to,'GSM')
 	xgse=c_coord_trans(from,'GSE',x,varargin{:});
 	y=irf_gse2gsm(xgse);
 	return
 end
-if strcmpi(from,'GSM'),
+if strcmpi(from,'GSM')
 	xgse=irf_gse2gsm(x,-1);
 	y=c_coord_trans('GSE',to,xgse,varargin{:});
 	return
@@ -87,9 +87,9 @@ while have_options
 					sax = args{2};
 					if ~all(size(sax)==[1 3]), error('size(sax) ~= [1 3]'), end
 					l = 2;
-				else error('SAX value must be numeric')
+				else, error('SAX value must be numeric')
 				end
-			else error('SAX value is missing')
+			else, error('SAX value is missing')
 			end
 		case 'cl_id'
 			if length(args)>1
@@ -97,9 +97,9 @@ while have_options
 					cl_id = args{2};
 					if ~any(cl_id == [1 2 3 4]), error('CL_ID value must be 1..4'), end
 					l = 2;
-				else error('CL_ID value must be numeric')
+				else, error('CL_ID value must be numeric')
 				end
-			else error('CL_ID value is missing')
+			else, error('CL_ID value is missing')
 			end
 		case 't'
 			if length(args)>1
@@ -113,9 +113,9 @@ while have_options
 					catch
 						error('T is not a valid ISO time string. ')
 					end
-				else error('T value must be an ISDAT epoch or ISO time string')
+				else, error('T value must be an ISDAT epoch or ISO time string')
 				end
-			else error('T value is missing')
+			else, error('T value is missing')
 			end
 		otherwise
 			error(['unknown parameter : ' args{1}])
@@ -131,8 +131,8 @@ if strcmpi(from,'GSE') || strcmpi(to,'GSE')
 	end
 	if isempty(sax) % get spin axis from latitude longitude
 		[ok,sax] = sax_from_lat_long;
-		if ~ok, flagReadLat = 1; else flagReadLat = 0; end
-		if flagReadLat, % try to read lat and long from CAA files
+		if ~ok, flagReadLat = 1; else, flagReadLat = 0; end
+		if flagReadLat % try to read lat and long from CAA files
       if isempty(CL_SP_AUX)
 				caa_load CL_SP_AUX % Load CAA data files
       end
@@ -143,9 +143,9 @@ if strcmpi(from,'GSE') || strcmpi(to,'GSE')
 				cl_id_saved=cl_id;
 			end
 			[ok,sax] = sax_from_lat_long;
-			if ~ok, flagReadLat = 1; else flagReadLat = 0; end
+			if ~ok, flagReadLat = 1; else, flagReadLat = 0; end
 		end
-		if flagReadLat, % try to stream from CSA
+		if flagReadLat % try to stream from CSA
 			lat = []; long = [];
 			latVarName  = ['sc_at' num2str(cl_id) '_lat__CL_SP_AUX'];
 			longVarName = ['sc_at' num2str(cl_id) '_long__CL_SP_AUX'];
@@ -155,14 +155,14 @@ if strcmpi(from,'GSE') || strcmpi(to,'GSE')
 			long = out{2};
 			cl_id_saved=cl_id;
 			[ok,sax] = sax_from_lat_long;
-			if ~ok, flagReadLat = 1; else flagReadLat = 0; end
+			if ~ok, flagReadLat = 1; else, flagReadLat = 0; end
 		end
-		if flagReadLat, % still no data, put to empty sax
+		if flagReadLat % still no data, put to empty sax
 			sax=[];
 		end
 	end
 
-	if isempty(sax), % could not load anywhere SAX, use default 0 0 1
+	if isempty(sax) % could not load anywhere SAX, use default 0 0 1
 		disp('!!!!!!!!!!!! ERROR !!!!!!!!!!!!')
 		disp('c_coord_trans: could not load SAX variable')
 		disp('Using SAX=[0 0 1]; ')
@@ -204,14 +204,14 @@ end
 
 y = x;
 if lx > 3, y(:,[2 3 4]) = out; % Assuming first column is time
-else y=out;
+else, y=out;
 end
 
 	function [ok,sax]=sax_from_lat_long
 		% check if persistent lat and long variables include required time
 		% interval
 		ok = false;sax=[];
-		if any(lat), % exists saved spin latidude files, check they are ok
+		if any(lat) % exists saved spin latidude files, check they are ok
 			if (cl_id == cl_id_saved) && (t(1) > lat(1,1)-60) && (t(end) < lat(end,1)+60)
 				latlong   = irf_resamp([lat long(:,2)],t(1));
 				[xspin,yspin,zspin] = sph2cart(latlong(3)*pi/180,latlong(2)*pi/180,1);

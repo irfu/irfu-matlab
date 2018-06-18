@@ -30,7 +30,7 @@ t = bs(:,1); nData = length(t);
 for i=2:nData-1
   tMin = t(i)-DT2; tMax = t(i)+DT2;
   if tMin<t(1), tMin = t(1); tMax = 2*t(i)-t(1);
-  elseif tMax>t(end),
+  elseif tMax>t(end)
     tMax = t(end); tMin=2*t(i)-t(end);
   end
   bMedian(i,2:4) = median(bs(t>=tMin & t<=tMax,2:4));
@@ -67,7 +67,7 @@ if ~isempty(ii)
       else
         idx = 1; count = 0;
         while ~isempty(idxModeCh)
-          if idx==length(idxModeCh),
+          if idx==length(idxModeCh)
             if count<MIN_COUNT, idxModeCh((idx-count):idx) = []; end
             break
           end
@@ -77,7 +77,7 @@ if ~isempty(ii)
               idxModeCh((idx-count):idx) = []; idx = idx - count;
             end
             count = 0;
-          else count = count + 1; idx = idx + 1;
+          else, count = count + 1; idx = idx + 1;
           end
           %fprintf('idx:%d count:%d \n',idx,count)
         end
@@ -127,7 +127,7 @@ if ~isempty(ii)
   for i=1:length(idxGap)
     iiStart = ii(idxGap(i));
     if i==length(idxGap), iiEnd = ii(end);
-    else iiEnd = ii(idxGap(i+1)-1);
+    else, iiEnd = ii(idxGap(i+1)-1);
     end
     ttGap = add(ttGap,[t(iiStart) t(iiEnd)],{},...
       sprintf('gap #%d : %d points',i,iiEnd-iiStart+1));

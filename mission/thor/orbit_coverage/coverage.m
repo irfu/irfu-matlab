@@ -7,7 +7,7 @@ TtotOrb = [1 1 1]*60*60*24*365; % the time to spend in that orbit
 
 dt = 120; % s, timestep, 120s=2min 
 t=0; x=[]; y=[];
-for orb = [1 2 3]; 
+for orb = [1 2 3] 
     [tOrb,xOrb,yOrb] = orbit(r_pers(orb),r_aps(orb),round(TtotOrb(orb)),'E','dt',dt);
     % add all orbits in same vectors
     t = [t tOrb+t(end) NaN];

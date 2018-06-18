@@ -84,9 +84,9 @@ for g =1:f_count
   s_t = fromepoch(t);
   e_t = fromepoch(t); 
   
-  for i_MP_file=1:size(MP_files,1),
+  for i_MP_file=1:size(MP_files,1)
     file_name = MP_files(i_MP_file).name;
-    if c_ri_timestr_within_intervall_M(file_name,s_t,e_t) == 1,
+    if c_ri_timestr_within_intervall_M(file_name,s_t,e_t) == 1
       %load passing_MP,dist_t,dist2MP,p_solarwind
       load([p_MP file_name]);
       if debug, disp(['MP file: ' p_up file_name]);end
@@ -108,7 +108,7 @@ for g =1:f_count
 % read data files - E field, P 
 
   data_files=dir([path_data 'F*T*.mat']);
-  for i_data_file=1:size(data_files,1),
+  for i_data_file=1:size(data_files,1)
 		    file_name = data_files(i_data_file).name;
     if c_ri_timestr_within_tint(file_name,[t t]) == 1
       load([path_data file_name]);
@@ -119,7 +119,7 @@ for g =1:f_count
 %---------------------------------------
 % ls all Bp_*.* files
   Bp_files=dir([path_Bp 'Bp_*.mat']);
-  for i_Bp_file=1:size(Bp_files,1),
+  for i_Bp_file=1:size(Bp_files,1)
     file_name = Bp_files(i_Bp_file).name;
     
     if c_ri_timestr_within_intervall(file_name,s_t,e_t) == 1
@@ -182,7 +182,7 @@ h(ip)=irf_subplot(np,1,-ip);ip=ip+1;
       c_pl_tx(P1,P2,P3,P4,3);
       hold on;
       ud=get(gcf,'userdata');
-      if isfield(ud,'t_start_epoch'), 	ts=ud.t_start_epoch;else ts=0;end
+      if isfield(ud,'t_start_epoch'), 	ts=ud.t_start_epoch;else, ts=0;end
       plot(t-ts,0,'xk');
       ylabel('Vps, [cc]')
       

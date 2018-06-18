@@ -82,7 +82,7 @@ zphase = zphase.tlim(tlimitl);
 norepeat = ones(length(zphase.time),1);
 
 nph = length(zphase.data);
-for ii=[2:nph]
+for ii=2:nph
     if(zphase.time(ii) > zphase.time(ii-1))
         if(zphase.data(ii) < zphase.data(ii-1))
             zphase.data(ii:end) = zphase.data(ii:end)+double(360.0);

@@ -13,14 +13,14 @@ function xint=irf_integrate(x,tref,time_step)
 %   all time_steps of the time series
 
 isinpTS = isa(x,'TSeries');
-if isinpTS, 
+if isinpTS 
     ttemp = x.time.epochUnix;
     datatemp = double(x.data);
     x = [ttemp, double(datatemp)];
 end
 
 dt=[0 ; diff(x(:,1))];
-if nargin < 3, % estimate time step
+if nargin < 3 % estimate time step
     time_steps=diff(x(:,1));
     [~,ind_min]=min(time_steps);
     time_steps(ind_min)=[]; % remove the smallest time step in case some problems
@@ -28,17 +28,17 @@ if nargin < 3, % estimate time step
 end
 dt(dt>3*time_step)=0;
 xint=x;
-for j=2:size(xint,2),
+for j=2:size(xint,2)
   j_ok=find(~isnan(xint(:,j)));
   xint(j_ok,j)=cumsum(x(j_ok,j).*dt(j_ok),1);
 end
 
-if nargin>=2, % other origo for integration 
+if nargin>=2 % other origo for integration 
     if isa(tref,'GenericTimeArray')
       tt = tref.epochUnix;
-    elseif size(tref)==6,
+    elseif size(tref)==6
         tt=toepoch(tref);
-    elseif size(tref)==1;
+    elseif size(tref)==1
         tt=tref;
     else
         errS = 'do not know how to treat TREF input';
@@ -50,8 +50,8 @@ if nargin>=2, % other origo for integration
     xint=irf_add(1,xint,-1,xint_ref);
 end
 
-if isinpTS,
-	xintd = xint(:,[2:end]);
+if isinpTS
+	xintd = xint(:, 2:end);
 	xintt = irf_time(xint(:,1),'epoch>epochtt');
     xint = TSeries(xintt,xintd);
 end

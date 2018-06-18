@@ -1,4 +1,4 @@
-function [jz,jp,nj,angle]=irf_jz(v,B,dB,deg_p,deg_z,n_av);
+function [jz,jp,nj,angle]=irf_jz(v,B,dB,deg_p,deg_z,n_av)
 %IRF_JZ   Estimate the current given velocity and magnetic field
 %
 % [jz,jp,nj,angle]=irf_jz(v,B,dB,deg_p,deg_z,n_av);        % method A
@@ -40,23 +40,23 @@ function [jz,jp,nj,angle]=irf_jz(v,B,dB,deg_p,deg_z,n_av);
 
 if size(v,2)==3, v=[v(:,1)*0+B(1,1) v];end
 
-if nargout<=2, method='B'; else method='A';end
+if nargout<=2, method='B'; else, method='A';end
 if nargin <3, dB=B;end
 flag_average=0;
-if strcmp(method,'A'),
+if strcmp(method,'A')
   if nargin==6, flag_average=1;end
   if nargin <5, deg_z=10;end
   if nargin <4, deg_p=10;end
-elseif strcmp(method,'B'),
+elseif strcmp(method,'B')
   if nargin==4, flag_average=1;n_av=deg_p;end
 end
 
 
-if flag_average == 1,
+if flag_average == 1
   dBf=irf_filt(dB,0,1/n_av,2,3);
   tt=dBf(:,1);
   [xx ,dtB]=gradient(dBf(:,2:end),tt,tt); dtB=[tt dtB];  
-else,
+else
   tt=dB(:,1);
   % create dtB
   [xx ,dtB]=gradient(dB(:,2:end),tt,tt); dtB=[tt dtB];

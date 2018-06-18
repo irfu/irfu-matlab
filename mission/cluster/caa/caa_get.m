@@ -93,7 +93,7 @@ for t=t0:SPLIT_INT*3600:t1
 		ttt.mode = tm(1);
 		ttt.dir = subdir;
 		if isempty(mode_list), mode_list = ttt;
-        else mode_list(end+1) = ttt; %#ok<AGROW>
+        else, mode_list(end+1) = ttt; %#ok<AGROW>
 		end
 	end
 	clear good_dir
@@ -103,7 +103,7 @@ if isempty(mode_list), cd(old_pwd), return, end
 % Concatenate intervals
 [starts,ii] = sort([mode_list.st]);
 dts = [mode_list.dt]; dts = dts(ii);
-for j = ii;
+for j = ii
 	cd(mode_list(j).dir);
     if HAVE_LOAD_ARGS
         eval(['[ok, tt, msg] = c_load(' eval_str ');']);
@@ -132,12 +132,12 @@ for j = ii;
 	% 946684800 = toepoch([2000 01 01 00 00 00])
 	if ~isstruct(tt) && ( tt(1,1) < 946684800 )
 		if size(tt,1)==1, tt = [starts(j)+dts(j)/2.0 tt]; %#ok<AGROW>
-		else error('loaded bogus data')
+		else, error('loaded bogus data')
 		end
 	elseif DO_MEAN
 		mm = mean(tt(~isnan(tt(:,2)),2:end));
 		if any(~isnan(mm)), tt = [starts(j)+dts(j)/2.0 mm];
-		else continue
+		else, continue
 		end
 	end	
 	

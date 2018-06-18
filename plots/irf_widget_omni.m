@@ -8,11 +8,11 @@ function hout=irf_widget_omni(varargin)
 % if interval larger than 1day uses hourly database
 Units=irf_units;
 %% Check input
-if nargin==0, % initialize
+if nargin==0 % initialize
   action='initialize';
   have_options=0;
-elseif nargin==1, % should be action
-  if ischar(varargin{1}),
+elseif nargin==1 % should be action
+  if ischar(varargin{1})
     action=varargin{1};
     have_options=0;
   else
@@ -34,7 +34,7 @@ while have_options
         data.t=tstart;
         set(gcf,'userdata',data);
         l = 2;
-      else irf.log('warning','wrongArgType : tint must be numeric')
+      else, irf.log('warning','wrongArgType : tint must be numeric')
       end
   end
   args = args(l+1:end);
@@ -82,7 +82,7 @@ switch lower(action)
     h=data.subplot_handles;
     ff=data.ff;
     tint=[data.t data.t+data.dt];
-    for j=1:numel(h),
+    for j=1:numel(h)
       ud=get(h(j),'userdata');
       if isstruct(ud), ud=rmfield(ud,'zoom_x');end % remove zoom_x if exists
       set(h(j),'userdata',ud);
@@ -135,7 +135,7 @@ switch lower(action)
   case 'new_start_time'
     data=get(gcf,'userdata');
     xx=inputdlg('Enter new start time. [yyyy mm dd hh mm ss]','**',1,{mat2str(irf_time(data.t,'vector'),4)});
-    if ~isempty(xx),
+    if ~isempty(xx)
       variable_str=xx{1};
       data.t=irf_time(eval(variable_str));
       set(gcf,'userdata',data);
@@ -145,7 +145,7 @@ switch lower(action)
   case 'new_time_interval'
     data=get(gcf,'userdata');
     xx=inputdlg('Enter time interval in hours.','**',1,{mat2str(data.dt/3600,3)});
-    if ~isempty(xx),
+    if ~isempty(xx)
       variable_str=xx{1};
       data.dt=eval(variable_str)*3600;
       set(gcf,'userdata',data);
@@ -153,7 +153,7 @@ switch lower(action)
       irf_widget_omni('plot');
     end
 end
-if nargout,
+if nargout
   hout=h;
 else
   clear hout;
@@ -180,7 +180,7 @@ xx=min(min(600,sz(3))/xSize,min(900,sz(4))/ySize); % figure at least 600 wide or
 set(gcf,'Position',[10 10 xSize*xx ySize*xx])
 clear xSize sLeft ySize yTop
 
-for j=1:number_of_subplots,
+for j=1:number_of_subplots
   c(j)=irf_subplot(number_of_subplots,1,-j);
   cla(c(j));
   set(c(j),'tag','');

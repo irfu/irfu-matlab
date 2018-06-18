@@ -20,7 +20,7 @@ gui_State = struct('gui_Name',       '+irf/tt_browse.fig', ...
                    'gui_Callback',   []);
 if nargin && ischar(varargin{1})
     gui_State.gui_Callback = str2func(varargin{1});
-elseif nargin == 0,
+elseif nargin == 0
 	help irf.tt_browse;
 	return;
 end
@@ -45,16 +45,16 @@ function tt_browse_OpeningFcn(hObject,~,handles, varargin)
 handles.output = hObject;
 handles.workDirectory=pwd;
 isSpecifiedDataDirectory = 0;
-if isa(varargin{1},'irf.TimeTable'),
+if isa(varargin{1},'irf.TimeTable')
 	tt=varargin{1};
-	if isfield(tt,'UserData'),
+	if isfield(tt,'UserData')
 		ud=tt.UserData;
-		if isfield(ud,'directory');
+		if isfield(ud,'directory')
 			isSpecifiedDataDirectory = 1;
 			handles.dirNames=ud.directory;
 		end
 	end
-	if ~isSpecifiedDataDirectory,
+	if ~isSpecifiedDataDirectory
 		disp('irf.tt_browse(): directory of time table events not specified');
 		handles.dirNames=cell(1,numel(tt));
 	end
@@ -70,7 +70,7 @@ end
 handles.list_index_match_filter=1:numel(handles.dirNames);
 set(handles.time_table_to_browse,'string',handles.timeInterval);
 set(handles.edit1,'string','');
-if numel(varargin) >= 2, % plot function specified as 2nd argument
+if numel(varargin) >= 2 % plot function specified as 2nd argument
 	if ischar(varargin{2})
 		set(handles.edit2,'string',varargin{2});
 	end
@@ -105,11 +105,11 @@ tint=[handles.tt(iEvent,1) handles.tt(iEvent,2)];
 cd(handles.workDirectory);
 plotFunc=get(handles.edit2,'string');
 [plotFuncDir,~,~] = fileparts(which(plotFunc));
-if strcmp(plotFuncDir,pwd),
+if strcmp(plotFuncDir,pwd)
 	addpath(pwd)
 end
 hcf=handles.userdata.figure; % figure handle in which plotFunc should plot
-if~isempty(eventDir); 
+if~isempty(eventDir) 
 	cd(eventDir);
 	run(plotFunc);
 	cd(handles.workDirectory);
@@ -140,10 +140,10 @@ function edit1_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 filter=regexpi(get(handles.edit1,'string'),'\w*','match'); % cell array with filter values
 handles.list_index_match_filter=[];
-if isempty(filter),
+if isempty(filter)
 	handles.list_index_match_filter=1:numel(handles.dirNames);
 else
-	for i=1:size(handles.timeInterval,1),
+	for i=1:size(handles.timeInterval,1)
 		ok=1;
 		a=regexpi(handles.timeInterval(i,:),filter);
 		for j=1:numel(a)
@@ -152,7 +152,7 @@ else
 		if ok, handles.list_index_match_filter(end+1)=i; end
 	end
 end
-if isempty(handles.list_index_match_filter),
+if isempty(handles.list_index_match_filter)
 	disp('WARNING! Filter did not match anything!');
 	handles.list_index_match_filter=1:numel(handles.timeInterval);
 end
@@ -186,7 +186,7 @@ tint=handles.userdata.TTselected.TimeInterval(iSelected,:);
 cd(handles.workDirectory);
 plotFunc=get(handles.edit2,'string');
 [plotFuncDir,~,~] = fileparts(which(plotFunc));
-if strcmp(plotFuncDir,pwd),
+if strcmp(plotFuncDir,pwd)
 	addpath(pwd)
 end
 hcf=handles.userdata.figure; % figure handle in which plotFunc should plot

@@ -34,10 +34,10 @@ leviCivita3D([6 16 20]) = -1;
 doConstraint = false;
 
 %% Input check
-if nargin == 0 && nargout == 0,
+if nargin == 0 && nargout == 0
 	help irf_generic_minimum_residue_analysis;
 	return;
-elseif nargin == 1 && isstruct(varargin{1}),
+elseif nargin == 1 && isstruct(varargin{1})
 	InputParameters = varargin{1};
 	inputParameterFields = fieldnames(InputParameters);
 	for j=1:numel(inputParameterFields)
@@ -124,7 +124,7 @@ if nargout == 0
 end
 
 %% Define output
-if nargout == 0,
+if nargout == 0
 	clear L V U;
 end
 

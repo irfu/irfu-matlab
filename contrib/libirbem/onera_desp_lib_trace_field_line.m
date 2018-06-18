@@ -60,11 +60,11 @@ function [Lm,Blocal,Bmin,J,POSIT] = onera_desp_lib_trace_field_line(kext,options
 % if maginput is omitted, [] is assumed
 % if R0 is omitted, R0=1 is assumed
 
-if nargin < 8,
+if nargin < 8
     maginput = [];
 end
 
-if nargin < 9,
+if nargin < 9
     R0 = 1;
 end
 
@@ -75,10 +75,10 @@ onera_desp_lib_load;
 kext = onera_desp_lib_kext(kext);
 options = onera_desp_lib_options(options);
 sysaxes = onera_desp_lib_sysaxes(sysaxes);
-if isempty(maginput),
+if isempty(maginput)
     maginput = nan(1,25);
 end
-if size(maginput,2) == 1, % make column vector into row vector
+if size(maginput,2) == 1 % make column vector into row vector
     maginput = maginput';
 end
 
@@ -87,7 +87,7 @@ maginput = onera_desp_lib_maginputs(maginput); % NaN to baddata
 
 Nbounce = 20*150; % maximum size of bounce array
 Lm = nan;
-Blocal = repmat(nan,Nbounce,1);
+Blocal = nan(Nbounce,1);
 Bmin = Lm;
 J = Lm;
 [iyear,idoy,UT] = onera_desp_lib_matlabd2yds(matlabd);
@@ -95,7 +95,7 @@ LmPtr = libpointer('doublePtr',Lm);
 BlocalPtr = libpointer('doublePtr',Blocal);
 BminPtr = libpointer('doublePtr',Bmin);
 JPtr = libpointer('doublePtr',J);
-POSIT = repmat(nan,[3 Nbounce]);
+POSIT = nan([3 Nbounce]);
 POSITPtr = libpointer('doublePtr',POSIT);
 NPOSIT = 0;
 NPOSITPtr = libpointer('int32Ptr',NPOSIT);

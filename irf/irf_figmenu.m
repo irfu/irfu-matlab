@@ -6,7 +6,7 @@ if nargin < 1, action = 'initialize'; end
 if nargin < 2, x1 = ''; end % x1 is used when printing figures
 
 switch lower(action)
-	case 'initialize',
+	case 'initialize'
 		% execute irf_figmenu if there is no such menu
 		if isempty(findobj(gcf,'type','uimenu','label','&irf'))
 			hfigmenu=uimenu('Label','&irf');
@@ -49,7 +49,7 @@ switch lower(action)
 		set(gcf,'userdata',ud);
 	case 'irf_tm'
 		user_data = get(gcf,'userdata');
-		if ~isfield(user_data,'suplot_handles'),
+		if ~isfield(user_data,'suplot_handles')
 			user_data.subplot_handles=irf_plot_get_subplot_handles;
 			set(gcf,'userdata',user_data);
 		end
@@ -57,7 +57,7 @@ switch lower(action)
 	case 'zoomall'
 		hmenu_zoom = getfield(get(gcf,'userdata'),'hmenu_zoom');
 		lab=get(hmenu_zoom,'label');
-		if strcmpi(lab,'Zoom all panels OFF'), % switch off auto zoom
+		if strcmpi(lab,'Zoom all panels OFF') % switch off auto zoom
 			set(zoom(gcf),'ActionPostCallback', '');
 			set(hmenu_zoom,'label','Zoom all panels ON');
 		else % switch on auto zoom
@@ -102,10 +102,10 @@ switch lower(action)
 		for jh = 1:numel(h)
 			t = get(h(jh),'xdata') + tStart;
 			y = get(h(jh),'ydata');
-			if jh == 1,
+			if jh == 1
 				v = [t(:) y(:)];
 			else
-				if all(t(:) == v(:,1)),
+				if all(t(:) == v(:,1))
 					v = [v y(:)];
 				else
 					irf_log('dsrc','Lines do not have the same time sampling!');
@@ -138,14 +138,14 @@ end
 	end
 	function figure_zoom_in(figureHandle,xlim,varargin)
 		% figure_zoom_in(figureHandle,xlim,[currentAxisHandle])
-		if nargin == 3,
+		if nargin == 3
 			currentAxisHandle = varargin{1};
 		else
 			currentAxisHandle = NaN;
 		end
 		ud=get(figureHandle,'userdata');
 		hsubplots=irf_plot_get_subplot_handles(figureHandle);
-		if isfield(ud,'t_start_epoch'),
+		if isfield(ud,'t_start_epoch')
 			irf_zoom(hsubplots,'x',xlim+double(ud.t_start_epoch));
 		else
 			set(hsubplots,'xlim',xlim);
@@ -153,7 +153,7 @@ end
 		set(figureHandle,'userdata',ud);
 		for ih=1:numel(hsubplots)
 			h=hsubplots(ih);
-			if h~=currentAxisHandle,
+			if h~=currentAxisHandle
 				% if not spectrogram do also smart y adjustment
 				if ~isempty(findobj(h,'tag','irf_pl_mark')) || ...
 						~any(~isempty([findobj(h,'Type','surface') ...

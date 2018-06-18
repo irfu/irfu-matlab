@@ -10,7 +10,7 @@
 mode = irf_ask('Mode p1_34->p_34_2(1) or p23->p41(0)? [%]>','mode',0);
 
 if mode, disp('p1_34->p_34_2, p1_34->p_34_2 interferometry');
-else disp('p23->p41, p42->p13 interferometry');
+else, disp('p23->p41, p42->p13 interferometry');
 end
 
 flag_corr_deriv = irf_ask('Use max gradient (0) or zero crossings(1)? [%]>',...
@@ -38,7 +38,7 @@ disp(['Using f=' num2str(ff_ref) ' Hz to estimate wavelength']);
 
 % Distance between the signals
 if mode, dist=.044;
-else dist=.062;
+else, dist=.062;
 end
 
 Fs = irf_ask('sampling frequnecy? [%]>','Fs',9000);
@@ -175,7 +175,7 @@ irf_pl_info([mfilename '  ' datestr(now) '. ' title_text],h(1)); % add informati
 
 ud=get(gcf,'userdata');
 if isfield(ud,'t_start_epoch'), ts = ud.t_start_epoch;
-else ts = 0;
+else, ts = 0;
 end
 
 %%%%%% subplot 2 %%%%%%
@@ -210,7 +210,7 @@ ylabel(h(5),'dn [cm^-3]');
 ylabel(h(6),'dn dE [cc mV/m]');axis(h(6),'tight');
 
 numb={'a)','b)','c)','d)','e)','f)','g)','h)','i)','j)','k)','l)','m)'};
-for ip=1:6,
+for ip=1:6
   ht=irf_pl_info(numb{ip},h(ip),[0.05,.7]);
   set(ht,'interpreter','none','FontSize', 10);
 end

@@ -32,19 +32,19 @@ function Flux = onera_desp_lib_get_ae8_ap8_flux(whichm,energy,BBo,L)
 
 onera_desp_lib_load;
 
-if isnumeric(whichm),
+if isnumeric(whichm)
     iwhichm = whichm;
 else
     mname = lower(whichm);
     mname = mname(~ismember(mname,[' ','-']));
-    switch(mname),
-        case {'ae8min'},
+    switch(mname)
+        case {'ae8min'}
             iwhichm = 1;
-        case {'ae8max'},
+        case {'ae8max'}
             iwhichm = 2;
-        case {'ap8min'},
+        case {'ap8min'}
             iwhichm = 3;
-        case {'ap8max'},
+        case {'ap8max'}
             iwhichm = 4;
         otherwise
             error('Unknown model whichm="%s" in %s',whichm,mfilename);
@@ -62,12 +62,12 @@ NEmax = 25; % maximum number of energies
 
 ntime = length(BBo);
 Nmax = onera_desp_lib_ntime_max; % maximum array size in fortran library
-Flux = repmat(nan,ntime,NE);
-if (ntime>Nmax) || (NE>NEmax),
+Flux = nan(ntime,NE);
+if (ntime>Nmax) || (NE>NEmax)
     % break up the calculation into chunks the libarary can handle
-    for i = 1:Nmax:ntime,
+    for i = 1:Nmax:ntime
         ii = i:min(i+Nmax-1,ntime);
-        for ie = 1:NEmax:NE,
+        for ie = 1:NEmax:NE
             iie = ie:min(ie+NEmax-1,NE);
             Flux(ii,iie) = onera_desp_lib_get_ae8_ap8_flux(whichm,energy(iie,:),BBo(ii),L(ii));
         end
@@ -82,24 +82,24 @@ else
     % energy: array(2) of double. If whatf=1 or 3 then energy(2) is not considered.
     %
 
-    if size(energy,2)==1,
+    if size(energy,2)==1
         whatf = 1; % differential flux
-        energy = [energy,repmat(nan,NE,1)];
-    elseif (size(energy,2)==2) && any(isinf(energy(:,2))),        
+        energy = [energy,nan(NE,1)];
+    elseif (size(energy,2)==2) && any(isinf(energy(:,2)))        
         whatf = 3; % integral flux
-        if ~all(isinf(energy(:,2))),
+        if ~all(isinf(energy(:,2)))
             error('%s: if any of second column of "energy" argument is infinity, all must be',mfilename);
         end
-    elseif size(energy,2)==2,
+    elseif size(energy,2)==2
         whatf = 2; % wide differential flux
     else
         error('%s: "energy" argument of size %d x %d uninterpretable',mfilename,size(energy,1),size(energy,2));
     end
 
-    nanpad = repmat(nan,Nmax-ntime,1);
+    nanpad = nan(Nmax-ntime,1);
     BBo = [BBo(:);nanpad];
     L = [L(:);nanpad];
-    flux = repmat(nan,Nmax,NEmax);
+    flux = nan(Nmax,NEmax);
     
     FluxPtr = libpointer('doublePtr',flux);
     calllib('onera_desp_lib','get_ae8_ap8_flux_',ntime,iwhichm,whatf,NE,energy',BBo,L,FluxPtr);

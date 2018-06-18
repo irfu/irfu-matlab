@@ -25,9 +25,9 @@ te = toepoch([nexty nextm 1 00 00 00]);
 [onoff,cover] = caa_read_coverage('/data/cluster/caa');
 [plan, plan_ind] = caa_pl_coverage(onoff,cover, [ts te],0);
 
-if isempty(plan) & isempty(plan_ind), disp('plans are empty. nothing to do'), return, end
+if isempty(plan) && isempty(plan_ind), disp('plans are empty. nothing to do'), return, end
 
-if ~isempty(plan_ind) & ~isempty(plan)
+if ~isempty(plan_ind) && ~isempty(plan)
 	plan = sortrows([plan; plan_ind(:,1:2)],1);
 end
 
@@ -56,7 +56,7 @@ cd(outdir)
 
 fid = fopen(fname,'w');
 fprintf(fid,'<?xml version="1.0"?>\n');
-fprintf(fid,'<!DOCTYPE regions SYSTEM "http://www.space.irfu.se/regions.dtd">\n');
+fprintf(fid,'<!DOCTYPE regions SYSTEM "https://www.space.irfu.se/regions.dtd">\n');
 fprintf(fid,'\n<!--\nList of regions crossed by Cluster for %s\n-->\n<regions>\n',tit);
 fprintf(fid,'<title>%s</title>\n',tit);
 if ts~=plan(1)

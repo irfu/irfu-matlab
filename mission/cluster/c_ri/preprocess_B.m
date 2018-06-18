@@ -30,7 +30,7 @@ sample_period = c_ri_calc_dt(B1,1000,mode);
 
 if sample_period == -1
 %calculating the sample fq
-if B1_max ~= 1 & B2_max ~= 1 & B3_max ~= 1 & B4_max ~= 1 
+if B1_max ~= 1 && B2_max ~= 1 && B3_max ~= 1 && B4_max ~= 1 
 per1 = (B1(B1_max,1) - B1(1,1))/(B1_max-1);
 per2 = (B2(B2_max,1) - B2(1,1))/(B2_max-1);
 per3 = (B3(B3_max,1) - B3(1,1))/(B3_max-1);
@@ -84,7 +84,7 @@ end
 start_time = min([B1_1 B2_1 B3_1 B4_1]);
 end_time = max([B1_m B2_m B3_m B4_m]);
 
-if start_time ~= NaN & end_time ~= NaN
+if ~isnan(start_time) && ~isnan(end_time)
 
 time_line = (start_time:sample_period:end_time)';
 

@@ -446,10 +446,6 @@ elseif strcmp(quantity,'dies') || strcmp(quantity,'diehxs') || strcmp(quantity,'
         continue
       end
       
-      if flag_lx, tmode = 'lx'; else, tmode = 'hx'; end
-      fsamp = c_efw_fsample(wE{iPr}.e,tmode);
-      if ~fsamp, error('no sampling frequency'),end
-      
       problems = 'reset|bbias|probesa|probeld|sweep|bdump|nsops|whip';
       if flag_lx
         ps = sprintf('%d',wE{iPr}.probe);
@@ -468,9 +464,21 @@ elseif strcmp(quantity,'dies') || strcmp(quantity,'diehxs') || strcmp(quantity,'
       wE{iPr}.e = res; %#ok<AGROW,NODEF>
       clear res signal problems
       
-      % Check if we have at least 1 spin of data left
-      if length(find(~isnan(wE{iPr}.e(:,2)))) < 4*fsamp
-        irf_log('proc',irf_ssub('No p? data after removals',wE{iPr}.probe));
+      noData = false;
+      nDataPoints = length(find(~isnan(wE{iPr}.e(:,2))));
+      if ~nDataPoints, noData = true;
+      else
+        if flag_lx, tmode = 'lx'; else, tmode = 'hx'; end
+        fsamp = c_efw_fsample(wE{iPr}.e,tmode);
+        if ~fsamp, error('no sampling frequency'),end
+        
+        % Check if we have at least 1 spin of data left
+        if nDataPoints < 4*fsamp, noData = true; end
+      end
+      
+      if noData
+        irf_log('proc',...
+          sprintf('No p%d%s data after removals',wE{iPr}.probe,lx_str));
         if     wE{iPr}.probe==34, flag_have_p34 = 0;
         elseif wE{iPr}.probe==p12, p12=[];
         end
@@ -750,7 +758,7 @@ elseif strcmp(quantity,'dies') || strcmp(quantity,'diehxs') || strcmp(quantity,'
     if ~any(strfind(save_list,sprintf('diEs%dp',cl_id))) && ...
         any(strfind(save_list,sprintf('diELXs%dp',cl_id)))
       for pp = [34 12 32 42]
-        if strfind(save_list,sprintf('diELXs%dp%d',cl_id,pp))
+        if strfind(save_list,sprintf('diELXs%dp%d',cl_id,pp)) %#ok<STRIFCND>
           caa_sfit_probe(cl_id,pp*10);
           irf_log('calb',irf_ssub('Will use p?LX for spin res data',pp))
           break
@@ -1012,20 +1020,23 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
         continue
       end
       
-      if flag_lx, fsamp = c_efw_fsample(tt,'lx');
-      else, fsamp = c_efw_fsample(tt,'hx');
-      end
-      if ~fsamp, error('no sampling frequency'),end
+      
       
       problems = 'reset|bbias|probesa|probeld|sweep|bdump|nsops';
       nsops_errlist = [caa_str2errid('bad_bias') caa_str2errid(irf_ssub('no_p?',ps))];
-      if ~flag_lx, nsops_errlist = [nsops_errlist caa_str2errid('bad_hx')]; end %#ok<AGROW,NASGU>
-      
-      % Always remove Whisper when we use 180Hz filter
-      if (fsamp == 450) || ...
-          ( cl_id == 2 && tt(1,1)>toepoch([2001 07 23 13 54 18]) ) || ...
-          ( flag_rmwhip && flag_rmwhip_force )
-        problems = [problems '|whip']; %#ok<AGROW>
+      if flag_lx
+        nsops_errlist = [nsops_errlist caa_str2errid('bad_lx')]; %#ok<AGROW,NASGU>
+      else
+        nsops_errlist = [nsops_errlist caa_str2errid('bad_hx')]; %#ok<AGROW,NASGU>
+        
+        fsamp = c_efw_fsample(tt,'hx');
+        if ~fsamp, error('no sampling frequency'),end
+        % Always remove Whisper when we use 180Hz filter
+        if (fsamp == 450) || ...
+            ( cl_id == 2 && tt(1,1)>toepoch([2001 07 23 13 54 18]) ) || ...
+            ( flag_rmwhip && flag_rmwhip_force )
+          problems = [problems '|whip']; %#ok<AGROW>
+        end
       end
       if flag_rmhbsa, problems = [problems '|hbiassa']; end %#ok<AGROW,NASGU>
       signal = tt; %#ok<NASGU>
@@ -1034,8 +1045,20 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
       tt = res; %#ok<NODEF>
       clear res signal problems probe
       
-      % Check if we have at least 1 sec of data left
-      if length(find(~isnan(tt(:,2)))) < fsamp
+      noData = false;
+      nDataPoints = length(find(~isnan(tt(:,2))));
+      
+      if ~nDataPoints, noData = true;
+      else
+        if flag_lx, tmode = 'lx'; else, tmode = 'hx'; end
+        fsamp = c_efw_fsample(tt,tmode);
+        if ~fsamp, error('no sampling frequency'),end
+        
+        % Check if we have at least 1 sec of data left
+        if nDataPoints < fsamp, noData = true; end
+      end
+      
+      if noData
         irf_log('proc',irf_ssub('No p? data after removals',ps))
         c_eval('e?=[];',p)
         continue
@@ -3153,7 +3176,7 @@ elseif strcmp(quantity,'hk')
           end
           if cnt>=31
             break;
-          end;
+          end
           cnt = cnt + 1;
         end
         romid=HK(j,80); % Does checking romid really work for a reset?

@@ -13,17 +13,17 @@ function [r1, r2, r3, r4] = c_umu_randtetra(L, E, P)
 % P           Planarity
 % r1..r4      Row vector (col 1-3 are SC pos in km)
 
-     if E > 1,  
+     if E > 1  
         error(sprintf('E = %g, must be less than 1.', E));
      end 
-     if P > 1,  
+     if P > 1  
         error(sprintf('P = %g, must be less than 1.', P));
      end 
 
-     if E < 0,  
+     if E < 0  
         error(sprintf('E = %g, must be greater than 0.', E));
      end 
-     if P < 0,  
+     if P < 0  
         error(sprintf('P = %g, must be greater than 0.', P));
      end 
 

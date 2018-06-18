@@ -22,9 +22,9 @@ while there_is_more_curves
     probe_type=irf_ask('Probe type. 1-spherical, 2- cylindrical [%]>','probe_type',2);
     probe_radius=irf_ask('Probe radius in cm. [%]>','probe_radius',4);
     probe_area=4*pi*(probe_radius/100)^2;
-    if probe_type==1,
+    if probe_type==1
         probe_cross_section=probe_area/pi; %cylinder
-    elseif probe_type ==2,
+    elseif probe_type ==2
         probe_cross_section=probe_area/4; %sphere
     end
     
@@ -55,7 +55,7 @@ figure;
 %h(1)=irf_subplot(2,1,-1);
 ccc=get(gca,'colororder');
 ccc=[0 0 0;ccc]; % add balck color first
-for j=1:number_of_curves,
+for j=1:number_of_curves
     hp(j)=plot(result.Upot{j},result.Jprobe{j},'color',ccc(j,:));
     grid on;hold on;
     legend_txt{j}=['n=' num2str(result.n(j)/1e6) 'cc ' 'Ti=' num2str(result.Ti(j)) 'eV ' 'Te=' num2str(result.Te(j)) 'eV'];
@@ -88,7 +88,7 @@ set(ht,'interpreter','none','FontSize', 8);
 add_ref_points=irf_ask('Add reference points? y/n>','qq','n');
 while strcmp(add_ref_points,'y')
     iref=irf_ask('Reference points at current level I[micro A/m2]=','ilevel',0);
-    for j=1:number_of_curves,
+    for j=1:number_of_curves
         uref=interp1(result.Jprobe{j},result.Upot{j},iref);
         plot(uref,iref,'o','color',ccc(j,:),'MarkerFaceColor',ccc(j,:),'MarkerSize',8);
     end

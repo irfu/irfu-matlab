@@ -35,7 +35,7 @@ for d=1:length(dirs)
 		if count<=0
 			irf_log('save','problem writing to .caa_rerun_L3E')
 			cd(old_pwd), return
-        end	
+		end	
 	else
 		irf_log('proc',[ '-- SKIPPING -- : ' curr_d]);
 	end

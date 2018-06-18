@@ -31,7 +31,7 @@ function varargout = digitize2(varargin)
 narginchk(0,1);
 
 % Identify image filename
-if (nargin == 0),
+if (nargin == 0)
      [filename, pathname] = uigetfile( ...
 	       {'*.jpg;*.tif;*.gif;*.png;*.bmp', ...
 		'All MATLAB Image Files (*.jpg,*.tif,*.gif,*.png,*.bmp)'; ...
@@ -48,14 +48,14 @@ if (nargin == 0),
 		'*.*', ...
 		'All Files (*.*)'}, ...
 	       'Select image file');
-     if isequal(filename,0) | isequal(pathname,0)
+     if isequal(filename,0) || isequal(pathname,0)
 	  return
      else
 	  imagename = fullfile(pathname, filename);
      end
-elseif nargin == 1,
+elseif nargin == 1
      imagename = varargin{1};
-     [path, file,ext] = fileparts(imagename);
+     [~, file,ext] = fileparts(imagename);
      filename = strcat(file,ext);
 end   
 
@@ -74,15 +74,15 @@ set(gca,'Units','normalized','Position',[0   0 1   1]);
 OriginButton = questdlg('Select the ORIGIN with left mouse button click', ...
 			'DIGITIZE: user input required', ...
 			'OK','Cancel','OK');
-switch OriginButton,
-     case 'OK',
+switch OriginButton
+     case 'OK'
 	  drawnow
 	  [Xopixels,Yopixels] = ginput(1);
 	  line(Xopixels,Yopixels,...
 	       'Marker','o','Color','g','MarkerSize',14)
 	  line(Xopixels,Yopixels,...
 	       'Marker','x','Color','g','MarkerSize',14)
-     case 'Cancel',
+     case 'Cancel'
 	  close(FigName)
 	  return
 end % switch OriginButton
@@ -94,7 +94,7 @@ def={'0','0'};
 dlgTitle='DIGITIZE: user input required';
 lineNo=1;
 answer=inputdlg(prompt,dlgTitle,lineNo,def);
-if (isempty(char(answer{:})) == 1),
+if (isempty(char(answer{:})) == 1)
      close(FigName)
      return
 else
@@ -107,15 +107,15 @@ XLimButton = questdlg(...
 	  'Select a point on the X-axis with left mouse button click ', ...
 	  'DIGITIZE: user input required', ...
 	  'OK','Cancel','OK');
-switch XLimButton,
-     case 'OK',
+switch XLimButton
+     case 'OK'
 	  drawnow
 	  [XAxisXpixels,XAxisYpixels] = ginput(1);
 	  line(XAxisXpixels,XAxisYpixels,...
 	       'Marker','*','Color','b','MarkerSize',14)
 	  line(XAxisXpixels,XAxisYpixels,...
 	       'Marker','s','Color','b','MarkerSize',14)
-     case 'Cancel',
+     case 'Cancel'
 	  close(FigName)
 	  return
 end % switch XLimButton
@@ -126,7 +126,7 @@ def={'1'};
 dlgTitle='DIGITIZE: user input required';
 lineNo=1;
 answer=inputdlg(prompt,dlgTitle,lineNo,def);
-if (isempty(char(answer{:})) == 1),
+if (isempty(char(answer{:})) == 1)
      close(FigName)
      return
 else
@@ -139,14 +139,14 @@ Xtype = questdlg(...
 	  'DIGITIZE: user input required', ...
 	  'LINEAR','LOGARITHMIC','Cancel');
 drawnow
-switch upper(Xtype),
-     case 'LINEAR',
+switch upper(Xtype)
+     case 'LINEAR'
 	  logx = 0;
 	  scalefactorXdata = XAxisXdata - OriginXYdata(1);
-     case 'LOGARITHMIC',
+     case 'LOGARITHMIC'
 	  logx = 1;
 	  scalefactorXdata = log10(XAxisXdata/OriginXYdata(1));
-     case 'CANCEL',
+     case 'CANCEL'
 	  close(FigName)
 	  return
 end % switch Xtype
@@ -164,15 +164,15 @@ YLimButton = questdlg(...
 	  'Select a point on the Y-axis with left mouse button click', ...
 	  'DIGITIZE: user input required', ...
 	  'OK','Cancel','OK');
-switch YLimButton,
-     case 'OK',
+switch YLimButton
+     case 'OK'
 	  drawnow
 	  [YAxisXpixels,YAxisYpixels] = ginput(1);
 	  line(YAxisXpixels,YAxisYpixels,...
 	       'Marker','*','Color','b','MarkerSize',14)
 	  line(YAxisXpixels,YAxisYpixels,...
 	       'Marker','s','Color','b','MarkerSize',14)
-     case 'Cancel',
+     case 'Cancel'
 	  close(FigName)
 	  return
 end % switch YLimButton
@@ -183,7 +183,7 @@ def={'1'};
 dlgTitle='DIGITIZE: user input required';
 lineNo=1;
 answer=inputdlg(prompt,dlgTitle,lineNo,def);
-if (isempty(char(answer{:})) == 1),
+if (isempty(char(answer{:})) == 1)
      close(FigName)
      return
 else
@@ -195,14 +195,14 @@ Ytype = questdlg('Select axis type for ordinate (Y)', ...
 		 'DIGITIZE: user input required', ...
 		 'LINEAR','LOGARITHMIC','Cancel');
 drawnow
-switch upper(Ytype),
-     case 'LINEAR',
+switch upper(Ytype)
+     case 'LINEAR'
 	  logy = 0;
 	  scalefactorYdata = YAxisYdata - OriginXYdata(2);
-     case 'LOGARITHMIC',
+     case 'LOGARITHMIC'
 	  logy = 1;
 	  scalefactorYdata = log10(YAxisYdata/OriginXYdata(2));
-     case 'CANCEL',
+     case 'CANCEL'
 	  close(FigName)
 	  return
 end % switch Ytype
@@ -224,10 +224,10 @@ drawnow
 numberformat = '%6.2f';
 nXY = [];
 ng = 0;
-while 1,
-     fprintf(['\n INFO >> Click with RIGHT mouse button to QUIT \n\n']);
+while 1
+     fprintf('\n INFO >> Click with RIGHT mouse button to QUIT \n\n');
      n = 0;
-     disp(sprintf('\n %s \n',' Index          X            Y'))
+     fprintf('\n %s \n\n',' Index          X            Y')
      
 % %%%%%%%%%%%%%% DATA ACQUISITION LOOP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
      while 1
@@ -235,14 +235,14 @@ while 1,
 	  xy = rotmat*[(x-Xopixels);(y-Yopixels)];
 	  delXpoint = xy(1);
 	  delYpoint = xy(2);
-	  if buttonNumber == 1, 
+	  if buttonNumber == 1 
 	       line(x,y,'Marker','.','Color','r','MarkerSize',12)
-	       if logx,
+	       if logx
 		    x = OriginXYdata(1)*10^(delXpoint/delXcal*scalefactorXdata);
 	       else
 		    x = OriginXYdata(1) + delXpoint/delXcal*scalefactorXdata;
 	       end
-	       if logy, 
+	       if logy 
 		    y = OriginXYdata(2)*10^(delYpoint/delYcal*scalefactorYdata);
 	       else  
 		    y = OriginXYdata(2) + delYpoint/delYcal*scalefactorYdata;
@@ -250,7 +250,7 @@ while 1,
 	       n = n+1;
 	       xpt(n) = x;
 	       ypt(n) = y;
-	       disp(sprintf(' %4d         %f      %f',n, x, y))
+	       fprintf(' %4d         %f      %f\n',n, x, y)
 	       ng = ng+1;
 	       nXY(ng,:) = [n x y];
 	  else
@@ -258,24 +258,24 @@ while 1,
 				'DIGITIZE: confirmation', ...
 				'YES', 'NO', 'NO');
 	       drawnow
-	       switch upper(query),
-		    case 'YES',
-			 disp(sprintf('\n'))
+	       switch upper(query)
+		    case 'YES'
+			 fprintf('\n\n')
 			 break
-		    case 'NO',
+		    case 'NO'
 			 
 	       end % switch query
 	  end
      end
 % %%%%%%%%%%%%%% DATA ACQUISITION LOOP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-     if nargout  == 0,
+     if nargout  == 0
 	  % Save data to file
 	  [writefname, writepname] = uiputfile('*.dat','Save data as');
-	  if (writefname == 0) | (writepname == 0),
+	  if (writefname == 0) || (writepname == 0)
 	       close(FigName)
 	       break
-	       return
+	       return %#ok<UNRCH>
 	  end
 	  writepfname = fullfile(writepname, writefname);
 	  writedata = [xpt' ypt'];
@@ -283,8 +283,8 @@ while 1,
 	  fprintf(fid,'  %g     %g\n',writedata');
 	  fclose(fid);
 	  close(FigName)
-	  disp(sprintf('\n'))
-     elseif nargout == 1,
+	  fprintf('\n\n')
+     elseif nargout == 1
 	  outputdata = [xpt' ypt'];
 	  varargout{1} = outputdata;
 	  close(FigName);

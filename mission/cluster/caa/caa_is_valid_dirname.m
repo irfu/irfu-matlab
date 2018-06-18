@@ -16,7 +16,7 @@ try
 	if y<2000 || y > 2020
         irf.log('warning',['Invalid year of dataset ' num2str(y)])
         return
-    end
+	end
 	m = str2double(s(5:6));
 	if m<1 || m > 12, return, end
 	d = str2double(s(7:8));

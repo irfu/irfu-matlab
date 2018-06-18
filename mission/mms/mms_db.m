@@ -101,6 +101,10 @@ classdef mms_db < handle
        if isempty(res), res = v; return, end
        if iscell(res), res = [res {v}]; return, end
        if ~comp_struct(res,v), res = [{res}, {v}]; return, end
+       if res.variance(1)=='F' % not varying in time
+         if isequal(res.data,v.data), return, end
+         error('Static (variance=F/) variable changing between files')
+       end
        
        res.DEPEND_0.data = [res.DEPEND_0.data; v.DEPEND_0.data];
        res.data = [res.data; v.data];

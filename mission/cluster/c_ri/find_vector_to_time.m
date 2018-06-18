@@ -31,7 +31,7 @@ function [B_vector, position] = find_vector_to_time(B, n, t, dt)
 if max(size(B)) > n 
     
     % in range of time window
-    if (B(n+1,1) > t - dt / 2) & ( B(n+1,1) < t + dt /2)
+    if (B(n+1,1) > t - dt / 2) && ( B(n+1,1) < t + dt /2)
         B_vector = B(n+1,2:4);
         position = n+1;
         
@@ -44,11 +44,11 @@ if max(size(B)) > n
         %searching forward in time
         k = 0;
         % to 
-        while B(n + k,1) < t - dt /2  &  max(size(B)) >= n + k + 1
+        while B(n + k,1) < t - dt /2  &&  max(size(B)) >= n + k + 1
             k = k + 1;
             
             % if position found within time frame
-            if (B(n + k,1) > t - dt /2) & ( B(n+1,1) < t + dt /2)
+            if (B(n + k,1) > t - dt /2) && ( B(n+1,1) < t + dt /2)
                 B_vector = B(n+k,2:4);
                 position = n+k;
             end

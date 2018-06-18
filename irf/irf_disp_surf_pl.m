@@ -1,4 +1,4 @@
-function irf_disp_surfplot(kc_x_max,kc_z_max,wfinal,extraparam,surfchoice,colorchoice)
+function irf_disp_surf_pl(kc_x_max,kc_z_max,wfinal,extraparam,surfchoice,colorchoice)
 %IRF_DISP_SURF_PL   Plot the cold plasma dispersion surfaces
 %
 %  IRF_DISP_SURF_PL(K_PERP_MAX,K_PAR_MAX,W,EXTRAPAR,SURFCHOICE,COLCHOICE)
@@ -36,8 +36,9 @@ function irf_disp_surfplot(kc_x_max,kc_z_max,wfinal,extraparam,surfchoice,colorc
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  
 	colorMap = 'parula'; % default colorbar
   if colorchoice==2
-    colorstring='<---- Electrostatic                Electromagnetic ---->';
-    colorlimits=[0,1];
+    colorstring='<---- Electrostatic  log10(cB/E)   Electromagnetic ---->';
+    colorlimits=[-2,2];
+    colorMap = 'bluered';
   elseif colorchoice==3
     colorstring='<---- Transversal                 Longitudinal ---->';
     colorlimits=[0,1];
@@ -63,13 +64,29 @@ function irf_disp_surfplot(kc_x_max,kc_z_max,wfinal,extraparam,surfchoice,colorc
     colorlimits=[-3,3];
 		colorMap = 'bluered';
   elseif colorchoice==10
-    colorstring='<---- Most energy in particles     log10(Wp/Wf)      Most energy in fields ---->';
+    colorstring='<---- Most energy in fields     log10(Wp/Wf)      Most energy in particles ---->';
     colorlimits=[-3,3];
 		colorMap = 'bluered';
   elseif colorchoice==11
     colorstring='<---- Left handed              Right handed ---->';
     colorlimits=[-1,1];
 		colorMap = 'bluered';
+  elseif colorchoice==12
+    colorstring='log10(v_{phase}/v_A)';
+    colorlimits=[-2,2];
+    colorMap = 'bluered';
+  elseif colorchoice==13
+    colorstring='log10(v_{e,par}/v_{e,perp})';
+    colorlimits=[-2,2];
+    colorMap = 'bluered';
+  elseif colorchoice==14
+    colorstring='log10(v_{i,par}/v_{i,perp})';
+    colorlimits=[-2,2];
+    colorMap = 'bluered';
+	elseif colorchoice==15
+    colorstring='<---- Most energy in fields     log10(W_e/W_f)      Most energy in electrons ---->';
+    colorlimits=[-2,2];
+    colorMap = 'bluered';
   else
     colorchoice=1;
     colorlimits=[0,1];

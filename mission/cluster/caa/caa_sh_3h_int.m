@@ -17,7 +17,7 @@ if year ~=str2double(tt(1:4)), error('ST and ET must be from the same year'), en
 ORB =[]; MP1 = []; MP2 = []; MP3 = []; MP4 = [];
 
 if exist('./mPlan.mat','file'), load ./mPlan.mat
-else error('No MPlan.mat found')
+else, error('No MPlan.mat found')
 end
 
 for cl_id = 1:4

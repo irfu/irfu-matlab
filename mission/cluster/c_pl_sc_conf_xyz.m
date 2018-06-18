@@ -23,27 +23,27 @@ R1=[];R2=[];R3=[];R4=[]; %#ok<NASGU>
 R.C1=[];R.C2=[];R.C3=[];R.C4=[];R.R=[]; % positions of each s/c and mass centrum
 tr=[];r=[]; %#ok<NASGU>
 XRe=cell(1,4);rr=cell(1,4);
-if       (nargin==1 && ischar(time)),
+if       (nargin==1 && ischar(time))
 	action=time;
 	irf.log('debug',['action=' action]);
 elseif   (nargin==3), plot_type=flag;action='initialize';
 elseif   (nargin==4), plot_type=flag;action='initialize';
 elseif   (nargin < 9),plot_type='default';action='initialize';
 end
-if nargin==0, % default time (with time can make smarter solution)
-	if evalin('caller','exist(''tint'') && isnumeric(''tint'')') ,
+if nargin==0 % default time (with time can make smarter solution)
+	if evalin('caller','exist(''tint'') && isnumeric(''tint'')') 
 		time=irf_time(evalin('caller','tint(1)'),'vector');
 	elseif exist('CAA','dir')
 		ok = caa_load('list','C1_CP_AUX_POSGSE_1M');
-		if ok,
+		if ok
 			R=irf_get_data('sc_r_xyz_gse__C1_CP_AUX_POSGSE_1M','caa','mat');
 		else
 			ok = caa_load('list','CL_SP_AUX');
-			if ok,
+			if ok
 				R=irf_get_data('sc_r_xyz_gse__CL_SP_AUX','caa','mat');
 			end
 		end
-		if ~ok,
+		if ~ok
 			time=[2010 12 31 01 01 01];
 		else
 			time=0.5*(R(1,1)+R(end,1)); % first point in center of position time series
@@ -54,16 +54,16 @@ if nargin==0, % default time (with time can make smarter solution)
 	t=irf_time(time);
 end
 if nargin==4, sc_list=spacecraft;
-else sc_list=1:4;
+else, sc_list=1:4;
 end
-if nargin>=2, % t,coord_sys
+if nargin>=2 % t,coord_sys
 	coord_label=upper(coord_sys);
-	if ~(strcmp(coord_label,'GSE') || strcmp(coord_label,'GSM')),
+	if ~(strcmp(coord_label,'GSE') || strcmp(coord_label,'GSM'))
 		coord_label='GSE'; % default reference frame GSE if does not recognize coord system
 	end
 end
-if exist('coord_label','var'), % define coord label if not defined so far
-	if isempty(coord_label),
+if exist('coord_label','var') % define coord label if not defined so far
+	if isempty(coord_label)
 		coord_label='GSE';
 	end
 else % in case coord_sys not specified
@@ -72,9 +72,9 @@ end
 
 switch lower(action)
 	case 'initialize' % read in all data and open figure
-		if length(time)==1, % time given in epoch
+		if length(time)==1 % time given in epoch
 			t=time;
-		elseif length(time)==6, % time given as vector
+		elseif length(time)==6 % time given as vector
 			t=irf_time(time);
 		else
 			irf.log('critical','Wrong input format of time.');
@@ -103,13 +103,13 @@ switch lower(action)
 		data=get(gcf,'userdata');
 		R=data.R;
 		tint = [data.t-120 data.t+120];
-		if ~is_R_ok,     % try reading from disk mat files
+		if ~is_R_ok     % try reading from disk mat files
 			irf.log('notice','===>>> Reading R? from mR.mat file')
-			for numSc = sc_list,
+			for numSc = sc_list
 				strSc = ['C' num2str(numSc)];
 				strRsc = ['R' num2str(numSc)];
 				ok = c_load(strRsc,numSc);
-				if ~ok, 
+				if ~ok 
 					irf.log('notice','--->>> did not succeed.')
 					break; 
 				else
@@ -117,7 +117,7 @@ switch lower(action)
 				end
 			end
 		end
-		if ~is_R_ok,     % try reading from CAA files CL_SP_AUX
+		if ~is_R_ok     % try reading from CAA files CL_SP_AUX
 			irf.log('notice','===>>> Reading CAA files CL_CP_AUX ...')
 			rVarCaaNames = {'sc_r_xyz_gse__CL_SP_AUX',...
 				'sc_dr1_xyz_gse__CL_SP_AUX','sc_dr2_xyz_gse__CL_SP_AUX',...
@@ -132,42 +132,42 @@ switch lower(action)
 				c_eval('R.C?=irf_add(1,R.R,1,rTmp{?+1});',sc_list);
 			end
 		end
-		if ~is_R_ok,     % try reading from CAA files CP_AUX_POSGSE_1M
+		if ~is_R_ok     % try reading from CAA files CP_AUX_POSGSE_1M
 			irf.log('notice','===>>> Reading CAA files C?_CP_AUX_POSGSE_1M ...')
-			for numSc = sc_list,
+			for numSc = sc_list
 				strSc = ['C' num2str(numSc)];
 				R.(strSc) = irf_get_data(tint,['sc_r_xyz_gse__C' strSc '_CP_AUX_POSGSE_1M'],'caa','mat');
-				if isempty(R.(strSc)),
+				if isempty(R.(strSc))
 					irf.log('notice','--->>> did not succeed.')
 					break;
 				end
 			end
 			tint = data.t + [-120 120];
 			irf.log('notice','===>>> Reading CAA files C?_CP_AUX_POSGSE_1M only +-2min interval, checks also local.c_read...')
-			for numSc = sc_list,
+			for numSc = sc_list
 				strSc = ['C' num2str(numSc)];
 				R.(strSc) = irf_get_data(tint,['sc_r_xyz_gse__' strSc '_CP_AUX_POSGSE_1M'],'caa','mat');
-				if isempty(R.(strSc)),
+				if isempty(R.(strSc))
 					irf.log('notice','--->>> did not succeed.')
 					break;
 				end
 			end
 		end
-		if ~is_R_ok,     % try reading stream from CAA
+		if ~is_R_ok     % try reading stream from CAA
 			read_R_from_caa_stream
 		end
-		if ~is_R_ok,     % try reading from isdat server
+		if ~is_R_ok     % try reading from isdat server
 			irf.log('notice','Trying to obtain satellite position from isdat server...')
 			try
 				c_eval('[tr,r] = irf_isdat_get([''Cluster/?/ephemeris/position''], data.t, 60);R.C?=[tr r];',data.sc_list);
-				if ~is_R_ok,% no idea
+				if ~is_R_ok% no idea
 					disp('NO POSITION DATA!');
 				end
 			catch
 				irf.log('notice','Did not succeed getting position data!');
 			end
 		end
-		if ~is_R_ok,     % could not obtain
+		if ~is_R_ok     % could not obtain
 			irf.log('warning','Could not obtain position data!')
 			c_eval('R.C?=[];',data.sc_list);
 		end
@@ -179,7 +179,7 @@ switch lower(action)
 		data.coord_label='GSE';
 		data.r=data.R;
 		set(gcf,'userdata',data);
-		if strcmp(data.plot_type,'lmn'), % need to redraw lmn text
+		if strcmp(data.plot_type,'lmn') % need to redraw lmn text
 			c_pl_sc_conf_xyz('lmn');
 		else
 			c_pl_sc_conf_xyz('plot');
@@ -189,7 +189,7 @@ switch lower(action)
 		data.coord_label='GSM';
 		c_eval('data.r.C?=irf_gse2gsm(data.R.C?);',data.sc_list);
 		set(gcf,'userdata',data);
-		if strcmp(data.plot_type,'lmn'), % need to redraw lmn text
+		if strcmp(data.plot_type,'lmn') % need to redraw lmn text
 			c_pl_sc_conf_xyz('lmn');
 		else
 			c_pl_sc_conf_xyz('plot');
@@ -202,8 +202,8 @@ switch lower(action)
 		delete(findall(gcf,'Type','axes'))
 		data.h=[];h=gobjects(1,8);
 		xsize=.35;ysize=.195;dx=.13;dy=.05;
-		for ix=1:2,
-			for iy=1:4,
+		for ix=1:2
+			for iy=1:4
 				h(iy*2-2+ix)=axes('position',[dx*ix+(ix-1)*xsize dy*(5-iy)+(4-iy)*ysize xsize ysize]); %#ok<LAXES>
 			end
 		end
@@ -269,15 +269,15 @@ switch lower(action)
 		callbackStr='c_pl_sc_conf_xyz(''plot'')';
 		data.LMN_text_hndl=uicontrol('string',['LMN vectors in ' data.coord_label '. One of L/M/N can be zero.'],'style','text','units','normalized','Position',[0.5 0.25 .35 .05]);
 		uicontrol('string','L','style','text','units','normalized','Position',[0.5 0.2 .05 .04])
-		if isfield(data,'Lstr'), Lstr=data.Lstr;else Lstr='[1 0 0]';end
+		if isfield(data,'Lstr'), Lstr=data.Lstr;else, Lstr='[1 0 0]';end
 		data.L_hndl=uicontrol('Style','edit','Units','normalized', ...
 			'Position',[0.55 0.2 .3 .05],'String',Lstr,'Callback',callbackStr);
 		uicontrol('string','M','style','text','units','normalized','Position',[0.5 0.15 .05 .04])
-		if isfield(data,'Lstr'), Mstr=data.Mstr;else Mstr='[0 1 0]';end
+		if isfield(data,'Lstr'), Mstr=data.Mstr;else, Mstr='[0 1 0]';end
 		data.M_hndl=uicontrol('Style','edit','Units','normalized', ...
 			'Position',[0.55 0.15 .3 .05],'String',Mstr,'Callback',callbackStr);
 		uicontrol('string','N','style','text','units','normalized','Position',[0.5 0.1 .05 .04])
-		if isfield(data,'Nstr'), Nstr=data.Nstr;else Nstr='0';end
+		if isfield(data,'Nstr'), Nstr=data.Nstr;else, Nstr='0';end
 		data.N_hndl=uicontrol('Style','edit','Units','normalized', ...
 			'Position',[0.55 0.1 .3 .05],'String',Nstr,'Callback',callbackStr);
 		set(gcf,'userdata',data);
@@ -425,9 +425,9 @@ switch lower(action)
 					plot3(h(1),x{ic}(2),x{ic}(3),-drref,cluster_marker_shaded{ic}{:});
 				end
 				axis(h(1),[-drref drref -drref drref -drref drref ]);
-				for ii=1:4,
-					for jj=ii+1:4,
-						if any(find(sc_list==ii)) && any(find(sc_list==jj)),
+				for ii=1:4
+					for jj=ii+1:4
+						if any(find(sc_list==ii)) && any(find(sc_list==jj))
 							line([x{ii}(2) x{jj}(2)],...
 								[x{ii}(3) x{jj}(3)],...
 								[x{ii}(4) x{jj}(4)],...
@@ -464,7 +464,7 @@ switch lower(action)
 			case 'lmn'
 				cla(h(1));
 				x=get_in_lmn(x);
-				for ic=1:numel(sc_list);
+				for ic=1:numel(sc_list)
 					plot(h(1),x{ic}(2),x{ic}(4),cluster_marker{sc_list(ic)}{:});
 					hold(h(1),'on');
 				end
@@ -475,7 +475,7 @@ switch lower(action)
 				axis(h(1),[-drref drref -drref drref]);
 				
 				cla(h(2));
-				for ic=1:numel(sc_list);
+				for ic=1:numel(sc_list)
 					plot(h(2),x{ic}(3),x{ic}(4),cluster_marker{sc_list(ic)}{:});
 					hold(h(2),'on');
 				end
@@ -485,7 +485,7 @@ switch lower(action)
 				axis(h(2),[-drref drref -drref drref]);
 				
 				cla(h(3));
-				for ic=1:numel(sc_list);
+				for ic=1:numel(sc_list)
 					plot(h(3),x{ic}(2),x{ic}(3),cluster_marker{sc_list(ic)}{:});
 					hold(h(3),'on');
 				end
@@ -520,7 +520,7 @@ switch lower(action)
 				text_Cluster_markers(h(2));
 				fix_RE_axis(h(2),h(22));
 		end
-		if data.showClusterDescription,
+		if data.showClusterDescription
 			if strcmpi(data.plot_type,'compact') || ...
 					strcmpi(data.plot_type,'lmn')  % decide in which axes write labels
 				hca=h(4);
@@ -542,10 +542,10 @@ switch lower(action)
 			htime=irf_legend(hca,['Cluster configuration\newline ' irf_time(data.t,'utc_yyyy-mm-dd HH:MM:SS.mmm')],[0,.95]);
 			set(htime,'fontsize',12);
 			if ~isempty(flag_using_omni_data)
-				if ~strcmpi(data.plot_type,'lmn'),
-					if flag_using_omni_data==1, % succeeded downloading OMNI
+				if ~strcmpi(data.plot_type,'lmn')
+					if flag_using_omni_data==1 % succeeded downloading OMNI
 						irf_legend(hca,['IMF from OMNI 1h database:\newline P=' num2str(omni.Dp,'%6.1f') '[nPa],\newline Bx=' num2str(omni.Bx,'%6.1f') ',By=' num2str(omni.By,'%6.1f') ',Bz=' num2str(omni.Bz,'%6.1f') '[nT] GSM' ],[0,0.7]);
-					elseif flag_using_omni_data==0, % did not succeeded downloading OMNI
+					elseif flag_using_omni_data==0 % did not succeeded downloading OMNI
 						irf_legend(hca,['IMF using assumed model:\newline P=' num2str(omni.Dp,'%6.1f') '[nPa],\newline Bz=' num2str(omni.Bz,'%6.1f') '[nT] GSM' ],[0,0.7]);
 					end
 				end
@@ -554,7 +554,7 @@ switch lower(action)
 	case 'new_time'
 		data=get(gcf,'userdata');
 		xx=inputdlg('New time. [yyyy mm dd hh mm ss] or ISO','**',1,{mat2str(irf_time(data.t,'vector'))});
-		if ~isempty(xx),
+		if ~isempty(xx)
 			variable_str=xx{1};
 			if any(strfind(variable_str,'T'))
 				data.t = irf_time(variable_str,'iso>epoch');
@@ -567,7 +567,7 @@ switch lower(action)
 		end
 	case 'new_sc_list'
 		xx=inputdlg('Enter new sc_list. ex. [1 3 4]','**',1,{mat2str(sc_list)});
-		if ~isempty(xx),
+		if ~isempty(xx)
 			variable_str=xx{1};
 			sc_list=eval(variable_str);
 			data=get(gcf,'userdata');
@@ -577,7 +577,7 @@ switch lower(action)
 			c_pl_sc_conf_xyz(data.coord_label);
 		end
 end
-if nargout,
+if nargout
 	data=get(gcf,'userdata');
 	hout = data.h;
 else
@@ -590,7 +590,7 @@ end
 		colX = plotAxes(1)-'W'+1;
 		colY = plotAxes(2)-'W'+1;
 		for iSc=data.sc_list
-			if is_R_ok(iSc),
+			if is_R_ok(iSc)
 				plot(ax1,XRe{iSc}(colX),XRe{iSc}(colY),cluster_marker_small{iSc}{:},'LineWidth',1.5);
 				hold(ax1,'on');
 			end
@@ -625,7 +625,7 @@ end
 		colY = plotAxes(2)-'W'+1;
 		if drref>10000, REform='%6.1f';
 		elseif drref<100, REform='%6.3f';
-		else REform='%6.2f';
+		else, REform='%6.2f';
 		end
 		xlim_ax1=get(axis1,'XLim');ylim_ax1=get(axis1,'YLim');
 		xtick_ax1=get(axis1,'XTick');ytick_ax1=get(axis1,'YTick');
@@ -647,12 +647,12 @@ end
 			if is_R_ok(iSc)
 				coordX = x{iSc}(colX);
 				coordY = x{iSc}(colY);
-				if coordX*signX > 0,
+				if coordX*signX > 0
 					horAl = 'right';
 				else
 					horAl = 'left';
 				end
-				if coordY*signY > 0,
+				if coordY*signY > 0
 					verAl = 'top';
 				else
 					verAl = 'bottom';
@@ -697,7 +697,7 @@ end
 		% check if position data are ok for spacecraft number 'sc'
 		% if input argument not given check if ok for all spacecraft that needs
 		% to be plotted.
-		if nargin == 0, 
+		if nargin == 0 
 			scList = data.sc_list;
 		else
 			scList = sc;
@@ -709,7 +709,7 @@ end
 				return;
 			else
 				tintR=[R.(strSc)(1,1) R.(strSc)(end,1)];
-				if (tintR(1)>data.t) || (tintR(2)<data.t),
+				if (tintR(1)>data.t) || (tintR(2)<data.t)
 					answer=false;
 					return;
 				end
@@ -738,7 +738,7 @@ end
 		% flag_omni=1 - using OMNI, flag_omni=0 - using default values
 		tMP=getfield(get(gcf,'userdata'),'t');
 		[xMP,yMP,omni]=irf_magnetosphere('mp_shue1998',tMP);
-		if isempty(xMP),
+		if isempty(xMP)
 			flag_omni=0;
 			[xMP,yMP,omni]=irf_magnetosphere('mp_shue1998');
 		else
@@ -752,7 +752,7 @@ end
 		% flag_omni=1 - using OMNI, flag_omni=0 - using default values
 		t=getfield(get(gcf,'userdata'),'t');
 		[xBS,yBS,omni]=irf_magnetosphere('bs',t);
-		if isempty(xBS),
+		if isempty(xBS)
 			flag_omni=0;
 			[xBS,yBS,omni]=irf_magnetosphere('bs');
 		else
@@ -763,7 +763,7 @@ end
 		line(xBS,yBS,'parent',h,'linewidth',0.5,'linestyle','-','color','k');
 	end
 	function add_Earth(h,flag)
-		if nargin == 1,
+		if nargin == 1
 			flag='terminator';
 		end
 		switch flag
@@ -800,7 +800,7 @@ end
 		data.Lstr=Lstr;
 		data.Mstr=Mstr;
 		data.Nstr=Nstr;
-		for iSc=1:numel(data.sc_list),
+		for iSc=1:numel(data.sc_list)
 			y{iSc}=irf_newxyz(x{iSc},L,M,N);
 		end
 		if L==0, data.Lstr=['[' num2str(irf_norm(cross(M,N)),'%6.2f') ']']; set(data.L_hndl,'string',data.Lstr);end

@@ -12,10 +12,10 @@ function ok=test(varargin)
 
 testList={'irf_time','epoch','c_4','coord_sys'};
 
-if nargin == 0,
+if nargin == 0
 	disp('Possible tests');
 	disp('--------------------------');
-	for j=1:numel(testList),
+	for j=1:numel(testList)
 		disp([num2str(j) '. ' testList{j}]);
 	end
 	disp('--------------------------');
@@ -23,7 +23,7 @@ if nargin == 0,
 	return
 else
 	testName = varargin{1};
-	if ischar(testName),
+	if ischar(testName)
 		isTest = strcmpi(testList,testName);
 		if any(isTest)
 			testNumber = find(isTest);
@@ -47,7 +47,7 @@ for j=1:nTests
 	iTest=testNumber(j);
 	disp(' ');
 	disp('*********************');
-	if numel(testNumber)>1,
+	if numel(testNumber)>1
 		disp(['TEST ' num2str(j) '/' num2str(nTests) ': ' testList{iTest}]);
 	else
 		disp(['TEST: ' testList{iTest}]);
@@ -60,7 +60,7 @@ for j=1:nTests
 	disp(['Test ended. Elapsed time: ' num2str(tElapsed) 's.']);
 end
 
-if all(okArray),
+if all(okArray)
 	disp('ALL TESTS PASSED SUCCESFULL!');
 else
 	for j=find(~okArray)
@@ -69,7 +69,7 @@ else
 	end
 end
 
-if nargout == 1,
+if nargout == 1
 	ok = okArray;
 end
 end
@@ -210,11 +210,11 @@ try
 		iCoord(end)=iCoord(1);
 		vecStart = rand(1,3)*rand(1)*1e4;
 		vec=[t(iT) vecStart];
-		for jCoord = 1:numel(iCoord)-1,
+		for jCoord = 1:numel(iCoord)-1
 			transformString = [coordsysList{iCoord(jCoord)} '>' coordsysList{iCoord(jCoord+1)}];
 			vec = irf.geocentric_coordinate_transformation(vec,transformString);
 		end
-		if abs(vec(2:4)-vecStart)>1e-10,
+		if abs(vec(2:4)-vecStart)>1e-10
 			okSubtest = false;
 			disp(['failed time: ' irf_time(t(iT),'ttns>utc') ]);
 			disp(['failed conversion: ' coordsysList(iCoord) ]);
@@ -257,7 +257,7 @@ end
 
 % Subfunctions
 function plusminus(ok)
-if ok,
+if ok
 	fprintf('+ ');
 else
 	fprintf('- ');

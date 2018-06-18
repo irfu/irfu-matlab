@@ -18,7 +18,7 @@ c_eval('tintUTC{tsub} = ''?-01-01T00:00:00/?-12-31T23:59:00''; tsub = tsub+1;',s
 
 omni_orig = [];
 tic;
-for iy = 1:numel(tintUTC);  
+for iy = 1:numel(tintUTC)  
   tint = irf.tint(tintUTC{iy});
   tmp_omni = irf_get_data_omni(tint,vars,'omni_min');
   omni_orig = [omni_orig; tmp_omni];

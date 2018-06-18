@@ -13,11 +13,11 @@ tint=[irf_time([2006 9 27 17 17 0]) irf_time([2006 9 27 17 24 0])]; % time inter
 
 %%%%%%%%%%%%%%%%%%%%%%%%
 % download data from CAA (needed only once!!!!!)
-if 1, % put to 0 if data already downloaded !!!!
+if 1 % put to 0 if data already downloaded !!!!
     caa_download(tint,'C1_CP_FGM_5VPS');
 	caa_download(tint,'CL_SP_AUX');
     download_status=caa_download; % repeat until all data are downloaded
-    if download_status==0, % some data are still in queue
+    if download_status==0 % some data are still in queue
       disp('___________!!!!_____________')
       disp('Some data where put in queue!')
       disp('To see when they are ready and to download execute "caa_download".');

@@ -22,26 +22,26 @@ function [Blnm1,h]=pl_cluster_ejxb(tint,Vmp,L,Nsign,flag_EdotB,sc_list)
 
 persistent Vmp_str L_str tint_str sc_list_str sc_list_pl icb  Te1 n_coef
 
-if nargin <1,
+if nargin <1
   help pl_cluster_ejxb;
   tint_str=irf_ask('Time interval [%]>','tint_str','toepoch([2002 03 30 13 11 42])+[0 8]');
   tint=eval(tint_str);
 end
-if nargin <2,
+if nargin <2
   Vmp_str=irf_ask('Magnetopause velocty Vmp (N=Nsign*norm(Vmp)) [%]>','Vmp_str','1 0 0');
   Vmp=eval(['[' Vmp_str ']']);
 end
-if nargin <3,
+if nargin <3
   L_str=irf_ask('Input L vector, (M=NxL,L=MxN) [%]>','L_str','0 0 1');
   L=eval(['[' L_str ']']);
 end
-if nargin <4,
+if nargin <4
   Nsign=irf_ask('Input Nsign [%]>','Nsign',1);
 end
-if nargin <5,
+if nargin <5
     flag_EdotB=1; % assume E.B=0 to calculate spin axis E component
 end
-if nargin <6,
+if nargin <6
   sc_list_str=irf_ask('Which satellites to analyze [%]>','sc_list_str','1:4');
   sc_list=eval(['[' sc_list_str ']']);
 end
@@ -72,7 +72,7 @@ c_eval('diB?=irf_tlim(diB?,tint_data);',sc_list);
 c_eval('dvE?=irf_tlim(diE?p1234,tint_data);',sc_list);
 c_eval('dvE?=irf_filt(dvE?,0,20);',sc_list);
 
-if flag_EdotB==1,
+if flag_EdotB==1
   c_eval('[dvE?,d?]=irf_edb(dvE?,diB?,10);',sc_list);
 end
 
@@ -83,7 +83,7 @@ c_eval('dNsp?=c_gse2dsc([B?(1,1) N],?,2);dNsp?(1,4)=0;dNsp?=irf_norm(dNsp?);dMsp
 c_eval('dN?=c_gse2dsc([B?(1,1) N],?,2);dN?=irf_norm(dN?);',sc_list);
 c_eval('dM?=c_gse2dsc([B?(1,1) M],?,2);dM?=irf_norm(dM?);',sc_list);
 c_eval('dEn?=irf_dot(dvE?,dNsp?);dEm?=irf_dot(dvE?,dMsp?);',sc_list);  % the direction in spin plane closest to the magnetopause normal
-if flag_EdotB==1,
+if flag_EdotB==1
   c_eval('dEn?=irf_dot(dvE?,dN?);dEm?=irf_dot(dvE?,dM?);',sc_list);
 end
 
@@ -156,7 +156,7 @@ ht=irf_pl_info([mfilename '  ' datestr(now) ...
   ' dt=[' num2str(dt,' %6.2f') ']s,' ...
   ' L=[' num2str(L,' %6.2f') '], N=[' num2str(N,' %6.2f') '].'],gca,[0,1 ]);
 leg_coord=[.1,.6];font_size=13;cluster_labels={'C1 ','C2 ','C3 ','C4 '};cluster_colors='krgb';
-for ic=sc_list,
+for ic=sc_list
   ht=irf_pl_info(cluster_labels{ic},gca,leg_coord);set(ht,'color',cluster_colors(ic),'Fontsize',font_size,'FontWeight','demi');
   ext=get(ht,'extent'); leg_coord=leg_coord+[ext(3)*1.2 0];
 end
@@ -194,7 +194,7 @@ ylabel('E_{N} [mV/m]');
 
 axes(h(9))
 c_eval('fs?=c_efw_fsample(dEn?);',sc_list)
-dd1=0;dd2=0;dd3=.5;dd4=-.5;
+dd1=0;dd2=0;dd3=.5;dd4=-.5; %#ok<NASGU>
 c_eval('eint?=[dEn?(:,1) 1e-3*irf_abs(Vmp,1)/fs?*cumsum(dEn?(:,2))+dd?];',sc_list)
 c_pl_tx('eint?',2,dt,'sc_list',sc_list);
 ylabel('U [kV]')
@@ -217,7 +217,7 @@ irf_timeaxis(h);
 %%  Figure single s/c %%%%%%%%%%%%%%
 %%%%%%%%%%%%%% Separate s/c %%%%%%%%%%%%%%%%%
 
-for ic=sc_list;
+for ic=sc_list
   figure;
   h=irf_plot({bb,bb,bb,bb});
 
@@ -229,7 +229,7 @@ for ic=sc_list;
   %end
   %c_eval('irf_plot(Blnm?(:,[1 5])); ylabel(''B [nT] sc?''); ',ic);
   leg_coord=[.1,.6];font_size=13;figure_labels={'E ', 'jxB/ne','-\nabla p/ne'};line_colors='bgr';
-  for iq=1:3,
+  for iq=1:3
       ht=irf_pl_info(figure_labels{iq},gca,leg_coord);set(ht,'color',line_colors(iq),'Fontsize',font_size,'FontWeight','demi');
       ext=get(ht,'extent'); leg_coord=leg_coord+[ext(3)*1.1 0];
   end
@@ -241,7 +241,7 @@ for ic=sc_list;
 
   axes(h(2));
   c_eval('irf_plot(n?(:,[1 2]));',ic);
-  if find(ic==icb), % plot also burst data
+  if find(ic==icb) % plot also burst data
     c_eval('hold on; irf_plot(nburst?);',ic);
   end
   c_eval('ylabel(''N_{Vps} [cc] sc?'');',ic);
@@ -253,8 +253,8 @@ for ic=sc_list;
   axes(h(4));
   c_eval('irf_plot(irf_tappl([jz? jperp?(:,2)],''*1e6''));ylabel(''j_{||},jperp [\mu A/m^2] sc?'');',ic);
   leg_coord=[.1,.6];font_size=13;figure_labels={'j_{||}', 'j_{perp}'};line_colors='bg';
-  for ic=1:2,
-      ht=irf_pl_info(figure_labels{ic},gca,leg_coord);set(ht,'color',line_colors(ic),'Fontsize',font_size,'FontWeight','demi');
+  for iPlot=1:2
+      ht=irf_pl_info(figure_labels{iPlot},gca,leg_coord);set(ht,'color',line_colors(iPlot),'Fontsize',font_size,'FontWeight','demi');
       ext=get(ht,'extent'); leg_coord=leg_coord+[ext(3)*1.1 0];
   end
 
@@ -286,7 +286,7 @@ if 1 % 1 if plot, 0 if skip the figure
         ' dt=[' num2str(dt,' %6.2f') ']s,' ...
         ' L=[' num2str(L,' %6.2f') '], N=[' num2str(N,' %6.2f') '].'],gca,[0,1 ]);
     leg_coord=[.1,.6];font_size=13;cluster_labels={'C1 ','C2 ','C3 ','C4 '};
-    for ic=sc_list,
+    for ic=sc_list
         ht=irf_pl_info(cluster_labels{ic},gca,leg_coord);set(ht,'color',cluster_colors(ic),'Fontsize',font_size,'FontWeight','demi');
         ext=get(ht,'extent'); leg_coord=leg_coord+[ext(3)*1.2 0];
     end
@@ -296,13 +296,13 @@ if 1 % 1 if plot, 0 if skip the figure
     c_pl_tx('jz?',2,dt,'sc_list',sc_list);
     ylabel('j_{||}[\mu A/m^2]');
     leg_coord=[.1,.6];font_size=13;cluster_labels={'C1 ','C2 ','C3 ','C4 '};cluster_colors='krgb';
-    for ic=sc_list,
+    for ic=sc_list
         ht=irf_pl_info(cluster_labels{ic},gca,leg_coord);set(ht,'color',cluster_colors(ic),'Fontsize',font_size,'FontWeight','demi');
         ext=get(ht,'extent'); leg_coord=leg_coord+[ext(3)*1.2 0];
     end
     set(h(2),'YTick',[-.4 -.2 0 .2 .4])
 
-    for ax=sc_list,
+    for ax=sc_list
         axes(h(ax+2));
 %         tmax = toepoch([2004 1 4 12 47 9.6]);
 %         c_eval('ii=find(egradn?(:,1)>tmax+dt(?));egradn?(ii,:)=[];',sc_list)
@@ -324,7 +324,7 @@ if 1 % 1 if plot, 0 if skip the figure
 
 %         leg_coord=[.1,.6];font_size=13;cluster_labels={'E ', 'uxB ','jxB/ne','-\nabla p/ne'};cluster_colors='bkgr';
         leg_coord=[.1,.6];font_size=13;cluster_labels={'E ', 'jxB/ne','-\nabla p/ne'};cluster_colors='bgr';
-        for ic=1:3,
+        for ic=1:3
             ht=irf_pl_info(cluster_labels{ic},gca,leg_coord);set(ht,'color',cluster_colors(ic),'Fontsize',font_size,'FontWeight','demi');
             ext=get(ht,'extent'); leg_coord=leg_coord+[ext(3)*1.2 0];
         end

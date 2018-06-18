@@ -5,9 +5,10 @@ function [out] = irf_shock_gui(scd,varName)
 %
 %   IRF_SHOCK_GUI(scd) Starts a GUI. scd is a struct with fields containing
 %   TSeries objects of spacecraft data. Select up- and downstream intervals
-%   of the shock by clicking in the plot. Then select methods to calculate
-%   shock normal and shock speed. The methods are described in
-%   irf_shock_normal. Click "Calculate" to display the results.
+%   of the shock by clicking in the plot. Optionally select the shock foot.
+%   Then select methods to calculate shock normal and shock speed. The
+%   methods are described in irf_shock_normal. Click "Calculate" to display
+%   the results.
 %
 %   scd field names:
 %       B       -   3D magnetic field (nT)
@@ -39,11 +40,10 @@ function [out] = irf_shock_gui(scd,varName)
 %   See also: 
 %       IRF_SHOCK_NORMAL, IRF_SHOCK_PARAMETERS, IRF_4_V_GUI, IRF_MINVAR_GUI
 %
+
 %   Written by: Andreas Johlander, andreasj@irfu.se
 % 
-%   TODO: Add legends for components in plot
-%       Remove time axis in all but last panel
-%       Fix velocity methods
+%   TODO: Fix all velocity methods
 %       Replace uicontrols with text objects
 
 
@@ -125,6 +125,12 @@ if ischar(scd)
             ud = mark_times(ud);
             ud = display_vals(ud);
             set(gcf,'userdata',ud)
+        case 'clf' % click foot
+            ud = clickt(ud,{'f'});
+            ud = get_avg_field(ud,ud.scd,{'f'});
+            ud = mark_times(ud);
+            ud = display_vals(ud);
+            set(gcf,'userdata',ud)
         case 'set_met' % click calculate
             ud = set_methods(ud);
             set(gcf,'userdata',ud)
@@ -137,12 +143,29 @@ if ischar(scd)
         case 'calc' % click calculate
             % time is set between up- and downstream intervals
             ud.params.t = irf_time(mean([ud.tu(2),ud.td(1)]),'epoch>epochtt');
-            % set temperatures to NaN if not set
+            % return up and downstream tints for output
+            ud.params.tintu = irf_time(ud.tu,'epoch>epochtt');
+            ud.params.tintd = irf_time(ud.td,'epoch>epochtt');
+            ud.params.tinfd = irf_time(ud.tf,'epoch>epochtt');
             
-            ud.shp.nvec = irf_shock_normal(ud.params);
+            % get shock parameters (Mach #, beta, Fcp,...)
             ud.shp.par = irf_shock_parameters(ud.params);
+            
+            % set parameters for shock foot width methods
+            if isfield(ud.shp.par,'Fcpf')
+                ud.params.Fcp = ud.shp.par.Fcpf; % foot ion cycl. freq.
+                ud.params.dTf = diff(ud.tf);
+                ud.params.d2u = (mean(ud.tu)<mean(ud.td));
+            end
+            
+            % calculate shock normals and speeds
+            ud.shp.nvec = irf_shock_normal(ud.params);
+            
             ud.shp.data = ud.params;
             ud = display_prop(ud);
+            
+
+            
             set(gcf,'userdata',ud)
     end
 else
@@ -224,6 +247,7 @@ else
     % up/downstream time intervals
     ud.tu = ud.scd.B.time([1,end]).epochUnix;
     ud.td = [ud.tu(1);ud.tu(1)]; % so no interval is shown first
+    ud.tf = ud.td;
     % normal vector struct
     ud.shp.nvec = [];
     % parameter struct
@@ -264,7 +288,7 @@ ud.ax = ax;
 %% Upstream panel
 % panel
 ud.uih.up.panel = uipanel('Units', 'normalized',...
-    'position',[0.56 0.91 0.22 0.075],...
+    'position',[0.56 0.91 0.1467 0.075],...
     'fontsize',14,...
     'Title','Upstream');
 % push button for time 
@@ -273,13 +297,13 @@ ud.uih.up.pb = uicontrol('style','push',...
     'Parent',ud.uih.up.panel,...
     'position',[0.05 0.2 0.8 0.6],...
     'fontsize',14,...
-    'string','Click times',...
+    'string','Set times',...
     'callback','irf_shock_gui(''clu'')');
 
 %% Downstream panel
 % panel
 ud.uih.dw.panel = uipanel('Units', 'normalized',...
-    'position',[0.78 0.91 0.22 0.075],...
+    'position',[0.7067 0.91 0.1467 0.075],...
     'fontsize',14,...
     'Title','Downstream');
 % push button for time 
@@ -288,8 +312,23 @@ ud.uih.dw.pb = uicontrol('style','push',...
     'Parent',ud.uih.dw.panel,...
     'position',[0.05 0.2 0.8 0.6],...
     'fontsize',14,...
-    'string','Click times',...
+    'string','Set times',...
     'callback','irf_shock_gui(''cld'')');
+
+%% Foot panel
+% panel
+ud.uih.ft.panel = uipanel('Units', 'normalized',...
+    'position',[0.8534 0.91 0.1467 0.075],...
+    'fontsize',14,...
+    'Title','Shock foot');
+% push button for time 
+ud.uih.ft.pb = uicontrol('style','push',...
+    'Units', 'normalized',...
+    'Parent',ud.uih.ft.panel,...
+    'position',[0.05 0.2 0.8 0.6],...
+    'fontsize',14,...
+    'string','Set times',...
+    'callback','irf_shock_gui(''clf'')');
 
 %% OMNI panel
 % panel
@@ -363,7 +402,7 @@ ud.uih.mt.npu = uicontrol('style','popupmenu',...
     'fontsize',14,...
     'string',{'Magnetic coplanarity','Velocity coplanarity',...
     'Mixed mode 1','Mixed mode 2','Mixed mode 3',...
-    '-------','Farris et al.','Slavin & Holzer mean',...
+    '-------','Farris et al.','Slavin & Holzer mean','Peredo et al.',...
     'Fairfield Meridian 4o','Fairfield Meridian No 4o',...
     'Formisano Unnorm. z = 0'},...
     'Value',5,...
@@ -383,7 +422,7 @@ ud.uih.mt.vpu = uicontrol('style','popupmenu',...
     'Parent',ud.uih.mt.panel,...
     'position',[0.3 0.4 0.65 0.2],...
     'fontsize',14,...
-    'string',{'Gosling & Thomsen (Experimental)','Mass flux','Smith & Burton (Experimental)','Moses et al. (Experimental)'},...
+    'string',{'Gosling & Thomsen','Mass flux','Smith & Burton','Moses et al. (Experimental)'},...
     'Value',2,...
     'Callback','irf_shock_gui(''set_met'')');
 
@@ -500,7 +539,7 @@ end
 
 
 function ud = set_labels(ud)
-% set ylabels and legends in panels
+% set ylabels and legends in panels, aslo sets ylabels
 for k = 1:ud.Nin
     ud.ax(k).YLabel.Interpreter = 'tex';
     switch ud.ax(k).Tag
@@ -512,10 +551,13 @@ for k = 1:ud.Nin
             irf_legend(ud.ax(k),{'V_x','V_y','V_z'},[0.98,0.98])
         case 'n'
             ud.ax(k).YLabel.String = 'n (cm^{-3})';
+            ud.ax(k).YLim(1) = 0;
         case 'Ti'
             ud.ax(k).YLabel.String = 'Ti (eV)';
+            ud.ax(k).YLim(1) = 0;
         case 'Te'
             ud.ax(k).YLabel.String = 'Te (eV)';
+            ud.ax(k).YLim(1) = 0;
         otherwise
             ud.ax(k).YLabel.String = ':P';
     end
@@ -523,7 +565,7 @@ end
 end
 
 
-function [ud] = clickt(ud,str) % click time, str is "u" or "d"
+function [ud] = clickt(ud,str) % click time, str is "u" or "d" or "f"
 % Give some log, should probably be "mark upstream/downstream"
 irf.log('w',['Mark ',num2str(nargout), ' time interval for averaging.'])
 % Click times
@@ -535,9 +577,10 @@ ud.(['t',str{1}]) = t;
 end
 
 
-function [ud] = mark_times(ud) % mark times, str is 'u' or 'd'
+function [ud] = mark_times(ud) % mark times, str is 'u' or 'd' or 'f'
 ucol = [0.7,0.7,0];
 dcol = [0,0.7,0.7];
+fcol = [0.7,0.35,0.35];
 for k = 1:ud.Nin
     delete(findall(ud.ax(k).Children,'Tag','irf_pl_mark'));
 end
@@ -546,6 +589,7 @@ pause(0.001)
 for k = 1:ud.Nin % new feature in axescheck, does not allow handle arrays
     irf_pl_mark(ud.ax(k),ud.tu',ucol)
     irf_pl_mark(ud.ax(k),ud.td',dcol)
+    irf_pl_mark(ud.ax(k),ud.tf',fcol)
 end
 end
 
@@ -553,7 +597,7 @@ end
 function [ud] = set_methods(ud)
 % '--' will crash the program, the order is very important
 nmet = {'mc','vc','mx1','mx2','mx3','--',...
-    'farris','slho','fa4o','fan4o','foun'};
+    'farris','slho','per','fa4o','fan4o','foun'};
 vmet = {'gt','mf','sb','mo'};
 
 if ud.uih.mt.npu.Value <= 5 || isfield(ud.params,'R') % not a model or with position
@@ -678,8 +722,8 @@ N = numel(fin);
 if isempty(ud.ax(1).Tag)
     for k = 1:nin
         if ~strcmpi(fnp{k},'r')
-        irf_plot(ud.ax(k),par.(fnp{k}));
-        ud.ax(k).Tag = fnp{k};
+            irf_plot(ud.ax(k),par.(fnp{k}));
+            ud.ax(k).Tag = fnp{k};
         end
     end
 end
@@ -689,7 +733,7 @@ color_order = zeros(nargout*3,3);
 for i = 1:3:nargout*3
     color_order(i:i+2,:) = [0,0,0; 0,0,1; 1,0,0];
 end
-for k = 1:nin % hack color order 
+for k = 1:nin % set color order
     ud.ax(k).ColorOrder = color_order;
 end
 
@@ -718,6 +762,14 @@ for i = 1:N
         ud.params.([fnp{k},fin{i}]) = x_avg;
     end
 end
+
+for k = 1:nin % set various things
+    % remove XTickLabels for all but the last panel
+    if k<nin; ud.ax(k).XTickLabels = ''; end
+    % thicker lines in plots
+    ud.ax(k).LineWidth = 1.15;
+end
+
 if ~isempty(ud.params)
     ud.params = orderfields(ud.params);
 end

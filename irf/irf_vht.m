@@ -36,7 +36,7 @@ if isa(e,'TSeries') && isa(b,'TSeries')
 	p(6)=sum(bz .* bz)/nSamples; % Bz*Bz
 	
 	
-	if (nargin > 2) && (flag == 2), % assume only Ex and Ey
+	if (nargin > 2) && (flag == 2) % assume only Ex and Ey
 		z=0; % put z component to 0 when using only Ex and Ey
 		K=[[p(6) 0 -p(3)];[0 p(6) -p(5)];[-p(3) -p(5) p(1)+p(4)]];
 		comm= 'De Hoffmann-Teller frame is calculated using 2 components of E=(Ex,Ey,0)';
@@ -64,7 +64,7 @@ if isa(e,'TSeries') && isa(b,'TSeries')
 	%
 	eht=irf_e_vxb(vht,b);
 	
-	if flag == 2,
+	if flag == 2
 		ep=e(indData);
 		ehtp=eht(indData);
 		ep.data(:,3) = 0;
@@ -86,7 +86,7 @@ if isa(e,'TSeries') && isa(b,'TSeries')
 	% 9.16 in ISSI book
 	DVHT=sum(irf_abs(deltaE,1).^2)/length(indData);
 	lambda=eig(K);
-	S=DVHT/(2*length(indData)-3)*inv(K);
+	S=(DVHT/(2*length(indData)-3))/K;
 	dvht(1)=sqrt([1 0 0]*S*[1;0;0])*1e3;
 	dvht(2)=sqrt([0 1 0]*S*[0;1;0])*1e3;
 	dvht(3)=sqrt([0 0 1]*S*[0;0;1])*1e3;
@@ -110,7 +110,7 @@ p(5)=sum(b(:,3).*b(:,4))/size(b,1); % By*Bz
 p(6)=sum(b(:,4).*b(:,4))/size(b,1); % Bz*Bz
 
 
-if (nargin > 2) && (flag == 2), % assume only Ex and Ey
+if (nargin > 2) && (flag == 2) % assume only Ex and Ey
 	e(:,4)=0; % put z component to 0 when using only Ex and Ey
 	K=[[p(6) 0 -p(3)];[0 p(6) -p(5)];[-p(3) -p(5) p(1)+p(4)]];
 	comm= 'Hofmann-Teller frame is calculated using 2 components of E=(Ex,Ey,0)';
@@ -134,7 +134,7 @@ disp(strvht);
 %
 eht=irf_e_vxb([0 vht],b);
 
-if flag == 2,
+if flag == 2
 	ep=[e(indData,2);e(indData,3)];
 	ehtp=[eht(indData,2);eht(indData,3)];
 	deltaE=[e(:,1) e(:,2)-eht(:,2) e(:,3)-eht(:,3) e(:,1)*0];
@@ -155,7 +155,7 @@ disp(['cc=' num2str(cc(1,2),3)]);
 % 9.16 in ISSI book
 DVHT=sum(irf_abs(deltaE(indData,:),1).^2)/length(indData);
 lambda=eig(K);
-S=DVHT/(2*length(indData)-3)*inv(K);
+S=(DVHT/(2*length(indData)-3))/K;
 dvht(1)=sqrt([1 0 0]*S*[1;0;0])*1e3;
 dvht(2)=sqrt([0 1 0]*S*[0;1;0])*1e3;
 dvht(3)=sqrt([0 0 1]*S*[0;0;1])*1e3;

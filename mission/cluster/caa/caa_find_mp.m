@@ -69,7 +69,7 @@ irf_log('proc',['X>0, R>7R_E: ' epoch2iso(start_time,1) ' -- ' ...
 
 % Fetch ACE data
 if ismac,  ISTP_PATH = '/Volumes/istp';
-else ISTP_PATH = '/data/istp';
+else, ISTP_PATH = '/data/istp';
 end
 
 ace_B = irf_istp_get(ISTP_PATH, start_time -120*60, dt +240*60, sc_source, 'b');
@@ -98,7 +98,7 @@ for t=st:1800:st+dt
 			if isnan(v_tmp)
 				dt_ace = ACE_DT_DEF;
 				irf_log('proc',['ace_v_tmp: NaN at ' epoch2iso(t,1)])
-			else dt_ace = ACE_X_POS/v_tmp;
+			else, dt_ace = ACE_X_POS/v_tmp;
 			end
 		end
 		%irf_log('proc',['ace_dt   : ' num2str(round(dt_ace/60)) ' min'])
@@ -186,7 +186,7 @@ if ~isempty(p2)
 		y = a_tmp*t + 0.5*(p1(:,2:end) +p2(:,2:end) ...
 				-a_tmp*(p1(:,1) +p2(:,1)));
 	end
-else y = p1(:,2:end);
+else, y = p1(:,2:end);
 end
 return
 
@@ -229,7 +229,7 @@ alpha = ( 0.58 -0.01*bz_nT )*( 1.0 +0.01*swp_nPa );
 
 % Shue et. al., Eq. 12
 if bz_nT>=0, r0 = ( 11.4 +0.013*bz_nT )*swp_nPa^( -1.0/6.6 );
-else         r0 = ( 11.4 +0.140*bz_nT )*swp_nPa^( -1.0/6.6 );
+else,        r0 = ( 11.4 +0.140*bz_nT )*swp_nPa^( -1.0/6.6 );
 end
 
 r = irf_abs(pos_Re_gsm,1);

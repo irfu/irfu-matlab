@@ -1,4 +1,4 @@
-function [ax cb] = c_caa_plot_distribution_function(varargin)
+function [ax, cb] = c_caa_plot_distribution_function(varargin)
 % C_CAA_PLOT_DISTRIBUTION_FUNCTION  Plots particle pitch angle distribution with
 %                                   data prepared by c_caa_distribution_data.m.
 %   Plots cross-section or polar pitch angle (angle with respect to the 
@@ -45,7 +45,7 @@ t_display='given';
 
 % Read input
 n_toplot=0;
-while length(args)>0
+while ~isempty(args)
     if isstruct(args{1})
         n_toplot=n_toplot+1;
         to_plot{n_toplot}=args{1};  
@@ -125,9 +125,9 @@ end
 
 % take out time interval
 for k=1:n_toplot
-    if length(tint)==2; % start and stop interval
+    if length(tint)==2 % start and stop interval
         [~,ind_t{k}]=irf_tlim(to_plot{k}.t,tint);
-    elseif length(tint)==1; % only one time, take closest energy sweep
+    elseif length(tint)==1 % only one time, take closest energy sweep
         [tt,ind_t{k}]=irf_tlim(to_plot{k}.t,[tint-1 tint+1]);
         ind_min{k}=find(abs((tt-tint))==min(abs((tt-tint))));
         ind_t{k}=ind_t{k}(ind_min{k});   
@@ -149,7 +149,7 @@ axes(ax);
 % Plot
 switch plot_type
     case 'polar'
-        if n_toplot==1; % Mirror plot if only one product is given
+        if n_toplot==1 % Mirror plot if only one product is given
             to_plot{2}=to_plot{1};
             ind_t{2}=ind_t{1};
         end
@@ -161,12 +161,12 @@ switch plot_type
         end       
         
         % Take away all values below emin
-        if isempty(emin); % then set to lowest energy bin
+        if isempty(emin) % then set to lowest energy bin
             emin=min([rlog{1};rlog{1}]);
         else
             emin=log10(emin);
         end
-        if emin_scale==0;
+        if emin_scale==0
             emin_scale=1; % set to 1eV, because dont want log(0)            
         end
         if isempty(emin_scale) %|| log10(emin)>min([rlog{1};rlog{1}]); % Take out r0
@@ -194,14 +194,14 @@ switch plot_type
         shading(ax,'flat');
         grid(ax,'off');
         if isa(ax,'handle'), cb = colorbar(ax); % HG2
-        else cb = colorbar('peer',ax);
+        else, cb = colorbar('peer',ax);
         end
         ylabel(cb,to_plot{1}.p_label)
         
         if 1 % Energy ticks
             xticks=log10([1e-1 1e0 1e1 1e2 1e3 1e4 1e5 1e6 1e7]*1e-3)-r0log;            
-            xticks=xticks(find(xticks>0));
-            xticks=xticks(find(xticks<max([max(r{1}) max(r{2})])));
+            xticks=xticks(xticks>0);
+            xticks=xticks(xticks<max([max(r{1}) max(r{2})]));
             xticklabels=cell(size(xticks));
             for k=1:length(xticklabels)
                 xticklabels{k}=num2str(10.^(xticks(k)+r0log)*1e-3);
@@ -315,6 +315,6 @@ switch n_toplot % Next line is the product plotted
         titleStr{end+1}=['Right: ', to_plot{2}.product,to_plot{1}.detector];                   
 end
 % Change underscores to spaces
-for k=1:length(titleStr) titleStr{k}(strfind(titleStr{k},'_'))=' '; end
+for k=1:length(titleStr), titleStr{k}(strfind(titleStr{k},'_'))=' '; end
 title(ax,titleStr);
 end

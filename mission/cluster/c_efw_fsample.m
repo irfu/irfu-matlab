@@ -81,5 +81,5 @@ elseif f<K_PLUS*9000 && f>K_MINUS*9000 && (strcmp(mode,'any') || strcmp(mode,'ib
 elseif f<K_PLUS*18000 && f>K_MINUS*18000 && (strcmp(mode,'any') || strcmp(mode,'ib'))
 	sf = 18000;  % IB
 elseif f<K_PLUS*.25 && f>K_MINUS*.25 && strcmp(mode,'any'), sf = .25;   % SPIN
-else sf = 0;
+else, sf = 0;
 end

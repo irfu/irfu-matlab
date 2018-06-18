@@ -42,7 +42,7 @@ c_eval('tintUTC{tsub} = ''200?-01-01T00:00:00/200?-12-31T23:59:00''; tsub = tsub
 
 bsnx_orig = [];
 tic;
-for iy = 1:numel(tintUTC);  
+for iy = 1:numel(tintUTC)  
   tint = irf.tint(tintUTC{iy});
   tmp_bsnx = irf_get_data_omni(tint,'bsnx','omni_min');
   bsnx_orig = [bsnx_orig; tmp_bsnx];

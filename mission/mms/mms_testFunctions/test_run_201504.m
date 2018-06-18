@@ -142,7 +142,7 @@ ylabel(hca,'E SL [mV/m]')
 title(hca,mmsId), set(hca,'YLim',49*[-1 1])
 
 if 0
-hca = irf_panel('Phase');
+hca = irf_panel('Phase'); %#ok<UNRCH>
 irf_plot(hca,Phase)
 ylabel(hca,'Phase [deg]'), set(hca,'YLim',[0 360])
 end

@@ -1,4 +1,4 @@
-function [x y z correlation intEdt Bz B0 dEk dEn Ek En] = irf_match_phibe_dir(B,E,angles,f)
+function [x, y, z, correlation, intEdt, Bz, B0, dEk, dEn, Ek, En] = irf_match_phibe_dir(B,E,angles,f)
 % IRF_MATCH_PHIBE_DIR Get propagation direction by matching dBpar and "phi".
 %   Tries different propagation directions and finds the direction 
 %   perpendicular to the magnetic field that gives the best correlation
@@ -123,7 +123,7 @@ end
 
 
 if 0
-vis.type='direction';
+vis.type='direction'; %#ok<UNRCH>
 vis.x=x;
 vis.y=y;
 vis.z=z;
