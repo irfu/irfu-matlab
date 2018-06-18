@@ -1,4 +1,4 @@
-function [partIntrvlStart, partIntrvlDur]=isPartitionInterval(intrvlStart,intrvldur,partLen,cntLstStart,cntLstDur);
+function [partIntrvlStart, partIntrvlDur]=isPartitionInterval(intrvlStart,intrvldur,partLen,cntLstStart,cntLstDur)
 % isPartitionInterval - Partition time intervals.
 %
 %   [PS,PD]=isPartitionInterval(S,D,L) partitions the time interval, given by
@@ -31,7 +31,7 @@ intrvlStopS=intrvlStartS+intrvldur;
 
 %Discard all times which are outside of the requested interval
 indBeforeStart=find(cntStartS < intrvlStartS);
-if length(indBeforeStart)>0 
+if ~isempty(indBeforeStart) 
   if cntStopS(indBeforeStart(end)) > intrvlStartS
     cntStartS(indBeforeStart(end))=intrvlStartS;
     indBeforeStart(end)=[];
@@ -40,7 +40,7 @@ if length(indBeforeStart)>0
   cntStopS (indBeforeStart)=[];
 end
 indAfterStop=find(cntStopS > intrvlStopS);
-if length(indAfterStop)>0 
+if ~isempty(indAfterStop) 
   if cntStartS(indAfterStop(1)) < intrvlStopS
     cntStopS(indAfterStop(1))=intrvlStopS;
     indAfterStop(1)=[];

@@ -119,9 +119,16 @@ if(p.Results.plotSpect)
     dslFastTs.(SCid{kk})=[]; % Empty to save memory.
 
     disp(['Computing slow spectra for DSL xyz for ',SCid{kk}]);
+    slowRate = MMS_CONST.Samplerate.slow{1};
+    dtSlow = round(10^9/median(double(diff(dslSlowTs.(SCid{kk}).time.ttns))));
+    for iSmplrate=1:length(MMS_CONST.Samplerate.slow)
+      if(MMS_CONST.Samplerate.slow{iSmplrate}*0.9 <= dtSlow && dtSlow <= MMS_CONST.Samplerate.slow{iSmplrate}*1.1)
+        slowRate = MMS_CONST.Samplerate.slow{iSmplrate};
+      end
+    end
     dslSlowSpect.(SCid{kk}) = irf_powerfft(dslSlowTs.(SCid{kk}), ...
       128, ...
-      MMS_CONST.Samplerate.slow);
+      slowRate);
     if(isempty(dslSlowSpect.(SCid{kk})))
       % FIXME better..
       warning(['Empty spectra from DSL on ', SCid{kk}]);
@@ -224,13 +231,13 @@ if(p.Results.plotUsc || p.Results.plotDSL)
 
   if(p.Results.bashRun)
     % Save plots in 3 hour segments, ie 00:00:00 to 03:00:00 and so on
-    for ii=0:3:21
-      tintZoom = {[yyyy, mm, dd, ii, 00, 00], ...
-        [yyyy, mm, dd, ii+3, 00, 00]};
+    for iZoom=0:3:21
+      tintZoom = {[yyyy, mm, dd, iZoom, 00, 00], ...
+        [yyyy, mm, dd, iZoom+3, 00, 00]};
       irf_zoom(h,'x',tintZoom);
       % Save segment
       print(gcf, '-dpng', sprintf('%s%sT%02d0000_%02d0000_Usc_and_DSLxy',...
-        outPath, Day, ii, ii+3) );
+        outPath, Day, iZoom, iZoom+3) );
       toc;
     end
   end
@@ -274,13 +281,13 @@ if(p.Results.plotSpect)
 
   if(p.Results.bashRun)
     % Save plots in 3 hour segments, ie 00:00:00 to 03:00:00 and so on
-    for ii=0:3:21
-      tintZoom = {[yyyy, mm, dd, ii, 00, 00], ...
-        [yyyy, mm, dd, ii+3, 00, 00]};
+    for iZoom=0:3:21
+      tintZoom = {[yyyy, mm, dd, iZoom, 00, 00], ...
+        [yyyy, mm, dd, iZoom+3, 00, 00]};
       irf_zoom(h,'x',tintZoom);
       % Save segment
       print(gcf, '-dpng', sprintf('%s%sT%02d0000_%02d0000_DSLxy_spectra',...
-        outPath, Day, ii, ii+3) );
+        outPath, Day, iZoom, iZoom+3) );
       toc;
     end
   end
@@ -292,7 +299,7 @@ end % End of plot figure with DSL spectra
 
 %% Help function to locate and load MMS data into TSeries
 function outTs = getDATA(dataID)
-  if(dataID>size(dataSuf)), error('Incorrect usage'); end;
+  if(dataID>size(dataSuf)), error('Incorrect usage'); end
   for ii=1:length(SCid)
     disp(['Loading and converting data from ',SCid{ii},' for ',dataSuf{dataID}]);
 

@@ -74,8 +74,8 @@ if any(strfind(product,'PITCH')) % Something fishy with background level
     en_minus=data.dep_x{3}.df.minus;    
     nan_en=isnan(en);en(nan_en)=[];en_plus(nan_en)=[];en_minus(nan_en)=[]; 
     en_pol=[en+en_plus en(end)-en_minus(end)]; 
-    [en en_cs_order]=sort(en);
-    [en_pol en_pol_order]=sort(en_pol);
+    [en, en_cs_order]=sort(en);
+    [en_pol, en_pol_order]=sort(en_pol);
     
     % Sub spin angles
     phi=data.dep_x{1}.data(1,:);
@@ -119,8 +119,8 @@ if any(strfind(product,'PEA_3DXP'))
     
     SEDL=c_caa_var_get(['Sweep_Energy_DeltaLower__', product],'mat');
     SEDU=c_caa_var_get(['Sweep_Energy_DeltaUpper__', product],'mat');
-    en_nan=isnan(SEDL(1,:));SEDL(:,en_nan)=[]; [SEDL SEDL_order]=sort(SEDL(1,2:end));
-    en_nan=isnan(SEDU(1,:));SEDU(:,en_nan)=[]; [SEDU SEDU_order]=sort(SEDU(1,2:end));       
+    en_nan=isnan(SEDL(1,:));SEDL(:,en_nan)=[]; [SEDL, SEDL_order]=sort(SEDL(1,2:end));
+    en_nan=isnan(SEDU(1,:));SEDU(:,en_nan)=[]; [SEDU, SEDU_order]=sort(SEDU(1,2:end));       
            
     % Store all data in specrec    
     specrec.t=res.tt;
@@ -144,7 +144,7 @@ if any([strfind(product,'CODIF_HS'),...
         strfind(product,'CODIF_LS'),...
         strfind(product,'HIA_LS'),...
         strfind(product,'HIA_HS'),...
-        strfind(product,'HIA') ]);
+        strfind(product,'HIA') ])
     
     % Load pitch angle data
     res=c_caa_construct_subspin_res_data(['3d_ions__', product]);
@@ -220,7 +220,7 @@ if isfield(timevar,'DELTA_PLUS') && isfield(timevar,'DELTA_MINUS')
     if ischar(timevar.DELTA_PLUS)
         deltaplus= getv(dataobject,timevar.DELTA_PLUS);
         dtplus=deltaplus.data(1,:);
-        if dtplus>5, % temporary solution for CIS problems
+        if dtplus>5 % temporary solution for CIS problems
             if (dtplus/2>3.5) && (dtplus/2 < 4.5), dtplus=dtplus/2;
             elseif (dtplus/3>3.5) && (dtplus/3 < 4.5), dtplus=dtplus/3;
             elseif (dtplus/4>3.5) && (dtplus/4 < 4.5), dtplus=dtplus/4;
@@ -241,7 +241,7 @@ else
 end
 spin_period=dtplus+dtminus;
 dtsampling=spin_period/length(phi);
-for j=length(phi):-1:1,
+for j=length(phi):-1:1
     tt(:,j)=tt(:,1)+double(-dtminus+(j-0.5)*dtsampling);
 end
 tt=reshape(tt',numel(tt),1);

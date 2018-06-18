@@ -36,18 +36,18 @@ function [out]=irf_convert_fac(inp,B0,r)
 % Begin temporary fix to convert TS format to older format (Must include spacecraft position)
 
 isinpTS = isa(inp,'TSeries');
-if isinpTS, 
+if isinpTS 
     inptemp = inp;
     ttemp = inp.time.epochUnix;
     datatemp = double(inp.data);
     inp = [ttemp, double(datatemp)];
 end
-if isa(B0,'TSeries'), 
+if isa(B0,'TSeries') 
     ttemp = B0.time.epochUnix;
     datatemp = double(B0.data);
     B0 = [ttemp, datatemp];
 end
-if isa(r,'TSeries'), 
+if isa(r,'TSeries') 
     ttemp = r.time.epochUnix;
     datatemp = double(r.data);
     r = [ttemp, datatemp];
@@ -69,7 +69,7 @@ else
     Rperpx(:,2:4) = rotMatrix.rotMatrix(:,1,:);
     Rperpy(:,2:4) = rotMatrix.rotMatrix(:,2,:);
     Rpar(:,2:4) = rotMatrix.rotMatrix(:,3,:);
-    if size(inp,1) ~= length(rotMatrix.t), 
+    if size(inp,1) ~= length(rotMatrix.t) 
       Rperpx = irf_resamp(Rperpx,inp); 
       Rperpy = irf_resamp(Rperpy,inp);
       Rpar = irf_resamp(Rpar,inp);
@@ -88,14 +88,14 @@ end
 
 if iscell(inp)
 	out=inp;
-	for j = 1:numel(inp),
+	for j = 1:numel(inp)
 		if j>1 && (size(inp{j},1) ~= size(inp{1},1) ...
 				|| ~all(inp{j}(:,1) == inp{1}(:,1)) ) % the same time axis
 			error('all inputs must have the same time axis')
 		end
 		out{j}=calculate_out(inp{j});
-        if isinpTS,
-            inptemp.data =  out(:,[2:4]);
+        if isinpTS
+            inptemp.data =  out(:, 2:4);
             out = inptemp;
         end
 	end
@@ -108,7 +108,7 @@ else
     out.rotMatrix(:,3,:) = Rpar(:,2:4);
   else
     out=calculate_out(inp);
-        if isinpTS,
+        if isinpTS
             if size(out, 2) == 4
                 out = irf.ts_vec_xyz(inptemp.time, out(:, 2: 4));
             elseif size(out, 2) == 3

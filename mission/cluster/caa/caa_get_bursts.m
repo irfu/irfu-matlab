@@ -94,7 +94,7 @@ varsb = c_efw_burst_param([DP '/burst/' filename]);
 varsbsize = length(varsb);
 
 if 0    % Exit if no V43M/H or V12H parameter
-found=false;
+found=false; %#ok<UNRCH>
 for i=1:varsbsize
     if strcmp(varsb(i),'V43M') || strcmp(varsb(i),'V43H') || strcmp(varsb(i),'V12H')
         found=true;
@@ -119,7 +119,7 @@ if ~flag_local
     end
 end
 
-for out = 1:varsbsize;
+for out = 1:varsbsize
     [field,sen,filter] = get_ib_props(varsb{out});
     instrument = 'efw';
     
@@ -467,7 +467,7 @@ switch ibvarstr(1)
                 filter='32kHz';
             case 'H'
                 if length(probe)==1, filter='4kHz';
-                else filter='8kHz';
+                else, filter='8kHz';
                 end
             case 'M'
                 filter='180Hz';

@@ -184,7 +184,7 @@ for in = iok
 	if plotflag && plot_i == plot_step
 		plotflag_now = 1;
 		plot_i = 0;
-	else plotflag_now = 0;
+	else, plotflag_now = 0;
 	end
 	
 	ts = ttime(1,in);
@@ -197,7 +197,7 @@ for in = iok
 		if any(nans)
 			idx = 1:6;
 			idx = idx(xor(idx,nans)) -3;
-		else idx = -2:1:2;
+		else, idx = -2:1:2;
 		end
 	end
 
@@ -499,7 +499,7 @@ elseif isempty(imax)
 end
 maxima = abs(s(imax));
 smax = max( maxima(maxima < maxmax) );
-if smax>maxmax*RATIO,
+if smax>maxmax*RATIO
 	res = 0; 
 	%irf_log('proc',...
 	%	sprintf('BAD FIT: second max is %0.2f of the main max',smax/maxmax))

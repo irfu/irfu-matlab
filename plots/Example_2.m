@@ -14,12 +14,12 @@ tint=[irf_time([2006 9 27 17 22 0]) irf_time([2006 9 27 17 24 30])];
 
 %%%%%%%%%%%%%%%%%%%%%%%%
 % download data from CAA (needed only once!!!!!)
-if 1, % put to 0 if data already downloaded !!!!
+if 1 % put to 0 if data already downloaded !!!!
     caa_download(tint,'C?_CP_STA_PSD')
     caa_download(tint,'C?_CP_FGM_5VPS')
     caa_download(tint,'C?_CP_RAP_PAD_L3DD')
     download_status=caa_download; % repeat until all data are downloaded
-    if download_status==0, % some data are still in queue
+    if download_status==0 % some data are still in queue
       disp('___________!!!!_____________')
       disp('Some data where put in queue!')
       disp('To see when they are ready and to download execute "caa_download".');
@@ -46,7 +46,7 @@ irf_legend(hca,{'C1','C2','C3','C4'},[0.98, 0.95],'color','cluster');
 
 %%%%%%%%%%%%%%%%%%%%%%%
 % 4 panels of RAPID
-for ic=1:4;
+for ic=1:4
   hca=irf_panel(['RAPID anisotropy C' num2str(ic)]);
   varname=irf_ssub('PAD_Electron_L_Dif_flux__C?_CP_RAP_PAD_L3DD',ic);
   varunits='[1/cm^2 s sr keV]';

@@ -41,7 +41,8 @@ FORMAT_R = '%10.2f,' ; % distance in km < 20 RE
 FILLVAL            = -999;
 FILLVAL_EXP        = -1.00E+31;
 
-if ~isstruct(ebsp), 
+dataToExport = []; nData = [];
+if ~isstruct(ebsp) 
   error('expecting sturcture output of irf_ebsp or irf_convert_fac')
 end
 
@@ -82,7 +83,7 @@ end
 
 % Add END_OF_RECORD markers in the end of each line
 out_CharArray(:,end)='$';
-out_CharArray(:,end+1)=sprintf('\n');
+out_CharArray(:,end+1)=sprintf('\n'); %#ok<SPRINTFN>
 out_CharArray = out_CharArray';
 out_CharArray=out_CharArray(:)';
 
@@ -166,9 +167,9 @@ end
         %DT2 = 0.5; % time resolution
         datasetID = 'ULF_PC12';
         if ischar(cl_id) && cl_id(1)=='g', numberOfFreq = 12; % GOES
-        else numberOfFreq = 21; % Cluster and THEMIS
+        else, numberOfFreq = 21; % Cluster and THEMIS
         end
-      case 'pc35';
+      case 'pc35'
         %DT2 = 30; % time resolution
         datasetID = 'ULF_PC35';
         numberOfFreq = 21;
@@ -183,7 +184,7 @@ end
     
     %% Prepare data array
     % B0
-    if isempty(ebsp.fullB), magB = ebsp.B0; else magB = ebsp.fullB; end
+    if isempty(ebsp.fullB), magB = ebsp.B0; else, magB = ebsp.fullB; end
     magB = irf_abs(magB); magB = magB(:,[1 5]); magB = irf_resamp(magB,ebsp.t);
     magB = magB(:,2);
     
@@ -275,7 +276,7 @@ end %export
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function obuf = pmeta(metaID,metaValue)
 % Print META
-if isnumeric(metaValue), q = ''; metaValue = num2str(metaValue); else q = '"'; end
+if isnumeric(metaValue), q = ''; metaValue = num2str(metaValue); else, q = '"'; end
 obuf = [...
     'START_META     =   ' metaID '\n'...
     '   ENTRY       =   ' q metaValue q '\n'...

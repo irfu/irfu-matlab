@@ -27,7 +27,7 @@ end
 jFile = java.io.File(file);
 if ~jFile.exists()
     ok = mkdir(file);
-    if ~ok; 
+    if ~ok 
         error('failed creating dirsave dir %s', file);
     end
 elseif ~jFile.isDirectory()
@@ -36,13 +36,13 @@ end
 names = fieldnames(s);
 for i = 1:numel(names)
     varFile = fullfile(file, [names{i} '.mat']);
-    varStruct = struct(names{i}, {s.(names{i})});
+    varStruct = struct(names{i}, {s.(names{i})}); %#ok<NASGU>
     save(varFile, '-struct', 'varStruct');
 end
 
 function out = join(Glue, Strings)
 Strings = cellstr(Strings);
-if length( Strings ) == 0
+if isempty( Strings )
     out = '';
 elseif length( Strings ) == 1
     out = Strings{1};

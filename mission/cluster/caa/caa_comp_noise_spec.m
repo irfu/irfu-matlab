@@ -1,6 +1,6 @@
 function [res,detailed_spec] = caa_comp_noise_spec(data,whip)
 
-if c_efw_fsample(data)~=450,
+if c_efw_fsample(data)~=450
 	error('DATA must be 450 Hz')
 end
 
@@ -13,7 +13,7 @@ pos = 0;
 count = 0;
 
 if nargout > 1, ncol = 2;
-else ncol = 1;
+else, ncol = 1;
 end
 detailed_spec = zeros(fix(size(data,1)/STEP),ncol);
 

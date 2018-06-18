@@ -1,4 +1,4 @@
-function outhandle=irf_pl_info(string,inhandle,position);
+function outhandle=irf_pl_info(string,inhandle,position)
 %IRF_PL_INFO   Add information to the plot
 %
 % Will be removed!!! Use IRF_LEGEND instead!
@@ -22,7 +22,7 @@ disp('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!');
 
 if nargin == 1, inhandle=gca;position=[.02 1];end
 if nargin == 2, position=[.02 1];end
-if inhandle ==0, % add to the whole figure if inhandle = 0
+if inhandle ==0 % add to the whole figure if inhandle = 0
     h00 = gca;
     h1 = axes('Units','normalized', 'Position',[0 0 1 1], 'Visible','off', ...
         'Tag','BackgroundAxes', 'HitTest','off');

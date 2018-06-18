@@ -37,14 +37,18 @@ function [ax,pst] = plot_int_distribution(varargin)
 %   Options:
 %   'tint'/'t'  - time interval used for plot. Data is averaged for a line
 %               and all data in interval is shown for a spectrogram
-%   'xvec'      - normal vector to plot data against
+%   'xvec'      - normal vector to plot data against, can be a TSeries
+%               object or a row vector
 %   'plotmode'  - can be 'spec'/'ts' or 'line', default is 'line'
 %   'clim'      - [cmin cmax], colorbar limits in logscale or ylim for line
 %   'vlim'      - vmax in [km/s], zoom in to XLim = YLim = vlim*[-1 1]
 %   'vint'      - set limits on the from-line velocity to get cut-like
 %               distribution
 %   'nMC'       - number of Monte Carlo iterations used for integration,
-%               default is 10
+%               default is 100
+%   'scpot'     - TSeries object with spacecraft potential in [V]
+%   'weight'-   how the number of MC iterations per bin is weighted, can be
+%               'none' (default), 'lin' or 'log'
 %   'vlabel'    - string for axis label corresponding to v
 %   'flipx'     - boolean value where 1 flips the x axis 
 %   'vg'        - array with center values for the projection velocity
@@ -118,11 +122,13 @@ doFlipX = 0;
 have_vlabels = 0;
 have_vlim = 0;
 have_clim = 0;
-nMC = 10; % number of Monte Carlo iterations
+nMC = 100; % number of Monte Carlo iterations
 vint = [-Inf,Inf];
 aint = [-180,180];
 plotMode = 'line';
 vgInput = 0;
+weight = 'none';
+correctForScPot = 0;
 
 have_options = nargs > 1;
 while have_options
@@ -131,12 +137,13 @@ while have_options
             tint = args{2};
         case 'xvec' % vector to plot data against
             xphat = args{2};
-            xphat = xphat/norm(xphat);
-            if acosd(dot([0,1,0],xphat)) > 10 && acosd(dot([0,1,0],xphat)) < 170
-                zphat = cross([0,1,0],xphat)/norm(cross([0,1,0],xphat));
-            else
-                zphat = cross([0,0,1],xphat)/norm(cross([0,0,1],xphat));
+            if isnumeric(xphat) % only single vector input allowed
+                xphat = xphat/norm(xphat);
+                if size(xphat,2)==1; xphat = xphat'; end % make sure it's a row vector
+            elseif isa(xphat,'TSeries') % time series
+                xphat = xphat.resample(dist).norm.data;
             end
+            
         case 'vlim'
             vlim = args{2};
             have_vlim = 1;
@@ -159,14 +166,24 @@ while have_options
         case 'vg' % define velocity grid
             vgInput = 1;
             vg = args{2}*1e3;
+        case 'weight' % how data is weighted
+            weight = args{2};
+        case 'scpot'
+            scPot = args{2};
+            correctForScPot = 1;
     end
     args = args(3:end);
     if isempty(args), break, end
 end
 
 if ~have_vlabels
-    vlabel = ['v_{x=[' num2str(xphat,'% .2f') ']}'];
+    if min(size(xphat)) == 1
+        vlabel = ['v_{x=[' num2str(xphat,'% .2f') ']}'];
+    else
+        vlabel = 'v ';
+    end
 end
+
 
 
 
@@ -186,16 +203,31 @@ else % time interval
     it = it1:it2;
 end
 
+% make sure xphat is a matrix
+if min(size(xphat)) == 1 
+    xphat = repmat(xphat,length(dist),1);
+end
 
 % loop to get projection
 for i = 1:length(it)
     if length(it)>1;disp([num2str(i),'/',num2str(length(it))]); end
     
-    % 3d data matrix for time index it
+    % 3d data matrix for time index it, [E,phi,th]
     F3d = double(squeeze(double(dist.data(it(i),:,:,:)))*1e12); % s^3/m^6
     
     emat = double(dist.energy); % in eV
     energy = emat(it(i),:);
+    
+    
+    % if scpot is in input, correct for it
+    if correctForScPot
+        energy = energy-scPot.resample(dist).data(it(i));
+        iEend = find(energy<0,1,'last');
+        % set to zero if below sc potential, +1 to make sure no the bin is removed
+        F3d(1:iEend+1,:,:) = 0; 
+        energy(energy<0) = 0; % not sure if needed
+    end
+    
     v = sqrt(2*energy*u.e/M); % m/s
     
     if length(v) ~= 32
@@ -235,18 +267,10 @@ for i = 1:length(it)
         vel = zeros(length(it),1);
     end
     % perform projection
-     tmpst = irf_int_sph_dist(F3d,v,phi,th,vg,'x',xphat,'z',zphat,'nMC',nMC,'vzint',vint*1e3,'aint',aint);
+     tmpst = irf_int_sph_dist(F3d,v,phi,th,vg,'x',xphat(it(i),:),'nMC',nMC,'vzint',vint*1e3,'aint',aint,'weight',weight);
      Fg(i,:) = tmpst.F;
      dens(i) = tmpst.dens;
      vel(i) = tmpst.vel;
-    
-    % cheat and interpolate if there's a hole
-    for j = 2:length(vg)-1
-        if Fg(i,j)==0 && Fg(i,j-1)~=0 && Fg(i,j+1)~=0
-            Fg(i,j) = (Fg(i,j-1)+Fg(i,j+1))/2;
-        end
-    end
-
 end
 
 

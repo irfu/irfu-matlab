@@ -831,7 +831,7 @@ if doAnalyzeFile
         disp(['* ' ffn]);
         if numel(anaFileErr)==0
             sr_display_str = '';
-            for idx = 1:numRC;
+            for idx = 1:numRC
                 sr_display_str = [sr_display_str ' �' repChar{idx} '�']; %#ok<AGROW>
             end
             disp(['* read mode: ' readMode]);
@@ -1579,7 +1579,7 @@ if strcmpi(readMode,'line') || ~isempty(errmsg)
         numColon = -abs(numColon);
         if arg.val.InfoLevel >= 2
             disp('Due to error')
-            disp(strrep(['  ' errmsg],char(10),char([10 32 32])))
+            disp(strrep(['  ' errmsg],char(10),char([10 32 32]))) %#ok<CHARTEN>
             disp('txt2mat will now try to read line by line...')
         end % if
     end
@@ -1628,7 +1628,7 @@ if strcmpi(readMode,'line') || ~isempty(errmsg)
     if arg.val.InfoLevel >= 2
         if numColon>=0
             reference = numColon;
-        elseif numColon == -1;
+        elseif numColon == -1
             reference = width_A;
         else
             reference = -numColon;
@@ -2388,7 +2388,7 @@ function lb = detectLineBreakCharacters(ffn)
 lfuint   = uint8(10);       % LineFeed
 cruint   = uint8(13);       % CarriageReturn
 crlfuint = [cruint,lfuint];
-lfchar   = char(10);
+lfchar   = char(10); %#ok<CHARTEN>
 crchar   = char(13);
 crlfchar = [crchar,lfchar];
 readlen  = 16384;

@@ -64,7 +64,7 @@ while feof(fp) == 0
 
   if passing_MP ~= 0
 
-    if s_t == 0 & e_t == 0
+    if s_t == 0 && e_t == 0
       tmp = passing_MP;
 
     else
@@ -73,7 +73,7 @@ while feof(fp) == 0
       tmp = [tmp1 tmp2];
       [s_row,e_row] = find_row(s_t_e, e_t_e, tmp,1);
 
-      if s_row == -1 | e_row == -1
+      if s_row == -1 || e_row == -1
         p_mp = -1;
       else
         p_mp = passing_MP(s_row:e_row,:);

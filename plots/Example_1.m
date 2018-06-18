@@ -13,7 +13,7 @@ tint=irf.tint('2006-09-27T17:17:00Z/2006-09-27T17:24:00Z'); % time interval
 
 %%%%%%%%%%%%%%%%%%%%%%%%
 % download data from CAA (needed only once!!!!!)
-if 1, % put to 0 if data already downloaded !!!!
+if 1 % put to 0 if data already downloaded !!!!
     caa_download(tint,'C1_CP_FGM_5VPS')
     caa_download(tint,'C1_CP_CIS-HIA_ONBOARD_MOMENTS')
     caa_download(tint,'C1_CP_CIS_HIA_HS_1D_PEF')

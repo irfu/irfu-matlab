@@ -60,7 +60,7 @@ XM=X0-A;    %  THIS IS THE X-COORDINATE OF THE SEAM BETWEEN THE
 %            N.A.TSYGANENKO, SOLUTION OF CHAPMAN-FERRARO PROBLEM FOR AN
 %             ELLIPSOIDAL MAGNETOPAUSE, PLANET.SPACE SCI., V.37, P.1037, 1989).
 %
-if (YGSM ~= 0 | ZGSM ~= 0)
+if (YGSM ~= 0 || ZGSM ~= 0)
     PHI=atan2(YGSM,ZGSM); %Controll that fortran atan2 is equal to matlab atan2
 else
     PHI=0;

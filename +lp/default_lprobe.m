@@ -24,7 +24,7 @@ lprobeNamesList = lprobeList(:,1);
 lprobeLpFunc    = lprobeList(:,2);
 
 if nargin == 0 && nargout == 0
-	for iLprobe = 1:numel(lprobeNamesList),
+	for iLprobe = 1:numel(lprobeNamesList)
 		disp([num2str(iLprobe) '. ' lprobeNamesList{iLprobe}]);
 	end
 	return;
@@ -34,7 +34,7 @@ end
 if ischar(lprobeNames), lprobeNames = {lprobeNames};   end
 
 iFoundLprobe = [];
-for iLprobe = 1:numel(lprobeNames),
+for iLprobe = 1:numel(lprobeNames)
 	iFoundLprobe = [iFoundLprobe find(strcmp(lprobeNames(iLprobe),lprobeNamesList))]; %#ok<AGROW>
 end
 

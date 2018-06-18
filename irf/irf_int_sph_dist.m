@@ -16,8 +16,11 @@ function [pst] = irf_int_sph_dist(F,v,phi,th,vg,varargin)
 %   'x'     -   axis that is not integrated along in 1D and x-axis
 %               (phig = 0) in 2D. x = [1,0,0] if omitted.
 %   'z'     -   Axis that is integrated along in 2D. z = [0,0,1] if omitted.
-%   'nMC'   -   number of Monte Carlo iterations used for integration,
-%               default is 10.
+%   'nMC'   -   average number of Monte Carlo iterations used per bin for 
+%               integration, default is 10. Number of iterations can be
+%               weighted data value in each bin.
+%   'weight'-   how the number of MC iterations per bin is weighted, can be
+%               'none' (default), 'lin' or 'log'
 %   'vzint' -   set limits on the out-of-plane velocity interval in 2D and
 %               "transverse" velocity in 1D.
 %   'aint'  -   angular limit in degrees, can be combined with vzlim
@@ -61,6 +64,7 @@ nMC = 10; % number of Monte Carlo iterations
 vzint = [-inf,inf]; % limit on out-of-plane velocity
 aint = [-180,180]; % limit on out-of-plane velocity
 projDim = 1; % number of dimensions of the projection
+weight = 'none'; % how number of MC points is weighted to data
 
 args = varargin;
 nargs = length(varargin);
@@ -83,11 +87,15 @@ while have_options
             vzint = args{2};
         case 'aint'
             aint = args{2};
+        case 'weight'
+            weight = args{2};
     end
     args = args(3:end);
     if isempty(args), break, end
 end
 
+
+%% Initiate initiate various things
 
 % complete RH system
 yphat = cross(zphat,xphat);
@@ -98,7 +106,7 @@ dPhi = abs(median(diff(phi))); % constant
 dTh = abs(median(diff(th))); % constant
 
 % primed (grid) diffs
-dVg = diff(vg); dVg = [dVg(1),dVg]; % quick and dirty
+% dVg = diff(vg); dVg = [dVg(1),dVg]; % quick and dirty
 if projDim == 2
     dPhig = median(diff(phig)); % constant
 else
@@ -113,15 +121,26 @@ else
 end
 
 % bin edges
-vg_edges = [vg(1)-dVg(1)/2,vg+dVg/2]; % quick and dirty
+% vg_edges = [vg(1)-dVg(1)/2,vg+dVg/2]; % quick and dirty
+vg_edges = zeros(1,length(vg)+1);
+vg_edges(1) = vg(1)-diff(vg(1:2))/2;
+vg_edges(2:end-1) = vg(1:end-1)+diff(vg)/2;
+vg_edges(end) = vg(end)+diff(vg(end-1:end))/2;
+
 if projDim == 2
     phig_edges = [phig-dPhig/2,phig(end)+dPhig/2];
 end
 
+% primed (grid) diffs
+dVg = diff(vg_edges);
+
 % convert to cartesian mesh, only for output
 if projDim == 2
-    [phiMesh,vMesh] = meshgrid(phig_edges+dPhig/2,vg); % Creates the mesh
+    [phiMesh,vMesh] = meshgrid(phig_edges+dPhig/2,vg); % Creates the mesh, center of bins, phi has one extra bin at the end
     [vxMesh,vyMesh] = pol2cart(phiMesh-pi/nAzg,vMesh);    % Converts to cartesian
+    
+    [phiMesh_edges,vMesh_edges] = meshgrid(phig_edges,vg_edges); % Creates the mesh, edges of bins
+    [vxMesh_edges,vyMesh_edges] = pol2cart(phiMesh_edges,vMesh_edges); % Converts to cartesian, edges
 end
 
 % Number of instrument bins
@@ -130,7 +149,7 @@ nAz = length(phi);
 nEle = length(th);
 
 
-% 3D matrices for bin centers
+% 3D matrices for instrumental bin centers
 TH = repmat(th,nV,1,nAz);       % [phi,th,v]
 TH = permute(TH,[1,3,2]);       % [v,phi,th]
 PHI = repmat(phi,nV,1,nEle);    % [v,phi,th]
@@ -139,31 +158,51 @@ VEL = permute(VEL,[2,1,3]);     % [v,phi,th]
 DV = repmat(dV,nAz,1,nEle);     % [phi,v,th]
 DV = permute(DV,[2,1,3]);       % [v,phi,th]
 
+% Weighting of number of Monte Carlo particles
+Nsum = nMC*numel(find(F)); % total number of Monte Carlo particles
+switch weight
+    case 'none'
+        % 3D matrix with values of nMC for each bin
+        NMC = zeros(size(F)); % no points when data is 0
+        NMC(F~=0) = nMC;
+    case 'lin'
+        NMC = ceil(Nsum/sum(sum(sum(F)))*F);
+    case 'log'
+        NMC = ceil(Nsum/(sum(sum(sum(log10(F+1)))))*log10(F+1));
+end
 
 % init Fp
 Fg = zeros(nAzg+1,nVg);
+Fg_ = zeros(nAzg,nVg); % use this one with 'edges bins'
 % Volume element
 dtau = ( VEL.^2.*cos(TH).*DV*dPhi*dTh );
 % Area or line element (primed)
 dAg = vg.^(projDim-1).*dVg*dPhig;
 
+
+%% Perform projection
 % Loop through all instrument bins
 for i = 1:nV % velocity (energy)
     for j = 1:nAz % phi
         for k = 1:nEle % theta
             % generate MC points
+            nMCt = NMC(i,j,k); % temporary number
+            % Ignore bin if value of F is zero to save computations
+            if F(i,j,k) == 0
+                continue;
+            end
             % first is not random
-            dV_MC = [0;(rand(nMC-1,1)-.5)*dV(i)];
-            dPHI_MC = [0;(rand(nMC-1,1)-.5)*dPhi];
-            dTH_MC = [0;(rand(nMC-1,1)-.5)*dTh];
+            dV_MC = [0;(rand(nMCt-1,1)-.5)*dV(i)];
+            dPHI_MC = [0;(rand(nMCt-1,1)-.5)*dPhi];
+            dTH_MC = [0;(rand(nMCt-1,1)-.5)*dTh];
             
             % convert instrument bin to cartesian velocity
             [vx,vy,vz] = sph2cart(PHI(i,j,k)+dPHI_MC,TH(i,j,k)+dTH_MC,VEL(i,j,k)+dV_MC);
             
             % Get velocities in primed coordinate system
-            vxp = sum([vx,vy,vz].*xphat,2); % all MC points
-            vyp = sum([vx,vy,vz].*yphat,2);
-            vzp = sum([vx,vy,vz].*zphat,2); % all MC points
+            vxp = [vx,vy,vz]*xphat'; % all MC points
+            vyp = [vx,vy,vz]*yphat';
+            vzp = [vx,vy,vz]*zphat'; % all MC points
             vabsp = sqrt(vxp.^2+vyp.^2+vzp.^2);
             if projDim == 1 % get transverse velocity sqrt(vy^2+vz^2)
                 vzp = sqrt(vyp.^2+vzp.^2); % call it vzp
@@ -182,29 +221,32 @@ for i = 1:nV % velocity (energy)
                 phip(phip<0) = 2*pi+phip(phip<0);
             end
             
+            % get indicies for all MC points
+            iVg = discretize(vp,vg_edges);
+            
+            if projDim == 2
+                iAzg = discretize(phip,phig_edges);
+            else
+                iAzg = ones(1,nMCt);
+            end
+            
             % Loop through MC points and add value of instrument bin to the
             % appropriate projection bin
-            for l = 1:nMC
-                iVg = find(vp(l)>vg_edges,1,'last');
-                % % Add to closest bin if it falls outside
-                % if isempty(iVg) && vp(l)<vg_edges(1); iVg = 1; end
-                % if iVg == nVg+1 && vp(l)>vg_edges(end); iVg = nVg; end
-                
-                if projDim == 2
-                    iAzg = find(phip(l)>phig_edges,1,'last');
-                else
-                    iAzg = 1;
-                end
-                
+            for l = 1:nMCt
                 % add value to appropriate projection bin
-                if usePoint(l) && ~isempty(iAzg) && ~isempty(iVg) && (iAzg<nAzg+1 || iAzg==1) && iVg<nVg+1
-                    Fg(iAzg,iVg) = Fg(iAzg,iVg)+F(i,j,k)*dtau(i,j,k)/dAg(iVg)/nMC;
+                if usePoint(l) && ~isempty(iAzg(l)) && ~isempty(iVg(l)) && (iAzg(l)<nAzg+1 || iAzg(l)==1) && iVg(l)<nVg+1
+                    Fg(iAzg(l),iVg(l)) = Fg(iAzg(l),iVg(l))+F(i,j,k)*dtau(i,j,k)/dAg(iVg(l))/nMCt;
+                    if projDim == 2
+                      Fg_(iAzg(l),iVg(l)) = Fg(iAzg(l),iVg(l))+F(i,j,k)*dtau(i,j,k)/dAg(iVg(l))/nMCt;
+                    end
                 end
             end
         end
     end
 end
 
+
+%% Output
 if projDim == 2
     % fix for interp shading, otherwise the last row can be whatever
     Fg(end,:) = mean([Fg(end-1,:);Fg(1,:)]);
@@ -212,10 +254,10 @@ end
 
 % Calculate density
 if projDim == 1
-    dens = nansum(Fg.*dAg);
+    dens = sum(Fg.*dAg);
 else
     dAG = repmat(dAg,nAzg,1);
-    dens = nansum(nansum(Fg(1:end-1,:).*dAG));
+    dens = sum(sum(Fg(1:end-1,:).*dAG));
 end
 
 % Calculate velocity moment
@@ -245,6 +287,9 @@ if projDim == 1
 else
     pst.vx = vxMesh;
     pst.vy = vyMesh;
+    pst.F_using_edges = Fg_;
+    pst.vx_edges = vxMesh_edges;
+    pst.vy_edges = vyMesh_edges;
 end
 pst.dens = dens;
 pst.vel = vel;

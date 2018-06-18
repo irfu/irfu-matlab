@@ -49,13 +49,13 @@ while feof(fp) == 0
 %within the intervall.
 correct_l = -1;
 temp_l = 0;
-while  feof(fp) == 0 & correct_l == -1
+while  feof(fp) == 0 && correct_l == -1
 temp_l = fgetl(fp);
 i = length(temp_l);
 %if the file is witin the time intervall
 
 %checks the filename
-if i == 30 & temp_l(1:3) == 'Ba_'
+if i == 30 && temp_l(1:3) == 'Ba_'
 if c_ri_timestr_within_intervall(temp_l,s_t,e_t) == 1
 %finds the file for cluster 1
 if strcmp(temp_l(i-2:i),'.01') == 1
@@ -77,10 +77,10 @@ b_file_04 = find_str(b_file_01,fp,'4');
 
 mode = b_file_01(length(b_file_01)-3);
 
-B1 = load_file(path_input, b_file_01);
-B2 = load_file(path_input, b_file_02);
-B3 = load_file(path_input, b_file_03);
-B4 = load_file(path_input, b_file_04);
+B1 = load_file(path_input, b_file_01); %#ok<NASGU> 
+B2 = load_file(path_input, b_file_02); %#ok<NASGU> 
+B3 = load_file(path_input, b_file_03); %#ok<NASGU> 
+B4 = load_file(path_input, b_file_04); %#ok<NASGU> 
 
 filename = b_file_01(3:length(b_file_01)-3);
 p_and_f = sprintf('%sBm%s',path_output,filename);

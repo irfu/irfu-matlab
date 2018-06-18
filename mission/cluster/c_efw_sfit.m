@@ -122,7 +122,7 @@ if pair == 12, pha = pha + 3*pi/4;
 elseif pair == 32, pha = pha + pi/2;
 elseif pair == 34, pha = pha + pi/4;
 elseif pair == 42, pha = pha + pi;
-else error('probe pair must be one of 12, 34, 32 or 42')
+else, error('probe pair must be one of 12, 34, 32 or 42')
 end
 
 

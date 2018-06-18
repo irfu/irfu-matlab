@@ -39,7 +39,7 @@ if length(t)<5 || any(diff(t)<0) || (t(end)-t(1)) > length(t)*100
     end
     
     ii = find(out(:,18)=='6'); % in case there has been rounding leading to 60.000 seconds
-    if any(ii),
+    if any(ii)
         out(ii,:) = epoch2iso(t(ii)+dt_res,fmt);
     end
 else
@@ -74,8 +74,8 @@ else
 	
     for j=1:length(mins)
         if j==length(mins), ii = find(t>=mins(j));
-        else ii = find(t>=mins(j) & t<mins(j+1));
-        end;
+        else, ii = find(t>=mins(j) & t<mins(j+1));
+        end
         if isempty(ii), continue, end
         if j_start
             for kk=j_start:5
@@ -90,7 +90,7 @@ else
         end
     end
     ii = find(out(:,18)=='6'); % in case there has been rounding leading to 60.000 seconds
-    if any(ii),
+    if any(ii)
         out(ii,:) = epoch2iso(t(ii)+dt_res,fmt);
     end
 end

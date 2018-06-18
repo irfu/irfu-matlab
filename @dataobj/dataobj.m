@@ -16,7 +16,7 @@ function dobj = dataobj(varargin)
 % ----------------------------------------------------------------------------
 persistent usingNasaPatchCdf
 
-if isempty(usingNasaPatchCdf), % check only once if using NASA cdf
+if isempty(usingNasaPatchCdf) % check only once if using NASA cdf
   usingNasaPatchCdf=irf.check_if_using_nasa_cdf;
 end
 shouldReadAllData = true;  % default read all data
@@ -33,7 +33,7 @@ else
   end
   if nargin >=3
     if ischar(varargin{2}) && strcmp(varargin{2},'tint') && ...
-        isnumeric(varargin{3}) && (length(varargin{3})==2),
+        isnumeric(varargin{3}) && (length(varargin{3})==2)
       tint=varargin{3};
       shouldReadAllData=false;
     else
@@ -71,14 +71,14 @@ switch action
           case 1
             cdf_file = [directory_name cdf_files.name];
           otherwise
-            for j=1:numel(cdf_files),
+            for j=1:numel(cdf_files)
               disp([num2str(j) '. ' cdf_files(j).name]);
             end
             j = irf_ask('Choose cdf-file? [%]>','cdf_file',1);
             cdf_file = [directory_name cdf_files(j).name];
         end
         clear cdf_files
-      else cdf_file = varargin{1};
+      else, cdf_file = varargin{1};
       end
       if ~exist(cdf_file,'file')
         error(['File ' cdf_file ' does not exist']);
@@ -179,7 +179,7 @@ switch action
             if strcmpi(info.Variables(iTimeVar,4),'tt2000')
               tintTmp(1) = spdfparsett2000(epoch2iso(tint(1)));
               tintTmp(2) = spdfparsett2000(epoch2iso(tint(2)));
-            else tintTmp = tint;
+            else, tintTmp = tint;
             end
             records{i} = (timeline >= tintTmp(1)) & (timeline < tintTmp(2));
             recsTmp = [recsTmp; {timeVarName,iTimeVar,records{i}}]; %#ok<AGROW>
@@ -201,7 +201,7 @@ switch action
         info   = cdfinfo(cdf_file);
         %check for epoch tt2000
         usingTT2000=strcmpi('tt2000',info.Variables{1,4});
-        if usingTT2000,
+        if usingTT2000
           se = 'NASA CDF patch is required to read files containing TT2000 variables';
           irf.log('critical',se);
           error('IRF:dataobj:dataobj:unsupported_data',se);
@@ -209,7 +209,7 @@ switch action
         % check if cdfepoch16
         usingCdfepoch16=strcmpi('epoch16',info.Variables{1,4});
         % read in file
-        if usingCdfepoch16,
+        if usingCdfepoch16
           irf.log('notice',['EPOCH16 time in cdf file:' cdf_file]);
           shouldReadAllData=1; % read all data
           isCdfEpoch16VariableArray=cellfun(@(x) strcmpi(x,'epoch16'), info.Variables(:,4));
@@ -221,7 +221,7 @@ switch action
             % get time axis
             tc=zeros(2,numrecs);
             cdfid   = cdflib.open(cdf_file);
-            for jj=1:numrecs,
+            for jj=1:numrecs
               tc(:,jj) = cdflib.getVarRecordData(cdfid,iCdf16Variable(i)-1,jj-1);
             end
             cdflib.close(cdfid);
@@ -231,7 +231,7 @@ switch action
           [data,info] = cdfread(cdf_file,'ConvertEpochToDatenum',true,'CombineRecords',true);
           data{1} = irf_time([data{:,1}],'date>epoch');
         end
-        if ~shouldReadAllData,
+        if ~shouldReadAllData
           records=find((data{1} >= tint(1)) & (data{1} <= tint(2)));
         end
         timeVariable=info.Variables{1,1};
@@ -261,7 +261,7 @@ switch action
       % test if there are some data
       if ~(any(strcmpi(info.Variables(:,4),'epoch')==1) || ...
           any(strcmpi(info.Variables(:,4),'epoch16')==1) || ...
-          any(strcmpi(info.Variables(:,4),'tt2000')==1)),
+          any(strcmpi(info.Variables(:,4),'tt2000')==1))
         nVariables=0; % no time variable, return nothing
         irf.log('warning','CDF FILE IS EMPTY!');
       else
@@ -276,20 +276,20 @@ switch action
           varName = dobj.vars{v,1};
           dataAllRecords = data{v};
           if shouldReadAllData || ...% return all data
-              (usingNasaPatchCdf && strcmpi(info.Variables{v,5}(1),'F')),% fixed variable with NASA cdf patch (matlab cdfread return fixed variable as time series)
+              (usingNasaPatchCdf && strcmpi(info.Variables{v,5}(1),'F'))% fixed variable with NASA cdf patch (matlab cdfread return fixed variable as time series)
             dobj.data.(varName).data = dataAllRecords;
             dobj.data.(varName).nrec = info.Variables{v,3};
           else
-            if iscell(records), recsTmp = records{v}; else recsTmp = records; end
+            if iscell(records), recsTmp = records{v}; else, recsTmp = records; end
             nDim=numel(size(dataAllRecords));
             switch nDim
-              case 2,
+              case 2
                 dataSelectedRecords=dataAllRecords(recsTmp,:);
-              case 3,
+              case 3
                 dataSelectedRecords=dataAllRecords(recsTmp,:,:);
-              case 4,
+              case 4
                 dataSelectedRecords=dataAllRecords(recsTmp,:,:,:);
-              case 5,
+              case 5
                 dataSelectedRecords=dataAllRecords(recsTmp,:,:,:,:);
             end
             dobj.data.(varName).data = dataSelectedRecords;
@@ -317,7 +317,7 @@ end % Main function
   function idx = get_var_idx(varName)
     isVarArray=cellfun(@(x) strcmpi(x,varName), info.Variables(:,1));
     idx = find(isVarArray==1);
-    if length(idx) > 1,
+    if length(idx) > 1
       strErr = sprintf('Multiple entries for variable ''%s'' in field ''Variables''',varName);
       irf.log('error',strErr);
       error('IRF:dataobj:get_var_idx:multipleEntries',strErr); %#ok<SPERR>
@@ -335,7 +335,7 @@ end % Main function
     isVarArray=cellfun(@(x) strcmpi(x,varName), info.VariableAttributes.(field)(:,1));
     idxVar = find(isVarArray==1);
     if isempty(idxVar), return, end
-    if length(idxVar) > 1,
+    if length(idxVar) > 1
       strErr = sprintf('Multiple entries for variable ''%s'' in field ''%s''',varName,field);
       irf.log('error',strErr);
       error('IRF:dataobj:get_key:multipleEntries',strErr); %#ok<SPERR>
@@ -405,7 +405,7 @@ end % Main function
     isFieldSIConversion = isfield(info.VariableAttributes,'SI_CONVERSION');
     isFieldDeltaPlus    = isfield(info.VariableAttributes,'DELTA_PLUS');
     isFieldDeltaMinus   = isfield(info.VariableAttributes,'DELTA_MINUS');
-    if isFieldUnits,
+    if isFieldUnits
       iattr=find(strcmpi(info.VariableAttributes.UNITS(:,1),timeVariable));
       % change from ms to s UNITS of epoch if present
       if iattr, info.VariableAttributes.UNITS(iattr,2)={'s'};
@@ -414,7 +414,7 @@ end % Main function
         info.VariableAttributes.UNITS(end,2)={'s'};
       end
     end
-    if isFieldSIConversion,
+    if isFieldSIConversion
       iattr=find(strcmpi(info.VariableAttributes.SI_CONVERSION(:,1),timeVariable));
       % change from ms to s SI_CONVERSION of epoch if present
       if iattr, info.VariableAttributes.SI_CONVERSION(iattr,2)={'1.0>s'};
@@ -432,15 +432,15 @@ end % Main function
       otherwise
     end
     % XXX: FIXME - update for VIRTUAL variables
-    if isFieldDeltaPlus,
+    if isFieldDeltaPlus
       iattr=find(strcmpi(info.VariableAttributes.DELTA_PLUS(:,1),timeVariable)); % to convert DELTA_PLUS
-      if any(iattr) && isnumeric(info.VariableAttributes.DELTA_PLUS{iattr,2}),
+      if any(iattr) && isnumeric(info.VariableAttributes.DELTA_PLUS{iattr,2})
         info.VariableAttributes.DELTA_PLUS{iattr,2}=info.VariableAttributes.DELTA_PLUS{iattr,2}/factor;
       end
     end
-    if isFieldDeltaMinus,
+    if isFieldDeltaMinus
       iattr=find(strcmpi(info.VariableAttributes.DELTA_MINUS(:,1),timeVariable)); % to convert DELTA_PLUS
-      if any(iattr) && isnumeric(info.VariableAttributes.DELTA_MINUS{iattr,2}),
+      if any(iattr) && isnumeric(info.VariableAttributes.DELTA_MINUS{iattr,2})
         info.VariableAttributes.DELTA_MINUS{iattr,2}=info.VariableAttributes.DELTA_MINUS{iattr,2}/factor;
       end
     end
@@ -450,7 +450,7 @@ end % Main function
     % the following if is because of the bug in CAA cdf files having EPOCH16
     % sometimes time variable has dimension zero and sometimes one
     % TODO: report bug to CAA team and if needed cdf team
-    if numel(size(in)) == 3,
+    if numel(size(in)) == 3
       tcdfepoch=reshape(in,size(in,1),size(in,3)); % cdfread returns (Nsamples X 1 X 2) matrix
     else
       tcdfepoch = in; % cdfread returns (Nsamples X 2) matrix

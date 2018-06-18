@@ -225,7 +225,7 @@ for in = iok
 	if plotflag && plot_i == plot_step
 		plotflag_now = 1;
 		plot_i = 0;
-	else plotflag_now = 0;
+	else, plotflag_now = 0;
 	end
 	
 	ts = ttime(1,in);
@@ -238,7 +238,7 @@ for in = iok
 		if any(nans)
 			idx = 1:6;
 			idx = idx(xor(idx,nans)) -3;
-		else idx = -2:1:2;
+		else, idx = -2:1:2;
 		end
 	end
 
@@ -288,7 +288,7 @@ for in = iok
 	wampl = min(ii(ii>23))-max(ii(ii<23));
 	if isempty(wampl) || wampl<WAKE_MIN_AMPLITUDE
 		if DEBUG
-			irf_log('proc',['proxy wake is too small at ' epoch2iso(ts,1)])
+			irf_log('proc',['proxy wake is too small at ' epoch2iso(ts,1)]) %#ok<UNRCH>
 		end
 		wakedesc([in*2-1 in*2],:) = NaN;
 		continue
@@ -334,21 +334,21 @@ for in = iok
 		if DEBUG
 			irf_log('proc',...
 				sprintf('wake too small/big(%.2f, %.2f mV/m) at %s',...
-				max(abs(ccdav1)),max(abs(ccdav2)), epoch2iso(ts,1)))
+				max(abs(ccdav1)),max(abs(ccdav2)), epoch2iso(ts,1))) %#ok<UNRCH>
 		end
 		wakedesc([in*2-1 in*2],:) = NaN;
 		continue
 	end
 	if median(ccdav1)*median(ccdav2) > 0
 		if DEBUG
-			irf_log('proc',['wakes corrections have same sign at  ' epoch2iso(ts,1)])
+			irf_log('proc',['wakes corrections have same sign at  ' epoch2iso(ts,1)]) %#ok<UNRCH>
 		end
 		wakedesc([in*2-1 in*2],:) = NaN;
 		continue
 	end
 	if ~(c_efw_nonsinwake_isGoodShape(ccdav1) && c_efw_nonsinwake_isGoodShape(ccdav2))
 		if DEBUG
-			irf_log('proc',['wrong wake shape at  ' epoch2iso(ts,1)])
+			irf_log('proc',['wrong wake shape at  ' epoch2iso(ts,1)]) %#ok<UNRCH>
 		end
 		wakedesc([in*2-1 in*2],:) = NaN;
 		continue
@@ -364,7 +364,7 @@ for in = iok
 		wakedesc(in*2-1+fw,4) = iimax;
 	else
 		if DEBUG
-			irf_log('proc',['wrong wake shape at  ' epoch2iso(ts,1) ' (spike corner case)'])
+			irf_log('proc',['wrong wake shape at  ' epoch2iso(ts,1) ' (spike corner case)']) %#ok<UNRCH>
 		end
 		wakedesc([in*2-1 in*2],:) = NaN;
 		continue		
@@ -549,14 +549,14 @@ for i=2:length(imax)
 	minmax=min([s(imax(i-1)) s(imax(i))]);
 	if min(s(imax(i-1):imax(i))-minmax) > mindepth
 		if s(imax(i-1)) > s(imax(i)),valid(i)=0;
-		else valid(i-1)=0; end
+		else, valid(i-1)=0; end
 	end
 end
 imax=imax(logical(valid));
 		
 maxima = abs(s(imax));
 smax = max( maxima(maxima < maxmax) );
-if smax>maxmax*RATIO,
+if smax>maxmax*RATIO
 	res = 0; 
 	irf_log('proc',...
 		sprintf('BAD FIT: second max is %0.2f of the main max',smax/maxmax))

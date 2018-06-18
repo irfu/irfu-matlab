@@ -28,13 +28,13 @@ DbDataSpecIndex=[data_spec_project data_spec_member data_spec_instrument...
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % DbSpecName Index
 
-spec_name_project	= [1:DbSPEC_NAME_DIM];
-spec_name_member	= max(spec_name_project)	+ [1:DbSPEC_NAME_DIM];
-spec_name_instrument	= max(spec_name_member)		+ [1:DbSPEC_NAME_DIM];
-spec_name_sensor	= max(spec_name_instrument)	+ [1:DbSPEC_NAME_DIM];
-spec_name_signal	= max(spec_name_sensor)		+ [1:DbSPEC_NAME_DIM];
-spec_name_channel	= max(spec_name_signal)		+ [1:DbSPEC_NAME_DIM];
-spec_name_parameter	= max(spec_name_channel)	+ [1:DbSPEC_NAME_DIM];
+spec_name_project	= 1:DbSPEC_NAME_DIM;
+spec_name_member	= max(spec_name_project)	+ 1:DbSPEC_NAME_DIM;
+spec_name_instrument	= max(spec_name_member)		+ 1:DbSPEC_NAME_DIM;
+spec_name_sensor	= max(spec_name_instrument)	+ 1:DbSPEC_NAME_DIM;
+spec_name_signal	= max(spec_name_sensor)		+ 1:DbSPEC_NAME_DIM;
+spec_name_channel	= max(spec_name_signal)		+ 1:DbSPEC_NAME_DIM;
+spec_name_parameter	= max(spec_name_channel)	+ 1:DbSPEC_NAME_DIM;
 
 DbSpecNameIndex = [spec_name_project spec_name_member spec_name_instrument...
  spec_name_sensor spec_name_signal spec_name_channel spec_name_parameter];
@@ -43,28 +43,28 @@ DbSpecNameIndex = [spec_name_project spec_name_member spec_name_instrument...
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % DbData Index
 
-data_RF0_re	= 1;			DbDataRF0Index	= [data_RF0_re];
-data_RF1_re	= [1:3];		DbDataRF1Index	= [data_RF1_re];
-data_RF2_re	= [1:6];		DbDataRF2Index	= [data_RF2_re];
-data_RF3_re	= [1:9];		DbDataRF3Index	= [data_RF3_re];
+data_RF0_re	= 1;			DbDataRF0Index	= data_RF0_re;
+data_RF1_re	= 1:3;		DbDataRF1Index	= data_RF1_re;
+data_RF2_re	= 1:6;		DbDataRF2Index	= data_RF2_re;
+data_RF3_re	= 1:9;		DbDataRF3Index	= data_RF3_re;
 
-data_RF2D_re	= [1:2];		DbDataRF2DIndex	= [data_RF2D_re];
+data_RF2D_re	= 1:2;		DbDataRF2DIndex	= data_RF2D_re;
 
-data_RD0_re	= 1;			DbDataRD0Index	= [data_RD0_re];
-data_RD1_re	= [1:3];		DbDataRD1Index	= [data_RD1_re];
-data_RD2_re	= [1:6];		DbDataRD2Index	= [data_RD2_re];
+data_RD0_re	= 1;			DbDataRD0Index	= data_RD0_re;
+data_RD1_re	= 1:3;		DbDataRD1Index	= data_RD1_re;
+data_RD2_re	= 1:6;		DbDataRD2Index	= data_RD2_re;
 
 data_CF0_re	= 1;
 data_CF0_im	= 2;			DbDataCF0Index	= [data_CF0_re data_CF0_im];
-data_CF1_re	= [1:3];
-data_CF1_im	= [4:6];		DbDataCF1Index	= [data_CF1_re data_CF1_im];
-data_CF2_re	= [1:6];
-data_CF2_im	= [7:12];		DbDataCF2Index	= [data_CF2_re data_CF2_im];
-data_CF3_re	= [1:9];
-data_CF3_im	= [10:18];		DbDataCF3Index	= [data_CF3_re data_CF3_im];
+data_CF1_re	= 1:3;
+data_CF1_im	= 4:6;		DbDataCF1Index	= [data_CF1_re data_CF1_im];
+data_CF2_re	= 1:6;
+data_CF2_im	= 7:12;		DbDataCF2Index	= [data_CF2_re data_CF2_im];
+data_CF3_re	= 1:9;
+data_CF3_im	= 10:18;		DbDataCF3Index	= [data_CF3_re data_CF3_im];
 
-data_CF2D_re	= [1:6];
-data_CF2D_im	= [7:12];		DbDataCF2DIndex	= [data_CF2D_re data_CF2D_im];
+data_CF2D_re	= 1:6;
+data_CF2D_im	= 7:12;		DbDataCF2DIndex	= [data_CF2D_re data_CF2D_im];
 data_CD0_re	= 1;
 data_CD0_im	= 2;			DbDataCD0Index	= [data_CD0_re data_CD0_im];
 
@@ -79,9 +79,9 @@ data_info_scaleMin	 = max (data_info_scaleType	)	+ 1;
 data_info_scaleMax	 = max (data_info_scaleMin	)	+ 1;
 data_info_samplingFreq	 = max (data_info_scaleMax	)	+ 1;
 data_info_filterFreq	 = max (data_info_samplingFreq	)	+ 1;
-data_info_unitString	 = max (data_info_filterFreq	)	+ [1:32];
-data_info_quantityString = max (data_info_unitString	)	+ [1:32];
-data_info_conversion	 = max (data_info_quantityString)	+ [1:80];
+data_info_unitString	 = max (data_info_filterFreq	)	+ 1:32;
+data_info_quantityString = max (data_info_unitString	)	+ 1:32;
+data_info_conversion	 = max (data_info_quantityString)	+ 1:80;
 
 DbDataInfoIndex = [ data_info_units data_info_quantity data_info_scaleType ...
 		    data_info_scaleMin data_info_scaleMax data_info_samplingFreq ...
@@ -139,7 +139,7 @@ DbQueryDescIndex = [ query_desc_mode query_desc_category query_desc_level	...
 query_data_value	= 1;
 query_data_groupId	= max(query_data_value)		+ 1;
 query_data_event	= max(query_data_groupId)	+ 1;
-query_data_name		= max(query_data_event)		+ [1:32];
+query_data_name		= max(query_data_event)		+ 1:32;
 query_data_rank		= max(query_data_name)		+ 1;
 query_data_complete	= max(query_data_rank)		+ 1;
 query_data_dataType	= max(query_data_complete)	+ 1;
@@ -200,4 +200,4 @@ DbControlDescIndex = [ control_desc_function control_desc_spec ];
 
 info_desc_spec			= DbDataSpecIndex;
 
-DbInfoDescIndex = [info_desc_spec ];
+DbInfoDescIndex = info_desc_spec;

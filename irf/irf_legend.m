@@ -6,7 +6,9 @@ function ht=irf_legend(varargin)
 % IRF_LEGEND(labels,position,text_property,text_value,...)
 %       add labels to the given position
 %
-% labels - cell array with strings
+% labels - Cell array with strings. Labels are aligned horizontally if
+%           labels is a row vector and vertically if labels is a column
+%           vector.
 % position - in normalized units (default, if x position is epoch assumes data units)
 %
 % default for normalized units is "smart" alignment,e.g.'left' in left side
@@ -19,6 +21,8 @@ function ht=irf_legend(varargin)
 % Examples:
 % irf_legend({'B_X','B_Y','B_Z','B'},[0.02, 0.1]);
 %
+% irf_legend({'B_X';'B_Y';'B_Z';'B'},[1.02, 0.75]); % vertical alignment
+%
 % set(gca,'ColorOrder',[[0 0 1];[0 1 0];[0 0 0];[1 0 0]]);
 % irf_legend(gca,{'B_X','B_Y','B_Z','B'},[0.02, 0.1]);
 %
@@ -26,14 +30,14 @@ function ht=irf_legend(varargin)
 
 [axis_handle,args,nargs] = axescheck(varargin{:});
 
-if nargs == 0, % show only help
+if nargs == 0 % show only help
     help irf_legend;
     return
 end
 
-if isempty(axis_handle),
-    if any(ishandle(args{1})), % first argument is axis handles
-        if args{1}==0, % add to the whole figure
+if isempty(axis_handle)
+    if any(ishandle(args{1})) % first argument is axis handles
+        if args{1}==0 % add to the whole figure
             axis_handle = axes('Units','normalized', 'Position',[0 0 1 1], 'Visible','off', ...
                 'Tag','BackgroundAxes', 'HitTest','off');
             uistack(axis_handle,'bottom') % move axis to background
@@ -43,8 +47,8 @@ if isempty(axis_handle),
         args=args(2:end);
         nargs=nargs-1;
     else % no axis handles
-        if isnumeric(args{1}), %
-            if args{1}==0, % add to the whole figure
+        if isnumeric(args{1}) %
+            if args{1}==0 % add to the whole figure
                 axis_handle = axes('Units','normalized', 'Position',[0 0 1 1], 'Visible','off', ...
                     'Tag','BackgroundAxes', 'HitTest','off');
                 uistack(axis_handle,'bottom') % move axis to background
@@ -59,7 +63,7 @@ if isempty(axis_handle),
     end
 end
 
-if nargs<2, 
+if nargs<2 
     error('IRFU_MATLAB:irf_legend:InvalidNumberOfInputs','Incorrect number of input arguments')
 else
     labels=args{1};
@@ -85,7 +89,7 @@ if position(1)>1e8 % assume that position specifued in axis units
     end
 end
 
-if position(1)<0,
+if position(1)<0
     value_horizontal_alignment='right';
 elseif position(1) < 0.5
     value_horizontal_alignment='left';
@@ -95,7 +99,7 @@ else
     value_horizontal_alignment='left';
 end
 
-if position(2)<0,
+if position(2)<0
     value_vertical_alignment='top';
 elseif position(2) < 0.5
     value_vertical_alignment='baseline';
@@ -106,54 +110,81 @@ else
 end
 
 
-if ischar(labels), % Try to get variable labels from string (space separates).
+if ischar(labels) % Try to get variable labels from string (space separates).
     lab=labels;clear labels;
     labels{1}=lab;
     colord=[0 0 0];
 end
 
-if strcmpi(value_horizontal_alignment,'left'),
+% If labels are given in a row vector, they should be plotted horizontally
+% If labels are given in a column vector, they should be plotted vertically
+labsize = size(labels);
+if labsize(1)>1 && labsize(2)==1 % column vector
+    value_alignment = 'vertical';
+else % row vector
+    value_alignment = 'horizontal';
+end
+
+% print labels in the order 1,2,...,N if left-aligned horizontal or top-aligned vertical
+if (strcmp(value_alignment,'horizontal') && strcmpi(value_horizontal_alignment,'left')) || ...
+        (strcmp(value_alignment,'vertical') && strcmpi(value_vertical_alignment,'top'))
     label_order=1:length(labels);
-else
+else % otherwise print labels in the order N,N-1,...,1 
     label_order=length(labels):-1:1;
 end
 ht=gobjects(1,length(labels)); % allocate handles
-tmp_ref_pos=position(1);
-for i=label_order, % start with first label first
+tmp_ref_pos=position(1); % reference position in x
+tmp_ref_ext_y=0; % if vertical add this to ht(i).Postion(2)
+% loop through labels
+for i=label_order % start with first label first
     ht(i)=text(position(1),position(2),labels{i},'parent',axis_handle,'units',unit_format,'fontweight','normal');
     set(ht(i),'color',colord(i,:));
     set(ht(i),'verticalalignment',value_vertical_alignment);
     set(ht(i),'horizontalalignment',value_horizontal_alignment);
+    % loop through options ('color','FontSize','Interpreter',...)
     for j=1:size(pvpairs,2)/2
         textprop=pvpairs{2*j-1};
         textvalue=pvpairs{2*j};
-        if strcmpi(textprop,'verticalalignment'), 
+        if strcmpi(textprop,'verticalalignment') 
             value_vertical_alignment=textvalue; % value has been reset manually by input parameter
         end
-        if strcmpi(textprop,'horizontalalignment'), 
+        if strcmpi(textprop,'horizontalalignment') 
             value_horizontal_alignment=textvalue; % value has been reset manually by input parameter
         end
-        if strcmpi(textprop,'color') && strcmp(textvalue,'cluster') && i<=4,
+        if strcmpi(textprop,'color') && strcmp(textvalue,'cluster') && i<=4
             set(ht(i),'color',cluster_colors(i,:));
-        elseif strcmpi(textprop,'color') && strcmp(textvalue,'mms') && i<=4,
+        elseif strcmpi(textprop,'color') && strcmp(textvalue,'mms') && i<=4
             set(ht(i),'color',mms_colors(i,:));
         else
             set(ht(i),textprop,textvalue);
         end
     end
+    % Get position and extent of label just printed
     txt_ext=get(ht(i),'extent'); 
     txt_pos=get(ht(i),'position'); 
-    if strcmpi(value_horizontal_alignment,'left'),
-        txt_pos(1)=txt_pos(1)-(txt_ext(1)-tmp_ref_pos); % how much to shift wrt to previous label
-        set(ht(i),'position',txt_pos);       
-        txt_ext=get(ht(i),'extent'); 
-        tmp_ref_pos=txt_ext(1)+txt_ext(3)+txt_ext(3)/max(1,numel(labels{i})); % the new reference position
-    elseif strcmpi(value_horizontal_alignment,'right')
-        txt_pos(1)=txt_pos(1)-(txt_ext(1)+txt_ext(3)-tmp_ref_pos);
-        set(ht(i),'position',txt_pos);
-        txt_ext=get(ht(i),'extent'); 
-        tmp_ref_pos=txt_ext(1)-txt_ext(3)/max(1,numel(labels{i}));
+    % 
+    if strcmp(value_alignment,'horizontal') % if horizontal labels
+        if strcmpi(value_horizontal_alignment,'left')
+            txt_pos(1)=txt_pos(1)-(txt_ext(1)-tmp_ref_pos); % how much to shift wrt to previous label
+            set(ht(i),'position',txt_pos);
+            txt_ext=get(ht(i),'extent');
+            tmp_ref_pos=txt_ext(1)+txt_ext(3)+txt_ext(3)/max(1,numel(labels{i})); % the new reference position
+        elseif strcmpi(value_horizontal_alignment,'right')
+            txt_pos(1)=txt_pos(1)-(txt_ext(1)+txt_ext(3)-tmp_ref_pos);
+            set(ht(i),'position',txt_pos);
+            txt_ext=get(ht(i),'extent');
+            tmp_ref_pos=txt_ext(1)-txt_ext(3)/max(1,numel(labels{i}));
+        end
+    elseif strcmp(value_alignment,'vertical') % if vertical labels
+        ht(i).Position(2) = ht(i).Position(2)+tmp_ref_ext_y; % add to y-position
+         % update what should be added to the y-position next time (can be < 0)
+        if strcmp(value_vertical_alignment,'baseline')
+            tmp_ref_ext_y = tmp_ref_ext_y+ht(i).Extent(4);
+        elseif strcmp(value_vertical_alignment,'top')
+            tmp_ref_ext_y = tmp_ref_ext_y-ht(i).Extent(4);
+        end
     end
+
 end
 
 if nargout==0, clear ht; end

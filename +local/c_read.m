@@ -57,7 +57,7 @@ function [out,dataobject]=c_read(varargin)
 persistent index % to make fast access read only once
 persistent usingNasaPatchCdf
 
-if isempty(usingNasaPatchCdf), % check only once if using NASA cdf
+if isempty(usingNasaPatchCdf) % check only once if using NASA cdf
 	usingNasaPatchCdf=irf.check_if_using_nasa_cdf;
 end
 
@@ -70,12 +70,12 @@ caaDir = datastore('caa','localDataDirectory');
 caaDirDefault = '/data/caalocal';  % value to suggest if caaDir not defined
 
 %% Default index is empty, read in only those indees that are used
-
-if isempty(index), 
+data=[];
+if isempty(index) 
 	index=struct('dummy',[]);
 end
 %% Check inputs
-if nargin == 0,
+if nargin == 0
 	help local.c_read;
 	return;
 end
@@ -85,17 +85,17 @@ elseif nargin == 1 && ischar(varargin{1}) && strcmp(varargin{1},'test')
 	out = false;
 	if exist(caaDir,'dir'), out = true; end
 	return
-elseif nargin>=2,
+elseif nargin>=2
 	varName=varargin{1};
 	tint=varargin{2};
-	if ischar(tint),
+	if ischar(tint)
 		tint=irf_time(tint,'utc>tint');
 	elseif isa(tint,'GenericTimeArray') && length(tint)==2
 		tintTemp = tint.epochUnix;
 		tint = tintTemp;
 	end
 end
-if nargin ==3,
+if nargin ==3
 	if ischar(varargin{3}) ...
 			&& any(strcmpi(varargin{3},{'dobj','caa','mat','ts'}))
 		returnDataFormat = varargin{3};
@@ -113,12 +113,12 @@ end
 if isempty(caaDir) % not saved in datastore
 	caaDir = input(['Input local caa directory [default:' ...
 		caaDirDefault ']:'],'s');
-	if isempty(caaDir),
+	if isempty(caaDir)
 		disp(['Using default data directory: ' caaDirDefault]);
 		caaDir=caaDirDefault;
 	end
 	ok = input('Shall I save the directory location for future sessions [y/n]?','s');
-	if strcmpi(ok,'y'),
+	if strcmpi(ok,'y')
 		datastore('caa','localDataDirectory',caaDir);
 	end
 end
@@ -158,29 +158,29 @@ switch lower(varName)
 	case {'r1','r2','r3','r4'}
 		varToRead={'sc_r_xyz_gse__CL_SP_AUX',['sc_dr' varName(2) '_xyz_gse__CL_SP_AUX']};
 		ok=read_data;
-		if ok && strcmpi(returnDataFormat,'mat'),
+		if ok && strcmpi(returnDataFormat,'mat')
 			out=[data{1} double(data{2}+data{3})];
 		end
 	case {'dr1','dr2','dr3','dr4'}
 		varToRead={['sc_dr' varName(3) '_xyz_gse__CL_SP_AUX']};
 		ok=read_data;
-		if ok && strcmpi(returnDataFormat,'mat'),
+		if ok && strcmpi(returnDataFormat,'mat')
 			out=[data{1} double(data{2})];
 		end
 	otherwise
 		irf.log('warning',['local.c_read() reading variable: ' varName]);
-		if strfind(varName,'CIS'),specialCaseCis=1;end
+		if strfind(varName,'CIS'),specialCaseCis=1;end %#ok<STRIFCND>
 		varToRead={varName};
 		ok=read_data;
 		if ok && iscell(data) && numel(data) == 1
 			out = data{1};
-		elseif ok && strcmpi(returnDataFormat,'mat'),
-			if numel(data)==2 && numel(size(data{2}))==2,
+		elseif ok && strcmpi(returnDataFormat,'mat')
+			if numel(data)==2 && numel(size(data{2}))==2
 				out=[data{1} double(data{2})];
 			else
 				out=data;
 			end
-		elseif ok && (strcmpi(returnDataFormat,'dobj') || strcmpi(returnDataFormat,'caa')),
+		elseif ok && (strcmpi(returnDataFormat,'dobj') || strcmpi(returnDataFormat,'caa'))
 			out = data;
 		end
 end
@@ -190,14 +190,14 @@ end
 		status = false; % default 
 		%% find index
 		ii=strfind(varToRead{1},'__');
-		if ii,
+		if ii
 			dataset=varToRead{1}(ii+2:end);
 			datasetIndex = strrep(dataset,'CIS-','CIS_');
 			datasetDir = [caaDir filesep datasetIndex];
 			if ~isfield(index,datasetIndex) % index not yet read
 				indexVarName = ['index_' datasetIndex];
 				indexFileInfo=dirwhos(datasetDir,indexVarName);
-				if numel(indexFileInfo)==0, % there is no index
+				if numel(indexFileInfo)==0 % there is no index
 					irf.log('critical',['There is no index file:' indexVarName]);
 					irf.log('critical','Check that your localDataPath is correct, see help!');
 					return;
@@ -206,7 +206,7 @@ end
 				index.(datasetIndex)=s.(indexVarName);
 			end
 			index=index.(datasetIndex);
-			if isempty(index),
+			if isempty(index)
 				irf.log('warning',['local.c_read: no data for dataset ' dataset]);
 				return;
 			end
@@ -219,19 +219,19 @@ end
 		iend=find(index.tstart<tint(2),1,'last');
 		irf.log('notice',['Dataset: ' dataset '. Index files: ' num2str(istart) '-' num2str(iend)]);
 
-		if isempty(istart) || isempty(iend) || istart > iend,
+		if isempty(istart) || isempty(iend) || istart > iend
 			return
 		end
 		%% read in records
 		for iFile=istart:iend
 			cdfFile=[caaDir filesep index.filename(iFile,:)];
-			if specialCaseCis,
+			if specialCaseCis
 				dataset=strrep(dataset,'CIS_','CIS-');
 				varToRead=strrep(varToRead,'CIS_','CIS-');
 			end
             % Get the correct CDF variables for vars>64 symbols
-            for  iVar=1:numel(varToRead),
-                if length(varToRead{iVar})>64,
+            for  iVar=1:numel(varToRead)
+                if length(varToRead{iVar})>64
                     varToRead{iVar}=[varToRead{iVar}(1:54) '...' varToRead{iVar}(end-6:end)];
                 end
             end
@@ -241,18 +241,18 @@ end
 					%% check if epoch16
 					cdfid=cdflib.open(cdfFile);
 					useCdfepoch16=strcmpi(cdflib.inquireVar(cdfid,0).datatype,'cdf_epoch16');
-					if useCdfepoch16,
+					if useCdfepoch16
 						irf.log('debug',['EPOCH16 time in cdf file:' cdfFile]);
 						tName  = cdflib.getVarName(cdfid,0);
 						tData = spdfcdfread(cdfFile,'CombineRecords',true,'KeepEpochAsIs',true,'Variables',{tName});
-						if numel(size(tData)) == 3,
+						if numel(size(tData)) == 3
 							tcdfepoch=reshape(tData,size(tData,1),size(tData,3)); % spdfcdfread returns (Nsamples X 1 X 2) matrix
 						else
 							tcdfepoch = tData'; % spdfcdfread returns (2 x Nsamples) matrix
 						end
 						timeVector=irf_time(tcdfepoch,'cdfepoch16>epoch');
 						tmpdata=cell(1,numel(varToRead));
-						for iVar=1:numel(varToRead),
+						for iVar=1:numel(varToRead)
                             tmpdata{iVar}=spdfcdfread(cdfFile,'CombineRecords',true,...
                                 'Variables',varToRead{iVar});
 						end
@@ -260,8 +260,8 @@ end
                     else
                         % remove time variable as it is already read in
                         ii=numel(varToRead);
-                        while ii,
-                            if strcmp(varToRead{ii},cdflib.getVarName(cdfid,0)),
+                        while ii
+                            if strcmp(varToRead{ii},cdflib.getVarName(cdfid,0))
                                 varToRead(ii)=[];
                             end
                             ii=ii-1;
@@ -283,20 +283,20 @@ end
 						iien=find(timeVector<tint(2),1,'last');
 					end
 					%% check for NaNs
-					for iVar=1:numel(varToRead),
+					for iVar=1:numel(varToRead)
 						fillVal=value_of_variable_attribute(cdfid,varToRead{iVar},'FILLVAL');
 						tmpdata{iVar+1}(tmpdata{iVar+1}==fillVal)=NaN; % +1 because first cell is time and then comes variables
 					end
 					%% attach to result
-					for j=1:numel(data),
+					for j=1:numel(data)
 						nDim=numel(size(tmpdata{j}));
-						if nDim==2,
+						if nDim==2
 							data{j}=vertcat(data{j},tmpdata{j}(iist:iien,:));
-						elseif nDim==3,
+						elseif nDim==3
 							data{j}=vertcat(data{j},tmpdata{j}(iist:iien,:,:));
-						elseif nDim==4,
+						elseif nDim==4
 							data{j}=vertcat(data{j},tmpdata{j}(iist:iien,:,:,:));
-						elseif nDim==5,
+						elseif nDim==5
 							data{j}=vertcat(data{j},tmpdata{j}(iist:iien,:,:,:,:));
 						end
 					end
@@ -364,12 +364,12 @@ end
 		end
 	end
 	function data=fix_order_of_array_dimensions(data)
-		for iDimension=3:4,
+		for iDimension=3:4
 			indDatasets=find(cellfun(@(x) numel(size(x)),data(:))==iDimension); % find iDimension datasets
 			for iDataset=1:numel(indDatasets)
-				if iDimension==3,
+				if iDimension==3
 					data{indDatasets(iDataset)}=permute(data{indDatasets(iDataset)},[3 1 2]);
-				elseif iDimension==4,
+				elseif iDimension==4
 					data{indDatasets(iDataset)}=permute(data{indDatasets(iDataset)},[4 3 1 2]);
 				end
 			end

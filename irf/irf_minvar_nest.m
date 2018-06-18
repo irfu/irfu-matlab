@@ -1,4 +1,4 @@
-function [b_n l2_l3_ratio v1_mv_nest v2_mv_nest v3_mv_nest]=irf_minvar_nest(data,cs_centre,tint)
+function [b_n, l2_l3_ratio, v1_mv_nest, v2_mv_nest, v3_mv_nest]=irf_minvar_nest(data,cs_centre,tint)
 %IRF_MINVAR_NEST performs the minimum variance technique for an assymetric
 %interval defined from the centre of the current sheet and in the interval tint
 %
@@ -27,7 +27,7 @@ fromepoch(tint);
 
 b=irf_tlim(data,tint);
 n_elem=length(b(:,1));
-arr=[1:n_elem];
+arr= 1:n_elem;
 ind_c=find(abs(b(:,1)-cs_centre) == min(abs(b(:,1)-cs_centre)));
 min_int=ind_c;
 plus_int=n_elem-ind_c;
@@ -44,7 +44,7 @@ for j=1:int-1
   end
   [out,l,v]=irf_minvar(b(ind_s:ind_e,:));
   if (v(coord,1)<0), v=-v; end % change sign so that min var always has  positive x
-  if (v(coord,3)>0.5 & v(coord,3)>2*v(coord,1)), v=-v; end % change sign so that z is  negative if z is dominating
+  if (v(coord,3)>0.5 && v(coord,3)>2*v(coord,1)), v=-v; end % change sign so that z is  negative if z is dominating
   l2_l3_ratio(j,2)=l(2)/l(3);
   v1_mv_nest(j,2:4)=v(1,:);
   v2_mv_nest(j,2:4)=v(2,:);

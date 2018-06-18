@@ -39,7 +39,8 @@ function [nd] = irf_shock_normal(spec,leq90)
 %
 %   Output nd contains:
 %
-%       n   -   Structure containing normal vectors:
+%       n   -   Structure containing normal vectors (n always points
+%               toward the upstream region):
 %           From data:
 %               mc  -   Magnetic coplanarity (10.14)
 %               vc  -   Velocity coplanarity (10.18)
@@ -49,6 +50,7 @@ function [nd] = irf_shock_normal(spec,leq90)
 %           Models (only if R is included in spec):
 %               farris  -   Farris, M. H., et al., 1991
 %               slho    -   Slavin, J. A. and Holzer, R. E., 1981 (corrected)
+%               per     -   Peredo et al., 1995, (z = 0)
 %               fa4o    -   Fairfield, D. H., 1971
 %               fan4o   -   Fairfield, D. H., 1971
 %               foun    -   Formisano, V., 1979
@@ -61,7 +63,7 @@ function [nd] = irf_shock_normal(spec,leq90)
 %            Methods:
 %               gt  -   Using shock foot thickness (10.32). Gosling, J. T., and M. F. Thomsen (1985)
 %               mf  -   Mass flux conservation (10.29).
-%               sb  -   Using jump conditions (10.33). Smith, E. J., and M. E. Burton (1988), BUGGED
+%               sb  -   Using jump conditions (10.33). Smith, E. J., and M. E. Burton (1988)
 %               mo -    Using shock foot thickness 
 %
 %       info -  Some more info:
@@ -118,10 +120,6 @@ function [nd] = irf_shock_normal(spec,leq90)
 
 %   Written by: Andreas Johlander, andreasj@irfu.se
 %
-%   TODO:   -Determine which solution in Smith & Burton velocity estimate is
-%           the correct one.
-%           -Should allow for vector input and calculate standard deviations
-%           of all parameters.
 
 %% Check if input are timeseries
 
@@ -258,6 +256,8 @@ if isfield(spec,'R')
     n.farris = farris_model(spec);
     % Slavin and Holzer mean
     n.slho = slavin_holzer_model(spec);
+    % Peredo et al., z = 0
+    n.per = peredo_model(spec);
     % Fairfield Meridian 4o
     n.fa4o = fairfield_meridian_4o_model(spec);
     % Fairfield Meridian No 4o
@@ -266,10 +266,16 @@ if isfield(spec,'R')
     n.foun = formisano_unnorm_model(spec);
 end
 
+% make sure all normal vectors are pointing upstream
+% based on deltaV, should work for IP shocks also
+fnames = fieldnames(n);
+for ii = 1:length(fnames)
+    if dot(delV,n.(fnames{ii}))<0; n.(fnames{ii}) = -n.(fnames{ii}); end
+end
+
 % shock angle
 thBn = shock_angle(spec,n,'B',leq90);
 thVn = shock_angle(spec,n,'V',leq90);
-
 
 % Shock velocity from foot time
 % Fcp in Hz as given by irf_plasma_calc.
@@ -281,7 +287,6 @@ Vsh.mf = shock_speed(spec,n,thBn,'mf');
 Vsh.sb = shock_speed(spec,n,thBn,'sb');
 % Shock velocity from (Moses et al., 1985)
 Vsh.mo = shock_speed(spec,n,thBn,'mo');
-
 
 % info
 info = [];
@@ -300,9 +305,8 @@ nd.thVn = thVn;
 nd.Vsh = Vsh;
 
 if nargout == 0
-    fnames = fieldnames(n);
-    for i = 1:length(fnames)
-        fprintf(['n_',fnames{i},'\t = \t',num2str(n.(fnames{i})),'\n'])
+    for ii = 1:length(fnames)
+        fprintf(['n_',fnames{ii},'\t = \t',num2str(n.(fnames{ii})),'\n'])
     end
 end
 
@@ -350,11 +354,11 @@ fnames = fieldnames(n);
 num = length(fnames);
 cmat = zeros(5,num);
 
-fun1 = @(nvec)dot(spec.delB,nvec)/norm(spec.delB);
-fun2 = @(nvec)dot(cross(spec.Bd,spec.Bu),nvec)/norm(cross(spec.Bd,spec.Bu));
-fun3 = @(nvec)dot(cross(spec.Bu,spec.delV),nvec)/norm(cross(spec.Bu,spec.delV));
-fun4 = @(nvec)dot(cross(spec.Bd,spec.delV),nvec)/norm(cross(spec.Bd,spec.delV));
-fun5 = @(nvec)dot(cross(spec.delB,spec.delV),nvec)/norm(cross(spec.delB,spec.delV));
+fun1 = @(nvec)dot(spec.delB,nvec)/norm(spec.delB); %#ok<NASGU>
+fun2 = @(nvec)dot(cross(spec.Bd,spec.Bu),nvec)/norm(cross(spec.Bd,spec.Bu)); %#ok<NASGU>
+fun3 = @(nvec)dot(cross(spec.Bu,spec.delV),nvec)/norm(cross(spec.Bu,spec.delV)); %#ok<NASGU>
+fun4 = @(nvec)dot(cross(spec.Bd,spec.delV),nvec)/norm(cross(spec.Bd,spec.delV)); %#ok<NASGU>
+fun5 = @(nvec)dot(cross(spec.delB,spec.delV),nvec)/norm(cross(spec.delB,spec.delV)); %#ok<NASGU>
 
 c_eval('cmat(?,:) = structfun(fun?,n);',1:5)
 
@@ -427,11 +431,11 @@ end
 end
 
 function Vsp = speed_smith_burton(spec,n,fn)
-% Two solutions Vsp = Vun +- |dVxBd|/|dB|. Find a good way to pick the
-% correct one.
+% Assuming n points upstream, there is only one solution to the equation
 for k = 1:1:length(fn)
-     Vsp.(fn{k}) = dot(spec.Vu,n.(fn{k}))+[1,-1]*norm(cross((spec.Vd-spec.Vu),spec.Bd))/norm(spec.Bd-spec.Bu);
+    Vsp.(fn{k}) = dot(spec.Vu,n.(fn{k}))+norm(cross((spec.Vd-spec.Vu),spec.Bd))/norm(spec.Bd-spec.Bu);
 end
+
 end
 
 function Vsp = speed_moses(spec,n,thBn,fn)
@@ -466,6 +470,16 @@ L = 23.3; % in RE
 x0 = 3.0;
 y0 = 0;
 alpha = atand(spec.Vu(2)/spec.Vu(1));
+
+n = shock_model(spec,eps,L,x0,y0,alpha);
+end
+
+function n = peredo_model(spec) %
+eps = 0.98;
+L = 26.1; % in RE
+x0 = 2.0;
+y0 = 0.3;
+alpha = 3.8-0.6;
 
 n = shock_model(spec,eps,L,x0,y0,alpha);
 end

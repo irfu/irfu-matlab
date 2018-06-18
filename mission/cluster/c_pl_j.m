@@ -34,7 +34,7 @@ function [hout,jout,divBout,jparout,jperpout]=c_pl_j(varargin)
 
 B1 = [];
 
-if nargin==0, 
+if nargin==0 
   help c_pl_j;return;
 end
  if nargin~=2 && nargin~=3 && nargin~=4 && nargin~=8 && nargin~=9 && nargin~=10
@@ -52,19 +52,19 @@ if nargin < 6
 		eval(irf_ssub('R? =ttt;',cl_id)); clear ttt
 	end
 	if length(args) > 2, args = args(3:end); 
-	else args = ''; end
+	else, args = ''; end
 else
 	% We have 8 arguments
 	c_eval('B? = args{4+?};');
 	c_eval('R? = args{?};');
 	if length(args) > 8, args = args(5:end); 
-	else args = ''; end
+	else, args = ''; end
 end
 
 if ~isempty(args)
 	ref_sc = args{1};
 	if length(args) > 1, args = args(2:end); 
-	else args = ''; end
+	else, args = ''; end
 else
 	ref_sc = 1;
 end

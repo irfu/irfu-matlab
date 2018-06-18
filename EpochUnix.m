@@ -14,14 +14,14 @@ classdef EpochUnix < GenericTimeArray
 	methods
 		function obj = EpochUnix(inp)
 			if nargin==0, return, end
-			if isa(inp,'double'),
+			if isa(inp,'double')
 				if min(size(inp))>1
 					error('irf:EpochUnix:EpochUnix:badInputs',...
 						'Double input (seconds since 1970) must be a columt or row vector')
 				end
 				if size(inp,2)~=1, inp = inp'; end % to column
 				obj.epoch = inp;
-      elseif isa(inp,'int64'),
+      elseif isa(inp,'int64')
         if min(size(inp))>1
           error('irf:EpochUnix:EpochUnix:badInputs',...
             'int64 input (nanoseconds since 2000) must be a columt or row vector')
@@ -35,7 +35,7 @@ classdef EpochUnix < GenericTimeArray
 						'UTC string input (char) must be in the form yyyy-mm-ddThh:mm:ss.mmmuuunnnZ')
 				end
 			elseif isa(inp,'GenericTimeArray')
-				if isa(inp,'EpochUnix'),
+				if isa(inp,'EpochUnix')
 					obj = inp;
 				else
 					obj = EpochUnix(inp.utc);
@@ -61,7 +61,7 @@ classdef EpochUnix < GenericTimeArray
         epoch = obj.start.epochUnix:1:varargin{1}.stop.epochUnix;
       elseif nargin == 3 && isa(varargin{2},'GenericTimeArray') && isnumeric(varargin{1})
         epoch = obj.start.epochUnix:double(varargin{1}):varargin{2}.stop.epochUnix;
-      else error('Invalid input(s)')
+      else, error('Invalid input(s)')
       end
       outObj = EpochUnix(epoch);
     end
@@ -84,7 +84,7 @@ classdef EpochUnix < GenericTimeArray
       s_tmp = spdfencodett2000(ttns(1)); 
 			epoch0 = iso2epoch(s_tmp{:});
 			epoch = double(ttns - ttns(1))*1e-9 + epoch0;
-			if numel(epoch) == 1, % WHY THIS CEHCK??
+			if numel(epoch) == 1 % WHY THIS CEHCK??
 				return;
 			end
 			% Check for leap seconds during the time interval of interest

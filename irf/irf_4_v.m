@@ -30,7 +30,7 @@ switch flag
         V = m/norm(m)^2;
         out = V';
         
-    case 'dt_from_v';
+    case 'dt_from_v'
         % Time and velocity input, time output
         tc = x(1); % Center time
         v = x(2:4); % Input velocity

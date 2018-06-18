@@ -29,7 +29,7 @@ function CBLH = cblabel(varargin)
 %     * Optional outputs may or not be called.
 %
 %   EXAMPLE:
-%     figure, colorbar, cblabel(['           T, °C'],'Rotation',0)
+%     figure, colorbar, cblabel(['           T, ï¿½C'],'Rotation',0)
 %     figure
 %      subplot(211), h1 = colorbar;
 %      subplot(212), h2 = colorbar('Location','south');

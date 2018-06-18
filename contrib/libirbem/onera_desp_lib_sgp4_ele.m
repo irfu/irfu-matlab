@@ -61,11 +61,11 @@ function pos = onera_desp_lib_sgp4_ele(elements,startdate,enddate,deltasec,sysAx
 % M0 - mean anomaly at epoch (deg)
 % geo_lon - longitude in GEO coordinates (deg)
 
-if nargin < 5,
+if nargin < 5
     sysAxesOUT = 'gdz';
 end
 
-if ~isfield(elements,'epoch'),
+if ~isfield(elements,'epoch')
     elements.epoch = startdate;
 end
 
@@ -76,36 +76,36 @@ sysAxesOUT = onera_desp_lib_sysaxes(sysAxesOUT);
 
 ele_opts = zeros(5,1);
 rv = 0;
-switch(lower(elements.type(1))),
-    case 'g', % geosynchronous orbit, do manually
+switch(lower(elements.type(1)))
+    case 'g' % geosynchronous orbit, do manually
         geo_alt = 35786; % wikipedia value
         sys_in = onera_desp_lib_sysaxes('gdz');
         pos.date = (startdate:(deltasec/24/60/60):enddate)';
         pos.X = onera_desp_lib_coord_trans(repmat([geo_alt 0 elements.geo_lon],length(pos.date),1),[sys_in sysAxesOUT],pos.date);
         return
-    case 'o',
+    case 'o'
         ele_opts(1) = 1;
         e_names = {'i','A_p','A_a','Omega','omega','M0'};
-    case 'c',
+    case 'c'
         ele_opts(1) = 2;
         e_names = {'a','e','i','Omega','omega','T'};
-    case 'r',
+    case 'r'
         ele_opts(1) = 3;
         rv = 1;
-    case 's',
+    case 's'
         ele_opts(1) = 4;
         e_names = {'i','A_p','A_a','H_a','H_i','T'};
-    case 'm',
+    case 'm'
         ele_opts(1) = 5;
         e_names = {'n','e','i','Omega','omega','M0'};
 end
 
-eles = repmat(nan,6,1);
+eles = nan(6,1);
 
-if rv,
-    if ~isfield(elements,'r'),
+if rv
+    if ~isfield(elements,'r')
         error('%s: element "r" not found', mfilename);
-    elseif ~isfield(elements,'v'),
+    elseif ~isfield(elements,'v')
         error('%s: element "v" not found', mfilename);
     else
         eles(1:3) = elements.r;
@@ -113,35 +113,35 @@ if rv,
     end
 else   
     % handle alternatives for e5
-    if isfield(elements,'omega'),
+    if isfield(elements,'omega')
         e_names{5} = 'omega';
         ele_opts(2) = 1;
-    elseif isfield(elements,'Pi'),
+    elseif isfield(elements,'Pi')
         e_names{5} = 'Pi';
         ele_opts(2) = 2;
     end
 
     % handle alternatives for e6
-    if isfield(elements,'T'),
+    if isfield(elements,'T')
         elements.Tsfe = (elements.T-elements.epoch)*24*60*60; 
         e_names{6} = 'Tsfe';
         ele_opts(3) = 1;
-    elseif isfield(elements,'nu0'),
+    elseif isfield(elements,'nu0')
         e_names{6} = 'nu0';
         ele_opts(3) = 2;
-    elseif isfield(elements,'u0'),
+    elseif isfield(elements,'u0')
         e_names{6} = 'u0';
         ele_opts(3) = 3;
-    elseif isfield(elements,'l0'),
+    elseif isfield(elements,'l0')
         e_names{6} = 'l0';
         ele_opts(3) = 4;
-    elseif isfield(elements,'M0'),
+    elseif isfield(elements,'M0')
         e_names{6} = 'M0';
         ele_opts(3) = 5;
     end
 
-    for i = 1:6,
-        if isfield(elements,e_names{i}),
+    for i = 1:6
+        if isfield(elements,e_names{i})
             eles(i) = elements.(e_names{i});
         else
             error('%s: element "%s" not found', mfilename, e_names{i});
@@ -158,26 +158,26 @@ stopsfe = (enddate-elements.epoch)*24*60*60; % seconds from epoch
 nmax = onera_desp_lib_ntime_max;
 ntimes = floor((stopsfe-startsfe)/deltasec);
 
-pos.date = repmat(nan,ntimes,1);
-pos.X = repmat(nan,ntimes,3);
+pos.date = nan(ntimes,1);
+pos.X = nan(ntimes,3);
 
 i0 = 1;
-while i0 <= ntimes,
+while i0 <= ntimes
     ii = i0:(min(ntimes,i0+nmax-1));
     ii0 = ii-i0+1;
     vstartsfe = startsfe + (ii(1)-1)*deltasec;
     vstopsfe = startsfe + (ii(end))*deltasec;
-    iYr = repmat(nan,nmax,1);
+    iYr = nan(nmax,1);
     iYrPtr = libpointer('int32Ptr',iYr);
-    iDoy = repmat(nan,nmax,1);
+    iDoy = nan(nmax,1);
     iDoyPtr = libpointer('int32Ptr',iDoy);
-    UT = repmat(nan,nmax,1);
+    UT = nan(nmax,1);
     UTptr = libpointer('doublePtr',UT);
-    x1 = repmat(nan,nmax,1);
+    x1 = nan(nmax,1);
     x1Ptr = libpointer('doublePtr',x1);
-    x2 = repmat(nan,nmax,1);
+    x2 = nan(nmax,1);
     x2Ptr = libpointer('doublePtr',x2);
-    x3 = repmat(nan,nmax,1);
+    x3 = nan(nmax,1);
     x3Ptr = libpointer('doublePtr',x3);
     calllib('onera_desp_lib','sgp4_ele1_',sysAxesOUT,Yr,Mon,Day,Hr,Minute,Sec,...
         eles(1),eles(2),eles(3),eles(4),eles(5),eles(6),ele_opts,...
@@ -185,7 +185,7 @@ while i0 <= ntimes,
     iYear = double(get(iYrPtr,'value'));
     ikeep = iYear(1:length(ii))>0; % trim out entries not reached by sgp4_ele1
     ii = ii(ikeep); 
-    if isempty(ii),
+    if isempty(ii)
         break;
     end
     ii0 = ii0(ikeep);

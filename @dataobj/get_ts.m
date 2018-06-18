@@ -8,7 +8,7 @@ function res = get_ts(dobj,var_s)
 %  See also: TSeries
 
 data = get_variable(dobj,var_s);
-if isempty(data), % no such variable, return empty
+if isempty(data) % no such variable, return empty
 	res=[];
 	return;
 end
@@ -21,7 +21,7 @@ end
   
 fillv = getfillval(dobj,var_s);
 if ~ischar(fillv), data.data(data.data==fillv) = NaN;
-else irf.log('warning','fill value is character: discarding')
+else, irf.log('warning','fill value is character: discarding')
 end
 
 if strcmpi(data.DEPEND_0.type,'tt2000')
@@ -56,11 +56,11 @@ else % guessing for Non-CAA data
   switch tensorOrder
     case 0 % scalar
     case 1 % vector
-      if data.dim(1)==2,
+      if data.dim(1)==2
         repres = {'x','y'};
       elseif data.dim(1)==3
         repres = {'x','y','z'};
-      else tensorOrder = 0; % TENSOR_ORDER=0 can be ommitted in CAA files 
+      else, tensorOrder = 0; % TENSOR_ORDER=0 can be ommitted in CAA files 
       end
     case 2 % tensor
     otherwise
@@ -75,9 +75,9 @@ else
 end
 res.name = data.name;
 if isfield(data,'UNITS'), res.units = data.UNITS;
-else res.units = 'unitless';
+else, res.units = 'unitless';
 end
-if isfield(ud,'SI_CONVERSION'), 
+if isfield(ud,'SI_CONVERSION') 
   res.siConversion = ud.SI_CONVERSION;  
 	ud = rmfield(ud,'SI_CONVERSION');
 end

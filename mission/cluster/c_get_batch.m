@@ -61,15 +61,15 @@ narginchk(0 ,15)
 sc_list = 1:4;
 
 if nargin>2, have_options = 1; args = varargin;
-elseif nargin==0,
+elseif nargin==0
   have_options=0;
   st_vector=irf_ask('Start time [%]>','st_vector',[2002 01 01 0 0 0]);
   st=toepoch(st_vector);
   dt_sec=irf_ask('Time interval in seconds [%]>','dt_sec',60);
   dt=dt_sec;
-elseif nargin==1,
+elseif nargin==1
   error('do not udnerstand what to do with the argument, see help');
-else have_options = 0;
+else, have_options = 0;
 end
 
 sp = '.';
@@ -88,10 +88,10 @@ sdir_st = '';
 
 
 if have_options
-	if isnumeric(args{1}), 
+	if isnumeric(args{1}) 
 		sc_list = args{1};
 		if length(args)>1, args = args(2:end);
-        else have_options = 0;
+        else, have_options = 0;
 		end
 	end
 end
@@ -102,23 +102,23 @@ while have_options
 		switch(args{1})
 			case 'sp'
 				if ischar(args{2}), sp = args{2};
-				else irf_log('fcal','SP must be string')
+				else, irf_log('fcal','SP must be string')
 				end
 			case 'sdir'
 				if ischar(args{2}), sdir_st = args{2};
-				else irf_log('fcal','SDIR must be string')
+				else, irf_log('fcal','SDIR must be string')
 				end
 			case 'dp'
 				if ischar(args{2}), dp = args{2};
-				else irf_log('fcal','DP must be string')
+				else, irf_log('fcal','DP must be string')
 				end
 			case 'db'
 				if ischar(args{2}), db = args{2};
-				else irf_log('fcal','DB must be string')
+				else, irf_log('fcal','DB must be string')
 				end
 			case 'sc_list'
 				if isnumeric(args{2}), sc_list = args{2};
-				else irf_log('fcal','SC_LIST must be numeric')
+				else, irf_log('fcal','SC_LIST must be numeric')
 				end
 			case 'swmode'
 				sw_mode = 1;
@@ -170,7 +170,7 @@ while have_options
 				break
 		end
 		if length(args) > l, args = args(l+1:end);
-		else break
+		else, break
 		end
 	else
 		error('caa:wrongArgType','use c_get_batch(..,''option'',''value'')')

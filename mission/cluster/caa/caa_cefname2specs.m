@@ -20,7 +20,7 @@ data_level = str2double(s(12));
 s = s(14:end);
 if s(2)=='_', caa_vs = s(1); s = s(4:end);
 elseif s(3)=='_', caa_vs = s(1:2); s = s(5:end);
-else caa_vs = s(1:3); s = s(6:end);
+else, caa_vs = s(1:3); s = s(6:end);
 end
 
 YY = s(1:4);

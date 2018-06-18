@@ -60,7 +60,7 @@ function [Lm,Lstar,Blocal,Bmin,J,POSIT] = onera_desp_lib_drift_shell(kext,option
 % IMPORTANT: all inputs must be present. For those which are not used a dummy value can be provided.
 %
 
-if nargin < 8,
+if nargin < 8
     maginput = [];
 end
 
@@ -71,15 +71,15 @@ onera_desp_lib_load;
 kext = onera_desp_lib_kext(kext);
 in_options = options;
 options = onera_desp_lib_options(options);
-if isempty(in_options),
+if isempty(in_options)
     options(1) = 1; % by default, force full drift shell to be traced, otherwise only get one field line
 end
 sysaxes = onera_desp_lib_sysaxes(sysaxes);
-if isempty(maginput),
+if isempty(maginput)
     maginput = nan(1,25);
 end
 
-if (size(maginput,1)==25) && (size(maginput,2)~=25), % 25xN
+if (size(maginput,1)==25) && (size(maginput,2)~=25) % 25xN
     maginput = maginput'; % Nx25
 end
 
@@ -90,7 +90,7 @@ Nbounce = 1000; % maximum size of bounce array
 Naz = 48; % number of azimuths
 Lm = nan;
 Lstar = Lm;
-Blocalar = repmat(nan,Nbounce,Naz);
+Blocalar = nan(Nbounce,Naz);
 Bmin = Lm;
 J = Lm;
 [iyear,idoy,UT] = onera_desp_lib_matlabd2yds(matlabd);
@@ -99,9 +99,9 @@ LstarPtr = libpointer('doublePtr',Lstar);
 BlocalPtr = libpointer('doublePtr',Blocalar);
 BminPtr = libpointer('doublePtr',Bmin);
 JPtr = libpointer('doublePtr',J);
-POSITarray = repmat(nan,[3 Nbounce Naz]);
+POSITarray = nan([3 Nbounce Naz]);
 POSITPtr = libpointer('doublePtr',POSITarray);
-NPOSIT = repmat(0,Naz,1);
+NPOSIT = zeros(Naz,1);
 NPOSITPtr = libpointer('int32Ptr',NPOSIT);
 maginput = maginput';
 calllib('onera_desp_lib','drift_shell1_',kext,options,sysaxes,iyear,idoy,UT,x1,x2,x3,maginput,...
@@ -120,7 +120,7 @@ Blocalar(Blocalar<-1e30) = nan; % flags
 NPOSIT = get(NPOSITPtr,'value');
 POSIT = cell(Naz,1);
 Blocal = cell(Naz,1);
-for i = 1:Naz,
+for i = 1:Naz
     n = NPOSIT(i);
     POSIT{i} = squeeze(POSITarray(:,1:n,i))';
     Blocal{i} = Blocalar(1:n,i);

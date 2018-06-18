@@ -11,14 +11,14 @@ function [x,in]=irf_tlim(x,tStart,tEnd,mode)
 % [Y,IND]=IRF_TLIM(...)
 %	IND contains indexes of rows that were returned 
 
-if nargin == 0, 
+if nargin == 0 
 	help irf_tlim;
 	return;
 end
 
 if isempty(x), in = []; return, end
 
-if ischar(tStart), % time interval specified as string
+if ischar(tStart) % time interval specified as string
 	tStart=irf_time(tStart,'utc>tint');
 end
 
@@ -29,7 +29,7 @@ elseif nargin==3
 	if length(tStart)==2 && length(tEnd)==1
 		mode = tEnd;
 		tEnd = tStart(2) + 1e-7; tStart = tStart(1) - 1e-7;
-	else mode = 0;
+	else, mode = 0;
 	end
 elseif nargin == 1 && nargin > 4
 	irf.log('critical','incorrect number of input arguments');
@@ -47,7 +47,7 @@ else
 end
 
 if mode==0, in = find((t >= tStart) & (t < tEnd));
-else in = find((t < tStart) | (t > tEnd));
+else, in = find((t < tStart) | (t > tEnd));
 end
 
 if isstruct(x)

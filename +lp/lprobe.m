@@ -36,11 +36,11 @@ classdef lprobe
 	methods
 		
 		function type = get.type(Lp)
-			if ~isempty(Lp.radiusSphere) && ~isempty(Lp.radiusWire) && ~isempty(Lp.lengthWire),
+			if ~isempty(Lp.radiusSphere) && ~isempty(Lp.radiusWire) && ~isempty(Lp.lengthWire)
 				type = 'sphere+wire';
-			elseif ~isempty(Lp.radiusWire) && ~isempty(Lp.lengthWire),
+			elseif ~isempty(Lp.radiusWire) && ~isempty(Lp.lengthWire)
 				type = 'wire';
-			elseif ~isempty(Lp.radiusWire),
+			elseif ~isempty(Lp.radiusWire)
 				type = 'sphere';
 			else
 				type =[];
@@ -52,13 +52,13 @@ classdef lprobe
 			areaSphereTotal  = 0;
 			areaWireSunlit   = 0;
 			areaWireTotal    = 0;
-			if isnumeric(Lp.radiusSphere) && ~isempty(Lp.radiusSphere),
+			if isnumeric(Lp.radiusSphere) && ~isempty(Lp.radiusSphere)
 				areaSphereSunlit = pi*Lp.radiusSphere^2;
 				areaSphereTotal  = 4*areaSphereSunlit;
 			end
 			if isnumeric(Lp.radiusWire) && ~isempty(Lp.radiusWire) ...
-					&& isnumeric(Lp.lengthWire) && ~isempty(Lp.lengthWire),
-				if numel(Lp.radiusWire) <= 2, % wire or stazer
+					&& isnumeric(Lp.lengthWire) && ~isempty(Lp.lengthWire)
+				if numel(Lp.radiusWire) <= 2 % wire or stazer
 					areaWireSunlit = 2*mean(Lp.radiusWire)*Lp.lengthWire;
 				else
 					errStr = 'The wire radius should be a numeric vector of length 1 (wire) or 2 (stazer).';
@@ -81,9 +81,9 @@ classdef lprobe
 			cWire = 0;
 			cSphere  = irf_estimate('capacitance_sphere',Lp.radiusSphere);
 			if isnumeric(Lp.radiusWire) && any(Lp.radiusWire) ...
-					&& isnumeric(Lp.lengthWire) && any(Lp.lengthWire),
+					&& isnumeric(Lp.lengthWire) && any(Lp.lengthWire)
 				if all(Lp.lengthWire > 10*Lp.radiusWire)
-					if numel(Lp.radiusWire) <= 2,
+					if numel(Lp.radiusWire) <= 2
 						cWire    = irf_estimate('capacitance_wire',  mean(Lp.radiusWire),Lp.lengthWire);
 					else
 						errStr = 'The wire radius should be a numeric vector of length 1 (wire) or 2 (stazer).';

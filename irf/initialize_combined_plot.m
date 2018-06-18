@@ -1,4 +1,4 @@
-function [h1 h2] = initialize_combined_plot(nTimePanels,nRows,nCols,totCols,sorting)
+function [h1, h2] = initialize_combined_plot(nTimePanels,nRows,nCols,totCols,sorting)
 % INITIALIZE_COMBINED_PLOT - Combination of irf time panels and subplot(nRows,nCols,i_subplot).
 %
 %   [h1,h2] = INITIALIZE_COMBINED_PLOT(nTimePanels,nRows,nCols,totCols OR timeseriesFraction,sorting);
@@ -28,7 +28,7 @@ if isempty(sorting)
 end
 
 if totCols<1 % gives the fraction of the plot to be taken up by the timeseries
-  for ii = 1:nTimePanels, % move timeseries panels
+  for ii = 1:nTimePanels % move timeseries panels
     space = totCols;
     h1(ii).Position(3) = space*0.8;
     h1(ii).Position(1) = h1(ii).Position(1)*0.4;
@@ -39,7 +39,7 @@ if totCols<1 % gives the fraction of the plot to be taken up by the timeseries
   h2left = [];
   totCols = 100;
 
-  if strcmp('horizontal',sorting);
+  if strcmp('horizontal',sorting)
     for ii = 1:nRows  
       for jj = (totCols-nCols+1):totCols
         isub = isub + 1;         
@@ -82,7 +82,7 @@ else % gives the the "total number of columns" for scaling
   isub = 0;
   h2left = [];
 
-  if strcmp('horizontal',sorting);
+  if strcmp('horizontal',sorting)
     for ii = 1:nRows  
       for jj = (totCols-nCols+1):totCols
         isub = isub + 1;         
@@ -102,7 +102,7 @@ else % gives the the "total number of columns" for scaling
 
   % Adjust irf_plot panels again
   h2left = min(h2left);
-  for ii = 1:nTimePanels,
+  for ii = 1:nTimePanels
     space = 1-(nCols + 1)/(totCols);
     h1(ii).Position(3) = (h2left-h1(ii).Position(1))*0.8;  
   end

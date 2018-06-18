@@ -28,7 +28,7 @@ function [angles, ampl] = c_ri_angles_and_ampl(B1,B2,B3,B4)
 %--------------------- the beginning --------------------------
 warning off
 
-if B1(1,1) ~= 0 & B2(1,1) ~= 0 & B3(1,1) ~= 0 & B4(1,1) ~= 0  
+if B1(1,1) ~= 0 && B2(1,1) ~= 0 && B3(1,1) ~= 0 && B4(1,1) ~= 0  
 
 angles(:,1) = B1(:,1);
 

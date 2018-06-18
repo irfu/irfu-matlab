@@ -45,17 +45,17 @@ function [Lower_flux,Mean_flux,Upper_flux] = onera_desp_lib_fly_in_ige(launch_ye
 
 onera_desp_lib_load;
 
-if isnumeric(whichm),
+if isnumeric(whichm)
     iwhichm = whichm;
 else
     mname = lower(whichm); % lower case
     mname = mname(~ismember(mname,[' ','-'])); % remove spaces and dashes
-    switch(mname),
-        case {'polev1'},
+    switch(mname)
+        case {'polev1'}
             iwhichm = 1;
-        case {'polev2'},
+        case {'polev2'}
             iwhichm = 2;
-        case {'ige2006'},
+        case {'ige2006'}
             iwhichm = 3;
         otherwise
             error('Unknown model whichm="%s" in %s',whichm,mfilename);
@@ -64,7 +64,7 @@ end
 
 iwhichm0 = iwhichm; % store this, as we're about to change it for gnss case
 
-if iwhichm >= 100,
+if iwhichm >= 100
     iwhichm = iwhichm-100;
     libfuncname = 'fly_in_meo_gnss1_';
 else
@@ -74,12 +74,12 @@ end
 NE = size(energy,1); % number of energies
 NEmax = 50; % maximum number of energies
 
-if NE>NEmax,
+if NE>NEmax
     % break up the calculation into chunks the libarary can handle
     Lower_flux = nan(NE,1);
     Mean_flux = nan(NE,1);
     Upper_flux = nan(NE,1);
-    for ie = 1:NEmax:NE,
+    for ie = 1:NEmax:NE
         iie = ie:min(ie+NEmax-1,NE);
         [lf,mf,uf] = onera_desp_lib_fly_in_ige(launch_year,duration,iwhichm0,energy(iie,:));
         Lower_flux(iie) = lf;
@@ -99,16 +99,16 @@ else
     % energy: array(2) of double. If whatf=1 or 3 then energy(2) is not considered.
     %
 
-    if size(energy,2)==1,
+    if size(energy,2)==1
         whatf = 1; % differential flux
-        energy = [energy,repmat(nan,NE,1)];
-    elseif (size(energy,2)==2) && any(isinf(energy(:,2))),        
+        energy = [energy,nan(NE,1)];
+    elseif (size(energy,2)==2) && any(isinf(energy(:,2)))        
         whatf = 3; % integral flux
-        if ~all(isinf(energy(:,2))),
+        if ~all(isinf(energy(:,2)))
             error('%s: if any of second column of "energy" argument is infinity, all must be',mfilename);
         end
         energy(:,2) = 0; % zeros instead of inf/nan
-    elseif size(energy,2)==2,
+    elseif size(energy,2)==2
         whatf = 2; % wide differential flux
     else
         error('%s: "energy" argument of size %d x %d uninterpretable',mfilename,size(energy,1),size(energy,2));

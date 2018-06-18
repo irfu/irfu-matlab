@@ -113,10 +113,10 @@ function edit1_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 filter=regexpi(get(handles.edit1,'string'),'\w*','match'); % cell array with filter values
 handles.list_index_match_filter=[];
-if isempty(filter),
+if isempty(filter)
 	handles.list_index_match_filter=1:numel(handles.list);
 else
-	for i=1:numel(handles.list),
+	for i=1:numel(handles.list)
 		ok=1;
 		a=regexpi(handles.list{i},filter);
 		for j=1:numel(a)
@@ -125,7 +125,7 @@ else
 		if ok, handles.list_index_match_filter(end+1)=i; end
 	end
 end
-if isempty(handles.list_index_match_filter),
+if isempty(handles.list_index_match_filter)
 	disp('WARNING! Filter did not match anything!');
 	handles.list_index_match_filter=1:numel(handles.list);
 end

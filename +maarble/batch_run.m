@@ -22,12 +22,12 @@ freq_range = lower(args{1});
 nEvents=numel(tt); % number of events
 j=1;
 %for cl_id=1:4,
-for cl_id=1,
+for cl_id=1
     cl_id_str=int2str(cl_id);
     workDirectory2=['/Users/meghanmella/Documents/MATLAB/Maarble/C' cl_id_str];
     emic=ascii(tt);
     emic.dirName=cell(size(tt));
-    for iEvent=1:nEvents,
+    for iEvent=1:nEvents
     cd(workDirectory2);
     tint=[tt.TimeInterval(iEvent) tt.TimeInterval(iEvent+numel(tt))];
     disp('=================================');
@@ -37,13 +37,13 @@ for cl_id=1,
 
     dirName=[sprintf('maarble_emic_',iEvent) irf_time(tint(1),'epoch>utc')];
     emic.dirName{iEvent}=dirName;
-    if(~exist(dirName,'dir')),
+    if(~exist(dirName,'dir'))
     disp(['creating directory - ' dirName]);
     mkdir(dirName);
     end
     cd(emic.dirName{iEvent});
     dataDownloaded=sprintf('dataDownloaded');
-    if(~exist(dataDownloaded,'dir')),
+    if(~exist(dataDownloaded,'dir'))
     %caa_download(tint,['C' cl_id_str '_CP_FGM_FULL']);
     caa_download(tint,['C' cl_id_str '_CP_FGM_FULL_ISR2']);
     caa_download(tint,['C' cl_id_str '_CP_EFW_L2_E']);

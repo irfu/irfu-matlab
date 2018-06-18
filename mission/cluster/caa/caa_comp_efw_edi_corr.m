@@ -91,7 +91,7 @@ for ax=1:3
 	end
 end
 if isempty(diEDI), legend(h(1),'EFW','corrotation')
-else legend(h(1),'EDI','EFW','corrotation')
+else, legend(h(1),'EDI','EFW','corrotation')
 end
 ylabel(h(1),'Ex [mV/m]')
 ylabel(h(2),'Ey [mV/m]')

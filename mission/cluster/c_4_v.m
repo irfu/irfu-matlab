@@ -23,7 +23,7 @@ function V=c_4_v(r1,r2,r3,r4,t)
 %  where Sk=(Sum dt? dr_?k)/N    N=4 number of satellites
 
 if nargin<4;disp('Too few parameters. See usage:');help c_4_V;return;end
-if nargin == 5,
+if nargin == 5
   r1=[t(1) interp1(r1(:,1),r1(:,[2 3 4]),t(1),'spline','extrap')];
   r2=[t(2) interp1(r2(:,1),r2(:,[2 3 4]),t(2),'spline','extrap')];
   r3=[t(3) interp1(r3(:,1),r3(:,[2 3 4]),t(3),'spline','extrap')];
@@ -46,7 +46,7 @@ m=S*Rinv;
 
 V=m/(m(1,1)^2+m(1,2)^2+m(1,3)^2);
 
-if nargout==0,
+if nargout==0
   disp(datestr(datenum(fromepoch(t(1)))))
   v=V;vn=irf_norm(v);dt=t-t(1);
   strv=['V=' num2str(irf_abs(v,1),3) '*[ ' num2str(vn(end-2:end),' %5.2f') '] km/s GSE'];

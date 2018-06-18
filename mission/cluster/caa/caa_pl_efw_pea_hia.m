@@ -44,7 +44,7 @@ if nargin < 3, plot_range = 0; end
 st = []; dt =[];
 
 if nargin > 3, have_options = 1; args = varargin;
-else have_options = 0;
+else, have_options = 0;
 end
 while have_options
 	l = 1;
@@ -67,7 +67,7 @@ while have_options
 			irf_log('fcal,',['Option ''' args{1} '''not recognized'])
 	end
 	if length(args) > l, args = args(l+1:end);
-	else break
+	else, break
 	end
 end
 
@@ -105,7 +105,7 @@ if ~isempty(st) && ~isempty(dt)
 	[st,dt] = irf_stdt(st,dt);
 	tint_pl = st + [0 dt];
 	clear st dt
-else tint_pl = tint;
+else, tint_pl = tint;
 end
 
 if flag_efw_irf
@@ -445,7 +445,7 @@ for comp=1:NCOMP
 	
 	irf_plot(E_Vec_xy_ISR2(:,[1 (comp+1)]))
 	if flag_efw_irf, leg = {leg{:} 'EFW-IRF'};
-	else leg = {leg{:} 'EFW'};
+	else, leg = {leg{:} 'EFW'};
 	end
 	
 	if flag_pea && plot_range_pea==1
@@ -465,7 +465,7 @@ for comp=1:NCOMP
 	hold off
 	
 	if comp<=2, set(h(OFF+comp),'YLim',YLim)
-	else set(h(OFF+comp),'YLim',YLimVZ)
+	else, set(h(OFF+comp),'YLim',YLimVZ)
 	end
 	if isempty(ts), ts = t_start_epoch(tint(1)); end
 	
@@ -479,7 +479,7 @@ legend(h(OFF+1),leg)
 legend(h(OFF+1),'boxoff')
 
 %% Diffs
-if plot_vz, OFF=5; else OFF = 4; end
+if plot_vz, OFF=5; else, OFF = 4; end
 
 comp_s='xyz';
 comp_v='EEV';
@@ -494,7 +494,7 @@ for comp=1:NCOMP
 	hold off
 	ylabel(h(OFF+comp),['log (\Delta' comp_v(comp) comp_s(comp) ')'])
 	if comp<=2, set(h(OFF+comp),'YLim',[-1 1.99],'XTickLabel',[],'Box','on')
-	else set(h(OFF+comp),'YLim',[-1 2.99],'XTickLabel',[],'Box','on')
+	else, set(h(OFF+comp),'YLim',[-1 2.99],'XTickLabel',[],'Box','on')
 	end
 	legend(h(OFF+comp),leg)
 	legend(h(OFF+comp),'boxoff')
@@ -567,7 +567,7 @@ function t_st_e = t_start_epoch(t)
 % if not  set, sets t_start_epoch of the figure
 ud = get(gcf,'userdata');
 ii = find(~isnan(t));
-if ~isempty(ii), valid_time_stamp = t(ii(1)); else valid_time_stamp = []; end
+if ~isempty(ii), valid_time_stamp = t(ii(1)); else, valid_time_stamp = []; end
 
 if isfield(ud,'t_start_epoch')
 	t_st_e = double(ud.t_start_epoch);

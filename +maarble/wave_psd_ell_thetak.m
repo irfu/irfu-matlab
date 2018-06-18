@@ -15,7 +15,7 @@ function Out = wave_psd_ell_thetak(TT)
 %    gseR, mlt, mLat - position
 
 ULF_PATH = '/data/caa/MAARBLE/WaveDatabase/ULF/';
-
+cl_s=''; th_s = '';
 chk_input()
 if ~isempty(th_s) % load THEMIS positions 1min resolution
   Rth = load('/data/caalocal/THEMIS/mRth',['Rth' lower(th_s)]);
@@ -26,7 +26,7 @@ Out = struct('time',[],'fPeak',[],'psdBpeak',[],'ellipticity',[],'thetaK',[],...
   'header',TT.Header{1},'created',irf_time(now,'date>utc'));
 
 oldPwd = pwd;
-for ievent=1:numel(TT),
+for ievent=1:numel(TT)
     fprintf('Event #%d (out of %d) : %s\n',ievent,numel(TT),...
       irf_disp_iso_range(TT.TimeInterval(ievent,:),1));
     lowerFreqBound = str2double(TT.Description{ievent}{1});
@@ -48,8 +48,8 @@ for ievent=1:numel(TT),
       gseR = irf_tlim(Rth.(['Rth' lower(th_s)]),tintDl);
     end
     
-    if flagSkipPC35, ebspPC35 = []; else ebspPC35 = get_ebsp('PC35'); end
-    if flagSkipPC12, ebspPC12 = []; else ebspPC12 = get_ebsp('PC12'); end
+    if flagSkipPC35, ebspPC35 = []; else, ebspPC35 = get_ebsp('PC35'); end
+    if flagSkipPC12, ebspPC12 = []; else, ebspPC12 = get_ebsp('PC12'); end
     
     if isempty(ebspPC35) && isempty(ebspPC12)
       irf.log('warning','No data')
@@ -173,9 +173,9 @@ cd (oldPwd)
         if strcmp(fieldName,'bb_xxyyzzss')
           tmpVar = get_variable(dobj,['BB_xxyyzz__' productName]);
           if isempty(tmpVar), continue
-          else res.flagFac = 0;
+          else, res.flagFac = 0;
           end
-        else continue
+        else, continue
         end
       end
       if isnumeric(tmpVar.FILLVAL)
@@ -208,16 +208,16 @@ cd (oldPwd)
         d = [d; d1];
       end
       m=0; i=1;
-      while i <= length(d) && m == 0,
+      while i <= length(d) && m == 0
         if isempty(th_s), tend = d(i).name(45:59);
-        else tend = d(i).name(49:63);
+        else, tend = d(i).name(49:63);
         end
         tenddate = datenum(tend,'yyyymmdd_HHMMSS');
         if tenddate > epoch2date(tintDl(1)), m=i; end
         i=i+1;
       end
       if m, fn = d(m).name; 
-      else irf.log('warning', ['no files found for ' range]);
+      else, irf.log('warning', ['no files found for ' range]);
       end
     end
   end % GET_EBSP

@@ -68,18 +68,18 @@ if 1
   hca.YTick = 10.^[1 2 3 4];
 end
 if 0
-  hca = irf_panel('e omni 64 energy channels');
+  hca = irf_panel('e omni 64 energy channels'); %#ok<UNRCH>
   irf_spectrogram(hca,ePDistN.e64.omni.specrec)
   hca.YScale = 'log';
   hca.YTick = 10.^[1 2 3 4];
 end
 if 0
-  hca = irf_panel('e pitchangles');
+  hca = irf_panel('e pitchangles'); %#ok<UNRCH>
   irf_spectrogram(hca,ePDistN.pitchangles(dmpaBN,18).specrec('pa')); 
   hca.YTick = [0 45 90 135];  
 end
 if 0
-  elim = [10 200];
+  elim = [10 200]; %#ok<UNRCH>
   hca = irf_panel('e pitchangles low');
   irf_spectrogram(hca,ePDistN.elim(elim).pitchangles(dmpaBN,18).specrec('pa')); 
   hca.YTick = [0 45 90 135];  
@@ -100,7 +100,7 @@ if 1
   irf_legend(hca,{[num2str(elim(1),'%.0f') '<E_e<' num2str(elim(2),'%.0f') ' eV']},[0.98 0.90],'fontsize',12,'color',[0 0 0]);
 end
 if 0
-  elim = [400 20000];
+  elim = [400 20000]; %#ok<UNRCH>
   hca = irf_panel('e pitchangles high');
   irf_spectrogram(hca,ePDistN.elim(elim).pitchangles(dmpaBN,18).specrec('pa')); 
   hca.YTick = [0 45 90 135];  
@@ -192,7 +192,7 @@ for i=1:80
   mms.plot_projection(hca,ePDistN.convertto('s^3/km^6'),'tint',time,'xyz',xyz,'elevationlim',elevlim,'vlim',vlim,'clim',projclim,'scpot',scpot,'vlabel',vlabels);
   
   if 0
-    hca = h(isub); isub = isub + 1;
+    hca = h(isub); isub = isub + 1; %#ok<UNRCH>
     mms.plot_skymap(hca,ePDistN,'tint',time,'energy',150,'flat');
     
     hca = h(isub); isub = isub + 1;

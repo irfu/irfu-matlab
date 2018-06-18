@@ -15,7 +15,7 @@ function out = thor_orbit(orbitFile,dt)
 % Returns the default pre-MCR orbit (new1a.bsp) at 10min resolution.
 
 %% Check input
-if nargin == 0 && nargout == 0,
+if nargin == 0 && nargout == 0
 	help thor_read_orbit_spis;
 	return;
 elseif nargin == 0 && nargout > 0

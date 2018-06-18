@@ -60,7 +60,7 @@ if length(varargin{1})== 1 && ishandle(varargin{1}) && strcmp(get(varargin{1},'t
 	varargin = varargin(2:end);
 else
 	hAx = gca;
-end;
+end
 
 errmsg = ['Invalid input.  Coordinates must be specified as 1 four-element \n' ...
 	'position vector or 2 equal length (x,y) vectors.'];
@@ -68,9 +68,9 @@ errmsg = ['Invalid input.  Coordinates must be specified as 1 four-element \n' .
 % Proceed with remaining inputs
 if length(varargin)==1	% Must be 4 elt POS vector
 	pos = varargin{1};
-	if length(pos) ~=4, 
+	if length(pos) ~=4 
 		error(errmsg);
-	end;
+	end
 else
 	[x,y] = deal(varargin{:});
 	if length(x) ~= length(y)

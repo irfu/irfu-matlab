@@ -10,9 +10,9 @@
 % under grant agreement n. 284520.
 
 %% Cluster
-Units=irf_units;
+Units=irf_units; %#ok<NASGU>
 tintIso='2001-01-01T00:00:00.000Z/2013-01-01T00:00:00.000Z';
-tint=irf_time(tintIso,'utc>tint');
+tint=irf_time(tintIso,'utc>tint'); %#ok<NASGU>
 disp(['Using time interval: ' tintIso]);
 
 disp('Loading Cluster 1-min positions');
@@ -31,9 +31,9 @@ c_eval('clear R?;');
 
 %load /data/caa/CAA/matMlat
 disp('Finding when Cluster satisfies MAARBLE conditions');
-tStep=median(diff(RRE1(:,1))); % time step
-minR=3;  % minimum distance from Earth 
-maxR=10;  % minimum distance from Earth 
+tStep=median(diff(RRE1(:,1))); %#ok<NASGU> % time step 
+minR=3; %#ok<NASGU> % minimum distance from Earth 
+maxR=10; %#ok<NASGU>  % minimum distance from Earth 
 maxMlat=60; % maximum magnetic latitude
 
 % maarble definition
@@ -50,7 +50,7 @@ c_eval(['tt_C?_in_' ttLabel '.TimeInterval=[RRE?(indstart?,1)-tStep/2 RRE?(inden
 c_eval(['disp(''Created time table: tt_C?_in_' ttLabel ''');']);
 c_eval(['tt_C?_in_' ttLabel '=remove(tt_C?_in_' ttLabel ',find(diff(tt_C?_in_' ttLabel '.TimeInterval,1,2)<10*60));']);
 y=irf_ask('Shall I save the time tables to IRF yes/no? [%]','y','no');  
-if strcmp(y,'yes'),
+if strcmp(y,'yes')
 	c_eval(['irf.tt(tt_C?_in_' ttLabel ',''write_IRF'',''C?_in_' ttLabel ''');'])
 end
 
@@ -86,6 +86,6 @@ c_eval(['tt_th?_in_' ttLabel '.TimeInterval=[RRE?(indstart?,1)-tStep/2 RRE?(inde
 c_eval(['disp(''Created time table: tt_th?_in_' ttLabel ''');'],'abcde');
 c_eval(['tt_th?_in_' ttLabel '=remove(tt_th?_in_' ttLabel ',find(diff(tt_th?_in_' ttLabel '.TimeInterval,1,2)<10*60));'],'abcde');
 y=irf_ask('Shall I save the time tables to IRF yes/no? [%]','y','no');  
-if strcmp(y,'yes'),
+if strcmp(y,'yes')
 	c_eval(['irf.tt(tt_th?_in_' ttLabel ',''write_IRF'',''th?_in_' ttLabel ''');'],'abcde')
 end

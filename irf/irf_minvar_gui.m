@@ -18,16 +18,16 @@ function irf_minvar_gui(x,column)
 global ud
 persistent message;
 
-if isempty(message), % run only the first time during the session
+if isempty(message) % run only the first time during the session
 	message='You can anytime access all the results from the variable "ud" or from get(gcf,''userdata'').';
 	disp(message);
 end
 
 if      nargin < 1, help irf_minvar_gui;return;
 elseif  (nargin==1 && ischar(x)), action=x;%disp(['action=' action]);
-elseif  isnumeric(x),
+elseif  isnumeric(x)
 	if size(x,2)<3, disp('Vector has too few components');return;end
-	if nargin < 2,
+	if nargin < 2
 		if size(x,2)==3, column=[1 2 3];end
 		if size(x,2)>3, column=[2 3 4];end
 	end
@@ -39,7 +39,7 @@ elseif isa(x,'TSeries') && x.tensorOrder == 1 && size(x.data,2)==3
 	x = xNew;
 end
 
-switch action,
+switch action
 	case 'initialize'
 		% X is used for minimum variance estimates
 		evalin('base','clear ud; global ud;');
@@ -56,7 +56,7 @@ switch action,
 		axis(h(1),'tight');
 		zoom(h(1),'off');
 		ud=get(gcf,'userdata');
-		if isfield(ud,'t_start_epoch'), ud.t0=ud.t_start_epoch;else ud.t0=0; end
+		if isfield(ud,'t_start_epoch'), ud.t0=ud.t_start_epoch;else, ud.t0=0; end
 		
 		ud.X=X;
 		ud.from = 1; % first click with mouse is 'from', second is 'to'
@@ -158,7 +158,7 @@ switch action,
 		irf_minvar_gui('update_mva_axis');
 	case 'update_mva_axis'
 		ud=get(gcf,'userdata');
-		if ud.tlim==ud.tlim_mva, % plot first time after 'mva'
+		if ud.tlim==ud.tlim_mva % plot first time after 'mva'
 			irf_plot(ud.h(2),ud.Xminvar);
 			axis(ud.h(2),'fill');
 			axis(ud.h(2),'tight');
@@ -227,7 +227,7 @@ end
 function fix_legends
 ud=get(gcf,'userdata');
 
-switch size(ud.X,2)-1, % how many components
+switch size(ud.X,2)-1 % how many components
 	case 3 %
 		legend(ud.h(1),'x','y','z','Location','EastOutside');
 		legend(ud.h(2),'max','interm','min','Location','EastOutside');
@@ -242,7 +242,7 @@ function fix_hittest(h)
 set(h,    'buttondownfcn', {@click_ax});
 % fixes that buttondownfcn of axes is called instead of children
 hChildren = get(h,'children');
-if ~iscell(hChildren),
+if ~iscell(hChildren)
 	hChildren = {hChildren};
 end
 for iH = 1:numel(hChildren)

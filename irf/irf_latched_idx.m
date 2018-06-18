@@ -20,7 +20,7 @@ if min(size(sig))>1
 end
 if numel(sig)<minPoints, idx = false(size(sig)); return, end
 % Data (MMS) will most likely be a row vector, if column vector, flip it.
-if size(sig,1)<size(sig,2), sig=sig'; end;
+if size(sig,1)<size(sig,2), sig=sig'; end
 
 % idx1 = diff(sig)==0;
 % idx2 = (diff(idx1) == 0) & idx1(1:end-1);

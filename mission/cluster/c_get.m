@@ -8,7 +8,7 @@
 DP_S = c_ctl(0,'data_path');
 csds_dir = [DP_S '/CSDS/'];
 
-if exist('sc_list') == 0, sc_list=1:4;end % default values
+if ~exist('sc_list','var'), sc_list=1:4;end % default values
 
 mmm =  ...
        ['q  end, quit                          ';
@@ -51,11 +51,11 @@ while(q ~= 'q') % ====== MAIN LOOP =========
  save_list='';save_file='';
  if q == 'q', return,
  elseif q == '0', disp(mmm);
- elseif q == 's',
+ elseif q == 's'
     if flag_save==1,flag_save=0;disp('not saving variables');
     else, flag_save=1;disp('saving variables to mfiles');
     end
- elseif q == '1',
+ elseif q == '1'
   DB_S = c_ctl(0,'isdat_db');
   DATABASE = irf_ask('Give database as string [%]>','DATABASE',DB_S);
   db = Mat_DbOpen(DATABASE);
@@ -64,14 +64,14 @@ while(q ~= 'q') % ====== MAIN LOOP =========
   start_date_str=strrep(datestr(start_time,29),'-','');
   Dt = irf_ask('How many seconds of data [%]>','Dt',60);
   tint_epoch=toepoch(start_time)+[0 Dt];
- elseif strcmp(q,'2'),
+ elseif strcmp(q,'2')
   % define sc_list
   sc_list = irf_ask('Spacecraft list [%]>','sc_list',1:4);
   
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Phase
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  elseif strcmp(q,'a'),
+  elseif strcmp(q,'a')
     save_file='./mA.mat';save_list='';
     for ic=sc_list, c_eval('disp(''...A?...Atwo?..'');',ic);
      [t,data] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic), 'ephemeris', 'phase', ' ', ' ', ' ');
@@ -84,7 +84,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Ephemeris
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
- elseif strcmp(q,'eph'),
+ elseif strcmp(q,'eph')
     for ic=sc_list, disp(['...ephemeris' num2str(ic) '...LT,MLT,ILAT,L->mEPH...R->mR...V->mR']);
      [tlt,lt] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic), 'ephemeris', 'lt', ' ', ' ', ' ');
      [tmlt,mlt] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic), 'ephemeris', 'mlt', ' ', ' ', ' ');
@@ -105,15 +105,16 @@ while(q ~= 'q') % ====== MAIN LOOP =========
     end
     save_list = '';
 
- elseif strcmp(q,'x'),
+ elseif strcmp(q,'x')
     var_name=input('matlab variable name =','s');
     disp('? in input is substituted by cluster number');
     qstring=input('example {''Cluster'' ''1'' ''efw'' ''E'' ''p12'' ''10Hz'' ''any''}=>','s');
-    for ic=sc_list,
+    for ic=sc_list
      string=eval(irf_ssub(qstring,ic));
      varic = [var_name num2str(ic)];
      disp(['...free format s/c' num2str(ic) ' ' varic]);
-     for jj=1:size(string,2),str{jj}=irf_ssub(string{jj},ic);end, for jj=size(string,2)+1:7,str{jj}=' ';end
+     for jj=1:size(string,2),str{jj}=irf_ssub(string{jj},ic);end
+     for jj=size(string,2)+1:7,str{jj}=' ';end
      [t,data] = isGetDataLite( db, start_time, Dt,str{1}, str{2}, str{3}, str{4},str{5},str{6},str{7});
      eval([varic '=[double(t) double(data)];']);
     end
@@ -121,7 +122,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Magnetic fields
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
- elseif q == 'b',
+ elseif q == 'b'
     save_file='./mBPP.mat';
     for ic=sc_list, disp(['CSDS...BPP' num2str(ic)]);
       eval(irf_ssub('BPP?=irf_cdf_read([csds_dir ''PP/FGM/C?/C?_PP_FGM_'' start_date_str ''*''],''B_xyz_gse__C?_PP_FGM'');BPP?=irf_tlim(BPP?,tint_epoch);save_list=[save_list '' BPP?''];',ic));
@@ -130,13 +131,13 @@ while(q ~= 'q') % ====== MAIN LOOP =========
 %     eval(irf_ssub('if exist(''./mBPP.mat''),save mBPP BPP? -append; else, save mBPP BPP?;end',ic));
     end
 
- elseif strcmp(q,'db'),
-  for ic=sc_list,
+ elseif strcmp(q,'db')
+  for ic=sc_list
    eval(irf_ssub('load mBPP BPP?;dBPP?=c_gse2dsc(BPP?,[BPP?(1,1) ic]);save -append mBPP dBPP?;',ic));
   end
 
- elseif strcmp(q,'bf'),
-  for ic=sc_list,
+ elseif strcmp(q,'bf')
+  for ic=sc_list
     disp(['Choose FGM GSE data for spacecraft ' num2str(ic) ]);
     fvs=fgmvec_stream('/home/andris/data/cluster/fgm/');
     disp(tavail(fvs,[]));
@@ -148,49 +149,49 @@ while(q ~= 'q') % ====== MAIN LOOP =========
   eval(['save mB ' save_list]); 
   save_list = '';
 
- elseif strcmp(q,'bfgm'),
+ elseif strcmp(q,'bfgm')
   disp('CONTACT STEPHAN BUCHERT!!!!!!!!!!!!!!!!!!!');
   save_file='./mB.mat';
   save_list = '';
   c_eval('B?=c_get_bfgm(tint_epoch,?);save_list=[save_list '' B? ''];',sc_list);
   c_eval('diB?=c_gse2dsc(B?,[B?(1,1) ?],2);save_list=[save_list '' diB? ''];',sc_list);
 
- elseif strcmp(q,'dbf'),
-  for ic=sc_list,
+ elseif strcmp(q,'dbf')
+  for ic=sc_list
    eval(irf_ssub('load mB B?;tt=B?(1,1);',ic));
    eval(irf_ssub('dB?=c_gse2dsc(B?,[B?(1,1) ic]);',ic));
    eval(irf_ssub('save -append mB dB?;',ic));
   end
 
- elseif strcmp(q,'dibf'),
-  for ic=sc_list,
+ elseif strcmp(q,'dibf')
+  for ic=sc_list
    eval(irf_ssub('load mB B?;',ic));
    eval(irf_ssub('diB?=c_gse2dsc(B?,?,2);',ic));
    eval(irf_ssub('save -append mB diB?;',ic));
   end
 
- elseif strcmp(q,'bs'),
-  mode=input('Model L=1/M=2? If different give as vector. [1]');if isempty(mode),mode=1;end;
-  for ic=sc_list,
+ elseif strcmp(q,'bs')
+  mode=input('Model L=1/M=2? If different give as vector. [1]');if isempty(mode),mode=1;end
+  for ic=sc_list
    	if (length(mode)>1), mm=mode(ic);else, mm=mode;end
-		if (mm == 1), param='0-10Hz';end;
-		if (mm == 2), param='0-180Hz';end;
+		if (mm == 1), param='0-10Hz';end
+		if (mm == 2), param='0-180Hz';end
     disp(['STAFF...wBS' num2str(ic) ' ' param ' filter' ]);
     [t,data] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic), 'staff', 'B_SC', 'Bx_By_Bz', param, '');
     eval(irf_ssub('wBS?=[double(t) double(data)''];',ic));clear t data;
-    end
+  end
     save mBS wBS1 wBS2 wBS3 wBS4;
 
- elseif strcmp(q,'dbs'),
+ elseif strcmp(q,'dbs')
    c_eval('load mBS.mat wBS?; c_load A?; if ~isempty(wBS?), dBS?=c_efw_despin(wBS?,A?); save -append mBS dBS?;end; clear wBS? A?',sc_list);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % E p1234 or p12 & p34
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  
- elseif strcmp(q,'e') | strcmp(q,'e1'),
+ elseif strcmp(q,'e') || strcmp(q,'e1')
   save_file = './mE.mat';
   mode=irf_ask('Sampling 1)hx 2)lx ? If different give as vector. [%]','mode',1);
-  for ic=sc_list,
+  for ic=sc_list
    	if (length(mode)>1), mm=mode(ic);else, mm=mode;end
 	if (mm == 2), param='10Hz';tmmode='lx';
 	elseif (mm == 1) 
@@ -209,7 +210,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
 			eval(irf_ssub('mTMode?=tm;',ic));
 			if exist('./mTMode.mat','file'), eval(irf_ssub('save -append mEFWR mTMode?;',ic));
 			else, eval(irf_ssub('save mEFWR mTMode?;',ic));	
-            end
+			end
 		end
 		if tm~=tm(1)*ones(size(tm))
 			warning('tape mode changes during the selected tile inteval')
@@ -219,18 +220,18 @@ while(q ~= 'q') % ====== MAIN LOOP =========
 		if tm<1e-30, param='10Hz';	else, param='180Hz'; end
 		clear tm
 		tst = toepoch(start_time);
-		if tst>toepoch([2001 07 31 00 00 00])&tst<toepoch([2001 09 01 00 00 00]), 
+		if tst>toepoch([2001 07 31 00 00 00])&&tst<toepoch([2001 09 01 00 00 00]) 
 			% all sc run on 180Hz filter in august 2001
 			param='180Hz';	
-		elseif tst>toepoch([2001 07 31 00 00 00])&ic==2, % 10Hz filtef probelm on sc2
+		elseif tst>toepoch([2001 07 31 00 00 00])&&ic==2 % 10Hz filtef probelm on sc2
 			param='180Hz';
 		end
 	end
     
-    if (toepoch(start_time)>toepoch([2001 12 28 03 00 00])&ic==1) | (toepoch(start_time)>toepoch([2002 07 29 09 06 59 ])&ic==3),
+    if (toepoch(start_time)>toepoch([2001 12 28 03 00 00])&&ic==1) || (toepoch(start_time)>toepoch([2002 07 29 09 06 59 ])&&ic==3)
 	p34_only = 1;
        	disp(sprintf('            !Only p34 exists for sc%d',ic));
-    else,
+    else
 	p34_only = 0;
     end
     
@@ -241,10 +242,10 @@ while(q ~= 'q') % ====== MAIN LOOP =========
        	    [t,data] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic), 'efw', 'E', 'p34', param, tmmode);
        	    data = double(real(data));
        	    data = [data(:,1)*0 data(:,1) data(:,1)*0]';
-        else,
+    	else
             [t,data] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic), 'efw', 'E', 'p1234', param, tmmode);
        	    data = double(real(data));
-        end
+    	end
         t = double(t);
         eval(irf_ssub('wE?=[t data''];',ic)); clear t data;
         eval(irf_ssub('save_list=[save_list '' wE? ''];',ic));
@@ -271,9 +272,9 @@ while(q ~= 'q') % ====== MAIN LOOP =========
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  % spinfits
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
- elseif strcmp(q,'dve1'), 
+ elseif strcmp(q,'dve1') 
   save_file = './mE.mat';
-  for ic=sc_list,
+  for ic=sc_list
    eval(irf_ssub('load mE wE?p12 wE?p34;',ic));
    eval(irf_ssub('load mA.mat A?;',ic));
    
@@ -306,7 +307,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
    end
    
    %display offsets
-   if exist(irf_ssub('wE?p12',ic),'var') & exist(irf_ssub('wE?p34',ic),'var')
+   if exist(irf_ssub('wE?p12',ic),'var') && exist(irf_ssub('wE?p34',ic),'var')
        disp(sprintf('[X Y] offsets <p12>-<p34> : [ %.2f %.2f ]', o12(1)-o34(1), o12(2)-o34(2)))
    end
  
@@ -316,10 +317,10 @@ while(q ~= 'q') % ====== MAIN LOOP =========
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % despin E
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
- elseif strcmp(q,'dve'),
+ elseif strcmp(q,'dve')
   save_file = './mE.mat';
   q_efw_offset=irf_ask('How to treat offsets? \n  1) do nothing, \n  2) before despin subtract probe signal mean \n  3)  2 + use nearest sunward offsets,\n  4) nearest full hand-tuned callibration,\n[%]>','q_efw_offset',2);
-  for ic=sc_list,
+  for ic=sc_list
    eval(irf_ssub('load mE wE?;tt=wE?(1,1);',ic));
    eval(irf_ssub('load mA.mat A?;',ic));
    switch q_efw_offset
@@ -337,8 +338,8 @@ while(q ~= 'q') % ====== MAIN LOOP =========
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % dE 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
- elseif strcmp(q,'de'),
-  for ic=sc_list,
+ elseif strcmp(q,'de')
+  for ic=sc_list
    eval(irf_ssub('load mE dvE?;load mBPP dBPP?;load mV dV?; tt=dvE?(1,1);db=dBPP?; dv=dV?;clear dBPP? dV?;',ic));
    evxb=irf_resamp(irf_tappl(irf_cross(db,dv),'*1e-3*(-1)'),tt);
    eval(irf_ssub('dE?=irf_add(1,dvE?,-1,evxb);dE?(:,4)=0;',ic));
@@ -349,11 +350,11 @@ while(q ~= 'q') % ====== MAIN LOOP =========
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % deo 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
- elseif strcmp(q,'deo'),
+ elseif strcmp(q,'deo')
   disp('Estimating dEo where dEo.B=0, Eo (GSE) and Vo=Eo/B')
   deg=input('B angle with respect to the spin plane should be at least x deg, x=');
-  qb=input('To use FGM high res (1) or PP data (2) [1] >');if isempty(qb),qb=1;end;
-  for ic=sc_list,
+  qb=input('To use FGM high res (1) or PP data (2) [1] >');if isempty(qb),qb=1;end
+  for ic=sc_list
      eval(irf_ssub('load mE dE?;tt=dE?(1,1);',ic));
    if qb ==1, eval(irf_ssub('load mB dB?; db=irf_resamp(dB?,dE?);clear dB?;',ic));
    else, eval(irf_ssub('load mBPP dBPP?; db=irf_resamp(dBPP?,dE?);clear dBPP?;',ic));
@@ -365,8 +366,8 @@ while(q ~= 'q') % ====== MAIN LOOP =========
   eval(['save -append mE  ' save_list]);
   save_list = '';
 
- elseif strcmp(q,'es'), % create E ascii files
-  for ic=sc_list,
+ elseif strcmp(q,'es') % create E ascii files
+  for ic=sc_list
      % E_GSE file creation
      eval(irf_ssub('load mE Eo? d?;tt=Eo?(1,1);x=Eo?;x(:,end+1)=d?;',ic));
      t_ref=toepoch(fromepoch(tt).*[1 1 1 0 0 0]);time_ref=datestr(datenum(fromepoch(t_ref)),0);
@@ -404,38 +405,38 @@ while(q ~= 'q') % ====== MAIN LOOP =========
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % E ASCII
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
- elseif strcmp(q,'ea')|strcmp(q,'esa') % create E ascii files
+ elseif strcmp(q,'ea')||strcmp(q,'esa') % create E ascii files
 	 if strcmp(q,'ea'), s = ''; else, s = 's'; end
-  for ic=sc_list,
+  for ic=sc_list
      eval(irf_ssub(['if ~exist(''E' s '?'') & exist(''mEdB.mat'',''file''), load mEdB E' s '? ang_limit?;disp(''Loading E' s '?, ang_limit? from mEdB'');end'],ic));
      eval(irf_ssub('if ~exist(''D?p12p34'') & ~exist(''Ddsi?''), load mEDSI D?p12p34 Ddsi? Da?p12 Da?p34 Damp?;disp(''Loading offset values from mEDSI.mat'');end',ic));
      eval(irf_ssub(['if ~exist(''diE' s '?'')& exist(''mEdB.mat'',''file''), load mEdB diE' s '? ang_limit?;disp(''Loading diE' s '?, ang_limit? from mEdB'');end'],ic));
 	offset_comment = 'Offsets => '; 
-	if exist(irf_ssub('Damp?',ic))
+	if exist(irf_ssub('Damp?',ic),'var')
      	eval(irf_ssub('offset_comment=[offset_comment '' Damp='' num2str(Damp?)];',ic)); 
 	end
-	if exist(irf_ssub('Da?p12',ic))
+	if exist(irf_ssub('Da?p12',ic),'var')
      	eval(irf_ssub('offset_comment=[offset_comment '' Dap12='' num2str(Da?p12)];',ic)); 
 	end
-	if exist(irf_ssub('Da?p34',ic))
+	if exist(irf_ssub('Da?p34',ic),'var')
      	eval(irf_ssub('offset_comment=[offset_comment '' Dap34='' num2str(Da?p34)];',ic)); 
 	end
-	if exist(irf_ssub('D?p12p34',ic))
+	if exist(irf_ssub('D?p12p34',ic),'var')
      	eval(irf_ssub('offset_comment=[offset_comment '' Dp12p34='' num2str(D?p12p34)];',ic)); 
 	end
-	if exist(irf_ssub('Ddsi?',ic))
+	if exist(irf_ssub('Ddsi?',ic),'var')
      	eval(irf_ssub('offset_comment=[offset_comment '' Ddsi(x,y)=('' num2str(real(Ddsi?)) '','' num2str(imag(Ddsi?)) '')''];',ic)); 
 	end
     offset_comment=[offset_comment '\n']; 
      eval(irf_ssub('ang_limit_s=num2str(ang_limit?);',ic)),
-     if eval(irf_ssub(['exist(''E' s '?'')'],ic)),
+     if eval(irf_ssub(['exist(''E' s '?'')'],ic))
        eval(irf_ssub(['number_of_points=size(E' s '?,1);'],ic));
        disp(['E' s num2str(ic) ' --> E' s num2str(ic) '.dat  ' num2str(number_of_points) ' samples']);
        E_add_comment=[offset_comment '\nang_limit=' ang_limit_s '\n'];
        E_add_comment=[E_add_comment 'E.B=0 used only for points in which magnetic field makes an angle \nwith respect to the spin plane that is larger than ang_limit'];
        eval(irf_ssub(['c_export_ascii(E' s '?,''E' s '?'',''' E_add_comment ''');'],ic));
      end
-     if eval(irf_ssub(['exist(''diE' s '?'')'],ic)),
+     if eval(irf_ssub(['exist(''diE' s '?'')'],ic))
        eval(irf_ssub(['number_of_points=size(diE' s '?,1);'],ic));
        disp(['diE' s num2str(ic) ' --> diE' s num2str(ic) '.dat  ' num2str(number_of_points) ' samples']);
        diE_add_comment=[offset_comment '\nang_limit=' ang_limit_s '\nE.B=0 used to estimate Ez for points in which magnetic field makes an \nangle with respect to the spin plane that is larger than ang_limit'];
@@ -446,13 +447,13 @@ while(q ~= 'q') % ====== MAIN LOOP =========
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % V=ExB ASCII
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
- elseif strcmp(q,'va')|strcmp(q,'vsa') 
+ elseif strcmp(q,'va')||strcmp(q,'vsa') 
 	if strcmp(q,'va'), s = ''; else, s = 's'; end
-	for ic=sc_list,
+	for ic=sc_list
 		% GSE
      eval(irf_ssub(['if ~exist(''VExB' s '?'') & exist(''mEdB.mat'',''file''), load mEdB VExB' s '? ang_limit?;disp(''Loading VExB' s '?, ang_limit? from mEdB'');end'],ic));
      eval(irf_ssub('ang_limit_s=num2str(ang_limit?);',ic)),
-     if eval(irf_ssub(['exist(''VExB' s '?'')'],ic)),
+     if eval(irf_ssub(['exist(''VExB' s '?'')'],ic))
        eval(irf_ssub(['number_of_points=size(VExB' s '?,1);'],ic));
        disp(['VExB' s num2str(ic) ' --> VExB' s num2str(ic) '.dat  ' num2str(number_of_points) ' samples']);
        E_add_comment=['\nang_limit=' ang_limit_s '\n'];
@@ -462,20 +463,20 @@ while(q ~= 'q') % ====== MAIN LOOP =========
 	 % DSI
      eval(irf_ssub(['if ~exist(''diVExB' s '?'',''var'') & exist(''mEdB.mat'',''file''), load mEdB diVExB' s '? ang_limit?;disp(''Loading diVExB' s '?, ang_limit? from mEdB'');end'],ic));
      eval(irf_ssub('ang_limit_s=num2str(ang_limit?);',ic)),
-     if eval(irf_ssub(['exist(''diVExB' s '?'')'],ic)),
+     if eval(irf_ssub(['exist(''diVExB' s '?'')'],ic))
        eval(irf_ssub(['number_of_points=size(diVExB' s '?,1);'],ic));
        disp(['diVExB' s num2str(ic) ' --> diVExB' s num2str(ic) '.dat  ' num2str(number_of_points) ' samples']);
        diE_add_comment=['\nang_limit=' ang_limit_s '\nE.B=0 used to estimate Ez for points in which magnetic field makes an \nangle with respect to the spin plane that is larger than ang_limit'];
        eval(irf_ssub(['c_export_ascii(diVExB' s '?,''diVExB' s '?'',''' diE_add_comment ''');'],ic));
      end
      clear E_add_comment diE_add_comment number_of_points;
-   end
+	end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % EDI
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
- elseif strcmp(q,'edi'),
+ elseif strcmp(q,'edi')
   save_file='./mEDI.mat';
-    for ic=sc_list,
+    for ic=sc_list
       [t, data] = isGetDataLite( db, start_time, Dt, 'CSDS_PP', ['C' num2str(ic)], 'EDI', ['E_xyz_gse__C' num2str(ic) '_PP_EDI'], ' ', ' ',' ');
       eval(irf_ssub('EDI?=[double(t) double(data)''];',ic));clear t,data;
       if eval(['min(size(EDI' num2str(ic) '))';])==0 % if there are no data
@@ -509,13 +510,13 @@ while(q ~= 'q') % ====== MAIN LOOP =========
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % P
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
- elseif q == 'p',
+ elseif q == 'p'
   mode = irf_ask(...
   	'Sampling 1)lx, 2)hx, 3)4kHz_any, 4)32kHz_any? If different give as vector. [%]','mode',1);
-  for ic=sc_list,
+  for ic=sc_list
   	if (length(mode)>1), mm=mode(ic);else, mm=mode;end
 		if (mm == 1), param='10Hz'; tmmode='lx';
-		elseif (mm == 2),
+		elseif (mm == 2)
 			%% Find TapeMode
   			[ok,tm] = c_load('mTMode?',ic);
 			if ~ok
@@ -536,55 +537,56 @@ while(q ~= 'q') % ====== MAIN LOOP =========
 			else, param='10Hz'; tmmode='lx'; end
 			clear tm
 		elseif (mm == 3), param='4kHz';tmmode='any';
-		elseif (mm == 4), param='32kHz';tmmode='any';end;
+		elseif (mm == 4), param='32kHz';tmmode='any';
+		end
 
-    for probe=1:4;
+    for probe=1:4
       disp(['EFW...sc' num2str(ic) '...probe' num2str(probe) '->P' param num2str(ic) 'p' num2str(probe)]);
       [t,data] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic), 'efw', 'E', ['p' num2str(probe)],param, tmmode);
       eval(irf_ssub(['p!=[double(t) double(real(data))];save_list=[save_list '' P' param '?p!''];P' param '?p!=p!;'],ic,probe)); clear t data;
     end
     clear p;
-    if size(p1)==size(p2)&size(p1)==size(p3)&size(p1)==size(p4)&size(p1)~=[0 0]&ic~=2,  % sc2 has often problems with p3
+    if size(p1)==size(p2)&&size(p1)==size(p3)&&size(p1)==size(p4)&&size(p1)~=[0 0]&&ic~=2  % sc2 has often problems with p3
        p=[p1(:,1) (p1(:,2)+p2(:,2)+p3(:,2)+p4(:,2))/4];
        disp('Vps = (p1+p2+p3+p4)/4, satellite potential is average over 4 probes');
-    elseif size(p1)==size(p2)&size(p1)~=[0 0],
+    elseif size(p1)==size(p2)&&size(p1)~=[0 0]
        p=[p1(:,1) (p1(:,2)+p2(:,2))/2];
        disp('Vps = (p1+p2)/2, satellite potential is average over probes 1 and 2');
-    elseif size(p3)==size(p4)&ic~=2,
+    elseif size(p3)==size(p4)&&ic~=2
        p=[p3(:,1) (p3(:,2)+p4(:,2))/2];
        disp('Vps = (p3+p4)/2, satellite potential is average over probes 3 and 4');
-    else,
+    else
        p=p4;
        disp('Vps = p4, satellite potential is put to potential of probe 4');
     end
     eval(irf_ssub(['P' param '?=p;save_list=[save_list '' P' param '? ''];'],ic));
-    if ((mm==1) | (mm==11)); eval(irf_ssub('P?=p;NVps?=c_efw_scp2ne(p);save_list=[save_list '' P? NVps?''];',ic));end
-    if (mm == 3) | (mm == 4)
+    if ((mm==1) || (mm==11)); eval(irf_ssub('P?=p;NVps?=c_efw_scp2ne(p);save_list=[save_list '' P? NVps?''];',ic));end
+    if (mm == 3) || (mm == 4)
       dtburst=input(['s/c' num2str(ic) ', time shift to obtain correct time (get from Anders Tjulin) =']);
       dtburst=double(dtburst);
       for probe=1:4,eval(irf_ssub(['P' param '?p!(:,1)=P' param '?p!(:,1)+dtburst;'],ic,probe));end
       c_eval(['P' param '?(:,1)=P' param '?(:,1)+dtburst;'],ic);
     end
   end
-  if exist('./mP.mat'), eval(['save mP ' save_list ' -append']); else eval(['save mP ' save_list]); end
+  if exist('./mP.mat','file'), eval(['save mP ' save_list ' -append']); else, eval(['save mP ' save_list]); end
   save_list = '';
 
- elseif strcmp(q,'pa'), % create V_sc n ascii files
-  for ic=sc_list,
+ elseif strcmp(q,'pa') % create V_sc n ascii files
+  for ic=sc_list
      % Vsc_N file creation
      %t_ref=toepoch(fromepoch(tt).*[1 1 1 0 0 0]);time_ref=datestr(datenum(fromepoch(t_ref)),0);
      %file_name=  [time_ref([8 9 10 11 3 4 5 6 3 1 2]) '_Vps_N_sc' num2str(ic) '.dat'];
      eval(irf_ssub('if ~exist(''NVps?''), load mP NVps?;end',ic));
-     if eval(irf_ssub('exist(''NVps?'')',ic)),
+     if eval(irf_ssub('exist(''NVps?'')',ic))
        eval(irf_ssub('number_of_points=size(NVps?,1);',ic));
        disp(['NVps' num2str(ic) ' --> NVps' num2str(ic) '.dat  ' num2str(number_of_points) ' samples']);
        eval(irf_ssub('c_export_ascii(NVps?);',ic));
      end
    end
 
- elseif strcmp(q,'r') | strcmp(q,'v'),
+ elseif strcmp(q,'r') || strcmp(q,'v')
    save_file='./mR.mat';save_list=[];
-   for ic=sc_list,
+   for ic=sc_list
      disp(['...R' num2str(ic) '--> mR.mat']);
      [tr,data_r] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic), 'ephemeris', 'position', ' ', ' ', ' ');
      eval(irf_ssub('R?=[double(tr) double(data_r)''];',ic));
@@ -595,8 +597,8 @@ while(q ~= 'q') % ====== MAIN LOOP =========
      save_list=[save_list irf_ssub(' R? V? ', ic)];
    end
 
- elseif strcmp(q,'vc'),
-    for ic=sc_list,
+ elseif strcmp(q,'vc')
+    for ic=sc_list
      disp(['...VCp' num2str(ic) ', dVCp' num2str(ic)]);
      [t, data] = isGetDataLite( db, start_time, Dt, 'CSDS_PP', ['C' num2str(ic)], 'CIS', ['V_p_xyz_gse__C' num2str(ic) '_PP_CIS'], ' ', ' ',' ');
      eval(irf_ssub('VCp?=[double(t) double(real(data))''];',ic));clear t,data;
@@ -609,19 +611,19 @@ while(q ~= 'q') % ====== MAIN LOOP =========
     eval(['save mCIS ' save_list]);
     save_list = '';
 
- elseif strcmp(q,'vce'),
+ elseif strcmp(q,'vce')
   CIS=load('mCIS');
-  for ic=sc_list,
+  for ic=sc_list
    eval(irf_ssub('if isfield(CIS,''VCp?''); vp=CIS.VCp?;else,vp=[];end;  if isfield(CIS,''VCh?'');vh=CIS.VCh?;else,vh=[];end; load mBPP BPP?;b=BPP?; clear BPP? VCp? VCh?;',ic));
    %
-    if min(size(vp)) ~= 0,
+    if min(size(vp)) ~= 0
       disp(['...VCEp' num2str(ic)]);
       evxb=irf_tappl(irf_cross(vp,b),'*(-1e-3)');
       eval(irf_ssub('VCEp?=evxb;save -append mCIS VCEp?;',ic));
       disp(['...dVCEp' num2str(ic)]);
       eval(irf_ssub('dVCEp?=c_gse2dsc(VCEp?,[VCEp?(1,1) ic]);save -append mCIS dVCEp?;',ic));
     end
-    if min(size(vh)) ~= 0,
+    if min(size(vh)) ~= 0
       disp(['...VCEh' num2str(ic)]);
       evxb=irf_tappl(irf_cross(vh,b),'*(-1e-3)');
       eval(irf_ssub('VCEh?=evxb;save -append mCIS VCEh?;',ic));
@@ -636,10 +638,10 @@ while(q ~= 'q') % ====== MAIN LOOP =========
  end
  
 % If flag_save is set, save variables to specified file
- if flag_save==1 & length(save_file)>0 & ~isempty(save_list),
-  if exist(save_file,'file'), 
+ if flag_save==1 && length(save_file)>0 && ~isempty(save_list)
+  if exist(save_file,'file') 
    eval(['save -append ' save_file ' ' save_list]); 
-  else, 
+  else 
    eval(['save ' save_file ' ' save_list]);
   end
  end

@@ -30,23 +30,23 @@ global ud
 persistent tlim message t0;
 %persistent ud tlim;
 
-if isempty(message), % run only the first time during the session
+if isempty(message) % run only the first time during the session
     message='You can anytime access all the results from the variable "ud".';
     disp(message);
 end
 
 if      nargin < 1, help irf_minvar_nest_gui;return;
-elseif  (nargin==1 & isstr(x)), action=x;%disp(['action=' action]);
-elseif  isnumeric(x),
+elseif  (nargin==1 && ischar(x)), action=x;%disp(['action=' action]);
+elseif  isnumeric(x)
     if size(x,2)<3, disp('Vector has too few components');return;end
-    if nargin < 2,
+    if nargin < 2
         if size(x,2)==3, column=[1 2 3];end
         if size(x,2)>3, column=[2 3 4];end
     end
     action='initialize';
 end
 
-switch action,
+switch action
     case 'initialize'
         % X is used for minimum variance estimates
         tlim = [];
@@ -68,7 +68,7 @@ switch action,
         h(1)=subplot(4,1,1);
         irf_plot(X);axis tight;
         uf=get(dgh,'userdata');
-        if isfield(uf,'t_start_epoch'), t0=uf.t_start_epoch;else t0=0; end
+        if isfield(uf,'t_start_epoch'), t0=uf.t_start_epoch;else, t0=0; end
 	ud.h=h;
 
         set(gcf,    'windowbuttondownfcn', 'irf_minvar_nest_gui(''ax'')');zoom off;
@@ -123,9 +123,9 @@ switch action,
         ud.result_text=text(0.3,0.8,'result','FontSize',14);
 	
     case 'csc'
-    title(['Click on the current sheet center' ]);
+    title('Click on the current sheet center');
     uf=get(gcf,'userdata');
-    if isfield(uf,'t_start_epoch'), t0=uf.t_start_epoch;else t0=0; end
+    if isfield(uf,'t_start_epoch'), t0=uf.t_start_epoch;else, t0=0; end
     temp=ginput(1);
     ud.csc=temp(1)+t0;
     p(1)=ud.csc;
@@ -134,7 +134,7 @@ switch action,
     
     case 'avg'
     axes(ud.h(2));
-    title(['Click the averaging limits' ]);
+    title('Click the averaging limits');
     set(ud.h(2),'layer','top');
     grid on;
     avglim=ginput(2);
@@ -180,7 +180,7 @@ switch action,
     case 'ax'
         tlim = get(ud.patch_mvar_intervals, 'xdata'); tlim=tlim(:)';tlim(3:4)=[];
         uf=get(gcf,'userdata');
-        if isfield(uf,'t_start_epoch'), t0=uf.t_start_epoch;else t0=0; end
+        if isfield(uf,'t_start_epoch'), t0=uf.t_start_epoch;else, t0=0; end
         tlim=tlim+t0;
         p = get(gca, 'currentpoint')+t0;
         tlim_interval=get(gca,'xlim')+t0;
@@ -221,11 +221,11 @@ switch action,
 					disp('f/Fs must be <1!!!')
 					set(ud.filter,'string','1')
 				end
-      [ud.bn ud.l2_l3_ratio ud.v1_nest ud.v2_nest ud.v3_nest]=irf_minvar_nest(X,ud.csc,tlim);
+      [ud.bn, ud.l2_l3_ratio, ud.v1_nest, ud.v2_nest, ud.v3_nest]=irf_minvar_nest(X,ud.csc,tlim);
       irf_minvar_nest_gui('update_mva_axis');
       
       case 'update_mva_axis'
-      if tlim==ud.tlim_mva, % plot first time after 'mva'
+      if tlim==ud.tlim_mva % plot first time after 'mva'
       axes(ud.h(2));
             plot(ud.v3_nest(:,1),ud.v3_nest(:,2));
 	    xlabel('Nest size (M)');ylabel('n_X');
@@ -244,6 +244,6 @@ switch action,
 	    xlabel('Nest size (M)');
 	    set(get(ud.AX(1),'Ylabel'),'String','B_n [nT]') 
             set(get(ud.AX(2),'Ylabel'),'String','L2/L3')
-        end
+      end
 
 end

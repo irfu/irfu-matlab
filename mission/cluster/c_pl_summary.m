@@ -57,24 +57,24 @@ sc_list = 1:4;
 ang_limit = 15;
 	
 if nargin>0, have_options = 1; args = varargin;
-else have_options = 0; args = '';
+else, have_options = 0; args = '';
 end
 
 while have_options
 	l = 2;
-	if length(args)>0
+	if ~isempty(args)
 		switch(args{1})
 			case 'sp'
 				if ischar(args{2}), sp = args{2};
-				else irf_log('fcal','wrongArgType : sp must be string')
+				else, irf_log('fcal','wrongArgType : sp must be string')
 				end
 			case 'sc_list'
 				if isnumeric(args{2}), sc_list = args{2};
-				else irf_log('fcal','wrongArgType : sc_list must be numeric')
+				else, irf_log('fcal','wrongArgType : sc_list must be numeric')
 				end
 			case 'ang_limit'
 				if isnumeric(args{2}), ang_limit = args{2};
-				else irf_log('fcal','wrongArgType : ang_limit must be numeric')
+				else, irf_log('fcal','wrongArgType : ang_limit must be numeric')
 				end
 			case 'noproc'
 				do_proc = 0; l=1;
@@ -84,7 +84,7 @@ while have_options
 		if length(args) >= l
 			args = args(l+1:end);
 			if isempty(args), break, end
-		else break
+		else, break
 		end
 	end
 end

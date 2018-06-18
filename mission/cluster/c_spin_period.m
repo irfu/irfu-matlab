@@ -34,7 +34,7 @@ end
 diffangle = mod(ph(:,2) - polyval(phc_coef,ph(:,1))*180/pi,360);
 diffangle = abs(diffangle); diffangle = min([diffangle';360-diffangle']);
 err_angle_mean = mean(diffangle); err_angle = std(diffangle);
-if err_angle>1 || err_angle_mean>1,
+if err_angle>1 || err_angle_mean>1
     irf_log('proc',['Spin period is changing! Phase errors>1deg. err=' num2str(err_angle) 'deg.']);
 end
 spin_period = 2*pi/phc_coef(1);

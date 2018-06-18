@@ -1,6 +1,6 @@
 if ismac
 cd ('/Users/yuri/Dropbox (IRFU)/projects-all/MAARBLE/EMIC_stats/tt')
-else cd ('/home/yuri/EMIC_stats/tt')
+else, cd ('/home/yuri/EMIC_stats/tt')
 end
 
 dbFileName = ['dbEMIC_' irf_fname(irf_time(now,'date>epoch'))];
@@ -18,7 +18,7 @@ for iBand = 1:length(bands)
     eval([dbName '=Out;'])
     clear Out
     if exist([dbFileName '.mat'],'file'), save(dbFileName,dbName,'-append')
-    else save(dbFileName,dbName)
+    else, save(dbFileName,dbName)
     end
   end
   % Cluster
@@ -30,7 +30,7 @@ for iBand = 1:length(bands)
     eval([dbName '=Out;'])
     clear Out
     if exist([dbFileName '.mat'],'file'), save(dbFileName,dbName,'-append')
-    else save(dbFileName,dbName)
+    else, save(dbFileName,dbName)
     end
   end
 end

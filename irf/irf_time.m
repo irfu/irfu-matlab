@@ -43,24 +43,24 @@ function tOutput = irf_time(tInput,flag)
 
 
 persistent tlastcall strlastcall
-if nargin==0, % return string with current time (second precision)
+if nargin==0 % return string with current time (second precision)
 	% datestr is slow function therefore if second has not passed use the old
 	% value of string as output without calling datestr function. Increases speed!
-	if isempty(tlastcall),
+	if isempty(tlastcall)
 		tlastcall=0; % initialize
 	end
-	if 24*3600*(now-tlastcall)>1,
+	if 24*3600*(now-tlastcall)>1
 		tlastcall=now;
 		strlastcall=irf_time(now,'date>utc_yyyy-mm-dd HH:MM:SS');
 	end
 	tOutput=strlastcall;
 	return
-elseif nargin==1,
+elseif nargin==1
 	flag='vector>epoch';
 end
 if isempty(tInput),tOutput=[];return;end
 flagTint=strfind(flag,'tint'); % check if we work with time interval (special case)
-if isempty(flagTint),          % default transformation
+if isempty(flagTint)   %#ok<STREMP>       % default transformation
 	flag2=strfind(flag,'2');   % see if flag has number 2 in it
 	if isempty(flag2)
 		flag2=strfind(flag,'>');   % see if flag has '>' in it
@@ -68,7 +68,7 @@ if isempty(flagTint),          % default transformation
 		irf.log('warning',['irf_time(..,''' flag '''): irf_time(..,''in2out'') is deprecated, please use irf_time(..,''in>out'')']);
 		flag(flag2)='>';
 	end
-	if isempty(flag2),         % if no '2' convert from epoch
+	if isempty(flag2)         % if no '2' convert from epoch
 		format_in='epoch';
 		format_out=flag;
 		flag=[format_in '>' format_out];
@@ -109,7 +109,7 @@ switch lower(flag)
 		% Convert a [YYYY MM DD hh mm ss ms micros ns] to TT2000 in int64 ns
 		% the last columns can be ommitted, default values MM=1,DD=1,other=0
 		nCol = size(tInput,2);
-		if nCol > 9,
+		if nCol > 9
 			error('irf_time:vector>tt:badInputs',...
 				'input should be column vector [YYYY MM DD hh mm ss ms micros ns], last columns can be ommitted.')
 		elseif nCol < 9
@@ -120,7 +120,7 @@ switch lower(flag)
 	case 'vector6>ttns'
 		% Convert a [YYYY MM DD hh mm ss.xxxx] to TT2000 in int64 ns
 		nCol = size(tInput,2);
-		if nCol ~= 6,
+		if nCol ~= 6
 			error('irf_time:vector6>ttns:badInputs',...
 				'input should be column vector with 6 columns [YYYY MM DD hh mm ss.xxx].')
 		end
@@ -133,7 +133,7 @@ switch lower(flag)
 		tInput(:,6:9) = [tSecRound tmSecRound tmicroSecRound tnSecRound];
 		tOutput = spdfcomputett2000(tInput);
 	case {'ttns>utc','ttns>iso'}
-		if any(strfind(flag,'iso')),
+		if any(strfind(flag,'iso'))
 			irf.log('warning','irf_time: ''iso'' is deprecated and will be removed, please use ''utc'', see help.');
 		end
 		tOutput = GenericTimeArray.ttns2utc(tInput);
@@ -148,7 +148,7 @@ switch lower(flag)
 		tOutput = tVec9(:,1:6);
 		tOutput(:,6) = tVec9(:,6)+1e-3*tVec9(:,7)+1e-6*tVec9(:,8)+1e-9*tVec9(:,9);
 	case {'utc>ttns','iso>ttns'}
-		if any(strfind(flag,'iso')),
+		if any(strfind(flag,'iso'))
 			irf.log('warning','irf_time: ''iso'' is deprecated and will be removed, please use ''utc'', see help.');
 		end
 		if any(strfind(tInput(1,:),'T'))
@@ -159,7 +159,7 @@ switch lower(flag)
 			s(end+1,:)=sprintf(' ');
 			a = sscanf(s,mask);
 			N = numel(a)/6;
-			if N~=fix(N) || N~=size(s,2),
+			if N~=fix(N) || N~=size(s,2)
 				irf.log('warning','something is wrong with iso input format, returning empty!'),
 				tOutput=[];
 				return;
@@ -220,13 +220,13 @@ switch lower(flag)
 		%
 		
 	case {'tint>utc','tint>iso'}
-		if any(strfind(flag,'iso')),
+		if any(strfind(flag,'iso'))
 			irf.log('warning','irf_time(..,''tint>iso'') is deprecated and will be removed, please use irf_time(..,''tint>utc'').');
 		end
 		tOutput = irf_time(tInput,'tint>utc_'); % fmt = []
 		
 	case {'utc>tint','iso>tint'}
-		if any(strfind(flag,'iso')),
+		if any(strfind(flag,'iso'))
 			irf.log('warning','irf_time(..,''iso>tint'') is deprecated and will be removed, please use irf_time(..,''utc>tint'').');
 		end
 		% assume column array where each row is interval in iso format

@@ -15,20 +15,20 @@ disp('If you choose not to save then locally will be created')
 disp('time tables with names TT_C1_EFW_internal_bursts,TT_C2...');
 
 questionSaveOnServer = irf_ask('Save on server the obtained lists y/n? [%]','questionSaveOnServer','n');
-if strcmpi(questionSaveOnServer,'y'),
+if strcmpi(questionSaveOnServer,'y')
 	saveOnServer=true;
 else
 	saveOnServer=false;
 end
 
-for ic=1:4,
+for ic=1:4
 	disp(['Creating time table for Cluster ' num2str(ic) '..']); 
 	c_eval('TT=s?;',ic);
 	TT.Header=[sprintf('Intervals of EFW internal bursts. Cluster %d\n\n',ic) TT.Header];
 	ii=find(TT.UserData.number);
 	TT=select(TT,ii);
 	label=['C' num2str(ic) '_EFW_internal_bursts'];
-	if saveOnServer,
+	if saveOnServer
 		irf.tt(TT,'write_IRF',label)
 		disp(['Time table ''' label ''' saved on IRF server.']);
 	else

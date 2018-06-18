@@ -16,5 +16,5 @@ function res = caa_is_sh_interval(dir_s)
 if nargin < 1, dir_s = pwd; end
 
 if exist([dir_s '/.caa_sh_interval'],'file'), res = 1;
-else res = 0;
+else, res = 0;
 end

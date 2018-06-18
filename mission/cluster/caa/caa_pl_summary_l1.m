@@ -42,7 +42,7 @@ int_s = realmax;
 int_e = -1;
 
 if nargin > 3, have_options = 1; args = varargin;
-else have_options = 0;
+else, have_options = 0;
 end
 while have_options
 	l = 1;
@@ -71,7 +71,7 @@ while have_options
 			irf_log('fcal,',['Option ''' args{1} '''not recognized'])
 	end
 	if length(args) > l, args = args(l+1:end);
-	else break
+	else, break
 	end
 end
 
@@ -81,7 +81,7 @@ old_pwd = pwd;
 sc_s = get(0,'ScreenSize');
 if sc_s(3)==1600 && sc_s(4)==1200, scrn_size = 2;
 elseif sc_s(3)==1920 && sc_s(4)==1200, scrn_size = 2;
-else scrn_size = 1;
+else, scrn_size = 1;
 end
 
 % Load data
@@ -113,8 +113,8 @@ for cli=1:4
         [tt,ttt,in_tmp.probeID] = caa_sfit_probe(cli); %#ok<ASGLU>
 		tm = c_load('mTMode?',cli,'var');
 		if ~isempty(tm) && tm(1,1)~=-157e8
-			if tm(1), in_tmp.tm = 1; else in_tmp.tm = 0; end
-		else in_tmp.tm = -1;
+			if tm(1), in_tmp.tm = 1; else, in_tmp.tm = 0; end
+		else, in_tmp.tm = -1;
 		end
 		in = [in; {in_tmp}]; %#ok<AGROW>
 		clear in_tmp
@@ -127,7 +127,7 @@ end
 if ( strcmp(iso_t,'-1') || (isnumeric(iso_t) && iso_t==-1) ) && dt==-1
 	st = int_s;
 	dt = int_e - int_s;
-else st = iso2epoch(iso_t);
+else, st = iso2epoch(iso_t);
 end
 
 dEx = cell(4,1);
@@ -227,7 +227,7 @@ for cli=1:4
                 end
                 % Remove saturation due to too high bias current
                 if probe_numeric<50, probepair_list=probe_numeric;
-                else probepair_list=[12 32 34];end
+                else, probepair_list=[12 32 34];end
                 for probepair=probepair_list
                     [ok,hbias,msg] = c_load(irf_ssub('HBIASSA?p!',cli,probepair));
                     if ok
@@ -239,14 +239,14 @@ for cli=1:4
                             irf_log('proc','blanking HB saturation')
                             spinFits.diEs = caa_rm_blankt(spinFits.diEs,hbias);
                         end
-                    else irf_log('load',msg)
+                    else, irf_log('load',msg)
                     end
                     clear ok hbias msg
                 end
                 
                 % Remove saturation
                 if probe_numeric<50, probepair_list=[mod(probe_numeric,10),fix(probe_numeric/10)];
-                else probepair_list=[1 2 3 4];end
+                else, probepair_list=[1 2 3 4];end
                 for probe=probepair_list
                     [ok,hbias,msg] = c_load(irf_ssub('PROBESA?p!',cli,probe));
                     if ok
@@ -254,7 +254,7 @@ for cli=1:4
                             irf_log('proc','blanking probe saturation')
                             spinFits.diEs = caa_rm_blankt(spinFits.diEs,hbias);
                         end
-                    else irf_log('load',msg)
+                    else, irf_log('load',msg)
                     end
                     clear ok hbias msg
                 end
@@ -266,7 +266,7 @@ for cli=1:4
                         irf_log('proc','blanking Whisper pulses')
                         spinFits.diEs = caa_rm_blankt(spinFits.diEs,whip);
                     end
-                else irf_log('load',msg)
+                else, irf_log('load',msg)
                 end
                 clear ok whip msg
                 
@@ -411,7 +411,7 @@ if plotspec
 
 figure(75)
 if scrn_size==1 ,set(gcf,'position',[91  40 909 640])
-else set(gcf,'position',[7   159   790   916])
+else, set(gcf,'position',[7   159   790   916])
 end
 clf
 
@@ -435,11 +435,11 @@ for cli=1:4
 	caxis(hca,[-4 1])
 	hold(hca,'off')
 	if fullscale, set(hca,'YLim',[0 fmax])
-	else set(hca,'YLim',[0 12.5])
+	else, set(hca,'YLim',[0 12.5])
 	end
     if cli==1
         if isempty(r), title(h(1),tit)
-        else title(h(1),[tit ', GSE Position C' num2str(ri)])
+        else, title(h(1),[tit ', GSE Position C' num2str(ri)])
         end
     end
 	set(hca,'XTickLabel',[])
@@ -482,7 +482,7 @@ c_eval('if ~isempty(edi?) && ~isempty(es?) && any(~isnan(es?(:,2))), for c=2:3, 
 
 figure(76)
 if scrn_size==1 ,set(gcf,'position',[91  40 909 640])
-else set(gcf,'position',[807   159   790   916])
+else, set(gcf,'position',[807   159   790   916])
 end
 clf
 
@@ -495,7 +495,7 @@ figure_start_epoch(st);
 hca = he(1); c_pl_tx(hca,'edi?',2,'.'), hold(hca,'on')
 c_pl_tx(hca,'es?',2), hold(hca,'off'), ylabel(hca,'Ex [mV/m]'), axis(hca,'tight')
 if isempty(r), title(he(1),tit)
-else title(he(1),[tit ', GSE Position C' num2str(ri)])
+else, title(he(1),[tit ', GSE Position C' num2str(ri)])
 end
 
 hca = he(2); c_pl_tx(hca,'edi?',3,'.'), hold(hca,'on')
@@ -557,7 +557,7 @@ if plotbitmask
    
 figure(77)
 if scrn_size==1 ,set(gcf,'position',[91  40 909 640])
-else set(gcf,'position',[7   159   790   916])
+else, set(gcf,'position',[7   159   790   916])
 end
 clf
 
@@ -600,7 +600,7 @@ for cli=1:4
 	end
 	if cli==1
 		if isempty(r), title(h(1),tit)
-		else title(h(1),[tit ', GSE Position C' num2str(ri)])
+		else, title(h(1),[tit ', GSE Position C' num2str(ri)])
 		end
 	end
 	ylabel(hca,sprintf('Bitmask C%d [bit no.]',cli))
@@ -628,7 +628,7 @@ end % if plotbitmask
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if fullscale,fn = sprintf('EFW_SPLOT_L1FULL__%s',irf_fname(st));
-else fn = sprintf('EFW_SPLOT_L1ESPEC__%s',irf_fname(st));
+else, fn = sprintf('EFW_SPLOT_L1ESPEC__%s',irf_fname(st));
 end
 fne = sprintf('EFW_SPLOT_L1ERSPEC__%s',irf_fname(st));
 fnq = sprintf('EFW_SPLOT_L1QUAL__%s',irf_fname(st));
@@ -778,7 +778,7 @@ function plot_quality(h, dataset, st)
 
 function t_start_epoch = figure_start_epoch(st)
 ud = get(gcf,'userdata');
-if isfield(ud,'t_start_epoch'), 
+if isfield(ud,'t_start_epoch') 
 	t_start_epoch = ud.t_start_epoch;
 else
 	t_start_epoch = st;

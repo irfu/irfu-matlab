@@ -18,13 +18,13 @@ function [out,l,v]=irf_minvar(inp,flag)
 % See also IRF_MINVAR_GUI, IRF_MINVAR_NEST, IRF_MINVAR_NEST_GUI
 % Works with TSeries as input
 
-if nargin==1,
+if nargin==1
     flag='mvar'; % default is to do unconstrained minimum variance
 end
 
 rtrnTS = 0;
 isaTSeries = isa(inp,'TSeries');
-if isaTSeries,
+if isaTSeries
     inptemp = inp;
     inp = inptemp.data;
     rtrnTS = 1;
@@ -33,7 +33,7 @@ end
 ooo=inp;
 qx = size(inp(1,:)); lx=qx(2); % the number of vector components
 if lx > 3, inp=inp(:,[2  3 4]);
-elseif lx < 3,
+elseif lx < 3
     disp('not enough components for x vector');
 end
 
@@ -76,7 +76,7 @@ if strcmpi(flag,'<bn>=0') % <Bn>=0 requires further calculations
     r=roots([a b c]);
     lmin=min(r);
     c_eval('n?=inp_mvar_?_mean/(l(?)-lmin);',1:3); % normal in MVAR reference frame
-    nnorm=norm([n1 n2 n3]);
+    nnorm=norm([n1 n2 n3]); %#ok<NASGU>
     c_eval('n?=n?/nnorm;',1:3);
     n=[0 0 0];
     c_eval('n=n+n?*v(?,:);',1:3); % calculate normal in input reference frame
@@ -85,7 +85,7 @@ if strcmpi(flag,'<bn>=0') % <Bn>=0 requires further calculations
     [~,l,v]=irf_minvar(inp_2,'mvar');
     l(3)=lmin;
     out=(v*inp')';
-elseif strcmpi(flag,'td'), % 'td' method
+elseif strcmpi(flag,'td') % 'td' method
     ln=l(3);
     bn=sum(inp.*repmat(v(3,:),size(inp,1),1),2);
     inp_2=inp-repmat(bn,1,3).*repmat(v(3,:),size(inp,1),1);
@@ -96,7 +96,7 @@ else % 'mvar' method (default)
     out=(v*inp')';
 end
 
-if nargout < 1,
+if nargout < 1
     disp(strcat('   max l1=',num2str(l(1),3),'v1=[',num2str(v(1,1),3),', ',num2str(v(1,2),3),', ',num2str(v(1,3),3),']'))
     disp(strcat('interm l2=',num2str(l(2),3),'v2=[',num2str(v(2,1),3),', ',num2str(v(2,2),3),', ',num2str(v(2,3),3),']'))
     disp(strcat('   min l3=',num2str(l(3),3),'v3=[',num2str(v(3,1),3),', ',num2str(v(3,2),3),', ',num2str(v(3,3),3),']'))

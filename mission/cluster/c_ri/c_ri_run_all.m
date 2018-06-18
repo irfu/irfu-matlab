@@ -162,7 +162,7 @@ if nargin == 6
   psw =2;
 end
 
-if exist('.c_ri_parameters.mat'),
+if exist('.c_ri_parameters.mat','file')
   load .c_ri_parameters.mat;
 else
   %-----sets the paths ---------------------
@@ -186,7 +186,7 @@ else
 end
 
 path_ok='disp([])';
-while ~strcmp(path_ok,'c'),
+while ~strcmp(path_ok,'c')
  eval(path_ok);
  disp('=========== Path information =========');
  disp(['MP-crossings          > p_MP = ''' p_MP ''';']);
@@ -200,13 +200,13 @@ while ~strcmp(path_ok,'c'),
  disp('To change enter new value, e.g. >p_A=[pwd ''/''];  or >p_R=''/share/tmp'';');
  disp('To continue >c');
  path_ok=input('>','s');
- if exist('.c_ri_parameters.mat'),
+ if exist('.c_ri_parameters.mat','file')
   try save -append .c_ri_parameters.mat p_MP p_Bt p_Bd p_Bp p_A p_E p_R;
-  catch disp('Paths changes valid only for this run!');
+  catch, disp('Paths changes valid only for this run!');
   end
  else
   try save .c_ri_parameters.mat p_MP p_Bt p_Bd p_Bp p_A p_E p_R;
-  catch disp('Paths changes valid only for this run!');
+  catch, disp('Paths changes valid only for this run!');
   end
  end
 

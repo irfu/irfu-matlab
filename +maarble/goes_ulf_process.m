@@ -17,7 +17,7 @@ for month=1:1
     filename_url=sprintf(...
       '%s%i%s%s%i%s%s%s','https://cdaweb.gsfc.nasa.gov/pub/data/goes/goes12/mag_l2/',...
       year,'/','g12_l2_mag_',year,monthStr,dayStr,'_v01.cdf');
-    filename=sprintf('%s%s%i%s%s', folder,...
+    filename=sprintf('%s%s%i%s%s%s', folder,...
       'g12_l2_mag_',year,monthStr,dayStr,'_v01.cdf');
     
     if exist(filename,'file')==0
@@ -47,7 +47,7 @@ for month=1:1
       end
     end
     if exist(filename,'file')~=0
-      display('processing file');
+      disp('processing file');
       display(filename);
       % read in Bgsm
       d=dataobj(filename);

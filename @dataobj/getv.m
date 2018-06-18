@@ -30,10 +30,10 @@ if nVars>0
     res.name = varName;
     % Add Variable attributes to the returned variable
     variableAttributeNames=fieldnames(dobj.VariableAttributes);
-    for j=1:length(variableAttributeNames),
+    for j=1:length(variableAttributeNames)
       iattr=find(strcmpi(dobj.vars{iVar,2},...
         dobj.VariableAttributes.(variableAttributeNames{j})(:,1))==1);
-      if iattr,
+      if iattr
         res.(variableAttributeNames{j})=dobj.VariableAttributes.(variableAttributeNames{j}){iattr,2};
       end
     end

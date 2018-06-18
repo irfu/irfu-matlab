@@ -35,12 +35,12 @@ for k = start_row:end_row
 %disp(['download intervall, row ' int2str(k)])
 
 time = Btdt(k,1);
-if start_time > time & k == start_row
+if start_time > time && k == start_row
 time = start_time;
 end
 
 time_e = Btdt(k,1) + Btdt(k,2);
-if end_time < time_e & k == end_row
+if end_time < time_e && k == end_row
 time_e = end_time;
 end
 

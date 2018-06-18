@@ -1,4 +1,4 @@
-function [start,dur]=isGetContentLite(db,proj,mem,inst,sig,sen,chan,param);
+function [start,dur]=isGetContentLite(db,proj,mem,inst,sig,sen,chan,param)
 % isGetContentLite - Get list of dataset contents on an ISDAT server.
 %
 %   [START,DUR]=isGetContentLite(DB,PROJ,MEM,INST,SIG,SEN,CHAN,PARAM)

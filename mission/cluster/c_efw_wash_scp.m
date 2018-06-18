@@ -56,14 +56,14 @@ if ~isempty(ii)
 	ends = [ii(ju)+1; ii(end)+1];
 	switch lower(method)
 		case 'linear'
-			for idx=1:length(begs);
+			for idx=1:length(begs)
 				res(begs(idx)+1:ends(idx)-1,2) = interp1(...
 					[res(begs(idx),1); res(ends(idx),1)],...
 					[res(begs(idx),2); res(ends(idx),2)],...
 					res(begs(idx)+1:ends(idx)-1,1),'linear');
 			end
 		case 'prevspin'
-			for idx=1:length(begs);
+			for idx=1:length(begs)
 				prevs = res( res(:,1) >= res(begs(idx)+1,1)-4 , :);
 				res(begs(idx)+1:ends(idx)-1,2) = ...
 					prevs( 1:ends(idx)-begs(idx)-1 , 2);
@@ -90,7 +90,7 @@ if isnan(m), error('data still contains NaNs'), end
 f = fft(res(:,2) - m);
 nff = length(f);
 if(rem(nff,2)==0), kfft=nff/2 +1;
-else kfft=(nff+1)/2;
+else, kfft=(nff+1)/2;
 end
 freq = c_efw_fsample(res)*(1:(kfft-1))'/nff;
 a = abs(f(1:kfft-1));

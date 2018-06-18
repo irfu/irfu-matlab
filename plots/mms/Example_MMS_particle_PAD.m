@@ -96,7 +96,7 @@ irf_spectrogram(h(7),iPDistpitch.elim(eint2).specrec('pa'),'log','donotfitcolorb
 irf_legend(h(7),'(g)',[0.99 0.98],'color','k','fontsize',12);
 set(h(7),'yscale','lin');
 set(h(7),'ytick',[0 90 180]);
-irf_legend(h(7),[num2str(eint2(2),'%g') 'eV -' num2str(eint2(2),'%g') ' eV'],[0.02 0.1],'color','k')
+irf_legend(h(7),[num2str(eint2(1),'%g') 'eV -' num2str(eint2(2),'%g') ' eV'],[0.02 0.1],'color','k')
 ylabel(h(7),{'\theta (deg.)','mid E'},'fontsize',12,'Interpreter','tex');
 
 h(8)=irf_panel('ipadhigh');
@@ -176,7 +176,7 @@ irf_spectrogram(h(7),ePDistpitch.elim(eint2).specrec('pa'),'log','donotfitcolorb
 irf_legend(h(7),'(g)',[0.99 0.98],'color','k','fontsize',12);
 set(h(7),'yscale','lin');
 set(h(7),'ytick',[0 90 180]);
-irf_legend(h(7),[num2str(eint2(2),'%g') 'eV -' num2str(eint2(2),'%g') ' eV'],[0.02 0.1],'color','k')
+irf_legend(h(7),[num2str(eint2(1),'%g') 'eV -' num2str(eint2(2),'%g') ' eV'],[0.02 0.1],'color','k')
 ylabel(h(7),{'\theta (deg.)','mid E'},'fontsize',12,'Interpreter','tex');
 
 h(8)=irf_panel('epadhigh');

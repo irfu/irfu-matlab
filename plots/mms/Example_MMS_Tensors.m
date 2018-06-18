@@ -14,7 +14,7 @@ T.trace
 T.tlim(tint);
 
 %% Make tensor of real data using mms.psd_moments
-tint = irf.tint('2015-10-16T10:33:10.00Z/2015-10-16T10:34:10.00Z');
+tint = irf.tint('2015-10-16T10:33:10.00Z/2015-10-16T10:34:10.00Z'); %#ok<NASGU>
 db_info = datastore('mms_db');
 ic = 1;
 

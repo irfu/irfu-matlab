@@ -22,7 +22,7 @@ width = length(m(1,:));
 number_output = min(width,nargout);
 ix = 1; p(1)=m(1,1);
 iy = 1; z(1)=m(1,2);
-for i = 1:n,
+for i = 1:n
  if m(i,1) ~= p(ix)
   if m(i,1) ~= p(1)
    ix = ix +1;

@@ -20,7 +20,7 @@ persistent Rth
 
 %% Load data
 if 0
-  cd /Users/yuri/Dropbox/Projects/MAARBLE/WP3/HeadersAndExamples/CAA-Test-Files-Cluster-ULF/C1_CP_AUX_MAARBLE_ULF_PC12
+  cd /Users/yuri/Dropbox/Projects/MAARBLE/WP3/HeadersAndExamples/CAA-Test-Files-Cluster-ULF/C1_CP_AUX_MAARBLE_ULF_PC12  %#ok<UNRCH>
   fname='C1_CP_AUX_MAARBLE_ULF_PC12__20101013_120000_20101013_150000_V130628.cdf';
 end
 
@@ -67,9 +67,9 @@ for iField = 1:length(fields)
     if strcmp(fieldName,'bb_xxyyzzss')
       tmpVar = get_variable(d,['BB_xxyyzz__' productName]);
       if isempty(tmpVar), continue
-      else ebsp.flagFac = 0;
+      else, ebsp.flagFac = 0;
       end
-    else continue
+    else, continue
     end
   end
   if isnumeric(tmpVar.FILLVAL)

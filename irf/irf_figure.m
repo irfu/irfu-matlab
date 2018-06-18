@@ -57,7 +57,7 @@ else
   hcf = figure(hcf);
 end
 
-if nSubplots>=1 && nSubplots<=20,
+if nSubplots>=1 && nSubplots<=20
   nSubplots = floor(nSubplots);
   c = gobjects(1,nSubplots);
   if flagReset
@@ -80,7 +80,7 @@ if nSubplots>=1 && nSubplots<=20,
   all_axis_position=[0.17 0.1 0.9 0.95]; % xmin ymin xmax ymax
   subplot_width=all_axis_position(3)-all_axis_position(1);
   subplot_height=(all_axis_position(4)-all_axis_position(2))/nSubplots;
-  for j=1:nSubplots,
+  for j=1:nSubplots
     c(j)=axes('position',[all_axis_position(1) ...
       all_axis_position(4)-j*subplot_height ...
       subplot_width subplot_height]); % [x y dx dy]

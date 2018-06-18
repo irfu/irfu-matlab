@@ -104,7 +104,7 @@ if ~isempty(idx)
 	if ~isempty(idx)
 		for j=idx'
 			if res(end,2)>=t(j)-DT2, res(end,2) = t(j) + DT2;
-			else res = [res; t(j)-DT2 t(j)+DT2];
+			else, res = [res; t(j)-DT2 t(j)+DT2];
 			end
 		end
 	end

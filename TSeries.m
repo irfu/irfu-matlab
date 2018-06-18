@@ -141,7 +141,7 @@
         x = args{1}; args(1) = [];
         switch lower(x)
           case {'tensor_xyz'}
-            if ndims(obj.data_)>3, %#ok<ISMAT>
+            if ndims(obj.data_)>3 %#ok<ISMAT>
               error('irf:TSeries:TSeries:badInputs',...
                 'DATA has more than 3 dimensions (needed for Tensor with order 2)')
             elseif size(obj.data_,2)~=3
@@ -159,7 +159,7 @@
             obj.representation{2} = {x(8), x(9), x(10)}; % 2nd dimension, (cols for 2D)
             obj.fullDim_{2} = true;
           case {'vec_xyz','vec_rtp','vec_rlp','vec_rpz'}
-            if ndims(obj.data_)>2, %#ok<ISMAT>
+            if ndims(obj.data_)>2 %#ok<ISMAT>
               error('irf:TSeries:TSeries:badInputs',...
                 'DATA has more than 2 dimensions (needed for 3D vec)')
             elseif size(obj.data_,2)~=3
@@ -172,7 +172,7 @@
             obj.representation{1} = {x(5), x(6), x(7)};
             obj.fullDim_{1} = true;
           case {'vec_xy','vec_rp'}
-            if ndims(obj.data_)>2, %#ok<ISMAT>
+            if ndims(obj.data_)>2 %#ok<ISMAT>
               error('irf:TSeries:TSeries:badInputs',...
                 'DATA has more than 2 dimentions (needed for 2D vec)')
             elseif size(obj.data_,2)~=2
@@ -195,13 +195,13 @@
             end
             if ~isempty(intersect(y,(0:1:obj.MAX_TENSOR_ORDER)))
               obj.tensorOrder_ = y; flagTensorOrderSet = true;
-              if y>0,
+              if y>0
                 % Check if we have any data dimension with 1..3 elements
                 found = false;
                 for i=2:ndims(obj.data_)
                   if size(obj.data_,i)<=3, found = true; break, end
                 end
-                if ~found,
+                if ~found
                   error('irf:TSeries:TSeries:badInputs',...
                     'cannot construct tensor:all data dimensions have size<=3')
                 end
@@ -239,7 +239,7 @@
                 'tensorBasis value not recognized')
             end
           case {'rep','repres','representation'}
-            if isempty(obj.tensorOrder_),
+            if isempty(obj.tensorOrder_)
               error('irf:TSeries:TSeries:badInputs',...
                 'Must specify TensorOrder first')
             end
@@ -255,7 +255,7 @@
             if isempty(y) && iDim<ndims(data)-1, iDim = iDim + 1;
             else
               [ok,msg] = validate_representation(y);
-              if ~isempty(ok),
+              if ~isempty(ok)
                 obj.fullDim_{iDim}=ok; obj.representation{iDim} = y;
                 iDim = iDim + 1;
               else
@@ -275,7 +275,7 @@
       function [ok,msg] = validate_representation(x)
         ok = []; msg = '';
         sDim = size(obj.data,iDim+1); tb = obj.BASIS{obj.tensorBasis_};
-        if sDim>length(tb),
+        if sDim>length(tb)
           msg = sprintf(...
             'Dimension %d size %d>%d (Basis=%s) cannot have Representation. Use Depend instead',...
             iDim,sDim,length(tb),tb);
@@ -309,7 +309,7 @@
           d = setdiff(s,tb); s1 = sprintf('%s',char(d)');
           msg = sprintf(...
             'Unrecognized entries (%s) for representation ''%s''',s1,tb);
-        else error('should not be here')
+        else, error('should not be here')
         end
       end
     end
@@ -326,7 +326,7 @@
           idxTmp = repmat({':'}, ndims(obj.data), 1);
           idxTmp(1) = idx(1).subs;
           obj.data_ = obj.data_(idxTmp{:});
-          if numel(idx) > 1,
+          if numel(idx) > 1
             obj = builtin('subsref',obj,idx(2:end));
           end
           [varargout{1:nargout}] = obj;
@@ -428,7 +428,7 @@
     end
     
     function obj = set.coordinateSystem(obj,value)
-      if obj.tensorOrder_ < 1, 
+      if obj.tensorOrder_ < 1 
         error('irf:TSeries:setcoordinateSystem:badInputs',...
           'coordinateSystem can only be set for a tensor')
       end
@@ -518,7 +518,7 @@
           obj.data_ = cumsum(obj.data,1); Ts = obj;
         otherwise % dimension is numeric value
           %if option> ndims(obj.data), error('cumsum dimension exceeds data dimension'); end
-          if option>0,             
+          if option>0             
             obj.data_ = cumsum(obj.data,abs(option)); Ts = obj;  
           elseif option<0            
             obj.data_ = cumsum(obj.data(:,end:-1:1),abs(option)); Ts = obj;
@@ -531,9 +531,9 @@
     
     function Ts = abs(obj)
       %ABS Magnitude
-      if obj.tensorOrder==0,
+      if obj.tensorOrder==0
         Tmpdata = abs(obj.data);
-      elseif obj.tensorOrder==1,
+      elseif obj.tensorOrder==1
         switch obj.basis
           case {'xy','xyz'}, Tmpdata = sqrt( sum(abs(obj.data).^2, 2) );
           case {'rtp','rlp','rp'}, Tmpdata = abs(obj.r.data);
@@ -601,17 +601,17 @@
       function update_name_units()
         if ~isempty(obj.name) || ~isempty(obj1.name)
           if isempty(obj.name), s = 'untitled';
-          else s = obj.name;
+          else, s = obj.name;
           end
           if isempty(obj1.name), s1 = 'untitled';
-          else s1 = obj1.name;
+          else, s1 = obj1.name;
           end
           Ts.name = sprintf('cross(%s,%s)',s,s1);
         end
         if ~isempty(obj.units) || ~isempty(obj1.units)
           if isempty(obj.units), Ts.units = obj1.units;
           elseif isempty(obj1.units), Ts.units = obj.units;
-          else Ts.units = [obj.units ' ' obj1.units];
+          else, Ts.units = [obj.units ' ' obj1.units];
           end
         end
       end
@@ -622,7 +622,7 @@
 			%
 			% LENGTH(TS) - number of data points in TS
       if isempty(obj.t_), l = 0;
-      else l = obj.t_.length();
+      else, l = obj.t_.length();
       end
     end
     
@@ -642,7 +642,7 @@
       %                    1x3 vector -> [1 1 3] 
       %                    3x3 tensor -> [1 3 3]
      
-      if isempty(obj.t_), 
+      if isempty(obj.t_) 
         l = 0;
       elseif nargin == 1
         l = size(obj.data);        
@@ -688,7 +688,7 @@
       [ST,~] = dbstack; % see if plus() was called from within minus()
       if numel(ST)>1 && strcmp(ST(2).name,'TSeries.minus')
             operationStr = 'Minus'; operationSymbol = '-';
-      else operationStr = 'Plus';  operationSymbol = '+';
+      else, operationStr = 'Plus';  operationSymbol = '+';
       end        
       
       if isnumeric(obj1) % then obj is TSeries
@@ -760,10 +760,10 @@
       function update_name()
         if ~isempty(obj.name) || ~isempty(obj1.name)
           if isempty(obj.name), s = 'untitled';
-          else s = obj.name;
+          else, s = obj.name;
           end
           if ~isa(obj1,'TSeries') || isempty(obj1.name), s1 = 'untitled';
-          else s1 = obj1.name;
+          else, s1 = obj1.name;
           end
           Ts.name = sprintf(['(%s' operationSymbol '%s)'],s,s1);                              
         end
@@ -866,18 +866,18 @@
       function update_name_units()
         if ~isempty(obj.name) || (isa(obj1,'TSeries') && ~isempty(obj1.name))
           if isempty(obj.name), s = 'untitled';
-          else s = obj.name;
+          else, s = obj.name;
           end
           if ~isa(obj1,'TSeries') || isempty(obj1.name), s1 = 'untitled';
-          else s1 = obj1.name;
+          else, s1 = obj1.name;
           end
           Ts.name = sprintf('dot(%s,%s)',s,s1);
         end
         if isempty(obj.units), s = '';
-        else s = obj.units;
+        else, s = obj.units;
         end
         if ~isa(obj1,'TSeries') || isempty(obj1.units), s1 = '';
-          else s1 = obj1.units;
+          else, s1 = obj1.units;
         end
         Ts.units = sprintf('%s %s',s,s1);
         Ts.userData = [];
@@ -904,18 +904,18 @@
       function update_name_units()
         if ~isempty(obj.name) || ~isempty(obj1.name)
           if isempty(obj.name), s = 'untitled';
-          else s = obj.name;
+          else, s = obj.name;
           end
           if isempty(obj1.name), s1 = 'untitled';
-          else s1 = obj1.name;
+          else, s1 = obj1.name;
           end
           Ts.name = sprintf('%s * %s',s,s1);
         end
         if isempty(obj.units), s = '';
-        else s = obj.units;
+        else, s = obj.units;
         end
         if isempty(obj1.units), s1 = '';
-          else s1 = obj1.units;
+          else, s1 = obj1.units;
         end
         Ts.units = sprintf('%s %s',s,s1);
         Ts.userData = [];
@@ -1016,7 +1016,7 @@
           Ts = construct_new_ts;
           update_name_units;
         end
-      else error('Only scalar multiplication supported.')
+      else, error('Only scalar multiplication supported.')
       end        
       
       % Nested functions
@@ -1036,7 +1036,7 @@
               error('For scalar multiplication, data sizes must agree or either data set must have size [1 1]. Consider using ''.*''.')
             end
           otherwise
-            if sizeData1(2) ~= sizeData2(1);
+            if sizeData1(2) ~= sizeData2(1)
               error('For vector/matric multiplication, inner matrix dimensions must agree.')
             else
               isOk = 1;
@@ -1052,7 +1052,7 @@
       end
       function newTime = new_time
         if isa(obj1,'TSeries'), newTime = obj1.time;
-        else newTime = obj2.time;
+        else, newTime = obj2.time;
         end
       end
       function newData = multiply(multiplication_type)
@@ -1075,10 +1075,10 @@
             elseif obj1.datasize('dataonly') == obj2.datasize('dataonly')
               newData = obj1.data.*obj2.data;    
             elseif all(obj1.datasize('dataonly') == [1 1]) && any(obj2.datasize('dataonly') ~= [1 1])
-              data1 = repmat(data1,[obj2.datasize('dataonly')]);
+              data1 = repmat(data1, obj2.datasize('dataonly') );
               newData = data1.*data2;
             elseif any(obj1.datasize('dataonly') ~= [1 1]) && all(obj2.datasize('dataonly') == [1 1])
-              data2 = repmat(data2,[obj1.datasize('dataonly')]);
+              data2 = repmat(data2, obj1.datasize('dataonly'));
               newData = data1.*data2;
             else
               error('Not supported.')
@@ -1086,11 +1086,11 @@
           otherwise % tensor multiplication
             %error('Tensor multiplication not yet implemented.')
             %reshapedData1 = permute(data1,[]);
-            newData = zeros(sizeData1(1),sizeData2(2),newTime.length);
+            %newData = zeros(sizeData1(1),sizeData2(2),newTime.length);
             newTmpData = zeros(sizeData1(1),sizeData2(2),newTime.length);
-            for i1 = 1:sizeData1(1);
-              for i2 = 1:sizeData2(2);
-                for indSum = 1:sizeData1(2);
+            for i1 = 1:sizeData1(1)
+              for i2 = 1:sizeData2(2)
+                for indSum = 1:sizeData1(2)
 %                  newData(i1,i2,:) = newData(i1,i2,:) + data1(i1,indSum,:).*data2(indSum,i2,:);
                   newTmpData(i1,i2,:) = newTmpData(i1,i2,:) + tmpData1(i1,indSum,:).*tmpData2(indSum,i2,:);
                 end
@@ -1191,12 +1191,12 @@
       function update_name_units()
         if ~isempty(obj.name)
           if isempty(obj.name), s = 'untitled';
-          else s = obj.name;
+          else, s = obj.name;
           end          
           Ts.name = sprintf('(%s).^%g',s,obj1);
         end
         if isempty(obj.units), s = '';
-        else s = obj.units;
+        else, s = obj.units;
         end
         Ts.units = sprintf('(%s)*%g',s,obj1);
         Ts.userData = [];
@@ -1243,7 +1243,7 @@
             && obj.tensorOrder>0 ...
             && all(obj.datasize('dataonly')==[1 1]) ...
             && all(obj1.datasize('dataonly')==[1 1]) 
-          sizeData = size(obj.data);
+          %sizeData = size(obj.data);
           newData  = obj.data./obj1.data;          
           Ts = irf.ts_scalar(obj.time,newData);
         else % Retain tensor order of numerator
@@ -1260,18 +1260,18 @@
       function update_name_units()
         if ~isempty(obj.name) || ~isempty(obj1.name)
           if isempty(obj.name), s = 'untitled';
-          else s = obj.name;
+          else, s = obj.name;
           end
           if ~isa(obj1,'TSeries') || isempty(obj1.name), s1 = 'untitled';
-          else s1 = obj1.name;
+          else, s1 = obj1.name;
           end
           Ts.name = sprintf('%s/(%s)',s,s1);
         end
         if isempty(obj.units), s = '';
-        else s = obj.units;
+        else, s = obj.units;
         end
         if ~isa(obj1,'TSeries') || isempty(obj1.units), s1 = '';
-          else s1 = obj1.units;
+          else, s1 = obj1.units;
         end
         Ts.units = sprintf('%s/(%s)',s,s1);
         Ts.userData = [];
@@ -1371,9 +1371,9 @@
       if isa(NewTime,'TSeries'), NewTime = NewTime.time; end
       if NewTime == obj.time, Ts = obj; return, end 
 
-      if obj.tensorOrder==0, 
+      if obj.tensorOrder==0 
           resample_(obj);
-      elseif obj.tensorOrder==1,       
+      elseif obj.tensorOrder==1       
           % For non-cartesian bases, in order to do a proper inte/extrapolarion
           % we first transform into cartesian basis, resample, and then
           % transform back to teh original basis
@@ -1386,7 +1386,7 @@
               error('Unknown representation'); % should not be here
           end
           Ts = Ts.transform(basis);
-      elseif obj.tensorOrder==2;
+      elseif obj.tensorOrder==2
           resample_(obj)
       else
           error('Not yet implemented'); 
@@ -1419,9 +1419,9 @@
       if isempty(obj), error('Cannot filter empty TSeries'), end      
       if numel(varargin)<2, error('Input missing'), end      
       
-      if obj.tensorOrder==0, 
+      if obj.tensorOrder==0 
         filt_(obj);
-      elseif obj.tensorOrder==1,       
+      elseif obj.tensorOrder==1       
         % For non-cartesian bases, in order to do a proper inte/extrapolarion
         % we first transform into cartesian basis, resample, and then
         % transform back to teh original basis
@@ -1434,7 +1434,7 @@
             error('Unknown representation'); % should not be here
         end
         Ts = Ts.transform(basis);
-      elseif obj.tensorOrder==2;
+      elseif obj.tensorOrder==2
         filt_(obj)
       else
         error('Not yet implemented'); 
@@ -1523,7 +1523,7 @@
           args = {obj.t_,dataNew,'TensorOrder',teno,'TensorBasis',basis};
           for i=1:nd
             if i==iDim, args = [args {'repres',{comp}}]; %#ok<AGROW>
-            else args = [args {'repres',{}}]; %#ok<AGROW>
+            else, args = [args {'repres',{}}]; %#ok<AGROW>
             end
           end
           res = TSeries(args{:}); res.name = sprintf('%s_%s',obj.name,comp);
@@ -1554,7 +1554,7 @@
           indDim = 1;
           for i=1:nd
             if i==iDim(indDim),  args = [args {'repres',{comp(indDim)}}]; indDim = indDim+1;%#ok<AGROW>
-            else args = [args {'repres',{}}]; %#ok<AGROW>
+            else, args = [args {'repres',{}}]; %#ok<AGROW>
             end
           end
           res = TSeries(args{:}); res.name = sprintf('%s_%s',obj.name,comp);
@@ -1566,9 +1566,10 @@
         if rep{1}==c, res = 1;
         elseif lRep>1 && rep{2}==c, res = 2;
         elseif lRep>2 && rep{3}==c, res = 3;
-        else res = [];
+        else, res = [];
         end        
       end
+      res.units = obj.units; res.siConversion = obj.siConversion;
     end
     
     function Ts = changeBasis(obj, flag)

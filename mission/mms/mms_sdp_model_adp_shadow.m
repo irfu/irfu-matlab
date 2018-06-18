@@ -19,86 +19,73 @@ function modelOut = mms_sdp_model_adp_shadow(dce,phase,signals)
 % can do whatever you want with this stuff. If we meet some day, and you think
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
-global MMS_CONST
-STEPS_PER_DEG=10;
-STEP_SPINS = 30;
 
-phaseUnw = unwrap(phase.data*pi/180)*180/pi;
-phaseTmp = (fix(phaseUnw(1)):1/STEPS_PER_DEG:ceil(phaseUnw(end)))';
+STEPS_PER_DEG=10;
+N_SPINS_MEDIAN = 31; % number of spins for moving median
+DETR_DPHA = 2; % window for detrending (+/- from the center) in deg
+SHA_DPHA = .9; % window for shadow model (+/- from the center) in deg
+SHA_OFF = 0.1; % offset shadow position (empirical) in deg
+    
+phaUnw = unwrap(phase.data*pi/180)*180/pi;
+fxPha = ((phaUnw(1)-rem(phaUnw(1),360)):1/STEPS_PER_DEG:...
+      (phaUnw(end)-rem(phaUnw(end),360)+360))';
+fxPha(end) = [];
 epoch0 = dce.time(1); epochTmp = double(dce.time-epoch0);
-timeTmp = interp1(phaseUnw,epochTmp,phaseTmp);
-phaseTmp(isnan(timeTmp)) = []; timeTmp(isnan(timeTmp)) = []; 
-phaseTmpWrp = mod(phaseTmp,360);
+tFxPha = interp1(phaUnw,epochTmp,fxPha);
+nSpins = length(fxPha)/360/STEPS_PER_DEG;
 
 for iSig = 1:length(signals)
   sig = signals{iSig};
-  switch sig
-    % Phaseshift.pX = 0 rad when probe X is sunward, i.e. in shade pi rad later
-    case 'e12', expShadow = [MMS_CONST.Phaseshift.p1, MMS_CONST.Phaseshift.p2] + pi;
-    case 'e34', expShadow = [MMS_CONST.Phaseshift.p3, MMS_CONST.Phaseshift.p4] + pi;
-    case 'p123'
-      expShadow = [MMS_CONST.Phaseshift.p1, MMS_CONST.Phaseshift.p2, MMS_CONST.Phaseshift.p3] + pi; % p4 lost
-      sig = 'e34';
-    case 'p124'
-      expShadow = [MMS_CONST.Phaseshift.p1, MMS_CONST.Phaseshift.p2, MMS_CONST.Phaseshift.p4] + pi; % p3 lost
-      sig = 'e34';
-    case 'p134'
-      expShadow = [MMS_CONST.Phaseshift.p1, MMS_CONST.Phaseshift.p3, MMS_CONST.Phaseshift.p4] + pi; % p2 lost
-      sig = 'e12';
-    case 'p234'
-      expShadow = [MMS_CONST.Phaseshift.p2, MMS_CONST.Phaseshift.p3, MMS_CONST.Phaseshift.p4] + pi; % p1 lost
-      sig = 'e12';
-    case 'v1'
-      expShadow = MMS_CONST.Phaseshift.p1 + pi; % p1
-    case 'v2'
-      expShadow = MMS_CONST.Phaseshift.p2 + pi; % p2
-    case 'v3'
-      expShadow = MMS_CONST.Phaseshift.p3 + pi; % p3
-    case 'v4'
-      expShadow = MMS_CONST.Phaseshift.p4 + pi; % p4
-    otherwise
-      errS = 'unrecognized SIG';
-      irf.log('critical',errS), error(errS)
+  expShadow = getExpShadow();
+  eRes = interp1(epochTmp,double(dce.(sig).data),tFxPha);
+  eResM = reshape(eRes,360*STEPS_PER_DEG,nSpins);
+  model = zeros(size(eResM));
+  phaOne = (0:1/STEPS_PER_DEG:360)'; phaOne(end) = [];
+  for sha = expShadow
+    % Detrend the data
+    idxDetr = (phaOne>sha-DETR_DPHA & phaOne<sha-SHA_DPHA) | ...
+      (phaOne<sha+DETR_DPHA & phaOne>sha+SHA_DPHA);
+    A = phaOne(idxDetr); X = [ones(length(A),1) A]; x = X\eResM(idxDetr,:);
+    idxDetr1 = (phaOne>sha-DETR_DPHA & phaOne<sha+DETR_DPHA);
+    eResM(idxDetr1,:) = eResM(idxDetr1,:) - ...
+      repmat(x(1,:),length(find(idxDetr1>0)),1) - phaOne(idxDetr1)*x(2,:);
+    % Compute moving median
+    iModel = (phaOne>sha-SHA_DPHA & phaOne<sha+SHA_DPHA);
+    model(iModel,:) = movmedian(eResM(iModel,:),N_SPINS_MEDIAN,2,'omitnan');
   end
-  expShadow = mod(180*expShadow/pi, 360);
-  eRes = interp1(epochTmp,double(dce.(sig).data),timeTmp);
-  model = zeros(size(phaseTmp));
-  
-  nData = length(phaseTmpWrp); 
-  winPoints = STEP_SPINS*3600*STEPS_PER_DEG;
-  stepPoints = fix(winPoints/3); % we advance by 1/3 of the window
-  for iS = 1:length(expShadow)
-    sha = expShadow(iS);
-    idxFirst = 1;
-    while true
-      idxLast = idxFirst + winPoints -1;
-      if idxLast>nData
-        idxLast = nData; idxFirst = idxLast - winPoints;
-        if idxFirst<1, idxFirst = 1; end
-      end
-      idxWin = (1:nData)'; idxWin = idxWin>=idxFirst & idxWin<=idxLast;
-      idxAssign = (1:nData)';
-      idxAssFirst = idxFirst +stepPoints; idxAssLast = idxLast -stepPoints;
-      if idxFirst==1, idxAssFirst = 1; end
-      if idxLast == nData, idxAssLast = nData; end
-      idxAssign = idxAssign>=idxAssFirst & idxAssLast<=idxLast;
-      
-      idx = idxWin & ( (phaseTmpWrp>sha-2 & phaseTmpWrp<sha-1) | ...
-        (phaseTmpWrp>sha+1 & phaseTmpWrp<sha+2) );
-      off =  median(eRes(idx));
-      for iPha=(-10:1:10)
-        pha = sha+iPha/STEPS_PER_DEG;
-        idxPha = int16(phaseTmpWrp*10)==int16(pha*10);
-        wakeVal = median(eRes(idxWin & idxPha))-off;
-        model(idxAssign & idxPha) = wakeVal;
-        %if iPha==0
-        %  sprintf('Sig %s, sha=%d spin #%.1f amp = %.2f mV/m',sig,sha,...
-        %    idxFirst/winPoints,wakeVal)
-        %end
-      end
-      idxFirst = idxFirst+stepPoints;
-      if idxFirst>=nData-winPoints+stepPoints, break, end
+  model = reshape(model,numel(model),1);
+  idxOK = ~isnan(tFxPha); 
+  modelOut.(sig) = interp1(tFxPha(idxOK),model(idxOK),epochTmp,'linear','extrap');
+end
+
+  function expShadow = getExpShadow()
+    % return expected shadow in degrees
+    global MMS_CONST
+    if isempty(MMS_CONST), MMS_CONST = mms_constants; end
+    switch sig
+      % Phaseshift.pX = 0 rad when probe X is sunward, i.e. in shade pi rad later
+      case 'e12', expShadow = [MMS_CONST.Phaseshift.p1, MMS_CONST.Phaseshift.p2] + pi;
+      case 'e34', expShadow = [MMS_CONST.Phaseshift.p3, MMS_CONST.Phaseshift.p4] + pi;
+      case 'p123'
+        expShadow = [MMS_CONST.Phaseshift.p1, MMS_CONST.Phaseshift.p2, MMS_CONST.Phaseshift.p3] + pi; % p4 lost
+        sig = 'e34';
+      case 'p124'
+        expShadow = [MMS_CONST.Phaseshift.p1, MMS_CONST.Phaseshift.p2, MMS_CONST.Phaseshift.p4] + pi; % p3 lost
+        sig = 'e34';
+      case 'p134'
+        expShadow = [MMS_CONST.Phaseshift.p1, MMS_CONST.Phaseshift.p3, MMS_CONST.Phaseshift.p4] + pi; % p2 lost
+        sig = 'e12';
+      case 'p234'
+        expShadow = [MMS_CONST.Phaseshift.p2, MMS_CONST.Phaseshift.p3, MMS_CONST.Phaseshift.p4] + pi; % p1 lost
+        sig = 'e12';
+      case 'v1', expShadow = MMS_CONST.Phaseshift.p1 + pi; % p1
+      case 'v2', expShadow = MMS_CONST.Phaseshift.p2 + pi; % p2
+      case 'v3', expShadow = MMS_CONST.Phaseshift.p3 + pi; % p3
+      case 'v4', expShadow = MMS_CONST.Phaseshift.p4 + pi; % p4
+      otherwise
+        errS = 'unrecognized SIG';
+        irf.log('critical',errS), error(errS)
     end
-  end
-  modelOut.(sig) = interp1(timeTmp,model,epochTmp,'spline');
+    expShadow = mod(180*expShadow/pi, 360) +SHA_OFF; 
+  end %getExpShadow()
 end

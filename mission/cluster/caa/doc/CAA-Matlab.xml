@@ -17,7 +17,7 @@
 <preface><title>Preface</title>
 <para>This document is intended... The latest version of this document
 is located on the 
-<ulink url="http://www.cluster.irfu.se/intra/CAA-Matlab.html">
+<ulink url="https://www.cluster.irfu.se/intra/CAA-Matlab.html">
 <citetitle>EFW-&matl; homepage</citetitle>
 </ulink>.
 </para>
@@ -209,7 +209,7 @@ You will need &matl; 7.0 (R14) for the softare described here to work
 <para>
 You need an up-to-date &is;-&matl; interface from CVS. For instructions on 
 using CVS for getting ISDAT see 
-<ulink url="http://www.space.irfu.se/isdat/using/HOWTO/using_CVS.html">
+<ulink url="https://www.space.irfu.se/isdat/using/HOWTO/using_CVS.html">
 <citetitle>ISDAT CVS HOWTO</citetitle>
 </ulink>
 </para>

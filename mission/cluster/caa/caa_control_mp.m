@@ -47,7 +47,7 @@ end
 
 OFF = 2*3600;
 
-for o = 1:length(ORB);
+for o = 1:length(ORB)
 	mp_in = 0; mp_out = 0; cnt = 0;
 	c_eval('ii=find(MP?(:,1)>=ORB(o,1) & MP?(:,1)<=ORB(o,1)+ORB(o,2)); if ~isempty(ii), cnt=cnt+1; mp_cur?=MP?(ii,:); mp_out=mp_out+MP?(ii,1); mp_in=mp_in+MP?(ii,2); end')
     if cnt==0

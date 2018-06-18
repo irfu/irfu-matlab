@@ -32,7 +32,7 @@ alpha = ( 0.58 -0.01*bz_nT )*( 1.0 +0.01*swp_nPa );
 
 % Shue et. al., Eq. 12
 if bz_nT>=0, r0 = ( 11.4 +0.013*bz_nT )*swp_nPa^( -1.0/6.6 );
-else         r0 = ( 11.4 +0.140*bz_nT )*swp_nPa^( -1.0/6.6 );
+else,        r0 = ( 11.4 +0.140*bz_nT )*swp_nPa^( -1.0/6.6 );
 end
 
 r = irf_abs(pos_Re_gsm,1);

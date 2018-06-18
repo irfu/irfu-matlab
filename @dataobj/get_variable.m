@@ -17,7 +17,7 @@ function res = get_variable(dobj,varName,parent)
 
 narginchk(2,3)
 if nargin==2, parent = ''; end
-if ~ischar(varName),
+if ~ischar(varName)
   errStr = 'variable name must be a string';
   irf.log('critical',errStr), error(errStr)
 end
@@ -40,7 +40,7 @@ res.GlobalAttributes = dobj.GlobalAttributes;
 % Add all revelant variable attributes to the returned variable
 varAtts = dobj.VariableAttributes; varAttNames = fieldnames(varAtts); 
 allVars = dobj.Variables(:,1);
-for iName=1:length(varAttNames),
+for iName=1:length(varAttNames)
   iattr = find(strcmpi(dobj.vars{iVar,2},varAtts.(varAttNames{iName})(:,1))==1);
   if isempty(iattr), continue, end
   
@@ -57,8 +57,8 @@ for iName=1:length(varAttNames),
   attrMatName = variable_mat_name(attr);
   % Detect recursive deps
   if strcmp(parent,attrMatName)
-    warning('databj:get_variable:cyclic_dep',...
-      ['Cyclic dependecy: ' parent ' <-> ' varName]);
+    irf.log('warning',['databj:get_variable:cyclic_dep',...
+       ['Cyclic dependecy: ' parent ' <-> ' varName]]);
     continue
   end
   varTmp = get_variable(dobj,attr,varName);

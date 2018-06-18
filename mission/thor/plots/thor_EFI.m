@@ -1,7 +1,7 @@
 %% Turbulence model spectra and noise       // SolO noise turb
 % 20100622 version (Milans antenna parameters)
 Units=irf_units;
-if 1, % parameters
+if 1 % parameters
     f_range=[1e-3 3.9e5];
     f_noise_range=10.^(log10(f_range(1)*5):.1:log10(f_range(2)));
     f=f_noise_range';
@@ -30,131 +30,131 @@ if 1, % parameters
     title_text=[title_text 'SDPA_{ant}=' num2str(SDP_probe.Area.total,'%5.2f') ' m^2, '];
     
 end
-if 1, % read Alexandrova et al. 2009 spectra
+if 1 % read Alexandrova et al. 2009 spectra
     %file reading
     [xx,yy]=textread('alexandrova2009_fig2.dat','%s%s','headerlines',3);
-    for j=1:size(xx,1),
+    for j=1:size(xx,1)
         alexandrova2009_Bspectra(j,1)=10^str2num(xx{j});
         alexandrova2009_Bspectra(j,2)=10^str2num(yy{j})*1e-6; % (V/m)^2/Hz
     end
     clear xx yy;
 end
-if 1, % read Sahraoui et al. 2009 spectra
+if 1 % read Sahraoui et al. 2009 spectra
     %file reading
     [xx,yy]=textread('sahraoui2009_fig4.dat','%s%s','headerlines',3);
-    for j=1:size(xx,1),
+    for j=1:size(xx,1)
         sahraoui2009_Espectra(j,1)=10^str2num(xx{j}); 
         sahraoui2009_Espectra(j,2)=10^str2num(yy{j})*1e-6; % (V/m)^2/Hz
     end
     clear xx yy;
 end
-if 1, % read Yuris spectra for Sahraoui et al. 2009 event
+if 1 % read Yuris spectra for Sahraoui et al. 2009 event
     %file reading
     [xx,yy]=textread('Cluster_yuri.dat','%s%s','headerlines',3);
-    for j=1:size(xx,1),
+    for j=1:size(xx,1)
         Cluster_Espectra(j,1)=10^str2num(xx{j}); 
         Cluster_Espectra(j,2)=10^str2num(yy{j})*1e-6; % (V/m)^2/Hz
     end
     clear xx yy;
 end
-if 1, % read Helios2 noise spectra for Sahraoui et al. 2009 event
+if 1 % read Helios2 noise spectra for Sahraoui et al. 2009 event
     %file reading
     [xx,yy]=textread('Helios2_noise.dat','%s%s','headerlines',3);
-    for j=1:size(xx,1),
+    for j=1:size(xx,1)
         Helios2_Espectra(j,1)=10^str2num(xx{j}); 
         Helios2_Espectra(j,2)=10^str2num(yy{j}); % (V/m)^2/Hz
     end
     clear xx yy;
 end
-if 0, % read example solar wind spectra
+if 0 % read example solar wind spectra
     %file reading
     [xx,yy]=textread('THEMIS_solar_wind_example_spectra.txt','%s%s','headerlines',4);
-    for j=1:size(xx,1),
+    for j=1:size(xx,1)
         SW_example_Espectra_THEMIS(j,1)=str2num(xx{j}); % Hz
         SW_example_Espectra_THEMIS(j,2)=str2num(yy{j})*1e-6; % (V/m)^2/Hz
     end
     clear xx yy;
 end
-if 1, % read example solar wind spectra
+if 1 % read example solar wind spectra
     %file reading
     [xx,yy]=textread('Cluster4_Ey_20070130_0000_0120.dat','%s%s','headerlines',4);
-    for j=1:size(xx,1),
+    for j=1:size(xx,1)
         SW_example_Espectra_Cluster4(j,1)=str2num(xx{j}); % Hz
         SW_example_Espectra_Cluster4(j,2)=str2num(yy{j})*1e-6; % (V/m)^2/Hz
     end
     clear xx yy;
 end
-if 1, % read example solar wind spectra
+if 1 % read example solar wind spectra
     %file reading
     [xx,yy]=textread('Cluster4_EySW_20070130_0000_0120.dat','%s%s','headerlines',4);
-    for j=1:size(xx,1),
+    for j=1:size(xx,1)
         SW_example_Espectra_Cluster4SW(j,1)=str2num(xx{j}); % Hz
         SW_example_Espectra_Cluster4SW(j,2)=str2num(yy{j})*1e-6; % (V/m)^2/Hz
     end
     clear xx yy;
 end
 
-if 1, % read example solar wind spectra
+if 1 % read example solar wind spectra
     %file reading
     [xx,yy]=textread('MMS4_brst_EySW_20151228_0518_0519.dat','%s%s','headerlines',4);
-    for j=1:size(xx,1),
+    for j=1:size(xx,1)
         SW_example_Espectra_MMS4brst(j,1)=str2num(xx{j}); % Hz
         SW_example_Espectra_MMS4brst(j,2)=str2num(yy{j})*1e-6; % (V/m)^2/Hz
     end
     clear xx yy;
 end
-if 1, % read example solar wind spectra
+if 1 % read example solar wind spectra
     %file reading
     [xx,yy]=textread('MMS4_fast_EySW_20151228_0511_0526.dat','%s%s','headerlines',4);
-    for j=1:size(xx,1),
+    for j=1:size(xx,1)
         SW_example_Espectra_MMS4fast(j,1)=str2num(xx{j}); % Hz
         SW_example_Espectra_MMS4fast(j,2)=str2num(yy{j})*1e-6; % (V/m)^2/Hz
     end
     clear xx yy;
 end
-if 1, % read example solar wind spectra
+if 1 % read example solar wind spectra
     %file reading
     [xx,yy]=textread('MMS4_fast_EySC_20151228_0511_0526.dat','%s%s','headerlines',4);
-    for j=1:size(xx,1),
+    for j=1:size(xx,1)
         SWsc_example_Espectra_MMS4fast(j,1)=str2num(xx{j}); % Hz
         SWsc_example_Espectra_MMS4fast(j,2)=str2num(yy{j})*1e-6; % (V/m)^2/Hz
     end
     clear xx yy;
 end
-if 1, % read example shock spectra
+if 1 % read example shock spectra
     %file reading
     [xx,yy]=textread('MMS4_brst_EyShock_20151222_071324.dat','%s%s','headerlines',4);
-    for j=1:size(xx,1),
+    for j=1:size(xx,1)
         SW_example_Espectra_MMS4brstShock(j,1)=str2num(xx{j}); % Hz
         SW_example_Espectra_MMS4brstShock(j,2)=str2num(yy{j})*1e-6; % (V/m)^2/Hz
     end
     clear xx yy;
 end
-if 1, % read example solar wind spectra
+if 1 % read example solar wind spectra
     %file reading
     [xx,yy]=textread('MMS4_hmfe_EySW_20151228_051852.dat','%s%s','headerlines',4);
-    for j=1:size(xx,1),
+    for j=1:size(xx,1)
         SW_example_Espectra_MMS4hmfe(j,1)=str2num(xx{j}); % Hz
         SW_example_Espectra_MMS4hmfe(j,2)=str2num(yy{j})*1e-6; % (V/m)^2/Hz
     end
     clear xx yy;
 end
-if 1, % instrument noise calculations HFA
-    if 1, % preamp parameters
+if 1 % instrument noise calculations HFA
+    if 1 % preamp parameters
         HFA_preamp_noise=150e-9; % preamplifier noise 4nV/Hz1/2
         HFA_preamp_noise_level=(HFA_preamp_noise/HFA_antenna_eff_length)^2;
         f_break=300; % transition frequency at which 1/f noise is starting
     end
-    if 1, % preamplifier noise
+    if 1 % preamplifier noise
         HFA_instr_noise=[f(1) f_break f(end)]';
         HFA_instr_noise(:,2)=2*HFA_preamp_noise_level*[(f_break/f(1))^2; 1;  1];
     end
-    if 1, % photoelectron thermal noise  S=4kTZ
+    if 1 % photoelectron thermal noise  S=4kTZ
         T_eV=1; % photoelectron temperature
         HFA_thermal_noise_bias=[f 4*Units.e*T_eV*sqrt(HFA_R_plasma_bias^2./(1+(2*pi*f).^2*HFA_R_plasma_bias^2*HFA_C_antenna^2))/HFA_antenna_eff_length^2];
         HFA_thermal_noise_nobias=[f 4*Units.e*T_eV*sqrt(HFA_R_plasma_nobias^2./(1+(2*pi*f).^2*HFA_R_plasma_nobias^2*HFA_C_antenna^2))/HFA_antenna_eff_length^2];
     end
-    if 1, % shot noise plasma and photoelectrons
+    if 1 % shot noise plasma and photoelectrons
         % SOFI_shot_noise_plasma XXX WE IGNORE THIS
         %nu=n/2*sqrt(8*Units.e*T_plasma_eV/pi/Units.me)*A_antenna;
         %SOFI_shot_noise_bias=[f 2*Units.e^2*nu*(R_plasma_bias^2./(1+(2*pi*f).^2*R_plasma_bias^2*C_antenna^2))/antenna_eff_length^2];
@@ -165,11 +165,11 @@ if 1, % instrument noise calculations HFA
         HFA_shot_noise_photoelectron_bias=[f 2*Units.e*abs(HFA_I.photo)*(HFA_R_plasma_bias^2./(1+(2*pi*f).^2*HFA_R_plasma_bias^2*HFA_C_antenna^2))/HFA_antenna_eff_length^2];
         HFA_shot_noise_photoelectron_nobias=[f 2*Units.e*abs(HFA_I.photo)*(HFA_R_plasma_nobias^2./(1+(2*pi*f).^2*HFA_R_plasma_nobias^2*HFA_C_antenna^2))/HFA_antenna_eff_length^2];
     end
-    if 1, % total noise = shot noise photo + thermal
+    if 1 % total noise = shot noise photo + thermal
         HFA_total_noise_bias=irf_add(1,HFA_shot_noise_photoelectron_bias,1,HFA_thermal_noise_bias);
         HFA_total_noise_nobias=irf_add(1,HFA_shot_noise_photoelectron_nobias,1,HFA_thermal_noise_nobias);
     end
-    if 1, % bit noise
+    if 1 % bit noise
         f_sampling=25e3; % DC up to kHz
         tmunit=15.2e-6; % in V/m for gain=1
         tmrange=0.5;    % in V/m
@@ -178,22 +178,22 @@ if 1, % instrument noise calculations HFA
     end
 end
 
-if 1, % instrument noise calculations SDP
-    if 1, % preamp parameters
+if 1 % instrument noise calculations SDP
+    if 1 % preamp parameters
         SDP_preamp_noise=150e-9; % preamplifier noise 70nV/Hz1/2
         SDP_preamp_noise_level=(SDP_preamp_noise/SDP_antenna_eff_length)^2;
         f_break=300; % transition frequency at which 1/f noise is starting
     end
-    if 1, % preamplifier noise
+    if 1 % preamplifier noise
         SDP_instr_noise=[f(1) f_break f(end)]';
         SDP_instr_noise(:,2)=2*SDP_preamp_noise_level*[(f_break/f(1))^2; 1;  1];
     end
-    if 1, % photoelectron thermal noise  S=4kTZ
+    if 1 % photoelectron thermal noise  S=4kTZ
         T_eV=1; % photoelectron temperature
         SDP_thermal_noise_bias=[f 4*Units.e*T_eV*sqrt(SDP_R_plasma_bias^2./(1+(2*pi*f).^2*SDP_R_plasma_bias^2*SDP_C_antenna^2))/SDP_antenna_eff_length^2];
         SDP_thermal_noise_bias_low=[f 4*Units.e*T_eV*sqrt(SDP_R_plasma_bias_low^2./(1+(2*pi*f).^2*SDP_R_plasma_bias_low^2*SDP_C_antenna^2))/SDP_antenna_eff_length^2];
     end
-    if 1, % shot noise plasma and photoelectrons
+    if 1 % shot noise plasma and photoelectrons
         % SOFI_shot_noise_plasma XXX WE IGNORE THIS
         %nu=n/2*sqrt(8*Units.e*T_plasma_eV/pi/Units.me)*A_antenna;
         %SOFI_shot_noise_bias=[f 2*Units.e^2*nu*(R_plasma_bias^2./(1+(2*pi*f).^2*R_plasma_bias^2*C_antenna^2))/antenna_eff_length^2];
@@ -204,11 +204,11 @@ if 1, % instrument noise calculations SDP
         SDP_shot_noise_photoelectron_bias=[f 2*Units.e*abs(SDP_I.photo)*(SDP_R_plasma_bias^2./(1+(2*pi*f).^2*SDP_R_plasma_bias^2*SDP_C_antenna^2))/SDP_antenna_eff_length^2];
         SDP_shot_noise_photoelectron_bias_low=[f 2*Units.e*abs(SDP_I.photo)*(SDP_R_plasma_bias_low^2./(1+(2*pi*f).^2*SDP_R_plasma_bias_low^2*SDP_C_antenna^2))/SDP_antenna_eff_length^2];
     end
-    if 1, % total noise = shot noise photo + thermal
+    if 1 % total noise = shot noise photo + thermal
         SDP_total_noise_bias=irf_add(1,SDP_shot_noise_photoelectron_bias,1,SDP_thermal_noise_bias);
         SDP_total_noise_bias_low=irf_add(1,SDP_shot_noise_photoelectron_bias_low,1,SDP_thermal_noise_bias_low);
     end
-    if 1, % bit noise
+    if 1 % bit noise
         f_sampling=25e3; % DC up to kHz
         tmunit=15.2e-6; % in V/m for gain=1
         tmrange=0.5;    % in V/m
@@ -217,7 +217,7 @@ if 1, % instrument noise calculations SDP
     end
 end
 
-if 1, % calculate spectra 1AU
+if 1 % calculate spectra 1AU
   %%
     Vf=400;T=30;B=5;nn=3; % R=1AU
     VA=20*B/sqrt(nn);
@@ -232,7 +232,7 @@ if 1, % calculate spectra 1AU
     SP.R_RS=1/0.00465; % distance in AU
     SP.f=[f_range(1) f_dop_ion f_dop_electron f_dop_electron*10];
     SP.slopes=[-1.6 -2.5 -2.5];
-    for i=2:length(SP.f),
+    for i=2:length(SP.f)
         SP.power(i)=SP.power(i-1)*10^(log10(SP.f(i)/SP.f(i-1))*SP.slopes(i-1));
         if i==2
           SP.Epower(i)=SP.power(i)*1e-12*VA^2;   % (V/m)^2
@@ -258,7 +258,7 @@ if 1 % EMC requirements
   SDP_EMC_OLD.Epower = [5e-8 1e-10 2e-13 1e-15 1e-16 1e-17 1e-17 1e-15];
 end
 
-if 1, % initialize figure - HFA
+if 1 % initialize figure - HFA
     figure(12);clf
     h=irf_plot(1);
     set(h,'position',[0.15 0.1 0.75 0.75]);
@@ -269,7 +269,7 @@ if 1, % initialize figure - HFA
     set(gcf,'PaperPosition',[xLeft yTop xSize ySize])
     set(gcf,'Position',[10 10 xSize*50 ySize*50])
 end
-if 0, % electric field example spectra
+if 0 % electric field example spectra
     % MMS shock 
     loglog(SW_example_Espectra_MMS4brstShock(:,1), SW_example_Espectra_MMS4brstShock(:,2),'color',[0.8 0.5 0.0],'linewidth',1);
     text(129,9e-9,'MMS-burst','fontsize',10,'color',[0.8 0.5 0.0],'units','data','horizontalalignment','left','verticalalignment','bottom');
@@ -280,7 +280,7 @@ if 0, % electric field example spectra
     loglog(SW_example_Espectra_MMS4hmfe(:,1), SW_example_Espectra_MMS4hmfe(:,2),'color',[0.5 0.5 0],'linewidth',1);
     text(4e4,1.2e-11,'MMS-hmfe','fontsize',10,'color',[0.5 0.5 0],'units','data','horizontalalignment','left','verticalalignment','bottom');
 end
-if 1, % electric field plot
+if 1 % electric field plot
     hca=h(1); hold(hca,'on');set(hca,'XScale','log','YScale','log')
     set(hca,'xlim',[0.5 5e5])
     set(hca,'ylim',[2e-17 9e-8])
@@ -297,9 +297,9 @@ if 1, % electric field plot
     title(hca,'Expected HFA noise levels')
 end
   
-if 1, % plot electric field noises
+if 1 % plot electric field noises
     
-    if 1, % HFA
+    if 1 % HFA
     HFA_color = [0.8 0.5 0.0];
     loglog(HFA_total_noise_bias,HFA_total_noise_bias(:,2),'color',HFA_color);hold(hca,'on');
     %loglog(HFA_total_noise_nobias(:,1),HFA_total_noise_nobias(:,2),'color',HFA_color,'linestyle',':');
@@ -319,7 +319,7 @@ end
 irf_legend(0,['THOR EFI-HFA noise ' datestr(now,31)],[0,0.001],'interpreter','none','color',[0.5 0.5 0.5])
 irf_print_fig(['HFA_noise_' datestr(now,'yyyymmdd')],'png')
 
-if 1, % initialize figure - SDP
+if 1 % initialize figure - SDP
     figure(13);clf
     h=irf_plot(1);
     set(h,'position',[0.15 0.1 0.75 0.75]);
@@ -330,7 +330,7 @@ if 1, % initialize figure - SDP
     set(gcf,'PaperPosition',[xLeft yTop xSize ySize])
     set(gcf,'Position',[10 10 xSize*50 ySize*50])
 end
-if 1, % electric field plot
+if 1 % electric field plot
     hca=h(1);
     loglog(hca,SP1AU.f,SP1AU.Epower,'b--','markersize',20);
     hold(hca,'on');

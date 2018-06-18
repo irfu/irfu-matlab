@@ -12,7 +12,7 @@ function hout=irf_panel(handles,tag)
 flag_tag_defined=0;
 if nargin==1 && ischar(handles)
     tag=handles;
-    if isempty(get(0,'CurrentFigure')), % there is no figure open
+    if isempty(get(0,'CurrentFigure')) % there is no figure open
         irf_figure(1);              % create new figure with one panel
     end
     ud=get(gcf,'userdata');
@@ -30,11 +30,11 @@ parent=get(h(1),'parent');
 ud=get(parent,'userdata');
 subplot_handles=ud.subplot_handles;
     
-if nargin==1 && ~flag_tag_defined, 
+if nargin==1 && ~flag_tag_defined 
     h=handles;
     parent=get(h(1),'parent');
     ud=get(parent,'userdata');
-    if isfield(ud,'current_panel'),
+    if isfield(ud,'current_panel')
         hout=ud.current_panel;
     else
         hout=handles(1);
@@ -42,9 +42,9 @@ if nargin==1 && ~flag_tag_defined,
         set(parent,'userdata',ud);
     end
 else
-    if ischar(tag), % check the tag
+    if ischar(tag) % check the tag
         hca=findobj(h,'tag',tag);
-        if numel(hca)>0, % has found subplot with tag
+        if numel(hca)>0 % has found subplot with tag
             hout=hca(1);
             irf.log('warning',['--SUBPLOT-- <' tag '> (Using existing panel)'])
             hnumber=find(hout==subplot_handles);
@@ -55,9 +55,9 @@ else
         else % go to next subplot and add tag to subplot
             parent=get(h(1),'parent');
             ud=get(parent,'userdata');
-            if isfield(ud,'current_panel'),
+            if isfield(ud,'current_panel')
                 current_panel=ud.current_panel+1;
-                if current_panel > numel(h),
+                if current_panel > numel(h)
                     current_panel=numel(h);
                 end
             else

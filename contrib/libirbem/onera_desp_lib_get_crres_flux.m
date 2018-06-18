@@ -48,30 +48,30 @@ function Flux = onera_desp_lib_get_crres_flux(whichm,energy,BBo,L,Ap15,crres_pat
 %   4             CRRES_Ap (20 - 25)
 %   5             CRRES_Ap (25 - 55)
 
-if nargin < 5,
+if nargin < 5
     Ap15 = [];
 end
 
-if nargin < 6,
+if nargin < 6
     crres_path = '';
 end
 
 onera_desp_lib_load;
 
-if isnumeric(whichm),
+if isnumeric(whichm)
     iwhichm = whichm;
 else
     mname = lower(whichm);
-    switch(mname),
-        case {'crrespro quiet'},
+    switch(mname)
+        case {'crrespro quiet'}
             iwhichm = 1;
-        case {'crrespro active'},
+        case {'crrespro active'}
             iwhichm = 2;
-        case {'crresele average'},
+        case {'crresele average'}
             iwhichm = 3;
-        case {'crresele worst case'},
+        case {'crresele worst case'}
             iwhichm = 4;
-        case {'crresele ap15'},
+        case {'crresele ap15'}
             iwhichm = 5;
         otherwise
             error('Unknown model whichm="%s" in %s',whichm,mfilename);
@@ -88,10 +88,10 @@ end
 %
 %
 
-if isempty(crres_path),
+if isempty(crres_path)
     testfile = 'crrespro_quiet.txt';
     crres_path = which(testfile);
-    if isempty(crres_path),
+    if isempty(crres_path)
         error('Unable to locate crres files (%s) in "%s"',testfile,mfilename);
     end
     crres_path = crres_path(1:(end-length(testfile)));
@@ -102,19 +102,19 @@ NEmax = 25; % maximum number of energies
 
 ntime = length(BBo);
 Nmax = onera_desp_lib_ntime_max; % maximum array size in fortran library
-Flux = repmat(nan,Nmax,1);
-if isempty(Ap15),
-    Ap15 = repmat(nan,1,Nmax);
-elseif length(Ap15)==1,
+Flux = nan(Nmax,1);
+if isempty(Ap15)
+    Ap15 = nan(1,Nmax);
+elseif length(Ap15)==1
     Ap15 = repmat(Ap15,1,Nmax);
 else
-    Ap15 = [Ap15(:)', repmat(nan,1,Nmax-ntime)];
+    Ap15 = [Ap15(:)', nan(1,Nmax-ntime)];
 end
-if (ntime>Nmax) || (NE>NEmax),
+if (ntime>Nmax) || (NE>NEmax)
     % break up the calculation into chunks the libarary can handle
-    for i = 1:Nmax:ntime,
+    for i = 1:Nmax:ntime
         ii = i:min(i+Nmax-1,ntime);
-        for ie = 1:NEmax:NE,
+        for ie = 1:NEmax:NE
             iie = ie:min(ie+NEmax-1,NE);
             Flux(ii,iie) = onera_desp_lib_get_crres_flux(whichm,energy(iie,:),BBo(ii),L(ii),Ap15(ii),crres_path);
         end
@@ -130,24 +130,24 @@ else
     %
 
 
-    if size(energy,2)==1,
+    if size(energy,2)==1
         whatf = 1; % differential flux
-        energy = [energy,repmat(nan,NE,1)];
-    elseif (size(energy,2)==2) && any(isinf(energy(:,2))),        
+        energy = [energy,nan(NE,1)];
+    elseif (size(energy,2)==2) && any(isinf(energy(:,2)))        
         whatf = 3; % integral flux
-        if ~all(isinf(energy(:,2))),
+        if ~all(isinf(energy(:,2)))
             error('%s: if any of second column of "energy" argument is infinity, all must be',mfilename);
         end
-    elseif size(energy,2)==2,
+    elseif size(energy,2)==2
         whatf = 2; % wide differential flux
     else
         error('%s: "energy" argument of size %d x %d uninterpretable',mfilename,size(energy,1),size(energy,2));
     end
 
-    nanpad = repmat(nan,Nmax-ntime,1);
+    nanpad = nan(Nmax-ntime,1);
     BBo = [BBo(:);nanpad];
     L = [L(:);nanpad];
-    flux = repmat(nan,Nmax,NEmax);
+    flux = nan(Nmax,NEmax);
     
     FluxPtr = libpointer('doublePtr',flux);
     crres_pathlen = length(crres_path);

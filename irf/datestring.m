@@ -8,7 +8,7 @@ function OUT = datestring(date)
 % By Anders Tjulin
 % 
 
-  if size(date) ~=[1,6]
+  if (size(date,1) ~=1 || size(date,2) ~= 6)
     error('Wrong format of date')
   end
   
@@ -49,4 +49,4 @@ function OUT = datestring(date)
     second=num2str(round(date(6)));
   end
   
-  OUT=[year '­' month '-' day ' ' hour ':' minute ':' second];
+  OUT=[year 'ï¿½' month '-' day ' ' hour ':' minute ':' second];

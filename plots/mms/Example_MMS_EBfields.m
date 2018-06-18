@@ -30,21 +30,21 @@ Exyzfaclf = Exyzfac.filt(0,fCut,dfE,5);
 Bscmfachf = Bscmfac.filt(fCut,0,dfB,5);
 
 %% Wavelet transforms
-nf = 100;
-Ewavelet = irf_wavelet(Exyzfac,'nf',nf,'f',[5 4000]);
-Bwavelet = irf_wavelet(Bscmfac,'nf',nf,'f',[5 4000]);
+nf = 100; fmin = 1; fmax = 1000;
+Ewavelet = irf_wavelet(Exyzfac,'nf',nf,'f',[fmin fmax]);
+Bwavelet = irf_wavelet(Bscmfac,'nf',nf,'f',[fmin fmax]);
 
 %compress wavelet transform data 10 point average
 nc = 20;
-idx = [nc/2:nc:length(Ewavelet.t)-nc/2];
+idx = nc/2:nc:length(Ewavelet.t)-nc/2;
 Ewavelettimes = Ewavelet.t(idx);
 Ewaveletx = zeros(length(idx),nf);
 Ewavelety = zeros(length(idx),nf);
 Ewaveletz = zeros(length(idx),nf);
-for ii = [1:length(idx)];
-        Ewaveletx(ii,:) = squeeze(irf.nanmean(Ewavelet.p{1,1}([idx(ii)-nc/2+1:idx(ii)+nc/2-1],:),1));
-        Ewavelety(ii,:) = squeeze(irf.nanmean(Ewavelet.p{1,2}([idx(ii)-nc/2+1:idx(ii)+nc/2-1],:),1));
-        Ewaveletz(ii,:) = squeeze(irf.nanmean(Ewavelet.p{1,3}([idx(ii)-nc/2+1:idx(ii)+nc/2-1],:),1));
+for ii = 1:length(idx)
+        Ewaveletx(ii,:) = squeeze(irf.nanmean(Ewavelet.p{1,1}(idx(ii)-nc/2+1:idx(ii)+nc/2-1,:),1));
+        Ewavelety(ii,:) = squeeze(irf.nanmean(Ewavelet.p{1,2}(idx(ii)-nc/2+1:idx(ii)+nc/2-1,:),1));
+        Ewaveletz(ii,:) = squeeze(irf.nanmean(Ewavelet.p{1,3}(idx(ii)-nc/2+1:idx(ii)+nc/2-1,:),1));
 end
 specperpE=struct('t',Ewavelettimes);
 specperpE.f=Ewavelet.f;
@@ -59,15 +59,15 @@ specparE.f_label='';
 specparE.p_label={'log_{10} E_{||}^2','mV^2 m^{-2} Hz^{-1}'};
 
 
-idx = [nc/2:nc:length(Bwavelet.t)-nc/2];
+idx = nc/2:nc:length(Bwavelet.t)-nc/2;
 Bwavelettimes = Bwavelet.t(idx);
 Bwaveletx = zeros(length(idx),nf);
 Bwavelety = zeros(length(idx),nf);
 Bwaveletz = zeros(length(idx),nf);
-for ii = [1:length(idx)];
-        Bwaveletx(ii,:) = squeeze(irf.nanmean(Bwavelet.p{1,1}([idx(ii)-nc/2+1:idx(ii)+nc/2-1],:),1));
-        Bwavelety(ii,:) = squeeze(irf.nanmean(Bwavelet.p{1,2}([idx(ii)-nc/2+1:idx(ii)+nc/2-1],:),1));
-        Bwaveletz(ii,:) = squeeze(irf.nanmean(Bwavelet.p{1,3}([idx(ii)-nc/2+1:idx(ii)+nc/2-1],:),1));
+for ii = 1:length(idx)
+        Bwaveletx(ii,:) = squeeze(irf.nanmean(Bwavelet.p{1,1}(idx(ii)-nc/2+1:idx(ii)+nc/2-1,:),1));
+        Bwavelety(ii,:) = squeeze(irf.nanmean(Bwavelet.p{1,2}(idx(ii)-nc/2+1:idx(ii)+nc/2-1,:),1));
+        Bwaveletz(ii,:) = squeeze(irf.nanmean(Bwavelet.p{1,3}(idx(ii)-nc/2+1:idx(ii)+nc/2-1,:),1));
 end
 specB=struct('t',Bwavelettimes);
 specB.f=Bwavelet.f;
@@ -131,7 +131,7 @@ irf_plot(h(3),Exyzfachf);
 ylabel(h(3),{'\delta E (mV m^{-1})'},'Interpreter','tex');
 irf_legend(h(3),{'E_{\perp 1}','E_{\perp 2}','E_{||}'},[0.98 0.12])
 irf_legend(h(3),'(c)',[0.99 0.94],'color','k','fontsize',12)
-irf_legend(h(3),sprintf('f > %d Hz',fCut),[0.1 0.1],'color','k','fontsize',12)
+irf_legend(h(3),sprintf('f > %.1f Hz',fCut),[0.1 0.1],'color','k','fontsize',12)
 
 h(4)=irf_panel('Especperp');
 irf_spectrogram(h(4),specperpE,'log');
@@ -170,7 +170,7 @@ irf_plot(h(6),Bscmfachf);
 ylabel(h(6),{'\delta B (nT)'},'Interpreter','tex');
 irf_legend(h(6),{'B_{\perp 1}','B_{\perp 2}','B_{||}'},[0.98 0.12])
 irf_legend(h(6),'(f)',[0.99 0.94],'color','k','fontsize',12)
-irf_legend(h(6),sprintf('f > %d Hz',fCut),[0.1 0.1],'color','k','fontsize',12)
+irf_legend(h(6),sprintf('f > %.1f Hz',fCut),[0.1 0.1],'color','k','fontsize',12)
 
 h(7)=irf_panel('Bspec');
 irf_spectrogram(h(7),specB,'log');

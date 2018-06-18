@@ -153,7 +153,7 @@ classdef mms_edp_Sweep < handle
       %
       % If sps is absent no phase is computed
       narginchk(2,3);
-      if(nargin==2), doPhase=false; else, doPhase=true; end;
+      if(nargin==2), doPhase=false; else, doPhase=true; end
       [sweepTime, prb1, prb2, voltage1, biasRes1, voltage2, biasRes2,...
           eVolt, eBias, v01, v02]...
           = getSweep(obj,iSweep);

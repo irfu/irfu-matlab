@@ -41,7 +41,7 @@ pos_raw_fig    = [[994 160 560 420];[1002 160 560 420]];
 pos_spect_fig  = [[464 282 560 420];[1002 655 560 420]];
 
 if nargin, action = varargin{1};
-else action = 'init';
+else, action = 'init';
 end
 
 if regexp(action,'^update_DATA.+radiobutton$')
@@ -111,7 +111,7 @@ case 'init'
 	% Create figure
 	if find(get(0,'children')==main_fig_id)
 		pos_old = get(main_fig_id,'Position');
-    else pos_old = [];
+    else, pos_old = [];
 	end
 	h0 = figure(main_fig_id);
 	clf
@@ -122,7 +122,7 @@ case 'init'
 	% Save the screen size
 	sc_s = get(0,'ScreenSize');
 	if sc_s(3)==1600 && sc_s(4)==1200, hnd.scrn_size = 2;
-    else hnd.scrn_size = 1;
+    else, hnd.scrn_size = 1;
 	end
 	
 	if isempty(pos_old), set(h0,'Position', pos_main_fig(hnd.scrn_size,:)), end
@@ -244,12 +244,12 @@ case 'init'
 					if strcmp(dsc.sig,'E'), data.type = 'E';
 					elseif strcmp(dsc.sig,'V') || strcmp(dsc.sig,'Vp')
 						data.type = 'V';
-                    else data.type = 'A';
+                    else, data.type = 'A';
 					end
 					if (strcmp(dsc.inst,'EFW') && strcmp(data.type,'E')) || ...
 						(strcmp(dsc.inst,'CIS') && (strcmp(data.type,'V')))
 						data.editable = 1;
-                    else data.editable = 0;
+                    else, data.editable = 0;
 					end
 					if d==1 || d==3
 						hhd = uicontrol(hnd.DATApanel,'Style','radiobutton',...
@@ -329,7 +329,7 @@ case 'init'
 							c_eval(...
 								['data.B = irf_resamp(hnd.BData{cl_id},' vs ');'],...
 								cl_id)
-                        else data.B = [];
+                        else, data.B = [];
 						end
 					end
 					
@@ -368,7 +368,7 @@ case 'init'
 			[ok2,Damp] = c_load('Damp?',cl_id); if ok2, offset(2) = Damp; end
 
 			if ok1 || ok2, irf_log('calb','Using saved DSI offsets')
-			else irf_log('calb','Using default DSI offsets')
+			else, irf_log('calb','Using default DSI offsets')
 			end
 			clear dsiof_def dam_def Ddsi Damp
 		else
@@ -583,7 +583,7 @@ case 'ch_active_var'
 			d_m = 1; vs = 'V'; vsz = 'Vz';
 			if strcmp(hnd.Data{j}.sen,'HIA')
 				hnd.off = hnd.CISHoffset(hnd.Data{j}.cl_id,:);
-            else hnd.off = hnd.CISCoffset(hnd.Data{j}.cl_id,:);
+            else, hnd.off = hnd.CISCoffset(hnd.Data{j}.cl_id,:);
 			end
 			set(hnd.DXslider,'Enable','off')
 			set(hnd.DXedit,'Enable','off')
@@ -756,7 +756,7 @@ case 'replot_all'
 		% Axes labels
 		labs = ['x' 'y' 'z'];
 		if hnd.mode, u_s = 'E'; u_u = 'mV/m'; cmp = '';
-        else u_s = 'V'; u_u = 'km/s'; cmp = '\perp ';
+        else, u_s = 'V'; u_u = 'km/s'; cmp = '\perp ';
 		end
 		for ax=1:3
 			ylabel(h(ax),[u_s '_{' cmp labs(ax) '} [' u_u ']'])
@@ -858,11 +858,11 @@ case 'update_SAVEbuttons'
 		off_s = hnd.CISHoffset_save(cl_id,:);
 	elseif strcmp(ava.type,'V') && strcmp(ava.sen,'COD')
 		off_s = hnd.CISCoffset_save(cl_id,:);
-    else disp([action ': must be something wrong']), off_s = [0 0];
+    else, disp([action ': must be something wrong']), off_s = [0 0];
 	end
 	hxx = [hnd.SAVEbutton hnd.RESETbutton hnd.SaveALLbutton];
 	if any(off_s-hnd.off), for j=1:3, set(hxx(j),'Enable','on'), end
-    else for j=1:3, set(hxx(j),'Enable','off'), end
+    else, for j=1:3, set(hxx(j),'Enable','off'), end
 	end
 	
 	% SaveALL button
@@ -870,7 +870,7 @@ case 'update_SAVEbuttons'
 		any(hnd.CISHoffset_save(:) - hnd.CISHoffset(:)) ||...
 		any(hnd.CISCoffset_save(:) - hnd.CISCoffset(:))
 		set(hnd.SaveALLbutton,'Enable','on')
-    else set(hnd.SaveALLbutton,'Enable','off')
+    else, set(hnd.SaveALLbutton,'Enable','off')
 	end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % update_off
@@ -924,12 +924,12 @@ case 'update_off'
 		% See if offsets were really changed and replot everything
 		if strcmp(hnd.Data{k}.sen,'HIA')
 			d_off = hnd.CISHoffset(hnd.Data{k}.cl_id,:);
-        else d_off = hnd.CISCoffset(hnd.Data{k}.cl_id,:);
+        else, d_off = hnd.CISCoffset(hnd.Data{k}.cl_id,:);
 		end
 		if any(d_off - hnd.off)
 			if strcmp(hnd.Data{k}.sen,'HIA')
 				hnd.CISHoffset(hnd.Data{k}.cl_id,:) = hnd.off;
-            else hnd.CISCoffset(hnd.Data{k}.cl_id,:) = hnd.off;
+            else, hnd.CISCoffset(hnd.Data{k}.cl_id,:) = hnd.off;
 			end
 			%disp(sprintf('%s : offsets %f %f %f',action,real(hnd.off(1)),imag(hnd.off(1)),hnd.off(2)))
 			hnd.off_updated = 1;
@@ -1012,7 +1012,7 @@ case 'press_SAVEbutton'
 		return
 	end
 	if exist(f_name,'file'), apd = ' -append';
-	else apd = '';
+	else, apd = '';
 	end
 	c_eval(['save ' f_name ' ' var_s ' -mat' apd],cl_id)
 	irf_log('save',irf_ssub([var_s ' -> ' f_name],cl_id))
@@ -1054,9 +1054,9 @@ case 'press_RESETbutton'
 	elseif strcmp(hnd.Data{k}.type,'V')
 		if strcmp(hnd.Data{k}.sen,'HIA')
 			hnd.off = hnd.CISHoffset_save(hnd.Data{k}.cl_id,:);
-        else hnd.off = hnd.CISCoffset_save(hnd.Data{k}.cl_id,:);
+        else, hnd.off = hnd.CISCoffset_save(hnd.Data{k}.cl_id,:);
 		end
-    else disp('Oj! Something is rong with data.type')
+    else, disp('Oj! Something is rong with data.type')
 	end
 	comp_s = 'XYZ';
 	for comp=1:3
@@ -1183,7 +1183,7 @@ case 'update_Ccheckbox'
 			for j=length(ii{k}):-1:1
 				if hnd.Data{ii{k}(j)}.cl_id == cl_id
 					if k==1, hnd.DataList(j) = [];
-                    else hnd.AUXList(j) = [];
+                    else, hnd.AUXList(j) = [];
 					end
 				end
 			end
@@ -1273,7 +1273,7 @@ case 'update_DATAcheckbox'
 		% Remove from the plotting lists	
 		j = L_find(hnd.DataList,vs);
 		if ~isempty(j), hnd.DataList = L_rm_ii(hnd.DataList,j);
-        else hnd.AUXList = L_rm(hnd.AUXList,vs);
+        else, hnd.AUXList = L_rm(hnd.AUXList,vs);
 		end
 		
 		guidata(h0,hnd);
@@ -1365,7 +1365,7 @@ case 'click_axes'
 				hnd.te_marker.t = hnd.ts_marker.t;
 			end
 		end
-    else return
+    else, return
 	end
 	
 	if replot_ts_marker
@@ -1507,7 +1507,7 @@ case 'show_raw'
 	% Create figure
 	if find(get(0,'children')==raw_fig_id)
 		pos_old = get(raw_fig_id,'Position');
-    else pos_old = [];
+    else, pos_old = [];
 	end
 	fig = figure(raw_fig_id);
 	clf
@@ -1565,12 +1565,12 @@ case 'show_raw'
 			set(h2,'YLimMode','auto')
 			ylabel(h2,'V [V]')
 			legend(h2,legp_tmp{:},'Location','NorthEastOutside')
-        end
-        irf_plot_axis_align;
+		end
+		irf_plot_axis_align;
 		clear d_tmp dp_tmp leg_tmp legp_tmp s sid dp_sid ok
 	else % Display V CIS
 		if strcmp(hnd.Data{j}.sen,'HIA'), v_s = irf_ssub('VCh?',hnd.Data{j}.cl_id);
-        else v_s = irf_ssub('VCp?',hnd.Data{j}.cl_id);
+        else, v_s = irf_ssub('VCp?',hnd.Data{j}.cl_id);
 		end
 		[ok,V_tmp] = c_load(v_s);
 		if ~ok, return, end
@@ -1596,7 +1596,7 @@ case 'show_b'
 	% Create figure
 	if find(get(0,'children')==raw_fig_id)
 		pos_old = get(raw_fig_id,'Position');
-    else pos_old = [];
+    else, pos_old = [];
 	end
 	fig = figure(raw_fig_id);
 	clf
@@ -1621,7 +1621,7 @@ case 'show_spect'
 	% Create figure
 	if find(get(0,'children')==spect_fig_id)
 		pos_old = get(spect_fig_id,'Position');
-	else pos_old = [];
+	else, pos_old = [];
 	end
 	fig = figure(spect_fig_id);
 	clf
@@ -1643,7 +1643,7 @@ case 'show_spect'
 	% Guess the sampling frequency
 	sf = c_efw_fsample(E_tmp.data(:,1));
 	if sf==25, nfft = 512;
-	else nfft = 4096;
+	else, nfft = 4096;
 	end
 	
 	% Exclude NaNs
@@ -1754,7 +1754,7 @@ case 'cut_int'
 		
 	else % Cut V CIS
 		if strcmp(hnd.Data{j}.sen,'HIA'), v_s = irf_ssub('VCh?',hnd.Data{j}.cl_id);
-		else v_s = irf_ssub('VCp?',hnd.Data{j}.cl_id);
+		else, v_s = irf_ssub('VCp?',hnd.Data{j}.cl_id);
 		end
 		% Variables which we need to reload
 		var_list = {['di' v_s],v_s}; n_ok = 0;
@@ -1917,7 +1917,7 @@ if data.visible
 		case 'V'
 			if strcmp(data.sen,'HIA')
 				ofs = hnd.CISHoffset(data.cl_id,:);
-            else ofs = hnd.CISCoffset(data.cl_id,:);
+            else, ofs = hnd.CISCoffset(data.cl_id,:);
 			end
 			%disp(sprintf('offsets are: %f %f %f',real(ofs(1)),imag(ofs(1)),ofs(2)))
 			if isempty(data.B), p_data = [];
@@ -1934,7 +1934,7 @@ if data.visible
 	% Calculate Ez, convert V->E and V->E
 	switch data.type
 	case 'E'
-		if any(p_data(:,4))==0,
+		if any(p_data(:,4))==0
 			if isempty(data.B)
 				irf_log('proc','B is empty. No Ez')
 			else

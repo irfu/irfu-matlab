@@ -28,7 +28,7 @@ function [J_probe, J_photo, J_plasma]=probe_current(probe,U_probe,R_sun,UV_facto
 
 Units=irf_units;
 
-if isempty(plasma), % calculate only photocurrent
+if isempty(plasma) % calculate only photocurrent
     nSpecies=0;
 else
     nSpecies=numel(plasma.q);
@@ -42,7 +42,7 @@ if strcmpi(probe.type,'arbitrary'), probe_type=1;end
 J_photo = -lp.photocurrent(probe.cross_section_area, U_probe, R_sun,probe.surface);
 J_photo = J_photo .* UV_factor;
 J_probe=J_photo; % initialize
-for ii=1:nSpecies,
+for ii=1:nSpecies
     % density n
     q=plasma.q(ii);
     if numel(plasma.n)<nSpecies && ii > numel(plasma.n)
@@ -63,7 +63,7 @@ for ii=1:nSpecies,
     else
         m=plasma.m(ii);
     end
-    if m==0, 
+    if m==0 
         m=Units.me; 
     else
         m=Units.mp*m;

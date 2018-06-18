@@ -5,7 +5,7 @@
 Tint = irf.tint('2016-06-07T01:53:44.00Z/2016-06-07T19:30:34.00Z');
 
 %%
-ic = [1:4]; 
+ic = 1:4; 
 
 c_eval('Bxyz?=mms.db_get_ts(''mms?_dfg_srvy_ql'',''mms?_dfg_srvy_dmpa'',Tint);');
 c_eval('Bxyz? = Bxyz?.resample(Bxyz1);',2:4);

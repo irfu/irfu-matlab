@@ -27,9 +27,12 @@ function [y]=irf_lmn(x,b,n,flag)
 
 irf_log('proc','WARNING: The sign of the M-component has been changed since 2012.03.01.')
 
-if nargin ==3, flag_case='L';end
-if (nargin ==4) & isstr(flag), flag_case=flag;end
-if (nargin ==4) & isnumeric(flag), L=b;M=n;N=flag;flag_case='LMN';end
+if nargin ==3, flag_case='L'; end
+if (nargin ==4)
+  if ischar(flag), flag_case=flag;
+  elseif isnumeric(flag),  L=b; M=n; N=flag; flag_case='LMN';
+  end
+end
 
 switch flag_case
 case 'L'
@@ -45,7 +48,7 @@ case 'N'
   nl=irf_cross(nm,nn);
 
 case 'LMN'
-  if abs(dot(cross(L,M),N)-norm(L)*norm(M)*norm(N))>1e-5, 
+  if abs(dot(cross(L,M),N)-norm(L)*norm(M)*norm(N))>1e-5 
     disp('irf_lmn: L,M,N does not satisfy M=LxN,N=MxL! using L=(NxL)xN; M=NxL;');
     L=cross(cross(N,L),N);
     M=cross(N,L);

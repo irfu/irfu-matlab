@@ -182,23 +182,20 @@ classdef mms_local_file_db < mms_file_db
           for mo = moStart:moStop
             moDir = sprintf('%s%s%d%s%02d',fDir,filesep,year,filesep,mo);
             curDir = moDir;
-            if (year==TStart.year && mo==TStart.month) || ...
-                (year==TStop.year && mo==TStop.month)
-              dStart = 1; dStop = 31;
-              if year==TStart.year && mo==TStart.month, dStart=TStart.day; end
-              if year==TStop.year && mo==TStop.month, dStop = TStop.day; end
-              if strcmp(C{3}, 'brst')
-                for day = dStart:dStop
-                  % BRST files are in daily subdirs
-                  curDir = [moDir filesep sprintf('%02d',day)];
-                  dPref = sprintf('%s_%d%02d%02d',filePrefix,year,mo,day);
-                  limited_sci_list;
-                end
-              else
-                %Fast, slow, srvy, comm
-                dPref = sprintf('%s_%d%02d',filePrefix,year,mo);
+            dStart = 1; dStop = 31;
+            if year==TStart.year && mo==TStart.month, dStart=TStart.day; end
+            if year==TStop.year && mo==TStop.month, dStop = TStop.day; end
+            if strcmp(C{3}, 'brst')
+              for day = dStart:dStop
+                % BRST files are in daily subdirs
+                curDir = [moDir filesep sprintf('%02d',day)];
+                dPref = sprintf('%s_%d%02d%02d',filePrefix,year,mo,day);
                 limited_sci_list;
               end
+            else
+              %Fast, slow, srvy, comm
+              dPref = sprintf('%s_%d%02d',filePrefix,year,mo);
+              limited_sci_list;
             end
           end
         end

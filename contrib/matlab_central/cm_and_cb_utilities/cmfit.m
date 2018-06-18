@@ -296,7 +296,7 @@ if (NL>1)
     'is extremely large. Try other LEVELS.'])
  end
  ko = wLEVELS(1);
- for k = 2:NL-1;
+ for k = 2:NL-1
   CMAP(ko+(1:wLEVELS(k)),:) = repmat(wCMAP(k,:),wLEVELS(k),1);
   ko = ko+wLEVELS(k);
  end

@@ -89,7 +89,7 @@ if strcmpi(method,'frequency')
         % Default method
     nfft = size(einp,1);
     if nfft/2==fix(nfft/2), nf = nfft/2;
-    else nf = (nfft+1)/2;
+    else, nf = (nfft+1)/2;
     end
 
     fsamp = c_efw_fsample(einp);

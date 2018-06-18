@@ -31,15 +31,15 @@ if isa(fielddata,'TSeries')
     tmptime = fielddata.time;
 else 
     tmptime = fielddata(:,1);
-    tmpfields = fielddata(:,[2:end]);
+    tmpfields = fielddata(:, 2:end);
 end
 
 % Make sure number of elements is an even number, if odd remove last
 % element to make an even number
 Nels = length(tmpfields(:,1));
 if (mod(Nels,2) == 1)
-    tmpfields = tmpfields([1:end-1],:);
-    tmptime = tmptime([1:end-1]);
+    tmpfields = tmpfields(1:end-1, :);
+    tmptime = tmptime(1:end-1);
     Nels = length(tmpfields(:,1));
 end
 
@@ -60,7 +60,7 @@ df = 2*fN/(Nels);
 f = (-fN:df:fN-df);
 
 % FFT and remove frequencies
-for nn=[1:numfields]
+for nn=1:numfields
     fieldtemp = fft(tmpfields(:,nn));
     fieldtemp = fftshift(fieldtemp);
 

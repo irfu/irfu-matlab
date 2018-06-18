@@ -42,24 +42,24 @@ function out=tt(varargin)
 
 %% Check inputs
 
-if nargin==0,
+if nargin==0
 	help irf.tt;
 	return;
 end
 
 if isa(varargin{1},'irf.TimeTable') % first argument is TT in matlab format (structure)
 	tt=varargin{1};
-	if nargin==1 && nargout == 0, % IRF_TT(tt) display time table on screen
+	if nargin==1 && nargout == 0 % IRF_TT(tt) display time table on screen
 		action='display';
-	elseif nargin>1 && ischar(varargin{2}), % second argument is action
+	elseif nargin>1 && ischar(varargin{2}) % second argument is action
 		action=varargin{2};
-		if strcmp(action,'write_IRF'), % [out]=IRF_TT(tt,'write_IRF',tt_id)
-			if nargin==2,
+		if strcmp(action,'write_IRF') % [out]=IRF_TT(tt,'write_IRF',tt_id)
+			if nargin==2
 				disp('ERROR! dont understand irf_tt arguments. See help!');
 				return
 			else
 				tt_id=varargin{3};
-				if ~ischar(varargin{3}), % filename should be character array
+				if ~ischar(varargin{3}) % filename should be character array
 					disp('ERROR! dont understand irf_tt arguments. See help!');
 					return
 				end
@@ -84,7 +84,7 @@ switch lower(action)
 	case 'display'
 		ascii(tt);
 	case 'read_irf'
-        out=irf.TimeTable(['http://www.space.irfu.se/TT/' tt_id]);
+        out=irf.TimeTable(['https://www.space.irfu.se/TT/' tt_id]);
 	case 'read_amda'
 		httpLink=['http://cdpp-amda.cesr.fr/DDHTML/SHARED/' tt_id '.txt'];
 		out=irf.TimeTable(httpLink);
@@ -95,20 +95,14 @@ switch lower(action)
 		eval(['!scp ' tempFile ' ' remoteFile]);
 		delete(tempFile);
 	case 'list_irf'
-		s=urlread('http://www.space.irfu.se/TT/');
-		A = strread(s, '%s', 'delimiter', sprintf('\n'));
-		A(1:10)=[];
-		A(end-2:end)=[];
-		for i=1:numel(A),
-			A{i}(1:49)=[];
-			ii=strfind(A{i},'"');
-			A{i}(ii:end)=[];
-		end
+		s = urlread('https://www.space.irfu.se/TT/'); %#ok<URLRD> webread introduced in R2014b
+		A = regexp(s,'a href="(?<entry>\w+)"','tokens');
+		A = [A{:}]';
 		disp(A)
 %		eval('!ssh hq.irfu.se ls /usr/home/www/space/TT');
 end
 
-if nargout==0,
+if nargout==0
 	clear out;
 end
 

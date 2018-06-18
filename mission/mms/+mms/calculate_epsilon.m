@@ -104,7 +104,7 @@ energyarr = PDist.ancillary.energy;
 v = zeros(size(energyarr));
 deltav = zeros(size(energyarr));
 
-for nt = 1:length(PDist.time);
+for nt = 1:length(PDist.time)
     energyvec = energyarr(nt,:);
     v(nt,:) = real(sqrt(2*(energyvec-SCpot.data(nt))*qe/pmass));
     energylog = log10(energyvec);

@@ -40,7 +40,7 @@ tlim = [];
 % initialize dgud variable that has all the properties of time manager
 dgud=get(gcf,'userdata'); % take existing values in user_data and add necessary
 dgud.figure=get(h(1),'parent'); % add the number of figure which is controled by irf_tm
-if strcmp(get(hh,'ylimmode'),'manual'),
+if strcmp(get(hh,'ylimmode'),'manual')
   dgud.autoY=0;
 else
   dgud.autoY=1; % default is always automatically fix Y component

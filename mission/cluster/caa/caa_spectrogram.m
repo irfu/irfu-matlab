@@ -35,7 +35,7 @@ disp('');
 
 narginchk(1,6)
 
-if nargin==1, 
+if nargin==1 
     specrec = h; h = [];
     if ~isfield(specrec,'dt'), specrec.dt=[];end
     if ~isfield(specrec,'df'), specrec.df=[];end
@@ -46,7 +46,7 @@ elseif nargin==2 % caa_spectrogram(h,t)
 elseif nargin==3 % caa_spectrogram(t,Pxx,F)
 	if size(t,2) == length(h), t = t'; end
 	if iscell(t), specrec.p = t;
-	else specrec.p = {t};
+	else, specrec.p = {t};
 	end
 	specrec.f = Pxx; 
 	specrec.t = h; 
@@ -61,7 +61,7 @@ elseif	nargin==4 % caa_spectrogram(h,t,Pxx,F)
 	specrec.t = t;
 	if (size(Pxx,1) ~= length(t)) && (size(Pxx,2) == length(t)), Pxx = Pxx'; end
 	if iscell(Pxx),specrec.p = Pxx;
-	else specrec.p = {Pxx};
+	else, specrec.p = {Pxx};
 	end
 	specrec.f = F;
     if length(specrec.t)>1 % assume equidistant times 
@@ -74,7 +74,7 @@ elseif	nargin==5 % caa_spectrogram(h,t,Pxx,F,dt)
 	specrec.t = t;
 	if (size(Pxx,1) ~= length(t)) && (size(Pxx,2) == length(t)), Pxx = Pxx'; end
 	if iscell(Pxx),specrec.p = Pxx;
-	else specrec.p = {Pxx};
+	else, specrec.p = {Pxx};
 	end
 	specrec.f = F;
 	specrec.dt = dt;
@@ -83,7 +83,7 @@ elseif	nargin==6 % caa_spectrogram(h,t,Pxx,F,dt,df)
 	specrec.t = t;
 	if (size(Pxx,1) ~= length(t)) && (size(Pxx,2) == length(t)), Pxx = Pxx'; end
 	if iscell(Pxx),specrec.p = Pxx;
-	else specrec.p = {Pxx};
+	else, specrec.p = {Pxx};
 	end
 	specrec.f = F;
 	specrec.dt = dt;
@@ -122,9 +122,9 @@ for comp=1:min(length(h),ncomp)
 	
     ud = get(gcf,'userdata');
 	ii = find(~isnan(specrec.t));
-    if isfield(ud,'t_start_epoch'),
+    if isfield(ud,'t_start_epoch')
         t_start_epoch = double(ud.t_start_epoch);
-    elseif specrec.t(ii(1))> 1e8,
+    elseif specrec.t(ii(1))> 1e8
         % Set start_epoch if time is in isdat epoch
         % Warn about changing t_start_epoch
         t_start_epoch = double(specrec.t(ii(1)));
@@ -141,8 +141,8 @@ for comp=1:min(length(h),ncomp)
         %		specrec.t = [specrec.t-dt; specrec.t+dt];
         %		specrec.p(comp) = {[specrec.p{comp}; specrec.p{comp}]};
     end
-    if ~isfield(specrec,'f_unit'), % if not specified assume units are Hz
-        if max(specrec.f) > 2000, % check whether to use kHz
+    if ~isfield(specrec,'f_unit') % if not specified assume units are Hz
+        if max(specrec.f) > 2000 % check whether to use kHz
             specrec.f=specrec.f*double(1e-3);
             specrec.f_unit='kHz';
         else
@@ -204,7 +204,7 @@ for comp=1:min(length(h),ncomp)
         pp=ppnew;
     end
 
-    if min(size(ff))==1, % frequency is vector
+    if min(size(ff))==1 % frequency is vector
         if any(min(pp)<0) % spectra include negative values linear spectrogram
             pcolor(h(comp),double(tt-t_start_epoch),ff,double(pp'))
         else
@@ -217,7 +217,7 @@ for comp=1:min(length(h),ncomp)
         else
             pcolor(h(comp),double(ttt-t_start_epoch),ff,log10(double(pp)))
         end
-        end
+    end
 %	colormap(cmap)
     shading(h(comp),'flat')
     %	colorbar('vert')
@@ -225,7 +225,7 @@ for comp=1:min(length(h),ncomp)
     set(h(comp),'TickDir','out')
     %check ylabel
     if ~isfield(specrec,'f_label')
-        if ~isfield(specrec,'f_unit'),
+        if ~isfield(specrec,'f_unit')
             specrec.f_unit='a.u.';
         end
         specrec.f_label=['[' specrec.f_unit ']'];
@@ -234,13 +234,13 @@ for comp=1:min(length(h),ncomp)
     
     if isfield(specrec,'p_label')
       if isa(h(comp),'handle'), hcb = colorbar(h(comp)); % HG2
-      else hcb = colorbar('peer',h(comp));
+      else, hcb = colorbar('peer',h(comp));
       end
       ylabel(hcb,specrec.p_label);
       irf_colorbar_fit_label_height(hcb);
     end
     if comp==min(length(h),ncomp), irf_timeaxis;
-    else set(h(comp),'XTicklabel','')
+    else, set(h(comp),'XTicklabel','')
     end
 end
 

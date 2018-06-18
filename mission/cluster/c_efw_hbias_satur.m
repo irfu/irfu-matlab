@@ -103,7 +103,7 @@ for in = 1:n_spins
         eind(isnan(data_corr(eind,2))) = [];
         % Check for data gaps inside one spin.
         if sf>0 && length(eind)<N_EMPTY*(te-ts +MARG*2)*sf
-            if DEBUG, irf_log('proc',['data gap at ' epoch2iso(ts,1)]), end
+            if DEBUG, irf_log('proc',['data gap at ' epoch2iso(ts,1)]), end %#ok<UNRCH>
             tt(:,in) = NaN;
         else
             if sf==450, dtmp = irf_resamp(data_corr(eind,:), ttime(:,in));
@@ -159,19 +159,19 @@ for in = iok
 	if plotflag && plot_i == plot_step
 		plotflag_now = 1;
 		plot_i = 0;
-	else plotflag_now = 0;
+	else, plotflag_now = 0;
 	end
 	
 	wakedesc(in,1) = ttime(1,in);
 
 	if any(isnan(tt(:,in)))
-		if DEBUG, disp(['gap at spin # ' num2str(in)]), end
+		if DEBUG, disp(['gap at spin # ' num2str(in)]), end %#ok<UNRCH>
 		continue
 	end
 	
 	[min1,imin1,wmin1,max1,imax1,wmax1,min2,max2] = find4minmax(tt(:, in));
 	if abs(min1)>abs(max1), w = wmin1; im = imin1;
-	else w = wmax1; im = imax1;
+	else, w = wmax1; im = imax1;
 	end
 	mm = max(abs(min1),abs(max1));
 	
@@ -195,7 +195,7 @@ for in = iok
 	end
 	
 	if DEBUG
-		if isempty(min2)
+		if isempty(min2) %#ok<UNRCH>
 			disp('No secondary peaks')
 		else
 			disp(sprintf('Max: %.1f mV/m  Ratio: %.1f  Width: %.1f',...
@@ -204,11 +204,11 @@ for in = iok
 	end
 	
     if (mm > WAKE_MAX_AMPLITUDE) || (mm > WAKE_INT_AMPLITUDE && w >=WAKE_MIN_WIDTH)
-        if DEBUG, disp('Matches'), end
+        if DEBUG, disp('Matches'), end %#ok<UNRCH>
         wakedesc(in,2) = mm;
         wakedesc(in,3) = w;
     elseif mean(tt(:, in)) > WAKE_MAX_ADC_OFF
-        if DEBUG, disp('Possibly matches based on ADC offset'), end
+        if DEBUG, disp('Possibly matches based on ADC offset'), end %#ok<UNRCH>
         wakedesc(in,2) = -mm;
         wakedesc(in,3) = -w;    
     elseif pair~=32	 % Wake position works only for p12 and p34
@@ -219,17 +219,17 @@ for in = iok
             if round( im/180 ) >= 1, im = im -180; end
             if abs(im) > WAKE_MAX_CENTER_OFF
                 if DEBUG
-                    disp(sprintf('wake center offset by : %d degress',im))
+                    disp(sprintf('wake center offset by : %d degress',im)) %#ok<UNRCH>
                 end
             else
                 if(w <= WAKE_MAX_WIDTH)
                     if( mm/max(abs(min2),abs(max2)) > WAKE_MIN_MAX_RATIO)
-                        if DEBUG, disp('Matches'), end
+                        if DEBUG, disp('Matches'), end %#ok<UNRCH>
                         wakedesc(in,2) = mm;
                         wakedesc(in,3) = w;
                     else
                         if (w < WIDE_WAKE_MIN_WIDTH) || (mm > WIDE_WAKE_MIN_AMPLITUDE)
-                            if DEBUG, disp('Possibly matches, but only one spike detected.'), end
+                            if DEBUG, disp('Possibly matches, but only one spike detected.'), end %#ok<UNRCH>
                             wakedesc(in,2) = -mm;
                             wakedesc(in,3) = -w;
                         end
@@ -237,10 +237,10 @@ for in = iok
                 end
             end
         else
-            if DEBUG, disp(['no saturation at spin # ' num2str(in)]), end
+            if DEBUG, disp(['no saturation at spin # ' num2str(in)]), end %#ok<UNRCH>
         end
     else
-        if DEBUG, disp('wake position works only for p12 and p34'), end
+        if DEBUG, disp('wake position works only for p12 and p34'), end %#ok<UNRCH>
     end
     if plotflag_now,input('press enter'), end
 end
@@ -318,11 +318,11 @@ function [min1,imin1,wmin1,max1,imax1,wmax1,min2,max2] = find4minmax(data)
 PLOT_FLAG = 0;
 
 if PLOT_FLAG
-	clf, plot(data,'k'), hold on, grid on
+	clf, plot(data,'k'), hold on, grid on %#ok<UNRCH>
 end
 
 data = w_ave(data,5);
-if PLOT_FLAG, plot(data); end
+if PLOT_FLAG, plot(data); end %#ok<UNRCH>
 
 %d1 = diff(data);
 %plot(idx(1:end-1)+.5,d1*2,'r')
@@ -334,7 +334,7 @@ imin1 = find(data == min1); imin1 = imin1(1);
 imax1 = find(data == max1); imax1 = imax1(1);
 
 if PLOT_FLAG
-	plot(imin1,data(imin1),'*',imax1,data(imax1),'*')
+	plot(imin1,data(imin1),'*',imax1,data(imax1),'*') %#ok<UNRCH>
 	%plot(imin1,d1(imin1),'r*',imax1,d1(imax1),'r*')
 end
 
@@ -372,7 +372,7 @@ imin2 = find(data == min2);
 imax2 = find(data == max2);
 
 if PLOT_FLAG
-	plot(imin2,data(imin2),'o',imax2,data(imax2),'o')
+	plot(imin2,data(imin2),'o',imax2,data(imax2),'o') %#ok<UNRCH>
 
 	disp(sprintf('Max 1: %.1f (%d points)  Max 2: %.1f  Min1/Min2: %.1f',...
 		max1,wmax1,max2,max1/max2))

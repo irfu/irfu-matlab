@@ -9,21 +9,21 @@ function QV = thor_QV(R,rTHOR)
 
 units = irf_units;
 
-if isa(R,'TSeries'); 
+if isa(R,'TSeries') 
   Time = R.time;
   R0 = R.data; 
-  if strcmp(R.units,'km') || R0(1,1) > 50; 
+  if strcmp(R.units,'km') || R0(1,1) > 50 
     R0 = R0/units.RE*1e3; % km->RE
   end  
 else 
   R0 = R;
 end
-if isa(rTHOR,'TSeries'); 
+if isa(rTHOR,'TSeries') 
   Time = rTHOR.time;
   xTHOR = rTHOR.x.data;
   yTHOR = rTHOR.y.data;
   zTHOR = rTHOR.z.data;
-  if strcmp(rTHOR.units,'km') || rTHOR.data(end,1) > 100; 
+  if strcmp(rTHOR.units,'km') || rTHOR.data(end,1) > 100 
     xTHOR = xTHOR/units.RE*1e3; % km->RE
     yTHOR = yTHOR/units.RE*1e3; % km->RE
     zTHOR = zTHOR/units.RE*1e3; % km->RE

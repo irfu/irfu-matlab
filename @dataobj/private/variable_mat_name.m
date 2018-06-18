@@ -14,7 +14,7 @@ end
 
 % Take care of '...'
 d3 = strfind(variableMatName,'...');
-if d3, 
+if d3 
 	variableMatName( d3 + (1:2) ) = []; 
 end
 
@@ -22,7 +22,7 @@ end
 variableMatName(strfind(variableMatName,'.')) = '_';
 
 % Add "x" if the varible name starts with a number
-if ~isletter(variableMatName(1)),
+if ~isletter(variableMatName(1))
 	variableMatName=['x' variableMatName];
 end
 
@@ -32,7 +32,7 @@ if length(variableMatName)>63
 end
 
 % if changes made write out log
-if ~strcmp(variableMatName,variableCdfName),
+if ~strcmp(variableMatName,variableCdfName)
 	irf.log('notice',['orig var : ' variableCdfName]);
 	irf.log('notice',[' new var : ' variableMatName]);
 end

@@ -29,7 +29,7 @@ if isempty(data) || isempty(time_int), return, end
 time_int = sort(time_int,1);
 
 for j=1:size(time_int,1)
-	if nargin == 2 || mode ~= 1;
+	if nargin == 2 || mode ~= 1
 		res( data(:,1)>=time_int(j,1) & data(:,1)<=time_int(j,2) ,2:end) = NaN;
 	else
 		if j==1

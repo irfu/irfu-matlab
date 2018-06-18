@@ -1,4 +1,4 @@
-function [hax,hcb] = plot_projection(varargin)
+function [hax,hcb, FF] = plot_projection(varargin)
 %MMS.PLOT_PROJECTION Plots projection on a specified plane.
 %
 % [ax,hcb] = MMS.PLOT_PROJECTION(dist,'Opt1',OptVal1,...) For PDist format
@@ -45,6 +45,7 @@ function [hax,hcb] = plot_projection(varargin)
 [ax,args,nargs] = axescheck(varargin{:});
 hax = ax;
 
+irf.log('warning','Consider using mms.plot_int_projection which integrates the distribution and has an improved binning method.');
 irf.log('warning','Please verify that you think the projection is done properly!');
 
 anglespassed = 0;
@@ -139,6 +140,7 @@ have_vlim = 0;
 limElevation = 20;
 correctForBinSize = 0;
 includescpot = 0;
+changed_xyz = [0 0 0];
 
 x = [1 0 0]; y = [0 1 0]; z = [0 0 1]; % default vectors
 
@@ -193,17 +195,28 @@ while have_options
     case 'xyz'
       l = 2;
       coord_sys = args{2};
+      
+      if ~all(size(coord_sys) == [3 3]) % to avoid errors associated with coordinate system: check for size of xyz, give error if not 3x3
+        error('Please verify your coordinate system ''xyz'', it has to be a 3x3 matrix: [x;y;z], where x,y,z are 1x3 vectors.')
+      end
+        
       x = coord_sys(1,:)/norm(coord_sys(1,:));
       y = coord_sys(2,:)/norm(coord_sys(2,:));
       z = coord_sys(3,:)/norm(coord_sys(3,:));
       z = cross(x,y); z = z/norm(z);
-      y = cross(z,x); y = y/norm(y);    
+      y = cross(z,x); y = y/norm(y);                
       
-      if abs(acosd(y*(coord_sys(2,:)/norm(coord_sys(2,:)))'))>1 
-        irf.log('warning',['y (perp1) changed from [' num2str(coord_sys(2,:)/norm(coord_sys(2,:)),'% .2f') '] to [' num2str(y,'% .2f') '].']);
+      if abs(acosd(x*(coord_sys(1,:)/norm(coord_sys(1,:)))'))>1 % x is never changed
+        irf.log('warning',['In making ''xyz'' a right handed orthogonal coordinate system, x (in-plane 1) was changed from [' num2str(coord_sys(1,:)/norm(coord_sys(1,:)),'% .2f') '] to [' num2str(x,'%.2f') ']. Please verify that this is according to your intentions.']);
+        changed_xyz(1) = 1;
       end
-      if abs(acosd(x*(coord_sys(1,:)/norm(coord_sys(1,:)))'))>1 
-        irf.log('warning',['x (perp2) changed from [' num2str(coord_sys(1,:)/norm(coord_sys(1,:)),'% .2f') '] to [' num2str(x,'% .2f') '].']);
+      if abs(acosd(y*(coord_sys(2,:)/norm(coord_sys(2,:)))'))>1 
+        irf.log('warning',['In making ''xyz'' a right handed orthogonal coordinate system, y (in-plane 2) was changed from [' num2str(coord_sys(2,:)/norm(coord_sys(2,:)),'% .2f') '] to [' num2str(y,'%.2f') ']. Please verify that this is according to your intentions.']);
+        changed_xyz(2) = 1;
+      end
+      if abs(acosd(z*(coord_sys(3,:)/norm(coord_sys(3,:)))'))>1 
+        irf.log('warning',['In making ''xyz'' a right handed orthogonal coordinate system, z (out-of-plane) was changed from [' num2str(coord_sys(3,:)/norm(coord_sys(3,:)),'% .2f') '] to [' num2str(z,'%.2f') ']. Please verify that this is according to your intentions.']);
+        changed_xyz(3) = 1;
       end
     case 'clim'
       l = 2;
@@ -243,9 +256,24 @@ while have_options
 end
 
 if have_vlabels
-  vlabelx = vlabels{1};
-  vlabely = vlabels{2};
-  vlabelz = vlabels{3};
+  if changed_xyz(1) 
+    vlabelx = ['v_{x=[' num2str(x,'% .2f') ']}'];
+    irf.log('warning',['x was changed, overriding given vlabels.']);
+  else
+    vlabelx = vlabels{1};
+  end
+  if changed_xyz(2) 
+    vlabely = ['v_{y=[' num2str(y,'% .2f') ']}'];
+    irf.log('warning',['y was changed, overriding given vlabels.']);
+  else
+    vlabely = vlabels{2};
+  end
+  if changed_xyz(3) 
+    vlabelz = ['v_{z=[' num2str(z,'% .2f') ']}'];
+    irf.log('warning',['z was changed, overriding given vlabels.']);
+  else
+    vlabelz = vlabels{3};
+  end
 else
   vlabelx = ['v_{x=[' num2str(x,'% .2f') ']}'];
   vlabely = ['v_{y=[' num2str(y,'% .2f') ']}'];
@@ -344,7 +372,7 @@ if includescpot
         [~,tId] = min(abs(scpot.time-tint));
         scpot = scpot.data(tId);
     else
-        scpot = scpot.tlim(tint);
+        scpot = scpot  .tlim(tint);
         scpot = irf.nanmean(scpot.data);
     end
 else

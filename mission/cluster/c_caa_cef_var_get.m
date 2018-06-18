@@ -20,12 +20,12 @@ function out = c_caa_cef_var_get(varName,fileName,varargin)
 %% Check CEFlib status
 persistent okCeflib 
 
-if isempty(okCeflib), 
+if isempty(okCeflib) 
 	% check whether ceflib is properly installed
 	okCeflib = datastore('irfu_matlab','okCeflib');
 end
 
-if ~okCeflib,
+if ~okCeflib
 	irf.log('critical','ceflib is not installed properly!');
 	if nargout > 0, out = []; end
 	return
@@ -37,7 +37,7 @@ end
 %% Check inputs
 
 if nargin == 0, help c_caa_cef_var_get; return; end
-if nargin == 1,
+if nargin == 1
 	errStr = 'Should be at least 2 input parameters';
 	irf.log('critical',errStr);
 	error(errStr);
@@ -112,7 +112,7 @@ end
 
 
 % define output
-if numel(out) == 1 && ~returnOutputAsCellArray,
+if numel(out) == 1 && ~returnOutputAsCellArray
 	out = out{1}; % return only matrix if one variable requested
 end
 

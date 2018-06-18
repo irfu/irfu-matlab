@@ -25,19 +25,19 @@ if nargin == 0, help c_4_v_xcorr; return; end
 if isa(tint,'GenericTimeArray')
   tint = [tint.start.utc '/' tint.stop.utc];
 end
-if ischar(tint), % assume time interval input in character format
+if ischar(tint) % assume time interval input in character format
 	tint=irf_time(tint,'utc>tint');
 end
 
-if isa(B1,'TSeries'), B1 = [B1.time.epochUnix double(B1.data)]; end
-if isa(B2,'TSeries'), B2 = [B2.time.epochUnix double(B2.data)]; end
-if isa(B3,'TSeries'), B3 = [B3.time.epochUnix double(B3.data)]; end
-if isa(B4,'TSeries'), B4 = [B4.time.epochUnix double(B4.data)]; end
+if isa(B1,'TSeries'), B1 = [B1.time.epochUnix double(B1.data)]; end %#ok<NASGU>
+if isa(B2,'TSeries'), B2 = [B2.time.epochUnix double(B2.data)]; end %#ok<NASGU>
+if isa(B3,'TSeries'), B3 = [B3.time.epochUnix double(B3.data)]; end %#ok<NASGU>
+if isa(B4,'TSeries'), B4 = [B4.time.epochUnix double(B4.data)]; end %#ok<NASGU>
 
-if isa(R1,'TSeries'), R1 = [R1.time.epochUnix double(R1.data)]; end
-if isa(R2,'TSeries'), R2 = [R2.time.epochUnix double(R2.data)]; end
-if isa(R3,'TSeries'), R3 = [R3.time.epochUnix double(R3.data)]; end
-if isa(R4,'TSeries'), R4 = [R4.time.epochUnix double(R4.data)]; end
+if isa(R1,'TSeries'), R1 = [R1.time.epochUnix double(R1.data)]; end %#ok<NASGU>
+if isa(R2,'TSeries'), R2 = [R2.time.epochUnix double(R2.data)]; end %#ok<NASGU>
+if isa(R3,'TSeries'), R3 = [R3.time.epochUnix double(R3.data)]; end %#ok<NASGU>
+if isa(R4,'TSeries'), R4 = [R4.time.epochUnix double(R4.data)]; end %#ok<NASGU>
 
 b1 = [];
 c_eval('b?=irf_tlim(B?(:,1:4),tint);')
@@ -149,7 +149,7 @@ for i=(-ndata+1):ndata-1
     S = ( data1 - data2(i+ndata:i+2*ndata-1,:) ).^2;
     if any(~isnan(S))
         corr(i+ndata) = sum(S(~isnan(S)))/(ndata - abs(i))/ncomp;
-    else corr(i+ndata) = NaN;
+    else, corr(i+ndata) = NaN;
     end
 end
 

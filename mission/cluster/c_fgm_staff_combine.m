@@ -22,7 +22,7 @@ function [bout]=c_fgm_staff_combine(bFgm,bStaff,varargin)
 if nargout==0 && nargin == 0, help c_fgm_staff_combine;return;end
 
 args = varargin;
-if ~isempty(args), have_options = 1; else have_options = 0; end
+if ~isempty(args), have_options = 1; else, have_options = 0; end
 
 %% Default values that can be override by options
 fCut = 1.3; % cut Frequency (Hz)
@@ -63,7 +63,7 @@ bStaff=irf_tlim(bStaff,tint); % limit time series to common time interval
 
 %% check if FGM and STAFF are in normal mode
 if isempty(cl_id), fsStaff = c_efw_fsample(bStaff,'hx');
-else fsStaff = c_efw_fsample(bStaff,'hx',cl_id);
+else, fsStaff = c_efw_fsample(bStaff,'hx',cl_id);
 end
 if fsStaff < 400 % STAFF in normal mode, not implemented
     N = 127;  % FIR filter order (have to be odd number!!!)
@@ -95,18 +95,18 @@ LoP = fir1(N-1,fCut/(fsStaff/2),'low',kaiser(N,Sband/10));
 b_fgm_res = irf_resamp(bFgm, bStaff);
 
 b_fgm_filt=b_fgm_res;
-for j=2:4,
+for j=2:4
     b_fgm_filt(:,j) = filtfilt(LoP, 1.0, b_fgm_res(:,j));
 end
 b_staff_filt=bStaff;
-for j=2:4,
+for j=2:4
     b_staff_filt(:,j) = bStaff(:,j) - filtfilt(LoP, 1.0, bStaff(:,j));
 end
 
 %merge the two vectors
 b=[b_fgm_res(:,1) b_fgm_filt(:,2:end) + b_staff_filt(:,2:end)];
 
-if size(b,2)>4, % the 5th column should be |B|
+if size(b,2)>4 % the 5th column should be |B|
     b(:,5)=irf_abs(b,1);
 end
 
@@ -118,7 +118,7 @@ if flag_plot
     
     compS = 'xyz';
     figure(13), hpl = gobjects(3);
-    for k=2:4;
+    for k=2:4
         hpl(k-1)=subplot(3,1,k-1);
         psdestFGM = psd(h,b_fgm_res(:,k),'Fs',fsStaff);
         plot(psdestFGM.Frequencies, psdestFGM.Data,'k');

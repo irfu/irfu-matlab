@@ -93,19 +93,19 @@ for start_time_intervalls=1:nr_intervalls
  end
 
  %if start and endtime are in timerange of postime
- if i_start == -1 | i_end == -1
+ if i_start == -1 || i_end == -1
 
   for k = 1:k_max-1
 
    t_temp = toepoch(pos_time(k,:));
    n_t_temp = toepoch(pos_time(k+1,:));
-   if ((t_temp <= start_time_e) & (t_temp+dur_time(k)) > start_time_e) | ( t_temp > start_time_e & i_start == -1)
+   if ((t_temp <= start_time_e) && (t_temp+dur_time(k)) > start_time_e) || ( t_temp > start_time_e && i_start == -1)
     i_start = k;
    end
 
    t_temp = toepoch(pos_time(k,:));
    n_t_temp = toepoch(pos_time(k+1,:));
-   if (t_temp+dur_time(k) > end_time_e & i_end == -1) | ( n_t_temp > end_time_e & i_end == -1)
+   if (t_temp+dur_time(k) > end_time_e && i_end == -1) || ( n_t_temp > end_time_e && i_end == -1)
     i_end = k;
    end
 

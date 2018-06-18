@@ -27,7 +27,7 @@ function [varargout]=irf_cdf_read(cdf_file,var_name,flag)
 flag_latest=0;
 persistent old_cdfread_call;
 
-if nargin==3,
+if nargin==3
   switch flag
   case 'latest'
     flag_latest=1;
@@ -35,7 +35,7 @@ if nargin==3,
 end
 
 if nargin<=1, var_name='*';end
-if nargin==0,
+if nargin==0
   cdf_files=dir('*.cdf');
   switch numel(cdf_files)
     case 0
@@ -45,7 +45,7 @@ if nargin==0,
       disp(['Using: ' cdf_file]);
     otherwise
       D=dir('*.cdf');
-      for j=1:length(D),
+      for j=1:length(D)
         disp([num2str(j) '. ' D(j).name]);
       end
       disp('Choose cdf file');
@@ -54,14 +54,14 @@ if nargin==0,
   end
 end
 
-if strfind(cdf_file,'*'), % use wilcard '*' expansion
+if strfind(cdf_file,'*')  %#ok<STRIFCND> % use wilcard '*' expansion
   ii=strfind(cdf_file,filesep);
-  if ii, cdf_directory=cdf_file(1:max(ii)); else cdf_directory=''; end
+  if ii, cdf_directory=cdf_file(1:max(ii)); else, cdf_directory=''; end
   ff=dir(cdf_file);
   switch size(ff,1)
   case 0
    irf_log('load','No cdf files')
-   if nargout>0,
+   if nargout>0
 	   varargout = cell(1,nargout);
 	   for i=1:nargout, varargout(i) = {[]}; end
    end
@@ -70,7 +70,7 @@ if strfind(cdf_file,'*'), % use wilcard '*' expansion
    cdf_file=[cdf_directory ff(1).name];
   otherwise
    cdf_names={};
-   for j=1:size(ff,1),
+   for j=1:size(ff,1)
     cdf_names{end+1}=ff(j).name; %#ok<AGROW>
     disp([num2str(j) '. ' ff(j).name]);
    end
@@ -90,7 +90,7 @@ irf_log('load',['cdf file: ' cdf_file]);
 cdf_file_info = spdfcdfinfo(cdf_file);
 variable_names = cdf_file_info.Variables(:,1);
 epoch_column=0; % default there is no epoch variable
-for j=1:size(variable_names,1),
+for j=1:size(variable_names,1)
 	if any(strfind(variable_names{j,1},'Epoch')) || ...
 			any(strfind(variable_names{j,1},'time_tags__')) || ...
 			any(strfind(variable_names{j,1},'_time')) || ...
@@ -106,13 +106,13 @@ for j=1:size(variable_names,1),
 	end
 end
 
-if iscell(var_name),
+if iscell(var_name)
 elseif ischar(var_name) % one specifies the name of variable 
   % in case string is '*' do interactive work with cdf file including
   % reading variables
   % get variable list that have associated time
   i_time_series_variable=0; % the counter of variables that depend on time
-  if epoch_column ~= 0,
+  if epoch_column ~= 0
       for j=2:size(cdf_file_info.Variables,1)
           if cdf_file_info.Variables{j,3}==cdf_file_info.Variables{epoch_column,3}
               if isempty(strfind(cdf_file_info.Variables{j,1},'Epoch')) && ...
@@ -145,17 +145,17 @@ elseif ischar(var_name) % one specifies the name of variable
               case 'v'
                   cdf_file_info.Variables
               case 'vv'
-                  for jj=1:size(cdf_file_info.Variables,1);
+                  for jj=1:size(cdf_file_info.Variables,1)
                       cdf_var=cdf_file_info.Variables{jj,1};
                       disp('======================================')
                       disp(cdf_var);
                       disp('======================================')
                       dd=spdfcdfread(cdf_file,'Variables',{cdf_var});
-                      if size(dd,1)>10,
+                      if size(dd,1)>10
                           disp([num2str(size(dd,1)) ' samples. 1st sample below.']);
-                          if iscell(dd), disp(dd{1}), else disp(dd(1,:)), end
+                          if iscell(dd), disp(dd{1}), else, disp(dd(1,:)), end
                       else
-                          if iscell(dd), disp(dd{1}), else disp(dd), end
+                          if iscell(dd), disp(dd{1}), else, disp(dd), end
                       end
                   end
               case 'r'
@@ -165,7 +165,7 @@ elseif ischar(var_name) % one specifies the name of variable
                   cdf_file_info.VariableAttributes
               case 'fav'
                   ssf=fieldnames(cdf_file_info.VariableAttributes);
-                  for jj=1:length(ssf),
+                  for jj=1:length(ssf)
                       disp('*************************************')
                       disp(ssf{jj});
                       disp('*************************************')
@@ -175,14 +175,14 @@ elseif ischar(var_name) % one specifies the name of variable
                   cdf_file_info.GlobalAttributes
               case 'gav'
                   ssf=fieldnames(cdf_file_info.GlobalAttributes);
-                  for jj=1:length(ssf),
+                  for jj=1:length(ssf)
                       disp('*************************************')
                       disp(ssf{jj});
                       disp('*************************************')
                       eval(['disp(cdf_file_info.GlobalAttributes.' ssf{jj} ')'])
                   end
               case 't'
-                  if i_time_series_variable == 0,
+                  if i_time_series_variable == 0
                       irf_log('load','there are no time variables identified')
                   elseif i_time_series_variable == 1
                       var_name='all';
@@ -190,18 +190,18 @@ elseif ischar(var_name) % one specifies the name of variable
                   else
                       disp('=== Choose time dependant variable ===');
                       disp('0) all time time dependant variables');
-                      for j=1:i_time_series_variable,
+                      for j=1:i_time_series_variable
                           disp([num2str(j) ') ' time_series_variables{j}]);
                       end
                       var_item=irf_ask('Variable? [%]>','var_item',0);
-                      if var_item==0, % read all
+                      if var_item==0 % read all
                           var_name='all';
-                      elseif var_item==-2,
+                      elseif var_item==-2
                           return;
-                      elseif var_item==-1,
+                      elseif var_item==-1
                       else
                           var_name={''};
-                          for j=1:length(var_item),
+                          for j=1:length(var_item)
                               var_name(j)=time_series_variables(var_item(j));
                           end
                       end
@@ -212,7 +212,7 @@ elseif ischar(var_name) % one specifies the name of variable
           end
       end
   end
-  if strcmp(var_name,'all'),
+  if strcmp(var_name,'all')
     var_name=time_series_variables;
   end
 else
@@ -239,7 +239,7 @@ if isempty(old_cdfread_call)
   end
 else
   if(old_cdfread_call), DATA = cdfread(cdf_file, 'VARIABLES', variables);
-  else DATA = spdfcdfread(cdf_file, 'VARIABLES', variables,'CombineRecords', true,'ConvertEpochToDatenum', true); end
+  else, DATA = spdfcdfread(cdf_file, 'VARIABLES', variables,'CombineRecords', true,'ConvertEpochToDatenum', true); end
 end
 
 if(old_cdfread_call)
@@ -248,7 +248,7 @@ if(old_cdfread_call)
       t = t(:);
       t = (t-62167219200000)/1000; %#ok<NASGU>
 else
-    if iscell(DATA), 
+    if iscell(DATA) 
         t = DATA{1};
     else
         t=DATA;
@@ -289,13 +289,13 @@ for k=2:numel(variables)
   eval([variables{k} '=[t double(var)];' ]);
 end
 
-if nargout==0,
+if nargout==0
  for k=2:numel(variables)
    assignin('caller',variables{k},eval(variables{k}));
  end
 else
 	varargout = cell(1,nargout);
-    if numel(variables)==1, % return only time variable
+    if numel(variables)==1 % return only time variable
         varargout{1}=t;
     else
         for i=1:nargout, varargout(i) = {eval(variables{i+1})}; end

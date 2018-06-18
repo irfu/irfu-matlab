@@ -2,10 +2,10 @@ function CBH = cbunits(varargin)
 %CBUNITS   Adds units (and ISU prefixes) to the colorbar ticklabels.
 %
 %   SYNTAX:
-%           cbunits ºC             % Just an example for celsius degrees.
-%           cbunits ºC prefix      % Uses ISU's prefix instead of 'x 10^y'.
-%           cbunits ºC off         % Resets the labels.
-%           cbunits(H,'°C',...)    % Uses H axes instead of current ones.
+%           cbunits ï¿½C             % Just an example for celsius degrees.
+%           cbunits ï¿½C prefix      % Uses ISU's prefix instead of 'x 10^y'.
+%           cbunits ï¿½C off         % Resets the labels.
+%           cbunits(H,'ï¿½C',...)    % Uses H axes instead of current ones.
 %     CBH = cbunits(...);
 %
 %   INPUTS:
@@ -39,7 +39,7 @@ function CBH = cbunits(varargin)
 %
 %     When a scientific notation is required, MATLAB normally put it in a
 %     small textbox like 'x10^6'; this function will put it within the unit
-%     as '°F/1e6' (dividing the unit), for example; or as 'M°F' if 'prefix'
+%     as 'ï¿½F/1e6' (dividing the unit), for example; or as 'Mï¿½F' if 'prefix'
 %     was used. If no unit was provided ('') then uses '1e6' (multiplying
 %     the label).
 %
@@ -65,7 +65,7 @@ function CBH = cbunits(varargin)
 %     * Use 'normal' extra input to avoid forcing all labels with the same
 %       decimals, that is, to use normal MATLAB behaviour.
 %     * Give extra inputs as a list of chars, for example:
-%         >> cbunits °C prefix nospace
+%         >> cbunits ï¿½C prefix nospace
 %     * Use '1' for adimensional values, for example:
 %         >> cbunits 1 prefix
 %
