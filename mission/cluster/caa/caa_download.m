@@ -787,14 +787,13 @@ end
 			datastore('csa','pwd',csaPwd);
 		end
 		if strcmp(csaUser, 'avaivads') && strcmp(csaPwd,'!kjUY88lm')
-			% Old password used by irfu-matlab, very soon to be deprecated!
+			% Old password used by irfu-matlab, now (2018/06/18) deprecated!
 			% Every user must from now on use their own credentials with ESA.
-			%datastore('csa','user',[]); datastore('csa','pwd',[]); % <-- Remove comment when it has been deprecated
+			datastore('csa','user',[]); datastore('csa','pwd',[]);
 			errStr = ['Please register at ESA: ', Default.Csa.urlRegistration, ...
 			  ' and then use your own credentials in irfu-matlab to download data from CSA.'];
 			irf.log('critical', errStr);
-			%error(errStr); % <-- When deprecated, change from warning to error.
-			warning(errStr);
+			error(errStr);
 		end
 		urlIdentity = ['&USERNAME=' csaUser '&PASSWORD=' csaPwd];
 	end
