@@ -262,28 +262,27 @@ function csaID = get_url_identity()
   % Users should use their own credentials as far as possible.
   csaUser = datastore('csa','user');
   if isempty(csaUser)
-    csaUser = input('Input csa username [default:avaivads]:','s');
+    csaUser = input('Input csa username:','s');
     if isempty(csaUser)
-      disp('Please register at ______? and later use your username and password.');
-      csaUser='avaivads';
+      disp('Please register at ESA: https://www.cosmos.esa.int/web/csa and then use your own credentials in irfu-matlab.');
     end
-    datastore('csa','user',csaUser);
   end
   csaPwd = datastore('csa','pwd');
   if isempty(csaPwd)
-    csaPwd = input('Input csa password [default:!kjUY88lm]:','s');
-    if isempty(csaPwd), csaPwd='!kjUY88lm';end
+    csaPwd = input('Input csa password:','s');
+    if isempty(csaPwd) && ~isempty(csaUser)
+      disp('Please register at ESA: https://www.cosmos.esa.int/web/csa and then use your own credentials in irfu-matlab.');
+    end
     datastore('csa','pwd',csaPwd);
   end
   if strcmp(csaUser, 'avaivads') && strcmp(csaPwd,'!kjUY88lm')
-    % Old password used by irfu-matlab, very soon to be deprecated!
+    % Old password used by irfu-matlab, now (2018/06/18) deprecated!
     % Every user must from now on use their own credentials with ESA.
-    %datastore('csa','user',[]); datastore('csa','pwd',[]); % <-- Remove comment when it has been deprecated
+    datastore('csa','user',[]); datastore('csa','pwd',[]);
     errStr = ['Please register at ESA: https://www.cosmos.esa.int/web/csa', ...
       ' and then use your own credentials in irfu-matlab to download data from CSA.'];
     irf.log('critical', errStr);
-    %error(errStr); % <-- When deprecated, change from warning to error.
-    warning(errStr);
+    error(errStr);
   end
   csaID = struct('csaUser', csaUser, 'csaPwd', csaPwd);
 end
