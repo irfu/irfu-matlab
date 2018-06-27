@@ -265,6 +265,8 @@ function csaID = get_url_identity()
     csaUser = input('Input csa username:','s');
     if isempty(csaUser)
       disp('Please register at ESA: https://www.cosmos.esa.int/web/csa and then use your own credentials in irfu-matlab.');
+    else
+      datastore('csa','user',csaUser);
     end
   end
   csaPwd = datastore('csa','pwd');
@@ -272,8 +274,9 @@ function csaID = get_url_identity()
     csaPwd = input('Input csa password:','s');
     if isempty(csaPwd) && ~isempty(csaUser)
       disp('Please register at ESA: https://www.cosmos.esa.int/web/csa and then use your own credentials in irfu-matlab.');
+    else
+      datastore('csa','pwd',csaPwd);
     end
-    datastore('csa','pwd',csaPwd);
   end
   if strcmp(csaUser, 'avaivads') && strcmp(csaPwd,'!kjUY88lm')
     % Old password used by irfu-matlab, now (2018/06/18) deprecated!
