@@ -7,14 +7,45 @@ function h = mms4_pl_eb(Tint)
 
 %% Load data
 tic
-for scId = 1:4
-  fprintf('Loading MMS%d\n',scId);
+for mmsId = 1:4
+  fprintf('Loading MMS%d\n',mmsId);
+  %% FGM & EDP
+  B_dmpa_fgm_srvy = mms.get_data('B_dmpa_fgm_srvy_l2',Tint,mmsId);
+  if isempty(B_dmpa_fgm_srvy)
+    irf.log('warning','loading L2pre DFG')
+    B_dmpa_fgm_srvy = mms.get_data('B_dmpa_dfg_srvy_l2pre',Tint,mmsId);
+    if isempty(B_dmpa_fgm_srvy)
+      irf.log('warning','loading QL DFG')
+      B_dmpa_fgm_srvy = mms.get_data('B_dmpa_dfg_srvy_ql',Tint,mmsId);
+    end
+  end
+  E_dsl_edp = mms.get_data('E_dsl_edp_brst_l2',Tint,mmsId);
+  if isempty(E_dsl_edp)
+    irf.log('warning','loading QL DCE')
+    E_dsl_edp = mms.get_data('E_dsl_edp_brst_ql',Tint,mmsId);
+  end
+  E2d_dsl_edp = mms.get_data('E2d_dsl_edp_brst_l2pre',Tint,mmsId);
+  if isempty(E2d_dsl_edp)
+    irf.log('warning','loading QL DCE2d')
+    E2d_dsl_edp = mms.get_data('E2d_dsl_edp_brst_ql',Tint,mmsId);
+  end
+  
+  V_edp = mms.get_data('V_edp_brst_l2',Tint,mmsId);
+  if isempty(V_edp)
+    irf.log('warning','loading SITL DCV')
+    V_edp = mms.get_data('V_edp_fast_sitl',Tint,mmsId);
+  end
+  
+  R_gse = mms.get_data('R_gse',Tint,mmsId);
+  
+  
   c_eval([...
-    'E? = mms.db_get_ts(''mms?_edp_fast_ql_dce'',''mms?_edp_dce_xyz_dsl'',Tint);'...
-    'P? = mms.db_get_ts(''mms?_edp_fast_l2_scpot'',''mms?_edp_psp'',Tint);'...
-    'B? = mms.db_get_ts(''mms?_dfg_srvy_ql'',''mms?_dfg_srvy_dmpa'',Tint);'...
-    'R? = mms.db_get_ts(''mms?_dfg_srvy_ql'',''mms?_ql_pos_gse'',Tint);'],...
-    scId)
+    'E? = E_dsl_edp;'...
+    'P? = V_edp;'...
+    'B? = B_dmpa_fgm_srvy;'...
+    'R? = R_gse;'],...
+    mmsId)
+  clear B_dmpa_fgm_srvy E_dsl_edp V_edp R_gse
 end
 fprintf('Data loaded\n');
 if ~isempty(R1), gseR = [R1.time.epochUnix double(R1.data(:,1:3))];
