@@ -24,18 +24,18 @@ Bscmfac = irf_convert_fac(Bscm,Bxyz,[1 0 0]);
 %% Bandpass filter E and B waveforms
 dfE = 1/median(diff(Exyz.time.epochUnix));
 dfB = 1/median(diff(Bscm.time.epochUnix));
-fCut = 4; % Hz
-Exyzfachf = Exyzfac.filt(fCut,0,dfE,5);
-Exyzfaclf = Exyzfac.filt(0,fCut,dfE,5);
-Bscmfachf = Bscmfac.filt(fCut,0,dfB,5);
+fmin = 20; fmax = 4100; %Hz
+Exyzfachf = Exyzfac.filt(fmin,0,dfE,5);
+Exyzfaclf = Exyzfac.filt(0,fmin,dfE,5);
+Bscmfachf = Bscmfac.filt(fmin,0,dfB,5);
 
 %% Wavelet transforms
-nf = 100; fmin = 1; fmax = 1000;
+nf = 100; 
 Ewavelet = irf_wavelet(Exyzfac,'nf',nf,'f',[fmin fmax]);
 Bwavelet = irf_wavelet(Bscmfac,'nf',nf,'f',[fmin fmax]);
 
 %compress wavelet transform data 10 point average
-nc = 20;
+nc = 100;
 idx = nc/2:nc:length(Ewavelet.t)-nc/2;
 Ewavelettimes = Ewavelet.t(idx);
 Ewaveletx = zeros(length(idx),nf);
@@ -131,7 +131,7 @@ irf_plot(h(3),Exyzfachf);
 ylabel(h(3),{'\delta E (mV m^{-1})'},'Interpreter','tex');
 irf_legend(h(3),{'E_{\perp 1}','E_{\perp 2}','E_{||}'},[0.98 0.12])
 irf_legend(h(3),'(c)',[0.99 0.94],'color','k','fontsize',12)
-irf_legend(h(3),sprintf('f > %.1f Hz',fCut),[0.1 0.1],'color','k','fontsize',12)
+irf_legend(h(3),sprintf('f > %.1f Hz',fmin),[0.1 0.1],'color','k','fontsize',12)
 
 h(4)=irf_panel('Especperp');
 irf_spectrogram(h(4),specperpE,'log');
@@ -170,7 +170,7 @@ irf_plot(h(6),Bscmfachf);
 ylabel(h(6),{'\delta B (nT)'},'Interpreter','tex');
 irf_legend(h(6),{'B_{\perp 1}','B_{\perp 2}','B_{||}'},[0.98 0.12])
 irf_legend(h(6),'(f)',[0.99 0.94],'color','k','fontsize',12)
-irf_legend(h(6),sprintf('f > %.1f Hz',fCut),[0.1 0.1],'color','k','fontsize',12)
+irf_legend(h(6),sprintf('f > %.1f Hz',fmin),[0.1 0.1],'color','k','fontsize',12)
 
 h(7)=irf_panel('Bspec');
 irf_spectrogram(h(7),specB,'log');
@@ -188,10 +188,10 @@ set(h(7),'yscale','log');
 set(h(7),'ytick',[1e1 1e2 1e3 1e4]);
 ylabel(h(7),{'f (Hz)'},'fontsize',12,'Interpreter','tex');
 
-load('caa/cmap.mat');
-colormap(h(4),cmap);
-colormap(h(5),cmap);
-colormap(h(7),cmap);
+%load('caa/cmap.mat');
+colormap(h(4),'jet');
+colormap(h(5),'jet');
+colormap(h(7),'jet');
 
 c_eval('title(h(1),''MMS?'')',ic);
 
