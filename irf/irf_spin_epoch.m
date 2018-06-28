@@ -13,6 +13,7 @@ function out = irf_spin_epoch(varargin)
 %          FCUT    - frequency for high-pass filter
 %          NSPINS  - number of spins used to construct spin epoch (default is 31)
 %          SAMPLEFREQ - sample frequency
+
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):
 % <yuri@irfu.se> wrote this file.  As long as you retain this notice you
@@ -70,7 +71,7 @@ while flag_have_options
 end
 
 
-STEPS_PER_DEG=10;
+STEPS_PER_DEG=2;
 
 phaUnw = unwrap(double(phase.data)*pi/180)*180/pi;
 fxPha = ((phaUnw(1)-rem(phaUnw(1),360)):1/STEPS_PER_DEG:...
