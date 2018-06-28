@@ -1,9 +1,16 @@
-function h = mms4_pl_eb(Tint)
+function h = mms4_pl_eb(Tint, mode)
 %MMS.MMS4_PL_EB  Summary plot - E & B at 4 MS S/C
 %
-%  H = MMS.MMS4_PL_EB(Tint)
+%  H = MMS.MMS4_PL_EB(Tint, [mode])
 
 %Tint = irf.tint('2015-05-24T02:10:00Z/2015-05-24T02:30:00Z');
+
+if nargin<2, dMode = 'fast'; end
+switch dMode
+  case {'brst','fast'}
+  otherwise
+    error('MODE must be one of: ''brst'', ''fast''')
+end
 
 %% Load data
 tic
@@ -19,18 +26,18 @@ for mmsId = 1:4
       B_dmpa_fgm_srvy = mms.get_data('B_dmpa_dfg_srvy_ql',Tint,mmsId);
     end
   end
-  E_dsl_edp = mms.get_data('E_dsl_edp_brst_l2',Tint,mmsId);
+  E_dsl_edp = mms.get_data(['E_dsl_edp_' dMode '_l2'],Tint,mmsId);
   if isempty(E_dsl_edp)
     irf.log('warning','loading QL DCE')
-    E_dsl_edp = mms.get_data('E_dsl_edp_brst_ql',Tint,mmsId);
+    E_dsl_edp = mms.get_data(['E_dsl_edp_' dMode '_ql'],Tint,mmsId);
   end
-  E2d_dsl_edp = mms.get_data('E2d_dsl_edp_brst_l2pre',Tint,mmsId);
+  E2d_dsl_edp = mms.get_data(['E2d_dsl_edp_' dMode '_l2pre'],Tint,mmsId);
   if isempty(E2d_dsl_edp)
     irf.log('warning','loading QL DCE2d')
-    E2d_dsl_edp = mms.get_data('E2d_dsl_edp_brst_ql',Tint,mmsId);
+    E2d_dsl_edp = mms.get_data(['E2d_dsl_edp_' dMode '_ql'],Tint,mmsId);
   end
   
-  V_edp = mms.get_data('V_edp_brst_l2',Tint,mmsId);
+  V_edp = mms.get_data(['V_edp_' dMode '_l2'],Tint,mmsId);
   if isempty(V_edp)
     irf.log('warning','loading SITL DCV')
     V_edp = mms.get_data('V_edp_fast_sitl',Tint,mmsId);
@@ -40,7 +47,7 @@ for mmsId = 1:4
   
   
   c_eval([...
-    'E? = E_dsl_edp;'...
+    'E? = E2d_dsl_edp;'...
     'P? = V_edp;'...
     'B? = B_dmpa_fgm_srvy;'...
     'R? = R_gse;'],...
