@@ -22,6 +22,7 @@ function [hout,hcb] = irf_spectrogram(varargin)
 %    options - 'lin' - plot spectrogram values in linear scale
 %              'log' - (default) plot spectrogram values in log10 scale
 %              'donotfitcolorbarlabel' - do not shrink colorbar label fonts to fit axes size
+%              'donotshowcolorbar' - do not create a colorbar in plot
 %
 % See also IRF_POWERFFT
 

@@ -1835,14 +1835,15 @@ classdef mms_sdp_dmgr < handle
           % L1b data combined with L2A fast to be processed for L2Pre
           % brst.
           DATAC.l2a.adp = -DATAC.dce.e56.data; % Note: minus (L1b dce e56) to align with DSL Z
+          brstTime = EpochTT(DATAC.dce.time);
           % Compute values from DCE and store in intermediate l2a
           % position
-          %L2aFastTime = DATAC.l2a.dce.time;
+          adcOffTs = irf.ts_vec_xy(DATAC.l2a.dce.time, [DATAC.l2a.adc_off.e12, DATAC.l2a.adc_off.e34]);
+          adcOffTs = adcOffTs.resample(brstTime); % resample to Brst time
+          DATAC.l2a.adc_off.e12 = adcOffTs.data(:,1);
+          DATAC.l2a.adc_off.e34 = adcOffTs.data(:,2);
           DATAC.l2a.dce.time = DATAC.dce.time;
           DATAC.l2a.phase = DATAC.phase;
-          % Use spinfits from entrie L2a fast segment to determine ADC
-          % offset and compute it for the burst time interval.
-          DATAC.l2a.adc_off = mms_sdp_adc_off(DATAC.dce.time, DATAC.l2a.spinfits, DATAC.scId);
           sdpProbes = fieldnames(DATAC.l2a.adc_off); % default {'e12', 'e34'}
           Etmp = struct('e12',DATAC.dce.e12.data,'e34',DATAC.dce.e34.data);
           for iProbe=1:numel(sdpProbes)
@@ -1855,7 +1856,7 @@ classdef mms_sdp_dmgr < handle
           Etmp.e12 = mask_bits(Etmp.e12, bitmask, MMS_CONST.Bitmask.SWEEP_DATA);
           Etmp.e34 = mask_bits(Etmp.e34, bitmask, MMS_CONST.Bitmask.SWEEP_DATA);
           DeltaOff = irf.ts_vec_xy(DATAC.l2a.spinfits.time, [real(DATAC.l2a.delta_off), imag(DATAC.l2a.delta_off)]);
-          DeltaOffR = DeltaOff.resample(EpochTT(DATAC.l2a.dce.time));
+          DeltaOffR = DeltaOff.resample(brstTime);
           dE = mms_sdp_despin(Etmp.e12, Etmp.e34, DATAC.phase.data, DeltaOffR.data(:,1) + DeltaOffR.data(:,2)*1j);
           offs = mms_sdp_get_offset(DATAC.scId, DATAC.procId, DATAC.dce.time, DATAC.tmMode);
           DATAC.calFile = offs.calFile; % Store name of cal file used.
@@ -1864,10 +1865,10 @@ classdef mms_sdp_dmgr < handle
           % Compute DCE Z from E.B = 0, if >10 deg and if abs(B_z)> 1 nT.
           B_tmp = DATAC.dfg.B_dmpa;
           B_tmp.data((abs(B_tmp.z.data) <= 1), :) = NaN;
-          dEz = irf_edb(TSeries(EpochTT(DATAC.dce.time),dE,'vec_xy'), B_tmp, 10, 'E.B=0');
+          dEz = irf_edb(irf.ts_vec_xy(brstTime, dE), B_tmp, 10, 'E.B=0');
           DATAC.l2a.dsl = struct('data', [dEz.data], 'bitmask', bitmask);
           if isfield(DATAC.l2pre,'spinEpoch')
-            DATAC.l2a.spinEpoch = DATAC.l2pre.spinEpoch.resample(EpochTT(DATAC.dce.time));
+            DATAC.l2a.spinEpoch = DATAC.l2pre.spinEpoch.resample(brstTime);
             DATAC.l2a.dsl.data = DATAC.l2a.dsl.data - DATAC.l2a.spinEpoch.data;
           else
             % Old processing or no corresponding L2pre dce2d fast file
