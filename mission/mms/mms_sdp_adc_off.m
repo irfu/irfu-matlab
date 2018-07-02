@@ -6,7 +6,7 @@ function ADC_off = mms_sdp_adc_off(time, spinfits, ~)
 
 % default settings
 %nPointsADCOffset = 5; %or 7 or 9 or...?;
-nPointsADCOffset = 31; % MMS
+nPointsADCOffset = 21; % MMS
 
 narginchk(3,3);
 if isempty(time) || mms_is_error(time)
