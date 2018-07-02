@@ -70,6 +70,7 @@ function [nd] = irf_shock_normal(spec,leq90)
 %           msh     -   Magnetic shear angle
 %           vsh     -   Velocity shear angle
 %           cmat    -   Constraints matrix with normalized errors.
+%           sig     -   Scaling factor to fit shock models to sc position
 %           Calclated from (10.9-10.13) in (Schwartz 1998).
 %
 %
@@ -202,7 +203,8 @@ if size(spec.Bu,1)>1 || size(spec.Bu,1)>1
                 for l = 1:length(fn2.(fn1{k})) % second layer
                     strl2 = fn2.(fn1{k}){l}; % second layer string
                     % add value from temporary structure
-                    if ~strcmp(strl2,'cmat') % cmat is not that important anyway
+                    % skip difficult ones (cmat and sig)
+                    if ~strcmp(strl2,'cmat') && ~strcmp(strl2,'sig') 
                         nd.(strl1).(strl2)(i,:) = tempNd.(strl1).(strl2);
                     end
                 end
@@ -250,20 +252,21 @@ n.mx2 = cross(cross(Bd,delV),delB)/norm(cross(cross(Bd,delV),delB));
 n.mx3 = cross(cross(delB,delV),delB)/norm(cross(cross(delB,delV),delB));
 
 
+sig = [];
 % calculate model normals if R is inputted
 if isfield(spec,'R')
     % Farris et al.
-    n.farris = farris_model(spec);
+    [n.farris,sig.farris] = farris_model(spec);
     % Slavin and Holzer mean
-    n.slho = slavin_holzer_model(spec);
+    [n.slho,sig.slho] = slavin_holzer_model(spec);
     % Peredo et al., z = 0
-    n.per = peredo_model(spec);
+    [n.per,sig.per] = peredo_model(spec);
     % Fairfield Meridian 4o
-    n.fa4o = fairfield_meridian_4o_model(spec);
+    [n.fa4o,sig.fa4o] = fairfield_meridian_4o_model(spec);
     % Fairfield Meridian No 4o
-    n.fan4o = fairfield_meridian_no_4o_model(spec);
+    [n.fan4o,sig.fan4o] = fairfield_meridian_no_4o_model(spec);
     % Formisano Unnorm. z = 0
-    n.foun = formisano_unnorm_model(spec);
+    [n.foun,sig.foun] = formisano_unnorm_model(spec);
 end
 
 % make sure all normal vectors are pointing upstream
@@ -294,7 +297,9 @@ info = [];
 info.msh = shear_angle(Bu,Bd);
 % velocity shear angle
 info.vsh = shear_angle(Vu,Vd);
-
+% compression factors to the models
+info.sig = sig;
+% constraint matrix
 info.cmat = constraint_values(spec,n);
 
 % gather data
@@ -453,7 +458,7 @@ end
 end
 
 
-function n = farris_model(spec)
+function [n,sig0] = farris_model(spec)
 eps = 0.81;
 L = 24.8; % in RE
 x0 = 0;
@@ -461,61 +466,61 @@ y0 = 0;
 
 alpha = 3.8;
 
-n = shock_model(spec,eps,L,x0,y0,alpha);
+[n,sig0] = shock_model(spec,eps,L,x0,y0,alpha);
 end
 
-function n = slavin_holzer_model(spec) %
+function [n,sig0] = slavin_holzer_model(spec) %
 eps = 1.16;
 L = 23.3; % in RE
 x0 = 3.0;
 y0 = 0;
 alpha = atand(spec.Vu(2)/spec.Vu(1));
 
-n = shock_model(spec,eps,L,x0,y0,alpha);
+[n,sig0] = shock_model(spec,eps,L,x0,y0,alpha);
 end
 
-function n = peredo_model(spec) %
+function [n,sig0] = peredo_model(spec) %
 eps = 0.98;
 L = 26.1; % in RE
 x0 = 2.0;
 y0 = 0.3;
 alpha = 3.8-0.6;
 
-n = shock_model(spec,eps,L,x0,y0,alpha);
+[n,sig0] = shock_model(spec,eps,L,x0,y0,alpha);
 end
 
-function n = fairfield_meridian_4o_model(spec) %
+function [n,sig0] = fairfield_meridian_4o_model(spec) %
 eps = 1.02;
 L = 22.3; % in RE
 x0 = 3.4;
 y0 = 0.3;
 alpha = 4.8;
 
-n = shock_model(spec,eps,L,x0,y0,alpha);
+[n,sig0] = shock_model(spec,eps,L,x0,y0,alpha);
 end
 
-function n = fairfield_meridian_no_4o_model(spec) %
+function [n,sig0] = fairfield_meridian_no_4o_model(spec) %
 eps = 1.05;
 L = 20.5; % in RE
 x0 = 4.6;
 y0 = 0.4;
 alpha = 5.2;
 
-n = shock_model(spec,eps,L,x0,y0,alpha);
+[n,sig0] = shock_model(spec,eps,L,x0,y0,alpha);
 end
 
-function n = formisano_unnorm_model(spec) %
+function [n,sig0] = formisano_unnorm_model(spec) %
 eps = 0.97;
 L = 22.8; % in RE
 x0 = 2.6;
 y0 = 1.1;
 alpha = 3.6;
 
-n = shock_model(spec,eps,L,x0,y0,alpha);
+[n,sig0] = shock_model(spec,eps,L,x0,y0,alpha);
 end
 
 
-function n = shock_model(spec,eps,L,x0,y0,alpha) % Method from ISSI book
+function [n,sig0] = shock_model(spec,eps,L,x0,y0,alpha) % Method from ISSI book
 u = irf_units;
 
 % rotation matrix
