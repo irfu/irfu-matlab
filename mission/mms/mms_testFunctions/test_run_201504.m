@@ -50,7 +50,8 @@ flagComm = 0;
 %tint = irf.tint('2016-01-03T23:00:00Z/2016-01-03T23:59:59Z'); flagComm = 2;
 %tint = irf.tint('2016-02-25T20:00:00Z/2016-02-25T23:59:59Z'); flagComm = 2;
 %tint = irf.tint('2016-06-12T05:00:00Z/2016-06-12T06:00:00Z'); flagComm = 2;
-tint = irf.tint('2016-09-17T00:00:00Z/2016-09-17T23:59:59Z'); flagComm = 2;
+%tint = irf.tint('2016-09-17T00:00:00Z/2016-09-17T23:59:59Z'); flagComm = 2;
+tint = irf.tint('2017-10-21T00:00:00Z/2017-10-21T23:59:59Z'); flagComm = 2;
 mmsId = 'mms1'; 
 
 prf = [data_root filesep mmsId]; utc = tint.start.toUtc(); 
@@ -112,18 +113,26 @@ probe2sc_pot = Dmgr.probe2sc_pot;
 phase = Dmgr.phase;
 spinfits = Dmgr.spinfits;
 delta_off = Dmgr.delta_off;
+adc_off = Dmgr.adc_off;
 dce_xyz_dsl = Dmgr.dce_xyz_dsl;
 dcv = Dmgr.dcv;
 
 sampleRate=Dmgr.samplerate;
-phase_an
+%phase_an
+
+%%
+spinEpoch = irf_spin_epoch( ...
+  irf.ts_vec_xyz(dce_xyz_dsl.time, dce_xyz_dsl.data), ...
+  phase, 'fCut', 1/40, 'nspins', 31, ...
+  'samplefreq', samplerate);
+dce_xyz_dsl.data = dce_xyz_dsl.data - spinEpoch.data;
 
 %% Construct TSeries
 DceSL = irf.ts_vec_xy(dce_xyz_dsl.time,[dce.e12.data dce.e34.data]);
 DceDSL = irf.ts_vec_xyz(dce_xyz_dsl.time,dce_xyz_dsl.data);
 Phase = irf.ts_scalar(dce_xyz_dsl.time,phase.data);
-AdcOff12 = irf.ts_scalar(spinfits.time,spinfits.sfit.e12(:,1));
-AdcOff34 = irf.ts_scalar(spinfits.time,spinfits.sfit.e34(:,1));
+AdcOff12 = irf.ts_scalar(dce_xyz_dsl.time,adc_off.e12(:,1));
+AdcOff34 = irf.ts_scalar(dce_xyz_dsl.time,adc_off.e34(:,1));
 Es12 = irf.ts_vec_xy(spinfits.time,spinfits.sfit.e12(:,2:3));
 Es34 = irf.ts_vec_xy(spinfits.time,spinfits.sfit.e34(:,2:3));
 P2scPot = irf.ts_scalar(probe2sc_pot.time,probe2sc_pot.data);
