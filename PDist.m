@@ -206,7 +206,7 @@ classdef PDist < TSeries
         if sizeDepend(1) == 1 % same dependence for all times
           obj.depend_{ii} = obj.depend{ii};
         elseif sizeDepend(1) == sizeData(1)
-          obj.depend_{ii} = obj.depend_{ii}(idx,:);
+          obj.depend_{ii} = reshape(obj.depend_{ii}(idx,:),[numel(idx) sizeDepend(2:end)]);
         else
           error('Depend has wrong dimensions.')
         end
@@ -217,7 +217,7 @@ classdef PDist < TSeries
       for iField = 1:nFields
         eval(['sizeField = size(obj.ancillary.' nameFields{iField} ');'])
         if sizeField(1) == sizeData(1)
-          eval(['obj.ancillary.' nameFields{iField} ' = obj.ancillary.' nameFields{iField} '(idx,:);'])
+          eval(['obj.ancillary.' nameFields{iField} ' = reshape(obj.ancillary.' nameFields{iField} '(idx,:),[numel(idx) sizeField(2:end)]);'])
         end
       end
     end    
@@ -623,6 +623,9 @@ classdef PDist < TSeries
       %% Get angles and velocities for spherical instrument grid, set projection
       %  grid and perform projection
       emat = double(dist.depend{1});
+      if doLowerElim
+        lowerelim_mat = repmat(lowerelim, size(emat(1,:)));
+      end
       if correct4scpot
         scpot = scpot.tlim(dist.time).resample(dist.time);
         scpot_mat = repmat(scpot.data, size(emat(1,:)));
@@ -634,9 +637,6 @@ classdef PDist < TSeries
         % must also remove all tabler energies below zero
         
         %ind_below_scpot = find(emat<scpot_mat);
-      end
-      if doLowerElim
-        lowerelim_mat = repmat(lowerelim, size(emat(1,:)));
       end
       u = irf_units;
 
@@ -776,8 +776,8 @@ classdef PDist < TSeries
         PD = PDist(dist.time(it),Fg,'line (reduced)',all_vg*1e-3);      
       elseif dim == 2
         Fg_tmp = Fg(:,:,:);
-        all_vx_tmp = permute(all_vx(:,:,:),[1 2 3])*1e-3;
-        all_vy_tmp = permute(all_vy(:,:,:),[1 2 3])*1e-3;
+        all_vx_tmp = permute(all_vx(:,:,1:end-1),[1 2 3])*1e-3;
+        all_vy_tmp = permute(all_vy(:,:,1:end-1),[1 2 3])*1e-3;
         all_vx_edges_tmp = permute(all_vx_edges(:,:,:),[1 2 3])*1e-3;
         all_vy_edges_tmp = permute(all_vy_edges(:,:,:),[1 2 3])*1e-3;
         PD = PDist(dist.time(it),Fg_tmp,'plane (reduced)',all_vx_tmp,all_vy_tmp);
@@ -802,6 +802,9 @@ classdef PDist < TSeries
         ancillary_data(1:2) = [];
       end
         
+      if doLowerElim
+        PD.ancillary.lowerelim = lowerelim_mat;
+      end
       
       % Must add xphat to ancillary data!
       
@@ -1024,6 +1027,7 @@ classdef PDist < TSeries
       all_handles.Surface = ax_surface;      
       view(ax,[0 0 1])
       ax.Box = 'on';
+      shading(ax,'flat');
       
       if doContour
         hold(ax,'on')
