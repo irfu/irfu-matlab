@@ -1911,6 +1911,22 @@ classdef PDist < TSeries
       PD.ancillary.energy = PD.depend{1}; 
       PD.depend{2} = phir.data;  
       
+      % update delta_energy 
+      if isfield(PD.ancillary,'delta_energy_minus') && isfield(PD.ancillary,'delta_energy_plus')
+        delta_energy = diff(energyr);
+        log_energy = log10(energyr);
+        log10_energy = diff(log_energy);
+        log10_energy_plus  = log_energy + 0.5*[log10_energy log10_energy(end)];
+        log10_energy_minus = log_energy - 0.5*[log10_energy(1) log10_energy];
+        energy_plus = 10.^log10_energy_plus;
+        energy_minus = 10.^log10_energy_minus;
+        delta_energy_plus = energy_plus - energyr;
+        delta_energy_minus = abs(energy_minus - energyr);
+        delta_energy_plus(end) = max(PD.ancillary.delta_energy_minus(:,end));
+        delta_energy_minus(1) = min(PD.ancillary.delta_energy_minus(:,1));
+        PD.ancillary.delta_energy_plus = delta_energy_plus;
+        PD.ancillary.delta_energy_minus = delta_energy_minus;
+      end
       if isfield(PD.ancillary,'energy0')
         PD.ancillary.energy0 = PD.depend{1}(1,:);
         PD.ancillary.energy1 = PD.depend{1}(1,:);
