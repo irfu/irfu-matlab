@@ -87,6 +87,18 @@ function irf_disp_surf_pl(kc_x_max,kc_z_max,wfinal,extraparam,surfchoice,colorch
     colorstring='<---- Most energy in fields     log10(W_e/W_f)      Most energy in electrons ---->';
     colorlimits=[-2,2];
     colorMap = 'bluered';
+  elseif colorchoice==16
+    colorstring='log10(dn_e/dn_i)';
+    colorlimits=[-2,2];
+    colorMap = 'bluered';
+  elseif colorchoice==17
+    colorstring='log10[(dn_e/n)/(dB/B)]';
+    colorlimits=[-2,2];
+    colorMap = 'bluered';
+  elseif colorchoice==18
+    colorstring='log10[(dn_i/n)/(dB/B)]';
+    colorlimits=[-2,2];
+    colorMap = 'bluered';
   else
     colorchoice=1;
     colorlimits=[0,1];

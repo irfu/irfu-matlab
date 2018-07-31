@@ -162,6 +162,16 @@ function [wfinal,extraparam]=irf_disp_surf_calc(kc_x_max,kc_z_max,m_i,wp_e)
   EB = 0.5*Btot.^2;
   ratiopf = (Een+Ein)./(EE+EB);
   
+  % Continuity equation
+  dneon = (KX.*vex + KZ.*vez)./wfinal;
+  dneon = sqrt(dneon.*conj(dneon));
+  dnion = (KX.*vix + KZ.*viz)./wfinal;
+  dnion = sqrt(dnion.*conj(dnion));
+  dnedni = dneon./dnion;
+  
+  dneonodBoB = dneon./Btot;
+  dnionodBoB = dnion./Btot;
+  
   
   extraparam(2,:,:,:)=log10(Btot./Etot); % Degree of electromagnetism
   extraparam(3,:,:,:)=abs(EparK)./Etot; % Degree of longitudinality
@@ -177,4 +187,7 @@ function [wfinal,extraparam]=irf_disp_surf_calc(kc_x_max,kc_z_max,m_i,wp_e)
   extraparam(13,:,:,:)=log10(veparoperp); % Ratio of parallel to perpendicular electron speed
   extraparam(14,:,:,:)=log10(viparoperp); % Ratio of parallel to perpendicular ion speed
   extraparam(15,:,:,:)=log10(Een./(EE+EB));
+  extraparam(16,:,:,:)=log10(dnedni); % Ratio of electron to ion density perturbations
+  extraparam(17,:,:,:)=log10(dneonodBoB); % (dn_e/n)/(dB/B)
+  extraparam(18,:,:,:)=log10(dnionodBoB); % (dn_i/n)/(dB/B)
   warning on
