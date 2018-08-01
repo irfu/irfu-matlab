@@ -99,6 +99,18 @@ function irf_disp_surf_pl(kc_x_max,kc_z_max,wfinal,extraparam,surfchoice,colorch
     colorstring='log10[(dn_i/n)/(dB/B)]';
     colorlimits=[-2,2];
     colorMap = 'bluered';
+  elseif colorchoice==19
+    colorstring='log10[(dn_e/n)/(dBpar/B)]';
+    colorlimits=[-2,2];
+    colorMap = 'bluered';
+  elseif colorchoice==20
+    colorstring='log10[(dn_i/n)/(dBpar/B)]';
+    colorlimits=[-2,2];
+    colorMap = 'bluered';
+  elseif colorchoice==21
+    colorstring='log10[dn_e/(k.E eps0/e)]';
+    colorlimits=[-2,2];
+    colorMap = 'bluered';
   else
     colorchoice=1;
     colorlimits=[0,1];
