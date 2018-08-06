@@ -1,4 +1,4 @@
-Copyright 2017
+Common Data Format (CDF)
 Space Physics Data Facility
 NASA/Goddard Space Flight Center
 
