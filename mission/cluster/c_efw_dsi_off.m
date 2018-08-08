@@ -58,6 +58,8 @@ elseif t>=toepoch([2007 07 21 18 45 0]), Ddsi = [-0.08     .46+1.4 1.65 .13 ]; %
 elseif t>=toepoch([2007 02 01 00 00 0]), Ddsi = [-0.08     .46 1.65 .13 ]; % very approximate due to high-speed solar wind streams
 elseif t>=toepoch([2007 01 01 00 00 0]), Ddsi = [-0.08     .46 1.95 .13 ]; % very approximate due to high-speed solar wind streams
 elseif t>=toepoch([2006 10 01 00 00 0]), Ddsi = [ .26      .79 2.0  .59 ];
+elseif t>=toepoch([2006 10 20 00 00 0]), Ddsi = [ .26      .79 1.7  .59 ];
+elseif t>=toepoch([2006 07 20 01 01 0]), Ddsi = [ 0.84  1.59 1.69  1.02 ]; % Force MS offset for months when don't enter SW.
 elseif t>=toepoch([2006 07 01 00 00 0]), Ddsi = [ .26      .79 1.7  .59 ];
 elseif t>=toepoch([2006 02 01 00 00 0]), Ddsi = [ .46     1.04 2.0  .59 ];
 elseif t>=toepoch([2006 01 01 00 00 0]), Ddsi = [ .46     1.13 2.0  .59 ];
@@ -130,8 +132,6 @@ elseif t>=toepoch([2007 11 01 00 0 0]), Ddsi = [ 0.72  1.46 1.69  0.87 ];
 elseif t>=toepoch([2007 08 05 01 1 0]), Ddsi = [ 0.72  1.46 1.53  0.87 ];
 elseif t>=toepoch([2007 07 21 18 45 0]), Ddsi = [ 0.72  1.46+1.4 1.53 0.87 ]; % problem with guard settings on C2
 elseif t>=toepoch([2007 01 01 00 0 0]), Ddsi = [ 0.72  1.46 1.53  0.87 ];
-elseif t>=toepoch([2006 10 01 00 0 0]), Ddsi = [ 0.84  1.59 1.69  1.02 ];
-elseif t>=toepoch([2006 07 01 00 0 0]), Ddsi = [ 0.84  1.59 1.18  1.02 ];
 elseif t>=toepoch([2006 01 01 00 0 0]), Ddsi = [ 0.84  1.59 1.69  1.02 ];
 elseif t>=toepoch([2005 01 01 00 0 0]), Ddsi = [ 1.26  2.34 1.81  1.37 ];
 elseif t>=toepoch([2004 01 01 00 0 0]), Ddsi = [ 1.35  2.06 1.45  1.15 ];
