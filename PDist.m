@@ -461,6 +461,99 @@ classdef PDist < TSeries
         vz = irf.ts_scalar(obj.time,vz);
       end
     end
+    function PD = d3v(obj,varargin)
+      % Calculate phase space volume of FPI bins.
+      % Default return is f_fpi*d3v, i.e. PDist multiplied with volume
+      % corresponding to each bin, giving the units of density.
+      % 
+      % Summing up all the bins should give the density: int(f*d3v)
+      % (For better accordance with FPI, multiply scpot with 1.2, see
+      % mms.psd_moments)
+      % nansum(nansum(nansum(ePDist1.d3v('scpot',scPot1.resample(ePDist1)).data,2),3),4)
+      % 
+      %   Options:
+      %     'scpot',scpot - corrects for spacecraft potential
+      %     'mat' - returns matrix (nt x nE x nAz x nPol) with phase space
+      %             volume
+      
+      units = irf_units;
+      doScpot = 0;
+      doReturnMat = 0;
+      nargs = numel(varargin);      
+      have_options = 0;
+      if nargs > 0, have_options = 1; args = varargin(:); end      
+      while have_options
+        l = 0;
+        switch(lower(args{1}))
+          case 'scpot'
+            scpot = varargin{2};
+            doScpot = 1;
+            l = 2;
+            args = args(l+1:end);
+          case 'mat'          
+            doReturnMat = 1;
+            l = 1;
+            args = args(l+1:end);
+          otherwise
+            l = 1;
+            irf.log('warning',sprintf('Input ''%s'' not recognized.',args{1}))
+            args = args(l+1:end);
+        end        
+        if isempty(args), break, end    
+      end
+      
+      switch obj.units % check units and if they are supported
+        case 's^3/cm^6' % m^3/s^3 = m^3/s^3 * cm^3/cm^3 = cm^3/s^3 * m^3/cm^3 = cm^3/s^3 * (10^-2)^3
+          d3v_scale = 1/10^(-2*3);
+          new_units = '1/cm^3';
+        case 's^3/m^6' % m^3/s^3 = m^3/s^3 * m^3/m^3 = m^3/s^3 * m^3/m^3 = m^3/s^3 * (10^0)^3
+          d3v_scale = 1/10^0;
+          new_units = '1/m^3';
+        case 's^3/km^6' % m^3/s^3 = m^3/s^3 * km^3/km^3 = km^3/s^3 * m^3/km^3 = km^3/s^3 * (10^3)^3
+          d3v_scale = 1/10^(3*3);
+          new_units = '1/km^3';
+        otherwise 
+          error(sprintf('PDist.d3v not supported for %s',obj.units))
+      end  
+      
+      % Calculate velocity volume of FPI bin
+      % int(sin(th)dth) -> x = -cos(th), dx = sin(th)dth -> int(dx) -> x = [-cos(th2) + cos(th1)] = [cos(th1) - cos(th1)]       
+      bin_edge_polar = [obj.depend{3} - 0.5*mean(diff(obj.depend{3})) obj.depend{3}(end) + 0.5*mean(diff(obj.depend{3}))];
+      d_polar = cosd(bin_edge_polar(1:(end-1))) - cosd(bin_edge_polar(2:end));
+      d_polar_mat = zeros(size(obj.data));
+      c_eval('d_polar_mat(:,:,:,?) = d_polar(?);',1:16)
+      
+      % int(dphi) -> phi
+      bin_azim = obj.depend{2}(1,2) - obj.depend{2}(1,1);
+      d_azim = bin_azim*pi/180;
+      
+      % int(v^2dv) -> v^3/3
+      if doScpot
+        E_minus = (obj.depend{1} - obj.ancillary.delta_energy_minus) - repmat(scpot.data,1,size(obj.depend{1},2));
+        E_plus = (obj.depend{1} + obj.ancillary.delta_energy_plus)   - repmat(scpot.data,1,size(obj.depend{1},2));      
+        E_minus(E_minus<0)= 0;
+        E_plus(E_plus<0)= 0;
+      else
+        E_minus = (obj.depend{1} - obj.ancillary.delta_energy_minus);
+        E_plus = (obj.depend{1} + obj.ancillary.delta_energy_plus);
+      end
+      v_minus = sqrt(2*units.e*E_minus/units.me); % m/s
+      v_plus = sqrt(2*units.e*E_plus/units.me); % m/s      
+      d_vel = (v_plus.^3 - v_minus.^3)/3; % (m/s)^3
+      d_vel_mat = repmat(d_vel,1,1,32,16);
+      
+      d3v = d_vel_mat.*d_azim.*d_polar_mat;            
+
+      if doReturnMat 
+        PD = d3v*d3v_scale;
+      else
+        PD = obj;
+        PD.data = PD.data.*d3v*d3v_scale;
+        PD.units = new_units;
+        PD.name = sprintf('(%s)*d3v',PD.name);
+        PD.siConversion = num2str(str2num(PD.siConversion)/d3v_scale,'%e');
+      end
+    end
     function PD = reduce(obj,dim,x,varargin) 
       %PDIST.REDUCE Reduces (integrates) 3D distribution to 1D (line).      
       %   Example (1D):
