@@ -206,7 +206,7 @@ classdef PDist < TSeries
         if sizeDepend(1) == 1 % same dependence for all times
           obj.depend_{ii} = obj.depend{ii};
         elseif sizeDepend(1) == sizeData(1)
-          obj.depend_{ii} = obj.depend_{ii}(idx,:);
+          obj.depend_{ii} = reshape(obj.depend_{ii}(idx,:),[numel(idx) sizeDepend(2:end)]);
         else
           error('Depend has wrong dimensions.')
         end
@@ -217,7 +217,7 @@ classdef PDist < TSeries
       for iField = 1:nFields
         eval(['sizeField = size(obj.ancillary.' nameFields{iField} ');'])
         if sizeField(1) == sizeData(1)
-          eval(['obj.ancillary.' nameFields{iField} ' = obj.ancillary.' nameFields{iField} '(idx,:);'])
+          eval(['obj.ancillary.' nameFields{iField} ' = reshape(obj.ancillary.' nameFields{iField} '(idx,:),[numel(idx) sizeField(2:end)]);'])
         end
       end
     end    
@@ -461,6 +461,99 @@ classdef PDist < TSeries
         vz = irf.ts_scalar(obj.time,vz);
       end
     end
+    function PD = d3v(obj,varargin)
+      % Calculate phase space volume of FPI bins.
+      % Default return is f_fpi*d3v, i.e. PDist multiplied with volume
+      % corresponding to each bin, giving the units of density.
+      % 
+      % Summing up all the bins should give the density: int(f*d3v)
+      % (For better accordance with FPI, multiply scpot with 1.2, see
+      % mms.psd_moments)
+      % nansum(nansum(nansum(ePDist1.d3v('scpot',scPot1.resample(ePDist1)).data,2),3),4)
+      % 
+      %   Options:
+      %     'scpot',scpot - corrects for spacecraft potential
+      %     'mat' - returns matrix (nt x nE x nAz x nPol) with phase space
+      %             volume
+      
+      units = irf_units;
+      doScpot = 0;
+      doReturnMat = 0;
+      nargs = numel(varargin);      
+      have_options = 0;
+      if nargs > 0, have_options = 1; args = varargin(:); end      
+      while have_options
+        l = 0;
+        switch(lower(args{1}))
+          case 'scpot'
+            scpot = varargin{2};
+            doScpot = 1;
+            l = 2;
+            args = args(l+1:end);
+          case 'mat'          
+            doReturnMat = 1;
+            l = 1;
+            args = args(l+1:end);
+          otherwise
+            l = 1;
+            irf.log('warning',sprintf('Input ''%s'' not recognized.',args{1}))
+            args = args(l+1:end);
+        end        
+        if isempty(args), break, end    
+      end
+      
+      switch obj.units % check units and if they are supported
+        case 's^3/cm^6' % m^3/s^3 = m^3/s^3 * cm^3/cm^3 = cm^3/s^3 * m^3/cm^3 = cm^3/s^3 * (10^-2)^3
+          d3v_scale = 1/10^(-2*3);
+          new_units = '1/cm^3';
+        case 's^3/m^6' % m^3/s^3 = m^3/s^3 * m^3/m^3 = m^3/s^3 * m^3/m^3 = m^3/s^3 * (10^0)^3
+          d3v_scale = 1/10^0;
+          new_units = '1/m^3';
+        case 's^3/km^6' % m^3/s^3 = m^3/s^3 * km^3/km^3 = km^3/s^3 * m^3/km^3 = km^3/s^3 * (10^3)^3
+          d3v_scale = 1/10^(3*3);
+          new_units = '1/km^3';
+        otherwise 
+          error(sprintf('PDist.d3v not supported for %s',obj.units))
+      end  
+      
+      % Calculate velocity volume of FPI bin
+      % int(sin(th)dth) -> x = -cos(th), dx = sin(th)dth -> int(dx) -> x = [-cos(th2) + cos(th1)] = [cos(th1) - cos(th1)]       
+      bin_edge_polar = [obj.depend{3} - 0.5*mean(diff(obj.depend{3})) obj.depend{3}(end) + 0.5*mean(diff(obj.depend{3}))];
+      d_polar = cosd(bin_edge_polar(1:(end-1))) - cosd(bin_edge_polar(2:end));
+      d_polar_mat = zeros(size(obj.data));
+      c_eval('d_polar_mat(:,:,:,?) = d_polar(?);',1:16)
+      
+      % int(dphi) -> phi
+      bin_azim = obj.depend{2}(1,2) - obj.depend{2}(1,1);
+      d_azim = bin_azim*pi/180;
+      
+      % int(v^2dv) -> v^3/3
+      if doScpot
+        E_minus = (obj.depend{1} - obj.ancillary.delta_energy_minus) - repmat(scpot.data,1,size(obj.depend{1},2));
+        E_plus = (obj.depend{1} + obj.ancillary.delta_energy_plus)   - repmat(scpot.data,1,size(obj.depend{1},2));      
+        E_minus(E_minus<0)= 0;
+        E_plus(E_plus<0)= 0;
+      else
+        E_minus = (obj.depend{1} - obj.ancillary.delta_energy_minus);
+        E_plus = (obj.depend{1} + obj.ancillary.delta_energy_plus);
+      end
+      v_minus = sqrt(2*units.e*E_minus/units.me); % m/s
+      v_plus = sqrt(2*units.e*E_plus/units.me); % m/s      
+      d_vel = (v_plus.^3 - v_minus.^3)/3; % (m/s)^3
+      d_vel_mat = repmat(d_vel,1,1,32,16);
+      
+      d3v = d_vel_mat.*d_azim.*d_polar_mat;            
+
+      if doReturnMat 
+        PD = d3v*d3v_scale;
+      else
+        PD = obj;
+        PD.data = PD.data.*d3v*d3v_scale;
+        PD.units = new_units;
+        PD.name = sprintf('(%s)*d3v',PD.name);
+        PD.siConversion = num2str(str2num(PD.siConversion)/d3v_scale,'%e');
+      end
+    end
     function PD = reduce(obj,dim,x,varargin) 
       %PDIST.REDUCE Reduces (integrates) 3D distribution to 1D (line).      
       %   Example (1D):
@@ -623,6 +716,9 @@ classdef PDist < TSeries
       %% Get angles and velocities for spherical instrument grid, set projection
       %  grid and perform projection
       emat = double(dist.depend{1});
+      if doLowerElim
+        lowerelim_mat = repmat(lowerelim, size(emat(1,:)));
+      end
       if correct4scpot
         scpot = scpot.tlim(dist.time).resample(dist.time);
         scpot_mat = repmat(scpot.data, size(emat(1,:)));
@@ -634,9 +730,6 @@ classdef PDist < TSeries
         % must also remove all tabler energies below zero
         
         %ind_below_scpot = find(emat<scpot_mat);
-      end
-      if doLowerElim
-        lowerelim_mat = repmat(lowerelim, size(emat(1,:)));
       end
       u = irf_units;
 
@@ -776,8 +869,8 @@ classdef PDist < TSeries
         PD = PDist(dist.time(it),Fg,'line (reduced)',all_vg*1e-3);      
       elseif dim == 2
         Fg_tmp = Fg(:,:,:);
-        all_vx_tmp = permute(all_vx(:,:,:),[1 2 3])*1e-3;
-        all_vy_tmp = permute(all_vy(:,:,:),[1 2 3])*1e-3;
+        all_vx_tmp = permute(all_vx(:,:,1:end-1),[1 2 3])*1e-3;
+        all_vy_tmp = permute(all_vy(:,:,1:end-1),[1 2 3])*1e-3;
         all_vx_edges_tmp = permute(all_vx_edges(:,:,:),[1 2 3])*1e-3;
         all_vy_edges_tmp = permute(all_vy_edges(:,:,:),[1 2 3])*1e-3;
         PD = PDist(dist.time(it),Fg_tmp,'plane (reduced)',all_vx_tmp,all_vy_tmp);
@@ -802,6 +895,9 @@ classdef PDist < TSeries
         ancillary_data(1:2) = [];
       end
         
+      if doLowerElim
+        PD.ancillary.lowerelim = lowerelim_mat;
+      end
       
       % Must add xphat to ancillary data!
       
@@ -1024,6 +1120,7 @@ classdef PDist < TSeries
       all_handles.Surface = ax_surface;      
       view(ax,[0 0 1])
       ax.Box = 'on';
+      shading(ax,'flat');
       
       if doContour
         hold(ax,'on')
@@ -1907,6 +2004,22 @@ classdef PDist < TSeries
       PD.ancillary.energy = PD.depend{1}; 
       PD.depend{2} = phir.data;  
       
+      % update delta_energy 
+      if isfield(PD.ancillary,'delta_energy_minus') && isfield(PD.ancillary,'delta_energy_plus')
+        delta_energy = diff(energyr);
+        log_energy = log10(energyr);
+        log10_energy = diff(log_energy);
+        log10_energy_plus  = log_energy + 0.5*[log10_energy log10_energy(end)];
+        log10_energy_minus = log_energy - 0.5*[log10_energy(1) log10_energy];
+        energy_plus = 10.^log10_energy_plus;
+        energy_minus = 10.^log10_energy_minus;
+        delta_energy_plus = energy_plus - energyr;
+        delta_energy_minus = abs(energy_minus - energyr);
+        delta_energy_plus(end) = max(PD.ancillary.delta_energy_minus(:,end));
+        delta_energy_minus(1) = min(PD.ancillary.delta_energy_minus(:,1));
+        PD.ancillary.delta_energy_plus = delta_energy_plus;
+        PD.ancillary.delta_energy_minus = delta_energy_minus;
+      end
       if isfield(PD.ancillary,'energy0')
         PD.ancillary.energy0 = PD.depend{1}(1,:);
         PD.ancillary.energy1 = PD.depend{1}(1,:);
