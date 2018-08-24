@@ -565,6 +565,9 @@ classdef PDist < TSeries
       %     f2D(100).plot_plane      
       %     [h_surf,h_axis,h_all] = f2D(100).plot_plane;
       %
+      %   See more example uses in Example_MMS_reduced_ion_dist and
+      %   Example_MMS_reduced_ele_dist
+      %
       %   Options:
       %     'vint'   - set limits on the from-line velocity to get cut-like
       %                distribution
@@ -621,9 +624,14 @@ classdef PDist < TSeries
           yphat_mat = y;
         else
           error('Can''t recognize second vector for the projection plane, ''y'': PDist.reduce(''2D'',x,y,...)')
-        end          
-        zphat_mat = cross(xphat_mat,yphat_mat); % it's x and z that are used as input to irf_int_sph_dist
+        end      
         
+        % it's x and z that are used as input to irf_int_sph_dist
+        zphat_mat = zeros(size(xphat_mat));
+        for ii = 1:size(xphat_mat,1)
+            zphat_mat(ii,:) = cross(xphat_mat(ii,:),yphat_mat(ii,:)); 
+        end
+
         nargs = nargs - 1;
         args = args(2:end);
         
@@ -647,6 +655,8 @@ classdef PDist < TSeries
       %tint = dist.time([1 dist.length-1]);
       correct4scpot = 0;
       isDes = 1;
+      base = 'pol'; % coordinate base, cart or pol
+      
       if strcmp(dist.species,'electrons'); isDes = 1; else, isDes = 0; end
       
       ancillary_data = {};
@@ -701,7 +711,12 @@ classdef PDist < TSeries
               lowerelim = lowerelim.resample(dist).data;
             else
               error(sprintf('Can not recognize input for flag ''%s'' ',args{1}))
-            end            
+            end
+            
+            case 'base' %
+                l = 2;
+                base = args{2};
+
         end
         args = args((l+1):end);
         if isempty(args), break, end
@@ -834,9 +849,12 @@ classdef PDist < TSeries
             % initiate projected f
             if dim == 1
               Fg = zeros(length(it),length(vg));
+              vel = zeros(length(it),1);
+            elseif dim == 2 && strcmpi(base,'pol')
+              Fg = zeros(length(it),length(phig),length(vg));
               vel = zeros(length(it),2);
-            elseif dim == 2
-              Fg = zeros(length(it),length(vg),length(vg));
+            elseif dim == 2 && strcmpi(base,'cart')
+              Fg = zeros(length(it),length(vg)+1,length(vg)+1);
               vel = zeros(length(it),2);
             end
             dens = zeros(length(it),1);
@@ -848,26 +866,26 @@ classdef PDist < TSeries
           all_vg(i,:) = vg;
         elseif dim == 2
           %tmpst = irf_int_sph_dist_mod(F3d,v,phi,th,vg,'x',xphat,'z',zphat,'phig',phig,'nMC',nMC,'vzint',vint*1e3,'weight',weight);
-          tmpst = irf_int_sph_dist(F3d,v,phi,th,vg,'x',xphat,'z',zphat,'phig',phig,'nMC',nMC,'vzint',vint*1e3,'weight',weight);
+          tmpst = irf_int_sph_dist(F3d,v,phi,th,vg,'x',xphat,'z',zphat,'phig',phig,'nMC',nMC,'vzint',vint*1e3,'weight',weight,'base',base);
           all_vx(i,:,:) = tmpst.vx;
           all_vy(i,:,:) = tmpst.vy;
           all_vx_edges(i,:,:) = tmpst.vx_edges;
           all_vy_edges(i,:,:) = tmpst.vy_edges;
         end
         
-        if dim == 1
-          Fg(i,:,:) = tmpst.F;
-        elseif dim == 2
-          Fg(i,:,:) = tmpst.F_using_edges;
+        if dim == 1 %|| strcmpi(base,'cart')
+            Fg(i,:,:) = tmpst.F;
+        elseif dim == 2 
+            Fg(i,:,:) = tmpst.F_using_edges;
         end
-         dens(i) = tmpst.dens;
-         vel(i,:) = tmpst.vel; % dimension of projection, 1D if projection onto line, 2D if projection onto plane
-         
+        dens(i) = tmpst.dens;
+        vel(i,:) = tmpst.vel; % dimension of projection, 1D if projection onto line, 2D if projection onto plane
+        
       end
       % vg is m/s, transform to km/s
       if dim == 1
         PD = PDist(dist.time(it),Fg,'line (reduced)',all_vg*1e-3);      
-      elseif dim == 2
+      elseif dim == 2 && strcmpi(base,'pol')
         Fg_tmp = Fg(:,:,:);
         all_vx_tmp = permute(all_vx(:,:,1:end-1),[1 2 3])*1e-3;
         all_vy_tmp = permute(all_vy(:,:,1:end-1),[1 2 3])*1e-3;
@@ -876,6 +894,12 @@ classdef PDist < TSeries
         PD = PDist(dist.time(it),Fg_tmp,'plane (reduced)',all_vx_tmp,all_vy_tmp);
         PD.ancillary.vx_edges = all_vx_edges_tmp;
         PD.ancillary.vy_edges = all_vy_edges_tmp;
+        PD.ancillary.base = 'pol';
+      elseif dim == 2 && strcmpi(base,'cart')
+        PD = PDist(dist.time(it),Fg,'plane (reduced)',all_vx*1e-3,all_vx*1e-3);
+        PD.ancillary.vx_edges = all_vx_edges*1e-3;
+        PD.ancillary.vy_edges = all_vx_edges*1e-3;
+        PD.ancillary.base = 'cart';
       end
       PD.species = dist.species;
       PD.userData = dist.userData;
@@ -1027,7 +1051,7 @@ classdef PDist < TSeries
       % check for input, try to keep it at a minimum, so that the
       % functionality is similar to Matlabs plot function, all the details
       % can then be fixed outside the function using ax.XLim, ax.YLim, 
-      % ax.CLim, etc...
+      % ax.CLim, etc... and colorbar perhaps?
       if nargs > 0; have_options = 1; else have_options = 0; end
       while have_options
         l = 1;
@@ -1088,6 +1112,9 @@ classdef PDist < TSeries
             l = 2;
             doFLim = 1;
             flim = args{2};
+          case 'docolorbar'
+            l = 2;
+            doColorbar = args{2};
         end
         args = args(l+1:end);  
         if isempty(args), break, end    
@@ -1115,7 +1142,12 @@ classdef PDist < TSeries
       % NOTE, PCOLOR and SURF uses flipped dimensions of (x,y) and (z), but PDist.reduce does not, there we need to flip the dim of the data
       plot_x_edges = squeeze(irf.nanmean(dist.ancillary.vx_edges,1))*v_scale; % v_scale, default 1e-3 for electrons to put axes in 10^3 km/s
       plot_y_edges = squeeze(irf.nanmean(dist.ancillary.vy_edges,1))*v_scale;
-      plot_z_edges = plot_x_edges*0;                  
+      
+      if strcmpi(dist.ancillary.base,'pol')
+        plot_z_edges = plot_x_edges*0;
+      elseif strcmpi(dist.ancillary.base,'cart')
+        plot_z_edges = zeros(length(plot_x_edges),length(plot_y_edges));
+      end
       ax_surface = surf(ax,plot_x_edges,plot_y_edges,plot_z_edges,plot_data'); 
       all_handles.Surface = ax_surface;      
       view(ax,[0 0 1])
@@ -1210,6 +1242,8 @@ classdef PDist < TSeries
         varargout = {ax_surface,ax,all_handles};
       end
     end
+    
+    
     function varargout = plot_pad_polar(varargin)
       % PDIST.PLOT_PAD_POLAR polar pitchangle plot
       

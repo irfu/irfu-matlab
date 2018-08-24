@@ -325,7 +325,7 @@ elseif strcmpi(base,'pol')
         end
     end
 elseif strcmpi(base,'cart')
-    vel = [0,0,0]; % whatever
+    vel = [0,0]; % whatever
 end
 vel = vel/dens;
 
@@ -344,6 +344,7 @@ elseif strcmpi(base,'pol')
 elseif strcmpi(base,'cart')
     pst.vx = vg;
     pst.vy = vg;
+    pst.F_using_edges = [[Fg,zeros(nVg,1)];zeros(1,nVg+1)];
     pst.vx_edges = vg_edges;
     pst.vy_edges = vg_edges;
     
