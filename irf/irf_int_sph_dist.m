@@ -24,6 +24,10 @@ function [pst] = irf_int_sph_dist(F,v,phi,th,vg,varargin)
 %   'vzint' -   set limits on the out-of-plane velocity interval in 2D and
 %               "transverse" velocity in 1D.
 %   'aint'  -   angular limit in degrees, can be combined with vzlim
+%   'base'  -   coordinate base, 'pol' for polar or 'cart' for cartesian,
+%               does not matter in 1D case
+%   've'    -   velocity edges of instrument (from delta_energy) with same
+%               units as v and one element longer than v
 %
 %   Output is a structure that contains the fields:
 %   'F'     -   integrated flux. For 2D, F(end,:) contains no information
@@ -66,6 +70,7 @@ aint = [-180,180]; % limit on out-of-plane velocity
 projDim = 1; % number of dimensions of the projection
 weight = 'none'; % how number of MC points is weighted to data
 base = 'pol'; % If 1D then this does not matter
+veInput = 0; % input energy differences
 
 args = varargin;
 nargs = length(varargin);
@@ -92,6 +97,9 @@ while have_options
             weight = args{2};
         case 'base'
             base = args{2};
+        case 've'
+            ve = args{2};
+            veInput = 1;
     end
     args = args(3:end);
     if isempty(args), break, end
@@ -103,8 +111,15 @@ end
 % complete RH system
 yphat = cross(zphat,xphat);
 
-% diffs
-dV = diff(v); dV = [dV(1),dV]; % quick and dirty
+% diffs of instrument bins
+% velocity
+if veInput
+    dVm = v-ve(1:end-1); dVp = ve(2:end)-v; % % minus and plus velocity from center
+    dV = dVm+dVp; % total difference
+else
+    dV = diff(v); dV = [dV(1),dV]; % quick and dirty
+    dVm = diff(v)/2; % dVp = diff(v)/2; % minus and plus velocity from center
+end
 dPhi = abs(median(diff(phi))); % constant
 dTh = abs(median(diff(th))); % constant
 
@@ -217,8 +232,9 @@ for i = 1:nV % velocity (energy)
                 continue;
             end
             
+            % Construct Monte Carlo particles within particle bins
             % first is not random
-            dV_MC = [0;(rand(nMCt-1,1)-.5)*dV(i)];
+            dV_MC = [0;-rand(nMCt-1,1)*dV(i)-dVm(1)]; % velocity within [-dVm,+dVp]
             dPHI_MC = [0;(rand(nMCt-1,1)-.5)*dPhi];
             dTH_MC = [0;(rand(nMCt-1,1)-.5)*dTh];
             
