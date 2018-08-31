@@ -152,8 +152,7 @@ for ic = cl_id
   a = sort([idxBad(1); idxBad(ii);  idxBad(ii+1); idxBad(end)]);
   a = result(a,1);
   a = reshape(a',2,length(a)/2)'; 
-  a(:,1) = a(:,1) - 2;
-  a(:,2) = a(:,2) - a(:,1)+4; %#ok<NASGU>
+  a(:,2) = a(:,2) - a(:,1)+4;   a(:,1) = a(:,1) - 2; %#ok<NASGU>
   c_eval('int? = a;',ic), clear a
 end % for ic
 
