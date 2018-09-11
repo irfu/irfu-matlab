@@ -395,7 +395,7 @@ rE = speedTable;
 plX = rE'*cos(edgesAz+pi);
 plY = rE'*sin(edgesAz+pi);
 
-FF(FF == 0) = NaN; % set to white the zero points
+FF(FF <= 0) = NaN; % set to white the zero points
 
 if isDes % make electron velocities 10^3 km/s
   hs = surf(ax,plX*1e-3,plY*1e-3,plY*0,log10(FF'));
