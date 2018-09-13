@@ -8,6 +8,8 @@ int1 = []; int2 = []; int3 = []; int4 = [];
 
 if nargin<3, cl_id = (1:4); end
 
+old_pwd = pwd;
+
 dt = iso2epoch(iso_stop) - iso2epoch(iso_st);
 
 h = irf_plot(4);
@@ -147,13 +149,17 @@ for ic = cl_id
   irf_plot(h(ic),result(idxBad,:),'mo')
   ylabel(h(ic),sprintf('Ex C%d [mV/m]',ic))
   
-  dbad = diff(idxBad); ii = find(dbad>1);
+  if ~isempty(idxBad)
+    dbad = diff(idxBad); ii = find(dbad>1);
   
-  a = sort([idxBad(1); idxBad(ii);  idxBad(ii+1); idxBad(end)]);
-  a = result(a,1);
-  a = reshape(a',2,length(a)/2)'; 
-  a(:,2) = a(:,2) - a(:,1)+4;   a(:,1) = a(:,1) - 2; %#ok<NASGU>
-  c_eval('int? = a;',ic), clear a
+    a = sort([idxBad(1); idxBad(ii);  idxBad(ii+1); idxBad(end)]);
+    a = result(a,1);
+    a = reshape(a',2,length(a)/2)'; 
+    a(:,2) = a(:,2) - a(:,1)+4;   a(:,1) = a(:,1) - 2; %#ok<NASGU>
+    c_eval('int? = a;',ic), clear a
+  end
 end % for ic
 
 irf_zoom(h,'x',[iso2epoch(iso_st) iso2epoch(iso_stop)])
+
+cd(old_pwd);
