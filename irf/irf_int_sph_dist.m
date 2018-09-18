@@ -351,6 +351,7 @@ pst = [];
 pst.F = Fg;
 if projDim == 1
     pst.v = vg;
+    pst.v_edges = vg_edges;
 elseif strcmpi(base,'pol')
     pst.vx = vxMesh;
     pst.vy = vyMesh;
