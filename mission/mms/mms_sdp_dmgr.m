@@ -971,8 +971,10 @@ classdef mms_sdp_dmgr < handle
         else
           % Electric field process, correct DCE fields.
           MODEL_THRESHOLD = 0.01; % mV/m
-          if(DATAC.scId == 4 && all(DATAC.dce.time > EpochTT('2016-06-12T05:28:48.200Z').ttns)) %MMS4 p4 failed
+          if(DATAC.scId == 4 && all(DATAC.dce.time > EpochTT('2016-06-12T05:28:48.200Z').ttns)) % MMS4 p4 failed
             model = mms_sdp_model_adp_shadow(DATAC.dce, Phase, {'e12', 'p123'});
+          elseif(DATAC.scId == 2 && all(DATAC.dce.time > EpochTT('2018-09-21T06:04:45.810Z').ttns)) % MMS2 p2 failed
+            model = mms_sdp_model_adp_shadow(DATAC.dce, Phase, {'p134', 'e34'});
           else
             model = mms_sdp_model_adp_shadow(DATAC.dce,Phase, {'e12','e34'});
           end
@@ -1200,10 +1202,17 @@ classdef mms_sdp_dmgr < handle
           %MMS4, Probe 4 fail, 2016-06-12T05:28:48.2
           TTFail = EpochTT('2016-06-12T05:28:48.200Z');
           senV = 'v4';
+          mergeBrst = true; % Should reconstructed e-field and original e-field be merged at highest freq?
+          senE = 'e34'; % e-field sensor to reconstruct, as:
+          % "senE" = "senA" - 0.5*("senB" + "senC")/(NOM_BOOM_L/2)
+          senA = 'v3'; senB = 'v1'; senC = 'v2';
         elseif DATAC.scId == 2
           %MMS2, Probe 2 fail, 2018-09-21T06:04:45.81
           TTFail = EpochTT('2018-09-21T06:04:45.810Z');
           senV = 'v2';
+          mergeBrst = false; % mms2p2 failed completely.
+          senE = 'e12';
+          senA = 'v1'; senB = 'v3'; senC = 'v4';
         end
         indFail = DATAC.dcv.time > TTFail.ttns;
         if ~any(indFail), return, end
@@ -1213,17 +1222,13 @@ classdef mms_sdp_dmgr < handle
           bitor(DATAC.dcv.(senV).bitmask(indFail), MMS_CONST.Bitmask.ASYMM_CONF);
         if(DATAC.procId == MMS_CONST.SDCProc.scpot), return, end
         
-        % mms2p2 should do something different from mms4p4 failure as probe
-        % 2 appears completely failed (MMS4 still provide some DCE34 data
-        % which could be merged at highest freqencies).
-        if DATAC.scId==2, return, end % FIXME: CHANGE TO DO SOMETHING WITH MMS2 e12 AS WELL!!
-
-        % Compute asymmetric E34
-        % Data with no v3 cannot be reconstructed
-        sen3_off = bitand(DATAC.dcv.v3.bitmask, MMS_CONST.Bitmask.SIGNAL_OFF);
-        DATAC.dce.e34.data(indFail & sen3_off) = NaN;
+        % Compute asymmetric E12 or E34
+        % Data with no complement cannot be reconstructed
+        senA_off = bitand(DATAC.dcv.(senA).bitmask, MMS_CONST.Bitmask.SIGNAL_OFF);
+        DATAC.dce.(senE).data(indFail & senA_off) = NaN;
         % E34 = (V3 - 0.5*(V1 + V2))/(L/2)
-        idx = indFail & ~sen3_off;
+        % or more generalized: "senE"="senA"-0.5*("senB"+"senC")/(NOM_BOOM_L/2)
+        idx = indFail & ~senA_off;
         NOM_BOOM_L = .12; % 120 m
 %         if 0 % The simplest correstion
 %           DATAC.dce.e34.data(idx) = single((double(DATAC.dcv.v3.data(idx)) - ...
@@ -1265,33 +1270,40 @@ classdef mms_sdp_dmgr < handle
               CmdModel = mms_sdp_model_spin_residual_cmd312(DATAC.dcv,...
                 Phase, DATAC.samplerate);
             end
-            tempE34 = single((...
-              double(DATAC.dcv.v3.data(idx)) - ...
-              0.5*(double(DATAC.dcv.v1.data(idx)) + ...
-              double(DATAC.dcv.v2.data(idx))) - CmdModel)/(NOM_BOOM_L/2));
-            if 2*DATAC.samplerate < MMS_CONST.Limit.MERGE_FREQ
-              irf.log('warning', ['Sample rate: ', num2str(DATAC.samplerate), ...
-                'Hz must be at least twice the merge frequency: ', ...
-                num2str(MMS_CONST.Limit.MERGE_FREQ), 'Hz. Will not merge (using only reconstructed).']);
-              DATAC.dce.e34.data(idx) = tempE34;
+            eRecon = single((...
+              double(DATAC.dcv.(senA).data(idx)) - ...
+              0.5*(double(DATAC.dcv.(senB).data(idx)) + ...
+              double(DATAC.dcv.(senC).data(idx))) - CmdModel)/(NOM_BOOM_L/2));
+            if mergeBrst && (2*DATAC.samplerate >= MMS_CONST.Limit.MERGE_FREQ)
+              % Merge high frequency content from original measurement
+              irf.log('notice', 'Probe failure specified to merge high frequency content with reconstructed.');
+              DATAC.dce.(senE).data(idx) = mms_sdp_dmgr.merge_fields(eRecon, DATAC.dce.(senE).data(idx), MMS_CONST.Limit.MERGE_FREQ, DATAC.samplerate);
             else
-              DATAC.dce.e34.data(idx) = mms_sdp_dmgr.merge_fields(tempE34, DATAC.dce.e34.data(idx), MMS_CONST.Limit.MERGE_FREQ, DATAC.samplerate);
+              % Do not merge high frequency content from original e-field
+              if mergeBrst % Write log based on case for not merging.
+                irf.log('warning', ['Sample rate: ', ...
+                  num2str(DATAC.samplerate), 'Hz must be at least twice the merge frequency: ', ...
+                  num2str(MMS_CONST.Limit.MERGE_FREQ), 'Hz. Will not merge (using only reconstructed).']);
+              else
+                irf.log('notice', 'Probe failure specified to not merge high frequency content (using only reconstructed).');
+              end
+              DATAC.dce.(senE).data(idx) = eRecon;
             end
           else
             CmdModel = mms_sdp_model_spin_residual_cmd312(DATAC.dcv, ...
               Phase, DATAC.samplerate);
             DATAC.CMDModel = CmdModel; % Store it, if process is L2A it should be written to file.
-            DATAC.dce.e34.data(idx) = single((...
-              double(DATAC.dcv.v3.data(idx)) - ...
-              0.5*(double(DATAC.dcv.v1.data(idx)) + ...
-              double(DATAC.dcv.v2.data(idx))) - CmdModel(idx))/(NOM_BOOM_L/2));
+            DATAC.dce.(senE).data(idx) = single((...
+              double(DATAC.dcv.(senA).data(idx)) - ...
+              0.5*(double(DATAC.dcv.(senB).data(idx)) + ...
+              double(DATAC.dcv.(senC).data(idx))) - CmdModel(idx))/(NOM_BOOM_L/2));
           end
         end
         % Combine the bitmasks, as the new E34 will be affected when
         % either E12 or E34 is sweeping. Other bits are left unaffected.
-        e12Sweep = bitand(DATAC.dce.e12.bitmask(idx), MMS_CONST.Bitmask.SWEEP_DATA); % True when e12 sweep
-        DATAC.dce.e34.bitmask(idx) = bitor(DATAC.dce.e34.bitmask(idx), e12Sweep);
-        DATAC.dce.e34.bitmask(idx) = bitor(DATAC.dce.e34.bitmask(idx), ...
+        eSweep = bitand(DATAC.dce.(['e' senB(2) senC(2)]).bitmask(idx), MMS_CONST.Bitmask.SWEEP_DATA); % True when sweeping
+        DATAC.dce.(senE).bitmask(idx) = bitor(DATAC.dce.(senE).bitmask(idx), eSweep);
+        DATAC.dce.(senE).bitmask(idx) = bitor(DATAC.dce.(senE).bitmask(idx), ...
           MMS_CONST.Bitmask.ASYMM_CONF);
       end
 
