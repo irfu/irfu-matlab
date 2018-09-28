@@ -1,7 +1,7 @@
-function [modelOut] = mms_sdp_model_spin_residual_cmd312(Dcv,Phase,sampleRate)
-%MMS_SDP_MODEL_SPIN_RESIDUAL  create a spin residual
+function [modelOut] = mms_sdp_model_spin_residual_cmd312(Dcv,Phase,sampleRate,signals)
+% MMS_SDP_MODEL_SPIN_RESIDUAL_CMD312  create a spin residual
 %
-%  modelOut = mms_sdp_model_spin_residual(dce,dcv,phase,signals,sampleRate)
+%  modelOut = mms_sdp_model_spin_residual_cmd312(dce,dcv,phase,sampleRate,signals)
 %
 %  Created a model to a disturbace signal caused by the ADP shadow by
 %  looking at many spins.
@@ -9,8 +9,14 @@ function [modelOut] = mms_sdp_model_spin_residual_cmd312(Dcv,Phase,sampleRate)
 %  Input : DCE     - structure with fields time, e12, e34
 %          DCV     - structure with fields time, v1, v2, v3, v4
 %          PHASE   - phase corresponding to DCE time. 
-%          SIGNALS - cell array with list of signals to proceess, 
-%                    e.g {'e12', 'e34'} or {'v1', 'v3'}
+%          SIGNALS - cell array with list of signals to proceess.
+%        Please note:
+%          Order the elements in SIGNALS corresponding to which data was
+%          reconstructed
+%                    e.g {'v3','v1','v2'} when P4 failed on MMS4 and e-field
+%                    was reconstructed as "v3-0.5*(v1+v2)... "
+%                    or {'v1','v3','v4'} when P2 failed on MMS2 and e-field
+%                    was reconstructed as "v1-0.5*(v3+v4)... "
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):
@@ -68,9 +74,9 @@ phaFixed(isnan(timeTmp)) = []; timeTmp(isnan(timeTmp)) = [];
 phaFixedWrp = mod(phaFixed,360);
 
 cmdRes = [];  
-for signal = {'v1','v2','v3'}
-  sig = signal{:};
-  if isempty(intersect(signal,{'e12','e34','v1','v2','v3','v4'}))
+for iSig = 1:length(signals)
+  sig = signals{iSig};
+  if ~ismember(sig, {'v1','v2','v3','v4'})
     errS = ['invalid signal: ' sig]; irf.log('critical',errS), error(errS)
   end 
   
@@ -94,10 +100,10 @@ for signal = {'v1','v2','v3'}
   spinFitComponent = sfitR(:,1) + sfitR(:,2).*cos(phaRad) + sfitR(:,3).*sin(phaRad);
   
   spinRes = double(double(dataIn))-spinFitComponent;
-  switch sig
-    case 'v1', cmdRes = - 0.5*spinRes;
-    case 'v2', cmdRes = cmdRes - 0.5*spinRes;
-    case 'v3', cmdRes = cmdRes + spinRes;
+  switch iSig
+    case 1, cmdRes = spinRes;
+    case 2, cmdRes = cmdRes - 0.5*spinRes;
+    case 3, cmdRes = cmdRes - 0.5*spinRes;
     otherwise, error('should not be here')
   end
 end

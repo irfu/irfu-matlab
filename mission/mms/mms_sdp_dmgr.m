@@ -1160,37 +1160,37 @@ classdef mms_sdp_dmgr < handle
         end
       end
 
-      function e_corr_cmd()
-        % Correct E for CMD
-        Phase = DATAC.phase;
-        if isempty(Phase)
-          errStr='Bad PHASE input, cannot proceed.';
-          irf.log('critical',errStr); error(errStr);
-        end
-        if(DATAC.tmMode == DATAC.CONST.TmMode.brst)
-          % XXX implement something
-        else
-          irf.log('notice','Correcting E for CMD');
-          NOM_BOOM_L = .12; % 120 m
-          if 1 % using spin resudual
-            SpinModel = mms_sdp_model_spin_residual(DATAC.dce,DATAC.dcv,Phase,...
-            {'v1','v2','v3','v4'},DATAC.samplerate);
-            DATAC.dce.e12.data = single( double(DATAC.dce.e12.data) - ...
-              (SpinModel.v1 - SpinModel.v2)/NOM_BOOM_L );
-            DATAC.dce.e34.data = single( double(DATAC.dce.e34.data) - ...
-              (SpinModel.v3 - SpinModel.v4)/NOM_BOOM_L );
-          else % using CMD
-            CmdModel = mms_sdp_model_spin_residual_cmd312(DATAC.dcv,...
-              Phase, DATAC.samplerate,'e12'); %#ok<UNRCH>
-            DATAC.dce.e12.data = single( ...
-              double(DATAC.dce.e12.data) - CmdModel/NOM_BOOM_L );
-            CmdModel = mms_sdp_model_spin_residual_cmd312(DATAC.dcv,...
-              Phase, DATAC.samplerate,'e34');
-            DATAC.dce.e34.data = single( ...
-              double(DATAC.dce.e34.data) - CmdModel/NOM_BOOM_L );
-          end
-        end
-      end
+%       function e_corr_cmd()
+%         % Correct E for CMD
+%         Phase = DATAC.phase;
+%         if isempty(Phase)
+%           errStr='Bad PHASE input, cannot proceed.';
+%           irf.log('critical',errStr); error(errStr);
+%         end
+%         if(DATAC.tmMode == DATAC.CONST.TmMode.brst)
+%           % XXX implement something
+%         else
+%           irf.log('notice','Correcting E for CMD');
+%           NOM_BOOM_L = .12; % 120 m
+%           if 1 % using spin resudual
+%             SpinModel = mms_sdp_model_spin_residual(DATAC.dce,DATAC.dcv,Phase,...
+%             {'v1','v2','v3','v4'},DATAC.samplerate);
+%             DATAC.dce.e12.data = single( double(DATAC.dce.e12.data) - ...
+%               (SpinModel.v1 - SpinModel.v2)/NOM_BOOM_L );
+%             DATAC.dce.e34.data = single( double(DATAC.dce.e34.data) - ...
+%               (SpinModel.v3 - SpinModel.v4)/NOM_BOOM_L );
+%           else % using CMD
+%             CmdModel = mms_sdp_model_spin_residual_cmd312(DATAC.dcv,...
+%               Phase, DATAC.samplerate,'e12'); %#ok<UNRCH>
+%             DATAC.dce.e12.data = single( ...
+%               double(DATAC.dce.e12.data) - CmdModel/NOM_BOOM_L );
+%             CmdModel = mms_sdp_model_spin_residual_cmd312(DATAC.dcv,...
+%               Phase, DATAC.samplerate,'e34');
+%             DATAC.dce.e34.data = single( ...
+%               double(DATAC.dce.e34.data) - CmdModel/NOM_BOOM_L );
+%           end
+%         end
+%       end
 
       function e_from_asym()
         % Compute E in asymmetric configuration
@@ -1268,7 +1268,7 @@ classdef mms_sdp_dmgr < handle
             else
               irf.log('warning','Burst but no L2a (fast) CMD model loaded.');
               CmdModel = mms_sdp_model_spin_residual_cmd312(DATAC.dcv,...
-                Phase, DATAC.samplerate);
+                Phase, DATAC.samplerate, {senA, senB, senC});
             end
             eRecon = single((...
               double(DATAC.dcv.(senA).data(idx)) - ...
@@ -1291,7 +1291,7 @@ classdef mms_sdp_dmgr < handle
             end
           else
             CmdModel = mms_sdp_model_spin_residual_cmd312(DATAC.dcv, ...
-              Phase, DATAC.samplerate);
+              Phase, DATAC.samplerate, {senA, senB, senC});
             DATAC.CMDModel = CmdModel; % Store it, if process is L2A it should be written to file.
             DATAC.dce.(senE).data(idx) = single((...
               double(DATAC.dcv.(senA).data(idx)) - ...
