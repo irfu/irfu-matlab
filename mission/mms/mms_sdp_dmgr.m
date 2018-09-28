@@ -1193,19 +1193,30 @@ classdef mms_sdp_dmgr < handle
       function e_from_asym()
         % Compute E in asymmetric configuration
 
-        if(DATAC.scId ~=4), return, end
+        if ~ismember(DATAC.scId, [2 4]), return, end
 
         %PROBE MAGIC
-        %MMS4, Probe 4 fail, 2016-06-12T05:28:48.2
-        TTFail = EpochTT('2016-06-12T05:28:48.200Z');
+        if DATAC.scId == 4
+          %MMS4, Probe 4 fail, 2016-06-12T05:28:48.2
+          TTFail = EpochTT('2016-06-12T05:28:48.200Z');
+          senV = 'v4';
+        elseif DATAC.scId == 2
+          %MMS2, Probe 2 fail, 2018-09-21T06:04:45.81
+          TTFail = EpochTT('2018-09-21T06:04:45.810Z');
+          senV = 'v2';
+        end
         indFail = DATAC.dcv.time > TTFail.ttns;
         if ~any(indFail), return, end
 
-        senV = 'v4';
         irf.log('notice',['Biasing failed on ' senV ' starting at ' TTFail.utc]);
         DATAC.dcv.(senV).bitmask(indFail) = ...
           bitor(DATAC.dcv.(senV).bitmask(indFail), MMS_CONST.Bitmask.ASYMM_CONF);
         if(DATAC.procId == MMS_CONST.SDCProc.scpot), return, end
+        
+        % mms2p2 should do something different from mms4p4 failure as probe
+        % 2 appears completely failed (MMS4 still provide some DCE34 data
+        % which could be merged at highest freqencies).
+        if DATAC.scId==2, return, end % FIXME: CHANGE TO DO SOMETHING WITH MMS2 e12 AS WELL!!
 
         % Compute asymmetric E34
         % Data with no v3 cannot be reconstructed
@@ -1214,26 +1225,26 @@ classdef mms_sdp_dmgr < handle
         % E34 = (V3 - 0.5*(V1 + V2))/(L/2)
         idx = indFail & ~sen3_off;
         NOM_BOOM_L = .12; % 120 m
-        if 0 % The simplest correstion
-          DATAC.dce.e34.data(idx) = single((double(DATAC.dcv.v3.data(idx)) - ...
-            0.5*(double(DATAC.dcv.v1.data(idx)) +...
-            double(DATAC.dcv.v2.data(idx))))/(NOM_BOOM_L/2)); %#ok<UNRCH>
-        end
-        if 0
-          % Correct for spin residual
-          Phase = DATAC.phase; %#ok<UNRCH>
-          if isempty(Phase)
-            errStr='Bad PHASE input, cannot proceed.';
-            irf.log('critical',errStr); error(errStr);
-          end
-          SpinModel = mms_sdp_model_spin_residual(DATAC.dce,DATAC.dcv,Phase,...
-            {'v1','v2','v3'},DATAC.samplerate);
-          DATAC.dce.e34.data(idx) = single((...
-            double(DATAC.dcv.v3.data(idx)) - SpinModel.v3(idx) - ...
-            0.5*(double(DATAC.dcv.v1.data(idx))- SpinModel.v1(idx) +...
-            double(DATAC.dcv.v2.data(idx))- SpinModel.v2(idx)...
-            ))/(NOM_BOOM_L/2));
-        end
+%         if 0 % The simplest correstion
+%           DATAC.dce.e34.data(idx) = single((double(DATAC.dcv.v3.data(idx)) - ...
+%             0.5*(double(DATAC.dcv.v1.data(idx)) +...
+%             double(DATAC.dcv.v2.data(idx))))/(NOM_BOOM_L/2)); %#ok<UNRCH>
+%         end
+%         if 0
+%           % Correct for spin residual
+%           Phase = DATAC.phase; %#ok<UNRCH>
+%           if isempty(Phase)
+%             errStr='Bad PHASE input, cannot proceed.';
+%             irf.log('critical',errStr); error(errStr);
+%           end
+%           SpinModel = mms_sdp_model_spin_residual(DATAC.dce,DATAC.dcv,Phase,...
+%             {'v1','v2','v3'},DATAC.samplerate);
+%           DATAC.dce.e34.data(idx) = single((...
+%             double(DATAC.dcv.v3.data(idx)) - SpinModel.v3(idx) - ...
+%             0.5*(double(DATAC.dcv.v1.data(idx))- SpinModel.v1(idx) +...
+%             double(DATAC.dcv.v2.data(idx))- SpinModel.v2(idx)...
+%             ))/(NOM_BOOM_L/2));
+%         end
         if 1
           % Correct for spin residual using model
           Phase = DATAC.phase;
@@ -1255,9 +1266,9 @@ classdef mms_sdp_dmgr < handle
                 Phase, DATAC.samplerate);
             end
             tempE34 = single((...
-            double(DATAC.dcv.v3.data(idx)) - ...
-            0.5*(double(DATAC.dcv.v1.data(idx)) + ...
-            double(DATAC.dcv.v2.data(idx))) - CmdModel)/(NOM_BOOM_L/2));
+              double(DATAC.dcv.v3.data(idx)) - ...
+              0.5*(double(DATAC.dcv.v1.data(idx)) + ...
+              double(DATAC.dcv.v2.data(idx))) - CmdModel)/(NOM_BOOM_L/2));
             if 2*DATAC.samplerate < MMS_CONST.Limit.MERGE_FREQ
               irf.log('warning', ['Sample rate: ', num2str(DATAC.samplerate), ...
                 'Hz must be at least twice the merge frequency: ', ...
@@ -1271,9 +1282,9 @@ classdef mms_sdp_dmgr < handle
               Phase, DATAC.samplerate);
             DATAC.CMDModel = CmdModel; % Store it, if process is L2A it should be written to file.
             DATAC.dce.e34.data(idx) = single((...
-            double(DATAC.dcv.v3.data(idx)) - ...
-            0.5*(double(DATAC.dcv.v1.data(idx)) + ...
-            double(DATAC.dcv.v2.data(idx))) - CmdModel(idx))/(NOM_BOOM_L/2));
+              double(DATAC.dcv.v3.data(idx)) - ...
+              0.5*(double(DATAC.dcv.v1.data(idx)) + ...
+              double(DATAC.dcv.v2.data(idx))) - CmdModel(idx))/(NOM_BOOM_L/2));
           end
         end
         % Combine the bitmasks, as the new E34 will be affected when
@@ -1630,7 +1641,7 @@ classdef mms_sdp_dmgr < handle
       end
 
       DATAC.probe2sc_pot = ...
-        mms_sdp_dmgr.comp_probe2sc_pot(Dcv,DATAC.CONST);
+        mms_sdp_dmgr.comp_probe2sc_pot(Dcv,DATAC.CONST,DATAC.scId);
       res = DATAC.probe2sc_pot;
     end
 
@@ -2018,10 +2029,10 @@ classdef mms_sdp_dmgr < handle
       end % FIND_ON
     end % COMP_DELTA_OFF
 
-    function probe2sc_pot = comp_probe2sc_pot(Dcv,MMS_CONST)
+    function probe2sc_pot = comp_probe2sc_pot(Dcv,MMS_CONST,scId)
       % COMP_PROBE2SC_POT  compute probe to SC potential
       %
-      % p2sc_pot = MMS_SDP_DMGR.COMP_PROBE2SC_POT(Dcv, MMS_CONST)
+      % p2sc_pot = MMS_SDP_DMGR.COMP_PROBE2SC_POT(Dcv, MMS_CONST,scId)
       % Blank sweeps
       sweepBit = MMS_CONST.Bitmask.SWEEP_DATA;
       Dcv.v1.data = mask_bits(Dcv.v1.data, Dcv.v1.bitmask, sweepBit);
@@ -2029,10 +2040,15 @@ classdef mms_sdp_dmgr < handle
       Dcv.v3.data = mask_bits(Dcv.v3.data, Dcv.v3.bitmask, sweepBit);
       Dcv.v4.data = mask_bits(Dcv.v4.data, Dcv.v4.bitmask, sweepBit);
 
-      % Probe 4 bias failure
+      % Probe failures
       assymConf = MMS_CONST.Bitmask.ASYMM_CONF;
-      Dcv.v3.data = mask_bits(Dcv.v3.data, Dcv.v4.bitmask, assymConf);
-      Dcv.v4.data = mask_bits(Dcv.v4.data, Dcv.v4.bitmask, assymConf);
+      if scId == 4 % Probe 4 bias failure on MMS4
+        Dcv.v3.data = mask_bits(Dcv.v3.data, Dcv.v4.bitmask, assymConf);
+        Dcv.v4.data = mask_bits(Dcv.v4.data, Dcv.v4.bitmask, assymConf);
+      elseif scId == 2 % Probe 2 complete failure on MMS2
+        Dcv.v1.data = mask_bits(Dcv.v1.data, Dcv.v2.bitmask, assymConf);
+        Dcv.v2.data = mask_bits(Dcv.v2.data, Dcv.v2.bitmask, assymConf);
+      end
 
       % Compute average of all spin plane probes, ignoring data identified
       % as bad (NaN).
