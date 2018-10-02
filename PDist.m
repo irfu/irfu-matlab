@@ -853,6 +853,9 @@ classdef PDist < TSeries
             elseif dim == 2 && strcmpi(base,'pol')
               Fg = zeros(length(it),length(phig),length(vg));
               vel = zeros(length(it),2);
+            elseif dim == 2 && strcmpi(base,'cart')
+              Fg = zeros(length(it),length(vg),length(vg));
+              vel = zeros(length(it),2);
             end
             dens = zeros(length(it),1);
         end
