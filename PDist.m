@@ -853,9 +853,6 @@ classdef PDist < TSeries
             elseif dim == 2 && strcmpi(base,'pol')
               Fg = zeros(length(it),length(phig),length(vg));
               vel = zeros(length(it),2);
-            elseif dim == 2 && strcmpi(base,'cart')
-              Fg = zeros(length(it),length(vg)+1,length(vg)+1);
-              vel = zeros(length(it),2);
             end
             dens = zeros(length(it),1);
         end
@@ -873,7 +870,7 @@ classdef PDist < TSeries
           all_vy_edges(i,:,:) = tmpst.vy_edges;
         end
         
-        if dim == 1 %|| strcmpi(base,'cart')
+        if dim == 1 || strcmpi(base,'cart')
             Fg(i,:,:) = tmpst.F;
         elseif dim == 2 
             Fg(i,:,:) = tmpst.F_using_edges;
