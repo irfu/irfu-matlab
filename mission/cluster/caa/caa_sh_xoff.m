@@ -103,6 +103,27 @@ if ~isempty(diVCEh3)
 else, CE3 = [];
 end
 
+% Try loading C4 CODIF from CAA
+if st+dt > iso2epoch('2012-11-01T00:00:00Z') % No CIS-HIA on C3 after this
+  diVCEh4 = caa_stream_var(st,dt,'C4_CP_CIS_CODIF_LS_H1_MOMENTS_INERT',...
+    'Efield_ISR2_INERT');
+  % XXX TODO: load also quality factors
+  NCp4 = caa_stream_var(st,dt,'C4_CP_CIS_CODIF_LS_H1_MOMENTS','density');
+else, diVCEh4 = [];
+end
+
+CODIF_FILLV = 200; % remove E values above this
+CODIF_N_THRESH = 2; % ion density below CODIF_N_THRESH cc is magnetosphere
+if ~isempty(diVCEh4)
+  if size(NCp4,1)==size(diVCEh4,1)
+    diVCEh4(NCp4(:,2)<CODIF_N_THRESH,:) = NaN; 
+  end   
+  diVCEh4(isnan(diVCEh4(:,2)),:)=[];
+  diVCEh4(abs(diVCEh4(:,2))>CODIF_FILLV,:) = [];
+  CE4=irf_resamp(diVCEh4,t);
+else, CE4 = [];
+end
+
 % Plot
 h = irf_plot(6);
 on = 0; compStr='xy';
@@ -119,18 +140,20 @@ for co=1:2
   if ~isempty(CE1), irf_plot(hca,CE1(:, [1 1+co]),'k+'), on = 1; end
   if on, hold(hca,'on'), end
   if ~isempty(CE3), irf_plot(hca,CE3(:, [1 1+co]),'g+'), on = 1; end
+  if on, hold(hca,'on'), end
+  if ~isempty(CE4), irf_plot(hca,CE4(:, [1 1+co]),'b+'), on = 1; end
   hold(hca,'off')
   set(hca,'YLimMode','auto', 'XLimMode','auto','XTickLabel','')
   xlabel(hca,'')
   ylabel(hca,['E' compStr(co) ' [mV/m]'])
   if co==1
     title(hca,['SH/SW ' epoch2iso(st,1) ' -- ' epoch2iso(st+dt,1)...
-      '  EFW (--), CIS HIA (+)'])
+      '  EFW (--), CIS HIA/CODIF (+)'])
   end
 end
 
 % delta Ex
-Eref = [];
+Eref = []; nRefs = 0;
 hca = irf_panel('delta Ex'); on = 0;
 if ~isempty(E1) && ~isempty(CE1)
   ii = find( abs(CE1(:,3)-E1(:,3)) < DEY );
@@ -141,10 +164,11 @@ if ~isempty(E1) && ~isempty(CE1)
     end
     dEx(:,2) = dAmp*E1(ii,2) - CE1(ii,2);
     irf_plot(hca,dEx,'kx'), on = 1;
-    dEx1 = mean(dEx(:,2));
+    dEx1 = median(dEx(:,2));
     Eref = E1(:,1:3);
     Eref(:,2) = dAmp*Eref(:,2) - dEx1;
     Eref(:,3) = dAmp*Eref(:,3);
+    nRefs = nRefs + 1;
   end
 end
 if ~isempty(E3) && ~isempty(CE3)
@@ -157,7 +181,8 @@ if ~isempty(E3) && ~isempty(CE3)
     dEx(:,2) = dAmp*E3(ii,2) - CE3(ii,2);
     if on, hold(hca,'on'), end
     irf_plot(hca,dEx,'gx')
-    dEx3 = mean(dEx(:,2));
+    dEx3 = median(dEx(:,2));
+    nRefs = nRefs + 1;
     if isempty(Eref)
       Eref = E3(:,1:3);
       Eref(:,2) = dAmp*Eref(:,2) - dEx3;
@@ -165,6 +190,30 @@ if ~isempty(E3) && ~isempty(CE3)
     else
       Eref(:,2) = ( Eref(:,2) + dAmp*E3(:,2) - dEx3 )/2;
       Eref(:,3) = ( Eref(:,3) + dAmp*E3(:,3) )/2;
+      irf_log('proc','using two signals')
+    end
+  end
+end
+if ~isempty(E4) && ~isempty(CE4)
+  ii = find( abs(CE4(:,3)-E4(:,3)) < DEY );
+  if ~isempty(ii)
+    dEx = E4(ii,1:2);
+    if flag_amp, dAmp = find_damp(E4(ii,3), CE4(ii,3));
+    else, dAmp = DAMP_DEF;
+    end
+    dEx(:,2) = dAmp*E4(ii,2) - CE4(ii,2);
+    if on, hold(hca,'on'), end
+    irf_plot(hca,dEx,'gx')
+    dEx4 = median(dEx(:,2));
+    nRefs = nRefs + 1;
+    if isempty(Eref)
+      Eref = E4(:,1:3);
+      Eref(:,2) = dAmp*Eref(:,2) - dEx4;
+      Eref(:,3) = dAmp*Eref(:,3);
+    else
+      c1 = (nRefs-1)/nRefs;
+      Eref(:,2) = c1*Eref(:,2) + (dAmp*E3(:,2) - dEx3)/nRefs;
+      Eref(:,3) = c1*Eref(:,3) + (dAmp*E3(:,3))/nRefs;
       irf_log('proc','using two signals')
     end
   end
