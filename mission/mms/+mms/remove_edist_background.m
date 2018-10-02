@@ -1,5 +1,5 @@
 function [eDist_new, eDist_bg, ephoto_scale] = remove_edist_background(varargin)
-% MMS.REMOVE_EDIST_BACKGROUND: remove secondary photoelectrons from electron distribution function
+%MMS.REMOVE_EDIST_BACKGROUND  remove secondary photoelectrons from electron distribution function
 %
 % [eDist_new] = MMS.REMOVE_EDIST_BACKGROUND(eDist, Tint)
 %
@@ -8,7 +8,8 @@ function [eDist_new, eDist_bg, ephoto_scale] = remove_edist_background(varargin)
 %
 % Options:
 %   'tint' - time interval; DEFAULT: time interval of input eDist;
-%   'Nphotoe_art' - artificial photo electron density; DEFAULT: ephoto_scale from des-emoms GlobalAttributes data;
+%   'Nphotoe_art' - artificial photo electron density; DEFAULT: ephoto_scale 
+%                   from des-emoms GlobalAttributes data;
 %   'ZeroNaN' - set the negative; DEFAULT: 0; [0/NaN]
 % 
 % References:
@@ -18,21 +19,24 @@ function [eDist_new, eDist_bg, ephoto_scale] = remove_edist_background(varargin)
 % Next step: move ion distribution background noise
 % 
 %   Example:     
-%     [eDist1_bgremoved, eDist1_bg, ephoto_scale] = remove_edist_background(eDist1, 'tint', Tint, 'Nphotoe_art', 1.0, 'ZeroNaN', NaN);
-%     [eDist1_bgremoved, eDist1_bg, ephoto_scale] = remove_edist_background(eDist1, 'tint', Tint);
-%     [eDist1_bgremoved, eDist1_bg, ephoto_scale] = remove_edist_background(eDist1);
+%     [eDist1_bgremoved, eDist1_bg, ephoto_scale] = ...
+%            mms.remove_edist_background(eDist1, 'tint', Tint, ...
+%            'Nphotoe_art', 1.0, 'ZeroNaN', NaN);
+%     [eDist1_bgremoved, eDist1_bg, ephoto_scale] = ...
+%            mms.remove_edist_background(eDist1, 'tint', Tint);
+%     [eDist1_bgremoved, eDist1_bg, ephoto_scale] = ...
+%            mms.remove_edist_background(eDist1);
 %
 % 2018-09-28, wyli;
 
     %%  1. basic
     Nphotoe_art = -1;
-    Nphoto = 0;
     ZeroNaN = 0;
     [~, args, nargs] = axescheck(varargin{:});
     eDist = args{1};
     Tint = irf.tint(eDist.time(1), eDist.time(end));    
     args_tmp = args(2: end);
-    if nargs > 1, have_options = 1; end
+    if nargs > 1, have_options = 1; else, have_options = 0; end
     while have_options 
         l = 1;
        switch(lower(args_tmp{1}))
@@ -61,8 +65,8 @@ function [eDist_new, eDist_bg, ephoto_scale] = remove_edist_background(varargin)
     c_eval('edist_fn = mms.get_filepath([''mms?_fpi_brst_l2_des-dist''], time_mid);', ic);
     emoms_obj = dataobj(emoms_fn);
     edist_obj = dataobj(edist_fn);
-    estartdelphi_count = get_ts(edist_obj, 'mms1_des_startdelphi_count_brst');
-    estartdelphi_angle = get_ts(edist_obj, 'mms1_des_startdelphi_angle_brst');
+    estartdelphi_count = get_ts(edist_obj, irf_ssub('mms?_des_startdelphi_count_brst',ic));
+    estartdelphi_angle = get_ts(edist_obj, irf_ssub('mms?_des_startdelphi_angle_brst',ic));
     ebgdist_fn = emoms_obj.GlobalAttributes.Photoelectron_model_filenames{1};
     ephoto_scale = str2double(emoms_obj.GlobalAttributes.Photoelectron_model_scaling_factor{1});
     estartdelphi_count_Tint = estartdelphi_count.tlim(Tint);
@@ -108,7 +112,7 @@ function [eDist_new, eDist_bg, ephoto_scale] = remove_edist_background(varargin)
     % 4.3. disp information
     irf.log('warning', ['* Secondary photoelectron model used: ''../mms/models/fpi/' ebgdist_fn '''.']);
     irf.log('warning', ['* Secondary photoelectron scale (number density): ' num2str(ephoto_scale)]);
-    if Nphotoe_art > 0, rf.log('warning', ['* Artificial Secondary photoelectron scale (number density): ' num2str(Nphotoe_art)]); end
+    if Nphotoe_art > 0, irf.log('warning', ['* Artificial Secondary photoelectron scale (number density): ' num2str(Nphotoe_art)]); end
     irf.log('warning', ['* Negative phase-space density set to : ' num2str(ZeroNaN)]);
 
 end
