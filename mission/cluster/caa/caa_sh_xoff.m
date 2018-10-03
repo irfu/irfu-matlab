@@ -212,8 +212,8 @@ if ~isempty(E4) && ~isempty(CE4)
       Eref(:,3) = dAmp*Eref(:,3);
     else
       c1 = (nRefs-1)/nRefs;
-      Eref(:,2) = c1*Eref(:,2) + (dAmp*E3(:,2) - dEx3)/nRefs;
-      Eref(:,3) = c1*Eref(:,3) + (dAmp*E3(:,3))/nRefs;
+      Eref(:,2) = c1*Eref(:,2) + (dAmp*E4(:,2) - dEx4)/nRefs;
+      Eref(:,3) = c1*Eref(:,3) + (dAmp*E4(:,3))/nRefs;
       irf_log('proc','using two signals')
     end
   end
