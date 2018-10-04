@@ -48,11 +48,9 @@ function [hsf,pst] = plot_int_projection(varargin)
 %   Examples:
 %       tint = irf.tint('2015-10-16T13:07:02/2015-10-16T13:07:03');
 %       t = irf.time_array('2015-10-16T13:07:02.226',0);
-%       db_info = datastore('mms_db');
-%       file  = [db_info.local_file_db_root,...
-%           '/mms4/fpi/brst/l2/des-dist/2015/10/16/mms4_fpi_brst_l2_des-dist_20151016130524_v3.1.1.cdf'];
-%       ePDist = mms.make_pdist(file);
-%       mms.plot_int_projection(ePDist,'t',t,'vlim',1e4,'xyz',[0,1,0;-1,0,0; 0,0,1],'vzint',2000*[-1,1],'nmc',100);
+%       ePDist = mms.get_data('PDe_fpi_brst_l2',tint,4);
+%       vg = linspace(-2.7e4,2.7e4,200);
+%       mms.plot_int_projection(ePDist,'t',t,'vlim',1e4,'xyz',[0,1,0;-1,0,0; 0,0,1],'vzint',2000*[-1,1],'nmc',5e2,'vg',vg,'base','cart');
 %
 %
 %   The function uses a Monte Carlo integration method. To read more about
@@ -111,6 +109,7 @@ showColorbar = 0;
 vgInput = 0;
 phigInput = 0;
 weight = 'none';
+base = 'pol';
 
 have_options = nargs > 1;
 while have_options
@@ -153,6 +152,8 @@ while have_options
             phig = args{2};
         case 'weight' % how data is weighted
             weight = args{2};
+        case 'base'
+            base = args{2};
     end
     args = args(3:end);
     if isempty(args), break, end
@@ -223,7 +224,7 @@ if ~phigInput; phig = linspace(0,2*pi-dPhig,nAzg)+dPhig/2; end
 if ~vgInput; vg = v; end % same as instrument if no input
 
 %% perform projection
-pst = irf_int_sph_dist(F3d,v,phi,th,vg,'z',zphat,'x',xphat,'phig',phig,'nMC',nMC,'vzint',vzint*1e3,'weight',weight);
+pst = irf_int_sph_dist2(F3d,v,phi,th,vg,'z',zphat,'x',xphat,'phig',phig,'nMC',nMC,'vzint',vzint*1e3,'weight',weight,'base',base);
 
 % put nans instead of 0s
 pst.F(pst.F==0) = NaN;
