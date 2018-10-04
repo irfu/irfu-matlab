@@ -554,6 +554,55 @@ classdef PDist < TSeries
         PD.siConversion = num2str(str2num(PD.siConversion)/d3v_scale,'%e');
       end
     end
+    function PD = solidangle(obj)
+      % Solid angle of bins, can for example be used when working with 
+      % pitchangles, or fluxes (where units is flux/sr)
+      %
+      % The change in solid angle is only due to the changes in polar (or 
+      % pitch) angle, you therefore get all the unique values as follows:
+      % 
+      %   squeeze(ePDist.solidangle.data(1,1,1,:))
+      %   squeeze(ePDist(1).pitchangles(dmpaB1,15).solidangle.data(1,1,:))
+      %
+      % Total solid angle is 4*pi
+      %
+      %   sum(ePDist.solidangle.data(1,1,:))
+      %   sum(ePDist(1).pitchangles(dmpaB1,15).solidangle.data(1,1,:))
+      
+      if strcmp(obj.type,'pitchangle')
+        if isfield(obj.ancillary,'pitchangle_edges') && not(isempty(obj.ancillary.pitchangle_edges))
+          bin_edge_polar = obj.ancillary.pitchangle_edges;
+        else
+          bin_edge_polar = [obj.depend{2} - 0.5*mean(diff(obj.depend{2})) obj.depend{2}(end) + 0.5*mean(diff(obj.depend{2}))];
+        end      
+        d_polar = cosd(bin_edge_polar(1:(end-1))) - cosd(bin_edge_polar(2:end));
+        d_polar_mat = zeros(size(obj.data));              
+        c_eval('d_polar_mat(:,:,?) = d_polar(?);',1:numel(obj.depend{2}))
+
+        % int(dphi) -> phi      
+        d_azim = 2*pi; % all around 
+      
+        sr_mat = d_polar_mat*d_azim;
+      elseif strcmp(obj.type,'skymap')
+        bin_edge_polar = [obj.depend{3} - 0.5*mean(diff(obj.depend{3})) obj.depend{3}(end) + 0.5*mean(diff(obj.depend{3}))];
+        d_polar = cosd(bin_edge_polar(1:(end-1))) - cosd(bin_edge_polar(2:end));
+        d_polar_mat = zeros(size(obj.data));
+        c_eval('d_polar_mat(:,:,:,?) = d_polar(?);',1:16)
+
+        % int(dphi) -> phi
+        bin_azim = obj.depend{2}(1,2) - obj.depend{2}(1,1);
+        d_azim = bin_azim*pi/180;
+        
+        sr_mat = d_azim.*d_polar_mat;
+      else
+        error(sprintf('PDist.type = %s not supported.',PDist.type))
+      end
+      
+      PD = obj;
+      PD.data = sr_mat;
+      PD.units = 'sr';
+      if isfield(PD.ancillary,'meanorsum'), PD.ancillary = rmfield(PD.ancillary,'meanorsum'); end
+    end
     function PD = reduce(obj,dim,x,varargin) 
       %PDIST.REDUCE Reduces (integrates) 3D distribution to 1D (line).      
       %   Example (1D):
@@ -711,11 +760,10 @@ classdef PDist < TSeries
               lowerelim = lowerelim.resample(dist).data;
             else
               error(sprintf('Can not recognize input for flag ''%s'' ',args{1}))
-            end
-            
-            case 'base' %
-                l = 2;
-                base = args{2};
+            end            
+          case 'base' %
+              l = 2;
+              base = args{2};
 
         end
         args = args((l+1):end);
@@ -864,6 +912,7 @@ classdef PDist < TSeries
           % v, phi, th corresponds to the bins of F3d
           tmpst = irf_int_sph_dist(F3d,v,phi,th,vg,'x',xphat,'nMC',nMC,'vzint',vint*1e3,'aint',aint,'weight',weight);
           all_vg(i,:) = vg;
+          all_vg_edges(1,:) = tmpst.v_edges;
         elseif dim == 2
           %tmpst = irf_int_sph_dist_mod(F3d,v,phi,th,vg,'x',xphat,'z',zphat,'phig',phig,'nMC',nMC,'vzint',vint*1e3,'weight',weight);
           tmpst = irf_int_sph_dist(F3d,v,phi,th,vg,'x',xphat,'z',zphat,'phig',phig,'nMC',nMC,'vzint',vint*1e3,'weight',weight,'base',base);
@@ -884,7 +933,8 @@ classdef PDist < TSeries
       end
       % vg is m/s, transform to km/s
       if dim == 1
-        PD = PDist(dist.time(it),Fg,'line (reduced)',all_vg*1e-3);      
+        PD = PDist(dist.time(it),Fg,'line (reduced)',all_vg*1e-3);
+        PD.ancillary.v_edges = all_vg_edges;  
       elseif dim == 2 && strcmpi(base,'pol')
         Fg_tmp = Fg(:,:,:);
         all_vx_tmp = permute(all_vx(:,:,1:end-1),[1 2 3])*1e-3;
@@ -978,10 +1028,17 @@ classdef PDist < TSeries
       %                       everything within this interval, so be
       %                       cautious if a varying projection plane/axis
       %                       is used            
-      %     'nolog10' - does not take log10 of data, default is to take log10
+      %     'log10'/value - if value = 0, does not take log10 of data, 
+      %             default is to take log10, i.e. value = 1,
       %     'contour'/contour_levels - contour levels drawn in black, if
-      %             log is used, use the power, as shown in the plot, i.e.
-      %             contour_levels = [-8 -5] for contour at log10(f) = [-8 -5]      
+      %             option 'log' is passed, the function will also do 
+      %             log10(contour_levels).
+      %             If one value is passed, this is the number of contours
+      %             that will be drawn at levels decided by Matlab.
+      %             If contour_levels is empty [], a default of 10 levels
+      %             will be drawn.
+      %     contourf/contour_levels - overrides the pcolor plot with filled
+      %             contour levels, using Matlabs contourf function
       %     '10^3 km/s' - plots x and y axis velocities in 10^3 km/s, this
       %             is default for electrons
       %     'km/s' - plots x and y axis velocities in km/s, this is
@@ -991,11 +1048,13 @@ classdef PDist < TSeries
       %             integration (see PDist.reduce), v1/v2 directions
       %     'flim'/flim - sets values outside of this range to NaN -
       %             default is [0 Inf]
+      %     'colorbar'/value - value is 0 for no colorbar or 1 for
+      %             colorbar, default is to plot colorbar
       %
       %     Example:
       %       tint = irf.tint('2017-07-06T13:53:50.00Z',25);
       %       tint_plot = irf.tint('2017-07-06T13:54:00.00Z',5);
-      %       Eint = [000 40000];
+      %       eint = [000 40000];
       %       vint = [-Inf Inf];
       %       iDist = iPDist1.tlim(tint).elim(eint);
       %       iLine = dmpaB1.resample(iDist).norm;
@@ -1033,6 +1092,7 @@ classdef PDist < TSeries
       doAxisLabels = 1;
       doPrintInfo = 0;
       doContour = 0;
+      doContourFill = 0;
       doCircles = 0;      
       doFLim = 1; flim = [0 Inf];
       
@@ -1079,21 +1139,21 @@ classdef PDist < TSeries
                 includescpot = 0;
                 irf.log('notice','scpot not recognized. Not using it.')
             end
-          case 'nolog10'
+          case 'nolog10' % backwards compatibility
             l = 1;
-            doLog10 = 0;   
+            doLog10 = 0;
+          case 'log10'
+            l = 2;
+            doLog10 = args{2};  
           case 'contour'
+            l = 2;
+            contour_levels = args{2};
+            doContour = 1;
+          case 'contourf'
             l = 2;
             contour_levels = args{2};  
             doContour = 1;
-%           case 'circles_origin'
-%             l = 2;
-%             v_levels = args{2};
-%             doCirclesOrigin = 1;
-%           case 'circles_drifting'
-%             l = 2;
-%             v_levels = args{2};
-%             doCirclesDrifting = 1;
+            doContourFill = 1;
           case 'circles' % same as circles drifting
             l = 2;
             v_levels = args{2};
@@ -1112,7 +1172,7 @@ classdef PDist < TSeries
             l = 2;
             doFLim = 1;
             flim = args{2};
-          case 'docolorbar'
+          case {'colorbar','docolorbar'}
             l = 2;
             doColorbar = args{2};
         end
@@ -1156,12 +1216,32 @@ classdef PDist < TSeries
       
       if doContour
         hold(ax,'on')
-        if numel(contour_levels) == 1
-          contour_levels = [contour_levels contour_levels];
+        if isempty(contour_levels), contour_levels = 10; 
+        elseif numel(contour_levels) > 1 && doLog10, contour_levels = log10(contour_levels);          
         end
-        plot_x = squeeze(irf.nanmean(dist.depend{1},1))*v_scale; % v_scale, default 1e-3 for electrons to put axes in 10^3 km/s
-        plot_y = squeeze(irf.nanmean(dist.depend{2},1))*v_scale;        
-        [~,h_contour] = contour(ax,plot_x,plot_y,plot_data',contour_levels,'k');
+        if strcmp(dist.ancillary.base,'pol')
+          if 1
+            plot_data_tmp = zeros(size(plot_data,1)+1,size(plot_data,2)+1);
+            plot_data_tmp(2:end,2:end) = plot_data;
+            plot_data_tmp(2:end,1) = plot_data(:,end);
+            plot_data_tmp(1,2:end) = plot_data(end,:);
+            plot_data_tmp(1,1) = plot_data(end,end);
+            plot_data = plot_data_tmp;
+          else
+            plot_data(:,end+1) = plot_data(:,1);
+            plot_data(end+1,:) = plot_data(1,:);
+          end
+          plot_x = plot_x_edges;
+          plot_y = plot_y_edges;
+        else
+          plot_x = squeeze(irf.nanmean(dist.depend{1},1))*v_scale; % v_scale, default 1e-3 for electrons to put axes in 10^3 km/s
+          plot_y = squeeze(irf.nanmean(dist.depend{2},1))*v_scale;  
+        end      
+        if doContourFill
+          [~,h_contour] = contourf(ax,plot_x,plot_y,plot_data',contour_levels,'k');
+        else
+          [~,h_contour] = contour(ax,plot_x,plot_y,plot_data',contour_levels,'k');
+        end
         h_contour.LineWidth = 1.5;
         hold(ax,'off')
         all_handles.Contour = h_contour;
@@ -1241,9 +1321,7 @@ classdef PDist < TSeries
       elseif nargout == 3 % return all handles in a structure
         varargout = {ax_surface,ax,all_handles};
       end
-    end
-    
-    
+    end  
     function varargout = plot_pad_polar(varargin)
       % PDIST.PLOT_PAD_POLAR polar pitchangle plot
       
@@ -1263,6 +1341,8 @@ classdef PDist < TSeries
       
       dist = dist_orig;
             
+      units = irf_units;
+      
       % default plotting parameters
       doMirrorData = 1;
       doAxesV = 0; % default is to do energy
@@ -1273,6 +1353,7 @@ classdef PDist < TSeries
       doPrintInfo = 0;
       doContour = 0;
       doCircles = 0;      
+      doScpot = 0;      
       doFLim = 1; flim = [0 Inf];
       
       if strcmp(dist.species,'electrons') 
@@ -1306,12 +1387,12 @@ classdef PDist < TSeries
           case 'scpot'
             l = 2;
             scpot = args{2};
+            doScpot = 1;
             if isa(scpot,'TSeries')
-              includescpot = 1;
-              irf.log('notice','Spacecraft potential passed.')
-            else
-                includescpot = 0;
-                irf.log('notice','scpot not recognized. Not using it.')
+              scpot = scpot.resample(dist).data;
+              irf.log('notice','scpot was TSeries.')
+            elseif isnumeric(scpot) && numel(scpot) == 1              
+              irf.log('notice','scpot was scalar.')
             end
           case 'nolog10'
             l = 1;
@@ -1373,8 +1454,20 @@ classdef PDist < TSeries
       % main surface plot
       % NOTE, PCOLOR and SURF uses flipped dimensions of (x,y) and (z), but PDist.reduce does not, there we need to flip the dim of the data
       rho_edges = [dist.depend{1}-dist.ancillary.delta_energy_minus dist.depend{1}(:,end)+dist.ancillary.delta_energy_plus(:,end)];
-      theta = dist.depend{2}; dtheta = theta(2)-theta(1); theta_edges = [theta(1)-dtheta/2 theta+dtheta/2];
-      if doLogAxes, rho_edges = log10(rho_edges); end
+      if isfield(dist.ancillary,'pitchangle_edges') && not(isempty(dist.ancillary.pitchangle_edges))
+        theta_edges = dist.ancillary.pitchangle_edges;
+      else
+        theta = dist.depend{2}; dtheta = theta(2)-theta(1); 
+        theta_edges = [theta(1)-dtheta/2 theta+dtheta/2];
+      end      
+      if doScpot, rho_edges = rho_edges - scpot; rho_edges(rho_edges<0) = NaN; data(isnan(rho_edges),:) = NaN; end
+      if doAxesV
+        rho_edges = sqrt(2*units.e*rho_edges/units.me)*1e-3*v_scale;
+        stringLabel = sprintf('v (%s)',v_label_units);
+      else
+        stringLabel = sprintf('E (%s)','eV');
+      end
+      if doLogAxes, rho_edges = log10(rho_edges); stringLabel = sprintf('log_{10}(%s)%s',stringLabel(1),stringLabel(2:end)); end
       theta_edges = theta_edges + 90; % rotate data      
       [RHO,THETA] = meshgrid(rho_edges,theta_edges);            
       X = RHO.*cosd(THETA);
@@ -1439,8 +1532,8 @@ classdef PDist < TSeries
         all_handles.Circles = h_levels;
       end
       if doAxisLabels
-        ax.XLabel.String = sprintf('v (%s)',v_label_units);
-        ax.YLabel.String = sprintf('v (%s)',v_label_units);
+        ax.XLabel.String = stringLabel;
+        ax.YLabel.String = stringLabel;
       end
       if doPrintInfo
         s1 = '';%sprintf('v int (out-of-plane) = [%g %g] %s',dist.ancillary.vint(1),dist.ancillary.vint(1),dist.ancillary.vint_units);
@@ -1900,7 +1993,7 @@ classdef PDist < TSeries
           error('Units not supported.');
       end
     end          
-    function PD = pitchangles(obj,obj1,obj2) %,method
+    function PD = pitchangles(obj,obj1,obj2,varargin) %,method
       %PITCHANGLES Calculate pitchangle distribution
       % PitchangleDistribution = Distribution.pitchangles(B,[nangles])
       % PitchangleDistribution = pitchangles(Distribution,B,[nangles])
@@ -1914,9 +2007,16 @@ classdef PDist < TSeries
       
       if nargin<3 || isempty(obj2)
         nangles = 12;
-      else 
+      elseif isnumeric(obj2) % angles or number of angles
         nangles = obj2; 
-      end       
+        if numel(nangles) > 1
+          pitchangle_edges = nangles;
+        else % if nothing is passed, they are equidistanced
+          pitchangle_edges = 0:(180/nangles):180;
+        end        
+      else % obj2 is part of varargin to be passed on to mms.get_pitchangles
+        varargin = {obj2,varargin{:}};
+      end     
 %       if method % try new method to try to get away the stripes         
 %         data_size = size(obj.data);
 %         B = obj1.resample(obj.time);
@@ -1967,8 +2067,11 @@ classdef PDist < TSeries
 %         PD = obj.clone(obj.time,new_data);                
 %         PD.depend = {PD.depend{1},repmat(mid{1},obj.length,1)};        
 %       else
-        [PD,~,~,~] = mms.get_pitchangledist(obj,obj1,'angles',nangles); % - For v1.0.0 or higher data      
+        [PD,~,~,~] = mms.get_pitchangledist(obj,obj1,'angles',nangles,varargin{:}); % - For v1.0.0 or higher data      
 %       end
+        % if the pitch angle bins are not equally spaced, we pass this for
+        % plotting purposes, can be empty
+        PD.ancillary.pitchangle_edges = pitchangle_edges;        
     end  
     function PD = einterp(obj,varargin)
       % PDIST.EINTERP Interpolates f to 64 energy channels. 
