@@ -1230,74 +1230,52 @@ classdef mms_sdp_dmgr < handle
         % or more generalized: "senE"="senA"-0.5*("senB"+"senC")/(NOM_BOOM_L/2)
         idx = indFail & ~senA_off;
         NOM_BOOM_L = .12; % 120 m
-%         if 0 % The simplest correstion
-%           DATAC.dce.e34.data(idx) = single((double(DATAC.dcv.v3.data(idx)) - ...
-%             0.5*(double(DATAC.dcv.v1.data(idx)) +...
-%             double(DATAC.dcv.v2.data(idx))))/(NOM_BOOM_L/2)); %#ok<UNRCH>
-%         end
-%         if 0
-%           % Correct for spin residual
-%           Phase = DATAC.phase; %#ok<UNRCH>
-%           if isempty(Phase)
-%             errStr='Bad PHASE input, cannot proceed.';
-%             irf.log('critical',errStr); error(errStr);
-%           end
-%           SpinModel = mms_sdp_model_spin_residual(DATAC.dce,DATAC.dcv,Phase,...
-%             {'v1','v2','v3'},DATAC.samplerate);
-%           DATAC.dce.e34.data(idx) = single((...
-%             double(DATAC.dcv.v3.data(idx)) - SpinModel.v3(idx) - ...
-%             0.5*(double(DATAC.dcv.v1.data(idx))- SpinModel.v1(idx) +...
-%             double(DATAC.dcv.v2.data(idx))- SpinModel.v2(idx)...
-%             ))/(NOM_BOOM_L/2));
-%         end
-        if 1
-          % Correct for spin residual using model
-          Phase = DATAC.phase;
-          if isempty(Phase)
-            errStr='Bad PHASE input, cannot proceed.';
-            irf.log('critical',errStr); error(errStr);
-          end
-          % FOR BRST SEGMENTS TRY TO USE L2A, if not brst or if no L2a
-          % loaded compute CMDModel
-          if(DATAC.tmMode == DATAC.CONST.TmMode.brst)
-            if(isfield(DATAC.l2a, 'CMDModel'))
-              irf.log('notice', 'Using CMD model from L2a file.');
-              tmp = irf.ts_scalar(DATAC.l2a.dce.time, DATAC.l2a.CMDModel);
-              CmdModel = tmp.resample(EpochTT(DATAC.dce.time(idx)));
-              CmdModel = CmdModel.data;
-            else
-              irf.log('warning','Burst but no L2a (fast) CMD model loaded.');
-              CmdModel = mms_sdp_model_spin_residual_cmd312(DATAC.dcv,...
-                Phase, DATAC.samplerate, {senA, senB, senC});
-            end
-            eRecon = single((...
-              double(DATAC.dcv.(senA).data(idx)) - ...
-              0.5*(double(DATAC.dcv.(senB).data(idx)) + ...
-              double(DATAC.dcv.(senC).data(idx))) - CmdModel)/(NOM_BOOM_L/2));
-            if mergeBrst && (2*DATAC.samplerate >= MMS_CONST.Limit.MERGE_FREQ)
-              % Merge high frequency content from original measurement
-              irf.log('notice', 'Probe failure specified to merge high frequency content with reconstructed.');
-              DATAC.dce.(senE).data(idx) = mms_sdp_dmgr.merge_fields(eRecon, DATAC.dce.(senE).data(idx), MMS_CONST.Limit.MERGE_FREQ, DATAC.samplerate);
-            else
-              % Do not merge high frequency content from original e-field
-              if mergeBrst % Write log based on case for not merging.
-                irf.log('warning', ['Sample rate: ', ...
-                  num2str(DATAC.samplerate), 'Hz must be at least twice the merge frequency: ', ...
-                  num2str(MMS_CONST.Limit.MERGE_FREQ), 'Hz. Will not merge (using only reconstructed).']);
-              else
-                irf.log('notice', 'Probe failure specified to not merge high frequency content (using only reconstructed).');
-              end
-              DATAC.dce.(senE).data(idx) = eRecon;
-            end
+        % Correct for spin residual using model
+        Phase = DATAC.phase;
+        if isempty(Phase)
+          errStr='Bad PHASE input, cannot proceed.';
+          irf.log('critical',errStr); error(errStr);
+        end
+        % FOR BRST SEGMENTS TRY TO USE L2A, if not brst or if no L2a
+        % loaded compute CMDModel
+        if(DATAC.tmMode == DATAC.CONST.TmMode.brst)
+          if(isfield(DATAC.l2a, 'CMDModel'))
+            irf.log('notice', 'Using CMD model from L2a file.');
+            tmp = irf.ts_scalar(DATAC.l2a.dce.time, DATAC.l2a.CMDModel);
+            CmdModel = tmp.resample(EpochTT(DATAC.dce.time(idx)));
+            CmdModel = CmdModel.data;
           else
-            CmdModel = mms_sdp_model_spin_residual_cmd312(DATAC.dcv, ...
-              Phase, DATAC.samplerate, {senA, senB, senC});
-            DATAC.CMDModel = CmdModel; % Store it, if process is L2A it should be written to file.
-            DATAC.dce.(senE).data(idx) = single((...
-              double(DATAC.dcv.(senA).data(idx)) - ...
-              0.5*(double(DATAC.dcv.(senB).data(idx)) + ...
-              double(DATAC.dcv.(senC).data(idx))) - CmdModel(idx))/(NOM_BOOM_L/2));
+            irf.log('warning','Burst but no L2a (fast) CMD model loaded.');
+            CmdModel = mms_sdp_model_spin_residual_cmd312(DATAC.dcv,...
+              Phase, DATAC.samplerate, {senA, senB, senC}, DATAC.scId);
           end
+          eRecon = single((...
+            double(DATAC.dcv.(senA).data(idx)) - ...
+            0.5*(double(DATAC.dcv.(senB).data(idx)) + ...
+            double(DATAC.dcv.(senC).data(idx))) - CmdModel)/(NOM_BOOM_L/2));
+          if mergeBrst && (2*DATAC.samplerate >= MMS_CONST.Limit.MERGE_FREQ)
+            % Merge high frequency content from original measurement
+            irf.log('notice', 'Probe failure specified to merge high frequency content with reconstructed.');
+            DATAC.dce.(senE).data(idx) = mms_sdp_dmgr.merge_fields(eRecon, DATAC.dce.(senE).data(idx), MMS_CONST.Limit.MERGE_FREQ, DATAC.samplerate);
+          else
+            % Do not merge high frequency content from original e-field
+            if mergeBrst % Write log based on case for not merging.
+              irf.log('warning', ['Sample rate: ', ...
+                num2str(DATAC.samplerate), 'Hz must be at least twice the merge frequency: ', ...
+                num2str(MMS_CONST.Limit.MERGE_FREQ), 'Hz. Will not merge (using only reconstructed).']);
+            else
+              irf.log('notice', 'Probe failure specified to not merge high frequency content (using only reconstructed).');
+            end
+            DATAC.dce.(senE).data(idx) = eRecon;
+          end
+        else
+          CmdModel = mms_sdp_model_spin_residual_cmd312(DATAC.dcv, ...
+            Phase, DATAC.samplerate, {senA, senB, senC}, DATAC.scId);
+          DATAC.CMDModel = CmdModel; % Store it, if process is L2A it should be written to file.
+          DATAC.dce.(senE).data(idx) = single((...
+            double(DATAC.dcv.(senA).data(idx)) - ...
+            0.5*(double(DATAC.dcv.(senB).data(idx)) + ...
+            double(DATAC.dcv.(senC).data(idx))) - CmdModel(idx))/(NOM_BOOM_L/2));
         end
         % Combine the bitmasks, as the new E34 will be affected when
         % either E12 or E34 is sweeping. Other bits are left unaffected.
