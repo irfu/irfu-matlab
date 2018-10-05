@@ -206,7 +206,7 @@ info1.Variables = {};
 info1.GlobalAttributes = [];
 info1.VariableAttributes = [];
 info1.LibVersion = '';
-info1.PatchVersion = '3.6.4.0';
+info1.PatchVersion = '3.7.0.0';
 info2.Variables = {};
 info2.VariableAttributes = [];
 args.VarStruct = false;
@@ -563,6 +563,17 @@ else
       str = 'Alpha VMS g';
     case 16
       str = 'Alpha VMS i';
+    case 17
+      str = 'ARM Little';
+    case 18
+      str = 'ARM Big';
+    case 19
+      str = 'IA64 VMS i';
+    case 20
+      str = 'IA64 VMS d';
+    case 21
+      str = 'IA64 VMS g';
+
   end
 end
 

@@ -146,7 +146,7 @@ if ischar(scd)
             % return up and downstream tints for output
             ud.params.tintu = irf_time(ud.tu,'epoch>epochtt');
             ud.params.tintd = irf_time(ud.td,'epoch>epochtt');
-            ud.params.tinfd = irf_time(ud.tf,'epoch>epochtt');
+            ud.params.tintf = irf_time(ud.tf,'epoch>epochtt');
             
             % get shock parameters (Mach #, beta, Fcp,...)
             ud.shp.par = irf_shock_parameters(ud.params);

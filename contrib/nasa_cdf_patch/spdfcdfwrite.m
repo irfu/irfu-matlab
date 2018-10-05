@@ -47,8 +47,10 @@ function spdfcdfwrite(filename, varcell, varargin)
 %
 %   If there is a master CDF that has all the meta-data that the new CDF needs,
 %   then SPDFCDFINFO module can be used to retrieve the infomation. The 
-%   'VariableAttributes' field from the returned structure can
-%   be passed in for the VATTRIB.
+%   'VariableAttributes' field from the returned structure can be passed
+%   in for the VATTRIB.
+%   Note: For string variable attributes, they can be either a single string
+%         or a cell of strings. 
 %
 %   In order to specify a variable attribute name that is illegal in
 %   MATLAB, create a field called "CDFAttributeRename" in the 
