@@ -66,7 +66,11 @@ function mms_sweep_plot_cron(dayToRun)
     end % for ii=1:length(listDefatt)
     if isempty(defatt), error('Unknown zphase'); end
     if(iSc==4 && tint.stop.ttns > EpochTT('2016-06-12T05:28:48.200Z').ttns)
-      warning('off','MATLAB:polyfit:PolyNotUnique');  %MMS4 p4 failed
+      warning('off','MATLAB:polyfit:PolyNotUnique');  % MMS4 p4 failed
+    elseif(iSc==2 && tint.stop.ttns > EpochTT('2018-09-21T06:04:45.810Z').ttns)
+      warning('off','MATLAB:polyfit:PolyNotUnique');  % MMS2 p2 failed
+    else
+      warning('on','MATLAB:polyfit:PolyNotUnique');  % Other s/c (with working probes) should warn
     end
     analyze_all(sObj, defatt); % Process the sweep data, with zphase from defatt
     figure('units', 'normalized', 'outerposition', [0 0 1 1]); % maximized window

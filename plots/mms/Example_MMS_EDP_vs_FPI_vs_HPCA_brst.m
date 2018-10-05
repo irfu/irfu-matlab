@@ -21,6 +21,9 @@ if isempty(E2d_dsl_edp)
   irf.log('warning','loading QL DCE2d')
   E2d_dsl_edp = mms.get_data('E2d_dsl_edp_brst_ql',Tint,mmsId);
 end
+E_adp_edp = mms.get_data('E_ssc_edp_brst_l1b',Tint,mmsId);
+E_adp_edp = -E_adp_edp.z*1.5;
+
 %% FPI
 Vi_dbcs_fpi = mms.get_data('Vi_dbcs_fpi_brst_l2',Tint,mmsId);
 Ve_dbcs_fpi = mms.get_data('Ve_dbcs_fpi_brst_l2',Tint,mmsId);
@@ -46,6 +49,7 @@ end
 %%
 f = irf_figure(2387456,3);
 set(gcf,'defaultAxesColorOrder',[0 0 0;0 0 1;1 0 0;0 0.9 0;0 1 1 ;1 0 1; 1 1 0])
+set(gcf,'defaultAxesFontSize',20)
 h = irf_plot({VExB,VE2dxB,Ve_perp,Vi_perp,Vhplus_perp},'comp');
 title(h(1),sprintf('MMS%d',mmsId))
 legend(h(1),'VExB','VE2dxB','V_{e\perp}','V_{i\perp}','V_{H+\perp}')
@@ -61,11 +65,13 @@ irf_print_fig(['mms' num2str(mmsId) '_VExB_EDP_vs_FPI_vs_HPCA_brst_' irf_fname(T
 %%
 f = irf_figure(2387457,3);
 set(gcf,'defaultAxesColorOrder',[0 0 0;0 0 1;1 0 0;0 0.9 0;0 1 1 ;1 0 1; 1 1 0])
+set(gcf,'defaultAxesFontSize',20)
 h = irf_plot({E2d_dsl_edp,E_dsl_edp,E_perp,EVexB,EVixB,EVphlusxB},'comp');
+irf_plot(h(3),E_adp_edp)
 title(h(1),sprintf('MMS%d',mmsId))
 legend(h(1),'E2d','E','E_perp','V_{e}xB','V_{i}xB','V_{H+}xB')
 legend(h(2),'E2d','E','E_perp','V_{e}xB','V_{i}xB','V_{H+}xB')
-legend(h(3),'E2d','E','E_perp','V_{e}xB','V_{i}xB','V_{H+}xB')
+legend(h(3),'E2d','E','E_perp','V_{e}xB','V_{i}xB','E adp')
 ylabel(h(1),'E_x DSL [mV/m]')
 ylabel(h(2),'E_y DSL [mV/m]')
 ylabel(h(3),'E_z DSL [mV/m]')

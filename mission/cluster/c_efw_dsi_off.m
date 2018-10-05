@@ -26,7 +26,8 @@ Damp = 1.1*ones(1,4);
 % i is for Ey +i send curve down
 
 % Table of SW/SH offsets
-if t>=toepoch([2015 01 01 00 00 0]), Ddsi = [ 0.34  2.89  00  0.31 ];
+if t>=toepoch([2016 01 01 00 00 0]), Ddsi = [ -0.36 1.95  00 -1.15 ];
+elseif t>=toepoch([2015 01 01 00 00 0]), Ddsi = [ 0.34  2.89  00  0.31 ];
 elseif t>=toepoch([2014 10 16 00 00 0]), Ddsi = [ -0.11  1.67  1.22  0.37 ];
 elseif t>=toepoch([2014 10 16 00 00 0]), Ddsi = [ -0.11  3.67  1.22  0.37 ];
 elseif t>=toepoch([2014 10 11 00 00 0]), Ddsi = [ -0.11  2.67  1.22  0.37 ];
@@ -58,6 +59,8 @@ elseif t>=toepoch([2007 07 21 18 45 0]), Ddsi = [-0.08     .46+1.4 1.65 .13 ]; %
 elseif t>=toepoch([2007 02 01 00 00 0]), Ddsi = [-0.08     .46 1.65 .13 ]; % very approximate due to high-speed solar wind streams
 elseif t>=toepoch([2007 01 01 00 00 0]), Ddsi = [-0.08     .46 1.95 .13 ]; % very approximate due to high-speed solar wind streams
 elseif t>=toepoch([2006 10 01 00 00 0]), Ddsi = [ .26      .79 2.0  .59 ];
+elseif t>=toepoch([2006 10 20 00 00 0]), Ddsi = [ .26      .79 1.7  .59 ];
+elseif t>=toepoch([2006 07 20 01 01 0]), Ddsi = [ 0.84  1.59 1.69  1.02 ]; % Force MS offset for months when don't enter SW.
 elseif t>=toepoch([2006 07 01 00 00 0]), Ddsi = [ .26      .79 1.7  .59 ];
 elseif t>=toepoch([2006 02 01 00 00 0]), Ddsi = [ .46     1.04 2.0  .59 ];
 elseif t>=toepoch([2006 01 01 00 00 0]), Ddsi = [ .46     1.13 2.0  .59 ];
@@ -110,7 +113,8 @@ elseif ischar(Ps)
 end
 
 % Table of MS offsets
-if t>=toepoch([2015 01 01 00 0 0]), Ddsi = [ -0.02 2.89 00 -0.44 ]; % curves fixed
+if t>=toepoch([2016 01 01 00 0 0]), Ddsi = [ -0.17 2.45 00 -0.51 ];
+elseif t>=toepoch([2015 01 01 00 0 0]), Ddsi = [ -0.02 2.89 00 -0.44 ]; % curves fixed
 elseif t>=toepoch([2014 10 16 00 0 0]), Ddsi = [ 0.18  3.7  0.71  0 ]; % Only C3 has a good curve
 elseif t>=toepoch([2014 10 11 00 0 0]), Ddsi = [ 0.18  2.7  0.71  0 ]; % Only C3 has a good curve
 elseif t>=toepoch([2014 08 01 00 0 0]), Ddsi = [ 0.18  3.7  0.71  0 ]; % Only C3 has a good curve
@@ -130,8 +134,6 @@ elseif t>=toepoch([2007 11 01 00 0 0]), Ddsi = [ 0.72  1.46 1.69  0.87 ];
 elseif t>=toepoch([2007 08 05 01 1 0]), Ddsi = [ 0.72  1.46 1.53  0.87 ];
 elseif t>=toepoch([2007 07 21 18 45 0]), Ddsi = [ 0.72  1.46+1.4 1.53 0.87 ]; % problem with guard settings on C2
 elseif t>=toepoch([2007 01 01 00 0 0]), Ddsi = [ 0.72  1.46 1.53  0.87 ];
-elseif t>=toepoch([2006 10 01 00 0 0]), Ddsi = [ 0.84  1.59 1.69  1.02 ];
-elseif t>=toepoch([2006 07 01 00 0 0]), Ddsi = [ 0.84  1.59 1.18  1.02 ];
 elseif t>=toepoch([2006 01 01 00 0 0]), Ddsi = [ 0.84  1.59 1.69  1.02 ];
 elseif t>=toepoch([2005 01 01 00 0 0]), Ddsi = [ 1.26  2.34 1.81  1.37 ];
 elseif t>=toepoch([2004 01 01 00 0 0]), Ddsi = [ 1.35  2.06 1.45  1.15 ];
