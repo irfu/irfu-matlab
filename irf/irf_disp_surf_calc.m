@@ -124,6 +124,7 @@ function [wfinal,extraparam]=irf_disp_surf_calc(kc_x_max,kc_z_max,m_i,wp_e)
   By=(KZ.*Ex-KX.*Ez)./wfinal;
   Bz=KX.*Ey./wfinal;
   Btot=sqrt(Bx.*conj(Bx)+By.*conj(By)+Bz.*conj(Bz));
+  Bpar = sqrt(Bz.*conj(Bz));
   Bperp=sqrt(Bx.*conj(Bx)+By.*conj(By));
   Bpolar=-2*imag(Bx.*conj(By))./(Bperp.*Bperp);
   
@@ -162,6 +163,22 @@ function [wfinal,extraparam]=irf_disp_surf_calc(kc_x_max,kc_z_max,m_i,wp_e)
   EB = 0.5*Btot.^2;
   ratiopf = (Een+Ein)./(EE+EB);
   
+  % Continuity equation
+  dneon = (KX.*vex + KZ.*vez)./wfinal;
+  dneon = sqrt(dneon.*conj(dneon));
+  dnion = (KX.*vix + KZ.*viz)./wfinal;
+  dnion = sqrt(dnion.*conj(dnion));
+  dnedni = dneon./dnion;
+  
+  dneonodBoB = dneon./Btot;
+  dnionodBoB = dnion./Btot;
+  
+  dneonodBparoB = dneon./Bpar;
+  dnionodBparoB = dnion./Bpar;
+  
+  dne = dneon*wp_e^2;
+  kdotE = Ex.*KX+Ez.*KZ;
+  kdotE = sqrt(kdotE.*conj(kdotE));
   
   extraparam(2,:,:,:)=log10(Btot./Etot); % Degree of electromagnetism
   extraparam(3,:,:,:)=abs(EparK)./Etot; % Degree of longitudinality
@@ -177,4 +194,10 @@ function [wfinal,extraparam]=irf_disp_surf_calc(kc_x_max,kc_z_max,m_i,wp_e)
   extraparam(13,:,:,:)=log10(veparoperp); % Ratio of parallel to perpendicular electron speed
   extraparam(14,:,:,:)=log10(viparoperp); % Ratio of parallel to perpendicular ion speed
   extraparam(15,:,:,:)=log10(Een./(EE+EB));
+  extraparam(16,:,:,:)=log10(dnedni); % Ratio of electron to ion density perturbations
+  extraparam(17,:,:,:)=log10(dneonodBoB); % (dn_e/n)/(dB/B)
+  extraparam(18,:,:,:)=log10(dnionodBoB); % (dn_i/n)/(dB/B)
+  extraparam(19,:,:,:)=log10(dneonodBparoB); % (dn_e/n)/(dBpar/B)
+  extraparam(20,:,:,:)=log10(dnionodBparoB); % (dn_i/n)/(dBpar/B)
+  extraparam(21,:,:,:)=log10(dne./kdotE); % (dn_i/n)/(dB/B)
   warning on

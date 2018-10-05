@@ -258,15 +258,13 @@ switch action
       dobj.GlobalAttributes	= info.GlobalAttributes;
       dobj.Variables			= info.Variables;
 
-      % test if there are some data
+      % check if there is time data
       if ~(any(strcmpi(info.Variables(:,4),'epoch')==1) || ...
           any(strcmpi(info.Variables(:,4),'epoch16')==1) || ...
-          any(strcmpi(info.Variables(:,4),'tt2000')==1))
-        nVariables=0; % no time variable, return nothing
-        irf.log('warning','CDF FILE IS EMPTY!');
-      else
-        nVariables = size(info.Variables,1);
+          any(strcmpi(info.Variables(:,4),'tt2000')==1))        
+        irf.log('warning','No time in CDF file.');      
       end
+      nVariables = size(info.Variables,1);
       dobj.vars = cell(nVariables,2);
       if nVariables>0
         dobj.vars(:,1) = info.Variables(:,1); % new variables

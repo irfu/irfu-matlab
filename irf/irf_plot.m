@@ -214,7 +214,7 @@ if flag_subplot==0  % One subplot
     hca = ax;
     tag=get(hca,'tag'); ud=get(hca,'userdata'); % keep tag/userdata during plotting
     if flag_yy == 0, h = plot(hca, time-ts-dt, data, marker, args{:});
-    else, h = plotyy(hca, time-ts, data, time-ts, data.*scaleyy);
+    else, h = plotyy(hca, time-ts, data, time-ts, data.*scaleyy); % XXX FIXME
     end
     grid(hca,'on');
     set(hca,'tag',tag); set(hca,'userdata',ud); % restore

@@ -5,16 +5,17 @@ Tint = irf.tint('2016-08-10T09:50:00Z/2016-08-10T10:15:00Z');
 B_dmpa_fgm_srvy_l2 = mms.get_data('B_dmpa_fgm_srvy_l2',Tint,mmsId);
 E_dsl_edp_l2 = mms.get_data('E_dsl_edp_fast_l2',Tint,mmsId);
 E2d_dsl_edp_l2pre = mms.get_data('E2d_dsl_edp_fast_l2pre',Tint,mmsId);
-
-%% FPI
+% FPI
 Vi_dbcs_fpi = mms.get_data('Vi_dbcs_fpi_fast_l2',Tint,mmsId);
 Ve_dbcs_fpi = mms.get_data('Ve_dbcs_fpi_fast_l2',Tint,mmsId);
+Ne_fpi = mms.get_data('Ne_fpi_fast_l2',Tint,mmsId);
+idx_lowDensity = Ne_fpi.data < 0.06; Ve_dbcs_fpi.data(idx_lowDensity,:) = NaN;
 Vhplus_dbcs_hpca = mms.get_data('Vhplus_dbcs_hpca_srvy_l2',Tint,mmsId);
 if isempty(Vhplus_dbcs_hpca)
   Vhplus_dbcs_hpca = mms.get_data('Vhplus_dbcs_hpca_srvy_l1b',Tint,mmsId);
 end
 
-%%
+% Comp VxB
 [~, Vi_perp] = irf_dec_parperp(B_dmpa_fgm_srvy_l2,Vi_dbcs_fpi);
 [~, Ve_perp] = irf_dec_parperp(B_dmpa_fgm_srvy_l2,Ve_dbcs_fpi);
 VExB = irf_e_vxb(E_dsl_edp_l2,B_dmpa_fgm_srvy_l2,-1);
@@ -30,6 +31,7 @@ end
 %%
 f = irf_figure(2387456,3);
 set(gcf,'defaultAxesColorOrder',[0 0 0;0 0 1;1 0 0;0 0.7 0;0 1 1 ;1 0 1; 1 1 0])
+set(gcf,'defaultAxesFontSize',12)
 h = irf_plot({VExB,VExB_l2pre,Ve_perp,Vi_perp,Vhplus_perp},'comp');
 title(h(1),sprintf('MMS%d',mmsId))
 legend(h(1),'VExB','VExB l2pre','V_{e\perp}','V_{i\perp}','V_{H+\perp}')
@@ -45,6 +47,7 @@ irf_print_fig(['mms' num2str(mmsId) '_VExB_EDP_vs_FPI_vs_HPCA_fast_' irf_fname(T
 %%
 f = irf_figure(2387457,3);
 set(gcf,'defaultAxesColorOrder',[0 0 0;0 0 1;1 0 0;0 0.7 0;0 1 1 ;1 0 1; 1 1 0])
+set(gcf,'defaultAxesFontSize',12)
 h = irf_plot({E2d_dsl_edp_l2pre,E_dsl_edp_l2,EVexB,EVixB,EVphlusxB},'comp');
 title(h(1),sprintf('MMS%d',mmsId))
 legend(h(1),'E L2pre','E l2','V_{e}xB','V_{i}xB','V_{H+}xB')
@@ -54,5 +57,23 @@ ylabel(h(1),'E_x DSL [mV/m]')
 ylabel(h(2),'E_y DSL [mV/m]')
 ylabel(h(3),'E_z DSL [mV/m]')
 irf_zoom(h,'x',Tint)
+irf_plot_ylabels_align(h)
+
+irf_print_fig(['mms' num2str(mmsId) '_E_EDP_vs_FPI_vs_HPCA_fast_' irf_fname(Tint,2)],'png')
+
+%%
+f = irf_figure(2387458,3);
+set(gcf,'defaultAxesColorOrder',[1 0 0;0 0 0;0 0 1;0 0.7 0;0 1 1 ;1 0 1; 1 1 0])
+set(gcf,'defaultAxesFontSize',12)
+h = irf_plot({EVexB,E2d_dsl_edp_l2pre,E_dsl_edp_l2,EVixB,EVphlusxB},'comp');
+title(h(1),sprintf('MMS%d',mmsId))
+legend(h(1),'V_{e}xB','E L2pre','E l2','V_{i}xB','V_{H+}xB')
+legend(h(2),'V_{e}xB','E L2pre','E l2','V_{i}xB','V_{H+}xB')
+legend(h(3),'V_{e}xB','E L2pre','E l2','V_{i}xB','V_{H+}xB')
+ylabel(h(1),'E_x DSL [mV/m]')
+ylabel(h(2),'E_y DSL [mV/m]')
+ylabel(h(3),'E_z DSL [mV/m]')
+irf_zoom(h,'x',Tint)
+irf_plot_ylabels_align(h)
 
 irf_print_fig(['mms' num2str(mmsId) '_E_EDP_vs_FPI_vs_HPCA_fast_' irf_fname(Tint,2)],'png')

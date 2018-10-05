@@ -72,6 +72,8 @@ function res = get_data(varStr, Tint, mmsId)
 %     'B_bcs_fgm_brst_l2' (aliases:'B_bcs_brst_l2','B_bcs_brst'),...
 %     'B_dmpa_fgm_srvy_l2' (aliases:'B_dmpa_srvy_l2','B_dmpa_srvy'),...
 %     'B_dmpa_fgm_brst_l2' (aliases:'B_dmpa_brst_l2','B_dmpa_brst').
+%  FSM:
+%     'B_gse_fsm_brst_l3'.
 %  DFG & AFG
 %     'B_gsm_dfg_srvy_l2pre','B_gsm_dfg_srvy_l2pre',...
 %     'B_gse_dfg_srvy_l2pre','B_gse_dfg_srvy_l2pre',...
@@ -133,6 +135,7 @@ vars = {'R_gse','R_gsm','V_gse','V_gsm',...
   'B_dmpa_dfg_srvy_ql','B_dmpa_afg_srvy_ql',...
   'dfg_ql_srvy','afg_ql_srvy',...
   'B_gse_scm_brst_l2',...
+  'B_gse_fsm_brst_l3', ...
   'tetra_quality',...
   'Phase_edp_fast_l2a','Phase_edp_slow_l2a',...
   'Es12_dsl_edp_fast_l2a','Es34_dsl_edp_fast_l2a',...
@@ -337,6 +340,10 @@ dsetName = ['mms' mmsIdS '_' Vr.inst '_' Vr.tmmode '_' Vr.lev];
 compS = ''; pref = ''; suf = '';
 
 switch Vr.inst
+  case 'fsm'
+    vn = ['mms' mmsIdS '_' Vr.inst '_b_' Vr.cs '_' Vr.tmmode '_' Vr.lev];
+    dsetName = [dsetName '_8khz'];
+    res = mms.db_get_ts(dsetName, vn, Tint);
   case {'fgm','dfg','afg'}
     switch Vr.lev
       case 'l2'
@@ -816,7 +823,7 @@ end
 
 instrument = tk{idx+1}; idx = idx + 1;
 switch instrument
-  case {'fpi','edp','edi','hpca','fgm','dfg','afg','scm'}
+  case {'fpi','edp','edi','hpca','fgm','dfg','afg','scm','fsm'}
   otherwise
     switch param
       case 'B', instrument = 'fgm'; idx = idx - 1;
@@ -838,7 +845,7 @@ if length(tk)==idx, dataLevel = 'l2'; %default
 else
   dataLevel = tk{idx+1};
   switch dataLevel
-    case {'ql','sitl','l1b','l2a','l2pre','l2'}
+    case {'ql','sitl','l1b','l2a','l2pre','l2','l3'}
     otherwise
       error('invalid DATA_LEVEL level')
   end

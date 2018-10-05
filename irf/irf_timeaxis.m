@@ -155,9 +155,11 @@ end
 % xlabel will have the date corresponding to that tick.
 xTickLast=get(h(end),'XTick');  xTickLabelLast=get(h(end),'XTickLabel');
 tFirstTick = [];
-for i=1:length(xTickLast)
-  if strcmp(xTickLabelLast{i},' '), continue, end
-  tFirstTick = xTickLast(i); break
+if ~isempty(xTickLabelLast)
+  for i=1:length(xTickLast)
+    if strcmp(xTickLabelLast{i},' '), continue, end
+    tFirstTick = xTickLast(i); break
+  end
 end
 xlimlast=get(h(end),'XLim'); 
 if isempty(tFirstTick), tFirstTick = xlimlast(1); end

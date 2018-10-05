@@ -148,20 +148,24 @@ if(p.Results.plotSpect)
     for ll=1:3 % 3 dimensions (DSL x, y, z)
       comb.(SCid{kk}).p{1,ll} = NaN(len_time, 256);
       if(~isempty(dslFastSpect.(SCid{kk})))
-        dslFastNew.p{1,ll} = (interp2((dslFastSpect.(SCid{kk}).t)',...
-          dslFastSpect.(SCid{kk}).f, (dslFastSpect.(SCid{kk}).p{1,ll})', ...
-          newTime', dslFastSpect.(SCid{kk}).f))';
-        indNotNaN = ~all(isnan(dslFastNew.p{1,ll}),2);
-        comb.(SCid{kk}).p{1,ll}(indNotNaN,:) = dslFastNew.p{1,ll}(indNotNaN,:);
+        if(length(dslFastSpect.(SCid{kk}).t)>1)
+          dslFastNew.p{1,ll} = (interp2((dslFastSpect.(SCid{kk}).t)',...
+            dslFastSpect.(SCid{kk}).f, (dslFastSpect.(SCid{kk}).p{1,ll})', ...
+            newTime', dslFastSpect.(SCid{kk}).f))';
+          indNotNaN = ~all(isnan(dslFastNew.p{1,ll}),2);
+          comb.(SCid{kk}).p{1,ll}(indNotNaN,:) = dslFastNew.p{1,ll}(indNotNaN,:);
+        end
       end
       if(~isempty(dslSlowSpect.(SCid{kk})))
-        dslSlowNew.p{1,ll} = (interp2((dslSlowSpect.(SCid{kk}).t)',...
-          dslSlowSpect.(SCid{kk}).f, (dslSlowSpect.(SCid{kk}).p{1,ll})', ...
-          newTime', dslSlowSpect.(SCid{kk}).f))';
-        % Fill high frequencies (that only exist in Fast) with NaN in the slow spectra
-        dslSlowNew.p{1,ll} = [dslSlowNew.p{1,ll} NaN(len_time, len_freq)];
-        indNotNaN = ~all(isnan(dslSlowNew.p{1,ll}),2);
-        comb.(SCid{kk}).p{1,ll}(indNotNaN,:) = dslSlowNew.p{1,ll}(indNotNaN,:);
+        if(length(dslSlowSpect.(SCid{kk}).t)>1)
+          dslSlowNew.p{1,ll} = (interp2((dslSlowSpect.(SCid{kk}).t)',...
+            dslSlowSpect.(SCid{kk}).f, (dslSlowSpect.(SCid{kk}).p{1,ll})', ...
+            newTime', dslSlowSpect.(SCid{kk}).f))';
+          % Fill high frequencies (that only exist in Fast) with NaN in the slow spectra
+          dslSlowNew.p{1,ll} = [dslSlowNew.p{1,ll} NaN(len_time, len_freq)];
+          indNotNaN = ~all(isnan(dslSlowNew.p{1,ll}),2);
+          comb.(SCid{kk}).p{1,ll}(indNotNaN,:) = dslSlowNew.p{1,ll}(indNotNaN,:);
+        end
       end
       if(tint.start<EpochTT('2015-07-28T00:00:00') && ~isempty(dslComm128Spect.(SCid{kk})))
         dslCommNew.p{1,ll} = (interp2((dslComm128Spect.(SCid{kk}).t)',...

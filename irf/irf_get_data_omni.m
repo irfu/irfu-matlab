@@ -29,6 +29,7 @@ function f = irf_get_data_omni( tint, parameter , database)
 %               'Ms'    - 1 AU IP Magnetosonic Mach number
 %               'ssn'   - daily sunspot number
 %               'dst'   - DST index
+%               'kp'    - Kp index
 %               'f10.7' - F10.7 flux
 %               'pc'    - PC index
 %               'ae'    - AE index

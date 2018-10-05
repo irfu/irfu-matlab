@@ -347,8 +347,8 @@ for iE = 1:lengthE
     C = C.*geoFactorElev.*geoFactorBinSize;    
     C(abs(elevationAngle)>limElevation*pi/180) = NaN;
     % surf(ax,newX,newY,newZ,C);xlabel(ax,'x');ylabel(ax,'y')
-    C(planeAz<edgesAz(iAz)) = NaN;
-    C(planeAz>edgesAz(iAz+1)) = NaN;    
+    C(planeAz<(edgesAz(iAz)-0.1*pi/180)) = NaN;             % use 0.1 deg to fix Az angle edges bug
+    C(planeAz>(edgesAz(iAz+1)+0.1*pi/180)) = NaN;           % use 0.1 deg to fix Az angle edges bug
     
     FF(ii,iAz,iE) = irf.nanmean(irf.nanmean(C));
   end    
@@ -395,7 +395,7 @@ rE = speedTable;
 plX = rE'*cos(edgesAz+pi);
 plY = rE'*sin(edgesAz+pi);
 
-FF(FF == 0) = NaN; % set to white the zero points
+FF(FF <= 0) = NaN; % set to white the zero points
 
 if isDes % make electron velocities 10^3 km/s
   hs = surf(ax,plX*1e-3,plY*1e-3,plY*0,log10(FF'));
