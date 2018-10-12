@@ -1,6 +1,9 @@
 % A routine to compute and plot reduced electron distributions from FPI
 %
-% The Example is fairly slow. Approx 4 min.
+% The function computes 2D reduced distributions from all four MMS. The
+% plotted distribution function is averaged both over time and spacecraft.
+%
+% The Example is fairly slow. 
 %
 % Written by A. Johlander
 
@@ -48,6 +51,7 @@ toc
 
 
 %% get spacecraft-averaged reduced distriubtions (pretty much a hack right now)
+% code should be improved
 
 % PDist object with reduced distribution averaged over time and spacecraft
 tempDistData = (mean(f2Dparperp11.data)+mean(f2Dparperp12.data)+mean(f2Dparperp13.data)+mean(f2Dparperp14.data))/4;
@@ -59,6 +63,7 @@ f2Dparperp2 = PDist(tint(1),tempDistData,'plane (reduced)',f2Dparperp21.depend{1
 tempDistData = (mean(f2Dperp1perp21.data)+mean(f2Dperp1perp22.data)+mean(f2Dperp1perp23.data)+mean(f2Dperp1perp24.data))/4;
 f2Dperp1perp2 = PDist(tint(1),tempDistData,'plane (reduced)',f2Dperp1perp21.depend{1}(1,:),f2Dperp1perp21.depend{2}(1,:));
 
+% set species and ancillary
 f2Dparperp1.species = 'electrons';
 f2Dparperp1.ancillary = f2Dparperp11.ancillary;
 
@@ -68,7 +73,79 @@ f2Dparperp2.ancillary = f2Dparperp21.ancillary;
 f2Dperp1perp2.species = 'electrons';
 f2Dperp1perp2.ancillary = f2Dperp1perp21.ancillary;
 
-%% Plot 2D distributions
+
+%% Plot 2D distributions of single, time-averaged, and time-spacecraft-averaged
+% make figure
+fig = figure;
+fig.Color = 'w';
+h = gobjects(1,2);
+
+% fix figure
+% -----------------------------------------------------
+set(gcf,'PaperUnits','centimeters')
+xSize = 20; ySize = 8;
+xLeft = (21-xSize)/2; yTop = (30-ySize)/2;
+set(gcf,'PaperPosition',[xLeft yTop xSize ySize])
+set(gcf,'Position',[10 10 xSize*50 ySize*50])
+set(gcf,'paperpositionmode','auto') % to get the same printing as on screen
+clear xLeft xSize sLeft ySize yTop
+% additional good options
+set(gcf,'defaultAxesFontSize',14);
+set(gcf,'defaultTextFontSize',14);
+set(gcf,'defaultAxesFontUnits','pixels');
+set(gcf,'defaultTextFontUnits','pixels');
+% -----------------------------------------------------
+
+
+hca = subplot(1,3,1);
+h(1) = hca;
+f2Dparperp11(1).plot_plane(hca,'colorbar',0,'contour',6)
+hold(hca,'on')
+axis(hca,'equal')
+xlabel(hca,'$V_{\parallel}$ [km/s]','interpreter','latex')
+ylabel(hca,'$V_{\perp,1}$ [km/s]','interpreter','latex')
+title(hca,'One distribution');
+
+hca = subplot(1,3,2);
+h(2) = hca;
+f2Dparperp11.plot_plane(hca,'colorbar',0,'contour',6)
+hold(hca,'on')
+axis(hca,'equal')
+xlabel(hca,'$V_{\parallel}$ [km/s]','interpreter','latex')
+ylabel(hca,'$V_{\perp,1}$ [km/s]','interpreter','latex')
+title(hca,'Time-averaged, MMS1');
+
+hca = subplot(1,3,3);
+h(3) = hca;
+f2Dparperp1.plot_plane(hca,'colorbar',0,'contour',6)
+hold(hca,'on')
+axis(hca,'equal')
+xlabel(hca,'$V_{\parallel}$ [km/s]','interpreter','latex')
+ylabel(hca,'$V_{\perp,1}$ [km/s]','interpreter','latex')
+title(hca,'Time- and spacecraft-averaged');
+
+% colorbar
+htempPos = h(1).Position;
+hcb = colorbar(h(1),'north');
+h(1).Position = htempPos;
+hcb.Position = [h(1).Position(1),0.83,sum(h(end).Position([1,3]))-h(1).Position(1),0.04];
+ylabel(hcb,'$\log_{10} F_e$ [s$^2$ m$^{-5}$]','interpreter','latex','fontsize',15)
+hcb.LineWidth = 1.3;
+
+for ii = 1:length(h)
+    % plot crosseye at origin in spacecrat frame
+    plot(h(ii),[h(ii).XLim,0,0,0],[0,0,0,h(ii).YLim],'k-','Linewidth',1.2)
+    h(ii).LineWidth = 1.3;
+    h(ii).Layer = 'top';
+    % match clim
+    h(ii).CLim = h(1).CLim;
+    h(ii).Position(2) = 0.06;
+end
+
+% new colormap!
+irf_colormap('waterfall')
+
+%% Plot time and spacraft averaged 2D distributions
 % make figure
 fig = figure;
 fig.Color = 'w';
@@ -119,7 +196,7 @@ ylabel(hca,'$V_{\perp,2}$ [km/s]','interpreter','latex')
 htempPos = h(1).Position;
 hcb = colorbar(h(1),'north');
 h(1).Position = htempPos;
-hcb.Position = [h(1).Position(1),0.83,sum(h(end).Position([1,3]))-h(1).Position(1),0.04];
+hcb.Position = [h(1).Position(1),0.76,sum(h(end).Position([1,3]))-h(1).Position(1),0.04];
 ylabel(hcb,'$\log_{10} F_e$ [s$^2$ m$^{-5}$]','interpreter','latex','fontsize',15)
 hcb.LineWidth = 1.3;
 
@@ -133,7 +210,9 @@ for ii = 1:length(h)
     h(ii).Position(2) = 0.06;
 end
 
+ht = title(h(2),'Four-spacecraft averages');
+ht.Units = 'normalized';
+ht.Position(2) = 1.35;
+
 % new colormap!
 irf_colormap('waterfall')
-
-
