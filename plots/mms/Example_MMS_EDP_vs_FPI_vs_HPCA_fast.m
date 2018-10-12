@@ -5,7 +5,8 @@ Tint = irf.tint('2016-08-10T09:50:00Z/2016-08-10T10:15:00Z');
 B_dmpa_fgm_srvy_l2 = mms.get_data('B_dmpa_fgm_srvy_l2',Tint,mmsId);
 E_dsl_edp_l2 = mms.get_data('E_dsl_edp_fast_l2',Tint,mmsId);
 E2d_dsl_edp_l2pre = mms.get_data('E2d_dsl_edp_fast_l2pre',Tint,mmsId);
-% FPI
+
+%% FPI
 Vi_dbcs_fpi = mms.get_data('Vi_dbcs_fpi_fast_l2',Tint,mmsId);
 Ve_dbcs_fpi = mms.get_data('Ve_dbcs_fpi_fast_l2',Tint,mmsId);
 Ne_fpi = mms.get_data('Ne_fpi_fast_l2',Tint,mmsId);
@@ -14,6 +15,10 @@ Vhplus_dbcs_hpca = mms.get_data('Vhplus_dbcs_hpca_srvy_l2',Tint,mmsId);
 if isempty(Vhplus_dbcs_hpca)
   Vhplus_dbcs_hpca = mms.get_data('Vhplus_dbcs_hpca_srvy_l1b',Tint,mmsId);
 end
+
+% correct Ez in E2d 
+% XXX: this should be undone later 
+E2d_dsl_edp_l2pre = irf_edb(E2d_dsl_edp_l2pre,B_dmpa_fgm_srvy_l2,10,'Eperp+NaN');
 
 % Comp VxB
 [~, Vi_perp] = irf_dec_parperp(B_dmpa_fgm_srvy_l2,Vi_dbcs_fpi);
@@ -29,7 +34,7 @@ else
 end
 
 %%
-f = irf_figure(2387456,3);
+f = irf_figure(2387458,3);
 set(gcf,'defaultAxesColorOrder',[0 0 0;0 0 1;1 0 0;0 0.7 0;0 1 1 ;1 0 1; 1 1 0])
 set(gcf,'defaultAxesFontSize',12)
 h = irf_plot({VExB,VExB_l2pre,Ve_perp,Vi_perp,Vhplus_perp},'comp');
@@ -45,7 +50,7 @@ irf_zoom(h,'x',Tint)
 irf_print_fig(['mms' num2str(mmsId) '_VExB_EDP_vs_FPI_vs_HPCA_fast_' irf_fname(Tint,2)],'png')
 
 %%
-f = irf_figure(2387457,3);
+f = irf_figure(2387459,3);
 set(gcf,'defaultAxesColorOrder',[0 0 0;0 0 1;1 0 0;0 0.7 0;0 1 1 ;1 0 1; 1 1 0])
 set(gcf,'defaultAxesFontSize',12)
 h = irf_plot({E2d_dsl_edp_l2pre,E_dsl_edp_l2,EVexB,EVixB,EVphlusxB},'comp');
@@ -62,6 +67,7 @@ irf_plot_ylabels_align(h)
 irf_print_fig(['mms' num2str(mmsId) '_E_EDP_vs_FPI_vs_HPCA_fast_' irf_fname(Tint,2)],'png')
 
 %%
+if 0
 f = irf_figure(2387458,3);
 set(gcf,'defaultAxesColorOrder',[1 0 0;0 0 0;0 0 1;0 0.7 0;0 1 1 ;1 0 1; 1 1 0])
 set(gcf,'defaultAxesFontSize',12)
@@ -77,3 +83,4 @@ irf_zoom(h,'x',Tint)
 irf_plot_ylabels_align(h)
 
 irf_print_fig(['mms' num2str(mmsId) '_E_EDP_vs_FPI_vs_HPCA_fast_' irf_fname(Tint,2)],'png')
+end
