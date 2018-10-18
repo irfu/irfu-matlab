@@ -603,6 +603,95 @@ classdef PDist < TSeries
       PD.units = 'sr';
       if isfield(PD.ancillary,'meanorsum'), PD.ancillary = rmfield(PD.ancillary,'meanorsum'); end
     end
+    function PD = flux(obj,varargin)
+      % Flux/sr [cm-2 s-1 sr-1], int(v^3dv) -> v^4/4, for skymaps and pitch angle distributions.
+      %
+      %  FPI flux in EDI energy range
+      %    dv_FPI_485 = 1760; % km/s
+      %    dv_EDI_500 = 660; % km/s
+      %    ePitch1 = ePDist1.pitchangles(dmpaB1,[168.5 180]); % antiparallel flux
+      %    irf_plot(ePitch1.elim(500).flux*dv_EDI_500/dv_FPI_485)
+      
+      %  % Need to fix line 1026 in TSeries.m
+      %  To get flux in units [cm-2 s-1], multiply with solid angle:
+      %   ePDist.flux*ePDist.solidangle
+      
+      doScpot = 0;
+      doPerSr = 1;
+      
+      nargs = numel(varargin);      
+      have_options = 0;
+      if nargs > 0, have_options = 1; args = varargin(:); end
+      
+      while have_options
+        l = 0;
+        switch(lower(args{1}))
+        case 'scpot'
+          scpot = varargin{2};
+          doScpot = 1;
+          l = 2;
+          args = args(l+1:end);
+        case 'sr'          
+          doPerSr = varargin{2};
+          l = 2;
+          args = args(l+1:end);            
+        otherwise
+          l = 1;
+          irf.log('warning',sprintf('Input ''%s'' not recognized.',args{1}))
+          args = args(l+1:end);
+        end        
+        if isempty(args), break, end    
+      end
+      
+      units = irf_units;
+      
+      % int(v^3dv) -> v^4/4
+      if doScpot
+        E_minus = (obj.depend{1} - obj.ancillary.delta_energy_minus) - repmat(scpot.data,1,size(obj.depend{1},2));
+        E_plus = (obj.depend{1} + obj.ancillary.delta_energy_plus)   - repmat(scpot.data,1,size(obj.depend{1},2));      
+        E_minus(E_minus<0)= 0;
+        E_plus(E_plus<0)= 0;
+      else
+        E_minus = (obj.depend{1} - obj.ancillary.delta_energy_minus);
+        E_plus = (obj.depend{1} + obj.ancillary.delta_energy_plus);
+      end
+      v_minus = sqrt(2*units.e*E_minus/units.me); % m/s
+      v_plus = sqrt(2*units.e*E_plus/units.me); % m/s
+      d_vel = (v_plus.^4 - v_minus.^4)/4; % (m/s)^3
+      
+      if strcmp(obj.type,'skymap')        
+        d_vel_mat = repmat(d_vel,1,1,32,16);
+      elseif strcmp(obj.type,'pitchangle')        
+        d_vel_mat = repmat(d_vel,1,1,numel(obj.depend{2}));
+      end
+            
+      if doPerSr        
+        vd3v = d_vel_mat;
+        str_sr = '/sr';
+      else
+        solidangle = obj.solidangle; 
+        vd3v = d_vel_mat.*solidangle;
+        str_sr = '';
+      end
+        
+      old_units = obj.units;
+      switch obj.units
+        case 's^3/cm^6' % m^4/s^4 = m^4/s^4 * cm^4/cm^4 = cm^4/s^4 * m^4/cm^4 = cm^4/s^4 * (10^-2)^4
+          d3v_scale = 1/10^(-2*4);
+          new_units = sprintf('1/cm^2s%s',str_sr);
+        case 's^3/m^6' % m^4/s^4 = m^4/s^4 * m^4/m^4 = m^4/s^4 * m^4/m^4 = m^4/s^4 * (10^0)^4
+          d3v_scale = 1/10^0;
+          new_units = sprintf('1/m^2s%s',str_sr);
+        case 's^3/km^6' % m^4/s^4 = m^4/s^4 * km^4/km^4 = km^4/s^4 * m^4/km^4 = km^4/s^4 * (10^3)^4
+          d3v_scale = 1/10^(3*4);
+          new_units = sprintf('1/km^2s%s',str_sr);          
+      end
+        
+      PD = obj;
+      PD.data = PD.data.*vd3v*d3v_scale;
+      PD.units = new_units;
+      PD.siConversion = num2str(str2num(PD.siConversion)/d3v_scale,'%e');
+    end
     function PD = reduce(obj,dim,x,varargin) 
       %PDIST.REDUCE Reduces (integrates) 3D distribution to 1D (line).      
       %   Example (1D):
@@ -2006,7 +2095,8 @@ classdef PDist < TSeries
       if ~strcmp(obj.type_,'skymap'); error('PDist must be a skymap.'); end 
       
       if nargin<3 || isempty(obj2)
-        nangles = 12;
+        nangles = 12;        
+        pitchangle_edges = 0:(180/nangles):180;
       elseif isnumeric(obj2) % angles or number of angles
         nangles = obj2; 
         if numel(nangles) > 1
