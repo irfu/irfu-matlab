@@ -5,27 +5,30 @@ function [xvariable,yvariable,powerxy] = fk_powerspec4SC(varargin)
 % Function to calculate the frequency-wave number power spectrum using
 % the four MMS spacecraft. Uses a generalization of mms.fk_powerspectrum. 
 % Wavelet based cross-spectral analysis is used to calculate the phase
-% difference each spacecraft pair to determine 3D wave vector.
+% difference each spacecraft pair and determine 3D wave vector. A
+% generalization of the method used in mms.fk_powerspectrum to four point
+% measurements. 
 % Written by D. B. Graham.
 %
 % Input: (All data must be in TSeries format)
 %       E? -        Fields to apply 4SC cross-spectral analysis to. E.g., E
-%                   or B fields (if multiple components only the first is usded). 
+%                   or B fields (if multiple components only the first is used). 
 %       R? -        Positions of the four spacecraft
-%       B? -        Background magnetic field in the same coordinates as E
-%                   and R. Used to determine the parallel and perpendicular wave
-%                   numebers.
-%       Tint -      time interval over which the power spectrum is calculated.
-%                   B should be closely aligned with one probe pair over this time.
-%                   See mms.probe_align_times
+%       B? -        Background magnetic field in the same coordinates as R?. 
+%                   Used to determine the parallel and perpendicular wave numebers using 4SC average.
+%       Tints -     Time interval over which the power spectrum is calculated. 
+%                   To avoid boundary effects use a longer time interval
+%                   for E? and B?. 
 %
 % Options:
 %       cav -       Number of points in timeseries used to estimate phase.
 %                   Optional parameter. Default is cav = 8;
-%       numk -      Set number of wave numbers used in spectrogram.
+%       numk -      Set number of wave numbers used in spectrogram. 
 %       linear -    Linearly spaced frequencies. Set number to df (default is logarithmic spacing).
 %       numf -      Set number of frequencies used in spectrogram.
-%       wwidth -    Multiplier for Morlet wavelet. Default is 1.
+%       wwidth -    Multiplier for Morlet wavelet width. Default is 1.
+%       linear -    Use linear spacing between frequencies. df argument is
+%                   required.
 %
 % Output:
 %       powerxy    - array of powers as a function of frequency and
@@ -34,7 +37,9 @@ function [xvariable,yvariable,powerxy] = fk_powerspec4SC(varargin)
 %       xvariable - array of wavenumbers k in m^{-1}. Positive values are
 %                    aligned with B and negative values are anti-aligned with B.
 %
-% Still testing. Check that the results look reasonable. 
+% Notes:
+%   Wavelength must be larger than twice the spacecraft separations,
+%   otherwise spatial aliasing will occur. 
 %
 %
 % Example: 
@@ -50,7 +55,7 @@ function [xvariable,yvariable,powerxy] = fk_powerspec4SC(varargin)
 
 
 if (nargin < 4)
-	help fk_powerspec4SC;
+	help mms.fk_powerspec4SC;
 	powerxy = NaN;
 	xvariable = NaN;
 	yvariable = NaN;
@@ -71,7 +76,7 @@ c_eval('R? = R?.resample(E1);',1:4);
 time = E1.time;
 
 cav = 8;
-numk = 101;
+numk = 500;
 numf = 200;
 uselinear = 0;
 wwidth = 1;
@@ -166,6 +171,7 @@ for m = 1:N+1
     Powerav(m,:) = irf.nanmean(fkPower([posav(m)-cav/2+1:posav(m)+cav/2],:));
 end
 
+% Compute phase differences between each spacecraft pair
 th12 = atan2(imag(cx12),real(cx12));
 th13 = atan2(imag(cx13),real(cx13));
 th14 = atan2(imag(cx14),real(cx14));
@@ -175,6 +181,7 @@ th34 = atan2(imag(cx34),real(cx34));
 
 wmat = 2*pi*ones(N+1,1)*(W1.f)';
 
+% Convert phase difference to time delay
 dt12 = th12./wmat;
 dt13 = th13./wmat;
 dt14 = th14./wmat;
@@ -182,6 +189,7 @@ dt23 = th23./wmat;
 dt24 = th24./wmat;
 dt34 = th34./wmat;
 
+% Weighted averaged time delay using all spacecraft pairs
 dt2 = 0.5*dt12 + 0.2*(dt13 - dt23) + 0.2*(dt14 - dt24) + 0.1*(dt14 - dt34 - dt23);
 dt3 = 0.5*dt13 + 0.2*(dt12 + dt23) + 0.2*(dt14 - dt34) + 0.1*(dt12 + dt24 - dt34);
 dt4 = 0.5*dt14 + 0.2*(dt12 + dt24) + 0.2*(dt13 + dt34) + 0.1*(dt12 + dt23 + dt34);
