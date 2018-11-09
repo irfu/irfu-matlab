@@ -606,15 +606,14 @@ classdef PDist < TSeries
     function PD = flux(obj,varargin)
       % Flux/sr [cm-2 s-1 sr-1], int(v^3dv) -> v^4/4, for skymaps and pitch angle distributions.
       %
+      %  To get flux in units [cm-2 s-1], multiply with solid angle:
+      %   ePDist.flux.*ePDist.solidangle
+      %
       %  FPI flux in EDI energy range
       %    dv_FPI_485 = 1760; % km/s
       %    dv_EDI_500 = 660; % km/s
       %    ePitch1 = ePDist1.pitchangles(dmpaB1,[168.5 180]); % antiparallel flux
       %    irf_plot(ePitch1.elim(500).flux*dv_EDI_500/dv_FPI_485)
-      
-      %  % Need to fix line 1026 in TSeries.m
-      %  To get flux in units [cm-2 s-1], multiply with solid angle:
-      %   ePDist.flux*ePDist.solidangle
       
       doScpot = 0;
       doPerSr = 1;
@@ -874,14 +873,6 @@ classdef PDist < TSeries
       if correct4scpot
         scpot = scpot.tlim(dist.time).resample(dist.time);
         scpot_mat = repmat(scpot.data, size(emat(1,:)));
-        %[it_below_scpot,ie_below_scpot] = find(emat < scpot_mat);
-        %dist.data(it_below_scpot,ie_below_scpot,:,:) = 0;
-        %dist.data(:,1:6,:,:) = 0;
-        %emat = emat - scpot_mat;                
-        
-        % must also remove all tabler energies below zero
-        
-        %ind_below_scpot = find(emat<scpot_mat);
       end
       u = irf_units;
 
@@ -931,20 +922,26 @@ classdef PDist < TSeries
           F3d(1:(max(ie_below_elim) + remove_extra_ind),:,:) = 0;           
         end
        
-        if correct4scpot
-          if 0
-            dist.data(it(i),emat(it(i),:) < 0,:,:) = 0; %#ok<UNRCH>
+        if correct4scpot          
+          if isfield(dist.ancillary,'delta_energy_minus') % remove all that satisfies E-Eminus<Vsc
+            ie_below_scpot = find(emat(it(i),:)-dist.ancillary.delta_energy_minus(it(i),:)-scpot_mat(it(i),1)<0,1,'last');
+            if 0 % disp energy channel that is removed, interferes with it = ... display
+              disp(sprintf('Spacecraft potential = %g, Energy channel removed [E-Eminus,E,E+Eplus] = [%g,%g,%g]',...
+                scpot_mat(it(i),1),...
+                emat(it(i),ie_below_scpot)-dist.ancillary.delta_energy_minus(it(i),ie_below_scpot),...
+                emat(it(i),ie_below_scpot),...
+                emat(it(i),ie_below_scpot)+dist.ancillary.delta_energy_plus(it(i),ie_below_scpot)))
+            end
           else
-            %ie_below_scpot = find(abs(emat(it(i),:)-scpot_mat(it(i),:))); % energy channel below 
             ie_below_scpot = find(abs(emat(it(i),:)-scpot_mat(it(i),:)) == min(abs(emat(it(i),:)-scpot_mat(it(i),:)))); % closest energy channel
-            remove_extra_ind = 0; % for margin, remove extra energy channels
-            F3d(1:(max(ie_below_scpot) + remove_extra_ind),:,:) = 0; 
-            %disp(sprintf('%8.1g ',energy))
-            energy = energy-scpot_mat(it(i),:);
-            %disp(sprintf('%8.1g ',energy))
-            energy(energy<0) = 0;
-            %disp(sprintf('%8.1g ',energy))
           end
+          remove_extra_ind = 0; % for margin, remove extra energy channels
+          F3d(1:(max(ie_below_scpot) + remove_extra_ind),:,:) = 0; 
+          %disp(sprintf('%8.1g ',energy))
+          energy = energy-scpot_mat(it(i),:);
+          %disp(sprintf('%8.1g ',energy))
+          energy(energy<0) = 0;
+          %disp(sprintf('%8.1g ',energy))          
         end
             
         v = sqrt(2*energy*u.e/M); % m/s       
