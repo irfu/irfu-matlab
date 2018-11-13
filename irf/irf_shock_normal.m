@@ -35,6 +35,7 @@ function [nd] = irf_shock_normal(spec,leq90)
 %       Fcp -   Reflected ion gyrofrequency (Hz).
 %       N   -   Number of Monte Carlo particles used in determining
 %               errorbars (default 100)
+%       n0  -   User defined normal vector from e.g. timing
 %       
 %
 %   Output nd contains:
@@ -54,6 +55,8 @@ function [nd] = irf_shock_normal(spec,leq90)
 %               fa4o    -   Fairfield, D. H., 1971
 %               fan4o   -   Fairfield, D. H., 1971
 %               foun    -   Formisano, V., 1979
+%           User defined (only if n0 is included in spec):
+%               n0  -   User defined normal vector from e.g. timing
 %
 %       thBn -  Angle between normal vector and spec.Bu, same fields as n.
 %
@@ -250,6 +253,9 @@ n.vc = delV/norm(delV);
 n.mx1 = cross(cross(Bu,delV),delB)/norm(cross(cross(Bu,delV),delB));
 n.mx2 = cross(cross(Bd,delV),delB)/norm(cross(cross(Bd,delV),delB));
 n.mx3 = cross(cross(delB,delV),delB)/norm(cross(cross(delB,delV),delB));
+
+% user defined normal vector
+n.n0 = spec.n0;
 
 
 sig = [];
