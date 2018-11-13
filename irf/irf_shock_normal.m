@@ -255,8 +255,9 @@ n.mx2 = cross(cross(Bd,delV),delB)/norm(cross(cross(Bd,delV),delB));
 n.mx3 = cross(cross(delB,delV),delB)/norm(cross(cross(delB,delV),delB));
 
 % user defined normal vector
-n.n0 = spec.n0;
-
+if isfield(spec,'n0')
+    n.n0 = spec.n0;
+end
 
 sig = [];
 % calculate model normals if R is inputted
