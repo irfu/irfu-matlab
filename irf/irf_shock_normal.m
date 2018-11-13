@@ -27,8 +27,8 @@ function [nd] = irf_shock_normal(spec,leq90)
 %       nu  -   Upstream number density (cm^-3).
 %       nd  -   Downstream number density.
 %       Optional:
-%       R   -   Spacecraft position as given by R =
-%               mms.get_data('R_gse',tint).
+%       R   -   Spacecraft position in TSeries format, 1x3 vector or as
+%               given by R = mms.get_data('R_gse',tint)
 %       t   -   Time of shock crossing (EpochTT), for models.
 %       d2u -   Down-to-up, is 1 or -1.
 %       dTf -   Time duration of shock foot (s).
