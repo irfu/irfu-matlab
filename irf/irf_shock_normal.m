@@ -543,7 +543,7 @@ if isstruct(spec.R) % MMS specific
     end
 elseif isa(spec.R,'TSeries') % TSeries
     
-    rsc = mean(spec.R.data)/(u.RE*1e-3);
+    rsc = mean(spec.R.data)'/(u.RE*1e-3);
 elseif isnumeric(spec.R) && length(R) == 3 % just a vector
     rsc = spec.R;
 end
