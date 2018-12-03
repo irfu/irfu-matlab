@@ -224,7 +224,7 @@ if ~phigInput; phig = linspace(0,2*pi-dPhig,nAzg)+dPhig/2; end
 if ~vgInput; vg = v; end % same as instrument if no input
 
 %% perform projection
-pst = irf_int_sph_dist2(F3d,v,phi,th,vg,'z',zphat,'x',xphat,'phig',phig,'nMC',nMC,'vzint',vzint*1e3,'weight',weight,'base',base);
+pst = irf_int_sph_dist(F3d,v,phi,th,vg,'z',zphat,'x',xphat,'phig',phig,'nMC',nMC,'vzint',vzint*1e3,'weight',weight,'base',base);
 
 % put nans instead of 0s
 pst.F(pst.F==0) = NaN;
