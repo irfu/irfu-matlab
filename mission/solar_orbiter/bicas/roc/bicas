@@ -51,6 +51,9 @@
 #
 # BUG: If mistakenly uses bad "--config" flag, i.e. "--conf", then the script itself will use the wrong
 # MATLAB version ==> Can not launch MATLAB (which would have checked if "--conf" was a bad flag).
+# 
+# PROPOSAL: Rewrite in python3?
+#   NOTE: Check with ROC first.
 #====================================================================================================
 
 
@@ -60,7 +63,7 @@
 declare -r STDOUT_PATTERN='^STDOUT: '    # NOTE: Regex. Includes "^" = beginning of line.
 
 # Prefix added to stdout when it is added to the log.
-declare -r STDERR_PREFIX='STDERR: '   # NOTE: Not a regex (but will code will misbehave for regex commands)!
+declare -r STDERR_PREFIX='STDERR: '   # NOTE: Not a regex (but code will misbehave for regex commands)!
 
 # Name of MATLAB script that launches the MATLAB part of BICAS, such as it is called from inside MATLAB,
 # i.e. WITHOUT the file extension ".m".

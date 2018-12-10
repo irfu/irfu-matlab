@@ -81,6 +81,7 @@ function create_RCT(rctMasterCdfFile, destDir)
 % TODO-NEED-INFO: How set time stamps?
 %   NOTE: Time stamps are not copied, nor modifications of existing time stamps. Can therefor not just reduce to relative times.
 % PROPOSAL: Change name: Something which implies using a master file and "filling it".
+% PROPOSAL/TODO: Functionality for both SGSE and RODP. Might be just a difference in filename.
 
 PRODUCE_CORRECT_RCT_FILENAME = 1;
 

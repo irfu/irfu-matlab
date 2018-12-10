@@ -37,6 +37,8 @@ classdef settings < handle
 %   Ex: Flag for values which have not been set but must later be set.
 %       Ex: MATLAB_COMMAND
 %           CON: Is not really needed by BICAS.
+%   --
+%   NOTE: This information should only be given once in the code, and be hard-coded.
 %
 % PROPOSAL: Convention for "empty"/"not set"?!
 %   TODO-DECISION/CON: Not really needed? Depends too much on the variable/setting.
@@ -44,9 +46,9 @@ classdef settings < handle
 % PROPOSAL: Move out interpretation of strings as numeric values?!
     
     properties(Access=private)
-        defineDisabledForever = false;   % Whether defining new keys is disallowed. True if readOnlyForever==true.
-        readOnlyForever       = false;   % Whether modifying the object is allowed.
-        map;                     % Bad name?
+        defineDisabledForever = false;   % Whether defining new keys is disallowed or not. True if readOnlyForever==true.
+        readOnlyForever       = false;   % Whether modifying the object is allowed or not.
+        map;                             % Map containing settings data.
     end
     
     %###################################################################################################################
@@ -78,9 +80,9 @@ classdef settings < handle
         
         % Define a NEW key and set the value.
         function define_setting(obj, key, value)
-            % ASSERTION
+            % ASSERTIONS
             if obj.defineDisabledForever
-                error('BICAS:settings:Assertion', 'No more allowed to define keys in this settings object.')
+                error('BICAS:settings:Assertion', 'Trying to define new keys in settings object which disallows defining new keys.')
             end
             if obj.map.isKey(key)
                 error('BICAS:settings:Assertion', 'Trying to define pre-existing settings key.')
@@ -95,7 +97,7 @@ classdef settings < handle
         function set_prexisting(obj, key, newValue)
             % ASSERTIONS
             if obj.readOnlyForever
-                error('BICAS:settings:Assertion', 'Not allowed to modify read-only settings object.')
+                error('BICAS:settings:Assertion', 'Trying to modify read-only settings object.')
             end
             if ~obj.map.isKey(key)
                 error('BICAS:settings:Assertion', 'Trying to define non-existing settings key.')
@@ -193,6 +195,8 @@ classdef settings < handle
         
         % Return settings value for a given, existing key.
         % Only works when object is NOT read-only, and the settings might change their value later.
+        %
+        % IMPLEMENTATION NOTE: Name analogous to get_fv. Hence it is short.
         % TV = Tentative value
         function value = get_tv(obj, key)
             % ASSERTIONS

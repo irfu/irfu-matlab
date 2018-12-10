@@ -18,7 +18,6 @@
 %   2016 July: Has TF phase shift   ~0 degrees at low frequencies.
 % NOTE: The class name is chosen to reflect the types of calibration data that it may contain in anticipation of 
 % eventually creating another analogous class for other calibration data.
-% NOTE: Does NOT read the mheader.regX fields above the actual text table.
 % NOTE: For DCC log files: Does not read the BIAS output channel (LFR_1/2/3) since requires reading "Header1" rows.
 % Should be the same as the antenna channels (which are read).
 %

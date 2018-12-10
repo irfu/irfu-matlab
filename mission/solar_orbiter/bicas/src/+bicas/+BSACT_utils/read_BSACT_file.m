@@ -34,6 +34,7 @@ function data = read_BSACT_file(filePath, columnFieldNamesList)
 % PROPOSAL: Rewrite to read file once (not twice).
 % PROPOSAL: Assertion for not using column name "mheader".
 % PROPOSAL: Move columns to its own "sub-struct", e.g. ".columns".
+% PROPOSAL: Re-design to interpret list of row strings; add test code.
 
 
 %====================

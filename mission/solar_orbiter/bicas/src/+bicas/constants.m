@@ -10,7 +10,7 @@
 %
 % IMPLEMENTATION NOTE
 % ===================
-% Reasons for using a singleton class (instead of static methods:
+% Reasons for using a singleton class (instead of static methods and static class variables):
 % 1) Can use properties/instance variables for "caching" values. Do not want to use persistent variables since they
 % cause trouble when testing. NOTE: There are no proper static variables in MATLAB.
 % 2) Can split up (structure, organize) configuration and validation code in methods.
@@ -82,7 +82,7 @@ classdef constants < handle
         % Constructor
         function obj = constants(bicasRootPath)            
             
-             obj.BICAS_ROOT_PATH = bicasRootPath;
+            obj.BICAS_ROOT_PATH = bicasRootPath;
 
             % These two values exist in "settings" in principle, but that is just for as long as there has been no
             % official release. After first release, then the two sets should start diverging.

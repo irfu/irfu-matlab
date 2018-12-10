@@ -28,7 +28,7 @@
 %   the RCS ICD.
 % - The parameter syntax may contain additional inofficial parameters, which are useful for development/debugging, but
 %   which are still compatible with the RCS ICD.
-% - The (MATLAB) code ignores but permits the CLI options --log and --config.
+% - The (MATLAB) code ignores but permits the CLI option --log.
 %
 %
 % NOTES
@@ -97,6 +97,7 @@ function errorCode = bicas( varargin )
 %
 % PROPOSAL: Better handling of errors in dataobj (reading CDF files).
 %   PROPOSAL: Wrap dataobj in function and catch and rethrow errors with BICAS' error IDs.
+
 
 
 % Clear any previous instance of global variables (as early as possible).
@@ -187,9 +188,11 @@ end    % bicas
 % BICAS's de facto main function, without error handling.
 function errorCode = main(REQUIRED_MATLAB_VERSION, ERROR_TYPES_INFO, INOFFICIAL_ARGUMENTS_SEPARATOR, cliArgumentsList)
 
-
+CONFIG_OPTION_HEADER = '--config';
 
 startTimeTicSeconds = tic;
+
+
 
 %=================================
 % ASSERTION: Check MATLAB version
@@ -282,7 +285,6 @@ end
 % Configure permitted ICD CLI options COMMON for all BICAS modes of operation
 %=============================================================================
 IcdOptionsConfigMap = containers.Map;
-CONFIG_OPTION_HEADER = '--config';
 % NOTE: log_path and config_file_path are both options to permit but ignore since they are handled by bash launcher script.
 IcdOptionsConfigMap('log_path')            = struct('optionHeader', '--log',               'occurrenceRequirement', '0-1',   'nValues', 1);
 IcdOptionsConfigMap('config_file_path')    = struct('optionHeader', CONFIG_OPTION_HEADER,  'occurrenceRequirement', '0-1',   'nValues', 1);
@@ -296,7 +298,7 @@ IcdOptionsConfigMap('config_file_path')    = struct('optionHeader', CONFIG_OPTIO
 % NOTE: Implementation assumes that --config option is optional.
 % ASSUMES: ICD CLI syntax implies that the option header can only be found at even index (2,4, ...) positions.
 %==============================================================================================================
-iArg = find(strcmp('CONFIG_OPTION_HEADER', icdCliArgumentsList));
+iArg = find(strcmp(CONFIG_OPTION_HEADER, icdCliArgumentsList));
 if numel(iArg) > 1
     error('BICAS:bicas:CLISyntax', 'Found multiple instances of %s option.', CONFIG_OPTION_HEADER)
 elseif numel(iArg) == 1

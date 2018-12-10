@@ -463,12 +463,21 @@ classdef dm_processing_functions
             EOutPD.V(:,:,1)         = PostDcd.DemuxerOutput.V1;
             EOutPD.V(:,:,2)         = PostDcd.DemuxerOutput.V2;
             EOutPD.V(:,:,3)         = PostDcd.DemuxerOutput.V3;
+            %EOutPD.V(:,1)           = PostDcd.DemuxerOutput.V1;
+            %EOutPD.V(:,2)           = PostDcd.DemuxerOutput.V2;
+            %EOutPD.V(:,3)           = PostDcd.DemuxerOutput.V3;
             EOutPD.E(:,:,1)         = PostDcd.DemuxerOutput.V12;
             EOutPD.E(:,:,2)         = PostDcd.DemuxerOutput.V13;
             EOutPD.E(:,:,3)         = PostDcd.DemuxerOutput.V23;
+            %EOutPD.E(:,1)           = PostDcd.DemuxerOutput.V12;
+            %EOutPD.E(:,2)           = PostDcd.DemuxerOutput.V13;
+            %EOutPD.E(:,3)           = PostDcd.DemuxerOutput.V23;
             EOutPD.EAC(:,:,1)       = PostDcd.DemuxerOutput.V12_AC;
             EOutPD.EAC(:,:,2)       = PostDcd.DemuxerOutput.V13_AC;
             EOutPD.EAC(:,:,3)       = PostDcd.DemuxerOutput.V23_AC;
+            %EOutPD.EAC(:,1)         = PostDcd.DemuxerOutput.V12_AC;
+            %EOutPD.EAC(:,2)         = PostDcd.DemuxerOutput.V13_AC;
+            %EOutPD.EAC(:,3)         = PostDcd.DemuxerOutput.V23_AC;
             
             % ASSERTION            
             bicas.dm_utils.assert_unvaried_N_rows(EOutPD);

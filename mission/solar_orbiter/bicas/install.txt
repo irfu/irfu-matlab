@@ -2,13 +2,13 @@
 ###########################
  BICAS system requirements
 ###########################
-1) Mathworks MATLAB 2016a - Needed for the bulk of the application. It is possible that other versions of MATLAB also work but BICAS has neither been tested nor is it supported for any other version of MATLAB. To try BICAS with any other version of MATLAB, BICAS' own internal MATLAB version check has to be modified or disabled for this to work.
+1) Mathworks MATLAB 2016a - Needed for the bulk of the application. It is possible that other versions of MATLAB also work but BICAS has neither been tested for, nor is it officially supported for, any other version of MATLAB. To try BICAS with any other version of MATLAB, BICAS' own internal MATLAB version check has to be modified or disabled for this to work.
 2) bash command shell (Linux) - Needed for the bash script that launches the actual MATLAB application.
 
 ==================================
  Running BICAS from inside MATLAB
 ==================================
-NOTE: BICAS can also be run directly from inside MATLAB, without the bash launcher script, and hence without bash and presumably without Linux (untested). For this case, call "bicas.m" with the CLI parameters as a sequence of separate string arguments. The argument flags "--log" and "--config" (and their associated user-submitted paths) will be tolerated but will have no effect.
+NOTE: BICAS can also be run directly from inside MATLAB, without the bash launcher script, and hence without bash and presumably without Linux (untested). For this case, call "bicas.m" with the CLI parameters as a sequence of separate string arguments. The argument flag "--log" (and its associated user-submitted paths) is tolerated but has no effect.
 
 
 
@@ -41,13 +41,10 @@ ONLY IF YOU NEED IT: How to convert an irfu-matlab repository into an RCS ICD-co
 Procedure in principle: Move the bicas/ directory (irfu-matlab/mission/solar_orbiter/bicas) out of irfu-matlab to where you want
 BICAS to be located. Use bicas/ as a root directory and put the remainder of irfu-matlab/ under bicas/lib/.
 
-Example using moving commands:
-   rm -rf ~/irfu-matlab/.git*                            # NOTE: Destroys the git repository versioning information. Optional.
-   mv     ~/irfu-matlab/mission/solar_orbiter/bicas/   ~
-   mv     ~/irfu-matlab/   ~/bicas/lib/
-
-Note: This procedure described avove is only meant to show the setup (configuration of directories) one wants to achieve.
-The BICAS root directory does not need to be located under the user directory.
+Example using Linux bash commands:
+   rm -rf irfu-matlab/.git*                            # NOTE: Destroys the git repository versioning information. Optional.
+   mv     irfu-matlab/mission/solar_orbiter/bicas/ .
+   mv     irfu-matlab/ bicas/lib/
 
 
 
