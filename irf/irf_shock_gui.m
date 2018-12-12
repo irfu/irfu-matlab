@@ -155,7 +155,7 @@ if ischar(scd)
             if isfield(ud.shp.par,'Fcpf')
                 ud.params.Fcp = ud.shp.par.Fcpf; % foot ion cycl. freq.
                 ud.params.dTf = diff(ud.tf);
-                ud.params.d2u = (mean(ud.tu)<mean(ud.td));
+                ud.params.d2u = sign(mean(ud.tu)-mean(ud.td));
             end
             
             % calculate shock normals and speeds
@@ -215,11 +215,11 @@ else
         ud.params.R = R;
     end
     % initiate parameters
-    ud.params.Bu = NaN*ones(1,3); ud.params.Bd = NaN*ones(1,3);
-    ud.params.nu = NaN; ud.params.nd = NaN;
-    ud.params.Vu = NaN*ones(1,3); ud.params.Vd = NaN*ones(1,3);
-    ud.params.Tiu = NaN; ud.params.Tid = NaN;
-    ud.params.Teu = NaN; ud.params.Ted = NaN;
+    ud.params.Bu = NaN*ones(1,3); ud.params.Bd = NaN*ones(1,3); ud.params.Bf = NaN*ones(1,3);
+    ud.params.nu = NaN; ud.params.nd = NaN; ud.params.nf = NaN;
+    ud.params.Vu = NaN*ones(1,3); ud.params.Vd = NaN*ones(1,3); ud.params.Vf = NaN*ones(1,3);
+    ud.params.Tiu = NaN; ud.params.Tid = NaN; ud.params.Tif = NaN;
+    ud.params.Teu = NaN; ud.params.Ted = NaN; ud.params.Tef = NaN;
     % to make omni stuff work
     ud.sc_up.Bu = ud.params.Bu;
     ud.sc_up.nu = ud.params.nu;

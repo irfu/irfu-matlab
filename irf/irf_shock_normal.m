@@ -426,7 +426,8 @@ for k = 1:length(fn)
     f = @(th)W*t1*(2*cos(th).^2-1)+2*sin(th).^2.*sin(W*t1);
     x0 = f(th)/(W*spec.dTf);
     
-    Vsp.(fn{k}) = dot(spec.Vu,nvec)*(x0/(1+spec.d2u*x0));
+    % the sign of Vsh in this method is ambiguous, assume n points upstream
+    Vsp.(fn{k}) = spec.d2u*dot(spec.Vu,nvec)*(x0/(1+spec.d2u*x0));
 end
 end
 
