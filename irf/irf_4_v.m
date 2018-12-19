@@ -11,12 +11,22 @@ function out = irf_4_v(r1,r2,r3,r4,x)
 
 
 % If the value is more than c, it is considered to be time. 
-% No FTL spacecraft... yet.
-if x(2) > 299792.458
+% If EpochTT object then also time
+if isa(x,'GenericTimeArray')
+    flag='v_from_t';
+    x = x.epochUnix;
+elseif x(2) > 299792.458
     flag='v_from_t';
 else
     flag='dt_from_v';
 end
+
+% check for TSeris input
+if isa(r1,'TSeries'), r1 = [r1.time.epochUnix double(r1.data)]; end
+if isa(r2,'TSeries'), r2 = [r2.time.epochUnix double(r2.data)]; end
+if isa(r3,'TSeries'), r3 = [r3.time.epochUnix double(r3.data)]; end
+if isa(r4,'TSeries'), r4 = [r4.time.epochUnix double(r4.data)]; end
+
 
 switch flag
     case 'v_from_t'
