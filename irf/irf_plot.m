@@ -214,7 +214,15 @@ if flag_subplot==0  % One subplot
     hca = ax;
     tag=get(hca,'tag'); ud=get(hca,'userdata'); % keep tag/userdata during plotting
     if flag_yy == 0, h = plot(hca, time-ts-dt, data, marker, args{:});
-    else, h = plotyy(hca, time-ts, data, time-ts, data.*scaleyy); % XXX FIXME
+    else
+      if(verLessThan('matlab','9.0'))
+        h = plotyy(hca, time-ts, data, time-ts, data.*scaleyy); % XXX FIXME
+      else
+        yyaxis(hca,'right'); % Matlab 2016a or above, use new yyaxis.
+        plot(time-ts, data.*scaleyy);
+        yyaxis(hca,'left'); % Plot left second, making it the default label location.
+        h = plot(time-ts, data);
+      end
     end
     grid(hca,'on');
     set(hca,'tag',tag); set(hca,'userdata',ud); % restore
