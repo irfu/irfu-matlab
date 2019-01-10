@@ -20,7 +20,7 @@ for day=1:eomday(year,month)
 				num2str(year) num2str(month,'%02.0f') num2str(day,'%02.0f') '_' ...
 				num2str(t3,'%02.0f') '00/' ];
 			cdir = [sdir 'C' num2str(cli)];
-			
+
 			if ~exist(cdir, 'dir'), continue, end
 			d = dir([cdir '/2*_*']);
 			if isempty(d), continue, end
@@ -33,7 +33,7 @@ for day=1:eomday(year,month)
 					continue
 				end
 				cd(curdir)
-				
+
 				dphi=caa_comp_sun_angle(cli);
 				if length(dphi)>1
 					% Blank dphi just after long gaps
@@ -45,7 +45,7 @@ for day=1:eomday(year,month)
 						if isempty(i2), i2=length(dphi2(:,1)); end
 						dphi2(i1:i2,2)=0;
 					end
-					
+
 					% Check for out-of-bounds dphi
 					idx= find(abs(dphi2(:,2))>10);
 					if length(idx)>10
@@ -53,7 +53,7 @@ for day=1:eomday(year,month)
 							plotno=1;
 							cd (old_pwd)
 							filename=sprintf('comp_sun_angle_%2.2i%2.2i_%3.3i.pdf',year,month,pageno);
-							print( fighandle, '-dpdf', filename);
+							print( fighandle, '-dpdf', filename, '-fillpage' );
 							pageno=pageno+1;
 							clf
 						end
@@ -81,5 +81,5 @@ fprintf(1,'Done.\nPDF files are in the directory %s\n\n',old_pwd);
 fprintf(1,output_string);
 cd (old_pwd)
 filename=sprintf('comp_sun_angle_%2.2i%2.2i_%3.3i.pdf',year,month,pageno);
-print( fighandle, '-dpdf', filename);
+print( fighandle, '-dpdf', filename, '-fillpage' );
 end
