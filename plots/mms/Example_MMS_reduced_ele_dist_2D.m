@@ -19,6 +19,10 @@ vg = linspace(-70e3,70e3,100); % km/s
 % performance, increase to improve plot.
 nMC = 2e3;
 
+% It is possible to limit the out-of-plane speed, in a way making a cut
+% (This seems to be undocumented)
+vzint = 20e3*[-1,1]; % km/s
+
 % get distribution function for all four MMS
 c_eval('ePDist? = mms.make_pdist(mms.get_filepath(''mms?_fpi_brst_l2_des-dist'',tint));')
 c_eval('ePDist? = ePDist?.tlim(tint);')
@@ -44,9 +48,9 @@ c_eval('ePDist?.data(:,1:11,:,:) = 0;')
 
 %% Reduce distributions 
 tic
-c_eval('f2Dparperp1? = ePDist?.reduce(''2D'',bvec,perp1vec,''base'',''cart'',''vg'',vg,''nMC'',nMC);')
-c_eval('f2Dparperp2? = ePDist?.reduce(''2D'',bvec,perp2vec,''base'',''cart'',''vg'',vg,''nMC'',nMC);')
-c_eval('f2Dperp1perp2? = ePDist?.reduce(''2D'',perp1vec,perp2vec,''base'',''cart'',''vg'',vg,''nMC'',nMC);')
+c_eval('f2Dparperp1? = ePDist?.reduce(''2D'',bvec,perp1vec,''base'',''cart'',''vg'',vg,''nMC'',nMC,''vint'',vzint);')
+c_eval('f2Dparperp2? = ePDist?.reduce(''2D'',bvec,perp2vec,''base'',''cart'',''vg'',vg,''nMC'',nMC,''vint'',vzint);')
+c_eval('f2Dperp1perp2? = ePDist?.reduce(''2D'',perp1vec,perp2vec,''base'',''cart'',''vg'',vg,''nMC'',nMC,''vint'',vzint);')
 toc
 
 
