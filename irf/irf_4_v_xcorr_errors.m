@@ -180,8 +180,8 @@ if ~patternInput
     % only in tint
     P = P.tlim(tint);
     
-    %redefine startTau
-    startTau = [-0.01,tau12,tau13,tau14];
+    %redefine startTau, negative starting guess for good measure
+    startTau = [-1e-9,tau12,tau13,tau14];
     
 end
 
