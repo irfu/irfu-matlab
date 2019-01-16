@@ -27,7 +27,7 @@ vzint = 20e3*[-1,1]; % km/s
 c_eval('ePDist? = mms.make_pdist(mms.get_filepath(''mms?_fpi_brst_l2_des-dist'',tint));')
 c_eval('ePDist? = ePDist?.tlim(tint);')
 
-% get magnetic field in DMPA (since ePDist is in DMPA)
+% get magnetic ield in DMPA (since ePDist is in DMPA)
 c_eval('B? = mms.get_data(''B_dmpa_fgm_brst_l2'',tint,?);')
 
 % get average magnetic field
@@ -37,7 +37,7 @@ B = (B1+B2.resample(B1)+B3.resample(B1)+B4.resample(B1))/4;
 % unit vector pointing along B
 bvec = mean(B.tlim(tint).data)/norm(mean(B.tlim(tint).data));
 % perp unit vectors, (par,perp1,perp2) is right handed
-perp1vec = cross([0,0,1],bvec);
+perp1vec = cross([0,0,1],bvec); perp1vec = perp1vec/norm(perp1vec);
 perp2vec = cross(bvec,perp1vec);
 
 
