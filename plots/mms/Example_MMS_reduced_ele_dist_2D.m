@@ -102,8 +102,8 @@ h(1) = hca;
 f2Dparperp11(1).plot_plane(hca,'colorbar',0,'contour',6)
 hold(hca,'on')
 axis(hca,'equal')
-xlabel(hca,'$V_{\parallel}$ [km/s]','interpreter','latex')
-ylabel(hca,'$V_{\perp,1}$ [km/s]','interpreter','latex')
+xlabel(hca,'$V_{\parallel}$ [$10^3$km/s]','interpreter','latex')
+ylabel(hca,'$V_{\perp,1}$ [$10^3$km/s]','interpreter','latex')
 title(hca,'One distribution');
 
 hca = subplot(1,3,2);
@@ -111,8 +111,8 @@ h(2) = hca;
 f2Dparperp11.plot_plane(hca,'colorbar',0,'contour',6)
 hold(hca,'on')
 axis(hca,'equal')
-xlabel(hca,'$V_{\parallel}$ [km/s]','interpreter','latex')
-ylabel(hca,'$V_{\perp,1}$ [km/s]','interpreter','latex')
+xlabel(hca,'$V_{\parallel}$ [$10^3$km/s]','interpreter','latex')
+ylabel(hca,'$V_{\perp,1}$ [$10^3$km/s]','interpreter','latex')
 title(hca,'Time-averaged, MMS1');
 
 hca = subplot(1,3,3);
@@ -120,8 +120,8 @@ h(3) = hca;
 f2Dparperp1.plot_plane(hca,'colorbar',0,'contour',6)
 hold(hca,'on')
 axis(hca,'equal')
-xlabel(hca,'$V_{\parallel}$ [km/s]','interpreter','latex')
-ylabel(hca,'$V_{\perp,1}$ [km/s]','interpreter','latex')
+xlabel(hca,'$V_{\parallel}$ [$10^3$km/s]','interpreter','latex')
+ylabel(hca,'$V_{\perp,1}$ [$10^3$km/s]','interpreter','latex')
 title(hca,'Time- and spacecraft-averaged');
 
 % colorbar
@@ -173,24 +173,24 @@ h(1) = hca;
 f2Dparperp1.plot_plane(hca,'colorbar',0,'contour',6)
 hold(hca,'on')
 axis(hca,'equal')
-xlabel(hca,'$V_{\parallel}$ [km/s]','interpreter','latex')
-ylabel(hca,'$V_{\perp,1}$ [km/s]','interpreter','latex')
+xlabel(hca,'$V_{\parallel}$ [$10^3$km/s]','interpreter','latex')
+ylabel(hca,'$V_{\perp,1}$ [$10^3$km/s]','interpreter','latex')
 
 hca = subplot(1,3,2);
 h(2) = hca;
 f2Dparperp2.plot_plane(hca,'colorbar',0,'contour',6)
 hold(hca,'on')
 axis(hca,'equal')
-xlabel(hca,'$V_{\parallel}$ [km/s]','interpreter','latex')
-ylabel(hca,'$V_{\perp,2}$ [km/s]','interpreter','latex')
+xlabel(hca,'$V_{\parallel}$ [$10^3$km/s]','interpreter','latex')
+ylabel(hca,'$V_{\perp,2}$ [$10^3$km/s]','interpreter','latex')
 
 hca = subplot(1,3,3);
 h(3) = hca;
 f2Dperp1perp2.plot_plane(hca,'colorbar',0,'contour',6)
 hold(hca,'on')
 axis(hca,'equal')
-xlabel(hca,'$V_{\perp,1}$ [km/s]','interpreter','latex')
-ylabel(hca,'$V_{\perp,2}$ [km/s]','interpreter','latex')
+xlabel(hca,'$V_{\perp,1}$ [$10^3$km/s]','interpreter','latex')
+ylabel(hca,'$V_{\perp,2}$ [$10^3$km/s]','interpreter','latex')
 
 % colorbar
 htempPos = h(1).Position;
