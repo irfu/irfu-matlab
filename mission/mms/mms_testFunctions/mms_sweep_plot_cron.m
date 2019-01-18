@@ -105,10 +105,6 @@ function mms_sweep_plot_cron(dayToRun)
     save([sweepFolder,'obj/mms',scStr,'_SweepTsCombined.mat'], 'Sw');
     close all % close plots..
     
-    % Create output folders (in case of new year)
-    if ~exist([sweepFolder,'summary_plots/ADP/',year],'dir'), mkdir([sweepFolder,'summary_plots/ADP/',year]); end
-    if ~exist([sweepFolder,'summary_plots/SDP/',year],'dir'), mkdir([sweepFolder,'summary_plots/SDP/',year]); end
-
     %% Plot all combined data
     % Moving median, Matlab built in uneven sampling time taken into account...
     c_eval('t?=datetime(Sw.p?_iPh_ts.time.utc(''yyyy-mm-ddTHH:MM:SS.mmmZ''),''InputFormat'',''uuuu-MM-dd''''T''''HH:mm:ss.SSS''''Z'''''',''TimeZone'',''UTCLeapSeconds'');', 1:6);
@@ -122,8 +118,8 @@ function mms_sweep_plot_cron(dayToRun)
     c_eval('ylim(h?,[-55 555]);', 1:6);
     c_eval('legend(h?,''I_{ph}, sweep p?'',''15 days moving median'');', 1:6);
     c_eval('set(h?.Children(1),''LineWidth'',2);', 1:6);
-    c_eval('print(h?.Parent, ''-dpng'', [sweepFolder,''summary_plots/SDP/'',year,''/iPhVsTime_mms'',scStr,''_p?.png'']);', 1:4);
-    c_eval('print(h?.Parent, ''-dpng'', [sweepFolder,''summary_plots/ADP/'',year,''/iPhVsTime_mms'',scStr,''_p?.png'']);', 5:6);
+    c_eval('print(h?.Parent, ''-dpng'', [sweepFolder,''summary_plots/SDP/iPhVsTime_mms'',scStr,''_p?.png'']);', 1:4);
+    c_eval('print(h?.Parent, ''-dpng'', [sweepFolder,''summary_plots/ADP/iPhVsTime_mms'',scStr,''_p?.png'']);', 5:6);
     close all % close plots
 
     % impedance vs time
@@ -134,8 +130,8 @@ function mms_sweep_plot_cron(dayToRun)
     c_eval('legend(h?,''impedance from P? Sweep'',''15 days moving median'');', 1:6);
     c_eval('ylim(h?,[-5 55]);', 1:6);
     c_eval('set(h?.Children(1),''LineWidth'',2);', 1:6);
-    c_eval('print(h?.Parent, ''-dpng'', [sweepFolder,''summary_plots/SDP/'',year,''/ImpedanceVsTime_mms'',scStr,''_p?.png'']);', 1:4);
-    c_eval('print(h?.Parent, ''-dpng'', [sweepFolder,''summary_plots/ADP/'',year,''/ImpedanceVsTime_mms'',scStr,''_p?.png'']);', 5:6);
+    c_eval('print(h?.Parent, ''-dpng'', [sweepFolder,''summary_plots/SDP/ImpedanceVsTime_mms'',scStr,''_p?.png'']);', 1:4);
+    c_eval('print(h?.Parent, ''-dpng'', [sweepFolder,''summary_plots/ADP/ImpedanceVsTime_mms'',scStr,''_p?.png'']);', 5:6);
     close all % close plots
 
     % phase vs time
@@ -145,7 +141,7 @@ function mms_sweep_plot_cron(dayToRun)
     ylabel(h,{'Phase, computed from DefAtt','[deg]'});
     title(h, ['Plot created: ',nowStr,'. MMS',scStr,' phase vs time.']);
     legend(h, 'p1', 'p2', 'p3', 'p4');
-    print(h.Parent, '-dpng', [sweepFolder,'summary_plots/SDP/'',year,''/PhaseVsTime_mms',scStr,'_p1234.png']);
+    print(h.Parent, '-dpng', [sweepFolder,'summary_plots/SDP/PhaseVsTime_mms',scStr,'_p1234.png']);
     close all % close plots
     figure('units','normalized','outerposition', [0 0 1 1]);
     h=irf_plot({Sw.p5_phase_ts, Sw.p6_phase_ts}, ...
@@ -153,7 +149,7 @@ function mms_sweep_plot_cron(dayToRun)
     ylabel(h,{'Phase, computed from DefAtt','[deg]'});
     title(h, ['Plot created: ',nowStr,'. MMS',scStr,' phase vs time.']);
     legend(h, 'p5', 'p6');
-    print(h.Parent, '-dpng', [sweepFolder,'summary_plots/ADP/'',year,''/PhaseVsTime_mms',scStr,'_p56.png']);
+    print(h.Parent, '-dpng', [sweepFolder,'summary_plots/ADP/PhaseVsTime_mms',scStr,'_p56.png']);
     close all % close plots
     
     % iPh vs phase
@@ -165,8 +161,8 @@ function mms_sweep_plot_cron(dayToRun)
     c_eval('iPhvsPhaseSegm!(?)=median(Sw.p!_iPh_ts.data(phaseInd!==? & ind!));', 1:nPhaseSegm, 1:6);
     c_eval('fig?=figure(''units'',''normalized'',''outerposition'',[0 0 1 1]);subplot(1,2,1);polarplot(deg2rad(Sw.p?_phase_ts.data(ind?)),Sw.p?_iPh_ts.data(ind?),lineStyle{?});rlim([0 600]);title(''All times, where I_{ph}>0.'');subplot(1,2,2);polarplot(deg2rad(360/(2*nPhaseSegm)+(0:360/nPhaseSegm:360)),[iPhvsPhaseSegm?; iPhvsPhaseSegm?(1)],''-black'',''LineWidth'',2);rlim([0 600]);title(''Median I_{ph}, where I_{ph}>0, over 5 degrees of phase.'');rticks([0 100 200 300 400 500 600]);suptitle([''Plot created: '',nowStr,''. MMS'',scStr,'' I_{ph} vs phase, p?.'']);', 1:6);
     %c_eval('fig?=figure(''units'',''normalized'',''outerposition'',[0 0 1 1]);subplot(1,2,1);polarplot(deg2rad(Sw.p?_phase_ts.data(ind?)),Sw.p?_iPh_ts.data(ind?),lineStyle{?});rlim([0 600]);title(''All times, where 0<I_{ph}.'');subplot(1,2,2);polarplot(deg2rad(2.5+0:360/nPhaseSegm:(360-1)),iPhvsPhaseSegm?,''-black'',''LineWidth'',2);rlim([0 600]);title(''Median I_{ph}, where 0<I_{ph}, over 5 degrees of phase.'');suptitle([''MMS'',scStr,'' I_{ph} vs phase, p?.'']);', 5:6);
-    c_eval('print(fig?, ''-dpng'', [sweepFolder,''summary_plots/SDP/'',year,''/iPhVsPhasePolar_mms'',scStr,''_p?.png'']);', 1:4);
-    c_eval('print(fig?, ''-dpng'', [sweepFolder,''summary_plots/ADP/'',year,''/iPhVsPhasePolar_mms'',scStr,''_p?.png'']);', 5:6);
+    c_eval('print(fig?, ''-dpng'', [sweepFolder,''summary_plots/SDP/iPhVsPhasePolar_mms'',scStr,''_p?.png'']);', 1:4);
+    c_eval('print(fig?, ''-dpng'', [sweepFolder,''summary_plots/ADP/iPhVsPhasePolar_mms'',scStr,''_p?.png'']);', 5:6);
     close all % close plots
 
     % impedance vs phase
@@ -176,8 +172,8 @@ function mms_sweep_plot_cron(dayToRun)
     c_eval('ImpvsPhaseSegm?=zeros(nPhaseSegm,1);',1:6);
     c_eval('ImpvsPhaseSegm!(?)=median(Sw.p!_impedance_ts.data(phaseInd!==? & ind!));', 1:nPhaseSegm, 1:6);
     c_eval('fig?=figure(''units'',''normalized'',''outerposition'',[0 0 1 1]);subplot(1,2,1);polarplot(deg2rad(Sw.p?_phase_ts.data(ind?)),Sw.p?_impedance_ts.data(ind?),lineStyle{?});rlim([0 55]);title(''All times, where Impedance>0.'');subplot(1,2,2);polarplot(deg2rad(360/(2*nPhaseSegm)+(0:360/nPhaseSegm:360)),[ImpvsPhaseSegm?; ImpvsPhaseSegm?(1)],''-black'',''LineWidth'',2);rlim([0 55]);title(''Median Impedance, where Impedance>0, over 5 degrees of phase.'');rticks([0 10 20 30 40 50]);suptitle([''Plot created: '',nowStr,''. MMS'',scStr,'' Impedance vs phase, p?.'']);', 1:6);
-    c_eval('print(fig?, ''-dpng'', [sweepFolder,''summary_plots/SDP/'',year,''/ImpedanceVsPhasePolar_mms'',scStr,''_p?.png'']);', 1:4);
-    c_eval('print(fig?, ''-dpng'', [sweepFolder,''summary_plots/ADP/'',year,''/ImpedanceVsPhasePolar_mms'',scStr,''_p?.png'']);', 5:6);
+    c_eval('print(fig?, ''-dpng'', [sweepFolder,''summary_plots/SDP/ImpedanceVsPhasePolar_mms'',scStr,''_p?.png'']);', 1:4);
+    c_eval('print(fig?, ''-dpng'', [sweepFolder,''summary_plots/ADP/ImpedanceVsPhasePolar_mms'',scStr,''_p?.png'']);', 5:6);
     close all % close plots
     
 %    % iPh vs F10.7
