@@ -441,8 +441,12 @@ H_psd = H_psd*1e3;
 % Construct TSeries'
 n_psd = irf.ts_scalar(pdist.time,n_psd);
 n_psd_e32 = irf.ts_scalar(pdist.time, n_psd_e32);
-n_psd_skymap = PDist(pdist.time, n_psd_e32_phi_theta, 'skymap', energy, phi.data, thetak);
-n_psd_skymap.userData = pdist.userData; 
+if isstruct(phi)
+    n_psd_skymap = PDist(pdist.time, n_psd_e32_phi_theta, 'skymap', energy, phi.data, thetak);
+else
+    n_psd_skymap = PDist(pdist.time, n_psd_e32_phi_theta, 'skymap', energy, phi, thetak);    
+end
+    n_psd_skymap.userData = pdist.userData; 
 n_psd_skymap.units = 'cm^{-3}';  
 V_psd = irf.ts_vec_xyz(pdist.time,V_psd);
 P_psd = irf.ts_tensor_xyz(pdist.time,P_psd);
