@@ -57,7 +57,7 @@ if loadError
 end
 if loadDist
   tmpDist = get_variable(tmpDataObj,['mms' fileInfo.mmsId '_' fileInfo.detector '_dist_' fileInfo.tmMode]);
-  Dist = tmpDist.data;
+  Dist = double(tmpDist.data);
 else
   Dist = Error;
 end
