@@ -432,7 +432,16 @@ classdef dm_processing_functions
                     EOutPD.IBIAS1           = bicas.dm_utils.convert_N_to_1_SPR_redistribute( PostDcd.IBIAS1 );
                     EOutPD.IBIAS2           = bicas.dm_utils.convert_N_to_1_SPR_redistribute( PostDcd.IBIAS2 );
                     EOutPD.IBIAS3           = bicas.dm_utils.convert_N_to_1_SPR_redistribute( PostDcd.IBIAS3 );
-
+                    EOutPD.V(:,1)           = PostDcd.DemuxerOutput.V1;
+                    EOutPD.V(:,2)           = PostDcd.DemuxerOutput.V2;
+                    EOutPD.V(:,3)           = PostDcd.DemuxerOutput.V3;
+                    EOutPD.E(:,1)           = PostDcd.DemuxerOutput.V12;
+                    EOutPD.E(:,2)           = PostDcd.DemuxerOutput.V13;
+                    EOutPD.E(:,3)           = PostDcd.DemuxerOutput.V23;
+                    EOutPD.EAC(:,1)         = PostDcd.DemuxerOutput.V12_AC;
+                    EOutPD.EAC(:,2)         = PostDcd.DemuxerOutput.V13_AC;
+                    EOutPD.EAC(:,3)         = PostDcd.DemuxerOutput.V23_AC;
+                    
                 case  'L2S_LFR-SURV-SWF-E_V02'
                     
                     % ASSERTION
@@ -451,33 +460,24 @@ classdef dm_processing_functions
                     % Only in LFR SWF (not CWF): F_SAMPLE, SAMP_DTIME
                     EOutPD.F_SAMPLE         = PostDcd.freqHz;
                     EOutPD.SAMP_DTIME       = PostDcd.SAMP_DTIME;
-
+                    
                     EOutPD.IBIAS1           = PostDcd.IBIAS1;
                     EOutPD.IBIAS2           = PostDcd.IBIAS2;
                     EOutPD.IBIAS3           = PostDcd.IBIAS3;
+                    EOutPD.V(:,:,1)         = PostDcd.DemuxerOutput.V1;
+                    EOutPD.V(:,:,2)         = PostDcd.DemuxerOutput.V2;
+                    EOutPD.V(:,:,3)         = PostDcd.DemuxerOutput.V3;
+                    EOutPD.E(:,:,1)         = PostDcd.DemuxerOutput.V12;
+                    EOutPD.E(:,:,2)         = PostDcd.DemuxerOutput.V13;
+                    EOutPD.E(:,:,3)         = PostDcd.DemuxerOutput.V23;
+                    EOutPD.EAC(:,:,1)       = PostDcd.DemuxerOutput.V12_AC;
+                    EOutPD.EAC(:,:,2)       = PostDcd.DemuxerOutput.V13_AC;
+                    EOutPD.EAC(:,:,3)       = PostDcd.DemuxerOutput.V23_AC;
                     
                 otherwise
                     error('BICAS:data_manager:Assertion:IllegalArgument', 'Function can not produce PDID=%s.', eoutPDID)
             end
             
-            EOutPD.V(:,:,1)         = PostDcd.DemuxerOutput.V1;
-            EOutPD.V(:,:,2)         = PostDcd.DemuxerOutput.V2;
-            EOutPD.V(:,:,3)         = PostDcd.DemuxerOutput.V3;
-            %EOutPD.V(:,1)           = PostDcd.DemuxerOutput.V1;
-            %EOutPD.V(:,2)           = PostDcd.DemuxerOutput.V2;
-            %EOutPD.V(:,3)           = PostDcd.DemuxerOutput.V3;
-            EOutPD.E(:,:,1)         = PostDcd.DemuxerOutput.V12;
-            EOutPD.E(:,:,2)         = PostDcd.DemuxerOutput.V13;
-            EOutPD.E(:,:,3)         = PostDcd.DemuxerOutput.V23;
-            %EOutPD.E(:,1)           = PostDcd.DemuxerOutput.V12;
-            %EOutPD.E(:,2)           = PostDcd.DemuxerOutput.V13;
-            %EOutPD.E(:,3)           = PostDcd.DemuxerOutput.V23;
-            EOutPD.EAC(:,:,1)       = PostDcd.DemuxerOutput.V12_AC;
-            EOutPD.EAC(:,:,2)       = PostDcd.DemuxerOutput.V13_AC;
-            EOutPD.EAC(:,:,3)       = PostDcd.DemuxerOutput.V23_AC;
-            %EOutPD.EAC(:,1)         = PostDcd.DemuxerOutput.V12_AC;
-            %EOutPD.EAC(:,2)         = PostDcd.DemuxerOutput.V13_AC;
-            %EOutPD.EAC(:,3)         = PostDcd.DemuxerOutput.V23_AC;
             
             % ASSERTION            
             bicas.dm_utils.assert_unvaried_N_rows(EOutPD);
