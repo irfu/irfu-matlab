@@ -78,6 +78,15 @@ classdef dm_processing_functions
 % NOTE: Both BIAS HK and LFR SURV CWF contain MUX data (only LFR has one timestamp per snapshot). True also for other input datasets?
 %
 % PROPOSAL: Assertion functions for PreDCD and PostDCD formats.
+%
+% PROPOSAL: Every processing function should use a special function for asserting and retrieving the right set of
+%           InputsMap keys and values.
+%   NOTE: Current convention/scheme only checks the existence of required keys, not absence of non-required keys.
+%   PRO: More assertions.
+%   PRO: Clearer dependencies.
+%
+% PROPOSAL: Assertions after every switch statement that differentiates different processing data/dataset versions.
+%           Describe what they should all "converge" on, and make sure they actually do.
 %#######################################################################################################################
     
     methods(Static, Access=public)
@@ -168,12 +177,12 @@ classdef dm_processing_functions
 
             nRecords = size(SciPd.Epoch, 1);
             
-            %=====================================================================
+            %=========================================================================
             % Handle differences between skeletons V01 and V02
             % ------------------------------------------------
             % LFR_V, LFR_E: zVars with different names (but identical meaning).
-            % L1_REC_NUM  : Not defined in V01, but in V02 dataset skeletons.
-            %=====================================================================
+            % L1_REC_NUM  : Not defined in V01, V04(?), but in V02 dataset skeletons.
+            %=========================================================================
             switch(sciPdid)
                 case {  'L2R_LFR-SBM1-CWF_V01', ...
                         'L2R_LFR-SBM2-CWF_V01', ...
@@ -461,11 +470,11 @@ classdef dm_processing_functions
                     
                     % ASSERTION
                     if nSamplesPerRecord ~= 2048
-                        error('BICAS:data_manager:Assertion:IllegalArgument', 'Number of samples per CDF record is not 2048.')
+                        error('BICAS:data_manager:Assertion:IllegalArgument', 'Number of samples per CDF record is not 2048, as expected.')
                     end
                     
                     EOutPD.Epoch            = PostDcd.Epoch;
-                    EOutPD.ACQUISITION_TIME = PostDcd.ACQUISITION_TIME;                    
+                    EOutPD.ACQUISITION_TIME = PostDcd.ACQUISITION_TIME;
                     
                     EOutPD.DELTA_PLUS_MINUS = PostDcd.DELTA_PLUS_MINUS;
                     EOutPD.L1_REC_NUM       = PostDcd.L1_REC_NUM;

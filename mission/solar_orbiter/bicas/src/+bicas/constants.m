@@ -224,7 +224,7 @@ classdef constants < handle
             % ~BUG: SWD_PURPOSE should also reference potential data (not just diffs).
             
             % NOTE: NESTED function
-            % SMI = s/w mode info
+            % SMI = Software Mode Info
             function smi = create_SMI(cliParameter, id, inputPdidList, outputPdidList, swdPurpose)
                 smi.CLI_PARAMETER    = cliParameter;
                 smi.ID               = id;
@@ -344,7 +344,7 @@ classdef constants < handle
             % PROPOSAL: Put derivation of .PDID in nested init function.
             
             % NOTE: NESTED function
-            % II = input info
+            % II = Input Info
             function InputInfo = create_II(datasetId, skeletonVersionStr)
                 InputInfo.OPTION_HEADER_SH     = 'input_sci';
                 InputInfo.DATASET_ID           = datasetId;
@@ -373,7 +373,7 @@ classdef constants < handle
             
             %=========
             % LFR SCI
-            %=========            
+            %=========
             inputsInfoList{end+1} = create_II('ROC-SGSE_L2R_RPW-LFR-SBM1-CWF', '01');   % 1 snapshot/record
             inputsInfoList{end+1} = create_II('ROC-SGSE_L2R_RPW-LFR-SBM1-CWF', '02');   % 1   sample/record
             

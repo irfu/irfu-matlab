@@ -7,19 +7,19 @@
 %
 % BASIC CONCEPT
 % =============
-% The basic concept is inspired by irfu-matlab's MMS data manager. The user gives the class the input data ("elementary
-% input process data") it has, and asks for the output data ("elementary output process data") it wants.
+% The basic concept is inspired by irfu-matlab's MMS data manager. The user gives the class the input data (here called
+% "elementary input process data") it has, and asks for the output data ("elementary output process data") it wants.
 %
 % The class maintains an internal set of different "process data" variables (PDVs), a set of variables where each one is
-% uniquely referenced by a unique string, a "process data ID" (PDID). These process data variables are all related to
-% each other in a conceptual "web" (an acyclic directed graph) describing their dependencies on each other. Initially
-% these process data variables are all empty.
+% uniquely referenced by a unique string, a "process data ID" (PDID). These PDVs are all related to each other in a
+% conceptual "web" (an acyclic directed graph) describing their dependencies on each other. Initially these PDVs are all
+% empty.
 %
 %
 % Dependencies
 % -------------
-% For a PDV "Y", there is a list of lists(!) of PDVs (or PDIDs) X_ij. To derive Y, you need to have available at least
-% one X_ij, for every i. 
+% For an arbitrary PDV "Y", there is a list of lists(!) of PDVs (or PDIDs) X_ij. To derive Y, you need to have available
+% at least one list {X_ij : for every i}, i.e. one list X_ij, for a fixed j (every i).
 % 
 %
 % Execution/process
@@ -32,8 +32,9 @@
 %
 % Example
 % -------
-% (Example assumes unique sets of required PDVs for simplicity. Information flows from left to right, i.e. PDVs on the
-% left are used to derive the ones to the right. Each string represents a PDV.)
+% Example assumes unique sets of required PDVs for simplicity. Information flows from left to right, i.e. PDVs on the
+% left are used to derive the ones to the right. Each string represents a PDV. Each set fo combined lines represents a
+% processing function.
 %    input_1 ---------------------------------------------- output_1 --
 %                                                                      \
 %                                                                       -- output_2
@@ -48,7 +49,7 @@
 % Advantages with architecture
 % ----------------------------
 % - Can split processing into multiple simpler and natural parts which can be recycled for different S/W modes.
-% - Easy to implement CHANGING S/W modes (as defined by the RCS ICD) using this class, althoguh the class itself is
+% - Easy to implement CHANGING S/W modes (as defined by the RCS ICD) using this class, although the class itself is
 %   unaware of S/W modes.
 %      Ex: Updates to the RPW pipeline, datasets.
 %      Ex: Can use a different set of modes when validating using the official RCS validation software at LESIA (not all
@@ -64,10 +65,12 @@
 %
 % DEFINITIONS OF TERMS, ABBREVIATIONS
 % ===================================
-% - Process data (PD)
-%       In practice, one internal variable representing some form of data in some step of
+% - PD = Process Data
+%       The data In practice, one internal variable representing some form of data in some step of
 %       the "data processing process".
-% - Elementary input/output (EIn/EOut) process data
+% - PDV = Process Data Variable
+%       A PD represented as a variable in code.
+% - EIn/EOut = Elementary Input/Output process data
 %       Process data that represents data that goes in and out of the data manager as a whole. The word "elementary" is
 %       added to distinguish input/output from the input/output for a smaller operation, in particular when converting
 %       to/from intermediate process data.
@@ -78,7 +81,7 @@
 % - Intermediate process data
 %       Process data that is not "elementary" input/output process data.
 %       These only exist inside data_manager.
-% - Process data ID (PDID)
+% - PDID = Process data ID
 %       A string that uniquely represents (refers to) a type of process data.
 %       By convention, the PDIDs for elementary input/output PDIDs are a shortened version of
 %       dataset_ID+skeleton_version_str, e.g. "L2S_LFR-SURV-CWF-E_V01". Hardcoded values of these occur throughout the
@@ -107,19 +110,21 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
 %--
 % PROPOSAL: Function for checking if list of Ein PDIDs for a list of EOut PDIDs can be satisfied.
 %
-% PROPOSAL: Functions for classifying PDIDs.
-%   Ex: LFR/TDS, sample/record or snapshot/record, V01/V02 (for LFR variables changing name).
-%   Ex: Number of samples per snapshot (useful for "virtual snapshots") in record (~size of record).
-%   PRO: Could reduce/collect the usage of hardcoded PDIDs.
-%   NOTE: Mostly/only useful for elementary input PDIDs?
-%   PROPOSAL: Add field (sub-struct) "format_constants" in list of EIn PDIDs in constants?!!
-%       NOTE: Already has version string in list of EIn PDIDs.
-%
 % PROPOSAL: get_process_data_recursively should give assertion error for not finding processing function? (Is there a
 % reason why not already so?)
 %
 % PROPOSAL: Log PDV values everytime they have been set in data_manager. 
 %   NOTE: Need to handle recursive structs.
+%
+% PROPOSAL: Replace with separate generic class, without hardcoded data.
+%           Class initialized with tables of dependencies and processing functions.
+%   PRO: Automatic testing.
+%   PRO: Can check switch-case PDIDs for validity, which can not be done right now.
+%   PRO: Clearer code?
+%   PRO: Could reuse code in other projects?
+%   CON: Bad for customized logging messages.
+%       PROPOSAL: Class property for logging function handle. Class calls it when logging.
+%       NOTE: Processing functions could also log.
 %#######################################################################################################################
 
     properties(Access=private)
@@ -201,6 +206,7 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
             [InputPdidsMap, processingFunc] = obj.get_processing_info(pdid);
             % ASSERTION
             if isempty(processingFunc)
+                % CASE: pdid represents an EIn.
                 processData = [];
                 %irf.log('n', sprintf('End   function (pdid=%s) - PD can not be derived (is EIn)', pdid))
                 return
@@ -270,8 +276,9 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
         % IMPLEMENTATION NOTE: The reason for that this function is located in "data_manager" instead of "constants" is
         % the combination of (1) the call to "bicas.data_manager.get_elementary_input_PDIDs" (which goes/went through the
         % data manager's processing graph recursively) and (2) that constants.m should contain no reference to
-        % data_manager.m (for initialization reasons at the very least). AMENDMENT 2016-11-16: Function no longer calls
-        % that function but might call a similar one in the future. The comment is therefore still relevant.
+        % data_manager.m (for initialization reasons at the very least).
+        % AMENDMENT 2016-11-16: Function no longer calls that function but might call a similar one in the future. The
+        % comment is therefore still relevant.
 
             global CONSTANTS
 
@@ -412,22 +419,29 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
         %     IDs for S/W modes are correct (this is needed for (a) generating the S/W descriptor, and (b) generating
         %     requirements on CLI parameters).
         %
-        % ARGUMENT AND RETURN VALUES
-        % ==========================
+        % ARGUMENTS
+        % =========
         % outputPdid     : The PDID (string) for the PD that should be produced.
-        % inputPdids     : Struct where every field is set to a cell array of PDIDs. In every such cell array, only one
-        %                  of its PDIDs/PDs is necessary for the processing function. The field names of the fields are
-        %                  "human-readable".
-        %                  NOTE: Elementary input PDIDs yield an empty struct (no field names).
+        %
+        % RETURN VALUES
+        % =============
         % processingFunc : Pointer to a function that can derive process data (for output_PDID) from other process data
         %                  (for input_PDIDs).
-        %         Function "syntax": process_data = processing_func(InputsMap)
+        %         Function "syntax": processData = processing_func(InputsMap)
         %         ARGUMENTS:
         %             InputsMap : A containers.Map
         %                <keys>       : The same keys as InputPdidsMap (returned by get_processing_info).
         %                <values>     : A struct with fields .pd (process data) and .pdid (PDID for .pd).
         %         An empty function pointer is equivalent to that outputPdid is an EIn-PDID.
+        % inputPdids        : containers.Map object
+        %       <key(s)>    : "Human-readable" string
+        %       <value(s)>  : Cell array of PDIDs. In every of cell array, any one corresponding PDV is needed by the
+        %                     processing function.
+        %       NOTE: Elementary input PDIDs yield an empty containers.Map object (no keys).
             
+        % PROPOSAL: Return variable boolean "isEIn".
+        %   PRO: Clearer
+        
             obj.assert_PDID(outputPdid)
 
 
@@ -474,7 +488,6 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
                 % Intermediary PDIDs
                 %====================
                 
-                % EXPERIMENTAL
                 case 'HK_on_SCI_time'
                     InputPdidsMap('HK_cdf') = {...
                         'HK_BIA_V01', ...

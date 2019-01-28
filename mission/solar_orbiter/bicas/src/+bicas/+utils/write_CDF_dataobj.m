@@ -269,7 +269,7 @@ for i=1:length(dataobj_Variables(:,1))
     end
     
     
-    
+
     [zVarValue, isRecordBound] = prepare_zVarData(zVarValue, specifiedSizePerRecord, strictZVarSize, zVarName);
     if isRecordBound
         zVarNameRcList{end+1} = zVarName;
@@ -537,12 +537,14 @@ end
 % =========
 % zVarData : If numeric array, indices (iRecord, i1, i2, ...)
 %            If char array, indices are the same as in dataobj.data.<zVarName>.data, i.e. inconsistent.
+% specifiedSizePerRecord : Size per record used for assertion.
+%                          For numeric: zValue size minus the first value, "size(zVarValue)(2:end)".
 function [zVarValue, isRecordBound] = prepare_zVarData(zVarValue, specifiedSizePerRecord, strictZVarSize, zVarName)
 
 if ischar(zVarValue)
     %===========================================================================================================
     % Special case for "char": Convert 3-D char matrices to column cell arrays of 2-D char matrices.
-    % -----------------------
+    % ----------------------------------------------------------------------------------------------
     % IMPLEMENTATION NOTE: It is not possible to permute indices for string as one can for non-char for ndim==3.
     %===========================================================================================================
 
@@ -644,8 +646,8 @@ end
 
 
 
-% "Normalize" a size vector, i.e. 1D vector describing size (dimensions) of variable Forces a row vector. Removes
-% trailing ones. Using this makes size vectors easily (ans safely) comparable.
+% "Normalize" a size vector, i.e. 1D vector describing size (dimensions) of variable. Forces a row vector. Removes
+% trailing ones (explicit size one for higher dimensions). Using this makes size vectors easily (and safely) comparable.
 %
 % NOTE: size() returns all dimensions up until the last non-size-one dimension. This also means that all zero-sized dimensions are included.
 %       size() adds trailing ones up to 2D;
@@ -654,6 +656,7 @@ end
 % [0]   ==> [0]
 % [1 0] ==> [1 0]
 % [0 1] ==> [0]
+% [1 1] ==> [] (1x0)
 function sizeVec = normalize_size_vec(sizeVec)
 % IMPLEMENTATION NOTE: sizeVec = [] ==> find returns [] (not a number) ==> 1:[], but that gives the same result as
 % 1:0 so the code works anyway.

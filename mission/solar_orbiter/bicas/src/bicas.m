@@ -67,6 +67,9 @@ function errorCode = bicas( varargin )
 %
 % PROPOSAL: Split up the "main" function in several functions (outsource chunks of its code to smaller functions which are called).
 %
+% PROPOSAL: Separate function for parsing arguments. Returns structure.
+%   PRO: Automatic test code.
+%   CON: Can not give proper error for some types of bad arguments.
 % -------- OLD --------
 % NOTE: Implementation of the parsing of CLI arguments is problematic for when processing s/w mode.
 %   PROBLEM: Present, ICD & inofficial options mixed: The s/w mode argument influences which succeeding arguments are
@@ -194,9 +197,9 @@ startTimeTicSeconds = tic;
 
 
 
-%=================================
-% ASSERTION: Check MATLAB version
-%=================================
+%==================================
+% ~ASSERTION: Check MATLAB version
+%==================================
 matlabVersionString = version('-release');
 if ~strcmp(matlabVersionString, REQUIRED_MATLAB_VERSION)
     error('BICAS:BadMatlabVersion', ...

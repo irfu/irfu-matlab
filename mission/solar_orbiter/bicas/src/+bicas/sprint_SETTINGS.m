@@ -16,7 +16,9 @@ function str = sprint_SETTINGS()
 
 global SETTINGS
 
-str = sprintf('\nSettings & constants:\n');
+% IMPLEMENTATION NOTE: Only prints "Settings" as a header (not "constants") to indicate/hint that it is only the content
+% of the "SETTINGS" variables, and not of constants.m.
+str = sprintf('\nSettings:\n');
 
 keyList = sort(SETTINGS.get_keys());   % Values seem sorted from the method, but sort again just to be sure.
 for iKey = 1:length(keyList)

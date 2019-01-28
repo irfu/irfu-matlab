@@ -7,7 +7,7 @@
 %
 % CONCEPT
 % =======
-% Data/settings are stored as key-value pairs. Keys are strings and values can be strings or numbers.
+% Data/settings are stored as a set of key-value pairs. Keys are strings and values can be strings or numbers.
 % --
 % A settings object progress through three phases, in order, and stays definitively in the last phase:
 % (1) From creation: New keys can be defined and set to their initial values.
@@ -46,9 +46,9 @@ classdef settings < handle
 % PROPOSAL: Move out interpretation of strings as numeric values?!
     
     properties(Access=private)
-        defineDisabledForever = false;   % Whether defining new keys is disallowed or not. True if readOnlyForever==true.
+        defineDisabledForever = false;   % Whether defining new keys is disallowed or not. Always true if readOnlyForever==true.
         readOnlyForever       = false;   % Whether modifying the object is allowed or not.
-        map;                             % Map containing settings data.
+        Map;                             % Map containing settings data.
     end
     
     %###################################################################################################################
@@ -57,10 +57,10 @@ classdef settings < handle
         
         % Constructor
         function obj = settings()
-            % IMPLEMENTATION NOTE: "map" reset here since empirically it is not reset every time an instance is created
+            % IMPLEMENTATION NOTE: "Map" reset here since empirically it is not reset every time an instance is created
             % if it is only reset in the "properties" section. Otherwise the value from the previous execution is used
             % for unknown reasons.
-            obj.map = containers.Map('KeyType', 'char', 'ValueType', 'any');
+            obj.Map = containers.Map('KeyType', 'char', 'ValueType', 'any');
         end
         
         
@@ -78,43 +78,43 @@ classdef settings < handle
         
         
         
-        % Define a NEW key and set the value.
+        % Define a NEW key and set the corresponding value.
         function define_setting(obj, key, value)
             % ASSERTIONS
             if obj.defineDisabledForever
                 error('BICAS:settings:Assertion', 'Trying to define new keys in settings object which disallows defining new keys.')
             end
-            if obj.map.isKey(key)
+            if obj.Map.isKey(key)
                 error('BICAS:settings:Assertion', 'Trying to define pre-existing settings key.')
             end
             
-            obj.map(key) = value;
+            obj.Map(key) = value;
         end
         
         
         
-        % Set a pre-existing key value.
+        % Set a PRE-EXISTING key value.
         function set_prexisting(obj, key, newValue)
             % ASSERTIONS
             if obj.readOnlyForever
                 error('BICAS:settings:Assertion', 'Trying to modify read-only settings object.')
             end
-            if ~obj.map.isKey(key)
+            if ~obj.Map.isKey(key)
                 error('BICAS:settings:Assertion', 'Trying to define non-existing settings key.')
             end
             
-            oldValue = obj.map(key);
+            oldValue = obj.Map(key);
             
             if isnumeric(oldValue) && isnumeric(newValue)
-                obj.map(key) = newValue;
+                obj.Map(key) = newValue;
             elseif ischar(oldValue) && ischar(newValue)
-                obj.map(key) = newValue;
+                obj.Map(key) = newValue;
             else
                 error('BICAS:settings:Assertion:IllegalArgument', ...
                     'New settings value either (1) does not match the type of the old settings value, or (2) is neither numeric nor char.')
             end
 
-            obj.map(key) = newValue;
+            obj.Map(key) = newValue;
         end
 
 
@@ -184,11 +184,11 @@ classdef settings < handle
             if ~obj.readOnlyForever
                 error('BICAS:settings:Assertion', 'Not allowed to call this method for non-read-only settings object.')
             end
-            if ~obj.map.isKey(key)
+            if ~obj.Map.isKey(key)
                 error('BICAS:settings:Assertion:IllegalArgument', 'There is no setting "%s".', key)
             end
             
-            value = obj.map(key);
+            value = obj.Map(key);
         end
         
         
@@ -203,17 +203,17 @@ classdef settings < handle
             if obj.readOnlyForever
                 error('BICAS:settings:Assertion', 'Not allowed to call this method for read-only settings object.')
             end
-            if ~obj.map.isKey(key)
+            if ~obj.Map.isKey(key)
                 error('BICAS:settings:Assertion:IllegalArgument', 'There is no setting "%s".', key)
             end            
             
-            value = obj.map(key);
+            value = obj.Map(key);
         end
         
         
         
         function keyList = get_keys(obj)
-            keyList = obj.map.keys;
+            keyList = obj.Map.keys;
         end
         
     end    % methods(Access=public)

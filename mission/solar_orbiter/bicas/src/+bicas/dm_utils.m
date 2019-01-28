@@ -257,16 +257,15 @@ classdef dm_utils
         
         
         function filteredData = filter_rows(data, rowFilter)
-        % Function intended for filtering out (copying selectively) data from a zVariable. Not copied values are set to
-        % NaN.
+        % Function intended for filtering out data from a zVariable by setting parts of it to NaN.
         %
         % ARGUMENTS AND RETURN VALUE
         % ==========================
         % data         : Numeric array with N rows.                 (Intended to represent zVariables with N records.)
         % rowFilter    : Numeric/logical column vector with N rows. (Intended to represent zVariables with N records.)
-        % filteredData : Array of the same size as "records", such that
-        %                filteredData(i,:,:, ...) == NaN,                 for record_filter(i)==0.
-        %                filteredData(i,:,:, ...) == records(i,:,:, ...), for record_filter(i)~=0.
+        % filteredData : Array of the same size as "data", such that
+        %                filteredData(i,:,:, ...) == NaN,              for rowFilter(i)==0.
+        %                filteredData(i,:,:, ...) == data(i,:,:, ...), for rowFilter(i)~=0.
 
             % ASSERTIONS
             if ~iscolumn(rowFilter)     % Not really necessary to require row vector, only 1D vector.

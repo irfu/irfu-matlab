@@ -1,5 +1,5 @@
 %
-% Interpret the contents of a (already read) config file as settings key-value pairs.
+% Interpret the contents of an (already read) config file as settings key-value pairs.
 %
 %
 % ARGUMENTS

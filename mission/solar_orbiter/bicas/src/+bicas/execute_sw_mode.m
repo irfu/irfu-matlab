@@ -111,7 +111,6 @@ for i = 1:length(inputPdidList)
     eInPdid = inputPdidList{i};
     inputFilePath = InputFilePathMap(eInPdid);
     
-    
     [processData, GlobalAttributes] = read_dataset_CDF(eInPdid, inputFilePath);
     DataManager.set_elementary_input_process_data(eInPdid, processData);
     
