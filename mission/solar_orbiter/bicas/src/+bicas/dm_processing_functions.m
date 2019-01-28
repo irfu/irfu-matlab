@@ -31,7 +31,7 @@
 %           QUALITY_FLAG
 %           QUALITY_BITMASK
 %           DELTA_PLUS_MINUS
-%           SAMP_DTIME          % Only important for SWF.
+%           % SAMP_DTIME          % Only important for SWF. - Abolished?
 %       Fields are "CDF-like": rows=records, all have same number of rows.
 % - PostDC = Post-Demuxing-Calibration Data
 %       Like PreDC but with additional fields. Tries to capture a superset of the information that goes into any
@@ -177,12 +177,13 @@ classdef dm_processing_functions
 
             nRecords = size(SciPd.Epoch, 1);
             
-            %=========================================================================
+            %===========================================================================================================
             % Handle differences between skeletons V01 and V02
             % ------------------------------------------------
             % LFR_V, LFR_E: zVars with different names (but identical meaning).
-            % L1_REC_NUM  : Not defined in V01, V04(?), but in V02 dataset skeletons.
-            %=========================================================================
+            % L1_REC_NUM  : Only seems to have been defined in very old skeletons (not in DataPool git repo).
+            %               Abolished for now.
+            %===========================================================================================================
             switch(sciPdid)
                 case {  'L2R_LFR-SBM1-CWF_V01', ...
                         'L2R_LFR-SBM2-CWF_V01', ...
@@ -190,7 +191,7 @@ classdef dm_processing_functions
                         'L2R_LFR-SURV-SWF_V01'}
                     POTENTIAL  = SciPd.POTENTIAL;
                     ELECTRICAL = SciPd.ELECTRICAL;
-                    L1_REC_NUM = bicas.dm_utils.create_NaN_array([nRecords, 1]);   % Set to fill values.
+                    %L1_REC_NUM = bicas.dm_utils.create_NaN_array([nRecords, 1]);   % Set to fill values.
                 case {  'L1R_LFR-SBM1-CWF-E_V04', ...
                         'L1R_LFR-SBM2-CWF-E_V04', ...
                         'L1R_LFR-SURV-CWF-E_V04', ...
@@ -201,14 +202,14 @@ classdef dm_processing_functions
                     % compatibility with old datasets which have CWF on "snapshot format" (multiple samples per record),
                     % over the second index.
                     
-                    L1_REC_NUM = bicas.dm_utils.create_NaN_array([nRecords, 1]);   % Set to fill values.
+                    %L1_REC_NUM = bicas.dm_utils.create_NaN_array([nRecords, 1]);   % Set to fill values.
                 case {  'L2R_LFR-SBM1-CWF_V02', ...
                         'L2R_LFR-SBM2-CWF_V02'}
                         %'L2R_LFR-SURV-CWF_V02'
                         %'L2R_LFR-SURV-SWF_V02'    % 'L2R_LFR-SURV-SWF_V02' correct?!
                     POTENTIAL  = SciPd.V;
                     ELECTRICAL = SciPd.E;
-                    L1_REC_NUM = SciPd.L1_REC_NUM;
+                    %L1_REC_NUM = SciPd.L1_REC_NUM;
                 otherwise
                     error('BICAS:data_manager:SWModeProcessing:Assertion:ConfigurationBug', ...
                         'Can not handle PDID="%s"', sciPdid)
@@ -252,8 +253,8 @@ classdef dm_processing_functions
             PreDcd.ACQUISITION_TIME = SciPd.ACQUISITION_TIME;
             PreDcd.DELTA_PLUS_MINUS = bicas.dm_utils.derive_DELTA_PLUS_MINUS(freqHz, nSamplesPerRecord);            
             PreDcd.freqHz           = freqHz;
-            PreDcd.SAMP_DTIME       = bicas.dm_utils.derive_SAMP_DTIME(freqHz, nSamplesPerRecord);
-            PreDcd.L1_REC_NUM       = L1_REC_NUM;
+            %PreDcd.SAMP_DTIME       = bicas.dm_utils.derive_SAMP_DTIME(freqHz, nSamplesPerRecord);
+            %PreDcd.L1_REC_NUM       = L1_REC_NUM;
             
             %===========================================================================================================
             % Replace illegally empty data with fill values/NaN
@@ -343,8 +344,8 @@ classdef dm_processing_functions
             PreDcd.ACQUISITION_TIME = SciPd.ACQUISITION_TIME;
             PreDcd.DELTA_PLUS_MINUS = bicas.dm_utils.derive_DELTA_PLUS_MINUS(freqHz, nSamplesPerRecord);            
             PreDcd.freqHz           = freqHz;    % CDF_UINT1 ?!!!
-            PreDcd.SAMP_DTIME       = bicas.dm_utils.derive_SAMP_DTIME(freqHz, nSamplesPerRecord);
-            PreDcd.L1_REC_NUM       = bicas.dm_utils.create_NaN_array([nRecords, nSamplesPerRecord]);   % Set to fill values. Not set in any TDS L2R dataset yet.
+            %PreDcd.SAMP_DTIME       = bicas.dm_utils.derive_SAMP_DTIME(freqHz, nSamplesPerRecord);
+            %PreDcd.L1_REC_NUM       = bicas.dm_utils.create_NaN_array([nRecords, nSamplesPerRecord]);   % Set to fill values. Not set in any TDS L2R dataset yet.
 
             PreDcd.QUALITY_FLAG    = SciPd.QUALITY_FLAG;
             PreDcd.QUALITY_BITMASK = SciPd.QUALITY_BITMASK;
@@ -372,8 +373,10 @@ classdef dm_processing_functions
 
 
         function assert_PreDC(PreDcd)
+            %FIELDS = {'Epoch', 'ACQUISITION_TIME', 'DemuxerInput', 'freqHz', 'DIFF_GAIN', 'MUX_SET', 'QUALITY_FLAG', ...
+            %    'QUALITY_BITMASK', 'DELTA_PLUS_MINUS', 'L1_REC_NUM', 'SAMP_DTIME'};
             FIELDS = {'Epoch', 'ACQUISITION_TIME', 'DemuxerInput', 'freqHz', 'DIFF_GAIN', 'MUX_SET', 'QUALITY_FLAG', ...
-                'QUALITY_BITMASK', 'DELTA_PLUS_MINUS', 'L1_REC_NUM', 'SAMP_DTIME'};
+                'QUALITY_BITMASK', 'DELTA_PLUS_MINUS'};
             
             if ~isstruct(PreDcd) || ~isempty(setxor(fieldnames(PreDcd), FIELDS))
                 error('BICAS:data_manager:Assertion:SWModeProcessing', 'PDV structure is not on "PreDC format".')
@@ -384,8 +387,10 @@ classdef dm_processing_functions
         
         
         function assert_PostDC(PostDcd)
+            %FIELDS = {'Epoch', 'ACQUISITION_TIME', 'DemuxerInput', 'freqHz', 'DIFF_GAIN', 'MUX_SET', 'QUALITY_FLAG', ...
+            %    'QUALITY_BITMASK', 'DELTA_PLUS_MINUS', 'DemuxerOutput', 'IBIAS1', 'IBIAS2', 'IBIAS3', 'L1_REC_NUM', 'SAMP_DTIME'};
             FIELDS = {'Epoch', 'ACQUISITION_TIME', 'DemuxerInput', 'freqHz', 'DIFF_GAIN', 'MUX_SET', 'QUALITY_FLAG', ...
-                'QUALITY_BITMASK', 'DELTA_PLUS_MINUS', 'DemuxerOutput', 'IBIAS1', 'IBIAS2', 'IBIAS3', 'L1_REC_NUM', 'SAMP_DTIME'};
+                'QUALITY_BITMASK', 'DELTA_PLUS_MINUS', 'DemuxerOutput', 'IBIAS1', 'IBIAS2', 'IBIAS3'};
             
             if ~isstruct(PostDcd) || ~isempty(setxor(fieldnames(PostDcd), FIELDS))
                 error('BICAS:data_manager:Assertion:SWModeProcessing', 'PDV structure is not on "PostDC format".')
@@ -429,9 +434,9 @@ classdef dm_processing_functions
             nSamplesPerRecord = size(PostDcd.DemuxerOutput.V1, 2);   % Samples per record.
             
             switch(eoutPDID)
-                case  {'L2S_LFR-SBM1-CWF-E_V02', ...
-                       'L2S_LFR-SBM2-CWF-E_V02', ...
-                       'L2S_LFR-SURV-CWF-E_V02'}
+                case  {'L2S_LFR-SBM1-CWF-E_V03', ...
+                       'L2S_LFR-SBM2-CWF-E_V03', ...
+                       'L2S_LFR-SURV-CWF-E_V03'}
                     
                     %=====================================================================
                     % Convert 1 snapshot/record --> 1 sample/record (if not already done)
@@ -446,7 +451,7 @@ classdef dm_processing_functions
                         PostDcd.freqHz  );
                     
                     EOutPD.DELTA_PLUS_MINUS = bicas.dm_utils.convert_N_to_1_SPR_redistribute( PostDcd.DELTA_PLUS_MINUS );
-                    EOutPD.L1_REC_NUM       = bicas.dm_utils.convert_N_to_1_SPR_repeat(       PostDcd.L1_REC_NUM,      nSamplesPerRecord);
+                    %EOutPD.L1_REC_NUM       = bicas.dm_utils.convert_N_to_1_SPR_repeat(       PostDcd.L1_REC_NUM,      nSamplesPerRecord);
                     EOutPD.QUALITY_FLAG     = bicas.dm_utils.convert_N_to_1_SPR_repeat(       PostDcd.QUALITY_FLAG,    nSamplesPerRecord);
                     EOutPD.QUALITY_BITMASK  = bicas.dm_utils.convert_N_to_1_SPR_repeat(       PostDcd.QUALITY_BITMASK, nSamplesPerRecord);
                     % F_SAMPLE, SAMP_DTIME: Omitting. Are not supposed to be present in BIAS CWF datasets.
@@ -470,7 +475,7 @@ classdef dm_processing_functions
                     EOutPD.EAC(:,2)         = PostDcd.DemuxerOutput.V13_AC;
                     EOutPD.EAC(:,3)         = PostDcd.DemuxerOutput.V23_AC;
                     
-                case  'L2S_LFR-SURV-SWF-E_V02'
+                case  'L2S_LFR-SURV-SWF-E_V03'
                     
                     % ASSERTION
                     if nSamplesPerRecord ~= 2048
@@ -481,13 +486,13 @@ classdef dm_processing_functions
                     EOutPD.ACQUISITION_TIME = PostDcd.ACQUISITION_TIME;
                     
                     EOutPD.DELTA_PLUS_MINUS = PostDcd.DELTA_PLUS_MINUS;
-                    EOutPD.L1_REC_NUM       = PostDcd.L1_REC_NUM;
+                    %EOutPD.L1_REC_NUM       = PostDcd.L1_REC_NUM;
                     EOutPD.QUALITY_BITMASK  = PostDcd.QUALITY_BITMASK;
                     EOutPD.QUALITY_FLAG     = PostDcd.QUALITY_FLAG;
                     
                     % Only in LFR SWF (not CWF): F_SAMPLE, SAMP_DTIME
                     EOutPD.F_SAMPLE         = PostDcd.freqHz;
-                    EOutPD.SAMP_DTIME       = PostDcd.SAMP_DTIME;
+                    %EOutPD.SAMP_DTIME       = PostDcd.SAMP_DTIME;
                     
                     EOutPD.IBIAS1           = PostDcd.IBIAS1;
                     EOutPD.IBIAS2           = PostDcd.IBIAS2;

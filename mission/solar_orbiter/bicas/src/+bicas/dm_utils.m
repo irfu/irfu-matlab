@@ -613,7 +613,7 @@ classdef dm_utils
                 % -------------------------
                 % Examples for choosing column sizes:
                 % Long variable names:       HK_BIA_MODE_BIAS3_ENABLED
-                %                            <L2S_LFR-SURV-CWF-E_V02>.QUALITY_BITMASK
+                %                            <L2S_LFR-SURV-CWF-E_V03>.QUALITY_BITMASK
                 %                            <L2R_LFR-SURV-CWF_V01>.BIAS_MODE_BIAS1_ENABLED
                 % Long variable size string: (90,90,2048)
                 %======================================================
