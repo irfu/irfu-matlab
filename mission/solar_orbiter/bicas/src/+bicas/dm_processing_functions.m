@@ -182,10 +182,19 @@ classdef dm_processing_functions
                     POTENTIAL  = SciPd.POTENTIAL;
                     ELECTRICAL = SciPd.ELECTRICAL;
                     L1_REC_NUM = bicas.dm_utils.create_NaN_array([nRecords, 1]);   % Set to fill values.
+                case {  'L1R_LFR-SURV-CWF-E_V04', ...
+                        'L1R_LFR-SURV-SWF-E_V04'}
+                    POTENTIAL  =         SciPd.V;
+                    ELECTRICAL = permute(SciPd.E, [1,3,2]);
+                    % IMPLEMENTATION NOTE: Permuting indices somewhat ugly temporary fix, but it gives(?) backward
+                    % compatibility with old datasets which have CWF on "snapshot format" (multiple samples per record),
+                    % over the second index.
+                    
+                    L1_REC_NUM = bicas.dm_utils.create_NaN_array([nRecords, 1]);   % Set to fill values.
                 case {  'L2R_LFR-SBM1-CWF_V02', ...
-                        'L2R_LFR-SBM2-CWF_V02', ...
-                        'L2R_LFR-SURV-CWF_V02', ...
-                        'L2R_LFR-SURV-SWF_V02'}
+                        'L2R_LFR-SBM2-CWF_V02'}
+                        %'L2R_LFR-SURV-CWF_V02'
+                        %'L2R_LFR-SURV-SWF_V02'    % 'L2R_LFR-SURV-SWF_V02' correct?!
                     POTENTIAL  = SciPd.V;
                     ELECTRICAL = SciPd.E;
                     L1_REC_NUM = SciPd.L1_REC_NUM;
@@ -206,9 +215,11 @@ classdef dm_processing_functions
                         'L2R_LFR-SBM2-CWF_V02'}
                     FREQ = ones(nRecords, 1) * 2;   % Always value "2".
                 case {  'L2R_LFR-SURV-CWF_V01', ...
-                        'L2R_LFR-SURV-CWF_V02', ...
+                        'L1R_LFR-SURV-CWF-E_V04', ...
                         'L2R_LFR-SURV-SWF_V01', ...
-                        'L2R_LFR-SURV-SWF_V02'}
+                        'L1R_LFR-SURV-SWF-E_V04'}
+                        %'L2R_LFR-SURV-CWF_V02', ...
+                        %'L2R_LFR-SURV-SWF_V02', ...
                     FREQ = SciPd.FREQ;
                 otherwise
                     error('BICAS:data_manager:SWModeProcessing:Assertion:ConfigurationBug', ...
@@ -251,6 +262,10 @@ classdef dm_processing_functions
                 irf.log('w', 'QUALITY_BITMASK from the SCI source dataset is empty. Filling with empty values.')
                 PreDcd.QUALITY_BITMASK = bicas.dm_utils.create_NaN_array([nRecords, 1]);
             end
+            
+            % ELECTRICAL must be floating-point so that values can be set to NaN.
+            % bicas.dm_utils.filter_rows requires this. Variable may be integer if integer in source CDF.
+            ELECTRICAL = single(ELECTRICAL);
             
             PreDcd.DemuxerInput        = [];
             PreDcd.DemuxerInput.BIAS_1 = POTENTIAL;
@@ -649,6 +664,13 @@ classdef dm_processing_functions
             V12_LF_AC = NAN_VALUES;
             V13_LF_AC = NAN_VALUES;
             V23_LF_AC = NAN_VALUES;
+            
+            % IMPLEMENTATION NOTE: Avoid getting integer - single ==> error.
+            Input.BIAS_1 = single(Input.BIAS_1);
+            Input.BIAS_2 = single(Input.BIAS_2);
+            Input.BIAS_3 = single(Input.BIAS_3);
+            Input.BIAS_4 = single(Input.BIAS_4);
+            Input.BIAS_5 = single(Input.BIAS_5);
 
             switch(MUX_SET)
                 case 0   % "Standard operation" : We have all information.
