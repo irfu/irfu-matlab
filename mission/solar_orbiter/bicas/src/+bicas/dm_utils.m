@@ -613,8 +613,8 @@ classdef dm_utils
                 % -------------------------
                 % Examples for choosing column sizes:
                 % Long variable names:       HK_BIA_MODE_BIAS3_ENABLED
-                %                            <L2S_LFR-SURV-CWF-E_V03>.QUALITY_BITMASK
-                %                            <L2R_LFR-SURV-CWF_V01>.BIAS_MODE_BIAS1_ENABLED
+                %                            <V03_ROC-SGSE_L2S_RPW-LFR-SURV-CWF-E>.QUALITY_BITMASK
+                %                            <V01_ROC-SGSE_L2R_RPW-LFR-SURV-CWF>.BIAS_MODE_BIAS1_ENABLED
                 % Long variable size string: (90,90,2048)
                 %======================================================
                 outputStr = sprintf('%-46s (%-10s): #Us=%5d (%-16s) %s', variableName, sizeStr, nUniqueValues, nanStr, valuesStr);

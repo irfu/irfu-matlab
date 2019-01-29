@@ -169,7 +169,7 @@ classdef dm_processing_functions
         
         % PROBLEM: Hardcoded CDF data types (MATLAB classes).
         % MINOR PROBLEM: Still does not handle LFR zVar TYPE for determining "virtual snapshot" length.
-        % Should only be relevant for L2R_LFR-SURV-CWF_V01 (not V02) which should expire.
+        % Should only be relevant for V01_ROC-SGSE_L2R_RPW-LFR-SURV-CWF (not V02) which should expire.
         
             sciPdid       = InputsMap('SCI_cdf').pdid;
             SciPd         = InputsMap('SCI_cdf').pd;
@@ -185,17 +185,17 @@ classdef dm_processing_functions
             %               Abolished for now.
             %===========================================================================================================
             switch(sciPdid)
-                case {  'L2R_LFR-SBM1-CWF_V01', ...
-                        'L2R_LFR-SBM2-CWF_V01', ...
-                        'L2R_LFR-SURV-CWF_V01', ...
-                        'L2R_LFR-SURV-SWF_V01'}
+                case {  'V01_ROC-SGSE_L2R_RPW-LFR-SBM1-CWF', ...
+                        'V01_ROC-SGSE_L2R_RPW-LFR-SBM2-CWF', ...
+                        'V01_ROC-SGSE_L2R_RPW-LFR-SURV-CWF', ...
+                        'V01_ROC-SGSE_L2R_RPW-LFR-SURV-SWF'}
                     POTENTIAL  = SciPd.POTENTIAL;
                     ELECTRICAL = SciPd.ELECTRICAL;
                     %L1_REC_NUM = bicas.dm_utils.create_NaN_array([nRecords, 1]);   % Set to fill values.
-                case {  'L1R_LFR-SBM1-CWF-E_V04', ...
-                        'L1R_LFR-SBM2-CWF-E_V04', ...
-                        'L1R_LFR-SURV-CWF-E_V04', ...
-                        'L1R_LFR-SURV-SWF-E_V04'}
+                case {  'V04_ROC-SGSE_L1R_RPW-LFR-SBM1-CWF-E', ...
+                        'V04_ROC-SGSE_L1R_RPW-LFR-SBM2-CWF-E', ...
+                        'V04_ROC-SGSE_L1R_RPW-LFR-SURV-CWF-E', ...
+                        'V04_ROC-SGSE_L1R_RPW-LFR-SURV-SWF-E'}
                     POTENTIAL  =         SciPd.V;
                     ELECTRICAL = permute(SciPd.E, [1,3,2]);
                     % IMPLEMENTATION NOTE: Permuting indices somewhat ugly temporary fix, but it gives(?) backward
@@ -203,10 +203,10 @@ classdef dm_processing_functions
                     % over the second index.
                     
                     %L1_REC_NUM = bicas.dm_utils.create_NaN_array([nRecords, 1]);   % Set to fill values.
-                case {  'L2R_LFR-SBM1-CWF_V02', ...
-                        'L2R_LFR-SBM2-CWF_V02'}
-                        %'L2R_LFR-SURV-CWF_V02'
-                        %'L2R_LFR-SURV-SWF_V02'    % 'L2R_LFR-SURV-SWF_V02' correct?!
+                case {  'V02_ROC-SGSE_L2R_RPW-LFR-SBM1-CWF', ...
+                        'V02_ROC-SGSE_L2R_RPW-LFR-SBM2-CWF'}
+                        %'V02_ROC-SGSE_L2R_RPW-LFR-SURV-CWF'
+                        %'V02_ROC-SGSE_L2R_RPW-LFR-SURV-SWF'    % 'V02_ROC-SGSE_L2R_RPW-LFR-SURV-SWF' correct?!
                     POTENTIAL  = SciPd.V;
                     ELECTRICAL = SciPd.E;
                     %L1_REC_NUM = SciPd.L1_REC_NUM;
@@ -220,20 +220,20 @@ classdef dm_processing_functions
             % LFR_FREQ: Corresponds to FREQ only defined in some LFR datasets.
             %========================================================================================
             switch(sciPdid)
-                case {  'L2R_LFR-SBM1-CWF_V01', ...
-                        'L2R_LFR-SBM1-CWF_V02', ...
-                        'L1R_LFR-SBM1-CWF-E_V04'}
+                case {  'V01_ROC-SGSE_L2R_RPW-LFR-SBM1-CWF', ...
+                        'V02_ROC-SGSE_L2R_RPW-LFR-SBM1-CWF', ...
+                        'V04_ROC-SGSE_L1R_RPW-LFR-SBM1-CWF-E'}
                     FREQ = ones(nRecords, 1) * 1;   % Always value "1".
-                case {  'L2R_LFR-SBM2-CWF_V01', ...
-                        'L2R_LFR-SBM2-CWF_V02', ...
-                        'L1R_LFR-SBM2-CWF-E_V04'}
+                case {  'V01_ROC-SGSE_L2R_RPW-LFR-SBM2-CWF', ...
+                        'V02_ROC-SGSE_L2R_RPW-LFR-SBM2-CWF', ...
+                        'V04_ROC-SGSE_L1R_RPW-LFR-SBM2-CWF-E'}
                     FREQ = ones(nRecords, 1) * 2;   % Always value "2".
-                case {  'L2R_LFR-SURV-CWF_V01', ...
-                        'L1R_LFR-SURV-CWF-E_V04', ...
-                        'L2R_LFR-SURV-SWF_V01', ...
-                        'L1R_LFR-SURV-SWF-E_V04'}
-                        %'L2R_LFR-SURV-CWF_V02', ...
-                        %'L2R_LFR-SURV-SWF_V02', ...
+                case {  'V01_ROC-SGSE_L2R_RPW-LFR-SURV-CWF', ...
+                        'V04_ROC-SGSE_L1R_RPW-LFR-SURV-CWF-E', ...
+                        'V01_ROC-SGSE_L2R_RPW-LFR-SURV-SWF', ...
+                        'V04_ROC-SGSE_L1R_RPW-LFR-SURV-SWF-E'}
+                        %'V02_ROC-SGSE_L2R_RPW-LFR-SURV-CWF', ...
+                        %'V02_ROC-SGSE_L2R_RPW-LFR-SURV-SWF', ...
                     FREQ = SciPd.FREQ;
                 otherwise
                     error('BICAS:data_manager:SWModeProcessing:Assertion:ConfigurationBug', ...
@@ -321,11 +321,11 @@ classdef dm_processing_functions
             %=====================================================================
             switch(sciPdid)
                 % Those TDS datasets which have the SAME number of samples/record as in the output datasets.
-                case {'L2R_TDS-LFM-CWF_V01', ...     % 1 S/R
-                      'L2R_TDS-LFM-RSWF_V02'};       % N S/R
+                case {'V01_ROC-SGSE_L2R_RPW-TDS-LFM-CWF', ...     % 1 S/R
+                      'V02_ROC-SGSE_L2R_RPW-TDS-LFM-RSWF'};       % N S/R
                       
                 % Those TDS datasets which have DIFFERENT number of samples/record compared to the output datasets.
-                case {'L2R_TDS-LFM-RSWF_V01'}        % 1 S/R for SWF data!!!
+                case {'V01_ROC-SGSE_L2R_RPW-TDS-LFM-RSWF'}        % 1 S/R for SWF data!!!
                     error('BICAS:data_manager:SWModeProcessing:Assertion:OperationNotImplemented', ...
                         'This processing function can not interpret PDID=%s. Not implemented yet.', sciPdid)
                 otherwise
@@ -434,9 +434,9 @@ classdef dm_processing_functions
             nSamplesPerRecord = size(PostDcd.DemuxerOutput.V1, 2);   % Samples per record.
             
             switch(eoutPDID)
-                case  {'L2S_LFR-SBM1-CWF-E_V03', ...
-                       'L2S_LFR-SBM2-CWF-E_V03', ...
-                       'L2S_LFR-SURV-CWF-E_V03'}
+                case  {'V03_ROC-SGSE_L2S_RPW-LFR-SBM1-CWF-E', ...
+                       'V03_ROC-SGSE_L2S_RPW-LFR-SBM2-CWF-E', ...
+                       'V03_ROC-SGSE_L2S_RPW-LFR-SURV-CWF-E'}
                     
                     %=====================================================================
                     % Convert 1 snapshot/record --> 1 sample/record (if not already done)
@@ -475,7 +475,7 @@ classdef dm_processing_functions
                     EOutPD.EAC(:,2)         = PostDcd.DemuxerOutput.V13_AC;
                     EOutPD.EAC(:,3)         = PostDcd.DemuxerOutput.V23_AC;
                     
-                case  'L2S_LFR-SURV-SWF-E_V03'
+                case  'V03_ROC-SGSE_L2S_RPW-LFR-SURV-SWF-E'
                     
                     % ASSERTION
                     if nSamplesPerRecord ~= 2048
@@ -521,8 +521,8 @@ classdef dm_processing_functions
         function EOutPD = process_PostDC_to_TDS(InputsMap, eoutPDID)
 
             %switch(eoutPDID)
-            %    case  'L2S_TDS-LFM-CWF-E_V02'
-            %    case  'L2S_TDS-LFM-RSWF-E_V02'
+            %    case  'V02_ROC-SGSE_L2S_RPW-TDS-LFM-CWF-E'
+            %    case  'V02_ROC-SGSE_L2S_RPW-TDS-LFM-RSWF-E'
                         
                     
             error('BICAS:data_manager:SWModeProcessing:Assertion:OperationNotImplemented', ...

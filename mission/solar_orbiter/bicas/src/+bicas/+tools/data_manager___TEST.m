@@ -29,7 +29,7 @@ end
 
 
 function test_1
-    % Testing L2R_LFR-SURV-CWF_V01 --> L2S_LFR-SURV-CWF-E_V01
+    % Testing V01_ROC-SGSE_L2R_RPW-LFR-SURV-CWF --> V01_ROC-SGSE_L2S_RPW-LFR-SURV-CWF-E
     % MUX mode 0
     %
     % NOTE: Does not test IBIAS.
@@ -83,10 +83,10 @@ function test_1
     SCI_out.E = [NaN_seq',  NaN_seq', NaN_seq'];
     SCI_out.EAC = [E_seq1_1', E_seq1_1'+E_seq2_1', E_seq2_1'] / 5;
 
-    DM.set_elementary_input_process_data('HK_BIA_V01', HK);
-    DM.set_elementary_input_process_data('L2R_LFR-SURV-CWF_V01', SCI);
-    %DM.set_elementary_input_process_data('L2R_LFR-SURV-CWF_V02', SCI);
-    SCI_out_result = DM.get_process_data_recursively('L2S_LFR-SURV-CWF-E_V01', 'LFR-SURV-CWF-E_V01-V01');
+    DM.set_elementary_input_process_data('V01_ROC-SGSE_HK_RPW-BIA', HK);
+    DM.set_elementary_input_process_data('V01_ROC-SGSE_L2R_RPW-LFR-SURV-CWF', SCI);
+    %DM.set_elementary_input_process_data('V02_ROC-SGSE_L2R_RPW-LFR-SURV-CWF', SCI);
+    SCI_out_result = DM.get_process_data_recursively('V01_ROC-SGSE_L2S_RPW-LFR-SURV-CWF-E', 'LFR-SURV-CWF-E_V01-V01');
     
     epsilon = 1e-13;
     fn_list = fieldnames(SCI_out)';
