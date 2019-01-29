@@ -220,6 +220,7 @@ classdef constants < handle
         %                        indirectly to the input constants through data_manager.get_elementary_input_PDIDs.
         function swModesInfoList = produce_sw_modes_constants()
             % PROPOSAL: Rename CLI_PARAMETER. CLI_NAME? CLI_ARGUMENT?
+            % PROPOSAL: Indent hardcoded s/w modes.
             %
             % ~BUG: SWD_PURPOSE should also reference potential data (not just diffs).
             
@@ -297,7 +298,12 @@ classdef constants < handle
             {'L1R_LFR-SURV-CWF-E_V04', 'HK_BIA_V02'}, ...
             {'L2S_LFR-SURV-CWF-E_V03'}, ...
             'Generate CWF electric field data (potential difference) from LFR');
-
+            %swModesInfoList{end+1} = create_SMI(...
+            %'SOLO_LFR-SURV-CWF-E_V01-V01', ...
+            %'SOLO_LFR-SURV-CWF-E_V01-V01', ...
+            %{'SOLO_L1R_LFR-SURV-CWF-E_V01', 'HK_BIA_V02'}, ...
+            %{'SOLO_L2_LFR-SURV-CWF-E_V01'}, ...
+            %'Generate CWF electric field data (potential difference) from LFR');   % RODP TEST
 
             % SURV-SWF
             swModesInfoList{end+1} = create_SMI(...
@@ -322,28 +328,34 @@ classdef constants < handle
             %=====
             % TDS
             %=====
-
-            % CWF
-            swModesInfoList{end+1} = create_SMI(...
-            'TDS-LFM-CWF-E_V01-V02', ...
-            'TDS-LFM-CWF-E_V01-V02', ...
-            {'L2R_TDS-LFM-CWF_V01', 'HK_BIA_V02'}, ...
-            {'L2S_TDS-LFM-CWF-E_V02'}, ...
-            'Generate CWF electric (potential difference) data from TDS-LFM-CWF');
-
-            % RSWF
-            swModesInfoList{end+1} = create_SMI(...
-            'TDS-LFM-RSWF-E_V01-V02', ...
-            'TDS-LFM-RSWF-E_V01-V02', ...
-            {'L2R_TDS-LFM-RSWF_V01', 'HK_BIA_V02'}, ...
-            {'L2S_TDS-LFM-RSWF-E_V02'}, ...
-            'Generate RSWF electric (potential difference) data from TDS-LFM-RSWF V01');
-            swModesInfoList{end+1} = create_SMI(...
-            'TDS-LFM-RSWF-E_V02-V02', ...
-            'TDS-LFM-RSWF-E_V02-V02', ...
-            {'L2R_TDS-LFM-RSWF_V02', 'HK_BIA_V02'}, ...
-            {'L2S_TDS-LFM-RSWF-E_V02'}, ...
-            'Generate RSWF electric (potential difference) data from TDS-LFM-RSWF V02');
+            
+            if 0
+                % Modes disabled since they do not work yet.
+                % ==> Keep corresponding processing, input & output datasets.
+                % NOTE: Not updated to latest output skeletons.
+                
+                % CWF
+                swModesInfoList{end+1} = create_SMI(...
+                    'TDS-LFM-CWF-E_V01-V02', ...
+                    'TDS-LFM-CWF-E_V01-V02', ...
+                    {'L2R_TDS-LFM-CWF_V01', 'HK_BIA_V02'}, ...
+                    {'L2S_TDS-LFM-CWF-E_V02'}, ...
+                    'Generate CWF electric (potential difference) data from TDS-LFM-CWF');
+                
+                % RSWF
+                swModesInfoList{end+1} = create_SMI(...
+                    'TDS-LFM-RSWF-E_V01-V02', ...
+                    'TDS-LFM-RSWF-E_V01-V02', ...
+                    {'L2R_TDS-LFM-RSWF_V01', 'HK_BIA_V02'}, ...
+                    {'L2S_TDS-LFM-RSWF-E_V02'}, ...
+                    'Generate RSWF electric (potential difference) data from TDS-LFM-RSWF V01');
+                swModesInfoList{end+1} = create_SMI(...
+                    'TDS-LFM-RSWF-E_V02-V02', ...
+                    'TDS-LFM-RSWF-E_V02-V02', ...
+                    {'L2R_TDS-LFM-RSWF_V02', 'HK_BIA_V02'}, ...
+                    {'L2S_TDS-LFM-RSWF-E_V02'}, ...
+                    'Generate RSWF electric (potential difference) data from TDS-LFM-RSWF V02');
+            end
 
         end
 
@@ -358,6 +370,8 @@ classdef constants < handle
             % NOTE: NESTED function
             % II = Input Info
             function InputInfo = create_II(datasetId, skeletonVersionStr)
+                % PROPOSAL: skeletonVersionStr first argument.
+                %   PRO: Rows line up automatically.
                 InputInfo.OPTION_HEADER_SH     = 'input_sci';
                 InputInfo.DATASET_ID           = datasetId;
                 InputInfo.SKELETON_VERSION_STR = skeletonVersionStr;
@@ -371,17 +385,24 @@ classdef constants < handle
             %=========
             % BIAS HK
             %=========
-            ii = [];    % II = input info
-            ii.OPTION_HEADER_SH     = 'input_hk';
-            ii.DATASET_ID           = 'ROC-SGSE_HK_RPW-BIA';
-            ii.SKELETON_VERSION_STR = '01';
-            inputsInfoList{end+1} = ii;
+            %ii = [];    % II = input info
+            %ii.OPTION_HEADER_SH     = 'input_hk';
+            %ii.DATASET_ID           = 'ROC-SGSE_HK_RPW-BIA';
+            %ii.SKELETON_VERSION_STR = '01';
+            %inputsInfoList{end+1} = ii;
             
             ii = [];
             ii.OPTION_HEADER_SH     = 'input_hk';
             ii.DATASET_ID           = 'ROC-SGSE_HK_RPW-BIA';
             ii.SKELETON_VERSION_STR = '02';
             inputsInfoList{end+1} = ii;
+            
+            % RODP TEST
+            %ii = [];
+            %ii.OPTION_HEADER_SH     = 'input_hk';
+            %ii.DATASET_ID           = 'SOLO_HK_RPW-BIA';
+            %ii.SKELETON_VERSION_STR = '01';
+            %inputsInfoList{end+1} = ii;
             
             %=========
             % LFR SCI
@@ -397,7 +418,7 @@ classdef constants < handle
             inputsInfoList{end+1} = create_II('ROC-SGSE_L2R_RPW-LFR-SURV-CWF', '01');   % 1 snapshot/record
             %inputsInfoList{end+1} = create_II('ROC-SGSE_L2R_RPW-LFR-SURV-CWF', '02');   % 1   sample/record
             inputsInfoList{end+1} = create_II('ROC-SGSE_L1R_RPW-LFR-SURV-CWF-E', '04');   % 1 snapshot/record
-            
+            %inputsInfoList{end+1} = create_II(    'SOLO_L1R_RPW-LFR-SURV-CWF-E', '01');   % RODP TEST
             
             inputsInfoList{end+1} = create_II('ROC-SGSE_L2R_RPW-LFR-SURV-SWF', '01');   % 1 snapshot/record
             %inputsInfoList{end+1} = create_II('ROC-SGSE_L2R_RPW-LFR-SURV-SWF', '02');   % 1 snapshot/record(!). Adds zVar SAMP_DTIME
@@ -439,6 +460,8 @@ classdef constants < handle
             % NOTE: NESTED function
             % IO = output info
             function OutputInfo = create_OI(datasetId, skeletonVersionStr, swdName, swdDescription)
+                % PROPOSAL: skeletonVersionStr first argument.
+                %   PRO: Rows line up automatically.
                 OutputInfo.SWD_OUTPUT_FILE_IDENTIFIER = 'output_sci';
                 OutputInfo.DATASET_ID                 = datasetId;
                 OutputInfo.SKELETON_VERSION_STR       = skeletonVersionStr;
@@ -452,7 +475,7 @@ classdef constants < handle
             end
             
             outputsInfoList = {};
-            
+
             % -------- LFR --------
             outputsInfoList{end+1} = create_OI('ROC-SGSE_L2S_RPW-LFR-SBM1-CWF-E', '03', ...
                 'LFR L2s CWF science electric data in survey mode', ...
@@ -465,6 +488,10 @@ classdef constants < handle
             outputsInfoList{end+1} = create_OI('ROC-SGSE_L2S_RPW-LFR-SURV-CWF-E', '03', ...
                 'LFR L2s CWF science electric data in survey mode', ...
             'RPW LFR L2s CWF science electric (potential difference) data in survey mode, time-tagged');
+            
+            %outputsInfoList{end+1} = create_OI('SOLO_L2_RPW-LFR-SURV-CWF-E', '01', ...
+            %    'LFR L2 CWF science electric data in survey mode', ...
+            %'RPW LFR L2 CWF science electric (potential difference) data in survey mode, time-tagged');   % RODP TEST
             
             outputsInfoList{end+1} = create_OI('ROC-SGSE_L2S_RPW-LFR-SURV-SWF-E', '03', ...
                 'LFR L2s SWF science electric data in survey mode', ...
@@ -493,6 +520,7 @@ classdef constants < handle
         % Construct a PDID derived from a dataset ID and skeleton version (a string shorter than the similar
         % corresponding official strings, e.g. ROC-SGSE_L2S_RPW-TDS-LFM-RSWF-E_V01 --> L2S-TDS-LFM-RSWF-E_V01).
         %
+        % NOTE: Has to work sensibly for both ROC-SGSE and RODP/SOLO dataset IDs.
         function pdid = construct_PDID(datasetId, skeletonVersionStr)
         
             %pdid = [datasetId, '_V', skeletonVersionStr];

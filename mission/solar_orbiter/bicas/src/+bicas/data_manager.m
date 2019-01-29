@@ -162,9 +162,11 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
         %
         % NOTE: This method is a useful interface for test code.
         
+        % PROPOSAL: Change name to analogous with get/set_PDV: ~set_EInPD? ~set_elementary_input_PDV
+        
             global CONSTANTS        
             CONSTANTS.assert_EIn_PDID(pdid)            
-            obj.set_process_data_variable(pdid, processData);
+            obj.set_PDV(pdid, processData);
         end
 
 
@@ -187,7 +189,7 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
             % sw_mode_ID comes first since that tends to make the log message values line up better.
             %irf.log('n', sprintf('Begin function (pdid=%s)', pdid))
 
-            processData = obj.get_process_data_variable(pdid);
+            processData = obj.get_PDV(pdid);
 
             %============================================
             % Check if process data is already available
@@ -255,7 +257,7 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
             irf.log('n', sprintf('Begin deriving PDID=%s using %s', pdid, func2str(processingFunc)))
             processData = processingFunc(Inputs);
             
-            obj.set_process_data_variable(pdid, processData)
+            obj.set_PDV(pdid, processData)
             
             % NOTE: This log message is useful for being able to follow the recursive calls of this function.
             %irf.log('n', sprintf('End   function (pdid=%s) - PD was derived', pdid))
@@ -367,7 +369,7 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
         % ASSERTS: Valid PDID.
         % DOES NOT ASSERT: Process data has already been set.
         %==================================================================================
-        function processData = get_process_data_variable(obj, pdid)
+        function processData = get_PDV(obj, pdid)
             obj.assert_PDID(pdid)
             
             processData = obj.ProcessDataVariables(pdid);
@@ -381,7 +383,7 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
         % ASSERTS: Process data has NOT been set yet.
         % ASSERTS: Valid PDID.
         %==================================================================================
-        function set_process_data_variable(obj, pdid, processData)
+        function set_PDV(obj, pdid, processData)
             % ASSERTIONS
             obj.assert_PDID(pdid)
             if ~isempty(obj.ProcessDataVariables(pdid))
@@ -458,8 +460,7 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
                 % NOTE: It is still useful to include cases which do nothing since it is a check on permitted values (so
                 % that switch-otherwise can give error).
                 % BIAS HK
-                case {'HK_BIA_V01', ...             % BIAS HK
-                      'HK_BIA_V02', ...
+                case {'HK_BIA_V02', ...
                       'L2R_LFR-SBM1-CWF_V01', ...   % LFR
                       'L2R_LFR-SBM1-CWF_V02', ...
                       'L1R_LFR-SBM1-CWF-E_V04', ...
@@ -473,6 +474,7 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
                       'L2R_TDS-LFM-CWF_V01', ...   % TDS
                       'L2R_TDS-LFM-RSWF_V01', ...
                       'L2R_TDS-LFM-RSWF_V02'}
+                      %'HK_BIA_V01', ...             % BIAS HK
                       %'L2R_LFR-SURV-CWF_V02', ...
                       %'L2R_LFR-SURV-SWF_V02', ...
                   
@@ -492,8 +494,8 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
                 
                 case 'HK_on_SCI_time'
                     InputPdidsMap('HK_cdf') = {...
-                        'HK_BIA_V01', ...
                         'HK_BIA_V02'};
+                        % 'HK_BIA_V01'
                     InputPdidsMap('SCI_cdf') = {...
                         'L2R_LFR-SBM1-CWF_V01', ...   % LFR
                         'L2R_LFR-SBM1-CWF_V02', ...
