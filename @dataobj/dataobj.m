@@ -111,7 +111,11 @@ switch action
               end
             else
               data{iVar(i)}(data{iVar(i)}==0) = NaN; % fillvalue timeline
-              data{iVar(i)} = irf_time(data{iVar(i)},'cdfepoch>epoch');
+              dTmp = data{iVar(i)};
+              for iCol=1:size(dTmp,2)
+                dTmp(:,iCol) = irf_time(dTmp(:,iCol),'cdfepoch>epoch');
+              end
+              data{iVar(i)} = dTmp; clear dTmp
               % bug fix for spdfcdfread (time comes out as row vector)
               if size(data{iVar(i)},1)~=info.Variables{iVar(i),3}
                 data{iVar(i)} = data{iVar(i)}';
