@@ -72,7 +72,7 @@ for i=1:length(param)
 			[ok,nsops,msg] = c_load('NSOPS?',cl_id);
       if ok
         if ~isempty(nsops)
-          idx = nsops(:,3)==19;
+          idx = nsops(:,3)==caa_str2errid('high_bias');
           if any(idx)
             irf_log('proc','blanking HB saturation (NS_OPS)')
             res = caa_rm_blankt(res,nsops(idx,1:2));
