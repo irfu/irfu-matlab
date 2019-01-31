@@ -7,8 +7,6 @@ function [res_l, res_s] = caa_errid2str(id)
 % /data/cluster/caa-control/text.xsl
 %
 % See also CAA_STR2ERRID
-%
-% $Id$
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):
@@ -51,6 +49,9 @@ case 17
 case 18
 	r.s = 'bad_lx';
 	r.l = 'Bad LX';
+case 19
+	r.s = 'high_bias';
+	r.l = 'High bias saturation';
 case 112
 	r.s = 'no_p12';
 	r.l = 'No probe 12';

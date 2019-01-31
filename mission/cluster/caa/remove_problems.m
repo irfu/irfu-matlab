@@ -68,6 +68,19 @@ for i=1:length(param)
       else, irf_log('load',msg)
 			end
 			clear ok wake msg
+      % Remove saturation due to too high bias current from nonstandard operations intervals
+			[ok,nsops,msg] = c_load('NSOPS?',cl_id);
+      if ok
+        if ~isempty(nsops)
+          idx = nsops(:,3)==19;
+          if any(idx)
+            irf_log('proc','blanking HB saturation (NS_OPS)')
+            res = caa_rm_blankt(res,nsops(idx,1:2));
+          end
+        end
+      else, irf_log('load',msg)
+      end
+      clear ok nsops msg
 
 		case 'saasa'
 			% Remove probe saturation due to SAA
