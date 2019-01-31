@@ -72,7 +72,7 @@ $Id$
 		<xsl:when test="@sdesc='bad_bias'">16</xsl:when>
 		<xsl:when test="@sdesc='bad_hx'">17</xsl:when>
 		<xsl:when test="@sdesc='bad_lx'">18</xsl:when>
-		<xsl:when test="@sdesc='high_bias'">18</xsl:when>
+		<xsl:when test="@sdesc='high_bias'">19</xsl:when>
 		<xsl:when test="@sdesc='no_p12'">112</xsl:when>
 		<xsl:when test="@sdesc='no_p23'">132</xsl:when>
 		<xsl:when test="@sdesc='no_p32'">132</xsl:when>
