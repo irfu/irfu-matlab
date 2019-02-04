@@ -215,7 +215,7 @@ if mask_type~=4
       result = caa_set_bitmask_and_quality(result, ns_ops_intervals, ...
         BITMASK_BAD_BIAS, QUALITY_BAD_BIAS(qindex), bitmask_column, quality_column);
     end
-    ns_ops_intervals = caa_get_ns_ops_int(data_start_time, data_time_span, ns_ops, 'high_bias')';
+    ns_ops_intervals = caa_get_ns_ops_int(data_start_time, data_time_span, ns_ops, 'high_bias');
     if ~isempty(ns_ops_intervals)
       irf_log('proc', 'marking high bias saturation from NS_OPS')
       result = caa_set_bitmask_and_quality(result, ns_ops_intervals, ...
