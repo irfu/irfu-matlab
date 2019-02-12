@@ -691,6 +691,8 @@ classdef PDist < TSeries
       PD.units = new_units;
       PD.siConversion = num2str(str2num(PD.siConversion)/d3v_scale,'%e');
     end
+    
+    
     function PD = reduce(obj,dim,x,varargin) 
       %PDIST.REDUCE Reduces (integrates) 3D distribution to 1D (line).      
       %   Example (1D):
@@ -944,11 +946,7 @@ classdef PDist < TSeries
           %disp(sprintf('%8.1g ',energy))          
         end
             
-        v = sqrt(2*energy*u.e/M); % m/s       
-
-        if 0%length(v) ~= 32 % shopuld be made possible for general number, e.g. 64 (dist.e64)
-            error('something went wrong') %#ok<UNRCH>
-        end
+        v = u.c*sqrt(1-(energy*u.e/(M*u.c^2)-1).^2); % m/s  
 
         % azimuthal angle
         phi = double(dist.depend{2}(it(i),:)); % in degrees
@@ -957,18 +955,10 @@ classdef PDist < TSeries
         phi = phi-180;
         phi = phi*pi/180; % in radians
 
-        if length(phi) ~= 32
-            error('something went wrong')
-        end
-
         % elevation angle
         th = double(dist.depend{3}); % polar angle in degrees
         th = th-90; % elevation angle in degrees
         th = th*pi/180; % in radi ans
-
-        if length(th) ~= 16
-            error('something went wrong')
-        end
 
         % Set projection grid after the first distribution function
         % bin centers
@@ -979,8 +969,9 @@ classdef PDist < TSeries
             vg = v;
           end
         end
+        
+        % initiate projected f
         if i == 1            
-            % initiate projected f
             if dim == 1
               Fg = zeros(length(it),length(vg));
               vel = zeros(length(it),1);
@@ -993,6 +984,7 @@ classdef PDist < TSeries
             end
             dens = zeros(length(it),1);
         end
+        
         % perform projection
         if dim == 1 
           % v, phi, th corresponds to the bins of F3d
@@ -1008,15 +1000,20 @@ classdef PDist < TSeries
           all_vy_edges(i,:,:) = tmpst.vy_edges;
         end
         
+        % fix for special cases
+        % dimension of projection, 1D if projection onto line, 2D if projection onto plane
         if dim == 1 || strcmpi(base,'cart')
             Fg(i,:,:) = tmpst.F;
         elseif dim == 2 
             Fg(i,:,:) = tmpst.F_using_edges;
         end
+        % set moments from reduced distribution (for debug)
         dens(i) = tmpst.dens;
-        vel(i,:) = tmpst.vel; % dimension of projection, 1D if projection onto line, 2D if projection onto plane
+        vel(i,:) = tmpst.vel; 
         
       end
+      
+      % Construct PDist objects with reduced distribution
       % vg is m/s, transform to km/s
       if dim == 1
         PD = PDist(dist.time(it),Fg,'line (reduced)',all_vg*1e-3);
@@ -1040,6 +1037,7 @@ classdef PDist < TSeries
       PD.species = dist.species;
       PD.userData = dist.userData;
      
+      % set units and projection directions
       if dim == 1      
         PD.units = 's/m^4';
         PD.ancillary.projection_direction = xphat_mat(it,:);
@@ -1059,9 +1057,9 @@ classdef PDist < TSeries
         PD.ancillary.lowerelim = lowerelim_mat;
       end
       
-      % Must add xphat to ancillary data!
-      
     end
+    
+    
     function [ax,args,nargs] = axescheck_pdist(varargin)
       %[ax,args,nargs] = axescheck_pdist(varargin{:});
       % MATLAB's axescheck only checks if the first argument is an axis handle, but
