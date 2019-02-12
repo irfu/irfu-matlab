@@ -1,4 +1,8 @@
 function [hsf,pst] = plot_int_projection(varargin)
+% NOTICE:
+% This function has been replaced by PDist.reduce and is no longer
+% being updated.
+%
 %MMS.PLOT_INT_PROJECTION Plots integrated FPI data on a specified plane.
 %
 %   MMS.PLOT_INT_PROJECTION(dist,'Opt1',OptVal1,...) plots projection of
@@ -65,6 +69,10 @@ function [hsf,pst] = plot_int_projection(varargin)
 %           Account for other quantities than psd, e.g. diff energy flux
 %
 %   Generally, the code deals with quantities in SI units until plotting.
+
+%% Warning
+irf.log('w','This function has been replaced by PDist.reduce')
+
 
 %% Input
 
