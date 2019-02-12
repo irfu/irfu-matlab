@@ -704,38 +704,45 @@ classdef PDist < TSeries
       %     f2D(100).plot_plane      
       %     [h_surf,h_axis,h_all] = f2D(100).plot_plane;
       %
-      %   See more example uses in Example_MMS_reduced_ion_dist and
-      %   Example_MMS_reduced_ele_dist
+      %   See more example uses in Example_MMS_reduced_ion_dist,
+      %   Example_MMS_reduced_ele_dist, and Example_MMS_reduced_ele_dist_2D
       %
       %   Options:
-      %     'vint'   - set limits on the from-line velocity to get cut-like
-      %                distribution
       %     'nMC'    - number of Monte Carlo iterations used for integration,
       %                for default number see IRF_INT_SPH_DIST
-      %     'weight' - how the number of MC iterations per bin is weighted, can be
-      %                'none' (default), 'lin' or 'log'
+      %     'base'   - set the base for the projection to polar 'pol', or
+      %                cartesian 'cart' (only valid for 2D planes)
       %     'vg'     - array with center values for the projection velocity
       %                grid in [km/s], determined by instrument if omitted
+      %     'phig'   - array with center values for the projection
+      %                azimuthal angle in [rad]
+      %     'vint'   - set limits on the out-of-plane velocity to get
+      %                cut-like distribution in 2D or a cylindrical shell
+      %                in 1D
+      %     'aint'   - angular limit in out-of-plane direction to make
+      %                projection cut-like in 2D (not valid for 1D?)
       %     'scpot'  - sets all values below scpot to zero and changes the
       %                energy correspondingly
       %     'lowerelim' - sets all values below lowerelim to zero, does not
       %                change the energy. Can be single value, vector or
       %                Tseries, for example 2*scpot
+      %     'weight' - how the number of MC iterations per bin is weighted, 
+      %                can be 'none' (default), 'lin' or 'log'
+      %     
       %    
       % This is a shell function for irf_int_sph_dist.m
       %
-      % See also: MMS.PLOT_INT_DISTRIBUTION, IRF_INT_SPH_DIST
-      % MMS.PLOT_INT_PROJECTION, PDIST.PLOT_PLANE, PDIST.SPECREC,
+      % See also: IRF_INT_SPH_DIST, PDIST.PLOT_PLANE, PDIST.SPECREC,
       % IRF_SPECTROGRAM
       
       %% Input
-      [ax,args,nargs] = axescheck(varargin{:});
+      [~,args,nargs] = axescheck(varargin{:});
       irf.log('warning','Please verify that you think the projection is done properly!');
       if isempty(obj); irf.log('warning','Empty input.'); return; else, dist = obj; end
       
       % Check to what dimension the distribution is to be reduced   
       if any(strcmp(dim,{'1D','2D'}))
-        dim = str2num(dim(1)); % input dim can either be '1D' or '2D'
+        dim = str2double(dim(1)); % input dim can either be '1D' or '2D'
       else
         error('First input must be a string deciding projection type, either ''1D'' or ''2D''.')
       end      
@@ -794,7 +801,7 @@ classdef PDist < TSeries
       %tint = dist.time([1 dist.length-1]);
       correct4scpot = 0;
       isDes = 1;
-      base = 'pol'; % coordinate base, cart or pol
+      base = 'pol'; % coordinate base, cart or pol (make 'cart' default?)
       
       if strcmp(dist.species,'electrons'); isDes = 1; else, isDes = 0; end
       
@@ -803,7 +810,7 @@ classdef PDist < TSeries
       have_options = nargs > 1;
       while have_options
         switch(lower(args{1}))
-          case {'t','tint','time'} % time
+          case {'t','tint','time'} % time (undocumented, can be removed?)
             l = 2;
             tint = args{2};
             doTint = 1;
