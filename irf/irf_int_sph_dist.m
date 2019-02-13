@@ -269,6 +269,9 @@ for i = 1:nV % velocity (energy)
                 % ------ 1D AND POLAR CASE ------
                 % get indicies for all MC points
                 iVg = discretize(vp,vg_edges);
+                % fixes bug that exists on some systems, may influence
+                % performance
+                iVg(iVg==0) = nan;
                 
                 if projDim == 2
                     iAzg = discretize(phip,phig_edges);
@@ -294,6 +297,10 @@ for i = 1:nV % velocity (energy)
                 % get indicies for all MC points
                 iVxg = discretize(vxp,vg_edges);
                 iVyg = discretize(vyp,vg_edges);
+                % fixes bug that exists on some systems, may influence
+                % performance
+                iVxg(iVxg==0) = nan;
+                iVyg(iVyg==0) = nan;
                 
                 % Loop through MC points and add value of instrument bin to the
                 % appropriate projection bin
