@@ -1,4 +1,4 @@
-function h = mms4_pl_eb(Tint, mode)
+function h = mms4_pl_eb(Tint, dMode)
 %MMS.MMS4_PL_EB  Summary plot - E & B at 4 MS S/C
 %
 %  H = MMS.MMS4_PL_EB(Tint, [mode])
