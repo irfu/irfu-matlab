@@ -134,7 +134,7 @@ QUALITY_SOLAR_WIND_WAKE          =  3;
 QUALITY_LOBE_WAKE                =  1;
 QUALITY_PLASMASPHERE_WAKE        =  1;
 QUALITY_WHISPER_OPERATING        =  [ 2 0 ]; % PQuality 0
-QUALITY_HIGH_BIAS_SATURATION     =  [ 1 2 ]; % PQuality 2
+QUALITY_HIGH_BIAS_SATURATION     =  [ 1 1 1 2]; % PQuality=2 (L3), =1 (L2), EQuality=1
 QUALITY_BAD_DAC                  =  2;    % NOTE: Applies to L2 only.
 QUALITY_PROBE_SHADOW             =  [ 1 3 2 ]; % PQuality 3, EQuality = 2 for L3
 
@@ -219,7 +219,8 @@ if mask_type~=4
     if ~isempty(ns_ops_intervals)
       irf_log('proc', 'marking high bias saturation from NS_OPS')
       result = caa_set_bitmask_and_quality(result, ns_ops_intervals, ...
-        BITMASK_HIGH_BIAS_SATURATION, QUALITY_HIGH_BIAS_SATURATION(qindex), ...
+        BITMASK_HIGH_BIAS_SATURATION, ...
+        QUALITY_HIGH_BIAS_SATURATION((data_level-2)*2 + qindex), ...
         bitmask_column, quality_column);
     end
     clear ns_ops ns_ops_intervals
@@ -437,7 +438,9 @@ for probe_id = probe_pair_list
     if ~isempty(problem_intervals)
       irf_log('proc', 'marking high bias saturations')
       result = caa_set_bitmask_and_quality(result, problem_intervals, ...
-        BITMASK_HIGH_BIAS_SATURATION, QUALITY_HIGH_BIAS_SATURATION(qindex), bitmask_column, quality_column);
+        BITMASK_HIGH_BIAS_SATURATION, ...
+        QUALITY_HIGH_BIAS_SATURATION((data_level-2)*2 + qindex),...
+        bitmask_column, quality_column);
     end
   end
 end
