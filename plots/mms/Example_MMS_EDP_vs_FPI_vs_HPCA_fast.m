@@ -1,11 +1,19 @@
 mmsId = 1;
 Tint = irf.tint('2016-08-10T09:50:00Z/2016-08-10T10:15:00Z');
 fpiMode = 'fast'; % alternative fpiMode = 'brst'
+edpMode = 'fast'; % alternative edpMode = 'brst'
 
 %% FGM & EDP
-B_dmpa_fgm_srvy_l2 = mms.get_data('B_dmpa_fgm_srvy_l2',Tint,mmsId);
-E_dsl_edp_l2 = mms.get_data('E_dsl_edp_fast_l2',Tint,mmsId);
-E2d_dsl_edp_l2pre = mms.get_data('E2d_dsl_edp_fast_l2pre',Tint,mmsId);
+switch edpMode
+  case 'fast', fgmMode = 'srvy';
+  case 'brst', fgmMode = 'brst';
+  otherwise, error('unrecognized mode (FAST/BRST)')
+end
+B_dmpa_fgm_srvy_l2 = mms.get_data(['B_dmpa_fgm_' fgmMode '_l2'],Tint,mmsId);
+E_dsl_edp_l2 = mms.get_data(['E_dsl_edp_' edpMode '_l2'],Tint,mmsId);
+E2d_dsl_edp_l2pre = mms.get_data(['E2d_dsl_edp_' edpMode '_l2pre'],Tint,mmsId);
+E_adp_edp = mms.get_data(['E_ssc_edp_' edpMode '_l1b'],Tint,mmsId);
+E_adp_edp = -E_adp_edp.z*1.5;
 
 %% FPI
 fpiSuf = ['_fpi_' fpiMode '_l2'];
@@ -44,21 +52,25 @@ hca = irf_panel('b');
 irf_plot(hca,B_dmpa_fgm_srvy_l2)
 title(hca,sprintf('MMS%d',mmsId))
 ylabel(hca,'B DSL [nT]')
-irf_legend(hca,{'X','Y','Z'},[0.98 0.05])
+irf_legend(hca,{'X','Y','Z'},[0.98 0.05],'fontsize',14)
 
 hca = irf_panel('Ex');
 irf_plot(hca,{E2d_dsl_edp_l2pre.x,E_dsl_edp_l2.x,EVexB.x,EVixB.x,EVphlusxB.x},'comp');
-irf_legend(hca,{'E L2pre','E l2','V_{e}xB','V_{i}xB','V_{H+}xB'},[0.98 0.05])
+irf_legend(hca,{'E L2pre','E l2','V_{e}xB','V_{i}xB','V_{H+}xB'},...
+  [0.98 0.05],'fontsize',14)
 ylabel(hca,'E_x DSL [mV/m]')
 
 hca = irf_panel('Ey');
 irf_plot(hca,{E2d_dsl_edp_l2pre.y,E_dsl_edp_l2.y,EVexB.y,EVixB.y,EVphlusxB.y},'comp');
-irf_legend(hca,{'E L2pre','E l2','V_{e}xB','V_{i}xB','V_{H+}xB'},[0.98 0.05])
+irf_legend(hca,{'E L2pre','E l2','V_{e}xB','V_{i}xB','V_{H+}xB'},...
+  [0.98 0.05],'fontsize',14)
 ylabel(hca,'E_y DSL [mV/m]')
 
 hca = irf_panel('Ez');
-irf_plot(hca,{E2d_dsl_edp_l2pre.z,E_dsl_edp_l2.z,EVexB.z,EVixB.z,EVphlusxB.z},'comp');
-irf_legend(hca,{'E L2pre','E l2','V_{e}xB','V_{i}xB','V_{H+}xB'},[0.98 0.05])
+irf_plot(hca,...
+  {E2d_dsl_edp_l2pre.z,E_dsl_edp_l2.z,EVexB.z,EVixB.z,EVphlusxB.z,E_adp_edp},'comp');
+irf_legend(hca,{'E L2pre','E l2','V_{e}xB','V_{i}xB','V_{H+}xB','E ADP'},...
+  [0.98 0.05],'fontsize',14)
 ylabel(hca,'E_z DSL [mV/m]')
 
 irf_zoom(h,'x',Tint)
@@ -76,21 +88,24 @@ hca = irf_panel('b');
 irf_plot(hca,B_dmpa_fgm_srvy_l2)
 title(hca,sprintf('MMS%d',mmsId))
 ylabel(hca,'B DSL [nT]')
-irf_legend(hca,{'X','Y','Z'},[0.98 0.05])
+irf_legend(hca,{'X','Y','Z'},[0.98 0.05],'fontsize',14)
 
 hca = irf_panel('Vx');
 irf_plot(hca,{VExB_l2pre.x,VExB.x,Ve_perp.x,Vi_perp.x,Vhplus_perp.x},'comp');
-irf_legend(hca,{'VExB l2pre','VExB','V_{e\perp}','V_{i\perp}','V_{H+\perp}'},[0.98 0.05])
+irf_legend(hca,{'VExB l2pre','VExB','V_{e\perp}','V_{i\perp}','V_{H+\perp}'},...
+  [0.98 0.05],'fontsize',14)
 ylabel(hca,'V_x DSL [km/s]')
 
 hca = irf_panel('Vy');
 irf_plot(hca,{VExB_l2pre.y,VExB.y,Ve_perp.y,Vi_perp.y,Vhplus_perp.y},'comp');
-irf_legend(hca,{'VExB l2pre','VExB','V_{e\perp}','V_{i\perp}','V_{H+\perp}'},[0.98 0.05])
+irf_legend(hca,{'VExB l2pre','VExB','V_{e\perp}','V_{i\perp}','V_{H+\perp}'},...
+  [0.98 0.05],'fontsize',14)
 ylabel(hca,'V_y DSL [km/s]')
 
 hca = irf_panel('Vz');
 irf_plot(hca,{VExB_l2pre.z,VExB.z,Ve_perp.z,Vi_perp.z,Vhplus_perp.z},'comp');
-irf_legend(hca,{'VExB l2pre','VExB','V_{e\perp}','V_{i\perp}','V_{H+\perp}'},[0.98 0.05])
+irf_legend(hca,{'VExB l2pre','VExB','V_{e\perp}','V_{i\perp}','V_{H+\perp}'},...
+  [0.98 0.05],'fontsize',14)
 ylabel(hca,'V_z DSL [km/s]')
 
 irf_zoom(h,'x',Tint)
