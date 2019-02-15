@@ -111,6 +111,9 @@ function irf_disp_surf_pl(kc_x_max,kc_z_max,wfinal,extraparam,surfchoice,colorch
     colorstring='log10[dn_e/(k.E eps0/e)]';
     colorlimits=[-2,2];
     colorMap = 'bluered';
+  elseif colorchoice==22
+    colorstring='S_{||}/|S|';
+    colorlimits=[0,1];
   else
     colorchoice=1;
     colorlimits=[0,1];
