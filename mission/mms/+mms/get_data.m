@@ -95,6 +95,8 @@ function res = get_data(varStr, Tint, mmsId)
 %     'Phplus_gsm_hpca_srvy_l2', 'Pheplus_gsm_hpca_srvy_l2', 'Pheplusplus_gsm_hpca_srvy_l2', 'Poplus_gsm_hpca_srvy_l2',...
 %     'Thplus_gsm_hpca_srvy_l2', 'Theplus_gsm_hpca_srvy_l2', 'Theplusplus_gsm_hpca_srvy_l2', 'Toplus_gsm_hpca_srvy_l2',...
 %     'Nhplus_hpca_sitl'.
+%  EDI:
+%     'Flux-amb-pm2_edi_brst_l2'
 %  ASPOC:
 %     'aspoc_status'.
 %
@@ -198,6 +200,7 @@ vars = {'R_gse','R_gsm','V_gse','V_gsm',...
   'PDERRe_fpi_brst_l2','PDERRi_fpi_brst_l2',...
   'PDe_fpi_fast_l2','PDi_fpi_fast_l2',...
   'PDERRe_fpi_fast_l2','PDERRi_fpi_fast_l2',...
+  'Flux-amb-pm2_edi_brst_l2',...
   'Nhplus_hpca_srvy_l2','Nheplus_hpca_srvy_l2','Nheplusplus_hpca_srvy_l2','Noplus_hpca_srvy_l2',...
   'Tshplus_hpca_srvy_l2','Tsheplus_hpca_srvy_l2','Tsheplusplus_hpca_srvy_l2','Tsoplus_hpca_srvy_l2',...
   'Vhplus_dbcs_hpca_srvy_l2','Vheplus_dbcs_hpca_srvy_l2','Vheplusplus_dbcs_hpca_srvy_l2','Voplus_dbcs_hpca_srvy_l2',...
@@ -379,7 +382,47 @@ switch Vr.inst
         res = res(~ind);
       end
     end
-    
+  case 'edi'  
+    switch Vr.param
+      case 'Flux-amb-pm2'
+        % for amb-pm2, node 1 is closest to 0/180
+        edi_tk = tokenize(Vr.param,'-');
+        dsetName = [dsetName '_' edi_tk{2} '-' edi_tk{3}];
+        nodes = 1:4;
+        pitchangles = [0 180];
+        flux = cell(numel(pitchangles),numel(nodes));
+        for ipitchangle = 1:numel(pitchangles)
+          for inode = 1:numel(nodes)
+            pitchangle = pitchangles(ipitchangle);
+            node = nodes(inode);
+            pref = ['mms' mmsIdS '_' Vr.inst '_flux' num2str(inode)  '_' num2str(pitchangle) '_' Vr.tmmode '_' Vr.lev];
+            flux{ipitchangle,inode} = get_ts('scalar');            
+          end
+        end
+        paddistarr = [flux{1,1}.data flux{1,2}.data flux{1,3}.data flux{1,4}.data flux{2,4}.data flux{2,3}.data flux{2,2}.data flux{2,1}.data];
+        d_angle = 180/16;
+        pitchangle_edges_edi = [0 1 2 3 4 12 13 14 15 16]*d_angle;
+        pitchangle_centers_edi = [0.5 1.5 2.5 3.5 12.5 13.5 14.5 15.5]*d_angle;
+        E_edi = 500;
+        dE_edi = E_edi*0.1*0.5;
+        E_edges = E_edi + dE_edi*[-1 1];
+        res = PDist(flux{1}.time,paddistarr,'pitchangle',E_edi,pitchangle_centers_edi);
+        res.units = flux{1}.units;
+        res.siConversion = flux{1}.siConversion;
+        res.species = 'electrons';
+        res.name = flux{1}.name;
+        % ancillary data
+        res.ancillary.dt_minus = 0.5*(flux{1}.time(2)-flux{1}.time(1));
+        res.ancillary.dt_plus = 0.5*(flux{1}.time(2)-flux{1}.time(1));
+        res.ancillary.energy = E_edi*ones(flux{1}.length,1);
+        res.ancillary.energy0 = E_edi;
+        res.ancillary.energy1 = E_edi;
+        res.ancillary.esteptable = ones(flux{1}.length,1);
+        res.ancillary.delta_energy_minus = dE_edi;
+        res.ancillary.delta_energy_plus = dE_edi;
+        res.ancillary.pitchangle_edges = pitchangle_edges_edi;             
+      case 'Flux-amb-pm'
+    end    
   case 'fpi'
     switch Vr.param(end)
       case 'i', sensor = 'dis';
@@ -802,7 +845,7 @@ param = tk{1};
 switch param
   case {'Ni', 'Ne', 'Nhplus', 'Tsi', 'Tperpi', 'Tparai', 'Tse', 'Tperpe', 'Tparae', ...
       'PDe', 'PDi', 'PDERRe', 'PDERRi', 'V', 'V6', ...
-      'Enfluxi', 'Enfluxe', 'Energyi', 'Energye', 'Epar', 'Sdev12', 'Sdev34'}
+      'Enfluxi', 'Enfluxe', 'Energyi', 'Energye', 'Epar', 'Sdev12', 'Sdev34','Flux-amb-pm2'}
     tensorOrder = 0;
   case {'Vi', 'Ve', 'B', 'E','E2d','Es12','Es34'}
     tensorOrder = 1;
