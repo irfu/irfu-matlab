@@ -1,4 +1,8 @@
 function [ax,pst] = plot_int_distribution(varargin)
+% NOTICE:
+% This function has been replaced by PDist.reduce and is no longer
+% being updated.
+%
 %MMS.PLOT_INT_DISTRIBUTION Plots integrated FPI data along a specified vector.
 %
 %   Does not seem optimal for cuts in the distribution function. Works fine
@@ -85,6 +89,10 @@ function [ax,pst] = plot_int_distribution(varargin)
 %   TODO:   Recalculate energies given spacecraft potential input
 %       
 %   Generally, the code deals with quantities in SI units until plotting.
+
+%% Warning
+irf.log('w','This function has been replaced by PDist.reduce')
+
 
 %% Input
 

@@ -21,6 +21,7 @@ START_META     =   INSTRUMENT_CAVEATS
    ENTRY       =   "Spacecraft potential data and 4-second resolution electric field data"
    ENTRY       =   "are not affected."
    ENTRY       =   "After 2011-06-01 no full resolution data available."
+   ENTRY       =   "After 2014-11-03 no electric field data available."
    ENTRY       =   "All products have reduced quality."
    ENTRY       =   ""
    ENTRY       =   "EFW operations caveats:"

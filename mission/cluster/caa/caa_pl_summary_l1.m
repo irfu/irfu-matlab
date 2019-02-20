@@ -173,10 +173,10 @@ for cli=1:4
         % Extend data array to accept bitmask and quality flag (2 columns at the end)
         p_tmp = [p_tmp zeros(size(p_tmp, 1), 2)];
         p_tmp(:, end) = QUALITY;    % Default quality column to best quality, i.e. good data/no problems.
-        quality_column = size(p_tmp, 2);
-        bitmask_column = quality_column - 1;
+        p_quality_column = size(p_tmp, 2);
+        p_bitmask_column = p_quality_column - 1;
                 
-        p_tmp = caa_identify_problems(p_tmp, 3, num2str(probe_info.probe), cli, bitmask_column, quality_column, 1);
+        p_tmp = caa_identify_problems(p_tmp, 3, num2str(probe_info.probe), cli, p_bitmask_column, p_quality_column, 1);
         ps = [ps; p_tmp]; 
       else
         irf_log('load',msg)
@@ -291,7 +291,8 @@ for cli=1:4
                 end
                 if ~isempty(ns_ops)
                     ns_ops_intervals = [caa_get_ns_ops_int(spinFits.diEs(1,1), spinFits.diEs(end,1)-spinFits.diEs(1,1), ns_ops, 'bad_data')' ...
-                        caa_get_ns_ops_int(spinFits.diEs(1,1), spinFits.diEs(end,1)-spinFits.diEs(1,1), ns_ops, 'bad_tm')']';
+                        caa_get_ns_ops_int(spinFits.diEs(1,1), spinFits.diEs(end,1)-spinFits.diEs(1,1), ns_ops, 'bad_tm')'...
+                        caa_get_ns_ops_int(spinFits.diEs(1,1), spinFits.diEs(end,1)-spinFits.diEs(1,1), ns_ops, 'high_bias')']';
                     if ~isempty(ns_ops_intervals)
                         ns_ops_intervals(:,1)=ns_ops_intervals(:,1)-4;
                         ns_ops_intervals(:,2)=ns_ops_intervals(:,2)+4;
@@ -307,15 +308,14 @@ for cli=1:4
                 % Extend data array to accept bitmask and quality flag (2 columns at the end)
                 spinFits.diEs = [spinFits.diEs zeros(size(spinFits.diEs, 1), 2)];
                 spinFits.diEs(:, end) = QUALITY;    % Default quality column to best quality, i.e. good data/no problems.
-                quality_column = size(spinFits.diEs, 2);
-                bitmask_column = quality_column - 1;
+                e_quality_column = size(spinFits.diEs, 2);
+                e_bitmask_column = e_quality_column - 1;
 
                 % Identify and flag problem areas in data with bitmask and quality factor:
                 if probe_numeric == 120 || probe_numeric == 320 || probe_numeric == 340 || probe_numeric == 420
                     probe_numeric = probe_numeric/10;
                 end
-                spinFits.diEs = caa_identify_problems(spinFits.diEs, data_level, sprintf('%d',probe_numeric), cli, bitmask_column, quality_column);
-%                spinFits.diEs = caa_identify_problems(spinFits.diEs, data_level, sprintf('%d',spinFits.probePair), cli, bitmask_column, quality_column);
+                spinFits.diEs = caa_identify_problems(spinFits.diEs, data_level, sprintf('%d',probe_numeric), cli, e_bitmask_column, e_quality_column);
                 
                 % Delta offsets
                 Del_caa = c_efw_delta_off(spinFits.diEs(1,1),cli);
@@ -591,7 +591,7 @@ for cli=1:4
 	if ~isempty(es)
         for k = 1:16
             plot(hca,[es(1,1) es(end,1)] - t_start_epoch, [k k] + fix((k-1)/4), 'k')
-            index = find( bitget(es(:,bitmask_column), k) );
+            index = find( bitget(es(:,e_bitmask_column), k) );
             if ~isempty(index)
                 ind_d = find( diff(index) > 1 );
                 if ~isempty(ind_d)

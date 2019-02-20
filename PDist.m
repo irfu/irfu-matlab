@@ -711,7 +711,7 @@ classdef PDist < TSeries
       PD.units = new_units;
       PD.siConversion = num2str(str2num(PD.siConversion)/d3v_scale,'%e');
     end
-    function PD = reduce(obj,dim,x,varargin)
+    function PD = reduce(obj,dim,x,varargin) 
       %PDIST.REDUCE Reduces (integrates) 3D distribution to 1D (line).      
       %   Example (1D):
       %     f1D = iPDist1.reduce('1D',dmpaB1,'vint',[0 10000]);
@@ -722,43 +722,47 @@ classdef PDist < TSeries
       %     f2D(100).plot_plane      
       %     [h_surf,h_axis,h_all] = f2D(100).plot_plane;
       %
-      %   See more example uses in Example_MMS_reduced_ion_dist and
-      %   Example_MMS_reduced_ele_dist
+      %   See more example uses in Example_MMS_reduced_ion_dist,
+      %   Example_MMS_reduced_ele_dist, and Example_MMS_reduced_ele_dist_2D
       %
       %   Options:
-      %     'vint'   - set limits on the from-line velocity to get cut-like
-      %                distribution [km/s]
       %     'nMC'    - number of Monte Carlo iterations used for integration,
       %                for default number see IRF_INT_SPH_DIST
-      %     'weight' - how the number of MC iterations per bin is weighted, can be
-      %                'none' (default), 'lin' or 'log'
+      %     'base'   - set the base for the projection to polar 'pol', or
+      %                cartesian 'cart' (only valid for 2D planes)
       %     'vg'     - array with center values for the projection velocity
-      %                grid in [km/s], determined by instrument if omitted
+      %                grid in [km/s], determined by instrument if omitte
       %     'vg_edges' - array with edge values for the projection velocity
       %                grid in [km/s]
-      %     'phig'   - array with center values of the azimuthal angle grid
-      %                in degrees
+      %     'phig'   - array with center values for the projection
+      %                azimuthal angle in [rad]
+      %     'vint'   - set limits on the out-of-plane velocity to get
+      %                cut-like distribution in 2D or a cylindrical shell
+      %                in 1D
+      %     'aint'   - angular limit in out-of-plane direction to make
+      %                projection cut-like in 2D (not valid for 1D?)
       %     'scpot'  - sets all values below scpot to zero and changes the
       %                energy correspondingly
       %     'lowerelim' - sets all values below lowerelim to zero, does not
       %                change the energy. Can be single value, vector or
       %                Tseries, for example 2*scpot
-      %     'base'   - 'pol' (radius, angle) (default) or 'cart' (x,y)
+      %     'weight' - how the number of MC iterations per bin is weighted, 
+      %                can be 'none' (default), 'lin' or 'log'
+      % 
       %    
       % This is a shell function for irf_int_sph_dist.m
       %
-      % See also: MMS.PLOT_INT_DISTRIBUTION, IRF_INT_SPH_DIST
-      % MMS.PLOT_INT_PROJECTION, PDIST.PLOT_PLANE, PDIST.SPECREC,
+      % See also: IRF_INT_SPH_DIST, PDIST.PLOT_PLANE, PDIST.SPECREC,
       % IRF_SPECTROGRAM
       
       %% Input
-      [ax,args,nargs] = axescheck(varargin{:});
+      [~,args,nargs] = axescheck(varargin{:});
       irf.log('warning','Please verify that you think the projection is done properly!');
       if isempty(obj); irf.log('warning','Empty input.'); return; else, dist = obj; end
       
       % Check to what dimension the distribution is to be reduced   
       if any(strcmp(dim,{'1D','2D'}))
-        dim = str2num(dim(1)); % input dim can either be '1D' or '2D'
+        dim = str2double(dim(1)); % input dim can either be '1D' or '2D'
       else
         error('First input must be a string deciding projection type, either ''1D'' or ''2D''.')
       end      
@@ -818,7 +822,7 @@ classdef PDist < TSeries
       %tint = dist.time([1 dist.length-1]);
       correct4scpot = 0;
       isDes = 1;
-      base = 'pol'; % coordinate base, cart or pol
+      base = 'pol'; % coordinate base, cart or pol (make 'cart' default?)
       
       if strcmp(dist.species,'electrons'); isDes = 1; else, isDes = 0; end
       
@@ -827,7 +831,7 @@ classdef PDist < TSeries
       have_options = nargs > 1;
       while have_options
         switch(lower(args{1}))
-          case {'t','tint','time'} % time
+          case {'t','tint','time'} % time (undocumented, can be removed?)
             l = 2;
             tint = args{2};
             doTint = 1;
@@ -967,8 +971,20 @@ classdef PDist < TSeries
           %disp(sprintf('%8.1g ',energy))          
         end
             
-        % velocity, elevation and azimuthal angle of original distribution
-        [v,phi,th] = get_grid();
+
+        v = units.c*sqrt(1-(energy*units.e/(M*units.c^2)-1).^2); % m/s  
+
+        % azimuthal angle
+        phi = double(dist.depend{2}(it(i),:)); % in degrees
+        %phi = phi+180;
+        %phi(phi>360) = phi(phi>360)-360;
+        phi = phi-180;
+        phi = phi*pi/180; % in radians
+
+        % elevation angle
+        th = double(dist.depend{3}); % polar angle in degrees
+        th = th-90; % elevation angle in degrees
+        th = th*pi/180; % in radi ans
 
         % Set projection grid after the first distribution function
         % bin centers
@@ -983,8 +999,9 @@ classdef PDist < TSeries
             vg = v;
           end
         end
-        if i == 1
-            % initiate projected f
+
+        % initiate projected f
+        if i == 1            
             if dim == 1
               Fg = zeros(length(it),length(vg));
               vel = zeros(length(it),1);
@@ -996,7 +1013,7 @@ classdef PDist < TSeries
               vel = zeros(length(it),2);
             end
             dens = zeros(length(it),1);
-        end
+        end        
         % perform projection
         if dim == 1 
           % v, phi, th corresponds to the bins of F3d
@@ -1016,15 +1033,20 @@ classdef PDist < TSeries
           all_vy_edges(i,:,:) = tmpst.vy_edges;
         end
         
+        % fix for special cases
+        % dimension of projection, 1D if projection onto line, 2D if projection onto plane
         if dim == 1 || strcmpi(base,'cart')
             Fg(i,:,:) = tmpst.F;
         elseif dim == 2 
             Fg(i,:,:) = tmpst.F_using_edges;
         end
+        % set moments from reduced distribution (for debug)
         dens(i) = tmpst.dens;
-        vel(i,:) = tmpst.vel; % dimension of projection, 1D if projection onto line, 2D if projection onto plane
+        vel(i,:) = tmpst.vel; 
         
       end
+      
+      % Construct PDist objects with reduced distribution
       % vg is m/s, transform to km/s
       if dim == 1
         PD = PDist(dist.time(it),Fg,'line (reduced)',all_vg*1e-3);
@@ -1048,6 +1070,7 @@ classdef PDist < TSeries
       PD.species = dist.species;
       PD.userData = dist.userData;
      
+      % set units and projection directions
       if dim == 1      
         PD.units = 's/m^4';
         PD.ancillary.projection_direction = xphat_mat(it,:);
@@ -1067,30 +1090,9 @@ classdef PDist < TSeries
         PD.ancillary.lowerelim = lowerelim_mat;
       end
       
-      % Must add xphat to ancillary data!
-      function [v,phi,th] = get_grid()
-        v = sqrt(2*energy*units.e/M); % m/s       
-        if 0%length(v) ~= 32 % shopuld be made possible for general number, e.g. 64 (dist.e64)
-            error('something went wrong') %#ok<UNRCH>
-        end
-
-        % azimuthal angle of original distribution
-        phi = double(dist.depend{2}(it(i),:)); % in degrees
-        phi = phi-180;
-        phi = phi*pi/180; % in radians
-        if length(phi) ~= 32
-            error('something went wrong')
-        end
-
-        % elevation angle of original distribution
-        th = double(dist.depend{3}); % polar angle in degrees
-        th = th-90; % elevation angle in degrees
-        th = th*pi/180; % in radi ans
-        if length(th) ~= 16
-            error('something went wrong')
-        end
-      end
     end
+    
+    
     function [ax,args,nargs] = axescheck_pdist(varargin)
       %[ax,args,nargs] = axescheck_pdist(varargin{:});
       % MATLAB's axescheck only checks if the first argument is an axis handle, but

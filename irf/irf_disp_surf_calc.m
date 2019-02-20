@@ -128,6 +128,13 @@ function [wfinal,extraparam]=irf_disp_surf_calc(kc_x_max,kc_z_max,m_i,wp_e)
   Bperp=sqrt(Bx.*conj(Bx)+By.*conj(By));
   Bpolar=-2*imag(Bx.*conj(By))./(Bperp.*Bperp);
   
+  % Poynting flux
+  Sx = Ey.*conj(Bz) - Ez.*conj(By);
+  Sy = Ez.*conj(Bx) - Ex.*conj(Bz);
+  Sz = Ex.*conj(By) - Ey.*conj(Bx);
+  Spar = abs(Sz);
+  Stot = sqrt(Sx.*conj(Sx) + Sy.*conj(Sy) + Sz.*conj(Sz));
+  
   temp=length(kc_x);
   dk_x=kc_x(2);dk_z=kc_z(2);
   dw_x=diff(wfinal,1,3); dw_z=diff(wfinal,1,2);
@@ -200,4 +207,5 @@ function [wfinal,extraparam]=irf_disp_surf_calc(kc_x_max,kc_z_max,m_i,wp_e)
   extraparam(19,:,:,:)=log10(dneonodBparoB); % (dn_e/n)/(dBpar/B)
   extraparam(20,:,:,:)=log10(dnionodBparoB); % (dn_i/n)/(dBpar/B)
   extraparam(21,:,:,:)=log10(dne./kdotE); % (dn_i/n)/(dB/B)
+  extraparam(22,:,:,:)=Spar./Stot; % (dn_i/n)/(dB/B)
   warning on

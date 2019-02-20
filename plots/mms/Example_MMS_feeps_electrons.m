@@ -51,7 +51,7 @@ Tint = irf.tint('2017-07-23T16:40:00.000Z/2017-07-23T17:10:00.000Z');
     ePA = ePA.tlim(Tint);
     
     %% Alt
-    specie = 'ion'; % alt specie = 'ion';
+    specie = 'electron'; % alt specie = 'ion';
     mode = 'brst'; % alt mode = 'fast';
     dsetName = sprintf('mms%d_feeps_%s_l2_%s',ic,mode,specie);
     dsetPref = sprintf('mms%d_epd_feeps_%s_l2_%s',ic,mode,specie);
@@ -76,15 +76,23 @@ Tint = irf.tint('2017-07-23T16:40:00.000Z/2017-07-23T17:10:00.000Z');
       sufMask = sprintf('sector_mask_sensorid_%d',sen);
       top = mms.db_get_ts(dsetName,[dsetPref '_top_' suf],Tint);
       mask = mms.db_get_ts(dsetName,[dsetPref '_top_' sufMask],Tint);
-      top.data(logical(repmat(mask.data,1,length(energies)))) = NaN;
+      if all(size((mask.data))==size((top.data)))
+        top.data(logical(mask.data)) = NaN;
+      else
+        top.data(logical(repmat(mask.data,1,length(energies)))) = NaN; % obsolete?
+      end
       bot = mms.db_get_ts(dsetName,[dsetPref '_bottom_' suf],Tint);
       mask = mms.db_get_ts(dsetName,[dsetPref '_bottom_' sufMask],Tint);
-      bot.data(logical(repmat(mask.data,1,length(energies)))) = NaN;
+      if all(size((mask.data))==size((bot.data)))
+        bot.data(logical(mask.data)) = NaN;
+      else
+        bot.data(logical(repmat(mask.data,1,length(energies)))) = NaN;
+      end
       c_eval([specie(1) 'Tit?=top;'  specie(1) 'Bit?=bot;'],sen)
     end
     
     % cleanup
-    if strcmp(mode,'brst') 
+    if 0 && strcmp(mode,'brst') 
       switch specie
         case 'electron'
           eTit1.data(:,:) = NaN;
