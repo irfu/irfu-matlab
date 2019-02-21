@@ -406,7 +406,7 @@ switch Vr.inst
         E_edi = 500;
         dE_edi = E_edi*0.1*0.5;
         E_edges = E_edi + dE_edi*[-1 1];
-        res = PDist(flux{1}.time,paddistarr,'pitchangle',E_edi,pitchangle_centers_edi);
+        res = PDist(flux{1}.time,reshape(paddistarr,[size(paddistarr,1),1,size(paddistarr,2)]),'pitchangle',E_edi,pitchangle_centers_edi);
         res.units = flux{1}.units;
         res.siConversion = flux{1}.siConversion;
         res.species = 'electrons';
@@ -420,7 +420,9 @@ switch Vr.inst
         res.ancillary.esteptable = ones(flux{1}.length,1);
         res.ancillary.delta_energy_minus = dE_edi;
         res.ancillary.delta_energy_plus = dE_edi;
-        res.ancillary.pitchangle_edges = pitchangle_edges_edi;             
+        res.ancillary.pitchangle_edges = pitchangle_edges_edi;  
+        res.ancillary.delta_pitchangle_minus = d_angle*ones(1,8);
+        res.ancillary.delta_pitchangle_plus = d_angle*ones(1,8);
       case 'Flux-amb-pm'
     end    
   case 'fpi'
