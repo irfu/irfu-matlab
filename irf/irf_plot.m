@@ -207,7 +207,7 @@ if flag_subplot==0  % One subplot
     end
     firstTimeStamp = x.t(~isnan(x.t),1);firstTimeStamp = firstTimeStamp(1);
   elseif ~isempty(x) % x is nonempty matrix
-    if isa(x,'TSeries'), time = x.time.epochUnix; data = x.data;
+    if isa(x,'TSeries'), time = x.time.epochUnix; data = x.data(:,:);
     else, time = x(:,1); data = x(:,2:end);
     end
     ts = t_start_epoch(time); % t_start_epoch is saved in figures user_data variable
@@ -230,7 +230,7 @@ if flag_subplot==0  % One subplot
     
 elseif flag_subplot==1 % Separate subplot for each component
   if isstruct(x), error('cannot plot spectra in COMP mode'), end
-  if isa(x,'TSeries'), time = x.time.epochUnix; data = x.data;
+  if isa(x,'TSeries'), time = x.time.epochUnix; data = x.data(:,:);
   else, time = x(:,1); data = x(:,2:end);
   end
   ts = t_start_epoch(time); npl = size(data,2);
@@ -264,7 +264,7 @@ elseif flag_subplot==2 % Separate subplot for each variable
     for ipl=1:npl
         y = x{ipl};
         if isa(y,'TSeries')
-          time = y.time.epochUnix; data = y.data;
+          time = y.time.epochUnix; data = y.data(:,:);
         elseif isstruct(y), time = double(y.t); data = y(:,2:end);
         else, time = double(y(:,1)); data = y(:,2:end);
         end
@@ -343,7 +343,7 @@ elseif flag_subplot==3  % components of vectors in separate panels
     idx = find(idxEmpty==0,1,'first');
     if isa(x{idx},'TSeries')
       ts = t_start_epoch(x{idx}.time.epochUnix);
-      npl = size(x{idx}.data,2);
+      npl = size(x{idx}.data(:,:),2);
     elseif isstruct(x{idx})
       ts = t_start_epoch(x{idx}.t); npl = size(x{idx}.data,2);
     else
@@ -371,7 +371,7 @@ elseif flag_subplot==3  % components of vectors in separate panels
             if isempty(x{jj}), data = [];
             else
               if isa(x{jj},'TSeries')
-                time = x{jj}.time.epochUnix; data = x{jj}.data;
+                time = x{jj}.time.epochUnix; data = x{jj}.data(:,:);
               else
                 time = x{jj}(:,1); data = x{jj}(:,2:end);
               end
