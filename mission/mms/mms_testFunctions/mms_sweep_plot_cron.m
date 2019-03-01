@@ -151,6 +151,18 @@ function mms_sweep_plot_cron(dayToRun)
     legend(h, 'p5', 'p6');
     print(h.Parent, '-dpng', [sweepFolder,'summary_plots/ADP/PhaseVsTime_mms',scStr,'_p56.png']);
     close all % close plots
+
+    % Do not use probes after probe failure when computing how the photo
+    % current or impedance depends on phase (or how it did depend on phase
+    % before the probe failure). Keeping the values up to this point helps
+    % to highlight the failure in the plots of iPh and impedance vs time.
+    if(iSc == 4) % MMS4 p4 failed
+      Sw.p4_iPh_ts.data(Sw.p4_iPh_ts.time >= EpochTT('2016-06-12T05:28:48.200Z')) = NaN;
+      Sw.p4_impedance_ts.data(Sw.p4_impedance_ts.time >= EpochTT('2016-06-12T05:28:48.200Z')) = NaN;
+    elseif(iSc == 2) % MMS2 p2 failed
+      Sw.p2_iPh_ts.data(Sw.p2_iPh_ts.time >= EpochTT('2018-09-21T06:04:45.810Z')) = NaN;
+      Sw.p2_impedance_ts.data(Sw.p2_impedance_ts.time >= EpochTT('2018-09-21T06:04:45.810Z')) = NaN;
+    end
     
     % iPh vs phase
     %c_eval('ind?=Sw.p?_iPh_ts.data>50&Sw.p?_iPh_ts.data<500;', 1:4);
