@@ -309,6 +309,7 @@ if ~isempty(Eref)
 end
 
 irf_zoom(h,'x',st+[0 dt])
+irf_plot_ylabels_align(h)
 
 % Return
 dE = [dE1 dE2 dE3 dE4];
