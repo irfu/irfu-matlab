@@ -330,7 +330,13 @@ dAmp = [dAmp1 dAmp2 dAmp3 dAmp4];
         else, probe_numeric=str2double(E_info.probe);
         end
       end
-      % Remove saturation due to too high bias current
+      
+      % Remove saturation due to too high bias current and ns_ops intervals
+      [ok,nsops,msg] = c_load('NSOPS?',cli);
+      if ~ok, irf_log('load',msg), end
+      clear ok msg
+      nsops_errlist = [];
+          
       if probe_numeric<50, probepair_list=probe_numeric;
       else, probepair_list=[12 32 34];end
       for probepair=probepair_list
@@ -347,7 +353,27 @@ dAmp = [dAmp1 dAmp2 dAmp3 dAmp4];
         else, irf_log('load',msg)
         end
         clear ok hbias msg
-      end
+        
+        
+        if ~isempty(nsops)
+          idx = nsops(:,3)==caa_str2errid('high_bias');
+          if any(idx)
+            irf_log('proc','blanking HB saturation (NS_OPS)')
+            spinFits.diEs = caa_rm_blankt(spinFits.diEs,nsops(idx,1:2));
+          end
+          
+          for j=1:length(nsops(:,3))
+            opcode=nsops(j,3);
+            % If nsops_errlist is present, only match on those
+            % opcodes in the list
+            if (opcode<10 && opcode>0) || ((opcode>=11 && opcode<=14) && any(opcode-10==p_list)) || (~isempty(nsops_errlist) && any(opcode==nsops_errlist))
+              irf_log('proc',['blanking nsops interval. opcode:' num2str(opcode) ' probe:' num2str(probepair)]);
+              res = caa_rm_blankt(res,nsops(j,:));
+            end
+          end
+        end
+        
+      end % for probepair=probepair_list
       
       % Remove saturation
       if probe_numeric<50, probepair_list=[mod(probe_numeric,10),fix(probe_numeric/10)];
