@@ -7,8 +7,7 @@ function res = caa_str2errid(id)
 % /data/cluster/caa-control/text.xsl
 %
 % See also CAA_ERRID2STR
-%
-% $Id$
+
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):
@@ -31,6 +30,7 @@ case 'hxonly',   res = 15; % LX data is blanked
 case 'bad_bias', res = 16; % HX data is blanked
 case 'bad_hx',   res = 17; % HX data is blanked
 case 'bad_lx',   res = 18; % LX data is blanked
+case 'high_bias',   res = 19; % HX data is blanked
 case 'no_p12', res = 112;
 case 'no_p23', res = 132;
 case 'no_p32', res = 132;

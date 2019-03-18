@@ -27,14 +27,15 @@ function [nd] = irf_shock_normal(spec,leq90)
 %       nu  -   Upstream number density (cm^-3).
 %       nd  -   Downstream number density.
 %       Optional:
-%       R   -   Spacecraft position as given by R =
-%               mms.get_data('R_gse',tint).
+%       R   -   Spacecraft position in TSeries format, 1x3 vector or as
+%               given by R = mms.get_data('R_gse',tint)
 %       t   -   Time of shock crossing (EpochTT), for models.
 %       d2u -   Down-to-up, is 1 or -1.
 %       dTf -   Time duration of shock foot (s).
 %       Fcp -   Reflected ion gyrofrequency (Hz).
 %       N   -   Number of Monte Carlo particles used in determining
 %               errorbars (default 100)
+%       n0  -   User defined normal vector from e.g. timing
 %       
 %
 %   Output nd contains:
@@ -54,6 +55,8 @@ function [nd] = irf_shock_normal(spec,leq90)
 %               fa4o    -   Fairfield, D. H., 1971
 %               fan4o   -   Fairfield, D. H., 1971
 %               foun    -   Formisano, V., 1979
+%           User defined (only if n0 is included in spec):
+%               n0  -   User defined normal vector from e.g. timing
 %
 %       thBn -  Angle between normal vector and spec.Bu, same fields as n.
 %
@@ -251,6 +254,10 @@ n.mx1 = cross(cross(Bu,delV),delB)/norm(cross(cross(Bu,delV),delB));
 n.mx2 = cross(cross(Bd,delV),delB)/norm(cross(cross(Bd,delV),delB));
 n.mx3 = cross(cross(delB,delV),delB)/norm(cross(cross(delB,delV),delB));
 
+% user defined normal vector
+if isfield(spec,'n0')
+    n.n0 = spec.n0;
+end
 
 sig = [];
 % calculate model normals if R is inputted
@@ -419,7 +426,8 @@ for k = 1:length(fn)
     f = @(th)W*t1*(2*cos(th).^2-1)+2*sin(th).^2.*sin(W*t1);
     x0 = f(th)/(W*spec.dTf);
     
-    Vsp.(fn{k}) = dot(spec.Vu,nvec)*(x0/(1+spec.d2u*x0));
+    % the sign of Vsh in this method is ambiguous, assume n points upstream
+    Vsp.(fn{k}) = spec.d2u*dot(spec.Vu,nvec)*(x0/(1+spec.d2u*x0));
 end
 end
 
@@ -543,7 +551,7 @@ if isstruct(spec.R) % MMS specific
     end
 elseif isa(spec.R,'TSeries') % TSeries
     
-    rsc = mean(spec.R.data)/(u.RE*1e-3);
+    rsc = mean(spec.R.data)'/(u.RE*1e-3);
 elseif isnumeric(spec.R) && length(R) == 3 % just a vector
     rsc = spec.R;
 end

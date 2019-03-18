@@ -47,7 +47,7 @@ for ic = cl_id
    
    data = data(:,1:2);
    
-
+   if 0 % this does double job, skip this
    % Remove saturation due to too high bias current
    [ok,hbias,msg] = c_load(irf_ssub('HBIASSA?p!',ic,sfit_probe));
    if ok
@@ -62,6 +62,7 @@ for ic = cl_id
    else, irf_log('load',msg)
    end
    clear ok hbias msg
+   end
    
    % Remove saturation
    if probe_numeric<50, probepair_list=[mod(probe_numeric,10),fix(probe_numeric/10)];
@@ -136,6 +137,19 @@ for ic = cl_id
   if isempty(result), continue, end
   %c_eval('Es? = result;',ic)
   
+  %create evenly sampled data and fill gaps with moving median
+  tNew = (result(1,1):4:result(end,1))';
+  newData = NaN(length(tNew),2);
+  [~,idxComm,~] = intersect(tNew,result(:,1));
+  if length(idxComm) ~= length(result(:,1)), error('something wrong'), end
+  newData(idxComm,:) = result;
+  ttt = newData(:,2);
+  newData(:,2) = movmedian(newData(:,2),5,'omitnan');
+  ii = ~isnan(ttt); newData(ii,2) = ttt(ii); clear ttt
+  newData(:,1) = tNew;
+  resultSave = result;
+  result = newData;
+  
   %% find Ex<threhsold
   EX_MAX = 15; % repeated points above this value
   EX_MAXXX = 30; % all points above this value
@@ -146,6 +160,7 @@ for ic = cl_id
   idx1plu = idx1+1; idx1plu(idx1plu>length(idx)) = [];
   idxBad = unique([idxxx; idx(idx1min); idx(idx1); idx(idx1plu)]);
   irf_plot(h(ic),result,'k.'), hold(h(ic),'on')
+  irf_plot(h(ic),[resultSave(:,1), resultSave(:,2)+2],'g.')
   irf_plot(h(ic),result(idxBad,:),'mo')
   ylabel(h(ic),sprintf('Ex C%d [mV/m]',ic))
   
@@ -155,6 +170,19 @@ for ic = cl_id
     a = sort([idxBad(1); idxBad(ii);  idxBad(ii+1); idxBad(end)]);
     a = result(a,1);
     a = reshape(a',2,length(a)/2)'; 
+    iCurr = 2;
+    %Merge intervals if no data between them
+    while true
+      if iCurr > size(a,1), break, end
+      if any(~isnan(resultSave(resultSave(:,1)>a(iCurr-1,2) & resultSave(:,1)<a(iCurr,1),2)))
+        iCurr = iCurr + 1; % next interval
+      else, a(iCurr,1) = a(iCurr-1,1); a(iCurr-1,:) = []; % merge with previous
+      end
+    end
+    for iInt = 1:size(a,1)
+      [~,~,idxComm] = intersect(a(iInt,:)',result(:,1));
+      irf_plot(h(ic),result(idxComm,:),'kx-');
+    end
     a(:,2) = a(:,2) - a(:,1)+4;   a(:,1) = a(:,1) - 2; %#ok<NASGU>
     c_eval('int? = a;',ic), clear a
   end

@@ -291,7 +291,7 @@ try
     else
       webOpt = weboptions();
     end
-    webOpt.Timeout = 10;
+    webOpt.Timeout = 20;
     c = webread(url, webOpt);
     getDataSuccess = true;
   end

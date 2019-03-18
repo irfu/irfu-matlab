@@ -21,6 +21,7 @@ Git
 2. Routines in [master](https://github.com/irfu/irfu-matlab/tree/master) branch should do not less and not more than written in their help!
 3. Our [devel](https://github.com/irfu/irfu-matlab/tree/devel) branch includes latest delivered development changes for the next release.
 4. Semantic release numbering https://semver.org/
+5. Write clear and useful git commit messages https://chris.beams.io/posts/git-commit/
 
 Common data types
 -----------------

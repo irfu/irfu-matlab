@@ -530,7 +530,7 @@ if status == 0 && exist(downloadedFile,'file')
 	end
 	fclose(fid);
 	delete(downloadedFile);
-	
+
 	if exist('downloadFile','var')
 		irf.log('warning',['Request put in queue    : ' urlLine]);
 		irf.log('warning',['When ready download from: ' downloadFile]);
@@ -607,12 +607,16 @@ end
 				irf.log('notice',['into ->' datasetDirName fileNameCefGz]);
 				status = 1;
 			else
-				irf.log('warning',['Did not succed to download: ' urlLink]);
+				if(isempty(tmpGetRequest))
+					irf.log('warning',['Did not succed to download: ' tempFilePathGz ]);
+				else
+					irf.log('warning',['Did not succed to download: ' tmpGetRequest{10} ' ' tmpGetRequest{12} ]);
+				end
 				status = 0;
 			end
 			return;
 		end
-		
+
 		downloadedFile = [tempname '.gz'];
 		[urlLink, tmpGetRequest] = splitUrlLink(urlLink);
 		if(isempty(tmpGetRequest))

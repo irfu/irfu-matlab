@@ -1,0 +1,48 @@
+ Problems seen when looking through the summary plots for 2015
+=============================================================
+
+1a) Processing bugs fixed
+========================
+
+Updated caa_sh_xoff() to use C4 CODIF data, as HIA is basically OFF.
+
+
+1b) Plotting bugs fixed
+=======================
+
+
+1c) Data problems fixed
+=======================
+
+0629 18 -- 0630 09 force MS offsets on C2
+
+2a) Software bugs to be fixed
+=============================
+
+2b) Data problems to be fixed/investigated
+==========================================
+
+
+
+3) Major data problems
+======================
+
+Entered in NS_OPS:
+C2, 2016-01-07T05:36:27Z/2016-01-08T06:40:00Z - chopped up TM cleared by EFW reset
+C4, 2016-03-06T15:10:00Z/2016-03-06T17:32:00Z - Ex slightly saturated, Ey OK
+C2, 2016-03-23T08:52:51Z/2016-03-24T11:40:00Z - all probes stuck at a fixed voltage. Cleared by EFW reset.
+C4, 2016-04-02T12:07:00Z/2016-04-02T15:11:00Z - Ex slightly saturated, Ey OK
+C4, 2016-04-07T06:30:00Z/2016-04-07T08:03:00Z - Ex slightly saturated, Ey OK
+C4, 2016-04-07T08:59:40Z/2016-04-07T09:09:40Z - Ex slightly saturated, Ey OK
+C4, 2016-04-07T09:50:00Z/2016-04-07T20:40:00Z - Ex saturated
+C4, 2016-04-08T11:41:12Z/2016-04-08T19:14:12Z - Ex saturated
+
+4) Ignored
+==========
+C4, 2016-03-20T19:10:00Z/2016-03-20T21:08:08Z - partially chopped up TM
+C4, 2016-03-29T14:27:00Z/2016-03-29T17:57:00Z - partially chopped up TM
+C4, 2016-04-05T13:30:00Z/2016-04-05T18:20:00Z - partially chopped up TM
+
+5) Unclassified
+===============
+

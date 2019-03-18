@@ -269,16 +269,22 @@ zt = squeeze(permute(zt,[1 4 2 3]));
 thetab = acosd(xt.*squeeze(Bvecx)+yt.*squeeze(Bvecy)+zt.*squeeze(Bvecz));
 
 c_eval('dist? = pdist.data;',1:length(anglevec));
-dist1(thetab > anglevec(1)) = NaN;
-for jj = 2:(length(anglevec)-1)
+%dist1(thetab > anglevec(1)) = NaN;
+for jj = 1:(length(anglevec))
 	c_eval('dist?(thetab < (anglevec(?)-dangle(?))) = NaN;',jj);
 	c_eval('dist?(thetab > anglevec(?)) = NaN;',jj);
 end 
-c_eval('dist?(thetab < (anglevec(end)-dangle(?))) = NaN;',length(anglevec));
+%c_eval('dist?(thetab < (anglevec(end)-dangle(?))) = NaN;',length(anglevec));
 if strcmp(meanorsum, 'mean')
     c_eval('dist? =  squeeze(irf.nanmean(irf.nanmean(dist?,4),3));',1:length(anglevec));
 elseif strcmp(meanorsum, 'sum')
     c_eval('dist? =  squeeze(irf.nansum(irf.nansum(dist?,4),3));',1:length(anglevec));
+elseif strcmp(meanorsum, 'sum_weighted')
+    c_eval('sr? = pdist.solidangle.data;',1:length(anglevec));  
+    c_eval('sr?(isnan(dist?)) = NaN;',1:length(anglevec));
+    c_eval('dist? =  squeeze(irf.nansum(irf.nansum(dist?.*sr?,4),3));',1:length(anglevec));
+    c_eval('sumsr? =  squeeze(irf.nansum(irf.nansum(sr?,4),3));',1:length(anglevec));
+    c_eval('dist? = dist?./sumsr?;',1:length(anglevec));
 end    
 %paddistarr = cat(3,dist15,dist30,dist45,dist60,dist75,dist90,dist105,dist120,dist135,dist150,dist165,dist180);
 paddistarr = dist1;
@@ -300,6 +306,9 @@ if (isa(varargin{1},'PDist') && length(tint)==2)
     paddist.units = pdist.units;
     paddist.species = pdist.species;
     paddist.ancillary = varargin{1}.ancillary;
+    paddist.ancillary.meanorsum = meanorsum;
+    paddist.ancillary.delta_pitchangle_minus = dangle(1:end)*0.5;
+    paddist.ancillary.delta_pitchangle_plus = dangle(1:end)*0.5;
 end
 
 end
