@@ -369,7 +369,7 @@ dAmp = [dAmp1 dAmp2 dAmp3 dAmp4];
             % opcodes in the list
             if (opcode<10 && opcode>0) || ((opcode>=11 && opcode<=14) && any(opcode-10==p_list)) || (~isempty(nsops_errlist) && any(opcode==nsops_errlist))
               irf_log('proc',['blanking nsops interval. opcode:' num2str(opcode) ' probe:' num2str(probepair)]);
-              res = caa_rm_blankt(res,nsops(j,:));
+              spinFits.diEs = caa_rm_blankt(spinFits.diEs,nsops(j,:));
             end
           end
         end
