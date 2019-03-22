@@ -10,6 +10,10 @@ if nargin<=2
     endRow = inf;
 end
 
+[FILEPATH,NAME,EXT] = fileparts(filename);
+fName = [NAME EXT];
+geo.name = fName;
+
 %% Format for each line of text:
 %   column1: text (%s)
 %	column2: double (%f)
