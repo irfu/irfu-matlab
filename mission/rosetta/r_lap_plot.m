@@ -103,7 +103,7 @@ else % go on
                     if(lb(1) == 'q')
                         % Fixed range [0,1] for qval
                         irf_zoom(hca,'y',[-0.05 1.05]);
-                    else
+                    elseif any(~isnan(pdat))
                         % For other put 5% margins on y axis
                         range = max(pdat)-min(pdat);
                         mid = (max(pdat)+min(pdat))/2;
