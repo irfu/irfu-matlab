@@ -90,6 +90,7 @@ else % go on
                     case 'p', l = 'frequency [Hz]';
                     case 'e', l = [l ' [mV/m]'];
                     case 's'
+                    case 'c'
                     otherwise, error('eee')
                 end
                 if l(1)=='f' % PSD

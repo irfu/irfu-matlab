@@ -79,7 +79,7 @@ switch NAME((end-6):(end-4))
                                 elseif(flagP==3)
                                     if(flagIV == 'E')
                                         fmt = '%s %f %f %f %f';
-                                        fields = {'obt','e12','qe12','g'};
+                                        fields = {'obt','e12','config','g'};
                                     else
                                         fmt = '%s %f %f %f %f %f';
                                         if flagIV == 'V', fields = {'obt','i1','i2','v12','g'};
