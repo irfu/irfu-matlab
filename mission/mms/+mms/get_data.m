@@ -399,18 +399,23 @@ switch Vr.inst
             flux{ipitchangle,inode} = get_ts('scalar');            
           end
         end
+        if isempty(flux{1,1})
+          res = [];          
+          return
+        end
         paddistarr = [flux{1,1}.data flux{1,2}.data flux{1,3}.data flux{1,4}.data flux{2,4}.data flux{2,3}.data flux{2,2}.data flux{2,1}.data];
         d_angle = 180/16;
         pitchangle_edges_edi = [0 1 2 3 4 12 13 14 15 16]*d_angle;
         pitchangle_centers_edi = [0.5 1.5 2.5 3.5 12.5 13.5 14.5 15.5]*d_angle;
         E_edi = 500;
-        dE_edi = E_edi*0.1*0.5;
+        dE_edi = E_edi*0.1*0.5; % width is 10% of center energy 
         E_edges = E_edi + dE_edi*[-1 1];
-        res = PDist(flux{1}.time,reshape(paddistarr,[size(paddistarr,1),1,size(paddistarr,2)]),'pitchangle',E_edi,pitchangle_centers_edi);
+        res = PDist(flux{1}.time,reshape(paddistarr,[size(paddistarr,1),1,size(paddistarr,2)]),'pitchangle',E_edi*ones(flux{1}.length,1),pitchangle_centers_edi);
         res.units = flux{1}.units;
         res.siConversion = flux{1}.siConversion;
         res.species = 'electrons';
-        res.name = flux{1}.name;
+        tmp_name = pref; tmp_name(14)='*'; tmp_name = strrep(tmp_name,'180','*'); tmp_name = strrep(tmp_name,'0','*');
+        res.name = tmp_name;
         % ancillary data
         res.ancillary.dt_minus = 0.5*(flux{1}.time(2)-flux{1}.time(1));
         res.ancillary.dt_plus = 0.5*(flux{1}.time(2)-flux{1}.time(1));
@@ -421,8 +426,8 @@ switch Vr.inst
         res.ancillary.delta_energy_minus = dE_edi;
         res.ancillary.delta_energy_plus = dE_edi;
         res.ancillary.pitchangle_edges = pitchangle_edges_edi;  
-        res.ancillary.delta_pitchangle_minus = d_angle*ones(1,8);
-        res.ancillary.delta_pitchangle_plus = d_angle*ones(1,8);
+        res.ancillary.delta_pitchangle_minus = d_angle*ones(1,8)*0.5;
+        res.ancillary.delta_pitchangle_plus = d_angle*ones(1,8)*0.5;
       case 'Flux-amb-pm'
     end    
   case 'fpi'
