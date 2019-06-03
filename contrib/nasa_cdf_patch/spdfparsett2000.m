@@ -13,6 +13,8 @@ function out = SPDFPARSETT2000(tt2000)
 %      2: yyyymmddhhmmss, e.g., "20100101120000"
 %      3: yyyy-mm-ddThh:mm:ss.mmmuuunnn, e.g., "2010-01-01T12:00:00.000000000"
 %         where mmmuuunnn is for milliseconds, microseconds and nanoseconds.
+%      4: yyyy-mm-ddThh:mm:ss.mmmuuunnnZ, e.g., "2010-01-01T12:00:00.000000000Z"
+%         where mmmuuunnn is for milliseconds, microseconds and nanoseconds.
 %
 %   Examples:
 %

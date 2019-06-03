@@ -11,7 +11,9 @@ function out = SPDFPARSEEPOCH(epoch)
 %      0: dd-mmm-yyyy hh:mm:ss.mmm, e.g., "01-JAN-2010 12:00:00.000"
 %      1: yyyymmdd.ddddddd, e.g., "20100101.1200000"
 %      2: yyyymmddhhmmss, e.g., "20100101120000"
-%      3: yyyy-mm-ddThh:mm:ss.mmm, e.g., "2010-01-01T12:00:00.000"
+%      3: yyyy-mm-ddThh:mm:ss.mmmZ, e.g., "2010-01-01T12:00:00.000Z"
+%         where mmm is milliseconds.
+%      4: yyyy-mm-ddThh:mm:ss.mmm, e.g., "2010-01-01T12:00:00.000"
 %         where mmm is milliseconds.
 %
 %   Examples:

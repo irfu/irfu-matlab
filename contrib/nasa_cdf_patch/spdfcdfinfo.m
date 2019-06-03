@@ -86,10 +86,10 @@ function info = spdfcdfinfo(filename, varargin)
 %   will be retrieved. A null is filled if a variable is not found in the CDF.
 %
 %   info = spdfcdfinfo (FILE, 'VARSTRUCT', TF);
-%   The returned Variable field can also be preseted in a struture form, if 
+%   The returned Variable field can also be presented in a structure form, if 
 %   the option is provided with a true value.
 %
-%   The struture has the following fields, each one is a cell array.
+%   The structure has the following fields, each one is a cell array.
 %
 %     Name                 A string containing the name of the variable
 %
@@ -114,6 +114,14 @@ function info = spdfcdfinfo(filename, varargin)
 %     VALIDMIN             The VALIDMIN attribute entry value for the variable
 %
 %     VALIDMAX             The VALIDMAX attribute entry value for the variable
+%
+%   info = spdfcdfinfo (FILE, 'VALIDATE', TF);
+%   This is to specify whether the CDF is to be validated when it's open. The
+%   default is NOT to valdate the file so the processing can be faster. There
+%   are two ways to set the data validation: setting the environment variable
+%   CDF_VALIDATE to "yes" outside of the MATLAB environment, or using the
+%   option 'VALIDATE' with true value when calling this module. If a CDF has 
+%   been validated before, there is no need to validate it over and over again.
 %
 %   The "GlobalAttributes" and "VariableAttributes" structures contain a
 %   field for each attribute.  Each field's name corresponds to the name
@@ -206,11 +214,12 @@ info1.Variables = {};
 info1.GlobalAttributes = [];
 info1.VariableAttributes = [];
 info1.LibVersion = '';
-info1.PatchVersion = '3.7.0.0';
+info1.PatchVersion = '3.7.1.0';
 info2.Variables = {};
 info2.VariableAttributes = [];
 args.VarStruct = false;
 args.Variables = {};
+args.Validate = false;
 variables = false;
 
 if (nargin == 0) || (length(strtrim(filename)) == 0)
@@ -226,6 +235,7 @@ else
   % Parse arguments based on their number.
   if (nargin > 0)
     paramStrings = {'variables'
+                    'validate'
                     'varstruct'};
 
     % For each pair
@@ -245,9 +255,6 @@ else
        switch (paramStrings{idx})
          case 'varstruct'
                varstruct = varargin{k + 1};
-               if (numel(varstruct) ~= 1)
-                   msg = 'The "varstruct" value must be a scalar logical.';
-               end
 
                if (islogical(varstruct))
                    args.VarStruct = varstruct;
@@ -255,6 +262,17 @@ else
                    args.VarStruct = logical(varstruct);
                else
                    msg = 'The "varstruct" value must be a scalar logical.';
+               end
+
+         case 'validate'
+               validate = varargin{k + 1};
+
+               if (islogical(validate))
+                   args.Validate = validate;
+               elseif (isnumeric(validate))
+                   args.Validate = logical(validate);
+               else
+                   msg = 'The "validate" value must be a scalar logical.';
                end
 
          case 'variables'
@@ -322,7 +340,7 @@ else
   end
   % Get the attribute, variable, and library details.
 
-  tmp = spdfcdfinfoc(filename, args.VarStruct, args.Variables);
+  tmp = spdfcdfinfoc(filename, args.VarStruct, args.Variables, args.Validate);
 
   if ~variables
     % Process file attributes.
