@@ -66,13 +66,13 @@ else % go on
         case {'L','H','D','W','C','O','P'}
             f = fieldnames(data);
             % Here we list what not to plot:
-            if((mesType == 'W' | flagIV =='N') & nargin > 1)
+            if((mesType == 'W' || flagIV =='N') && nargin > 1)
                 % Then plot all qvals with ASW data
                 fields = setdiff(f,{'f','name','t','tstop','obt','obtstop','qval','g'},'stable');
             else
                 fields = setdiff(f,{'f','name','t','tstop','obt','obtstop','qne','qiphs','qui','qte1','qte2','qvphk','qval','g'},'stable');
             end
-            fields = [fields; {'g'}]  % Adds qflag as last panel
+            fields = [fields; {'g'}];  % Adds qflag as last panel
             nPanels = length(fields);
             
             h = irf_plot(nPanels);
@@ -89,7 +89,8 @@ else % go on
                     case 'g', l = 'qflag';
                     case 'p', l = 'frequency [Hz]';
                     case 'e', l = [l ' [mV/m]'];
-                    case 's';
+                    case 's'
+                    case 'c'
                     otherwise, error('eee')
                 end
                 if l(1)=='f' % PSD
@@ -103,7 +104,7 @@ else % go on
                     if(lb(1) == 'q')
                         % Fixed range [0,1] for qval
                         irf_zoom(hca,'y',[-0.05 1.05]);
-                    else
+                    elseif any(~isnan(pdat))
                         % For other put 5% margins on y axis
                         range = max(pdat)-min(pdat);
                         mid = (max(pdat)+min(pdat))/2;
@@ -135,7 +136,7 @@ else % go on
                     data.f = desc.di;
                     data.f_label = 'v [V]';
                     data.p_label = 'i [nA]';
-                    [hca,hcb] = irf_spectrogram(hca,data);
+                    [hca,~] = irf_spectrogram(hca,data);
                     title(hca,data.name,'interpreter','none')
                     p = get(hca,'Position');
                     

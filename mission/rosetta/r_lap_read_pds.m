@@ -34,7 +34,7 @@ switch NAME((end-6):(end-4))
         freq = load([ FILEPATH filesep frFile EXT]);
         fmt = ['%s %s %f %f %d %f %f' repmat(' %f',1,length(freq))];
     otherwise       
-        fSuf = NAME((end-2):end)
+        fSuf = NAME((end-2):end);
         switch fSuf
             case 'ASW'
                 fmt = '%s %f %f %f %f %f %f %f %f %f %f %f %f %f %d';
@@ -56,7 +56,7 @@ switch NAME((end-6):(end-4))
                     case 'P'  % Means NPL data  
                         flagP = 3; % Given in source variable
                     case {'1','2','3'}
-                        flagP = str2double(flagPs)
+                        flagP = str2double(flagPs);
                     otherwise, error('unrecognized Probe')
                 end
                 mesType = NAME(end);
@@ -79,7 +79,7 @@ switch NAME((end-6):(end-4))
                                 elseif(flagP==3)
                                     if(flagIV == 'E')
                                         fmt = '%s %f %f %f %f';
-                                        fields = {'obt','e12','qe12','g'};
+                                        fields = {'obt','e12','config','g'};
                                     else
                                         fmt = '%s %f %f %f %f %f';
                                         if flagIV == 'V', fields = {'obt','i1','i2','v12','g'};
@@ -189,4 +189,5 @@ switch fSuf
                     data.(fields{i}) = C{i};
                 end
         end
+end
 end

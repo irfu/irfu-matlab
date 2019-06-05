@@ -10,7 +10,7 @@ if nargin<=2
     endRow = inf;
 end
 
-[FILEPATH,NAME,EXT] = fileparts(filename);
+[~,NAME,EXT] = fileparts(filename);
 fName = [NAME EXT];
 geo.name = fName;
 
@@ -32,8 +32,7 @@ geo.name = fName;
 %   column15: double (%f)
 %	column16: double (%f)
 % For more information, see the TEXTSCAN documentation.
-formatSpec = '%s%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%[^\n\r]';
-
+formatSpec = ['%s', repmat('%f',[1,15]), '%[^\n\r]'];
 %% Open the text file.
 fileID = fopen(filename,'r');
 
@@ -41,12 +40,18 @@ fileID = fopen(filename,'r');
 % This call is based on the structure of the file used to generate this
 % code. If an error occurs for a different file, try regenerating the code
 % from the Import Tool.
-dataArray = textscan(fileID, formatSpec, endRow(1)-startRow(1)+1, 'Delimiter', delimiter, 'TextType', 'string', 'EmptyValue', NaN, 'HeaderLines', startRow(1)-1, 'ReturnOnError', false, 'EndOfLine', '\r\n');
+dataArray = textscan(fileID, formatSpec, endRow(1)-startRow(1)+1, ...
+  'Delimiter', delimiter, 'TextType', 'string', 'EmptyValue', NaN, ...
+  'HeaderLines', startRow(1)-1, 'ReturnOnError', false, ...
+  'EndOfLine', '\r\n');
 for block=2:length(startRow)
     frewind(fileID);
-    dataArrayBlock = textscan(fileID, formatSpec, endRow(block)-startRow(block)+1, 'Delimiter', delimiter, 'TextType', 'string', 'EmptyValue', NaN, 'HeaderLines', startRow(block)-1, 'ReturnOnError', false, 'EndOfLine', '\r\n');
+    dataArrayBlock = textscan(fileID, formatSpec, endRow(block)-startRow(block)+1, ...
+      'Delimiter', delimiter, 'TextType', 'string', 'EmptyValue', NaN, ...
+      'HeaderLines', startRow(block)-1, 'ReturnOnError', false, ...
+      'EndOfLine', '\r\n');
     for col=1:length(dataArray)
-        dataArray{col} = [dataArray{col};dataArrayBlock{col}];
+        dataArray{col} = [dataArray{col}; dataArrayBlock{col}];
     end
 end
 
@@ -76,3 +81,4 @@ geo.ill1 = dataArray{:, 13};
 geo.ill2 = dataArray{:, 14};
 geo.caa = dataArray{:, 15};
 geo.cea = dataArray{:, 16};
+end
