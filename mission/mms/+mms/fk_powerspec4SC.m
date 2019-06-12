@@ -252,8 +252,9 @@ for mm = 1:N+1
 end
 
 powerkmagf(powerkmagf == 0) = NaN;
-powerkmagf = powerkmagf/max(max(powerkmagf));
-powerkmagf(powerkmagf < 1.0e-6) = 1e-6;
+%powerkmagf = powerkmagf/(N+1); % Normalization. This should correspond to FFT PSD when summed over k.
+powerkmagf = powerkmagf/max(max(powerkmagf)); % Normalization to Max value for plotting. 
+%powerkmagf(powerkmagf < 1.0e-6) = 1e-6;
 
 xvec1 = kmagvec;
 yvec1 = W1.f;
@@ -270,7 +271,7 @@ end
 
 powerkperpkpar(powerkperpkpar == 0) = NaN;
 powerkperpkpar = powerkperpkpar/max(max(powerkperpkpar));
-powerkperpkpar(powerkperpkpar < 1.0e-6) = 1e-6;
+%powerkperpkpar(powerkperpkpar < 1.0e-6) = 1e-6;
 
 xvec2 = kmagvec;
 yvec2 = kvec;
@@ -287,7 +288,7 @@ end
 
 powerkxky(powerkxky == 0) = NaN;
 powerkxky = powerkxky/max(max(powerkxky));
-powerkxky(powerkxky < 1.0e-6) = 1e-6;
+%powerkxky(powerkxky < 1.0e-6) = 1e-6;
 
 xvec3 = kvec;
 yvec3 = kvec;
@@ -304,7 +305,7 @@ end
 
 powerkxkz(powerkxkz == 0) = NaN;
 powerkxkz= powerkxkz/max(max(powerkxkz));
-powerkxkz(powerkxkz < 1.0e-6) = 1e-6;
+%powerkxkz(powerkxkz < 1.0e-6) = 1e-6;
 
 xvec4 = kvec;
 yvec4 = kvec;
@@ -321,7 +322,7 @@ end
 
 powerkykz(powerkykz == 0) = NaN;
 powerkykz= powerkykz/max(max(powerkykz));
-powerkykz(powerkykz < 1.0e-6) = 1e-6;
+%powerkykz(powerkykz < 1.0e-6) = 1e-6;
 
 xvec5 = kvec;
 yvec5 = kvec;
@@ -337,7 +338,7 @@ end
 
 powerkxf(powerkxf == 0) = NaN;
 powerkxf = powerkxf/max(max(powerkxf));
-powerkxf(powerkxf < 1.0e-6) = 1e-6;
+%powerkxf(powerkxf < 1.0e-6) = 1e-6;
 
 xvec6 = kvec;
 yvec6 = W1.f;
@@ -353,7 +354,7 @@ end
 
 powerkyf(powerkyf == 0) = NaN;
 powerkyf = powerkyf/max(max(powerkyf));
-powerkyf(powerkyf < 1.0e-6) = 1e-6;
+%powerkyf(powerkyf < 1.0e-6) = 1e-6;
 
 xvec7 = kvec;
 yvec7 = W1.f;
@@ -369,7 +370,7 @@ end
 
 powerkzf(powerkzf == 0) = NaN;
 powerkzf = powerkzf/max(max(powerkzf));
-powerkzf(powerkzf < 1.0e-6) = 1e-6;
+%powerkzf(powerkzf < 1.0e-6) = 1e-6;
 
 xvec8 = kvec;
 yvec8 = W1.f;

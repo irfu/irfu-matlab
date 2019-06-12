@@ -56,6 +56,7 @@ hold(h(1),'on')
 plot(h(1),kfit,yvecs.fkmag*1e-3,'k','linewidth',1)
 hold(h(1),'off')
 axis(h(1),[0 3e-4 0 2])
+caxis(h(1),[-6 0]);
 irf_legend(h(1),strcat('v_{ph} = ',num2str(round(vph/1e3)),'km s^{-1}'),[0.9 0.05],'color','k','fontsize',14)
 set(gcf,'color','w')
 
@@ -66,6 +67,7 @@ ylabel(h(2),'k_{||} (m^{-1})');
 c=colorbar('peer',h(2),'ver');
 ylabel(c,'log_{10} P(k_{\perp},k_{||})/P_{max}');
 colormap('jet');
+caxis(h(2),[-6 0]);
 irf_legend(h(2),'(b)',[0.99 0.99],'color','k','fontsize',14)
 
 pcolor(h(3),xvecs.kxkxky,yvecs.kykxky,log10(Power.Powerkxky));
@@ -79,6 +81,7 @@ ylabel(h(3),'k_{y} (m^{-1})');
 c=colorbar('peer',h(3),'ver');
 ylabel(c,'log_{10} P(k_x,k_y)/P_{max}');
 colormap('jet');
+caxis(h(3),[-6 0]);
 irf_legend(h(3),'(c)',[0.99 0.99],'color','k','fontsize',14)
 
 pcolor(h(4),xvecs.kxkxkz,yvecs.kzkxkz,log10(Power.Powerkxkz));
@@ -92,6 +95,7 @@ ylabel(h(4),'k_{z} (m^{-1})');
 c=colorbar('peer',h(4),'ver');
 ylabel(c,'log_{10} P(k_x,k_z)/P_{max}');
 colormap('jet');
+caxis(h(4),[-6 0]);
 irf_legend(h(4),'(d)',[0.99 0.99],'color','k','fontsize',14)
 
 pcolor(h(5),xvecs.kykykz,yvecs.kzkykz,log10(Power.Powerkykz));
@@ -105,6 +109,7 @@ ylabel(h(5),'k_{z} (m^{-1})');
 c=colorbar('peer',h(5),'ver');
 ylabel(c,'log_{10} P(k_y,k_z)/P_{max}');
 colormap('jet');
+caxis(h(5),[-6 0]);
 irf_legend(h(5),'(e)',[0.99 0.99],'color','k','fontsize',14)
 
 pcolor(h(6),xvecs.kxf,yvecs.fkxf*1e-3,log10(Power.Powerkxf));
@@ -114,6 +119,7 @@ ylabel(h(6),'f (kHz)');
 c=colorbar('peer',h(6),'ver');
 ylabel(c,'log_{10} P(k_x,f)/P_{max}');
 colormap('jet');
+caxis(h(6),[-6 0]);
 irf_legend(h(6),'(f)',[0.99 0.99],'color','k','fontsize',14)
 
 pcolor(h(7),xvecs.kyf,yvecs.fkyf*1e-3,log10(Power.Powerkyf));
@@ -123,6 +129,7 @@ ylabel(h(7),'f (kHz)');
 c=colorbar('peer',h(7),'ver');
 ylabel(c,'log_{10} P(k_y,f)/P_{max}');
 colormap('jet');
+caxis(h(7),[-6 0]);
 irf_legend(h(7),'(g)',[0.99 0.99],'color','k','fontsize',14)
 
 pcolor(h(8),xvecs.kzf,yvecs.fkzf*1e-3,log10(Power.Powerkzf));
@@ -132,4 +139,5 @@ ylabel(h(8),'f (kHz)');
 c=colorbar('peer',h(8),'ver');
 ylabel(c,'log_{10} P(k_z,f)/P_{max}');
 colormap('jet');
+caxis(h(8),[-6 0]);
 irf_legend(h(8),'(h)',[0.99 0.99],'color','k','fontsize',14)
