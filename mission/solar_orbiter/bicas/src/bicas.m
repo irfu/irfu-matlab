@@ -1,4 +1,4 @@
-% errorCode = bicas( varargin )   Main function that launches BICAS.
+% Main MATLAB function that launches BICAS.
 %
 % BICAS = BIAS CAlibration Software
 %
@@ -15,20 +15,22 @@
 % understanding the implementation and information not already present in other documentation text files.
 %
 %
-% ARGUMENTS AND RETURN VALUE
-% ==========================
-% ARGUMENTS: This function expects exactly the CLI arguments submitted to the bash launcher script as a sequence of
-% MATLAB strings. This function therefore expects the arguments defined in the RCS ICD and possibly additional inoffical
-% arguments.
-%
-% RETURN VALUE: errorCode = The error code that is to be passed on to the OS/shell.
-%
+% ARGUMENTS
+% =========
+% varargin: This function expects exactly the CLI arguments submitted to the bash launcher script as a sequence of
+%           MATLAB strings. This function therefore expects the arguments defined in the RCS ICD and possibly additional
+%           inoffical arguments.
 % Notes:
 % - The official parameter syntax for S/W modes must be in agreement with "roc_sw_descriptor.js" as specified by
 %   the RCS ICD.
 % - The parameter syntax may contain additional inofficial parameters, which are useful for development/debugging, but
 %   which are still compatible with the RCS ICD.
 % - The (MATLAB) code ignores but permits the CLI option --log.
+%
+%
+% RETURN VALUE
+% ============
+% errorCode = The error code that is to be passed on to the OS/shell.
 %
 %
 % NOTES
@@ -38,15 +40,15 @@
 % NOTE: This code is designed for MATLAB 2016a (as of 2016-06-02) but may very well work with other
 % versions of MATLAB.
 %
-% IMPLEMENTATION NOTE: This code does not quit/exit using the MATLAB function "quit" since that
-% always exits all of MATLAB which is undesirable when developing in the MATLAB IDE. The function
-% returns the error code to make it possible for the bash wrapper to quit with an exit code instead.
+% IMPLEMENTATION NOTE: This code does not quit/exit using the MATLAB function "quit" since that always exits all of
+% MATLAB which is undesirable when developing code from in the MATLAB IDE. The function returns the error code to make
+% it possible for the bash wrapper to quit with an exit code instead.
 %
-% IMPLEMENTATION NOTE: The RCS ICD specifies tightly what should go to stdout. BICAS
+% IMPLEMENTATION NOTE: The RCS ICD specifies what should go to stdout. BICAS
 % 1) prints all log messages to stdout, and
 % 2) prints all messages intended for BICAS' final, actual stdout (as produced by the bash wrapper) to stdout but with a
 % prefix so they can be filtered out by the calling wrapper bash script.
-% Reasons: See the bash wrapper script.
+% RATIONALE: See the bash wrapper script.
 %
 %
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
@@ -62,6 +64,7 @@ function errorCode = bicas( varargin )
 %
 % PROPOSAL: Rename to bicas.main (+bicas/main.m).
 %   NOTE: Function already has an internal function named "main".
+%
 % PROPOSAL: Put a summarized version of CLI syntax in "bicas --help" (somethinger easier that the S/W descriptor).
 %    PRO: Useful when S/W descriptor becomes big and complex.
 %
@@ -70,6 +73,8 @@ function errorCode = bicas( varargin )
 % PROPOSAL: Separate function for parsing arguments. Returns structure.
 %   PRO: Automatic test code.
 %   CON: Can not give proper error for some types of bad arguments.
+%   TODO-DECISION: How handle relationship with proposed code for printing the CLI syntax (print_help)?
+%
 % -------- OLD --------
 % NOTE: Implementation of the parsing of CLI arguments is problematic for when processing s/w mode.
 %   PROBLEM: Present, ICD & inofficial options mixed: The s/w mode argument influences which succeeding arguments are
@@ -103,9 +108,10 @@ function errorCode = bicas( varargin )
 
 
 
-% Clear any previous instance of global variables (as early as possible).
+% Clear any previous instance of global variables
+% -----------------------------------------------
 % This is useful to avoid mistakenly using a previously initialized version of CONSTANTS or SETTINGS when the
-% initialization has failed and when developing in MATLAB.
+% initialization has failed and when developing in MATLAB. Must be done as early as possible in the execution.
 clear -global CONSTANTS SETTINGS
 
 [ERROR_TYPES_INFO, REQUIRED_MATLAB_VERSION, INOFFICIAL_ARGUMENTS_SEPARATOR] = bicas.error_safe_constants();
@@ -116,25 +122,25 @@ try
 
     errorCode = main(REQUIRED_MATLAB_VERSION, ERROR_TYPES_INFO, INOFFICIAL_ARGUMENTS_SEPARATOR, varargin);
 
-catch exception1
+catch Exception1
     %================================================================
     % CASE: Caught an error in the regular execution of the software
     %================================================================
-    
+
     try
         irf.log('critical', 'Main function caught an exception. Beginning error handling.');   % Print to stdout.
-        fprintf(2, 'exception1.identifier = "%s"\n', exception1.identifier);    % Print to stderr.        
-        fprintf(2, 'exception1.message    = "%s"\n', exception1.message);       % Print to stderr.
-        
+        fprintf(2, 'exception1.identifier = "%s"\n', Exception1.identifier);    % Print to stderr.
+        fprintf(2, 'exception1.message    = "%s"\n', Exception1.message);       % Print to stderr.
+
         %=================================================================================
         % Use MATLAB error message identifiers to identify one or multiple "error types".
         %=================================================================================
-        msgIdentifierParts = strsplit(exception1.identifier, ':');
+        msgIdentifierParts = strsplit(Exception1.identifier, ':');
         errorTypesList = msgIdentifierParts(ERROR_TYPES_INFO.isKey(msgIdentifierParts));    % Cell array of error types (strings) only.
         if isempty(errorTypesList)
             errorTypesList = {'UntranslatableErrorMsgId'};
         end
-        
+
         %===================================
         % Print all identified error types.
         %===================================
@@ -144,39 +150,39 @@ catch exception1
         end
         % NOTE: Choice - Uses the last part of the message ID for determining error code to return.
         errorCode = ERROR_TYPES_INFO(errorTypesList{end}).code;
-        
+
         %======================
         % Print the call stack
         %======================
-        callStackLength = length(exception1.stack);
+        callStackLength = length(Exception1.stack);
         fprintf(2, 'MATLAB call stack:\n');    % Print to stderr.
         if (~isempty(callStackLength))
             for i=1:callStackLength
-                stackCall = exception1.stack(i);
+                stackCall = Exception1.stack(i);
                 temp      = strsplit(stackCall.file, filesep);
                 filename  = temp{end};
-                
+
                 fprintf(2, '    %-25s %-55s row %i,\n', [filename, ','], [stackCall.name, ','], stackCall.line);
             end
         end
-        
 
-        
-        fprintf(2, 'Exiting MATLAB application with error code %i.\n', errorCode);        % Print to stderr.        
+
+
+        fprintf(2, 'Exiting MATLAB application with error code %i.\n', errorCode);        % Print to stderr.
         return
-        
-    catch exception2    % Deliberately use different variable name to distinguish the exception from the previous one.
+
+    catch Exception2    % Deliberately use different variable name to distinguish the exception from the previous one.
         %========================================================
         % CASE: Caught an error in the regular error handling(!)
         %========================================================
 
         % NOTE: Only use very, very error-safe code here.
         fprintf(2, 'Error in the MATLAB code''s error handling.\n');   % Print to stderr.
-        fprintf(2, 'exception2.identifier = "%s"\n', exception2.identifier);          % Print to stderr.        
-        fprintf(2, 'exception2.message    = "%s"\n', exception2.message);             % Print to stderr.
-        
+        fprintf(2, 'exception2.identifier = "%s"\n', Exception2.identifier);          % Print to stderr.
+        fprintf(2, 'exception2.message    = "%s"\n', Exception2.message);             % Print to stderr.
+
         errorCode = ERROR_TYPES_INFO('MatlabCodeErrorHandlingError').code;             % Use hardcoded constant for this error?!!
-        
+
         fprintf(2, 'Exiting MATLAB application with error code %i.\n', errorCode);    % Print to stderr.
         return
     end
@@ -218,7 +224,7 @@ fprintf(1, 'Using MATLAB, version %s.\n', matlabVersionString);
 %===================================================================================================================
 irf('check_path');
 irf('check_os');              % Maybe not strictly needed.
-irf('matlab');                % Maybe not strictly needed.
+irf('matlab');
 irf('cdf_leapsecondstable');
 irf('version')                % Print e.g. "irfu-matlab version: 2017-02-21,  v1.12.6".
 irf.log('notice')             % Set initial log level value until it is later overridden by the config value.
@@ -297,7 +303,7 @@ IcdOptionsConfigMap('config_file_path')    = struct('optionHeader', CONFIG_OPTIO
 %==============================================================================================================
 % Find the --config option among the ICD arguments in order to load the config file before parsing
 % the remaining ICD CLI arguments.
-% 
+%
 % NOTE: Implementation assumes that --config option is optional.
 % ASSUMES: ICD CLI syntax implies that the option header can only be found at even index (2,4, ...) positions.
 %==============================================================================================================
@@ -362,7 +368,7 @@ end
 %============================================
 SETTINGS.set_preexisting_from_strings(CliSettingsVsMap);    % Modify SETTINGS
 SETTINGS.make_read_only();
-% CASE: SETTINGS has now been finalized and is read-only after this (assertion).
+% CASE: SETTINGS has now been finalized and is read-only (by assertion) after this.
 
 
 
@@ -382,7 +388,7 @@ DataManager = bicas.data_manager();    % NOTE: Requires CONSTANTS (not necessari
 %=====================================================================
 if (length(icdCliArgumentsList) < 1)
     error('BICAS:CLISyntax', 'Not enough arguments found.')
-    
+
 elseif (strcmp(icdCliArgumentsList{1}, '--version'))
     %=====================
     % CASE: Print version
@@ -390,7 +396,7 @@ elseif (strcmp(icdCliArgumentsList{1}, '--version'))
     % IMPLEMENTATION NOTE: Parse CLI arguments for the syntax check, even if does not use the results.
     IcdOptionValuesMap = bicas.utils.parse_CLI_options(icdCliArgumentsList(2:end), IcdOptionsConfigMap);
     print_version(DataManager)
-    
+
 elseif (strcmp(icdCliArgumentsList{1}, '--identification'))
     %============================
     % CASE: Print s/w descriptor
@@ -398,7 +404,7 @@ elseif (strcmp(icdCliArgumentsList{1}, '--identification'))
     % IMPLEMENTATION NOTE: Parse CLI arguments for the syntax check, even if does not use the results.
     IcdOptionValuesMap = bicas.utils.parse_CLI_options(icdCliArgumentsList(2:end), IcdOptionsConfigMap);
     print_identification(DataManager)
-    
+
 elseif (strcmp(icdCliArgumentsList{1}, '--help'))
     %==================
     % CASE: Print help
@@ -419,9 +425,9 @@ else
             'Can not interpret first argument "%s" as a S/W mode (or any other legal first argument).', ...
             icdCliArgumentsList{1});
     end
-    
-    
-    
+
+
+
     %==============================================================================================================
     % Configure requirements on (remaining) (ICD) CLI arguments depending on the S/W mode
     % -----------------------------------------------------------------------------------
@@ -434,48 +440,48 @@ else
     IcdOptionsConfigMap('output_dir') = struct('optionHeader', '--output', 'occurrenceRequirement', '1', 'nValues', 1);
     inputsInfoList = ExtendedSwModeInfo.inputs;
     inputPdidsList = {};                  % List of keys used for input files.
-    
+
     for iInput = 1:length(inputsInfoList)    % For every input dataset...
         pdid = inputsInfoList{iInput}.PDID;
-        
+
         % Configure one option.
         OptionConfig = [];
         OptionConfig.optionHeader          = ['--', inputsInfoList{iInput}.OPTION_HEADER_SH];
         OptionConfig.occurrenceRequirement = '1';
         OptionConfig.nValues               = 1;
-        
+
         % ASSERTION
         if IcdOptionsConfigMap.isKey(pdid)
             error('BICAS:Assertion:IllegalCodeConfiguration', 'Dataset ID used as option identifier conflicts with other option identifier. Bad hardcoding.')
         end
         IcdOptionsConfigMap(pdid) = OptionConfig;
-        
+
         inputPdidsList{end+1} = pdid;
     end
-    
+
     %================================
     % Parse ICD CLI arguments (bulk)
     %================================
     IcdOptionValuesMap = bicas.utils.parse_CLI_options(icdCliArgumentsList(2:end), IcdOptionsConfigMap);
-    
-    
-    
+
+
+
     % Extract the input files (datasets) from CLI arguments.
     InputFilesMap = containers.Map;
     for iPdid = 1:length(inputPdidsList)
         valuesListsLists = IcdOptionValuesMap(inputPdidsList{iPdid});
         InputFilesMap(inputPdidsList{iPdid}) = valuesListsLists{1}{1};   % Extract subset of parsed arguments.
     end
-    
+
     % Extract the output directory from CLI arguments.
     valuesListsLists = IcdOptionValuesMap('output_dir');
     outputDir = bicas.utils.get_abs_path(valuesListsLists{1}{1});
-    
+
     %==================
     % EXECUTE S/W MODE
     %==================
     bicas.execute_sw_mode( DataManager, ExtendedSwModeInfo.CLI_PARAMETER, InputFilesMap, outputDir )
-    
+
 end    % main
 
 
@@ -524,9 +530,9 @@ end
 
 
 
-% Print "help text".
-% 
-% NOTE: Useful if this can be used for copy-pasting into RCS User Manual (RUM).
+% Print user-readable "help text".
+%
+% NOTE: Useful if the output printed by this function can be used for copy-pasting into RCS User Manual (RUM).
 %
 function print_help(ERROR_TYPES_INFO, DataManager)
 %
@@ -547,7 +553,7 @@ errorCodesList = cellfun(@(x) (x.code), ERROR_TYPES_INFO.values);   % Array of (
 errorTypesInfoList = ERROR_TYPES_INFO.values;      % Cell array of structs (unsorted).
 errorTypesInfoList = errorTypesInfoList(iSort);    % Cell array of structs sorted by error code.
 bicas.stdout_printf('\nError codes:\n')
-for i = 1:numel(errorTypesInfoList)    
+for i = 1:numel(errorTypesInfoList)
     bicas.stdout_printf('   %3i = %s\n', errorTypesInfoList{i}.code, errorTypesInfoList{i}.description)
 end
 

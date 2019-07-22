@@ -4,7 +4,11 @@ classdef dm_utils
 %
 % dm_utils = data_manager utilities
 %
-% SPR = Samples per record
+%
+% TERMINOLOGY
+% ===========
+% SPR = Samples Per (CDF-like) Record
+%
 %
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
 % First created 2016-10-10
@@ -617,7 +621,7 @@ classdef dm_utils
                 %                            <V01_ROC-SGSE_L2R_RPW-LFR-SURV-CWF>.BIAS_MODE_BIAS1_ENABLED
                 % Long variable size string: (90,90,2048)
                 %======================================================
-                outputStr = sprintf('%-46s (%-10s): #Us=%5d (%-16s) %s', variableName, sizeStr, nUniqueValues, nanStr, valuesStr);
+                outputStr = sprintf('%-61s (%-10s): #Us=%5d (%-16s) %s', variableName, sizeStr, nUniqueValues, nanStr, valuesStr);
                 
                 irf.log('n', outputStr)
             else

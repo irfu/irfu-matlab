@@ -21,7 +21,7 @@
 %
 % ARGUMENTS
 % =========
-% cliArgumentsList             : 1D cell array of strings.
+% cliArgumentsList             : 1D cell array of strings representing a sequence of CLI arguments.
 % OptionsConfigMap             : containers.Map
 %    <keys>                    : Option ID.
 %    <values>                  : Struct. Information about each specified option (syntax).
@@ -45,7 +45,7 @@
 %
 %
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
-% First created 2016-06-02, reworked 2017-02-09
+% First created 2016-06-02, reworked 2017-02-09.
 %
 function OptionValuesMap = parse_CLI_options(cliArgumentsList, OptionsConfigMap)
 %
