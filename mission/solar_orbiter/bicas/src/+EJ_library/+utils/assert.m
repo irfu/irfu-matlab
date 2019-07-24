@@ -43,19 +43,19 @@
 %
 classdef assert
 % TODO-DECISION: Use assertions on (assertion function) arguments internally?
-% PROPOSAL: Struct with minimum set of fieldnames.
 % PROPOSAL: isvector, iscolumnvector, isrowvector.
 % PROPOSAL: Add argument for name of argument so that can print better error messages.
 % PROPOSAL: Optional error message (string) as last argument to ~every method.
 %   CON: Can conflict with other string arguments.
 %       Ex: Method "struct".
-%       PROPOSAL: 
+% PROPOSAL: Optional error message identifier as second-last argument to ~every method (see "error").
+%   CON: Can conflict with other string arguments.
+%
 % PROPOSAL: Assertion for checking that multiple variables have same size in specific dimensions/indices.
 %   PROPOSAL: Same dimensions in all dimensions except those specified.
 %       PRO: Better handling of "high dimensions to infinity".
 %   PROPOSAL: Check on all fields in struct.
 %       Ex: SSL (+KVPL?)
-%       Ex: 
 %
 % PROPOSAL: Redefine class as collection of standardized non-trivial "condition functions", used by an "assert" class.
 % PROPOSAL: Have methods return a true/false value for assertion result. If a value is returned, then raise no assertion error.
@@ -67,6 +67,9 @@ classdef assert
 %        errors.
 %   PRO: Can combine multiple assertion conditions into one assertion.
 %       Ex: assert(<castring> || <struct>)
+%
+% PROPOSAL: Static variable for error message identifier.
+%   PRO: Can set differently in BICAS.
 
     methods(Static)
         

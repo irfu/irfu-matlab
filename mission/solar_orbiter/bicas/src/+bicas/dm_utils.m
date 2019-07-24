@@ -159,24 +159,33 @@ classdef dm_utils
 
 
 
-        function tt2000 = ACQUISITION_TIME_to_tt2000(ACQUISITION_TIME)
+        
+        function tt2000 = ACQUISITION_TIME_to_tt2000(ACQUISITION_TIME, ACQUISITION_TIME_EPOCH_UTC)
         % Convert time in from ACQUISITION_TIME to tt2000 which is used for Epoch in CDF files.
         % 
-        % NOTE: t_tt2000 is in int64.
-        % NOTE: ACQUSITION_TIME can not be negative since it is uint32.
+        % 
+        %
+        % ARGUMENTS
+        % =========
+        % ACQUSITION_TIME            : NOTE: Can be negative since it is uint32.
+        % ACQUISITION_TIME_EPOCH_UTC : Numeric row vector. The time in UTC at which ACQUISITION_TIME is [0,0] as
+        %                              Year-month-day-hour-minute-second-millisecond-mikrosecond(0-999)-nanoseconds(0-999)
+        %
+        % RETURN VALUE
+        % ============
+        % tt2000 : NOTE: int64
         
-            global SETTINGS
-            
             bicas.dm_utils.assert_ACQUISITION_TIME(ACQUISITION_TIME)
             
             ACQUISITION_TIME = double(ACQUISITION_TIME);
             atSeconds = ACQUISITION_TIME(:, 1) + ACQUISITION_TIME(:, 2) / 65536;   % at = ACQUISITION_TIME
-            tt2000 = spdfcomputett2000(SETTINGS.get_fv('ACQUISITION_TIME_EPOCH_UTC')) + int64(atSeconds * 1e9);   % NOTE: spdfcomputett2000 returns int64 (as it should).
+%             tt2000 = spdfcomputett2000(SETTINGS.get_fv('ACQUISITION_TIME_EPOCH_UTC')) + int64(atSeconds * 1e9);   % NOTE: spdfcomputett2000 returns int64 (as it should).
+            tt2000 = spdfcomputett2000(ACQUISITION_TIME_EPOCH_UTC) + int64(atSeconds * 1e9);   % NOTE: spdfcomputett2000 returns int64 (as it should).
         end
         
         
         
-        function ACQUISITION_TIME = tt2000_to_ACQUISITION_TIME(tt2000)
+        function ACQUISITION_TIME = tt2000_to_ACQUISITION_TIME(tt2000, ACQUISITION_TIME_EPOCH_UTC)
         % Convert from tt2000 to ACQUISITION_TIME.
         %
         % t_tt2000 : Nx1 vector. Tequired to be int64 like the real zVar Epoch.
@@ -189,7 +198,8 @@ classdef dm_utils
             bicas.dm_utils.assert_Epoch(tt2000)
 
             % NOTE: Important to type cast to double because of multiplication
-            atSeconds = double(int64(tt2000) - spdfcomputett2000(SETTINGS.get_fv('ACQUISITION_TIME_EPOCH_UTC'))) * 1e-9;    % at = ACQUISITION_TIME
+%             atSeconds = double(int64(tt2000) - spdfcomputett2000(SETTINGS.get_fv('ACQUISITION_TIME_EPOCH_UTC'))) * 1e-9;    % at = ACQUISITION_TIME
+            atSeconds = double(int64(tt2000) - spdfcomputett2000(ACQUISITION_TIME_EPOCH_UTC)) * 1e-9;    % at = ACQUISITION_TIME
             
             % ASSERTION: ACQUISITION_TIME must not be negative.
             if any(atSeconds < 0)
@@ -208,9 +218,10 @@ classdef dm_utils
 
 
         function [iFirstList, iLastList] = find_sequences(varargin)
-        % For a non-empty set of column vectors, find all subsequences of continuously constant values in all the vectors.
+        % For a non-empty set of COLUMN vectors, find all subsequences of continuously constant values in all the vectors.
         % Useful for finding continuous sequences of (CDF) records with identical settings.
         % NOTE: NaN counts as equal to itself.
+        % NOTE: size([]) = 0x0 ==> Not column vector
         %
         % ARGUMENTS
         % ==================
@@ -218,24 +229,28 @@ classdef dm_utils
         %                           size 0xN). Does not have to be numeric as long as isequaln can handle it.
         % iFirst, iLast           : Vectors with indices to the first and last index of each sequence.
         
-            % ASSERTIONS & variable extraction
+            % ASSERTION: Must be at least on argument.
             if isempty(varargin)
                 error('BICAS:dm_utils:Assertion:IllegalArgument', 'There are no vectors to look for sequences in.')
             end
-            nRecords = size(varargin{1}, 1);
+            
+            nRows = size(varargin{1}, 1);
+            
             for kArg = 1:length(varargin)
-                if ~iscolumn(varargin{kArg}) || nRecords ~= size(varargin{kArg}, 1)
-                    error('BICAS:dm_utils:Assertion:IllegalArgument', 'varargins are not all same-size column vectors.')
+                if ~iscolumn(varargin{kArg}) || nRows ~= size(varargin{kArg}, 1)
+                    error('BICAS:dm_utils:Assertion:IllegalArgument', 'varargins are not all SAME-SIZE COLUMN vectors.')
                 end
             end                
+            
+            
             
             iFirstList = [];
             iLastList  = [];
             iFirst = 1;
             iLast = iFirst;
-            while iFirst <= nRecords
+            while iFirst <= nRows
                 
-                while iLast+1 <= nRecords       % For as long as there is another row...
+                while iLast+1 <= nRows       % For as long as there is another row...
                     foundLast = false;
                     for kArg = 1:length(varargin)
                         if ~isequaln(varargin{kArg}(iFirst), varargin{kArg}(iLast+1))    % NOTE: Use "isequaln" that treats NaN as any other value.
@@ -332,14 +347,16 @@ classdef dm_utils
         % Convert time series zVariable (column) equivalent to converting N-->1 samples/record, assuming time increments
         % with frequency in each snapshot.
         %
-        % oldTt2000  : Nx1 vector.
-        % newTt2000  : Nx1 vector. Like oldTt2000 but each single time (row) has been replaced by a constantly
-        %              incrementing sequence of times (rows). Every such sequence begins with the original value, has
-        %              length nSpr with frequency freqWithinRecords(i).
-        %              NOTE: There is no check that the entire sequence is monotonic. LFR data can have snapshots (i.e.
-        %              snapshot records) that overlap in time!
-        % nSpr                    : Positive integer. Scalar. Number of values/samples per record (SPR).
-        % freqWithinRecords  : Nx1 vector. Frequency of samples within a subsequence (CDF record). Unit: Hz.
+        % ARGUMENTS AND RETURN VALUE
+        % ==========================
+        % oldTt2000         : Nx1 vector.
+        % nSpr              : Positive integer. Scalar. Number of values/samples per record (SPR).
+        % freqWithinRecords : Nx1 vector. Frequency of samples within a subsequence (CDF record). Unit: Hz.
+        % newTt2000         : Nx1 vector. Like oldTt2000 but each single time (row) has been replaced by a constantly
+        %                     incrementing sequence of times (rows). Every such sequence begins with the original value,
+        %                     has length nSpr with frequency freqWithinRecords(i).
+        %                     NOTE: There is no check that the entire sequence is monotonic. LFR data can have snapshots
+        %                           (i.e. snapshot records) that overlap in time!
             
         % PROPOSAL: Turn into more generic function, working on number sequences in general.
         % PROPOSAL: N_sequence should be a column vector.
@@ -387,12 +404,18 @@ classdef dm_utils
         
         
         
-        function ACQUISITION_TIME_2 = convert_N_to_1_SPR_ACQUISITION_TIME(  ACQUISITION_TIME_1, nSpr, freqWithinRecords  )
+        function ACQUISITION_TIME_2 = convert_N_to_1_SPR_ACQUISITION_TIME(  ACQUISITION_TIME_1, nSpr, freqWithinRecords, ACQUISITION_TIME_EPOCH_UTC )
         % Function intended for converting ACQUISITION_TIME (always one time per record) from many samples/record to one
         % sample/record. See convert_N_to_1_SPR_Epoch which is analogous.
         % 
-        % ACQUISITION_TIME_1 : Nx2 vector.
-        % ACQUISITION_TIME_2 : Nx2 vector.
+        % ARGUMENTS AND RETURN VALUES
+        % ===========================
+        % ACQUISITION_TIME_1         : Nx2 vector.
+        % freqWithinRecords          : Nx2 vector.
+        % ACQUISITION_TIME_2         : Nx2 vector.
+        % ACQUISITION_TIME_EPOCH_UTC : UTC as 1x9 row vector.
+        %
+        % NOTE: Theoretically, the function should be independent of the exact value of ACQUISITION_TIME_EPOCH_UTC.
 
         % Command-line algorithm "test code":
         % clear; t_rec = [1;2;3;4]; f = [5;1;5;20]; N=length(t_rec); M=5; I_sample=repmat(0:(M-1), [N, 1]); F=repmat(f, [1,M]); T_rec = repmat(t_rec, [1,M]); T = T_rec + I_sample./F; reshape(T', [numel(T), 1])
@@ -400,16 +423,20 @@ classdef dm_utils
             % ASSERTIONS
             bicas.dm_utils.assert_ACQUISITION_TIME(ACQUISITION_TIME_1)
 
-            tt2000_1 = bicas.dm_utils.ACQUISITION_TIME_to_tt2000(ACQUISITION_TIME_1);
-            tt2000_2 = bicas.dm_utils.convert_N_to_1_SPR_Epoch(tt2000_1, nSpr, freqWithinRecords);
-            ACQUISITION_TIME_2 = bicas.dm_utils.tt2000_to_ACQUISITION_TIME(tt2000_2);
+%           tt2000_1           = bicas.dm_utils.ACQUISITION_TIME_to_tt2000(ACQUISITION_TIME_1);
+            tt2000_1           = bicas.dm_utils.ACQUISITION_TIME_to_tt2000(ACQUISITION_TIME_1, ACQUISITION_TIME_EPOCH_UTC);
+            tt2000_2           = bicas.dm_utils.convert_N_to_1_SPR_Epoch(  tt2000_1,           nSpr, freqWithinRecords);
+            ACQUISITION_TIME_2 = bicas.dm_utils.tt2000_to_ACQUISITION_TIME(tt2000_2,           ACQUISITION_TIME_EPOCH_UTC);
         end
         
         
         
         function DELTA_PLUS_MINUS = derive_DELTA_PLUS_MINUS(freqHz, nSpr)
-        % freqHz  : Frequency column vector in s^-1. Can not handle freqHz=NaN since the output is an integer.
-        % nSpr    : Number of samples/record.
+        %
+        % ARGUMENTS AND RETURN VALUE
+        % ==========================
+        % freqHz           : Frequency column vector in s^-1. Can not handle freqHz=NaN since the output is an integer.
+        % nSpr             : Number of samples/record.
         % DELTA_PLUS_MINUS : Analogous to BIAS zVariable. CDF_INT8=int64. NOTE: Unit ns.
             
             if ~iscolumn(freqHz) || ~isfloat(freqHz) || any(isnan(freqHz))

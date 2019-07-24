@@ -1,10 +1,10 @@
 %
 % Informal non-automated test code.
 %
-function JSON_object_str_TEST
+function JSON_object_str_MTEST
 
 obj = define_descriptor1();
-str = bicas.utils.JSON_object_str(obj, struct('INDENT_SIZE', 4, 'VALUE_POSITION', 15));
+str = bicas.utils.JSON_object_str(obj, 4, 15);
 fprintf('-------------------------------------------\n');
 fprintf(str);
 %bicas.stdout_disp(str);

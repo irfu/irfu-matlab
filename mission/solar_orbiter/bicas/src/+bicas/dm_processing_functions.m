@@ -104,8 +104,9 @@ classdef dm_processing_functions
             
             
             % Define local convenience variables. AT = ACQUISITION_TIME
-            hkAtTt2000  = bicas.dm_utils.ACQUISITION_TIME_to_tt2000(  HkPd.ACQUISITION_TIME );
-            sciAtTt2000 = bicas.dm_utils.ACQUISITION_TIME_to_tt2000( SciPd.ACQUISITION_TIME );
+            ACQUISITION_TIME_EPOCH_UTC = SETTINGS.get_fv('ACQUISITION_TIME_EPOCH_UTC');
+            hkAtTt2000  = bicas.dm_utils.ACQUISITION_TIME_to_tt2000(  HkPd.ACQUISITION_TIME, ACQUISITION_TIME_EPOCH_UTC);
+            sciAtTt2000 = bicas.dm_utils.ACQUISITION_TIME_to_tt2000( SciPd.ACQUISITION_TIME, ACQUISITION_TIME_EPOCH_UTC );
             hkEpoch     = HkPd.Epoch;
             sciEpoch    = SciPd.Epoch;
             
@@ -428,6 +429,8 @@ classdef dm_processing_functions
         function EOutPD = process_PostDC_to_LFR(InputsMap, eoutPDID)
         % Processing function. Convert PostDC to any one of several similar LFR dataset PDs.
         
+            global SETTINGS
+            
             PostDcd = InputsMap('PostDC').pd;
             EOutPD = [];
             
@@ -448,7 +451,8 @@ classdef dm_processing_functions
                     EOutPD.ACQUISITION_TIME = bicas.dm_utils.convert_N_to_1_SPR_ACQUISITION_TIME(...
                         PostDcd.ACQUISITION_TIME, ...
                         nSamplesPerRecord, ...
-                        PostDcd.freqHz  );
+                        PostDcd.freqHz, ...
+                        SETTINGS.get_fv('ACQUISITION_TIME_EPOCH_UTC'));
                     
                     EOutPD.DELTA_PLUS_MINUS = bicas.dm_utils.convert_N_to_1_SPR_redistribute( PostDcd.DELTA_PLUS_MINUS );
                     %EOutPD.L1_REC_NUM       = bicas.dm_utils.convert_N_to_1_SPR_repeat(       PostDcd.L1_REC_NUM,      nSamplesPerRecord);

@@ -157,9 +157,9 @@ classdef constants < handle
             % The RCS ICD, iss2rev2, section 5.3 seems (ambiguous) to imply this regex for S/W mode CLI parameters.
             SW_MODE_CLI_PARAMETER_REGEX = '^[A-Za-z][\w-]+$';   % NOTE: Only one backslash in MATLAB regex as opposed to in the RCS ICD.
 
-            % The RCS ICD, iss2rev2, section 3.2.3 only permits these characters (and only lowercase).
+            % The RCS ICD 00037 iss1rev2 draft 2019-07-11, section 3.1.2.3 only permits these characters (and only lowercase).
             % SIP = RCS ICD "Specific Input Parameters".
-            SIP_CLI_OPTION_BODY_PERMITTED_CHARACTERS = 'abcdefghijklmnopqrstuvxyz0123456789_';
+            SIP_CLI_OPTION_BODY_REGEX = '[a-z0-9_]+';
             
             %==========================
             % Iterate over input types
@@ -169,15 +169,11 @@ classdef constants < handle
                 
                 % NOTE: Implicitly checks that cliParameter does NOT begin with "--".
                 % PROPOSAL: Standard assertion checking string vs regexp.
-                disallowedCharsFound = setdiff(cliParameter, SIP_CLI_OPTION_BODY_PERMITTED_CHARACTERS);
-                if ~isempty(disallowedCharsFound)
-                    error('BICAS:constants:Assertion:IllegalCodeConfiguration', ...
-                        'Constants value contains illegal character(s). This indicates a pure configuration bug (hard-coded).');
-                end
+                EJ_library.utils.assert.castring_regexp(cliParameter, SIP_CLI_OPTION_BODY_REGEX)
             end
             
             bicas.utils.assert_strings_unique(obj.INPUTS_PDIDS_LIST)
-            bicas.utils.assert_strings_unique(obj.OUTPUTS_PDIDS_LIST)            
+            bicas.utils.assert_strings_unique(obj.OUTPUTS_PDIDS_LIST)
             
             swModeCliParameterList = cellfun(@(s) ({s.CLI_PARAMETER}), obj.SW_MODES_INFO_LIST);
             swModeIdList           = cellfun(@(s) ({s.ID           }), obj.SW_MODES_INFO_LIST);
@@ -188,10 +184,7 @@ classdef constants < handle
             for iMode = 1:length(obj.SW_MODES_INFO_LIST)
                 cliParameter = obj.SW_MODES_INFO_LIST{iMode}.CLI_PARAMETER;
                 
-                if isempty(regexp(cliParameter, SW_MODE_CLI_PARAMETER_REGEX, 'once'))
-                    error('BICAS:constants:Assertion:IllegalCodeConfiguration', ...
-                        'Illegal S/W mode CLI parameter definition. This indicates a pure (hard-coded) configuration bug.');
-                end
+                EJ_library.utils.assert.castring_regexp(cliParameter, SW_MODE_CLI_PARAMETER_REGEX)
             end
             
             % NOTE: Check that combinations of dataset_ID and SKELETON_VERSION_STR are unique.

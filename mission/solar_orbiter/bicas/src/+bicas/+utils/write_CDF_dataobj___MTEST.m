@@ -9,7 +9,7 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2018-03-09
 %
-function write_CDF_dataobj___TEST()
+function write_CDF_dataobj___MTEST()
 % NOTE: dataobj requires at least one "Epoch-like" zVar. otherwise it returns an empty dataobj.
 %
 % TODO: Create CDF with correct record variance.
@@ -158,12 +158,11 @@ end
 
 
 
-
 % Shift a 1D vector to be a 1D vector in dimension k.
-function v= vec_1D(v, k)
-    v = v(:);    % Force column vector.
-    
-    % NOTE: permute requires permutations with length>=2 ==> 1:(k+2)
-    % NOTE: circshift requires column vector.
-    v = permute(v, circshift([1:(k+2)]', k));    % NOTE: k can be zero.
-end
+% function v = vec_1D(v, k)
+%     v = v(:);    % Force column vector.
+%     
+%     % NOTE: permute requires permutations with length>=2 ==> 1:(k+2)
+%     % NOTE: circshift requires column vector.
+%     v = permute(v, circshift([1:(k+2)]', k));    % NOTE: k can be zero.
+% end

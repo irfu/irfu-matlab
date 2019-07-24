@@ -1,5 +1,7 @@
-function data_manager_TEST
-% data_manager_TST - Automated test code for data_manager.
+function data_manager___ATEST
+% data_manager_TST - Attempt at automated test code for data_manager.
+%
+% NOTE 2019-07-24: Does not work
 % 
 %
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
@@ -23,11 +25,6 @@ end
 
 
 
-%function test_2
-%end
-
-
-
 function test_1
     % Testing V01_ROC-SGSE_L2R_RPW-LFR-SURV-CWF --> V01_ROC-SGSE_L2S_RPW-LFR-SURV-CWF-E
     % MUX mode 0
@@ -43,8 +40,9 @@ function test_1
     clear   % Remove all global variables, i.e. CONSTANTS.    
     global CONSTANTS
     CONSTANTS = bicas.constants('');
+    ACQUISITION_TIME_EPOCH_UTC = [2000,01,01, 12,00,00, 000,000,000];
 
-    DM = bicas.data_manager();
+    Dm = bicas.data_manager();
     
     V_seq1   = rand(1,672);
     V_seq2   = rand(1,672);
@@ -77,23 +75,28 @@ function test_1
 
     SCI_out = struct;
     SCI_out.Epoch            = bicas.dm_utils.convert_N_to_1_SPR_Epoch(          SCI.Epoch,            672, [256; 256]);
-    SCI_out.ACQUISITION_TIME = bicas.dm_utils.convert_N_to_1_SPR_ACQUISITION_TIME(SCI.ACQUISITION_TIME, 672, [256; 256]);
+    SCI_out.ACQUISITION_TIME = bicas.dm_utils.convert_N_to_1_SPR_ACQUISITION_TIME(SCI.ACQUISITION_TIME, 672, [256; 256], ACQUISITION_TIME_EPOCH_UTC);
     
     SCI_out.V = [V_seq1'*17, NaN_seq', NaN_seq'; V_seq2'*17, NaN_seq', NaN_seq'];
     SCI_out.E = [NaN_seq',  NaN_seq', NaN_seq'];
     SCI_out.EAC = [E_seq1_1', E_seq1_1'+E_seq2_1', E_seq2_1'] / 5;
 
-    DM.set_elementary_input_process_data('V01_ROC-SGSE_HK_RPW-BIA', HK);
-    DM.set_elementary_input_process_data('V01_ROC-SGSE_L2R_RPW-LFR-SURV-CWF', SCI);
+%     Dm.set_elementary_input_process_data('V01_ROC-SGSE_HK_RPW-BIA', HK);
+    Dm.set_elementary_input_process_data('V02_ROC-SGSE_HK_RPW-BIA', HK);    
+    Dm.set_elementary_input_process_data('V01_ROC-SGSE_L2R_RPW-LFR-SURV-CWF', SCI);
     %DM.set_elementary_input_process_data('V02_ROC-SGSE_L2R_RPW-LFR-SURV-CWF', SCI);
-    SCI_out_result = DM.get_process_data_recursively('V01_ROC-SGSE_L2S_RPW-LFR-SURV-CWF-E', 'LFR-SURV-CWF-E_V01-V01');
+%     SCI_out_result = Dm.get_process_data_recursively('V01_ROC-SGSE_L2S_RPW-LFR-SURV-CWF-E', 'LFR-SURV-CWF-E_V01-V01');
+    SCI_out_result = Dm.get_process_data_recursively('V03_ROC-SGSE_L2S_RPW-LFR-SURV-CWF-E');
+    
+    
     
     epsilon = 1e-13;
     fn_list = fieldnames(SCI_out)';
     for fn = fn_list
         A = SCI_out.(fn{1});
         B = SCI_out_result.(fn{1});
-        if bicas.utils.equals_tolerance(A,B, epsilon)
+        %if bicas.utils.equals_tolerance(A,B, epsilon)
+        if EJ_library.utils.equals_recursive(A,B, 'epsilon', epsilon)
             %fprintf('%s - Matches\n', fn{1})
         else
             fprintf('%s - NO MATCH\n', fn{1})

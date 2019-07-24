@@ -8,12 +8,12 @@ classdef calibration
 %
 %
 %
-% VARIABLE NAMING CONVENTION
-% --------------------------
+% TERMINOLOGY
+% ===========
 % TF = Transfer function
 % ("spectrum") transfer functions, i.e. transfer functions which modify the spectrum content of a signal, are
-% represented in the pure mathematical form as Z=Z(omega), where Z is a complex number (multiply frequency component of
-% the signal in Volt; not Volt^2) and omega is a frequency (radians/s).
+% represented in the pure mathematical form as Z=Z(omega), where Z is a complex number (pracitcally, multiply frequency
+% component of the signal in Volt; not Volt^2) and omega is a frequency (radians/s).
 
 
 
@@ -135,9 +135,11 @@ classdef calibration
 
         function y2 = apply_transfer_function_in_freq(dt, y1, tfOmega, tfZ, varargin)
         % y2 = apply_transfer_function_in_freq(dt, y1, tfOmega, tfZ, varargin)
-        % Generic general-purpose function for applying a spectrum TF to a sequence of samples (real-valued).
+        % Generic general-purpose function for applying a spectrum TF to a sequence of samples
+        % (real-valued, time domain).
         %
-        % Algorithm:
+        % ALGORITHM
+        % =========
         % (1) de-trend (if enabled)
         % (2) DFT
         % (3) Interpret DFT component frequencies as pairs of positive and negative frequencies (lower and higher half
@@ -165,21 +167,23 @@ classdef calibration
         %   'EnableDetrending', enableDetrending : Override the default on whether de-trending is used.
         %
         %
+        % NOTES
+        % =====
         % NOTE: This function effectively implements an approximate convolution. For an inverse application of a TF
         % (de-convolution), the caller has to invert the TF first.
-        %
         % NOTE: irfu-matlab contains at least two other functions for applying transfer functions to data but which are
         % not general-purpose:
         % 1) c_efw_invert_tf.m      (extensive; in both time domain and frequency domain; multiple ways of handling edges)
         % 2) c_efw_burst_bsc_tf.m   (short & simple)
         %
         %
-        % IMPLEMENTATION NOTE: Added ability to enable/disable de-trending to make testing easier.
-        %
-        % IMPLEMENTATION NOTE: Conversion of transfer functions to fit the input format should be done by wrapper
-        % functions and NOT by modifying this function.
-        %
-        % IMPLEMENTATION NOTE: This function is only represents the pure mathematical algorithm and therefore only
+        % IMPLEMENTATION NOTES
+        % ====================
+        % -- The only reason for that this function is public is to make it possible for external test code to access it.
+        % -- Added ability to enable/disable de-trending to make testing easier.
+        % -- Conversion of transfer functions to fit the input format should be done by wrapper functions and NOT by
+        %    this function.
+        % -- This function is only represents the pure mathematical algorithm and therefore only
         % works with "mathematically pure" units: radians, amplitudes (no dB!). This is useful since it
         % (1) separates (a) the core processing code from (b) related but simple processing of data (changing units,
         % different ways of representing transfer functions, checking for constant sampling rate)
@@ -187,15 +191,12 @@ classdef calibration
         % (3) makes a better unit for testing,
         % (4) makes it easier to simultaneously support different forms of input data (in wrapper functions),
         % (5) it is easy to combine multiple TF:s on the TF format that this function accepts,
-        % (6) easier to use it for mathematically calculated transfer functions, e.g. due to RPW's parasitic
-        % capacitance (although that should not be done in isolation, but rather by combining it with other TF:s.
-        %
-        % IMPLEMENTATION NOTE: The only reason for that this function is public is to make it possible for external test
-        % code to access it.
+        % (6) easier to use it for mathematically calculated transfer functions, e.g. due to RPW's parasitic capacitance
+        % (although that should not be done in isolation, but rather by combining it with other TF:s.
             
             % ------------------------------------------------------------------------------
             % PROPOSAL: Process multiple sequences functions in one call.
-            %   QUESTION: Handle sequences of different length?
+            %   TODO-DECISION: Handle sequences of different length?
             %       Ex: Different-length snapshots (LFR)
             %       Ex: Longer CWF (SWF?!) sequences divided by missing data into different-length sequences.
             % PROPOSAL: Option for using inverse TF? Can easily be implemented in the actual call to the function though
@@ -207,6 +208,8 @@ classdef calibration
             %   PRO: Caller can control the inter-/extrapolation of table (linear, spline etc).
             %   PRO: Useful when combining table TFs with other table TFs (other set of frequencies), or with analytical TFs.
             %   CON: Slower?
+            %
+            % PROPOSAL: Move to its own function file.
             % ------------------------------------------------------------------------------
 
 

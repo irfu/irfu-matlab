@@ -32,12 +32,12 @@ function str = JSON_object_str(jsonObj, indentSize, valuePosition)
 %
 % PROPOSAL: Permit arbitrary line break?
 
-settings.LINE_BREAK     = char(10);    % Should be same as sprintf('\n').
-settings.INDENT_SIZE    = indentSize;
-settings.VALUE_POSITION = valuePosition;
+Settings.LINE_BREAK     = char(10);    % Should be same as sprintf('\n').
+Settings.INDENT_SIZE    = indentSize;
+Settings.VALUE_POSITION = valuePosition;
 
-str = print_JSON_object_recursive(jsonObj, 0, false, settings);
-str = [str, settings.LINE_BREAK];
+str = print_JSON_object_recursive(jsonObj, 0, false, Settings);
+str = [str, Settings.LINE_BREAK];
 
 end
 

@@ -1,6 +1,6 @@
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
 % First created 2019-07-23
-function interpret_CLI_args___TEST
+function interpret_CLI_args___ATEST
 
     Ecm = EJ_library.utils.create_containers_Map('char', 'char', {}, {});
     

@@ -14,6 +14,10 @@
 % str        : String
 % regexpList : Cell array of strings, each one containing a regexp. ^ at the beginning of a regexp will be ignored.
 %              NOTE: The sequence of regexes must match every single character in str.
+%
+%
+% RETURN VALUE
+% ============
 % subStrList : Cell array of strings, each being a match for the corresponding string in regexpList.
 % 
 %

@@ -1,9 +1,10 @@
-% Semi-automated test code for "calibration".
-% 
+% Semi-automated test code for class "calibration".
+%
+%
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
 % First created 2017-02-16
 %
-function calibration_TEST
+function calibration___ATEST
     apply_transfer_function_in_freq_TEST
 end
 
@@ -130,7 +131,8 @@ for iTest = 1:length(input)
     y_exp = output{iTest};
     y_res = bicas.calibration.apply_transfer_function_in_freq( input{iTest}{:} );
     
-    if ~bicas.utils.equals_tolerance(y_res, y_exp, EPSILON)
+%    if ~bicas.utils.equals_tolerance(y_res, y_exp, EPSILON)
+    if ~EJ_library.utils.approx_equals(y_res, y_exp, EPSILON, 'NaN equal to itself')
         %error('TEST FAILED')
         warning('TEST FAILED')
         
