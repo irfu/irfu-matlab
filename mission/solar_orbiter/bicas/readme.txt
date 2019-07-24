@@ -16,13 +16,15 @@ The documentation included in BICAS only covers the most important parts of the 
  Acronyms / Dictionary
 #######################
 NOTE: This list also applies to comments in the source code.
+--
 RCS                        = RPW Calibration Software. BICAS is an example of an RCS.
 ICD                        = Interface Control Document
 ROC DFMD                   = Document ROC-TST-GSE-NTT-00017-LES, "Data format and metadata definition for the ROC-SGSE data"
 ROC Engineering Guidelines = Document ROC-OPS-PIP-NTT-00008-LES, "RPW Ground Segment - ROC Engineering Guidelines"
-RCS ICD                    = Documents ROC-TST-GSE-ICD-00023-LES, "RPW Calibration Software ICD Documentation",
-                             and       ROC-PRO-PIP-ICD-00037-LES, "RPW Calibration Software Interface Document"
-                             which at this stage (2017-02-20) appear to be identical in their specification.
+RCS ICD                    = Originally document           ROC-TST-GSE-ICD-00023-LES, "RPW Calibration Software ICD Documentation",
+                             which was later superseded by ROC-PRO-PIP-ICD-00037-LES, "RPW Calibration Software Interface Document".
+                             NOTE: "RCS ICD" does not at this time (2019-07-24) distinguish between these two which gives room for confusion since
+                                   a later rev/iss for the old RCS ICD may thus be superseded by a lower rev/iss for the newer RCS ICD.                             
 BIAS specification         = Document RPW-SYS-MEB-BIA-SPC-00001-IRF, "RPW Instrument -- BIAS Specification"
 S/W mode                   = A "S/W mode" defines a set of required input CDF files and a set of output CDF files derived from the input files.
                              BICAS can execute only one such mode on each run. Executing such modes is the primary purpose of an RCS.

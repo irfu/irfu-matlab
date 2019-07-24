@@ -17,10 +17,14 @@
 % 3) The constructor can be used as initialization code which must be run before using the class/constants.
 %
 %
+% NAMING CONVENTION
+% =================
+% CLI_OPTION_BODY = CLI option header MINUS any CLI option prefix, i.e. e.g. "sci" instead of "--sci".
 %
-% ~"BUG"?/NOTE: The current implementation contains a minor error of thought(?): It contains an array with data for every
-% possible output format. There, every output format is associated with "release data" (required for the S/W descriptor).
-% This "release data" should possibly(?) be associated with every S/W mode instead.
+%
+% ~"BUG"?/NOTE: The current implementation contains a minor error of thought(?): It contains an array with data for
+% every possible output format. There, every output format is associated with "release data" (required for the S/W
+% descriptor). This "release data" should possibly(?) be associated with every S/W mode instead.
 %
 classdef constants < handle
 %
@@ -154,16 +158,18 @@ classdef constants < handle
             SW_MODE_CLI_PARAMETER_REGEX = '^[A-Za-z][\w-]+$';   % NOTE: Only one backslash in MATLAB regex as opposed to in the RCS ICD.
 
             % The RCS ICD, iss2rev2, section 3.2.3 only permits these characters (and only lowercase).
-            INPUT_CLI_OPTION_HEADER_SH_PERMITTED_CHARACTERS = 'abcdefghijklmnopqrstuvxyz0123456789_';
+            % SIP = RCS ICD "Specific Input Parameters".
+            SIP_CLI_OPTION_BODY_PERMITTED_CHARACTERS = 'abcdefghijklmnopqrstuvxyz0123456789_';
             
             %==========================
             % Iterate over input types
             %==========================
             for iInput = 1:length(obj.INPUTS_INFO_LIST)
-                cliParameter = obj.INPUTS_INFO_LIST{iInput}.OPTION_HEADER_SH;
+                cliParameter = obj.INPUTS_INFO_LIST{iInput}.CLI_OPTION_BODY;
                 
                 % NOTE: Implicitly checks that cliParameter does NOT begin with "--".
-                disallowedCharsFound = setdiff(cliParameter, INPUT_CLI_OPTION_HEADER_SH_PERMITTED_CHARACTERS);
+                % PROPOSAL: Standard assertion checking string vs regexp.
+                disallowedCharsFound = setdiff(cliParameter, SIP_CLI_OPTION_BODY_PERMITTED_CHARACTERS);
                 if ~isempty(disallowedCharsFound)
                     error('BICAS:constants:Assertion:IllegalCodeConfiguration', ...
                         'Constants value contains illegal character(s). This indicates a pure configuration bug (hard-coded).');
@@ -372,34 +378,31 @@ classdef constants < handle
             function InputInfo = create_II(datasetId, skeletonVersionStr)
                 % PROPOSAL: skeletonVersionStr first argument.
                 %   PRO: Rows line up automatically.
-                InputInfo.OPTION_HEADER_SH     = 'input_sci';
+                InputInfo.CLI_OPTION_BODY     = 'input_sci';
                 InputInfo.DATASET_ID           = datasetId;
                 InputInfo.SKELETON_VERSION_STR = skeletonVersionStr;
             end
 
             inputsInfoList = {};
             
-            % NOTE: OPTION_HEADER_SH = CLI option header MINUS option prefix ("--"), i.e. e.g. "sci" instead of "--sci".
-            %       SH = short
-            
             %=========
             % BIAS HK
             %=========
             %ii = [];    % II = input info
-            %ii.OPTION_HEADER_SH     = 'input_hk';
+            %ii.CLI_OPTION_BODY     = 'input_hk';
             %ii.DATASET_ID           = 'ROC-SGSE_HK_RPW-BIA';
             %ii.SKELETON_VERSION_STR = '01';
             %inputsInfoList{end+1} = ii;
             
             ii = [];
-            ii.OPTION_HEADER_SH     = 'input_hk';
+            ii.CLI_OPTION_BODY     = 'input_hk';
             ii.DATASET_ID           = 'ROC-SGSE_HK_RPW-BIA';
             ii.SKELETON_VERSION_STR = '02';
             inputsInfoList{end+1} = ii;
             
             % RODP TEST
             %ii = [];
-            %ii.OPTION_HEADER_SH     = 'input_hk';
+            %ii.CLI_OPTION_BODY     = 'input_hk';
             %ii.DATASET_ID           = 'SOLO_HK_RPW-BIA';
             %ii.SKELETON_VERSION_STR = '01';
             %inputsInfoList{end+1} = ii;
@@ -462,7 +465,7 @@ classdef constants < handle
             function OutputInfo = create_OI(datasetId, skeletonVersionStr, swdName, swdDescription)
                 % PROPOSAL: skeletonVersionStr first argument.
                 %   PRO: Rows line up automatically.
-                OutputInfo.SWD_OUTPUT_FILE_IDENTIFIER = 'output_sci';
+                OutputInfo.CLI_OPTION_BODY            = 'output_sci';
                 OutputInfo.DATASET_ID                 = datasetId;
                 OutputInfo.SKELETON_VERSION_STR       = skeletonVersionStr;
                 OutputInfo.SWD_NAME                   = swdName;

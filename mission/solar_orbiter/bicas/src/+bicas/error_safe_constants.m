@@ -20,7 +20,7 @@
 %                    identify only one error type if there are multiple ones to choose from.
 % REQUIRED_MATLAB_VERSION        : String value that should be identical to the value returned by "version('-release')"
 %                                  when using the correct MATLAB version.
-% INOFFICIAL_ARGUMENTS_SEPARATOR : String. Argument that separates the official (ICD) arguments from inofficial
+% INOFFICIAL_ARGUMENTS_SEPARATOR : String. Argument that separates the official (RCS ICD) arguments from inofficial
 %                                  arguments.
 %
 %

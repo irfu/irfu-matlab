@@ -1,3 +1,4 @@
+%
 % Main MATLAB function that launches BICAS.
 %
 % BICAS = BIAS CAlibration Software
@@ -69,39 +70,6 @@ function errorCode = bicas( varargin )
 %    PRO: Useful when S/W descriptor becomes big and complex.
 %
 % PROPOSAL: Split up the "main" function in several functions (outsource chunks of its code to smaller functions which are called).
-%
-% PROPOSAL: Separate function for parsing arguments. Returns structure.
-%   PRO: Automatic test code.
-%   CON: Can not give proper error for some types of bad arguments.
-%   TODO-DECISION: How handle relationship with proposed code for printing the CLI syntax (print_help)?
-%
-% -------- OLD --------
-% NOTE: Implementation of the parsing of CLI arguments is problematic for when processing s/w mode.
-%   PROBLEM: Present, ICD & inofficial options mixed: The s/w mode argument influences which succeeding arguments are
-%   permitted (depends on the s/w mode).
-%   ==> Must invoke DataManager before SETTINGS is fully initialized (from the CLI arguments)
-%   PROBLEM: Anticipated future changes: Arguments after s/w mode argument (choice of pipeline, test modes) influences
-%   which s/w modes are allowed, and also which arguments those s/w modes in turn allow.
-%   PROBLEM: --config (ICD option) could influence which ICD options that are permissible (e.g. pipeline).
-%   --
-%   PROPOSAL: Make it possible to separate sequence of inofficial arguments from other arguments before parsing individual options.
-%       PRO: Makes it possible to first parse the inofficial arguments and modify SETTINGS, before parsing anything
-%               s/w modes which might require an updated SETTINGS variable.
-%       PROPOSAL: Inofficial arguments can only be added before s/w mode.
-%           PRO: Does not need separator argument.
-%           CON: Can not parse reliably since does not know where sequence of inofficial arguments ends.
-%       PROPOSAL: Inofficial arguments can only be added after (inofficial, optional) separator argument, e.g. "---".
-%           NOTE: Separator argument can be placed in SETTINGS itself, but not be read from CLI arguments.
-%           PRO: Smoother for just adding/appending inofficial arguments after existing arguments.
-%   PROPOSAL: Somehow try all possible interpretations of arguments to see if any one of them matches, e.g. try all s/w
-%       modes.
-%   PROPOSAL: Try to parse some options in argument sequence (e.g. --config) before parsing all.
-%       CON: Can fail if searched-for options coincide with values of other options.
-%           CON: Needs second parsing of all arguments. ==> Can give error for that case for syntactically correct argument lists.
-%           PROPOSAL: Parse some options assuming that all other options have exactly N values argument.
-%               NOTE: Does not need to know anything else about other options since this determines possible positions of
-%                   the sought option: index = 1 + (N+1)*m, m=integer.
-%               CON: Can still not mix inofficial and ICD arguments.
 %
 % PROPOSAL: Better handling of errors in dataobj (reading CDF files).
 %   PROPOSAL: Wrap dataobj in function and catch and rethrow errors with BICAS' error IDs.
@@ -197,7 +165,7 @@ end    % bicas
 % BICAS's de facto main function, without error handling.
 function errorCode = main(REQUIRED_MATLAB_VERSION, ERROR_TYPES_INFO, INOFFICIAL_ARGUMENTS_SEPARATOR, cliArgumentsList)
 
-CONFIG_OPTION_HEADER = '--config';
+
 
 startTimeTicSeconds = tic;
 
@@ -238,8 +206,7 @@ irf.log('notice')             % Set initial log level value until it is later ov
 %irf.log('n', sprintf('ROC_RCS_PATH = "%s"', ROC_RCS_PATH));
 % ASSUMES: The current file is in the <BICAS>/src directory.
 [matlabSrcPath, ~, ~] = fileparts(mfilename('fullpath'));   % Use path of the current MATLAB file.
-bicasRootPathFromCode = bicas.utils.get_abs_path(fullfile(matlabSrcPath, '..'));
-bicasRootPath = bicasRootPathFromCode;    % Select which path to use as BICAS root path.
+bicasRootPath         = bicas.utils.get_abs_path(fullfile(matlabSrcPath, '..'));
 
 
 
@@ -269,67 +236,21 @@ SETTINGS  = bicas.create_default_SETTINGS();
 
 
 
-%===============================================================================
-% Separate CLI arguments into two different sequences/lists:
-% (1) icdCliArgumentsList   = List of official arguments, as defined in RCS ICD.
-% (2) inoffCliArgumentsList = List of inofficial arguments (may be empty).
-%===============================================================================
-iArgSeparator = find(strcmp(cliArgumentsList, INOFFICIAL_ARGUMENTS_SEPARATOR));
-if numel(iArgSeparator) == 0
-    icdCliArgumentsList   = cliArgumentsList;
-    inoffCliArgumentsList = {};
-elseif numel(iArgSeparator) == 1    % NOTE: Permit argument separator to be the very last argument.
-    if (iArgSeparator <= 1)
-        error('BICAS:CLISyntax', 'CLI argument separator at wrong position.')
-    end
-    icdCliArgumentsList   = cliArgumentsList( 1 : (iArgSeparator-1) );
-    inoffCliArgumentsList = cliArgumentsList( (iArgSeparator+1) : end );
-else
-    error('BICAS:CLISyntax', 'Found more than one CLI argument separator.')
-end
-
-
-
-%=============================================================================
-% Configure permitted ICD CLI options COMMON for all BICAS modes of operation
-%=============================================================================
-IcdOptionsConfigMap = containers.Map;
-% NOTE: log_path and config_file_path are both options to permit but ignore since they are handled by bash launcher script.
-IcdOptionsConfigMap('log_path')            = struct('optionHeader', '--log',               'occurrenceRequirement', '0-1',   'nValues', 1);
-IcdOptionsConfigMap('config_file_path')    = struct('optionHeader', CONFIG_OPTION_HEADER,  'occurrenceRequirement', '0-1',   'nValues', 1);
-
-
-
-%==============================================================================================================
-% Find the --config option among the ICD arguments in order to load the config file before parsing
-% the remaining ICD CLI arguments.
-%
-% NOTE: Implementation assumes that --config option is optional.
-% ASSUMES: ICD CLI syntax implies that the option header can only be found at even index (2,4, ...) positions.
-%==============================================================================================================
-iArg = find(strcmp(CONFIG_OPTION_HEADER, icdCliArgumentsList));
-if numel(iArg) > 1
-    error('BICAS:bicas:CLISyntax', 'Found multiple instances of %s option.', CONFIG_OPTION_HEADER)
-elseif numel(iArg) == 1
-    % ASSERTION
-    if ~((mod(iArg, 2) == 0) && (iArg < numel(icdCliArgumentsList)))
-        error('BICAS:bicas:CLISyntax', 'Found %s option at illegal position.', CONFIG_OPTION_HEADER)
-    end
-    % CASE: There is one --config option.
-    configFilePath = icdCliArgumentsList{iArg+1};
-else
-    % CASE: There is no --config option.
-    configFilePath = fullfile(bicasRootPath, SETTINGS.get_tv('DEFAULT_CONFIG_FILE_RELATIVE_PATH'));
-end
+%=============================================
+% First-round interpretation of CLI arguments
+%=============================================
+CliData = bicas.interpret_CLI_args(cliArgumentsList, INOFFICIAL_ARGUMENTS_SEPARATOR);
 
 
 
 %=================================================
 % Modify settings according to configuration file
 %=================================================
-rowList = bicas.utils.read_text_file(configFilePath);
-ConfigFileSettingsVsMap = bicas.interpret_config_file(rowList);
-SETTINGS.set_preexisting_from_strings(ConfigFileSettingsVsMap);    % Modify SETTINGS
+if ~isempty(CliData.configFile)
+    rowList = bicas.utils.read_text_file(CliData.configFile);
+    ConfigFileSettingsVsMap = bicas.interpret_config_file(rowList);
+    SETTINGS.set_preexisting_from_strings(ConfigFileSettingsVsMap);    % Modify SETTINGS
+end
 
 
 
@@ -341,32 +262,10 @@ env_var_2_SETTINGS(SETTINGS, 'ROC_RCS_CAL_PATH', 'PROCESSING.ROC_RCS_CAL_PATH');
 
 
 
-InoffOptionsConfigMap = containers.Map;
-InoffOptionsConfigMap('modified_settings') = struct('optionHeader', '--setting', 'occurrenceRequirement', '0-inf', 'nValues', 2);
-% Parse inofficial CLI arguments.
-InoffOptionValuesMap = bicas.utils.parse_CLI_options(inoffCliArgumentsList, InoffOptionsConfigMap);
-
-%=======================================================================================================================
-% Extract the modified settings from the inofficial CLI arguments.
-%
-% NOTE: ModifiedSettingsMap corresponds to one definition of ONE option (in the meaning of parse_CLI_options) and is
-% filled with the corresponding option values in the order of the CLI arguments.
-%       ==> A later occurrence of an option with the same first option value, overwrites previous occurrences of the
-%       option with the same first option value.
-%       E.g. --setting LOGGING.IRF_LOG_LEVEL w --setting LOGGING.IRF_LOG_LEVEL n
-%=======================================================================================================================
-CliSettingsVsMap = containers.Map;
-valuesListsLists = InoffOptionValuesMap('modified_settings');   % Should contain multiple occurrences of the same option. Is hence a "list of lists".
-for iSetting = 1:length(valuesListsLists)
-    CliSettingsVsMap(valuesListsLists{iSetting}{1}) = valuesListsLists{iSetting}{2};
-end
-
-
-
 %============================================
 % Modify settings according to CLI arguments
 %============================================
-SETTINGS.set_preexisting_from_strings(CliSettingsVsMap);    % Modify SETTINGS
+SETTINGS.set_preexisting_from_strings(CliData.ModifiedSettingsMap);    % Modify SETTINGS
 SETTINGS.make_read_only();
 % CASE: SETTINGS has now been finalized and is read-only (by assertion) after this.
 
@@ -381,108 +280,74 @@ DataManager = bicas.data_manager();    % NOTE: Requires CONSTANTS (not necessari
 
 
 
-%=====================================================================
-% Read the first CLI argument -- Determine BICAS modes of operation
-% -----------------------------------------------------------------
-% ==> Configure permitted CLI options
-%=====================================================================
-if (length(icdCliArgumentsList) < 1)
-    error('BICAS:CLISyntax', 'Not enough arguments found.')
-
-elseif (strcmp(icdCliArgumentsList{1}, '--version'))
-    %=====================
-    % CASE: Print version
-    %=====================
-    % IMPLEMENTATION NOTE: Parse CLI arguments for the syntax check, even if does not use the results.
-    IcdOptionValuesMap = bicas.utils.parse_CLI_options(icdCliArgumentsList(2:end), IcdOptionsConfigMap);
-    print_version(DataManager)
-
-elseif (strcmp(icdCliArgumentsList{1}, '--identification'))
-    %============================
-    % CASE: Print s/w descriptor
-    %============================
-    % IMPLEMENTATION NOTE: Parse CLI arguments for the syntax check, even if does not use the results.
-    IcdOptionValuesMap = bicas.utils.parse_CLI_options(icdCliArgumentsList(2:end), IcdOptionsConfigMap);
-    print_identification(DataManager)
-
-elseif (strcmp(icdCliArgumentsList{1}, '--help'))
-    %==================
-    % CASE: Print help
-    %==================
-    % IMPLEMENTATION NOTE: Parse CLI arguments for the syntax check, even if does not use the results.
-    IcdOptionValuesMap = bicas.utils.parse_CLI_options(icdCliArgumentsList(2:end), IcdOptionsConfigMap);
-    print_help(ERROR_TYPES_INFO, DataManager)
-
-else
+switch(CliData.functionalityMode)
+    case 'version'
+        print_version(DataManager)
+    case 'identification'
+        print_identification(DataManager)
+    case 'help'
+        print_help(ERROR_TYPES_INFO, DataManager)
+    case 'S/W mode'
     %==============================================================================
     % CASE: Should be a S/W mode (deduced from elimination of other possibilities)
     %==============================================================================
     try
-        ExtendedSwModeInfo = DataManager.get_extended_sw_mode_info(icdCliArgumentsList{1});    % NOTE: FIRST USE OF DataManager.
-    catch exception1
-        % NOTE: Argument "--verson" (misspelled "--version") etc. would have produced error here too.
+        ExtendedSwModeInfo = DataManager.get_extended_sw_mode_info(CliData.swModeArg);    % NOTE: FIRST USE OF DataManager.
+    catch Exception1
+        % NOTE: Misspelled "--version" etc. would be interpreted as S/W mode and produce error here too.
         error('BICAS:CLISyntax', ...
             'Can not interpret first argument "%s" as a S/W mode (or any other legal first argument).', ...
-            icdCliArgumentsList{1});
+            CliData.swModeArg);
     end
 
 
 
     %==============================================================================================================
-    % Configure requirements on (remaining) (ICD) CLI arguments depending on the S/W mode
-    % -----------------------------------------------------------------------------------
-    % NOTE/BUG RISK: The options are identified by option ID strings (container.Map keys). Here the code uses
-    % (1) identifiers for misc. options (e.g. "output_dir", "log_path"), and
-    % (2) dataset IDs
-    % as option IDs. This is not really appropriate but works as long as there is no overlap between the two sets of
-    % strings. Assertion checks for illegal option IDs.
+    % Configure requirements on (remaining) (RCS ICD) CLI arguments depending on the S/W mode
     %==============================================================================================================
-    IcdOptionsConfigMap('output_dir') = struct('optionHeader', '--output', 'occurrenceRequirement', '1', 'nValues', 1);
+
+    %====================================
+    % Parse RCS ICD CLI arguments (bulk)
+    %====================================
+
+
+    % Extract INPUT dataset files from arguments.
     inputsInfoList = ExtendedSwModeInfo.inputs;
-    inputPdidsList = {};                  % List of keys used for input files.
-
-    for iInput = 1:length(inputsInfoList)    % For every input dataset...
-        pdid = inputsInfoList{iInput}.PDID;
-
-        % Configure one option.
-        OptionConfig = [];
-        OptionConfig.optionHeader          = ['--', inputsInfoList{iInput}.OPTION_HEADER_SH];
-        OptionConfig.occurrenceRequirement = '1';
-        OptionConfig.nValues               = 1;
-
-        % ASSERTION
-        if IcdOptionsConfigMap.isKey(pdid)
-            error('BICAS:Assertion:IllegalCodeConfiguration', 'Dataset ID used as option identifier conflicts with other option identifier. Bad hardcoding.')
+    InputFilesMap  = containers.Map();
+    for i = 1:numel(inputsInfoList)
+        optionHeader = inputsInfoList{i}.CLI_OPTION_BODY;
+        
+        % UI ASSERTION
+        if ~CliData.SpecInputParametersMap.isKey(optionHeader)
+            error('bicas:CLISyntax', 'Can not find CLI argument(s) for input "%s".', optionHeader)
         end
-        IcdOptionsConfigMap(pdid) = OptionConfig;
-
-        inputPdidsList{end+1} = pdid;
+        
+        inputFile = CliData.SpecInputParametersMap( optionHeader );
+        InputFilesMap(inputsInfoList{i}.PDID) = inputFile;
     end
-
-    %================================
-    % Parse ICD CLI arguments (bulk)
-    %================================
-    IcdOptionValuesMap = bicas.utils.parse_CLI_options(icdCliArgumentsList(2:end), IcdOptionsConfigMap);
-
-
-
-    % Extract the input files (datasets) from CLI arguments.
-    InputFilesMap = containers.Map;
-    for iPdid = 1:length(inputPdidsList)
-        valuesListsLists = IcdOptionValuesMap(inputPdidsList{iPdid});
-        InputFilesMap(inputPdidsList{iPdid}) = valuesListsLists{1}{1};   % Extract subset of parsed arguments.
+    
+    % Extract OUTPUT dataset files from arguments.
+    outputsInfoList = ExtendedSwModeInfo.outputs;
+    OutputFilesMap  = containers.Map();
+    for i = 1:numel(outputsInfoList)
+        optionHeader = outputsInfoList{i}.CLI_OPTION_BODY;
+        
+        % UI ASSERTION
+        if ~CliData.SpecInputParametersMap.isKey(optionHeader)
+            error('bicas:CLISyntax', 'Can not find CLI argument(s) for input "%s".', optionHeader)
+        end
+        
+        outputFile = CliData.SpecInputParametersMap( optionHeader );
+        OutputFilesMap(outputsInfoList{i}.PDID) = outputFile;
     end
-
-    % Extract the output directory from CLI arguments.
-    valuesListsLists = IcdOptionValuesMap('output_dir');
-    outputDir = bicas.utils.get_abs_path(valuesListsLists{1}{1});
+    
 
     %==================
     % EXECUTE S/W MODE
     %==================
-    bicas.execute_sw_mode( DataManager, ExtendedSwModeInfo.CLI_PARAMETER, InputFilesMap, outputDir )
+    bicas.execute_sw_mode( DataManager, ExtendedSwModeInfo.CLI_PARAMETER, InputFilesMap, OutputFilesMap )
 
-end    % main
+end    % if ... else ... / switch
 
 
 

@@ -6,10 +6,10 @@
 %
 % ARGUMENTS AND RETURN VALUES
 % ===========================
-% swModeCliParameter : The CLI argument value that represents the S/W mode.
-% InputFilePathMap   : containers.Map with
+% swModeCliParameter                    : The CLI argument value that represents the S/W mode.
+% InputFilePathMap, OutputFilePathMap   : containers.Map with
 %    keys   = PDIDs
-%    values = Paths to input files.
+%    values = Paths to input/output files.
 %
 %
 % IMPORTANT NOTE
@@ -26,7 +26,7 @@
 %   might be wrong. Should ideally be run on the exact input datasets (~EIn PDs) used to produce a specific output
 %   dataset.
 %
-function execute_sw_mode(DataManager, swModeCliParameter, InputFilePathMap, outputDir)
+function execute_sw_mode(DataManager, swModeCliParameter, InputFilePathMap, OutputFilePathMap)
 %
 % QUESTION: How verify dataset ID and dataset version against constants?
 %    NOTE: Need to read CDF first.
@@ -91,12 +91,12 @@ function execute_sw_mode(DataManager, swModeCliParameter, InputFilePathMap, outp
 
 global SETTINGS
 
-irf.log('n', sprintf('Output directory = "%s"', outputDir));       
-
-% ASSERTION
-if ~exist(outputDir, 'dir')
-    error('BICAS:execute_sw_mode:Assertion:PathNotFound', 'Output directory "%s" does not exist.', outputDir)
-end
+% irf.log('n', sprintf('Output directory = "%s"', outputDir));
+% 
+% % ASSERTION
+% if ~exist(outputDir, 'dir')
+%     error('BICAS:execute_sw_mode:Assertion:PathNotFound', 'Output directory "%s" does not exist.', outputDir)
+% end
 
 
 
@@ -127,11 +127,12 @@ SwModeInfo = DataManager.get_extended_sw_mode_info(swModeCliParameter);
 %==================================
 % Iterate over all the output CDFs
 %==================================
-JsonOutputCdfFilenameListStruct = struct;    % Struct(!) representing a JSON object.
+%JsonOutputCdfFilenameListStruct = struct;    % Struct(!) representing a JSON object.
 for iOutputCdf = 1:length(SwModeInfo.outputs)
     OutputInfo = SwModeInfo.outputs{iOutputCdf};
     
     eOutPdid = OutputInfo.PDID;
+    outputFilePath = OutputFilePathMap(eOutPdid);
     
     %%%%%%%%%%%%%%%
     %%%%%%%%%%%%%%%
@@ -144,25 +145,29 @@ for iOutputCdf = 1:length(SwModeInfo.outputs)
 
     % Write dataset CDF file.
     masterCdfPath = bicas.get_master_CDF_path(OutputInfo.DATASET_ID, OutputInfo.SKELETON_VERSION_STR);
-    [outputFilename] = write_dataset_CDF ( ...
-        ProcessData, globalAttributesSubset, outputDir, @get_output_filename, masterCdfPath, OutputInfo.DATASET_ID );
+    write_dataset_CDF ( ...
+        ProcessData, globalAttributesSubset, outputFilePath, masterCdfPath, OutputInfo.DATASET_ID );
     
     % Collect list (struct) of output files.
-    JsonOutputCdfFilenameListStruct.( OutputInfo.SWD_OUTPUT_FILE_IDENTIFIER ) = outputFilename;
+%     JsonOutputCdfFilenameListStruct.( OutputInfo.CLI_OPTION_BODY ) = outputFilename;
 end
 
 
 
-%============================================================
+%====================================================================================================================
 % Print JSON object describing the created file(s) to stdout
 % ----------------------------------------------------------
-% Required by the RCS ICD iss2rev2, section 3.3.
-%============================================================
-str = bicas.utils.JSON_object_str(...
-    JsonOutputCdfFilenameListStruct, ...
-    SETTINGS.get_fv('JSON_OBJECT_STR.INDENT_SIZE'), ...
-    SETTINGS.get_fv('JSON_OBJECT_STR.VALUE_POSITION'));
-bicas.stdout_disp(str);
+% Required by the ROC-TST-GSE-ICD-00023-LES (RCS ICD) iss2rev2, section 3.3.
+%   NOTE: This is the OBSOLETE RCS ICD document.
+% 
+% NOTE: Unsure, but it seems that as of ROC-PRO-PIP-ICD-00037-LES (RCS ICD) iss1, rev2, draft 2019-07-11, this is no
+% longer required.
+%====================================================================================================================
+% str = bicas.utils.JSON_object_str(...
+%     JsonOutputCdfFilenameListStruct, ...
+%     SETTINGS.get_fv('JSON_OBJECT_STR.INDENT_SIZE'), ...
+%     SETTINGS.get_fv('JSON_OBJECT_STR.VALUE_POSITION'));
+% bicas.stdout_disp(str);
 
 end   % execute_sw_mode
 
@@ -215,8 +220,10 @@ end
 
 
 
-function [outputFilename] = write_dataset_CDF(...
-    ProcessData, GlobalAttributesSubset, outputFileParentDir, FilenamingFunction, masterCdfPath, datasetId)
+% function [outputFilename] = write_dataset_CDF(...
+%     ProcessData, GlobalAttributesSubset, outputFileParentDir, FilenamingFunction, masterCdfPath, datasetId)
+function write_dataset_CDF(...
+    ProcessData, GlobalAttributesSubset, outputFile, masterCdfPath, datasetId)
 % Function that writes one ___dataset___ CDF file.
 %
 
@@ -357,11 +364,12 @@ end
 %===========================================
 % Write to CDF file using write_CDF_dataobj
 %===========================================
-outputFilename = FilenamingFunction(...
-    datasetId, GlobalAttributesSubset.Test_Id, GlobalAttributesSubset.Provider, SETTINGS.get_fv('OUTPUT_CDF.DATA_VERSION'));
-filePath = fullfile(outputFileParentDir, outputFilename);
-irf.log('n', sprintf('Writing dataset CDF file: %s', filePath))
-bicas.utils.write_CDF_dataobj( filePath, ...
+% outputFilename = FilenamingFunction(...
+%     datasetId, GlobalAttributesSubset.Test_Id, GlobalAttributesSubset.Provider, SETTINGS.get_fv('OUTPUT_CDF.DATA_VERSION'));
+% filePath = fullfile(outputFileParentDir, outputFilename);
+irf.log('n', sprintf('Writing dataset CDF file: %s', outputFile))
+bicas.utils.write_CDF_dataobj( ...
+    outputFile, ...
     DataObj.GlobalAttributes, ...
     DataObj.data, ...
     DataObj.VariableAttributes, ...
@@ -486,28 +494,31 @@ end
 
 
 
-function filename = get_output_filename(datasetId, testId, provider, dataVersion)
-% Function that decides the filename to use for any given output dataset CDF file
-%
-% NOTE: ROC-TST-GSE-NTT-00017, "Data format and metadata definition for the ROC-SGSE data", iss2,rev1, Section 3.4
-% specifies a file naming convention. Note: The version number should be the "data version"!
-%
-% dataVersion : two-digit string
-
-% PROPOSAL: Include date and time?
-%
-% NOTE: May need to know the global attributes of the master CDF! See file naming convention, Test_id.
-% Some may be identical to dataset ID, but still..
-
-
-
-%current_time = datestr(now, 'yyyy-mm-dd_hhMMss.FFF');
-%filename = [datasetId, '_V', skeletonVersionStr, '_', current_time, '.cdf'];
-%filename = [datasetId, '_V', skeletonVersionStr, '___OUTPUT.cdf'];
-
-filename = [logical_file_id(datasetId, testId, provider, dataVersion), '.cdf'];
-end
-
+% function filename = get_output_filename(datasetId, testId, provider, dataVersion)
+% % Function that decides the filename to use for any given output dataset CDF file
+% %
+% % dataVersion : two-digit string
+% %
+% % NOTE: ROC-TST-GSE-NTT-00017, "Data format and metadata definition for the ROC-SGSE data", iss2,rev1, Section 3.4
+% % specifies a file naming convention. Note: The version number should be the "data version"!
+% %
+% % NOTE: Should be obsolete with RCS ICD iss1, rev2, draft 2019-07-11. Kept since it might be useful for inofficial
+% % functionality for automatically setting the output filename.
+% 
+% % PROPOSAL: Include date and time?
+% %
+% % NOTE: May need to know the global attributes of the master CDF! See file naming convention, Test_id.
+% % Some may be identical to dataset ID, but still..
+% 
+% 
+% 
+% %current_time = datestr(now, 'yyyy-mm-dd_hhMMss.FFF');
+% %filename = [datasetId, '_V', skeletonVersionStr, '_', current_time, '.cdf'];
+% %filename = [datasetId, '_V', skeletonVersionStr, '___OUTPUT.cdf'];
+% 
+% filename = [logical_file_id(datasetId, testId, provider, dataVersion), '.cdf'];
+% end
+% 
 
 
 

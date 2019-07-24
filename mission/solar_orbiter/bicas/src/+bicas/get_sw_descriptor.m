@@ -116,12 +116,12 @@ for OutputInfo = ExtendedSwModeInfo.inputs
     SwdInput.version    = SwModeInputInfo.SKELETON_VERSION_STR;
     SwdInput.identifier = SwModeInputInfo.DATASET_ID;
     
-    SwdMode.inputs.(SwModeInputInfo.OPTION_HEADER_SH) = SwdInput;
+    SwdMode.inputs.(SwModeInputInfo.CLI_OPTION_BODY) = SwdInput;
 end
 
 
 for iOutput = 1:length(ExtendedSwModeInfo.outputs)
-    OutputInfo    = ExtendedSwModeInfo.outputs{iOutput};
+    OutputInfo = ExtendedSwModeInfo.outputs{iOutput};
 
     [~, masterFilename] = bicas.get_master_CDF_path(OutputInfo.DATASET_ID, OutputInfo.SKELETON_VERSION_STR);
 
@@ -148,7 +148,7 @@ for iOutput = 1:length(ExtendedSwModeInfo.outputs)
             'Illegal S/W descriptor output release version "%s". This indicates a hard-coded configuration bug.', SwdOutputInfo.release.version)
     end
         
-    SwdMode.outputs.(OutputInfo.SWD_OUTPUT_FILE_IDENTIFIER) = SwdOutputInfo;
+    SwdMode.outputs.(OutputInfo.CLI_OPTION_BODY) = SwdOutputInfo;
 end
 
 
