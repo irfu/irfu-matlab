@@ -539,27 +539,6 @@ classdef dm_utils
         
         
         
-        function uniqueValues = unique_values_NaN(A)
-        % Return number of unique values in array, treating +Inf, -Inf, and NaN as equal to themselves (separately).
-        % (MATLAB's "unique" function does not do this for NaN.)
-        %
-        % NOTE: Should work for all dimensionalities.
-           
-        % PROPOSAL: Move to +utils.
-            
-            % NOTE: "unique" has special behaviour which must be taken into account:
-            % 1) Inf and -Inf are treated as equal to themselves.
-            % 2) NaN is treated as if it is NOT equal itself. ==> Can thus return multiple instances of NaN.
-            % 3) "unique" always puts NaN at the then of the vector of unique values (one or many NaN).
-            uniqueValues = unique(A);
-            
-            % Remove all NaN unless it is found in the last component (save one legitimate occurrence of NaN, if there is any).
-            % NOTE: Does work for empty matrices.
-            uniqueValues(isnan(uniqueValues(1:end-1))) = [];
-        end
-
-        
-
         function log_array(varargin)
         % Logs statistics on the contents of a numeric variable (any dimensionality): Number of & percentage NaN, unique
         % values, min-max. Primarily intended for zVariables and derivatives thereof. Can be useful for knowing which
@@ -606,7 +585,7 @@ classdef dm_utils
                 end
                 
                 nValues       = numel(variableValue);
-                nUniqueValues = length(bicas.dm_utils.unique_values_NaN(variableValue));
+                nUniqueValues = length(bicas.utils.unique_values_NaN(variableValue));
                 nNan          = sum(isnan(variableValue(:)));
                 
                 %============================
@@ -635,7 +614,7 @@ classdef dm_utils
                     if nUniqueValues == 0
                         valuesStr = '';
                     else
-                        valuesStr = ['Us: ', sprintf('%d ', bicas.dm_utils.unique_values_NaN(variableValue))];
+                        valuesStr = ['Us: ', sprintf('%d ', bicas.utils.unique_values_NaN(variableValue))];
                     end
                 end
                 

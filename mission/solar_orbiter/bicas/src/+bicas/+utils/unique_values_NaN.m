@@ -1,4 +1,4 @@
-function uniqueValues = unique_NaN(A)
+function uniqueValues = unique_values_NaN(A)
 % Return number of unique values in array, treating +Inf, -Inf, and NaN as equal to themselves.
 % (MATLAB's "unique" function does not do this.)
 %
