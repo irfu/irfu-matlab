@@ -4,13 +4,7 @@
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
 % First created 2017-02-16
 %
-function calibration___ATEST
-    apply_transfer_function_in_freq_TEST
-end
-
-
-
-function apply_transfer_function_in_freq_TEST
+function apply_transfer_function___ATEST
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
 % First created 2017-02-13
 %
@@ -25,6 +19,7 @@ function apply_transfer_function_in_freq_TEST
 % PROPOSAL: Automatic test: tf+inversion, compare ~spectras? Same result for multiple resolutions (even/odd). Pure delay/advance.
 % QUESTION: How robust is automatic test code in the event of better algorithms? (Hann windows, de-trending and stuff...)
 % PROPOSAL: Use specially-written "equals"-like function that permits (greater) discrepancies at the edge(s).
+% PROPOSAL: Test constant function.
 
 EPSILON = 1e-6;
 
@@ -129,9 +124,8 @@ end
 for iTest = 1:length(input)
     
     y_exp = output{iTest};
-    y_res = bicas.calibration.apply_transfer_function_in_freq( input{iTest}{:} );
+    y_res = bicas.utils.apply_transfer_function( input{iTest}{:} );
     
-%    if ~bicas.utils.equals_tolerance(y_res, y_exp, EPSILON)
     if ~EJ_library.utils.approx_equals(y_res, y_exp, EPSILON, 'NaN equal to itself')
         %error('TEST FAILED')
         warning('TEST FAILED')
@@ -143,7 +137,7 @@ for iTest = 1:length(input)
         y1 = input{iTest}{2};
         plot(n, [y1, y_exp, y_res])
         legend('y1', 'y\_expected', 'y\_result')
-        keyboard
+        %keyboard
     end
     disp('TEST OK')
 end
