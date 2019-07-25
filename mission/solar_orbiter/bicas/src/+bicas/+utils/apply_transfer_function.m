@@ -1,35 +1,34 @@
-function y2 = apply_transfer_function(dt, y1, tfOmega, tfZ, varargin)
-% y2 = apply_transfer_function_in_freq(dt, y1, tfOmega, tfZ, varargin)
-% Generic general-purpose function for applying a spectrum TF to a sequence of samples
-% (real-valued, time domain).
+function [y2] = apply_transfer_function(dt, y1, tfOmega, tfZ, varargin)
+%
+% Generic general-purpose function for applying a spectrum TF to a sequence of (real-valued, time domain)
+% samples.
+%
 %
 % ALGORITHM
 % =========
 % (1) de-trend (if enabled)
-% (2) DFT
+% (2) Compute DFT using MATLAB's "fft" function.
 % (3) Interpret DFT component frequencies as pairs of positive and negative frequencies (lower and higher half
 %     of DFT components. (Interpret TF as symmetric function covering positive & negative frequencies. Zero at
 %     zero frequency.)
 % (4) Multiply DFT coefficients with complex TF values.
-% (5) Inverse DFT
+% (5) Compute inverse DFT using MATLAB's "ifft(... , 'symmetric')" function.
 % (6) Re-trend (if de-trending enabled)
-%
-%
-% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
-% First created 2017-02-13
 %
 %
 % ARGUMENTS AND RETURN VALUE
 % ==========================
 % NOTE: All arguments/return value vectors are column vectors. TF = transfer function.
 % dt       : Time between each sample. Unit: seconds
-% y1       : Samples. Must be real-valued.
-% tfOmega  : TF frequencies: Unit: radians/s (RPS = Radians per second)
+% y1       : Samples. Must be real-valued (assertion).
+% tfOmega  : TF frequencies for which tfZ values apply. Must only contain positive values (i.e. exkl. zero).
+%            Algorithm will use tfZ(tfOmega=0) = 1. Unit: radians/s
 % tfZ      : Complex TF values (multiplication factors) at frequencies tfOmega. No unit.
 % y2       : y1 after the application of the TF.
 %            If y1 contains at least one NaN, then all components in y2 will be NaN. No error will be thrown.
-% varargin : Sequence of optional options as parameter/value pairs.
-%   'EnableDetrending', enableDetrending : Override the default on whether de-trending is used.
+% varargin : Optinal settings arguments as interpreted by EJ_library.utils.interpret_settings_args.
+%   Possible settings:
+%       enableDetrending : Override the default on whether de-trending is used. Default=1.
 %
 %
 % NOTES
@@ -40,12 +39,14 @@ function y2 = apply_transfer_function(dt, y1, tfOmega, tfZ, varargin)
 % not general-purpose:
 % 1) c_efw_invert_tf.m      (extensive; in both time domain and frequency domain; multiple ways of handling edges)
 % 2) c_efw_burst_bsc_tf.m   (short & simple)
+% --
+% NOTE: Presently not sure if MATLAB has standard functions for applying a transfer function that is tabulated in the
+% frequency domain. /Erik P G Johansson 2019-07-25
 %
 %
 % IMPLEMENTATION NOTES
 % ====================
-% -- The only reason for that this function is public is to make it possible for external test code to access it.
-% -- Added ability to enable/disable de-trending to make testing easier.
+% -- Has ability to enable/disable de-trending to make testing easier.
 % -- Conversion of transfer functions to fit the input format should be done by wrapper functions and NOT by
 %    this function.
 % -- This function is only represents the pure mathematical algorithm and therefore only
@@ -58,6 +59,20 @@ function y2 = apply_transfer_function(dt, y1, tfOmega, tfZ, varargin)
 % (5) it is easy to combine multiple TF:s on the TF format that this function accepts,
 % (6) easier to use it for mathematically calculated transfer functions, e.g. due to RPW's parasitic capacitance
 % (although that should not be done in isolation, but rather by combining it with other TF:s.
+%
+%
+% TERMINOLOGY
+% ===========
+% DFT = Discrete Fourier Transform
+% TF  = Transfer function, ("spectrum") transfer functions, i.e. transfer functions which modify the spectrum content of
+% a signal, are represented in the pure mathematical form as Z=Z(omega), where Z is a complex number (pracitcally,
+% multiply frequency component of the signal in Volt; not Volt^2) and omega is a frequency (radians/s).
+%
+%
+% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% First created 2017-02-13
+
+
 
 % ------------------------------------------------------------------------------
 % PROPOSAL: Process multiple sequences functions in one call.
@@ -73,6 +88,19 @@ function y2 = apply_transfer_function(dt, y1, tfOmega, tfZ, varargin)
 %   PRO: Caller can control the inter-/extrapolation of table (linear, spline etc).
 %   PRO: Useful when combining table TFs with other table TFs (other set of frequencies), or with analytical TFs.
 %   CON: Slower?
+% PROPOSAL: Eliminate dt from function. Only needed for interpreting tfOmega. Add in wrapper.
+% PROPOSAL: Eliminate de-trending. Add in wrapper.
+%   CON/NOTE: Might not be compatible with future functionality (Hann Windows etc).
+%
+% TODO-DECISION: How handle NaN, Inf?
+%   PROPOSAL: Assertion.
+%   PROPOSAL: Return all NaN.
+%   PROPOSAL: warning
+%   PROPOSAL: Setting for how to respond.
+%
+%
+% TODO-NEED-INFO: WHY DOES THIS FUNCTION EXIST? DOES NOT MATLAB HAVE THIS FUNCTIONALITY?
+%   
 % ------------------------------------------------------------------------------
 
 
@@ -80,60 +108,57 @@ function y2 = apply_transfer_function(dt, y1, tfOmega, tfZ, varargin)
 % Set the type of polynomial that should be used for detrending.
 N_POLYNOMIAL_COEFFS_TREND_FIT = 1;    % 1 = Linear function.
 
+%============
 % ASSERTIONS
-if ~iscolumn(y1) || ~iscolumn(tfOmega) || ~iscolumn(tfZ)
-    error('BICAS:calibration:Assertion', 'Argument y1, tfOmega, or tfZ is not a column vector.')
+%============
+if ~(iscolumn(y1) && iscolumn(tfOmega) && iscolumn(tfZ))
+    error('BICAS:apply_transfer_function:Assertion', 'Argument y1, tfOmega, or tfZ is not a column vector.')
 elseif ~isscalar(dt)
-    error('BICAS:calibration:Assertion', 'dt is not scalar.')
+    error('BICAS:apply_transfer_function:Assertion', 'dt is not scalar.')
 elseif (numel(tfOmega) ~= numel(tfZ))
-    error('BICAS:calibration:Assertion', 'tfOmega, tfZ have different sizes.')
+    error('BICAS:apply_transfer_function:Assertion', 'tfOmega, tfZ have different sizes.')
 elseif ~isreal(y1)
-    error('BICAS:calibration:Assertion', 'y1 is not real.')
+    error('BICAS:apply_transfer_function:Assertion', 'y1 is not real.')
     % NOTE: The algorithm itself does not make sense for non-real functions.
 elseif any(tfOmega<=0)
-    error('BICAS:calibration:Assertion', 'tfOmega contains non-positive frequencies.')
+    error('BICAS:apply_transfer_function:Assertion', 'tfOmega contains non-positive frequencies.')
     % NOTE: Requires TF to be undefined for 0 Hz since such a value should not be used since it represents
-    % adding a constant offset to the in signal (sort of).
+    % adding a constant offset to the in signal (sort of). The algorithm uses tfZ(0) == 1.
 end
 
 
 
-% Extract values of options.
-% IMPLEMENTATION NOTE: Written to make it possible to have many options. I just forgot which other ones I
-% wanted to add...
-enableDetrending = 1;   % Default value
-while length(varargin) >= 1
-    if length(varargin) >= 2
-        if strcmp(varargin{1}, 'EnableDetrending')
-            enableDetrending = varargin{2};
-        else
-            error('BICAS:calibration:Assertion', 'Can not interpret extra option.')
-        end
-        varargin(1:2) = [];
-    else
-        error('BICAS:calibration:Assertion', 'Can not interpret options.')
-    end
-end
+DEFAULT_SETTINGS.enableDetrending = 1;
+Settings = EJ_library.utils.interpret_settings_args(DEFAULT_SETTINGS, varargin);
+EJ_library.utils.assert.struct(Settings, fieldnames(DEFAULT_SETTINGS))
 
 
 
 N = length(y1);
 
-if enableDetrending
+if Settings.enableDetrending
+    %##########
     % De-trend
+    %##########
     trendFitsCoeffs = polyfit((1:N)', y1, N_POLYNOMIAL_COEFFS_TREND_FIT);
     yTrendFit       = polyval(trendFitsCoeffs, (1:N)');
     y1              = y1 - yTrendFit;
 end
 
-% Derive DFT
+
+
+%#############
+% Compute DFT
+%#############
 yDft1 = fft(y1);
 
-%===========================================================================================================
-% Define the frequencies we use to interpret the DFT
-% --------------------------------------------------
+
+
+%================================================================================================================
+% Define the frequencies used to interpret the DFT components X_k (yDft1)
+% -----------------------------------------------------------------------
 % IMPLEMENTATION NOTE:
-% We work only with REAL-valued signals. Therefore,
+% The code only works with REAL-valued time-domain signals. Therefore,
 % (1) We want to interpret the signal as consisting of pairs of positive and negative frequencies (pairs of
 % complex bases).
 % (2) We want to interpret the TF as being a symmetric function, defined for both positive and negative
@@ -144,51 +169,55 @@ yDft1 = fft(y1);
 % Since
 %    exp(i*2*pi*omega_k*t_n) = exp(i*2*pi*omega_(k+N)*t_n),
 %    where t_n = (n-1)*dt ,
-% the exact frequencies are however subject to a choice/interpretation, where
+% the exact frequencies associated with DFT components X_k are however subject to a choice/interpretation, where
 %    omega_k <--> omega_(k+N) .
 % Since we only work with real-valued signals, we want to interpret the DFT components as having frequencies
 %    omega_1, ..., omega_ceil(N/2), omega_ceil(-N/2+1), ..., omega_0
 % but to look up values in the TF, we have to use the absolute values of the above frequencies.
 %
+% NOTE: omega_0 = 0
 % NOTE: The above must work for both even & odd N. For even N, the DFT component k=N/2 should be zero due to
 % being a real-valued signal. Whether one interprets k=N/2 as a positive or negative frequency (using
 % floor/ceil) should therefore be unimportant.
-%===========================================================================================================
-k1 = ( 1            : ceil(N/2) )';
-k2 = ( ceil(-N/2+1) : 0         )';
-omegaDft1 = 2*pi * (k1 - 1) / (N * dt);          % Non-negative frequencies.
-omegaDft2 = 2*pi * (k2 - 1) / (N * dt);          % Negative     frequencies.
-omegaDftLookupHighest = omegaDft1(end);
-
-% Frequencies that should be USED for finding TF values to use for the respective DFT components.
-% Assumes that the TF can be interpreted as a symmetric functions.
-tfOmegaLookups = [omegaDft1; - omegaDft2];
-
-% ASSERTION
-if omegaDftLookupHighest > max(tfOmega)
-    error('BICAS:calibration:Assertion', 'Transfer function does not cover the highest frequency %d [rad/s] in the data samples.', omegaDftLookupHighest)
-end
+%================================================================================================================
+tfOmegaLookups     = 2*pi * ((1:N) - 1) / (N*dt);
+i = (tfOmegaLookups >= pi/dt);
+tfOmegaLookups(i) = abs(tfOmegaLookups(i)  - 2*pi/dt);
 
 
 
-% Find complex TF values, i.e. complex factors to be multiplied with every DFT component
-% --------------------------------------------------------------------------------------
-% NOTE: interp1 does NOT seem to require that submitted table of (x,y) values is sorted in x.
+% Find complex TF values, i.e. complex factors to multiply every DFT component with
+% ---------------------------------------------------------------------------------
+% NOTE: interp1 does NOT seem to require that submitted table of (x,y)=(tfOmega,tfZ) values is sorted in x.
 % NOTE: interp1 requires that submitted table (x,y) has unique x values.
 % NOTE: "extrap" ==> Extrapolate TF to frequencies below/above the lowest/highest stated frequencies. ==>
 % Non-zero TF value for 0 Hz. ==> Applying TF for 0 Hz-component means adding a constant offset (sort of)
 % which one does not want. ==> Force the TF 0 Hz values to be one.
 % Note that de-trending (if enabled) should already have removed the zero-frequency component from the in
 % signal.
-tfZLookups = interp1(tfOmega, tfZ, tfOmegaLookups, 'linear', 'extrap' );
+% tfZLookups = interp1(tfOmega, tfZ, tfOmegaLookups, 'linear', 'extrap');
+tfZLookups = interp1(tfOmega, tfZ, tfOmegaLookups, 'linear');
 tfZLookups(tfOmegaLookups == 0) = 1;    % Should only be needed when de-trending is disabled.
+if any(isnan(tfZLookups))
+    % NOTE: Should only potentially be triggered if not extrapolating the TF.
+    error('BICAS:apply_transfer_function:Assertion', 'Transfer function does not cover enough range of frequencies needed.')
+end
 
-% Apply TF to data.
+
+
+%##################
+% Apply TF to data
+%##################
 % NOTE: For real input signal and even N, this should produce complex yDft2(N/2+1) values.
-yDft2 = yDft1 .* tfZLookups;
+% IMPORTANT NOTE: Must transpose complex vector in a way that does not negate the imaginary part.
+%                 ' negates the imaginary part.
+yDft2 = yDft1 .* transpose(tfZLookups);
 
-% IDFT
-% ----
+
+
+%##############
+% Compute IDFT
+%##############
 % Forces yDft1 to be (interpreted as) conjugate symmetric due to (1) possible rounding errors, and (2) a
 % complex yDft2(N/2+1) for even N.
 %
@@ -200,8 +229,12 @@ yDft2 = yDft1 .* tfZLookups;
 %     symmetry."
 y2 = ifft(yDft2, 'symmetric');
 
+
+
+%##########
 % Re-trend
-if enableDetrending
+%##########
+if Settings.enableDetrending
     y2 = y2 + yTrendFit;
 end
 

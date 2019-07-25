@@ -3,17 +3,9 @@ classdef calibration
 %
 % UNFINISHED. NOT USED BY MAIN PROGRAM YET. NOT ENTIRELY CLEAR WHAT IT SHOULD INCLUDE.
 %
+%
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
 % First created 2017-02-15
-%
-%
-%
-% TERMINOLOGY
-% ===========
-% TF = Transfer function
-% ("spectrum") transfer functions, i.e. transfer functions which modify the spectrum content of a signal, are
-% represented in the pure mathematical form as Z=Z(omega), where Z is a complex number (pracitcally, multiply frequency
-% component of the signal in Volt; not Volt^2) and omega is a frequency (radians/s).
 
 
 

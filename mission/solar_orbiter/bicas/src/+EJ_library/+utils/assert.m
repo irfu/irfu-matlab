@@ -226,8 +226,8 @@ classdef assert
                 case 'exact'
                     if (~isempty(missingFnList) || ~isempty(extraFnList))
                         
-                        missingFnListStr = utils.str_join(missingFnList, ', ');
-                        extraFnListStr   = utils.str_join(extraFnList,   ', ');
+                        missingFnListStr = strjoin(missingFnList, ', ');
+                        extraFnListStr   = strjoin(extraFnList,   ', ');
                         
                         error(['Expected struct has the wrong set of fields.', ...
                             '\n    Missing fields:           %s', ...
@@ -236,13 +236,13 @@ classdef assert
                 case 'subset'
                     if ~isempty(extraFnList)
                         
-                        extraFnListStr   = utils.str_join(extraFnList,   ', ');
+                        extraFnListStr   = strjoin(extraFnList,   ', ');
                         error(['Expected struct has the wrong set of fields.', ...
                             '\n    Extra (forbidden) fields: %s'], extraFnListStr)
                     end
                 case 'superset'
                     if ~isempty(missingFnList)                        
-                        missingFnListStr = utils.str_join(missingFnList, ', ');
+                        missingFnListStr = strjoin(missingFnList, ', ');
                         error(['Expected struct has the wrong set of fields.', ...
                             '\n    Missing fields:           %s'], missingFnListStr)
                     end
