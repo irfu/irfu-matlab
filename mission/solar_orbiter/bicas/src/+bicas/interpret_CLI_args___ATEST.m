@@ -2,7 +2,7 @@
 % First created 2019-07-23
 function interpret_CLI_args___ATEST
 
-    Ecm = EJ_library.utils.create_containers_Map('char', 'char', {}, {});
+%     Ecm = EJ_library.utils.create_containers_Map('char', 'char', {}, {});
     
     tl = {};
     
@@ -12,8 +12,23 @@ function interpret_CLI_args___ATEST
         'version', [], [], [], {{}, {}}, {{}, {}});
     tl{end+1} = new_test( {'--identification'}, ...
         'identification', [], [], [], {{}, {}}, {{}, {}});
+
+    tl{end+1} = new_test( {'--help', '--log', 'logfile'}, ...
+        'help', [], [], 'logfile', {{},{}}, {{},{}});
+    tl{end+1} = new_test( {'--log', 'logfile', '--help'}, ...
+        'help', [], [], 'logfile', {{},{}}, {{},{}});
     
-    tl{end+1} = new_test_exc( {'--help', '--log', 'logfile'}, ...
+    tl{end+1} = new_test( {'--version', '--log', 'logfile', '--config', 'configfile'}, ...
+        'version', [], 'configfile', 'logfile', {{},{}}, {{},{}});
+    
+    
+    tl{end+1} = new_test_EXC( {'--version', '--help'}, ...
+        'MException');
+    tl{end+1} = new_test_EXC( {'swmode', '--help'}, ...
+        'MException');
+    tl{end+1} = new_test_EXC( {'--in', 'infile', '--out', 'outfile', '--help'}, ...
+        'MException');
+    tl{end+1} = new_test_EXC( {'--in', 'infile', '--out', 'outfile', 'swmode'}, ...
         'MException');
     
     tl{end+1} = new_test( {'swmode', '--in', 'infile', '--out', 'outfile'}, ...
@@ -47,7 +62,7 @@ Test = EJ_library.atest.CompareFuncResult(@bicas.interpret_CLI_args, {cliArgList
 end
 
 
-function Test = new_test_exc(cliArgList, exceptionType)
+function Test = new_test_EXC(cliArgList, exceptionType)
 
 Test = EJ_library.atest.CompareFuncResult(@bicas.interpret_CLI_args, {cliArgList, '--'}, exceptionType);
 end

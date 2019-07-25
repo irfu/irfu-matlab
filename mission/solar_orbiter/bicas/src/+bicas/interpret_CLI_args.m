@@ -36,8 +36,8 @@
 %
 % TERMINOLOGY
 % ===========
-% Functionality mode : Whether BICAS is launched with --version, --help, --identification, or (some) s/w mode.
-% S/W mode           : Which dataset processing is to be performed.
+% FM = Functionality mode : Whether BICAS is launched with --version, --help, --identification, or (some) s/w mode.
+% S/W mode                : Which dataset processing is to be performed.
 %
 %
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
@@ -47,14 +47,23 @@ function CliData = interpret_CLI_args(cliArgumentList, INOFFICIAL_ARGUMENTS_SEPA
 
 
 
-%=================================================================================
-% Configure permitted RCS ICD CLI options COMMON for all BICAS modes of operation
-%=================================================================================
+%==================================================================================
+% Configure permitted RCS ICD CLI options COMMON for all BICAS functionality modes
+% NOTE: Exclude the argument for functionality mode itself.
+%==================================================================================
+SW_MODE_REGEXP = '[^-][^-].*';
+
 ICD_OPTIONS_CONFIG_MAP = containers.Map();
 % NOTE: log_file and config_file are both options to permit but ignore since they are handled by bash launcher script.
-ICD_OPTIONS_CONFIG_MAP('log_file')                  = struct('optionHeaderRegexp', '--log',    'occurrenceRequirement', '0-1',   'nValues', 1);
-ICD_OPTIONS_CONFIG_MAP('config_file')               = struct('optionHeaderRegexp', '--config', 'occurrenceRequirement', '0-1',   'nValues', 1);
-ICD_OPTIONS_CONFIG_MAP('specific_input_parameters') = struct('optionHeaderRegexp', '--(.*)',   'occurrenceRequirement', '0-inf', 'nValues', 1, 'interprPriority', -1);
+ICD_OPTIONS_CONFIG_MAP('version_FM')                = struct('optionHeaderRegexp', '--version',        'occurrenceRequirement', '0-1',   'nValues', 0);
+ICD_OPTIONS_CONFIG_MAP('identification_FM')         = struct('optionHeaderRegexp', '--identification', 'occurrenceRequirement', '0-1',   'nValues', 0);
+ICD_OPTIONS_CONFIG_MAP('help_FM')                   = struct('optionHeaderRegexp', '--help',           'occurrenceRequirement', '0-1',   'nValues', 0);
+ICD_OPTIONS_CONFIG_MAP('SW_mode')                   = struct('optionHeaderRegexp', SW_MODE_REGEXP,     'occurrenceRequirement', '0-1',   'nValues', 0);
+
+ICD_OPTIONS_CONFIG_MAP('specific_input_parameters') = struct('optionHeaderRegexp', '--(.*)',           'occurrenceRequirement', '0-inf', 'nValues', 1, 'interprPriority', -1);
+
+ICD_OPTIONS_CONFIG_MAP('log_file')                  = struct('optionHeaderRegexp', '--log',            'occurrenceRequirement', '0-1',   'nValues', 1);
+ICD_OPTIONS_CONFIG_MAP('config_file')               = struct('optionHeaderRegexp', '--config',         'occurrenceRequirement', '0-1',   'nValues', 1);
 % NOTE: "specific input parameter" is an RCS ICD term.
 
 INOFF_OPTIONS_CONFIG_MAP = containers.Map();
@@ -85,14 +94,8 @@ end
 
 
 
-
-
-
 CliData = [];
 
-
-
-IcdOptionValuesMap = bicas.utils.parse_CLI_options(icdCliArgumentsList(2:end), ICD_OPTIONS_CONFIG_MAP);
 
 
 %=======================================================================================================================
@@ -109,49 +112,66 @@ CliData.ModifiedSettingsMap = convert_modif_settings_OptionValues_2_Map(InoffOpt
 
 
 
-%=========================
+%=====================================================================================================
 % Parse RCS ICD arguments
 % -----------------------
-% NOTE: Interprets RCS ICD as saying that there can be NO (official) arguments next to non-s/w mode functionality mode
+% NOTE: Interprets RCS ICD as permitting (official) arguments next to non-s/w mode functionality mode
 % arguments.
-%=========================
+%=====================================================================================================
 CliData.SpecInputParametersMap = EJ_library.utils.create_containers_Map('char', 'char', {}, {});
-if (length(icdCliArgumentsList) < 1)
-    error('BICAS:CLISyntax', 'Not enough arguments found.')
+IcdOptionValuesMap = bicas.utils.parse_CLI_options(icdCliArgumentsList, ICD_OPTIONS_CONFIG_MAP);
 
-elseif (strcmp(icdCliArgumentsList{1}, '--version'))
+
+sipOptionValues = IcdOptionValuesMap('specific_input_parameters');
+hasVersionFmOption = ~isempty(IcdOptionValuesMap('version_FM'));
+hasIdentifFmOption = ~isempty(IcdOptionValuesMap('identification_FM'));
+hasHelpFmOption    = ~isempty(IcdOptionValuesMap('help_FM'));
+hasSwModeOption    = ~isempty(IcdOptionValuesMap('SW_mode'));
+
+if     hasVersionFmOption && ~hasIdentifFmOption && ~hasHelpFmOption && ~hasSwModeOption
     CliData.functionalityMode = 'version';
     CliData.swModeArg         = [];
+    assert(isempty(sipOptionValues), 'Specified illegal specific input parameters.')
 
-elseif (strcmp(icdCliArgumentsList{1}, '--identification'))
+elseif ~hasVersionFmOption && hasIdentifFmOption && ~hasHelpFmOption && ~hasSwModeOption
     CliData.functionalityMode = 'identification';
     CliData.swModeArg         = [];
+    assert(isempty(sipOptionValues), 'Specified illegal specific input parameters.')
 
-elseif (strcmp(icdCliArgumentsList{1}, '--help'))
+elseif ~hasVersionFmOption && ~hasIdentifFmOption && hasHelpFmOption && ~hasSwModeOption
     CliData.functionalityMode = 'help';
     CliData.swModeArg         = [];
+    assert(isempty(sipOptionValues), 'Specified illegal specific input parameters.')
 
-else
+elseif ~hasVersionFmOption && ~hasIdentifFmOption && ~hasHelpFmOption && hasSwModeOption
+    
+    swModeArg = icdCliArgumentsList{1};    % NOTE: Always reading argument 1.
+    
+    % NOTE: Somewhat of a hack, since can not read out from using bicas.utils.parse_CLI_options where
+    % the SW_mode option is located among the arguments. The code knows it should be somewhere.
+    if ~EJ_library.utils.regexpf(swModeArg, SW_MODE_REGEXP)
+        error('BICAS:CLISyntax', 'First argument can not be interpreted as a S/W mode as expected.')
+    end
+
     CliData.functionalityMode = 'S/W mode';
-    CliData.swModeArg         = icdCliArgumentsList{1};
+    CliData.swModeArg         = swModeArg;   
     
-    IcdOptionValuesMap = bicas.utils.parse_CLI_options(icdCliArgumentsList(2:end), ICD_OPTIONS_CONFIG_MAP);
-    
-    temp = IcdOptionValuesMap('specific_input_parameters');
-    temp = convert_SIP_OptionValues_2_Map(temp);
+    temp = convert_SIP_OptionValues_2_Map(sipOptionValues);
     CliData.SpecInputParametersMap = temp;
+else
+    error('BICAS:CLISyntax', 'Illegal combination of arguments.')
 end
 
 
 
 temp = IcdOptionValuesMap('log_file');
 if isempty(temp)    CliData.logFile = [];
-else                CliData.logFile = temp{2};
+else                CliData.logFile = temp{end}{2};
 end
 
 temp = IcdOptionValuesMap('config_file');
 if isempty(temp)    CliData.configFile = [];
-else                CliData.configFile = temp{1}{2};
+else                CliData.configFile = temp{end}{2};
 end
 
 EJ_library.utils.assert.struct(CliData, {'functionalityMode', 'swModeArg', 'logFile', 'configFile', 'SpecInputParametersMap', 'ModifiedSettingsMap'})
