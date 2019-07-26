@@ -65,6 +65,7 @@ function errorCode = bicas( varargin )
 %
 % PROPOSAL: Rename to bicas.main (+bicas/main.m).
 %   NOTE: Function already has an internal function named "main".
+%   PROPOSAL: 
 %
 % PROPOSAL: Put a summarized version of CLI syntax in "bicas --help" (somethinger easier that the S/W descriptor).
 %    PRO: Useful when S/W descriptor becomes big and complex.
@@ -254,17 +255,9 @@ end
 
 
 
-%====================================================
-% Modify settings according to environment variables
-%====================================================
-env_var_2_SETTINGS(SETTINGS, 'ROC_PIP_NAME',     'PROCESSING.ROC_PIP_NAME');
-env_var_2_SETTINGS(SETTINGS, 'ROC_RCS_CAL_PATH', 'PROCESSING.ROC_RCS_CAL_PATH');
-
-
-
-%============================================
-% Modify settings according to CLI arguments
-%============================================
+%=========================================================
+% Modify settings according to (inofficial) CLI arguments
+%=========================================================
 SETTINGS.set_preexisting_from_strings(CliData.ModifiedSettingsMap);    % Modify SETTINGS
 SETTINGS.make_read_only();
 % CASE: SETTINGS has now been finalized and is read-only (by assertion) after this.
@@ -273,6 +266,18 @@ SETTINGS.make_read_only();
 
 irf.log(SETTINGS.get_fv('LOGGING.IRF_LOG_LEVEL'));
 irf.log('n', bicas.sprint_SETTINGS)                 % Prints/log the contents of SETTINGS.
+
+
+
+%================================
+% Set pipelineId, calibrationDir
+%================================
+% COMPLETE CODE, BUT NOT ALL NEEDED BY OTHER CODE YET.
+%
+%pipelineId     = read_env_variable('ROC_PIP_NAME',        'PROCESSING.ROC_PIP_NAME_OVERRIDE');
+%calibrationDir = read_env_variable('ROC_RCS_CAL_PATH',    'PROCESSING.ROC_RCS_CAL_PATH_OVERRIDE');
+masterCdfDir   = read_env_variable(SETTINGS, 'ROC_RCS_MASTER_PATH', 'PROCESSING.ROC_RCS_MASTER_PATH_OVERRIDE');
+irf.log('n', sprintf('masterCdfDir = "%s"', masterCdfDir))
 
 
 
@@ -288,65 +293,63 @@ switch(CliData.functionalityMode)
     case 'help'
         print_help(ERROR_TYPES_INFO, DataManager)
     case 'S/W mode'
-    %==============================================================================
-    % CASE: Should be a S/W mode (deduced from elimination of other possibilities)
-    %==============================================================================
-    try
-        ExtendedSwModeInfo = DataManager.get_extended_sw_mode_info(CliData.swModeArg);    % NOTE: FIRST USE OF DataManager.
-    catch Exception1
-        % NOTE: Misspelled "--version" etc. would be interpreted as S/W mode and produce error here too.
-        error('BICAS:CLISyntax', ...
-            'Can not interpret first argument "%s" as a S/W mode (or any other legal first argument).', ...
-            CliData.swModeArg);
-    end
-
-
-
-    %==============================================================================================================
-    % Configure requirements on (remaining) (RCS ICD) CLI arguments depending on the S/W mode
-    %==============================================================================================================
-
-    %====================================
-    % Parse RCS ICD CLI arguments (bulk)
-    %====================================
-
-
-    % Extract INPUT dataset files from arguments.
-    inputsInfoList = ExtendedSwModeInfo.inputs;
-    InputFilesMap  = containers.Map();
-    for i = 1:numel(inputsInfoList)
-        optionHeader = inputsInfoList{i}.CLI_OPTION_BODY;
-        
-        % UI ASSERTION
-        if ~CliData.SpecInputParametersMap.isKey(optionHeader)
-            error('bicas:CLISyntax', 'Can not find CLI argument(s) for input "%s".', optionHeader)
+        %==============================================================================
+        % CASE: Should be a S/W mode (deduced from elimination of other possibilities)
+        %==============================================================================
+        try
+            ExtendedSwModeInfo = DataManager.get_extended_sw_mode_info(CliData.swModeArg);    % NOTE: FIRST USE OF DataManager.
+        catch Exception1
+            % NOTE: Misspelled "--version" etc. would be interpreted as S/W mode and produce error here too.
+            error('BICAS:CLISyntax', ...
+                'Can not interpret first argument "%s" as a S/W mode (or any other legal first argument).', ...
+                CliData.swModeArg);
         end
         
-        inputFile = CliData.SpecInputParametersMap( optionHeader );
-        InputFilesMap(inputsInfoList{i}.PDID) = inputFile;
-    end
-    
-    % Extract OUTPUT dataset files from arguments.
-    outputsInfoList = ExtendedSwModeInfo.outputs;
-    OutputFilesMap  = containers.Map();
-    for i = 1:numel(outputsInfoList)
-        optionHeader = outputsInfoList{i}.CLI_OPTION_BODY;
         
-        % UI ASSERTION
-        if ~CliData.SpecInputParametersMap.isKey(optionHeader)
-            error('bicas:CLISyntax', 'Can not find CLI argument(s) for input "%s".', optionHeader)
+        
+        %======================================================================
+        % Parse CliData.SpecInputParametersMap arguments depending on S/W mode
+        %======================================================================
+        
+        % Extract INPUT dataset files from arguments.
+        inputsInfoList = ExtendedSwModeInfo.inputs;
+        InputFilesMap  = containers.Map();
+        for i = 1:numel(inputsInfoList)
+            optionHeader = inputsInfoList{i}.CLI_OPTION_BODY;
+            
+            % UI ASSERTION
+            if ~CliData.SpecInputParametersMap.isKey(optionHeader)
+                error('BICAS:CLISyntax', 'Can not find CLI argument(s) for input "%s".', optionHeader)
+            end
+            
+            inputFile = CliData.SpecInputParametersMap( optionHeader );
+            InputFilesMap(inputsInfoList{i}.PDID) = inputFile;
         end
         
-        outputFile = CliData.SpecInputParametersMap( optionHeader );
-        OutputFilesMap(outputsInfoList{i}.PDID) = outputFile;
-    end
-    
-
-    %==================
-    % EXECUTE S/W MODE
-    %==================
-    bicas.execute_sw_mode( DataManager, ExtendedSwModeInfo.CLI_PARAMETER, InputFilesMap, OutputFilesMap )
-
+        % Extract OUTPUT dataset files from arguments.
+        outputsInfoList = ExtendedSwModeInfo.outputs;
+        OutputFilesMap  = containers.Map();
+        for i = 1:numel(outputsInfoList)
+            optionHeader = outputsInfoList{i}.CLI_OPTION_BODY;
+            
+            % UI ASSERTION
+            if ~CliData.SpecInputParametersMap.isKey(optionHeader)
+                error('BICAS:CLISyntax', 'Can not find CLI argument(s) for input "%s".', optionHeader)
+            end
+            
+            outputFile = CliData.SpecInputParametersMap( optionHeader );
+            OutputFilesMap(outputsInfoList{i}.PDID) = outputFile;
+        end
+        
+        
+        
+        %==================
+        % EXECUTE S/W MODE
+        %==================
+        bicas.execute_sw_mode( DataManager, ExtendedSwModeInfo.CLI_PARAMETER, InputFilesMap, OutputFilesMap, masterCdfDir )
+        
+    otherwise
+        error('BICAS:Assertion', 'Illegal value functionalityMode="%s"', functionalityMode)
 end    % if ... else ... / switch
 
 
@@ -406,9 +409,9 @@ function print_help(ERROR_TYPES_INFO, DataManager)
 
 
 % Print software name & description
-swd = bicas.get_sw_descriptor(DataManager);
+Swd = bicas.get_sw_descriptor(DataManager);
 print_version(DataManager)
-bicas.stdout_printf('%s\n', swd.identification.description)
+bicas.stdout_printf('%s\n', Swd.identification.description)
 
 %==========================
 % Print error codes & types
@@ -430,16 +433,20 @@ end
 
 
 
-% Read value of environment variable and use its value to set a corresponding value in SETTINGS.
-%
-% NOTE: Will only modify SETTINGS if the environment variable exists/is non-empty.
-% NOTE: Will only set the SETTINGS value as a string value (not numeric).
-%
-% IMPLEMENTATION NOTE: Function may seem superfluous but it clarifies the code, and removes some mistyping risks.
-function env_var_2_SETTINGS(SETTINGS, envVarName, settingsKey)
+% Read environment variable, but allow the value to be overriden by a settings variable.
+function v = read_env_variable(SETTINGS, envVarName, settingsOverrideName)
+settingsOverrideValue = SETTINGS.get_fv(settingsOverrideName);
 
-envVarValue = getenv(envVarName);
-if ~isempty(envVarValue)
-    SETTINGS.set_prexisting(settingsKey, envVarValue);
+if isempty(settingsOverrideValue)
+    v = getenv(envVarName);
+else
+    v = settingsOverrideValue;
+end
+
+% UI ASSERTION
+if isempty(v)
+    error('BICAS:Assertion', ...
+        'Can not set internal variable corresponding to environment variable "%s" from either (1) the environment variable, or (2) settings key value "%s".', ...
+        envVarName, settingsOverrideName)
 end
 end

@@ -1,15 +1,13 @@
-% Settings - Singleton class for global settings/constants used by BICAS.
-% 
-% Class for storing 
-% 1) settings (variable values) which could reasonably be set via some user interface (CLI, configuration file), and
-% 2) settings and constants which could reasonably be printed for the user.
+%
+% Singleton class for global settings/constants used by BICAS, and which could reasonably be set via some
+% user interface (default values, configuration file, CLI).
 %
 %
 % CONCEPT
 % =======
 % Data/settings are stored as a set of key-value pairs. Keys are strings and values can be strings or numbers.
 % --
-% A settings object progress through three phases, in order, and stays definitively in the last phase:
+% A settings object progress through three phases, in order, and stays ROC_PIP_NAME/write-protected in the last phase:
 % (1) From creation: New keys can be defined and set to their initial values.
 % (2) Definition disabled: Can set the values of pre-existing keys
 % (3) Read-only: Can not modify the object at all. Can only read key values. (Object can not leave this phase.)
@@ -26,7 +24,6 @@
 classdef settings < handle
 % BOGIQ: 
 % ------
-% PROPOSAL: Rename SIMPLE_DEMUXER. SIMPLE_CALIBRATION?
 % PROPOSAL: Add extra information for every setting (key-value pair).
 %   Ex: Human-readable description!
 %   Ex: MATLAB class (data type)
@@ -44,23 +41,30 @@ classdef settings < handle
 %   TODO-DECISION/CON: Not really needed? Depends too much on the variable/setting.
 %
 % PROPOSAL: Move out interpretation of strings as numeric values?!
+%
+% PROPOSAL: Initialize by submitting map.
+%   PRO: Can remove methods define_setting, disable_define.
+%   CON: Can not easily add metadata for every variable (in the future), e.g. permitted values (data type/class, range).
+%
+% PROPOSAL: Update variables by submitting containers.Map.
+%   PRO: Can eliminate set_prexisting.
     
     properties(Access=private)
         defineDisabledForever = false;   % Whether defining new keys is disallowed or not. Always true if readOnlyForever==true.
         readOnlyForever       = false;   % Whether modifying the object is allowed or not.
-        Map;                             % Map containing settings data.
+        DataMap;                         % Map containing the actual settings data.
     end
     
     %###################################################################################################################
-    
+
     methods(Access=public)
         
         % Constructor
         function obj = settings()
-            % IMPLEMENTATION NOTE: "Map" reset here since empirically it is not reset every time an instance is created
+            % IMPLEMENTATION NOTE: "DataMap" reset here since empirically it is not reset every time an instance is created
             % if it is only reset in the "properties" section. Otherwise the value from the previous execution is used
             % for unknown reasons.
-            obj.Map = containers.Map('KeyType', 'char', 'ValueType', 'any');
+            obj.DataMap = containers.Map('KeyType', 'char', 'ValueType', 'any');
         end
         
         
@@ -84,41 +88,15 @@ classdef settings < handle
             if obj.defineDisabledForever
                 error('BICAS:settings:Assertion', 'Trying to define new keys in settings object which disallows defining new keys.')
             end
-            if obj.Map.isKey(key)
+            if obj.DataMap.isKey(key)
                 error('BICAS:settings:Assertion', 'Trying to define pre-existing settings key.')
             end
             
-            obj.Map(key) = value;
+            obj.DataMap(key) = value;
         end
         
         
         
-        % Set a PRE-EXISTING key value.
-        function set_prexisting(obj, key, newValue)
-            % ASSERTIONS
-            if obj.readOnlyForever
-                error('BICAS:settings:Assertion', 'Trying to modify read-only settings object.')
-            end
-            if ~obj.Map.isKey(key)
-                error('BICAS:settings:Assertion', 'Trying to define non-existing settings key.')
-            end
-            
-            oldValue = obj.Map(key);
-            
-            if isnumeric(oldValue) && isnumeric(newValue)
-                obj.Map(key) = newValue;
-            elseif ischar(oldValue) && ischar(newValue)
-                obj.Map(key) = newValue;
-            else
-                error('BICAS:settings:Assertion:IllegalArgument', ...
-                    'New settings value either (1) does not match the type of the old settings value, or (2) is neither numeric nor char.')
-            end
-
-            obj.Map(key) = newValue;
-        end
-
-
-
         % Modify multiple settings, where the values are strings but converted to numerics as needed. Primarily intended
         % for updating settings with values from CLI arguments (which by their nature are initially strings).
         %
@@ -184,11 +162,11 @@ classdef settings < handle
             if ~obj.readOnlyForever
                 error('BICAS:settings:Assertion', 'Not allowed to call this method for non-read-only settings object.')
             end
-            if ~obj.Map.isKey(key)
+            if ~obj.DataMap.isKey(key)
                 error('BICAS:settings:Assertion:IllegalArgument', 'There is no setting "%s".', key)
             end
             
-            value = obj.Map(key);
+            value = obj.DataMap(key);
         end
         
         
@@ -203,20 +181,51 @@ classdef settings < handle
             if obj.readOnlyForever
                 error('BICAS:settings:Assertion', 'Not allowed to call this method for read-only settings object.')
             end
-            if ~obj.Map.isKey(key)
+            if ~obj.DataMap.isKey(key)
                 error('BICAS:settings:Assertion:IllegalArgument', 'There is no setting "%s".', key)
             end            
             
-            value = obj.Map(key);
+            value = obj.DataMap(key);
         end
         
         
         
         function keyList = get_keys(obj)
-            keyList = obj.Map.keys;
+            keyList = obj.DataMap.keys;
         end
         
     end    % methods(Access=public)
     
-end
+    
+    
+    methods(Access=private)
+        
+        % Set a PRE-EXISTING key value.
+        function set_prexisting(obj, key, newValue)
+            % NOTE: Used to be public method. Can/should probably be rewritten or merged with set_preexisting_from_strings.
+            
+            % ASSERTIONS
+            if obj.readOnlyForever
+                error('BICAS:settings:Assertion', 'Trying to modify read-only settings object.')
+            end
+            if ~obj.DataMap.isKey(key)
+                error('BICAS:settings:Assertion', 'Trying to define non-existing settings key.')
+            end
+            
+            oldValue = obj.DataMap(key);
+            
+            if isnumeric(oldValue) && isnumeric(newValue)
+                obj.DataMap(key) = newValue;
+            elseif ischar(oldValue) && ischar(newValue)
+                obj.DataMap(key) = newValue;
+            else
+                error('BICAS:settings:Assertion:IllegalArgument', ...
+                    'New settings value either (1) does not match the type of the old settings value, or (2) is neither numeric nor char.')
+            end
 
+            obj.DataMap(key) = newValue;
+        end
+
+    end    % methods(Access=private)
+    
+end

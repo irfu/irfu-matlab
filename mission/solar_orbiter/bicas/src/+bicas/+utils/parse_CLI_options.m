@@ -72,6 +72,19 @@ function OptionValuesMap = parse_CLI_options(cliArgumentsList, OptionsConfigMap)
 % PROPOSAL: Return some kind of help information to display proper user-friendly error message.
 % PROPOSAL: Shorten occurrenceRequirement
 %   PROPOSAL: occReq, occurrenceReq
+% PROPOSAL: Somehow return the order/argument number of the arguments found.
+%   PRO: Can test for order, e.g. S/W mode must come first.
+% PROPOSAL: Return struct array, one index for every option header+values (combined).
+%   .index/.location : Number. Tells the order of (the groups of) arguments.
+%   .optionId      : 
+%   .optionHeader  : String
+%   .optionValues  : Cell array of strings
+%   NOTE: Might want to sort/search by either .index or .optionId . Therefore not Map. When there are several
+%       occurrences, then one can use e.g. syntax
+%           s=struct('x', {1,3,2,3}, 'y', {9,8,7,6})
+%           xa = [s.x]; s(find(xa==3, 1, 'last')).y
+%   CON: Return format is harder to search through when searching.
+%       CON: Mostly/only when there are many occurrences.
 
 
 
@@ -176,7 +189,7 @@ for iOption = 1:length(optionIdsList)
     
     if strcmp(OptionConfig.occurrenceRequirement, '0-1')
         if numel(optionValues) > 1
-            error('parse_CLI_options:CLISyntax', 'Found more than one occurance of command-line option "%s".', OptionConfig.optionHeaderRegexp)
+            error('parse_CLI_options:CLISyntax', 'Found more than one occurrence of command-line option "%s".', OptionConfig.optionHeaderRegexp)
         end
     elseif strcmp(OptionConfig.occurrenceRequirement, '1')
         if numel(optionValues) ~= 1

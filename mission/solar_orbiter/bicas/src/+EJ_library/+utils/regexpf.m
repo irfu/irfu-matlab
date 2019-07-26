@@ -10,6 +10,10 @@
 % ========= 
 % regexPattern : CA string or cell array of CA strings. Each CA string is a regexp which may or may not be surrounded by
 %                ^ and $.
+%
+%
+% RETURN VALUE
+% ============
 % isMatch      : Logical array. True iff str is matched by corresponding regexp.
 %                NOTE: This is different from "regexp" which returns a cell array of arrays.
 %

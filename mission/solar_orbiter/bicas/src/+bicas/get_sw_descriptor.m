@@ -123,7 +123,7 @@ end
 for iOutput = 1:length(ExtendedSwModeInfo.outputs)
     OutputInfo = ExtendedSwModeInfo.outputs{iOutput};
 
-    [~, masterFilename] = bicas.get_master_CDF_path(OutputInfo.DATASET_ID, OutputInfo.SKELETON_VERSION_STR);
+    masterCdfFilename = bicas.get_master_CDF_filename(OutputInfo.DATASET_ID, OutputInfo.SKELETON_VERSION_STR);
 
     SwdOutputInfo = struct;
     SwdOutputInfo.identifier           = OutputInfo.DATASET_ID;
@@ -136,7 +136,7 @@ for iOutput = 1:length(ExtendedSwModeInfo.outputs)
     SwdOutputInfo.release.contact      = SETTINGS.get_fv('AUTHOR_EMAIL');
     SwdOutputInfo.release.institute    = SETTINGS.get_fv('INSTITUTE');
     SwdOutputInfo.release.modification = OutputInfo.SWD_RELEASE_MODIFICATION;
-    SwdOutputInfo.release.file         = masterFilename;
+    SwdOutputInfo.release.file         = masterCdfFilename;
     
     % Validate output datasets release version
     % ----------------------------------------

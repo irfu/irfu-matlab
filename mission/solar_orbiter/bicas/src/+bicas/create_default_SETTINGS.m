@@ -19,6 +19,8 @@
 % First created 2018-01-24
 %
 function SETTINGS = create_default_SETTINGS()
+% PROPOSAL: Rename SIMPLE_DEMUXER. SIMPLE_CALIBRATION?
+
 
 %-------------------------------------------------------------------------------------
 % Values common to multiple settings
@@ -42,7 +44,6 @@ S.define_setting('MATLAB_COMMAND', '');
 S.define_setting('AUTHOR_NAME',  D.AUTHOR_NAME);
 S.define_setting('AUTHOR_EMAIL', D.AUTHOR_EMAIL);
 S.define_setting('INSTITUTE',    D.INSTITUTE);
-S.define_setting('MASTER_CDFS_RELATIVE_DIR', 'data');    % Directory with master CDF files. Relative to BICAS's directory root.
 
 % Value that shows up in EOut dataset GlobalAttributes.Calibration_version.
 % String value. TEMPORARY SOLUTION.
@@ -93,8 +94,12 @@ S.define_setting('OUTPUT_CDF.SET_TEST_ID',                       1);    % Set CD
 S.define_setting('OUTPUT_CDF.DATA_VERSION',                      '01'); % Set CDF GlobalAttribute "Data_version". ROC DFMD says it should be updated in a way which can not be automatized?!!! Set here for now.
 
 S.define_setting('PROCESSING.USE_AQUISITION_TIME_FOR_HK_TIME_INTERPOLATION', 1);
-S.define_setting('PROCESSING.ROC_PIP_NAME',                                  'RGTS');   % Corresponds to environment variable ROC_PIP_NAME defined in RCS ICD. "RGTS" or "RODP".
-S.define_setting('PROCESSING.ROC_RCS_CAL_PATH',                              '');   % Corresponds to environment variable ROC_RCS_CAL_PATH defined in RCS ICD. Path to the RCS calibration files.
+
+S.define_setting('PROCESSING.ROC_PIP_NAME_OVERRIDE',        '');   % If set, override environment variable ROC_PIP_NAME        defined in RCS ICD. Which pipeline to run, "RGTS" or "RODP".
+S.define_setting('PROCESSING.ROC_RCS_CAL_PATH_OVERRIDE',    '');   % If set, override environment variable ROC_RCS_CAL_PATH    defined in RCS ICD. Path to dir. with calibration files.
+S.define_setting('PROCESSING.ROC_RCS_MASTER_PATH_OVERRIDE', '');   % If set, override environment variable ROC_RCS_MASTER_PATH defined in RCS ICD. Path to dir. with master CDF files.
+
+
 % zVariables which are still empty after copying data into the master CDF assigned a correctly sized array
 % with fill values. This should only be necessary for S/W modes with incomplete processing.
 S.define_setting('OUTPUT_CDF.EMPTY_ZVARIABLES_SET_TO_FILL', 0);

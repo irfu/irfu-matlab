@@ -26,7 +26,7 @@
 %   might be wrong. Should ideally be run on the exact input datasets (~EIn PDs) used to produce a specific output
 %   dataset.
 %
-function execute_sw_mode(DataManager, swModeCliParameter, InputFilePathMap, OutputFilePathMap)
+function execute_sw_mode(DataManager, swModeCliParameter, InputFilePathMap, OutputFilePathMap, masterCdfDir)
 %
 % QUESTION: How verify dataset ID and dataset version against constants?
 %    NOTE: Need to read CDF first.
@@ -89,15 +89,6 @@ function execute_sw_mode(DataManager, swModeCliParameter, InputFilePathMap, Outp
 % PROPOSAL: Print variable statistics also for zVariables which are created with fill values.
 %   NOTE: These do not use NaN, but fill values.
 
-global SETTINGS
-
-% irf.log('n', sprintf('Output directory = "%s"', outputDir));
-% 
-% % ASSERTION
-% if ~exist(outputDir, 'dir')
-%     error('BICAS:execute_sw_mode:Assertion:PathNotFound', 'Output directory "%s" does not exist.', outputDir)
-% end
-
 
 
 %===========================================================================
@@ -144,7 +135,9 @@ for iOutputCdf = 1:length(SwModeInfo.outputs)
     ProcessData = DataManager.get_process_data_recursively(eOutPdid);
 
     % Write dataset CDF file.
-    masterCdfPath = bicas.get_master_CDF_path(OutputInfo.DATASET_ID, OutputInfo.SKELETON_VERSION_STR);
+    masterCdfPath = fullfile(...
+        masterCdfDir, ...
+        bicas.get_master_CDF_filename(OutputInfo.DATASET_ID, OutputInfo.SKELETON_VERSION_STR));
     write_dataset_CDF ( ...
         ProcessData, globalAttributesSubset, outputFilePath, masterCdfPath, OutputInfo.DATASET_ID );
     
@@ -153,21 +146,6 @@ for iOutputCdf = 1:length(SwModeInfo.outputs)
 end
 
 
-
-%====================================================================================================================
-% Print JSON object describing the created file(s) to stdout
-% ----------------------------------------------------------
-% Required by the ROC-TST-GSE-ICD-00023-LES (RCS ICD) iss2rev2, section 3.3.
-%   NOTE: This is the OBSOLETE RCS ICD document.
-% 
-% NOTE: Unsure, but it seems that as of ROC-PRO-PIP-ICD-00037-LES (RCS ICD) iss1, rev2, draft 2019-07-11, this is no
-% longer required.
-%====================================================================================================================
-% str = bicas.utils.JSON_object_str(...
-%     JsonOutputCdfFilenameListStruct, ...
-%     SETTINGS.get_fv('JSON_OBJECT_STR.INDENT_SIZE'), ...
-%     SETTINGS.get_fv('JSON_OBJECT_STR.VALUE_POSITION'));
-% bicas.stdout_disp(str);
 
 end   % execute_sw_mode
 

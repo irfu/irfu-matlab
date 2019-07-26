@@ -121,37 +121,46 @@ classdef CompareFuncResult
                     if strcmp(class(actException), obj.expExceptionName)
                         % CASE: Actual and expected exception classes are identical.
                         TestData.resultDescrText = 'Success';
-                        TestData.success     = true;
+                        TestData.success         = true;
                     else
                         % CASE: Actual and expected exception classes are not identical.
-                        TestData.resultDescrText = 'Test expected exception, and generated a actual exception, but the exception types differ.';
-                        TestData.success     = false;
+                        TestData.resultDescrText = 'Test expected exception, and generated an actual exception, but the exception types differ.';
+                        TestData.success         = false;
                     end
                 else
                     % CASE: Did not expect exception.
                     TestData.resultDescrText = 'Test generated unexpected exception.';
-                    TestData.success     = false;
+                    TestData.success         = false;
                 end
             else
                 % CASE: No actual exception.
                 
-                if obj.equalsFunc(obj.expOutput, actOutput)
-                    % CASE: Actual result == expected result
-                    TestData.resultDescrText = 'Success';
-                    TestData.success         = true;
-                else
-                    % CASE: Actual result != expected result
-                    
-                    % NOTE: Only the location of the "FIRST" difference?!
-                    [equals_recursive_equal, diffLoc, diffMsg] = EJ_library.utils.equals_recursive(obj.expOutput, actOutput);
-                    if equals_recursive_equal
-                        warning('EJ_library.utils.equals_recursive can not find the difference.')
+                if isempty(obj.expExceptionName)
+                    % CASE: Did not expect exception.
+                    if obj.equalsFunc(obj.expOutput, actOutput)
+                        % CASE: Actual result == expected result
+                        TestData.resultDescrText = 'Success';
+                        TestData.success         = true;
+                    else
+                        % CASE: Actual result != expected result
+                        
+                        % NOTE: Only the location of the "FIRST" difference?!
+                        [equals_recursive_equal, diffLoc, diffMsg] = EJ_library.utils.equals_recursive(obj.expOutput, actOutput);
+                        if equals_recursive_equal
+                            warning('EJ_library.utils.equals_recursive can not find the difference.')
+                        end
+                        TestData.Result.diff.location = diffLoc;
+                        TestData.Result.diff.message  = diffMsg;
+                        TestData.resultDescrText = 'Actual function result differs from expected function result.';
+                        TestData.success         = false;
                     end
-                    TestData.Result.diff.location = diffLoc;
-                    TestData.Result.diff.message  = diffMsg;
-                    TestData.resultDescrText = 'Actual function result differs from expected function result.';
-                    TestData.success         = false;
+                else
+                    % CASE: Expected exception.
+                        TestData.resultDescrText = 'Test did not generate an exception as expected.';
+                        TestData.success         = false;
                 end
+                
+                
                 %end
             end
 
