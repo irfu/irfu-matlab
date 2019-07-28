@@ -90,7 +90,7 @@ function spdfcdfwrite(filename, varcell, varargin)
 %   variable. RECBNDVARS is a cell array of variable names. The M-by-N array
 %   data will create M rows (records), while each row having N elements. For an
 %   M-by-1 (column) or 1-by-M (row) vector, it will create M records, each 
-%   being a scarlar. For a 3-D array M-by-N-by-R, R records will be written,
+%   being a scalar. For a 3-D array M-by-N-by-R, R records will be written,
 %   and each record with M-by-N elements. Without this option, an array of 
 %   M-by-N will be written into a single record of 2-dimensions. See sample
 %   codes for its usage.
@@ -154,7 +154,7 @@ function spdfcdfwrite(filename, varcell, varargin)
 %   preferable). 
 %
 %   SPDFCDFWRITE(..., 'VarSparse', SPARSEVARS) specifies which variables have
-%   sparse records. SPARSEVARS is a cell array of prderly pairs of a variable
+%   sparse records. SPARSEVARS is a cell array of orderly pairs of a variable
 %   name and its respective value. The valid value should be 'full',
 %   'Sparse(padded)' or 'Sparse(previous)' (the 6th column from Variables field
 %   from spdfcdfinfo).
@@ -472,7 +472,7 @@ function spdfcdfwrite(filename, varcell, varargin)
 %                'blockingfactor', bf, ...			% Var blocking factors 
 %                'padvalues', pad, ...				% Var Pad values
 %                'cdfcompress',cdfcompress, ...			% CDF compression
-%                'checksum', info.FileSettings.Checksum, ... 	% Checsum
+%                'checksum', info.FileSettings.Checksum, ... 	% Checksum
 %                'VarDatatypes', datatypes);			% Var data types
 %
 %   Note: The compatible data types between MATLAB and CDF are as follows:

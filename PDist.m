@@ -221,6 +221,64 @@ classdef PDist < TSeries
         end
       end
     end    
+    function obj = resample_depend_ancillary(obj,NewTime,varargin)
+      TsTmp = obj;
+      tData = double(TsTmp.time.ttns - TsTmp.time.start.ttns)/10^9;
+      dataTmp = double(TsTmp.data);
+      newTimeTmp = double(NewTime.ttns - TsTmp.time.start.ttns)/10^9;
+
+%         % reshape data so it can be directly inserted into irf_resamp
+%         origDataSize = size(dataTmp);
+%         dataTmpReshaped = squeeze(reshape(dataTmp,[origDataSize(1) prod(origDataSize(2:end))]));
+%         newDataTmpReshaped = irf_resamp([tData dataTmpReshaped], newTimeTmp, varargin{:}); % resample
+%         newDataReshaped = squeeze(newDataTmpReshaped(:,2:end)); % take away time column
+%         newData = reshape(newDataReshaped,[length(newTimeTmp) origDataSize(2:end)]); % shape back to original dimensions
+        
+      % depend data
+      sizeData = size(obj.data);
+      nDepend = numel(obj.depend);
+      for ii = 1:nDepend
+        sizeDepend =  size(obj.depend{ii});
+        if sizeDepend(1) == 1 % same dependence for all times
+          obj.depend_{ii} = obj.depend{ii};
+        elseif sizeDepend(1) == TsTmp.length
+          dataTmp = obj.depend{ii};
+          origDataSize = size(dataTmp);
+          dataTmpReshaped = squeeze(reshape(dataTmp,[origDataSize(1) prod(origDataSize(2:end))]));
+          newDataTmpReshaped = irf_resamp([tData dataTmpReshaped], newTimeTmp, varargin{:}); % resample
+          newDataReshaped = squeeze(newDataTmpReshaped(:,2:end)); % take away time column
+          newData = reshape(newDataReshaped,[length(newTimeTmp) origDataSize(2:end)]); % shape back to original dimensions
+        
+          obj.depend_{ii} = newData;
+        else
+          error('Depend has wrong dimensions.')
+        end
+      end
+      
+      % ancillary data
+      nameFields = fieldnames(obj.ancillary);
+      nFields = numel(nameFields);
+      for iField = 1:nFields
+        eval(['sizeField = size(obj.ancillary.' nameFields{iField} ');'])
+        if sizeField(1) == TsTmp.length
+          old_ancillary = eval(['obj.ancillary.' nameFields{iField}]);
+          new_ancillary = irf_resamp([tData old_ancillary], newTimeTmp, varargin{:});
+          eval(['obj.ancillary.' nameFields{iField} ' = new_ancillary(:,2:end);'])
+        end
+      end       
+    end
+    function obj = mtimes(obj,value)
+      obj.data = obj.data*value;
+    end
+    function obj = times(obj,value)
+      obj.data = obj.data.*value;
+    end
+    function obj = mdivide(obj,value)
+      obj.data = obj.data/value;
+    end
+    function obj = divide(obj,obj2)
+      obj.data = obj.data./obj2.data;
+    end
     function [x,y,z] = xyz(obj,varargin)
       % PDIST.XYZ Get xyz coordinates of each detector bin. DSL
       % coordinates. PLEASE REPORT ERRORS.
@@ -604,7 +662,11 @@ classdef PDist < TSeries
       if isfield(PD.ancillary,'meanorsum'), PD.ancillary = rmfield(PD.ancillary,'meanorsum'); end
     end
     function PD = flux(obj,varargin)
-      % Flux/sr [cm-2 s-1 sr-1], int(v^3dv) -> v^4/4, for skymaps and pitch angle distributions.
+      % Flux/sr [cm-2 s-1 sr-1] for skymaps and pitch angle distributions.
+      %  j = int(fv d3v) = int(fv v^2dv sin(th)dth dphi) 
+      %    ~> (fv^4/4)*solidangle
+      %
+      %  Reduced distributions to be added.
       %
       %  To get flux in units [cm-2 s-1], multiply with solid angle:
       %   ePDist.flux.*ePDist.solidangle
@@ -617,6 +679,7 @@ classdef PDist < TSeries
       
       doScpot = 0;
       doPerSr = 1;
+      doDiff = 0;
       
       nargs = numel(varargin);      
       have_options = 0;
@@ -629,21 +692,37 @@ classdef PDist < TSeries
           scpot = varargin{2};
           doScpot = 1;
           l = 2;
-          args = args(l+1:end);
-        case 'sr'          
+        case 'sr'
           doPerSr = varargin{2};
-          l = 2;
-          args = args(l+1:end);            
+          l = 2;        
+        case 'diff'
+          doDiff = 1;
+          l = 1;          
         otherwise
           l = 1;
           irf.log('warning',sprintf('Input ''%s'' not recognized.',args{1}))
-          args = args(l+1:end);
-        end        
+        end    
+          args = args(l+1:end);    
         if isempty(args), break, end    
       end
       
       units = irf_units;
       
+      if doDiff 
+        PD = obj; 
+        E_mat = repmat(PD.depend{1},1,1,size(PD.depend{2},2)); % eV
+        E_mat_SI = E_mat*units.e;
+        if 0   
+          %PD.data = PD.data*2.*E_mat_SI/PD.mass/PD.mass;
+          PD.data = PD.data*2.*E_mat*units.e/PD.mass/PD.mass;
+        else
+          v_mat = sqrt(2*units.e*E_mat/obj.mass); % m/s
+          v_mat = v_mat*1e2; % cm/s
+          PD.data = PD.data.*v_mat.^2/PD.mass*1e-3;
+        end
+        PD.units = '1/(cm^2 s sr eV)';
+        return
+      end
       % int(v^3dv) -> v^4/4
       if doScpot
         E_minus = (obj.depend{1} - obj.ancillary.delta_energy_minus) - repmat(scpot.data,1,size(obj.depend{1},2));
@@ -656,15 +735,15 @@ classdef PDist < TSeries
       end
       v_minus = sqrt(2*units.e*E_minus/units.me); % m/s
       v_plus = sqrt(2*units.e*E_plus/units.me); % m/s
-      d_vel = (v_plus.^4 - v_minus.^4)/4; % (m/s)^3
+      d_vel = (v_plus.^4 - v_minus.^4)/4; % (m/s)^3      
       
-      if strcmp(obj.type,'skymap')        
-        d_vel_mat = repmat(d_vel,1,1,32,16);
+      if strcmp(obj.type,'skymap')
+        d_vel_mat = repmat(d_vel,1,1,size(obj.depend{2},2),size(obj.depend{3},2));
       elseif strcmp(obj.type,'pitchangle')        
         d_vel_mat = repmat(d_vel,1,1,numel(obj.depend{2}));
       end
             
-      if doPerSr        
+      if doPerSr
         vd3v = d_vel_mat;
         str_sr = '/sr';
       else
@@ -691,9 +770,68 @@ classdef PDist < TSeries
       PD.units = new_units;
       PD.siConversion = num2str(str2num(PD.siConversion)/d3v_scale,'%e');
     end
-    
-    
-    function PD = reduce(obj,dim,x,varargin) 
+    function PD = flux_red(obj,varargin)
+      % Flux/sr [cm-2 s-1 sr-1], int(v^3dv) -> v^4/4, for skymaps and pitch angle distributions.
+      %  Reduced distributions to be added.
+      %
+      %  To get flux in units [cm-2 s-1], multiply with solid angle:
+      %   ePDist.flux.*ePDist.solidangle
+      %
+      %  FPI flux in EDI energy range
+      %    dv_FPI_485 = 1760; % km/s
+      %    dv_EDI_500 = 660; % km/s
+      %    ePitch1 = ePDist1.pitchangles(dmpaB1,[168.5 180]); % antiparallel flux
+      %    irf_plot(ePitch1.elim(500).flux*dv_EDI_500/dv_FPI_485)
+      
+      doScpot = 0;
+      doPerSr = 1;
+      
+      nargs = numel(varargin);      
+      have_options = 0;
+      if nargs > 0, have_options = 1; args = varargin(:); end
+      
+      while have_options
+        l = 0;
+        switch(lower(args{1}))                
+        otherwise
+          l = 1;
+          irf.log('warning',sprintf('Input ''%s'' not recognized.',args{1}))
+          args = args(l+1:end);
+        end        
+        if isempty(args), break, end    
+      end
+      
+      units = irf_units;
+            
+      v_minus = obj.ancillary.v_edges(1:end-1); % m/s
+      v_plus = obj.ancillary.v_edges(2:end); % m/s
+      d_vel = abs(v_plus.^2 - v_minus.^2)/2; % (m/s)^3
+      d_vel_mat = repmat(d_vel,obj.length,1);
+      
+      str_sr = '';
+        
+      old_units = obj.units;
+      switch obj.units
+        case 's^3/cm^6' % m^4/s^4 = m^4/s^4 * cm^4/cm^4 = cm^4/s^4 * m^4/cm^4 = cm^4/s^4 * (10^-2)^4
+          d3v_scale = 1/10^(-2*4);
+          new_units = sprintf('1/cm^2s%s',str_sr);
+        case 's^3/m^6' % m^4/s^4 = m^4/s^4 * m^4/m^4 = m^4/s^4 * m^4/m^4 = m^4/s^4 * (10^0)^4
+          d3v_scale = 1/10^0;
+          new_units = sprintf('1/m^2s%s',str_sr);
+        case 's^3/km^6' % m^4/s^4 = m^4/s^4 * km^4/km^4 = km^4/s^4 * m^4/km^4 = km^4/s^4 * (10^3)^4
+          d3v_scale = 1/10^(3*4);
+          new_units = sprintf('1/km^2s%s',str_sr);          
+      end
+        
+      PD = obj;
+      PD.data = PD.data.*d_vel_mat*1;
+      PD.units = 's-1m-2';
+      
+      PD.data = PD.data*1e-4;
+      PD.units = 's-1cm-2';
+      PD.siConversion = '>1e4';%num2str(str2num(PD.siConversion)/d3v_scale,'%e');
+    end
+    function PD = reduce(obj,dim,x,varargin)
       %PDIST.REDUCE Reduces (integrates) 3D distribution to 1D (line).      
       %   Example (1D):
       %     f1D = iPDist1.reduce('1D',dmpaB1,'vint',[0 10000]);
@@ -713,7 +851,9 @@ classdef PDist < TSeries
       %     'base'   - set the base for the projection to polar 'pol', or
       %                cartesian 'cart' (only valid for 2D planes)
       %     'vg'     - array with center values for the projection velocity
-      %                grid in [km/s], determined by instrument if omitted
+      %                grid in [km/s], determined by instrument if omitte
+      %     'vg_edges' - array with edge values for the projection velocity
+      %                grid in [km/s]
       %     'phig'   - array with center values for the projection
       %                azimuthal angle in [rad]
       %     'vint'   - set limits on the out-of-plane velocity to get
@@ -728,7 +868,7 @@ classdef PDist < TSeries
       %                Tseries, for example 2*scpot
       %     'weight' - how the number of MC iterations per bin is weighted, 
       %                can be 'none' (default), 'lin' or 'log'
-      %     
+      % 
       %    
       % This is a shell function for irf_int_sph_dist.m
       %
@@ -797,7 +937,8 @@ classdef PDist < TSeries
       vint = [-Inf,Inf];
       aint = [-180,180]; % azimuthal intherval
       vgInput = 0;
-      weight = 'none';
+      vgInputEdges = 0;
+      weight = 'none';      
       %tint = dist.time([1 dist.length-1]);
       correct4scpot = 0;
       isDes = 1;
@@ -832,6 +973,10 @@ classdef PDist < TSeries
             l = 2;
             vgInput = 1;
             vg = args{2}*1e3;
+          case 'vg_edges'
+            l = 2;
+            vgInputEdges = 1;
+            vg_edges = args{2}*1e3; % m/s
           case 'weight' % how data is weighted
             l = 2;
             weight = args{2};
@@ -861,7 +1006,6 @@ classdef PDist < TSeries
           case 'base' %
               l = 2;
               base = args{2};
-
         end
         args = args((l+1):end);
         if isempty(args), break, end
@@ -875,6 +1019,7 @@ classdef PDist < TSeries
       
       %% Get angles and velocities for spherical instrument grid, set projection
       %  grid and perform projection
+      units = irf_units;
       emat = double(dist.depend{1});
       if doLowerElim
         lowerelim_mat = repmat(lowerelim, size(emat(1,:)));
@@ -883,10 +1028,7 @@ classdef PDist < TSeries
         scpot = scpot.tlim(dist.time).resample(dist.time);
         scpot_mat = repmat(scpot.data, size(emat(1,:)));
       end
-      u = irf_units;
-
-      if isDes == 1; M = u.me; else; M = u.mp; end
-
+      if isDes == 1; M = units.me; else; M = units.mp; end
       if doTint % get time indicies
         if length(tint) == 1 % single time
           it = interp1(dist.time.epochUnix,1:length(dist.time),tint.epochUnix,'nearest');
@@ -897,15 +1039,12 @@ classdef PDist < TSeries
         end
       else % use entire PDist
         it = 1:dist.length;
-      end
-    
+      end   
       nt = length(it);
       if ~nt % nt = 0
         error('Empty time array. Please verify the time(s) given.')
       end
     
-      
-      nt = length(it);
       % try to make initialization and scPot correction outside time-loop
       
       % loop to get projection
@@ -929,9 +1068,8 @@ classdef PDist < TSeries
           remove_extra_ind = 0; % for margin, remove extra energy channels
           ie_below_elim = find(abs(emat(it(i),:)-lowerelim_mat(it(i),:)) == min(abs(emat(it(i),:)-lowerelim_mat(it(i),:)))); % closest energy channel
           F3d(1:(max(ie_below_elim) + remove_extra_ind),:,:) = 0;           
-        end
-       
-        if correct4scpot          
+        end       
+        if correct4scpot
           if isfield(dist.ancillary,'delta_energy_minus') % remove all that satisfies E-Eminus<Vsc
             ie_below_scpot = find(emat(it(i),:)-dist.ancillary.delta_energy_minus(it(i),:)-scpot_mat(it(i),1)<0,1,'last');
             if 0 % disp energy channel that is removed, interferes with it = ... display
@@ -953,7 +1091,8 @@ classdef PDist < TSeries
           %disp(sprintf('%8.1g ',energy))          
         end
             
-        v = u.c*sqrt(1-(energy*u.e/(M*u.c^2)-1).^2); % m/s  
+
+        v = units.c*sqrt(1-(energy*units.e/(M*units.c^2)-1).^2); % m/s  
 
         % azimuthal angle
         phi = double(dist.depend{2}(it(i),:)); % in degrees
@@ -969,14 +1108,18 @@ classdef PDist < TSeries
 
         % Set projection grid after the first distribution function
         % bin centers
-        if ~vgInput
+        if vgInputEdges % redefine vg (which is vg_center)
+          vg = vg_edges(1:end-1) + 0.5*diff(vg_edges);          
+        elseif vgInput
+          vg = vg;
+        else % define from instrument velocity bins
           if dim == 1
             vg = [-fliplr(v),v];
           elseif dim == 2
             vg = v;
           end
         end
-        
+
         % initiate projected f
         if i == 1            
             if dim == 1
@@ -990,13 +1133,16 @@ classdef PDist < TSeries
               vel = zeros(length(it),2);
             end
             dens = zeros(length(it),1);
-        end
-        
+        end        
         % perform projection
         if dim == 1 
           % v, phi, th corresponds to the bins of F3d
-          tmpst = irf_int_sph_dist(F3d,v,phi,th,vg,'x',xphat,'nMC',nMC,'vzint',vint*1e3,'aint',aint,'weight',weight);
-          all_vg(i,:) = vg;
+          if vgInputEdges
+            tmpst = irf_int_sph_dist(F3d,v,phi,th,vg,'x',xphat,'nMC',nMC,'vzint',vint*1e3,'aint',aint,'weight',weight,'vg_edges',vg_edges);
+          else
+            tmpst = irf_int_sph_dist(F3d,v,phi,th,vg,'x',xphat,'nMC',nMC,'vzint',vint*1e3,'aint',aint,'weight',weight);
+          end
+          all_vg(i,:) = tmpst.v; % normally vg, but if vg_edges is used, vg is overriden
           all_vg_edges(1,:) = tmpst.v_edges;
         elseif dim == 2
           %tmpst = irf_int_sph_dist_mod(F3d,v,phi,th,vg,'x',xphat,'z',zphat,'phig',phig,'nMC',nMC,'vzint',vint*1e3,'weight',weight);
@@ -1065,8 +1211,105 @@ classdef PDist < TSeries
       end
       
     end
-    
-    
+    function PD = rebin(obj,base,grid)
+      % PDIST.REBIN Rebins energies of distribution function.      
+      %   Usage: 
+      %     PD = REBIN(dist,base,grid);
+      %       base - only 'sph' implemented
+      %       grid - only {energy,[],[]} implemented
+      %       
+      %     Rebin to correspond to EDI energy interval.
+      %     ePDist1_rebin_500 = ePDist1.rebin(''sph'',{[475 525],[],[]});',1);      
+      % See also IRF_INT_SPH_DIST
+      
+      %     if base is 'sph', grid should contain {energy,azimuthal_angle,polar_angle} 
+      %       if any is empty, it is kept as it is,for example, one can
+      %       choose to only rebin in energies
+      %     if base is 'cart' or 'cart_v', grid should be {vx,vy,vz} 
+      %     if base is 'cart_E', grid should be {Ex,Ey,Ez} 
+      %       v/E defines the edges of the bins
+      %
+      units = irf_units;
+      nMC = 200;
+      %its = 1:10;
+      nt = obj.length;
+      its = 1:nt;
+      PD = [];
+      
+      if strcmp(base,'sph')
+        old_az_num = size(obj.depend{2},2);
+        old_pol_num = size(obj.depend{3},2);
+        
+        old_energy_minus = obj.depend{1} - obj.ancillary.delta_energy_minus;
+        old_energy_plus = obj.depend{1} + obj.ancillary.delta_energy_plus;
+        old_energy_num = size(old_energy_minus,2);
+        
+        old_v_minus = sqrt(2*units.e*old_energy_minus/units.me); % m/s
+        old_v_plus = sqrt(2*units.e*old_energy_plus/units.me); % m/s    
+        old_v2dv = (old_v_plus.^3 - old_v_minus.^3)/3;
+      
+        old_data = obj.data;
+        old_dn = obj.d3v.data; % how much density belongs to each phase space bin
+        old_d3v = obj.d3v('mat');
+
+        if not(isempty(grid{1}))
+          new_energy_minus = grid{1}(1:end-1);
+          new_energy_plus = grid{1}(2:end);
+          new_energy_edges = unique([new_energy_minus,new_energy_plus]);
+          
+          new_v_minus = sqrt(2*units.e*new_energy_minus/units.me); % m/s
+          new_v_plus = sqrt(2*units.e*new_energy_plus/units.me); % m/s    
+          new_v2dv = (new_v_plus.^3 - new_v_minus.^3)/3;
+        end
+        new_energy_num = numel(new_energy_minus);
+        new_data = zeros(nt,new_energy_num,size(obj.depend{2},2),size(obj.depend{3},2));
+          
+        % loop through time
+        nskip_erange = 0;
+        nskip_fzero = 0;
+        for it = its
+          % loop through old instrument bins
+          for ie = 1:old_energy_num
+            if or(old_energy_minus(it,ie) > max(new_energy_plus),old_energy_plus(it,ie) < min(new_energy_minus))
+              nskip_erange = nskip_erange + 1;              
+              %disp(sprintf('skipping: new_energy_channel max range = [%.0f, %.0f], old energy channel = [%.0f, %.0f]',min(new_energy_minus),max(new_energy_plus),old_energy_minus(it,ie),old_energy_plus(it,ie)))              
+              continue
+            end
+            for ipol = 1:old_pol_num
+              for iaz = 1:old_az_num %                
+                f_per_MC = old_data(it,ie,iaz,ipol)*old_v2dv(it,ie)/nMC;
+                %dn_per_MC = old_dn(it,ie,iaz,ipol)/nMC;
+                if f_per_MC == 0
+                  nskip_fzero = nskip_fzero + 1;
+                  continue
+                end
+                %try
+                energy_MC = rand(nMC,1)*(old_energy_plus(it,ie)-old_energy_minus(it,ie))+old_energy_minus(it,ie);                
+                
+                %f_per_MC = old_dn(it,ie,iaz,ipol)/nMC;
+                % divide particles into new bins
+                [N,EDGES] = histcounts(energy_MC,new_energy_edges);
+                new_data(it,:,iaz,ipol) = new_data(it,:,iaz,ipol) + N*f_per_MC./new_v2dv;
+                %catch
+                %  1;
+                %end
+              end
+            end
+          end
+        end  
+        disp(sprintf('nskip_erange = %g, nskip_fzero = %g',nskip_erange,nskip_fzero))
+        PD = obj;        
+        PD.depend{1} = repmat(((new_energy_plus(:,:)+new_energy_minus(:,:))/2),nt,1);        
+        PD.ancillary.delta_energy_minus = abs(PD.depend{1}-new_energy_minus(:,:));
+        PD.ancillary.delta_energy_plus = abs(PD.depend{1}-new_energy_plus(:,:));
+        PD.ancillary.energy0 = PD.depend{1}(1,:);
+        PD.ancillary.energy1 = PD.depend{1}(1,:);
+        %new_dn = PD.d3v('mat');
+        PD.data_ = new_data;%./new_dn;
+      else
+        return
+      end      
+    end
     function [ax,args,nargs] = axescheck_pdist(varargin)
       %[ax,args,nargs] = axescheck_pdist(varargin{:});
       % MATLAB's axescheck only checks if the first argument is an axis handle, but
@@ -1435,7 +1678,7 @@ classdef PDist < TSeries
       units = irf_units;
       
       % default plotting parameters
-      doMirrorData = 1;
+      doMirrorData = 0;
       doAxesV = 0; % default is to do energy
       doLog10 = 1;
       doLogAxes = 1;
@@ -1527,16 +1770,17 @@ classdef PDist < TSeries
       % builtin function
       subs.type = '()';
       subs.subs = {tId};
-      dist = dist_orig.subsref(subs);
+      dist = dist_orig.subsref(subs);      
       %dist = dist_orig(tId);
       if (length(dist.time)<1); irf.log('warning','No data for given time interval.'); return; end
       
       % prepare data to be plotted
-      data = squeeze(mean(dist.data,1)); % average data over time indices
+      data = squeeze(irf.nanmean(dist.data,1)); % average data over time indices
+      data = reshape(data,[size(dist.depend{1},2) size(dist.depend{2},2)]);
       data(data==0) = NaN; % put zero values to NaN
       if doFLim % put values outside given interval to NaN, default is [0 Inf]
-        plot_data(data<=flim(1)) = NaN;
-        plot_data(data>flim(2)) = NaN;
+        data(data<=flim(1)) = NaN;
+        data(data>flim(2)) = NaN;
       end
       if doLog10 % take log10 of data
         data = log10(data);      
@@ -1544,20 +1788,71 @@ classdef PDist < TSeries
       
       % main surface plot
       % NOTE, PCOLOR and SURF uses flipped dimensions of (x,y) and (z), but PDist.reduce does not, there we need to flip the dim of the data
-      rho_edges = [dist.depend{1}-dist.ancillary.delta_energy_minus dist.depend{1}(:,end)+dist.ancillary.delta_energy_plus(:,end)];
-      if isfield(dist.ancillary,'pitchangle_edges') && not(isempty(dist.ancillary.pitchangle_edges))
+      rho_edges = [dist.depend{1}-dist.ancillary.delta_energy_minus dist.depend{1}(:,end)+dist.ancillary.delta_energy_plus(:,end)];      
+      if isfield(dist.ancillary,'delta_pitchangle_minus') && not(isempty(dist.ancillary.delta_pitchangle_minus))
+        ntheta = numel(dist.depend{2});
+        theta_minus = dist.depend{2} - dist.ancillary.delta_pitchangle_minus;
+        theta_plus = dist.depend{2} + dist.ancillary.delta_pitchangle_plus;
+        theta_edges = sort(unique([theta_minus;theta_plus]));
+        % Look for any edges that are not common, this should be a gap;
+        gaps = setdiff(theta_minus(2:end),theta_plus(1:end-1));
+        ngaps = numel(gaps);
+        new_itheta = 1;
+        for itheta = 2:ntheta
+          new_itheta = new_itheta + 1;
+          if theta_minus(itheta) == theta_plus(itheta-1) % ok, the edges concide
+            
+          else % edges does not concide, need to pad with NaN
+            theta_edges = [theta_edges(1:new_itheta); NaN; theta_edges(new_itheta+1:end)];
+            data = [data(:,1:new_itheta-1) nan(size(data,1),2) data(:,new_itheta:end)];
+            new_itheta = new_itheta + 2;
+          end
+        end
+        1;
+
+      elseif isfield(dist.ancillary,'pitchangle_edges') && not(isempty(dist.ancillary.pitchangle_edges))
         theta_edges = dist.ancillary.pitchangle_edges;
+        if not(size(theta_edges,2)-1 == size(dist.depend{2},2)) % there are gaps in the pitchangle, for example for EDI flux
+          % find gaps and pad with nans, only adapted for equally wide
+          % pitch angle bins, and only one gap
+          diff_theta_edges = diff(theta_edges);
+          unique_diff_theta_edges = sort(unique(diff_theta_edges));
+          % assume the smallest on is the proper one
+          ind_pad = find(diff_theta_edges==unique_diff_theta_edges(end));
+          data = [data(:,1:ind_pad-1) nan(size(data,1),2) data(:,ind_pad:end)];
+          theta_edges = [theta_edges(1:ind_pad) NaN theta_edges(ind_pad+1:end)]; % also pad grid, to avoid empty boxes
+%           ngaps = size(theta_edges,2) - 1 - size(dist.depend{2},2);
+%           ngaps_remaining = ngaps;
+%           %while ngaps_remaining
+%           for iedge = 1:size(theta_edges,2)-1
+%             theta_minus_correct = dist.depend{2}(iedge);
+%             theta_plus = theta_edges(iedge+1);
+%             theta_minus = theta_edges(iedge);
+%             theta_plus = theta_edges(iedge+1);
+%           end
+          
+        end
       else
         theta = dist.depend{2}; dtheta = theta(2)-theta(1); 
         theta_edges = [theta(1)-dtheta/2 theta+dtheta/2];
       end      
-      if doScpot, rho_edges = rho_edges - scpot; rho_edges(rho_edges<0) = NaN; data(isnan(rho_edges),:) = NaN; end
+      if doScpot
+        if isscalar(scpot)
+          rho_edges = rho_edges - scpot; 
+        else
+          rho_edges = rho_edges - repmat(scpot(tId),1,size(rho_edges,2));           
+        end
+          %rho_edges = rho_edges - repmat(scpot,1,size(rho_edges,2)); 
+        rho_edges(rho_edges<0) = NaN; 
+      end
       if doAxesV
         rho_edges = sqrt(2*units.e*rho_edges/units.me)*1e-3*v_scale;
         stringLabel = sprintf('v (%s)',v_label_units);
       else
         stringLabel = sprintf('E (%s)','eV');
       end
+      rho_edges = irf.nanmean(rho_edges,1); % average over times, do after removing scpot
+      data(isnan(rho_edges),:) = NaN; % rho_edges<scpot was put to NaN above      
       if doLogAxes, rho_edges = log10(rho_edges); stringLabel = sprintf('log_{10}(%s)%s',stringLabel(1),stringLabel(2:end)); end
       theta_edges = theta_edges + 90; % rotate data      
       [RHO,THETA] = meshgrid(rho_edges,theta_edges);            
@@ -1567,6 +1862,10 @@ classdef PDist < TSeries
         plot_X = [X; -flipdim(X(1:end-1,:),1)];
         plot_Y = [Y; flipdim(Y(1:end-1,:),1)];
         plot_data = [data flipdim(data,2)];
+      else
+        plot_X = X;
+        plot_Y = Y;
+        plot_data = data;
       end
       ax_surface = surf(ax,plot_X,plot_Y,plot_X*0,plot_data');
       
@@ -1708,6 +2007,24 @@ classdef PDist < TSeries
       PD = obj;
       PD.data_ = tmpData;
       PD.depend{2} = tmpPA; 
+      % Ancillary data, problematic for pitchangle_edges since we dont 
+      % immediately know where gaps can be, use instead
+      % pitchangle_delta_minus/plus
+      if isfield(PD.ancillary,'pitchangle_delta_minus')
+        PD.ancillary.pitchangle_delta_minus = PD.ancillary.pitchangle_delta_minus(:,indPA);
+      end
+      if isfield(PD.ancillary,'pitchangle_delta_plus')
+        PD.ancillary.pitchangle_delta_plus = PD.ancillary.pitchangle_delta_plus(:,indPA);
+      end
+      % changed to delta_pitchangle_minus/plus to follow fpi way: delta_energy_minus/plus
+      % keep above for now for backwards compatability
+      if isfield(PD.ancillary,'delta_pitchangle_minus') 
+        PD.ancillary.delta_pitchangle_minus = PD.ancillary.delta_pitchangle_minus(:,indPA);
+      end
+      if isfield(PD.ancillary,'delta_pitchangle_plus')
+        PD.ancillary.delta_pitchangle_plus = PD.ancillary.delta_pitchangle_plus(:,indPA);
+      end
+      
     end
     function PD = elim(obj,eint)  
       energy = obj.depend{1};
@@ -1791,7 +2108,7 @@ classdef PDist < TSeries
       PD.units = obj.units;
       PD.name = 'omni';
     end
-    function spec = specrec(obj,varargin)    
+    function spec = specrec(obj,varargin)
       % PDIST.SPECREC Prepares structure to be used with irf_spectrogram or irf_plot
       %   sr = PDIST.SPECREC(spectype)
       %     spectype - 'energy' - default for PDist.type 'omni'
@@ -2165,6 +2482,10 @@ classdef PDist < TSeries
         % plotting purposes, can be empty
         PD.ancillary.pitchangle_edges = pitchangle_edges;        
     end  
+    function PD = squeeze(obj)
+      PD = obj;
+      PD.data = squeeze(PD.data);
+    end
     function PD = einterp(obj,varargin)
       % PDIST.EINTERP Interpolates f to 64 energy channels. 
       %   OBS: ONLY FOR COSMETICS, it makes pitchangle spectrograms 
@@ -2337,6 +2658,7 @@ classdef PDist < TSeries
       % to be investigated further. 
  
     end
+    % Plotting functions
   end
   
   methods (Static)

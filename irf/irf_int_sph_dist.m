@@ -71,6 +71,7 @@ projDim = 1; % number of dimensions of the projection
 weight = 'none'; % how number of MC points is weighted to data
 base = 'pol'; % If 1D then this does not matter
 veInput = 0; % input energy differences
+veInputEdges = 0; % 
 
 args = varargin;
 nargs = length(varargin);
@@ -100,6 +101,9 @@ while have_options
         case 've'
             ve = args{2};
             veInput = 1;
+        case 'vg_edges'
+          vg_edges = args{2};
+          veInputEdges = 1;
     end
     args = args(3:end);
     if isempty(args), break, end
@@ -146,11 +150,16 @@ nV = length(v);
 
 
 %% bin edges
-
-vg_edges = zeros(1,length(vg)+1);
-vg_edges(1) = vg(1)-diff(vg(1:2))/2;
-vg_edges(2:end-1) = vg(1:end-1)+diff(vg)/2;
-vg_edges(end) = vg(end)+diff(vg(end-1:end))/2;
+if veInputEdges % get vg from vg_edges
+  vg_edges = vg_edges;
+  vg = vg_edges(1:(end-1)) + 0.5*diff(vg_edges);
+  nVg = numel(vg);
+else % get vg_edges from vg
+  vg_edges = zeros(1,length(vg)+1);
+  vg_edges(1) = vg(1)-diff(vg(1:2))/2;
+  vg_edges(2:end-1) = vg(1:end-1)+diff(vg)/2;
+  vg_edges(end) = vg(end)+diff(vg(end-1:end))/2;
+end
 
 switch lower(base)
     case 'pol'

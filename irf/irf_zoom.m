@@ -244,6 +244,7 @@ end
 if isempty(ylims) % has been to few data points to estimate limits
   ylims=get(h,'ylim');
 end
+if isa(ylims, 'integer'), ylims = double(ylims); end
 
 yscale=get(h,'yscale');
 

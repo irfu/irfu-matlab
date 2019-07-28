@@ -8,10 +8,13 @@ function out = SPDFPARSEEPOCH16(epoch16)
 %     epoch16               A cell or vector of UTC string
 %
 %   Note: the valid epoch string must be one of the following forms:
-%      0: dd-mmm-yyyy hh:mm:ss.mmmuuunnnppp, e.g., "01-JAN-2010 12:00:00.000000000000"
+%      0: dd-mmm-yyyy hh:mm:ss.mmm.uuu.nnn.ppp, e.g., "01-JAN-2010 12:00:00.000.000.000.000"
 %      1: yyyymmdd.ddddddddddddddd, e.g., "20100101.120000000000000"
 %      2: yyyymmddhhmmss, e.g., "20100101120000"
-%      3: yyyy-mm-ddThh:mm:ss.mmmuuunnnppp, e.g., "2010-01-01T12:00:00.000000000000"
+%      3: yyyy-mm-ddThh:mm:ss.mmm.uuu.nnn.pppZ, e.g., "2010-01-01T12:00:00.000.000.000.000Z"
+%         where mmm is milliseconds, uuu microseconds, nnn nanoseconds,
+%         ppp picoseconds.
+%      4: yyyy-mm-ddThh:mm:ss.mmmuuunnnppp, e.g., "2010-01-01T12:00:00.000000000000"
 %         where mmm is milliseconds, uuu microseconds, nnn nanoseconds,
 %         ppp picoseconds.
 %
@@ -20,7 +23,7 @@ function out = SPDFPARSEEPOCH16(epoch16)
 %   % Convert the UTC strings in cell to CDF_EPOCH16 and write it to Epoch
 %   % variable of CDF CDF_EPOCH16 data type in a CDF.
 %
-%   utcs = {'2009-01-01 00:00:00.123'; '2009-01-01 12:00:00.123'};
+%   utcs = {'2009-01-01T00:00:00.123'; '2009-01-01T12:00:00.123'};
 %   epoch16 = SPDFPARSEEPOCH16(utcs);
 %   SPDFCDFWRITE('example', {'Epoch', epoch16}, ...
 %            'recordbound', {'Epoch'});

@@ -201,6 +201,8 @@ for i=1:size(data,2) % go through all the datacolumns
     %% Calculate the power spectrum
     if returnpower
         power=abs((2*pi)*conj(W).*W./newfreqmat);
+    else
+        power=sqrt(abs((2*pi)./newfreqmat)).*power;
     end
     
     %% Remove data possibly influenced by edge effects

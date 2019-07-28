@@ -14,7 +14,7 @@ function out = UTC2CDFEPOCH16(UTC,month,day,hour,minute,second,milsec,micsec,nan
 %      1: yyyymmdd.dddddddddd, e.g., "20100101.1200000000"
 %      2: yyyymmddhhmmss, e.g., "20100101120000"
 %      3: yyyy-mm-ddThh:mm:ss.llluuunnn, e.g., "2010-01-01T12:00:00.000000000"
-%         where lll as milliseconds, uuu as microseconds and nnn as naniseconds.
+%         where lll as milliseconds, uuu as microseconds and nnn as nanoseconds.
 %   Or,
 %
 %   OUT = UTC2CDFEPOCH16(year,month,day,hour,minute,second,milsec,micsec,nansec,picsec) 

@@ -12,12 +12,13 @@ function out = SPDFENCODETT2000(tt2000, varargin)
 %       yyyy-mm-ddThh:mm:ss.mmmuuunnn, e.g., "2000-01-01T12:34:56.123456789"
 %
 %   OUT = SPDFENCODETT2000(tt2000, 'Format', FORMAT) encodes the UTC
-%   string into the specified format. FORMAT is a number from 0 to 3.
+%   string into the specified format. FORMAT is a number from 0 to 4.
 %   FORMAT:
 %     0: dd-mmm-yyyy hh:mm:ss.mmmuuunnn, e.g., "01-JAN-2000 12:34:56.123456789"
 %     1: yyyymmdd.dddddddddd, e.g., "20000101.1200000000"
-%     2: yyymmddhhmmss, e.g., "20000101123456"
+%     2: yyyymmddhhmmss, e.g., "20000101123456"
 %     3: yyyy-mm-ddThh:mm:ss.mmmuuunnn, e.g., "2000-01-01T12:34:56.123456789"
+%     4: yyyy-mm-ddThh:mm:ss.mmmuuunnnZ, e.g., "2000-01-01T12:34:56.123456789Z"
 %   where mmmuuunnn is milliseconds, microseconds and nanoseconds.
 %   Format 3 is the default (as ISO 8601) if this option is not provided.
 %
@@ -35,6 +36,7 @@ function out = SPDFENCODETT2000(tt2000, varargin)
 
 % HISTORY:
 %   August 16, 2011  Mike Liu    The initial version.
+%   October 6, 2018  Mike Liu    Added format 4.
 
 %
 % Process arguments.
@@ -121,8 +123,8 @@ if (nargin > 0)
                    return;
                end
 
-               if (int32(format) < 0 || int32(format) > 3)
-                 msg = sprintf('format value "%d" is out or 0-3 range.', format);
+               if (int32(format) < 0 || int32(format) > 4)
+                 msg = sprintf('format value "%d" is out of 0-4 range.', format);
                  return;
                end
                args.Format = int32(format);

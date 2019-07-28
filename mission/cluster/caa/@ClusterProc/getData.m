@@ -1849,7 +1849,7 @@ elseif strcmp(quantity,'probesa')
         end
         if err_angle>1 || err_angle_mean>1
           irf_log('proc','This is not yet implemented, need to do spin-by-spin');
-          error('This is not yet implemented, need to do spin-by-spin')
+          continue
         end
         fsamp = [];
         for probe = [12 32 34]

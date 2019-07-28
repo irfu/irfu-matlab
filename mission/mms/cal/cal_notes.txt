@@ -6,3 +6,4 @@
 2016-10-25 -- 27, MMS1 and MMS2 offsets were originally exluded from these ROIs. These values were added to 20170112 cal files manually for MMS1 and MMS2.
 2017-05-28, Additional offset added to at 22:00 to end of ROI for all MMS spacecraft
 2017-09-12, Additional offset added to at 11:00 to end of ROI for all MMS spacecraft
+2018-12-31, NOTE: This date and time (midnight) is artifically added to ensure a reasonable value is used for dates after end of CAL file. MUST BE CHANGED IN NEXT FILE!

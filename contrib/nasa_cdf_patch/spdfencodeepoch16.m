@@ -6,17 +6,20 @@ function out = SPDFENCODEEPOCH16(epoch, varargin)
 %
 %     epoch                An epoch
 %
-%   The encoded epoch string will have the following format:
+%   The encoded epoch string will have the following ISO 8601 format:
+%          yyyy-mm-ddThh:mm:ss.mmmuuunnnppp
+%          e.g., "2000-01-01T12:34:56.123456789999"
+%   Originally, it was in this form:
 %          dd-mmm-yyyy hh:mm:ss.mmm.uuu.nnn.ppp
-%   e.g., "01-Jan-2000 12:34:56.123.456.789.999"
+%          e.g., "01-Jan-2000 12:34:56.123.456.789.999"
 %
 %   OUT = SPDFENCODEEPOCH16(epoch, 'Format', FORMAT) encodes the UTC
-%   string into the specified format. FORMAT is a number from 0 to 3.
+%   string into the specified format. FORMAT is a number from 0 to 4.
 %   FORMAT:
 %     0: dd-mmm-yyyy hh:mm:ss.mmm.uuu.nnn.ppp 
 %        e.g., "01-JAN-2000 12:34:56.123.456.789.999"
 %     1: yyyymmdd.ddddddd e.g., "20000101.1200000"
-%     2: yyymmddhhmmss e.g., "20000101123456"
+%     2: yyyymmddhhmmss e.g., "20000101123456"
 %     3: yyyy-mm-ddThh:mm:ss.mmm.uuu.nnn.pppZ
 %        e.g., "2000-01-01T12:34:56.123.456.789.999Z"
 %     4: yyyy-mm-ddThh:mm:ss.mmmuuunnnppp
@@ -61,7 +64,7 @@ out = spdfencodeepoch16c(epoch, args.Format);
 
 function [args, msg] = parse_inputs(varargin)
 % Set default values
-args.Format = int32(0);
+args.Format = int32(4);
 msg = '';
 % Parse arguments based on their number.
 if (nargin > 0)
