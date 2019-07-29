@@ -1,42 +1,23 @@
-function parse_testlogbook_DCC_DCV_TF___TEST
 %
 % Automatic test code for function parse_testlogbook_DCC_DCV_TF.
 %
 %
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
 % First created 2017-10-12
+%
+function parse_testlogbook_DCC_DCV_TF___ATEST
 
-expResultList = {};
-argListList   = {};
+tl = {};
+tl{end+1} = test_data_DCC();
+tl{end+1} = test_data_DCV_TF();
 
-[expResultList{end+1}, argListList{end+1}] = test_data_DCC();
-[expResultList{end+1}, argListList{end+1}] = test_data_DCV_TF();
-
-
-
-for iTest = 1:numel(expResultList);
-    actResult = bicas.BSACT_utils.parse_testlogbook_DCC_DCV_TF(argListList{iTest}{:});   % act = actual
-    
-    expResult = expResultList{iTest};
-    
-    if ~isequaln(expResult, actResult)
-        if numel(expResult) ~= numel(actResult)
-            error('Different number of elements')
-        end
-        for i=1:numel(expResult)
-            if ~isequaln(expResult(i), actResult(i))
-                warning('Elements %i differ', i)
-            end
-        end
-        error('FAIL')
-    end
-end
+EJ_library.atest.run_tests(tl)
 
 end
 
 
 
-function [expResult, argList] = test_data_DCC()
+function Test = test_data_DCC()
 
 exp = struct(...
     'antennaSignals',          {}, ...
@@ -103,8 +84,7 @@ rowList = [rowList, {...
 
 
 
-expResult = exp;
-argList   = {rowList, 'DCC'};
+Test = EJ_library.atest.CompareFuncResult(@bicas.tools.BSACT_utils.parse_testlogbook_DCC_DCV_TF, {rowList, 'DCC'}, {exp});
 
 end
 
@@ -134,7 +114,7 @@ end
 
 
 
-function [expResult, argList] = test_data_DCV_TF()
+function Test = test_data_DCV_TF()
 
 exp = struct(...
     'antennaSignals',  {}, ...
@@ -251,8 +231,7 @@ rowList = [rowList, {...
 
 
 
-expResult = exp;
-argList   = {rowList, 'DCV'};
+Test = EJ_library.atest.CompareFuncResult(@bicas.tools.BSACT_utils.parse_testlogbook_DCC_DCV_TF, {rowList, 'DCV'}, {exp});
 
 end
 
@@ -293,4 +272,5 @@ function StructArray = set_field(StructArray, nLastIndices, fieldName, fieldValu
 for i = numel(StructArray) + [(-nLastIndices+1) : 0]
     StructArray(i).(fieldName) = fieldValue;
 end
+
 end

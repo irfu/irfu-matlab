@@ -2,7 +2,6 @@
 % Class that collects calibration data and the corresponding metadata from BSACT. An object can and should contain
 % either DCC, DCV, _or_ TF data. Metadata are collected by parsing the testlogbook*.txt files.
 %
-% 
 %
 % NOTES
 % =====
@@ -36,7 +35,6 @@
 % (2) Can be used for automatically converting calibration data to to other file formats (CDF, XML etc).
 % (3) Manually analyzing the calibration data itself (plotting; making one's own fits using other table columns;
 % comparing channels, checking temperature dependence).
-%
 %
 %
 % VARIABLE NAMING CONVENTIONS / DEFINITIONS OF TERMS
@@ -75,7 +73,6 @@
 %
 % NOTE: The naming convention here is to use the flow of information in the physical instrument to determine what is
 % "input" and "output". Therefor, for voltages, BICAS calculates the "input" signals from the "output" signals.
-%
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden.
@@ -141,7 +138,7 @@ classdef reader_DCC_DCV_TF < handle     % Explicitly declare it as a handle clas
         % mebTemperatureCelsius : The MEB temperature at which the tests are made.
             
             testLogbookRowList = bicas.utils.read_text_file(testLogbookFile);
-            metadataList = bicas.BSACT_utils.parse_testlogbook_DCC_DCV_TF(testLogbookRowList, dataType);
+            metadataList = bicas.tools.BSACT_utils.parse_testlogbook_DCC_DCV_TF(testLogbookRowList, dataType);
             
             % TODO-NEED-INFO: Necessary to use special function here? Can replace call with one-liner?
             metadataList = bicas.utils.merge_structs(metadataList, struct('mebTempCelsius', mebTemperatureCelsius));
@@ -189,7 +186,7 @@ classdef reader_DCC_DCV_TF < handle     % Explicitly declare it as a handle clas
         
             if ~ischar(filePath); error('BICAS:reader_DCC_DCV_TF:IllegalArgument', 'Argument is not a string.'); end
         
-            Data = bicas.BSACT_utils.read_BSACT_file(filePath, {...
+            Data = bicas.tools.BSACT_utils.read_BSACT_file(filePath, {...
                 'setCurrentMikroAmpere', ...   % Set current/design current. Exactly proportional to digital current.
                 'setCurrentDigital', ...       % Signed integer value representing current. If not identical to TM,
                 ...                            % then at least very-very similar (signed/unsigned?).
@@ -214,7 +211,7 @@ classdef reader_DCC_DCV_TF < handle     % Explicitly declare it as a handle clas
             
             if ~ischar(filePath); error('BICAS:reader_DCC_DCV_TF:IllegalArgument', 'Argument is not a string.'); end
             
-            Data = bicas.BSACT_utils.read_BSACT_file(filePath, {...
+            Data = bicas.tools.BSACT_utils.read_BSACT_file(filePath, {...
                 'inputBstVolt', ...
                 'outputIooVolt', ...
                 'antennaCurrentAmpere', ...
@@ -232,7 +229,7 @@ classdef reader_DCC_DCV_TF < handle     % Explicitly declare it as a handle clas
         
             if ~ischar(filePath) ; error('BICAS:reader_DCC_DCV_TF:IllegalArgument', 'Argument is not a string.') ; end
             
-            Data = bicas.BSACT_utils.read_BSACT_file(filePath, {...
+            Data = bicas.tools.BSACT_utils.read_BSACT_file(filePath, {...
                 'freqHz', ...
                 'gainEnergyDb', ...
                 'phaseShiftDeg'});
