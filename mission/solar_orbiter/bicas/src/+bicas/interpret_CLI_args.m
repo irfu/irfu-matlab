@@ -43,7 +43,11 @@
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
 % First created 2016-07-22.
 %
-function CliData = interpret_CLI_args(cliArgumentList, INOFFICIAL_ARGUMENTS_SEPARATOR)
+function CliData = interpret_CLI_args(cliArgumentList)
+
+
+
+C = bicas.error_safe_constants();
 
 
 
@@ -76,7 +80,7 @@ INOFF_OPTIONS_CONFIG_MAP('modified_settings')       = struct('optionHeaderRegexp
 % (1) icdCliArgumentsList   = List of official arguments, as defined in RCS ICD.
 % (2) inoffCliArgumentsList = List of inofficial arguments (may be empty).
 %===============================================================================
-iArgSeparator = find(strcmp(cliArgumentList, INOFFICIAL_ARGUMENTS_SEPARATOR));
+iArgSeparator = find(strcmp(cliArgumentList, C.INOFFICIAL_ARGUMENTS_SEPARATOR));
 if numel(iArgSeparator) == 0
     icdCliArgumentsList   = cliArgumentList;
     inoffCliArgumentsList = {};
@@ -187,7 +191,7 @@ for iSip = 1:numel(optionValues)
     temp = optionValues{iSip}{1};
     key = temp(3:end);
     if Map.isKey(key)
-        error('interpret_CLI_args:CLISyntax', 'Specifying same specific input parameter (argument) more than once.')
+        error('BICAS:interpret_CLI_args:CLISyntax', 'Specifying same specific input parameter (argument) more than once.')
     end
     Map(key) = optionValues{iSip}{2};
 end

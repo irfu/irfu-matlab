@@ -21,6 +21,7 @@
 function log(logLevel, msgStr)
 % PROPOSAL: Be able to read "debug mode" flag so can choose whether to print or not.
 %   NOTE: Apropos RCS ICD 00037, iss1/rev2, draft 2019-07-11, Section 4.2.4 table.
+% PROPOSAL: Move LOG_PREFIX to error_safe_constants.
 
 % IMPLEMENTATION NOTE: Constant defined here and not centrally (e.g. SETTINGS) to make sure that it is error-safe and always
 % initialized. Needed for early initialization and error handling (try-catch).

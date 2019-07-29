@@ -83,61 +83,64 @@ function errorCode = bicas( varargin )
 % initialization has failed and when developing in MATLAB. Must be done as early as possible in the execution.
 clear -global CONSTANTS SETTINGS
 
-[ERROR_TYPES_INFO, REQUIRED_MATLAB_VERSION, INOFFICIAL_ARGUMENTS_SEPARATOR] = bicas.error_safe_constants();
+C = bicas.error_safe_constants();
 
 
 
 try
-
-    errorCode = main(REQUIRED_MATLAB_VERSION, ERROR_TYPES_INFO, INOFFICIAL_ARGUMENTS_SEPARATOR, varargin);
+    errorCode = C.EMIDP_2_INFO('NoError').errorCode;
+    main(varargin);
 
 catch Exception1
     %================================================================
     % CASE: Caught an error in the regular execution of the software
     %================================================================
     try
-        bicas.log( 'error', 'Main function caught an exception. Beginning error handling.');
-        bicas.logf('error', 'exception1.identifier = "%s"',   Exception1.identifier);
-        bicas.logf('error', 'exception1.message    = "%s"\n', Exception1.message);
-        % NOTE: bicas.logf requires string, i.e. the PATTERN, to end with line feed.
+        % IMPLEMENTATION NOTE: The error handling collects one long string with log/error messages for one bicas.log
+        % call, instead of making multiple bicas.log calls. This avoids having stdout and stderr messages mixed
+        % (alternating rows with stdout and stderr) in the MATLAB GUI, making it easier to read.
+        msg = '';
+        msg = [msg, sprintf('Main function caught an exception. Starting error handling.\n')];
+        msg = [msg, sprintf('Exception1.identifier = "%s"\n', Exception1.identifier)];
+        msg = [msg, sprintf('Exception1.message    = "%s"\n', Exception1.message)];
 
         %=================================================================================
         % Use MATLAB error message identifiers to identify one or multiple "error types".
         %=================================================================================
         msgIdentifierParts = strsplit(Exception1.identifier, ':');
-        errorTypesList = msgIdentifierParts(ERROR_TYPES_INFO.isKey(msgIdentifierParts));    % Cell array of error types (strings) only.
-        if isempty(errorTypesList)
-            errorTypesList = {'UntranslatableErrorMsgId'};
+        emidpList = msgIdentifierParts(C.EMIDP_2_INFO.isKey(msgIdentifierParts));    % Cell array of message identifier parts (strings) only.
+        if isempty(emidpList)
+            emidpList = {'UntranslatableErrorMsgId'};
         end
 
         %===================================
         % Print all identified error types.
         %===================================
-        bicas.log('error', 'Matching error types:');% Print to stderr.
-        for i = 1:numel(errorTypesList)
-            bicas.logf('error', '    %s\n', ERROR_TYPES_INFO(errorTypesList{i}).description);
+        msg = [msg, sprintf('Matching MATLAB error message identifier parts (error types derived from Exception1.identifier):\n')];
+        for i = 1:numel(emidpList)
+            emidp = emidpList{i};
+            msg  = [msg, sprintf('    %-15s : %s\n', emidp, C.EMIDP_2_INFO(emidp).description)];
         end
         % NOTE: Choice - Uses the last part of the message ID for determining error code to return.
-        errorCode = ERROR_TYPES_INFO(errorTypesList{end}).code;
+        errorCode = C.EMIDP_2_INFO(emidpList{end}).errorCode;
 
         %======================
         % Print the call stack
         %======================
         callStackLength = length(Exception1.stack);
-        bicas.log('error', 'MATLAB call stack:');    % Print to stderr.
+        msg = [msg, sprintf('MATLAB call stack:\n')];
         if (~isempty(callStackLength))
             for i=1:callStackLength
                 stackCall = Exception1.stack(i);
                 temp      = strsplit(stackCall.file, filesep);
                 filename  = temp{end};
 
-                bicas.logf('error', '    %-27s %-55s row %i,\n', [filename, ','], [stackCall.name, ','], stackCall.line);
+                msg = [msg, sprintf('    %-27s %-55s row %i,\n', [filename, ','], [stackCall.name, ','], stackCall.line)];
             end
         end
 
-
-
-        bicas.logf('error', 'Exiting MATLAB application with error code %i.', errorCode);        % Print to stderr.
+        msg = [msg, sprintf('Exiting MATLAB application with error code %i.\n', errorCode)];
+        bicas.log('error', msg)
         return
 
     catch Exception2    % Deliberately use different variable name to distinguish the exception from the previous one.
@@ -151,7 +154,10 @@ catch Exception1
         fprintf(2, 'exception2.identifier = "%s"\n', Exception2.identifier);          % Print to stderr.
         fprintf(2, 'exception2.message    = "%s"\n', Exception2.message);             % Print to stderr.
 
-        errorCode = ERROR_TYPES_INFO('MatlabCodeErrorHandlingError').code;            % Use hardcoded constant for this error?!!
+        % NOTE: The RCS ICD 00037, iss1/rev2, draft 2019-07-11, Section 3.4.3 specifies
+        %   error code 0 : No error
+        %   error code 1 : Every kind of error (!)
+        errorCode = 1;
 
         fprintf(2, 'Exiting MATLAB application with error code %i.\n', errorCode);    % Print to stderr.
         return
@@ -165,11 +171,13 @@ end    % bicas
 
 
 % BICAS's de facto main function, without error handling.
-function errorCode = main(REQUIRED_MATLAB_VERSION, ERROR_TYPES_INFO, INOFFICIAL_ARGUMENTS_SEPARATOR, cliArgumentsList)
+function main(cliArgumentsList)
 
 
 
 startTimeTicSeconds = tic;
+
+C = bicas.error_safe_constants();
 
 
 
@@ -177,10 +185,10 @@ startTimeTicSeconds = tic;
 % ~ASSERTION: Check MATLAB version
 %==================================
 matlabVersionString = version('-release');
-if ~strcmp(matlabVersionString, REQUIRED_MATLAB_VERSION)
+if ~strcmp(matlabVersionString, C.REQUIRED_MATLAB_VERSION)
     error('BICAS:BadMatlabVersion', ...
         'Using bad MATLAB version. Found version "%s". BICAS requires version "%s".\n', ...
-        matlabVersionString, REQUIRED_MATLAB_VERSION)
+        matlabVersionString, C.REQUIRED_MATLAB_VERSION)
 end
 fprintf(1, 'Using MATLAB, version %s.\n', matlabVersionString);
 
@@ -218,7 +226,7 @@ bicas.logf('info', 'Current working directory: "%s"', pwd);   % Useful for debug
 % PROPOSAL: Combine CLI arguments into a single multiline log message?
 bicas.logf('info', 'Number of CLI arguments: %i', length(cliArgumentsList))
 for i = 1:length(cliArgumentsList)
-    bicas.logf('info', 'CLI argument %2i: "%s"', i, cliArgumentsList{i})
+    bicas.logf('info', '    CLI argument %2i: "%s"', i, cliArgumentsList{i})
 end
 
 
@@ -240,7 +248,7 @@ SETTINGS  = bicas.create_default_SETTINGS();
 %=============================================
 % First-round interpretation of CLI arguments
 %=============================================
-CliData = bicas.interpret_CLI_args(cliArgumentsList, INOFFICIAL_ARGUMENTS_SEPARATOR);
+CliData = bicas.interpret_CLI_args(cliArgumentsList);
 
 
 
@@ -290,7 +298,7 @@ switch(CliData.functionalityMode)
     case 'identification'
         print_identification(DataManager)
     case 'help'
-        print_help(ERROR_TYPES_INFO, DataManager)
+        print_help(DataManager)
     case 'S/W mode'
         %==============================================================================
         % CASE: Should be a S/W mode (deduced from elimination of other possibilities)
@@ -355,11 +363,6 @@ end    % if ... else ... / switch
 
 executionWallTimeSeconds = toc(startTimeTicSeconds);
 bicas.logf('info', 'Time used for execution (wall time): %g [s]', executionWallTimeSeconds);    % Always log (-->critical)?
-
-
-
-% EXIT
-errorCode = ERROR_TYPES_INFO('NoError').code;   % Default RETURN value.
 end
 
 
@@ -401,9 +404,11 @@ end
 %
 % NOTE: Useful if the output printed by this function can be used for copy-pasting into RCS User Manual (RUM).
 %
-function print_help(ERROR_TYPES_INFO, DataManager)
+function print_help(DataManager)
 %
 % PROPOSAL: Print CLI syntax incl. for all modes? More easy to parse than the S/W descriptor.
+
+C = bicas.error_safe_constants();
 
 
 
@@ -415,13 +420,17 @@ bicas.stdout_printf('%s\n', Swd.identification.description)
 %==========================
 % Print error codes & types
 %==========================
-errorCodesList = cellfun(@(x) (x.code), ERROR_TYPES_INFO.values);   % Array of (unsorted) error codes.
+errorCodesList = cellfun(@(x) (x.errorCode), C.EMIDP_2_INFO.values);   % Array of (unsorted) error codes.
 [~, iSort] = sort(errorCodesList);
-errorTypesInfoList = ERROR_TYPES_INFO.values;      % Cell array of structs (unsorted).
+empidList          = C.EMIDP_2_INFO.keys;
+errorTypesInfoList = C.EMIDP_2_INFO.values;        % Cell array of structs (unsorted).
+empidList          = empidList(iSort);
 errorTypesInfoList = errorTypesInfoList(iSort);    % Cell array of structs sorted by error code.
-bicas.stdout_printf('\nError codes:\n')
+bicas.stdout_printf('\nError codes, error message identifiers, human-readable descriptions:\n')
 for i = 1:numel(errorTypesInfoList)
-    bicas.stdout_printf('   %3i = %s\n', errorTypesInfoList{i}.code, errorTypesInfoList{i}.description)
+    errorType = errorTypesInfoList{i};
+    bicas.stdout_printf(['    %1i : %s\n', ...
+                         '        %s\n'], errorType.errorCode, empidList{i}, errorType.description)
 end
 
 % Print settings
