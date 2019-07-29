@@ -70,7 +70,7 @@ end
 %=====================================================================================================================
 
 % Read file a second time(!)
-rowList = bicas.utils.read_text_file(filePath);
+rowList = EJ_library.utils.read_text_file(filePath);
 
 % Find relevant rows.
 temp = regexp(rowList, '^mheader\.reg[0-9]*');

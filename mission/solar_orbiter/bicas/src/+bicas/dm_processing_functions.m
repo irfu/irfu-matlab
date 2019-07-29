@@ -1,17 +1,18 @@
 % Class that collects "processing functions" as public static methods. See data_manager.m.
 % dm = data_manager
+%
+% This class is not meant to be instantiated. Its functions are only meant to be called from data_manager.
+% May contain some non-trivial helper functions.
 % 
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
 % First created 2017-02-10, with source code from data_manager.m.
 %
-% This class is not meant to be instantiated. Its functions are only meant to be called from data_manager.
-% May contain some non-trivial helper functions.
-%
 %
 % CODE CONVENTIONS
 % ================
-% - Processing functions follow a convention for return values and arguments. See data_manager.get_processing_info. 
-% - It is implicit that arrays/matrices representing CDF data, or "CDF-like" data, use the first MATLAB array index to
+% - Processing functions follow a convention for return values and arguments. See
+%   bicas.data_manager.get_processing_info.
+% - It is implicit that arrays/matrices representing CDF data, or "CDF-like" data, using the first MATLAB array index to
 %   represent CDF records.
 %
 %
@@ -42,7 +43,6 @@
 %           .IBIAS1
 %           .IBIAS2
 %           .IBIAS3
-%
 %
 classdef dm_processing_functions
 %#######################################################################################################################
@@ -838,4 +838,3 @@ classdef dm_processing_functions
     end   % methods(Static, Access=private)
         
 end
-

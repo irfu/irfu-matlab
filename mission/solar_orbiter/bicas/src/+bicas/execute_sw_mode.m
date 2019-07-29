@@ -1,4 +1,5 @@
-% execute_sw_mode   Execute a "S/W mode" as (implicitly) specified by the CLI arguments.
+% Execute a "S/W mode" as (indirectly) specified by the CLI arguments.
+%
 %
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
 % First created 2016-06-09
@@ -18,8 +19,8 @@
 % purpose of testing. The old way is meant to be phased out eventually.
 %
 %
-% "BUGS:"
-% =======
+% "BUGS"
+% ======
 % - Sets GlobalAttributes.Generation_date in local time (no fixed time zone).
 % - Calls derive_output_dataset_GlobalAttributes for ALL input dataset and uses the result for ALL output datasets.
 %   ==> If a S/W mode has multiple output datasets based on different sets of input datasets, then the GlobalAttributes
@@ -64,8 +65,8 @@ function execute_sw_mode(DataManager, swModeCliParameter, InputFilePathMap, Outp
 %       Write GlobalAttributes: Calibration_version, Parents, Parent_version, Generation_date, Logical_file_id,
 %           Software_version, SPECTRAL_RANGE_MIN/-MAX (optional?), TIME_MIN/-MAX
 %       Write VariableAttributes: pad value? (if master CDF does not contain a correct value), SCALE_MIN/-MAX
-%       Determine the output filename. ==> 
-%       Collect the output filenames into the JSON output filenames list.
+%   --
+%   NOTE: Do we not already have this in read_dataset_CDF & write_dataset_CDF?
 %
 % PROPOSAL: BUG FIX: Move global attributes into PDs somehow to let the data_manager collect the values during processing?
 %   PROPOSAL: Have PDs include global attributes in new struct structure.
@@ -92,16 +93,18 @@ function execute_sw_mode(DataManager, swModeCliParameter, InputFilePathMap, Outp
 
 
 %===========================================================================
-% Give all input CDF files (from the CLI argument list) to the data manager
+% Give all INPUT CDF files (from the CLI argument list) to the data manager
 %===========================================================================
 inputPdidList = InputFilePathMap.keys;
 GlobalAttributesCellArray = {};   % Use cell array since CDF global attributes may in principle contain different sets of attributes (field names).
 
-% testIdList = {};
 for i = 1:length(inputPdidList)
     eInPdid = inputPdidList{i};
     inputFilePath = InputFilePathMap(eInPdid);
     
+    %=======================
+    % Read dataset CDF file
+    %=======================
     [processData, GlobalAttributes] = read_dataset_CDF(eInPdid, inputFilePath);
     DataManager.set_elementary_input_process_data(eInPdid, processData);
     
@@ -116,9 +119,8 @@ SwModeInfo = DataManager.get_extended_sw_mode_info(swModeCliParameter);
 
 
 %==================================
-% Iterate over all the output CDFs
+% Iterate over all the OUTPUT CDFs
 %==================================
-%JsonOutputCdfFilenameListStruct = struct;    % Struct(!) representing a JSON object.
 for iOutputCdf = 1:length(SwModeInfo.outputs)
     OutputInfo = SwModeInfo.outputs{iOutputCdf};
     
@@ -134,15 +136,14 @@ for iOutputCdf = 1:length(SwModeInfo.outputs)
     %%%%%%%%%%%%%%%
     ProcessData = DataManager.get_process_data_recursively(eOutPdid);
 
-    % Write dataset CDF file.
+    %========================
+    % Write dataset CDF file
+    %========================
     masterCdfPath = fullfile(...
         masterCdfDir, ...
         bicas.get_master_CDF_filename(OutputInfo.DATASET_ID, OutputInfo.SKELETON_VERSION_STR));
     write_dataset_CDF ( ...
         ProcessData, globalAttributesSubset, outputFilePath, masterCdfPath, OutputInfo.DATASET_ID );
-    
-    % Collect list (struct) of output files.
-%     JsonOutputCdfFilenameListStruct.( OutputInfo.CLI_OPTION_BODY ) = outputFilename;
 end
 
 
@@ -159,7 +160,8 @@ function GlobalAttributesSubset = derive_output_dataset_GlobalAttributes(GlobalA
 % Function for global attributes for an output dataset from the global attributes of multiple input datasets (if there
 % are several).
 %
-% RETURN VALUE:
+% RETURN VALUE
+% ============
 % GlobalAttributesSubset : Struct where each field name corresponds to a CDF global atttribute.
 %                          NOTE: Deviates from the usual variable naming conventions. GlobalAttributesSubset field names
 %                          have the exact names of CDF global attributes.
@@ -198,10 +200,119 @@ end
 
 
 
-% function [outputFilename] = write_dataset_CDF(...
-%     ProcessData, GlobalAttributesSubset, outputFileParentDir, FilenamingFunction, masterCdfPath, datasetId)
+function [ProcessData, GlobalAttributes] = read_dataset_CDF(pdid, filePath)
+% Read elementary input process data from a CDF file and convert it to a format suitable as a data_manager "process data".
+% Copies all zVariables into fields of a regular structure.
+%
+%
+% ARGUMENTS
+% =========
+% pdid
+% filePath
+%
+%
+% RETURN VALUES
+% =============
+% ProcessData      : Struct with one field per zVar (named after the zVar). The content of every such field equals the
+%                    content of the corresponding zVar.
+% GlobalAttributes : Struct returned from "dataobj".
+%
+%
+% NOTE: Fill & pad values are replaced with NaN for numeric data types.
+%       Other CDF data (attributes) are ignored.
+% NOTE: Uses irfu-matlab's dataobj for reading the CDF file.
+
+% NOTE: HK TIME_SYNCHRO_FLAG can be empty.
+
+global SETTINGS CONSTANTS
+
+%bicas.logf('info', 'pdid=%s', pdid)
+
+%===========
+% Read file
+%===========
+bicas.logf('info', 'Reading CDF file: "%s"', filePath)
+do = dataobj(filePath);                 % do=dataobj, i.e. irfu-matlab's dataobj!!!
+
+
+
+%=========================================================================
+% Copy zVariables (only the data) into analogous fields in smaller struct
+%=========================================================================
+bicas.log('info', 'Converting dataobj (CDF data structure) to PDV.')
+ProcessData       = struct();
+zVariableNameList = fieldnames(do.data);
+%bicas.dm_utils.log_array('explanation')
+for i = 1:length(zVariableNameList)
+    zVariableName = zVariableNameList{i};
+    zVariableData = do.data.(zVariableName).data;
+    
+    %=================================================================================================
+    % Log data to be written to CDF file
+    % ----------------------------------
+    % NOTE: Log messages should reflect the values READ from file.
+    %       Process data variables are logged separately by data_manager.
+    %=================================================================================================
+    %bicas.dm_utils.log_struct_arrays(zVariableName, zVariableData);
+    
+    %=================================================
+    % Replace fill/pad values with NaN for FLOAT data
+    %=================================================
+    % QUESTION: How does/should this work with integer fields that should also be stored as integers internally?!!!
+    %    Ex: ACQUISITION_TIME, Epoch.
+    % QUESTION: How distinguish integer zVariables that could be converted to floats (and therefore use NaN)?
+    if isfloat(zVariableData)
+        [fillValue, padValue] = get_fill_pad_values(do, zVariableName);
+        zVariableData = bicas.utils.replace_value(zVariableData, fillValue, NaN);
+        zVariableData = bicas.utils.replace_value(zVariableData, padValue,  NaN);
+    else
+        % Disable?! Only print warning if finds fill value which is not replaced?
+        %bicas.logf('warning', 'Can not handle replace fill/pad values for zVariable "%s" when reading "%s".', zVariableName, filePath))
+    end
+    
+    ProcessData.(zVariableName) = zVariableData;
+end
+
+
+
+fileDatasetId          = do.GlobalAttributes.DATASET_ID{1};
+fileSkeletonVersionStr = do.GlobalAttributes.Skeleton_version{1};
+bicas.logf('info', 'File: DATASET_ID       = "%s"', fileDatasetId)
+bicas.logf('info', 'File: Skeleton_version = "%s"', fileSkeletonVersionStr)
+
+
+
+%===================================================
+% ASSERTIONS: Check GlobalAttributes values
+%===================================================
+% NOTE: Does print file name since it has only been previously been logged as "notice".
+%bicas.dm_utils.assert_unvaried_N_rows(processData);
+InputInfo = bicas.utils.select_cell_array_structs(CONSTANTS.INPUTS_INFO_LIST, 'PDID', {pdid});
+InputInfo = InputInfo{1};
+bicas.utils.assert_strings_equal(...
+    SETTINGS.get_fv('INPUT_CDF_ASSERTIONS.STRICT_DATASET_ID'), ...
+    {fileDatasetId, InputInfo.DATASET_ID}, ...
+    sprintf('The input CDF file''s stated DATASET_ID does not match the value expected for the S/W mode.\n    File: %s\n    ', filePath))
+bicas.utils.assert_strings_equal(...
+    SETTINGS.get_fv('INPUT_CDF_ASSERTIONS.STRICT_SKELETON_VERSION'), ...
+    {fileSkeletonVersionStr, InputInfo.SKELETON_VERSION_STR}, ...
+    sprintf('The input CDF file''s stated Skeleton_version does not match the value expected for the S/W mode.\n    File: (%s)\n    ', filePath))
+
+
+
+GlobalAttributes = do.GlobalAttributes;   % Assign return value.
+
+end
+
+
+
+
+
+
+
 function write_dataset_CDF(...
     ProcessData, GlobalAttributesSubset, outputFile, masterCdfPath, datasetId)
+%
 % Function that writes one ___dataset___ CDF file.
 %
 
@@ -353,116 +464,6 @@ bicas.utils.write_CDF_dataobj( ...
     DataObj.VariableAttributes, ...
     DataObj.Variables ...
     )
-
-end
-
-
-
-
-
-
-
-function [ProcessData, GlobalAttributes] = read_dataset_CDF(pdid, filePath)
-% Read elementary input process data from a CDF file and convert it to a format suitable as a data_manager "process data".
-% Copies all zVariables into fields of a regular structure.
-%
-%
-% ARGUMENTS
-% =========
-% pdid
-% filePath
-%
-%
-% RETURN VALUES
-% =============
-% ProcessData      : Struct with one field per zVar (named after the zVar). The content of every such field equals the
-%                    content of the corresponding zVar.
-% GlobalAttributes : Struct returned from "dataobj".
-%
-%
-% NOTE: Fill & pad values are replaced with NaN for numeric data types.
-%       Other CDF data (attributes) are ignored.
-% NOTE: Uses irfu-matlab's dataobj for reading the CDF file.
-
-% NOTE: HK TIME_SYNCHRO_FLAG can be empty.
-
-global SETTINGS CONSTANTS
-
-bicas.logf('info', 'pdid=%s', pdid)
-
-%===========
-% Read file
-%===========
-bicas.logf('info', 'Reading CDF file: "%s"', filePath)
-do = dataobj(filePath);                 % do=dataobj, i.e. irfu-matlab's dataobj!!!
-
-
-
-%=========================================================================
-% Copy zVariables (only the data) into analogous fields in smaller struct
-%=========================================================================
-bicas.log('info', 'Converting dataobj (CDF data structure) to PDV.')
-ProcessData       = struct();
-zVariableNameList = fieldnames(do.data);
-%bicas.dm_utils.log_array('explanation')
-for i = 1:length(zVariableNameList)
-    zVariableName = zVariableNameList{i};
-    zVariableData = do.data.(zVariableName).data;
-    
-    %=================================================================================================
-    % Log data to be written to CDF file
-    % ----------------------------------
-    % NOTE: Log messages should reflect the values READ from file.
-    %       Process data variables are logged separately by data_manager.
-    %=================================================================================================
-    %bicas.dm_utils.log_struct_arrays(zVariableName, zVariableData);
-    
-    %=================================================
-    % Replace fill/pad values with NaN for FLOAT data
-    %=================================================
-    % QUESTION: How does/should this work with integer fields that should also be stored as integers internally?!!!
-    %    Ex: ACQUISITION_TIME, Epoch.
-    % QUESTION: How distinguish integer zVariables that could be converted to floats (and therefore use NaN)?
-    if isfloat(zVariableData)
-        [fillValue, padValue] = get_fill_pad_values(do, zVariableName);
-        zVariableData = bicas.utils.replace_value(zVariableData, fillValue, NaN);
-        zVariableData = bicas.utils.replace_value(zVariableData, padValue,  NaN);
-    else
-        % Disable?! Only print warning if finds fill value which is not replaced?
-        %bicas.logf('warning', 'Can not handle replace fill/pad values for zVariable "%s" when reading "%s".', zVariableName, filePath))
-    end
-    
-    ProcessData.(zVariableName) = zVariableData;
-end
-
-
-
-fileDatasetId          = do.GlobalAttributes.DATASET_ID{1};
-fileSkeletonVersionStr = do.GlobalAttributes.Skeleton_version{1};
-bicas.logf('info', 'File: DATASET_ID       = "%s"', fileDatasetId)
-bicas.logf('info', 'File: Skeleton_version = "%s"', fileSkeletonVersionStr)
-
-
-
-%===================================================
-% ASSERTIONS: Check GlobalAttributes values
-%===================================================
-% NOTE: Does print file name since it has only been previously been logged as "notice".
-%bicas.dm_utils.assert_unvaried_N_rows(processData);
-InputInfo = bicas.utils.select_cell_array_structs(CONSTANTS.INPUTS_INFO_LIST, 'PDID', {pdid});
-InputInfo = InputInfo{1};
-bicas.utils.assert_strings_equal(...
-    SETTINGS.get_fv('INPUT_CDF_ASSERTIONS.STRICT_DATASET_ID'), ...
-    {fileDatasetId, InputInfo.DATASET_ID}, ...
-    sprintf('The input CDF file''s stated DATASET_ID does not match the value expected for the S/W mode.\n    File: %s\n    ', filePath))
-bicas.utils.assert_strings_equal(...
-    SETTINGS.get_fv('INPUT_CDF_ASSERTIONS.STRICT_SKELETON_VERSION'), ...
-    {fileSkeletonVersionStr, InputInfo.SKELETON_VERSION_STR}, ...
-    sprintf('The input CDF file''s stated Skeleton_version does not match the value expected for the S/W mode.\n    File: (%s)\n    ', filePath))
-
-
-
-GlobalAttributes = do.GlobalAttributes;   % Assign return value.
 
 end
 

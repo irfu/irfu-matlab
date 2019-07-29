@@ -183,7 +183,7 @@ classdef settings < handle
             end
             if ~obj.DataMap.isKey(key)
                 error('BICAS:settings:Assertion:IllegalArgument', 'There is no setting "%s".', key)
-            end            
+            end
             
             value = obj.DataMap(key);
         end

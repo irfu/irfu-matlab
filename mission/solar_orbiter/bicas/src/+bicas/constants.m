@@ -49,13 +49,19 @@ classdef constants < handle
 % PROPOSAL: Change name to which is more specific. Current name is too generic.
 %   PROPOSAL: ~dm_constants.
 %   PROPOSAL: ~datasets_modes_constants
+%   PROPOSAL: ~processing_constants
+%
+% PROPOSAL: Split into code for
+%   -- Initializing constants for all the s/w modes that BICAS can handle.
+%   -- Returning constants for the s/w modes that should be visible/accessible.
 % PROPOSAL: Split into code for
 %   (1) storing the data, and
 %   (2) initializing the data
 %
 % PROPOSAL: Use containers.Map
 %   NOTE: Only suitable for structs with exactly one field which is always unique and is "always" used for look-up.
-%   PROPOSAL: S/w modes list.
+%   PROPOSAL: S/w modes list w. key=CLI_PARAMETER.
+%   PROPOSAL: Inputs/outputs w. key=PDID.
 %###################################################################################################################
 
     properties(Access=public)
@@ -71,7 +77,7 @@ classdef constants < handle
     properties(Access=private)
         ALL_DATASET_IDS_LIST    % Collect alla known dataset IDs. Useful for assertions.
     end
-    
+
     %###################################################################################################################
     
     methods(Access=public)
@@ -144,6 +150,9 @@ classdef constants < handle
 
         % Any code for double-checking the validity of hardcoded constants.
         function validate(obj)
+            % PROPOSAL: Change name to assert_*
+            % PROPOSAL: Assert that CLI_OPTION_BODY do not contain duplicates for any s/w mode.
+            %   NOTE: CLI_OPTION_BODY is set for every input/output (not every s/w mode).
             
             % The RCS ICD, iss2rev2, section 5.3 seems (ambiguous) to imply this regex for S/W mode CLI parameters.
             SW_MODE_CLI_PARAMETER_REGEX = '^[A-Za-z][\w-]+$';   % NOTE: Only one backslash in MATLAB regex as opposed to in the RCS ICD.

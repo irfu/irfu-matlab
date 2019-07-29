@@ -192,6 +192,8 @@ if ~strcmp(matlabVersionString, C.REQUIRED_MATLAB_VERSION)
 end
 fprintf(1, 'Using MATLAB, version %s.\n', matlabVersionString);
 
+
+
 %===================================================================================================================
 % Initialize irfu-matlab "library"
 %
@@ -213,7 +215,7 @@ irf('version')                % Print e.g. "irfu-matlab version: 2017-02-21,  v1
 %===============================
 % ASSUMES: The current file is in the <BICAS>/src directory.
 [matlabSrcPath, ~, ~] = fileparts(mfilename('fullpath'));   % Use path of the current MATLAB file.
-bicasRootPath         = bicas.utils.get_abs_path(fullfile(matlabSrcPath, '..'));
+bicasRootPath         = EJ_library.utils.get_abs_path(fullfile(matlabSrcPath, '..'));
 
 
 
@@ -240,7 +242,7 @@ end
 % NOTE: Constants will later be modified by the CLI arguments.
 global CONSTANTS
 global SETTINGS
-CONSTANTS = bicas.constants(bicasRootPath);
+CONSTANTS = bicas.constants();
 SETTINGS  = bicas.create_default_SETTINGS();
 
 
@@ -260,7 +262,7 @@ if ~isempty(CliData.configFile)
 else
     configFile = fullfile(bicasRootPath, C.DEFAULT_CONFIG_FILE_RELATIVE_PATH);
 end
-rowList = bicas.utils.read_text_file(configFile);
+rowList = EJ_library.utils.read_text_file(configFile);
 ConfigFileSettingsVsMap = bicas.interpret_config_file(rowList);
 SETTINGS.set_preexisting_from_strings(ConfigFileSettingsVsMap);    % Modify SETTINGS
 
@@ -282,10 +284,11 @@ bicas.log('info', bicas.sprint_SETTINGS)                 % Prints/log the conten
 %================================
 % Set pipelineId, calibrationDir
 %================================
-% COMPLETE CODE, BUT NOT ALL NEEDED BY OTHER CODE YET.
+% COMPLETE CODE. DISABLED SINCE IT IS NOT NEEDED BY OTHER CODE YET.
 %
 %pipelineId     = read_env_variable('ROC_PIP_NAME',        'PROCESSING.ROC_PIP_NAME_OVERRIDE');
 %calibrationDir = read_env_variable('ROC_RCS_CAL_PATH',    'PROCESSING.ROC_RCS_CAL_PATH_OVERRIDE');
+%
 masterCdfDir   = read_env_variable(SETTINGS, 'ROC_RCS_MASTER_PATH', 'PROCESSING.ROC_RCS_MASTER_PATH_OVERRIDE');
 bicas.logf('info', 'masterCdfDir = "%s"', masterCdfDir)
 
@@ -320,19 +323,20 @@ switch(CliData.functionalityMode)
         %======================================================================
         % Parse CliData.SpecInputParametersMap arguments depending on S/W mode
         %======================================================================
+        % PROPOSAL: Assert that CLI_OPTION_BODY do not contain duplicates.
         
         % Extract INPUT dataset files from arguments.
         inputsInfoList = ExtendedSwModeInfo.inputs;
         InputFilesMap  = containers.Map();
         for i = 1:numel(inputsInfoList)
-            optionHeader = inputsInfoList{i}.CLI_OPTION_BODY;
+            optionHeaderBody = inputsInfoList{i}.CLI_OPTION_BODY;
             
             % UI ASSERTION
-            if ~CliData.SpecInputParametersMap.isKey(optionHeader)
-                error('BICAS:CLISyntax', 'Can not find CLI argument(s) for input "%s".', optionHeader)
+            if ~CliData.SpecInputParametersMap.isKey(optionHeaderBody)
+                error('BICAS:CLISyntax', 'Can not find CLI argument(s) for input "%s".', optionHeaderBody)
             end
             
-            inputFile = CliData.SpecInputParametersMap( optionHeader );
+            inputFile = CliData.SpecInputParametersMap( optionHeaderBody );
             InputFilesMap(inputsInfoList{i}.PDID) = inputFile;
         end
         
@@ -340,24 +344,24 @@ switch(CliData.functionalityMode)
         outputsInfoList = ExtendedSwModeInfo.outputs;
         OutputFilesMap  = containers.Map();
         for i = 1:numel(outputsInfoList)
-            optionHeader = outputsInfoList{i}.CLI_OPTION_BODY;
+            optionHeaderBody = outputsInfoList{i}.CLI_OPTION_BODY;
             
             % UI ASSERTION
-            if ~CliData.SpecInputParametersMap.isKey(optionHeader)
-                error('BICAS:CLISyntax', 'Can not find CLI argument(s) for input "%s".', optionHeader)
+            if ~CliData.SpecInputParametersMap.isKey(optionHeaderBody)
+                error('BICAS:CLISyntax', 'Can not find CLI argument(s) for input "%s".', optionHeaderBody)
             end
             
-            outputFile = CliData.SpecInputParametersMap( optionHeader );
+            outputFile = CliData.SpecInputParametersMap( optionHeaderBody );
             OutputFilesMap(outputsInfoList{i}.PDID) = outputFile;
         end
-        
-        
-        
+
+
+
         %==================
         % EXECUTE S/W MODE
         %==================
         bicas.execute_sw_mode( DataManager, ExtendedSwModeInfo.CLI_PARAMETER, InputFilesMap, OutputFilesMap, masterCdfDir )
-        
+
     otherwise
         error('BICAS:Assertion', 'Illegal value functionalityMode="%s"', functionalityMode)
 end    % if ... else ... / switch

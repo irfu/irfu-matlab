@@ -1,3 +1,7 @@
+%
+% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% First created <=2016-10-28
+%
 function assert_strings_equal( giveError, stringList, msg )
 % Assert that the strings in stringList (cell array of strings) are equal and that there is at least one string.
 % Zero strings count as assertion false (error/warning).
@@ -16,4 +20,3 @@ if numel(uniqueStrings) ~= 1   % NOTE: stringList empty ==> uniqueStrings empty 
 end
 
 end
-

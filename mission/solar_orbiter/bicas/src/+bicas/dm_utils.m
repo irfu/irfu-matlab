@@ -192,8 +192,6 @@ classdef dm_utils
         % ACQUISITION_TIME : Nx2 vector. uint32.
         %       NOTE: ACQUSITION_TIME can not be negative since it is uint32.
         
-            global SETTINGS
-            
             % ASSERTIONS
             bicas.dm_utils.assert_Epoch(tt2000)
 

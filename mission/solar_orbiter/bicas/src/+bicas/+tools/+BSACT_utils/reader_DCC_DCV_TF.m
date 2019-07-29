@@ -137,7 +137,7 @@ classdef reader_DCC_DCV_TF < handle     % Explicitly declare it as a handle clas
         %                         cTableFilesPattern.
         % mebTemperatureCelsius : The MEB temperature at which the tests are made.
             
-            testLogbookRowList = bicas.utils.read_text_file(testLogbookFile);
+            testLogbookRowList = EJ_library.utils.read_text_file(testLogbookFile);
             metadataList = bicas.tools.BSACT_utils.parse_testlogbook_DCC_DCV_TF(testLogbookRowList, dataType);
             
             % TODO-NEED-INFO: Necessary to use special function here? Can replace call with one-liner?

@@ -66,10 +66,9 @@
 % DEFINITIONS OF TERMS, ABBREVIATIONS
 % ===================================
 % - PD = Process Data
-%       The data In practice, one internal variable representing some form of data in some step of
-%       the "data processing process".
+%       The data in some step of the "data processing process".
 % - PDV = Process Data Variable
-%       A PD represented as a variable in code.
+%       A PD represented as a variable in code. In practice a struct with standardized fields.
 % - EIn/EOut = Elementary Input/Output process data
 %       Process data that represents data that goes in and out of the data manager as a whole. The word "elementary" is
 %       added to distinguish input/output from the input/output for a smaller operation, in particular when converting
@@ -183,7 +182,6 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
         % ============
         % processData : Empty if data was not already available, or could not be derived recursively.        
         %               ==> Empty is returnd for elementary input process data, or possibly for misconfigurations (error).
-        
         
             % NOTE: This log message is particularly useful for following the recursive calls of this function.
             % sw_mode_ID comes first since that tends to make the log message values line up better.
