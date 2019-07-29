@@ -4,7 +4,8 @@ function react_to_false_assertion(giveError, msg)
 if giveError
     error('BICAS:Assertion', msg)
 else
-    irf.log('w', ['FALSE ASSERTION: ', msg])
+    LINE_FEED = char(10);
+    bicas.log('warning', ['FALSE ASSERTION: ', msg, LINE_FEED])
 end
 
 end

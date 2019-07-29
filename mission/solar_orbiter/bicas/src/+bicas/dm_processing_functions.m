@@ -124,11 +124,11 @@ classdef dm_processing_functions
             %    ACQUISITION_TIME or Epoch.
             %=========================================================================================================
             if SETTINGS.get_fv('PROCESSING.USE_AQUISITION_TIME_FOR_HK_TIME_INTERPOLATION')
-                irf.log('n', 'Using HK & SCI zVariable ACQUISITION_TIME (not Epoch) for interpolating HK data to SCI time.')
+                bicas.log('info', 'Using HK & SCI zVariable ACQUISITION_TIME (not Epoch) for interpolating HK data to SCI time.')
                 hkInterpolationTimeTt2000  = hkAtTt2000;
                 sciInterpolationTimeTt2000 = sciAtTt2000;
             else
-                %irf.log('n', 'Using HK & SCI zVariable Epoch (not ACQUISITION_TIME) for interpolating HK data to SCI time.')
+                %bicas.log('info', 'Using HK & SCI zVariable Epoch (not ACQUISITION_TIME) for interpolating HK data to SCI time.')
                 hkInterpolationTimeTt2000  = hkEpoch;
                 sciInterpolationTimeTt2000 = sciEpoch;
             end
@@ -270,11 +270,11 @@ classdef dm_processing_functions
             PreDcd.QUALITY_FLAG    = SciPd.QUALITY_FLAG;
             PreDcd.QUALITY_BITMASK = SciPd.QUALITY_BITMASK;
             if isempty(PreDcd.QUALITY_FLAG)
-                irf.log('w', 'QUALITY_FLAG from the SCI source dataset is empty. Filling with empty values.')
-                PreDcd.QUALITY_FLAG    = bicas.dm_utils.create_NaN_array([nRecords, 1]);
+                bicas.log('warning', 'QUALITY_FLAG from the SCI source dataset is empty. Filling with empty values.')
+                PreDcd.QUALITY_FLAG = bicas.dm_utils.create_NaN_array([nRecords, 1]);
             end
             if isempty(PreDcd.QUALITY_BITMASK)
-                irf.log('w', 'QUALITY_BITMASK from the SCI source dataset is empty. Filling with empty values.')
+                bicas.log('warning', 'QUALITY_BITMASK from the SCI source dataset is empty. Filling with empty values.')
                 PreDcd.QUALITY_BITMASK = bicas.dm_utils.create_NaN_array([nRecords, 1]);
             end
             
@@ -576,8 +576,8 @@ classdef dm_processing_functions
                 % Extract SCALAR settings to use for entire subsequence of records.
                 MUX_SET_value   = MUX_SET  (iFirst);
                 DIFF_GAIN_value = DIFF_GAIN(iFirst);
-                irf.log('n', sprintf('Records %2i-%2i : Demultiplexing; MUX_SET=%-3i; DIFF_GAIN=%-3i', ...
-                    iFirst, iLast, MUX_SET_value, DIFF_GAIN_value))    % "%-3" since value might be NaN.
+                bicas.logf('info', 'Records %2i-%2i : Demultiplexing; MUX_SET=%-3i; DIFF_GAIN=%-3i', ...
+                    iFirst, iLast, MUX_SET_value, DIFF_GAIN_value)    % "%-3" since value might be NaN.
                 
                 % Extract subsequence of DATA records to "demux".
                 DemuxerInputSubseq = bicas.dm_utils.select_subset_from_struct(DemuxerInput, iFirst, iLast);

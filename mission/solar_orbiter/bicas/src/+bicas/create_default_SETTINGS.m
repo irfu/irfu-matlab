@@ -20,6 +20,7 @@
 %
 function SETTINGS = create_default_SETTINGS()
 % PROPOSAL: Rename SIMPLE_DEMUXER. SIMPLE_CALIBRATION?
+% PROPOSAL: Move STDOUT_PREFIX, LOG_PREFIX to ~constants (not overridable). error_safe_constants?
 
 
 %-------------------------------------------------------------------------------------
@@ -76,6 +77,7 @@ S.define_setting('SWD_ENVIRONMENT.executable',     'roc/bicas');     % Relative 
 
 % Prefix used to identify the subset of stdout that should actually be passed on as stdout by the bash launcher script.
 S.define_setting('STDOUT_PREFIX',                  'STDOUT: ');
+% NOTE: Analogous LOG_PREFIX is hard-coded for safety.
 
 % Parameters influencing how JSON objects are printed with function JSON_object_str.
 S.define_setting('JSON_OBJECT_STR.INDENT_SIZE',     4);
@@ -105,7 +107,6 @@ S.define_setting('PROCESSING.ROC_RCS_MASTER_PATH_OVERRIDE', '');   % If set, ove
 S.define_setting('OUTPUT_CDF.EMPTY_ZVARIABLES_SET_TO_FILL', 0);
 
 S.define_setting('LOGGING.MAX_UNIQUES_PRINTED',             5);    % When logging contents of matrix/vector, maximum number of unique values printed before switching to shorter representation (min-max range)
-S.define_setting('LOGGING.IRF_LOG_LEVEL',                   'notice');   % Log level for "irf.log".
 
 
 

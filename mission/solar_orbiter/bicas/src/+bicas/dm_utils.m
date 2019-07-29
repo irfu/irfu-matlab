@@ -570,8 +570,8 @@ classdef dm_utils
                     error('BICAS:dm_utils:Assertion:IllegalArgument', 'Wrong number of arguments')
                 end
                     
-                EXPLANATION_STRING = 'Explanation for variable log messages: (x,y, ...)=size of variable; #=Number of ...; Us=Unique values (incl. NaN which counts as equal to itself); Mm=Min-max';
-                irf.log('n', EXPLANATION_STRING)
+                EXPLANATION_STRING = 'Explanation for variable log messages: (x,y, ...)=size of variable; #=number of ...; Us=unique values (incl. NaN which counts as equal to itself); Mm=min-max';
+                bicas.log('info', EXPLANATION_STRING)
                 return
                 
             elseif nargin == 2
@@ -629,7 +629,7 @@ classdef dm_utils
                 %======================================================
                 outputStr = sprintf('%-61s (%-10s): #Us=%5d (%-16s) %s', variableName, sizeStr, nUniqueValues, nanStr, valuesStr);
                 
-                irf.log('n', outputStr)
+                bicas.log('info', outputStr)
             else
                 
                 % ASSERTION
@@ -701,9 +701,9 @@ classdef dm_utils
             if ~isempty(tt2000)
                 strFirst = bicas.dm_utils.tt2000_to_UTC_str(tt2000(1));
                 strLast  = bicas.dm_utils.tt2000_to_UTC_str(tt2000(end));
-                irf.log('n', sprintf('%s: %s -- %s', variableName, strFirst, strLast))
+                bicas.logf('info', '%s: %s -- %s', variableName, strFirst, strLast)
             else
-                irf.log('n', sprintf('%s: <empty>', variableName))
+                bicas.logf('info', '%s: <empty>', variableName)
             end
         end
 

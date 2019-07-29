@@ -27,7 +27,6 @@ function [varargout] = validate_BIAS_master_CDFs(dir_path, file_name_regex)
     
     
     irf('check_path');    
-    irf.log('critical')      % Set log level.
     
     if ~ischar(file_name_regex)
         error('"file_name_regex" is not a string.')

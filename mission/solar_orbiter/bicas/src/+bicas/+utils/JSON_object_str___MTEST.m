@@ -7,7 +7,7 @@ obj = define_descriptor1();
 str = bicas.utils.JSON_object_str(obj, 4, 15);
 fprintf('-------------------------------------------\n');
 fprintf(str);
-%bicas.stdout_disp(str);
+%bicas.stdout_print(str);
 
 
 

@@ -95,11 +95,11 @@ catch Exception1
     %================================================================
     % CASE: Caught an error in the regular execution of the software
     %================================================================
-
     try
-        irf.log('critical', 'Main function caught an exception. Beginning error handling.');   % Print to stdout.
-        fprintf(2, 'exception1.identifier = "%s"\n', Exception1.identifier);    % Print to stderr.
-        fprintf(2, 'exception1.message    = "%s"\n', Exception1.message);       % Print to stderr.
+        bicas.log( 'error', 'Main function caught an exception. Beginning error handling.');
+        bicas.logf('error', 'exception1.identifier = "%s"',   Exception1.identifier);
+        bicas.logf('error', 'exception1.message    = "%s"\n', Exception1.message);
+        % NOTE: bicas.logf requires string, i.e. the PATTERN, to end with line feed.
 
         %=================================================================================
         % Use MATLAB error message identifiers to identify one or multiple "error types".
@@ -113,9 +113,9 @@ catch Exception1
         %===================================
         % Print all identified error types.
         %===================================
-        fprintf(2, 'Matching error types:\n');% Print to stderr.
+        bicas.log('error', 'Matching error types:');% Print to stderr.
         for i = 1:numel(errorTypesList)
-            fprintf(2, '    %s\n', ERROR_TYPES_INFO(errorTypesList{i}).description);   % Print to stderr.
+            bicas.logf('error', '    %s\n', ERROR_TYPES_INFO(errorTypesList{i}).description);
         end
         % NOTE: Choice - Uses the last part of the message ID for determining error code to return.
         errorCode = ERROR_TYPES_INFO(errorTypesList{end}).code;
@@ -124,20 +124,20 @@ catch Exception1
         % Print the call stack
         %======================
         callStackLength = length(Exception1.stack);
-        fprintf(2, 'MATLAB call stack:\n');    % Print to stderr.
+        bicas.log('error', 'MATLAB call stack:');    % Print to stderr.
         if (~isempty(callStackLength))
             for i=1:callStackLength
                 stackCall = Exception1.stack(i);
                 temp      = strsplit(stackCall.file, filesep);
                 filename  = temp{end};
 
-                fprintf(2, '    %-25s %-55s row %i,\n', [filename, ','], [stackCall.name, ','], stackCall.line);
+                bicas.logf('error', '    %-27s %-55s row %i,\n', [filename, ','], [stackCall.name, ','], stackCall.line);
             end
         end
 
 
 
-        fprintf(2, 'Exiting MATLAB application with error code %i.\n', errorCode);        % Print to stderr.
+        bicas.logf('error', 'Exiting MATLAB application with error code %i.', errorCode);        % Print to stderr.
         return
 
     catch Exception2    % Deliberately use different variable name to distinguish the exception from the previous one.
@@ -146,11 +146,12 @@ catch Exception1
         %========================================================
 
         % NOTE: Only use very, very error-safe code here.
+        %       Does not use bicas.log() or similar.
         fprintf(2, 'Error in the MATLAB code''s error handling.\n');   % Print to stderr.
         fprintf(2, 'exception2.identifier = "%s"\n', Exception2.identifier);          % Print to stderr.
         fprintf(2, 'exception2.message    = "%s"\n', Exception2.message);             % Print to stderr.
 
-        errorCode = ERROR_TYPES_INFO('MatlabCodeErrorHandlingError').code;             % Use hardcoded constant for this error?!!
+        errorCode = ERROR_TYPES_INFO('MatlabCodeErrorHandlingError').code;            % Use hardcoded constant for this error?!!
 
         fprintf(2, 'Exiting MATLAB application with error code %i.\n', errorCode);    % Print to stderr.
         return
@@ -196,15 +197,12 @@ irf('check_os');              % Maybe not strictly needed.
 irf('matlab');
 irf('cdf_leapsecondstable');
 irf('version')                % Print e.g. "irfu-matlab version: 2017-02-21,  v1.12.6".
-irf.log('notice')             % Set initial log level value until it is later overridden by the config value.
 
 
 
 %===============================
 % Derive BICAS's directory root
 %===============================
-%ROC_RCS_PATH = getenv('ROC_RCS_PATH');     % Use environment variable.
-%irf.log('n', sprintf('ROC_RCS_PATH = "%s"', ROC_RCS_PATH));
 % ASSUMES: The current file is in the <BICAS>/src directory.
 [matlabSrcPath, ~, ~] = fileparts(mfilename('fullpath'));   % Use path of the current MATLAB file.
 bicasRootPath         = bicas.utils.get_abs_path(fullfile(matlabSrcPath, '..'));
@@ -214,10 +212,13 @@ bicasRootPath         = bicas.utils.get_abs_path(fullfile(matlabSrcPath, '..'));
 %=======================================
 % Log misc. paths and all CLI arguments
 %=======================================
-irf.log('n', sprintf('BICAS software root path:  "%s"', bicasRootPath))
-irf.log('n', sprintf('Current working directory: "%s"', pwd));   % Useful for debugging the use of relative directory arguments.
+bicas.logf('info', 'BICAS software root path:  "%s"', bicasRootPath)
+bicas.logf('info', 'Current working directory: "%s"', pwd);   % Useful for debugging the use of relative directory arguments.
+
+% PROPOSAL: Combine CLI arguments into a single multiline log message?
+bicas.logf('info', 'Number of CLI arguments: %i', length(cliArgumentsList))
 for i = 1:length(cliArgumentsList)
-    irf.log('n', sprintf('CLI argument %2i: "%s"', i, cliArgumentsList{i}))    % PROPOSAL: Combine into a single multiline log message?
+    bicas.logf('info', 'CLI argument %2i: "%s"', i, cliArgumentsList{i})
 end
 
 
@@ -229,7 +230,6 @@ end
 %    1) MATLAB version should have been checked for first. The initialization code could otherwise fail.
 %    2) Needs BICAS root path.
 % NOTE: Constants will later be modified by the CLI arguments.
-% Should preferably not use irf.log before here so that the right logging level is used.
 global CONSTANTS
 global SETTINGS
 CONSTANTS = bicas.constants(bicasRootPath);
@@ -264,8 +264,7 @@ SETTINGS.make_read_only();
 
 
 
-irf.log(SETTINGS.get_fv('LOGGING.IRF_LOG_LEVEL'));
-irf.log('n', bicas.sprint_SETTINGS)                 % Prints/log the contents of SETTINGS.
+bicas.log('info', bicas.sprint_SETTINGS)                 % Prints/log the contents of SETTINGS.
 
 
 
@@ -277,7 +276,7 @@ irf.log('n', bicas.sprint_SETTINGS)                 % Prints/log the contents of
 %pipelineId     = read_env_variable('ROC_PIP_NAME',        'PROCESSING.ROC_PIP_NAME_OVERRIDE');
 %calibrationDir = read_env_variable('ROC_RCS_CAL_PATH',    'PROCESSING.ROC_RCS_CAL_PATH_OVERRIDE');
 masterCdfDir   = read_env_variable(SETTINGS, 'ROC_RCS_MASTER_PATH', 'PROCESSING.ROC_RCS_MASTER_PATH_OVERRIDE');
-irf.log('n', sprintf('masterCdfDir = "%s"', masterCdfDir))
+bicas.logf('info', 'masterCdfDir = "%s"', masterCdfDir)
 
 
 
@@ -355,7 +354,7 @@ end    % if ... else ... / switch
 
 
 executionWallTimeSeconds = toc(startTimeTicSeconds);
-irf.log('n', sprintf('Execution took %g s (wall time).', executionWallTimeSeconds));    % Always log (-->critical)?
+bicas.logf('info', 'Time used for execution (wall time): %g [s]', executionWallTimeSeconds);    % Always log (-->critical)?
 
 
 
@@ -372,8 +371,8 @@ function print_version(DataManager)
 % This is in principle inefficient but "precise".
 % NOTE: Uses the s/w name from the s/w descriptor too (instead of SETTINGS) since available anyway.
 
-swd = bicas.get_sw_descriptor(DataManager);
-bicas.stdout_printf('%s version %s\n', swd.identification.name, swd.release.version)
+Swd = bicas.get_sw_descriptor(DataManager);
+bicas.stdout_printf('%s version %s\n', Swd.identification.name, Swd.release.version)
 
 end
 
@@ -388,11 +387,11 @@ function print_identification(DataManager)
 
 global SETTINGS
 
-swd = bicas.get_sw_descriptor(DataManager);
-str = bicas.utils.JSON_object_str(swd, ...
+Swd = bicas.get_sw_descriptor(DataManager);
+str = bicas.utils.JSON_object_str(Swd, ...
     SETTINGS.get_fv('JSON_OBJECT_STR.INDENT_SIZE'), ...
     SETTINGS.get_fv('JSON_OBJECT_STR.VALUE_POSITION'));
-bicas.stdout_disp(str);
+bicas.stdout_print(str);
 
 end
 
@@ -426,7 +425,7 @@ for i = 1:numel(errorTypesInfoList)
 end
 
 % Print settings
-bicas.stdout_disp(bicas.sprint_SETTINGS)   % Includes title
+bicas.stdout_print(bicas.sprint_SETTINGS)   % Includes title
 
 bicas.stdout_printf('\nSee "readme.txt" and user manual for more help.\n')
 end

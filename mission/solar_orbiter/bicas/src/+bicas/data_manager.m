@@ -187,7 +187,7 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
         
             % NOTE: This log message is particularly useful for following the recursive calls of this function.
             % sw_mode_ID comes first since that tends to make the log message values line up better.
-            %irf.log('n', sprintf('Begin function (pdid=%s)', pdid))
+            %bicas.logf('debug', 'Begin function (pdid=%s)', pdid)
 
             processData = obj.get_PDV(pdid);
 
@@ -196,7 +196,7 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
             %============================================
             if ~isempty(processData)
                 % CASE: Process data is already available.
-                %irf.log('n', sprintf('End   function (pdid=%s) - PD already available', pdid))
+                %bicas.logf('debug', 'End   function (pdid=%s) - PD already available', pdid)
                 return   % NOTE: This provides caching so that the same process data are not derived twice.
             end
 
@@ -210,7 +210,7 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
             if isempty(processingFunc)
                 % CASE: pdid represents an EIn.
                 processData = [];
-                %irf.log('n', sprintf('End   function (pdid=%s) - PD can not be derived (is EIn)', pdid))
+                %bicas.logf('debug', 'End   function (pdid=%s) - PD can not be derived (is EIn)', pdid)
                 return
             end
 
@@ -254,13 +254,13 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            irf.log('n', sprintf('Begin deriving PDID=%s using %s', pdid, func2str(processingFunc)))
+            bicas.logf('info', 'Begin deriving PDID=%s using %s', pdid, func2str(processingFunc))
             processData = processingFunc(Inputs);
             
             obj.set_PDV(pdid, processData)
             
             % NOTE: This log message is useful for being able to follow the recursive calls of this function.
-            %irf.log('n', sprintf('End   function (pdid=%s) - PD was derived', pdid))
+            %bicas.logf('debug', 'End   function (pdid=%s) - PD was derived', pdid)
             
         end
         

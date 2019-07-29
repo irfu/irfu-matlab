@@ -1,10 +1,12 @@
+%
+% Wrapper around stdout_print but prints with pattern+parameters.
+%
+%
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
 % First created 2016-08-05
 %
-% Wrapper around stdout_disp but prints with pattern+parameters.
-%
 function stdout_printf(pattern, varargin)
 
-    bicas.stdout_disp(sprintf(pattern, varargin{:}));
-    
+bicas.stdout_print( sprintf(pattern, varargin{:}) );
+
 end

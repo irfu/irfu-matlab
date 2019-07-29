@@ -225,7 +225,7 @@ global SETTINGS
 %======================
 % Read master CDF file
 %======================
-irf.log('n', sprintf('Reading master CDF file: "%s"', masterCdfPath))
+bicas.logf('info', 'Reading master CDF file: "%s"', masterCdfPath)
 DataObj = dataobj(masterCdfPath);
 
 %=============================================================================================
@@ -233,7 +233,7 @@ DataObj = dataobj(masterCdfPath);
 %=============================================================================================
 % NOTE: Only sets a SUBSET of the zVariables in master CDF.
 pdFieldNameList = fieldnames(ProcessData);
-irf.log('n', 'Converting PDV to dataobj (CDF data structure)')
+bicas.log('info', 'Converting PDV to dataobj (CDF data structure)')
 %bicas.dm_utils.log_array('explanation')
 for iPdFieldName = 1:length(pdFieldNameList)
     zVariableName = pdFieldNameList{iPdFieldName};
@@ -310,7 +310,7 @@ for fn = fieldnames(DataObj.data)'
             zVariableName);
         
         if SETTINGS.get_fv('OUTPUT_CDF.EMPTY_ZVARIABLES_SET_TO_FILL')
-            irf.log('w', logMsg)
+            bicas.log('warning', logMsg)
             matlabClass = bicas.utils.convert_CDF_type_to_MATLAB_class(DataObj.data.(zVariableName).type, 'Permit MATLAB classes');
             
             % ASSERTION: Require numeric type.
@@ -325,7 +325,7 @@ for fn = fieldnames(DataObj.data)'
             % NOTE: Assumes that
             % (1) there is a PD fields/zVariable Epoch, and
             % (2) this zVariable should have as many records as Epoch.
-            irf.log('w', sprintf('Setting zVariable "%s" to correctly-sized data with fill values.', zVariableName))
+            bicas.logf('warning', 'Setting zVariable "%s" to correctly-sized data with fill values.', zVariableName)
             nEpochRecords = size(ProcessData.Epoch, 1);
             [fillValue, ~] = get_fill_pad_values(DataObj, zVariableName);
             zVariableSize = [nEpochRecords, DataObj.data.(fn{1}).dim];
@@ -345,7 +345,7 @@ end
 % outputFilename = FilenamingFunction(...
 %     datasetId, GlobalAttributesSubset.Test_Id, GlobalAttributesSubset.Provider, SETTINGS.get_fv('OUTPUT_CDF.DATA_VERSION'));
 % filePath = fullfile(outputFileParentDir, outputFilename);
-irf.log('n', sprintf('Writing dataset CDF file: %s', outputFile))
+bicas.logf('info', 'Writing dataset CDF file: %s', outputFile)
 bicas.utils.write_CDF_dataobj( ...
     outputFile, ...
     DataObj.GlobalAttributes, ...
@@ -388,12 +388,12 @@ function [ProcessData, GlobalAttributes] = read_dataset_CDF(pdid, filePath)
 
 global SETTINGS CONSTANTS
 
-irf.log('n', sprintf('pdid=%s', pdid))    % NOTE: irf.log adds the method name.
+bicas.logf('info', 'pdid=%s', pdid)
 
 %===========
 % Read file
 %===========
-irf.log('n', sprintf('Reading CDF file: "%s"', filePath))
+bicas.logf('info', 'Reading CDF file: "%s"', filePath)
 do = dataobj(filePath);                 % do=dataobj, i.e. irfu-matlab's dataobj!!!
 
 
@@ -401,7 +401,7 @@ do = dataobj(filePath);                 % do=dataobj, i.e. irfu-matlab's dataobj
 %=========================================================================
 % Copy zVariables (only the data) into analogous fields in smaller struct
 %=========================================================================
-irf.log('n', 'Converting dataobj (CDF data structure) to PDV.')
+bicas.log('info', 'Converting dataobj (CDF data structure) to PDV.')
 ProcessData       = struct();
 zVariableNameList = fieldnames(do.data);
 %bicas.dm_utils.log_array('explanation')
@@ -429,7 +429,7 @@ for i = 1:length(zVariableNameList)
         zVariableData = bicas.utils.replace_value(zVariableData, padValue,  NaN);
     else
         % Disable?! Only print warning if finds fill value which is not replaced?
-        %irf.log('w', sprintf('Can not handle replace fill/pad values for zVariable "%s" when reading "%s".', zVariableName, filePath))
+        %bicas.logf('warning', 'Can not handle replace fill/pad values for zVariable "%s" when reading "%s".', zVariableName, filePath))
     end
     
     ProcessData.(zVariableName) = zVariableData;
@@ -439,8 +439,8 @@ end
 
 fileDatasetId          = do.GlobalAttributes.DATASET_ID{1};
 fileSkeletonVersionStr = do.GlobalAttributes.Skeleton_version{1};
-irf.log('n', sprintf('File: DATASET_ID       = "%s"', fileDatasetId))
-irf.log('n', sprintf('File: Skeleton_version = "%s"', fileSkeletonVersionStr))
+bicas.logf('info', 'File: DATASET_ID       = "%s"', fileDatasetId)
+bicas.logf('info', 'File: Skeleton_version = "%s"', fileSkeletonVersionStr)
 
 
 
