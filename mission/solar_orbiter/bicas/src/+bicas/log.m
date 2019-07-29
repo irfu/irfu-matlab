@@ -49,9 +49,6 @@ printStr = bicas.utils.add_prefix_on_every_row(msgStr, rowPrefix);
 
 
 
-
-
-
 %=============================
 % Print log message to stdout
 %=============================

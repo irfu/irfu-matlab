@@ -38,6 +38,8 @@
 % First created 2016-06-02
 %
 function C = error_safe_constants
+% PROPOSAL: Change name. Something not just "error safe".
+%   PROPOSAL: ~constants. (Change name of bicas.constants).
 
 % NOTE: The RCS ICD 00037, iss1/rev2, draft 2019-07-11, Section 3.4.3 specifies
 %   error code 0 : No error
@@ -58,8 +60,9 @@ MAP('IllegalCodeConfiguration')     = info_struct(1, 'Bad hard-coded configurati
 MAP('CannotInterpretConfigFile')    = info_struct(1, 'Can not interpret the content of the configuration file. This implies a problem with the syntax.');
 C.EMIDP_2_INFO = MAP;
 
-C.REQUIRED_MATLAB_VERSION        = '2016a';
-C.INOFFICIAL_ARGUMENTS_SEPARATOR = '--';
+C.REQUIRED_MATLAB_VERSION           = '2016a';
+C.INOFFICIAL_ARGUMENTS_SEPARATOR    = '--';
+C.DEFAULT_CONFIG_FILE_RELATIVE_PATH = fullfile('config', 'bicas.conf');    % Path (incl. filename) to default config file. Relative to BICAS's directory root.
 
 end
 

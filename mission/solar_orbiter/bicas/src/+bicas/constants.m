@@ -36,10 +36,6 @@ classdef constants < handle
 %   PROPOSAL: Handle "manually" through function parameters.
 %   TODO-NEED-INFO: There is a ROC-defined environment variable for this?
 %
-% PROPOSAL: Get rid of BICAS_ROOT_PATH somehow. Does not fit in.
-%   PROPOSAL: Move to SETTINGS?
-%   PROPOSAL: Use as regular variable submitted through arguments.
-%
 % PROPOSAL: More validation.
 %   PROPOSAL: Check that data types are unique.
 %       NOTE: Requires access to the lists.
@@ -52,7 +48,6 @@ classdef constants < handle
 %
 % PROPOSAL: Change name to which is more specific. Current name is too generic.
 %   PROPOSAL: ~dm_constants.
-%       NOTE: Should then get rid of BICAS_ROOT_PATH first.
 %   PROPOSAL: ~datasets_modes_constants
 % PROPOSAL: Split into code for
 %   (1) storing the data, and
@@ -64,8 +59,6 @@ classdef constants < handle
 %###################################################################################################################
 
     properties(Access=public)
-        BICAS_ROOT_PATH
-        
         SW_MODES_INFO_LIST   % Information associated with S/W modes.
         
         INPUTS_INFO_LIST     % Information associated with input  datasets.
@@ -84,10 +77,8 @@ classdef constants < handle
     methods(Access=public)
         
         % Constructor
-        function obj = constants(bicasRootPath)            
+        function obj = constants()            
             
-            obj.BICAS_ROOT_PATH = bicasRootPath;
-
             % These two values exist in "settings" in principle, but that is just for as long as there has been no
             % official release. After first release, then the two sets should start diverging.
             INITIAL_RELEASE_DATE_STR         = '2018-01-23';

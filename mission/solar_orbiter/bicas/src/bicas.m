@@ -256,10 +256,13 @@ CliData = bicas.interpret_CLI_args(cliArgumentsList);
 % Modify settings according to configuration file
 %=================================================
 if ~isempty(CliData.configFile)
-    rowList = bicas.utils.read_text_file(CliData.configFile);
-    ConfigFileSettingsVsMap = bicas.interpret_config_file(rowList);
-    SETTINGS.set_preexisting_from_strings(ConfigFileSettingsVsMap);    % Modify SETTINGS
+    configFile = CliData.configFile;
+else
+    configFile = fullfile(bicasRootPath, C.DEFAULT_CONFIG_FILE_RELATIVE_PATH);
 end
+rowList = bicas.utils.read_text_file(configFile);
+ConfigFileSettingsVsMap = bicas.interpret_config_file(rowList);
+SETTINGS.set_preexisting_from_strings(ConfigFileSettingsVsMap);    % Modify SETTINGS
 
 
 

@@ -50,8 +50,7 @@ S.define_setting('INSTITUTE',    D.INSTITUTE);
 % String value. TEMPORARY SOLUTION.
 S.define_setting('CALIBRATION_VERSION', '0.1; Only proportionality constants i.e. no voltage offset tables, no transfer functions; No bias currents');
 
-S.define_setting('DEFAULT_CONFIG_FILE_RELATIVE_PATH', fullfile('config', 'bicas.conf'));   % Path (incl. filename) to default config file. Relative to BICAS's directory root.
- 
+
 
 %===========================================================================================================
 % Various S/W descriptor release data for the entire software (not specific outputs)
