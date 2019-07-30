@@ -1,5 +1,5 @@
-function data_manager___ATEST
-% data_manager_TST - Attempt at automated test code for data_manager.
+function data_manager_old___ATEST
+% data_manager_old_TST - Attempt at automated test code for data_manager_old.
 %
 % NOTE 2019-07-24: Does not work
 % 
@@ -42,7 +42,7 @@ function test_1
     CONSTANTS = bicas.constants();
     ACQUISITION_TIME_EPOCH_UTC = [2000,01,01, 12,00,00, 000,000,000];
 
-    Dm = bicas.data_manager();
+    Dm = bicas.data_manager_old();
     
     V_seq1   = rand(1,672);
     V_seq2   = rand(1,672);

@@ -1,4 +1,8 @@
-% data_manager - Class that "coordinates", "organizes" the actual processing of datasets.
+% data_manager_old - Class that "coordinates", "organizes" the actual processing of datasets.
+%
+% IMPORTANT NOTE: AS OF 2019-07-30, THIS CODE IS PLANNED TO BE TAKEN OUT OF USE AND BE REPLACED BY A SIMPLER SCHEME,
+%                 HENCE THE SUFFIX "_old".
+%
 %
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
 % First created 2016-06-10
@@ -79,7 +83,7 @@
 %           Returned TO the user. In practice this should correspond to the content of a CDF file.
 % - Intermediate process data
 %       Process data that is not "elementary" input/output process data.
-%       These only exist inside data_manager.
+%       These only exist inside data_manager_old.
 % - PDID = Process data ID
 %       A string that uniquely represents (refers to) a type of process data.
 %       By convention, the PDIDs for elementary input/output PDIDs are a shortened version of
@@ -102,7 +106,7 @@
 %     - NOT be aware of S/W modes as defined in the RCS ICD.
 %     - NOT deal with reading or writing CDFs.
 %
-classdef data_manager < handle     % Explicitly declare it as a handle class to avoid IDE warnings.
+classdef data_manager_old < handle     % Explicitly declare it as a handle class to avoid IDE warnings.
 %#######################################################################################################################
 % PROPOSAL: Use other class name that implices processing, and fits with defined term "process data".
 %     "processing_manager"? "proc_manager"?
@@ -112,7 +116,7 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
 % PROPOSAL: get_process_data_recursively should give assertion error for not finding processing function? (Is there a
 % reason why not already so?)
 %
-% PROPOSAL: Log PDV values everytime they have been set in data_manager. 
+% PROPOSAL: Log PDV values everytime they have been set in data_manager_old. 
 %   NOTE: Need to handle recursive structs.
 %
 % PROPOSAL: Replace with separate generic class, without hardcoded data.
@@ -141,7 +145,7 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
 
     methods(Access=public)
         
-        function obj = data_manager()
+        function obj = data_manager_old()
         % CONSTRUCTOR
         
             global CONSTANTS
@@ -239,7 +243,7 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
                 
                 % ASSERTION: Check that input (field) has been derived.
                 if ~Inputs.isKey(inputField)
-                    error('BICAS:data_manager:Assertion:SWModeProcessing', ...
+                    error('BICAS:data_manager_old:Assertion:SWModeProcessing', ...
                         'Can not derive necessary process data for pdid=%s, inputField=%s', pdid, inputField)
                 end
 
@@ -273,10 +277,10 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
         % NOTE: This function takes constants.SW_MODES_INFO_LIST and adds info about input and output datasets to it.
         % NOTE: The function takes the "swModeCliParameter" as parameter, not the S/W mode ID!
         %
-        % IMPLEMENTATION NOTE: The reason for that this function is located in "data_manager" instead of "constants" is
-        % the combination of (1) the call to "bicas.data_manager.get_elementary_input_PDIDs" (which goes/went through the
+        % IMPLEMENTATION NOTE: The reason for that this function is located in "data_manager_old" instead of "constants" is
+        % the combination of (1) the call to "bicas.data_manager_old.get_elementary_input_PDIDs" (which goes/went through the
         % data manager's processing graph recursively) and (2) that constants.m should contain no reference to
-        % data_manager.m (for initialization reasons at the very least).
+        % data_manager_old.m (for initialization reasons at the very least).
         % AMENDMENT 2016-11-16: Function no longer calls that function but might call a similar one in the future. The
         % comment is therefore still relevant.
 
@@ -352,7 +356,7 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
         
         function assert_PDID(obj, pdid)
             if ~ischar(pdid) || ~ismember(pdid, obj.ALL_PDID_LIST)
-                error('BICAS:data_manager:Assertion', 'There is no such PDID="%s".', pdid)
+                error('BICAS:data_manager_old:Assertion', 'There is no such PDID="%s".', pdid)
             end
         end
 
@@ -385,7 +389,7 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
             % ASSERTIONS
             obj.assert_PDID(pdid)
             if ~isempty(obj.ProcessDataVariables(pdid))
-                error('BICAS:data_manager:Assertion', 'There is already process data for the specified PDID="%s".', pdid);
+                error('BICAS:data_manager_old:Assertion', 'There is already process data for the specified PDID="%s".', pdid);
             end
             
             obj.ProcessDataVariables(pdid) = processData;
@@ -573,7 +577,7 @@ classdef data_manager < handle     % Explicitly declare it as a handle class to 
                 otherwise
                     % NOTE: The PDID can be valid without there being an implementation for it, i.e. the error should
                     % NOT be replaced with assert_PDID().
-                    error('BICAS:data_manager:Assertion:OperationNotImplemented', ...
+                    error('BICAS:data_manager_old:Assertion:OperationNotImplemented', ...
                         'There is no processing data for PDID="%s".', outputPdid)
             end   % switch
 

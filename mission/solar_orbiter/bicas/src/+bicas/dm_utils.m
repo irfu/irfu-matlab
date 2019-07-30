@@ -1,8 +1,8 @@
 classdef dm_utils
-% Collections of minor utility functions (in the form of static methods) used by data_manager.
-% The functions are collected here to reduce the size of data_manager.
+% Collections of minor utility functions (in the form of static methods) used by data_manager_old.
+% The functions are collected here to reduce the size of data_manager_old.
 %
-% dm_utils = data_manager utilities
+% dm_utils = data_manager_old utilities
 %
 %
 % TERMINOLOGY
@@ -740,7 +740,7 @@ classdef dm_utils
         function assert_unvaried_N_rows(s)
         % Assert that all NUMERIC fields in a structure have the same number of rows.
         %
-        % Useful since in data_manager, much code assumes that struct fields represent CDF zVar records which should
+        % Useful since in data_manager_old, much code assumes that struct fields represent CDF zVar records which should
         % have the same number of rows.
         %
         % s : A struct to be tested.

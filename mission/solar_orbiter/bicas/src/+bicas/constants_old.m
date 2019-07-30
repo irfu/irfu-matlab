@@ -1,10 +1,11 @@
 % Constants - Singleton class for global constants used by BICAS.
 %
-% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
-% First created 2016-05-31
-%
 % Defines constants used by the software. Set up as a ~singleton handle class.
 % Also contains validation code and functions for more convenient access.
+%
+%
+% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% First created 2016-05-31
 %
 %
 %
@@ -27,14 +28,6 @@
 % descriptor). This "release data" should possibly(?) be associated with every S/W mode instead.
 %
 classdef constants < handle
-%
-% PROPOSAL: Include SW root path?! How?
-%   PRO: Needs to be universally accessible.
-%   CON: Not hardcoded. ==> Mixes code with manually set/hardcoded constants.
-%   QUESTION: Is there anything analogous? output dir?
-%   PROPOSAL: Some functionality for setting "properties", in reality named ~global variables as key-value pairs. cf OVT.
-%   PROPOSAL: Handle "manually" through function parameters.
-%   TODO-NEED-INFO: There is a ROC-defined environment variable for this?
 %
 % PROPOSAL: More validation.
 %   PROPOSAL: Check that data types are unique.
@@ -211,12 +204,12 @@ classdef constants < handle
         %    .CLI_PARAMETER    : Is used as CLI parameter to identify the S/W mode.
         %                        NOTE: This is not necessarily to regard as a "CLI option" as defined in "parse_CLI_options".
         %    .ID               : S/W mode ID. Used to identify the mode internally (in particular for hardcoded constants
-        %                        in data_manager).
+        %                        in data_manager_old).
         %                        Has about the same purpose as CLI_PARAMETER but is separate so that CLI_PARAMETER
         %                        values/constants can be easily modified, whereas ID values are tied to hardcoded
-        %                        constants in data_manager which are harder to modify.
+        %                        constants in data_manager_old which are harder to modify.
         %    .OUTPUT_PDID_LIST : A cell array of PDIDs. Effectively an array of pointers to (1) the output constants, and (2)
-        %                        indirectly to the input constants through data_manager.get_elementary_input_PDIDs.
+        %                        indirectly to the input constants through data_manager_old.get_elementary_input_PDIDs.
         function swModesInfoList = produce_sw_modes_constants()
             % PROPOSAL: Rename CLI_PARAMETER. CLI_NAME? CLI_ARGUMENT?
             % PROPOSAL: Indent hardcoded s/w modes.
@@ -433,8 +426,8 @@ classdef constants < handle
 
             % Add one field ".PDID" to every struct above!
             % 
-            % Put together PDIDs (used in data_manager).
-            % See data_manager for definition.
+            % Put together PDIDs (used in data_manager_old).
+            % See data_manager_old for definition.
             einPdidList = {};
             for i = 1:length(inputsInfoList)
                 inputsInfoList{i}.PDID = bicas.constants.construct_PDID(inputsInfoList{i}.DATASET_ID, inputsInfoList{i}.SKELETON_VERSION_STR);
@@ -514,10 +507,13 @@ classdef constants < handle
         
         
         % Construct a PDID derived from a dataset ID and skeleton version (a string shorter than the similar
-        % corresponding official strings, e.g. ROC-SGSE_L2S_RPW-TDS-LFM-RSWF-E + V01 --> V01_ROC-SGSE_L2S_RPW-TDS-LFM-RSWF-E).
+        % corresponding official strings, e.g.
+        %   V01 + ROC-SGSE_L2S_RPW-TDS-LFM-RSWF-E
+        % --> V01_ROC-SGSE_L2S_RPW-TDS-LFM-RSWF-E).
         %
         % NOTE: Has to work sensibly for both ROC-SGSE and RODP/SOLO dataset IDs.
         function pdid = construct_PDID(datasetId, skeletonVersionStr)
+            % PROPOSAL: Move to ~constants (collect decision functions).
         
             %pdid = [datasetId, '_V', skeletonVersionStr];
             
@@ -527,7 +523,7 @@ classdef constants < handle
             %pdid = [datasetIdShortened, '_V', skeletonVersionStr];
             pdid = sprintf('V%s_%s', skeletonVersionStr, datasetIdShortened);
             % IMPLEMENTATION NOTE: Put skeleton version at beginning of PDID since PDIDs then line up better when
-            % printed in a list above each other.
+            % printed in a list above each other. Easier to read.
         end
 
     end % methods(Static, Access=private)

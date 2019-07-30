@@ -68,7 +68,7 @@ function execute_sw_mode(DataManager, swModeCliParameter, InputFilePathMap, Outp
 %   --
 %   NOTE: Do we not already have this in read_dataset_CDF & write_dataset_CDF?
 %
-% PROPOSAL: BUG FIX: Move global attributes into PDs somehow to let the data_manager collect the values during processing?
+% PROPOSAL: BUG FIX: Move global attributes into PDs somehow to let the data_manager_old collect the values during processing?
 %   PROPOSAL: Have PDs include global attributes in new struct structure.
 %             EIn PD:            EInPD(GlobalAttributes,          zVariables)   // All input dataset GAs.
 %             Intermediary PDs:     PD(GlobalAttributesCellArray, data)         // All input datasets GAs (multiple datasets).
@@ -83,7 +83,7 @@ function execute_sw_mode(DataManager, swModeCliParameter, InputFilePathMap, Outp
 %   PROPOSAL: Separate DM dependancies to handle GAs directly EIn-EOut without intermediary PDs.
 %       PRO: Can collect all GAs in one step.
 %       CON: DM must explicitly state all the EIn PDs, rather than collect them automatically indirectly (recursively).x
-%   PROPOSAL: Since functionality is identical for all (L2R-->L2S) processing, use data_manager.get_elementary_input_PDIDs.
+%   PROPOSAL: Since functionality is identical for all (L2R-->L2S) processing, use data_manager_old.get_elementary_input_PDIDs.
 %       CON: There is no proper link from EIn PDs to dataset global attributes unless these are in the EIn PDs, but they
 %            are not really needed for the processing so it would be contradictive if they were.
 %
@@ -201,7 +201,7 @@ end
 
 
 function [ProcessData, GlobalAttributes] = read_dataset_CDF(pdid, filePath)
-% Read elementary input process data from a CDF file and convert it to a format suitable as a data_manager "process data".
+% Read elementary input process data from a CDF file and convert it to a format suitable as a data_manager_old "process data".
 % Copies all zVariables into fields of a regular structure.
 %
 %
@@ -251,7 +251,7 @@ for i = 1:length(zVariableNameList)
     % Log data to be written to CDF file
     % ----------------------------------
     % NOTE: Log messages should reflect the values READ from file.
-    %       Process data variables are logged separately by data_manager.
+    %       Process data variables are logged separately by data_manager_old.
     %=================================================================================================
     %bicas.dm_utils.log_struct_arrays(zVariableName, zVariableData);
     
@@ -371,7 +371,7 @@ for iPdFieldName = 1:length(pdFieldNameList)
     % Log data to be written to CDF file
     % ----------------------------------
     % NOTE: Log messages should reflect the values WRITTEN to file.
-    %       Process data variables are logged separately by data_manager.
+    %       Process data variables are logged separately by data_manager_old.
     %=================================================================================================
     %bicas.dm_utils.log_struct_arrays(zVariableName, zVariableData);
     

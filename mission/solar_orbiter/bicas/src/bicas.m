@@ -294,7 +294,7 @@ bicas.logf('info', 'masterCdfDir = "%s"', masterCdfDir)
 
 
 
-DataManager = bicas.data_manager();    % NOTE: Requires CONSTANTS (not necessarily SETTINGS) to be initialized.
+DataManager = bicas.data_manager_old();    % NOTE: Requires CONSTANTS (not necessarily SETTINGS) to be initialized.
 
 
 
