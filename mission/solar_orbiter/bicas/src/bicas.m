@@ -242,7 +242,7 @@ end
 % NOTE: Constants will later be modified by the CLI arguments.
 global CONSTANTS
 global SETTINGS
-CONSTANTS = bicas.constants();
+CONSTANTS = bicas.constants_old();
 SETTINGS  = bicas.create_default_SETTINGS();
 
 

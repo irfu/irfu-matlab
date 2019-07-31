@@ -39,7 +39,7 @@ function test_1
     
     clear   % Remove all global variables, i.e. CONSTANTS.    
     global CONSTANTS
-    CONSTANTS = bicas.constants();
+    CONSTANTS = bicas.constants_old();
     ACQUISITION_TIME_EPOCH_UTC = [2000,01,01, 12,00,00, 000,000,000];
 
     Dm = bicas.data_manager_old();

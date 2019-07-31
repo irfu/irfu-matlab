@@ -1,5 +1,8 @@
 % Constants - Singleton class for global constants used by BICAS.
 %
+% IMPORTANT NOTE: AS OF 2019-07-31, THIS CODE IS PLANNED TO BE TAKEN OUT OF USE AND BE REPLACED BY A SIMPLER SCHEME,
+%                 HENCE THE SUFFIX "_old".
+%
 % Defines constants used by the software. Set up as a ~singleton handle class.
 % Also contains validation code and functions for more convenient access.
 %
@@ -27,7 +30,7 @@
 % every possible output format. There, every output format is associated with "release data" (required for the S/W
 % descriptor). This "release data" should possibly(?) be associated with every S/W mode instead.
 %
-classdef constants < handle
+classdef constants_old < handle
 %
 % PROPOSAL: More validation.
 %   PROPOSAL: Check that data types are unique.
@@ -76,17 +79,17 @@ classdef constants < handle
     methods(Access=public)
         
         % Constructor
-        function obj = constants()            
+        function obj = constants_old()            
             
             % These two values exist in "settings" in principle, but that is just for as long as there has been no
             % official release. After first release, then the two sets should start diverging.
             INITIAL_RELEASE_DATE_STR         = '2018-01-23';
             INITIAL_RELEASE_MODIFICATION_STR = 'No modification (initial release)';
             
-            [obj.INPUTS_INFO_LIST,  obj.INPUTS_PDIDS_LIST]  = bicas.constants.produce_inputs_constants();
-            [obj.OUTPUTS_INFO_LIST, obj.OUTPUTS_PDIDS_LIST] = bicas.constants.produce_outputs_constants(...
+            [obj.INPUTS_INFO_LIST,  obj.INPUTS_PDIDS_LIST]  = bicas.constants_old.produce_inputs_constants();
+            [obj.OUTPUTS_INFO_LIST, obj.OUTPUTS_PDIDS_LIST] = bicas.constants_old.produce_outputs_constants(...
                 INITIAL_RELEASE_DATE_STR, INITIAL_RELEASE_MODIFICATION_STR);          
-            obj.SW_MODES_INFO_LIST                          = bicas.constants.produce_sw_modes_constants();
+            obj.SW_MODES_INFO_LIST                          = bicas.constants_old.produce_sw_modes_constants();
             
             
             
@@ -102,7 +105,7 @@ classdef constants < handle
         % Assert that argument is a valid dataset ID.
         
             if ~ismember(datasetId, obj.ALL_DATASET_IDS_LIST)
-                error('BICAS:constants:Assertion', '"%s" is not a valid dataset ID.', datasetId)
+                error('BICAS:constants_old:Assertion', '"%s" is not a valid dataset ID.', datasetId)
             end
         end
         
@@ -113,7 +116,7 @@ classdef constants < handle
                     return
                 end
             end
-            error('BICAS:constants:Assertion', '"%s" is not a valid S/W mode ID', swModeId)
+            error('BICAS:constants_old:Assertion', '"%s" is not a valid S/W mode ID', swModeId)
         end
 
         function assert_EIn_PDID(obj, einPdid)
@@ -123,7 +126,7 @@ classdef constants < handle
                     return
                 end
             end
-            error('BICAS:constants:Assertion', '"%s" is not a valid EIn PDID', einPdid)
+            error('BICAS:constants_old:Assertion', '"%s" is not a valid EIn PDID', einPdid)
         end
 %         
 %         function assert_EOut_PDID(obj, eoutPdid)
@@ -133,7 +136,7 @@ classdef constants < handle
 %                     return
 %                 end
 %             end
-%             error('BICAS:constants:Assertion', '"%s" is not a valid EOut PDID', eoutPdid)
+%             error('BICAS:constants_old:Assertion', '"%s" is not a valid EOut PDID', eoutPdid)
 %         end
     end   % methods(Access=public)
     
@@ -430,7 +433,7 @@ classdef constants < handle
             % See data_manager_old for definition.
             einPdidList = {};
             for i = 1:length(inputsInfoList)
-                inputsInfoList{i}.PDID = bicas.constants.construct_PDID(inputsInfoList{i}.DATASET_ID, inputsInfoList{i}.SKELETON_VERSION_STR);
+                inputsInfoList{i}.PDID = bicas.constants_old.construct_PDID(inputsInfoList{i}.DATASET_ID, inputsInfoList{i}.SKELETON_VERSION_STR);
                 einPdidList{i} = inputsInfoList{i}.PDID;
             end
         end
@@ -460,7 +463,7 @@ classdef constants < handle
                 OutputInfo.SWD_RELEASE_DATE           = initialRelaseDateStr;
                 OutputInfo.SWD_RELEASE_MODIFICATION   = initialRelaseModificationStr;
                 
-                OutputInfo.PDID = bicas.constants.construct_PDID(datasetId, skeletonVersionStr);
+                OutputInfo.PDID = bicas.constants_old.construct_PDID(datasetId, skeletonVersionStr);
             end
             
             outputsInfoList = {};
