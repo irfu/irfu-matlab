@@ -107,7 +107,7 @@ end
 if 1
 hca = irf_panel('ScPot'); set(hca,'ColorOrder',mmsColors)
 irf_pl_tx(hca,'P?')
-ylabel(hca,'-ScPot [V]')
+ylabel(hca,'ScPot [V]')
 end
 
 
