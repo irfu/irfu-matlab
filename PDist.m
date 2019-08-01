@@ -2593,73 +2593,184 @@ classdef PDist < TSeries
       %indE = find(strcmp(obj.representation,'energy'))
       e = obj.depend{1};
     end
+    
+    
+    
     function moms = moments(obj,varargin)
-      % MOMENTS compute moments from the FPI particle phase-space densities 
-      %
-      % For brst mode data
-      % particlemoments = PDist.moments(phi,theta,stepTable,energy0,energy1,SCpot,particle,option,option_value)
-      %
-      % For fast mode data
-      % particlemoments = PDist.moments(phi,theta,energy,SCpot,particle,'fast',option,option_value)
-      %
-      % Input:
-      %   pdist - TSeries of the full particle distribution of electrons or ions
-      %   (must be in s^3/cm^6) (burst and fast)
-      %   phi - TSeries of all phi angles of distribution for burst data. 1D array or
-      %   structure for fast data.
-      %   theta - 1D array or structure of theta angles (burst and fast)
-      %   stepTable - TSeries of stepping table between energies (burst)
-      %   energy0 - 1D array or structure of energy table 0 (burst)
-      %   energy1 - 1D array or structure of energy table 1 (burst)
-      %   energy - 1D array or structure of energy table (fast)
-      %   SCpot - TSeries of spacecraft potential (burst and fast). 
-      %   (Make sure sign is correct, should be typically positive)
-      %   particle - indicate particle type: 'electron' or 'ion'
-      %
-      %   See Example_MMS_EDRsignatures for example of loading the necessary data 
-      %   and running the function.
-      %
-      % Optional Inputs:
-      %   'energyrange' - set energy range in eV to integrate over [E_min E_max].
-      %   energy range is applied to energy0 and the same elements are used for energy1 to 
-      %   ensure that the same number of points are integrated over. 
-      %   'noscpot' - set to 1 to set spacecraft potential to zero. Calculates moments without
-      %   correcting for spacecraft potential. 
-      %   'enchannels' - set energy channels to integrate over [min max]; min and max
-      %   between must be between 1 and 32.
-      %   'partialmoms' - use a binary array (or TSeries) (pmomsarr) to select which psd points are used
-      %   in the moments calculation. pmomsarr must be a binary array (1s and 0s, 1s correspond to points used).
-      %   Array (or data of TSeries) must be the same size as pdist.data. For
-      %   examples see Example_MMS_partialmoments.
-      %
-      % Output: 
-      %   psd_moments - structure containing the particle moments: density, bulk
-      %   velocity, pressure, temperature, and particle heat flux (n_psd, V_psd, P_psd, T_psd, and H_psd,
-      %   respectively) as TSeries'. For temperature and
-      %   pressure tensors the order of the columns is XX, XY, XZ, YY, YZ, ZZ.
-      %
-      % See also MMS.PSD_MOMENTS
-      %
-      % Notes: 
-      % Regarding the spacecraft potential, the best estimate of is -1.2*(probe
-      % to spacecraft voltage)+MMSoffset. Note that in most plasmas the spacecraft
-      % potential is positive. E.g.
-      % ic = 1,2,3, or 4;
-      % c_eval('do = dataobj(''data/mms?_edp_brst_l2_scpot_20151202011414_v1.0.0.cdf'');',ic);
-      % c_eval('SCpot = mms.variable2ts(get_variable(tmpDataObj,''mms?_edp_psp''));',ic);
-      % offset1 = 1.3; offset2 = 1.5; offset3 = 1.2; offset4 = 0.0; %For v1 data
-      % c_eval('SCpot.data = -SCpot.data*1.2+offset?;',ic);
-      % Apply correction for input. Correction is not applied in this script. 
-      % This correction is applied to v2 spacecraft potential so use 
-      % c_eval('SCpot = mms.variable2ts(get_variable(tmpDataObj,''mms?_edp_scpot_fast_l2''));',ic);
-      %
-      % Currently the heat flux vector does not match with the FPI ion moments. Currently
-      % using Eq. (6.8) of Analysis Methods for Multi-Spacecraft Data. This needs
-      % to be investigated further. 
- 
+        % PRELIMINARY VERSION
+        % Currently does not include spacecraft potential and has no
+        % pressure tensor or heat flux.
+        %
+        % MOMENTS get particle moments from PDist object
+        %
+        %   moms = PDIST.MOMENTS returns a structure containing TSeries
+        %   objects of the moments recalculated from the PDist object.
+        %       Moments:
+        %           n   -   number density [cm^-3]
+        %           V   -   bulk velocity [km/s]
+        %           T   -   Temperature tensor [eV]
+        %
+        %   See also: MMS.PSD_MOMENTS
+        %
+        %   TODO:   -Implement heat flux and maybe pressure tensor.
+        %           -Spacecraft potential should really NOT be an input to
+        %           this function but should be called in a separate class
+        %           method (maybe it already exists?)
+        %
+        
+        % make sure it's PSD and in SI units
+        dist = obj.convertto('s^3/m^6');
+        
+        % units
+        u = irf_units;
+        % particle mass
+        if strcmp(dist.species,'electrons'); isDes = 1; else, isDes = 0; end
+        if isDes; M = u.me; else; M = u.mp; end
+        
+        % get intstrument values (azimuthal angle is set in loop)
+        % elevation angle
+        th = double(dist.depend{3}); % polar angle in degrees
+        th = th-90; % elevation angle in degrees
+        th = th*pi/180; % in radians
+        dth = median(diff(th)); % scalar
+        % velocity
+        esteptable = dist.ancillary.esteptable;
+        idEstep0First = find(esteptable==0,1);
+        emat = double(dist.energy); % [eV]
+        e0 = emat(idEstep0First,:); e0 = e0(1,:); % [eV]
+        e1 = emat(idEstep0First+1,:); e1 = e1(1,:); % [eV]
+        % velocity (size = [2,nE]) per steptable
+        % this works also for no energy table switching since e0 == e1
+        v = sqrt((2*[e0;e1])*u.e/M); % [m/s]
+        
+        % velocity diffs from delta energy
+        % energy diffs minus/plus
+        dEm = dist.ancillary.delta_energy_minus; % [eV]
+        dEp = dist.ancillary.delta_energy_plus; % [eV]
+        % per esteptable
+        dEm0 = dEm(idEstep0First,:);
+        dEp0 = dEp(idEstep0First,:);
+        dEm1 = dEm(idEstep0First+1,:);
+        dEp1 = dEp(idEstep0First+1,:);
+        % vel diffs
+        v0lower = sqrt(2*(e0-dEm0)*u.e/M); % [m/s]
+        v0upper = sqrt(2*(e0+dEp0)*u.e/M);
+        v1lower = sqrt(2*(e1-dEm1)*u.e/M);
+        v1upper = sqrt(2*(e1+dEp1)*u.e/M);
+        % same structure as for v
+        dv = [v0upper-v0lower; v1upper-v1lower]; % [m/s]
+        
+        % Number of instrument bins
+        nEle = length(th);
+        nV = length(v);
+        
+        % initialize arrays
+        N = zeros(1,obj.length);
+        NV = zeros(3,obj.length);
+        Pressure = zeros(3,3,obj.length);
+        
+        % loop'n through time
+        for it = 1:obj.length
+            % 3d data matrix for time index it, [E,phi,th]
+            F3d = double(squeeze(dist.data(it,:,:,:)));
+            
+            % azimuthal angle
+            phi = double(dist.depend{2}(it,:)); % in degrees
+            phi = phi-180; % travel/arrival correction
+            phi = phi*pi/180; % in radians
+            dphi = median(diff(phi)); % scalar
+            
+            % Number of instrument bins
+            nAz = length(phi);
+            
+            
+            % 3D matrices for instrumental bin centers
+            TH = repmat(th,nV,1,nAz);                       % [v,th,phi]
+            TH = permute(TH,[1,3,2]);                       % [v,phi,th]
+            PHI = repmat(phi,nV,1,nEle);                    % [v,phi,th]
+            VEL = repmat(v(esteptable(it)+1,:),nAz,1,nEle); % [phi,v,th]
+            VEL = permute(VEL,[2,1,3]);                     % [v,phi,th]
+            DV = repmat(dv(esteptable(it)+1,:),nAz,1,nEle); % [phi,v,th]
+            DV = permute(DV,[2,1,3]);                       % [v,phi,th]
+            
+            
+            [VX,VY,VZ] = sph2cart(PHI,TH,VEL);
+            
+            % density
+            N(it) = sum(sum(sum(F3d.*VEL.^2.*DV.*cos(TH)*dphi*dth)));
+            
+            % should improve preformance by finding indices with non-zero
+            % psd?
+            % idf = find(F3d);
+            % [idfV,idfPhi,idfTh] = ind2sub(size(F3d),idf);
+            
+            % mega loop (should skip empty bins)
+            for iv = 1:nV
+                for iphi = 1:nAz
+                    for ith = 1:nEle
+                        % Ignore bin if value of F is zero to save computations
+                        if F3d(iv,iphi,ith) == 0
+                            continue;
+                        end
+                        % velocity
+                        NV(:,it) = NV(:,it)+...
+                            [VX(iv,iphi,ith);VY(iv,iphi,ith);VZ(iv,iphi,ith)]*...
+                            (F3d(iv,iphi,ith)*VEL(iv,iphi,ith)^2*DV(iv,iphi,ith)*...
+                            cos(TH(iv,iphi,ith))*dphi*dth);
+                        
+                    end
+                end
+            end
+            
+            Vtemp = NV(:,it)/N(it);
+            
+            % mega loop #2 (should skip empty bins) to get pressure tensor
+            % separate loop because it requires velocity moments
+            for iv = 1:nV
+                for iphi = 1:nAz
+                    for ith = 1:nEle
+                        % Ignore bin if value of F is zero to save computations
+                        if F3d(iv,iphi,ith) == 0
+                            continue;
+                        end
+                        % pressure (6.9)
+                        Pressure(:,:,it) = Pressure(:,:,it)+...
+                            M*(([VX(iv,iphi,ith);VY(iv,iphi,ith);VZ(iv,iphi,ith)]-Vtemp)*...
+                            ([VX(iv,iphi,ith);VY(iv,iphi,ith);VZ(iv,iphi,ith)]-Vtemp)')*...
+                            (F3d(iv,iphi,ith)*VEL(iv,iphi,ith)^2*DV(iv,iphi,ith)*...
+                            cos(TH(iv,iphi,ith))*dphi*dth);
+                    end
+                end
+            end
+        end
+        
+        % set output structure
+        moms = [];
+        
+        % density
+        moms.n = irf.ts_scalar(obj.time,N*1e-6);
+        moms.n.name = [dist.name,'_moms_density'];
+        moms.n.units = 'cm^-3';
+        moms.n.siConversion = '1e6>m^-3';
+        
+        % velocity
+        moms.V = irf.ts_vec_xyz(obj.time,(NV./N)'*1e-3);
+        moms.V.name = [dist.name,'_moms_velocity'];
+        moms.V.units = 'km/s';
+        moms.V.siConversion = '1.0e3>m s^-1';
+        % tensorOrder, representation, etc are read-only, how to add?
+        
+        % temperature
+        moms.T = irf.ts_tensor_xyz(obj.time,permute(Pressure,[3,1,2])./(u.e*N'));
+        moms.T.name = [dist.name,'_moms_temperature'];
+        moms.T.units = 'eV';
+        moms.T.siConversion = '11604.50520>K';
+        % tensorOrder, representation, etc are read-only, how to add?
     end
-    % Plotting functions
+    
+    
   end
+  % Plotting functions
   
   methods (Static)
     function newUnits = changeunits(from,to)
