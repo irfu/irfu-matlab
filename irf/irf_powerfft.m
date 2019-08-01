@@ -1,4 +1,4 @@
-function [outspecrec,outPxx,outF] = irf_powerfft(data,nfft,sfreq,overlap)
+function [outspecrec,outPxx,outF] = irf_powerfft(data,nfft,sfreq,overlap,smoothWidth)
 %IRF_POWERFFT  compute power spectrum
 %
 % [t,power,f] = irf_powerfft(data,nfft,sfreq,[overlap])
@@ -22,8 +22,11 @@ function [outspecrec,outPxx,outF] = irf_powerfft(data,nfft,sfreq,overlap)
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
 
-narginchk(3,4);
-if nargin<4, overlap = 0; end
+narginchk(3,5);
+if nargin<4, overlap = 0; smoothWidth = 0;
+elseif nargin<5, smoothWidth = 0; 
+end
+
 if overlap<0 || overlap>100, error('OVERLAP must be in a range 0..99'), end
 
 if(isa(data,'TSeries')), tseries = true; else, tseries = false; end
@@ -88,6 +91,12 @@ for jj=1:nint
   tcur = tcur + (1-overlap*.01)*(nfft-1)/sfreq;
 end
 
+if smoothWidth
+  if (smoothWidth > 2/sfreq), smoothSpectrum(); 
+  else, irf.log('warn','smoting not done - smoothWidth too small')
+  end
+end
+
 if nargout==1, outspecrec = specrec;
 elseif nargout==3
   outspecrec = specrec.t;
@@ -124,5 +133,28 @@ function out = order_data(in, ndata, sfreq, ts)
     end
   end
 end
+
+  function smoothSpectrum
+    %Basic smoothing procedure, borrowed from mms_fft() 
+    
+    nc = floor(smoothWidth*sfreq);
+    %make sure nc is even
+    if (mod(nc,2) == 1), nc = nc-1; end
+    
+    idx = nc/2:nc:nf-nc/2; nFreq = length(idx);
+    freqs = zeros(nFreq,1);
+    for ij = 1:nFreq
+      freqs(ij) = mean(specrec.f(idx(ij)-nc/2+1:idx(ij)+nc/2-1));
+    end
+    specrec.f = freqs;
+    
+    powers = zeros(nint,nFreq);
+    for iComp=1:ncomp
+      for ij = 1:nFreq
+        powers(:,ij) = mean(specrec.p{iComp}(:,idx(ij)-nc/2+1:idx(ij)+nc/2-1),2);
+      end
+      specrec.p{iComp} = powers;
+    end 
+  end
 
 end
