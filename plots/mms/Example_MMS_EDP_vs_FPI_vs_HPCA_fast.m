@@ -44,7 +44,7 @@ else
 end
 
 %% E plot
-h = irf_figure(2387459,4);
+h = irf_figure(2387456,4);
 set(gcf,'defaultAxesColorOrder',[0 0 0;0 0 1;1 0 0;0 0.7 0;0 1 1 ;1 0 1; 1 1 0])
 set(gcf,'defaultAxesFontSize',12)
 
@@ -77,7 +77,7 @@ irf_zoom(h,'x',Tint)
 irf_plot_ylabels_align(h)
 irf_plot_axis_align(h)
 
-irf_print_fig(['mms' num2str(mmsId) '_E_EDP_vs_FPI_vs_HPCA_fast_' irf_fname(Tint,2)],'png')
+irf_print_fig(['mms' num2str(mmsId) '_E_EDP_' edpMode '_vs_FPI_' fpiMode '_vs_HPCA_fast_' irf_fname(Tint,2)],'png')
 
 %% V plot
 h = irf_figure(2387458,4);
@@ -110,7 +110,7 @@ ylabel(hca,'V_z DSL [km/s]')
 
 irf_zoom(h,'x',Tint)
 irf_plot_ylabels_align(h)
-irf_print_fig(['mms' num2str(mmsId) '_VExB_EDP_vs_FPI_vs_HPCA_fast_' irf_fname(Tint,2)],'png')
+irf_print_fig(['mms' num2str(mmsId) '_VExB_EDP_' edpMode '_vs_FPI_' fpiMode '_vs_HPCA_fast_' irf_fname(Tint,2)],'png')
 
 
 %%
