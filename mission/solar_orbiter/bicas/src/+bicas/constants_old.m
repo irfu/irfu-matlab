@@ -506,8 +506,12 @@ classdef constants_old < handle
                 eoutPdidList{i} = outputsInfoList{i}.PDID;
             end
         end
+
+    end    % methods(Static, Access=private)
         
-        
+
+    
+    methods(Static)
         
         % Construct a PDID derived from a dataset ID and skeleton version (a string shorter than the similar
         % corresponding official strings, e.g.
@@ -528,7 +532,7 @@ classdef constants_old < handle
             % IMPLEMENTATION NOTE: Put skeleton version at beginning of PDID since PDIDs then line up better when
             % printed in a list above each other. Easier to read.
         end
-
-    end % methods(Static, Access=private)
+        
+    end    % methods(Static)
     
 end   % classdef

@@ -7,7 +7,7 @@
 %
 % ARGUMENTS AND RETURN VALUES
 % ===========================
-% swModeCliParameter                    : The CLI argument value that represents the S/W mode.
+% SwModeInfo
 % InputFilePathMap, OutputFilePathMap   : containers.Map with
 %    keys   = PDIDs
 %    values = Paths to input/output files.
@@ -27,7 +27,7 @@
 %   might be wrong. Should ideally be run on the exact input datasets (~EIn PDs) used to produce a specific output
 %   dataset.
 %
-function execute_sw_mode(DataManager, swModeCliParameter, InputFilePathMap, OutputFilePathMap, masterCdfDir)
+function execute_sw_mode(SwModeInfo, InputFilePathMap, OutputFilePathMap, masterCdfDir)
 %
 % QUESTION: How verify dataset ID and dataset version against constants?
 %    NOTE: Need to read CDF first.
@@ -95,18 +95,21 @@ function execute_sw_mode(DataManager, swModeCliParameter, InputFilePathMap, Outp
 %===========================================================================
 % Give all INPUT CDF files (from the CLI argument list) to the data manager
 %===========================================================================
-inputPdidList = InputFilePathMap.keys;
+prodFuncArgNamesList = InputFilePathMap.keys;
 GlobalAttributesCellArray = {};   % Use cell array since CDF global attributes may in principle contain different sets of attributes (field names).
 
-for i = 1:length(inputPdidList)
-    eInPdid = inputPdidList{i};
-    inputFilePath = InputFilePathMap(eInPdid);
+InputsMap = containers.Map();
+for i = 1:length(prodFuncArgNamesList)
+    prodFuncArgName = prodFuncArgNamesList{i};
+    inputFilePath   = InputFilePathMap(prodFuncArgName);
     
     %=======================
     % Read dataset CDF file
     %=======================
-    [processData, GlobalAttributes] = read_dataset_CDF(eInPdid, inputFilePath);
-    DataManager.set_elementary_input_process_data(eInPdid, processData);
+    %[processData, GlobalAttributes] = read_dataset_CDF(eInPdid, inputFilePath);
+    [processData, GlobalAttributes] = read_dataset_CDF(inputFilePath);
+    %DataManager.set_elementary_input_process_data(eInPdid, processData);
+    InputsMap(prodFuncArgName) = struct('pdid', prodFuncArgName, 'pd', processData);
     
     GlobalAttributesCellArray{end+1} = GlobalAttributes;
 end
@@ -114,18 +117,28 @@ end
 
 
 globalAttributesSubset = derive_output_dataset_GlobalAttributes(GlobalAttributesCellArray);
-SwModeInfo = DataManager.get_extended_sw_mode_info(swModeCliParameter);
+%SwModeInfo = DataManager.get_extended_sw_mode_info(swModeCliParameter);
+
+
+%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%
+% PROCESS DATA
+%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%
+OutputsMap = SwModeInfo.prodFunc(InputsMap);
 
 
 
 %==================================
 % Iterate over all the OUTPUT CDFs
 %==================================
-for iOutputCdf = 1:length(SwModeInfo.outputs)
-    OutputInfo = SwModeInfo.outputs{iOutputCdf};
+for iOutputCdf = 1:length(SwModeInfo.outputsList)
+    OutputInfo = SwModeInfo.outputsList(iOutputCdf);
     
-    eOutPdid = OutputInfo.PDID;
-    outputFilePath = OutputFilePathMap(eOutPdid);
+    prodFuncReturnName = OutputInfo.prodFuncReturnName;
+    outputFilePath     = OutputFilePathMap(prodFuncReturnName);
     
     %%%%%%%%%%%%%%%
     %%%%%%%%%%%%%%%
@@ -134,7 +147,7 @@ for iOutputCdf = 1:length(SwModeInfo.outputs)
     %%%%%%%%%%%%%%%
     %%%%%%%%%%%%%%%
     %%%%%%%%%%%%%%%
-    ProcessData = DataManager.get_process_data_recursively(eOutPdid);
+    %ProcessData = DataManager.get_process_data_recursively(eOutPdid);
 
     %========================
     % Write dataset CDF file
@@ -143,7 +156,7 @@ for iOutputCdf = 1:length(SwModeInfo.outputs)
         masterCdfDir, ...
         bicas.get_master_CDF_filename(OutputInfo.DATASET_ID, OutputInfo.SKELETON_VERSION_STR));
     write_dataset_CDF ( ...
-        ProcessData, globalAttributesSubset, outputFilePath, masterCdfPath, OutputInfo.DATASET_ID );
+        OutputsMap(OutputInfo.prodFuncReturnName), globalAttributesSubset, outputFilePath, masterCdfPath, OutputInfo.DATASET_ID );
 end
 
 
@@ -200,7 +213,8 @@ end
 
 
 
-function [ProcessData, GlobalAttributes] = read_dataset_CDF(pdid, filePath)
+%function [ProcessData, GlobalAttributes] = read_dataset_CDF(pdid, filePath)
+function [ProcessData, GlobalAttributes] = read_dataset_CDF(filePath)
 % Read elementary input process data from a CDF file and convert it to a format suitable as a data_manager_old "process data".
 % Copies all zVariables into fields of a regular structure.
 %
@@ -224,7 +238,7 @@ function [ProcessData, GlobalAttributes] = read_dataset_CDF(pdid, filePath)
 
 % NOTE: HK TIME_SYNCHRO_FLAG can be empty.
 
-global SETTINGS CONSTANTS
+%global SETTINGS CONSTANTS
 
 %bicas.logf('info', 'pdid=%s', pdid)
 
@@ -284,19 +298,22 @@ bicas.logf('info', 'File: Skeleton_version = "%s"', fileSkeletonVersionStr)
 
 %===================================================
 % ASSERTIONS: Check GlobalAttributes values
+%
+% PROPOSAL: Move checks to production function
 %===================================================
 % NOTE: Does print file name since it has only been previously been logged as "notice".
 %bicas.dm_utils.assert_unvaried_N_rows(processData);
-InputInfo = bicas.utils.select_cell_array_structs(CONSTANTS.INPUTS_INFO_LIST, 'PDID', {pdid});
-InputInfo = InputInfo{1};
-bicas.utils.assert_strings_equal(...
-    SETTINGS.get_fv('INPUT_CDF_ASSERTIONS.STRICT_DATASET_ID'), ...
-    {fileDatasetId, InputInfo.DATASET_ID}, ...
-    sprintf('The input CDF file''s stated DATASET_ID does not match the value expected for the S/W mode.\n    File: %s\n    ', filePath))
-bicas.utils.assert_strings_equal(...
-    SETTINGS.get_fv('INPUT_CDF_ASSERTIONS.STRICT_SKELETON_VERSION'), ...
-    {fileSkeletonVersionStr, InputInfo.SKELETON_VERSION_STR}, ...
-    sprintf('The input CDF file''s stated Skeleton_version does not match the value expected for the S/W mode.\n    File: (%s)\n    ', filePath))
+% InputInfo = bicas.utils.select_cell_array_structs(CONSTANTS.INPUTS_INFO_LIST, 'PDID', {pdid});
+% InputInfo = InputInfo{1};
+% bicas.utils.assert_strings_equal(...
+%     SETTINGS.get_fv('INPUT_CDF_ASSERTIONS.STRICT_DATASET_ID'), ...
+%     {fileDatasetId, InputInfo.DATASET_ID}, ...
+%     sprintf('The input CDF file''s stated DATASET_ID does not match the value expected for the S/W mode.\n    File: %s\n    ', filePath))
+% bicas.utils.assert_strings_equal(...
+%     SETTINGS.get_fv('INPUT_CDF_ASSERTIONS.STRICT_SKELETON_VERSION'), ...
+%     {fileSkeletonVersionStr, InputInfo.SKELETON_VERSION_STR}, ...
+%     sprintf('The input CDF file''s stated Skeleton_version does not match the value expected for the S/W mode.\n    File: (%s)\n    ', filePath))
+
 
 
 
@@ -380,7 +397,7 @@ for iPdFieldName = 1:length(pdFieldNameList)
 end
 
 
-    
+
 %==========================
 % Set CDF GlobalAttributes
 %==========================

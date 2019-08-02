@@ -286,14 +286,15 @@ bicas.log('info', bicas.sprint_SETTINGS)                 % Prints/log the conten
 %================================
 % COMPLETE CODE. DISABLED SINCE IT IS NOT NEEDED BY OTHER CODE YET.
 %
-%pipelineId     = read_env_variable('ROC_PIP_NAME',        'PROCESSING.ROC_PIP_NAME_OVERRIDE');
-%calibrationDir = read_env_variable('ROC_RCS_CAL_PATH',    'PROCESSING.ROC_RCS_CAL_PATH_OVERRIDE');
+pipelineId     = read_env_variable(SETTINGS, 'ROC_PIP_NAME',        'PROCESSING.ROC_PIP_NAME_OVERRIDE');   % RGTS or RODP
+%calibrationDir = read_env_variable(SETTINGS, 'ROC_RCS_CAL_PATH',    'PROCESSING.ROC_RCS_CAL_PATH_OVERRIDE');
 %
 masterCdfDir   = read_env_variable(SETTINGS, 'ROC_RCS_MASTER_PATH', 'PROCESSING.ROC_RCS_MASTER_PATH_OVERRIDE');
 bicas.logf('info', 'masterCdfDir = "%s"', masterCdfDir)
 
 
 
+% NOTE: Still needed for print_version, print_identification, print_help.
 DataManager = bicas.data_manager_old();    % NOTE: Requires CONSTANTS (not necessarily SETTINGS) to be initialized.
 
 
@@ -310,7 +311,11 @@ switch(CliData.functionalityMode)
         % CASE: Should be a S/W mode (deduced from elimination of other possibilities)
         %==============================================================================
         try
-            ExtendedSwModeInfo = DataManager.get_extended_sw_mode_info(CliData.swModeArg);    % NOTE: FIRST USE OF DataManager.
+            %ExtendedSwModeInfo = DataManager.get_extended_sw_mode_info(CliData.swModeArg);    % NOTE: FIRST USE OF DataManager.
+            SwModeDefs = bicas.swmode_defs(pipelineId, ...
+                SETTINGS.get_fv('SW_MODES.ENABLE_INPUT_L2R'), ...
+                SETTINGS.get_fv('SW_MODES.ENABLE_TDS'));
+            SwModeInfo = SwModeDefs.get_sw_mode_info(CliData.swModeArg);
         catch Exception1
             % NOTE: Misspelled "--version" etc. would be interpreted as S/W mode and produce error here too.
             error('BICAS:CLISyntax', ...
@@ -326,10 +331,12 @@ switch(CliData.functionalityMode)
         % PROPOSAL: Assert that CLI_OPTION_BODY do not contain duplicates.
         
         % Extract INPUT dataset files from arguments.
-        inputsInfoList = ExtendedSwModeInfo.inputs;
+        %inputsInfoList = ExtendedSwModeInfo.inputs;
+        inputsInfoList = SwModeInfo.inputsList;
         InputFilesMap  = containers.Map();
         for i = 1:numel(inputsInfoList)
-            optionHeaderBody = inputsInfoList{i}.CLI_OPTION_BODY;
+            %optionHeaderBody = inputsInfoList{i}.CLI_OPTION_BODY;
+            optionHeaderBody = inputsInfoList(i).cliOptionHeaderBody;
             
             % UI ASSERTION
             if ~CliData.SpecInputParametersMap.isKey(optionHeaderBody)
@@ -337,22 +344,27 @@ switch(CliData.functionalityMode)
             end
             
             inputFile = CliData.SpecInputParametersMap( optionHeaderBody );
-            InputFilesMap(inputsInfoList{i}.PDID) = inputFile;
+            %InputFilesMap(inputsInfoList{i}.PDID) = inputFile;
+            InputFilesMap(inputsInfoList(i).prodFuncArgName) = inputFile;
         end
         
         % Extract OUTPUT dataset files from arguments.
-        outputsInfoList = ExtendedSwModeInfo.outputs;
+        %outputsInfoList = ExtendedSwModeInfo.outputs;
         OutputFilesMap  = containers.Map();
-        for i = 1:numel(outputsInfoList)
-            optionHeaderBody = outputsInfoList{i}.CLI_OPTION_BODY;
+        for i = 1:numel(SwModeInfo.outputsList)
+            outputInfo = SwModeInfo.outputsList(i);
+            
+            %optionHeaderBody = outputsInfoList{i}.CLI_OPTION_BODY;
+            optionHeaderBody = outputInfo.cliOptionHeaderBody;
             
             % UI ASSERTION
             if ~CliData.SpecInputParametersMap.isKey(optionHeaderBody)
-                error('BICAS:CLISyntax', 'Can not find CLI argument(s) for input "%s".', optionHeaderBody)
+                error('BICAS:CLISyntax', 'Can not find CLI argument(s) for output "%s".', optionHeaderBody)
             end
             
             outputFile = CliData.SpecInputParametersMap( optionHeaderBody );
-            OutputFilesMap(outputsInfoList{i}.PDID) = outputFile;
+            %OutputFilesMap(outputsInfoList{i}.PDID) = outputFile;
+            OutputFilesMap(outputInfo.prodFuncReturnName) = outputFile;
         end
 
 
@@ -360,7 +372,8 @@ switch(CliData.functionalityMode)
         %==================
         % EXECUTE S/W MODE
         %==================
-        bicas.execute_sw_mode( DataManager, ExtendedSwModeInfo.CLI_PARAMETER, InputFilesMap, OutputFilesMap, masterCdfDir )
+        %bicas.execute_sw_mode( DataManager, ExtendedSwModeInfo.CLI_PARAMETER, InputFilesMap, OutputFilesMap, masterCdfDir )
+        bicas.execute_sw_mode( SwModeInfo, InputFilesMap, OutputFilesMap, masterCdfDir )
 
     otherwise
         error('BICAS:Assertion', 'Illegal value functionalityMode="%s"', functionalityMode)

@@ -100,6 +100,8 @@ S.define_setting('PROCESSING.ROC_PIP_NAME_OVERRIDE',        '');   % If set, ove
 S.define_setting('PROCESSING.ROC_RCS_CAL_PATH_OVERRIDE',    '');   % If set, override environment variable ROC_RCS_CAL_PATH    defined in RCS ICD. Path to dir. with calibration files.
 S.define_setting('PROCESSING.ROC_RCS_MASTER_PATH_OVERRIDE', '');   % If set, override environment variable ROC_RCS_MASTER_PATH defined in RCS ICD. Path to dir. with master CDF files.
 
+S.define_setting('SW_MODES.ENABLE_INPUT_L2R', 1);
+S.define_setting('SW_MODES.ENABLE_TDS',       0);
 
 % zVariables which are still empty after copying data into the master CDF assigned a correctly sized array
 % with fill values. This should only be necessary for S/W modes with incomplete processing.

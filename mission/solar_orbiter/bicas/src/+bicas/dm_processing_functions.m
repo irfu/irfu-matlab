@@ -87,6 +87,10 @@ classdef dm_processing_functions
 %
 % PROPOSAL: Assertions after every switch statement that differentiates different processing data/dataset versions.
 %           Describe what they should all "converge" on, and make sure they actually do.
+%
+% PROPOSAL: Instantiate class, use instance methods instead of static.
+%   PRO: Can have SETTINGS, CONSTANTS as instance variable instead of calling global variables.
+%
 %#######################################################################################################################
     
     methods(Static, Access=public)
