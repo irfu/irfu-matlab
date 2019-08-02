@@ -135,7 +135,7 @@ catch Exception1
                 temp      = strsplit(stackCall.file, filesep);
                 filename  = temp{end};
 
-                msg = [msg, sprintf('    %-27s %-55s row %i,\n', [filename, ','], [stackCall.name, ','], stackCall.line)];
+                msg = [msg, sprintf('    %-27s %-46s row %i,\n', [filename, ','], [stackCall.name, ','], stackCall.line)];
             end
         end
 
@@ -310,11 +310,10 @@ switch(CliData.functionalityMode)
         %==============================================================================
         % CASE: Should be a S/W mode (deduced from elimination of other possibilities)
         %==============================================================================
+        SwModeDefs = bicas.swmode_defs(pipelineId, ...
+            SETTINGS.get_fv('SW_MODES.ENABLE_INPUT_L2R'), ...
+            SETTINGS.get_fv('SW_MODES.ENABLE_TDS'));
         try
-            %ExtendedSwModeInfo = DataManager.get_extended_sw_mode_info(CliData.swModeArg);    % NOTE: FIRST USE OF DataManager.
-            SwModeDefs = bicas.swmode_defs(pipelineId, ...
-                SETTINGS.get_fv('SW_MODES.ENABLE_INPUT_L2R'), ...
-                SETTINGS.get_fv('SW_MODES.ENABLE_TDS'));
             SwModeInfo = SwModeDefs.get_sw_mode_info(CliData.swModeArg);
         catch Exception1
             % NOTE: Misspelled "--version" etc. would be interpreted as S/W mode and produce error here too.
@@ -331,11 +330,9 @@ switch(CliData.functionalityMode)
         % PROPOSAL: Assert that CLI_OPTION_BODY do not contain duplicates.
         
         % Extract INPUT dataset files from arguments.
-        %inputsInfoList = ExtendedSwModeInfo.inputs;
         inputsInfoList = SwModeInfo.inputsList;
         InputFilesMap  = containers.Map();
         for i = 1:numel(inputsInfoList)
-            %optionHeaderBody = inputsInfoList{i}.CLI_OPTION_BODY;
             optionHeaderBody = inputsInfoList(i).cliOptionHeaderBody;
             
             % UI ASSERTION
@@ -344,17 +341,14 @@ switch(CliData.functionalityMode)
             end
             
             inputFile = CliData.SpecInputParametersMap( optionHeaderBody );
-            %InputFilesMap(inputsInfoList{i}.PDID) = inputFile;
-            InputFilesMap(inputsInfoList(i).prodFuncArgName) = inputFile;
+            InputFilesMap(inputsInfoList(i).prodFuncArgKey) = inputFile;
         end
         
         % Extract OUTPUT dataset files from arguments.
-        %outputsInfoList = ExtendedSwModeInfo.outputs;
         OutputFilesMap  = containers.Map();
         for i = 1:numel(SwModeInfo.outputsList)
             outputInfo = SwModeInfo.outputsList(i);
             
-            %optionHeaderBody = outputsInfoList{i}.CLI_OPTION_BODY;
             optionHeaderBody = outputInfo.cliOptionHeaderBody;
             
             % UI ASSERTION
@@ -363,8 +357,7 @@ switch(CliData.functionalityMode)
             end
             
             outputFile = CliData.SpecInputParametersMap( optionHeaderBody );
-            %OutputFilesMap(outputsInfoList{i}.PDID) = outputFile;
-            OutputFilesMap(outputInfo.prodFuncReturnName) = outputFile;
+            OutputFilesMap(outputInfo.prodFuncReturnKey) = outputFile;
         end
 
 
@@ -372,7 +365,6 @@ switch(CliData.functionalityMode)
         %==================
         % EXECUTE S/W MODE
         %==================
-        %bicas.execute_sw_mode( DataManager, ExtendedSwModeInfo.CLI_PARAMETER, InputFilesMap, OutputFilesMap, masterCdfDir )
         bicas.execute_sw_mode( SwModeInfo, InputFilesMap, OutputFilesMap, masterCdfDir )
 
     otherwise

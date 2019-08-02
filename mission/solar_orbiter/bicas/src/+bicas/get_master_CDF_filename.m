@@ -16,5 +16,8 @@ function masterCdfFilename = get_master_CDF_filename(datasetId, skeletonVersionS
 % PROPOSAL: Move function into ~constants.
 % PROPOSAL: Standard assertion for skeletonVersionStr.
 
+    bicas.assert_DATASET_ID(datasetId)
+    bicas.assert_skeleton_version(skeletonVersionStr)
+    
     masterCdfFilename = [datasetId, '_V', skeletonVersionStr, '.cdf'];
 end

@@ -57,8 +57,8 @@ classdef swmode_defs
     % PROPOSAL: Always produce all possible s/w modes (both pipelines, incl. L2R), then filter out the undesired ones
     % using internal metadata for every S/W mode.
     %
-    % PROPOSAL: Rename prodFuncArgName   -->prodFuncInputName
-    %                  prodFuncReturnName-->prodFuncOutputName
+    % PROPOSAL: Rename prodFuncArgKey   -->prodFuncInputName
+    %                  prodFuncReturnKey-->prodFuncOutputName
     %   PRO: More consistent.
     % PROPOSAL: Use PF = prodFunc, production function
     
@@ -165,15 +165,18 @@ classdef swmode_defs
                         'in_sci', ...
                         strmod('<PLP>_<LI>_RPW-LFR-<SBMx/SURV>-<C/SWF><I-E>'), ...
                         'SCI_cdf');
+                    
                     SCI_OUTPUT_DEF = obj.def_output_dataset(...
                         strmod('<PLP>_<LO>_RPW-LFR-<SBMx/SURV>-<C/SWF>-E'), ...
                         strmod('LFR <LO> <C/SWF> science electric <mode str> data'), ...
-                        strmod('RPW LFR <LO> <C/SWF> science electric (potential difference) data in <mode str>, time-tagged'));
-                    Pdid = bicas.constants_old.construct_PDID(SCI_OUTPUT_DEF.DATASET_ID, '03');
+                        strmod('RPW LFR <LO> <C/SWF> science electric (potential difference) data in <mode str>, time-tagged'), ...
+                        '03');                    
+                    
                     List(end+1) = obj.def_swmode(...
                         @(InputsMap) bicas.pipelines.produce_L2S_L2_LFR(...
                             InputsMap, ...
-                            Pdid), ...
+                            SCI_OUTPUT_DEF.DATASET_ID, ...
+                            SCI_OUTPUT_DEF.skeletonVersion), ...
                         strmod('LFR-<SBMx/SURV>-<C/SWF>-E<L2R amendm>'), ...
                         strmod('Generate <SBMx/SURV> <C/SWF> electric field <LO> data (potential difference) from LFR <LI> data'), ...
                         [SCI_INPUT_DEF, HK_INPUT_DEF], [SCI_OUTPUT_DEF]);
@@ -191,10 +194,13 @@ classdef swmode_defs
                             'in_sci', ...
                             strmod('<PLP>_<LI>_RPW-TDS-LFM-<C/RSWF><I-E>'), ...
                             'SCI_cdf');
+                        
                         SCI_OUTPUT_DEF = obj.def_output_dataset(...
                             strmod('<PLP>_<LO>_RPW-TDS-LFM-<C/RSWF>-E'), ...
                             strmod('LFR <LO> <C/RSWF> science electric LF mode data'), ...
-                            strmod('RPW LFR <LO> <C/RSWF> science electric (potential difference) data in LF mode, time-tagged'));
+                            strmod('RPW LFR <LO> <C/RSWF> science electric (potential difference) data in LF mode, time-tagged'), ...
+                            '03');
+                        
                         List(end+1) = obj.def_swmode(...
                             @bicas.pipelines.produce_L2S_L2_TDS, ...
                             strmod('TDS-LFM-<C/RSWF>-E<L2R amendm>'), ...
@@ -236,6 +242,7 @@ classdef swmode_defs
             
             bicas.swmode_defs.assert_SW_mode_CLI_option(Def.cliOption)
             bicas.swmode_defs.assert_text(              Def.swdPurpose)
+            
             EJ_library.utils.assert.castring_set({...
                 Def.inputsList(:).cliOptionHeaderBody, ...
                 Def.outputsList(:).cliOptionHeaderBody})
@@ -243,10 +250,10 @@ classdef swmode_defs
 
         
         
-        function Def = def_input_dataset(obj, cliOptionHeaderBody, DATASET_ID, prodFuncArgName)
+        function Def = def_input_dataset(obj, cliOptionHeaderBody, DATASET_ID, prodFuncArgKey)
             % NOTE: No dataset version.
             Def.cliOptionHeaderBody = cliOptionHeaderBody;
-            Def.prodFuncArgName     = prodFuncArgName;
+            Def.prodFuncArgKey      = prodFuncArgKey;
             Def.DATASET_ID          = DATASET_ID;            
             
             bicas.swmode_defs.assert_SIP_CLI_option(Def.cliOptionHeaderBody)
@@ -255,30 +262,33 @@ classdef swmode_defs
 
         
         
-        function Def = def_output_dataset(obj, DATASET_ID, swdName, swdDescription)
+        function Def = def_output_dataset(obj, DATASET_ID, swdName, swdDescription, skeletonVersion)
             Def.cliOptionHeaderBody = 'out_sci';
-            Def.prodFuncReturnName  = 'SCI_cdf';
-            Def.swdName             = swdName;
-            Def.swdDescription      = swdDescription;
-            Def.DATASET_ID          = DATASET_ID;
-            Def.datasetLevel        = obj.outputDatasetLevel;     % NOTE: Automatically set.
+            Def.prodFuncReturnKey = 'SCI_cdf';
+            Def.swdName           = swdName;
+            Def.swdDescription    = swdDescription;
+            Def.DATASET_ID        = DATASET_ID;
+            Def.datasetLevel      = obj.outputDatasetLevel;     % NOTE: Automatically set.
+            Def.skeletonVersion    = skeletonVersion;
             
             bicas.swmode_defs.assert_SW_mode_CLI_option(Def.cliOptionHeaderBody)
             bicas.swmode_defs.assert_text(              Def.swdName)
             bicas.swmode_defs.assert_text(              Def.swdDescription)
             obj.assert_DATASET_ID(                      Def.DATASET_ID)
-            bicas.swmode_defs.assert_dataset_level(     Def.datasetLevel)
+            bicas.assert_dataset_level(                 Def.datasetLevel)
+            bicas.assert_skeleton_version(              Def.skeletonVersion)
         end
-        
-        
-        
+
+
+
         function assert_DATASET_ID(obj, DATASET_ID)
-            % TODO-NEED-INFO: Function needed globally?
+            bicas.assert_DATASET_ID(DATASET_ID)
             
-            % '(ROC-SGSE|SOLO)_(L[12].+RPW-(LFR|TDS)-(SBM[12]|SURV|LFM)-(C|S|RS)WF.*)|HK_RPW_BIA)'
-            % IMPLEMENTATION NOTE: Does not cover everything. It is hard to cover "everything" MATLAB regxp can not
-            % handle recursive brackets it seems, i.e. ((...|...)|(...|...)) .
-            EJ_library.utils.assert.castring_regexp(DATASET_ID, [obj.dsiPipelinePrefix, '_(L[12].?|HK)_RPW-(BIA|LFR|TDS)[A-Z1-2-]*'])
+            % ASSERTION: Pipeline
+            assert(strcmp(...
+                obj.dsiPipelinePrefix, ...
+                DATASET_ID(1:numel(obj.dsiPipelinePrefix))...
+                ))
         end
 
     end    % methods(Access=private)    
@@ -293,11 +303,6 @@ classdef swmode_defs
             EJ_library.utils.assert.castring_regexp(str, '[^<>]*')
         end
 
-        function assert_dataset_level(datasetLevel)
-            % PROPOSAL: Have depend on ROC-SGSE/RODP pipeline?
-            EJ_library.utils.assert.castring_regexp(datasetLevel, '(L2|L2S)')
-        end
-        
         % NOTE: Really refers to "option body".
         function assert_SIP_CLI_option(sipCliOptionBody)
             EJ_library.utils.assert.castring_regexp(sipCliOptionBody, bicas.swmode_defs.SW_MODE_CLI_PARAMETER_REGEX)

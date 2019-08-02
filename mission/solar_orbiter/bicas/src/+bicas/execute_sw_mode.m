@@ -95,21 +95,19 @@ function execute_sw_mode(SwModeInfo, InputFilePathMap, OutputFilePathMap, master
 %===========================================================================
 % Give all INPUT CDF files (from the CLI argument list) to the data manager
 %===========================================================================
-prodFuncArgNamesList = InputFilePathMap.keys;
+prodFuncArgKeysList = InputFilePathMap.keys;
 GlobalAttributesCellArray = {};   % Use cell array since CDF global attributes may in principle contain different sets of attributes (field names).
 
 InputsMap = containers.Map();
-for i = 1:length(prodFuncArgNamesList)
-    prodFuncArgName = prodFuncArgNamesList{i};
-    inputFilePath   = InputFilePathMap(prodFuncArgName);
+for i = 1:length(prodFuncArgKeysList)
+    prodFuncArgKey = prodFuncArgKeysList{i};
+    inputFilePath   = InputFilePathMap(prodFuncArgKey);
     
     %=======================
     % Read dataset CDF file
     %=======================
-    %[processData, GlobalAttributes] = read_dataset_CDF(eInPdid, inputFilePath);
-    [processData, GlobalAttributes] = read_dataset_CDF(inputFilePath);
-    %DataManager.set_elementary_input_process_data(eInPdid, processData);
-    InputsMap(prodFuncArgName) = struct('pdid', prodFuncArgName, 'pd', processData);
+    [ZVars, GlobalAttributes] = read_dataset_CDF(inputFilePath);
+    InputsMap(prodFuncArgKey) = struct('ZVars', ZVars, 'Ga', GlobalAttributes);
     
     GlobalAttributesCellArray{end+1} = GlobalAttributes;
 end
@@ -117,7 +115,7 @@ end
 
 
 globalAttributesSubset = derive_output_dataset_GlobalAttributes(GlobalAttributesCellArray);
-%SwModeInfo = DataManager.get_extended_sw_mode_info(swModeCliParameter);
+
 
 
 %%%%%%%%%%%%%%%
@@ -137,26 +135,17 @@ OutputsMap = SwModeInfo.prodFunc(InputsMap);
 for iOutputCdf = 1:length(SwModeInfo.outputsList)
     OutputInfo = SwModeInfo.outputsList(iOutputCdf);
     
-    prodFuncReturnName = OutputInfo.prodFuncReturnName;
-    outputFilePath     = OutputFilePathMap(prodFuncReturnName);
-    
-    %%%%%%%%%%%%%%%
-    %%%%%%%%%%%%%%%
-    %%%%%%%%%%%%%%%
-    % PROCESS DATA
-    %%%%%%%%%%%%%%%
-    %%%%%%%%%%%%%%%
-    %%%%%%%%%%%%%%%
-    %ProcessData = DataManager.get_process_data_recursively(eOutPdid);
+    prodFuncReturnKey = OutputInfo.prodFuncReturnKey;
+    outputFilePath    = OutputFilePathMap(prodFuncReturnKey);
 
     %========================
     % Write dataset CDF file
     %========================
     masterCdfPath = fullfile(...
         masterCdfDir, ...
-        bicas.get_master_CDF_filename(OutputInfo.DATASET_ID, OutputInfo.SKELETON_VERSION_STR));
+        bicas.get_master_CDF_filename(OutputInfo.DATASET_ID, OutputInfo.skeletonVersion));
     write_dataset_CDF ( ...
-        OutputsMap(OutputInfo.prodFuncReturnName), globalAttributesSubset, outputFilePath, masterCdfPath, OutputInfo.DATASET_ID );
+        OutputsMap(OutputInfo.prodFuncReturnKey), globalAttributesSubset, outputFilePath, masterCdfPath, OutputInfo.DATASET_ID );
 end
 
 
@@ -214,7 +203,7 @@ end
 
 
 %function [ProcessData, GlobalAttributes] = read_dataset_CDF(pdid, filePath)
-function [ProcessData, GlobalAttributes] = read_dataset_CDF(filePath)
+function [ZVars, GlobalAttributes] = read_dataset_CDF(filePath)
 % Read elementary input process data from a CDF file and convert it to a format suitable as a data_manager_old "process data".
 % Copies all zVariables into fields of a regular structure.
 %
@@ -254,7 +243,7 @@ do = dataobj(filePath);                 % do=dataobj, i.e. irfu-matlab's dataobj
 % Copy zVariables (only the data) into analogous fields in smaller struct
 %=========================================================================
 bicas.log('info', 'Converting dataobj (CDF data structure) to PDV.')
-ProcessData       = struct();
+ZVars             = struct();
 zVariableNameList = fieldnames(do.data);
 %bicas.dm_utils.log_array('explanation')
 for i = 1:length(zVariableNameList)
@@ -284,7 +273,7 @@ for i = 1:length(zVariableNameList)
         %bicas.logf('warning', 'Can not handle replace fill/pad values for zVariable "%s" when reading "%s".', zVariableName, filePath))
     end
     
-    ProcessData.(zVariableName) = zVariableData;
+    ZVars.(zVariableName) = zVariableData;
 end
 
 
@@ -313,7 +302,6 @@ bicas.logf('info', 'File: Skeleton_version = "%s"', fileSkeletonVersionStr)
 %     SETTINGS.get_fv('INPUT_CDF_ASSERTIONS.STRICT_SKELETON_VERSION'), ...
 %     {fileSkeletonVersionStr, InputInfo.SKELETON_VERSION_STR}, ...
 %     sprintf('The input CDF file''s stated Skeleton_version does not match the value expected for the S/W mode.\n    File: (%s)\n    ', filePath))
-
 
 
 

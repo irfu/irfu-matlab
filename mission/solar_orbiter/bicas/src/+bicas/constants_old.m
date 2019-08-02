@@ -433,7 +433,7 @@ classdef constants_old < handle
             % See data_manager_old for definition.
             einPdidList = {};
             for i = 1:length(inputsInfoList)
-                inputsInfoList{i}.PDID = bicas.constants_old.construct_PDID(inputsInfoList{i}.DATASET_ID, inputsInfoList{i}.SKELETON_VERSION_STR);
+                inputsInfoList{i}.PDID = bicas.construct_DVID(inputsInfoList{i}.DATASET_ID, inputsInfoList{i}.SKELETON_VERSION_STR);
                 einPdidList{i} = inputsInfoList{i}.PDID;
             end
         end
@@ -463,7 +463,7 @@ classdef constants_old < handle
                 OutputInfo.SWD_RELEASE_DATE           = initialRelaseDateStr;
                 OutputInfo.SWD_RELEASE_MODIFICATION   = initialRelaseModificationStr;
                 
-                OutputInfo.PDID = bicas.constants_old.construct_PDID(datasetId, skeletonVersionStr);
+                OutputInfo.PDID = bicas.construct_DVID(datasetId, skeletonVersionStr);
             end
             
             outputsInfoList = {};
@@ -508,31 +508,5 @@ classdef constants_old < handle
         end
 
     end    % methods(Static, Access=private)
-        
-
-    
-    methods(Static)
-        
-        % Construct a PDID derived from a dataset ID and skeleton version (a string shorter than the similar
-        % corresponding official strings, e.g.
-        %   V01 + ROC-SGSE_L2S_RPW-TDS-LFM-RSWF-E
-        % --> V01_ROC-SGSE_L2S_RPW-TDS-LFM-RSWF-E).
-        %
-        % NOTE: Has to work sensibly for both ROC-SGSE and RODP/SOLO dataset IDs.
-        function pdid = construct_PDID(datasetId, skeletonVersionStr)
-            % PROPOSAL: Move to ~constants (collect decision functions).
-        
-            %pdid = [datasetId, '_V', skeletonVersionStr];
-            
-            datasetIdShortened = datasetId;
-            %datasetIdShortened = regexprep(datasetIdShortened, '^ROC-SGSE_', '',  'once');
-            %datasetIdShortened = regexprep(datasetIdShortened, '_RPW-',      '_', 'once');                
-            %pdid = [datasetIdShortened, '_V', skeletonVersionStr];
-            pdid = sprintf('V%s_%s', skeletonVersionStr, datasetIdShortened);
-            % IMPLEMENTATION NOTE: Put skeleton version at beginning of PDID since PDIDs then line up better when
-            % printed in a list above each other. Easier to read.
-        end
-        
-    end    % methods(Static)
     
 end   % classdef
