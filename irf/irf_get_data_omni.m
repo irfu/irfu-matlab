@@ -21,6 +21,8 @@ function f = irf_get_data_omni( tint, parameter , database)
 %               'vx'    - vx GSE
 %               'vy'    - vy GSE, corrected for abberation (29.8 km/s)
 %               'vz'    - vz GSE
+%               'vlon'  - bulk flow longitude in degrees
+%               'vlat'  - bulk flow latitude in degrees
 %               'E'     - electric field (mV/m)
 %               'P'     - flow pressure (nPa)
 %               'beta'  - plasma beta
@@ -176,7 +178,9 @@ for jj=1:length(iStart)
 		case 'v',      varOmni2=24;varOmni1min=21;
         case 'vx',     varOmni2=-1;varOmni1min=22; 
         case 'vy',     varOmni2=-1;varOmni1min=23;
-        case 'vz',     varOmni2=-1;varOmni1min=24;  
+        case 'vz',     varOmni2=-1;varOmni1min=24; 
+        case 'vlon',   varOmni2=25;varOmni1min=-1;
+        case 'vlat',   varOmni2=26;varOmni1min=-1;
 		case 'p',      varOmni2=28;varOmni1min=27;
 		case 'e',      varOmni2=35;varOmni1min=28;
 		case 'beta',   varOmni2=36;varOmni1min=29;
