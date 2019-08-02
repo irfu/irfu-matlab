@@ -7,8 +7,7 @@
 % =========
 % varName  : String that will be used as a (top-level) variable name.
 % v        : The variable which contents will be printed.
-% varargin : Settings as interpreted by EJ_library.utils.interpret_settings.
-%           stringsMaxDisplayLen : Max number of characters used for printing string values. Can be set to Inf.
+% varargin : Settings as interpreted by EJ_library.utils.interpret_settings. See implementation.
 %
 %
 % DISPLAYING STRINGS
@@ -88,21 +87,22 @@ function print_variable_recursively(varName, v, varargin)
 %                   CON: Must be returned, and printed by caller.
 %
 % PROPOSAL: Print multirow valueDisplayStrings using indentation for non-first row.
+% PROPOSAL: Make "=" line up, at least among siblings.
 
 % Define default settings.
-DefaultSettings = [];
-DefaultSettings.maxNArrayComponents       = Inf;      % Max number of array components to print.
-DefaultSettings.stringsMaxDisplayLen      = Inf;       % Max length of printed strings.
-DefaultSettings.maxRecursionDepth         = Inf;      % First function call is level 0. Counting may not be perfectly implemented.
-DefaultSettings.indent                    = false;    % Visualisera underträd mha indentering. Implicerar en extra rad för föräldern till varje underträd.
-DefaultSettings.indentationLength         = 4;        % Indentation length that is added per recursion level, if indentation is used.
-DefaultSettings.printParentSeparately     = true;
-DefaultSettings.stringsEscape             = true;     % Whether to display (some) special characters using escape codes.
-%DefaultSettings.stringsBnrMinNonemptyRows = 3';       % Criterion for whether to use BNR.
-DefaultSettings.stringsSsMaxLength        = 120;      % Max length on (pre-escaped) substrings before dividing into more lines.
+DEFAULT_SETTINGS = [];
+DEFAULT_SETTINGS.maxNArrayComponents       = Inf;      % Max number of array components to print.
+DEFAULT_SETTINGS.stringsMaxDisplayLen      = Inf;      % Max length of printed strings.
+DEFAULT_SETTINGS.maxRecursionDepth         = Inf;      % First function call is level 0. Counting may not be perfectly implemented.
+DEFAULT_SETTINGS.indent                    = false;    % Visualisera underträd mha indentering. Implicerar en extra rad för föräldern till varje underträd.
+DEFAULT_SETTINGS.indentationLength         = 4;        % Indentation length that is added per recursion level, if indentation is used.
+DEFAULT_SETTINGS.printParentSeparately     = true;
+DEFAULT_SETTINGS.stringsEscape             = true;     % Whether to display (some) special characters using escape codes.
+%DEFAULT_SETTINGS.stringsBnrMinNonemptyRows = 3';       % Criterion for whether to use BNR.
+DEFAULT_SETTINGS.stringsSsMaxLength        = 120;      % Max length on (pre-escaped) substrings before dividing into more lines.
 
-Settings = EJ_library.utils.interpret_settings_args(DefaultSettings, varargin);
-EJ_library.utils.assert.struct(Settings, fieldnames(DefaultSettings))    % Require DefaultSettings to contain all possible settings.
+Settings = EJ_library.utils.interpret_settings_args(DEFAULT_SETTINGS, varargin);
+EJ_library.utils.assert.struct(Settings, fieldnames(DEFAULT_SETTINGS))    % Require DEFAULT_SETTINGS to contain all possible settings.
 
 print_NESTED('', varName, v, 0, Settings)
 
@@ -131,7 +131,8 @@ function print_NESTED(fullParentName, varName, v, recursionDepth, Settings)
         %============
         % Print leaf
         %============
-        fprintf(1, '%s%s = %s\n', prefixStr, varName, valueDisplayStr);
+        % NOTE: Arbitrarily chosen string width to make = line up, normally.
+        fprintf(1, '%s%-20s = %s\n', prefixStr, varName, valueDisplayStr);
         
     else
         % CASE: Node may have children (but does not have to have this time).
