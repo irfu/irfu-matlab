@@ -52,7 +52,7 @@ function execute_sw_mode(SwModeInfo, InputFilePathMap, OutputFilePathMap, master
 %           Software_version, SPECTRAL_RANGE_MIN/-MAX (optional?), TIME_MIN/-MAX
 %       Write VariableAttributes: pad value? (if master CDF does not contain a correct value), SCALE_MIN/-MAX
 %
-% PROPOSAL: BUG FIX: Move global attributes into PDs somehow to let the data_manager_old collect the values during processing?
+% PROPOSAL: BUG FIX: Move global attributes into PDs somehow to let the processing functions collect the values during processing?
 %   PROPOSAL: Have PDs include global attributes in new struct structure.
 %             EIn PD:            EInPD(GlobalAttributes,          zVariables)   // All input dataset GAs.
 %             Intermediary PDs:     PD(GlobalAttributesCellArray, data)         // All input datasets GAs (multiple datasets).
@@ -68,7 +68,6 @@ function execute_sw_mode(SwModeInfo, InputFilePathMap, OutputFilePathMap, master
 %===========================================================================
 % Give all INPUT CDF files (from the CLI argument list) to the data manager
 %===========================================================================
-%prodFuncArgKeysList = InputFilePathMap.keys;
 GlobalAttributesCellArray = {};   % Use cell array since CDF global attributes may in principle contain different sets of attributes (field names).
 
 
@@ -191,8 +190,7 @@ end
 
 
 function [ZVars, GlobalAttributes] = read_dataset_CDF(filePath)
-% Read elementary input process data from a CDF file and convert it to a format suitable as a data_manager_old "process data".
-% Copies all zVariables into fields of a regular structure.
+% Read elementary input process data from a CDF file. Copies all zVariables into fields of a regular structure.
 %
 %
 % RETURN VALUES
@@ -233,7 +231,6 @@ for i = 1:length(zVariableNameList)
     % Log data to be written to CDF file
     % ----------------------------------
     % NOTE: Log messages should reflect the values READ from file.
-    %       Process data variables are logged separately by data_manager_old.
     %=================================================================================================
     %bicas.dm_utils.log_struct_arrays(zVariableName, zVariableData);
     
@@ -331,7 +328,6 @@ for iPdFieldName = 1:length(pdFieldNameList)
     % Log data to be written to CDF file
     % ----------------------------------
     % NOTE: Log messages should reflect the values WRITTEN to file.
-    %       Process data variables are logged separately by data_manager_old.
     %=================================================================================================
     %bicas.dm_utils.log_struct_arrays(zVariableName, zVariableData);
     
@@ -346,7 +342,7 @@ end
 %==========================
 DataObj.GlobalAttributes.Software_name       = SETTINGS.get_fv('SWD_IDENTIFICATION.name');
 DataObj.GlobalAttributes.Software_version    = SETTINGS.get_fv('SWD_RELEASE.version');
-DataObj.GlobalAttributes.Calibration_version = SETTINGS.get_fv('CALIBRATION_VERSION');         % "Static"?!!
+DataObj.GlobalAttributes.Calibration_version = SETTINGS.get_fv('OUTPUT_CDF.GLOBAL_ATTRIBUTES.Calibration_version');         % "Static"?!!
 DataObj.GlobalAttributes.Generation_date     = datestr(now, 'yyyy-mm-ddTHH:MM:SS');         % BUG? Assigns local time, not UTC!!! ROC DFMD does not mention time zone.
 DataObj.GlobalAttributes.Logical_file_id     = get_logical_file_id(...
     datasetId, GlobalAttributesSubset.Test_Id, ...
@@ -433,9 +429,6 @@ end
 function logicalFileId = get_logical_file_id(datasetId, testId, provider, dataVersion)
 % Construct a "Logical_file_id" as defined in the ROC DFMD, global attribute+file name convention.
 
-% global CONSTANTS
-
-% CONSTANTS.assert_dataset_ID(datasetId)
 bicas.assert_DATASET_ID(datasetId)
 
 if ~ischar(dataVersion ) || length(dataVersion)~=2

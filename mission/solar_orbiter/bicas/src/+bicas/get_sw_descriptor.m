@@ -8,7 +8,7 @@
 %
 % RETURN VALUE
 % ============
-% swDescriptor : See JSON_object_str for the exact format.
+% JsonSwd : See bicas.utils.JSON_object_str for the exact format.
 %
 %
 % IMPLEMENTATION NOTE
@@ -28,7 +28,7 @@
 %     institute, output_XX.release.file).
 % (6) It is easier to add automatic checks on the S/W descriptor in the code that derives it.
 %
-function SwDescriptor = get_sw_descriptor(DataManager)
+function JsonSwd = get_sw_descriptor(SwModeDefsList, SETTINGS)
 %
 % PROPOSAL: Have this function add the prefix "input_" to all modes[].inputs[].input (in SWD)
 % and only store the "CLI_PARAMETER_suffix" in the BICAS constants structure instead.
@@ -49,7 +49,9 @@ function SwDescriptor = get_sw_descriptor(DataManager)
 %   NOTE: Checks on the main constants structure will (can) only happen if this file is executed, not if 
 %         the S/W as a whole is (by default).
 %
-global CONSTANTS SETTINGS
+C = bicas.error_safe_constants();
+
+
 
 % Variable naming convention:
 % ---------------------------
@@ -57,100 +59,61 @@ global CONSTANTS SETTINGS
 % Its fields (field names) should NOT follow variable naming conventions since they determine the JSON object string
 % which must follow the RCS ICD.
 
-Swd = [];
-Swd.identification.project     = SETTINGS.get_fv('SWD_IDENTIFICATION.project');
-Swd.identification.name        = SETTINGS.get_fv('SWD_IDENTIFICATION.name');
-Swd.identification.identifier  = SETTINGS.get_fv('SWD_IDENTIFICATION.identifier');
-Swd.identification.description = SETTINGS.get_fv('SWD_IDENTIFICATION.description');
-            
-Swd.release.version            = SETTINGS.get_fv('SWD_RELEASE.version');
-Swd.release.date               = SETTINGS.get_fv('SWD_RELEASE.date');
-Swd.release.author             = SETTINGS.get_fv('SWD_RELEASE.author');
-Swd.release.contact            = SETTINGS.get_fv('SWD_RELEASE.contact');
-Swd.release.institute          = SETTINGS.get_fv('SWD_RELEASE.institute');
-Swd.release.modification       = SETTINGS.get_fv('SWD_RELEASE.modification');
+JsonSwd = [];
+JsonSwd.identification.project     = SETTINGS.get_fv('SWD_IDENTIFICATION.project');
+JsonSwd.identification.name        = SETTINGS.get_fv('SWD_IDENTIFICATION.name');
+JsonSwd.identification.identifier  = SETTINGS.get_fv('SWD_IDENTIFICATION.identifier');
+JsonSwd.identification.description = SETTINGS.get_fv('SWD_IDENTIFICATION.description');
+JsonSwd.identification.icd_version = SETTINGS.get_fv('SWD_IDENTIFICATION.icd_version');
 
-Swd.environment                = SETTINGS.get_fv('SWD_ENVIRONMENT.executable');
-Swd.modes = {};
+JsonSwd.release.version            = SETTINGS.get_fv('SWD_RELEASE.version');
+JsonSwd.release.date               = SETTINGS.get_fv('SWD_RELEASE.date');
+JsonSwd.release.author             = SETTINGS.get_fv('SWD_RELEASE.author');
+JsonSwd.release.contact            = SETTINGS.get_fv('SWD_RELEASE.contact');
+JsonSwd.release.institute          = SETTINGS.get_fv('SWD_RELEASE.institute');
+JsonSwd.release.modification       = SETTINGS.get_fv('SWD_RELEASE.modification');
+JsonSwd.release.source             = SETTINGS.get_fv('SWD_RELEASE.source');    % RCS ICD 00037 iss1/rev2, draft 2019-07-11: Optional.
 
-for i = 1:length(CONSTANTS.SW_MODES_INFO_LIST)
-    cliParameter = CONSTANTS.SW_MODES_INFO_LIST{i}.CLI_PARAMETER;
+JsonSwd.environment.executable     = SETTINGS.get_fv('SWD_ENVIRONMENT.executable');
+JsonSwd.environment.configuration  = C.DEFAULT_CONFIG_FILE_RELATIVE_PATH;      % RCS ICD 00037 iss1/rev2, draft 2019-07-11: Optional.
+
+JsonSwd.modes = {};
+for i = 1:length(SwModeDefsList)
+    JsonSwd.modes{end+1} = generate_sw_descriptor_mode(SwModeDefsList(i));
+end
+
+end
+
+
+
+function JsonSwdMode = generate_sw_descriptor_mode(SwModeDef)
+
+JsonSwdMode.name    = SwModeDef.cliOption;
+JsonSwdMode.purpose = SwModeDef.swdPurpose;
+
+JsonSwdMode.inputs = [];
+for i = 1:length(SwModeDef.inputsList)
+    InputDef = SwModeDef.inputsList(i);
     
-    ExtendedSwModeInfo = DataManager.get_extended_sw_mode_info(cliParameter);
+    JsonInput = [];
+    JsonInput.identifier = InputDef.DATASET_ID;
+    JsonSwdMode.inputs.(InputDef.cliOptionHeaderBody) = JsonInput;
+end
+
+JsonSwdMode.outputs = {};
+for i = 1:length(SwModeDef.outputsList)
+    OutputDef = SwModeDef.outputsList(i);
     
-    Swd.modes{end+1} = generate_sw_descriptor_mode(ExtendedSwModeInfo);
+    JsonOutput = [];
+    JsonOutput.identifier  = OutputDef.DATASET_ID;
+    JsonOutput.name        = OutputDef.swdName;
+    JsonOutput.description = OutputDef.swdDescription;
+    JsonOutput.level       = OutputDef.datasetLevel;
+    JsonOutput.template    = bicas.get_master_CDF_filename(...
+        OutputDef.DATASET_ID, ...
+        OutputDef.skeletonVersion);    % RCS ICD 00037 iss1/rev2, draft 2019-07-11: Optional.
+    JsonSwdMode.outputs.(OutputDef.cliOptionHeaderBody) = JsonOutput;
 end
-
-
-%===========================================================================================
-% Validate S/W release version
-% ----------------------------
-% RCS ICD, iss2rev2, Section 5.3 S/W descriptor file validation scheme implies this regex.
-% NOTE: It is hard to thoroughly follow the description, but the end result should be under
-% release-->version-->pattern (not to be confused with release_dataset-->version--pattern).
-%===========================================================================================
-if isempty(regexp(Swd.release.version, '^(\d+\.)?(\d+\.)?(\d+)$', 'once'))
-    error('BICAS:get_sw_descriptor:IllegalCodeConfiguration', 'Illegal S/W descriptor release version "%s". This indicates a hard-coded configuration bug.', Swd.release.version)
-end
-
-SwDescriptor = Swd;    % Assign return value.
 
 end
 
-
-
-% Create data structure for a S/W mode corresponding to the information in the JSON S/W descriptor.
-%
-function SwdMode = generate_sw_descriptor_mode(ExtendedSwModeInfo)
-
-global SETTINGS
-
-SwdMode = struct;
-SwdMode.name    = ExtendedSwModeInfo.CLI_PARAMETER;
-SwdMode.purpose = ExtendedSwModeInfo.SWD_PURPOSE;
-
-for OutputInfo = ExtendedSwModeInfo.inputs
-    SwModeInputInfo = OutputInfo{1};
-    
-    SwdInput = struct;
-    SwdInput.version    = SwModeInputInfo.SKELETON_VERSION_STR;
-    SwdInput.identifier = SwModeInputInfo.DATASET_ID;
-    
-    SwdMode.inputs.(SwModeInputInfo.CLI_OPTION_BODY) = SwdInput;
-end
-
-
-for iOutput = 1:length(ExtendedSwModeInfo.outputs)
-    OutputInfo = ExtendedSwModeInfo.outputs{iOutput};
-
-    masterCdfFilename = bicas.get_master_CDF_filename(OutputInfo.DATASET_ID, OutputInfo.SKELETON_VERSION_STR);
-
-    SwdOutputInfo = struct;
-    SwdOutputInfo.identifier           = OutputInfo.DATASET_ID;
-    SwdOutputInfo.name                 = OutputInfo.SWD_NAME;
-    SwdOutputInfo.description          = OutputInfo.SWD_DESCRIPTION;
-    SwdOutputInfo.level                = OutputInfo.SWD_LEVEL;
-    SwdOutputInfo.release.date         = OutputInfo.SWD_RELEASE_DATE;
-    SwdOutputInfo.release.version      = OutputInfo.SKELETON_VERSION_STR;
-    SwdOutputInfo.release.author       = SETTINGS.get_fv('AUTHOR_NAME');
-    SwdOutputInfo.release.contact      = SETTINGS.get_fv('AUTHOR_EMAIL');
-    SwdOutputInfo.release.institute    = SETTINGS.get_fv('INSTITUTE');
-    SwdOutputInfo.release.modification = OutputInfo.SWD_RELEASE_MODIFICATION;
-    SwdOutputInfo.release.file         = masterCdfFilename;
-    
-    % Validate output datasets release version
-    % ----------------------------------------
-    % RCS ICD, iss2rev2, Section 5.3 S/W descriptor file validation scheme implies this regex.
-    % NOTE: It is hard to thoroughly follow the description, but the end result should be under
-    % release_dataset-->version-->pattern (not to be confused with release-->version--pattern).
-    if isempty(regexp(SwdOutputInfo.release.version, '^[0-9]{2}$', 'once'))
-        error('BICAS:get_sw_descriptor:Assertion:IllegalCodeConfiguration', ...
-            'Illegal S/W descriptor output release version "%s". This indicates a hard-coded configuration bug.', SwdOutputInfo.release.version)
-    end
-        
-    SwdMode.outputs.(OutputInfo.CLI_OPTION_BODY) = SwdOutputInfo;
-end
-
-
-
-end

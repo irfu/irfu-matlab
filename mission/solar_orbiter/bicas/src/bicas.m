@@ -79,9 +79,9 @@ function errorCode = bicas( varargin )
 
 % Clear any previous instance of global variables
 % -----------------------------------------------
-% This is useful to avoid mistakenly using a previously initialized version of CONSTANTS or SETTINGS when the
+% This is useful to avoid mistakenly using a previously initialized version of SETTINGS when the
 % initialization has failed and when developing in MATLAB. Must be done as early as possible in the execution.
-clear -global CONSTANTS SETTINGS
+clear -global CONSTANTS SETTINGS    % Clearing obsoleted variable CONSTANTS for safety.
 
 C = bicas.error_safe_constants();
 
@@ -224,15 +224,13 @@ bicasRootPath         = EJ_library.utils.get_abs_path(fullfile(matlabSrcPath, '.
 %=======================================
 bicas.logf('info', 'BICAS software root path:  "%s"', bicasRootPath)
 bicas.logf('info', 'Current working directory: "%s"', pwd);   % Useful for debugging the use of relative directory arguments.
-
-% PROPOSAL: Combine CLI arguments into a single multiline log message?
-bicas.logf('info', 'Command-line interface (CLI) arguments to bicas')
-%bicas.logf('info', '    Number of CLI arguments: %i', length(cliArgumentsList))
+bicas.logf('info', '\nCOMMAND-LINE INTERFACE (CLI) ARGUMENTS TO BICAS\n')
+bicas.logf('info',   '===============================================')
 for i = 1:length(cliArgumentsList)
     bicas.logf('info', '    CLI argument %2i: "%s"', i, cliArgumentsList{i})
     cliArgumentsQuotedList{i} = ['''', cliArgumentsList{i}, ''''];
 end
-cliArgumentsStr = strjoin(cliArgumentsQuotedList);
+cliArgumentsStr = strjoin(cliArgumentsQuotedList, ' ');
 % IMPLEMENTATION NOTE: Printing the entire sequence of arguments, quoted with apostophe, is useful for copy-pasting to
 % both MATLAB command prompt and bash.
 bicas.logf('info', '    CLI arguments for copy-pasting: %s', cliArgumentsStr)
@@ -242,13 +240,7 @@ bicas.logf('info', '    CLI arguments for copy-pasting: %s', cliArgumentsStr)
 %========================================
 % Initialize global settings & constants
 %========================================
-% IMPLEMENTATION NOTE: Does not initialize CONSTANTS until here because:
-%    1) MATLAB version should have been checked for first. The initialization code could otherwise fail.
-%    2) Needs BICAS root path.
-% NOTE: Constants will later be modified by the CLI arguments.
-global CONSTANTS
 global SETTINGS
-CONSTANTS = bicas.constants_old();
 SETTINGS  = bicas.create_default_SETTINGS();
 
 
@@ -283,7 +275,24 @@ SETTINGS.make_read_only();
 
 
 
-bicas.log('info', bicas.sprint_SETTINGS)                 % Prints/log the contents of SETTINGS.
+%======================
+% ASSERTIONS: SETTINGS
+%======================
+EJ_library.utils.assert.castring_regexp(SETTINGS.get_fv('SWD_RELEASE.version'), '[0-9]+\.[0-9]+\.[0-9]+')
+EJ_library.utils.assert.castring_regexp(SETTINGS.get_fv('SWD_RELEASE.date'),    '20[1-3][0-9]-[01][0-9]-[0-3][0-9]')
+% Validate S/W release version
+% ----------------------------
+% RCS ICD 00037, iss1rev2, Section 5.3 S/W descriptor file validation scheme implies this regex.
+% NOTE: It is hard to thoroughly follow the description, but the end result should be under
+% release-->version-->pattern (not to be confused with release_dataset-->version--pattern).
+EJ_library.utils.assert.castring_regexp(SETTINGS.get_fv('SWD_RELEASE.version'), '(\d+\.)?(\d+\.)?(\d+)')
+% if isempty(regexp(JsonSwd.release.version, '^(\d+\.)?(\d+\.)?(\d+)$', 'once'))
+%     error('BICAS:get_sw_descriptor:IllegalCodeConfiguration', 'Illegal S/W descriptor release version "%s". This indicates a hard-coded configuration bug.', JsonSwd.release.version)
+% end
+
+
+
+bicas.log('info', bicas.sprint_SETTINGS(SETTINGS))                 % Prints/log the contents of SETTINGS.
 
 
 
@@ -300,28 +309,26 @@ bicas.logf('info', 'masterCdfDir = "%s" (value actually used)', masterCdfDir)
 
 
 
-% NOTE: Still needed for print_version, print_identification, print_help.
-DataManager = bicas.data_manager_old();    % NOTE: Requires CONSTANTS (not necessarily SETTINGS) to be initialized.
+SwModeDefs = bicas.swmode_defs(pipelineId, ...
+    SETTINGS.get_fv('SW_MODES.ENABLE_INPUT_L2R'), ...
+    SETTINGS.get_fv('SW_MODES.ENABLE_TDS'));
 
 
 
 switch(CliData.functionalityMode)
     case 'version'
-        print_version(DataManager)
+        print_version(SwModeDefs.List, SETTINGS)
         
     case 'identification'
-        print_identification(DataManager)
+        print_identification(SwModeDefs.List, SETTINGS)
         
     case 'help'
-        print_help(DataManager)
+        print_help(SETTINGS)
         
     case 'S/W mode'
         %==============================================================================
         % CASE: Should be a S/W mode (deduced from elimination of other possibilities)
         %==============================================================================
-        SwModeDefs = bicas.swmode_defs(pipelineId, ...
-            SETTINGS.get_fv('SW_MODES.ENABLE_INPUT_L2R'), ...
-            SETTINGS.get_fv('SW_MODES.ENABLE_TDS'));
         try
             SwModeInfo = SwModeDefs.get_sw_mode_info(CliData.swModeArg);
         catch Exception1
@@ -391,16 +398,28 @@ end
 
 
 
-function print_version(DataManager)
+% Print software version on JSON format.
+%
+% RCS ICD 00037 iss1/rev2, draft 2019-07-11, Section 5.2:
+% The example (but not the text) makes it clear that code should print JSON object.
+%
+% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% First created <<2019-08-05
+%
+function print_version(SwModeDefsList, SETTINGS)
 
 % IMPLEMENTATION NOTE: Uses the software version in the S/W descriptor rather than the in the BICAS
 % constants since the RCS ICD specifies that it should be that specific version.
-% This is in principle inefficient but "precise".
-% NOTE: Uses the s/w name from the s/w descriptor too (instead of SETTINGS) since available anyway.
+% This is in principle inefficient but also "precise".
 
-Swd = bicas.get_sw_descriptor(DataManager);
-bicas.stdout_printf('%s version %s\n', Swd.identification.name, Swd.release.version)
+JsonSwd = bicas.get_sw_descriptor(SwModeDefsList, SETTINGS);
 
+JsonVersion = [];
+JsonVersion.version = JsonSwd.release.version;
+
+strVersion = bicas.utils.JSON_object_str(JsonVersion, ...
+    SETTINGS.get_fv('JSON_OBJECT_STR.INDENT_SIZE'));
+bicas.stdout_print(strVersion);
 end
 
 
@@ -410,15 +429,12 @@ end
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
 % First created 2016-06-07
 %
-function print_identification(DataManager)
+function print_identification(SwModesDefsList, SETTINGS)
 
-global SETTINGS
-
-Swd = bicas.get_sw_descriptor(DataManager);
-str = bicas.utils.JSON_object_str(Swd, ...
-    SETTINGS.get_fv('JSON_OBJECT_STR.INDENT_SIZE'), ...
-    SETTINGS.get_fv('JSON_OBJECT_STR.VALUE_POSITION'));
-bicas.stdout_print(str);
+JsonSwd = bicas.get_sw_descriptor(SwModesDefsList, SETTINGS);
+strSwd = bicas.utils.JSON_object_str(JsonSwd, ...
+    SETTINGS.get_fv('JSON_OBJECT_STR.INDENT_SIZE'));
+bicas.stdout_print(strSwd);
 
 end
 
@@ -428,7 +444,7 @@ end
 %
 % NOTE: Useful if the output printed by this function can be used for copy-pasting into RCS User Manual (RUM).
 %
-function print_help(DataManager)
+function print_help(SETTINGS)
 %
 % PROPOSAL: Print CLI syntax incl. for all modes? More easy to parse than the S/W descriptor.
 
@@ -437,9 +453,8 @@ C = bicas.error_safe_constants();
 
 
 % Print software name & description
-Swd = bicas.get_sw_descriptor(DataManager);
-print_version(DataManager)
-bicas.stdout_printf('%s\n', Swd.identification.description)
+bicas.stdout_printf('\n%s version %s\n', SETTINGS.get_fv('SWD_IDENTIFICATION.name'), SETTINGS.get_fv('SWD_RELEASE.version') )
+bicas.stdout_print(SETTINGS.get_fv('SWD_IDENTIFICATION.description'))
 
 %==========================
 % Print error codes & types
@@ -450,7 +465,8 @@ empidList          = C.EMIDP_2_INFO.keys;
 errorTypesInfoList = C.EMIDP_2_INFO.values;        % Cell array of structs (unsorted).
 empidList          = empidList(iSort);
 errorTypesInfoList = errorTypesInfoList(iSort);    % Cell array of structs sorted by error code.
-bicas.stdout_printf('\nError codes, error message identifiers, human-readable descriptions:\n')
+bicas.stdout_printf('\nERROR CODES, ERROR MESSAGE IDENTIFIERS, HUMAN-READABLE DESCRIPTIONS\n')
+bicas.stdout_printf(  '===================================================================')
 for i = 1:numel(errorTypesInfoList)
     errorType = errorTypesInfoList{i};
     bicas.stdout_printf(['    %1i : %s\n', ...
@@ -458,7 +474,7 @@ for i = 1:numel(errorTypesInfoList)
 end
 
 % Print settings
-bicas.stdout_print(bicas.sprint_SETTINGS)   % Includes title
+bicas.stdout_print(bicas.sprint_SETTINGS(SETTINGS))   % Includes title
 
 bicas.stdout_printf('\nSee "readme.txt" and user manual for more help.\n')
 end

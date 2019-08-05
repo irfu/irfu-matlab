@@ -121,9 +121,9 @@ classdef swmode_defs
                     inputDashEList            = {'-E'};
                     swModeCliOptionAmendmList = {''};
                     obj.outputDatasetLevel    = 'L2';
-                    
+
                 otherwise
-                    error('swmode_defs:Assertion:IllegalArgument', 'Can not interpret "pipelineName=%s', pipelineId)
+                    error('swmode_defs:Assertion:IllegalArgument', 'Can not interpret "pipelineId=%s', pipelineId)
             end
             clear pipelineName
             
@@ -221,9 +221,9 @@ classdef swmode_defs
             
             EJ_library.utils.assert.castring_set({obj.List(:).cliOption})
         end    % Constructor
-        
-        
-        
+
+
+
         function swModeInfo = get_sw_mode_info(obj, swModeCliOption)
             i = find(strcmp(swModeCliOption, {obj.List(:).cliOption}));
             EJ_library.utils.assert.scalar(i)

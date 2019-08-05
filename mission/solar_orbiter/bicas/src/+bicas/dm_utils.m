@@ -1,6 +1,5 @@
 classdef dm_utils
-% Collections of minor utility functions (in the form of static methods) used by data_manager_old.
-% The functions are collected here to reduce the size of data_manager_old.
+% Collections of minor utility functions (in the form of static methods) used for data processing.
 %
 % dm_utils = data_manager_old utilities
 %
@@ -737,24 +736,24 @@ classdef dm_utils
         
         
         
-        function assert_unvaried_N_rows(s)
+        function assert_unvaried_N_rows(S)
         % Assert that all NUMERIC fields in a structure have the same number of rows.
         %
-        % Useful since in data_manager_old, much code assumes that struct fields represent CDF zVar records which should
-        % have the same number of rows.
+        % Useful for structs where all fields represent CDF zVariables and/or derivatives thereof, the size in the first
+        % index (number of CDF record) should be equal.
         %
         % s : A struct to be tested.
             
             % PROPOSAL: Better name.
             %   Ex: _equal_rows, _equal_N_rows, _same_N_rows, _equal_nbr_of_rows
             
-            fieldNamesList = fieldnames(s);
+            fieldNamesList = fieldnames(S);
             nRows = [];
             for i = 1:length(fieldNamesList)
                 fn = fieldNamesList{i};
                 
-                if isnumeric(s.(fn))
-                    nRows(end+1) = size(s.(fn), 1);
+                if isnumeric(S.(fn))
+                    nRows(end+1) = size(S.(fn), 1);
                 end
             end
             if length(unique(nRows)) > 1    % NOTE: length==0 valid for struct containing zero numeric fields.

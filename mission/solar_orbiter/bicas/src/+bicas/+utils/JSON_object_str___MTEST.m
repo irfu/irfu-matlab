@@ -1,13 +1,14 @@
 %
 % Informal non-automated test code.
 %
-function JSON_object_str_MTEST
+% NOTE: Example s/w descriptor is outdated, but that does not really matter.
+%
+function JSON_object_str___MTEST
 
 obj = define_descriptor1();
 str = bicas.utils.JSON_object_str(obj, 4, 15);
 fprintf('-------------------------------------------\n');
 fprintf(str);
-%bicas.stdout_print(str);
 
 
 

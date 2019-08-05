@@ -46,7 +46,7 @@ classdef pipelines
     %   TODO-DECISION: Include skeleton version in function names?
     % 
     % TODO-DECISION: Use PDID system?
-    %   NOTE: data_manager_old's PDID uses skeleton versions.
+    %   NOTE: data_manager_old's PDID used skeleton versions.
     %   NOTE: According to RCS ICD 00037 iss1/rev2, draft 2019-07-11, the s/w descriptor interface no longer specifies
     %         the version of the input datasets. One can still specify modes (and CLI parameters) that require specific
     %         input skeleton versions though.
@@ -83,7 +83,7 @@ classdef pipelines
     %   PRO: Needed for merging global attributes?
     %
     % PROPOSAL: Instantiate class, use instance methods instead of static.
-    %   PRO: Can have SETTINGS, CONSTANTS as instance variable instead of calling global variables.
+    %   PRO: Can have SETTINGS & constants as instance variable instead of calling global variables.
     %
     % TODO-DECISION: How handle differences between pipelines?
     %

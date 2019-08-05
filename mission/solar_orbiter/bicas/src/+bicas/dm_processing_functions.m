@@ -1,8 +1,7 @@
-% Class that collects "processing functions" as public static methods. See data_manager_old.m.
+% Class that collects "processing functions" as public static methods.
 % dm = data_manager_old
 %
-% This class is not meant to be instantiated. Its functions are only meant to be called from data_manager_old.
-% May contain some non-trivial helper functions.
+% This class is not meant to be instantiated.
 % 
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
 % First created 2017-02-10, with source code from data_manager_old.m.
@@ -10,14 +9,12 @@
 %
 % CODE CONVENTIONS
 % ================
-% - Processing functions follow a convention for return values and arguments. See
-%   bicas.data_manager_old.get_processing_info.
 % - It is implicit that arrays/matrices representing CDF data, or "CDF-like" data, using the first MATLAB array index to
 %   represent CDF records.
 %
 %
-% SOME PDVs
-% =========
+% SOME INTERMEDIATE PROCESSING DATA FORMATS
+% =========================================
 % - PreDC = Pre-Demuxing-Calibration Data
 %       Generic data format that can represent all forms of input datasets before demuxing and calibration. Can use an
 %       arbitrary number of samples per record. Some variables are therefore not used in CWF output datasets.
@@ -87,7 +84,7 @@ classdef dm_processing_functions
 %           Describe what they should all "converge" on, and make sure they actually do.
 %
 % PROPOSAL: Instantiate class, use instance methods instead of static.
-%   PRO: Can have SETTINGS, CONSTANTS as instance variable instead of calling global variables.
+%   PRO: Can have SETTINGS and constants as instance variable instead of calling global variables.
 %
 %#######################################################################################################################
     
@@ -215,7 +212,7 @@ classdef dm_processing_functions
                     ELECTRICAL = Sci.ZVars.E;
                     %L1_REC_NUM = Sci.L1_REC_NUM;
                 otherwise
-                    error('BICAS:data_manager_old:SWModeProcessing:Assertion:ConfigurationBug', ...
+                    error('BICAS:dm_processing_functions:SWModeProcessing:Assertion:ConfigurationBug', ...
                         'Can not handle DVID="%s"', sciDvid)
             end
             
@@ -240,7 +237,7 @@ classdef dm_processing_functions
                         %'V02_ROC-SGSE_L2R_RPW-LFR-SURV-SWF', ...
                     FREQ = Sci.ZVars.FREQ;
                 otherwise
-                    error('BICAS:data_manager_old:SWModeProcessing:Assertion:ConfigurationBug', ...
+                    error('BICAS:dm_processing_functions:SWModeProcessing:Assertion:ConfigurationBug', ...
                         'Can not handle DVID="%s"', sciDvid)
             end
             
@@ -329,10 +326,10 @@ classdef dm_processing_functions
                       
                 % Those TDS datasets which have DIFFERENT number of samples/record compared to the output datasets.
                 case {'V01_ROC-SGSE_L2R_RPW-TDS-LFM-RSWF'}        % 1 S/R for SWF data!!!
-                    error('BICAS:data_manager_old:SWModeProcessing:Assertion:OperationNotImplemented', ...
+                    error('BICAS:dm_processing_functions:SWModeProcessing:Assertion:OperationNotImplemented', ...
                         'This processing function can not interpret PDID=%s. Not implemented yet.', sciPdid)
                 otherwise
-                    error('BICAS:data_manager_old:SWModeProcessing:Assertion:ConfigurationBug', ...
+                    error('BICAS:dm_processing_functions:SWModeProcessing:Assertion:ConfigurationBug', ...
                         'Can not handle PDID="%s"', sciPdid)
             end
             
@@ -366,7 +363,7 @@ classdef dm_processing_functions
             % ASSERTIONS
             bicas.dm_processing_functions.assert_PreDC(PreDc)
             
-            %error('BICAS:data_manager_old:OperationNotImplemented', ...
+            %error('BICAS:dm_processing_functions:OperationNotImplemented', ...
             %    'This processing function process_TDS_to_PreDC has not been implemented yet.')
         end
 
@@ -479,7 +476,7 @@ classdef dm_processing_functions
                     
                     % ASSERTION
                     if nSamplesPerRecord ~= 2048
-                        error('BICAS:data_manager_old:Assertion:IllegalArgument', 'Number of samples per CDF record is not 2048, as expected.')
+                        error('BICAS:dm_processing_functions:Assertion:IllegalArgument', 'Number of samples per CDF record is not 2048, as expected.')
                     end
                     
                     OutputSci.Epoch            = SciPostDc.Epoch;
@@ -509,7 +506,7 @@ classdef dm_processing_functions
                     %OutputSci.SAMP_DTIME       = PostDc.SAMP_DTIME;
                     
                 otherwise
-                    error('BICAS:data_manager_old:Assertion:IllegalArgument', 'Function can not produce outputDvid=%s.', outputDvid)
+                    error('BICAS:dm_processing_functions:Assertion:IllegalArgument', 'Function can not produce outputDvid=%s.', outputDvid)
             end
             
             
@@ -528,7 +525,7 @@ classdef dm_processing_functions
             %    case  'V02_ROC-SGSE_L2S_RPW-TDS-LFM-RSWF-E'
                         
                     
-            error('BICAS:data_manager_old:SWModeProcessing:Assertion:OperationNotImplemented', ...
+            error('BICAS:dm_processing_functions:SWModeProcessing:Assertion:OperationNotImplemented', ...
                 'This processing function has not been implemented yet.')
         end    
         
@@ -666,7 +663,7 @@ classdef dm_processing_functions
             
             % ASSERTIONS
             if numel(MUX_SET) ~= 1 || numel(DIFF_GAIN) ~= 1
-                error('BICAS:data_manager_old:Assertion:IllegalArgument', 'Illegal argument value "MUX_SET" or "DIFF_GAIN". Must be scalars (not arrays).')
+                error('BICAS:dm_processing_functions:Assertion:IllegalArgument', 'Illegal argument value "MUX_SET" or "DIFF_GAIN". Must be scalars (not arrays).')
             end
             
             ALPHA = SETTINGS.get_fv('SIMPLE_DEMUXER.ALPHA');
@@ -773,7 +770,7 @@ classdef dm_processing_functions
                     if isnan(MUX_SET)
                         ;   % Do nothing. Allow the default values (NaN) to be returned.
                     else
-                        error('BICAS:data_manager_old:Assertion:IllegalArgument:DatasetFormat', 'Illegal argument value for mux_set.')
+                        error('BICAS:dm_processing_functions:Assertion:IllegalArgument:DatasetFormat', 'Illegal argument value for mux_set.')
                     end
             end   % switch
             
