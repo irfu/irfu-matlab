@@ -38,7 +38,7 @@ S.define_setting('JSON_OBJECT_STR.INDENT_SIZE',     4);
 
 
 
-S.define_setting('INPUT_CDF_ASSERTIONS.STRICT_DATASET_ID',       0);    % Require input CDF Global Attribute "DATASET_ID"       to match the expected value.
+S.define_setting('INPUT_CDF_ASSERTIONS.STRICT_DATASET_ID',       0);    % Require input CDF Global Attribute "DATASET_ID" to match the expected value.
 S.define_setting('INPUT_CDF_ASSERTIONS.MATCHING_TEST_ID',        0);    % Require Test_id to be identical for all input CDF datasets.
 
 S.define_setting('OUTPUT_CDF.SET_TEST_ID',                       1);    % Set CDF GlobalAttribute "Test_id". ROC DFMD says that it should really be set by ROC.

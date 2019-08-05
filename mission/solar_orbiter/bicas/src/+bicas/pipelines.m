@@ -8,10 +8,10 @@
 %   OutputsMap = produce_*(InputsMap)
 % where
 % InputsMap  : containers.Map with
-%                <keys>       : String defining a name of an input ("prodFuncArgKey" in swmode_defs).
+%                <keys>       : String defining a name of an input ("prodFuncInputKey" in swmode_defs).
 %                <values>     : A struct with data corresponding to a CDF file (zVariables+global attributes).
 % OutputsMap : containers.Map with
-%                <keys>       : String defining a name of an output ("prodFuncReturnKey" in swmode_defs).
+%                <keys>       : String defining a name of an output ("prodFuncOutputKey" in swmode_defs).
 %                <values>     : A struct with data corresponding to a CDF file (zVariables).
 %
 %

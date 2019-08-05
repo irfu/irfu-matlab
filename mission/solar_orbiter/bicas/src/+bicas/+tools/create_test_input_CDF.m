@@ -39,15 +39,15 @@ MUX_SETTINGS  = struct('fraction_fill_values', 0.0, 'min', 0, 'max', 4, 'record_
 %================================================
 % Determine which variables to randomize and how
 %================================================
-DATASET_ID = info.GlobalAttributes.DATASET_ID{1};
-if isempty(strtrim(DATASET_ID))                      
+datasetId = info.GlobalAttributes.DATASET_ID{1};
+if isempty(strtrim(datasetId))                      
     % Ugly temporary "fix" for incomplete input files.
     fprintf('No DATASET_ID for %s.\n   Replacing with .Logical_source .\n', input_file_path);
-    DATASET_ID = info.GlobalAttributes.Logical_source{1};
+    datasetId = info.GlobalAttributes.Logical_source{1};
 end
 
 zVars_to_randomize = struct('zVar_name', {}, 'randomizer_settings', {});
-switch(DATASET_ID)
+switch(datasetId)
     case 'ROC-SGSE_HK_RPW-BIA'
         zVars_to_randomize(end+1) = struct('zVar_name', 'HK_BIA_MODE_MUX_SET',  'randomizer_settings', MUX_SETTINGS);
     case 'ROC-SGSE_L2R_RPW-LFR-SURV-CWF'
@@ -57,7 +57,7 @@ switch(DATASET_ID)
         zVars_to_randomize(end+1) = struct('zVar_name', 'POTENTIAL',  'randomizer_settings', BULK_SETTINGS);
         zVars_to_randomize(end+1) = struct('zVar_name', 'ELECTRICAL', 'randomizer_settings', BULK_SETTINGS);
     otherwise
-        error('Can not handle this file. DATASET_ID = "%s".', DATASET_ID)
+        error('Can not handle this file. datasetId = "%s".', datasetId)
 end
 
 

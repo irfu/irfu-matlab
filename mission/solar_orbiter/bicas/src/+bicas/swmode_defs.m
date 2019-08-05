@@ -61,9 +61,6 @@ classdef swmode_defs
     % PROPOSAL: Always produce all possible s/w modes (both pipelines, incl. L2R), then filter out the undesired ones
     % using internal metadata for every S/W mode.
     %
-    % PROPOSAL: Rename prodFuncArgKey   -->prodFuncInputName
-    %                  prodFuncReturnKey-->prodFuncOutputName
-    %   PRO: More consistent.
     % PROPOSAL: Use PF = prodFunc, production function
     
     properties(SetAccess=immutable)
@@ -93,7 +90,7 @@ classdef swmode_defs
         %
         % ARGUMENTS
         % =========
-        % pipelineName
+        % pipelineId
         % enableRocsgseL2rInput : true/false, 1/0. Whether to enable (make visible) support for ROC-SGSE.
         function obj = swmode_defs(pipelineId, enableRocsgseL2rInput, enableTds)
             % IMPLEMENTATION NOTE: Constructor written so that it is easy to disable S/W modes with L2R input datasets.
@@ -125,7 +122,7 @@ classdef swmode_defs
                 otherwise
                     error('swmode_defs:Assertion:IllegalArgument', 'Can not interpret "pipelineId=%s', pipelineId)
             end
-            clear pipelineName
+            clear pipelineId
             
             
             
@@ -179,7 +176,7 @@ classdef swmode_defs
                     List(end+1) = obj.def_swmode(...
                         @(InputsMap) bicas.pipelines.produce_L2S_L2_LFR(...
                             InputsMap, ...
-                            SCI_OUTPUT_DEF.DATASET_ID, ...
+                            SCI_OUTPUT_DEF.datasetId, ...
                             SCI_OUTPUT_DEF.skeletonVersion), ...
                         strmod('LFR-<SBMx/SURV>-<C/SWF>-E<L2R amendm>'), ...
                         strmod('Generate <SBMx/SURV> <C/SWF> electric field <LO> data (potential difference) from LFR <LI> data'), ...
@@ -251,9 +248,9 @@ classdef swmode_defs
                 Def.inputsList(:).cliOptionHeaderBody, ...
                 Def.outputsList(:).cliOptionHeaderBody })   % Important. Check uniqueness of SIP options.
             EJ_library.utils.assert.castring_set( {...
-                Def.inputsList(:).prodFuncArgKey })   % Maybe not really necessary.
+                Def.inputsList(:).prodFuncInputKey })   % Maybe not really necessary.
             EJ_library.utils.assert.castring_set( {...
-                Def.outputsList(:).prodFuncReturnKey })   % Maybe not really necessary.
+                Def.outputsList(:).prodFuncOutputKey })   % Maybe not really necessary.
             
             bicas.swmode_defs.assert_SW_mode_CLI_option(Def.cliOption)
             bicas.swmode_defs.assert_text(              Def.swdPurpose)
@@ -265,31 +262,31 @@ classdef swmode_defs
 
         
         
-        function Def = def_input_dataset(obj, cliOptionHeaderBody, DATASET_ID, prodFuncArgKey)
+        function Def = def_input_dataset(obj, cliOptionHeaderBody, datasetId, prodFuncInputKey)
             % NOTE: No dataset version.
             Def.cliOptionHeaderBody = cliOptionHeaderBody;
-            Def.prodFuncArgKey      = prodFuncArgKey;
-            Def.DATASET_ID          = DATASET_ID;
+            Def.prodFuncInputKey    = prodFuncInputKey;
+            Def.datasetId           = datasetId;
             
             bicas.swmode_defs.assert_SIP_CLI_option(Def.cliOptionHeaderBody)
-            obj.assert_DATASET_ID(                  Def.DATASET_ID)    % NOTE: Using the internal assertion function, not the global one.
+            obj.assert_DATASET_ID(                  Def.datasetId)    % NOTE: Using the internal assertion function, not the global one.
         end
 
         
         
-        function Def = def_output_dataset(obj, DATASET_ID, swdName, swdDescription, skeletonVersion)
+        function Def = def_output_dataset(obj, datasetId, swdName, swdDescription, skeletonVersion)
             Def.cliOptionHeaderBody = 'out_sci';
-            Def.prodFuncReturnKey   = 'SCI_cdf';
+            Def.prodFuncOutputKey   = 'SCI_cdf';
             Def.swdName             = swdName;
             Def.swdDescription      = swdDescription;
-            Def.DATASET_ID          = DATASET_ID;
+            Def.datasetId           = datasetId;
             Def.datasetLevel        = obj.outputDatasetLevel;     % NOTE: Automatically set.
             Def.skeletonVersion     = skeletonVersion;
             
             bicas.swmode_defs.assert_SW_mode_CLI_option(Def.cliOptionHeaderBody)
             bicas.swmode_defs.assert_text(              Def.swdName)
             bicas.swmode_defs.assert_text(              Def.swdDescription)
-            obj.assert_DATASET_ID(                      Def.DATASET_ID)
+            obj.assert_DATASET_ID(                      Def.datasetId)
             bicas.assert_dataset_level(                 Def.datasetLevel)
             bicas.assert_skeleton_version(              Def.skeletonVersion)
         end
@@ -297,13 +294,13 @@ classdef swmode_defs
 
 
         % NOTE: Wrapper around global counterpart.
-        function assert_DATASET_ID(obj, DATASET_ID)
-            bicas.assert_DATASET_ID(DATASET_ID)
+        function assert_DATASET_ID(obj, datasetId)
+            bicas.assert_DATASET_ID(datasetId)
             
             % ASSERTION: Pipeline
             assert(strcmp(...
                 obj.dsiPipelinePrefix, ...
-                DATASET_ID(1:numel(obj.dsiPipelinePrefix))...
+                datasetId(1:numel(obj.dsiPipelinePrefix))...
                 ))
         end
 

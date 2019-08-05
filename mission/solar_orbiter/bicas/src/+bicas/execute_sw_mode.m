@@ -10,10 +10,10 @@
 % ===========================
 % SwModeInfo
 % InputFilePathMap  : containers.Map with
-%    key   = prodFuncArgKey
+%    key   = prodFuncInputKey
 %    value = Path to input file
 % OutputFilePathMap : containers.Map with
-%    key   = prodFuncReturnKey
+%    key   = prodFuncOutputKey
 %    value = Path to output file
 %
 %
@@ -74,14 +74,14 @@ GlobalAttributesCellArray = {};   % Use cell array since CDF global attributes m
 
 InputsMap = containers.Map();
 for i = 1:length(SwModeInfo.inputsList)
-    prodFuncArgKey = SwModeInfo.inputsList(i).prodFuncArgKey;
-    inputFilePath  = InputFilePathMap(prodFuncArgKey);
+    prodFuncInputKey = SwModeInfo.inputsList(i).prodFuncInputKey;
+    inputFilePath    = InputFilePathMap(prodFuncInputKey);
     
     %=======================
     % Read dataset CDF file
     %=======================
-    [ZVars, GlobalAttributes] = read_dataset_CDF(inputFilePath);
-    InputsMap(prodFuncArgKey) = struct('ZVars', ZVars, 'Ga', GlobalAttributes);
+    [ZVars, GlobalAttributes]   = read_dataset_CDF(inputFilePath);
+    InputsMap(prodFuncInputKey) = struct('ZVars', ZVars, 'Ga', GlobalAttributes);
     
     
     
@@ -92,7 +92,7 @@ for i = 1:length(SwModeInfo.inputsList)
     % records. Ex: Metadata such as ACQUISITION_TIME_UNITS.
     bicas.utils.assert_strings_equal(...
         SETTINGS.get_fv('INPUT_CDF_ASSERTIONS.STRICT_DATASET_ID'), ...
-        {GlobalAttributes.DATASET_ID{1}, SwModeInfo.inputsList(i).DATASET_ID}, ...
+        {GlobalAttributes.DATASET_ID{1}, SwModeInfo.inputsList(i).datasetId}, ...
         sprintf('The input CDF file''s stated DATASET_ID does not match the value expected for the S/W mode.\n    File: %s\n    ', inputFilePath))
 
 
@@ -123,17 +123,17 @@ OutputsMap = SwModeInfo.prodFunc(InputsMap);
 for iOutputCdf = 1:length(SwModeInfo.outputsList)
     OutputInfo = SwModeInfo.outputsList(iOutputCdf);
     
-    prodFuncReturnKey = OutputInfo.prodFuncReturnKey;
-    outputFilePath    = OutputFilePathMap(prodFuncReturnKey);
+    prodFuncOutputKey = OutputInfo.prodFuncOutputKey;
+    outputFilePath    = OutputFilePathMap(prodFuncOutputKey);
 
     %========================
     % Write dataset CDF file
     %========================
     masterCdfPath = fullfile(...
         masterCdfDir, ...
-        bicas.get_master_CDF_filename(OutputInfo.DATASET_ID, OutputInfo.skeletonVersion));
+        bicas.get_master_CDF_filename(OutputInfo.datasetId, OutputInfo.skeletonVersion));
     write_dataset_CDF ( ...
-        OutputsMap(OutputInfo.prodFuncReturnKey), globalAttributesSubset, outputFilePath, masterCdfPath, OutputInfo.DATASET_ID, SETTINGS );
+        OutputsMap(OutputInfo.prodFuncOutputKey), globalAttributesSubset, outputFilePath, masterCdfPath, OutputInfo.datasetId, SETTINGS );
 end
 
 
