@@ -77,8 +77,6 @@ classdef dm_processing_functions
 %--
 % NOTE: Both BIAS HK and LFR SURV CWF contain MUX data (only LFR has one timestamp per snapshot). True also for other input datasets?
 %
-% PROPOSAL: Assertion functions for PreDCD and PostDCD formats.
-%
 % PROPOSAL: Every processing function should use a special function for asserting and retrieving the right set of
 %           InputsMap keys and values.
 %   NOTE: Current convention/scheme only checks the existence of required keys, not absence of non-required keys.
@@ -218,7 +216,7 @@ classdef dm_processing_functions
                     %L1_REC_NUM = Sci.L1_REC_NUM;
                 otherwise
                     error('BICAS:data_manager_old:SWModeProcessing:Assertion:ConfigurationBug', ...
-                        'Can not handle PDID="%s"', sciDvid)
+                        'Can not handle DVID="%s"', sciDvid)
             end
             
             %========================================================================================
@@ -243,7 +241,7 @@ classdef dm_processing_functions
                     FREQ = Sci.ZVars.FREQ;
                 otherwise
                     error('BICAS:data_manager_old:SWModeProcessing:Assertion:ConfigurationBug', ...
-                        'Can not handle PDID="%s"', sciDvid)
+                        'Can not handle DVID="%s"', sciDvid)
             end
             
             

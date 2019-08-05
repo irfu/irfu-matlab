@@ -10,8 +10,12 @@
 %   .swModeArg                  : String constant
 %   .logFile                    : Empty if argument not given.
 %   .configFile                 : Empty if argument not given.
-%   .SpecInputParametersMap     : containers.Map. key=CLI argument without prefix --> value=file path
-%   .ModifiedSettingsMap        : containers.Map. key=settings key                --> value=settings value
+%   .SpecInputParametersMap     : containers.Map with
+%                                   key   = CLI argument without prefix
+%                                   value = file path (argument)
+%   .ModifiedSettingsMap        : containers.Map.
+%                                   key   = settings key (argument)
+%                                   value = settings value (argument)
 %
 %
 % IMPLEMENTATION NOTES

@@ -89,7 +89,6 @@ S.define_setting('JSON_OBJECT_STR.VALUE_POSITION', 15);
 S.define_setting('ACQUISITION_TIME_EPOCH_UTC',                   [2000,01,01, 12,00,00, 000,000,000]);
 
 S.define_setting('INPUT_CDF_ASSERTIONS.STRICT_DATASET_ID',       0);    % Require input CDF Global Attribute "DATASET_ID"       to match the expected value.
-S.define_setting('INPUT_CDF_ASSERTIONS.STRICT_SKELETON_VERSION', 1);    % Require input CDF Global Attribute "Skeleton_version" to match the expected value.
 S.define_setting('INPUT_CDF_ASSERTIONS.MATCHING_TEST_ID',        0);    % Require Test_id to be identical for all input CDF datasets.
 S.define_setting('OUTPUT_CDF.SET_TEST_ID',                       1);    % Set CDF GlobalAttribute "Test_id". ROC DFMD says that it should really be set by ROC.
 S.define_setting('OUTPUT_CDF.DATA_VERSION',                      '01'); % Set CDF GlobalAttribute "Data_version". ROC DFMD says it should be updated in a way which can not be automatized?!!! Set here for now.

@@ -13,7 +13,7 @@ if numel(uniqueStrings) ~= 1   % NOTE: stringList empty ==> uniqueStrings empty 
     if numel(stringList) == 0
         stringListString = '(no strings)';
     else
-        stringListString = sprintf('"%s", ', stringList{:});   % BUG: Will give an unnecessary comma after last string.
+        stringListString = ['"', strjoin(stringList, '", "'), '"'];
     end
     
     bicas.utils.react_to_false_assertion(giveError, [msg, ' String values: ', stringListString])

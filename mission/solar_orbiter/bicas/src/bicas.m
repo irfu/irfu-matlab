@@ -226,10 +226,16 @@ bicas.logf('info', 'BICAS software root path:  "%s"', bicasRootPath)
 bicas.logf('info', 'Current working directory: "%s"', pwd);   % Useful for debugging the use of relative directory arguments.
 
 % PROPOSAL: Combine CLI arguments into a single multiline log message?
-bicas.logf('info', 'Number of CLI arguments: %i', length(cliArgumentsList))
+bicas.logf('info', 'Command-line interface (CLI) arguments to bicas')
+%bicas.logf('info', '    Number of CLI arguments: %i', length(cliArgumentsList))
 for i = 1:length(cliArgumentsList)
     bicas.logf('info', '    CLI argument %2i: "%s"', i, cliArgumentsList{i})
+    cliArgumentsQuotedList{i} = ['''', cliArgumentsList{i}, ''''];
 end
+cliArgumentsStr = strjoin(cliArgumentsQuotedList);
+% IMPLEMENTATION NOTE: Printing the entire sequence of arguments, quoted with apostophe, is useful for copy-pasting to
+% both MATLAB command prompt and bash.
+bicas.logf('info', '    CLI arguments for copy-pasting: %s', cliArgumentsStr)
 
 
 
@@ -286,11 +292,11 @@ bicas.log('info', bicas.sprint_SETTINGS)                 % Prints/log the conten
 %================================
 % COMPLETE CODE. DISABLED SINCE IT IS NOT NEEDED BY OTHER CODE YET.
 %
-pipelineId     = read_env_variable(SETTINGS, 'ROC_PIP_NAME',        'PROCESSING.ROC_PIP_NAME_OVERRIDE');   % RGTS or RODP
 %calibrationDir = read_env_variable(SETTINGS, 'ROC_RCS_CAL_PATH',    'PROCESSING.ROC_RCS_CAL_PATH_OVERRIDE');
-%
+pipelineId     = read_env_variable(SETTINGS, 'ROC_PIP_NAME',        'PROCESSING.ROC_PIP_NAME_OVERRIDE');   % RGTS or RODP
 masterCdfDir   = read_env_variable(SETTINGS, 'ROC_RCS_MASTER_PATH', 'PROCESSING.ROC_RCS_MASTER_PATH_OVERRIDE');
-bicas.logf('info', 'masterCdfDir = "%s"', masterCdfDir)
+bicas.logf('info', 'pipelineId   = "%s" (value actually used)', pipelineId)
+bicas.logf('info', 'masterCdfDir = "%s" (value actually used)', masterCdfDir)
 
 
 
@@ -302,10 +308,13 @@ DataManager = bicas.data_manager_old();    % NOTE: Requires CONSTANTS (not neces
 switch(CliData.functionalityMode)
     case 'version'
         print_version(DataManager)
+        
     case 'identification'
         print_identification(DataManager)
+        
     case 'help'
         print_help(DataManager)
+        
     case 'S/W mode'
         %==============================================================================
         % CASE: Should be a S/W mode (deduced from elimination of other possibilities)
@@ -321,51 +330,38 @@ switch(CliData.functionalityMode)
                 'Can not interpret first argument "%s" as a S/W mode (or any other legal first argument).', ...
                 CliData.swModeArg);
         end
-        
-        
-        
+
+
+
         %======================================================================
         % Parse CliData.SpecInputParametersMap arguments depending on S/W mode
         %======================================================================
-        % PROPOSAL: Assert that CLI_OPTION_BODY do not contain duplicates.
         
-        % Extract INPUT dataset files from arguments.
-        inputsInfoList = SwModeInfo.inputsList;
-        InputFilesMap  = containers.Map();
-        for i = 1:numel(inputsInfoList)
-            optionHeaderBody = inputsInfoList(i).cliOptionHeaderBody;
-            
-            % UI ASSERTION
-            if ~CliData.SpecInputParametersMap.isKey(optionHeaderBody)
-                error('BICAS:CLISyntax', 'Can not find CLI argument(s) for input "%s".', optionHeaderBody)
-            end
-            
-            inputFile = CliData.SpecInputParametersMap( optionHeaderBody );
-            InputFilesMap(inputsInfoList(i).prodFuncArgKey) = inputFile;
-        end
+        % Extract INPUT dataset files from SIP arguments.
+        InputFilesMap = extract_rename_Map_keys(...
+            CliData.SpecInputParametersMap, ...
+            {SwModeInfo.inputsList(:).cliOptionHeaderBody}, ...
+            {SwModeInfo.inputsList(:).prodFuncArgKey});
         
-        % Extract OUTPUT dataset files from arguments.
-        OutputFilesMap  = containers.Map();
-        for i = 1:numel(SwModeInfo.outputsList)
-            outputInfo = SwModeInfo.outputsList(i);
-            
-            optionHeaderBody = outputInfo.cliOptionHeaderBody;
-            
-            % UI ASSERTION
-            if ~CliData.SpecInputParametersMap.isKey(optionHeaderBody)
-                error('BICAS:CLISyntax', 'Can not find CLI argument(s) for output "%s".', optionHeaderBody)
-            end
-            
-            outputFile = CliData.SpecInputParametersMap( optionHeaderBody );
-            OutputFilesMap(outputInfo.prodFuncReturnKey) = outputFile;
-        end
+        % Extract OUTPUT dataset files from SIP arguments.
+        OutputFilesMap = extract_rename_Map_keys(...
+            CliData.SpecInputParametersMap, ...
+            {SwModeInfo.outputsList(:).cliOptionHeaderBody}, ...
+            {SwModeInfo.outputsList(:).prodFuncReturnKey});
+        
+        % ASSERTION: Assume correct number of arguments (the only thing not implicitly checked by extract_rename_Map_keys above).
+        nSipExpected = numel(SwModeInfo.inputsList) + numel(SwModeInfo.outputsList);
+        nSipActual   = numel(CliData.SpecInputParametersMap.keys);
+        if nSipExpected ~= nSipActual
+            error('BICAS:CLISyntax', 'Illegal number of "specific input parameters" (input & output datasets). Expected %i, but got %i.', nSipExpected, nSipActual)
+        end        
 
-
-
+        
+        
         %==================
         % EXECUTE S/W MODE
         %==================
-        bicas.execute_sw_mode( SwModeInfo, InputFilesMap, OutputFilesMap, masterCdfDir )
+        bicas.execute_sw_mode( SwModeInfo, InputFilesMap, OutputFilesMap, masterCdfDir, SETTINGS )
 
     otherwise
         error('BICAS:Assertion', 'Illegal value functionalityMode="%s"', functionalityMode)
@@ -375,6 +371,22 @@ end    % if ... else ... / switch
 
 executionWallTimeSeconds = toc(startTimeTicSeconds);
 bicas.logf('info', 'Time used for execution (wall time): %g [s]', executionWallTimeSeconds);    % Always log (-->critical)?
+end
+
+
+
+function NewMap = extract_rename_Map_keys(SrcMap, srcKeysList, newKeysList)
+assert(numel(srcKeysList) == numel(newKeysList))
+NewMap = containers.Map();
+
+for i = 1:numel(srcKeysList)
+    srcKey = srcKeysList{i};
+    
+    if ~SrcMap.isKey(srcKey)
+        error('BICAS:Assertion', 'Can not find source key "%s"', srcKey)
+    end
+    NewMap(newKeysList{i}) = SrcMap(srcKey);
+end
 end
 
 

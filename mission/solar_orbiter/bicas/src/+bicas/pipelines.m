@@ -5,12 +5,14 @@
 % PRODUCTION FUNCTIONS
 % ====================
 % A function with interface
-%   ProcessData = produce_*(InputsMap)
+%   OutputsMap = produce_*(InputsMap)
 % where
-% InputsMap : containers.Map with
-%             InputsMap : A containers.Map
-%                <keys>       : PDID.
-%                <values>     : A struct with fields .pd (process data) and .pdid (PDID for .pd).
+% InputsMap  : containers.Map with
+%                <keys>       : String defining a name of an input ("prodFuncArgKey" in swmode_defs).
+%                <values>     : A struct with data corresponding to a CDF file (zVariables+global attributes).
+% OutputsMap : containers.Map with
+%                <keys>       : String defining a name of an output ("prodFuncReturnKey" in swmode_defs).
+%                <values>     : A struct with data corresponding to a CDF file (zVariables).
 %
 %
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
@@ -20,6 +22,13 @@ classdef pipelines
     % PROPOSAL: Other name of class.
     %   PROPOSAL: production_functions
     %   PROPOSAL: production
+    %   PROPOSAL: processing
+    %       TODO-DECISION: Name relationship to dm_processing_functions, dm_utils?
+    %           PROPOSAL: Rename dm_processing_functions
+    %               processing_functions
+    %               processing_subfunctions
+    %           PROPOSAL: Rename dm_utils
+    %               processing_utils
     % --
     % TODO-DECISION: Term and naming scheme for these "complete processing functions"?
     %   NOTE: Already used term "processing function" and process_* for partal processing.
@@ -30,13 +39,15 @@ classdef pipelines
     %   PROPOSAL: swmode_*
     %       CON: Already considering changing the term "s/w mode".
     %   PROPOSAL: pipeline_*
-    %       CON: Conflicts with RODP, ROC-SGSE pipelines.
+    %       CON: Conflicts with use of RODP, ROC-SGSE pipelines.
     %   PROPOSAL: swmode_pipelines
+    %   PROPOSAL: process_*
+    %       CON: Already used in dm_processing_functions.
     %   TODO-DECISION: Include skeleton version in function names?
-    %   
+    % 
     % TODO-DECISION: Use PDID system?
     %   NOTE: data_manager_old's PDID uses skeleton versions.
-    %   NOTE: According to RCS ICD 00037 iss1/rev2, draft 2019-07-11, the s/w descriptor interface no specifies
+    %   NOTE: According to RCS ICD 00037 iss1/rev2, draft 2019-07-11, the s/w descriptor interface no longer specifies
     %         the version of the input datasets. One can still specify modes (and CLI parameters) that require specific
     %         input skeleton versions though.
     %   NOTE: Processing functions still need to know the input skeleton version.
@@ -49,7 +60,7 @@ classdef pipelines
     % PROPOSAL: Submit CDF global attributes to processing functions.
     %     PRO: Can use the ~Skeleton_version GA for assertion & interpreting data instead of PDID.
     %         CON: ~Skeleton_version GA can be wrong.
-    %             Ex: Setting INPUT_CDF_ASSERTIONS.STRICT_SKELETON_VERSION.
+    %             Ex: Global attribute Skeleton_version
     %             PROPOSAL: Setting for overriding global attribute dataset version.
     %                 NOTE: Such setting needs two variables in principle:
     %                     --DATASET_ID for which Dataset_version will be overwritten,
@@ -87,63 +98,8 @@ classdef pipelines
         % =========
         % InputsMap : containers.Map: key=<argument key> --> value=PDV for input CDF
         %
-        %function [OutputsMap, InputPdidsList, OutputPdidList] = produce_L2S_L2_LFR(InputsMap, outputPdid, inputLevel, pipelineId)
         function [OutputsMap] = produce_L2S_L2_LFR(InputsMap, outputDsi, outputVersion)
-            
-%             OutputPdidList = {outputPdid};
-%             
-%             switch(pipelineId)
-%                 case {'ROC-SGSE', 'RGTS'}
-%                     dsiPrefix = 'ROC-SGSE';
-%                     switch(inputLevel)
-%                         case 'L2R'
-%                             dashESuffix = '';
-%                         case 'L1R'
-%                             dashESuffix = '-E';
-%                         otherwise
-%                             error('BICAS:pipelines:produce_L2S_L2_LFR:Assertion:IllegalArgument', 'Illegal inputLevel="%s"', inputLevel)
-%                     end
-%                 case 'RODP'
-%                     dsiPrefix   = 'SOLO';
-%                     dashESuffix = '-E';
-%                     assert(strcmp(inputLevel, 'L1R'))
-%                 otherwise
-%                     error('BICAS:pipelines:produce_L2S_L2_LFR:Assertion:IllegalArgument', 'Illegal pipelineId="%s"', pipelineId)
-%             end
-%             
-%             % BUG: outputPdid can only be ROC-SGSE.
-%             switch(outputPdid)
-%                 case 'V03_ROC-SGSE_L2S_RPW-LFR-SBM1-CWF-E'
-%                     InputSciPdid = '<PLP>_<LI>_RPW-LFR-SBM1-CWF<-E>';
-%                 case 'V03_ROC-SGSE_L2S_RPW-LFR-SBM2-CWF-E'
-%                     InputSciPdid = '<PLP>_<LI>_RPW-LFR-SBM2-CWF<-E>';
-%                 case 'V03_ROC-SGSE_L2S_RPW-LFR-SURV-CWF-E'
-%                     InputSciPdid = '<PLP>_<LI>_RPW-LFR-SURV-CWF<-E>';
-%                 case 'V03_ROC-SGSE_L2S_RPW-LFR-SURV-SWF-E'
-%                     InputSciPdid = '<PLP>_<LI>_RPW-LFR-SURV-SWF<-E>';
-%                 otherwise
-%                     error('pipelines:produce_L2S_L2_LFR:Assertion:IllegalCodeConfiguration', ...
-%                         'This function can not handle outputPdid="%s"', outputPdid)
-%             end
-%             InputSciPdid = strrep(InputSciPdid, '<PLP>', dsiPrefix);
-%             InputSciPdid = strrep(InputSciPdid, '<LI>',  inputLevel);
-%             InputSciPdid = strrep(InputSciPdid, '<-E>',  dashESuffix);            
-%             
-%             InputHkPdid = '<PLP>_HK_RPW-BIA';
-%             InputHkPdid = strrep(InputHkPdid, '<PLP>', dsiPrefix);
-%             
-%             InputPdidsList = {InputSciPdid, InputHkPdid};
-
-%             if isempty(InputsMap)
-%                 %===============================
-%                 % CASE: No processing requested
-%                 %===============================
-%                 OutputsMap = [];
-%             else
-                %============================
-                % CASE: Processing requested
-                %============================
-                
+               
                 HkPd  = InputsMap('HK_cdf');
                 SciPd = InputsMap('SCI_cdf');
                 

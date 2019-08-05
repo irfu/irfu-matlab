@@ -1,6 +1,6 @@
 %
-% Singleton class that stores (and builds) an unmodifiable data structure that represents which and how s/w modes are
-% CURRENTLY VISIBLE to the user. What that data structure contains thus depends on
+% Singleton class that stores (after having "built" tit) an unmodifiable data structure that represents which and how
+% s/w modes are CURRENTLY VISIBLE to the user. What that data structure contains thus depends on
 % -- current pipeline: RODP, ROC-SGSE
 % -- whether support for old L2R input datasets is enabled or not.
 %
@@ -15,28 +15,32 @@
 %
 % IMPLEMENTATION NOTES
 % ====================
-% The class essentially consists of building one large struct in the constructor and store it. The large data struct
-% contains many parts which are similar but not the same. To do this, much of the data is "generated" with hardcoded strings (mostly
-% the same in every iteration), in which specific codes/substrings are substituted algorithmically (different in
+% The class essentially consists of one large struct, and a constructor that builds it. The large data struct contains
+% many parts which are similar but not the same. To do this, much of the data is "generated" with hardcoded strings
+% (mostly the same in every iteration), in which specific codes/substrings are substituted algorithmically (different in
 % different iterations). To avoid mistakes, the code uses a lot of assertions to protect against mistakes, e.g.
-% --algorithmic bugs
-% --mistyped hardcoded info
-% --mistakenly confused arguments with each other.
+% -- algorithmic bugs
+% -- mistyped hardcoded info
+% -- mistakenly confused arguments with each other.
 % Assertions are located at the place where "values are placed in their final location".
-% --
+% 
 % NOTE: To implement backward compatibility with L2R input datasets, the code must be able to handle
 % -- changing input dataset levels: L1R (new), L2R (old).
 % -- DATASET_ID with (new) and without (old) a trailing "-E".
 % It implements L2R input datasets via separate S/W modes.
-% --
+% 
 % RATIONALE:
 % -- Should decrease the amount of overlapping hardcoded information to e.g. reduce risk of mistakes, reduce manual
-% work when verifying updates.
+%    work when verifying updates.
 % -- Having one big, somewhat redundant data structure should make the interface to the rest of BICAS relatively
-% future-proof, in the face of updates:
-% -- bias current datasets
-% -- possible need for backward compatibility.
+%    future-proof, in the face of future updates
+% -- Useful for expected future bias current datasets
+% -- Possible need for backward compatibility
 %
+%
+% DEFINITIONS
+% ===========
+% SIP = "Specific Input Parameters" (RCS ICD).
 %
 %
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
@@ -78,7 +82,6 @@ classdef swmode_defs
         
         % The RCS ICD 00037 iss1rev2 draft 2019-07-11, section 3.1.2.3 only permits these characters (and only lowercase).
         % This regexp only describes the "option body", i.e. not the preceding "--".
-        % SIP = RCS ICD "Specific Input Parameters".
         SIP_CLI_OPTION_BODY_REGEX = '[a-z0-9_]+';
     end
 
@@ -100,24 +103,25 @@ classdef swmode_defs
             %========================================
             switch(pipelineId)
                 case {'ROC-SGSE', 'RGTS'}
-                    obj.dsiPipelinePrefix     = 'ROC-SGSE';         % Prefix in DATASET_ID (DSI).
-                    if enableRocsgseL2rInput
-                        inputDatasetLevelList     = {'L2R',  'L1R'};     % NOTE: L2R etc only kept for backward-compatibility.
-                        inputDashEList            = {'',     '-E'};
-                        swModeCliOptionAmendmList = {'_L2R', ''};
-                    else
-                        inputDatasetLevelList     = {'L1R'};     % NOTE: L2R etc only kept for backward-compatibility.
-                        inputDashEList            = {'-E'};
-                        swModeCliOptionAmendmList = {''};
-                    end
+                    obj.dsiPipelinePrefix     = 'ROC-SGSE';      % Prefix in DATASET_ID (DSI).
+                    inputDatasetLevelList     = {'L1R'};         % NOTE: L2R etc only kept for backward-compatibility.
                     obj.outputDatasetLevel    = 'L2S';
+                    inputDashEList            = {'-E'};
+                    swModeCliOptionAmendmList = {''};
+                    
+                    if enableRocsgseL2rInput
+                        inputDatasetLevelList{end+1}     = 'L2R';     % NOTE: L2R etc only kept for backward-compatibility.
+                        inputDashEList{end+1}            = '';
+                        swModeCliOptionAmendmList{end+1} = '_L2R';
+                    end
                     
                 case 'RODP'
-                    obj.dsiPipelinePrefix   = 'SOLO';    % NOTE: SOLO, not RODP.
-                    inputDatasetLevelList   = {'L1R'};
-                    inputDashEList          = {'-E'};
+                    obj.dsiPipelinePrefix     = 'SOLO';    % NOTE: SOLO, not RODP.
+                    inputDatasetLevelList     = {'L1R'};
+                    inputDashEList            = {'-E'};
                     swModeCliOptionAmendmList = {''};
-                    obj.outputDatasetLevel  = 'L2';
+                    obj.outputDatasetLevel    = 'L2';
+                    
                 otherwise
                     error('swmode_defs:Assertion:IllegalArgument', 'Can not interpret "pipelineName=%s', pipelineId)
             end
@@ -183,9 +187,9 @@ classdef swmode_defs
                 end
                 
                 if enableTds
-                    %============================================
-                    % Iterate of the "fundamental" TDS S/W modes
-                    %============================================
+                    %==============================================
+                    % Iterate over the "fundamental" TDS S/W modes
+                    %==============================================
                     for iSwm = 1:numel(TDS_SW_MODE_DATA)
                         strmod = @(s) strrep(strmodg(s, iInputLevel), ...
                             '<C/RSWF>', TDS_SW_MODE_DATA(iSwm).CWF_RSWF);
@@ -232,13 +236,24 @@ classdef swmode_defs
 
     methods(Access=private)
         
-        % NOTE: Could technically be a static method.
+        % NOTE: Could technically be a static method. Only instance method for grouping it with other analogous methods.
         function Def = def_swmode(~, prodFunc, cliOption, swdPurpose, inputsList, outputsList)
             Def.prodFunc    = prodFunc;
-            Def.cliOption   = cliOption;   % NOTE: Not intended to be prefixed by e.g. "--". Therefore not named *Body.
+            Def.cliOption   = cliOption;   % NOTE: s/w mode CLI _ARGUMENT_ is not intended to be prefixed by e.g. "--". Variable therefore NOT named *Body.
             Def.swdPurpose  = swdPurpose;
             Def.inputsList  = inputsList;
             Def.outputsList = outputsList;
+            
+            
+            
+            % ASSERTIONS
+            EJ_library.utils.assert.castring_set( {...
+                Def.inputsList(:).cliOptionHeaderBody, ...
+                Def.outputsList(:).cliOptionHeaderBody })   % Important. Check uniqueness of SIP options.
+            EJ_library.utils.assert.castring_set( {...
+                Def.inputsList(:).prodFuncArgKey })   % Maybe not really necessary.
+            EJ_library.utils.assert.castring_set( {...
+                Def.outputsList(:).prodFuncReturnKey })   % Maybe not really necessary.
             
             bicas.swmode_defs.assert_SW_mode_CLI_option(Def.cliOption)
             bicas.swmode_defs.assert_text(              Def.swdPurpose)
@@ -254,22 +269,22 @@ classdef swmode_defs
             % NOTE: No dataset version.
             Def.cliOptionHeaderBody = cliOptionHeaderBody;
             Def.prodFuncArgKey      = prodFuncArgKey;
-            Def.DATASET_ID          = DATASET_ID;            
+            Def.DATASET_ID          = DATASET_ID;
             
             bicas.swmode_defs.assert_SIP_CLI_option(Def.cliOptionHeaderBody)
-            obj.assert_DATASET_ID(                  Def.DATASET_ID)
+            obj.assert_DATASET_ID(                  Def.DATASET_ID)    % NOTE: Using the internal assertion function, not the global one.
         end
 
         
         
         function Def = def_output_dataset(obj, DATASET_ID, swdName, swdDescription, skeletonVersion)
             Def.cliOptionHeaderBody = 'out_sci';
-            Def.prodFuncReturnKey = 'SCI_cdf';
-            Def.swdName           = swdName;
-            Def.swdDescription    = swdDescription;
-            Def.DATASET_ID        = DATASET_ID;
-            Def.datasetLevel      = obj.outputDatasetLevel;     % NOTE: Automatically set.
-            Def.skeletonVersion    = skeletonVersion;
+            Def.prodFuncReturnKey   = 'SCI_cdf';
+            Def.swdName             = swdName;
+            Def.swdDescription      = swdDescription;
+            Def.DATASET_ID          = DATASET_ID;
+            Def.datasetLevel        = obj.outputDatasetLevel;     % NOTE: Automatically set.
+            Def.skeletonVersion     = skeletonVersion;
             
             bicas.swmode_defs.assert_SW_mode_CLI_option(Def.cliOptionHeaderBody)
             bicas.swmode_defs.assert_text(              Def.swdName)
@@ -281,6 +296,7 @@ classdef swmode_defs
 
 
 
+        % NOTE: Wrapper around global counterpart.
         function assert_DATASET_ID(obj, DATASET_ID)
             bicas.assert_DATASET_ID(DATASET_ID)
             

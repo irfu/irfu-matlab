@@ -1,4 +1,5 @@
 % Execute a "S/W mode" as (indirectly) specified by the CLI arguments.
+% This function should be agnostic of CLI syntax.
 %
 %
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
@@ -8,9 +9,12 @@
 % ARGUMENTS AND RETURN VALUES
 % ===========================
 % SwModeInfo
-% InputFilePathMap, OutputFilePathMap   : containers.Map with
-%    keys   = PDIDs
-%    values = Paths to input/output files.
+% InputFilePathMap  : containers.Map with
+%    key   = prodFuncArgKey
+%    value = Path to input file
+% OutputFilePathMap : containers.Map with
+%    key   = prodFuncReturnKey
+%    value = Path to output file
 %
 %
 % IMPORTANT NOTE
@@ -27,7 +31,7 @@
 %   might be wrong. Should ideally be run on the exact input datasets (~EIn PDs) used to produce a specific output
 %   dataset.
 %
-function execute_sw_mode(SwModeInfo, InputFilePathMap, OutputFilePathMap, masterCdfDir)
+function execute_sw_mode(SwModeInfo, InputFilePathMap, OutputFilePathMap, masterCdfDir, SETTINGS)
 %
 % QUESTION: How verify dataset ID and dataset version against constants?
 %    NOTE: Need to read CDF first.
@@ -40,33 +44,13 @@ function execute_sw_mode(SwModeInfo, InputFilePathMap, OutputFilePathMap, master
 % QUESTION: What should be the relationship between data manager and S/W modes really?
 %           Should data manager check anything?
 %
-% Separate functions for converting CDF file<-->PDV?
-%   NOTE: May be different procedures (GlobalAttributes etc.) for all post-calibration datasets.
-%   NOTE: There are values which are identical for all output datasets (for a given set of input files).
-%   --
-%   NOTE: Things that need to be done when reading CDF-->PDV
-%       PDV assertions: Contains the right zVariables, with the right types & sizes.
-%           NOTE: Some could be checked against the (input!) master CDF.
-%           Should be more PDV-specific.
-%       Assign the data to a specific data manager PDV/PDID.
-%       Convert fill/pad values-->NaN for numeric types, or at least for floating point zVariables.
-%           QUESTION: How should code know which policy applies for integers? (Ex: ACQUSITION_TIME)
-%               PROPOSAL: Data manager gets information on fill/pad values and does the selected substitutions itself.
-%               PROPOSAL: read-CDF function get information on which conversions should be made.
-%
-%       PROPOSAL: Separate function for all datasets should do...
-%           S/W mode assertions: GlobalAttributes: DATASET_ID, Skeleton_version
-%           Read GlobalAttributes to be used later: Source_name, Data_version, Provider, Test_id, 
-%   --
-%   NOTE: Things that need to be done when writing PDV-->CDF
+% NOTE: Things that need to be done when writing PDV-->CDF
 %       Read master CDF file.
 %       Compare PDV variables with master CDF variables (only write a subset).
 %       Check variable types, sizes against master CDF.
 %       Write GlobalAttributes: Calibration_version, Parents, Parent_version, Generation_date, Logical_file_id,
 %           Software_version, SPECTRAL_RANGE_MIN/-MAX (optional?), TIME_MIN/-MAX
 %       Write VariableAttributes: pad value? (if master CDF does not contain a correct value), SCALE_MIN/-MAX
-%   --
-%   NOTE: Do we not already have this in read_dataset_CDF & write_dataset_CDF?
 %
 % PROPOSAL: BUG FIX: Move global attributes into PDs somehow to let the data_manager_old collect the values during processing?
 %   PROPOSAL: Have PDs include global attributes in new struct structure.
@@ -75,17 +59,6 @@ function execute_sw_mode(SwModeInfo, InputFilePathMap, OutputFilePathMap, master
 %             EOut PDs:         EOutPD(GlobalAttributesSubset,    data)         // Only those GAs that should be set. Should have been "collected" at this stage.
 %       PROBLEM: When collecting lists of GAs, must handle any overlap of input datasets when merging lists.
 %           Ex: (EIn1+EIn2-->Interm1; EIn1+EIn2-->Interm2; Interm1+Interm2-->EOut)
-%       PROPOSAL: Have get_processing_info do the work if it is the same for every PDID.
-%           CON: There is no such functionality in get_processing_info. All the processing is supposed to be done by the processing function.
-%               PROPOSAL: Can use switch-case for the data processing function, then wrap another processing function
-%                         for global attributes around it and return that function.
-%   PROPOSAL: Have all PDs use struct PD(GlobalAttributes, data).
-%   PROPOSAL: Separate DM dependancies to handle GAs directly EIn-EOut without intermediary PDs.
-%       PRO: Can collect all GAs in one step.
-%       CON: DM must explicitly state all the EIn PDs, rather than collect them automatically indirectly (recursively).x
-%   PROPOSAL: Since functionality is identical for all (L2R-->L2S) processing, use data_manager_old.get_elementary_input_PDIDs.
-%       CON: There is no proper link from EIn PDs to dataset global attributes unless these are in the EIn PDs, but they
-%            are not really needed for the processing so it would be contradictive if they were.
 %
 % PROPOSAL: Print variable statistics also for zVariables which are created with fill values.
 %   NOTE: These do not use NaN, but fill values.
@@ -95,13 +68,15 @@ function execute_sw_mode(SwModeInfo, InputFilePathMap, OutputFilePathMap, master
 %===========================================================================
 % Give all INPUT CDF files (from the CLI argument list) to the data manager
 %===========================================================================
-prodFuncArgKeysList = InputFilePathMap.keys;
+%prodFuncArgKeysList = InputFilePathMap.keys;
 GlobalAttributesCellArray = {};   % Use cell array since CDF global attributes may in principle contain different sets of attributes (field names).
 
+
+
 InputsMap = containers.Map();
-for i = 1:length(prodFuncArgKeysList)
-    prodFuncArgKey = prodFuncArgKeysList{i};
-    inputFilePath   = InputFilePathMap(prodFuncArgKey);
+for i = 1:length(SwModeInfo.inputsList)
+    prodFuncArgKey = SwModeInfo.inputsList(i).prodFuncArgKey;
+    inputFilePath  = InputFilePathMap(prodFuncArgKey);
     
     %=======================
     % Read dataset CDF file
@@ -109,12 +84,26 @@ for i = 1:length(prodFuncArgKeysList)
     [ZVars, GlobalAttributes] = read_dataset_CDF(inputFilePath);
     InputsMap(prodFuncArgKey) = struct('ZVars', ZVars, 'Ga', GlobalAttributes);
     
+    
+    
+    %===================================================
+    % ASSERTIONS: Check GlobalAttributes values
+    %===================================================
+    % NOTE: Can not use bicas.dm_utils.assert_unvaried_N_rows(ZVars) since not all zVariables have same number of
+    % records. Ex: Metadata such as ACQUISITION_TIME_UNITS.
+    bicas.utils.assert_strings_equal(...
+        SETTINGS.get_fv('INPUT_CDF_ASSERTIONS.STRICT_DATASET_ID'), ...
+        {GlobalAttributes.DATASET_ID{1}, SwModeInfo.inputsList(i).DATASET_ID}, ...
+        sprintf('The input CDF file''s stated DATASET_ID does not match the value expected for the S/W mode.\n    File: %s\n    ', inputFilePath))
+
+
+
     GlobalAttributesCellArray{end+1} = GlobalAttributes;
 end
 
 
 
-globalAttributesSubset = derive_output_dataset_GlobalAttributes(GlobalAttributesCellArray);
+globalAttributesSubset = derive_output_dataset_GlobalAttributes(GlobalAttributesCellArray, SETTINGS);
 
 
 
@@ -145,7 +134,7 @@ for iOutputCdf = 1:length(SwModeInfo.outputsList)
         masterCdfDir, ...
         bicas.get_master_CDF_filename(OutputInfo.DATASET_ID, OutputInfo.skeletonVersion));
     write_dataset_CDF ( ...
-        OutputsMap(OutputInfo.prodFuncReturnKey), globalAttributesSubset, outputFilePath, masterCdfPath, OutputInfo.DATASET_ID );
+        OutputsMap(OutputInfo.prodFuncReturnKey), globalAttributesSubset, outputFilePath, masterCdfPath, OutputInfo.DATASET_ID, SETTINGS );
 end
 
 
@@ -158,7 +147,7 @@ end   % execute_sw_mode
 
 
 
-function GlobalAttributesSubset = derive_output_dataset_GlobalAttributes(GlobalAttributesCellArray)
+function GlobalAttributesSubset = derive_output_dataset_GlobalAttributes(GlobalAttributesCellArray, SETTINGS)
 % Function for global attributes for an output dataset from the global attributes of multiple input datasets (if there
 % are several).
 %
@@ -168,7 +157,6 @@ function GlobalAttributesSubset = derive_output_dataset_GlobalAttributes(GlobalA
 %                          NOTE: Deviates from the usual variable naming conventions. GlobalAttributesSubset field names
 %                          have the exact names of CDF global attributes.
 
-global SETTINGS
 ASSERT_MATCHING_TEST_ID = SETTINGS.get_fv('INPUT_CDF_ASSERTIONS.MATCHING_TEST_ID');
 
 GlobalAttributesSubset.Parents        = {};            % Array in which to collect value for this file's GlobalAttributes (array-sized GlobalAttribute).
@@ -202,21 +190,14 @@ end
 
 
 
-%function [ProcessData, GlobalAttributes] = read_dataset_CDF(pdid, filePath)
 function [ZVars, GlobalAttributes] = read_dataset_CDF(filePath)
 % Read elementary input process data from a CDF file and convert it to a format suitable as a data_manager_old "process data".
 % Copies all zVariables into fields of a regular structure.
 %
 %
-% ARGUMENTS
-% =========
-% pdid
-% filePath
-%
-%
 % RETURN VALUES
 % =============
-% ProcessData      : Struct with one field per zVar (named after the zVar). The content of every such field equals the
+% Zvars            : Struct with one field per zVariable (using the same name). The content of every such field equals the
 %                    content of the corresponding zVar.
 % GlobalAttributes : Struct returned from "dataobj".
 %
@@ -227,9 +208,7 @@ function [ZVars, GlobalAttributes] = read_dataset_CDF(filePath)
 
 % NOTE: HK TIME_SYNCHRO_FLAG can be empty.
 
-%global SETTINGS CONSTANTS
 
-%bicas.logf('info', 'pdid=%s', pdid)
 
 %===========
 % Read file
@@ -278,30 +257,8 @@ end
 
 
 
-fileDatasetId          = do.GlobalAttributes.DATASET_ID{1};
-fileSkeletonVersionStr = do.GlobalAttributes.Skeleton_version{1};
-bicas.logf('info', 'File: DATASET_ID       = "%s"', fileDatasetId)
-bicas.logf('info', 'File: Skeleton_version = "%s"', fileSkeletonVersionStr)
-
-
-
-%===================================================
-% ASSERTIONS: Check GlobalAttributes values
-%
-% PROPOSAL: Move checks to production function
-%===================================================
-% NOTE: Does print file name since it has only been previously been logged as "notice".
-%bicas.dm_utils.assert_unvaried_N_rows(processData);
-% InputInfo = bicas.utils.select_cell_array_structs(CONSTANTS.INPUTS_INFO_LIST, 'PDID', {pdid});
-% InputInfo = InputInfo{1};
-% bicas.utils.assert_strings_equal(...
-%     SETTINGS.get_fv('INPUT_CDF_ASSERTIONS.STRICT_DATASET_ID'), ...
-%     {fileDatasetId, InputInfo.DATASET_ID}, ...
-%     sprintf('The input CDF file''s stated DATASET_ID does not match the value expected for the S/W mode.\n    File: %s\n    ', filePath))
-% bicas.utils.assert_strings_equal(...
-%     SETTINGS.get_fv('INPUT_CDF_ASSERTIONS.STRICT_SKELETON_VERSION'), ...
-%     {fileSkeletonVersionStr, InputInfo.SKELETON_VERSION_STR}, ...
-%     sprintf('The input CDF file''s stated Skeleton_version does not match the value expected for the S/W mode.\n    File: (%s)\n    ', filePath))
+bicas.logf('info', 'File''s Global attribute: DATASET_ID       = "%s"', do.GlobalAttributes.DATASET_ID{1})
+bicas.logf('info', 'File''s Global attribute: Skeleton_version = "%s"', do.GlobalAttributes.Skeleton_version{1})
 
 
 
@@ -316,7 +273,7 @@ end
 
 
 function write_dataset_CDF(...
-    ProcessData, GlobalAttributesSubset, outputFile, masterCdfPath, datasetId)
+    ZVarsSubset, GlobalAttributesSubset, outputFile, masterCdfPath, datasetId, SETTINGS)
 %
 % Function that writes one ___dataset___ CDF file.
 %
@@ -334,8 +291,6 @@ function write_dataset_CDF(...
 %   Function should check the master file anyway: Assert existence, GlobalAttributes (dataset ID, SkeletonVersion, ...)
 %==========================================================================
 
-global SETTINGS
-
 
 
 %======================
@@ -348,7 +303,7 @@ DataObj = dataobj(masterCdfPath);
 % Iterate over all OUTPUT PD field names (~zVariables) - Set corresponding dataobj zVariables
 %=============================================================================================
 % NOTE: Only sets a SUBSET of the zVariables in master CDF.
-pdFieldNameList = fieldnames(ProcessData);
+pdFieldNameList = fieldnames(ZVarsSubset);
 bicas.log('info', 'Converting PDV to dataobj (CDF data structure)')
 %bicas.dm_utils.log_array('explanation')
 for iPdFieldName = 1:length(pdFieldNameList)
@@ -360,7 +315,7 @@ for iPdFieldName = 1:length(pdFieldNameList)
         'Trying to write to zVariable "%s" that does not exist in the master CDF file.', zVariableName)
     end
     
-    zVariableData = ProcessData.(zVariableName);
+    zVariableData = ZVarsSubset.(zVariableName);
     
     % Prepare PDV zVariable data:
     % (1) Replace NaN-->fill value
@@ -369,7 +324,7 @@ for iPdFieldName = 1:length(pdFieldNameList)
         [fillValue, ~] = get_fill_pad_values(DataObj, zVariableName);
         zVariableData = bicas.utils.replace_value(zVariableData, NaN, fillValue);
     end
-    matlabClass = bicas.utils.convert_CDF_type_to_MATLAB_class(DataObj.data.(zVariableName).type, 'Permit MATLAB classes');
+    matlabClass   = bicas.utils.convert_CDF_type_to_MATLAB_class(DataObj.data.(zVariableName).type, 'Permit MATLAB classes');
     zVariableData = cast(zVariableData, matlabClass);
     
     %=================================================================================================
@@ -393,7 +348,7 @@ DataObj.GlobalAttributes.Software_name       = SETTINGS.get_fv('SWD_IDENTIFICATI
 DataObj.GlobalAttributes.Software_version    = SETTINGS.get_fv('SWD_RELEASE.version');
 DataObj.GlobalAttributes.Calibration_version = SETTINGS.get_fv('CALIBRATION_VERSION');         % "Static"?!!
 DataObj.GlobalAttributes.Generation_date     = datestr(now, 'yyyy-mm-ddTHH:MM:SS');         % BUG? Assigns local time, not UTC!!! ROC DFMD does not mention time zone.
-DataObj.GlobalAttributes.Logical_file_id     = logical_file_id(...
+DataObj.GlobalAttributes.Logical_file_id     = get_logical_file_id(...
     datasetId, GlobalAttributesSubset.Test_Id, ...
     GlobalAttributesSubset.Provider, ...
     SETTINGS.get_fv('OUTPUT_CDF.DATA_VERSION'));
@@ -442,7 +397,7 @@ for fn = fieldnames(DataObj.data)'
             % (1) there is a PD fields/zVariable Epoch, and
             % (2) this zVariable should have as many records as Epoch.
             bicas.logf('warning', 'Setting zVariable "%s" to correctly-sized data with fill values.', zVariableName)
-            nEpochRecords = size(ProcessData.Epoch, 1);
+            nEpochRecords = size(ZVarsSubset.Epoch, 1);
             [fillValue, ~] = get_fill_pad_values(DataObj, zVariableName);
             zVariableSize = [nEpochRecords, DataObj.data.(fn{1}).dim];
             zVariableData = cast(zeros(zVariableSize), matlabClass);
@@ -458,9 +413,6 @@ end
 %===========================================
 % Write to CDF file using write_CDF_dataobj
 %===========================================
-% outputFilename = FilenamingFunction(...
-%     datasetId, GlobalAttributesSubset.Test_Id, GlobalAttributesSubset.Provider, SETTINGS.get_fv('OUTPUT_CDF.DATA_VERSION'));
-% filePath = fullfile(outputFileParentDir, outputFilename);
 bicas.logf('info', 'Writing dataset CDF file: %s', outputFile)
 bicas.utils.write_CDF_dataobj( ...
     outputFile, ...
@@ -478,43 +430,14 @@ end
 
 
 
-% function filename = get_output_filename(datasetId, testId, provider, dataVersion)
-% % Function that decides the filename to use for any given output dataset CDF file
-% %
-% % dataVersion : two-digit string
-% %
-% % NOTE: ROC-TST-GSE-NTT-00017, "Data format and metadata definition for the ROC-SGSE data", iss2,rev1, Section 3.4
-% % specifies a file naming convention. Note: The version number should be the "data version"!
-% %
-% % NOTE: Should be obsolete with RCS ICD iss1, rev2, draft 2019-07-11. Kept since it might be useful for inofficial
-% % functionality for automatically setting the output filename.
-% 
-% % PROPOSAL: Include date and time?
-% %
-% % NOTE: May need to know the global attributes of the master CDF! See file naming convention, Test_id.
-% % Some may be identical to dataset ID, but still..
-% 
-% 
-% 
-% %current_time = datestr(now, 'yyyy-mm-dd_hhMMss.FFF');
-% %filename = [datasetId, '_V', skeletonVersionStr, '_', current_time, '.cdf'];
-% %filename = [datasetId, '_V', skeletonVersionStr, '___OUTPUT.cdf'];
-% 
-% filename = [logical_file_id(datasetId, testId, provider, dataVersion), '.cdf'];
-% end
-% 
-
-
-
-
-
-
-function logicalFileId = logical_file_id(datasetId, testId, provider, dataVersion)
+function logicalFileId = get_logical_file_id(datasetId, testId, provider, dataVersion)
 % Construct a "Logical_file_id" as defined in the ROC DFMD, global attribute+file name convention.
 
-global CONSTANTS
+% global CONSTANTS
 
-CONSTANTS.assert_dataset_ID(datasetId)
+% CONSTANTS.assert_dataset_ID(datasetId)
+bicas.assert_DATASET_ID(datasetId)
+
 if ~ischar(dataVersion ) || length(dataVersion)~=2
     error('BICAS:execute_sw_mode:Assertion:IllegalArgument', 'Illegal dataVersion')
 end
@@ -542,8 +465,8 @@ if strcmp(do.data.(zVariableName).type, 'tt2000')
     fillValue = spdfparsett2000(fillValue);   % NOTE: Uncertain if this is the correct conversion function.
 end
 
-iZVariable=find(strcmp(do.Variables(:,1), zVariableName));
-padValue = do.Variables{iZVariable, 9};
+iZVariable = strcmp(do.Variables(:,1), zVariableName);
+padValue   = do.Variables{iZVariable, 9};
 % Comments in "spdfcdfinfo.m" should indirectly imply that column 9 is pad values since the structure/array
 % commented on should be identical.
 end
