@@ -340,8 +340,8 @@ end
 %==========================
 % Set CDF GlobalAttributes
 %==========================
-DataObj.GlobalAttributes.Software_name       = SETTINGS.get_fv('SWD_IDENTIFICATION.name');
-DataObj.GlobalAttributes.Software_version    = SETTINGS.get_fv('SWD_RELEASE.version');
+DataObj.GlobalAttributes.Software_name       = SETTINGS.get_fv('SWD.identification.name');
+DataObj.GlobalAttributes.Software_version    = SETTINGS.get_fv('SWD.release.version');
 DataObj.GlobalAttributes.Calibration_version = SETTINGS.get_fv('OUTPUT_CDF.GLOBAL_ATTRIBUTES.Calibration_version');         % "Static"?!!
 DataObj.GlobalAttributes.Generation_date     = datestr(now, 'yyyy-mm-ddTHH:MM:SS');         % BUG? Assigns local time, not UTC!!! ROC DFMD does not mention time zone.
 DataObj.GlobalAttributes.Logical_file_id     = get_logical_file_id(...

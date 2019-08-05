@@ -105,10 +105,10 @@ classdef dm_utils
             
             % NOTE: Implementation that works for arrays of any size.
             freq = ones(size(FREQ)) * -1;        % Allocate array and set default values.
-            freq(FREQ==0) = SETTINGS.get_fv('LFR.F0');
-            freq(FREQ==1) = SETTINGS.get_fv('LFR.F1');
-            freq(FREQ==2) = SETTINGS.get_fv('LFR.F2');
-            freq(FREQ==3) = SETTINGS.get_fv('LFR.F3');
+            freq(FREQ==0) = SETTINGS.get_fv('PROCESSING.LFR.F0');
+            freq(FREQ==1) = SETTINGS.get_fv('PROCESSING.LFR.F1');
+            freq(FREQ==2) = SETTINGS.get_fv('PROCESSING.LFR.F2');
+            freq(FREQ==3) = SETTINGS.get_fv('PROCESSING.LFR.F3');
         end
         
         
@@ -125,8 +125,8 @@ classdef dm_utils
             end
             
             switch(DIFF_GAIN)
-                case 0    ; GAMMA = SETTINGS.get_fv('SIMPLE_DEMUXER.GAMMA_LOW_GAIN');
-                case 1    ; GAMMA = SETTINGS.get_fv('SIMPLE_DEMUXER.GAMMA_HIGH_GAIN');
+                case 0    ; GAMMA = SETTINGS.get_fv('PROCESSING.SIMPLE_DEMUXER.GAMMA_LOW_GAIN');
+                case 1    ; GAMMA = SETTINGS.get_fv('PROCESSING.SIMPLE_DEMUXER.GAMMA_HIGH_GAIN');
                 otherwise
                     if isnan(DIFF_GAIN)
                         GAMMA = NaN;
@@ -178,7 +178,7 @@ classdef dm_utils
             
             ACQUISITION_TIME = double(ACQUISITION_TIME);
             atSeconds = ACQUISITION_TIME(:, 1) + ACQUISITION_TIME(:, 2) / 65536;   % at = ACQUISITION_TIME
-%             tt2000 = spdfcomputett2000(SETTINGS.get_fv('ACQUISITION_TIME_EPOCH_UTC')) + int64(atSeconds * 1e9);   % NOTE: spdfcomputett2000 returns int64 (as it should).
+%             tt2000 = spdfcomputett2000(SETTINGS.get_fv('PROCESSING.ACQUISITION_TIME_EPOCH_UTC')) + int64(atSeconds * 1e9);   % NOTE: spdfcomputett2000 returns int64 (as it should).
             tt2000 = spdfcomputett2000(ACQUISITION_TIME_EPOCH_UTC) + int64(atSeconds * 1e9);   % NOTE: spdfcomputett2000 returns int64 (as it should).
         end
         
@@ -195,7 +195,7 @@ classdef dm_utils
             bicas.dm_utils.assert_Epoch(tt2000)
 
             % NOTE: Important to type cast to double because of multiplication
-%             atSeconds = double(int64(tt2000) - spdfcomputett2000(SETTINGS.get_fv('ACQUISITION_TIME_EPOCH_UTC'))) * 1e-9;    % at = ACQUISITION_TIME
+%             atSeconds = double(int64(tt2000) - spdfcomputett2000(SETTINGS.get_fv('PROCESSING.ACQUISITION_TIME_EPOCH_UTC'))) * 1e-9;    % at = ACQUISITION_TIME
             atSeconds = double(int64(tt2000) - spdfcomputett2000(ACQUISITION_TIME_EPOCH_UTC)) * 1e-9;    % at = ACQUISITION_TIME
             
             % ASSERTION: ACQUISITION_TIME must not be negative.

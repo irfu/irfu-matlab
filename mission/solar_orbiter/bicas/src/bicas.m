@@ -278,14 +278,14 @@ SETTINGS.make_read_only();
 %======================
 % ASSERTIONS: SETTINGS
 %======================
-EJ_library.utils.assert.castring_regexp(SETTINGS.get_fv('SWD_RELEASE.version'), '[0-9]+\.[0-9]+\.[0-9]+')
-EJ_library.utils.assert.castring_regexp(SETTINGS.get_fv('SWD_RELEASE.date'),    '20[1-3][0-9]-[01][0-9]-[0-3][0-9]')
+EJ_library.utils.assert.castring_regexp(SETTINGS.get_fv('SWD.release.version'), '[0-9]+\.[0-9]+\.[0-9]+')
+EJ_library.utils.assert.castring_regexp(SETTINGS.get_fv('SWD.release.date'),    '20[1-3][0-9]-[01][0-9]-[0-3][0-9]')
 % Validate S/W release version
 % ----------------------------
 % RCS ICD 00037, iss1rev2, Section 5.3 S/W descriptor file validation scheme implies this regex.
 % NOTE: It is hard to thoroughly follow the description, but the end result should be under
 % release-->version-->pattern (not to be confused with release_dataset-->version--pattern).
-EJ_library.utils.assert.castring_regexp(SETTINGS.get_fv('SWD_RELEASE.version'), '(\d+\.)?(\d+\.)?(\d+)')
+EJ_library.utils.assert.castring_regexp(SETTINGS.get_fv('SWD.release.version'), '(\d+\.)?(\d+\.)?(\d+)')
 % if isempty(regexp(JsonSwd.release.version, '^(\d+\.)?(\d+\.)?(\d+)$', 'once'))
 %     error('BICAS:get_sw_descriptor:IllegalCodeConfiguration', 'Illegal S/W descriptor release version "%s". This indicates a hard-coded configuration bug.', JsonSwd.release.version)
 % end
@@ -301,9 +301,9 @@ bicas.log('info', bicas.sprint_SETTINGS(SETTINGS))                 % Prints/log 
 %================================
 % COMPLETE CODE. DISABLED SINCE IT IS NOT NEEDED BY OTHER CODE YET.
 %
-%calibrationDir = read_env_variable(SETTINGS, 'ROC_RCS_CAL_PATH',    'PROCESSING.ROC_RCS_CAL_PATH_OVERRIDE');
-pipelineId     = read_env_variable(SETTINGS, 'ROC_PIP_NAME',        'PROCESSING.ROC_PIP_NAME_OVERRIDE');   % RGTS or RODP
-masterCdfDir   = read_env_variable(SETTINGS, 'ROC_RCS_MASTER_PATH', 'PROCESSING.ROC_RCS_MASTER_PATH_OVERRIDE');
+%calibrationDir = read_env_variable(SETTINGS, 'ROC_RCS_CAL_PATH',    'ENV_VAR.ROC_RCS_CAL_PATH_OVERRIDE');
+pipelineId     = read_env_variable(SETTINGS, 'ROC_PIP_NAME',        'ENV_VAR.ROC_PIP_NAME_OVERRIDE');   % RGTS or RODP
+masterCdfDir   = read_env_variable(SETTINGS, 'ROC_RCS_MASTER_PATH', 'ENV_VAR.ROC_RCS_MASTER_PATH_OVERRIDE');
 bicas.logf('info', 'pipelineId   = "%s" (value actually used)', pipelineId)
 bicas.logf('info', 'masterCdfDir = "%s" (value actually used)', masterCdfDir)
 
@@ -453,8 +453,8 @@ C = bicas.error_safe_constants();
 
 
 % Print software name & description
-bicas.stdout_printf('\n%s version %s\n', SETTINGS.get_fv('SWD_IDENTIFICATION.name'), SETTINGS.get_fv('SWD_RELEASE.version') )
-bicas.stdout_print(SETTINGS.get_fv('SWD_IDENTIFICATION.description'))
+bicas.stdout_printf('\n%s version %s\n', SETTINGS.get_fv('SWD.identification.name'), SETTINGS.get_fv('SWD.release.version') )
+bicas.stdout_print(SETTINGS.get_fv('SWD.identification.description'))
 
 %==========================
 % Print error codes & types

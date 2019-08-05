@@ -60,21 +60,21 @@ C = bicas.error_safe_constants();
 % which must follow the RCS ICD.
 
 JsonSwd = [];
-JsonSwd.identification.project     = SETTINGS.get_fv('SWD_IDENTIFICATION.project');
-JsonSwd.identification.name        = SETTINGS.get_fv('SWD_IDENTIFICATION.name');
-JsonSwd.identification.identifier  = SETTINGS.get_fv('SWD_IDENTIFICATION.identifier');
-JsonSwd.identification.description = SETTINGS.get_fv('SWD_IDENTIFICATION.description');
-JsonSwd.identification.icd_version = SETTINGS.get_fv('SWD_IDENTIFICATION.icd_version');
+JsonSwd.identification.project     = SETTINGS.get_fv('SWD.identification.project');
+JsonSwd.identification.name        = SETTINGS.get_fv('SWD.identification.name');
+JsonSwd.identification.identifier  = SETTINGS.get_fv('SWD.identification.identifier');
+JsonSwd.identification.description = SETTINGS.get_fv('SWD.identification.description');
+JsonSwd.identification.icd_version = SETTINGS.get_fv('SWD.identification.icd_version');
 
-JsonSwd.release.version            = SETTINGS.get_fv('SWD_RELEASE.version');
-JsonSwd.release.date               = SETTINGS.get_fv('SWD_RELEASE.date');
-JsonSwd.release.author             = SETTINGS.get_fv('SWD_RELEASE.author');
-JsonSwd.release.contact            = SETTINGS.get_fv('SWD_RELEASE.contact');
-JsonSwd.release.institute          = SETTINGS.get_fv('SWD_RELEASE.institute');
-JsonSwd.release.modification       = SETTINGS.get_fv('SWD_RELEASE.modification');
-JsonSwd.release.source             = SETTINGS.get_fv('SWD_RELEASE.source');    % RCS ICD 00037 iss1/rev2, draft 2019-07-11: Optional.
+JsonSwd.release.version            = SETTINGS.get_fv('SWD.release.version');
+JsonSwd.release.date               = SETTINGS.get_fv('SWD.release.date');
+JsonSwd.release.author             = SETTINGS.get_fv('SWD.release.author');
+JsonSwd.release.contact            = SETTINGS.get_fv('SWD.release.contact');
+JsonSwd.release.institute          = SETTINGS.get_fv('SWD.release.institute');
+JsonSwd.release.modification       = SETTINGS.get_fv('SWD.release.modification');
+JsonSwd.release.source             = SETTINGS.get_fv('SWD.release.source');    % RCS ICD 00037 iss1/rev2, draft 2019-07-11: Optional.
 
-JsonSwd.environment.executable     = SETTINGS.get_fv('SWD_ENVIRONMENT.executable');
+JsonSwd.environment.executable     = SETTINGS.get_fv('SWD.environment.executable');
 JsonSwd.environment.configuration  = C.DEFAULT_CONFIG_FILE_RELATIVE_PATH;      % RCS ICD 00037 iss1/rev2, draft 2019-07-11: Optional.
 
 JsonSwd.modes = {};

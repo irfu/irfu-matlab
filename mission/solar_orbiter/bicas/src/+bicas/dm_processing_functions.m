@@ -104,7 +104,7 @@ classdef dm_processing_functions
             
             
             % Define local convenience variables. AT = ACQUISITION_TIME
-            ACQUISITION_TIME_EPOCH_UTC = SETTINGS.get_fv('ACQUISITION_TIME_EPOCH_UTC');
+            ACQUISITION_TIME_EPOCH_UTC = SETTINGS.get_fv('PROCESSING.ACQUISITION_TIME_EPOCH_UTC');
             hkAtTt2000  = bicas.dm_utils.ACQUISITION_TIME_to_tt2000(  Hk.ZVars.ACQUISITION_TIME, ACQUISITION_TIME_EPOCH_UTC);
             sciAtTt2000 = bicas.dm_utils.ACQUISITION_TIME_to_tt2000( Sci.ZVars.ACQUISITION_TIME, ACQUISITION_TIME_EPOCH_UTC);
             hkEpoch     = Hk.ZVars.Epoch;
@@ -446,7 +446,7 @@ classdef dm_processing_functions
                         SciPostDc.ACQUISITION_TIME, ...
                         nSamplesPerRecord, ...
                         SciPostDc.freqHz, ...
-                        SETTINGS.get_fv('ACQUISITION_TIME_EPOCH_UTC'));
+                        SETTINGS.get_fv('PROCESSING.ACQUISITION_TIME_EPOCH_UTC'));
                     
                     OutputSci.DELTA_PLUS_MINUS = bicas.dm_utils.convert_N_to_1_SPR_redistribute( SciPostDc.DELTA_PLUS_MINUS );
                     %OutputSci.L1_REC_NUM       = bicas.dm_utils.convert_N_to_1_SPR_repeat(       SciPostDc.L1_REC_NUM,      nSamplesPerRecord);
@@ -666,8 +666,8 @@ classdef dm_processing_functions
                 error('BICAS:dm_processing_functions:Assertion:IllegalArgument', 'Illegal argument value "MUX_SET" or "DIFF_GAIN". Must be scalars (not arrays).')
             end
             
-            ALPHA = SETTINGS.get_fv('SIMPLE_DEMUXER.ALPHA');
-            BETA  = SETTINGS.get_fv('SIMPLE_DEMUXER.BETA');
+            ALPHA = SETTINGS.get_fv('PROCESSING.SIMPLE_DEMUXER.ALPHA');
+            BETA  = SETTINGS.get_fv('PROCESSING.SIMPLE_DEMUXER.BETA');
             GAMMA = bicas.dm_utils.get_simple_demuxer_gamma(DIFF_GAIN);   % NOTE: GAMMA can be NaN iff DIFF_GAIN is.
             
             % Set default values which will be returned for
