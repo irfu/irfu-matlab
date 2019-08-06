@@ -311,11 +311,13 @@ info.vsh = shear_angle(Vu,Vd);
 % compression factors to the models
 info.sig = sig;
 % other paramters from the models
-info.eps = eps;
-info.L = L;
-info.alpha = alpha;
-info.x0 = x0;
-info.y0 = y0;
+if isfield(spec,'R')
+    info.eps = eps;
+    info.L = L;
+    info.alpha = alpha;
+    info.x0 = x0;
+    info.y0 = y0;
+end
 % constraint matrix
 info.cmat = constraint_values(spec,n);
 
