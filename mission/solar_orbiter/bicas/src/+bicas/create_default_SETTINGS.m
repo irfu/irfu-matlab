@@ -19,10 +19,7 @@
 %
 function SETTINGS = create_default_SETTINGS()
 % PROPOSAL: Move STDOUT_PREFIX to ~constants (not overridable), error_safe_constants?
-% PROPOSAL: Rename PROCESSING.SIMPLE_DEMUXER. SIMPLE_CALIBRATION?
-% PROPOSAL: Rename ENV_VAR-->ENV_VARS
-% PROPOSAL: Rename ENV_VAR.*_OVERRIDE --> ENV_VAR_OVERRIDE.*
-% PROPOSAL: Rename PROCESSING.LFR.Fx --> *.Fx_HZ
+% PROPOSAL: Rename PROCESSING.SIMPLE_DEMUXER --> *.SIMPLE_CALIBRATION?
 
 S = bicas.settings();
 
@@ -53,17 +50,16 @@ S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.CALIBRATION_VERSION', '0.1; Only 
 % Value that is used to set the output dataset GlobalAttribute "Calibration_version". String value. TEMPORARY SOLUTION.
 S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.Calibration_version', '0.1; Only proportionality constants i.e. no voltage offset tables, no transfer functions; No bias currents');
 
-S.define_setting('ENV_VAR.ROC_PIP_NAME_OVERRIDE',        '');   % If non-empty, override environment variable ROC_PIP_NAME        defined in RCS ICD. Which pipeline to run, "RGTS" or "RODP".
-S.define_setting('ENV_VAR.ROC_RCS_CAL_PATH_OVERRIDE',    '');   % If non-empty, override environment variable ROC_RCS_CAL_PATH    defined in RCS ICD. Path to dir. with calibration files.
-S.define_setting('ENV_VAR.ROC_RCS_MASTER_PATH_OVERRIDE', '');   % If non-empty, override environment variable ROC_RCS_MASTER_PATH defined in RCS ICD. Path to dir. with master CDF files.
+% Variables, if non-empty, are used to override the corresponding environment variables.
+S.define_setting('ENV_VAR_OVERRIDE.ROC_PIP_NAME',        '');   % ROC_PIP_NAME        defined in RCS ICD. Which pipeline to run, "RGTS" or "RODP".
+S.define_setting('ENV_VAR_OVERRIDE.ROC_RCS_CAL_PATH',    '');   % ROC_RCS_CAL_PATH    defined in RCS ICD. Path to dir. with calibration files.
+S.define_setting('ENV_VAR_OVERRIDE.ROC_RCS_MASTER_PATH', '');   % ROC_RCS_MASTER_PATH defined in RCS ICD. Path to dir. with master CDF files.
 
 % Whether to enable (make visible & accessible to the user) certain s/w modes.
 S.define_setting('SW_MODES.ENABLE_INPUT_L2R', 1);    % S/w modes which accept L2R input datasets.
 S.define_setting('SW_MODES.ENABLE_TDS',       0);    % S/w modes which accept TDS input datasets.
 
 S.define_setting('LOGGING.MAX_UNIQUES_PRINTED',             5);    % When logging contents of matrix/vector, maximum number of unique values printed before switching to shorter representation (min-max range)
-
-
 
 
 
@@ -101,16 +97,16 @@ S.define_setting('SWD.environment.executable',     'roc/bicas'); % Relative path
 
 
 
-%===========================================================================================================
+%====================================================================================================================
 % Define constants relating to interpreting LFR datasets
 % ------------------------------------------------------
-% F0, F1, F2, F3: Frequencies with which samples are taken. The variables names follow LFR's naming scheme.
+% F0, F1, F2, F3: Frequencies with which samples are taken. The variables names (F[0-3]) follow LFR's naming scheme.
 % Unit: Hz.
-%===========================================================================================================
-S.define_setting('PROCESSING.LFR.F0', 24576);  % = 6 * 4096
-S.define_setting('PROCESSING.LFR.F1',  4096);
-S.define_setting('PROCESSING.LFR.F2',   256);
-S.define_setting('PROCESSING.LFR.F3',    16);
+%====================================================================================================================
+S.define_setting('PROCESSING.LFR.F0_HZ', 24576);  % = 6 * 4096
+S.define_setting('PROCESSING.LFR.F1_HZ',  4096);
+S.define_setting('PROCESSING.LFR.F2_HZ',   256);
+S.define_setting('PROCESSING.LFR.F3_HZ',    16);
 
 %========================================================
 % Constants for how the "simple demuxer" calibrates data

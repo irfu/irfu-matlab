@@ -105,10 +105,10 @@ classdef dm_utils
             
             % NOTE: Implementation that works for arrays of any size.
             freq = ones(size(FREQ)) * -1;        % Allocate array and set default values.
-            freq(FREQ==0) = SETTINGS.get_fv('PROCESSING.LFR.F0');
-            freq(FREQ==1) = SETTINGS.get_fv('PROCESSING.LFR.F1');
-            freq(FREQ==2) = SETTINGS.get_fv('PROCESSING.LFR.F2');
-            freq(FREQ==3) = SETTINGS.get_fv('PROCESSING.LFR.F3');
+            freq(FREQ==0) = SETTINGS.get_fv('PROCESSING.LFR.F0_HZ');
+            freq(FREQ==1) = SETTINGS.get_fv('PROCESSING.LFR.F1_HZ');
+            freq(FREQ==2) = SETTINGS.get_fv('PROCESSING.LFR.F2_HZ');
+            freq(FREQ==3) = SETTINGS.get_fv('PROCESSING.LFR.F3_HZ');
         end
         
         

@@ -301,9 +301,9 @@ bicas.log('info', bicas.sprint_SETTINGS(SETTINGS))                 % Prints/log 
 %================================
 % COMPLETE CODE. DISABLED SINCE IT IS NOT NEEDED BY OTHER CODE YET.
 %
-%calibrationDir = read_env_variable(SETTINGS, 'ROC_RCS_CAL_PATH',    'ENV_VAR.ROC_RCS_CAL_PATH_OVERRIDE');
-pipelineId     = read_env_variable(SETTINGS, 'ROC_PIP_NAME',        'ENV_VAR.ROC_PIP_NAME_OVERRIDE');   % RGTS or RODP
-masterCdfDir   = read_env_variable(SETTINGS, 'ROC_RCS_MASTER_PATH', 'ENV_VAR.ROC_RCS_MASTER_PATH_OVERRIDE');
+%calibrationDir = read_env_variable(SETTINGS, 'ROC_RCS_CAL_PATH',    'ENV_VAR_OVERRIDE.ROC_RCS_CAL_PATH');
+pipelineId     = read_env_variable(SETTINGS, 'ROC_PIP_NAME',        'ENV_VAR_OVERRIDE.ROC_PIP_NAME');   % RGTS or RODP
+masterCdfDir   = read_env_variable(SETTINGS, 'ROC_RCS_MASTER_PATH', 'ENV_VAR_OVERRIDE.ROC_RCS_MASTER_PATH');
 bicas.logf('info', 'pipelineId   = "%s" (value actually used)', pipelineId)
 bicas.logf('info', 'masterCdfDir = "%s" (value actually used)', masterCdfDir)
 
