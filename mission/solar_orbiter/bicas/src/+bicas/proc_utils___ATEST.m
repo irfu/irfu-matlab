@@ -1,6 +1,6 @@
-% dm_utils_TEST - Automated test code for functions in dm_utils. Does not necessarily test all functions.
+% Automated test code for functions in proc_utils.
 %
-% NOTE: Does NOT test all functions in dm_utils.
+% NOTE: Does NOT test all functions in proc_utils.
 % 
 %
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
@@ -11,7 +11,7 @@
 % argument lists, list of expected return results.
 %   NOTE: Has to handle approximate numeric results.
 
-function dm_utils___ATEST
+function proc_utils___ATEST
     find_sequences_TEST
     convert_N_to_1_SPR_ACQUISITION_TIME_TEST
     convert_N_to_1_SPR_Epoch_TEST
@@ -23,7 +23,7 @@ end
 
 function find_sequences_TEST
     
-    new_test = @(inputs, outputs) (EJ_library.atest.CompareFuncResult(@bicas.dm_utils.find_sequences, inputs, outputs));
+    new_test = @(inputs, outputs) (EJ_library.atest.CompareFuncResult(@bicas.proc_utils.find_sequences, inputs, outputs));
     tl = {};
     
     tl{end+1} = new_test({[]', []'}, 'MException');    % NOTE: size([]) = 0x0 ==> Not column vector
@@ -44,7 +44,7 @@ function convert_N_to_1_SPR_ACQUISITION_TIME_TEST
     % NOTE: Tests should actually be independent of the exact value(!)
     ACQUISITION_TIME_EPOCH_UTC = [2000,01,01, 12,00,00, 000,000,000];
 
-    new_test = @(inputs, outputs) (EJ_library.atest.CompareFuncResult(@bicas.dm_utils.convert_N_to_1_SPR_ACQUISITION_TIME, inputs, outputs));
+    new_test = @(inputs, outputs) (EJ_library.atest.CompareFuncResult(@bicas.proc_utils.convert_N_to_1_SPR_ACQUISITION_TIME, inputs, outputs));
     tl = {};
     
     tl{end+1} = new_test( {uint32([123, 100]), 1, 100, ACQUISITION_TIME_EPOCH_UTC}, {uint32([123, 100])});    
@@ -58,7 +58,7 @@ end
 
 
 function convert_N_to_1_SPR_Epoch_TEST
-    new_test = @(inputs, outputs) (EJ_library.atest.CompareFuncResult(@bicas.dm_utils.convert_N_to_1_SPR_Epoch, inputs, outputs));
+    new_test = @(inputs, outputs) (EJ_library.atest.CompareFuncResult(@bicas.proc_utils.convert_N_to_1_SPR_Epoch, inputs, outputs));
     tl = {};
     
     tl{end+1} = new_test({int64(1000),         3, 1e6},        {int64([1000; 2000; 3000])});
@@ -71,7 +71,7 @@ end
 
 
 function convert_N_to_1_SPR_redistribute_TEST
-    new_test = @(inputs, outputs) (EJ_library.atest.CompareFuncResult(@bicas.dm_utils.convert_N_to_1_SPR_redistribute, inputs, outputs));
+    new_test = @(inputs, outputs) (EJ_library.atest.CompareFuncResult(@bicas.proc_utils.convert_N_to_1_SPR_redistribute, inputs, outputs));
     tl = {};
     
     tl{end+1} = new_test({[1,2,3; 4,5,6; 7,8,9; 10,11,12]}, {(1:12)'});
@@ -84,7 +84,7 @@ end
 
 
 function convert_N_to_1_SPR_repeat_TEST
-    new_test = @(inputs, outputs) (EJ_library.atest.CompareFuncResult(@bicas.dm_utils.convert_N_to_1_SPR_repeat, inputs, outputs));
+    new_test = @(inputs, outputs) (EJ_library.atest.CompareFuncResult(@bicas.proc_utils.convert_N_to_1_SPR_repeat, inputs, outputs));
     tl = {};
     
     tl{end+1} = new_test({[5;6], 2},      {[5;5;6;6]});    

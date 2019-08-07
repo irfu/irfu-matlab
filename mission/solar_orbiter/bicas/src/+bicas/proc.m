@@ -18,16 +18,16 @@
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
 % First created 2019-07-30
 %
-classdef pipelines
+classdef proc
     % PROPOSAL: Other name of class.
     %   PROPOSAL: production_functions
     %   PROPOSAL: production
     %   PROPOSAL: processing
-    %       TODO-DECISION: Name relationship to dm_processing_functions, dm_utils?
-    %           PROPOSAL: Rename dm_processing_functions
+    %       TODO-DECISION: Name relationship to proc_sub, proc_utils?
+    %           PROPOSAL: Rename proc_sub
     %               processing_functions
     %               processing_subfunctions
-    %           PROPOSAL: Rename dm_utils
+    %           PROPOSAL: Rename proc_utils
     %               processing_utils
     % --
     % TODO-DECISION: Term and naming scheme for these "complete processing functions"?
@@ -42,7 +42,7 @@ classdef pipelines
     %       CON: Conflicts with use of RODP, ROC-SGSE pipelines.
     %   PROPOSAL: swmode_pipelines
     %   PROPOSAL: process_*
-    %       CON: Already used in dm_processing_functions.
+    %       CON: Already used in proc_sub.
     %   TODO-DECISION: Include skeleton version in function names?
     % 
     % TODO-DECISION: Use PDID system?
@@ -103,11 +103,11 @@ classdef pipelines
                 HkPd  = InputsMap('HK_cdf');
                 SciPd = InputsMap('SCI_cdf');
                 
-                HkSciTimePd = bicas.dm_processing_functions.process_HK_to_HK_on_SCI_TIME(SciPd, HkPd);
+                HkSciTimePd = bicas.proc_sub.process_HK_to_HK_on_SCI_TIME(SciPd, HkPd);
                 
-                SciPreDcPd  = bicas.dm_processing_functions.process_LFR_to_PreDC(        SciPd, HkSciTimePd);
-                SciPostDcPd = bicas.dm_processing_functions.process_demuxing_calibration(SciPreDcPd);
-                OutputSciPd = bicas.dm_processing_functions.process_PostDC_to_LFR(       SciPostDcPd, outputDsi, outputVersion);
+                SciPreDcPd  = bicas.proc_sub.process_LFR_to_PreDC(        SciPd, HkSciTimePd);
+                SciPostDcPd = bicas.proc_sub.process_demuxing_calibration(SciPreDcPd);
+                OutputSciPd = bicas.proc_sub.process_PostDC_to_LFR(       SciPostDcPd, outputDsi, outputVersion);
                 
                 OutputsMap = containers.Map();
                 OutputsMap('SCI_cdf') = OutputSciPd;

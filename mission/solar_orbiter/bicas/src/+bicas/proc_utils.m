@@ -1,7 +1,7 @@
-classdef dm_utils
+classdef proc_utils
 % Collections of minor utility functions (in the form of static methods) used for data processing.
 %
-% dm_utils = data_manager_old utilities
+% proc_utils = processing utilities
 %
 %
 % TERMINOLOGY
@@ -16,7 +16,7 @@ classdef dm_utils
 % PROPOSAL: Split up in separate files?!
 % PROPOSAL: Move some functions to "utils".
 %   Ex: add_components_to_struct, select_subset_from_struct
-%   Ex: log_array, log_struct_array, log_tt2000_array (uses bicas.dm_utils_assert_Epoch)
+%   Ex: log_array, log_struct_array, log_tt2000_array (uses bicas.proc_utils_assert_Epoch)
 %
 % PROPOSAL: Write test code for ACQUISITION_TIME_to_tt2000 and its inversion.
 % PROPOSAL: Reorg select_subset_from_struct into returning a list of intervals instead.
@@ -57,10 +57,10 @@ classdef dm_utils
                 if isnan(nRows)
                     nRows = size(s.(fn), 1);
                     if (nRows < iFirst) || (nRows < iLast)
-                        error('BICAS:dm_utils:Assertion', 'iFirst or iLast outside of interval of indices (rows).')
+                        error('BICAS:proc_utils:Assertion', 'iFirst or iLast outside of interval of indices (rows).')
                     end
                 elseif nRows ~= size(s.(fn), 1)
-                   error('BICAS:dm_utils:Assertion', 'Not all struct fields have the same number of rows.')
+                   error('BICAS:proc_utils:Assertion', 'Not all struct fields have the same number of rows.')
                 end
                 
                 s.(fn) = s.(fn)(iFirst:iLast, :, :);
@@ -100,7 +100,7 @@ classdef dm_utils
             unique_values = unique(FREQ);
             if ~all(ismember(unique_values, [0,1,2,3]))
                 unique_values_str = sprintf('%d', unique_values);   % NOTE: Has to print without \n to keep all values on a single-line string.
-                error('BICAS:dm_utils:Assertion:IllegalArgument:DatasetFormat', 'Found unexpected values in (LFR) FREQ (unique values: %s).', unique_values_str)
+                error('BICAS:proc_utils:Assertion:IllegalArgument:DatasetFormat', 'Found unexpected values in (LFR) FREQ (unique values: %s).', unique_values_str)
             end
             
             % NOTE: Implementation that works for arrays of any size.
@@ -121,7 +121,7 @@ classdef dm_utils
             
             % ASSERTION
             if numel(DIFF_GAIN) ~= 1
-                error('BICAS:dm_utils:Assertion:IllegalArgument', 'Illegal argument value "DIFF_GAIN". Must be scalar (not array).')
+                error('BICAS:proc_utils:Assertion:IllegalArgument', 'Illegal argument value "DIFF_GAIN". Must be scalar (not array).')
             end
             
             switch(DIFF_GAIN)
@@ -131,7 +131,7 @@ classdef dm_utils
                     if isnan(DIFF_GAIN)
                         GAMMA = NaN;
                     else
-                        error('BICAS:dm_utils:Assertion:IllegalArgument:DatasetFormat', 'Illegal argument value "DIFF_GAIN"=%d.', DIFF_GAIN)                    
+                        error('BICAS:proc_utils:Assertion:IllegalArgument:DatasetFormat', 'Illegal argument value "DIFF_GAIN"=%d.', DIFF_GAIN)                    
                     end
             end
         end
@@ -174,7 +174,7 @@ classdef dm_utils
         % ============
         % tt2000 : NOTE: int64
         
-            bicas.dm_utils.assert_ACQUISITION_TIME(ACQUISITION_TIME)
+            bicas.proc_utils.assert_ACQUISITION_TIME(ACQUISITION_TIME)
             
             ACQUISITION_TIME = double(ACQUISITION_TIME);
             atSeconds = ACQUISITION_TIME(:, 1) + ACQUISITION_TIME(:, 2) / 65536;   % at = ACQUISITION_TIME
@@ -192,7 +192,7 @@ classdef dm_utils
         %       NOTE: ACQUSITION_TIME can not be negative since it is uint32.
         
             % ASSERTIONS
-            bicas.dm_utils.assert_Epoch(tt2000)
+            bicas.proc_utils.assert_Epoch(tt2000)
 
             % NOTE: Important to type cast to double because of multiplication
 %             atSeconds = double(int64(tt2000) - spdfcomputett2000(SETTINGS.get_fv('PROCESSING.ACQUISITION_TIME_EPOCH_UTC'))) * 1e-9;    % at = ACQUISITION_TIME
@@ -200,7 +200,7 @@ classdef dm_utils
             
             % ASSERTION: ACQUISITION_TIME must not be negative.
             if any(atSeconds < 0)
-                error('BICAS:dm_manager:Assertion:IllegalArgument:DatasetFormat', 'Can not produce ACQUISITION_TIME (uint32) with negative number of integer seconds.')
+                error('BICAS:proc_utils:Assertion:IllegalArgument:DatasetFormat', 'Can not produce ACQUISITION_TIME (uint32) with negative number of integer seconds.')
             end
             
             atSeconds = round(atSeconds*65536) / 65536;
@@ -228,14 +228,14 @@ classdef dm_utils
         
             % ASSERTION: Must be at least on argument.
             if isempty(varargin)
-                error('BICAS:dm_utils:Assertion:IllegalArgument', 'There are no vectors to look for sequences in.')
+                error('BICAS:proc_utils:Assertion:IllegalArgument', 'There are no vectors to look for sequences in.')
             end
             
             nRows = size(varargin{1}, 1);
             
             for kArg = 1:length(varargin)
                 if ~iscolumn(varargin{kArg}) || nRows ~= size(varargin{kArg}, 1)
-                    error('BICAS:dm_utils:Assertion:IllegalArgument', 'varargins are not all SAME-SIZE COLUMN vectors.')
+                    error('BICAS:proc_utils:Assertion:IllegalArgument', 'varargins are not all SAME-SIZE COLUMN vectors.')
                 end
             end                
             
@@ -285,11 +285,11 @@ classdef dm_utils
 
             % ASSERTIONS
             if ~iscolumn(rowFilter)     % Not really necessary to require row vector, only 1D vector.
-                error('BICAS:dm_utils:Assertion:IllegalArgument', '"rowFilter" is not a column vector.')
+                error('BICAS:proc_utils:Assertion:IllegalArgument', '"rowFilter" is not a column vector.')
             elseif size(rowFilter, 1) ~= size(data, 1)
-                error('BICAS:dm_utils:Assertion:IllegalArgument', 'Numbers of records do not match.')
+                error('BICAS:proc_utils:Assertion:IllegalArgument', 'Numbers of records do not match.')
             elseif ~isfloat(data)
-                error('BICAS:dm_utils:Assertion:IllegalArgument', '"data" is not a floating-point class (can not represent NaN).')
+                error('BICAS:proc_utils:Assertion:IllegalArgument', '"data" is not a floating-point class (can not represent NaN).')
             end
             
             
@@ -314,7 +314,7 @@ classdef dm_utils
             % ASSERTIONS
             % NOTE: ndims always returns at least two, which is exactly what we want, also for empty and scalars, and row vectors.
             if ndims(oldData) > 2
-                error('BICAS:dm_utils:Assertion:IllegalArgument', 'oldData has more than two dimensions.')
+                error('BICAS:proc_utils:Assertion:IllegalArgument', 'oldData has more than two dimensions.')
             end
             
             newData = reshape(oldData', numel(oldData), 1);
@@ -328,14 +328,14 @@ classdef dm_utils
             
             % ASSERTIONS
             if ~(iscolumn(oldData))
-                error('BICAS:dm_utils:Assertion', 'oldData is not a column vector')
+                error('BICAS:proc_utils:Assertion', 'oldData is not a column vector')
             elseif ~isscalar(nRepeatsPerOldRecord)
-                error('BICAS:dm_utils:Assertion', 'nSamplesPerOldRecord is not a scalar')
+                error('BICAS:proc_utils:Assertion', 'nSamplesPerOldRecord is not a scalar')
             end
             
             newData = repmat(oldData, [1,nRepeatsPerOldRecord]);
             %newData = reshape(newData', [numel(newData), 1]);     % NOTE: Must transpose first.
-            newData = bicas.dm_utils.convert_N_to_1_SPR_redistribute(newData);
+            newData = bicas.proc_utils.convert_N_to_1_SPR_redistribute(newData);
         end
         
         
@@ -363,11 +363,11 @@ classdef dm_utils
         % PROPOSAL: Replace by some simpler(?) algorithm that uses column/matrix multiplication.
             
             % ASSERTIONS
-            bicas.dm_utils.assert_Epoch(oldTt2000)
+            bicas.proc_utils.assert_Epoch(oldTt2000)
             if numel(nSpr) ~= 1
-                error('BICAS:dm_utils:Assertion:IllegalArgument', 'nSpr not scalar.')
+                error('BICAS:proc_utils:Assertion:IllegalArgument', 'nSpr not scalar.')
             elseif size(freqHzWithinRecords, 1) ~= size(oldTt2000, 1)
-                error('BICAS:dm_utils:Assertion:IllegalArgument', 'freqWithinRecords and oldTt2000 do not have the same number of rows.')
+                error('BICAS:proc_utils:Assertion:IllegalArgument', 'freqWithinRecords and oldTt2000 do not have the same number of rows.')
             end
             
             nRecords = numel(oldTt2000);
@@ -396,7 +396,7 @@ classdef dm_utils
             
             % Convert to 2D matrix --> 1D column vector.
             %newTt2000 = reshape(tt2000Matrix', [nRecords*nSpr, 1]);
-            newTt2000 = bicas.dm_utils.convert_N_to_1_SPR_redistribute(tt2000Matrix);
+            newTt2000 = bicas.proc_utils.convert_N_to_1_SPR_redistribute(tt2000Matrix);
         end
         
         
@@ -418,12 +418,12 @@ classdef dm_utils
         % clear; t_rec = [1;2;3;4]; f = [5;1;5;20]; N=length(t_rec); M=5; I_sample=repmat(0:(M-1), [N, 1]); F=repmat(f, [1,M]); T_rec = repmat(t_rec, [1,M]); T = T_rec + I_sample./F; reshape(T', [numel(T), 1])
             
             % ASSERTIONS
-            bicas.dm_utils.assert_ACQUISITION_TIME(ACQUISITION_TIME_1)
+            bicas.proc_utils.assert_ACQUISITION_TIME(ACQUISITION_TIME_1)
 
-%           tt2000_1           = bicas.dm_utils.ACQUISITION_TIME_to_tt2000(ACQUISITION_TIME_1);
-            tt2000_1           = bicas.dm_utils.ACQUISITION_TIME_to_tt2000(ACQUISITION_TIME_1, ACQUISITION_TIME_EPOCH_UTC);
-            tt2000_2           = bicas.dm_utils.convert_N_to_1_SPR_Epoch(  tt2000_1,           nSpr, freqWithinRecords);
-            ACQUISITION_TIME_2 = bicas.dm_utils.tt2000_to_ACQUISITION_TIME(tt2000_2,           ACQUISITION_TIME_EPOCH_UTC);
+%           tt2000_1           = bicas.proc_utils.ACQUISITION_TIME_to_tt2000(ACQUISITION_TIME_1);
+            tt2000_1           = bicas.proc_utils.ACQUISITION_TIME_to_tt2000(ACQUISITION_TIME_1, ACQUISITION_TIME_EPOCH_UTC);
+            tt2000_2           = bicas.proc_utils.convert_N_to_1_SPR_Epoch(  tt2000_1,           nSpr, freqWithinRecords);
+            ACQUISITION_TIME_2 = bicas.proc_utils.tt2000_to_ACQUISITION_TIME(tt2000_2,           ACQUISITION_TIME_EPOCH_UTC);
         end
         
         
@@ -437,9 +437,9 @@ classdef dm_utils
         % DELTA_PLUS_MINUS : Analogous to BIAS zVariable. CDF_INT8=int64. NOTE: Unit ns.
             
             if ~iscolumn(freqHz) || ~isfloat(freqHz) || any(isnan(freqHz))
-                error('BICAS:dm_utils:Assertion:IllegalArgument', '"freqHz" is not a column vector of non-NaN floats.')
+                error('BICAS:proc_utils:Assertion:IllegalArgument', '"freqHz" is not a column vector of non-NaN floats.')
             elseif ~isscalar(nSpr)
-                error('BICAS:dm_utils:Assertion:IllegalArgument', '"nSpr" is not a scalar.')
+                error('BICAS:proc_utils:Assertion:IllegalArgument', '"nSpr" is not a scalar.')
             end
             
             nRecords = size(freqHz, 1);
@@ -468,9 +468,9 @@ classdef dm_utils
         
             % ASSERTIONS
             if ~iscolumn(freqHz) || ~isfloat(freqHz) || any(isnan(freqHz))
-                error('BICAS:dm_utils:Assertion:IllegalArgument', '"freqHz" is not a column vector of non-NaN floats.')
+                error('BICAS:proc_utils:Assertion:IllegalArgument', '"freqHz" is not a column vector of non-NaN floats.')
             elseif ~isscalar(nSpr)
-                error('BICAS:dm_utils:Assertion:IllegalArgument', '"nSpr" is not a scalar.')
+                error('BICAS:proc_utils:Assertion:IllegalArgument', '"nSpr" is not a scalar.')
             end
             
             nRecords = size(freqHz, 1);
@@ -515,8 +515,8 @@ classdef dm_utils
         % IMPLEMENTATION NOTE: interp1 does seem to require oldData to be float. Using NaN as a "fill value" for the
         % return value imples that it too has to be a float.
             
-            bicas.dm_utils.assert_Epoch(oldTt2000)
-            bicas.dm_utils.assert_Epoch(newTt2000)
+            bicas.proc_utils.assert_Epoch(oldTt2000)
+            bicas.proc_utils.assert_Epoch(newTt2000)
             newData = interp1(double(oldTt2000), oldData, double(newTt2000), 'nearest', NaN);
         end
 
@@ -528,7 +528,7 @@ classdef dm_utils
         % Example: 2016-04-16T02:26:14.196334848
         % NOTE: This is the inverse to spdfparsett2000.
             
-            bicas.dm_utils.assert_Epoch(tt2000)
+            bicas.proc_utils.assert_Epoch(tt2000)
             
             v = spdfbreakdowntt2000(tt2000);
             utcStr = sprintf('%04i-%02i-%02iT%02i:%02i:%2i.%03i%03i%03i', v(1), v(2), v(3), v(4), v(5), v(6), v(7), v(8), v(9));
@@ -564,7 +564,7 @@ classdef dm_utils
             if nargin == 1
                 % ASSERTION
                 if ~strcmp(varargin{1}, 'explanation')
-                    error('BICAS:dm_utils:Assertion:IllegalArgument', 'Wrong number of arguments')
+                    error('BICAS:proc_utils:Assertion:IllegalArgument', 'Wrong number of arguments')
                 end
                     
                 EXPLANATION_STRING = 'Explanation for variable log messages: (x,y, ...)=size of variable; #=number of ...; Us=unique values (incl. NaN which counts as equal to itself); Mm=min-max';
@@ -578,7 +578,7 @@ classdef dm_utils
                 
                 % ASSERTIONS
                 if ~isnumeric(variableValue) || ndims(variableValue) > 3   % NOTE: min-max limit number of dimensions.
-                    error('BICAS:dm_utils:Assertion:IllegalArgument', 'v is not numerical with max 3 dimensions.')
+                    error('BICAS:proc_utils:Assertion:IllegalArgument', 'v is not numerical with max 3 dimensions.')
                 end
                 
                 nValues       = numel(variableValue);
@@ -630,7 +630,7 @@ classdef dm_utils
             else
                 
                 % ASSERTION
-                error('BICAS:dm_utils:Assertion:IllegalArgument', 'Wrong number of arguments')
+                error('BICAS:proc_utils:Assertion:IllegalArgument', 'Wrong number of arguments')
                 
             end
         end
@@ -639,7 +639,7 @@ classdef dm_utils
         
         function log_struct_arrays(variableName, variableValue)
             
-            bicas.dm_utils.log_array('explanation')
+            bicas.proc_utils.log_array('explanation')
             log_struct_arrays_INNER(variableName, variableValue)
         
             function log_struct_arrays_INNER(variableName, variableValue)
@@ -649,11 +649,11 @@ classdef dm_utils
                 
                 if iscolumn(variableValue) && isa(variableValue, 'int64') && ~isempty(regexp(variableName, 'Epoch$'))
                     
-                    bicas.dm_utils.log_tt2000_array(variableName, variableValue);
+                    bicas.proc_utils.log_tt2000_array(variableName, variableValue);
                     
                 elseif isnumeric(variableValue)
                     
-                    bicas.dm_utils.log_array(variableName, variableValue)
+                    bicas.proc_utils.log_array(variableName, variableValue)
                     
                 elseif isstruct(variableValue)
                     
@@ -674,7 +674,7 @@ classdef dm_utils
                     
                 else
                     
-                    error('BICAS:dm_utils:Assertion', 'variableValue is neither numeric nor struct.')
+                    error('BICAS:proc_utils:Assertion', 'variableValue is neither numeric nor struct.')
                     
                 end
             end
@@ -693,11 +693,11 @@ classdef dm_utils
         
         % PROPOSAL: Move to +utils.
         
-            bicas.dm_utils.assert_Epoch(tt2000)
+            bicas.proc_utils.assert_Epoch(tt2000)
             
             if ~isempty(tt2000)
-                strFirst = bicas.dm_utils.tt2000_to_UTC_str(tt2000(1));
-                strLast  = bicas.dm_utils.tt2000_to_UTC_str(tt2000(end));
+                strFirst = bicas.proc_utils.tt2000_to_UTC_str(tt2000(1));
+                strLast  = bicas.proc_utils.tt2000_to_UTC_str(tt2000(end));
                 bicas.logf('info', '%s: %s -- %s', variableName, strFirst, strLast)
             else
                 bicas.logf('info', '%s: <empty>', variableName)
@@ -710,9 +710,9 @@ classdef dm_utils
         % Assert that variable is an "zVar Epoch-like" variable.
         
             if ~iscolumn(Epoch)
-                error('BICAS:dm_utils:Assertion:IllegalArgument', 'Argument is not a column vector')   % Right ID?                
+                error('BICAS:proc_utils:Assertion:IllegalArgument', 'Argument is not a column vector')   % Right ID?                
             elseif ~isa(Epoch, 'int64')
-                error('BICAS:dm_utils:Assertion:IllegalArgument', 'Argument has the wrong class.')   % Right ID?
+                error('BICAS:proc_utils:Assertion:IllegalArgument', 'Argument has the wrong class.')   % Right ID?
             end
         end
 
@@ -722,15 +722,15 @@ classdef dm_utils
         % Assert that variable is an "zVar ACQUISITION_TIME-like" variable.
         
             if ~isa(ACQUISITION_TIME, 'uint32')
-                error('BICAS:dm_utils:Assertion:IllegalArgument', 'ACQUISITION_TIME is not uint32.')
+                error('BICAS:proc_utils:Assertion:IllegalArgument', 'ACQUISITION_TIME is not uint32.')
             elseif ndims(ACQUISITION_TIME) ~= 2
-                error('BICAS:dm_utils:Assertion:IllegalArgument', 'ACQUISITION_TIME is not 2D.')
+                error('BICAS:proc_utils:Assertion:IllegalArgument', 'ACQUISITION_TIME is not 2D.')
             elseif size(ACQUISITION_TIME, 2) ~= 2
-                error('BICAS:dm_utils:Assertion:IllegalArgument', 'ACQUISITION_TIME does not have two columns.')
+                error('BICAS:proc_utils:Assertion:IllegalArgument', 'ACQUISITION_TIME does not have two columns.')
             elseif any(ACQUISITION_TIME(:, 1) < 0)
-                error('BICAS:dm_utils:Assertion:IllegalArgument', 'ACQUISITION_TIME has negative number of integer seconds.')
+                error('BICAS:proc_utils:Assertion:IllegalArgument', 'ACQUISITION_TIME has negative number of integer seconds.')
             elseif any(65536 <= ACQUISITION_TIME(:, 2))    % Does not need to check for negative values due to uint32.
-                error('BICAS:dm_utils:Assertion:IllegalArgument', 'ACQUISITION_TIME subseconds out of range.')
+                error('BICAS:proc_utils:Assertion:IllegalArgument', 'ACQUISITION_TIME subseconds out of range.')
             end
         end
         
@@ -757,7 +757,7 @@ classdef dm_utils
                 end
             end
             if length(unique(nRows)) > 1    % NOTE: length==0 valid for struct containing zero numeric fields.
-                error('BICAS:dm_utils:Assertion', 'Numeric fields in struct do not have the same number of rows (likely corresponding to CDF zVar records).')
+                error('BICAS:proc_utils:Assertion', 'Numeric fields in struct do not have the same number of rows (likely corresponding to CDF zVar records).')
             end
         end
         

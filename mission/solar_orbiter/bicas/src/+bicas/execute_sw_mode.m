@@ -88,7 +88,7 @@ for i = 1:length(SwModeInfo.inputsList)
     %===================================================
     % ASSERTIONS: Check GlobalAttributes values
     %===================================================
-    % NOTE: Can not use bicas.dm_utils.assert_unvaried_N_rows(ZVars) since not all zVariables have same number of
+    % NOTE: Can not use bicas.proc_utils.assert_unvaried_N_rows(ZVars) since not all zVariables have same number of
     % records. Ex: Metadata such as ACQUISITION_TIME_UNITS.
     bicas.utils.assert_strings_equal(...
         SETTINGS.get_fv('INPUT_CDF_ASSERTIONS.STRICT_DATASET_ID'), ...
@@ -222,7 +222,7 @@ do = dataobj(filePath);                 % do=dataobj, i.e. irfu-matlab's dataobj
 bicas.log('info', 'Converting dataobj (CDF data structure) to PDV.')
 ZVars             = struct();
 zVariableNameList = fieldnames(do.data);
-%bicas.dm_utils.log_array('explanation')
+%bicas.proc_utils.log_array('explanation')
 for i = 1:length(zVariableNameList)
     zVariableName = zVariableNameList{i};
     zVariableData = do.data.(zVariableName).data;
@@ -232,7 +232,7 @@ for i = 1:length(zVariableNameList)
     % ----------------------------------
     % NOTE: Log messages should reflect the values READ from file.
     %=================================================================================================
-    %bicas.dm_utils.log_struct_arrays(zVariableName, zVariableData);
+    %bicas.proc_utils.log_struct_arrays(zVariableName, zVariableData);
     
     %=================================================
     % Replace fill/pad values with NaN for FLOAT data
@@ -302,7 +302,7 @@ DataObj = dataobj(masterCdfPath);
 % NOTE: Only sets a SUBSET of the zVariables in master CDF.
 pdFieldNameList = fieldnames(ZVarsSubset);
 bicas.log('info', 'Converting PDV to dataobj (CDF data structure)')
-%bicas.dm_utils.log_array('explanation')
+%bicas.proc_utils.log_array('explanation')
 for iPdFieldName = 1:length(pdFieldNameList)
     zVariableName = pdFieldNameList{iPdFieldName};
     
@@ -329,7 +329,7 @@ for iPdFieldName = 1:length(pdFieldNameList)
     % ----------------------------------
     % NOTE: Log messages should reflect the values WRITTEN to file.
     %=================================================================================================
-    %bicas.dm_utils.log_struct_arrays(zVariableName, zVariableData);
+    %bicas.proc_utils.log_struct_arrays(zVariableName, zVariableData);
     
     % Set zVariable.
     DataObj.data.(zVariableName).data = zVariableData;
