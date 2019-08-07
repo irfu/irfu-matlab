@@ -26,7 +26,7 @@
 % -- s/w mode
 % -- config file        (might implement enabling/disabling s/w modes for debugging)
 % -- settings arguments (might implement enabling/disabling s/w modes for debugging)
-% To keep the function agnostic about s/w modes and input and output data sets, and settings, this function does not
+% To keep the function agnostic about s/w modes and input and output datasets, and settings, this function does not
 % determine whether specific input parameters or settings keys/values) are legal. The caller has to do those checks.
 %
 %

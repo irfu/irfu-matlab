@@ -77,7 +77,7 @@ classdef swmode_defs
         % regexp: "\w    A word character [a-z_A-Z0-9]"
         SW_MODE_CLI_PARAMETER_REGEX = '^[A-Za-z][\w-]+$';   % NOTE: Only one backslash in MATLAB regex as opposed to in the RCS ICD.
         
-        % The RCS ICD 00037 iss1rev2 draft 2019-07-11, section 3.1.2.3 only permits these characters (and only lowercase).
+        % The RCS ICD 00037 iss1rev2 draft 2019-07-11, section 3.1.2.3 only permits these characters (and only lowercase!).
         % This regexp only describes the "option body", i.e. not the preceding "--".
         SIP_CLI_OPTION_BODY_REGEX = '[a-z0-9_]+';
     end
@@ -315,15 +315,16 @@ classdef swmode_defs
             EJ_library.utils.assert.castring_regexp(str, '.* .*')
             EJ_library.utils.assert.castring_regexp(str, '[^<>]*')
         end
-
-        % NOTE: Really refers to "option body".
-        function assert_SIP_CLI_option(sipCliOptionBody)
-            EJ_library.utils.assert.castring_regexp(sipCliOptionBody, bicas.swmode_defs.SW_MODE_CLI_PARAMETER_REGEX)
-        end
         
         function assert_SW_mode_CLI_option(swModeCliOption)
             EJ_library.utils.assert.castring_regexp(swModeCliOption, bicas.swmode_defs.SW_MODE_CLI_PARAMETER_REGEX)
         end
+
+        % NOTE: Really refers to "option body".
+        function assert_SIP_CLI_option(sipCliOptionBody)
+            EJ_library.utils.assert.castring_regexp(sipCliOptionBody, bicas.swmode_defs.SIP_CLI_OPTION_BODY_REGEX)
+        end
+        
     end    % methods(Static, Access=private)
 
 end

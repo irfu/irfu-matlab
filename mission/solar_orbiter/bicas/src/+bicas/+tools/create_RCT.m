@@ -48,8 +48,8 @@ function create_RCT(rctMasterCdfFile, destDir, useOfficialRctFilename, pipelineI
 %
 % The RCT shall comply the following file naming convention:
 % SOLO_CAL_RPW-[receiver]_[free-field]_[Version].cdf	
-% Where [receiver] is the name of the receiver in uppercase characters (i.e., “TDS” pr
-% “LFR”) of the corresponding RPW L1R data set, [free-field] is a field that can be used to
+% Where [receiver] is the name of the receiver in uppercase characters (i.e., “TDS” or
+% “LFR”) of the corresponding RPW L1R dataset, [free-field] is a field that can be used to
 % specify the content of the file (e.g., “BIAS-F0”) and [Version] is the version of the
 % calibration table file (see previous section).
 % Note that this RCT naming convention is not fully compliant with the SOC definition [AD1].
