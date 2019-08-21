@@ -53,9 +53,6 @@ classdef proc
     %   NOTE: Processing functions still need to know the input skeleton version.
     %   NOTE: One can choose PDIDs such that the incorporate the version or not. If they do not, then the corresponding
     %         PDVs must themselves contain the same information.
-    %
-    % TODO-NEED-INFO: Do the production functions really need to be aware of EIn & EOut PDIDs?!
-    %       They need to know which input is which though: HK vs SCI, different types of datasets.
     % --
     % PROPOSAL: Submit CDF global attributes to processing functions.
     %     PRO: Can use the ~Skeleton_version GA for assertion & interpreting data instead of PDID.
@@ -79,12 +76,6 @@ classdef proc
     %   NOTE: Metadata associated with each s/w mode
     %
     % --
-    % PROPOSAL: Master CDF as input.
-    %   PRO: Needed for merging global attributes?
-    %
-    % PROPOSAL: Instantiate class, use instance methods instead of static.
-    %   PRO: Can have SETTINGS & constants as instance variable instead of calling global variables.
-    %
     % TODO-DECISION: How handle differences between pipelines?
     %
     % PROPOSAL: (Outside) Derive PDID from input dataset, then use it when sending input dataset argument to production function.

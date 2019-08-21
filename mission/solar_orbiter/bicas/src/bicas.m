@@ -63,9 +63,11 @@ function errorCode = bicas( varargin )
 %
 % PROPOSAL: Check that all master cdf files are present/available.
 %
-% PROPOSAL: Rename to bicas.main (+bicas/main.m).
+% PROPOSAL: Rename.
 %   NOTE: Function already has an internal function named "main".
-%   PROPOSAL: 
+%   PRO: Parent package is already named "bicas", and function is outside package (bicas.m at root-level).
+%   PROPOSAL: bicas.main (+bicas/main.m)
+%   PROPOSAL: bicas.root_func
 %
 % PROPOSAL: Put a summarized version of CLI syntax in "bicas --help" (somethinger easier that the S/W descriptor).
 %    PRO: Useful when S/W descriptor becomes big and complex.
@@ -222,10 +224,13 @@ bicasRootPath         = EJ_library.utils.get_abs_path(fullfile(matlabSrcPath, '.
 %=======================================
 % Log misc. paths and all CLI arguments
 %=======================================
-bicas.logf('info', 'BICAS software root path:  "%s"', bicasRootPath)
-bicas.logf('info', 'Current working directory: "%s"', pwd);   % Useful for debugging the use of relative directory arguments.
+% IMPLEMENTATION NOTE: Want this as early as possible, before interpreting arguments. Should therefore not merge this
+% with printing settings. This might help debug why settings were not set.
+bicas.logf('info', 'BICAS software root path:  bicasRootPath = "%s"', bicasRootPath)
+bicas.logf('info', 'Current working directory: pwd           = "%s"', pwd);   % Useful for debugging the use of relative directory arguments.
 bicas.logf('info', '\nCOMMAND-LINE INTERFACE (CLI) ARGUMENTS TO BICAS\n')
 bicas.logf('info',   '===============================================')
+cliArgumentsQuotedList = {};
 for i = 1:length(cliArgumentsList)
     bicas.logf('info', '    CLI argument %2i: "%s"', i, cliArgumentsList{i})
     cliArgumentsQuotedList{i} = ['''', cliArgumentsList{i}, ''''];
@@ -233,7 +238,7 @@ end
 cliArgumentsStr = strjoin(cliArgumentsQuotedList, ' ');
 % IMPLEMENTATION NOTE: Printing the entire sequence of arguments, quoted with apostophe, is useful for copy-pasting to
 % both MATLAB command prompt and bash.
-bicas.logf('info', '    CLI arguments for copy-pasting: %s', cliArgumentsStr)
+bicas.logf('info', '    CLI arguments for copy-pasting: %s\n\n', cliArgumentsStr)
 
 
 
@@ -260,8 +265,10 @@ if ~isempty(CliData.configFile)
 else
     configFile = fullfile(bicasRootPath, C.DEFAULT_CONFIG_FILE_RELATIVE_PATH);
 end
-rowList = EJ_library.utils.read_text_file(configFile);
+bicas.logf('info', 'configFile = "%s"', configFile)
+rowList                 = EJ_library.utils.read_text_file(configFile);
 ConfigFileSettingsVsMap = bicas.interpret_config_file(rowList);
+bicas.log('info', 'Overriding subset of in-memory settings using config file.')
 SETTINGS.set_preexisting_from_strings(ConfigFileSettingsVsMap);    % Modify SETTINGS
 
 
@@ -269,6 +276,7 @@ SETTINGS.set_preexisting_from_strings(ConfigFileSettingsVsMap);    % Modify SETT
 %=========================================================
 % Modify settings according to (inofficial) CLI arguments
 %=========================================================
+bicas.log('info', 'Overriding in-memory settings using (optional, inofficial) CLI arguments, if any.')
 SETTINGS.set_preexisting_from_strings(CliData.ModifiedSettingsMap);    % Modify SETTINGS
 SETTINGS.make_read_only();
 % CASE: SETTINGS has now been finalized and is read-only (by assertion) after this.
@@ -286,26 +294,22 @@ EJ_library.utils.assert.castring_regexp(SETTINGS.get_fv('SWD.release.date'),    
 % NOTE: It is hard to thoroughly follow the description, but the end result should be under
 % release-->version-->pattern (not to be confused with release_dataset-->version--pattern).
 EJ_library.utils.assert.castring_regexp(SETTINGS.get_fv('SWD.release.version'), '(\d+\.)?(\d+\.)?(\d+)')
-% if isempty(regexp(JsonSwd.release.version, '^(\d+\.)?(\d+\.)?(\d+)$', 'once'))
-%     error('BICAS:get_sw_descriptor:IllegalCodeConfiguration', 'Illegal S/W descriptor release version "%s". This indicates a hard-coded configuration bug.', JsonSwd.release.version)
-% end
 
 
 
-bicas.log('info', bicas.sprint_SETTINGS(SETTINGS))                 % Prints/log the contents of SETTINGS.
+bicas.log('info', bicas.sprint_SETTINGS(SETTINGS))    % Prints/log the contents of SETTINGS.
 
 
 
 %================================
 % Set pipelineId, calibrationDir
 %================================
-% COMPLETE CODE. DISABLED SINCE IT IS NOT NEEDED BY OTHER CODE YET.
-%
-%calibrationDir = read_env_variable(SETTINGS, 'ROC_RCS_CAL_PATH',    'ENV_VAR_OVERRIDE.ROC_RCS_CAL_PATH');
+calibrationDir = read_env_variable(SETTINGS, 'ROC_RCS_CAL_PATH',    'ENV_VAR_OVERRIDE.ROC_RCS_CAL_PATH');
 pipelineId     = read_env_variable(SETTINGS, 'ROC_PIP_NAME',        'ENV_VAR_OVERRIDE.ROC_PIP_NAME');   % RGTS or RODP
 masterCdfDir   = read_env_variable(SETTINGS, 'ROC_RCS_MASTER_PATH', 'ENV_VAR_OVERRIDE.ROC_RCS_MASTER_PATH');
-bicas.logf('info', 'pipelineId   = "%s" (value actually used)', pipelineId)
-bicas.logf('info', 'masterCdfDir = "%s" (value actually used)', masterCdfDir)
+bicas.logf('info', 'calibrationDir = "%s"', calibrationDir)
+bicas.logf('info', 'pipelineId     = "%s"', pipelineId)
+bicas.logf('info', 'masterCdfDir   = "%s"', masterCdfDir)
 
 
 
@@ -476,7 +480,7 @@ end
 % Print settings
 bicas.stdout_print(bicas.sprint_SETTINGS(SETTINGS))   % Includes title
 
-bicas.stdout_printf('\nSee "readme.txt" and user manual for more help.\n')
+bicas.stdout_printf('See "readme.txt" and user manual for more help.\n')
 end
 
 
@@ -488,6 +492,7 @@ settingsOverrideValue = SETTINGS.get_fv(settingsOverrideName);
 if isempty(settingsOverrideValue)
     v = getenv(envVarName);
 else
+    bicas.logf('info', 'Environment variable "%s" overridden by setting\n    %s = "%s"\n', envVarName, settingsOverrideName, settingsOverrideValue)
     v = settingsOverrideValue;
 end
 
@@ -495,6 +500,6 @@ end
 if isempty(v)
     error('BICAS:Assertion', ...
         'Can not set internal variable corresponding to environment variable "%s" from either (1) the environment variable, or (2) settings key value "%s".', ...
-        envVarName, settingsOverrideName)
+        envVarName, settingsOverrideValue)
 end
 end

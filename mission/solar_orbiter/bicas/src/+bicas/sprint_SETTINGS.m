@@ -11,6 +11,7 @@ function str = sprint_SETTINGS(SETTINGS)
 % PROPOSAL: Better handling of different data types (MATLAB classes). Let settings.m do conversions to strings?!
 % PROPOSAL: Somehow print where values come from (default, CLI, config file).
 % PROPOSAL: Make hierarchy visually clearer?!!! Should then have help from data structure itself.
+% PROPOSAL: Move to bicas.m.
 
 % IMPLEMENTATION NOTE: Only prints "Settings" as a header (not "constants") to indicate/hint that it is only the content
 % of the "SETTINGS" variables, and not of constants.m.
@@ -34,5 +35,7 @@ for iKey = 1:length(keyList)
     
     str = [str, sprintf(['    %-', int2str(lengthMaxKey),'s = %s\n'], key, strValue)];
 end
+
+str = [str, sprintf('\n')];
 
 end

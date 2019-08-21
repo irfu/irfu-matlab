@@ -12,16 +12,16 @@
 %   NOTE: Has to handle approximate numeric results.
 
 function proc_utils___ATEST
-    find_sequences_TEST
-    convert_N_to_1_SPR_ACQUISITION_TIME_TEST
-    convert_N_to_1_SPR_Epoch_TEST
-    convert_N_to_1_SPR_redistribute_TEST
-    convert_N_to_1_SPR_repeat_TEST
+    find_sequences___ATEST
+    convert_N_to_1_SPR_ACQUISITION_TIME___ATEST
+    convert_N_to_1_SPR_Epoch___ATEST
+    convert_N_to_1_SPR_redistribute___ATEST
+    convert_N_to_1_SPR_repeat___ATEST
 end
 
 
 
-function find_sequences_TEST
+function find_sequences___ATEST
     
     new_test = @(inputs, outputs) (EJ_library.atest.CompareFuncResult(@bicas.proc_utils.find_sequences, inputs, outputs));
     tl = {};
@@ -38,7 +38,7 @@ end
 
 
 
-function convert_N_to_1_SPR_ACQUISITION_TIME_TEST
+function convert_N_to_1_SPR_ACQUISITION_TIME___ATEST
 % NOTE: Indirectly tests convert_N_to_1_SPR_Epoch too.
 
     % NOTE: Tests should actually be independent of the exact value(!)
@@ -57,7 +57,7 @@ end
 
 
 
-function convert_N_to_1_SPR_Epoch_TEST
+function convert_N_to_1_SPR_Epoch___ATEST
     new_test = @(inputs, outputs) (EJ_library.atest.CompareFuncResult(@bicas.proc_utils.convert_N_to_1_SPR_Epoch, inputs, outputs));
     tl = {};
     
@@ -70,7 +70,7 @@ end
 
 
 
-function convert_N_to_1_SPR_redistribute_TEST
+function convert_N_to_1_SPR_redistribute___ATEST
     new_test = @(inputs, outputs) (EJ_library.atest.CompareFuncResult(@bicas.proc_utils.convert_N_to_1_SPR_redistribute, inputs, outputs));
     tl = {};
     
@@ -83,7 +83,7 @@ end
 
 
 
-function convert_N_to_1_SPR_repeat_TEST
+function convert_N_to_1_SPR_repeat___ATEST
     new_test = @(inputs, outputs) (EJ_library.atest.CompareFuncResult(@bicas.proc_utils.convert_N_to_1_SPR_repeat, inputs, outputs));
     tl = {};
     
