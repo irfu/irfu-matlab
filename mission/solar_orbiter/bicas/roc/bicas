@@ -67,7 +67,7 @@ declare -r STDERR_PREFIX='STDERR: '   # NOTE: Not a regex (but code will misbeha
 
 # Name of MATLAB script that launches the MATLAB part of BICAS, such as it is called from inside MATLAB,
 # i.e. WITHOUT the file extension ".m".
-declare -r MATLAB_SCRIPT_NAME="bicas"
+declare -r MATLAB_SCRIPT_NAME="bicas.main"
 
 # The name of the settings key in the config file, which value is the path to the MATLAB executable.
 # Should technically not contain anything that can be interpreted as regex, but period is probably fine anyway.

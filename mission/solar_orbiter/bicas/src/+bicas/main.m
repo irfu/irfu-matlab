@@ -55,19 +55,13 @@
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
 % First created 2016-03-xx
 %
-function errorCode = bicas( varargin )
+function errorCode = main( varargin )
 %
 % PROPOSAL: Set option for MATLAB warnings. Disable?
 %    NOTE: TN claims warnings are sent to stdout.
 % TODO-NEED-INFO: Is the application allowed to overwrite output files?
 %
 % PROPOSAL: Check that all master cdf files are present/available.
-%
-% PROPOSAL: Rename.
-%   NOTE: Function already has an internal function named "main".
-%   PRO: Parent package is already named "bicas", and function is outside package (bicas.m at root-level).
-%   PROPOSAL: bicas.main (+bicas/main.m)
-%   PROPOSAL: bicas.root_func
 %
 % PROPOSAL: Put a summarized version of CLI syntax in "bicas --help" (somethinger easier that the S/W descriptor).
 %    PRO: Useful when S/W descriptor becomes big and complex.
@@ -91,7 +85,7 @@ C = bicas.error_safe_constants();
 
 try
     errorCode = C.EMIDP_2_INFO('NoError').errorCode;
-    main(varargin);
+    main_without_error_handling(varargin);
 
 catch Exception1
     %================================================================
@@ -173,7 +167,7 @@ end    % bicas
 
 
 % BICAS's de facto main function, without error handling.
-function main(cliArgumentsList)
+function main_without_error_handling(cliArgumentsList)
 
 
 
@@ -215,9 +209,9 @@ irf('version')                % Print e.g. "irfu-matlab version: 2017-02-21,  v1
 %===============================
 % Derive BICAS's directory root
 %===============================
-% ASSUMES: The current file is in the <BICAS>/src directory.
+% ASSUMES: The current file is in the <BICAS>/src/+bicas/ directory.
 [matlabSrcPath, ~, ~] = fileparts(mfilename('fullpath'));   % Use path of the current MATLAB file.
-bicasRootPath         = EJ_library.utils.get_abs_path(fullfile(matlabSrcPath, '..'));
+bicasRootPath         = EJ_library.utils.get_abs_path(fullfile(matlabSrcPath, '..', '..'));
 
 
 
