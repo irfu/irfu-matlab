@@ -20,34 +20,28 @@
 # In addition, a symlink (with a constant filename) to the current log file is created.
 # Overwriting the old symlink might technically not be compliant with the RCS ICD.
 # 
-# NOTE: The script takes stderr and copy it to the log file with a prefix.
-# 
 # 
 # 
 # IMPLEMENTATION NOTE: Reasons to pipe MATLAB's stdout to the log file
 # from this bash script rather than from MATLAB code:
-# 1) avoid manually having to pipe everything to log file in MATLAB code.
+# 1) avoid manually having to pipe everything to log file in MATLAB code
 # 2) can handle stdout from library MATLAB code that prints to stdout (code that should not be altered, e.g. in irfu-matlab, e.g. irf.log)
-# 3) can handle stdout from the MATLAB startup process
+# 3) can handle stdout from the MATLAB startup process (currently ignored).
 # 
 # IMPLEMENTATION NOTE: The same arguments that are passed to this script are passed on to the MATLAB code, including
-# arguments which are unnecessary there, including --log <dir> and --config <file>.
-# PRO (Reasons for):
+# arguments which are unnecessary there, including --log <file> and --config <file>.
+# PRO:
 # 1) It is best to let as much parameter-parsing (incl. syntax checking) code to be in one place as possible (the MATLAB code).
 # 2) Enable the MATLAB code to print all the command-line parameters in error messages and to the log file.
 # 3) Enable the MATLAB code to print its syntax which is then identical to the syntax of this script.
 # CON: The MATLAB code needs some knowledge of the parameter parsing in this script.
 #
-# IMPLEMENTATION NOTE: The name of this file may only contain alphanumeric characters. Can therefore not use 
+# IMPLEMENTATION NOTE: The name of this file must only contain alphanumeric characters. Can therefore not use 
 # the file extension ".sh" to indicate that it is a shell script.
 # /ROC-TST-GSE-ICD-00023-LES, iss02rev02, Section 3.1.
 # 
 #====================================================================================================
-# QUESTION: If log file already exists, overwrite, amend, or error?
-# PROPOSAL: Better error message when can not find MATLAB_COMMAND. Common error.
 # PROPOSAL: Detect presence of bicas within irfu-matlab (avoid there being two bicas).
-#
-# TODO?: Detect root path from new environment variable specified in new/upcoming RCS ICD.
 #
 # BUG: If mistakenly uses bad "--config" flag, i.e. "--conf", then the script itself will use the wrong
 # MATLAB version ==> Can not launch MATLAB (which would have checked if "--conf" was a bad flag).
@@ -58,12 +52,13 @@
 
 
 
-# Search pattern that determines which stdout (in particular from MATLAB) that is actually piped to stdout.
+# Prefix that MATLAB code uses for stdout rows that should be sent to stdout (from the script).
 # NOTE: This pattern must match the corresponding prefix used in MATLAB.
 declare -r STDOUT_PREFIX='STDOUT: '    # NOTE: Not regex. Implicit that should match beginning of line.
 
-# Prefix added to stdout when it is added to the log.
-declare -r STDERR_PREFIX='STDERR: '   # NOTE: Not a regex (but code will misbehave for regex commands)!
+# Prefix that MATLAB code uses for stdout rows that should be sent to the log file.
+declare -r LOG_PREFIX='LOG: '
+
 
 # Name of MATLAB script that launches the MATLAB part of BICAS, such as it is called from inside MATLAB,
 # i.e. WITHOUT the file extension ".m".
@@ -130,6 +125,7 @@ fi
 #       to make logging easier and should contain an as large fraction of the this script as possible.
 loggable_main_code() {
 
+    # DEBUG. Normally ignored, but printed (not filtered away) if logging is disabled.
     echo "Command-line arguments: $@"
 
 
@@ -205,6 +201,7 @@ loggable_main_code() {
 
 
 
+    # DEBUG. Normally ignored, but printed (not filtered away) if logging is disabled.
     echo "BICAS_ROOT_PATH  = \"$BICAS_ROOT_PATH\""
     echo "MATLAB_COMMAND   = \"$MATLAB_COMMAND\""
     echo "IRFUMATLAB_PATH  = \"${IRFUMATLAB_PATH}\""
@@ -291,40 +288,15 @@ loggable_main_code() {
 
 
 
-#===========================================================================================================================
-# Function for sending (copying) the stderr to a log file (amending). Every row of stderr is prefixed in the log file.
-# 
-# NOTE: It is possible to use the same (stderr) log file for other logging (stdout) at the same time.
-# The order between stdout and stderr is not guaranteed then.
-# ASSUMES: stderr itself never contains the prefix. If so, the string is removed.
-#===========================================================================================================================
-log_stderr() {
-    local log_file_stderr="$1"
-    shift
-    #===========================================================================================================================
-    # The functionality requires some bash tricks:
-    # 1) One can only pipe stdout (not stderr) and one can only "copy" stdout (not stderr) to a file with "tee -a".
-    #    Therefore the code switches stderr and stdout with 3>&1 1>&2 2>&3 and then pipes and "copies" it with "tee -a".
-    #    After that, outside that shell (the brackets), switches them back again.
-    # 2) We want the function to return the error code of the first, innermost command. Must therefore exit inner shell with
-    #    exit ${PIPESTATUS[0]} and then the whole function with it again.
-    # 
-    # NOTE: $STDERR_PREFIX is added to stderr and is then removed again.
-    #
-    # tee options:
-    #        -a, --append
-    #               append to the given FILEs, do not overwrite
-    #===========================================================================================================================
-    ( eval "$@" 3>&1 1>&2 2>&3 | sed "s/^/${STDERR_PREFIX}/" | tee -a "$log_file_stderr" | sed "s/^${STDERR_PREFIX}//" ; exit ${PIPESTATUS[0]} ) 3>&1 1>&2 2>&3
-    exit ${PIPESTATUS[0]}
-}
-
-
-
-# Filter stdout so that only that intended to for stdout is let through.
-filter_out_stdout() {
+# Filter stdout so that only that intended for stdout is let through.
+filter_stdout_labeled_rows() {
     # NOTE: Call grep to FILTER entire rows. Call sed to filter out the prefix. Must call both.
     grep "^${STDOUT_PREFIX}" | sed "s/^${STDOUT_PREFIX}//"
+}
+
+filter_log_labeled_rows() {
+    # NOTE: Call grep to FILTER entire rows. Call sed to filter out the prefix. Must call both.
+    grep "^${LOG_PREFIX}" | sed "s/^${LOG_PREFIX}//"
 }
 
 
@@ -332,18 +304,18 @@ filter_out_stdout() {
 #######################################
 # CALL BASH FUNCTION AND START LOGGING
 #######################################
-# Launch MATLAB and do nothing with stderr.
-#loggable_main_code "$@" | tee -a "$log_file" | filter_out_stdout
-
-# Launch MATLAB and COPY stderr to the log file (where stderr is prefixed)
-# ------------------------------------------------------------------------
+# Launch MATLAB and COPY selected stdout rows to the log file
+# -----------------------------------------------------------
 # tee options:
 #        -a, --append
 #               append to the given FILEs, do not overwrite
 #               
 # NOTE: Should always APPEND to log file.
 #       /RCS ICD 00037, iss1/rev2, draft 2019-07-11, Section 4.2.1
-log_stderr "$log_file" loggable_main_code "$@" | tee -a "$log_file" | filter_out_stdout
+#
+# IMPLEMENTATION NOTE: Somewhat unsure if tee command prints to file "immediately" (can one follow the progress of execution?).
+#
+loggable_main_code "$@" | tee -a >(filter_log_labeled_rows >> "$log_file") | filter_stdout_labeled_rows
 
 matlab_error_code=${PIPESTATUS[0]}    # Get exit code of the first component of piping.
 exit $matlab_error_code
