@@ -58,15 +58,16 @@
 function errorCode = main( varargin )
 %
 % PROPOSAL: Set option for MATLAB warnings. Disable?
-%    NOTE: TN claims warnings are sent to stdout.
+%   NOTE: TN claims warnings are sent to stdout.
 % TODO-NEED-INFO: Is the application allowed to overwrite output files?
 %
 % PROPOSAL: Check that all master cdf files are present/available.
 %
 % PROPOSAL: Put a summarized version of CLI syntax in "bicas --help" (somethinger easier that the S/W descriptor).
-%    PRO: Useful when S/W descriptor becomes big and complex.
+%   PRO: Useful when S/W descriptor becomes big and complex.
 %
-% PROPOSAL: Split up the "main" function in several functions (outsource chunks of its code to smaller functions which are called).
+% PROPOSAL: Split up the "main_without_error_handling" function in several functions (outsource chunks of its code to smaller functions which are called).
+%   PROPOSAL: Printing CLI arguments.
 %
 % PROPOSAL: Better handling of errors in dataobj (reading CDF files).
 %   PROPOSAL: Wrap dataobj in function and catch and rethrow errors with BICAS' error IDs.

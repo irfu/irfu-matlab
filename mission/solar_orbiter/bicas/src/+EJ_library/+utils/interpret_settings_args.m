@@ -63,14 +63,6 @@ function [Settings] = interpret_settings_args(DefaultSettings, argList)
     
     import EJ_library.*
     
-    % Normalize argList so that varargin can be used to assign argList
-    % ----------------------------------------------------------------
-    % IMPLEMENTATION NOTE: varargin represent zero arguments by using {{}} (i.e. not an empty list). Reinterprets that
-    % value here to simplify the algorithm.
-    if numel(argList) == 1 && isempty(argList{1})
-        argList = {};   % Empty cell array.
-    end
-    
     %====================================================
     % Assign SettingsArg1: Uses first argument if struct
     %====================================================

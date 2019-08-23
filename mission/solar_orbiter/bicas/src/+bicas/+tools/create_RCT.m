@@ -1,4 +1,4 @@
-function create_RCT(rctMasterCdfFile, destDir, useOfficialRctFilename, pipelineId)
+function create_RCT(rctMasterCdfFile, destDir, pipelineId)
 %
 % Script/utility for creating the ROC-SGSE and RODP BIAS RCTs. The code reads a master file, and using it, creates a
 % version with calibration data added to it.

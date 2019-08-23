@@ -1,4 +1,4 @@
-% Semi-automated test code for class "calibration".
+% Semi-automated test code for function "apply_transfer_function".
 %
 %
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden

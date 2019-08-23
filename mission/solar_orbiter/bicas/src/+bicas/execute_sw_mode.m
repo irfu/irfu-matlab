@@ -212,7 +212,7 @@ function [ZVars, GlobalAttributes] = read_dataset_CDF(filePath)
 % Read file
 %===========
 bicas.logf('info', 'Reading CDF file: "%s"', filePath)
-do = dataobj(filePath);                 % do=dataobj, i.e. irfu-matlab's dataobj!!!
+DataObj = dataobj(filePath);                 % do=dataobj, i.e. irfu-matlab's dataobj!!!
 
 
 
@@ -221,11 +221,11 @@ do = dataobj(filePath);                 % do=dataobj, i.e. irfu-matlab's dataobj
 %=========================================================================
 bicas.log('info', 'Converting dataobj (CDF data structure) to PDV.')
 ZVars             = struct();
-zVariableNameList = fieldnames(do.data);
+zVariableNameList = fieldnames(DataObj.data);
 %bicas.proc_utils.log_array('explanation')
 for i = 1:length(zVariableNameList)
     zVariableName = zVariableNameList{i};
-    zVariableData = do.data.(zVariableName).data;
+    zVariableData = DataObj.data.(zVariableName).data;
     
     %=================================================================================================
     % Log data to be written to CDF file
@@ -241,7 +241,7 @@ for i = 1:length(zVariableNameList)
     %    Ex: ACQUISITION_TIME, Epoch.
     % QUESTION: How distinguish integer zVariables that could be converted to floats (and therefore use NaN)?
     if isfloat(zVariableData)
-        [fillValue, padValue] = get_fill_pad_values(do, zVariableName);
+        [fillValue, padValue] = get_fill_pad_values(DataObj, zVariableName);
         zVariableData = bicas.utils.replace_value(zVariableData, fillValue, NaN);
         zVariableData = bicas.utils.replace_value(zVariableData, padValue,  NaN);
     else
@@ -254,12 +254,12 @@ end
 
 
 
-bicas.logf('info', 'File''s Global attribute: DATASET_ID       = "%s"', do.GlobalAttributes.DATASET_ID{1})
-bicas.logf('info', 'File''s Global attribute: Skeleton_version = "%s"', do.GlobalAttributes.Skeleton_version{1})
+bicas.logf('info', 'File''s Global attribute: DATASET_ID       = "%s"', DataObj.GlobalAttributes.DATASET_ID{1})
+bicas.logf('info', 'File''s Global attribute: Skeleton_version = "%s"', DataObj.GlobalAttributes.Skeleton_version{1})
 
 
 
-GlobalAttributes = do.GlobalAttributes;   % Assign return value.
+GlobalAttributes = DataObj.GlobalAttributes;   % Assign return value.
 
 end
 

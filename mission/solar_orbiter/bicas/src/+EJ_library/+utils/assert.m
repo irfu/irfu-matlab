@@ -90,11 +90,10 @@ classdef assert
         
         
         
-        % Assert that entire string matches a regexp or any in a cell array of regular expressions.
+        % Assert that ENTIRE string matches a regexp or any in a cell array of regular expressions.
         % NOTE: If regex is an empty cell array, then assertion fails.
+        % NOTE: Will permit empty strings to match a regular expression.
         function castring_regexp(s, regexp)
-            % PROPOSAL: Match any regexp in a cell array of regexps.
-            
             if ~any(EJ_library.utils.regexpf(s, regexp))
                 error(EJ_library.utils.assert.ERROR_MSG_ID, 'String "%s" (in its entirety) does not match any of the specified regular expressions.', s)
             end
@@ -211,7 +210,7 @@ classdef assert
             import EJ_library.*
             
             if isempty(varargin)   %numel(varargin) == 1 && isempty(varargin{1})
-                checkType = 'exact';    % Default
+                checkType = 'exact';
             elseif numel(varargin) == 1 && strcmp(varargin{1}, 'subset')
                 checkType = 'subset';
             elseif numel(varargin) == 1 && strcmp(varargin{1}, 'superset')
@@ -223,7 +222,7 @@ classdef assert
             if ~isstruct(s)
                 error(EJ_library.utils.assert.ERROR_MSG_ID, 'Expected struct is not struct.')
             end
-            utils.assert.castring_set(fieldNamesSet)    % Abolish to speed up?
+            utils.assert.castring_set(fieldNamesSet)    % Abolish?
             
             missingFnList = setdiff(fieldNamesSet, fieldnames(s));
             extraFnList   = setdiff(fieldnames(s), fieldNamesSet);

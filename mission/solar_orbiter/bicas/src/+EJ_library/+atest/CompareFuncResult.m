@@ -30,7 +30,6 @@
 classdef CompareFuncResult
     % TODO-DECISION: Terminology?
     %   PROPOSAL: Real
-    %   PROPOSAL: Actual=act
     % PROPOSAL: Always specify number of return values, also for expected exception.
     %   PRO: nargout could influence execution.
     %   CON: Would require one more argument (constructor) for expected exception.

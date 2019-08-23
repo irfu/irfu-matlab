@@ -1,6 +1,6 @@
 %
 % Print the contents of a MATLAB variable recursively. Intended for getting an overview of the contents of complex
-% variables consisting of nested structures, nested cell arrays, etc.
+% variables consisting of nested structures, nested cell arrays, etc. useful for debugging.
 %
 %
 % ARGUMENTS
@@ -18,8 +18,7 @@
 %   Setting stringsBnrMinNonemptyRows determines when to use which.
 %
 %
-% NOTE: NOT COMPLETE. More cases to be added as they are needed.   ??
-% NOTE: Can not yet handle empty array, empty struct.              ??
+% NOTE: NOT COMPLETE. More cases to be added as they are needed.
 % NOTE: Option maxRecursionDepth implemented but only crudely.
 % NOTE: Will only print public properties for objects.
 %
@@ -88,6 +87,7 @@ function print_variable_recursively(varName, v, varargin)
 %
 % PROPOSAL: Print multirow valueDisplayStrings using indentation for non-first row.
 % PROPOSAL: Make "=" line up, at least among siblings.
+% PROPOSAL: Rename "printParentSeparately" --> "printParentsSeparately" (plural)
 
 % Define default settings.
 DEFAULT_SETTINGS = [];
@@ -270,13 +270,13 @@ function [canHaveChildren, childrenVList, childrenNamesList, valueDisplayStr] = 
                 % Have actual string substrings be displayed on separate rows.
                 valueDisplayStr = [LF, strjoin(valueDisplayStrList, LF)];
             end
-            
+
         end
 
     elseif numel(v) == 0
         % CASE: Empty matrix (char, non-char)
         
-        if isnumeric(v)
+        if isnumeric(v) || islogical(v)
             canHaveChildren = false;    % A bit wrong.
             valueDisplayStr = sprintf('[]   (size %s, class "%s")', size_str(v), class(v));   % Print array size.
             
@@ -297,10 +297,18 @@ function [canHaveChildren, childrenVList, childrenNamesList, valueDisplayStr] = 
     elseif numel(v) == 1
         % CASE: 1x1
 
-        if isnumeric(v) || islogical(v)
+        if isnumeric(v)
             canHaveChildren = false;
             valueDisplayStr = sprintf('%g', v);
-
+            
+        elseif islogical(v)
+            canHaveChildren = false;
+            if v
+                valueDisplayStr = 'true';
+            else
+                valueDisplayStr = 'false';
+            end
+ 
         elseif isstruct(v) || isobject(v)
             % NOTE: Only gets the PUBLIC properties of objects/classes.
 
@@ -336,7 +344,7 @@ function [canHaveChildren, childrenVList, childrenNamesList, valueDisplayStr] = 
                 %childrenNamesList{i} = sprintf('{%i}', i);
                 childrenNamesList{i} = sprintf('{%s}', index_str(size(v), i));
             end
-        elseif isstruct(v) || isnumeric(v)
+        elseif isstruct(v) || isnumeric(v) || islogical(v)
             canHaveChildren = true;
             for i = 1:numel(v)
                 childrenVList{i}     = v(i);
@@ -346,7 +354,7 @@ function [canHaveChildren, childrenVList, childrenNamesList, valueDisplayStr] = 
             
         else
             
-            error('Can not handle this variable size or type.')
+            error('Can not handle this variable size or type (MATLAB class).')
         end
         
     end
