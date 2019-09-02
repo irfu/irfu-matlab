@@ -29,6 +29,7 @@ function [xvariable,yvariable,powerxy] = fk_powerspec4SC(varargin)
 %       wwidth -    Multiplier for Morlet wavelet width. Default is 1.
 %       linear -    Use linear spacing between frequencies. df argument is
 %                   required.
+%       frange -    select frequency range for k-k plots. [minf maxf]
 %
 % Output:
 %       powerxy    - array of powers as a function of frequency and
@@ -80,6 +81,7 @@ numk = 500;
 numf = 200;
 uselinear = 0;
 wwidth = 1;
+frange = 0;
 
 args=varargin(5:end);
 if numel(args)>0
@@ -113,6 +115,10 @@ while haveoptions
     case 'wwidth'
       if numel(args)>1 && isnumeric(args{2})
         wwidth = args{2};
+      end
+    case 'frange' 
+       if numel(args)>1 && isnumeric(args{2})
+        frange = args{2};      
       end
     otherwise
       irf.log('warning',['Unknown flag: ' args{1}]);
@@ -259,10 +265,18 @@ powerkmagf = powerkmagf/max(max(powerkmagf)); % Normalization to Max value for p
 xvec1 = kmagvec;
 yvec1 = W1.f;
 
+idxf = 1:numf;
+
+if numel(frange)==2
+  freqind = yvec1 > min(frange) & yvec1 < max(frange);
+  idxf = idxf(freqind);
+end
+idxf
+
 irf.log('notice','Computing power versus kperp,kpar')
 powerkperpkpar = zeros(numk,numk);
 for mm = 1:N+1
-	for nn = 1:numf
+	for nn = idxf
     kparnumber = floor((kpar(mm,nn)-kmin)/dk)+1;
     kperpnumber = floor((kperp(mm,nn))/dkmag)+1;
     powerkperpkpar(kparnumber,kperpnumber) = powerkperpkpar(kparnumber,kperpnumber) + Powerav(mm,nn);
@@ -279,7 +293,7 @@ yvec2 = kvec;
 irf.log('notice','Computing power versus kx,ky')
 powerkxky = zeros(numk,numk);
 for mm = 1:N+1
-	for nn = 1:numf
+	for nn = idxf
     kxnumber = floor((kx(mm,nn)-kmin)/dk)+1;
     kynumber = floor((ky(mm,nn)-kmin)/dk)+1;
     powerkxky(kynumber,kxnumber) = powerkxky(kynumber,kxnumber) + Powerav(mm,nn);
@@ -296,7 +310,7 @@ yvec3 = kvec;
 irf.log('notice','Computing power versus kx,ky')
 powerkxkz = zeros(numk,numk);
 for mm = 1:N+1
-	for nn = 1:numf
+	for nn = idxf
     kxnumber = floor((kx(mm,nn)-kmin)/dk)+1;
     kznumber = floor((kz(mm,nn)-kmin)/dk)+1;
     powerkxkz(kznumber,kxnumber) = powerkxkz(kznumber,kxnumber) + Powerav(mm,nn);
@@ -313,7 +327,7 @@ yvec4 = kvec;
 irf.log('notice','Computing power versus ky,kz')
 powerkykz = zeros(numk,numk);
 for mm = 1:N+1
-	for nn = 1:numf
+	for nn = idxf
     kynumber = floor((ky(mm,nn)-kmin)/dk)+1;
     kznumber = floor((kz(mm,nn)-kmin)/dk)+1;
     powerkykz(kznumber,kynumber) = powerkykz(kznumber,kynumber) + Powerav(mm,nn);

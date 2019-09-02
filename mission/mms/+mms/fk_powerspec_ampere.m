@@ -213,7 +213,8 @@ yvec1 = WJ.f;
 idxf = 1:numf;
 
 if numel(frange)==2
-  idxf = yvec1 > min(frange) & yvec1 < max(frange);
+  freqind = yvec1 > min(frange) & yvec1 < max(frange);
+  idxf = idxf(freqind);
 end
 
 irf.log('notice','Computing power versus kperp,kpar')
