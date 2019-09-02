@@ -40,6 +40,8 @@ function f = irf_get_data_omni( tint, parameter , database)
 %               'imfid' - Spacecraft ID for IMF, 50=IMP8, 51=WIND,
 %                         60=Geotail, 71=ACE
 %               'swid'  - Spacecraft ID for SW
+%               'ts'    - Timeshift to bow shock in seconds
+%               'rmsts' - Root mean square of timeshift to bow shock
 %
 % f=IRF_GET_DATA_OMNI(tint,parameter,database) download from specified database
 %
@@ -199,6 +201,8 @@ for jj=1:length(iStart)
 		case 'f10.7',  varOmni2=50;varOmni1min=-1;
         case 'imfid',  varOmni2=-1;varOmni1min= 4;
         case 'swid',   varOmni2=-1;varOmni1min= 5;
+        case 'ts',     varOmni2=-1;varOmni1min=9;
+        case 'rmsts',  varOmni2=-1;varOmni1min=10;
 		otherwise,     varOmni2=0 ;varOmni1min=-1;
 	end
 	if strcmp(dataSource,'omni2')
