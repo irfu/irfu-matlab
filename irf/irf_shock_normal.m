@@ -27,14 +27,15 @@ function [nd] = irf_shock_normal(spec,leq90)
 %       nu  -   Upstream number density (cm^-3).
 %       nd  -   Downstream number density.
 %       Optional:
-%       R   -   Spacecraft position as given by R =
-%               mms.get_data('R_gse',tint).
+%       R   -   Spacecraft position in TSeries format, 1x3 vector or as
+%               given by R = mms.get_data('R_gse',tint)
 %       t   -   Time of shock crossing (EpochTT), for models.
 %       d2u -   Down-to-up, is 1 or -1.
 %       dTf -   Time duration of shock foot (s).
 %       Fcp -   Reflected ion gyrofrequency (Hz).
 %       N   -   Number of Monte Carlo particles used in determining
 %               errorbars (default 100)
+%       n0  -   User defined normal vector from e.g. timing
 %       
 %
 %   Output nd contains:
@@ -54,6 +55,8 @@ function [nd] = irf_shock_normal(spec,leq90)
 %               fa4o    -   Fairfield, D. H., 1971
 %               fan4o   -   Fairfield, D. H., 1971
 %               foun    -   Formisano, V., 1979
+%           User defined (only if n0 is included in spec):
+%               n0  -   User defined normal vector from e.g. timing
 %
 %       thBn -  Angle between normal vector and spec.Bu, same fields as n.
 %
@@ -251,22 +254,30 @@ n.mx1 = cross(cross(Bu,delV),delB)/norm(cross(cross(Bu,delV),delB));
 n.mx2 = cross(cross(Bd,delV),delB)/norm(cross(cross(Bd,delV),delB));
 n.mx3 = cross(cross(delB,delV),delB)/norm(cross(cross(delB,delV),delB));
 
+% user defined normal vector
+if isfield(spec,'n0')
+    n.n0 = spec.n0;
+end
 
 sig = [];
+eps = [];
+x0 = [];
+y0 = [];
+alpha = [];
 % calculate model normals if R is inputted
 if isfield(spec,'R')
     % Farris et al.
-    [n.farris,sig.farris] = farris_model(spec);
+    [n.farris,sig.farris,eps.farris,L.farris,alpha.farris,x0.farris,y0.farris] = farris_model(spec);
     % Slavin and Holzer mean
-    [n.slho,sig.slho] = slavin_holzer_model(spec);
+    [n.slho,sig.slho,eps.slho,L.slho,alpha.slho,x0.slho,y0.slho] = slavin_holzer_model(spec);
     % Peredo et al., z = 0
-    [n.per,sig.per] = peredo_model(spec);
+    [n.per,sig.per,eps.per,L.per,alpha.per,x0.per,y0.per] = peredo_model(spec);
     % Fairfield Meridian 4o
-    [n.fa4o,sig.fa4o] = fairfield_meridian_4o_model(spec);
+    [n.fa4o,sig.fa4o,eps.fa4o,L.fa4o,alpha.fa4o,x0.fa4o,y0.fa4o] = fairfield_meridian_4o_model(spec);
     % Fairfield Meridian No 4o
-    [n.fan4o,sig.fan4o] = fairfield_meridian_no_4o_model(spec);
+    [n.fan4o,sig.fan4o,eps.fan4o,L.fan4o,alpha.fan4o,x0.fan4o,y0.fan4o] = fairfield_meridian_no_4o_model(spec);
     % Formisano Unnorm. z = 0
-    [n.foun,sig.foun] = formisano_unnorm_model(spec);
+    [n.foun,sig.foun,eps.foun,L.foun,alpha.foun,x0.foun,y0.foun] = formisano_unnorm_model(spec);
 end
 
 % make sure all normal vectors are pointing upstream
@@ -299,6 +310,14 @@ info.msh = shear_angle(Bu,Bd);
 info.vsh = shear_angle(Vu,Vd);
 % compression factors to the models
 info.sig = sig;
+% other paramters from the models
+if isfield(spec,'R')
+    info.eps = eps;
+    info.L = L;
+    info.alpha = alpha;
+    info.x0 = x0;
+    info.y0 = y0;
+end
 % constraint matrix
 info.cmat = constraint_values(spec,n);
 
@@ -419,7 +438,8 @@ for k = 1:length(fn)
     f = @(th)W*t1*(2*cos(th).^2-1)+2*sin(th).^2.*sin(W*t1);
     x0 = f(th)/(W*spec.dTf);
     
-    Vsp.(fn{k}) = dot(spec.Vu,nvec)*(x0/(1+spec.d2u*x0));
+    % the sign of Vsh in this method is ambiguous, assume n points upstream
+    Vsp.(fn{k}) = spec.d2u*dot(spec.Vu,nvec)*(x0/(1+spec.d2u*x0));
 end
 end
 
@@ -458,7 +478,7 @@ end
 end
 
 
-function [n,sig0] = farris_model(spec)
+function [n,sig0,eps,L,alpha,x0,y0] = farris_model(spec)
 eps = 0.81;
 L = 24.8; % in RE
 x0 = 0;
@@ -469,17 +489,17 @@ alpha = 3.8;
 [n,sig0] = shock_model(spec,eps,L,x0,y0,alpha);
 end
 
-function [n,sig0] = slavin_holzer_model(spec) %
+function [n,sig0,eps,L,alpha,x0,y0] = slavin_holzer_model(spec) %
 eps = 1.16;
 L = 23.3; % in RE
 x0 = 3.0;
 y0 = 0;
-alpha = atand(spec.Vu(2)/spec.Vu(1));
+alpha = -atand(spec.Vu(2)/spec.Vu(1));
 
 [n,sig0] = shock_model(spec,eps,L,x0,y0,alpha);
 end
 
-function [n,sig0] = peredo_model(spec) %
+function [n,sig0,eps,L,alpha,x0,y0] = peredo_model(spec) %
 eps = 0.98;
 L = 26.1; % in RE
 x0 = 2.0;
@@ -489,7 +509,7 @@ alpha = 3.8-0.6;
 [n,sig0] = shock_model(spec,eps,L,x0,y0,alpha);
 end
 
-function [n,sig0] = fairfield_meridian_4o_model(spec) %
+function [n,sig0,eps,L,alpha,x0,y0] = fairfield_meridian_4o_model(spec) %
 eps = 1.02;
 L = 22.3; % in RE
 x0 = 3.4;
@@ -499,7 +519,7 @@ alpha = 4.8;
 [n,sig0] = shock_model(spec,eps,L,x0,y0,alpha);
 end
 
-function [n,sig0] = fairfield_meridian_no_4o_model(spec) %
+function [n,sig0,eps,L,alpha,x0,y0] = fairfield_meridian_no_4o_model(spec) %
 eps = 1.05;
 L = 20.5; % in RE
 x0 = 4.6;
@@ -509,7 +529,7 @@ alpha = 5.2;
 [n,sig0] = shock_model(spec,eps,L,x0,y0,alpha);
 end
 
-function [n,sig0] = formisano_unnorm_model(spec) %
+function [n,sig0,eps,L,alpha,x0,y0] = formisano_unnorm_model(spec) %
 eps = 0.97;
 L = 22.8; % in RE
 x0 = 2.6;
@@ -543,7 +563,7 @@ if isstruct(spec.R) % MMS specific
     end
 elseif isa(spec.R,'TSeries') % TSeries
     
-    rsc = mean(spec.R.data)/(u.RE*1e-3);
+    rsc = mean(spec.R.data)'/(u.RE*1e-3);
 elseif isnumeric(spec.R) && length(R) == 3 % just a vector
     rsc = spec.R;
 end
@@ -552,12 +572,14 @@ end
 % sc position in the natural system (cartesian)
 rp = @(sig)R*rsc-sig.*r0;
 % sc polar angle in the natural system
-thp = @(sig)cart2pol([1,0,0]*rp(sig),[0,1,0]*rp(sig)); % returns angle first
+thp = @(sig)cart2pol([1,0,0]*rp(sig),sqrt(([0,1,0]*rp(sig))^2+([0,0,1]*rp(sig))^2)); % returns angle first
 % minimize |LH-RH| in eq 10.22
 fval = @(sig)abs(sig.*L./sqrt(sum(rp(sig).^2,1))-1-eps*cos(thp(sig)));
 
 % find the best fit for sigma
-sig0 = fminsearch(fval,0);  
+sig0 = fminsearch(fval,1);
+% to make sure it finds the largest sigma
+sig0 = fminsearch(fval,2*sig0);
 
 % calculate normal
 xp = [1,0,0]*rp(sig0);

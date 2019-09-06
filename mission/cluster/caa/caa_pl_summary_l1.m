@@ -81,6 +81,7 @@ old_pwd = pwd;
 sc_s = get(0,'ScreenSize');
 if sc_s(3)==1600 && sc_s(4)==1200, scrn_size = 2;
 elseif sc_s(3)==1920 && sc_s(4)==1200, scrn_size = 2;
+elseif sc_s(3)==2560 && sc_s(4)==1440, scrn_size = 2;  
 else, scrn_size = 1;
 end
 
@@ -167,7 +168,19 @@ for cli=1:4
             
 			% Load Ps
 			p_tmp = c_load('Ps?',cli,'var');
-			if ~isempty(p_tmp) && p_tmp(1,1)~=-157e8, ps = [ps; p_tmp]; end %#ok<AGROW>
+      [ok,probe_info,msg] = c_load('Ps?_info',cli);
+			if ~isempty(p_tmp) && p_tmp(1,1)~=-157e8 && ok && ~isempty(probe_info)
+        % Extend data array to accept bitmask and quality flag (2 columns at the end)
+        p_tmp = [p_tmp zeros(size(p_tmp, 1), 2)];
+        p_tmp(:, end) = QUALITY;    % Default quality column to best quality, i.e. good data/no problems.
+        p_quality_column = size(p_tmp, 2);
+        p_bitmask_column = p_quality_column - 1;
+                
+        p_tmp = caa_identify_problems(p_tmp, 3, num2str(probe_info.probe), cli, p_bitmask_column, p_quality_column, 1);
+        ps = [ps; p_tmp]; 
+      else
+        irf_log('load',msg)
+      end
 			clear p_tmp
 			
             % Load SW WAKE amplitude
@@ -278,7 +291,8 @@ for cli=1:4
                 end
                 if ~isempty(ns_ops)
                     ns_ops_intervals = [caa_get_ns_ops_int(spinFits.diEs(1,1), spinFits.diEs(end,1)-spinFits.diEs(1,1), ns_ops, 'bad_data')' ...
-                        caa_get_ns_ops_int(spinFits.diEs(1,1), spinFits.diEs(end,1)-spinFits.diEs(1,1), ns_ops, 'bad_tm')']';
+                        caa_get_ns_ops_int(spinFits.diEs(1,1), spinFits.diEs(end,1)-spinFits.diEs(1,1), ns_ops, 'bad_tm')'...
+                        caa_get_ns_ops_int(spinFits.diEs(1,1), spinFits.diEs(end,1)-spinFits.diEs(1,1), ns_ops, 'high_bias')']';
                     if ~isempty(ns_ops_intervals)
                         ns_ops_intervals(:,1)=ns_ops_intervals(:,1)-4;
                         ns_ops_intervals(:,2)=ns_ops_intervals(:,2)+4;
@@ -294,15 +308,14 @@ for cli=1:4
                 % Extend data array to accept bitmask and quality flag (2 columns at the end)
                 spinFits.diEs = [spinFits.diEs zeros(size(spinFits.diEs, 1), 2)];
                 spinFits.diEs(:, end) = QUALITY;    % Default quality column to best quality, i.e. good data/no problems.
-                quality_column = size(spinFits.diEs, 2);
-                bitmask_column = quality_column - 1;
+                e_quality_column = size(spinFits.diEs, 2);
+                e_bitmask_column = e_quality_column - 1;
 
                 % Identify and flag problem areas in data with bitmask and quality factor:
                 if probe_numeric == 120 || probe_numeric == 320 || probe_numeric == 340 || probe_numeric == 420
                     probe_numeric = probe_numeric/10;
                 end
-                spinFits.diEs = caa_identify_problems(spinFits.diEs, data_level, sprintf('%d',probe_numeric), cli, bitmask_column, quality_column);
-%                spinFits.diEs = caa_identify_problems(spinFits.diEs, data_level, sprintf('%d',spinFits.probePair), cli, bitmask_column, quality_column);
+                spinFits.diEs = caa_identify_problems(spinFits.diEs, data_level, sprintf('%d',probe_numeric), cli, e_bitmask_column, e_quality_column);
                 
                 % Delta offsets
                 Del_caa = c_efw_delta_off(spinFits.diEs(1,1),cli);
@@ -446,14 +459,14 @@ for cli=1:4
 end
 
 % Plot quality
-plot_quality(h(5), {es1, es2, es3, es4}, st)
+plot_quality(h(5), {{es1,ps1}, {es2,ps2}, {es3,ps3}, {es4,ps4}}, st)
 
 % Plot P
-axes(h(6))
-c_pl_tx('ps?')
-ylabel('P L3 [-V]')
-a = get(gca,'YLim');
-if a(1)<-70, a(1)=-70; set(gca,'YLim',a); end
+hca = h(6);
+c_pl_tx(hca,'ps?',2)
+ylabel(hca,'P L3 [-V]'), xlabel(hca,'')
+a = get(hca,'YLim');
+if a(1)<-70, a(1)=-70; set(hca,'YLim',a); end
 
 if dt>0 
 	plot_intervals(h(7),{in1,in2,in3,in4},st)
@@ -578,7 +591,7 @@ for cli=1:4
 	if ~isempty(es)
         for k = 1:16
             plot(hca,[es(1,1) es(end,1)] - t_start_epoch, [k k] + fix((k-1)/4), 'k')
-            index = find( bitget(es(:,bitmask_column), k) );
+            index = find( bitget(es(:,e_bitmask_column), k) );
             if ~isempty(index)
                 ind_d = find( diff(index) > 1 );
                 if ~isempty(ind_d)
@@ -611,7 +624,7 @@ for cli=1:4
 end
 
 % Plot quality
-plot_quality(h(5), {es1, es2, es3, es4}, st)
+plot_quality(h(5), {{es1,ps1}, {es2,ps2}, {es3,ps3}, {es4,ps4}}, st)
 
 if dt>0 
 	plot_intervals(h(6),{in1,in2,in3,in4},st)
@@ -682,6 +695,7 @@ if saveJPG
 			'cannot save JPG: /usr/local/bin/eps2png does not exist')
 	end
 end
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Help functions
@@ -714,12 +728,13 @@ hold(h,'off')
 set(h,'YLim',[0 5],'YTick',1:4,'YTickLabel',4:-1:1)
 ylabel(h,'proc intrerv/SC')
 grid(h,'on')
+end
 
 
 function plot_quality(h, dataset, st)
 % Plot quality factor
    
-   linecolor = 'yrgb';
+   linecolor = 'mrgb';
    cli_pos = [4 3 2 1];
    
    t_start_epoch = figure_start_epoch(st);
@@ -727,53 +742,58 @@ function plot_quality(h, dataset, st)
    
    hold(h,'on')
    for cli=1:4
-	% Start by plotting nsops intervals. 
-	ns_ops = c_ctl('get',cli,'ns_ops');
-	if isempty(ns_ops)
-		c_ctl('load_ns_ops',[cdb.dp '/caa-control'])
-		ns_ops = c_ctl('get',cl_id,'ns_ops');
-	end
-	if isempty(ns_ops),error('Nonstandard operations table not found!'),end
-	ii = find( ns_ops(:,1)<=t_end_epoch & ns_ops(:,1)+ns_ops(:,2)>t_start_epoch);
-	for j=1:length(ii)
-		 plot(h,[ns_ops(ii(j),1) ns_ops(ii(j),1)+ns_ops(ii(j),2)] - t_start_epoch, ...
-               [cli_pos(cli) cli_pos(cli)], 'y','LineWidth', 3.5);
-	end
-	% Then plot quality lines.
-   	data = dataset{cli};
-   	if isempty(data), continue, end
-      quality = data(:, end);
-      indexes = [];
-      start_ind = 1;
-      finished = 0;
-
-   	while ~finished
-   	   if isnan(quality(start_ind))
-   	      next_ind = find(~isnan(quality(start_ind:end)), 1);
-   	   else
-   	      next_ind = find(quality(start_ind:end) ~= quality(start_ind), 1);
-   	   end
-	   if isempty(next_ind)
-		   next_ind = length(quality(start_ind:end)) + 1;
-		   finished = 1;
-	   end
-
-   	   end_ind = start_ind + next_ind - 2;
-   	   indexes = [indexes; [start_ind end_ind] quality(start_ind)]; %#ok<AGROW>
-
-	   if ~isnan(quality(start_ind))
-		   plot(h,[data(start_ind, 1) data(end_ind, 1)] - t_start_epoch, ...
-			   [cli_pos(cli) cli_pos(cli)], linecolor(quality(start_ind)+1), ...
-			   'LineWidth', 3-quality(start_ind)+0.5);
-	   end
-   	   
-   	   start_ind = start_ind + next_ind - 1;
-   	end
+     % Start by plotting nsops intervals.
+     ns_ops = c_ctl('get',cli,'ns_ops');
+     if isempty(ns_ops)
+       c_ctl('load_ns_ops',[cdb.dp '/caa-control'])
+       ns_ops = c_ctl('get',cl_id,'ns_ops');
+     end
+     if isempty(ns_ops),error('Nonstandard operations table not found!'),end
+     ii = find( ns_ops(:,1)<=t_end_epoch & ns_ops(:,1)+ns_ops(:,2)>t_start_epoch);
+     for j=1:length(ii)
+       plot(h,[ns_ops(ii(j),1) ns_ops(ii(j),1)+ns_ops(ii(j),2)] - t_start_epoch, ...
+         [cli_pos(cli) cli_pos(cli)]-.2, 'm','LineWidth', 3.5);
+     end
+     % Then plot quality lines.
+     data_c = dataset{cli};
+     if isempty(data_c), continue, end
+     for iVar=1:length(data_c)
+       data = data_c{iVar};
+       if isempty(data), continue, end
+       quality = data(:, end);
+       indexes = [];
+       start_ind = 1;
+       finished = 0;
+       
+       while ~finished
+         if isnan(quality(start_ind))
+           next_ind = find(~isnan(quality(start_ind:end)), 1);
+         else
+           next_ind = find(quality(start_ind:end) ~= quality(start_ind), 1);
+         end
+         if isempty(next_ind)
+           next_ind = length(quality(start_ind:end)) + 1;
+           finished = 1;
+         end
+         
+         end_ind = start_ind + next_ind - 2;
+         indexes = [indexes; [start_ind end_ind] quality(start_ind)]; %#ok<AGROW>
+         
+         if ~isnan(quality(start_ind))
+           plot(h,[data(start_ind, 1)-2 data(end_ind, 1)+2] - t_start_epoch, ...
+             [cli_pos(cli) cli_pos(cli)]+0.2*(iVar-1), linecolor(quality(start_ind)+1), ...
+             'LineWidth', 3-quality(start_ind)+0.5);
+         end
+         
+         start_ind = start_ind + next_ind - 1;
+       end
+     end
    end
    hold(h,'off')
    set(h,'YLim',[0 5],'YTick',1:4,'YTickLabel',4:-1:1)
    ylabel(h,'Quality/SC')
    grid(h,'on')
+end
 
 
 function t_start_epoch = figure_start_epoch(st)
@@ -786,4 +806,5 @@ else
 	set(gcf,'userdata',ud);
 	irf_log('proc',['user_data.t_start_epoch is set to '...
 		epoch2iso(t_start_epoch,1)]);
+end
 end

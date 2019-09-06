@@ -74,6 +74,12 @@ end
 STEPS_PER_DEG=2;
 
 phaUnw = unwrap(double(phase.data)*pi/180)*180/pi;
+% Gaps may not have been unwrapped correctly so add a complete revolution
+% (360 deg) to ensure unique phase values
+idxGap = find(diff(phaUnw)<0);
+for iGap=1:length(idxGap)
+  phaUnw(idxGap(iGap)+1:end) = phaUnw(idxGap(iGap)+1:end) + 360;
+end
 fxPha = ((phaUnw(1)-rem(phaUnw(1),360)):1/STEPS_PER_DEG:...
       (phaUnw(end)-rem(phaUnw(end),360)+360))';
 fxPha(end) = [];

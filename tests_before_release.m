@@ -9,8 +9,6 @@ function tests_before_release
 
 % https://blogs.mathworks.com/developer/2015/01/20/the-other-kind-of-continuous-integration/
 
-failed = false;
-DEBUG = false; % Display some extra information or not.
 
 % Setup paths etc.
 irf;
@@ -19,36 +17,20 @@ irf;
 testsToRun = {...
   'TestTimeArray', ...              % IRF generic
   'test_irf_time', ...
+  'TestTSeries', ...
   'irf.test_geocentric_coordinate_transformation', ...
+  'test_irf_plot', ...
   'testC4', ...                     % Cluster specific
   'test_mms_defatt_phase', ...      % MMS specific
   'test_mms_spinfit', ...
   'test_mms_dsl2gse', ...
   'mms_phaseFromSunpulse_2_Test'};
 
-for ii = 1:length(testsToRun)
-  try
-    test = eval([testsToRun{ii},';']);
-    results = test.run;
-    if DEBUG, display(results); end  %#ok<UNRCH>
-    if any([results.Failed]), failed = true; end
-  catch ME
-    display(getReport(ME, 'extended'));
-    failed = true;
-    continue
-  end
-end
+import matlab.unittest.plugins.TestReportPlugin;
+runner = matlab.unittest.TestRunner.withTextOutput;
+runner.addPlugin(TestReportPlugin.producingHTML('Verbosity',3));
+runner.run(testsuite(testsToRun));
 
-if(failed)
-  disp('================================================================');
-  warning('Test failed! Do not release irfu-matlab until all issues solved.');
-  disp('================================================================');
-  %exit(1);
-else
-  disp('================================================================');
-  disp('     All automatic tests completed without issues               ');
-  disp('================================================================');
-  %exit(0);
-end
+% CHECK output, if any problems do not release new version of irfu-matlab!
 
 end

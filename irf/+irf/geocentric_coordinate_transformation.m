@@ -142,7 +142,7 @@ end
 if size(inp,2)>=3 % input is time and 3 components
 	out = mult(T(tInd),inp(:,1:3));
 elseif size(inp,2)==0 % input is time, return only transformation matrix
-	out=T(tInd);
+	out=T(tInd); return
 end
 if size(inp,2) > 3 % more columns than 3 components
 	irf.log('warning','Input has more columns than 3 components! Replicating last columns in output');

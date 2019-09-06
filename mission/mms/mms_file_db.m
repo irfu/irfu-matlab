@@ -15,7 +15,11 @@ classdef (Abstract) mms_file_db
       obj.id = id;
       obj.cache = mms_db_cache();
       if exist([id filesep 'index_sql'],'file') && ~verLessThan('matlab', '8.5')
-        obj.index = mms_db_sql([id filesep 'index_sql']);
+        try
+          obj.index = mms_db_sql([id filesep 'index_sql']);
+        catch
+          obj.index = [];
+        end
       else
         obj.index = [];
       end

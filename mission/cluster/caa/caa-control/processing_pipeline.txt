@@ -5,7 +5,7 @@ Document name: CAA delivery status
 Web link (Can edit document: Anders, Jan K, Yuri and Chris(Owner))
 https://docs.google.com/spreadsheet/ccc?key=0AnEKm-D1gw9XdEhmTFZ2UUkzV3RkOW9YRGFIOVg2UVE&invite=CKeb7twH
 
-Notes on each year are also kept at irfu-matlab/caa/caa-control/sp_problems_YYYY.txt
+Notes on each year are also kept at irfu-matlab/mission/cluster/caa/caa-control/sp_problems_YYYY.txt
 
 ====================================
 1. Preliminary processing for P data
@@ -56,7 +56,7 @@ Non-standard operations are stored in the XML table at /home/www/cluster/efw/ops
 The present ns ops list can also be viewed at https://www.cluster.irfu.se/efw/ops/ns_ops.html
 Matlab accesses a text version of this on db when processing the data.
 
-1. Check through ns_ops.xml (git controlled at irfu-matlab/caa/caa-control/), and make sure it's complete and OK.
+1. Check through ns_ops.xml (git controlled at irfu-matlab/mission/cluster/caa/caa-control/), and make sure it's complete and OK.
    Look through the WEC mail archive at http://www.acse.shef.ac.uk/wec-ops/ (wec, xdwp3000) for EFW-related
    problems, and add any required to the list. In particular, some of the times are only approximate, and
    will need to be made more accurate. The most recent messages are at https://lists.shef.ac.uk/sympa/info/wec-ops.
@@ -65,11 +65,11 @@ Matlab accesses a text version of this on db when processing the data.
    by most recent message as mail_YYMMDD). Within the subdirectory, open the file maillist.html or threads.html.
    Sometimes you need to sort by thread instead of date if you want to see all the messages.
 
-2. Edit the XML table locally in irfu-matlab/caa/caa-control, do a make to check and then commit ns_ops.xml to git.
+2. Edit the XML table locally in irfu-matlab/mission/cluster/caa/caa-control, do a make to check and then commit ns_ops.xml to git.
 
 3. Update on db:
      ssh db
-     cd /data/cluster/irfu-matlab/caa/caa-control
+     cd /data/cluster/irfu-matlab/mission/cluster/caa/caa-control
      git pull
      make
 
@@ -284,7 +284,7 @@ new group=201011_L012 st=2010-11-01T00:00:00Z dt=2592000 lev=0 maxlev=2 ddt=1080
 new group=201012_L012 st=2010-12-01T00:00:00Z dt=2678400 lev=0 maxlev=2 ddt=10800
 
 3. Run the groups:
-     take a web browser to www.cluster.irfu.se/caaconsole/CaaWeb.py  
+     take a web browser to www.cluster.irfu.se/caaconsole/CaaWeb.py
        (user: caa password: caarunner)
        (note: IP-controlled access.  Try from fernie or ice or via ssh tunnel from hq.)
      go to the groups list, select a group, click on run
@@ -303,13 +303,13 @@ new group=201012_L012 st=2010-12-01T00:00:00Z dt=2678400 lev=0 maxlev=2 ddt=1080
 =========================
 7. Find the delta offsets
 =========================
-No delta on C1 possible since 2009-10-14.
-No delta on C3 possible since 2011-06-01.
-No delta on C4 possible since 2013-07-01.
+No delta on C1 possible since 2009-11.
+No delta on C2 possible since 2016-12.
+No delta on C3 possible since 2011-04.
+No delta on C4 possible since 2013-07.
 The delta offsets are the difference between the spin fits for pair 12 vs. pair 34.
 The delta offsets must be computed before L2 processing.
 1. Load the delta offsets computed during the runs. Example for C2 (D2p12p34 from mEDSI.mat):
-   (D1p12p34 or similar does not exist for data year>=2010)
      D2p12p34=caa_get('2006-01-01T00:00:00Z','2007-01-01T00:00:00Z',2,'D?p12p34');
        (this will take 10 minutes or so, the first minutes of which it will be silent)
        (ignore the cannot fill gaps/guess sampling f errors)
@@ -341,7 +341,7 @@ One month of L02 data rerun takes about 45min to complete with 2 caa and 6 spis 
 If this is a re-run, then run any special processing called out in /data/caa/l1/YYYY/special_processing.txt.
 e.g. caa_special_process('2007-01-01T00:00:00Z','2008-01-01T00:00:00Z', '/data/caa/l1/2007/special_processing.txt')
 
-Special processing files are under git control in: irfu-matlab/caa/caa-control/20YY_special_processing.txt.
+Special processing files are under git control in: irfu-matlab/mission/cluster/caa/caa-control/20YY_special_processing.txt.
 
 
 ========================
@@ -354,8 +354,8 @@ They are computed on a statistical basis and applied on a roughly per-year basis
 1. Use caa_sh_xoff_batch() to find the offsets in the solar wind. Note: Solar wind season 
 lasts from the end of November to June, therefore we run the code from 1st of September 
 to the end of August. Example:
-     cp /data/cluster/irfu-matlab/caa/mPlan.mat /home/chris/caa/test-mp
-     cp /data/cluster/irfu-matlab/caa/deltaoff.mat /home/chris/caa/test-mp
+     cp /data/cluster/irfu-matlab/mission/cluster/caa/mPlan.mat /home/chris/caa/test-mp
+     cp /data/cluster/irfu-matlab/mission/cluster/caa/deltaoff.mat /home/chris/caa/test-mp
      matlab
      cd /home/chris/caa/test-mp
      [dE,dAmp,dt,weight] = caa_sh_xoff_batch('2007-09-01T00:00:00Z','2008-08-31T23:59:59.99Z',0);
@@ -400,7 +400,8 @@ Create them straight from Matlab (new): use caa_pl_summary_l1_batch
 12. Update the eclipse/maneuvers list
 =====================================
 It's useful to know the times of the eclipses and maneuvers before looking through the summary plots.
-Extract the maneuver times from the Mission Ops Reports (https://www.cluster.irfu.se/efw/ops/ops_files/ESOC_MOR/), and add them to the eclipse list (git controlled version at: irfu-matlab/caa/caa-control/eclipses_manoeuvres.txt).
+Extract the maneuver times from the Mission Ops Reports (https://www.cluster.irfu.se/efw/ops/ops_files/ESOC_MOR/), and add them to the eclipse list
+(git controlled version at: irfu-matlab/mission/cluster/caa/caa-control/eclipses_manoeuvres.txt).
 A relatively small fraction of these maneuvers (those that occured while EFW was on) will need to be added to ns_ops in the next step.
 
 
@@ -415,7 +416,7 @@ Make the combined files:
   pdfjoin *QUAL*200601* --outfile 200601_qual.pdf
 Check through the summary plots.  Easiest is to use okular in dual-page mode to examine the bigger pdf (eg. 200601.pdf), and open the quality plots in a window beside it. Keep a record of the problems at ~/caa/sp_problems_YEAR.txt.
 
-First, take a look at the Eclipses and Manoeuvres file (git-controlled, /data/cluster/irfu-matlab/caa/caa-control/eclipses_manoeuvres.txt or git local version), and check if there were any manoeuvres when the instruments were operating during that month. Those intervals will need to be flagged in the nsops file, and the summary plots redone.
+First, take a look at the Eclipses and Manoeuvres file (git-controlled, /data/cluster/irfu-matlab/mission/cluster/caa/caa-control/eclipses_manoeuvres.txt or git local version), and check if there were any manoeuvres when the instruments ere operating during that month. Those intervals will need to be flagged in the nsops file, and the summary plots redone.
 
 There will be problems. Look particularly for:
 1. Unexplained data gaps. In later years, there are very few unexplained large data gaps. Mostly, these are either:
@@ -426,17 +427,17 @@ There will be problems. Look particularly for:
    Any long data gap that doesn't fall into the above categories should be further investigated. Very rarely, the DDS files may be corrupt or missing.
 2. Missing phase information after maneuvers (thick blue line at 0.5 Hz). Enter into ns_ops, use caa_join_phase to fix the phase problems, and then re-run the L1/L2 processing. Take care to set the permissions properly when re-running things.
 3. Bad Ex or Ey offsets.
-4. Missing problems that ought to be marked. These can be marked by hand in the files /data/cluster/irfu-matlab/caa/caa-control/manual_problems_c?.dat:
-   Edit the git version under irfu-matlab/caa/caa-control and commit it.
+4. Missing problems that ought to be marked. These can be marked by hand in the files /data/cluster/irfu-matlab/mission/cluster/caa/caa-control/manual_problems_c?.dat:
+   Edit the git version under irfu-matlab/mission/cluster/caa/caa-control and commit it.
    ssh db
    cd /data/cluster/irfu-matlab/
    git pull
 After marking, the affected intervals can be re-run as needed from the CAA Server, or use the matlab commend caa_apply_manproblems to do it manually.
 Some problems should be added to nsops:
-   Edit the git version under irfu-matlab/caa/caa-control and commit it.
+   Edit the git version under irfu-matlab/mission/cluster/caa/caa-control and commit it.
    ssh hq
    cd /home/www/cluster/efw/ops
-   scp chris@fernie:/home/chris/devel/irfu-matlab/caa/caa-control/ns_ops.xml .
+   scp chris@fernie:/home/chris/devel/irfu-matlab/mission/cluster/caa/caa-control/ns_ops.xml .
    sudo make all
    sudo make txt
    scp ns_ops_c[1-4].dat ns_ops.xml chris@db:/export/data/cluster/caa-control 
@@ -444,7 +445,7 @@ The runners will need to be restarted on runners (spis, caa...) after this opera
 There's also a separate "manual problems" file at /data/cluster/caa-control/QRecord_c?.dat that can be used to mark it as a "manual interval". The columns in this file are: epoch time, dt, L2 quality, L3 quality, dief quality (deprecated).
 6. Bad packets.
 7. Missed HBIASSA.
-8. Jumping offsets at the flanks from bad SW/MS identifications. These should be added to special_processing (git: irfu-matlab/caa/caa-control/YYYY_special_processing.txt) with an entry something like this:
+8. Jumping offsets at the flanks from bad SW/MS identifications. These should be added to special_processing (git: irfu-matlab/mission/cluster/caa/caa-control/YYYY_special_processing.txt) with an entry something like this:
    2010-06-22T03:00:00Z 2010-06-22T06:00:00Z  1234 % force MS offsets
     [st,dt] = caa_read_interval(pwd); st=iso2epoch(st);
     Ddsi = c_efw_dsi_off(st,cli,[st+[-1 1]' [-20 -20]']); c_eval('Ddsi?=Ddsi;',cli);  
@@ -474,7 +475,7 @@ To process internal burst and export to .cef files:
    Failed files are logged in the /data/caa/log/ directory as *.ibfail.log files.
 
 3. Look at the plots in ~/figures and decide which iburst files are no good for L2 cef
-   export. Put all these file names in file irfu-matlab/caa/caa-control/BAD_IB_L2_LIST_C1-4.txt.
+   export. Put all these file names in file irfu-matlab/mission/cluster/caa/caa-control/BAD_IB_L2_LIST_C1-4.txt.
    Do a git checkin of the updated file and do a git pull on db:/data/cluster/irfu-matlab/.
 
 4. To export iburst .cef files use caa_export_month().
@@ -488,7 +489,7 @@ To process internal burst and export to .cef files:
 Data is read in from the MEX files.  Some additional processing is done:
 1. Quality flags are calculated and applied.
 2. DSI offsets are applied.
-The CEF files are stored at db.irfu.se:/export/data1/caa/cef/YYYYMM* (/data/caa/cef/YYYYMM*)
+The CEF files are stored at nas8.irfu.se mounted at /data/caa/cef/YYYY/MM
 
 Use caa_export_month(year,month) to export everything expected for that month.
   Be sure to check the resulting "export failed" log.
@@ -502,7 +503,7 @@ You might need to compile the mex file 'cefprint_mx.c' before calling caa_export
 ==================
 16: Deliver to CAA
 ==================
-This must be done from "ice" for now or connection is not permitted.
+This must be done from "db.irfu.se" or connection is not permitted.
 Deliver the files to the CAA using sftp:
   sftp efw@caa-delivery.estec.esa.int
     EFW4Yu71
@@ -886,6 +887,3 @@ Timing shit:
  1.1 ms jumps
  Per-Arne 0.2*n second jumps
  bigger negative dt jumps
-
-Move all runners over to m2009b (?)
- Message: "Not all CPUs are enabled." ???

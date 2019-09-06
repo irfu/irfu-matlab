@@ -32,7 +32,10 @@ end
 
 %userData
 ud = data; 
-ud = rmfield(ud,{'DEPEND_0','data','nrec','dim','name','variance','UNITS'});
+
+field_list={'DEPEND_0','data','nrec','dim','name','variance','UNITS'};
+ud = rmfield(ud,field_list(isfield(ud,field_list)));
+
 repres = [];
 if isfield(data,'TENSOR_ORDER') % CAA data has TENSOR_ORDER>=1
   tensorOrder = data.TENSOR_ORDER; ud = rmfield(ud,'TENSOR_ORDER');

@@ -1815,7 +1815,7 @@ classdef mms_sdp_dmgr < handle
           % Compute DCE Z from E.B = 0, if >10 deg and if abs(B_z)> 1 nT.
           B_tmp = DATAC.dfg.B_dmpa;
           B_tmp.data((abs(B_tmp.z.data) <= 1), :) = NaN;
-          dEz = irf_edb(TSeries(EpochTT(DATAC.l2a.dce.time),dE,'vec_xy'), B_tmp, 10, 'E.B=0');
+          dEz = irf_edb(irf.ts_vec_xy(EpochTT(DATAC.l2a.dce.time),dE), B_tmp, 10, 'E.B=0');
           DATAC.l2a.dsl = struct('data', [dEz.data], 'bitmask', bitmask);
           % Compute "Spin epoch"
           DATAC.l2a.spinEpoch = irf_spin_epoch( ...

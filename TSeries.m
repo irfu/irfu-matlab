@@ -1404,7 +1404,13 @@
         newDataReshaped = squeeze(newDataTmpReshaped(:,2:end)); % take away time column
         newData = reshape(newDataReshaped,[length(newTimeTmp) origDataSize(2:end)]); % shape back to original dimensions
         
-        Ts = TsTmp; Ts.t_ = NewTime; Ts.data_ = newData;           
+        Ts = TsTmp; 
+                
+        if isa(Ts,'PDist') % update ancillary and depend before time is updated
+          Ts = Ts.resample_depend_ancillary(NewTime,varargin{:});
+        end
+        
+        Ts.t_ = NewTime; Ts.data_ = newData;  
       end
     end %RESAMPLE
     

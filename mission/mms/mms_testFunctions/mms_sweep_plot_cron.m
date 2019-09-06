@@ -1,7 +1,8 @@
 function mms_sweep_plot_cron(dayToRun)
   % dayToRun - date to process (format "YYYYMMDD")
-  tint = irf.tint([dayToRun(1:4),'-',dayToRun(5:6),'-',dayToRun(7:8), 'T00:00:00.000000000Z'], ...
-    [dayToRun(1:4),'-',dayToRun(5:6),'-',dayToRun(7:8), 'T23:59:59.999999999Z']);
+  year = dayToRun(1:4);
+  tint = irf.tint([year,'-',dayToRun(5:6),'-',dayToRun(7:8), 'T00:00:00.000000000Z'], ...
+    [year,'-',dayToRun(5:6),'-',dayToRun(7:8), 'T23:59:59.999999999Z']);
   dataRoot='/data/mms/';
   sweepFolder=[dataRoot, 'irfu/plots/edp/sweeps/'];
   mms.db_init('local_file_db', dataRoot);
@@ -77,8 +78,12 @@ function mms_sweep_plot_cron(dayToRun)
     for iSweep=1:sObj.nSweeps
       % Plot individual sweeps
       plot(sObj, iSweep);
-      fName = sprintf('%sindividual/MMS%i_probe%i-%i/mms%i_%i_%s_%03i.png', sweepFolder,... 
-        iSc, sObj.pTable(1,iSweep), sObj.pTable(1,iSweep)+1, iSc, sObj.pTable(1,iSweep), dayToRun, iSweep);
+      % Create output folders (in case of new year)
+      outFolder = sprintf('%sindividual/MMS%i_probe%i-%i/%s', sweepFolder, ...
+        iSc, sObj.pTable(1,iSweep), sObj.pTable(1,iSweep)+1, year);
+      if ~exist(outFolder,'dir'), mkdir(outFolder); end
+      fName = sprintf('%s/mms%i_%i_%s_%03i.png', outFolder, iSc, ...
+        sObj.pTable(1,iSweep), dayToRun, iSweep);
       print(gcf, '-dpng', fName);
       clf('reset')
     end % for iSweep=1:sObj.nSweeps
@@ -146,6 +151,18 @@ function mms_sweep_plot_cron(dayToRun)
     legend(h, 'p5', 'p6');
     print(h.Parent, '-dpng', [sweepFolder,'summary_plots/ADP/PhaseVsTime_mms',scStr,'_p56.png']);
     close all % close plots
+
+    % Do not use probes after probe failure when computing how the photo
+    % current or impedance depends on phase (or how it did depend on phase
+    % before the probe failure). Keeping the values up to this point helps
+    % to highlight the failure in the plots of iPh and impedance vs time.
+    if(iSc == 4) % MMS4 p4 failed
+      Sw.p4_iPh_ts.data(Sw.p4_iPh_ts.time >= EpochTT('2016-06-12T05:28:48.200Z')) = NaN;
+      Sw.p4_impedance_ts.data(Sw.p4_impedance_ts.time >= EpochTT('2016-06-12T05:28:48.200Z')) = NaN;
+    elseif(iSc == 2) % MMS2 p2 failed
+      Sw.p2_iPh_ts.data(Sw.p2_iPh_ts.time >= EpochTT('2018-09-21T06:04:45.810Z')) = NaN;
+      Sw.p2_impedance_ts.data(Sw.p2_impedance_ts.time >= EpochTT('2018-09-21T06:04:45.810Z')) = NaN;
+    end
     
     % iPh vs phase
     %c_eval('ind?=Sw.p?_iPh_ts.data>50&Sw.p?_iPh_ts.data<500;', 1:4);
@@ -158,6 +175,17 @@ function mms_sweep_plot_cron(dayToRun)
     %c_eval('fig?=figure(''units'',''normalized'',''outerposition'',[0 0 1 1]);subplot(1,2,1);polarplot(deg2rad(Sw.p?_phase_ts.data(ind?)),Sw.p?_iPh_ts.data(ind?),lineStyle{?});rlim([0 600]);title(''All times, where 0<I_{ph}.'');subplot(1,2,2);polarplot(deg2rad(2.5+0:360/nPhaseSegm:(360-1)),iPhvsPhaseSegm?,''-black'',''LineWidth'',2);rlim([0 600]);title(''Median I_{ph}, where 0<I_{ph}, over 5 degrees of phase.'');suptitle([''MMS'',scStr,'' I_{ph} vs phase, p?.'']);', 5:6);
     c_eval('print(fig?, ''-dpng'', [sweepFolder,''summary_plots/SDP/iPhVsPhasePolar_mms'',scStr,''_p?.png'']);', 1:4);
     c_eval('print(fig?, ''-dpng'', [sweepFolder,''summary_plots/ADP/iPhVsPhasePolar_mms'',scStr,''_p?.png'']);', 5:6);
+    close all % close plots
+
+    % impedance vs phase
+    c_eval('ind?=Sw.p?_impedance_ts.data>0;', 1:6);
+    nPhaseSegm = 360 / 5; % Number of phase segments
+    c_eval('phaseInd?=discretize(Sw.p?_phase_ts.data,nPhaseSegm);', 1:6); % Index of which phase segment data was measured in
+    c_eval('ImpvsPhaseSegm?=zeros(nPhaseSegm,1);',1:6);
+    c_eval('ImpvsPhaseSegm!(?)=median(Sw.p!_impedance_ts.data(phaseInd!==? & ind!));', 1:nPhaseSegm, 1:6);
+    c_eval('fig?=figure(''units'',''normalized'',''outerposition'',[0 0 1 1]);subplot(1,2,1);polarplot(deg2rad(Sw.p?_phase_ts.data(ind?)),Sw.p?_impedance_ts.data(ind?),lineStyle{?});rlim([0 55]);title(''All times, where Impedance>0.'');subplot(1,2,2);polarplot(deg2rad(360/(2*nPhaseSegm)+(0:360/nPhaseSegm:360)),[ImpvsPhaseSegm?; ImpvsPhaseSegm?(1)],''-black'',''LineWidth'',2);rlim([0 55]);title(''Median Impedance, where Impedance>0, over 5 degrees of phase.'');rticks([0 10 20 30 40 50]);suptitle([''Plot created: '',nowStr,''. MMS'',scStr,'' Impedance vs phase, p?.'']);', 1:6);
+    c_eval('print(fig?, ''-dpng'', [sweepFolder,''summary_plots/SDP/ImpedanceVsPhasePolar_mms'',scStr,''_p?.png'']);', 1:4);
+    c_eval('print(fig?, ''-dpng'', [sweepFolder,''summary_plots/ADP/ImpedanceVsPhasePolar_mms'',scStr,''_p?.png'']);', 5:6);
     close all % close plots
     
 %    % iPh vs F10.7

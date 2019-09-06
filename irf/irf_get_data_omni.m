@@ -21,6 +21,8 @@ function f = irf_get_data_omni( tint, parameter , database)
 %               'vx'    - vx GSE
 %               'vy'    - vy GSE, corrected for abberation (29.8 km/s)
 %               'vz'    - vz GSE
+%               'vlon'  - bulk flow longitude in degrees
+%               'vlat'  - bulk flow latitude in degrees
 %               'E'     - electric field (mV/m)
 %               'P'     - flow pressure (nPa)
 %               'beta'  - plasma beta
@@ -38,6 +40,8 @@ function f = irf_get_data_omni( tint, parameter , database)
 %               'imfid' - Spacecraft ID for IMF, 50=IMP8, 51=WIND,
 %                         60=Geotail, 71=ACE
 %               'swid'  - Spacecraft ID for SW
+%               'ts'    - Timeshift to bow shock in seconds
+%               'rmsts' - Root mean square of timeshift to bow shock
 %
 % f=IRF_GET_DATA_OMNI(tint,parameter,database) download from specified database
 %
@@ -176,7 +180,9 @@ for jj=1:length(iStart)
 		case 'v',      varOmni2=24;varOmni1min=21;
         case 'vx',     varOmni2=-1;varOmni1min=22; 
         case 'vy',     varOmni2=-1;varOmni1min=23;
-        case 'vz',     varOmni2=-1;varOmni1min=24;  
+        case 'vz',     varOmni2=-1;varOmni1min=24; 
+        case 'vlon',   varOmni2=25;varOmni1min=-1;
+        case 'vlat',   varOmni2=26;varOmni1min=-1;
 		case 'p',      varOmni2=28;varOmni1min=27;
 		case 'e',      varOmni2=35;varOmni1min=28;
 		case 'beta',   varOmni2=36;varOmni1min=29;
@@ -195,6 +201,8 @@ for jj=1:length(iStart)
 		case 'f10.7',  varOmni2=50;varOmni1min=-1;
         case 'imfid',  varOmni2=-1;varOmni1min= 4;
         case 'swid',   varOmni2=-1;varOmni1min= 5;
+        case 'ts',     varOmni2=-1;varOmni1min=9;
+        case 'rmsts',  varOmni2=-1;varOmni1min=10;
 		otherwise,     varOmni2=0 ;varOmni1min=-1;
 	end
 	if strcmp(dataSource,'omni2')
@@ -291,7 +299,7 @@ try
     else
       webOpt = weboptions();
     end
-    webOpt.Timeout = 10;
+    webOpt.Timeout = 20;
     c = webread(url, webOpt);
     getDataSuccess = true;
   end

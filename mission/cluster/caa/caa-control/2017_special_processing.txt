@@ -1,0 +1,132 @@
+% Each entry starts with 2 valid ISO times (start/stop) and a list of spacecraft (e.g. 234)
+% separated by spaces, and then a list of commands forming the special processing.
+% Do not forget one extra newline at the end of the file or the last command will not run.
+% The special processing is run for all 3-hour intervals that contain part of the time range.
+% To run the special processing for a given interval, use caa_special_process().
+% The variable name cli can be used to refer to the cluster satellite number.
+% pwd can be used to refer to the appropriate l1 storage directory.
+
+2017-03-24T21:00:00Z 2017-03-24T23:59:59Z  2 % force MS offsets
+ [st,dt] = caa_read_interval(pwd); st=iso2epoch(st);
+ Ddsi = c_efw_dsi_off(st,cli,[st+[-1 1]' [-20 -20]']); c_eval('Ddsi?=Ddsi;',cli);
+ if exist('mEDSI.mat','file'), c_eval('save mEDSI.mat Ddsi? -append',cli); end
+
+2017-05-03T12:00:00Z 2017-05-04T07:43:59Z  4 % force max algorithm for Ps
+ [ok,Info_tmp] = c_load('P?_info',cli); if ok, Info_tmp.useMax4hbiassa=1; c_eval('P?_info=Info_tmp;',cli); if exist('mP.mat','file'), c_eval('save mP.mat P?_info -append',cli); end, getData(ClusterProc,cli,'ps'), end
+
+2017-05-04T18:00:00Z 2017-05-04T23:59:59Z  24 % force max algorithm for Ps
+ [ok,Info_tmp] = c_load('P?_info',cli); if ok, Info_tmp.useMax4hbiassa=1; c_eval('P?_info=Info_tmp;',cli); if exist('mP.mat','file'), c_eval('save mP.mat P?_info -append',cli); end, getData(ClusterProc,cli,'ps'), end
+
+2017-05-08T06:00:00Z 2017-05-08T11:59:59Z  24 % force max algorithm for Ps
+ [ok,Info_tmp] = c_load('P?_info',cli); if ok, Info_tmp.useMax4hbiassa=1; c_eval('P?_info=Info_tmp;',cli); if exist('mP.mat','file'), c_eval('save mP.mat P?_info -append',cli); end, getData(ClusterProc,cli,'ps'), end
+
+2017-05-10T09:00:00Z 2017-05-11T03:39:59Z  4 % force max algorithm for Ps
+ [ok,Info_tmp] = c_load('P?_info',cli); if ok, Info_tmp.useMax4hbiassa=1; c_eval('P?_info=Info_tmp;',cli); if exist('mP.mat','file'), c_eval('save mP.mat P?_info -append',cli); end, getData(ClusterProc,cli,'ps'), end
+
+2017-05-11T17:17:00Z 2017-05-11T20:59:59Z  4 % force max algorithm for Ps
+ [ok,Info_tmp] = c_load('P?_info',cli); if ok, Info_tmp.useMax4hbiassa=1; c_eval('P?_info=Info_tmp;',cli); if exist('mP.mat','file'), c_eval('save mP.mat P?_info -append',cli); end, getData(ClusterProc,cli,'ps'), end
+
+2017-05-13T00:00:00Z 2017-05-13T02:59:59Z  1 % force MS offsets
+ [st,dt] = caa_read_interval(pwd); st=iso2epoch(st);
+ Ddsi = c_efw_dsi_off(st,cli,[st+[-1 1]' [-20 -20]']); c_eval('Ddsi?=Ddsi;',cli);
+ if exist('mEDSI.mat','file'), c_eval('save mEDSI.mat Ddsi? -append',cli); end
+
+2017-05-13T21:00:00Z 2017-05-14T04:29:59Z  24 % force max algorithm for Ps
+ [ok,Info_tmp] = c_load('P?_info',cli); if ok, Info_tmp.useMax4hbiassa=1; c_eval('P?_info=Info_tmp;',cli); if exist('mP.mat','file'), c_eval('save mP.mat P?_info -append',cli); end, getData(ClusterProc,cli,'ps'), end
+
+2017-05-14T19:30:00Z 2017-05-15T07:29:59Z  24 % force max algorithm for Ps
+ [ok,Info_tmp] = c_load('P?_info',cli); if ok, Info_tmp.useMax4hbiassa=1; c_eval('P?_info=Info_tmp;',cli); if exist('mP.mat','file'), c_eval('save mP.mat P?_info -append',cli); end, getData(ClusterProc,cli,'ps'), end
+
+2017-05-16T17:00:00Z 2017-05-17T17:21:59Z  4 % force max algorithm for Ps
+ [ok,Info_tmp] = c_load('P?_info',cli); if ok, Info_tmp.useMax4hbiassa=1; c_eval('P?_info=Info_tmp;',cli); if exist('mP.mat','file'), c_eval('save mP.mat P?_info -append',cli); end, getData(ClusterProc,cli,'ps'), end
+
+2017-05-21T21:00:00Z 2017-05-21T23:59:59Z 124 % force MS offsets
+ [st,dt] = caa_read_interval(pwd); st=iso2epoch(st);
+ Ddsi = c_efw_dsi_off(st,cli,[st+[-1 1]' [-20 -20]']); c_eval('Ddsi?=Ddsi;',cli);
+ if exist('mEDSI.mat','file'), c_eval('save mEDSI.mat Ddsi? -append',cli); end
+
+2017-05-23T18:00:00Z 2017-05-23T20:59:59Z 124 % force MS offsets
+ [st,dt] = caa_read_interval(pwd); st=iso2epoch(st);
+ Ddsi = c_efw_dsi_off(st,cli,[st+[-1 1]' [-20 -20]']); c_eval('Ddsi?=Ddsi;',cli);
+ if exist('mEDSI.mat','file'), c_eval('save mEDSI.mat Ddsi? -append',cli); end
+
+2017-05-26T06:00:00Z 2017-05-26T08:59:59Z 24 % force MS offsets
+ [st,dt] = caa_read_interval(pwd); st=iso2epoch(st);
+ Ddsi = c_efw_dsi_off(st,cli,[st+[-1 1]' [-20 -20]']); c_eval('Ddsi?=Ddsi;',cli);
+ if exist('mEDSI.mat','file'), c_eval('save mEDSI.mat Ddsi? -append',cli); end
+
+2017-05-29T18:00:00Z 2017-05-29T20:59:59Z 124 % force MS offsets
+ [st,dt] = caa_read_interval(pwd); st=iso2epoch(st);
+ Ddsi = c_efw_dsi_off(st,cli,[st+[-1 1]' [-20 -20]']); c_eval('Ddsi?=Ddsi;',cli);
+ if exist('mEDSI.mat','file'), c_eval('save mEDSI.mat Ddsi? -append',cli); end
+
+2017-05-30T15:00:00Z 2017-05-31T02:59:59Z 124 % force MS offsets
+ [st,dt] = caa_read_interval(pwd); st=iso2epoch(st);
+ Ddsi = c_efw_dsi_off(st,cli,[st+[-1 1]' [-20 -20]']); c_eval('Ddsi?=Ddsi;',cli);
+ if exist('mEDSI.mat','file'), c_eval('save mEDSI.mat Ddsi? -append',cli); end
+
+2017-06-04T06:00:00Z 2017-06-04T17:59:59Z 124 % force MS offsets
+ [st,dt] = caa_read_interval(pwd); st=iso2epoch(st);
+ Ddsi = c_efw_dsi_off(st,cli,[st+[-1 1]' [-20 -20]']); c_eval('Ddsi?=Ddsi;',cli);
+ if exist('mEDSI.mat','file'), c_eval('save mEDSI.mat Ddsi? -append',cli); end
+
+2017-06-05T00:00:00Z 2017-06-05T02:59:59Z 124 % force MS offsets
+ [st,dt] = caa_read_interval(pwd); st=iso2epoch(st);
+ Ddsi = c_efw_dsi_off(st,cli,[st+[-1 1]' [-20 -20]']); c_eval('Ddsi?=Ddsi;',cli);
+ if exist('mEDSI.mat','file'), c_eval('save mEDSI.mat Ddsi? -append',cli); end
+
+2017-06-06T21:00:00Z 2017-06-06T23:59:59Z 2 % force MS offsets
+ [st,dt] = caa_read_interval(pwd); st=iso2epoch(st);
+ Ddsi = c_efw_dsi_off(st,cli,[st+[-1 1]' [-20 -20]']); c_eval('Ddsi?=Ddsi;',cli);
+ if exist('mEDSI.mat','file'), c_eval('save mEDSI.mat Ddsi? -append',cli); end
+
+2017-06-07T06:00:00Z 2017-06-07T08:59:59Z 2 % force MS offsets
+ [st,dt] = caa_read_interval(pwd); st=iso2epoch(st);
+ Ddsi = c_efw_dsi_off(st,cli,[st+[-1 1]' [-20 -20]']); c_eval('Ddsi?=Ddsi;',cli);
+ if exist('mEDSI.mat','file'), c_eval('save mEDSI.mat Ddsi? -append',cli); end
+
+2017-06-08T15:00:00Z 2017-06-09T05:59:59Z 124 % force MS offsets
+ [st,dt] = caa_read_interval(pwd); st=iso2epoch(st);
+ Ddsi = c_efw_dsi_off(st,cli,[st+[-1 1]' [-20 -20]']); c_eval('Ddsi?=Ddsi;',cli);
+ if exist('mEDSI.mat','file'), c_eval('save mEDSI.mat Ddsi? -append',cli); end
+
+2017-06-13T09:00:00Z 2017-06-13T17:59:59Z 24 % force MS offsets
+ [st,dt] = caa_read_interval(pwd); st=iso2epoch(st);
+ Ddsi = c_efw_dsi_off(st,cli,[st+[-1 1]' [-20 -20]']); c_eval('Ddsi?=Ddsi;',cli);
+ if exist('mEDSI.mat','file'), c_eval('save mEDSI.mat Ddsi? -append',cli); end
+
+2017-06-14T15:00:00Z 2017-06-14T17:59:59Z 2 % force MS offsets
+ [st,dt] = caa_read_interval(pwd); st=iso2epoch(st);
+ Ddsi = c_efw_dsi_off(st,cli,[st+[-1 1]' [-20 -20]']); c_eval('Ddsi?=Ddsi;',cli);
+ if exist('mEDSI.mat','file'), c_eval('save mEDSI.mat Ddsi? -append',cli); end
+
+2017-06-15T09:00:00Z 2017-06-16T02:59:59Z 124 % force MS offsets
+ [st,dt] = caa_read_interval(pwd); st=iso2epoch(st);
+ Ddsi = c_efw_dsi_off(st,cli,[st+[-1 1]' [-20 -20]']); c_eval('Ddsi?=Ddsi;',cli);
+ if exist('mEDSI.mat','file'), c_eval('save mEDSI.mat Ddsi? -append',cli); end
+
+2017-06-21T12:00:00Z 2017-06-23T02:59:59Z 124 % force MS offsets
+ [st,dt] = caa_read_interval(pwd); st=iso2epoch(st);
+ Ddsi = c_efw_dsi_off(st,cli,[st+[-1 1]' [-20 -20]']); c_eval('Ddsi?=Ddsi;',cli);
+ if exist('mEDSI.mat','file'), c_eval('save mEDSI.mat Ddsi? -append',cli); end
+
+2017-06-25T00:00:00Z 2017-06-25T02:59:59Z 12 % force MS offsets
+ [st,dt] = caa_read_interval(pwd); st=iso2epoch(st);
+ Ddsi = c_efw_dsi_off(st,cli,[st+[-1 1]' [-20 -20]']); c_eval('Ddsi?=Ddsi;',cli);
+ if exist('mEDSI.mat','file'), c_eval('save mEDSI.mat Ddsi? -append',cli); end
+
+2017-06-26T12:00:00Z 2017-06-27T02:59:59Z 12 % force MS offsets
+ [st,dt] = caa_read_interval(pwd); st=iso2epoch(st);
+ Ddsi = c_efw_dsi_off(st,cli,[st+[-1 1]' [-20 -20]']); c_eval('Ddsi?=Ddsi;',cli);
+ if exist('mEDSI.mat','file'), c_eval('save mEDSI.mat Ddsi? -append',cli); end
+
+2017-06-28T12:00:00Z 2017-06-29T02:59:59Z 124 % force MS offsets
+ [st,dt] = caa_read_interval(pwd); st=iso2epoch(st);
+ Ddsi = c_efw_dsi_off(st,cli,[st+[-1 1]' [-20 -20]']); c_eval('Ddsi?=Ddsi;',cli);
+ if exist('mEDSI.mat','file'), c_eval('save mEDSI.mat Ddsi? -append',cli); end
+
+2017-06-30T15:00:00Z 2017-06-30T23:59:59Z 4 % force MS offsets
+ [st,dt] = caa_read_interval(pwd); st=iso2epoch(st);
+ Ddsi = c_efw_dsi_off(st,cli,[st+[-1 1]' [-20 -20]']); c_eval('Ddsi?=Ddsi;',cli);
+ if exist('mEDSI.mat','file'), c_eval('save mEDSI.mat Ddsi? -append',cli); end
+

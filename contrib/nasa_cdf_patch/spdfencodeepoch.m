@@ -7,15 +7,17 @@ function out = SPDFENCODEEPOCH(epoch, varargin)
 %
 %     epoch                An epoch
 %
-%   The encoded epoch string will have the following format:
+%   The encoded epoch string will have the following ISO 8601 format:
+%       yyyy-mm-ddThh:mm:ss.mmm, e.g., "2000-01-01T12:34:56.123"
+%   Originally, it was in this form:
 %       dd-mmm-yyyy hh:mm:ss.mmm, e.g., "01-Jan-2000 12:34:56.123"
 %
 %   OUT = SPDFENCODEEPOCH(epoch, 'Format', FORMAT) encodes the UTC
-%   string into the specified format. FORMAT is a number from 0 to 3.
+%   string into the specified format. FORMAT is a number from 0 to 4.
 %   FORMAT:
 %     0: dd-mmm-yyyy hh:mm:ss.mmm, e.g., "01-JAN-2000 12:34:56.123"
 %     1: yyyymmdd.ddddddd, e.g., "20000101.1200000"
-%     2: yyymmddhhmmss, e.g., "20000101123456"
+%     2: yyyymmddhhmmss, e.g., "20000101123456"
 %     3: yyyy-mm-ddThh:mm:ss.mmmZ, e.g., "2000-01-01T12:34:56.123Z"
 %     4: yyyy-mm-ddThh:mm:ss.mmm, e.g., "2000-01-01T12:34:56.123"
 %   where mmm is milliseconds.
@@ -51,6 +53,7 @@ function out = SPDFENCODEEPOCH(epoch, varargin)
 
 % HISTORY:
 %   August 16, 2011  Mike Liu    The initial version.
+%   October 16, 2018  Mike Liu   The default format is now 4 (from 0).
 
 if (nargin < 1)
     error('MATLAB:SPDFENCODEEPOCH:inputArgumentCount', ...
@@ -92,7 +95,7 @@ end
 
 function [args, msg] = parse_inputs(varargin)
 % Set default values
-args.Format = int32(0);
+args.Format = int32(4);
 msg = '';
 % Parse arguments based on their number.
 if (nargin > 0)

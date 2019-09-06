@@ -117,6 +117,14 @@ function [out, info] = spdfcdfread(filename, varargin)
 %   [DATA, INFO] = SPDFCDFREAD(FILE, ...) also returns details about the CDF
 %   file in the INFO structure.
 %
+%   DATA = SPDFCDFREAD(FILE, 'VALIDATE', TF, ...) specifies whether to validate 
+%   the CDF when it is open. The default is NOT to validate the file so its 
+%   processing can be faster. There are two ways to set the data validation:
+%   setting the environment variable CDF_VALIDATE to "yes" outside of the
+%   MATLAB environment, or using the option 'VALIDATE' with true value when
+%   calling this module. If a CDF has been validated before, there is no need to
+%   validate it over and over again.
+%
 %   Notes:
 %
 %     SPDFCDFREAD creates temporary files when accessing CDF files.  The
@@ -373,7 +381,7 @@ else
   % Get information about the variables.
   %
 
-  info = spdfcdfinfo(filename);
+  info = spdfcdfinfo(filename, 'VALIDATE', args.Validate);
 
   if (isempty(args.Variables))
     args.Variables = info.Variables(:, 1)';
@@ -811,6 +819,7 @@ args.ConvertEpochToDatestr = false;
 args.KeepEpochAsIs = false;
 args.CDFEpochToString = false;
 args.DataOnly = false;
+args.Validate = false;
 args.Records = [];
 args.Slices = [];
 args.Variables = {};
@@ -832,6 +841,7 @@ if (nargin > 0)
                     'structure'
                     'cdfepochtostring'
                     'dataonly'
+                    'validate'
                     'showprogress'};
     
     % For each pair
@@ -1066,6 +1076,25 @@ if (nargin > 0)
 		 args.KeepEpochAsIs = true;
 		 args.ConvertEpochToDatenum = false;
 	       end
+           end
+ 
+       case 'validate'
+
+           if (k == length(varargin))
+               msg = 'No validate value specified.';
+               return
+           else
+               validate = varargin{k + 1};
+               if (numel(validate) ~= 1)
+                   msg = 'validate value must be a scalar logical.';
+               end
+               if (islogical(validate))
+                   args.Validate = validate;
+               elseif (isnumeric(validate))
+                   args.Validate = logical(validate);
+               else
+                   msg = 'validate value must be a scalar logical.';
+               end
            end
  
        case 'cdfepochtostring'
