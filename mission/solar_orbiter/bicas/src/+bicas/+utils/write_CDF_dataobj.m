@@ -144,6 +144,8 @@ function write_CDF_dataobj(filePath, dataobj_GlobalAttributes, dataobj_data, dat
 %       NOTE/CON: spdfcdfread returns some data structures similar to what dataobj contains so the gain might be small.
 %
 % PROPOSAL: Create analogous read_CDF+write_CDF (which use the same data structures). Combine with proper test code.
+%   NOTE: This current code is based on writing a modified dataobj to disk, which is not necessarily desirable for a
+%         general-purpose function write_CDF function.
 %
 %
 % PROPOSAL: Some form of validation of input.

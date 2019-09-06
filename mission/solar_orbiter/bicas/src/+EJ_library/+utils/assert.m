@@ -43,7 +43,7 @@
 %
 classdef assert
 % TODO-DECISION: Use assertions on (assertion function) arguments internally?
-% PROPOSAL: isvector, iscolumnvector, isrowvector.
+% PROPOSAL: iscolumnvector, isrowvector.
 % PROPOSAL: Add argument for name of argument so that can print better error messages.
 % PROPOSAL: Optional error message (string) as last argument to ~every method.
 %   CON: Can conflict with other string arguments.
@@ -70,6 +70,11 @@ classdef assert
 %
 % PROPOSAL: Static variable for error message identifier.
 %   PRO: Can set differently in BICAS.
+%
+% PROPOSAL: Move out of "utils" package.
+%   PRO: Is used very, very often.
+
+
 
     properties(Constant)
         ERROR_MSG_ID = 'assert:Assertion'
@@ -289,8 +294,8 @@ classdef assert
 
         % Assert v has non-one size in at most one dimension.
         %
-        % NOTE: matlab's isvector uses different criterion which excludes numel(v) == 0, and length in third or higher
-        % dimension.
+        % NOTE: MATLAB's "isvector" function uses different criterion which excludes numel(v) == 0, and length in third
+        % or higher dimension.
         function vector(v)
             dims = unique(size(v));
             dims(dims==1) = [];

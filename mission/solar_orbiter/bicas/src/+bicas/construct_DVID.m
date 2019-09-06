@@ -1,7 +1,8 @@
 %
-% Construct a DVID (DATASET_ID+skeleton version, ID) derived from
+% Construct a DVID string (D=DATASET_ID + V=skeleton version + ID) derived from
 % (1) a dataset ID, and
 % (2) skeleton version.
+% This is useful for determining how to process given data (can compare with constants).
 %
 % Ex: V01 + ROC-SGSE_L2S_RPW-TDS-LFM-RSWF-E
 %   --> V01_ROC-SGSE_L2S_RPW-TDS-LFM-RSWF-E)

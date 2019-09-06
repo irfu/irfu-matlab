@@ -83,26 +83,51 @@ classdef proc
     
     methods(Static, Access=public)
         
-        % Produce PD for PDID=V03_ROC-SGSE_L2S_RPW-LFR-SURV-CWF-E.
-        %
         % ARGUMENTS
         % =========
         % InputsMap : containers.Map: key=<argument key> --> value=PDV for input CDF
         %
         function [OutputsMap] = produce_L2S_L2_LFR(InputsMap, outputDsi, outputVersion)
-               
-                HkPd  = InputsMap('HK_cdf');
-                SciPd = InputsMap('SCI_cdf');
-                
-                HkSciTimePd = bicas.proc_sub.process_HK_to_HK_on_SCI_TIME(SciPd, HkPd);
-                
-                SciPreDcPd  = bicas.proc_sub.process_LFR_to_PreDC(        SciPd, HkSciTimePd);
-                SciPostDcPd = bicas.proc_sub.process_demuxing_calibration(SciPreDcPd);
-                OutputSciPd = bicas.proc_sub.process_PostDC_to_LFR(       SciPostDcPd, outputDsi, outputVersion);
-                
-                OutputsMap = containers.Map();
-                OutputsMap('SCI_cdf') = OutputSciPd;
-%             end
+            
+            HkPd  = InputsMap('HK_cdf');
+            SciPd = InputsMap('SCI_cdf');
+            
+            HkSciTimePd = bicas.proc_sub.process_HK_to_HK_on_SCI_TIME(SciPd, HkPd);
+            
+            SciPreDcPd  = bicas.proc_sub.process_LFR_to_PreDC(        SciPd, HkSciTimePd);
+            SciPostDcPd = bicas.proc_sub.process_demuxing_calibration(SciPreDcPd);
+            OutputSciPd = bicas.proc_sub.process_PostDC_to_LFR(       SciPostDcPd, outputDsi, outputVersion);
+            
+            OutputsMap = containers.Map();
+            OutputsMap('SCI_cdf') = OutputSciPd;
+        end
+        
+        
+        
+        % UNFINISHED
+        %
+        % ARGUMENTS
+        % =========
+        % InputsMap : containers.Map: key=<argument key> --> value=PDV for input CDF
+        %
+        function [OutputsMap] = produce_L2S_L2_TDS(InputsMap, outputDsi, outputVersion)
+            
+            error('BICAS:proc_sub:SWModeProcessing:Assertion:OperationNotImplemented', ...
+                'This processing function has not been implemented yet.')
+            
+%             
+%             
+%             HkPd  = InputsMap('HK_cdf');
+%             SciPd = InputsMap('SCI_cdf');
+%             
+%             HkSciTimePd = bicas.proc_sub.process_HK_to_HK_on_SCI_TIME(SciPd, HkPd);
+%             
+%             SciPreDcPd  = bicas.proc_sub.process_TDS_to_PreDC(        SciPd, HkSciTimePd);   % Not tested.
+%             SciPostDcPd = bicas.proc_sub.process_demuxing_calibration(SciPreDcPd);
+%             OutputSciPd = bicas.proc_sub.process_PostDC_to_TDS(       SciPostDcPd, outputDsi, outputVersion);   % Not implemented.
+%             
+%             OutputsMap = containers.Map();
+%             OutputsMap('SCI_cdf') = OutputSciPd;
         end
         
     end    % methods(Static, Access=public)

@@ -15,11 +15,11 @@ classdef proc_utils
 %============================================================================================================
 % PROPOSAL: Split up in separate files?!
 % PROPOSAL: Move some functions to "utils".
-%   Ex: add_components_to_struct, select_subset_from_struct
+%   Ex: add_rows_to_struct_fields, select_row_range_from_struct_fields
 %   Ex: log_array, log_struct_array, log_tt2000_array (uses bicas.proc_utils_assert_Epoch)
 %
 % PROPOSAL: Write test code for ACQUISITION_TIME_to_tt2000 and its inversion.
-% PROPOSAL: Reorg select_subset_from_struct into returning a list of intervals instead.
+% PROPOSAL: Reorg select_row_range_from_struct_fields into returning a list of intervals instead.
 %
 % PROPOSAL: Replace find_last_same_subsequence with function that returns list of sequences.
 %   PRO: Can naturally handle zero records.
@@ -41,47 +41,51 @@ classdef proc_utils
 
     methods(Static, Access=public)
 
-        function s = select_subset_from_struct(s, iFirst, iLast)
+        function S = select_row_range_from_struct_fields(S, iFirst, iLast)
         % Given a struct, select a subset of that struct defined by a range of ROW indices for every field.
         % Generic utility function.
+        %
+        % Compare add_rows_to_struct_fields. Name chosen in analogy.
         
-        % PROPOSAL: Use ~assert_unvaried_N_rows.
-        % PROPOSAL: Better name. select_struct_columns_subset/range/interval.
+            bicas.proc_utils.assert_unvaried_N_rows(S);
         
-            fieldNameList = fieldnames(s);
+            fieldNameList = fieldnames(S);
             nRows = NaN;                   % Initial non-sensical value which is later replaced.
             for i=1:length(fieldNameList)
                 fn = fieldNameList{i};
                 
                 % ASSERTIONS
                 if isnan(nRows)
-                    nRows = size(s.(fn), 1);
+                    nRows = size(S.(fn), 1);
                     if (nRows < iFirst) || (nRows < iLast)
                         error('BICAS:proc_utils:Assertion', 'iFirst or iLast outside of interval of indices (rows).')
                     end
-                elseif nRows ~= size(s.(fn), 1)
+                elseif nRows ~= size(S.(fn), 1)
                    error('BICAS:proc_utils:Assertion', 'Not all struct fields have the same number of rows.')
                 end
                 
-                s.(fn) = s.(fn)(iFirst:iLast, :, :);
+                S.(fn) = S.(fn)(iFirst:iLast, :, :);
             end
         end
         
         
 
-        function s = add_components_to_struct(s, structAmendment)
+        function S = add_rows_to_struct_fields(S, SAmendment)
+        % Generic utility function.
         % Add values to every struct field by adding components after their highest row index (let them grow in
         % the row index).
-        
-        % PROPOSAL: Better name. ~rows, ~fields, ~records
-        %   Ex: add_row_components_to_struct_fields
+        %
+        % Compare select_row_range_from_struct_fields. Name chosen in analogy.
+ 
+
+            bicas.proc_utils.assert_unvaried_N_rows(S);
+            bicas.proc_utils.assert_unvaried_N_rows(SAmendment);
             
-            % Generic utility function.
-            fieldNamesList = fieldnames(structAmendment);
+            fieldNamesList = fieldnames(SAmendment);
             for i=1:length(fieldNamesList)
                 fn = fieldNamesList{i};
                 
-                s.(fn) = [s.(fn) ; structAmendment.(fn)];
+                S.(fn) = [S.(fn) ; SAmendment.(fn)];
             end
         end
 
@@ -93,14 +97,16 @@ classdef proc_utils
         %
         % FREQ : The FREQ zVariable in LFR CDFs (contains constants representing frequencies, themselves NOT being frequencies).
         % freq : Frequency in Hz.
+        %
             
             global SETTINGS
             
             % ASSERTION
-            unique_values = unique(FREQ);
-            if ~all(ismember(unique_values, [0,1,2,3]))
-                unique_values_str = sprintf('%d', unique_values);   % NOTE: Has to print without \n to keep all values on a single-line string.
-                error('BICAS:proc_utils:Assertion:IllegalArgument:DatasetFormat', 'Found unexpected values in (LFR) FREQ (unique values: %s).', unique_values_str)
+            uniqueValues = unique(FREQ);
+            if ~all(ismember(uniqueValues, [0,1,2,3]))
+                uniqueValuesStr = sprintf('%d', uniqueValues);   % NOTE: Has to print without \n to keep all values on a single-line string.
+                error('BICAS:proc_utils:Assertion:IllegalArgument:DatasetFormat', ...
+                    'Found unexpected values in LFR variable FREQ (unique values: %s).', uniqueValuesStr)
             end
             
             % NOTE: Implementation that works for arrays of any size.
@@ -148,12 +154,14 @@ classdef proc_utils
         %
         % NOTE: Works for all array sizes.
             
-            Rx = -ones(size(FREQ));        % Set to -1 (should always be overwritten).
+            Rx = -1 * ones(size(FREQ));        % Set to -1 (should always be overwritten if code works).
             
-            I = (FREQ==0); Rx(I) = R0(I);
-            I = (FREQ==1); Rx(I) = R1(I);
-            I = (FREQ==2); Rx(I) = R2(I);
-            I = (FREQ==3); Rx(I) = 1;      % The value of a hypothetical (non-existant, constant) analogous zVariable "R3".
+            I = (FREQ==0);   Rx(I) = R0(I);
+            I = (FREQ==1);   Rx(I) = R1(I);
+            I = (FREQ==2);   Rx(I) = R2(I);
+            I = (FREQ==3);   Rx(I) = 1;      % The value of a hypothetical (non-existant, constant) analogous zVariable "R3".
+            
+            assert(~any(Rx == -1))
         end
 
 
@@ -277,8 +285,8 @@ classdef proc_utils
         %
         % ARGUMENTS AND RETURN VALUE
         % ==========================
-        % data         : Numeric array with N rows.                 (Intended to represent zVariables with N records.)
-        % rowFilter    : Numeric/logical column vector with N rows. (Intended to represent zVariables with N records.)
+        % data         : Numeric array with N rows.                 (Intended to represent a zVariable with N records.)
+        % rowFilter    : Numeric/logical column vector with N rows. (Intended to represent a zVariable with N records.)
         % filteredData : Array of the same size as "data", such that
         %                filteredData(i,:,:, ...) == NaN,              for rowFilter(i)==0.
         %                filteredData(i,:,:, ...) == data(i,:,:, ...), for rowFilter(i)~=0.
@@ -420,7 +428,6 @@ classdef proc_utils
             % ASSERTIONS
             bicas.proc_utils.assert_ACQUISITION_TIME(ACQUISITION_TIME_1)
 
-%           tt2000_1           = bicas.proc_utils.ACQUISITION_TIME_to_tt2000(ACQUISITION_TIME_1);
             tt2000_1           = bicas.proc_utils.ACQUISITION_TIME_to_tt2000(ACQUISITION_TIME_1, ACQUISITION_TIME_EPOCH_UTC);
             tt2000_2           = bicas.proc_utils.convert_N_to_1_SPR_Epoch(  tt2000_1,           nSpr, freqWithinRecords);
             ACQUISITION_TIME_2 = bicas.proc_utils.tt2000_to_ACQUISITION_TIME(tt2000_2,           ACQUISITION_TIME_EPOCH_UTC);
@@ -530,6 +537,13 @@ classdef proc_utils
             
             bicas.proc_utils.assert_Epoch(tt2000)
             
+            %  spdfbreakdowntt2000 converts the CDF TT2000 time, nanoseconds since
+            %               2000-01-01 12:00:00 to UTC date/time.
+            %
+            %     OUT = spdfbreakdowntt2000(tt2000) returns the UTC date/time from CDF TT2000
+            %     time. OUT is an array with each row having nine (9) numerical values
+            %     for year, month, day, hour, minute, second, millisecond, microsecond
+            %     and nanosecond.
             v = spdfbreakdowntt2000(tt2000);
             utcStr = sprintf('%04i-%02i-%02iT%02i:%02i:%2i.%03i%03i%03i', v(1), v(2), v(3), v(4), v(5), v(6), v(7), v(8), v(9));
         end
@@ -708,6 +722,8 @@ classdef proc_utils
         
         function assert_Epoch(Epoch)
         % Assert that variable is an "zVar Epoch-like" variable.
+        % PROPOSAL: Change name: assert_Epoch_zvar
+        % PROPOSAL: Separate functions: assert_Epoch_zvar, assert_Epoch.
         
             if ~iscolumn(Epoch)
                 error('BICAS:proc_utils:Assertion:IllegalArgument', 'Argument is not a column vector')   % Right ID?                
@@ -739,14 +755,15 @@ classdef proc_utils
         function assert_unvaried_N_rows(S)
         % Assert that all NUMERIC fields in a structure have the same number of rows.
         %
+        % NOTE: Excludes numeric fields to handle field "DemuxerInput" (a scalar struct).
+        %
         % Useful for structs where all fields represent CDF zVariables and/or derivatives thereof, the size in the first
         % index (number of CDF record) should be equal.
-        %
-        % s : A struct to be tested.
-            
-            % PROPOSAL: Better name.
-            %   Ex: _equal_rows, _equal_N_rows, _same_N_rows, _equal_nbr_of_rows
-            
+
+        % PROPOSAL: Better name.
+        %   Ex: _equal_rows, _equal_N_rows, _same_N_rows, _equal_nbr_of_rows
+        % PROPOSAL: Only exclude struct fields.
+        
             fieldNamesList = fieldnames(S);
             nRows = [];
             for i = 1:length(fieldNamesList)

@@ -47,6 +47,11 @@ classdef proc_sub
 %   PROPOSAL: Function for calibrating with either constant factors and transfer functions. (Flag for choosing which.)
 %       NOTE: Function needs enough information to split up data into sequences on which transfer functions can be applied.
 %
+% PROPOSAL: Split into smaller files.
+%   PROPOSAL: proc_LFR
+%   PROPOSAL: proc_TDS
+%   PROPOSAL: proc_demux_calib
+%
 % PROPOSAL: Use double for all numeric zVariables in the processing. Do not produce or require proper type, e.g. integers, in any
 %           intermediate processing. Only convert to the proper data type/class when writing to CDF.
 %   PRO: Variables can keep NaN to represent fill/pad value, also for "integers".
@@ -104,6 +109,7 @@ classdef proc_sub
             
             % Define local convenience variables. AT = ACQUISITION_TIME
             ACQUISITION_TIME_EPOCH_UTC = SETTINGS.get_fv('PROCESSING.ACQUISITION_TIME_EPOCH_UTC');
+            
             hkAtTt2000  = bicas.proc_utils.ACQUISITION_TIME_to_tt2000(  Hk.ZVars.ACQUISITION_TIME, ACQUISITION_TIME_EPOCH_UTC);
             sciAtTt2000 = bicas.proc_utils.ACQUISITION_TIME_to_tt2000( Sci.ZVars.ACQUISITION_TIME, ACQUISITION_TIME_EPOCH_UTC);
             hkEpoch     = Hk.ZVars.Epoch;
@@ -120,24 +126,28 @@ classdef proc_sub
             %=========================================================================================================
             % 1) Convert time to something linear in time that can be used for processing (not storing time to file).
             % 2) Effectively also chooses which time to use for the purpose of processing:
-            %    ACQUISITION_TIME or Epoch.
+            %       (a) ACQUISITION_TIME, or
+            %       (b) Epoch.
             %=========================================================================================================
             if SETTINGS.get_fv('PROCESSING.USE_AQUISITION_TIME_FOR_HK_TIME_INTERPOLATION')
-                bicas.log('info', 'Using HK & SCI zVariable ACQUISITION_TIME (not Epoch) for interpolating HK data to SCI time.')
+                bicas.log('info', 'Using HK & SCI zVariable ACQUISITION_TIME (not Epoch) for interpolating HK dataset data to SCI dataset time.')
                 hkInterpolationTimeTt2000  = hkAtTt2000;
                 sciInterpolationTimeTt2000 = sciAtTt2000;
             else
-                %bicas.log('info', 'Using HK & SCI zVariable Epoch (not ACQUISITION_TIME) for interpolating HK data to SCI time.')
+                bicas.log('info', 'Using HK & SCI zVariable Epoch (not ACQUISITION_TIME) for interpolating HK dataset data to SCI dataset time.')
                 hkInterpolationTimeTt2000  = hkEpoch;
                 sciInterpolationTimeTt2000 = sciEpoch;
             end
+            clear hkAtTt2000 sciAtTt2000
+            clear hkEpoch    sciEpoch
 
 
 
             %=========================================================================================================
-            % Choose where to get MUX_SET from: BIAS-HK, or possibly LFR-SCI
-            % --------------------------------------------------------------
+            % Derive MUX_SET
+            % --------------
             % NOTE: Only obtains one MUX_SET per record ==> Can not change MUX_SET in the middle of a record.
+            % NOTE: Can potentially obtain MUX_SET from LFR SCI.
             %=========================================================================================================            
             HkSciTime.MUX_SET = bicas.proc_utils.nearest_interpolate_float_records(...
                 double(Hk.ZVars.HK_BIA_MODE_MUX_SET), hkInterpolationTimeTt2000, sciInterpolationTimeTt2000);   % Use BIAS HK.
@@ -146,15 +156,16 @@ classdef proc_sub
 
 
             %=========================================================================================================
-            % Derive approximate DIFF_GAIN values for from BIAS HK
-            %
+            % Derive DIFF_GAIN
+            % ----------------
             % NOTE: Not perfect handling of time when 1 snapshot/record, since one should ideally use time stamps
             % for every LFR _sample_.
             %=========================================================================================================
             HkSciTime.DIFF_GAIN = bicas.proc_utils.nearest_interpolate_float_records(...
                 double(Hk.ZVars.HK_BIA_DIFF_GAIN), hkInterpolationTimeTt2000, sciInterpolationTimeTt2000);
-            
-            
+
+
+
             % ASSERTIONS
             EJ_library.utils.assert.struct(HkSciTime, {'MUX_SET', 'DIFF_GAIN'})
         end        
@@ -162,7 +173,7 @@ classdef proc_sub
         
 
         function PreDc = process_LFR_to_PreDC(Sci, HkSciTime)
-        % Processing function. Convert LFR CDF data (PDs) to PreDC.
+        % Processing function. Convert LFR CDF data to PreDC.
         %
         % Keeps number of samples/record. Treats 1 samples/record "length-one snapshots".
         
@@ -171,7 +182,7 @@ classdef proc_sub
         % Should only be relevant for V01_ROC-SGSE_L2R_RPW-LFR-SURV-CWF (not V02) which should expire.
         
             % ASSERTIONS
-            EJ_library.utils.assert.struct(Sci, {'ZVars', 'Ga'})
+            EJ_library.utils.assert.struct(Sci,        {'ZVars', 'Ga'})
             EJ_library.utils.assert.struct(HkSciTime,  {'MUX_SET', 'DIFF_GAIN'})
             
             sciDvid  = bicas.construct_DVID(Sci.Ga.DATASET_ID{1}, Sci.Ga.Skeleton_version{1});
@@ -180,9 +191,10 @@ classdef proc_sub
             %===========================================================================================================
             % Handle differences between skeletons V01 and V02
             % ------------------------------------------------
-            % LFR_V, LFR_E: zVars with different names (but identical meaning).
-            % L1_REC_NUM  : Only seems to have been defined in very old skeletons (not in DataPool git repo).
-            %               Abolished for now.
+            % POTENTIAL,
+            % ELECTRICAL : zVars with different names (but identical meaning).
+            % L1_REC_NUM : Only seems to have been defined in very old skeletons (not in DataPool git repo).
+            %              Abolished for now.
             %===========================================================================================================
             switch(sciDvid)
                 case {  'V01_ROC-SGSE_L2R_RPW-LFR-SBM1-CWF', ...
@@ -199,8 +211,8 @@ classdef proc_sub
                     POTENTIAL  =         Sci.ZVars.V;
                     ELECTRICAL = permute(Sci.ZVars.E, [1,3,2]);
                     % IMPLEMENTATION NOTE: Permuting indices somewhat ugly temporary fix, but it gives(?) backward
-                    % compatibility with old datasets which have CWF on "snapshot format" (multiple samples per record),
-                    % over the second index.
+                    % compatibility with old datasets (which? /2019-08-23) which have CWF on "snapshot format" (multiple
+                    % samples per record), over the second index.
                     
                     %L1_REC_NUM = bicas.proc_utils.create_NaN_array([nRecords, 1]);   % Set to fill values.
                 case {  'V02_ROC-SGSE_L2R_RPW-LFR-SBM1-CWF', ...
@@ -214,7 +226,7 @@ classdef proc_sub
                     error('BICAS:proc_sub:SWModeProcessing:Assertion:ConfigurationBug', ...
                         'Can not handle DVID="%s"', sciDvid)
             end
-            
+
             %========================================================================================
             % Handle differences between datasets with and without zVAR FREQ:
             % LFR_FREQ: Corresponds to FREQ only defined in some LFR datasets.
@@ -223,11 +235,11 @@ classdef proc_sub
                 case {  'V01_ROC-SGSE_L2R_RPW-LFR-SBM1-CWF', ...
                         'V02_ROC-SGSE_L2R_RPW-LFR-SBM1-CWF', ...
                         'V04_ROC-SGSE_L1R_RPW-LFR-SBM1-CWF-E'}
-                    FREQ = ones(nRecords, 1) * 1;   % Always value "1".
+                    FREQ = ones(nRecords, 1) * 1;   % Always value "1" (F1).
                 case {  'V01_ROC-SGSE_L2R_RPW-LFR-SBM2-CWF', ...
                         'V02_ROC-SGSE_L2R_RPW-LFR-SBM2-CWF', ...
                         'V04_ROC-SGSE_L1R_RPW-LFR-SBM2-CWF-E'}
-                    FREQ = ones(nRecords, 1) * 2;   % Always value "2".
+                    FREQ = ones(nRecords, 1) * 2;   % Always value "2" (F2).
                 case {  'V01_ROC-SGSE_L2R_RPW-LFR-SURV-CWF', ...
                         'V04_ROC-SGSE_L1R_RPW-LFR-SURV-CWF-E', ...
                         'V01_ROC-SGSE_L2R_RPW-LFR-SURV-SWF', ...
@@ -245,8 +257,12 @@ classdef proc_sub
             nSamplesPerRecord = size(POTENTIAL, 2);
             freqHz            = bicas.proc_utils.get_LFR_frequency( FREQ );   % NOTE: Needed also for 1 SPR.
             
-            % Find the relevant value of zVariables R0, R1, R2, "R3".
-            Rx = bicas.proc_utils.get_LFR_Rx( Sci.ZVars.R0, Sci.ZVars.R1, Sci.ZVars.R2, FREQ );   % NOTE: Function also handles the imaginary zVar "R3".
+            % Obtain the relevant values (one per record) from zVariables R0, R1, R2, "R3".
+            Rx = bicas.proc_utils.get_LFR_Rx( ...
+                Sci.ZVars.R0, ...
+                Sci.ZVars.R1, ...
+                Sci.ZVars.R2, ...
+                FREQ );   % NOTE: Function also handles the imaginary zVar "R3".
             
             PreDc = [];
             PreDc.Epoch            = Sci.ZVars.Epoch;
@@ -255,6 +271,8 @@ classdef proc_sub
             PreDc.freqHz           = freqHz;
             %PreDc.SAMP_DTIME       = bicas.proc_utils.derive_SAMP_DTIME(freqHz, nSamplesPerRecord);
             %PreDc.L1_REC_NUM       = L1_REC_NUM;
+            
+            
             
             %===========================================================================================================
             % Replace illegally empty data with fill values/NaN
@@ -269,30 +287,32 @@ classdef proc_sub
             PreDc.QUALITY_FLAG    = Sci.ZVars.QUALITY_FLAG;
             PreDc.QUALITY_BITMASK = Sci.ZVars.QUALITY_BITMASK;
             if isempty(PreDc.QUALITY_FLAG)
-                bicas.log('warning', 'QUALITY_FLAG from the SCI source dataset is empty. Filling with empty values.')
+                bicas.log('warning', 'QUALITY_FLAG from the LFR SCI source dataset is empty. Filling with empty values.')
                 PreDc.QUALITY_FLAG = bicas.proc_utils.create_NaN_array([nRecords, 1]);
             end
             if isempty(PreDc.QUALITY_BITMASK)
-                bicas.log('warning', 'QUALITY_BITMASK from the SCI source dataset is empty. Filling with empty values.')
+                bicas.log('warning', 'QUALITY_BITMASK from the LFR SCI source dataset is empty. Filling with empty values.')
                 PreDc.QUALITY_BITMASK = bicas.proc_utils.create_NaN_array([nRecords, 1]);
             end
-            
+
+
+
             % ELECTRICAL must be floating-point so that values can be set to NaN.
             % bicas.proc_utils.filter_rows requires this. Variable may be integer if integer in source CDF.
             ELECTRICAL = single(ELECTRICAL);
-            
+
             PreDc.DemuxerInput        = [];
             PreDc.DemuxerInput.BIAS_1 = POTENTIAL;
             PreDc.DemuxerInput.BIAS_2 = bicas.proc_utils.filter_rows( ELECTRICAL(:,:,1), Rx==1 );
             PreDc.DemuxerInput.BIAS_3 = bicas.proc_utils.filter_rows( ELECTRICAL(:,:,2), Rx==1 );
             PreDc.DemuxerInput.BIAS_4 = bicas.proc_utils.filter_rows( ELECTRICAL(:,:,1), Rx==0 );
             PreDc.DemuxerInput.BIAS_5 = bicas.proc_utils.filter_rows( ELECTRICAL(:,:,2), Rx==0 );
-            
+
             PreDc.MUX_SET   = HkSciTime.MUX_SET;
             PreDc.DIFF_GAIN = HkSciTime.DIFF_GAIN;
 
-            
-            
+
+
             % ASSERTIONS
             bicas.proc_sub.assert_PreDC(PreDc)
         end
@@ -382,33 +402,6 @@ classdef proc_sub
                 'QUALITY_BITMASK', 'DELTA_PLUS_MINUS', 'DemuxerOutput', 'IBIAS1', 'IBIAS2', 'IBIAS3'});
             bicas.proc_utils.assert_unvaried_N_rows(PostDc);
             bicas.proc_utils.assert_unvaried_N_rows(PostDc.DemuxerOutput);
-        end
-
-
-
-        function PostDc = process_demuxing_calibration(SciPreDc)
-        % Processing function. Converts PreDC to PostDC, i.e. demux and calibrate data.
-        
-            % ASSERTIONS
-            bicas.proc_sub.assert_PreDC(SciPreDc);
-            
-            %=======
-            % DEMUX
-            %=======
-            PostDc = SciPreDc;    % Copy all values, to later overwrite a subset of them.
-            PostDc.DemuxerOutput = bicas.proc_sub.simple_demultiplex(...
-                SciPreDc.DemuxerInput, ...
-                SciPreDc.MUX_SET, ...
-                SciPreDc.DIFF_GAIN);
-            
-            % BUG / TEMP: Set default values since the real values are not available.
-            % Move "derivation" to HK_on_SCI_time?
-            PostDc.IBIAS1 = bicas.proc_utils.create_NaN_array(size(PostDc.DemuxerOutput.V1));
-            PostDc.IBIAS2 = bicas.proc_utils.create_NaN_array(size(PostDc.DemuxerOutput.V2));
-            PostDc.IBIAS3 = bicas.proc_utils.create_NaN_array(size(PostDc.DemuxerOutput.V3));
-            
-            % ASSERTIONS
-            bicas.proc_sub.assert_PostDC(PostDc)
         end
         
 
@@ -522,11 +515,45 @@ classdef proc_sub
             %switch(eoutPDID)
             %    case  'V02_ROC-SGSE_L2S_RPW-TDS-LFM-CWF-E'
             %    case  'V02_ROC-SGSE_L2S_RPW-TDS-LFM-RSWF-E'
-                        
-                    
+
             error('BICAS:proc_sub:SWModeProcessing:Assertion:OperationNotImplemented', ...
                 'This processing function has not been implemented yet.')
-        end    
+        end
+
+
+
+        % Processing function. Converts PreDC to PostDC, i.e. demux and calibrate data.
+        %
+        % Is in large part a wrapper around "simple_demultiplex".
+        % NOTE: Public function as opposed to the other demuxing/calibration functions.
+        function PostDc = process_demuxing_calibration(PreDc)
+        % PROPOSAL: Move setting of IBIASx (bias current) somewhere else?
+        %   PRO: Unrelated to demultiplexing.
+        %   CON: Related to calibration.
+
+            % ASSERTION
+            bicas.proc_sub.assert_PreDC(PreDc);
+
+            %=======
+            % DEMUX
+            %=======
+            PostDc = PreDc;    % Copy all values, to later overwrite a subset of them.
+            PostDc.DemuxerOutput = bicas.proc_sub.simple_demultiplex(...
+                PreDc.DemuxerInput, ...
+                PreDc.MUX_SET, ...
+                PreDc.DIFF_GAIN);
+            
+            %================================
+            % Set (calibrated) bias currents
+            %================================
+            % BUG / TEMP: Set default values since the real values are not available.
+            PostDc.IBIAS1 = bicas.proc_utils.create_NaN_array(size(PostDc.DemuxerOutput.V1));
+            PostDc.IBIAS2 = bicas.proc_utils.create_NaN_array(size(PostDc.DemuxerOutput.V2));
+            PostDc.IBIAS3 = bicas.proc_utils.create_NaN_array(size(PostDc.DemuxerOutput.V3));
+            
+            % ASSERTION
+            bicas.proc_sub.assert_PostDC(PostDc)
+        end
         
     end   % methods(Static, Access=public)
             
@@ -534,7 +561,6 @@ classdef proc_sub
     
     methods(Static, Access=private)
         
-        function DemuxerOutput = simple_demultiplex(DemuxerInput, MUX_SET, DIFF_GAIN)
         % Wrapper around "simple_demultiplex_subsequence" to be able to handle multiple CDF records with changing
         % settings (mux_set, diff_gain).
         %
@@ -547,11 +573,21 @@ classdef proc_sub
         % MUX_SET      = Column vector. Numbers identifying the MUX/DEMUX mode. 
         % DIFF_GAIN    = Column vector. Gains for differential measurements. 0 = Low gain, 1 = High gain.
         %
+        %
         % NOTE: Can handle arrays of any size as long as the sizes are consistent.
-        
+        function DemuxerOutput = simple_demultiplex(DemuxerInput, MUX_SET, DIFF_GAIN)
         % PROPOSAL: Incorporate into processing function process_demuxing_calibration.
+        % PROPOSAL: Assert same nbr of "records" for MUX_SET, DIFF_GAIN as for BIAS_x.
         
+            % ASSERTIONS
+            EJ_library.utils.assert.struct(DemuxerInput, {'BIAS_1', 'BIAS_2', 'BIAS_3', 'BIAS_4', 'BIAS_5'})
             bicas.proc_utils.assert_unvaried_N_rows(DemuxerInput)
+            EJ_library.utils.assert.all_equal([...
+                size(MUX_SET,             1), ...
+                size(DIFF_GAIN,           1), ...
+                size(DemuxerInput.BIAS_1, 1)])
+
+            
             
             % Create empty structure to which new components can be added.
             DemuxerOutput = struct(...
@@ -561,10 +597,11 @@ classdef proc_sub
 
 
 
-            % Find continuous sequences of records having identical settings then
+            % Find continuous sequences of records having identical settings, then
             % process data separately for those sequences.
             [iFirstList, iLastList] = bicas.proc_utils.find_sequences(MUX_SET, DIFF_GAIN);            
             for iSequence = 1:length(iFirstList)
+                
                 iFirst = iFirstList(iSequence);
                 iLast  = iLastList (iSequence);
                 
@@ -573,9 +610,9 @@ classdef proc_sub
                 DIFF_GAIN_value = DIFF_GAIN(iFirst);
                 bicas.logf('info', 'Records %2i-%2i : Demultiplexing; MUX_SET=%-3i; DIFF_GAIN=%-3i', ...
                     iFirst, iLast, MUX_SET_value, DIFF_GAIN_value)    % "%-3" since value might be NaN.
-                
+
                 % Extract subsequence of DATA records to "demux".
-                DemuxerInputSubseq = bicas.proc_utils.select_subset_from_struct(DemuxerInput, iFirst, iLast);
+                DemuxerInputSubseq = bicas.proc_utils.select_row_range_from_struct_fields(DemuxerInput, iFirst, iLast);
                 
                 %=================================================
                 % CALL DEMUXER - See method/function for comments
@@ -584,7 +621,7 @@ classdef proc_sub
                     DemuxerInputSubseq, MUX_SET_value, DIFF_GAIN_value);
                 
                 % Add demuxed sequence to the to-be complete set of records.
-                DemuxerOutput = bicas.proc_utils.add_components_to_struct(DemuxerOutput, DemuxerOutputSubseq);
+                DemuxerOutput = bicas.proc_utils.add_rows_to_struct_fields(DemuxerOutput, DemuxerOutputSubseq);
                 
             end
             
@@ -592,7 +629,6 @@ classdef proc_sub
 
 
 
-        function Output = simple_demultiplex_subsequence(Input, MUX_SET, DIFF_GAIN)
         % Demultiplex, with only constant factors for calibration (no transfer functions, no offsets) and exactly one
         % setting for MUX_SET and DIFF_GAIN respectively.
         %
@@ -601,7 +637,7 @@ classdef proc_sub
         %
         % NOTE/BUG: Does not handle latching relay.
         %
-        % NOTE: Conceptually, this function mixes demuxing with calibration which can (and most likely should) be separated.
+        % NOTE: Conceptually, this function does both (a) demuxing and (b) calibration which could be separated.
         % - Demuxing is done on individual samples at a specific point in time.
         % - Calibration (with transfer functions) is made on a time series (presumably of one variable, but could be several).
         %
@@ -618,52 +654,54 @@ classdef proc_sub
         % MUX_SET   : Scalar number identifying the MUX/DEMUX mode.
         % DIFF_GAIN : Scalar gain for differential measurements. 0 = Low gain, 1 = High gain.
         % Output    : Struct with fields V1, V2, V3,   V12, V13, V23,   V12_AC, V13_AC, V23_AC.
-        % 
+        % --
         % NOTE: Will tolerate values of NaN for MUX_SET, DIFF_GAIN. The effect is NaN in the corresponding output values.
-        %
         % NOTE: Can handle any arrays of any size as long as the sizes are consistent.
-
-        
-            %==========================================================================================================
-            % QUESTION: How to structure the demuxing?
-            % --
-            % QUESTION: How split by record? How put together again? How do in a way which
-            %           works for real transfer functions? How handle the many non-indexed outputs?
-            % QUESTION: How handle changing values of diff_gain, mux_set, bias-dependent calibration offsets?
-            % NOTE: LFR data can be either 1 sample/record or 1 snapshot/record.
-            % PROPOSAL: Work with some subset of in- and out-values of each type?
-            %   PROPOSAL: Work with exactly one value of each type?
-            %       CON: Slow.
-            %           CON: Only temporary implementation.
-            %       PRO: Quick to implement.
-            %   PROPOSAL: Work with only some arbitrary subset specified by array of indices.
-            %   PROPOSAL: Work with only one row?
-            %   PROPOSAL: Work with a continuous sequence of rows/records?
-            %   PROPOSAL: Submit all values, and return structure. Only read and set subset specified by indices.
-            %
-            %
-            % PROPOSAL: Could, maybe, be used for demuxing if the caller has already applied the
-            % transfer function calibration on on the BIAS signals.
-            % PROPOSAL: Validate with some "multiplexer" function?!
-            % QUESTION: Does it make sense to have BIAS values as cell array? Struct fields?!
-            %   PRO: Needed for caller's for loop to split up by record.
-            %
-            % QUESTION: Is there some better implementation than giant switch statement?! Something more similar to BIAS
-            % specification Table 3-4?
-            %
-            % QUESTION: MUX modes 1-3 are overdetermined if we always have BIAS1-3?
-            %           If so, how select what to calculate?! What if results disagree/are inconsistent? Check for it?
-            %
-            % PROPOSAL: Separate the multiplication with factor in other function.
-            %   PRO: Can use function together with TFs.
-            %==========================================================================================================
+        %
+        function Output = simple_demultiplex_subsequence(Input, MUX_SET, DIFF_GAIN)
+        %==========================================================================================================
+        % QUESTION: How to structure the demuxing?
+        % --
+        % QUESTION: How split by record? How put together again? How do in a way which
+        %           works for real transfer functions? How handle the many non-indexed outputs?
+        % QUESTION: How handle changing values of diff_gain, mux_set, bias-dependent calibration offsets?
+        % NOTE: LFR data can be either 1 sample/record or 1 snapshot/record.
+        % PROPOSAL: Work with some subset of in- and out-values of each type?
+        %   PROPOSAL: Work with exactly one value of each type?
+        %       CON: Slow.
+        %           CON: Only temporary implementation.
+        %       PRO: Quick to implement.
+        %   PROPOSAL: Work with only some arbitrary subset specified by array of indices.
+        %   PROPOSAL: Work with only one row?
+        %   PROPOSAL: Work with a continuous sequence of rows/records?
+        %   PROPOSAL: Submit all values, and return structure. Only read and set subset specified by indices.
+        %
+        %
+        % PROPOSAL: Could, maybe, be used for demuxing if the caller has already applied the
+        % transfer function calibration on on the BIAS signals.
+        % PROPOSAL: Validate with some "multiplexer" function?!
+        % QUESTION: Does it make sense to have BIAS values as cell array? Struct fields?!
+        %   PRO: Needed for caller's for loop to split up by record.
+        %
+        % QUESTION: Is there some better implementation than giant switch statement?! Something more similar to BIAS
+        % specification Table 3-4?
+        %
+        % QUESTION: MUX modes 1-3 are overdetermined if we always have BIAS1-3?
+        %           If so, how select what to calculate?! What if results disagree/are inconsistent? Check for it?
+        %
+        % PROPOSAL: Separate the multiplication with factor in other function.
+        %   PRO: Can use function together with TFs.
+        %==========================================================================================================
             
             global SETTINGS
             
             % ASSERTIONS
-            if numel(MUX_SET) ~= 1 || numel(DIFF_GAIN) ~= 1
-                error('BICAS:proc_sub:Assertion:IllegalArgument', 'Illegal argument value "MUX_SET" or "DIFF_GAIN". Must be scalars (not arrays).')
-            end
+            EJ_library.utils.assert.struct(Input, {'BIAS_1', 'BIAS_2', 'BIAS_3', 'BIAS_4', 'BIAS_5'})
+            bicas.proc_utils.assert_unvaried_N_rows(Input)
+            assert(isscalar(MUX_SET))
+            assert(isscalar(DIFF_GAIN))
+
+            
             
             ALPHA = SETTINGS.get_fv('PROCESSING.SIMPLE_DEMUXER.ALPHA');
             BETA  = SETTINGS.get_fv('PROCESSING.SIMPLE_DEMUXER.BETA');
@@ -691,7 +729,7 @@ classdef proc_sub
 
             switch(MUX_SET)
                 case 0   % "Standard operation" : We have all information.
-                    
+
                     % Summarize the INPUT DATA we have.
                     V1_DC  = Input.BIAS_1;
                     V12_DC = Input.BIAS_2;
