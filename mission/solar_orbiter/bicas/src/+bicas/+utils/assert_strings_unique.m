@@ -28,7 +28,7 @@ else
         dispList = [dispList, sprintf('   "%s"\n', nonuniquesList{i})];
     end    
     
-    error('assert_strings_unique:Assertion', ...
+    error('BICAS:assert_strings_unique:Assertion', ...
         ['Strings in list of strings are not unique as expected. The following quoted strings are not unique:\n', dispList])
 end
 

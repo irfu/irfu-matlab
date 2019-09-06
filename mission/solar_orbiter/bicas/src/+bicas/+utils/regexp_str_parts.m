@@ -36,7 +36,7 @@ function subStrList = regexp_str_parts(str, regexpList)
         % syntax.
         subStr = regexp(remStr, ['^', regexpList{i}], 'match', 'emptymatch');  
         if isempty(subStr)
-            error('Could not match regexp "%s" to beginning of the remainder of the string, "%s".', regexpList{i}, remStr)
+            error('BICAS:Could not match regexp "%s" to beginning of the remainder of the string, "%s".', regexpList{i}, remStr)
         end
         subStr = subStr{1};
         

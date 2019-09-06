@@ -185,7 +185,7 @@ while numel(varargin) > 0
         case 'Strict empty data class'
             permitBadEmptyDataClass = 0;
         otherwise
-            error('write_CDF_dataobj:Assertion', 'Can not interpret extra option "%s".', argument)
+            error('BICAS:write_CDF_dataobj:Assertion', 'Can not interpret extra option "%s".', argument)
     end
     varargin = varargin(2:end);
 end
@@ -198,11 +198,11 @@ zVarNameAllList2 = fieldnames(dataobj_data);
 % ASSERTION: zVariable names are all unique.
 if length(unique(zVarNameAllList1)) ~= length(zVarNameAllList1)
     % IMPLEMENTATION NOTE: Could be useful for test code which may generate zVar names automatically.
-    error('write_CDF_dataobj:Assertion', 'Not all zVariable names are unique.')
+    error('BICAS:write_CDF_dataobj:Assertion', 'Not all zVariable names are unique.')
 end
 % ASSERTION: Arguments contain two consistent lists of zVariables.
 if ~isempty(setxor(zVarNameAllList1, zVarNameAllList2))
-    error('write_CDF_dataobj:Assertion', 'Arguments contain two inconsistent lists of available zVariable names.')
+    error('BICAS:write_CDF_dataobj:Assertion', 'Arguments contain two inconsistent lists of available zVariable names.')
 end
 
 zVarNameAllList = zVarNameAllList1;
@@ -245,7 +245,7 @@ for i=1:length(dataobj_Variables(:,1))
     % In practice: #records > 0 with zero-size records ==> zero records
     % Not certain that the CDF files format is meant to handle this either.
     if prod(specifiedSizePerRecord) == 0
-        error('write_CDF_dataobj:Assertion', 'Specified size per record contains zero-size dimension(s). The code can not handle this.')
+        error('BICAS:write_CDF_dataobj:Assertion', 'Specified size per record contains zero-size dimension(s). The code can not handle this.')
     end
     
     %zVarData = handle_zero_records(zVarData, padValue, dataobjStatedMatlabClass, turnZeroRecordsIntoOneRecord);
@@ -265,7 +265,7 @@ for i=1:length(dataobj_Variables(:,1))
     zVarDataMatlabClass = class(zVarValue);    
     
     if ~(permitBadEmptyDataClass && isempty(zVarValue)) && ~strcmp( specifiedMatlabClass, zVarDataMatlabClass )
-        error('write_CDF_dataobj:Assertion', ...
+        error('BICAS:write_CDF_dataobj:Assertion', ...
             'The MATLAB class ("%s") of the variable containing zVariable ("%s") data does not match specified CDF data type "%s".', ...
             zVarDataMatlabClass, zVarName, specifiedCdfDataType)
     end
@@ -304,7 +304,7 @@ for i=1:length(dataobj_Variables(:,1))
             % CASE: The current zVariable does not have this attribute (varAttrName).
             continue
         elseif length(iAttrZVar) > 1
-            error('write_CDF_dataobj:Assertion:OperationNotImplemented', ...
+            error('BICAS:write_CDF_dataobj:Assertion:OperationNotImplemented', ...
                 'Can not handle multiple variable name matches in dataobj_VariableAttributes.%s.', varAttrName)
         end
         varAttrValue = doVarAttrField{iAttrZVar, 2};
@@ -312,7 +312,7 @@ for i=1:length(dataobj_Variables(:,1))
             varAttrValue = spdfparsett2000(varAttrValue);   % Convert char-->tt2000.
         elseif ~strcmp(specifiedCdfDataType, class(varAttrValue))
             class(varAttrValue)
-            error('write_CDF_dataobj:Assertion', ...
+            error('BICAS:write_CDF_dataobj:Assertion', ...
                 'Found VariableAttribute %s for CDF variable %s whose data type did not match the declared one.', ...
                 varAttrName, zVarName)
         end
@@ -469,7 +469,7 @@ end
 function charArray = convert_dataobj_charZVarValue_2_consistent_charZVarValue(charArray, nWrd1)
     % ASSERTION
     if ~isscalar(nWrd1)
-        error('write_CDF_dataobj:Assertion', 'Argument nWrd1 is not a scalar.')
+        error('BICAS:write_CDF_dataobj:Assertion', 'Argument nWrd1 is not a scalar.')
     end
 
     if nWrd1 == 1
@@ -499,11 +499,11 @@ end
 function [zVarValue, isRecordBound] = prepare_char_zVarData(charArray)
     % ASSERTIONS. Important to check that the code can actually handle the case.
     if ~isa(charArray, 'char')
-        error('write_CDF_dataobj:Assertion', 'Argument charArray is not a char array.');
+        error('BICAS:write_CDF_dataobj:Assertion', 'Argument charArray is not a char array.');
     elseif ndims(charArray) > 3
-        error('write_CDF_dataobj:Assertion:OperationNotImplemented', 'Argument charArray has more than 3 dimension (2 per record). Can not produce value for such zVariable.');
+        error('BICAS:write_CDF_dataobj:Assertion:OperationNotImplemented', 'Argument charArray has more than 3 dimension (2 per record). Can not produce value for such zVariable.');
     elseif isempty(charArray)
-        error('write_CDF_dataobj:Assertion:OperationNotImplemented', 'Argument charArray constains zero strings. Can not produce value for empty zVariable.');
+        error('BICAS:write_CDF_dataobj:Assertion:OperationNotImplemented', 'Argument charArray constains zero strings. Can not produce value for empty zVariable.');
     end
     
     nRecords = size(charArray, 2);   % CASE: >=1, because of assertion.
@@ -524,7 +524,7 @@ function [zVarValue, isRecordBound] = prepare_char_zVarData(charArray)
                 end
             end
         else
-            error('write_CDF_dataobj:Assertion:OperationNotImplemented', 'Argument charArray represents multiple records containing multiple strings per record. Can not produce zVariable value for this case.');
+            error('BICAS:write_CDF_dataobj:Assertion:OperationNotImplemented', 'Argument charArray represents multiple records containing multiple strings per record. Can not produce zVariable value for this case.');
         end
     end    
     
@@ -561,7 +561,7 @@ if ischar(zVarValue)
     if ~isequal(...
             normalize_size_vec(specifiedSizePerRecord), ...
             normalize_size_vec(sizePerRecord))
-        error('write_CDF_dataobj:Assertion', ...
+        error('BICAS:write_CDF_dataobj:Assertion', ...
             'The zVariable data size (dataobj_data.(''%s'').data) does not fit the stated size per record (dataobj_Variables).', ...
             zVarName)
     end
@@ -580,7 +580,7 @@ elseif isnumeric(zVarValue)
         if ~isequal(...
                 normalize_size_vec(specifiedSizePerRecord), ...
                 normalize_size_vec(sizePerRecord))
-            error('write_CDF_dataobj:Assertion', ...
+            error('BICAS:write_CDF_dataobj:Assertion', ...
                 ['The zVariable (''%s'') data size according to data variable itself does not fit the stated size per record according to separate argument.\n', ...
                 '    Size per record according to data variable:          [', sprintf('%i ', sizePerRecord),          ']\n', ...
                 '    Size per record according to separate size argument: [', sprintf('%i ', specifiedSizePerRecord), ']'], ...
@@ -641,7 +641,7 @@ elseif isnumeric(zVarValue)
         isRecordBound = 1;
     end
 else
-    error('write_CDF_dataobj:Assertion', 'zVarValue is neither char nor numeric.')
+    error('BICAS:write_CDF_dataobj:Assertion', 'zVarValue is neither char nor numeric.')
 end
 
 end
@@ -672,7 +672,7 @@ end
 % 
 % if isempty(zVarData)
 %     if ~turnZeroRecordsIntoOneRecord
-%         error('write_CDF_dataobj:Assertion', 'Can not handle CDF zVariables with zero records (due to presumed bug in spdfcdfwrite).')
+%         error('BICAS:write_CDF_dataobj:Assertion', 'Can not handle CDF zVariables with zero records (due to presumed bug in spdfcdfwrite).')
 %     else
 %         %---------------------------------------------------------------------------------------------
 %         % EXPERIMENTAL SOLUTION: Store 1 record of data with only pad values instead of zero records.
@@ -682,7 +682,7 @@ end
 %         try
 %             zVarData = cast(ones(nRecords, 1), specifiedMatlabClass) * padValue;
 %         catch exception
-%             error('write_CDF_dataobj:Assertion', 'Can not type cast zvar data variable to MATLAB class "%s" (CDF: "%s").', ...
+%             error('BICAS:write_CDF_dataobj:Assertion', 'Can not type cast zvar data variable to MATLAB class "%s" (CDF: "%s").', ...
 %                 specifiedMatlabClass, dataobjStatedCdfDataType)
 %         end
 %     end

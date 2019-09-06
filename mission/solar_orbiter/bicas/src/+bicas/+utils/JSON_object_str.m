@@ -122,7 +122,7 @@ elseif isstruct(JsonObj)
     str = [str, INDENT_0_STR, '}'];   % NOTE: No line break.
     
 else
-    error('JSON_object_str:Assertion:IllegalArgument', 'Disallowed variable type. Neither structure nor cell array.')
+    error('BICAS:JSON_object_str:Assertion:IllegalArgument', 'Disallowed variable type. Neither structure nor cell array.')
 end
 
 end    % print_JSON_object_recursive

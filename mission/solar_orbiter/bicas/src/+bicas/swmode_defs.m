@@ -120,7 +120,7 @@ classdef swmode_defs
                     obj.outputDatasetLevel    = 'L2';
 
                 otherwise
-                    error('swmode_defs:Assertion:IllegalArgument', 'Can not interpret "pipelineId=%s', pipelineId)
+                    error('BICAS:swmode_defs:Assertion:IllegalArgument', 'Can not interpret "pipelineId=%s', pipelineId)
             end
             clear pipelineId
             
