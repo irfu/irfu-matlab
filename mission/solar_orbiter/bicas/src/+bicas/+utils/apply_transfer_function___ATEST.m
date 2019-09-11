@@ -62,8 +62,8 @@ if 1
     dt = 0.1;
     delay = 8*dt;
     
-    tfOmega = linspace(0, 4/dt, 1e6)';
-    tfZ     = delayTfZ(tfOmega, delay);
+    %tfOmega = linspace(0, 4/dt, 1e6)';
+    tf     = @(omega) delayTfZ(omega, delay);
     
     t  = tVec(N, dt);
     f = @(t) (0.5*t.^2 - 1*t + 2);
@@ -71,7 +71,7 @@ if 1
     y2 = delayedFunc(f, t, delay, N, dt);
 
 %    input{end+1} = {dt, y1, tfOmega, tfZ, 'enableDetrending', 1};   % Test fails legitimately
-    input{end+1} = {dt, y1, tfOmega, tfZ, 'enableDetrending', 0};
+    input{end+1} = {dt, y1, tf, 'enableDetrending', 0};
     output{end+1} = y2;
 end
 
@@ -80,10 +80,8 @@ if 1
     % TF    : Constant Z != 1
     N  = 100;
     dt = 0.1;
-    delay = 12*dt;
     
-    tfOmega = linspace(0, 4/dt, 1e6)';
-    tfZ     = constantTfZ(tfOmega, 2, 2);
+    tf    = @(omega) constantTfZ(omega, 2, 2);
     
     t  = tVec(N, dt);
     f1 = @(t) (1 * ones(size(t)) );
@@ -92,7 +90,7 @@ if 1
     y2 = f2(t);
 
     % NOTE: Test without de-trending.
-    input{end+1} = {dt, y1, tfOmega, tfZ, 'enableDetrending', 0};
+    input{end+1} = {dt, y1, tf, 'enableDetrending', 0};
     output{end+1} = y2;
 end
 
@@ -105,15 +103,14 @@ if 1
         dt     = 2*pi/N;
         omega0 = 1;    % Fits time interval perfectly. Perfectly periodic.
                 
-        tfOmega = [0, 1e-9, 100]';   % Deliberately low-resolved.
-        tfZ     = constantTfZ(tfOmega, 1, exp(1i*omega0*(-delay)));
+        tf      = @(omega) constantTfZ(omega, 1, exp(1i*omega0*(-delay)));
         t  = tVec(N, dt);
         f  = @(t) (3+cos(omega0 * (t-pi/5)));
         
         y1 = f(t);
         y2 = delayedFunc(f, t, delay, N, dt);
         
-        input{end+1} = {dt, y1, tfOmega, tfZ, 'enableDetrending', 0};
+        input{end+1} = {dt, y1, tf, 'enableDetrending', 0};
         output{end+1} = y2;
     end
 end
@@ -127,8 +124,7 @@ if 1
         dt    = 0.1;
         delay = 3*dt;
         
-        tfOmega = linspace(0, 1e1*4/dt, 1e6)';
-        tfZ     = delayTfZ(tfOmega, delay);
+        tf    = @(omega) delayTfZ(omega, delay);
         
         omega0 = 2*pi * 5/(N*dt);    % Exact DFT frequency.  ==> Good match
         %omega0 = 2*pi * 1/3;          % Arbitrary frequency.  ==> Edge effects, generally
@@ -142,7 +138,7 @@ if 1
         y1 = f(t);
         y2 = delayedFunc(f,t,delay,N,dt);
         
-        input{end+1} = {dt, y1, tfOmega, tfZ, 'enableDetrending', 0};
+        input{end+1} = {dt, y1, tf, 'enableDetrending', 0};
         output{end+1} = y2;
     end
 end
@@ -155,8 +151,7 @@ if 1
         dt    = 0.01;
         delay = 13*dt;
         
-        tfOmega = linspace(0, 4/dt, 1e6)';
-        tfZ     = delayTfZ(tfOmega, delay);
+        tf    = @(omega) delayTfZ(omega, delay);
         
         t = tVec(N, dt);
         
@@ -165,7 +160,7 @@ if 1
         y2 = delayedFunc(f,t,delay,N,dt);
         
 %         input{end+1} = {dt, y1, tfOmega, tfZ, 'enableDetrending', 1};    % De-trend
-        input{end+1} = {dt, y1, tfOmega, tfZ, 'enableDetrending', 0};    % De-trend
+        input{end+1} = {dt, y1, tf, 'enableDetrending', 0};    % De-trend
         output{end+1} = y2;
     end
 end
@@ -174,11 +169,11 @@ if 1
     % Arbitrary function + delay
     for N = 100:101
         % TF for a delay.
-        dt = 1 / (N-1);
+        dt    = 1 / (N-1);
         delay = 10*dt;
         
         tfOmega = linspace(0, 4*N/dt, 1e6)';
-        tfZ     = delayTfZ(tfOmega, delay);
+        tf     = @(omega) delayTfZ(omega, delay);
         
         t = tVec(N,dt);
         
@@ -187,7 +182,7 @@ if 1
         y2 = delayedFunc(f,t,delay,N,dt);
 %         y1(3) = NaN;    % TEST
         
-       input{end+1} = {dt, y1, tfOmega, tfZ, 'enableDetrending', 0};
+       input{end+1} = {dt, y1, tf, 'enableDetrending', 0};
 %         input{end+1} = {dt, y1, tfOmega, tfZ, 'enableDetrending', 1};
         output{end+1} = y2;
     end

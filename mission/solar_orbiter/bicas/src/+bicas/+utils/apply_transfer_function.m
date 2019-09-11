@@ -1,4 +1,4 @@
-function [y2] = apply_transfer_function(dt, y1, tfOmega, tfZ, varargin)
+function [y2] = apply_transfer_function(dt, y1, tf, varargin)
 %
 % Generic general-purpose function for applying a spectrum TF(transfer function) to a sequence of (real-valued, time
 % domain) samples.
@@ -21,9 +21,10 @@ function [y2] = apply_transfer_function(dt, y1, tfOmega, tfZ, varargin)
 % NOTE: All arguments/return value vectors are column vectors. TF = transfer function.
 % dt       : Time between each sample. Unit: seconds
 % y1       : Samples. Must be real-valued (assertion).
-% tfOmega  : TF frequencies for which tfZ values apply. Must only contain positive values (i.e. excl. zero).
-%            Unit: radians/s
-% tfZ      : Complex TF values (multiplication factors) at frequencies tfOmega. No unit.
+% tf       : Function handle to function z=tf(omega). z has not unit. omega unit: rad/s.
+%            Will only be called for omega>=0. tf(0) must be real.
+%            NOTE: If the caller wants to use a tabulated TF, then s/he should construct an anonymous function using
+%            "interp1" and submit it as argument.
 % y2       : y1 after the application of the TF.
 %            If y1 contains at least one NaN, then all components in y2 will be NaN. No error will be thrown.
 % varargin : Optional settings arguments as interpreted by EJ_library.utils.interpret_settings_args.
@@ -44,8 +45,8 @@ function [y2] = apply_transfer_function(dt, y1, tfOmega, tfZ, varargin)
 % the beginning and end of the signal (reduces it in the case of linear de-trending), which affects the high-frequency
 % content(?) but probably in a good way. The implementation scales the "trend" (polynomial fit) by tfZ(omega==0).
 % --
-% NOTE: Presently not sure if MATLAB has standard functions for applying a transfer function that is tabulated in the
-% frequency domain. /Erik P G Johansson 2019-07-25
+% NOTE: Presently not sure if MATLAB has standard functions for applying a transfer function in the
+% frequency domain and that is tabulated or function handle.   /Erik P G Johansson 2019-09-11
 %
 %
 % IMPLEMENTATION NOTES
@@ -83,7 +84,6 @@ function [y2] = apply_transfer_function(dt, y1, tfOmega, tfZ, varargin)
 % PROPOSAL: Option for using inverse TF? Can easily be implemented in the actual call to the function though
 %           (dangerous?).
 % PROPOSAL: Option for error on NaN/Inf.
-% PROPOSAL: Assert tfOmega sorted?
 % PROPOSAL: Eliminate dt from function. Only needed for interpreting tfOmega. Add in wrapper.
 % PROPOSAL: Eliminate de-trending. Add in wrapper.
 %   CON/NOTE: Might not be compatible with future functionality (Hann Windows etc).
@@ -94,12 +94,9 @@ function [y2] = apply_transfer_function(dt, y1, tfOmega, tfZ, varargin)
 %   PROPOSAL: warning
 %   PROPOSAL: Setting for how to respond.
 %
-% PROPOSAL: Read TF from a function (pointer) instead.
-%   PRO: Caller can control the inter-/extrapolation of table (linear, spline etc).
-%   PRO: Useful when combining table TFs with other table TFs (other set of frequencies), or with analytical TFs.
-%   CON: Slower?
-% PROPOSAL: Have work for analytical transfer function. Extract Z only for needed omega values.
-%   PROPOSAL: Have this be the default and use a interpolation function for tables.
+% PROPOSAL: If slow to call function handle, permit caller to submit table with implicit frequencies.
+%   PROPOSAL: Return the Z values actually used, so that caller can call back using them.
+%   PROPOSAL: Separate function for generating such vector.
 %
 % TODO-NEED-INFO: How does algorithm handle X_(N/2+1) (which has no frequency twin)? Seems like implemention should
 %   multiply it by a complex Z (generic situation) ==> Complex y2. Still, no such example has been found yet.
@@ -114,24 +111,18 @@ N_POLYNOMIAL_COEFFS_TREND_FIT = 1;    % 1 = Linear function.
 %============
 % ASSERTIONS
 %============
-if ~(iscolumn(y1) && iscolumn(tfOmega) && iscolumn(tfZ))
-    error('BICAS:apply_transfer_function:Assertion', 'Argument y1, tfOmega, or tfZ is not a column vector.')
-elseif ~isscalar(dt)
-    error('BICAS:apply_transfer_function:Assertion', 'dt is not scalar.')
-elseif (numel(tfOmega) ~= numel(tfZ))
-    error('BICAS:apply_transfer_function:Assertion', 'tfOmega, tfZ have different sizes.')
+if ~iscolumn(y1)
+    error('BICAS:apply_transfer_function:Assertion:IllegalArgument', 'Argument y1 is not a column vector.')
 elseif ~isreal(y1)
-    error('BICAS:apply_transfer_function:Assertion', 'y1 is not real.')
+    error('BICAS:apply_transfer_function:Assertion:IllegalArgument', 'y1 is not real.')
     % NOTE: The algorithm itself does not make sense for non-real functions.
-elseif any(tfOmega<0)
-    error('BICAS:apply_transfer_function:Assertion', 'tfOmega contains non-positive frequencies.')
-end
-iZero = find(tfOmega == 0);
-if isempty(iZero) 
-    error('BICAS:apply_transfer_function:Assertion', 'There is no component tfOmega==0.')    
-end
-if ~isreal(tfZ(iZero))
-    error('BICAS:apply_transfer_function:Assertion', 'tfZ(find(tfOmega==0)) not real.')    
+elseif ~isscalar(dt)
+    error('BICAS:apply_transfer_function:Assertion:IllegalArgument', 'dt is not scalar.')
+elseif ~isa(tf, 'function_handle')
+    % EJ_library.utils.assert.func does not seem to handle return values correctly.
+    error('BICAS:apply_transfer_function:Assertion:IllegalArgument', 'tf is not a function.')
+elseif ~isreal(tf(0))
+    error('BICAS:apply_transfer_function:Assertion:IllegalArgument', 'tf(0) is not real.')    
 end
 
 
@@ -196,22 +187,16 @@ tfOmegaLookups = 2*pi * (kOmegaLookup - 1) / (N*dt);
 
 
 
-%===========================================================================================================
+%=============================================================================================================
 % Find complex TF values, i.e. complex factors to multiply every DFT component with
 % ---------------------------------------------------------------------------------
-% NOTE: interp1 does NOT seem to require that submitted table of (x,y)=(tfOmega,tfZ) values is sorted in x.
-% NOTE: interp1 requires that submitted table (x,y) has unique x values.
-% NOTE: "extrap" ==> Extrapolate TF to frequencies below/above the lowest/highest stated frequencies. ==>
-% Note that de-trending (if enabled) should already have removed the zero-frequency component from the in
-% signal.
-%===========================================================================================================
-% tfZLookups = interp1(tfOmega, tfZ, tfOmegaLookups, 'linear', 'extrap');
-tfZLookups    = interp1(tfOmega, tfZ, abs(tfOmegaLookups), 'linear');
+% NOTE: De-trending (if enabled) should already have removed the zero-frequency component from the in signal.
+%=============================================================================================================
+tfZLookups    = tf(abs(tfOmegaLookups));
 i             = tfOmegaLookups < 0;
 tfZLookups(i) = conj(tfZLookups(i));
 if any(isnan(tfZLookups))
-    % NOTE: Should only potentially be triggered if not extrapolating the TF.
-    error('BICAS:apply_transfer_function:Assertion', 'Transfer function does not cover enough range of frequencies needed.')
+    error('BICAS:apply_transfer_function:Assertion', 'Transfer function tf returned NaN for at least one frequency.')
 end
 
 
