@@ -1,4 +1,4 @@
-% Semi-automated test code for function "apply_transfer_function".
+% Semi-automatic test code for function "apply_transfer_function".
 %
 %
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
@@ -9,13 +9,10 @@ function apply_transfer_function___ATEST
 % First created 2017-02-13
 %
 % NOTE: Want to test even & odd N, dt<>1.
-%
-% UNFINISHED.
 
 % BOGIQ:
 % ------
-% PROPOSAL: Function for generating delay/advance TF, single frequency change.
-% PROPOSAL: Inner function that generates TF for delay. Function pointer to function?
+% PROPOSAL: Utility Z(omega) for generating single frequency change.
 % PROPOSAL: Automatic test: tf+inversion, compare ~spectras? Same result for multiple resolutions (even/odd). Pure delay/advance.
 % TODO-NEED-INFO: How robust is automatic test code in the event of better algorithms? (Hann windows, de-trending and stuff...)
 % PROPOSAL: Use specially-written "equals"-like function that permits (greater) discrepancies at the edge(s).
@@ -33,18 +30,27 @@ function apply_transfer_function___ATEST
 %   PROPOSAL: Use circshift, instead of mod to cycle/delay functions/arrays.
 %   PROPOSAL: Use random input arrays.
 %
-
+% PROPOSAL: Test scaling X_0 and X_k, k>0 differently.
 
 
 % EPSILON = 1e-6;
-EPSILON = 1e-3;
+EPSILON = 1e-4;
 
 input  = {};
 output = {};
 
 tVec = @(N,dt) (0 : dt : ((N-1)*dt) )';
-delayedFunc = @(f,t,delay,N,dt) (f(mod(t-delay, (N-dt)*dt)));    % Delays function (in time domain), AND treats it as cyclic. delay>0 pushes it in t+ direction.
-delayTfZ    = @(omega, delay)   (exp(1i*omega*(-delay)));        % TF that delays function (in time domain), i.e. one time delay for all frequencies.
+
+% Delays function (in time domain), AND treats it as cyclic. delay>0 pushes it in t+ direction.
+delayedFunc = @(f,t,delay,N,dt) (f(mod(t-delay, N*dt)));
+
+% TF that delays function (in time domain), i.e. one time delay for all frequencies.
+delayTfZ    = @(omega, delay)   (exp(1i*omega*(-delay)));
+
+% TF for (alsmost) constant Z. Implements Z(omega=0)=z0 and Z(omega>0)=z1.
+% NOTE: Must work for omega=vector.
+% NOTE: z0 should be real.
+constantTfZ = @(omega, z0, z1) ( (omega==0)*z0 + (omega~=0)*z1 );
 
 
 
@@ -52,33 +58,55 @@ if 1
     % Signal: Quadratic function
     % TF    : Constant delay.
     N  = 100;
+%     N  = 10;
     dt = 0.1;
-    delay = 12*dt;
+    delay = 8*dt;
     
-    tfOmega = linspace(1e-9, 4/dt, 1e6)';
+    tfOmega = linspace(0, 4/dt, 1e6)';
     tfZ     = delayTfZ(tfOmega, delay);
     
     t  = tVec(N, dt);
-%     f = @(t) (0*t + 2);
-%     f = @(t) (1*t + 0);
     f = @(t) (0.5*t.^2 - 1*t + 2);
     y1 = f(t);
     y2 = delayedFunc(f, t, delay, N, dt);
 
+%    input{end+1} = {dt, y1, tfOmega, tfZ, 'enableDetrending', 1};   % Test fails legitimately
+    input{end+1} = {dt, y1, tfOmega, tfZ, 'enableDetrending', 0};
+    output{end+1} = y2;
+end
+
+if 1
+    % Signal: Constant function
+    % TF    : Constant Z != 1
+    N  = 100;
+    dt = 0.1;
+    delay = 12*dt;
+    
+    tfOmega = linspace(0, 4/dt, 1e6)';
+    tfZ     = constantTfZ(tfOmega, 2, 2);
+    
+    t  = tVec(N, dt);
+    f1 = @(t) (1 * ones(size(t)) );
+    f2 = @(t) (2 * ones(size(t)) );
+    y1 = f1(t);
+    y2 = f2(t);
+
+    % NOTE: Test without de-trending.
     input{end+1} = {dt, y1, tfOmega, tfZ, 'enableDetrending', 0};
     output{end+1} = y2;
 end
 
 if 1
     % Signal: Approximately one non-zero DFT component
-    % TF:     Constant Z(!) Different time delays on different frequencies, which produces a chosen time delay for this specific signal.
+    % TF:     Constant Z(!), except tfZ(omega=0). Different time delays on different frequencies, which produces a chosen time delay for this specific signal.
     for N = 100:101
+%     for N = 10
         delay  = 0.60;
         dt     = 2*pi/N;
         omega0 = 1;    % Fits time interval perfectly. Perfectly periodic.
                 
-        tfOmega = [1e-8, 100]';   % Deliberately low-resolved.
-        tfZ     = ones(size(tfOmega)) * exp(1i*omega0*(-delay));
+        tfOmega = [0, 1e-9, 100]';   % Deliberately low-resolved.
+        tfZ     = constantTfZ(tfOmega, 1, exp(1i*omega0*(-delay)));
         t  = tVec(N, dt);
         f  = @(t) (3+cos(omega0 * (t-pi/5)));
         
@@ -94,15 +122,16 @@ if 1
     % Signal: Single non-zero DFT component
     % TF:     One delay for all frequencies.
     for N = 100:101
+%     for N = 10
         % TF for a delay.
         dt    = 0.1;
         delay = 3*dt;
         
-        tfOmega = linspace(1e-9, 4/dt, 1e6)';
+        tfOmega = linspace(0, 1e1*4/dt, 1e6)';
         tfZ     = delayTfZ(tfOmega, delay);
         
-        omega0 = 2*pi * 12/(N*dt);   % Exact DFT frequency.  ==> Good match
-        %omega0 = 2*pi * 1/3;         % Arbitrary frequency.  ==> Edge effects, generally
+        omega0 = 2*pi * 5/(N*dt);    % Exact DFT frequency.  ==> Good match
+        %omega0 = 2*pi * 1/3;          % Arbitrary frequency.  ==> Edge effects, generally
         if (N*dt) / (1/omega0) < 10   % Assert minimum number of oscillation periods in function (in radians).
             error('Bad test config.?')
         end
@@ -120,14 +149,14 @@ end
 
 if 1
     % Signal: Arbitrary function + delay
-    for N = 100
-%     for N = 100:101
+%     for N = 100
+    for N = 100:101
         % TF for a delay.
         dt    = 0.01;
         delay = 13*dt;
         
-        tfOmega = linspace(1e-8, 4/dt, 1e6)';
-        tfZ = delayTfZ(tfOmega, delay);
+        tfOmega = linspace(0, 4/dt, 1e6)';
+        tfZ     = delayTfZ(tfOmega, delay);
         
         t = tVec(N, dt);
         
@@ -148,7 +177,7 @@ if 1
         dt = 1 / (N-1);
         delay = 10*dt;
         
-        tfOmega = linspace(1e-8, 4*N/dt, 1e6)';
+        tfOmega = linspace(0, 4*N/dt, 1e6)';
         tfZ     = delayTfZ(tfOmega, delay);
         
         t = tVec(N,dt);
@@ -158,7 +187,7 @@ if 1
         y2 = delayedFunc(f,t,delay,N,dt);
 %         y1(3) = NaN;    % TEST
         
-        input{end+1} = {dt, y1, tfOmega, tfZ, 'enableDetrending', 0};
+       input{end+1} = {dt, y1, tfOmega, tfZ, 'enableDetrending', 0};
 %         input{end+1} = {dt, y1, tfOmega, tfZ, 'enableDetrending', 1};
         output{end+1} = y2;
     end
@@ -176,7 +205,9 @@ for iTest = 1:length(input)
     y1 = input{iTest}{2};
     figure
 %     plot(n, [y1, y2_exp])
-    plot(n, [y1, y2_exp, y2_res])
+    plot(n, y1,     '-'); hold on
+    plot(n, y2_exp, '-k', 'LineWidth', 2.0)
+    plot(n, y2_res, '*')
     legend('y1', 'y2\_expected', 'y2\_result')
     xlabel('array index (not t)')
     
@@ -184,7 +215,7 @@ for iTest = 1:length(input)
         %error('TEST FAILED')
         warning('TEST FAILED')
         
-        y2diffMax = max(abs(y2_res - y2_exp))
+        [y2diffMax, iY2DiffMax] = max(abs(y2_res - y2_exp))
 %         keyboard
 %         close all
     else
