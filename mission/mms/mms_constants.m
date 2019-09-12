@@ -54,7 +54,7 @@ MMS_CONST.TmMode.brst = 3;
 MMS_CONST.TmMode.comm = 4; % Commissioning data.
 
 % Sample rates
-MMS_CONST.Samplerate.slow = {8; 32}; % Samples per second (dce & dcv), TM mode slow.
+MMS_CONST.Samplerate.slow = {8; 16; 32}; % Samples per second (dce & dcv), TM mode slow.
 MMS_CONST.Samplerate.fast = 32; % TM mode fast
 MMS_CONST.Samplerate.comm_8 = 8; % Commissioning "Slow"
 MMS_CONST.Samplerate.comm_32 = 32; % Commissioning "I&T" phase
