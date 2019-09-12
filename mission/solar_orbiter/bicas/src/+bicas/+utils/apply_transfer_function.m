@@ -118,6 +118,8 @@ elseif ~isreal(y1)
     % NOTE: The algorithm itself does not make sense for non-real functions.
 elseif ~isscalar(dt)
     error('BICAS:apply_transfer_function:Assertion:IllegalArgument', 'dt is not scalar.')
+elseif ~(dt>0)
+    error('BICAS:apply_transfer_function:Assertion:IllegalArgument', 'dt is not positive.')
 elseif ~isa(tf, 'function_handle')
     % EJ_library.utils.assert.func does not seem to handle return values correctly.
     error('BICAS:apply_transfer_function:Assertion:IllegalArgument', 'tf is not a function.')

@@ -131,8 +131,8 @@ classdef proc_utils
             end
             
             switch(DIFF_GAIN)
-                case 0    ; GAMMA = SETTINGS.get_fv('PROCESSING.SIMPLE_DEMUXER.GAMMA_LOW_GAIN');
-                case 1    ; GAMMA = SETTINGS.get_fv('PROCESSING.SIMPLE_DEMUXER.GAMMA_HIGH_GAIN');
+                case 0    ; GAMMA = SETTINGS.get_fv('PROCESSING.CALIBRATION.SCALAR.GAMMA_LOW_GAIN');
+                case 1    ; GAMMA = SETTINGS.get_fv('PROCESSING.CALIBRATION.SCALAR.GAMMA_HIGH_GAIN');
                 otherwise
                     if isnan(DIFF_GAIN)
                         GAMMA = NaN;
@@ -720,8 +720,8 @@ classdef proc_utils
 
         
         
-        function assert_Epoch(Epoch)
         % Assert that variable is an "zVar Epoch-like" variable.
+        function assert_Epoch(Epoch)
         % PROPOSAL: Change name: assert_Epoch_zvar
         % PROPOSAL: Separate functions: assert_Epoch_zvar, assert_Epoch.
         
@@ -730,6 +730,9 @@ classdef proc_utils
             elseif ~isa(Epoch, 'int64')
                 error('BICAS:proc_utils:Assertion:IllegalArgument', 'Argument has the wrong class.')   % Right ID?
             end
+            
+            % Use?!!! Too processing heavy?!
+            %validateattributes(Epoch, {'numeric'}, {'increasing'})
         end
 
         

@@ -597,8 +597,10 @@ classdef proc_sub
 
 
 
-            % Find continuous sequences of records having identical settings, then
-            % process data separately for those sequences.
+            %====================================================================
+            % Find continuous sequences of records with identical settings, then
+            % process data separately (one iteration) for those sequences.
+            %====================================================================
             [iFirstList, iLastList] = bicas.proc_utils.find_sequences(MUX_SET, DIFF_GAIN);            
             for iSequence = 1:length(iFirstList)
                 
@@ -678,7 +680,7 @@ classdef proc_sub
         %
         %
         % PROPOSAL: Could, maybe, be used for demuxing if the caller has already applied the
-        % transfer function calibration on on the BIAS signals.
+        %           transfer function calibration on the BIAS signals.
         % PROPOSAL: Validate with some "multiplexer" function?!
         % QUESTION: Does it make sense to have BIAS values as cell array? Struct fields?!
         %   PRO: Needed for caller's for loop to split up by record.
@@ -691,6 +693,8 @@ classdef proc_sub
         %
         % PROPOSAL: Separate the multiplication with factor in other function.
         %   PRO: Can use function together with TFs.
+        %
+        % TODO: Implement demuxing latching relay.
         %==========================================================================================================
             
             global SETTINGS
@@ -703,8 +707,8 @@ classdef proc_sub
 
             
             
-            ALPHA = SETTINGS.get_fv('PROCESSING.SIMPLE_DEMUXER.ALPHA');
-            BETA  = SETTINGS.get_fv('PROCESSING.SIMPLE_DEMUXER.BETA');
+            ALPHA = SETTINGS.get_fv('PROCESSING.CALIBRATION.SCALAR.ALPHA');
+            BETA  = SETTINGS.get_fv('PROCESSING.CALIBRATION.SCALAR.BETA');
             GAMMA = bicas.proc_utils.get_simple_demuxer_gamma(DIFF_GAIN);   % NOTE: GAMMA can be NaN iff DIFF_GAIN is.
             
             % Set default values which will be returned for
