@@ -581,9 +581,29 @@ end
 			[urlLink, tmpGetRequest] = splitUrlLink(urlLink);
 			if(isempty(tmpGetRequest))
 			  [downloadedFile,isReady] = urlwrite(urlLink, tempFilePathGz); %#ok<URLWR> websave introduced in R2014b
-			else
-			  [downloadedFile,isReady] = urlwrite(urlLink, tempFilePathGz, ...
-			    'Authentication', 'Basic', 'Get', tmpGetRequest); %#ok<URLWR> websave introduced in R2014b
+      else
+        if verLessThan('matlab', '8.4')
+          [downloadedFile,isReady] = urlwrite(urlLink, tempFilePathGz, ...
+            'Authentication', 'Basic', 'Get', tmpGetRequest); %#ok<URLWR> websave introduced in R2014b
+        else
+          indUser = strcmp(tmpGetRequest, 'USERNAME');
+          indPass = strcmp(tmpGetRequest, 'PASSWORD');
+          webOpt = weboptions('RequestMethod', 'get', 'Timeout', Inf, ...
+            'Username', tmpGetRequest{find(indUser)+1}, ...
+            'Password', tmpGetRequest{find(indPass)+1});
+          tmpGetRequest(indUser) = []; % Clear USERNAME
+          tmpGetRequest(indUser(1:end-1)) = [];
+          indPass = strcmp(tmpGetRequest, 'PASSWORD'); % Clear PASSWORD
+          tmpGetRequest(indPass) = [];
+          tmpGetRequest(indPass(1:end-1)) = [];
+          try
+            downloadedFile = websave(tempFilePathGz, urlLink, ...
+              tmpGetRequest{:}, webOpt);
+            isReady = true;
+          catch
+            isReady = false;
+          end
+        end
 			end
 			if isReady
 				gunzip(tempFilePathGz);
@@ -628,7 +648,7 @@ end
       else
         indUser = strcmp(tmpGetRequest, 'USERNAME');
         indPass = strcmp(tmpGetRequest, 'PASSWORD');
-        options = weboptions('RequestMethod', 'get', 'Timeout', Inf, ...
+        webOpt = weboptions('RequestMethod', 'get', 'Timeout', Inf, ...
           'Username', tmpGetRequest{find(indUser)+1}, ...
           'Password', tmpGetRequest{find(indPass)+1});
         tmpGetRequest(indUser) = []; % Clear USERNAME
@@ -638,7 +658,7 @@ end
         tmpGetRequest(indPass(1:end-1)) = [];
         try
           downloadedFile = websave(downloadedFile, urlLink, ...
-            tmpGetRequest{:}, options);
+            tmpGetRequest{:}, webOpt);
           isZipFileReady = true;
         catch
           isZipFileReady = false;
