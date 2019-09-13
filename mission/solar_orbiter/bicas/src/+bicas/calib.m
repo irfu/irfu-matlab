@@ -14,13 +14,34 @@ classdef calib
 % (4) to detect changing RCT formats, in particular from external teams.
 %
 %
-% DEFINITIONS
-% ===========
+% DEFINITIONS, NAMING CONVENTIONS
+% ===============================
+% Deg = Degrees (angle). 360 degrees=2*pi radians.
 % CPV = counts/volt
 % VPC = volt/count
 % APC = ampere/count
 % RPS = radians/second
 % (count = TM/TC unit)
+% TF = Transfer function (Z=Z(omega))
+% --
+% BLTS : BIAS-LFR/TDS Signals. Signals somewhere between the LFR/TDS ADCs and the antenna side of the BIAS demuxer
+%        including the BIAS transfer functions. Like BIAS_i, i=1..5, but includes various stages of calibration/non-calibration,
+%        including in particular
+%           - TM units (inside LFR/TDS),
+%           - BLTS interface volt (at the physical boundary BIAS-LFR/TDS (BIAS_i)), and
+%           - calibrated values inside BIAS but before addition and subtraction inside BIAS (i.e. after using BIAS offsets, BIAS
+%        transfer functions; volt).
+%        NOTE: Partly created to avoid using term "BIAS_i" since it is easily
+%        confused with other things (the subsystem BIAS, bias currents), partly to include various stages of
+%        calibration.
+% ASR  : Antenna Signal Representations. Those measured signals which are ultimately derived/calibrated by BICAS,
+%        i.e. Vi_LF, Vij_LF, Vij_LF_AC (i,j=1..3) in the BIAS specification.
+%        NOTE: This is different from the physical antenna signals which are
+%        essentially subset of ASR (Vi_LF), was it not for calibration errors and filtering.
+%        NOTE: This is different from the set Vi_DC, Vij_DC, Vij_AC of which a subset are equal to BIAS_i
+%        (which subset it is depends on the demux mode) and which is always in LFR/TDS calibrated volts.
+% BIAS_i, i=1..5 : Defined in BIAS specifications document. Equal to the physical signal at the physical boundary
+%        between BIAS and LFR/TDS. LFR/TDS calibrated volt. Mostly replaced by BLTS+unit in the code.
 %
 %
 % UNFINISHED. NOT USED BY MAIN PROGRAM YET. NOT ENTIRELY CLEAR WHAT IT SHOULD INCLUDE.
@@ -80,6 +101,10 @@ classdef calib
 %   PROPOSAL: Apply TF to numerical spike/delta/Dirac function.
 %       PROBLEM: At what sampling rate?
 % 
+% PROPOSAL: Calibration functions that do not work on a single sequence, but a list of sequences (with the same
+% settings; not necessarily the same calibration time).
+%
+%
 %
 % BOGIQ: RCT-reading functions
 % ============================
@@ -194,62 +219,127 @@ classdef calib
         
         % ARGUMENTS
         % =========
-        % tdsBiasChannel : 1..3, representing BIAS_1, ..., BIAS_3.
-        % antChannel     : 1..3 for single antenna, or [iAntenna, jAntenna] for diff antenna.
-        % biasSignalType : String constant
+        % tdsCwfSamplesTm : Samples.
+        % iBltsChannel    : 1..3.
+        % BltsAsrType     : Struct with fields
+        %       .antennas : [iAntenna] for single antenna, or [iAntenna, jAntenna] for diff antenna.
+        %       .category : String constant
         %
-        function antVolt = calibrate_TDS_CWF(obj, Epoch, tdsCwfTm, tdsBiasChannel, antChannel, biasSignalType)
+        %
+        % NOTE: TEMPORARY IMPLEMENTATION(?) Only uses first Epoch value for determining calibration values.
+        function asrSamplesVolt = calibrate_TDS_CWF(obj, Epoch, tdsCwfSamplesTm, iBltsChannel, BltsAsrType)
+            % PROPOSAL: Some kind of assertion (assumption of) constant sampling frequency.
+            
             bicas.proc_utils.assert_Epoch(Epoch)
+            assert(numel(tdsCwfSamplesTm) == numel(Epoch))
+            assert((1 <= iBltsChannel) && (iBltsChannel <= 3))
             
-            assert(numel(tdsCwfTm) == numel(Epoch))
-            
-            % PROPOSAL: Some kind of assertion.
             dt = double(Epoch(end) - Epoch(1)) / numel(Epoch) * 1e-9;   % Unit: s   (Epoch unit: ns)
-            iEpochListL = bicas.calib.get_calibration_time_interval(Epoch, obj.Bias.epochL);
-            iCalibTimeL = iEpochListL{1}(1);
-            iEpochListH = bicas.calib.get_calibration_time_interval(Epoch, obj.Bias.epochH);
-            iCalibTimeH = iEpochListH{1}(1);
-            
-            % IMPLEMENTATION NOTE: biasOutputChannel = BIAS_1, BIAS_2, BIAS_3 which are always DC.
-            switch(biasSignalType)
-                case 'DC single'
-                     BiasTfCoeffs = obj.Bias.Tfs.DcSingle;
-                     offsetVolt   = obj.Bias.singleOffsetsVolt(antChannel);
-                case 'DC diff'
-                     BiasTfCoeffs = obj.Bias.Tfs.DcDiff;
-                     if     all(antChannel==[1,2])  offsetVolt   = obj.Bias.DiffOffsets.E12Volt;
-                     elseif all(antChannel==[2,3])  offsetVolt   = obj.Bias.DiffOffsets.E23Volt;
-                     elseif all(antChannel==[1,3])  offsetVolt   = obj.Bias.DiffOffsets.E13Volt;
-                     else
-                         error('calib:calibrate_TDS_CWF:Assertion:IllegalArgument', 'Illegal antChannel.');
-                     end
-                otherwise
-                    error('BICAS:calib:IllegalArgument:Assertion', 'Illegal argument biasSignalType=%s', biasSignalType)
-            end
-            offsetVolt = offsetVolt(iCalibTimeH);            
-            numerCoeffs = BiasTfCoeffs.numerCoeffs(  iCalibTimeL, :);
-            denomCoeffs = BiasTfCoeffs.denomCoeffs(iCalibTimeL, :);
 
+            %==============================
+            % Obtain calibration constants
+            %==============================
+            iEpochListL = bicas.calib.get_calibration_time_interval(Epoch, obj.Bias.epochL);   iCalibTimeL = iEpochListL{1}(1);
+            iEpochListH = bicas.calib.get_calibration_time_interval(Epoch, obj.Bias.epochH);   iCalibTimeH = iEpochListH{1}(1);
+            % NOTE: Low/high gain is irrelevant for TDS. Argument value arbitrary.
+            BiasCalibData = obj.get_BIAS_calib_data(BltsAsrType, 0, iCalibTimeL, iCalibTimeH);
+
+            %===============================================
             % CALIBRATE: TDS TM --> TDS/BIAS interface volt
-            biasInputVolt = obj.tdsCwfFactors(tdsBiasChannel) * tdsCwfTm;
+            %===============================================
+            bltsInterfVolt = obj.tdsCwfFactors(iBltsChannel) * tdsCwfSamplesTm;
             
+            %=====================================================
             % CALIBRATE: TDS/BIAS interface volt --> antenna volt
+            %=====================================================
             tf = @(omega) bicas.calib.eval_analytical_transfer_func(...
-                omega, numerCoeffs, denomCoeffs);
-            antVolt = bicas.utils.apply_transfer_function(dt, biasInputVolt, tf, 'enableDetrending', 0);
+                omega, BiasCalibData.tfNumerCoeffs, BiasCalibData.tfDenomCoeffs);
+            asrSamplesVolt = bicas.utils.apply_transfer_function(dt, bltsInterfVolt, tf, ...
+                'enableDetrending', obj.SETTINGS.get_fv('PROCESSING.CALIBRATION.DETRENDING_ENABLED'));
+
+            asrSamplesVolt = asrSamplesVolt + BiasCalibData.offsetVolt;
+        end
+
+
+
+        % NOTE: TEMPORARY IMPLEMENTATION(?) Only uses first Epoch value for determining calibration values.
+        function asrSamplesVolt = calibrate_LFR(obj, Epoch, lfrSamplesTm, iBltsChannel, BltsAsrType, iLfrFreq, biasHighGain)
             
-            antVolt = antVolt + offsetVolt;
+            bicas.proc_utils.assert_Epoch(Epoch)
+            assert(numel(lfrSamplesTm) == numel(Epoch))
+            assert((1 <= iBltsChannel) && (iBltsChannel <= 5))
+            assert((1 <= iLfrFreq)     && (iLfrFreq     <= 4), 'Illegal iLfrFreq value.')
+            
+            dt = double(Epoch(end) - Epoch(1)) / numel(Epoch) * 1e-9;   % Unit: s   (Epoch unit: ns)
+
+            %==============================
+            % Obtain calibration constants
+            %==============================
+            iEpochListL = bicas.calib.get_calibration_time_interval(Epoch, obj.Bias.epochL);   iCalibTimeL = iEpochListL{1}(1);
+            iEpochListH = bicas.calib.get_calibration_time_interval(Epoch, obj.Bias.epochH);   iCalibTimeH = iEpochListH{1}(1);
+            BiasCalibData = obj.get_BIAS_calib_data(BltsAsrType, biasHighGain, iCalibTimeL, iCalibTimeH);
+            LfrTf = obj.LfrTfs{iLfrFreq}{iBltsChannel};
+            
+            %============================================================
+            % CALIBRATE: LFR TM --> LFR/BIAS interface volt --> ASR volt
+            %============================================================
+            tf = @(omega) (...
+                bicas.calib.eval_tabulated_transfer_func(omega, LfrTf.omegaRps, LfrTf.zVpc) ...
+                .* ...
+                bicas.calib.eval_analytical_transfer_func(...
+                omega, BiasCalibData.tfNumerCoeffs, BiasCalibData.tfDenomCoeffs));
+            asrSamplesVolt = bicas.utils.apply_transfer_function(dt, lfrSamplesTm, tf, ...
+                'enableDetrending', obj.SETTINGS.get_fv('PROCESSING.CALIBRATION.DETRENDING_ENABLED'));
+            
+            asrSamplesVolt = asrSamplesVolt + BiasCalibData.offsetVolt;
         end
         
         
         
-        function calibrate_LFR
-        end
-
-
-
     end    % methods(Access=public)
     
+    %###################################################################################################################
+
+    methods(Access=private)
+
+
+
+        % Internal utility function
+        function BiasCalibData = get_BIAS_calib_data(obj, BltsAsrType, biasHighGain, iCalibTimeL, iCalibTimeH)
+            
+            switch(BltsAsrType.category)
+                case 'DC single'
+                    assert(isscalar(BltsAsrType.antennas))
+                    BiasTfCoeffs = obj.Bias.Tfs.DcSingle;
+                    offsetVolt   = obj.Bias.dcSingleOffsetsVolt(iCalibTimeH, BltsAsrType.antennas);
+                case 'DC diff'
+                    BiasTfCoeffs = obj.Bias.Tfs.DcDiff;
+                    if     isequal(BltsAsrType.antennas(:)', [1,2]);   offsetVolt = obj.Bias.DcDiffOffsets.E12Volt(iCalibTimeH);
+                    elseif isequal(BltsAsrType.antennas(:)', [2,3]);   offsetVolt = obj.Bias.DcDiffOffsets.E23Volt(iCalibTimeH);
+                    elseif isequal(BltsAsrType.antennas(:)', [1,3]);   offsetVolt = obj.Bias.DcDiffOffsets.E13Volt(iCalibTimeH);
+                    else
+                        error('calib:calibrate_TDS_CWF:Assertion:IllegalArgument', 'Illegal BltsAsrType.antennas.');
+                    end
+                case 'AC'
+                    if biasHighGain
+                        BiasTfCoeffs = obj.Bias.Tfs.AcHighGain;
+                        offsetVolt = 0;
+                    else
+                        BiasTfCoeffs = obj.Bias.Tfs.AcLowGain;
+                        offsetVolt = 0;
+                    end
+                otherwise
+                    error('BICAS:calib:IllegalArgument:Assertion', 'Illegal argument BltsAsrType.category=%s', BltsAsrType.category)
+            end
+            BiasCalibData.tfNumerCoeffs = BiasTfCoeffs.numerCoeffs(iCalibTimeL, :);
+            BiasCalibData.tfDenomCoeffs = BiasTfCoeffs.denomCoeffs(iCalibTimeL, :);
+            BiasCalibData.offsetVolt = offsetVolt;
+        end
+
+
+
+    end    % methods(Access=private)
+
     %###################################################################################################################
 
     
@@ -324,8 +414,8 @@ classdef calib
                 epochH                   = bicas.calib.norm_do_zv(Do.data.Epoch_H);
                 biasCurrentOffsetsAmpere = bicas.calib.norm_do_zv(Do.data.BIAS_CURRENT_OFFSET);      % DEPEND_0 = Epoch_L
                 biasCurrentGainsApc      = bicas.calib.norm_do_zv(Do.data.BIAS_CURRENT_GAIN);        % DEPEND_0 = Epoch_L
-                singleOffsetsVolt        = bicas.calib.norm_do_zv(Do.data.V_OFFSET);                 % DEPEND_0 = Epoch_H
-                diffOffsetsVolt          = bicas.calib.norm_do_zv(Do.data.E_OFFSET);                 % DEPEND_0 = Epoch_H
+                dcSingleOffsetsVolt      = bicas.calib.norm_do_zv(Do.data.V_OFFSET);                 % DEPEND_0 = Epoch_H
+                dcDiffOffsetsVolt        = bicas.calib.norm_do_zv(Do.data.E_OFFSET);                 % DEPEND_0 = Epoch_H
                 tfCoeffs                 = bicas.calib.norm_do_zv(Do.data.TRANSFER_FUNCTION_COEFFS); % DEPEND_0 = Epoch_L
 
                 nEpochL = size(epochL, 1);
@@ -356,12 +446,12 @@ classdef calib
                 Bias.epochL = epochL;
                 Bias.epochH = epochH;
                 
-                Bias.Current.offsetsAmpere = biasCurrentOffsetsAmpere;
-                Bias.Current.gainsApc      = biasCurrentGainsApc;
-                Bias.singleOffsetsVolt     = singleOffsetsVolt;
-                Bias.DiffOffsets.E12Volt   = diffOffsetsVolt(:, 1);
-                Bias.DiffOffsets.E13Volt   = diffOffsetsVolt(:, 2);
-                Bias.DiffOffsets.E23Volt   = diffOffsetsVolt(:, 3);
+                Bias.Current.offsetsAmpere   = biasCurrentOffsetsAmpere;
+                Bias.Current.gainsApc        = biasCurrentGainsApc;
+                Bias.dcSingleOffsetsVolt     = dcSingleOffsetsVolt;
+                Bias.DcDiffOffsets.E12Volt   = dcDiffOffsetsVolt(:, 1);
+                Bias.DcDiffOffsets.E13Volt   = dcDiffOffsetsVolt(:, 2);
+                Bias.DcDiffOffsets.E23Volt   = dcDiffOffsetsVolt(:, 3);
 
                 Bias.Tfs.DcSingle.numerCoeffs   = tfCoeffs(:, :, NUMERATOR,   DC_SINGLE);
                 Bias.Tfs.DcSingle.denomCoeffs   = tfCoeffs(:, :, DENOMINATOR, DC_SINGLE);
@@ -389,12 +479,12 @@ classdef calib
                 assert(ndims(Bias.Current.gainsApc)         == 2)
                 assert(size( Bias.Current.gainsApc, 1)      == nEpochL)
                 assert(size( Bias.Current.gainsApc, 2)      == 3)
-                assert(ndims(Bias.singleOffsetsVolt)        == 2)
-                assert(size( Bias.singleOffsetsVolt, 1)     == nEpochH)
-                assert(size( Bias.singleOffsetsVolt, 2)     == 3)
-                for fn = fieldnames(Bias.DiffOffsets)'
-                    assert(iscolumn(Bias.DiffOffsets.(fn{1}))           )
-                    assert(length(  Bias.DiffOffsets.(fn{1})) == nEpochH)
+                assert(ndims(Bias.dcSingleOffsetsVolt)      == 2)
+                assert(size( Bias.dcSingleOffsetsVolt, 1)   == nEpochH)
+                assert(size( Bias.dcSingleOffsetsVolt, 2)   == 3)
+                for fn = fieldnames(Bias.DcDiffOffsets)'
+                    assert(iscolumn(Bias.DcDiffOffsets.(fn{1}))           )
+                    assert(length(  Bias.DcDiffOffsets.(fn{1})) == nEpochH)
                 end
                 
             catch Exc
@@ -417,46 +507,46 @@ classdef calib
                 % ASSUMPTION: Exactly 1 CDF record.
                 % IMPLEMENTATION NOTE: Does not want to rely one dataobj special behaviour for 1 record case
                 % ==> Remove leading singleton dimensions, much assertions.
-                
+
                 freqsHz{1}  = shiftdim(Do.data.Freqs_F0.data);    % NOTE: Index {iLfrFreq}.
                 freqsHz{2}  = shiftdim(Do.data.Freqs_F1.data);
                 freqsHz{3}  = shiftdim(Do.data.Freqs_F2.data);
                 freqsHz{4}  = shiftdim(Do.data.Freqs_F3.data);
-                
+
                 amplCpv{1}  = shiftdim(Do.data.TF_BIAS_12345_amplitude_F0.data);
                 amplCpv{2}  = shiftdim(Do.data.TF_BIAS_12345_amplitude_F1.data);
                 amplCpv{3}  = shiftdim(Do.data.TF_BIAS_12345_amplitude_F2.data);
                 amplCpv{4}  = shiftdim(Do.data.TF_BIAS_123_amplitude_F3.data);
-                
+
                 phaseDeg{1} = shiftdim(Do.data.TF_BIAS_12345_phase_F0.data);
                 phaseDeg{2} = shiftdim(Do.data.TF_BIAS_12345_phase_F1.data);
                 phaseDeg{3} = shiftdim(Do.data.TF_BIAS_12345_phase_F2.data);
                 phaseDeg{4} = shiftdim(Do.data.TF_BIAS_123_phase_F3.data);
-                
+
                 for iLfrFreq = 1:4
                     if iLfrFreq ~= 4
-                        nBiasChannels = 5;
+                        nBltsChannels = 5;
                     else
-                        nBiasChannels = 3;
+                        nBltsChannels = 3;
                     end
 
                     % ASSERTIONS: Check CDF array sizes, that no change in format.
                     assert(iscolumn(freqsHz{iLfrFreq}))
                     assert(ndims(amplCpv)  == 2)
                     assert(ndims(phaseDeg) == 2)
-                    assert(size( amplCpv{iLfrFreq}, 2) == nBiasChannels)
-                    assert(size(phaseDeg{iLfrFreq}, 2) == nBiasChannels)
+                    assert(size( amplCpv{iLfrFreq}, 2) == nBltsChannels)
+                    assert(size(phaseDeg{iLfrFreq}, 2) == nBltsChannels)
 
-                    for iBiasChannel = 1:nBiasChannels
+                    for iBltsChannel = 1:nBltsChannels
                         omegaRps = freqsHz{iLfrFreq} * 2*pi;    % NOTE: Duplicates the same frequency list.
-                        zVpc     = amplCpv{iLfrFreq}(:,iBiasChannel) .* exp(1i * deg2rad(phaseDeg{iLfrFreq}(:,iBiasChannel)));
+                        zVpc     = amplCpv{iLfrFreq}(:,iBltsChannel) .* exp(1i * deg2rad(phaseDeg{iLfrFreq}(:,iBltsChannel)));
                         
                         assert(isvector(omegaRps))
                         assert(isvector(zVpc))
                         assert(numel(omegaRps) == numel(zVpc))
                         
-                        LfrTfs{iLfrFreq}{iBiasChannel}.omegaRps = omegaRps;
-                        LfrTfs{iLfrFreq}{iBiasChannel}.zVpc     = zVpc;
+                        LfrTfs{iLfrFreq}{iBltsChannel}.omegaRps = omegaRps;
+                        LfrTfs{iLfrFreq}{iBltsChannel}.zVpc     = zVpc;
                     end
                 end
                 
@@ -520,15 +610,15 @@ classdef calib
                     size(amplVpc,  2), ...
                     size(phaseDeg, 2) ]);
                 
-                for iBiasChannel = 1:3
+                for iBltsChannel = 1:3
                     omegaRps = freqsHz;    % NOTE: Duplicates the same frequency list.
-                    zVpc     = shiftdim(amplVpc(iBiasChannel, :) .* exp(1i * deg2rad(phaseDeg(iBiasChannel, :))));
+                    zVpc     = shiftdim(amplVpc(iBltsChannel, :) .* exp(1i * deg2rad(phaseDeg(iBltsChannel, :))));
                     
                     assert(iscolumn(omegaRps))
                     assert(iscolumn(zVpc))
                     
-                    TdsRswfTfList(iBiasChannel).omegaRps = omegaRps;
-                    TdsRswfTfList(iBiasChannel).zVpc     = zVpc;
+                    TdsRswfTfList(iBltsChannel).omegaRps = omegaRps;
+                    TdsRswfTfList(iBltsChannel).zVpc     = zVpc;
                 end
                 
             catch Exc1
@@ -684,6 +774,8 @@ classdef calib
         function Z = eval_analytical_transfer_func(omega, numerCoeffs, denomCoeffs)
             % PROPOSAL: Reclassify as generic function and move it.
             
+            assert(isvector(numerCoeffs))
+            assert(isvector(denomCoeffs))
             numerCoeffs = numerCoeffs(:);
             denomCoeffs = denomCoeffs(:);
             
@@ -701,6 +793,20 @@ classdef calib
             % Calculate Z
             s = 1i * omega;
             Z = polyval(flipud(numerCoeffs), s) ./ polyval(flipud(denomCoeffs), s);
+        end
+        
+        
+        
+        function Z = eval_tabulated_transfer_func(evalOmega, tfOmega, tfZ)
+            % PROPOSAL: Extend TF to infinite frequency.
+            %   PRO: Can play around with high sampling rates for testing.
+            
+            % Extend TF to zero radians/s.
+            % NOTE: Can not just extrapolate/use the lowest-frequency Z to 0 Hz since it has to be real (not complex).
+            tfOmega = [0;           tfOmega(:)];
+            tfZ     = [abs(tfZ(1)); tfZ(:)];   
+            
+            Z = interp1(tfOmega, tfZ, evalOmega, 'linear');
         end
 
 
@@ -737,25 +843,3 @@ classdef calib
     end    %methods(Static, Access=private)
 
 end
-
-
-        
-        % TEST
-%         function inputSignalVolt = calibrate_DC(obj, temperatureCelsius, stimuli, antennaCh, lfrCh, outputSignalVolt)
-%             %if numel(antennaCh) == 2
-%             %    antennaCh = sort(antennaCh);
-%             %end
-%             
-%             if     isequal(antennaCh, [1])
-%             elseif isequal(antennaCh, [2])
-%             elseif isequal(antennaCh, [3])
-%             elseif isequal(antennaCh, [1,2])
-%             elseif isequal(antennaCh, [1,3])
-%             elseif isequal(antennaCh, [1,3])
-%             else
-%                 error('BICAS:Assertion', 'Can not interpret antenna channels.')
-%             end
-%             
-%             inputSignalVolt = offset + slope .* outputSignalVolt;
-%         end
-        

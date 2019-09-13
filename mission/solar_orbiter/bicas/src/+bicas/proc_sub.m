@@ -872,26 +872,13 @@ classdef proc_sub
         % AsrSamplesVolt
         %             : All representations of antenna signals which can possibly be derived from the BLTS (BIAS_i).
         %               Struct with fields named as in the BIAS specification: .Vi_LF, .Vij_LF, .Vij_LF_AC
-        %               NOTE: Calibration signals GND and 2.5V Ref are also sent to these variables although they are
-        %               technically not antenna representations. See implementation.
+        %               NOTE: Calibration signals GND and 2.5V Ref which are generated internally by BIAS are also
+        %               stored in these variables although they are technically not ASRs. See implementation.
         %
         %
-        % DEFINITIONS
-        % ===========
-        % BLTS : BIAS-LFR/TDS Signals. Like BIAS_i, i=1..5, but includes various stages of calibration/non-calibration, 
-        %        including TM units (inside LFR/TDS), at the physical boundary BIAS-LFR/TDS (BIAS_i; volt), and calibrated
-        %        values inside BIAS but before addition and subtraction inside BIAS (after using BIAS offsets, BIAS
-        %        transfer functions; volt). NOTE: Partly created to avoid using term "BIAS_i" since it is easily
-        %        confused with other things (the subsystem BIAS, bias currents), partly to include various stages of
-        %        calibration.
-        % ASR  : Antenna Signal Representations. Those measured signals which are ultimately derived/calibrated by BICAS,
-        %        i.e. Vi_LF, Vij_LF, Vij_LF_AC (i,j=1..3). 
-        %        NOTE: This is different from the physical antenna signals which are
-        %        essentially subset of ASR (Vi_LF), was it not for calibration errors and filtering.
-        %        NOTE: This is different from the set Vi_DC, Vij_DC, Vij_AC of which a subset are equal to BIAS_i
-        %        (which subset it is depends on the demux mode) and which is always in LFR/TDS calibrated volts.
-        % BIAS_i, i=1..5 : Defined in BIAS specifications document. Equal to the physical signal at the physical boundary
-        %        between BIAS and LFR/TDS. LFR/TDS calibrated volt. Mostly replaced by BLTS+unit in the code.
+        % DEFINITIONS, NAMING CONVENTIONS
+        % ===============================
+        % See bicas.calib.
         %
         function [BltsAsrType, AsrSamplesVolt] ...
                 = demultiplexer(MUX_SET, dlrUsing12, BltsSamplesCalibVolt)
