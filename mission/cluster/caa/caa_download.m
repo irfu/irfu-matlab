@@ -636,9 +636,13 @@ end
         indPass = strcmp(tmpGetRequest, 'PASSWORD'); % Clear PASSWORD
         tmpGetRequest(indPass) = [];
         tmpGetRequest(indPass(1:end-1)) = [];
-        downloadedFile = websave(downloadedFile, urlLink, ...
-          tmpGetRequest{:}, options);
-        if(exist(downloadedFile,'file')), isZipFileReady=1; end
+        try
+          downloadedFile = websave(downloadedFile, urlLink, ...
+            tmpGetRequest{:}, options);
+          isZipFileReady = true;
+        catch
+          isZipFileReady = false;
+        end
       end
 		end
 		
