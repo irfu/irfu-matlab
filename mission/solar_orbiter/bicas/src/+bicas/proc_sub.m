@@ -90,6 +90,7 @@ classdef proc_sub
 % PROPOSAL: Instantiate class, use instance methods instead of static.
 %   PRO: Can have SETTINGS and constants as instance variable instead of calling global variables.
 %
+% PROPOSAL: Change variable names to conform better with BIAS spec. V1 --> V1_DC
 %#######################################################################################################################
     
     methods(Static, Access=public)
@@ -560,6 +561,7 @@ classdef proc_sub
     %###################################################################################################################
     
     methods(Static, Access=private)
+    %methods(Static, Access=public)
         
         % Wrapper around "simple_demultiplex_subsequence" to be able to handle multiple CDF records with changing
         % settings (mux_set, diff_gain).
@@ -705,8 +707,8 @@ classdef proc_sub
             assert(isscalar(MUX_SET))
             assert(isscalar(DIFF_GAIN))
 
-            
-            
+
+
             ALPHA = SETTINGS.get_fv('PROCESSING.CALIBRATION.SCALAR.ALPHA');
             BETA  = SETTINGS.get_fv('PROCESSING.CALIBRATION.SCALAR.BETA');
             GAMMA = bicas.proc_utils.get_simple_demuxer_gamma(DIFF_GAIN);   % NOTE: GAMMA can be NaN iff DIFF_GAIN is.
@@ -828,6 +830,327 @@ classdef proc_sub
             Output.V23_AC = V23_LF_AC;
             
         end  % simple_demultiplex_subsequence
+
+        
+        
+        % NEW FUNCTION. NOT USED YET BUT MEANT TO REPLACE OLD FUNCTION "simple_demultiplex_subsequence".
+        %
+        % (1) Return the information needed for how to calibrate a BIAS-LFR/TDS signal (BIAS_i) that is a function of the demultiplexer mode,
+        % (2) Derives as much as possible of all the antenna singles and diffs from the available BIAS-LFR/TDS signals
+        % (BIAS_i), except the calibration (i.e. only addition and subtraction).
+        %
+        % Meant to be called in two different ways, typically twice for any time period with samples.
+        % (1) To obtain signal type info needed for how to calibrate every BIAS-LFR/TDS signal (BIAS_i) signal given any demux mode. 
+        % (2) To derive the complete set of ASR samples from the given BLTS samples.
+        %
+        % RATIONALE: Meant to collect all hardcoded information about the demultiplexer routing of signals.
+        % NOTE: Does not perform any calibration. The closest is to calculate diffs and singles from diffs and singles.
+        % 
+        % 
+        % ARGUMENTS
+        % =========
+        % MUX_SET            : Scalar value. Demultiplexer mode.
+        % dlrUsing12         : 0/1, true/false. DLR = Demultiplexer Latching Relay.
+        %                       False=0 = Using diffs V13_DC, V13_AC
+        %                       True =1 = Using diffs V12_DC, V12_AC
+        % BltsSamplesCalibVolt : Cell array of matrices, length 5. {iBlts} = Vector with sample values for that channel.
+        %                        BIAS calibrated volts.
+        % --
+        % NOTE: No argument for diff gain since this function does not calibrate.
+        %
+        %
+        % RETURN VALUES
+        % =============
+        % BltsAsrType : Struct array. (iBlts) = Number representing ASR type of the BLTS data, which depends on the mux mode.
+        %               Has fields
+        %                   .antennas = Numeric vector of length 0, 1 or 2.
+        %                           Either [] (no signal, e.g. BIAS_4/5 for TDS), [iAnt] (single), or [iAnt1, iAnt2] (diff).
+        %                           NOTE: iAnt1 < iAnt2. iAnt/iAnt1/iAnt2 = {1,2,3}.
+        %                           Represents the current routing of signals.
+        %                   .category = String constant representing the category/type of signal on the channel.
+        %                           DC single, DC diff, AC low-gain, AC high-gain, no signal
+        % AsrSamplesVolt
+        %             : All representations of antenna signals which can possibly be derived from the BLTS (BIAS_i).
+        %               Struct with fields named as in the BIAS specification: .Vi_LF, .Vij_LF, .Vij_LF_AC
+        %               NOTE: Calibration signals GND and 2.5V Ref are also sent to these variables although they are
+        %               technically not antenna representations. See implementation.
+        %
+        %
+        % DEFINITIONS
+        % ===========
+        % BLTS : BIAS-LFR/TDS Signals. Like BIAS_i, i=1..5, but includes various stages of calibration/non-calibration, 
+        %        including TM units (inside LFR/TDS), at the physical boundary BIAS-LFR/TDS (BIAS_i; volt), and calibrated
+        %        values inside BIAS but before addition and subtraction inside BIAS (after using BIAS offsets, BIAS
+        %        transfer functions; volt). NOTE: Partly created to avoid using term "BIAS_i" since it is easily
+        %        confused with other things (the subsystem BIAS, bias currents), partly to include various stages of
+        %        calibration.
+        % ASR  : Antenna Signal Representations. Those measured signals which are ultimately derived/calibrated by BICAS,
+        %        i.e. Vi_LF, Vij_LF, Vij_LF_AC (i,j=1..3). 
+        %        NOTE: This is different from the physical antenna signals which are
+        %        essentially subset of ASR (Vi_LF), was it not for calibration errors and filtering.
+        %        NOTE: This is different from the set Vi_DC, Vij_DC, Vij_AC of which a subset are equal to BIAS_i
+        %        (which subset it is depends on the demux mode) and which is always in LFR/TDS calibrated volts.
+        % BIAS_i, i=1..5 : Defined in BIAS specifications document. Equal to the physical signal at the physical boundary
+        %        between BIAS and LFR/TDS. LFR/TDS calibrated volt. Mostly replaced by BLTS+unit in the code.
+        %
+        function [BltsAsrType, AsrSamplesVolt] ...
+                = demultiplexer(MUX_SET, dlrUsing12, BltsSamplesCalibVolt)
+            % PROPOSAL: Function name that implies constant settings (MUX_SET at least; DIFF_GAIN?!).
+            % PROPOSAL: Convention for separating actual signal data/samples from signal "type".
+            %   PROPOSAL: "samples" vs "type"
+            % PROPOSAL/NOTE: BIAS calibrated volts = ASR volts (automatically for those ASR for which there is BLTS data)
+            % TODO-DECISION: How handle calibration modes with fixed, constant BIAS-LFR/TDS signals?
+            %
+            % PROBLEM: BltsAsrType.category for AC can not include low-gain/high-gain which leads to different set of
+            % alternatives than used for selecting transfer functions.
+            % PROPOSAL: "Assertion" for using good combination of mux mode and latching relay. Log warning if assertion
+            %           fails.
+            % PROPOSAL: Use string constants (calib.m?).
+            % PROPOSAL: Assertions for returned string constants.
+            
+            % ASSERTIONS
+            assert(isscalar(MUX_SET))
+            assert(isscalar(dlrUsing12))
+            assert(iscell(BltsSamplesCalibVolt))
+            EJ_library.utils.assert.vector(BltsSamplesCalibVolt)
+            assert(numel(BltsSamplesCalibVolt)==5)
+            
+            % Cv = (BIAS) Calibrated (BLT) volt
+            BIAS_1_Cv = BltsSamplesCalibVolt{1};
+            BIAS_2_Cv = BltsSamplesCalibVolt{2};
+            BIAS_3_Cv = BltsSamplesCalibVolt{3};
+            BIAS_4_Cv = BltsSamplesCalibVolt{4};
+            BIAS_5_Cv = BltsSamplesCalibVolt{5};
+            
+            NAN_VALUES = ones(size(BIAS_1_Cv)) * NaN;
+            As.V1_LF     = NAN_VALUES;
+            As.V2_LF     = NAN_VALUES;
+            As.V3_LF     = NAN_VALUES;
+            As.V12_LF    = NAN_VALUES;
+            As.V13_LF    = NAN_VALUES;
+            As.V23_LF    = NAN_VALUES;
+            As.V12_LF_AC = NAN_VALUES;
+            As.V13_LF_AC = NAN_VALUES;
+            As.V23_LF_AC = NAN_VALUES;
+
+            
+
+            if dlrUsing12;   iAntB = 2;
+            else             iAntB = 3;
+            end
+           
+            import bicas.proc_sub.routing
+            
+            % NOTE: BLTS 5 = V23_LF_AC for all modes, but has written it out anyway for completeness.
+            switch(MUX_SET)
+                case 0   % "Standard operation" : We have all information.
+
+                    % Summarize the routing.
+                    [BltsAsrType(1), As] = routing(As, [1],       'DC single', BIAS_1_Cv);
+                    [BltsAsrType(2), As] = routing(As, [1,iAntB], 'DC diff',   BIAS_2_Cv);
+                    [BltsAsrType(3), As] = routing(As, [2,3],     'DC diff',   BIAS_3_Cv);
+                    [BltsAsrType(4), As] = routing(As, [1,iAntB], 'AC',        BIAS_4_Cv);
+                    [BltsAsrType(5), As] = routing(As, [2,3],     'AC',        BIAS_5_Cv);
+                    
+                    % Derive the ASR:s not in the BLTS.
+                    if dlrUsing12
+                        As.V13_LF    = As.V12_LF    + As.V23_LF;
+                        As.V13_LF_AC = As.V12_LF_AC + As.V23_LF_AC;
+                    else
+                        As.V12_LF    = As.V13_LF    - As.V23_LF;
+                        As.V12_LF_AC = As.V13_LF_AC - As.V23_LF_AC;
+                    end
+                    As.V2_LF     = As.V1_LF     - As.V12_LF;
+                    As.V3_LF     = As.V2_LF     - As.V23_LF;
+                    
+                case 1   % Probe 1 fails
+
+                    [BltsAsrType(1), As] = routing(As, [2],       'DC single', BIAS_1_Cv);
+                    [BltsAsrType(2), As] = routing(As, [3],       'DC single', BIAS_2_Cv);
+                    [BltsAsrType(3), As] = routing(As, [2,3],     'DC diff',   BIAS_3_Cv);
+                    [BltsAsrType(4), As] = routing(As, [1,iAntB], 'AC',        BIAS_4_Cv);
+                    [BltsAsrType(5), As] = routing(As, [2,3],     'AC',        BIAS_5_Cv);
+                    
+                    % NOTE: Can not derive anything for DC. BLTS 1-3 contain redundant data.
+                    if dlrUsing12
+                        As.V13_LF_AC = As.V12_LF_AC + As.V23_LF_AC;
+                    else
+                        As.V12_LF_AC = As.V13_LF_AC - As.V23_LF_AC;
+                    end
+                    
+                case 2   % Probe 2 fails
+                    
+                    [BltsAsrType(1), As] = routing(As, [1],       'DC single', BIAS_1_Cv);
+                    [BltsAsrType(2), As] = routing(As, [3],       'DC single', BIAS_2_Cv);
+                    [BltsAsrType(3), As] = routing(As, [1,iAntB], 'DC diff',   BIAS_3_Cv);
+                    [BltsAsrType(4), As] = routing(As, [1,iAntB], 'AC',        BIAS_4_Cv);
+                    [BltsAsrType(5), As] = routing(As, [2,3],     'AC',        BIAS_5_Cv);
+                    
+                    % NOTE: Can not derive anything for DC. BLTS 1-3 contain redundant data.
+                    if dlrUsing12
+                        As.V13_LF_AC = As.V12_LF_AC + As.V23_LF_AC;
+                    else
+                        As.V12_LF_AC = As.V13_LF_AC - As.V23_LF_AC;
+                    end
+                    
+                case 3   % Probe 3 fails
+                    
+                    [BltsAsrType(1), As] = routing(As, [1],       'DC single', BIAS_1_Cv);
+                    [BltsAsrType(2), As] = routing(As, [2],       'DC single', BIAS_2_Cv);
+                    [BltsAsrType(3), As] = routing(As, [1,iAntB], 'DC diff',   BIAS_3_Cv);
+                    [BltsAsrType(4), As] = routing(As, [1,iAntB], 'AC',        BIAS_4_Cv);
+                    [BltsAsrType(5), As] = routing(As, [2,3],     'AC',        BIAS_5_Cv);
+                    
+                    % NOTE: Can not derive anything for DC. BLTS 1-3 contain redundant data.
+                    if dlrUsing12
+                        As.V13_LF_AC = V12_LF_AC + V23_LF_AC;
+                    else
+                        As.V12_LF_AC = V13_LF_AC - V23_LF_AC;
+                    end
+                    
+                case 4   % Calibration mode 0
+                    
+                    [BltsAsrType(1), As] = routing(As, [1],       'DC single', BIAS_1_Cv);
+                    [BltsAsrType(2), As] = routing(As, [2],       'DC single', BIAS_2_Cv);
+                    [BltsAsrType(3), As] = routing(As, [3],       'DC single', BIAS_3_Cv);
+                    [BltsAsrType(4), As] = routing(As, [1,iAntB], 'AC',        BIAS_4_Cv);
+                    [BltsAsrType(5), As] = routing(As, [2,3],     'AC',        BIAS_5_Cv);
+                    
+                    As.V12_LF    = As.V1_LF    - As.V2_LF;
+                    As.V13_LF    = As.V1_LF    - As.V3_LF;
+                    As.V23_LF    = As.V2_LF    - As.V3_LF;
+                    if dlrUsing12
+                        As.V13_LF_AC = As.V12_LF_AC + As.V23_LF_AC;
+                    else
+                        As.V12_LF_AC = As.V13_LF_AC - As.V23_LF_AC;
+                    end
+
+                case {5,6,7}   % Calibration mode 1/2/3
+                    
+                    switch(MUX_SET)
+                        case 5
+                            signalTypeCategory = '2.5V Ref';
+                        case {6,7}
+                            signalTypeCategory = 'GND';
+                    end
+                    
+                    % NOTE: It is in principle arbitrary (probably) how the GND and 2.5V Ref signals, which are
+                    % generated by the instrument, should be represented in the datasets, since the datasets assume that
+                    % only assumes signals from the antennas. The implementation classifies them as antennas, including
+                    % for diffs, but the signalTypeCategory specifies that they should be calibrated differently.
+                    [BltsAsrType(1), As] = routing(As, [1],       signalTypeCategory, BIAS_1_Cv);
+                    [BltsAsrType(2), As] = routing(As, [2],       signalTypeCategory, BIAS_2_Cv);
+                    [BltsAsrType(3), As] = routing(As, [3],       signalTypeCategory, BIAS_3_Cv);
+                    [BltsAsrType(4), As] = routing(As, [1,iAntB], 'AC',               BIAS_4_Cv);
+                    [BltsAsrType(5), As] = routing(As, [2,3],     'AC',               BIAS_5_Cv);
+
+                    As.V12_LF    = As.V1_LF    - As.V2_LF;
+                    As.V13_LF    = As.V1_LF    - As.V3_LF;
+                    As.V23_LF    = As.V2_LF    - As.V3_LF;
+                    if dlrUsing12
+                        As.V13_LF_AC = As.V12_LF_AC + As.V23_LF_AC;
+                    else
+                        As.V12_LF_AC = As.V13_LF_AC - As.V23_LF_AC;
+                    end
+
+                otherwise
+%                     if isnan(MUX_SET)
+%                         % Do nothing. Allow the default values (NaN) to be returned.
+%                     else
+                        error('BICAS:proc_sub:Assertion:IllegalArgument:DatasetFormat', 'Illegal argument value for mux_set.')
+%                     end
+            end   % switch
+            
+            AsrSamplesVolt = As;
+            
+            assert(numel(BltsAsrType) == 5)
+        end
+        
+        
+        
+        % Utility function for "demultiplexer".
+        function [BltsAsrType, AsrSamples] = routing(AsrSamples, antennas, category, BltsSamples)
+            
+            % Normalize vector to row vector since "isequal" is sensitive to row/column vectors.
+            antennas = antennas(:)';
+            
+            % Assign BltsType.
+            BltsAsrType.antennas = antennas;
+            BltsAsrType.category = category;
+            
+            % Modify AsrSamples (and assertion on arguments).
+            if     isequal(antennas, [1])   && strcmp(category, 'DC single')   AsrSamples.V1_LF     = BltsSamples;
+            elseif isequal(antennas, [2])   && strcmp(category, 'DC single')   AsrSamples.V2_LF     = BltsSamples;
+            elseif isequal(antennas, [3])   && strcmp(category, 'DC single')   AsrSamples.V3_LF     = BltsSamples;
+            elseif isequal(antennas, [1,2]) && strcmp(category, 'DC diff')     AsrSamples.V12_LF    = BltsSamples;
+            elseif isequal(antennas, [1,3]) && strcmp(category, 'DC diff')     AsrSamples.V13_LF    = BltsSamples;
+            elseif isequal(antennas, [2,3]) && strcmp(category, 'DC diff')     AsrSamples.V23_LF    = BltsSamples;
+            elseif isequal(antennas, [1,2]) && strcmp(category, 'AC')          AsrSamples.V12_LF_AC = BltsSamples;
+            elseif isequal(antennas, [1,3]) && strcmp(category, 'AC')          AsrSamples.V13_LF_AC = BltsSamples;
+            elseif isequal(antennas, [2,3]) && strcmp(category, 'AC')          AsrSamples.V23_LF_AC = BltsSamples;
+            else
+                error('BICAS:proc_SUB:Assertion:IllegalArgument', 'Illegal combination of arguments antennas and category.')
+            end
+        end
+        
+        
+        
+        % Automatic test code.
+        %
+        % Very basic tests at this stage. Could be improved but unsure how much is meaningful.
+        function demultiplexer___ATEST            
+            
+            new_test = @(inputs, outputs) (EJ_library.atest.CompareFuncResult(@bicas.proc_sub.demultiplexer, inputs, outputs));
+            tl = {};
+            
+            V1   = 10;
+            V2   = 11;
+            V3   = 12;
+            V12  = V1-V2;
+            V13  = V1-V3;
+            V23  = V2-V3;
+            V12a = 45-56;
+            V13a = 45-67;
+            V23a = 56-67;
+
+            function AsrSamplesVolt = ASR_samples(varargin)
+                assert(nargin == 9)
+                AsrSamplesVolt = struct(...
+                    'V1_LF',     as(varargin{1}, V1), ...
+                    'V2_LF',     as(varargin{2}, V2), ...
+                    'V3_LF',     as(varargin{3}, V3), ...
+                    'V12_LF',    as(varargin{4}, V12), ...
+                    'V13_LF',    as(varargin{5}, V13), ...
+                    'V23_LF',    as(varargin{6}, V23), ...
+                    'V12_LF_AC', as(varargin{7}, V12a), ...
+                    'V13_LF_AC', as(varargin{8}, V13a), ...
+                    'V23_LF_AC', as(varargin{9}, V23a));
+                
+                function V = as(v,V)    % as = assign. Effectively implements ~ternary operator + constant (NaN).
+                    if v; V = V;
+                    else  V = NaN;
+                    end
+                end
+            end
+            
+            if 1
+                tl{end+1} = new_test({0, true, {V1, V12, V23, V12a, V23a}}, ...
+                    {struct(...
+                    'antennas', {[1], [1 2], [2 3], [1 2], [2 3]}, ...
+                    'category', {'DC single', 'DC diff', 'DC diff', 'AC', 'AC'}), ...
+                    ASR_samples(1,1,1, 1,1,1, 1,1,1)});
+            end
+            
+            if 1
+                tl{end+1} = new_test({1, false, {V2, V3, V23, V13a, V23a}}, ...
+                    {struct(...
+                    'antennas', {[2], [3], [2 3], [1 3], [2 3]}, ...
+                    'category', {'DC single', 'DC single', 'DC diff', 'AC', 'AC'}), ...
+                    ASR_samples(0,1,1, 0,0,1, 1,1,1)});
+            end
+            
+            EJ_library.atest.run_tests(tl)
+        end
 
 
 
