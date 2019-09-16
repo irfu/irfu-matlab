@@ -90,10 +90,22 @@ classdef swmode_defs
         %
         % ARGUMENTS
         % =========
-        % pipelineId
         % enableRocsgseL2rInput : true/false, 1/0. Whether to enable (make visible) support for ROC-SGSE.
+        %
+        % IMPLEMENTATION NOTE: Constructor written so that it is easy to disable S/W modes with L2R input datasets.
         function obj = swmode_defs(pipelineId, enableRocsgseL2rInput, enableTds)
-            % IMPLEMENTATION NOTE: Constructor written so that it is easy to disable S/W modes with L2R input datasets.
+            % PROPOSAL: Re-implement (top-level) hard-coded constants by setting multiple redundant 1D(?) vectors that covers every case.
+            %   Then set various cases by assigning constants to many elements using MATLAB syntax.
+            %   One index representing: Combination of DATASET_ID+Skeleton_Version (both pipelines, LFR+TDS, HK+SCI), every element contains data for
+            %   that dataset. Must use combination DATASET_ID+Skeleton_Version to potentially cover old versions.            
+            %   Manipulate and set multiple elements smoothly by using vectors for indices.
+            %   Ex: Vectors to set: pipelineIdVector, skeletonVersionVector, SBMx_SURV_vector, CWF_SWF_vector, output
+            %       dataset level, vectors for human-readable description string(s) (e.g. modeStr)
+            %   Ex: Vectors with indices for dataset in/for: either pipeline, science or HK, LFR or TDS, latest versions
+            %       or backward-compatibility versions.
+            %   --
+            %   TODO-DECISION: Above describes input & output (?) data sets. How relates to s/w modes?
+            %   
             
             %========================================
             % Select constants depending on pipeline
@@ -102,9 +114,11 @@ classdef swmode_defs
                 case {'ROC-SGSE', 'RGTS'}
                     obj.dsiPipelinePrefix     = 'ROC-SGSE';      % Prefix in DATASET_ID (DSI).
                     inputDatasetLevelList     = {'L1R'};         % NOTE: L2R etc only kept for backward-compatibility.
-                    obj.outputDatasetLevel    = 'L2S';
+                    obj.outputDatasetLevel    =  'L2S';
                     inputDashEList            = {'-E'};
                     swModeCliOptionAmendmList = {''};
+                    lfrOutputSkeletonVersion  = {'03', '03', '03', '03'};
+                    tdsOutputSkeletonVersion  = {'03', '03'};
                     
                     if enableRocsgseL2rInput
                         inputDatasetLevelList{end+1}     = 'L2R';     % NOTE: L2R etc only kept for backward-compatibility.
@@ -118,6 +132,8 @@ classdef swmode_defs
                     inputDashEList            = {'-E'};
                     swModeCliOptionAmendmList = {''};
                     obj.outputDatasetLevel    = 'L2';
+                    lfrOutputSkeletonVersion  = {'04', '04', '04', '04'};
+                    tdsOutputSkeletonVersion  = {'04', '04'};
 
                 otherwise
                     error('BICAS:swmode_defs:Assertion:IllegalArgument', 'Can not interpret "pipelineId=%s', pipelineId)
@@ -142,20 +158,22 @@ classdef swmode_defs
 
 
             LFR_SW_MODE_DATA = struct(...
-                'SBMx_SURV', {'SBM1', 'SBM2', 'SURV', 'SURV'}, ...
-                'CWF_SWF',   {'CWF',  'CWF',  'CWF',  'SWF'}, ...
-                'modeStr',   {'selective burst mode 1', 'selective burst mode 2', 'survey mode', 'survey mode'});
+                'SBMx_SURV',       {'SBM1', 'SBM2', 'SURV', 'SURV'}, ...
+                'CWF_SWF',         {'CWF',  'CWF',  'CWF',  'SWF'}, ...
+                'modeStr',         {'selective burst mode 1', 'selective burst mode 2', 'survey mode', 'survey mode'}, ...
+                'outputSkeletonVersion', lfrOutputSkeletonVersion);
             TDS_SW_MODE_DATA = struct(...
-                'CWF_RSWF',  {'CWF', 'RSWF'});
+                'CWF_RSWF',        {'CWF', 'RSWF'}, ...
+                'outputSkeletonVersion', tdsOutputSkeletonVersion);
             
             
             
             List = struct('prodFunc', {}, 'cliOption', {}, 'swdPurpose', {}, 'inputsList', {}, 'outputsList', {});
             for iInputLevel = 1:numel(inputDatasetLevelList)
                 
-                %============================================
-                % Iterate of the "fundamental" LFR S/W modes
-                %============================================
+                %==============================================
+                % Iterate over the "fundamental" LFR S/W modes
+                %==============================================
                 for iSwm = 1:length(LFR_SW_MODE_DATA)
                     strmod = @(s) strrep(strrep(strrep(strmodg(s, iInputLevel), ...
                         '<SBMx/SURV>',  LFR_SW_MODE_DATA(iSwm).SBMx_SURV), ...
@@ -171,8 +189,8 @@ classdef swmode_defs
                         strmod('<PLP>_<LO>_RPW-LFR-<SBMx/SURV>-<C/SWF>-E'), ...
                         strmod('LFR <LO> <C/SWF> science electric <mode str> data'), ...
                         strmod('RPW LFR <LO> <C/SWF> science electric (potential difference) data in <mode str>, time-tagged'), ...
-                        '03');                    
-                    
+                        LFR_SW_MODE_DATA(iSwm).outputSkeletonVersion);
+
                     List(end+1) = obj.def_swmode(...
                         @(InputsMap) bicas.proc.produce_L2S_L2_LFR(...
                             InputsMap, ...
@@ -200,7 +218,7 @@ classdef swmode_defs
                             strmod('<PLP>_<LO>_RPW-TDS-LFM-<C/RSWF>-E'), ...
                             strmod('LFR <LO> <C/RSWF> science electric LF mode data'), ...
                             strmod('RPW LFR <LO> <C/RSWF> science electric (potential difference) data in LF mode, time-tagged'), ...
-                            '03');
+                            TDS_SW_MODE_DATA(iSwm).outputSkeletonVersion);
                         
                         List(end+1) = obj.def_swmode(...
                             @bicas.proc.produce_L2S_L2_TDS, ...

@@ -19,7 +19,9 @@
 %
 function SETTINGS = create_default_SETTINGS()
 % PROPOSAL: Move STDOUT_PREFIX to ~constants (not overridable), error_safe_constants?
-
+% PROPOSAL: Setting for latching relay? Setting for only mode 0?
+% PROPOSAL: Better name for *.CALIBRATION.SCALAR.*. Neither indicates simple calibration, nor BIAS calibration.
+%   PROPOSAL: BIAS_SIMPLE
 
 S = bicas.settings();
 
@@ -57,7 +59,7 @@ S.define_setting('ENV_VAR_OVERRIDE.ROC_RCS_CAL_PATH',    '');   % ROC_RCS_CAL_PA
 S.define_setting('ENV_VAR_OVERRIDE.ROC_RCS_MASTER_PATH', '');   % ROC_RCS_MASTER_PATH defined in RCS ICD. Path to dir. with master CDF files.
 
 % Whether to enable (make visible & accessible to the user) certain s/w modes.
-S.define_setting('SW_MODES.ENABLE_INPUT_L2R',   1);    % Enable OLD s/w modes which accept L2R input datasets.
+S.define_setting('SW_MODES.ENABLE_INPUT_L2R',   0);    % Enable OLD s/w modes which accept L2R input datasets.
 S.define_setting('SW_MODES.ENABLE_TDS',         0);    % Enable     s/w modes which accept TDS input datasets. NOTE: Not implemented.
 
 S.define_setting('LOGGING.MAX_UNIQUES_PRINTED', 5);    % When logging contents of matrix/vector, maximum number of unique values printed before switching to shorter representation (min-max range)
@@ -70,7 +72,7 @@ S.define_setting('LOGGING.MAX_UNIQUES_PRINTED', 5);    % When logging contents o
 % PROPOSAL: Store the value returned by spdfcomputett2000(ACQUISITION_TIME_EPOCH_UTC) instead?
 S.define_setting('PROCESSING.ACQUISITION_TIME_EPOCH_UTC',                   [2000,01,01, 12,00,00, 000,000,000]);
 
-S.define_setting('PROCESSING.USE_AQUISITION_TIME_FOR_HK_TIME_INTERPOLATION', 1);
+S.define_setting('PROCESSING.USE_AQUISITION_TIME_FOR_HK_TIME_INTERPOLATION', 0);
 
 
 

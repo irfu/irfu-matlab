@@ -151,7 +151,9 @@ classdef proc_sub
             % NOTE: Can potentially obtain MUX_SET from LFR SCI.
             %=========================================================================================================            
             HkSciTime.MUX_SET = bicas.proc_utils.nearest_interpolate_float_records(...
-                double(Hk.ZVars.HK_BIA_MODE_MUX_SET), hkInterpolationTimeTt2000, sciInterpolationTimeTt2000);   % Use BIAS HK.
+                double(Hk.ZVars.HK_BIA_MODE_MUX_SET), ...
+                hkInterpolationTimeTt2000, ...
+                sciInterpolationTimeTt2000);   % Use BIAS HK.
             %PreDc.MUX_SET = LFR_cdf.BIAS_MODE_MUX_SET;    % Use LFR SCI. NOTE: Only possible for ___LFR___.
 
 
@@ -211,6 +213,10 @@ classdef proc_sub
                         'V04_ROC-SGSE_L1R_RPW-LFR-SURV-SWF-E'}
                     POTENTIAL  =         Sci.ZVars.V;
                     ELECTRICAL = permute(Sci.ZVars.E, [1,3,2]);
+                    assert(size(ELECTRICAL, 3) == 2)
+                    % Switch last two indices of ELECTRICAL.
+                    % ==> index 2 = "snapshot" sample
+                    %     index 3 = E1/E2 component.
                     % IMPLEMENTATION NOTE: Permuting indices somewhat ugly temporary fix, but it gives(?) backward
                     % compatibility with old datasets (which? /2019-08-23) which have CWF on "snapshot format" (multiple
                     % samples per record), over the second index.
@@ -266,10 +272,12 @@ classdef proc_sub
                 FREQ );   % NOTE: Function also handles the imaginary zVar "R3".
             
             PreDc = [];
-            PreDc.Epoch            = Sci.ZVars.Epoch;
-            PreDc.ACQUISITION_TIME = Sci.ZVars.ACQUISITION_TIME;
-            PreDc.DELTA_PLUS_MINUS = bicas.proc_utils.derive_DELTA_PLUS_MINUS(freqHz, nSamplesPerRecord);            
-            PreDc.freqHz           = freqHz;
+            PreDc.Epoch             = Sci.ZVars.Epoch;
+            PreDc.ACQUISITION_TIME  = Sci.ZVars.ACQUISITION_TIME;
+            PreDc.DELTA_PLUS_MINUS  = bicas.proc_utils.derive_DELTA_PLUS_MINUS(freqHz, nSamplesPerRecord);            
+            PreDc.freqHz            = freqHz;
+            PreDc.SYNCHRO_FLAG      = Sci.ZVars.TIME_SYNCHRO_FLAG;   % NOTE: Different zVar name in input and output datasets.
+
             %PreDc.SAMP_DTIME       = bicas.proc_utils.derive_SAMP_DTIME(freqHz, nSamplesPerRecord);
             %PreDc.L1_REC_NUM       = L1_REC_NUM;
             
@@ -362,7 +370,7 @@ classdef proc_sub
             
             PreDc.Epoch            = SciPd.Epoch;
             PreDc.ACQUISITION_TIME = SciPd.ACQUISITION_TIME;
-            PreDc.DELTA_PLUS_MINUS = bicas.proc_utils.derive_DELTA_PLUS_MINUS(freqHz, nSamplesPerRecord);            
+            PreDc.DELTA_PLUS_MINUS = bicas.proc_utils.derive_DELTA_PLUS_MINUS(freqHz, nSamplesPerRecord);
             PreDc.freqHz           = freqHz;    % CDF_UINT1 ?!!!
             %PreDc.SAMP_DTIME       = bicas.proc_utils.derive_SAMP_DTIME(freqHz, nSamplesPerRecord);
             %PreDc.L1_REC_NUM       = bicas.proc_utils.create_NaN_array([nRecords, nSamplesPerRecord]);   % Set to fill values. Not set in any TDS L2R dataset yet.
@@ -379,7 +387,7 @@ classdef proc_sub
             
             PreDc.MUX_SET   = HkOnSciTimePd.MUX_SET;
             PreDc.DIFF_GAIN = HkOnSciTimePd.DIFF_GAIN;
-                        
+
             % ASSERTIONS
             bicas.proc_sub.assert_PreDC(PreDc)
             
@@ -391,7 +399,7 @@ classdef proc_sub
 
         function assert_PreDC(PreDc)
             EJ_library.utils.assert.struct(PreDc, {'Epoch', 'ACQUISITION_TIME', 'DemuxerInput', 'freqHz', 'DIFF_GAIN', 'MUX_SET', 'QUALITY_FLAG', ...
-                'QUALITY_BITMASK', 'DELTA_PLUS_MINUS'});
+                'QUALITY_BITMASK', 'DELTA_PLUS_MINUS', 'SYNCHRO_FLAG'});
             bicas.proc_utils.assert_unvaried_N_rows(PreDc);
             bicas.proc_utils.assert_unvaried_N_rows(PreDc.DemuxerInput);
         end
@@ -400,7 +408,7 @@ classdef proc_sub
         
         function assert_PostDC(PostDc)
             EJ_library.utils.assert.struct(PostDc, {'Epoch', 'ACQUISITION_TIME', 'DemuxerInput', 'freqHz', 'DIFF_GAIN', 'MUX_SET', 'QUALITY_FLAG', ...
-                'QUALITY_BITMASK', 'DELTA_PLUS_MINUS', 'DemuxerOutput', 'IBIAS1', 'IBIAS2', 'IBIAS3'});
+                'QUALITY_BITMASK', 'DELTA_PLUS_MINUS', 'SYNCHRO_FLAG', 'DemuxerOutput', 'IBIAS1', 'IBIAS2', 'IBIAS3'});
             bicas.proc_utils.assert_unvaried_N_rows(PostDc);
             bicas.proc_utils.assert_unvaried_N_rows(PostDc.DemuxerOutput);
         end
@@ -424,9 +432,13 @@ classdef proc_sub
                 'QUALITY_BITMASK', 'QUALITY_FLAG', 'DELTA_PLUS_MINUS', 'ACQUISITION_TIME'};
             
             switch(outputDvid)
-                case  {'V03_ROC-SGSE_L2S_RPW-LFR-SBM1-CWF-E', ...
-                       'V03_ROC-SGSE_L2S_RPW-LFR-SBM2-CWF-E', ...
-                       'V03_ROC-SGSE_L2S_RPW-LFR-SURV-CWF-E'}
+                case  {'V03_ROC-SGSE_L2S_RPW-LFR-SBM1-CWF-E' ...
+                       'V03_ROC-SGSE_L2S_RPW-LFR-SBM2-CWF-E' ...
+                       'V03_ROC-SGSE_L2S_RPW-LFR-SURV-CWF-E' ...
+                            'V04_SOLO_L2_RPW-LFR-SURV-CWF-E' ...
+                            'V04_SOLO_L2_RPW-LFR-SBM1-CWF-E' ...
+                            'V04_SOLO_L2_RPW-LFR-SBM2-CWF-E' ...
+                       }
                     
                     %=====================================================================
                     % Convert 1 snapshot/record --> 1 sample/record (if not already done)
@@ -465,11 +477,12 @@ classdef proc_sub
                     OutputSci.EAC(:,2)         = SciPostDc.DemuxerOutput.V13_AC;
                     OutputSci.EAC(:,3)         = SciPostDc.DemuxerOutput.V23_AC;
                     
-                case  'V03_ROC-SGSE_L2S_RPW-LFR-SURV-SWF-E'
+                case  {'V03_ROC-SGSE_L2S_RPW-LFR-SURV-SWF-E',  ...
+                            'V04_SOLO_L2_RPW-LFR-SURV-SWF-E'}
                     
                     % ASSERTION
                     if nSamplesPerRecord ~= 2048
-                        error('BICAS:proc_sub:Assertion:IllegalArgument', 'Number of samples per CDF record is not 2048, as expected.')
+                        error('BICAS:proc_sub:Assertion:IllegalArgument', 'Number of samples per CDF record is not 2048, as expected. Bad Input CDF?')
                     end
                     
                     OutputSci.Epoch            = SciPostDc.Epoch;
@@ -492,11 +505,30 @@ classdef proc_sub
                     OutputSci.EAC(:,:,1)       = SciPostDc.DemuxerOutput.V12_AC;
                     OutputSci.EAC(:,:,2)       = SciPostDc.DemuxerOutput.V13_AC;
                     OutputSci.EAC(:,:,3)       = SciPostDc.DemuxerOutput.V23_AC;
-                    ZVAR_FN_LIST{end+1} = 'F_SAMPLE';
 
                     % Only in LFR SWF (not CWF): F_SAMPLE, SAMP_DTIME
                     OutputSci.F_SAMPLE         = SciPostDc.freqHz;
+                    ZVAR_FN_LIST{end+1} = 'F_SAMPLE';
                     %OutputSci.SAMP_DTIME       = PostDc.SAMP_DTIME;
+                    
+                otherwise
+                    error('BICAS:proc_sub:Assertion:IllegalArgument', 'Function can not produce outputDvid=%s.', outputDvid)
+            end
+
+
+
+            switch(outputDvid)
+                case  {'V03_ROC-SGSE_L2S_RPW-LFR-SBM1-CWF-E' ...
+                       'V03_ROC-SGSE_L2S_RPW-LFR-SBM2-CWF-E' ...
+                       'V03_ROC-SGSE_L2S_RPW-LFR-SURV-CWF-E' ...
+                       'V03_ROC-SGSE_L2S_RPW-LFR-SURV-SWF-E'}
+
+                case  {'V04_SOLO_L2_RPW-LFR-SURV-CWF-E' ...
+                       'V04_SOLO_L2_RPW-LFR-SURV-SWF-E' ...
+                       'V04_SOLO_L2_RPW-LFR-SBM1-CWF-E' ...
+                       'V04_SOLO_L2_RPW-LFR-SBM2-CWF-E'}
+                    OutputSci.SYNCHRO_FLAG = SciPostDc.SYNCHRO_FLAG;                    
+                    ZVAR_FN_LIST{end+1} = 'SYNCHRO_FLAG';
                     
                 otherwise
                     error('BICAS:proc_sub:Assertion:IllegalArgument', 'Function can not produce outputDvid=%s.', outputDvid)
@@ -547,7 +579,7 @@ classdef proc_sub
             %================================
             % Set (calibrated) bias currents
             %================================
-            % BUG / TEMP: Set default values since the real values are not available.
+            % BUG / TEMP: Set default values since the real bias current values are not available.
             PostDc.IBIAS1 = bicas.proc_utils.create_NaN_array(size(PostDc.DemuxerOutput.V1));
             PostDc.IBIAS2 = bicas.proc_utils.create_NaN_array(size(PostDc.DemuxerOutput.V2));
             PostDc.IBIAS3 = bicas.proc_utils.create_NaN_array(size(PostDc.DemuxerOutput.V3));
@@ -563,7 +595,7 @@ classdef proc_sub
     methods(Static, Access=private)
     %methods(Static, Access=public)
         
-        % Wrapper around "simple_demultiplex_subsequence" to be able to handle multiple CDF records with changing
+        % Wrapper around "simple_demultiplex_subsequence_OLD" to be able to handle multiple CDF records with changing
         % settings (mux_set, diff_gain).
         %
         % NOTE: NOT a processing function (does not derive a PDV).
@@ -589,8 +621,8 @@ classdef proc_sub
                 size(DIFF_GAIN,           1), ...
                 size(DemuxerInput.BIAS_1, 1)])
 
-            
-            
+
+
             % Create empty structure to which new components can be added.
             DemuxerOutput = struct(...
                 'V1',     [], 'V2',     [], 'V3',     [], ...
@@ -621,7 +653,7 @@ classdef proc_sub
                 %=================================================
                 % CALL DEMUXER - See method/function for comments
                 %=================================================
-                DemuxerOutputSubseq = bicas.proc_sub.simple_demultiplex_subsequence(...
+                DemuxerOutputSubseq = bicas.proc_sub.simple_demultiplex_subsequence_OLD(...
                     DemuxerInputSubseq, MUX_SET_value, DIFF_GAIN_value);
                 
                 % Add demuxed sequence to the to-be complete set of records.
@@ -633,6 +665,9 @@ classdef proc_sub
 
 
 
+        % NOTE: FUNCTION IS PLANNED TO BE PHASED OUT/OBSOLETED.
+        %
+        %
         % Demultiplex, with only constant factors for calibration (no transfer functions, no offsets) and exactly one
         % setting for MUX_SET and DIFF_GAIN respectively.
         %
@@ -662,7 +697,7 @@ classdef proc_sub
         % NOTE: Will tolerate values of NaN for MUX_SET, DIFF_GAIN. The effect is NaN in the corresponding output values.
         % NOTE: Can handle any arrays of any size as long as the sizes are consistent.
         %
-        function Output = simple_demultiplex_subsequence(Input, MUX_SET, DIFF_GAIN)
+        function Output = simple_demultiplex_subsequence_OLD(Input, MUX_SET, DIFF_GAIN)
         %==========================================================================================================
         % QUESTION: How to structure the demuxing?
         % --
@@ -829,11 +864,11 @@ classdef proc_sub
             Output.V13_AC = V13_LF_AC;
             Output.V23_AC = V23_LF_AC;
             
-        end  % simple_demultiplex_subsequence
+        end  % simple_demultiplex_subsequence_OLD
 
         
         
-        % NEW FUNCTION. NOT USED YET BUT MEANT TO REPLACE OLD FUNCTION "simple_demultiplex_subsequence".
+        % NEW FUNCTION. NOT USED YET BUT MEANT TO REPLACE OLD FUNCTION "simple_demultiplex_subsequence_OLD".
         %
         % (1) Return the information needed for how to calibrate a BIAS-LFR/TDS signal (BIAS_i) that is a function of the demultiplexer mode,
         % (2) Derives as much as possible of all the antenna singles and diffs from the available BIAS-LFR/TDS signals
@@ -893,7 +928,7 @@ classdef proc_sub
             % PROPOSAL: "Assertion" for using good combination of mux mode and latching relay. Log warning if assertion
             %           fails.
             % PROPOSAL: Use string constants (calib.m?).
-            % PROPOSAL: Assertions for returned string constants.
+            % PROPOSAL: Assertions for returned string constants (only legal).
             
             % ASSERTIONS
             assert(isscalar(MUX_SET))

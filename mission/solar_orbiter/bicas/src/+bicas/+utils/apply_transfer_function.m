@@ -105,7 +105,7 @@ function [y2] = apply_transfer_function(dt, y1, tf, varargin)
 
 
 
-% Set the type of polynomial that should be used for detrending.
+% Set the order of the polynomial that should be used for detrending.
 N_POLYNOMIAL_COEFFS_TREND_FIT = 1;    % 1 = Linear function.
 
 %============
@@ -197,8 +197,9 @@ tfOmegaLookups = 2*pi * (kOmegaLookup - 1) / (N*dt);
 tfZLookups    = tf(abs(tfOmegaLookups));
 i             = tfOmegaLookups < 0;
 tfZLookups(i) = conj(tfZLookups(i));
-if any(isnan(tfZLookups))
-    error('BICAS:apply_transfer_function:Assertion', 'Transfer function tf returned NaN for at least one frequency.')
+% ASSERTION: Only
+if any(~isfinite(tfZLookups))
+    error('BICAS:apply_transfer_function:Assertion', 'Transfer function tf returned non-finite value for at least one frequency.')
 end
 
 

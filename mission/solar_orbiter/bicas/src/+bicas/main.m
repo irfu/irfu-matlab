@@ -187,7 +187,19 @@ if ~strcmp(matlabVersionString, C.REQUIRED_MATLAB_VERSION)
         'Using bad MATLAB version. Found version "%s". BICAS requires version "%s".\n', ...
         matlabVersionString, C.REQUIRED_MATLAB_VERSION)
 end
-fprintf(1, 'Using MATLAB, version %s.\n', matlabVersionString);
+%fprintf(1, 'Using MATLAB, version %s.\n', matlabVersionString);
+
+
+
+% Log that BICAS (the MATLAB code) has started running.
+% RATIONALE: This is useful when one manually looks through the log file and tries to identify the beginning of a
+% particular run. The BICAS log is always amended to and may therefore contain log messages from multiple runs.
+bicas.logf('info', [...
+    '##########################################\n', ...
+    '##########################################\n', ...
+    '#### BICAS MATLAB CODE STARTS RUNNING ####\n', ...
+    '##########################################\n', ...
+    '##########################################\n'])
 
 
 
@@ -230,11 +242,14 @@ for i = 1:length(cliArgumentsList)
     bicas.logf('info', '    CLI argument %2i: "%s"', i, cliArgumentsList{i})
     cliArgumentsQuotedList{i} = ['''', cliArgumentsList{i}, ''''];
 end
-cliArgumentsStr = strjoin(cliArgumentsQuotedList, ' ');
+cliArgStrWhSpaceSep = strjoin(cliArgumentsQuotedList, ' ');
+cliArgStrCommaSep   = strjoin(cliArgumentsQuotedList, ', ');
 % IMPLEMENTATION NOTE: Printing the entire sequence of arguments, quoted with apostophe, is useful for copy-pasting to
 % both MATLAB command prompt and bash.
-bicas.logf('info', '    CLI arguments for copy-pasting: %s\n\n', cliArgumentsStr)
-
+bicas.logf('info', '    CLI arguments for copy-pasting:\n')
+bicas.logf('info', '        Quoted, whitespace-separated: %s\n\n', cliArgStrWhSpaceSep)
+bicas.logf('info', '        Quoted, comma-separated:      %s\n\n', cliArgStrCommaSep)
+bicas.logf('info', '\n\n')
 
 
 %========================================

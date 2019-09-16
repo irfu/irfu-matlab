@@ -147,7 +147,10 @@ classdef proc_utils
         function Rx = get_LFR_Rx(R0, R1, R2, FREQ)
         % Return the relevant value of LFR CDF zVariables R0, R1, or R2, or a hypothetical but analogous "R3" which is always 1.
         %
+        % ARGUMENTS
+        % =========
         % R0, R1, R2, FREQ : LFR CDF zVariables. All must have identical array sizes.
+        %                    FREQ(i) == 0 (not 1) ==> F0 and so on.
         % Rx               : Same size array as R0, R1, R2, FREQ. The relevant values are copied, respectively, from
         %                    R0, R1, R2, or an analogous hypothetical "R3" that is a constant (=1) depending on
         %                    the value of FREQ in the corresponding component.
@@ -345,12 +348,12 @@ classdef proc_utils
             %newData = reshape(newData', [numel(newData), 1]);     % NOTE: Must transpose first.
             newData = bicas.proc_utils.convert_N_to_1_SPR_redistribute(newData);
         end
-        
+
         
         
         function newTt2000 = convert_N_to_1_SPR_Epoch( oldTt2000, nSpr, freqHzWithinRecords )
         % Convert time series zVariable (column) equivalent to converting N-->1 samples/record, assuming time increments
-        % with frequency in each snapshot.
+        % with frequency within each snapshot.
         %
         % ARGUMENTS AND RETURN VALUE
         % ==========================

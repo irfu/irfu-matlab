@@ -115,8 +115,6 @@ classdef proc
             error('BICAS:proc_sub:SWModeProcessing:Assertion:OperationNotImplemented', ...
                 'This processing function has not been implemented yet.')
             
-%             
-%             
 %             HkPd  = InputsMap('HK_cdf');
 %             SciPd = InputsMap('SCI_cdf');
 %             

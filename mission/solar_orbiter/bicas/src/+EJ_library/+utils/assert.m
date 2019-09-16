@@ -292,7 +292,7 @@ classdef assert
         
         
 
-        % Assert v has non-one size in at most one dimension.
+        % Assert v has a non-one size in at most one dimension.
         %
         % NOTE: MATLAB's "isvector" function uses different criterion which excludes numel(v) == 0, and length in third
         % or higher dimension.
