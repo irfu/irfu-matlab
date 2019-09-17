@@ -324,7 +324,6 @@ bicas.logf('info', 'masterCdfDir   = "%s"', masterCdfDir)
 
 
 SwModeDefs = bicas.swmode_defs(pipelineId, ...
-    SETTINGS.get_fv('SW_MODES.ENABLE_INPUT_L2R'), ...
     SETTINGS.get_fv('SW_MODES.ENABLE_TDS'));
 
 

@@ -92,8 +92,12 @@ classdef swmode_defs
         % =========
         % enableRocsgseL2rInput : true/false, 1/0. Whether to enable (make visible) support for ROC-SGSE.
         %
-        % IMPLEMENTATION NOTE: Constructor written so that it is easy to disable S/W modes with L2R input datasets.
-        function obj = swmode_defs(pipelineId, enableRocsgseL2rInput, enableTds)
+        % IMPLEMENTATION NOTE: The constructor used to be written so that it was easy to disable S/W modes with L2R
+        % input datasets (for backward compatibility). That functionality has now been now removed, although the
+        % implementation has not been entirely updated to take advantage of this (not simplified of this).
+        % 
+%        function obj = swmode_defs(pipelineId, enableRocsgseL2rInput, enableTds)
+        function obj = swmode_defs(pipelineId, enableTds)
             % PROPOSAL: Re-implement (top-level) hard-coded constants by setting multiple redundant 1D(?) vectors that covers every case.
             %   Then set various cases by assigning constants to many elements using MATLAB syntax.
             %   One index representing: Combination of DATASET_ID+Skeleton_Version (both pipelines, LFR+TDS, HK+SCI), every element contains data for
@@ -113,18 +117,18 @@ classdef swmode_defs
             switch(pipelineId)
                 case {'ROC-SGSE', 'RGTS'}
                     obj.dsiPipelinePrefix     = 'ROC-SGSE';      % Prefix in DATASET_ID (DSI).
-                    inputDatasetLevelList     = {'L1R'};         % NOTE: L2R etc only kept for backward-compatibility.
+                    inputDatasetLevelList     = {'L1R'};
                     obj.outputDatasetLevel    =  'L2S';
                     inputDashEList            = {'-E'};
                     swModeCliOptionAmendmList = {''};
                     lfrOutputSkeletonVersion  = {'03', '03', '03', '03'};
                     tdsOutputSkeletonVersion  = {'03', '03'};
                     
-                    if enableRocsgseL2rInput
-                        inputDatasetLevelList{end+1}     = 'L2R';     % NOTE: L2R etc only kept for backward-compatibility.
-                        inputDashEList{end+1}            = '';
-                        swModeCliOptionAmendmList{end+1} = '_L2R';
-                    end
+%                     if enableRocsgseL2rInput
+%                         inputDatasetLevelList{end+1}     = 'L2R';     % NOTE: L2R etc only kept for backward-compatibility.
+%                         inputDashEList{end+1}            = '';
+%                         swModeCliOptionAmendmList{end+1} = '_L2R';
+%                     end
                     
                 case 'RODP'
                     obj.dsiPipelinePrefix     = 'SOLO';    % NOTE: SOLO, not RODP.
