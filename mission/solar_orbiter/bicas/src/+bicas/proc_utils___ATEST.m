@@ -17,12 +17,12 @@ function proc_utils___ATEST
     convert_N_to_1_SPR_Epoch___ATEST
     convert_N_to_1_SPR_redistribute___ATEST
     convert_N_to_1_SPR_repeat___ATEST
+    set_NaN_after_snapshots_end___ATEST
 end
 
 
 
 function find_sequences___ATEST
-    
     new_test = @(inputs, outputs) (EJ_library.atest.CompareFuncResult(@bicas.proc_utils.find_sequences, inputs, outputs));
     tl = {};
     
@@ -90,6 +90,19 @@ function convert_N_to_1_SPR_repeat___ATEST
     tl{end+1} = new_test({[5;6], 2},      {[5;5;6;6]});    
     tl{end+1} = new_test({[5], 2},        {[5;5]});    
     tl{end+1} = new_test({zeros(0,1), 2}, {zeros(0,1)});
+    
+    EJ_library.atest.run_tests(tl);
+end
+
+
+
+function set_NaN_after_snapshots_end___ATEST
+    new_test = @(inputs, outputs) (EJ_library.atest.CompareFuncResult(@bicas.proc_utils.set_NaN_after_snapshots_end, inputs, outputs));
+    tl = {};
+    
+    tl{end+1} = new_test({ones(0,4),              ones(0,1)},   {ones(0,4)});
+    tl{end+1} = new_test({[0,1,2],                [3]},   {[0,1,2]});
+    tl{end+1} = new_test({[0,1,2,3,4; 5,6,7,8,9], [2;4]}, {[0,1,NaN,NaN,NaN; 5,6,7,8,NaN]});
     
     EJ_library.atest.run_tests(tl);
 end

@@ -54,18 +54,6 @@ classdef proc
     %   NOTE: One can choose PDIDs such that the incorporate the version or not. If they do not, then the corresponding
     %         PDVs must themselves contain the same information.
     % --
-    % PROPOSAL: Submit CDF global attributes to processing functions.
-    %     PRO: Can use the ~Skeleton_version GA for assertion & interpreting data instead of PDID.
-    %         CON: ~Skeleton_version GA can be wrong.
-    %             Ex: Global attribute Skeleton_version
-    %             PROPOSAL: Setting for overriding global attribute dataset version.
-    %                 NOTE: Such setting needs two variables in principle:
-    %                     --DATASET_ID for which Dataset_version will be overwritten,
-    %                     --Dataset_version itself
-    %                 PROPOSAL: Incorporate DATASET_ID in settings key.
-    %                     Ex: ROC-SGSE_L1R_RPW-LFR-SBM1-CWF-E_Dataset_version_OVERRIDE
-    %                     CON: Presupposes that such settings pre-exist for every DATASET_ID.
-    %                 PROPOSAL: Use settings value arrays somehow. May need to implement.
     % PROPOSAL: Production functions should not assume/specify any particular input dataset version, but read it out
     %           from global attributes (part of the PDV).
     % PROPOSAL: Somehow associate metadata with each function.
@@ -85,47 +73,47 @@ classdef proc
         
         % ARGUMENTS
         % =========
-        % InputsMap : containers.Map: key=<argument key> --> value=PDV for input CDF
+        % InputDatasetsMap : containers.Map: key=<argument key> --> value=PDV for input CDF
+        % inputSciDsi      : The science input dataset will be interpreted as having this DATASET_ID.
+        %                    RATIONALE: InputDatasetsMap should contain the same as a CDF global attribute but
+        %                    (1) it could be missing, or
+        %                    (2) sometimes one may want to read an ROC-SGSE dataset as if it was an RODP dataset or the other way around.
         %
-        function [OutputsMap] = produce_L2S_L2_LFR(InputsMap, outputDsi, outputVersion)
+        function [OutputDatasetsMap] = produce_L2S_L2_LFR(InputDatasetsMap, inputSciDsi, outputDsi, outputVersion)
             
-            HkPd  = InputsMap('HK_cdf');
-            SciPd = InputsMap('SCI_cdf');
+            HkPd  = InputDatasetsMap('HK_cdf');
+            SciPd = InputDatasetsMap('SCI_cdf');
             
             HkSciTimePd = bicas.proc_sub.process_HK_to_HK_on_SCI_TIME(SciPd, HkPd);
             
-            SciPreDcPd  = bicas.proc_sub.process_LFR_to_PreDC(        SciPd, HkSciTimePd);
+            SciPreDcPd  = bicas.proc_sub.process_LFR_to_PreDC(        SciPd, inputSciDsi, HkSciTimePd);
             SciPostDcPd = bicas.proc_sub.process_demuxing_calibration(SciPreDcPd);
             OutputSciPd = bicas.proc_sub.process_PostDC_to_LFR(       SciPostDcPd, outputDsi, outputVersion);
             
-            OutputsMap = containers.Map();
-            OutputsMap('SCI_cdf') = OutputSciPd;
+            OutputDatasetsMap = containers.Map();
+            OutputDatasetsMap('SCI_cdf') = OutputSciPd;
         end
         
         
         
-        % UNFINISHED
-        %
         % ARGUMENTS
         % =========
-        % InputsMap : containers.Map: key=<argument key> --> value=PDV for input CDF
+        % InputDatasetsMap : containers.Map: key=<argument key> --> value=PDV for input CDF
         %
-        function [OutputsMap] = produce_L2S_L2_TDS(InputsMap, outputDsi, outputVersion)
+        function [OutputDatasetsMap] = produce_L2S_L2_TDS(InputDatasetsMap, inputSciDsi, outputDsi, outputVersion)
             
-            error('BICAS:proc_sub:SWModeProcessing:Assertion:OperationNotImplemented', ...
-                'This processing function has not been implemented yet.')
+            HkPd  = InputDatasetsMap('HK_cdf');
+            SciPd = InputDatasetsMap('SCI_cdf');
             
-%             HkPd  = InputsMap('HK_cdf');
-%             SciPd = InputsMap('SCI_cdf');
-%             
-%             HkSciTimePd = bicas.proc_sub.process_HK_to_HK_on_SCI_TIME(SciPd, HkPd);
-%             
-%             SciPreDcPd  = bicas.proc_sub.process_TDS_to_PreDC(        SciPd, HkSciTimePd);   % Not tested.
-%             SciPostDcPd = bicas.proc_sub.process_demuxing_calibration(SciPreDcPd);
-%             OutputSciPd = bicas.proc_sub.process_PostDC_to_TDS(       SciPostDcPd, outputDsi, outputVersion);   % Not implemented.
-%             
-%             OutputsMap = containers.Map();
-%             OutputsMap('SCI_cdf') = OutputSciPd;
+            HkSciTimePd = bicas.proc_sub.process_HK_to_HK_on_SCI_TIME(SciPd, HkPd);
+            SciPreDcPd  = bicas.proc_sub.process_TDS_to_PreDC(        SciPd, inputSciDsi, HkSciTimePd);   % Not tested.
+            
+            SciPostDcPd = bicas.proc_sub.process_demuxing_calibration(SciPreDcPd);
+            OutputSciPd = bicas.proc_sub.process_PostDC_to_TDS(       SciPostDcPd, outputDsi, outputVersion);   % Not implemented.
+
+            OutputDatasetsMap = containers.Map();
+            OutputDatasetsMap('SCI_cdf') = OutputSciPd;
+
         end
         
     end    % methods(Static, Access=public)

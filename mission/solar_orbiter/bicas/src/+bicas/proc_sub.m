@@ -63,16 +63,12 @@ classdef proc_sub
 %   CON: ROUNDING ERRORS. Can not be certain that values which are copied, are actually copied.
 %   --
 %   NOTE: Functions may in principle require integer math to work correctly.
-%
-% PROPOSAL: Comment section for intermediate PDVs.
 % --
 % PROPOSAL: Derive DIFF_GAIN (from BIAS HK using time interpolation) in one code common to both LFR & TDS.
 %   PROPOSAL: Function
-%   PROPOSAL: In intermediate PDV?!
 %   PRO: Uses flag for selecting interpolation time in one place.
 % PROPOSAL: Derive HK_BIA_MODE_MUX_SET (from BIAS SCI or HK using time interpolation for HK) in one code common to both LFR & TDS.
 %   PROPOSAL: Function
-%   PROPOSAL: In intermediate PDV?!
 %   PRO: Uses flag for selecting HK/SCI DIFF_GAIN in one place.
 %   PRO: Uses flag for selecting interpolation time in one place.
 %--
@@ -90,7 +86,10 @@ classdef proc_sub
 % PROPOSAL: Instantiate class, use instance methods instead of static.
 %   PRO: Can have SETTINGS and constants as instance variable instead of calling global variables.
 %
-% PROPOSAL: Change variable names to conform better with BIAS spec. V1 --> V1_DC
+% PROPOSAL: Submit zVar variable attributes.
+%   PRO: Can interpret fill values.
+%       Ex: Can doublecheck TDS RSWF snapshot length using fill values and compare with zVar SAMPS_PER_CH (which seems to be
+%       bad).
 %#######################################################################################################################
     
     methods(Static, Access=public)
@@ -175,7 +174,7 @@ classdef proc_sub
         
         
 
-        function PreDc = process_LFR_to_PreDC(Sci, HkSciTime)
+        function PreDc = process_LFR_to_PreDC(Sci, inputSciDsi, HkSciTime)
         % Processing function. Convert LFR CDF data to PreDC.
         %
         % Keeps number of samples/record. Treats 1 samples/record "length-one snapshots".
@@ -184,115 +183,36 @@ classdef proc_sub
         % MINOR PROBLEM: Still does not handle LFR zVar TYPE for determining "virtual snapshot" length.
         % Should only be relevant for V01_ROC-SGSE_L2R_RPW-LFR-SURV-CWF (not V02) which should expire.
         
+            LFR_SWF_SNAPSHOT_LENGTH = 2048;
+        
             % ASSERTIONS
-            EJ_library.utils.assert.struct(Sci,        {'ZVars', 'Ga'})
-            EJ_library.utils.assert.struct(HkSciTime,  {'MUX_SET', 'DIFF_GAIN'})
+            EJ_library.utils.assert.struct(Sci,       {'ZVars', 'Ga'})
+            EJ_library.utils.assert.struct(HkSciTime, {'MUX_SET', 'DIFF_GAIN'})
             
-            %sciDvid  = bicas.construct_DVID(Sci.Ga.DATASET_ID{1}, Sci.Ga.Skeleton_version{1});
-            nRecords = size(Sci.ZVars.Epoch, 1);
-            
-            % TEMPORARY SOLUTION?
-            % PROPOSAL: Function DATASET_ID --> Flags (isSurvCwf etc, as needed)
-            srcDatasetId = Sci.Ga.DATASET_ID{1};
-            isSurvSwf = ~isempty(strfind(srcDatasetId, 'SURV-SWF'));    
-            isSbm1Cwf = ~isempty(strfind(srcDatasetId, 'SBM1-CWF'));
-            isSbm2Cwf = ~isempty(strfind(srcDatasetId, 'SBM2-CWF'));
-            
-%             switch(srcDatasetId)
-%                 case  { 'ROC-SGSE_L1R_RPW-LFR-SURV-SWF-E'
-%                 case  { 'ROC-SGSE_L1R_RPW-LFR-SBM1-CWF-E' ...
-%                         'ROC-SGSE_L1R_RPW-LFR-SBM2-CWF-E' ...
-%                         'ROC-SGSE_L1R_RPW-LFR-SURV-CWF-E' ...
-%                       { 'ROC-SGSE_L1R_RPW-LFR-SBM1-CWF-E' ...
-%                         'ROC-SGSE_L1R_RPW-LFR-SBM2-CWF-E' ...
-%                         'ROC-SGSE_L1R_RPW-LFR-SURV-CWF-E'}
-%             end
-            
-            
-            
-            %===========================================================================================================
-            % Handle differences between skeletons V01 and V02
-            % ------------------------------------------------
-            % POTENTIAL,
-            % ELECTRICAL : zVars with different names (but identical meaning).
-            % L1_REC_NUM : Only seems to have been defined in very old skeletons (not in DataPool git repo).
-            %              Abolished for now.
-            %===========================================================================================================
-%             switch(sciDvid)
-%                 case {  'V01_ROC-SGSE_L2R_RPW-LFR-SBM1-CWF', ...
-%                         'V01_ROC-SGSE_L2R_RPW-LFR-SBM2-CWF', ...
-%                         'V01_ROC-SGSE_L2R_RPW-LFR-SURV-CWF', ...
-%                         'V01_ROC-SGSE_L2R_RPW-LFR-SURV-SWF'}
-%                     POTENTIAL  = Sci.ZVars.POTENTIAL;
-%                     ELECTRICAL = Sci.ZVars.ELECTRICAL;
-%                     %L1_REC_NUM = bicas.proc_utils.create_NaN_array([nRecords, 1]);   % Set to fill values.
-%                 case {  'V04_ROC-SGSE_L1R_RPW-LFR-SBM1-CWF-E', ...
-%                         'V04_ROC-SGSE_L1R_RPW-LFR-SBM2-CWF-E', ...
-%                         'V04_ROC-SGSE_L1R_RPW-LFR-SURV-CWF-E', ...
-%                         'V04_ROC-SGSE_L1R_RPW-LFR-SURV-SWF-E'}
-%                     POTENTIAL  =         Sci.ZVars.V;
-%                     ELECTRICAL = permute(Sci.ZVars.E, [1,3,2]);
-%                     assert(size(ELECTRICAL, 3) == 2)
-%                     % Switch last two indices of ELECTRICAL.
-%                     % ==> index 2 = "snapshot" sample
-%                     %     index 3 = E1/E2 component.
-%                     % IMPLEMENTATION NOTE: Permuting indices somewhat ugly temporary fix, but it gives(?) backward
-%                     % compatibility with old datasets (which? /2019-08-23) which have CWF on "snapshot format" (multiple
-%                     % samples per record), over the second index.
-%                     
-%                     %L1_REC_NUM = bicas.proc_utils.create_NaN_array([nRecords, 1]);   % Set to fill values.
-%                 case {  'V02_ROC-SGSE_L2R_RPW-LFR-SBM1-CWF', ...
-%                         'V02_ROC-SGSE_L2R_RPW-LFR-SBM2-CWF'}
-%                         %'V02_ROC-SGSE_L2R_RPW-LFR-SURV-CWF'
-%                         %'V02_ROC-SGSE_L2R_RPW-LFR-SURV-SWF'    % 'V02_ROC-SGSE_L2R_RPW-LFR-SURV-SWF' correct?!
-%                     POTENTIAL  = Sci.ZVars.V;
-%                     ELECTRICAL = Sci.ZVars.E;
-%                     %L1_REC_NUM = Sci.L1_REC_NUM;
-%                 otherwise
-%                     error('BICAS:proc_sub:SWModeProcessing:Assertion:ConfigurationBug', ...
-%                         'Can not handle DVID="%s"', sciDvid)
-%             end
-            POTENTIAL  = Sci.ZVars.V;
-            ELECTRICAL = permute(Sci.ZVars.E, [1,3,2]);
-            % Switch last two indices of ELECTRICAL.
-            % ==> index 2 = "snapshot" sample
+            nRecords = size(Sci.ZVars.Epoch, 1);            
+            C = bicas.proc_utils.classify_DATASET_ID(inputSciDsi);
+           
+            V = Sci.ZVars.V;
+            E = permute(Sci.ZVars.E, [1,3,2]);
+            % Switch last two indices of E.
+            % ==> index 2 = "snapshot" sample index, including for CWF (sample/record, "snapshots" consisting of 1 sample).
             %     index 3 = E1/E2 component.
-            if isSurvSwf
-                assert(size(ELECTRICAL, 2) == 2048)
-            else
-                assert(size(ELECTRICAL, 2) == 1)
-            end
-            assert(size(ELECTRICAL, 3) == 2)
             
+            nSamplesPerRecord = size(V, 2);
+            
+            % ASSERTIONS
+            if C.isLfrSwf
+                assert(nSamplesPerRecord == LFR_SWF_SNAPSHOT_LENGTH)
+            else
+                assert(nSamplesPerRecord == 1)
+            end
+            assert(size(E, 3) == 2)
             
 
-            %========================================================================================
-            % Handle differences between datasets with and without zVAR FREQ:
-            % LFR_FREQ: Corresponds to FREQ only defined in some LFR datasets.
-            %========================================================================================
-%             switch(sciDvid)
-%                 case {  'V01_ROC-SGSE_L2R_RPW-LFR-SBM1-CWF', ...
-%                         'V02_ROC-SGSE_L2R_RPW-LFR-SBM1-CWF', ...
-%                         'V04_ROC-SGSE_L1R_RPW-LFR-SBM1-CWF-E'}
-%                     FREQ = ones(nRecords, 1) * 1;   % Always value "1" (F1).
-%                 case {  'V01_ROC-SGSE_L2R_RPW-LFR-SBM2-CWF', ...
-%                         'V02_ROC-SGSE_L2R_RPW-LFR-SBM2-CWF', ...
-%                         'V04_ROC-SGSE_L1R_RPW-LFR-SBM2-CWF-E'}
-%                     FREQ = ones(nRecords, 1) * 2;   % Always value "2" (F2).
-%                 case {  'V01_ROC-SGSE_L2R_RPW-LFR-SURV-CWF', ...
-%                         'V04_ROC-SGSE_L1R_RPW-LFR-SURV-CWF-E', ...
-%                         'V01_ROC-SGSE_L2R_RPW-LFR-SURV-SWF', ...
-%                         'V04_ROC-SGSE_L1R_RPW-LFR-SURV-SWF-E'}
-%                         %'V02_ROC-SGSE_L2R_RPW-LFR-SURV-CWF', ...
-%                         %'V02_ROC-SGSE_L2R_RPW-LFR-SURV-SWF', ...
-%                     FREQ = Sci.ZVars.FREQ;
-%                 otherwise
-%                     error('BICAS:proc_sub:SWModeProcessing:Assertion:ConfigurationBug', ...
-%                         'Can not handle DVID="%s"', sciDvid)
-%             end
-            if     isSbm1Cwf
+            
+            if     C.isLfrSbm1
                 FREQ = ones(nRecords, 1) * 1;   % Always value "1" (F1).
-            elseif isSbm2Cwf
+            elseif C.isLfrSbm2
                 FREQ = ones(nRecords, 1) * 2;   % Always value "2" (F2).
             else
                 FREQ = Sci.ZVars.FREQ;
@@ -301,8 +221,7 @@ classdef proc_sub
             
             
             
-            nSamplesPerRecord = size(POTENTIAL, 2);
-            freqHz            = bicas.proc_utils.get_LFR_frequency( FREQ );   % NOTE: Needed also for 1 SPR.
+            freqHz = bicas.proc_utils.get_LFR_frequency( FREQ );   % NOTE: Needed also for 1 SPR.
             
             % Obtain the relevant values (one per record) from zVariables R0, R1, R2, "R3".
             Rx = bicas.proc_utils.get_LFR_Rx( ...
@@ -312,15 +231,13 @@ classdef proc_sub
                 FREQ );   % NOTE: Function also handles the imaginary zVar "R3".
 
             PreDc = [];
-            PreDc.Epoch             = Sci.ZVars.Epoch;
-            PreDc.ACQUISITION_TIME  = Sci.ZVars.ACQUISITION_TIME;
-            PreDc.DELTA_PLUS_MINUS  = bicas.proc_utils.derive_DELTA_PLUS_MINUS(freqHz, nSamplesPerRecord);            
-            PreDc.freqHz            = freqHz;
-            PreDc.SYNCHRO_FLAG      = Sci.ZVars.TIME_SYNCHRO_FLAG;   % NOTE: Different zVar name in input and output datasets.
+            PreDc.Epoch                  = Sci.ZVars.Epoch;
+            PreDc.ACQUISITION_TIME       = Sci.ZVars.ACQUISITION_TIME;
+            PreDc.DELTA_PLUS_MINUS       = bicas.proc_utils.derive_DELTA_PLUS_MINUS(freqHz, nSamplesPerRecord);            
+            PreDc.freqHz                 = freqHz;
+            PreDc.nValidSamplesPerRecord = ones(nRecords, nSamplesPerRecord);
+            PreDc.SYNCHRO_FLAG           = Sci.ZVars.TIME_SYNCHRO_FLAG;   % NOTE: Different zVar name in input and output datasets.
 
-            %PreDc.SAMP_DTIME       = bicas.proc_utils.derive_SAMP_DTIME(freqHz, nSamplesPerRecord);
-            %PreDc.L1_REC_NUM       = L1_REC_NUM;
-            
             
             
             %===========================================================================================================
@@ -347,19 +264,19 @@ classdef proc_sub
             % per record. BIAS output datasets should.
             assert(size(PreDc.QUALITY_FLAG,    2) == 1)
             assert(size(PreDc.QUALITY_BITMASK, 2) == 1)
-            
 
 
-            % ELECTRICAL must be floating-point so that values can be set to NaN.
+
+            % E must be floating-point so that values can be set to NaN.
             % bicas.proc_utils.filter_rows requires this. Variable may be integer if integer in source CDF.
-            ELECTRICAL = single(ELECTRICAL);
+            E = single(E);
 
             PreDc.DemuxerInput        = [];
-            PreDc.DemuxerInput.BIAS_1 = POTENTIAL;
-            PreDc.DemuxerInput.BIAS_2 = bicas.proc_utils.filter_rows( ELECTRICAL(:,:,1), Rx==1 );
-            PreDc.DemuxerInput.BIAS_3 = bicas.proc_utils.filter_rows( ELECTRICAL(:,:,2), Rx==1 );
-            PreDc.DemuxerInput.BIAS_4 = bicas.proc_utils.filter_rows( ELECTRICAL(:,:,1), Rx==0 );
-            PreDc.DemuxerInput.BIAS_5 = bicas.proc_utils.filter_rows( ELECTRICAL(:,:,2), Rx==0 );
+            PreDc.DemuxerInput.BIAS_1 = V;
+            PreDc.DemuxerInput.BIAS_2 = bicas.proc_utils.filter_rows( E(:,:,1), Rx==1 );
+            PreDc.DemuxerInput.BIAS_3 = bicas.proc_utils.filter_rows( E(:,:,2), Rx==1 );
+            PreDc.DemuxerInput.BIAS_4 = bicas.proc_utils.filter_rows( E(:,:,1), Rx==0 );
+            PreDc.DemuxerInput.BIAS_5 = bicas.proc_utils.filter_rows( E(:,:,2), Rx==0 );
 
             PreDc.MUX_SET   = HkSciTime.MUX_SET;
             PreDc.DIFF_GAIN = HkSciTime.DIFF_GAIN;
@@ -372,86 +289,108 @@ classdef proc_sub
         
         
         
-        function PreDc = process_TDS_to_PreDC(InputsMap)
-        % UNTESTED
-        %
+        function PreDc = process_TDS_to_PreDC(Sci, inputSciDsi, HkSciTime)
         % Processing function. Convert TDS CDF data (PDs) to PreDC.
         %
         % Keeps number of samples/record. Treats 1 samples/record "length-one snapshots".
-        
-        % NOTE: L1_REC_NUM not set in any TDS L2R dataset
-        
-            SciPd         = InputsMap('SCI_cdf').pd;
-            HkOnSciTimePd = InputsMap('HK_on_SCI_time').pd;
-            sciPdid       = InputsMap('SCI_cdf').pdid;
+        %
+        % BUG?: Does not use CHANNEL_STATUS_INFO.
+        % NOTE: BIAS output datasets do not have a variable for the length of snapshots. Need to use NaN/fill value.
 
-            %=====================================================================
-            % Handle differences between skeletons V01 and V02
-            % ------------------------------------------------
-            % LFR_V, LFR_E: zVars with different names (but identical meaning).
-            % L1_REC_NUM  : Not defined in V01, but in V02 dataset skeletons.
-            %=====================================================================
-            switch(sciPdid)
-                % Those TDS datasets which have the SAME number of samples/record as in the output datasets.
-                case {'V01_ROC-SGSE_L2R_RPW-TDS-LFM-CWF', ...     % 1 S/R
-                      'V02_ROC-SGSE_L2R_RPW-TDS-LFM-RSWF'};       % N S/R
-                      
-                % Those TDS datasets which have DIFFERENT number of samples/record compared to the output datasets.
-                case {'V01_ROC-SGSE_L2R_RPW-TDS-LFM-RSWF'}        % 1 S/R for SWF data!!!
-                    error('BICAS:proc_sub:SWModeProcessing:Assertion:OperationNotImplemented', ...
-                        'This processing function can not interpret PDID=%s. Not implemented yet.', sciPdid)
-                otherwise
-                    error('BICAS:proc_sub:SWModeProcessing:Assertion:ConfigurationBug', ...
-                        'Can not handle PDID="%s"', sciPdid)
-            end
+            % ASSERTIONS
+            EJ_library.utils.assert.struct(Sci,        {'ZVars', 'Ga'})
+            EJ_library.utils.assert.struct(HkSciTime,  {'MUX_SET', 'DIFF_GAIN'})
             
-            nRecords          = size(SciPd.Epoch, 1);
-            nSamplesPerRecord = size(SciPd.WAVEFORM_DATA, 3);
+            C = bicas.proc_utils.classify_DATASET_ID(inputSciDsi);
             
-            freqHz = SciPd.SAMPLING_RATE;
+            nRecords                  = size(Sci.ZVars.Epoch, 1);
+            nVariableSamplesPerRecord = size(Sci.ZVars.WAVEFORM_DATA, 3);   % Number of samples in the variable, not necessarily actual data.
+            
+            freqHz = double(Sci.ZVars.SAMPLING_RATE);
             
             PreDc = [];
             
-            PreDc.Epoch            = SciPd.Epoch;
-            PreDc.ACQUISITION_TIME = SciPd.ACQUISITION_TIME;
-            PreDc.DELTA_PLUS_MINUS = bicas.proc_utils.derive_DELTA_PLUS_MINUS(freqHz, nSamplesPerRecord);
-            PreDc.freqHz           = freqHz;    % CDF_UINT1 ?!!!
-            %PreDc.SAMP_DTIME       = bicas.proc_utils.derive_SAMP_DTIME(freqHz, nSamplesPerRecord);
-            %PreDc.L1_REC_NUM       = bicas.proc_utils.create_NaN_array([nRecords, nSamplesPerRecord]);   % Set to fill values. Not set in any TDS L2R dataset yet.
+            PreDc.Epoch            = Sci.ZVars.Epoch;
+            PreDc.ACQUISITION_TIME = Sci.ZVars.ACQUISITION_TIME;
+            PreDc.DELTA_PLUS_MINUS = bicas.proc_utils.derive_DELTA_PLUS_MINUS(freqHz, nVariableSamplesPerRecord);
+            PreDc.freqHz           = freqHz;
+            if C.isTdsRswf
+                
+                %====================================================================================================
+                % ASSERTION WARNING: Check zVar SAMPS_PER_CH for invalid values
+                %
+                % NOTE: Has observed invalid SAMPS_PER_CH value 16562 in
+                % ROC-SGSE_L1R_RPW-TDS-LFM-RSWF-E_73525cd_CNE_V03.CDF.
+                % 2019-09-18, David Pisa: Not a flaw in TDS RCS but in the source L1 dataset.
+                %====================================================================================================
+                SAMPS_PER_CH_MIN_VALID = 2^10;
+                SAMPS_PER_CH_MAX_VALID = 2^15;
+                SAMPS_PER_CH         = double(Sci.ZVars.SAMPS_PER_CH);
+                SAMPS_PER_CH_rounded = round(2.^round(log2(SAMPS_PER_CH)));
+                SAMPS_PER_CH_rounded(SAMPS_PER_CH_rounded < SAMPS_PER_CH_MIN_VALID) = SAMPS_PER_CH_MIN_VALID;
+                SAMPS_PER_CH_rounded(SAMPS_PER_CH_rounded > SAMPS_PER_CH_MAX_VALID) = SAMPS_PER_CH_MAX_VALID;
+                if any(SAMPS_PER_CH_rounded ~= SAMPS_PER_CH)
+                    SAMPS_PER_CH_badValues = unique(SAMPS_PER_CH(SAMPS_PER_CH_rounded ~= SAMPS_PER_CH));
+                    badValuesDisplayStr = strjoin(arrayfun(@(n) sprintf('%i', n), SAMPS_PER_CH_badValues, 'uni', false), ', ');                    
+                    bicas.logf('warning', 'TDS LFM RSWF zVar SAMPS_PER_CH contains unexpected value(s), not 2^n: %s', badValuesDisplayStr)
+                    
+                    % NOTE: Unclear if this is the appropriate action.
+                    %bicas.log('warning', 'Replacing TDS RSWF zVar SAMPS_PER_CH values with values, rounded to valid values.')
+                    %SAMPS_PER_CH = SAMPS_PER_CH_rounded;
+                end
+                
+                % NOTE: This might only be appropriate for TDS's "COMMON_MODE" mode. TDS also has a "FULL_BAND" mode
+                % with 2^18=262144 samples per snapshot. You should never encounter FULL_BAND in any dataset (even on
+                % ground), only used for calibration and testing. /David Pisa & Jan Soucek in emails, 2016.
+                % --
+                % FULL_BAND mode has each snapshot divided into 2^15 samples/record * 8 records.  /Unknown source
+                % Unclear what value SAMPS_PER_CH should have for FULL_BAND mode. How does Epoch work for FULL_BAND
+                % snapshots?
+                PreDc.nValidSamplesPerRecord = SAMPS_PER_CH;                
+                
+            else
+                PreDc.nValidSamplesPerRecord = ones(nRecords, 1) * 1;
+            end
 
-            PreDc.QUALITY_FLAG    = SciPd.QUALITY_FLAG;
-            PreDc.QUALITY_BITMASK = SciPd.QUALITY_BITMASK;
+            PreDc.QUALITY_FLAG    = Sci.ZVars.QUALITY_FLAG;
+            PreDc.QUALITY_BITMASK = Sci.ZVars.QUALITY_BITMASK;
+            PreDc.SYNCHRO_FLAG    = Sci.ZVars.TIME_SYNCHRO_FLAG;   % NOTE: Different zVar name in input and output datasets.
+            
+            modif_WAVEFORM_DATA = double(permute(Sci.ZVars.WAVEFORM_DATA, [1,3,2]));
             
             PreDc.DemuxerInput        = [];
-            PreDc.DemuxerInput.BIAS_1 = permute(SciPd.WAVEFORM_DATA(:,1,:), [1,3,2]);
-            PreDc.DemuxerInput.BIAS_2 = permute(SciPd.WAVEFORM_DATA(:,2,:), [1,3,2]);
-            PreDc.DemuxerInput.BIAS_3 = permute(SciPd.WAVEFORM_DATA(:,3,:), [1,3,2]);
-            PreDc.DemuxerInput.BIAS_4 = bicas.proc_utils.create_NaN_array([nRecords, nSamplesPerRecord]);
-            PreDc.DemuxerInput.BIAS_5 = bicas.proc_utils.create_NaN_array([nRecords, nSamplesPerRecord]);
+            PreDc.DemuxerInput.BIAS_1 = bicas.proc_utils.set_NaN_after_snapshots_end( modif_WAVEFORM_DATA(:,:,1), PreDc.nValidSamplesPerRecord );
+            PreDc.DemuxerInput.BIAS_2 = bicas.proc_utils.set_NaN_after_snapshots_end( modif_WAVEFORM_DATA(:,:,2), PreDc.nValidSamplesPerRecord );
+            PreDc.DemuxerInput.BIAS_3 = bicas.proc_utils.set_NaN_after_snapshots_end( modif_WAVEFORM_DATA(:,:,3), PreDc.nValidSamplesPerRecord );
+            PreDc.DemuxerInput.BIAS_4 = bicas.proc_utils.create_NaN_array([nRecords, nVariableSamplesPerRecord]);
+            PreDc.DemuxerInput.BIAS_5 = bicas.proc_utils.create_NaN_array([nRecords, nVariableSamplesPerRecord]);
             
-            PreDc.MUX_SET   = HkOnSciTimePd.MUX_SET;
-            PreDc.DIFF_GAIN = HkOnSciTimePd.DIFF_GAIN;
-
+            PreDc.MUX_SET   = HkSciTime.MUX_SET;
+            PreDc.DIFF_GAIN = HkSciTime.DIFF_GAIN;
+            
+            
+            
             % ASSERTIONS
             bicas.proc_sub.assert_PreDC(PreDc)
-            
-            %error('BICAS:proc_sub:OperationNotImplemented', ...
-            %    'This processing function process_TDS_to_PreDC has not been implemented yet.')
         end
 
 
 
         function assert_PreDC(PreDc)
-            EJ_library.utils.assert.struct(PreDc, {'Epoch', 'ACQUISITION_TIME', 'DemuxerInput', 'freqHz', 'DIFF_GAIN', 'MUX_SET', 'QUALITY_FLAG', ...
+            EJ_library.utils.assert.struct(PreDc, {...
+                'Epoch', 'ACQUISITION_TIME', 'DemuxerInput', 'freqHz', 'nValidSamplesPerRecord', 'DIFF_GAIN', 'MUX_SET', 'QUALITY_FLAG', ...
                 'QUALITY_BITMASK', 'DELTA_PLUS_MINUS', 'SYNCHRO_FLAG'});
             bicas.proc_utils.assert_unvaried_N_rows(PreDc);
             bicas.proc_utils.assert_unvaried_N_rows(PreDc.DemuxerInput);
+            
+            assert(isa(PreDc.freqHz, 'double'))
         end
         
         
         
         function assert_PostDC(PostDc)
-            EJ_library.utils.assert.struct(PostDc, {'Epoch', 'ACQUISITION_TIME', 'DemuxerInput', 'freqHz', 'DIFF_GAIN', 'MUX_SET', 'QUALITY_FLAG', ...
+            EJ_library.utils.assert.struct(PostDc, {...
+                'Epoch', 'ACQUISITION_TIME', 'DemuxerInput', 'freqHz', 'nValidSamplesPerRecord', 'DIFF_GAIN', 'MUX_SET', 'QUALITY_FLAG', ...
                 'QUALITY_BITMASK', 'DELTA_PLUS_MINUS', 'SYNCHRO_FLAG', 'DemuxerOutput', 'IBIAS1', 'IBIAS2', 'IBIAS3'});
             bicas.proc_utils.assert_unvaried_N_rows(PostDc);
             bicas.proc_utils.assert_unvaried_N_rows(PostDc.DemuxerOutput);
@@ -459,21 +398,25 @@ classdef proc_sub
         
 
         
-        function OutputSci = process_PostDC_to_LFR(SciPostDc, outputDsi, outputVersion)
+        function OutSciZVars = process_PostDC_to_LFR(SciPostDc, outputDsi, outputVersion)
         % Processing function. Convert PostDC to any one of several similar LFR dataset PDs.
         
-            %global SETTINGS
-            
             % ASSERTIONS
-            bicas.proc_sub.assert_PostDC(SciPostDc)            
+            bicas.proc_sub.assert_PostDC(SciPostDc)
             
-            OutputSci = [];
+            OutSciZVars = [];
             
             nSamplesPerRecord = size(SciPostDc.DemuxerOutput.V1, 2);   % Samples per record.
             
             outputDvid = bicas.construct_DVID(outputDsi, outputVersion);
             ZVAR_FN_LIST = {'IBIAS1', 'IBIAS2', 'IBIAS3', 'V', 'E', 'EAC', 'Epoch', ...
                 'QUALITY_BITMASK', 'QUALITY_FLAG', 'DELTA_PLUS_MINUS', 'ACQUISITION_TIME'};
+            
+            OutSciZVars.Epoch = SciPostDc.Epoch;
+            OutSciZVars.ACQUISITION_TIME = SciPostDc.ACQUISITION_TIME;
+            OutSciZVars.QUALITY_BITMASK  = SciPostDc.QUALITY_BITMASK;
+            OutSciZVars.QUALITY_FLAG     = SciPostDc.QUALITY_FLAG;
+            OutSciZVars.DELTA_PLUS_MINUS = SciPostDc.DELTA_PLUS_MINUS;
             
             switch(outputDvid)
                 case  {'V03_ROC-SGSE_L2S_RPW-LFR-SBM1-CWF-E' ...
@@ -484,94 +427,50 @@ classdef proc_sub
                             'V04_SOLO_L2_RPW-LFR-SBM2-CWF-E' ...
                        }
                    
-                   % ASSERTION
-                   if nSamplesPerRecord ~= 1
-                        error('BICAS:proc_sub:Assertion:IllegalArgument', 'Number of samples per CDF record is not 1, as expected. Bad input CDF?')
-                   end
+                    % ASSERTION
+                    assert(nSamplesPerRecord == 1, 'BICAS:proc_sub:Assertion:IllegalArgument', 'Number of samples per CDF record is not 1, as expected. Bad input CDF?')
+                    assert(size(OutSciZVars.QUALITY_FLAG,    2) == 1)
+                    assert(size(OutSciZVars.QUALITY_BITMASK, 2) == 1)
+
+                    OutSciZVars.IBIAS1 = SciPostDc.IBIAS1;
+                    OutSciZVars.IBIAS2 = SciPostDc.IBIAS2;
+                    OutSciZVars.IBIAS3 = SciPostDc.IBIAS3;
+                    assert(size(OutSciZVars.IBIAS1, 2) == 1)
+                    assert(size(OutSciZVars.IBIAS2, 2) == 1)
+                    assert(size(OutSciZVars.IBIAS3, 2) == 1)
                     
-                    %=====================================================================
-                    % Convert 1 snapshot/record --> 1 sample/record (if not already done)
-                    %=====================================================================
-%                     OutputSci.Epoch = bicas.proc_utils.convert_N_to_1_SPR_Epoch( ...
-%                         SciPostDc.Epoch, ...
-%                         nSamplesPerRecord, ...
-%                         SciPostDc.freqHz  );
-                    OutputSci.Epoch = SciPostDc.Epoch;
-%                     OutputSci.ACQUISITION_TIME = bicas.proc_utils.convert_N_to_1_SPR_ACQUISITION_TIME(...
-%                         SciPostDc.ACQUISITION_TIME, ...
-%                         nSamplesPerRecord, ...
-%                         SciPostDc.freqHz, ...
-%                         SETTINGS.get_fv('PROCESSING.ACQUISITION_TIME_EPOCH_UTC'));
-                    OutputSci.ACQUISITION_TIME = SciPostDc.ACQUISITION_TIME;
-                    
-                    OutputSci.DELTA_PLUS_MINUS = bicas.proc_utils.convert_N_to_1_SPR_redistribute( SciPostDc.DELTA_PLUS_MINUS );
-                    %OutputSci.L1_REC_NUM       = bicas.proc_utils.convert_N_to_1_SPR_repeat(       SciPostDc.L1_REC_NUM,      nSamplesPerRecord);
-                    %OutputSci.QUALITY_FLAG     = bicas.proc_utils.convert_N_to_1_SPR_repeat(       SciPostDc.QUALITY_FLAG,    nSamplesPerRecord);
-                    %OutputSci.QUALITY_BITMASK  = bicas.proc_utils.convert_N_to_1_SPR_repeat(       SciPostDc.QUALITY_BITMASK, nSamplesPerRecord);
-                    OutputSci.QUALITY_FLAG    = SciPostDc.QUALITY_FLAG;
-                    OutputSci.QUALITY_BITMASK = SciPostDc.QUALITY_BITMASK;
-                    assert(size(OutputSci.QUALITY_FLAG,    2) == 1)
-                    assert(size(OutputSci.QUALITY_BITMASK, 2) == 1)
-                    
-                    % Convert PostDc.DemuxerOutput
-                    for fn = fieldnames(SciPostDc.DemuxerOutput)'
-                        SciPostDc.DemuxerOutput.(fn{1}) = bicas.proc_utils.convert_N_to_1_SPR_redistribute( ...
-                            SciPostDc.DemuxerOutput.(fn{1}) );
-                    end
-                    
-                    %OutputSci.IBIAS1           = bicas.proc_utils.convert_N_to_1_SPR_redistribute( SciPostDc.IBIAS1 );
-                    %OutputSci.IBIAS2           = bicas.proc_utils.convert_N_to_1_SPR_redistribute( SciPostDc.IBIAS2 );
-                    %OutputSci.IBIAS3           = bicas.proc_utils.convert_N_to_1_SPR_redistribute( SciPostDc.IBIAS3 );
-                    OutputSci.IBIAS1 = SciPostDc.IBIAS1;
-                    OutputSci.IBIAS2 = SciPostDc.IBIAS2;
-                    OutputSci.IBIAS3 = SciPostDc.IBIAS3;
-                    assert(size(OutputSci.IBIAS1, 2) == 1)
-                    assert(size(OutputSci.IBIAS2, 2) == 1)
-                    assert(size(OutputSci.IBIAS3, 2) == 1)
-                    
-                    OutputSci.V(:,1)           = SciPostDc.DemuxerOutput.V1;
-                    OutputSci.V(:,2)           = SciPostDc.DemuxerOutput.V2;
-                    OutputSci.V(:,3)           = SciPostDc.DemuxerOutput.V3;
-                    OutputSci.E(:,1)           = SciPostDc.DemuxerOutput.V12;
-                    OutputSci.E(:,2)           = SciPostDc.DemuxerOutput.V13;
-                    OutputSci.E(:,3)           = SciPostDc.DemuxerOutput.V23;
-                    OutputSci.EAC(:,1)         = SciPostDc.DemuxerOutput.V12_AC;
-                    OutputSci.EAC(:,2)         = SciPostDc.DemuxerOutput.V13_AC;
-                    OutputSci.EAC(:,3)         = SciPostDc.DemuxerOutput.V23_AC;
+                    OutSciZVars.V(:,1)           = SciPostDc.DemuxerOutput.V1;
+                    OutSciZVars.V(:,2)           = SciPostDc.DemuxerOutput.V2;
+                    OutSciZVars.V(:,3)           = SciPostDc.DemuxerOutput.V3;
+                    OutSciZVars.E(:,1)           = SciPostDc.DemuxerOutput.V12;
+                    OutSciZVars.E(:,2)           = SciPostDc.DemuxerOutput.V13;
+                    OutSciZVars.E(:,3)           = SciPostDc.DemuxerOutput.V23;
+                    OutSciZVars.EAC(:,1)         = SciPostDc.DemuxerOutput.V12_AC;
+                    OutSciZVars.EAC(:,2)         = SciPostDc.DemuxerOutput.V13_AC;
+                    OutSciZVars.EAC(:,3)         = SciPostDc.DemuxerOutput.V23_AC;
                     
                 case  {'V03_ROC-SGSE_L2S_RPW-LFR-SURV-SWF-E',  ...
                             'V04_SOLO_L2_RPW-LFR-SURV-SWF-E'}
                     
                     % ASSERTION
-                    if nSamplesPerRecord ~= 2048
-                        error('BICAS:proc_sub:Assertion:IllegalArgument', 'Number of samples per CDF record is not 2048, as expected. Bad Input CDF?')
-                    end
+                    assert(nSamplesPerRecord == 2048, 'BICAS:proc_sub:Assertion:IllegalArgument', 'Number of samples per CDF record is not 2048, as expected. Bad Input CDF?')
                     
-                    OutputSci.Epoch            = SciPostDc.Epoch;
-                    OutputSci.ACQUISITION_TIME = SciPostDc.ACQUISITION_TIME;
-                    
-                    OutputSci.DELTA_PLUS_MINUS = SciPostDc.DELTA_PLUS_MINUS;
-                    %OutputSci.L1_REC_NUM       = PostDc.L1_REC_NUM;
-                    OutputSci.QUALITY_BITMASK  = SciPostDc.QUALITY_BITMASK;
-                    OutputSci.QUALITY_FLAG     = SciPostDc.QUALITY_FLAG;
-                    
-                    OutputSci.IBIAS1           = SciPostDc.IBIAS1;
-                    OutputSci.IBIAS2           = SciPostDc.IBIAS2;
-                    OutputSci.IBIAS3           = SciPostDc.IBIAS3;
-                    OutputSci.V(:,:,1)         = SciPostDc.DemuxerOutput.V1;
-                    OutputSci.V(:,:,2)         = SciPostDc.DemuxerOutput.V2;
-                    OutputSci.V(:,:,3)         = SciPostDc.DemuxerOutput.V3;
-                    OutputSci.E(:,:,1)         = SciPostDc.DemuxerOutput.V12;
-                    OutputSci.E(:,:,2)         = SciPostDc.DemuxerOutput.V13;
-                    OutputSci.E(:,:,3)         = SciPostDc.DemuxerOutput.V23;
-                    OutputSci.EAC(:,:,1)       = SciPostDc.DemuxerOutput.V12_AC;
-                    OutputSci.EAC(:,:,2)       = SciPostDc.DemuxerOutput.V13_AC;
-                    OutputSci.EAC(:,:,3)       = SciPostDc.DemuxerOutput.V23_AC;
+                    OutSciZVars.IBIAS1           = SciPostDc.IBIAS1;
+                    OutSciZVars.IBIAS2           = SciPostDc.IBIAS2;
+                    OutSciZVars.IBIAS3           = SciPostDc.IBIAS3;
+                    OutSciZVars.V(:,:,1)         = SciPostDc.DemuxerOutput.V1;
+                    OutSciZVars.V(:,:,2)         = SciPostDc.DemuxerOutput.V2;
+                    OutSciZVars.V(:,:,3)         = SciPostDc.DemuxerOutput.V3;
+                    OutSciZVars.E(:,:,1)         = SciPostDc.DemuxerOutput.V12;
+                    OutSciZVars.E(:,:,2)         = SciPostDc.DemuxerOutput.V13;
+                    OutSciZVars.E(:,:,3)         = SciPostDc.DemuxerOutput.V23;
+                    OutSciZVars.EAC(:,:,1)       = SciPostDc.DemuxerOutput.V12_AC;
+                    OutSciZVars.EAC(:,:,2)       = SciPostDc.DemuxerOutput.V13_AC;
+                    OutSciZVars.EAC(:,:,3)       = SciPostDc.DemuxerOutput.V23_AC;
 
                     % Only in LFR SWF (not CWF): F_SAMPLE, SAMP_DTIME
-                    OutputSci.F_SAMPLE         = SciPostDc.freqHz;
+                    OutSciZVars.F_SAMPLE         = SciPostDc.freqHz;
                     ZVAR_FN_LIST{end+1} = 'F_SAMPLE';
-                    %OutputSci.SAMP_DTIME       = PostDc.SAMP_DTIME;
                     
                 otherwise
                     error('BICAS:proc_sub:Assertion:IllegalArgument', 'Function can not produce outputDvid=%s.', outputDvid)
@@ -579,6 +478,7 @@ classdef proc_sub
 
 
 
+            % PROPOSAL: Use classify_DATASET_ID flag.
             switch(outputDvid)
                 case  {'V03_ROC-SGSE_L2S_RPW-LFR-SBM1-CWF-E' ...
                        'V03_ROC-SGSE_L2S_RPW-LFR-SBM2-CWF-E' ...
@@ -589,7 +489,7 @@ classdef proc_sub
                        'V04_SOLO_L2_RPW-LFR-SURV-SWF-E' ...
                        'V04_SOLO_L2_RPW-LFR-SBM1-CWF-E' ...
                        'V04_SOLO_L2_RPW-LFR-SBM2-CWF-E'}
-                    OutputSci.SYNCHRO_FLAG = SciPostDc.SYNCHRO_FLAG;                    
+                    OutSciZVars.SYNCHRO_FLAG = SciPostDc.SYNCHRO_FLAG;
                     ZVAR_FN_LIST{end+1} = 'SYNCHRO_FLAG';
                     
                 otherwise
@@ -599,20 +499,81 @@ classdef proc_sub
             
             
             % ASSERTION
-            bicas.proc_utils.assert_unvaried_N_rows(OutputSci);
-            EJ_library.utils.assert.struct(OutputSci, ZVAR_FN_LIST)
+            bicas.proc_utils.assert_unvaried_N_rows(OutSciZVars);
+            EJ_library.utils.assert.struct(OutSciZVars, ZVAR_FN_LIST)
         end   % process_PostDC_to_LFR
 
 
 
-        function EOutPD = process_PostDC_to_TDS(InputsMap, eoutPDID)
+        function OutSciZVars = process_PostDC_to_TDS(SciPostDc, outputDsi, outputVersion)
+            
+            % ASSERTIONS
+            bicas.proc_sub.assert_PostDC(SciPostDc)
+            
+            OutSciZVars = [];
+            
+            outputDvid = bicas.construct_DVID(outputDsi, outputVersion);
+            ZVAR_FN_LIST = {'IBIAS1', 'IBIAS2', 'IBIAS3', 'V', 'E', 'EAC', 'Epoch', ...
+                'QUALITY_BITMASK', 'QUALITY_FLAG', 'DELTA_PLUS_MINUS', 'ACQUISITION_TIME'};
+            
+            switch(outputDvid)
+                case {'V03_ROC-SGSE_L2S_RPW-TDS-LFM-CWF-E' ...
+                           'V04_SOLO_L2_RPW-TDS-LFM-CWF-E'}
+                    OutSciZVars.V(:,1)     = SciPostDc.DemuxerOutput.V1;
+                    OutSciZVars.V(:,2)     = SciPostDc.DemuxerOutput.V2;
+                    OutSciZVars.V(:,3)     = SciPostDc.DemuxerOutput.V3;
+                    OutSciZVars.E(:,1)     = SciPostDc.DemuxerOutput.V12;
+                    OutSciZVars.E(:,2)     = SciPostDc.DemuxerOutput.V13;
+                    OutSciZVars.E(:,3)     = SciPostDc.DemuxerOutput.V23;
+                    OutSciZVars.EAC(:,1)   = SciPostDc.DemuxerOutput.V12_AC;
+                    OutSciZVars.EAC(:,2)   = SciPostDc.DemuxerOutput.V13_AC;
+                    OutSciZVars.EAC(:,3)   = SciPostDc.DemuxerOutput.V23_AC;
+                    
+                case {'V03_ROC-SGSE_L2S_RPW-TDS-LFM-RSWF-E' ...
+                           'V04_SOLO_L2_RPW-TDS-LFM-RSWF-E'}
+                       
+                    OutSciZVars.V(:,:,1)   = SciPostDc.DemuxerOutput.V1;
+                    OutSciZVars.V(:,:,2)   = SciPostDc.DemuxerOutput.V2;
+                    OutSciZVars.V(:,:,3)   = SciPostDc.DemuxerOutput.V3;
+                    OutSciZVars.E(:,:,1)   = SciPostDc.DemuxerOutput.V12;
+                    OutSciZVars.E(:,:,2)   = SciPostDc.DemuxerOutput.V13;
+                    OutSciZVars.E(:,:,3)   = SciPostDc.DemuxerOutput.V23;
+                    OutSciZVars.EAC(:,:,1) = SciPostDc.DemuxerOutput.V12_AC;
+                    OutSciZVars.EAC(:,:,2) = SciPostDc.DemuxerOutput.V13_AC;
+                    OutSciZVars.EAC(:,:,3) = SciPostDc.DemuxerOutput.V23_AC;
+                    
+                    OutSciZVars.F_SAMPLE       = SciPostDc.freqHz;
+                    ZVAR_FN_LIST{end+1} = 'F_SAMPLE';
 
-            %switch(eoutPDID)
-            %    case  'V02_ROC-SGSE_L2S_RPW-TDS-LFM-CWF-E'
-            %    case  'V02_ROC-SGSE_L2S_RPW-TDS-LFM-RSWF-E'
+                otherwise
+                    error('BICAS:proc_sub:Assertion:IllegalArgument', 'Function can not produce outputDvid=%s.', outputDvid)
+            end
 
-            error('BICAS:proc_sub:SWModeProcessing:Assertion:OperationNotImplemented', ...
-                'This processing function has not been implemented yet.')
+            OutSciZVars.Epoch = SciPostDc.Epoch;
+            OutSciZVars.ACQUISITION_TIME = SciPostDc.ACQUISITION_TIME;
+            OutSciZVars.QUALITY_FLAG     = SciPostDc.QUALITY_FLAG;
+            OutSciZVars.QUALITY_BITMASK  = SciPostDc.QUALITY_BITMASK;
+            OutSciZVars.DELTA_PLUS_MINUS = SciPostDc.DELTA_PLUS_MINUS;
+            OutSciZVars.IBIAS1           = SciPostDc.IBIAS1;
+            OutSciZVars.IBIAS2           = SciPostDc.IBIAS2;
+            OutSciZVars.IBIAS3           = SciPostDc.IBIAS3;
+            
+            switch(outputDvid)
+                case  {'V03_ROC-SGSE_L2S_RPW-TDS-LFM-CWF-E' ...
+                       'V03_ROC-SGSE_L2S_RPW-TDS-LFM-RSWF-E'}
+
+                case  {'V04_SOLO_L2_RPW-TDS-LFM-CWF-E' ...
+                       'V04_SOLO_L2_RPW-TDS-LFM-RSWF-E'}
+                    OutSciZVars.SYNCHRO_FLAG = SciPostDc.SYNCHRO_FLAG;
+                    ZVAR_FN_LIST{end+1} = 'SYNCHRO_FLAG';
+                    
+                otherwise
+                    error('BICAS:proc_sub:Assertion:IllegalArgument', 'Function can not produce outputDvid=%s.', outputDvid)
+            end
+
+            % ASSERTION
+            bicas.proc_utils.assert_unvaried_N_rows(OutSciZVars);
+            EJ_library.utils.assert.struct(OutSciZVars, ZVAR_FN_LIST)
         end
 
 
@@ -637,7 +598,7 @@ classdef proc_sub
                 PreDc.DemuxerInput, ...
                 PreDc.MUX_SET, ...
                 PreDc.DIFF_GAIN);
-            
+
             %================================
             % Set (calibrated) bias currents
             %================================
@@ -824,11 +785,11 @@ classdef proc_sub
             V23_LF_AC = NAN_VALUES;
             
             % IMPLEMENTATION NOTE: Avoid getting integer - single ==> error.
-            Input.BIAS_1 = single(Input.BIAS_1);
-            Input.BIAS_2 = single(Input.BIAS_2);
-            Input.BIAS_3 = single(Input.BIAS_3);
-            Input.BIAS_4 = single(Input.BIAS_4);
-            Input.BIAS_5 = single(Input.BIAS_5);
+            Input.BIAS_1 = double(Input.BIAS_1);
+            Input.BIAS_2 = double(Input.BIAS_2);
+            Input.BIAS_3 = double(Input.BIAS_3);
+            Input.BIAS_4 = double(Input.BIAS_4);
+            Input.BIAS_5 = double(Input.BIAS_5);
 
             switch(MUX_SET)
                 case 0   % "Standard operation" : We have all information.

@@ -168,7 +168,6 @@ classdef proc_utils
         end
 
 
-
         
         function tt2000 = ACQUISITION_TIME_to_tt2000(ACQUISITION_TIME, ACQUISITION_TIME_EPOCH_UTC)
         % Convert time in from ACQUISITION_TIME to tt2000 which is used for Epoch in CDF files.
@@ -338,14 +337,10 @@ classdef proc_utils
         % (2) Convert zVariable-like variable from N values/record to 1 value/record by redistributing values.
             
             % ASSERTIONS
-            if ~(iscolumn(oldData))
-                error('BICAS:proc_utils:Assertion', 'oldData is not a column vector')
-            elseif ~isscalar(nRepeatsPerOldRecord)
-                error('BICAS:proc_utils:Assertion', 'nSamplesPerOldRecord is not a scalar')
-            end
+            assert(iscolumn(oldData),              'BICAS:proc_utils:Assertion:IllegalArgument', 'oldData is not a column vector')
+            assert(isscalar(nRepeatsPerOldRecord), 'BICAS:proc_utils:Assertion:IllegalArgument', 'nSamplesPerOldRecord is not a scalar')
             
             newData = repmat(oldData, [1,nRepeatsPerOldRecord]);
-            %newData = reshape(newData', [numel(newData), 1]);     % NOTE: Must transpose first.
             newData = bicas.proc_utils.convert_N_to_1_SPR_redistribute(newData);
         end
 
@@ -438,6 +433,20 @@ classdef proc_utils
         
         
         
+        function zv = set_NaN_after_snapshots_end(zv, snapshotLengths)
+            assert(iscolumn(snapshotLengths))
+            
+            assert(ndims(zv) == 2)   % NOTE: ndims always returns at least 2.
+            assert(size(zv,1) == numel(snapshotLengths))
+            assert(size(zv,2) >= max([snapshotLengths; 0]))   % Add zero so that max gives sensible value for empty snapshotLengths.
+            
+            for iRecord = 1:numel(snapshotLengths)
+                zv(iRecord, (snapshotLengths(iRecord)+1):end) = NaN;
+            end
+        end
+        
+        
+        
         function DELTA_PLUS_MINUS = derive_DELTA_PLUS_MINUS(freqHz, nSpr)
         %
         % ARGUMENTS AND RETURN VALUE
@@ -455,7 +464,7 @@ classdef proc_utils
             nRecords = size(freqHz, 1);
             DELTA_PLUS_MINUS = zeros([nRecords, nSpr]);
             for i = 1:length(freqHz)
-                DELTA_PLUS_MINUS(i, :) = 1/freqHz(i) * 1e9 * 0.5;      % Seems to work for more than 2D.
+                DELTA_PLUS_MINUS(i, :) = 1./freqHz(i) * 1e9 * 0.5;      % Seems to work for more than 2D.
             end
             DELTA_PLUS_MINUS = cast(DELTA_PLUS_MINUS, bicas.utils.convert_CDF_type_to_MATLAB_class('CDF_INT8',  'Only CDF data types'));
         end
@@ -549,6 +558,45 @@ classdef proc_utils
             %     and nanosecond.
             v = spdfbreakdowntt2000(tt2000);
             utcStr = sprintf('%04i-%02i-%02iT%02i:%02i:%2i.%03i%03i%03i', v(1), v(2), v(3), v(4), v(5), v(6), v(7), v(8), v(9));
+        end
+        
+        
+        
+        % NOTE: Does not recognize HK datasets.
+        % NOTE: Only classifies input datasets. (Is there a good reason for this?)
+        % NOTE: Function deliberately ignores Skeleton_version.
+        function C = classify_DATASET_ID(datasetId)
+            % PROPOSAL: Use regexp instead.
+            
+            EJ_library.utils.assert.castring(datasetId)
+            
+            C.isLfrSbm1 = 0;
+            C.isLfrSbm2 = 0;
+            C.isLfrSwf  = 0;
+            C.isTdsRswf    = 0;
+            
+            switch(datasetId)
+                case {'ROC-SGSE_L1R_RPW-LFR-SBM1-CWF-E'
+                          'SOLO_L1R_RPW-LFR-SBM1-CWF-E'}
+                      C.isLfrSbm1 = 1;
+                case {'ROC-SGSE_L1R_RPW-LFR-SBM2-CWF-E'
+                          'SOLO_L1R_RPW-LFR-SBM2-CWF-E'}
+                      C.isLfrSbm2 = 1;
+                case {'ROC-SGSE_L1R_RPW-LFR-SURV-CWF-E'
+                          'SOLO_L1R_RPW-LFR-SURV-CWF-E'}
+                case {'ROC-SGSE_L1R_RPW-LFR-SURV-SWF-E'
+                          'SOLO_L1R_RPW-LFR-SURV-SWF-E'}
+                      C.isLfrSwf = 1;
+                case {'ROC-SGSE_L1R_RPW-TDS-LFM-CWF-E'
+                          'SOLO_L1R_RPW-TDS-LFM-CWF-E'}
+                case {'ROC-SGSE_L1R_RPW-TDS-LFM-RSWF-E'
+                          'SOLO_L1R_RPW-TDS-LFM-RSWF-E'}
+                      C.isTdsRswf = 1;
+                otherwise
+                    error('BICAS:proc_utils:Assertion:IllegalArgument', 'Illegal DATASET_ID. datasetId="%s"', datasetId)
+            end
+            
+            EJ_library.utils.assert.struct(C, {'isLfrSbm1', 'isLfrSbm2', 'isLfrSwf', 'isTdsRswf'})
         end
         
         

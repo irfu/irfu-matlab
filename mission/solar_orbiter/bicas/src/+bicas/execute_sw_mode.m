@@ -72,7 +72,7 @@ GlobalAttributesCellArray = {};   % Use cell array since CDF global attributes m
 
 
 
-InputsMap = containers.Map();
+InputDatasetsMap = containers.Map();
 for i = 1:length(SwModeInfo.inputsList)
     prodFuncInputKey = SwModeInfo.inputsList(i).prodFuncInputKey;
     inputFilePath    = InputFilePathMap(prodFuncInputKey);
@@ -81,7 +81,7 @@ for i = 1:length(SwModeInfo.inputsList)
     % Read dataset CDF file
     %=======================
     [ZVars, GlobalAttributes]   = read_dataset_CDF(inputFilePath);
-    InputsMap(prodFuncInputKey) = struct('ZVars', ZVars, 'Ga', GlobalAttributes);
+    InputDatasetsMap(prodFuncInputKey) = struct('ZVars', ZVars, 'Ga', GlobalAttributes);
     
     
     
@@ -113,7 +113,7 @@ globalAttributesSubset = derive_output_dataset_GlobalAttributes(GlobalAttributes
 %%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%
-OutputsMap = SwModeInfo.prodFunc(InputsMap);
+OutputDatasetsMap = SwModeInfo.prodFunc(InputDatasetsMap);
 
 
 
@@ -133,7 +133,7 @@ for iOutputCdf = 1:length(SwModeInfo.outputsList)
         masterCdfDir, ...
         bicas.get_master_CDF_filename(OutputInfo.datasetId, OutputInfo.skeletonVersion));
     write_dataset_CDF ( ...
-        OutputsMap(OutputInfo.prodFuncOutputKey), globalAttributesSubset, outputFilePath, masterCdfPath, OutputInfo.datasetId, SETTINGS );
+        OutputDatasetsMap(OutputInfo.prodFuncOutputKey), globalAttributesSubset, outputFilePath, masterCdfPath, OutputInfo.datasetId, SETTINGS );
 end
 
 
