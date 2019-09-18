@@ -49,7 +49,7 @@ classdef calib
 %
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
 % First created 2017-02-15
-
+%
 
 % BOGIQ:
 % ------
@@ -151,23 +151,14 @@ classdef calib
             % TODO-DECISION: Is it wise to specify the paths in the constructor? Read the filenames (and relative directory) from the constants instead?
             % TODO-DECISION: Good to use SETTINGS this way? Submit calibration data directly?
             
-            filePath = bicas.calib.find_RCT(calibrationDir, pipelineId, 'BIAS');
-            bicas.logf('info', 'Reading BIAS     RCT "%s"', filePath)
-            obj.Bias = bicas.calib.read_BIAS_RCT(filePath);
-            
-            filePath   = bicas.calib.find_RCT(calibrationDir, pipelineId, 'LFR');
-            bicas.logf('info', 'Reading LFR      RCT "%s"', filePath)
-            obj.LfrTfs = bicas.calib.read_LFR_RCT(filePath);
-            
-            filePath          = bicas.calib.find_RCT(calibrationDir, pipelineId, 'TDS-CWF');
-            bicas.logf('info', 'Reading TDS-CWF  RCT "%s"', filePath)
-            obj.tdsCwfFactors = bicas.calib.read_TDS_CWF_RCT(filePath);
-            
-            filePath               = bicas.calib.find_RCT(calibrationDir, pipelineId, 'TDS-RSWF');
-            bicas.logf('info', 'Reading TDS-RSWF RCT "%s"', filePath)
-            obj.TdsRswfTfTableList = bicas.calib.read_TDS_RSWF_RCT(filePath);
-            
+            % IMPLEMENTATION NOTE: Must assign obj.SETTINGS before calling methods that rely on it having been set, e.g.
+            % find_RCT.
             obj.SETTINGS = SETTINGS;
+            
+            obj.Bias               = obj.read_log_BIAS_RCT(calibrationDir, pipelineId, 'BIAS');
+            obj.LfrTfs             = obj.read_log_BIAS_RCT(calibrationDir, pipelineId, 'LFR');
+            obj.tdsCwfFactors      = obj.read_log_BIAS_RCT(calibrationDir, pipelineId, 'TDS-CWF');
+            obj.TdsRswfTfTableList = obj.read_log_BIAS_RCT(calibrationDir, pipelineId, 'TDS-RSWF');
         end
 
 
@@ -296,15 +287,127 @@ classdef calib
         
         
         
+        % Find the path to the RCT to use, using the filenames specified in the documentation. If there are multiple
+        % matching candidates, choose the latest one as indicated by the filename.
+        %
+        %
+        % ARGUMENTS
+        % =========
+        % pipelineId, rctId : String constants representing pipeline and RCT to be read.
+        %
+        %
+        % IMPLEMENTATION NOTE: Useful to have this as separate functionality so that the chosen RCT to use can be
+        % explicitly overridden via e.g. settings.
+        % IMPLEMENTATION NOTE: Only instance method so that it can use SETTINGS.
+        %
+        function path = find_RCT(obj, calibrationDir, pipelineId, rctId)            
+
+            %============================
+            % Create regexp for filename
+            %============================
+            pipelineSettingsSegm = EJ_library.utils.translate({...
+            {'ROC-SGSE', 'RGTS'}, 'RGTS';...
+            {'RODP'},             'RODP'}, ...
+            pipelineId, 'BICAS:calib:Assertion:IllegalArgument', sprintf('Illegal pipelineId="%s"', pipelineId));
+            clear pipelineId
+            
+            % IMPLEMENTATION NOTE: This translation statement
+            % (1) verifies the argument, AND
+            % (2) separates the argument string constants from the SETTINGS naming convention.
+            analyzerSettingsSegm = EJ_library.utils.translate({...
+                {'BIAS'},     'BIAS'; ...
+                {'LFR'},      'LFR'; ...
+                {'TDS-CWF'},  'TDS-LFM-CWF'; ...
+                {'TDS-RSWF'}, 'TDS-LFM-RSWF'}, ...
+            rctId, 'BICAS:calib:Assertion:IllegalArgument', sprintf('Illegal rctId="%s"', rctId));
+            clear rctId
+            filenameRegexp = obj.SETTINGS.get_fv(sprintf('PROCESSING.RCT_REGEXP.%s.%s', pipelineSettingsSegm, analyzerSettingsSegm));
+
+
+
+            %=================================================
+            % Find candidate files and select the correct one
+            %=================================================
+            dirObjectList = dir(calibrationDir);
+            dirObjectList([dirObjectList.isdir]) = [];    % Eliminate directories.
+            filenameList = {dirObjectList.name};
+            filenameList(~EJ_library.utils.regexpf(filenameList, filenameRegexp)) = [];    % Eliminate non-matching filenames.
+            
+            % ASSERTION / WARNING
+            if numel(filenameList) == 0
+                % ERROR
+                error('BICAS:calib:CannotFindRegexMatchingRCT', ...
+                    'Can not find any calibration file that matches regular expression "%s" in directory "%s".', ...
+                    filenameRegexp, calibrationDir);
+            end
+            % CASE: There is at least on candidate file.
+            
+            filenameList = sort(filenameList);
+            filename     = filenameList{end};
+            path = fullfile(calibrationDir, filename);
+            
+            if numel(filenameList) > 1
+                % WARNING/INFO/NOTICE
+                msg = sprintf(...
+                    ['Found multiple calibration files matching regular expression "%s"\n', ...
+                     'in directory "%s".\n', ...
+                     'Selecting the latest one as indicated by the filename: "%s".\n'], ...
+                    filenameRegexp, calibrationDir, filename);
+%                 for i = 1:numel(filenameList)
+%                     msg = [msg, sprintf('    %s\n', filenameList{i})];
+%                 end
+                bicas.log('debug', msg)
+            end
+            
+            % IMPLEMENTATION NOTE: Not logging which calibration file is selected, since this function is not supposed
+            % to actually load the content.
+        end
+        
+        
+        
     end    % methods(Access=public)
+
+    
     
     %###################################################################################################################
 
+    
+    
     methods(Access=private)
+        
+        
+        
+        % IMPLEMENTATION NOTE: Only instance method because of find_RCT.
+        %
+        function RctCalibData = read_log_BIAS_RCT(obj, calibrationDir, pipelineId, rctId)
+            
+            filePath = obj.find_RCT(calibrationDir, pipelineId, rctId);
+            bicas.logf('info', 'Reading %-4s %-8s RCT: "%s"', pipelineId, rctId, filePath)
+            
+            % ~EXPERIMENTAL. Correct code, but EXPERIMENTAL wrt. convenience/clarity etc.
+%             funcHandle = EJ_library.utils.translate({...
+%                 {'BIAS'    } @() (bicas.calib.read_BIAS_RCT(filePath));
+%                 {'LFR'     } @() (bicas.calib.read_LFR_RCT(filePath));
+%                 {'TDS-CWF' } @() (bicas.calib.read_TDS_CWF_RCT(filePath));
+%                 {'TDS-RSWF'} @() (bicas.calib.read_TDS_RSWF_RCT(filePath))}, ...
+%                 rctId, 'BICAS:calib:Assertion:IllegalArgument', sprintf('Illegal rctId="%s"', rctId));
+%             
+%             RctCalibData = funcHandle();
+
+            switch(rctId)
+                case 'BIAS'     ; Rcd = bicas.calib.read_BIAS_RCT(filePath);
+                case 'LFR'      ; Rcd = bicas.calib.read_LFR_RCT(filePath);
+                case 'TDS-CWF'  ; Rcd = bicas.calib.read_TDS_CWF_RCT(filePath);
+                case 'TDS-RSWF' ; Rcd = bicas.calib.read_TDS_RSWF_RCT(filePath);
+                otherwise
+                    error('BICAS:calib:Assertion:IllegalArgument', 'Illegal rctId="%s"', rctId);
+            end
+            RctCalibData = Rcd;
+        end
 
 
 
-        % Internal utility function
+        % Return BIAS calibration data that is relevant given specified settings.
         function BiasCalibData = get_BIAS_calib_data(obj, BltsAsrType, biasHighGain, iCalibTimeL, iCalibTimeH)
             
             switch(BltsAsrType.category)
@@ -318,15 +421,11 @@ classdef calib
                     elseif isequal(BltsAsrType.antennas(:)', [2,3]);   offsetVolt = obj.Bias.DcDiffOffsets.E23Volt(iCalibTimeH);
                     elseif isequal(BltsAsrType.antennas(:)', [1,3]);   offsetVolt = obj.Bias.DcDiffOffsets.E13Volt(iCalibTimeH);
                     else
-                        error('calib:calibrate_TDS_CWF:Assertion:IllegalArgument', 'Illegal BltsAsrType.antennas.');
+                        error('BICAS:calib:Assertion:IllegalArgument', 'Illegal BltsAsrType.antennas.');
                     end
                 case 'AC'
-                    if biasHighGain
-                        BiasTfCoeffs = obj.Bias.Tfs.AcHighGain;
-                        offsetVolt = 0;
-                    else
-                        BiasTfCoeffs = obj.Bias.Tfs.AcLowGain;
-                        offsetVolt = 0;
+                    if biasHighGain ; BiasTfCoeffs = obj.Bias.Tfs.AcHighGain; offsetVolt = 0;
+                    else            ; BiasTfCoeffs = obj.Bias.Tfs.AcLowGain;  offsetVolt = 0;
                     end
                 otherwise
                     error('BICAS:calib:IllegalArgument:Assertion', 'Illegal argument BltsAsrType.category=%s', BltsAsrType.category)
@@ -379,7 +478,8 @@ classdef calib
             jEpochCalib = discretize(Epoch, [EpochEdgeList; Inf], 'IncludedEdge', 'left');    % NaN for Epoch < epochL(1)
 
             % ASSERTION: All Epoch values were assigned a calibration time index.
-            assert(~any(isnan(jEpochCalib)), 'Found Epoch value(s) which could not be assigned to a time interval with calibration data.')
+            assert(~any(isnan(jEpochCalib)), 'BICAS:calib:get_calibration_time_interval:Assertion:IllegalArgument', ...
+                'Found Epoch value(s) which could not be assigned to a time interval with calibration data.')
 
             iEpochList = {};
             for j = 1:numel(EpochEdgeList)
@@ -390,8 +490,6 @@ classdef calib
         
         
         function [Bias] = read_BIAS_RCT(filePath)
-            % NOTE: UNFINISHED. DOES NOT SAVE/RETURN OFFSETS.
-            
             % TODO-DECISION: How handle time?
             %   PROPOSAL: "Only" access the BIAS values (trans.func and other) through a function instead of selecting indices in a data struct.
             %       PROPOSAL: (private method) [omegaRps, zVpc] = get_transfer_func(epoch, signalType)
@@ -630,117 +728,6 @@ classdef calib
         
 
         
-        % Find the path to the RCT to use, using the filenames specified in the documentation. If there are multiple
-        % matching candidates, choose the latest one as indicated by the filename.
-        %
-        % RCT filenaming convention is described in:	ROC-PRO-DAT-NTT-00006-LES, 1/1 draft, Sect 4.3.2-3.
-        %
-        %
-        % IMPLEMENTATION NOTE: BICAS is not following the documented filenaming convention here since (1) TDS and
-        % LFR teams do not seem to use it and (2) it is uncertain how it can be applied to BIAS RCTs (which receiver
-        % should the BIAS RCT specify?). Therefore using a regular expression that covers more files.
-        %     NOTE: LFR RCTs use 2+12 digits instead of 10 in the timestamps (they add seconds=2 digits).
-        %     NOTE: TDS RCTs use 2+6  digits instead of 10 in the timestamps (the have no time of day, only date)
-        %
-        % IMPLEMENTATION NOTE: Useful to have this as separate functionality so that the chosen RCT to use can be
-        % explicitly overridden via e.g. settings.
-        %
-        %
-        % ARGUMENTS
-        % =========
-        % pipelineId, rctId : String constants representing pipeline and RCT to be read.
-        %
-        function path = find_RCT(calibrationDir, pipelineId, rctId)            
-            % PROPOSAL: Different regexp (not just the middle substring) for different types of RCT to handle different
-            % naming conventions (e.g. different number of digits, whether to include substrings RCT, RPW).
-            % PROPOSAL: Put type-dependent regexp. naming conventions in settings.
-            %   PROPOSAL: Exclude pipelineId prefix and CDF suffix.
-            
-            % Examples of RCT filenames
-            % -------------------------
-            % BIAS:
-            %       ROC-SGSE_CAL_RCT-BIAS_V201803211625.cdf   (old implemented convention)
-            %       ROC-SGSE_CAL_RPW_BIAS_V201908231028.cdf   (new implemented convention, closer to documentation)
-            %           SOLO_CAL_RCT-BIAS_V201901141146.cdf   (old implemented convention)
-            % LFR:
-            %       ROC-SGSE_CAL_RCT-LFR-BIAS_V20180724165443.cdf
-            %           SOLO_CAL_RCT-LFR-BIAS_V20190123171020.cdf
-            % TDS:
-            %           SOLO_CAL_RCT-TDS-LFM-CWF-E_V20190128.cdf
-            %           SOLO_CAL_RCT-TDS-LFM-RSWF-E_V20190128.cdf
-            %         (Two types of calibration files, but only RODP versions)
-
-            %============================
-            % Create regexp for filename
-            %============================
-            switch(pipelineId)
-                case {'ROC-SGSE', 'RGTS'}
-                    filenamePrefix = 'ROC-SGSE';
-                case 'RODP'
-                    filenamePrefix = 'SOLO';
-                otherwise
-                    error('BICAS:calib:Assertion:IllegalArgument', 'Illegal pipelineId="%s"', pipelineId)
-            end
-            clear pipelineId
-            
-            % IMPLEMENTATION NOTE: This switch statement
-            % (1) verifies the input/output, AND
-            % (2) concentrates BICAS' knowledge of RCT filenaming to this function (the caller does not need to know
-            %     anything about filenames).
-            switch(rctId)
-                case 'BIAS'
-                    %rctDependentSubRegexp = 'RCT-BIAS_V20[0-9]{10}';   % Old convention.
-                    rctDependentSubRegexp = 'RPW_BIAS_V20[0-9]{10}';
-                case 'LFR'
-                    rctDependentSubRegexp = 'RCT-LFR-BIAS_V20[0-9]{12}';
-                case 'TDS-CWF'
-                    rctDependentSubRegexp = 'RCT-TDS-LFM-CWF-E_V20[0-9]{6}';
-                case 'TDS-RSWF'
-                    rctDependentSubRegexp = 'RCT-TDS-LFM-RSWF-E_V20[0-9]{6}';
-                otherwise
-                    error('BICAS:calib:Assertion:IllegalArgument', 'Illegal rctId="%s"', rctId)
-            end
-            clear rctId
-            
-            %filenameRegexp = sprintf('%s_CAL_[A-Z_-]*%s_V20[0-9]{6,12}.(cdf|CDF)', filenamePrefix, rctDependentSubRegexp);
-            filenameRegexp = sprintf('%s_CAL_%s.(cdf|CDF)', filenamePrefix, rctDependentSubRegexp);
-
-
-
-            %=================================================
-            % Find candidate files and select the correct one
-            %=================================================
-            dirObjectList = dir(calibrationDir);
-            dirObjectList([dirObjectList.isdir]) = [];    % Eliminate directories.
-            filenameList = {dirObjectList.name};
-            filenameList(~EJ_library.utils.regexpf(filenameList, filenameRegexp)) = [];    % Eliminate non-matching filenames.
-            
-            % ASSERTION / WARNING
-            if numel(filenameList) == 0
-                % ERROR
-                error('BICAS:calib:CannotFindRegexMatchingRCT', ...
-                    'Can not find any calibration file that matches regular expression "%s" in directory "%s".', ...
-                    filenameRegexp, calibrationDir);
-            end
-            % CASE: There is at least on candidate file.
-            
-            filenameList = sort(filenameList);
-            filename     = filenameList{end};
-            path = fullfile(calibrationDir, filename);
-            
-            if numel(filenameList) > 1
-                % WARNING/INFO/NOTICE
-                msg = sprintf('Found multiple calibration files matching regular expression "%s"\nin directory "%s".\nSelecting the latest one as indicated by the filename: "%s".\n', ...
-                    filenameRegexp, calibrationDir, filename);
-%                 for i = 1:numel(filenameList)
-%                     msg = [msg, sprintf('    %s\n', filenameList{i})];
-%                 end
-                bicas.log('debug', msg)
-            end
-            
-            % IMPLEMENTATION NOTE: Not logging which calibration file is selected, since this function is not supposed
-            % to actually load the content.
-        end
 
 
 

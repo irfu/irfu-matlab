@@ -101,6 +101,46 @@ S.define_setting('SWD.release.source',             'https://github.com/irfu/irfu
 S.define_setting('SWD.environment.executable',     'roc/bicas');   % Relative path to BICAS executable. See RCS ICD.
 
 
+%=======================================================================================================================
+% Regular expressions for the filenames of RCTs
+% ---------------------------------------------
+% RCT filenaming convention is described in:	ROC-PRO-DAT-NTT-00006-LES, 1/1 draft, Sect 4.3.2-3.
+%
+% IMPLEMENTATION NOTE: RFT filenaming is implemented as settings since filenaming seems is likey to change.
+% (1) LFR & TDS do not seem to follow the filenaming convenction
+% (2) BIAS has (previously at least) not followed the filenaming convention.
+% (3) it is uncertain how it can be applied to BIAS RCTs (which receiver should the BIAS RCT specify when BIAS uses the
+% same RCT for both LFR & TDS data?).
+%
+% NOTE: LFR RCTs use 2+6+6 digits instead of 2+6 in the timestamps (they add seconds=2 digits). NOTE: TDS RCTs use 2+6
+% digits instead of 10 in the timestamps (the have no time of day, only date)
+%
+% Examples of RCT filenames (2019 Sept)
+% -------------------------------------
+% BIAS:
+%       ROC-SGSE_CAL_RCT-BIAS_V201803211625.cdf   (old implemented convention)
+%       ROC-SGSE_CAL_RPW_BIAS_V201908231028.cdf   (new implemented convention, closer to documentation)
+%           SOLO_CAL_RCT-BIAS_V201901141146.cdf   (old implemented convention)
+% LFR:
+%       ROC-SGSE_CAL_RCT-LFR-BIAS_V20180724165443.cdf
+%           SOLO_CAL_RCT-LFR-BIAS_V20190123171020.cdf
+% TDS:
+%           SOLO_CAL_RCT-TDS-LFM-CWF-E_V20190128.cdf
+%           SOLO_CAL_RCT-TDS-LFM-RSWF-E_V20190128.cdf
+%           (Two types of calibration files, but only RODP versions)
+%
+% NOTE: Only the last filename in a sorted list of matching filenames will actually be used.
+%=======================================================================================================================
+CDF_SUFFIX_REGEXP = '\.(cdf|CDF)';
+%S.define_setting('PROCESSING.RCT_REGEXP.RGTS.BIAS',         ['ROC-SGSE_CAL_RCT-BIAS_V20[0-9]{10}',          CDF_SUFFIX_REGEXP]);   % Old BIAS convention
+S.define_setting('PROCESSING.RCT_REGEXP.RGTS.BIAS',         ['ROC-SGSE_CAL_RPW_BIAS_V20[0-9]{10}',          CDF_SUFFIX_REGEXP]);
+S.define_setting('PROCESSING.RCT_REGEXP.RODP.BIAS',         [    'SOLO_CAL_RPW_BIAS_V20[0-9]{10}',          CDF_SUFFIX_REGEXP]);
+S.define_setting('PROCESSING.RCT_REGEXP.RGTS.LFR',          ['ROC-SGSE_CAL_RCT-LFR-BIAS_V20[0-9]{12}',      CDF_SUFFIX_REGEXP]);
+S.define_setting('PROCESSING.RCT_REGEXP.RODP.LFR',          [    'SOLO_CAL_RCT-LFR-BIAS_V20[0-9]{12}',      CDF_SUFFIX_REGEXP]);
+S.define_setting('PROCESSING.RCT_REGEXP.RGTS.TDS-LFM-CWF',  ['ROC-SGSE_CAL_RCT-TDS-LFM-CWF-E_V20[0-9]{6}',  CDF_SUFFIX_REGEXP]);
+S.define_setting('PROCESSING.RCT_REGEXP.RODP.TDS-LFM-CWF',  [    'SOLO_CAL_RCT-TDS-LFM-CWF-E_V20[0-9]{6}',  CDF_SUFFIX_REGEXP]);
+S.define_setting('PROCESSING.RCT_REGEXP.RGTS.TDS-LFM-RSWF', ['ROC-SGSE_CAL_RCT-TDS-LFM-RSWF-E_V20[0-9]{6}', CDF_SUFFIX_REGEXP]);
+S.define_setting('PROCESSING.RCT_REGEXP.RODP.TDS-LFM-RSWF', [    'SOLO_CAL_RCT-TDS-LFM-RSWF-E_V20[0-9]{6}', CDF_SUFFIX_REGEXP]);
 
 %====================================================================================================================
 % Define constants relating to interpreting LFR datasets

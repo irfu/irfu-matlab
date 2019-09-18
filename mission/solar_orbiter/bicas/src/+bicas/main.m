@@ -116,7 +116,7 @@ catch Exception1
         msg = [msg, sprintf('Matching MATLAB error message identifier parts (error types derived from Exception1.identifier):\n')];
         for i = 1:numel(emidpList)
             emidp = emidpList{i};
-            msg  = [msg, sprintf('    %-15s : %s\n', emidp, C.EMIDP_2_INFO(emidp).description)];
+            msg  = [msg, sprintf('    %-23s : %s\n', emidp, C.EMIDP_2_INFO(emidp).description)];
         end
         % NOTE: Choice - Uses the last part of the message ID for determining error code to return.
         errorCode = C.EMIDP_2_INFO(emidpList{end}).errorCode;

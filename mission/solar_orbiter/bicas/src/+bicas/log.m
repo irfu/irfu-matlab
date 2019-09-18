@@ -30,14 +30,10 @@ LOG_PREFIX = 'LOG: ';
 
 
 switch(logLevel)
-    case 'debug'
-        logLevelStr = 'DEBUG';
-    case 'info'
-        logLevelStr = 'INFO';
-    case 'warning'
-        logLevelStr = 'WARNING';
-    case 'error'
-        logLevelStr = 'ERROR';
+    case 'debug'   ; logLevelStr = 'DEBUG';
+    case 'info'    ; logLevelStr = 'INFO';
+    case 'warning' ; logLevelStr = 'WARNING';
+    case 'error'   ; logLevelStr = 'ERROR';
     otherwise
         error('BICAS:log:Assertion:IllegalArgument', 'Illegal logLevel="%s"', logLevel)
 end
