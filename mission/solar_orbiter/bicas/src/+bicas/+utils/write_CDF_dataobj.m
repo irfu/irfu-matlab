@@ -249,9 +249,9 @@ for i=1:length(dataobj_Variables(:,1))
     end
     
     %zVarData = handle_zero_records(zVarData, padValue, dataobjStatedMatlabClass, turnZeroRecordsIntoOneRecord);
-    
-    
-    
+
+
+
     %========================================================================================================
     % ASSERTION:
     %   Check that the supplied zVariable data variable has a MATLAB class (type) which matches the specified CDF

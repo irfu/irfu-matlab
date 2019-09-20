@@ -121,8 +121,8 @@ classdef swmode_defs
                     obj.outputDatasetLevel    =  'L2S';
                     inputDashEList            = {'-E'};
                     swModeCliOptionAmendmList = {''};
-                    lfrOutputSkeletonVersion  = {'03', '03', '03', '03'};
-                    tdsOutputSkeletonVersion  = {'03', '03'};
+                    lfrOutputSkeletonVersion  = {'04', '04', '04', '04'};
+                    tdsOutputSkeletonVersion  = {'04', '04'};
                     
 %                     if enableRocsgseL2rInput
 %                         inputDatasetLevelList{end+1}     = 'L2R';     % NOTE: L2R etc only kept for backward-compatibility.

@@ -7,12 +7,12 @@
         "icd_version": "1.2 draft 2019-07-11"
     },
     "release": {
-        "version":      "0.1.0",
-        "date":         "2018-01-22",
+        "version":      "0.2.0",
+        "date":         "2019-09-20",
         "author":       "Erik P G Johansson, BIAS team",
         "contact":      "erik.johansson@irfu.se",
-        "institute":    "IRF-U",
-        "modification": "No modification (initial release)",
+        "institute":    "Swedish Institute of Space Physics (IRF)",
+        "modification": "Various updates and refactoring; Incomplete but ICD compliant support for TDS data sets & RODP pipeline, L2R-->L1R , updated ICD compliance(pre-release)",
         "source":       "https://github.com/irfu/irfu-matlab/commits/SOdevel"
     },
     "environment": {
@@ -37,7 +37,7 @@
                     "name":        "LFR L2S CWF science electric selective burst mode 1 data",
                     "description": "RPW LFR L2S CWF science electric (potential difference) data in selective burst mode 1, time-tagged",
                     "level":       "L2S",
-                    "template":    "ROC-SGSE_L2S_RPW-LFR-SBM1-CWF-E_V03.cdf"
+                    "template":    "ROC-SGSE_L2S_RPW-LFR-SBM1-CWF-E_V04.cdf"
                 }
             }
         },
@@ -58,7 +58,7 @@
                     "name":        "LFR L2S CWF science electric selective burst mode 2 data",
                     "description": "RPW LFR L2S CWF science electric (potential difference) data in selective burst mode 2, time-tagged",
                     "level":       "L2S",
-                    "template":    "ROC-SGSE_L2S_RPW-LFR-SBM2-CWF-E_V03.cdf"
+                    "template":    "ROC-SGSE_L2S_RPW-LFR-SBM2-CWF-E_V04.cdf"
                 }
             }
         },
@@ -79,7 +79,7 @@
                     "name":        "LFR L2S CWF science electric survey mode data",
                     "description": "RPW LFR L2S CWF science electric (potential difference) data in survey mode, time-tagged",
                     "level":       "L2S",
-                    "template":    "ROC-SGSE_L2S_RPW-LFR-SURV-CWF-E_V03.cdf"
+                    "template":    "ROC-SGSE_L2S_RPW-LFR-SURV-CWF-E_V04.cdf"
                 }
             }
         },
@@ -100,7 +100,49 @@
                     "name":        "LFR L2S SWF science electric survey mode data",
                     "description": "RPW LFR L2S SWF science electric (potential difference) data in survey mode, time-tagged",
                     "level":       "L2S",
-                    "template":    "ROC-SGSE_L2S_RPW-LFR-SURV-SWF-E_V03.cdf"
+                    "template":    "ROC-SGSE_L2S_RPW-LFR-SURV-SWF-E_V04.cdf"
+                }
+            }
+        },
+        {
+            "name":    "TDS-LFM-CWF-E",
+            "purpose": "Generate CWF electric field L2S data (potential difference) from TDS LF mode L1R data",
+            "inputs": {
+                "in_sci": {
+                    "identifier": "ROC-SGSE_L1R_RPW-TDS-LFM-CWF-E"
+                },
+                "in_hk": {
+                    "identifier": "ROC-SGSE_HK_RPW-BIA"
+                }
+            },
+            "outputs": {
+                "out_sci": {
+                    "identifier":  "ROC-SGSE_L2S_RPW-TDS-LFM-CWF-E",
+                    "name":        "LFR L2S CWF science electric LF mode data",
+                    "description": "RPW LFR L2S CWF science electric (potential difference) data in LF mode, time-tagged",
+                    "level":       "L2S",
+                    "template":    "ROC-SGSE_L2S_RPW-TDS-LFM-CWF-E_V04.cdf"
+                }
+            }
+        },
+        {
+            "name":    "TDS-LFM-RSWF-E",
+            "purpose": "Generate RSWF electric field L2S data (potential difference) from TDS LF mode L1R data",
+            "inputs": {
+                "in_sci": {
+                    "identifier": "ROC-SGSE_L1R_RPW-TDS-LFM-RSWF-E"
+                },
+                "in_hk": {
+                    "identifier": "ROC-SGSE_HK_RPW-BIA"
+                }
+            },
+            "outputs": {
+                "out_sci": {
+                    "identifier":  "ROC-SGSE_L2S_RPW-TDS-LFM-RSWF-E",
+                    "name":        "LFR L2S RSWF science electric LF mode data",
+                    "description": "RPW LFR L2S RSWF science electric (potential difference) data in LF mode, time-tagged",
+                    "level":       "L2S",
+                    "template":    "ROC-SGSE_L2S_RPW-TDS-LFM-RSWF-E_V04.cdf"
                 }
             }
         }

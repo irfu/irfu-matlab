@@ -25,6 +25,9 @@ function SETTINGS = create_default_SETTINGS()
 
 S = bicas.settings();
 
+% The MATLAB command (e.g. path) to use to launch MATLAB for BICAS.
+% NOTE: Only the value in the BICAS config file is actually used. The normal priority order for how SETTINGS values are
+% being obatined does apply here.
 S.define_setting('MATLAB_COMMAND', '');
 
 
@@ -51,7 +54,7 @@ S.define_setting('OUTPUT_CDF.EMPTY_ZVARIABLES_SET_TO_FILL', 0);
 
 % Value that shows up in output dataset GlobalAttributes.Calibration_version.
 % Value that is used to set the output dataset GlobalAttribute "Calibration_version". String value. TEMPORARY SOLUTION.
-S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.Calibration_version', '0.1; Only proportionality constants i.e. no voltage offset tables, no transfer functions; No bias currents');
+S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.Calibration_version', '0.2; Only (the wrong) proportionality constants i.e. no voltage offset tables, no transfer functions; No bias currents');
 
 % Variables, if non-empty, are used to override the corresponding environment variables.
 S.define_setting('ENV_VAR_OVERRIDE.ROC_PIP_NAME',        '');   % ROC_PIP_NAME        defined in RCS ICD. Which pipeline to run, "RGTS" or "RODP".
@@ -88,13 +91,13 @@ S.define_setting('SWD.identification.identifier',  'BICAS');
 S.define_setting('SWD.identification.description', 'Calibration software which tries to derive electric field L2/L2S datasets from electric L1R LFR and TDS (LFM) datasets.');
 S.define_setting('SWD.identification.icd_version', '1.2 draft 2019-07-11');    % Illegal format?
 
-S.define_setting('SWD.release.version',            '0.1.0');
-S.define_setting('SWD.release.date',               '2018-01-22');
+S.define_setting('SWD.release.version',            '0.2.0');
+S.define_setting('SWD.release.date',               '2019-09-20');
 S.define_setting('SWD.release.author',             'Erik P G Johansson, BIAS team');
 S.define_setting('SWD.release.contact',            'erik.johansson@irfu.se');
 %S.define_setting('SWD.release.institute',          'IRF-U');
 S.define_setting('SWD.release.institute',          'Swedish Institute of Space Physics (IRF)');   % Full name or abbreviation?
-S.define_setting('SWD.release.modification',       'No modification (initial release)');
+S.define_setting('SWD.release.modification',       'Various updates and refactoring; Incomplete but ICD compliant support for TDS data sets & RODP pipeline, L2R-->L1R , updated ICD compliance(pre-release)');
 S.define_setting('SWD.release.source',             'https://github.com/irfu/irfu-matlab/commits/SOdevel');    % Appropriate branch?
 %S.define_setting('SWD.release.source',             'https://github.com/irfu/irfu-matlab/commits/master');
 %
