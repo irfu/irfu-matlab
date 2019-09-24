@@ -51,14 +51,15 @@ dataset (data set)         = A CDF file on one of a number standardized formats 
 #############################
 NOTE: The official CLI parameter syntax is defined in RCS ICD, Iss02 Rev02, Section 3.2.
 
-SYNTAX 1: ( --identification | --version | --help ) <General parameters>
+SYNTAX 1: ( --version | --identification | --swdescriptor | --help ) <General parameters>
 SYNTAX 2: <S/W mode> <General parameters, Output parameter, Specific inputs parameters> 
 
-NOTE: Only the position of the first parameter is important. The order of all other parameters is arbitrary.
+NOTE: In syntax 2, the position of the first arguments is important. The order of all other arguments is arbitrary.
 
---version           Prints the software version.
---identification    Prints the S/W descriptor.
---help
+--version           Print the software version.
+--identification    Print the S/W descriptor release segment.
+--swdescriptor      Print the S/W descriptor (not RCS ICD requirement).
+--help              Print "help-ish" text
 
 
 

@@ -335,6 +335,9 @@ switch(CliData.functionalityMode)
     case 'identification'
         print_identification(SwModeDefs.List, SETTINGS)
         
+    case 'S/W descriptor'
+        print_sw_descriptor(SwModeDefs.List, SETTINGS)
+        
     case 'help'
         print_help(SETTINGS)
         
@@ -437,12 +440,28 @@ end
 
 
 
-% Print the JSON S/W descriptor.
+% Print the JSON S/W descriptor identification section.
 %
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
 % First created 2016-06-07
 %
 function print_identification(SwModesDefsList, SETTINGS)
+
+JsonSwd = bicas.get_sw_descriptor(SwModesDefsList, SETTINGS);
+strSwd = bicas.utils.JSON_object_str(JsonSwd.release, ...
+    SETTINGS.get_fv('JSON_OBJECT_STR.INDENT_SIZE'));
+bicas.stdout_print(strSwd);
+
+end
+
+
+
+% Print the JSON S/W descriptor.
+%
+% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% First created 2016-06-07/2019-09-24
+%
+function print_sw_descriptor(SwModesDefsList, SETTINGS)
 
 JsonSwd = bicas.get_sw_descriptor(SwModesDefsList, SETTINGS);
 strSwd = bicas.utils.JSON_object_str(JsonSwd, ...
