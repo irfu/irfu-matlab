@@ -89,7 +89,7 @@ S.define_setting('SWD.identification.project',     'ROC');
 S.define_setting('SWD.identification.name',        'BIAS Calibration Software (BICAS)');
 S.define_setting('SWD.identification.identifier',  'BICAS');
 S.define_setting('SWD.identification.description', 'Calibration software which tries to derive electric field L2/L2S datasets from electric L1R LFR and TDS (LFM) datasets.');
-S.define_setting('SWD.identification.icd_version', '1.2 draft 2019-07-11');    % Illegal format?
+S.define_setting('SWD.identification.icd_version', '1.2');   % Technically wrong. In reality iss1rev2, draft 2019-07-11.
 
 S.define_setting('SWD.release.version',            '0.2.0');
 S.define_setting('SWD.release.date',               '2019-09-20');

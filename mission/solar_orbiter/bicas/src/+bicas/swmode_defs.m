@@ -116,9 +116,11 @@ classdef swmode_defs
             %========================================
             switch(pipelineId)
                 case {'ROC-SGSE', 'RGTS'}
-                    obj.dsiPipelinePrefix     = 'ROC-SGSE';      % Prefix in DATASET_ID (DSI).
+                    %obj.dsiPipelinePrefix     = 'ROC-SGSE';      % Prefix in DATASET_ID (DSI).
+                    obj.dsiPipelinePrefix     = 'SOLO';       % Prefix in DATASET_ID (DSI). TEST: On request from ROC.
                     inputDatasetLevelList     = {'L1R'};
-                    obj.outputDatasetLevel    =  'L2S';
+%                    obj.outputDatasetLevel    =  'L2S';
+                    obj.outputDatasetLevel    =  'L2';    %  TEST: On request from ROC.
                     inputDashEList            = {'-E'};
                     swModeCliOptionAmendmList = {''};
                     lfrOutputSkeletonVersion  = {'04', '04', '04', '04'};
@@ -144,7 +146,7 @@ classdef swmode_defs
             end
             clear pipelineId
             
-            
+
             
             % Define function which interprets (replaces) specific substrings.            
             % "strmod" = string modify, "g"=global

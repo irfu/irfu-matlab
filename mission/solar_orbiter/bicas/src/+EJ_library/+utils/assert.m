@@ -43,7 +43,6 @@
 %
 classdef assert
 % TODO-DECISION: Use assertions on (assertion function) arguments internally?
-% PROPOSAL: iscolumnvector, isrowvector.
 % PROPOSAL: Add argument for name of argument so that can print better error messages.
 % PROPOSAL: Optional error message (string) as last argument to ~every method.
 %   CON: Can conflict with other string arguments.
@@ -80,6 +79,8 @@ classdef assert
         ERROR_MSG_ID = 'assert:Assertion'
     end
 
+    
+    
     methods(Static)
         
         % NOTE: Empty string literal '' is 0x0.
@@ -203,15 +204,13 @@ classdef assert
         %
         % NOTE: Does NOT assume 1x1 struct. Can be matrix.
         function struct(s, fieldNamesSet, varargin)
-            % PROPOSAL: Print superfluous and missing fieldnames.
-            % PROPOSAL: Option to specify subset or superset of field names.
-            %   PRO: Subset useful for "PdsData" structs(?)
-            %   Ex: EJ_library.PDS_utils.construct_DATA_SET_ID
-            %   
             % PROPOSAL: Recursive structs field names.
             %   TODO-DECISION: How specify fieldnames? Can not use cell arrays recursively.
-            % PROPOSAL: Replace sueprset, subset with clearer keywords.
+            % PROPOSAL: Replace superset, subset with clearer keywords.
             %   PROPOSAL: require, permit
+            % PROPOSAL: Change arguments for fieldnames. Always two.
+            %   PROPOSAL: requiredNamesSet, optionalNamesSet
+            
             import EJ_library.*
             
             if isempty(varargin)   %numel(varargin) == 1 && isempty(varargin{1})

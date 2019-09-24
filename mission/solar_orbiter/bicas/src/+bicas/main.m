@@ -36,7 +36,7 @@
 %
 % NOTES
 % =====
-% ASSUMES: The current file is in the <BICAS>/src directory.
+% ASSUMES: The current file is located in the <BICAS>/src directory.
 %
 % NOTE: This code is designed for MATLAB 2016a (as of 2016-06-02) but may very well work with other
 % versions of MATLAB.
@@ -61,8 +61,6 @@ function errorCode = main( varargin )
 %   NOTE: TN claims warnings are sent to stdout.
 % TODO-NEED-INFO: Is the application allowed to overwrite output files?
 %
-% PROPOSAL: Check that all master cdf files are present/available.
-%
 % PROPOSAL: Put a summarized version of CLI syntax in "bicas --help" (somethinger easier that the S/W descriptor).
 %   PRO: Useful when S/W descriptor becomes big and complex.
 %
@@ -71,6 +69,8 @@ function errorCode = main( varargin )
 %
 % PROPOSAL: Better handling of errors in dataobj (reading CDF files).
 %   PROPOSAL: Wrap dataobj in function and catch and rethrow errors with BICAS' error IDs.
+%
+% PROPOSAL: When printing settings, print how each key value has been set: default, config file, CLI argument.
 
 
 
