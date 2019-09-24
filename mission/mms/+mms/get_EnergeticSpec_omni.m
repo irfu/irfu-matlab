@@ -71,6 +71,8 @@ function [efeeps_omni_spec, ifeeps_omni_spec] = get_EnergeticSpec_omni(varargin)
         c_eval('eBit12 = get_ts(eobj?, [''mms?_epd_feeps_'' srvy_brst ''_l2_electron_bottom_intensity_sensorid_12'']);', ic);
         % 2.2. make electron omni flux
         eenergy = (eElow.data + eEupp.data)/2.;
+        c_eval('eTit?.data(eTit?.data<0) = 0;', [1:5, 9:12]);      % needs to be updated --> NaN
+        c_eval('eBit?.data(eBit?.data<0) = 0;', [1:5, 9:12]);
         etmp = (eTit1 + eTit2 + eTit3 + eTit4 + eTit5 + eTit9 + eTit10 + eTit11 + eTit12 ...
             + eBit1 + eBit2 + eBit3 + eBit4 + eBit5 + eBit9 + eBit10 + eBit11 + eBit12)/18;
         efeeps_omni_spec = struct('t', eTit1.time.epochUnix);
@@ -93,6 +95,8 @@ function [efeeps_omni_spec, ifeeps_omni_spec] = get_EnergeticSpec_omni(varargin)
     
         % 2.4. make ion omni flux
         ienergy = (iElow.data + iEupp.data)/2.;
+        c_eval('iTit?.data(iTit?.data<0) = 0;', 6:8);          % needs to be updated --> NaN
+        c_eval('iBit?.data(iBit?.data<0) = 0;', 6:8);      
         itmp = (iTit6 + iTit7 + iTit8 + iBit6 + iBit7 + iBit8)/6;
         ifeeps_omni_spec = struct('t', iTit6.time.epochUnix);
         ifeeps_omni_spec.p = double(itmp.data);
