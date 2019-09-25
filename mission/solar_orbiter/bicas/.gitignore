@@ -1,1 +1,5 @@
 data/*.cdf
+
+# Requested by ROC 2019-09-25 for the BICAS ROC git repo.
+*.DS_Store*
+.idea/

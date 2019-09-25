@@ -448,7 +448,7 @@ end
 function print_identification(SwModesDefsList, SETTINGS)
 
 JsonSwd = bicas.get_sw_descriptor(SwModesDefsList, SETTINGS);
-strSwd = bicas.utils.JSON_object_str(JsonSwd.release, ...
+strSwd = bicas.utils.JSON_object_str(JsonSwd.identification, ...
     SETTINGS.get_fv('JSON_OBJECT_STR.INDENT_SIZE'));
 bicas.stdout_print(strSwd);
 
