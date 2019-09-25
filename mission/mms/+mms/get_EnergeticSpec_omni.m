@@ -7,15 +7,19 @@ function [efeeps_omni_spec, ifeeps_omni_spec] = get_EnergeticSpec_omni(varargin)
 %       tint:           time interval
 %       'instrument':   FEEPS or EIS
 %       'svry_brst':    'svry' or 'brst' mode data;
+%       'iandore';      'ie'/'i'/'e'; DEFAULT: 'ie';
 %   Example:     
-%   [efeeps, ifeeps] = mms.get_EnergeticSpec_omni(ic, Tint, 'instrument', 'FEEPS', 'srvy_brst', 'srvy');
+%   [efeeps, ifeeps] = mms.get_EnergeticSpec_omni(ic, Tint, 'instrument', 'FEEPS', 'srvy_brst', 'srvy', 'iandore', 'i');
 
 %ic, tint, 'instrument', instrument, 'svry_brst', svry_brst
 
     % 1. get input variables;
     ic = varargin{1};
     tint = varargin{2};    
-    args=varargin(3:end);       % rest variables    
+    args=varargin(3:end);       % rest variables  
+    efeeps_omni_spec = '';      eflag = 1;
+    ifeeps_omni_spec = '';      iflag = 1;
+    
     if numel(args)>0
         options=1;
     else
@@ -34,7 +38,13 @@ function [efeeps_omni_spec, ifeeps_omni_spec] = get_EnergeticSpec_omni(varargin)
                 if numel(args)>1 && ~isempty(args{2})
                     srvy_brst = args{2};
                     irf.log('notice', ['Data resolution ', upper(srvy_brst), '.']);                
-                end                          
+                end    
+            case 'iandore'
+                if numel(args)>1 && ~isempty(args{2})
+                    iandore = args{2};
+                    if ~contains(iandore, 'i'); iflag = 0; end
+                    if ~contains(iandore, 'e'); eflag = 0; end
+                end                 
             otherwise
                 irf.log('critical',['Unknown flag: ' args{1}]);
                 l=1;
@@ -46,7 +56,8 @@ function [efeeps_omni_spec, ifeeps_omni_spec] = get_EnergeticSpec_omni(varargin)
 
     % 2. load data
     if strcmp(upper(instrument), 'FEEPS')
-        % 2.1. FEEPS electron    
+        % 2.1. FEEPS electron  
+        if eflag
         c_eval('efile? = mms.get_filepath([''mms?_feeps_'' srvy_brst ''_l2_electron''], tint);', ic);
         c_eval('eobj? = dataobj(efile?);', ic);
         c_eval('eElow = get_variable(eobj?, ''electron_energy_lower_bound'');', ic);
@@ -80,7 +91,9 @@ function [efeeps_omni_spec, ifeeps_omni_spec] = get_EnergeticSpec_omni(varargin)
         efeeps_omni_spec.p_label = {'intensity'};
         efeeps_omni_spec.f_label = {'Energy'};
         efeeps_omni_spec.f = double(eenergy);
-    
+        end
+        
+        if iflag
         % 2.3. FEEPS ions 
         c_eval('ifile? = mms.get_filepath([''mms?_feeps_'' srvy_brst ''_l2_ion''], tint);', ic);
         c_eval('iobj? = dataobj(ifile?);', ic);
@@ -103,6 +116,7 @@ function [efeeps_omni_spec, ifeeps_omni_spec] = get_EnergeticSpec_omni(varargin)
         ifeeps_omni_spec.p_label = {'intensity'};
         ifeeps_omni_spec.f_label = {'Energy'};
         ifeeps_omni_spec.f = double(ienergy); 
+        end
     end
     
     end
