@@ -88,7 +88,8 @@ S.define_setting('PROCESSING.USE_AQUISITION_TIME_FOR_HK_TIME_INTERPOLATION', 0);
 S.define_setting('SWD.identification.project',     'ROC');
 S.define_setting('SWD.identification.name',        'BIAS Calibration Software (BICAS)');
 S.define_setting('SWD.identification.identifier',  'BICAS');
-S.define_setting('SWD.identification.description', 'Calibration software which tries to derive electric field L2/L2S datasets from electric L1R LFR and TDS (LFM) datasets.');
+S.define_setting('SWD.identification.description', ...
+    '(Incomplete) calibration software meant to (1) calibrate electric field L2 data from electric L1R LFR and TDS (LFM) data, and (2) calibrate bias currents.');
 S.define_setting('SWD.identification.icd_version', '1.2');   % Technically wrong. In reality iss1rev2, draft 2019-07-11.
 
 S.define_setting('SWD.release.version',            '0.2.0');
@@ -97,7 +98,7 @@ S.define_setting('SWD.release.author',             'Erik P G Johansson, BIAS tea
 S.define_setting('SWD.release.contact',            'erik.johansson@irfu.se');
 %S.define_setting('SWD.release.institute',          'IRF-U');
 S.define_setting('SWD.release.institute',          'Swedish Institute of Space Physics (IRF)');   % Full name or abbreviation?
-S.define_setting('SWD.release.modification',       'Various updates and refactoring; Incomplete but ICD compliant support for TDS data sets & RODP pipeline, L2R-->L1R , updated ICD compliance(pre-release)');
+S.define_setting('SWD.release.modification',       'Various updates and refactoring; Incomplete but ICD compliant support for TDS data sets & RODP pipeline, L2R-->L1R, updated ICD compliance (pre-release).');
 S.define_setting('SWD.release.source',             'https://github.com/irfu/irfu-matlab/commits/SOdevel');    % Appropriate branch?
 %S.define_setting('SWD.release.source',             'https://github.com/irfu/irfu-matlab/commits/master');
 %

@@ -1,6 +1,9 @@
-#==============================
-# Configuration file for BICAS
-#==============================
+#=========================================================================
+# Template configuration file for BICAS
+# -------------------------------------
+# See the documentation for what the config file can be used for.
+# NOTE: The config file must have the correct name to be read by default.
+#=========================================================================
 
 
 
