@@ -87,7 +87,7 @@ switch lower(action)
         end
         disp(' ');
       else
-        disp('unclear! you are eiter the bleeding edge or have to update :-)');
+        disp('unclear! you are either the bleeding edge or have to update :-)');
         disp(['Newest irfu-matlab is from: ' newestVersion]);
         disp(['  Your irfu-matlab is from: ' currentVersion]);
       end

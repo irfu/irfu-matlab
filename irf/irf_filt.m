@@ -93,6 +93,8 @@ ind_NaN=find(isnan(inp));
 inp(ind_NaN)=0;
 
 nColumnsToFilter=size(inp,2);
+    nColumnsToFilter_3=size(inp,3);             % for pressure or temperature
+    nColumnsToFilter = nColumnsToFilter * nColumnsToFilter_3;
 iStartColumn=1; % from which column start filtering
 if nColumnsToFilter>1 % assume that first column is time
     iStartColumn=2;

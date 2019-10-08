@@ -59,7 +59,16 @@ end
 			fileDir = tempname;
 			mkdir(fileDir);
 			filePath = [fileDir filesep fileName];
-			[f,status]=urlwrite(fileUrlLink,filePath); %#ok<URLWR> websave introduced in R2014b
+      if verLessThan('matlab', '8.4')
+        [f,status]=urlwrite(fileUrlLink,filePath); %#ok<URLWR> websave introduced in R2014b
+      else
+        try
+          f = websave(filePath, fileUrlLink);
+          status = true;
+        catch
+          status = false;
+        end
+      end
 			if status
 				disp('Success!');
 				if useDatastore

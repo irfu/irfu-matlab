@@ -1,3 +1,4 @@
+2019-10-08 v1.15.0 NASA CDF patch, MMS changed slow mode datarate, added support for some Rosetta files, and a few minor fixes.
 2018-10-05 v1.14.2 NASA CDF patch, MMS2 sdp2 failure (2018/09/21), and a few minor fixes.
 2018-07-02 v1.14.1 MMS ADC offsets improved, and a few minor fixes.
 2018-06-18 v1.14.0 MMS swwake and adp shadow improved, Cluser CSA will now require personal accounts, and a lot more minor fixes.

@@ -2,7 +2,7 @@
 % Generate two vectors of random numbers and plot a histogram for each
 %% THOR probability histogram frequencies - SW,MSH 1) get data
 %Using Jan's database
-dirTHORGoogleDrive = '/Users/andris/Google Drive/THOR';
+dirTHORGoogleDrive = '/Users/andris/Google Drive/Job/Projects/THOR';
 
 cd([dirTHORGoogleDrive '/Figures/matlab/'])
 
@@ -296,7 +296,7 @@ text(4.1,0.15,{'plasma','frequency'},'color',color_fp.^3,'fontsize',fontsize);
 irf_legend('Magnetosheath',[0.6 1.03]);
 
 
-xlabel('V_{flow} / L_{kinetic} [1/s]                                        frequency [Hz]')
+xlabel('          V_{flow} / L_{kinetic} [1/s]                                            frequency [Hz]')
 
 h(1).XTickLabel = '';
 h(1).XTick = (fix(xmin):fix(xmax));
@@ -336,8 +336,8 @@ text(log10(1./Ts),ymin+0.01,'Cluster','rotation',90,...
 	'verticalalignment','top','horizontalalignment','left',...
 	'fontsize',14,'Parent', h(1));
 
-Ts = 1e-4;
+Ts = 1/8e3;
 plot(h(1),log10(1./Ts).*[1 1],[ymin ymax],'linewidth',linewidth,'color','k','linestyle',':');
-text(log10(1./Ts),ymin+0.01,'MMS??','rotation',90,...
+text(log10(1./Ts),ymin+0.01,'MMS','rotation',90,...
 	'verticalalignment','top','horizontalalignment','left',...
 	'fontsize',14,'Parent', h(1));
