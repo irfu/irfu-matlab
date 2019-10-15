@@ -80,6 +80,21 @@ for calId = 1:length(calTypes)
           warning(['First (max 5) rows with problems were: ', sprintf('%i, ', 1+ind(1:min(5, length(ind))))]);
           calOk = false;
         end
+        
+        %% Verify Time (with "-/+dt") is also monotone increasing
+        if is_version_geq(verStr{1}{1}, '1.0.0')
+          t_start = time1 + int64(C{4}*10^9); % t -dt
+          t_start = t_start(2:end); % Skip start point
+          t_stop = time1 + int64(C{5}*10^9); % t +dt
+          t_stop = t_stop(1:end-1); % Skip end point
+          t_12 =  reshape([t_stop'; t_start'], [], 1);
+          [ind, ~] = find(diff(t_12)<=0);
+          if any(ind)
+            warning('Found %i rows with time not being monotone increasing when considering "+/-dt", %s', length(ind), list.name);
+            warning(['First (max 5) rows with problems were: ', sprintf('%i, ', 1+ind(1:min(5, length(ind))))]);
+            calOk = false;
+          end
+        end
 
         %% Verify no NaN values in the offsets
         if(~strcmp(calStr, 'regions'))
