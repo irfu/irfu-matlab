@@ -38,9 +38,15 @@ for scId=1:4
         C = textscan(fID, '%s\t%f\t%f\t%f\t%f', 'HeaderLines', 1);
         fclose(fID);
         %% Verify the new verison "dt" margins
-        [ind, ~] = find(C{4} > 0);
+        [ind, ~] = find(C{4} > 0); % all "-dt" should be negative or zero
         if any(ind)
           warning('Found %i rows with non-negative time margin "-dt"', length(ind));
+          warning(['First (max 5) rows with problmes were: ' sprintf('%i, ', ind(1:min(5, length(ind))))]);
+          calOk = false;
+        end
+        [ind, ~] = find(C{5} < 0); % all "+dt" should be positive or zero
+        if any(ind)
+          warning('Found %i rows with non-positive time margin "+dt"', length(ind));
           warning(['First (max 5) rows with problmes were: ' sprintf('%i, ', ind(1:min(5, length(ind))))]);
           calOk = false;
         end
