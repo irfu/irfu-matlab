@@ -110,6 +110,15 @@ for calId = 1:length(calTypes)
           warning(['First (max 5) rows with problems were: ', sprintf('%i, ', 1+ind(1:min(5, length(ind))))]);
           calOk = false;
         end
+        
+        %% Verify no Inf values in the offsets
+        [ind, ~] = find(isinf(dataOff));
+        if any(ind)
+          ind = unique(sort(ind));
+          warning('Found %i rows with Inf in offset file, %s', length(ind), list.name);
+          warning(['First (max 5) rows with problems were: ', sprintf('%i, ', 1+ind(1:min(5, length(ind))))]);
+          calOk = false;
+        end
 
       else
         warning('Failed to locate %s calibration file for scId: %i', calStr, scId);
