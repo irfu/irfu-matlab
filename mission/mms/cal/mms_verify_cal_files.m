@@ -43,13 +43,13 @@ for calId = 1:length(calTypes)
           [ind, ~] = find(C{4} > 0); % all "-dt" should be negative or zero
           if any(ind)
             warning('Found %i rows with non-negative time margin "-dt", %s', length(ind), list.name);
-            warning(['First (max 5) rows with problmes were: ' sprintf('%i, ', ind(1:min(5, length(ind))))]);
+            warning(['First (max 5) rows with problmes were: ' sprintf('%i, ', 1+ind(1:min(5, length(ind))))]);
             calOk = false;
           end
           [ind, ~] = find(C{5} < 0); % all "+dt" should be positive or zero
           if any(ind)
             warning('Found %i rows with non-positive time margin "+dt", %s', length(ind), list.name);
-            warning(['First (max 5) rows with problmes were: ' sprintf('%i, ', ind(1:min(5, length(ind))))]);
+            warning(['First (max 5) rows with problmes were: ' sprintf('%i, ', 1+ind(1:min(5, length(ind))))]);
             calOk = false;
           end
 
@@ -77,7 +77,7 @@ for calId = 1:length(calTypes)
         [ind, ~] = find(diff(time1)<=0);
         if any(ind)
           warning('Found %i rows with time not being monotonically increasing, %s', length(ind), list.name);
-          warning(['First (max 5) rows with problems were: ', sprintf('%i, ', ind(1:min(5, length(ind))))])
+          warning(['First (max 5) rows with problems were: ', sprintf('%i, ', 1+ind(1:min(5, length(ind))))]);
           calOk = false;
         end
 
@@ -92,7 +92,7 @@ for calId = 1:length(calTypes)
         if any(ind)
           ind = unique(sort(ind));
           warning('Found %i rows with NaN in offset file, %s', length(ind), list.name);
-          warning(['First (max 5) rows with problems were: ', sprintf('%i, ', ind(1:min(5, length(ind))))]);
+          warning(['First (max 5) rows with problems were: ', sprintf('%i, ', 1+ind(1:min(5, length(ind))))]);
           calOk = false;
         end
 
