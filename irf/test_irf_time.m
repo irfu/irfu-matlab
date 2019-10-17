@@ -8,8 +8,8 @@ classdef test_irf_time < matlab.unittest.TestCase
 		function test_UTC_to_TTns_to_UTC(testCase)
 			% 1000 random utc>ttns>utc
 			
-			%generate vector with 10000 times during last 500 years
-			tDateArray = now - 365*500*rand(1000,1);
+			%generate vector with 10000 times during last 300 years
+			tDateArray = now - 365*300*rand(1000,1);
 			s1=irf_time(tDateArray,'date>utc');
 			t=irf_time(s1,'utc>ttns');
 			s2=irf_time(t,'ttns>utc');
@@ -26,7 +26,7 @@ classdef test_irf_time < matlab.unittest.TestCase
 			testCase.verifyEqual(tint,tt,'AbsTol',3e-7); % 0.3 us precision (epoch)
 		end
 		function test_different_UTC_formats(testCase)
-			tDateArray = now - 365*500*rand(1000,1);
+			tDateArray = now - 365*300*rand(1000,1);
 			s1=irf_time(tDateArray,'date>utc');
 			t=irf_time(s1,'utc>ttns');
 			t1=irf_time(s1(:,1:end-1),'utc>ttns');
