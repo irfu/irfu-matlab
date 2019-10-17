@@ -1310,6 +1310,15 @@ classdef PDist < TSeries
         return
       end      
     end
+    function PD = smooth(obj,step)
+      % Running average
+      PD = obj;
+      %dists = cell(step,1);
+      for istep = 1:step
+        dist_tmp = obj.resample(obj.time(istep:step:end));
+        PD.data(istep:step:end,:) = dist_tmp.data(:,:);      
+      end
+    end
     function [ax,args,nargs] = axescheck_pdist(varargin)
       %[ax,args,nargs] = axescheck_pdist(varargin{:});
       % MATLAB's axescheck only checks if the first argument is an axis handle, but
