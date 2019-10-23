@@ -212,12 +212,14 @@ classdef PDist < TSeries
         end
       end
       % on ancillary data
-      nameFields = fieldnames(obj.ancillary);
-      nFields = numel(nameFields);
-      for iField = 1:nFields
-        eval(['sizeField = size(obj.ancillary.' nameFields{iField} ');'])
-        if sizeField(1) == sizeData(1)
-          eval(['obj.ancillary.' nameFields{iField} ' = reshape(obj.ancillary.' nameFields{iField} '(idx,:),[numel(idx) sizeField(2:end)]);'])
+      if not(isempty(obj.ancillary))
+        nameFields = fieldnames(obj.ancillary);            
+        nFields = numel(nameFields);
+        for iField = 1:nFields
+          eval(['sizeField = size(obj.ancillary.' nameFields{iField} ');'])
+          if sizeField(1) == sizeData(1)
+            eval(['obj.ancillary.' nameFields{iField} ' = reshape(obj.ancillary.' nameFields{iField} '(idx,:),[numel(idx) sizeField(2:end)]);'])
+          end
         end
       end
     end    
