@@ -10,7 +10,7 @@ Note: See readme.txt for more documentation.
 
 1) Linux(?)
 2) bash command shell (Linux) - Needed for the bash script that launches the actual MATLAB application.
-3) Mathworks MATLAB 2016a - Needed for the bulk of the application.
+3) Mathworks MATLAB 2016a or 2019b - Needed for the bulk of the application.
 
 
 

@@ -182,12 +182,12 @@ C = bicas.error_safe_constants();
 % ~ASSERTION: Check MATLAB version
 %==================================
 matlabVersionString = version('-release');
-if ~strcmp(matlabVersionString, C.REQUIRED_MATLAB_VERSION)
+if ~ismember(matlabVersionString, C.PERMITTED_MATLAB_VERSIONS)
     error('BICAS:BadMatlabVersion', ...
-        'Using bad MATLAB version. Found version "%s". BICAS requires version "%s".\n', ...
-        matlabVersionString, C.REQUIRED_MATLAB_VERSION)
+        'Using bad MATLAB version. Found version "%s". BICAS requires any of the following MATLAB versions: %s.\n', ...
+        matlabVersionString, strjoin(C.PERMITTED_MATLAB_VERSIONS, ', '))
 end
-%fprintf(1, 'Using MATLAB, version %s.\n', matlabVersionString);
+bicas.logf('info', 'Using MATLAB, version %s.\n\n', matlabVersionString);
 
 
 

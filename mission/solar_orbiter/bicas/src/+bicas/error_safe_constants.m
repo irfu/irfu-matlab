@@ -21,7 +21,7 @@
 %                      IMPORTANT NOTE: A MATLAB error message identifier may match multiple "error types" (keys). The
 %                      error-handling code (try-catch) should decide whether every message identifier should be used to
 %                      identify only one error type if there are multiple ones to choose from.
-% REQUIRED_MATLAB_VERSION        : String value that should be identical to the value returned by "version('-release')"
+% PERMITTED_MATLAB_VERSIONS      : Cell array of permissible string values returned by "version('-release')"
 %                                  when using the correct MATLAB version.
 % INOFFICIAL_ARGUMENTS_SEPARATOR : String. Argument that separates the official (RCS ICD) arguments from inofficial
 %                                  arguments.
@@ -63,7 +63,7 @@ MAP('CannotInterpretRCT')           = info_struct(1, 'Can not interpret the cont
 MAP('CannotFindRegexMatchingRCT')   = info_struct(1, 'Can not find any matching calibration file to read. No file matches regular expression.');
 C.EMIDP_2_INFO = MAP;
 
-C.REQUIRED_MATLAB_VERSION           = '2016a';
+C.PERMITTED_MATLAB_VERSIONS         = {'2016a', '2019b'};
 C.INOFFICIAL_ARGUMENTS_SEPARATOR    = '--';
 C.DEFAULT_CONFIG_FILE_RELATIVE_PATH = fullfile('config', 'bicas.conf');    % Path (incl. filename) to default config file. Relative to BICAS's directory root.
 
