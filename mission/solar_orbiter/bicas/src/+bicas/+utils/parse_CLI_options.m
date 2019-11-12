@@ -115,7 +115,7 @@ for iOption = 1:length(optionIdsList)
     assert(isfinite(OptionConfig.interprPriority))
 
     % ASSERTION: OptionConfig is the right struct.
-    EJ_library.utils.assert.struct(OptionConfig, {'optionHeaderRegexp', 'interprPriority', 'occurrenceRequirement', 'nValues'})
+    EJ_library.utils.assert.struct2(OptionConfig, {'optionHeaderRegexp', 'interprPriority', 'occurrenceRequirement', 'nValues'}, {})
     
     % Create empty return structure (default value) with the same keys (optionId values).
     % NOTE: Applies to both options with and without values!

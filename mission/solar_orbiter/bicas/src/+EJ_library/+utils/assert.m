@@ -146,7 +146,7 @@ classdef assert
             
             % NOTE: all({}) == all([]) == true
             if ~all(ismember(strSubset, strSet))
-                error(EJ_library.utils.assert.ERROR_MSG_ID, 'Expected subset is not.')
+                error(EJ_library.utils.assert.ERROR_MSG_ID, 'Expected subset is not a subset.')
             end
         end
         
@@ -203,63 +203,124 @@ classdef assert
         %   'superset' : Require superset of (or equal to) the specified set of fields.
         %
         % NOTE: Does NOT assume 1x1 struct. Can be matrix.
-        function struct(s, fieldNamesSet, varargin)
+%         function struct(S, fieldNamesSet, varargin)
+%             % NEED: Be able to specify
+%             %   struct with exact set of fieldnames
+%             %   struct with some required fieldnames, and some optional fieldnames
+%             %   struct with only optional fieldnames                                               <=> fieldnames are a SUBSET of specified set.
+%             %   struct with with some required fieldnames, and all other fieldnames being optional <=> fieldnames are a SUPERSET of specified fieldnames
+%             % 
+%             % PROPOSAL: Replace superset, subset with clearer keywords.
+%             %   PROPOSAL: require, permit
+%             % PROPOSAL: Change arguments for fieldnames. Always two.
+%             %   PRO: More robuts w.r.t. backward-compatibility in the case of future changes(?)
+%             %   PROPOSAL: requiredFnSet, optionalFnSet
+%             %       PROPOSAL: optionalFnSet can have special value ('all') to mean that all fieldnames are optional.
+%             %
+%             % PROPOSAL: Delete.
+%             
+%             warning('Using deprecated function EJ_library.utils.assert.struct.')
+%             
+%             import EJ_library.*
+%             
+%             if isempty(varargin)   %numel(varargin) == 1 && isempty(varargin{1})
+%                 checkType = 'exact';
+%             elseif numel(varargin) == 1 && strcmp(varargin{1}, 'subset')
+%                 checkType = 'subset';
+%             elseif numel(varargin) == 1 && strcmp(varargin{1}, 'superset')
+%                 checkType = 'superset';
+%             else
+%                 error(EJ_library.utils.assert.ERROR_MSG_ID, 'Illegal argument')
+%             end
+%             
+%             if ~isstruct(S)
+%                 error(EJ_library.utils.assert.ERROR_MSG_ID, 'Expected struct is not struct.')
+%             end
+%             utils.assert.castring_set(fieldNamesSet)    % Abolish?
+%             
+%             missingFnList = setdiff(fieldNamesSet, fieldnames(S));
+%             extraFnList   = setdiff(fieldnames(S), fieldNamesSet);
+%             
+%             switch(checkType)
+%                 case 'exact'
+%                     if (~isempty(missingFnList) || ~isempty(extraFnList))
+%                         
+%                         missingFnListStr = strjoin(missingFnList, ', ');
+%                         extraFnListStr   = strjoin(extraFnList,   ', ');
+%                         
+%                         error(EJ_library.utils.assert.ERROR_MSG_ID, ['Expected struct has the wrong set of fields.', ...
+%                             '\n    Missing fields:           %s', ...
+%                             '\n    Extra (forbidden) fields: %s'], missingFnListStr, extraFnListStr)
+%                     end
+%                 case 'subset'
+%                     if ~isempty(extraFnList)
+%                         
+%                         extraFnListStr   = strjoin(extraFnList,   ', ');
+%                         error(EJ_library.utils.assert.ERROR_MSG_ID, ['Expected struct has the wrong set of fields.', ...
+%                             '\n    Extra (forbidden) fields: %s'], extraFnListStr)
+%                     end
+%                 case 'superset'
+%                     if ~isempty(missingFnList)                        
+%                         missingFnListStr = strjoin(missingFnList, ', ');
+%                         error(EJ_library.utils.assert.ERROR_MSG_ID, ['Expected struct has the wrong set of fields.', ...
+%                             '\n    Missing fields:           %s'], missingFnListStr)
+%                     end
+%             end
+%         end
+
+
+
+        % Replacement for "EJ_library.utils.assert.struct".
+        %
+        % ARGUMENTS
+        % ==========
+        % requiredFnSet : Cell array of required field names.
+        % optionalFnSet : (a) Cell array of optional field names (i.e. allowed, but not required)
+        %                 (b) String constant 'all' : All fieldnames are allowed but not required. This is likely only
+        %                     meaningful when requiredFnSet is non-empty (not a requirement).
+        %
+        function struct2(S, requiredFnSet, optionalFnSet)
+            % PROPOSAL: Have it apply to a set of strings (e.g. fieldnames), not a struct as such.
+            % PROPOSAL: Let optionalFnSet be optional (empty by default).
+            %   PRO: Shorter for the most common case.
+            %   PRO: Backward-compatibility with some of the syntax for struct(predecessor assertion function).
+            %   CON: Bad for future extensions of function.
+            %
             % PROPOSAL: Recursive structs field names.
             %   TODO-DECISION: How specify fieldnames? Can not use cell arrays recursively.
-            % PROPOSAL: Replace superset, subset with clearer keywords.
-            %   PROPOSAL: require, permit
-            % PROPOSAL: Change arguments for fieldnames. Always two.
-            %   PROPOSAL: requiredNamesSet, optionalNamesSet
+            %   PROPOSAL: Define other, separate assertion method.
+            %   CON: Rarely needed.
+            %   CON-PROPOSAL: Can manually call EJ_library.utils.assert.struct2 multiple times, once for each substruct,
+            %                 instead (if only required field names).
+            % PROPOSAL: Rename struct2-->struct.
+            % PROPOSAL: Assertion: Intersection requiredFnSet-optionalFnSet is empty.
             
-            import EJ_library.*
+            structFnSet          = fieldnames(S);
             
-            if isempty(varargin)   %numel(varargin) == 1 && isempty(varargin{1})
-                checkType = 'exact';
-            elseif numel(varargin) == 1 && strcmp(varargin{1}, 'subset')
-                checkType = 'subset';
-            elseif numel(varargin) == 1 && strcmp(varargin{1}, 'superset')
-                checkType = 'superset';
+            missingRequiredFnSet = setdiff(requiredFnSet, structFnSet);
+            
+            % disallowedFnSet = ...
+            if iscell(optionalFnSet)
+                disallowedFnSet = setdiff(setdiff(structFnSet, requiredFnSet), optionalFnSet);
+            elseif isequal(optionalFnSet, 'all')
+                disallowedFnSet = {};
             else
-                error(EJ_library.utils.assert.ERROR_MSG_ID, 'Illegal argument')
+                error(EJ_library.utils.assert.ERROR_MSG_ID, 'Illegal optionalFnSet argument. Is neither cell array or string constant "all".')
             end
             
-            if ~isstruct(s)
-                error(EJ_library.utils.assert.ERROR_MSG_ID, 'Expected struct is not struct.')
-            end
-            utils.assert.castring_set(fieldNamesSet)    % Abolish?
-            
-            missingFnList = setdiff(fieldNamesSet, fieldnames(s));
-            extraFnList   = setdiff(fieldnames(s), fieldNamesSet);
-            
-            switch(checkType)
-                case 'exact'
-                    if (~isempty(missingFnList) || ~isempty(extraFnList))
-                        
-                        missingFnListStr = strjoin(missingFnList, ', ');
-                        extraFnListStr   = strjoin(extraFnList,   ', ');
-                        
-                        error(EJ_library.utils.assert.ERROR_MSG_ID, ['Expected struct has the wrong set of fields.', ...
-                            '\n    Missing fields:           %s', ...
-                            '\n    Extra (forbidden) fields: %s'], missingFnListStr, extraFnListStr)
-                    end
-                case 'subset'
-                    if ~isempty(extraFnList)
-                        
-                        extraFnListStr   = strjoin(extraFnList,   ', ');
-                        error(EJ_library.utils.assert.ERROR_MSG_ID, ['Expected struct has the wrong set of fields.', ...
-                            '\n    Extra (forbidden) fields: %s'], extraFnListStr)
-                    end
-                case 'superset'
-                    if ~isempty(missingFnList)                        
-                        missingFnListStr = strjoin(missingFnList, ', ');
-                        error(EJ_library.utils.assert.ERROR_MSG_ID, ['Expected struct has the wrong set of fields.', ...
-                            '\n    Missing fields:           %s'], missingFnListStr)
-                    end
+            % Give error, with an actually useful error message.
+            if ~isempty(missingRequiredFnSet) || ~isempty(disallowedFnSet)
+                missingFnListStr = strjoin(missingFnList, ', ');
+                extraFnListStr   = strjoin(extraFnList,   ', ');
+
+                error(EJ_library.utils.assert.ERROR_MSG_ID, ['Expected struct has the wrong set of fields.', ...
+                    '\n    Missing fields:           %s', ...
+                    '\n    Extra (forbidden) fields: %s'], missingFnListStr, extraFnListStr)
             end
         end
-        
-        
-        
+
+
+
         % NOTE: Can not be used for an assertion that treats functions with/without varargin/varargout.
         %   Ex: Assertion for functions which can ACCEPT (not require exactly) 5 arguments, i.e. incl. functions which
         %       take >5 arguments.

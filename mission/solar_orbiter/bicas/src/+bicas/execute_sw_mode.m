@@ -17,12 +17,6 @@
 %    value = Path to output file
 %
 %
-% IMPORTANT NOTE
-% ==============
-% As of 2016-10-26: This function temporarily uses both an old way and a new way of writing CDFs in parallel for the
-% purpose of testing. The old way is meant to be phased out eventually.
-%
-%
 % "BUGS"
 % ======
 % - Sets GlobalAttributes.Generation_date in local time (no fixed time zone).
@@ -65,13 +59,15 @@ function execute_sw_mode(SwModeInfo, InputFilePathMap, OutputFilePathMap, master
 
 
 
-%===========================================================================
-% Give all INPUT CDF files (from the CLI argument list) to the data manager
-%===========================================================================
 GlobalAttributesCellArray = {};   % Use cell array since CDF global attributes may in principle contain different sets of attributes (field names).
 
 
 
+%=================================
+% READ CDFs
+% ---------
+% Iterate over all the INPUT CDFs
+%=================================
 InputDatasetsMap = containers.Map();
 for i = 1:length(SwModeInfo.inputsList)
     prodFuncInputKey = SwModeInfo.inputsList(i).prodFuncInputKey;
@@ -106,18 +102,16 @@ globalAttributesSubset = derive_output_dataset_GlobalAttributes(GlobalAttributes
 
 
 
-%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%
+%==============
 % PROCESS DATA
-%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%
+%==============
 OutputDatasetsMap = SwModeInfo.prodFunc(InputDatasetsMap);
 
 
 
 %==================================
+% WRITE CDFs
+% ----------
 % Iterate over all the OUTPUT CDFs
 %==================================
 for iOutputCdf = 1:length(SwModeInfo.outputsList)
@@ -427,7 +421,9 @@ end
 
 
 function logicalFileId = get_logical_file_id(datasetId, testId, provider, dataVersion)
-% Construct a "Logical_file_id" as defined in the ROC DFMD, global attribute+file name convention.
+% Construct a "Logical_file_id" as defined in the ROC DFMD
+% "The name of the CDF file without the ‘.cdf’ extension, using the file naming convention."
+
 
 bicas.assert_DATASET_ID(datasetId)
 

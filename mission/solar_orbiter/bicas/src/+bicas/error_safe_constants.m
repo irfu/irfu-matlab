@@ -5,7 +5,7 @@
 % and which  thus need to be initialized independent of settings and in a way which is unlikely to trigger errors.
 %
 %
-% NOTE: This file contains the authoritative definitions of the meaning of error codes that should (Maybe) be used in
+% NOTE: This file contains the authoritative definitions of the meaning of error codes that should (maybe) be used in
 % documentation.
 %
 %

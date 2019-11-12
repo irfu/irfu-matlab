@@ -5,6 +5,12 @@
 % NOTE: There might be a function for this in newer version of MATLAB. Not sure which.
 % NOTE: Inf is always dissimilar fron Inf, reagrdless of tolerance.
 %
+%
+% ARGUMENTS
+% =========
+% a,b : Numeric arbitrary dimension matrices.
+% 
+%
 % Initially created 2018-07-18 by Erik P G Johansson.
 %
 function result = approx_equals(a, b, epsilon, nanPolicy)
@@ -25,7 +31,7 @@ function result = approx_equals(a, b, epsilon, nanPolicy)
     % ASSERTIONS
     assert(isnumeric(a))
     assert(isnumeric(b))
-    assert(epsilon >= 0)
+    assert(epsilon >= 0, 'Not non-negative epsilon argument.')
     
     % Check that dimensions.
     % NOTE: Should not be assertion.

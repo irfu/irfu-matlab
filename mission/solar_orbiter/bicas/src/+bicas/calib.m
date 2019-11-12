@@ -1,8 +1,10 @@
 classdef calib
+%
 % Class for (1) loading calibration data from file, and (2) library/utility functions that calibrate data.
+% An instance contains all loaded RCTs.
 %
 % NOTE: RCT reading functions assume that the same type of RCT (BIAS, LFR, TDS-CWF or TDS-RSWF) is identical (in all
-% relevant parts) for RODP and ROC-SGSE.
+% relevant parts) for both RODP and ROC-SGSE.
 %
 %
 % IMPLEMENTATION NOTES
@@ -23,25 +25,32 @@ classdef calib
 % RPS = radians/second
 % (count = TM/TC unit)
 % TF = Transfer function (Z=Z(omega))
-% --
-% BLTS : BIAS-LFR/TDS Signals. Signals somewhere between the LFR/TDS ADCs and the antenna side of the BIAS demuxer
-%        including the BIAS transfer functions. Like BIAS_i, i=1..5, but includes various stages of calibration/non-calibration,
-%        including in particular
-%           - TM units (inside LFR/TDS),
-%           - BLTS interface volt (at the physical boundary BIAS-LFR/TDS (BIAS_i)), and
-%           - calibrated values inside BIAS but before addition and subtraction inside BIAS (i.e. after using BIAS offsets, BIAS
-%        transfer functions; volt).
-%        NOTE: Partly created to avoid using term "BIAS_i" since it is easily
-%        confused with other things (the subsystem BIAS, bias currents), partly to include various stages of
-%        calibration.
-% ASR  : Antenna Signal Representations. Those measured signals which are ultimately derived/calibrated by BICAS,
-%        i.e. Vi_LF, Vij_LF, Vij_LF_AC (i,j=1..3) in the BIAS specification.
-%        NOTE: This is different from the physical antenna signals which are
-%        essentially subset of ASR (Vi_LF), was it not for calibration errors and filtering.
-%        NOTE: This is different from the set Vi_DC, Vij_DC, Vij_AC of which a subset are equal to BIAS_i
-%        (which subset it is depends on the demux mode) and which is always in LFR/TDS calibrated volts.
-% BIAS_i, i=1..5 : Defined in BIAS specifications document. Equal to the physical signal at the physical boundary
-%        between BIAS and LFR/TDS. LFR/TDS calibrated volt. Mostly replaced by BLTS+unit in the code.
+% 
+% BLTS = BIAS-LFR/TDS Signals
+% ---------------------------
+% Signals somewhere between the LFR/TDS ADCs and the antenna side of the BIAS demuxer
+% including the BIAS transfer functions. Like BIAS_i, i=1..5, but includes various stages of calibration/non-calibration,
+% including in particular
+%   - TM units (inside LFR/TDS),
+%   - BLTS interface volt (at the physical boundary BIAS-LFR/TDS (BIAS_i)), and
+%   - calibrated values inside BIAS but without demuxer addition and subtraction inside BIAS (i.e. including
+%     using BIAS offsets, BIAS transfer functions; volt).
+% NOTE: Definition is partly created to avoid using term "BIAS_i" since it is easily confused with other things (the
+% subsystem BIAS, bias currents), partly to include various stages of calibration.
+%
+% ASR = Antenna Signal Representation
+% -----------------------------------
+% Those measured signals which are ultimately derived/calibrated by BICAS,     i.e. Vi_LF, Vij_LF, Vij_LF_AC (i,j=1..3)
+% in the BIAS specification.
+% NOTE: This is different from the physical antenna signals (Vi_LF) which are essentially a subset of ASR, except for
+% calibration errors and filtering.
+% NOTE: This is different from the set Vi_DC, Vij_DC, Vij_AC of which a subset are equal to BIAS_i (which subset it is
+% depends on the demux mode) and which is always in LFR/TDS calibrated volts.
+%
+% BIAS_i, i=1..5
+% --------------
+% Defined in BIAS specifications document. Equal to the physical signal at the physical boundary between BIAS and
+% LFR/TDS. Unit: LFR/TDS calibrated volt. Mostly replaced by BLTS+specified unit in the code.
 %
 %
 % UNFINISHED. NOT USED BY MAIN PROGRAM YET. NOT ENTIRELY CLEAR WHAT IT SHOULD INCLUDE.
@@ -50,6 +59,8 @@ classdef calib
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
 % First created 2017-02-15
 %
+
+
 
 % BOGIQ:
 % ------
@@ -136,7 +147,7 @@ classdef calib
         %BiasDcRecordList = [];
         
         Bias
-        LfrTfs;
+        LfrTfs;             % "Tfs" = TFs = Transfer Functions
         tdsCwfFactors;
         TdsRswfTfTableList;
         
@@ -148,29 +159,32 @@ classdef calib
     methods(Access=public)
 
         function obj = calib(calibrationDir, pipelineId, SETTINGS)
-            % TODO-DECISION: Is it wise to specify the paths in the constructor? Read the filenames (and relative directory) from the constants instead?
-            % TODO-DECISION: Good to use SETTINGS this way? Submit calibration data directly?
+            % TODO-DECISION: Is it wise to specify the paths in the constructor? Read the filenames (and relative
+            %                directory) from the constants instead?
+            % TODO-DECISION: Appropriate to use SETTINGS this way? Submit calibration data directly?
             
             % IMPLEMENTATION NOTE: Must assign obj.SETTINGS before calling methods that rely on it having been set, e.g.
             % find_RCT.
             obj.SETTINGS = SETTINGS;
             
-            obj.Bias               = obj.read_log_BIAS_RCT(calibrationDir, pipelineId, 'BIAS');
-            obj.LfrTfs             = obj.read_log_BIAS_RCT(calibrationDir, pipelineId, 'LFR');
-            obj.tdsCwfFactors      = obj.read_log_BIAS_RCT(calibrationDir, pipelineId, 'TDS-CWF');
-            obj.TdsRswfTfTableList = obj.read_log_BIAS_RCT(calibrationDir, pipelineId, 'TDS-RSWF');
+            obj.Bias               = obj.read_log_RCT(calibrationDir, pipelineId, 'BIAS');
+            obj.LfrTfs             = obj.read_log_RCT(calibrationDir, pipelineId, 'LFR');
+            obj.tdsCwfFactors      = obj.read_log_RCT(calibrationDir, pipelineId, 'TDS-CWF');
+            obj.TdsRswfTfTableList = obj.read_log_RCT(calibrationDir, pipelineId, 'TDS-RSWF');
         end
 
 
 
-        % Convert/calibrate from TC bias current in TM units to physical units.
-        % This is the normal way of obtaining bias current in physical units.
+        % Convert/calibrate TC bias current: TM units --> physical units.
+        %
+        % NOTE: This is the normal way of obtaining bias current in physical units (as opposed to HK bias current).
         function biasCurrentAmpere = TC_bias_TM_to_bias_current(obj, tcBiasTm, Epoch, iAntenna)
             % BUG: Can not handle time.
             
             bicas.proc_utils.assert_Epoch(Epoch)   % NOTE: Asserts column vector ("zvar"-like).
             
-            biasCurrentAmpere = obj.Bias.Currents.offsetAmpere(iAntenna) + obj.Bias.Currents.gainApc(iAntenna) * tcBiasTm;
+            % Calibrate
+            biasCurrentAmpere = obj.Bias.Currents.offsetAmpere(iAntenna) + obj.Bias.Currents.gainApc(iAntenna) * tcBiasTm;      % LINEAR FUNCTION
         end
 
         
@@ -178,10 +192,12 @@ classdef calib
         % Convert/calibrate diagnostic HK TM bias current values to physical units.
         % Refers to BIAS HK zVars HK_BIA_BIAS1/2/3.
         %
+        %
         % NOTES
         % =====
-        % IMPORTANT NOTE: The HK bias current values are measured onboard but are only meant as diagnostic values, not
-        % as the proper bias current values for nominal use. Therefore the values should only be seen as approximate.
+        % IMPORTANT NOTE: The HK bias current values are measured onboard but are only meant as DIAGNOSTIC values, NOT
+        % AS THE PROPER BIAS CURRENT values for nominal use. Therefore the values should only be seen as approximate.
+        %
         % NOTE: Walter Puccio, IRFU 2019-09-06: Values are measured on the order of once per second (and sent back as HK
         % even more rarely). Expect errors on the order of 5%.
         %
@@ -199,11 +215,16 @@ classdef calib
             offsetTm = obj.SETTINGS.get_fv('PROCESSING.CALIBRATION.HK_BIAS_CURRENT.OFFSET_TM');
             gainApc  = obj.SETTINGS.get_fv('PROCESSING.CALIBRATION.HK_BIAS_CURRENT.GAIN_APC');
             
+            %===================================================================================================
+            % CALIBRATE
+            % ---------
             % Unsigned integer which represents ~signed integer.
             % ==> Intervals 0..0x7FFF and 0x8000...0xFFFF need to "change places".
-            % ==> Need to flip bit representing sign to have one interval 0...0xFFFF with monotonic function to calibrated values.
-            hkBiasCurrentTm   = bitxor(hkBiasCurrentTm, hex2dec('8000'));
-            biasCurrentAmpere = gainApc(iAntenna) * (hkBiasCurrentTm + offsetTm(iAntenna));
+            % ==> Need to flip bit representing sign to have one interval 0...0xFFFF with monotonic function
+            %     TM-to-calibrated values.
+            %===================================================================================================
+            hkBiasCurrentTm   = bitxor(hkBiasCurrentTm, hex2dec('8000'));                       % FLIP BIT
+            biasCurrentAmpere = gainApc(iAntenna) * (hkBiasCurrentTm + offsetTm(iAntenna));     % LINEAR FUNCTION
         end
         
         
@@ -218,14 +239,17 @@ classdef calib
         %
         %
         % NOTE: TEMPORARY IMPLEMENTATION(?) Only uses first Epoch value for determining calibration values.
+        %
         function asrSamplesVolt = calibrate_TDS_CWF(obj, Epoch, tdsCwfSamplesTm, iBltsChannel, BltsAsrType)
             % PROPOSAL: Some kind of assertion (assumption of) constant sampling frequency.
             
+            % ASSERTIONS
             bicas.proc_utils.assert_Epoch(Epoch)
             assert(numel(tdsCwfSamplesTm) == numel(Epoch))
             assert((1 <= iBltsChannel) && (iBltsChannel <= 3))
             
-            dt = double(Epoch(end) - Epoch(1)) / numel(Epoch) * 1e-9;   % Unit: s   (Epoch unit: ns)
+            dt = double(Epoch(end) - Epoch(1)) / numel(Epoch) * 1e-9;   % Unit: s   ("Epoch" unit: ns)
+            enableDetrending = obj.SETTINGS.get_fv('PROCESSING.CALIBRATION.DETRENDING_ENABLED');
 
             %==============================
             % Obtain calibration constants
@@ -238,15 +262,17 @@ classdef calib
             %===============================================
             % CALIBRATE: TDS TM --> TDS/BIAS interface volt
             %===============================================
-            bltsInterfVolt = obj.tdsCwfFactors(iBltsChannel) * tdsCwfSamplesTm;
+            bltsInterfVolt = obj.tdsCwfFactors(iBltsChannel) * tdsCwfSamplesTm;    % MULTIPLICATION
             
             %=====================================================
             % CALIBRATE: TDS/BIAS interface volt --> antenna volt
             %=====================================================
+            % Create TF for BIAS.
             tf = @(omega) bicas.calib.eval_analytical_transfer_func(...
                 omega, BiasCalibData.tfNumerCoeffs, BiasCalibData.tfDenomCoeffs);
+            % APPLY TRANSFER FUNCTION
             asrSamplesVolt = bicas.utils.apply_transfer_function(dt, bltsInterfVolt, tf, ...
-                'enableDetrending', obj.SETTINGS.get_fv('PROCESSING.CALIBRATION.DETRENDING_ENABLED'));
+                'enableDetrending', enableDetrending);                  
 
             asrSamplesVolt = asrSamplesVolt + BiasCalibData.offsetVolt;
         end
@@ -254,6 +280,7 @@ classdef calib
 
 
         % NOTE: TEMPORARY IMPLEMENTATION(?) Only uses first Epoch value for determining calibration values.
+        %
         function asrSamplesVolt = calibrate_LFR(obj, Epoch, lfrSamplesTm, iBltsChannel, BltsAsrType, iLfrFreq, biasHighGain)
             
             bicas.proc_utils.assert_Epoch(Epoch)
@@ -262,6 +289,7 @@ classdef calib
             assert((1 <= iLfrFreq)     && (iLfrFreq     <= 4), 'Illegal iLfrFreq value.')
             
             dt = double(Epoch(end) - Epoch(1)) / numel(Epoch) * 1e-9;   % Unit: s   (Epoch unit: ns)
+            enableDetrending = obj.SETTINGS.get_fv('PROCESSING.CALIBRATION.DETRENDING_ENABLED');
 
             %==============================
             % Obtain calibration constants
@@ -274,13 +302,15 @@ classdef calib
             %============================================================
             % CALIBRATE: LFR TM --> LFR/BIAS interface volt --> ASR volt
             %============================================================
+            % Create combined TF for LFR and BIAS.
             tf = @(omega) (...
                 bicas.calib.eval_tabulated_transfer_func(omega, LfrTf.omegaRps, LfrTf.zVpc) ...
                 .* ...
                 bicas.calib.eval_analytical_transfer_func(...
                 omega, BiasCalibData.tfNumerCoeffs, BiasCalibData.tfDenomCoeffs));
+            % APPLY TRANSFER FUNCTION
             asrSamplesVolt = bicas.utils.apply_transfer_function(dt, lfrSamplesTm, tf, ...
-                'enableDetrending', obj.SETTINGS.get_fv('PROCESSING.CALIBRATION.DETRENDING_ENABLED'));
+                'enableDetrending', enableDetrending);
             
             asrSamplesVolt = asrSamplesVolt + BiasCalibData.offsetVolt;
         end
@@ -298,7 +328,7 @@ classdef calib
         %
         % IMPLEMENTATION NOTE: Useful to have this as separate functionality so that the chosen RCT to use can be
         % explicitly overridden via e.g. settings.
-        % IMPLEMENTATION NOTE: Only instance method so that it can use SETTINGS.
+        % IMPLEMENTATION NOTE: This method is only an instance method so that it can use SETTINGS.
         %
         function path = find_RCT(obj, calibrationDir, pipelineId, rctId)            
 
@@ -340,7 +370,7 @@ classdef calib
                     'Can not find any calibration file that matches regular expression "%s" in directory "%s".', ...
                     filenameRegexp, calibrationDir);
             end
-            % CASE: There is at least on candidate file.
+            % CASE: There is at least one candidate file.
             
             filenameList = sort(filenameList);
             filename     = filenameList{end};
@@ -377,9 +407,14 @@ classdef calib
         
         
         
-        % IMPLEMENTATION NOTE: Only instance method because of find_RCT.
+        % Read any single RCT file, and log it. Effectively wraps the different RCT-reading functions.
+        % 
+        % IMPLEMENTATION NOTE: This method exists to
+        % (1) run shared code that should be run when reading any RCT (logging, algorithm for finding file),
+        % (2) separate logging from the RCT-reading code, so that one can read RCTs without BICAS.
+        % IMPLEMENTATION NOTE: This method is an instance method only because of find_RCT.
         %
-        function RctCalibData = read_log_BIAS_RCT(obj, calibrationDir, pipelineId, rctId)
+        function RctCalibData = read_log_RCT(obj, calibrationDir, pipelineId, rctId)
             
             filePath = obj.find_RCT(calibrationDir, pipelineId, rctId);
             bicas.logf('info', 'Reading %-4s %-8s RCT: "%s"', pipelineId, rctId, filePath)
@@ -407,7 +442,8 @@ classdef calib
 
 
 
-        % Return BIAS calibration data that is relevant given specified settings.
+        % Return subset of already loaded BIAS calibration data, for specified settings.
+        %
         function BiasCalibData = get_BIAS_calib_data(obj, BltsAsrType, biasHighGain, iCalibTimeL, iCalibTimeH)
             
             switch(BltsAsrType.category)
@@ -497,9 +533,13 @@ classdef calib
             
             Do = dataobj(filePath);
             
+            % Minimum number of numerator or denominator coefficients in the BIAS RCT.
+            N_MIN_TF_NUMER_DENOM_COEFFS = 8;
+            
             % Constants for interpreting the array indices in the CDF.
             NUMERATOR   = 1;
             DENOMINATOR = 2;
+            %
             DC_SINGLE = 1;
             DC_DIFF   = 2;
             AC_LG     = 3;
@@ -527,14 +567,14 @@ classdef calib
                 % 1 CDF record:   size(Do.data.TRANSFER_FUNCTION_COEFFS.data) == [  4 2 8]
                 % 2 CDF records:  size(Do.data.TRANSFER_FUNCTION_COEFFS.data) == [2 4 2 8]                
                 tfCoeffs = permute(tfCoeffs, [1, 4,3,2]);
-                
-                
-                
+
+
+
                 %=======================================================
                 % ASSERTIONS: Size of tfCoeffs/TRANSFER_FUNCTION_COEFFS
                 %=======================================================
                 assert(size(tfCoeffs, 1) == nEpochL)
-                assert(size(tfCoeffs, 2) >= 8)
+                assert(size(tfCoeffs, 2) >= N_MIN_TF_NUMER_DENOM_COEFFS)
                 assert(size(tfCoeffs, 3) == 2)
                 assert(size(tfCoeffs, 4) == 4)
 
@@ -727,7 +767,8 @@ classdef calib
         end
         
 
-        
+
+
 
 
 
@@ -803,7 +844,7 @@ classdef calib
         % or many. If there is one record, then there is not record index. If there are multiple records, then the first
         % index represents the record number. This function inserts a size-one index as the first index.
         % 
-        % Do = dataobj(...)
+        % DO   = dataobj(...)
         % data = Do.data.TRANSFER_FUNCTION_COEFFS.data
         %
         % NOTE: Not well tested on different types of zvar array sizes.

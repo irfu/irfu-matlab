@@ -183,7 +183,7 @@ if isempty(temp)   CliData.configFile = [];
 else               CliData.configFile = temp{end}{2};
 end
 
-EJ_library.utils.assert.struct(CliData, {'functionalityMode', 'swModeArg', 'logFile', 'configFile', 'SpecInputParametersMap', 'ModifiedSettingsMap'})
+EJ_library.utils.assert.struct2(CliData, {'functionalityMode', 'swModeArg', 'logFile', 'configFile', 'SpecInputParametersMap', 'ModifiedSettingsMap'}, {})
 
 end
 

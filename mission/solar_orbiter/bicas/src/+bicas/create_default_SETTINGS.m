@@ -110,7 +110,7 @@ S.define_setting('SWD.environment.executable',     'roc/bicas');   % Relative pa
 % ---------------------------------------------
 % RCT filenaming convention is described in:	ROC-PRO-DAT-NTT-00006-LES, 1/1 draft, Sect 4.3.2-3.
 %
-% IMPLEMENTATION NOTE: RFT filenaming is implemented as settings since filenaming seems is likey to change.
+% IMPLEMENTATION NOTE: RCT filenaming is implemented as settings since filenaming seems likely to change.
 % (1) LFR & TDS do not seem to follow the filenaming convenction
 % (2) BIAS has (previously at least) not followed the filenaming convention.
 % (3) it is uncertain how it can be applied to BIAS RCTs (which receiver should the BIAS RCT specify when BIAS uses the
@@ -145,6 +145,8 @@ S.define_setting('PROCESSING.RCT_REGEXP.RGTS.TDS-LFM-CWF',  ['ROC-SGSE_CAL_RCT-T
 S.define_setting('PROCESSING.RCT_REGEXP.RODP.TDS-LFM-CWF',  [    'SOLO_CAL_RCT-TDS-LFM-CWF-E_V20[0-9]{6}',  CDF_SUFFIX_REGEXP]);
 S.define_setting('PROCESSING.RCT_REGEXP.RGTS.TDS-LFM-RSWF', ['ROC-SGSE_CAL_RCT-TDS-LFM-RSWF-E_V20[0-9]{6}', CDF_SUFFIX_REGEXP]);
 S.define_setting('PROCESSING.RCT_REGEXP.RODP.TDS-LFM-RSWF', [    'SOLO_CAL_RCT-TDS-LFM-RSWF-E_V20[0-9]{6}', CDF_SUFFIX_REGEXP]);
+
+
 
 %====================================================================================================================
 % Define constants relating to interpreting LFR datasets

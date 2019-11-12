@@ -596,7 +596,7 @@ classdef proc_utils
                     error('BICAS:proc_utils:Assertion:IllegalArgument', 'Illegal DATASET_ID. datasetId="%s"', datasetId)
             end
             
-            EJ_library.utils.assert.struct(C, {'isLfrSbm1', 'isLfrSbm2', 'isLfrSwf', 'isTdsRswf'})
+            EJ_library.utils.assert.struct2(C, {'isLfrSbm1', 'isLfrSbm2', 'isLfrSwf', 'isTdsRswf'}, {})
         end
         
         

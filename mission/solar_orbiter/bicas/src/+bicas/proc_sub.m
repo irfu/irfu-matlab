@@ -42,11 +42,6 @@
 %
 classdef proc_sub
 %#######################################################################################################################
-% PROPOSAL: Move out calibration (not demuxing) from proc_sub.
-%   PROPOSAL: Reading of calibration files.
-%   PROPOSAL: Function for calibrating with either constant factors and transfer functions. (Flag for choosing which.)
-%       NOTE: Function needs enough information to split up data into sequences on which transfer functions can be applied.
-%
 % PROPOSAL: Split into smaller files.
 %   PROPOSAL: proc_LFR
 %   PROPOSAL: proc_TDS
@@ -103,8 +98,8 @@ classdef proc_sub
             global SETTINGS
             
             % ASSERTIONS
-            EJ_library.utils.assert.struct(Sci, {'ZVars', 'Ga'})
-            EJ_library.utils.assert.struct(Hk,  {'ZVars', 'Ga'})
+            EJ_library.utils.assert.struct2(Sci, {'ZVars', 'Ga'}, {})
+            EJ_library.utils.assert.struct2(Hk,  {'ZVars', 'Ga'}, {})
             
             HkSciTime = [];
             
@@ -172,7 +167,7 @@ classdef proc_sub
 
 
             % ASSERTIONS
-            EJ_library.utils.assert.struct(HkSciTime, {'MUX_SET', 'DIFF_GAIN'})
+            EJ_library.utils.assert.struct2(HkSciTime, {'MUX_SET', 'DIFF_GAIN'}, {})
         end        
         
         
@@ -189,8 +184,8 @@ classdef proc_sub
             LFR_SWF_SNAPSHOT_LENGTH = 2048;
         
             % ASSERTIONS
-            EJ_library.utils.assert.struct(Sci,       {'ZVars', 'Ga'})
-            EJ_library.utils.assert.struct(HkSciTime, {'MUX_SET', 'DIFF_GAIN'})
+            EJ_library.utils.assert.struct2(Sci,       {'ZVars', 'Ga'}, {})
+            EJ_library.utils.assert.struct2(HkSciTime, {'MUX_SET', 'DIFF_GAIN'}, {})
             
             nRecords = size(Sci.ZVars.Epoch, 1);            
             C = bicas.proc_utils.classify_DATASET_ID(inputSciDsi);
@@ -301,8 +296,8 @@ classdef proc_sub
         % NOTE: BIAS output datasets do not have a variable for the length of snapshots. Need to use NaN/fill value.
 
             % ASSERTIONS
-            EJ_library.utils.assert.struct(Sci,        {'ZVars', 'Ga'})
-            EJ_library.utils.assert.struct(HkSciTime,  {'MUX_SET', 'DIFF_GAIN'})
+            EJ_library.utils.assert.struct2(Sci,        {'ZVars', 'Ga'}, {})
+            EJ_library.utils.assert.struct2(HkSciTime,  {'MUX_SET', 'DIFF_GAIN'}, {})
             
             C = bicas.proc_utils.classify_DATASET_ID(inputSciDsi);
             
@@ -380,9 +375,9 @@ classdef proc_sub
 
 
         function assert_PreDC(PreDc)
-            EJ_library.utils.assert.struct(PreDc, {...
+            EJ_library.utils.assert.struct2(PreDc, {...
                 'Epoch', 'ACQUISITION_TIME', 'DemuxerInput', 'freqHz', 'nValidSamplesPerRecord', 'DIFF_GAIN', 'MUX_SET', 'QUALITY_FLAG', ...
-                'QUALITY_BITMASK', 'DELTA_PLUS_MINUS', 'SYNCHRO_FLAG'});
+                'QUALITY_BITMASK', 'DELTA_PLUS_MINUS', 'SYNCHRO_FLAG'}, {});
             bicas.proc_utils.assert_unvaried_N_rows(PreDc);
             bicas.proc_utils.assert_unvaried_N_rows(PreDc.DemuxerInput);
             
@@ -392,9 +387,9 @@ classdef proc_sub
         
         
         function assert_PostDC(PostDc)
-            EJ_library.utils.assert.struct(PostDc, {...
+            EJ_library.utils.assert.struct2(PostDc, {...
                 'Epoch', 'ACQUISITION_TIME', 'DemuxerInput', 'freqHz', 'nValidSamplesPerRecord', 'DIFF_GAIN', 'MUX_SET', 'QUALITY_FLAG', ...
-                'QUALITY_BITMASK', 'DELTA_PLUS_MINUS', 'SYNCHRO_FLAG', 'DemuxerOutput', 'IBIAS1', 'IBIAS2', 'IBIAS3'});
+                'QUALITY_BITMASK', 'DELTA_PLUS_MINUS', 'SYNCHRO_FLAG', 'DemuxerOutput', 'IBIAS1', 'IBIAS2', 'IBIAS3'}, {});
             bicas.proc_utils.assert_unvaried_N_rows(PostDc);
             bicas.proc_utils.assert_unvaried_N_rows(PostDc.DemuxerOutput);
         end
@@ -505,7 +500,7 @@ classdef proc_sub
             
             % ASSERTION
             bicas.proc_utils.assert_unvaried_N_rows(OutSciZVars);
-            EJ_library.utils.assert.struct(OutSciZVars, ZVAR_FN_LIST)
+            EJ_library.utils.assert.struct2(OutSciZVars, ZVAR_FN_LIST, {})
         end   % process_PostDC_to_LFR
 
 
@@ -580,7 +575,7 @@ classdef proc_sub
 
             % ASSERTION
             bicas.proc_utils.assert_unvaried_N_rows(OutSciZVars);
-            EJ_library.utils.assert.struct(OutSciZVars, ZVAR_FN_LIST)
+            EJ_library.utils.assert.struct2(OutSciZVars, ZVAR_FN_LIST, {})
         end
 
 
@@ -644,7 +639,7 @@ classdef proc_sub
         % PROPOSAL: Assert same nbr of "records" for MUX_SET, DIFF_GAIN as for BIAS_x.
         
             % ASSERTIONS
-            EJ_library.utils.assert.struct(DemuxerInput, {'BIAS_1', 'BIAS_2', 'BIAS_3', 'BIAS_4', 'BIAS_5'})
+            EJ_library.utils.assert.struct2(DemuxerInput, {'BIAS_1', 'BIAS_2', 'BIAS_3', 'BIAS_4', 'BIAS_5'}, {})
             bicas.proc_utils.assert_unvaried_N_rows(DemuxerInput)
             EJ_library.utils.assert.all_equal([...
                 size(MUX_SET,             1), ...
@@ -767,7 +762,7 @@ classdef proc_sub
             global SETTINGS
             
             % ASSERTIONS
-            EJ_library.utils.assert.struct(Input, {'BIAS_1', 'BIAS_2', 'BIAS_3', 'BIAS_4', 'BIAS_5'})
+            EJ_library.utils.assert.struct2(Input, {'BIAS_1', 'BIAS_2', 'BIAS_3', 'BIAS_4', 'BIAS_5'}, {})
             bicas.proc_utils.assert_unvaried_N_rows(Input)
             assert(isscalar(MUX_SET))
             assert(isscalar(DIFF_GAIN))

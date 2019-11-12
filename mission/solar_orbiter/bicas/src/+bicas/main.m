@@ -73,7 +73,6 @@ function errorCode = main( varargin )
 % PROPOSAL: When printing settings, print how each key value has been set: default, config file, CLI argument.
 
 
-
 % Clear any previous instance of global variables
 % -----------------------------------------------
 % This is useful to avoid mistakenly using a previously initialized version of SETTINGS when the
@@ -163,7 +162,7 @@ end
 
 
 
-end    % bicas
+end    % main
 
 
 
@@ -276,7 +275,7 @@ else
     configFile = fullfile(bicasRootPath, C.DEFAULT_CONFIG_FILE_RELATIVE_PATH);
 end
 bicas.logf('info', 'configFile = "%s"', configFile)
-rowList                 = EJ_library.utils.read_text_file(configFile);
+rowList                 = EJ_library.utils.read_text_file(configFile, '(\r\n|\r|\n)');
 ConfigFileSettingsVsMap = bicas.interpret_config_file(rowList);
 bicas.log('info', 'Overriding subset of in-memory settings using config file.')
 SETTINGS.set_preexisting_from_strings(ConfigFileSettingsVsMap);    % Modify SETTINGS

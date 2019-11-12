@@ -1,22 +1,30 @@
 %
-% Function for interpreting settings argument(s) passed to functions. This function interprets a cell array of strings
-% representing a list of arguments to another function, typically the external calling function, and typically the last
-% argument(s) by using varargin.
-% 
+% Utility function for interpreting settings argument(s) on a standardized syntax/format passed to functions. 
+%
+%
+% INTENDED USAGE
+% ==============
+% The function interprets a 1D cell array, representing a list of arguments to another function, typically the
+% external function that calls this function, and typically the external function's last arguments by using varargin.
+% --
+% In order to require/permit a certain set of settings (keys), use an assertion for the set of field names in the
+% returned struct. Note that if there are default values for all keys, then DefaultSettings can be used to obtain the
+% list of field names.
+%
 %
 % ALGORITHM
 % =========
-% Works with up to three analogous "Settings" structs.
+% The algorithm uses/constructs three analogous "Settings" structs.
+% DefaultSettings      = argument.
 % SettingsArg1         = argList{1}, if argList{1} exists and is a struct. Otherwise empty struct.
 % SettingsArgListPairs = remainder of argList (excluding SettingsArg1), interpreted as pairs of field name + field value.
-% DefaultSettings      = argument.
 % --
-% Returns struct which is a combination of 
+% The functions returns a struct which is a combination (union of fields) of 
 % (1) SettingsArgListPairs
 % (2) SettingsArg1
 % (3) DefaultSettings
-% where fields are taken from the first top-most struct with that field, i.e. a higher one has precedence over a lower
-% one, e.g. (1) has precedence over (2).
+% where field values are taken from the first top-most struct with that field, i.e. a higher one has precedence over a
+% lower one, e.g. (1) has precedence over (2). Therefore, the structs do not need to, but are allowed to, contain the same fields.
 %
 %
 % LIMITATIONS
@@ -29,14 +37,12 @@
 % ARGUMENTS
 % =========
 % DefaultSettings : Struct with default Settings (to be processed; not Settings for this functions).
-% argList         : Cell array representing a sequence of arguments (varargin presumably) from another
-%                   function that uses this function.
+% argList         : Cell array representing a sequence of arguments (presumably "varargin" or subset thereof) from
+%                   another function that uses this function.
 %                   It is either
-%                       (1) a cell array of pairs string+value, or
-%                       (2) a cell array of exactly one struct, or
-%                       (3) an empty cell array
-%                   NOTE: The list is permitted to be empty.
-%                   NOTE: {{}} is interpreted as empty list just as varargin uses it to represent no arguments.
+%                       (1) {              key1,value1, ..., keyN,valueN}
+%                       (2) {SettingsArg1, key1,value1, ..., keyN,valueN}
+%                   NOTE: The cell array is permitted to be empty.
 %
 %
 % RETURN VALUES
@@ -53,15 +59,34 @@ function [Settings] = interpret_settings_args(DefaultSettings, argList)
     %   CON: Makes it impossible to have default values for some settings/fields, but not for others.
     %   PROPOSAL: Option/flag for this behaviour.
     %   NOTE: User can easily add an assertion after:
-    %       EJ_library.utils.assert.struct(Settings, fieldnames(DEFAULT_SETTINGS))
+    %       EJ_library.utils.assert.struct2(Settings, fieldnames(DEFAULT_SETTINGS), {})
     %
     % PROPOSAL: Reorg algorithm to produce better error messages when using bad combinations of arguments.
     %
     % PROPOSAL: Argument for required settings fields (DefaultSettings contains the ones which are optional in varargin).
     %   CON: Might have situations where the required settings fields depend on the the value of other settings fields.
-    %   PROPOSAL: User should call EJ_library.utils.assert.struct instead. This is almost as succint.
-    
-    import EJ_library.*
+    %   PROPOSAL: User should call EJ_library.utils.assert.struct2 instead. This is almost as succint.
+    %
+    % PROPOSAL: Add ability to recognize "string keywords" (one argument, instead of keyword+value) which indicate that
+    % a flag (false/true) shall be set.
+    %   NOTE: The default value is always false.
+    %   TODO-DECISION: How represent in a struct that a field represents an optional string keyword?
+    %       PROPOSAL: Special value, e.g. "string keyword", "argument keyword".
+    %       PROPOSAL: Field name naming convention.
+    %       NOTE: Might want it to be possible to both specify either a string keyword or a setting+value for the same
+    %               setting e.g. if passing on variable values.
+    %       PROBLEM: Does not want to restrict string keywords to possible field names (e.g. no whitespace)?
+    %   CON: Can just as well just use key+value, and set value to 0/1. It is quite short.
+    %
+    % PROPOSAL: Use containers.Map instead of struct.
+    %   PRO: Can have arbitrary keys with whitespace and non-text characters.
+    %       Ex: "Extrapolate Z(omega>0) to Z(0)')"
+    %   CON: Has less functionality for working with containers.Map than for struct. Union, difference, overwrite overlap etc.
+    %       Ex: Want to internally merge/overwrite different sources of settings: Default settings, struct argument,
+    %       key+value arguments.
+    %       PRO: Needs to implement analogue of "add_struct_to_struct" for containers.Map.
+    %   PROPOSAL: Can permit both containers.Map and struct simultaneously.
+    %       PROPOSAL: Convert struct to containers.Map internally.
     
     %====================================================
     % Assign SettingsArg1: Uses first argument if struct
@@ -102,10 +127,10 @@ function [Settings] = interpret_settings_args(DefaultSettings, argList)
     Settings = SettingsArgListPairs;
     
     % For missing values, take from SettingsArg1.
-    Settings = utils.add_struct_to_struct(Settings, SettingsArg1, ...
+    Settings = EJ_library.utils.add_struct_to_struct(Settings, SettingsArg1, ...
         struct('noStructs', 'Do nothing', 'aIsStruct', 'Error', 'bIsStruct', 'Error', 'bothAreStructs', 'Recurse'));
     
     % For missing values, take from DefaultSettings.
-    Settings = utils.add_struct_to_struct(Settings, DefaultSettings, ...
+    Settings = EJ_library.utils.add_struct_to_struct(Settings, DefaultSettings, ...
         struct('noStructs', 'Do nothing', 'aIsStruct', 'Error', 'bIsStruct', 'Error', 'bothAreStructs', 'Recurse'));
 end

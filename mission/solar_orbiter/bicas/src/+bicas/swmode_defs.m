@@ -62,16 +62,12 @@ classdef swmode_defs
     % using internal metadata for every S/W mode.
     %
     % PROPOSAL: Use PF = prodFunc, production function
-    
-    properties(SetAccess=immutable)
-        List
-    end
-    
-    properties(GetAccess=private, SetAccess=immutable)
-        dsiPipelinePrefix    % Prefix in DATASET_ID (DSI).
-        outputDatasetLevel
-    end
+    % PROPOSAL: Same input CDF can have multiple DATASET_IDs, but only one is shown in the s/w descriptor.
+    %   PRO: Can handle old datasets with ROG-SGSE DATASET_IDs, and otherwise only use RODP DATASET_IDs.
 
+
+
+    % PRIVATE, STATIC, CONSTANTS
     properties(Constant, GetAccess=private)
         % The RCS ICD 00037, iss1rev2, draft 2019-07-11, section 5.3 seems (ambiguous) to imply this regex for S/W mode CLI parameters.
         % regexp: "\w    A word character [a-z_A-Z0-9]"
@@ -84,6 +80,21 @@ classdef swmode_defs
 
     
     
+    % PUBLIC, IMMUTABLE
+    properties(SetAccess=immutable)
+        List
+    end
+    
+    
+    
+    % PRIVATE, INSTANCE, IMMUTABLE
+    properties(GetAccess=private, SetAccess=immutable)
+        dsiPipelinePrefix    % Prefix in DATASET_ID (DSI).
+        outputDatasetLevel
+    end
+
+
+
     methods(Access=public)
         
         % Constructor
