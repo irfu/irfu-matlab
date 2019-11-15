@@ -4,7 +4,10 @@ classdef calib
 % An instance contains all loaded RCTs.
 %
 % NOTE: RCT reading functions assume that the same type of RCT (BIAS, LFR, TDS-CWF or TDS-RSWF) is identical (in all
-% relevant parts) for both RODP and ROC-SGSE.
+% relevant parts) for both the RODP and ROC-SGSE pipeline.
+%
+%
+% NOTE: UNFINISHED. NOT USED BY MAIN PROGRAM YET.
 %
 %
 % IMPLEMENTATION NOTES
@@ -24,7 +27,10 @@ classdef calib
 % APC = ampere/count
 % RPS = radians/second
 % (count = TM/TC unit)
+% LSF = LFR Sampling Frequency (F0...F3)
 % TF = Transfer function (Z=Z(omega))
+% FTF = Forward Transfer Function = TF that describes physical input-to-output (not the reverse)
+% ITF = Inverse Transfer Function = TF that describes physical output-to-input (not the reverse)
 % 
 % BLTS = BIAS-LFR/TDS Signals
 % ---------------------------
@@ -53,9 +59,6 @@ classdef calib
 % LFR/TDS. Unit: LFR/TDS calibrated volt. Mostly replaced by BLTS+specified unit in the code.
 %
 %
-% UNFINISHED. NOT USED BY MAIN PROGRAM YET. NOT ENTIRELY CLEAR WHAT IT SHOULD INCLUDE.
-%
-%
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
 % First created 2017-02-15
 %
@@ -64,57 +67,54 @@ classdef calib
 
 % BOGIQ:
 % ------
+% TODO-NEED-INFO: Where does the parasitic capacitance TF fit into the calibration formulas?
+% TODO-NEED-INFO: Parasitic capacitance values?
+%
 % PROPOSAL: Need multiple functions
-%   Apply TF in frequency domain, in time domain(?)   (in both directions = inverse & non-inverse)
-%   Convert TF from frequency domain to time domain (and maybe reverse for debugging)
-%   Invert TF function.
-%   Multiply/combine transfer functions.
-%   Convert files data to time-domain transfer functions?
-%   (Select one BIAS TF of many? Interpolate between transfer functions?!!!)
 %   Select a TDS/LFR TF
 %   Combine TFs: TDS/LFR, BIAS, possibly capacitance-TF.
 %   Apply TF (inverse)
 %   Add TF for (arbitrary) capacitance. (Needed for ~debugging/testing.)
-%   Special treatment of 0 Hz?!
-%
-% QUESTION: How implement the parasitic capacitance TF? Use analytical TF directly, or convert to TF table?
-% TODO: Read RCT
-%
-% PROPOSAL: apply_transfer_function_in_freq as separate utility function?
-% PROPOSAL: Change name.
-%   PRO: "calibration" is too long.
-%   PRO: "calibration" overlaps with function names.
-%   PROPOSAL: "calib", "cal".
-%
-% PROPOSAL: Function for converting frequency list, amplitude list, phase list, into struct (omega, Z).
 %
 % PROPOSAL: Create general-purpose read_CDF function which handles indices correctly (1 vs many records).
 % PROPOSAL: Function for permuting indices to handle dataobj's handling of 1 record-case.
-%
-% PROPOSAL: Somehow tie BIAS calibration variables closer to EpochL and EpochH. Should not be hardcoded in every
-%           instance.
 %
 % PROPOSAL: Derive the alpha, beta and gamma_lg/hg values from the BIAS transfer functions and log them.
 %   NOTE: gamma values apply to AC (highpass filter) and their comparable amplitude is not at 0 Hz but at some other frequency.
 %   NOTE: TFs may change over time.
 %
-% PROPOSAL: Automatically detect in which "direction" a TF is: Delays, advances, or delays & advances the signal.
-%   PRO: Can be used for detecting whether a TF is used correctly. Delaying TF should be inverted, advancing TF should
-%        be used as is, delaying & advancing TF must be wrong.
-%   NOTE: Can probably be read out from phase shifts alone.
-%       TODO-DECISION/PROBLEM: How handle periodicity of angles? Must convert to absolute (non-periodic) angles representing rotation.
-%           PROPOSAL: (For tabulated TFs) Use EJ's unwrap function.
-%   PROBLEM: How do for analytical TFs?!
-%       PROPOSAL: Define (numerical, anonymous) function for the phase shift. Numerically search for global min & max.
-%           NOTE: Must limit min & max frequency.
-%           NOTE: Can stop searching for min/max when found one example of negative/positive value. Does not really need
-%                 global min & max.
-%   PROPOSAL: Apply TF to numerical spike/delta/Dirac function.
-%       PROBLEM: At what sampling rate?
-% 
 % PROPOSAL: Calibration functions that do not work on a single sequence, but a list of sequences (with the same
 % settings; not necessarily the same calibration time).
 %
+% TODO-DECISION: How distribute the "calibration formulas/algorithms between
+%   (1) calibrate_* functions, 
+%   (2) functions that select relevant calibration data (get_BIAS_calib_data)
+%   (2) RCT reading functions,
+%   (3) classes that store TFs?
+%   Ex: Invert the (rat.func., tabulated) TFs
+%   Ex: Extrapolate the tabulated TFs
+%   Ex: If one modifies the TFs before applying the inverse (hypothetical; not implemented)
+%   --
+%   PROPOSAL: Separate modifications/choices/code that
+%       (1) only need to be done/run once during the execution: modification of calibration data,
+%       (2) are done every calibration (call to calibrate_*):   exact algorithms/formulas through which data is fed
+%   PROPOSAL: read_*_RCT should not modify any calibration data, just store it: Not invert TFs, not extrapolate TFs to 0 Hz.
+%       CON: Must separate unmodified and modified calibration data.
+%       CON: "Must" label variables that they are modified/unmodified.
+%       CON-PROBLEM: No clear line for what is modification or not.
+%           Ex: TF frequency Hz-->omega rad/s
+%           Ex: TF amplitude+phase-->Z
+%       TODO-DECISION: Where is it natural to modify calibration data then?!
+%   PROPOSAL: General philosophy should be that calibrate_* chooses as much as possible, and thus chooses different
+%             functions to call.
+%
+% PROPOSAL: Move RCT functions to separate class.
+%
+% PROPOSAL: Simplify/clean-up calibrate_*
+%   PROPOSAL: Function for dtSec.
+%   PROPOSAL: Function for iCalibTimeL/H
+%   PROPOSAL: Assertions for same number of Epoch as samples.
+% PROPOSAL: SETTINGS for scalar calibrations.
 %
 %
 % BOGIQ: RCT-reading functions
@@ -122,9 +122,6 @@ classdef calib
 % PROPOSAL: Use same code/function for reading calibration table, as for reading dataset (and master cdfs)?
 % PROPOSAL: Assert CDF skeleton/master version number.
 % PROPOSAL: Assert skeleton/master.
-% PROPOSAL: Convert from file units to "mathematical units"? (radians/s, radians (for phase shift))
-% PROPOSAL: Convert file transfer function to the right direction (invert it).
-%   NOTE: Currently uncertain if such case exists, but it might.
 % PROPOSAL: Assert/warn (depending on setting?) file units.
 % PROPOSAL: Only use units in variable names.
 % PROPOSAL: Use utility function for reading every zVariable.
@@ -132,26 +129,25 @@ classdef calib
 
 
 
+    properties(Access=private, Constant)
+        
+        % Minimum number of numerator or denominator coefficients in the BIAS RCT.
+        N_MIN_TF_NUMER_DENOM_COEFFS = 8;
+        
+        % Minimum number of entries in tabulated transfer functions in RCTs.
+        TF_TABLE_MIN_LENGTH = 10;
+        
+    end
+
+
     properties(Access=private)
         
-        % Different TFs. Initialized in constructor.
-        % IMPLEMENTATION NOTE: Variable names include the prefix "BIAS" to indicate that these are the TFs for BIAS
-        % as opposed to TDS and LFR which will have to be added later.
-        %biasDcAbsGain        % BIAS gain for DC absolute (non-diff) data (instead of TF).
-        %biasDcDiffGain       % BIAS gain for DC diff data (instead of TF).
-        %biasDcAbsOffsets     % Unclear definition so far.
-        
-        %biasAcLoGainTf
-        %biasAcHiGainTf
-        
-        %BiasDcRecordList = [];
-        
         Bias
-        LfrTfs;             % "Tfs" = TFs = Transfer Functions
-        tdsCwfFactors;
-        TdsRswfTfTableList;
+        LfrItfTable
+        tdsCwfFactorsVpc
+        TdsRswfItfList
         
-        SETTINGS;
+        SETTINGS
     end
 
     %###################################################################################################################
@@ -167,10 +163,10 @@ classdef calib
             % find_RCT.
             obj.SETTINGS = SETTINGS;
             
-            obj.Bias               = obj.read_log_RCT(calibrationDir, pipelineId, 'BIAS');
-            obj.LfrTfs             = obj.read_log_RCT(calibrationDir, pipelineId, 'LFR');
-            obj.tdsCwfFactors      = obj.read_log_RCT(calibrationDir, pipelineId, 'TDS-CWF');
-            obj.TdsRswfTfTableList = obj.read_log_RCT(calibrationDir, pipelineId, 'TDS-RSWF');
+            obj.Bias             = obj.read_log_RCT(calibrationDir, pipelineId, 'BIAS');
+            obj.LfrItfTable      = obj.read_log_RCT(calibrationDir, pipelineId, 'LFR');
+            obj.tdsCwfFactorsVpc = obj.read_log_RCT(calibrationDir, pipelineId, 'TDS-CWF');
+            obj.TdsRswfItfList   = obj.read_log_RCT(calibrationDir, pipelineId, 'TDS-RSWF');
         end
 
 
@@ -178,16 +174,25 @@ classdef calib
         % Convert/calibrate TC bias current: TM units --> physical units.
         %
         % NOTE: This is the normal way of obtaining bias current in physical units (as opposed to HK bias current).
-        function biasCurrentAmpere = TC_bias_TM_to_bias_current(obj, tcBiasTm, Epoch, iAntenna)
+        function biasCurrentAmpere = calibrate_TC_bias_TM_to_bias_current(obj, Epoch, tcBiasTm, iAntenna)
             % BUG: Can not handle time.
             
+            % ASSERTION
             bicas.proc_utils.assert_Epoch(Epoch)   % NOTE: Asserts column vector ("zvar"-like).
+            assert(isa(tcBiasTm, 'uint16'))
             
-            % Calibrate
-            biasCurrentAmpere = obj.Bias.Currents.offsetAmpere(iAntenna) + obj.Bias.Currents.gainApc(iAntenna) * tcBiasTm;      % LINEAR FUNCTION
+            %==============================
+            % Obtain calibration constants
+            %==============================
+            iEpochListL = bicas.calib.get_calibration_time_interval(Epoch, obj.Bias.epochL);   iCalibTimeL = iEpochListL{1}(1);
+            offsetAmpere = obj.Bias.Current.offsetsAmpere(iCalibTimeL, iAntenna);
+            gainApc      = obj.Bias.Current.gainsApc(     iCalibTimeL, iAntenna);
+
+            % CALIBRATE
+            biasCurrentAmpere = offsetAmpere + gainApc .* tcBiasTm;    % LINEAR FUNCTION
         end
 
-        
+
 
         % Convert/calibrate diagnostic HK TM bias current values to physical units.
         % Refers to BIAS HK zVars HK_BIA_BIAS1/2/3.
@@ -207,7 +212,7 @@ classdef calib
         % "Telemetry". (Not to be confused with the corresponding telecommands.). The conversion functions are identical
         % for all three probes.
         %
-        function biasCurrentAmpere = bias_HK_TM_to_bias_current(obj, hkBiasCurrentTm, iAntenna)
+        function biasCurrentAmpere = calibrate_HK_bias_TM_to_bias_current(obj, hkBiasCurrentTm, iAntenna)
             % ASSERTION: zVar HK_BIA_BIAS1/2/3's class in BIAS HK. Not strictly required, but the variable has to be
             % some integer which can contain the information.
             assert(isa(hkBiasCurrentTm, 'uint16'))
@@ -226,9 +231,9 @@ classdef calib
             hkBiasCurrentTm   = bitxor(hkBiasCurrentTm, hex2dec('8000'));                       % FLIP BIT
             biasCurrentAmpere = gainApc(iAntenna) * (hkBiasCurrentTm + offsetTm(iAntenna));     % LINEAR FUNCTION
         end
-        
-        
-        
+
+
+
         % ARGUMENTS
         % =========
         % tdsCwfSamplesTm : Samples.
@@ -248,7 +253,7 @@ classdef calib
             assert(numel(tdsCwfSamplesTm) == numel(Epoch))
             assert((1 <= iBltsChannel) && (iBltsChannel <= 3))
             
-            dt = double(Epoch(end) - Epoch(1)) / numel(Epoch) * 1e-9;   % Unit: s   ("Epoch" unit: ns)
+            dtSec = double(Epoch(end) - Epoch(1)) / (numel(Epoch)-1) * 1e-9;   % Unit: s   ("Epoch" unit: ns)
             enableDetrending = obj.SETTINGS.get_fv('PROCESSING.CALIBRATION.DETRENDING_ENABLED');
 
             %==============================
@@ -262,18 +267,54 @@ classdef calib
             %===============================================
             % CALIBRATE: TDS TM --> TDS/BIAS interface volt
             %===============================================
-            bltsInterfVolt = obj.tdsCwfFactors(iBltsChannel) * tdsCwfSamplesTm;    % MULTIPLICATION
+            bltsInterfVolt = obj.tdsCwfFactorsVpc(iBltsChannel) * tdsCwfSamplesTm;    % MULTIPLICATION
             
             %=====================================================
             % CALIBRATE: TDS/BIAS interface volt --> antenna volt
             %=====================================================
             % Create TF for BIAS.
-            tf = @(omega) bicas.calib.eval_analytical_transfer_func(...
-                omega, BiasCalibData.tfNumerCoeffs, BiasCalibData.tfDenomCoeffs);
             % APPLY TRANSFER FUNCTION
-            asrSamplesVolt = bicas.utils.apply_transfer_function(dt, bltsInterfVolt, tf, ...
+            asrSamplesVolt = bicas.utils.apply_transfer_function(...
+                dtSec, ...
+                bltsInterfVolt, ...
+                @(omega) BiasCalibData.Itf.eval(omega), ...
                 'enableDetrending', enableDetrending);                  
 
+            asrSamplesVolt = asrSamplesVolt + BiasCalibData.offsetVolt;
+        end
+
+
+
+        function asrSamplesVolt = calibrate_TDS_RSWF(obj, Epoch, tdsRswfSamplesTm, iBltsChannel, BltsAsrType)
+            % ASSERTIONS
+            bicas.proc_utils.assert_Epoch(Epoch)
+            assert(numel(tdsRswfSamplesTm) == numel(Epoch))
+            assert((1 <= iBltsChannel) && (iBltsChannel <= 3))
+            
+            dtSec = double(Epoch(end) - Epoch(1)) / (numel(Epoch)-1) * 1e-9;   % Unit: s   ("Epoch" unit: ns)
+            enableDetrending = obj.SETTINGS.get_fv('PROCESSING.CALIBRATION.DETRENDING_ENABLED');
+            
+            %==============================
+            % Obtain calibration constants
+            %==============================
+            iEpochListL = bicas.calib.get_calibration_time_interval(Epoch, obj.Bias.epochL);   iCalibTimeL = iEpochListL{1}(1);
+            iEpochListH = bicas.calib.get_calibration_time_interval(Epoch, obj.Bias.epochH);   iCalibTimeH = iEpochListH{1}(1);
+            % NOTE: Low/high gain is irrelevant for TDS. Argument value arbitrary.
+            BiasCalibData = obj.get_BIAS_calib_data(BltsAsrType, 0, iCalibTimeL, iCalibTimeH);
+            
+            itf = @(omega) (...
+                obj.TdsRswfItfList{iBltsChannel}.eval_linear(omega) .* ...
+                BiasCalibData.Itf.eval(omega));
+
+            %====================================
+            % CALIBRATE: TDS TM --> antenna volt
+            %====================================
+            asrSamplesVolt = bicas.utils.apply_transfer_function(...
+                dtSec, ...
+                tdsRswfSamplesTm, ...
+                itf, ...
+                'enableDetrending', enableDetrending);
+            
             asrSamplesVolt = asrSamplesVolt + BiasCalibData.offsetVolt;
         end
 
@@ -288,7 +329,7 @@ classdef calib
             assert((1 <= iBltsChannel) && (iBltsChannel <= 5))
             assert((1 <= iLfrFreq)     && (iLfrFreq     <= 4), 'Illegal iLfrFreq value.')
             
-            dt = double(Epoch(end) - Epoch(1)) / numel(Epoch) * 1e-9;   % Unit: s   (Epoch unit: ns)
+            dtSec = double(Epoch(end) - Epoch(1)) / (numel(Epoch)-1) * 1e-9;   % Unit: s   (Epoch unit: ns)
             enableDetrending = obj.SETTINGS.get_fv('PROCESSING.CALIBRATION.DETRENDING_ENABLED');
 
             %==============================
@@ -297,26 +338,26 @@ classdef calib
             iEpochListL = bicas.calib.get_calibration_time_interval(Epoch, obj.Bias.epochL);   iCalibTimeL = iEpochListL{1}(1);
             iEpochListH = bicas.calib.get_calibration_time_interval(Epoch, obj.Bias.epochH);   iCalibTimeH = iEpochListH{1}(1);
             BiasCalibData = obj.get_BIAS_calib_data(BltsAsrType, biasHighGain, iCalibTimeL, iCalibTimeH);
-            LfrTf = obj.LfrTfs{iLfrFreq}{iBltsChannel};
+            LfrTf = obj.LfrItfTable{iLfrFreq}{iBltsChannel};
             
             %============================================================
             % CALIBRATE: LFR TM --> LFR/BIAS interface volt --> ASR volt
             %============================================================
             % Create combined TF for LFR and BIAS.
             tf = @(omega) (...
-                bicas.calib.eval_tabulated_transfer_func(omega, LfrTf.omegaRps, LfrTf.zVpc) ...
+                LfrTf.eval_linear(omega) ...
                 .* ...
-                bicas.calib.eval_analytical_transfer_func(...
-                omega, BiasCalibData.tfNumerCoeffs, BiasCalibData.tfDenomCoeffs));
+                BiasCalibData.Itf.eval(omega));
+
             % APPLY TRANSFER FUNCTION
-            asrSamplesVolt = bicas.utils.apply_transfer_function(dt, lfrSamplesTm, tf, ...
+            asrSamplesVolt = bicas.utils.apply_transfer_function(dtSec, lfrSamplesTm, tf, ...
                 'enableDetrending', enableDetrending);
             
             asrSamplesVolt = asrSamplesVolt + BiasCalibData.offsetVolt;
         end
-        
-        
-        
+
+
+
         % Find the path to the RCT to use, using the filenames specified in the documentation. If there are multiple
         % matching candidates, choose the latest one as indicated by the filename.
         %
@@ -326,11 +367,13 @@ classdef calib
         % pipelineId, rctId : String constants representing pipeline and RCT to be read.
         %
         %
-        % IMPLEMENTATION NOTE: Useful to have this as separate functionality so that the chosen RCT to use can be
+        % IMPLEMENTATION NOTES
+        % ====================
+        % Useful to have this as separate functionality so that the chosen RCT to use can be
         % explicitly overridden via e.g. settings.
-        % IMPLEMENTATION NOTE: This method is only an instance method so that it can use SETTINGS.
+        % This method is only an instance method so that it can use SETTINGS.
         %
-        function path = find_RCT(obj, calibrationDir, pipelineId, rctId)            
+        function path = find_RCT(obj, calibrationDir, pipelineId, rctId)
 
             %============================
             % Create regexp for filename
@@ -383,18 +426,18 @@ classdef calib
                      'in directory "%s".\n', ...
                      'Selecting the latest one as indicated by the filename: "%s".\n'], ...
                     filenameRegexp, calibrationDir, filename);
-%                 for i = 1:numel(filenameList)
-%                     msg = [msg, sprintf('    %s\n', filenameList{i})];
-%                 end
+                for i = 1:numel(filenameList)
+                    msg = [msg, sprintf('    %s\n', filenameList{i})];
+                end
                 bicas.log('debug', msg)
             end
             
             % IMPLEMENTATION NOTE: Not logging which calibration file is selected, since this function is not supposed
             % to actually load the content.
         end
-        
-        
-        
+
+
+
     end    % methods(Access=public)
 
     
@@ -449,10 +492,10 @@ classdef calib
             switch(BltsAsrType.category)
                 case 'DC single'
                     assert(isscalar(BltsAsrType.antennas))
-                    BiasTfCoeffs = obj.Bias.Tfs.DcSingle;
-                    offsetVolt   = obj.Bias.dcSingleOffsetsVolt(iCalibTimeH, BltsAsrType.antennas);
+                    BiasItfSet    = obj.Bias.ItfSet.DcSingle;
+                    offsetVolt = obj.Bias.dcSingleOffsetsVolt(iCalibTimeH, BltsAsrType.antennas);
                 case 'DC diff'
-                    BiasTfCoeffs = obj.Bias.Tfs.DcDiff;
+                    BiasItfSet    = obj.Bias.ItfSet.DcDiff;
                     if     isequal(BltsAsrType.antennas(:)', [1,2]);   offsetVolt = obj.Bias.DcDiffOffsets.E12Volt(iCalibTimeH);
                     elseif isequal(BltsAsrType.antennas(:)', [2,3]);   offsetVolt = obj.Bias.DcDiffOffsets.E23Volt(iCalibTimeH);
                     elseif isequal(BltsAsrType.antennas(:)', [1,3]);   offsetVolt = obj.Bias.DcDiffOffsets.E13Volt(iCalibTimeH);
@@ -460,14 +503,13 @@ classdef calib
                         error('BICAS:calib:Assertion:IllegalArgument', 'Illegal BltsAsrType.antennas.');
                     end
                 case 'AC'
-                    if biasHighGain ; BiasTfCoeffs = obj.Bias.Tfs.AcHighGain; offsetVolt = 0;
-                    else            ; BiasTfCoeffs = obj.Bias.Tfs.AcLowGain;  offsetVolt = 0;
+                    if biasHighGain ; BiasItfSet = obj.Bias.ItfSet.AcHighGain;   offsetVolt = 0;
+                    else            ; BiasItfSet = obj.Bias.ItfSet.AcLowGain;    offsetVolt = 0;
                     end
                 otherwise
                     error('BICAS:calib:IllegalArgument:Assertion', 'Illegal argument BltsAsrType.category=%s', BltsAsrType.category)
             end
-            BiasCalibData.tfNumerCoeffs = BiasTfCoeffs.numerCoeffs(iCalibTimeL, :);
-            BiasCalibData.tfDenomCoeffs = BiasTfCoeffs.denomCoeffs(iCalibTimeL, :);
+            BiasCalibData.Itf        = BiasItfSet{iCalibTimeL};
             BiasCalibData.offsetVolt = offsetVolt;
         end
 
@@ -533,9 +575,6 @@ classdef calib
             
             Do = dataobj(filePath);
             
-            % Minimum number of numerator or denominator coefficients in the BIAS RCT.
-            N_MIN_TF_NUMER_DENOM_COEFFS = 8;
-            
             % Constants for interpreting the array indices in the CDF.
             NUMERATOR   = 1;
             DENOMINATOR = 2;
@@ -574,7 +613,7 @@ classdef calib
                 % ASSERTIONS: Size of tfCoeffs/TRANSFER_FUNCTION_COEFFS
                 %=======================================================
                 assert(size(tfCoeffs, 1) == nEpochL)
-                assert(size(tfCoeffs, 2) >= N_MIN_TF_NUMER_DENOM_COEFFS)
+                assert(size(tfCoeffs, 2) >= bicas.calib.N_MIN_TF_NUMER_DENOM_COEFFS)
                 assert(size(tfCoeffs, 3) == 2)
                 assert(size(tfCoeffs, 4) == 4)
 
@@ -590,18 +629,30 @@ classdef calib
                 Bias.DcDiffOffsets.E12Volt   = dcDiffOffsetsVolt(:, 1);
                 Bias.DcDiffOffsets.E13Volt   = dcDiffOffsetsVolt(:, 2);
                 Bias.DcDiffOffsets.E23Volt   = dcDiffOffsetsVolt(:, 3);
-
-                Bias.Tfs.DcSingle.numerCoeffs   = tfCoeffs(:, :, NUMERATOR,   DC_SINGLE);
-                Bias.Tfs.DcSingle.denomCoeffs   = tfCoeffs(:, :, DENOMINATOR, DC_SINGLE);
                 
-                Bias.Tfs.DcDiff.numerCoeffs     = tfCoeffs(:, :, NUMERATOR,   DC_DIFF);
-                Bias.Tfs.DcDiff.denomCoeffs     = tfCoeffs(:, :, DENOMINATOR, DC_DIFF);
+                % NOTE: Using name "ItfSet" only to avoid "Itfs" (plural). (List, Table would be wrong? Use "ItfTable"?)
+                Bias.ItfSet.DcSingle = bicas.calib.sequence_of_ITFs(...
+                    tfCoeffs(:, :, NUMERATOR,   DC_SINGLE), ...
+                    tfCoeffs(:, :, DENOMINATOR, DC_SINGLE));
                 
-                Bias.Tfs.AcLowGain.numerCoeffs  = tfCoeffs(:, :, NUMERATOR,   AC_LG);
-                Bias.Tfs.AcLowGain.denomCoeffs  = tfCoeffs(:, :, DENOMINATOR, AC_LG);
+                Bias.ItfSet.DcDiff = bicas.calib.sequence_of_ITFs(...
+                    tfCoeffs(:, :, NUMERATOR,   DC_DIFF), ...
+                    tfCoeffs(:, :, DENOMINATOR, DC_DIFF));
                 
-                Bias.Tfs.AcHighGain.numerCoeffs = tfCoeffs(:, :, NUMERATOR,   AC_HG);
-                Bias.Tfs.AcHighGain.denomCoeffs = tfCoeffs(:, :, DENOMINATOR, AC_HG);
+                Bias.ItfSet.AcLowGain = bicas.calib.sequence_of_ITFs(...
+                    tfCoeffs(:, :, NUMERATOR,   AC_LG), ...
+                    tfCoeffs(:, :, DENOMINATOR, AC_LG));
+                
+                Bias.ItfSet.AcHighGain = bicas.calib.sequence_of_ITFs(...
+                    tfCoeffs(:, :, NUMERATOR,   AC_HG), ...
+                    tfCoeffs(:, :, DENOMINATOR, AC_HG));
+                
+                % ASSERTION
+                EJ_library.utils.assert.all_equal(...
+                   [numel(Bias.ItfSet.DcSingle), ...
+                    numel(Bias.ItfSet.DcDiff), ...
+                    numel(Bias.ItfSet.AcLowGain), ...
+                    numel(Bias.ItfSet.AcHighGain)])
                 
                 %==========================================================================
                 % ASSERTIONS: All variables NOT based on tfCoeffs/TRANSFER_FUNCTION_COEFFS
@@ -632,13 +683,11 @@ classdef calib
 
 
 
-        % LfrTfs : LfrTfs{iFreq}{iBiasChannel}, iFreq=1..4 for F0..F3,
+        % LfrItfTable : {iFreq}{iBiasChannel}, iFreq=1..4 representing LFR sampling frequencies F0...F3,
         %                   iFreq=1..3 : iBiasChannel=1..5 for BIAS_1..BIAS_5
         %                   iFreq=4    : iBiasChannel=1..3 for BIAS_1..BIAS_3
         %                  NOTE: This is different from LFR zVar FREQ.
-        function LfrTfs = read_LFR_RCT(filePath)
-            % BUG: 5+5+5+3 TFs, NOT 1+1+1+1.
-            
+        function LfrItfTable = read_LFR_RCT(filePath)
             Do = dataobj(filePath);
             
             try
@@ -646,6 +695,8 @@ classdef calib
                 % IMPLEMENTATION NOTE: Does not want to rely one dataobj special behaviour for 1 record case
                 % ==> Remove leading singleton dimensions, much assertions.
 
+                % NOTE: There are separate TFs for each BLTS channel, not just separate LFR sampling frequencies, i.e.
+                % there are 5+5+5+3 TFs.
                 freqsHz{1}  = shiftdim(Do.data.Freqs_F0.data);    % NOTE: Index {iLfrFreq}.
                 freqsHz{2}  = shiftdim(Do.data.Freqs_F1.data);
                 freqsHz{3}  = shiftdim(Do.data.Freqs_F2.data);
@@ -661,30 +712,40 @@ classdef calib
                 phaseDeg{3} = shiftdim(Do.data.TF_BIAS_12345_phase_F2.data);
                 phaseDeg{4} = shiftdim(Do.data.TF_BIAS_123_phase_F3.data);
 
-                for iLfrFreq = 1:4
-                    if iLfrFreq ~= 4
+                for iLsf = 1:4
+                    if iLsf ~= 4
                         nBltsChannels = 5;
                     else
                         nBltsChannels = 3;
                     end
+                    
+                    lsfFreqsHz  = freqsHz{iLsf};
+                    lsfAmplCpv  = amplCpv{iLsf};
+                    lsfPhaseDeg = phaseDeg{iLsf};
 
-                    % ASSERTIONS: Check CDF array sizes, that no change in format.
-                    assert(iscolumn(freqsHz{iLfrFreq}))
-                    assert(ndims(amplCpv)  == 2)
-                    assert(ndims(phaseDeg) == 2)
-                    assert(size( amplCpv{iLfrFreq}, 2) == nBltsChannels)
-                    assert(size(phaseDeg{iLfrFreq}, 2) == nBltsChannels)
+                    % ASSERTIONS: Check CDF array sizes, and implicitly that the CDF format is the expected one.
+                    assert(iscolumn(freqsHz{iLsf}))
+                    
+                    assert(ndims(lsfAmplCpv)  == 2)
+                    assert(ndims(lsfPhaseDeg) == 2)                    
+                    assert(size( lsfAmplCpv,  1) >= bicas.calib.TF_TABLE_MIN_LENGTH)
+                    assert(size( lsfPhaseDeg, 1) >= bicas.calib.TF_TABLE_MIN_LENGTH)
+                    assert(size( lsfAmplCpv,  2) == nBltsChannels)
+                    assert(size( lsfPhaseDeg, 2) == nBltsChannels)
 
                     for iBltsChannel = 1:nBltsChannels
-                        omegaRps = freqsHz{iLfrFreq} * 2*pi;    % NOTE: Duplicates the same frequency list.
-                        zVpc     = amplCpv{iLfrFreq}(:,iBltsChannel) .* exp(1i * deg2rad(phaseDeg{iLfrFreq}(:,iBltsChannel)));
                         
-                        assert(isvector(omegaRps))
-                        assert(isvector(zVpc))
-                        assert(numel(omegaRps) == numel(zVpc))
+                        % NOTE: Inverting the tabulated TF.
+                        Itf = EJ_library.utils.tabulated_transform(...
+                            lsfFreqsHz * 2*pi, ...
+                            1 ./ lsfAmplCpv(      :, iBltsChannel), ...
+                            - deg2rad(lsfPhaseDeg(:, iBltsChannel)), ...
+                            'extrapolatePositiveFreqZtoZero', 1);
                         
-                        LfrTfs{iLfrFreq}{iBltsChannel}.omegaRps = omegaRps;
-                        LfrTfs{iLfrFreq}{iBltsChannel}.zVpc     = zVpc;
+                        % ASSERTION: ITF
+                        assert(~Itf.toward_zero_at_high_freq())
+                        
+                        LfrItfTable{iLsf}{iBltsChannel} = Itf;
                     end
                 end
                 
@@ -719,12 +780,12 @@ classdef calib
                 Exc2 = MException('BICAS:calib:CannotInterpretRCT', 'Can not interpret calibration file (RCT) "%s"', filePath);
                 Exc2 = Exc2.addCause(Exc1);
                 throw(Exc2);
-            end            
+            end
         end
         
         
         
-        function TdsRswfTfList = read_TDS_RSWF_RCT(filePath)
+        function TdsRswfItfList = read_TDS_RSWF_RCT(filePath)
             
             Do = dataobj(filePath);
             
@@ -739,9 +800,11 @@ classdef calib
                 % ASSERTIONS: Check CDF array sizes, no change in format.
                 assert(iscolumn(freqsHz));                
                 assert(ndims(amplVpc)     == 2)
-                assert(size( amplVpc, 1)  == 3)
                 assert(ndims(phaseDeg)    == 2)
+                assert(size( amplVpc,  1) == 3)
                 assert(size( phaseDeg, 1) == 3)
+                assert(size( amplVpc,  2) >= bicas.calib.TF_TABLE_MIN_LENGTH)
+                assert(size( phaseDeg, 2) >= bicas.calib.TF_TABLE_MIN_LENGTH)
                 
                 EJ_library.utils.assert.all_equal([...
                     length(freqsHz), ...
@@ -749,14 +812,18 @@ classdef calib
                     size(phaseDeg, 2) ]);
                 
                 for iBltsChannel = 1:3
-                    omegaRps = freqsHz;    % NOTE: Duplicates the same frequency list.
-                    zVpc     = shiftdim(amplVpc(iBltsChannel, :) .* exp(1i * deg2rad(phaseDeg(iBltsChannel, :))));
+                    Itf = EJ_library.utils.tabulated_transform(...
+                        freqsHz * 2*pi, ...
+                        amplVpc(         iBltsChannel, :), ...
+                        deg2rad(phaseDeg(iBltsChannel, :)), ...
+                        'extrapolatePositiveFreqZtoZero', 1);
                     
-                    assert(iscolumn(omegaRps))
-                    assert(iscolumn(zVpc))
+                    % ASSERTION: INVERTED TF
+                    assert(~Itf.toward_zero_at_high_freq(), ...
+                        ['TDS RSWF transfer function appears to go toward zero at high frequencies. Has it not been', ...
+                        ' inverted/backward in time, i.e. is it not physical output-to-input?'])
                     
-                    TdsRswfTfList(iBltsChannel).omegaRps = omegaRps;
-                    TdsRswfTfList(iBltsChannel).zVpc     = zVpc;
+                    TdsRswfItfList{iBltsChannel} = Itf;
                 end
                 
             catch Exc1
@@ -768,77 +835,8 @@ classdef calib
         
 
 
-
-
-
-
-%         function tfZ = parasitic_capacitance_TF(tfOmega)
-%             % Calculate Z(omega) values for TF representing parasitic capacitances (based on analytic function).
-% 
-%             % Function name? "Input capacitance"?
-%             % Not read R & C from constants here? Submit as arguments?
-%             capacitanceFarad =
-%             impedanceOhm     =
-%             
-%             % Correct for a TF?!
-%             tfZ = 1 / (1 + 1j*tfOmega*capacitanceFarad*impedanceOhm);
-%             
-%             error('BICAS:calib:OperationNotImplemented', 'Function not implemented Yet.')
-%         end
-        
-        
-        
-        % Evaluate (complex) analytical transfer function for arbitrary number of omega values.
-        % 
-        %     nc(1)*s^0 + ... + nc(nNc)*s^(nNc-1)
-        % Z = -----------------------------------,   s = i*omega
-        %     dc(1)*s^0 + ... + dc(nDc)*s^(nDc-1)
+        % Utility function
         %
-        % nc = numerCoeffs
-        % dc = denomCoeffs
-        %
-        % NOTE: MATLAB's "polyval" uses the opposite convention for the order/index of coefficients.
-        %
-        function Z = eval_analytical_transfer_func(omega, numerCoeffs, denomCoeffs)
-            % PROPOSAL: Reclassify as generic function and move it.
-            
-            assert(isvector(numerCoeffs))
-            assert(isvector(denomCoeffs))
-            numerCoeffs = numerCoeffs(:);
-            denomCoeffs = denomCoeffs(:);
-            
-            % ASSERTIONS.
-            % NOTE: Column vectors are required for using "flipud".
-            assert(iscolumn(numerCoeffs))
-            assert(iscolumn(denomCoeffs))
-            % ASSERTION: Try to detect accidently switching the coefficients.
-            % Denominator polynomial should have at least as high a degree as the numerator polynomial. <==> Z should
-            % not diverge as omega-->inf.
-            nNc = find(numerCoeffs,   1, 'last' );   % Detect highest-order non-zero coefficient.
-            nDc = find(denomCoeffs, 1, 'last' );
-            assert(nDc >= nNc)
-            
-            % Calculate Z
-            s = 1i * omega;
-            Z = polyval(flipud(numerCoeffs), s) ./ polyval(flipud(denomCoeffs), s);
-        end
-        
-        
-        
-        function Z = eval_tabulated_transfer_func(evalOmega, tfOmega, tfZ)
-            % PROPOSAL: Extend TF to infinite frequency.
-            %   PRO: Can play around with high sampling rates for testing.
-            
-            % Extend TF to zero radians/s.
-            % NOTE: Can not just extrapolate/use the lowest-frequency Z to 0 Hz since it has to be real (not complex).
-            tfOmega = [0;           tfOmega(:)];
-            tfZ     = [abs(tfZ(1)); tfZ(:)];   
-            
-            Z = interp1(tfOmega, tfZ, evalOmega, 'linear');
-        end
-
-
-
         % Function for normalizing the indices of dataobj zVariables.
         % dataobj zVariable arrays have different meanings for their indices depending on whether there are one record
         % or many. If there is one record, then there is not record index. If there are multiple records, then the first
@@ -865,8 +863,48 @@ classdef calib
                 data = shiftdim(data, -1);
             end
         end
-
+        
+        
+        
+        % Utility function.
+        %
+        % NOTE: Arguments describe FTFs. Return value describes ITFs.
+        function ItfArray = sequence_of_ITFs(ftfNumCoeffs, ftfDenomCoeffs)
+            assert(size(ftfNumCoeffs, 1) == size(ftfDenomCoeffs, 1))
+            ItfArray = {};
             
+            for i = 1:size(ftfNumCoeffs, 1)
+                % IMPORTANT NOTE: Invert TF: FTF --> ITF
+                Itf = EJ_library.utils.rational_func_transform(...
+                    ftfDenomCoeffs(i,:), ...
+                    ftfNumCoeffs(i,:));
+                
+                % ASSERTIONS
+                assert(Itf.has_real_impulse_response())
+                % Assert ITF. Can not set proper error message.
+                assert(~Itf.zero_in_high_freq_limit(), 'Transfer function is not inverted, i.e. not physical output-to-input.')
+                
+                ItfArray{end+1} = Itf;
+            end
+        end
+
+        
+
+%         function tfZ = parasitic_capacitance_TF(tfOmega)
+%             % Calculate Z(omega) values for TF representing parasitic capacitances (based on analytic function).
+% 
+%             % Function name? "Input capacitance"?
+%             % Not read R & C from constants here? Submit as arguments?
+%             capacitanceFarad =
+%             impedanceOhm     =
+%             
+%             % Correct for a TF?!
+%             tfZ = 1 / (1 + 1j*tfOmega*capacitanceFarad*impedanceOhm);
+%             
+%             error('BICAS:calib:OperationNotImplemented', 'Function not implemented Yet.')
+%         end
+
+
 
     end    %methods(Static, Access=private)
 
