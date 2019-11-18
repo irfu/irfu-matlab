@@ -225,6 +225,44 @@ classdef calib
 
 
 
+        % NOTE: TEMPORARY IMPLEMENTATION(?) Only uses first Epoch value for determining calibration values.
+        %
+        function asrSamplesVolt = calibrate_LFR(obj, Epoch, lfrSamplesTm, iBltsChannel, BltsAsrType, iLfrFreq, biasHighGain)
+            
+            bicas.proc_utils.assert_Epoch(Epoch)
+            assert(numel(lfrSamplesTm) == numel(Epoch))
+            assert((1 <= iBltsChannel) && (iBltsChannel <= 5))
+            assert((1 <= iLfrFreq)     && (iLfrFreq     <= 4), 'Illegal iLfrFreq value.')
+            
+            dtSec = double(Epoch(end) - Epoch(1)) / (numel(Epoch)-1) * 1e-9;   % Unit: s   (Epoch unit: ns)
+            enableDetrending = obj.SETTINGS.get_fv('PROCESSING.CALIBRATION.DETRENDING_ENABLED');
+
+            %==============================
+            % Obtain calibration constants
+            %==============================
+            iEpochListL = bicas.calib.get_calibration_time_interval(Epoch, obj.Bias.epochL);   iCalibTimeL = iEpochListL{1}(1);
+            iEpochListH = bicas.calib.get_calibration_time_interval(Epoch, obj.Bias.epochH);   iCalibTimeH = iEpochListH{1}(1);
+            BiasCalibData = obj.get_BIAS_calib_data(BltsAsrType, biasHighGain, iCalibTimeL, iCalibTimeH);
+            LfrTf = obj.LfrItfTable{iLfrFreq}{iBltsChannel};
+            
+            %============================================================
+            % CALIBRATE: LFR TM --> LFR/BIAS interface volt --> ASR volt
+            %============================================================
+            % Create combined TF for LFR and BIAS.
+            tf = @(omega) (...
+                LfrTf.eval_linear(omega) ...
+                .* ...
+                BiasCalibData.Itf.eval(omega));
+
+            % APPLY TRANSFER FUNCTION
+            asrSamplesVolt = bicas.utils.apply_transfer_function(dtSec, lfrSamplesTm, tf, ...
+                'enableDetrending', enableDetrending);
+            
+            asrSamplesVolt = asrSamplesVolt + BiasCalibData.offsetVolt;
+        end
+
+
+
         % ARGUMENTS
         % =========
         % tdsCwfSamplesTm : Samples.
@@ -304,44 +342,6 @@ classdef calib
                 dtSec, ...
                 tdsRswfSamplesTm, ...
                 itf, ...
-                'enableDetrending', enableDetrending);
-            
-            asrSamplesVolt = asrSamplesVolt + BiasCalibData.offsetVolt;
-        end
-
-
-
-        % NOTE: TEMPORARY IMPLEMENTATION(?) Only uses first Epoch value for determining calibration values.
-        %
-        function asrSamplesVolt = calibrate_LFR(obj, Epoch, lfrSamplesTm, iBltsChannel, BltsAsrType, iLfrFreq, biasHighGain)
-            
-            bicas.proc_utils.assert_Epoch(Epoch)
-            assert(numel(lfrSamplesTm) == numel(Epoch))
-            assert((1 <= iBltsChannel) && (iBltsChannel <= 5))
-            assert((1 <= iLfrFreq)     && (iLfrFreq     <= 4), 'Illegal iLfrFreq value.')
-            
-            dtSec = double(Epoch(end) - Epoch(1)) / (numel(Epoch)-1) * 1e-9;   % Unit: s   (Epoch unit: ns)
-            enableDetrending = obj.SETTINGS.get_fv('PROCESSING.CALIBRATION.DETRENDING_ENABLED');
-
-            %==============================
-            % Obtain calibration constants
-            %==============================
-            iEpochListL = bicas.calib.get_calibration_time_interval(Epoch, obj.Bias.epochL);   iCalibTimeL = iEpochListL{1}(1);
-            iEpochListH = bicas.calib.get_calibration_time_interval(Epoch, obj.Bias.epochH);   iCalibTimeH = iEpochListH{1}(1);
-            BiasCalibData = obj.get_BIAS_calib_data(BltsAsrType, biasHighGain, iCalibTimeL, iCalibTimeH);
-            LfrTf = obj.LfrItfTable{iLfrFreq}{iBltsChannel};
-            
-            %============================================================
-            % CALIBRATE: LFR TM --> LFR/BIAS interface volt --> ASR volt
-            %============================================================
-            % Create combined TF for LFR and BIAS.
-            tf = @(omega) (...
-                LfrTf.eval_linear(omega) ...
-                .* ...
-                BiasCalibData.Itf.eval(omega));
-
-            % APPLY TRANSFER FUNCTION
-            asrSamplesVolt = bicas.utils.apply_transfer_function(dtSec, lfrSamplesTm, tf, ...
                 'enableDetrending', enableDetrending);
             
             asrSamplesVolt = asrSamplesVolt + BiasCalibData.offsetVolt;
