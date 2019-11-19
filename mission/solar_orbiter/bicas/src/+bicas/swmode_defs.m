@@ -134,8 +134,8 @@ classdef swmode_defs
                     obj.outputDatasetLevel    =  'L2';    % On request from ROC.
                     inputDashEList            = {'-E'};
                     swModeCliOptionAmendmList = {''};
-                    lfrOutputSkeletonVersion  = {'04', '04', '04', '04'};
-                    tdsOutputSkeletonVersion  = {'04', '04'};
+                    lfrOutputSkeletonVersion  = {'05', '05', '05', '05'};
+                    tdsOutputSkeletonVersion  = {'05', '05'};
                     
 %                     if enableRocsgseL2rInput
 %                         inputDatasetLevelList{end+1}     = 'L2R';     % NOTE: L2R etc only kept for backward-compatibility.
@@ -149,8 +149,8 @@ classdef swmode_defs
                     inputDashEList            = {'-E'};
                     swModeCliOptionAmendmList = {''};
                     obj.outputDatasetLevel    = 'L2';
-                    lfrOutputSkeletonVersion  = {'04', '04', '04', '04'};
-                    tdsOutputSkeletonVersion  = {'04', '04'};
+                    lfrOutputSkeletonVersion  = {'05', '05', '05', '05'};
+                    tdsOutputSkeletonVersion  = {'05', '05'};
 
                 otherwise
                     error('BICAS:swmode_defs:Assertion:IllegalArgument', 'Can not interpret "pipelineId=%s', pipelineId)

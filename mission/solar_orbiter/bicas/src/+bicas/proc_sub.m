@@ -427,13 +427,12 @@ classdef proc_sub
             OutSciZVars.DELTA_PLUS_MINUS = SciPostDc.DELTA_PLUS_MINUS;
             
             switch(outputDvid)
-                case  {'V04_ROC-SGSE_L2S_RPW-LFR-SBM1-CWF-E' ...
-                       'V04_ROC-SGSE_L2S_RPW-LFR-SBM2-CWF-E' ...
-                       'V04_ROC-SGSE_L2S_RPW-LFR-SURV-CWF-E' ...
-                            'V04_SOLO_L2_RPW-LFR-SURV-CWF-E' ...
-                            'V04_SOLO_L2_RPW-LFR-SBM1-CWF-E' ...
-                            'V04_SOLO_L2_RPW-LFR-SBM2-CWF-E' ...
-                       }
+                case  {'V05_SOLO_L2_RPW-LFR-SURV-CWF-E' ...
+                       'V05_SOLO_L2_RPW-LFR-SBM1-CWF-E' ...
+                       'V05_SOLO_L2_RPW-LFR-SBM2-CWF-E'}
+                    % 'V05_ROC-SGSE_L2S_RPW-LFR-SBM1-CWF-E' ...
+                    % 'V05_ROC-SGSE_L2S_RPW-LFR-SBM2-CWF-E' ...
+                    % 'V05_ROC-SGSE_L2S_RPW-LFR-SURV-CWF-E' ...
                    
                     % ASSERTION
                     assert(nSamplesPerRecord == 1, 'BICAS:proc_sub:Assertion:IllegalArgument', 'Number of samples per CDF record is not 1, as expected. Bad input CDF?')
@@ -457,8 +456,8 @@ classdef proc_sub
                     OutSciZVars.EAC(:,2)         = SciPostDc.DemuxerOutput.V13_AC;
                     OutSciZVars.EAC(:,3)         = SciPostDc.DemuxerOutput.V23_AC;
                     
-                case  {'V04_ROC-SGSE_L2S_RPW-LFR-SURV-SWF-E',  ...
-                            'V04_SOLO_L2_RPW-LFR-SURV-SWF-E'}
+                case  {'V05_SOLO_L2_RPW-LFR-SURV-SWF-E'}
+                    % 'V05_ROC-SGSE_L2S_RPW-LFR-SURV-SWF-E'
                     
                     % ASSERTION
                     assert(nSamplesPerRecord == 2048, 'BICAS:proc_sub:Assertion:IllegalArgument', 'Number of samples per CDF record is not 2048, as expected. Bad Input CDF?')
@@ -487,24 +486,26 @@ classdef proc_sub
 
 
             % PROPOSAL: Use classify_DATASET_ID flag.
-            switch(outputDvid)
-                case  {'V04_ROC-SGSE_L2S_RPW-LFR-SBM1-CWF-E' ...
-                       'V04_ROC-SGSE_L2S_RPW-LFR-SBM2-CWF-E' ...
-                       'V04_ROC-SGSE_L2S_RPW-LFR-SURV-CWF-E' ...
-                       'V04_ROC-SGSE_L2S_RPW-LFR-SURV-SWF-E'}
-                    OutSciZVars.SYNCHRO_FLAG = SciPostDc.SYNCHRO_FLAG;
-                    ZVAR_FN_LIST{end+1} = 'SYNCHRO_FLAG';
-
-                case  {'V04_SOLO_L2_RPW-LFR-SURV-CWF-E' ...
-                       'V04_SOLO_L2_RPW-LFR-SURV-SWF-E' ...
-                       'V04_SOLO_L2_RPW-LFR-SBM1-CWF-E' ...
-                       'V04_SOLO_L2_RPW-LFR-SBM2-CWF-E'}
-                    OutSciZVars.SYNCHRO_FLAG = SciPostDc.SYNCHRO_FLAG;
-                    ZVAR_FN_LIST{end+1} = 'SYNCHRO_FLAG';
-                    
-                otherwise
-                    error('BICAS:proc_sub:Assertion:IllegalArgument', 'Function can not produce outputDvid=%s.', outputDvid)
-            end
+%             switch(outputDvid)
+%                 case  {'V05_ROC-SGSE_L2S_RPW-LFR-SBM1-CWF-E' ...
+%                        'V05_ROC-SGSE_L2S_RPW-LFR-SBM2-CWF-E' ...
+%                        'V05_ROC-SGSE_L2S_RPW-LFR-SURV-CWF-E' ...
+%                        'V05_ROC-SGSE_L2S_RPW-LFR-SURV-SWF-E'}
+%                     OutSciZVars.SYNCHRO_FLAG = SciPostDc.SYNCHRO_FLAG;
+%                     ZVAR_FN_LIST{end+1} = 'SYNCHRO_FLAG';
+% 
+%                 case  {'V05_SOLO_L2_RPW-LFR-SURV-CWF-E' ...
+%                        'V05_SOLO_L2_RPW-LFR-SURV-SWF-E' ...
+%                        'V05_SOLO_L2_RPW-LFR-SBM1-CWF-E' ...
+%                        'V05_SOLO_L2_RPW-LFR-SBM2-CWF-E'}
+%                     OutSciZVars.SYNCHRO_FLAG = SciPostDc.SYNCHRO_FLAG;
+%                     ZVAR_FN_LIST{end+1} = 'SYNCHRO_FLAG';
+%                     
+%                 otherwise
+%                     error('BICAS:proc_sub:Assertion:IllegalArgument', 'Function can not produce outputDvid=%s.', outputDvid)
+%             end
+            OutSciZVars.SYNCHRO_FLAG = SciPostDc.SYNCHRO_FLAG;
+            ZVAR_FN_LIST{end+1} = 'SYNCHRO_FLAG';
             
             
             
@@ -527,8 +528,9 @@ classdef proc_sub
                 'QUALITY_BITMASK', 'QUALITY_FLAG', 'DELTA_PLUS_MINUS', 'ACQUISITION_TIME'};
             
             switch(outputDvid)
-                case {'V04_ROC-SGSE_L2S_RPW-TDS-LFM-CWF-E' ...
-                           'V04_SOLO_L2_RPW-TDS-LFM-CWF-E'}
+                
+                case {'V05_SOLO_L2_RPW-TDS-LFM-CWF-E'}
+                    % 'V05_ROC-SGSE_L2S_RPW-TDS-LFM-CWF-E'
                     OutSciZVars.V(:,1)     = SciPostDc.DemuxerOutput.V1;
                     OutSciZVars.V(:,2)     = SciPostDc.DemuxerOutput.V2;
                     OutSciZVars.V(:,3)     = SciPostDc.DemuxerOutput.V3;
@@ -539,8 +541,8 @@ classdef proc_sub
                     OutSciZVars.EAC(:,2)   = SciPostDc.DemuxerOutput.V13_AC;
                     OutSciZVars.EAC(:,3)   = SciPostDc.DemuxerOutput.V23_AC;
                     
-                case {'V04_ROC-SGSE_L2S_RPW-TDS-LFM-RSWF-E' ...
-                           'V04_SOLO_L2_RPW-TDS-LFM-RSWF-E'}
+                case {'V05_SOLO_L2_RPW-TDS-LFM-RSWF-E'}
+                    % 'V05_ROC-SGSE_L2S_RPW-TDS-LFM-RSWF-E'
                        
                     OutSciZVars.V(:,:,1)   = SciPostDc.DemuxerOutput.V1;
                     OutSciZVars.V(:,:,2)   = SciPostDc.DemuxerOutput.V2;
@@ -568,20 +570,22 @@ classdef proc_sub
             OutSciZVars.IBIAS2           = SciPostDc.IBIAS2;
             OutSciZVars.IBIAS3           = SciPostDc.IBIAS3;
             
-            switch(outputDvid)
-                case  {'V04_ROC-SGSE_L2S_RPW-TDS-LFM-CWF-E' ...
-                       'V04_ROC-SGSE_L2S_RPW-TDS-LFM-RSWF-E'}
-                    OutSciZVars.SYNCHRO_FLAG = SciPostDc.SYNCHRO_FLAG;
-                    ZVAR_FN_LIST{end+1} = 'SYNCHRO_FLAG';
-
-                case  {'V04_SOLO_L2_RPW-TDS-LFM-CWF-E' ...
-                       'V04_SOLO_L2_RPW-TDS-LFM-RSWF-E'}
-                    OutSciZVars.SYNCHRO_FLAG = SciPostDc.SYNCHRO_FLAG;
-                    ZVAR_FN_LIST{end+1} = 'SYNCHRO_FLAG';
-                    
-                otherwise
-                    error('BICAS:proc_sub:Assertion:IllegalArgument', 'Function can not produce outputDvid=%s.', outputDvid)
-            end
+%             switch(outputDvid)
+%                 case  {'V05_ROC-SGSE_L2S_RPW-TDS-LFM-CWF-E' ...
+%                        'V05_ROC-SGSE_L2S_RPW-TDS-LFM-RSWF-E'}
+%                     OutSciZVars.SYNCHRO_FLAG = SciPostDc.SYNCHRO_FLAG;
+%                     ZVAR_FN_LIST{end+1} = 'SYNCHRO_FLAG';
+%
+%                 case  {'V05_SOLO_L2_RPW-TDS-LFM-CWF-E' ...
+%                        'V05_SOLO_L2_RPW-TDS-LFM-RSWF-E'}
+%                     OutSciZVars.SYNCHRO_FLAG = SciPostDc.SYNCHRO_FLAG;
+%                     ZVAR_FN_LIST{end+1} = 'SYNCHRO_FLAG';
+%
+%                 otherwise
+%                     error('BICAS:proc_sub:Assertion:IllegalArgument', 'Function can not produce outputDvid=%s.', outputDvid)
+%             end
+            OutSciZVars.SYNCHRO_FLAG = SciPostDc.SYNCHRO_FLAG;
+            ZVAR_FN_LIST{end+1} = 'SYNCHRO_FLAG';
 
             % ASSERTION
             bicas.proc_utils.assert_unvaried_N_rows(OutSciZVars);

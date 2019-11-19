@@ -3,7 +3,7 @@
         "project":     "ROC",
         "name":        "BIAS Calibration Software (BICAS)",
         "identifier":  "BICAS",
-        "description": "Calibration software which tries to derive electric field L2/L2S datasets from electric L1R LFR and TDS (LFM) datasets.",
+        "description": "(Incomplete) calibration software meant to (1) calibrate electric field L2 data from electric L1R LFR and TDS (LFM) data, and (2) calibrate bias currents.",
         "icd_version": "1.2"
     },
     "release": {
@@ -12,7 +12,7 @@
         "author":       "Erik P G Johansson, BIAS team",
         "contact":      "erik.johansson@irfu.se",
         "institute":    "Swedish Institute of Space Physics (IRF)",
-        "modification": "Various updates and refactoring; Incomplete but ICD compliant support for TDS data sets & RODP pipeline, L2R-->L1R , updated ICD compliance(pre-release)",
+        "modification": "Various updates and refactoring; Incomplete but ICD compliant support for TDS data sets & RODP pipeline, L2R-->L1R, updated ICD compliance (pre-release).",
         "source":       "https://github.com/irfu/irfu-matlab/commits/SOdevel"
     },
     "environment": {
@@ -37,7 +37,7 @@
                     "name":        "LFR L2 CWF science electric selective burst mode 1 data",
                     "description": "RPW LFR L2 CWF science electric (potential difference) data in selective burst mode 1, time-tagged",
                     "level":       "L2",
-                    "template":    "SOLO_L2_RPW-LFR-SBM1-CWF-E_V04.cdf"
+                    "template":    "SOLO_L2_RPW-LFR-SBM1-CWF-E_V05.cdf"
                 }
             }
         },
@@ -58,7 +58,7 @@
                     "name":        "LFR L2 CWF science electric selective burst mode 2 data",
                     "description": "RPW LFR L2 CWF science electric (potential difference) data in selective burst mode 2, time-tagged",
                     "level":       "L2",
-                    "template":    "SOLO_L2_RPW-LFR-SBM2-CWF-E_V04.cdf"
+                    "template":    "SOLO_L2_RPW-LFR-SBM2-CWF-E_V05.cdf"
                 }
             }
         },
@@ -79,7 +79,7 @@
                     "name":        "LFR L2 CWF science electric survey mode data",
                     "description": "RPW LFR L2 CWF science electric (potential difference) data in survey mode, time-tagged",
                     "level":       "L2",
-                    "template":    "SOLO_L2_RPW-LFR-SURV-CWF-E_V04.cdf"
+                    "template":    "SOLO_L2_RPW-LFR-SURV-CWF-E_V05.cdf"
                 }
             }
         },
@@ -100,7 +100,7 @@
                     "name":        "LFR L2 SWF science electric survey mode data",
                     "description": "RPW LFR L2 SWF science electric (potential difference) data in survey mode, time-tagged",
                     "level":       "L2",
-                    "template":    "SOLO_L2_RPW-LFR-SURV-SWF-E_V04.cdf"
+                    "template":    "SOLO_L2_RPW-LFR-SURV-SWF-E_V05.cdf"
                 }
             }
         },
@@ -121,7 +121,7 @@
                     "name":        "LFR L2 CWF science electric LF mode data",
                     "description": "RPW LFR L2 CWF science electric (potential difference) data in LF mode, time-tagged",
                     "level":       "L2",
-                    "template":    "SOLO_L2_RPW-TDS-LFM-CWF-E_V04.cdf"
+                    "template":    "SOLO_L2_RPW-TDS-LFM-CWF-E_V05.cdf"
                 }
             }
         },
@@ -142,7 +142,7 @@
                     "name":        "LFR L2 RSWF science electric LF mode data",
                     "description": "RPW LFR L2 RSWF science electric (potential difference) data in LF mode, time-tagged",
                     "level":       "L2",
-                    "template":    "SOLO_L2_RPW-TDS-LFM-RSWF-E_V04.cdf"
+                    "template":    "SOLO_L2_RPW-TDS-LFM-RSWF-E_V05.cdf"
                 }
             }
         }

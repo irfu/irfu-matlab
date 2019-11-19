@@ -372,15 +372,17 @@ for fn = fieldnames(DataObj.data)'
             'processing data to the master CDF. This should only happen for incomplete processing.'], ...
             zVariableName);
         
-        if SETTINGS.get_fv('OUTPUT_CDF.EMPTY_ZVARIABLES_SET_TO_FILL')
-            bicas.log('warning', logMsg)
-            matlabClass = bicas.utils.convert_CDF_type_to_MATLAB_class(DataObj.data.(zVariableName).type, 'Permit MATLAB classes');
+        matlabClass  = bicas.utils.convert_CDF_type_to_MATLAB_class(DataObj.data.(zVariableName).type, 'Permit MATLAB classes');
+        isNumericZVar = isnumeric(cast(0.000, matlabClass));
             
-            % ASSERTION: Require numeric type.
-            if ~isnumeric(cast(0.000, matlabClass))
-                error('BICAS:sw_execute_sw_mode:SWModeProcessing', ...
-                    'zVariable "%s" is non-numeric. Can not set it to correctly-sized data with fill values (not implemented).', zVariableName)
-            end
+        if isNumericZVar && SETTINGS.get_fv('OUTPUT_CDF.EMPTY_NUMERIC_ZVARIABLES_SET_TO_FILL')
+            bicas.log('warning', logMsg)
+            
+%             % ASSERTION: Require numeric type.
+%             if ~isnumeric(cast(0.000, matlabClass))
+%                 error('BICAS:sw_execute_sw_mode:SWModeProcessing', ...
+%                     'zVariable "%s" is non-numeric. Can not set it to correctly-sized data with fill values (not implemented).', zVariableName)
+%             end
             
             %========================================================
             % Create correctly-sized zVariable data with fill values
@@ -388,7 +390,7 @@ for fn = fieldnames(DataObj.data)'
             % NOTE: Assumes that
             % (1) there is a PD fields/zVariable Epoch, and
             % (2) this zVariable should have as many records as Epoch.
-            bicas.logf('warning', 'Setting zVariable "%s" to correctly-sized data with fill values.', zVariableName)
+            bicas.logf('warning', 'Setting zVariable "%s" to presumed correctl size using fill values.', zVariableName)
             nEpochRecords = size(ZVarsSubset.Epoch, 1);
             [fillValue, ~] = get_fill_pad_values(DataObj, zVariableName);
             zVariableSize = [nEpochRecords, DataObj.data.(fn{1}).dim];
@@ -396,6 +398,10 @@ for fn = fieldnames(DataObj.data)'
             zVariableData = bicas.utils.replace_value(zVariableData, 0, fillValue);
             
             DataObj.data.(zVariableName).data = zVariableData;
+            
+        elseif ~isNumericZVar && SETTINGS.get_fv('OUTPUT_CDF.EMPTY_NONNUMERIC_ZVARIABLES_IGNORE')
+            bicas.log('warning', 'Ignoring empty non-numeric zVar.')
+            
         else
             error('BICAS:execute_sw_mode:SWModeProcessing', logMsg)
         end
