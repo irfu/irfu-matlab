@@ -90,7 +90,7 @@ classdef proc
             HkSciTimePd = bicas.proc_sub.process_HK_to_HK_on_SCI_TIME(SciPd, HkPd);
             
             SciPreDcPd  = bicas.proc_sub.process_LFR_to_PreDC(        SciPd, inputSciDsi, HkSciTimePd);
-            SciPostDcPd = bicas.proc_sub.process_demuxing_calibration(SciPreDcPd);
+            SciPostDcPd = bicas.proc_sub.process_demuxing_calibration(SciPreDcPd, Cal);
             OutputSciPd = bicas.proc_sub.process_PostDC_to_LFR(       SciPostDcPd, outputDsi, outputVersion);
             
             OutputDatasetsMap = containers.Map();
@@ -111,7 +111,7 @@ classdef proc
             HkSciTimePd = bicas.proc_sub.process_HK_to_HK_on_SCI_TIME(SciPd, HkPd);
             SciPreDcPd  = bicas.proc_sub.process_TDS_to_PreDC(        SciPd, inputSciDsi, HkSciTimePd);   % Not tested.
             
-            SciPostDcPd = bicas.proc_sub.process_demuxing_calibration(SciPreDcPd);
+            SciPostDcPd = bicas.proc_sub.process_demuxing_calibration(SciPreDcPd, Cal);
             OutputSciPd = bicas.proc_sub.process_PostDC_to_TDS(       SciPostDcPd, outputDsi, outputVersion);   % Not implemented.
 
             OutputDatasetsMap = containers.Map();

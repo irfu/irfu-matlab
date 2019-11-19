@@ -611,7 +611,7 @@ classdef proc_sub
         %
         % NOTE: Public function as opposed to the other demuxing/calibration functions.
         %
-        function PostDc = process_demuxing_calibration(PreDc)
+        function PostDc = process_demuxing_calibration(PreDc, Cal)
         % PROPOSAL: Move the setting of IBIASx (bias current) somewhere else?
         %   PRO: Unrelated to demultiplexing.
         %   CON: Related to calibration.
@@ -625,9 +625,11 @@ classdef proc_sub
             %=======
             PostDc = PreDc;    % Copy all values, to later overwrite a subset of them.
             PostDc.DemuxerOutput = bicas.proc_sub.simple_demultiplex(...
+                PreDc.Epoch, ...
                 PreDc.DemuxerInput, ...
                 PreDc.MUX_SET, ...
-                PreDc.DIFF_GAIN);
+                PreDc.DIFF_GAIN, ...
+                Cal);
 
             %================================
             % Set (calibrated) bias currents
@@ -662,7 +664,7 @@ classdef proc_sub
         %
         %
         % NOTE: Can handle arrays of any size as long as the sizes are consistent.
-        function DemuxerOutput = simple_demultiplex(DemuxerInput, MUX_SET, DIFF_GAIN)
+        function DemuxerOutput = simple_demultiplex(Epoch, DemuxerInput, MUX_SET, DIFF_GAIN, Cal)
         % PROPOSAL: Incorporate into processing function process_demuxing_calibration.
         % PROPOSAL: Assert same nbr of "records" for MUX_SET, DIFF_GAIN as for BIAS_x.
         
@@ -683,23 +685,39 @@ classdef proc_sub
                 'V12_AC', [], 'V23_AC', [], 'V13_AC', []);
 
 
+            
+            dlrUsing12 = bicas.demultiplexer_latching_relay(Epoch);
+            iCalibL    = Cal.get_calibration_time_L(Epoch);
+            iCalibH    = Cal.get_calibration_time_H(Epoch);
+            
+            
 
             %====================================================================
             % Find continuous sequences of records with identical settings, then
             % process data separately (one iteration) for those sequences.
             %====================================================================
-            [iFirstList, iLastList] = bicas.proc_utils.find_sequences(MUX_SET, DIFF_GAIN);            
+            [iFirstList, iLastList] = bicas.proc_utils.find_sequences(MUX_SET, DIFF_GAIN, dlrUsing12, iCalibL, iCalibH);
             for iSequence = 1:length(iFirstList)
                 
                 iFirst = iFirstList(iSequence);
                 iLast  = iLastList (iSequence);
                 
                 % Extract SCALAR settings to use for entire subsequence of records.
-                MUX_SET_value   = MUX_SET  (iFirst);
-                DIFF_GAIN_value = DIFF_GAIN(iFirst);
-                bicas.logf('info', 'Records %2i-%2i : Demultiplexing; MUX_SET=%-3i; DIFF_GAIN=%-3i', ...
-                    iFirst, iLast, MUX_SET_value, DIFF_GAIN_value)    % "%-3" since value might be NaN.
+                MUX_SET_constant    = MUX_SET  (iFirst);
+                DIFF_GAIN_constant  = DIFF_GAIN(iFirst);
+                dlrUsing12_constant = dlrUsing12(iFirst);
+                iCalibL_constant    = iCalibL(iFirst);
+                iCalibH_constant    = iCalibH(iFirst);
+                
+                bicas.logf('info', ['Records %2i-%2i : Demultiplexing; ', ...
+                    'MUX_SET=%i; DIFF_GAIN=%i; dlrUsing12=%i; iCalibL=%i; iCalibH=%i'], ...
+                    iFirst, iLast, ...
+                    MUX_SET_constant, DIFF_GAIN_constant, dlrUsing12_constant, iCalibL_constant, iCalibH_constant)
 
+                % NOTE: Call demultiplexer with no samples. Only collecting information on which BLTS channels are
+                % connected to which ASRs.
+                %[BltsSrc, ~] = bicas.demultiplexer.main(MUX_SET_constant, dlrUsing12_constant, {[],[],[],[],[]});
+                
                 % Extract subsequence of DATA records to "demux".
                 DemuxerInputSubseq = bicas.proc_utils.select_row_range_from_struct_fields(DemuxerInput, iFirst, iLast);
                 
@@ -707,7 +725,7 @@ classdef proc_sub
                 % CALL DEMUXER - See method/function for comments
                 %=================================================
                 DemuxerOutputSubseq = bicas.proc_sub.simple_demultiplex_subsequence_OLD(...
-                    DemuxerInputSubseq, MUX_SET_value, DIFF_GAIN_value);
+                    DemuxerInputSubseq, MUX_SET_constant, DIFF_GAIN_constant);
                 
                 % Add demuxed sequence to the to-be complete set of records.
                 DemuxerOutput = bicas.proc_utils.add_rows_to_struct_fields(DemuxerOutput, DemuxerOutputSubseq);

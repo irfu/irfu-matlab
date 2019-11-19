@@ -28,9 +28,11 @@ classdef calib
 % RPS = radians/second
 % (count = TM/TC unit)
 % LSF = LFR Sampling Frequency (F0...F3)
-% TF = Transfer function (Z=Z(omega))
+% TF  = Transfer function (Z=Z(omega))
 % FTF = Forward Transfer Function = TF that describes physical input-to-output (not the reverse)
 % ITF = Inverse Transfer Function = TF that describes physical output-to-input (not the reverse)
+% ASR Volt = Calibrated to volt as for ASR, i.e. the final calibrated (measured) value.
+%
 % 
 % BLTS = BIAS-LFR/TDS Signals
 % ---------------------------
@@ -46,17 +48,11 @@ classdef calib
 %
 % ASR = Antenna Signal Representation
 % -----------------------------------
-% Those measured signals which are ultimately derived/calibrated by BICAS, i.e. Vi_LF, Vij_LF, Vij_LF_AC (i,j=1..3) in
-% the BIAS specification.
-% NOTE: This is different from the physical antenna signals (Vi_LF) which are essentially a subset of ASR, except for
-% calibration errors and filtering.
-% NOTE: This is different from the set Vi_DC, Vij_DC, Vij_AC of which a subset are equal to BIAS_i (which subset it is
-% depends on the demux mode) and which is always in LFR/TDS calibrated volts.
-%
-% ASR TYPE
-% --------
-% The type of ASR, typically what kind of ASR a specific BLTS channel represents.
-%
+% Those "physical antenna signals" which BIAS-LFR/TDS is trying to measure, or a measurement thereof. In reality, the
+% terminology is:
+% ASR         : Pointer to a specific physical antenna signal, e.g. V12_LF (DC diff, antenna 1-2)
+% ASR samples : Samples representing a specific ASR (as opposed to BLTS)
+% NOTE: There are 9 ASRs, i.e. they can refer also to signals not represented in any single BLTS.
 %
 % BIAS_i, i=1..5
 % --------------
@@ -120,9 +116,6 @@ classdef calib
 %   PROPOSAL: Assertions for same number of Epoch as samples.
 % PROPOSAL: SETTINGS for scalar calibrations.
 %
-% BUG: Currently misusing get_calibration_time_interval. /2019-11-18
-%   PROPOSAL: Let caller decide on which calibration time to use. ==> Calibration methods only use one time.
-%
 %
 % BOGIQ: RCT-reading functions
 % ============================
@@ -175,7 +168,7 @@ classdef calib
         %
         % NOTE: TEMPORARY IMPLEMENTATION(?) Only uses first Epoch value for determining calibration values.
         %
-        function biasCurrentAmpere = calibrate_TC_bias_TM_to_bias_current(obj, Epoch, tcBiasTm, iAntenna)
+        function biasCurrentAmpere = calibrate_TC_bias_TM_to_bias_current(obj, Epoch, tcBiasTm, iAntenna, iCalibTimeL)
             % BUG: Can not handle time.
             
             % ASSERTION
@@ -185,7 +178,6 @@ classdef calib
             %==============================
             % Obtain calibration constants
             %==============================
-            iEpochListL = bicas.calib.get_calibration_time_interval(Epoch, obj.Bias.epochL);   iCalibTimeL = iEpochListL{1}(1);
             offsetAmpere = obj.Bias.Current.offsetsAmpere(iCalibTimeL, iAntenna);
             gainApc      = obj.Bias.Current.gainsApc(     iCalibTimeL, iAntenna);
 
@@ -237,11 +229,12 @@ classdef calib
 
         % NOTE: TEMPORARY IMPLEMENTATION(?) Only uses first Epoch value for determining calibration values.
         %
-        function asrSamplesVolt = calibrate_LFR(obj, Epoch, lfrSamplesTm, iBltsChannel, BltsAsrType, biasHighGain, iLfrFreq)
+        function asrSamplesVolt = calibrate_LFR(obj, Epoch, lfrSamplesTm, iBltsChannel, BltsSrc, biasHighGain, iLfrFreq, iCalibTimeL, iCalibTimeH)
             
             bicas.proc_utils.assert_Epoch(Epoch)
             assert(numel(lfrSamplesTm) == numel(Epoch))
             assert((1 <= iBltsChannel) && (iBltsChannel <= 5))
+            assert(isa(BltsSrc, 'bicas.BLTS_src_dest'))
             assert((1 <= iLfrFreq)     && (iLfrFreq     <= 4), 'Illegal iLfrFreq value.')
             
             dtSec = double(Epoch(end) - Epoch(1)) / (numel(Epoch)-1) * 1e-9;   % Unit: s   (Epoch unit: ns)
@@ -250,9 +243,7 @@ classdef calib
             %==============================
             % Obtain calibration constants
             %==============================
-            iEpochListL = bicas.calib.get_calibration_time_interval(Epoch, obj.Bias.epochL);   iCalibTimeL = iEpochListL{1}(1);
-            iEpochListH = bicas.calib.get_calibration_time_interval(Epoch, obj.Bias.epochH);   iCalibTimeH = iEpochListH{1}(1);
-            BiasCalibData = obj.get_BIAS_calib_data(BltsAsrType, biasHighGain, iCalibTimeL, iCalibTimeH);
+            BiasCalibData = obj.get_BIAS_calib_data(BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH);
             LfrTf = obj.LfrItfTable{iLfrFreq}{iBltsChannel};
             
             %============================================================
@@ -277,19 +268,18 @@ classdef calib
         % =========
         % tdsCwfSamplesTm : Samples.
         % iBltsChannel    : 1..3.
-        % BltsAsrType     : Struct with fields
-        %       .antennas : [iAntenna] for single antenna, or [iAntenna, jAntenna] for diff antenna.
-        %       .category : String constant
+        % BltsSrc         : bicas.BLTS_src_dest describing where the signal comes from.
         %
         %
         % NOTE: TEMPORARY IMPLEMENTATION(?) Only uses first Epoch value for determining calibration values.
         %
-        function asrSamplesVolt = calibrate_TDS_CWF(obj, Epoch, tdsCwfSamplesTm, iBltsChannel, BltsAsrType, biasHighGain)
+        function asrSamplesVolt = calibrate_TDS_CWF(obj, Epoch, tdsCwfSamplesTm, iBltsChannel, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH)
             
             % ASSERTIONS
             bicas.proc_utils.assert_Epoch(Epoch)
             assert(numel(tdsCwfSamplesTm) == numel(Epoch))
             assert((1 <= iBltsChannel) && (iBltsChannel <= 3))
+            assert(isa(BltsSrc, 'bicas.BLTS_src_dest'))
             
             dtSec = double(Epoch(end) - Epoch(1)) / (numel(Epoch)-1) * 1e-9;   % Unit: s   ("Epoch" unit: ns)
             enableDetrending = obj.SETTINGS.get_fv('PROCESSING.CALIBRATION.DETRENDING_ENABLED');
@@ -297,10 +287,8 @@ classdef calib
             %==============================
             % Obtain calibration constants
             %==============================
-            iEpochListL = bicas.calib.get_calibration_time_interval(Epoch, obj.Bias.epochL);   iCalibTimeL = iEpochListL{1}(1);
-            iEpochListH = bicas.calib.get_calibration_time_interval(Epoch, obj.Bias.epochH);   iCalibTimeH = iEpochListH{1}(1);
             % NOTE: Low/high gain is irrelevant for TDS. Argument value arbitrary.
-            BiasCalibData = obj.get_BIAS_calib_data(BltsAsrType, biasHighGain, iCalibTimeL, iCalibTimeH);
+            BiasCalibData = obj.get_BIAS_calib_data(BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH);
 
             %===============================================
             % CALIBRATE: TDS TM --> TDS/BIAS interface volt
@@ -325,11 +313,13 @@ classdef calib
 
         % NOTE: TEMPORARY IMPLEMENTATION(?) Only uses first Epoch value for determining calibration values.
         %
-        function asrSamplesVolt = calibrate_TDS_RSWF(obj, Epoch, tdsRswfSamplesTm, iBltsChannel, BltsAsrType, biasHighGain)
+        function asrSamplesVolt = calibrate_TDS_RSWF(obj, Epoch, tdsRswfSamplesTm, iBltsChannel, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH)
+            
             % ASSERTIONS
             bicas.proc_utils.assert_Epoch(Epoch)
             assert(numel(tdsRswfSamplesTm) == numel(Epoch))
             assert((1 <= iBltsChannel) && (iBltsChannel <= 3))
+            assert(isa(BltsSrc, 'bicas.BLTS_src_dest'))
             
             dtSec = double(Epoch(end) - Epoch(1)) / (numel(Epoch)-1) * 1e-9;   % Unit: s   ("Epoch" unit: ns)
             enableDetrending = obj.SETTINGS.get_fv('PROCESSING.CALIBRATION.DETRENDING_ENABLED');
@@ -337,10 +327,8 @@ classdef calib
             %==============================
             % Obtain calibration constants
             %==============================
-            iEpochListL = bicas.calib.get_calibration_time_interval(Epoch, obj.Bias.epochL);   iCalibTimeL = iEpochListL{1}(1);
-            iEpochListH = bicas.calib.get_calibration_time_interval(Epoch, obj.Bias.epochH);   iCalibTimeH = iEpochListH{1}(1);
             % NOTE: Low/high gain is irrelevant for TDS. Argument value arbitrary.
-            BiasCalibData = obj.get_BIAS_calib_data(BltsAsrType, biasHighGain, iCalibTimeL, iCalibTimeH);
+            BiasCalibData = obj.get_BIAS_calib_data(BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH);
             
             itf = @(omega) (...
                 obj.TdsRswfItfList{iBltsChannel}.eval_linear(omega) .* ...
@@ -356,6 +344,18 @@ classdef calib
                 'enableDetrending', enableDetrending);
             
             asrSamplesVolt = asrSamplesVolt + BiasCalibData.offsetVolt;
+        end
+
+
+
+        function iCalib = get_calibration_time_L(obj, Epoch)
+            iCalib = bicas.calib.get_calibration_time(Epoch, obj.Bias.epochL);
+        end
+
+
+
+        function iCalib = get_calibration_time_H(obj, Epoch)
+            iCalib = bicas.calib.get_calibration_time(Epoch, obj.Bias.epochH);
         end
 
 
@@ -405,30 +405,35 @@ classdef calib
 
         % Return subset of already loaded BIAS calibration data, for specified settings.
         %
-        function BiasCalibData = get_BIAS_calib_data(obj, BltsAsrType, biasHighGain, iCalibTimeL, iCalibTimeH)
+        function BiasCalibData = get_BIAS_calib_data(obj, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH)
             
-            switch(BltsAsrType.category)
+            % ASSERTION
+            assert(isa(BltsSrc, 'bicas.BLTS_src_dest'))
+            
+            switch(BltsSrc.category)
                 case 'DC single'
-                    assert(isscalar(BltsAsrType.antennas))
+                    assert(isscalar(BltsSrc.antennas))
                     BiasItfSet = obj.Bias.ItfSet.DcSingle;
-                    offsetVolt = obj.Bias.dcSingleOffsetsVolt(iCalibTimeH, BltsAsrType.antennas);
+                    offsetVolt = obj.Bias.dcSingleOffsetsVolt(iCalibTimeH, BltsSrc.antennas);
 
                 case 'DC diff'
                     BiasItfSet    = obj.Bias.ItfSet.DcDiff;
-                    if     isequal(BltsAsrType.antennas(:)', [1,2]);   offsetVolt = obj.Bias.DcDiffOffsets.E12Volt(iCalibTimeH);
-                    elseif isequal(BltsAsrType.antennas(:)', [2,3]);   offsetVolt = obj.Bias.DcDiffOffsets.E23Volt(iCalibTimeH);
-                    elseif isequal(BltsAsrType.antennas(:)', [1,3]);   offsetVolt = obj.Bias.DcDiffOffsets.E13Volt(iCalibTimeH);
+                    if     isequal(BltsSrc.antennas(:)', [1,2]);   offsetVolt = obj.Bias.DcDiffOffsets.E12Volt(iCalibTimeH);
+                    elseif isequal(BltsSrc.antennas(:)', [2,3]);   offsetVolt = obj.Bias.DcDiffOffsets.E23Volt(iCalibTimeH);
+                    elseif isequal(BltsSrc.antennas(:)', [1,3]);   offsetVolt = obj.Bias.DcDiffOffsets.E13Volt(iCalibTimeH);
                     else
-                        error('BICAS:calib:Assertion:IllegalArgument', 'Illegal BltsAsrType.antennas.');
+                        error('BICAS:calib:Assertion:IllegalArgument', 'Illegal BltsSrc.');
                     end
 
-                case 'AC'
+                case 'AC diff'
                     if biasHighGain ; BiasItfSet = obj.Bias.ItfSet.AcHighGain;   offsetVolt = 0;
                     else            ; BiasItfSet = obj.Bias.ItfSet.AcLowGain;    offsetVolt = 0;
                     end
 
                 otherwise
-                    error('BICAS:calib:IllegalArgument:Assertion', 'Illegal argument BltsAsrType.category=%s', BltsAsrType.category)
+                    error('BICAS:calib:IllegalArgument:Assertion', ...
+                        'Illegal argument BltsSrc.category=%s. Can not obtain calibration data for this type of signal.', ...
+                        BltsSrc.category)
 
             end
             BiasCalibData.Itf        = BiasItfSet{iCalibTimeL};
@@ -443,7 +448,8 @@ classdef calib
 
     
     
-    methods(Static, Access=public)
+    methods(Static, Access=private)
+    %methods(Static, Access=public)
         % NOTE: Public so that automatic test code can call get_calibration_time.
 
 
@@ -460,7 +466,7 @@ classdef calib
         %                  In practice intended to be Bias.epochL or Bias.epochH.
         % iCalibList     : Array. iCalibList(i) = calibration time index for Epoch(i).
         %
-        function [iCalibList] = get_calibration_time(Epoch, CalibEpochList)
+        function [iCalib] = get_calibration_time(Epoch, CalibEpochList)
             
             % ASSERTIONS
             bicas.proc_utils.assert_Epoch(Epoch)
@@ -474,8 +480,8 @@ classdef calib
             % IMPLEMENTATION NOTE: "discretize" behaves differently for scalar second argument. Adding edges at infinity hides
             % this problem. If one does not add infinities and uses a scalar edge list, then one has to treat those
             % cases manually.
-            iCalibList = discretize(Epoch, [CalibEpochList; Inf], 'IncludedEdge', 'left');
-            assert(all(~isnan(iCalibList(:))), 'Can not derive which calibration data to use for all specified timestamps.')
+            iCalib = discretize(Epoch, [CalibEpochList; Inf], 'IncludedEdge', 'left');
+            assert(all(~isnan(iCalib(:))), 'Can not derive which calibration data to use for all specified timestamps.')
         end
 
 
@@ -538,6 +544,6 @@ classdef calib
 
 
 
-    end    %methods(Static, Access=private)
+    end    % methods(Static)
 
 end
