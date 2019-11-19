@@ -10,64 +10,87 @@
 % every case by having e.g. cell array after values.
 % 
 %
-% ARGUMENTS
-% =========
-% beforeAfterTable : Cell array of (a) cell arrays of strings, and () arbitrary values.
-%                    {iMeaning, 1} = Cell array of strings. Is allowed to be empty but will then never match.
-%                    {iMeaning, 2} = Arbitrary value to be returned.
-%                    NOTE: One (probably) does not want there to be any duplicate strings.
-%                    RATIONALE: Argument has this structure to make before+after clear when hardcoding it.
-% beforeStr        : String.
-% afterValue       : beforeAfterTable{iMeaning, 2} for which beforeAfterTable{iMeaning, 1}==beforeStr.
+% ARGUMENTS AND RETURN VALUE
+% ==========================
+% table      : Cell array of (a) cell arrays of strings, and (b) arbitrary values.
+%              {i, 1} = Cell array of unique strings. Is allowed to be empty but will then never match.
+%              {i, 2} = Arbitrary value to be returned.
+%              NOTE: One (probably) does not want there to be any duplicate strings.
+%              RATIONALE: Argument has this structure to make keys+values clear when hardcoding it using literals.
+% key        : String.
+% value      : table{i, 2} for which table{i, 1}==key (string comparison).
+% --
 % NOTE: Empty string matches empty string.
-%
+% NOTE: Asserts there are only unique keys. No match will lead to error. (There can not be multiple matches.)
+% NOTE: Counts '' and char(zeros(1,0)) as identical, both for matching and asserting unique keys
+% (due to the behaviour of "ismember" and "unique", as opposed to "strcmp").
+% 
 %
 % Initially created 2019-09-18 by Erik P G Johansson.
 %
-function afterValue = translate(beforeAfterTable, beforeStr, errorMsgId, errorMsg)
+function value = translate(table, key, errorMsgId, errorMsg)
 % PROPOSAL: Submit function returning error message string. Only evaluated if error.
-% PROPOSAL: After value for no match.
-% PROPOSAL: errorMsgId == '' ==> errorMsg is afterValue for match.
-% PROPOSAL: One argument fewer ==> Last argument is afterValue if no match.
-% PROPOSAL: Be able to submit separate before and after tables. ==> Varying number of arguments.
-% PROPOSAL: Use functions as after values. Only evaluate if returned.
-%   CON: Can effectively be used so already if the caller immediately evaluates the after value.
+%   PRO: Useful for complex error messages.
+
+% PROPOSAL: Use functions as values. Only evaluate if returned.
+%   CON: Can effectively be used so already if the caller immediately evaluates the value.
+
+% PROPOSAL: Value for no match.
+%   PROPOSAL: One argument fewer ==> Last argument is value if no match.
 % PROPOSITION: Function is unnecessary.
 %   PRO: Does not shorten the code enough to warrant a function.
 %       PRO: Can write case statements on one row.
-% PROPOSAL: Be able to use non-string beforeStr.
+% PROPOSAL: Be able to use non-string key.
 %   PRO: Can not always do with switch-case. ==> Can avoid if-elseif-elseif-...-else statements
 %       Ex: Numeric vectors
+%
+% PROPOSAL: Not require all "keys" to be unique for the same "key set"?
+% PROPOSAL: Exclude empty strings (assertion).
+%   PRO: Avoids empty string ambiguity.
 
-[beforeTable, afterTable] = convert_before_after_table(beforeAfterTable);
-
-assert(~isempty(errorMsgId))   % NOTE: Empty errorMsgId ==> error() will not throw exception.
-
+[keySetsTable, valuesTable] = convert_table(table);
+matchArray = zeros(size(keySetsTable));
 
 
-for iMeaning = 1:numel(beforeTable)
+
+% ASSERTIONS
+assert(~isempty(errorMsgId), 'Empty errorMsgId')   % NOTE: Empty errorMsgId ==> error() will not throw exception.
+% ASSERTION: Check for duplicate keys.
+% NOTE: This condition requires the "keys" terms to be unique also within every set of keys.
+combinedKeysList = [keySetsTable{:}];
+nCombinedKeys    = numel(combinedKeysList);
+nUniqueKeys      = numel(unique(combinedKeysList));
+assert(nCombinedKeys == nUniqueKeys, 'Illegal "table". Duplicated "keys" terms.')
+
+
+
+%===========
+% ALGORITHM
+%===========
+for i = 1:numel(keySetsTable)
+    keySet = keySetsTable{i};
     
-    beforeAlts = beforeTable{iMeaning};
-    
-    % IMPLEMENTATION NOTE: ismember does not work as expected if beforeAlts is not a cell array, in particular a plain
+    % IMPLEMENTATION NOTE: ismember does not work as expected if keySet is not a cell array, in particular a plain
     % string.
-    assert(iscell(beforeAlts))
+    assert(iscell(keySet))
     
-    if ismember(beforeStr, beforeAlts)
-        afterValue = afterTable{iMeaning};
+    matchArray(i) = ismember(key, keySet);
+    if ismember(key, keySet)
+        value = valuesTable{i};
         return
     end
 end
 
+% CASE: Did not find any match.
 error(errorMsgId, errorMsg)
 
 end
 
 
 
-function [beforeTable, afterTable] = convert_before_after_table(beforeAfterTable)
-assert(size(beforeAfterTable, 2) == 2)
+function [keySetsTable, valuesTable] = convert_table(table)
+assert(size(table, 2) == 2)
 
-beforeTable = beforeAfterTable(:,1);
-afterTable  = beforeAfterTable(:,2);
+keySetsTable = table(:,1);
+valuesTable  = table(:,2);
 end

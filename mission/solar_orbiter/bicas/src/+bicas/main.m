@@ -383,7 +383,7 @@ switch(CliData.functionalityMode)
         %==================
         % EXECUTE S/W MODE
         %==================
-        bicas.execute_sw_mode( SwModeInfo, InputFilesMap, OutputFilesMap, masterCdfDir, SETTINGS )
+        bicas.execute_sw_mode( SwModeInfo, InputFilesMap, OutputFilesMap, masterCdfDir, calibrationDir, pipelineId, SETTINGS )
 
     otherwise
         error('BICAS:Assertion', 'Illegal value functionalityMode="%s"', functionalityMode)

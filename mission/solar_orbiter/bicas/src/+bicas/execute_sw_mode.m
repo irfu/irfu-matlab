@@ -25,7 +25,7 @@
 %   might be wrong. Should ideally be run on the exact input datasets (~EIn PDs) used to produce a specific output
 %   dataset.
 %
-function execute_sw_mode(SwModeInfo, InputFilePathMap, OutputFilePathMap, masterCdfDir, SETTINGS)
+function execute_sw_mode(SwModeInfo, InputFilePathMap, OutputFilePathMap, masterCdfDir, calibrationDir, pipelineId, SETTINGS)
 %
 % QUESTION: How verify dataset ID and dataset version against constants?
 %    NOTE: Need to read CDF first.
@@ -60,6 +60,8 @@ function execute_sw_mode(SwModeInfo, InputFilePathMap, OutputFilePathMap, master
 
 
 GlobalAttributesCellArray = {};   % Use cell array since CDF global attributes may in principle contain different sets of attributes (field names).
+
+Cal = bicas.calib(calibrationDir, pipelineId, SETTINGS);
 
 
 
@@ -105,7 +107,7 @@ globalAttributesSubset = derive_output_dataset_GlobalAttributes(GlobalAttributes
 %==============
 % PROCESS DATA
 %==============
-OutputDatasetsMap = SwModeInfo.prodFunc(InputDatasetsMap);
+OutputDatasetsMap = SwModeInfo.prodFunc(InputDatasetsMap, Cal);
 
 
 

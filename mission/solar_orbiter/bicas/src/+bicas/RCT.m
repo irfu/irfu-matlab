@@ -56,7 +56,7 @@ classdef RCT
             
             RctCalibData = bicas.RCT.find_RCT_regexp(calibrationDir, filenameRegexp);
         end
-                    
+
 
 
         % Determine the path to the RCT that should be used according to algorithm specified in the documentation(?). If
@@ -417,7 +417,14 @@ classdef RCT
 
 
 
-        % Utility function.
+        % Utility function to simplify read_BIAS_RCT. Arguments correspond to zVariables in BIAS RCT.
+        %
+        %
+        % ARGUMENTS
+        % =========
+        % ftfNumCoeffs, ftfDenomCoeffs : 2D matrix of numerator/denominator coefficients for a sequence of FTFs.
+        % ItfArray                     : Cell array of ITF (rational_func_transform).
+        % 
         %
         % NOTE: Arguments describe FTFs. Return value describes ITFs.
         %

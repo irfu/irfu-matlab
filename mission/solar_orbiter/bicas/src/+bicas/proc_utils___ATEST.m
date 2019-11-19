@@ -17,7 +17,8 @@ function proc_utils___ATEST
     convert_N_to_1_SPR_Epoch___ATEST
     convert_N_to_1_SPR_redistribute___ATEST
     convert_N_to_1_SPR_repeat___ATEST
-    set_NaN_after_snapshots_end___ATEST
+    set_NaN_after_snapshots_end___ATEST    
+    %get_bin_index___ATEST
 end
 
 
@@ -106,3 +107,26 @@ function set_NaN_after_snapshots_end___ATEST
     
     EJ_library.atest.run_tests(tl);
 end
+
+
+
+% function get_bin_index___ATEST
+% new_test = @(inputs, outputs) (EJ_library.atest.CompareFuncResult(@bicas.proc_utils.get_bin_index, inputs, outputs));
+% tl = {};
+% 
+% tl{end+1} = new_test({[],     []},    {[]});
+% tl{end+1} = new_test({[],     [3]},   {[]});
+% tl{end+1} = new_test({[],     [3,7]}, {[]});
+% tl{end+1} = new_test({[1:10], []},    {ones(1,10)});
+% 
+% tl{end+1} = new_test({[1:10],      [3]   }, {[1,1,2,2,2,2,2,2,2,2]});
+% tl{end+1} = new_test({[1:10],      [3, 7]}, {[1,1,2,2,2,2,3,3,3,3]});
+% tl{end+1} = new_test({[10:-1:1],   [3]   }, {[2,2,2,2,2,2,2,2,1,1]});
+% tl{end+1} = new_test({[10:-1:1],   [3, 7]}, {[3,3,3,3,2,2,2,2,1,1]});
+% tl{end+1} = new_test({[-Inf, Inf], [3, 7]}, {[1,3]});
+% tl{end+1} = new_test({[], []}, {[]});
+% % tl{end+1} = new_test({[], []}, {[]});
+% % tl{end+1} = new_test({[], []}, {[]});
+% 
+% EJ_library.atest.run_tests(tl)
+% end

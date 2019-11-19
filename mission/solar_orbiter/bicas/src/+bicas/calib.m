@@ -34,7 +34,7 @@ classdef calib
 % 
 % BLTS = BIAS-LFR/TDS Signals
 % ---------------------------
-% Signals somewhere between the LFR/TDS ADCs and the antenna side of the BIAS demuxer
+% Signals somewhere between the LFR/TDS ADCs and the non-antenna side of the BIAS demuxer
 % including the BIAS transfer functions. Like BIAS_i, i=1..5, but includes various stages of calibration/non-calibration,
 % including in particular
 %   - TM units (inside LFR/TDS),
@@ -46,12 +46,17 @@ classdef calib
 %
 % ASR = Antenna Signal Representation
 % -----------------------------------
-% Those measured signals which are ultimately derived/calibrated by BICAS,     i.e. Vi_LF, Vij_LF, Vij_LF_AC (i,j=1..3)
-% in the BIAS specification.
+% Those measured signals which are ultimately derived/calibrated by BICAS, i.e. Vi_LF, Vij_LF, Vij_LF_AC (i,j=1..3) in
+% the BIAS specification.
 % NOTE: This is different from the physical antenna signals (Vi_LF) which are essentially a subset of ASR, except for
 % calibration errors and filtering.
 % NOTE: This is different from the set Vi_DC, Vij_DC, Vij_AC of which a subset are equal to BIAS_i (which subset it is
 % depends on the demux mode) and which is always in LFR/TDS calibrated volts.
+%
+% ASR TYPE
+% --------
+% The type of ASR, typically what kind of ASR a specific BLTS channel represents.
+%
 %
 % BIAS_i, i=1..5
 % --------------
@@ -108,13 +113,15 @@ classdef calib
 %   PROPOSAL: General philosophy should be that calibrate_* chooses as much as possible, and thus chooses different
 %             functions to call.
 %
-% PROPOSAL: Move RCT functions to separate class.
-%
-% PROPOSAL: Simplify/clean-up calibrate_*
+% PROPOSAL: Simplify/clean-up calibrate_*.
 %   PROPOSAL: Function for dtSec.
-%   PROPOSAL: Function for iCalibTimeL/H
+%       PROPOSAL: Some kind of assertion (assumption of) constant sampling frequency.
+%   PROPOSAL: Function for iCalibTimeL/H.
 %   PROPOSAL: Assertions for same number of Epoch as samples.
 % PROPOSAL: SETTINGS for scalar calibrations.
+%
+% BUG: Currently misusing get_calibration_time_interval. /2019-11-18
+%   PROPOSAL: Let caller decide on which calibration time to use. ==> Calibration methods only use one time.
 %
 %
 % BOGIQ: RCT-reading functions
@@ -165,6 +172,9 @@ classdef calib
         % Convert/calibrate TC bias current: TM units --> physical units.
         %
         % NOTE: This is the normal way of obtaining bias current in physical units (as opposed to HK bias current).
+        %
+        % NOTE: TEMPORARY IMPLEMENTATION(?) Only uses first Epoch value for determining calibration values.
+        %
         function biasCurrentAmpere = calibrate_TC_bias_TM_to_bias_current(obj, Epoch, tcBiasTm, iAntenna)
             % BUG: Can not handle time.
             
@@ -227,7 +237,7 @@ classdef calib
 
         % NOTE: TEMPORARY IMPLEMENTATION(?) Only uses first Epoch value for determining calibration values.
         %
-        function asrSamplesVolt = calibrate_LFR(obj, Epoch, lfrSamplesTm, iBltsChannel, BltsAsrType, iLfrFreq, biasHighGain)
+        function asrSamplesVolt = calibrate_LFR(obj, Epoch, lfrSamplesTm, iBltsChannel, BltsAsrType, biasHighGain, iLfrFreq)
             
             bicas.proc_utils.assert_Epoch(Epoch)
             assert(numel(lfrSamplesTm) == numel(Epoch))
@@ -274,8 +284,7 @@ classdef calib
         %
         % NOTE: TEMPORARY IMPLEMENTATION(?) Only uses first Epoch value for determining calibration values.
         %
-        function asrSamplesVolt = calibrate_TDS_CWF(obj, Epoch, tdsCwfSamplesTm, iBltsChannel, BltsAsrType)
-            % PROPOSAL: Some kind of assertion (assumption of) constant sampling frequency.
+        function asrSamplesVolt = calibrate_TDS_CWF(obj, Epoch, tdsCwfSamplesTm, iBltsChannel, BltsAsrType, biasHighGain)
             
             % ASSERTIONS
             bicas.proc_utils.assert_Epoch(Epoch)
@@ -291,7 +300,7 @@ classdef calib
             iEpochListL = bicas.calib.get_calibration_time_interval(Epoch, obj.Bias.epochL);   iCalibTimeL = iEpochListL{1}(1);
             iEpochListH = bicas.calib.get_calibration_time_interval(Epoch, obj.Bias.epochH);   iCalibTimeH = iEpochListH{1}(1);
             % NOTE: Low/high gain is irrelevant for TDS. Argument value arbitrary.
-            BiasCalibData = obj.get_BIAS_calib_data(BltsAsrType, 0, iCalibTimeL, iCalibTimeH);
+            BiasCalibData = obj.get_BIAS_calib_data(BltsAsrType, biasHighGain, iCalibTimeL, iCalibTimeH);
 
             %===============================================
             % CALIBRATE: TDS TM --> TDS/BIAS interface volt
@@ -314,7 +323,9 @@ classdef calib
 
 
 
-        function asrSamplesVolt = calibrate_TDS_RSWF(obj, Epoch, tdsRswfSamplesTm, iBltsChannel, BltsAsrType)
+        % NOTE: TEMPORARY IMPLEMENTATION(?) Only uses first Epoch value for determining calibration values.
+        %
+        function asrSamplesVolt = calibrate_TDS_RSWF(obj, Epoch, tdsRswfSamplesTm, iBltsChannel, BltsAsrType, biasHighGain)
             % ASSERTIONS
             bicas.proc_utils.assert_Epoch(Epoch)
             assert(numel(tdsRswfSamplesTm) == numel(Epoch))
@@ -329,7 +340,7 @@ classdef calib
             iEpochListL = bicas.calib.get_calibration_time_interval(Epoch, obj.Bias.epochL);   iCalibTimeL = iEpochListL{1}(1);
             iEpochListH = bicas.calib.get_calibration_time_interval(Epoch, obj.Bias.epochH);   iCalibTimeH = iEpochListH{1}(1);
             % NOTE: Low/high gain is irrelevant for TDS. Argument value arbitrary.
-            BiasCalibData = obj.get_BIAS_calib_data(BltsAsrType, 0, iCalibTimeL, iCalibTimeH);
+            BiasCalibData = obj.get_BIAS_calib_data(BltsAsrType, biasHighGain, iCalibTimeL, iCalibTimeH);
             
             itf = @(omega) (...
                 obj.TdsRswfItfList{iBltsChannel}.eval_linear(omega) .* ...
@@ -366,7 +377,8 @@ classdef calib
         % IMPLEMENTATION NOTE: This method exists to
         % (1) run shared code that should be run when reading any RCT (logging, algorithm for finding file),
         % (2) separate logging from the RCT-reading code, so that one can read RCTs without BICAS.
-        % IMPLEMENTATION NOTE: This method is an instance method only because of find_RCT.
+        % IMPLEMENTATION NOTE: This method is an instance method only because of needing settings for
+        % find_RCT_by_SETTINGS_regexp.
         %
         %
         % ARGUMENTS
@@ -398,8 +410,9 @@ classdef calib
             switch(BltsAsrType.category)
                 case 'DC single'
                     assert(isscalar(BltsAsrType.antennas))
-                    BiasItfSet    = obj.Bias.ItfSet.DcSingle;
+                    BiasItfSet = obj.Bias.ItfSet.DcSingle;
                     offsetVolt = obj.Bias.dcSingleOffsetsVolt(iCalibTimeH, BltsAsrType.antennas);
+
                 case 'DC diff'
                     BiasItfSet    = obj.Bias.ItfSet.DcDiff;
                     if     isequal(BltsAsrType.antennas(:)', [1,2]);   offsetVolt = obj.Bias.DcDiffOffsets.E12Volt(iCalibTimeH);
@@ -408,12 +421,15 @@ classdef calib
                     else
                         error('BICAS:calib:Assertion:IllegalArgument', 'Illegal BltsAsrType.antennas.');
                     end
+
                 case 'AC'
                     if biasHighGain ; BiasItfSet = obj.Bias.ItfSet.AcHighGain;   offsetVolt = 0;
                     else            ; BiasItfSet = obj.Bias.ItfSet.AcLowGain;    offsetVolt = 0;
                     end
+
                 otherwise
                     error('BICAS:calib:IllegalArgument:Assertion', 'Illegal argument BltsAsrType.category=%s', BltsAsrType.category)
+
             end
             BiasCalibData.Itf        = BiasItfSet{iCalibTimeL};
             BiasCalibData.offsetVolt = offsetVolt;
@@ -427,8 +443,40 @@ classdef calib
 
     
     
-    %methods(Static, Access=public)
-    methods(Static, Access=private)
+    methods(Static, Access=public)
+        % NOTE: Public so that automatic test code can call get_calibration_time.
+
+
+
+        % Given a sequence of Epoch values, determine for each value which calibration time index should be used. The
+        % caller will have to decide which sequence of data that should be calibrated together (e.g. if calibration time
+        % changes in the middle of CWF), and which Epoch values should be used to determine calibration time (e.g. first
+        % Epoch value for a snapshot determines entire snapshot).
+        %
+        % ARGUMENTS AND RETURN VALUES
+        % ===========================
+        % Epoch          : Column vector with Epoch values.
+        % CalibEpochList : List of monotonically increasing timestamps ("Epoch format").
+        %                  In practice intended to be Bias.epochL or Bias.epochH.
+        % iCalibList     : Array. iCalibList(i) = calibration time index for Epoch(i).
+        %
+        function [iCalibList] = get_calibration_time(Epoch, CalibEpochList)
+            
+            % ASSERTIONS
+            bicas.proc_utils.assert_Epoch(Epoch)
+            bicas.proc_utils.assert_Epoch(CalibEpochList)
+            % IMPLEMENTATION NOTE: Does not work if CalibEpochList is empty, since discretize behaves differently for
+            % scalar second argument.
+            assert(~isempty(CalibEpochList))
+            
+            % IMPLEMENTATION NOTE: "discretize" by itself returns NaN for Epoch values outside the outermost edges.
+            % Therefore (1) must add upper edge "Inf", (2) asserts non-Nan afterwards.
+            % IMPLEMENTATION NOTE: "discretize" behaves differently for scalar second argument. Adding edges at infinity hides
+            % this problem. If one does not add infinities and uses a scalar edge list, then one has to treat those
+            % cases manually.
+            iCalibList = discretize(Epoch, [CalibEpochList; Inf], 'IncludedEdge', 'left');
+            assert(all(~isnan(iCalibList(:))), 'Can not derive which calibration data to use for all specified timestamps.')
+        end
 
 
 
@@ -442,37 +490,38 @@ classdef calib
         % ARGUMENTS AND RETURN VALUES
         % ===========================
         % Epoch         : Column vector with CDF Epoch values. Must be monotonically increasing.
-        % EpochEdgeList : Bias.epochL or Bias.epochH.          Must be monotonically increasing.
+        % EpochEdgeList : List of monotonically increasing timestamps ("Epoch format").
+        %                 In practice intended to be Bias.epochL or Bias.epochH.
         % iEpochList    : Cell array. iEpochList{jCalib} = 1D vector of indices into Epoch for which to use jCalib as time
         %                 index into BIAS calibration data. Every vector should describe a continuous interval in the
         %                 original order. One can thus safely apply transfer functions on data selected this way.
         %                 NOTE: Intervals can be empty.
         %
-        function [iEpochList] = get_calibration_time_interval(Epoch, EpochEdgeList)
-            % PROPOSAL: Re-create as generic function that splits sorted vector into sub-arrays.
+%         function [iEpochList] = get_calibration_time_interval(Epoch, EpochEdgeList)
+%             % PROPOSAL: Re-create as generic function that splits sorted vector into sub-arrays.
+%             
+%             % ASSERTIONS
+%             bicas.proc_utils.assert_Epoch(Epoch)
+%             bicas.proc_utils.assert_Epoch(EpochEdgeList)
+%             validateattributes(Epoch,         {'numeric'}, {'increasing'})
+%             validateattributes(EpochEdgeList, {'numeric'}, {'increasing'})
+% 
+%             % NOTE: int64(Inf) = int64 max value.
+%             % NOTE: Adds Inf to edges. "discretize" assigns NaN to values outside the list of edges, which is hereby avoided.
+%             jEpochCalib = discretize(Epoch, [EpochEdgeList; Inf], 'IncludedEdge', 'left');    % NaN for Epoch < epochL(1)
+% 
+%             % ASSERTION: All Epoch values were assigned a calibration time index.
+%             assert(~any(isnan(jEpochCalib)), 'BICAS:calib:get_calibration_time_interval:Assertion:IllegalArgument', ...
+%                 'Found Epoch value(s) which could not be assigned to a time interval with calibration data.')
+% 
+%             iEpochList = {};
+%             for j = 1:numel(EpochEdgeList)
+%                 iEpochList{j} = find(jEpochCalib == j);
+%             end
+%         end
+
+
             
-            % ASSERTIONS
-            bicas.proc_utils.assert_Epoch(Epoch)
-            bicas.proc_utils.assert_Epoch(EpochEdgeList)
-            validateattributes(Epoch,         {'numeric'}, {'increasing'})
-            validateattributes(EpochEdgeList, {'numeric'}, {'increasing'})
-
-            % NOTE: int64(Inf) = int64 max value.
-            % NOTE: Adds Inf to edges. "discretize" assigns NaN to values outside the list of edges, which is hereby avoided.
-            jEpochCalib = discretize(Epoch, [EpochEdgeList; Inf], 'IncludedEdge', 'left');    % NaN for Epoch < epochL(1)
-
-            % ASSERTION: All Epoch values were assigned a calibration time index.
-            assert(~any(isnan(jEpochCalib)), 'BICAS:calib:get_calibration_time_interval:Assertion:IllegalArgument', ...
-                'Found Epoch value(s) which could not be assigned to a time interval with calibration data.')
-
-            iEpochList = {};
-            for j = 1:numel(EpochEdgeList)
-                iEpochList{j} = find(jEpochCalib == j);
-            end
-        end
-        
-
-        
 %         function tfZ = parasitic_capacitance_TF(tfOmega)
 %             % Calculate Z(omega) values for TF representing parasitic capacitances (based on analytic function).
 % 

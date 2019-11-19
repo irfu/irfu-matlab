@@ -5,14 +5,17 @@
 % PRODUCTION FUNCTIONS
 % ====================
 % A function with interface
-%   OutputsMap = produce_*(InputsMap)
+%   OutputsMap = produce_*(InputsMap, Cal)
 % where
+% Cal        : A bicas.calib object.
 % InputsMap  : containers.Map with
 %                <keys>       : String defining a name of an input ("prodFuncInputKey" in swmode_defs).
 %                <values>     : A struct with data corresponding to a CDF file (zVariables+global attributes).
 % OutputsMap : containers.Map with
 %                <keys>       : String defining a name of an output ("prodFuncOutputKey" in swmode_defs).
 %                <values>     : A struct with data corresponding to a CDF file (zVariables).
+% NOTE: In practice, anonymous functions with the correct interface are used to wrap the actual implementing functions
+% (with another interface).
 %
 %
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
@@ -68,7 +71,7 @@ classdef proc
     %
     % PROPOSAL: (Outside) Derive PDID from input dataset, then use it when sending input dataset argument to production function.
     %   CON: Possible to derive non-exististant (non-supported) PDIDs. Not the best way to test input datasets.
-    
+
     methods(Static, Access=public)
         
         % ARGUMENTS
@@ -79,7 +82,7 @@ classdef proc
         %                    (1) it could be missing, or
         %                    (2) sometimes one may want to read an ROC-SGSE dataset as if it was an RODP dataset or the other way around.
         %
-        function [OutputDatasetsMap] = produce_L2S_L2_LFR(InputDatasetsMap, inputSciDsi, outputDsi, outputVersion)
+        function [OutputDatasetsMap] = produce_L2_LFR(InputDatasetsMap, Cal, inputSciDsi, outputDsi, outputVersion)
             
             HkPd  = InputDatasetsMap('HK_cdf');
             SciPd = InputDatasetsMap('SCI_cdf');
@@ -93,14 +96,14 @@ classdef proc
             OutputDatasetsMap = containers.Map();
             OutputDatasetsMap('SCI_cdf') = OutputSciPd;
         end
-        
-        
-        
+
+
+
         % ARGUMENTS
         % =========
         % InputDatasetsMap : containers.Map: key=<argument key> --> value=PDV for input CDF
         %
-        function [OutputDatasetsMap] = produce_L2S_L2_TDS(InputDatasetsMap, inputSciDsi, outputDsi, outputVersion)
+        function [OutputDatasetsMap] = produce_L2_TDS(InputDatasetsMap, Cal, inputSciDsi, outputDsi, outputVersion)
             
             HkPd  = InputDatasetsMap('HK_cdf');
             SciPd = InputDatasetsMap('SCI_cdf');

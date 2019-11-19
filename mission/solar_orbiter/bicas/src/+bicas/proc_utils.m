@@ -565,6 +565,7 @@ classdef proc_utils
         % NOTE: Does not recognize HK datasets.
         % NOTE: Only classifies input datasets. (Is there a good reason for this?)
         % NOTE: Function deliberately ignores Skeleton_version.
+        %
         function C = classify_DATASET_ID(datasetId)
             % PROPOSAL: Use regexp instead.
             
@@ -573,7 +574,7 @@ classdef proc_utils
             C.isLfrSbm1 = 0;
             C.isLfrSbm2 = 0;
             C.isLfrSwf  = 0;
-            C.isTdsRswf    = 0;
+            C.isTdsRswf = 0;
             
             switch(datasetId)
                 case {'ROC-SGSE_L1R_RPW-LFR-SBM1-CWF-E'
@@ -831,6 +832,35 @@ classdef proc_utils
                 error('BICAS:proc_utils:Assertion', 'Numeric fields in struct do not have the same number of rows (likely corresponding to CDF zVar records).')
             end
         end
+        
+        
+        
+%         function iBinList = get_bin_index(x, edgeList)
+%             % PROPOSAL: Move to EJ_library.
+%             
+%             % ASSERTIONS
+%             assert(isnumeric(x))
+%             assert(all(~isnan(x(:))))    % Convert to array to handle all dimensionalities.
+%             validateattributes(edgeList, {'numeric'}, {'increasing'})
+%             
+%             % "ALGORITHM"
+% %             if numel(edgeList) == 0
+% %                 iBinList = ones(size(x));
+% %             elseif numel(edgeList) == 1
+% %                 iBinList = 1 + double((edgeList <= x));
+% %             else
+% %                 % CASE: numel(edgeList) >= 2
+% %                 iBinList = discretize(x, [-Inf, edgeList, Inf], 'IncludedEdge', 'left');
+% %             end
+% 
+%             % IMPLEMENTATION NOTE: "discretize" by itself returns NaN for x values outside the outermost edges.
+%             % IMPLEMENTATION NOTE: "discretize" behaves differently for scalar second argument. Adding edges at infinity hides
+%             % this problem. If one does not add infinities and uses a scalar edge list, then one has to treat those
+%             % cases manually.
+%             iBinList = discretize(x, [-Inf, edgeList, Inf], 'IncludedEdge', 'left');
+%         end
+        
+        
         
     end   % Static
     
