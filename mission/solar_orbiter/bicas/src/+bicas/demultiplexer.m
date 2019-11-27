@@ -23,12 +23,6 @@
 % First created 2019-11-18
 %
 classdef demultiplexer
-    % PROPOSAL: Change naming convention Vx_LF, Vxy_LF, Vxy_LF_AC.
-	%   CON: Is same as in BIAS spec.
-    %   PROPOSAL: Remove LF
-    %   PROPOSAL: Write both DC & AC explicitly, not just AC.
-    %   PROPOSAL: Use something that conforms to BICAS-defined notation, i.e. ASR, BLTS etc.
-    %
     % PROPOSAL: Change fieldname <routing>.src
     %   NOTE: Can not use ASR/AS ID. Does not cover all sources.
     %   PROPOSAL: .signalSource
@@ -47,39 +41,39 @@ classdef demultiplexer
         %    the bicas.demultiplexer.main function is called (in particular mux mode). ==> Tests more code immediately.
         %    ==> Finds "routing bugs" faster.
         
-        V1_LF     = bicas.BLTS_src_dest('DC single', [1]);
-        V2_LF     = bicas.BLTS_src_dest('DC single', [2]);
-        V3_LF     = bicas.BLTS_src_dest('DC single', [3]);
-        V12_LF    = bicas.BLTS_src_dest('DC diff',   [1,2]);
-        V13_LF    = bicas.BLTS_src_dest('DC diff',   [1,3]);
-        V23_LF    = bicas.BLTS_src_dest('DC diff',   [2,3]);
-        V12_LF_AC = bicas.BLTS_src_dest('AC diff',   [1,2]);
-        V13_LF_AC = bicas.BLTS_src_dest('AC diff',   [1,3]);
-        V23_LF_AC = bicas.BLTS_src_dest('AC diff',   [2,3]);
+        SRC_DC_V1   = bicas.BLTS_src_dest('DC single', [1]);
+        SRC_DC_V2   = bicas.BLTS_src_dest('DC single', [2]);
+        SRC_DC_V3   = bicas.BLTS_src_dest('DC single', [3]);
+        SRC_DC_V12  = bicas.BLTS_src_dest('DC diff',   [1,2]);
+        SRC_DC_V13  = bicas.BLTS_src_dest('DC diff',   [1,3]);
+        SRC_DC_V23  = bicas.BLTS_src_dest('DC diff',   [2,3]);
+        SRC_AC_V12  = bicas.BLTS_src_dest('AC diff',   [1,2]);
+        SRC_AC_V13  = bicas.BLTS_src_dest('AC diff',   [1,3]);
+        SRC_AC_V23  = bicas.BLTS_src_dest('AC diff',   [2,3]);
 
         % Define constants each one representing different routings.
-        ROUTING_V1_LF     = bicas.demultiplexer.routing('DC single', [1]);
-        ROUTING_V2_LF     = bicas.demultiplexer.routing('DC single', [2]);
-        ROUTING_V3_LF     = bicas.demultiplexer.routing('DC single', [3]);
-        ROUTING_V12_LF    = bicas.demultiplexer.routing('DC diff',   [1,2]);
-        ROUTING_V13_LF    = bicas.demultiplexer.routing('DC diff',   [1,3]);
-        ROUTING_V23_LF    = bicas.demultiplexer.routing('DC diff',   [2,3]);
-        ROUTING_V12_LF_AC = bicas.demultiplexer.routing('AC diff',   [1,2]);
-        ROUTING_V13_LF_AC = bicas.demultiplexer.routing('AC diff',   [1,3]);
-        ROUTING_V23_LF_AC = bicas.demultiplexer.routing('AC diff',   [2,3]);
-        
-        ROUTING_25VREF_1_TO_V1_LF      = bicas.demultiplexer.routing('2.5V Ref',  [], 'DC single', [1]);
-        ROUTING_25VREF_2_TO_V2_LF      = bicas.demultiplexer.routing('2.5V Ref',  [], 'DC single', [2]);
-        ROUTING_25VREF_3_TO_V3_LF      = bicas.demultiplexer.routing('2.5V Ref',  [], 'DC single', [3]);
-        ROUTING_GND_1_TO_V1_LF         = bicas.demultiplexer.routing('GND',       [], 'DC single', [1]);
-        ROUTING_GND_2_TO_V2_LF         = bicas.demultiplexer.routing('GND',       [], 'DC single', [2]);
-        ROUTING_GND_3_TO_V3_LF         = bicas.demultiplexer.routing('GND',       [], 'DC single', [3]);
-        ROUTING_UNKNOWN_1_TO_NOTHING     = bicas.demultiplexer.routing('Unknown',   [], 'Nowhere', []);
-        ROUTING_UNKNOWN_2_TO_NOTHING     = bicas.demultiplexer.routing('Unknown',   [], 'Nowhere', []);
-        ROUTING_UNKNOWN_3_TO_NOTHING     = bicas.demultiplexer.routing('Unknown',   [], 'Nowhere', []);
-%         ROUTING_UNKNOWN_1_TO_V1_LF     = bicas.demultiplexer.routing('Unknown',   [], 'DC single', [1]);
-%         ROUTING_UNKNOWN_2_TO_V2_LF     = bicas.demultiplexer.routing('Unknown',   [], 'DC single', [2]);
-%         ROUTING_UNKNOWN_3_TO_V3_LF     = bicas.demultiplexer.routing('Unknown',   [], 'DC single', [3]);
+        ROUTING_DC_V1  = bicas.demultiplexer.routing('DC single', [1]);
+        ROUTING_DC_V2  = bicas.demultiplexer.routing('DC single', [2]);
+        ROUTING_DC_V3  = bicas.demultiplexer.routing('DC single', [3]);
+        ROUTING_DC_V12 = bicas.demultiplexer.routing('DC diff',   [1,2]);
+        ROUTING_DC_V13 = bicas.demultiplexer.routing('DC diff',   [1,3]);
+        ROUTING_DC_V23 = bicas.demultiplexer.routing('DC diff',   [2,3]);
+        ROUTING_AC_V12 = bicas.demultiplexer.routing('AC diff',   [1,2]);
+        ROUTING_AC_V13 = bicas.demultiplexer.routing('AC diff',   [1,3]);
+        ROUTING_AC_V23 = bicas.demultiplexer.routing('AC diff',   [2,3]);
+
+        ROUTING_25VREF_1_TO_DC_V1     = bicas.demultiplexer.routing('2.5V Ref',  [], 'DC single', [1]);
+        ROUTING_25VREF_2_TO_DC_V2     = bicas.demultiplexer.routing('2.5V Ref',  [], 'DC single', [2]);
+        ROUTING_25VREF_3_TO_DC_V3     = bicas.demultiplexer.routing('2.5V Ref',  [], 'DC single', [3]);
+        ROUTING_GND_1_TO_V1_LF        = bicas.demultiplexer.routing('GND',       [], 'DC single', [1]);
+        ROUTING_GND_2_TO_V2_LF        = bicas.demultiplexer.routing('GND',       [], 'DC single', [2]);
+        ROUTING_GND_3_TO_V3_LF        = bicas.demultiplexer.routing('GND',       [], 'DC single', [3]);
+        ROUTING_UNKNOWN_1_TO_NOTHING  = bicas.demultiplexer.routing('Unknown',   [], 'Nowhere', []);
+        ROUTING_UNKNOWN_2_TO_NOTHING  = bicas.demultiplexer.routing('Unknown',   [], 'Nowhere', []);
+        ROUTING_UNKNOWN_3_TO_NOTHING  = bicas.demultiplexer.routing('Unknown',   [], 'Nowhere', []);
+%         ROUTING_UNKNOWN_1_TO_V1_LF    = bicas.demultiplexer.routing('Unknown',   [], 'DC single', [1]);
+%         ROUTING_UNKNOWN_2_TO_V2_LF    = bicas.demultiplexer.routing('Unknown',   [], 'DC single', [2]);
+%         ROUTING_UNKNOWN_3_TO_V3_LF    = bicas.demultiplexer.routing('Unknown',   [], 'DC single', [3]);
         % NOTE: BLTS 4 & 5 are never unknown.
     end
 
@@ -183,26 +177,24 @@ classdef demultiplexer
             
             % AS = "ASR Samples"
             NAN_VALUES = ones(size(BltsSamplesAsrVolt{1})) * NaN;
-            As.V1_LF     = NAN_VALUES;
-            As.V2_LF     = NAN_VALUES;
-            As.V3_LF     = NAN_VALUES;
-            As.V12_LF    = NAN_VALUES;
-            As.V13_LF    = NAN_VALUES;
-            As.V23_LF    = NAN_VALUES;
-            As.V12_LF_AC = NAN_VALUES;
-            As.V13_LF_AC = NAN_VALUES;
-            As.V23_LF_AC = NAN_VALUES;
+            As.dcV1  = NAN_VALUES;
+            As.dcV2  = NAN_VALUES;
+            As.dcV3  = NAN_VALUES;
+            As.dcV12 = NAN_VALUES;
+            As.dcV13 = NAN_VALUES;
+            As.dcV23 = NAN_VALUES;
+            As.acV12 = NAN_VALUES;
+            As.acV13 = NAN_VALUES;
+            As.acV23 = NAN_VALUES;
             
             
             
             if dlrUsing12
-                %iAntB = 2;
-                ROUTING_V1x_LF    = bicas.demultiplexer.ROUTING_V12_LF;
-                ROUTING_V1x_LF_AC = bicas.demultiplexer.ROUTING_V12_LF_AC;
+                ROUTING_DC_V1x = bicas.demultiplexer.ROUTING_DC_V12;
+                ROUTING_AC_V1x = bicas.demultiplexer.ROUTING_AC_V12;
             else
-                %iAntB = 3;
-                ROUTING_V1x_LF    = bicas.demultiplexer.ROUTING_V13_LF;
-                ROUTING_V1x_LF_AC = bicas.demultiplexer.ROUTING_V13_LF_AC;
+                ROUTING_DC_V1x = bicas.demultiplexer.ROUTING_DC_V13;
+                ROUTING_AC_V1x = bicas.demultiplexer.ROUTING_AC_V13;
             end
 
             import bicas.demultiplexer.*
@@ -214,29 +206,29 @@ classdef demultiplexer
                 case 0   % "Standard operation" : We have all information.
                     
                     % Summarize the routing.
-                    RoutingArray(1) = bicas.demultiplexer.ROUTING_V1_LF;
-                    RoutingArray(2) =                     ROUTING_V1x_LF;
-                    RoutingArray(3) = bicas.demultiplexer.ROUTING_V23_LF;
-                    RoutingArray(4) =                     ROUTING_V1x_LF_AC;
-                    RoutingArray(5) = bicas.demultiplexer.ROUTING_V23_LF_AC;
+                    RoutingArray(1) = bicas.demultiplexer.ROUTING_DC_V1;
+                    RoutingArray(2) =                     ROUTING_DC_V1x;
+                    RoutingArray(3) = bicas.demultiplexer.ROUTING_DC_V23;
+                    RoutingArray(4) =                     ROUTING_AC_V1x;
+                    RoutingArray(5) = bicas.demultiplexer.ROUTING_AC_V23;
                     As = assign_ASR_samples_from_BLTS(As, BltsSamplesAsrVolt, RoutingArray);
                     
                     % Derive the ASR:s not in the BLTS.
-                    As.V2_LF = As.V1_LF - As.V12_LF;
-                    As.V3_LF = As.V2_LF - As.V23_LF;
+                    As.dcV2 = As.dcV1 - As.dcV12;
+                    As.dcV3 = As.dcV2 - As.dcV23;
                     if dlrUsing12
-                        As.V13_LF = As.V12_LF + As.V23_LF;
+                        As.dcV13 = As.dcV12 + As.dcV23;
                     else
-                        As.V12_LF = As.V13_LF - As.V23_LF;
+                        As.dcV12 = As.dcV13 - As.dcV23;
                     end
                     
                 case 1   % Probe 1 fails
                     
-                    RoutingArray(1) = bicas.demultiplexer.ROUTING_V2_LF;
-                    RoutingArray(2) = bicas.demultiplexer.ROUTING_V3_LF;
-                    RoutingArray(3) = bicas.demultiplexer.ROUTING_V23_LF;
-                    RoutingArray(4) =                     ROUTING_V1x_LF_AC;
-                    RoutingArray(5) = bicas.demultiplexer.ROUTING_V23_LF_AC;
+                    RoutingArray(1) = bicas.demultiplexer.ROUTING_DC_V2;
+                    RoutingArray(2) = bicas.demultiplexer.ROUTING_DC_V3;
+                    RoutingArray(3) = bicas.demultiplexer.ROUTING_DC_V23;
+                    RoutingArray(4) =                     ROUTING_AC_V1x;
+                    RoutingArray(5) = bicas.demultiplexer.ROUTING_AC_V23;
                     As = assign_ASR_samples_from_BLTS(As, BltsSamplesAsrVolt, RoutingArray);
                     
                     % NOTE: Can not derive anything extra for DC. BLTS 1-3 contain redundant data (regardless of
@@ -244,73 +236,73 @@ classdef demultiplexer
                     
                 case 2   % Probe 2 fails
                     
-                    RoutingArray(1) = bicas.demultiplexer.ROUTING_V1_LF;
-                    RoutingArray(2) = bicas.demultiplexer.ROUTING_V3_LF;
-                    RoutingArray(3) =                     ROUTING_V1x_LF;
-                    RoutingArray(4) = bicas.demultiplexer.ROUTING_V13_LF_AC;
-                    RoutingArray(5) = bicas.demultiplexer.ROUTING_V23_LF_AC;
+                    RoutingArray(1) = bicas.demultiplexer.ROUTING_DC_V1;
+                    RoutingArray(2) = bicas.demultiplexer.ROUTING_DC_V3;
+                    RoutingArray(3) =                     ROUTING_DC_V1x;
+                    RoutingArray(4) = bicas.demultiplexer.ROUTING_AC_V13;
+                    RoutingArray(5) = bicas.demultiplexer.ROUTING_AC_V23;
                     As = assign_ASR_samples_from_BLTS(As, BltsSamplesAsrVolt, RoutingArray);
                     
                     if dlrUsing12
                         % CASE: Know V1, V3, V12
-                        As.V2_LF  = As.V1_LF - As.V12_LF;
-                        As.V13_LF = As.V1_LF - As.V3_LF;
-                        As.V23_LF = As.V2_LF - As.V3_LF;
+                        As.dcV2  = As.dcV1 - As.dcV12;
+                        As.dcV13 = As.dcV1 - As.dcV3;
+                        As.dcV23 = As.dcV2 - As.dcV3;
                     else
                         % NOTE: Can not derive anything extra for DC. BLTS 1-3 contain redundant data.
                     end
                     
                 case 3   % Probe 3 fails
 
-                    RoutingArray(1) = bicas.demultiplexer.ROUTING_V1_LF;
-                    RoutingArray(2) = bicas.demultiplexer.ROUTING_V2_LF;
-                    RoutingArray(3) =                     ROUTING_V1x_LF;
-                    RoutingArray(4) =                     ROUTING_V1x_LF_AC;
-                    RoutingArray(5) = bicas.demultiplexer.ROUTING_V23_LF_AC;
+                    RoutingArray(1) = bicas.demultiplexer.ROUTING_DC_V1;
+                    RoutingArray(2) = bicas.demultiplexer.ROUTING_DC_V2;
+                    RoutingArray(3) =                     ROUTING_DC_V1x;
+                    RoutingArray(4) =                     ROUTING_AC_V1x;
+                    RoutingArray(5) = bicas.demultiplexer.ROUTING_AC_V23;
                     As = assign_ASR_samples_from_BLTS(As, BltsSamplesAsrVolt, RoutingArray);
 
                     if dlrUsing12
                         % NOTE: Can not derive anything extra for DC. BLTS 1-3 contain redundant data.
                     else
                         % CASE: Know V1, V2, V13
-                        As.V3_LF  = As.V1_LF - As.V13_LF;
-                        As.V12_LF = As.V1_LF - As.V2_LF;
-                        As.V23_LF = As.V2_LF - As.V3_LF;
+                        As.dcV3  = As.dcV1 - As.dcV13;
+                        As.dcV12 = As.dcV1 - As.dcV2;
+                        As.dcV23 = As.dcV2 - As.dcV3;
                     end
                     
                 case 4   % Calibration mode 0
                     
-                    RoutingArray(1) = bicas.demultiplexer.ROUTING_V1_LF;
-                    RoutingArray(2) = bicas.demultiplexer.ROUTING_V2_LF;
-                    RoutingArray(3) = bicas.demultiplexer.ROUTING_V3_LF;
-                    RoutingArray(4) =                     ROUTING_V1x_LF_AC;
-                    RoutingArray(5) = bicas.demultiplexer.ROUTING_V23_LF_AC;
+                    RoutingArray(1) = bicas.demultiplexer.ROUTING_DC_V1;
+                    RoutingArray(2) = bicas.demultiplexer.ROUTING_DC_V2;
+                    RoutingArray(3) = bicas.demultiplexer.ROUTING_DC_V3;
+                    RoutingArray(4) =                     ROUTING_AC_V1x;
+                    RoutingArray(5) = bicas.demultiplexer.ROUTING_AC_V23;
                     As = assign_ASR_samples_from_BLTS(As, BltsSamplesAsrVolt, RoutingArray);
                     
-                    As.V12_LF = As.V1_LF - As.V2_LF;
-                    As.V13_LF = As.V1_LF - As.V3_LF;
-                    As.V23_LF = As.V2_LF - As.V3_LF;
+                    As.dcV12 = As.dcV1 - As.dcV2;
+                    As.dcV13 = As.dcV1 - As.dcV3;
+                    As.dcV23 = As.dcV2 - As.dcV3;
 
                 case {5,6,7}   % Calibration mode 1/2/3
 
                     switch(demuxMode)
                         case 5
-                            RoutingArray(1) = bicas.demultiplexer.ROUTING_25V_REF_1_TO_V1_LF;
-                            RoutingArray(2) = bicas.demultiplexer.ROUTING_25V_REF_2_TO_V2_LF;
-                            RoutingArray(3) = bicas.demultiplexer.ROUTING_25V_REF_3_TO_V3_LF;
+                            RoutingArray(1) = bicas.demultiplexer.ROUTING_25VREF_1_TO_DC_V1;
+                            RoutingArray(2) = bicas.demultiplexer.ROUTING_25VREF_2_TO_DC_V2;
+                            RoutingArray(3) = bicas.demultiplexer.ROUTING_25VREF_3_TO_DC_V3;
                         case {6,7}
                             RoutingArray(1) = bicas.demultiplexer.ROUTING_GND_1_TO_V1_LF;
                             RoutingArray(2) = bicas.demultiplexer.ROUTING_GND_2_TO_V2_LF;
                             RoutingArray(3) = bicas.demultiplexer.ROUTING_GND_3_TO_V3_LF;
                     end
-                    RoutingArray(4) =                     ROUTING_V1x_LF_AC;
-                    RoutingArray(5) = bicas.demultiplexer.ROUTING_V23_LF_AC;
+                    RoutingArray(4) =                     ROUTING_AC_V1x;
+                    RoutingArray(5) = bicas.demultiplexer.ROUTING_AC_V23;
                     As = assign_ASR_samples_from_BLTS(As, BltsSamplesAsrVolt, RoutingArray);
                     
-                    As.V12_LF = As.V1_LF - As.V2_LF;
-                    As.V13_LF = As.V1_LF - As.V3_LF;
-                    As.V23_LF = As.V2_LF - As.V3_LF;
-                    
+                    As.dcV12 = As.dcV1 - As.dcV2;
+                    As.dcV13 = As.dcV1 - As.dcV3;
+                    As.dcV23 = As.dcV2 - As.dcV3;
+
                 otherwise
                     % IMPLEMENTATION NOTE: switch-case statement does not work for NaN. Therefore using "otherwise".
                     if isnan(demuxMode)
@@ -320,8 +312,8 @@ classdef demultiplexer
                         RoutingArray(1) = bicas.demultiplexer.ROUTING_UNKNOWN_1_TO_NOTHING;
                         RoutingArray(2) = bicas.demultiplexer.ROUTING_UNKNOWN_2_TO_NOTHING;
                         RoutingArray(3) = bicas.demultiplexer.ROUTING_UNKNOWN_3_TO_NOTHING;
-                        RoutingArray(4) =                     ROUTING_V1x_LF_AC;
-                        RoutingArray(5) = bicas.demultiplexer.ROUTING_V23_LF_AC;
+                        RoutingArray(4) =                     ROUTING_AC_V1x;
+                        RoutingArray(5) = bicas.demultiplexer.ROUTING_AC_V23;
                         As = assign_ASR_samples_from_BLTS(As, BltsSamplesAsrVolt, RoutingArray);
                         
                     else
@@ -332,22 +324,12 @@ classdef demultiplexer
             % IMPLEMENTATION NOTE: Can be placed outside switch-case since BLTS 4 & 5 are routed identically for all mux
             % modes.
             if dlrUsing12
-                As.V13_LF_AC = As.V12_LF_AC + As.V23_LF_AC;
+                As.acV13 = As.acV12 + As.acV23;
             else
-                As.V12_LF_AC = As.V13_LF_AC - As.V23_LF_AC;
+                As.acV12 = As.acV13 - As.acV23;
             end
             
-            AsrSamplesVolt = [];
-            AsrSamplesVolt.V1     = As.V1_LF;
-            AsrSamplesVolt.V2     = As.V2_LF;
-            AsrSamplesVolt.V3     = As.V3_LF;
-            AsrSamplesVolt.V12    = As.V12_LF;
-            AsrSamplesVolt.V13    = As.V13_LF;
-            AsrSamplesVolt.V23    = As.V23_LF;
-            AsrSamplesVolt.V12_AC = As.V12_LF_AC;
-            AsrSamplesVolt.V13_AC = As.V13_LF_AC;
-            AsrSamplesVolt.V23_AC = As.V23_LF_AC;
-            %AsrSamplesVolt = As;
+            AsrSamplesVolt = As;
             
             % ASSERTIONS
             assert(numel(RoutingArray) == 5)
@@ -411,15 +393,15 @@ classdef demultiplexer
         function fn = get_ASR_fieldname(BltsDest)
             % PROPOSAL: New name implying "destination".
             
-            if     isequal(BltsDest, bicas.demultiplexer.V1_LF)       fn = 'V1_LF';
-            elseif isequal(BltsDest, bicas.demultiplexer.V2_LF)       fn = 'V2_LF';
-            elseif isequal(BltsDest, bicas.demultiplexer.V3_LF)       fn = 'V3_LF';
-            elseif isequal(BltsDest, bicas.demultiplexer.V12_LF)      fn = 'V12_LF';
-            elseif isequal(BltsDest, bicas.demultiplexer.V13_LF)      fn = 'V13_LF';
-            elseif isequal(BltsDest, bicas.demultiplexer.V23_LF)      fn = 'V23_LF';
-            elseif isequal(BltsDest, bicas.demultiplexer.V12_LF_AC)   fn = 'V12_LF_AC';
-            elseif isequal(BltsDest, bicas.demultiplexer.V13_LF_AC)   fn = 'V13_LF_AC';
-            elseif isequal(BltsDest, bicas.demultiplexer.V23_LF_AC)   fn = 'V23_LF_AC';
+            if     isequal(BltsDest, bicas.demultiplexer.SRC_DC_V1)     fn = 'dcV1';
+            elseif isequal(BltsDest, bicas.demultiplexer.SRC_DC_V2)     fn = 'dcV2';
+            elseif isequal(BltsDest, bicas.demultiplexer.SRC_DC_V3)     fn = 'dcV3';
+            elseif isequal(BltsDest, bicas.demultiplexer.SRC_DC_V12)    fn = 'dcV12';
+            elseif isequal(BltsDest, bicas.demultiplexer.SRC_DC_V13)    fn = 'dcV13';
+            elseif isequal(BltsDest, bicas.demultiplexer.SRC_DC_V23)    fn = 'dcV23';
+            elseif isequal(BltsDest, bicas.demultiplexer.SRC_AC_V12)    fn = 'acV12';
+            elseif isequal(BltsDest, bicas.demultiplexer.SRC_AC_V13)    fn = 'acV13';
+            elseif isequal(BltsDest, bicas.demultiplexer.SRC_AC_V23)    fn = 'acV23';
             else
                 error('BICAS:demultiplexer:Assertion:IllegalArgument', 'Illegal argument BltsDest.')
             end
@@ -441,7 +423,7 @@ classdef demultiplexer
 %             
 %             % AC ASRs are separate from DC. Does not have to be in loop.
 %             % IMPLEMENTATION NOTE: Must be executed before DC loop. Otherwise nFnAfter == 9 condition does not work.
-%             As = complete_relation(As, 'V13_LF_AC', 'V12_LF_AC', 'V23_LF_AC');
+%             As = complete_relation(As, 'acV13', 'acV12', 'acV23');
 % 
 %             nFnBefore = numel(fieldnames(As));
 %             while true
@@ -454,11 +436,11 @@ classdef demultiplexer
 %                 %   V2=f(V1,V12)
 %                 %   V3=f(V2,V23)
 %                 %   V13=f(V1,V3)   ## Bad since could use V13=f(V12,V23), only using initial values.
-%                 As = complete_relation(As, 'V13_LF',    'V12_LF',    'V23_LF');
+%                 As = complete_relation(As, 'dcV13',    'dcV12',    'dcV23');
 %                 
-%                 As = complete_relation(As, 'V1_LF',     'V12_LF',    'V2_LF');
-%                 As = complete_relation(As, 'V2_LF',     'V23_LF',    'V3_LF');
-%                 As = complete_relation(As, 'V1_LF',     'V13_LF',    'V3_LF');
+%                 As = complete_relation(As, 'dcV1',     'dcV12',    'dcV2');
+%                 As = complete_relation(As, 'dcV2',     'dcV23',    'dcV3');
+%                 As = complete_relation(As, 'dcV1',     'dcV13',    'dcV3');
 %                 nFnAfter = numel(fieldnames(As));
 %                 
 %                 if (nFnBefore == nFnAfter) || (nFnAfter == 9)

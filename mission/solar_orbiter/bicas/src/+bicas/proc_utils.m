@@ -122,9 +122,9 @@ classdef proc_utils
         % FREQ : The FREQ zVariable in LFR CDFs (contains constants representing frequencies, themselves NOT being frequencies).
         % freq : Frequency in Hz.
         %
-            
+
             global SETTINGS
-            
+
             % ASSERTION
             uniqueValues = unique(FREQ);
             if ~all(ismember(uniqueValues, [0,1,2,3]))
@@ -143,28 +143,28 @@ classdef proc_utils
         
         
         
-        function GAMMA = get_simple_demuxer_gamma(DIFF_GAIN)
-        % Translate a scalar zVariable value DIFF_GAIN to an actual scalar gamma used in simplified calibration.
-        % NaN translates to NaN.
-        
-            global SETTINGS
-            
-            % ASSERTION
-            if numel(DIFF_GAIN) ~= 1
-                error('BICAS:proc_utils:Assertion:IllegalArgument', 'Illegal argument value "DIFF_GAIN". Must be scalar (not array).')
-            end
-            
-            switch(DIFF_GAIN)
-                case 0    ; GAMMA = SETTINGS.get_fv('PROCESSING.CALIBRATION.SCALAR.GAMMA_LOW_GAIN');
-                case 1    ; GAMMA = SETTINGS.get_fv('PROCESSING.CALIBRATION.SCALAR.GAMMA_HIGH_GAIN');
-                otherwise
-                    if isnan(DIFF_GAIN)
-                        GAMMA = NaN;
-                    else
-                        error('BICAS:proc_utils:Assertion:IllegalArgument:DatasetFormat', 'Illegal argument value "DIFF_GAIN"=%d.', DIFF_GAIN)                    
-                    end
-            end
-        end
+%         function GAMMA = get_simple_demuxer_gamma(DIFF_GAIN)
+%         % Translate a scalar zVariable value DIFF_GAIN to an actual scalar gamma used in simplified calibration.
+%         % NaN translates to NaN.
+%         
+%             global SETTINGS
+%             
+%             % ASSERTION
+%             if numel(DIFF_GAIN) ~= 1
+%                 error('BICAS:proc_utils:Assertion:IllegalArgument', 'Illegal argument value "DIFF_GAIN". Must be scalar (not array).')
+%             end
+% 
+%             switch(DIFF_GAIN)
+%                 case 0    ; GAMMA = SETTINGS.get_fv('PROCESSING.CALIBRATION.SCALAR.GAMMA_LOW_GAIN');
+%                 case 1    ; GAMMA = SETTINGS.get_fv('PROCESSING.CALIBRATION.SCALAR.GAMMA_HIGH_GAIN');
+%                 otherwise
+%                     if isnan(DIFF_GAIN)
+%                         GAMMA = NaN;
+%                     else
+%                         error('BICAS:proc_utils:Assertion:IllegalArgument:DatasetFormat', 'Illegal argument value "DIFF_GAIN"=%d.', DIFF_GAIN)                    
+%                     end
+%             end
+%         end
         
         
         

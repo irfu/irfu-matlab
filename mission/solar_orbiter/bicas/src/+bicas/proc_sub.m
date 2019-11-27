@@ -39,7 +39,7 @@
 %       dataset produced by BICAS.
 %       Has extra fields:
 %           .DemuxerOutput   : struct with fields.
-%               V1, V2, V3,   V12, V13, V23,   V12_AC, V13_AC, V23_AC.
+%               dcV1, dcV2, dcV3,   dc12, dc13, dc23,   acV12, acV13, acV23.
 %           .IBIAS1
 %           .IBIAS2
 %           .IBIAS3
@@ -294,10 +294,10 @@ classdef proc_sub
 
 
 
-            % NOTE: Uses iRecord to set iLfrFreq.
-            iLfrFreqVec = FREQ + 1;   % NOTE: Translates from FREQ values (0=F0 etc) and LSF index values (1=F0) used in loaded RCT data structs.
-            calibFunc = @(        dtSec, lfrSamplesTm, iBltsChannel, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH, iRecord) ...
-                Cal.calibrate_LFR(dtSec, lfrSamplesTm, iBltsChannel, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH, iLfrFreqVec(iRecord));
+            % NOTE: Uses iRecord to set iLsf.
+            iLsfVec = FREQ + 1;   % NOTE: Translates from FREQ values (0=F0 etc) and LSF index values (1=F0) used in loaded RCT data structs.
+            calibFunc = @(        dtSec, lfrSamplesTm, iBlts, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH, iRecord) ...
+                Cal.calibrate_LFR(dtSec, lfrSamplesTm, iBlts, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH, iLsfVec(iRecord));
 
 
 
@@ -322,7 +322,7 @@ classdef proc_sub
             C = bicas.proc_utils.classify_DATASET_ID(inputSciDsi);
             
             nRecords                  = size(Sci.ZVars.Epoch, 1);
-            nVariableSamplesPerRecord = size(Sci.ZVars.WAVEFORM_DATA, 3);   % Number of samples in the variable, not necessarily actual data.
+            nVariableSamplesPerRecord = size(Sci.ZVars.WAVEFORM_DATA, 3);    % Number of samples in the variable, not necessarily actual data.
             
             freqHz = double(Sci.ZVars.SAMPLING_RATE);
             
@@ -390,14 +390,14 @@ classdef proc_sub
             
             
             if C.isTdsCwf
-                % function asrSamplesVolt = calibrate_TDS_CWF(obj, dtSec, tdsCwfSamplesTm, iBltsChannel, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH)
-                calibFunc = @(             dtSec, tdsCwfSamplesTm, iBltsChannel, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH, iRecord) ...
-                    (Cal.calibrate_TDS_CWF(dtSec, tdsCwfSamplesTm, iBltsChannel, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH));
+                % function asrSamplesVolt = calibrate_TDS_CWF(obj, dtSec, tdsCwfSamplesTm, iBlts, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH)
+                calibFunc = @(             dtSec, tdsCwfSamplesTm, iBlts, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH, iRecord) ...
+                    (Cal.calibrate_TDS_CWF(dtSec, tdsCwfSamplesTm, iBlts, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH));
                 % NOTE: Ignoring iRecord.
             elseif C.isTdsRswf
-                % function asrSamplesVolt = calibrate_TDS_RSWF(obj, dtSec, tdsRswfSamplesTm, iBltsChannel, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH)
-                calibFunc = @(              dtSec, tdsRswfSamplesTm, iBltsChannel, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH, iRecord) ...
-                    (Cal.calibrate_TDS_RSWF(dtSec, tdsRswfSamplesTm, iBltsChannel, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH));
+                % function asrSamplesVolt = calibrate_TDS_RSWF(obj, dtSec, tdsRswfSamplesTm, iBlts, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH)
+                calibFunc = @(              dtSec, tdsRswfSamplesTm, iBlts, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH, iRecord) ...
+                    (Cal.calibrate_TDS_RSWF(dtSec, tdsRswfSamplesTm, iBlts, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH));
                 % NOTE: Ignoring iRecord.
             end
             
@@ -431,7 +431,7 @@ classdef proc_sub
         
 
         
-        function [OutSciZVars] = process_PostDC_to_LFR(SciPostDc, outputDsi, outputVersion, Cal)
+        function [OutSciZVars] = process_PostDC_to_LFR(SciPostDc, outputDsi, outputVersion)
         % Processing function. Convert PostDC to any one of several similar LFR dataset PDs.
         
             % ASSERTIONS
@@ -439,7 +439,7 @@ classdef proc_sub
             
             OutSciZVars = [];
             
-            nSamplesPerRecord = size(SciPostDc.DemuxerOutput.V1, 2);   % Samples per record.
+            nSamplesPerRecord = size(SciPostDc.DemuxerOutput.dcV1, 2);   % Samples per record.
             
             outputDvid = bicas.construct_DVID(outputDsi, outputVersion);
             ZVAR_FN_LIST = {'IBIAS1', 'IBIAS2', 'IBIAS3', 'V', 'E', 'EAC', 'Epoch', ...
@@ -451,6 +451,7 @@ classdef proc_sub
             OutSciZVars.QUALITY_FLAG     = SciPostDc.QUALITY_FLAG;
             OutSciZVars.DELTA_PLUS_MINUS = SciPostDc.DELTA_PLUS_MINUS;
             
+            % NOTE: The two cases are different in the indexes they use for OutSciZVars.
             switch(outputDvid)
                 case  {'V05_SOLO_L2_RPW-LFR-SURV-CWF-E' ...
                        'V05_SOLO_L2_RPW-LFR-SBM1-CWF-E' ...
@@ -471,15 +472,15 @@ classdef proc_sub
                     assert(size(OutSciZVars.IBIAS2, 2) == 1)
                     assert(size(OutSciZVars.IBIAS3, 2) == 1)
                     
-                    OutSciZVars.V(:,1)           = SciPostDc.DemuxerOutput.V1;
-                    OutSciZVars.V(:,2)           = SciPostDc.DemuxerOutput.V2;
-                    OutSciZVars.V(:,3)           = SciPostDc.DemuxerOutput.V3;
-                    OutSciZVars.E(:,1)           = SciPostDc.DemuxerOutput.V12;
-                    OutSciZVars.E(:,2)           = SciPostDc.DemuxerOutput.V13;
-                    OutSciZVars.E(:,3)           = SciPostDc.DemuxerOutput.V23;
-                    OutSciZVars.EAC(:,1)         = SciPostDc.DemuxerOutput.V12_AC;
-                    OutSciZVars.EAC(:,2)         = SciPostDc.DemuxerOutput.V13_AC;
-                    OutSciZVars.EAC(:,3)         = SciPostDc.DemuxerOutput.V23_AC;
+                    OutSciZVars.V(:,1)           = SciPostDc.DemuxerOutput.dcV1;
+                    OutSciZVars.V(:,2)           = SciPostDc.DemuxerOutput.dcV2;
+                    OutSciZVars.V(:,3)           = SciPostDc.DemuxerOutput.dcV3;
+                    OutSciZVars.E(:,1)           = SciPostDc.DemuxerOutput.dcV12;
+                    OutSciZVars.E(:,2)           = SciPostDc.DemuxerOutput.dcV13;
+                    OutSciZVars.E(:,3)           = SciPostDc.DemuxerOutput.dcV23;
+                    OutSciZVars.EAC(:,1)         = SciPostDc.DemuxerOutput.acV12;
+                    OutSciZVars.EAC(:,2)         = SciPostDc.DemuxerOutput.acV13;
+                    OutSciZVars.EAC(:,3)         = SciPostDc.DemuxerOutput.acV23;
                     
                 case  {'V05_SOLO_L2_RPW-LFR-SURV-SWF-E'}
                     % 'V05_ROC-SGSE_L2S_RPW-LFR-SURV-SWF-E'
@@ -490,15 +491,15 @@ classdef proc_sub
                     OutSciZVars.IBIAS1           = SciPostDc.IBIAS1;
                     OutSciZVars.IBIAS2           = SciPostDc.IBIAS2;
                     OutSciZVars.IBIAS3           = SciPostDc.IBIAS3;
-                    OutSciZVars.V(:,:,1)         = SciPostDc.DemuxerOutput.V1;
-                    OutSciZVars.V(:,:,2)         = SciPostDc.DemuxerOutput.V2;
-                    OutSciZVars.V(:,:,3)         = SciPostDc.DemuxerOutput.V3;
-                    OutSciZVars.E(:,:,1)         = SciPostDc.DemuxerOutput.V12;
-                    OutSciZVars.E(:,:,2)         = SciPostDc.DemuxerOutput.V13;
-                    OutSciZVars.E(:,:,3)         = SciPostDc.DemuxerOutput.V23;
-                    OutSciZVars.EAC(:,:,1)       = SciPostDc.DemuxerOutput.V12_AC;
-                    OutSciZVars.EAC(:,:,2)       = SciPostDc.DemuxerOutput.V13_AC;
-                    OutSciZVars.EAC(:,:,3)       = SciPostDc.DemuxerOutput.V23_AC;
+                    OutSciZVars.V(:,:,1)         = SciPostDc.DemuxerOutput.dcV1;
+                    OutSciZVars.V(:,:,2)         = SciPostDc.DemuxerOutput.dcV2;
+                    OutSciZVars.V(:,:,3)         = SciPostDc.DemuxerOutput.dcV3;
+                    OutSciZVars.E(:,:,1)         = SciPostDc.DemuxerOutput.dcV12;
+                    OutSciZVars.E(:,:,2)         = SciPostDc.DemuxerOutput.dcV13;
+                    OutSciZVars.E(:,:,3)         = SciPostDc.DemuxerOutput.dcV23;
+                    OutSciZVars.EAC(:,:,1)       = SciPostDc.DemuxerOutput.acV12;
+                    OutSciZVars.EAC(:,:,2)       = SciPostDc.DemuxerOutput.acV13;
+                    OutSciZVars.EAC(:,:,3)       = SciPostDc.DemuxerOutput.acV23;
 
                     % Only in LFR SWF (not CWF): F_SAMPLE, SAMP_DTIME
                     OutSciZVars.F_SAMPLE         = SciPostDc.freqHz;
@@ -532,37 +533,35 @@ classdef proc_sub
             outputDvid = bicas.construct_DVID(outputDsi, outputVersion);
             ZVAR_FN_LIST = {'IBIAS1', 'IBIAS2', 'IBIAS3', 'V', 'E', 'EAC', 'Epoch', ...
                 'QUALITY_BITMASK', 'QUALITY_FLAG', 'DELTA_PLUS_MINUS', 'ACQUISITION_TIME'};
-            
+
+            % NOTE: The two cases are actually different in the indexes they use for OutSciZVars.
             switch(outputDvid)
                 
                 case {'V05_SOLO_L2_RPW-TDS-LFM-CWF-E'}
-                    % 'V05_ROC-SGSE_L2S_RPW-TDS-LFM-CWF-E'
-                    OutSciZVars.V(:,1)     = SciPostDc.DemuxerOutput.V1;
-                    OutSciZVars.V(:,2)     = SciPostDc.DemuxerOutput.V2;
-                    OutSciZVars.V(:,3)     = SciPostDc.DemuxerOutput.V3;
-                    OutSciZVars.E(:,1)     = SciPostDc.DemuxerOutput.V12;
-                    OutSciZVars.E(:,2)     = SciPostDc.DemuxerOutput.V13;
-                    OutSciZVars.E(:,3)     = SciPostDc.DemuxerOutput.V23;
-                    OutSciZVars.EAC(:,1)   = SciPostDc.DemuxerOutput.V12_AC;
-                    OutSciZVars.EAC(:,2)   = SciPostDc.DemuxerOutput.V13_AC;
-                    OutSciZVars.EAC(:,3)   = SciPostDc.DemuxerOutput.V23_AC;
+                    OutSciZVars.V(:,1)     = SciPostDc.DemuxerOutput.dcV1;
+                    OutSciZVars.V(:,2)     = SciPostDc.DemuxerOutput.dcV2;
+                    OutSciZVars.V(:,3)     = SciPostDc.DemuxerOutput.dcV3;
+                    OutSciZVars.E(:,1)     = SciPostDc.DemuxerOutput.dcV12;
+                    OutSciZVars.E(:,2)     = SciPostDc.DemuxerOutput.dcV13;
+                    OutSciZVars.E(:,3)     = SciPostDc.DemuxerOutput.dcV23;
+                    OutSciZVars.EAC(:,1)   = SciPostDc.DemuxerOutput.acV12;
+                    OutSciZVars.EAC(:,2)   = SciPostDc.DemuxerOutput.acV13;
+                    OutSciZVars.EAC(:,3)   = SciPostDc.DemuxerOutput.acV23;
                     
                 case {'V05_SOLO_L2_RPW-TDS-LFM-RSWF-E'}
-                    % 'V05_ROC-SGSE_L2S_RPW-TDS-LFM-RSWF-E'
-                       
-                    OutSciZVars.V(:,:,1)   = SciPostDc.DemuxerOutput.V1;
-                    OutSciZVars.V(:,:,2)   = SciPostDc.DemuxerOutput.V2;
-                    OutSciZVars.V(:,:,3)   = SciPostDc.DemuxerOutput.V3;
-                    OutSciZVars.E(:,:,1)   = SciPostDc.DemuxerOutput.V12;
-                    OutSciZVars.E(:,:,2)   = SciPostDc.DemuxerOutput.V13;
-                    OutSciZVars.E(:,:,3)   = SciPostDc.DemuxerOutput.V23;
-                    OutSciZVars.EAC(:,:,1) = SciPostDc.DemuxerOutput.V12_AC;
-                    OutSciZVars.EAC(:,:,2) = SciPostDc.DemuxerOutput.V13_AC;
-                    OutSciZVars.EAC(:,:,3) = SciPostDc.DemuxerOutput.V23_AC;
+                    OutSciZVars.V(:,:,1)   = SciPostDc.DemuxerOutput.dcV1;
+                    OutSciZVars.V(:,:,2)   = SciPostDc.DemuxerOutput.dcV2;
+                    OutSciZVars.V(:,:,3)   = SciPostDc.DemuxerOutput.dcV3;
+                    OutSciZVars.E(:,:,1)   = SciPostDc.DemuxerOutput.dcV12;
+                    OutSciZVars.E(:,:,2)   = SciPostDc.DemuxerOutput.dcV13;
+                    OutSciZVars.E(:,:,3)   = SciPostDc.DemuxerOutput.dcV23;
+                    OutSciZVars.EAC(:,:,1) = SciPostDc.DemuxerOutput.acV12;
+                    OutSciZVars.EAC(:,:,2) = SciPostDc.DemuxerOutput.acV13;
+                    OutSciZVars.EAC(:,:,3) = SciPostDc.DemuxerOutput.acV23;
                     
-                    OutSciZVars.F_SAMPLE       = SciPostDc.freqHz;
-                    ZVAR_FN_LIST{end+1} = 'F_SAMPLE';
-
+                    OutSciZVars.F_SAMPLE = SciPostDc.freqHz;
+                    ZVAR_FN_LIST{end+1}  = 'F_SAMPLE';
+                    
                 otherwise
                     error('BICAS:proc_sub:Assertion:IllegalArgument', 'Function can not produce outputDvid=%s.', outputDvid)
             end
@@ -633,9 +632,9 @@ classdef proc_sub
             % Set (calibrated) bias currents
             %================================
             % BUG / TEMP: Set default values since the real bias current values are not available.
-            PostDc.IBIAS1 = bicas.proc_utils.create_NaN_array(size(PostDc.DemuxerOutput.V1));
-            PostDc.IBIAS2 = bicas.proc_utils.create_NaN_array(size(PostDc.DemuxerOutput.V2));
-            PostDc.IBIAS3 = bicas.proc_utils.create_NaN_array(size(PostDc.DemuxerOutput.V3));
+            PostDc.IBIAS1 = bicas.proc_utils.create_NaN_array(size(PostDc.DemuxerOutput.dcV1));
+            PostDc.IBIAS2 = bicas.proc_utils.create_NaN_array(size(PostDc.DemuxerOutput.dcV2));
+            PostDc.IBIAS3 = bicas.proc_utils.create_NaN_array(size(PostDc.DemuxerOutput.dcV3));
             
             % ASSERTION
             bicas.proc_sub.assert_PostDC(PostDc)
@@ -694,6 +693,7 @@ classdef proc_sub
         %
         % PROPOSAL: Move the different conversion of CWF/SWF (one/many cell arrays) into the calibration function?!!
 
+            global SETTINGS
 
             % ASSERTIONS
             assert(isscalar(hasSnapshotFormat))
@@ -710,12 +710,17 @@ classdef proc_sub
 
             % Create empty structure to which new array components can be added.
             AsrSamplesVolt = struct(...
-                'V1',     [], 'V2',     [], 'V3',     [], ...
-                'V12',    [], 'V23',    [], 'V13',    [], ...
-                'V12_AC', [], 'V23_AC', [], 'V13_AC', []);
+                'dcV1',  [], 'dcV2',  [], 'dcV3',  [], ...
+                'dcV12', [], 'dcV23', [], 'dcV13', [], ...
+                'acV12', [], 'acV23', [], 'acV13', []);
 
 
 
+            disableCalibration = SETTINGS.get_fv('PROCESSING.CALIBRATION.DISABLE_CALIBRATION');
+            if disableCalibration
+                bicas.log('warning', 'CALIBRATION HAS BEEN DISABLED via setting PROCESSING.CALIBRATION.DISABLE_CALIBRATION.')
+            end
+            
             dlrUsing12 = bicas.demultiplexer_latching_relay(Epoch);
             iCalibL    = Cal.get_calibration_time_L(Epoch);
             iCalibH    = Cal.get_calibration_time_H(Epoch);
@@ -767,13 +772,14 @@ classdef proc_sub
                 %===========
                 % CALIBRATE
                 %===========
+                subseqBltsArrayVolt = cell(5,1);
                 for iBlts = 1:5
 
                     if strcmp(BltsSrcAsrArray(iBlts).category, 'Unknown')
                         subseqBltsArrayVolt{iBlts} = NaN * zeros(size(subseqBltsArrayTm{iBlts}));
                     else
-
-                        if ~false    % TODO: Replace by setting.
+                        
+                        if ~disableCalibration
                             biasHighGain = DIFF_GAIN_constant;    % NOTE: Not yet sure that this is correct.
 
                             if hasSnapshotFormat
@@ -786,7 +792,7 @@ classdef proc_sub
                             end
 
                             % FUNCTION HANDLE INTERFACE:
-                            %   calibFunc = @(dtSec, lfrSamplesTm, iBltsChannel, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH, iRecord)
+                            %   calibFunc = @(dtSec, lfrSamplesTm, iBlts, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH, iRecord)
                             subseqBltsVoltCa = calibFunc(...
                                 subseqDtSec, subseqBltsTmCa, iBlts, BltsSrcAsrArray(iBlts), biasHighGain, ...
                                 iCalibL_constant, iCalibH_constant, iFirst);
@@ -799,18 +805,10 @@ classdef proc_sub
                             end
                             
                         else
-                            % DEBUG/TEST
-                            %subseqBltsArrayVolt{iBlts} = double(subseqBltsArrayTm{iBlts});
-                            %warning('TEST IMPLEMENTATION: NO CALIBRATION - TM-->TM')
+                            subseqBltsArrayVolt{iBlts} = double(subseqBltsArrayTm{iBlts});
                         end
                     end
                 end
-                
-                %=================================================
-                % CALL DEMUXER - See method/function for comments
-                %=================================================
-                %DemuxerOutputSubseq = bicas.proc_sub.simple_demultiplex_subsequence_OLD(...
-                %    DemuxerInputSubseq, MUX_SET_constant, DIFF_GAIN_constant);
                 
                 %====================
                 % CALL DEMULTIPLEXER

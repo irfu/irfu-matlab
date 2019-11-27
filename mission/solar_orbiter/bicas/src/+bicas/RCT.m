@@ -6,16 +6,17 @@
 % First created 2019-11-15
 %
 classdef RCT
-% BOGIQ: RCT-reading functions
-% ============================
+% BOGIQ
+% =====
 % PROPOSAL: Use same code/function for reading calibration table, as for reading dataset (and master cdfs)?
 % PROPOSAL: Assert CDF skeleton/master version number.
 % PROPOSAL: Assert skeleton/master.
-% PROPOSAL: Assert/warn (depending on setting?) file units.
-% PROPOSAL: Only use units in variable names.
+% PROPOSAL: Assert/warn (depending on setting?) file units in CDF metadata.
 % PROPOSAL: Use utility function for reading every zVariable.
 %   PROPOSAL: Assert units from zVar attributes.
-
+%
+% PROPOSAL: Move out the extrapolation of LFR TFs.
+%   PRO: Want to distinguish between RCT data and modified data.
 
 
     properties(Access=private, Constant)
@@ -237,10 +238,9 @@ classdef RCT
 
 
 
-        % LfrItfTable : {iFreq}{iBiasChannel}, iFreq=1..4 representing LFR sampling frequencies F0...F3,
-        %                   iFreq=1..3 : iBiasChannel=1..5 for BIAS_1..BIAS_5
-        %                   iFreq=4    : iBiasChannel=1..3 for BIAS_1..BIAS_3
-        %                  NOTE: This is different from LFR zVar FREQ.
+        % LfrItfTable : {iLsf}{iBlts}. Table of LFR TFs.
+        %                   iLsf=1..3 : iBlts=1..5 for BLTS 1-5
+        %                   iLsf=4    : iBlts=1..3 for BIAS 1-3
         function LfrItfTable = read_LFR_RCT(filePath, tfExtrapolateAmountHz)
             Do = dataobj(filePath);
             
@@ -253,7 +253,7 @@ classdef RCT
                 % there are 5+5+5+3 TFs (but only 1 frequency table/LSF, since they are recycled).
                 % NOTE: The assignment of indices here effectively determines the translation between array index and
                 % LFR Sampling Frequency (LSF). This is NOT the same as the values in the LFR zVar FREQ.
-                freqTableHz{1}  = shiftdim(Do.data.Freqs_F0.data);    % NOTE: Index {iLfrFreq}.
+                freqTableHz{1}  = shiftdim(Do.data.Freqs_F0.data);    % NOTE: Index {iLsf}.
                 freqTableHz{2}  = shiftdim(Do.data.Freqs_F1.data);
                 freqTableHz{3}  = shiftdim(Do.data.Freqs_F2.data);
                 freqTableHz{4}  = shiftdim(Do.data.Freqs_F3.data);
@@ -270,9 +270,9 @@ classdef RCT
 
                 for iLsf = 1:4
                     if iLsf ~= 4
-                        nBltsChannels = 5;
+                        nBltsMax = 5;
                     else
-                        nBltsChannels = 3;
+                        nBltsMax = 3;
                     end
 
                     % NOTE: Values for the specific LFS, hence the prefix.
@@ -287,14 +287,14 @@ classdef RCT
                     assert(ndims(lsfPhaseTableDeg) == 2)
                     assert(size( lsfAmplTableCpv,  1) >= bicas.RCT.TF_TABLE_MIN_LENGTH)
                     assert(size( lsfPhaseTableDeg, 1) >= bicas.RCT.TF_TABLE_MIN_LENGTH)
-                    assert(size( lsfAmplTableCpv,  2) == nBltsChannels)
-                    assert(size( lsfPhaseTableDeg, 2) == nBltsChannels)
+                    assert(size( lsfAmplTableCpv,  2) == nBltsMax)
+                    assert(size( lsfPhaseTableDeg, 2) == nBltsMax)
 
-                    for iBltsChannel = 1:nBltsChannels
+                    for iBlts = 1:nBltsMax
                         
                         lsfBltsFreqTableHz   = lsfFreqTableHz;
-                        lsfBltsAmplTableCpv  = lsfAmplTableCpv( :, iBltsChannel);
-                        lsfBltsPhaseTableDeg = lsfPhaseTableDeg(:, iBltsChannel);
+                        lsfBltsAmplTableCpv  = lsfAmplTableCpv( :, iBlts);
+                        lsfBltsPhaseTableDeg = lsfPhaseTableDeg(:, iBlts);
                         
                         % Extrapolate the TF somewhat to higher frequencies
                         % -------------------------------------------------
@@ -316,7 +316,7 @@ classdef RCT
                         % ASSERTION: ITF
                         assert(~Itf.toward_zero_at_high_freq())
                         
-                        LfrItfTable{iLsf}{iBltsChannel} = Itf;
+                        LfrItfTable{iLsf}{iBlts} = Itf;
                     end
                 end
                 
@@ -382,11 +382,11 @@ classdef RCT
                     size(amplVpc,  2), ...
                     size(phaseDeg, 2) ]);
                 
-                for iBltsChannel = 1:3
+                for iBlts = 1:3
                     Itf = EJ_library.utils.tabulated_transform(...
                         freqsHz * 2*pi, ...
-                        amplVpc(         iBltsChannel, :), ...
-                        deg2rad(phaseDeg(iBltsChannel, :)), ...
+                        amplVpc(         iBlts, :), ...
+                        deg2rad(phaseDeg(iBlts, :)), ...
                         'extrapolatePositiveFreqZtoZero', 1);
                     
                     % ASSERTION: INVERTED TF
@@ -394,7 +394,7 @@ classdef RCT
                         ['TDS RSWF transfer function appears to go toward zero at high frequencies. Has it not been', ...
                         ' inverted/backward in time, i.e. is it not physical output-to-input?'])
                     
-                    TdsRswfItfList{iBltsChannel} = Itf;
+                    TdsRswfItfList{iBlts} = Itf;
                 end
                 
             catch Exc1
