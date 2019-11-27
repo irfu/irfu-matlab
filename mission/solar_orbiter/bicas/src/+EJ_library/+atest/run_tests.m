@@ -38,8 +38,8 @@ function run_tests(testList)
     % PROPOSAL: Optional whether to stop on first failure.
     
     Settings.printParentSeparately = true;
-    Settings.stringsEscape = true;
-    Settings.stringsSsMaxLength = 120;
+    Settings.stringsEscape         = true;
+    Settings.stringsSsMaxLength    = 120;
 %    Settings.printParentSeparately = false;   % Does not work due to bug?
 
     assert(iscell(testList), 'Argument testList is not a cell array.')

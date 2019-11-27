@@ -51,11 +51,11 @@ function print_variable_recursively(varName, v, varargin)
 % BUG? Settings.printParentSeparately does not work?
 %
 %
-% Överblick över fall
-% -------------------
-% NOT: Alla variabler har en array size, även om man kan vilja specialbehandla fallet 1x1.
-% Celler
-% Char: array som sträng
+% Overview of cases
+% -----------------
+% NOT: All variables have an array size, even though one may to treat 1x1 as a special case.
+% Cells
+% Char: row vector counts as string
 % Struct, object (class object)
 % Numeric
 % Function handle

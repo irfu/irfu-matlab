@@ -1,6 +1,6 @@
 %
 % Roughly like regexp, except
-% (1) it only matches entire strings (not substrings). In practise, it surrounds the submitted regular expressions with ^ and $.
+% (1) it only matches entire strings (not substrings). In practice, it surrounds the submitted regular expressions with ^ and $.
 % (2) it can match empty strings (option in regexp),
 % (3) it returns a more usable logic array.
 % (4) it can iterate over both strings, and regular expressions (but not simultaneously).

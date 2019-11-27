@@ -102,6 +102,19 @@ classdef proc_utils
 
 
 
+%         function c3 = add_rows_to_cell_comps(c1, c2)
+%             % ASSERTIONS
+%             bicas.proc_utils.assert_cell_array_comps_have_same_N_rows(c1)
+%             bicas.proc_utils.assert_cell_array_comps_have_same_N_rows(c2)
+%             assert(numel(c1) == numel(c2))
+%             
+%             for i = 1:numel(c1)
+%                 c3{i} = [c1{i}; c2{i}];
+%             end
+%         end
+
+        
+
         function freq = get_LFR_frequency(FREQ)
         % Convert LFR zVariable FREQ values to Hz. The usefulness of this function stems from how the LFR
         % datasets are defined.

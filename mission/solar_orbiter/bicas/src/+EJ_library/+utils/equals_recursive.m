@@ -109,12 +109,14 @@ DEFAULT_SETTINGS.epsilon        = 0.0;
 %Settings = EJ_library.utils.add_struct_to_struct(settings, DEFAULT_SETTINGS, ...
 %    struct('noStructs', 'Do nothing', 'aIsStruct', 'Error', 'bIsStruct', 'Error', 'bothAreStructs', 'Error'));
 Settings = EJ_library.utils.interpret_settings_args(DEFAULT_SETTINGS, varargin);
-EJ_library.utils.assert.struct2(Settings, {'rowColVecEqual', 'nanEquals', 'epsilon'}, {})   % ASSERTION
+EJ_library.utils.assert.struct2(Settings, fieldnames(DEFAULT_SETTINGS), {})   % ASSERTION
+
+assert(Settings.epsilon >= 0)
 
 
 
 % Default return values.
-result = 0;
+result  = 0;
 diffLoc = '';
 diffMsg = [];
 

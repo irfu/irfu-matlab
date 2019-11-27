@@ -390,7 +390,7 @@ for fn = fieldnames(DataObj.data)'
             % NOTE: Assumes that
             % (1) there is a PD fields/zVariable Epoch, and
             % (2) this zVariable should have as many records as Epoch.
-            bicas.logf('warning', 'Setting zVariable "%s" to presumed correctl size using fill values.', zVariableName)
+            bicas.logf('warning', 'Setting numeric zVariable "%s" to presumed correct size using fill values due to setting.', zVariableName)
             nEpochRecords = size(ZVarsSubset.Epoch, 1);
             [fillValue, ~] = get_fill_pad_values(DataObj, zVariableName);
             zVariableSize = [nEpochRecords, DataObj.data.(fn{1}).dim];
@@ -400,7 +400,7 @@ for fn = fieldnames(DataObj.data)'
             DataObj.data.(zVariableName).data = zVariableData;
             
         elseif ~isNumericZVar && SETTINGS.get_fv('OUTPUT_CDF.EMPTY_NONNUMERIC_ZVARIABLES_IGNORE')
-            bicas.log('warning', 'Ignoring empty non-numeric zVar.')
+            bicas.logf('warning', 'Ignoring empty non-numeric zVariable "%s" due to setting.', zVariableName)
             
         else
             error('BICAS:execute_sw_mode:SWModeProcessing', logMsg)

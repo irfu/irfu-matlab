@@ -6,7 +6,18 @@
 % First created 2019-11-15
 %
 classdef RCT
-    
+% BOGIQ: RCT-reading functions
+% ============================
+% PROPOSAL: Use same code/function for reading calibration table, as for reading dataset (and master cdfs)?
+% PROPOSAL: Assert CDF skeleton/master version number.
+% PROPOSAL: Assert skeleton/master.
+% PROPOSAL: Assert/warn (depending on setting?) file units.
+% PROPOSAL: Only use units in variable names.
+% PROPOSAL: Use utility function for reading every zVariable.
+%   PROPOSAL: Assert units from zVar attributes.
+
+
+
     properties(Access=private, Constant)
         
         % Minimum number of numerator or denominator coefficients in the BIAS RCT.
@@ -220,7 +231,7 @@ classdef RCT
                 end
                 
             catch Exc
-                error('BICAS:calib:CannotInterpretRCT', 'Can not interpret calibration file (RCT) "%s"', filePath)
+                error('BICAS:calib:FailedToReadInterpretRCT', 'Can not interpret calibration file (RCT) "%s"', filePath)
             end
         end
 
@@ -285,6 +296,10 @@ classdef RCT
                         lsfBltsAmplTableCpv  = lsfAmplTableCpv( :, iBltsChannel);
                         lsfBltsPhaseTableDeg = lsfPhaseTableDeg(:, iBltsChannel);
                         
+                        % Extrapolate the TF somewhat to higher frequencies
+                        % -------------------------------------------------
+                        % IMPLEMENTATION NOTE: This is needed since calibrating CWF data needs transfer function values
+                        % for slightly higher frequencies than tabulated in the RCT.
                         [~, lsfBltsAmplTableCpv] = bicas.utils.extend_extrapolate(lsfBltsFreqTableHz, lsfBltsAmplTableCpv, ...
                             tfExtrapolateAmountHz, 'positive', 'exponential', 'exponential');
                         [lsfBltsFreqTableHz, lsfBltsPhaseTableDeg] = bicas.utils.extend_extrapolate(lsfBltsFreqTableHz, lsfBltsPhaseTableDeg, ...
@@ -306,7 +321,7 @@ classdef RCT
                 end
                 
             catch Exc1
-                Exc2 = MException('BICAS:calib:CannotInterpretRCT', 'Can not interpret calibration file (RCT) "%s"', filePath);
+                Exc2 = MException('BICAS:calib:FailedToReadInterpretRCT', 'Error when interpreting calibration file (RCT) "%s"', filePath);
                 Exc2 = Exc2.addCause(Exc1);
                 throw(Exc2);
             end
@@ -333,7 +348,7 @@ classdef RCT
                 assert(size(    tdsCwfFactorsVpc, 1) == 3)
                 
             catch Exc1
-                Exc2 = MException('BICAS:calib:CannotInterpretRCT', 'Can not interpret calibration file (RCT) "%s"', filePath);
+                Exc2 = MException('BICAS:calib:FailedToReadInterpretRCT', 'Error when interpreting calibration file (RCT) "%s"', filePath);
                 Exc2 = Exc2.addCause(Exc1);
                 throw(Exc2);
             end
@@ -383,7 +398,7 @@ classdef RCT
                 end
                 
             catch Exc1
-                Exc2 = MException('BICAS:calib:CannotInterpretRCT', 'Can not interpret calibration file (RCT) "%s"', filePath);
+                Exc2 = MException('BICAS:calib:FailedToReadInterpretRCT', 'Error when interpreting calibration file (RCT) "%s"', filePath);
                 Exc2 = Exc2.addCause(Exc1);
                 throw(Exc2);
             end

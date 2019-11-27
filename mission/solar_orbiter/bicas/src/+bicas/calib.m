@@ -113,22 +113,54 @@ classdef calib
 %             functions to call.
 %
 % PROPOSAL: Simplify/clean-up calibrate_*.
-%   PROPOSAL: Function for dtSec.
-%       PROPOSAL: Some kind of assertion (assumption of) constant sampling frequency.
 %   PROPOSAL: Function for iCalibTimeL/H.
 %   PROPOSAL: Assertions for same number of Epoch as samples.
 % PROPOSAL: SETTINGS for scalar calibrations.
 %
+% ~DOCUMENTATION BUG?!!:
+%   In practice, BLTS refers to not only signals at the BIAS-LFT/TDS boundary, but also the BLTS number for
+%   calibrated signals (at the antenna).
+%       PROPOSAL: Change definition?
+%       PROPOSAL: Change terminology.
+%   In practice, ASR refers to both samples at antennas, and the type of signal.
+%   PROPOSAL: Define
+%       BLTS = BIAS-LFR/TDS Signal, and always refer to signal/samples. Variable with samples: BltsSamples
+%       BLTS ID (BltsId) = Number that identifies one BLTS among other BLTS (BltsNbr, iBlts)
+%   PROPOSAL: Abolish ASR. Define
+%       AS ID (AsId) = Antenna signal ID (DC single/diff, AC diff; antennas)
+%       AS (As)      = Antenna Signal
+%       CON: AS to short?
+%           PROPOSAL: A=Antenna --> RA=RPW Antenna
+%               CON: RAS bad acronym.
+%       NOTE: BLTS_src_dest is a superset of AS ID.
 %
-% BOGIQ: RCT-reading functions
-% ============================
-% PROPOSAL: Use same code/function for reading calibration table, as for reading dataset (and master cdfs)?
-% PROPOSAL: Assert CDF skeleton/master version number.
-% PROPOSAL: Assert skeleton/master.
-% PROPOSAL: Assert/warn (depending on setting?) file units.
-% PROPOSAL: Only use units in variable names.
-% PROPOSAL: Use utility function for reading every zVariable.
-%   PROPOSAL: Assert units from zVar attributes.
+% PROPOSAL: Other name for bicas.BLTS_src_dest that does not reference BLTS.
+%   PRO: Reference to BLTS is confusing.
+%   PROPOSAL: Define acronym for all physical signal sources which is a superset of ASR/AS ID.
+%       PROPOSAL: Be able to use for both physical signal sources, and for where to place in dataset.
+%           PRO: Can use acronym for both, and for class bicas.BLTS_src_dest.
+%       PROPOSAL: PSS  = Physical Signal Source
+%       PROPOSAL: PS   = Physical Signal
+%       PROPOSAL: PSSD = Physical Signal Source or Destination
+%       PROPOSAL: PSSR = Physical Signal Source or Representation
+%       PROPOSAL: PSSR = Physical Signal Source or Dataset Representation
+%   PROPOSAL: Have different classes and acronyms for (1) physical signal sources and (2) dataset representation
+%       ("BLTS src" and "BLTS dest") where (2) is in practice a subset of (1).
+%   PROPOSAL: Use terms based on BLTS as formal terms (both samples and ID)
+%       PROPOSAL: BLTS Source/Physical Signal Source
+%           BLTSS, BltsSrc
+%           BLTS-PSS, BltsPss
+%       PROPOSAL: and BLTS Destination/Store/Dataset Variable
+%           BLTSD, BltsDest
+%           BLTSS, Bltss
+%           BLTSDV, BltsDv
+%
+% NOTE: Should separately denote:
+%   (1) The calibration/units of samples,
+%   (2) The "identification" of signals (antenna or BLTS)
+%   Ex: A variable may contain
+%       (a) antenna-calibrated samples, but labelled as BLTS ID (before code demuxes), or
+%       (b) non-calibrated/TM samples but labelled by antennas (disabled calibration for debugging).
 
 
 

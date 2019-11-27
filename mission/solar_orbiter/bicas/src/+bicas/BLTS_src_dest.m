@@ -29,6 +29,11 @@ classdef BLTS_src_dest %< handle
     %   CON: Unpractical to access via names instead of numbers.
     %   CON-PROPOSAL: Have the demultiplexer.main use its own pre-defined constants.
     %       NOTE/CON: Slightly impractical for routings which depend on the latching relay.
+    %
+    % PROPOSAL: Other name that does not reference BLTS.
+    %   See bicas.calib BOGIQ.
+    %   PRO: Reference to BLTS is confusing.
+    %   PROPOSAL: Need acronym for all physical signal sources which is a superset of ASR/AS ID.
 
 
     

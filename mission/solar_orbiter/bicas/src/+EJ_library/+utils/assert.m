@@ -56,7 +56,13 @@ classdef assert
 %   PROPOSAL: Check on all fields in struct.
 %       Ex: SSL (+KVPL?)
 %
-% PROPOSAL: Redefine class as collection of standardized non-trivial "condition functions", used by an "assert" class.
+% PROPOSAL: Create class with collection of standardized non-trivial "condition functions", used by this "assert" class.
+%           Use an analogous naming scheme.
+%   PROPOSAL: Name "cond".
+%   Ex: vector, struct2
+%   Ex: Because of comments?: dir_exists, file_exists
+%   Ex: castring?
+%   
 % PROPOSAL: Have methods return a true/false value for assertion result. If a value is returned, then raise no assertion error.
 %   PRO: Can be used with regular assert statements. (Not entirely sure why this would be useful.)
 %       PRO: MATLAB's assert can be used for raising exception with customized error message.
@@ -66,6 +72,7 @@ classdef assert
 %        errors.
 %   PRO: Can combine multiple assertion conditions into one assertion.
 %       Ex: assert(<castring> || <struct>)
+%   CON: "assert" is a bad name for such a class.
 %
 % PROPOSAL: Static variable for error message identifier.
 %   PRO: Can set differently in BICAS.
@@ -341,9 +348,9 @@ classdef assert
                     func2str(funcHandle), nargout(funcHandle), nArgout)
             end
         end
-        
-        
-        
+
+
+
         function isa(v, className)
             if ~isa(v, className)
                 error(EJ_library.utils.assert.ERROR_MSG_ID, 'Expected class=%s but found class=%s.', className, class(v))
@@ -357,6 +364,8 @@ classdef assert
         % NOTE: MATLAB's "isvector" function uses different criterion which excludes numel(v) == 0, and length in third
         % or higher dimension.
         function vector(v)
+            % PROPOSAL: Optional extra argument that specifies the length.
+            
             dims = unique(size(v));
             dims(dims==1) = [];
             if numel(dims) > 1

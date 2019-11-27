@@ -20,8 +20,9 @@ function [y2] = apply_transfer_function(dt, y1, tf, varargin)
 % ==========================
 % NOTE: All arguments/return value vectors are column vectors. TF = transfer function.
 % dt       : Time between each sample. Unit: seconds
-% y1       : Samples. Must be real-valued (assertion).
-% tf       : Function handle to function z=tf(omega). z has not unit. omega unit: rad/s.
+% y1       : Samples. Must be real-valued (assertion). May contain NaN.
+% tf       : Function handle to function z=tf(omega). z is a complex value (amplitude+phase) and has not unit.
+%            omega unit: rad/s.
 %            Will only be called for omega>=0. tf(0) must be real.
 %            NOTE: If the caller wants to use a tabulated TF, then s/he should construct an anonymous function using
 %            "interp1" and submit it as argument.
@@ -88,19 +89,15 @@ function [y2] = apply_transfer_function(dt, y1, tf, varargin)
 % PROPOSAL: Eliminate de-trending. Add in wrapper.
 %   CON/NOTE: Might not be compatible with future functionality (Hann Windows etc).
 %
-% TODO-DECISION: How handle NaN, Inf?
-%   PROPOSAL: Assertion.
-%   PROPOSAL: Return all NaN.
-%   PROPOSAL: warning
-%   PROPOSAL: Setting for how to respond.
-%
-% PROPOSAL: If slow to call function handle, permit caller to submit table with implicit frequencies.
+% PROPOSAL: If slow to call function handle for transfer function tf, permit caller to submit table with implicit frequencies.
 %   PROPOSAL: Return the Z values actually used, so that caller can call back using them.
 %   PROPOSAL: Separate function for generating such vector.
 %
 % TODO-NEED-INFO: How does algorithm handle X_(N/2+1) (which has no frequency twin)? Seems like implemention should
 %   multiply it by a complex Z (generic situation) ==> Complex y2. Still, no such example has been found yet.
 %   Should be multiplied by abs(Z)?! Z-imag(z)?! Keep as is?!
+%
+% PROPOSAL: Not require column vectors. Only require vectors.
 % ------------------------------------------------------------------------------
 
 
@@ -113,6 +110,8 @@ N_POLYNOMIAL_COEFFS_TREND_FIT = 1;    % 1 = Linear function.
 %============
 if ~iscolumn(y1)
     error('BICAS:apply_transfer_function:Assertion:IllegalArgument', 'Argument y1 is not a column vector.')
+elseif ~isnumeric(y1)
+    error('BICAS:apply_transfer_function:Assertion:IllegalArgument', 'Argument y1 is not numeric.')
 elseif ~isreal(y1)
     error('BICAS:apply_transfer_function:Assertion:IllegalArgument', 'y1 is not real.')
     % NOTE: The algorithm itself does not make sense for non-real functions.

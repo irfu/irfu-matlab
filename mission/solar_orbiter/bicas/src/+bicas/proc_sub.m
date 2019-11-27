@@ -215,9 +215,9 @@ classdef proc_sub
                 assert(nSamplesPerRecord == 1)
             end
             assert(size(E, 3) == 2)
-            
 
-            
+
+
             if     C.isLfrSbm1
                 FREQ = ones(nRecords, 1) * 1;   % Always value "1" (F1).
             elseif C.isLfrSbm2
@@ -230,7 +230,7 @@ classdef proc_sub
             
             
             freqHz = bicas.proc_utils.get_LFR_frequency( FREQ );   % NOTE: Needed also for 1 SPR.
-            
+
             % Obtain the relevant values (one per record) from zVariables R0, R1, R2, and the virtual "R3".
             Rx = bicas.proc_utils.get_LFR_Rx( ...
                 Sci.ZVars.R0, ...
@@ -364,7 +364,7 @@ classdef proc_sub
                 % FULL_BAND mode has each snapshot divided into 2^15 samples/record * 8 records.  /Unknown source
                 % Unclear what value SAMPS_PER_CH should have for FULL_BAND mode. How does Epoch work for FULL_BAND
                 % snapshots?
-                PreDc.nValidSamplesPerRecord = SAMPS_PER_CH;                
+                PreDc.nValidSamplesPerRecord = SAMPS_PER_CH;
                 
             else
                 PreDc.nValidSamplesPerRecord = ones(nRecords, 1) * 1;
@@ -510,25 +510,6 @@ classdef proc_sub
 
 
 
-            % PROPOSAL: Use classify_DATASET_ID flag.
-%             switch(outputDvid)
-%                 case  {'V05_ROC-SGSE_L2S_RPW-LFR-SBM1-CWF-E' ...
-%                        'V05_ROC-SGSE_L2S_RPW-LFR-SBM2-CWF-E' ...
-%                        'V05_ROC-SGSE_L2S_RPW-LFR-SURV-CWF-E' ...
-%                        'V05_ROC-SGSE_L2S_RPW-LFR-SURV-SWF-E'}
-%                     OutSciZVars.SYNCHRO_FLAG = SciPostDc.SYNCHRO_FLAG;
-%                     ZVAR_FN_LIST{end+1} = 'SYNCHRO_FLAG';
-% 
-%                 case  {'V05_SOLO_L2_RPW-LFR-SURV-CWF-E' ...
-%                        'V05_SOLO_L2_RPW-LFR-SURV-SWF-E' ...
-%                        'V05_SOLO_L2_RPW-LFR-SBM1-CWF-E' ...
-%                        'V05_SOLO_L2_RPW-LFR-SBM2-CWF-E'}
-%                     OutSciZVars.SYNCHRO_FLAG = SciPostDc.SYNCHRO_FLAG;
-%                     ZVAR_FN_LIST{end+1} = 'SYNCHRO_FLAG';
-%                     
-%                 otherwise
-%                     error('BICAS:proc_sub:Assertion:IllegalArgument', 'Function can not produce outputDvid=%s.', outputDvid)
-%             end
             OutSciZVars.SYNCHRO_FLAG = SciPostDc.SYNCHRO_FLAG;
             ZVAR_FN_LIST{end+1} = 'SYNCHRO_FLAG';
             
@@ -594,7 +575,7 @@ classdef proc_sub
             OutSciZVars.IBIAS1           = SciPostDc.IBIAS1;
             OutSciZVars.IBIAS2           = SciPostDc.IBIAS2;
             OutSciZVars.IBIAS3           = SciPostDc.IBIAS3;
-            
+
 %             switch(outputDvid)
 %                 case  {'V05_ROC-SGSE_L2S_RPW-TDS-LFM-CWF-E' ...
 %                        'V05_ROC-SGSE_L2S_RPW-TDS-LFM-RSWF-E'}
@@ -618,18 +599,6 @@ classdef proc_sub
         end
         
         
-        
-%         function PostDc2 = process_PostDC1_to_PostDC2(PostDc1, HkSciTimePd, Cal)
-%             global SETTINGS
-%             
-%             PostDc2 = PostDc1;
-%             
-%             PostDc2.IBIAS1 = bicas.proc_utils.create_NaN_array(size(PostDc1.DemuxerOutput.V1));
-%             PostDc2.IBIAS2 = bicas.proc_utils.create_NaN_array(size(PostDc1.DemuxerOutput.V2));
-%             PostDc2.IBIAS3 = bicas.proc_utils.create_NaN_array(size(PostDc1.DemuxerOutput.V3));
-%         end
-
-
 
         % Processing function. Converts PreDC to PostDC, i.e. demux and calibrate data.
         % Function is in large part a wrapper around "simple_demultiplex".
@@ -855,209 +824,6 @@ classdef proc_sub
             end
             
         end   % simple_demultiplex
-
-
-
-        % NOTE: FUNCTION IS PLANNED TO BE PHASED OUT/OBSOLETED.
-        %
-        %
-        % Demultiplex, with only constant factors for calibration (no transfer functions, no offsets) and exactly one
-        % setting for MUX_SET and DIFF_GAIN respectively.
-        %
-        % This function implements Table 3 and Table 4 in "RPW-SYS-MEB-BIA-SPC-00001-IRF", iss1rev16.
-        % Variable names are chosen according to these tables.
-        %
-        % NOTE/BUG: Does not handle latching relay.
-        %
-        % NOTE: Conceptually, this function does both (a) demuxing and (b) calibration which could be separated.
-        % - Demuxing is done on individual samples at a specific point in time.
-        % - Calibration (with transfer functions) is made on a time series (presumably of one variable, but could be several).
-        %
-        % NOTE: NOT a processing function (does not derive a PDV).
-        %
-        % NOTE: Function is intended for development/testing until there is proper code for using transfer functions.
-        % NOTE: "input"/"output" refers to input/output for the function, which is (approximately) the opposite of
-        % the physical signals in the BIAS hardware.
-        %
-        %
-        % ARGUMENTS AND RETURN VALUE
-        % ==========================
-        % Input     : Struct with fields BIAS_1 to BIAS_5.
-        % MUX_SET   : Scalar number identifying the MUX/DEMUX mode.
-        % DIFF_GAIN : Scalar gain for differential measurements. 0 = Low gain, 1 = High gain.
-        % Output    : Struct with fields V1, V2, V3,   V12, V13, V23,   V12_AC, V13_AC, V23_AC.
-        % --
-        % NOTE: Will tolerate values of NaN for MUX_SET, DIFF_GAIN. The effect is NaN in the corresponding output values.
-        % NOTE: Can handle any arrays of any size as long as the sizes are consistent.
-        %
-        function Output = simple_demultiplex_subsequence_OLD(Input, MUX_SET, DIFF_GAIN)
-        %==========================================================================================================
-        % QUESTION: How to structure the demuxing?
-        % --
-        % QUESTION: How split by record? How put together again? How do in a way which
-        %           works for real transfer functions? How handle the many non-indexed outputs?
-        % QUESTION: How handle changing values of diff_gain, mux_set, bias-dependent calibration offsets?
-        % NOTE: LFR data can be either 1 sample/record or 1 snapshot/record.
-        % PROPOSAL: Work with some subset of in- and out-values of each type?
-        %   PROPOSAL: Work with exactly one value of each type?
-        %       CON: Slow.
-        %           CON: Only temporary implementation.
-        %       PRO: Quick to implement.
-        %   PROPOSAL: Work with only some arbitrary subset specified by array of indices.
-        %   PROPOSAL: Work with only one row?
-        %   PROPOSAL: Work with a continuous sequence of rows/records?
-        %   PROPOSAL: Submit all values, and return structure. Only read and set subset specified by indices.
-        %
-        %
-        % PROPOSAL: Could, maybe, be used for demuxing if the caller has already applied the
-        %           transfer function calibration on the BIAS signals.
-        % PROPOSAL: Validate with some "multiplexer" function?!
-        % QUESTION: Does it make sense to have BIAS values as cell array? Struct fields?!
-        %   PRO: Needed for caller's for loop to split up by record.
-        %
-        % QUESTION: Is there some better implementation than giant switch statement?! Something more similar to BIAS
-        % specification Table 3-4?
-        %
-        % QUESTION: MUX modes 1-3 are overdetermined if we always have BIAS1-3?
-        %           If so, how select what to calculate?! What if results disagree/are inconsistent? Check for it?
-        %
-        % PROPOSAL: Separate the multiplication with factor in other function.
-        %   PRO: Can use function together with TFs.
-        %
-        % TODO: Implement demuxing latching relay.
-        %==========================================================================================================
-            
-            global SETTINGS
-            
-            % ASSERTIONS
-            EJ_library.utils.assert.struct2(Input, {'BIAS_1', 'BIAS_2', 'BIAS_3', 'BIAS_4', 'BIAS_5'}, {})
-            bicas.proc_utils.assert_unvaried_N_rows(Input)
-            assert(isscalar(MUX_SET))
-            assert(isscalar(DIFF_GAIN))
-
-
-
-            ALPHA = SETTINGS.get_fv('PROCESSING.CALIBRATION.SCALAR.ALPHA');
-            BETA  = SETTINGS.get_fv('PROCESSING.CALIBRATION.SCALAR.BETA');
-            GAMMA = bicas.proc_utils.get_simple_demuxer_gamma(DIFF_GAIN);   % NOTE: GAMMA can be NaN iff DIFF_GAIN is.
-            
-            % Set default values which will be returned for
-            % variables which are not set by the demuxer.
-            NAN_VALUES = ones(size(Input.BIAS_1)) * NaN;
-            V1_LF     = NAN_VALUES;
-            V2_LF     = NAN_VALUES;
-            V3_LF     = NAN_VALUES;
-            V12_LF    = NAN_VALUES;
-            V13_LF    = NAN_VALUES;
-            V23_LF    = NAN_VALUES;
-            V12_LF_AC = NAN_VALUES;
-            V13_LF_AC = NAN_VALUES;
-            V23_LF_AC = NAN_VALUES;
-            
-            % IMPLEMENTATION NOTE: Avoid getting integer - single ==> error.
-            Input.BIAS_1 = double(Input.BIAS_1);
-            Input.BIAS_2 = double(Input.BIAS_2);
-            Input.BIAS_3 = double(Input.BIAS_3);
-            Input.BIAS_4 = double(Input.BIAS_4);
-            Input.BIAS_5 = double(Input.BIAS_5);
-
-            switch(MUX_SET)
-                case 0   % "Standard operation" : We have all information.
-
-                    % Summarize the INPUT DATA we have.
-                    V1_DC  = Input.BIAS_1;
-                    V12_DC = Input.BIAS_2;
-                    V23_DC = Input.BIAS_3;
-                    V12_AC = Input.BIAS_4;
-                    V23_AC = Input.BIAS_5;
-                    % Derive the OUTPUT DATA which are trivial.
-                    V1_LF     = V1_DC  / ALPHA;
-                    V12_LF    = V12_DC / BETA;
-                    V23_LF    = V23_DC / BETA;
-                    V12_LF_AC = V12_AC / GAMMA;
-                    V23_LF_AC = V23_AC / GAMMA;
-                    % Derive the OUTPUT DATA which are less trivial.
-                    V13_LF    = V12_LF    + V23_LF;
-                    V2_LF     = V1_LF     - V12_LF;
-                    V3_LF     = V2_LF     - V23_LF;
-                    V13_LF_AC = V12_LF_AC + V23_LF_AC;
-                    
-                case 1   % Probe 1 fails
-                    
-                    V2_LF     = Input.BIAS_1 / ALPHA;
-                    V3_LF     = Input.BIAS_2 / ALPHA;
-                    V23_LF    = Input.BIAS_3 / BETA;
-                    % Input.BIAS_4 unavailable.
-                    V23_LF_AC = Input.BIAS_5 / GAMMA;
-                    
-                case 2   % Probe 2 fails
-                    
-                    V1_LF     = Input.BIAS_1 / ALPHA;
-                    V3_LF     = Input.BIAS_2 / ALPHA;
-                    V13_LF    = Input.BIAS_3 / BETA;
-                    V13_LF_AC = Input.BIAS_4 / GAMMA;
-                    % Input.BIAS_5 unavailable.
-                    
-                case 3   % Probe 3 fails
-                    
-                    V1_LF     = Input.BIAS_1 / ALPHA;
-                    V2_LF     = Input.BIAS_2 / ALPHA;
-                    V12_LF    = Input.BIAS_3 / BETA;
-                    V12_LF_AC = Input.BIAS_4 / GAMMA;
-                    % Input.BIAS_5 unavailable.
-                    
-                case 4   % Calibration mode 0
-                    
-                    % Summarize the INPUT DATA we have.
-                    V1_DC  = Input.BIAS_1;
-                    V2_DC  = Input.BIAS_2;
-                    V3_DC  = Input.BIAS_3;
-                    V12_AC = Input.BIAS_4;
-                    V23_AC = Input.BIAS_5;
-                    % Derive the OUTPUT DATA which are trivial.
-                    V1_LF     = V1_DC / ALPHA;
-                    V2_LF     = V2_DC / ALPHA;
-                    V3_LF     = V3_DC / ALPHA;
-                    V12_LF_AC = V12_AC / GAMMA;
-                    V23_LF_AC = V23_AC / GAMMA;
-                    % Derive the OUTPUT DATA which are less trivial.
-                    V12_LF    = V1_LF     - V2_LF;
-                    V13_LF    = V1_LF     - V3_LF;
-                    V23_LF    = V2_LF     - V3_LF;
-                    V13_LF_AC = V12_LF_AC + V23_LF_AC;
-
-                case {5,6,7}   % Calibration mode 1/2/3
-                    
-                    % Summarize the INPUT DATA we have.
-                    V12_AC = Input.BIAS_4;
-                    V23_AC = Input.BIAS_5;
-                    % Derive the OUTPUT DATA which are trivial.
-                    V12_LF_AC = V12_AC / GAMMA;
-                    V23_LF_AC = V23_AC / GAMMA;
-                    % Derive the OUTPUT DATA which are less trivial.
-                    V13_LF_AC = V12_LF_AC + V23_LF_AC;
-                    
-                otherwise
-                    if isnan(MUX_SET)
-                        ;   % Do nothing. Allow the default values (NaN) to be returned.
-                    else
-                        error('BICAS:proc_sub:Assertion:IllegalArgument:DatasetFormat', 'Illegal argument value for mux_set.')
-                    end
-            end   % switch
-            
-            % Create structure to return. (Removes the "_LF" suffix.)
-            Output = [];
-            Output.V1     = V1_LF;
-            Output.V2     = V2_LF;
-            Output.V3     = V3_LF;
-            Output.V12    = V12_LF;
-            Output.V13    = V13_LF;
-            Output.V23    = V23_LF;
-            Output.V12_AC = V12_LF_AC;
-            Output.V13_AC = V13_LF_AC;
-            Output.V23_AC = V23_LF_AC;
-            
-        end  % simple_demultiplex_subsequence_OLD
 
 
 

@@ -83,9 +83,9 @@ classdef tabulated_transform
             assert(isreal(omegaRps))
             assert(issorted(omegaRps))
             
-            %====================================
-            % Handle TF amplitde/phase arguments
-            %====================================
+            %=====================================
+            % Handle TF amplitude/phase arguments
+            %=====================================
             if (numel(varargin) >= 2) && isnumeric(varargin{1}) && isnumeric(varargin{2})
                 %=======================================
                 % CASE: Arguments for amplitude + phase
@@ -173,10 +173,27 @@ classdef tabulated_transform
         
         % NOTE: Interpolates Z; not amplitude and phase separately.
         function Z = eval_linear(obj, omegaRps)
-            % TODO-NI: How handles values outside range?
+            % NOTE: interp1 return NaN for values outside range.
             Z = interp1(obj.omegaRps, obj.Z, omegaRps, 'linear');
             
-            assert(all(isfinite(Z)), 'Can not evaluate for omegaRps outside of table omegaRps min-max.')
+            if ~all(isfinite(Z))
+                % IMPLEMENTATION NOTE: Experience shows that it is useful to have an extended error message confirming
+                % that the requested frequence range is outside the tabulated one, and by how much.
+                errorMsg = sprintf(...
+                    ['Can not evaluate tabulated transfer function for frequencies outside of the range of tabulated frequencies.\n', ...
+                    'Range of frequencies for which there are tabulated Z values:\n', ...
+                    '    min(obj.omegaRps) = %g\n', ...
+                    '    max(obj.omegaRps) = %g\n', ...
+                    'Range of frequencies for which evaluation (interpolation) of Z was attempted:\n', ...
+                    '    min(omegaRps)     = %g\n', ...
+                    '    max(omegaRps)     = %g\n'], ...
+                    min(obj.omegaRps), ...
+                    max(obj.omegaRps), ...
+                    min(omegaRps), ...
+                    max(omegaRps));
+                
+                error('BICAS:Assertion', errorMsg)
+            end
         end
 
 

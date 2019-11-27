@@ -27,6 +27,13 @@ classdef demultiplexer
 	%   CON: Is same as in BIAS spec.
     %   PROPOSAL: Remove LF
     %   PROPOSAL: Write both DC & AC explicitly, not just AC.
+    %   PROPOSAL: Use something that conforms to BICAS-defined notation, i.e. ASR, BLTS etc.
+    %
+    % PROPOSAL: Change fieldname <routing>.src
+    %   NOTE: Can not use ASR/AS ID. Does not cover all sources.
+    %   PROPOSAL: .signalSource
+    % PROPOSAL: Change fieldname <routing>.dest
+    %   PROOPSAL: .datasetAsId
     
     
     

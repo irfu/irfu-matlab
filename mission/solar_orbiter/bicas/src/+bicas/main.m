@@ -71,6 +71,9 @@ function errorCode = main( varargin )
 %   PROPOSAL: Wrap dataobj in function and catch and rethrow errors with BICAS' error IDs.
 %
 % PROPOSAL: When printing settings, print how each key value has been set: default, config file, CLI argument.
+%
+% PROPOSAL: Print Exception causes recursively.
+%   NOTE: Technically a tree structure, not a chain/sequence.
 
 
 % Clear any previous instance of global variables
@@ -131,7 +134,8 @@ catch Exception1
                 temp      = strsplit(stackCall.file, filesep);
                 filename  = temp{end};
 
-                msg = [msg, sprintf('    %-27s %-46s row %i,\n', [filename, ','], [stackCall.name, ','], stackCall.line)];
+                %msg = [msg, sprintf('    %-27s %-52s row %i,\n', [filename, ','], [stackCall.name, ','], stackCall.line)];
+                msg = [msg, sprintf('    row %3i, %-27s %-52s\n', stackCall.line, [filename, ','], stackCall.name)];
             end
         end
 
