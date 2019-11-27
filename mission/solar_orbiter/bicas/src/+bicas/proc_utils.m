@@ -41,33 +41,44 @@ classdef proc_utils
 
     methods(Static, Access=public)
 
-        function S = select_row_range_from_struct_fields(S, iFirst, iLast)
-        % Given a struct, select a subset of that struct defined by a range of ROW indices for every field.
-        % Generic utility function.
-        %
-        % Compare add_rows_to_struct_fields. Name chosen in analogy.
-        
-            bicas.proc_utils.assert_unvaried_N_rows(S);
-        
-            fieldNameList = fieldnames(S);
-            nRows = NaN;                   % Initial non-sensical value which is later replaced.
-            for i=1:length(fieldNameList)
-                fn = fieldNameList{i};
-                
-                % ASSERTIONS
-                if isnan(nRows)
-                    nRows = size(S.(fn), 1);
-                    if (nRows < iFirst) || (nRows < iLast)
-                        error('BICAS:proc_utils:Assertion', 'iFirst or iLast outside of interval of indices (rows).')
-                    end
-                elseif nRows ~= size(S.(fn), 1)
-                   error('BICAS:proc_utils:Assertion', 'Not all struct fields have the same number of rows.')
-                end
-                
-                S.(fn) = S.(fn)(iFirst:iLast, :, :);
+%         function S = select_row_range_from_struct_fields(S, iFirst, iLast)
+%         % Given a struct, select a subset of that struct defined by a range of ROW indices for every field.
+%         % Generic utility function.
+%         %
+%         % Compare add_rows_to_struct_fields. Name chosen in analogy.
+%         
+%             bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(S);
+%         
+%             fieldNameList = fieldnames(S);
+%             nRows = NaN;                   % Initial non-sensical value which is later replaced.
+%             for i=1:length(fieldNameList)
+%                 fn = fieldNameList{i};
+%                 
+%                 % ASSERTIONS
+%                 if isnan(nRows)
+%                     nRows = size(S.(fn), 1);
+%                     if (nRows < iFirst) || (nRows < iLast)
+%                         error('BICAS:proc_utils:Assertion', 'iFirst or iLast outside of interval of indices (rows).')
+%                     end
+%                 elseif nRows ~= size(S.(fn), 1)
+%                    error('BICAS:proc_utils:Assertion', 'Not all struct fields have the same number of rows.')
+%                 end
+%                 
+%                 S.(fn) = S.(fn)(iFirst:iLast, :, :);
+%             end
+%         end
+
+
+
+        function c2 = select_row_range_from_cell_comps(c1, iFirst, iLast)
+            % ASSERTIONS
+            bicas.proc_utils.assert_cell_array_comps_have_same_N_rows(c1)
+            
+            for i = 1:numel(c1)
+                c2{i} = c1{i}(iFirst:iLast, :, :);
             end
         end
-        
+
         
 
         function S = add_rows_to_struct_fields(S, SAmendment)
@@ -78,8 +89,8 @@ classdef proc_utils
         % Compare select_row_range_from_struct_fields. Name chosen in analogy.
  
 
-            bicas.proc_utils.assert_unvaried_N_rows(S);
-            bicas.proc_utils.assert_unvaried_N_rows(SAmendment);
+            bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(S);
+            bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(SAmendment);
             
             fieldNamesList = fieldnames(SAmendment);
             for i=1:length(fieldNamesList)
@@ -224,60 +235,161 @@ classdef proc_utils
 
 
 
-        function [iFirstList, iLastList] = find_sequences(varargin)
-        % For a non-empty set of COLUMN vectors, find all subsequences of continuously constant values in all the vectors.
-        % Useful for finding continuous sequences of (CDF) records with identical settings.
-        % NOTE: NaN counts as equal to itself.
-        % NOTE: size([]) = 0x0 ==> Not column vector
-        %
-        % ARGUMENTS
-        % ==================
-        % Arguments (varargin{i}) : Column arrays of the same size. Can have zero rows (but must still have one column;
-        %                           size 0xN). Does not have to be numeric as long as isequaln can handle it.
-        % iFirst, iLast           : Vectors with indices to the first and last index of each sequence.
+%         function [iFirstList, iLastList] = find_constant_sequences_OLD(varargin)
+%         % For a non-empty set of numeric COLUMN vectors, find all subsequences of continuously constant values in all the vectors.
+%         % Useful for finding continuous sequences of (CDF) records with identical settings.
+%         % NOTE: NaN counts as equal to itself.
+%         % NOTE: size([]) = 0x0 ==> Not column vector
+%         %
+%         % ARGUMENTS
+%         % ==================
+%         % Arguments (varargin{i}) : Column arrays of the same size. Can have zero rows (but must still have one column;
+%         %                           size 0xN). Does not have to be numeric as long as isequaln can handle it.
+%         % iFirst, iLast           : Vectors with indices to the first and last index of each sequence.
+%         
+%             % ASSERTION: Must be at least on argument.
+%             if isempty(varargin)
+%                 error('BICAS:proc_utils:Assertion:IllegalArgument', 'There are no vectors to look for sequences in.')
+%             end
+%             
+%             nRows = size(varargin{1}, 1);
+%             
+%             % ASSERTION
+%             %EJ_library.utils.assert.vector(varargin{kArg})
+%             for kArg = 1:length(varargin)
+%                 if ~iscolumn(varargin{kArg}) || nRows ~= size(varargin{kArg}, 1)
+%                     error('BICAS:proc_utils:Assertion:IllegalArgument', 'varargins are not all SAME-SIZE COLUMN vectors.')
+%                 end
+%             end                
+%             
+%             
+%             
+%             iFirstList = [];
+%             iLastList  = [];
+%             iFirst = 1;
+%             iLast = iFirst;
+%             while iFirst <= nRows
+%                 
+%                 while iLast+1 <= nRows       % For as long as there is another row...
+%                     foundLast = false;
+%                     for kArg = 1:length(varargin)
+%                         if ~isequaln(varargin{kArg}(iFirst), varargin{kArg}(iLast+1))    % NOTE: Use "isequaln" that treats NaN as any other value.
+%                             % CASE: This row is different from the previous one.
+%                             foundLast = true;
+%                             break
+%                         end
+%                     end
+%                     if foundLast
+%                         break
+%                     end
+%                     
+%                     iLast = iLast + 1;                    
+%                 end
+% 
+%                 iFirstList(end+1) = iFirst;
+%                 iLastList(end+1)  = iLast;
+% 
+%                 iFirst = iLast + 1;
+%             end
+%         end
         
-            % ASSERTION: Must be at least on argument.
-            if isempty(varargin)
-                error('BICAS:proc_utils:Assertion:IllegalArgument', 'There are no vectors to look for sequences in.')
-            end
+        
+        
+        % Find sequences of constant value for a set of non-empty 1D vectors of identical length. Return sequences in
+        % the format of indices to "edges", here defined as the union of
+        % (1) The first index
+        % (2) The last index+1
+        % (3) Every index which is the first index in a sequence of unchanging values for all vectors
+        % NOTE: NaN counts as equal to itself.
+        % NOTE: Needs to work for NaN in order to handle demultipexer mode and diff gain being NaN (unknown).
+        %
+        %
+        % ARGUMENTS AND RETURN VALUE
+        % ==========================
+        % varargin  : Non-empty 1D vectors of identical length.
+        % iEdgeList : 1D vector. Minimum-length 2.
+        % --
+        % RATIONALE: The function uses varargin (and the possibility to submit many separate 1D vectors) instead of one
+        % matrix argument (the caller merges) to make it possible to have vectors of multiple variable types (MATLAB
+        % classes) and different dimensions (column, row etc).
+        % --
+        % RATIONALE: The return format is chosen such that it is easy to merge it with other lists of edges from other
+        % sources.
+        %
+        function iEdgeList = find_constant_sequences(varargin)
+            % PROPOSAL: Rename to imply that the function finds edges (separating sequences), not sequences.
             
-            nRows = size(varargin{1}, 1);
+            nArgs = numel(varargin);
             
-            for kArg = 1:length(varargin)
-                if ~iscolumn(varargin{kArg}) || nRows ~= size(varargin{kArg}, 1)
-                    error('BICAS:proc_utils:Assertion:IllegalArgument', 'varargins are not all SAME-SIZE COLUMN vectors.')
-                end
-            end                
+            % ASSERTION
+            assert(nArgs >= 1, 'BICAS:proc_utils:Assertion:IllegalArgument', 'Must have at least one argument.')
             
-            
-            
-            iFirstList = [];
-            iLastList  = [];
-            iFirst = 1;
-            iLast = iFirst;
-            while iFirst <= nRows
+            iEdgeListArray = cell(nArgs, 1);    % Initialize empty variable.
+            for i = 1:nArgs
+                arg = varargin{i};   % Argument before assertions.
                 
-                while iLast+1 <= nRows       % For as long as there is another row...
-                    foundLast = false;
-                    for kArg = 1:length(varargin)
-                        if ~isequaln(varargin{kArg}(iFirst), varargin{kArg}(iLast+1))    % NOTE: Use "isequaln" that treats NaN as any other value.
-                            % CASE: This row is different from the previous one.
-                            foundLast = true;
-                            break
-                        end
-                    end
-                    if foundLast
-                        break
-                    end
-                    
-                    iLast = iLast + 1;                    
+                % ASSERTIONS
+                EJ_library.utils.assert.vector(arg)
+                assert(~isempty(arg))
+                
+                v = arg(:);   % Force column vector. Can not do earlier since we do not know for sure that it is a vector.
+                
+                
+                
+                %iEdgeListArray{i} = [1; 1+find(diff(v)); numel(v)+1];   % Can not handle NaN.
+                diff_v = zeros(numel(v)-1, 1);
+                for j = 1:numel(v)-1
+                    % IMPLEMENTATION NOTE: Uses "isequaln" to treat NaN as equal to itself. A side effect is that also
+                    % Inf equals itself, and that one can (untested) have arrays of non-numeric data (structs, chars,
+                    % objects etc).
+                    diff_v(j) = ~isequaln(v(j), v(j+1));
                 end
-
-                iFirstList(end+1) = iFirst;
-                iLastList(end+1)  = iLast;
-
-                iFirst = iLast + 1;
+                iEdgeListArray{i} = [1; 1+find(diff_v); numel(v)+1];   % Can not handle NaN.
             end
+            
+            % NOTE: At this point, it is known (assertions) that all varargin{i} are vectors. By asserting at this
+            % point, we do not need to assert that all arguments are the same kind of vectors (row, column etc.), only
+            % that they have the same length.
+            EJ_library.utils.assert.all_equal(cellfun(@numel, varargin, 'UniformOutput', true))
+            
+            iEdgeList = bicas.proc_utils.merge_index_edge_lists(iEdgeListArray{:});
+        end
+        
+        
+        
+        % EXPERIMENTAL
+        function iEdgeList = merge_index_edge_lists(varargin)
+            iEdgeList = [];
+            for i = 1:numel(varargin)
+                v = varargin{i};
+                
+                % ASSERTIONS
+                EJ_library.utils.assert.vector(v)
+                assert(v(1) == 1)    % Verifies that it is an edge list, and that the "convention" for what is an edge list (include beginning and end) has not changed.
+                
+                % NOTE: Works with (forces) column vectors to make concatenations reliable
+                iEdgeList = [iEdgeList; varargin{i}(:)];
+            end
+            iEdgeList = sort(unique(iEdgeList));
+        end
+        
+        
+        
+        % EXPERIMENTAL
+        %
+        % Convert a list of edges (indexes) into adjacent sequences of indices, represented by lists of the first and
+        % last index for each sequence. Each sequence begins and ends with an edge.
+        %
+        % iEdgeList  : Sorted numeric 1D vector. If empty or scalar, then empty vectors are returned.
+        % iFirstList, iLastList : Vectors with first and last index for each sequence.
+        %
+        function [iFirstList, iLastList] = index_edges_2_first_last(iEdgeList)
+            assert(issorted(iEdgeList))
+            EJ_library.utils.assert.vector(iEdgeList)
+            
+            
+            iFirstList = iEdgeList(1:end-1);
+            iLastList  = iEdgeList(2:end) - 1;
         end
         
         
@@ -444,7 +556,45 @@ classdef proc_utils
                 zv(iRecord, (snapshotLengths(iRecord)+1):end) = NaN;
             end
         end
+
+
         
+        % M                     : 2D matrix
+        % nCopyColsPerRowVec    : 1D vector. {i}=Number of elements to copy from M{i,:}.
+        % ca                    : Column cell array of 1D vectors.
+        function ca = convert_matrix_to_cell_array_of_vectors(M, nCopyColsPerRowVec)
+            EJ_library.utils.assert.vector(nCopyColsPerRowVec)
+            assert(ismatrix(M))
+            assert(size(M, 1) == length(nCopyColsPerRowVec))
+            
+            ca = cell(size(M, 1), 1);
+            for iRow = 1:numel(nCopyColsPerRowVec)
+                ca{iRow} = M(iRow, 1:nCopyColsPerRowVec(iRow));
+            end
+        end
+        
+
+        
+        % ca                    : Column cell array of 1D vectors.
+        % nMatrixColumns        : Scalar. Number of columns in M.
+        % M                     : Numeric 2D matrix.
+        %                         NOTE: Sets unset elements to NaN.
+        % nCopyColsPerRowVec    : 1D vector. {i}=Length of ca{i}=Number of elements copyied to M{i,:}.
+        function [M, nCopyColsPerRowVec] = convert_cell_array_of_vectors_to_matrix(ca, nMatrixColumns)
+            assert(iscell(ca))
+            EJ_library.utils.assert.vector(ca)
+            assert(isscalar(nMatrixColumns))
+            EJ_library.utils.assert.vector(nMatrixColumns)
+            
+            nCopyColsPerRowVec = zeros(numel(ca), 1);   % Always column vector.
+            M                  = zeros(numel(ca), nMatrixColumns) * NaN;
+            for iRow = 1:numel(nCopyColsPerRowVec)
+                nCopyColsPerRowVec(iRow)            = numel(ca{iRow});
+                M(iRow, 1:nCopyColsPerRowVec(iRow)) = ca{iRow};
+            end
+            
+        end
+
         
         
         function DELTA_PLUS_MINUS = derive_DELTA_PLUS_MINUS(freqHz, nSpr)
@@ -574,22 +724,24 @@ classdef proc_utils
             C.isLfrSbm1 = 0;
             C.isLfrSbm2 = 0;
             C.isLfrSwf  = 0;
+            C.isTdsCwf  = 0;
             C.isTdsRswf = 0;
             
             switch(datasetId)
                 case {'ROC-SGSE_L1R_RPW-LFR-SBM1-CWF-E'
                           'SOLO_L1R_RPW-LFR-SBM1-CWF-E'}
-                      C.isLfrSbm1 = 1;
+                      C.isLfrSbm1  = 1;
                 case {'ROC-SGSE_L1R_RPW-LFR-SBM2-CWF-E'
                           'SOLO_L1R_RPW-LFR-SBM2-CWF-E'}
-                      C.isLfrSbm2 = 1;
+                      C.isLfrSbm2  = 1;
                 case {'ROC-SGSE_L1R_RPW-LFR-SURV-CWF-E'
                           'SOLO_L1R_RPW-LFR-SURV-CWF-E'}
                 case {'ROC-SGSE_L1R_RPW-LFR-SURV-SWF-E'
                           'SOLO_L1R_RPW-LFR-SURV-SWF-E'}
-                      C.isLfrSwf = 1;
+                      C.isLfrSwf  = 1;
                 case {'ROC-SGSE_L1R_RPW-TDS-LFM-CWF-E'
                           'SOLO_L1R_RPW-TDS-LFM-CWF-E'}
+                      C.isTdsCwf  = 1;
                 case {'ROC-SGSE_L1R_RPW-TDS-LFM-RSWF-E'
                           'SOLO_L1R_RPW-TDS-LFM-RSWF-E'}
                       C.isTdsRswf = 1;
@@ -597,7 +749,7 @@ classdef proc_utils
                     error('BICAS:proc_utils:Assertion:IllegalArgument', 'Illegal DATASET_ID. datasetId="%s"', datasetId)
             end
             
-            EJ_library.utils.assert.struct2(C, {'isLfrSbm1', 'isLfrSbm2', 'isLfrSwf', 'isTdsRswf'}, {})
+            EJ_library.utils.assert.struct2(C, {'isLfrSbm1', 'isLfrSbm2', 'isLfrSwf', 'isTdsCwf', 'isTdsRswf'}, {})
         end
         
         
@@ -807,17 +959,12 @@ classdef proc_utils
         
         
         
-        function assert_unvaried_N_rows(S)
+        function assert_struct_num_fields_have_same_N_rows(S)
         % Assert that all NUMERIC fields in a structure have the same number of rows.
-        %
-        % NOTE: Excludes numeric fields to handle field "DemuxerInput" (a scalar struct).
+        % NOTE: Ignores numeric fields to handle field "bltsArrayTm" (a cell array).
         %
         % Useful for structs where all fields represent CDF zVariables and/or derivatives thereof, the size in the first
         % index (number of CDF record) should be equal.
-
-        % PROPOSAL: Better name.
-        %   Ex: _equal_rows, _equal_N_rows, _same_N_rows, _equal_nbr_of_rows
-        % PROPOSAL: Only exclude struct fields.
         
             fieldNamesList = fieldnames(S);
             nRows = [];
@@ -829,9 +976,21 @@ classdef proc_utils
                 end
             end
             if length(unique(nRows)) > 1    % NOTE: length==0 valid for struct containing zero numeric fields.
-                error('BICAS:proc_utils:Assertion', 'Numeric fields in struct do not have the same number of rows (likely corresponding to CDF zVar records).')
+                error('BICAS:proc_utils:Assertion', ...
+                    'Numeric fields in struct do not have the same number of rows (likely corresponding to CDF zVar records).')
             end
         end
+        
+        
+        
+        % Assert that cell array components all have the same number of rows.
+        %
+        % c : Cell array.
+        function assert_cell_array_comps_have_same_N_rows(c)
+            nRowsArray = cellfun(@(v) (size(v,1)), c, 'UniformOutput', true);
+            EJ_library.utils.assert.all_equal( nRowsArray )
+        end
+            
         
         
         

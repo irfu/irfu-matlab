@@ -310,12 +310,12 @@ classdef assert
             
             % Give error, with an actually useful error message.
             if ~isempty(missingRequiredFnSet) || ~isempty(disallowedFnSet)
-                missingFnListStr = strjoin(missingFnList, ', ');
-                extraFnListStr   = strjoin(extraFnList,   ', ');
+                missingRequiredFnListStr = strjoin(missingRequiredFnSet, ', ');
+                disallowedFnListStr      = strjoin(disallowedFnSet,      ', ');
 
                 error(EJ_library.utils.assert.ERROR_MSG_ID, ['Expected struct has the wrong set of fields.', ...
                     '\n    Missing fields:           %s', ...
-                    '\n    Extra (forbidden) fields: %s'], missingFnListStr, extraFnListStr)
+                    '\n    Extra (forbidden) fields: %s'], missingRequiredFnListStr, disallowedFnListStr)
             end
         end
 

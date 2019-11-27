@@ -12,11 +12,14 @@ classdef calib
 %
 % IMPLEMENTATION NOTES
 % ====================
-% Coded with extra many assertions since
+% Class is implemented with extra many assertions since
 % (1) undiscovered calibration bugs could be considered extra bad
 % (2) it is expected to be hard to detect certain bugs
 % (3) it could be hard to use automatic testing here.
 % (4) to detect changing RCT formats, in particular from external teams.
+% --
+% All calibration functions of measured data are assumed to accept data from all BLTS (1-5), i.e. including TDS, in
+% order to reduce the number assumptions that the calling code needs to make.
 %
 %
 % DEFINITIONS, NAMING CONVENTIONS
@@ -137,6 +140,10 @@ classdef calib
         TdsRswfItfList
         
         SETTINGS
+        
+        % Corresponds to SETTINGS key-value.
+        % In principle unnecessary, but it shortens/clarifies the code.
+        enableDetrending
     end
 
     %###################################################################################################################
@@ -158,6 +165,8 @@ classdef calib
             obj.LfrItfTable      = obj.read_log_RCT(calibrationDir, pipelineId, 'LFR');
             obj.tdsCwfFactorsVpc = obj.read_log_RCT(calibrationDir, pipelineId, 'TDS-CWF');
             obj.TdsRswfItfList   = obj.read_log_RCT(calibrationDir, pipelineId, 'TDS-RSWF');
+            
+            obj.enableDetrending = obj.SETTINGS.get_fv('PROCESSING.CALIBRATION.DETRENDING_ENABLED');
         end
 
 
@@ -166,14 +175,11 @@ classdef calib
         %
         % NOTE: This is the normal way of obtaining bias current in physical units (as opposed to HK bias current).
         %
-        % NOTE: TEMPORARY IMPLEMENTATION(?) Only uses first Epoch value for determining calibration values.
-        %
-        function biasCurrentAmpere = calibrate_TC_bias_TM_to_bias_current(obj, Epoch, tcBiasTm, iAntenna, iCalibTimeL)
+        function biasCurrentAmpere = calibrate_TC_bias_TM_to_bias_current(obj, tcBiasCurrentTm, iAntenna, iCalibTimeL)
             % BUG: Can not handle time.
             
             % ASSERTION
-            bicas.proc_utils.assert_Epoch(Epoch)   % NOTE: Asserts column vector ("zvar"-like).
-            assert(isa(tcBiasTm, 'uint16'))
+            assert(isa(tcBiasCurrentTm, 'uint16'))
             
             %==============================
             % Obtain calibration constants
@@ -182,7 +188,7 @@ classdef calib
             gainApc      = obj.Bias.Current.gainsApc(     iCalibTimeL, iAntenna);
 
             % CALIBRATE
-            biasCurrentAmpere = offsetAmpere + gainApc .* tcBiasTm;    % LINEAR FUNCTION
+            biasCurrentAmpere = offsetAmpere + gainApc .* tcBiasCurrentTm;    % LINEAR FUNCTION
         end
 
 
@@ -206,8 +212,9 @@ classdef calib
         % for all three probes.
         %
         function biasCurrentAmpere = calibrate_HK_bias_TM_to_bias_current(obj, hkBiasCurrentTm, iAntenna)
-            % ASSERTION: zVar HK_BIA_BIAS1/2/3's class in BIAS HK. Not strictly required, but the variable has to be
-            % some integer which can contain the information.
+            
+            % ASSERTION: zVar HK_BIA_BIAS1/2/3's class in BIAS HK.
+            % Not strictly required, but the variable has to be some integer.
             assert(isa(hkBiasCurrentTm, 'uint16'))
             
             offsetTm = obj.SETTINGS.get_fv('PROCESSING.CALIBRATION.HK_BIAS_CURRENT.OFFSET_TM');
@@ -227,39 +234,48 @@ classdef calib
 
 
 
-        % NOTE: TEMPORARY IMPLEMENTATION(?) Only uses first Epoch value for determining calibration values.
+        % ARGUMENTS
+        % =========
+        % lfrSamplesTm   : 1D cell array of numeric 1D arrays.
+        % asrSamplesVolt : 1D cell array of numeric 1D arrays.
         %
-        function asrSamplesVolt = calibrate_LFR(obj, Epoch, lfrSamplesTm, iBltsChannel, BltsSrc, biasHighGain, iLfrFreq, iCalibTimeL, iCalibTimeH)
+        function asrSamplesVolt = calibrate_LFR(obj, dtSec, lfrSamplesTm, iBltsChannel, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH, iLfrFreq)
             
-            bicas.proc_utils.assert_Epoch(Epoch)
-            assert(numel(lfrSamplesTm) == numel(Epoch))
+            % ASSERTIONS
+            assert(iscell(lfrSamplesTm))
+            EJ_library.utils.assert.vector(lfrSamplesTm)
+            EJ_library.utils.assert.vector(dtSec)
+            assert(numel(lfrSamplesTm) == numel(dtSec))
             assert((1 <= iBltsChannel) && (iBltsChannel <= 5))
             assert(isa(BltsSrc, 'bicas.BLTS_src_dest'))
-            assert((1 <= iLfrFreq)     && (iLfrFreq     <= 4), 'Illegal iLfrFreq value.')
-            
-            dtSec = double(Epoch(end) - Epoch(1)) / (numel(Epoch)-1) * 1e-9;   % Unit: s   (Epoch unit: ns)
-            enableDetrending = obj.SETTINGS.get_fv('PROCESSING.CALIBRATION.DETRENDING_ENABLED');
+            assert((1 <= iLfrFreq)     && (iLfrFreq     <= 4), 'Illegal argument iLfrFreq=%g.', iLfrFreq)
 
             %==============================
             % Obtain calibration constants
             %==============================
             BiasCalibData = obj.get_BIAS_calib_data(BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH);
-            LfrTf = obj.LfrItfTable{iLfrFreq}{iBltsChannel};
-            
+            lfrItf        = obj.get_LFR_ITF(iBltsChannel, iLfrFreq);
+
+            %=====================================
+            % Create combined TF for LFR and BIAS
+            %=====================================
+            itf = @(omega) (...
+                lfrItf(omega) ...
+                .* ...
+                BiasCalibData.itf(omega));
+
             %============================================================
             % CALIBRATE: LFR TM --> LFR/BIAS interface volt --> ASR volt
             %============================================================
-            % Create combined TF for LFR and BIAS.
-            tf = @(omega) (...
-                LfrTf.eval_linear(omega) ...
-                .* ...
-                BiasCalibData.Itf.eval(omega));
-
-            % APPLY TRANSFER FUNCTION
-            asrSamplesVolt = bicas.utils.apply_transfer_function(dtSec, lfrSamplesTm, tf, ...
-                'enableDetrending', enableDetrending);
+            asrSamplesVolt = cell(size(lfrSamplesTm));
+            for i = 1:numel(lfrSamplesTm)
+                
+                % APPLY TRANSFER FUNCTION
+                tempAsrSamplesVolt = bicas.utils.apply_transfer_function(dtSec(i), lfrSamplesTm{i}(:), itf, ...
+                    'enableDetrending', obj.enableDetrending);
             
-            asrSamplesVolt = asrSamplesVolt + BiasCalibData.offsetVolt;
+                asrSamplesVolt{i} = tempAsrSamplesVolt + BiasCalibData.offsetVolt;
+            end
         end
 
 
@@ -267,62 +283,78 @@ classdef calib
         % ARGUMENTS
         % =========
         % tdsCwfSamplesTm : Samples.
-        % iBltsChannel    : 1..3.
+        % iBlts           : 1..5.
+        %                   NOTE: TDS does not supply any signal for BLTS 4-5. Therefore the calibration procedure is
+        %                   undefined and algorithm should return only NaN. BICAS should supply NaN samples for that
+        %                   case anyway though.
         % BltsSrc         : bicas.BLTS_src_dest describing where the signal comes from.
         %
-        %
-        % NOTE: TEMPORARY IMPLEMENTATION(?) Only uses first Epoch value for determining calibration values.
-        %
-        function asrSamplesVolt = calibrate_TDS_CWF(obj, Epoch, tdsCwfSamplesTm, iBltsChannel, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH)
-            
+        function asrSamplesVolt = calibrate_TDS_CWF(obj, dtSec, tdsCwfSamplesTm, iBlts, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH)
+
             % ASSERTIONS
-            bicas.proc_utils.assert_Epoch(Epoch)
-            assert(numel(tdsCwfSamplesTm) == numel(Epoch))
-            assert((1 <= iBltsChannel) && (iBltsChannel <= 3))
+            EJ_library.utils.assert.vector(dtSec)
+            assert(numel(tdsCwfSamplesTm) == numel(dtSec))
+            assert(iscell(tdsCwfSamplesTm))
+            assert((1 <= iBlts) && (iBlts <= 5))
             assert(isa(BltsSrc, 'bicas.BLTS_src_dest'))
             
-            dtSec = double(Epoch(end) - Epoch(1)) / (numel(Epoch)-1) * 1e-9;   % Unit: s   ("Epoch" unit: ns)
-            enableDetrending = obj.SETTINGS.get_fv('PROCESSING.CALIBRATION.DETRENDING_ENABLED');
+            asrSamplesVolt = cell(size(tdsCwfSamplesTm));   % Initialize empty output variable.
+                
+            if ismember(iBlts, [1,2,3])
+                
+                %==============================
+                % Obtain calibration constants
+                %==============================
+                % NOTE: Low/high gain is irrelevant for TDS. Argument value arbitrary.
+                BiasCalibData = obj.get_BIAS_calib_data(BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH);
+                
+                for i = 1:numel(tdsCwfSamplesTm)
+                    
+                    %===============================================
+                    % CALIBRATE: TDS TM --> TDS/BIAS interface volt
+                    %===============================================
+                    tempBltsSamplesInterfVolt = obj.tdsCwfFactorsVpc(iBlts) * tdsCwfSamplesTm{i};    % MULTIPLICATION
+                    
+                    %=====================================================
+                    % CALIBRATE: TDS/BIAS interface volt --> antenna volt
+                    %=====================================================
+                    % APPLY TRANSFER FUNCTION
+                    tempAsrSamplesVolt = bicas.utils.apply_transfer_function(...
+                        dtSec(i), ...
+                        tempBltsSamplesInterfVolt(:), ...
+                        BiasCalibData.itf, ...
+                        'enableDetrending', obj.enableDetrending);
+                    asrSamplesVolt{i} = tempAsrSamplesVolt + BiasCalibData.offsetVolt;
+                end
 
-            %==============================
-            % Obtain calibration constants
-            %==============================
-            % NOTE: Low/high gain is irrelevant for TDS. Argument value arbitrary.
-            BiasCalibData = obj.get_BIAS_calib_data(BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH);
+            else
+                
+                for i = 1:numel(tdsCwfSamplesTm)
+                    asrSamplesVolt{i} = NaN * tdsCwfSamplesTm{i};
+                end
+            end
 
-            %===============================================
-            % CALIBRATE: TDS TM --> TDS/BIAS interface volt
-            %===============================================
-            bltsInterfVolt = obj.tdsCwfFactorsVpc(iBltsChannel) * tdsCwfSamplesTm;    % MULTIPLICATION
-            
-            %=====================================================
-            % CALIBRATE: TDS/BIAS interface volt --> antenna volt
-            %=====================================================
-            % Create TF for BIAS.
-            % APPLY TRANSFER FUNCTION
-            asrSamplesVolt = bicas.utils.apply_transfer_function(...
-                dtSec, ...
-                bltsInterfVolt, ...
-                @(omega) BiasCalibData.Itf.eval(omega), ...
-                'enableDetrending', enableDetrending);                  
-
-            asrSamplesVolt = asrSamplesVolt + BiasCalibData.offsetVolt;
         end
 
 
 
-        % NOTE: TEMPORARY IMPLEMENTATION(?) Only uses first Epoch value for determining calibration values.
+        % ARGUMENTS
+        % =========
+        % tdsCwfSamplesTm : Samples.
+        % iBlts           : 1..5.
+        %                   NOTE: TDS does not supply any signal for BLTS 4-5. Therefore the calibration procedure is
+        %                   undefined and algorithm should return only NaN. BICAS should supply NaN samples for that
+        %                   case anyway though.
+        % BltsSrc         : bicas.BLTS_src_dest describing where the signal comes from.
         %
-        function asrSamplesVolt = calibrate_TDS_RSWF(obj, Epoch, tdsRswfSamplesTm, iBltsChannel, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH)
+        function asrSamplesVolt = calibrate_TDS_RSWF(obj, dtSec, tdsRswfSamplesTm, iBlts, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH)
             
             % ASSERTIONS
-            bicas.proc_utils.assert_Epoch(Epoch)
-            assert(numel(tdsRswfSamplesTm) == numel(Epoch))
-            assert((1 <= iBltsChannel) && (iBltsChannel <= 3))
+            EJ_library.utils.assert.vector(dtSec)
+            assert(iscell(tdsRswfSamplesTm))
+            assert(numel(tdsRswfSamplesTm) == numel(dtSec))
+            assert((1 <= iBlts) && (iBlts <= 5))
             assert(isa(BltsSrc, 'bicas.BLTS_src_dest'))
-            
-            dtSec = double(Epoch(end) - Epoch(1)) / (numel(Epoch)-1) * 1e-9;   % Unit: s   ("Epoch" unit: ns)
-            enableDetrending = obj.SETTINGS.get_fv('PROCESSING.CALIBRATION.DETRENDING_ENABLED');
             
             %==============================
             % Obtain calibration constants
@@ -330,20 +362,30 @@ classdef calib
             % NOTE: Low/high gain is irrelevant for TDS. Argument value arbitrary.
             BiasCalibData = obj.get_BIAS_calib_data(BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH);
             
-            itf = @(omega) (...
-                obj.TdsRswfItfList{iBltsChannel}.eval_linear(omega) .* ...
-                BiasCalibData.Itf.eval(omega));
-
-            %====================================
-            % CALIBRATE: TDS TM --> antenna volt
-            %====================================
-            asrSamplesVolt = bicas.utils.apply_transfer_function(...
-                dtSec, ...
-                tdsRswfSamplesTm, ...
-                itf, ...
-                'enableDetrending', enableDetrending);
+            asrSamplesVolt = cell(size(tdsRswfSamplesTm));   % Initialize empty output variable.
+            if ismember(iBlts, [1,2,3])
+                itf = @(omega) (...
+                    obj.TdsRswfItfList{iBlts}.eval_linear(omega) .* ...
+                    BiasCalibData.itf(omega));
+                
+                %====================================
+                % CALIBRATE: TDS TM --> antenna volt
+                %====================================
+                for i = 1:numel(tdsRswfSamplesTm)
+                    tempAsrSamplesVolt = bicas.utils.apply_transfer_function(...
+                        dtSec(i), ...
+                        tdsRswfSamplesTm{i}(:), ...
+                        itf, ...
+                        'enableDetrending', obj.enableDetrending);
+                    
+                    asrSamplesVolt{i} = tempAsrSamplesVolt + BiasCalibData.offsetVolt;
+                end
+            else
+                for i = 1:numel(tdsRswfSamplesTm)
+                    asrSamplesVolt{i} = NaN * tdsRswfSamplesTm{i};
+                end
+            end
             
-            asrSamplesVolt = asrSamplesVolt + BiasCalibData.offsetVolt;
         end
 
 
@@ -378,7 +420,8 @@ classdef calib
         % (1) run shared code that should be run when reading any RCT (logging, algorithm for finding file),
         % (2) separate logging from the RCT-reading code, so that one can read RCTs without BICAS.
         % IMPLEMENTATION NOTE: This method is an instance method only because of needing settings for
-        % find_RCT_by_SETTINGS_regexp.
+        %   * find_RCT_by_SETTINGS_regexp, and
+        %   * read_LFR_RCT.
         %
         %
         % ARGUMENTS
@@ -392,7 +435,7 @@ classdef calib
 
             switch(rctId)
                 case 'BIAS'     ; Rcd = bicas.RCT.read_BIAS_RCT(filePath);
-                case 'LFR'      ; Rcd = bicas.RCT.read_LFR_RCT(filePath);
+                case 'LFR'      ; Rcd = bicas.RCT.read_LFR_RCT(filePath, obj.SETTINGS.get_fv('PROCESSING.RCT.LFR.EXTRAPOLATE_TF_AMOUNT_HZ'));
                 case 'TDS-CWF'  ; Rcd = bicas.RCT.read_TDS_CWF_RCT(filePath);
                 case 'TDS-RSWF' ; Rcd = bicas.RCT.read_TDS_RSWF_RCT(filePath);
                 otherwise
@@ -405,19 +448,29 @@ classdef calib
 
         % Return subset of already loaded BIAS calibration data, for specified settings.
         %
+        % ARGUMENTS
+        % =========
+        % biasHighGain : NUMERIC value: 0=Off, 1=ON, or NaN=Value not known.
+        %                IMPLEMENTATION NOTE: Needs value to represent that biasHighGain is unknown.
+        %                Sometimes, if biasHighGain is unknown, then it is useful to process as usual since some of the
+        %                data can still be derived/calibrated, so that the caller does not need to handle the special case.
+        %
         function BiasCalibData = get_BIAS_calib_data(obj, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH)
             
             % ASSERTION
             assert(isa(BltsSrc, 'bicas.BLTS_src_dest'))
+            assert(isscalar(biasHighGain) && isnumeric(biasHighGain))
+            assert(isscalar(iCalibTimeL))
+            assert(isscalar(iCalibTimeH))
             
             switch(BltsSrc.category)
                 case 'DC single'
                     assert(isscalar(BltsSrc.antennas))
-                    BiasItfSet = obj.Bias.ItfSet.DcSingle;
+                    BiasItfList = obj.Bias.ItfSet.DcSingle;
                     offsetVolt = obj.Bias.dcSingleOffsetsVolt(iCalibTimeH, BltsSrc.antennas);
 
                 case 'DC diff'
-                    BiasItfSet    = obj.Bias.ItfSet.DcDiff;
+                    BiasItfList = obj.Bias.ItfSet.DcDiff;
                     if     isequal(BltsSrc.antennas(:)', [1,2]);   offsetVolt = obj.Bias.DcDiffOffsets.E12Volt(iCalibTimeH);
                     elseif isequal(BltsSrc.antennas(:)', [2,3]);   offsetVolt = obj.Bias.DcDiffOffsets.E23Volt(iCalibTimeH);
                     elseif isequal(BltsSrc.antennas(:)', [1,3]);   offsetVolt = obj.Bias.DcDiffOffsets.E13Volt(iCalibTimeH);
@@ -426,18 +479,45 @@ classdef calib
                     end
 
                 case 'AC diff'
-                    if biasHighGain ; BiasItfSet = obj.Bias.ItfSet.AcHighGain;   offsetVolt = 0;
-                    else            ; BiasItfSet = obj.Bias.ItfSet.AcLowGain;    offsetVolt = 0;
+                    if     biasHighGain == 1;   BiasItfList = obj.Bias.ItfSet.AcHighGain;   offsetVolt = 0;
+                    elseif biasHighGain == 0;   BiasItfList = obj.Bias.ItfSet.AcLowGain;    offsetVolt = 0;
+                    elseif isnan(biasHighGain); BiasItf     = @(omega) (omega*NaN);         offsetVolt = NaN;   % NOTE: Set TF such that data becomes NaN.
+                    else
+                        error('BICAS:calib:Assertion:IllegalArgument', 'Illegal argument biasHighGain=%g.', biasHighGain)
                     end
 
                 otherwise
-                    error('BICAS:calib:IllegalArgument:Assertion', ...
+                    error('BICAS:calib:Assertion:IllegalArgument', ...
                         'Illegal argument BltsSrc.category=%s. Can not obtain calibration data for this type of signal.', ...
                         BltsSrc.category)
-
             end
-            BiasCalibData.Itf        = BiasItfSet{iCalibTimeL};
+            
+            % CASE: Either "BiasItfList" or "BiasItf" is defined.
+            if exist('BiasItfList', 'var')
+                % Select (1) TF by calibration time, and (2) convert to function handle.
+                BiasItf = @(omegaRps) (BiasItfList{iCalibTimeL}.eval(omegaRps));
+            end
+            
+            BiasCalibData.itf        = BiasItf;
             BiasCalibData.offsetVolt = offsetVolt;
+        end
+        
+        
+        
+        % Obtain LFR ITF, but handle the case that should never happen for actual non-NaN data (LSF F3 + BLTS 4 or 5)
+        % and return a TF that only returns NaN instead. BICAS may still iterate over that combination though when
+        % calibrating.
+        % 
+        function lfrItf = get_LFR_ITF(obj, iBlts, iLfrFreq)
+            assert(ismember(iBlts,    [1:5]))
+            assert(ismember(iLfrFreq, [1:4]))
+            
+            if (iLfrFreq == 4) && ismember(iBlts, [4,5])
+                lfrItf = @(omegaRps) (omegaRps * NaN);
+            else                
+                tempLfrItf = obj.LfrItfTable{iLfrFreq}{iBlts};
+                lfrItf = @(omegaRps) (tempLfrItf.eval_linear(omegaRps));
+            end
         end
 
 

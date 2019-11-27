@@ -86,7 +86,7 @@ for i = 1:length(SwModeInfo.inputsList)
     %===================================================
     % ASSERTIONS: Check GlobalAttributes values
     %===================================================
-    % NOTE: Can not use bicas.proc_utils.assert_unvaried_N_rows(ZVars) since not all zVariables have same number of
+    % NOTE: Can not use bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(ZVars) since not all zVariables have same number of
     % records. Ex: Metadata such as ACQUISITION_TIME_UNITS.
     bicas.utils.assert_strings_equal(...
         SETTINGS.get_fv('INPUT_CDF_ASSERTIONS.STRICT_DATASET_ID'), ...

@@ -197,8 +197,8 @@ tfOmegaLookups = 2*pi * (kOmegaLookup - 1) / (N*dt);
 tfZLookups    = tf(abs(tfOmegaLookups));
 i             = tfOmegaLookups < 0;
 tfZLookups(i) = conj(tfZLookups(i));
-% ASSERTION: Only
-if any(~isfinite(tfZLookups))
+% % ASSERTION:
+if ~all(isfinite(tfZLookups) | isnan(tfZLookups))
     error('BICAS:apply_transfer_function:Assertion', 'Transfer function tf returned non-finite value for at least one frequency.')
 end
 

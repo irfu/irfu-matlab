@@ -12,28 +12,91 @@
 %   NOTE: Has to handle approximate numeric results.
 
 function proc_utils___ATEST
-    find_sequences___ATEST
+    %convert_matrix_to_cell_array_of_vectors___ATEST
+    convert_cell_array_of_vectors_to_matrix___ATEST
+    
+    if 1
+    find_constant_sequences___ATEST
     convert_N_to_1_SPR_ACQUISITION_TIME___ATEST
     convert_N_to_1_SPR_Epoch___ATEST
     convert_N_to_1_SPR_redistribute___ATEST
     convert_N_to_1_SPR_repeat___ATEST
-    set_NaN_after_snapshots_end___ATEST    
+    set_NaN_after_snapshots_end___ATEST
+    end
+    
+    % Tests for functions which are currently not used
+    % ================================================
+    %find_constant_sequences_OLD___ATEST
     %get_bin_index___ATEST
 end
 
 
 
-function find_sequences___ATEST
-    new_test = @(inputs, outputs) (EJ_library.atest.CompareFuncResult(@bicas.proc_utils.find_sequences, inputs, outputs));
+function convert_matrix_to_cell_array_of_vectors___ATEST
+    new_test = @(inputs, outputs) (EJ_library.atest.CompareFuncResult(...
+        @bicas.proc_utils.convert_matrix_to_cell_array_of_vectors, inputs, outputs));
     tl = {};
     
-    tl{end+1} = new_test({[]', []'}, 'MException');    % NOTE: size([]) = 0x0 ==> Not column vector
-    tl{end+1} = new_test({ones(0,1), ones(0,1)}, {[], []});
-    tl{end+1} = new_test({[1]'                          }, {[1], [1]});
-    tl{end+1} = new_test({[1]',           [3]'          }, {[1], [1]});
-    tl{end+1} = new_test({[1,1,1]',       [3,3,3]'      }, {[1], [3]});    
-    tl{end+1} = new_test({[1,1,1,2,2,2]', [3,3,3,4,4,4]'}, {[1,4], [3,6]});
+    tl{end+1} = new_test({[],zeros(0,1)}, {cell(0,1)});
+    tl{end+1} = new_test({[1,2,3,4,5], [3]}, {{[1,2,3]}});
+    tl{end+1} = new_test({[1,2,3,4,5; 6,7,8,9,0], [3, 2]}, {{[1,2,3]; [6,7]}});
     
+    EJ_library.atest.run_tests(tl)
+end
+
+
+
+function convert_cell_array_of_vectors_to_matrix___ATEST
+    new_test = @(inputs, outputs) (EJ_library.atest.CompareFuncResult(...
+        @bicas.proc_utils.convert_cell_array_of_vectors_to_matrix, inputs, outputs));
+    tl = {};
+    
+    tl{end+1} = new_test({cell(0,1),        5},   {ones(0,5), ones(0,1)});
+    tl{end+1} = new_test({{[1,2,3]       }, 5},   {[1,2,3,NaN,NaN                 ], [3   ]'});
+    tl{end+1} = new_test({{[1,2,3]; [1,2]}, 5},   {[1,2,3,NaN,NaN; 1,2,NaN,NaN,NaN], [3, 2]'});
+    
+    EJ_library.atest.run_tests(tl)
+end
+
+
+
+% function find_constant_sequences_OLD___ATEST
+%     new_test = @(inputs, outputs) (EJ_library.atest.CompareFuncResult(@bicas.proc_utils.find_constant_sequences_OLD, inputs, outputs));
+%     tl = {};
+%     
+%     tl{end+1} = new_test({[]', []'},                       'MException');    % NOTE: size([]) = 0x0 ==> Not column vector
+%     tl{end+1} = new_test({ones(0,1), ones(0,1)},           {[], []});
+%     tl{end+1} = new_test({[1]'                          }, {[1], [1]});
+%     tl{end+1} = new_test({[1]',           [3]'          }, {[1], [1]});
+%     tl{end+1} = new_test({[1,1,1]',       [3,3,3]'      }, {[1], [3]});    
+%     tl{end+1} = new_test({[1,1,1,2,2,2]', [3,3,3,4,4,4]'}, {[1,4], [3,6]});
+%     
+%     EJ_library.atest.run_tests(tl)
+% end
+
+
+
+function find_constant_sequences___ATEST
+    % NOTE: Indirectly tests bicas.proc_utils.merge_index_edge_lists since it is used by this function.
+    
+    new_test = @(inputs, outputs) (EJ_library.atest.CompareFuncResult(@bicas.proc_utils.find_constant_sequences, inputs, outputs));
+    tl = {};
+    
+    tl{end+1} = new_test({},                     'MException');
+    tl{end+1} = new_test({[]', []'},             'MException');    % NOTE: size([]) = 0x0 ==> Not column vector
+    tl{end+1} = new_test({ones(0,1), ones(0,1)}, 'MException');
+    tl{end+1} = new_test({[1]               }, {[1, 2]'});
+    tl{end+1} = new_test({[1], [3]          }, {[1, 2]'});
+    tl{end+1} = new_test({[1,1,1]',      [3,3,3]'      }, {[1,4]'});    
+    tl{end+1} = new_test({[1,1,1]',      [NaN,NaN,NaN]'}, {[1,4]'});
+    tl{end+1} = new_test({[1,1,1]',      [Inf,Inf,Inf]'}, {[1,4]'});
+    tl{end+1} = new_test({[1,1,1,2,2,2], [3,3,3,4,4,4]'}, {[1,4,7]'}); 
+    tl{end+1} = new_test({[1,1,2,2,2,2], [3,3,3,3,4,4]'}, {[1,3,5,7]'});
+    tl{end+1} = new_test({[1,1,2,2,2,2], [3,3,3,3,4,4]'}, {[1,3,5,7]'});
+    tl{end+1} = new_test({...
+        [1,1,NaN,NaN,NaN,2,2,2], ...
+        [3,3,3,  3,  4,  4,4,4]'}, {...
+        [1,  3,      5,  6,    9]'});
     EJ_library.atest.run_tests(tl)
 end
 

@@ -150,6 +150,8 @@ S.define_setting('PROCESSING.RCT_REGEXP.RODP.TDS-LFM-CWF',  [    'SOLO_CAL_RCT-T
 S.define_setting('PROCESSING.RCT_REGEXP.RGTS.TDS-LFM-RSWF', ['ROC-SGSE_CAL_RCT-TDS-LFM-RSWF-E_V20[0-9]{6}', CDF_SUFFIX_REGEXP]);
 S.define_setting('PROCESSING.RCT_REGEXP.RODP.TDS-LFM-RSWF', [    'SOLO_CAL_RCT-TDS-LFM-RSWF-E_V20[0-9]{6}', CDF_SUFFIX_REGEXP]);
 
+S.define_setting('PROCESSING.RCT.LFR.EXTRAPOLATE_TF_AMOUNT_HZ', 1);
+
 
 
 %====================================================================================================================

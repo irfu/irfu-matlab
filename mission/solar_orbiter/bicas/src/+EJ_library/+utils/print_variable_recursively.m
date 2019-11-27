@@ -351,16 +351,16 @@ function [canHaveChildren, childrenVList, childrenNamesList, valueDisplayStr] = 
                 %childrenNamesList{i} = sprintf('{%i}', i);
                 childrenNamesList{i} = sprintf('{%s}', index_str(size(v), i));
             end
-        elseif isstruct(v) || isnumeric(v) || islogical(v)
+
+        elseif isstruct(v) || isnumeric(v) || islogical(v) || isobject(v)
             canHaveChildren = true;
             for i = 1:numel(v)
                 childrenVList{i}     = v(i);
                 childrenNamesList{i} = sprintf('(%s)', index_str(size(v), i));
                 %childrenNamesList{i} = sprintf('(%i)', i);
             end
-            
-        else
-            
+
+        else            
             error('Can not handle this variable size or type (MATLAB class).')
         end
         

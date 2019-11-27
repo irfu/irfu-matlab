@@ -230,7 +230,7 @@ classdef RCT
         %                   iFreq=1..3 : iBiasChannel=1..5 for BIAS_1..BIAS_5
         %                   iFreq=4    : iBiasChannel=1..3 for BIAS_1..BIAS_3
         %                  NOTE: This is different from LFR zVar FREQ.
-        function LfrItfTable = read_LFR_RCT(filePath)
+        function LfrItfTable = read_LFR_RCT(filePath, tfExtrapolateAmountHz)
             Do = dataobj(filePath);
             
             try
@@ -239,21 +239,23 @@ classdef RCT
                 % ==> Remove leading singleton dimensions, much assertions.
 
                 % NOTE: There are separate TFs for each BLTS channel, not just separate LFR sampling frequencies, i.e.
-                % there are 5+5+5+3 TFs.
-                freqsHz{1}  = shiftdim(Do.data.Freqs_F0.data);    % NOTE: Index {iLfrFreq}.
-                freqsHz{2}  = shiftdim(Do.data.Freqs_F1.data);
-                freqsHz{3}  = shiftdim(Do.data.Freqs_F2.data);
-                freqsHz{4}  = shiftdim(Do.data.Freqs_F3.data);
+                % there are 5+5+5+3 TFs (but only 1 frequency table/LSF, since they are recycled).
+                % NOTE: The assignment of indices here effectively determines the translation between array index and
+                % LFR Sampling Frequency (LSF). This is NOT the same as the values in the LFR zVar FREQ.
+                freqTableHz{1}  = shiftdim(Do.data.Freqs_F0.data);    % NOTE: Index {iLfrFreq}.
+                freqTableHz{2}  = shiftdim(Do.data.Freqs_F1.data);
+                freqTableHz{3}  = shiftdim(Do.data.Freqs_F2.data);
+                freqTableHz{4}  = shiftdim(Do.data.Freqs_F3.data);
 
-                amplCpv{1}  = shiftdim(Do.data.TF_BIAS_12345_amplitude_F0.data);
-                amplCpv{2}  = shiftdim(Do.data.TF_BIAS_12345_amplitude_F1.data);
-                amplCpv{3}  = shiftdim(Do.data.TF_BIAS_12345_amplitude_F2.data);
-                amplCpv{4}  = shiftdim(Do.data.TF_BIAS_123_amplitude_F3.data);
+                amplTableCpv{1}  = shiftdim(Do.data.TF_BIAS_12345_amplitude_F0.data);
+                amplTableCpv{2}  = shiftdim(Do.data.TF_BIAS_12345_amplitude_F1.data);
+                amplTableCpv{3}  = shiftdim(Do.data.TF_BIAS_12345_amplitude_F2.data);
+                amplTableCpv{4}  = shiftdim(Do.data.TF_BIAS_123_amplitude_F3.data);
 
-                phaseDeg{1} = shiftdim(Do.data.TF_BIAS_12345_phase_F0.data);
-                phaseDeg{2} = shiftdim(Do.data.TF_BIAS_12345_phase_F1.data);
-                phaseDeg{3} = shiftdim(Do.data.TF_BIAS_12345_phase_F2.data);
-                phaseDeg{4} = shiftdim(Do.data.TF_BIAS_123_phase_F3.data);
+                phaseTableDeg{1} = shiftdim(Do.data.TF_BIAS_12345_phase_F0.data);
+                phaseTableDeg{2} = shiftdim(Do.data.TF_BIAS_12345_phase_F1.data);
+                phaseTableDeg{3} = shiftdim(Do.data.TF_BIAS_12345_phase_F2.data);
+                phaseTableDeg{4} = shiftdim(Do.data.TF_BIAS_123_phase_F3.data);
 
                 for iLsf = 1:4
                     if iLsf ~= 4
@@ -261,28 +263,39 @@ classdef RCT
                     else
                         nBltsChannels = 3;
                     end
-                    
-                    lsfFreqsHz  = freqsHz{iLsf};
-                    lsfAmplCpv  = amplCpv{iLsf};
-                    lsfPhaseDeg = phaseDeg{iLsf};
+
+                    % NOTE: Values for the specific LFS, hence the prefix.
+                    lsfFreqTableHz   = freqTableHz{iLsf};
+                    lsfAmplTableCpv  = amplTableCpv{iLsf};
+                    lsfPhaseTableDeg = phaseTableDeg{iLsf};
 
                     % ASSERTIONS: Check CDF array sizes, and implicitly that the CDF format is the expected one.
-                    assert(iscolumn(freqsHz{iLsf}))
+                    assert(iscolumn(freqTableHz{iLsf}))
                     
-                    assert(ndims(lsfAmplCpv)  == 2)
-                    assert(ndims(lsfPhaseDeg) == 2)                    
-                    assert(size( lsfAmplCpv,  1) >= bicas.RCT.TF_TABLE_MIN_LENGTH)
-                    assert(size( lsfPhaseDeg, 1) >= bicas.RCT.TF_TABLE_MIN_LENGTH)
-                    assert(size( lsfAmplCpv,  2) == nBltsChannels)
-                    assert(size( lsfPhaseDeg, 2) == nBltsChannels)
+                    assert(ndims(lsfAmplTableCpv)  == 2)
+                    assert(ndims(lsfPhaseTableDeg) == 2)
+                    assert(size( lsfAmplTableCpv,  1) >= bicas.RCT.TF_TABLE_MIN_LENGTH)
+                    assert(size( lsfPhaseTableDeg, 1) >= bicas.RCT.TF_TABLE_MIN_LENGTH)
+                    assert(size( lsfAmplTableCpv,  2) == nBltsChannels)
+                    assert(size( lsfPhaseTableDeg, 2) == nBltsChannels)
 
                     for iBltsChannel = 1:nBltsChannels
                         
-                        % NOTE: Inverting the tabulated TF.
+                        lsfBltsFreqTableHz   = lsfFreqTableHz;
+                        lsfBltsAmplTableCpv  = lsfAmplTableCpv( :, iBltsChannel);
+                        lsfBltsPhaseTableDeg = lsfPhaseTableDeg(:, iBltsChannel);
+                        
+                        [~, lsfBltsAmplTableCpv] = bicas.utils.extend_extrapolate(lsfBltsFreqTableHz, lsfBltsAmplTableCpv, ...
+                            tfExtrapolateAmountHz, 'positive', 'exponential', 'exponential');
+                        [lsfBltsFreqTableHz, lsfBltsPhaseTableDeg] = bicas.utils.extend_extrapolate(lsfBltsFreqTableHz, lsfBltsPhaseTableDeg, ...
+                            tfExtrapolateAmountHz, 'positive', 'exponential', 'linear');
+                        
+                        
+                        % NOTE: INVERTING the tabulated TF.
                         Itf = EJ_library.utils.tabulated_transform(...
-                            lsfFreqsHz * 2*pi, ...
-                            1 ./ lsfAmplCpv(      :, iBltsChannel), ...
-                            - deg2rad(lsfPhaseDeg(:, iBltsChannel)), ...
+                            lsfBltsFreqTableHz * 2*pi, ...
+                            1 ./ lsfBltsAmplTableCpv, ...
+                            - deg2rad(lsfBltsPhaseTableDeg), ...
                             'extrapolatePositiveFreqZtoZero', 1);
                         
                         % ASSERTION: ITF
