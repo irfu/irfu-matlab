@@ -316,10 +316,10 @@ classdef calib
             %=====================================
             % Create combined TF for LFR and BIAS
             %=====================================
-            itf = @(omega) (...
+            itfIvpt = @(omega) (...
                 lfrItfIvpt(omega) ...
                 .* ...
-                BiasCalibData.itf(omega));
+                BiasCalibData.itfAvpiv(omega));
 
             %=======================================
             % CALIBRATE: LFR TM --> TM --> ASR volt
@@ -329,7 +329,7 @@ classdef calib
                 
                 % APPLY TRANSFER FUNCTION
                 tempSamplesAVolt = bicas.utils.apply_transfer_function(...
-                    dtSec(i), samplesCaTm{i}(:), itf, ...
+                    dtSec(i), samplesCaTm{i}(:), itfIvpt, ...
                     'enableDetrending', obj.enableDetrending);
 
                 samplesCaAVolt{i} = tempSamplesAVolt + BiasCalibData.offsetAVolt;
@@ -374,7 +374,7 @@ classdef calib
                     tempSamplesAVolt = bicas.utils.apply_transfer_function(...
                         dtSec(i), ...
                         tempSamplesIVolt(:), ...
-                        BiasCalibData.itf, ...
+                        BiasCalibData.itfAvpiv, ...
                         'enableDetrending', obj.enableDetrending);
                     samplesCaAVolt{i} = tempSamplesAVolt + BiasCalibData.offsetAVolt;
                 end
@@ -414,7 +414,7 @@ classdef calib
             if ismember(iBlts, [1,2,3])
                 itf = @(omega) (...
                     obj.TdsRswfItfIvptList{iBlts}.eval_linear(omega) .* ...
-                    BiasCalibData.itf(omega));
+                    BiasCalibData.itfAvpiv(omega));
                 
                 %====================================
                 % CALIBRATE: TDS TM --> antenna volt
@@ -515,11 +515,11 @@ classdef calib
             
             switch(BltsSrc.category)
                 case 'DC single'
-                    BiasItfList = obj.Bias.ItfSet.DcSingleAvpiv;
+                    BiasItfAvpivList = obj.Bias.ItfSet.DcSingleAvpiv;
                     offsetAVolt = obj.Bias.dcSingleOffsetsAVolt(iCalibTimeH, BltsSrc.antennas);
 
                 case 'DC diff'
-                    BiasItfList = obj.Bias.ItfSet.DcDiffAvpiv;
+                    BiasItfAvpivList = obj.Bias.ItfSet.DcDiffAvpiv;
                     if     isequal(BltsSrc.antennas(:)', [1,2]);   offsetAVolt = obj.Bias.DcDiffOffsets.E12AVolt(iCalibTimeH);
                     elseif isequal(BltsSrc.antennas(:)', [2,3]);   offsetAVolt = obj.Bias.DcDiffOffsets.E23AVolt(iCalibTimeH);
                     elseif isequal(BltsSrc.antennas(:)', [1,3]);   offsetAVolt = obj.Bias.DcDiffOffsets.E13AVolt(iCalibTimeH);
@@ -528,9 +528,9 @@ classdef calib
                     end
 
                 case 'AC diff'
-                    if     biasHighGain == 1;   BiasItfList = obj.Bias.ItfSet.AcHighGainAvpiv;   offsetAVolt = 0;
-                    elseif biasHighGain == 0;   BiasItfList = obj.Bias.ItfSet.AcLowGainAvpiv;    offsetAVolt = 0;
-                    elseif isnan(biasHighGain); BiasItf     = @(omega) (omega*NaN);         offsetAVolt = NaN;   % NOTE: Set TF such that data becomes NaN.
+                    if     biasHighGain == 1;   BiasItfAvpivList = obj.Bias.ItfSet.AcHighGainAvpiv;   offsetAVolt = 0;
+                    elseif biasHighGain == 0;   BiasItfAvpivList = obj.Bias.ItfSet.AcLowGainAvpiv;    offsetAVolt = 0;
+                    elseif isnan(biasHighGain); BiasItfAvpiv     = @(omega) (omega*NaN);              offsetAVolt = NaN;   % NOTE: Set TF such that data becomes NaN.
                     else
                         error('BICAS:calib:Assertion:IllegalArgument', 'Illegal argument biasHighGain=%g.', biasHighGain)
                     end
@@ -542,12 +542,12 @@ classdef calib
             end
             
             % CASE: Either "BiasItfList" or "BiasItf" is defined.
-            if exist('BiasItfList', 'var')
+            if exist('BiasItfAvpivList', 'var')
                 % Select (1) TF by calibration time, and (2) convert to function handle.
-                BiasItf = @(omegaRps) (BiasItfList{iCalibTimeL}.eval(omegaRps));
+                BiasItfAvpiv = @(omegaRps) (BiasItfAvpivList{iCalibTimeL}.eval(omegaRps));
             end
             
-            BiasCalibData.itf         = BiasItf;
+            BiasCalibData.itfAvpiv    = BiasItfAvpiv;
             BiasCalibData.offsetAVolt = offsetAVolt;
         end
         
@@ -558,12 +558,12 @@ classdef calib
         % calibrating.
         % 
         function lfrItfIvpt = get_LFR_ITF(obj, iBlts, iLsf)
-            assert(ismember(iBlts,    [1:5]))
-            assert(ismember(iLsf, [1:4]))
+            assert(ismember(iBlts, [1:5]))
+            assert(ismember(iLsf,  [1:4]))
             
             if (iLsf == 4) && ismember(iBlts, [4,5])
                 lfrItfIvpt = @(omegaRps) (omegaRps * NaN);
-            else                
+            else
                 tempLfrItfIvpt = obj.LfrItfIvptTable{iLsf}{iBlts};
                 lfrItfIvpt = @(omegaRps) (tempLfrItfIvpt.eval_linear(omegaRps));
             end
@@ -577,8 +577,8 @@ classdef calib
 
     
     
-    methods(Static, Access=private)
-    %methods(Static, Access=public)
+    %methods(Static, Access=private)
+    methods(Static, Access=public)
         % NOTE: Public so that automatic test code can call get_calibration_time.
 
 

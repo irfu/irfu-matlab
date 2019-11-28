@@ -700,18 +700,9 @@ classdef proc_sub
             assert(numel(samplesCaTm) == 5)
             bicas.proc_utils.assert_cell_array_comps_have_same_N_rows(samplesCaTm)
             EJ_library.utils.assert.all_equal([...
-                size(MUX_SET,             1), ...
-                size(DIFF_GAIN,           1), ...
+                size(MUX_SET,        1), ...
+                size(DIFF_GAIN,      1), ...
                 size(samplesCaTm{1}, 1)])
-
-
-
-            % Create empty structure to which new array components can be added.
-            % NOTE: Unit is AVolt. Not including in the field name to keep them short.
-            AsrSamplesAVolt = struct(...
-                'dcV1',  [], 'dcV2',  [], 'dcV3',  [], ...
-                'dcV12', [], 'dcV23', [], 'dcV13', [], ...
-                'acV12', [], 'acV23', [], 'acV13', []);
 
 
 
@@ -719,7 +710,16 @@ classdef proc_sub
             if disableCalibration
                 bicas.log('warning', 'CALIBRATION HAS BEEN DISABLED via setting PROCESSING.CALIBRATION.DISABLE_CALIBRATION.')
             end
+
             
+            
+            % Create empty structure to which new array components can be added.
+            % NOTE: Unit is AVolt. Not including in the field names to keep them short.
+            AsrSamplesAVolt = struct(...
+                'dcV1',  [], 'dcV2',  [], 'dcV3',  [], ...
+                'dcV12', [], 'dcV23', [], 'dcV13', [], ...
+                'acV12', [], 'acV23', [], 'acV13', []);
+
             dlrUsing12 = bicas.demultiplexer_latching_relay(Epoch);
             iCalibL    = Cal.get_calibration_time_L(Epoch);
             iCalibH    = Cal.get_calibration_time_H(Epoch);
@@ -761,7 +761,7 @@ classdef proc_sub
 
                 % Extract subsequence of DATA records to "demux".
                 %DemuxerInputSubseq = bicas.proc_utils.select_row_range_from_struct_fields(samplesCaTm, iFirst, iLast);
-                ssSamplesTm               = bicas.proc_utils.select_row_range_from_cell_comps(samplesCaTm, iFirst, iLast);
+                ssSamplesTm              = bicas.proc_utils.select_row_range_from_cell_comps(samplesCaTm, iFirst, iLast);
                 ssNValidSamplesPerRecord = nValidSamplesPerRecord(iFirst:iLast);
                 if hasSnapshotFormat
                     % NOTE: Vector of constant numbers (one per snapshot).
@@ -824,11 +824,11 @@ classdef proc_sub
                 %====================
                 % CALL DEMULTIPLEXER
                 %====================
-                [~, SsAsrSamplesVolt] = bicas.demultiplexer.main(MUX_SET_ss, dlrUsing12_ss, ssSamplesAVolt);
+                [~, SsAsrSamplesAVolt] = bicas.demultiplexer.main(MUX_SET_ss, dlrUsing12_ss, ssSamplesAVolt);
                 
                 % Add demuxed sequence to the to-be complete set of records.
                 %DemuxerOutput = bicas.proc_utils.add_rows_to_struct_fields(DemuxerOutput, DemuxerOutputSubseq);
-                AsrSamplesAVolt = bicas.proc_utils.add_rows_to_struct_fields(AsrSamplesAVolt, SsAsrSamplesVolt);
+                AsrSamplesAVolt = bicas.proc_utils.add_rows_to_struct_fields(AsrSamplesAVolt, SsAsrSamplesAVolt);
                 
             end
             

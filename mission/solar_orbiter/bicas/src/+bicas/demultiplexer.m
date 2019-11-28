@@ -411,7 +411,7 @@ classdef demultiplexer
         
         
 %         % EXPERIMENTAL. NOT USED.
-%         function AsrSamplesVolt = complement(AsrSamplesVolt)
+%         function AsrSamplesVolt = complement_DC_signals(AsrSamplesVolt)
 %             As = AsrSamplesVolt;
 %             
 %             % BUG??!!! Algorithm should ideally start over with highest-precedence relation after any field has been
@@ -421,6 +421,8 @@ classdef demultiplexer
 %             % PROPOSAL: complete_relation returns successFlag. Use list of function pointers. Remove functions that have
 %             % executed.
 %             %   CON: Overkill.
+%             % PROPOSAL: Add empty/NaN same-sized fields when can not derive any more fields. Assertion on fieldnames
+%             %           at the end.
 %             
 %             % AC ASRs are separate from DC. Does not have to be in loop.
 %             % IMPLEMENTATION NOTE: Must be executed before DC loop. Otherwise nFnAfter == 9 condition does not work.
