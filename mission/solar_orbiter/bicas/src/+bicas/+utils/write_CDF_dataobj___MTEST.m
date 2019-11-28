@@ -125,7 +125,7 @@ function dop = add_zVar_size_test(dop, namePrefix, nRecords, statedSizePerRecord
 
 % ASSERTION
 if numel(nRecords) ~= 1
-    error('Illegal argument nRecords.')
+    error('BICAS:TEST', 'Illegal argument nRecords.')
 end
 
 

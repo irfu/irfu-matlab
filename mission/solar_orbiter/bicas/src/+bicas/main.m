@@ -186,7 +186,7 @@ C = bicas.error_safe_constants();
 %==================================
 matlabVersionString = version('-release');
 if ~ismember(matlabVersionString, C.PERMITTED_MATLAB_VERSIONS)
-    error('BICAS:BadMatlabVersion', ...
+    error('BICAS:main:BadMatlabVersion', ...
         'Using bad MATLAB version. Found version "%s". BICAS requires any of the following MATLAB versions: %s.\n', ...
         matlabVersionString, strjoin(C.PERMITTED_MATLAB_VERSIONS, ', '))
 end
@@ -352,7 +352,7 @@ switch(CliData.functionalityMode)
             SwModeInfo = SwModeDefs.get_sw_mode_info(CliData.swModeArg);
         catch Exception1
             % NOTE: Misspelled "--version" etc. would be interpreted as S/W mode and produce error here too.
-            error('BICAS:CLISyntax', ...
+            error('BICAS:main:CLISyntax', ...
                 'Can not interpret first argument "%s" as a S/W mode (or any other legal first argument).', ...
                 CliData.swModeArg);
         end
@@ -379,7 +379,7 @@ switch(CliData.functionalityMode)
         nSipExpected = numel(SwModeInfo.inputsList) + numel(SwModeInfo.outputsList);
         nSipActual   = numel(CliData.SpecInputParametersMap.keys);
         if nSipExpected ~= nSipActual
-            error('BICAS:CLISyntax', 'Illegal number of "specific input parameters" (input & output datasets). Expected %i, but got %i.', nSipExpected, nSipActual)
+            error('BICAS:main:CLISyntax', 'Illegal number of "specific input parameters" (input & output datasets). Expected %i, but got %i.', nSipExpected, nSipActual)
         end        
 
         
@@ -390,7 +390,7 @@ switch(CliData.functionalityMode)
         bicas.execute_sw_mode( SwModeInfo, InputFilesMap, OutputFilesMap, masterCdfDir, calibrationDir, pipelineId, SETTINGS )
 
     otherwise
-        error('BICAS:Assertion', 'Illegal value functionalityMode="%s"', functionalityMode)
+        error('BICAS:main:Assertion', 'Illegal value functionalityMode="%s"', functionalityMode)
 end    % if ... else ... / switch
 
 
@@ -409,7 +409,7 @@ for i = 1:numel(srcKeysList)
     srcKey = srcKeysList{i};
     
     if ~SrcMap.isKey(srcKey)
-        error('BICAS:Assertion', 'Can not find source key "%s"', srcKey)
+        error('BICAS:main:Assertion', 'Can not find source key "%s"', srcKey)
     end
     NewMap(newKeysList{i}) = SrcMap(srcKey);
 end
@@ -529,7 +529,7 @@ end
 
 % UI ASSERTION
 if isempty(v)
-    error('BICAS:Assertion', ...
+    error('BICAS:main:Assertion', ...
         'Can not set internal variable corresponding to environment variable "%s" from either (1) the environment variable, or (2) settings key value "%s".', ...
         envVarName, settingsOverrideValue)
 end

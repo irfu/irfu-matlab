@@ -25,7 +25,7 @@
 %       Consists of struct with fields:
 %           .Epoch
 %           .ACQUISITION_TIME
-%           .bltsArrayTm     : 1D, size 5 cell array. {iBltsId} = NxM arrays, where M may be 1 (1 sample/record) or >1.
+%           .samplesCaTm     : 1D, size 5 cell array. {iBltsId} = NxM arrays, where M may be 1 (1 sample/record) or >1.
 %           .freqHz          : Snapshot frequency in Hz. Unimportant for one sample/record data.
 %           .DIFF_GAIN
 %           .MUX_SET
@@ -129,7 +129,7 @@ classdef proc_sub
             bicas.proc_utils.log_tt2000_array('SCI ACQUISITION_TIME', sciAtTt2000)
             bicas.proc_utils.log_tt2000_array('HK  Epoch           ', hkEpoch)
             bicas.proc_utils.log_tt2000_array('SCI Epoch           ', sciEpoch)
-            
+
             %=========================================================================================================
             % 1) Convert time to something linear in time that can be used for processing (not storing time to file).
             % 2) Effectively also chooses which time to use for the purpose of processing:
@@ -177,9 +177,9 @@ classdef proc_sub
 
             % ASSERTIONS
             EJ_library.utils.assert.struct2(HkSciTime, {'MUX_SET', 'DIFF_GAIN'}, {})
-        end        
-        
-        
+        end
+
+
 
         function [PreDc, calibFunc] = process_LFR_to_PreDC(Sci, inputSciDsi, HkSciTime, Cal)
         % Processing function. Convert LFR CDF data to PreDC.
@@ -281,12 +281,12 @@ classdef proc_sub
             % bicas.proc_utils.filter_rows requires this. Variable may be integer if integer in source CDF.
             E = single(E);
 
-            PreDc.bltsArrayTm    = {};
-            PreDc.bltsArrayTm{1} = V;
-            PreDc.bltsArrayTm{2} = bicas.proc_utils.filter_rows( E(:,:,1), Rx==1 );
-            PreDc.bltsArrayTm{3} = bicas.proc_utils.filter_rows( E(:,:,2), Rx==1 );
-            PreDc.bltsArrayTm{4} = bicas.proc_utils.filter_rows( E(:,:,1), Rx==0 );
-            PreDc.bltsArrayTm{5} = bicas.proc_utils.filter_rows( E(:,:,2), Rx==0 );
+            PreDc.samplesCaTm    = {};
+            PreDc.samplesCaTm{1} = V;
+            PreDc.samplesCaTm{2} = bicas.proc_utils.filter_rows( E(:,:,1), Rx==1 );
+            PreDc.samplesCaTm{3} = bicas.proc_utils.filter_rows( E(:,:,2), Rx==1 );
+            PreDc.samplesCaTm{4} = bicas.proc_utils.filter_rows( E(:,:,1), Rx==0 );
+            PreDc.samplesCaTm{5} = bicas.proc_utils.filter_rows( E(:,:,2), Rx==0 );
 
             PreDc.MUX_SET           = HkSciTime.MUX_SET;
             PreDc.DIFF_GAIN         = HkSciTime.DIFF_GAIN;
@@ -376,12 +376,12 @@ classdef proc_sub
             
             modif_WAVEFORM_DATA = double(permute(Sci.ZVars.WAVEFORM_DATA, [1,3,2]));
             
-            PreDc.bltsArrayTm    = {};
-            PreDc.bltsArrayTm{1} = bicas.proc_utils.set_NaN_after_snapshots_end( modif_WAVEFORM_DATA(:,:,1), PreDc.nValidSamplesPerRecord );
-            PreDc.bltsArrayTm{2} = bicas.proc_utils.set_NaN_after_snapshots_end( modif_WAVEFORM_DATA(:,:,2), PreDc.nValidSamplesPerRecord );
-            PreDc.bltsArrayTm{3} = bicas.proc_utils.set_NaN_after_snapshots_end( modif_WAVEFORM_DATA(:,:,3), PreDc.nValidSamplesPerRecord );
-            PreDc.bltsArrayTm{4} = bicas.proc_utils.create_NaN_array([nRecords, nVariableSamplesPerRecord]);
-            PreDc.bltsArrayTm{5} = bicas.proc_utils.create_NaN_array([nRecords, nVariableSamplesPerRecord]);
+            PreDc.samplesCaTm    = {};
+            PreDc.samplesCaTm{1} = bicas.proc_utils.set_NaN_after_snapshots_end( modif_WAVEFORM_DATA(:,:,1), PreDc.nValidSamplesPerRecord );
+            PreDc.samplesCaTm{2} = bicas.proc_utils.set_NaN_after_snapshots_end( modif_WAVEFORM_DATA(:,:,2), PreDc.nValidSamplesPerRecord );
+            PreDc.samplesCaTm{3} = bicas.proc_utils.set_NaN_after_snapshots_end( modif_WAVEFORM_DATA(:,:,3), PreDc.nValidSamplesPerRecord );
+            PreDc.samplesCaTm{4} = bicas.proc_utils.create_NaN_array([nRecords, nVariableSamplesPerRecord]);
+            PreDc.samplesCaTm{5} = bicas.proc_utils.create_NaN_array([nRecords, nVariableSamplesPerRecord]);
             
             PreDc.MUX_SET   = HkSciTime.MUX_SET;
             PreDc.DIFF_GAIN = HkSciTime.DIFF_GAIN;
@@ -390,12 +390,10 @@ classdef proc_sub
             
             
             if C.isTdsCwf
-                % function asrSamplesVolt = calibrate_TDS_CWF(obj, dtSec, tdsCwfSamplesTm, iBlts, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH)
                 calibFunc = @(             dtSec, tdsCwfSamplesTm, iBlts, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH, iRecord) ...
                     (Cal.calibrate_TDS_CWF(dtSec, tdsCwfSamplesTm, iBlts, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH));
                 % NOTE: Ignoring iRecord.
             elseif C.isTdsRswf
-                % function asrSamplesVolt = calibrate_TDS_RSWF(obj, dtSec, tdsRswfSamplesTm, iBlts, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH)
                 calibFunc = @(              dtSec, tdsRswfSamplesTm, iBlts, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH, iRecord) ...
                     (Cal.calibrate_TDS_RSWF(dtSec, tdsRswfSamplesTm, iBlts, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH));
                 % NOTE: Ignoring iRecord.
@@ -411,10 +409,10 @@ classdef proc_sub
 
         function assert_PreDC(PreDc)
             EJ_library.utils.assert.struct2(PreDc, {...
-                'Epoch', 'ACQUISITION_TIME', 'bltsArrayTm', 'freqHz', 'nValidSamplesPerRecord', 'DIFF_GAIN', 'MUX_SET', 'QUALITY_FLAG', ...
+                'Epoch', 'ACQUISITION_TIME', 'samplesCaTm', 'freqHz', 'nValidSamplesPerRecord', 'DIFF_GAIN', 'MUX_SET', 'QUALITY_FLAG', ...
                 'QUALITY_BITMASK', 'DELTA_PLUS_MINUS', 'SYNCHRO_FLAG', 'hasSnapshotFormat'}, {});
             bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(PreDc);
-            %bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(PreDc.bltsArrayTm);
+            %bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(PreDc.samplesCaTm);
             
             assert(isa(PreDc.freqHz, 'double'))
         end
@@ -423,10 +421,10 @@ classdef proc_sub
         
         function assert_PostDC(PostDc)
             EJ_library.utils.assert.struct2(PostDc, {...
-                'Epoch', 'ACQUISITION_TIME', 'bltsArrayTm', 'freqHz', 'nValidSamplesPerRecord', 'DIFF_GAIN', 'MUX_SET', 'QUALITY_FLAG', ...
+                'Epoch', 'ACQUISITION_TIME', 'samplesCaTm', 'freqHz', 'nValidSamplesPerRecord', 'DIFF_GAIN', 'MUX_SET', 'QUALITY_FLAG', ...
                 'QUALITY_BITMASK', 'DELTA_PLUS_MINUS', 'SYNCHRO_FLAG', 'DemuxerOutput', 'IBIAS1', 'IBIAS2', 'IBIAS3', 'hasSnapshotFormat'}, {});
             bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(PostDc);
-            %bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(PostDc.bltsArrayTm);
+            %bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(PostDc.samplesCaTm);
         end
         
 
@@ -621,7 +619,7 @@ classdef proc_sub
                 PreDc.hasSnapshotFormat{1}, ...
                 PreDc.Epoch, ...
                 PreDc.nValidSamplesPerRecord, ...
-                PreDc.bltsArrayTm, ...
+                PreDc.samplesCaTm, ...
                 PreDc.MUX_SET, ...
                 PreDc.DIFF_GAIN, ...
                 PreDc.freqHz, ...
@@ -661,7 +659,7 @@ classdef proc_sub
         %
         %
         % NOTE: Can handle arrays of any size as long as the sizes are consistent.
-        function AsrSamplesVolt = simple_demultiplex(hasSnapshotFormat, Epoch, nValidSamplesPerRecord, bltsArrayTm, MUX_SET, DIFF_GAIN, freqHz, Cal, calibFunc)
+        function AsrSamplesAVolt = simple_demultiplex(hasSnapshotFormat, Epoch, nValidSamplesPerRecord, samplesCaTm, MUX_SET, DIFF_GAIN, freqHz, Cal, calibFunc)
         % PROPOSAL: Incorporate into processing function process_demuxing_calibration.
         % PROPOSAL: Assert same nbr of "records" for MUX_SET, DIFF_GAIN as for BIAS_x.
         %
@@ -697,19 +695,20 @@ classdef proc_sub
 
             % ASSERTIONS
             assert(isscalar(hasSnapshotFormat))
-            assert(iscell(bltsArrayTm))
-            EJ_library.utils.assert.vector(bltsArrayTm)
-            assert(numel(bltsArrayTm) == 5)
-            bicas.proc_utils.assert_cell_array_comps_have_same_N_rows(bltsArrayTm)
+            assert(iscell(samplesCaTm))
+            EJ_library.utils.assert.vector(samplesCaTm)
+            assert(numel(samplesCaTm) == 5)
+            bicas.proc_utils.assert_cell_array_comps_have_same_N_rows(samplesCaTm)
             EJ_library.utils.assert.all_equal([...
                 size(MUX_SET,             1), ...
                 size(DIFF_GAIN,           1), ...
-                size(bltsArrayTm{1}, 1)])
+                size(samplesCaTm{1}, 1)])
 
 
 
             % Create empty structure to which new array components can be added.
-            AsrSamplesVolt = struct(...
+            % NOTE: Unit is AVolt. Not including in the field name to keep them short.
+            AsrSamplesAVolt = struct(...
                 'dcV1',  [], 'dcV2',  [], 'dcV3',  [], ...
                 'dcV12', [], 'dcV23', [], 'dcV13', [], ...
                 'acV12', [], 'acV23', [], 'acV13', []);
@@ -727,10 +726,10 @@ classdef proc_sub
 
 
 
-            %===================================================================
-            % (1) Find continuous sequences of records with identical settings.
+            %======================================================================
+            % (1) Find continuous subsequences of records with identical settings.
             % (2) Process data separately for each such sequence.
-            %===================================================================
+            %======================================================================
             [iEdgeList]             = bicas.proc_utils.find_constant_sequences(MUX_SET, DIFF_GAIN, dlrUsing12, freqHz, iCalibL, iCalibH);
             [iFirstList, iLastList] = bicas.proc_utils.index_edges_2_first_last(iEdgeList);
             for iSubseq = 1:length(iFirstList)
@@ -739,73 +738,85 @@ classdef proc_sub
                 iLast  = iLastList (iSubseq);
                 
                 % Extract SCALAR settings to use for entire subsequence of records.
-                MUX_SET_constant    = MUX_SET  (iFirst);
-                DIFF_GAIN_constant  = DIFF_GAIN(iFirst);
-                dlrUsing12_constant = dlrUsing12(iFirst);
-                iCalibL_constant    = iCalibL(iFirst);
-                iCalibH_constant    = iCalibH(iFirst);
+                MUX_SET_ss    = MUX_SET  (iFirst);
+                DIFF_GAIN_ss  = DIFF_GAIN(iFirst);
+                dlrUsing12_ss = dlrUsing12(iFirst);
+                iCalibL_ss    = iCalibL(iFirst);
+                iCalibH_ss    = iCalibH(iFirst);
+                freqHz_ss     = freqHz(iFirst);
                 
                 bicas.logf('info', ['Records %5i-%5i : ', ...
                     'MUX_SET=%3i; DIFF_GAIN=%3i; dlrUsing12=%i; freqHz=%5g; iCalibL=%i; iCalibH=%i'], ...
                     iFirst, iLast, ...
-                    MUX_SET_constant, DIFF_GAIN_constant, dlrUsing12_constant, freqHz(iFirst), iCalibL_constant, iCalibH_constant)
+                    MUX_SET_ss, DIFF_GAIN_ss, dlrUsing12_ss, freqHz_ss, iCalibL_ss, iCalibH_ss)
 
                 %============================================
                 % FIND DEMUXER ROUTING, BUT DO NOT CALIBRATE
                 %============================================
                 % NOTE: Call demultiplexer with no samples. Only collecting information on which BLTS channels are
                 % connected to which ASRs.
-                [BltsSrcAsrArray, ~] = bicas.demultiplexer.main(MUX_SET_constant, dlrUsing12_constant, {[],[],[],[],[]});
+                [BltsSrcAsrArray, ~] = bicas.demultiplexer.main(MUX_SET_ss, dlrUsing12_ss, {[],[],[],[],[]});
 
 
 
                 % Extract subsequence of DATA records to "demux".
-                %DemuxerInputSubseq = bicas.proc_utils.select_row_range_from_struct_fields(bltsArrayTm, iFirst, iLast);
-                subseqBltsArrayTm            = bicas.proc_utils.select_row_range_from_cell_comps(bltsArrayTm, iFirst, iLast);
-                subseqNValidSamplesPerRecord = nValidSamplesPerRecord(iFirst:iLast);
+                %DemuxerInputSubseq = bicas.proc_utils.select_row_range_from_struct_fields(samplesCaTm, iFirst, iLast);
+                ssSamplesTm               = bicas.proc_utils.select_row_range_from_cell_comps(samplesCaTm, iFirst, iLast);
+                ssNValidSamplesPerRecord = nValidSamplesPerRecord(iFirst:iLast);
                 if hasSnapshotFormat
-                    subseqDtSec = 1 ./ freqHz(iFirst:iLast);
+                    % NOTE: Vector of constant numbers (one per snapshot).
+                    ssDtSec = 1 ./ freqHz(iFirst:iLast);
                 else
-                    subseqDtSec = double(Epoch(iLast) - Epoch(iFirst)) / (iLast-iFirst) * 1e-9;   % TEMPORARY
+                    % NOTE: Scalar (one for entire sequence).
+                    ssDtSec = double(Epoch(iLast) - Epoch(iFirst)) / (iLast-iFirst) * 1e-9;   % TEMPORARY
                 end
 
                 %===========
                 % CALIBRATE
                 %===========
-                subseqBltsArrayVolt = cell(5,1);
+                ssSamplesAVolt = cell(5,1);
                 for iBlts = 1:5
 
                     if strcmp(BltsSrcAsrArray(iBlts).category, 'Unknown')
-                        subseqBltsArrayVolt{iBlts} = NaN * zeros(size(subseqBltsArrayTm{iBlts}));
+                        % Calibrated data is NaN.
+                        ssSamplesAVolt{iBlts} = NaN * zeros(size(ssSamplesTm{iBlts}));
+
+                    elseif strcmp(BltsSrcAsrArray(iBlts).category, 'GND') || strcmp(BltsSrcAsrArray(iBlts).category, '2.5V Ref')
+                        % No calibration.
+                        ssSamplesAVolt{iBlts} = ssSamplesTm{iBlts};
+
                     else
-                        
                         if ~disableCalibration
-                            biasHighGain = DIFF_GAIN_constant;    % NOTE: Not yet sure that this is correct.
+                            % CASE: NOMINAL CALIBRATION
+                            biasHighGain = DIFF_GAIN_ss;    % NOTE: Not yet sure that this is correct.
 
                             if hasSnapshotFormat
-                                subseqBltsTmCa = bicas.proc_utils.convert_matrix_to_cell_array_of_vectors(...
-                                    double(subseqBltsArrayTm{iBlts}), subseqNValidSamplesPerRecord);
+                                ssSamplesCaTm = bicas.proc_utils.convert_matrix_to_cell_array_of_vectors(...
+                                    double(ssSamplesTm{iBlts}), ssNValidSamplesPerRecord);
                             else
                                 assert(all(nValidSamplesPerRecord == 1))
                                 
-                                subseqBltsTmCa = {double(subseqBltsArrayTm{iBlts})};
+                                ssSamplesCaTm = {double(ssSamplesTm{iBlts})};
                             end
 
-                            % FUNCTION HANDLE INTERFACE:
+                            % CALIBRATE
+                            %
+                            % Function handle interface:
                             %   calibFunc = @(dtSec, lfrSamplesTm, iBlts, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH, iRecord)
-                            subseqBltsVoltCa = calibFunc(...
-                                subseqDtSec, subseqBltsTmCa, iBlts, BltsSrcAsrArray(iBlts), biasHighGain, ...
-                                iCalibL_constant, iCalibH_constant, iFirst);
+                            ssSamplesCaAVolt = calibFunc(...
+                                ssDtSec, ssSamplesCaTm, iBlts, BltsSrcAsrArray(iBlts), biasHighGain, ...
+                                iCalibL_ss, iCalibH_ss, iFirst);
                             
                             if hasSnapshotFormat
-                                [subseqBltsArrayVolt{iBlts}, ~] = bicas.proc_utils.convert_cell_array_of_vectors_to_matrix(...
-                                    subseqBltsVoltCa, size(subseqBltsArrayTm{iBlts}, 2));
+                                [ssSamplesAVolt{iBlts}, ~] = bicas.proc_utils.convert_cell_array_of_vectors_to_matrix(...
+                                    ssSamplesCaAVolt, size(ssSamplesTm{iBlts}, 2));
                             else
-                                subseqBltsArrayVolt{iBlts} = subseqBltsVoltCa{1};   % NOTE: Must be column array.
+                                ssSamplesAVolt{iBlts} = ssSamplesCaAVolt{1};   % NOTE: Must be column array.
                             end
                             
                         else
-                            subseqBltsArrayVolt{iBlts} = double(subseqBltsArrayTm{iBlts});
+                            % CASE: CALIBRATION DISABLED.
+                            ssSamplesAVolt{iBlts} = double(ssSamplesTm{iBlts});
                         end
                     end
                 end
@@ -813,11 +824,11 @@ classdef proc_sub
                 %====================
                 % CALL DEMULTIPLEXER
                 %====================
-                [~, SubseqAsrSamplesVolt] = bicas.demultiplexer.main(MUX_SET_constant, dlrUsing12_constant, subseqBltsArrayVolt);
+                [~, SsAsrSamplesVolt] = bicas.demultiplexer.main(MUX_SET_ss, dlrUsing12_ss, ssSamplesAVolt);
                 
                 % Add demuxed sequence to the to-be complete set of records.
                 %DemuxerOutput = bicas.proc_utils.add_rows_to_struct_fields(DemuxerOutput, DemuxerOutputSubseq);
-                AsrSamplesVolt = bicas.proc_utils.add_rows_to_struct_fields(AsrSamplesVolt, SubseqAsrSamplesVolt);
+                AsrSamplesAVolt = bicas.proc_utils.add_rows_to_struct_fields(AsrSamplesAVolt, SsAsrSamplesVolt);
                 
             end
             

@@ -24,18 +24,26 @@ classdef calib
 %
 % DEFINITIONS, NAMING CONVENTIONS
 % ===============================
-% Deg = Degrees (angle). 360 degrees=2*pi radians.
-% CPV = counts/volt
-% VPC = volt/count
-% APC = ampere/count
-% RPS = radians/second
-% (count = TM/TC unit)
+% TM     = Telemetry units (in LFR/TDS ADC), or telecommand (TC) units. Using this instead of the term "count".
+% IVolt  = Interface Volt = Calibrated to volt at the interface between BIAS and LFR/TDS.
+% AVolt  = Antenna Volt   = Calibrated to volt at the antennas, i.e. the final calibrated (measured) value, including
+%          for reconstructed signals (e.g. diffs calculated from singles). May also refer to offsets and values without
+%          offsets.
+% Ampere = (Always) ampere bias current
+% TPIV   = TM/interface volt
+% IVPT   = Interface volt/TM
+% APT    = Ampere/TM
+% AVPIV  = Antenna volt per interface volt
+% Deg    = Degrees (angle). 360 degrees=2*pi radians.
+% RPS    = Radians/second
+% Sec    = Seconds
+% --
 % LSF = LFR Sampling Frequency (F0...F3)
-%       NOTE: When used an array index, 1=F0, ..., 4=F3.
+%       NOTE: When used as an array index, 1=F0, ..., 4=F3.
 % TF  = Transfer function (Z=Z(omega))
 % FTF = Forward Transfer Function = TF that describes physical input-to-output (not the reverse)
 % ITF = Inverse Transfer Function = TF that describes physical output-to-input (not the reverse)
-% ASR Volt = Calibrated to volt as for ASR, i.e. the final calibrated (measured) value.
+%
 %
 % 
 % BLTS = BIAS-LFR/TDS Signals
@@ -44,8 +52,8 @@ classdef calib
 % including the BIAS transfer functions. Like BIAS_i, i=1..5, but includes various stages of calibration/non-calibration,
 % including in particular
 %   - TM units (inside LFR/TDS),
-%   - BLTS interface volt (at the physical boundary BIAS-LFR/TDS (BIAS_i)), and
-%   - calibrated values inside BIAS but without demuxer addition and subtraction inside BIAS (i.e. including
+%   - Interface volt (at the physical boundary BIAS-LFR/TDS (BIAS_i)), and
+%   - Calibrated values inside BIAS but without demuxer addition and subtraction inside BIAS (i.e. including
 %     using BIAS offsets, BIAS transfer functions; volt).
 % NOTE: Definition is partly created to avoid using term "BIAS_i" since it is easily confused with other things (the
 % subsystem BIAS, bias currents), partly to include various stages of calibration.
@@ -75,11 +83,7 @@ classdef calib
 % TODO-NEED-INFO: Where does the parasitic capacitance TF fit into the calibration formulas?
 % TODO-NEED-INFO: Parasitic capacitance values?
 %
-% PROPOSAL: Need multiple functions
-%   Select a TDS/LFR TF
-%   Combine TFs: TDS/LFR, BIAS, possibly capacitance-TF.
-%   Apply TF (inverse)
-%   Add TF for (arbitrary) capacitance. (Needed for ~debugging/testing.)
+% PROPOSAL: Add TF for (arbitrary) capacitance. (Needed for ~debugging/testing.)
 %
 % PROPOSAL: Create general-purpose read_CDF function which handles indices correctly (1 vs many records).
 % PROPOSAL: Function for permuting indices to handle dataobj's handling of 1 record-case.
@@ -87,9 +91,6 @@ classdef calib
 % PROPOSAL: Derive the alpha, beta and gamma_lg/hg values from the BIAS transfer functions and log them.
 %   NOTE: gamma values apply to AC (highpass filter) and their comparable amplitude is not at 0 Hz but at some other frequency.
 %   NOTE: TFs may change over time.
-%
-% PROPOSAL: Calibration functions that do not work on a single sequence, but a list of sequences (with the same
-% settings; not necessarily the same calibration time).
 %
 % TODO-DECISION: How distribute the "calibration formulas/algorithms between
 %   (1) calibrate_* functions, 
@@ -114,64 +115,38 @@ classdef calib
 %   PROPOSAL: General philosophy should be that calibrate_* chooses as much as possible, and thus chooses different
 %             functions to call.
 %
-% PROPOSAL: Simplify/clean-up calibrate_*.
-%   PROPOSAL: Function for iCalibTimeL/H.
-%   PROPOSAL: Assertions for same number of Epoch as samples.
 % PROPOSAL: SETTINGS for scalar calibrations.
 %
 % ~DOCUMENTATION BUG?!!:
-%   In practice, BLTS refers to not only signals at the BIAS-LFT/TDS boundary, but also the BLTS number for
-%   calibrated signals (at the antenna).
-%       PROPOSAL: Change definition?
-%       PROPOSAL: Change terminology.
-%   In practice, ASR refers to both samples at antennas, and the type of signal.
-%   PROPOSAL: Define
-%       BLTS = BIAS-LFR/TDS Signal, and always refer to signal/samples. Variable with samples: BltsSamples
-%       BLTS ID (BltsId) = Number that identifies one BLTS among other BLTS (BltsNbr, iBlts)
-%   PROPOSAL: Abolish ASR. Define
-%       AS ID (AsId) = Antenna signal ID (DC single/diff, AC diff; antennas)
-%       AS (As)      = Antenna Signal
-%       CON: AS to short?
-%           PROPOSAL: A=Antenna --> RA=RPW Antenna
-%               CON: RAS bad acronym.
-%       NOTE: BLTS_src_dest is a superset of AS ID.
+%   PROPOSAL: Abolish ASR. Define acronyms for
+%       (1) Antenna signals (AC, DC, singles, diffs)
+%       (2) All possible sources of signals of which (1) is a subset (a diff counts as a source).
+%           PROPOSAL: Be able to use for both physical signal sources, and for where to place in dataset.
+%               PRO: Can use acronym for both, and for class bicas.BLTS_src_dest.
+%           PROPOSAL: PSS  = Physical Signal Source
+%           PROPOSAL: PS   = Physical Signal
+%           PROPOSAL: PSSD = Physical Signal Source or Destination
+%           PROPOSAL: PSSR = Physical Signal Source or Representation
+%           PROPOSAL: PSSR = Physical Signal Source or Dataset Representation
 %
 % PROPOSAL: Other name for bicas.BLTS_src_dest that does not reference BLTS.
 %   PRO: Reference to BLTS is confusing.
-%   PROPOSAL: Define acronym for all physical signal sources which is a superset of ASR/AS ID.
-%       PROPOSAL: Be able to use for both physical signal sources, and for where to place in dataset.
-%           PRO: Can use acronym for both, and for class bicas.BLTS_src_dest.
-%       PROPOSAL: PSS  = Physical Signal Source
-%       PROPOSAL: PS   = Physical Signal
-%       PROPOSAL: PSSD = Physical Signal Source or Destination
-%       PROPOSAL: PSSR = Physical Signal Source or Representation
-%       PROPOSAL: PSSR = Physical Signal Source or Dataset Representation
+%   PROPOSAL: Define acronym for all physical signal sources which is a superset of ASR.
 %   PROPOSAL: Have different classes and acronyms for (1) physical signal sources and (2) dataset representation
 %       ("BLTS src" and "BLTS dest") where (2) is in practice a subset of (1).
-%   PROPOSAL: Use terms based on BLTS as formal terms (both samples and ID)
-%       PROPOSAL: BLTS Source/Physical Signal Source
-%           BLTSS, BltsSrc
-%           BLTS-PSS, BltsPss
-%       PROPOSAL: and BLTS Destination/Store/Dataset Variable
-%           BLTSD, BltsDest
-%           BLTSS, Bltss
-%           BLTSDV, BltsDv
-%
-% NOTE: Should separately denote:
-%   (1) The calibration/units of samples,
-%   (2) The "identification" of signals (antenna or BLTS)
-%   Ex: A variable may contain
-%       (a) antenna-calibrated samples, but labelled as BLTS ID (before code demuxes), or
-%       (b) non-calibrated/TM samples but labelled by antennas (disabled calibration for debugging).
 
 
 
     properties(Access=private)
         
         Bias
-        LfrItfTable
-        tdsCwfFactorsVpc
-        TdsRswfItfList
+        
+        LfrItfIvptTable
+        tdsCwfFactorsIvpt
+        TdsRswfItfIvptList
+        
+%         % BIAS scalar (simplified) calibration, not in the RCTs. For debugging/testing purposes.
+%         BiasScalar
         
         SETTINGS
         
@@ -195,16 +170,21 @@ classdef calib
             % find_RCT.
             obj.SETTINGS = SETTINGS;
             
-            obj.Bias             = obj.read_log_RCT(calibrationDir, pipelineId, 'BIAS');
-            obj.LfrItfTable      = obj.read_log_RCT(calibrationDir, pipelineId, 'LFR');
-            obj.tdsCwfFactorsVpc = obj.read_log_RCT(calibrationDir, pipelineId, 'TDS-CWF');
-            obj.TdsRswfItfList   = obj.read_log_RCT(calibrationDir, pipelineId, 'TDS-RSWF');
+            obj.Bias               = obj.read_log_RCT(calibrationDir, pipelineId, 'BIAS');
+            obj.LfrItfIvptTable    = obj.read_log_RCT(calibrationDir, pipelineId, 'LFR');
+            obj.tdsCwfFactorsIvpt  = obj.read_log_RCT(calibrationDir, pipelineId, 'TDS-CWF');
+            obj.TdsRswfItfIvptList = obj.read_log_RCT(calibrationDir, pipelineId, 'TDS-RSWF');
+
+%             obj.BiasScalar.alpha          = SETTINGS.get_fv('PROCESSING.CALIBRATION.BIAS.SCALAR.ALPHA');
+%             obj.BiasScalar.beta           = SETTINGS.get_fv('PROCESSING.CALIBRATION.BIAS.SCALAR.BETA');
+%             obj.BiasScalar.gamma.highGain = SETTINGS.get_fv('PROCESSING.CALIBRATION.BIAS.SCALAR.GAMMA.HIGH_GAIN');
+%             obj.BiasScalar.gamma.lowGain  = SETTINGS.get_fv('PROCESSING.CALIBRATION.BIAS.SCALAR.GAMMA.LOW_GAIN');
             
             obj.enableDetrending = obj.SETTINGS.get_fv('PROCESSING.CALIBRATION.DETRENDING_ENABLED');
         end
-
-
-
+        
+        
+        
         % Convert/calibrate TC bias current: TM units --> physical units.
         %
         % NOTE: This is the normal way of obtaining bias current in physical units (as opposed to HK bias current).
@@ -219,10 +199,10 @@ classdef calib
             % Obtain calibration constants
             %==============================
             offsetAmpere = obj.Bias.Current.offsetsAmpere(iCalibTimeL, iAntenna);
-            gainApc      = obj.Bias.Current.gainsApc(     iCalibTimeL, iAntenna);
+            gainApt      = obj.Bias.Current.gainsApt(     iCalibTimeL, iAntenna);
 
             % CALIBRATE
-            biasCurrentAmpere = offsetAmpere + gainApc .* biasCurrentTm;    % LINEAR FUNCTION
+            biasCurrentAmpere = offsetAmpere + gainApt .* biasCurrentTm;    % LINEAR FUNCTION
         end
 
 
@@ -252,7 +232,7 @@ classdef calib
             assert(isa(biasCurrentTm, 'uint16'))
             
             offsetTm = obj.SETTINGS.get_fv('PROCESSING.CALIBRATION.HK_BIAS_CURRENT.OFFSET_TM');
-            gainApc  = obj.SETTINGS.get_fv('PROCESSING.CALIBRATION.HK_BIAS_CURRENT.GAIN_APC');
+            gainApt  = obj.SETTINGS.get_fv('PROCESSING.CALIBRATION.HK_BIAS_CURRENT.GAIN_APT');
             
             %===================================================================================================
             % CALIBRATE
@@ -262,18 +242,61 @@ classdef calib
             % ==> Need to flip bit representing sign to have one interval 0...0xFFFF with monotonic function
             %     TM-to-calibrated values.
             %===================================================================================================
-            biasCurrentTm   = bitxor(biasCurrentTm, hex2dec('8000'));                       % FLIP BIT
-            biasCurrentAmpere = gainApc(iAntenna) * (biasCurrentTm + offsetTm(iAntenna));     % LINEAR FUNCTION
+            biasCurrentTm     = bitxor(biasCurrentTm, hex2dec('8000'));                       % FLIP BIT
+            biasCurrentAmpere = gainApt(iAntenna) * (biasCurrentTm + offsetTm(iAntenna));     % LINEAR FUNCTION
         end
+
+
+
+        % NOT YET USED
+        %
+        % Simplified scalar calibration within BIAS unit.
+        %
+        % NOTE: Does not work with cell arrays.
+%         function samplesAVolt = calibrate_BIAS_scalar(obj, samplesIVolt, BltsSrc, biasHighGain)
+%             
+%             % ASSERTIONS
+%             assert(isnumeric(samplesIVolt))
+%             EJ_library.utils.assert.vector(samplesIVolt)
+%             assert(isa(BltsSrc, 'bicas.BLTS_src_dest'))
+%             assert(isscalar(biasHighGain) && isnumeric(biasHighGain))
+%             
+%             
+%             switch(BltsSrc.category)
+%                 case 'DC single'
+%                     k = 1 / obj.BiasScalar.alpha;
+% 
+%                 case 'DC diff'
+%                     k = 1 / obj.BiasScalar.beta;
+% 
+%                 case 'AC diff'
+%                     if     biasHighGain == 1;   k = 1 / obj.BiasScalar.beta.highGain;
+%                     elseif biasHighGain == 0;   k = 1 / obj.BiasScalar.beta.lowGain;
+%                     elseif isnan(biasHighGain); k = NaN;   % NOTE: Set such that data becomes NaN.
+%                     else
+%                         error('BICAS:calib:Assertion:IllegalArgument', 'Illegal argument biasHighGain=%g.', biasHighGain)
+%                     end
+% 
+%                 otherwise
+%                     error('BICAS:calib:Assertion:IllegalArgument', ...
+%                         'Illegal argument BltsSrc.category=%s. Can not obtain calibration data for this type of signal.', ...
+%                         BltsSrc.category)
+%             end
+%             
+%             % CALIBRATE DATA
+%             samplesAVolt = k * samplesIVolt;
+%         end
 
 
 
         % ARGUMENTS
         % =========
-        % lfrSamplesTm   : 1D cell array of numeric 1D arrays.
-        % asrSamplesVolt : 1D cell array of numeric 1D arrays.
+        % samplesTm    : 1D cell array of numeric 1D arrays.
+        % samplesAVolt : 1D cell array of numeric 1D arrays.
+        % iBlts        : 1..5.
+        % BltsSrc      : bicas.BLTS_src_dest describing where the signal comes from.
         %
-        function asrSamplesVolt = calibrate_LFR(obj, dtSec, samplesCaTm, iBlts, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH, iLsf)
+        function samplesCaAVolt = calibrate_LFR(obj, dtSec, samplesCaTm, iBlts, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH, iLsf)
             
             % ASSERTIONS
             assert(iscell(samplesCaTm))
@@ -282,33 +305,34 @@ classdef calib
             assert(numel(samplesCaTm) == numel(dtSec))
             assert((1 <= iBlts) && (iBlts <= 5))
             assert(isa(BltsSrc, 'bicas.BLTS_src_dest'))
-            assert((1 <= iLsf)     && (iLsf     <= 4), 'Illegal argument iLsf=%g.', iLsf)
+            assert((1 <= iLsf)  && (iLsf  <= 4), 'Illegal argument iLsf=%g.', iLsf)
 
             %==============================
             % Obtain calibration constants
             %==============================
             BiasCalibData = obj.get_BIAS_calib_data(BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH);
-            lfrItf        = obj.get_LFR_ITF(iBlts, iLsf);
+            lfrItfIvpt    = obj.get_LFR_ITF(iBlts, iLsf);
 
             %=====================================
             % Create combined TF for LFR and BIAS
             %=====================================
             itf = @(omega) (...
-                lfrItf(omega) ...
+                lfrItfIvpt(omega) ...
                 .* ...
                 BiasCalibData.itf(omega));
 
             %=======================================
             % CALIBRATE: LFR TM --> TM --> ASR volt
             %=======================================
-            asrSamplesVolt = cell(size(samplesCaTm));
+            samplesCaAVolt = cell(size(samplesCaTm));
             for i = 1:numel(samplesCaTm)
                 
                 % APPLY TRANSFER FUNCTION
-                tempAsrSamplesVolt = bicas.utils.apply_transfer_function(dtSec(i), samplesCaTm{i}(:), itf, ...
+                tempSamplesAVolt = bicas.utils.apply_transfer_function(...
+                    dtSec(i), samplesCaTm{i}(:), itf, ...
                     'enableDetrending', obj.enableDetrending);
 
-                asrSamplesVolt{i} = tempAsrSamplesVolt + BiasCalibData.offsetVolt;
+                samplesCaAVolt{i} = tempSamplesAVolt + BiasCalibData.offsetAVolt;
             end
         end
 
@@ -316,14 +340,8 @@ classdef calib
 
         % ARGUMENTS
         % =========
-        % tdsCwfSamplesTm : Samples.
-        % iBlts           : 1..5.
-        %                   NOTE: TDS does not supply any signal for BLTS 4-5. Therefore the calibration procedure is
-        %                   undefined and algorithm should return only NaN. BICAS should supply NaN samples for that
-        %                   case anyway though.
-        % BltsSrc         : bicas.BLTS_src_dest describing where the signal comes from.
-        %
-        function asrSamplesVolt = calibrate_TDS_CWF(obj, dtSec, samplesCaTm, iBlts, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH)
+        % See calibrate_LFR.
+        function samplesCaAVolt = calibrate_TDS_CWF(obj, dtSec, samplesCaTm, iBlts, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH)
 
             % ASSERTIONS
             EJ_library.utils.assert.vector(dtSec)
@@ -332,7 +350,7 @@ classdef calib
             assert((1 <= iBlts) && (iBlts <= 5))
             assert(isa(BltsSrc, 'bicas.BLTS_src_dest'))
             
-            asrSamplesVolt = cell(size(samplesCaTm));   % Initialize empty output variable.
+            samplesCaAVolt = cell(size(samplesCaTm));   % Initialize empty output variable.
                 
             if ismember(iBlts, [1,2,3])
                 
@@ -347,24 +365,26 @@ classdef calib
                     %===============================================
                     % CALIBRATE: TDS TM --> TDS/BIAS interface volt
                     %===============================================
-                    tempSamplesInterfVolt = obj.tdsCwfFactorsVpc(iBlts) * samplesCaTm{i};    % MULTIPLICATION
+                    tempSamplesIVolt = obj.tdsCwfFactorsIvpt(iBlts) * samplesCaTm{i};    % MULTIPLICATION
                     
                     %=====================================================
                     % CALIBRATE: TDS/BIAS interface volt --> antenna volt
                     %=====================================================
                     % APPLY TRANSFER FUNCTION
-                    tempAsrSamplesVolt = bicas.utils.apply_transfer_function(...
+                    tempSamplesAVolt = bicas.utils.apply_transfer_function(...
                         dtSec(i), ...
-                        tempSamplesInterfVolt(:), ...
+                        tempSamplesIVolt(:), ...
                         BiasCalibData.itf, ...
                         'enableDetrending', obj.enableDetrending);
-                    asrSamplesVolt{i} = tempAsrSamplesVolt + BiasCalibData.offsetVolt;
+                    samplesCaAVolt{i} = tempSamplesAVolt + BiasCalibData.offsetAVolt;
                 end
 
             else
                 
                 for i = 1:numel(samplesCaTm)
-                    asrSamplesVolt{i} = NaN * samplesCaTm{i};
+                    % CASE: BLTS 4-5 which TDS does not support.
+                    % Always return NaN.
+                    samplesCaAVolt{i} = NaN * samplesCaTm{i};
                 end
             end
 
@@ -374,14 +394,8 @@ classdef calib
 
         % ARGUMENTS
         % =========
-        % tdsCwfSamplesTm : Samples.
-        % iBlts           : 1..5.
-        %                   NOTE: TDS does not supply any signal for BLTS 4-5. Therefore the calibration procedure is
-        %                   undefined and algorithm should return only NaN. BICAS should supply NaN samples for that
-        %                   case anyway though.
-        % BltsSrc         : bicas.BLTS_src_dest describing where the signal comes from.
-        %
-        function asrSamplesVolt = calibrate_TDS_RSWF(obj, dtSec, samplesCaTm, iBlts, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH)
+        % See calibrate_LFR.
+        function samplesCaAVolt = calibrate_TDS_RSWF(obj, dtSec, samplesCaTm, iBlts, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH)
             
             % ASSERTIONS
             EJ_library.utils.assert.vector(dtSec)
@@ -396,27 +410,29 @@ classdef calib
             % NOTE: Low/high gain is irrelevant for TDS. Argument value arbitrary.
             BiasCalibData = obj.get_BIAS_calib_data(BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH);
             
-            asrSamplesVolt = cell(size(samplesCaTm));   % Initialize empty output variable.
+            samplesCaAVolt = cell(size(samplesCaTm));   % Initialize empty output variable.
             if ismember(iBlts, [1,2,3])
                 itf = @(omega) (...
-                    obj.TdsRswfItfList{iBlts}.eval_linear(omega) .* ...
+                    obj.TdsRswfItfIvptList{iBlts}.eval_linear(omega) .* ...
                     BiasCalibData.itf(omega));
                 
                 %====================================
                 % CALIBRATE: TDS TM --> antenna volt
                 %====================================
                 for i = 1:numel(samplesCaTm)
-                    tempAsrSamplesVolt = bicas.utils.apply_transfer_function(...
+                    tempSamplesAVolt = bicas.utils.apply_transfer_function(...
                         dtSec(i), ...
                         samplesCaTm{i}(:), ...
                         itf, ...
                         'enableDetrending', obj.enableDetrending);
                     
-                    asrSamplesVolt{i} = tempAsrSamplesVolt + BiasCalibData.offsetVolt;
+                    samplesCaAVolt{i} = tempSamplesAVolt + BiasCalibData.offsetAVolt;
                 end
             else
                 for i = 1:numel(samplesCaTm)
-                    asrSamplesVolt{i} = NaN * samplesCaTm{i};
+                    % CASE: BLTS 4-5 which TDS does not support.
+                    % Always return NaN.
+                    samplesCaAVolt{i} = NaN * samplesCaTm{i};
                 end
             end
             
@@ -499,23 +515,22 @@ classdef calib
             
             switch(BltsSrc.category)
                 case 'DC single'
-                    assert(isscalar(BltsSrc.antennas))
-                    BiasItfList = obj.Bias.ItfSet.DcSingle;
-                    offsetVolt = obj.Bias.dcSingleOffsetsVolt(iCalibTimeH, BltsSrc.antennas);
+                    BiasItfList = obj.Bias.ItfSet.DcSingleAvpiv;
+                    offsetAVolt = obj.Bias.dcSingleOffsetsAVolt(iCalibTimeH, BltsSrc.antennas);
 
                 case 'DC diff'
-                    BiasItfList = obj.Bias.ItfSet.DcDiff;
-                    if     isequal(BltsSrc.antennas(:)', [1,2]);   offsetVolt = obj.Bias.DcDiffOffsets.E12Volt(iCalibTimeH);
-                    elseif isequal(BltsSrc.antennas(:)', [2,3]);   offsetVolt = obj.Bias.DcDiffOffsets.E23Volt(iCalibTimeH);
-                    elseif isequal(BltsSrc.antennas(:)', [1,3]);   offsetVolt = obj.Bias.DcDiffOffsets.E13Volt(iCalibTimeH);
+                    BiasItfList = obj.Bias.ItfSet.DcDiffAvpiv;
+                    if     isequal(BltsSrc.antennas(:)', [1,2]);   offsetAVolt = obj.Bias.DcDiffOffsets.E12AVolt(iCalibTimeH);
+                    elseif isequal(BltsSrc.antennas(:)', [2,3]);   offsetAVolt = obj.Bias.DcDiffOffsets.E23AVolt(iCalibTimeH);
+                    elseif isequal(BltsSrc.antennas(:)', [1,3]);   offsetAVolt = obj.Bias.DcDiffOffsets.E13AVolt(iCalibTimeH);
                     else
                         error('BICAS:calib:Assertion:IllegalArgument', 'Illegal BltsSrc.');
                     end
 
                 case 'AC diff'
-                    if     biasHighGain == 1;   BiasItfList = obj.Bias.ItfSet.AcHighGain;   offsetVolt = 0;
-                    elseif biasHighGain == 0;   BiasItfList = obj.Bias.ItfSet.AcLowGain;    offsetVolt = 0;
-                    elseif isnan(biasHighGain); BiasItf     = @(omega) (omega*NaN);         offsetVolt = NaN;   % NOTE: Set TF such that data becomes NaN.
+                    if     biasHighGain == 1;   BiasItfList = obj.Bias.ItfSet.AcHighGainAvpiv;   offsetAVolt = 0;
+                    elseif biasHighGain == 0;   BiasItfList = obj.Bias.ItfSet.AcLowGainAvpiv;    offsetAVolt = 0;
+                    elseif isnan(biasHighGain); BiasItf     = @(omega) (omega*NaN);         offsetAVolt = NaN;   % NOTE: Set TF such that data becomes NaN.
                     else
                         error('BICAS:calib:Assertion:IllegalArgument', 'Illegal argument biasHighGain=%g.', biasHighGain)
                     end
@@ -532,8 +547,8 @@ classdef calib
                 BiasItf = @(omegaRps) (BiasItfList{iCalibTimeL}.eval(omegaRps));
             end
             
-            BiasCalibData.itf        = BiasItf;
-            BiasCalibData.offsetVolt = offsetVolt;
+            BiasCalibData.itf         = BiasItf;
+            BiasCalibData.offsetAVolt = offsetAVolt;
         end
         
         
@@ -542,15 +557,15 @@ classdef calib
         % and return a TF that only returns NaN instead. BICAS may still iterate over that combination though when
         % calibrating.
         % 
-        function lfrItf = get_LFR_ITF(obj, iBlts, iLsf)
+        function lfrItfIvpt = get_LFR_ITF(obj, iBlts, iLsf)
             assert(ismember(iBlts,    [1:5]))
             assert(ismember(iLsf, [1:4]))
             
             if (iLsf == 4) && ismember(iBlts, [4,5])
-                lfrItf = @(omegaRps) (omegaRps * NaN);
+                lfrItfIvpt = @(omegaRps) (omegaRps * NaN);
             else                
-                tempLfrItf = obj.LfrItfTable{iLsf}{iBlts};
-                lfrItf = @(omegaRps) (tempLfrItf.eval_linear(omegaRps));
+                tempLfrItfIvpt = obj.LfrItfIvptTable{iLsf}{iBlts};
+                lfrItfIvpt = @(omegaRps) (tempLfrItfIvpt.eval_linear(omegaRps));
             end
         end
 

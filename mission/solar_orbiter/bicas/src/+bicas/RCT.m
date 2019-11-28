@@ -145,9 +145,9 @@ classdef RCT
                 epochL                   = bicas.RCT.norm_do_zv(Do.data.Epoch_L);
                 epochH                   = bicas.RCT.norm_do_zv(Do.data.Epoch_H);
                 biasCurrentOffsetsAmpere = bicas.RCT.norm_do_zv(Do.data.BIAS_CURRENT_OFFSET);      % DEPEND_0 = Epoch_L
-                biasCurrentGainsApc      = bicas.RCT.norm_do_zv(Do.data.BIAS_CURRENT_GAIN);        % DEPEND_0 = Epoch_L
-                dcSingleOffsetsVolt      = bicas.RCT.norm_do_zv(Do.data.V_OFFSET);                 % DEPEND_0 = Epoch_H
-                dcDiffOffsetsVolt        = bicas.RCT.norm_do_zv(Do.data.E_OFFSET);                 % DEPEND_0 = Epoch_H
+                biasCurrentGainsApt      = bicas.RCT.norm_do_zv(Do.data.BIAS_CURRENT_GAIN);        % DEPEND_0 = Epoch_L
+                dcSingleOffsetsAVolt     = bicas.RCT.norm_do_zv(Do.data.V_OFFSET);                 % DEPEND_0 = Epoch_H
+                dcDiffOffsetsAVolt       = bicas.RCT.norm_do_zv(Do.data.E_OFFSET);                 % DEPEND_0 = Epoch_H
                 tfCoeffs                 = bicas.RCT.norm_do_zv(Do.data.TRANSFER_FUNCTION_COEFFS); % DEPEND_0 = Epoch_L
 
                 nEpochL = size(epochL, 1);
@@ -177,37 +177,37 @@ classdef RCT
                 %================================
                 Bias.epochL = epochL;
                 Bias.epochH = epochH;
-                
+
                 Bias.Current.offsetsAmpere   = biasCurrentOffsetsAmpere;
-                Bias.Current.gainsApc        = biasCurrentGainsApc;
-                Bias.dcSingleOffsetsVolt     = dcSingleOffsetsVolt;
-                Bias.DcDiffOffsets.E12Volt   = dcDiffOffsetsVolt(:, 1);
-                Bias.DcDiffOffsets.E13Volt   = dcDiffOffsetsVolt(:, 2);
-                Bias.DcDiffOffsets.E23Volt   = dcDiffOffsetsVolt(:, 3);
-                
+                Bias.Current.gainsApt        = biasCurrentGainsApt;
+                Bias.dcSingleOffsetsAVolt    = dcSingleOffsetsAVolt;
+                Bias.DcDiffOffsets.E12AVolt  = dcDiffOffsetsAVolt(:, 1);
+                Bias.DcDiffOffsets.E13AVolt  = dcDiffOffsetsAVolt(:, 2);
+                Bias.DcDiffOffsets.E23AVolt  = dcDiffOffsetsAVolt(:, 3);
+
                 % NOTE: Using name "ItfSet" only to avoid "Itfs" (plural). (List, Table would be wrong? Use "ItfTable"?)
-                Bias.ItfSet.DcSingle = bicas.RCT.create_ITF_sequence(...
+                Bias.ItfSet.DcSingleAvpiv = bicas.RCT.create_ITF_sequence(...
                     tfCoeffs(:, :, NUMERATOR,   DC_SINGLE), ...
                     tfCoeffs(:, :, DENOMINATOR, DC_SINGLE));
                 
-                Bias.ItfSet.DcDiff = bicas.RCT.create_ITF_sequence(...
+                Bias.ItfSet.DcDiffAvpiv = bicas.RCT.create_ITF_sequence(...
                     tfCoeffs(:, :, NUMERATOR,   DC_DIFF), ...
                     tfCoeffs(:, :, DENOMINATOR, DC_DIFF));
                 
-                Bias.ItfSet.AcLowGain = bicas.RCT.create_ITF_sequence(...
+                Bias.ItfSet.AcLowGainAvpiv = bicas.RCT.create_ITF_sequence(...
                     tfCoeffs(:, :, NUMERATOR,   AC_LG), ...
                     tfCoeffs(:, :, DENOMINATOR, AC_LG));
                 
-                Bias.ItfSet.AcHighGain = bicas.RCT.create_ITF_sequence(...
+                Bias.ItfSet.AcHighGainAvpiv = bicas.RCT.create_ITF_sequence(...
                     tfCoeffs(:, :, NUMERATOR,   AC_HG), ...
                     tfCoeffs(:, :, DENOMINATOR, AC_HG));
                 
                 % ASSERTION
                 EJ_library.utils.assert.all_equal(...
-                   [numel(Bias.ItfSet.DcSingle), ...
-                    numel(Bias.ItfSet.DcDiff), ...
-                    numel(Bias.ItfSet.AcLowGain), ...
-                    numel(Bias.ItfSet.AcHighGain)])
+                   [numel(Bias.ItfSet.DcSingleAvpiv), ...
+                    numel(Bias.ItfSet.DcDiffAvpiv), ...
+                    numel(Bias.ItfSet.AcLowGainAvpiv), ...
+                    numel(Bias.ItfSet.AcHighGainAvpiv)])
                 
                 %==========================================================================
                 % ASSERTIONS: All variables NOT based on tfCoeffs/TRANSFER_FUNCTION_COEFFS
@@ -220,12 +220,12 @@ classdef RCT
                 assert(ndims(Bias.Current.offsetsAmpere)    == 2)
                 assert(size( Bias.Current.offsetsAmpere, 1) == nEpochL)
                 assert(size( Bias.Current.offsetsAmpere, 2) == 3)
-                assert(ndims(Bias.Current.gainsApc)         == 2)
-                assert(size( Bias.Current.gainsApc, 1)      == nEpochL)
-                assert(size( Bias.Current.gainsApc, 2)      == 3)
-                assert(ndims(Bias.dcSingleOffsetsVolt)      == 2)
-                assert(size( Bias.dcSingleOffsetsVolt, 1)   == nEpochH)
-                assert(size( Bias.dcSingleOffsetsVolt, 2)   == 3)
+                assert(ndims(Bias.Current.gainsApt)         == 2)
+                assert(size( Bias.Current.gainsApt, 1)      == nEpochL)
+                assert(size( Bias.Current.gainsApt, 2)      == 3)
+                assert(ndims(Bias.dcSingleOffsetsAVolt)      == 2)
+                assert(size( Bias.dcSingleOffsetsAVolt, 1)   == nEpochH)
+                assert(size( Bias.dcSingleOffsetsAVolt, 2)   == 3)
                 for fn = fieldnames(Bias.DcDiffOffsets)'
                     assert(iscolumn(Bias.DcDiffOffsets.(fn{1}))           )
                     assert(length(  Bias.DcDiffOffsets.(fn{1})) == nEpochH)
@@ -238,10 +238,10 @@ classdef RCT
 
 
 
-        % LfrItfTable : {iLsf}{iBlts}. Table of LFR TFs.
+        % LfrItfIvptTable : {iLsf}{iBlts}. Table of LFR TFs.
         %                   iLsf=1..3 : iBlts=1..5 for BLTS 1-5
         %                   iLsf=4    : iBlts=1..3 for BIAS 1-3
-        function LfrItfTable = read_LFR_RCT(filePath, tfExtrapolateAmountHz)
+        function LfrItfIvptTable = read_LFR_RCT(filePath, tfExtrapolateAmountHz)
             Do = dataobj(filePath);
             
             try
@@ -258,10 +258,10 @@ classdef RCT
                 freqTableHz{3}  = shiftdim(Do.data.Freqs_F2.data);
                 freqTableHz{4}  = shiftdim(Do.data.Freqs_F3.data);
 
-                amplTableCpv{1}  = shiftdim(Do.data.TF_BIAS_12345_amplitude_F0.data);
-                amplTableCpv{2}  = shiftdim(Do.data.TF_BIAS_12345_amplitude_F1.data);
-                amplTableCpv{3}  = shiftdim(Do.data.TF_BIAS_12345_amplitude_F2.data);
-                amplTableCpv{4}  = shiftdim(Do.data.TF_BIAS_123_amplitude_F3.data);
+                amplTableTpiv{1}  = shiftdim(Do.data.TF_BIAS_12345_amplitude_F0.data);
+                amplTableTpiv{2}  = shiftdim(Do.data.TF_BIAS_12345_amplitude_F1.data);
+                amplTableTpiv{3}  = shiftdim(Do.data.TF_BIAS_12345_amplitude_F2.data);
+                amplTableTpiv{4}  = shiftdim(Do.data.TF_BIAS_123_amplitude_F3.data);
 
                 phaseTableDeg{1} = shiftdim(Do.data.TF_BIAS_12345_phase_F0.data);
                 phaseTableDeg{2} = shiftdim(Do.data.TF_BIAS_12345_phase_F1.data);
@@ -277,46 +277,47 @@ classdef RCT
 
                     % NOTE: Values for the specific LFS, hence the prefix.
                     lsfFreqTableHz   = freqTableHz{iLsf};
-                    lsfAmplTableCpv  = amplTableCpv{iLsf};
+                    lsfAmplTableTpiv = amplTableTpiv{iLsf};
                     lsfPhaseTableDeg = phaseTableDeg{iLsf};
 
                     % ASSERTIONS: Check CDF array sizes, and implicitly that the CDF format is the expected one.
                     assert(iscolumn(freqTableHz{iLsf}))
                     
-                    assert(ndims(lsfAmplTableCpv)  == 2)
+                    assert(ndims(lsfAmplTableTpiv) == 2)
                     assert(ndims(lsfPhaseTableDeg) == 2)
-                    assert(size( lsfAmplTableCpv,  1) >= bicas.RCT.TF_TABLE_MIN_LENGTH)
+                    assert(size( lsfAmplTableTpiv, 1) >= bicas.RCT.TF_TABLE_MIN_LENGTH)
                     assert(size( lsfPhaseTableDeg, 1) >= bicas.RCT.TF_TABLE_MIN_LENGTH)
-                    assert(size( lsfAmplTableCpv,  2) == nBltsMax)
+                    assert(size( lsfAmplTableTpiv, 2) == nBltsMax)
                     assert(size( lsfPhaseTableDeg, 2) == nBltsMax)
 
                     for iBlts = 1:nBltsMax
                         
                         lsfBltsFreqTableHz   = lsfFreqTableHz;
-                        lsfBltsAmplTableCpv  = lsfAmplTableCpv( :, iBlts);
+                        lsfBltsAmplTableTpiv = lsfAmplTableTpiv(:, iBlts);
                         lsfBltsPhaseTableDeg = lsfPhaseTableDeg(:, iBlts);
                         
                         % Extrapolate the TF somewhat to higher frequencies
                         % -------------------------------------------------
                         % IMPLEMENTATION NOTE: This is needed since calibrating CWF data needs transfer function values
                         % for slightly higher frequencies than tabulated in the RCT.
-                        [~, lsfBltsAmplTableCpv] = bicas.utils.extend_extrapolate(lsfBltsFreqTableHz, lsfBltsAmplTableCpv, ...
+                        [   ~,                  lsfBltsAmplTableTpiv] = bicas.utils.extend_extrapolate(...
+                            lsfBltsFreqTableHz, lsfBltsAmplTableTpiv, ...
                             tfExtrapolateAmountHz, 'positive', 'exponential', 'exponential');
-                        [lsfBltsFreqTableHz, lsfBltsPhaseTableDeg] = bicas.utils.extend_extrapolate(lsfBltsFreqTableHz, lsfBltsPhaseTableDeg, ...
+                        [   lsfBltsFreqTableHz, lsfBltsPhaseTableDeg] = bicas.utils.extend_extrapolate(...
+                            lsfBltsFreqTableHz, lsfBltsPhaseTableDeg, ...
                             tfExtrapolateAmountHz, 'positive', 'exponential', 'linear');
                         
-                        
                         % NOTE: INVERTING the tabulated TF.
-                        Itf = EJ_library.utils.tabulated_transform(...
+                        ItfIvpt = EJ_library.utils.tabulated_transform(...
                             lsfBltsFreqTableHz * 2*pi, ...
-                            1 ./ lsfBltsAmplTableCpv, ...
+                            1 ./ lsfBltsAmplTableTpiv, ...
                             - deg2rad(lsfBltsPhaseTableDeg), ...
                             'extrapolatePositiveFreqZtoZero', 1);
                         
                         % ASSERTION: ITF
-                        assert(~Itf.toward_zero_at_high_freq())
+                        assert(~ItfIvpt.toward_zero_at_high_freq())
                         
-                        LfrItfTable{iLsf}{iBlts} = Itf;
+                        LfrItfIvptTable{iLsf}{iBlts} = ItfIvpt;
                     end
                 end
                 
@@ -329,7 +330,7 @@ classdef RCT
         
         
         
-        function tdsCwfFactorsVpc = read_TDS_CWF_RCT(filePath)
+        function tdsCwfFactorsIvpt = read_TDS_CWF_RCT(filePath)
             
             Do = dataobj(filePath);
             
@@ -341,11 +342,11 @@ classdef RCT
                 % IMPLEMENTATION NOTE: Does not want to rely one dataobj special behaviour for 1 record case
                 % ==> Remove leading singleton dimensions, much assertions.
                 
-                tdsCwfFactorsVpc = shiftdim(Do.data.CALIBRATION_TABLE.data);
+                tdsCwfFactorsIvpt = shiftdim(Do.data.CALIBRATION_TABLE.data);
                 
                 % ASSERTIONS: Check CDF array sizes, no change in format.
-                assert(iscolumn(tdsCwfFactorsVpc))
-                assert(size(    tdsCwfFactorsVpc, 1) == 3)
+                assert(iscolumn(tdsCwfFactorsIvpt))
+                assert(size(    tdsCwfFactorsIvpt, 1) == 3)
                 
             catch Exc1
                 Exc2 = MException('BICAS:calib:FailedToReadInterpretRCT', 'Error when interpreting calibration file (RCT) "%s"', filePath);
@@ -356,7 +357,7 @@ classdef RCT
         
         
         
-        function TdsRswfItfList = read_TDS_RSWF_RCT(filePath)
+        function TdsRswfItfIvptList = read_TDS_RSWF_RCT(filePath)
             
             Do = dataobj(filePath);
             
@@ -365,36 +366,36 @@ classdef RCT
                 % IMPLEMENTATION NOTE: Does not want to rely one dataobj special behaviour for 1 record case
                 % ==> Remove leading singleton dimensions, much assertions.
                 freqsHz  = shiftdim(Do.data.CALIBRATION_FREQUENCY.data);
-                amplVpc  = shiftdim(Do.data.CALIBRATION_AMPLITUDE.data);
+                amplIvpt = shiftdim(Do.data.CALIBRATION_AMPLITUDE.data);
                 phaseDeg = shiftdim(Do.data.CALIBRATION_PHASE.data);
                 
                 % ASSERTIONS: Check CDF array sizes, no change in format.
                 assert(iscolumn(freqsHz));                
-                assert(ndims(amplVpc)     == 2)
+                assert(ndims(amplIvpt)    == 2)
                 assert(ndims(phaseDeg)    == 2)
-                assert(size( amplVpc,  1) == 3)
+                assert(size( amplIvpt, 1) == 3)
                 assert(size( phaseDeg, 1) == 3)
-                assert(size( amplVpc,  2) >= bicas.RCT.TF_TABLE_MIN_LENGTH)
+                assert(size( amplIvpt, 2) >= bicas.RCT.TF_TABLE_MIN_LENGTH)
                 assert(size( phaseDeg, 2) >= bicas.RCT.TF_TABLE_MIN_LENGTH)
                 
                 EJ_library.utils.assert.all_equal([...
                     length(freqsHz), ...
-                    size(amplVpc,  2), ...
+                    size(amplIvpt,  2), ...
                     size(phaseDeg, 2) ]);
                 
                 for iBlts = 1:3
-                    Itf = EJ_library.utils.tabulated_transform(...
+                    ItfIvpt = EJ_library.utils.tabulated_transform(...
                         freqsHz * 2*pi, ...
-                        amplVpc(         iBlts, :), ...
+                        amplIvpt(        iBlts, :), ...
                         deg2rad(phaseDeg(iBlts, :)), ...
                         'extrapolatePositiveFreqZtoZero', 1);
                     
                     % ASSERTION: INVERTED TF
-                    assert(~Itf.toward_zero_at_high_freq(), ...
+                    assert(~ItfIvpt.toward_zero_at_high_freq(), ...
                         ['TDS RSWF transfer function appears to go toward zero at high frequencies. Has it not been', ...
                         ' inverted/backward in time, i.e. is it not physical output-to-input?'])
                     
-                    TdsRswfItfList{iBlts} = Itf;
+                    TdsRswfItfIvptList{iBlts} = ItfIvpt;
                 end
                 
             catch Exc1

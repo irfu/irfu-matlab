@@ -42,19 +42,19 @@
 % BSACT             BIAS StandAlone Calibration Tables. The raw files generated at the BIAS standalone calibration, in
 %                   particular those taken (1) June 2016 and (2) July 2016.
 %
-% CTable:           Calibration table. Equal to the contents of one BIAS standalone calibration file.
+% CTable            Calibration table. Equal to the contents of one BIAS standalone calibration file.
 %
 % metadata          Refers to the metadata for a specific calibration table/CTable, e.g. MUX mode, input channels,
 %                   AC low/high gain, diff/single, stimuli.
 %
-% Input channel:    One or two integers (row vector; values 1-3), signifying a single-probe "channel" or
+% Input channel     One or two integers (row vector; values 1-3), signifying a single-probe "channel" or
 % (inputChNbrs)     a diff-probe "channel", i.e. which signal is coming from the ANTENNA(S).
 %                       Example: [2] refers to V2_LF.
 %                       Example: [2,3] refers to (V2_LF-V3_LF).
 %                   NOTE: Does NOT refer to the signal itself (voltage), only which channel out of several.
 %                   NOTE: The probe order is always increasing.
 %
-% Output channel:   Integer (1-5) representing one of the "channels" at the BIAS-to-LFR/TDS boundary.
+% Output channel    Integer (1-5) representing one of the "channels" at the BIAS-to-LFR/TDS boundary.
 % (outputChNbr)     Also known as LFR_1...LFR_5, TDS_1...TDS_3, and BIAS_1...BIAS_5.
 %                   NOTE: Does NOT refer to the signal itself (voltage), only which channel out of several.
 %
@@ -64,6 +64,11 @@
 %                   identical for the same type of calibration data at different temperatures.
 %
 % RPS               Radians per second
+% --
+% EOO               Excluding output offset (offset removed)
+% IOO               Including output offset (offset not removed)
+% BST               Before stimuli
+% AST               After stimuli (after voltage drop due to stimuli)
 %
 % Types of calibration data
 % -------------------------
@@ -95,6 +100,8 @@ classdef reader_DCC_DCV_TF < handle     % Explicitly declare it as a handle clas
 %
 % PROPOSAL: Replace class with functions for retrieving metadata. If one also wants functionality for loading all calibration
 % data at once (and saving it memory), or caching, then that should be done by other function/class which calls those functions.
+%      
+% PROPOSAL: Change shortening: EOO-->OOR (Output offset removed), IOO-->OOK (Output offset kept)
 
 
 
@@ -201,13 +208,9 @@ classdef reader_DCC_DCV_TF < handle     % Explicitly declare it as a handle clas
         function Data = read_DCV_calib_file(filePath)
         % Read one BSACT DCV table (text file) into a struct.
         %
+        % 
         % Column naming convention to distinguish columns with very similar meanings (and values):
-        % EOO = Excluding output offset (offset removed)
-        % IOO = Including output offset (offset not removed)
-        % BST = Before stimuli
-        % AST = After stimuli (after voltage drop due to stimuli)
-        
-        % PROPOSAL: Change shortening: EOO-->OOR (Output offset removed), IOO-->OOK (Output offset kept)
+        % Se comments at top of file.
             
             if ~ischar(filePath); error('BICAS:reader_DCC_DCV_TF:IllegalArgument', 'Argument is not a string.'); end
             

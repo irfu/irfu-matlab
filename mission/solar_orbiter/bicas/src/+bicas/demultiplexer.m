@@ -120,18 +120,18 @@ classdef demultiplexer
         % EDGE CASES
         % ==========
         % Function must be able to handle:
-        % demux mode = NaN                                  : Unknown demux mode, e.g. due to insufficient HK time coverage.
+        % demuxMode = NaN                                  : Unknown demux mode, e.g. due to insufficient HK time coverage.
         % BLTS 1-3 signals labelled as "GND" or "2.5V Ref". : Demux modes 5-7.
         %
         %
         % ARGUMENTS
         % =========
-        % demuxMode            : Scalar value. Demultiplexer mode.
-        %                        Can be NaN to represent unknown demux mode. Implies that AsrSamplesVolt is assigned
-        %                        NaN values.
-        % dlrUsing12           : See bicas.demultiplexer_latching_relay.
-        % BltsSamplesAsrVolt   : Cell array of vectors/matrices, length 5. {iBlts} = Vector/matrix with sample values
-        %                        for that BLTS channel, calibrated as for ASR.
+        % demuxMode          : Scalar value. Demultiplexer mode.
+        %                      NOTE: Can be NaN to represent unknown demux mode. Implies that AsrSamplesVolt fields are
+        %                      correctly sized with NaN values.
+        % dlrUsing12         : See bicas.demultiplexer_latching_relay.
+        % bltsSamplesAVolt   : Cell array of vectors/matrices, length 5. {iBlts} = Vector/matrix with sample values
+        %                      for that BLTS channel, calibrated as for ASR.
         % --
         % NOTE: There is no argument for diff gain since this function does not calibrate/multiply signals by factor.
         %
@@ -140,15 +140,13 @@ classdef demultiplexer
         % =============
         % RoutingArray   : Array of bicas.BLTS_src_dest objects. (iBlts) = Represents the origin of the corresponding
         %                  BLTS.
-        % AsrSamplesVolt : All ASRsr which can possibly be derived from the BLTS (BIAS_i). Those which can not be
-        %                  derived are correctly sized containing only NaN. Struct with fields named for all the ASRs as
-        %                  in the BIAS specification:
-        %                   .Vx_LF
-        %                   .Vxy_LF
-        %                   .Vxy_LF_AC
+        % AsrSamplesVolt : Samples for all ASRs (singles, diffs) which can possibly be derived from the BLTS (BIAS_i). Those which can not be
+        %                  derived are correctly sized containing only NaN. Struct with fields.
         %                  NOTE: See "EDGE CASES".
         %
-        function [BltsSrcArray, AsrSamplesVolt] = main(demuxMode, dlrUsing12, BltsSamplesAsrVolt)
+        %
+        % NOTE: Separate names bltsSamplesAVolt & AsrSamplesAVolt to denote that they are organized by BLTS and ASRs.
+        function [BltsSrcArray, AsrSamplesAVolt] = main(demuxMode, dlrUsing12, bltsSamplesAVolt)
             % PROPOSAL: Function name that implies constant settings (MUX_SET at least; DIFF_GAIN?!).
             %   invert
             %   main
@@ -170,13 +168,13 @@ classdef demultiplexer
             % ASSERTIONS
             assert(isscalar(demuxMode))
             assert(isscalar(dlrUsing12))
-            assert(iscell(BltsSamplesAsrVolt))            
-            EJ_library.utils.assert.vector(BltsSamplesAsrVolt)
-            assert(numel(BltsSamplesAsrVolt)==5)
-            assert(isnumeric(BltsSamplesAsrVolt{1}))   % Shuold ideally check for all indices, but one helps.
+            assert(iscell(bltsSamplesAVolt))            
+            EJ_library.utils.assert.vector(bltsSamplesAVolt)
+            assert(numel(bltsSamplesAVolt)==5)
+            assert(isnumeric(bltsSamplesAVolt{1}))   % Shuold ideally check for all indices, but one helps.
             
-            % AS = "ASR Samples"
-            NAN_VALUES = ones(size(BltsSamplesAsrVolt{1})) * NaN;
+            % AS = "ASR Samples" (AVolt)
+            NAN_VALUES = ones(size(bltsSamplesAVolt{1})) * NaN;
             As.dcV1  = NAN_VALUES;
             As.dcV2  = NAN_VALUES;
             As.dcV3  = NAN_VALUES;
@@ -211,7 +209,7 @@ classdef demultiplexer
                     RoutingArray(3) = bicas.demultiplexer.ROUTING_DC_V23;
                     RoutingArray(4) =                     ROUTING_AC_V1x;
                     RoutingArray(5) = bicas.demultiplexer.ROUTING_AC_V23;
-                    As = assign_ASR_samples_from_BLTS(As, BltsSamplesAsrVolt, RoutingArray);
+                    As = assign_ASR_samples_from_BLTS(As, bltsSamplesAVolt, RoutingArray);
                     
                     % Derive the ASR:s not in the BLTS.
                     As.dcV2 = As.dcV1 - As.dcV12;
@@ -229,7 +227,7 @@ classdef demultiplexer
                     RoutingArray(3) = bicas.demultiplexer.ROUTING_DC_V23;
                     RoutingArray(4) =                     ROUTING_AC_V1x;
                     RoutingArray(5) = bicas.demultiplexer.ROUTING_AC_V23;
-                    As = assign_ASR_samples_from_BLTS(As, BltsSamplesAsrVolt, RoutingArray);
+                    As = assign_ASR_samples_from_BLTS(As, bltsSamplesAVolt, RoutingArray);
                     
                     % NOTE: Can not derive anything extra for DC. BLTS 1-3 contain redundant data (regardless of
                     % latching relay setting).
@@ -241,7 +239,7 @@ classdef demultiplexer
                     RoutingArray(3) =                     ROUTING_DC_V1x;
                     RoutingArray(4) = bicas.demultiplexer.ROUTING_AC_V13;
                     RoutingArray(5) = bicas.demultiplexer.ROUTING_AC_V23;
-                    As = assign_ASR_samples_from_BLTS(As, BltsSamplesAsrVolt, RoutingArray);
+                    As = assign_ASR_samples_from_BLTS(As, bltsSamplesAVolt, RoutingArray);
                     
                     if dlrUsing12
                         % CASE: Know V1, V3, V12
@@ -259,7 +257,7 @@ classdef demultiplexer
                     RoutingArray(3) =                     ROUTING_DC_V1x;
                     RoutingArray(4) =                     ROUTING_AC_V1x;
                     RoutingArray(5) = bicas.demultiplexer.ROUTING_AC_V23;
-                    As = assign_ASR_samples_from_BLTS(As, BltsSamplesAsrVolt, RoutingArray);
+                    As = assign_ASR_samples_from_BLTS(As, bltsSamplesAVolt, RoutingArray);
 
                     if dlrUsing12
                         % NOTE: Can not derive anything extra for DC. BLTS 1-3 contain redundant data.
@@ -277,7 +275,7 @@ classdef demultiplexer
                     RoutingArray(3) = bicas.demultiplexer.ROUTING_DC_V3;
                     RoutingArray(4) =                     ROUTING_AC_V1x;
                     RoutingArray(5) = bicas.demultiplexer.ROUTING_AC_V23;
-                    As = assign_ASR_samples_from_BLTS(As, BltsSamplesAsrVolt, RoutingArray);
+                    As = assign_ASR_samples_from_BLTS(As, bltsSamplesAVolt, RoutingArray);
                     
                     As.dcV12 = As.dcV1 - As.dcV2;
                     As.dcV13 = As.dcV1 - As.dcV3;
@@ -297,7 +295,7 @@ classdef demultiplexer
                     end
                     RoutingArray(4) =                     ROUTING_AC_V1x;
                     RoutingArray(5) = bicas.demultiplexer.ROUTING_AC_V23;
-                    As = assign_ASR_samples_from_BLTS(As, BltsSamplesAsrVolt, RoutingArray);
+                    As = assign_ASR_samples_from_BLTS(As, bltsSamplesAVolt, RoutingArray);
                     
                     As.dcV12 = As.dcV1 - As.dcV2;
                     As.dcV13 = As.dcV1 - As.dcV3;
@@ -314,7 +312,10 @@ classdef demultiplexer
                         RoutingArray(3) = bicas.demultiplexer.ROUTING_UNKNOWN_3_TO_NOTHING;
                         RoutingArray(4) =                     ROUTING_AC_V1x;
                         RoutingArray(5) = bicas.demultiplexer.ROUTING_AC_V23;
-                        As = assign_ASR_samples_from_BLTS(As, BltsSamplesAsrVolt, RoutingArray);
+                        As = assign_ASR_samples_from_BLTS(As, bltsSamplesAVolt, RoutingArray);
+                        
+                        % BUG/NOTE: Does not set any DC samples. Therefore just keeping the defaults. Can not derive any
+                        % DC signals from other DC signals.
                         
                     else
                         error('BICAS:demultiplexer:main:Assertion:IllegalArgument:DatasetFormat', 'Illegal argument value demuxMode=%g.', demuxMode)
@@ -329,7 +330,7 @@ classdef demultiplexer
                 As.acV12 = As.acV13 - As.acV23;
             end
             
-            AsrSamplesVolt = As;
+            AsrSamplesAVolt = As;
             
             % ASSERTIONS
             assert(numel(RoutingArray) == 5)

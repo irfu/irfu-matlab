@@ -129,7 +129,7 @@ if 1
         omega0 = 2*pi * 5/(N*dt);    % Exact DFT frequency.  ==> Good match
         %omega0 = 2*pi * 1/3;          % Arbitrary frequency.  ==> Edge effects, generally
         if (N*dt) / (1/omega0) < 10   % Assert minimum number of oscillation periods in function (in radians).
-            error('Bad test config.?')
+            error('BICAS:TEST', 'Bad test config.?')
         end
         
         t  = tVec(N, dt);
@@ -207,7 +207,7 @@ for iTest = 1:length(input)
     xlabel('array index (not t)')
     
     if ~EJ_library.utils.approx_equals(y2_res, y2_exp, EPSILON, 'NaN equal to itself')
-        %error('TEST FAILED')
+        %error('BICAS:TEST', 'TEST FAILED')
         warning('TEST FAILED')
         
         [y2diffMax, iY2DiffMax] = max(abs(y2_res - y2_exp))

@@ -169,10 +169,10 @@ S.define_setting('PROCESSING.LFR.F3_HZ',    16);
 %========================================================
 % Constants for how the "simple demuxer" calibrates data
 %========================================================
-%S.define_setting('PROCESSING.CALIBRATION.SCALAR.ALPHA',           1/17);
-%S.define_setting('PROCESSING.CALIBRATION.SCALAR.BETA',               1);
-%S.define_setting('PROCESSING.CALIBRATION.SCALAR.GAMMA_HIGH_GAIN',  100);
-%S.define_setting('PROCESSING.CALIBRATION.SCALAR.GAMMA_LOW_GAIN',     5);
+%S.define_setting('PROCESSING.CALIBRATION.BIAS.SCALAR.ALPHA',           1/17);
+%S.define_setting('PROCESSING.CALIBRATION.BIAS.SCALAR.BETA',               1);
+%S.define_setting('PROCESSING.CALIBRATION.BIAS.SCALAR.GAMMA.HIGH_GAIN',  100);
+%S.define_setting('PROCESSING.CALIBRATION.BIAS.SCALAR.GAMMA.LOW_GAIN',     5);
 
 %=================================================================================
 % Constants for using HK bias currents for deriving/calibrating the bias currents
@@ -182,7 +182,7 @@ S.define_setting('PROCESSING.LFR.F3_HZ',    16);
 %S.define_setting('PROCESSING.USE_UNCALIBRATED_BIAS_CURRENTS_FROM_HK', 0);
 % NOTE: OFFSET_TM value is added to the TM value (not the ampere value).
 S.define_setting('PROCESSING.CALIBRATION.HK_BIAS_CURRENT.OFFSET_TM', -hex2dec('56C0') * [1,1,1])
-S.define_setting('PROCESSING.CALIBRATION.HK_BIAS_CURRENT.GAIN_APC',  -0.008198754     * [1,1,1])
+S.define_setting('PROCESSING.CALIBRATION.HK_BIAS_CURRENT.GAIN_APT',  -0.008198754     * [1,1,1])
 
 S.define_setting('PROCESSING.CALIBRATION.DISABLE_CALIBRATION', 0)
 S.define_setting('PROCESSING.CALIBRATION.DETRENDING_ENABLED',  0)
