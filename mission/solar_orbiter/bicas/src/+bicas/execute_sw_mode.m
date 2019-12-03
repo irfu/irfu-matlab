@@ -88,6 +88,13 @@ for i = 1:length(SwModeInfo.inputsList)
     %===================================================
     % NOTE: Can not use bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(ZVars) since not all zVariables have same number of
     % records. Ex: Metadata such as ACQUISITION_TIME_UNITS.
+    if isfield(GlobalAttributes, 'DATASET_ID')
+        datasetId = GlobalAttributes.DATASET_ID{1};
+    else
+        error('BICAS:execute_sw_mode:Assertion:DatasetFormat', ...
+            'Input dataset does not contain (any accepted variation of) the global attribute DATASET_ID.\n    File: "%s"', ...
+            inputFilePath)
+    end
     bicas.utils.assert_strings_equal(...
         SETTINGS.get_fv('INPUT_CDF_ASSERTIONS.STRICT_DATASET_ID'), ...
         {GlobalAttributes.DATASET_ID{1}, SwModeInfo.inputsList(i).datasetId}, ...
@@ -238,7 +245,10 @@ for i = 1:length(zVariableNameList)
     % QUESTION: How distinguish integer zVariables that could be converted to floats (and therefore use NaN)?
     if isfloat(zVariableData)
         [fillValue, padValue] = get_fill_pad_values(DataObj, zVariableName);
-        zVariableData = bicas.utils.replace_value(zVariableData, fillValue, NaN);
+        if ~isempty(fillValue)
+            % CASE: There is a fill value.
+            zVariableData = bicas.utils.replace_value(zVariableData, fillValue, NaN);
+        end
         zVariableData = bicas.utils.replace_value(zVariableData, padValue,  NaN);
     else
         % Disable?! Only print warning if finds fill value which is not replaced?
@@ -250,18 +260,17 @@ end
 
 
 
-bicas.logf('info', 'File''s Global attribute: DATASET_ID       = "%s"', DataObj.GlobalAttributes.DATASET_ID{1})
-bicas.logf('info', 'File''s Global attribute: Skeleton_version = "%s"', DataObj.GlobalAttributes.Skeleton_version{1})
+% NOTE: At least test files
+% solo_L1R_rpw-tds-lfm-cwf-e_20190523T080316-20190523T134337_V02_les-7ae6b5e.cdf
+% solo_L1R_rpw-tds-lfm-rswf-e_20190523T080316-20190523T134337_V02_les-7ae6b5e.cdf
+% do not contain DATASET_ID, only Dataset_ID.
+GlobalAttributes = bicas.utils.normalize_struct_fieldnames(DataObj.GlobalAttributes, ...
+    {{{'DATASET_ID', 'Dataset_ID'}, 'DATASET_ID'}});   % Assign return value.
 
-
-
-GlobalAttributes = DataObj.GlobalAttributes;   % Assign return value.
+bicas.logf('info', 'File''s Global attribute: DATASET_ID       = "%s"', GlobalAttributes.DATASET_ID{1})
+bicas.logf('info', 'File''s Global attribute: Skeleton_version = "%s"', GlobalAttributes.Skeleton_version{1})
 
 end
-
-
-
-
 
 
 
@@ -315,7 +324,7 @@ for iPdFieldName = 1:length(pdFieldNameList)
     % (2) Convert to the right MATLAB class.
     if isfloat(zVariableData)
         [fillValue, ~] = get_fill_pad_values(DataObj, zVariableName);
-        zVariableData = bicas.utils.replace_value(zVariableData, NaN, fillValue);
+        zVariableData  = bicas.utils.replace_value(zVariableData, NaN, fillValue);
     end
     matlabClass   = bicas.utils.convert_CDF_type_to_MATLAB_class(DataObj.data.(zVariableName).type, 'Permit MATLAB classes');
     zVariableData = cast(zVariableData, matlabClass);
@@ -448,7 +457,8 @@ end
 
 
 
-
+% fillValue : Empty if there is no fill value.
+%
 function [fillValue, padValue] = get_fill_pad_values(do, zVariableName)
 % NOTE: Uncertain how it handles the absence of a fill value. (Or is fill value mandatory?)
 % PROPOSAL: Remake into general-purpose function.

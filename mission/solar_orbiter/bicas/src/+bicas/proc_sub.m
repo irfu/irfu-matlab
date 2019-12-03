@@ -321,6 +321,10 @@ classdef proc_sub
             
             C = bicas.proc_utils.classify_DATASET_ID(inputSciDsi);
             
+            % Both zVars TIME_SYNCHRO_FLAG, SYNCHRO_FLAG found in datasets. Unknown why.
+            % DEFINITION BUG in definition of datasets/skeleton?
+            Sci.ZVars = bicas.utils.normalize_struct_fieldnames(Sci.ZVars, {{{'TIME_SYNCHRO_FLAG', 'SYNCHRO_FLAG'}, 'TIME_SYNCHRO_FLAG'}});
+            
             nRecords                  = size(Sci.ZVars.Epoch, 1);
             nVariableSamplesPerRecord = size(Sci.ZVars.WAVEFORM_DATA, 3);    % Number of samples in the variable, not necessarily actual data.
             
