@@ -31,10 +31,12 @@ settingsVsMap = containers.Map('KeyType', 'char', 'ValueType', 'char');
 for iRow = 1:numel(configFileRowList)
     row = configFileRowList{iRow};
     
-    if ~isempty(regexp(row, '^#.*$'))   % Row with only comments, beginning at first character!
-        ;
-    elseif ~isempty(regexp(row, '^ *$', 'emptymatch'))   % Row containing only whitespace (or empty).
-        ;
+    if ~isempty(regexp(row, '^#.*$', 'once'))   
+        % CASE: Row with only comments, beginning at first character of row!
+        % Do nothing
+    elseif ~isempty(regexp(row, '^ *$', 'emptymatch'))   
+        % CASE: Row containing only whitespace (or empty).
+        % Do nothing
     else
         try
             subStrList = bicas.utils.regexp_str_parts(row, {SETTINGS_KEY_REGEXP, ' *= *', '"', SETTINGS_VALUE_STRING_REGEXP, '" *', '(#.*)?'});

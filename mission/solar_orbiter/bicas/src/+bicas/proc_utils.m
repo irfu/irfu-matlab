@@ -739,30 +739,51 @@ classdef proc_utils
             C.isLfrSwf  = 0;
             C.isTdsCwf  = 0;
             C.isTdsRswf = 0;
+            C.isL1      = 0;
+            C.isL1R     = 0;
             
-            switch(datasetId)
-                case {'ROC-SGSE_L1R_RPW-LFR-SBM1-CWF-E'
-                          'SOLO_L1R_RPW-LFR-SBM1-CWF-E'}
-                      C.isLfrSbm1  = 1;
-                case {'ROC-SGSE_L1R_RPW-LFR-SBM2-CWF-E'
-                          'SOLO_L1R_RPW-LFR-SBM2-CWF-E'}
-                      C.isLfrSbm2  = 1;
-                case {'ROC-SGSE_L1R_RPW-LFR-SURV-CWF-E'
-                          'SOLO_L1R_RPW-LFR-SURV-CWF-E'}
-                case {'ROC-SGSE_L1R_RPW-LFR-SURV-SWF-E'
-                          'SOLO_L1R_RPW-LFR-SURV-SWF-E'}
-                      C.isLfrSwf  = 1;
-                case {'ROC-SGSE_L1R_RPW-TDS-LFM-CWF-E'
-                          'SOLO_L1R_RPW-TDS-LFM-CWF-E'}
-                      C.isTdsCwf  = 1;
-                case {'ROC-SGSE_L1R_RPW-TDS-LFM-RSWF-E'
-                          'SOLO_L1R_RPW-TDS-LFM-RSWF-E'}
-                      C.isTdsRswf = 1;
-                otherwise
-                    error('BICAS:proc_utils:Assertion:IllegalArgument', 'Illegal DATASET_ID. datasetId="%s"', datasetId)
+            % Shorten function name. MF = Matching Function
+            mf = @(regexpPatternList) (any(EJ_library.utils.regexpf(datasetId, regexpPatternList)));
+            
+            if     mf({'(ROC-SGSE|SOLO)_L1R_RPW-LFR-SBM1-CWF-E', ...
+                                   'SOLO_L1_RPW-LFR-SBM1-CWF'})
+                C.isLfrSbm1  = 1;
+            elseif mf({'(ROC-SGSE|SOLO)_L1R_RPW-LFR-SBM2-CWF-E', ...
+                                   'SOLO_L1_RPW-LFR-SBM2-CWF'})
+                C.isLfrSbm2  = 1;
+            elseif mf({'(ROC-SGSE|SOLO)_L1R_RPW-LFR-SURV-CWF-E', ...
+                                   'SOLO_L1_RPW-LFR-SURV-CWF'})
+                % Do nothing
+            elseif mf({'(ROC-SGSE|SOLO)_L1R_RPW-LFR-SURV-SWF-E', ...
+                                   'SOLO_L1_RPW-LFR-SURV-SWF'})
+                C.isLfrSwf  = 1;
+            elseif mf({'(ROC-SGSE|SOLO)_L1R_RPW-TDS-LFM-CWF-E', ...
+                                   'SOLO_L1_RPW-TDS-LFM-CWF'})
+                C.isTdsCwf  = 1;
+            elseif mf({'(ROC-SGSE|SOLO)_L1R_RPW-TDS-LFM-RSWF-E', ...
+                                   'SOLO_L1_RPW-TDS-LFM-RSWF'})
+                C.isTdsRswf = 1;
+            else
+                error('BICAS:proc_utils:Assertion:IllegalArgument', 'Illegal DATASET_ID. datasetId="%s"', datasetId)
             end
             
-            EJ_library.utils.assert.struct2(C, {'isLfrSbm1', 'isLfrSbm2', 'isLfrSwf', 'isTdsCwf', 'isTdsRswf'}, {})
+            if     mf({           'SOLO_L1_RPW-.*'})
+                C.isL1      = 1;
+            elseif mf({'(ROC-SGSE|SOLO)_L1R_RPW-.*'})
+                C.isL1R     = 1;
+            else
+                error('BICAS:proc_utils:Assertion:IllegalArgument', 'Illegal DATASET_ID. datasetId="%s"', datasetId)
+            end
+                
+            
+            EJ_library.utils.assert.struct2(C, {...
+                'isLfrSbm1', ...
+                'isLfrSbm2', ...
+                'isLfrSwf', ...
+                'isTdsCwf', ...
+                'isTdsRswf', ...
+                'isL1', ...
+                'isL1R'}, {})
         end
         
         

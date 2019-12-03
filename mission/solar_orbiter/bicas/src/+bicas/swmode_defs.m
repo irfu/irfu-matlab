@@ -82,19 +82,13 @@ classdef swmode_defs
     
     % PUBLIC, IMMUTABLE
     properties(SetAccess=immutable)
+        
+        % NOTE: Implicit that it is a list of s/w modes (not in name). Note that it is a public property.
         List
     end
     
     
     
-    % PRIVATE, INSTANCE, IMMUTABLE
-    properties(GetAccess=private, SetAccess=immutable)
-        dsiPipelinePrefix    % Prefix in DATASET_ID (DSI).
-        outputDatasetLevel
-    end
-
-
-
     methods(Access=public)
         
         % Constructor
@@ -107,8 +101,7 @@ classdef swmode_defs
         % input datasets (for backward compatibility). That functionality has now been now removed, although the
         % implementation has not been entirely updated to take advantage of this (not simplified of this).
         % 
-%        function obj = swmode_defs(pipelineId, enableRocsgseL2rInput, enableTds)
-        function obj = swmode_defs(pipelineId, enableTds)
+        function obj = swmode_defs(SETTINGS)
             % PROPOSAL: Re-implement (top-level) hard-coded constants by setting multiple redundant 1D(?) vectors that covers every case.
             %   Then set various cases by assigning constants to many elements using MATLAB syntax.
             %   One index representing: Combination of DATASET_ID+Skeleton_Version (both pipelines, LFR+TDS, HK+SCI), every element contains data for
@@ -121,56 +114,35 @@ classdef swmode_defs
             %   --
             %   TODO-DECISION: Above describes input & output (?) data sets. How relates to s/w modes?
             %   
-            
-            %========================================
-            % Select constants depending on pipeline
-            %========================================
-            switch(pipelineId)
-                case {'ROC-SGSE', 'RGTS'}
-                    %obj.dsiPipelinePrefix     = 'ROC-SGSE';      % Prefix in DATASET_ID (DSI).
-                    obj.dsiPipelinePrefix     = 'SOLO';       % Prefix in DATASET_ID (DSI). TEST: On request from ROC.
-                    inputDatasetLevelList     = {'L1R'};
-%                    obj.outputDatasetLevel    =  'L2S';
-                    obj.outputDatasetLevel    =  'L2';    % On request from ROC.
-                    inputDashEList            = {'-E'};
-                    swModeCliOptionAmendmList = {''};
-                    lfrOutputSkeletonVersion  = {'05', '05', '05', '05'};
-                    tdsOutputSkeletonVersion  = {'05', '05'};
-                    
-%                     if enableRocsgseL2rInput
-%                         inputDatasetLevelList{end+1}     = 'L2R';     % NOTE: L2R etc only kept for backward-compatibility.
-%                         inputDashEList{end+1}            = '';
-%                         swModeCliOptionAmendmList{end+1} = '_L2R';
-%                     end
-                    
-                case 'RODP'
-                    obj.dsiPipelinePrefix     = 'SOLO';    % NOTE: SOLO, not RODP.
-                    inputDatasetLevelList     = {'L1R'};
-                    inputDashEList            = {'-E'};
-                    swModeCliOptionAmendmList = {''};
-                    obj.outputDatasetLevel    = 'L2';
-                    lfrOutputSkeletonVersion  = {'05', '05', '05', '05'};
-                    tdsOutputSkeletonVersion  = {'05', '05'};
+            % PROPOSAL: Merge LFR and TDS loops.
 
-                otherwise
-                    error('BICAS:swmode_defs:Assertion:IllegalArgument', 'Can not interpret "pipelineId=%s', pipelineId)
+            lfrOutputSkeletonVersion  = {'05', '05', '05', '05'};
+            tdsOutputSkeletonVersion  = {'05', '05'};
+
+            inputDatasetLevelList     = {'L1R'};
+            inputDashEList            = {'-E'};
+            swmSuffixList             = {''};
+            swmPurposeAmendmList      = {''};
+            if SETTINGS.get_fv('SW_MODES.L1_LFR_TDS_ENABLED')
+                inputDatasetLevelList{end+1} = 'L1';
+                inputDashEList{end+1}        = '';
+                swmSuffixList{end+1}         = '_L1';
+                swmPurposeAmendmList{end+1}  = ' EXPERIMENTAL.';
             end
-            clear pipelineId
-            
 
-            
+
+
             % Define function which interprets (replaces) specific substrings.            
             % "strmod" = string modify, "g"=global
-            strmodg = @(s, iInputLevel) strrep(strrep(strrep(strrep(strrep(s, ...
-                '<PLP>', obj.dsiPipelinePrefix), ...
-                '<LI>',  inputDatasetLevelList{iInputLevel}), ...
-                '<LO>',  obj.outputDatasetLevel), ...
-                '<I-E>', inputDashEList{iInputLevel}), ...
-                '<L2R amendm>', swModeCliOptionAmendmList{iInputLevel});    % I-E: "I"=Input, "-E"=optional "-E"
+            strmodg = @(s, iInputLevel) bicas.utils.strrepmany(s, ...
+                '<InLvl>',      inputDatasetLevelList{iInputLevel}, ...
+                '<I-E>',        inputDashEList{iInputLevel}, ...
+                '<SWM suffix>',         swmSuffixList{iInputLevel}, ...
+                '<SWM purpose amendm>', swmPurposeAmendmList{iInputLevel});
             
             % Input def that is reused multiple times.
             HK_INPUT_DEF = obj.def_input_dataset(...
-                'in_hk', strmodg('<PLP>_HK_RPW-BIA', 1), 'HK_cdf');
+                'in_hk', 'SOLO_HK_RPW-BIA', 'HK_cdf');
 
 
 
@@ -185,7 +157,7 @@ classdef swmode_defs
             
             
             
-            List = struct('prodFunc', {}, 'cliOption', {}, 'swdPurpose', {}, 'inputsList', {}, 'outputsList', {});
+            SwModeList = struct('prodFunc', {}, 'cliOption', {}, 'swdPurpose', {}, 'inputsList', {}, 'outputsList', {});
             for iInputLevel = 1:numel(inputDatasetLevelList)
                 
                 %==============================================
@@ -196,67 +168,66 @@ classdef swmode_defs
                         '<SBMx/SURV>',  LFR_SW_MODE_DATA(iSwm).SBMx_SURV), ...
                         '<C/SWF>',      LFR_SW_MODE_DATA(iSwm).CWF_SWF), ...
                         '<mode str>',   LFR_SW_MODE_DATA(iSwm).modeStr);
-                    
+
                     SCI_INPUT_DEF = obj.def_input_dataset(...
                         'in_sci', ...
-                        strmod('<PLP>_<LI>_RPW-LFR-<SBMx/SURV>-<C/SWF><I-E>'), ...
+                        strmod('SOLO_<InLvl>_RPW-LFR-<SBMx/SURV>-<C/SWF><I-E>'), ...
                         'SCI_cdf');
-                    
+
                     SCI_OUTPUT_DEF = obj.def_output_dataset(...
-                        strmod('<PLP>_<LO>_RPW-LFR-<SBMx/SURV>-<C/SWF>-E'), ...
-                        strmod('LFR <LO> <C/SWF> science electric <mode str> data'), ...
-                        strmod('RPW LFR <LO> <C/SWF> science electric (potential difference) data in <mode str>, time-tagged'), ...
+                        strmod('SOLO_L2_RPW-LFR-<SBMx/SURV>-<C/SWF>-E'), ...
+                        strmod('LFR L2 <C/SWF> science electric <mode str> data'), ...
+                        strmod('RPW LFR L2 <C/SWF> science electric (potential difference) data in <mode str>, time-tagged'), ...
                         LFR_SW_MODE_DATA(iSwm).outputSkeletonVersion);
 
-                    List(end+1) = obj.def_swmode(...
+                    SwModeList(end+1) = obj.def_swmode(...
                         @(InputDatasetsMap, Cal) bicas.proc.produce_L2_LFR(...
                             InputDatasetsMap, ...
                             Cal, ...
                             SCI_INPUT_DEF.datasetId, ...
                             SCI_OUTPUT_DEF.datasetId, ...
-                            SCI_OUTPUT_DEF.skeletonVersion), ...
-                        strmod('LFR-<SBMx/SURV>-<C/SWF>-E<L2R amendm>'), ...
-                        strmod('Generate <SBMx/SURV> <C/SWF> electric field <LO> data (potential difference) from LFR <LI> data'), ...
+                            SCI_OUTPUT_DEF.skeletonVersion, ...
+                            SETTINGS), ...
+                        strmod('LFR-<SBMx/SURV>-<C/SWF>-E<SWM suffix>'), ...
+                        strmod('Generate <SBMx/SURV> <C/SWF> electric field L2 data (potential difference) from LFR <InLvl> data.<SWM purpose amendm>'), ...
                         [SCI_INPUT_DEF, HK_INPUT_DEF], [SCI_OUTPUT_DEF]);
                 end
-                
-                if enableTds
-                    %==============================================
-                    % Iterate over the "fundamental" TDS S/W modes
-                    %==============================================
-                    for iSwm = 1:numel(TDS_SW_MODE_DATA)
-                        strmod = @(s) strrep(strmodg(s, iInputLevel), ...
-                            '<C/RSWF>', TDS_SW_MODE_DATA(iSwm).CWF_RSWF);
-                        
-                        SCI_INPUT_DEF = obj.def_input_dataset(...
-                            'in_sci', ...
-                            strmod('<PLP>_<LI>_RPW-TDS-LFM-<C/RSWF><I-E>'), ...
-                            'SCI_cdf');
-                        
-                        SCI_OUTPUT_DEF = obj.def_output_dataset(...
-                            strmod('<PLP>_<LO>_RPW-TDS-LFM-<C/RSWF>-E'), ...
-                            strmod('LFR <LO> <C/RSWF> science electric LF mode data'), ...
-                            strmod('RPW LFR <LO> <C/RSWF> science electric (potential difference) data in LF mode, time-tagged'), ...
-                            TDS_SW_MODE_DATA(iSwm).outputSkeletonVersion);
-                        
-                        List(end+1) = obj.def_swmode(...
-                            @(InputDatasetsMap, Cal) bicas.proc.produce_L2_TDS(...
-                                InputDatasetsMap, ...
-                                Cal, ...
-                                SCI_INPUT_DEF.datasetId, ...
-                                SCI_OUTPUT_DEF.datasetId, ...
-                                SCI_OUTPUT_DEF.skeletonVersion), ...
-                            strmod('TDS-LFM-<C/RSWF>-E<L2R amendm>'), ...
-                            strmod('Generate <C/RSWF> electric field <LO> data (potential difference) from TDS LF mode <LI> data'), ...
-                            [SCI_INPUT_DEF, HK_INPUT_DEF], [SCI_OUTPUT_DEF]);
-                    end
+
+                %==============================================
+                % Iterate over the "fundamental" TDS S/W modes
+                %==============================================
+                for iSwm = 1:numel(TDS_SW_MODE_DATA)
+                    strmod = @(s) strrep(strmodg(s, iInputLevel), ...
+                        '<C/RSWF>', TDS_SW_MODE_DATA(iSwm).CWF_RSWF);
+
+                    SCI_INPUT_DEF = obj.def_input_dataset(...
+                        'in_sci', ...
+                        strmod('SOLO_<InLvl>_RPW-TDS-LFM-<C/RSWF><I-E>'), ...
+                        'SCI_cdf');
+                    
+                    SCI_OUTPUT_DEF = obj.def_output_dataset(...
+                        strmod('SOLO_L2_RPW-TDS-LFM-<C/RSWF>-E'), ...
+                        strmod('LFR L2 <C/RSWF> science electric LF mode data'), ...
+                        strmod('RPW TDS L2 <C/RSWF> science electric (potential difference) data in LF mode, time-tagged'), ...
+                        TDS_SW_MODE_DATA(iSwm).outputSkeletonVersion);
+
+                    SwModeList(end+1) = obj.def_swmode(...
+                        @(InputDatasetsMap, Cal) bicas.proc.produce_L2_TDS(...
+                            InputDatasetsMap, ...
+                            Cal, ...
+                            SCI_INPUT_DEF.datasetId, ...
+                            SCI_OUTPUT_DEF.datasetId, ...
+                            SCI_OUTPUT_DEF.skeletonVersion, ...
+                            SETTINGS), ...
+                        strmod('TDS-LFM-<C/RSWF>-E<SWM suffix>'), ...
+                        strmod('Generate <C/RSWF> electric field L2 data (potential difference) from TDS LF mode <InLvl> data.<SWM purpose amendm>'), ...
+                        [SCI_INPUT_DEF, HK_INPUT_DEF], [SCI_OUTPUT_DEF]);
                 end
             end    % for iInputLevel = 1:numel(inputDatasetLevelList)
             
             
             
-            obj.List = List;
-            clear List
+            obj.List = SwModeList;
             
             EJ_library.utils.assert.castring_set({obj.List(:).cliOption})
         end    % Constructor
@@ -322,7 +293,7 @@ classdef swmode_defs
             Def.swdName             = swdName;
             Def.swdDescription      = swdDescription;
             Def.datasetId           = datasetId;
-            Def.datasetLevel        = obj.outputDatasetLevel;     % NOTE: Automatically set.
+            Def.datasetLevel        = 'L2';
             Def.skeletonVersion     = skeletonVersion;
             
             bicas.swmode_defs.assert_SW_mode_CLI_option(Def.cliOptionHeaderBody)
@@ -337,13 +308,12 @@ classdef swmode_defs
 
         % NOTE: Wrapper around global counterpart.
         function assert_DATASET_ID(obj, datasetId)
+            % PROPOSAL: Use classification function for DATASET_ID instead.
+            
             bicas.assert_DATASET_ID(datasetId)
             
             % ASSERTION: Pipeline
-            assert(strcmp(...
-                obj.dsiPipelinePrefix, ...
-                datasetId(1:numel(obj.dsiPipelinePrefix))...
-                ))
+            assert(strcmp('SOLO_', datasetId(1:5)))
         end
 
     end    % methods(Access=private)    

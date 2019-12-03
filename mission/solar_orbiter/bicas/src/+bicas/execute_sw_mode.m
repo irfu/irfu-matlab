@@ -135,8 +135,12 @@ for iOutputCdf = 1:length(SwModeInfo.outputsList)
     masterCdfPath = fullfile(...
         masterCdfDir, ...
         bicas.get_master_CDF_filename(OutputInfo.datasetId, OutputInfo.skeletonVersion));
-    write_dataset_CDF ( ...
-        OutputDatasetsMap(OutputInfo.prodFuncOutputKey), globalAttributesSubset, outputFilePath, masterCdfPath, OutputInfo.datasetId, SETTINGS );
+    if ~SETTINGS.get_fv('OUTPUT_CDF.WRITE_FILE_DISABLED')
+        write_dataset_CDF ( ...
+            OutputDatasetsMap(OutputInfo.prodFuncOutputKey), globalAttributesSubset, outputFilePath, masterCdfPath, OutputInfo.datasetId, SETTINGS );
+    else
+        bicas.logf('warning', 'Writing output datasets is disabled via setting OUTPUT_CDF.WRITE_FILE_DISABLED.')
+    end
 end
 
 

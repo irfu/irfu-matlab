@@ -101,11 +101,9 @@ classdef proc_sub
 
     methods(Static, Access=public)
         
-        function HkSciTime = process_HK_to_HK_on_SCI_TIME(Sci, Hk)
+        function HkSciTime = process_HK_to_HK_on_SCI_TIME(Sci, Hk, SETTINGS)
         % Processing function
         
-            global SETTINGS
-            
             % ASSERTIONS
             EJ_library.utils.assert.struct2(Sci, {'ZVars', 'Ga'}, {})
             EJ_library.utils.assert.struct2(Hk,  {'ZVars', 'Ga'}, {})
@@ -307,7 +305,7 @@ classdef proc_sub
         
         
         
-        function [PreDc, calibFunc] = process_TDS_to_PreDC(Sci, inputSciDsi, HkSciTime, Cal)
+        function [PreDc, calibFunc] = process_TDS_to_PreDC(Sci, inputSciDsi, HkSciTime, Cal, SETTINGS)
         % Processing function. Convert TDS CDF data (PDs) to PreDC.
         %
         % Keeps number of samples/record. Treats 1 samples/record "length-one snapshots".
@@ -323,12 +321,22 @@ classdef proc_sub
             
             % Both zVars TIME_SYNCHRO_FLAG, SYNCHRO_FLAG found in datasets. Unknown why.
             % DEFINITION BUG in definition of datasets/skeleton?
-            Sci.ZVars = bicas.utils.normalize_struct_fieldnames(Sci.ZVars, {{{'TIME_SYNCHRO_FLAG', 'SYNCHRO_FLAG'}, 'TIME_SYNCHRO_FLAG'}});
+            Sci.ZVars = bicas.utils.normalize_struct_fieldnames(Sci.ZVars, ...
+                {{{'TIME_SYNCHRO_FLAG', 'SYNCHRO_FLAG'}, 'TIME_SYNCHRO_FLAG'}});
             
             nRecords                  = size(Sci.ZVars.Epoch, 1);
             nVariableSamplesPerRecord = size(Sci.ZVars.WAVEFORM_DATA, 3);    % Number of samples in the variable, not necessarily actual data.
             
             freqHz = double(Sci.ZVars.SAMPLING_RATE);
+            if C.isL1R && C.isTdsRswf && SETTINGS.get_fv('PROCESSING.TDS.RSWF_L1R_FREQ_CORRECTION_ENABLED')
+                % TEMPORARY?
+                % IMPLEMENTATION NOTE: Has observed test file
+                % solo_L1R_rpw-tds-lfm-rswf-e_20190523T080316-20190523T134337_V02_les-7ae6b5e.cdf
+                % to have SAMPLING_RATE == 255, which is likely a BUG in the dataset. Setting it to what is probably the
+                % correct value.
+                freqHz(freqHz == 255) = 32768;
+                bicas.logf('warning', 'Correcting presumed bug in TDS L1R LFM-RSWF dataset due to setting PROCESSING.TDS.RSWF_L1R_FREQ_CORRECTION_ENABLED. Modifying the frequency 255-->32768.')
+            end
             
             PreDc = [];
             
@@ -378,6 +386,14 @@ classdef proc_sub
             PreDc.QUALITY_BITMASK = Sci.ZVars.QUALITY_BITMASK;
             PreDc.SYNCHRO_FLAG    = Sci.ZVars.TIME_SYNCHRO_FLAG;   % NOTE: Different zVar name in input and output datasets.
             
+            
+            if C.isL1R
+                assert(size(Sci.ZVars.WAVEFORM_DATA, 2) == 3, ...
+                    'BICAS:proc_sub:process_TDS_to_PreDC:Assertion:DatasetFormat', 'TDS zVar WAVEFORM_DATA has an unexpected size.')
+            elseif C.isL1
+                assert(size(Sci.ZVars.WAVEFORM_DATA, 2) == 8, ...
+                    'BICAS:proc_sub:process_TDS_to_PreDC:Assertion:DatasetFormat', 'TDS zVar WAVEFORM_DATA has an unexpected size.')
+            end
             modif_WAVEFORM_DATA = double(permute(Sci.ZVars.WAVEFORM_DATA, [1,3,2]));
             
             PreDc.samplesCaTm    = {};
@@ -606,7 +622,7 @@ classdef proc_sub
         %
         % NOTE: Public function as opposed to the other demuxing/calibration functions.
         %
-        function PostDc = process_demuxing_calibration(PreDc, Cal, calibFunc)
+        function PostDc = process_demuxing_calibration(PreDc, Cal, calibFunc, SETTINGS)
         % PROPOSAL: Move the setting of IBIASx (bias current) somewhere else?
         %   PRO: Unrelated to demultiplexing.
         %   CON: Related to calibration.
@@ -628,7 +644,8 @@ classdef proc_sub
                 PreDc.DIFF_GAIN, ...
                 PreDc.freqHz, ...
                 Cal, ...
-                calibFunc);
+                calibFunc, ...
+                SETTINGS);
 
             %================================
             % Set (calibrated) bias currents
@@ -663,7 +680,7 @@ classdef proc_sub
         %
         %
         % NOTE: Can handle arrays of any size as long as the sizes are consistent.
-        function AsrSamplesAVolt = simple_demultiplex(hasSnapshotFormat, Epoch, nValidSamplesPerRecord, samplesCaTm, MUX_SET, DIFF_GAIN, freqHz, Cal, calibFunc)
+        function AsrSamplesAVolt = simple_demultiplex(hasSnapshotFormat, Epoch, nValidSamplesPerRecord, samplesCaTm, MUX_SET, DIFF_GAIN, freqHz, Cal, calibFunc, SETTINGS)
         % PROPOSAL: Incorporate into processing function process_demuxing_calibration.
         % PROPOSAL: Assert same nbr of "records" for MUX_SET, DIFF_GAIN as for BIAS_x.
         %
@@ -695,8 +712,6 @@ classdef proc_sub
         %
         % PROPOSAL: Move the different conversion of CWF/SWF (one/many cell arrays) into the calibration function?!!
 
-            global SETTINGS
-
             % ASSERTIONS
             assert(isscalar(hasSnapshotFormat))
             assert(iscell(samplesCaTm))
@@ -710,9 +725,9 @@ classdef proc_sub
 
 
 
-            disableCalibration = SETTINGS.get_fv('PROCESSING.CALIBRATION.DISABLE_CALIBRATION');
+            disableCalibration = SETTINGS.get_fv('PROCESSING.CALIBRATION.CALIBRATION_DISABLED');
             if disableCalibration
-                bicas.log('warning', 'CALIBRATION HAS BEEN DISABLED via setting PROCESSING.CALIBRATION.DISABLE_CALIBRATION.')
+                bicas.log('warning', 'CALIBRATION HAS BEEN DISABLED via setting PROCESSING.CALIBRATION.CALIBRATION_DISABLED.')
             end
 
             

@@ -314,20 +314,7 @@ bicas.log('info', bicas.sprint_SETTINGS(SETTINGS))    % Prints/log the contents 
 
 
 
-%================================
-% Set pipelineId, calibrationDir
-%================================
-calibrationDir = read_env_variable(SETTINGS, 'ROC_RCS_CAL_PATH',    'ENV_VAR_OVERRIDE.ROC_RCS_CAL_PATH');
-pipelineId     = read_env_variable(SETTINGS, 'ROC_PIP_NAME',        'ENV_VAR_OVERRIDE.ROC_PIP_NAME');   % RGTS or RODP
-masterCdfDir   = read_env_variable(SETTINGS, 'ROC_RCS_MASTER_PATH', 'ENV_VAR_OVERRIDE.ROC_RCS_MASTER_PATH');
-bicas.logf('info', 'calibrationDir = "%s"', calibrationDir)
-bicas.logf('info', 'pipelineId     = "%s"', pipelineId)
-bicas.logf('info', 'masterCdfDir   = "%s"', masterCdfDir)
-
-
-
-SwModeDefs = bicas.swmode_defs(pipelineId, ...
-    SETTINGS.get_fv('SW_MODES.ENABLE_TDS'));
+SwModeDefs = bicas.swmode_defs(SETTINGS);
 
 
 
@@ -384,6 +371,19 @@ switch(CliData.functionalityMode)
 
         
         
+        %================================
+        % Set pipelineId, calibrationDir
+        %================================
+        % NOTE: Reading environment variables first here, where they are needed.
+        calibrationDir = read_env_variable(SETTINGS, 'ROC_RCS_CAL_PATH',    'ENV_VAR_OVERRIDE.ROC_RCS_CAL_PATH');
+        pipelineId     = read_env_variable(SETTINGS, 'ROC_PIP_NAME',        'ENV_VAR_OVERRIDE.ROC_PIP_NAME');   % RGTS or RODP
+        masterCdfDir   = read_env_variable(SETTINGS, 'ROC_RCS_MASTER_PATH', 'ENV_VAR_OVERRIDE.ROC_RCS_MASTER_PATH');
+        bicas.logf('info', 'calibrationDir = "%s"', calibrationDir)
+        bicas.logf('info', 'pipelineId     = "%s"', pipelineId)
+        bicas.logf('info', 'masterCdfDir   = "%s"', masterCdfDir)
+
+
+
         %==================
         % EXECUTE S/W MODE
         %==================

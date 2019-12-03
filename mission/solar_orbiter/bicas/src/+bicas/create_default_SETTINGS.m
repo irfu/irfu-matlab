@@ -39,63 +39,28 @@ S.define_setting('STDOUT_PREFIX',                  'STDOUT: ');
 % Parameters influencing how JSON objects are printed with function JSON_object_str.
 S.define_setting('JSON_OBJECT_STR.INDENT_SIZE',     4);
 
+% When logging contents of matrix/vector, maximum number of unique values printed before switching to shorter representation (min-max range)
+S.define_setting('LOGGING.MAX_UNIQUES_PRINTED', 5);
 
-
-S.define_setting('INPUT_CDF_ASSERTIONS.STRICT_DATASET_ID', 0);    % Require input CDF Global Attribute "DATASET_ID" to match the expected value.
-S.define_setting('INPUT_CDF_ASSERTIONS.MATCHING_TEST_ID',  0);    % Require Test_id to be identical for all input CDF datasets.
-
-S.define_setting('OUTPUT_CDF.SET_TEST_ID',                 1);    % Set CDF GlobalAttribute "Test_id". ROC DFMD says that it should really be set by ROC.
-S.define_setting('OUTPUT_CDF.DATA_VERSION',                '01'); % Set CDF GlobalAttribute "Data_version". ROC DFMD says it should be updated in a way which can not be automatized?!!! Set here for now.
-
-% What to do with zVariables which are still empty after copying data into the master CDF.
-% This indicates that something is wrong, either in the master CDF or in the processing.
-%
-S.define_setting('OUTPUT_CDF.EMPTY_NUMERIC_ZVARIABLES_SET_TO_FILL', 0);
-% Ex: Non-numeric ACQUISITION_TIME_UNITS in SOLO_L2_RPW-LFR-SBM1-CWF-E_V05.cdf is empty
-S.define_setting('OUTPUT_CDF.EMPTY_NONNUMERIC_ZVARIABLES_IGNORE',   1);
+% EXPERIMENTAL
+% Enable inofficial support for S/W modes that accept L1 LFR & TDS datasets in addition to the official support for L1R.
+S.define_setting('SW_MODES.L1_LFR_TDS_ENABLED', 0);
 
 
 
-% Value that shows up in output dataset GlobalAttributes.Calibration_version.
-% Value that is used to set the output dataset GlobalAttribute "Calibration_version". String value. TEMPORARY SOLUTION.
-S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.Calibration_version', '0.2; Only (the wrong) proportionality constants i.e. no voltage offset tables, no transfer functions; No bias currents');
-
-% Variables, if non-empty, are used to override the corresponding environment variables.
-S.define_setting('ENV_VAR_OVERRIDE.ROC_PIP_NAME',        '');   % ROC_PIP_NAME        defined in RCS ICD. Which pipeline to run, "RGTS" or "RODP".
-S.define_setting('ENV_VAR_OVERRIDE.ROC_RCS_CAL_PATH',    '');   % ROC_RCS_CAL_PATH    defined in RCS ICD. Path to dir. with calibration files.
-S.define_setting('ENV_VAR_OVERRIDE.ROC_RCS_MASTER_PATH', '');   % ROC_RCS_MASTER_PATH defined in RCS ICD. Path to dir. with master CDF files.
-
-% Whether to enable (make visible & accessible to the user) certain s/w modes.
-%S.define_setting('SW_MODES.ENABLE_INPUT_L2R',   0);    % Enable OLD s/w modes which accept L2R input datasets.
-S.define_setting('SW_MODES.ENABLE_TDS',         1);    % Enable     s/w modes which accept TDS input datasets. NOTE: Not implemented.
-
-S.define_setting('LOGGING.MAX_UNIQUES_PRINTED', 5);    % When logging contents of matrix/vector, maximum number of unique values printed before switching to shorter representation (min-max range)
-
-
-
-% The epoch for ACQUISITION_TIME.
-% The time in UTC at which ACQUISITION_TIME is [0,0].
-% Year-month-day-hour-minute-second-millisecond-mikrosecond(0-999)-nanoseconds(0-999)
-% PROPOSAL: Store the value returned by spdfcomputett2000(ACQUISITION_TIME_EPOCH_UTC) instead?
-S.define_setting('PROCESSING.ACQUISITION_TIME_EPOCH_UTC',                   [2000,01,01, 12,00,00, 000,000,000]);
-
-S.define_setting('PROCESSING.USE_AQUISITION_TIME_FOR_HK_TIME_INTERPOLATION', 0);
-
-
-
-%===========================================================================================================
+%###########################################################################################################
+% SWD.*
 % Various S/W descriptor release data for the entire software (not specific outputs)
 % ----------------------------------------------------------------------------------
 % EXCEPTION TO VARIABLE NAMING CONVENTION: Field names are used for constructing the JSON object struct and
 % can therefore NOT follow variable naming conventions without modifying other code.
-%===========================================================================================================
+%###########################################################################################################
 S.define_setting('SWD.identification.project',     'ROC');
 S.define_setting('SWD.identification.name',        'BIAS Calibration Software (BICAS)');
 S.define_setting('SWD.identification.identifier',  'BICAS');
 S.define_setting('SWD.identification.description', ...
     '(Incomplete) calibration software meant to (1) calibrate electric field L2 data from electric L1R LFR and TDS (LFM) data, and (2) calibrate bias currents.');
 S.define_setting('SWD.identification.icd_version', '1.2');   % Technically wrong. In reality iss1rev2, draft 2019-07-11.
-
 S.define_setting('SWD.release.version',            '0.2.0');
 S.define_setting('SWD.release.date',               '2019-09-20');
 S.define_setting('SWD.release.author',             'Erik P G Johansson, BIAS team');
@@ -107,6 +72,56 @@ S.define_setting('SWD.release.source',             'https://github.com/irfu/irfu
 %S.define_setting('SWD.release.source',             'https://github.com/irfu/irfu-matlab/commits/master');
 %
 S.define_setting('SWD.environment.executable',     'roc/bicas');   % Relative path to BICAS executable. See RCS ICD.
+
+
+
+%#############
+% INPUT_CDF.*
+%#############
+S.define_setting('INPUT_CDF_ASSERTIONS.STRICT_DATASET_ID', 0);    % Require input CDF Global Attribute "DATASET_ID" to match the expected value.
+S.define_setting('INPUT_CDF_ASSERTIONS.MATCHING_TEST_ID',  0);    % Require Test_id to be identical for all input CDF datasets.
+
+
+
+%##############
+% OUTPUT_CDF.*
+%##############
+S.define_setting('OUTPUT_CDF.SET_TEST_ID',                 1);    % Set CDF GlobalAttribute "Test_id". ROC DFMD says that it should really be set by ROC.
+S.define_setting('OUTPUT_CDF.DATA_VERSION',                '01'); % Set CDF GlobalAttribute "Data_version". ROC DFMD says it should be updated in a way which can not be automatized?!!! Set here for now.
+S.define_setting('OUTPUT_CDF.WRITE_FILE_DISABLED',         0)
+% What to do with zVariables which are still empty after copying data into the master CDF.
+% This indicates that something is wrong, either in the master CDF or in the processing.
+S.define_setting('OUTPUT_CDF.EMPTY_NUMERIC_ZVARIABLES_SET_TO_FILL', 0);
+% Ex: Non-numeric ACQUISITION_TIME_UNITS in SOLO_L2_RPW-LFR-SBM1-CWF-E_V05.cdf is empty
+S.define_setting('OUTPUT_CDF.EMPTY_NONNUMERIC_ZVARIABLES_IGNORE',   1);
+% Value that shows up in output dataset GlobalAttributes.Calibration_version.
+% Value that is used to set the output dataset GlobalAttribute "Calibration_version". String value. TEMPORARY SOLUTION.
+S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.Calibration_version', ...
+    '0.3; Using combined BIAS and LFR/TDS transfer functions (freq.dependent), BIAS offsets. No bias currents');
+
+
+
+%####################
+% ENV_VAR_OVERRIDE.*
+%####################
+% Variables, if non-empty, are used to override the corresponding environment variables.
+S.define_setting('ENV_VAR_OVERRIDE.ROC_PIP_NAME',        '');   % ROC_PIP_NAME        defined in RCS ICD. Which pipeline to run, "RGTS" or "RODP".
+S.define_setting('ENV_VAR_OVERRIDE.ROC_RCS_CAL_PATH',    '');   % ROC_RCS_CAL_PATH    defined in RCS ICD. Path to dir. with calibration files.
+S.define_setting('ENV_VAR_OVERRIDE.ROC_RCS_MASTER_PATH', '');   % ROC_RCS_MASTER_PATH defined in RCS ICD. Path to dir. with master CDF files.
+
+
+
+%##############
+% PROCESSING.*
+%##############
+% The epoch for ACQUISITION_TIME.
+% The time in UTC at which ACQUISITION_TIME is [0,0].
+% Year-month-day-hour-minute-second-millisecond-mikrosecond(0-999)-nanoseconds(0-999)
+% PROPOSAL: Store the value returned by spdfcomputett2000(ACQUISITION_TIME_EPOCH_UTC) instead?
+S.define_setting('PROCESSING.ACQUISITION_TIME_EPOCH_UTC',                   [2000,01,01, 12,00,00, 000,000,000]);
+S.define_setting('PROCESSING.USE_AQUISITION_TIME_FOR_HK_TIME_INTERPOLATION', 0);
+S.define_setting('PROCESSING.RCT.LFR.EXTRAPOLATE_TF_AMOUNT_HZ', 1);
+
 
 
 %=======================================================================================================================
@@ -140,7 +155,6 @@ S.define_setting('SWD.environment.executable',     'roc/bicas');   % Relative pa
 % NOTE: Only the last filename in a sorted list of matching filenames will actually be used.
 %=======================================================================================================================
 CDF_SUFFIX_REGEXP = '\.(cdf|CDF)';
-%S.define_setting('PROCESSING.RCT_REGEXP.RGTS.BIAS',         ['ROC-SGSE_CAL_RCT-BIAS_V20[0-9]{10}',          CDF_SUFFIX_REGEXP]);   % Old BIAS convention
 S.define_setting('PROCESSING.RCT_REGEXP.RGTS.BIAS',         ['ROC-SGSE_CAL_RPW_BIAS_V20[0-9]{10}',          CDF_SUFFIX_REGEXP]);
 S.define_setting('PROCESSING.RCT_REGEXP.RODP.BIAS',         [    'SOLO_CAL_RPW_BIAS_V20[0-9]{10}',          CDF_SUFFIX_REGEXP]);
 S.define_setting('PROCESSING.RCT_REGEXP.RGTS.LFR',          ['ROC-SGSE_CAL_RCT-LFR-BIAS_V20[0-9]{12}',      CDF_SUFFIX_REGEXP]);
@@ -149,10 +163,6 @@ S.define_setting('PROCESSING.RCT_REGEXP.RGTS.TDS-LFM-CWF',  ['ROC-SGSE_CAL_RCT-T
 S.define_setting('PROCESSING.RCT_REGEXP.RODP.TDS-LFM-CWF',  [    'SOLO_CAL_RCT-TDS-LFM-CWF-E_V20[0-9]{6}',  CDF_SUFFIX_REGEXP]);
 S.define_setting('PROCESSING.RCT_REGEXP.RGTS.TDS-LFM-RSWF', ['ROC-SGSE_CAL_RCT-TDS-LFM-RSWF-E_V20[0-9]{6}', CDF_SUFFIX_REGEXP]);
 S.define_setting('PROCESSING.RCT_REGEXP.RODP.TDS-LFM-RSWF', [    'SOLO_CAL_RCT-TDS-LFM-RSWF-E_V20[0-9]{6}', CDF_SUFFIX_REGEXP]);
-
-S.define_setting('PROCESSING.RCT.LFR.EXTRAPOLATE_TF_AMOUNT_HZ', 1);
-
-
 
 %====================================================================================================================
 % Define constants relating to interpreting LFR datasets
@@ -165,6 +175,9 @@ S.define_setting('PROCESSING.LFR.F0_HZ', 24576);  % = 6 * 4096
 S.define_setting('PROCESSING.LFR.F1_HZ',  4096);
 S.define_setting('PROCESSING.LFR.F2_HZ',   256);
 S.define_setting('PROCESSING.LFR.F3_HZ',    16);
+
+% Presumed ~BUGFIX for flaw in L1R TDS-LFM-RSWF datasets. Remove?
+S.define_setting('PROCESSING.TDS.RSWF_L1R_FREQ_CORRECTION_ENABLED', 1)
 
 %========================================================
 % Constants for how the "simple demuxer" calibrates data
@@ -184,8 +197,10 @@ S.define_setting('PROCESSING.LFR.F3_HZ',    16);
 S.define_setting('PROCESSING.CALIBRATION.HK_BIAS_CURRENT.OFFSET_TM', -hex2dec('56C0') * [1,1,1])
 S.define_setting('PROCESSING.CALIBRATION.HK_BIAS_CURRENT.GAIN_APT',  -0.008198754     * [1,1,1])
 
-S.define_setting('PROCESSING.CALIBRATION.DISABLE_CALIBRATION', 0)
+S.define_setting('PROCESSING.CALIBRATION.CALIBRATION_DISABLED', 0)
 S.define_setting('PROCESSING.CALIBRATION.DETRENDING_ENABLED',  0)
+
+
 
 S.disable_define();
 

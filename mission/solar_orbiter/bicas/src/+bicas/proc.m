@@ -82,15 +82,15 @@ classdef proc
         %                    (1) it could be missing, or
         %                    (2) sometimes one may want to read an ROC-SGSE dataset as if it was an RODP dataset or the other way around.
         %
-        function [OutputDatasetsMap] = produce_L2_LFR(InputDatasetsMap, Cal, inputSciDsi, outputDsi, outputVersion)
+        function [OutputDatasetsMap] = produce_L2_LFR(InputDatasetsMap, Cal, inputSciDsi, outputDsi, outputVersion, SETTINGS)
             
             HkPd  = InputDatasetsMap('HK_cdf');
             SciPd = InputDatasetsMap('SCI_cdf');
             
-            HkSciTimePd = bicas.proc_sub.process_HK_to_HK_on_SCI_TIME(SciPd, HkPd);
+            HkSciTimePd             = bicas.proc_sub.process_HK_to_HK_on_SCI_TIME(SciPd, HkPd, SETTINGS);
             
             [SciPreDcPd, calibFunc] = bicas.proc_sub.process_LFR_to_PreDC(        SciPd, inputSciDsi, HkSciTimePd, Cal);
-            SciPostDcPd             = bicas.proc_sub.process_demuxing_calibration(SciPreDcPd, Cal, calibFunc);
+            SciPostDcPd             = bicas.proc_sub.process_demuxing_calibration(SciPreDcPd, Cal, calibFunc, SETTINGS);
             OutputSciPd             = bicas.proc_sub.process_PostDC_to_LFR(       SciPostDcPd, outputDsi, outputVersion);
             
             OutputDatasetsMap = containers.Map();
@@ -103,16 +103,16 @@ classdef proc
         % =========
         % InputDatasetsMap : containers.Map: key=<argument key> --> value=PDV for input CDF
         %
-        function [OutputDatasetsMap] = produce_L2_TDS(InputDatasetsMap, Cal, inputSciDsi, outputDsi, outputVersion)
+        function [OutputDatasetsMap] = produce_L2_TDS(InputDatasetsMap, Cal, inputSciDsi, outputDsi, outputVersion, SETTINGS)
             
             HkPd  = InputDatasetsMap('HK_cdf');
             SciPd = InputDatasetsMap('SCI_cdf');
             
-            HkSciTimePd             = bicas.proc_sub.process_HK_to_HK_on_SCI_TIME(SciPd, HkPd);
-            [SciPreDcPd, calibFunc] = bicas.proc_sub.process_TDS_to_PreDC(        SciPd, inputSciDsi, HkSciTimePd, Cal);   % Not tested.
+            HkSciTimePd             = bicas.proc_sub.process_HK_to_HK_on_SCI_TIME(SciPd, HkPd, SETTINGS);
+            [SciPreDcPd, calibFunc] = bicas.proc_sub.process_TDS_to_PreDC(        SciPd, inputSciDsi, HkSciTimePd, Cal, SETTINGS);
             
-            SciPostDcPd = bicas.proc_sub.process_demuxing_calibration(SciPreDcPd, Cal, calibFunc);
-            OutputSciPd = bicas.proc_sub.process_PostDC_to_TDS(       SciPostDcPd, outputDsi, outputVersion);   % Not implemented.
+            SciPostDcPd = bicas.proc_sub.process_demuxing_calibration(SciPreDcPd, Cal, calibFunc, SETTINGS);
+            OutputSciPd = bicas.proc_sub.process_PostDC_to_TDS(       SciPostDcPd, outputDsi, outputVersion);
 
             OutputDatasetsMap = containers.Map();
             OutputDatasetsMap('SCI_cdf') = OutputSciPd;
