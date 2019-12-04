@@ -42,7 +42,16 @@ if flag_get_all_Cluster_positions_from_isdat
 end
 if flag_get_all_Cluster_positions_from_www
 	disp('Downloading from internet file with all Cluster orbits ...');  %#ok<UNRCH>
-	[f,status]=urlwrite('https://space.irfu.se/~andris/cluster/mR.mat','mR.mat'); %#ok<URLWR> websave introduced in R2014b
+  if verLessThan('matlab', '8.4')
+    [f,status]=urlwrite('https://space.irfu.se/~andris/cluster/mR.mat','mR.mat'); %#ok<URLWR> websave introduced in R2014b
+  else
+    try
+      f = websave('mR.mat', 'https://space.irfu.se/~andris/cluster/mR.mat');
+      status = true;
+    catch
+      status = false;
+    end
+  end
 end
 
 %% Get all Cluster position from isdat
@@ -113,7 +122,16 @@ end
 %% Get Cluster file from internet 
 if flag_get_Cluster_file_from_www
 	disp('Downloading from internet Cluster orbit parameter file mRcluster.mat ...');
-	[f,status]=urlwrite('https://space.irfu.se/~andris/cluster/mRcluster.mat','mRcluster.mat'); %#ok<URLWR> websave introduced in R2014b
+  if verLessThan('matlab', '8.4')
+    [f,status]=urlwrite('https://space.irfu.se/~andris/cluster/mRcluster.mat','mRcluster.mat'); %#ok<URLWR> websave introduced in R2014b
+  else
+    try
+      f = websave('mRcluster.mat', 'https://space.irfu.se/~andris/cluster/mRcluster.mat');
+      status = true;
+    catch
+      status = false;
+    end
+  end
 end
 
 %% Create the figure
