@@ -109,8 +109,18 @@ classdef calib
 %       CON: Must separate unmodified and modified calibration data.
 %       CON: "Must" label variables that they are modified/unmodified.
 %       CON-PROBLEM: No clear line for what is a modification or not.
+%           NOTE: Difference between
+%               (1) modification (information potentially destroyed), and
+%               (2) conversion (no information destroyed; e.g. format conversion)
 %           Ex: TF frequency Hz-->omega rad/s
 %           Ex: TF amplitude+phase-->Z
+%           Ex: Apply upper frequency cut-off to ITF, in particular analytical ITFs.
+%           Ex: Extrapolate tabulated TF
+%           Ex: How/where make different choices for how to calibrate?
+%               (1) No calibration
+%               (2) Scalar calibration (a) with/(b) without offsets
+%               (3) Full calibration
+%               (4) Full calibration except without parasitic capacitance.
 %       TODO-DECISION: Where is it natural to modify calibration data then?!
 %   PROPOSAL: General philosophy should be that calibrate_* chooses as much as possible, and thus chooses different
 %             functions to call.
@@ -134,7 +144,8 @@ classdef calib
 %   PROPOSAL: Define acronym for all physical signal sources which is a superset of ASR.
 %   PROPOSAL: Have different classes and acronyms for (1) physical signal sources and (2) dataset representation
 %       ("BLTS src" and "BLTS dest") where (2) is in practice a subset of (1).
-
+%
+% PROPOSAL: Move TF=0 for high frequencies to modify_tabulated_ITF.
 
 
     properties(Access=private)
@@ -153,6 +164,10 @@ classdef calib
         % Corresponds to SETTINGS key-value.
         % In principle unnecessary, but it shortens/clarifies the code.
         enableDetrending
+    end
+    
+    properties(Access=private, Constant)
+        NAN_TF = @(omegaRps) (omegaRps * NaN);
     end
 
     %###################################################################################################################
@@ -174,6 +189,18 @@ classdef calib
             obj.LfrItfIvptTable    = obj.read_log_RCT(calibrationDir, pipelineId, 'LFR');
             obj.tdsCwfFactorsIvpt  = obj.read_log_RCT(calibrationDir, pipelineId, 'TDS-CWF');
             obj.TdsRswfItfIvptList = obj.read_log_RCT(calibrationDir, pipelineId, 'TDS-RSWF');
+            
+            % Modify tabulated LFR TFs.
+            for iLsf = 1:numel(obj.LfrItfIvptTable)
+                for iBlts = 1:numel(obj.LfrItfIvptTable{iLsf})
+                    obj.LfrItfIvptTable{iLsf}{iBlts} = bicas.calib.modify_tabulated_ITF(obj.LfrItfIvptTable{iLsf}{iBlts});
+                end
+            end
+            
+            % Modify tabulated TDS TFs.
+            for iBlts = 1:numel(obj.TdsRswfItfIvptList)
+                obj.TdsRswfItfIvptList{iBlts} = bicas.calib.modify_tabulated_ITF(obj.TdsRswfItfIvptList{iBlts});
+            end
 
 %             obj.BiasScalar.alpha          = SETTINGS.get_fv('PROCESSING.CALIBRATION.BIAS.SCALAR.ALPHA');
 %             obj.BiasScalar.beta           = SETTINGS.get_fv('PROCESSING.CALIBRATION.BIAS.SCALAR.BETA');
@@ -412,8 +439,13 @@ classdef calib
             
             samplesCaAVolt = cell(size(samplesCaTm));   % Initialize empty output variable.
             if ismember(iBlts, [1,2,3])
+                
+                %=====================================
+                % Create combined TF for TDS and BIAS
+                %=====================================
                 itf = @(omega) (...
-                    obj.TdsRswfItfIvptList{iBlts}.eval_linear(omega) .* ...
+                    bicas.calib.eval_tabulated_ITF(obj.TdsRswfItfIvptList{iBlts}, omega) ...
+                    .* ...
                     BiasCalibData.itfAvpiv(omega));
                 
                 %====================================
@@ -485,7 +517,8 @@ classdef calib
 
             switch(rctId)
                 case 'BIAS'     ; Rcd = bicas.RCT.read_BIAS_RCT(filePath);
-                case 'LFR'      ; Rcd = bicas.RCT.read_LFR_RCT(filePath, obj.SETTINGS.get_fv('PROCESSING.RCT.LFR.EXTRAPOLATE_TF_AMOUNT_HZ'));
+                %case 'LFR'      ; Rcd = bicas.RCT.read_LFR_RCT(filePath, obj.SETTINGS.get_fv('PROCESSING.RCT.LFR.EXTRAPOLATE_TF_AMOUNT_HZ'));
+                case 'LFR'      ; Rcd = bicas.RCT.read_LFR_RCT(filePath);
                 case 'TDS-CWF'  ; Rcd = bicas.RCT.read_TDS_CWF_RCT(filePath);
                 case 'TDS-RSWF' ; Rcd = bicas.RCT.read_TDS_RSWF_RCT(filePath);
                 otherwise
@@ -515,11 +548,11 @@ classdef calib
             
             switch(BltsSrc.category)
                 case 'DC single'
-                    BiasItfAvpivList = obj.Bias.ItfSet.DcSingleAvpiv;
-                    offsetAVolt = obj.Bias.dcSingleOffsetsAVolt(iCalibTimeH, BltsSrc.antennas);
+                    BiasItfAvpiv = TF_list_2_func(obj.Bias.ItfSet.DcSingleAvpiv);    % NOTE: List of ITFs for different times.
+                    offsetAVolt  = obj.Bias.dcSingleOffsetsAVolt(iCalibTimeH, BltsSrc.antennas);
 
                 case 'DC diff'
-                    BiasItfAvpivList = obj.Bias.ItfSet.DcDiffAvpiv;
+                    BiasItfAvpiv = TF_list_2_func(obj.Bias.ItfSet.DcDiffAvpiv);
                     if     isequal(BltsSrc.antennas(:)', [1,2]);   offsetAVolt = obj.Bias.DcDiffOffsets.E12AVolt(iCalibTimeH);
                     elseif isequal(BltsSrc.antennas(:)', [2,3]);   offsetAVolt = obj.Bias.DcDiffOffsets.E23AVolt(iCalibTimeH);
                     elseif isequal(BltsSrc.antennas(:)', [1,3]);   offsetAVolt = obj.Bias.DcDiffOffsets.E13AVolt(iCalibTimeH);
@@ -528,9 +561,9 @@ classdef calib
                     end
 
                 case 'AC diff'
-                    if     biasHighGain == 1;   BiasItfAvpivList = obj.Bias.ItfSet.AcHighGainAvpiv;   offsetAVolt = 0;
-                    elseif biasHighGain == 0;   BiasItfAvpivList = obj.Bias.ItfSet.AcLowGainAvpiv;    offsetAVolt = 0;
-                    elseif isnan(biasHighGain); BiasItfAvpiv     = @(omega) (omega*NaN);              offsetAVolt = NaN;   % NOTE: Set TF such that data becomes NaN.
+                    if     biasHighGain == 1;   BiasItfAvpiv = TF_list_2_func(obj.Bias.ItfSet.AcHighGainAvpiv);   offsetAVolt = 0;
+                    elseif biasHighGain == 0;   BiasItfAvpiv = TF_list_2_func(obj.Bias.ItfSet.AcLowGainAvpiv);    offsetAVolt = 0;
+                    elseif isnan(biasHighGain); BiasItfAvpiv = bicas.calib.NAN_TF;                                offsetAVolt = NaN;
                     else
                         error('BICAS:calib:Assertion:IllegalArgument', 'Illegal argument biasHighGain=%g.', biasHighGain)
                     end
@@ -542,13 +575,19 @@ classdef calib
             end
             
             % CASE: Either "BiasItfList" or "BiasItf" is defined.
-            if exist('BiasItfAvpivList', 'var')
-                % Select (1) TF by calibration time, and (2) convert to function handle.
-                BiasItfAvpiv = @(omegaRps) (BiasItfAvpivList{iCalibTimeL}.eval(omegaRps));
-            end
+            %if exist('BiasItfAvpivList', 'var')
+            %    % Select (1) TF by calibration time, and (2) convert to function handle.
+            %    BiasItfAvpiv = @(omegaRps) (BiasItfAvpivList{iCalibTimeL}.eval(omegaRps));
+            %end
             
             BiasCalibData.itfAvpiv    = BiasItfAvpiv;
             BiasCalibData.offsetAVolt = offsetAVolt;
+
+
+
+            function Tf = TF_list_2_func(RtfList)
+                Tf = @(omegaRps) (RtfList{iCalibTimeL}.eval(omegaRps));
+            end
         end
         
         
@@ -562,15 +601,15 @@ classdef calib
             assert(ismember(iLsf,  [1:4]))
             
             if (iLsf == 4) && ismember(iBlts, [4,5])
-                lfrItfIvpt = @(omegaRps) (omegaRps * NaN);
+                %lfrItfIvpt = @(omegaRps) (omegaRps * NaN);
+                lfrItfIvpt = bicas.calib.NAN_TF;
             else
-                tempLfrItfIvpt = obj.LfrItfIvptTable{iLsf}{iBlts};
-                lfrItfIvpt = @(omegaRps) (tempLfrItfIvpt.eval_linear(omegaRps));
+                lfrItfIvpt = @(omegaRps) (bicas.calib.eval_tabulated_ITF(obj.LfrItfIvptTable{iLsf}{iBlts}, omegaRps));
             end
         end
-
-
-
+        
+        
+        
     end    % methods(Access=private)
 
     %###################################################################################################################
@@ -674,5 +713,69 @@ classdef calib
 
 
     end    % methods(Static)
+    
+    
+    
+    methods(Static, Access=private)
+
+
+
+        % Evaluate tabulated INVERSE transfer function.
+        % This function is meant to specify how the tabulated transfer functions should be interpreted w.r.t.
+        % interpolation.
+        %
+        % NOTE: Intended specifically for INVERSE transfer functions. Therefore using Z=0 for frequencies higher than
+        % the table.
+        function Z = eval_tabulated_ITF(TabulatedTf, omegaRps)
+            useTabTf = (omegaRps <= TabulatedTf.omegaRps(end));
+            
+            % NOTE: interp1 return NaN for values outside range.
+            Z = interp1(TabulatedTf.omegaRps, TabulatedTf.Z, omegaRps, 'linear');
+            Z(~useTabTf) = 0;   % Set to zero (overwrite) for values above highest tabulated frequency.
+            
+            % ASSERTION
+            if ~all(isfinite(Z))
+                % IMPLEMENTATION NOTE: Experience shows that it is useful to have an extended error message confirming
+                % that the requested frequence range is outside the tabulated one, and by how much.
+                errorMsg = sprintf(...
+                    ['Can not evaluate tabulated transfer function for frequencies outside of the range of tabulated frequencies.\n', ...
+                    'Range of frequencies for which there are tabulated Z values:\n', ...
+                    '    min(TabulatedTf.omegaRps) = %g\n', ...
+                    '    max(TabulatedTf.omegaRps) = %g\n', ...
+                    'Range of frequencies for which evaluation (interpolation) of Z was attempted:\n', ...
+                    '    min(omegaRps)     = %g\n', ...
+                    '    max(omegaRps)     = %g\n'], ...
+                    min(TabulatedTf.omegaRps), ...
+                    max(TabulatedTf.omegaRps), ...
+                    min(omegaRps), ...
+                    max(omegaRps));
+                
+                error('BICAS:Assertion', errorMsg)
+            end
+        end
+        
+        
+        
+        % Modify tabulated INVERSE transfer functions, if needed.
+        %
+        % Extrapolate to 0 Hz, if needed.
+        function ModifItf = modify_tabulated_ITF(Itf)
+            assert(Itf.omegaRps(1) > 0)
+            
+            % NOTE: Can not just use the lowest-frequency Z value for 0 Hz since it has to be real (not complex).
+            Z1     = Itf.Z(1);
+            signZ0 = sign(real(Z1));
+            assert(signZ0 ~= 0, 'Can not extrapolate due to ambiguity. real(Z(1)) = 0.')
+            Z0     = abs(Z1) * signZ0;
+            
+            omegaRps = [0;  Itf.omegaRps(:)];
+            Z        = [Z0; Itf.Z(:)       ];
+            
+            ModifItf = EJ_library.utils.tabulated_transform(omegaRps, Z);
+        end
+        
+        
+        
+    end    % methods(Static, Access=private)
 
 end

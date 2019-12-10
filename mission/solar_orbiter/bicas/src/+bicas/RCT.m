@@ -1,6 +1,12 @@
 %
 % Class that collects functions related to finding/selecting and reading RCTs.
 %
+% DESIGN INTENT
+% =============
+% Implemented so that no calibration data is modified/added to/removed from. The returned data structures reflect the
+% content of the RCTs, not necessarily the data used. Modification of data (in particular extrapolation of transfer
+% functions) should be done elsewhere.
+%
 %
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
 % First created 2019-11-15
@@ -189,15 +195,15 @@ classdef RCT
                 Bias.ItfSet.DcSingleAvpiv = bicas.RCT.create_ITF_sequence(...
                     tfCoeffs(:, :, NUMERATOR,   DC_SINGLE), ...
                     tfCoeffs(:, :, DENOMINATOR, DC_SINGLE));
-                
+
                 Bias.ItfSet.DcDiffAvpiv = bicas.RCT.create_ITF_sequence(...
                     tfCoeffs(:, :, NUMERATOR,   DC_DIFF), ...
                     tfCoeffs(:, :, DENOMINATOR, DC_DIFF));
-                
+
                 Bias.ItfSet.AcLowGainAvpiv = bicas.RCT.create_ITF_sequence(...
                     tfCoeffs(:, :, NUMERATOR,   AC_LG), ...
                     tfCoeffs(:, :, DENOMINATOR, AC_LG));
-                
+
                 Bias.ItfSet.AcHighGainAvpiv = bicas.RCT.create_ITF_sequence(...
                     tfCoeffs(:, :, NUMERATOR,   AC_HG), ...
                     tfCoeffs(:, :, DENOMINATOR, AC_HG));
@@ -216,7 +222,7 @@ classdef RCT
                 bicas.proc_utils.assert_Epoch(Bias.epochH)
                 validateattributes(Bias.epochL, {'numeric'}, {'increasing'})
                 validateattributes(Bias.epochH, {'numeric'}, {'increasing'})
-                
+
                 assert(ndims(Bias.Current.offsetsAmpere)    == 2)
                 assert(size( Bias.Current.offsetsAmpere, 1) == nEpochL)
                 assert(size( Bias.Current.offsetsAmpere, 2) == 3)
@@ -241,7 +247,8 @@ classdef RCT
         % LfrItfIvptTable : {iLsf}{iBlts}. Table of LFR TFs.
         %                   iLsf=1..3 : iBlts=1..5 for BLTS 1-5
         %                   iLsf=4    : iBlts=1..3 for BIAS 1-3
-        function LfrItfIvptTable = read_LFR_RCT(filePath, tfExtrapolateAmountHz)
+        function LfrItfIvptTable = read_LFR_RCT(filePath)
+        %function LfrItfIvptTable = read_LFR_RCT(filePath, tfExtrapolateAmountHz)
             Do = dataobj(filePath);
             
             try
@@ -295,24 +302,12 @@ classdef RCT
                         lsfBltsFreqTableHz   = lsfFreqTableHz;
                         lsfBltsAmplTableTpiv = lsfAmplTableTpiv(:, iBlts);
                         lsfBltsPhaseTableDeg = lsfPhaseTableDeg(:, iBlts);
-                        
-                        % Extrapolate the TF somewhat to higher frequencies
-                        % -------------------------------------------------
-                        % IMPLEMENTATION NOTE: This is needed since calibrating CWF data needs transfer function values
-                        % for slightly higher frequencies than tabulated in the RCT.
-                        [   ~,                  lsfBltsAmplTableTpiv] = bicas.utils.extend_extrapolate(...
-                            lsfBltsFreqTableHz, lsfBltsAmplTableTpiv, ...
-                            tfExtrapolateAmountHz, 'positive', 'exponential', 'exponential');
-                        [   lsfBltsFreqTableHz, lsfBltsPhaseTableDeg] = bicas.utils.extend_extrapolate(...
-                            lsfBltsFreqTableHz, lsfBltsPhaseTableDeg, ...
-                            tfExtrapolateAmountHz, 'positive', 'exponential', 'linear');
-                        
+
                         % NOTE: INVERTING the tabulated TF.
                         ItfIvpt = EJ_library.utils.tabulated_transform(...
                             lsfBltsFreqTableHz * 2*pi, ...
                             1 ./ lsfBltsAmplTableTpiv, ...
-                            - deg2rad(lsfBltsPhaseTableDeg), ...
-                            'extrapolatePositiveFreqZtoZero', 1);
+                            - deg2rad(lsfBltsPhaseTableDeg));
                         
                         % ASSERTION: ITF
                         assert(~ItfIvpt.toward_zero_at_high_freq())
@@ -377,36 +372,35 @@ classdef RCT
                 assert(size( phaseDeg, 1) == 3)
                 assert(size( amplIvpt, 2) >= bicas.RCT.TF_TABLE_MIN_LENGTH)
                 assert(size( phaseDeg, 2) >= bicas.RCT.TF_TABLE_MIN_LENGTH)
-                
+
                 EJ_library.utils.assert.all_equal([...
                     length(freqsHz), ...
                     size(amplIvpt,  2), ...
                     size(phaseDeg, 2) ]);
-                
+
                 for iBlts = 1:3
                     ItfIvpt = EJ_library.utils.tabulated_transform(...
                         freqsHz * 2*pi, ...
                         amplIvpt(        iBlts, :), ...
-                        deg2rad(phaseDeg(iBlts, :)), ...
-                        'extrapolatePositiveFreqZtoZero', 1);
-                    
+                        deg2rad(phaseDeg(iBlts, :)));
+
                     % ASSERTION: INVERTED TF
                     assert(~ItfIvpt.toward_zero_at_high_freq(), ...
                         ['TDS RSWF transfer function appears to go toward zero at high frequencies. Has it not been', ...
                         ' inverted/backward in time, i.e. is it not physical output-to-input?'])
-                    
+
                     TdsRswfItfIvptList{iBlts} = ItfIvpt;
                 end
-                
+
             catch Exc1
                 Exc2 = MException('BICAS:calib:FailedToReadInterpretRCT', 'Error when interpreting calibration file (RCT) "%s"', filePath);
                 Exc2 = Exc2.addCause(Exc1);
                 throw(Exc2);
             end
         end
-        
-        
-        
+
+
+
     end    %methods(Static, Access=public)
     
     

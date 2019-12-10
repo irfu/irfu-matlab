@@ -30,8 +30,18 @@
 % First created 2019-11-12
 %
 classdef tabulated_transform
-% PROBLEM: Interpolating a table is not ambiguous. There are many choices.
+% PROBLEM: Evaluating a TF is not unambiguous.
+%   Ex: How interpolate? Linear, quadratic, spline etc. Interpolate amplitude & phase separately?!
+%   Ex: How handle values outside of table?
+%           Assertion against extrapolation
+%           Extrapolate below min. frequency: How?
+%           Extrapolate above max. frequency: How?
+% PROPOSAL: Redefine as class for only the data, not the evaluation.
+% PROPOSAL: Redefine as class for general-purpose table.
 % PROPOSAL: Implement subclasses with more strict requirements on permitted transfer functions.
+% PROPOSAL: New class name(s), without "transform".
+%   PROPOSAL: tabulated_TF, rational_func_TF
+%   CON: "transform" refers to Fourier/Laplace transform.
 
 
 
@@ -40,7 +50,7 @@ classdef tabulated_transform
         omegaRps    % Rps = Radians Per Second
         Z
     end
-    
+
 
 
     methods(Access=public)
@@ -69,8 +79,8 @@ classdef tabulated_transform
             %   NOTE: Must rename string constant.
             %       PROPOSAL: "extrapolatePositiveFreqZtoZ0"
 
-            DEFAULT_SETTINGS = [];
-            DEFAULT_SETTINGS.extrapolatePositiveFreqZtoZero = false;
+%             DEFAULT_SETTINGS = [];
+%             DEFAULT_SETTINGS.extrapolatePositiveFreqZtoZero = false;
             
             %==========================
             % Handle omegaRps argument
@@ -92,7 +102,7 @@ classdef tabulated_transform
                 %=======================================
                 amplitude = varargin{1};
                 phaseRad  = varargin{2};
-                varargin = varargin(3:end);
+                varargin  = varargin(3:end);
                 
                 % ASSERTIONS
                 EJ_library.utils.assert.vector(amplitude)
@@ -121,25 +131,25 @@ classdef tabulated_transform
             %===========================
             % Handle settings arguments
             %===========================
-            Settings = EJ_library.utils.interpret_settings_args(DEFAULT_SETTINGS, varargin);
-            if Settings.extrapolatePositiveFreqZtoZero
-                % IMPLEMENTATION NOTE: Require only tabulated positive frequencies, since 
-                % (1) it is ambiguous how one would interpolate from Z(omega<0) and Z(omega>0) (and it is interpolation,
-                %     not extrapolation as in the settings key name string),
-                % (2) "eval" method would interpolate anyway.
-                % NOTE: Could also implement extrapolation from Z(omega<0) (alone).
-                % NOTE: Settings key name itself does not indicate the requirement of positive frequencies.
-                assert(omegaRps(1) > 0)
-                
-                % NOTE: Can not just use the lowest-frequency Z for 0 Hz since it has to be real (not complex).
-                Z1 = Z(1);
-                signZ0 = sign(real(Z1));
-                assert(signZ0 ~= 0, 'Can not extrapolate due to ambiguity. real(Z(1)) = 0.')
-                Z0 = abs(Z1) * signZ0;
-                
-                omegaRps = [0;  omegaRps(:)];
-                Z        = [Z0; Z(:)       ];
-            end
+%             Settings = EJ_library.utils.interpret_settings_args(DEFAULT_SETTINGS, varargin);
+%             if Settings.extrapolatePositiveFreqZtoZero
+%                 % IMPLEMENTATION NOTE: Require only tabulated positive frequencies, since 
+%                 % (1) it is ambiguous how one would interpolate from Z(omega<0) and Z(omega>0) (and it is interpolation,
+%                 %     not extrapolation as in the settings key name string),
+%                 % (2) "eval" method would interpolate anyway.
+%                 % NOTE: Could also implement extrapolation from Z(omega<0) (alone).
+%                 % NOTE: Settings key name itself does not indicate the requirement of positive frequencies.
+%                 assert(omegaRps(1) > 0)
+%                 
+%                 % NOTE: Can not just use the lowest-frequency Z value for 0 Hz since it has to be real (not complex).
+%                 Z1 = Z(1);
+%                 signZ0 = sign(real(Z1));
+%                 assert(signZ0 ~= 0, 'Can not extrapolate due to ambiguity. real(Z(1)) = 0.')
+%                 Z0 = abs(Z1) * signZ0;
+%                 
+%                 omegaRps = [0;  omegaRps(:)];
+%                 Z        = [Z0; Z(:)       ];
+%             end
 
 
 
@@ -171,30 +181,30 @@ classdef tabulated_transform
         
         
         
-        % NOTE: Interpolates Z; not amplitude and phase separately.
-        function Z = eval_linear(obj, omegaRps)
-            % NOTE: interp1 return NaN for values outside range.
-            Z = interp1(obj.omegaRps, obj.Z, omegaRps, 'linear');
-            
-            if ~all(isfinite(Z))
-                % IMPLEMENTATION NOTE: Experience shows that it is useful to have an extended error message confirming
-                % that the requested frequence range is outside the tabulated one, and by how much.
-                errorMsg = sprintf(...
-                    ['Can not evaluate tabulated transfer function for frequencies outside of the range of tabulated frequencies.\n', ...
-                    'Range of frequencies for which there are tabulated Z values:\n', ...
-                    '    min(obj.omegaRps) = %g\n', ...
-                    '    max(obj.omegaRps) = %g\n', ...
-                    'Range of frequencies for which evaluation (interpolation) of Z was attempted:\n', ...
-                    '    min(omegaRps)     = %g\n', ...
-                    '    max(omegaRps)     = %g\n'], ...
-                    min(obj.omegaRps), ...
-                    max(obj.omegaRps), ...
-                    min(omegaRps), ...
-                    max(omegaRps));
-                
-                error('BICAS:Assertion', errorMsg)
-            end
-        end
+%         % NOTE: Interpolates Z; not amplitude and phase separately.
+%         function Z = eval_linear(obj, omegaRps)
+%             % NOTE: interp1 return NaN for values outside range.
+%             Z = interp1(obj.omegaRps, obj.Z, omegaRps, 'linear');
+%             
+%             if ~all(isfinite(Z))
+%                 % IMPLEMENTATION NOTE: Experience shows that it is useful to have an extended error message confirming
+%                 % that the requested frequence range is outside the tabulated one, and by how much.
+%                 errorMsg = sprintf(...
+%                     ['Can not evaluate tabulated transfer function for frequencies outside of the range of tabulated frequencies.\n', ...
+%                     'Range of frequencies for which there are tabulated Z values:\n', ...
+%                     '    min(obj.omegaRps) = %g\n', ...
+%                     '    max(obj.omegaRps) = %g\n', ...
+%                     'Range of frequencies for which evaluation (interpolation) of Z was attempted:\n', ...
+%                     '    min(omegaRps)     = %g\n', ...
+%                     '    max(omegaRps)     = %g\n'], ...
+%                     min(obj.omegaRps), ...
+%                     max(obj.omegaRps), ...
+%                     min(omegaRps), ...
+%                     max(omegaRps));
+%                 
+%                 error('BICAS:Assertion', errorMsg)
+%             end
+%         end
 
 
 
