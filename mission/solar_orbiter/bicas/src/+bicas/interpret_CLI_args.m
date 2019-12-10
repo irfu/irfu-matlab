@@ -42,6 +42,7 @@
 % ===========
 % FM = Functionality mode : Whether BICAS is launched with --version, --help, --identification, -- descriptor, or (some) s/w mode.
 % S/W mode                : Which dataset processing is to be performed.
+% SIP                     : Specific Input Parameters. The phrase is an RCS ICD term.
 %
 %
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
@@ -53,9 +54,6 @@ function CliData = interpret_CLI_args(cliArgumentList)
 %       Ex: Flags for BICAS functionality modes.
 
 
-C = bicas.error_safe_constants();
-
-
 
 %==================================================================================
 % Configure permitted RCS ICD CLI options COMMON for all BICAS functionality modes
@@ -63,45 +61,21 @@ C = bicas.error_safe_constants();
 %==================================================================================
 SW_MODE_REGEXP = '[^-][^-].*';
 
-ICD_OPTIONS_CONFIG_MAP = containers.Map();
-% NOTE: log_file and config_file are both options to permit but ignore since they are handled by bash launcher script.
-ICD_OPTIONS_CONFIG_MAP('version_FM')                = struct('optionHeaderRegexp', '--version',        'occurrenceRequirement', '0-1',   'nValues', 0);
-ICD_OPTIONS_CONFIG_MAP('identification_FM')         = struct('optionHeaderRegexp', '--identification', 'occurrenceRequirement', '0-1',   'nValues', 0);
-ICD_OPTIONS_CONFIG_MAP('swdescriptor_FM')           = struct('optionHeaderRegexp', '--swdescriptor',   'occurrenceRequirement', '0-1',   'nValues', 0);
-ICD_OPTIONS_CONFIG_MAP('help_FM')                   = struct('optionHeaderRegexp', '--help',           'occurrenceRequirement', '0-1',   'nValues', 0);
-ICD_OPTIONS_CONFIG_MAP('SW_mode')                   = struct('optionHeaderRegexp', SW_MODE_REGEXP,     'occurrenceRequirement', '0-1',   'nValues', 0);
+OPTIONS_CONFIG_MAP = containers.Map();
+OPTIONS_CONFIG_MAP('version_FM')                = struct('optionHeaderRegexp', '--version',        'occurrenceRequirement', '0-1',   'nValues', 0);
+OPTIONS_CONFIG_MAP('identification_FM')         = struct('optionHeaderRegexp', '--identification', 'occurrenceRequirement', '0-1',   'nValues', 0);
+OPTIONS_CONFIG_MAP('swdescriptor_FM')           = struct('optionHeaderRegexp', '--swdescriptor',   'occurrenceRequirement', '0-1',   'nValues', 0);
+OPTIONS_CONFIG_MAP('help_FM')                   = struct('optionHeaderRegexp', '--help',           'occurrenceRequirement', '0-1',   'nValues', 0);
+OPTIONS_CONFIG_MAP('SW_mode')                   = struct('optionHeaderRegexp', SW_MODE_REGEXP,     'occurrenceRequirement', '0-1',   'nValues', 0);
 
-ICD_OPTIONS_CONFIG_MAP('specific_input_parameters') = struct('optionHeaderRegexp', '--(.*)',           'occurrenceRequirement', '0-inf', 'nValues', 1, 'interprPriority', -1);
+% NOTE: "specific_input_parameters" refers to the official RCS ICD term.
+% NOTE: log_file is an option to permit but ignore since it is handled by the bash launcher script, not the MATLAB code.
+OPTIONS_CONFIG_MAP('specific_input_parameters') = struct('optionHeaderRegexp', '--(..*)',          'occurrenceRequirement', '0-inf', 'nValues', 1, 'interprPriority', -1);
+OPTIONS_CONFIG_MAP('log_file')                  = struct('optionHeaderRegexp', '--log',            'occurrenceRequirement', '0-1',   'nValues', 1);
+OPTIONS_CONFIG_MAP('config_file')               = struct('optionHeaderRegexp', '--config',         'occurrenceRequirement', '0-1',   'nValues', 1);
 
-ICD_OPTIONS_CONFIG_MAP('log_file')                  = struct('optionHeaderRegexp', '--log',            'occurrenceRequirement', '0-1',   'nValues', 1);
-ICD_OPTIONS_CONFIG_MAP('config_file')               = struct('optionHeaderRegexp', '--config',         'occurrenceRequirement', '0-1',   'nValues', 1);
-% NOTE: "specific input parameter" is an RCS ICD term.
-
-INOFF_OPTIONS_CONFIG_MAP = containers.Map();
-INOFF_OPTIONS_CONFIG_MAP('modified_settings')       = struct('optionHeaderRegexp', '--set',    'occurrenceRequirement', '0-inf', 'nValues', 2);
-
-
-
-%===============================================================================
-% Separate CLI arguments into two different sequences/lists:
-% (1) icdCliArgumentsList   = List of official arguments, as defined in RCS ICD.
-% (2) inoffCliArgumentsList = List of inofficial arguments (may be empty).
-%===============================================================================
-iArgSeparator = find(strcmp(cliArgumentList, C.INOFFICIAL_ARGUMENTS_SEPARATOR));
-if numel(iArgSeparator) == 0
-    icdCliArgumentsList   = cliArgumentList;
-    inoffCliArgumentsList = {};
-
-elseif numel(iArgSeparator) == 1    % NOTE: Permit argument separator to be the very last argument.
-    if (iArgSeparator <= 1)
-        error('BICAS:CLISyntax', 'CLI argument separator at illegal position.')
-    end
-    icdCliArgumentsList   = cliArgumentList( 1 : (iArgSeparator-1) );
-    inoffCliArgumentsList = cliArgumentList( (iArgSeparator+1) : end );
-    
-else
-    error('BICAS:CLISyntax', 'Found more than one CLI argument separator.')
-end
+% Inofficial arguments
+OPTIONS_CONFIG_MAP('modified_settings')         = struct('optionHeaderRegexp', '--set',    'occurrenceRequirement', '0-inf', 'nValues', 2);
 
 
 
@@ -118,8 +92,8 @@ CliData = [];
 %       option with the same first option value. This is the intended behaviour (not a side effect).
 %       E.g. --setting LOGGING.IRF_LOG_LEVEL w --setting LOGGING.IRF_LOG_LEVEL n
 %=======================================================================================================================
-InoffOptionValuesMap = bicas.utils.parse_CLI_options(inoffCliArgumentsList, INOFF_OPTIONS_CONFIG_MAP);
-CliData.ModifiedSettingsMap = convert_modif_settings_OptionValues_2_Map(InoffOptionValuesMap('modified_settings'));
+OptionValuesMap = bicas.utils.parse_CLI_options(cliArgumentList, OPTIONS_CONFIG_MAP);
+CliData.ModifiedSettingsMap = convert_modif_settings_OptionValues_2_Map(OptionValuesMap('modified_settings'));
 
 
 
@@ -130,42 +104,49 @@ CliData.ModifiedSettingsMap = convert_modif_settings_OptionValues_2_Map(InoffOpt
 % arguments.
 %=====================================================================================================
 CliData.SpecInputParametersMap = EJ_library.utils.create_containers_Map('char', 'char', {}, {});
-IcdOptionValuesMap             = bicas.utils.parse_CLI_options(icdCliArgumentsList, ICD_OPTIONS_CONFIG_MAP);
 
 
-sipOptionValues = IcdOptionValuesMap('specific_input_parameters');
+
+sipOptionValues = OptionValuesMap('specific_input_parameters');
 
 
 
 % Convert presence of functionality mode flag (mutually exclusive) into the correct constant.
 tempTable = {
-    ~isempty(IcdOptionValuesMap('version_FM')),        'version'; ...
-    ~isempty(IcdOptionValuesMap('identification_FM')), 'identification'; ...
-    ~isempty(IcdOptionValuesMap('swdescriptor_FM')),   'S/W descriptor'; ...
-    ~isempty(IcdOptionValuesMap('help_FM')),           'help'; ...
-    ~isempty(IcdOptionValuesMap('SW_mode')),           'S/W mode'};
+    ~isempty(OptionValuesMap('version_FM')),        'version'; ...
+    ~isempty(OptionValuesMap('identification_FM')), 'identification'; ...
+    ~isempty(OptionValuesMap('swdescriptor_FM')),   'S/W descriptor'; ...
+    ~isempty(OptionValuesMap('help_FM')),           'help'; ...
+    ~isempty(OptionValuesMap('SW_mode')),           'S/W mode'};
 assert(sum([tempTable{:,1}]) == 1, 'BICAS:interpret_CLI_syntax:CLISyntax', 'Illegal combination of arguments.')
 CliData.functionalityMode = tempTable{[tempTable{:,1}], 2};
 
 switch CliData.functionalityMode
+    
     case {'version', 'identification', 'S/W descriptor', 'help'}
+
         CliData.swModeArg = [];
         assert(isempty(sipOptionValues), 'Specified illegal specific input parameters.')
         
     case 'S/W mode'
         
-        swModeArg = icdCliArgumentsList{1};    % NOTE: Always reading argument 1.
+        OptionValues = OptionValuesMap('SW_mode');
         
+        % ASSERTION
         % NOTE: Somewhat of a hack, since can not read out from using bicas.utils.parse_CLI_options where
         % the SW_mode option is located among the arguments. The code knows it should be somewhere.
-        if ~EJ_library.utils.regexpf(swModeArg, SW_MODE_REGEXP)
+        %if ~EJ_library.utils.regexpf(swModeArg, SW_MODE_REGEXP)
+        if numel(OptionValues) ~= 1
+            % Somewhat misleading error message. Hard to be accurate without too much effort or by explaining the
+            % argument-parsing algorithm to the user.
+            error('BICAS:CLISyntax', 'Can not interpret argument(s).')
+        elseif OptionValues.iOptionHeaderCliArgument ~= 1
             error('BICAS:CLISyntax', 'First argument can not be interpreted as a S/W mode as expected.')
         end
         
-        CliData.swModeArg         = swModeArg;
+        CliData.swModeArg         = OptionValues.optionHeader;
         
-        temp = convert_SIP_OptionValues_2_Map(sipOptionValues);
-        CliData.SpecInputParametersMap = temp;
+        CliData.SpecInputParametersMap = convert_SIP_OptionValues_2_Map(sipOptionValues);
         
     otherwise
         error('BICAS:interpret_CLI_args:Assertion', 'Illegal CliData.functionalityMode value.')
@@ -173,14 +154,14 @@ end
 
 
 
-temp = IcdOptionValuesMap('log_file');
+temp = OptionValuesMap('log_file');
 if isempty(temp)   CliData.logFile = [];
-else               CliData.logFile = temp{end}{2};
+else               CliData.logFile = temp(end).optionValues{1};
 end
 
-temp = IcdOptionValuesMap('config_file');
+temp = OptionValuesMap('config_file');
 if isempty(temp)   CliData.configFile = [];
-else               CliData.configFile = temp{end}{2};
+else               CliData.configFile = temp(end).optionValues{1};
 end
 
 EJ_library.utils.assert.struct2(CliData, {'functionalityMode', 'swModeArg', 'logFile', 'configFile', 'SpecInputParametersMap', 'ModifiedSettingsMap'}, {})
@@ -191,23 +172,28 @@ end
 
 % NOTE: Checks (assertion) for doubles.
 function Map = convert_SIP_OptionValues_2_Map(optionValues)
-Map = EJ_library.utils.create_containers_Map('char', 'char', {}, {});
-for iSip = 1:numel(optionValues)
-    temp = optionValues{iSip}{1};
-    key = temp(3:end);
-    if Map.isKey(key)
-        error('BICAS:interpret_CLI_args:CLISyntax', 'Specifying same specific input parameter (argument) more than once.')
+    Map = EJ_library.utils.create_containers_Map('char', 'char', {}, {});
+    
+    for iSip = 1:numel(optionValues)
+        %temp = optionValues{iSip}{1};
+        key = optionValues(iSip).optionHeader(3:end);
+        %key = temp(3:end);
+        if Map.isKey(key)
+            error('BICAS:interpret_CLI_args:CLISyntax', 'Specifying same specific input parameter (argument) more than once.')
+        end
+        Map(key) = optionValues(iSip).optionValues{1};
     end
-    Map(key) = optionValues{iSip}{2};
-end
 end
 
 
 
 % NOTE: Deliberately does not check for doubles.
 function Map = convert_modif_settings_OptionValues_2_Map(optionValues)
-Map = EJ_library.utils.create_containers_Map('char', 'char', {}, {});
-for iSetting = 1:length(optionValues)
-    Map(optionValues{iSetting}{2}) = optionValues{iSetting}{3};
-end
+    Map = EJ_library.utils.create_containers_Map('char', 'char', {}, {});
+    
+    for iSetting = 1:length(optionValues)
+        settingKey   = optionValues(iSetting).optionValues{1};
+        settingValue = optionValues(iSetting).optionValues{2};
+        Map(settingKey) = settingValue;
+    end
 end

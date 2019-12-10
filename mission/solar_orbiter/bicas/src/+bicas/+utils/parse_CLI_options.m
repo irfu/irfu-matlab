@@ -14,7 +14,7 @@
 % Option value(s) = A sequence of arguments (could be zero arguments) following an option header with which they are
 %                   associated, e.g. none, "bicas.conf", or "X" & "123". The number of expected option values should be
 %                   predefined for the option.
-% Option          = The combination of an option header and the subsequent option values.
+% Option          = The combination of an option header and the immediately subsequent (and associated) option values.
 % Option ID       = Unique, arbitrary string used to refer to the definition of an option and the corresponding results
 %                   from parsing CLI arguments.
 %
@@ -26,7 +26,7 @@
 %    <keys>                    : Option ID.
 %    <values>                  : Struct. Information about each specified option (syntax).
 %       .optionHeaderRegexp    : The option header, including any prefix (e.g. dash) expressed as regular expression.
-%       .interprPriority       : Optional. Default=0. "Interpretation Priority". In case multiple regexp match,
+%       .interprPriority       : Optional. Default=0. "Interpretation Priority". In case of multiple regexp matches,
 %                                the priority determines which interpretation is used. If multiple options have the same
 %                                priority, then assertion error.
 %       .occurrenceRequirement : String specifying the number of times the option may occur.
@@ -62,7 +62,7 @@ function OptionValuesMap = parse_CLI_options(cliArgumentsList, OptionsConfigMap)
 % array, structure of structures).
 % 1) Caller can easily build up list of options by amending list.
 % 2) Can use key strings to identify options rather than the CLI option headers themselves (the latter could be short
-% and cryptic, and can change).
+% and cryptic, and can change since it is part of the command-line UI).
 % 3) Can use more key strings (more permitted characters) than for structure field names.
 % 4) Easy for caller to group subsets of options by keeping track of sets of keys. The caller can
 % merge groups of options (before submitting as one parameter), and can split the returned result into
@@ -70,10 +70,9 @@ function OptionValuesMap = parse_CLI_options(cliArgumentsList, OptionsConfigMap)
 % NOTE: The caller can easily(?) convert result into struct (one field per key-value pair).
 %
 % PROPOSAL: Return some kind of help information to display proper user-friendly error message.
-% PROPOSAL: Shorten occurrenceRequirement
-%   PROPOSAL: occReq, occurrenceReq
-% PROPOSAL: Somehow return the order/argument number of the arguments found.
+% PROPOSAL: Somehow return the order/argument number/position of the arguments found.
 %   PRO: Can test for order, e.g. S/W mode must come first.
+%   PRO: Useful for printing/logging arguments, grouped by option?
 % PROPOSAL: Return struct array, one index for every option header+values (combined).
 %   .index/.location : Number. Tells the order of (the groups of) arguments.
 %   .optionId      : 
@@ -90,37 +89,15 @@ function OptionValuesMap = parse_CLI_options(cliArgumentsList, OptionsConfigMap)
 
 % ASSERTIONS: Check argument types, sizes.
 assert(iscell(cliArgumentsList), 'cliArgumentsList is not a cell array.')
-if length(cliArgumentsList) ~= numel(cliArgumentsList)
-    error('BICAS:parse_CLI_options:Assertion:IllegalArgument', 'Parameter is not a 1D cell array.')
-end
+EJ_library.utils.assert.vector(cliArgumentsList)
+% if length(cliArgumentsList) ~= numel(cliArgumentsList)
+%     error('BICAS:parse_CLI_options:Assertion:IllegalArgument', 'Parameter is not a 1D cell array.')
+% end
 EJ_library.utils.assert.isa(OptionsConfigMap, 'containers.Map')
 
 
 
-%===========================================
-% Initializations before algorithm.
-%
-% 1) Assertions
-% 2) Initialize empty OptionValuesMap
-%===========================================
-OptionValuesMap = containers.Map;
-optionIdsList   = OptionsConfigMap.keys;   % List to iterate over map.
-for iOption = 1:length(optionIdsList)
-    optionId     = optionIdsList{iOption};
-    OptionConfig = OptionsConfigMap(optionId);
-    if ~isfield(OptionConfig, 'interprPriority')
-        OptionConfig.interprPriority = 0;
-        OptionsConfigMap(optionId) = OptionConfig;
-    end
-    assert(isfinite(OptionConfig.interprPriority))
-
-    % ASSERTION: OptionConfig is the right struct.
-    EJ_library.utils.assert.struct2(OptionConfig, {'optionHeaderRegexp', 'interprPriority', 'occurrenceRequirement', 'nValues'}, {})
-    
-    % Create empty return structure (default value) with the same keys (optionId values).
-    % NOTE: Applies to both options with and without values!
-    OptionValuesMap(optionId) = {};
-end
+[OptionsConfigMap, OptionValuesMap] = init_assert(OptionsConfigMap);
 OptionsConfigArray = cellfun(@(x) (x), OptionsConfigMap.values);    % Convert to struct array (NOT cell array of structs).
 
 
@@ -130,50 +107,7 @@ OptionsConfigArray = cellfun(@(x) (x), OptionsConfigMap.values);    % Convert to
 %====================================
 iCliArg = 1;
 while iCliArg <= length(cliArgumentsList)
-    cliArgument = cliArgumentsList{iCliArg};
-
-    %=========================================
-    % Search for a matching CLI option string
-    %=========================================
-    % NOTE: More convenient to work with arrays than maps here.
-    iRegexpMatches  = find(EJ_library.utils.regexpf(cliArgument, {OptionsConfigArray.optionHeaderRegexp}));
-
-    ipArray = [OptionsConfigArray(iRegexpMatches).interprPriority];    % Array over regexp matches. IP = Interpretation Priority
-    ip      = max(ipArray);    % Scalar
-    iMatch  = iRegexpMatches(ip == ipArray);
-
-    
-    
-    nMatchingOptions = numel(iMatch);
-    % UI ASSERTION
-    if nMatchingOptions == 0
-        % NOTE: Phrase chosen for case that there may be multiple sequences of arguments which are parsed separately.
-        error('BICAS:parse_CLI_options:CLISyntax', ...
-            'Can not interpret command-line argument "%s". It is not a permitted option header in this sequence of arguments.', ...
-            cliArgument)
-    end
-    % ASSERTION
-    if nMatchingOptions >= 2
-        error('BICAS:parse_CLI_options:Assertion', 'Can interpret CLI option in multiple ways, because the interpretation of CLI arguments is badly configured.')
-    end
-    
-    
-    
-    % CASE: There is exacly one matching option.
-    optionId = optionIdsList{iMatch};
-    
-    % Store values for this option. (May be zero option values).
-    OptionConfig = OptionsConfigMap(optionId);
-    optionValues = OptionValuesMap(optionId);
-    
-    iCliArgLastValue  = iCliArg + OptionConfig.nValues;
-    if iCliArgLastValue > length(cliArgumentsList)
-        error('BICAS:parse_CLI_options:CLISyntax', ...
-            'Can not find the argument(s) that is/are expected to follow command-line option header "%s".', cliArgument)
-    end
-    optionValues{end+1} = cliArgumentsList(iCliArg:iCliArgLastValue);
-    OptionValuesMap(optionId) = optionValues;
-    
+    [OptionValuesMap, iCliArgLastValue] = try_interpret_option(cliArgumentsList, iCliArg, OptionsConfigArray, OptionValuesMap);
     iCliArg = iCliArgLastValue + 1;
 end   % while
 
@@ -182,8 +116,8 @@ end   % while
 %=====================================================
 % ASSERTION: Check that all required options were set
 %=====================================================
-for iOption = 1:length(optionIdsList)
-    optionId     = optionIdsList{iOption};
+for iOption = 1:length(OptionsConfigArray)
+    optionId     = OptionsConfigArray(iOption).optionId;
     OptionConfig = OptionsConfigMap(optionId);
     optionValues = OptionValuesMap(optionId);
     
@@ -202,4 +136,105 @@ for iOption = 1:length(optionIdsList)
     end
 end
 
+end
+
+
+
+% Try interpret a specific argument as an option header, followed by option values.
+%
+% IMPLEMENTATION NOTE: Implemented as separate function to insulate the use of variables.
+function [OptionValuesMap, iCliArgLastValue] = try_interpret_option(cliArgumentsList, iCliArg, OptionsConfigArray, OptionValuesMap)
+    
+    cliArgument = cliArgumentsList{iCliArg};
+
+    %=========================================
+    % Search for a matching CLI option string
+    %=========================================
+    % NOTE: More convenient to work with arrays than maps here.
+    iRegexpMatches  = find(EJ_library.utils.regexpf(cliArgument, {OptionsConfigArray.optionHeaderRegexp}));
+
+    % IP = Interpretation Priority
+    ipArray = [OptionsConfigArray(iRegexpMatches).interprPriority];    % Array over regexp matches.
+    ip      = max(ipArray);    % Scalar
+    iMatch  = iRegexpMatches(ip == ipArray);
+
+
+
+    % ASSERTION
+    nMatchingOptions = numel(iMatch);
+    if nMatchingOptions == 0
+        % CASE: Argument list does not conform to configuration.
+        
+        % NOTE: Phrase chosen for case that there may be multiple sequences of arguments which are parsed separately.
+        error('BICAS:parse_CLI_options:CLISyntax', ...
+            'Can not interpret command-line argument "%s". It is not a permitted option header in this sequence of arguments.', ...
+            cliArgument)
+    elseif nMatchingOptions >= 2
+        % CASE: Configuration is wrong.
+        error('BICAS:parse_CLI_options:Assertion', 'Can interpret CLI option in multiple ways, because the interpretation of CLI arguments is badly configured.')
+    end
+    
+    
+    
+    % CASE: There is exacly one matching option.
+    optionId = OptionsConfigArray(iMatch).optionId;
+
+    % Store values for this option. (May be zero option values).
+    OptionConfig = OptionsConfigArray(iMatch);
+    optionValues = OptionValuesMap(optionId);
+
+    iCliArgLastValue = iCliArg + OptionConfig.nValues;
+    % ASSERTION: Argument list does not conform to configuration.
+    if iCliArgLastValue > length(cliArgumentsList)
+        error('BICAS:parse_CLI_options:CLISyntax', ...
+            'Can not find the argument(s) that is/are expected to follow command-line option header "%s".', cliArgument)
+    end
+
+    % Extract option values associated with the option header.
+    %optionValues{end+1} = cliArgumentsList(iCliArg:iCliArgLastValue);
+    optionValues(end+1) = struct('iOptionHeaderCliArgument', iCliArg, 'optionHeader', cliArgumentsList(iCliArg), 'optionValues', {cliArgumentsList(iCliArg+1:iCliArgLastValue)});
+    OptionValuesMap(optionId) = optionValues;
+end
+
+
+
+% Various initializations and assertions.
+%
+% NOTE: Returns modified "deepish" copy of OptionsConfigMap since containers.Map is a handle object.
+%
+function [OptionsConfigMapModifCopy, EmptyOptionValuesMap] = init_assert(OptionsConfigMap)
+    %===========================================
+    % Initializations before algorithm.
+    %
+    % 1) Assertions
+    % 2) Initialize empty OptionValuesMap
+    %===========================================
+    EmptyOptionValuesMap      = containers.Map;          % Copy filled with modified OptionsValuesMap.
+    OptionsConfigMapModifCopy = containers.Map;
+    optionIdsList             = OptionsConfigMap.keys;   % List to iterate over map.
+    for iOption = 1:length(optionIdsList)
+        
+        optionId          = optionIdsList{iOption};
+        ModifOptionConfig = OptionsConfigMap(optionId);
+        
+        % ASSERTION: OptionConfig is the right struct.
+        EJ_library.utils.assert.struct2(ModifOptionConfig, {'optionHeaderRegexp', 'occurrenceRequirement', 'nValues'}, {'interprPriority'})
+        
+        % Use priority default value, if there is none.
+        if ~isfield(ModifOptionConfig, 'interprPriority')
+            ModifOptionConfig.interprPriority = 0;
+        end
+        
+        ModifOptionConfig.optionId               = optionId;
+        OptionsConfigMapModifCopy(optionId) = ModifOptionConfig;
+        
+        % ASSERTION
+        assert(isfinite(ModifOptionConfig.interprPriority))
+        
+        % Create empty return structure (default value) with the same keys (optionId values).
+        % NOTE: Applies to both options with and without values!
+        %EmptyOptionValuesMap(optionId) = {};
+        EmptyOptionValuesMap(optionId) = struct('iOptionHeaderCliArgument', {}, 'optionHeader', {}, 'optionValues', {});
+    end
+    
 end

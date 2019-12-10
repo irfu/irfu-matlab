@@ -3,9 +3,11 @@
 function interpret_CLI_args___ATEST
 
 %     Ecm = EJ_library.utils.create_containers_Map('char', 'char', {}, {});
-    
+
     tl = {};
-    
+
+
+
     tl{end+1} = new_test( {'--help'}, ...
         'help',    [], [], [], {{}, {}}, {{}, {}});
     tl{end+1} = new_test( {'--version'}, ...
@@ -35,12 +37,25 @@ function interpret_CLI_args___ATEST
     tl{end+1} = new_test( {'swmode', '--in', 'infile', '--out', 'outfile'}, ...
         'S/W mode', 'swmode', [], [], {{}, {}}, {{'in', 'out'}, {'infile', 'outfile'}});
     
+    tl{end+1} = new_test_EXC( {'--in', 'infile', 'swmode', '--out', 'outfile'}, ...
+        'MException');    % S/w mode in the wrong place.
+    
+
+    
     tl{end+1} = new_test( {'swmode', '--in', 'infile', '--config', 'configfile', '--out', 'outfile'}, ...
         'S/W mode', 'swmode', 'configfile', [], {{}, {}}, {{'in', 'out'}, {'infile', 'outfile'}});
     
-    tl{end+1} = new_test( {'--version', '--'}, ...
+    % S/w mode in the wrong place.
+    tl{end+1} = new_test_EXC( {'--in', 'infile', 'swmode', '--config', 'configfile', '--out', 'outfile'}, ...
+        'MException');
+    
+    % S/w mode in TWO places (one correct). (Tested due to how algorithm works.)
+    tl{end+1} = new_test_EXC( {'swmode1', '--in', 'infile', 'swmode2', '--config', 'configfile', '--out', 'outfile'}, ...
+        'MException');
+    
+    tl{end+1} = new_test( {'--version'}, ...
                   'version', [], [], [], {{}, {}}, {{}, {}});
-    tl{end+1} = new_test( {'--version', '--', '--set', 'A', 'a', '--set', 'B', 'b'}, ...
+    tl{end+1} = new_test( {'--version', '--set', 'A', 'a', '--set', 'B', 'b'}, ...
                   'version', [], [], [], {{'A', 'B'}, {'a', 'b'}}, {{}, {}});
 
 
@@ -77,13 +92,10 @@ end
 
 
 
-% Can not initialize containers.Map with empty keys and values lists.
-% This takes care of that special case.
-% function Map = create_map(keyList, valueList)
-% assert(length(keyList) == length(valueList))
-% if isempty(keyList)
-%     Map = containers.Map('');
-% else
-%     Map = containers.Map(keyList, valueList);
-% end
-% end
+function OptionOccurrence = oo(iOptionHeaderCliArgument, optionHeader, optionValues)
+    assert(iscell(optionValues))
+    if isempty(optionValues)
+        optionValues = cell(1,0);
+    end
+    OptionOccurrence = struct('iOptionHeaderCliArgument', iOptionHeaderCliArgument, 'optionHeader', optionHeader, 'optionValues', {optionValues});
+end

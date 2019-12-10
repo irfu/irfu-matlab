@@ -65,7 +65,6 @@ MAP('CannotFindRegexMatchingRCT')   = info_struct(1, 'Can not find any matching 
 C.EMIDP_2_INFO = MAP;
 
 C.PERMITTED_MATLAB_VERSIONS         = {'2016a', '2019b'};
-C.INOFFICIAL_ARGUMENTS_SEPARATOR    = '--';
 C.DEFAULT_CONFIG_FILE_RELATIVE_PATH = fullfile('config', 'bicas.conf');    % Path (incl. filename) to default config file. Relative to BICAS's directory root.
 
 end
