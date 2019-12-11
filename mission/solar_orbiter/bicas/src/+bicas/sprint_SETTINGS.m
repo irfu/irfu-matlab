@@ -8,10 +8,8 @@
 %
 function str = sprint_SETTINGS(SETTINGS)
 
-% PROPOSAL: Better handling of different data types (MATLAB classes). Let settings.m do conversions to strings?!
 % PROPOSAL: Somehow print where values come from (default, CLI, config file).
 % PROPOSAL: Make hierarchy visually clearer?!!! Should then have help from data structure itself.
-% PROPOSAL: Move to bicas.m.
 
 % IMPLEMENTATION NOTE: Only prints "Settings" as a header (not "constants") to indicate/hint that it is only the content
 % of the "SETTINGS" variables, and not of constants.m.
@@ -33,9 +31,23 @@ for iKey = 1:length(keyList)
         strValue = sprintf('%d ', value);    % Extra whitespace important for printing arrays. Works for all dimensionalities (are made into "string row vector").
     end
     
-    str = [str, sprintf(['    %-', int2str(lengthMaxKey),'s = %s\n'], key, strValue)];
+    
+    %isDefaultValue = SETTINGS.is_default_value(key);
+    valueSource = SETTINGS.get_value_source(key);
+    valueStatusStr = EJ_library.utils.translate({...
+        {'default'},            '(def)';
+        {'configuration file'}, '(conf)'; 
+        {'CLI arguments'},      '(CLI)'}, ...
+        valueSource, 'BICAS:sprintf_settings:Assertion', 'Illegal setting value source');
+    
+    str = [str, sprintf(['%-6s  %-', int2str(lengthMaxKey),'s = %s\n'], valueStatusStr, key, strValue)];
 end
 
-str = [str, sprintf('\n')];
+str = [str, newline];
+str = [str, sprintf('(def)  = Default value\n')];
+str = [str, sprintf('(conf) = Value comes from configuration file\n')];
+str = [str, sprintf('(CLI)  = Value comes from CLI argument\n')];
+
+str = [str, newline];
 
 end

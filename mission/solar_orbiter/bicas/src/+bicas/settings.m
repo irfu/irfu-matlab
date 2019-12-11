@@ -40,25 +40,26 @@ classdef settings < handle
 % PROPOSAL: Convention for "empty"/"not set"?!
 %   TODO-DECISION/CON: Not really needed? Depends too much on the variable/setting.
 %
-% PROPOSAL: Move out interpretation of strings as numeric values?!
-%
 % PROPOSAL: Initialize by submitting map.
 %   PRO: Can remove methods define_setting, disable_define.
 %   CON: Can not easily add metadata for every variable (in the future), e.g. permitted values (data type/class, range).
 %
-% PROPOSAL: Update variables by submitting containers.Map.
-%   PRO: Can eliminate set_prexisting.
-    
     properties(Access=private)
         defineDisabledForever = false;   % Whether defining new keys is disallowed or not. Always true if readOnlyForever==true.
         readOnlyForever       = false;   % Whether modifying the object is allowed or not.
         DataMap;                         % Map containing the actual settings data.
     end
-    
+
+
+
     %###################################################################################################################
 
-    methods(Access=public)
         
+    
+    methods(Access=public)
+
+
+
         % Constructor
         function obj = settings()
             % IMPLEMENTATION NOTE: "DataMap" reset here since empirically it is not reset every time an instance is created
@@ -66,24 +67,24 @@ classdef settings < handle
             % for unknown reasons.
             obj.DataMap = containers.Map('KeyType', 'char', 'ValueType', 'any');
         end
-        
-        
-        
+
+
+
         function disable_define(obj)
             obj.defineDisabledForever = true;
         end
-        
-        
-        
+
+
+
         function make_read_only(obj)
             obj.disable_define();
             obj.readOnlyForever = true;
         end
-        
-        
-        
+
+
+
         % Define a NEW key and set the corresponding value.
-        function define_setting(obj, key, value)
+        function define_setting(obj, key, defaultValue)
             % ASSERTIONS
             if obj.defineDisabledForever
                 error('BICAS:settings:Assertion', 'Trying to define new keys in settings object which disallows defining new keys.')
@@ -92,66 +93,44 @@ classdef settings < handle
                 error('BICAS:settings:Assertion', 'Trying to define pre-existing settings key.')
             end
             
-            obj.DataMap(key) = value;
+            obj.DataMap(key) = struct('defaultValue', defaultValue, 'value', defaultValue, 'valueSource', 'default');
         end
-        
-        
-        
-        % Modify multiple settings, where the values are strings but converted to numerics as needed. Primarily intended
-        % for updating settings with values from CLI arguments (which by their nature are initially strings).
-        %
-        %
-        % ARGUMENTS
-        % =========
-        % ModifiedSettingsAsStrings : containers.Map
-        %   <keys>   = Settings keys (strings). Must pre-exist as a SETTINGS key.
-        %   <values> = Settings values AS STRINGS.
-        %              Preserves the type of settings value for strings and numerics. If the pre-existing value is
-        %              numeric, then the argument value will be converted to a number.
-        %              Numeric row vectors are represented as a comma separated-list (no brackets), e.g. "1,2,3".
-        %              Empty numeric vectors can not be represented.
-        %
-        % 
-        % NOTE/BUG: No good checking (assertion) of whether the string format of a vector makes sense.
+
+
+
+        % Set a PRE-EXISTING key value.
         % NOTE: Does not check if numeric vectors have the same size as old value.
-        %
-        function set_preexisting_from_strings(obj, ModifiedSettingsMap)
+        function update_value(obj, key, newValue, valueSource)
+            % NOTE: Used to be public method. Can/should probably be rewritten or merged with set_preexisting_from_strings.
             
-            % ASSERTION
+            % ASSERTIONS
+            EJ_library.utils.assert.castring(valueSource)
             if obj.readOnlyForever
-                error('BICAS:settings:Assertion', 'Not allowed to modify read-only settings object.')
+                error('BICAS:settings:Assertion', 'Trying to modify read-only settings object.')
             end
-            
-            keysList = ModifiedSettingsMap.keys;
-            for iModifSetting = 1:numel(keysList)
-                key              = keysList{iModifSetting};
-                newValueAsString = ModifiedSettingsMap(key);
-                
-                % ASSERTION
-                if ~isa(newValueAsString, 'char')
-                    error('BICAS:settings:Assertion:IllegalArgument', 'Map value is not a string.')
-                end
-                
-                % Use old value to convert string value to appropriate MATLAB class.
-                oldValue = obj.get_tv(key);   % ASSERTS: Key pre-exists
-                if isnumeric(oldValue)
-                    %newValue = str2double(newValueAsString);
-                    newValue = textscan(newValueAsString, '%f', 'Delimiter', ',');
-                    newValue = newValue{1}';   % Row vector.
-                elseif ischar(oldValue)
-                    newValue = newValueAsString;
-                else
-                    error('BICAS:settings:Assertion:ConfigurationBug', 'Can not handle the MATLAB class=%s of internal setting "%s".', class(oldValue), key)
-                end
-            
-                % Overwrite old setting.
-                obj.set_prexisting(key, newValue);
+            if ~obj.DataMap.isKey(key)
+                error('BICAS:settings:Assertion', 'Trying to define non-existing settings key.')
+            end
+            if ~strcmp(bicas.settings.get_value_type(newValue), obj.get_setting_value_type(key))
+                error('BICAS:settings:Assertion:IllegalArgument', ...
+                    'New settings value does not match the type of the old settings value.')
             end
 
+            % IMPLEMENTATION NOTE: obj.DataMap(key).value = newValue;   % Not permitted by MATLAB.
+            temp             = obj.DataMap(key);
+            temp.value       = newValue;
+            temp.valueSource = valueSource;
+            obj.DataMap(key) = temp;
         end
 
-
-
+        
+        
+        function keyList = get_keys(obj)
+            keyList = obj.DataMap.keys;
+        end
+        
+        
+        
         % Return settings value for a given, existing key.
         % Only works when object is read-only, and the settings have their final values.
         %
@@ -166,8 +145,33 @@ classdef settings < handle
                 error('BICAS:settings:Assertion:IllegalArgument', 'There is no setting "%s".', key)
             end
             
-            value = obj.DataMap(key);
+            
+            value = obj.DataMap(key).value;
         end
+        
+        
+        
+        function valueSource = get_value_source(obj, key)
+            valueSource = obj.DataMap(key).valueSource;
+        end
+
+
+
+        % Needs to be public so that caller can determine how to parse string, e.g. parse to number.
+        function valueType = get_setting_value_type(obj, key)
+            % PROPOSAL: Abolish?
+            
+            value     = obj.DataMap(key).defaultValue;            % NOTE: Always use defaultValue.
+            valueType = bicas.settings.get_value_type(value);
+        end
+
+
+
+    end    % methods(Access=public)
+    
+    
+    
+    methods(Access=private)
         
         
         
@@ -185,47 +189,31 @@ classdef settings < handle
                 error('BICAS:settings:Assertion:IllegalArgument', 'There is no setting "%s".', key)
             end
             
-            value = obj.DataMap(key);
+            value = obj.DataMap(key).value;
         end
         
         
         
-        function keyList = get_keys(obj)
-            keyList = obj.DataMap.keys;
-        end
-        
-    end    % methods(Access=public)
-    
-    
-    
-    methods(Access=private)
-        
-        % Set a PRE-EXISTING key value.
-        function set_prexisting(obj, key, newValue)
-            % NOTE: Used to be public method. Can/should probably be rewritten or merged with set_preexisting_from_strings.
-            
-            % ASSERTIONS
-            if obj.readOnlyForever
-                error('BICAS:settings:Assertion', 'Trying to modify read-only settings object.')
-            end
-            if ~obj.DataMap.isKey(key)
-                error('BICAS:settings:Assertion', 'Trying to define non-existing settings key.')
-            end
-            
-            oldValue = obj.DataMap(key);
-            
-            if isnumeric(oldValue) && isnumeric(newValue)
-                obj.DataMap(key) = newValue;
-            elseif ischar(oldValue) && ischar(newValue)
-                obj.DataMap(key) = newValue;
-            else
-                error('BICAS:settings:Assertion:IllegalArgument', ...
-                    'New settings value either (1) does not match the type of the old settings value, or (2) is neither numeric nor char.')
-            end
-
-            obj.DataMap(key) = newValue;
-        end
-
     end    % methods(Access=private)
+    
+    
+    
+    methods(Access=private, Static)
+        
+        
+        
+        function valueType = get_value_type(value)
+            if isnumeric(value)
+                valueType = 'numeric';
+            elseif ischar(value)
+                valueType = 'string';
+            else
+                error('BICAS:settings:ConfigurationBug', 'Settings value (old or new) has an illegal MATLAB class.')
+            end
+        end
+        
+        
+        
+    end
     
 end

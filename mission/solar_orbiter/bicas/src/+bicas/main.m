@@ -282,7 +282,7 @@ bicas.logf('info', 'configFile = "%s"', configFile)
 rowList                 = EJ_library.utils.read_text_file(configFile, '(\r\n|\r|\n)');
 ConfigFileSettingsVsMap = bicas.interpret_config_file(rowList);
 bicas.log('info', 'Overriding subset of in-memory settings using config file.')
-SETTINGS.set_preexisting_from_strings(ConfigFileSettingsVsMap);    % Modify SETTINGS
+SETTINGS = overwrite_settings_from_strings(SETTINGS, ConfigFileSettingsVsMap, 'configuration file');    % Modify SETTINGS
 
 
 
@@ -290,7 +290,7 @@ SETTINGS.set_preexisting_from_strings(ConfigFileSettingsVsMap);    % Modify SETT
 % Modify settings according to (inofficial) CLI arguments
 %=========================================================
 bicas.log('info', 'Overriding in-memory settings using (optional, inofficial) CLI arguments, if any.')
-SETTINGS.set_preexisting_from_strings(CliData.ModifiedSettingsMap);    % Modify SETTINGS
+SETTINGS = overwrite_settings_from_strings(SETTINGS, CliData.ModifiedSettingsMap, 'CLI arguments');    % Modify SETTINGS
 SETTINGS.make_read_only();
 % CASE: SETTINGS has now been finalized and is read-only (by assertion) after this.
 
@@ -533,4 +533,55 @@ if isempty(v)
         'Can not set internal variable corresponding to environment variable "%s" from either (1) the environment variable, or (2) settings key value "%s".', ...
         envVarName, settingsOverrideValue)
 end
+end
+
+
+
+
+% Modify multiple settings, where the values are strings but converted to numerics as needed. Primarily intended
+% for updating settings with values from CLI arguments (which by their nature are initially strings).
+%
+%
+% ARGUMENTS
+% =========
+% ModifiedSettingsAsStrings : containers.Map
+%   <keys>   = Settings keys (strings). Must pre-exist as a SETTINGS key.
+%   <values> = Settings values AS STRINGS.
+%              Preserves the type of settings value for strings and numerics. If the pre-existing value is
+%              numeric, then the argument value will be converted to a number.
+%              Numeric row vectors are represented as a comma separated-list (no brackets), e.g. "1,2,3".
+%              Empty numeric vectors can not be represented.
+%
+%
+% NOTE/BUG: No good checking (assertion) of whether the string format of a vector makes sense.
+%
+function SETTINGS = overwrite_settings_from_strings(SETTINGS, ModifiedSettingsMap, valueSource)
+    
+    keysList = ModifiedSettingsMap.keys;
+    for iModifSetting = 1:numel(keysList)
+        key              = keysList{iModifSetting};
+        newValueAsString = ModifiedSettingsMap(key);
+        
+        % ASSERTION
+        if ~isa(newValueAsString, 'char')
+            error('BICAS:settings:Assertion:IllegalArgument', 'Map value is not a string.')
+        end
+        
+        %==================================================
+        % Convert string value to appropriate MATLAB class.
+        %==================================================
+        switch(SETTINGS.get_setting_value_type(key))
+            case 'numeric'
+                newValue = textscan(newValueAsString, '%f', 'Delimiter', ',');
+                newValue = newValue{1}';    % Row vector.
+            case 'string'
+                newValue = newValueAsString;
+            otherwise
+                error('BICAS:settings:Assertion:ConfigurationBug', 'Can not handle the MATLAB class=%s of internal setting "%s".', class(oldValue), key)
+        end
+        
+        % Overwrite old setting.
+        SETTINGS.update_value(key, newValue, valueSource);
+    end
+    
 end
