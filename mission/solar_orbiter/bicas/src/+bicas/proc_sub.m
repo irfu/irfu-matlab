@@ -152,7 +152,7 @@ classdef proc_sub
 
 
 
-        function [PreDc, calibFunc] = process_LFR_to_PreDC(Sci, inputSciDsi, HkSciTime, Cal)
+        function PreDc = process_LFR_to_PreDC(Sci, inputSciDsi, HkSciTime)
         % Processing function. Convert LFR CDF data to PreDC.
         %
         % Keeps number of samples/record. Treats 1 samples/record "length-one snapshots".
@@ -263,14 +263,11 @@ classdef proc_sub
 
             PreDc.Zv.MUX_SET        = HkSciTime.MUX_SET;
             PreDc.Zv.DIFF_GAIN      = HkSciTime.DIFF_GAIN;
-            PreDc.hasSnapshotFormat     = C.isLfrSwf;
-            PreDc.nRecords              = nRecords;
-
-
-
-            % NOTE: Uses iRecord to set iLsf.
-            calibFunc = @(        dtSec, lfrSamplesTm, iBlts, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH, iRecord) ...
-                Cal.calibrate_LFR(dtSec, lfrSamplesTm, iBlts, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH, iLsfZv(iRecord));
+            PreDc.hasSnapshotFormat = C.isLfrSwf;
+            PreDc.nRecords          = nRecords;
+            PreDc.isLfr             = true;
+            PreDc.isTdsCwf          = false;
+            PreDc.Zv.iLsf           = iLsfZv;
 
 
 
@@ -280,7 +277,7 @@ classdef proc_sub
         
         
         
-        function [PreDc, calibFunc] = process_TDS_to_PreDC(Sci, inputSciDsi, HkSciTime, Cal, SETTINGS)
+        function PreDc = process_TDS_to_PreDC(Sci, inputSciDsi, HkSciTime, SETTINGS)
         % Processing function. Convert TDS CDF data (PDs) to PreDC.
         %
         % Keeps number of samples/record. Treats 1 samples/record "length-one snapshots".
@@ -382,20 +379,11 @@ classdef proc_sub
             
             PreDc.Zv.MUX_SET    = HkSciTime.MUX_SET;
             PreDc.Zv.DIFF_GAIN  = HkSciTime.DIFF_GAIN;
+            PreDc.isLfr             = false;
+            PreDc.isTdsCwf          = C.isTdsCwf;
             PreDc.hasSnapshotFormat = C.isTdsRswf;
             PreDc.nRecords          = nRecords;
-            
-            
-            
-            if C.isTdsCwf
-                calibFunc = @(             dtSec, tdsCwfSamplesTm, iBlts, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH, iRecord) ...
-                    (Cal.calibrate_TDS_CWF(dtSec, tdsCwfSamplesTm, iBlts, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH));
-                % NOTE: Ignoring iRecord.
-            elseif C.isTdsRswf
-                calibFunc = @(              dtSec, tdsRswfSamplesTm, iBlts, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH, iRecord) ...
-                    (Cal.calibrate_TDS_RSWF(dtSec, tdsRswfSamplesTm, iBlts, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH));
-                % NOTE: Ignoring iRecord.
-            end
+            PreDc.Zv.iLsf           = zeros(nRecords, 1) * NaN;   % Only set becuse the code shared with LFR requires it.
             
             
             
@@ -406,9 +394,9 @@ classdef proc_sub
 
 
         function assert_PreDC(PreDc)
-            EJ_library.utils.assert.struct2(PreDc, {'Zv', 'hasSnapshotFormat', 'nRecords'}, {});
+            EJ_library.utils.assert.struct2(PreDc, {'Zv', 'hasSnapshotFormat', 'nRecords', 'isLfr', 'isTdsCwf'}, {});
             EJ_library.utils.assert.struct2(PreDc.Zv, {...
-                'Epoch', 'ACQUISITION_TIME', 'samplesCaTm', 'freqHz', 'nValidSamplesPerRecord', 'DIFF_GAIN', 'MUX_SET', 'QUALITY_FLAG', ...
+                'Epoch', 'ACQUISITION_TIME', 'samplesCaTm', 'freqHz', 'nValidSamplesPerRecord', 'iLsf', 'DIFF_GAIN', 'MUX_SET', 'QUALITY_FLAG', ...
                 'QUALITY_BITMASK', 'DELTA_PLUS_MINUS', 'SYNCHRO_FLAG'}, {});
             bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(PreDc.Zv);
             
@@ -418,9 +406,9 @@ classdef proc_sub
         
         
         function assert_PostDC(PostDc)
-            EJ_library.utils.assert.struct2(PostDc, {'Zv', 'hasSnapshotFormat', 'nRecords'}, {});
+            EJ_library.utils.assert.struct2(PostDc, {'Zv', 'hasSnapshotFormat', 'nRecords', 'isLfr', 'isTdsCwf'}, {});
             EJ_library.utils.assert.struct2(PostDc.Zv, {...
-                'Epoch', 'ACQUISITION_TIME', 'samplesCaTm', 'freqHz', 'nValidSamplesPerRecord', 'DIFF_GAIN', 'MUX_SET', 'QUALITY_FLAG', ...
+                'Epoch', 'ACQUISITION_TIME', 'samplesCaTm', 'freqHz', 'nValidSamplesPerRecord', 'iLsf', 'DIFF_GAIN', 'MUX_SET', 'QUALITY_FLAG', ...
                 'QUALITY_BITMASK', 'DELTA_PLUS_MINUS', 'SYNCHRO_FLAG', 'DemuxerOutput', 'IBIAS1', 'IBIAS2', 'IBIAS3', 'DemuxerOutput'}, {});
             bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(PostDc.Zv);
         end
@@ -592,15 +580,16 @@ classdef proc_sub
             PostDc = PreDc;    % Copy all values, to later overwrite a subset of them.
             PostDc.Zv.DemuxerOutput = bicas.proc_sub.simple_demultiplex(...
                 PreDc.hasSnapshotFormat, ...
+                PreDc.isLfr, ...
+                PreDc.isTdsCwf, ...
                 PreDc.Zv.Epoch, ...
                 PreDc.Zv.nValidSamplesPerRecord, ...
                 PreDc.Zv.samplesCaTm, ...
                 PreDc.Zv.MUX_SET, ...
                 PreDc.Zv.DIFF_GAIN, ...
                 PreDc.Zv.freqHz, ...
-                Cal, ...
-                calibFunc, ...
-                SETTINGS);
+                PreDc.Zv.iLsf, ...
+                Cal);
 
             %================================
             % Set (calibrated) bias currents
@@ -636,7 +625,8 @@ classdef proc_sub
         %
         % NOTE: Can handle arrays of any size as long as the sizes are consistent.
         function AsrSamplesAVolt = simple_demultiplex(...
-                hasSnapshotFormat, Epoch, nValidSamplesPerRecord, samplesCaTm, MUX_SET, DIFF_GAIN, freqHz, Cal, calibFunc, SETTINGS)
+                hasSnapshotFormat, isLfr, isTdsCwf, ...
+                zvEpoch, nValidSamplesPerRecordZv, samplesCaTm, MUX_SET_zv, DIFF_GAIN_zv, zvFreqHz, iLsfZv, Cal)
         % PROPOSAL: Incorporate into processing function process_demuxing_calibration.
         % PROPOSAL: Assert same nbr of "records" for MUX_SET, DIFF_GAIN as for BIAS_x.
         %
@@ -675,19 +665,12 @@ classdef proc_sub
             assert(numel(samplesCaTm) == 5)
             bicas.proc_utils.assert_cell_array_comps_have_same_N_rows(samplesCaTm)
             EJ_library.utils.assert.all_equal([...
-                size(MUX_SET,        1), ...
-                size(DIFF_GAIN,      1), ...
+                size(MUX_SET_zv,        1), ...
+                size(DIFF_GAIN_zv,      1), ...
                 size(samplesCaTm{1}, 1)])
 
 
 
-            disableCalibration = SETTINGS.get_fv('PROCESSING.CALIBRATION.CALIBRATION_DISABLED');
-            if disableCalibration
-                bicas.log('warning', 'CALIBRATION HAS BEEN DISABLED via setting PROCESSING.CALIBRATION.CALIBRATION_DISABLED.')
-            end
-
-            
-            
             % Create empty structure to which new array components can be added.
             % NOTE: Unit is AVolt. Not including in the field names to keep them short.
             AsrSamplesAVolt = struct(...
@@ -695,9 +678,9 @@ classdef proc_sub
                 'dcV12', [], 'dcV23', [], 'dcV13', [], ...
                 'acV12', [], 'acV23', [], 'acV13', []);
 
-            dlrUsing12 = bicas.demultiplexer_latching_relay(Epoch);
-            iCalibL    = Cal.get_calibration_time_L(Epoch);
-            iCalibH    = Cal.get_calibration_time_H(Epoch);
+            dlrUsing12zv = bicas.demultiplexer_latching_relay(zvEpoch);
+            iCalibLZv    = Cal.get_calibration_time_L(zvEpoch);
+            iCalibHZv    = Cal.get_calibration_time_H(zvEpoch);
 
 
 
@@ -705,21 +688,22 @@ classdef proc_sub
             % (1) Find continuous subsequences of records with identical settings.
             % (2) Process data separately for each such sequence.
             %======================================================================
-            [iEdgeList]             = bicas.proc_utils.find_constant_sequences(MUX_SET, DIFF_GAIN, dlrUsing12, freqHz, iCalibL, iCalibH);
+            [iEdgeList]             = bicas.proc_utils.find_constant_sequences(MUX_SET_zv, DIFF_GAIN_zv, dlrUsing12zv, zvFreqHz, iCalibLZv, iCalibHZv, iLsfZv);
             [iFirstList, iLastList] = bicas.proc_utils.index_edges_2_first_last(iEdgeList);
             for iSubseq = 1:length(iFirstList)
-                
+
                 iFirst = iFirstList(iSubseq);
                 iLast  = iLastList (iSubseq);
-                
+
                 % Extract SCALAR settings to use for entire subsequence of records.
                 % SS = Subsequence (single, constant value valid for entire subsequence)
-                MUX_SET_ss    = MUX_SET  (iFirst);
-                DIFF_GAIN_ss  = DIFF_GAIN(iFirst);
-                dlrUsing12_ss = dlrUsing12(iFirst);
-                iCalibL_ss    = iCalibL(iFirst);
-                iCalibH_ss    = iCalibH(iFirst);
-                freqHz_ss     = freqHz(iFirst);
+                MUX_SET_ss    = MUX_SET_zv  (iFirst);
+                DIFF_GAIN_ss  = DIFF_GAIN_zv(iFirst);
+                dlrUsing12_ss = dlrUsing12zv(iFirst);
+                freqHz_ss     = zvFreqHz(    iFirst);
+                iCalibL_ss    = iCalibLZv(   iFirst);
+                iCalibH_ss    = iCalibHZv(   iFirst);
+                iLsf_ss       = iLsfZv(      iFirst);
                 
                 bicas.logf('info', ['Records %5i-%5i : ', ...
                     'MUX_SET=%3i; DIFF_GAIN=%3i; dlrUsing12=%i; freqHz=%5g; iCalibL=%i; iCalibH=%i'], ...
@@ -738,14 +722,17 @@ classdef proc_sub
                 % Extract subsequence of DATA records to "demux".
                 %DemuxerInputSubseq = bicas.proc_utils.select_row_range_from_struct_fields(samplesCaTm, iFirst, iLast);
                 ssSamplesTm              = bicas.proc_utils.select_row_range_from_cell_comps(samplesCaTm, iFirst, iLast);
-                ssNValidSamplesPerRecord = nValidSamplesPerRecord(iFirst:iLast);
+                ssNValidSamplesPerRecord = nValidSamplesPerRecordZv(iFirst:iLast);
                 if hasSnapshotFormat
                     % NOTE: Vector of constant numbers (one per snapshot).
-                    ssDtSec = 1 ./ freqHz(iFirst:iLast);
+                    ssDtSec = 1 ./ zvFreqHz(iFirst:iLast);
                 else
                     % NOTE: Scalar (one for entire sequence).
-                    ssDtSec = double(Epoch(iLast) - Epoch(iFirst)) / (iLast-iFirst) * 1e-9;   % TEMPORARY
+                    ssDtSec = double(zvEpoch(iLast) - zvEpoch(iFirst)) / (iLast-iFirst) * 1e-9;   % TEMPORARY
                 end
+                
+                biasHighGain = DIFF_GAIN_ss;    % NOTE: Not yet sure that this is correct.
+
 
                 %===========
                 % CALIBRATE
@@ -760,40 +747,32 @@ classdef proc_sub
                     elseif strcmp(BltsSrcAsrArray(iBlts).category, 'GND') || strcmp(BltsSrcAsrArray(iBlts).category, '2.5V Ref')
                         % No calibration.
                         ssSamplesAVolt{iBlts} = ssSamplesTm{iBlts};
-
+                        
                     else
-                        % PROPOSOAL: Check .category and add else-assertion.
-                        if ~disableCalibration
-                            % CASE: NOMINAL CALIBRATION
-                            biasHighGain = DIFF_GAIN_ss;    % NOTE: Not yet sure that this is correct.
-
-                            if hasSnapshotFormat
-                                ssSamplesCaTm = bicas.proc_utils.convert_matrix_to_cell_array_of_vectors(...
-                                    double(ssSamplesTm{iBlts}), ssNValidSamplesPerRecord);
-                            else
-                                assert(all(nValidSamplesPerRecord == 1))
-                                
-                                ssSamplesCaTm = {double(ssSamplesTm{iBlts})};
-                            end
-
-                            % CALIBRATE
-                            %
-                            % Function handle interface:
-                            %   calibFunc = @(dtSec, lfrSamplesTm, iBlts, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH, iRecord)
-                            ssSamplesCaAVolt = calibFunc(...
-                                ssDtSec, ssSamplesCaTm, iBlts, BltsSrcAsrArray(iBlts), biasHighGain, ...
-                                iCalibL_ss, iCalibH_ss, iFirst);
-                            
-                            if hasSnapshotFormat
-                                [ssSamplesAVolt{iBlts}, ~] = bicas.proc_utils.convert_cell_array_of_vectors_to_matrix(...
-                                    ssSamplesCaAVolt, size(ssSamplesTm{iBlts}, 2));
-                            else
-                                ssSamplesAVolt{iBlts} = ssSamplesCaAVolt{1};   % NOTE: Must be column array.
-                            end
-                            
+                        % PROPOSAL: Check .category and add else-assertion.
+                        
+                        if hasSnapshotFormat
+                            ssSamplesCaTm = bicas.proc_utils.convert_matrix_to_cell_array_of_vectors(...
+                                double(ssSamplesTm{iBlts}), ssNValidSamplesPerRecord);
                         else
-                            % CASE: CALIBRATION DISABLED.
-                            ssSamplesAVolt{iBlts} = double(ssSamplesTm{iBlts});
+                            assert(all(nValidSamplesPerRecordZv == 1))
+                            
+                            ssSamplesCaTm = {double(ssSamplesTm{iBlts})};
+                        end
+                        
+                        %%%%%%%%%%%%
+                        %%%%%%%%%%%%
+                        % CALIBRATE
+                        %%%%%%%%%%%%
+                        %%%%%%%%%%%%
+                        ssSamplesCaAVolt = Cal.calibrate_voltage_all(ssDtSec, ssSamplesCaTm, ...
+                            isLfr, isTdsCwf, iBlts, BltsSrcAsrArray(iBlts), biasHighGain, iCalibL_ss, iCalibH_ss, iLsf_ss);
+                        
+                        if hasSnapshotFormat
+                            [ssSamplesAVolt{iBlts}, ~] = bicas.proc_utils.convert_cell_array_of_vectors_to_matrix(...
+                                ssSamplesCaAVolt, size(ssSamplesTm{iBlts}, 2));
+                        else
+                            ssSamplesAVolt{iBlts} = ssSamplesCaAVolt{1};   % NOTE: Must be column array.
                         end
                     end
                 end

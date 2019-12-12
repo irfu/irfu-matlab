@@ -807,7 +807,7 @@ classdef proc_utils
                     end
                 end
                 
-                %======================================================
+                %========================================================================================
                 % Assemble the final string
                 % -------------------------
                 % Examples for choosing column sizes:
@@ -815,7 +815,7 @@ classdef proc_utils
                 %                            <V03_ROC-SGSE_L2S_RPW-LFR-SURV-CWF-E>.QUALITY_BITMASK
                 %                            <V01_ROC-SGSE_L2R_RPW-LFR-SURV-CWF>.BIAS_MODE_BIAS1_ENABLED
                 % Long variable size string: (90,90,2048)
-                %======================================================
+                %========================================================================================
                 outputStr = sprintf('%-61s (%-10s): #Us=%5d (%-16s) %s', variableName, sizeStr, nUniqueValues, nanStr, valuesStr);
                 
                 bicas.log('info', outputStr)
@@ -839,7 +839,7 @@ classdef proc_utils
                 %
                 % NOTE: Special case for variables/fields named "Epoch" of type int64.
                 
-                if iscolumn(variableValue) && isa(variableValue, 'int64') && ~isempty(regexp(variableName, 'Epoch$'))
+                if iscolumn(variableValue) && isa(variableValue, 'int64') && ~isempty(regexp(variableName, 'Epoch$', 'once'))
                     
                     bicas.proc_utils.log_tt2000_array(variableName, variableValue);
                     

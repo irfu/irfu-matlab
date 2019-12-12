@@ -145,7 +145,7 @@ classdef calib
 %   PROPOSAL: Have different classes and acronyms for (1) physical signal sources and (2) dataset representation
 %       ("BLTS src" and "BLTS dest") where (2) is in practice a subset of (1).
 %
-% PROPOSAL: Move TF=0 for high frequencies to modify_tabulated_ITF.
+% PROPOSAL: Move TF=0 for HIGH frequencies to modify_tabulated_ITF.
 
 
     properties(Access=private)
@@ -155,15 +155,22 @@ classdef calib
         LfrItfIvptTable
         tdsCwfFactorsIvpt
         TdsRswfItfIvptList
+       
+        HkBiasCurrent        
         
 %         % BIAS scalar (simplified) calibration, not in the RCTs. For debugging/testing purposes.
 %         BiasScalar
         
-        SETTINGS
-        
         % Corresponds to SETTINGS key-value.
         % In principle unnecessary, but it shortens/clarifies the code.
         enableDetrending
+        
+        allVoltageCalibDisabled   = 0;
+        scalarVoltageCalibEnabled = 0;
+        fullVoltageCalibEnabled   = 0;
+        
+        % Needed so that it can be ubmitted it to bicas.RCT.find_RCT_by_SETTINGS_regexp
+        SETTINGS
     end
     
     properties(Access=private, Constant)
@@ -183,6 +190,7 @@ classdef calib
             
             % IMPLEMENTATION NOTE: Must assign obj.SETTINGS before calling methods that rely on it having been set, e.g.
             % find_RCT.
+            
             obj.SETTINGS = SETTINGS;
             
             obj.Bias               = obj.read_log_RCT(calibrationDir, pipelineId, 'BIAS');
@@ -202,12 +210,30 @@ classdef calib
                 obj.TdsRswfItfIvptList{iBlts} = bicas.calib.modify_tabulated_ITF(obj.TdsRswfItfIvptList{iBlts});
             end
 
+            obj.HkBiasCurrent.offsetTm = SETTINGS.get_fv('PROCESSING.CALIBRATION.HK_BIAS_CURRENT.OFFSET_TM');
+            obj.HkBiasCurrent.gainApt  = SETTINGS.get_fv('PROCESSING.CALIBRATION.HK_BIAS_CURRENT.GAIN_APT');
+            
+            
+            switch(SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.ALGORITHM'))
+                case 'NONE'
+                    obj.allVoltageCalibDisabled   = 1;
+                    bicas.logf('warning', 'Calibration has been disabled due to setting PROCESSING.CALIBRATION.VOLTAGE.ALGORITHM ')
+                case 'SCALAR'
+                    obj.scalarVoltageCalibEnabled = 1;
+                    bicas.logf('warning', 'Calibration is only scalar due to setting PROCESSING.CALIBRATION.VOLTAGE.ALGORITHM ')
+                case 'FULL'
+                    obj.fullVoltageCalibEnabled   = 1;
+                otherwise
+                    error('BICAS:calib:Assertion:ConfigurationBug', '')
+            end
+            
+            
 %             obj.BiasScalar.alpha          = SETTINGS.get_fv('PROCESSING.CALIBRATION.BIAS.SCALAR.ALPHA');
 %             obj.BiasScalar.beta           = SETTINGS.get_fv('PROCESSING.CALIBRATION.BIAS.SCALAR.BETA');
 %             obj.BiasScalar.gamma.highGain = SETTINGS.get_fv('PROCESSING.CALIBRATION.BIAS.SCALAR.GAMMA.HIGH_GAIN');
 %             obj.BiasScalar.gamma.lowGain  = SETTINGS.get_fv('PROCESSING.CALIBRATION.BIAS.SCALAR.GAMMA.LOW_GAIN');
             
-            obj.enableDetrending = obj.SETTINGS.get_fv('PROCESSING.CALIBRATION.DETRENDING_ENABLED');
+            obj.enableDetrending = SETTINGS.get_fv('PROCESSING.CALIBRATION.DETRENDING_ENABLED');
         end
         
         
@@ -258,9 +284,6 @@ classdef calib
             % Not strictly required, but the variable has to be some integer.
             assert(isa(biasCurrentTm, 'uint16'))
             
-            offsetTm = obj.SETTINGS.get_fv('PROCESSING.CALIBRATION.HK_BIAS_CURRENT.OFFSET_TM');
-            gainApt  = obj.SETTINGS.get_fv('PROCESSING.CALIBRATION.HK_BIAS_CURRENT.GAIN_APT');
-            
             %===================================================================================================
             % CALIBRATE
             % ---------
@@ -270,7 +293,45 @@ classdef calib
             %     TM-to-calibrated values.
             %===================================================================================================
             biasCurrentTm     = bitxor(biasCurrentTm, hex2dec('8000'));                       % FLIP BIT
-            biasCurrentAmpere = gainApt(iAntenna) * (biasCurrentTm + offsetTm(iAntenna));     % LINEAR FUNCTION
+            biasCurrentAmpere = obj.HkBiasCurrent.gainApt(iAntenna) * ...
+                (biasCurrentTm + obj.HkBiasCurrent.offsetTm(iAntenna));  % LINEAR FUNCTION
+        end
+        
+        
+        
+        % Calibrate all voltages. Function will choose the more specific algorithm internally.
+        function samplesCaAVolt = calibrate_voltage_all(obj, dtSec, samplesCaTm, isLfr, isTdsCwf, iBlts, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH, iLsf)
+
+            if obj.allVoltageCalibDisabled
+                
+                samplesCaAVolt = cell(size(samplesCaTm));
+                for i = 1:numel(samplesCaTm)
+                    samplesCaAVolt{i} = double(samplesCaTm{i});
+                end
+                
+            elseif obj.fullVoltageCalibEnabled
+
+                if isLfr
+                    % CASE: LFR
+                    samplesCaAVolt = calibrate_LFR_full(obj, dtSec, samplesCaTm, iBlts, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH, iLsf);
+                else
+                    % CASE: TDS
+                    if isTdsCwf
+                        % CASE: TDS CWF
+                        samplesCaAVolt = calibrate_TDS_CWF_full(obj, dtSec, samplesCaTm, iBlts, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH);
+                    else
+                        % CASE: TDS RSWF
+                        samplesCaAVolt = calibrate_TDS_RSWF_full(obj, dtSec, samplesCaTm, iBlts, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH);
+                    end
+                end
+                
+            elseif obj.scalarVoltageCalibEnabled
+                
+                error('BICAS:calib:OperationNotImplemented', 'Scalar voltage calibration has not been implemented yet.')
+                
+            else
+                error('BICAS:calib:Assertion', 'Illegal combination of internal flags.')                
+            end
         end
 
 
@@ -323,7 +384,7 @@ classdef calib
         % iBlts        : 1..5.
         % BltsSrc      : bicas.BLTS_src_dest describing where the signal comes from.
         %
-        function samplesCaAVolt = calibrate_LFR(obj, dtSec, samplesCaTm, iBlts, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH, iLsf)
+        function samplesCaAVolt = calibrate_LFR_full(obj, dtSec, samplesCaTm, iBlts, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH, iLsf)
             
             % ASSERTIONS
             assert(iscell(samplesCaTm))
@@ -367,8 +428,8 @@ classdef calib
 
         % ARGUMENTS
         % =========
-        % See calibrate_LFR.
-        function samplesCaAVolt = calibrate_TDS_CWF(obj, dtSec, samplesCaTm, iBlts, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH)
+        % See calibrate_LFR_full.
+        function samplesCaAVolt = calibrate_TDS_CWF_full(obj, dtSec, samplesCaTm, iBlts, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH)
 
             % ASSERTIONS
             EJ_library.utils.assert.vector(dtSec)
@@ -421,8 +482,8 @@ classdef calib
 
         % ARGUMENTS
         % =========
-        % See calibrate_LFR.
-        function samplesCaAVolt = calibrate_TDS_RSWF(obj, dtSec, samplesCaTm, iBlts, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH)
+        % See calibrate_LFR_full.
+        function samplesCaAVolt = calibrate_TDS_RSWF_full(obj, dtSec, samplesCaTm, iBlts, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH)
             
             % ASSERTIONS
             EJ_library.utils.assert.vector(dtSec)
@@ -501,9 +562,8 @@ classdef calib
         % IMPLEMENTATION NOTE: This method exists to
         % (1) run shared code that should be run when reading any RCT (logging, algorithm for finding file),
         % (2) separate logging from the RCT-reading code, so that one can read RCTs without BICAS.
-        % IMPLEMENTATION NOTE: This method is an instance method only because of needing settings for
-        %   * find_RCT_by_SETTINGS_regexp, and
-        %   * read_LFR_RCT.
+        % IMPLEMENTATION NOTE: This method is an instance method only since it needs SETTINGS in order to be able to
+        % call find_RCT_by_SETTINGS_regexp
         %
         %
         % ARGUMENTS
@@ -516,10 +576,9 @@ classdef calib
             bicas.logf('info', 'Reading %4s %-8s RCT: "%s"', pipelineId, rctId, filePath)
 
             switch(rctId)
-                case 'BIAS'     ; Rcd = bicas.RCT.read_BIAS_RCT(filePath);
-                %case 'LFR'      ; Rcd = bicas.RCT.read_LFR_RCT(filePath, obj.SETTINGS.get_fv('PROCESSING.RCT.LFR.EXTRAPOLATE_TF_AMOUNT_HZ'));
-                case 'LFR'      ; Rcd = bicas.RCT.read_LFR_RCT(filePath);
-                case 'TDS-CWF'  ; Rcd = bicas.RCT.read_TDS_CWF_RCT(filePath);
+                case 'BIAS'     ; Rcd = bicas.RCT.read_BIAS_RCT(    filePath);
+                case 'LFR'      ; Rcd = bicas.RCT.read_LFR_RCT(     filePath);
+                case 'TDS-CWF'  ; Rcd = bicas.RCT.read_TDS_CWF_RCT( filePath);
                 case 'TDS-RSWF' ; Rcd = bicas.RCT.read_TDS_RSWF_RCT(filePath);
                 otherwise
                     error('BICAS:calib:Assertion:IllegalArgument', 'Illegal rctId="%s"', rctId);
@@ -761,7 +820,7 @@ classdef calib
         % Extrapolate to 0 Hz, if needed.
         function ModifItf = modify_tabulated_ITF(Itf)
             assert(Itf.omegaRps(1) > 0)
-            
+
             % NOTE: Can not just use the lowest-frequency Z value for 0 Hz since it has to be real (not complex).
             Z1     = Itf.Z(1);
             signZ0 = sign(real(Z1));

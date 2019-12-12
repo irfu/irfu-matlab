@@ -87,11 +87,10 @@ classdef proc
             HkPd  = InputDatasetsMap('HK_cdf');
             SciPd = InputDatasetsMap('SCI_cdf');
             
-            HkSciTimePd             = bicas.proc_sub.process_HK_to_HK_on_SCI_TIME(SciPd, HkPd, SETTINGS);
-            
-            [SciPreDcPd, calibFunc] = bicas.proc_sub.process_LFR_to_PreDC(        SciPd, inputSciDsi, HkSciTimePd, Cal);
-            SciPostDcPd             = bicas.proc_sub.process_demuxing_calibration(SciPreDcPd, Cal, calibFunc, SETTINGS);
-            OutputSciPd             = bicas.proc_sub.process_PostDC_to_LFR(       SciPostDcPd, outputDsi, outputVersion);
+            HkSciTimePd = bicas.proc_sub.process_HK_to_HK_on_SCI_TIME(SciPd, HkPd, SETTINGS);
+            SciPreDcPd  = bicas.proc_sub.process_LFR_to_PreDC(         SciPd, inputSciDsi, HkSciTimePd);
+            SciPostDcPd = bicas.proc_sub.process_demuxing_calibration( SciPreDcPd, Cal, SETTINGS);
+            OutputSciPd = bicas.proc_sub.process_PostDC_to_LFR(        SciPostDcPd, outputDsi, outputVersion);
             
             OutputDatasetsMap = containers.Map();
             OutputDatasetsMap('SCI_cdf') = OutputSciPd;
@@ -108,10 +107,9 @@ classdef proc
             HkPd  = InputDatasetsMap('HK_cdf');
             SciPd = InputDatasetsMap('SCI_cdf');
             
-            HkSciTimePd             = bicas.proc_sub.process_HK_to_HK_on_SCI_TIME(SciPd, HkPd, SETTINGS);
-            [SciPreDcPd, calibFunc] = bicas.proc_sub.process_TDS_to_PreDC(        SciPd, inputSciDsi, HkSciTimePd, Cal, SETTINGS);
-            
-            SciPostDcPd = bicas.proc_sub.process_demuxing_calibration(SciPreDcPd, Cal, calibFunc, SETTINGS);
+            HkSciTimePd = bicas.proc_sub.process_HK_to_HK_on_SCI_TIME(SciPd, HkPd, SETTINGS);
+            SciPreDcPd  = bicas.proc_sub.process_TDS_to_PreDC(        SciPd, inputSciDsi, HkSciTimePd, SETTINGS);
+            SciPostDcPd = bicas.proc_sub.process_demuxing_calibration(SciPreDcPd, Cal, SETTINGS);
             OutputSciPd = bicas.proc_sub.process_PostDC_to_TDS(       SciPostDcPd, outputDsi, outputVersion);
 
             OutputDatasetsMap = containers.Map();

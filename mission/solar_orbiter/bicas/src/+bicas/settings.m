@@ -90,7 +90,7 @@ classdef settings < handle
                 error('BICAS:settings:Assertion', 'Trying to define new keys in settings object which disallows defining new keys.')
             end
             if obj.DataMap.isKey(key)
-                error('BICAS:settings:Assertion', 'Trying to define pre-existing settings key.')
+                error('BICAS:settings:Assertion:ConfigurationBug', 'Trying to define pre-existing settings key.')
             end
             
             obj.DataMap(key) = struct('defaultValue', defaultValue, 'value', defaultValue, 'valueSource', 'default');
@@ -108,19 +108,19 @@ classdef settings < handle
             if obj.readOnlyForever
                 error('BICAS:settings:Assertion', 'Trying to modify read-only settings object.')
             end
-            if ~obj.DataMap.isKey(key)
-                error('BICAS:settings:Assertion', 'Trying to define non-existing settings key.')
-            end
+            
+            valueStruct = obj.get_value_struct(key);
+            
+            % ASSERTION
             if ~strcmp(bicas.settings.get_value_type(newValue), obj.get_setting_value_type(key))
                 error('BICAS:settings:Assertion:IllegalArgument', ...
                     'New settings value does not match the type of the old settings value.')
             end
 
             % IMPLEMENTATION NOTE: obj.DataMap(key).value = newValue;   % Not permitted by MATLAB.
-            temp             = obj.DataMap(key);
-            temp.value       = newValue;
-            temp.valueSource = valueSource;
-            obj.DataMap(key) = temp;
+            valueStruct.value       = newValue;
+            valueStruct.valueSource = valueSource;
+            obj.DataMap(key) = valueStruct;
         end
 
         
@@ -159,9 +159,7 @@ classdef settings < handle
 
         % Needs to be public so that caller can determine how to parse string, e.g. parse to number.
         function valueType = get_setting_value_type(obj, key)
-            % PROPOSAL: Abolish?
-            
-            value     = obj.DataMap(key).defaultValue;            % NOTE: Always use defaultValue.
+            value     = obj.get_value_struct(key).defaultValue;            % NOTE: Always use defaultValue.
             valueType = bicas.settings.get_value_type(value);
         end
 
@@ -175,21 +173,17 @@ classdef settings < handle
         
         
         
-        % Return settings value for a given, existing key.
-        % Only works when object is NOT read-only, and the settings might change their value later.
+        % Return settings struct for a given, existing key.
         %
-        % IMPLEMENTATION NOTE: Name analogous to get_fv. Hence it is short.
-        % TV = Tentative value
-        function value = get_tv(obj, key)
+        % RATIONALE: Exists to give better error message when using an illegal key, than just calling obj.DataMap
+        % directly.
+        function S = get_value_struct(obj, key)
             % ASSERTIONS
-            if obj.readOnlyForever
-                error('BICAS:settings:Assertion', 'Not allowed to call this method for read-only settings object.')
-            end
             if ~obj.DataMap.isKey(key)
                 error('BICAS:settings:Assertion:IllegalArgument', 'There is no setting "%s".', key)
             end
             
-            value = obj.DataMap(key).value;
+            S = obj.DataMap(key);
         end
         
         
