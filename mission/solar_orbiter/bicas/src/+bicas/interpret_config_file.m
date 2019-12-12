@@ -21,7 +21,7 @@
 %
 function settingsVsMap = interpret_config_file(configFileRowList)
 
-SETTINGS_KEY_REGEXP = '[a-zA-Z0-9._-]+';
+SETTINGS_KEY_REGEXP          = '[a-zA-Z0-9._-]+';
 SETTINGS_VALUE_STRING_REGEXP = '[^"]*';
 
 % IMPLEMENTATION NOTE: Well-defined keyType and valueType good for comparisons in automated tests, and (2) for
@@ -38,12 +38,13 @@ for iRow = 1:numel(configFileRowList)
         % CASE: Row containing only whitespace (or empty).
         % Do nothing
     else
+        % CASE: Row is a SETTINGS key assignment.
         try
             subStrList = bicas.utils.regexp_str_parts(row, {SETTINGS_KEY_REGEXP, ' *= *', '"', SETTINGS_VALUE_STRING_REGEXP, '" *', '(#.*)?'});
             key      = subStrList{1};
             valueStr = subStrList{4};
             
-        catch exception
+        catch Exception
             error('BICAS:interpret_config_file:Assertion:CannotInterpretConfigFile', 'Can not interpret row %i in configuration file: "%s"', iRow, row)
         end
         

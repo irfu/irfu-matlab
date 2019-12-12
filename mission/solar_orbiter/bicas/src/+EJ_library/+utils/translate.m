@@ -47,6 +47,8 @@ function value = translate(table, key, errorMsgId, errorMsg)
 % PROPOSAL: Not require all "keys" to be unique for the same "key set"?
 % PROPOSAL: Exclude empty strings (assertion).
 %   PRO: Avoids empty string ambiguity.
+%
+% PROPOSAL: Reorder arguments. table last.
 
 [keySetsTable, valuesTable] = convert_table(table);
 matchArray = zeros(size(keySetsTable));

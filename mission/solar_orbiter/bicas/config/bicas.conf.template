@@ -1,14 +1,16 @@
-#=========================================================================
+#======================================================================================
 # Template configuration file for BICAS
 # -------------------------------------
 # See the documentation for what the config file can be used for.
-# NOTE: The config file must have the correct name to be read by default.
-#=========================================================================
+# NOTE: The config file must have the correct name and location to be read by default.
+#======================================================================================
 
 
 
 #=======================================================================================================
-# The MATLAB command used to launch BICAS.
+# MATLAB command used internally by BICAS to launch its MATLAB code
+# -----------------------------------------------------------------
 # This option exists to make it possible to choose between multiple MATLAB versions on the same system.
+# BICAS can not launch without setting this correctly in a config file.
 #=======================================================================================================
 MATLAB_COMMAND = "should_be_OS_command_to_launch_MATLAB"

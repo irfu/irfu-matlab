@@ -173,7 +173,7 @@ ZVAR_ATTRIBUTES_OF_ZVAR_DATA_TYPE = {'VALIDMIN', 'VALIDMAX', 'SCALEMIN', 'SCALEM
 %    turnZeroRecordsIntoOneRecord = 0;
 % Flag for whether or not to permit [] to be interpreted as a zero-record-zvariable value matrix,
 % regardless of stated size per record. Data returned from dataobj seems to work that way.
-strictZVarSize = 0;
+strictZvSize = 0;
 permitBadEmptyDataClass = 1;
 while numel(varargin) > 0
     argument = varargin{1};
@@ -181,7 +181,7 @@ while numel(varargin) > 0
         %            case 'Turn zero records into one record'
         %                turnZeroRecordsIntoOneRecord = 1;
         case 'Strict zVar size'
-            strictZVarSize = 1;
+            strictZvSize = 1;
         case 'Strict empty data class'
             permitBadEmptyDataClass = 0;
         otherwise
@@ -272,7 +272,7 @@ for i=1:length(dataobj_Variables(:,1))
     
     
 
-    [zVarValue, isRecordBound] = prepare_zVarData(zVarValue, specifiedSizePerRecord, strictZVarSize, zVarName);
+    [zVarValue, isRecordBound] = prepare_zVarData(zVarValue, specifiedSizePerRecord, strictZvSize, zVarName);
     if isRecordBound
         zVarNameRcList{end+1} = zVarName;
     end
@@ -541,7 +541,7 @@ end
 %            If char array, indices are the same as in dataobj.data.<zVarName>.data, i.e. inconsistent.
 % specifiedSizePerRecord : Size per record used for assertion.
 %                          For numeric: zValue size minus the first value, "size(zVarValue)(2:end)".
-function [zVarValue, isRecordBound] = prepare_zVarData(zVarValue, specifiedSizePerRecord, strictZVarSize, zVarName)
+function [zVarValue, isRecordBound] = prepare_zVarData(zVarValue, specifiedSizePerRecord, strictZvSize, zVarName)
 
 if ischar(zVarValue)
     %===========================================================================================================
@@ -574,7 +574,7 @@ elseif isnumeric(zVarValue)
     
     % ASSERTION: Check zVar size.
     nRecords = size(zVarValue, 1);
-    if strictZVarSize || (nRecords >= 1)
+    if strictZvSize || (nRecords >= 1)
         temp = size(zVarValue);
         sizePerRecord = temp(2:end);
         if ~isequal(...

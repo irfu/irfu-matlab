@@ -36,7 +36,7 @@ classdef BLTS_src_dest %< handle
     %   PROPOSAL: Need acronym for all physical signal sources which is a superset of ASR/AS ID.
 
 
-    
+
     properties(SetAccess=immutable, GetAccess=public)
         % String constant
         category

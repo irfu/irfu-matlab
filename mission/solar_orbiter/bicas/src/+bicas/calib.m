@@ -60,7 +60,7 @@ classdef calib
 %
 % ASR = Antenna Signal Representation
 % -----------------------------------
-% Those "physical antenna signals" which BIAS-LFR/TDS is trying to measure, or a measurement thereof. In reality, the
+% The "physical antenna signals" which BIAS-LFR/TDS is trying to measure, or a measurement thereof. In reality, the
 % terminology is:
 % ASR         : Pointer to a specific physical antenna signal, e.g. V12_LF (DC diff, antenna 1-2)
 % ASR samples : Samples representing a specific ASR (as opposed to BLTS)

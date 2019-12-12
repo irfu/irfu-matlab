@@ -5,6 +5,7 @@
 function assert_DATASET_ID(datasetId)
 % PROPOSAL: Optional second argument for pipeline ID.
 % PROPOSAL: Implement via list.
+% PROPOSAL: Implement via bicas.proc_utils.classify_DATASET_ID. See implementation.
 
 % '(ROC-SGSE|SOLO)_(L[12].+RPW-(LFR|TDS)-(SBM[12]|SURV|LFM)-(C|S|RS)WF.*)|HK_RPW_BIA)'
 % IMPLEMENTATION NOTE: Does not cover everything. It is hard to cover "everything" MATLAB regxp can not

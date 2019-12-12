@@ -109,14 +109,14 @@ destPath = fullfile(destDir, destFilename);
 %=================================================
 % Create empty variables representing zVariables.
 %=================================================
-RctZVarsL.Epoch_L                  = int64( zeros(0,1));
-RctZVarsL.BIAS_CURRENT_OFFSET      = zeros(0,3);
-RctZVarsL.BIAS_CURRENT_GAIN        = zeros(0,3);
-RctZVarsL.TRANSFER_FUNCTION_COEFFS = zeros(0,2,8,4);
+RctZvL.Epoch_L                  = int64( zeros(0,1));
+RctZvL.BIAS_CURRENT_OFFSET      = zeros(0,3);
+RctZvL.BIAS_CURRENT_GAIN        = zeros(0,3);
+RctZvL.TRANSFER_FUNCTION_COEFFS = zeros(0,2,8,4);
 
-RctZVarsH.Epoch_H  = int64( zeros(0,1));
-RctZVarsH.E_OFFSET = zeros(0,3);
-RctZVarsH.V_OFFSET = zeros(0,3);
+RctZvH.Epoch_H  = int64( zeros(0,1));
+RctZvH.E_OFFSET = zeros(0,3);
+RctZvH.V_OFFSET = zeros(0,3);
 
 
 
@@ -148,7 +148,7 @@ RctZVarsH.V_OFFSET = zeros(0,3);
 % Fits have been made using MATLAB function invfreqs with weights = 1 for freqHz <= 199e3.
 
 
-RctZVarsL = add_RCT_zvars_L(RctZVarsL, int64(0), [-1.72313e-09, 4.83034e-08, 4.87629e-08]', [-1.98004e-15, -1.97993e-15, -1.98017e-15]', ...
+RctZvL = add_RCT_zvars_L(RctZvL, int64(0), [-1.72313e-09, 4.83034e-08, 4.87629e-08]', [-1.98004e-15, -1.97993e-15, -1.98017e-15]', ...
     create_tfc_zvar_record(...
         'DC_single', {[-5.009e20,  8.148e14, -1.041e10],                      [8.556e21, 2.578e17, 2.042e12, 8.238e05, 1]}, ...
         'DC_diff',   {[-2.311e23, -1.009e18,  2.664e11],                      [2.329e23, 4.411e18, 7.344e12, 3.868e06, 1]}, ...
@@ -158,7 +158,7 @@ RctZVarsL = add_RCT_zvars_L(RctZVarsL, int64(0), [-1.72313e-09, 4.83034e-08, 4.8
 
 if 0
 % TEST
-RctZVarsL = add_RCT_zvars_L(RctZVarsL, int64(1), [-1.72313e-09, 4.83034e-08, 4.87629e-08]', [-1.98004e-15, -1.97993e-15, -1.98017e-15]', ...
+RctZvL = add_RCT_zvars_L(RctZvL, int64(1), [-1.72313e-09, 4.83034e-08, 4.87629e-08]', [-1.98004e-15, -1.97993e-15, -1.98017e-15]', ...
     create_tfc_zvar_record(...
         'DC_single', {[-5.009e20,  8.148e14, -1.041e10],                      [8.556e21, 2.578e17, 2.042e12, 8.238e05, 1]}, ...
         'DC_diff',   {[-2.311e23, -1.009e18,  2.664e11],                      [2.329e23, 4.411e18, 7.344e12, 3.868e06, 1]}, ...
@@ -171,15 +171,15 @@ end
 
 % V_OFFSET values from mheader.reg6 for tests with stimuli=1e5 Ohm.
 % E_OFFSET values from mheader.reg6 for tests with stimuli=1e5 Ohm, non-inverted inputs.
-RctZVarsH = add_RCT_zvars_H(RctZVarsH, int64(0), [0.001307, 0.0016914, 0.0030156]', [0.015384, 0.01582, 0.017215]');
+RctZvH = add_RCT_zvars_H(RctZvH, int64(0), [0.001307, 0.0016914, 0.0030156]', [0.015384, 0.01582, 0.017215]');
 if 0
 % TEST
-RctZVarsH = add_RCT_zvars_H(RctZVarsH, int64(1), [0.001307, 0.0016914, 0.0030156]', [0.015384, 0.01582, 0.017215]');
+RctZvH = add_RCT_zvars_H(RctZvH, int64(1), [0.001307, 0.0016914, 0.0030156]', [0.015384, 0.01582, 0.017215]');
 end
 
 
 fprintf(1, 'Creating file "%s"\n', destPath);
-create_RCT_file(rctMasterCdfFile, destPath, RctZVarsL, RctZVarsH);
+create_RCT_file(rctMasterCdfFile, destPath, RctZvL, RctZvH);
 
 end
 
@@ -227,20 +227,20 @@ end
 
 
 % Add 1 record to zVariables associated with Epoch_L.
-function RctZVarsL = add_RCT_zvars_L(RctZVarsL, Epoch_L, BIAS_CURRENT_OFFSET, BIAS_CURRENT_GAIN, TRANSFER_FUNCTION_COEFFS)
-    RctZVarsL.Epoch_L                 (end+1,1)     = Epoch_L;
-    RctZVarsL.BIAS_CURRENT_OFFSET     (end+1,:)     = BIAS_CURRENT_OFFSET;
-    RctZVarsL.BIAS_CURRENT_GAIN       (end+1,:)     = BIAS_CURRENT_GAIN;
-    RctZVarsL.TRANSFER_FUNCTION_COEFFS(end+1,:,:,:) = TRANSFER_FUNCTION_COEFFS;
+function RctZvL = add_RCT_zvars_L(RctZvL, Epoch_L, BIAS_CURRENT_OFFSET, BIAS_CURRENT_GAIN, TRANSFER_FUNCTION_COEFFS)
+    RctZvL.Epoch_L                 (end+1,1)     = Epoch_L;
+    RctZvL.BIAS_CURRENT_OFFSET     (end+1,:)     = BIAS_CURRENT_OFFSET;
+    RctZvL.BIAS_CURRENT_GAIN       (end+1,:)     = BIAS_CURRENT_GAIN;
+    RctZvL.TRANSFER_FUNCTION_COEFFS(end+1,:,:,:) = TRANSFER_FUNCTION_COEFFS;
 end
 
 
 
 % Add 1 record to zVariables associated with Epoch_H.
-function RctZvarsH = add_RCT_zvars_H(RctZvarsH, Epoch_H, V_OFFSET, E_OFFSET)
-    RctZvarsH.Epoch_H (end+1,1) = Epoch_H;
-    RctZvarsH.V_OFFSET(end+1,:) = V_OFFSET;
-    RctZvarsH.E_OFFSET(end+1,:) = E_OFFSET;
+function RctZvH = add_RCT_zvars_H(RctZvH, Epoch_H, V_OFFSET, E_OFFSET)
+    RctZvH.Epoch_H (end+1,1) = Epoch_H;
+    RctZvH.V_OFFSET(end+1,:) = V_OFFSET;
+    RctZvH.E_OFFSET(end+1,:) = E_OFFSET;
 end
 
 

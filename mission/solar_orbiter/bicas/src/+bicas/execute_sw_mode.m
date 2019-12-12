@@ -78,15 +78,15 @@ for i = 1:length(SwModeInfo.inputsList)
     %=======================
     % Read dataset CDF file
     %=======================
-    [ZVars, GlobalAttributes]          = read_dataset_CDF(inputFilePath);
-    InputDatasetsMap(prodFuncInputKey) = struct('ZVars', ZVars, 'Ga', GlobalAttributes);
+    [Zv, GlobalAttributes]          = read_dataset_CDF(inputFilePath);
+    InputDatasetsMap(prodFuncInputKey) = struct('Zv', Zv, 'Ga', GlobalAttributes);
     
     
     
     %===================================================
     % ASSERTIONS: Check GlobalAttributes values
     %===================================================
-    % NOTE: Can not use bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(ZVars) since not all zVariables have same number of
+    % NOTE: Can not use bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(Zv) since not all zVariables have same number of
     % records. Ex: Metadata such as ACQUISITION_TIME_UNITS.
     if isfield(GlobalAttributes, 'DATASET_ID')
         datasetId = GlobalAttributes.DATASET_ID{1};
@@ -192,7 +192,7 @@ end
 
 
 
-function [ZVars, GlobalAttributes] = read_dataset_CDF(filePath)
+function [Zv, GlobalAttributes] = read_dataset_CDF(filePath)
 % Read elementary input process data from a CDF file. Copies all zVariables into fields of a regular structure.
 %
 %
@@ -223,7 +223,7 @@ DataObj = dataobj(filePath);                 % do=dataobj, i.e. irfu-matlab's da
 % Copy zVariables (only the data) into analogous fields in smaller struct
 %=========================================================================
 bicas.log('info', 'Converting dataobj (CDF data structure) to PDV.')
-ZVars             = struct();
+Zv             = struct();
 zVariableNameList = fieldnames(DataObj.data);
 %bicas.proc_utils.log_array('explanation')
 for i = 1:length(zVariableNameList)
@@ -255,7 +255,7 @@ for i = 1:length(zVariableNameList)
         %bicas.logf('warning', 'Can not handle replace fill/pad values for zVariable "%s" when reading "%s".', zVariableName, filePath))
     end
     
-    ZVars.(zVariableName) = zVariableData;
+    Zv.(zVariableName) = zVariableData;
 end
 
 
@@ -275,9 +275,9 @@ end
 
 
 function write_dataset_CDF(...
-    ZVarsSubset, GlobalAttributesSubset, outputFile, masterCdfPath, datasetId, SETTINGS)
+    ZvSubset, GlobalAttributesSubset, outputFile, masterCdfPath, datasetId, SETTINGS)
 %
-% Function that writes one ___dataset___ CDF file.
+% Function that writes one ___DATASET___ CDF file.
 %
 
 %==========================================================================
@@ -305,7 +305,7 @@ DataObj = dataobj(masterCdfPath);
 % Iterate over all OUTPUT PD field names (~zVariables) - Set corresponding dataobj zVariables
 %=============================================================================================
 % NOTE: Only sets a SUBSET of the zVariables in master CDF.
-pdFieldNameList = fieldnames(ZVarsSubset);
+pdFieldNameList = fieldnames(ZvSubset);
 bicas.log('info', 'Converting PDV to dataobj (CDF data structure)')
 %bicas.proc_utils.log_array('explanation')
 for iPdFieldName = 1:length(pdFieldNameList)
@@ -317,7 +317,7 @@ for iPdFieldName = 1:length(pdFieldNameList)
         'Trying to write to zVariable "%s" that does not exist in the master CDF file.', zVariableName)
     end
     
-    zVariableData = ZVarsSubset.(zVariableName);
+    zVariableData = ZvSubset.(zVariableName);
     
     % Prepare PDV zVariable data:
     % (1) Replace NaN-->fill value
@@ -400,7 +400,7 @@ for fn = fieldnames(DataObj.data)'
             % (1) there is a PD fields/zVariable Epoch, and
             % (2) this zVariable should have as many records as Epoch.
             bicas.logf('warning', 'Setting numeric zVariable "%s" to presumed correct size using fill values due to setting.', zVariableName)
-            nEpochRecords = size(ZVarsSubset.Epoch, 1);
+            nEpochRecords = size(ZvSubset.Epoch, 1);
             [fillValue, ~] = get_fill_pad_values(DataObj, zVariableName);
             zVariableSize = [nEpochRecords, DataObj.data.(fn{1}).dim];
             zVariableData = cast(zeros(zVariableSize), matlabClass);

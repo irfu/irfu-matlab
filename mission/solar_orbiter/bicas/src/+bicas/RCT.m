@@ -282,7 +282,7 @@ classdef RCT
                         nBltsMax = 3;
                     end
 
-                    % NOTE: Values for the specific LFS, hence the prefix.
+                    % NOTE: Values for the specific LSF, hence the prefix.
                     lsfFreqTableHz   = freqTableHz{iLsf};
                     lsfAmplTableTpiv = amplTableTpiv{iLsf};
                     lsfPhaseTableDeg = phaseTableDeg{iLsf};

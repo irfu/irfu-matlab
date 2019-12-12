@@ -100,22 +100,9 @@ classdef proc_utils
             end
         end
 
-
-
-%         function c3 = add_rows_to_cell_comps(c1, c2)
-%             % ASSERTIONS
-%             bicas.proc_utils.assert_cell_array_comps_have_same_N_rows(c1)
-%             bicas.proc_utils.assert_cell_array_comps_have_same_N_rows(c2)
-%             assert(numel(c1) == numel(c2))
-%             
-%             for i = 1:numel(c1)
-%                 c3{i} = [c1{i}; c2{i}];
-%             end
-%         end
-
         
 
-        function freq = get_LFR_frequency(FREQ)
+        function freqHz = get_LFR_frequency(iLsf)
         % Convert LFR zVariable FREQ values to Hz. The usefulness of this function stems from how the LFR
         % datasets are defined.
         %
@@ -126,19 +113,19 @@ classdef proc_utils
             global SETTINGS
 
             % ASSERTION
-            uniqueValues = unique(FREQ);
-            if ~all(ismember(uniqueValues, [0,1,2,3]))
+            uniqueValues = unique(iLsf);
+            if ~all(ismember(uniqueValues, [1,2,3,4]))
                 uniqueValuesStr = sprintf('%d', uniqueValues);   % NOTE: Has to print without \n to keep all values on a single-line string.
                 error('BICAS:proc_utils:Assertion:IllegalArgument:DatasetFormat', ...
-                    'Found unexpected values in LFR variable FREQ (unique values: %s).', uniqueValuesStr)
+                    'Found unexpected values in LSF index (corresponding to LFR FREQ+1). Unique values: %s.', uniqueValuesStr)
             end
             
             % NOTE: Implementation that works for arrays of any size.
-            freq = ones(size(FREQ)) * -1;        % Allocate array and set default values.
-            freq(FREQ==0) = SETTINGS.get_fv('PROCESSING.LFR.F0_HZ');
-            freq(FREQ==1) = SETTINGS.get_fv('PROCESSING.LFR.F1_HZ');
-            freq(FREQ==2) = SETTINGS.get_fv('PROCESSING.LFR.F2_HZ');
-            freq(FREQ==3) = SETTINGS.get_fv('PROCESSING.LFR.F3_HZ');
+            freqHz = ones(size(iLsf)) * NaN;        % Allocate array and set default values.
+            freqHz(iLsf==1) = SETTINGS.get_fv('PROCESSING.LFR.F0_HZ');
+            freqHz(iLsf==2) = SETTINGS.get_fv('PROCESSING.LFR.F1_HZ');
+            freqHz(iLsf==3) = SETTINGS.get_fv('PROCESSING.LFR.F2_HZ');
+            freqHz(iLsf==4) = SETTINGS.get_fv('PROCESSING.LFR.F3_HZ');
         end
         
         
@@ -168,7 +155,7 @@ classdef proc_utils
         
         
         
-        function Rx = get_LFR_Rx(R0, R1, R2, FREQ)
+        function Rx = get_LFR_Rx(R0, R1, R2, iLsf)
         % Return the relevant value of LFR CDF zVariables R0, R1, or R2, or a hypothetical but analogous "R3" which is always 1.
         %
         % ARGUMENTS
@@ -181,14 +168,14 @@ classdef proc_utils
         %
         % NOTE: Works for all array sizes.
             
-            Rx = -1 * ones(size(FREQ));        % Set to -1 (should always be overwritten if code works).
+            Rx = NaN * ones(size(iLsf));        % Set to NaN (should always be overwritten if code works).
             
-            I = (FREQ==0);   Rx(I) = R0(I);
-            I = (FREQ==1);   Rx(I) = R1(I);
-            I = (FREQ==2);   Rx(I) = R2(I);
-            I = (FREQ==3);   Rx(I) = 1;      % The value of a hypothetical (non-existant, constant) analogous zVariable "R3".
+            I = (iLsf==1);   Rx(I) = R0(I);
+            I = (iLsf==2);   Rx(I) = R1(I);
+            I = (iLsf==3);   Rx(I) = R2(I);
+            I = (iLsf==4);   Rx(I) = 1;      % The value of a hypothetical (non-existant, constant) analogous zVariable "R3".
             
-            assert(~any(Rx == -1))
+            assert(all(~isnan(Rx)))
         end
 
 
@@ -245,66 +232,6 @@ classdef proc_utils
             ACQUISITION_TIME(:, 2) = uint32((atSeconds - atSecondsFloor) * 65536);
             % NOTE: Should not be able to produce ACQUISITION_TIME(:, 2)==65536 (2^16) since atSeconds already rounded (to parts of 2^-16).
         end
-
-
-
-%         function [iFirstList, iLastList] = find_constant_sequences_OLD(varargin)
-%         % For a non-empty set of numeric COLUMN vectors, find all subsequences of continuously constant values in all the vectors.
-%         % Useful for finding continuous sequences of (CDF) records with identical settings.
-%         % NOTE: NaN counts as equal to itself.
-%         % NOTE: size([]) = 0x0 ==> Not column vector
-%         %
-%         % ARGUMENTS
-%         % ==================
-%         % Arguments (varargin{i}) : Column arrays of the same size. Can have zero rows (but must still have one column;
-%         %                           size 0xN). Does not have to be numeric as long as isequaln can handle it.
-%         % iFirst, iLast           : Vectors with indices to the first and last index of each sequence.
-%         
-%             % ASSERTION: Must be at least on argument.
-%             if isempty(varargin)
-%                 error('BICAS:proc_utils:Assertion:IllegalArgument', 'There are no vectors to look for sequences in.')
-%             end
-%             
-%             nRows = size(varargin{1}, 1);
-%             
-%             % ASSERTION
-%             %EJ_library.utils.assert.vector(varargin{kArg})
-%             for kArg = 1:length(varargin)
-%                 if ~iscolumn(varargin{kArg}) || nRows ~= size(varargin{kArg}, 1)
-%                     error('BICAS:proc_utils:Assertion:IllegalArgument', 'varargins are not all SAME-SIZE COLUMN vectors.')
-%                 end
-%             end                
-%             
-%             
-%             
-%             iFirstList = [];
-%             iLastList  = [];
-%             iFirst = 1;
-%             iLast = iFirst;
-%             while iFirst <= nRows
-%                 
-%                 while iLast+1 <= nRows       % For as long as there is another row...
-%                     foundLast = false;
-%                     for kArg = 1:length(varargin)
-%                         if ~isequaln(varargin{kArg}(iFirst), varargin{kArg}(iLast+1))    % NOTE: Use "isequaln" that treats NaN as any other value.
-%                             % CASE: This row is different from the previous one.
-%                             foundLast = true;
-%                             break
-%                         end
-%                     end
-%                     if foundLast
-%                         break
-%                     end
-%                     
-%                     iLast = iLast + 1;                    
-%                 end
-% 
-%                 iFirstList(end+1) = iFirst;
-%                 iLastList(end+1)  = iLast;
-% 
-%                 iFirst = iLast + 1;
-%             end
-%         end
         
         
         
@@ -680,10 +607,11 @@ classdef proc_utils
         
         
         
-        function M = create_NaN_array(nRowsColumns)
-            % Input on the format [nRows, nColumns] so that the return value from the size() function can be used.
+        % mSize : [nRows, nColumns, ...] so that the return value from the size() function can be used.
+        function M = create_NaN_array(mSize)
+            assert(numel(mSize) >= 2)
             
-            M = NaN * zeros(nRowsColumns(1), nRowsColumns(2));
+            M = NaN * zeros(mSize);
         end
 
 
@@ -728,9 +656,21 @@ classdef proc_utils
         % NOTE: Does not recognize HK datasets.
         % NOTE: Only classifies input datasets. (Is there a good reason for this?)
         % NOTE: Function deliberately ignores Skeleton_version.
+        % IMPLEMENTATION NOTE: Still recognizes old ROC-SGSE datasets since they may be found in global attribute
+        % DATASET_ID in old test files.
         %
         function C = classify_DATASET_ID(datasetId)
             % PROPOSAL: Use regexp instead.
+            %   PRO: Can more easily handle old ROC-SGSE datasets.
+            %
+            % PROPOSAL: Implement assertsion on DATASET_ID via this function.
+            %   Ex: bicas.assert_DATASET_ID
+            %   Ex: bicas.swmde_defs.assert_DATASET_ID
+            %   CON: Requires strict matching.
+            %   PRO: Does not spread out the knowledge of DATASET_IDs.
+            %   PROPOSAL: Flag for obsoleted DATASET_IDs that may be found in input datasets. Caller decides how to
+            %       respond.
+            % NEED?!: Some way of determining whether an obsoleted and current DATASET_ID are equivalent.
             
             EJ_library.utils.assert.castring(datasetId)
             
@@ -994,24 +934,41 @@ classdef proc_utils
         
         
         function assert_struct_num_fields_have_same_N_rows(S)
-        % Assert that all NUMERIC fields in a structure have the same number of rows.
-        % NOTE: Ignores numeric fields to handle field "bltsArrayTm" (a cell array).
+        % Assert that the below variables inside the struct have the same size in the first index.
+        % (1) numeric fields                  : The field itself
+        % (2) cell fields                     : Cell array components
+        % (3) struct field (inside the struct): The inner struct's fields (not recursive)
+        % Asserts that there are no other types of variables.
         %
         % Useful for structs where all fields represent CDF zVariables and/or derivatives thereof, the size in the first
         % index (number of CDF record) should be equal.
         
-            fieldNamesList = fieldnames(S);
+        % NOTE: Function name somewhat bad.
+        % PROPOSAL: Make recursive?!
+        
+            fieldNamesList1 = fieldnames(S);
             nRows = [];
-            for i = 1:length(fieldNamesList)
-                fn = fieldNamesList{i};
+            for iFn1 = 1:length(fieldNamesList1)
+                fieldValue = S.(fieldNamesList1{iFn1});
                 
-                if isnumeric(S.(fn))
-                    nRows(end+1) = size(S.(fn), 1);
+                if isnumeric(fieldValue)
+                    nRows(end+1) = size(fieldValue, 1);
+                elseif iscell(fieldValue)
+                    for iCc = 1:numel(fieldValue)
+                        nRows(end+1) = size(fieldValue{iCc}, 1);
+                    end
+                elseif isstruct(fieldValue)
+                    fieldNamesList2 = fieldnames(fieldValue);
+                    for iFn2 = 1:length(fieldNamesList2)
+                        nRows(end+1) = size(fieldValue.(fieldNamesList2{iFn2}), 1);
+                    end
+                else
+                    error('BICAS:proc_utils:Assertion', 'Can not handle this type of struct field.')
                 end
             end
             if length(unique(nRows)) > 1    % NOTE: length==0 valid for struct containing zero numeric fields.
                 error('BICAS:proc_utils:Assertion', ...
-                    'Numeric fields in struct do not have the same number of rows (likely corresponding to CDF zVar records).')
+                    'Numeric fields and cell array components in struct do not have the same number of rows (likely corresponding to CDF zVar records).')
             end
         end
         
