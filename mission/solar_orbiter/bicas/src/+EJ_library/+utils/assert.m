@@ -296,7 +296,7 @@ classdef assert
         function vector(v)
             % PROPOSAL: Optional extra argument that specifies the length.
             
-            dims = unique(size(v));
+            dims = size(v);
             dims(dims==1) = [];
             if numel(dims) > 1
                 sizeStr = sprintf('%ix', size(v));

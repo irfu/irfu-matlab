@@ -12,11 +12,12 @@
 %   NOTE: Has to handle approximate numeric results.
 
 function proc_utils___ATEST
-    %convert_matrix_to_cell_array_of_vectors___ATEST
+    
+    find_constant_sequences___ATEST
+    if 1
+    convert_matrix_to_cell_array_of_vectors___ATEST
     convert_cell_array_of_vectors_to_matrix___ATEST
     
-    if 1
-    find_constant_sequences___ATEST
     convert_N_to_1_SPR_ACQUISITION_TIME___ATEST
     convert_N_to_1_SPR_Epoch___ATEST
     convert_N_to_1_SPR_redistribute___ATEST
@@ -81,22 +82,24 @@ function find_constant_sequences___ATEST
     
     new_test = @(inputs, outputs) (EJ_library.atest.CompareFuncResult(@bicas.proc_utils.find_constant_sequences, inputs, outputs));
     tl = {};
-    
+
     tl{end+1} = new_test({},                     'MException');
     tl{end+1} = new_test({[]', []'},             'MException');    % NOTE: size([]) = 0x0 ==> Not column vector
     tl{end+1} = new_test({ones(0,1), ones(0,1)}, 'MException');
-    tl{end+1} = new_test({[1]               }, {[1, 2]'});
-    tl{end+1} = new_test({[1], [3]          }, {[1, 2]'});
-    tl{end+1} = new_test({[1,1,1]',      [3,3,3]'      }, {[1,4]'});    
+    tl{end+1} = new_test({[1]                          }, {[1,2]'});
+    tl{end+1} = new_test({[1], [3]                     }, {[1,2]'});
+    tl{end+1} = new_test({[1,1,1]',      [3,3,3]'      }, {[1,4]'});
     tl{end+1} = new_test({[1,1,1]',      [NaN,NaN,NaN]'}, {[1,4]'});
     tl{end+1} = new_test({[1,1,1]',      [Inf,Inf,Inf]'}, {[1,4]'});
-    tl{end+1} = new_test({[1,1,1,2,2,2], [3,3,3,4,4,4]'}, {[1,4,7]'}); 
-    tl{end+1} = new_test({[1,1,2,2,2,2], [3,3,3,3,4,4]'}, {[1,3,5,7]'});
-    tl{end+1} = new_test({[1,1,2,2,2,2], [3,3,3,3,4,4]'}, {[1,3,5,7]'});
+    tl{end+1} = new_test({[1,1,1,2,2,2]', [3,3,3,4,4,4]'}, {[1,4,7]'});
+    tl{end+1} = new_test({[1,1,2,2,2,2]', [3,3,3,3,4,4]'}, {[1,3,5,7]'});
+    tl{end+1} = new_test({[1,1,2,2,2,2]', [3,3,3,3,4,4]'}, {[1,3,5,7]'});
+    tl{end+1} = new_test({[1,1,2,2,2,2]', [3,6; 3,6; 3,6; 3,6; 4,6; 4,6]}, {[1,3,5,7]'});
     tl{end+1} = new_test({...
-        [1,1,NaN,NaN,NaN,2,2,2], ...
+        [1,1,NaN,NaN,NaN,2,2,2]', ...
         [3,3,3,  3,  4,  4,4,4]'}, {...
         [1,  3,      5,  6,    9]'});
+
     EJ_library.atest.run_tests(tl)
 end
 

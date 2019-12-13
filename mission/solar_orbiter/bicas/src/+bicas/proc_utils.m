@@ -235,8 +235,8 @@ classdef proc_utils
         
         
         
-        % Find sequences of constant value for a set of non-empty 1D vectors of identical length. Return sequences in
-        % the format of indices to "edges", here defined as the union of
+        % Find sequences of constant value for a set of non-empty N-D vectors of identical length. Return sequences in
+        % the format of indices to "edges", here defined as the set union of
         % (1) The first index
         % (2) The last index+1
         % (3) Every index which is the first index in a sequence of unchanging values for all vectors
@@ -246,7 +246,7 @@ classdef proc_utils
         %
         % ARGUMENTS AND RETURN VALUE
         % ==========================
-        % varargin  : Non-empty 1D vectors of identical length.
+        % varargin  : Matrices with same size in the first index. Must be at least one argument. Max 2-D.
         % iEdgeList : 1D vector. Minimum-length 2.
         % --
         % RATIONALE: The function uses varargin (and the possibility to submit many separate 1D vectors) instead of one
@@ -256,43 +256,65 @@ classdef proc_utils
         % RATIONALE: The return format is chosen such that it is easy to merge it with other lists of edges from other
         % sources.
         %
+        %
+        % IMPLEMENTATION NOTE: Can re-implement using subsref to handle higher-dimensional matrices, but this slows down
+        % the function, by factor of ~20. Presently hardcoded to permit up to 2-D matrices by the number indexing
+        % (hardcoded number of colons), but this can be increased to an arbitrary finite limit.
         function iEdgeList = find_constant_sequences(varargin)
             % PROPOSAL: Rename to imply that the function finds edges (separating sequences), not sequences.
-            
+            %tic
             nArgs = numel(varargin);
             
             % ASSERTION
             assert(nArgs >= 1, 'BICAS:proc_utils:Assertion:IllegalArgument', 'Must have at least one argument.')
             
             iEdgeListArray = cell(nArgs, 1);    % Initialize empty variable.
-            for i = 1:nArgs
-                arg = varargin{i};   % Argument before assertions.
+            nRows          = size(varargin{1},1);
+            % Pre-allocate. Should be same size for all arguments and therefore does not need to be re-initialized/cleared.
+            diff_v = zeros(nRows-1, 1);
+            %S      = struct('type', '()', 'subs', {repmat({':'}, ndims(varargin{1}), 1)});
+            %S1     = struct('type', '()', 'subs', {repmat({':'}, ndims(varargin{1}), 1)});
+            %S2     = struct('type', '()', 'subs', {repmat({':'}, ndims(varargin{1}), 1)});
+
+            for iArg = 1:nArgs
+                v = varargin{iArg};   % Argument before assertions.
                 
                 % ASSERTIONS
-                EJ_library.utils.assert.vector(arg)
-                assert(~isempty(arg))
+                assert(~isempty(v))
+                assert(nRows == size(v, 1), 'BICAS:proc_utils:Assertion:IllegalArgument', 'Arguments have different number of rows.')
+                assert(ndims(v) <= 2)
                 
-                v = arg(:);   % Force column vector. Can not do earlier since we do not know for sure that it is a vector.
-                
-                
-                
-                %iEdgeListArray{i} = [1; 1+find(diff(v)); numel(v)+1];   % Can not handle NaN.
-                diff_v = zeros(numel(v)-1, 1);
-                for j = 1:numel(v)-1
+                %S.subs{1} = 1;
+                %v1        = subsref(v, S);
+                %v1 = v(1, :);
+                for iRow = 1:nRows-1
+                    
+                    %S.subs{1} = iRow + 1;
+                    %S1.subs{1} = iRow;
+                    %S2.subs{1} = iRow + 1;
+                    %v2        = subsref(v, S);
+                    %v2 = v(iRow, :, :);
+                    %v2 = v(iRow, :);
+                    
+                    %==================================================================================================
+                    % Compare two slices of v, and subsequent in the first index of v
+                    % ----------------------------------------------------------------
                     % IMPLEMENTATION NOTE: Uses "isequaln" to treat NaN as equal to itself. A side effect is that also
                     % Inf equals itself, and that one can (untested) have arrays of non-numeric data (structs, chars,
                     % objects etc).
-                    diff_v(j) = ~isequaln(v(j), v(j+1));
+                    %==================================================================================================
+                    diff_v(iRow) = ~isequaln(v(iRow,:), v(iRow+1,:));
+                    %diff_v(iRow) = ~isequaln(v1, v2);
+                    %diff_v(iRow) = ~isequaln(subsref(v, S1), subsref(v, S2));
+                    %diff_v
+                    
+                    %v1        = v2;
                 end
-                iEdgeListArray{i} = [1; 1+find(diff_v); numel(v)+1];   % Can not handle NaN.
+                iEdgeListArray{iArg} = [1; 1+find(diff_v); nRows+1];
             end
             
-            % NOTE: At this point, it is known (assertions) that all varargin{i} are vectors. By asserting at this
-            % point, we do not need to assert that all arguments are the same kind of vectors (row, column etc.), only
-            % that they have the same length.
-            EJ_library.utils.assert.all_equal(cellfun(@numel, varargin, 'UniformOutput', true))
-            
             iEdgeList = bicas.proc_utils.merge_index_edge_lists(iEdgeListArray{:});
+            %toc
         end
         
         
