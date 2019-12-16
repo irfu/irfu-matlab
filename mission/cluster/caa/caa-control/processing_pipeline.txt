@@ -86,15 +86,15 @@ Matlab accesses a text version of this on db when processing the data.
 3.1 Get the ACE and OMNI files
 ==============================
 Download data (mfi_h2 and swe_h2) from:
-(Something like: wget ftp://cdaweb.gsfc.nasa.gov/pub/data/ace/mag/level_2_cdaweb/mfi_h2/2012/*201209*.cdf
- or ftp://cdaweb.gsfc.nasa.gov/pub/data/ace/swepam/level_2_cdaweb/swe_h2/2013/*2013*.cdf)
-  ftp://cdaweb.gsfc.nasa.gov/pub/data/ace/mag/level_2_cdaweb/mfi_h2/
-  (old path ftp://cdaweb.gsfc.nasa.gov/pub/istp/ace)
+(Something like: wget -l1 --no-parent -nd -r -A cdf https://cdaweb.gsfc.nasa.gov/pub/data/ace/mag/level_2_cdaweb/mfi_h2/2018/
+ and wget -l1 --no-parent -nd -r -A cdf https://cdaweb.gsfc.nasa.gov/pub/data/ace/swepam/level_2_cdaweb/swe_h2/2018/)
+  https://cdaweb.gsfc.nasa.gov/pub/data/ace/mag/level_2_cdaweb/mfi_h2/
+  https://cdaweb.gsfc.nasa.gov/pub/data/ace/swepam/level_2_cdaweb/swe_h2/
 to:
   db.irfu.se/export/data/istp/ace    (should be NFS mounted at /data/istp/ace)
 Also download the OMNI data from:
-  ftp://cdaweb.gsfc.nasa.gov/pub/data/omni/omni_cdaweb/hourly/
-  (old path ftp://cdaweb.gsfc.nasa.gov/pub/istp/omni2)
+(wget -l1 --no-parent -nd -r -A cdf https://cdaweb.gsfc.nasa.gov/pub/data/omni/omni_cdaweb/hourly/2018/)
+  https://cdaweb.gsfc.nasa.gov/pub/data/omni/omni_cdaweb/hourly
 to:
   db.irfu.se/export/data/istp/omni2    (should be NFS mounted at /data/istp/omni2)
 
