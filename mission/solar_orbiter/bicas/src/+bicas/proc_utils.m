@@ -257,9 +257,14 @@ classdef proc_utils
         % sources.
         %
         %
-        % IMPLEMENTATION NOTE: Can re-implement using subsref to handle higher-dimensional matrices, but this slows down
-        % the function, by factor of ~20. Presently hardcoded to permit up to 2-D matrices by the number indexing
+        % EXECUTION SPEED
+        % ===============
+        % Empirically, it can be useful to have a fast implementation of this function.
+        % IMPLEMENTATION NOTE: One can re-implement using subsref to handle higher-dimensional matrices, but this slows
+        % down the function, by factor of ~20. Presently hardcoded to permit up to 2-D matrices by the number indexing
         % (hardcoded number of colons), but this can be increased to an arbitrary finite limit.
+        % Has kept multiple implementations to be able to compare speeds.
+        %
         function iEdgeList = find_constant_sequences(varargin)
             % PROPOSAL: Rename to imply that the function finds edges (separating sequences), not sequences.
             %tic
@@ -267,54 +272,125 @@ classdef proc_utils
             
             % ASSERTION
             assert(nArgs >= 1, 'BICAS:proc_utils:Assertion:IllegalArgument', 'Must have at least one argument.')
-            
-            iEdgeListArray = cell(nArgs, 1);    % Initialize empty variable.
-            nRows          = size(varargin{1},1);
+                        
+            nRows  = size(varargin{1},1);
             % Pre-allocate. Should be same size for all arguments and therefore does not need to be re-initialized/cleared.
             diff_v = zeros(nRows-1, 1);
-            %S      = struct('type', '()', 'subs', {repmat({':'}, ndims(varargin{1}), 1)});
-            %S1     = struct('type', '()', 'subs', {repmat({':'}, ndims(varargin{1}), 1)});
-            %S2     = struct('type', '()', 'subs', {repmat({':'}, ndims(varargin{1}), 1)});
 
-            for iArg = 1:nArgs
-                v = varargin{iArg};   % Argument before assertions.
+
+
+            if 1
+                %=========================================================================
+                % IMPLEMENTATION 1a
+                % * One call to "isequalnan" for every row and argument.
+                % NOTE: Slightly faster to index only once, and save the result (v1, v2).
+                %=========================================================================
                 
-                % ASSERTIONS
-                assert(~isempty(v))
-                assert(nRows == size(v, 1), 'BICAS:proc_utils:Assertion:IllegalArgument', 'Arguments have different number of rows.')
-                assert(ndims(v) <= 2)
-                
-                %S.subs{1} = 1;
-                %v1        = subsref(v, S);
-                %v1 = v(1, :);
-                for iRow = 1:nRows-1
+                iEdgeListArray = cell(nArgs, 1);    % Initialize empty variable.
+                for iArg = 1:nArgs
+                    v = varargin{iArg};   % Argument before assertions.
                     
-                    %S.subs{1} = iRow + 1;
-                    %S1.subs{1} = iRow;
-                    %S2.subs{1} = iRow + 1;
-                    %v2        = subsref(v, S);
-                    %v2 = v(iRow, :, :);
-                    %v2 = v(iRow, :);
+                    % ASSERTIONS
+                    assert(~isempty(v))
+                    assert(nRows == size(v, 1), 'BICAS:proc_utils:Assertion:IllegalArgument', 'Arguments have different number of rows.')
+                    assert(ndims(v) <= 2)
                     
-                    %==================================================================================================
-                    % Compare two slices of v, and subsequent in the first index of v
-                    % ----------------------------------------------------------------
-                    % IMPLEMENTATION NOTE: Uses "isequaln" to treat NaN as equal to itself. A side effect is that also
-                    % Inf equals itself, and that one can (untested) have arrays of non-numeric data (structs, chars,
-                    % objects etc).
-                    %==================================================================================================
-                    diff_v(iRow) = ~isequaln(v(iRow,:), v(iRow+1,:));
-                    %diff_v(iRow) = ~isequaln(v1, v2);
-                    %diff_v(iRow) = ~isequaln(subsref(v, S1), subsref(v, S2));
-                    %diff_v
+                    v1 = v(1, :);
+                    for iRow = 1:nRows-1
+                        
+                        v2 = v(iRow+1, :);
+                        
+                        %==================================================================================================
+                        % Compare two slices of v, and subsequent in the first index of v
+                        % ----------------------------------------------------------------
+                        % IMPLEMENTATION NOTE: Uses "isequaln" to treat NaN as equal to itself. A side effect is that also
+                        % Inf equals itself, and that one can (untested) have arrays of non-numeric data (structs, chars,
+                        % objects etc).
+                        %==================================================================================================
+                        %diff_v(iRow) = ~isequaln(v(iRow,:), v(iRow+1,:));
+                        diff_v(iRow) = ~isequaln(v1, v2);
+                        
+                        v1 = v2;
+                    end
                     
-                    %v1        = v2;
+                    iEdgeListArray{iArg} = [1; 1+find(diff_v); nRows+1];
                 end
-                iEdgeListArray{iArg} = [1; 1+find(diff_v); nRows+1];
+                iEdgeList = bicas.proc_utils.merge_index_edge_lists(iEdgeListArray{:});
+                
             end
-            
-            iEdgeList = bicas.proc_utils.merge_index_edge_lists(iEdgeListArray{:});
-            %toc
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            if 0
+                %======================================================
+                % IMPLEMENTATION 1b
+                % * One call to "isequalnan" for every row and argument.
+                % * Uses subsref ==> Makes it really slow.
+                %======================================================
+                
+                iEdgeListArray = cell(nArgs, 1);    % Initialize empty variable.
+                S = struct('type', '()', 'subs', {repmat({':'}, ndims(varargin{1}), 1)});
+                
+                for iArg = 1:nArgs
+                    v = varargin{iArg};   % Argument before assertions.
+                    
+                    % ASSERTIONS
+                    assert(~isempty(v))
+                    assert(nRows == size(v, 1), 'BICAS:proc_utils:Assertion:IllegalArgument', 'Arguments have different number of rows.')
+                    assert(ndims(v) <= 2)
+                    
+                    S.subs{1} = 1;
+                    v1        = subsref(v, S);
+                    for iRow = 1:nRows-1
+                        
+                        S.subs{1} = iRow + 1;
+                        v2        = subsref(v, S);
+                        
+                        %==================================================================================================
+                        % Compare two slices of v, and subsequent in the first index of v
+                        % ----------------------------------------------------------------
+                        % IMPLEMENTATION NOTE: Uses "isequaln" to treat NaN as equal to itself. A side effect is that also
+                        % Inf equals itself, and that one can (untested) have arrays of non-numeric data (structs, chars,
+                        % objects etc).
+                        %==================================================================================================
+                        diff_v(iRow) = ~isequaln(v1, v2);
+                        
+                        v1 = v2;
+                    end
+                    
+                    iEdgeListArray{iArg} = [1; 1+find(diff_v); nRows+1];
+                end
+                iEdgeList = bicas.proc_utils.merge_index_edge_lists(iEdgeListArray{:});
+                
+            end
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            if 0
+                %========================================================
+                % IMPLEMENTATION 2
+                % * One call to "isequalnan" for every row (not argument).
+                % Seems slower than not.
+                %========================================================
+                v1 = cell(nArgs, 1);
+                v2 = cell(nArgs, 1);
+                for iArg = 1:nArgs
+                    v = varargin{iArg};   % Argument before assertions.
+                    
+                    % ASSERTIONS
+                    assert(~isempty(v))
+                    assert(nRows == size(v, 1), 'BICAS:proc_utils:Assertion:IllegalArgument', 'Arguments have different number of rows.')
+                    assert(ndims(v) <= 2)
+                    
+                    v1{iArg} = v(1, :);
+                end
+                for iRow = 1:nRows-1
+                    for iArg = 1:nArgs
+                        v = varargin{iArg};
+                        v2{iArg} = v(iRow+1, :);
+                    end
+                    diff_v(iRow) = ~isequaln(v1, v2);
+                    v1 = v2;
+                end
+                iEdgeList = [1; 1+find(diff_v); nRows+1];
+                
+            end
         end
         
         
