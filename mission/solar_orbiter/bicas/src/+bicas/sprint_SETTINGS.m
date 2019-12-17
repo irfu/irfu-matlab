@@ -35,7 +35,7 @@ for iKey = 1:length(keyList)
     %isDefaultValue = SETTINGS.is_default_value(key);
     valueSource = SETTINGS.get_value_source(key);
     valueStatusStr = EJ_library.utils.translate({...
-        {'default'},            '(def)';
+        {'default'},            '  --';
         {'configuration file'}, '(conf)'; 
         {'CLI arguments'},      '(CLI)'}, ...
         valueSource, 'BICAS:sprintf_settings:Assertion', 'Illegal setting value source');
@@ -44,7 +44,9 @@ for iKey = 1:length(keyList)
 end
 
 str = [str, newline];
-str = [str, sprintf('(def)  = Default value\n')];
+str = [str, sprintf('Explanations for leftmost column above:\n')];
+str = [str, sprintf('---------------------------------------\n')];
+str = [str, sprintf('  --   = Default value\n')];
 str = [str, sprintf('(conf) = Value comes from configuration file\n')];
 str = [str, sprintf('(CLI)  = Value comes from CLI argument\n')];
 

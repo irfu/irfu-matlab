@@ -44,6 +44,14 @@ classdef settings < handle
 %   PRO: Can remove methods define_setting, disable_define.
 %   CON: Can not easily add metadata for every variable (in the future), e.g. permitted values (data type/class, range).
 %
+% PROPOSAL: Be able to make some settings (default values) write-protected, not overridable.
+%   CON: Of limited value.
+%
+% PROPOSAL: Store which settings were invoked (read) during a run.
+%   PRO: Can summarize (and log) which settings are actually being used.
+
+
+
     properties(Access=private)
         defineDisabledForever = false;   % Whether defining new keys is disallowed or not. Always true if readOnlyForever==true.
         readOnlyForever       = false;   % Whether modifying the object is allowed or not.

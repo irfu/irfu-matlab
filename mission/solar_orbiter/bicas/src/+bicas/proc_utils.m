@@ -1079,9 +1079,17 @@ classdef proc_utils
             nRowsArray = cellfun(@(v) (size(v,1)), c, 'UniformOutput', true);
             EJ_library.utils.assert.all_equal( nRowsArray )
         end
+        
+        
+        
+        function doOverlap = ranges_overlap(v1, v2)
+            EJ_library.utils.assert.vector(v1)
+            EJ_library.utils.assert.vector(v2)
             
-        
-        
+            doOverlap = (min(v2) <= max(v1)) && (min(v1) <= max(v2));
+        end
+
+            
         
 %         function iBinList = get_bin_index(x, edgeList)
 %             % PROPOSAL: Move to EJ_library.

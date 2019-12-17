@@ -290,7 +290,7 @@ SETTINGS = overwrite_settings_from_strings(SETTINGS, ConfigFileSettingsVsMap, 'c
 %=========================================================
 % Modify settings according to (inofficial) CLI arguments
 %=========================================================
-bicas.log('info', 'Overriding in-memory settings using (optional, inofficial) CLI arguments, if any.')
+bicas.log('info', 'Overriding subset of in-memory settings using (optional, inofficial) CLI arguments, if any.')
 SETTINGS = overwrite_settings_from_strings(SETTINGS, CliData.ModifiedSettingsMap, 'CLI arguments');    % Modify SETTINGS
 SETTINGS.make_read_only();
 % CASE: SETTINGS has now been finalized and is read-only (by assertion) after this.

@@ -197,8 +197,8 @@ classdef demultiplexer
 
             import bicas.demultiplexer.*
 
-            % NOTE: BLTS 4 & 5 are routed independently of mux mode, but the code hardcodes this separately for every
-            % case (i.e. multiple times) for completeness.
+            % IMPLEMENTATION NOTE: BLTS 4 & 5 are routed independently of mux mode, but the code hardcodes this
+            % separately for every case (i.e. multiple times) for completeness.
             switch(demuxMode)
                 
                 case 0   % "Standard operation" : We have all information.

@@ -70,7 +70,7 @@ classdef proc
     % TODO-DECISION: How handle differences between pipelines?
     %
     % PROPOSAL: (Outside) Derive PDID from input dataset, then use it when sending input dataset argument to production function.
-    %   CON: Possible to derive non-exististant (non-supported) PDIDs. Not the best way to test input datasets.
+    %   CON: Possible to derive non-existant (non-supported) PDIDs. Not the best way to test input datasets.
 
     methods(Static, Access=public)
         
@@ -86,11 +86,26 @@ classdef proc
             
             HkPd  = InputDatasetsMap('HK_cdf');
             SciPd = InputDatasetsMap('SCI_cdf');
+
+            %==============================
+            % Configure calibration object
+            %==============================
+            C = bicas.proc_utils.classify_DATASET_ID(inputSciDsi);
+            useCt   = SETTINGS.get_fv('PROCESSING.L1R.LFR.USE_GA_CALIBRATION_TABLE_RCTS')   && C.isL1R;
+            useCti2 = SETTINGS.get_fv('PROCESSING.L1R.LFR.USE_ZV_CALIBRATION_TABLE_INDEX2') && C.isL1R;
+            if useCt
+                Cal.read_non_BIAS_RCT_by_CALIBRATION_TABLE('LFR', ...
+                    SciPd.Ga.CALIBRATION_TABLE, ...
+                    SciPd.Zv.CALIBRATION_TABLE_INDEX, ...
+                    useCti2);
+            else
+                Cal.read_non_BIAS_RCTs_by_regexp(useCti2);
+            end
             
             HkSciTimePd = bicas.proc_sub.process_HK_to_HK_on_SCI_TIME(SciPd, HkPd, SETTINGS);
-            SciPreDcPd  = bicas.proc_sub.process_LFR_to_PreDC(         SciPd, inputSciDsi, HkSciTimePd);
-            SciPostDcPd = bicas.proc_sub.process_demuxing_calibration( SciPreDcPd, Cal, SETTINGS);
-            OutputSciPd = bicas.proc_sub.process_PostDC_to_LFR(        SciPostDcPd, outputDsi, outputVersion);
+            SciPreDcPd  = bicas.proc_sub.process_LFR_to_PreDC(        SciPd, inputSciDsi, HkSciTimePd);
+            SciPostDcPd = bicas.proc_sub.process_demuxing_calibration(SciPreDcPd, Cal, SETTINGS);
+            OutputSciPd = bicas.proc_sub.process_PostDC_to_LFR(       SciPostDcPd, outputDsi, outputVersion);
             
             OutputDatasetsMap = containers.Map();
             OutputDatasetsMap('SCI_cdf') = OutputSciPd;
@@ -106,6 +121,32 @@ classdef proc
             
             HkPd  = InputDatasetsMap('HK_cdf');
             SciPd = InputDatasetsMap('SCI_cdf');
+            
+            %==============================
+            % Configure calibration object
+            %==============================
+            C = bicas.proc_utils.classify_DATASET_ID(inputSciDsi);
+            if C.isTdsCwf
+                settingUseCt   = 'PROCESSING.L1R.TDS.CWF.USE_GA_CALIBRATION_TABLE_RCTS';
+                settingUseCti2 = 'PROCESSING.L1R.TDS.CWF.USE_ZV_CALIBRATION_TABLE_INDEX2';
+                rctId = 'TDS-CWF';
+            else
+                settingUseCt   = 'PROCESSING.L1R.TDS.RSWF.USE_GA_CALIBRATION_TABLE_RCTS';
+                settingUseCti2 = 'PROCESSING.L1R.TDS.RSWF.USE_ZV_CALIBRATION_TABLE_INDEX2';
+                rctId = 'TDS-RSWF';
+            end
+            useCt   = SETTINGS.get_fv(settingUseCt)   && C.isL1R;
+            useCti2 = SETTINGS.get_fv(settingUseCti2) && C.isL1R;
+            if useCt
+                Cal.read_non_BIAS_RCT_by_CALIBRATION_TABLE(rctId, ...
+                    SciPd.Ga.CALIBRATION_TABLE, ...
+                    SciPd.Zv.CALIBRATION_TABLE_INDEX, ...
+                    useCti2);
+            else
+                Cal.read_non_BIAS_RCTs_by_regexp(useCti2);
+            end
+            
+            
             
             HkSciTimePd = bicas.proc_sub.process_HK_to_HK_on_SCI_TIME(SciPd, HkPd, SETTINGS);
             SciPreDcPd  = bicas.proc_sub.process_TDS_to_PreDC(        SciPd, inputSciDsi, HkSciTimePd, SETTINGS);

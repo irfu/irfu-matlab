@@ -100,6 +100,16 @@ classdef proc_sub
             bicas.proc_utils.log_tt2000_array('SCI ACQUISITION_TIME', sciAtTt2000)
             bicas.proc_utils.log_tt2000_array('HK  Epoch           ', hkEpoch)
             bicas.proc_utils.log_tt2000_array('SCI Epoch           ', sciEpoch)
+            
+            
+            if ~(bicas.proc_utils.ranges_overlap(hkAtTt2000, sciAtTt2000))
+                bicas.log('warning', 'zVar ACQUSITION_TIME in HK and SCI input datasets do not overlap in time.')
+            end
+            if ~(bicas.proc_utils.ranges_overlap(hkEpoch, sciEpoch))
+                bicas.log('warning', 'zVar Epoch in HK and SCI input datasets do not overlap in time.')
+            end
+
+
 
             %=========================================================================================================
             % 1) Convert time to something linear in time that can be used for processing (not storing time to file).
@@ -107,8 +117,8 @@ classdef proc_sub
             %       (a) ACQUISITION_TIME, or
             %       (b) Epoch.
             %=========================================================================================================
-            if SETTINGS.get_fv('PROCESSING.USE_AQUISITION_TIME_FOR_HK_TIME_INTERPOLATION')
-                bicas.log('info', 'Using HK & SCI zVariable ACQUISITION_TIME (not Epoch) for interpolating HK dataset data to SCI dataset time.')
+            if SETTINGS.get_fv('PROCESSING.USE_ZV_AQUISITION_TIME_FOR_HK_TIME_INTERPOLATION')
+                bicas.log('info', 'Using HK & SCI zVariable ACQUISITION_TIME (not Epoch) for interpolating HK dataset data to SCI dataset time, due to setting PROCESSING.USE_ZV_AQUISITION_TIME_FOR_HK_TIME_INTERPOLATION.')
                 hkInterpolationTimeTt2000  = hkAtTt2000;
                 sciInterpolationTimeTt2000 = sciAtTt2000;
             else
@@ -119,8 +129,13 @@ classdef proc_sub
             clear hkAtTt2000 sciAtTt2000
             clear hkEpoch    sciEpoch
 
+            if ~(bicas.proc_utils.ranges_overlap(hkInterpolationTimeTt2000, sciInterpolationTimeTt2000))
+                error('BICAS:proc_sub:Assertion', ...
+                'Time zVariables (Epoch or ACQUISITION_TIME) in HK and SCI input datasets, used for converting HK data to SCI timestamps, do not overlap in time.')
+            end
+            
 
-
+            
             %=========================================================================================================
             % Derive MUX_SET
             % --------------
@@ -304,14 +319,15 @@ classdef proc_sub
             nVariableSamplesPerRecord = size(InSci.Zv.WAVEFORM_DATA, 3);    % Number of samples in the variable, not necessarily actual data.
 
             freqHz = double(InSci.Zv.SAMPLING_RATE);
-            if C.isL1R && C.isTdsRswf && SETTINGS.get_fv('PROCESSING.TDS.RSWF_L1R_FREQ_CORRECTION_ENABLED')
-                % TEMPORARY?
+            if C.isL1R && C.isTdsRswf && SETTINGS.get_fv('PROCESSING.L1R.TDS.RSWF_L1R_FREQ_CORRECTION_ENABLED')
+                % TEMPORARY
                 % IMPLEMENTATION NOTE: Has observed test file
-                % solo_L1R_rpw-tds-lfm-rswf-e_20190523T080316-20190523T134337_V02_les-7ae6b5e.cdf
-                % to have SAMPLING_RATE == 255, which is likely a BUG in the dataset. Setting it to what is probably the
-                % correct value.
+                % TESTDATA_RGTS_TDS_CALBA_V0.8.5C: solo_L1R_rpw-tds-lfm-rswf-e_20190523T080316-20190523T134337_V02_les-7ae6b5e.cdf
+                % to have SAMPLING_RATE == 255, which is likely a BUG in the dataset. /Erik P G Johansson 2019-12-03
+                % Bug in TDS RCS.  /David Pisa 2019-12-03
+                % Setting it to what is probably the correct value.
                 freqHz(freqHz == 255) = 32768;
-                bicas.logf('warning', 'Correcting presumed bug in TDS L1R LFM-RSWF dataset due to setting PROCESSING.TDS.RSWF_L1R_FREQ_CORRECTION_ENABLED. Modifying the frequency 255-->32768.')
+                bicas.logf('warning', 'Correcting presumed bug in TDS L1R LFM-RSWF dataset due to setting PROCESSING.L1R.TDS.RSWF_L1R_FREQ_CORRECTION_ENABLED. Modifying the frequency 255-->32768.')
             end
             
             PreDc = [];
@@ -331,26 +347,38 @@ classdef proc_sub
             
             if C.isTdsRswf
                 %====================================================================================================
-                % ASSERTION WARNING: Check zVar SAMPS_PER_CH for invalid values
-                %
+                % Chech for and handle illegal input data, zVar SAMPS_PER_CH
+                % ----------------------------------------------------------
                 % NOTE: Has observed invalid SAMPS_PER_CH value 16562 in
                 % ROC-SGSE_L1R_RPW-TDS-LFM-RSWF-E_73525cd_CNE_V03.CDF.
                 % 2019-09-18, David Pisa: Not a flaw in TDS RCS but in the source L1 dataset.
                 %====================================================================================================
                 SAMPS_PER_CH_MIN_VALID = 2^10;
                 SAMPS_PER_CH_MAX_VALID = 2^15;
-                SAMPS_PER_CH           = double(InSci.Zv.SAMPS_PER_CH);
-                SAMPS_PER_CH_rounded   = round(2.^round(log2(SAMPS_PER_CH)));
+                SAMPS_PER_CH_zv        = double(InSci.Zv.SAMPS_PER_CH);
+                SAMPS_PER_CH_rounded   = round(2.^round(log2(SAMPS_PER_CH_zv)));
                 SAMPS_PER_CH_rounded(SAMPS_PER_CH_rounded < SAMPS_PER_CH_MIN_VALID) = SAMPS_PER_CH_MIN_VALID;
                 SAMPS_PER_CH_rounded(SAMPS_PER_CH_rounded > SAMPS_PER_CH_MAX_VALID) = SAMPS_PER_CH_MAX_VALID;
-                if any(SAMPS_PER_CH_rounded ~= SAMPS_PER_CH)
-                    SAMPS_PER_CH_badValues = unique(SAMPS_PER_CH(SAMPS_PER_CH_rounded ~= SAMPS_PER_CH));
+                if any(SAMPS_PER_CH_rounded ~= SAMPS_PER_CH_zv)
+                    SAMPS_PER_CH_badValues = unique(SAMPS_PER_CH_zv(SAMPS_PER_CH_rounded ~= SAMPS_PER_CH_zv));
                     badValuesDisplayStr = strjoin(arrayfun(@(n) sprintf('%i', n), SAMPS_PER_CH_badValues, 'uni', false), ', ');                    
-                    bicas.logf('warning', 'TDS LFM RSWF zVar SAMPS_PER_CH contains unexpected value(s), not 2^n: %s', badValuesDisplayStr)
+                    logErrorMsg = sprintf('TDS LFM RSWF zVar SAMPS_PER_CH contains unexpected value(s), not 2^n: %s', badValuesDisplayStr);
                     
-                    % NOTE: Unclear if this is the appropriate action.
-                    %bicas.log('warning', 'Replacing TDS RSWF zVar SAMPS_PER_CH values with values, rounded to valid values.')
-                    %SAMPS_PER_CH = SAMPS_PER_CH_rounded;
+                    actionSettingValue = SETTINGS.get_fv('PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_ACTION');
+                    switch(actionSettingValue)
+                        case 'ERROR'
+                            error('BICAS:proc_sub:Assertion:DatasetFormat', logErrorMsg)
+                        case 'PERMIT'
+                            bicas.logf('warning', [logErrorMsg, 'Permitting due to setting PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_ACTION.'])
+                            % Do nothing
+                        case 'ROUND'
+                            bicas.logf('warning', logErrorMsg)
+                            bicas.log('warning', 'Replacing TDS RSWF zVar SAMPS_PER_CH values with values, rounded to valid values due to setting PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_ACTION.')
+                            SAMPS_PER_CH_zv = SAMPS_PER_CH_rounded;
+                        otherwise
+                            error('BICAS:proc_sub:Assertion:ConfigurationBug', ...
+                                'Illegal value PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_ACTION=%s', actionSettingValue)
+                    end
                 end
                 
                 % NOTE: This might only be appropriate for TDS's "COMMON_MODE" mode. TDS also has a "FULL_BAND" mode
@@ -360,7 +388,7 @@ classdef proc_sub
                 % FULL_BAND mode has each snapshot divided into 2^15 samples/record * 8 records.  /Unknown source
                 % Unclear what value SAMPS_PER_CH should have for FULL_BAND mode. How does Epoch work for FULL_BAND
                 % snapshots?
-                PreDc.Zv.nValidSamplesPerRecord = SAMPS_PER_CH;
+                PreDc.Zv.nValidSamplesPerRecord = SAMPS_PER_CH_zv;
             else
                 PreDc.Zv.nValidSamplesPerRecord = ones(nRecords, 1) * 1;
             end
@@ -565,7 +593,7 @@ classdef proc_sub
         %
         % NOTE: Public function as opposed to the other demuxing/calibration functions.
         %
-        function PostDc = process_demuxing_calibration(PreDc, Cal, calibFunc, SETTINGS)
+        function PostDc = process_demuxing_calibration(PreDc, Cal, SETTINGS)
         % PROPOSAL: Move the setting of IBIASx (bias current) somewhere else?
         %   PRO: Unrelated to demultiplexing.
         %   CON: Related to calibration.
@@ -578,7 +606,7 @@ classdef proc_sub
             % DEMUX
             %=======
             PostDc = PreDc;    % Copy all values, to later overwrite a subset of them.
-            PostDc.Zv.DemuxerOutput = bicas.proc_sub.simple_demultiplex(PreDc, Cal);
+            PostDc.Zv.DemuxerOutput = bicas.proc_sub.simple_demultiplex(PreDc, Cal, SETTINGS);
 
             %================================
             % Set (calibrated) bias currents
@@ -613,7 +641,7 @@ classdef proc_sub
         %
         %
         % NOTE: Can handle arrays of any size as long as the sizes are consistent.
-        function AsrSamplesAVolt = simple_demultiplex(PreDc, Cal)
+        function AsrSamplesAVolt = simple_demultiplex(PreDc, Cal, SETTINGS)
         % PROPOSAL: Incorporate into processing function process_demuxing_calibration.
         % PROPOSAL: Assert same nbr of "records" for MUX_SET, DIFF_GAIN as for BIAS_x.
         %
@@ -672,14 +700,32 @@ classdef proc_sub
             iCalibHZv    = Cal.get_calibration_time_H(        PreDc.Zv.Epoch);
 
 
-
-%             if isfield(PreDc.Zv 'CALIBRATION_TABLE_INDEX')
-%                 CALIBRATION_TABLE_INDEX_zv = PreDc.Zv.CALIBRATION_TABLE_INDEX;
-%             else
-%                 %assert('No zVar CALIBRATION_TABLE_INDEX. Support for absence of it not yet implemented.')
-%                 % Create "empty" CALIBRATION_TABLE_INDEX_zv.
-%                 CALIBRATION_TABLE_INDEX_zv = zeros(size(size(PreDc.Zv.Epoch, 1), 2)) * NaN;
-%             end
+            
+            
+            if isfield(PreDc.Zv, 'CALIBRATION_TABLE_INDEX')
+                % NOTE: Technically, this should only happen for L1R input.
+                
+                % ASSERTION
+                % NOTE: Checks both LFR & TDS CDF files.
+                % NOTE: Has observed breaking assertion in LFR test files "LFR___LFR_suggested_2019-01-17".
+                
+                CALIBRATION_TABLE_INDEX_zv = PreDc.Zv.CALIBRATION_TABLE_INDEX;
+                legalCtiSize = size(CALIBRATION_TABLE_INDEX_zv, 2) == 2;
+                if ~legalCtiSize
+                    if SETTINGS.get_fv('PROCESSING.L1R.ZV_CALIBRATION_TABLE_INDEX_ILLEGAL_SIZE_REPLACE')
+                        bicas.log('warning', 'Setting CALIBRATION_TABLE_INDEX to NaN due to setting PROCESSING.L1R.ZV_CALIBRATION_TABLE_INDEX_ILLEGAL_SIZE_REPLACE.')
+                        CALIBRATION_TABLE_INDEX_zv = zeros(PreDc.nRecords, 2) * NaN;
+                    else
+                        error('BICAS:proc_sub:Assertion', 'zVar CALIBRATION_TABLE_INDEX has illegal width (<>2).')
+                    end
+                end
+            else
+                % NOTE: Technically, this should only happen for L1 input.
+                
+                % Create "empty" CALIBRATION_TABLE_INDEX_zv.
+                bicas.log('warning', 'Creating NaN-valued CALIBRATION_TABLE_INDEX due to zVar not being present in input CDF.')
+                CALIBRATION_TABLE_INDEX_zv = zeros(PreDc.nRecords, 2) * NaN;
+            end
 
                 
                 
@@ -688,14 +734,15 @@ classdef proc_sub
             % (2) Process data separately for each such sequence.
             % NOTE: Just finding continuous subsequences can take a significant amount of time.
             %===================================================================================
-            [iEdgeList]             = bicas.proc_utils.find_constant_sequences(...
+            [iEdgeList] = bicas.proc_utils.find_constant_sequences(...
                 PreDc.Zv.MUX_SET, ...
                 PreDc.Zv.DIFF_GAIN, ...
                 dlrUsing12zv, ...
                 PreDc.Zv.freqHz, ...
                 iCalibLZv, ...
                 iCalibHZv, ...
-                PreDc.Zv.iLsf);
+                PreDc.Zv.iLsf, ...
+                CALIBRATION_TABLE_INDEX_zv);
             [iFirstList, iLastList] = bicas.proc_utils.index_edges_2_first_last(iEdgeList);
             for iSubseq = 1:length(iFirstList)
 
@@ -704,30 +751,30 @@ classdef proc_sub
 
                 % Extract SCALAR settings to use for entire subsequence of records.
                 % SS = Subsequence (single, constant value valid for entire subsequence)
-                MUX_SET_ss    = PreDc.Zv.MUX_SET  (iFirst);
-                DIFF_GAIN_ss  = PreDc.Zv.DIFF_GAIN(iFirst);
-                dlrUsing12_ss = dlrUsing12zv(      iFirst);
-                freqHz_ss     = PreDc.Zv.freqHz(   iFirst);
-                iCalibL_ss    = iCalibLZv(         iFirst);
-                iCalibH_ss    = iCalibHZv(         iFirst);
-                iLsf_ss       = PreDc.Zv.iLsf(     iFirst);
+                MUX_SET_ss                 = PreDc.Zv.MUX_SET  (iFirst);
+                DIFF_GAIN_ss               = PreDc.Zv.DIFF_GAIN(iFirst);
+                dlrUsing12_ss              = dlrUsing12zv(      iFirst);
+                freqHz_ss                  = PreDc.Zv.freqHz(   iFirst);
+                iCalibL_ss                 = iCalibLZv(         iFirst);
+                iCalibH_ss                 = iCalibHZv(         iFirst);
+                iLsf_ss                    = PreDc.Zv.iLsf(     iFirst);
+                CALIBRATION_TABLE_INDEX_ss = CALIBRATION_TABLE_INDEX_zv(iFirst, :);
                 
                 bicas.logf('info', ['Records %5i-%5i : ', ...
-                    'MUX_SET=%3i; DIFF_GAIN=%3i; dlrUsing12=%i; freqHz=%5g; iCalibL=%i; iCalibH=%i'], ...
+                    'MUX_SET=%i; DIFF_GAIN=%i; dlrUsing12=%i; freqHz=%5g; iCalibL=%i; iCalibH=%i; CALIBRATION_TABLE_INDEX=[%i, %i]'], ...
                     iFirst, iLast, ...
-                    MUX_SET_ss, DIFF_GAIN_ss, dlrUsing12_ss, freqHz_ss, iCalibL_ss, iCalibH_ss)
+                    MUX_SET_ss, DIFF_GAIN_ss, dlrUsing12_ss, freqHz_ss, iCalibL_ss, iCalibH_ss, CALIBRATION_TABLE_INDEX_ss(1), CALIBRATION_TABLE_INDEX_ss(2))
 
                 %============================================
                 % FIND DEMUXER ROUTING, BUT DO NOT CALIBRATE
                 %============================================
-                % NOTE: Call demultiplexer with no samples. Only collecting information on which BLTS channels are
+                % NOTE: Call demultiplexer with no samples. Only for collecting information on which BLTS channels are
                 % connected to which ASRs.
                 [BltsSrcAsrArray, ~] = bicas.demultiplexer.main(MUX_SET_ss, dlrUsing12_ss, {[],[],[],[],[]});
 
 
 
                 % Extract subsequence of DATA records to "demux".
-                %DemuxerInputSubseq = bicas.proc_utils.select_row_range_from_struct_fields(samplesCaTm, iFirst, iLast);
                 ssSamplesTm                = bicas.proc_utils.select_row_range_from_cell_comps(PreDc.Zv.samplesCaTm, iFirst, iLast);
                 % NOTE: "zVariable" (i.e. first index=record) for only the current subsequence.
                 ssZvNValidSamplesPerRecord = PreDc.Zv.nValidSamplesPerRecord(iFirst:iLast);
@@ -743,9 +790,9 @@ classdef proc_sub
 
 
 
-                %===========
-                % CALIBRATE
-                %===========
+                %=======================
+                % ITERATE OVER CHANNELS
+                %=======================
                 ssSamplesAVolt = cell(5,1);
                 for iBlts = 1:5
 
@@ -775,7 +822,7 @@ classdef proc_sub
                         %%%%%%%%%%%%
                         ssSamplesCaAVolt = Cal.calibrate_voltage_all(ssDtSec, ssSamplesCaTm, ...
                             PreDc.isLfr, PreDc.isTdsCwf, iBlts, ...
-                            BltsSrcAsrArray(iBlts), biasHighGain, iCalibL_ss, iCalibH_ss, iLsf_ss);
+                            BltsSrcAsrArray(iBlts), biasHighGain, iCalibL_ss, iCalibH_ss, iLsf_ss, CALIBRATION_TABLE_INDEX_ss);
                         
                         if PreDc.hasSnapshotFormat
                             [ssSamplesAVolt{iBlts}, ~] = bicas.proc_utils.convert_cell_array_of_vectors_to_matrix(...

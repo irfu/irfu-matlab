@@ -357,7 +357,7 @@ DataObj.GlobalAttributes.Parents             = GlobalAttributesSubset.Parents;
 DataObj.GlobalAttributes.Parent_version      = GlobalAttributesSubset.Parent_version;
 DataObj.GlobalAttributes.Data_version        = SETTINGS.get_fv('OUTPUT_CDF.DATA_VERSION');     % ROC DFMD says it should be updated in a way which can not be automatized?!!!
 DataObj.GlobalAttributes.Provider            = GlobalAttributesSubset.Provider;             % ROC DFMD contradictive if it should be set.
-if SETTINGS.get_fv('OUTPUT_CDF.SET_TEST_ID')
+if SETTINGS.get_fv('OUTPUT_CDF.GLOBAL_ATTRIBUTES.SET_TEST_ID')
     DataObj.GlobalAttributes.Test_id         = GlobalAttributesSubset.Test_Id;              % ROC DFMD says that it should really be set by ROC.
 end
 %DataObj.GlobalAttributes.SPECTRAL_RANGE_MIN
@@ -377,16 +377,16 @@ for fn = fieldnames(DataObj.data)'
     if isempty(DataObj.data.(zVariableName).data)
         % CASE: zVariable has zero records, indicating that should have been set using PDV field.
         
-        logMsg = sprintf(['CDF contains zVariable "%s" which has not been set (i.e. it has zero records) after adding ', ...
-            'processing data to the master CDF. This should only happen for incomplete processing.'], ...
+        logMsg = sprintf(['Master CDF contains zVariable "%s" which has not been set (i.e. it has zero records) after adding ', ...
+            'processing data. This should only happen for incomplete processing.'], ...
             zVariableName);
         
         matlabClass  = bicas.utils.convert_CDF_type_to_MATLAB_class(DataObj.data.(zVariableName).type, 'Permit MATLAB classes');
         isNumericZVar = isnumeric(cast(0.000, matlabClass));
-            
+
         if isNumericZVar && SETTINGS.get_fv('OUTPUT_CDF.EMPTY_NUMERIC_ZVARIABLES_SET_TO_FILL')
             bicas.log('warning', logMsg)
-            
+
 %             % ASSERTION: Require numeric type.
 %             if ~isnumeric(cast(0.000, matlabClass))
 %                 error('BICAS:sw_execute_sw_mode:SWModeProcessing', ...
@@ -399,7 +399,7 @@ for fn = fieldnames(DataObj.data)'
             % NOTE: Assumes that
             % (1) there is a PD fields/zVariable Epoch, and
             % (2) this zVariable should have as many records as Epoch.
-            bicas.logf('warning', 'Setting numeric zVariable "%s" to presumed correct size using fill values due to setting.', zVariableName)
+            bicas.logf('warning', 'Setting numeric master/output CDF zVariable "%s" to presumed correct size using fill values due to setting.', zVariableName)
             nEpochRecords = size(ZvSubset.Epoch, 1);
             [fillValue, ~] = get_fill_pad_values(DataObj, zVariableName);
             zVariableSize = [nEpochRecords, DataObj.data.(fn{1}).dim];
@@ -407,10 +407,12 @@ for fn = fieldnames(DataObj.data)'
             zVariableData = bicas.utils.replace_value(zVariableData, 0, fillValue);
             
             DataObj.data.(zVariableName).data = zVariableData;
-            
+
         elseif ~isNumericZVar && SETTINGS.get_fv('OUTPUT_CDF.EMPTY_NONNUMERIC_ZVARIABLES_IGNORE')
-            bicas.logf('warning', 'Ignoring empty non-numeric zVariable "%s" due to setting.', zVariableName)
-            
+            bicas.logf('warning', ...
+                'Ignoring empty non-numeric master CDF zVariable "%s" due to setting OUTPUT_CDF.EMPTY_NONNUMERIC_ZVARIABLES_IGNORE.', ...
+                zVariableName)
+
         else
             error('BICAS:execute_sw_mode:SWModeProcessing', logMsg)
         end
@@ -430,7 +432,7 @@ if ~SETTINGS.get_fv('OUTPUT_CDF.WRITE_FILE_DISABLED')
         DataObj.Variables ...
         )
 else
-    bicas.logf('warning', 'Writing output datasets is disabled via setting OUTPUT_CDF.WRITE_FILE_DISABLED.')
+    bicas.logf('warning', 'Writing output CDF file is disabled via setting OUTPUT_CDF.WRITE_FILE_DISABLED.')
 end
 
 end
