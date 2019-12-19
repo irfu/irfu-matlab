@@ -537,8 +537,8 @@ end
 %
 % ARGUMENTS
 % =========
-% zVarData : If numeric array, indices (iRecord, i1, i2, ...)
-%            If char array, indices are the same as in dataobj.data.<zVarName>.data, i.e. inconsistent.
+% zVarData :               If numeric array, indices (iRecord, i1, i2, ...)
+%                          If char array, indices are the same as in dataobj.data.<zVarName>.data, i.e. inconsistent.
 % specifiedSizePerRecord : Size per record used for assertion.
 %                          For numeric: zValue size minus the first value, "size(zVarValue)(2:end)".
 function [zVarValue, isRecordBound] = prepare_zVarData(zVarValue, specifiedSizePerRecord, strictZvSize, zVarName)
@@ -582,8 +582,8 @@ elseif isnumeric(zVarValue)
                 normalize_size_vec(sizePerRecord))
             error('BICAS:write_CDF_dataobj:Assertion', ...
                 ['The zVariable (''%s'') data size according to data variable itself does not fit the stated size per record according to separate argument.\n', ...
-                '    Size per record according to data variable:          [', sprintf('%i ', sizePerRecord),          ']\n', ...
-                '    Size per record according to separate size argument: [', sprintf('%i ', specifiedSizePerRecord), ']'], ...
+                '    Size per record according to data variable produced by processing: [', sprintf('%i ', sizePerRecord),          ']\n', ...
+                '    Size per record according to master CDF:                           [', sprintf('%i ', specifiedSizePerRecord), ']'], ...
                 zVarName)
         end
     end

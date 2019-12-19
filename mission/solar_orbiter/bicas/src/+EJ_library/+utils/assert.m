@@ -306,6 +306,52 @@ classdef assert
         
         
         
+        % Assert that v has a specific size, in all or some dimensions/indices.
+        %
+        % ARGUMENTS
+        % =========
+        % v              : Variable which size will be asserted.
+        % sizeComparison : 1D vector with the sizes of the corresponding indices/dimensions. NaN means that the
+        %                  size of that particular dimension will not be checked.
+        %
+        function size(v, sizeComparison)
+            % PROPOSAL: Apply the same size constraint to an arbitrary number of variables.
+            % PROPOSAL: Be able to separate size constraints to multiple variables, but specify that certain indices
+            % have to be identical (but arbitrary) between variables.
+            %   PROPOSAL: Use negative values to indicate that the size in that dimension should be identical.
+            %       CALL EXAMPLE: size([-1], Epoch, [-1, 1, -2], zvSnapshotsV, [-1, 2, -2], zvSnapshotsE)
+            %       Ex: zVariables: Number of records, number of samples per record.
+            
+            % ASSERTION
+            EJ_library.utils.assert.vector(sizeComparison)
+            
+            sizeV = size(v);
+            
+            % Enforce column vectors.
+            sizeV          = sizeV(:);
+            sizeComparison = sizeComparison(:);
+            
+            nSizeV          = numel(sizeV);
+            nSizeComparison = numel(sizeComparison);
+            
+            % Enforce that sizeV and sizeComparison, by adding ones until the size vectors have equal size.
+            % NOTE: MATLAB's "size" function always returns at least a 1x2 vector.
+            if (nSizeV < nSizeComparison)
+                sizeV          = [sizeV;          ones(nSizeComparison-nSizeV, 1)];
+            else
+                sizeComparison = [sizeComparison; ones(nSizeV-nSizeComparison, 1)];
+            end
+            
+            % Overwrite NaN values with the actual size values for those indices.
+            iIgnore = isnan(sizeComparison);
+            sizeComparison(iIgnore) = sizeV(iIgnore);
+
+            % The actual assertion
+            assert( all(sizeV == sizeComparison), EJ_library.utils.assert.ERROR_MSG_ID, 'Variable does not have the expected size.')
+        end
+        
+        
+        
         % Assert that all values in a matrix are identical. Useful for e.g. checking that sizes of vectors are
         % identical.
         %

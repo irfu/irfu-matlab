@@ -84,8 +84,8 @@ classdef proc
         %
         function [OutputDatasetsMap] = produce_L2_LFR(InputDatasetsMap, Cal, inputSciDsi, outputDsi, outputVersion, SETTINGS)
             
-            HkPd  = InputDatasetsMap('HK_cdf');
-            SciPd = InputDatasetsMap('SCI_cdf');
+            InputHkPd  = InputDatasetsMap('HK_cdf');
+            InputSciPd = InputDatasetsMap('SCI_cdf');
 
             %==============================
             % Configure calibration object
@@ -95,15 +95,15 @@ classdef proc
             useCti2 = SETTINGS.get_fv('PROCESSING.L1R.LFR.USE_ZV_CALIBRATION_TABLE_INDEX2') && C.isL1R;
             if useCt
                 Cal.read_non_BIAS_RCT_by_CALIBRATION_TABLE('LFR', ...
-                    SciPd.Ga.CALIBRATION_TABLE, ...
-                    SciPd.Zv.CALIBRATION_TABLE_INDEX, ...
+                    InputSciPd.Ga.CALIBRATION_TABLE, ...
+                    InputSciPd.Zv.CALIBRATION_TABLE_INDEX, ...
                     useCti2);
             else
                 Cal.read_non_BIAS_RCTs_by_regexp(useCti2);
             end
             
-            HkSciTimePd = bicas.proc_sub.process_HK_to_HK_on_SCI_TIME(SciPd, HkPd, SETTINGS);
-            SciPreDcPd  = bicas.proc_sub.process_LFR_to_PreDC(        SciPd, inputSciDsi, HkSciTimePd);
+            HkSciTimePd = bicas.proc_sub.process_HK_to_HK_on_SCI_TIME(InputSciPd, InputHkPd, SETTINGS);
+            SciPreDcPd  = bicas.proc_sub.process_LFR_to_PreDC(        InputSciPd, inputSciDsi, HkSciTimePd);
             SciPostDcPd = bicas.proc_sub.process_demuxing_calibration(SciPreDcPd, Cal, SETTINGS);
             OutputSciPd = bicas.proc_sub.process_PostDC_to_LFR(       SciPostDcPd, outputDsi, outputVersion);
             
@@ -119,8 +119,8 @@ classdef proc
         %
         function [OutputDatasetsMap] = produce_L2_TDS(InputDatasetsMap, Cal, inputSciDsi, outputDsi, outputVersion, SETTINGS)
             
-            HkPd  = InputDatasetsMap('HK_cdf');
-            SciPd = InputDatasetsMap('SCI_cdf');
+            InputHkPd  = InputDatasetsMap('HK_cdf');
+            InputSciPd = InputDatasetsMap('SCI_cdf');
             
             %==============================
             % Configure calibration object
@@ -139,8 +139,8 @@ classdef proc
             useCti2 = SETTINGS.get_fv(settingUseCti2) && C.isL1R;
             if useCt
                 Cal.read_non_BIAS_RCT_by_CALIBRATION_TABLE(rctId, ...
-                    SciPd.Ga.CALIBRATION_TABLE, ...
-                    SciPd.Zv.CALIBRATION_TABLE_INDEX, ...
+                    InputSciPd.Ga.CALIBRATION_TABLE, ...
+                    InputSciPd.Zv.CALIBRATION_TABLE_INDEX, ...
                     useCti2);
             else
                 Cal.read_non_BIAS_RCTs_by_regexp(useCti2);
@@ -148,8 +148,8 @@ classdef proc
             
             
             
-            HkSciTimePd = bicas.proc_sub.process_HK_to_HK_on_SCI_TIME(SciPd, HkPd, SETTINGS);
-            SciPreDcPd  = bicas.proc_sub.process_TDS_to_PreDC(        SciPd, inputSciDsi, HkSciTimePd, SETTINGS);
+            HkSciTimePd = bicas.proc_sub.process_HK_to_HK_on_SCI_TIME(InputSciPd, InputHkPd, SETTINGS);
+            SciPreDcPd  = bicas.proc_sub.process_TDS_to_PreDC(        InputSciPd, inputSciDsi, HkSciTimePd, SETTINGS);
             SciPostDcPd = bicas.proc_sub.process_demuxing_calibration(SciPreDcPd, Cal, SETTINGS);
             OutputSciPd = bicas.proc_sub.process_PostDC_to_TDS(       SciPostDcPd, outputDsi, outputVersion);
 

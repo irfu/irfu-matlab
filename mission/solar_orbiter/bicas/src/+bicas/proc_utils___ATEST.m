@@ -13,23 +13,17 @@
 
 function proc_utils___ATEST
     
-    find_constant_sequences___ATEST
-    
-    if 1
     convert_matrix_to_cell_array_of_vectors___ATEST
     convert_cell_array_of_vectors_to_matrix___ATEST
-    
+    find_constant_sequences___ATEST    
     convert_N_to_1_SPR_ACQUISITION_TIME___ATEST
     convert_N_to_1_SPR_Epoch___ATEST
     convert_N_to_1_SPR_redistribute___ATEST
     convert_N_to_1_SPR_repeat___ATEST
     set_NaN_after_snapshots_end___ATEST
-    end
     
     % Tests for functions which are currently not used
     % ================================================
-    %find_constant_sequences_OLD___ATEST
-    %get_bin_index___ATEST
 end
 
 
@@ -59,22 +53,6 @@ function convert_cell_array_of_vectors_to_matrix___ATEST
     
     EJ_library.atest.run_tests(tl)
 end
-
-
-
-% function find_constant_sequences_OLD___ATEST
-%     new_test = @(inputs, outputs) (EJ_library.atest.CompareFuncResult(@bicas.proc_utils.find_constant_sequences_OLD, inputs, outputs));
-%     tl = {};
-%     
-%     tl{end+1} = new_test({[]', []'},                       'MException');    % NOTE: size([]) = 0x0 ==> Not column vector
-%     tl{end+1} = new_test({ones(0,1), ones(0,1)},           {[], []});
-%     tl{end+1} = new_test({[1]'                          }, {[1], [1]});
-%     tl{end+1} = new_test({[1]',           [3]'          }, {[1], [1]});
-%     tl{end+1} = new_test({[1,1,1]',       [3,3,3]'      }, {[1], [3]});    
-%     tl{end+1} = new_test({[1,1,1,2,2,2]', [3,3,3,4,4,4]'}, {[1,4], [3,6]});
-%     
-%     EJ_library.atest.run_tests(tl)
-% end
 
 
 
@@ -157,6 +135,9 @@ function convert_N_to_1_SPR_redistribute___ATEST
     tl{end+1} = new_test({[1,2,3,4,5,6,7,8,9,10,11]},       {(1:11)'});
     tl{end+1} = new_test({[1,2,3,4,5,6,7,8,9,10,11]'},      {(1:11)'});
     
+    A = permute(reshape([1:24], 4,3,2), [2,1,3]);   % 3D matrix.
+    tl{end+1} = new_test({A},   {[(1:12)', (13:24)']});
+    
     EJ_library.atest.run_tests(tl);
 end
 
@@ -185,26 +166,3 @@ function set_NaN_after_snapshots_end___ATEST
     
     EJ_library.atest.run_tests(tl);
 end
-
-
-
-% function get_bin_index___ATEST
-% new_test = @(inputs, outputs) (EJ_library.atest.CompareFuncResult(@bicas.proc_utils.get_bin_index, inputs, outputs));
-% tl = {};
-% 
-% tl{end+1} = new_test({[],     []},    {[]});
-% tl{end+1} = new_test({[],     [3]},   {[]});
-% tl{end+1} = new_test({[],     [3,7]}, {[]});
-% tl{end+1} = new_test({[1:10], []},    {ones(1,10)});
-% 
-% tl{end+1} = new_test({[1:10],      [3]   }, {[1,1,2,2,2,2,2,2,2,2]});
-% tl{end+1} = new_test({[1:10],      [3, 7]}, {[1,1,2,2,2,2,3,3,3,3]});
-% tl{end+1} = new_test({[10:-1:1],   [3]   }, {[2,2,2,2,2,2,2,2,1,1]});
-% tl{end+1} = new_test({[10:-1:1],   [3, 7]}, {[3,3,3,3,2,2,2,2,1,1]});
-% tl{end+1} = new_test({[-Inf, Inf], [3, 7]}, {[1,3]});
-% tl{end+1} = new_test({[], []}, {[]});
-% % tl{end+1} = new_test({[], []}, {[]});
-% % tl{end+1} = new_test({[], []}, {[]});
-% 
-% EJ_library.atest.run_tests(tl)
-% end

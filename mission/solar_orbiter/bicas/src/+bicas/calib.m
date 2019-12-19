@@ -33,6 +33,7 @@
 % IVPT   = Interface volt/TM
 % APT    = Ampere/TM
 % AVPIV  = Antenna volt per interface volt
+% IVPAV  = Interface volt per antenna volt
 % Deg    = Degrees (angle). 360 degrees=2*pi radians.
 % RPS    = Radians/second
 % Sec    = Seconds
@@ -183,7 +184,10 @@ classdef calib < handle
         SETTINGS
     end
     
+    
+    
     properties(Access=private, Constant)
+        % Local constant for convenience.
         NAN_TF = @(omegaRps) (omegaRps * NaN);
     end
 
@@ -431,7 +435,7 @@ classdef calib < handle
             
             if obj.use_CALIBRATION_TABLE_INDEX2
                 % ASSERTION: Remove?!!!
-                assert(iLsf == cti2+1, 'BICAS:calib:Assertion', 'cti2+1=%i != iLsf=%i (before overwriting)', cti2+1, iLsf)   % Remove??!!!
+                assert(iLsf == cti2+1, 'BICAS:calib:Assertion', 'cti2+1=%i != iLsf=%i (before overwriting)', cti2+1, iLsf)
                 
                 iLsf = cti2 + 1;
             else
@@ -478,8 +482,8 @@ classdef calib < handle
 
             % ASSERTIONS
             EJ_library.utils.assert.vector(dtSec)
-            assert(numel(samplesCaTm) == numel(dtSec))
             assert(iscell(samplesCaTm))
+            assert(numel(samplesCaTm) == numel(dtSec))
             assert((1 <= iBlts) && (iBlts <= 5))
             assert(isa(BltsSrc, 'bicas.BLTS_src_dest'))
             
@@ -625,8 +629,8 @@ classdef calib < handle
             filePath     = bicas.RCT.find_RCT_by_SETTINGS_regexp(obj.calibrationDir, pipelineId, rctId, obj.SETTINGS);
             RctCalibData = bicas.calib.read_log_modify_RCT(filePath, rctId);
         end
-        
-        
+
+
         
         % Return subset of already loaded BIAS calibration data, for specified settings.
         %
@@ -716,6 +720,7 @@ classdef calib < handle
 
 
 
+            % Convenience function: Cell array of TFs --> Time-relevant TF (as function handle)
             function Tf = TF_list_2_func(RtfList)
                 Tf = @(omegaRps) (RtfList{iCalibTimeL}.eval(omegaRps));
             end
@@ -781,48 +786,6 @@ classdef calib < handle
             iCalib = discretize(Epoch, [CalibEpochList; Inf], 'IncludedEdge', 'left');
             assert(all(~isnan(iCalib(:))), 'Can not derive which calibration data to use for all specified timestamps.')
         end
-
-
-
-        % Internal utility function.
-        %
-        % Find which BIAS calibration data to use for specific Epoch values.
-        % Assumes that the result is exactly one interval in Epoch so that transfer functions can be applied to it.
-        % Therefore assumes that time values are increasing.
-        %
-        %
-        % ARGUMENTS AND RETURN VALUES
-        % ===========================
-        % Epoch         : Column vector with CDF Epoch values. Must be monotonically increasing.
-        % EpochEdgeList : List of monotonically increasing timestamps ("Epoch format").
-        %                 In practice intended to be Bias.epochL or Bias.epochH.
-        % iEpochList    : Cell array. iEpochList{jCalib} = 1D vector of indices into Epoch for which to use jCalib as time
-        %                 index into BIAS calibration data. Every vector should describe a continuous interval in the
-        %                 original order. One can thus safely apply transfer functions on data selected this way.
-        %                 NOTE: Intervals can be empty.
-        %
-%         function [iEpochList] = get_calibration_time_interval(Epoch, EpochEdgeList)
-%             % PROPOSAL: Re-create as generic function that splits sorted vector into sub-arrays.
-%             
-%             % ASSERTIONS
-%             bicas.proc_utils.assert_Epoch(Epoch)
-%             bicas.proc_utils.assert_Epoch(EpochEdgeList)
-%             validateattributes(Epoch,         {'numeric'}, {'increasing'})
-%             validateattributes(EpochEdgeList, {'numeric'}, {'increasing'})
-% 
-%             % NOTE: int64(Inf) = int64 max value.
-%             % NOTE: Adds Inf to edges. "discretize" assigns NaN to values outside the list of edges, which is hereby avoided.
-%             jEpochCalib = discretize(Epoch, [EpochEdgeList; Inf], 'IncludedEdge', 'left');    % NaN for Epoch < epochL(1)
-% 
-%             % ASSERTION: All Epoch values were assigned a calibration time index.
-%             assert(~any(isnan(jEpochCalib)), 'BICAS:calib:get_calibration_time_interval:Assertion:IllegalArgument', ...
-%                 'Found Epoch value(s) which could not be assigned to a time interval with calibration data.')
-% 
-%             iEpochList = {};
-%             for j = 1:numel(EpochEdgeList)
-%                 iEpochList{j} = find(jEpochCalib == j);
-%             end
-%         end
 
 
             

@@ -1,4 +1,3 @@
-classdef proc_utils
 % Collections of minor utility functions (in the form of static methods) used for data processing.
 %
 % proc_utils = processing utilities
@@ -11,6 +10,7 @@ classdef proc_utils
 %
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
 % First created 2016-10-10
+classdef proc_utils
 
 %============================================================================================================
 % PROPOSAL: Split up in separate files?!
@@ -106,9 +106,10 @@ classdef proc_utils
         % Convert LFR zVariable FREQ values to Hz. The usefulness of this function stems from how the LFR
         % datasets are defined.
         %
-        % FREQ : The FREQ zVariable in LFR CDFs (contains constants representing frequencies, themselves NOT being frequencies).
-        % freq : Frequency in Hz.
-        %
+        % ARGUMENTS
+        % =========
+        % iLsf   : The LSF index, i.e. 1=LFR freq. F0, and so on.
+        % freqHz : Frequency in Hz.
 
             global SETTINGS
 
@@ -184,7 +185,6 @@ classdef proc_utils
         % Convert time in from ACQUISITION_TIME to tt2000 which is used for Epoch in CDF files.
         % 
         % 
-        %
         % ARGUMENTS
         % =========
         % ACQUSITION_TIME            : NOTE: Can be negative since it is uint32.
@@ -198,12 +198,12 @@ classdef proc_utils
             bicas.proc_utils.assert_ACQUISITION_TIME(ACQUISITION_TIME)
             
             ACQUISITION_TIME = double(ACQUISITION_TIME);
-            atSeconds = ACQUISITION_TIME(:, 1) + ACQUISITION_TIME(:, 2) / 65536;   % at = ACQUISITION_TIME
+            atSeconds = ACQUISITION_TIME(:, 1) + ACQUISITION_TIME(:, 2) / 65536;    % at = ACQUISITION_TIME
 %             tt2000 = spdfcomputett2000(SETTINGS.get_fv('PROCESSING.ACQUISITION_TIME_EPOCH_UTC')) + int64(atSeconds * 1e9);   % NOTE: spdfcomputett2000 returns int64 (as it should).
             tt2000 = spdfcomputett2000(ACQUISITION_TIME_EPOCH_UTC) + int64(atSeconds * 1e9);   % NOTE: spdfcomputett2000 returns int64 (as it should).
         end
         
-        
+
         
         function ACQUISITION_TIME = tt2000_to_ACQUISITION_TIME(tt2000, ACQUISITION_TIME_EPOCH_UTC)
         % Convert from tt2000 to ACQUISITION_TIME.
@@ -468,20 +468,27 @@ classdef proc_utils
 
 
 
-        function newData = convert_N_to_1_SPR_redistribute(oldData)
+        function zv2 = convert_N_to_1_SPR_redistribute(zv1)
         % Convert zVariable-like variable from N samples/record to 1 sample/record (from a matrix to a column vector).
-        
-            % ASSERTIONS
-            % NOTE: ndims always returns at least two, which is exactly what we want, also for empty and scalars, and row vectors.
-            if ndims(oldData) > 2
-                error('BICAS:proc_utils:Assertion:IllegalArgument', 'oldData has more than two dimensions.')
-            end
+        %
+        % ARGUMENT
+        % ========
+        % v     : (iRecord, iSnapshotSample, iChannel)
+        %
+        % RETURN VALUE
+        % ============
+        % v     : (iRecord, iChannel)
+
+            EJ_library.utils.assert.size(zv1, [NaN, NaN, NaN])
             
-            newData = reshape(oldData', numel(oldData), 1);
+            zv  = permute(zv1, [2,1,3]);
+            zv2 = reshape(zv, size(zv,1) * size(zv,2), size(zv,3));
+            
+            EJ_library.utils.assert.size(zv2, [NaN, NaN])
         end
-        
-        
-        
+
+
+
         function newData = convert_N_to_1_SPR_repeat(oldData, nRepeatsPerOldRecord)
         % (1) Convert zVariable-like variable from 1 value/record to N values/record (same number of records) by repeating within record.
         % (2) Convert zVariable-like variable from N values/record to 1 value/record by redistributing values.
@@ -793,7 +800,7 @@ classdef proc_utils
                                    'SOLO_L1_RPW-LFR-SURV-CWF'})
                 % Do nothing
             elseif mf({'(ROC-SGSE|SOLO)_L1R_RPW-LFR-SURV-SWF-E', ...
-                                   'SOLO_L1_RPW-LFR-SURV-SWF'})
+                        '(ROC-SGSE|SOLO)_L1_RPW-LFR-SURV-SWF'})
                 C.isLfrSwf  = 1;
             elseif mf({'(ROC-SGSE|SOLO)_L1R_RPW-TDS-LFM-CWF-E', ...
                                    'SOLO_L1_RPW-TDS-LFM-CWF'})
@@ -805,7 +812,7 @@ classdef proc_utils
                 error('BICAS:proc_utils:Assertion:IllegalArgument', 'Illegal DATASET_ID. datasetId="%s"', datasetId)
             end
             
-            if     mf({           'SOLO_L1_RPW-.*'})
+            if     mf({'(ROC-SGSE|SOLO)_L1_RPW-.*'})
                 C.isL1      = 1;
             elseif mf({'(ROC-SGSE|SOLO)_L1R_RPW-.*'})
                 C.isL1R     = 1;
@@ -1088,33 +1095,6 @@ classdef proc_utils
             
             doOverlap = (min(v2) <= max(v1)) && (min(v1) <= max(v2));
         end
-
-            
-        
-%         function iBinList = get_bin_index(x, edgeList)
-%             % PROPOSAL: Move to EJ_library.
-%             
-%             % ASSERTIONS
-%             assert(isnumeric(x))
-%             assert(all(~isnan(x(:))))    % Convert to array to handle all dimensionalities.
-%             validateattributes(edgeList, {'numeric'}, {'increasing'})
-%             
-%             % "ALGORITHM"
-% %             if numel(edgeList) == 0
-% %                 iBinList = ones(size(x));
-% %             elseif numel(edgeList) == 1
-% %                 iBinList = 1 + double((edgeList <= x));
-% %             else
-% %                 % CASE: numel(edgeList) >= 2
-% %                 iBinList = discretize(x, [-Inf, edgeList, Inf], 'IncludedEdge', 'left');
-% %             end
-% 
-%             % IMPLEMENTATION NOTE: "discretize" by itself returns NaN for x values outside the outermost edges.
-%             % IMPLEMENTATION NOTE: "discretize" behaves differently for scalar second argument. Adding edges at infinity hides
-%             % this problem. If one does not add infinities and uses a scalar edge list, then one has to treat those
-%             % cases manually.
-%             iBinList = discretize(x, [-Inf, edgeList, Inf], 'IncludedEdge', 'left');
-%         end
         
         
         

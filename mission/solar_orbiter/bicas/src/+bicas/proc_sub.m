@@ -192,13 +192,13 @@ classdef proc_sub
             %     index 3 = E1/E2 component
             %               NOTE: 1/2=index into array; these are diffs but not equivalent to any particular diffs).
             
-            nSamplesPerRecord = size(V, 2);
+            nCdfSamplesPerRecord = size(V, 2);
             
             % ASSERTIONS
             if C.isLfrSwf
-                assert(nSamplesPerRecord == LFR_SWF_SNAPSHOT_LENGTH)
+                assert(nCdfSamplesPerRecord == LFR_SWF_SNAPSHOT_LENGTH)
             else
-                assert(nSamplesPerRecord == 1)
+                assert(nCdfSamplesPerRecord == 1)
             end
             assert(size(E, 3) == 2)
 
@@ -213,7 +213,8 @@ classdef proc_sub
                 % NOTE: Translates from LFR's FREQ values (0=F0 etc) to LSF index values (1=F0) used in loaded RCT data structs.
                 iLsfZv = InSci.Zv.FREQ + 1;
             end
-            assert(size(iLsfZv, 2) == 1)
+            EJ_library.utils.assert.size(iLsfZv, [NaN, 1])
+            %assert(size(iLsfZv, 2) == 1)
             
             
             
@@ -229,9 +230,9 @@ classdef proc_sub
             PreDc = [];
             PreDc.Zv.Epoch                  = InSci.Zv.Epoch;
             PreDc.Zv.ACQUISITION_TIME       = InSci.Zv.ACQUISITION_TIME;
-            PreDc.Zv.DELTA_PLUS_MINUS       = bicas.proc_utils.derive_DELTA_PLUS_MINUS(zvFreqHz, nSamplesPerRecord);            
+            PreDc.Zv.DELTA_PLUS_MINUS       = bicas.proc_utils.derive_DELTA_PLUS_MINUS(zvFreqHz, nCdfSamplesPerRecord);            
             PreDc.Zv.freqHz                 = zvFreqHz;
-            PreDc.Zv.nValidSamplesPerRecord = ones(nRecords, 1) * nSamplesPerRecord;
+            PreDc.Zv.nValidSamplesPerRecord = ones(nRecords, 1) * nCdfSamplesPerRecord;
             PreDc.Zv.SYNCHRO_FLAG           = InSci.Zv.TIME_SYNCHRO_FLAG;   % NOTE: Different zVar name in input and output datasets.
             if isfield(InSci.Zv, 'CALIBRATION_TABLE_INDEX')
                 PreDc.Zv.CALIBRATION_TABLE_INDEX = InSci.Zv.CALIBRATION_TABLE_INDEX;
@@ -282,11 +283,12 @@ classdef proc_sub
             PreDc.Zv.MUX_SET        = HkSciTime.MUX_SET;
             PreDc.Zv.DIFF_GAIN      = HkSciTime.DIFF_GAIN;            
             
-            PreDc.hasSnapshotFormat = C.isLfrSwf;
-            PreDc.nRecords          = nRecords;
-            PreDc.isLfr             = true;
-            PreDc.isTdsCwf          = false;
-            PreDc.Zv.iLsf           = iLsfZv;
+            PreDc.hasSnapshotFormat    = C.isLfrSwf;
+            PreDc.nRecords             = nRecords;
+            PreDc.nCdfSamplesPerRecord = nCdfSamplesPerRecord;
+            PreDc.isLfr                = true;
+            PreDc.isTdsCwf             = false;
+            PreDc.Zv.iLsf              = iLsfZv;
 
 
 
@@ -315,8 +317,8 @@ classdef proc_sub
             InSci.Zv = bicas.utils.normalize_struct_fieldnames(InSci.Zv, ...
                 {{{'TIME_SYNCHRO_FLAG', 'SYNCHRO_FLAG'}, 'TIME_SYNCHRO_FLAG'}});
 
-            nRecords                  = size(InSci.Zv.Epoch, 1);
-            nVariableSamplesPerRecord = size(InSci.Zv.WAVEFORM_DATA, 3);    % Number of samples in the variable, not necessarily actual data.
+            nRecords             = size(InSci.Zv.Epoch, 1);
+            nCdfSamplesPerRecord = size(InSci.Zv.WAVEFORM_DATA, 3);    % Number of samples in the zVariable, not necessarily actual data.
 
             freqHz = double(InSci.Zv.SAMPLING_RATE);
             if C.isL1R && C.isTdsRswf && SETTINGS.get_fv('PROCESSING.L1R.TDS.RSWF_L1R_FREQ_CORRECTION_ENABLED')
@@ -334,7 +336,7 @@ classdef proc_sub
             
             PreDc.Zv.Epoch            = InSci.Zv.Epoch;
             PreDc.Zv.ACQUISITION_TIME = InSci.Zv.ACQUISITION_TIME;
-            PreDc.Zv.DELTA_PLUS_MINUS = bicas.proc_utils.derive_DELTA_PLUS_MINUS(freqHz, nVariableSamplesPerRecord);
+            PreDc.Zv.DELTA_PLUS_MINUS = bicas.proc_utils.derive_DELTA_PLUS_MINUS(freqHz, nCdfSamplesPerRecord);
             PreDc.Zv.freqHz           = freqHz;
             PreDc.Zv.QUALITY_FLAG     = InSci.Zv.QUALITY_FLAG;
             PreDc.Zv.QUALITY_BITMASK  = InSci.Zv.QUALITY_BITMASK;
@@ -344,10 +346,15 @@ classdef proc_sub
             if isfield(InSci.Zv, 'CALIBRATION_TABLE_INDEX')
                 PreDc.Zv.CALIBRATION_TABLE_INDEX = InSci.Zv.CALIBRATION_TABLE_INDEX;
             end
-            
+
+
+
+            %=====================================
+            % Set PreDc.Zv.nValidSamplesPerRecord
+            %=====================================
             if C.isTdsRswf
                 %====================================================================================================
-                % Chech for and handle illegal input data, zVar SAMPS_PER_CH
+                % Check for and handle illegal input data, zVar SAMPS_PER_CH
                 % ----------------------------------------------------------
                 % NOTE: Has observed invalid SAMPS_PER_CH value 16562 in
                 % ROC-SGSE_L1R_RPW-TDS-LFM-RSWF-E_73525cd_CNE_V03.CDF.
@@ -408,14 +415,15 @@ classdef proc_sub
             PreDc.Zv.samplesCaTm{1} = bicas.proc_utils.set_NaN_after_snapshots_end( modif_WAVEFORM_DATA(:,:,1), PreDc.Zv.nValidSamplesPerRecord );
             PreDc.Zv.samplesCaTm{2} = bicas.proc_utils.set_NaN_after_snapshots_end( modif_WAVEFORM_DATA(:,:,2), PreDc.Zv.nValidSamplesPerRecord );
             PreDc.Zv.samplesCaTm{3} = bicas.proc_utils.set_NaN_after_snapshots_end( modif_WAVEFORM_DATA(:,:,3), PreDc.Zv.nValidSamplesPerRecord );
-            PreDc.Zv.samplesCaTm{4} = bicas.proc_utils.create_NaN_array([nRecords, nVariableSamplesPerRecord]);
-            PreDc.Zv.samplesCaTm{5} = bicas.proc_utils.create_NaN_array([nRecords, nVariableSamplesPerRecord]);
+            PreDc.Zv.samplesCaTm{4} = bicas.proc_utils.create_NaN_array([nRecords, nCdfSamplesPerRecord]);
+            PreDc.Zv.samplesCaTm{5} = bicas.proc_utils.create_NaN_array([nRecords, nCdfSamplesPerRecord]);
 
-            PreDc.isLfr             = false;
-            PreDc.isTdsCwf          = C.isTdsCwf;
-            PreDc.hasSnapshotFormat = C.isTdsRswf;
-            PreDc.nRecords          = nRecords;
-            PreDc.Zv.iLsf           = zeros(nRecords, 1) * NaN;   % Only set becuse the code shared with LFR requires it.
+            PreDc.isLfr                = false;
+            PreDc.isTdsCwf             = C.isTdsCwf;
+            PreDc.hasSnapshotFormat    = C.isTdsRswf;
+            PreDc.nRecords             = nRecords;
+            PreDc.nCdfSamplesPerRecord = nCdfSamplesPerRecord;
+            PreDc.Zv.iLsf              = zeros(nRecords, 1) * NaN;   % Only set becuse the code shared with LFR requires it.
 
 
 
@@ -426,7 +434,7 @@ classdef proc_sub
 
 
         function assert_PreDC(PreDc)
-            EJ_library.utils.assert.struct2(PreDc, {'Zv', 'hasSnapshotFormat', 'nRecords', 'isLfr', 'isTdsCwf'}, {});
+            EJ_library.utils.assert.struct2(PreDc, {'Zv', 'hasSnapshotFormat', 'nRecords', 'nCdfSamplesPerRecord', 'isLfr', 'isTdsCwf'}, {});
             EJ_library.utils.assert.struct2(PreDc.Zv, {...
                 'Epoch', 'ACQUISITION_TIME', 'samplesCaTm', 'freqHz', 'nValidSamplesPerRecord', 'iLsf', 'DIFF_GAIN', 'MUX_SET', 'QUALITY_FLAG', ...
                 'QUALITY_BITMASK', 'DELTA_PLUS_MINUS', 'SYNCHRO_FLAG'}, {'CALIBRATION_TABLE_INDEX'});
@@ -438,7 +446,7 @@ classdef proc_sub
 
 
         function assert_PostDC(PostDc)
-            EJ_library.utils.assert.struct2(PostDc, {'Zv', 'hasSnapshotFormat', 'nRecords', 'isLfr', 'isTdsCwf'}, {});
+            EJ_library.utils.assert.struct2(PostDc, {'Zv', 'hasSnapshotFormat', 'nRecords', 'nCdfSamplesPerRecord', 'isLfr', 'isTdsCwf'}, {});
             EJ_library.utils.assert.struct2(PostDc.Zv, {...
                 'Epoch', 'ACQUISITION_TIME', 'samplesCaTm', 'freqHz', 'nValidSamplesPerRecord', 'iLsf', 'DIFF_GAIN', 'MUX_SET', 'QUALITY_FLAG', ...
                 'QUALITY_BITMASK', 'DELTA_PLUS_MINUS', 'SYNCHRO_FLAG', 'DemuxerOutput', 'IBIAS1', 'IBIAS2', 'IBIAS3', 'DemuxerOutput'}, {'CALIBRATION_TABLE_INDEX'});
@@ -628,19 +636,10 @@ classdef proc_sub
     %methods(Static, Access=public)
         
         % Wrapper around "simple_demultiplex_subsequence_OLD" to be able to handle multiple CDF records with changing
-        % settings (mux_set, diff_gain).
-        %
-        % NOTE: NOT a processing function (does not derive a PDV).
-        %
-        %
-        % ARGUMENTS AND RETURN VALUE
-        % ==========================
-        % BltsSamplesTm : Size 5 cell array with numeric arrays(?). {iBlts} = samples for the corresponding BLTS.
-        % MUX_SET       : Column vector. Numbers identifying the MUX/DEMUX mode. 
-        % DIFF_GAIN     : Column vector. Gains for differential measurements. 0 = Low gain, 1 = High gain.
-        %
+        % settings.
         %
         % NOTE: Can handle arrays of any size as long as the sizes are consistent.
+        %
         function AsrSamplesAVolt = simple_demultiplex(PreDc, Cal, SETTINGS)
         % PROPOSAL: Incorporate into processing function process_demuxing_calibration.
         % PROPOSAL: Assert same nbr of "records" for MUX_SET, DIFF_GAIN as for BIAS_x.
@@ -663,7 +662,6 @@ classdef proc_sub
         % PROPOSAL: Sequence of constant settings includes constant NaN/non-NaN for CWF.
         %
         % PROPOSAL: Integrate into bicas.demultiplexer (as method).
-        % PROPOSAL: Ignore (set NaN) for too short subsequences (CWF).
         % NOTE: Calibration is really separate from the demultiplexer. Demultiplexer only needs to split into
         % subsequences based on mux mode and latching relay, nothing else.
         %   PROPOSAL: Separate out demultiplexer. Do not call from this function.
@@ -698,7 +696,6 @@ classdef proc_sub
             dlrUsing12zv = bicas.demultiplexer_latching_relay(PreDc.Zv.Epoch);
             iCalibLZv    = Cal.get_calibration_time_L(        PreDc.Zv.Epoch);
             iCalibHZv    = Cal.get_calibration_time_H(        PreDc.Zv.Epoch);
-
 
             
             
