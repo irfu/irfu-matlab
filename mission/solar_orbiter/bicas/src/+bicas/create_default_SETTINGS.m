@@ -192,13 +192,15 @@ S.define_setting('PROCESSING.L1R.TDS.RSWF.USE_GA_CALIBRATION_TABLE_RCTS',       
 S.define_setting('PROCESSING.L1R.TDS.RSWF.USE_ZV_CALIBRATION_TABLE_INDEX2',        0)    % =1 : Not implemented, since not implemented in TDS datasets.
 S.define_setting('PROCESSING.L1R.ZV_CALIBRATION_TABLE_INDEX_ILLEGAL_SIZE_REPLACE', 0)
 
-%========================================================
-% Constants for how the "simple demuxer" calibrates data
-%========================================================
-%S.define_setting('PROCESSING.CALIBRATION.BIAS.SCALAR.ALPHA',           1/17);
-%S.define_setting('PROCESSING.CALIBRATION.BIAS.SCALAR.BETA',               1);
-%S.define_setting('PROCESSING.CALIBRATION.BIAS.SCALAR.GAMMA.HIGH_GAIN',  100);
-%S.define_setting('PROCESSING.CALIBRATION.BIAS.SCALAR.GAMMA.LOW_GAIN',     5);
+%=================================================================================
+% Calibration constants for "scalar" calibration
+% ----------------------------------------------
+% Unit: IVPAV = Interface volt per antenna volt.
+%=================================================================================
+S.define_setting('PROCESSING.CALIBRATION.BIAS.SCALAR.ALPHA_IVPAV',           1/17);
+S.define_setting('PROCESSING.CALIBRATION.BIAS.SCALAR.BETA_IVPAV',               1);
+S.define_setting('PROCESSING.CALIBRATION.BIAS.SCALAR.GAMMA_IVPAV.HIGH_GAIN',  100);
+S.define_setting('PROCESSING.CALIBRATION.BIAS.SCALAR.GAMMA_IVPAV.LOW_GAIN',     5);
 
 %=================================================================================
 % Constants for using HK bias currents for deriving/calibrating the bias currents
