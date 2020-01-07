@@ -1097,7 +1097,11 @@ classdef PDist < TSeries
         v = units.c*sqrt(1-(energy*units.e/(M*units.c^2)-1).^2); % m/s  
 
         % azimuthal angle
-        phi = double(dist.depend{2}(it(i),:)); % in degrees
+        if size(dist.depend{2},1)>1
+            phi = double(dist.depend{2}(it(i),:)); % in degrees
+        else % fast mode
+            phi = double(dist.depend{2}); % in degrees
+        end
         %phi = phi+180;
         %phi(phi>360) = phi(phi>360)-360;
         phi = phi-180;
@@ -2636,7 +2640,12 @@ classdef PDist < TSeries
         th = th*pi/180; % in radians
         dth = median(diff(th)); % scalar
         % velocity
-        esteptable = dist.ancillary.esteptable;
+        if ~isempty(dist.ancillary)
+            esteptable = dist.ancillary.esteptable;
+        else % if there is no ancillary data, it's assumed to be fast mode
+            % set steptable to all zeros
+            esteptable = zeros(1,length(dist));
+        end
         idEstep0First = find(esteptable==0,1);
         emat = double(dist.energy); % [eV]
         e0 = emat(idEstep0First,:); e0 = e0(1,:); % [eV]
@@ -2647,8 +2656,18 @@ classdef PDist < TSeries
         
         % velocity diffs from delta energy
         % energy diffs minus/plus
-        dEm = dist.ancillary.delta_energy_minus; % [eV]
-        dEp = dist.ancillary.delta_energy_plus; % [eV]
+        if ~isempty(dist.ancillary)
+            dEm = dist.ancillary.delta_energy_minus; % [eV]
+            dEp = dist.ancillary.delta_energy_plus; % [eV]
+        else % if there is no ancillary data, it's assumed to be fast mode
+            % display warning
+            irf.log('w','No information on delta_energy_minus/plus in PDist, guessing values')
+            % guess energy diffs
+            %dEm = repmat([e0(2)-e0(1),diff(e0)],length(dist),1)/2;
+            dEm = ([diff(e0),e0(end)-e0(end-1)]+[e0(2)-e0(1),diff(e0)])/2;
+            dEm = repmat(dEm,length(dist),1)/2;
+            dEp = dEm;
+        end
         % per esteptable
         dEm0 = dEm(idEstep0First,:);
         dEp0 = dEp(idEstep0First,:);
@@ -2677,7 +2696,11 @@ classdef PDist < TSeries
             F3d = double(squeeze(dist.data(it,:,:,:)));
             
             % azimuthal angle
-            phi = double(dist.depend{2}(it,:)); % in degrees
+            if size(dist.depend{2},1)>1 % brst mode
+                phi = double(dist.depend{2}(it,:)); % in degrees
+            else % fast mode
+                phi = double(dist.depend{2});
+            end
             phi = phi-180; % travel/arrival correction
             phi = phi*pi/180; % in radians
             dphi = median(diff(phi)); % scalar

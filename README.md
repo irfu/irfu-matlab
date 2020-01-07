@@ -1,6 +1,13 @@
 irfu-matlab
 ===========
 
+Acknowledgment
+--------------
+
+Please use the following to acknowledge use of IRFU-Matlab in your publications:
+
+> Data analysis was performed using the IRFU-Matlab analysis package available at https://github.com/irfu/irfu-matlab 
+
 Examples
 --------
 

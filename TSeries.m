@@ -888,7 +888,11 @@
       %TIMES element-wise multiplication '.*'.
       
       if ~isa(obj1,'TSeries') || ~isa(obj,'TSeries')
-        error('TSeries inputs are expected')
+          if (isnumeric(obj1) || isnumeric(obj))
+              Ts = obj*obj1; return
+          else
+              error('TSeries inputs are expected')
+          end
       elseif obj.tensorOrder~=obj1.tensorOrder
         error('Inputs must have the same tensor order');
       elseif obj.tensorBasis_ ~= obj1.tensorBasis_
