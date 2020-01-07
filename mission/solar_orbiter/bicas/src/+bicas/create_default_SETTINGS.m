@@ -20,8 +20,15 @@
 function SETTINGS = create_default_SETTINGS()
 % PROPOSAL: Make STDOUT_PREFIX not overridable, move to error_safe_constants?
 % PROPOSAL: Setting for latching relay? Setting for only mode 0?
-% PROPOSAL: Better name for *.CALIBRATION.SCALAR.*. Neither indicates simple calibration, nor BIAS calibration.
-%   PROPOSAL: BIAS_SIMPLE
+%
+% PROPOSAL: Need (settings name) terminology for temporary "bugfixes"/corrections due to bugs outside of BICAS,
+%   Ex: Bugs datasets (bugs in other RCS, ROC's pipeline).
+%   Ex: ~Corrupted data (different from bugs?)
+%   PROPOSAL: Always include name of zVar.
+%   PROPOSAL: "correction"
+%   PROPOSAL: "mitigation"
+%   PROPOSAL: "bugfix"
+%       CON: Sounds like a bug in BICAS.
 
 S = bicas.settings();
 
@@ -173,12 +180,13 @@ S.define_setting('PROCESSING.LFR.F1_HZ',  4096);
 S.define_setting('PROCESSING.LFR.F2_HZ',   256);
 S.define_setting('PROCESSING.LFR.F3_HZ',    16);
 
-% Presumed ~BUGFIX for flaw in L1R TDS-LFM-RSWF datasets. Remove?
-S.define_setting('PROCESSING.L1R.TDS.RSWF_L1R_FREQ_CORRECTION_ENABLED', 0)
+% Quick ~BUGFIX for bad values in zv SAMPLING_RATE in L1R TDS-LFM-RSWF datasets. Remove?
+S.define_setting('PROCESSING.L1R.TDS.RSWF_L1R_ZV_SAMPLING_RATE_DATASET_BUGFIX_ENABLED', 0)
 
 % L1/L1R
 % React to bug in L1/L1R TDS-LFM RSWF datasets.
-S.define_setting('PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_ACTION', "ROUND")   % ERROR, ROUND, PERMIT
+% TDS has bugfixed. /2019-12-19
+S.define_setting('PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_ACTION', "ERROR")   % ERROR, ROUND, PERMIT
 
 % GA = (CDF) Global Attribute
 % ZV = (CDF) zVariable
@@ -187,20 +195,23 @@ S.define_setting('PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_ACTION', "ROUND") 
 S.define_setting('PROCESSING.L1R.LFR.USE_GA_CALIBRATION_TABLE_RCTS',               0)    % =1 : Implemented, but not yet usable due to LFR L1R datasets bug.
 S.define_setting('PROCESSING.L1R.LFR.USE_ZV_CALIBRATION_TABLE_INDEX2',             0)    % =1 : Implemented, but not yet usable due to LFR L1R datasets bug.
 S.define_setting('PROCESSING.L1R.TDS.CWF.USE_GA_CALIBRATION_TABLE_RCTS',           1)
-S.define_setting('PROCESSING.L1R.TDS.CWF.USE_ZV_CALIBRATION_TABLE_INDEX2',         0)    % =1 : Not implemented, since not implemented in TDS datasets.
+S.define_setting('PROCESSING.L1R.TDS.CWF.USE_ZV_CALIBRATION_TABLE_INDEX2',         0)    % 1 : Not implemented, since not yet tested bugfix in TDS datasets.
 S.define_setting('PROCESSING.L1R.TDS.RSWF.USE_GA_CALIBRATION_TABLE_RCTS',          1)
-S.define_setting('PROCESSING.L1R.TDS.RSWF.USE_ZV_CALIBRATION_TABLE_INDEX2',        0)    % =1 : Not implemented, since not implemented in TDS datasets.
+S.define_setting('PROCESSING.L1R.TDS.RSWF.USE_ZV_CALIBRATION_TABLE_INDEX2',        0)    % 1 : Not implemented, since not yet tested bugfix in TDS datasets.
 S.define_setting('PROCESSING.L1R.ZV_CALIBRATION_TABLE_INDEX_ILLEGAL_SIZE_REPLACE', 0)
 
 %=================================================================================
 % Calibration constants for "scalar" calibration
 % ----------------------------------------------
 % Unit: IVPAV = Interface volt per antenna volt.
+%
+% NOTE: The sign should preferably be consistent with the BIAS transfer functions, i.e. negative values as of
+% 2019-12-20.
 %=================================================================================
-S.define_setting('PROCESSING.CALIBRATION.BIAS.SCALAR.ALPHA_IVPAV',           1/17);
-S.define_setting('PROCESSING.CALIBRATION.BIAS.SCALAR.BETA_IVPAV',               1);
-S.define_setting('PROCESSING.CALIBRATION.BIAS.SCALAR.GAMMA_IVPAV.HIGH_GAIN',  100);
-S.define_setting('PROCESSING.CALIBRATION.BIAS.SCALAR.GAMMA_IVPAV.LOW_GAIN',     5);
+S.define_setting('PROCESSING.CALIBRATION.BIAS.SCALAR.ALPHA_IVPAV',           -1/17);
+S.define_setting('PROCESSING.CALIBRATION.BIAS.SCALAR.BETA_IVPAV',               -1);
+S.define_setting('PROCESSING.CALIBRATION.BIAS.SCALAR.GAMMA_IVPAV.HIGH_GAIN',  -100);
+S.define_setting('PROCESSING.CALIBRATION.BIAS.SCALAR.GAMMA_IVPAV.LOW_GAIN',     -5);
 
 %=================================================================================
 % Constants for using HK bias currents for deriving/calibrating the bias currents

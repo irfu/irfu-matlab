@@ -153,17 +153,20 @@ function GlobalAttributesSubset = derive_output_dataset_GlobalAttributes(GlobalA
 % Function for global attributes for an output dataset from the global attributes of multiple input datasets (if there
 % are several).
 %
+% PGA = parents' GlobalAttributes.
+%
 % RETURN VALUE
 % ============
 % GlobalAttributesSubset : Struct where each field name corresponds to a CDF global atttribute.
 %                          NOTE: Deviates from the usual variable naming conventions. GlobalAttributesSubset field names
 %                          have the exact names of CDF global attributes.
+%
 
 ASSERT_MATCHING_TEST_ID = SETTINGS.get_fv('INPUT_CDF_ASSERTIONS.MATCHING_TEST_ID');
 
 GlobalAttributesSubset.Parents        = {};            % Array in which to collect value for this file's GlobalAttributes (array-sized GlobalAttribute).
 GlobalAttributesSubset.Parent_version = {};
-pgaTestIdList   = {};   % PGA = parents' GlobalAttributes. List = List with one value per parent.
+pgaTestIdList   = {};   % List = List with one value per parent.
 pgaProviderList = {};
 for i = 1:length(GlobalAttributesCellArray)
     GlobalAttributesSubset.Parents       {end+1} = ['CDF>', GlobalAttributesCellArray{i}.Logical_file_id{1}];
@@ -179,10 +182,12 @@ end
 bicas.utils.assert_strings_equal(0,                       pgaProviderList, 'The input CDF files'' GlobalAttribute "Provider" values differ.')
 bicas.utils.assert_strings_equal(ASSERT_MATCHING_TEST_ID, pgaTestIdList,   'The input CDF files'' GlobalAttribute "Test_id" values differ.')
 
-% NOTE: Uses shortened "Test id" value in case it is a long one, e.g. "eeabc1edba9d76b08870510f87a0be6193c39051". Uncertain
+% IMPLEMENTATION NOTE: Uses shortened "Test id" value in case it is a long one, e.g. "eeabc1edba9d76b08870510f87a0be6193c39051". Uncertain
 % how "legal" that is but it seems to be at least what people use in the filenames.
+% IMPLEMENTATION NOTE: Does not assume a minimum length for TestId since empty Test_id strings have been observed in
+% datasets. /2020-01-07
 GlobalAttributesSubset.Provider = pgaProviderList{1};
-GlobalAttributesSubset.Test_Id  = pgaTestIdList{1}(1:7);
+GlobalAttributesSubset.Test_Id  = pgaTestIdList{1}(1:min(7, length(pgaTestIdList{1})));
 
 end
 

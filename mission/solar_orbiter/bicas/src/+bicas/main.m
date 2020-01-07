@@ -242,6 +242,12 @@ bicas.logf('info', '\nCOMMAND-LINE INTERFACE (CLI) ARGUMENTS TO BICAS\n')
 bicas.logf('info',   '===============================================')
 cliArgumentsQuotedList = {};
 for i = 1:length(cliArgumentsList)
+    % UI ASSERTION
+    % IMPLEMENTATION NOTE: This check useful when calling BICAS from MATLAB (not bash).
+    if ~ischar(cliArgumentsList{i})
+        error('BICAS:main', 'Argument %i is not a string.', i)
+    end
+    
     bicas.logf('info', '    CLI argument %2i: "%s"', i, cliArgumentsList{i})
     cliArgumentsQuotedList{i} = ['''', cliArgumentsList{i}, ''''];
 end

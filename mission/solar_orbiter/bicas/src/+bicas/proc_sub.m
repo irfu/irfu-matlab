@@ -102,6 +102,8 @@ classdef proc_sub
             bicas.proc_utils.log_tt2000_array('SCI Epoch           ', sciEpoch)
             
             
+            
+            % WARNINGS
             if ~(bicas.proc_utils.ranges_overlap(hkAtTt2000, sciAtTt2000))
                 bicas.log('warning', 'zVar ACQUSITION_TIME in HK and SCI input datasets do not overlap in time.')
             end
@@ -129,6 +131,7 @@ classdef proc_sub
             clear hkAtTt2000 sciAtTt2000
             clear hkEpoch    sciEpoch
 
+            % ASSERTION
             if ~(bicas.proc_utils.ranges_overlap(hkInterpolationTimeTt2000, sciInterpolationTimeTt2000))
                 error('BICAS:proc_sub:Assertion', ...
                 'Time zVariables (Epoch or ACQUISITION_TIME) in HK and SCI input datasets, used for converting HK data to SCI timestamps, do not overlap in time.')
@@ -185,6 +188,11 @@ classdef proc_sub
             nRecords = size(InSci.Zv.Epoch, 1);            
             C = bicas.proc_utils.classify_DATASET_ID(inSciDsi);
            
+            % Both zVars TIME_SYNCHRO_FLAG, SYNCHRO_FLAG found in input datasets (2020-01-05). Unknown why.
+            % "DEFINITION BUG" in definition of datasets/skeleton?
+            InSci.Zv = bicas.utils.normalize_struct_fieldnames(InSci.Zv, ...
+                {{{'TIME_SYNCHRO_FLAG', 'SYNCHRO_FLAG'}, 'TIME_SYNCHRO_FLAG'}});
+            
             V = InSci.Zv.V;
             E = permute(InSci.Zv.E, [1,3,2]);
             % Switch last two indices of E.
@@ -270,7 +278,9 @@ classdef proc_sub
 
 
             % E must be floating-point so that values can be set to NaN.
+            % ==> V must be floating-point so that demultiplexer can subtract/add V/E, and calibration can work.
             % bicas.proc_utils.filter_rows requires this. Variable may be integer if integer in source CDF.
+            V = single(V);
             E = single(E);
 
             PreDc.Zv.samplesCaTm    = {};
@@ -312,7 +322,7 @@ classdef proc_sub
 
             C = bicas.proc_utils.classify_DATASET_ID(inSciDsi);
 
-            % Both zVars TIME_SYNCHRO_FLAG, SYNCHRO_FLAG found in input datasets. Unknown why.
+            % Both zVars TIME_SYNCHRO_FLAG, SYNCHRO_FLAG found in input datasets (2019-12-xx). Unknown why.
             % "DEFINITION BUG" in definition of datasets/skeleton?
             InSci.Zv = bicas.utils.normalize_struct_fieldnames(InSci.Zv, ...
                 {{{'TIME_SYNCHRO_FLAG', 'SYNCHRO_FLAG'}, 'TIME_SYNCHRO_FLAG'}});
@@ -321,7 +331,7 @@ classdef proc_sub
             nCdfSamplesPerRecord = size(InSci.Zv.WAVEFORM_DATA, 3);    % Number of samples in the zVariable, not necessarily actual data.
 
             freqHz = double(InSci.Zv.SAMPLING_RATE);
-            if C.isL1R && C.isTdsRswf && SETTINGS.get_fv('PROCESSING.L1R.TDS.RSWF_L1R_FREQ_CORRECTION_ENABLED')
+            if C.isL1R && C.isTdsRswf && SETTINGS.get_fv('PROCESSING.L1R.TDS.RSWF_L1R_ZV_SAMPLING_RATE_DATASET_BUGFIX_ENABLED')
                 % TEMPORARY
                 % IMPLEMENTATION NOTE: Has observed test file
                 % TESTDATA_RGTS_TDS_CALBA_V0.8.5C: solo_L1R_rpw-tds-lfm-rswf-e_20190523T080316-20190523T134337_V02_les-7ae6b5e.cdf
@@ -329,7 +339,7 @@ classdef proc_sub
                 % Bug in TDS RCS.  /David Pisa 2019-12-03
                 % Setting it to what is probably the correct value.
                 freqHz(freqHz == 255) = 32768;
-                bicas.logf('warning', 'Correcting presumed bug in TDS L1R LFM-RSWF dataset due to setting PROCESSING.L1R.TDS.RSWF_L1R_FREQ_CORRECTION_ENABLED. Modifying the frequency 255-->32768.')
+                bicas.logf('warning', 'Correcting presumed bug in TDS L1R LFM-RSWF dataset due to setting PROCESSING.L1R.TDS.RSWF_L1R_ZV_SAMPLING_RATE_DATASET_BUGFIX_ENABLED. Modifying the frequency 255-->32768.')
             end
             
             PreDc = [];
@@ -620,9 +630,9 @@ classdef proc_sub
             % Set (calibrated) bias currents
             %================================
             % BUG / TEMP: Set default values since the real bias current values are not available.
-            PostDc.Zv.IBIAS1 = bicas.proc_utils.create_NaN_array([PostDc.nRecords, 1]);
-            PostDc.Zv.IBIAS2 = bicas.proc_utils.create_NaN_array([PostDc.nRecords, 1]);
-            PostDc.Zv.IBIAS3 = bicas.proc_utils.create_NaN_array([PostDc.nRecords, 1]);
+            PostDc.Zv.IBIAS1 = bicas.proc_utils.create_NaN_array([PostDc.nRecords, PostDc.nCdfSamplesPerRecord]);
+            PostDc.Zv.IBIAS2 = bicas.proc_utils.create_NaN_array([PostDc.nRecords, PostDc.nCdfSamplesPerRecord]);
+            PostDc.Zv.IBIAS3 = bicas.proc_utils.create_NaN_array([PostDc.nRecords, PostDc.nCdfSamplesPerRecord]);
             
             % ASSERTION
             bicas.proc_sub.assert_PostDC(PostDc)

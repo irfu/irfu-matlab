@@ -34,7 +34,7 @@
 % APT    = Ampere/TM
 % AVPIV  = Antenna volt per interface volt
 % IVPAV  = Interface volt per antenna volt
-% Deg    = Degrees (angle). 360 degrees=2*pi radians.
+% Deg    = Degrees (angle). 1 revolution=360 degrees=2*pi radians.
 % RPS    = Radians/second
 % Sec    = Seconds
 % --
@@ -198,8 +198,10 @@ classdef calib < handle
         
 
         % Constructor.
-        % NOTE: The constructor only intiializes BIAS calibration data. One also needs to call
-        % read_non_BIAS_RCTs_by_regexp OR read_non_BIAS_RCT_by_CALIBRATION_TABLE to fully initialize the object.
+        %
+        % IMPORTANT NOTE: The constructor only initializes BIAS calibration data. One also needs to call either
+        % (1) read_non_BIAS_RCTs_by_regexp, OR
+        % (2) read_non_BIAS_RCT_by_CALIBRATION_TABLE to fully initialize the object.
         %
         function obj = calib(calibrationDir, pipelineId, SETTINGS)
             % TODO-DECISION: Appropriate to use SETTINGS this way? Submit calibration data directly?
@@ -229,11 +231,33 @@ classdef calib < handle
                     bicas.logf('warning', 'Calibration has been disabled due to setting PROCESSING.CALIBRATION.VOLTAGE.ALGORITHM.')
                 case 'BIAS_SCALAR'
                     obj.scalarVoltageCalibEnabled = 1;
-                    bicas.logf('warning', 'Calibration is only scalar due to setting PROCESSING.CALIBRATION.VOLTAGE.ALGORITHM.')
+                    bicas.logf('warning', 'BIAS calibration (not TDS/LFR calibration) is only scalar due to setting PROCESSING.CALIBRATION.VOLTAGE.ALGORITHM.')
                 case 'FULL'
                     obj.fullVoltageCalibEnabled   = 1;
                 otherwise
-                    error('BICAS:calib:Assertion:ConfigurationBug', 'Illegal value PROCESSING.CALIBRATION.VOLTAGE.ALGORITHM="%s".', algorithmId)
+                    error('BICAS:calib:Assertion:ConfigurationBug', 'Illegal value for setting PROCESSING.CALIBRATION.VOLTAGE.ALGORITHM="%s".', algorithmId)
+            end
+            
+            
+            
+            nBiasEpoch = numel(obj.Bias.epochL);
+            for i = 1:nBiasEpoch
+                dcSingleZ0 = obj.Bias.ItfSet.DcSingleAvpiv{i}.eval(0);
+                dcDiffZ0   = obj.Bias.ItfSet.DcDiffAvpiv{i}.eval(0);
+                
+                AC_DIFF_FREQ_HZ = 1000;
+                acDiffLgZ      = obj.Bias.ItfSet.AcLowGainAvpiv{i}.eval(AC_DIFF_FREQ_HZ);
+                acDiffHgZ      = obj.Bias.ItfSet.AcHighGainAvpiv{i}.eval(AC_DIFF_FREQ_HZ);
+                
+                log_ITF_Z(sprintf('(%i) BIAS DC single', i),          0,               dcSingleZ0)
+                log_ITF_Z(sprintf('(%i) BIAS DC diff',   i),          0,               dcDiffZ0)
+                log_ITF_Z(sprintf('(%i) BIAS AC diff, low  gain', i), AC_DIFF_FREQ_HZ, acDiffLgZ)
+                log_ITF_Z(sprintf('(%i) BIAS AC diff, high gain', i), AC_DIFF_FREQ_HZ, acDiffHgZ)
+            end
+            
+            
+            function log_ITF_Z(itfName, freqHz, Z)
+                bicas.logf('debug', 'Inverse TF, %-23s, %4i Hz: abs(Z)=%5.2f [AVolt/IVolt], phase(Z)=%5.1f [deg]', itfName, freqHz, abs(Z), rad2deg(phase(Z)))
             end
             
         end
@@ -243,6 +267,7 @@ classdef calib < handle
         % Load non-BIAS RCTs (all types) using assumptions on filenames.
         %
         % NOTE: Can be useful for manual experimentation with calibration.
+        %
         function read_non_BIAS_RCTs_by_regexp(obj, use_CALIBRATION_TABLE_INDEX2)
             assert(~obj.hasLoadedNonBiasData, 'BICAS:calib:Assertion', 'Can not load non-BIAS data twice.')
             
@@ -489,6 +514,7 @@ classdef calib < handle
             
             if obj.use_CALIBRATION_TABLE_INDEX2
                 %??? = cti2
+                %assert(, 'BICAS:calib:Assertion', 'cti2+1=%i != iLsf=%i (before overwriting)', cti2+1, iLsf)
                 error('BICAS:calib:Assertion:IllegalCodeConfiguration:OperationNotImplemented', 'TDS-CWF calibration using CALIBRATION_TABLE_INDEX2 has not been implemented yet.')
             end
             
@@ -529,7 +555,7 @@ classdef calib < handle
                     samplesCaAVolt{i} = NaN * samplesCaTm{i};
                 end
             end
-
+            
         end
 
 
@@ -651,8 +677,9 @@ classdef calib < handle
             assert(isscalar(biasHighGain) && isnumeric(biasHighGain))
             assert(isscalar(iCalibTimeL))
             assert(isscalar(iCalibTimeH))
-            
-            
+
+
+
             if obj.fullVoltageCalibEnabled
                 
                 switch(BltsSrc.category)
@@ -721,8 +748,10 @@ classdef calib < handle
 
 
             % Convenience function: Cell array of TFs --> Time-relevant TF (as function handle)
-            function Tf = TF_list_2_func(RtfList)
-                Tf = @(omegaRps) (RtfList{iCalibTimeL}.eval(omegaRps));
+            %
+            % RFTF = Rational Function (rational_func_transform object) Transfer Function
+            function Tf = TF_list_2_func(RftfList)
+                Tf = @(omegaRps) (RftfList{iCalibTimeL}.eval(omegaRps));
             end
         end
         
