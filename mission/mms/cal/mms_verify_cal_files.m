@@ -119,6 +119,16 @@ for calId = 1:length(calTypes)
           warning(['First (max 5) rows with problems were: ', sprintf('%i, ', 1+ind(1:min(5, length(ind))))]);
           calOk = false;
         end
+        
+        %% Verify end value (of region files) is not S/W
+        % as we should not have it be active for all time (until next
+        % region file is ready for production)
+        if strcmp(calStr, 'regions')
+          if dataOff(end) == 1
+            warning('Region file %s appears to have solar wind active for the last record.', list.name);
+            calOk = false;
+          end
+        end
 
       else
         warning('Failed to locate %s calibration file for scId: %i', calStr, scId);
