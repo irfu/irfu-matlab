@@ -14,6 +14,7 @@
 # Updated: 2015/12/16, new return code 196 if L1b dce file in empty ("Epoch" variable contains zero Written records).
 # Updated: 2017/01/09, reading XML files (containing information about manuevers) require jvm.
 # Updated: 2017/11/23, force first file argument to Matlab to be the lowest datalevel source file (L1b dce) as this is used to determine log name and path.
+# Updated: 2020/01/09, change Matlab version on SDC to R2019a.
 #
 # Usage: place script in the same folder as has irfu-matlab as a subfolder, then run
 #  "./script.sh <mmsX_dce_filename> <mmsX_dcv_filename> <mmsX_101_filename> <mmsX_10e_filename> <mmsX_105_filename>", with the following
@@ -42,7 +43,7 @@
 # Note: The script assumes it is located in the folder which has irfu-matlab as a subfolder.
 
 # User definable constants
-MATLAB_EXE=/tools/matlab/R2017a/bin/matlab # SDC location of installed Matlab. # XXX: change this to whereever matlab is located.
+MATLAB_EXE=/tools/matlab/R2019a/bin/matlab # SDC location of installed Matlab. # XXX: change this to whereever matlab is located.
 MATLAB_FLAGS="-nodesktop -nosplash -nodisplay"
 IRFU_MATLAB=/mms/itfhome/mms-sdp/software/irfu-matlab # SDC location of irfu-matlab. # XXX: change this to whereever irfu-matlab is located.
 
