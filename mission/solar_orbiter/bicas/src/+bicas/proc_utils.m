@@ -102,7 +102,7 @@ classdef proc_utils
 
         
 
-        function freqHz = get_LFR_frequency(iLsf)
+        function freqHz = get_LFR_frequency(iLsf, lsfArrayHz)
         % Convert LFR zVariable FREQ values to Hz. The usefulness of this function stems from how the LFR
         % datasets are defined.
         %
@@ -110,8 +110,6 @@ classdef proc_utils
         % =========
         % iLsf   : The LSF index, i.e. 1=LFR freq. F0, and so on.
         % freqHz : Frequency in Hz.
-
-            global SETTINGS
 
             % ASSERTION
             uniqueValues = unique(iLsf);
@@ -123,10 +121,10 @@ classdef proc_utils
             
             % NOTE: Implementation that works for arrays of any size.
             freqHz = ones(size(iLsf)) * NaN;        % Allocate array and set default values.
-            freqHz(iLsf==1) = SETTINGS.get_fv('PROCESSING.LFR.F0_HZ');
-            freqHz(iLsf==2) = SETTINGS.get_fv('PROCESSING.LFR.F1_HZ');
-            freqHz(iLsf==3) = SETTINGS.get_fv('PROCESSING.LFR.F2_HZ');
-            freqHz(iLsf==4) = SETTINGS.get_fv('PROCESSING.LFR.F3_HZ');
+            freqHz(iLsf==1) = lsfArrayHz(1);
+            freqHz(iLsf==2) = lsfArrayHz(2);
+            freqHz(iLsf==3) = lsfArrayHz(3);
+            freqHz(iLsf==4) = lsfArrayHz(4);
         end
         
         

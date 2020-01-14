@@ -103,7 +103,7 @@ classdef proc
             end
             
             HkSciTimePd = bicas.proc_sub.process_HK_to_HK_on_SCI_TIME(InputSciPd, InputHkPd, SETTINGS);
-            SciPreDcPd  = bicas.proc_sub.process_LFR_to_PreDC(        InputSciPd, inputSciDsi, HkSciTimePd);
+            SciPreDcPd  = bicas.proc_sub.process_LFR_to_PreDC(        InputSciPd, inputSciDsi, HkSciTimePd, SETTINGS);
             SciPostDcPd = bicas.proc_sub.process_demuxing_calibration(SciPreDcPd, Cal, SETTINGS);
             OutputSciPd = bicas.proc_sub.process_PostDC_to_LFR(       SciPostDcPd, outputDsi, outputVersion);
             

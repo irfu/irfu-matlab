@@ -160,6 +160,7 @@ classdef calib < handle
         LfrItfIvptTable    = {};
         tdsCwfFactorsIvpt  = {};
         TdsRswfItfIvptList = {};
+        lfrLsfOffsetsTm    = [];   % EXPERIMENTAL. NOTE: Technically, the name contains a tautology (LFR+LSF).
        
         calibrationDir
         
@@ -219,9 +220,10 @@ classdef calib < handle
             obj.BiasScalar.gammaIvpav.highGain = SETTINGS.get_fv('PROCESSING.CALIBRATION.BIAS.SCALAR.GAMMA_IVPAV.HIGH_GAIN');
             obj.BiasScalar.gammaIvpav.lowGain  = SETTINGS.get_fv('PROCESSING.CALIBRATION.BIAS.SCALAR.GAMMA_IVPAV.LOW_GAIN');
             
-            obj.HkBiasCurrent.offsetTm = SETTINGS.get_fv('PROCESSING.CALIBRATION.HK_BIAS_CURRENT.OFFSET_TM');
-            obj.HkBiasCurrent.gainApt  = SETTINGS.get_fv('PROCESSING.CALIBRATION.HK_BIAS_CURRENT.GAIN_APT');
+            obj.HkBiasCurrent.offsetTm         = SETTINGS.get_fv('PROCESSING.CALIBRATION.HK_BIAS_CURRENT.OFFSET_TM');
+            obj.HkBiasCurrent.gainApt          = SETTINGS.get_fv('PROCESSING.CALIBRATION.HK_BIAS_CURRENT.GAIN_APT');
             
+            obj.lfrLsfOffsetsTm = SETTINGS.get_fv('PROCESSING.CALIBRATION.LFR.LSF_OFFSETS_TM');
             
 
             algorithmId = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.ALGORITHM');
@@ -528,14 +530,18 @@ classdef calib < handle
                 BiasCalibData.itfAvpiv(omega));
 
             %=======================================
-            % CALIBRATE: LFR TM --> TM --> ASR volt
+            % CALIBRATE: LFR TM --> TM --> AVolt
             %=======================================
             samplesCaAVolt = cell(size(samplesCaTm));
+            lsfOffsetTm = obj.lfrLsfOffsetsTm(iLsf);
             for i = 1:numel(samplesCaTm)
+                
+                % ADD LSF OFFSET
+                samplesTm = samplesCaTm{i}(:) + lsfOffsetTm;
                 
                 % APPLY TRANSFER FUNCTION
                 tempSamplesAVolt = bicas.utils.apply_transfer_function(...
-                    dtSec(i), samplesCaTm{i}(:), itfIvpt, ...
+                    dtSec(i), samplesTm, itfIvpt, ...
                     'enableDetrending', obj.enableDetrending);
 
                 samplesCaAVolt{i} = tempSamplesAVolt + BiasCalibData.offsetAVolt;

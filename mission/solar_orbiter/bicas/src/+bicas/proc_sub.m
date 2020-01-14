@@ -170,7 +170,7 @@ classdef proc_sub
 
 
 
-        function PreDc = process_LFR_to_PreDC(InSci, inSciDsi, HkSciTime)
+        function PreDc = process_LFR_to_PreDC(InSci, inSciDsi, HkSciTime, SETTINGS)
         % Processing function. Convert LFR CDF data to PreDC.
         %
         % Keeps number of samples/record. Treats 1 samples/record "length-one snapshots".
@@ -226,7 +226,7 @@ classdef proc_sub
             
             
             
-            zvFreqHz = bicas.proc_utils.get_LFR_frequency( iLsfZv );   % NOTE: Needed also for 1 SPR.
+            zvFreqHz = bicas.proc_utils.get_LFR_frequency( iLsfZv, SETTINGS.get_fv('PROCESSING.LFR.F0_F1_F2_F3_HZ') );   % NOTE: Needed also for 1 SPR.
 
             % Obtain the relevant values (one per record) from zVariables R0, R1, R2, and the virtual "R3".
             zvRx = bicas.proc_utils.get_LFR_Rx( ...

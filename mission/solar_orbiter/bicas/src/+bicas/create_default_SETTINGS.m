@@ -175,10 +175,9 @@ S.define_setting('PROCESSING.RCT_REGEXP.RODP.TDS-LFM-RSWF', [    'SOLO_CAL_RCT-T
 % The variables names (F[0-3]) follow LFR's naming scheme.
 % Only used for sequences of samples within the same CDF record (?!).
 %====================================================================================================================
-S.define_setting('PROCESSING.LFR.F0_HZ', 24576);  % = 6 * 4096
-S.define_setting('PROCESSING.LFR.F1_HZ',  4096);
-S.define_setting('PROCESSING.LFR.F2_HZ',   256);
-S.define_setting('PROCESSING.LFR.F3_HZ',    16);
+S.define_setting('PROCESSING.LFR.F0_F1_F2_F3_HZ',    [24576, 4096, 256, 16]);   % 24576 = 6 * 4096
+
+
 
 % Quick ~BUGFIX for bad values in zv SAMPLING_RATE in L1R TDS-LFM-RSWF datasets. Remove?
 S.define_setting('PROCESSING.L1R.TDS.RSWF_L1R_ZV_SAMPLING_RATE_DATASET_BUGFIX_ENABLED', 0)
@@ -199,6 +198,17 @@ S.define_setting('PROCESSING.L1R.TDS.CWF.USE_ZV_CALIBRATION_TABLE_INDEX2',      
 S.define_setting('PROCESSING.L1R.TDS.RSWF.USE_GA_CALIBRATION_TABLE_RCTS',          1)
 S.define_setting('PROCESSING.L1R.TDS.RSWF.USE_ZV_CALIBRATION_TABLE_INDEX2',        0)    % 1 : Not implemented, since not yet tested bugfix in TDS datasets.
 S.define_setting('PROCESSING.L1R.ZV_CALIBRATION_TABLE_INDEX_ILLEGAL_SIZE_REPLACE', 0)
+
+
+
+% EXPERIMENTAL. Calibration values.
+% LFR sampling frequency-dependent offsets.
+% Values obtained from manually fitting F0,F1,F2 (not F3) snapshots in
+% ROC-SGSE_L1R_RPW-LFR-SURV-SWF-E_59e82ff_CNE_V02.cdf.
+% NOTE: Values are relative as the absolute level is not known.
+% NOTE: Might be that LFR offsets also depend on BLTS.
+% NOTE: Has not set any value for F3.
+S.define_setting('PROCESSING.CALIBRATION.LFR.LSF_OFFSETS_TM', [-638, -610, 0, 0])
 
 %=================================================================================
 % Calibration constants for "scalar" calibration
