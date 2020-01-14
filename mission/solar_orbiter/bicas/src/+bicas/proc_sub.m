@@ -190,6 +190,14 @@ classdef proc_sub
             nRecords = size(InSci.Zv.Epoch, 1);            
             C = bicas.proc_utils.classify_DATASET_ID(inSciDsi);
            
+            %============================================================
+            % Normalize LFR data: Handle variation that should not exist
+            %============================================================
+            % Handle that SYNCHRO_FLAG (empty) and TIME_SYNCHRO_FLAG (non-empty) may both be present.
+            % Ex: LFR___TESTDATA_RGTS_LFR_CALBUT_V0.7.0/ROC-SGSE_L1R_RPW-LFR-SBM1-CWF-E_4129f0b_CNE_V02.cdf   2019-11-29
+            if isfield(InSci.Zv, 'SYNCHRO_FLAG') && isempty(InSci.Zv.SYNCHRO_FLAG)
+                InSci.Zv = rmfield(InSci.Zv, 'SYNCHRO_FLAG');
+            end                
             % Both zVars TIME_SYNCHRO_FLAG, SYNCHRO_FLAG found in input datasets (2020-01-05). Unknown why.
             % "DEFINITION BUG" in definition of datasets/skeleton?
             InSci.Zv = bicas.utils.normalize_struct_fieldnames(InSci.Zv, ...
