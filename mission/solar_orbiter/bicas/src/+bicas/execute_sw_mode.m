@@ -197,13 +197,13 @@ end
 
 
 
-function [Zv, GlobalAttributes] = read_dataset_CDF(filePath)
+function [Zvs, GlobalAttributes] = read_dataset_CDF(filePath)
 % Read elementary input process data from a CDF file. Copies all zVariables into fields of a regular structure.
 %
 %
 % RETURN VALUES
 % =============
-% Zvars            : Struct with one field per zVariable (using the same name). The content of every such field equals the
+% Zvs              : Struct with one field per zVariable (using the same name). The content of every such field equals the
 %                    content of the corresponding zVar.
 % GlobalAttributes : Struct returned from "dataobj".
 %
@@ -228,19 +228,14 @@ DataObj = dataobj(filePath);                 % do=dataobj, i.e. irfu-matlab's da
 % Copy zVariables (only the data) into analogous fields in smaller struct
 %=========================================================================
 bicas.log('info', 'Converting dataobj (CDF data structure) to PDV.')
-Zv             = struct();
+Zvs               = struct();
+ZvsLog            = struct();   % zVariables for logging.
 zVariableNameList = fieldnames(DataObj.data);
-%bicas.proc_utils.log_array('explanation')
 for i = 1:length(zVariableNameList)
-    zVariableName = zVariableNameList{i};
-    zVariableData = DataObj.data.(zVariableName).data;
+    zvName  = zVariableNameList{i};
+    zvValue = DataObj.data.(zvName).data;
     
-    %=================================================================================================
-    % Log data to be written to CDF file
-    % ----------------------------------
-    % NOTE: Log messages should reflect the values READ from file.
-    %=================================================================================================
-    %bicas.proc_utils.log_struct_arrays(zVariableName, zVariableData);
+    ZvsLog.(zvName) = zvValue;
     
     %=================================================
     % Replace fill/pad values with NaN for FLOAT data
@@ -248,20 +243,25 @@ for i = 1:length(zVariableNameList)
     % QUESTION: How does/should this work with integer fields that should also be stored as integers internally?!!!
     %    Ex: ACQUISITION_TIME, Epoch.
     % QUESTION: How distinguish integer zVariables that could be converted to floats (and therefore use NaN)?
-    if isfloat(zVariableData)
-        [fillValue, padValue] = get_fill_pad_values(DataObj, zVariableName);
+    if isfloat(zvValue)
+        [fillValue, padValue] = get_fill_pad_values(DataObj, zvName);
         if ~isempty(fillValue)
             % CASE: There is a fill value.
-            zVariableData = bicas.utils.replace_value(zVariableData, fillValue, NaN);
+            zvValue = bicas.utils.replace_value(zvValue, fillValue, NaN);
         end
-        zVariableData = bicas.utils.replace_value(zVariableData, padValue,  NaN);
+        zvValue = bicas.utils.replace_value(zvValue, padValue,  NaN);
     else
         % Disable?! Only print warning if finds fill value which is not replaced?
         %bicas.logf('warning', 'Can not handle replace fill/pad values for zVariable "%s" when reading "%s".', zVariableName, filePath))
     end
     
-    Zv.(zVariableName) = zVariableData;
+    Zvs.(zvName) = zvValue;
 end
+
+
+
+% Log data read from CDF file
+bicas.proc_utils.log_zVars(ZvsLog)
 
 
 
@@ -280,7 +280,7 @@ end
 
 
 function write_dataset_CDF(...
-    ZvSubset, GlobalAttributesSubset, outputFile, masterCdfPath, datasetId, SETTINGS)
+    ZvsSubset, GlobalAttributesSubset, outputFile, masterCdfPath, datasetId, SETTINGS)
 %
 % Function that writes one ___DATASET___ CDF file.
 %
@@ -305,45 +305,44 @@ function write_dataset_CDF(...
 %======================
 bicas.logf('info', 'Reading master CDF file: "%s"', masterCdfPath)
 DataObj = dataobj(masterCdfPath);
+ZvsLog  = struct();   % zVars for logging.
 
 %=============================================================================================
 % Iterate over all OUTPUT PD field names (~zVariables) - Set corresponding dataobj zVariables
 %=============================================================================================
 % NOTE: Only sets a SUBSET of the zVariables in master CDF.
-pdFieldNameList = fieldnames(ZvSubset);
+pdFieldNameList = fieldnames(ZvsSubset);
 bicas.log('info', 'Converting PDV to dataobj (CDF data structure)')
-%bicas.proc_utils.log_array('explanation')
 for iPdFieldName = 1:length(pdFieldNameList)
-    zVariableName = pdFieldNameList{iPdFieldName};
+    zvName = pdFieldNameList{iPdFieldName};
     
     % ASSERTION: Master CDF already contains the zVariable.
-    if ~isfield(DataObj.data, zVariableName)
+    if ~isfield(DataObj.data, zvName)
         error('BICAS:execute_sw_mode:Assertion:SWModeProcessing', ...
-        'Trying to write to zVariable "%s" that does not exist in the master CDF file.', zVariableName)
+        'Trying to write to zVariable "%s" that does not exist in the master CDF file.', zvName)
     end
     
-    zVariableData = ZvSubset.(zVariableName);
+    zvValue = ZvsSubset.(zvName);
+    ZvsLog.(zvName)            = zvValue;
     
-    % Prepare PDV zVariable data:
+    % Prepare PDV zVariable value:
     % (1) Replace NaN-->fill value
     % (2) Convert to the right MATLAB class.
-    if isfloat(zVariableData)
-        [fillValue, ~] = get_fill_pad_values(DataObj, zVariableName);
-        zVariableData  = bicas.utils.replace_value(zVariableData, NaN, fillValue);
+    if isfloat(zvValue)
+        [fillValue, ~] = get_fill_pad_values(DataObj, zvName);
+        zvValue  = bicas.utils.replace_value(zvValue, NaN, fillValue);
     end
-    matlabClass   = bicas.utils.convert_CDF_type_to_MATLAB_class(DataObj.data.(zVariableName).type, 'Permit MATLAB classes');
-    zVariableData = cast(zVariableData, matlabClass);
-    
-    %=================================================================================================
-    % Log data to be written to CDF file
-    % ----------------------------------
-    % NOTE: Log messages should reflect the values WRITTEN to file.
-    %=================================================================================================
-    %bicas.proc_utils.log_struct_arrays(zVariableName, zVariableData);
+    matlabClass   = bicas.utils.convert_CDF_type_to_MATLAB_class(DataObj.data.(zvName).type, 'Permit MATLAB classes');
+    zvValue = cast(zvValue, matlabClass);
     
     % Set zVariable.
-    DataObj.data.(zVariableName).data = zVariableData;
+    DataObj.data.(zvName).data = zvValue;
 end
+
+
+
+% Log data to be written to CDF file.
+bicas.proc_utils.log_zVars(ZvsLog)
 
 
 
@@ -377,16 +376,16 @@ end
 % Handle still-empty zVariables (zero records)
 %==============================================
 for fn = fieldnames(DataObj.data)'
-    zVariableName = fn{1};
+    zvName = fn{1};
     
-    if isempty(DataObj.data.(zVariableName).data)
+    if isempty(DataObj.data.(zvName).data)
         % CASE: zVariable has zero records, indicating that should have been set using PDV field.
         
         logMsg = sprintf(['Master CDF contains zVariable "%s" which has not been set (i.e. it has zero records) after adding ', ...
             'processing data. This should only happen for incomplete processing.'], ...
-            zVariableName);
+            zvName);
         
-        matlabClass  = bicas.utils.convert_CDF_type_to_MATLAB_class(DataObj.data.(zVariableName).type, 'Permit MATLAB classes');
+        matlabClass  = bicas.utils.convert_CDF_type_to_MATLAB_class(DataObj.data.(zvName).type, 'Permit MATLAB classes');
         isNumericZVar = isnumeric(cast(0.000, matlabClass));
 
         if isNumericZVar && SETTINGS.get_fv('OUTPUT_CDF.EMPTY_NUMERIC_ZVARIABLES_SET_TO_FILL')
@@ -404,19 +403,19 @@ for fn = fieldnames(DataObj.data)'
             % NOTE: Assumes that
             % (1) there is a PD fields/zVariable Epoch, and
             % (2) this zVariable should have as many records as Epoch.
-            bicas.logf('warning', 'Setting numeric master/output CDF zVariable "%s" to presumed correct size using fill values due to setting.', zVariableName)
-            nEpochRecords = size(ZvSubset.Epoch, 1);
-            [fillValue, ~] = get_fill_pad_values(DataObj, zVariableName);
+            bicas.logf('warning', 'Setting numeric master/output CDF zVariable "%s" to presumed correct size using fill values due to setting.', zvName)
+            nEpochRecords = size(ZvsSubset.Epoch, 1);
+            [fillValue, ~] = get_fill_pad_values(DataObj, zvName);
             zVariableSize = [nEpochRecords, DataObj.data.(fn{1}).dim];
-            zVariableData = cast(zeros(zVariableSize), matlabClass);
-            zVariableData = bicas.utils.replace_value(zVariableData, 0, fillValue);
+            zvValue = cast(zeros(zVariableSize), matlabClass);
+            zvValue = bicas.utils.replace_value(zvValue, 0, fillValue);
             
-            DataObj.data.(zVariableName).data = zVariableData;
+            DataObj.data.(zvName).data = zvValue;
 
         elseif ~isNumericZVar && SETTINGS.get_fv('OUTPUT_CDF.EMPTY_NONNUMERIC_ZVARIABLES_IGNORE')
             bicas.logf('warning', ...
                 'Ignoring empty non-numeric master CDF zVariable "%s" due to setting OUTPUT_CDF.EMPTY_NONNUMERIC_ZVARIABLES_IGNORE.', ...
-                zVariableName)
+                zvName)
 
         else
             error('BICAS:execute_sw_mode:SWModeProcessing', logMsg)

@@ -830,176 +830,179 @@ classdef proc_utils
         
         
         
-        function log_array(varargin)
-        % Logs statistics on the contents of a numeric variable (any dimensionality): Number of & percentage NaN, unique
-        % values, min-max. Primarily intended for zVariables and derivatives thereof. Can be useful for knowing which
-        % settings are used (e.g. DIFF_GAIN), constant/varying bias current, suspect input datasets.
-        %
-        % IMPLEMENTATION NOTE: Deliberately short function name to not clutter the log.
-        %
-        %
+        function ColumnStrs = log_array(varName, varValue, varType)
+            % Logs statistics on the contents of a numeric variable (any dimensionality): Number of & percentage NaN, unique
+            % values, min-max. Primarily intended for zVariables and derivatives thereof. Can be useful for knowing which
+            % settings are used (e.g. DIFF_GAIN), constant/varying bias current, suspect input datasets.
+            %
+            % IMPLEMENTATION NOTE: Deliberately short function name to not clutter the log.
+            %
+            %
+            % ARGUMENTS
+            % =========
+            % Alternative 1: 'explanation' (string literal) : Prints explanation of the (very condensed) log messages.
+            % Alternative 2: variableName, variableValue    : Print statistics on line
+            %
+            % ASSUMPTIONS
+            % ===========
+            % variableValue is numeric
+            
+            % PROPOSAL: Handle fill/pad value?
+            % PROPOSAL: Move to +utils.
+            % PROPOSAL: Special log function for zVars. Can print CDF type (implicitly range).
+            % PROPOSAL: Print MATLAB class (implicitly range).
+            
+            MAX_EPOCH_UNIQUES_PRINTED = 2;
+            
+            global SETTINGS
+            
+            % ASSERTION
+            assert(isnumeric(varValue))
+            
+            uniqueValues  = bicas.utils.unique_values_NaN(varValue);
+            nUniqueValues = numel(uniqueValues);
+            
+            %=================================
+            % Construct string: variable size
+            %=================================
+            % Create comma-separated list of numbers.
+            sizeStr = strjoin(arrayfun(@(n) num2str(n), size(varValue), 'UniformOutput', 0),',');
+            sizeStr = sprintf('(%s)', sizeStr);
+            
+            switch(varType)
+                case 'numeric'
+                    % ASSERTION
+                    assert(ndims(varValue) <= 3, 'BICAS:proc_utils:Assertion:IllegalArgument', 'v is not numerical with max 3 dimensions.')
+
+                    nNan             = sum(isnan(varValue(:)));
+                    percentageNan    = round((nNan/numel(varValue))*100);
+                    nNanStr          = num2str(nNan);
+                    percentageNanStr = sprintf('%i%%', percentageNan);
+                    
+                    %===================================
+                    % Construct string: range of values
+                    %===================================
+                    if nUniqueValues > SETTINGS.get_fv('LOGGING.MAX_UNIQUES_PRINTED')
+                        vMin = min(min(min(varValue)));
+                        vMax = max(max(max(varValue)));
+                        
+                        % IMPLEMENTATION NOTE: Space around "--" to make it easier to spot minus sign in a negative max number.
+                        valuesStr = sprintf('Mm: %d -- %d', vMin, vMax);    
+                    else
+                        if nUniqueValues == 0
+                            valuesStr = '';
+                        else
+                            valuesStr = ['Us: ', sprintf('%d ', uniqueValues)];
+                        end
+                    end
+
+                case 'Epoch'
+                    % ASSERTIONS
+                    bicas.proc_utils.assert_Epoch(varValue)
+                    
+                    nNanStr          = '-';
+                    percentageNanStr = '- ';   % NOTE: Extra whitespace.
+                    
+                    if nUniqueValues > MAX_EPOCH_UNIQUES_PRINTED
+                        epochMinStr = bicas.proc_utils.tt2000_to_UTC_str(min(varValue));
+                        epochMaxStr = bicas.proc_utils.tt2000_to_UTC_str(max(varValue));
+                        valuesStr   = sprintf('Mm: %s -- %s', epochMinStr, epochMaxStr);
+                    elseif numel(varValue) >= 1
+                        for i = 1:numel(uniqueValues)
+                            valueStrs{end+1} = bicas.proc_utils.tt2000_to_UTC_str(uniqueValues{i});
+                        end
+                        valuesStr = ['Us: ', strjoin(valueStrs, ', ')];
+                    else
+                        valuesStr = '-';
+                    end
+                    
+                otherwise
+                    error('BICAS:proc_utils', 'Illegal argument varType="%s"', varType)
+            end
+            
+            % Assemble the final string
+            ColumnStrs.name             = varName;
+            ColumnStrs.size             = sizeStr;
+            ColumnStrs.nNan             = nNanStr;
+            ColumnStrs.percentageNan    = percentageNanStr;
+            ColumnStrs.nUniqueValues    = num2str(nUniqueValues);
+            ColumnStrs.values           = valuesStr;
+        end
+
+
+
+        % Log human readable summary of a set of zVar-like variables.
+        % NOTE: Ignores string zVars.
+        % 
         % ARGUMENTS
         % =========
-        % Alternative 1: 'explanation' (string literal) : Prints explanation of the (very condensed) log messages.
-        % Alternative 2: variableName, variableValue    : Print statistics on line
-        %
-        % ASSUMPTIONS
-        % ===========
-        % variableValue is numeric
+        % Zvs : Struct with ~zVariables.
+        %       NOTE: Uses field name to determine whether field is Epoch-like or not.
+        function log_zVars(Zvs)
+            % PROBLEM: Can not manually specify which variables are Epoch-like.
+            % PROBLEM: Can not manually specify variable name strings.
+            %   Ex: process_HK_to_HK_on_SCI_TIME: Print different versions of time for comparison. Want whitespace
+            %
+            % PROPOSAL: For min-max values, also print difference.
+            %   Ex: Time difference for Epoch.
+            %       TODO-DECISION: How print time difference?
+            %           PROPOSAL: Days-hours-minutes-seconds, e.g. 56 days, 13:02:34
+            %           PROPOSAL: Days-hours-minutes-seconds, e.g. 56 days, 13h02m34s
             
-        % PROPOSAL: Handle fill/pad value?
-        % PROPOSAL: Move to +utils.
-        % PROPOSAL: Special log function for zVars. Can print CDF type (implicitly range).
-        % PROPOSAL: Print MATLAB class (implicitly range).
-        %
-        
-            global SETTINGS                
-        
-            if nargin == 1
-                % ASSERTION
-                if ~strcmp(varargin{1}, 'explanation')
-                    error('BICAS:proc_utils:Assertion:IllegalArgument', 'Wrong number of arguments')
-                end
-                    
-                EXPLANATION_STRING = 'Explanation for variable log messages: (x,y, ...)=size of variable; #=number of ...; Us=unique values (incl. NaN which counts as equal to itself); Mm=min-max';
-                bicas.log('info', EXPLANATION_STRING)
-                return
-                
-            elseif nargin == 2
-                
-                variableName  = varargin{1};
-                variableValue = varargin{2};
-                
-                % ASSERTIONS
-                if ~isnumeric(variableValue) || ndims(variableValue) > 3   % NOTE: min-max limit number of dimensions.
-                    error('BICAS:proc_utils:Assertion:IllegalArgument', 'v is not numerical with max 3 dimensions.')
-                end
-                
-                nValues       = numel(variableValue);
-                nUniqueValues = length(bicas.utils.unique_values_NaN(variableValue));
-                nNan          = sum(isnan(variableValue(:)));
-                
-                %============================
-                % Construct string: NaN info
-                %============================
-                if nValues == 0
-                    nanStr = '';
-                else
-                    nanStr = sprintf('#NaN=%3d%%=%d', round((nNan/numel(variableValue))*100), nNan);
-                end
-                
-                %=================================
-                % Construct string: variable size
-                %=================================
-                % Create comma-separated list of numbers.
-                sizeStr = strjoin(arrayfun(@(n) num2str(n), size(variableValue), 'UniformOutput', 0),',');
-                
-                %===================================
-                % Construct string: range of values
-                %===================================
-                if nUniqueValues > SETTINGS.get_fv('LOGGING.MAX_UNIQUES_PRINTED')
-                    vMin = min(min(min(variableValue)));
-                    vMax = max(max(max(variableValue)));
-                    valuesStr = sprintf('Mm: %d--%d', vMin, vMax);
-                else
-                    if nUniqueValues == 0
-                        valuesStr = '';
-                    else
-                        valuesStr = ['Us: ', sprintf('%d ', bicas.utils.unique_values_NaN(variableValue))];
-                    end
-                end
-                
-                %========================================================================================
-                % Assemble the final string
-                % -------------------------
-                % Examples for choosing column sizes:
-                % Long variable names:       HK_BIA_MODE_BIAS3_ENABLED
-                %                            <V03_ROC-SGSE_L2S_RPW-LFR-SURV-CWF-E>.QUALITY_BITMASK
-                %                            <V01_ROC-SGSE_L2R_RPW-LFR-SURV-CWF>.BIAS_MODE_BIAS1_ENABLED
-                % Long variable size string: (90,90,2048)
-                %========================================================================================
-                outputStr = sprintf('%-61s (%-10s): #Us=%5d (%-16s) %s', variableName, sizeStr, nUniqueValues, nanStr, valuesStr);
-                
-                bicas.log('info', outputStr)
-            else
-                
-                % ASSERTION
-                error('BICAS:proc_utils:Assertion:IllegalArgument', 'Wrong number of arguments')
-                
-            end
-        end
-        
-        
-        
-        function log_struct_arrays(variableName, variableValue)
+            LOG_LEVEL = 'debug';
+
+            fnList     = fieldnames(Zvs);
+            ColumnStrs = struct('name', {}, 'size', {}, 'nNan', {}, 'percentageNan', {}, 'nUniqueValues', {}, 'values', {});
             
-            bicas.proc_utils.log_array('explanation')
-            log_struct_arrays_INNER(variableName, variableValue)
-        
-            function log_struct_arrays_INNER(variableName, variableValue)
-                % Call log_array recursively for struct.
-                %
-                % NOTE: Special case for variables/fields named "Epoch" of type int64.
+            for iFn = 1:numel(fnList)
+                zvName  = fnList{iFn};
+                zvValue = Zvs.(zvName);
                 
-                if iscolumn(variableValue) && isa(variableValue, 'int64') && ~isempty(regexp(variableName, 'Epoch$', 'once'))
+                if iscolumn(zvValue) && isa(zvValue, 'int64') && any(EJ_library.utils.regexpf(zvName, {'Epoch.*', '.*Epoch'}))
+                    % CASE: Epoch-like variable.
                     
-                    bicas.proc_utils.log_tt2000_array(variableName, variableValue);
+                    ColumnStrs(end+1) = bicas.proc_utils.log_array(zvName, zvValue, 'Epoch');
                     
-                elseif isnumeric(variableValue)
+                elseif isnumeric(zvValue)
+                    % CASE: Non-Epoch-like numeric variable.
                     
-                    bicas.proc_utils.log_array(variableName, variableValue)
+                    ColumnStrs(end+1) = bicas.proc_utils.log_array(zvName, zvValue, 'numeric');
                     
-                elseif isstruct(variableValue)
-                    
-                    fieldNamesList = fieldnames(variableValue);
-                    for i = 1:length(fieldNamesList)
-                        fieldName = fieldNamesList{i};
-                        
-                        % NOTE: RECURSIVE CALL
-                        log_struct_arrays_INNER(...
-                            [variableName, '.', fieldName], ...
-                            variableValue.(fieldName))
-                    end
-                    
-                elseif ischar(variableValue)
+                elseif ischar(zvValue)
                     
                     % Example of string valued (but irrelevant) CDF zVariables: ACQUISITION_TIME_LABEL
                     ;   % Ignore
                     
                 else
-                    
-                    error('BICAS:proc_utils:Assertion', 'variableValue is neither numeric nor struct.')
-                    
+                    error('BICAS:proc_utils:Assertion', 'Can not handle zVar "%s".', zvName)
                 end
             end
             
-        end
-        
-        
-        
-        function log_tt2000_array(variableName, tt2000)
-        % Log summary of series of times.
-        %
-        % tt2000 : A vector of tt2000 values.
-        %
-        % NOTE: Assumes that t is sorted in time, increasing.
-        % NOTE: Can handle zero values.
-        
-        % PROPOSAL: Move to +utils.
-        
-            bicas.proc_utils.assert_Epoch(tt2000)
-            
-            if ~isempty(tt2000)
-                strFirst = bicas.proc_utils.tt2000_to_UTC_str(tt2000(1));
-                strLast  = bicas.proc_utils.tt2000_to_UTC_str(tt2000(end));
-                bicas.logf('info', '%s: %s -- %s', variableName, strFirst, strLast)
-            else
-                bicas.logf('info', '%s: <empty>', variableName)
+            headerStrs = {'Name', 'Size', '#NaN', '%NaN', '#Uniq', 'Values'};
+            tableStrs = {};
+            tableStrs(:,1) = {ColumnStrs(:).name}';
+            tableStrs(:,2) = {ColumnStrs(:).size}';
+            tableStrs(:,3) = {ColumnStrs(:).nNan}';
+            tableStrs(:,4) = {ColumnStrs(:).percentageNan}';
+            tableStrs(:,5) = {ColumnStrs(:).nUniqueValues}';
+            tableStrs(:,6) = {ColumnStrs(:).values}';
+            tableColumnAdjustments = [{'left', 'left'}, repmat({'right'}, 1,3), {'left'}];
+            [headerStrs, tableStrs, columnWidths] = EJ_library.utils.assist_print_table(headerStrs, tableStrs,  tableColumnAdjustments);
+
+            bicas.log(LOG_LEVEL, strjoin(headerStrs, ' '))
+            bicas.log(LOG_LEVEL, repmat('=', 1, sum(columnWidths) + numel(headerStrs) - 1))
+            for iRow = 1:numel(ColumnStrs)
+                bicas.log(LOG_LEVEL, strjoin(tableStrs(iRow, :), ' '))
             end
+            bicas.logf(LOG_LEVEL, [...
+                '    #NaN = Number of NaN\n', ...
+                '    #Uniq = Number of unique values incl. NaN which counts as equal to itself.\n', ...
+                '    Mm = min-max\n', ...
+                '    Us = Unique values (explicitly listed)\n'])
         end
 
-        
-        
+
+
         % Assert that variable is an "zVar Epoch-like" variable.
         function assert_Epoch(Epoch)
         % PROPOSAL: Change name: assert_Epoch_zvar

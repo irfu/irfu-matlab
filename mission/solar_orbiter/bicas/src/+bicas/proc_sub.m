@@ -96,10 +96,12 @@ classdef proc_sub
             %==================================================================
             % Log time intervals to enable comparing available SCI and HK data
             %==================================================================
-            bicas.proc_utils.log_tt2000_array('HK  ACQUISITION_TIME', hkAtTt2000)
-            bicas.proc_utils.log_tt2000_array('SCI ACQUISITION_TIME', sciAtTt2000)
-            bicas.proc_utils.log_tt2000_array('HK  Epoch           ', hkEpoch)
-            bicas.proc_utils.log_tt2000_array('SCI Epoch           ', sciEpoch)
+            TimeVars = [];
+            TimeVars.Epoch_HK_ACQUISITION_TIME  = hkAtTt2000;
+            TimeVars.Epoch_SCI_ACQUISITION_TIME = sciAtTt2000;
+            TimeVars.Epoch_HK                   = hkEpoch;
+            TimeVars.Epoch_SCI                  = sciEpoch;
+            bicas.proc_utils.log_zVars(TimeVars);
             
             
             
