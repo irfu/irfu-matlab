@@ -240,33 +240,33 @@ classdef calib < handle
             
             
             
+            %===========================================
+            % Log some indicative value(s) in BIAS ITFs
+            %===========================================
+            DC_FREQ_HQ      = 0;
+            AC_DIFF_FREQ_HZ = 1000;
             nBiasEpoch = numel(obj.Bias.epochL);
             for i = 1:nBiasEpoch
-                dcSingleZ0 = obj.Bias.ItfSet.DcSingleAvpiv{i}.eval(0);
-                dcDiffZ0   = obj.Bias.ItfSet.DcDiffAvpiv{i}.eval(0);
+                dcSingleZ = obj.Bias.ItfSet.DcSingleAvpiv{i}.eval(DC_FREQ_HQ);
+                dcDiffZ   = obj.Bias.ItfSet.DcDiffAvpiv{i}.eval(DC_FREQ_HQ);
                 
-                AC_DIFF_FREQ_HZ = 1000;
-                acDiffLgZ      = obj.Bias.ItfSet.AcLowGainAvpiv{i}.eval(AC_DIFF_FREQ_HZ);
-                acDiffHgZ      = obj.Bias.ItfSet.AcHighGainAvpiv{i}.eval(AC_DIFF_FREQ_HZ);
+                acDiffLgZ = obj.Bias.ItfSet.AcLowGainAvpiv{i}.eval(AC_DIFF_FREQ_HZ);
+                acDiffHgZ = obj.Bias.ItfSet.AcHighGainAvpiv{i}.eval(AC_DIFF_FREQ_HZ);
                 
-                log_ITF_Z(sprintf('(%i) BIAS DC single', i),          0,               dcSingleZ0)
-                log_ITF_Z(sprintf('(%i) BIAS DC diff',   i),          0,               dcDiffZ0)
-                log_ITF_Z(sprintf('(%i) BIAS AC diff, low  gain', i), AC_DIFF_FREQ_HZ, acDiffLgZ)
-                log_ITF_Z(sprintf('(%i) BIAS AC diff, high gain', i), AC_DIFF_FREQ_HZ, acDiffHgZ)
-            end
-            
-            
-            function log_ITF_Z(itfName, freqHz, Z)
-                bicas.logf('debug', 'Inverse TF, %-23s, %4i Hz: abs(Z)=%5.2f [AVolt/IVolt], phase(Z)=%5.1f [deg]', itfName, freqHz, abs(Z), rad2deg(phase(Z)))
+                bicas.calib.log_ITF_Z(sprintf('(%i) BIAS DC single', i),          DC_FREQ_HQ,      dcSingleZ)
+                bicas.calib.log_ITF_Z(sprintf('(%i) BIAS DC diff',   i),          DC_FREQ_HQ,      dcDiffZ)
+                bicas.calib.log_ITF_Z(sprintf('(%i) BIAS AC diff, low  gain', i), AC_DIFF_FREQ_HZ, acDiffLgZ)
+                bicas.calib.log_ITF_Z(sprintf('(%i) BIAS AC diff, high gain', i), AC_DIFF_FREQ_HZ, acDiffHgZ)
             end
             
         end
         
-
+        
         
         % Load non-BIAS RCTs (all types) using assumptions on filenames.
         %
         % NOTE: Can be useful for manual experimentation with calibration.
+        % NOTE: Will only load one of each RCT type (no time dependence as per global attribute CALIBRATION_TABLE).
         %
         function read_non_BIAS_RCTs_by_regexp(obj, use_CALIBRATION_TABLE_INDEX2)
             assert(~obj.hasLoadedNonBiasData, 'BICAS:calib:Assertion', 'Can not load non-BIAS data twice.')
@@ -278,6 +278,9 @@ classdef calib < handle
             obj.hasLoadedNonBiasData         = 1;
             obj.use_CALIBRATION_TABLE_rcts   = 0;
             obj.use_CALIBRATION_TABLE_INDEX2 = use_CALIBRATION_TABLE_INDEX2;
+            
+            obj.log_LFR_ITFs();
+            obj.log_TDS_RSWF_ITFs();
         end
 
 
@@ -329,10 +332,51 @@ classdef calib < handle
             obj.hasLoadedNonBiasData         = 1;
             obj.use_CALIBRATION_TABLE_rcts   = 1;
             obj.use_CALIBRATION_TABLE_INDEX2 = use_CALIBRATION_TABLE_INDEX2;
+            
+            obj.log_LFR_ITFs();
+            obj.log_TDS_RSWF_ITFs();
         end
 
 
 
+        function log_LFR_ITFs(obj)
+            
+            FREQ_HZ = 0;
+            for iLfrRct = 1:numel(obj.LfrItfIvptTable)
+                for iLsf = 1:4
+                    if iLsf ~= 4
+                        nBltsMax = 5;
+                    else
+                        nBltsMax = 3;
+                    end
+                    
+                    for iBlts = 1:nBltsMax
+                        Itf = obj.LfrItfIvptTable{iLfrRct}{iLsf}{iBlts};
+                        
+                        Z = bicas.calib.eval_tabulated_ITF(Itf, FREQ_HZ);
+                        bicas.calib.log_ITF_Z(sprintf('LFR RCT %i, F%i, BLTS/BIAS_%i', iLfrRct, iLsf-1, iBlts), FREQ_HZ, Z)
+                    end
+                end
+            end
+        end
+        
+        
+        
+        function log_TDS_RSWF_ITFs(obj)
+            
+            FREQ_HZ = 0;
+            for iTdsRswfRct = 1:numel(obj.TdsRswfItfIvptList)
+                for iBlts = 1:3
+                    Itf = obj.TdsRswfItfIvptList{iTdsRswfRct}{iBlts};
+                    
+                    Z = bicas.calib.eval_tabulated_ITF(Itf, FREQ_HZ);
+                    bicas.calib.log_ITF_Z(sprintf('TDS RSWF RCT %i, BLTS/BIAS_%i', iTdsRswfRct, iBlts), FREQ_HZ, Z)
+                end
+            end
+        end
+        
+        
+        
         % Convert/calibrate TC bias current: TM units --> physical units.
         %
         % NOTE: This is the normal way of obtaining bias current in physical units (as opposed to HK bias current).
@@ -841,6 +885,12 @@ classdef calib < handle
     methods(Static, Access=private)
 
 
+
+        function log_ITF_Z(itfName, freqHz, Z)
+            bicas.logf('debug', 'Inverse TF, %-28s %4i Hz: abs(Z)=%8.5f=1/%8.5f [AVolt/IVolt], phase(Z)=%5.1f [deg]', [itfName, ','], freqHz, abs(Z), 1/abs(Z), rad2deg(phase(Z)))
+        end
+        
+        
 
         % Read any single RCT file, and log it. Effectively wraps the different RCT-reading functions.
         % 
