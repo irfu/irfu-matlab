@@ -30,12 +30,11 @@ function SETTINGS = create_default_SETTINGS()
 %   PROPOSAL: "bugfix"
 %       CON: Sounds like a bug in BICAS.
 %
-% PROPOSAL: BIAS.SCALAR.* ---> BIAS.SCALAR_TF
-%           PROCESSING.CALIBRATION.LFR.LSF_OFFSETS_TM --> PROCESSING.CALIBRATION.VOLTAGE.LFR.LSF_OFFSETS_TM
-%           PROCESSING.CALIBRATION.HK_BIAS_CURRENT.OFFSET_TM --> PROCESSING.CALIBRATION.CURRENT.HK.OFFSET_TM
-% PROPOSAL: PROCESSING.CALIBRATION.CURRENT.HK.DISABLE : Whether to calibrate HK current or use HK TM. Not which data to use (HK or TC).
+% PROPOSAL: OUTPUT_CDF.OVERWRITE_POLICY = REQUIRED: Require overwriting pre-existing file (sic!).
+%   PRO: (Maybe) useful as assertion for bulk processing.
+%
+% PROPOSAL: PROCESSING.CALIBRATION.CURRENT.HK.DISABLE      : Whether to calibrate HK current or use HK TM. Not which data to use (HK or TC).
 %           PROCESSING.CALIBRATION.CURRENT.SOURCE = TC, HK : Which data to use.
-%           PROCESSING.CALIBRATION.DETRENDING_ENABLED --> PROCESSING.CALIBRATION.TF_DETRENDING_ENABLED
 
 S = bicas.settings();
 
@@ -225,8 +224,8 @@ S.define_setting('PROCESSING.L1R.ZV_CALIBRATION_TABLE_INDEX_ILLEGAL_SIZE_REPLACE
 % NOTE: Values are relative as the absolute level is not known.
 % NOTE: Might be that LFR offsets also depend on BLTS.
 % NOTE: Has not set any value for F3.
-%S.define_setting('PROCESSING.CALIBRATION.LFR.LSF_OFFSETS_TM', [-638, -610, 0, 0])
-S.define_setting('PROCESSING.CALIBRATION.LFR.LSF_OFFSETS_TM', [0, 0, 0, 0])
+%S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.LFR.LSF_OFFSETS_TM', [-638, -610, 0, 0])
+S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.LFR.LSF_OFFSETS_TM', [0, 0, 0, 0])
 
 %=================================================================================
 % Calibration constants for the "scalar" calibration mode
@@ -239,10 +238,10 @@ S.define_setting('PROCESSING.CALIBRATION.LFR.LSF_OFFSETS_TM', [0, 0, 0, 0])
 % 2019-12-20.
 % NOTE: There are no equivalent (alternative) scalar values to replace the 
 %=================================================================================
-S.define_setting('PROCESSING.CALIBRATION.BIAS.SCALAR.ALPHA_IVPAV',           -1/17);
-S.define_setting('PROCESSING.CALIBRATION.BIAS.SCALAR.BETA_IVPAV',               -1);
-S.define_setting('PROCESSING.CALIBRATION.BIAS.SCALAR.GAMMA_IVPAV.HIGH_GAIN',  -100);
-S.define_setting('PROCESSING.CALIBRATION.BIAS.SCALAR.GAMMA_IVPAV.LOW_GAIN',     -5);
+S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.ALPHA_IVPAV',           -1/17);
+S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.BETA_IVPAV',               -1);
+S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.GAMMA_IVPAV.HIGH_GAIN',  -100);
+S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.GAMMA_IVPAV.LOW_GAIN',     -5);
 
 %=================================================================================================
 % Constants for using HK bias currents for deriving/calibrating the bias currents
@@ -251,8 +250,8 @@ S.define_setting('PROCESSING.CALIBRATION.BIAS.SCALAR.GAMMA_IVPAV.LOW_GAIN',     
 %=================================================================================================
 %S.define_setting('PROCESSING.USE_UNCALIBRATED_BIAS_CURRENTS_FROM_HK', 0);
 % NOTE: OFFSET_TM value is added to the TM value (not the ampere value).
-S.define_setting('PROCESSING.CALIBRATION.HK_BIAS_CURRENT.OFFSET_TM', -hex2dec('56C0') * [1,1,1])
-S.define_setting('PROCESSING.CALIBRATION.HK_BIAS_CURRENT.GAIN_APT',  -0.008198754     * [1,1,1])
+S.define_setting('PROCESSING.CALIBRATION.CURRENT.HK.OFFSET_TM', -hex2dec('56C0') * [1,1,1])
+S.define_setting('PROCESSING.CALIBRATION.CURRENT.HK.GAIN_APT',  -0.008198754     * [1,1,1])
 
 
 
@@ -268,7 +267,7 @@ S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.BIAS.DISABLE_OFFSETS', 0);
 % BIAS-LFR/TDS interface.
 S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.BIAS.TF',             'FULL');    % SCALAR, FULL
 % Whether to use de-trending before applying transfer functions.
-S.define_setting('PROCESSING.CALIBRATION.DETRENDING_ENABLED', 1)
+S.define_setting('PROCESSING.CALIBRATION.TF_DETRENDING_ENABLED', 1)
 
 
 

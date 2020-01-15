@@ -162,7 +162,7 @@ classdef calib < handle
         
         Bias;
 %         % BIAS scalar (simplified) calibration, not in the RCTs. For debugging/testing purposes.
-        BiasScalar
+        BiasGain
         HkBiasCurrent
         
         % Cell arrays. {iRct}, iRct=CALIBRATION_TABLE_INDEX(i,1), if CALIBRATION_TABLE_INDEX is used. Otherwise always
@@ -223,19 +223,19 @@ classdef calib < handle
             
             obj.SETTINGS         = SETTINGS;
             obj.pipelineId       = pipelineId;
-            obj.enableDetrending = SETTINGS.get_fv('PROCESSING.CALIBRATION.DETRENDING_ENABLED');
+            obj.enableDetrending = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF_DETRENDING_ENABLED');
             obj.calibrationDir   = calibrationDir;
             
             obj.Bias                           = obj.read_log_RCT_by_SETTINGS_regexp(pipelineId, 'BIAS');
-            obj.BiasScalar.alphaIvpav          = SETTINGS.get_fv('PROCESSING.CALIBRATION.BIAS.SCALAR.ALPHA_IVPAV');
-            obj.BiasScalar.betaIvpav           = SETTINGS.get_fv('PROCESSING.CALIBRATION.BIAS.SCALAR.BETA_IVPAV');
-            obj.BiasScalar.gammaIvpav.highGain = SETTINGS.get_fv('PROCESSING.CALIBRATION.BIAS.SCALAR.GAMMA_IVPAV.HIGH_GAIN');
-            obj.BiasScalar.gammaIvpav.lowGain  = SETTINGS.get_fv('PROCESSING.CALIBRATION.BIAS.SCALAR.GAMMA_IVPAV.LOW_GAIN');
+            obj.BiasGain.alphaIvpav            = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.ALPHA_IVPAV');
+            obj.BiasGain.betaIvpav             = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.BETA_IVPAV');
+            obj.BiasGain.gammaIvpav.highGain   = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.GAMMA_IVPAV.HIGH_GAIN');
+            obj.BiasGain.gammaIvpav.lowGain    = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.GAMMA_IVPAV.LOW_GAIN');
             
-            obj.HkBiasCurrent.offsetTm         = SETTINGS.get_fv('PROCESSING.CALIBRATION.HK_BIAS_CURRENT.OFFSET_TM');
-            obj.HkBiasCurrent.gainApt          = SETTINGS.get_fv('PROCESSING.CALIBRATION.HK_BIAS_CURRENT.GAIN_APT');
+            obj.HkBiasCurrent.offsetTm         = SETTINGS.get_fv('PROCESSING.CALIBRATION.CURRENT.HK.OFFSET_TM');
+            obj.HkBiasCurrent.gainApt          = SETTINGS.get_fv('PROCESSING.CALIBRATION.CURRENT.HK.GAIN_APT');
             
-            obj.lfrLsfOffsetsTm                = SETTINGS.get_fv('PROCESSING.CALIBRATION.LFR.LSF_OFFSETS_TM');
+            obj.lfrLsfOffsetsTm                = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.LFR.LSF_OFFSETS_TM');
 
             obj.allVoltageCalibDisabled        = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.DISABLE');
             obj.biasOffsetsDisabled            = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.DISABLE_OFFSETS');
@@ -776,18 +776,18 @@ classdef calib < handle
 %                 % kIvpav = Multiplication factor "k" that represents/replaces the inverted transfer function.
 %                 switch(BltsSrc.category)
 %                     case 'DC single'
-%                         kIvpav      = 1 / obj.BiasScalar.alphaIvpav;
+%                         kIvpav      = 1 / obj.BiasGain.alphaIvpav;
 %                         offsetAVolt = 0;
 %                         
 %                     case 'DC diff'
-%                         kIvpav      = 1 / obj.BiasScalar.betaIvpav;
+%                         kIvpav      = 1 / obj.BiasGain.betaIvpav;
 %                         offsetAVolt = 0;
 %                         
 %                     case 'AC diff'
 %                         
 %                         % NOTE: Can set offsetAVolt <> 0.
-%                         if     biasHighGain == 0;   kIvpav = 1 / obj.BiasScalar.gammaIvpav.lowGain;    offsetAVolt = 0;
-%                         elseif biasHighGain == 1;   kIvpav = 1 / obj.BiasScalar.gammaIvpav.highGain;   offsetAVolt = 0;
+%                         if     biasHighGain == 0;   kIvpav = 1 / obj.BiasGain.gammaIvpav.lowGain;    offsetAVolt = 0;
+%                         elseif biasHighGain == 1;   kIvpav = 1 / obj.BiasGain.gammaIvpav.highGain;   offsetAVolt = 0;
 %                         elseif isnan(biasHighGain); kIvpav = NaN;                                      offsetAVolt = NaN;
 %                         else
 %                             error('BICAS:calib:Assertion:IllegalArgument', 'Illegal argument biasHighGain=%g.', biasHighGain)
@@ -807,13 +807,13 @@ classdef calib < handle
                 case 'DC single'
                     
                     BiasItfAvpiv = TF_list_2_func(obj.Bias.ItfSet.DcSingleAvpiv);    % NOTE: List of ITFs for different times.
-                    kFtfIvpav    = obj.BiasScalar.alphaIvpav;
+                    kFtfIvpav    = obj.BiasGain.alphaIvpav;
                     offsetAVolt  = obj.Bias.dcSingleOffsetsAVolt(iCalibTimeH, BltsSrc.antennas);
                     
                 case 'DC diff'
                     
                     BiasItfAvpiv = TF_list_2_func(obj.Bias.ItfSet.DcDiffAvpiv);
-                    kFtfIvpav    = obj.BiasScalar.betaIvpav;
+                    kFtfIvpav    = obj.BiasGain.betaIvpav;
                     if     isequal(BltsSrc.antennas(:)', [1,2]);   offsetAVolt = obj.Bias.DcDiffOffsets.E12AVolt(iCalibTimeH);
                     elseif isequal(BltsSrc.antennas(:)', [2,3]);   offsetAVolt = obj.Bias.DcDiffOffsets.E23AVolt(iCalibTimeH);
                     elseif isequal(BltsSrc.antennas(:)', [1,3]);   offsetAVolt = obj.Bias.DcDiffOffsets.E13AVolt(iCalibTimeH);
@@ -825,11 +825,11 @@ classdef calib < handle
                     
                     if     biasHighGain == 0
                         BiasItfAvpiv = TF_list_2_func(obj.Bias.ItfSet.AcLowGainAvpiv);
-                        kFtfIvpav    = obj.BiasScalar.gammaIvpav.lowGain;
+                        kFtfIvpav    = obj.BiasGain.gammaIvpav.lowGain;
                         offsetAVolt  = 0;
                     elseif biasHighGain == 1
                         BiasItfAvpiv = TF_list_2_func(obj.Bias.ItfSet.AcHighGainAvpiv);
-                        kFtfIvpav    = obj.BiasScalar.gammaIvpav.highGain;
+                        kFtfIvpav    = obj.BiasGain.gammaIvpav.highGain;
                         offsetAVolt  = 0;
                     elseif isnan(biasHighGain)
                         BiasItfAvpiv = bicas.calib.NAN_TF;
