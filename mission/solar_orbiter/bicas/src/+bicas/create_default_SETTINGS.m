@@ -30,10 +30,6 @@ function SETTINGS = create_default_SETTINGS()
 %   PROPOSAL: "bugfix"
 %       CON: Sounds like a bug in BICAS.
 %
-% PROPOSAL: Multiple settings describing calibration mode.
-%   PROPOSAL: PROCESSING.CALIBRATION.VOLTAGE.BIAS.DISABLE_OFFSETS
-%   PROPOSAL: PROCESSING.CALIBRATION.VOLTAGE.BIAS.TF              = SCALAR, FULL ??!!
-%   PROPOSAL: PROCESSING.CALIBRATION.VOLTAGE.DISABLE
 % PROPOSAL: BIAS.SCALAR.* ---> BIAS.SCALAR_TF
 %           PROCESSING.CALIBRATION.LFR.LSF_OFFSETS_TM --> PROCESSING.CALIBRATION.VOLTAGE.LFR.LSF_OFFSETS_TM
 %           PROCESSING.CALIBRATION.HK_BIAS_CURRENT.OFFSET_TM --> PROCESSING.CALIBRATION.CURRENT.HK.OFFSET_TM
@@ -260,24 +256,18 @@ S.define_setting('PROCESSING.CALIBRATION.HK_BIAS_CURRENT.GAIN_APT',  -0.00819875
 
 
 
-%=======================================================================================================================
-% Set calibration mode/algorithm
-% ------------------------------
-% NONE
-%   No calibration at all. Output dataset data contain TM units. BIAS demultiplexer addition/subtraction of BLTS
-%   necessary to derive antenna signals is still done though.
-% SCALAR
-%   From BIAS-LFR/TDS interface to LFR/TDS ADC: Full calibration.
-%   From antennas to BIAS-LFR/TDS interface: Using scalar multiplication instead of (frequency-dependent) transfer
-%   functions, No BIAS offsets.
-% FULL
-%   FULL, NOMINAL CALIBRATION. This is intended to be the calibration mode used for the normal production of datasets.
-%   All other modes are for debugging and development only.
-%=======================================================================================================================
-S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.ALGORITHM',  'FULL')   % NONE, SCALAR, FULL
-
-
-
+%===================================================================
+% Deactivate/simplify different parts of the calibration algorithm
+%===================================================================
+% Disable all voltage calibration. Output dataset data contain TM units. BIAS demultiplexer addition/subtraction of BLTS
+% necessary to derive antenna signals is still done though.
+S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.DISABLE',              0);
+% Whether to disable BIAS offsets.
+S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.BIAS.DISABLE_OFFSETS', 0);
+% Whether to use transfer functions or scalar multiplication for calibration of signals between antennas and
+% BIAS-LFR/TDS interface.
+S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.BIAS.TF',             'FULL');    % SCALAR, FULL
+% Whether to use de-trending before applying transfer functions.
 S.define_setting('PROCESSING.CALIBRATION.DETRENDING_ENABLED', 1)
 
 

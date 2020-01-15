@@ -187,9 +187,9 @@ classdef calib < handle
         enableDetrending
                 
         % What type of calibration to use.
-        allVoltageCalibDisabled   = 0;
-        scalarVoltageCalibEnabled = 0;
-        fullVoltageCalibEnabled   = 0;
+        allVoltageCalibDisabled
+        biasOffsetsDisabled
+        useBiasTfScalar
         
         % Needed so that it can be submitted it to bicas.RCT.read_log_RCT_by_SETTINGS_regexp.
         SETTINGS
@@ -235,26 +235,22 @@ classdef calib < handle
             obj.HkBiasCurrent.offsetTm         = SETTINGS.get_fv('PROCESSING.CALIBRATION.HK_BIAS_CURRENT.OFFSET_TM');
             obj.HkBiasCurrent.gainApt          = SETTINGS.get_fv('PROCESSING.CALIBRATION.HK_BIAS_CURRENT.GAIN_APT');
             
-            obj.lfrLsfOffsetsTm = SETTINGS.get_fv('PROCESSING.CALIBRATION.LFR.LSF_OFFSETS_TM');
-            
+            obj.lfrLsfOffsetsTm                = SETTINGS.get_fv('PROCESSING.CALIBRATION.LFR.LSF_OFFSETS_TM');
 
-            
-            algorithmId = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.ALGORITHM');
-            switch(algorithmId)
-                case 'NONE'
-                    obj.allVoltageCalibDisabled   = 1;
-                    bicas.logf('warning', 'Calibration has been disabled due to setting PROCESSING.CALIBRATION.VOLTAGE.ALGORITHM.')
-                case 'BIAS_SCALAR'
-                    obj.scalarVoltageCalibEnabled = 1;
-                    bicas.logf('warning', 'BIAS calibration (not TDS/LFR calibration) is only scalar due to setting PROCESSING.CALIBRATION.VOLTAGE.ALGORITHM.')
+            obj.allVoltageCalibDisabled        = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.DISABLE');
+            obj.biasOffsetsDisabled            = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.DISABLE_OFFSETS');
+            settingBiasTf                      = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.TF');
+            switch(settingBiasTf)
                 case 'FULL'
-                    obj.fullVoltageCalibEnabled   = 1;
+                    obj.useBiasTfScalar = 0;
+                case 'SCALAR'
+                    obj.useBiasTfScalar = 1;
                 otherwise
-                    error('BICAS:calib:Assertion:ConfigurationBug', 'Illegal value for setting PROCESSING.CALIBRATION.VOLTAGE.ALGORITHM="%s".', algorithmId)
+                    error('BICAS:calib:Assertion:ConfigurationBug', 'Illegal value for setting PROCESSING.CALIBRATION.VOLTAGE.BIAS.TF="%s".', settingBiasTf)
             end
-            
-            
-            
+
+
+
             %===========================================
             % Log some indicative value(s) in BIAS ITFs
             %===========================================
@@ -474,7 +470,7 @@ classdef calib < handle
                     samplesCaAVolt{i} = double(samplesCaTm{i});
                 end
                 
-            elseif obj.fullVoltageCalibEnabled || obj.scalarVoltageCalibEnabled
+            else
 
                 if isLfr
                     %===========
@@ -494,8 +490,6 @@ classdef calib < handle
                     end
                 end
                 
-            else
-                error('BICAS:calib:Assertion', 'Illegal combination of internal flags.')
             end
         end
 
@@ -747,66 +741,117 @@ classdef calib < handle
 
 
 
-            if obj.fullVoltageCalibEnabled
-                
-                switch(BltsSrc.category)
-                    case 'DC single'
-                        BiasItfAvpiv = TF_list_2_func(obj.Bias.ItfSet.DcSingleAvpiv);    % NOTE: List of ITFs for different times.
-                        offsetAVolt  = obj.Bias.dcSingleOffsetsAVolt(iCalibTimeH, BltsSrc.antennas);
-                        
-                    case 'DC diff'
-                        BiasItfAvpiv = TF_list_2_func(obj.Bias.ItfSet.DcDiffAvpiv);
-                        if     isequal(BltsSrc.antennas(:)', [1,2]);   offsetAVolt = obj.Bias.DcDiffOffsets.E12AVolt(iCalibTimeH);
-                        elseif isequal(BltsSrc.antennas(:)', [2,3]);   offsetAVolt = obj.Bias.DcDiffOffsets.E23AVolt(iCalibTimeH);
-                        elseif isequal(BltsSrc.antennas(:)', [1,3]);   offsetAVolt = obj.Bias.DcDiffOffsets.E13AVolt(iCalibTimeH);
-                        else
-                            error('BICAS:calib:Assertion:IllegalArgument', 'Illegal BltsSrc.');
-                        end
-                        
-                    case 'AC diff'
-                        if     biasHighGain == 0;   BiasItfAvpiv = TF_list_2_func(obj.Bias.ItfSet.AcLowGainAvpiv);    offsetAVolt = 0;
-                        elseif biasHighGain == 1;   BiasItfAvpiv = TF_list_2_func(obj.Bias.ItfSet.AcHighGainAvpiv);   offsetAVolt = 0;
-                        elseif isnan(biasHighGain); BiasItfAvpiv = bicas.calib.NAN_TF;                                offsetAVolt = NaN;
-                        else
-                            error('BICAS:calib:Assertion:IllegalArgument', 'Illegal argument biasHighGain=%g.', biasHighGain)
-                        end
-                        
-                    otherwise
-                        error('BICAS:calib:Assertion:IllegalArgument', ...
-                            'Illegal argument BltsSrc.category=%s. Can not obtain calibration data for this type of signal.', ...
-                            BltsSrc.category)
-                end
-                
-            elseif obj.scalarVoltageCalibEnabled
-                
-                % kIvpav = Multiplication factor "k" that represents/replaces the inverted transfer function.
-                switch(BltsSrc.category)
-                    case 'DC single'
-                        kIvpav      = 1 / obj.BiasScalar.alphaIvpav;
-                        offsetAVolt = 0;
-                        
-                    case 'DC diff'
-                        kIvpav      = 1 / obj.BiasScalar.betaIvpav;
-                        offsetAVolt = 0;
-                        
-                    case 'AC diff'
-                        
-                        % NOTE: Can set offsetAVolt <> 0.
-                        if     biasHighGain == 0;   kIvpav = 1 / obj.BiasScalar.gammaIvpav.lowGain;    offsetAVolt = 0;
-                        elseif biasHighGain == 1;   kIvpav = 1 / obj.BiasScalar.gammaIvpav.highGain;   offsetAVolt = 0;
-                        elseif isnan(biasHighGain); kIvpav = NaN;                                      offsetAVolt = NaN;
-                        else
-                            error('BICAS:calib:Assertion:IllegalArgument', 'Illegal argument biasHighGain=%g.', biasHighGain)
-                        end
-                        
-                    otherwise
-                        error('BICAS:calib:Assertion:IllegalArgument', ...
-                            'Illegal argument BltsSrc.category=%s. Can not obtain calibration data for this type of signal.', ...
-                            BltsSrc.category)
-                end
-                
-                BiasItfAvpiv = @(omegaRps) (ones(size(omegaRps)) * kIvpav);
+%             if obj.fullVoltageCalibEnabled
+%                 
+%                 switch(BltsSrc.category)
+%                     case 'DC single'
+%                         BiasItfAvpiv = TF_list_2_func(obj.Bias.ItfSet.DcSingleAvpiv);    % NOTE: List of ITFs for different times.
+%                         offsetAVolt  = obj.Bias.dcSingleOffsetsAVolt(iCalibTimeH, BltsSrc.antennas);
+% 
+%                     case 'DC diff'
+%                         BiasItfAvpiv = TF_list_2_func(obj.Bias.ItfSet.DcDiffAvpiv);
+%                         if     isequal(BltsSrc.antennas(:)', [1,2]);   offsetAVolt = obj.Bias.DcDiffOffsets.E12AVolt(iCalibTimeH);
+%                         elseif isequal(BltsSrc.antennas(:)', [2,3]);   offsetAVolt = obj.Bias.DcDiffOffsets.E23AVolt(iCalibTimeH);
+%                         elseif isequal(BltsSrc.antennas(:)', [1,3]);   offsetAVolt = obj.Bias.DcDiffOffsets.E13AVolt(iCalibTimeH);
+%                         else
+%                             error('BICAS:calib:Assertion:IllegalArgument', 'Illegal BltsSrc.');
+%                         end
+% 
+%                     case 'AC diff'
+%                         if     biasHighGain == 0;   BiasItfAvpiv = TF_list_2_func(obj.Bias.ItfSet.AcLowGainAvpiv);    offsetAVolt = 0;
+%                         elseif biasHighGain == 1;   BiasItfAvpiv = TF_list_2_func(obj.Bias.ItfSet.AcHighGainAvpiv);   offsetAVolt = 0;
+%                         elseif isnan(biasHighGain); BiasItfAvpiv = bicas.calib.NAN_TF;                                offsetAVolt = NaN;
+%                         else
+%                             error('BICAS:calib:Assertion:IllegalArgument', 'Illegal argument biasHighGain=%g.', biasHighGain)
+%                         end
+% 
+%                     otherwise
+%                         error('BICAS:calib:Assertion:IllegalArgument', ...
+%                             'Illegal argument BltsSrc.category=%s. Can not obtain calibration data for this type of signal.', ...
+%                             BltsSrc.category)
+%                 end
+% 
+%             elseif obj.scalarVoltageCalibEnabled
+% 
+%                 % kIvpav = Multiplication factor "k" that represents/replaces the inverted transfer function.
+%                 switch(BltsSrc.category)
+%                     case 'DC single'
+%                         kIvpav      = 1 / obj.BiasScalar.alphaIvpav;
+%                         offsetAVolt = 0;
+%                         
+%                     case 'DC diff'
+%                         kIvpav      = 1 / obj.BiasScalar.betaIvpav;
+%                         offsetAVolt = 0;
+%                         
+%                     case 'AC diff'
+%                         
+%                         % NOTE: Can set offsetAVolt <> 0.
+%                         if     biasHighGain == 0;   kIvpav = 1 / obj.BiasScalar.gammaIvpav.lowGain;    offsetAVolt = 0;
+%                         elseif biasHighGain == 1;   kIvpav = 1 / obj.BiasScalar.gammaIvpav.highGain;   offsetAVolt = 0;
+%                         elseif isnan(biasHighGain); kIvpav = NaN;                                      offsetAVolt = NaN;
+%                         else
+%                             error('BICAS:calib:Assertion:IllegalArgument', 'Illegal argument biasHighGain=%g.', biasHighGain)
+%                         end
+%                         
+%                     otherwise
+%                         error('BICAS:calib:Assertion:IllegalArgument', ...
+%                             'Illegal argument BltsSrc.category=%s. Can not obtain calibration data for this type of signal.', ...
+%                             BltsSrc.category)
+%                 end
+%                 
+%                 BiasItfAvpiv = @(omegaRps) (ones(size(omegaRps)) * kIvpav);
+%             end
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            % kIvpav = Multiplication factor "k" that represents/replaces the (forward) transfer function.
+            switch(BltsSrc.category)
+                case 'DC single'
+                    
+                    BiasItfAvpiv = TF_list_2_func(obj.Bias.ItfSet.DcSingleAvpiv);    % NOTE: List of ITFs for different times.
+                    kFtfIvpav    = obj.BiasScalar.alphaIvpav;
+                    offsetAVolt  = obj.Bias.dcSingleOffsetsAVolt(iCalibTimeH, BltsSrc.antennas);
+                    
+                case 'DC diff'
+                    
+                    BiasItfAvpiv = TF_list_2_func(obj.Bias.ItfSet.DcDiffAvpiv);
+                    kFtfIvpav    = obj.BiasScalar.betaIvpav;
+                    if     isequal(BltsSrc.antennas(:)', [1,2]);   offsetAVolt = obj.Bias.DcDiffOffsets.E12AVolt(iCalibTimeH);
+                    elseif isequal(BltsSrc.antennas(:)', [2,3]);   offsetAVolt = obj.Bias.DcDiffOffsets.E23AVolt(iCalibTimeH);
+                    elseif isequal(BltsSrc.antennas(:)', [1,3]);   offsetAVolt = obj.Bias.DcDiffOffsets.E13AVolt(iCalibTimeH);
+                    else
+                        error('BICAS:calib:Assertion:IllegalArgument', 'Illegal BltsSrc.');
+                    end
+                    
+                case 'AC diff'
+                    
+                    if     biasHighGain == 0
+                        BiasItfAvpiv = TF_list_2_func(obj.Bias.ItfSet.AcLowGainAvpiv);
+                        kFtfIvpav    = obj.BiasScalar.gammaIvpav.lowGain;
+                        offsetAVolt  = 0;
+                    elseif biasHighGain == 1
+                        BiasItfAvpiv = TF_list_2_func(obj.Bias.ItfSet.AcHighGainAvpiv);
+                        kFtfIvpav    = obj.BiasScalar.gammaIvpav.highGain;
+                        offsetAVolt  = 0;
+                    elseif isnan(biasHighGain)
+                        BiasItfAvpiv = bicas.calib.NAN_TF;
+                        kFtfIvpav    = NaN;
+                        offsetAVolt  = NaN;
+                    else
+                        error('BICAS:calib:Assertion:IllegalArgument', 'Illegal argument biasHighGain=%g.', biasHighGain)
+                    end
+
+                otherwise
+                    error('BICAS:calib:Assertion:IllegalArgument', ...
+                        'Illegal argument BltsSrc.category=%s. Can not obtain calibration data for this type of signal.', ...
+                        BltsSrc.category)
             end
+            
+            if obj.biasOffsetsDisabled && ~isnan(offsetAVolt)
+                offsetAVolt = 0;
+            end
+            if obj.useBiasTfScalar
+                BiasItfAvpiv = @(omegaRps) (ones(size(omegaRps)) / kFtfIvpav);
+            end
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             
             
             
