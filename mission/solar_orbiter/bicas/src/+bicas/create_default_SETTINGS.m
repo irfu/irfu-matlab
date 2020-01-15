@@ -92,9 +92,17 @@ S.define_setting('INPUT_CDF_ASSERTIONS.MATCHING_TEST_ID',  0);    % Require Test
 %##############
 % OUTPUT_CDF.*
 %##############
-S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.SET_TEST_ID',                 1);    % Set CDF GlobalAttribute "Test_id". ROC DFMD says that it should really be set by ROC.
-S.define_setting('OUTPUT_CDF.DATA_VERSION',                '01'); % Set CDF GlobalAttribute "Data_version". ROC DFMD says it should be updated in a way which can not be automatized?!!! Set here for now.
-S.define_setting('OUTPUT_CDF.WRITE_FILE_DISABLED',         0)
+% Set CDF GlobalAttribute "Test_id". ROC DFMD says that Test_id should really be set by ROC.
+S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.SET_TEST_ID',   1);
+% Set CDF GlobalAttribute "Data_version". ROC DFMD says it should be updated in a way which can not be automatized?!!! Set here for now.
+S.define_setting('OUTPUT_CDF.DATA_VERSION',                    '01');
+S.define_setting('OUTPUT_CDF.WRITE_FILE_DISABLED',             0)
+% What BICAS should do when there is a pre-existing file on a output dataset file path.
+% NOTE: Not known if the RCS ICD says anything about what sohuld be the default, or what ROC thinks it should be.
+S.define_setting('OUTPUT_CDF.OVERWRITE_POLICY',                'ERROR');    % ERROR, OVERWRITE.
+
+
+
 % What to do with zVariables which are still empty after copying data into the master CDF.
 % This indicates that something is wrong, either in the master CDF or in the processing.
 S.define_setting('OUTPUT_CDF.EMPTY_NUMERIC_ZVARIABLES_SET_TO_FILL', 0);

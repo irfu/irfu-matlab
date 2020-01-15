@@ -423,21 +423,51 @@ for fn = fieldnames(DataObj.data)'
     end
 end
 
+settingOverwritePolicy   = SETTINGS.get_fv('OUTPUT_CDF.OVERWRITE_POLICY');
+settingWriteFileDisabled = SETTINGS.get_fv('OUTPUT_CDF.WRITE_FILE_DISABLED');
+
+
+%==============================
+% Checks before writing to CDF
+%==============================
+% Check if file writing is deliberately disabled.
+if settingWriteFileDisabled
+    bicas.logf('warning', 'Writing output CDF file is disabled via setting OUTPUT_CDF.WRITE_FILE_DISABLED.')
+    return
+end
+% UI ASSERTION: Check for directory collision. Always error.
+if exist(outputFile, 'dir')     % Checks for directory.
+    error('BICAS:execute_sw_mode', 'Intended output dataset file path matches a pre-existing directory.')
+end
+
+% Behaviour w.r.t. output file path collision with pre-existing file.
+if exist(outputFile, 'file')    % Checks for file and directory.
+    switch(settingOverwritePolicy)
+        case 'ERROR'
+            % UI ASSERTION
+            error('BICAS:execute_sw_mode', ...
+                'Intended output dataset file path "%s" matches a pre-existing file. Setting OUTPUT_CDF.OVERWRITE_POLICY is set to prohibit overwriting.', ...
+                outputFile)
+        case 'OVERWRITE'
+            bicas.logf('warning', ...
+                'Intended output dataset file path "%s"\nmatches a pre-existing file. Setting OUTPUT_CDF.OVERWRITE_POLICY is set to permit overwriting.\n', ...
+                outputFile)
+        otherwise
+            error('BICAS:execute_sw_mode:ConfigurationBug', 'Illegal setting value OUTPUT_CDF.OVERWRITE_POLICY="%s".', settingOverwritePolicy)
+    end
+end
+
 %===========================================
 % Write to CDF file using write_CDF_dataobj
 %===========================================
-if ~SETTINGS.get_fv('OUTPUT_CDF.WRITE_FILE_DISABLED')
-    bicas.logf('info', 'Writing dataset CDF file: %s', outputFile)
-    bicas.utils.write_CDF_dataobj( ...
-        outputFile, ...
-        DataObj.GlobalAttributes, ...
-        DataObj.data, ...
-        DataObj.VariableAttributes, ...
-        DataObj.Variables ...
-        )
-else
-    bicas.logf('warning', 'Writing output CDF file is disabled via setting OUTPUT_CDF.WRITE_FILE_DISABLED.')
-end
+bicas.logf('info', 'Writing dataset CDF file: %s', outputFile)
+bicas.utils.write_CDF_dataobj( ...
+    outputFile, ...
+    DataObj.GlobalAttributes, ...
+    DataObj.data, ...
+    DataObj.VariableAttributes, ...
+    DataObj.Variables ...
+    )
 
 end
 
