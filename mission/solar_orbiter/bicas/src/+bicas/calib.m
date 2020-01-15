@@ -23,6 +23,7 @@
 %
 % DEFINITIONS, NAMING CONVENTIONS
 % ===============================
+% Offset = Value (constant) that is ADDED to (not subtracted from) a measured value during the calibration process.
 % TM     = Telemetry units (in LFR/TDS ADC), or telecommand (TC) units. Using this instead of the term "count".
 % IVolt  = Interface Volt = Calibrated to volt at the interface between BIAS and LFR/TDS.
 % AVolt  = Antenna Volt   = Calibrated to volt at the antennas, i.e. the final calibrated (measured) value, including
@@ -146,6 +147,15 @@ classdef calib < handle
 % PROPOSAL: Move TF=0 for HIGH frequencies to modify_tabulated_ITF.
 %
 % PROPOSAL: Initialize with RCT-data directly. Put RCT-reading outside of class.
+% PROPOSAL: Calibration mode for only removing LFR LSF offsets
+%   NOTE: Does not apply to TDS.
+%
+% PROPOSAL: Rename "semi" initialization methods ("semiconstructors")
+%       read_non_BIAS_RCTs_by_regexp
+%       read_non_BIAS_RCT_by_CALIBRATION_TABLE
+%   to make it more clear that they are needed for initialization.
+%   PROPOSAL: "init_*"
+%   PROPOSAL: "complete_init_*"
 
 
     properties(Access=private)
@@ -196,11 +206,13 @@ classdef calib < handle
 
     methods(Access=public)
 
-        
+
 
         % Constructor.
         %
-        % IMPORTANT NOTE: The constructor only initializes BIAS calibration data. One also needs to call either
+        % IMPORTANT NOTE
+        % ==============
+        % The constructor only initializes BIAS calibration data. One also needs to call either
         % (1) read_non_BIAS_RCTs_by_regexp, OR
         % (2) read_non_BIAS_RCT_by_CALIBRATION_TABLE to fully initialize the object.
         %
@@ -226,6 +238,7 @@ classdef calib < handle
             obj.lfrLsfOffsetsTm = SETTINGS.get_fv('PROCESSING.CALIBRATION.LFR.LSF_OFFSETS_TM');
             
 
+            
             algorithmId = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.ALGORITHM');
             switch(algorithmId)
                 case 'NONE'
@@ -293,7 +306,7 @@ classdef calib < handle
         % IMPLEMENTATION NOTE: May load multiple RCTs (of the same type) but will only load those RCTs which are
         % actually needed, as indicated by CALIBRATION_TABLE_INDEX. This is necessary since CALIBRATION_TABLE may
         % contain unnecessary RCTs of types not recognized by BICAS (LFR's ROC-SGSE_CAL_RCT-LFR-VHF_V01.cdf
-        % /2019-12-16), and which are therefore unreadable by BICAS.
+        % /2019-12-16), and which are therefore unreadable by BICAS (BICAS would crash).
         %
         % RETURN VALUE
         % ============
@@ -464,10 +477,14 @@ classdef calib < handle
             elseif obj.fullVoltageCalibEnabled || obj.scalarVoltageCalibEnabled
 
                 if isLfr
+                    %===========
                     % CASE: LFR
+                    %===========
                     samplesCaAVolt = obj.calibrate_LFR_full(dtSec, samplesCaTm, iBlts, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH, iLsf, cti1, cti2);
                 else
+                    %===========
                     % CASE: TDS
+                    %===========
                     if isTdsCwf
                         % CASE: TDS CWF
                         samplesCaAVolt = obj.calibrate_TDS_CWF_full(dtSec, samplesCaTm, iBlts, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH, cti1, cti2);
@@ -478,7 +495,7 @@ classdef calib < handle
                 end
                 
             else
-                error('BICAS:calib:Assertion', 'Illegal combination of internal flags.')                
+                error('BICAS:calib:Assertion', 'Illegal combination of internal flags.')
             end
         end
 
@@ -762,6 +779,7 @@ classdef calib < handle
                 
             elseif obj.scalarVoltageCalibEnabled
                 
+                % kIvpav = Multiplication factor "k" that represents/replaces the inverted transfer function.
                 switch(BltsSrc.category)
                     case 'DC single'
                         kIvpav      = 1 / obj.BiasScalar.alphaIvpav;
@@ -821,9 +839,9 @@ classdef calib < handle
                 lfrItfIvpt = @(omegaRps) (bicas.calib.eval_tabulated_ITF(obj.LfrItfIvptTable{cti1}{iLsf}{iBlts}, omegaRps));
             end
         end
-        
-        
-        
+
+
+
     end    % methods(Access=private)
 
     %###################################################################################################################
@@ -835,7 +853,7 @@ classdef calib < handle
         % NOTE: Public so that automatic test code can call get_calibration_time.
 
 
-
+        
         % Given a sequence of Epoch values, determine for each value which calibration time index should be used. The
         % caller will have to decide which sequence of data that should be calibrated together (e.g. if calibration time
         % changes in the middle of CWF), and which Epoch values should be used to determine calibration time (e.g. first

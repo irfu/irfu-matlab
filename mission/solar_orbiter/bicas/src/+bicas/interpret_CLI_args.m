@@ -147,7 +147,7 @@ switch CliData.functionalityMode
             error('BICAS:CLISyntax', 'First argument can not be interpreted as a S/W mode as expected.')
         end
         
-        CliData.swModeArg         = OptionValues.optionHeader;
+        CliData.swModeArg              = OptionValues.optionHeader;
         
         CliData.SpecInputParametersMap = convert_SIP_OptionValues_2_Map(sipOptionValues);
         

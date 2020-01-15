@@ -29,6 +29,17 @@ function SETTINGS = create_default_SETTINGS()
 %   PROPOSAL: "mitigation"
 %   PROPOSAL: "bugfix"
 %       CON: Sounds like a bug in BICAS.
+%
+% PROPOSAL: Multiple settings describing calibration mode.
+%   PROPOSAL: PROCESSING.CALIBRATION.VOLTAGE.BIAS.DISABLE_OFFSETS
+%   PROPOSAL: PROCESSING.CALIBRATION.VOLTAGE.BIAS.TF              = SCALAR, FULL ??!!
+%   PROPOSAL: PROCESSING.CALIBRATION.VOLTAGE.DISABLE
+% PROPOSAL: BIAS.SCALAR.* ---> BIAS.SCALAR_TF
+%           PROCESSING.CALIBRATION.LFR.LSF_OFFSETS_TM --> PROCESSING.CALIBRATION.VOLTAGE.LFR.LSF_OFFSETS_TM
+%           PROCESSING.CALIBRATION.HK_BIAS_CURRENT.OFFSET_TM --> PROCESSING.CALIBRATION.CURRENT.HK.OFFSET_TM
+% PROPOSAL: PROCESSING.CALIBRATION.CURRENT.HK.DISABLE : Whether to calibrate HK current or use HK TM. Not which data to use (HK or TC).
+%           PROCESSING.CALIBRATION.CURRENT.SOURCE = TC, HK : Which data to use.
+%           PROCESSING.CALIBRATION.DETRENDING_ENABLED --> PROCESSING.CALIBRATION.TF_DETRENDING_ENABLED
 
 S = bicas.settings();
 
@@ -57,8 +68,8 @@ S.define_setting('SW_MODES.L1_LFR_TDS_ENABLED', 0);
 
 %###########################################################################################################
 % SWD.*
-% Various S/W descriptor release data for the entire software (not specific outputs)
-% ----------------------------------------------------------------------------------
+% Various S/W descriptor (SWD) release data for the entire software (not specific outputs)
+% ----------------------------------------------------------------------------------------
 % EXCEPTION TO VARIABLE NAMING CONVENTION: Field names are used for constructing the JSON object struct and
 % can therefore NOT follow variable naming conventions without modifying other code.
 %###########################################################################################################
@@ -81,9 +92,9 @@ S.define_setting('SWD.environment.executable',     'roc/bicas');   % Relative pa
 
 
 
-%#############
-% INPUT_CDF.*
-%#############
+%########################
+% INPUT_CDF_ASSERTIONS.*
+%########################
 S.define_setting('INPUT_CDF_ASSERTIONS.STRICT_DATASET_ID', 0);    % Require input CDF Global Attribute "DATASET_ID" to match the expected value.
 S.define_setting('INPUT_CDF_ASSERTIONS.MATCHING_TEST_ID',  0);    % Require Test_id to be identical for all input CDF datasets.
 
@@ -96,6 +107,7 @@ S.define_setting('INPUT_CDF_ASSERTIONS.MATCHING_TEST_ID',  0);    % Require Test
 S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.SET_TEST_ID',   1);
 % Set CDF GlobalAttribute "Data_version". ROC DFMD says it should be updated in a way which can not be automatized?!!! Set here for now.
 S.define_setting('OUTPUT_CDF.DATA_VERSION',                    '01');
+% Flag to disable writing output files. Useful for debugging.
 S.define_setting('OUTPUT_CDF.WRITE_FILE_DISABLED',             0)
 % What BICAS should do when there is a pre-existing file on a output dataset file path.
 % NOTE: Not known if the RCS ICD says anything about what sohuld be the default, or what ROC thinks it should be.
@@ -211,38 +223,62 @@ S.define_setting('PROCESSING.L1R.ZV_CALIBRATION_TABLE_INDEX_ILLEGAL_SIZE_REPLACE
 
 % EXPERIMENTAL. Calibration values.
 % LFR sampling frequency-dependent offsets.
+%
 % Values obtained from manually fitting F0,F1,F2 (not F3) snapshots in
 % ROC-SGSE_L1R_RPW-LFR-SURV-SWF-E_59e82ff_CNE_V02.cdf.
 % NOTE: Values are relative as the absolute level is not known.
 % NOTE: Might be that LFR offsets also depend on BLTS.
 % NOTE: Has not set any value for F3.
-S.define_setting('PROCESSING.CALIBRATION.LFR.LSF_OFFSETS_TM', [-638, -610, 0, 0])
+%S.define_setting('PROCESSING.CALIBRATION.LFR.LSF_OFFSETS_TM', [-638, -610, 0, 0])
+S.define_setting('PROCESSING.CALIBRATION.LFR.LSF_OFFSETS_TM', [0, 0, 0, 0])
 
 %=================================================================================
-% Calibration constants for "scalar" calibration
-% ----------------------------------------------
+% Calibration constants for the "scalar" calibration mode
+% -------------------------------------------------------
 % Unit: IVPAV = Interface volt per antenna volt.
-%
+% 
+% Calibration constants that are used instead of the corresponding BIAS transfer functions.
+% NOTE: These values do not influence the nominal, "full" calibration. They are entirely separate.
 % NOTE: The sign should preferably be consistent with the BIAS transfer functions, i.e. negative values as of
 % 2019-12-20.
+% NOTE: There are no equivalent (alternative) scalar values to replace the 
 %=================================================================================
 S.define_setting('PROCESSING.CALIBRATION.BIAS.SCALAR.ALPHA_IVPAV',           -1/17);
 S.define_setting('PROCESSING.CALIBRATION.BIAS.SCALAR.BETA_IVPAV',               -1);
 S.define_setting('PROCESSING.CALIBRATION.BIAS.SCALAR.GAMMA_IVPAV.HIGH_GAIN',  -100);
 S.define_setting('PROCESSING.CALIBRATION.BIAS.SCALAR.GAMMA_IVPAV.LOW_GAIN',     -5);
 
-%=================================================================================
+%=================================================================================================
 % Constants for using HK bias currents for deriving/calibrating the bias currents
 % NOTE: This is a non-standard way of deriving the bias currents.
 % NOTE 2019-09-12: THIS HAS NOT BEEN IMPLEMENTED IN THE CODE YET EXCEPT FOR CALIBRATION FUNCTION.
-%=================================================================================
+%=================================================================================================
 %S.define_setting('PROCESSING.USE_UNCALIBRATED_BIAS_CURRENTS_FROM_HK', 0);
 % NOTE: OFFSET_TM value is added to the TM value (not the ampere value).
 S.define_setting('PROCESSING.CALIBRATION.HK_BIAS_CURRENT.OFFSET_TM', -hex2dec('56C0') * [1,1,1])
 S.define_setting('PROCESSING.CALIBRATION.HK_BIAS_CURRENT.GAIN_APT',  -0.008198754     * [1,1,1])
 
-S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.ALGORITHM',  'FULL')   % FULL, NONE, SCALAR
-S.define_setting('PROCESSING.CALIBRATION.DETRENDING_ENABLED', 0)
+
+
+%=======================================================================================================================
+% Set calibration mode/algorithm
+% ------------------------------
+% NONE
+%   No calibration at all. Output dataset data contain TM units. BIAS demultiplexer addition/subtraction of BLTS
+%   necessary to derive antenna signals is still done though.
+% SCALAR
+%   From BIAS-LFR/TDS interface to LFR/TDS ADC: Full calibration.
+%   From antennas to BIAS-LFR/TDS interface: Using scalar multiplication instead of (frequency-dependent) transfer
+%   functions, No BIAS offsets.
+% FULL
+%   FULL, NOMINAL CALIBRATION. This is intended to be the calibration mode used for the normal production of datasets.
+%   All other modes are for debugging and development only.
+%=======================================================================================================================
+S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.ALGORITHM',  'FULL')   % NONE, SCALAR, FULL
+
+
+
+S.define_setting('PROCESSING.CALIBRATION.DETRENDING_ENABLED', 1)
 
 
 

@@ -23,6 +23,8 @@ classdef RCT
 %
 % PROPOSAL: Move out the extrapolation of LFR TFs.
 %   PRO: Want to distinguish between RCT data and modified data.
+% PROPOSAL: Log read RCTs in the same way as input datasets; generic zVar logging.
+
 
 
     properties(Access=private, Constant)
@@ -248,7 +250,6 @@ classdef RCT
         %                   iLsf=1..3 : iBlts=1..5 for BLTS 1-5
         %                   iLsf=4    : iBlts=1..3 for BIAS 1-3
         function LfrItfIvptTable = read_LFR_RCT(filePath)
-        %function LfrItfIvptTable = read_LFR_RCT(filePath, tfExtrapolateAmountHz)
             Do = dataobj(filePath);
             
             try
@@ -387,7 +388,7 @@ classdef RCT
                     % ASSERTION: INVERTED TF
                     assert(~ItfIvpt.toward_zero_at_high_freq(), ...
                         ['TDS RSWF transfer function appears to go toward zero at high frequencies. Has it not been', ...
-                        ' inverted/backward in time, i.e. is it not physical output-to-input?'])
+                        ' inverted/made backward in time, i.e. does it not describe physical output-to-physical input?'])
 
                     TdsRswfItfIvptList{iBlts} = ItfIvpt;
                 end

@@ -58,6 +58,12 @@ classdef assert
 %
 % PROPOSAL: Create class with collection of standardized non-trivial "condition functions", used by this "assert" class.
 %           Use an analogous naming scheme.
+%   PRO: Can use functions instead of assertions to design custom-made error responses, warnings.
+%   CON: Not clear what the conditions should be, and ifthere should be some assertions(). Input checks or the nominal condition
+%       Ex: castring_set: Should the return value be whether the input argument is
+%           A cell array of unique strings.
+%           A cell array of unique strings (assertion: cell array)
+%           A cell array of unique strings (assertion: cell array of strings)
 %   PROPOSAL: Name "cond".
 %   Ex: vector, struct2
 %   Ex: Because of comments?: dir_exists, file_exists
@@ -134,7 +140,7 @@ classdef assert
                 error(EJ_library.utils.assert.ERROR_MSG_ID, 'Expected cell array of unique strings, but not all strings are unique.')
             end
         end
-
+        
         
         
         function castring_in_set(s, strSet)
@@ -310,44 +316,47 @@ classdef assert
         %
         % ARGUMENTS
         % =========
-        % v              : Variable which size will be asserted.
-        % sizeComparison : 1D vector with the sizes of the corresponding indices/dimensions. NaN means that the
-        %                  size of that particular dimension will not be checked.
+        % v               : Variable which size will be asserted.
+        % sizeConstraints : 1D vector with the sizes of the corresponding indices/dimensions. A component value of NaN
+        %                   means that the size of that particular dimension will not be checked.
         %
-        function size(v, sizeComparison)
+        function size(v, sizeConstraints)
             % PROPOSAL: Apply the same size constraint to an arbitrary number of variables.
             % PROPOSAL: Be able to separate size constraints to multiple variables, but specify that certain indices
-            % have to be identical (but arbitrary) between variables.
+            % have to be identical in size (but arbitrary) between variables.
             %   PROPOSAL: Use negative values to indicate that the size in that dimension should be identical.
-            %       CALL EXAMPLE: size([-1], Epoch, [-1, 1, -2], zvSnapshotsV, [-1, 2, -2], zvSnapshotsE)
+            %       CALL EXAMPLE: EJ_library.utils.assert.size(Epoch, [-1], zvSnapshotsV, [-1, 1, -2], zvSnapshotsE, [-1, 2, -2])
             %       Ex: zVariables: Number of records, number of samples per record.
+            %   PROPOSAL: Somehow be able to state that a variable is a 1D vector, regardless of which index is not size one.
+            %       PROPOSAL: sizeConstraints = 1x1 cell array, with one numeric value (length of vector)?!!
+            %       PROPOSAL: Prepend sizeConstraints with string constant "vector".
             
             % ASSERTION
-            EJ_library.utils.assert.vector(sizeComparison)
+            EJ_library.utils.assert.vector(sizeConstraints)
             
             sizeV = size(v);
             
             % Enforce column vectors.
-            sizeV          = sizeV(:);
-            sizeComparison = sizeComparison(:);
+            sizeV           = sizeV(:);
+            sizeConstraints = sizeConstraints(:);
             
-            nSizeV          = numel(sizeV);
-            nSizeComparison = numel(sizeComparison);
+            nSizeV           = numel(sizeV);
+            nSizeConstraints = numel(sizeConstraints);
             
-            % Enforce that sizeV and sizeComparison, by adding ones until the size vectors have equal size.
+            % Enforce that sizeV and sizeConstraints have equal size by adding components equal to one (1).
             % NOTE: MATLAB's "size" function always returns at least a 1x2 vector.
-            if (nSizeV < nSizeComparison)
-                sizeV          = [sizeV;          ones(nSizeComparison-nSizeV, 1)];
+            if (nSizeV < nSizeConstraints)
+                sizeV           = [sizeV;           ones(nSizeConstraints-nSizeV, 1)];
             else
-                sizeComparison = [sizeComparison; ones(nSizeV-nSizeComparison, 1)];
+                sizeConstraints = [sizeConstraints; ones(nSizeV-nSizeConstraints, 1)];
             end
             
             % Overwrite NaN values with the actual size values for those indices.
-            iIgnore = isnan(sizeComparison);
-            sizeComparison(iIgnore) = sizeV(iIgnore);
+            iIgnore = isnan(sizeConstraints);
+            sizeConstraints(iIgnore) = sizeV(iIgnore);
 
-            % The actual assertion
-            assert( all(sizeV == sizeComparison), EJ_library.utils.assert.ERROR_MSG_ID, 'Variable does not have the expected size.')
+            % ASSERTION: The actual assertion
+            assert( all(sizeV == sizeConstraints), EJ_library.utils.assert.ERROR_MSG_ID, 'Variable does not have the expected size.')
         end
         
         

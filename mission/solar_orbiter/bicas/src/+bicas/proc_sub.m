@@ -221,7 +221,7 @@ classdef proc_sub
             assert(size(E, 3) == 2)
 
 
-            
+
             % Set iLsfZv.
             if     C.isLfrSbm1
                 iLsfZv = ones(nRecords, 1) * 2;   % Always value "2" (F1, "FREQ = 1").
@@ -232,8 +232,7 @@ classdef proc_sub
                 iLsfZv = InSci.Zv.FREQ + 1;
             end
             EJ_library.utils.assert.size(iLsfZv, [NaN, 1])
-            %assert(size(iLsfZv, 2) == 1)
-            
+
             
             
             zvFreqHz = bicas.proc_utils.get_LFR_frequency( iLsfZv, SETTINGS.get_fv('PROCESSING.LFR.F0_F1_F2_F3_HZ') );   % NOTE: Needed also for 1 SPR.

@@ -129,31 +129,6 @@ classdef proc_utils
         
         
         
-%         function GAMMA = get_simple_demuxer_gamma(DIFF_GAIN)
-%         % Translate a scalar zVariable value DIFF_GAIN to an actual scalar gamma used in simplified calibration.
-%         % NaN translates to NaN.
-%         
-%             global SETTINGS
-%             
-%             % ASSERTION
-%             if numel(DIFF_GAIN) ~= 1
-%                 error('BICAS:proc_utils:Assertion:IllegalArgument', 'Illegal argument value "DIFF_GAIN". Must be scalar (not array).')
-%             end
-% 
-%             switch(DIFF_GAIN)
-%                 case 0    ; GAMMA = SETTINGS.get_fv('PROCESSING.CALIBRATION.SCALAR.GAMMA_LOW_GAIN');
-%                 case 1    ; GAMMA = SETTINGS.get_fv('PROCESSING.CALIBRATION.SCALAR.GAMMA_HIGH_GAIN');
-%                 otherwise
-%                     if isnan(DIFF_GAIN)
-%                         GAMMA = NaN;
-%                     else
-%                         error('BICAS:proc_utils:Assertion:IllegalArgument:DatasetFormat', 'Illegal argument value "DIFF_GAIN"=%d.', DIFF_GAIN)                    
-%                     end
-%             end
-%         end
-        
-        
-        
         function Rx = get_LFR_Rx(R0, R1, R2, iLsf)
         % Return the relevant value of LFR CDF zVariables R0, R1, or R2, or a hypothetical but analogous "R3" which is always 1.
         %
@@ -197,7 +172,6 @@ classdef proc_utils
             
             ACQUISITION_TIME = double(ACQUISITION_TIME);
             atSeconds = ACQUISITION_TIME(:, 1) + ACQUISITION_TIME(:, 2) / 65536;    % at = ACQUISITION_TIME
-%             tt2000 = spdfcomputett2000(SETTINGS.get_fv('PROCESSING.ACQUISITION_TIME_EPOCH_UTC')) + int64(atSeconds * 1e9);   % NOTE: spdfcomputett2000 returns int64 (as it should).
             tt2000 = spdfcomputett2000(ACQUISITION_TIME_EPOCH_UTC) + int64(atSeconds * 1e9);   % NOTE: spdfcomputett2000 returns int64 (as it should).
         end
         
@@ -214,7 +188,6 @@ classdef proc_utils
             bicas.proc_utils.assert_Epoch(tt2000)
 
             % NOTE: Important to type cast to double because of multiplication
-%             atSeconds = double(int64(tt2000) - spdfcomputett2000(SETTINGS.get_fv('PROCESSING.ACQUISITION_TIME_EPOCH_UTC'))) * 1e-9;    % at = ACQUISITION_TIME
             atSeconds = double(int64(tt2000) - spdfcomputett2000(ACQUISITION_TIME_EPOCH_UTC)) * 1e-9;    % at = ACQUISITION_TIME
             
             % ASSERTION: ACQUISITION_TIME must not be negative.
@@ -861,6 +834,7 @@ classdef proc_utils
             
             uniqueValues  = bicas.utils.unique_values_NaN(varValue);
             nUniqueValues = numel(uniqueValues);
+            nValues       = numel(varValue);
             
             %=================================
             % Construct string: variable size
@@ -875,9 +849,13 @@ classdef proc_utils
                     assert(ndims(varValue) <= 3, 'BICAS:proc_utils:Assertion:IllegalArgument', 'v is not numerical with max 3 dimensions.')
 
                     nNan             = sum(isnan(varValue(:)));
-                    percentageNan    = round((nNan/numel(varValue))*100);
                     nNanStr          = num2str(nNan);
-                    percentageNanStr = sprintf('%i%%', percentageNan);
+                    if nValues == 0
+                        percentageNanStr = '-';
+                    else                        
+                        percentageNan    = round((nNan/nValues)*100);
+                        percentageNanStr = sprintf('%i%%', percentageNan);
+                    end
                     
                     %===================================
                     % Construct string: range of values
@@ -907,7 +885,7 @@ classdef proc_utils
                         epochMinStr = bicas.proc_utils.tt2000_to_UTC_str(min(varValue));
                         epochMaxStr = bicas.proc_utils.tt2000_to_UTC_str(max(varValue));
                         valuesStr   = sprintf('Mm: %s -- %s', epochMinStr, epochMaxStr);
-                    elseif numel(varValue) >= 1
+                    elseif nValues >= 1
                         for i = 1:numel(uniqueValues)
                             valueStrs{end+1} = bicas.proc_utils.tt2000_to_UTC_str(uniqueValues{i});
                         end
@@ -1050,6 +1028,7 @@ classdef proc_utils
         
         % NOTE: Function name somewhat bad.
         % PROPOSAL: Make recursive?!
+        % PROPOSAL: Implement using new features in EJ_library.utils.assert.size.
         
             fieldNamesList1 = fieldnames(S);
             nRows = [];

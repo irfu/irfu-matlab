@@ -64,8 +64,8 @@ MAP('FailedToReadInterpretRCT')     = info_struct(1, 'Can not interpret the cont
 MAP('CannotFindRegexMatchingRCT')   = info_struct(1, 'Can not find any matching calibration file to read. No file matches regular expression.');
 C.EMIDP_2_INFO = MAP;
 
-% NOTE: Originally required R2016a.
-% NOTE: ROC only needs R2019b. Source: https://gitlab.obspm.fr/ROC/RCS/BICAS/issues/2#note_10804
+% NOTE: BICAS originally required MATLAB R2016a.
+% NOTE: ROC only needs MATLAB R2019b. Source: https://gitlab.obspm.fr/ROC/RCS/BICAS/issues/2#note_10804
 C.PERMITTED_MATLAB_VERSIONS         = {'2019b'};
 C.DEFAULT_CONFIG_FILE_RELATIVE_PATH = fullfile('config', 'bicas.conf');    % Path (incl. filename) to default config file. Relative to BICAS's directory root.
 

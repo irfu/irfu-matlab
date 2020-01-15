@@ -92,9 +92,9 @@ for i = 1:length(SwModeInfo.inputsList)
     
     
     
-    %===================================================
+    %===========================================
     % ASSERTIONS: Check GlobalAttributes values
-    %===================================================
+    %===========================================
     % NOTE: Can not use bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(Zv) since not all zVariables have same number of
     % records. Ex: Metadata such as ACQUISITION_TIME_UNITS.
     if isfield(GlobalAttributes, 'DATASET_ID')
@@ -144,8 +144,8 @@ for iOutputCdf = 1:length(SwModeInfo.outputsList)
     masterCdfPath = fullfile(...
         masterCdfDir, ...
         bicas.get_master_CDF_filename(OutputInfo.datasetId, OutputInfo.skeletonVersion));
-        write_dataset_CDF ( ...
-            OutputDatasetsMap(OutputInfo.prodFuncOutputKey), globalAttributesSubset, outputFilePath, masterCdfPath, OutputInfo.datasetId, SETTINGS );
+    write_dataset_CDF ( ...
+        OutputDatasetsMap(OutputInfo.prodFuncOutputKey), globalAttributesSubset, outputFilePath, masterCdfPath, OutputInfo.datasetId, SETTINGS );
 end
 
 

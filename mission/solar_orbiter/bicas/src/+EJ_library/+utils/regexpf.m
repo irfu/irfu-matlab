@@ -1,5 +1,5 @@
 %
-% Roughly like regexp, except
+% Roughly like MATLAB's "regexp", except
 % (1) it only matches entire strings (not substrings). In practice, it surrounds the submitted regular expressions with ^ and $.
 % (2) it can match empty strings (option in regexp),
 % (3) it returns a more usable logic array.
