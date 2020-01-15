@@ -52,6 +52,9 @@ function CliData = interpret_CLI_args(cliArgumentList)
 % PROPOSAL: Generic utility function for converting list of mutually exclusive (assertion) booleans into one unique value.
 %   Ex: Convert list of booleans for various argument flags (any application) into one variable value.
 %       Ex: Flags for BICAS functionality modes.
+%
+% PROPOSAL: Include assertion for unique input and output dataset paths.
+%   NOTE: Assertion is presently in execute_sw_mode.
 
 
 

@@ -65,6 +65,15 @@ Cal = bicas.calib(calibrationDir, pipelineId, SETTINGS);
 
 
 
+% ASSERTION: Check that all input & output dataset paths (strings) are unique.
+% NOTE: Manually entering CLI argument, or copy-pasting BICAS call, can easily lead to reusing the same path by mistake,
+% and e.g. overwriting an input file.
+datasetFileList = [InputFilePathMap.values(), OutputFilePathMap.values()];
+assert(numel(unique(datasetFileList)) == numel(datasetFileList), 'BICAS:execute_sw_mode:CLISyntax', ...
+    'Input and output dataset paths are not all unique. This hints of a manual mistake in the CLI arguments in call to BICAS.')
+
+
+
 %=================================
 % READ CDFs
 % ---------
