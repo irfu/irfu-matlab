@@ -25,7 +25,7 @@
 %   might be wrong. Should ideally be run on the exact input datasets (~EIn PDs) used to produce a specific output
 %   dataset.
 %
-function execute_sw_mode(SwModeInfo, InputFilePathMap, OutputFilePathMap, masterCdfDir, calibrationDir, pipelineId, SETTINGS)
+function execute_sw_mode(SwModeInfo, InputFilePathMap, OutputFilePathMap, masterCdfDir, calibrationDir, SETTINGS)
 %
 % QUESTION: How verify dataset ID and dataset version against constants?
 %    NOTE: Need to read CDF first.
@@ -61,7 +61,7 @@ function execute_sw_mode(SwModeInfo, InputFilePathMap, OutputFilePathMap, master
 
 GlobalAttributesCellArray = {};   % Use cell array since CDF global attributes may in principle contain different sets of attributes (field names).
 
-Cal = bicas.calib(calibrationDir, pipelineId, SETTINGS);
+Cal = bicas.calib(calibrationDir, SETTINGS);
 
 
 
@@ -97,16 +97,16 @@ for i = 1:length(SwModeInfo.inputsList)
     %===========================================
     % NOTE: Can not use bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(Zv) since not all zVariables have same number of
     % records. Ex: Metadata such as ACQUISITION_TIME_UNITS.
-    if isfield(GlobalAttributes, 'DATASET_ID')
-        datasetId = GlobalAttributes.DATASET_ID{1};
+    if isfield(GlobalAttributes, 'Dataset_ID')
+        datasetId = GlobalAttributes.Dataset_ID{1};
     else
         error('BICAS:execute_sw_mode:Assertion:DatasetFormat', ...
-            'Input dataset does not contain (any accepted variation of) the global attribute DATASET_ID.\n    File: "%s"', ...
+            'Input dataset does not contain (any accepted variation of) the global attribute Dataset_ID.\n    File: "%s"', ...
             inputFilePath)
     end
     bicas.utils.assert_strings_equal(...
         SETTINGS.get_fv('INPUT_CDF_ASSERTIONS.STRICT_DATASET_ID'), ...
-        {GlobalAttributes.DATASET_ID{1}, SwModeInfo.inputsList(i).datasetId}, ...
+        {GlobalAttributes.Dataset_ID{1}, SwModeInfo.inputsList(i).datasetId}, ...
         sprintf('The input CDF file''s stated DATASET_ID does not match the value expected for the S/W mode.\n    File: %s\n    ', inputFilePath))
 
 
@@ -277,11 +277,15 @@ bicas.proc_utils.log_zVars(ZvsLog)
 % NOTE: At least test files
 % solo_L1R_rpw-tds-lfm-cwf-e_20190523T080316-20190523T134337_V02_les-7ae6b5e.cdf
 % solo_L1R_rpw-tds-lfm-rswf-e_20190523T080316-20190523T134337_V02_les-7ae6b5e.cdf
-% do not contain DATASET_ID, only Dataset_ID.
+% do not contain "DATASET_ID", only "Dataset_ID".
+%
+% NOTE: Has not found document that specifies the global attribute. /2020-01-16
+% https://gitlab.obspm.fr/ROC/RCS/BICAS/issues/7#note_11016
+% states that the correct string is "Dataset_ID".
 GlobalAttributes = bicas.utils.normalize_struct_fieldnames(DataObj.GlobalAttributes, ...
-    {{{'DATASET_ID', 'Dataset_ID'}, 'DATASET_ID'}});   % Assign return value.
+    {{{'DATASET_ID', 'Dataset_ID'}, 'Dataset_ID'}});
 
-bicas.logf('info', 'File''s Global attribute: DATASET_ID       = "%s"', GlobalAttributes.DATASET_ID{1})
+bicas.logf('info', 'File''s Global attribute: Dataset_ID       = "%s"', GlobalAttributes.Dataset_ID{1})
 bicas.logf('info', 'File''s Global attribute: Skeleton_version = "%s"', GlobalAttributes.Skeleton_version{1})
 
 end

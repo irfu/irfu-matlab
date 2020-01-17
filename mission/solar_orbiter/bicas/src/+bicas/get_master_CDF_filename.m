@@ -9,9 +9,6 @@
 % skeletonVersionStr : Two-character two-digit string specifying version of the master CDF file.
 %
 %
-% NOTE: Function does not require pipelineId argument since datasetId contains the right prefix.
-%
-%
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
 % First created 2016-07-28
 %

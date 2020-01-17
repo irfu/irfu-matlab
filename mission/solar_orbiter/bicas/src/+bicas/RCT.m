@@ -51,18 +51,18 @@ classdef RCT
         %
         % ARGUMENTS
         % =========
-        % pipelineId, rctId : String constants representing pipeline and RCT to be read.
+        % rctId : String constants representing RCT to be read.
         %
-        function RctCalibData = find_RCT_by_SETTINGS_regexp(calibrationDir, pipelineId, rctId, SETTINGS)
+        function RctCalibData = find_RCT_by_SETTINGS_regexp(calibrationDir, rctId, SETTINGS)
 
             %============================
             % Create regexp for filename
             %============================
-            pipelineSettingsSegm = EJ_library.utils.translate({...
-                {'ROC-SGSE', 'RGTS'}, 'RGTS';...
-                {'RODP'},             'RODP'}, ...
-                pipelineId, ...
-                'BICAS:calib:Assertion:IllegalArgument', sprintf('Illegal pipelineId="%s"', pipelineId));
+%             pipelineSettingsSegm = EJ_library.utils.translate({...
+%                 {'ROC-SGSE', 'RGTS'}, 'RGTS';...
+%                 {'RODP'},             'RODP'}, ...
+%                 pipelineId, ...
+%                 'BICAS:calib:Assertion:IllegalArgument', sprintf('Illegal pipelineId="%s"', pipelineId));
             % IMPLEMENTATION NOTE: Below translation statement
             % (1) verifies the argument, AND
             % (2) separates the argument string constants from the SETTINGS naming convention.
@@ -72,7 +72,7 @@ classdef RCT
                 {'TDS-CWF'},  'TDS-LFM-CWF'; ...
                 {'TDS-RSWF'}, 'TDS-LFM-RSWF'}, ...
                 rctId, 'BICAS:calib:Assertion:IllegalArgument', sprintf('Illegal rctId="%s"', rctId));
-            filenameRegexp = SETTINGS.get_fv(sprintf('PROCESSING.RCT_REGEXP.%s.%s', pipelineSettingsSegm, analyzerSettingsSegm));
+            filenameRegexp = SETTINGS.get_fv(sprintf('PROCESSING.RCT_REGEXP.%s', analyzerSettingsSegm));
             
             RctCalibData = bicas.RCT.find_RCT_regexp(calibrationDir, filenameRegexp);
         end

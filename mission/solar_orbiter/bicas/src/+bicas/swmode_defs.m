@@ -107,7 +107,7 @@ classdef swmode_defs
             %   One index representing: Combination of DATASET_ID+Skeleton_Version (both pipelines, LFR+TDS, HK+SCI), every element contains data for
             %   that dataset. Must use combination DATASET_ID+Skeleton_Version to potentially cover old versions.            
             %   Manipulate and set multiple elements smoothly by using vectors for indices.
-            %   Ex: Vectors to set: pipelineIdVector, skeletonVersionVector, SBMx_SURV_vector, CWF_SWF_vector, output
+            %   Ex: Vectors to set: skeletonVersionVector, SBMx_SURV_vector, CWF_SWF_vector, output
             %       dataset level, vectors for human-readable description string(s) (e.g. modeStr)
             %   Ex: Vectors with indices for dataset in/for: either pipeline, science or HK, LFR or TDS, latest versions
             %       or backward-compatibility versions.

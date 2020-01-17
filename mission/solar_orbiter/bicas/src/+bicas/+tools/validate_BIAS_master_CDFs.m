@@ -164,7 +164,7 @@ function do = validate_one_BIAS_master_CDF(file_path)
     %=====================================
     % Docs specifies "Acknowledgment", but ISTP specifies "Acknowledgement" (different spelling).
     % NOTE: Incomplete list of mandatory global attributes (too long).
-    MANDATORY_L2S_GLOBAL_ATTRIBUTES = {'ACCESS_FORMAT', 'ACCESS_URL', 'Acknowledgement', 'Calibration_version', 'DATASET_ID', 'Data_type', 'Data_version', 'Descriptor', 'Discipline', 'File_naming_convention', 'FILE_UUID', 'Generated_by', 'HTTP_LINK', 'Instrument_type', 'Level', 'LINK_TEXT'};
+    MANDATORY_L2S_GLOBAL_ATTRIBUTES = {'ACCESS_FORMAT', 'ACCESS_URL', 'Acknowledgement', 'Calibration_version', 'Dataset_ID', 'Data_type', 'Data_version', 'Descriptor', 'Discipline', 'File_naming_convention', 'FILE_UUID', 'Generated_by', 'HTTP_LINK', 'Instrument_type', 'Level', 'LINK_TEXT'};
     for i = 1:length(MANDATORY_L2S_GLOBAL_ATTRIBUTES)
         validate_global_attribute_presence(do, MANDATORY_L2S_GLOBAL_ATTRIBUTES{i})
     end
@@ -172,7 +172,7 @@ function do = validate_one_BIAS_master_CDF(file_path)
     
     
     CDF_Descriptor       = ga.Descriptor{1};       % E.g.              "RPW-LFR-SURV-CWF-E>RPW Low Frequency Receiver Continuous Waveforms in survey mode. Electric component."
-    CDF_DATASET_ID       = ga.DATASET_ID{1};       % E.g. "ROC-SGSE_L2S_RPW-LFR-SURV-CWF-E"
+    CDF_DATASET_ID       = ga.Dataset_ID{1};       % E.g. "ROC-SGSE_L2S_RPW-LFR-SURV-CWF-E"
     CDF_SKELETON_PARENT  = ga.SKELETON_PARENT{1};  % E.g. "ROC-SGSE_L2S_RPW-LFR-SURV-CWF-E_V01.xlsx"
     CDF_Skeleton_version = ga.Skeleton_version{1}; % E.g.                                  "01"
     CDF_Level            = ga.Level{1};            % E.g.          "L2S>Level 2S"

@@ -39,10 +39,10 @@ MUX_SETTINGS  = struct('fraction_fill_values', 0.0, 'min', 0, 'max', 4, 'record_
 %================================================
 % Determine which variables to randomize and how
 %================================================
-datasetId = info.GlobalAttributes.DATASET_ID{1};
+datasetId = info.GlobalAttributes.Dataset_ID{1};
 if isempty(strtrim(datasetId))                      
     % Ugly temporary "fix" for incomplete input files.
-    fprintf('No DATASET_ID for %s.\n   Replacing with .Logical_source .\n', input_file_path);
+    fprintf('No global attribute "Dataset_ID" for %s.\n   Replacing with "Logical_source" .\n', input_file_path);
     datasetId = info.GlobalAttributes.Logical_source{1};
 end
 

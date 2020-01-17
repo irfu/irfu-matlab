@@ -174,7 +174,7 @@ classdef calib < handle
        
         calibrationDir
         
-        pipelineId
+        %pipelineId
         hasLoadedNonBiasData = false;
         
         % Whether to select non-BIAS RCT using global attribute CALIBRATION_TABLE (and
@@ -216,17 +216,17 @@ classdef calib < handle
         % (1) read_non_BIAS_RCTs_by_regexp, OR
         % (2) read_non_BIAS_RCT_by_CALIBRATION_TABLE to fully initialize the object.
         %
-        function obj = calib(calibrationDir, pipelineId, SETTINGS)
+        function obj = calib(calibrationDir, SETTINGS)
             % TODO-DECISION: Appropriate to use SETTINGS this way? Submit calibration data directly?
             
             % IMPLEMENTATION NOTE: Must assign obj.SETTINGS before calling methods that rely on it having been set.
             
             obj.SETTINGS         = SETTINGS;
-            obj.pipelineId       = pipelineId;
+            %obj.pipelineId       = pipelineId;
             obj.enableDetrending = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF_DETRENDING_ENABLED');
             obj.calibrationDir   = calibrationDir;
             
-            obj.Bias                           = obj.read_log_RCT_by_SETTINGS_regexp(pipelineId, 'BIAS');
+            obj.Bias                           = obj.read_log_RCT_by_SETTINGS_regexp('BIAS');
             obj.BiasGain.alphaIvpav            = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.ALPHA_IVPAV');
             obj.BiasGain.betaIvpav             = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.BETA_IVPAV');
             obj.BiasGain.gammaIvpav.highGain   = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.GAMMA_IVPAV.HIGH_GAIN');
@@ -282,9 +282,9 @@ classdef calib < handle
         function read_non_BIAS_RCTs_by_regexp(obj, use_CALIBRATION_TABLE_INDEX2)
             assert(~obj.hasLoadedNonBiasData, 'BICAS:calib:Assertion', 'Can not load non-BIAS data twice.')
             
-            obj.LfrItfIvptTable{1}    = obj.read_log_RCT_by_SETTINGS_regexp(obj.pipelineId, 'LFR');
-            obj.tdsCwfFactorsIvpt{1}  = obj.read_log_RCT_by_SETTINGS_regexp(obj.pipelineId, 'TDS-CWF');
-            obj.TdsRswfItfIvptList{1} = obj.read_log_RCT_by_SETTINGS_regexp(obj.pipelineId, 'TDS-RSWF');
+            obj.LfrItfIvptTable{1}    = obj.read_log_RCT_by_SETTINGS_regexp('LFR');
+            obj.tdsCwfFactorsIvpt{1}  = obj.read_log_RCT_by_SETTINGS_regexp('TDS-CWF');
+            obj.TdsRswfItfIvptList{1} = obj.read_log_RCT_by_SETTINGS_regexp('TDS-RSWF');
             
             obj.hasLoadedNonBiasData         = 1;
             obj.use_CALIBRATION_TABLE_rcts   = 0;
@@ -712,8 +712,8 @@ classdef calib < handle
 
 
         % NOTE: To be compared with read_log_RCT_by_filename.
-        function RctCalibData = read_log_RCT_by_SETTINGS_regexp(obj, pipelineId, rctId)
-            filePath     = bicas.RCT.find_RCT_by_SETTINGS_regexp(obj.calibrationDir, pipelineId, rctId, obj.SETTINGS);
+        function RctCalibData = read_log_RCT_by_SETTINGS_regexp(obj, rctId)
+            filePath     = bicas.RCT.find_RCT_by_SETTINGS_regexp(obj.calibrationDir, rctId, obj.SETTINGS);
             RctCalibData = bicas.calib.read_log_modify_RCT(filePath, rctId);
         end
 

@@ -383,10 +383,10 @@ switch(CliData.functionalityMode)
         %================================
         % NOTE: Reading environment variables first here, where they are needed.
         calibrationDir = read_env_variable(SETTINGS, 'ROC_RCS_CAL_PATH',    'ENV_VAR_OVERRIDE.ROC_RCS_CAL_PATH');
-        pipelineId     = read_env_variable(SETTINGS, 'ROC_PIP_NAME',        'ENV_VAR_OVERRIDE.ROC_PIP_NAME');   % RGTS or RODP
+        %pipelineId     = read_env_variable(SETTINGS, 'ROC_PIP_NAME',        'ENV_VAR_OVERRIDE.ROC_PIP_NAME');   % RGTS or RODP
         masterCdfDir   = read_env_variable(SETTINGS, 'ROC_RCS_MASTER_PATH', 'ENV_VAR_OVERRIDE.ROC_RCS_MASTER_PATH');
         bicas.logf('info', 'calibrationDir = "%s"', calibrationDir)
-        bicas.logf('info', 'pipelineId     = "%s"', pipelineId)
+        %bicas.logf('info', 'pipelineId     = "%s"', pipelineId)
         bicas.logf('info', 'masterCdfDir   = "%s"', masterCdfDir)
 
 
@@ -394,7 +394,7 @@ switch(CliData.functionalityMode)
         %==================
         % EXECUTE S/W MODE
         %==================
-        bicas.execute_sw_mode( SwModeInfo, InputFilesMap, OutputFilesMap, masterCdfDir, calibrationDir, pipelineId, SETTINGS )
+        bicas.execute_sw_mode( SwModeInfo, InputFilesMap, OutputFilesMap, masterCdfDir, calibrationDir, SETTINGS )
 
     otherwise
         error('BICAS:main:Assertion', 'Illegal value functionalityMode="%s"', functionalityMode)
