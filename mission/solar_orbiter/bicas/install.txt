@@ -10,7 +10,7 @@ Note: See readme.txt for more documentation.
 
 1) Linux(?)
 2) bash command shell (Linux) - Needed for the bash script that launches the actual MATLAB application.
-3) Mathworks MATLAB 2016a or 2019b - Needed for the bulk of the application.
+3) Mathworks MATLAB 2019b - Needed for the bulk of the application.
 
 
 
@@ -31,25 +31,17 @@ See separate section in this file on this topic.
 Add master CDF files for every dataset that the software can produce in a directory.
 Set environment variable ROC_RCS_MASTER_PATH to the path to the directory.
 The master CDF files must have filenames as indicated in the S/W descriptor.
-As of 2016-09-09, master CDF files can be downloaded from
-https://version-lesia.obspm.fr/repos/ROC/GroundTests/ROC-SGSE/Data/Schemas/CDF/Master/
 
 
-======================================================
- Step 2: Put needed master RCT files in one directory
-======================================================
+=========================================================
+ Step 2: Put necessary master RCT files in one directory
+=========================================================
 Add RCS calibration tables in one directory.
 Set environment variable ROC_RCS_CAL_PATH to the path to the directory.
 
 
-=========================
- Step 3: Select pipeline
-=========================
-Set environment variable ROC_PIP_NAME to either RGTS or RODP.
-
-
 ============================================
- Step 4: Configure the right MATLAB command
+ Step 3: Configure the right MATLAB command
 ============================================
 Configure a BICAS config file to contain the right command to launch MATLAB (e.g. path to executable).
 Modify e.g. default config file <BICAS root dir>/config/bicas.conf.
@@ -85,12 +77,10 @@ to be officially run, NOR (2) just copy the BICAS subdirectory from within irfu-
 ================
  How to convert
 ================
-Procedure in principle: Move irfu-matlab's bicas/ directory (irfu-matlab/mission/solar_orbiter/bicas) out of irfu-matlab to where you want
-BICAS to be located. Use bicas/ as a root directory and put the remainder of irfu-matlab/ under bicas/lib/. 
+Procedure in principle: Move (not copy) irfu-matlab's bicas/ directory (irfu-matlab/mission/solar_orbiter/bicas) out of irfu-matlab to where you want BICAS to be located. Use bicas/ as a root directory and put the remainder of irfu-matlab/ under bicas/lib/.
 
 Example using Linux bash commands (destroys the original irfu-matlab!):
    rm -rf irfu-matlab/.git*                            # NOTE: Destroys the git repository versioning information. Optional.
    mv     irfu-matlab/mission/solar_orbiter/bicas/ .
    mv     irfu-matlab/ bicas/lib/
 
-   ## NEED TO UPDATE

@@ -85,14 +85,14 @@ S.define_setting('SWD.identification.identifier',  'BICAS');
 S.define_setting('SWD.identification.description', ...
     '(Incomplete) calibration software meant to (1) calibrate electric field L2 data from electric L1R LFR and TDS (LFM) data, and (2) calibrate bias currents.');
 S.define_setting('SWD.identification.icd_version', '1.2');   % Technically wrong. In reality iss1rev2, draft 2019-07-11.
-S.define_setting('SWD.release.version',            '0.3.0');
-S.define_setting('SWD.release.date',               '2019-12-13');
+S.define_setting('SWD.release.version',            '1.0.0');
+S.define_setting('SWD.release.date',               '2020-01-20');
 S.define_setting('SWD.release.author',             'Erik P G Johansson, BIAS team, IRF');
-S.define_setting('SWD.release.contact',            'erik.johansson@irfu.se');
+S.define_setting('SWD.release.contact',            'erjo@irfu.se');
 S.define_setting('SWD.release.institute',          'Swedish Institute of Space Physics (IRF)');   % Full name or abbreviation?
-S.define_setting('SWD.release.modification',       'Various updates and refactoring; close to complete support for LFR & TDS datasets (but untested); Removed ROC-SGSE_* dataset support.');
-S.define_setting('SWD.release.source',             'https://github.com/irfu/irfu-matlab/commits/SOdevel');    % Appropriate branch?
-%S.define_setting('SWD.release.source',             'https://github.com/irfu/irfu-matlab/commits/master');
+%S.define_setting('SWD.release.modification',       'Various updates and refactoring; close to complete support for LFR & TDS datasets (but untested); Removed ROC-SGSE_* dataset support.');
+S.define_setting('SWD.release.modification',       'Almost-complete support for LFR & TDS datasets (voltages) with transfer functions (partially tested).');
+S.define_setting('SWD.release.source',             'https://github.com/irfu/irfu-matlab/commits/SOdevel');    % Appropriate branch? "master" instead?
 %
 S.define_setting('SWD.environment.executable',     'roc/bicas');   % Relative path to BICAS executable. See RCS ICD.
 % NOTE: See also OUTPUT_CDF.GLOBAL_ATTRIBUTES.Calibration_version.
@@ -122,15 +122,15 @@ S.define_setting('OUTPUT_CDF.OVERWRITE_POLICY',                'OVERWRITE');    
 
 
 
+% Value that shows up in output dataset GlobalAttributes.Calibration_version.
+% Value that is used to set the output dataset GlobalAttribute "Calibration_version". String value.
+S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.Calibration_version', ...
+    '1.0; Voltages: Using combined BIAS and LFR/TDS transfer functions (freq. dependent), BIAS offsets. Currents: No data.');
 % What to do with zVariables which are still empty after copying data into the master CDF.
 % This indicates that something is wrong, either in the master CDF or in the processing.
 S.define_setting('OUTPUT_CDF.EMPTY_NUMERIC_ZVARIABLES_SET_TO_FILL', 0);
 % Ex: Non-numeric ACQUISITION_TIME_UNITS in SOLO_L2_RPW-LFR-SBM1-CWF-E_V05.cdf is empty
 S.define_setting('OUTPUT_CDF.EMPTY_NONNUMERIC_ZVARIABLES_IGNORE',   1);
-% Value that shows up in output dataset GlobalAttributes.Calibration_version.
-% Value that is used to set the output dataset GlobalAttribute "Calibration_version". String value.
-S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.Calibration_version', ...
-    '0.3; Using combined BIAS and LFR/TDS transfer functions (freq.dependent), BIAS offsets. No bias currents');
 
 
 

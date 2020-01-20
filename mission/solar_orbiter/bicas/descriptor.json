@@ -7,12 +7,12 @@
         "icd_version": "1.2"
     },
     "release": {
-        "version":      "0.2.0",
-        "date":         "2019-09-20",
-        "author":       "Erik P G Johansson, BIAS team",
-        "contact":      "erik.johansson@irfu.se",
+        "version":      "1.0.0",
+        "date":         "2020-01-20",
+        "author":       "Erik P G Johansson, BIAS team, IRF",
+        "contact":      "erjo@irfu.se",
         "institute":    "Swedish Institute of Space Physics (IRF)",
-        "modification": "Various updates and refactoring; Incomplete but ICD compliant support for TDS data sets & RODP pipeline, L2R-->L1R, updated ICD compliance (pre-release).",
+        "modification": "Almost-complete support for LFR & TDS datasets (voltages) with transfer functions (partially tested).",
         "source":       "https://github.com/irfu/irfu-matlab/commits/SOdevel"
     },
     "environment": {

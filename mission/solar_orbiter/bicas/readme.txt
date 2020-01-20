@@ -42,7 +42,6 @@ dataset (data set)         = A CDF file on one of a number standardized formats 
  Main executable
 #################
 <BICAS root dir>/roc/bicas
-(from Linux command-line)
 
 
 
@@ -94,7 +93,9 @@ bicas --identification
 bicas --identification --log ~/bicas.log
 bicas LFR-SURV-CWF-E   --in_hk   ROC-SGSE_HK_RPW-BIA_7729147_CNE_V01.cdf
                        --in_sci  ROC-SGSE_L1R_RPW-LFR-SURV-CWF-E_7729147_CNE_V01.cdf
-                       --out_sci ROC-SGSE_L2S_RPW-LFR-SURV-CWF-E_7729147_CNE_V01.cdf   --log ~/bicas.log   --config ~/bicas.conf
+                       --out_sci ROC-SGSE_L2S_RPW-LFR-SURV-CWF-E_7729147_CNE_V01.cdf
+                       --log ~/bicas.log
+                       --config ~/bicas.conf
 
 
 
@@ -108,8 +109,6 @@ See "install.txt".
 ####################################
  Known current limitations, caveats
 ####################################
-* BICAS DOES NOT YET CALIBRATE DATA. This should not apply to offically delivered versions.
-  It does however read and write datasets (CDF files) in the s/w modes that it supports. It is just the output dataset content that is not entirely complete.
+* BICAS currently calibrates only voltages, but not currents as there are no current datasets to read.
 
 For other limitations and caveats, see the official user manual, the RUM document.
-

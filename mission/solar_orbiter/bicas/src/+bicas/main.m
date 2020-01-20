@@ -38,7 +38,7 @@
 % =====
 % ASSUMES: The current file is located in the <BICAS>/src directory.
 %
-% NOTE: This code is designed for MATLAB 2016a (as of 2016-06-02) but may very well work with other
+% NOTE: This code is designed for MATLAB 2019b (as of 2020-01-20) but may very well work with other
 % versions of MATLAB.
 %
 % IMPLEMENTATION NOTE: This code does not quit/exit using the MATLAB function "quit" since that always exits all of
