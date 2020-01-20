@@ -105,8 +105,8 @@ S.define_setting('OUTPUT_CDF.DATA_VERSION',                    '01');
 % Flag to disable writing output files. Useful for debugging.
 S.define_setting('OUTPUT_CDF.WRITE_FILE_DISABLED',             0)
 % What BICAS should do when there is a pre-existing file on a output dataset file path.
-% NOTE: Not known if the RCS ICD says anything about what sohuld be the default, or what ROC thinks it should be.
-S.define_setting('OUTPUT_CDF.OVERWRITE_POLICY',                'ERROR');    % ERROR, OVERWRITE.
+% NOTE: Not known if the RCS ICD says anything about what should be the default, or what ROC thinks it should be.
+S.define_setting('OUTPUT_CDF.OVERWRITE_POLICY',                'OVERWRITE');    % ERROR, OVERWRITE.
 
 
 
