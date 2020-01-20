@@ -102,7 +102,7 @@ DEFAULT_SETTINGS.stringsEscape             = true;     % Whether to display (som
 DEFAULT_SETTINGS.stringsSsMaxLength        = 120;      % Max length on (pre-escaped) substrings before dividing into more lines.
 
 Settings = EJ_library.utils.interpret_settings_args(DEFAULT_SETTINGS, varargin);
-EJ_library.utils.assert.struct2(Settings, fieldnames(DEFAULT_SETTINGS), {})    % Require DEFAULT_SETTINGS to contain all possible settings.
+EJ_library.utils.assert.struct(Settings, fieldnames(DEFAULT_SETTINGS), {})    % Require DEFAULT_SETTINGS to contain all possible settings.
 
 print_NESTED('', varName, v, 0, Settings)
 

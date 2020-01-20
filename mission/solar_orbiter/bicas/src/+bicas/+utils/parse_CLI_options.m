@@ -218,7 +218,7 @@ function [OptionsConfigMapModifCopy, EmptyOptionValuesMap] = init_assert(Options
         ModifOptionConfig = OptionsConfigMap(optionId);
         
         % ASSERTION: OptionConfig is the right struct.
-        EJ_library.utils.assert.struct2(ModifOptionConfig, {'optionHeaderRegexp', 'occurrenceRequirement', 'nValues'}, {'interprPriority'})
+        EJ_library.utils.assert.struct(ModifOptionConfig, {'optionHeaderRegexp', 'occurrenceRequirement', 'nValues'}, {'interprPriority'})
         
         % Use priority default value, if there is none.
         if ~isfield(ModifOptionConfig, 'interprPriority')

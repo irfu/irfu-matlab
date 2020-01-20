@@ -65,7 +65,7 @@ classdef assert
 %           A cell array of unique strings (assertion: cell array)
 %           A cell array of unique strings (assertion: cell array of strings)
 %   PROPOSAL: Name "cond".
-%   Ex: vector, struct2
+%   Ex: vector, struct
 %   Ex: Because of comments?: dir_exists, file_exists
 %   Ex: castring?
 %   
@@ -213,8 +213,6 @@ classdef assert
 
 
 
-        % Replacement for "EJ_library.utils.assert.struct".
-        %
         % ARGUMENTS
         % ==========
         % requiredFnSet : Cell array of required field names.
@@ -222,7 +220,7 @@ classdef assert
         %                 (b) String constant 'all' : All fieldnames are allowed but not required. This is likely only
         %                     meaningful when requiredFnSet is non-empty (not a requirement).
         %
-        function struct2(S, requiredFnSet, optionalFnSet)
+        function struct(S, requiredFnSet, optionalFnSet)
             % PROPOSAL: Have it apply to a set of strings (e.g. fieldnames), not a struct as such.
             % PROPOSAL: Let optionalFnSet be optional (empty by default).
             %   PRO: Shorter for the most common case.
@@ -233,9 +231,8 @@ classdef assert
             %   TODO-DECISION: How specify fieldnames? Can not use cell arrays recursively.
             %   PROPOSAL: Define other, separate assertion method.
             %   CON: Rarely needed.
-            %   CON-PROPOSAL: Can manually call EJ_library.utils.assert.struct2 multiple times, once for each substruct,
+            %   CON-PROPOSAL: Can manually call EJ_library.utils.assert.struct multiple times, once for each substruct,
             %                 instead (if only required field names).
-            % PROPOSAL: Rename struct2-->struct.
             % PROPOSAL: Assertion: Intersection requiredFnSet-optionalFnSet is empty.
             
             structFnSet          = fieldnames(S);

@@ -78,8 +78,8 @@ classdef proc_sub
         % Processing function
         
             % ASSERTIONS
-            EJ_library.utils.assert.struct2(InSci, {'Zv', 'Ga'}, {})
-            EJ_library.utils.assert.struct2(InHk,  {'Zv', 'Ga'}, {})
+            EJ_library.utils.assert.struct(InSci, {'Zv', 'Ga'}, {})
+            EJ_library.utils.assert.struct(InHk,  {'Zv', 'Ga'}, {})
             
             HkSciTime = [];
             
@@ -167,7 +167,7 @@ classdef proc_sub
 
 
             % ASSERTIONS
-            EJ_library.utils.assert.struct2(HkSciTime, {'MUX_SET', 'DIFF_GAIN'}, {})
+            EJ_library.utils.assert.struct(HkSciTime, {'MUX_SET', 'DIFF_GAIN'}, {})
         end
 
 
@@ -184,8 +184,8 @@ classdef proc_sub
             LFR_SWF_SNAPSHOT_LENGTH = 2048;
         
             % ASSERTIONS
-            EJ_library.utils.assert.struct2(InSci,  {'Zv', 'Ga'}, {})
-            EJ_library.utils.assert.struct2(HkSciTime, {'MUX_SET', 'DIFF_GAIN'}, {})
+            EJ_library.utils.assert.struct(InSci,  {'Zv', 'Ga'}, {})
+            EJ_library.utils.assert.struct(HkSciTime, {'MUX_SET', 'DIFF_GAIN'}, {})
             
             nRecords = size(InSci.Zv.Epoch, 1);            
             C = bicas.proc_utils.classify_DATASET_ID(inSciDsi);
@@ -326,8 +326,8 @@ classdef proc_sub
         % NOTE: BIAS output datasets do not have a variable for the length of snapshots. Need to use NaN/fill value.
 
             % ASSERTIONS
-            EJ_library.utils.assert.struct2(InSci,     {'Zv', 'Ga'}, {})
-            EJ_library.utils.assert.struct2(HkSciTime, {'MUX_SET', 'DIFF_GAIN'}, {})
+            EJ_library.utils.assert.struct(InSci,     {'Zv', 'Ga'}, {})
+            EJ_library.utils.assert.struct(HkSciTime, {'MUX_SET', 'DIFF_GAIN'}, {})
 
             C = bicas.proc_utils.classify_DATASET_ID(inSciDsi);
 
@@ -453,8 +453,8 @@ classdef proc_sub
 
 
         function assert_PreDC(PreDc)
-            EJ_library.utils.assert.struct2(PreDc, {'Zv', 'hasSnapshotFormat', 'nRecords', 'nCdfSamplesPerRecord', 'isLfr', 'isTdsCwf'}, {});
-            EJ_library.utils.assert.struct2(PreDc.Zv, {...
+            EJ_library.utils.assert.struct(PreDc, {'Zv', 'hasSnapshotFormat', 'nRecords', 'nCdfSamplesPerRecord', 'isLfr', 'isTdsCwf'}, {});
+            EJ_library.utils.assert.struct(PreDc.Zv, {...
                 'Epoch', 'ACQUISITION_TIME', 'samplesCaTm', 'freqHz', 'nValidSamplesPerRecord', 'iLsf', 'DIFF_GAIN', 'MUX_SET', 'QUALITY_FLAG', ...
                 'QUALITY_BITMASK', 'DELTA_PLUS_MINUS', 'SYNCHRO_FLAG'}, {'CALIBRATION_TABLE_INDEX'});
             bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(PreDc.Zv);
@@ -465,8 +465,8 @@ classdef proc_sub
 
 
         function assert_PostDC(PostDc)
-            EJ_library.utils.assert.struct2(PostDc, {'Zv', 'hasSnapshotFormat', 'nRecords', 'nCdfSamplesPerRecord', 'isLfr', 'isTdsCwf'}, {});
-            EJ_library.utils.assert.struct2(PostDc.Zv, {...
+            EJ_library.utils.assert.struct(PostDc, {'Zv', 'hasSnapshotFormat', 'nRecords', 'nCdfSamplesPerRecord', 'isLfr', 'isTdsCwf'}, {});
+            EJ_library.utils.assert.struct(PostDc.Zv, {...
                 'Epoch', 'ACQUISITION_TIME', 'samplesCaTm', 'freqHz', 'nValidSamplesPerRecord', 'iLsf', 'DIFF_GAIN', 'MUX_SET', 'QUALITY_FLAG', ...
                 'QUALITY_BITMASK', 'DELTA_PLUS_MINUS', 'SYNCHRO_FLAG', 'DemuxerOutput', 'IBIAS1', 'IBIAS2', 'IBIAS3', 'DemuxerOutput'}, {'CALIBRATION_TABLE_INDEX'});
             bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(PostDc.Zv);
@@ -548,7 +548,7 @@ classdef proc_sub
             % ASSERTION
             bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(OutSciZv);
             % NOTE: Not really necessary since the list of zVars will be checked against the master CDF?
-            EJ_library.utils.assert.struct2(OutSciZv, {'IBIAS1', 'IBIAS2', 'IBIAS3', 'V', 'E', 'EAC', 'Epoch', ...
+            EJ_library.utils.assert.struct(OutSciZv, {'IBIAS1', 'IBIAS2', 'IBIAS3', 'V', 'E', 'EAC', 'Epoch', ...
                 'QUALITY_BITMASK', 'QUALITY_FLAG', 'DELTA_PLUS_MINUS', 'ACQUISITION_TIME', 'SYNCHRO_FLAG'}, {'F_SAMPLE'})
         end   % process_PostDC_to_LFR
 
@@ -609,7 +609,7 @@ classdef proc_sub
             % ASSERTION
             bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(OutSciZv);
             % NOTE: Not really necessary since the list of zVars will be checked against the master CDF?
-            EJ_library.utils.assert.struct2(OutSciZv, {'IBIAS1', 'IBIAS2', 'IBIAS3', 'V', 'E', 'EAC', 'Epoch', ...
+            EJ_library.utils.assert.struct(OutSciZv, {'IBIAS1', 'IBIAS2', 'IBIAS3', 'V', 'E', 'EAC', 'Epoch', ...
                 'QUALITY_BITMASK', 'QUALITY_FLAG', 'DELTA_PLUS_MINUS', 'ACQUISITION_TIME', 'SYNCHRO_FLAG'}, {'F_SAMPLE'})
         end
         
