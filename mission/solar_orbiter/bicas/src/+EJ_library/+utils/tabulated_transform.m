@@ -86,7 +86,7 @@ classdef tabulated_transform
             % Handle omegaRps argument
             %==========================
             % ASSERTIONS: omegaRps
-            EJ_library.utils.assert.vector(omegaRps)
+            EJ_library.assert.vector(omegaRps)
             assert(all(~isnan(omegaRps)))   % NOTE: Permit +-Inf, but not NaN.
             % Do not really limit the type of TFs, but still good sanity check on argument (e.g. when confusing
             % arguments).
@@ -105,9 +105,9 @@ classdef tabulated_transform
                 varargin  = varargin(3:end);
                 
                 % ASSERTIONS
-                EJ_library.utils.assert.vector(amplitude)
-                EJ_library.utils.assert.vector(phaseRad)
-                EJ_library.utils.assert.all_equal([...
+                EJ_library.assert.vector(amplitude)
+                EJ_library.assert.vector(phaseRad)
+                EJ_library.assert.all_equal([...
                     numel(omegaRps), ...
                     numel(amplitude), ...
                     numel(phaseRad)])
@@ -122,7 +122,7 @@ classdef tabulated_transform
                 varargin = varargin(2:end);
                 
                 % ASSERTIONS
-                EJ_library.utils.assert.vector(Z)
+                EJ_library.assert.vector(Z)
                 assert( numel(omegaRps) == numel(Z) )
             else
                 error('Illegal combination of arguments.')

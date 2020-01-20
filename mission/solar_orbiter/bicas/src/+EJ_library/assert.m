@@ -26,11 +26,11 @@
 % PRO: MATLAB's assert requires argument to logical, not numerical (useful if using 0/1=false/true).
 % --
 % Ex: assert(strcmp(datasetType, 'DERIV1'))
-%     vs EJ_library.utils.assertions.castring_in_set(datasetType, {'DERIV1'})
+%     vs EJ_library.assertions.castring_in_set(datasetType, {'DERIV1'})
 % Ex: assert(any(strcmp(s, {'DERIV1', 'EDDER'})))
-%     vs EJ_library.utils.assertions.castring_in_set(datasetType, {'EDDER', 'DERIV1'})
+%     vs EJ_library.assertions.castring_in_set(datasetType, {'EDDER', 'DERIV1'})
 % Ex: assert(isstruct(s) && isempty(setxor(fieldnames(s), {'a', 'b', 'c'})))
-%     vs EJ_library.utils.assertions.is_struct_w_fields(s, {'a', 'b', 'c'})
+%     vs EJ_library.assertions.is_struct_w_fields(s, {'a', 'b', 'c'})
 %
 %
 % NAMING CONVENTIONS
@@ -83,9 +83,6 @@ classdef assert
 % PROPOSAL: Static variable for error message identifier.
 %   PRO: Can set differently in BICAS.
 %
-% PROPOSAL: Move out of "utils" package.
-%   PRO: Is used very, very often.
-%
 % PROPOSAL: Function for asserting that some arbitrary property is identical for an arbitrary set of variables.
 %   Function handle defines the property: argument=variable, return value=value that should be identical for all
 %   variables.
@@ -108,9 +105,9 @@ classdef assert
         function castring(s)
             % PROPOSAL: Only accept empty char arrays of size 1x0 or 0x0.
             if ~ischar(s)
-                error(EJ_library.utils.assert.ERROR_MSG_ID, 'Expected castring (0x0, 1xN char array) is not char.')
+                error(EJ_library.assert.ERROR_MSG_ID, 'Expected castring (0x0, 1xN char array) is not char.')
             elseif ~(isempty(s) || size(s, 1) == 1)
-                error(EJ_library.utils.assert.ERROR_MSG_ID, 'Expected castring (0x0, 1xN char array) has wrong dimensions.')
+                error(EJ_library.assert.ERROR_MSG_ID, 'Expected castring (0x0, 1xN char array) has wrong dimensions.')
             end
         end
         
@@ -121,7 +118,7 @@ classdef assert
         % NOTE: Will permit empty strings to match a regular expression.
         function castring_regexp(s, regexp)
             if ~any(EJ_library.utils.regexpf(s, regexp))
-                error(EJ_library.utils.assert.ERROR_MSG_ID, 'String "%s" (in its entirety) does not match any of the specified regular expressions.', s)
+                error(EJ_library.assert.ERROR_MSG_ID, 'String "%s" (in its entirety) does not match any of the specified regular expressions.', s)
             end
         end
         
@@ -132,12 +129,12 @@ classdef assert
             % NOTE: Misleading name, since does not check for strings.
             
             if ~iscell(s)
-                error(EJ_library.utils.assert.ERROR_MSG_ID, 'Expected cell array of unique strings, but is not cell array.')
+                error(EJ_library.assert.ERROR_MSG_ID, 'Expected cell array of unique strings, but is not cell array.')
                 
             % IMPLEMENTATION NOTE: For cell arrays, "unique" requires the components to be strings. Therefor does not
             % check (again), since probably slow.
             elseif numel(unique(s)) ~= numel(s)
-                error(EJ_library.utils.assert.ERROR_MSG_ID, 'Expected cell array of unique strings, but not all strings are unique.')
+                error(EJ_library.assert.ERROR_MSG_ID, 'Expected cell array of unique strings, but not all strings are unique.')
             end
         end
         
@@ -147,13 +144,12 @@ classdef assert
         % PROPOSAL: Abolish
         %   PRO: Unnecessary since can use assert(ismember(s, strSet)).
         %       CON: This gives better error messages for string not being string, for string set not being string set.
-            import EJ_library.*
         
-            utils.assert.castring_set(strSet)
-            utils.assert.castring(s)
+            EJ_library.assert.castring_set(strSet)
+            EJ_library.assert.castring(s)
             
             if ~ismember(s, strSet)
-                error(EJ_library.utils.assert.ERROR_MSG_ID, 'Expected string in string set is not in set.')
+                error(EJ_library.assert.ERROR_MSG_ID, 'Expected string in string set is not in set.')
             end
         end
         
@@ -166,7 +162,7 @@ classdef assert
             
             % NOTE: all({}) == all([]) == true
             if ~all(ismember(strSubset, strSet))
-                error(EJ_library.utils.assert.ERROR_MSG_ID, 'Expected subset is not a subset.')
+                error(EJ_library.assert.ERROR_MSG_ID, 'Expected subset is not a subset.')
             end
         end
         
@@ -174,7 +170,7 @@ classdef assert
         
         function scalar(x)
             if ~isscalar(x)
-                error(EJ_library.utils.assert.ERROR_MSG_ID, 'Variable is not scalar as expected.')
+                error(EJ_library.assert.ERROR_MSG_ID, 'Variable is not scalar as expected.')
             end
         end
         
@@ -183,7 +179,7 @@ classdef assert
         % Either regular file or symlink to regular file (i.e. not directory or symlink to directory).
         function file_exists(filePath)
             if ~(exist(filePath, 'file') == 2)
-                error(EJ_library.utils.assert.ERROR_MSG_ID, 'Expected existing regular file (or symlink to regular file) "%s" can not be found.', filePath)
+                error(EJ_library.assert.ERROR_MSG_ID, 'Expected existing regular file (or symlink to regular file) "%s" can not be found.', filePath)
             end
         end
         
@@ -191,7 +187,7 @@ classdef assert
         
         function dir_exists(dirPath)
             if ~exist(dirPath, 'dir')
-                error(EJ_library.utils.assert.ERROR_MSG_ID, 'Expected existing directory "%s" can not be found.', dirPath)
+                error(EJ_library.assert.ERROR_MSG_ID, 'Expected existing directory "%s" can not be found.', dirPath)
             end
         end
         
@@ -207,7 +203,7 @@ classdef assert
         %   Ex: file_dir_does_not_exist
         
             if exist(path, 'file')
-                error(EJ_library.utils.assert.ERROR_MSG_ID, 'Path "%s" which was expected to point to nothing, actually points to a file/directory.', path)
+                error(EJ_library.assert.ERROR_MSG_ID, 'Path "%s" which was expected to point to nothing, actually points to a file/directory.', path)
             end
         end
 
@@ -231,7 +227,7 @@ classdef assert
             %   TODO-DECISION: How specify fieldnames? Can not use cell arrays recursively.
             %   PROPOSAL: Define other, separate assertion method.
             %   CON: Rarely needed.
-            %   CON-PROPOSAL: Can manually call EJ_library.utils.assert.struct multiple times, once for each substruct,
+            %   CON-PROPOSAL: Can manually call EJ_library.assert.struct multiple times, once for each substruct,
             %                 instead (if only required field names).
             % PROPOSAL: Assertion: Intersection requiredFnSet-optionalFnSet is empty.
             
@@ -245,7 +241,7 @@ classdef assert
             elseif isequal(optionalFnSet, 'all')
                 disallowedFnSet = {};
             else
-                error(EJ_library.utils.assert.ERROR_MSG_ID, 'Illegal optionalFnSet argument. Is neither cell array or string constant "all".')
+                error(EJ_library.assert.ERROR_MSG_ID, 'Illegal optionalFnSet argument. Is neither cell array or string constant "all".')
             end
             
             % Give error, with an actually useful error message.
@@ -253,7 +249,7 @@ classdef assert
                 missingRequiredFnListStr = strjoin(missingRequiredFnSet, ', ');
                 disallowedFnListStr      = strjoin(disallowedFnSet,      ', ');
 
-                error(EJ_library.utils.assert.ERROR_MSG_ID, ['Expected struct has the wrong set of fields.', ...
+                error(EJ_library.assert.ERROR_MSG_ID, ['Expected struct has the wrong set of fields.', ...
                     '\n    Missing fields:           %s', ...
                     '\n    Extra (forbidden) fields: %s'], missingRequiredFnListStr, disallowedFnListStr)
             end
@@ -268,15 +264,15 @@ classdef assert
         % NOTE: Can not handle: is function handle, but does not point to existing function(!)
         function func(funcHandle, nArgin, nArgout)
             if ~isa(funcHandle, 'function_handle')
-                error(EJ_library.utils.assert.ERROR_MSG_ID, 'Expected function handle is not a function handle.')
+                error(EJ_library.assert.ERROR_MSG_ID, 'Expected function handle is not a function handle.')
             end
             if nargin(funcHandle) ~= nArgin
-                error(EJ_library.utils.assert.ERROR_MSG_ID, ...
+                error(EJ_library.assert.ERROR_MSG_ID, ...
                     'Expected function handle ("%s") has the wrong number of input arguments. nargin()=%i, nArgin=%i', ...
                     func2str(funcHandle), nargin(funcHandle), nArgin)
             elseif nargout(funcHandle) ~= nArgout
                 % NOTE: MATLAB actually uses term "output arguments".
-                error(EJ_library.utils.assert.ERROR_MSG_ID, ...
+                error(EJ_library.assert.ERROR_MSG_ID, ...
                     'Expected function handle ("%s") has the wrong number of output arguments (return values). nargout()=%i, nArgout=%i', ...
                     func2str(funcHandle), nargout(funcHandle), nArgout)
             end
@@ -286,7 +282,7 @@ classdef assert
 
         function isa(v, className)
             if ~isa(v, className)
-                error(EJ_library.utils.assert.ERROR_MSG_ID, 'Expected class=%s but found class=%s.', className, class(v))
+                error(EJ_library.assert.ERROR_MSG_ID, 'Expected class=%s but found class=%s.', className, class(v))
             end
         end
         
@@ -303,7 +299,7 @@ classdef assert
             dims(dims==1) = [];
             if numel(dims) > 1
                 sizeStr = sprintf('%ix', size(v));
-                error(EJ_library.utils.assert.ERROR_MSG_ID, 'Expected vector, but found variable of size %s.', sizeStr(1:end-1))
+                error(EJ_library.assert.ERROR_MSG_ID, 'Expected vector, but found variable of size %s.', sizeStr(1:end-1))
             end
         end
         
@@ -322,14 +318,14 @@ classdef assert
             % PROPOSAL: Be able to separate size constraints to multiple variables, but specify that certain indices
             % have to be identical in size (but arbitrary) between variables.
             %   PROPOSAL: Use negative values to indicate that the size in that dimension should be identical.
-            %       CALL EXAMPLE: EJ_library.utils.assert.size(Epoch, [-1], zvSnapshotsV, [-1, 1, -2], zvSnapshotsE, [-1, 2, -2])
+            %       CALL EXAMPLE: EJ_library.assert.size(Epoch, [-1], zvSnapshotsV, [-1, 1, -2], zvSnapshotsE, [-1, 2, -2])
             %       Ex: zVariables: Number of records, number of samples per record.
             %   PROPOSAL: Somehow be able to state that a variable is a 1D vector, regardless of which index is not size one.
             %       PROPOSAL: sizeConstraints = 1x1 cell array, with one numeric value (length of vector)?!!
             %       PROPOSAL: Prepend sizeConstraints with string constant "vector".
             
             % ASSERTION
-            EJ_library.utils.assert.vector(sizeConstraints)
+            EJ_library.assert.vector(sizeConstraints)
             
             sizeV = size(v);
             
@@ -353,7 +349,7 @@ classdef assert
             sizeConstraints(iIgnore) = sizeV(iIgnore);
 
             % ASSERTION: The actual assertion
-            assert( all(sizeV == sizeConstraints), EJ_library.utils.assert.ERROR_MSG_ID, 'Variable does not have the expected size.')
+            assert( all(sizeV == sizeConstraints), EJ_library.assert.ERROR_MSG_ID, 'Variable does not have the expected size.')
         end
         
         
@@ -375,7 +371,7 @@ classdef assert
            nUniques = numel(unique(v(:)));    % NOTE: Make 1D vector.
            nTotal   = numel(v);
            if (nUniques ~= 1) && (nTotal >= 1)
-               error(EJ_library.utils.assert.ERROR_MSG_ID, ...
+               error(EJ_library.assert.ERROR_MSG_ID, ...
                    'Expected vector of identical values, but found %i unique values out of a total of %i values.', ...
                    nUniques, nTotal)
            end

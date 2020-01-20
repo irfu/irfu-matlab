@@ -54,8 +54,8 @@ classdef rational_func_transform
             % IMPLEMENTATION NOTE: See top-level file comments.
 
             % ASSERTION: Require 1D vectors
-            EJ_library.utils.assert.vector(numeratorCoeffs)
-            EJ_library.utils.assert.vector(denominatorCoeffs)
+            EJ_library.assert.vector(numeratorCoeffs)
+            EJ_library.assert.vector(denominatorCoeffs)
             % ASSERTION: Exclude NaN, +-Inf
             assert(all(isfinite(  numeratorCoeffs)))
             assert(all(isfinite(denominatorCoeffs)))

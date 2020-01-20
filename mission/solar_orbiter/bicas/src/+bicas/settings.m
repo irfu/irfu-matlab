@@ -114,7 +114,7 @@ classdef settings < handle
             % NOTE: Used to be public method. Can/should probably be rewritten or merged with set_preexisting_from_strings.
             
             % ASSERTIONS
-            EJ_library.utils.assert.castring(valueSource)
+            EJ_library.assert.castring(valueSource)
             if obj.readOnlyForever
                 error('BICAS:settings:Assertion', 'Trying to modify read-only settings object.')
             end

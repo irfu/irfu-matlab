@@ -89,11 +89,11 @@ function OptionValuesMap = parse_CLI_options(cliArgumentsList, OptionsConfigMap)
 
 % ASSERTIONS: Check argument types, sizes.
 assert(iscell(cliArgumentsList), 'cliArgumentsList is not a cell array.')
-EJ_library.utils.assert.vector(cliArgumentsList)
+EJ_library.assert.vector(cliArgumentsList)
 % if length(cliArgumentsList) ~= numel(cliArgumentsList)
 %     error('BICAS:parse_CLI_options:Assertion:IllegalArgument', 'Parameter is not a 1D cell array.')
 % end
-EJ_library.utils.assert.isa(OptionsConfigMap, 'containers.Map')
+EJ_library.assert.isa(OptionsConfigMap, 'containers.Map')
 
 
 
@@ -218,7 +218,7 @@ function [OptionsConfigMapModifCopy, EmptyOptionValuesMap] = init_assert(Options
         ModifOptionConfig = OptionsConfigMap(optionId);
         
         % ASSERTION: OptionConfig is the right struct.
-        EJ_library.utils.assert.struct(ModifOptionConfig, {'optionHeaderRegexp', 'occurrenceRequirement', 'nValues'}, {'interprPriority'})
+        EJ_library.assert.struct(ModifOptionConfig, {'optionHeaderRegexp', 'occurrenceRequirement', 'nValues'}, {'interprPriority'})
         
         % Use priority default value, if there is none.
         if ~isfield(ModifOptionConfig, 'interprPriority')

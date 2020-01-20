@@ -229,14 +229,14 @@ classdef swmode_defs
             
             obj.List = SwModeList;
             
-            EJ_library.utils.assert.castring_set({obj.List(:).cliOption})
+            EJ_library.assert.castring_set({obj.List(:).cliOption})
         end    % Constructor
 
 
 
         function swModeInfo = get_sw_mode_info(obj, swModeCliOption)
             i = find(strcmp(swModeCliOption, {obj.List(:).cliOption}));
-            EJ_library.utils.assert.scalar(i)
+            EJ_library.assert.scalar(i)
             swModeInfo = obj.List(i);
         end
         
@@ -257,18 +257,18 @@ classdef swmode_defs
             
             
             % ASSERTIONS
-            EJ_library.utils.assert.castring_set( {...
+            EJ_library.assert.castring_set( {...
                 Def.inputsList(:).cliOptionHeaderBody, ...
                 Def.outputsList(:).cliOptionHeaderBody })   % Important. Check uniqueness of SIP options.
-            EJ_library.utils.assert.castring_set( {...
+            EJ_library.assert.castring_set( {...
                 Def.inputsList(:).prodFuncInputKey })   % Maybe not really necessary.
-            EJ_library.utils.assert.castring_set( {...
+            EJ_library.assert.castring_set( {...
                 Def.outputsList(:).prodFuncOutputKey })   % Maybe not really necessary.
             
             bicas.swmode_defs.assert_SW_mode_CLI_option(Def.cliOption)
             bicas.swmode_defs.assert_text(              Def.swdPurpose)
             
-            EJ_library.utils.assert.castring_set({...
+            EJ_library.assert.castring_set({...
                 Def.inputsList(:).cliOptionHeaderBody, ...
                 Def.outputsList(:).cliOptionHeaderBody})
         end
@@ -324,17 +324,17 @@ classdef swmode_defs
 
         % Assert that string contains human-readable text.
         function assert_text(str)
-            EJ_library.utils.assert.castring_regexp(str, '.* .*')
-            EJ_library.utils.assert.castring_regexp(str, '[^<>]*')
+            EJ_library.assert.castring_regexp(str, '.* .*')
+            EJ_library.assert.castring_regexp(str, '[^<>]*')
         end
         
         function assert_SW_mode_CLI_option(swModeCliOption)
-            EJ_library.utils.assert.castring_regexp(swModeCliOption, bicas.swmode_defs.SW_MODE_CLI_PARAMETER_REGEX)
+            EJ_library.assert.castring_regexp(swModeCliOption, bicas.swmode_defs.SW_MODE_CLI_PARAMETER_REGEX)
         end
 
         % NOTE: Really refers to "option body".
         function assert_SIP_CLI_option(sipCliOptionBody)
-            EJ_library.utils.assert.castring_regexp(sipCliOptionBody, bicas.swmode_defs.SIP_CLI_OPTION_BODY_REGEX)
+            EJ_library.assert.castring_regexp(sipCliOptionBody, bicas.swmode_defs.SIP_CLI_OPTION_BODY_REGEX)
         end
         
     end    % methods(Static, Access=private)

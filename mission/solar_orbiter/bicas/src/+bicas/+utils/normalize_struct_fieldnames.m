@@ -46,7 +46,7 @@ function S = normalize_struct_fieldnames(S, normList)
         
 
         oldFn = fnList{iFn};
-        EJ_library.utils.assert.castring(newFn)
+        EJ_library.assert.castring(newFn)
         
         if ~strcmp(oldFn, newFn)
             S.(newFn) = S.(oldFn);

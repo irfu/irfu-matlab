@@ -315,7 +315,7 @@ classdef calib < handle
         function rctDataList = read_non_BIAS_RCT_by_CALIBRATION_TABLE(obj, rctId, ga_CALIBRATION_TABLE, zv_CALIBRATION_TABLE_INDEX, use_CALIBRATION_TABLE_INDEX2)
             % ASSERTIONS
             assert(iscell(ga_CALIBRATION_TABLE), 'BICAS:calib:Assertion:IllegalArgument', 'ga_CALIBRATION_TABLE is not a cell array.')
-            EJ_library.utils.assert.vector(ga_CALIBRATION_TABLE)
+            EJ_library.assert.vector(ga_CALIBRATION_TABLE)
             assert(size(zv_CALIBRATION_TABLE_INDEX, 2) == 2, 'BICAS:calib:Assertion:IllegalArgument', 'zv_CALIBRATION_TABLE_INDEX does not have two columns.')
 
             %==========================================================================
@@ -508,8 +508,8 @@ classdef calib < handle
             
             % ASSERTIONS
             assert(iscell(samplesCaTm))
-            EJ_library.utils.assert.vector(samplesCaTm)
-            EJ_library.utils.assert.vector(dtSec)
+            EJ_library.assert.vector(samplesCaTm)
+            EJ_library.assert.vector(dtSec)
             assert(numel(samplesCaTm) == numel(dtSec))
             assert((1 <= iBlts) && (iBlts <= 5))
             assert(isa(BltsSrc, 'bicas.BLTS_src_dest'))
@@ -569,7 +569,7 @@ classdef calib < handle
         function samplesCaAVolt = calibrate_TDS_CWF_full(obj, dtSec, samplesCaTm, iBlts, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH, cti1, cti2)
 
             % ASSERTIONS
-            EJ_library.utils.assert.vector(dtSec)
+            EJ_library.assert.vector(dtSec)
             assert(iscell(samplesCaTm))
             assert(numel(samplesCaTm) == numel(dtSec))
             assert((1 <= iBlts) && (iBlts <= 5))
@@ -629,7 +629,7 @@ classdef calib < handle
         function samplesCaAVolt = calibrate_TDS_RSWF_full(obj, dtSec, samplesCaTm, iBlts, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH, cti1, cti2)
             
             % ASSERTIONS
-            EJ_library.utils.assert.vector(dtSec)
+            EJ_library.assert.vector(dtSec)
             assert(iscell(samplesCaTm))
             assert(numel(samplesCaTm) == numel(dtSec))
             assert((1 <= iBlts) && (iBlts <= 5))

@@ -120,7 +120,7 @@ elseif ~isscalar(dt)
 elseif ~(dt>0)
     error('BICAS:apply_transfer_function:Assertion:IllegalArgument', 'dt is not positive.')
 elseif ~isa(tf, 'function_handle')
-    % EJ_library.utils.assert.func does not seem to handle return values correctly.
+    % EJ_library.assert.func does not seem to handle return values correctly.
     error('BICAS:apply_transfer_function:Assertion:IllegalArgument', 'tf is not a function.')
 elseif ~isreal(tf(0))
     error('BICAS:apply_transfer_function:Assertion:IllegalArgument', 'tf(0) is not real.')    
@@ -130,7 +130,7 @@ end
 
 DEFAULT_SETTINGS.enableDetrending = 0;
 Settings = EJ_library.utils.interpret_settings_args(DEFAULT_SETTINGS, varargin);
-EJ_library.utils.assert.struct(Settings, fieldnames(DEFAULT_SETTINGS), {})
+EJ_library.assert.struct(Settings, fieldnames(DEFAULT_SETTINGS), {})
 
 
 

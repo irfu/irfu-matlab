@@ -373,7 +373,7 @@ classdef proc_utils
                 v = varargin{i};
                 
                 % ASSERTIONS
-                EJ_library.utils.assert.vector(v)
+                EJ_library.assert.vector(v)
                 assert(v(1) == 1)    % Verifies that it is an edge list, and that the "convention" for what is an edge list (include beginning and end) has not changed.
                 
                 % NOTE: Works with (forces) column vectors to make concatenations reliable
@@ -394,7 +394,7 @@ classdef proc_utils
         %
         function [iFirstList, iLastList] = index_edges_2_first_last(iEdgeList)
             assert(issorted(iEdgeList))
-            EJ_library.utils.assert.vector(iEdgeList)
+            EJ_library.assert.vector(iEdgeList)
             
             
             iFirstList = iEdgeList(1:end-1);
@@ -450,12 +450,12 @@ classdef proc_utils
         % ============
         % v     : (iRecord, iChannel)
 
-            EJ_library.utils.assert.size(zv1, [NaN, NaN, NaN])
+            EJ_library.assert.size(zv1, [NaN, NaN, NaN])
             
             zv  = permute(zv1, [2,1,3]);
             zv2 = reshape(zv, size(zv,1) * size(zv,2), size(zv,3));
             
-            EJ_library.utils.assert.size(zv2, [NaN, NaN])
+            EJ_library.assert.size(zv2, [NaN, NaN])
         end
 
 
@@ -579,7 +579,7 @@ classdef proc_utils
         % nCopyColsPerRowVec    : 1D vector. {i}=Number of elements to copy from M{i,:}.
         % ca                    : Column cell array of 1D vectors.
         function ca = convert_matrix_to_cell_array_of_vectors(M, nCopyColsPerRowVec)
-            EJ_library.utils.assert.vector(nCopyColsPerRowVec)
+            EJ_library.assert.vector(nCopyColsPerRowVec)
             assert(ismatrix(M))
             assert(size(M, 1) == length(nCopyColsPerRowVec))
             
@@ -598,9 +598,9 @@ classdef proc_utils
         % nCopyColsPerRowVec    : 1D vector. {i}=Length of ca{i}=Number of elements copyied to M{i,:}.
         function [M, nCopyColsPerRowVec] = convert_cell_array_of_vectors_to_matrix(ca, nMatrixColumns)
             assert(iscell(ca))
-            EJ_library.utils.assert.vector(ca)
+            EJ_library.assert.vector(ca)
             assert(isscalar(nMatrixColumns))
-            EJ_library.utils.assert.vector(nMatrixColumns)
+            EJ_library.assert.vector(nMatrixColumns)
             
             nCopyColsPerRowVec = zeros(numel(ca), 1);   % Always column vector.
             M                  = zeros(numel(ca), nMatrixColumns) * NaN;
@@ -748,7 +748,7 @@ classdef proc_utils
             %       respond.
             % NEED?!: Some way of determining whether an obsoleted and current DATASET_ID are equivalent.
             
-            EJ_library.utils.assert.castring(datasetId)
+            EJ_library.assert.castring(datasetId)
             
             C.isLfrSbm1 = 0;
             C.isLfrSbm2 = 0;
@@ -791,7 +791,7 @@ classdef proc_utils
                 error('BICAS:proc_utils:Assertion:IllegalArgument', 'Illegal DATASET_ID. datasetId="%s"', datasetId)
             end
             
-            EJ_library.utils.assert.struct(C, {...
+            EJ_library.assert.struct(C, {...
                 'isLfrSbm1', ...
                 'isLfrSbm2', ...
                 'isLfrSwf', ...
@@ -1028,7 +1028,7 @@ classdef proc_utils
         
         % NOTE: Function name somewhat bad.
         % PROPOSAL: Make recursive?!
-        % PROPOSAL: Implement using new features in EJ_library.utils.assert.size.
+        % PROPOSAL: Implement using new features in EJ_library.assert.size.
         
             fieldNamesList1 = fieldnames(S);
             nRows = [];
@@ -1063,14 +1063,14 @@ classdef proc_utils
         % c : Cell array.
         function assert_cell_array_comps_have_same_N_rows(c)
             nRowsArray = cellfun(@(v) (size(v,1)), c, 'UniformOutput', true);
-            EJ_library.utils.assert.all_equal( nRowsArray )
+            EJ_library.assert.all_equal( nRowsArray )
         end
         
         
         
         function doOverlap = ranges_overlap(v1, v2)
-            EJ_library.utils.assert.vector(v1)
-            EJ_library.utils.assert.vector(v2)
+            EJ_library.assert.vector(v1)
+            EJ_library.assert.vector(v2)
             
             doOverlap = (min(v2) <= max(v1)) && (min(v1) <= max(v2));
         end

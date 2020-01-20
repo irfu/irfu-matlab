@@ -46,7 +46,7 @@ function run_tests(testList)
     
     for iTest = 1:numel(testList)
         TestData = testList{iTest}.run();
-        EJ_library.utils.assert.struct(TestData, {'success', 'resultDescrText', 'Parameters', 'Result'}, {});
+        EJ_library.assert.struct(TestData, {'success', 'resultDescrText', 'Parameters', 'Result'}, {});
         
         fprintf('TEST %2i: ', iTest)
         if TestData.success
