@@ -29,6 +29,8 @@ for iKey = 1:length(keyList)
         strValue = ['"', value, '"'];
     elseif isnumeric(value)
         strValue = sprintf('%d ', value);    % Extra whitespace important for printing arrays. Works for all dimensionalities (are made into "string row vector").
+    else
+        error('BICAS:sprintf_settings:Assertion', 'SETTINGS value for key="%s" has illegal MATLAB class. Is neither char nor numeric.', 'key')
     end
     
     
