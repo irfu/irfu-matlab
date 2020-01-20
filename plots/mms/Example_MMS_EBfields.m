@@ -5,8 +5,8 @@
 
 ic = 1; % Spacecraft number
 
-%Tint = irf.tint('2015-10-30T05:15:20.00Z/2015-10-30T05:16:20.00Z');
-Tint = irf.tint('2017-01-27T12:05:00.000Z/2017-01-27T12:06:00.000Z');    
+Tint = irf.tint('2015-10-30T05:15:20.00Z/2015-10-30T05:16:20.00Z');
+%Tint = irf.tint('2017-01-27T12:05:00.000Z/2017-01-27T12:06:00.000Z');    
 
 
 %% Load Data 
@@ -32,7 +32,7 @@ Bscmfachf = Bscmfac.filt(fmin,0,dfB,5);
 %% Wavelet transforms
 nf = 100; 
 Ewavelet = irf_wavelet(Exyzfac,'nf',nf,'f',[fmin fmax]);
-Bwavelet = irf_wavelet(Bscmfac,'nf',nf,'f',[fmin fmax]);
+Bwavelet = irf_wavelet(Bscm,'nf',nf,'f',[fmin fmax]);
 
 %compress wavelet transform data 10 point average
 nc = 100;

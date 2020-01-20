@@ -64,7 +64,7 @@ classdef PDist < TSeries
           obj.depend{2} = args{1}; args(1) = []; obj.representation{2} = {'pitchangle'};                       
         case {'omni'} % construct omni directional distribution
           obj.depend{1} = args{1}; args(1) = []; obj.representation{1} = {'energy'};
-        case {'line (reduced)'} % % construct 1D distribution, through integration over the other 2 dimensions
+        case {'line (reduced)','1Dcart'} % % construct 1D distribution, through integration over the other 2 dimensions
           obj.depend{1} = args{1}; args(1) = []; obj.representation{1} = {'velocity'};          
         case {'plane (reduced)'} % construct 2D distribution, either through integration or by taking a slice
           obj.depend{1} = args{1}; args(1) = []; obj.representation{1} = {'velocity1'};
@@ -72,6 +72,10 @@ classdef PDist < TSeries
         case {'plane (slice)'} % construct 2D distribution, either through integration or by taking a slice
           obj.depend{1} = args{1}; args(1) = []; obj.representation{1} = {'velocity1'};
           obj.depend{2} = args{1}; args(1) = []; obj.representation{2} = {'velocity2'};        
+        case {'box','3Dcart'}
+          obj.depend{1} = args{1}; args(1) = []; obj.representation{1} = {'velocity1'};
+          obj.depend{2} = args{1}; args(1) = []; obj.representation{2} = {'velocity2'};
+          obj.depend{3} = args{1}; args(1) = []; obj.representation{3} = {'velocity3'};
         otherwise 
           warning('Unknown distribution type')
       end
@@ -282,8 +286,8 @@ classdef PDist < TSeries
       obj.data = obj.data./obj2.data;
     end
     function [x,y,z] = xyz(obj,varargin)
-      % PDIST.XYZ Get xyz coordinates of each detector bin. DSL
-      % coordinates. PLEASE REPORT ERRORS.
+      % PDIST.XYZ Get xyz coordinates of each detector bin.
+      % PLEASE REPORT ERRORS.
       %
       %   [x,y,z] = PDIST.xyz(options);
       %    x, y, z - ntx32x16 matrices
@@ -1097,7 +1101,11 @@ classdef PDist < TSeries
         v = units.c*sqrt(1-(energy*units.e/(M*units.c^2)-1).^2); % m/s  
 
         % azimuthal angle
-        phi = double(dist.depend{2}(it(i),:)); % in degrees
+        if size(dist.depend{2},1)>1
+            phi = double(dist.depend{2}(it(i),:)); % in degrees
+        else % fast mode
+            phi = double(dist.depend{2}); % in degrees
+        end
         %phi = phi+180;
         %phi(phi>360) = phi(phi>360)-360;
         phi = phi-180;
@@ -1213,11 +1221,12 @@ classdef PDist < TSeries
       end
       
     end
-    function PD = rebin(obj,base,grid)
+    function PD = rebin(obj,base,grid,orient,varargin)
       % PDIST.REBIN Rebins energies of distribution function.      
       %   Usage: 
-      %     PD = REBIN(dist,base,grid);
+      %     PD = REBIN(dist,base,grid,orient);
       %       base - only 'sph' implemented
+      %       orient - 
       %       grid - only {energy,[],[]} implemented
       %       
       %     Rebin to correspond to EDI energy interval.
@@ -1231,86 +1240,161 @@ classdef PDist < TSeries
       %     if base is 'cart_E', grid should be {Ex,Ey,Ez} 
       %       v/E defines the edges of the bins
       %
+      
+      
+      % Default values
       units = irf_units;
       nMC = 200;
-      %its = 1:10;
       nt = obj.length;
       its = 1:nt;
       PD = [];
       
-      if strcmp(base,'sph')
-        old_az_num = size(obj.depend{2},2);
-        old_pol_num = size(obj.depend{3},2);
-        
-        old_energy_minus = obj.depend{1} - obj.ancillary.delta_energy_minus;
-        old_energy_plus = obj.depend{1} + obj.ancillary.delta_energy_plus;
-        old_energy_num = size(old_energy_minus,2);
-        
-        old_v_minus = sqrt(2*units.e*old_energy_minus/units.me); % m/s
-        old_v_plus = sqrt(2*units.e*old_energy_plus/units.me); % m/s    
-        old_v2dv = (old_v_plus.^3 - old_v_minus.^3)/3;
+      % Check input
+      nargs = numel(varargin);
+      have_options = 0;
+      if nargs > 0, have_options = 1; args = varargin(:); end      
+      while have_options
+        l = 0;
+        switch(lower(args{1}))          
+          otherwise
+            l = 1;
+            irf.log('warning',sprintf('Input ''%s'' not recognized.',args{1}))
+            args = args(l+1:end);
+        end        
+        if isempty(args), break, end    
+      end
       
-        old_data = obj.data;
-        old_dn = obj.d3v.data; % how much density belongs to each phase space bin
-        old_d3v = obj.d3v('mat');
+      % Start binning
+      switch base
+        case 'sph'
+          old_az_num = size(obj.depend{2},2);
+          old_pol_num = size(obj.depend{3},2);
 
-        if not(isempty(grid{1}))
-          new_energy_minus = grid{1}(1:end-1);
-          new_energy_plus = grid{1}(2:end);
-          new_energy_edges = unique([new_energy_minus,new_energy_plus]);
-          
-          new_v_minus = sqrt(2*units.e*new_energy_minus/units.me); % m/s
-          new_v_plus = sqrt(2*units.e*new_energy_plus/units.me); % m/s    
-          new_v2dv = (new_v_plus.^3 - new_v_minus.^3)/3;
-        end
-        new_energy_num = numel(new_energy_minus);
-        new_data = zeros(nt,new_energy_num,size(obj.depend{2},2),size(obj.depend{3},2));
-          
-        % loop through time
-        nskip_erange = 0;
-        nskip_fzero = 0;
-        for it = its
-          % loop through old instrument bins
-          for ie = 1:old_energy_num
-            if or(old_energy_minus(it,ie) > max(new_energy_plus),old_energy_plus(it,ie) < min(new_energy_minus))
-              nskip_erange = nskip_erange + 1;              
-              %disp(sprintf('skipping: new_energy_channel max range = [%.0f, %.0f], old energy channel = [%.0f, %.0f]',min(new_energy_minus),max(new_energy_plus),old_energy_minus(it,ie),old_energy_plus(it,ie)))              
-              continue
-            end
-            for ipol = 1:old_pol_num
-              for iaz = 1:old_az_num %                
-                f_per_MC = old_data(it,ie,iaz,ipol)*old_v2dv(it,ie)/nMC;
-                %dn_per_MC = old_dn(it,ie,iaz,ipol)/nMC;
-                if f_per_MC == 0
-                  nskip_fzero = nskip_fzero + 1;
-                  continue
+          old_energy_minus = obj.depend{1} - obj.ancillary.delta_energy_minus;
+          old_energy_plus = obj.depend{1} + obj.ancillary.delta_energy_plus;
+          old_energy_num = size(old_energy_minus,2);
+
+          old_v_minus = sqrt(2*units.e*old_energy_minus/units.me); % m/s
+          old_v_plus = sqrt(2*units.e*old_energy_plus/units.me); % m/s    
+          old_v2dv = (old_v_plus.^3 - old_v_minus.^3)/3;
+
+          old_data = obj.data;
+          old_dn = obj.d3v.data; % how much density belongs to each phase space bin
+          old_d3v = obj.d3v('mat');
+
+          if not(isempty(grid{1}))
+            new_energy_minus = grid{1}(1:end-1);
+            new_energy_plus = grid{1}(2:end);
+            new_energy_edges = unique([new_energy_minus,new_energy_plus]);
+
+            new_v_minus = sqrt(2*units.e*new_energy_minus/units.me); % m/s
+            new_v_plus = sqrt(2*units.e*new_energy_plus/units.me); % m/s    
+            new_v2dv = (new_v_plus.^3 - new_v_minus.^3)/3;
+          end
+          new_energy_num = numel(new_energy_minus);
+          new_data = zeros(nt,new_energy_num,size(obj.depend{2},2),size(obj.depend{3},2));
+
+          % loop through time
+          nskip_erange = 0;
+          nskip_fzero = 0;
+          for it = its
+            % loop through old instrument bins
+            for ie = 1:old_energy_num
+              if or(old_energy_minus(it,ie) > max(new_energy_plus),old_energy_plus(it,ie) < min(new_energy_minus))
+                nskip_erange = nskip_erange + 1;              
+                %disp(sprintf('skipping: new_energy_channel max range = [%.0f, %.0f], old energy channel = [%.0f, %.0f]',min(new_energy_minus),max(new_energy_plus),old_energy_minus(it,ie),old_energy_plus(it,ie)))              
+                continue
+              end
+              for ipol = 1:old_pol_num
+                for iaz = 1:old_az_num %                
+                  f_per_MC = old_data(it,ie,iaz,ipol)*old_v2dv(it,ie)/nMC;
+                  %dn_per_MC = old_dn(it,ie,iaz,ipol)/nMC;
+                  if f_per_MC == 0
+                    nskip_fzero = nskip_fzero + 1;
+                    continue
+                  end
+                  %try
+                  energy_MC = rand(nMC,1)*(old_energy_plus(it,ie)-old_energy_minus(it,ie))+old_energy_minus(it,ie);                
+
+                  %f_per_MC = old_dn(it,ie,iaz,ipol)/nMC;
+                  % divide particles into new bins
+                  [N,EDGES] = histcounts(energy_MC,new_energy_edges);
+                  new_data(it,:,iaz,ipol) = new_data(it,:,iaz,ipol) + N*f_per_MC./new_v2dv;
+                  %catch
+                  %  1;
+                  %end
                 end
-                %try
-                energy_MC = rand(nMC,1)*(old_energy_plus(it,ie)-old_energy_minus(it,ie))+old_energy_minus(it,ie);                
-                
-                %f_per_MC = old_dn(it,ie,iaz,ipol)/nMC;
-                % divide particles into new bins
-                [N,EDGES] = histcounts(energy_MC,new_energy_edges);
-                new_data(it,:,iaz,ipol) = new_data(it,:,iaz,ipol) + N*f_per_MC./new_v2dv;
-                %catch
-                %  1;
-                %end
               end
             end
+          end  
+          disp(sprintf('nskip_erange = %g, nskip_fzero = %g',nskip_erange,nskip_fzero))
+          PD = obj;        
+          PD.depend{1} = repmat(((new_energy_plus(:,:)+new_energy_minus(:,:))/2),nt,1);        
+          PD.ancillary.delta_energy_minus = abs(PD.depend{1}-new_energy_minus(:,:));
+          PD.ancillary.delta_energy_plus = abs(PD.depend{1}-new_energy_plus(:,:));
+          PD.ancillary.energy0 = PD.depend{1}(1,:);
+          PD.ancillary.energy1 = PD.depend{1}(1,:);
+          %new_dn = PD.d3v('mat');
+          PD.data_ = new_data;%./new_dn;
+        case 'cart'   
+          % Get input
+          new_vx_unit = orient(1,:);
+          new_vy_unit = orient(2,:);
+          new_vz_unit = orient(3,:);
+          new_vbins_edges = grid;
+            
+          % Get v_xyz_DSL of original grid
+          [old_vx,old_vy,old_vz] = obj.v; 
+          old_f = obj.data;
+          old_vol = obj.d3v;
+
+
+          % Rotate old coordinates into new coordinates
+          old_vx_in_new_vxyz = old_vx*new_vx_unit(1) + old_vy*new_vx_unit(2) + old_vz*new_vx_unit(3);
+          old_vy_in_new_vxyz = old_vx*new_vy_unit(1) + old_vy*new_vy_unit(2) + old_vz*new_vy_unit(3);
+          old_vz_in_new_vxyz = old_vx*new_vz_unit(1) + old_vy*new_vz_unit(2) + old_vz*new_vz_unit(3);
+
+
+          % Set up new grid
+          % Add one outer bin
+          [new_vx,new_vy,new_vz] = meshgrid(new_vbins_edges{1},new_vbins_edges{2},new_vbins_edges{3});
+          new_f = nan(size(old_f));
+
+
+          iVxg = discretize(vxp,vg_edges);
+          iVyg = discretize(vyp,vg_edges);
+          % fixes bug that exists on some systems, may influence
+          % performance
+          iVxg(iVxg==0) = nan;
+          iVyg(iVyg==0) = nan;
+
+          % Loop through MC points and add value of instrument bin to the
+          % appropriate projection bin
+          for l = 1:nMCt
+              if usePoint(l) && vxp(l)>min(vg_edges) && vxp(l)<max(vg_edges) && vyp(l)>min(vg_edges) && vyp(l)<max(vg_edges)
+                  Fg(iVxg(l),iVyg(l)) = Fg(iVxg(l),iVyg(l))+F(i,j,k)*dtau(i,j,k)/dAg/nMCt;
+              end
           end
-        end  
-        disp(sprintf('nskip_erange = %g, nskip_fzero = %g',nskip_erange,nskip_fzero))
-        PD = obj;        
-        PD.depend{1} = repmat(((new_energy_plus(:,:)+new_energy_minus(:,:))/2),nt,1);        
-        PD.ancillary.delta_energy_minus = abs(PD.depend{1}-new_energy_minus(:,:));
-        PD.ancillary.delta_energy_plus = abs(PD.depend{1}-new_energy_plus(:,:));
-        PD.ancillary.energy0 = PD.depend{1}(1,:);
-        PD.ancillary.energy1 = PD.depend{1}(1,:);
-        %new_dn = PD.d3v('mat');
-        PD.data_ = new_data;%./new_dn;
-      else
-        return
+                
+                
+        
+        PD = PDist(dist.time(it),Fg,'box',new_vx,new_vy,new_vz);
+        PD.ancillary.vx_edges = all_vx_edges*1e-3;
+        PD.ancillary.vy_edges = all_vx_edges*1e-3;
+        PD.ancillary.base = 'cart';       
       end      
+    end
+    function PD = smooth(obj,step)
+      % PDIST.SMOOTH Running average
+      % PD = smooth(obj,step)
+      % method: It just applies obj.resample on a step-basis
+      
+      PD = obj;
+      %dists = cell(step,1);
+      for istep = 1:step
+        dist_tmp = obj.resample(obj.time(istep:step:end));
+        PD.data(istep:step:end,:) = dist_tmp.data(:,:);      
+      end
     end
     function [ax,args,nargs] = axescheck_pdist(varargin)
       %[ax,args,nargs] = axescheck_pdist(varargin{:});
@@ -2578,6 +2662,78 @@ classdef PDist < TSeries
       end
       if isfield(PD.ancillary,'esteptable'); PD.ancillary.esteptable = zeros(PD.length,1); end
     end
+    function PD = interp(obj,varargin)
+      % PDIST.INTERP Interpolates from spherical to spherical or cartesian
+      % grid.
+      %
+      % To add: Interpolation between all possible grids.
+      
+      % Default values
+      % Check input
+      nargs = numel(varargin);
+      have_options = 0;
+      if nargs > 0, have_options = 1; args = varargin(:); end      
+      while have_options
+        l = 0;
+        switch(lower(args{1}))
+          case 'cart'
+            scpot = varargin{2};
+            doCart = 1;
+            l = 3;
+            new_vxyz = args{2};   
+            new_vx_unit = args{2}(1,:);
+            new_vy_unit = args{2}(2,:);
+            new_vz_unit = args{2}(3,:);
+            new_vbins_edges = args{3}; % edges of new bin
+            args = args(l+1:end);
+          otherwise
+            l = 1;
+            irf.log('warning',sprintf('Input ''%s'' not recognized.',args{1}))
+            args = args(l+1:end);
+        end        
+        if isempty(args), break, end    
+      end
+      
+      % Get v_xyz_DSL of original grid
+      [old_vx,old_vy,old_vz] = obj.v; 
+      old_f = obj.data;
+      
+      
+      % Rotate old coordinates into new coordinates
+      old_vx_in_new_vxyz = old_vx*new_vx_unit(1) + old_vy*new_vx_unit(2) + old_vz*new_vx_unit(3);
+      old_vy_in_new_vxyz = old_vx*new_vy_unit(1) + old_vy*new_vy_unit(2) + old_vz*new_vy_unit(3);
+      old_vz_in_new_vxyz = old_vx*new_vz_unit(1) + old_vy*new_vz_unit(2) + old_vz*new_vz_unit(3);
+      
+      
+      % Set up new grid
+      % Add one outer bin
+      [new_vx,new_vy,new_vz] = meshgrid(new_vbins_edges{1},new_vbins_edges{2},new_vbins_edges{3});
+      new_f = nan(size(old_f));
+      
+      
+      if 0
+        %%
+        scatter3(old_vx(:),old_vy(:),old_vz(:),old_vx(:)*0+1,old_vx(:))
+        figure; scatter3(old_vx_in_new_vxyz(:),old_vy_in_new_vxyz(:),old_vz_in_new_vxyz(:),old_vx(:)*0+1,old_vx(:))
+      
+      end
+      
+      % Interpolate data from old to new grid
+      sizeData = size(old_f);
+      %%
+      for itime = 1:length(obj.time) 
+        X = squeeze(old_vy_in_new_vxyz(itime,:,:,:));
+        Y = squeeze(old_vy_in_new_vxyz(itime,:,:,:));
+        Z = squeeze(old_vz_in_new_vxyz(itime,:,:,:));
+        V = squeeze(old_f(itime,:,:,:));
+        Xq = new_vx(:,:,:);
+        Yq = new_vy(:,:,:);
+        Zq = new_vz(:,:,:);
+        Vq = interp3(X,Y,Z,V,Xq,Yq,Zq);
+        new_f(itime,:,:,:) = Vq;
+      end
+      
+    end
     function m = mass(obj)
       % Get mass of species
       units = irf_units;
@@ -2636,7 +2792,12 @@ classdef PDist < TSeries
         th = th*pi/180; % in radians
         dth = median(diff(th)); % scalar
         % velocity
-        esteptable = dist.ancillary.esteptable;
+        if ~isempty(dist.ancillary)
+            esteptable = dist.ancillary.esteptable;
+        else % if there is no ancillary data, it's assumed to be fast mode
+            % set steptable to all zeros
+            esteptable = zeros(1,length(dist));
+        end
         idEstep0First = find(esteptable==0,1);
         emat = double(dist.energy); % [eV]
         e0 = emat(idEstep0First,:); e0 = e0(1,:); % [eV]
@@ -2647,8 +2808,18 @@ classdef PDist < TSeries
         
         % velocity diffs from delta energy
         % energy diffs minus/plus
-        dEm = dist.ancillary.delta_energy_minus; % [eV]
-        dEp = dist.ancillary.delta_energy_plus; % [eV]
+        if ~isempty(dist.ancillary)
+            dEm = dist.ancillary.delta_energy_minus; % [eV]
+            dEp = dist.ancillary.delta_energy_plus; % [eV]
+        else % if there is no ancillary data, it's assumed to be fast mode
+            % display warning
+            irf.log('w','No information on delta_energy_minus/plus in PDist, guessing values')
+            % guess energy diffs
+            %dEm = repmat([e0(2)-e0(1),diff(e0)],length(dist),1)/2;
+            dEm = ([diff(e0),e0(end)-e0(end-1)]+[e0(2)-e0(1),diff(e0)])/2;
+            dEm = repmat(dEm,length(dist),1)/2;
+            dEp = dEm;
+        end
         % per esteptable
         dEm0 = dEm(idEstep0First,:);
         dEp0 = dEp(idEstep0First,:);
@@ -2677,7 +2848,11 @@ classdef PDist < TSeries
             F3d = double(squeeze(dist.data(it,:,:,:)));
             
             % azimuthal angle
-            phi = double(dist.depend{2}(it,:)); % in degrees
+            if size(dist.depend{2},1)>1 % brst mode
+                phi = double(dist.depend{2}(it,:)); % in degrees
+            else % fast mode
+                phi = double(dist.depend{2});
+            end
             phi = phi-180; % travel/arrival correction
             phi = phi*pi/180; % in radians
             dphi = median(diff(phi)); % scalar
