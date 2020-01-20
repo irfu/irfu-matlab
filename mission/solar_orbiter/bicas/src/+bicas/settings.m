@@ -100,6 +100,8 @@ classdef settings < handle
             if obj.DataMap.isKey(key)
                 error('BICAS:settings:Assertion:ConfigurationBug', 'Trying to define pre-existing settings key.')
             end
+            assert(ischar(defaultValue) || isnumeric(defaultValue))
+            
             
             obj.DataMap(key) = struct('defaultValue', defaultValue, 'value', defaultValue, 'valueSource', 'default');
         end

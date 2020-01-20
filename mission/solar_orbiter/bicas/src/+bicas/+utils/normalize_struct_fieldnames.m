@@ -23,6 +23,9 @@ function S = normalize_struct_fieldnames(S, normList)
     %       PRO/NOTE: Can already "translate" fieldnames (change names arbitrarily) since normList{i}{2} does not have to be a member of normList{i}{1}.
     %   PROPOSAL: Policy argument.
     % PROPOSAL: Test code.
+    %
+    % PROPOSAL: Return ~flags for what has been changed.
+    %   PRO: Caller can print warnings based on it.
 
     fnList = fieldnames(S);
 
@@ -30,13 +33,21 @@ function S = normalize_struct_fieldnames(S, normList)
     for iNl = 1:numel(normList)    % Iterate over items in NORMALIZATION LIST (not over fieldnames in S).
         % ASSERTION: Check argument format.
         assert(numel(normList{iNl}) == 2, 'Not exactly two elements in normList{%i}.', iNl)
+                
+        fnAlternatives = normList{iNl}{1};
+        newFn          = normList{iNl}{2};
         
-        iFn = find(ismember(fnList, normList{iNl}{1}));   % Indices into fnList: Fieldnames which match normalized field name iNl (should be exactly one).
+        assert(~isempty(fnAlternatives), 'normList{%i}{1} is empty.', iNl)
+        
+        iFn = find(ismember(fnList, fnAlternatives));   % Indices into fnList: Fieldnames which match normalized field name iNl (should be exactly one).
         % ASSERTION: There is exactly one fieldname that matches the current canonical fieldname (item in normList).
-        assert(isscalar(iFn), 'Found not exactly one field name that matches {%s}.', 'dddd')
+        assert(isscalar(iFn), 'Did not find exactly one field name that matches any of normList{%i}{1}={"%s"}.', iNl, strjoin(fnAlternatives, '", "'))
+
+        
 
         oldFn = fnList{iFn};
-        newFn = normList{iNl}{2};
+        EJ_library.utils.assert.castring(newFn)
+        
         if ~strcmp(oldFn, newFn)
             S.(newFn) = S.(oldFn);
             S         = rmfield(S, oldFn);

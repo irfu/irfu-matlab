@@ -6,12 +6,18 @@
 % relevant parts) for both the RODP and ROC-SGSE pipeline.
 %
 %
-% NOTE: UNFINISHED.
+% SHORTCOMINGS
+% ============
+% Does not implement parasitic capacitance yet due to lack of calibration values (at least).
 %
 %
 % IMPLEMENTATION NOTES
 % ====================
-% Class is implemented with extra many assertions since
+% Class is implemented with extra care, and therefore
+% - has extra many assertions
+% - is extra careful with identifiers with units
+% - is extra careful with well defined terms/shorternings/naming conventions
+% since
 % (1) undiscovered calibration bugs could be considered extra bad
 % (2) it is expected to be hard to detect certain bugs
 % (3) it could be hard to use automatic testing here.
@@ -88,10 +94,6 @@ classdef calib < handle
 %
 % PROPOSAL: Create general-purpose read_CDF function which handles indices correctly (1 vs many records).
 % PROPOSAL: Function for permuting indices to handle dataobj's handling of 1 record-case.
-%
-% PROPOSAL: Derive the alpha, beta and gamma_lg/hg values from the BIAS transfer functions and log them.
-%   NOTE: gamma values apply to AC (highpass filter) and their comparable amplitude is not at 0 Hz but at some other frequency.
-%   NOTE: TFs may change over time.
 %
 % TODO-DECISION: How distribute the "calibration formulas/algorithms between
 %   (1) calibrate_* functions, 
@@ -419,7 +421,7 @@ classdef calib < handle
         % IMPORTANT NOTE: The HK bias current values are measured onboard but are only meant as DIAGNOSTIC values, NOT
         % AS THE PROPER BIAS CURRENT values for nominal use. Therefore the values should only be seen as approximate.
         %
-        % NOTE: Walter Puccio, IRFU 2019-09-06: Values are measured on the order of once per second (and sent back as HK
+        % NOTE: Walter Puccio, IRF-U 2019-09-06: Values are measured on the order of once per second (and sent back as HK
         % even more rarely). Expect errors on the order of 5%.
         %
         % NOTE: The calibration data are NOT stored in the BIAS RCT.

@@ -1,4 +1,6 @@
 
+*~
+
 # Ignore the default BICAS master CDFs.
 data/*.cdf
 

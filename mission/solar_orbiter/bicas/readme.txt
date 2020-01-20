@@ -20,7 +20,7 @@ NOTE: This list also applies to comments in the source code.
 RCS                        = RPW Calibration Software. BICAS is an example of an RCS.
 ICD                        = Interface Control Document
 ROC DFMD                   = Document ROC-TST-GSE-NTT-00017-LES, "Data format and metadata definition for the ROC-SGSE data"
-ROC Engineering Guidelines = Document ROC-OPS-PIP-NTT-00008-LES, "RPW Ground Segment - ROC Engineering Guidelines"
+ROC Engineering Guidelines = Document ROC-GEN-SYS-NTT-00019-LES, "ROC Engineering Guidelines for External Users"
 RCS ICD                    = Originally document           ROC-TST-GSE-ICD-00023-LES, "RPW Calibration Software ICD Documentation",
                              which was later superseded by ROC-PRO-PIP-ICD-00037-LES, "RPW Calibration Software Interface Document".
                              NOTE: "RCS ICD" does not at this time (2019-07-24) distinguish between these two which gives room for confusion since

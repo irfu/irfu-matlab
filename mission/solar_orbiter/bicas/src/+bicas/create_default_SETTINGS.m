@@ -28,7 +28,8 @@ function SETTINGS = create_default_SETTINGS()
 %   PROPOSAL: "correction"
 %   PROPOSAL: "mitigation"
 %   PROPOSAL: "bugfix"
-%       CON: Sounds like a bug in BICAS.
+%       CON: Sounds like a bug in BICAS which it is not.
+%   PROPOSAL: workaround
 %
 % PROPOSAL: OUTPUT_CDF.OVERWRITE_POLICY = REQUIRED: Require overwriting pre-existing file (sic!).
 %   PRO: (Maybe) useful as assertion for bulk processing.
@@ -40,17 +41,18 @@ S = bicas.settings();
 
 % The MATLAB command (e.g. path) to use to launch MATLAB for BICAS.
 % NOTE: Only the value in the BICAS config file is actually used. The normal priority order for how SETTINGS values are
-% being obatined does apply here.
+% being obtained does apply here but does not matter since the value is only used by the bash wrapper script for
+% launching MATLAB.
 S.define_setting('MATLAB_COMMAND', '');
 
 
 
 % Prefix used to identify the subset of stdout that should actually be passed on as stdout by the bash launcher script.
-S.define_setting('STDOUT_PREFIX',                  'STDOUT: ');
+S.define_setting('STDOUT_PREFIX',               'STDOUT: ');
 % NOTE: Analogous LOG_PREFIX is hard-coded for safety.
 
 % Parameters influencing how JSON objects are printed with function JSON_object_str.
-S.define_setting('JSON_OBJECT_STR.INDENT_SIZE',     4);
+S.define_setting('JSON_OBJECT_STR.INDENT_SIZE', 4);
 
 % When logging contents of matrix/vector, maximum number of unique values printed before switching to shorter representation (min-max range)
 S.define_setting('LOGGING.MAX_UNIQUES_PRINTED', 5);
@@ -67,6 +69,15 @@ S.define_setting('SW_MODES.L1_LFR_TDS_ENABLED', 0);
 % ----------------------------------------------------------------------------------------
 % EXCEPTION TO VARIABLE NAMING CONVENTION: Field names are used for constructing the JSON object struct and
 % can therefore NOT follow variable naming conventions without modifying other code.
+%
+% ROC-GEN-SYS-NTT-00019-LES, "ROC Engineering Guidelines for External Users":
+% """"""""
+% 2.2.3 RCS versioning
+% The RCS version must be a unique number sequence identifier “X.Y.Z”, where “X” is an
+% integer indicating the release (major changes, not necessarily retro-compatible), “Y” is an
+% integer indicating the issue (minor changes, necessarily retro-compatible) and “Z” is an
+% integer indicating a revision (e.g., bug correction).
+% """"""""
 %###########################################################################################################
 S.define_setting('SWD.identification.project',     'ROC');
 S.define_setting('SWD.identification.name',        'BIAS Calibration Software (BICAS)');
@@ -84,6 +95,7 @@ S.define_setting('SWD.release.source',             'https://github.com/irfu/irfu
 %S.define_setting('SWD.release.source',             'https://github.com/irfu/irfu-matlab/commits/master');
 %
 S.define_setting('SWD.environment.executable',     'roc/bicas');   % Relative path to BICAS executable. See RCS ICD.
+% NOTE: See also OUTPUT_CDF.GLOBAL_ATTRIBUTES.Calibration_version.
 
 
 
@@ -145,6 +157,7 @@ S.define_setting('PROCESSING.USE_ZV_AQUISITION_TIME_FOR_HK_TIME_INTERPOLATION', 
 
 
 %=======================================================================================================================
+% PROCESSING.RCT_REGEXP.*
 % Regular expressions for the filenames of RCTs
 % ---------------------------------------------
 % RCT filenaming convention is described in:	ROC-PRO-DAT-NTT-00006-LES, 1/1 draft, Sect 4.3.2-3.
@@ -220,7 +233,8 @@ S.define_setting('PROCESSING.L1R.ZV_CALIBRATION_TABLE_INDEX_ILLEGAL_SIZE_REPLACE
 
 
 
-% EXPERIMENTAL. Calibration values.
+%======================================================================
+% EXPERIMENTAL.
 % LFR sampling frequency-dependent offsets.
 %
 % Values obtained from manually fitting F0,F1,F2 (not F3) snapshots in
@@ -228,6 +242,7 @@ S.define_setting('PROCESSING.L1R.ZV_CALIBRATION_TABLE_INDEX_ILLEGAL_SIZE_REPLACE
 % NOTE: Values are relative as the absolute level is not known.
 % NOTE: Might be that LFR offsets also depend on BLTS.
 % NOTE: Has not set any value for F3.
+%======================================================================
 %S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.LFR.LSF_OFFSETS_TM', [-638, -610, 0, 0])
 S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.LFR.LSF_OFFSETS_TM', [0, 0, 0, 0])
 
@@ -247,12 +262,15 @@ S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.BETA_IVPAV',         
 S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.GAMMA_IVPAV.HIGH_GAIN',  -100);
 S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.GAMMA_IVPAV.LOW_GAIN',     -5);
 
-%=================================================================================================
+%=======================================================================================================================
 % Constants for using HK bias currents for deriving/calibrating the bias currents
+% -------------------------------------------------------------------------------
+% Values taken from BIAS specifications, 01/16, Section 3.4.4.1-3. Not to be confused with registers which set the
+% bias command.
+%
 % NOTE: This is a non-standard way of deriving the bias currents.
 % NOTE 2019-09-12: THIS HAS NOT BEEN IMPLEMENTED IN THE CODE YET EXCEPT FOR CALIBRATION FUNCTION.
-%=================================================================================================
-%S.define_setting('PROCESSING.USE_UNCALIBRATED_BIAS_CURRENTS_FROM_HK', 0);
+%=======================================================================================================================
 % NOTE: OFFSET_TM value is added to the TM value (not the ampere value).
 S.define_setting('PROCESSING.CALIBRATION.CURRENT.HK.OFFSET_TM', -hex2dec('56C0') * [1,1,1])
 S.define_setting('PROCESSING.CALIBRATION.CURRENT.HK.GAIN_APT',  -0.008198754     * [1,1,1])

@@ -15,6 +15,8 @@
 function masterCdfFilename = get_master_CDF_filename(datasetId, skeletonVersionStr)
 % PROPOSAL: Move function into ~constants.
 % PROPOSAL: Standard assertion for skeletonVersionStr.
+% PROPOSAL: Update BICAS so that both lowercase and uppercase .cdf is accepted.
+%           ==> Has to be done in other code which finds set of matching files.
 
     bicas.assert_DATASET_ID(datasetId)
     bicas.assert_skeleton_version(skeletonVersionStr)

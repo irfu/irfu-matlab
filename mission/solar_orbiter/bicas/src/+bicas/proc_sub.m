@@ -136,7 +136,7 @@ classdef proc_sub
             % ASSERTION
             if ~(bicas.proc_utils.ranges_overlap(hkInterpolationTimeTt2000, sciInterpolationTimeTt2000))
                 error('BICAS:proc_sub:Assertion', ...
-                'Time zVariables (Epoch or ACQUISITION_TIME) in HK and SCI input datasets, used for converting HK data to SCI timestamps, do not overlap in time.')
+                'Time zVariables (whichever of Epoch or ACQUISITION_TIME is being used) in HK and SCI input datasets, used for converting HK data to SCI timestamps, do not overlap in time.')
             end
             
 

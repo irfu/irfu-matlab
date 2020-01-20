@@ -87,7 +87,7 @@ for i = 1:length(SwModeInfo.inputsList)
     %=======================
     % Read dataset CDF file
     %=======================
-    [Zv, GlobalAttributes]          = read_dataset_CDF(inputFilePath);
+    [Zv, GlobalAttributes]             = read_dataset_CDF(inputFilePath);
     InputDatasetsMap(prodFuncInputKey) = struct('Zv', Zv, 'Ga', GlobalAttributes);
     
     
