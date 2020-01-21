@@ -87,7 +87,7 @@ for i = 1:length(SwModeInfo.inputsList)
     %=======================
     % Read dataset CDF file
     %=======================
-    [Zv, GlobalAttributes]             = read_dataset_CDF(inputFilePath);
+    [Zv, GlobalAttributes]             = read_dataset_CDF(inputFilePath, SETTINGS);
     InputDatasetsMap(prodFuncInputKey) = struct('Zv', Zv, 'Ga', GlobalAttributes);
     
     
@@ -206,7 +206,7 @@ end
 
 
 
-function [Zvs, GlobalAttributes] = read_dataset_CDF(filePath)
+function [Zvs, GlobalAttributes] = read_dataset_CDF(filePath, SETTINGS)
 % Read elementary input process data from a CDF file. Copies all zVariables into fields of a regular structure.
 %
 %
@@ -282,8 +282,11 @@ bicas.proc_utils.log_zVars(ZvsLog)
 % NOTE: Has not found document that specifies the global attribute. /2020-01-16
 % https://gitlab.obspm.fr/ROC/RCS/BICAS/issues/7#note_11016
 % states that the correct string is "Dataset_ID".
-GlobalAttributes = bicas.utils.normalize_struct_fieldnames(DataObj.GlobalAttributes, ...
+[GlobalAttributes, fnChangeList] = bicas.utils.normalize_struct_fieldnames(DataObj.GlobalAttributes, ...
     {{{'DATASET_ID', 'Dataset_ID'}, 'Dataset_ID'}});
+
+msgFunc = @(oldFn, newFn) (sprintf('Global attribute in input dataset\n    "%s"\nuses illegal alternative "%s" instead of "%s"\n', filePath, oldFn, newFn));
+bicas.handle_struct_name_change(fnChangeList, SETTINGS, msgFunc, 'Dataset_ID', 'INPUT_CDF.USING_GA_NAME_VARIANT_POLICY')
 
 bicas.logf('info', 'File''s Global attribute: Dataset_ID       = "%s"', GlobalAttributes.Dataset_ID{1})
 bicas.logf('info', 'File''s Global attribute: Skeleton_version = "%s"', GlobalAttributes.Skeleton_version{1})
@@ -401,7 +404,7 @@ for fn = fieldnames(DataObj.data)'
         matlabClass  = bicas.utils.convert_CDF_type_to_MATLAB_class(DataObj.data.(zvName).type, 'Permit MATLAB classes');
         isNumericZVar = isnumeric(cast(0.000, matlabClass));
 
-        if isNumericZVar && SETTINGS.get_fv('OUTPUT_CDF.EMPTY_NUMERIC_ZVARIABLES_SET_TO_FILL')
+        if isNumericZVar && SETTINGS.get_fv('OUTPUT_CDF.EMPTY_NUMERIC_ZV_SET_TO_FILL')
             bicas.log('warning', logMsg)
 
 %             % ASSERTION: Require numeric type.
@@ -425,9 +428,9 @@ for fn = fieldnames(DataObj.data)'
             
             DataObj.data.(zvName).data = zvValue;
 
-        elseif ~isNumericZVar && SETTINGS.get_fv('OUTPUT_CDF.EMPTY_NONNUMERIC_ZVARIABLES_IGNORE')
+        elseif ~isNumericZVar && SETTINGS.get_fv('OUTPUT_CDF.EMPTY_NONNUMERIC_ZV_IGNORE')
             bicas.logf('warning', ...
-                'Ignoring empty non-numeric master CDF zVariable "%s" due to setting OUTPUT_CDF.EMPTY_NONNUMERIC_ZVARIABLES_IGNORE.', ...
+                'Ignoring empty non-numeric master CDF zVariable "%s" due to setting OUTPUT_CDF.EMPTY_NONNUMERIC_ZV_IGNORE.', ...
                 zvName)
 
         else

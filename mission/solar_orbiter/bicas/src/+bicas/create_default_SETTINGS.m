@@ -7,6 +7,12 @@
 % NOTE: Slightly deceiving name, since it defines which keys are permitted.
 %
 %
+% NAMING CONVENTIONS
+% ==================
+% ZV : zVariable
+% GA : Global Attribute (in CDF file)
+%
+%
 % NOTES ON SETTINGS KEY NAMING CONVENTION
 % =======================================
 % Some constants (1) correspond exactly to fields in the (JSON) S/W descriptor, and (2) are unlikely to be used for
@@ -24,12 +30,18 @@ function SETTINGS = create_default_SETTINGS()
 % PROPOSAL: Need (settings name) terminology for temporary "bugfixes"/corrections due to bugs outside of BICAS,
 %   Ex: Bugs datasets (bugs in other RCS, ROC's pipeline).
 %   Ex: ~Corrupted data (different from bugs?)
+%   Ex: PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_POLICY
+%   NOTE: Need something is compatible with different course of action, not just permit or error.
+%       Ex: PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_POLICY = ERROR, ROUND, PERMIT
 %   PROPOSAL: Always include name of zVar.
 %   PROPOSAL: "correction"
 %   PROPOSAL: "mitigation"
 %   PROPOSAL: "bugfix"
 %       CON: Sounds like a bug in BICAS which it is not.
 %   PROPOSAL: workaround
+%   PROPOSAL: behaviour
+%   PROPOSAL: action
+%   PROPOSAL: "anomaly"-something
 %
 % PROPOSAL: OUTPUT_CDF.OVERWRITE_POLICY = REQUIRED: Require overwriting pre-existing file (sic!).
 %   PRO: (Maybe) useful as assertion for bulk processing.
@@ -99,6 +111,12 @@ S.define_setting('SWD.environment.executable',     'roc/bicas');   % Relative pa
 
 
 
+S.define_setting('INPUT_CDF.LFR.HAVING_SYNCHRO_FLAG_AND_TIME_SYNCHRO_FLAG_WORKAROUND', 0)
+S.define_setting('INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY', 'ERROR')    % PERMIT, WARNING, ERROR
+S.define_setting('INPUT_CDF.USING_GA_NAME_VARIANT_POLICY', 'ERROR')    % PERMIT, WARNING, ERROR
+
+
+
 %########################
 % INPUT_CDF_ASSERTIONS.*
 %########################
@@ -128,9 +146,9 @@ S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.Calibration_version', ...
     '1.0; Voltages: Using combined BIAS and LFR/TDS transfer functions (freq. dependent), BIAS offsets. Currents: No data.');
 % What to do with zVariables which are still empty after copying data into the master CDF.
 % This indicates that something is wrong, either in the master CDF or in the processing.
-S.define_setting('OUTPUT_CDF.EMPTY_NUMERIC_ZVARIABLES_SET_TO_FILL', 0);
+S.define_setting('OUTPUT_CDF.EMPTY_NUMERIC_ZV_SET_TO_FILL', 0);
 % Ex: Non-numeric ACQUISITION_TIME_UNITS in SOLO_L2_RPW-LFR-SBM1-CWF-E_V05.cdf is empty
-S.define_setting('OUTPUT_CDF.EMPTY_NONNUMERIC_ZVARIABLES_IGNORE',   1);
+S.define_setting('OUTPUT_CDF.EMPTY_NONNUMERIC_ZV_IGNORE',   1);
 
 
 
@@ -138,7 +156,6 @@ S.define_setting('OUTPUT_CDF.EMPTY_NONNUMERIC_ZVARIABLES_IGNORE',   1);
 % ENV_VAR_OVERRIDE.*
 %####################
 % Variables, if non-empty, are used to override the corresponding environment variables.
-%S.define_setting('ENV_VAR_OVERRIDE.ROC_PIP_NAME',        '');   % ROC_PIP_NAME        defined in RCS ICD. Which pipeline to run, "RGTS" or "RODP".
 S.define_setting('ENV_VAR_OVERRIDE.ROC_RCS_CAL_PATH',    '');   % ROC_RCS_CAL_PATH    defined in RCS ICD. Path to dir. with calibration files.
 S.define_setting('ENV_VAR_OVERRIDE.ROC_RCS_MASTER_PATH', '');   % ROC_RCS_MASTER_PATH defined in RCS ICD. Path to dir. with master CDF files.
 
@@ -217,7 +234,9 @@ S.define_setting('PROCESSING.L1R.TDS.RSWF_L1R_ZV_SAMPLING_RATE_DATASET_BUGFIX_EN
 % L1/L1R
 % React to bug in L1/L1R TDS-LFM RSWF datasets.
 % TDS has bugfixed. /2019-12-19
-S.define_setting('PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_ACTION', 'ERROR')   % ERROR, ROUND, PERMIT
+% NOTE: "SAMPS_PER_CH" is the name of a zVariable.
+% PROPOSAL: Rename.
+S.define_setting('PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_POLICY', 'ERROR')   % ERROR, ROUND, PERMIT
 
 % GA = (CDF) Global Attribute
 % ZV = (CDF) zVariable

@@ -40,6 +40,8 @@
 function C = error_safe_constants
 % PROPOSAL: Change name. Something not just "error safe". "All" constants that can not be modified as in SETTINGS.
 %   PROPOSAL: ~constants.
+% PROPOSAL: Category for bad input datasets (both science and HK).
+%   PRO: Has similar for RCTs.
 
 
 % NOTE: The RCS ICD 00037, iss1/rev2, draft 2019-07-11, Section 3.4.3 specifies

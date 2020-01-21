@@ -195,13 +195,19 @@ classdef proc_sub
             %============================================================
             % Handle that SYNCHRO_FLAG (empty) and TIME_SYNCHRO_FLAG (non-empty) may both be present.
             % Ex: LFR___TESTDATA_RGTS_LFR_CALBUT_V0.7.0/ROC-SGSE_L1R_RPW-LFR-SBM1-CWF-E_4129f0b_CNE_V02.cdf   2019-11-29
-            if isfield(InSci.Zv, 'SYNCHRO_FLAG') && isempty(InSci.Zv.SYNCHRO_FLAG)
+            if SETTINGS.get_fv('INPUT_CDF.LFR.HAVING_SYNCHRO_FLAG_AND_TIME_SYNCHRO_FLAG_WORKAROUND') ...
+                    && isfield(InSci.Zv, 'SYNCHRO_FLAG') && isempty(InSci.Zv.SYNCHRO_FLAG)
                 InSci.Zv = rmfield(InSci.Zv, 'SYNCHRO_FLAG');
-            end                
+            end
             % Both zVars TIME_SYNCHRO_FLAG, SYNCHRO_FLAG found in input datasets (2020-01-05). Unknown why.
             % "DEFINITION BUG" in definition of datasets/skeleton?
-            InSci.Zv = bicas.utils.normalize_struct_fieldnames(InSci.Zv, ...
-                {{{'TIME_SYNCHRO_FLAG', 'SYNCHRO_FLAG'}, 'TIME_SYNCHRO_FLAG'}});
+            % 2020-01-21: Based on skeletons (.skt; L1R, L2), SYNCHRO_FLAG seems to be the correct one.
+            [InSci.Zv, fnChangeList] = bicas.utils.normalize_struct_fieldnames(InSci.Zv, ...
+                {{{'TIME_SYNCHRO_FLAG', 'SYNCHRO_FLAG'}, 'SYNCHRO_FLAG'}});
+            
+            bicas.proc_sub.handle_zv_name_change(fnChangeList, inSciDsi, SETTINGS, 'SYNCHRO_FLAG', 'INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY')
+            
+            
             
             V = InSci.Zv.V;
             E = permute(InSci.Zv.E, [1,3,2]);
@@ -250,7 +256,7 @@ classdef proc_sub
             PreDc.Zv.DELTA_PLUS_MINUS       = bicas.proc_utils.derive_DELTA_PLUS_MINUS(zvFreqHz, nCdfSamplesPerRecord);            
             PreDc.Zv.freqHz                 = zvFreqHz;
             PreDc.Zv.nValidSamplesPerRecord = ones(nRecords, 1) * nCdfSamplesPerRecord;
-            PreDc.Zv.SYNCHRO_FLAG           = InSci.Zv.TIME_SYNCHRO_FLAG;   % NOTE: Different zVar name in input and output datasets.
+            PreDc.Zv.SYNCHRO_FLAG           = InSci.Zv.SYNCHRO_FLAG;
             if isfield(InSci.Zv, 'CALIBRATION_TABLE_INDEX')
                 PreDc.Zv.CALIBRATION_TABLE_INDEX = InSci.Zv.CALIBRATION_TABLE_INDEX;
             end
@@ -331,11 +337,16 @@ classdef proc_sub
 
             C = bicas.proc_utils.classify_DATASET_ID(inSciDsi);
 
-            % Both zVars TIME_SYNCHRO_FLAG, SYNCHRO_FLAG found in input datasets (2019-12-xx). Unknown why.
+            % Both zVars TIME_SYNCHRO_FLAG, SYNCHRO_FLAG found in input datasets (2020-01-05). Unknown why.
             % "DEFINITION BUG" in definition of datasets/skeleton?
-            InSci.Zv = bicas.utils.normalize_struct_fieldnames(InSci.Zv, ...
-                {{{'TIME_SYNCHRO_FLAG', 'SYNCHRO_FLAG'}, 'TIME_SYNCHRO_FLAG'}});
+            % 2020-01-21: Based on skeletons (.skt; L1R, L2), SYNCHRO_FLAG seems to be the correct one.
+            [InSci.Zv, fnChangeList] = bicas.utils.normalize_struct_fieldnames(InSci.Zv, ...
+                {{{'TIME_SYNCHRO_FLAG', 'SYNCHRO_FLAG'}, 'SYNCHRO_FLAG'}});
+            
+            bicas.proc_sub.handle_zv_name_change(fnChangeList, inSciDsi, SETTINGS, 'SYNCHRO_FLAG', 'INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY')
+            
 
+            
             nRecords             = size(InSci.Zv.Epoch, 1);
             nCdfSamplesPerRecord = size(InSci.Zv.WAVEFORM_DATA, 3);    % Number of samples in the zVariable, not necessarily actual data.
 
@@ -359,7 +370,7 @@ classdef proc_sub
             PreDc.Zv.freqHz           = freqHz;
             PreDc.Zv.QUALITY_FLAG     = InSci.Zv.QUALITY_FLAG;
             PreDc.Zv.QUALITY_BITMASK  = InSci.Zv.QUALITY_BITMASK;
-            PreDc.Zv.SYNCHRO_FLAG     = InSci.Zv.TIME_SYNCHRO_FLAG;   % NOTE: Different zVar name in input and output datasets.
+            PreDc.Zv.SYNCHRO_FLAG     = InSci.Zv.SYNCHRO_FLAG;
             PreDc.Zv.MUX_SET          = HkSciTime.MUX_SET;
             PreDc.Zv.DIFF_GAIN        = HkSciTime.DIFF_GAIN;
             if isfield(InSci.Zv, 'CALIBRATION_TABLE_INDEX')
@@ -390,20 +401,20 @@ classdef proc_sub
                     badValuesDisplayStr = strjoin(arrayfun(@(n) sprintf('%i', n), SAMPS_PER_CH_badValues, 'uni', false), ', ');                    
                     logErrorMsg = sprintf('TDS LFM RSWF zVar SAMPS_PER_CH contains unexpected value(s), not 2^n: %s', badValuesDisplayStr);
                     
-                    actionSettingValue = SETTINGS.get_fv('PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_ACTION');
+                    actionSettingValue = SETTINGS.get_fv('PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_POLICY');
                     switch(actionSettingValue)
                         case 'ERROR'
                             error('BICAS:proc_sub:Assertion:DatasetFormat', logErrorMsg)
                         case 'PERMIT'
-                            bicas.logf('warning', [logErrorMsg, 'Permitting due to setting PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_ACTION.'])
+                            bicas.logf('warning', [logErrorMsg, 'Permitting due to setting PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_POLICY.'])
                             % Do nothing
                         case 'ROUND'
                             bicas.logf('warning', logErrorMsg)
-                            bicas.log('warning', 'Replacing TDS RSWF zVar SAMPS_PER_CH values with values, rounded to valid values due to setting PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_ACTION.')
+                            bicas.log('warning', 'Replacing TDS RSWF zVar SAMPS_PER_CH values with values, rounded to valid values due to setting PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_POLICY.')
                             SAMPS_PER_CH_zv = SAMPS_PER_CH_rounded;
                         otherwise
                             error('BICAS:proc_sub:Assertion:ConfigurationBug', ...
-                                'Illegal value PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_ACTION=%s', actionSettingValue)
+                                'Illegal value PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_POLICY=%s', actionSettingValue)
                     end
                 end
                 
@@ -726,13 +737,13 @@ classdef proc_sub
                 % NOTE: Has observed breaking assertion in LFR test files "LFR___LFR_suggested_2019-01-17".
                 
                 CALIBRATION_TABLE_INDEX_zv = PreDc.Zv.CALIBRATION_TABLE_INDEX;
-                legalCtiSize = size(CALIBRATION_TABLE_INDEX_zv, 2) == 2;
-                if ~legalCtiSize
+                hasLegalCtiSize = size(CALIBRATION_TABLE_INDEX_zv, 2) == 2;
+                if ~hasLegalCtiSize
                     if SETTINGS.get_fv('PROCESSING.L1R.ZV_CALIBRATION_TABLE_INDEX_ILLEGAL_SIZE_REPLACE')
                         bicas.log('warning', 'Setting CALIBRATION_TABLE_INDEX to NaN due to setting PROCESSING.L1R.ZV_CALIBRATION_TABLE_INDEX_ILLEGAL_SIZE_REPLACE.')
                         CALIBRATION_TABLE_INDEX_zv = zeros(PreDc.nRecords, 2) * NaN;
                     else
-                        error('BICAS:proc_sub:Assertion', 'zVar CALIBRATION_TABLE_INDEX has illegal width (<>2).')
+                        error('BICAS:proc_sub:Assertion', 'zVar CALIBRATION_TABLE_INDEX has illegal width=%i (<>2).', size(CALIBRATION_TABLE_INDEX_zv, 2))
                     end
                 end
             else
@@ -861,6 +872,19 @@ classdef proc_sub
             end
             
         end   % simple_demultiplex
+
+
+        
+        % inSciDsi : Input SCI DATASET_ID whch contains the zVariable.
+        %
+        % Wrapper around bicas.proc_sub.handle_struct_name_change to be used locally.
+        function handle_zv_name_change(fnChangeList, inSciDsi, SETTINGS, varargin)
+            msgFunc = @(oldFieldname, newFieldname) (sprintf(...
+                'Input dataset DATASET_ID=%s uses an alternative but illegal(?) zVariable name "%s" instead of "%s".', ...
+                inSciDsi, oldFieldname, newFieldname));
+            
+            bicas.handle_struct_name_change(fnChangeList, SETTINGS, msgFunc, varargin{:})
+        end
 
 
 
