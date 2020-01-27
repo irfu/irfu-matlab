@@ -12,7 +12,7 @@ production will be performed elsewhere, and our role will be to provide
 updated calibration files and perform validation of the L2 data.
 
 For BIAS calibration required:
-* L2 HF E spectra (plasma ferquency line)
+* L2 HF E spectra (plasma frequency line)
 * L2 B field
 * L2 plasma velocity
 * L2 plasma density (particle instruments)
@@ -24,13 +24,15 @@ access to these data as soon as possible, e.g. before they
 become public. This needs to be coordinated with other 
 in situ PIs.
 
+
 Calibration files for E field DC/LF (up to 10kHZ)
 -------------------------------------------------
 Model the probe properties, and get the model transfer function 
 as a function of plasma parameters.
 
 Verify the transfer function using known wave modes such as whistler 
-by comparing the E/B ration and phase between E and B.
+by comparing the E/B ratio and phase between E and B.
+
 
 Spacecraft potential (time series)
 ----------------------------------
@@ -44,6 +46,7 @@ data (good resolution at low energies) and possibly simulations
 with SPIS. As a result we expect to have a table with correction 
 factors corresponding to different levels of solar UV emissions, 
 bias current settings, etc.
+
 
 E-field time series
 -------------------

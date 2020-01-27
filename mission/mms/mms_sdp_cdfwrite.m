@@ -16,7 +16,7 @@ function [ outFileName ] = mms_sdp_cdfwrite( HeaderInfo, Dmgr )
 %
 % 	See also MMS_SDC_SDP_PROC, MMS_SDP_DMGR, MMS_SDC_SDP_INIT.
 
-% Verify that we have all information requried.
+% Verify that we have all the information that is required.
 narginchk(2,2);
 
 global ENVIR;
@@ -1108,7 +1108,7 @@ cd(oldDir);
 
   function write_file
    % write file with arguments obtained above, also include md5 checksum.
-   spdfcdfwrite(outFileName, outVars, 'Vardatatypes',varDatatype, ...
+   spdfcdfwrite(outFileName, outVars, 'Vardatatypes', varDatatype, ...
      'GlobalAttributes', GATTRIB, 'VariableAttributes', VATTRIB, ...
      'RecordBound', recBound, 'VarCompress', compressVars, ...
      'Checksum', 'md5');

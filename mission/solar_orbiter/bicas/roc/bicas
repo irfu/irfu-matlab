@@ -1,0 +1,321 @@
+#!/bin/bash
+#====================================================================================================
+# Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+# First created 2016-04-xx
+#
+# The primary purpose of this bash script is to call a MATLAB script.
+# See readme.txt for more information on arguments.
+# See the MATLAB script called for more documentation.
+#
+#
+#
+# NOTE: The script is designed to handle important basic errors, such as
+# 1) Can not find MATLAB executable (not explicitly, but implicitly)
+# 2) MATLAB can not find the MATLAB script.
+# 
+# NOTE: The script is designed to return the same exit codes as the MATLAB code.
+# 
+# NOTE: The script reads the "--log" parameter value and pipes "all" stdout to a log file. 
+# It also uses a prefix to filter out some stdout lines that are piped to the actual stdout.
+# In addition, a symlink (with a constant filename) to the current log file is created.
+# Overwriting the old symlink might technically not be compliant with the RCS ICD.
+# 
+# 
+# 
+# IMPLEMENTATION NOTE: Reasons to pipe MATLAB's stdout to the log file
+# from this bash script rather than from MATLAB code:
+# 1) avoid manually having to pipe everything to log file in MATLAB code
+# 2) can handle stdout from library MATLAB code that prints to stdout (code that should not be altered, e.g. in irfu-matlab, e.g. irf.log)
+# 3) can handle stdout from the MATLAB startup process (currently ignored).
+# 
+# IMPLEMENTATION NOTE: The same arguments that are passed to this script are passed on to the MATLAB code, including
+# arguments which are unnecessary there, including --log <file> and --config <file>.
+# PRO:
+# 1) It is best to let as much parameter-parsing (incl. syntax checking) code to be in one place as possible (the MATLAB code).
+# 2) Enable the MATLAB code to print all the command-line parameters in error messages and to the log file.
+# 3) Enable the MATLAB code to print its syntax which is then identical to the syntax of this script.
+# CON: The MATLAB code needs some knowledge of the parameter parsing in this script.
+#
+# IMPLEMENTATION NOTE: The name of this file must only contain alphanumeric characters. Can therefore not use 
+# the file extension ".sh" to indicate that it is a shell script.
+# /ROC-TST-GSE-ICD-00023-LES, iss02rev02, Section 3.1.
+# 
+#====================================================================================================
+# PROPOSAL: Detect presence of bicas within irfu-matlab (avoid there being two bicas).
+#
+# BUG: If mistakenly uses bad "--config" flag, i.e. "--conf", then the script itself will use the wrong
+# MATLAB version ==> Can not launch MATLAB (which would have checked if "--conf" was a bad flag).
+# 
+# PROPOSAL: Rewrite in python3?
+#   NOTE: Check with ROC first.
+#====================================================================================================
+
+
+
+# Prefix that MATLAB code uses for stdout rows that should be sent to stdout (from the script).
+# NOTE: This pattern must match the corresponding prefix used in MATLAB.
+declare -r STDOUT_PREFIX='STDOUT: '    # NOTE: Not regex. Implicit that should match beginning of line.
+
+# Prefix that MATLAB code uses for stdout rows that should be sent to the log file.
+declare -r LOG_PREFIX='LOG: '
+
+
+# Name of MATLAB script that launches the MATLAB part of BICAS, such as it is called from inside MATLAB,
+# i.e. WITHOUT the file extension ".m".
+declare -r MATLAB_SCRIPT_NAME="bicas.main"
+
+# The name of the settings key in the config file, which value is the path to the MATLAB executable.
+# Should technically not contain anything that can be interpreted as regex, but period is probably fine anyway.
+declare -r MATLAB_COMMAND_SETTINGS_KEY="MATLAB_COMMAND"  
+
+# Default config file, relative to the BICAS root path.
+declare -r DEFAULT_CONFIG_FILE_RELATIVE_PATH="config/bicas.conf"
+
+# The two alternatives for where the root irfu-matlab directory may be, relative to the BICAS root directory.
+declare -r INNER_IRFUMATLAB_RELATIVE_PATH="lib/irfu-matlab"    # Needed to detect the presence/absence of the directory.
+declare -r OUTER_IRFUMATLAB_RELATIVE_PATH="../../.."
+
+# Error codes for errors that do not occur in MATLAB.
+# Error code must always be 1. /RCS ICD 00037, iss1/rev2, draft 2019-07-11, Section 3.4.3.
+declare -r ERROR_CODE_CAN_NOT_FIND_LOG_DIR=1
+#declare -r ERROR_CODE_CAN_NOT_WRITE_LOG_FILE=1
+declare -r ERROR_CODE_CAN_NOT_FIND_CONFIG_FILE=1
+declare -r ERROR_CODE_MATLAB_COMMAND_FILE_NOT_EXECUTABLE=1
+
+
+
+#========================================
+# Extract relevant (optional) arguments:
+# (1) log directory
+# (2) config file
+#========================================
+for ((i=1; i<$#; i++))      # NOTE: Intentionally omit the last argument.
+do
+    if [[ "${!i}" == "--log" ]]
+    then
+        let i=i+1
+        log_file="${!i}"
+    elif [[ "${!i}" == "--config" ]]               # NOTE: Hardcoded CLI option that is defined in RCS ICD.
+    then
+        let i=i+1
+        config_file="${!i}"
+    fi
+done
+
+
+
+#==================================================
+# Construct default log file if none was specified
+#==================================================
+if [[ -z "$log_file" ]]
+then
+    log_file='/dev/null'
+else
+    log_file=$(readlink -f "$log_file")
+fi
+
+
+
+
+
+
+
+# NOTE: Any CALL to this function should appropriately pipe stdout and stderr to log file.
+#       Therefore code inside of it does not need to do this. This function effectively exists
+#       to make logging easier and should contain an as large fraction of the this script as possible.
+loggable_main_code() {
+
+    # DEBUG. Normally ignored, but printed (not filtered away) if logging is disabled.
+    echo "Command-line arguments: $@"
+
+
+
+    #==============================================================================================
+    # Find (absolute) paths by using the path to this executable + relative paths.
+    #
+    # ASSUMES: This executable is located under a direct subdirectory to $BICAS_ROOT_PATH.
+    #
+    # NOTE: Some paths might not exist on disk and one can not use readlink on non-existent paths.
+    #==============================================================================================
+    local temp=$(dirname "$0")/..
+    local  BICAS_ROOT_PATH=$(readlink -f "$temp")
+    local  DEFAULT_CONFIG_FILE="${BICAS_ROOT_PATH}/${DEFAULT_CONFIG_FILE_RELATIVE_PATH}"
+    local INNER_IRFUMATLAB_PATH=$(readlink -f "${BICAS_ROOT_PATH}/${INNER_IRFUMATLAB_RELATIVE_PATH}")  
+    local OUTER_IRFUMATLAB_PATH=$(readlink -f "${BICAS_ROOT_PATH}/${OUTER_IRFUMATLAB_RELATIVE_PATH}")
+
+    # Set IRFUMATLAB_PATH : Path to irfu-matlab directory.
+    # The value is selected depending on the directory structure used.
+    if [[ -d "$INNER_IRFUMATLAB_PATH" ]] ; then
+        local IRFUMATLAB_PATH="$INNER_IRFUMATLAB_PATH"
+    else
+        local IRFUMATLAB_PATH="$OUTER_IRFUMATLAB_PATH"
+    fi
+
+
+
+    #======================================================
+    # Determine config file
+    # NOTE: Requires DEFAULT_CONFIG_FILE to have been set.
+    #======================================================
+    if [[ -z "$config_file" ]] ; then
+        # CASE: No config file argument set (or it is an empty string).
+        config_file="$DEFAULT_CONFIG_FILE"
+    else
+        # CASE: Config file argument set.
+        # Canonical paths are useful for error messages/debugging on paths with symbolic links.
+        config_file=$(readlink -f "$config_file")
+    fi
+    if [[ ! -f "$config_file" ]] ; then
+        echo "Can not find configuration file \"$config_file\"." >> /dev/stderr
+        exit $ERROR_CODE_CAN_NOT_FIND_CONFIG_FILE
+    fi
+
+
+
+    #==============================================
+    # Read MATLAB_COMMAND setting from config file
+    #==============================================
+    # ASSUMES/NOTE: The syntax here must be in agreement with the MATLAB code.
+    # IMPLEMENTATION NOTE: Needs some ~ugly code to handle the config file syntax, but it should be quite flexible.
+    # Uses "tail" to reduce multiple matches to one. NOTE: MATLAB code should give error for setting the same key multiple times.
+    MATLAB_COMMAND_row_str=$(grep '^'"${MATLAB_COMMAND_SETTINGS_KEY}"' *= *"' "$config_file" | tail -n 1)      
+    MATLAB_COMMAND=$(echo "$MATLAB_COMMAND_row_str" | awk -F '"' '{ print $2 }' | awk -F '"' '{ print $1 }' )
+    # NOTE: Does not find any matching row. ==> Empty string ==> Must test for empty string before checking path.
+
+
+
+    # ASSERTIONS: Test MATLAB_COMMAND
+    # -z  String is empty
+    if [[ -z "$MATLAB_COMMAND" ]] ; then
+        echo "Can not read setting MATLAB_COMMAND in configuration file \"$config_file\"." >> /dev/stderr
+        exit $ERROR_CODE_CAN_NOT_FIND_CONFIG_FILE
+    fi
+    # -f  File is a regular file (not directory, not symlink).
+    # -x  File/directory has execute permission.
+    # NOTE: If testing a symlink, then -f and -x test the pointed-to object.
+    if [[ ! -f "$MATLAB_COMMAND" ]] || [[ ! -x "$MATLAB_COMMAND" ]] ; then
+        echo "\"${MATLAB_COMMAND_row_str}\" in configuration file \"$config_file\" does not refer to an executable file." >> /dev/stderr
+        echo "MATLAB_COMMAND=\"${MATLAB_COMMAND}\"" >> /dev/stderr
+        exit $ERROR_CODE_MATLAB_COMMAND_FILE_NOT_EXECUTABLE
+    fi
+
+
+
+    # DEBUG. Normally ignored, but printed (not filtered away) if logging is disabled.
+    echo "BICAS_ROOT_PATH  = \"$BICAS_ROOT_PATH\""
+    echo "MATLAB_COMMAND   = \"$MATLAB_COMMAND\""
+    echo "IRFUMATLAB_PATH  = \"${IRFUMATLAB_PATH}\""
+    echo "config_file      = \"$config_file\""
+    echo "log_file         = \"$log_file\""
+
+
+
+    #=======================================================================
+    # Convert arguments into one long string that MATLAB code
+    # can interpret as a list of arguments.
+    # NOTE: Can not handle arguments containing the character single quote '.
+    #=======================================================================
+    local matlab_arg_list=""
+    for arg in "$@"
+    do
+        if [[ -z "$matlab_arg_list" ]]   # if string is empty
+        then
+            matlab_arg_list="'$arg'"
+        else
+            matlab_arg_list="$matlab_arg_list, '$arg'"
+        fi
+    done
+
+
+
+    #===================================================================================================================
+    # MATLAB options:
+    #
+    #     -r MATLAB_command    - Start MATLAB and execute the MATLAB_command.
+    #     -nodesktop           - Do not start the MATLAB desktop. Use the current
+    #                            terminal for commands. The Java virtual machine
+    #                            will be started.
+    #     -nojvm               - Shut off all Java support by not starting the
+    #                            Java virtual machine. In particular the MATLAB
+    #                            desktop will not be started.
+    #     -nosplash            - Do not display the splash screen during startup.
+    #
+    # IMPLEMENTATION NOTE: The MATLAB code supplied here is to make sure that
+    # the code works well in the event of failure.
+    # 1) MATLAB itself will NOT EXIT unless the code itself calls "exit".
+    # 2) MATLAB hangs if it can not find the MATLAB script. One can therefore not just launch MATLAB to call script.
+    # One also has to catch (try-catch) errors.
+    #
+    # NOTE: It is very important to end lines with semicolons and backslash for
+    # the command line-supplied MATLAB code to not yield syntax error AND NOT HANG.
+    # 
+    # IMPLEMENTATION NOTE: MATLAB must be called from the same current directory as this bash script is called from.
+    # This is necessary for the MATLAB code TO AT ALL BE ABLE to correctly interpret relative paths (arguments).
+    #
+    # NOTE: The irfu-matlab code itself adds subdirectories to irfu-matlab/. "genpath" should therefor not ne required.
+    #===================================================================================================================
+    echo "Launching MATLAB, using \"${MATLAB_COMMAND}\"."
+    "${MATLAB_COMMAND}" -nodisplay -r "\
+        try;\
+            addpath('${BICAS_ROOT_PATH}/src', '-begin');\
+            addpath('${BICAS_ROOT_PATH}/lib', '-begin');\
+            addpath('${IRFUMATLAB_PATH}',      '-begin');\
+            error_code = $MATLAB_SCRIPT_NAME($matlab_arg_list);\
+            quit(error_code);\
+        catch Exc;\
+            msg = sprintf('Could not launch the MATLAB script. The reason MIGHT be that MATLAB could not find it.\nException message: %s\n', Exc.message);\
+            fprintf(1, msg);\
+            fprintf(2, msg);\
+            quit(1);\
+        end"
+    local matlab_error_code=$?
+    if [[  "$matlab_error_code" != 0 ]] ; then
+        # NOTE: Can receive error both from
+        # (1) failure to launch MATLAB (command does not work, bad path, not on PATH etc.), and
+        # (2) MATLAB itself (MATLAB launched, but the MATLAB code decided something was wrong).
+        # The error message has to be chosen accordingly.
+        echo "Error from launching MATLAB command \"${MATLAB_COMMAND}\"."     >> /dev/stderr
+        echo "Bash launch function: matlab_error_code = $matlab_error_code"   >> /dev/stderr   # Send to stderr, not stdout.
+    else
+        echo "Bash launch function: matlab_error_code = $matlab_error_code"    # NOTE: Send to stdout ==> Piped to log file.
+    fi
+    
+    
+    
+    # NOTE: "exit" inside a bash function does NOT EXIT the entire script file.
+    exit $matlab_error_code
+}
+
+
+
+# Filter stdout so that only that intended for stdout is let through.
+filter_stdout_labeled_rows() {
+    # NOTE: Call grep to FILTER entire rows. Call sed to filter out the prefix. Must call both.
+    grep "^${STDOUT_PREFIX}" | sed "s/^${STDOUT_PREFIX}//"
+}
+
+filter_log_labeled_rows() {
+    # NOTE: Call grep to FILTER entire rows. Call sed to filter out the prefix. Must call both.
+    grep "^${LOG_PREFIX}" | sed "s/^${LOG_PREFIX}//"
+}
+
+
+
+#######################################
+# CALL BASH FUNCTION AND START LOGGING
+#######################################
+# Launch MATLAB and COPY selected stdout rows to the log file
+# -----------------------------------------------------------
+# tee options:
+#        -a, --append
+#               append to the given FILEs, do not overwrite
+#               
+# NOTE: Should always APPEND to log file.
+#       /RCS ICD 00037, iss1/rev2, draft 2019-07-11, Section 4.2.1
+#
+# IMPLEMENTATION NOTE: Somewhat unsure if tee command prints to file "immediately" (can one follow the progress of execution?).
+#
+loggable_main_code "$@" | tee -a >(filter_log_labeled_rows >> "$log_file") | filter_stdout_labeled_rows
+
+matlab_error_code=${PIPESTATUS[0]}    # Get exit code of the first component of piping.
+exit $matlab_error_code
