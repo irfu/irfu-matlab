@@ -1650,9 +1650,12 @@ classdef mms_sdp_dmgr < handle
       scPot = - Probe2sc_pot.data(:) .* offs.shortening(:) + offs.p2p;
       % Check present time and processing interval if we should set
       % FillValues to ensure SITL does not use Eclipse and/or Maneuvers
-      tEnd = irf_time(Probe2sc_pot.time(end), 'ttns>vector');
+      % As data interval is sometimes streching outside general day of
+      % processing (one packet before or after midnight) use the date from
+      % the middle of the interval and time 22 hours.
+      tEnd = irf_time(Probe2sc_pot.time(floor(length(Probe2sc_pot.time)/2)), 'ttns>vector');
       SITLtime = datetime('now', 'TimeZone', 'UTC') - hours(35);
-      if SITLtime < datetime(tEnd, 'TimeZone', 'UTC')
+      if SITLtime < datetime([tEnd(1), tEnd(2), tEnd(3), 22, 0, 0], 'TimeZone', 'UTC')
         % Ensure no MANUEVERS or ECLIPSE data is used by SITL,
         % however keep individual probes should anyone be interest in the
         % data.
