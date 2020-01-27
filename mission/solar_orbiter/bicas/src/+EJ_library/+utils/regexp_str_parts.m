@@ -8,6 +8,10 @@
 %
 % The primary purpose of this function is to make it easy to parse a string syntax.
 %
+% NOTE: Not always usable. Ex: Matching with restrictive regexp (one or several) at the end and hacing regexp that
+% permits ~arbitrary string in the beginning/middle. Arbitrary string will match until the end, preventing matching the
+% ending regular expressions.
+%
 %
 % ARGUMENTS
 % =========
@@ -26,6 +30,15 @@
 %
 function subStrList = regexp_str_parts(str, regexpList)
 % PROPOSAL: Better function name.
+% 
+% PROPOSAL: Somehow improve to prevent arbitrary strings in the middle.
+%   PROPOSAL: Simultaneously begin searching from end.
+%   PROPOSAL: Associate order of matching with each regexp. Must go from edges toward the middle (a regexp must be
+%       applied to a string that is adjacent to at least one already matched substring.
+%       CON: Still does not work for regexp surrounded by two ~arbitrary strings.
+%           CON: Impossible problem to solve, even in principle(?).
+%               PROPOSAL: Allow to search for matching substrings inside interior substring (substring not bounded by
+%                         already made matches).
 
     subStrList = cell(numel(regexpList), 1);
     
@@ -36,8 +49,7 @@ function subStrList = regexp_str_parts(str, regexpList)
         % syntax.
         subStr = regexp(remStr, ['^', regexpList{i}], 'match', 'emptymatch');  
         if isempty(subStr)
-            % NOTE: Not a BICAS-specific error ID.
-            error('BICAS:regexp_str_parts:CannotSplitString', 'Could not match regexp "%s" to beginning of the remainder of the string, "%s".', regexpList{i}, remStr)
+            error('Could not match regexp "%s" to beginning of the remainder of the string, "%s".', regexpList{i}, remStr)
         end
         subStr = subStr{1};
         

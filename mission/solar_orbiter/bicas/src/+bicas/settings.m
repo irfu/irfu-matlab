@@ -18,6 +18,12 @@
 % use a different get method to highlight that the read value is tentative (which it may be during initialization).
 % 
 %
+% NOTE
+% ====
+% Class stores all overriden values, not just the latest ones. This has not been taken advantage of yet, but is
+% intended for better logging the sources of settings and how they override each other. /2020-01-23
+% 
+%
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
 % First created 2017-02-22
 %
@@ -49,7 +55,21 @@ classdef settings < handle
 %
 % PROPOSAL: Store which settings were invoked (read) during a run.
 %   PRO: Can summarize (and log) which settings are actually being used.
-
+%   CON: Must distinguish between retrieving settings for actual use in algorithm, or for just logging.
+%
+% PROPOSAL: Enable BICAS to log where a key is set, and how many times. To follow how default value is overridden, and
+%           how it is overriden twice in the same interface (in the config file or CLI arguments)
+%   Ex: Config file specifies a new "default" value which is then overridden further below.
+%   PROBLEM: interpret_config_file and interpret_CLI_args must then be aware of setting a key multiple times, and return
+%   that information.
+%       PROPOSAL: Submit SETTINGS to those functions.
+%           CON: Automatic testing becomes harder. Harder to test returned value. Harder to submit varied SETTINGS.
+%       PROPOSAL: Return KVPL.
+%           NOTE: KVPL only permits string values(?).
+%
+% PROPOSAL: Make it possible to load multiple config files. Subsequent log files override each other.
+%   TODO-DECISION: Should the internal order of --set and --config arguments matter? Should a --config override a previous
+%                  --set?
 
 
     properties(Access=private)
@@ -103,14 +123,14 @@ classdef settings < handle
             assert(ischar(defaultValue) || isnumeric(defaultValue))
             
             
-            obj.DataMap(key) = struct('defaultValue', defaultValue, 'value', defaultValue, 'valueSource', 'default');
+            obj.DataMap(key) = struct('value', defaultValue, 'valueSource', 'default');
         end
 
 
 
-        % Set a PRE-EXISTING key value.
+        % Set a PRE-EXISTING key value (i.e. override the default at the very least).
         % NOTE: Does not check if numeric vectors have the same size as old value.
-        function update_value(obj, key, newValue, valueSource)
+        function override_value(obj, key, newValue, valueSource)
             % NOTE: Used to be public method. Can/should probably be rewritten or merged with set_preexisting_from_strings.
             
             % ASSERTIONS
@@ -119,7 +139,7 @@ classdef settings < handle
                 error('BICAS:settings:Assertion', 'Trying to modify read-only settings object.')
             end
             
-            valueStruct = obj.get_value_struct(key);
+            valueArayStruct = obj.get_value_array_struct(key);
             
             % ASSERTION
             if ~strcmp(bicas.settings.get_value_type(newValue), obj.get_setting_value_type(key))
@@ -128,9 +148,9 @@ classdef settings < handle
             end
 
             % IMPLEMENTATION NOTE: obj.DataMap(key).value = newValue;   % Not permitted by MATLAB.
-            valueStruct.value       = newValue;
-            valueStruct.valueSource = valueSource;
-            obj.DataMap(key) = valueStruct;
+            valueArayStruct(end+1).value       = newValue;
+            valueArayStruct(end  ).valueSource = valueSource;
+            obj.DataMap(key) = valueArayStruct;
         end
 
         
@@ -141,7 +161,7 @@ classdef settings < handle
         
         
         
-        % Return settings value for a given, existing key.
+        % Return the settings value (that is actually going to be used) for a given, existing key.
         % Only works when object is read-only, and the settings have their final values.
         %
         % IMPLEMENTATION NOTE: Short function name since function is called many times, often repeatedly.
@@ -151,26 +171,38 @@ classdef settings < handle
             if ~obj.readOnlyForever
                 error('BICAS:settings:Assertion', 'Not allowed to call this method for non-read-only settings object.')
             end
+            valueStructArray = obj.get_value_array_struct(key);
+
+            value = valueStructArray(end).value;
+        end
+        
+        
+        
+        % Return settings value for a given, existing key.
+        % Only works when object is read-only, and the settings have their final values.
+        %
+        % IMPLEMENTATION NOTE: Short function name since function is called many times, often repeatedly.
+        % FV = Final value
+        function valueArrayStruct = get_final_value_array(obj, key)
+            % ASSERTIONS
+            if ~obj.readOnlyForever
+                error('BICAS:settings:Assertion', 'Not allowed to call this method for non-read-only settings object.')
+            end
             if ~obj.DataMap.isKey(key)
                 error('BICAS:settings:Assertion:IllegalArgument', 'There is no setting "%s".', key)
             end
             
             
-            value = obj.DataMap(key).value;
+            valueArrayStruct = obj.DataMap(key);
+            EJ_library.assert.struct(valueArrayStruct, {'value', 'valueSource'}, {})
         end
         
-        
-        
-        function valueSource = get_value_source(obj, key)
-            valueSource = obj.DataMap(key).valueSource;
-        end
-
 
 
         % Needs to be public so that caller can determine how to parse string, e.g. parse to number.
         function valueType = get_setting_value_type(obj, key)
-            value     = obj.get_value_struct(key).defaultValue;            % NOTE: Always use defaultValue.
-            valueType = bicas.settings.get_value_type(value);
+            valueArrayStruct = obj.get_value_array_struct(key);            
+            valueType        = bicas.settings.get_value_type(valueArrayStruct(1).value);    % NOTE: Always use default/first value.
         end
 
 
@@ -183,11 +215,11 @@ classdef settings < handle
         
         
         
-        % Return settings struct for a given, existing key.
+        % Return settings array struct for a given, existing key.
         %
         % RATIONALE: Exists to give better error message when using an illegal key, than just calling obj.DataMap
         % directly.
-        function S = get_value_struct(obj, key)
+        function S = get_value_array_struct(obj, key)
             % ASSERTIONS
             if ~obj.DataMap.isKey(key)
                 error('BICAS:settings:Assertion:IllegalArgument', 'There is no setting "%s".', key)

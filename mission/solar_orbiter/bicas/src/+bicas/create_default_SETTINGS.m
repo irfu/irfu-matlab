@@ -46,6 +46,13 @@ function SETTINGS = create_default_SETTINGS()
 % PROPOSAL: OUTPUT_CDF.OVERWRITE_POLICY = REQUIRED: Require overwriting pre-existing file (sic!).
 %   PRO: (Maybe) useful as assertion for bulk processing.
 %
+% PROPOSAL: Merge OUTPUT_CDF.OVERWRITE_POLICY and WRITE_FILE_DISABLED
+%   CON: WRITE_FILE_DISABLED is something one is more likely to flip back and forth between (i.e. comment/uncomment in
+%   bicas.conf). More dangerous to flip back and forth between two non-default alternatives, e.g. WRITE DISABLED and
+%   FORBID_OVERWRITE.
+%       CON-PROPOSAL: Permit bicas.conf to contain same setting twice, and having a later one overwrite and earlier one.
+%   PROPOSAL: Name OUTPUT_CDF.WRITE_POLICY = DISABLED, PERMIT_OVERWRITE, FORBID_OVERWRITE
+%
 % PROPOSAL: PROCESSING.CALIBRATION.CURRENT.HK.DISABLE      : Whether to calibrate HK current or use HK TM. Not which data to use (HK or TC).
 %           PROCESSING.CALIBRATION.CURRENT.SOURCE = TC, HK : Which data to use.
 

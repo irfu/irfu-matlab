@@ -5,12 +5,12 @@
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
 % First created 2018-01-25
 %
-function regexp_str_parts___ATEST()
+function regexp_str_parts___ATEST1()
 
     KEY_VALUE_REGEXP_LIST         = {'[a-zA-Z0-9._]+', ' *= *', '"', '[^"]*', '"', ' *'};
     KEY_VALUE_COMMENT_REGEXP_LIST = {'[a-zA-Z0-9._]+', ' *= *', '"', '[^"]*', '"', ' *', '(#.*)?'};
     
-    new_test = @(inputs, outputs) (EJ_library.atest.CompareFuncResult(@bicas.utils.regexp_str_parts, inputs, outputs));
+    new_test = @(inputs, outputs) (EJ_library.atest.CompareFuncResult(@EJ_library.utils.regexp_str_parts, inputs, outputs));
     tl = {};
     
     tl{end+1} = new_test({'key',  {'[a-z]+'}}, {{'key'}'});

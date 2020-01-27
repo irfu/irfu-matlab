@@ -64,16 +64,17 @@ function errorCode = main( varargin )
 % PROPOSAL: Put a summarized version of CLI syntax in "bicas --help" (somethinger easier that the S/W descriptor).
 %   PRO: Useful when S/W descriptor becomes big and complex.
 %
-% PROPOSAL: Split up the "main_without_error_handling" function in several functions (outsource chunks of its code to smaller functions which are called).
+% PROPOSAL: Split up the "main_without_error_handling" function into several functions (outsource chunks of its code to smaller functions which are called).
 %   PROPOSAL: Printing CLI arguments.
 %
 % PROPOSAL: Better handling of errors in dataobj (reading CDF files).
 %   PROPOSAL: Wrap dataobj in function and catch and rethrow errors with BICAS' error IDs.
 %
-% PROPOSAL: When printing settings, print how each key value has been set: default, config file, CLI argument.
-%
 % PROPOSAL: Print Exception causes recursively.
 %   NOTE: Technically a tree structure, not a chain/sequence.
+%
+% PROPOSAL: Print MATLAB path (return value from path()).
+%   CON: Too many rows.
 
 
 % Clear any previous instance of global variables
@@ -206,6 +207,12 @@ bicas.logf('info', [...
 
 
 
+% IMPLEMENTATION NOTE: Runs before irf(...) commands. Added after a problem of calling irf('check_os') which indirectly
+% calls system('hostname') at ROC:roc2-dev. Could be
+bicas.logf('debug', 'OS environment variable PATH = "%s"', getenv('PATH'));
+
+
+
 %===================================================================================================================
 % Initialize irfu-matlab "library"
 %
@@ -256,8 +263,8 @@ cliArgStrCommaSep   = strjoin(cliArgumentsQuotedList, ', ');
 % IMPLEMENTATION NOTE: Printing the entire sequence of arguments, quoted with apostophe, is useful for copy-pasting to
 % both MATLAB command prompt and bash.
 bicas.logf('info', '    CLI arguments for copy-pasting:\n')
-bicas.logf('info', '        Quoted, whitespace-separated: %s\n\n', cliArgStrWhSpaceSep)
-bicas.logf('info', '        Quoted, comma-separated:      %s\n\n', cliArgStrCommaSep)
+bicas.logf('info', '        Single-quoted, whitespace-separated: %s\n\n', cliArgStrWhSpaceSep)
+bicas.logf('info', '        Single-quoted, comma-separated:      %s\n\n', cliArgStrCommaSep)
 bicas.logf('info', '\n\n')
 
 
@@ -537,8 +544,8 @@ end
 % UI ASSERTION
 if isempty(v)
     error('BICAS:main:Assertion', ...
-        'Can not set internal variable corresponding to environment variable "%s" from either (1) the environment variable, or (2) settings key value "%s".', ...
-        envVarName, settingsOverrideValue)
+        'Can not set internal variable corresponding to environment variable "%s" from either (1) the environment variable, or (2) settings key value %s="%s".', ...
+        envVarName, settingsOverrideName, settingsOverrideValue)
 end
 end
 
@@ -588,7 +595,7 @@ function SETTINGS = overwrite_settings_from_strings(SETTINGS, ModifiedSettingsMa
         end
         
         % Overwrite old setting.
-        SETTINGS.update_value(key, newValue, valueSource);
+        SETTINGS.override_value(key, newValue, valueSource);
     end
     
 end

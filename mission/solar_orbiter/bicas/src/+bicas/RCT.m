@@ -318,7 +318,7 @@ classdef RCT
                 end
                 
             catch Exc1
-                Exc2 = MException('BICAS:calib:FailedToReadInterpretRCT', 'Error when interpreting calibration file (RCT) "%s"', filePath);
+                Exc2 = MException('BICAS:calib:FailedToReadInterpretRCT', 'Error when interpreting calibration file (LFR team''s RCT for BIAS/BICAS) "%s"', filePath);
                 Exc2 = Exc2.addCause(Exc1);
                 throw(Exc2);
             end
@@ -345,7 +345,7 @@ classdef RCT
                 assert(size(    tdsCwfFactorsIvpt, 1) == 3)
                 
             catch Exc1
-                Exc2 = MException('BICAS:calib:FailedToReadInterpretRCT', 'Error when interpreting calibration file (RCT) "%s"', filePath);
+                Exc2 = MException('BICAS:calib:FailedToReadInterpretRCT', 'Error when interpreting calibration file (TDS team''s LFM CWF RCT for BIAS/BICAS) "%s"', filePath);
                 Exc2 = Exc2.addCause(Exc1);
                 throw(Exc2);
             end
@@ -394,7 +394,7 @@ classdef RCT
                 end
 
             catch Exc1
-                Exc2 = MException('BICAS:calib:FailedToReadInterpretRCT', 'Error when interpreting calibration file (RCT) "%s"', filePath);
+                Exc2 = MException('BICAS:calib:FailedToReadInterpretRCT', 'Error when interpreting calibration file (TDS team''s LFM RSWF RCT for BIAS/BICAS) "%s"', filePath);
                 Exc2 = Exc2.addCause(Exc1);
                 throw(Exc2);
             end
