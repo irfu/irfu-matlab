@@ -830,7 +830,7 @@ end
 			end
 			datastore('csa','pwd',csaPwd);
     end
-    if strfind(csaPwd, '&') || strfind(csaPwd, '=') %#ok<STRIFCND>
+    if ~(isempty(strfind(csaPwd, '&')) || ~(isempty(strfind(csaPwd, '=')))) %#ok<STREMP>
       % While it is ESA CSA allows for "&" and "=" to be part password, our
       % scripts explicitly use ampersand (&) and equal (=) signs to
       % construct the download request from ESA/CSA. Thus having either
