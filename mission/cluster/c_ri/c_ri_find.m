@@ -111,14 +111,14 @@ while 1
     if strcmp(path_ok,'c'), break; end
     eval(path_ok);
 end
-if exist('.c_ri_parameters.mat','file')
-    try save -append .c_ri_parameters.mat p_E p_R st_m et_m min_angle min_ampl period d2MP psw run_steps;
-    catch, disp('Parameter values could not be saved and therefore valid only for this run!');
-    end
+if exist('.c_ri_parameters.mat','file'),
+     try save -append .c_ri_parameters.mat p_E p_R st_m et_m min_angle min_ampl period d2MP psw run_steps;
+     catch disp('Parameter values could not be saved and therefore valid only for this run!');
+     end
 else
-    try save .c_ri_parameters.mat p_E p_R st_m et_m min_angle min_ampl period d2MP psw run_steps;
-    catch, disp('Parameter values could not be saved and therefore valid only for this run!');
-    end
+     try save .c_ri_parameters.mat p_E p_R st_m et_m min_angle min_ampl period d2MP psw run_steps;
+     catch disp('Parameter values could not be saved and therefore valid only for this run!');
+     end
 end
 
 if ~exist(p_E,'dir'), irf_log('save',['creating p_E directory: ' p_E]); mkdir(p_E);  end
@@ -129,11 +129,11 @@ if ~exist(p_R,'dir'), irf_log('save',['creating p_E directory: ' p_R]); mkdir(p_
 if flag_continue
     if exist('time_interval_start','var')
         i_start=time_interval_start;
-        disp(['Sarting at ' num2str(i_start) '. time interval']);
+        disp(['Starting at ' num2str(i_start) '. time interval']);
     end
     if exist('MP_interval_start','var')
         j_start=MP_interval_start;
-        disp(['Sarting at ' num2str(j_start) '. MP crossing interval']);
+        disp(['Starting at ' num2str(j_start) '. MP crossing interval']);
     end
 end
 

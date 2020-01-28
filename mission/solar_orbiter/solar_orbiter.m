@@ -40,7 +40,7 @@ flag=varargin{1};
 Units=irf_units;
 
 switch flag
-    case '?'         % show all possibel flag options
+    case '?'         % Show all possible flag options
         fid=fopen(which('solar_orbiter'));
         while 1
             tline = fgetl(fid);

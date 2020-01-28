@@ -1,0 +1,15 @@
+
+*~
+
+# Ignore the default BICAS master CDFs.
+data/*.cdf
+
+# Ignore the default BICAS configuration file, so that the user can configure his/her own version.
+#
+# Specifically, this is useful when delivering BICAS via the dedicated ROC/BICAS git repo (not irfu-matlab) so that
+# ROC's config/bicas.con is not overwritten.
+config/bicas.conf
+
+# Requested by ROC 2019-09-25 for the BICAS ROC git repo.
+*.DS_Store*
+.idea/
