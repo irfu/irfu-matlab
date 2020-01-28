@@ -829,7 +829,19 @@ end
 				  ' and then use your own credentials in irfu-matlab to download data from CSA.']);
 			end
 			datastore('csa','pwd',csaPwd);
-		end
+    end
+    if strfind(csaPwd, '&') || strfind(csaPwd, '=') %#ok<STRIFCND>
+      % While it is ESA CSA allows for "&" and "=" to be part password, our
+      % scripts explicitly use ampersand (&) and equal (=) signs to
+      % construct the download request from ESA/CSA. Thus having either
+      % results in problem for caa_download. For now, please reconsider
+      % changing password.
+      errStr = ['Please reconsider changing password to avoid the signs'...
+        ' "&" and "=" as these are used by caa_download.m to construct the'...
+        ' requested URL to download data from ESA/CSA.'];
+      irf.log('warning', errStr);
+      warning(errStr);
+    end
 		if strcmp(csaUser, 'avaivads') && strcmp(csaPwd,'!kjUY88lm')
 			% Old password used by irfu-matlab, now (2018/06/18) deprecated!
 			% Every user must from now on use their own credentials with ESA.
