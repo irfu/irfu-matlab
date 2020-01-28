@@ -582,28 +582,28 @@ end
 			if(isempty(tmpGetRequest))
 			  [downloadedFile,isReady] = urlwrite(urlLink, tempFilePathGz); %#ok<URLWR> websave introduced in R2014b
       else
-        if verLessThan('matlab', '8.4')
+%         if verLessThan('matlab', '8.4')
           [downloadedFile,isReady] = urlwrite(urlLink, tempFilePathGz, ...
             'Authentication', 'Basic', 'Get', tmpGetRequest); %#ok<URLWR> websave introduced in R2014b
-        else
-          indUser = strcmp(tmpGetRequest, 'USERNAME');
-          indPass = strcmp(tmpGetRequest, 'PASSWORD');
-          webOpt = weboptions('RequestMethod', 'get', 'Timeout', Inf, ...
-            'Username', tmpGetRequest{find(indUser)+1}, ...
-            'Password', tmpGetRequest{find(indPass)+1});
-          tmpGetRequest(indUser) = []; % Clear USERNAME
-          tmpGetRequest(indUser(1:end-1)) = [];
-          indPass = strcmp(tmpGetRequest, 'PASSWORD'); % Clear PASSWORD
-          tmpGetRequest(indPass) = [];
-          tmpGetRequest(indPass(1:end-1)) = [];
-          try
-            downloadedFile = websave(tempFilePathGz, urlLink, ...
-              tmpGetRequest{:}, webOpt);
-            isReady = true;
-          catch
-            isReady = false;
-          end
-        end
+%         else
+%           indUser = strcmp(tmpGetRequest, 'USERNAME');
+%           indPass = strcmp(tmpGetRequest, 'PASSWORD');
+%           webOpt = weboptions('RequestMethod', 'get', 'Timeout', Inf, ...
+%             'Username', tmpGetRequest{find(indUser)+1}, ...
+%             'Password', tmpGetRequest{find(indPass)+1});
+%           tmpGetRequest(indUser) = []; % Clear USERNAME
+%           tmpGetRequest(indUser(1:end-1)) = [];
+%           indPass = strcmp(tmpGetRequest, 'PASSWORD'); % Clear PASSWORD
+%           tmpGetRequest(indPass) = [];
+%           tmpGetRequest(indPass(1:end-1)) = [];
+%           try
+%             downloadedFile = websave(tempFilePathGz, urlLink, ...
+%               tmpGetRequest{:}, webOpt);
+%             isReady = true;
+%           catch
+%             isReady = false;
+%           end
+%         end
 			end
 			if isReady
 				gunzip(tempFilePathGz);
@@ -642,28 +642,28 @@ end
 		if(isempty(tmpGetRequest))
 		  [downloadedFile,isZipFileReady] = urlwrite(urlLink, downloadedFile); %#ok<URLWR> websave introduced in R2014b
     else
-      if verLessThan('matlab','8.4')
+%       if verLessThan('matlab','8.4')
         [downloadedFile,isZipFileReady] = urlwrite(urlLink, downloadedFile, ...
           'Authentication', 'Basic', 'Get', tmpGetRequest); %#ok<URLWR> websave introduced in R2014b
-      else
-        indUser = strcmp(tmpGetRequest, 'USERNAME');
-        indPass = strcmp(tmpGetRequest, 'PASSWORD');
-        webOpt = weboptions('RequestMethod', 'get', 'Timeout', Inf, ...
-          'Username', tmpGetRequest{find(indUser)+1}, ...
-          'Password', tmpGetRequest{find(indPass)+1});
-        tmpGetRequest(indUser) = []; % Clear USERNAME
-        tmpGetRequest(indUser(1:end-1)) = [];
-        indPass = strcmp(tmpGetRequest, 'PASSWORD'); % Clear PASSWORD
-        tmpGetRequest(indPass) = [];
-        tmpGetRequest(indPass(1:end-1)) = [];
-        try
-          downloadedFile = websave(downloadedFile, urlLink, ...
-            tmpGetRequest{:}, webOpt);
-          isZipFileReady = true;
-        catch
-          isZipFileReady = false;
-        end
-      end
+%       else
+%         indUser = strcmp(tmpGetRequest, 'USERNAME');
+%         indPass = strcmp(tmpGetRequest, 'PASSWORD');
+%         webOpt = weboptions('RequestMethod', 'get', 'Timeout', Inf, ...
+%           'Username', tmpGetRequest{find(indUser)+1}, ...
+%           'Password', tmpGetRequest{find(indPass)+1});
+%         tmpGetRequest(indUser) = []; % Clear USERNAME
+%         tmpGetRequest(indUser(1:end-1)) = [];
+%         indPass = strcmp(tmpGetRequest, 'PASSWORD'); % Clear PASSWORD
+%         tmpGetRequest(indPass) = [];
+%         tmpGetRequest(indPass(1:end-1)) = [];
+%         try
+%           downloadedFile = websave(downloadedFile, urlLink, ...
+%             tmpGetRequest{:}, webOpt);
+%           isZipFileReady = true;
+%         catch
+%           isZipFileReady = false;
+%         end
+%       end
 		end
 		
 		if isZipFileReady %
@@ -829,7 +829,19 @@ end
 				  ' and then use your own credentials in irfu-matlab to download data from CSA.']);
 			end
 			datastore('csa','pwd',csaPwd);
-		end
+    end
+    if ~(isempty(strfind(csaPwd, '&')) || ~(isempty(strfind(csaPwd, '=')))) %#ok<STREMP>
+      % While it is ESA CSA allows for "&" and "=" to be part password, our
+      % scripts explicitly use ampersand (&) and equal (=) signs to
+      % construct the download request from ESA/CSA. Thus having either
+      % results in problem for caa_download. For now, please reconsider
+      % changing password.
+      errStr = ['Please reconsider changing password to avoid the signs'...
+        ' "&" and "=" as these are used by caa_download.m to construct the'...
+        ' requested URL to download data from ESA/CSA.'];
+      irf.log('warning', errStr);
+      warning(errStr);
+    end
 		if strcmp(csaUser, 'avaivads') && strcmp(csaPwd,'!kjUY88lm')
 			% Old password used by irfu-matlab, now (2018/06/18) deprecated!
 			% Every user must from now on use their own credentials with ESA.

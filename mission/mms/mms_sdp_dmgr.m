@@ -1648,11 +1648,27 @@ classdef mms_sdp_dmgr < handle
       offs = mms_sdp_get_offset(DATAC.scId, DATAC.procId, Probe2sc_pot.time, DATAC.tmMode);
       DATAC.calFile = offs.calFile; % Store name of cal file used.
       scPot = - Probe2sc_pot.data(:) .* offs.shortening(:) + offs.p2p;
-      % Ensure no MANUEVERS or ECLIPSE data is used by SITL,
-      % however keep individual probes should anyone be interest in the
-      % data.
-      bits = bitor(MMS_CONST.Bitmask.MANEUVERS, MMS_CONST.Bitmask.ECLIPSE);
-      scPot = mask_bits(scPot, Probe2sc_pot.bitmask, bits);
+      % Check present time and processing interval if we should set
+      % FillValues to ensure SITL does not use Eclipse and/or Maneuvers
+      % As data interval is sometimes streching outside general day of
+      % processing (one packet before or after midnight) use the date from
+      % the middle of the interval and time 22 hours.
+      tEnd = irf_time(Probe2sc_pot.time(floor(length(Probe2sc_pot.time)/2)), 'ttns>vector');
+      SITLtime = datetime('now', 'TimeZone', 'UTC') - hours(35);
+      if SITLtime < datetime([tEnd(1), tEnd(2), tEnd(3), 22, 0, 0], 'TimeZone', 'UTC')
+        % Ensure no MANUEVERS or ECLIPSE data is used by SITL,
+        % however keep individual probes should anyone be interest in the
+        % data.
+        bits = bitor(MMS_CONST.Bitmask.MANEUVERS, MMS_CONST.Bitmask.ECLIPSE);
+        scPot = mask_bits(scPot, Probe2sc_pot.bitmask, bits);
+      else
+        % Following discussion with FPI, amoung others, they would like to
+        % have access to our "scpot" product directly regardless.
+        % With the notion that it is not really good data... And since we
+        % are now processing sufficently old data the SITL should no longer
+        % use/see this when making their selection of burst intervals.
+        % (e-mail thread dated 2020-01-23T16:50, FPI team & Mark & Barbara)
+      end
 
       DATAC.sc_pot = struct('time',Probe2sc_pot.time,'data',scPot,...
         'bitmask',Probe2sc_pot.bitmask);

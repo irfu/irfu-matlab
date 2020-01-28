@@ -158,9 +158,13 @@ function [wfinal,extraparam]=irf_disp_surf_calc(kc_x_max,kc_z_max,m_i,wp_e)
   veparoperp = vez.*conj(vez)./(vex.*conj(vex)+vey.*conj(vey));
   viparoperp = viz.*conj(viz)./(vix.*conj(vix)+viy.*conj(viy));
   
+  % Total particle speeds
+  ve2 = vex.*conj(vex)+vey.*conj(vey)+vez.*conj(vez);
+  vi2 = vix.*conj(vix)+viy.*conj(viy)+viz.*conj(viz);
+  
   % Ion and electron energies
-  Ee = 0.5*m_e*(vex.*conj(vex)+vey.*conj(vey)+vez.*conj(vez));
-  Ei = 0.5*m_i*(vix.*conj(vix)+viy.*conj(viy)+viz.*conj(viz));
+  Ee = 0.5*m_e*ve2;
+  Ei = 0.5*m_i*vi2;
   
   % Ratio of particle and field energy densities
   ne = wp_e^2;
@@ -195,17 +199,18 @@ function [wfinal,extraparam]=irf_disp_surf_calc(kc_x_max,kc_z_max,m_i,wp_e)
   extraparam(7,:,:,:)=Epolar; % Ellipticity
   extraparam(8,:,:,:)=log10(Etot.^2./Btot.^2); % Degree of electromagnetism
   extraparam(9,:,:,:)=log10(Ee./Ei); % Ratio of electron to ion energy
-  extraparam(10,:,:,:)=log10(ratiopf); % Ratio of particle to field energy densities
-  extraparam(11,:,:,:)=Bpolar; % Ellipticity based on B
-  extraparam(12,:,:,:)=log10(vphase_to_vA); % Phase speed divided by Alfven speed
-  extraparam(13,:,:,:)=log10(veparoperp); % Ratio of parallel to perpendicular electron speed
-  extraparam(14,:,:,:)=log10(viparoperp); % Ratio of parallel to perpendicular ion speed
-  extraparam(15,:,:,:)=log10(Een./(EE+EB));
-  extraparam(16,:,:,:)=log10(dnedni); % Ratio of electron to ion density perturbations
-  extraparam(17,:,:,:)=log10(dneonodBoB); % (dn_e/n)/(dB/B)
-  extraparam(18,:,:,:)=log10(dnionodBoB); % (dn_i/n)/(dB/B)
-  extraparam(19,:,:,:)=log10(dneonodBparoB); % (dn_e/n)/(dBpar/B)
-  extraparam(20,:,:,:)=log10(dnionodBparoB); % (dn_i/n)/(dBpar/B)
-  extraparam(21,:,:,:)=log10(dne./kdotE); % (dn_i/n)/(dB/B)
-  extraparam(22,:,:,:)=Spar./Stot; % (dn_i/n)/(dB/B)
+  extraparam(10,:,:,:)=log10(sqrt(ve2./vi2)); % Ratio of electron to ion velocity fluctuations
+  extraparam(11,:,:,:)=log10(ratiopf); % Ratio of particle to field energy densities
+  extraparam(12,:,:,:)=Bpolar; % Ellipticity based on B
+  extraparam(13,:,:,:)=log10(vphase_to_vA); % Phase speed divided by Alfven speed
+  extraparam(14,:,:,:)=log10(veparoperp); % Ratio of parallel to perpendicular electron speed
+  extraparam(15,:,:,:)=log10(viparoperp); % Ratio of parallel to perpendicular ion speed
+  extraparam(16,:,:,:)=log10(Een./(EE+EB));
+  extraparam(17,:,:,:)=log10(dnedni); % Ratio of electron to ion density perturbations
+  extraparam(18,:,:,:)=log10(dneonodBoB); % (dn_e/n)/(dB/B)
+  extraparam(19,:,:,:)=log10(dnionodBoB); % (dn_i/n)/(dB/B)
+  extraparam(20,:,:,:)=log10(dneonodBparoB); % (dn_e/n)/(dBpar/B)
+  extraparam(21,:,:,:)=log10(dnionodBparoB); % (dn_i/n)/(dBpar/B)
+  extraparam(22,:,:,:)=log10(dne./kdotE); % (dn_i/n)/(dB/B)
+  extraparam(23,:,:,:)=Spar./Stot; % Spar/Stot
   warning on
