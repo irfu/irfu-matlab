@@ -93,7 +93,9 @@ irf_legend(h(1),'Example 1',[1.0 1.001],'fontsize',8,'color',[0.5 0.5 0.5]);
 % add tmarks and mark intervals
 % add line marks
 tmarks=irf_time([2006 9 27 17 17 30;2006 9 27 17 18 20;2006 9 27 17 19 45;2006 9 27 17 21 0;2006 9 27 17 23 0]);
-irf_pl_mark(h,tmarks,'black','LineWidth',0.5)
+for iH=1:length(h)
+  irf_pl_mark(h(iH),tmarks,'black','LineWidth',0.5)
+end
 text_tmarks={'A','B','C','D','E'};
 ypos=get(h(1),'ylim');ypos(1)=[];
 for j=1:length(tmarks)
@@ -101,7 +103,8 @@ for j=1:length(tmarks)
 end
 % add interval mark
 tmarks=irf_time([2006 9 27 17 25 0])+[0 5*60];
-irf_pl_mark(h(1:2),tmarks)
+irf_pl_mark(h(1),tmarks)
+irf_pl_mark(h(2),tmarks)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%
