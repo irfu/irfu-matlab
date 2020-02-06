@@ -360,7 +360,8 @@ end
 
 Vr = splitVs(varStr);
 dsetName = ['mms' mmsIdS '_' Vr.inst '_' Vr.tmmode '_' Vr.lev];
-compS = ''; pref = ''; suf = '';
+compS = ''; pref = ''; suf = ''; pref_err = '';
+err = [];
 
 switch Vr.inst
   case 'fsm'
@@ -494,6 +495,7 @@ switch Vr.inst
            % pref = ['mms' mmsIdS '_' sensor '_numberdensity_dbcs_' Vr.tmmode];
             % V3.1 FPI
             pref = ['mms' mmsIdS '_' sensor '_numberdensity_' Vr.tmmode];
+            pref_err = ['mms' mmsIdS '_' sensor '_numberdensity_err_' Vr.tmmode];
           case 'l1b'
             pref = ['mms' mmsIdS '_' sensor '_numberdensity'];
           case 'ql'
@@ -737,10 +739,21 @@ end
           return
         end
         rX = comb_ts(rX);
-        res = irf.ts_scalar(rX.time, rX.data);
+        res = irf.ts_scalar(rX.time, rX.data); % This removes all "userData"...
         res.name = [varStr '_' mmsIdS];
         res.units = rX.units;
         res.siConversion = rX.siConversion;
+        
+        rX_err = mms.db_get_ts(dsetName,pref_err,Tint);% error
+        if isempty(rX_err)
+          irf.log('warning',...
+            ['No data for ' dsetName '(' pref_err ')'])
+          return
+        else
+          rX_err = comb_ts(rX_err);
+          err = rX_err.data;
+        end
+        res.userData.error = err;
       case 'vector'
         if isempty(compS), compS.x = 'X'; compS.y = 'Y'; compS.z = 'Z'; end
         rX = mms.db_get_ts(dsetName,[pref compS.x suf],Tint);
