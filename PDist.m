@@ -837,6 +837,8 @@ classdef PDist < TSeries
       PD.units = 's-1cm-2';
       PD.siConversion = '>1e4';%num2str(str2num(PD.siConversion)/d3v_scale,'%e');
     end
+    
+    
     function PD = reduce(obj,dim,x,varargin)
       %PDIST.REDUCE Reduces (integrates) 3D distribution to 1D (line).      
       %   Example (1D):
@@ -854,29 +856,34 @@ classdef PDist < TSeries
       %   Options:
       %     'nMC'    - number of Monte Carlo iterations used for integration,
       %                for default number see IRF_INT_SPH_DIST
-      %     'base'   - set the base for the projection to polar 'pol', or
-      %                cartesian 'cart' (only valid for 2D planes)
+      %     'base'   - set the base for the projection to cartesian 'cart'
+      %                (default) or polar 'pol' (only valid for 2D planes)
       %     'vg'     - array with center values for the projection velocity
-      %                grid in [km/s], determined by instrument if omitte
+      %                grid in [km/s], determined by instrument if omitted
       %     'vg_edges' - array with edge values for the projection velocity
       %                grid in [km/s]
       %     'phig'   - array with center values for the projection
       %                azimuthal angle in [rad]
       %     'vint'   - set limits on the out-of-plane velocity to get
       %                cut-like distribution in 2D or a cylindrical shell
-      %                in 1D
+      %                in 1D in [km/s]
       %     'aint'   - angular limit in out-of-plane direction to make
-      %                projection cut-like in 2D (not valid for 1D?)
+      %                projection cut-like in 2D (only valid for 2D planes)
       %     'scpot'  - sets all values below scpot to zero and changes the
-      %                energy correspondingly
+      %                energy correspondingly (only valid for electrons)
       %     'lowerelim' - sets all values below lowerelim to zero, does not
       %                change the energy. Can be single value, vector or
       %                Tseries, for example 2*scpot
       %     'weight' - how the number of MC iterations per bin is weighted, 
       %                can be 'none' (default), 'lin' or 'log'
       % 
+      %
+      %   The output is a PDist object with the reduced distribution where
+      %   'data' is the integrated phase space density and 'depend'
+      %   contains one (line) or two (plane) vectors of the velocity
+      %   centers. The units of the velocity is [km/s].
       %    
-      % This is a shell function for irf_int_sph_dist.m
+      % The integration itself is performed in irf_int_sph_dist.m
       %
       % See also: IRF_INT_SPH_DIST, PDIST.PLOT_PLANE, PDIST.SPECREC,
       % IRF_SPECTROGRAM
@@ -945,10 +952,8 @@ classdef PDist < TSeries
       vgInput = 0;
       vgInputEdges = 0;
       weight = 'none';      
-      %tint = dist.time([1 dist.length-1]);
       correct4scpot = 0;
-      isDes = 1;
-      base = 'pol'; % coordinate base, cart or pol (make 'cart' default?)
+      base = 'cart'; % coordinate base, cart or pol 
       
       if strcmp(dist.species,'electrons'); isDes = 1; else, isDes = 0; end
       
@@ -1097,7 +1102,6 @@ classdef PDist < TSeries
           %disp(sprintf('%8.1g ',energy))          
         end
             
-
         v = units.c*sqrt(1-(energy*units.e/(M*units.c^2)-1).^2); % m/s  
 
         % azimuthal angle
@@ -1145,7 +1149,7 @@ classdef PDist < TSeries
             dens = zeros(length(it),1);
         end        
         % perform projection
-        if dim == 1 
+        if dim == 1 % 1D plane
           % v, phi, th corresponds to the bins of F3d
           if vgInputEdges
             tmpst = irf_int_sph_dist(F3d,v,phi,th,vg,'x',xphat,'nMC',nMC,'vzint',vint*1e3,'aint',aint,'weight',weight,'vg_edges',vg_edges);
@@ -1199,7 +1203,8 @@ classdef PDist < TSeries
       end
       PD.species = dist.species;
       PD.userData = dist.userData;
-     
+      PD.ancillary.v_units = 'km/s';
+      
       % set units and projection directions
       if dim == 1      
         PD.units = 's/m^4';
@@ -1220,7 +1225,9 @@ classdef PDist < TSeries
         PD.ancillary.lowerelim = lowerelim_mat;
       end
       
-    end
+    end % end of reduce function
+    
+    
     function PD = rebin(obj,base,grid,orient,varargin)
       % PDIST.REBIN Rebins energies of distribution function.      
       %   Usage: 
