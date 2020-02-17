@@ -836,9 +836,7 @@ classdef PDist < TSeries
       PD.data = PD.data*1e-4;
       PD.units = 's-1cm-2';
       PD.siConversion = '>1e4';%num2str(str2num(PD.siConversion)/d3v_scale,'%e');
-    end
-    
-    
+    end 
     function PD = reduce(obj,dim,x,varargin)
       %PDIST.REDUCE Reduces (integrates) 3D distribution to 1D (line).      
       %   Example (1D):
@@ -908,6 +906,12 @@ classdef PDist < TSeries
         elseif isnumeric(x) && all(numel(size(x) == [dist.length 3]))
           xphat_mat = x;        
         end
+        
+        xphat_amplitude = sqrt(sum(xphat_mat.^2,2));        
+        if abs(mean(xphat_amplitude)-1) < 1e-2 && std(xphat_amplitude) > 1e-2 % make sure x are unit vectors, 
+          xphat_mat = xphat_mat./repmat(xphat_amplitude,1,3);
+          irf.log('warning','|<x/|x|>-1| > 1e-2 or std(x/|x|) > 1e-2: x is recalculated as x = x/|x|.');
+        end        
       elseif dim == 2 % 2D: projection to plane        
         if isa(x,'TSeries') && isa(varargin{1},'TSeries')
           y = varargin{1}; varargin = varargin(2:end); % assume other coordinate for perpendicular plane is given after and in same format
@@ -924,12 +928,37 @@ classdef PDist < TSeries
         else
           error('Can''t recognize second vector for the projection plane, ''y'': PDist.reduce(''2D'',x,y,...)')
         end      
-        
+                
         % it's x and z that are used as input to irf_int_sph_dist
-        zphat_mat = zeros(size(xphat_mat));
-        for ii = 1:size(xphat_mat,1)
-            zphat_mat(ii,:) = cross(xphat_mat(ii,:),yphat_mat(ii,:)); 
+        % x and y are given, but might not be orthogonal
+        % first make x and y unit vectors
+        xphat_amplitude = sqrt(sum(xphat_mat.^2,2));
+        yphat_amplitude = sqrt(sum(yphat_mat.^2,2));
+        % These ifs are not really necessary, but could be there if one 
+        % wants to add some output saying that they were not put in 
+        % (inputted) as unit vectors. The definition of unit vectors is not
+        % quite clear, due to tiny roundoff(?) errors
+        if abs(mean(xphat_amplitude)-1) < 1e-2 && std(xphat_amplitude) > 1e-2 % make sure x are unit vectors, 
+          xphat_mat = xphat_mat./repmat(xphat_amplitude,1,3);
+          irf.log('warning','|<x/|x|>-1| > 1e-2 or std(x/|x|) > 1e-2: x is recalculated as x = x/|x|.');
         end
+        if abs(mean(yphat_amplitude)-1) < 1e-2 && std(yphat_amplitude) > 1e-2 % make sure y are unit vectors
+          yphat_mat = yphat_mat./repmat(yphat_amplitude,1,3);
+          irf.log('warning','|<y/|y|>-1| > 1e-2 or std(y/|y|) > 1e-2: y is recalculated as y = y/|y|.');
+        end
+        % make z orthogonal to x and y
+        zphat_mat = cross(xphat_mat,yphat_mat,2); 
+        zphat_amplitude = sqrt(sum(zphat_mat.^2,2));        
+        zphat_mat = zphat_mat./repmat(zphat_amplitude,1,3);        
+        % make y orthogonal to z and x
+        yphat_mat = cross(zphat_mat,xphat_mat,2);
+        % check amplitude again, incase x and y were not orthogonal
+        yphat_amplitude = sqrt(sum(yphat_mat.^2,2));
+        if abs(mean(yphat_amplitude)-1) < 1e-2 && std(yphat_amplitude) > 1e-2  % make sure y are unit vectors
+          yphat_mat = yphat_mat./repmat(yphat_amplitude,1,3);
+          irf.log('warning','x and y were not orthogonal, y is recalculated as y = cross(cross(x,y),x)');
+        end
+        
 
         nargs = nargs - 1;
         args = args(2:end);
@@ -1058,6 +1087,13 @@ classdef PDist < TSeries
     
       % try to make initialization and scPot correction outside time-loop
       
+      if not(any([vgInput,vgInputEdges])) % prepare a single grid outside the time-loop
+        emax = dist.ancillary.energy(1,end)+dist.ancillary.delta_energy_plus(1,end);
+        vmax = units.c*sqrt(1-(emax*units.e/(M*units.c^2)-1).^2);
+        nv = 100;
+        vgcart_noinput = linspace(-vmax,vmax,nv);        
+        irf.log('warning',sprintf('No velocity grid specified, using a default vg = linspace(-vmax,vmax,%g), with vmax = %g km/s.',nv,vmax*1e-3));
+      end
       % loop to get projection
       disp('Integrating distribution')
       fprintf('it = %4.0f/%4.0f\n',0,nt) % display progress
@@ -1123,14 +1159,18 @@ classdef PDist < TSeries
         % Set projection grid after the first distribution function
         % bin centers
         if vgInputEdges % redefine vg (which is vg_center)
-          vg = vg_edges(1:end-1) + 0.5*diff(vg_edges);          
+          vg = vg_edges(1:end-1) + 0.5*diff(vg_edges);
         elseif vgInput
           vg = vg;
         else % define from instrument velocity bins
-          if dim == 1
-            vg = [-fliplr(v),v];
-          elseif dim == 2
-            vg = v;
+          if strcmp(base,'cart')
+            vg = vgcart_noinput; % maybe just bypass this and go directly through input vg_edges?
+          else
+            if dim == 1
+              vg = [-fliplr(v),v];
+            elseif dim == 2
+              vg = v;
+            end
           end
         end
 
@@ -1160,6 +1200,7 @@ classdef PDist < TSeries
           all_vg_edges(1,:) = tmpst.v_edges;
         elseif dim == 2
           %tmpst = irf_int_sph_dist_mod(F3d,v,phi,th,vg,'x',xphat,'z',zphat,'phig',phig,'nMC',nMC,'vzint',vint*1e3,'weight',weight);
+          % is 'vg_edges' implemented for 2d?
           tmpst = irf_int_sph_dist(F3d,v,phi,th,vg,'x',xphat,'z',zphat,'phig',phig,'nMC',nMC,'vzint',vint*1e3,'weight',weight,'base',base);
           all_vx(i,:,:) = tmpst.vx;
           all_vy(i,:,:) = tmpst.vy;
@@ -1226,8 +1267,6 @@ classdef PDist < TSeries
       end
       
     end % end of reduce function
-    
-    
     function PD = rebin(obj,base,grid,orient,varargin)
       % PDIST.REBIN Rebins energies of distribution function.      
       %   Usage: 
