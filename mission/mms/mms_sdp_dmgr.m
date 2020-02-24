@@ -23,6 +23,7 @@ classdef mms_sdp_dmgr < handle
     hk_10e = [];      % src HK_10E file
     l2a = [];         % src L2A file
     l2pre = [];       % src L2Pre file
+    orb_radius = [];  % comp sc orbital radius
     phase = [];       % comp phase
     probe2sc_pot = [];% comp probe to sc potential
     sc_pot = [];      % comp sc potential
@@ -417,10 +418,34 @@ classdef mms_sdp_dmgr < handle
           end
 
         case('defeph')
-          % DEFEPH, contains Def Ephemeris (Struct with 'time', 'Pos_X', 'Pos_Y'
-          % and 'Pos_Z')
-          DATAC.(param) = dataObj;
-          check_monoton_timeincrease(DATAC.(param).time);
+          % DEFEPH, contains Def Ephemeris (Struct with 'time', 'r' and 'v')
+          % It is unknown (2020/02/24) if duplicated timestamps can occur
+          % in DefEph (similar to DefAtt). If nay are found, they could
+          % cause problem when interpolating data so use the same approach
+          % as for DefAtt. I.e. Use the last data point and disregard the
+          % first duplicate.
+          idxBad = diff(dataObj.time)==0; % First duplicate index
+          fs = fields(dataObj);
+          for idxFs=1:length(fs), dataObj.(fs{idxFs})(idxBad) = []; end
+          if isempty(DATAC.(param))
+            % First DefEph file
+            DATAC.(param) = dataObj;
+            check_monoton_timeincrease(DATAC.(param).time);
+          else
+            % Second defeph file
+            % Combine each field of the structs and run sort & unique on
+            % the time
+            combined = [DATAC.(param).time; dataObj.time];
+            [~, srt] = sort(combined);
+            [DATAC.(param).time, usrt] = unique(combined(srt));
+            for idxFs=1:length(fs)
+              if(~strcmp(fs{idxFs}, 'time'))
+                combined = [DATAC.(param).(fs{idxFs}); dataObj.(fs{idxFs})];
+                DATAC.(param).(fs{idxFs}) = combined(srt(usrt));
+              end
+            end
+            check_monoton_timeincrease(DATAC.(param).time); % Verify combined defeph
+          end
 
         case('l2a')
           % L2A, contain dce data, spinfits, etc. for L2Pre processing or
@@ -1561,6 +1586,36 @@ classdef mms_sdp_dmgr < handle
       DATAC.dce_xyz_dsl = struct('time',Dce.time,'data',[dE -Dce.e56.data],...
         'bitmask',bitmask);
       res = DATAC.dce_xyz_dsl;
+    end
+    
+    function res = get.orb_radius(DATAC)
+      if ~isempty(DATAC.orb_radius), res = DATAC.orb_radius; return, end
+      % Compute spacecraft's orbital radius for each measurement timestamp
+      %% FIXME
+      Dce = DATAC.dce;
+      if isempty(Dce)
+        Dce = DATAC.l2a;
+        if isempty(Dce)
+          errStr='Bad DCE input, cannot proceed.';
+          irf.log('critical',errStr); error(errStr);
+        else
+          DceTime = Dce.dce.time;
+        end
+      else
+        DceTime = Dce.time;
+      end
+      % Defeph contains 'time' and position 'r' (in cart. coord)
+      Defeph = DATAC.defeph;
+      if(~isempty(Defeph))
+        % Defeph found use it
+        [~, ~, radius] = cart2sph(Defeph.r(:,1), Defeph.r(:,2), Defeph.r(:,3)); 
+        DATAC.orb_radius = interp1(double(Defeph.time-DceTime(1)), ...
+          radius, ...
+          double(DceTime-DceTime(1)), 'linear'); %% FIXME or spline or something...
+      else
+        errStr='No DefEph loaded, can not compute radius. Fallback to no radius';
+        irf.log('critical', errStr);
+      end
     end
 
     function res = get.delta_off(DATAC)
