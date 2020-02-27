@@ -27,6 +27,7 @@ DCE_File = '';
 L2A_File = ''; % L2A file, contain offsets from fast/slow to be used by brst and for L2Pre process.
 L2Pre_File = ''; % L2Pre file, containing spin residue from Fast to be used by brst for L2pre process.
 DEFATT_File = ''; % Defatt file used for l2pre or reprocessing of QL.
+DEFEPH_File = ''; % Defeph file used for orbit information (Slow mode offset is radius dependent).
 HdrInfo = [];
 procId=[]; Dmgr = [];
 
@@ -189,6 +190,37 @@ switch procId
         end
       end % If QL or L2A
     end % If running Brst dce
+    
+    %% Third type of special case, Slow mode is now dependent in radius found in DEFEPH
+    if( procId==MMS_CONST.SDCProc.l2a )
+      if(isempty(DEFEPH_File))
+        % Go looking for DEFEPH to match tint.
+        list = mms.db_list_files(['mms',HdrInfo.scIdStr,'_ancillary_defeph'],tint);
+        if(isempty(list) || list(1).start >= tint.start || list(end).stop <= tint.stop)
+          % Should not be here!
+          %% FIXME (go looking for Pred. Eph?)
+          errStr = 'No DEFEPH was found and no DEFEPH identified in arguments when processing SLOW mode.';
+          irf.log('critical',errStr);% error(errStr);
+        else
+          for ii=1:length(list)
+            irf.log('notice', [procName ' proc using: ',list(ii).name]);
+            [dataTmp, src_fileData] = mms_load_ancillary([list(ii).path, filesep, ...
+              list(ii).name], 'defeph');
+            Dmgr.set_param('defeph', dataTmp);
+            update_header(src_fileData); % Update header with file info.
+          end
+        end
+      else
+        % Load input specified DEFEPH
+        fileSplit = strsplit(DEFEPH_File,':');
+        for iFile=1:size(fileSplit,2)
+          irf.log('notice', [procName ' proc using: ' fileSplit{iFile}]);
+          [dataTmp, src_fileData] = mms_load_ancillary(fileSplit{iFile}, 'defeph');
+          Dmgr.set_param('defeph', dataTmp);
+          update_header(src_fileData) % Update header with file info.
+        end
+      end % DEFEPH special case
+    end % If running L2a processing (check for DefEph).
 
     % Go on with the DCE file.
     Dmgr.set_param('dce',dce_obj);
@@ -583,6 +615,13 @@ filename_output = mms_sdp_cdfwrite(HdrInfo, Dmgr);
         end
         DFG_File = varargin{j};
         irf.log('notice',['DFG input file: ',DFG_File]);
+      elseif regexpi(fileIn, '_DEFEPH_') % DEFEPH
+        if ~isempty(DEFEPH_File)
+          errStr = ['Multiple DEFEPH files in input (',DEFEPH_File,' and ',varargin{j},')'];
+          irf.log('critical', errStr); error(errStr);
+        end
+        DEFEPH_File = varargin{j};
+        irf.log('notice', ['DEFEPH input file: ', DEFEPH_File]);
       else
         % Unidentified input argument
         errStr = ['MMS_SDC_SDP_PROC unrecognized input file: ',varargin{j}];

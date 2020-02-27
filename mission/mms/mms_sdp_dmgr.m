@@ -441,7 +441,7 @@ classdef mms_sdp_dmgr < handle
             for idxFs=1:length(fs)
               if(~strcmp(fs{idxFs}, 'time'))
                 combined = [DATAC.(param).(fs{idxFs}); dataObj.(fs{idxFs})];
-                DATAC.(param).(fs{idxFs}) = combined(srt(usrt));
+                DATAC.(param).(fs{idxFs}) = combined(srt(usrt), :);
               end
             end
             check_monoton_timeincrease(DATAC.(param).time); % Verify combined defeph
@@ -1617,6 +1617,7 @@ classdef mms_sdp_dmgr < handle
         DATAC.orb_radius = interp1(double(Defeph.time-DceTime(1)), ...
           radius, ...
           double(DceTime-DceTime(1)), 'linear'); %% FIXME or spline or something...
+        res = DATAC.orb_radius;
       else
         errStr='No DefEph loaded, can not compute radius. Fallback to no radius';
         irf.log('critical', errStr);
