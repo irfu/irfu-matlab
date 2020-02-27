@@ -44,6 +44,9 @@ switch procId
 end
 
 try
+  if procId == MMS_CONST.SDCProc.l2pre && TMmode == MMS_CONST.TmMode.slow
+    useVpspdependentoff
+  else
   calPath = [ENVIR.CAL_PATH_ROOT, filesep 'mms', num2str(scId), filesep, ...
     'edp', filesep, 'sdp', filesep, calStr];
   calFiles = [calPath, filesep, 'mms', num2str(scId), ...
@@ -185,6 +188,7 @@ try
   else
     off = useStaticOffset;
   end
+  end
 catch ME
   irf.log('warning', ME.message);
   off = useStaticOffset;
@@ -244,5 +248,54 @@ end
         irf.log('critical', 'Process does not yet have offsets. SETTING ALL TO ZERO');
     end
   end % useStaticOffset
+
+  function useVpspdependentoff
+    epoch1min = ceil(Tint.start.epochUnix/60)*60:20:fix(Tint.stop.epochUnix/60)*60;
+    Epoch20s = EpochUnix(epoch1min); % Define 20 baseline
+    Vpsp20s = Vpsp.resample(Epoch20s);
+    switch lower(scId)
+    case 1
+      V0 = -0.2; % Define constants 
+      a = 0.7;
+      b = 1.2;
+      c = a - b/((-V0)^(2/3)) + 1/(1+V0)^5;
+    case 2
+      V0 = -0.2; % MMS2-4 values need to be corrected
+      a = 0.7;
+      b = 1.2;
+      c = a - b/((-V0)^(2/3)) + 1/(1+V0)^5;
+    case 3
+      V0 = -0.2;
+      a = 0.7;
+      b = 1.2;
+      c = a - b/((-V0)^(2/3)) + 1/(1+V0)^5;
+    case 4
+      V0 = -0.2;
+      a = 0.7;
+      b = 1.2;
+      c = a - b/((-V0)^(2/3)) + 1/(1+V0)^5;
+    otherwise
+      errStr = 'Unexpected scId';
+      irf.log('critical',errStr); error(errStr);
+    end  
+    
+    dEx = zeros(size(Epoch20s));
+    dEy = zeros(size(Epoch20s));
+    idx1 = Vpsp20s.data <= V0;
+    idx2 = Vpsp20s.data > V0;
+    
+    dEx(idx1) = a-b./abs(Vpsp20s.data(idx1)).^(2/3);
+    dEx(idx2) = c-1./abs(Vpsp20s.data(idx2)+1).^5;
+    
+    timeTS = epochTT(time);
+    
+    dE = irf.ts_vec_xy(Epoch20s,[dEx dEy]);
+    dEslow = dE.resample(timeTS);
+    
+    off.ex = dEslow.data(:,1);
+    off.ey = dEslow.data(:,2);
+    off.calFile = [];
+  end 
+    
 
 end
