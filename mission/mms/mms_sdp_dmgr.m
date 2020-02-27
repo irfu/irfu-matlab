@@ -136,7 +136,7 @@ classdef mms_sdp_dmgr < handle
 
       if( ~isempty(DATAC.(param)) )
         % Error, Warning or Notice for replacing the data variable?
-        if(~any(strcmp(param,{'hk_101', 'hk_105', 'hk_10e', 'defatt', 'aspoc', 'l2pre'})))
+        if(~any(strcmp(param,{'hk_101', 'hk_105', 'hk_10e', 'defatt', 'aspoc', 'l2pre', 'defeph'})))
           % Only multiple HK/Defatt/aspoc files are allowed for now..
           errStr = ['replacing existing variable (' param ') with new data'];
           irf.log('critical', errStr);
@@ -1166,6 +1166,11 @@ classdef mms_sdp_dmgr < handle
         end
 
         factor = MMS_CONST.NominalAmpCorr; NOM_DIST = 120.0;
+        if DATAC.tmMode == DATAC.CONST.TmMode.slow
+          %% FIXME
+          orb_radius = DATAC.orb_radius;
+          factor = MMS_CONST.NominalAmpCorr;
+        end
         for iSen = 1:numel(sensors)
           senE = sensors{iSen};
           nSenA = str2double(senE(2)); nSenB = str2double(senE(3));
