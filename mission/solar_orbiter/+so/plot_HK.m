@@ -61,9 +61,11 @@ function plot_HK(filePath)
     % ones (surrounded by zeros) should be represented as "infinitely" thin vertical lines, whereas two ones in a row
     % (surrounded by zeros) are not.
     %
+    % PROPOSAL: New name: plot_BIAS_HK
+    %
     % ~BUG: No grid lines for bits empty zVars.
     
-    warning('Incomplete quicklook')
+    warning('Incomplete quicklook code')
     
     D = dataobj(filePath);
     Epoch = D.data.Epoch.data;
@@ -73,7 +75,7 @@ function plot_HK(filePath)
 
     % zVariables that (presumably) are bit flags.
     ZVAR_BIT_FLAG_LIST = {...
-        'TIME_SYNCHRO_FLAG', ...
+        'SYNCHRO_FLAG', ...
         'HK_BIA_MODE_ACTIVE_LINK', ...
         'HK_BIA_MODE_HV_ENABLED', ...
         'HK_BIA_MODE_DIFF_PROBE', ...
@@ -85,8 +87,9 @@ function plot_HK(filePath)
         'HK_BIA_MODE_BIAS3_ENABLED', ...
         'HK_BIA_DIFF_GAIN' ...
         };
+    %ZVAR_BIT_FLAG_LIST = {};
 
-    hAxesArray = irf_plot(3+numel(ZVAR_BIT_FLAG_LIST)+1, 'newfigure');
+    hAxesArray = irf_plot(3+numel(ZVAR_BIT_FLAG_LIST), 'newfigure');
     
     plot_time_series3(D, 'HK_BIA_BIAS%s');
     plot_time_series3(D, 'HK_BIA_M%s'   );
@@ -103,7 +106,8 @@ function plot_HK(filePath)
         hBitArray(end+1) = plot_bit_series(zVarName, Epoch, D.data.(zVarName).data, zVarName);
     end
     
-    hBitArray(end+1) = plot_bit_series('BIT TEST', Epoch, testBit, 'BIT_TEST');
+    % TEST: Add test bit flag for testing plotting
+    %hBitArray(end+1) = plot_bit_series('BIT TEST', Epoch, testBit, 'BIT_TEST');
     
 %     for i = 1:numel(hBitArray)
 %         op = get(hBitArray(i), 'OuterPosition');
@@ -153,9 +157,10 @@ end
 
 
 
-% Plot3 time series, one for each antenna.
+% Plot 3 time series, one for each antenna.
 %
-% zVarNamePattern : String used in sprintf, with "%s" (!) representing the antenna number 1, 2, or 3.
+% zVarNamePattern : String used in sprintf, with "%s" (not "%i"!) representing the antenna number 1, 2, or 3.
+%
 function h = plot_time_series3(D, zVarNamePattern)
     panelTag = sprintf(zVarNamePattern, 'x');
     yLabel   = sprintf(zVarNamePattern, 'x');
@@ -168,9 +173,14 @@ function h = plot_time_series3(D, zVarNamePattern)
         D.data.(zvName1).data, ...
         D.data.(zvName2).data, ...
         D.data.(zvName3).data]);
-    
+
     %plot_time_series(panelTag, Ts, yLabel, {'1', '2', '3'})
     h = plot_time_series(panelTag, Ts, '', {escape_str(sprintf(zVarNamePattern, '1')), '2', '3'});
+    
+    
+%     Ts = irf.ts_scalar(D.data.Epoch.data, [...
+%         D.data.(zvName1).data]);
+%     h = plot_time_series(panelTag, Ts, '', {escape_str(sprintf(zVarNamePattern, '1'))});    
 end
 
 

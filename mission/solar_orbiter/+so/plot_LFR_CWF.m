@@ -11,7 +11,7 @@
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
 % First created 2020-01-28.
 %
-function hAxes = plot_LFR_CWF(filePath)
+function [hAxes] = plot_LFR_CWF(filePath)
     % SOLO_L2_RPW-LFR-SBM1-CWF-E_V05.cdf zVariables:
     %
     % Variable Information (0 rVariable, 17 zVariables)
@@ -47,7 +47,9 @@ function hAxes = plot_LFR_CWF(filePath)
     % TODO: Correct sampling frequency for irf_powerfft.
     % BUG: X axes differ between spectra and time series (irfu-matlab bug?).
     
-    warning('Incomplete quicklook')
+    warning('Incomplete quicklook code')
+    
+    FILL_VALUE = single(-1e31);
     
     D = dataobj(filePath);
     
@@ -56,19 +58,24 @@ function hAxes = plot_LFR_CWF(filePath)
     E12   = D.data.E.data(:,1);
     E13   = D.data.E.data(:,2);
     
-    hAxes = irf_plot(6,'newfigure');
+    V1  = changem(V1,  NaN, FILL_VALUE);
+    E12 = changem(E12, NaN, FILL_VALUE);
+    E13 = changem(E13, NaN, FILL_VALUE);
+    
+    %hAxes = irf_plot(6,'newfigure');
+    hAxes = irf_plot(3,'newfigure');
     
     TsV1  = irf.ts_scalar(Epoch, V1);
     TsE12 = irf.ts_scalar(Epoch, E12);
     TsE13 = irf.ts_scalar(Epoch, E13);
     
     h = [];
-    h(end+1) = plot_spectrum('E12 spectrogram', TsE12, 'E12');
-    h(end+1) = plot_spectrum('E13 spectrogram', TsE13, 'E13');
-    h(end+1) = plot_spectrum( 'V1 spectrogram', TsV1,   'V1');
+    %h(end+1) = plot_spectrum('E12 spectrogram', TsE12, 'V12');
+    %h(end+1) = plot_spectrum('E13 spectrogram', TsE13, 'V13');
+    %h(end+1) = plot_spectrum( 'V1 spectrogram', TsV1,   'V1');
     
-    h(end+1) = plot_time_series('E12 time series', TsE12, 'E12 [V]');
-    h(end+1) = plot_time_series('E13 time series', TsE13, 'E13 [V]');
+    h(end+1) = plot_time_series('E12 time series', TsE12, 'V12 [V]');
+    h(end+1) = plot_time_series('E13 time series', TsE13, 'V13 [V]');
     h(end+1) = plot_time_series( 'V1 time series', TsV1,   'V1 [V]');
     
     irf_plot_axis_align(h)                   % For aligning MATLAB axes (taking color legends into account).
@@ -78,9 +85,12 @@ end
 
 
 
+% panelTag      : 
+% Ts            : irfumatlab TSeries (volt).
+% yLabelNonUnit : y label without unit (unit is at the color bar; Assumes "Ts" uses volt).
 function h = plot_spectrum(panelTag, Ts, yLabelNonUnit)
     %N_SAMPLES_PER_SPECTRUM = 2048;
-    N_SAMPLES_PER_SPECTRUM = 512;
+    N_SAMPLES_PER_SPECTRUM = 128;
     
     % TEMPORARY FIX?!
     % Assuming there is one sampling frequency.
@@ -102,6 +112,9 @@ end
 
 
 
+% panelTag      : 
+% Ts            : irfumatlab TSeries
+% yLabelNonUnit : y label with unit.
 function h = plot_time_series(panelTag, Ts, yLabel)
     h = irf_panel(panelTag);
     irf_plot(h, Ts)
