@@ -250,6 +250,7 @@ end
   end % useStaticOffset
 
   function useVpspdependentoff
+    Tint = irf.tint(time);
     epoch1min = ceil(Tint.start.epochUnix/60)*60:20:fix(Tint.stop.epochUnix/60)*60;
     Epoch20s = EpochUnix(epoch1min); % Define 20 baseline
     Vpsp20s = Vpsp.resample(Epoch20s);
