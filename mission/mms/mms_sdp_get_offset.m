@@ -257,36 +257,46 @@ end
     switch lower(scId)
     case 1
       V0 = -0.2; % Define constants 
-      a = 0.7;
-      b = 1.2;
-      c = a - b/((-V0)^(2/3)) + 1/(1+V0)^5;
+      a = 0.9;
+      b = 2.5;
+      c = 0.5;
+      d = 3.0;
+      e = 1.2;
     case 2
-      V0 = -0.2; % MMS2-4 values need to be corrected
-      a = 0.7;
-      b = 1.2;
-      c = a - b/((-V0)^(2/3)) + 1/(1+V0)^5;
+      V0 = -0.3; 
+      a = 1.7;
+      b = 3.7;
+      c = 0.5;
+      d = 2.5;
+      e = 1.2;
     case 3
-      V0 = -0.2;
-      a = 0.7;
-      b = 1.2;
-      c = a - b/((-V0)^(2/3)) + 1/(1+V0)^5;
+      V0 = -0.25;
+      a = 1.9;
+      b = 5.3;
+      c = 1.7;
+      d = 4.2;
+      e = 1.5;
     case 4
-      V0 = -0.2;
-      a = 0.7;
-      b = 1.2;
-      c = a - b/((-V0)^(2/3)) + 1/(1+V0)^5;
+      V0 = -0.35;
+      a = 2.2;
+      b = 15;
+      c = 5;
+      d = 0.12;
+      e = 1.0;
     otherwise
       errStr = 'Unexpected scId';
       irf.log('critical',errStr); error(errStr);
     end  
+    
+    f = a - b/abs(V0 - c) + d/abs(V0 + e)^4;
     
     dEx = zeros(size(Epoch20s));
     dEy = zeros(size(Epoch20s));
     idx1 = Vpsp20s.data <= V0;
     idx2 = Vpsp20s.data > V0;
     
-    dEx(idx1) = a-b./abs(Vpsp20s.data(idx1)).^(2/3);
-    dEx(idx2) = c-1./abs(Vpsp20s.data(idx2)+1).^5;
+    dEx(idx1) = a-b./abs(Vpsp20s.data(idx1) - c);
+    dEx(idx2) = f-d./abs(Vpsp20s.data(idx2) + e).^4;
     
     timeTS = epochTT(time);
     
