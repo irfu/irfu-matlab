@@ -1168,8 +1168,20 @@ classdef mms_sdp_dmgr < handle
         factor = MMS_CONST.NominalAmpCorr; NOM_DIST = 120.0;
         if DATAC.tmMode == DATAC.CONST.TmMode.slow
           %% FIXME
-          orb_radius = DATAC.orb_radius;
+          orbradius = DATAC.orb_radius;
           factor = MMS_CONST.NominalAmpCorr;
+          % Set gain to 1 for orbit radius less than 5 RE
+          if min(orbradius) < MMS_CONST.InnerMSPradius % Factor needs an array for inner magnetosphere periods
+            %factorMSP = MMS_CONST.InnerMSPAmpCorr;
+            idx = orbradius < MMS_CONST.InnerMSPradius;
+            tempgainarray = ones(size(size(DATAC.dce.('e12').data)));
+            factor.e56 = tempgainarray;
+            factor.e12 = tempgainarray;
+            factor.e12(~idx) = MMS_CONST.NominalAmpCorr.e12;
+            factor.e34 = tempgainarray;
+            factor.e34(~idx) = MMS_CONST.NominalAmpCorr.e34;
+            % This needs to be written better
+          end    
         end
         for iSen = 1:numel(sensors)
           senE = sensors{iSen};
@@ -1182,7 +1194,7 @@ classdef mms_sdp_dmgr < handle
           else
             distF = NOM_DIST./(senDist(:,nSenA) + senDist(:,nSenB));
           end
-          DATAC.dce.(senE).data = DATAC.dce.(senE).data .* distF * factor.(senE);
+          DATAC.dce.(senE).data = DATAC.dce.(senE).data .* distF .* factor.(senE);
         end
 
         function l = sensor_dist(len)
