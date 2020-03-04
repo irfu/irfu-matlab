@@ -250,9 +250,12 @@ end
   end % useStaticOffset
 
   function useVpspdependentoff
-    Tint = irf.tint(time);
+    timeTS = EpochTT(time);
+    Tint = irf.tint(timeTS);
     epoch1min = ceil(Tint.start.epochUnix/60)*60:20:fix(Tint.stop.epochUnix/60)*60;
     Epoch20s = EpochUnix(epoch1min); % Define 20 baseline
+    %% Fix me: I think Vpsp needs to be an input to this function
+    Vpsp = mms.get_data('Vpsp_edp_slow_l2', Tint, scId); % Work around. This needs to be revised.
     Vpsp20s = Vpsp.resample(Epoch20s);
     switch lower(scId)
     case 1
@@ -297,8 +300,6 @@ end
     
     dEx(idx1) = a-b./abs(Vpsp20s.data(idx1) - c);
     dEx(idx2) = f-d./abs(Vpsp20s.data(idx2) + e).^4;
-    
-    timeTS = epochTT(time);
     
     dE = irf.ts_vec_xy(Epoch20s,[dEx dEy]);
     dEslow = dE.resample(timeTS);
