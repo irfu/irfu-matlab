@@ -46,6 +46,13 @@ MMS_CONST.NominalAmpCorr.e12 = 1.25;
 MMS_CONST.NominalAmpCorr.e34 = 1.25;
 MMS_CONST.NominalAmpCorr.e56 = 1.0;
 
+% Inner Magnetosphere Amplitude Correction factor multiplied to DCE data.
+MMS_CONST.InnerMSPAmpCorr.e12 = 1.0;
+MMS_CONST.InnerMSPAmpCorr.e34 = 1.0;
+MMS_CONST.InnerMSPAmpCorr.e56 = 1.0;
+
+MMS_CONST.InnerMSPradius = 5*6.3712e+03; % 5 R_E in km. 
+
 % Telemetry mode
 MMS_CONST.TmModes = {'slow','fast','brst', 'comm'};
 MMS_CONST.TmMode.slow = 1; % Number must corrspond to position in the list
