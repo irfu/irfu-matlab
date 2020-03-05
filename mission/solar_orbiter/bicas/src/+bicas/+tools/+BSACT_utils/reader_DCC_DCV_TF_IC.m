@@ -8,9 +8,9 @@
 % IMPLEMENTATION NOTE: The current implementation really "only" collects a list of metadata and paths to the
 % corresponding calibration table files. When this metadata has been retrieved, the object is no longer needed. The
 % class could therefor in principle be replaced by a function. However, the thought behind the current design is to make
-% it possible to easily modify it in the future so that data can be loaded retrieved through the class. This design may
+% it possible to easily modify it in the future so that data can be loaded/retrieved through the class. This design may
 % be changed in the future though.
-% NOTE: The implementation does not force one to use either DCC, DCV, or TF test in a given object. One can mix them,
+% NOTE: The implementation does not force one to use either DCC, DCV, TF, or IC test in a given object. One can mix them,
 % but that form uf usage makes little sense and is not intended.
 % NOTE: There is a slight difference between BSACT TFs (without inverted diffs).
 %   2016 June: Has TF phase shift ~180 degrees at low frequencies.
@@ -72,18 +72,21 @@
 %
 % Types of calibration data
 % -------------------------
-% DCC (DC_CURRENT):         Calibration data for determining offset and slope for bias currents.
-% DCV (DC_VOLTAGE):         Calibration data for determining offset and slope for DC voltages.
-% TF  (TRANSFER_FUNCTION):  Transfer functions (amplification and phase shift over frequencies).
+% DCC (DC_CURRENT):             Calibration data for determining offset and slope for bias currents.
+% DCV (DC_VOLTAGE):             Calibration data for determining offset and slope for DC voltages.
+% TF  (TRANSFER_FUNCTION):      Transfer functions (amplification and phase shift over frequencies).
+% IC  (BIAS_DC_INTERNAL_CAL):   Calibration data for determining the internal calibration resistance.
 %
-% NOTE: The naming convention here is to use the flow of information in the physical instrument to determine what is
+% Direction, what is input/output
+% -------------------------------
+% The naming convention here is to use the flow of information in the physical instrument to determine what is
 % "input" and "output". Therefor, for voltages, BICAS calculates the "input" signals from the "output" signals.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden.
 % First created 2017-12-11
 %
-classdef reader_DCC_DCV_TF < handle     % Explicitly declare it as a handle class to avoid IDE warnings.
+classdef reader_DCC_DCV_TF_IC < handle     % Explicitly declare it as a handle class to avoid IDE warnings.
 % BOGIQ
 % =====
 % PROPOSAL: Force user to only use one data type: DCC, DCV, or TF tests.
@@ -102,6 +105,9 @@ classdef reader_DCC_DCV_TF < handle     % Explicitly declare it as a handle clas
 % data at once (and saving it memory), or caching, then that should be done by other function/class which calls those functions.
 %      
 % PROPOSAL: Change shortening: EOO-->OOR (Output offset removed), IOO-->OOK (Output offset kept)
+%
+% PROPOSAL: Read temperature which seems contained in all (?) calibration table files.
+%   Ex: "header.reg2 23.96   :Ambient temperature in C"
 
 
 
@@ -119,9 +125,9 @@ classdef reader_DCC_DCV_TF < handle     % Explicitly declare it as a handle clas
     methods(Access=public)
 
         % CONSTRUCTOR
-        function obj = reader_DCC_DCV_TF(varargin)
+        function obj = reader_DCC_DCV_TF_IC(varargin)
 %             if nargin > 1
-%                 error('BICAS:reader_DCC_DCV_TF:IllegalArgument', 'Illegal number of arguments')
+%                 error('BICAS:reader_DCC_DCV_TF_IC:IllegalArgument', 'Illegal number of arguments')
 %             end
 %             
 %             obj.doPreload = ismember('preload', varargin);
@@ -144,15 +150,15 @@ classdef reader_DCC_DCV_TF < handle     % Explicitly declare it as a handle clas
         %                         cTableFilesPattern.
         % mebTemperatureCelsius : The MEB temperature at which the tests are made.
             
-            testLogbookRowList = EJ_library.utils.read_text_file(testLogbookFile);
-            metadataList = bicas.tools.BSACT_utils.parse_testlogbook_DCC_DCV_TF(testLogbookRowList, dataType);
+            testLogbookRowList = EJ_library.utils.read_text_file(testLogbookFile, '\r?\n');
+            metadataList = bicas.tools.BSACT_utils.parse_testlogbook_DCC_DCV_TF_IC(testLogbookRowList, dataType);
             
             % TODO-NEED-INFO: Necessary to use special function here? Can replace call with one-liner?
             metadataList = bicas.utils.merge_structs(metadataList, struct('mebTempCelsius', mebTemperatureCelsius));
-            
-            
-            
-            % IMPLEMENTATION NOTE: Does not read entire files since does not know whether they are DCC, DCV, or TF files.
+
+
+
+            % IMPLEMENTATION NOTE: Does not read entire files since does not know whether they are DCC, DCV, TF, or IC files.
             [metadataList.filePath] = deal([]);
             for i = 1:numel(metadataList)
                 filePath = sprintf(cTableFilesPattern, metadataList(i).testIdNbr);
@@ -191,10 +197,10 @@ classdef reader_DCC_DCV_TF < handle     % Explicitly declare it as a handle clas
         function Data = read_DCC_calib_file(filePath)
         % Read one BSACT DCC table (text file) into a struct.
         
-            if ~ischar(filePath); error('BICAS:reader_DCC_DCV_TF:IllegalArgument', 'Argument is not a string.'); end
+            if ~ischar(filePath); error('BICAS:reader_DCC_DCV_TF_IC:IllegalArgument', 'Argument is not a string.'); end
         
             Data = bicas.tools.BSACT_utils.read_BSACT_file(filePath, {...
-                'setCurrentMikroAmpere', ...   % Set current/design current. Exactly proportional to digital current.
+                'setCurrentMicroAmpere', ...   % Set current/design current. Exactly proportional to digital current.
                 'setCurrentDigital', ...       % Signed integer value representing current. If not identical to TM,
                 ...                            % then at least very-very similar (signed/unsigned?).
                 'biasCurrentAmpere', ...       % Measured bias current. NOTE: Opposite sign compared to set current.
@@ -210,9 +216,9 @@ classdef reader_DCC_DCV_TF < handle     % Explicitly declare it as a handle clas
         %
         % 
         % Column naming convention to distinguish columns with very similar meanings (and values):
-        % Se comments at top of file.
+        % See comments at top of file.
             
-            if ~ischar(filePath); error('BICAS:reader_DCC_DCV_TF:IllegalArgument', 'Argument is not a string.'); end
+            assert(ischar(filePath), 'BICAS:reader_DCC_DCV_TF_IC:IllegalArgument', 'Argument is not a string.')
             
             Data = bicas.tools.BSACT_utils.read_BSACT_file(filePath, {...
                 'inputBstVolt', ...
@@ -230,7 +236,7 @@ classdef reader_DCC_DCV_TF < handle     % Explicitly declare it as a handle clas
         function Data = read_TF_calib_file(filePath)
         % Read one BSACT TF table (text file) into a struct.
         
-            if ~ischar(filePath) ; error('BICAS:reader_DCC_DCV_TF:IllegalArgument', 'Argument is not a string.') ; end
+            assert(ischar(filePath), 'BICAS:reader_DCC_DCV_TF_IC:IllegalArgument', 'Argument is not a string.')
             
             Data = bicas.tools.BSACT_utils.read_BSACT_file(filePath, {...
                 'freqHz', ...
@@ -242,6 +248,25 @@ classdef reader_DCC_DCV_TF < handle     % Explicitly declare it as a handle clas
                 Data.freqHz, ...
                 Data.gainEnergyDb, ...
                 Data.phaseShiftDeg);
+        end
+        
+        
+
+        function Data = read_IC_calib_file(filePath)
+        % Read one BSACT IC table (text file) into a struct.
+        
+            assert(ischar(filePath), 'BICAS:reader_DCC_DCV_TF_IC:IllegalArgument', 'Argument is not a string.')
+        
+            Data = bicas.tools.BSACT_utils.read_BSACT_file(filePath, {...
+                'setCurrentMicroAmpere', ...   % Set current/design current. Exactly proportional to digital current.
+                'setCurrentDigital', ...       % Signed integer value representing current. If not identical to TM,
+                ...                            % then at least very-very similar (signed/unsigned?).
+                'outputIooVolt', ...
+                'outputEooVolt', ...
+                'hkInput1Volt', ...            % Slightly unsure, but should be measured voltage in HK data, in Volt. Compare DCV columns.
+                'hkInput2Volt', ...
+                'hkInput3Volt'});
+
         end
 
     end    % methods(Static, Access=public)
