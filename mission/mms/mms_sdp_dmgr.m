@@ -1169,17 +1169,21 @@ classdef mms_sdp_dmgr < handle
         if DATAC.tmMode == DATAC.CONST.TmMode.slow
           %% FIXME
           orbradius = DATAC.orb_radius;
-          factor = MMS_CONST.NominalAmpCorr;
           % Set gain to 1 for orbit radius less than 5 RE
-          if min(orbradius) < MMS_CONST.InnerMSPradius % Factor needs an array for inner magnetosphere periods
+          idx_innerMSP = orbradius <= MMS_CONST.InnerMSPradius;
+          if any(idx_innerMSP)
+            % Factor needs an array for inner magnetosphere periods
             %factorMSP = MMS_CONST.InnerMSPAmpCorr;
-            idx = orbradius < MMS_CONST.InnerMSPradius;
-            tempgainarray = ones(size(size(DATAC.dce.('e12').data)));
-            factor.e56 = tempgainarray;
+            tempgainarray = ones(size(DATAC.dce.time));
+            % factor.e56 = factor.e56; % Unchanged 1 to 1
             factor.e12 = tempgainarray;
-            factor.e12(~idx) = MMS_CONST.NominalAmpCorr.e12;
+            factor.e12(~idx_innerMSP) = MMS_CONST.NominalAmpCorr.e12;
             factor.e34 = tempgainarray;
-            factor.e34(~idx) = MMS_CONST.NominalAmpCorr.e34;
+            factor.e34(~idx_innerMSP) = MMS_CONST.NominalAmpCorr.e34;
+            logStr = sprintf(['Applying nominal amplitude correction factor ', ...
+              '1.0 for %i datapoints in inner MSp and 1.25 for %i datapoints', ...
+              'outside of inner MSp.'], sum(idx_innerMSP), sum(~idx_innerMSP));
+            irf.log('notice', logStr);
             % This needs to be written better
           end    
         end
@@ -1187,7 +1191,7 @@ classdef mms_sdp_dmgr < handle
           senE = sensors{iSen};
           nSenA = str2double(senE(2)); nSenB = str2double(senE(3));
           logStr = sprintf(['Applying nominal amplitude correction factor, '...
-            '%.2f, to %s'], factor.(senE), senE);
+            '%.2f, to %s'], factor.(senE)(1), senE);
           irf.log('notice',logStr);
           if(strcmp(senE,'e56'))
             distF = 1; % Boom length rescaling for ADP. I.e. only nominal amplitude correction.
@@ -1897,6 +1901,7 @@ classdef mms_sdp_dmgr < handle
           DeltaOff = irf.ts_vec_xy(DATAC.l2a.spinfits.time, [real(DATAC.l2a.delta_off), imag(DATAC.l2a.delta_off)]);
           DeltaOffR = DeltaOff.resample(EpochTT(DATAC.l2a.dce.time));
           dE = mms_sdp_despin(Etmp.e12, Etmp.e34, DATAC.l2a.phase.data, DeltaOffR.data(:,1) + DeltaOffR.data(:,2)*1j);
+          % offs = mms_sdp_get_offset(DATAC.scId, DATAC.procId, DATAC.l2a.dce.time, DATAC.tmMode); %% FIXME should include scpot p2p_pot if processing slow mode!
           offs = mms_sdp_get_offset(DATAC.scId, DATAC.procId, DATAC.l2a.dce.time, DATAC.tmMode);
           DATAC.calFile = offs.calFile; % Store name of cal file used.
           dE(:,1) = dE(:,1) - offs.ex; % Remove sunward
