@@ -1,11 +1,13 @@
 %
 % Add a prefix string to the beginning of every row in a multirow string.
 %
+% NOTE: Uses linefeed as linebreak.
+%
 %
 % ARGUMENTS
 % ========= 
 % str    : Potentially multi-row string to be printed.
-%           NOTE: If one-row   string: May optionally end with line feed.
+%           NOTE: If one-row   string: Argument may optionally end with line feed.
 %                 If multi-row string: Every row must end with line feed, including the last one.
 % prefix : One-row string without line feed.
 %
@@ -15,7 +17,7 @@
 % newStr : One or multi-row string
 %
 %
-% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2019-07-26
 %
 function newStr = add_prefix_on_every_row(str, prefix)

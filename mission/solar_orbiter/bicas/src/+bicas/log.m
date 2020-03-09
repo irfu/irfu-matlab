@@ -41,7 +41,7 @@ end
 timestamp = datestr(clock, 'yyyy-mm-ddTHH:MM:SS');
 rowPrefix = sprintf('%s%s -- %s -- ', LOG_PREFIX, timestamp, logLevelStr);
 
-printStr = bicas.utils.add_prefix_on_every_row(msgStr, rowPrefix);
+printStr = EJ_library.utils.add_prefix_on_every_row(msgStr, rowPrefix);
 
 
 
@@ -58,7 +58,7 @@ if strcmp(logLevel, 'error')
     % Make sure string ends with line feed.
     % IMPLEMENTATION NOTE: Necessary for stderr messages to end up on separate lines. Not doing so produces some output
     % rows (at least inside the MATLAB GUI) with mixed stderr and std out content which is hard to read.
-    % NOTE: bicas.utils.add_prefix_on_every_row already does this for the log messages.
+    % NOTE: EJ_library.utils.add_prefix_on_every_row already does this for the log messages.
     LINE_FEED = char(10); 
     if msgStr(end) ~= LINE_FEED
         msgStr = [msgStr, LINE_FEED];

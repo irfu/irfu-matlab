@@ -28,7 +28,7 @@ function Test = new_test(inputStr, prefix, outputStr)
 input     = {sprintf(inputStr), prefix};
 expOutput = {sprintf(outputStr)};
 
-Test = EJ_library.atest.CompareFuncResult(@bicas.utils.add_prefix_on_every_row, input, expOutput);
+Test = EJ_library.atest.CompareFuncResult(@EJ_library.utils.add_prefix_on_every_row, input, expOutput);
 
 end
 
@@ -39,6 +39,6 @@ function Test = new_test_EXC(inputStr, prefix)
 input     = {sprintf(inputStr), prefix};
 expOutput = 'MException';
 
-Test = EJ_library.atest.CompareFuncResult(@bicas.utils.add_prefix_on_every_row, input, expOutput);
+Test = EJ_library.atest.CompareFuncResult(@EJ_library.utils.add_prefix_on_every_row, input, expOutput);
 
 end

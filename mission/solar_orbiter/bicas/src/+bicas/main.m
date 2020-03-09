@@ -53,121 +53,140 @@
 %
 %
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
-% First created 2016-03-xx
+% First created 2016-03-xx.
 %
 function errorCode = main( varargin )
-%
-% PROPOSAL: Set option for MATLAB warnings. Disable?
-%   NOTE: TN claims warnings are sent to stdout.
-% TODO-NEED-INFO: Is the application allowed to overwrite output files?
-%
-% PROPOSAL: Put a summarized version of CLI syntax in "bicas --help" (somethinger easier that the S/W descriptor).
-%   PRO: Useful when S/W descriptor becomes big and complex.
-%
-% PROPOSAL: Split up the "main_without_error_handling" function into several functions (outsource chunks of its code to smaller functions which are called).
-%   PROPOSAL: Printing CLI arguments.
-%
-% PROPOSAL: Better handling of errors in dataobj (reading CDF files).
-%   PROPOSAL: Wrap dataobj in function and catch and rethrow errors with BICAS' error IDs.
-%
-% PROPOSAL: Print Exception causes recursively.
-%   NOTE: Technically a tree structure, not a chain/sequence.
-%
-% PROPOSAL: Print MATLAB path (return value from path()).
-%   CON: Too many rows.
-
-
-% Clear any previous instance of global variables
-% -----------------------------------------------
-% This is useful to avoid mistakenly using a previously initialized version of SETTINGS when the
-% initialization has failed and when developing in MATLAB. Must be done as early as possible in the execution.
-clear -global CONSTANTS SETTINGS    % Clearing obsoleted variable CONSTANTS for safety.
-
-C = bicas.error_safe_constants();
-
-
-
-try
-    errorCode = C.EMIDP_2_INFO('NoError').errorCode;
-    main_without_error_handling(varargin);
-
-catch Exception1
-    %================================================================
-    % CASE: Caught an error in the regular execution of the software
-    %================================================================
+    %
+    % PROPOSAL: Set option for MATLAB warnings. Disable?
+    %   NOTE: TN claims warnings are sent to stdout.
+    % TODO-NEED-INFO: Is the application allowed to overwrite output files?
+    %
+    % PROPOSAL: Put a summarized version of CLI syntax in "bicas --help" (somethinger easier that the S/W descriptor).
+    %   PRO: Useful when S/W descriptor becomes big and complex.
+    %
+    % PROPOSAL: Split up the "main_without_error_handling" function into several functions (outsource chunks of its code to smaller functions which are called).
+    %   PROPOSAL: Printing CLI arguments.
+    %
+    % PROPOSAL: Better handling of errors in dataobj (reading CDF files).
+    %   PROPOSAL: Wrap dataobj in function and catch and rethrow errors with BICAS' error IDs.
+    %
+    % PROPOSAL: Print MATLAB path (return value from path()).
+    %   CON: Too many rows.
+    
+    
+    % Clear any previous instance of global variables
+    % -----------------------------------------------
+    % This is useful to avoid mistakenly using a previously initialized version of SETTINGS when the
+    % initialization has failed and when developing in MATLAB. Must be done as early as possible in the execution.
+    clear -global CONSTANTS SETTINGS    % Clearing obsoleted variable CONSTANTS for safety.
+    
+    C = bicas.error_safe_constants();
+    
+    
+    
     try
-        % IMPLEMENTATION NOTE: The error handling collects one long string with log/error messages for one bicas.log
-        % call, instead of making multiple bicas.log calls. This avoids having stdout and stderr messages mixed
-        % (alternating rows with stdout and stderr) in the MATLAB GUI, making it easier to read.
-        msg = '';
-        msg = [msg, sprintf('Main function caught an exception. Starting error handling.\n')];
-        msg = [msg, sprintf('Exception1.identifier = "%s"\n', Exception1.identifier)];
-        msg = [msg, sprintf('Exception1.message    = "%s"\n', Exception1.message)];
-
-        %=================================================================================
-        % Use MATLAB error message identifiers to identify one or multiple "error types".
-        %=================================================================================
-        msgIdentifierParts = strsplit(Exception1.identifier, ':');
-        emidpList = msgIdentifierParts(C.EMIDP_2_INFO.isKey(msgIdentifierParts));    % Cell array of message identifier parts (strings) only.
-        if isempty(emidpList)
-            emidpList = {'UntranslatableErrorMsgId'};
+        errorCode = C.EMIDP_2_INFO('NoError').errorCode;
+        main_without_error_handling(varargin);
+        
+    catch Exception1
+        %================================================================
+        % CASE: Caught an error in the regular execution of the software
+        %================================================================
+        try
+            msg = sprintf('Main function caught an exception. Starting error handling.\n');
+        
+            msg = [msg, recursive_exception_msg(Exception1, C)];
+            
+            msg = [msg, sprintf('Exiting MATLAB application with error code %i.\n', errorCode)];
+            bicas.log('error', msg)
+            return
+            
+        catch Exception2    % Deliberately use different variable name to distinguish the exception from the previous one.
+            %========================================================
+            % CASE: Caught an error in the regular error handling(!)
+            %========================================================
+            
+            % NOTE: Only use very, very error-safe code here.
+            %       Does not use bicas.log() or similar.
+            fprintf(2, 'Error in the MATLAB code''s error handling.\n');   % Print to stderr.
+            fprintf(2, 'exception2.identifier = "%s"\n', Exception2.identifier);          % Print to stderr.
+            fprintf(2, 'exception2.message    = "%s"\n', Exception2.message);             % Print to stderr.
+            
+            % NOTE: The RCS ICD 00037, iss1/rev2, draft 2019-07-11, Section 3.4.3 specifies
+            %   error code 0 : No error
+            %   error code 1 : Every kind of error (!)
+            errorCode = 1;
+            
+            fprintf(2, 'Exiting MATLAB application with error code %i.\n', errorCode);    % Print to stderr.
+            return
         end
-
-        %===================================
-        % Print all identified error types.
-        %===================================
-        msg = [msg, sprintf('Matching MATLAB error message identifier parts (error types derived from Exception1.identifier):\n')];
-        for i = 1:numel(emidpList)
-            emidp = emidpList{i};
-            msg  = [msg, sprintf('    %-23s : %s\n', emidp, C.EMIDP_2_INFO(emidp).description)];
-        end
-        % NOTE: Choice - Uses the last part of the message ID for determining error code to return.
-        errorCode = C.EMIDP_2_INFO(emidpList{end}).errorCode;
-
-        %======================
-        % Print the call stack
-        %======================
-        callStackLength = length(Exception1.stack);
-        msg = [msg, sprintf('MATLAB call stack:\n')];
-        if (~isempty(callStackLength))
-            for i=1:callStackLength
-                stackCall = Exception1.stack(i);
-                temp      = strsplit(stackCall.file, filesep);
-                filename  = temp{end};
-
-                %msg = [msg, sprintf('    %-27s %-52s row %i,\n', [filename, ','], [stackCall.name, ','], stackCall.line)];
-                msg = [msg, sprintf('    row %3i, %-27s %-52s\n', stackCall.line, [filename, ','], stackCall.name)];
-            end
-        end
-
-        msg = [msg, sprintf('Exiting MATLAB application with error code %i.\n', errorCode)];
-        bicas.log('error', msg)
-        return
-
-    catch Exception2    % Deliberately use different variable name to distinguish the exception from the previous one.
-        %========================================================
-        % CASE: Caught an error in the regular error handling(!)
-        %========================================================
-
-        % NOTE: Only use very, very error-safe code here.
-        %       Does not use bicas.log() or similar.
-        fprintf(2, 'Error in the MATLAB code''s error handling.\n');   % Print to stderr.
-        fprintf(2, 'exception2.identifier = "%s"\n', Exception2.identifier);          % Print to stderr.
-        fprintf(2, 'exception2.message    = "%s"\n', Exception2.message);             % Print to stderr.
-
-        % NOTE: The RCS ICD 00037, iss1/rev2, draft 2019-07-11, Section 3.4.3 specifies
-        %   error code 0 : No error
-        %   error code 1 : Every kind of error (!)
-        errorCode = 1;
-
-        fprintf(2, 'Exiting MATLAB application with error code %i.\n', errorCode);    % Print to stderr.
-        return
     end
-end
-
-
-
+    
+    
+    
 end    % main
+
+
+
+% Create logging/error message for a given exception, and which is recursive in Exception.cause.
+%
+function msg = recursive_exception_msg(Exception, C)
+    
+    CAUSES_RECURSIVE_INDENTATION_LENGTH = 8;
+
+    % IMPLEMENTATION NOTE: The error handling collects one long string with log/error messages for one bicas.log
+    % call, instead of making multiple bicas.log calls. This avoids having stdout and stderr messages mixed
+    % (alternating rows with stdout and stderr) in the MATLAB GUI, making it easier to read.
+    msg = '';
+    msg = [msg, sprintf('Exception.identifier = "%s"\n', Exception.identifier)];
+    msg = [msg, sprintf('Exception.message    = "%s"\n', Exception.message)];
+    
+    %=================================================================================
+    % Use MATLAB error message identifiers to identify one or multiple "error types".
+    %=================================================================================
+    msgIdentifierParts = strsplit(Exception.identifier, ':');
+    emidpList = msgIdentifierParts(C.EMIDP_2_INFO.isKey(msgIdentifierParts));    % Cell array of message identifier parts (strings) only.
+    if isempty(emidpList)
+        emidpList = {'UntranslatableErrorMsgId'};
+    end
+    
+    %===================================
+    % Print all identified error types.
+    %===================================
+    msg = [msg, sprintf('Matching MATLAB error message identifier parts (error types derived from Exception1.identifier):\n')];
+    for i = 1:numel(emidpList)
+        emidp = emidpList{i};
+        msg  = [msg, sprintf('    %-23s : %s\n', emidp, C.EMIDP_2_INFO(emidp).description)];
+    end
+    % NOTE: Choice - Uses the last part of the message ID for determining error code to return.
+    %errorCode = C.EMIDP_2_INFO(emidpList{end}).errorCode;
+    
+    %======================
+    % Print the call stack
+    %======================
+    callStackLength = length(Exception.stack);
+    msg = [msg, sprintf('MATLAB call stack:\n')];
+    if (~isempty(callStackLength))
+        for i=1:callStackLength
+            stackCall = Exception.stack(i);
+            temp      = strsplit(stackCall.file, filesep);
+            filename  = temp{end};
+            
+            msg = [msg, sprintf('    row %4i, %-27s %-52s\n', stackCall.line, [filename, ','], stackCall.name)];
+        end
+    end
+    
+    for iCause = 1:numel(Exception.cause)
+        msg = [msg, sprintf('Logging Exception.cause{%i}:\n', iCause)];
+        
+        % RECURSIVE CALL
+        recursiveMsg = recursive_exception_msg(Exception.cause{iCause}, C);
+        
+        recursiveMsg = EJ_library.utils.indent_str(recursiveMsg, CAUSES_RECURSIVE_INDENTATION_LENGTH);
+        msg = [msg, recursiveMsg];
+    end
+    
+end
 
 
 
