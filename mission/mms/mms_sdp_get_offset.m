@@ -306,7 +306,7 @@ end
     
     off.ex = dEslow.data(:,1);
     off.ey = dEslow.data(:,2);
-    off.calFile = [];
+    off.calFile = 'SCPOT dependent with 20200302 static coef.';
   end 
     
 
