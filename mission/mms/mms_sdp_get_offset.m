@@ -265,7 +265,7 @@ end
     Vpsp20s = Vpsp.resample(Epoch20s);
     switch lower(scId)
     case 1
-      V0 = -0.2; % Define constants 
+      V0 = -0.2; % Define constants, IF changed remember to update the date in "off.calFile" below
       a = 0.9;
       b = 2.5;
       c = 0.5;
@@ -312,7 +312,7 @@ end
     
     off.ex = dEslow.data(:,1);
     off.ey = dEslow.data(:,2);
-    off.calFile = 'SCPOT dependent with 20200302 static coef.';
+    off.calFile = 'SCPOT dependent with 20200302 static coef.'; % Date, YYYYMMDD, of when coef. above was last changed
   end 
     
 
