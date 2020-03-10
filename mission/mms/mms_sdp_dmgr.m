@@ -27,6 +27,7 @@ classdef mms_sdp_dmgr < handle
     phase = [];       % comp phase
     probe2sc_pot = [];% comp probe to sc potential
     sc_pot = [];      % comp sc potential
+    scpotFile = [];   % Stored sc potential file (loaded from previous processing)
     spinfits = [];    % comp spinfits
     sw_wake = [];     % comp solar wind wake
     timelineXML = []; % List of timeline files used to bitmask maneuvers.
@@ -136,7 +137,7 @@ classdef mms_sdp_dmgr < handle
 
       if( ~isempty(DATAC.(param)) )
         % Error, Warning or Notice for replacing the data variable?
-        if(~any(strcmp(param,{'hk_101', 'hk_105', 'hk_10e', 'defatt', 'aspoc', 'l2pre', 'defeph'})))
+        if(~any(strcmp(param,{'hk_101', 'hk_105', 'hk_10e', 'defatt', 'aspoc', 'l2pre', 'defeph', 'scpotFile'})))
           % Only multiple HK/Defatt/aspoc files are allowed for now..
           errStr = ['replacing existing variable (' param ') with new data'];
           irf.log('critical', errStr);
@@ -542,6 +543,21 @@ classdef mms_sdp_dmgr < handle
             DATAC.(param).spinEpoch = combine(DATAC.(param).spinEpoch, spinResidueTs);
           else
             DATAC.(param).spinEpoch = spinResidueTs;
+          end
+
+        case('scpotFile')
+          % L2pre slow mode processing is depenent on scpot, simply store
+          % it here as a TSeries object under "DATAC.scpotFile" for
+          % recalling later
+          varPre = ['mms', num2str(DATAC.scId), '_edp_psp_'];
+          typePos = strfind(dataObj.GlobalAttributes.Data_type{1},'_');
+          varSuf = dataObj.GlobalAttributes.Data_type{1}(1:typePos(2)-1);
+          if isempty(DATAC.(param))
+            DATAC.(param) = get_ts(dataObj, [varPre, varSuf]);
+          else
+            % Multiple files, simply combine and sort based on time.
+            p2spTS = get_ts(dataObj, [varPre, varSuf]);
+            DATAC.(param) = combine(DATAC.(param), p2spTS);
           end
           
         case('aspoc')
@@ -1612,7 +1628,6 @@ classdef mms_sdp_dmgr < handle
     function res = get.orb_radius(DATAC)
       if ~isempty(DATAC.orb_radius), res = DATAC.orb_radius; return, end
       % Compute spacecraft's orbital radius for each measurement timestamp
-      %% FIXME
       Dce = DATAC.dce;
       if isempty(Dce)
         Dce = DATAC.l2a;
@@ -1901,8 +1916,11 @@ classdef mms_sdp_dmgr < handle
           DeltaOff = irf.ts_vec_xy(DATAC.l2a.spinfits.time, [real(DATAC.l2a.delta_off), imag(DATAC.l2a.delta_off)]);
           DeltaOffR = DeltaOff.resample(EpochTT(DATAC.l2a.dce.time));
           dE = mms_sdp_despin(Etmp.e12, Etmp.e34, DATAC.l2a.phase.data, DeltaOffR.data(:,1) + DeltaOffR.data(:,2)*1j);
-          % offs = mms_sdp_get_offset(DATAC.scId, DATAC.procId, DATAC.l2a.dce.time, DATAC.tmMode); %% FIXME should include scpot p2p_pot if processing slow mode!
-          offs = mms_sdp_get_offset(DATAC.scId, DATAC.procId, DATAC.l2a.dce.time, DATAC.tmMode);
+          if DATAC.tmMode == MMS_CONST.TmMode.slow && ~isempty(DATAC.scpotFile)
+            offs = mms_sdp_get_offset(DATAC.scId, DATAC.procId, DATAC.l2a.dce.time, DATAC.tmMode, DATAC.scpotFile);
+          else
+            offs = mms_sdp_get_offset(DATAC.scId, DATAC.procId, DATAC.l2a.dce.time, DATAC.tmMode);
+          end
           DATAC.calFile = offs.calFile; % Store name of cal file used.
           dE(:,1) = dE(:,1) - offs.ex; % Remove sunward
           dE(:,2) = dE(:,2) - offs.ey; % and duskward offsets

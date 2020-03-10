@@ -1,4 +1,4 @@
-function off = mms_sdp_get_offset(scId, procId, time, TMmode)
+function off = mms_sdp_get_offset(scId, procId, time, TMmode, Vpsp)
 % Return offsets etc. to be applied in MMS processing (currently only 
 % QL dce2d, L2Pre dce2d or Scpot.
 %
@@ -18,12 +18,15 @@ function off = mms_sdp_get_offset(scId, procId, time, TMmode)
 % preceeding the start of time. (Start of data interval processing). If no
 % files are found a static value is used.
 %
+% NOTE: if processing Slow L2pre than also include the otherwise optional
+%      "Vpsp" - a TSeries of "probe2scpot" for corresponding interval.
+%
 % NOTE: Keep in mind the signs used here and when applying the offsets and
 % scale factors.
 %
 % See also: MMS_SDP_DMGR
 
-narginchk(3,4);
+narginchk(3,5);
 global MMS_CONST ENVIR
 if isempty(MMS_CONST), MMS_CONST = mms_constants(); end
 if ~exist('TMmode','var'), TMmode=[]; end
@@ -254,8 +257,11 @@ end
     Tint = irf.tint(timeTS);
     epoch1min = ceil(Tint.start.epochUnix/60)*60:20:fix(Tint.stop.epochUnix/60)*60;
     Epoch20s = EpochUnix(epoch1min); % Define 20 baseline
-    %% Fix me: I think Vpsp needs to be an input to this function
-    Vpsp = mms.get_data('Vpsp_edp_slow_l2', Tint, scId); % Work around. This needs to be revised.
+    if ~exist('Vpsp','var') || isempty(Vpsp) || ~isa(Vpsp, 'TSeries')
+      errStr='NO SCPOT TSeries loaded/given as argument. Fall back to static offset!';
+      irf.log('critical', errStr);
+      error(errStr);
+    end
     Vpsp20s = Vpsp.resample(Epoch20s);
     switch lower(scId)
     case 1

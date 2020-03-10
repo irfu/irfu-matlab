@@ -25,6 +25,7 @@ DFG_File = ''; % B-field, L2Pre
 DCV_File = '';
 DCE_File = '';
 L2A_File = ''; % L2A file, contain offsets from fast/slow to be used by brst and for L2Pre process.
+SCPOT_File = ''; % SCPOT file, used for computing DSL offsets when processing Slow L2a to Slow L2pre.
 L2Pre_File = ''; % L2Pre file, containing spin residue from Fast to be used by brst for L2pre process.
 DEFATT_File = ''; % Defatt file used for l2pre or reprocessing of QL.
 DEFEPH_File = ''; % Defeph file used for orbit information (Slow mode offset is radius dependent).
@@ -396,6 +397,36 @@ switch procId
         irf.log('critical',errStr)
         error('Matlab:MMS_SDC_SDP_PROC:Input', errStr)
       end
+      %% Special case, Slow mode calibration is dependent on SCpot
+      if regexpi(L2A_File, '_slow_')
+        if ~isempty(SCPOT_File)
+          fileSplit = strsplit(SCPOT_File,':');
+          for iFile=1:size(fileSplit,2)
+            irf.log('notice',[procName ' proc using: ' fileSplit{iFile}]);
+            src_fileData = load_file(fileSplit{iFile}, 'scpotFile');
+            update_header(src_fileData) % Update header with file info.
+          end
+        else
+          irf.log('warning',[procName ' slow mode but no SCPOT file. Looking for it..']);
+          % Create a time interval for start and stop of l2a epoch times.
+          dce_obj = dataobj(L2A_File);
+          tint = EpochTT(dce_obj.data.(['mms', HdrInfo.scIdStr, '_edp_epoch_slow_l2a']).data);
+          tint = irf.tint(tint.start, tint.stop);
+          list = mms.db_list_files(['mms', HdrInfo.scIdStr, '_edp_slow_l2_scpot'], tint);
+          if isempty(list)
+            % If no L2 scpot was found or it did not cover start of tint.
+            % Simply issue warning.
+            irf.log('warning', 'No SLOW L2 scpot file located.');
+          else
+            for iFile=1:length(list)
+              irf.log('notice', [procName, ' proc using: ', list(iFile).name]);
+              src_fileData = load_file([list(iFile).path, filesep, list(iFile).name],...
+                'scpotFile');
+              update_header(src_fileData); % Update header with file info.
+            end
+          end
+        end
+      end % If running SLOW mode
       irf.log('notice', [procName ' proc using: ' L2A_File]);
       src_fileData = load_file(L2A_File,'l2a');
       Dmgr.process_l2a_to_l2pre(MMS_CONST);
@@ -622,6 +653,13 @@ filename_output = mms_sdp_cdfwrite(HdrInfo, Dmgr);
         end
         DEFEPH_File = varargin{j};
         irf.log('notice', ['DEFEPH input file: ', DEFEPH_File]);
+      elseif regepxi(fileIn, '_SCPOT_') % SCPOT
+        if ~isempty(SCPOT_File)
+          errStr = ['Multiple SCPOT files in input (',SCPOT_File,' and ',varargin{j},')'];
+          irf.log('critical', errStr); error(errStr);
+        end
+        SCPOT_File = varargin{j};
+        irf.log('notice', 'SCPOT input file: ', SCPOT_File);
       else
         % Unidentified input argument
         errStr = ['MMS_SDC_SDP_PROC unrecognized input file: ',varargin{j}];
