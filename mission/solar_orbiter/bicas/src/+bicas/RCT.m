@@ -1,6 +1,7 @@
 %
 % Class that collects functions related to finding/selecting and reading RCTs.
 %
+%
 % DESIGN INTENT
 % =============
 % Implemented so that no calibration data is modified/added to/removed from. The returned data structures reflect the
@@ -156,7 +157,7 @@ classdef RCT
                 biasCurrentGainsApt      = bicas.RCT.norm_do_zv(Do.data.BIAS_CURRENT_GAIN);        % DEPEND_0 = Epoch_L
                 dcSingleOffsetsAVolt     = bicas.RCT.norm_do_zv(Do.data.V_OFFSET);                 % DEPEND_0 = Epoch_H
                 dcDiffOffsetsAVolt       = bicas.RCT.norm_do_zv(Do.data.E_OFFSET);                 % DEPEND_0 = Epoch_H
-                tfCoeffs                 = bicas.RCT.norm_do_zv(Do.data.TRANSFER_FUNCTION_COEFFS); % DEPEND_0 = Epoch_L
+                ftfCoeffs                = bicas.RCT.norm_do_zv(Do.data.TRANSFER_FUNCTION_COEFFS); % DEPEND_0 = Epoch_L
 
                 nEpochL = size(epochL, 1);
                 nEpochH = size(epochH, 1);
@@ -168,17 +169,17 @@ classdef RCT
                 % 2 CDF records: cdfdump: "TRANSFER_FUNCTION_COEFFS CDF_DOUBLE/1   3:[2,8,4]       T/TTT"
                 % 1 CDF record:   size(Do.data.TRANSFER_FUNCTION_COEFFS.data) == [  4 2 8]
                 % 2 CDF records:  size(Do.data.TRANSFER_FUNCTION_COEFFS.data) == [2 4 2 8]                
-                tfCoeffs = permute(tfCoeffs, [1, 4,3,2]);
+                ftfCoeffs = permute(ftfCoeffs, [1, 4,3,2]);
 
 
 
                 %=======================================================
                 % ASSERTIONS: Size of tfCoeffs/TRANSFER_FUNCTION_COEFFS
                 %=======================================================
-                assert(size(tfCoeffs, 1) == nEpochL)
-                assert(size(tfCoeffs, 2) >= bicas.RCT.N_MIN_TF_NUMER_DENOM_COEFFS)
-                assert(size(tfCoeffs, 3) == 2)
-                assert(size(tfCoeffs, 4) == 4)
+                assert(size(ftfCoeffs, 1) == nEpochL)
+                assert(size(ftfCoeffs, 2) >= bicas.RCT.N_MIN_TF_NUMER_DENOM_COEFFS)
+                assert(size(ftfCoeffs, 3) == 2)
+                assert(size(ftfCoeffs, 4) == 4)
 
                 %================================
                 % Assign struct that is returned
@@ -195,27 +196,33 @@ classdef RCT
 
                 % NOTE: Using name "ItfSet" only to avoid "Itfs" (plural). (List, Table would be wrong? Use "ItfTable"?)
                 Bias.ItfSet.DcSingleAvpiv = bicas.RCT.create_ITF_sequence(...
-                    tfCoeffs(:, :, NUMERATOR,   DC_SINGLE), ...
-                    tfCoeffs(:, :, DENOMINATOR, DC_SINGLE));
+                    ftfCoeffs(:, :, NUMERATOR,   DC_SINGLE), ...
+                    ftfCoeffs(:, :, DENOMINATOR, DC_SINGLE));
 
                 Bias.ItfSet.DcDiffAvpiv = bicas.RCT.create_ITF_sequence(...
-                    tfCoeffs(:, :, NUMERATOR,   DC_DIFF), ...
-                    tfCoeffs(:, :, DENOMINATOR, DC_DIFF));
+                    ftfCoeffs(:, :, NUMERATOR,   DC_DIFF), ...
+                    ftfCoeffs(:, :, DENOMINATOR, DC_DIFF));
 
                 Bias.ItfSet.AcLowGainAvpiv = bicas.RCT.create_ITF_sequence(...
-                    tfCoeffs(:, :, NUMERATOR,   AC_LG), ...
-                    tfCoeffs(:, :, DENOMINATOR, AC_LG));
+                    ftfCoeffs(:, :, NUMERATOR,   AC_LG), ...
+                    ftfCoeffs(:, :, DENOMINATOR, AC_LG));
 
                 Bias.ItfSet.AcHighGainAvpiv = bicas.RCT.create_ITF_sequence(...
-                    tfCoeffs(:, :, NUMERATOR,   AC_HG), ...
-                    tfCoeffs(:, :, DENOMINATOR, AC_HG));
+                    ftfCoeffs(:, :, NUMERATOR,   AC_HG), ...
+                    ftfCoeffs(:, :, DENOMINATOR, AC_HG));
                 
-                % ASSERTION
+                % ASSERTIONS
                 EJ_library.assert.all_equal(...
                    [numel(Bias.ItfSet.DcSingleAvpiv), ...
                     numel(Bias.ItfSet.DcDiffAvpiv), ...
                     numel(Bias.ItfSet.AcLowGainAvpiv), ...
                     numel(Bias.ItfSet.AcHighGainAvpiv)])
+                for iEpochL = 1:nEpochL
+                    %assert(Bias.ItfSet.DcSingleAvpiv{iEpochL}.eval(0) > 0, 'BICAS:calib:FailedToReadInterpretRCT', 'DC single inverted transfer function is not positive (and real) at 0 Hz. (Wrong sign?)');
+                    %assert(Bias.ItfSet.DcDiffAvpiv{iEpochL}.eval(0)   > 0, 'BICAS:calib:FailedToReadInterpretRCT',   'DC diff inverted transfer function is not positive (and real) at 0 Hz. (Wrong sign?)');
+                    % Unsure if assertion makes sense for AC, or possibly even for DC.
+                    % 2020-03-10: This criterion is not true for AC high-gain transfer function fit now used (but does for AC diff low-gain).
+                end
                 
                 %==========================================================================
                 % ASSERTIONS: All variables NOT based on tfCoeffs/TRANSFER_FUNCTION_COEFFS
@@ -239,8 +246,11 @@ classdef RCT
                     assert(length(  Bias.DcDiffOffsets.(fn{1})) == nEpochH)
                 end
                 
-            catch Exc
-                error('BICAS:calib:FailedToReadInterpretRCT', 'Can not interpret calibration file (RCT) "%s"', filePath)
+            catch Exc1
+                Exc2 = MException('BICAS:calib:FailedToReadInterpretRCT', 'Error when interpreting calibration file (BIAS RCT) "%s"', filePath);
+                Exc2 = Exc2.addCause(Exc1);
+                throw(Exc2)
+                %error('BICAS:calib:FailedToReadInterpretRCT', 'Error when interpreting calibration file (BIAS RCT) "%s"', filePath)
             end
         end
 
@@ -443,17 +453,25 @@ classdef RCT
 
         % Utility function to simplify read_BIAS_RCT. Arguments correspond to zVariables in BIAS RCT.
         %
+        % NOTE: Arguments describe FTFs. Return value describes ITFs.
+        %
         %
         % ARGUMENTS
         % =========
         % ftfNumCoeffs, ftfDenomCoeffs : 2D matrix of numerator/denominator coefficients for a sequence of FTFs.
         % ItfArray                     : Cell array of ITF (rational_func_transform).
-        % 
         %
-        % NOTE: Arguments describe FTFs. Return value describes ITFs.
+        % RETURN VALUE
+        % ============
+        % ItfArray : 1D cell array of EJ_library.utils.rational_func_transform.
         %
         function ItfArray = create_ITF_sequence(ftfNumCoeffs, ftfDenomCoeffs)
+            % ASSERTIONS
             assert(size(ftfNumCoeffs, 1) == size(ftfDenomCoeffs, 1))
+            % The last FTF denominator coefficient (highest index, for which the value is non-zero) must be =1.
+            assert(ftfDenomCoeffs(find(ftfDenomCoeffs, 1, 'last')) == 1, 'BICAS:calib:FailedToReadInterpretRCT', ...
+                'RCT contains forward transfer function (FTF) denominator coefficients, where the highest-order (non-zero) coefficient is NOT one as expected.')
+
             ItfArray = {};
             
             for i = 1:size(ftfNumCoeffs, 1)
@@ -466,7 +484,7 @@ classdef RCT
                 % ASSERTIONS
                 assert(Itf.has_real_impulse_response())
                 % Assert ITF. Can not set proper error message.
-                assert(~Itf.zero_in_high_freq_limit(), 'Transfer function is not inverted, i.e. not physical output-to-input.')
+                assert(~Itf.zero_in_high_freq_limit(), 'BICAS:calib:FailedToReadInterpretRCT', 'Transfer function is not inverted, i.e. not physical OUTput-to-INput.')
                 
                 ItfArray{end+1} = Itf;
             end

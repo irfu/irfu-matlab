@@ -55,6 +55,8 @@ function SETTINGS = create_default_SETTINGS()
 %
 % PROPOSAL: PROCESSING.CALIBRATION.CURRENT.HK.DISABLE      : Whether to calibrate HK current or use HK TM. Not which data to use (HK or TC).
 %           PROCESSING.CALIBRATION.CURRENT.SOURCE = TC, HK : Which data to use.
+%
+% PROPOSAL: Merge INPUT_CDF.* and INPUT_CDF_ASSERTIONS.* .
 
 S = bicas.settings();
 
@@ -119,8 +121,9 @@ S.define_setting('SWD.environment.executable',     'roc/bicas');   % Relative pa
 
 
 S.define_setting('INPUT_CDF.LFR.HAVING_SYNCHRO_FLAG_AND_TIME_SYNCHRO_FLAG_WORKAROUND', 0)
-S.define_setting('INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY', 'ERROR')    % PERMIT, WARNING, ERROR
-S.define_setting('INPUT_CDF.USING_GA_NAME_VARIANT_POLICY', 'ERROR')    % PERMIT, WARNING, ERROR
+S.define_setting('INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY',     'ERROR')    % PERMIT, WARNING, ERROR
+S.define_setting('INPUT_CDF.USING_GA_NAME_VARIANT_POLICY',     'ERROR')    % PERMIT, WARNING, ERROR
+S.define_setting('INPUT_CDF.NON-INCREMENTING_ZV_EPOCH_POLICY', 'ERROR')    % ERROR, WARNING_SORT
 
 
 
@@ -184,19 +187,59 @@ S.define_setting('PROCESSING.USE_ZV_AQUISITION_TIME_FOR_HK_TIME_INTERPOLATION', 
 % PROCESSING.RCT_REGEXP.*
 % Regular expressions for the filenames of RCTs
 % ---------------------------------------------
-% RCT filenaming convention is described in:	ROC-PRO-DAT-NTT-00006-LES, 1/1 draft, Sect 4.3.2-3.
 %
-% IMPLEMENTATION NOTE: RCT filenaming is implemented as settings since filenaming seems likely to change.
+% OFFICIAL DOCUMENTATION ON RCT FILENAME CONVENTION
+% =================================================
+% RCT filenaming convention is described in ROC-PRO-DAT-NTT-00006-LES. This document refers to the RODP.
+%
+% Version 1/1:
+% """"""""
+%   4.3.2 RCT data versioning convention
+%
+%   The version of the RCT CDF data file must be the local date and time of creation of the file,
+%   in the format: “YYYYMMDDHHNN”, where “YYYY”, “MM”, “DD”, “HH” and “NN” are
+%    respectively the 4-digits year, 2-digits month, 2-digits day, 2-digits hours, 2-digits minutes of
+%    the file creation.
+%    In the RCT filename, the version number must appear with the “V” prefix (e.g.,
+%    “V202210122359”.
+%
+%
+%   4.3.3 RCT file naming convention
+%
+%   The RCT shall comply the following file naming convention:
+%   SOLO_CAL_RPW-[receiver]_[free-field]_[Version].cdf
+%   Where [receiver] is the name of the receiver in uppercase characters (i.e., “TDS” or
+%   “LFR”) of the corresponding RPW L1R dataset, [free-field] is a field that can be used to
+%   specify the content of the file (e.g., “BIAS-F0”) and [Version] is the version of the
+%   calibration table file (see previous section).
+%   Note that this RCT naming convention is not fully compliant with the SOC definition [AD1]. /.../
+% """"""""
+% Version 1/2, draft:
+% Section 2.2.6.3-4: Slightly different filenaming convention:
+% """"""""
+%   2.2.6.3 File naming
+%   The CAL file must comply the following naming convention:
+%   SOLO_CAL_[Descriptor]_[free-field]_V[CALIBRATION_VERSION].cdf
+% 
+%   Where [Descriptor], [free-field] and [CALIBRATION_VERSION] correspond
+%   respectively to the short value in the “Descriptor”, “Free_field” and
+%   “CALIBRATION_VERSION” global attributes (see section 2.2.6.6).
+%   N.B. The CAL file naming convention is not fully compliant with the SOC definition [AD1]. /.../
+% """"""""
+%
+% RATIONALE
+% =========
+% RCT filenaming is implemented as settings since filenaming seems likely to change.
 % (1) LFR & TDS do not seem to follow the filenaming convenction
 % (2) BIAS has (previously at least) not followed the filenaming convention.
-% (3) it is uncertain how it can be applied to BIAS RCTs (which receiver should the BIAS RCT specify when BIAS uses the
-% same RCT for both LFR & TDS data?).
+% (3) it is uncertain how it (doc version 1/1) can be applied to BIAS RCTs (which receiver should the BIAS RCT specify
+% when BIAS uses the same RCT for both LFR & TDS data?).
 %
-% NOTE: LFR RCTs use 2+6+6 digits instead of 2+6 in the timestamps (they add seconds=2 digits). NOTE: TDS RCTs use 2+6
-% digits instead of 10 in the timestamps (the have no time of day, only date)
+% NOTE: LFR RCTs use 2+6+6 digits in the timestamps (they add seconds=2 digits).
+% NOTE: TDS RCTs use 2+6+0 digits in the timestamps (the have no time of day, only date)
 %
-% Examples of RCT filenames (2019 Sept)
-% -------------------------------------
+% Examples of de facto RCT filenames (2019 Sept)
+% ----------------------------------------------
 % BIAS:
 %       ROC-SGSE_CAL_RCT-BIAS_V201803211625.cdf   (old implemented convention)
 %       ROC-SGSE_CAL_RPW_BIAS_V201908231028.cdf   (new implemented convention, closer to documentation)
@@ -212,15 +255,7 @@ S.define_setting('PROCESSING.USE_ZV_AQUISITION_TIME_FOR_HK_TIME_INTERPOLATION', 
 % NOTE: Only the last filename in a sorted list of matching filenames will actually be used.
 %=======================================================================================================================
 CDF_SUFFIX_REGEXP = '\.(cdf|CDF)';
-% S.define_setting('PROCESSING.RCT_REGEXP.RGTS.BIAS',         ['ROC-SGSE_CAL_RPW_BIAS_V20[0-9]{10}',          CDF_SUFFIX_REGEXP]);
-% S.define_setting('PROCESSING.RCT_REGEXP.RODP.BIAS',         [    'SOLO_CAL_RPW_BIAS_V20[0-9]{10}',          CDF_SUFFIX_REGEXP]);
-% S.define_setting('PROCESSING.RCT_REGEXP.RGTS.LFR',          ['ROC-SGSE_CAL_RCT-LFR-BIAS_V20[0-9]{12}',      CDF_SUFFIX_REGEXP]);
-% S.define_setting('PROCESSING.RCT_REGEXP.RODP.LFR',          [    'SOLO_CAL_RCT-LFR-BIAS_V20[0-9]{12}',      CDF_SUFFIX_REGEXP]);
-% S.define_setting('PROCESSING.RCT_REGEXP.RGTS.TDS-LFM-CWF',  ['ROC-SGSE_CAL_RCT-TDS-LFM-CWF-E_V20[0-9]{6}',  CDF_SUFFIX_REGEXP]);
-% S.define_setting('PROCESSING.RCT_REGEXP.RODP.TDS-LFM-CWF',  [    'SOLO_CAL_RCT-TDS-LFM-CWF-E_V20[0-9]{6}',  CDF_SUFFIX_REGEXP]);
-% S.define_setting('PROCESSING.RCT_REGEXP.RGTS.TDS-LFM-RSWF', ['ROC-SGSE_CAL_RCT-TDS-LFM-RSWF-E_V20[0-9]{6}', CDF_SUFFIX_REGEXP]);
-% S.define_setting('PROCESSING.RCT_REGEXP.RODP.TDS-LFM-RSWF', [    'SOLO_CAL_RCT-TDS-LFM-RSWF-E_V20[0-9]{6}', CDF_SUFFIX_REGEXP]);
-S.define_setting('PROCESSING.RCT_REGEXP.BIAS',         ['SOLO_CAL_RPW_BIAS_V20[0-9]{10}',          CDF_SUFFIX_REGEXP]);      % Wrong convention?!!
+S.define_setting('PROCESSING.RCT_REGEXP.BIAS',         ['SOLO_CAL_RPW_BIAS_V20[0-9]{10}',          CDF_SUFFIX_REGEXP]);      % Wrong filenaming convention?!!
 S.define_setting('PROCESSING.RCT_REGEXP.LFR',          ['SOLO_CAL_RCT-LFR-BIAS_V20[0-9]{12}',      CDF_SUFFIX_REGEXP]);
 S.define_setting('PROCESSING.RCT_REGEXP.TDS-LFM-CWF',  ['SOLO_CAL_RCT-TDS-LFM-CWF-E_V20[0-9]{6}',  CDF_SUFFIX_REGEXP]);
 S.define_setting('PROCESSING.RCT_REGEXP.TDS-LFM-RSWF', ['SOLO_CAL_RCT-TDS-LFM-RSWF-E_V20[0-9]{6}', CDF_SUFFIX_REGEXP]);
@@ -238,15 +273,12 @@ S.define_setting('PROCESSING.LFR.F0_F1_F2_F3_HZ',    [24576, 4096, 256, 16]);   
 % Quick ~BUGFIX for bad values in zv SAMPLING_RATE in L1R TDS-LFM-RSWF datasets. Remove?
 S.define_setting('PROCESSING.L1R.TDS.RSWF_L1R_ZV_SAMPLING_RATE_DATASET_BUGFIX_ENABLED', 0)
 
-% L1/L1R
-% React to bug in L1/L1R TDS-LFM RSWF datasets.
+% ~BUGFIX for bug in L1/L1R TDS-LFM RSWF datasets.
 % TDS has bugfixed. /2019-12-19
 % NOTE: "SAMPS_PER_CH" is the name of a zVariable.
 % PROPOSAL: Rename.
 S.define_setting('PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_POLICY', 'ERROR')   % ERROR, ROUND, PERMIT
 
-% GA = (CDF) Global Attribute
-% ZV = (CDF) zVariable
 % CALIBRATION_TABLE_INDEX2 = Second value in zVar CALIBRATION_TABLE_INDEX (in every record), that contains an index to
 % calibration data inside a given RCT.
 S.define_setting('PROCESSING.L1R.LFR.USE_GA_CALIBRATION_TABLE_RCTS',               0)    % =1 : Implemented, but not yet usable due to LFR L1R datasets bug.
@@ -312,10 +344,14 @@ S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.DISABLE',              0);
 % Whether to disable BIAS offsets.
 S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.BIAS.DISABLE_OFFSETS', 0);
 % Whether to use transfer functions or scalar multiplication for calibration of signals between antennas and
-% BIAS-LFR/TDS interface.
+% BIAS-LFR/TDS interface. It does not affect the LFR/TDS transfer functions.
 S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.BIAS.TF',             'FULL');    % SCALAR, FULL
 % Whether to use de-trending before applying transfer functions.
 S.define_setting('PROCESSING.CALIBRATION.TF_DETRENDING_ENABLED', 1)
+% Whether to disable LFR/TDS transfer functions (but still potentially use the BIAS transfer functions).
+% This effectively means that TM voltage corresponds to interface volt.
+% NOTE: This useful for separately using bicas.calib for analyzing BIAS standalone calibration tables (BSACT).
+S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.LFR_TDS.TF_DISABLED', 0);
 
 
 

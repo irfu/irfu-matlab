@@ -27,7 +27,7 @@ STDOUT_PREFIX = SETTINGS.get_fv('STDOUT_PREFIX');
 
 
 
-printStr = bicas.utils.add_prefix_on_every_row(msgStr, STDOUT_PREFIX);
+printStr = EJ_library.utils.add_prefix_on_every_row(msgStr, STDOUT_PREFIX);
 
 fwrite(1, printStr);    % NOTE: Must print using function that reacts to trailing line feed.
 

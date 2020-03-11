@@ -98,7 +98,7 @@ classdef reader_DCC_DCV_TF_IC < handle     % Explicitly declare it as a handle c
 % PROPOSAL: Split into multiple classes, one per calibration data type.
 %   NOTE: Want to reuse "add_test_directory".
 % 
-% PROPOSAL: Rename to exclude "DCC_DCV_TF".
+% PROPOSAL: Rename to exclude "DCC_DCV_TF_IC".
 %   PRO: Already includes all data types so mentioning them is superfluous.
 %
 % PROPOSAL: Replace class with functions for retrieving metadata. If one also wants functionality for loading all calibration

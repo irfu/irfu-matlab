@@ -62,7 +62,7 @@ MAP('DatasetFormat')                = info_struct(1, 'Error when interpreting (o
 MAP('IllegalCodeConfiguration')     = info_struct(1, 'Bad hard-coded configuration (or possibly configurable setting but should not be), e.g. constants, S/W descriptor. This should ideally indicate a pure code bug, i.e. it is not triggered by certain user-controlled input.');
 MAP('CannotInterpretConfigFile')    = info_struct(1, 'Can not interpret the content of the configuration file. This implies a problem with the syntax.');
 MAP('ConfigurationBug')             = info_struct(1, 'Trying to configure BICAS in an illegal way.');
-MAP('FailedToReadInterpretRCT')     = info_struct(1, 'Can not interpret the content of the calibration file (RCT) file.');
+MAP('FailedToReadInterpretRCT')     = info_struct(1, 'Can not interpret the content of the calibration file (RCT) file, e.g. because the RCT contains invalid calibration values.');
 MAP('CannotFindRegexMatchingRCT')   = info_struct(1, 'Can not find any matching calibration file to read. No file matches regular expression.');
 C.EMIDP_2_INFO = MAP;
 

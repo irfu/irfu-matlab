@@ -202,7 +202,7 @@ classdef tabulated_transform
 %                     min(omegaRps), ...
 %                     max(omegaRps));
 %                 
-%                 error('BICAS:Assertion', errorMsg)
+%                 error('Assertion', errorMsg)
 %             end
 %         end
 

@@ -212,7 +212,7 @@ function [Zvs, GlobalAttributes] = read_dataset_CDF(filePath, SETTINGS)
 %
 % RETURN VALUES
 % =============
-% Zvs              : Struct with one field per zVariable (using the same name). The content of every such field equals the
+% Zvs              : ZVS = zVariables Struct. One field per zVariable (using the same name). The content of every such field equals the
 %                    content of the corresponding zVar.
 % GlobalAttributes : Struct returned from "dataobj".
 %
@@ -240,8 +240,8 @@ bicas.log('info', 'Converting dataobj (CDF data structure) to PDV.')
 Zvs               = struct();
 ZvsLog            = struct();   % zVariables for logging.
 zVariableNameList = fieldnames(DataObj.data);
-for i = 1:length(zVariableNameList)
-    zvName  = zVariableNameList{i};
+for iZv = 1:length(zVariableNameList)
+    zvName  = zVariableNameList{iZv};
     zvValue = DataObj.data.(zvName).data;
     
     ZvsLog.(zvName) = zvValue;
@@ -274,7 +274,10 @@ bicas.proc_utils.log_zVars(ZvsLog)
 
 
 
-% NOTE: At least test files
+%=================================================================================
+% Normalize the field/zVar names
+% ------------------------------
+% NOTE: At least the test files
 % solo_L1R_rpw-tds-lfm-cwf-e_20190523T080316-20190523T134337_V02_les-7ae6b5e.cdf
 % solo_L1R_rpw-tds-lfm-rswf-e_20190523T080316-20190523T134337_V02_les-7ae6b5e.cdf
 % do not contain "DATASET_ID", only "Dataset_ID".
@@ -282,15 +285,88 @@ bicas.proc_utils.log_zVars(ZvsLog)
 % NOTE: Has not found document that specifies the global attribute. /2020-01-16
 % https://gitlab.obspm.fr/ROC/RCS/BICAS/issues/7#note_11016
 % states that the correct string is "Dataset_ID".
+%=================================================================================
 [GlobalAttributes, fnChangeList] = bicas.utils.normalize_struct_fieldnames(DataObj.GlobalAttributes, ...
     {{{'DATASET_ID', 'Dataset_ID'}, 'Dataset_ID'}});
-
 msgFunc = @(oldFn, newFn) (sprintf('Global attribute in input dataset\n    "%s"\nuses illegal alternative "%s" instead of "%s"\n', filePath, oldFn, newFn));
 bicas.handle_struct_name_change(fnChangeList, SETTINGS, msgFunc, 'Dataset_ID', 'INPUT_CDF.USING_GA_NAME_VARIANT_POLICY')
+
+
+
+%===============================================================================================
+% Check for non-monotonically increasing Epoch values
+% ---------------------------------------------------
+% Examples:
+% solo_L1_rpw-lfr-surv-cwf-cdag_20200212_V01.cdf   (decrements 504 times)
+% solo_L1_rpw-lfr-surv-swf-cdag_20200212_V01.cdf   (1458 identical consecutive pairs of values)
+% solo_HK_rpw-bia_20200212_V01.cdf                 (decrements once)
+%===============================================================================================
+% IMPLEMENTATION NOTE: Must explicitly check for identical consecutive values. Not the default.
+if ~issorted(Zvs.Epoch, 'strictascend')
+    
+    message = sprintf('Input dataset "%s"\n    contains an Epoch zVariable which values do not monotonically increment.\n', filePath);
+    
+    
+    
+    settingName  = 'INPUT_CDF.NON-INCREMENTING_ZV_EPOCH_POLICY';
+    settingValue = SETTINGS.get_fv(settingName);
+    switch(settingValue)
+        case 'ERROR'
+            error('BICAS:execute_sw_mode:DatasetFormat', message)
+            
+        case 'WARNING_SORT'
+            bicas.logf('warning', message)
+            
+            % Sort (data) zVariables according to Epoch.
+            [~, iSort] = sort(Zvs.Epoch);
+            Zvs = select_ZVS_indices(Zvs, iSort);
+            
+            % NOTE: Sorting Epoch does not remove identical values. Must therefore check again.
+            if ~issorted(Zvs.Epoch, 'strictascend')
+                error('BICAS:execute_sw_mode:DatasetFormat', ...
+                    ['zVariable Epoch in input dataset "%s"\n does not increase non-monotonically even after sorting.', ...
+                    ' It must contain multiple identical values (or the sorting algorithm does not work).'], ...
+                    filePath)
+            end
+            
+        otherwise
+            bicas.logf('Setting has illegal value %s="%s"', settingName, settingValue)
+    end
+end
+
+
 
 bicas.logf('info', 'File''s Global attribute: Dataset_ID       = "%s"', GlobalAttributes.Dataset_ID{1})
 bicas.logf('info', 'File''s Global attribute: Skeleton_version = "%s"', GlobalAttributes.Skeleton_version{1})
 
+end
+
+
+
+function Zvs = select_ZVS_indices(Zvs, iArray)
+% Function that modifies ZVS to only contain specified records in specified order.
+%
+% Can be used for
+% ** Re-ordering records (sorting Epoch).
+% ** Filtering records (only keeping some).
+%
+% NOTE: Only want to modify the zVariables that contain data, i.e. for which CDF variable attribute DEPEND_0=Epoch, not
+% metadata e.g. ACQUISITION_TIME_UNITS. Code does not use rigorous condition. Should ideally use variable attribute
+% DEPEND_0.
+%
+    fnList = fieldnames(Zvs);
+    
+    for iZv = 1:numel(fnList)
+        fn = fnList{iZv};
+        Zv = Zvs.(fn);
+        
+        % IMPLEMENTATION NOTE: Using size to distinguish data & metadata zVariables.
+        if size(Zv, 1) == size(Zvs.Epoch, 1)
+            Zv = Zv(iArray, :,:,:,:,:,:,:);
+        end
+        Zvs.(fn) = Zv;
+    end    
+    
 end
 
 
@@ -461,7 +537,7 @@ if exist(outputFile, 'file')    % Checks for file and directory.
     switch(settingOverwritePolicy)
         case 'ERROR'
             % UI ASSERTION
-            error('BICAS:execute_sw_mode', ...
+            error('BICAS:execute_sw_mode:SWModeProcessing', ...
                 'Intended output dataset file path "%s" matches a pre-existing file. Setting OUTPUT_CDF.OVERWRITE_POLICY is set to prohibit overwriting.', ...
                 outputFile)
         case 'OVERWRITE'

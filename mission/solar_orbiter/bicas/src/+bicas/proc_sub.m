@@ -106,10 +106,16 @@ classdef proc_sub
             
             
             % WARNINGS
-            if ~(bicas.proc_utils.ranges_overlap(hkAtTt2000, sciAtTt2000))
+            if ~(bicas.proc_utils.is_range_subset(sciAtTt2000, hkAtTt2000))
+                bicas.log('warning', 'SCI time range is not a subset of HK time range according to zVar ACQUSITION_TIME.')
+            end
+            if ~(bicas.proc_utils.is_range_subset(sciEpoch,  hkEpoch))                
+                bicas.log('warning', 'SCI time range is not a subset of HK time range according to zVar Epoch.')
+            end
+            if ~(bicas.proc_utils.ranges_overlap(sciAtTt2000, hkAtTt2000))
                 bicas.log('warning', 'zVar ACQUSITION_TIME in HK and SCI input datasets do not overlap in time.')
             end
-            if ~(bicas.proc_utils.ranges_overlap(hkEpoch, sciEpoch))
+            if ~(bicas.proc_utils.ranges_overlap(sciEpoch, hkEpoch))
                 bicas.log('warning', 'zVar Epoch in HK and SCI input datasets do not overlap in time.')
             end
 
@@ -359,7 +365,9 @@ classdef proc_sub
                 % Bug in TDS RCS.  /David Pisa 2019-12-03
                 % Setting it to what is probably the correct value.
                 freqHz(freqHz == 255) = 32768;
-                bicas.logf('warning', 'Correcting presumed bug in TDS L1R LFM-RSWF dataset due to setting PROCESSING.L1R.TDS.RSWF_L1R_ZV_SAMPLING_RATE_DATASET_BUGFIX_ENABLED. Modifying the frequency 255-->32768.')
+                bicas.logf('warning', ...
+                    ['Correcting presumed bug in TDS L1R LFM-RSWF dataset due to setting', ...
+                    ' PROCESSING.L1R.TDS.RSWF_L1R_ZV_SAMPLING_RATE_DATASET_BUGFIX_ENABLED. Modifying the frequency 255-->32768.'])
             end
             
             PreDc = [];
@@ -787,9 +795,14 @@ classdef proc_sub
                 iLsf_ss                    = PreDc.Zv.iLsf(     iFirst);
                 CALIBRATION_TABLE_INDEX_ss = CALIBRATION_TABLE_INDEX_zv(iFirst, :);
                 
-                bicas.logf('info', ['Records %5i-%5i : ', ...
+                % PROPOSAL: Make into "proper" table.
+                %   NOTE: Can not use EJ_library.utils.assist_print_table since it requires the entire table to pre-exist.
+                %   PROPOSAL: Print after all iterations.
+                bicas.logf('info', ['Records %7i-%7i : %s -- %s ', ...
                     'MUX_SET=%i; DIFF_GAIN=%i; dlrUsing12=%i; freqHz=%5g; iCalibL=%i; iCalibH=%i; CALIBRATION_TABLE_INDEX=[%i, %i]'], ...
                     iFirst, iLast, ...
+                    bicas.proc_utils.tt2000_to_UTC_str(PreDc.Zv.Epoch(iFirst)), ...
+                    bicas.proc_utils.tt2000_to_UTC_str(PreDc.Zv.Epoch(iLast)), ...
                     MUX_SET_ss, DIFF_GAIN_ss, dlrUsing12_ss, freqHz_ss, iCalibL_ss, iCalibH_ss, CALIBRATION_TABLE_INDEX_ss(1), CALIBRATION_TABLE_INDEX_ss(2))
 
                 %============================================

@@ -223,12 +223,38 @@ classdef assert
             %   PRO: Backward-compatibility with some of the syntax for struct(predecessor assertion function).
             %   CON: Bad for future extensions of function.
             %
+            % PROPOSAL: Be able to (optionally) specify properties of individual fields.
+            %   PROPOSAL: Arguments (one or many in a row) with prefix describe properties of previous field.
+            %       Ex: 'fieldName', '-cell'
+            %       Ex: 'fieldName', '-scalar'
+            %       Ex: 'fieldName', '-double'
+            %       Ex: 'fieldName', '-castring'
+            %       Ex: 'fieldName', '-vector'
+            %       Ex: 'fieldName', '-column vector'
+            %       PRO: Can be combined with recursive scheme for structs, which can be regarded as an extension of
+            %            this scheme. In that case, a cell array is implicitly interpreted as the assertion that the
+            %            field is a struct with the specified (required and optional) subfields.
+            %
             % PROPOSAL: Recursive structs field names.
             %   TODO-DECISION: How specify fieldnames? Can not use cell arrays recursively.
             %   PROPOSAL: Define other, separate assertion method.
+            %   PROPOSAL: Tolerate/ignore that structs are array structs.
+            %   PROPOSAL: struct(S, {'PointA.x', 'PointA.y'}, {'PointA.z'})
+            %   PROPOSAL: struct(S, {'PointA', {'x', 'y'}}, {'PointA', {'z'}})   % Recursively
+            %       Cell array means previous argument was the parent struct.
+            %   PROPOSAL: struct(S, {'name', 'ReqPointA', {{'reqX', 'reqY'}, {'optZ'}}}, {'OptPointB', {{'reqX', 'reqY'}, {'optZ'}}})
+            %       Cell array means previous argument was the parent struct.
+            %       Groups together required and optional with every parent struct.
+            %       PRO: Optional fields can be structs with both required and optional fields, recursively.
+            %       PRO: Can be implemented recursively(?).
+            %   TODO-NEED-INFO: Required & optional is well-defined?
             %   CON: Rarely needed.
+            %       CON: Maybe not
+            %           Ex: Settings structs
+            %           Ex: EJ_library.so.group_datasets_by_filename
             %   CON-PROPOSAL: Can manually call EJ_library.assert.struct multiple times, once for each substruct,
             %                 instead (if only required field names).
+            %
             % PROPOSAL: Assertion: Intersection requiredFnSet-optionalFnSet is empty.
             
             structFnSet          = fieldnames(S);
@@ -311,7 +337,8 @@ classdef assert
         % =========
         % v               : Variable which size will be asserted.
         % sizeConstraints : 1D vector with the sizes of the corresponding indices/dimensions. A component value of NaN
-        %                   means that the size of that particular dimension will not be checked.
+        %                   means that the size of that particular dimension will not be checked. Higher dimensions
+        %                   which are not specified are implicitly one.
         %
         function size(v, sizeConstraints)
             % PROPOSAL: Apply the same size constraint to an arbitrary number of variables.

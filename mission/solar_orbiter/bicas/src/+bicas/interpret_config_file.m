@@ -41,14 +41,15 @@ for iRow = 1:numel(configFileRowList)
         % Do nothing
     else
         % CASE: Row is a SETTINGS key assignment.
-        try
-            subStrList = EJ_library.utils.regexp_str_parts(row, {SETTINGS_KEY_REGEXP, ' *= *', '"', SETTINGS_VALUE_STRING_REGEXP, '" *', '(#.*)?'});
-            key      = subStrList{1};
-            valueStr = subStrList{4};
-            
-        catch Exception
+        REGEXP_LIST = {SETTINGS_KEY_REGEXP, ' *= *', '"', SETTINGS_VALUE_STRING_REGEXP, '" *', '(#.*)?'};
+        [subStrList, remainingStr] = EJ_library.utils.regexp_str_parts(row, REGEXP_LIST, 'permit non-match');
+        
+        % ASSERTION
+        if (numel(subStrList) ~= numel(REGEXP_LIST)) || ~isempty(remainingStr)
             error('BICAS:interpret_config_file:Assertion:CannotInterpretConfigFile', 'Can not interpret row %i in configuration file: "%s"', iRow, row)
         end
+        key      = subStrList{1};
+        valueStr = subStrList{4};
         
         if settingsVsMap.isKey(key)
             %error('BICAS:interpret_config_file:Assertion:CannotInterpretConfigFile', 'The same settings key "%s" is assigned twice.', key)
@@ -61,6 +62,3 @@ for iRow = 1:numel(configFileRowList)
 end
 
 end
-
-
-

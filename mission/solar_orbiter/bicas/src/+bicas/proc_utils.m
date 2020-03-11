@@ -139,6 +139,7 @@ classdef proc_utils
         % Rx               : Same size array as R0, R1, R2, FREQ. The relevant values are copied, respectively, from
         %                    R0, R1, R2, or an analogous hypothetical "R3" that is a constant (=1) depending on
         %                    the value of FREQ in the corresponding component.
+        %                    NOTE: Not MATLAB class "logical".
         %
         % NOTE: Works for all array sizes.
             
@@ -637,49 +638,56 @@ classdef proc_utils
         
         
         
-        function SAMP_DTIME = derive_SAMP_DTIME(freqHz, nSpr)
-        % freqHz     : Frequency column vector in s^-1. Can not handle freq=NaN since the output is an integer.
-        % nSpr       : Number of samples per record (SPR).
-        % SAMP_DTIME : Analogous to BIAS zVariable with CDF_UINT4=uint32. NOTE: Unit ns.
-        %
-        % ~BUG: The LFR/TDS/BIAS dataset skeletons specify that zVariable SAMP_DTIME is CDF_UINT4 in unit ns which should
-        % have a too small a range for some snapshots. Therefore, this conversion will eliminate most Example: LFR
-        % 2048/256 Hz = 8e9 ns > 2^31 ns ~ 2e9 ns.
-        % 2017-03-08: Xavier Bonnin (LESIA) and Bruno Katra (RPW/LFR) are aware of this and seem to have implemented it
-        % that way intentionally!!!
-        %
-        % IMPLEMENTATION NOTE: Algorithm should require integers in order to have a very predictable behaviour (useful
-        % when testing).
-        
-            % ASSERTIONS
-            if ~iscolumn(freqHz) || ~isfloat(freqHz) || any(isnan(freqHz))
-                error('BICAS:proc_utils:Assertion:IllegalArgument', '"freqHz" is not a column vector of non-NaN floats.')
-            elseif ~isscalar(nSpr)
-                error('BICAS:proc_utils:Assertion:IllegalArgument', '"nSpr" is not a scalar.')
-            end
-            
-            nRecords = size(freqHz, 1);
-            
-            % Express frequency as period length in ns (since tt2000 uses ns as a unit).
-            % Use the same MATLAB class as tt
-            % Unique frequency per record.
-            periodNsColVec = int64(1e9 ./ freqHz);   % Ns = ns = nanoseconds
-            periodNsMatrix = repmat(periodNsColVec, [1, nSpr]);
-                        
-            % Conventions:
-            % ------------
-            % Time unit: ns (as for tt2000)            
-            % Algorithm should require integers to have a very predictable behaviour (useful when testing).
-            
-            % Indices for within every record (start at zero for every record).
-            iSampleRowVec = int64(0:(nSpr-1));
-            iSampleMatrix = repmat(iSampleRowVec, [nRecords, 1]);
-            
-            % Unique time for every sample in every record.
-            SAMP_DTIME = iSampleMatrix .* periodNsMatrix;
-            
-            SAMP_DTIME = cast(SAMP_DTIME, bicas.utils.convert_CDF_type_to_MATLAB_class('CDF_UINT4',  'Only CDF data types'));
-        end
+        % 2020-03-10: Function seems to not be used any more. DSAMP_TIME abolished from BIAS datasets?
+%         function SAMP_DTIME = derive_SAMP_DTIME(freqHz, nSpr)
+%         %
+%         % ARGUMENTS
+%         % =========
+%         % freqHz     : Frequency column vector in s^-1. Can not handle freq=NaN since the output is an integer.
+%         % nSpr       : Number of samples per record (SPR).
+%         %
+%         % RETURN VALUE
+%         % ============
+%         % SAMP_DTIME : Analogous to BIAS zVariable with CDF_UINT4=uint32. NOTE: Unit ns.
+%         %
+%         % ~BUG: The LFR/TDS/BIAS dataset skeletons specify that zVariable SAMP_DTIME is CDF_UINT4 in unit ns which should
+%         % have a too small a range for some snapshots. Therefore, this conversion will eliminate most Example: LFR
+%         % 2048/256 Hz = 8e9 ns > 2^31 ns ~ 2e9 ns.
+%         % 2017-03-08: Xavier Bonnin (LESIA) and Bruno Katra (RPW/LFR) are aware of this and seem to have implemented it
+%         % that way intentionally!!!
+%         %
+%         % IMPLEMENTATION NOTE: Algorithm should require integers in order to have a very predictable behaviour (useful
+%         % when testing).
+%         
+%             % ASSERTIONS
+%             if ~iscolumn(freqHz) || ~isfloat(freqHz) || any(isnan(freqHz))
+%                 error('BICAS:proc_utils:Assertion:IllegalArgument', '"freqHz" is not a column vector of non-NaN floats.')
+%             elseif ~isscalar(nSpr)
+%                 error('BICAS:proc_utils:Assertion:IllegalArgument', '"nSpr" is not a scalar.')
+%             end
+%             
+%             nRecords = size(freqHz, 1);
+%             
+%             % Express frequency as period length in ns (since tt2000 uses ns as a unit).
+%             % Use the same MATLAB class as tt
+%             % Unique frequency per record.
+%             periodNsColVec = int64(1e9 ./ freqHz);   % Ns = ns = nanoseconds
+%             periodNsMatrix = repmat(periodNsColVec, [1, nSpr]);
+%                         
+%             % Conventions:
+%             % ------------
+%             % Time unit: ns (as for tt2000)            
+%             % Algorithm should require integers to have a very predictable behaviour (useful when testing).
+%             
+%             % Indices for within every record (start at zero for every record).
+%             iSampleRowVec = int64(0:(nSpr-1));
+%             iSampleMatrix = repmat(iSampleRowVec, [nRecords, 1]);
+%             
+%             % Unique time for every sample in every record.
+%             SAMP_DTIME = iSampleMatrix .* periodNsMatrix;
+%             
+%             SAMP_DTIME = cast(SAMP_DTIME, bicas.utils.convert_CDF_type_to_MATLAB_class('CDF_UINT4',  'Only CDF data types'));
+%         end
         
         
         
@@ -724,7 +732,7 @@ classdef proc_utils
             %     for year, month, day, hour, minute, second, millisecond, microsecond
             %     and nanosecond.
             v = spdfbreakdowntt2000(tt2000);
-            utcStr = sprintf('%04i-%02i-%02iT%02i:%02i:%2i.%03i%03i%03i', v(1), v(2), v(3), v(4), v(5), v(6), v(7), v(8), v(9));
+            utcStr = sprintf('%04i-%02i-%02iT%02i:%02i:%02i.%03i%03i%03i', v(1), v(2), v(3), v(4), v(5), v(6), v(7), v(8), v(9));
         end
         
         
@@ -1068,6 +1076,19 @@ classdef proc_utils
         
         
         
+        % If one regards numeric values as defining a range (min to max), return whether is v1 a subset of v2 (not
+        % necessarily proper subset, i.e. equality counts as subset).
+        function isSubset = is_range_subset(v1, v2)
+            EJ_library.assert.vector(v1)
+            EJ_library.assert.vector(v2)
+            
+            isSubset = (min(v2) <= min(v1)) && (max(v1) <= max(v2));   % NOTE: Equality counts as a subset.
+        end
+        
+        
+        
+        % If one regards numeric values as defining a range (min to max), return whether v1 and v2 overlap (have a
+        % non-empty intersection).
         function doOverlap = ranges_overlap(v1, v2)
             EJ_library.assert.vector(v1)
             EJ_library.assert.vector(v2)
