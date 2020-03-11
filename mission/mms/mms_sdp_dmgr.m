@@ -1924,6 +1924,7 @@ classdef mms_sdp_dmgr < handle
           DATAC.calFile = offs.calFile; % Store name of cal file used.
           dE(:,1) = dE(:,1) - offs.ex; % Remove sunward
           dE(:,2) = dE(:,2) - offs.ey; % and duskward offsets
+          DATAC.l2a.dsl_offset = [offs.ex, offs.ey]; % Store removed offset, to be written in L2Pre file
           % Compute DCE Z from E.B = 0, if >10 deg and if abs(B_z)> 1 nT.
           B_tmp = DATAC.dfg.B_dmpa;
           B_tmp.data((abs(B_tmp.z.data) <= 1), :) = NaN;
@@ -1975,6 +1976,7 @@ classdef mms_sdp_dmgr < handle
           DATAC.calFile = offs.calFile; % Store name of cal file used.
           dE(:,1) = dE(:,1) - offs.ex; % Remove sunward
           dE(:,2) = dE(:,2) - offs.ey; % and duskward offsets
+          DATAC.l2a.dsl_offset = [offs.ex, offs.ey]; % Store removed offset, to be written in L2Pre file
           % Compute DCE Z from E.B = 0, if >10 deg and if abs(B_z)> 1 nT.
           B_tmp = DATAC.dfg.B_dmpa;
           B_tmp.data((abs(B_tmp.z.data) <= 1), :) = NaN;
