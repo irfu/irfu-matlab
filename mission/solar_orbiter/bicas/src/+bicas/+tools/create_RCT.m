@@ -27,39 +27,15 @@ function create_RCT(rctMasterCdfFile, destDir)
 % (4) it could be modified to read data from external files, e.g. text files.
 %
 %
-% OFFICIAL DOCUMENTATION ON RCT FILENAME CONVENTION
-% =================================================
-% Extract from ROC-PRO-DAT-NTT-00006-LES, 01/01 (dated 2017-11-17), "RPW Data Products".
-% NOTE: This document refers to the RODP.
-% ----------------------------------------------------------------------------------------------------------
-% """"""""4.3.2 RCT data versioning convention
-%
-% The version of the RCT CDF data file must be the local date and time of creation of the file,
-% in the format: “YYYYMMDDHHNN”, where “YYYY”, “MM”, “DD”, “HH” and “NN” are
-% respectively the 4-digits year, 2-digits month, 2-digits day, 2-digits hours, 2-digits minutes of
-% the file creation.
-% In the RCT filename, the version number must appear with the “V” prefix (e.g.,
-% “V202210122359”.
-%
-%
-% 4.3.3 RCT file naming convention
-%
-% The RCT shall comply the following file naming convention:
-% SOLO_CAL_RPW-[receiver]_[free-field]_[Version].cdf
-% Where [receiver] is the name of the receiver in uppercase characters (i.e., “TDS” or
-% “LFR”) of the corresponding RPW L1R dataset, [free-field] is a field that can be used to
-% specify the content of the file (e.g., “BIAS-F0”) and [Version] is the version of the
-% calibration table file (see previous section).
-% Note that this RCT naming convention is not fully compliant with the SOC definition [AD1].
-% It is envisaged to gather the RCT for a given period of time - time when the RCT values have
-% not changed (TBC) – into a single file, which complies SOC specification. This file will have
-% to be delivered for the Solar Orbiter data archive.""""""""
-% ----------------------------------------------------------------------------------------------------------
+% RCT FILENAME CONVENTION
+% =======================
+% See implementation for comments.
+% See comments for settings PROCESSING.RCT_REGEXP.* (all RCTs), in bicas.create_default_SETTINGS.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2018-03-09
-    
+
 
 % RCTs in DataPool git repository 2019-01-14 (commit 50cc3d8):
 %  ROC-SGSE_CAL_RCT-BIAS_V01.xlsx
@@ -78,6 +54,8 @@ function create_RCT(rctMasterCdfFile, destDir)
 %  SOLO_CAL_RCT-TDS-LFM-RSWF-B_V01.xlsx
 %  SOLO_CAL_RCT-TDS-LFM-RSWF-E_V01.xlsx
 %  SOLO_CAL_RCT-TDS-SURV-SWF-B_V01.xlsx
+%
+% MANUAL CALL: bicas.tools.create_RCT('/nonhome_data/work_files/SOLAR_ORBITER/skeletons_BIAS_RCT/SOLO_CAL_RCT-BIAS_V01.cdf', '/nonhome_data/work_files/SOLAR_ORBITER/bicas_calibration_files/')
 
 
 
@@ -90,6 +68,8 @@ function create_RCT(rctMasterCdfFile, destDir)
     
     destPath = fullfile(destDir, get_dest_RCT_filename());
     
+    ADD_DEBUG_RECORD_L = 0;
+    ADD_DEBUG_RECORD_H = 0;
     
     
     %===================================================================
@@ -106,6 +86,7 @@ function create_RCT(rctMasterCdfFile, destDir)
     
     
     
+    %===================================================================================================================
     % Extract from e-mail:
     % --------------------
     % Finally, I have made some fits for the other BIAS standalone tests 2016-06-21/22.
@@ -132,41 +113,61 @@ function create_RCT(rctMasterCdfFile, destDir)
     %
     % Based on BIAS standalone calibrations 2016-06-21/22, 100 kOhm stimuli, (there is only one temperature for these tests), TEST ID=0-3
     % Fits have been made using MATLAB function invfreqs with weights = 1 for freqHz <= 199e3.
-    
-    
-
+    %-------------------------------------------------------------------------------------------------------------------
+    % NOTE: Above fits for DC single/diff, AC low gain (NOT AC high gain) can be re-created using
+    %   * Files 20160621_FS0_EG_Test_Flight_Harness_Preamps/4-5_TRANSFER_FUNCTION/SO_BIAS_AC_VOLTAGE_ID{00..02}*.txt
+    %   * N_ZEROS = 2;
+    %     N_POLES = 4;
+    %   * N_ITERATIONS = 30;
+    %   * weights = double( (Data.freqHz <= 199e3) );
+    %   * [b, a] = invfreqs(Data.z, Data.freqRps, N_ZEROS, N_POLES, weights, N_ITERATIONS);
+    % NOTE: Unclear how to re-create the fit for AC high gain, but it should be similar but using file
+    %   20160621_FS0_EG_Test_Flight_Harness_Preamps/4-5_TRANSFER_FUNCTION/SO_BIAS_AC_VOLTAGE_ID03*.txt
+    % NOTE: All above TFs except AC diff high-gain, invert the sign at 0 Hz. This sign change appears to be wrong.
+    % The source files (four) all have ~sign inversion at 10 Hz (the lowest tabulated frequency); -141-142 degrees phase
+    % for both AC TFs.
+    %===================================================================================================================
     RctZvL = add_RCT_zvars_L(RctZvL, int64(0), [-2.60316e-09, 4.74234e-08, 4.78828e-08]', [-1.98004e-09, -1.97993e-09, -1.98017e-09]', ...
         create_tfc_zvar_record(...
-        'DC_single', {[-5.009e20,  8.148e14, -1.041e10],                      [8.556e21, 2.578e17, 2.042e12, 8.238e05, 1]}, ...
-        'DC_diff',   {[-2.311e23, -1.009e18,  2.664e11],                      [2.329e23, 4.411e18, 7.344e12, 3.868e06, 1]}, ...
-        'AC_lg',     {[-2.287e18, -1.365e18, -1.946e12],                      [1.348e19, 2.68e17 , 4.828e12, 3.85e06,  1]}, ...
-        'AC_hg',     {[ 2.149e40, -4.705e39, -1.258e35, -2.524e30, 1.611e24], [2.114e39, 4.817e37, 2.755e33, 6.497e28, 6.418e23,  7.211e17, 1]}) ...
+        'DC_single', {-[-5.009e20,  8.148e14, -1.041e10],                      [8.556e21, 2.578e17, 2.042e12, 8.238e05, 1]}, ...
+        'DC_diff',   {-[-2.311e23, -1.009e18,  2.664e11],                      [2.329e23, 4.411e18, 7.344e12, 3.868e06, 1]}, ...
+        'AC_lg',     {-[-2.287e18, -1.365e18, -1.946e12],                      [1.348e19, 2.68e17 , 4.828e12, 3.85e06,  1]}, ...
+        'AC_hg',     {-[ 2.149e40, -4.705e39, -1.258e35, -2.524e30, 1.611e24], [2.114e39, 4.817e37, 2.755e33, 6.497e28, 6.418e23,  7.211e17, 1]}) ...
         );
     
-    if 0
+    if ADD_DEBUG_RECORD_L
         % TEST: Add another record for Epoch_L.
-        % NOTE: Copy-pasted. Can be deleted.
-        RctZvL = add_RCT_zvars_L(RctZvL, int64(0), [-2.60316e-09, 4.74234e-08, 4.78828e-08]', [-1.98004e-09, -1.97993e-09, -1.98017e-09]', ...
-            create_tfc_zvar_record(...
-            'DC_single', {[-5.009e20,  8.148e14, -1.041e10],                      [8.556e21, 2.578e17, 2.042e12, 8.238e05, 1]}, ...
-            'DC_diff',   {[-2.311e23, -1.009e18,  2.664e11],                      [2.329e23, 4.411e18, 7.344e12, 3.868e06, 1]}, ...
-            'AC_lg',     {[-2.287e18, -1.365e18, -1.946e12],                      [1.348e19, 2.68e17 , 4.828e12, 3.85e06,  1]}, ...
-            'AC_hg',     {[ 2.149e40, -4.705e39, -1.258e35, -2.524e30, 1.611e24], [2.114e39, 4.817e37, 2.755e33, 6.497e28, 6.418e23,  7.211e17, 1]}) ...
+        RctZvL = add_RCT_zvars_L(RctZvL, ...
+            RctZvL.Epoch_L(end) + 1e9, ...
+            RctZvL.BIAS_CURRENT_OFFSET(end)', ...
+            RctZvL.BIAS_CURRENT_GAIN(end)', ...
+            RctZvL.TRANSFER_FUNCTION_COEFFS(end, :,:,:) ...
             );
+        warning('Creating RCT with added test data.')
     end
     
     
     
+    %===================================================================================================================    
+    % Values from 20160621_FS0_EG_Test_Flight_Harness_Preamps.
     % V_OFFSET values from mheader.reg6 for tests with stimuli=1e5 Ohm.
     % E_OFFSET values from mheader.reg6 for tests with stimuli=1e5 Ohm, non-inverted inputs.
-    RctZvH = add_RCT_zvars_H(RctZvH, int64(0), [0.001307, 0.0016914, 0.0030156]', [0.015384, 0.01582, 0.017215]');
-    if 0
+    % Sign is uncertain
+    % Uncertain whether it is correct to use value for stimuli=1e5 Ohm instead 1e6 Ohm.
+    % Uncertain whether it is correct to use the reg6 value instead of own fit.
+    %===================================================================================================================
+    RctZvH = add_RCT_zvars_H(RctZvH, int64(0), -[0.001307, 0.0016914, 0.0030156]', -[0.015384, 0.01582, 0.017215]');
+    if ADD_DEBUG_RECORD_H
         % TEST: Add another record for Epoch_H.
-        % NOTE: Copy-pasted. Can be deleted.
-        RctZvH = add_RCT_zvars_H(RctZvH, int64(1), [0.001307, 0.0016914, 0.0030156]', [0.015384, 0.01582, 0.017215]');
+        RctZvH = add_RCT_zvars_H(RctZvH, ...
+            RctZvH.Epoch_H(end) + 2e9, ...
+            RctZvH.V_OFFSET(end, :)', ...
+            RctZvH.V_OFFSET(end, :)');
+        warning('Creating RCT with added test data.')
     end
-    
-    
+
+
+
     fprintf(1, 'Creating file "%s"\n', destPath);
     create_RCT_file(rctMasterCdfFile, destPath, RctZvL, RctZvH);
     
@@ -174,14 +175,19 @@ end
 
 
 
-function destFilename = get_dest_RCT_filename()
 
-    %===========================
-    % Determine output filename
-    %===========================
-    % Filenaming convention is described in: ROC-PRO-DAT-NTT-00006-LES, 1/1 draft, Sect 4.3.2-3.
+
+% Create RCT filename (time-stamped).
+%
+%
+% OFFICIAL DOCUMENTATION ON RCT FILENAMING CONVENTION
+% ===================================================
+% See comments for bicas.create_default_SETTINGS, settings PROCESSING.RCT_REGEXP.* (all RCTs).
+%
+function destFilename = get_dest_RCT_filename()
     % IMPLEMENTATION NOTE: The official filenaming convention is not followed here!! Not sure how to comply with it either (which
     % receiver should the BIAS RCT specify?).
+    
     destFilename = sprintf(    'SOLO_CAL_RPW_BIAS_V%s.cdf', datestr(clock, 'yyyymmddHHMM'));
 end
 
