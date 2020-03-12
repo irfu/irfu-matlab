@@ -12,7 +12,7 @@
 # Updated: 2020/01/09, change Matlab version on SDC to R2019a.
 #
 # Usage: place script in the same folder as has irfu-matlab as a subfolder, then run
-#  "./script.sh <mmsX_dce_filename> <mmsX_dcv_filename> <mmsX_101_filename> <mmsX_10e_filename> <mmsX_105_filename>", with the following
+#  "./script.sh <mmsX_dce_filename> <mmsX_dcv_filename> <mmsX_101_filename> <mmsX_10e_filename> <mmsX_105_filename> <mmsX_DEFEPH_*>", with the following
 #  input arguments: (order is irrelevant as long as the OptionalDataDescriptor is "_dce_", "_dcv_","_10e_", "_105_" or "_101_").
 #    <mmsX_***_dce_filename.cdf> = Filename of DC E data to be processed for 'xyz'. Including path and extension.
 #    <mmsX_***_dcv_filename.cdf> = Filename of DC V data to be processed for 'xyz'. Including path and extention.
@@ -21,6 +21,7 @@
 #    <mmsX_aspoc_l2_srvy_***_filename.cdf> = Filename of ASPOC L2 srvy data (with aspoc status) to be processed for 'xyz'. Including path and extention. (optional, if not included script will go looking for it).
 #    <mmsX_DEFATT_***> = Filename of DEFATT data (with phase) to be processed for 'xyz'. Including path and extention. (optional, if not included script will go looking for it)
 #    <mmsX_***_101_filename.cdf> = Filename of HK 101 data (with sunpulse) to be processed for 'xyz'. Including path and extention. (if no DEFATT exist, this will be used otherwise not required)
+#    <mmsX_DEFEPH_***> = Filename of DEFEPH data (with sc position) to be used for processing L2A SLOW mode. Incuding path and extention (optional, if not included script will go looking for it).
 #    <mmsX_***_l2a_fast_yyyymmddHHMMSS_vX.Y.Z.cdf> = IF processing Brst mode, include the corresponding L2A DCE2d Fast mode file created previously.
 # if using multiple HK input files, separate these by a colon (:) without additional spaces,
 # ie. two HK 101 data files would be the following
@@ -74,20 +75,20 @@ if [ ! -x $MATLAB_EXE ] ; then
 fi
 
 # Verify awk and cdfdump exists as commands in this environment.
-command -v awk >/dev/null 2>&1 && awkExist=true || { awkExist=false; }
-if [ -x $CDF_BASE/bin/cdfdump ]; then cdfdumpExist=true; else cdfdumpExist=false; fi
+if [ "$(command -v awk 2>/dev/null)" ]; then awkExist="true"; else awkExist="false"; fi
+if [ -x "$CDF_BASE/bin/cdfdump" ]; then cdfdumpExist="true"; else cdfdumpExist="false"; fi
 
 # If awk & cdfdump exist, try to identify L1b dce file and check number of records written. If zero records in "Epoch" variable, return exit code 196.
-if [ "$awkExist"==true ] && [ "$cdfdumpExist"==true ]; then
+if [ "$awkExist" == "true" ] && [ "$cdfdumpExist" == "true" ]; then
    for var in "$@"
     do
-      if [ -f $var ]; then # its a single file, not one of the combined files separated by ":".
+      if [ -f "$var" ]; then # its a single file, not one of the combined files separated by ":".
          if [[ $var =~ mms[1-4]_edp_(fast|slow|brst|comm)_l1b_dce[0-9]{0,3}_20[0-9]{6,12}_v[0-9]+.[0-9]+.[0-9]+.cdf ]]; then
             # File matches the MMS L1b dce file naming convention.
             # Dump one record of variable "Epoch" in the file along with some metadata
 	    # awk for line with "Written records  12345/12345(max)" and print only the 
 	    # number (before the "/" sign).
-            nrec=`$CDF_BASE/bin/cdfdump -dump data -recordrange "1,1" -vars "Epoch" $var | awk -F"[ /]+" '/Written/ {print $3}'`
+	    nrec=$("$CDF_BASE/bin/cdfdump" -dump data -recordrange "1,1" -vars "Epoch" "$var" | awk -F"[ /]+" '/Written/ {print $3}')
             if [ "$nrec" == 0 ]; then
                exit 196
             fi
@@ -103,6 +104,7 @@ fi # if awk & cdfdump exist
 # exit with 197 if error reading DEFATT files (incorrect times of start/stop-> Epoch error).
 # exit with 198 if error reading cdf file (mostly related to ASPOC files),
 
+# shellcheck disable=SC2086
 $MATLAB_EXE $MATLAB_FLAGS -r\
   "\
   try;\
