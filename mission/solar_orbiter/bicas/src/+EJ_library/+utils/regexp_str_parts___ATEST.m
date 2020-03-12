@@ -21,30 +21,38 @@ function regexp_str_parts___ATEST()
     
     tl = {};
 
-    tl{end+1} = new_test_A('',     {''},       {{''}',    ES});
+    tl{end+1} = new_test_A('',     {''},       {{''}',    ES, true});
 
-    tl{end+1} = new_test_A('abc', {'a', 'b', 'c'}, {{'a' 'b' 'c'}', ES});
-    tl{end+1} = new_test_P('abc', {'a', 'b', 'c'}, {{'a' 'b' 'c'}', ES});
+    % Match
+    tl{end+1} = new_test_A('abc', {'a', 'b', 'c'}, {{'a' 'b' 'c'}', ES, true});
+    tl{end+1} = new_test_P('abc', {'a', 'b', 'c'}, {{'a' 'b' 'c'}', ES, true});
     
+    % Non-match
     tl{end+1} = new_test_A('ab', {'a', 'b', 'c'}, 'MException');
-    tl{end+1} = new_test_P('ab', {'a', 'b', 'c'}, {{'a', 'b'}', ES});
+    tl{end+1} = new_test_P('ab', {'a', 'b', 'c'}, {{'a', 'b'}', ES, false});
     
     tl{end+1} = new_test_A('ac', {'a', 'b', 'c'}, 'MException');
     tl{end+1} = new_test_A('a',  {'a', 'b', 'c'}, 'MException');
     tl{end+1} = new_test_A('ac', {'a', 'b'     }, 'MException');
     
     
-    tl{end+1} = new_test_A('word',  {'[a-z]+'}, {{'word'}', ES});
+    tl{end+1} = new_test_A('word',  {'[a-z]+'}, {{'word'}', ES, true});
     tl{end+1} = new_test_A('key = value', KEY_QUOTED_VALUE_REGEXP_LIST, 'MException');
     
-    tl{end+1} = new_test_A('key=value',                     KEY_ANY_VALUE_REGEXP_LIST,            {{'key', '=',         'value'            }', ES});
-    tl{end+1} = new_test_A('key = "value"',                 KEY_QUOTED_VALUE_REGEXP_LIST,         {{'key', ' = ', '"',  'value', '"', ''   }', ES});
-    tl{end+1} = new_test_A('key=   "value"   ',             KEY_QUOTED_VALUE_REGEXP_LIST,         {{'key', '=   ', '"', 'value', '"', '   '}', ES});
-    tl{end+1} = new_test_A('key_name.subset   =" .-/ "   ', KEY_QUOTED_VALUE_REGEXP_LIST,         {{'key_name.subset', '   =', '"', ' .-/ ', '"', '   '}', ES});
-    tl{end+1} = new_test_A('key = "value"',                 KEY_QUOTED_VALUE_COMMENT_REGEXP_LIST, {{'key', ' = ', '"', 'value', '"', '', ''}', ES});
-    tl{end+1} = new_test_A('key = "value"   # Comment',     KEY_QUOTED_VALUE_COMMENT_REGEXP_LIST, {{'key', ' = ', '"', 'value', '"', '   ', '# Comment'}', ES});
+    tl{end+1} = new_test_A('key=value',                     KEY_ANY_VALUE_REGEXP_LIST,            {{'key',                '=',         'value'            }', ES, true});
+    tl{end+1} = new_test_A('key = "value"',                 KEY_QUOTED_VALUE_REGEXP_LIST,         {{'key',               ' = ',   '"', 'value', '"', ''   }', ES, true});
+    tl{end+1} = new_test_A('key=   "value"   ',             KEY_QUOTED_VALUE_REGEXP_LIST,         {{'key',                '=   ', '"', 'value', '"', '   '}', ES, true});
+    tl{end+1} = new_test_A('key_name.subset   =" .-/ "   ', KEY_QUOTED_VALUE_REGEXP_LIST,         {{'key_name.subset', '   =',    '"', ' .-/ ', '"', '   '}', ES, true});
+    tl{end+1} = new_test_A('key = "value"',                 KEY_QUOTED_VALUE_COMMENT_REGEXP_LIST, {{'key',               ' = ',   '"', 'value', '"', '', ''            }', ES, true});
     
-    
+    % Match
+    tl{end+1} = new_test_A('key = "value"   # Comment',     KEY_QUOTED_VALUE_COMMENT_REGEXP_LIST, {{'key',               ' = ',   '"', 'value', '"', '   ', '# Comment'}', ES, true});
+    tl{end+1} = new_test_P('key = "value"   # Comment',     KEY_QUOTED_VALUE_COMMENT_REGEXP_LIST, {{'key',               ' = ',   '"', 'value', '"', '   ', '# Comment'}', ES, true});
+    % Non-match
+    tl{end+1} = new_test_A('key = "value"   % Comment',     KEY_QUOTED_VALUE_COMMENT_REGEXP_LIST, 'MException');
+    tl{end+1} = new_test_P('key = "value"   % Comment',     KEY_QUOTED_VALUE_COMMENT_REGEXP_LIST, {{'key',               ' = ',   '"', 'value', '"', '   ', ''}', '% Comment', false});
+
+
 
     EJ_library.atest.run_tests(tl)    
 end

@@ -26,21 +26,11 @@ function [rowsList] = read_text_file(filePath, linebreakRegexp)
 %           CON: If want automatic detection of type of line break, then rowsList is the proper format, not the
 %                multi-row string.
 %       CON: Row string list is dependent on how to interpret chars after the last line break.
-%
-% PROPOSAL: Split into functions
-%   (1) read entire file as sequence of bytes.
-%   (2) convert sequence of bytes into rows
-%   PRO: Can have test code for converting sequence into rows.
-%   PRO: Can have different algorithms (functions) for different conversion.
 
-    fileId = fopen(filePath);
-    
-    % ASSERTION
-    if fileId == -1
-        error('read_text_file:CanNotOpenFile', 'Can not open file: "%s"', filePath)
-    end
-    
-% 
+
+
+    bytesArray = EJ_library.utils.read_file(filePath);
+
 %     % IMPLEMENTATION NOTE: "delimiter" does not refer to end-of-line (there is a separate property for that).
 %     % Default textscan behaviour is to detect which of LF, CR, or CR+LF to use for end-of-line.
 %     % delimiter='' probably means to ignore "
@@ -48,11 +38,6 @@ function [rowsList] = read_text_file(filePath, linebreakRegexp)
 %     assert(numel(temp) == 1, 'textscan unexpectedly returned a non-scalar cell array.')
 % 
 %     rowsList = temp{1};
+    rowsList = strsplit(char(bytesArray(:)'), linebreakRegexp, 'DelimiterType', 'RegularExpression', 'CollapseDelimiters', false)';
     
-    fc = fread(fileId);
-    rowsList = strsplit(char(fc'), linebreakRegexp, 'DelimiterType', 'RegularExpression', 'CollapseDelimiters', false)';
-    
-
-
-    fclose(fileId);
 end

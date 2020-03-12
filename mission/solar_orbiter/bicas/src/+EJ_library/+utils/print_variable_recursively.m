@@ -13,8 +13,8 @@
 % DISPLAYING STRINGS
 % ==================
 % The function displays every string in one of two different ways:
-% (1) BAE = Begin After Equals : More compact. Better for strings with few/no linebreaks.
-% (2) BNR = Begin on New Row   : Useful for strings with many linebreaks.
+% (1) BAE = Begin After Equals : More compact. Better for strings with few/no line breaks.
+% (2) BNR = Begin on New Row   : Useful for strings with many line breaks.
 %   Setting stringsBnrMinNonemptyRows determines when to use which.
 %
 %
@@ -62,24 +62,24 @@ function print_variable_recursively(varName, v, varargin)
 %
 % PROPOSAL: Criterion for displaying strings over multiple lines?
 %   PROPOSAL: Min number of non-empty rows
-%   PROPOSAL: Min number of non-linebreak chars
+%   PROPOSAL: Min number of non-line break chars
 %   PROPOSAL: Multiple criteria. Use MLD when at least one of them is satisfied.
 %
 % TODO-DECISION: How handle strings (1xN char arrays) and general char arrays (2-D, N-D)?
 %   TODO-DECISION: How handle strings (1xN char arrays)
-%                  How handle long strings ~without linebreaks?
-%                  How handle long strings with many linebreaks?
+%                  How handle long strings ~without line breaks?
+%                  How handle long strings with many line breaks?
 %       PROPOSAL: Separate printing mode which divides string into separate substrings. Return cell array of substrings.
 %                 Caller can print strings on separate substrings, with indentation, prefix, everyone separately quoted.
 %           PROPOSAL: Separate modes/reasons/criteria for splitting into separate substring.
-%               NOTE: If splitting for other reasons than ~linebreak, then complete string is ambiguous if not using escape
+%               NOTE: If splitting for other reasons than ~line break, then complete string is ambiguous if not using escape
 %                     codes.
 %                   NOTE: String is ALWAYS ambiguous if not using escape codes, e.g. tab.
 %               NOTE: If splitting string into substrings which should themselves not be linebroken when printed, then
 %                     line-breaking characters must be removed manually (even if not dispaly escape codes).
-%                   PROPOSAL: Print with special function which tries to ignore (remove) linebreaking characters.
+%                   PROPOSAL: Print with special function which tries to ignore (remove) line breaking characters.
 %               --
-%               PROPOSAL: Split on linebreak.
+%               PROPOSAL: Split on line break.
 %               PROPOSAL: Max substring length.
 %                   TODO-DECISION: Before/after escape codes? How handle after escape codes?
 %               PROPOSAL: Print comment with reason for splitting.
@@ -132,7 +132,7 @@ function print_NESTED(fullParentName, varName, v, recursionDepth, Settings)
         % Print leaf
         %============
         % NOTE: Arbitrarily chosen string width to make = line up, normally.
-        fprintf(1, '%s%-20s = %s\n', prefixStr, varName, valueDisplayStr);
+        fprintf(1, '%s%-21s = %s\n', prefixStr, varName, valueDisplayStr);
         
     else
         % CASE: Node may have children (but does not have to have this time).
@@ -260,7 +260,7 @@ function [canHaveChildren, childrenVList, childrenNamesList, valueDisplayStr] = 
             end
             
             % Construct one single long string for display.
-            valueDisplayStrList      = remove_linebreaks(valueDisplayStrList);                                               % Remove content linebreaks (not escape codes).
+            valueDisplayStrList      = remove_linebreaks(valueDisplayStrList);                                               % Remove content line breaks (not escape codes).
             valueDisplayStrList      = cellfun(@(x) (sprintf('''%s''', x)), valueDisplayStrList, 'UniformOutput', false);    % Quote every substring.
             valueDisplayStrList{end} = sprintf('%s   (%s)', valueDisplayStrList{end}, valueCommentStr);                      % Add comment string to last string.
             
@@ -445,7 +445,7 @@ function strList = split_content_str(s, maxSsLength)
     assert(maxSsLength>=1)
     
     % IMPLEMENTATION NOTE: Can not use regexp(s, '\n', 'split')
-    % since we want to keep the linebreaking character in the substrings.
+    % since we want to keep the line breaking character in the substrings.
     % Split into substrings, where each substring contains the longest possible sequence of non-LF characters followed
     % by either (1) LF, or (2) end-of-string.
     %strList1 = regexp(s, '[^\n]*(\n|$)', 'split');

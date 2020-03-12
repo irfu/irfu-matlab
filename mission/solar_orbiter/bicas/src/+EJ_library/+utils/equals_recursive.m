@@ -65,9 +65,11 @@ function [result, diffLoc, diffMsg] = equals_recursive(a, b, varargin)
 %     Approximate numeric equality, e.g. abs(a-b) < eps.
 %
 % PROPOSAL: Return list of all found differences, suiteable for reading on screen.
-%    PROPOSAL: Return lists of all possible diffLoc & diffMsg.
+%   PROPOSAL: Return lists of all possible diffLoc & diffMsg.
+%   PRO: Useful for comparing large, similar (non-identical) data structs, "diff".
+%       Ex: Compare CDFs via dataobj.
 % PROPOSAL: Implement exceptions for specific struct/object field names.
-%    PROPOSAL: Specify by name.
+%   PROPOSAL: Specify by name.
 %       PROPOSAL: settings.field_name_exceptions = {'fn1', 'fn2', ...}
 %
 % PROPOSAL: Change implementation to something that reuses code for all "branching".
@@ -174,7 +176,7 @@ elseif isobject(a) && isobject(b)
         diffMsg = 'Class names differ.';
         return
     end
-        
+
     fnList = fieldnames(a);
     for i = 1:length(fnList)
         fn = fnList{i};
