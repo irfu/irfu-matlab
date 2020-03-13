@@ -9,12 +9,13 @@
 # Updated: 2020/01/09, change Matlab version on SDC to R2019a.
 #
 # Usage: place script in the same folder as has irfu-matlab as a subfolder, then run
-#  "./script.sh <mmsX_dce_filename> <mmsX_dfg_l2pre_filename>", with the following
+#  "./script.sh <mmsX_dce_filename> <mmsX_dfg_l2pre_filename> <mmsX_edp_slow_l2_scpot_filename>", with the following
 #  input arguments: (order is irrelevant).
 #
 #    <mmsX_edp_*_l2a_filename.cdf> = Filename of DC E l2a data to be processed for 'L2pre'. Including path and extension.
 #    <mmsX_dfg_*_l2pre_filename.cdf> = Filename of DFG srvy L2pre covering the same interval as the "dce" file,
 #                                      for Fast/Slow dce l2a this means the dfg srvy l2pre file of same day.
+#    <mmsX_edp_slow_l2_scpot_filename.cdf> = Filename of corresponding L2 scpot Slow mode file created previously, include ONLY when processing SLOW MODE data. (optional, if not included script will go looking for it).
 #
 # OR if processing BRST segments directly from L1b:
 #
@@ -74,7 +75,7 @@ if [ ${#} -lt 2 ] || [ ${#} -gt 8 ] ; then
 fi
 
 # test that Matlab binary (startup script) is executable
-if [ ! -x $MATLAB_EXE ] ; then 
+if [ ! -x "$MATLAB_EXE" ] ; then 
 	echo "ERROR: Matlab [$MATLAB_EXE] not found/not executable"
 	exit 166  # SDC-defined error code for "incorrect usage"
 fi
@@ -86,6 +87,7 @@ fi
 # exit with 197 if error reading DEFATT files (incorrect times of start/stop-> Epoch error).
 # exit with 198 if error reading cdf file (mostly related to ASPOC files),
 
+# shellcheck disable=SC2086
 $MATLAB_EXE $MATLAB_FLAGS -r\
   "\
   try;\
