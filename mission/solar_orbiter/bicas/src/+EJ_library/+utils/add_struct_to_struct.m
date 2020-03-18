@@ -1,34 +1,46 @@
 %
-% Takes a structure "a" and adds to it the fields of a
-% structure "b". If a field exists in both structures,
-% then DuplicateFieldBehaviours determines what happens.
-% Can be recursive.
+% Takes a structure "A" and adds to it the fields of a structure "B". If a field exists in both structures, then
+% Settings determines what happens. Can be recursive.
 %
-% NOTE: The operation is NOT symmetric in "a" and "b".
+% NOTES
+% =====
+% NOTE: The operation is NOT symmetric in "A" and "B".
+% NOTE: The algorithm can ALMOST be generalized to struct arrays. The conceptual cruxes are
+%   (1) a non-empty struct array field can be struct or non-struct for different components
+%   (2) an empty struct array field does not have a class (neither struct or non-struct)
+%   A user could iterate over struct array components and call the function for each component separately.
 %
 %
 % ARGUMENTS
 % =========
 % MANDATORY:
-%   a                          : A struct. The fields of "b" will be added to this struct.
-%   b                          : A struct.
+%   A                          : Scalar struct. The fields of "B" will be added to this struct.
+%   B                          : Scalar struct.
 % OPTIONAL:
-%   DuplicateFieldBehaviours : Struct array with four components, each one representing how to react for different cases of
-%                              duplicate fields, depending on which of the two fields are structs themselves.
-%                              Each field in this argument is a string with one of the following values:
-%                                   "Overwrite"  : The field in a is overwritten by the field in b.
-%                                   "Do nothing"
-%                                   "Recurse"    : Only valid for two structs.
-%                                   "Error"      : Default value.
+%   Settings : Struct. 
 %       .noStructs
 %       .aIsStruct
 %       .bIsStruct
-%       .bothAreStructs
+%       .abAreStructs : 
+%           Above fields are string constants. Represent how to react for different cases of duplicate fields, depending
+%           on which of the two fields are structs themselves. Each field in this argument is a string with one of the
+%           following values:
+%              "Overwrite"  : The field in "A" is overwritten by the field in "B".
+%              "Do nothing" :
+%              "Recurse"    : Only valid if both fields are structs. Apply the function on the two fields.
+%              "Error"      : Default value.
+%       .onlyBField : String constant. 'Copy', 'Error'. What to do if field is present in B, but not A.
+%
+%
+% RETURN VALUE
+% ============
+% A : Struct. Corresponds to argument "A", with the fields of "B" added to it.
 %
 %
 % Initially created 201x-xx-xx (=<2017) by Erik P G Johansson.
 %
-function a = add_struct_to_struct(a, b, DuplicateFieldBehaviours)
+function A = add_struct_to_struct(A, B, varargin)
+%
 % PROPOSAL: Function pointer for what to do for duplicate fields?!
 % TODO-DECISION: Over-engineered?
 %   PRO: Too many duplicate field behaviours.
@@ -37,12 +49,18 @@ function a = add_struct_to_struct(a, b, DuplicateFieldBehaviours)
 
 % TODO-DECISION: How determine recursion depth?
 %   PROPOSAL: Function pointer argument?!!
-%   PROPOSAL: (Flag) always/never recurse structs (if present in both a and b).
+%   PROPOSAL: (Flag) always/never recurse structs (if present in both "A" and "B").
 %
 % PROPOSAL: Use EJ_library.utils.interpret_settings_args.
 %   CON: Can not use it since it calls this function! Would get infinite recursion!!!
-
-
+%
+% PROPOSAL: Policy alternative for requiring a field in "A" to overwrite.
+%   PRO: Useful for EJ_library.utils.interpret_settings_args.
+%   PROPOSAL: Settings.onlyBfield = 'Error'
+%   CON: Caller can assert that A fieldnames are superset of B fieldsnames.
+%       CON: Not trivial expression.
+%       CON: Not recursive.
+%
 % NOTE: In reality designed for merging "compatible" data structures (types are compatible; field names may or may not overlap).
 % ==> Does not need so many cases.
 % ==> Ambiguous if a struct within a struct of settings is to be regarded as a value or as another container for settings (not clear where to end recursion).
@@ -55,92 +73,83 @@ function a = add_struct_to_struct(a, b, DuplicateFieldBehaviours)
 %   TODO-DECISION: How determine recursion depth?
 %   PROPOSAL: Comparison with diffdn somehow?
 %       CON: Recursion depth is well defined for diffdn.
-%   
+%
+% PROPOSAL: Permit struct arrays, but restrict policies (for struct arrays only) to 'Error' and 'Overwrite'.
 
 
-    % DFB = Duplicate field behaviour.
-    DEFAULT_DFB = struct('noStructs', 'Error', 'aIsStruct', 'Error', 'bIsStruct', 'Error', 'twoStructs', 'Error');   % DFB = Duplicate Field Behaviours
-    
-    
-    
-    if nargin == 2
-        DuplicateFieldBehaviours = DEFAULT_DFB;
-    end
+
+    % DFB = Duplicate Field Policy.
+    DEFAULT_SETTINGS = struct(...
+        'noStructs',    'Error', ...
+        'aIsStruct',    'Error', ...
+        'bIsStruct',    'Error', ...
+        'abAreStructs', 'Error', ...
+        'onlyBField',   'Copy');
+    Settings = EJ_library.utils.interpret_settings_args(DEFAULT_SETTINGS, varargin);
+    EJ_library.assert.struct(Settings, fieldnames(DEFAULT_SETTINGS), {})
     
     % ASSERTIONS
-    if ~ismember(nargin, [2,3])
-        error('Wrong number of arguments.')
-    elseif ~isstruct(a)
-        a
-        error('a is not a structure.')
-    elseif ~isstruct(b)
-        b
-        error('b is not a structure.')
-    elseif ~isstruct(DuplicateFieldBehaviours)
-        DuplicateFieldBehaviours
-        error('DuplicateFieldBehaviours is not a struct.')
-    end
-
-        
+    assert(isstruct(A),               'A is not a structure.')
+    assert(isstruct(B),               'B is not a structure.')
+    assert(isstruct(Settings),        'Settings is not a struct.')
+    assert(isscalar(A),               'A is not scalar.')
+    assert(isscalar(B),               'B is not scalar.')
+    %assert(isequal(size(A), size(B)), 'A and B have different array sizes.')
+    
     %===========================
-    % Iterate over fields in b.
+    % Iterate over fields in B.
     %===========================
-    bFieldNamesList = fieldnames(b);
+    bFieldNamesList = fieldnames(B);
     for i = 1:length(bFieldNamesList)
         fieldName = bFieldNamesList{i};
 
-        if isfield(a, fieldName)
+        if isfield(A, fieldName)
             %===========================================================
             % CASE: Duplicate fields (field exists in both structures).
-            %===========================================================
-            afv = a.(fieldName);
-            bfv = b.(fieldName);
+            %===========================================================            
+            afv = A.(fieldName);
+            bfv = B.(fieldName);
 
-            %nFieldStructs = isstruct(a.(fieldName)) + isstruct(b.(fieldName));   % Of the duplicate fields, determine how many are structures.
-            % 0 = two non-structs
-            % 1 = struct + non-struct
-            % 2 = struct + struct
-            
-%             switch nFieldStructs
-%                 case 0
-%                     behaviour = DuplicateFieldBehaviours.noStructs;
-%                 case 1
-%                     behaviour = DuplicateFieldBehaviours.oneStruct;
-%                 case 2
-%                     behaviour = DuplicateFieldBehaviours.twoStructs;
-%                 otherwise
-%                     error('Should never reach this code.')
-%             end
-
-            bothAreStructs = false;
+            abAreStructs = false;
             if ~isstruct(afv) && ~isstruct(bfv)
-                behaviour = DuplicateFieldBehaviours.noStructs;
+                behaviour = Settings.noStructs;
+                
             elseif isstruct(afv) && ~isstruct(bfv)
-                behaviour = DuplicateFieldBehaviours.aIsStruct;
+                behaviour = Settings.aIsStruct;
+                
             elseif ~isstruct(afv) && isstruct(bfv)
-                behaviour = DuplicateFieldBehaviours.bIsStruct;
+                behaviour = Settings.bIsStruct;
+                
             else
-                behaviour = DuplicateFieldBehaviours.bothAreStructs;
-                bothAreStructs = true;
+                behaviour = Settings.abAreStructs;
+                abAreStructs = true;
             end
 
             if strcmp(behaviour, 'Error')
                 error('Structures share identically named fields "%s".', fieldName)
             elseif strcmp(behaviour, 'Overwrite')
-                a.(fieldName) = b.(fieldName);
+                A.(fieldName) = B.(fieldName);
             elseif strcmp(behaviour, 'Do nothing')
                 % Do nothing.
-            elseif strcmp(behaviour, 'Recurse') && (bothAreStructs)
-                % NOTE: Recursive call. Needs the original DuplicateFieldBehaviours.
-                a.(fieldName) = EJ_library.utils.add_struct_to_struct(a.(fieldName), b.(fieldName), DuplicateFieldBehaviours);
+            elseif strcmp(behaviour, 'Recurse') && (abAreStructs)
+                % NOTE: RECURSIVE CALL. Needs the original Settings.
+                A.(fieldName) = EJ_library.utils.add_struct_to_struct(A.(fieldName), B.(fieldName), Settings);
             else
                 error('Can not interpret string value behaviour="%s" for this combination of field values.', behaviour)
             end
         else
             %===========================================
-            % CASE: Field exists in "b", but not in "a"
+            % CASE: Field exists in "B", but not in "A"
             %===========================================
-            a.(fieldName) = b.(fieldName);     % NOTE: Not overwrite field, but create new field in a.
+            switch(Settings.onlyBField)
+                case 'Copy'
+                    A.(fieldName) = B.(fieldName);     % NOTE: Not overwrite field, but create new field in A.
+                case 'Error'
+                    error('Field B.%s exists but not A.%s.', fieldName, fieldName)
+                otherwise
+                    error('Illegal setting onlyBField=%s', Settings.onlyBField)
+            end
+            
         end
     end
 end

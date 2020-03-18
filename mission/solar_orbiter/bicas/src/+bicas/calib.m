@@ -332,7 +332,9 @@ classdef calib < handle
         %               where iRct=zv_CALIBRATION_TABLE_INDEX(i,1). Each element is the content of the corresponding RCT
         %               mentioned in ga_CALIBRATION_TABLE.
         %
-        function rctDataList = read_non_BIAS_RCT_by_CALIBRATION_TABLE(obj, rctId, ga_CALIBRATION_TABLE, zv_CALIBRATION_TABLE_INDEX, use_CALIBRATION_TABLE_INDEX2)
+        function rctDataList = read_non_BIAS_RCT_by_CALIBRATION_TABLE(obj, ...
+                rctId, ga_CALIBRATION_TABLE, zv_CALIBRATION_TABLE_INDEX, use_CALIBRATION_TABLE_INDEX2)
+            
             % ASSERTIONS
             assert(iscell(ga_CALIBRATION_TABLE), 'BICAS:calib:Assertion:IllegalArgument', 'ga_CALIBRATION_TABLE is not a cell array.')
             EJ_library.assert.vector(ga_CALIBRATION_TABLE)
@@ -414,7 +416,6 @@ classdef calib < handle
         % NOTE: This is the normal way of obtaining bias current in physical units (as opposed to HK bias current).
         %
         function biasCurrentAmpere = calibrate_TC_bias_TM_to_bias_current(obj, biasCurrentTm, iAntenna, iCalibTimeL)
-            % BUG: Can not handle time.
             
             % ASSERTION
             assert(isa(biasCurrentTm, 'int16'))

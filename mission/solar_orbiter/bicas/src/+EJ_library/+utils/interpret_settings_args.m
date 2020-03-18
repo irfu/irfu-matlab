@@ -7,9 +7,12 @@
 % The function interprets a 1D cell array, representing a list of arguments to another function, typically the
 % external function that calls this function, and typically the external function's last arguments by using varargin.
 % --
+% IMPORTANT NOTE: The function does permit that settings (fields) not present in DefaultSettings are ADDED to Settings.
 % In order to require/permit a certain set of settings (keys), use an assertion for the set of field names in the
 % returned struct. Note that if there are default values for all keys, then DefaultSettings can be used to obtain the
 % list of field names.
+%   Ex: EJ_library.assert.struct(Settings, fieldnames(DEFAULT_SETTINGS), {})
+% 
 %
 %
 % ALGORITHM
@@ -85,8 +88,14 @@ function [Settings] = interpret_settings_args(DefaultSettings, argList)
     %       Ex: Want to internally merge/overwrite different sources of settings: Default settings, struct argument,
     %       key+value arguments.
     %       PRO: Needs to implement analogue of "add_struct_to_struct" for containers.Map.
-    %   PROPOSAL: Can permit both containers.Map and struct simultaneously.
+    %   PROPOSAL: Can support both containers.Map and struct simultaneously. Return same type as DefaultSettings
+    %             (for backward compatibility).
     %       PROPOSAL: Convert struct to containers.Map internally.
+    %
+    % PROPOSAL: Policy argument (first) for whether or not to only permit settings/fields already in DefaultSettings.
+    %   CON: If wants to permit, then still undetermined (not asserted) I which extra settings should be permitted?
+    %       PROPOSAL: Cell array of settings that are allowed to be added. No extra settings. ==> Empty cell array.
+    %   PRO: Prevents caller from forgetting this option.
     
     %====================================================
     % Assign SettingsArg1: Uses first argument if struct
@@ -124,13 +133,113 @@ function [Settings] = interpret_settings_args(DefaultSettings, argList)
     % Assign return value: Settings
     %===============================
     % Take all available values from SettingsArgListPairs.
-    Settings = SettingsArgListPairs;
+    %Settings = SettingsArgListPairs;
+    
+    % NOTE: Could permit recursive settings structs, but then without checking for the existence of corresponding default key.
+    AS2S_SETTINGS = struct(...
+        'noStructs',  'Overwrite', ...
+        'aIsStruct',  'Error', ...
+        'bIsStruct',  'Error', ...
+        'abAreStructs', 'Error', ...
+        'onlyBField', 'Copy');
     
     % For missing values, take from SettingsArg1.
-    Settings = EJ_library.utils.add_struct_to_struct(Settings, SettingsArg1, ...
-        struct('noStructs', 'Do nothing', 'aIsStruct', 'Error', 'bIsStruct', 'Error', 'bothAreStructs', 'Recurse'));
-    
+    %Settings = add_struct_to_struct(Settings, SettingsArg1, AS2S_SETTINGS);
+    Settings = add_struct_to_struct(DefaultSettings, SettingsArg1, AS2S_SETTINGS);
+
     % For missing values, take from DefaultSettings.
-    Settings = EJ_library.utils.add_struct_to_struct(Settings, DefaultSettings, ...
-        struct('noStructs', 'Do nothing', 'aIsStruct', 'Error', 'bIsStruct', 'Error', 'bothAreStructs', 'Recurse'));
+    %Settings = add_struct_to_struct(Settings, DefaultSettings, AS2S_SETTINGS);
+    Settings = add_struct_to_struct(Settings, SettingsArgListPairs, AS2S_SETTINGS);
+end
+
+
+%=======================================================================================================================
+% Lightly modified hard-coded copy of EJ_library.utils.add_struct_to_struct
+% -------------------------------------------------------------------------
+% Modifications: Not use EJ_library.utils.interpret_settings_args (including recursive call).
+%
+% IMPORTANT IMPLEMENTATION NOTE
+% =============================
+% This function (EJ_library.utils.interpret_settings_args) deliberately does not use
+% EJ_library.utils.add_struct_to_struct so that it can use EJ_library.utils.interpret_settings_args instead. Both using
+% each other would lead to ininite recursion.
+%=======================================================================================================================
+function A = add_struct_to_struct(A, B, Settings)
+
+    %========================================================================================================
+    % IMPLEMENTATION NOTE: CAN NOT USE EJ_library.utils.interpret_settings_args SINCE IT USES THIS FUNCTION!
+    %========================================================================================================
+    if nargin == 2
+        Settings = DEFAULT_SETTINGS;
+    elseif nargin == 3
+        ;   % Do nothing. Settings has already been assigned.
+    else
+        % ASSERTION
+        error('Wrong number of arguments.')
+    end
+    
+    % ASSERTIONS
+    assert(isstruct(A),               'A is not a structure.')
+    assert(isstruct(B),               'B is not a structure.')
+    assert(isstruct(Settings),        'Settings is not a struct.')
+    assert(isscalar(A),               'A is not scalar.')
+    assert(isscalar(B),               'B is not scalar.')
+    %assert(isequal(size(A), size(B)), 'A and B have different array sizes.')
+    
+    %===========================
+    % Iterate over fields in B.
+    %===========================
+    bFieldNamesList = fieldnames(B);
+    for i = 1:length(bFieldNamesList)
+        fieldName = bFieldNamesList{i};
+
+        if isfield(A, fieldName)
+            %===========================================================
+            % CASE: Duplicate fields (field exists in both structures).
+            %===========================================================            
+            afv = A.(fieldName);
+            bfv = B.(fieldName);
+
+            abAreStructs = false;
+            if ~isstruct(afv) && ~isstruct(bfv)
+                behaviour = Settings.noStructs;
+                
+            elseif isstruct(afv) && ~isstruct(bfv)
+                behaviour = Settings.aIsStruct;
+                
+            elseif ~isstruct(afv) && isstruct(bfv)
+                behaviour = Settings.bIsStruct;
+                
+            else
+                behaviour = Settings.abAreStructs;
+                abAreStructs = true;
+            end
+
+            if strcmp(behaviour, 'Error')
+                error('Structures share identically named fields "%s".', fieldName)
+            elseif strcmp(behaviour, 'Overwrite')
+                A.(fieldName) = B.(fieldName);
+            elseif strcmp(behaviour, 'Do nothing')
+                % Do nothing.
+            elseif strcmp(behaviour, 'Recurse') && (abAreStructs)
+                % NOTE: RECURSIVE CALL. Needs the original Settings.
+                A.(fieldName) = add_struct_to_struct(A.(fieldName), B.(fieldName), Settings);
+            else
+                error('Can not interpret string value behaviour="%s" for this combination of field values.', behaviour)
+            end
+        else
+            %===========================================
+            % CASE: Field exists in "B", but not in "A"
+            %===========================================
+            switch(Settings.onlyBField)
+                case 'Copy'
+                    A.(fieldName) = B.(fieldName);     % NOTE: Not overwrite field, but create new field in A.
+                case 'Error'
+                    error('Field B.%s exists but not A.%s.', fieldName, fieldName)
+                otherwise
+                    error('Illegal setting onlyBField=%s', Settings.onlyBField)
+            end
+            
+        end
+    end
 end

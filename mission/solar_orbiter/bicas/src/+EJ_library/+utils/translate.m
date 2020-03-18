@@ -13,8 +13,8 @@
 % ARGUMENTS AND RETURN VALUE
 % ==========================
 % table      : Cell array of (a) cell arrays of strings, and (b) arbitrary values.
-%              {i, 1} = Cell array of unique strings. Is allowed to be empty but will then never match.
-%              {i, 2} = Arbitrary value to be returned.
+%              {iRule, 1} = Cell array of unique strings. Is allowed to be empty but will then never match.
+%              {iRule, 2} = Arbitrary value to be returned.
 %              NOTE: One (probably) does not want there to be any duplicate strings.
 %              RATIONALE: Argument has this structure to make keys+values clear when hardcoding it using literals.
 % key        : String.

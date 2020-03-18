@@ -15,11 +15,9 @@ classdef proc_utils
 %============================================================================================================
 % PROPOSAL: Split up in separate files?!
 % PROPOSAL: Move some functions to "utils".
-%   Ex: add_rows_to_struct_fields, select_row_range_from_struct_fields
 %   Ex: log_array, log_struct_array, log_tt2000_array (uses bicas.proc_utils_assert_Epoch)
 %
 % PROPOSAL: Write test code for ACQUISITION_TIME_to_tt2000 and its inversion.
-% PROPOSAL: Reorg select_row_range_from_struct_fields into returning a list of intervals instead.
 %
 % PROPOSAL: Replace find_last_same_subsequence with function that returns list of sequences.
 %   PRO: Can naturally handle zero records.
@@ -41,35 +39,6 @@ classdef proc_utils
 
     methods(Static, Access=public)
 
-%         function S = select_row_range_from_struct_fields(S, iFirst, iLast)
-%         % Given a struct, select a subset of that struct defined by a range of ROW indices for every field.
-%         % Generic utility function.
-%         %
-%         % Compare add_rows_to_struct_fields. Name chosen in analogy.
-%         
-%             bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(S);
-%         
-%             fieldNameList = fieldnames(S);
-%             nRows = NaN;                   % Initial non-sensical value which is later replaced.
-%             for i=1:length(fieldNameList)
-%                 fn = fieldNameList{i};
-%                 
-%                 % ASSERTIONS
-%                 if isnan(nRows)
-%                     nRows = size(S.(fn), 1);
-%                     if (nRows < iFirst) || (nRows < iLast)
-%                         error('BICAS:proc_utils:Assertion', 'iFirst or iLast outside of interval of indices (rows).')
-%                     end
-%                 elseif nRows ~= size(S.(fn), 1)
-%                    error('BICAS:proc_utils:Assertion', 'Not all struct fields have the same number of rows.')
-%                 end
-%                 
-%                 S.(fn) = S.(fn)(iFirst:iLast, :, :);
-%             end
-%         end
-
-
-
         function c2 = select_row_range_from_cell_comps(c1, iFirst, iLast)
             % ASSERTIONS
             bicas.proc_utils.assert_cell_array_comps_have_same_N_rows(c1)
@@ -85,8 +54,6 @@ classdef proc_utils
         % Generic utility function.
         % Add values to every struct field by adding components after their highest row index (let them grow in
         % the row index).
-        %
-        % Compare select_row_range_from_struct_fields. Name chosen in analogy.
  
 
             bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(S);
@@ -721,6 +688,8 @@ classdef proc_utils
         %
         % Example: 2016-04-16T02:26:14.196334848
         % NOTE: This is the inverse to spdfparsett2000.
+        
+        % PROPOSAL: Move to EJ_library.
             
             bicas.proc_utils.assert_Epoch(tt2000)
             

@@ -120,18 +120,24 @@ S.define_setting('SWD.environment.executable',     'roc/bicas');   % Relative pa
 
 
 
-S.define_setting('INPUT_CDF.LFR.HAVING_SYNCHRO_FLAG_AND_TIME_SYNCHRO_FLAG_WORKAROUND', 0)
-S.define_setting('INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY',     'ERROR')    % PERMIT, WARNING, ERROR
-S.define_setting('INPUT_CDF.USING_GA_NAME_VARIANT_POLICY',     'ERROR')    % PERMIT, WARNING, ERROR
-S.define_setting('INPUT_CDF.NON-INCREMENTING_ZV_EPOCH_POLICY', 'ERROR')    % ERROR, WARNING_SORT
+% NOTE: Requires INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY = non-error.
+S.define_setting('INPUT_CDF.LFR.HAVING_SYNCHRO_FLAG_AND_TIME_SYNCHRO_FLAG_WORKAROUND', 1)
+
+% NOTE: See INPUT_CDF.LFR.HAVING_SYNCHRO_FLAG_AND_TIME_SYNCHRO_FLAG_WORKAROUND
+S.define_setting('INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY',     'WARNING')    % PERMIT, WARNING, ERROR
+
+S.define_setting('INPUT_CDF.USING_GA_NAME_VARIANT_POLICY',     'WARNING')    % PERMIT, WARNING, ERROR
+S.define_setting('INPUT_CDF.NON-INCREMENTING_ZV_EPOCH_POLICY', 'ERROR')      % ERROR, WARNING_SORT
 
 
 
 %########################
 % INPUT_CDF_ASSERTIONS.*
 %########################
-S.define_setting('INPUT_CDF_ASSERTIONS.STRICT_DATASET_ID', 0);    % Require input CDF Global Attribute "DATASET_ID" to match the expected value.
-S.define_setting('INPUT_CDF_ASSERTIONS.MATCHING_TEST_ID',  0);    % Require Test_id to be identical for all input CDF datasets.
+% Require input CDF Global Attribute "DATASET_ID" to match the expected value.
+S.define_setting('INPUT_CDF_ASSERTIONS.STRICT_DATASET_ID', 0);
+% Require Test_id to be identical for all input CDF datasets.
+S.define_setting('INPUT_CDF_ASSERTIONS.MATCHING_TEST_ID',  0);
 
 
 
@@ -156,9 +162,14 @@ S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.Calibration_version', ...
     '1.0; Voltages: Using combined BIAS and LFR/TDS transfer functions (freq. dependent), BIAS offsets. Currents: No data.');
 % What to do with zVariables which are still empty after copying data into the master CDF.
 % This indicates that something is wrong, either in the master CDF or in the processing.
-S.define_setting('OUTPUT_CDF.EMPTY_NUMERIC_ZV_SET_TO_FILL', 0);
-% Ex: Non-numeric ACQUISITION_TIME_UNITS in SOLO_L2_RPW-LFR-SBM1-CWF-E_V05.cdf is empty
+S.define_setting('OUTPUT_CDF.EMPTY_NUMERIC_ZV_SET_TO_FILL', 1);
+% Ex: Non-numeric ACQUISITION_TIME_UNITS in (master?) SOLO_L2_RPW-LFR-SBM1-CWF-E_V05.cdf is empty
 S.define_setting('OUTPUT_CDF.EMPTY_NONNUMERIC_ZV_IGNORE',   1);
+
+% ACQUSITION_TIME_UNITS being empty in the master CDF requires value 0/false.
+S.define_setting('OUTPUT_CDF.write_CDF_dataobj.strictEmptyZvSize',  0)
+% ACQUSITION_TIME_UNITS being empty in the master CDF requires value 0/false.
+S.define_setting('OUTPUT_CDF.write_CDF_dataobj.strictEmptyZvClass', 0)
 
 
 

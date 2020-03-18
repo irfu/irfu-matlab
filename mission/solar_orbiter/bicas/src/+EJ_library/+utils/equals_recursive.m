@@ -96,7 +96,8 @@ function [result, diffLoc, diffMsg] = equals_recursive(a, b, varargin)
 %==================================
 % ASSERTIONS: Check argument types
 %==================================
-if ~numel(a) && ~isnumeric(a) && ~iscell(a) && ~ischar(a)   &&   ~numel(b) && ~isnumeric(b) && ~iscell(b) && ~ischar(b)
+if      ~numel(a) && ~isnumeric(a) && ~iscell(a) && ~ischar(a) && ~isstruct(a)  && ...
+        ~numel(b) && ~isnumeric(b) && ~iscell(b) && ~ischar(b) && ~isstruct(b)
     error('Can not handle the type of variable(s)');
 end
 
@@ -108,8 +109,6 @@ end
 DEFAULT_SETTINGS.rowColVecEqual = 0;
 DEFAULT_SETTINGS.nanEquals      = 1;
 DEFAULT_SETTINGS.epsilon        = 0.0;
-%Settings = EJ_library.utils.add_struct_to_struct(settings, DEFAULT_SETTINGS, ...
-%    struct('noStructs', 'Do nothing', 'aIsStruct', 'Error', 'bIsStruct', 'Error', 'bothAreStructs', 'Error'));
 Settings = EJ_library.utils.interpret_settings_args(DEFAULT_SETTINGS, varargin);
 EJ_library.assert.struct(Settings, fieldnames(DEFAULT_SETTINGS), {})   % ASSERTION
 

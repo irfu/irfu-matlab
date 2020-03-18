@@ -42,6 +42,7 @@
 % Initially created 2018-07-11 by Erik P G Johansson.
 %
 classdef assert
+    %
 % TODO-DECISION: Use assertions on (assertion function) arguments internally?
 % PROPOSAL: Add argument for name of argument so that can print better error messages.
 % PROPOSAL: Optional error message (string) as last argument to ~every method.
@@ -51,10 +52,7 @@ classdef assert
 %   CON: Can conflict with other string arguments.
 %
 % PROPOSAL: Assertion for checking that multiple variables have same size in specific dimensions/indices.
-%   PROPOSAL: Same dimensions in all dimensions except those specified.
-%       PRO: Better handling of "high dimensions to infinity".
-%   PROPOSAL: Check on all fields in struct.
-%       Ex: SSL (+KVPL?)
+%   See BOGIQ for method "size".
 %
 % PROPOSAL: Create class with collection of standardized non-trivial "condition functions", used by this "assert" class.
 %           Use an analogous naming scheme.
@@ -342,14 +340,30 @@ classdef assert
         %
         function size(v, sizeConstraints)
             % PROPOSAL: Apply the same size constraint to an arbitrary number of variables.
+            %
             % PROPOSAL: Be able to separate size constraints to multiple variables, but specify that certain indices
-            % have to be identical in size (but arbitrary) between variables.
+            %           have to be identical in size (but arbitrary) between variables.
+            %
             %   PROPOSAL: Use negative values to indicate that the size in that dimension should be identical.
             %       CALL EXAMPLE: EJ_library.assert.size(Epoch, [-1], zvSnapshotsV, [-1, 1, -2], zvSnapshotsE, [-1, 2, -2])
             %       Ex: zVariables: Number of records, number of samples per record.
+            %
             %   PROPOSAL: Somehow be able to state that a variable is a 1D vector, regardless of which index is not size one.
             %       PROPOSAL: sizeConstraints = 1x1 cell array, with one numeric value (length of vector)?!!
             %       PROPOSAL: Prepend sizeConstraints with string constant "vector".
+            %   ~CON/NOTE: Can not assert equal size for variables with arbitrary number of dimensions.
+            %
+            %       PROPOSAL: Policy argument for how to treat dimensions after those specified.
+            %           Higher dimensions size 1
+            %           Higher dimensions equal for all variables.
+            %               NOTE: Requires that all size specifications specify the same dimensions(?)
+            %
+            %       PROPOSAL: Last size component refers to size in all higher dimensions.
+            %           CON: Very non-standard, unintuitive, unclear.
+            %           CON: Verbose.
+            
+            %   PROPOSAL: Same dimensions in all dimensions except those specified.
+            %       PRO: Better handling of "high dimensions to infinity".
             
             % ASSERTION
             EJ_library.assert.vector(sizeConstraints)
@@ -384,19 +398,20 @@ classdef assert
         % Assert that all values in a matrix are identical. Useful for e.g. checking that sizes of vectors are
         % identical.
         %
-        % NOTE: Empty matrices are accepted.
-        %
-        % Works on:
-        % - matrix of numbers
-        % - matrix of characters
-        % - cell array of strings
-        %
-        % Does not work on:
-        % - cell array of numbers
+        % ARGUMENT
+        % ========
+        % v : One of below:
+        %     - matrix of numbers
+        %     - matrix of characters
+        %     - cell array of strings
+        %     Does not work on:
+        %     - cell array of numbers
+        %     NOTE: Empty matrices are accepted.
         % 
         function all_equal(v)
            nUniques = numel(unique(v(:)));    % NOTE: Make 1D vector.
            nTotal   = numel(v);
+           
            if (nUniques ~= 1) && (nTotal >= 1)
                error(EJ_library.assert.ERROR_MSG_ID, ...
                    'Expected vector of identical values, but found %i unique values out of a total of %i values.', ...

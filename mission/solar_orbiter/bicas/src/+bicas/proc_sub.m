@@ -205,13 +205,16 @@ classdef proc_sub
                     && isfield(InSci.Zv, 'SYNCHRO_FLAG') && isempty(InSci.Zv.SYNCHRO_FLAG)
                 InSci.Zv = rmfield(InSci.Zv, 'SYNCHRO_FLAG');
             end
-            % Both zVars TIME_SYNCHRO_FLAG, SYNCHRO_FLAG found in input datasets (2020-01-05). Unknown why.
+            % Both zVars TIME_SYNCHRO_FLAG, SYNCHRO_FLAG found in input datasets. Unknown why.
             % "DEFINITION BUG" in definition of datasets/skeleton?
+            % Ex: LFR___TESTDATA_RGTS_LFR_CALBUT_V0.7.0/ROC-SGSE_L1R_RPW-LFR-SBM1-CWF-E_4129f0b_CNE_V02.cdf /2020-03-17
+            
             % 2020-01-21: Based on skeletons (.skt; L1R, L2), SYNCHRO_FLAG seems to be the correct one.
             [InSci.Zv, fnChangeList] = bicas.utils.normalize_struct_fieldnames(InSci.Zv, ...
-                {{{'TIME_SYNCHRO_FLAG', 'SYNCHRO_FLAG'}, 'SYNCHRO_FLAG'}});
-            
-            bicas.proc_sub.handle_zv_name_change(fnChangeList, inSciDsi, SETTINGS, 'SYNCHRO_FLAG', 'INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY')
+                {{{'TIME_SYNCHRO_FLAG', 'SYNCHRO_FLAG'}, 'SYNCHRO_FLAG'}}, 'Assert one matching candidate');
+
+            bicas.proc_sub.handle_zv_name_change(...
+                fnChangeList, inSciDsi, SETTINGS, 'SYNCHRO_FLAG', 'INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY')
             
             
             
@@ -347,7 +350,7 @@ classdef proc_sub
             % "DEFINITION BUG" in definition of datasets/skeleton?
             % 2020-01-21: Based on skeletons (.skt; L1R, L2), SYNCHRO_FLAG seems to be the correct one.
             [InSci.Zv, fnChangeList] = bicas.utils.normalize_struct_fieldnames(InSci.Zv, ...
-                {{{'TIME_SYNCHRO_FLAG', 'SYNCHRO_FLAG'}, 'SYNCHRO_FLAG'}});
+                {{{'TIME_SYNCHRO_FLAG', 'SYNCHRO_FLAG'}, 'SYNCHRO_FLAG'}}, 'Assert one matching candidate');
             
             bicas.proc_sub.handle_zv_name_change(fnChangeList, inSciDsi, SETTINGS, 'SYNCHRO_FLAG', 'INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY')
             
@@ -891,6 +894,7 @@ classdef proc_sub
         % inSciDsi : Input SCI DATASET_ID whch contains the zVariable.
         %
         % Wrapper around bicas.proc_sub.handle_struct_name_change to be used locally.
+        %
         function handle_zv_name_change(fnChangeList, inSciDsi, SETTINGS, varargin)
             msgFunc = @(oldFieldname, newFieldname) (sprintf(...
                 'Input dataset DATASET_ID=%s uses an alternative but illegal(?) zVariable name "%s" instead of "%s".', ...

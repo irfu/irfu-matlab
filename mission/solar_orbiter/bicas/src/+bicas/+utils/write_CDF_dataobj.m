@@ -1,4 +1,6 @@
-function write_CDF_dataobj(filePath, dataobj_GlobalAttributes, dataobj_data, dataobj_VariableAttributes, dataobj_Variables, varargin)
+function write_CDF_dataobj(filePath, ...
+    dataobj_GlobalAttributes, dataobj_data, dataobj_VariableAttributes, dataobj_Variables, varargin)
+%
 % Function which writes a CDF file.
 %
 % Attempt at a function which can easily write a CDF using variables on the same data format as returned by dataobj
@@ -9,7 +11,7 @@ function write_CDF_dataobj(filePath, dataobj_GlobalAttributes, dataobj_data, dat
 % IMPORTANT NOTE: This function replaces "write_CDF_spdfcdfread.m".
 %
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
-% First created 2016-07-12 (write_cdf.m/write_cdf_spdfcdfread.m), 2016-10-20 (write_cdf_dataobj.m)
+% First created 2016-07-12 (as write_cdf.m/write_cdf_spdfcdfread.m), 2016-10-20 (as write_cdf_dataobj.m)
 %
 %
 %
@@ -47,9 +49,10 @@ function write_CDF_dataobj(filePath, dataobj_GlobalAttributes, dataobj_data, dat
 %                                       Requires zero-record zVariables to have the size specified by
 %                                       dataobj_Variables{iZVar, 2}.
 %                                   'Strict empty data class'
-%                                       Require data_obj.data.<zVarName>.data (if it is numeric) to have the right MATLAB class if it is
-%                                       empty (not just when non-empty). Data read with dataobj can have the wrong class
-%                                       if it is an empty array and therefore this is permitted by default.
+%                                       Require data_obj.data.<zVarName>.data (if it is numeric) to have the right
+%                                       MATLAB class if it is empty (not just when non-empty). Data read with dataobj
+%                                       can have the wrong class if it is an empty array and therefore this is permitted
+%                                       by default.
 %
 %
 %
@@ -94,11 +97,11 @@ function write_CDF_dataobj(filePath, dataobj_GlobalAttributes, dataobj_data, dat
 % on an existing CDF file).
 %
 %
-% IMPLEMENTATION NOTE ON spdfcdfwrite AND CHAR ZVARIABLES
-% ========================================
+% IMPLEMENTATION NOTE ON "spdfcdfwrite" AND CHAR ZVARIABLES
+% =========================================================
 % The behaviour of spdfcdfwrite when passing char arrays or cell arrays of strings for zVariables is very mysterious and
-% hard-to-understand. Below is the empirical behaviour from passing such arrays to spdfcdfwrite (RecordBound option disabled
-% option, Singleton option enabled).
+% hard to understand. Below is the empirical behaviour from passing such arrays to spdfcdfwrite (RecordBound option
+% disabled option, Singleton option enabled).
 % --
 % i = index within record. N,M,K>1
 % Left  column = Size of CHAR ARRAY passed to scpdfcdfwrite.
@@ -128,10 +131,10 @@ function write_CDF_dataobj(filePath, dataobj_GlobalAttributes, dataobj_data, dat
 
 
 %=======================================================================================================================
+% "BUG": ROC requires cdf files to use md5 checksums, but this code does not.
+%
 % PROPOSAL: Implement using NASA SPDFs Java code instead?!! Should be possible to easily call Java code from inside MATLAB.
 %   PRO?: Java interface might be more easy to work with and have fewer quirks & limitations.
-%
-% PROPOSAL: Enable MD5 checksum.
 %
 % PROPOSAL: Option for filling empty variable with pad values. 1 record?
 %    CON: Can not know the (non-record) dimensions of such a CDF variable.
@@ -163,32 +166,22 @@ function write_CDF_dataobj(filePath, dataobj_GlobalAttributes, dataobj_data, dat
 % PROPOSAL: Check for illegal characters (or at least, characters which can not be handled) in global attributes: åäöÅÄÖ, quotes(?).
 %   NOTE: According to old notes, åäöÅÄÖ will be invisible global attributes, but the corresponding number of characters will be cut out
 %   from the end.
+%
+% ~BUG: Zero-record numeric & char zVars are converted to [] (numeric, always 0x0) by dataobj. This code does not take
+% this into account by internally converting the zVar variable back to the right class and size.
 
 
 % zVariable attributes that should reasonably have the same data type as the zVariable itself.
 ZVAR_ATTRIBUTES_OF_ZVAR_DATA_TYPE = {'VALIDMIN', 'VALIDMAX', 'SCALEMIN', 'SCALEMAX', 'FILLVAL'};
 
-
-
-%    turnZeroRecordsIntoOneRecord = 0;
-% Flag for whether or not to permit [] to be interpreted as a zero-record-zvariable value matrix,
-% regardless of stated size per record. Data returned from dataobj seems to work that way.
-strictZvSize = 0;
-permitBadEmptyDataClass = 1;
-while numel(varargin) > 0
-    argument = varargin{1};
-    switch argument
-        %            case 'Turn zero records into one record'
-        %                turnZeroRecordsIntoOneRecord = 1;
-        case 'Strict zVar size'
-            strictZvSize = 1;
-        case 'Strict empty data class'
-            permitBadEmptyDataClass = 0;
-        otherwise
-            error('BICAS:write_CDF_dataobj:Assertion', 'Can not interpret extra option "%s".', argument)
-    end
-    varargin = varargin(2:end);
-end
+% NOTE: 'disableSpdfcdfwrite' : May be useful for debugging.
+DEFAULT_SETTINGS = struct(...
+    'strictEmptyZvSize',    1, ...   % 1/true since dataobj is not strict about size of  empty zVars.
+    'strictEmptyZvClass',   1, ...   % 1/true since dataobj is not strict about class or empty zVars.
+    'calculateMd5Checksum', 0, ...
+    'disableSpdfcdfwrite',  0);
+Settings = EJ_library.utils.interpret_settings_args(DEFAULT_SETTINGS, varargin);
+EJ_library.assert.struct(Settings, fieldnames(DEFAULT_SETTINGS), {})
 
 
 
@@ -234,7 +227,7 @@ for i=1:length(dataobj_Variables(:,1))
     specifiedCdfDataType   = dataobj_Variables{i, 4};
     padValue               = dataobj_Variables{i, 9};   % This value can NOT be found in dataobj_data. Has to be read from dataobj_Variables.
     
-    zVarValue = dataobj_data.(zVarName).data;
+    zVarValue            = dataobj_data.(zVarName).data;
     specifiedMatlabClass = bicas.utils.convert_CDF_type_to_MATLAB_class(specifiedCdfDataType, 'Permit MATLAB classes');
     
     
@@ -252,19 +245,19 @@ for i=1:length(dataobj_Variables(:,1))
 
 
 
-    %========================================================================================================
+    %===================================================================================================================
     % ASSERTION:
-    %   Check that the supplied zVariable data variable has a MATLAB class (type) which matches the specified CDF
-    %   type.
-    % -----------------------------------------------------------------------------------------------------
+    %   Check that the supplied zVariable data variable has a MATLAB class (type) which matches the specified CDF type.
+    % -----------------------------------------------------------------------------------------------------------------
     % IMPLEMENTATION NOTE:
     % (1) Empty data (empty arrays) from spdfcdfread are known to have the wrong data type (char).
     % Therefore, do this check after having dealt with empty data.
     % (2) Must do this after converting time strings (char) data to uint64/tt2000.
-    %========================================================================================================
+    %===================================================================================================================
     zVarDataMatlabClass = class(zVarValue);    
     
-    if ~(permitBadEmptyDataClass && isempty(zVarValue)) && ~strcmp( specifiedMatlabClass, zVarDataMatlabClass )
+    %if ~(~Settings.strictEmptyZvClass && isempty(zVarValue)) && ~strcmp( specifiedMatlabClass, zVarDataMatlabClass )
+    if ~strcmp( specifiedMatlabClass, zVarDataMatlabClass ) && (Settings.strictEmptyZvClass || ~isempty(zVarValue))
         error('BICAS:write_CDF_dataobj:Assertion', ...
             'The MATLAB class ("%s") of the variable containing zVariable ("%s") data does not match specified CDF data type "%s".', ...
             zVarDataMatlabClass, zVarName, specifiedCdfDataType)
@@ -272,7 +265,7 @@ for i=1:length(dataobj_Variables(:,1))
     
     
 
-    [zVarValue, isRecordBound] = prepare_zVarData(zVarValue, specifiedSizePerRecord, strictZvSize, zVarName);
+    [zVarValue, isRecordBound] = prepare_zVarData(zVarValue, specifiedSizePerRecord, Settings.strictEmptyZvSize, zVarName);
     if isRecordBound
         zVarNameRcList{end+1} = zVarName;
     end
@@ -447,15 +440,21 @@ end
 %   The above 10x1x100 variable will be written as 1-dimension
 %   (with 10 elements).
 %===================================================================================================
+if Settings.calculateMd5Checksum ; checksumFlag = 'MD5';
+else                             ; checksumFlag = 'None';
+end
 
-spdfcdfwrite(...
-    filePath, zVarNameAndValueList(:), ...
-    'RecordBound',        zVarNameRcList, ...
-    'GlobalAttributes',   dataobj_GlobalAttributes, ...
-    'VariableAttributes', dataobj_VariableAttributes, ...
-    'Vardatatypes',       zVarNameAndDataTypeList, ...
-    'PadValues',          zVarNameAndPadValueList, ...
-    'Singleton',          zVarNameAllList)
+if ~Settings.disableSpdfcdfwrite
+    spdfcdfwrite(...
+        filePath, zVarNameAndValueList(:), ...
+        'RecordBound',        zVarNameRcList, ...
+        'GlobalAttributes',   dataobj_GlobalAttributes, ...
+        'VariableAttributes', dataobj_VariableAttributes, ...
+        'Vardatatypes',       zVarNameAndDataTypeList, ...
+        'PadValues',          zVarNameAndPadValueList, ...
+        'Singleton',          zVarNameAllList, ...
+        'Checksum',           checksumFlag)
+end
 
 end
 
@@ -541,11 +540,11 @@ end
 %                          If char array, indices are the same as in dataobj.data.<zVarName>.data, i.e. inconsistent.
 % specifiedSizePerRecord : Size per record used for assertion.
 %                          For numeric: zValue size minus the first value, "size(zVarValue)(2:end)".
-function [zVarValue, isRecordBound] = prepare_zVarData(zVarValue, specifiedSizePerRecord, strictZvSize, zVarName)
+function [zVarValue, isRecordBound] = prepare_zVarData(zVarValue, specifiedSizePerRecord, strictEmptyZvSize, zVarName)
 
 if ischar(zVarValue)
     %===========================================================================================================
-    % Special case for "char": Convert 3-D char matrices to column cell arrays of 2-D char matrices.
+    % CASE: char zVar: Convert 3-D char matrices to column cell arrays of 2-D char matrices.
     % ----------------------------------------------------------------------------------------------
     % IMPLEMENTATION NOTE: It is not possible to permute indices for string as one can for non-char for ndim==3.
     %===========================================================================================================
@@ -567,23 +566,29 @@ if ischar(zVarValue)
     end
     
     [zVarValue, isRecordBound] = prepare_char_zVarData(zVarValue);
-    
-    
+
+
     
 elseif isnumeric(zVarValue)
     
     % ASSERTION: Check zVar size.
     nRecords = size(zVarValue, 1);
-    if strictZvSize || (nRecords >= 1)
+    if strictEmptyZvSize || (nRecords >= 1)
+        % NOTE: data obj zVar data is always (empirically) [] (i.e. numeric) when nRecords=0,
+        %   i.e. also for char-valued zVars, and also for non-empty size per record. Therefore often needs to be
+        %   tolerant of this. Note that the code can not (?) reconstruct an original char zVar from dataobj for
+        %   nRecords=0 since it does not have the length of the strings.
+        
         temp = size(zVarValue);
         sizePerRecord = temp(2:end);
         if ~isequal(...
                 normalize_size_vec(specifiedSizePerRecord), ...
                 normalize_size_vec(sizePerRecord))
             error('BICAS:write_CDF_dataobj:Assertion', ...
-                ['The zVariable (''%s'') data size according to data variable itself does not fit the stated size per record according to separate argument.\n', ...
+                ['The zVariable (''%s'') data size according to data variable itself is not', ...
+                ' consistent with the stated size per record in other argument.\n', ...
                 '    Size per record according to data variable produced by processing: [', sprintf('%i ', sizePerRecord),          ']\n', ...
-                '    Size per record according to master CDF:                           [', sprintf('%i ', specifiedSizePerRecord), ']'], ...
+                '    Size per record separately specified:                              [', sprintf('%i ', specifiedSizePerRecord), ']'], ...
                 zVarName)
         end
     end
@@ -624,8 +629,9 @@ elseif isnumeric(zVarValue)
     %   The above 10x1x100 variable will be written as 1-dimension
     %   (with 10 elements).""""
     %===========================================================================================================
-    nRecords = size(zVarValue, 1);
-    
+    %if nRecords == 0
+    %    zVarValue = zeros(sizePerRecord);
+    %else
     if nRecords == 1
         % Shift/permute indices "left" so that index 1 appears last (and hence "disappears" since it is size=1 due to
         % how MATLAB handles indices).
@@ -689,4 +695,3 @@ end
 % end
 % 
 % end
-

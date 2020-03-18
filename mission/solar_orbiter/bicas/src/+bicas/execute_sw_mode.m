@@ -287,8 +287,10 @@ bicas.proc_utils.log_zVars(ZvsLog)
 % states that the correct string is "Dataset_ID".
 %=================================================================================
 [GlobalAttributes, fnChangeList] = bicas.utils.normalize_struct_fieldnames(DataObj.GlobalAttributes, ...
-    {{{'DATASET_ID', 'Dataset_ID'}, 'Dataset_ID'}});
-msgFunc = @(oldFn, newFn) (sprintf('Global attribute in input dataset\n    "%s"\nuses illegal alternative "%s" instead of "%s"\n', filePath, oldFn, newFn));
+    {{{'DATASET_ID', 'Dataset_ID'}, 'Dataset_ID'}}, 'Assert one matching candidate');
+msgFunc = @(oldFn, newFn) (sprintf(...
+    'Global attribute in input dataset\n    "%s"\nuses illegal alternative "%s" instead of "%s"\n', ...
+    filePath, oldFn, newFn));
 bicas.handle_struct_name_change(fnChangeList, SETTINGS, msgFunc, 'Dataset_ID', 'INPUT_CDF.USING_GA_NAME_VARIANT_POLICY')
 
 
@@ -351,9 +353,12 @@ function Zvs = select_ZVS_indices(Zvs, iArray)
 % ** Filtering records (only keeping some).
 %
 % NOTE: Only want to modify the zVariables that contain data, i.e. for which CDF variable attribute DEPEND_0=Epoch, not
-% metadata e.g. ACQUISITION_TIME_UNITS. Code does not use rigorous condition. Should ideally use variable attribute
-% DEPEND_0.
-%
+% metadata e.g. ACQUISITION_TIME_UNITS. Code does not use rigorous condition. Should ideally use zVariable attribute
+% DEPEND_0. Is therefore not a generic function.
+
+    % NOTE: Can not use bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(S); since want to ignore but permit
+    % fields/zVars with other number of records.
+    
     fnList = fieldnames(Zvs);
     
     for iZv = 1:numel(fnList)
@@ -519,17 +524,19 @@ settingOverwritePolicy   = SETTINGS.get_fv('OUTPUT_CDF.OVERWRITE_POLICY');
 settingWriteFileDisabled = SETTINGS.get_fv('OUTPUT_CDF.WRITE_FILE_DISABLED');
 
 
+
 %==============================
 % Checks before writing to CDF
 %==============================
+% UI ASSERTION: Check for directory collision. Always error.
+if exist(outputFile, 'dir')     % Checks for directory.
+    error('BICAS:execute_sw_mode', 'Intended output dataset file path matches a pre-existing directory.')
+end
+
 % Check if file writing is deliberately disabled.
 if settingWriteFileDisabled
     bicas.logf('warning', 'Writing output CDF file is disabled via setting OUTPUT_CDF.WRITE_FILE_DISABLED.')
     return
-end
-% UI ASSERTION: Check for directory collision. Always error.
-if exist(outputFile, 'dir')     % Checks for directory.
-    error('BICAS:execute_sw_mode', 'Intended output dataset file path matches a pre-existing directory.')
 end
 
 % Behaviour w.r.t. output file path collision with pre-existing file.
@@ -540,10 +547,12 @@ if exist(outputFile, 'file')    % Checks for file and directory.
             error('BICAS:execute_sw_mode:SWModeProcessing', ...
                 'Intended output dataset file path "%s" matches a pre-existing file. Setting OUTPUT_CDF.OVERWRITE_POLICY is set to prohibit overwriting.', ...
                 outputFile)
+            
         case 'OVERWRITE'
             bicas.logf('warning', ...
                 'Intended output dataset file path "%s"\nmatches a pre-existing file. Setting OUTPUT_CDF.OVERWRITE_POLICY is set to permit overwriting.\n', ...
                 outputFile)
+            
         otherwise
             error('BICAS:execute_sw_mode:ConfigurationBug', 'Illegal setting value OUTPUT_CDF.OVERWRITE_POLICY="%s".', settingOverwritePolicy)
     end
@@ -558,13 +567,12 @@ bicas.utils.write_CDF_dataobj( ...
     DataObj.GlobalAttributes, ...
     DataObj.data, ...
     DataObj.VariableAttributes, ...
-    DataObj.Variables ...
-    )
+    DataObj.Variables, ...
+    'calculateMd5Checksum', true, ...
+    'strictEmptyZvSize',  SETTINGS.get_fv('OUTPUT_CDF.write_CDF_dataobj.strictEmptyZvSize'), ...
+    'strictEmptyZvClass', SETTINGS.get_fv('OUTPUT_CDF.write_CDF_dataobj.strictEmptyZvClass'))
 
 end
-
-
-
 
 
 
@@ -572,7 +580,6 @@ end
 function logicalFileId = get_logical_file_id(datasetId, testId, provider, dataVersion)
 % Construct a "Logical_file_id" as defined in the ROC DFMD
 % "The name of the CDF file without the ‘.cdf’ extension, using the file naming convention."
-
 
 bicas.assert_DATASET_ID(datasetId)
 

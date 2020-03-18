@@ -1,15 +1,15 @@
-% Standard handling of fnChangeList returned from bicas.utils.normalize_struct_fieldnames based on standardized
-% SETTINGS values.
+
 %
 %
 % ARGUMENTS
 % =========
+% fnChangeList : Returned from bicas.utils.normalize_struct_fieldnames
+% msgFunc  : Function handle: msgStr = func(oldFieldname, newFieldname)
+%            NOTE: Return value is passed to bicas.log (not logf), i.e. multi-row messages must end with line feed.
 % varargin : List of pairs of arguments.
 %            varargin{2*m + 1} : Fieldname (new/after change) for which to react.
 %            varargin{2*m + 2} : SETTINGS key which determines the policy. Must have value PERMIT, WARNING, or
 %                                ERROR.
-% msgFunc  : Function handle: msgStr = func(oldFieldname, newFieldname)
-%            NOTE: Return value is passed to bicas.log (not logf), i.e. multi-row messages must end with line feed.
 %
 %
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
@@ -21,7 +21,7 @@ function handle_struct_name_change(fnChangeList, SETTINGS, msgFunc, varargin)
     %   PROPOSAL: Submit function that returns error/warning/log message. Accepts arguments for old+new
     %             fieldname. Can thus handle e.g. both zVar names and global attributes.
     
-    while numel(varargin) >= 2
+    while numel(varargin) >= 2    % Iterate over pairs of varargin components.
         newFn       = varargin{1};
         settingsKey = varargin{2};
         varargin    = varargin(3:end);
@@ -30,6 +30,8 @@ function handle_struct_name_change(fnChangeList, SETTINGS, msgFunc, varargin)
         if i > 0
             settingZvNameChangePolicy = SETTINGS.get_fv(settingsKey);
             msg = msgFunc(fnChangeList(i).oldFieldname, fnChangeList(i).newFieldname);
+            assert(isempty(fnChangeList(i).ignoredCandidateFieldnames), ...
+                'Function not designed for handling non-empty .ignoredCandidateFieldnames.')
             
             switch(settingZvNameChangePolicy)
                 case 'PERMIT'
@@ -40,7 +42,8 @@ function handle_struct_name_change(fnChangeList, SETTINGS, msgFunc, varargin)
                 case 'ERROR'
                     error('BICAS:Assertion', msg)
                 otherwise
-                    error('BICAS:proc_sub:Assertion', 'Illegal setting for %s="%s"', settingsKey, settingZvNameChangePolicy)
+                    error('BICAS:proc_sub:Assertion', 'Illegal setting for %s="%s"', ...
+                        settingsKey, settingZvNameChangePolicy)
             end
         end
     end
