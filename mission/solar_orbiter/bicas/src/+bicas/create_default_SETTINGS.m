@@ -137,7 +137,7 @@ S.define_setting('INPUT_CDF.NON-INCREMENTING_ZV_EPOCH_POLICY', 'ERROR')      % E
 % Require input CDF Global Attribute "DATASET_ID" to match the expected value.
 S.define_setting('INPUT_CDF_ASSERTIONS.STRICT_DATASET_ID', 0);
 % Require Test_id to be identical for all input CDF datasets.
-S.define_setting('INPUT_CDF_ASSERTIONS.MATCHING_TEST_ID',  0);
+%S.define_setting('INPUT_CDF_ASSERTIONS.MATCHING_TEST_ID',  0);
 
 
 
@@ -145,9 +145,9 @@ S.define_setting('INPUT_CDF_ASSERTIONS.MATCHING_TEST_ID',  0);
 % OUTPUT_CDF.*
 %##############
 % Set CDF GlobalAttribute "Test_id". ROC DFMD says that Test_id should really be set by ROC.
-S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.SET_TEST_ID',   1);
+%S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.SET_TEST_ID',   1);
 % Set CDF GlobalAttribute "Data_version". ROC DFMD says it should be updated in a way which can not be automatized?!!! Set here for now.
-S.define_setting('OUTPUT_CDF.DATA_VERSION',                    '01');
+%S.define_setting('OUTPUT_CDF.DATA_VERSION',                    '01');
 % Flag to disable writing output files. Useful for debugging.
 S.define_setting('OUTPUT_CDF.WRITE_FILE_DISABLED',             0)
 % What BICAS should do when there is a pre-existing file on a output dataset file path.

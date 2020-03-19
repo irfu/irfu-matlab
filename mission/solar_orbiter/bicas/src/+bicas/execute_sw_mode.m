@@ -171,11 +171,11 @@ function GlobalAttributesSubset = derive_output_dataset_GlobalAttributes(GlobalA
 %                          have the exact names of CDF global attributes.
 %
 
-ASSERT_MATCHING_TEST_ID = SETTINGS.get_fv('INPUT_CDF_ASSERTIONS.MATCHING_TEST_ID');
+%ASSERT_MATCHING_TEST_ID = SETTINGS.get_fv('INPUT_CDF_ASSERTIONS.MATCHING_TEST_ID');
 
 GlobalAttributesSubset.Parents        = {};            % Array in which to collect value for this file's GlobalAttributes (array-sized GlobalAttribute).
 GlobalAttributesSubset.Parent_version = {};
-pgaTestIdList   = {};   % List = List with one value per parent.
+%pgaTestIdList   = {};   % List = List with one value per parent.
 pgaProviderList = {};
 for i = 1:length(GlobalAttributesCellArray)
     GlobalAttributesSubset.Parents       {end+1} = ['CDF>', GlobalAttributesCellArray{i}.Logical_file_id{1}];
@@ -183,20 +183,20 @@ for i = 1:length(GlobalAttributesCellArray)
     % NOTE: ROC DFMD is not completely clear on which version number should be used.
     GlobalAttributesSubset.Parent_version{end+1} = GlobalAttributesCellArray{i}.Data_version{1};
     
-    pgaTestIdList                        {end+1} = GlobalAttributesCellArray{i}.Test_id{1};
+    %pgaTestIdList                        {end+1} = GlobalAttributesCellArray{i}.Test_id{1};
     pgaProviderList                      {end+1} = GlobalAttributesCellArray{i}.Provider{1};
 end
 
 % NOTE: Test_id values can legitimately differ. E.g. "eeabc1edba9d76b08870510f87a0be6193c39051" and "eeabc1e".
 bicas.utils.assert_strings_equal(0,                       pgaProviderList, 'The input CDF files'' GlobalAttribute "Provider" values differ.')
-bicas.utils.assert_strings_equal(ASSERT_MATCHING_TEST_ID, pgaTestIdList,   'The input CDF files'' GlobalAttribute "Test_id" values differ.')
+%bicas.utils.assert_strings_equal(ASSERT_MATCHING_TEST_ID, pgaTestIdList,   'The input CDF files'' GlobalAttribute "Test_id" values differ.')
 
 % IMPLEMENTATION NOTE: Uses shortened "Test id" value in case it is a long one, e.g. "eeabc1edba9d76b08870510f87a0be6193c39051". Uncertain
 % how "legal" that is but it seems to be at least what people use in the filenames.
 % IMPLEMENTATION NOTE: Does not assume a minimum length for TestId since empty Test_id strings have been observed in
 % datasets. /2020-01-07
 GlobalAttributesSubset.Provider = pgaProviderList{1};
-GlobalAttributesSubset.Test_Id  = pgaTestIdList{1}(1:min(7, length(pgaTestIdList{1})));
+%GlobalAttributesSubset.Test_Id  = pgaTestIdList{1}(1:min(7, length(pgaTestIdList{1})));
 
 end
 
@@ -382,10 +382,9 @@ function write_dataset_CDF(...
 % Function that writes one ___DATASET___ CDF file.
 %
 
-%==========================================================================
-% This function needs GlobaAttributes values from the input files:
+%=======================================================================================================================
+% This function needs GlobalAttributes values from the input files:
 %    One value per file:      Data_version (for setting Parent_version).
-%    One value for all files: Test_id
 %    Data_version ??!!
 %
 % PROPOSAL: Accept GlobalAttributes for all input datasets?!
@@ -393,7 +392,7 @@ function write_dataset_CDF(...
 % QUESTION: Should function find the master CDF file itself?
 %   Function needs the dataset ID for it anyway.
 %   Function should check the master file anyway: Assert existence, GlobalAttributes (dataset ID, SkeletonVersion, ...)
-%==========================================================================
+%=======================================================================================================================
 
 
 
@@ -450,17 +449,14 @@ DataObj.GlobalAttributes.Software_name       = SETTINGS.get_fv('SWD.identificati
 DataObj.GlobalAttributes.Software_version    = SETTINGS.get_fv('SWD.release.version');
 DataObj.GlobalAttributes.Calibration_version = SETTINGS.get_fv('OUTPUT_CDF.GLOBAL_ATTRIBUTES.Calibration_version');         % "Static"?!!
 DataObj.GlobalAttributes.Generation_date     = datestr(now, 'yyyy-mm-ddTHH:MM:SS');         % BUG? Assigns local time, not UTC!!! ROC DFMD does not mention time zone.
-DataObj.GlobalAttributes.Logical_file_id     = get_logical_file_id(...
-    datasetId, GlobalAttributesSubset.Test_Id, ...
-    GlobalAttributesSubset.Provider, ...
-    SETTINGS.get_fv('OUTPUT_CDF.DATA_VERSION'));
+DataObj.GlobalAttributes.Logical_file_id     = get_logical_file_id(outputFile);
 DataObj.GlobalAttributes.Parents             = GlobalAttributesSubset.Parents;
 DataObj.GlobalAttributes.Parent_version      = GlobalAttributesSubset.Parent_version;
-DataObj.GlobalAttributes.Data_version        = SETTINGS.get_fv('OUTPUT_CDF.DATA_VERSION');     % ROC DFMD says it should be updated in a way which can not be automatized?!!!
+%DataObj.GlobalAttributes.Data_version        = SETTINGS.get_fv('OUTPUT_CDF.DATA_VERSION');     % ROC DFMD says it should be updated in a way which can not be automatized?!!!
 DataObj.GlobalAttributes.Provider            = GlobalAttributesSubset.Provider;             % ROC DFMD contradictive if it should be set.
-if SETTINGS.get_fv('OUTPUT_CDF.GLOBAL_ATTRIBUTES.SET_TEST_ID')
-    DataObj.GlobalAttributes.Test_id         = GlobalAttributesSubset.Test_Id;              % ROC DFMD says that it should really be set by ROC.
-end
+%if SETTINGS.get_fv('OUTPUT_CDF.GLOBAL_ATTRIBUTES.SET_TEST_ID')
+%    DataObj.GlobalAttributes.Test_id         = GlobalAttributesSubset.Test_Id;              % ROC DFMD says that it should really be set by ROC.
+%end
 %DataObj.GlobalAttributes.SPECTRAL_RANGE_MIN
 %DataObj.GlobalAttributes.SPECTRAL_RANGE_MAX
 %DataObj.GlobalAttributes.TIME_MIN
@@ -576,20 +572,25 @@ end
 
 
 
-
-function logicalFileId = get_logical_file_id(datasetId, testId, provider, dataVersion)
-% Construct a "Logical_file_id" as defined in the ROC DFMD
-% "The name of the CDF file without the ‘.cdf’ extension, using the file naming convention."
-
-bicas.assert_DATASET_ID(datasetId)
-
-if ~ischar(dataVersion ) || length(dataVersion)~=2
-    error('BICAS:execute_sw_mode:Assertion:IllegalArgument', 'Illegal dataVersion')
+function logicalFileId = get_logical_file_id(filePath)
+    % Use the filename without suffix.
+    [~, basename, ~] = fileparts(filePath);
+   logicalFileId = basename;
 end
-
-providerParts = strsplit(provider, '>');
-logicalFileId = [datasetId, '_', testId, '_', providerParts{1}, '_V', dataVersion];
-end
+% function logicalFileId = get_logical_file_id(datasetId, testId, provider, dataVersion)
+%     % Construct a "Logical_file_id" as defined in the ROC DFMD.
+%     %   NOTE 2020-03-19: Can not find in ROC DFMD 02/02,
+%     % "The name of the CDF file without the ‘.cdf’ extension, using the file naming convention."
+%     
+%     bicas.assert_DATASET_ID(datasetId)
+%     
+%     if ~ischar(dataVersion ) || length(dataVersion)~=2
+%         error('BICAS:execute_sw_mode:Assertion:IllegalArgument', 'Illegal dataVersion')
+%     end
+%     
+%     providerParts = strsplit(provider, '>');
+%     logicalFileId = [datasetId, '_', testId, '_', providerParts{1}, '_V', dataVersion];
+% end
 
 
 
