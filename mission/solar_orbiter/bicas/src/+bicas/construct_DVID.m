@@ -8,11 +8,16 @@
 %   --> V01_ROC-SGSE_L2S_RPW-TDS-LFM-RSWF-E)
 %
 %
+% NOTE: APPEARS UNUSED. DELETE?
+%
+%
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
 % First created 2019-08-02
 %
 function dvid = construct_DVID(datasetId, skeletonVersionStr)
 % PROPOSAL: Move to ~constants (collect decision functions).
+
+error('UNUSED FUNCTION')
 
 bicas.assert_DATASET_ID(datasetId)
 bicas.assert_skeleton_version(skeletonVersionStr)

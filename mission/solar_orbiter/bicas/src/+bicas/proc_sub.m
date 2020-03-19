@@ -506,7 +506,7 @@ classdef proc_sub
             
             nSamplesPerRecord = size(SciPostDc.Zv.DemuxerOutput.dcV1, 2);   % Samples per record.
             
-            outputDvid = bicas.construct_DVID(outputDsi, outputVersion);
+            %outputDvid = bicas.construct_DVID(outputDsi, outputVersion);
             
             OutSciZv.Epoch            = SciPostDc.Zv.Epoch;
             OutSciZv.ACQUISITION_TIME = SciPostDc.Zv.ACQUISITION_TIME;
@@ -519,10 +519,14 @@ classdef proc_sub
             OutSciZv.SYNCHRO_FLAG     = SciPostDc.Zv.SYNCHRO_FLAG;
                     
             % NOTE: The two cases are different in the indexes they use for OutSciZv.
-            switch(outputDvid)
-                case  {'V05_SOLO_L2_RPW-LFR-SURV-CWF-E' ...
-                       'V05_SOLO_L2_RPW-LFR-SBM1-CWF-E' ...
-                       'V05_SOLO_L2_RPW-LFR-SBM2-CWF-E'}
+%             switch(outputDvid)
+%                 case  {'V05_SOLO_L2_RPW-LFR-SURV-CWF-E' ...
+%                        'V05_SOLO_L2_RPW-LFR-SBM1-CWF-E' ...
+%                        'V05_SOLO_L2_RPW-LFR-SBM2-CWF-E'}
+            switch(outputDsi)
+                case  {'SOLO_L2_RPW-LFR-SURV-CWF-E' ...
+                       'SOLO_L2_RPW-LFR-SBM1-CWF-E' ...
+                       'SOLO_L2_RPW-LFR-SBM2-CWF-E'}
 
                     % ASSERTION
                     assert(nSamplesPerRecord == 1, 'BICAS:proc_sub:Assertion:IllegalArgument', 'Number of samples per CDF record is not 1, as expected. Bad input CDF?')
@@ -543,7 +547,8 @@ classdef proc_sub
                     OutSciZv.EAC(:,2) = SciPostDc.Zv.DemuxerOutput.acV13;
                     OutSciZv.EAC(:,3) = SciPostDc.Zv.DemuxerOutput.acV23;
                     
-                case  {'V05_SOLO_L2_RPW-LFR-SURV-SWF-E'}
+                %case  {'V05_SOLO_L2_RPW-LFR-SURV-SWF-E'}
+                case  {'SOLO_L2_RPW-LFR-SURV-SWF-E'}
                     
                     % ASSERTION
                     assert(nSamplesPerRecord == 2048, 'BICAS:proc_sub:Assertion:IllegalArgument', 'Number of samples per CDF record is not 2048, as expected. Bad Input CDF?')
@@ -562,7 +567,8 @@ classdef proc_sub
                     OutSciZv.F_SAMPLE   = SciPostDc.Zv.freqHz;
                     
                 otherwise
-                    error('BICAS:proc_sub:Assertion:IllegalArgument', 'Function can not produce outputDvid=%s.', outputDvid)
+                    %error('BICAS:proc_sub:Assertion:IllegalArgument', 'Function can not produce outputDvid=%s.', outputDvid)
+                    error('BICAS:proc_sub:Assertion:IllegalArgument', 'Function can not produce outputDsi=%s.', outputDsi)
             end
 
 
@@ -583,7 +589,7 @@ classdef proc_sub
             
             OutSciZv = [];
             
-            outputDvid = bicas.construct_DVID(outputDsi, outputVersion);
+            %outputDvid = bicas.construct_DVID(outputDsi, outputVersion);
 
             OutSciZv.Epoch            = SciPostDc.Zv.Epoch;
             OutSciZv.ACQUISITION_TIME = SciPostDc.Zv.ACQUISITION_TIME;
@@ -596,9 +602,11 @@ classdef proc_sub
             OutSciZv.SYNCHRO_FLAG     = SciPostDc.Zv.SYNCHRO_FLAG;
 
             % NOTE: The two cases are actually different in the indexes they use for OutSciZv.
-            switch(outputDvid)
+            %switch(outputDvid)
+            switch(outputDsi)
                 
-                case {'V05_SOLO_L2_RPW-TDS-LFM-CWF-E'}
+                %case {'V05_SOLO_L2_RPW-TDS-LFM-CWF-E'}
+                case {'SOLO_L2_RPW-TDS-LFM-CWF-E'}
                     OutSciZv.V(:,1)     = SciPostDc.Zv.DemuxerOutput.dcV1;
                     OutSciZv.V(:,2)     = SciPostDc.Zv.DemuxerOutput.dcV2;
                     OutSciZv.V(:,3)     = SciPostDc.Zv.DemuxerOutput.dcV3;
@@ -609,7 +617,8 @@ classdef proc_sub
                     OutSciZv.EAC(:,2)   = SciPostDc.Zv.DemuxerOutput.acV13;
                     OutSciZv.EAC(:,3)   = SciPostDc.Zv.DemuxerOutput.acV23;
                     
-                case {'V05_SOLO_L2_RPW-TDS-LFM-RSWF-E'}
+                %case {'V05_SOLO_L2_RPW-TDS-LFM-RSWF-E'}
+                case {'SOLO_L2_RPW-TDS-LFM-RSWF-E'}
                     OutSciZv.V(:,:,1)   = SciPostDc.Zv.DemuxerOutput.dcV1;
                     OutSciZv.V(:,:,2)   = SciPostDc.Zv.DemuxerOutput.dcV2;
                     OutSciZv.V(:,:,3)   = SciPostDc.Zv.DemuxerOutput.dcV3;
@@ -623,7 +632,8 @@ classdef proc_sub
                     OutSciZv.F_SAMPLE = SciPostDc.Zv.freqHz;
                     
                 otherwise
-                    error('BICAS:proc_sub:Assertion:IllegalArgument', 'Function can not produce outputDvid=%s.', outputDvid)
+                    %error('BICAS:proc_sub:Assertion:IllegalArgument', 'Function can not produce outputDvid=%s.', outputDvid)
+                    error('BICAS:proc_sub:Assertion:IllegalArgument', 'Function can not produce outputDsi=%s.', outputDsi)
             end
 
 

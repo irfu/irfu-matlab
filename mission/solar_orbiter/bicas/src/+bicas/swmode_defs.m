@@ -116,8 +116,8 @@ classdef swmode_defs
             %   
             % PROPOSAL: Merge LFR and TDS loops.
 
-            lfrOutputSkeletonVersion  = {'05', '05', '05', '05'};
-            tdsOutputSkeletonVersion  = {'05', '05'};
+            lfrOutputSkeletonVersion  = {'06', '06', '06', '05'};
+            tdsOutputSkeletonVersion  = {'06', '05'};
 
             inputDatasetLevelList     = {'L1R'};
             inputDashEList            = {'-E'};
