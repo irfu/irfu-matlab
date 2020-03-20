@@ -526,6 +526,8 @@ classdef proc_sub
             OutSciZv.IBIAS2           = SciPostDc.Zv.IBIAS2;
             OutSciZv.IBIAS3           = SciPostDc.Zv.IBIAS3;
             OutSciZv.SYNCHRO_FLAG     = SciPostDc.Zv.SYNCHRO_FLAG;
+            OutSciZv.SAMPLING_RATE    = SciPostDc.Zv.freqHz;
+                    
                     
             % NOTE: The two cases are different in the indexes they use for OutSciZv.
 %             switch(outputDvid)
@@ -572,9 +574,6 @@ classdef proc_sub
                     OutSciZv.EAC(:,:,2) = SciPostDc.Zv.DemuxerOutput.acV13;
                     OutSciZv.EAC(:,:,3) = SciPostDc.Zv.DemuxerOutput.acV23;
 
-                    % Only in (LFR) SWF (not (LFR) CWF): F_SAMPLE, SAMP_DTIME
-                    OutSciZv.F_SAMPLE   = SciPostDc.Zv.freqHz;
-                    
                 otherwise
                     %error('BICAS:proc_sub:Assertion:IllegalArgument', 'Function can not produce outputDvid=%s.', outputDvid)
                     error('BICAS:proc_sub:Assertion:IllegalArgument', 'Function can not produce outputDsi=%s.', outputDsi)
@@ -585,8 +584,9 @@ classdef proc_sub
             % ASSERTION
             bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(OutSciZv);
             % NOTE: Not really necessary since the list of zVars will be checked against the master CDF?
-            EJ_library.assert.struct(OutSciZv, {'IBIAS1', 'IBIAS2', 'IBIAS3', 'V', 'E', 'EAC', 'Epoch', ...
-                'QUALITY_BITMASK', 'QUALITY_FLAG', 'DELTA_PLUS_MINUS', 'ACQUISITION_TIME', 'SYNCHRO_FLAG'}, {'F_SAMPLE'})
+            EJ_library.assert.struct(OutSciZv, {...
+                'IBIAS1', 'IBIAS2', 'IBIAS3', 'V', 'E', 'EAC', 'Epoch', 'QUALITY_BITMASK', 'QUALITY_FLAG', ...
+                'DELTA_PLUS_MINUS', 'ACQUISITION_TIME', 'SYNCHRO_FLAG', 'SAMPLING_RATE'}, {})
         end   % process_PostDC_to_LFR
 
 
@@ -609,6 +609,7 @@ classdef proc_sub
             OutSciZv.IBIAS2           = SciPostDc.Zv.IBIAS2;
             OutSciZv.IBIAS3           = SciPostDc.Zv.IBIAS3;
             OutSciZv.SYNCHRO_FLAG     = SciPostDc.Zv.SYNCHRO_FLAG;
+            OutSciZv.SAMPLING_RATE = SciPostDc.Zv.freqHz;
 
             % NOTE: The two cases are actually different in the indexes they use for OutSciZv.
             %switch(outputDvid)
@@ -638,9 +639,6 @@ classdef proc_sub
                     OutSciZv.EAC(:,:,2) = SciPostDc.Zv.DemuxerOutput.acV13;
                     OutSciZv.EAC(:,:,3) = SciPostDc.Zv.DemuxerOutput.acV23;
                     
-                    % Only in (TDS) RSWF (not (TDS) CWF): F_SAMPLE
-                    OutSciZv.F_SAMPLE = SciPostDc.Zv.freqHz;
-                    
                 otherwise
                     %error('BICAS:proc_sub:Assertion:IllegalArgument', 'Function can not produce outputDvid=%s.', outputDvid)
                     error('BICAS:proc_sub:Assertion:IllegalArgument', 'Function can not produce outputDsi=%s.', outputDsi)
@@ -651,8 +649,9 @@ classdef proc_sub
             % ASSERTION
             bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(OutSciZv);
             % NOTE: Not really necessary since the list of zVars will be checked against the master CDF?
-            EJ_library.assert.struct(OutSciZv, {'IBIAS1', 'IBIAS2', 'IBIAS3', 'V', 'E', 'EAC', 'Epoch', ...
-                'QUALITY_BITMASK', 'QUALITY_FLAG', 'DELTA_PLUS_MINUS', 'ACQUISITION_TIME', 'SYNCHRO_FLAG'}, {'F_SAMPLE'})
+            EJ_library.assert.struct(OutSciZv, {...
+                'IBIAS1', 'IBIAS2', 'IBIAS3', 'V', 'E', 'EAC', 'Epoch', 'QUALITY_BITMASK', 'QUALITY_FLAG', ...
+                'DELTA_PLUS_MINUS', 'ACQUISITION_TIME', 'SYNCHRO_FLAG', 'SAMPLING_RATE'}, {})
         end
 
 

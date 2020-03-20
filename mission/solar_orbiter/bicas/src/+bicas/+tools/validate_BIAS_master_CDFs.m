@@ -263,9 +263,7 @@ function do = validate_one_BIAS_master_CDF(file_path)
     validate_zVariable_presence(do, 'IBIAS1', 0)
     validate_zVariable_presence(do, 'IBIAS2', 0)
     validate_zVariable_presence(do, 'IBIAS3', 0)
-    if snapshot
-        validate_zVariable_presence(do, 'F_SAMPLE', 0)
-    end
+    validate_zVariable_presence(do, 'SAMPLING_RATE', 0)
     
     %==================================
     % Validate zVariable record values
@@ -312,7 +310,6 @@ function do = validate_one_BIAS_master_CDF(file_path)
     %==================
     % Check pad values
     %==================
-    % NOTE: F_SAMPLE only present in snapshot datasets.
     zVAR_PAD_VALUES_CHECK = {'V', 'E', 'EAC', 'IBIAS1', 'IBIAS2', 'IBIAS3'};
     for i = 1:length(zVAR_PAD_VALUES_CHECK)
         zVar_name = zVAR_PAD_VALUES_CHECK{i};
