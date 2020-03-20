@@ -1,13 +1,14 @@
 %
-% Singleton class that stores (after having "built" tit) an unmodifiable data structure that represents which and how
+% Singleton class that stores (after having "built" it) an unmodifiable data structure that represents which and how
 % s/w modes are CURRENTLY VISIBLE to the user. What that data structure contains thus depends on
 % -- current pipeline: RODP, ROC-SGSE
-% -- whether support for old L2R input datasets is enabled or not.
+% -- whether support for L1 input datasets is enabled or not.
 %
 % Data here
 % -- is intended to (1) add metadata to the production functions for
-%       (a) the user interface, and
-%       (b) the s/w descriptor
+%       (a) the caller interface
+%       (b) potentially future help text
+%       (c) the s/w descriptor
 % -- contains variables to make it possible to match information for input and output datasets here, with that of
 %    bicas.proc' production functions.
 %
@@ -24,18 +25,17 @@
 % -- mistakenly confused arguments with each other.
 % Assertions are located at the place where "values are placed in their final location".
 % 
-% NOTE: To implement backward compatibility with L2R input datasets, the code must be able to handle
-% -- changing input dataset levels: L1R (new), L2R (old).
-% -- DATASET_ID with (new) and without (old) a trailing "-E".
-% It implements L2R input datasets via separate S/W modes.
+% NOTE: To implement compatibility with L1 input datasets, the code must be able to handle
+% -- changing input dataset levels: L1 (inofficial support), L1R (official support).
+% It implements support for L1 input datasets via separate S/W modes.
 % 
 % RATIONALE:
 % -- Should decrease the amount of overlapping hardcoded information to e.g. reduce risk of mistakes, reduce manual
 %    work when verifying updates.
 % -- Having one big, somewhat redundant data structure should make the interface to the rest of BICAS relatively
-%    future-proof, in the face of future updates
-% -- Useful for expected future bias current datasets
-% -- Possible need for backward compatibility
+%    future-proof, in the face of future updates.
+% -- Useful for expected future bias current datasets.
+% -- Possible need for backward compatibility.
 %
 %
 % DEFINITIONS
@@ -48,7 +48,7 @@
 %
 classdef swmode_defs
     % PROPOSAL: New class name implying that it only contains S/W modes VISIBLE to the user, that it DEFINES what is
-    % visible.
+    % visible for a given BICAS run.
     %
     % PROPOSAL: Pick SWD name/descriptions from master CDFs.
     % PROPOSAL: Obtain output dataset level from production function metadata?!!
@@ -58,7 +58,7 @@ classdef swmode_defs
     %       PRO: Needed for deriving master-CDF filename.
     %   PRO: Needed for verifying conformance with production function.
     %
-    % PROPOSAL: Always produce all possible s/w modes (both pipelines, incl. L2R), then filter out the undesired ones
+    % PROPOSAL: Always produce all possible s/w modes (both pipelines, incl. L1), then filter out the undesired ones
     % using internal metadata for every S/W mode.
     %
     % PROPOSAL: Use PF = prodFunc, production function
@@ -95,7 +95,6 @@ classdef swmode_defs
         %
         % ARGUMENTS
         % =========
-        % enableRocsgseL2rInput : true/false, 1/0. Whether to enable (make visible) support for ROC-SGSE.
         %
         % IMPLEMENTATION NOTE: The constructor used to be written so that it was easy to disable S/W modes with L2R
         % input datasets (for backward compatibility). That functionality has now been now removed, although the
@@ -135,8 +134,8 @@ classdef swmode_defs
             % Define function which interprets (replaces) specific substrings.            
             % "strmod" = string modify, "g"=global
             strmodg = @(s, iInputLevel) bicas.utils.strrepmany(s, ...
-                '<InLvl>',      inputDatasetLevelList{iInputLevel}, ...
-                '<I-E>',        inputDashEList{iInputLevel}, ...
+                '<InLvl>',              inputDatasetLevelList{iInputLevel}, ...
+                '<I-E>',                inputDashEList{iInputLevel}, ...
                 '<SWM suffix>',         swmSuffixList{iInputLevel}, ...
                 '<SWM purpose amendm>', swmPurposeAmendmList{iInputLevel});
             
@@ -157,7 +156,7 @@ classdef swmode_defs
             
             
             
-            SwModeList = struct('prodFunc', {}, 'cliOption', {}, 'swdPurpose', {}, 'inputsList', {}, 'outputsList', {});
+            SwModeList = EJ_library.utils.empty_struct([0,1], 'prodFunc', 'cliOption', 'swdPurpose', 'inputsList', 'outputsList');
             for iInputLevel = 1:numel(inputDatasetLevelList)
                 
                 %==============================================

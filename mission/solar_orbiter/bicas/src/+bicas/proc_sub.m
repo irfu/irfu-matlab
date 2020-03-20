@@ -188,7 +188,7 @@ classdef proc_sub
         % Should only be relevant for V01_ROC-SGSE_L2R_RPW-LFR-SURV-CWF (not V02) which should expire.
         
             LFR_SWF_SNAPSHOT_LENGTH = 2048;
-        
+
             % ASSERTIONS
             EJ_library.assert.struct(InSci,  {'Zv', 'Ga'}, {})
             EJ_library.assert.struct(HkSciTime, {'MUX_SET', 'DIFF_GAIN'}, {})
@@ -196,9 +196,10 @@ classdef proc_sub
             nRecords = size(InSci.Zv.Epoch, 1);            
             C = bicas.proc_utils.classify_DATASET_ID(inSciDsi);
            
-            %============================================================
-            % Normalize LFR data: Handle variation that should not exist
-            %============================================================
+            %===============================================================
+            % Workaround: 
+            % Normalize LFR data to handle variations that should not exist
+            %===============================================================
             % Handle that SYNCHRO_FLAG (empty) and TIME_SYNCHRO_FLAG (non-empty) may both be present.
             % Ex: LFR___TESTDATA_RGTS_LFR_CALBUT_V0.7.0/ROC-SGSE_L1R_RPW-LFR-SBM1-CWF-E_4129f0b_CNE_V02.cdf   2019-11-29
             if SETTINGS.get_fv('INPUT_CDF.LFR.HAVING_SYNCHRO_FLAG_AND_TIME_SYNCHRO_FLAG_WORKAROUND') ...
@@ -416,13 +417,16 @@ classdef proc_sub
                     switch(actionSettingValue)
                         case 'ERROR'
                             error('BICAS:proc_sub:Assertion:DatasetFormat', logErrorMsg)
+                            
                         case 'PERMIT'
                             bicas.logf('warning', [logErrorMsg, 'Permitting due to setting PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_POLICY.'])
                             % Do nothing
+                            
                         case 'ROUND'
                             bicas.logf('warning', logErrorMsg)
                             bicas.log('warning', 'Replacing TDS RSWF zVar SAMPS_PER_CH values with values, rounded to valid values due to setting PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_POLICY.')
                             SAMPS_PER_CH_zv = SAMPS_PER_CH_rounded;
+                            
                         otherwise
                             error('BICAS:proc_sub:Assertion:ConfigurationBug', ...
                                 'Illegal value PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_POLICY=%s', actionSettingValue)
@@ -475,10 +479,12 @@ classdef proc_sub
 
 
         function assert_PreDC(PreDc)
-            EJ_library.assert.struct(PreDc, {'Zv', 'hasSnapshotFormat', 'nRecords', 'nCdfSamplesPerRecord', 'isLfr', 'isTdsCwf'}, {});
-            EJ_library.assert.struct(PreDc.Zv, {...
-                'Epoch', 'ACQUISITION_TIME', 'samplesCaTm', 'freqHz', 'nValidSamplesPerRecord', 'iLsf', 'DIFF_GAIN', 'MUX_SET', 'QUALITY_FLAG', ...
-                'QUALITY_BITMASK', 'DELTA_PLUS_MINUS', 'SYNCHRO_FLAG'}, {'CALIBRATION_TABLE_INDEX'});
+            EJ_library.assert.struct(PreDc, ...
+                {'Zv', 'hasSnapshotFormat', 'nRecords', 'nCdfSamplesPerRecord', 'isLfr', 'isTdsCwf'}, {});
+            EJ_library.assert.struct(PreDc.Zv, ...
+                {'Epoch', 'ACQUISITION_TIME', 'samplesCaTm', 'freqHz', 'nValidSamplesPerRecord', 'iLsf', 'DIFF_GAIN', ...
+                'MUX_SET', 'QUALITY_FLAG', 'QUALITY_BITMASK', 'DELTA_PLUS_MINUS', 'SYNCHRO_FLAG'}, ...
+                {'CALIBRATION_TABLE_INDEX'});
             bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(PreDc.Zv);
 
             assert(isa(PreDc.Zv.freqHz, 'double'))
@@ -487,10 +493,13 @@ classdef proc_sub
 
 
         function assert_PostDC(PostDc)
-            EJ_library.assert.struct(PostDc, {'Zv', 'hasSnapshotFormat', 'nRecords', 'nCdfSamplesPerRecord', 'isLfr', 'isTdsCwf'}, {});
-            EJ_library.assert.struct(PostDc.Zv, {...
-                'Epoch', 'ACQUISITION_TIME', 'samplesCaTm', 'freqHz', 'nValidSamplesPerRecord', 'iLsf', 'DIFF_GAIN', 'MUX_SET', 'QUALITY_FLAG', ...
-                'QUALITY_BITMASK', 'DELTA_PLUS_MINUS', 'SYNCHRO_FLAG', 'DemuxerOutput', 'IBIAS1', 'IBIAS2', 'IBIAS3', 'DemuxerOutput'}, {'CALIBRATION_TABLE_INDEX'});
+            EJ_library.assert.struct(PostDc, ...
+                {'Zv', 'hasSnapshotFormat', 'nRecords', 'nCdfSamplesPerRecord', 'isLfr', 'isTdsCwf'}, {});
+            EJ_library.assert.struct(PostDc.Zv, ...
+                {'Epoch', 'ACQUISITION_TIME', 'samplesCaTm', 'freqHz', 'nValidSamplesPerRecord', 'iLsf', 'DIFF_GAIN', ...
+                'MUX_SET', 'QUALITY_FLAG', 'QUALITY_BITMASK', 'DELTA_PLUS_MINUS', 'SYNCHRO_FLAG', 'DemuxerOutput', ...
+                'IBIAS1', 'IBIAS2', 'IBIAS3', 'DemuxerOutput'}, ...
+                {'CALIBRATION_TABLE_INDEX'});
             bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(PostDc.Zv);
         end
 
@@ -563,7 +572,7 @@ classdef proc_sub
                     OutSciZv.EAC(:,:,2) = SciPostDc.Zv.DemuxerOutput.acV13;
                     OutSciZv.EAC(:,:,3) = SciPostDc.Zv.DemuxerOutput.acV23;
 
-                    % Only in LFR SWF (not CWF): F_SAMPLE, SAMP_DTIME
+                    % Only in (LFR) SWF (not (LFR) CWF): F_SAMPLE, SAMP_DTIME
                     OutSciZv.F_SAMPLE   = SciPostDc.Zv.freqHz;
                     
                 otherwise
@@ -629,6 +638,7 @@ classdef proc_sub
                     OutSciZv.EAC(:,:,2) = SciPostDc.Zv.DemuxerOutput.acV13;
                     OutSciZv.EAC(:,:,3) = SciPostDc.Zv.DemuxerOutput.acV23;
                     
+                    % Only in (TDS) RSWF (not (TDS) CWF): F_SAMPLE
                     OutSciZv.F_SAMPLE = SciPostDc.Zv.freqHz;
                     
                 otherwise
@@ -644,8 +654,8 @@ classdef proc_sub
             EJ_library.assert.struct(OutSciZv, {'IBIAS1', 'IBIAS2', 'IBIAS3', 'V', 'E', 'EAC', 'Epoch', ...
                 'QUALITY_BITMASK', 'QUALITY_FLAG', 'DELTA_PLUS_MINUS', 'ACQUISITION_TIME', 'SYNCHRO_FLAG'}, {'F_SAMPLE'})
         end
-        
-        
+
+
 
         % Processing function. Converts PreDC to PostDC, i.e. demux and calibrate data.
         % Function is in large part a wrapper around "simple_demultiplex".
@@ -737,12 +747,12 @@ classdef proc_sub
 
 
 
-            % Create empty structure to which new array components can be added.
+            % Create empty 1x1 structure to which new array components can be added.
             % NOTE: Unit is AVolt. Not including in the field names to keep them short.
-            AsrSamplesAVolt = struct(...
-                'dcV1',  [], 'dcV2',  [], 'dcV3',  [], ...
-                'dcV12', [], 'dcV23', [], 'dcV13', [], ...
-                'acV12', [], 'acV23', [], 'acV13', []);
+            AsrSamplesAVolt = EJ_library.utils.empty_struct([1], ...
+                'dcV1',  'dcV2',  'dcV3', ...
+                'dcV12', 'dcV23', 'dcV13', ...
+                'acV12', 'acV23', 'acV13');
 
             dlrUsing12zv = bicas.demultiplexer_latching_relay(PreDc.Zv.Epoch);
             iCalibLZv    = Cal.get_calibration_time_L(        PreDc.Zv.Epoch);

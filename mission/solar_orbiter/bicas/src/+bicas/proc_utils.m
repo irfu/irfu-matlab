@@ -907,7 +907,7 @@ classdef proc_utils
             LOG_LEVEL = 'debug';
 
             fnList     = fieldnames(Zvs);
-            ColumnStrs = struct('name', {}, 'size', {}, 'nNan', {}, 'percentageNan', {}, 'nUniqueValues', {}, 'values', {});
+            ColumnStrs = EJ_library.utils.empty_struct([0,1], 'name', 'size', 'nNan', 'percentageNan', 'nUniqueValues', 'values');
             
             for iFn = 1:numel(fnList)
                 zvName  = fnList{iFn};

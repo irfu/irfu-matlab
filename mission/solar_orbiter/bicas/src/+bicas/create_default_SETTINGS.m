@@ -104,7 +104,7 @@ S.define_setting('SWD.identification.project',     'ROC');
 S.define_setting('SWD.identification.name',        'BIAS Calibration Software (BICAS)');
 S.define_setting('SWD.identification.identifier',  'BICAS');
 S.define_setting('SWD.identification.description', ...
-    '(Incomplete) calibration software meant to (1) calibrate electric field L2 data from electric L1R LFR and TDS (LFM) data, and (2) calibrate bias currents.');
+    'Calibration software meant to (1) calibrate electric field L2 data from electric L1R LFR and TDS (LFM) data, and (2) calibrate bias currents.');
 S.define_setting('SWD.identification.icd_version', '1.2');   % Technically wrong. In reality iss1rev2, draft 2019-07-11.
 S.define_setting('SWD.release.version',            '1.0.0');
 S.define_setting('SWD.release.date',               '2020-01-20');

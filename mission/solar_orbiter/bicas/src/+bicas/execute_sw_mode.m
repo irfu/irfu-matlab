@@ -162,7 +162,7 @@ function GlobalAttributesSubset = derive_output_dataset_GlobalAttributes(GlobalA
 % Function for global attributes for an output dataset from the global attributes of multiple input datasets (if there
 % are several).
 %
-% PGA = parents' GlobalAttributes.
+% PGA = Parents' GlobalAttributes.
 %
 % RETURN VALUE
 % ============
@@ -289,7 +289,7 @@ bicas.proc_utils.log_zVars(ZvsLog)
 [GlobalAttributes, fnChangeList] = bicas.utils.normalize_struct_fieldnames(DataObj.GlobalAttributes, ...
     {{{'DATASET_ID', 'Dataset_ID'}, 'Dataset_ID'}}, 'Assert one matching candidate');
 msgFunc = @(oldFn, newFn) (sprintf(...
-    'Global attribute in input dataset\n    "%s"\nuses illegal alternative "%s" instead of "%s"\n', ...
+    'Global attribute in input dataset\n    "%s"\nuses illegal alternative "%s" instead of "%s".\n', ...
     filePath, oldFn, newFn));
 bicas.handle_struct_name_change(fnChangeList, SETTINGS, msgFunc, 'Dataset_ID', 'INPUT_CDF.USING_GA_NAME_VARIANT_POLICY')
 
@@ -419,17 +419,19 @@ for iPdFieldName = 1:length(pdFieldNameList)
     end
     
     zvValue = ZvsSubset.(zvName);
-    ZvsLog.(zvName)            = zvValue;
+    ZvsLog.(zvName) = zvValue;
     
+    %=======================================
     % Prepare PDV zVariable value:
     % (1) Replace NaN-->fill value
-    % (2) Convert to the right MATLAB class.
+    % (2) Convert to the right MATLAB class
+    %=======================================
     if isfloat(zvValue)
         [fillValue, ~] = get_fill_pad_values(DataObj, zvName);
-        zvValue  = bicas.utils.replace_value(zvValue, NaN, fillValue);
+        zvValue        = bicas.utils.replace_value(zvValue, NaN, fillValue);
     end
-    matlabClass   = bicas.utils.convert_CDF_type_to_MATLAB_class(DataObj.data.(zvName).type, 'Permit MATLAB classes');
-    zvValue = cast(zvValue, matlabClass);
+    matlabClass = bicas.utils.convert_CDF_type_to_MATLAB_class(DataObj.data.(zvName).type, 'Permit MATLAB classes');
+    zvValue     = cast(zvValue, matlabClass);
     
     % Set zVariable.
     DataObj.data.(zvName).data = zvValue;
@@ -591,9 +593,6 @@ end
 %     providerParts = strsplit(provider, '>');
 %     logicalFileId = [datasetId, '_', testId, '_', providerParts{1}, '_V', dataVersion];
 % end
-
-
-
 
 
 

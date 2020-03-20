@@ -13,9 +13,16 @@
 % First created 2020-03-17.
 %
 function S = empty_struct(size, varargin)
+    %
+    % PROPOSAL: Be able to set the field value (same for all fields) for non-empty stuct arrays.
+    %   Ex: {}, cell(0,1)
     
     % NOTE: cell(n) ==> nxn cell array.
-    assert(numel(size) >= 2)
+    assert(isnumeric(size), 'Argument "size" is not numeric.')
+    EJ_library.assert.vector(size)
+    size(end+1) = 1;
+    size(end+1) = 1;
+    %assert(numel(size) >= 2, '')
     
     if isempty(varargin)
         % CASE: Create struct with no fieldnames
