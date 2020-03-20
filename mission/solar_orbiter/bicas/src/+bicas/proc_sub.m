@@ -190,9 +190,9 @@ classdef proc_sub
             LFR_SWF_SNAPSHOT_LENGTH = 2048;
 
             % ASSERTIONS
-            EJ_library.assert.struct(InSci,  {'Zv', 'Ga'}, {})
+            EJ_library.assert.struct(InSci,     {'Zv', 'Ga'}, {})
             EJ_library.assert.struct(HkSciTime, {'MUX_SET', 'DIFF_GAIN'}, {})
-            
+
             nRecords = size(InSci.Zv.Epoch, 1);            
             C = bicas.proc_utils.classify_DATASET_ID(inSciDsi);
            
@@ -249,9 +249,10 @@ classdef proc_sub
             end
             EJ_library.assert.size(iLsfZv, [NaN, 1])
 
-            
-            
-            zvFreqHz = bicas.proc_utils.get_LFR_frequency( iLsfZv, SETTINGS.get_fv('PROCESSING.LFR.F0_F1_F2_F3_HZ') );   % NOTE: Needed also for 1 SPR.
+
+
+            % NOTE: Needed also for 1 SPR.
+            zvFreqHz = bicas.proc_utils.get_LFR_frequency( iLsfZv, SETTINGS.get_fv('PROCESSING.LFR.F0_F1_F2_F3_HZ') );
 
             % Obtain the relevant values (one per record) from zVariables R0, R1, R2, and the virtual "R3".
             zvRx = bicas.proc_utils.get_LFR_Rx( ...
@@ -268,6 +269,7 @@ classdef proc_sub
             PreDc.Zv.nValidSamplesPerRecord = ones(nRecords, 1) * nCdfSamplesPerRecord;
             PreDc.Zv.SYNCHRO_FLAG           = InSci.Zv.SYNCHRO_FLAG;
             if isfield(InSci.Zv, 'CALIBRATION_TABLE_INDEX')
+                % NOTE: CALIBRATION_TABLE_INDEX exists for L1R, but not L1.
                 PreDc.Zv.CALIBRATION_TABLE_INDEX = InSci.Zv.CALIBRATION_TABLE_INDEX;
             end
 
@@ -354,9 +356,9 @@ classdef proc_sub
                 {{{'TIME_SYNCHRO_FLAG', 'SYNCHRO_FLAG'}, 'SYNCHRO_FLAG'}}, 'Assert one matching candidate');
             
             bicas.proc_sub.handle_zv_name_change(fnChangeList, inSciDsi, SETTINGS, 'SYNCHRO_FLAG', 'INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY')
-            
 
-            
+
+
             nRecords             = size(InSci.Zv.Epoch, 1);
             nCdfSamplesPerRecord = size(InSci.Zv.WAVEFORM_DATA, 3);    % Number of samples in the zVariable, not necessarily actual data.
 
@@ -386,6 +388,7 @@ classdef proc_sub
             PreDc.Zv.MUX_SET          = HkSciTime.MUX_SET;
             PreDc.Zv.DIFF_GAIN        = HkSciTime.DIFF_GAIN;
             if isfield(InSci.Zv, 'CALIBRATION_TABLE_INDEX')
+                % NOTE: CALIBRATION_TABLE_INDEX exists for L1R, but not L1.
                 PreDc.Zv.CALIBRATION_TABLE_INDEX = InSci.Zv.CALIBRATION_TABLE_INDEX;
             end
 
@@ -760,7 +763,7 @@ classdef proc_sub
             
             
             if isfield(PreDc.Zv, 'CALIBRATION_TABLE_INDEX')
-                % NOTE: Technically, this should only happen for L1R input.
+                % NOTE: CALIBRATION_TABLE_INDEX exists for L1R, but not L1.
                 
                 % ASSERTION
                 % NOTE: Checks both LFR & TDS CDF files.

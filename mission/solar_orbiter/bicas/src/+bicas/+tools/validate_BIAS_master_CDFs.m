@@ -1,25 +1,32 @@
-% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
-% First created 2016-07-06
-%
 % Standalone "validation" tool for BIAS master CDFs, i.e. master (template) CDF files for any of the datasets that BIAS
 % produces.
 %
-% The code tries to verify that multiple master cdfs satsify certain selected criteria instead of manually checking
-% them. The code is primarily intended as a standalone tool, separate from the pipeline. It is neither intended to be
-% "complete", nor to ever be constant and "finished".
+% The code tries to verify that multiple BICAS output dataset master CDFs satsify certain selected criteria instead of
+% manually checking them. The code is primarily intended as a standalone tool, separate from the pipeline. It is neither
+% intended to be "complete", nor to ever be constant and "finished".
 % 
 % This is useful when
 % (1) manually creating master CDFs based on other CDFs (e.g. from other teams, other levels), or
 % (2) the formal specification for master CDFs is modified/reinterpreted.
 %
-% ARGUMENTS:
+% NOTE: 2020-03-20: Has not been used or adequately updated for long, but might still be updated to be useful.
+%
+%
+% ARGUMENTS
+% =========
 % dir_path        : Directory path
 % file_name_regex : Regular expression which match the entire filenames of the files to validate in the directory. The
 %                   function adds ^ (beginning of string) and $ (end of string) are added automatically to the regular expression.
 %
-% RETURN VALUE:
+%
+% RETURN VALUE
+% ============
 % varargout : Optional single return value. Cell array of "dataobj" objects for the validated CDF files. This is useful
 %             for manually inspecting the CDF files to investigate what is wrong.
+%
+%
+% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% First created 2016-07-06
 %
 function [varargout] = validate_BIAS_master_CDFs(dir_path, file_name_regex)
 
@@ -515,6 +522,3 @@ function validation_warning(msg, varargin)
     msg = strrep(msg, LF, [LF, '   ']);   % Necessary for indentation.
     disp([' * ', msg])    
 end
-
-
-
