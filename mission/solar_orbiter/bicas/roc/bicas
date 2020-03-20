@@ -255,11 +255,13 @@ loggable_main_code() {
     # NOTE: The irfu-matlab code itself adds subdirectories to irfu-matlab/. "genpath" should therefor not ne required.
     #===================================================================================================================
     echo "Launching MATLAB, using \"${MATLAB_COMMAND}\"."
+    # NOTE: EJ_library is needed before calling irf(...).
     "${MATLAB_COMMAND}" -nodisplay -r "\
         try;\
-            addpath('${BICAS_ROOT_PATH}/src', '-begin');\
-            addpath('${BICAS_ROOT_PATH}/lib', '-begin');\
-            addpath('${IRFUMATLAB_PATH}',      '-begin');\
+            addpath('${BICAS_ROOT_PATH}/src',                   '-begin');\
+            addpath('${BICAS_ROOT_PATH}/lib',                   '-begin');\
+            addpath('${IRFUMATLAB_PATH}',                       '-begin');\
+            addpath('${IRFUMATLAB_PATH}/mission/solar_orbiter', '-begin');\
             error_code = $MATLAB_SCRIPT_NAME($matlab_arg_list);\
             quit(error_code);\
         catch Exc;\
