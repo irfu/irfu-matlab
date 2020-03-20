@@ -262,7 +262,7 @@ classdef proc_sub
 
             PreDc = [];
             PreDc.Zv.Epoch                  = InSci.Zv.Epoch;
-            PreDc.Zv.ACQUISITION_TIME       = InSci.Zv.ACQUISITION_TIME;
+            %PreDc.Zv.ACQUISITION_TIME       = InSci.Zv.ACQUISITION_TIME;
             PreDc.Zv.DELTA_PLUS_MINUS       = bicas.proc_utils.derive_DELTA_PLUS_MINUS(zvFreqHz, nCdfSamplesPerRecord);            
             PreDc.Zv.freqHz                 = zvFreqHz;
             PreDc.Zv.nValidSamplesPerRecord = ones(nRecords, 1) * nCdfSamplesPerRecord;
@@ -377,7 +377,7 @@ classdef proc_sub
             PreDc = [];
             
             PreDc.Zv.Epoch            = InSci.Zv.Epoch;
-            PreDc.Zv.ACQUISITION_TIME = InSci.Zv.ACQUISITION_TIME;
+            %PreDc.Zv.ACQUISITION_TIME = InSci.Zv.ACQUISITION_TIME;
             PreDc.Zv.DELTA_PLUS_MINUS = bicas.proc_utils.derive_DELTA_PLUS_MINUS(freqHz, nCdfSamplesPerRecord);
             PreDc.Zv.freqHz           = freqHz;
             PreDc.Zv.QUALITY_FLAG     = InSci.Zv.QUALITY_FLAG;
@@ -482,7 +482,7 @@ classdef proc_sub
             EJ_library.assert.struct(PreDc, ...
                 {'Zv', 'hasSnapshotFormat', 'nRecords', 'nCdfSamplesPerRecord', 'isLfr', 'isTdsCwf'}, {});
             EJ_library.assert.struct(PreDc.Zv, ...
-                {'Epoch', 'ACQUISITION_TIME', 'samplesCaTm', 'freqHz', 'nValidSamplesPerRecord', 'iLsf', 'DIFF_GAIN', ...
+                {'Epoch', 'samplesCaTm', 'freqHz', 'nValidSamplesPerRecord', 'iLsf', 'DIFF_GAIN', ...
                 'MUX_SET', 'QUALITY_FLAG', 'QUALITY_BITMASK', 'DELTA_PLUS_MINUS', 'SYNCHRO_FLAG'}, ...
                 {'CALIBRATION_TABLE_INDEX'});
             bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(PreDc.Zv);
@@ -496,7 +496,7 @@ classdef proc_sub
             EJ_library.assert.struct(PostDc, ...
                 {'Zv', 'hasSnapshotFormat', 'nRecords', 'nCdfSamplesPerRecord', 'isLfr', 'isTdsCwf'}, {});
             EJ_library.assert.struct(PostDc.Zv, ...
-                {'Epoch', 'ACQUISITION_TIME', 'samplesCaTm', 'freqHz', 'nValidSamplesPerRecord', 'iLsf', 'DIFF_GAIN', ...
+                {'Epoch', 'samplesCaTm', 'freqHz', 'nValidSamplesPerRecord', 'iLsf', 'DIFF_GAIN', ...
                 'MUX_SET', 'QUALITY_FLAG', 'QUALITY_BITMASK', 'DELTA_PLUS_MINUS', 'SYNCHRO_FLAG', 'DemuxerOutput', ...
                 'IBIAS1', 'IBIAS2', 'IBIAS3', 'DemuxerOutput'}, ...
                 {'CALIBRATION_TABLE_INDEX'});
@@ -518,7 +518,7 @@ classdef proc_sub
             %outputDvid = bicas.construct_DVID(outputDsi, outputVersion);
             
             OutSciZv.Epoch            = SciPostDc.Zv.Epoch;
-            OutSciZv.ACQUISITION_TIME = SciPostDc.Zv.ACQUISITION_TIME;
+            %OutSciZv.ACQUISITION_TIME = SciPostDc.Zv.ACQUISITION_TIME;
             OutSciZv.QUALITY_BITMASK  = SciPostDc.Zv.QUALITY_BITMASK;
             OutSciZv.QUALITY_FLAG     = SciPostDc.Zv.QUALITY_FLAG;
             OutSciZv.DELTA_PLUS_MINUS = SciPostDc.Zv.DELTA_PLUS_MINUS;
@@ -586,7 +586,7 @@ classdef proc_sub
             % NOTE: Not really necessary since the list of zVars will be checked against the master CDF?
             EJ_library.assert.struct(OutSciZv, {...
                 'IBIAS1', 'IBIAS2', 'IBIAS3', 'V', 'E', 'EAC', 'Epoch', 'QUALITY_BITMASK', 'QUALITY_FLAG', ...
-                'DELTA_PLUS_MINUS', 'ACQUISITION_TIME', 'SYNCHRO_FLAG', 'SAMPLING_RATE'}, {})
+                'DELTA_PLUS_MINUS', 'SYNCHRO_FLAG', 'SAMPLING_RATE'}, {})
         end   % process_PostDC_to_LFR
 
 
@@ -601,7 +601,7 @@ classdef proc_sub
             %outputDvid = bicas.construct_DVID(outputDsi, outputVersion);
 
             OutSciZv.Epoch            = SciPostDc.Zv.Epoch;
-            OutSciZv.ACQUISITION_TIME = SciPostDc.Zv.ACQUISITION_TIME;
+            %OutSciZv.ACQUISITION_TIME = SciPostDc.Zv.ACQUISITION_TIME;
             OutSciZv.QUALITY_FLAG     = SciPostDc.Zv.QUALITY_FLAG;
             OutSciZv.QUALITY_BITMASK  = SciPostDc.Zv.QUALITY_BITMASK;
             OutSciZv.DELTA_PLUS_MINUS = SciPostDc.Zv.DELTA_PLUS_MINUS;
@@ -651,7 +651,7 @@ classdef proc_sub
             % NOTE: Not really necessary since the list of zVars will be checked against the master CDF?
             EJ_library.assert.struct(OutSciZv, {...
                 'IBIAS1', 'IBIAS2', 'IBIAS3', 'V', 'E', 'EAC', 'Epoch', 'QUALITY_BITMASK', 'QUALITY_FLAG', ...
-                'DELTA_PLUS_MINUS', 'ACQUISITION_TIME', 'SYNCHRO_FLAG', 'SAMPLING_RATE'}, {})
+                'DELTA_PLUS_MINUS', 'SYNCHRO_FLAG', 'SAMPLING_RATE'}, {})
         end
 
 
