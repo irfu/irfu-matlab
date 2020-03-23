@@ -84,7 +84,7 @@ rowList = [rowList, {...
 
 
 
-Test = EJ_library.atest.CompareFuncResult(@bicas.tools.BSACT_utils.parse_testlogbook_DCC_DCV_TF_IC, {rowList, 'DCC'}, {exp});
+Test = EJ_library.atest.CompareFuncResult(@so.BSACT_utils.parse_testlogbook_DCC_DCV_TF_IC, {rowList, 'DCC'}, {exp});
 
 end
 
@@ -230,7 +230,7 @@ rowList = [rowList, {...
 
 
 
-Test = EJ_library.atest.CompareFuncResult(@bicas.tools.BSACT_utils.parse_testlogbook_DCC_DCV_TF_IC, {rowList, 'DCV'}, {exp});
+Test = EJ_library.atest.CompareFuncResult(@so.BSACT_utils.parse_testlogbook_DCC_DCV_TF_IC, {rowList, 'DCV'}, {exp});
 
 end
 
@@ -274,7 +274,7 @@ rowList = {...
 
 
 
-Test = EJ_library.atest.CompareFuncResult(@bicas.tools.BSACT_utils.parse_testlogbook_DCC_DCV_TF_IC, {rowList, 'IC'}, {exp});
+Test = EJ_library.atest.CompareFuncResult(@so.BSACT_utils.parse_testlogbook_DCC_DCV_TF_IC, {rowList, 'IC'}, {exp});
 
 end
 

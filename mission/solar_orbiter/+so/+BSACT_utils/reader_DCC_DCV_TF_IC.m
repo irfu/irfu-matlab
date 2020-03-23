@@ -151,7 +151,7 @@ classdef reader_DCC_DCV_TF_IC < handle     % Explicitly declare it as a handle c
         % mebTemperatureCelsius : The MEB temperature at which the tests are made.
             
             testLogbookRowList = EJ_library.utils.read_text_file(testLogbookFile, '\r?\n');
-            metadataList = bicas.tools.BSACT_utils.parse_testlogbook_DCC_DCV_TF_IC(testLogbookRowList, dataType);
+            metadataList = so.BSACT_utils.parse_testlogbook_DCC_DCV_TF_IC(testLogbookRowList, dataType);
             
             % TODO-NEED-INFO: Necessary to use special function here? Can replace call with one-liner?
             metadataList = bicas.utils.merge_structs(metadataList, struct('mebTempCelsius', mebTemperatureCelsius));
@@ -199,7 +199,7 @@ classdef reader_DCC_DCV_TF_IC < handle     % Explicitly declare it as a handle c
         
             if ~ischar(filePath); error('BICAS:reader_DCC_DCV_TF_IC:IllegalArgument', 'Argument is not a string.'); end
         
-            Data = bicas.tools.BSACT_utils.read_BSACT_file(filePath, {...
+            Data = so.BSACT_utils.read_BSACT_file(filePath, {...
                 'setCurrentMicroAmpere', ...   % Set current/design current. Exactly proportional to digital current.
                 'setCurrentDigital', ...       % Signed integer value representing current. If not identical to TM,
                 ...                            % then at least very-very similar (signed/unsigned?).
@@ -220,7 +220,7 @@ classdef reader_DCC_DCV_TF_IC < handle     % Explicitly declare it as a handle c
             
             assert(ischar(filePath), 'BICAS:reader_DCC_DCV_TF_IC:IllegalArgument', 'Argument is not a string.')
             
-            Data = bicas.tools.BSACT_utils.read_BSACT_file(filePath, {...
+            Data = so.BSACT_utils.read_BSACT_file(filePath, {...
                 'inputBstVolt', ...
                 'outputIooVolt', ...
                 'antennaCurrentAmpere', ...
@@ -238,7 +238,7 @@ classdef reader_DCC_DCV_TF_IC < handle     % Explicitly declare it as a handle c
         
             assert(ischar(filePath), 'BICAS:reader_DCC_DCV_TF_IC:IllegalArgument', 'Argument is not a string.')
             
-            Data = bicas.tools.BSACT_utils.read_BSACT_file(filePath, {...
+            Data = so.BSACT_utils.read_BSACT_file(filePath, {...
                 'freqHz', ...
                 'gainEnergyDb', ...
                 'phaseShiftDeg'});
@@ -257,7 +257,7 @@ classdef reader_DCC_DCV_TF_IC < handle     % Explicitly declare it as a handle c
         
             assert(ischar(filePath), 'BICAS:reader_DCC_DCV_TF_IC:IllegalArgument', 'Argument is not a string.')
         
-            Data = bicas.tools.BSACT_utils.read_BSACT_file(filePath, {...
+            Data = so.BSACT_utils.read_BSACT_file(filePath, {...
                 'setCurrentMicroAmpere', ...   % Set current/design current. Exactly proportional to digital current.
                 'setCurrentDigital', ...       % Signed integer value representing current. If not identical to TM,
                 ...                            % then at least very-very similar (signed/unsigned?).
