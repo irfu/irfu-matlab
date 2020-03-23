@@ -81,7 +81,7 @@ function errorCode = main( varargin )
     clear -global CONSTANTS SETTINGS    % Clearing obsoleted variable CONSTANTS for safety.
     
     C = bicas.error_safe_constants();
-    L = bicas.logger('bash wrapper', false);
+    L = bicas.logger('bash wrapper', true);   % NOTE: Permitting logging to file in case using inofficial option.
     
     
     
@@ -301,6 +301,16 @@ SETTINGS  = bicas.create_default_SETTINGS();
 % First-round interpretation of CLI arguments
 %=============================================
 CliData = bicas.interpret_CLI_args(cliArgumentsList);
+
+
+
+%==============================================================
+% Configure inofficial log file, written to from within MATLAB
+%==============================================================
+if ~isempty(CliData.matlabLogFile)
+    % NOTE: Requires that bicas.logger has been initialized to permit writing to log file.
+    L.set_log_file(CliData.matlabLogFile);
+end
 
 
 
