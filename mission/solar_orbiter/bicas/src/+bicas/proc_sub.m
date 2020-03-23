@@ -74,7 +74,7 @@ classdef proc_sub
 
     methods(Static, Access=public)
         
-        function HkSciTime = process_HK_to_HK_on_SCI_TIME(InSci, InHk, SETTINGS)
+        function HkSciTime = process_HK_to_HK_on_SCI_TIME(InSci, InHk, SETTINGS, L)
         % Processing function
         
             % ASSERTIONS
@@ -101,22 +101,22 @@ classdef proc_sub
             TimeVars.Epoch_SCI_ACQUISITION_TIME = sciAtTt2000;
             TimeVars.Epoch_HK                   = hkEpoch;
             TimeVars.Epoch_SCI                  = sciEpoch;
-            bicas.proc_utils.log_zVars(TimeVars);
+            bicas.proc_utils.log_zVars(TimeVars, L);
             
             
             
             % WARNINGS
             if ~(bicas.proc_utils.is_range_subset(sciAtTt2000, hkAtTt2000))
-                bicas.log('warning', 'SCI time range is not a subset of HK time range according to zVar ACQUSITION_TIME.')
+                L.log('warning', 'SCI time range is not a subset of HK time range according to zVar ACQUSITION_TIME.')
             end
             if ~(bicas.proc_utils.is_range_subset(sciEpoch,  hkEpoch))                
-                bicas.log('warning', 'SCI time range is not a subset of HK time range according to zVar Epoch.')
+                L.log('warning', 'SCI time range is not a subset of HK time range according to zVar Epoch.')
             end
             if ~(bicas.proc_utils.ranges_overlap(sciAtTt2000, hkAtTt2000))
-                bicas.log('warning', 'zVar ACQUSITION_TIME in HK and SCI input datasets do not overlap in time.')
+                L.log('warning', 'zVar ACQUSITION_TIME in HK and SCI input datasets do not overlap in time.')
             end
             if ~(bicas.proc_utils.ranges_overlap(sciEpoch, hkEpoch))
-                bicas.log('warning', 'zVar Epoch in HK and SCI input datasets do not overlap in time.')
+                L.log('warning', 'zVar Epoch in HK and SCI input datasets do not overlap in time.')
             end
 
 
@@ -128,11 +128,11 @@ classdef proc_sub
             %       (b) Epoch.
             %=========================================================================================================
             if SETTINGS.get_fv('PROCESSING.USE_ZV_AQUISITION_TIME_FOR_HK_TIME_INTERPOLATION')
-                bicas.log('info', 'Using HK & SCI zVariable ACQUISITION_TIME (not Epoch) for interpolating HK dataset data to SCI dataset time, due to setting PROCESSING.USE_ZV_AQUISITION_TIME_FOR_HK_TIME_INTERPOLATION.')
+                L.log('info', 'Using HK & SCI zVariable ACQUISITION_TIME (not Epoch) for interpolating HK dataset data to SCI dataset time, due to setting PROCESSING.USE_ZV_AQUISITION_TIME_FOR_HK_TIME_INTERPOLATION.')
                 hkInterpolationTimeTt2000  = hkAtTt2000;
                 sciInterpolationTimeTt2000 = sciAtTt2000;
             else
-                bicas.log('info', 'Using HK & SCI zVariable Epoch (not ACQUISITION_TIME) for interpolating HK dataset data to SCI dataset time.')
+                L.log('info', 'Using HK & SCI zVariable Epoch (not ACQUISITION_TIME) for interpolating HK dataset data to SCI dataset time.')
                 hkInterpolationTimeTt2000  = hkEpoch;
                 sciInterpolationTimeTt2000 = sciEpoch;
             end
@@ -178,7 +178,7 @@ classdef proc_sub
 
 
 
-        function PreDc = process_LFR_to_PreDC(InSci, inSciDsi, HkSciTime, SETTINGS)
+        function PreDc = process_LFR_to_PreDC(InSci, inSciDsi, HkSciTime, SETTINGS, L)
         % Processing function. Convert LFR CDF data to PreDC.
         %
         % Keeps number of samples/record. Treats 1 samples/record "length-one snapshots".
@@ -215,7 +215,7 @@ classdef proc_sub
                 {{{'TIME_SYNCHRO_FLAG', 'SYNCHRO_FLAG'}, 'SYNCHRO_FLAG'}}, 'Assert one matching candidate');
 
             bicas.proc_sub.handle_zv_name_change(...
-                fnChangeList, inSciDsi, SETTINGS, 'SYNCHRO_FLAG', 'INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY')
+                fnChangeList, inSciDsi, SETTINGS, L, 'SYNCHRO_FLAG', 'INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY')
             
             
             
@@ -288,11 +288,11 @@ classdef proc_sub
             PreDc.Zv.QUALITY_FLAG    = InSci.Zv.QUALITY_FLAG;
             PreDc.Zv.QUALITY_BITMASK = InSci.Zv.QUALITY_BITMASK;
             if isempty(PreDc.Zv.QUALITY_FLAG)
-                bicas.log('warning', 'QUALITY_FLAG from the LFR SCI source dataset is empty. Filling with empty values.')
+                L.log('warning', 'QUALITY_FLAG from the LFR SCI source dataset is empty. Filling with empty values.')
                 PreDc.Zv.QUALITY_FLAG = bicas.proc_utils.create_NaN_array([nRecords, 1]);
             end
             if isempty(PreDc.Zv.QUALITY_BITMASK)
-                bicas.log('warning', 'QUALITY_BITMASK from the LFR SCI source dataset is empty. Filling with empty values.')
+                L.log('warning', 'QUALITY_BITMASK from the LFR SCI source dataset is empty. Filling with empty values.')
                 PreDc.Zv.QUALITY_BITMASK = bicas.proc_utils.create_NaN_array([nRecords, 1]);
             end
             
@@ -335,7 +335,7 @@ classdef proc_sub
         
         
         
-        function PreDc = process_TDS_to_PreDC(InSci, inSciDsi, HkSciTime, SETTINGS)
+        function PreDc = process_TDS_to_PreDC(InSci, inSciDsi, HkSciTime, SETTINGS, L)
         % Processing function. Convert TDS CDF data (PDs) to PreDC.
         %
         % Keeps number of samples/record. Treats 1 samples/record "length-one snapshots".
@@ -355,7 +355,8 @@ classdef proc_sub
             [InSci.Zv, fnChangeList] = bicas.utils.normalize_struct_fieldnames(InSci.Zv, ...
                 {{{'TIME_SYNCHRO_FLAG', 'SYNCHRO_FLAG'}, 'SYNCHRO_FLAG'}}, 'Assert one matching candidate');
             
-            bicas.proc_sub.handle_zv_name_change(fnChangeList, inSciDsi, SETTINGS, 'SYNCHRO_FLAG', 'INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY')
+            bicas.proc_sub.handle_zv_name_change(...
+                fnChangeList, inSciDsi, SETTINGS, L, 'SYNCHRO_FLAG', 'INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY')
 
 
 
@@ -371,7 +372,7 @@ classdef proc_sub
                 % Bug in TDS RCS.  /David Pisa 2019-12-03
                 % Setting it to what is probably the correct value.
                 freqHz(freqHz == 255) = 32768;
-                bicas.logf('warning', ...
+                L.logf('warning', ...
                     ['Correcting presumed bug in TDS L1R LFM-RSWF dataset due to setting', ...
                     ' PROCESSING.L1R.TDS.RSWF_L1R_ZV_SAMPLING_RATE_DATASET_BUGFIX_ENABLED. Modifying the frequency 255-->32768.'])
             end
@@ -422,12 +423,12 @@ classdef proc_sub
                             error('BICAS:proc_sub:Assertion:DatasetFormat', logErrorMsg)
                             
                         case 'PERMIT'
-                            bicas.logf('warning', [logErrorMsg, 'Permitting due to setting PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_POLICY.'])
+                            L.logf('warning', [logErrorMsg, 'Permitting due to setting PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_POLICY.'])
                             % Do nothing
                             
                         case 'ROUND'
-                            bicas.logf('warning', logErrorMsg)
-                            bicas.log('warning', 'Replacing TDS RSWF zVar SAMPS_PER_CH values with values, rounded to valid values due to setting PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_POLICY.')
+                            L.logf('warning', logErrorMsg)
+                            L.log('warning', 'Replacing TDS RSWF zVar SAMPS_PER_CH values with values, rounded to valid values due to setting PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_POLICY.')
                             SAMPS_PER_CH_zv = SAMPS_PER_CH_rounded;
                             
                         otherwise
@@ -664,7 +665,7 @@ classdef proc_sub
         %
         % NOTE: Public function as opposed to the other demuxing/calibration functions.
         %
-        function PostDc = process_demuxing_calibration(PreDc, Cal, SETTINGS)
+        function PostDc = process_demuxing_calibration(PreDc, Cal, SETTINGS, L)
         % PROPOSAL: Move the setting of IBIASx (bias current) somewhere else?
         %   PRO: Unrelated to demultiplexing.
         %   CON: Related to calibration.
@@ -677,7 +678,7 @@ classdef proc_sub
             % DEMUX
             %=======
             PostDc = PreDc;    % Copy all values, to later overwrite a subset of them.
-            PostDc.Zv.DemuxerOutput = bicas.proc_sub.simple_demultiplex(PreDc, Cal, SETTINGS);
+            PostDc.Zv.DemuxerOutput = bicas.proc_sub.simple_demultiplex(PreDc, Cal, SETTINGS, L);
 
             %================================
             % Set (calibrated) bias currents
@@ -703,7 +704,7 @@ classdef proc_sub
         %
         % NOTE: Can handle arrays of any size as long as the sizes are consistent.
         %
-        function AsrSamplesAVolt = simple_demultiplex(PreDc, Cal, SETTINGS)
+        function AsrSamplesAVolt = simple_demultiplex(PreDc, Cal, SETTINGS, L)
         % PROPOSAL: Incorporate into processing function process_demuxing_calibration.
         % PROPOSAL: Assert same nbr of "records" for MUX_SET, DIFF_GAIN as for BIAS_x.
         %
@@ -773,7 +774,7 @@ classdef proc_sub
                 hasLegalCtiSize = size(CALIBRATION_TABLE_INDEX_zv, 2) == 2;
                 if ~hasLegalCtiSize
                     if SETTINGS.get_fv('PROCESSING.L1R.ZV_CALIBRATION_TABLE_INDEX_ILLEGAL_SIZE_REPLACE')
-                        bicas.log('warning', 'Setting CALIBRATION_TABLE_INDEX to NaN due to setting PROCESSING.L1R.ZV_CALIBRATION_TABLE_INDEX_ILLEGAL_SIZE_REPLACE.')
+                        L.log('warning', 'Setting CALIBRATION_TABLE_INDEX to NaN due to setting PROCESSING.L1R.ZV_CALIBRATION_TABLE_INDEX_ILLEGAL_SIZE_REPLACE.')
                         CALIBRATION_TABLE_INDEX_zv = zeros(PreDc.nRecords, 2) * NaN;
                     else
                         error('BICAS:proc_sub:Assertion', 'zVar CALIBRATION_TABLE_INDEX has illegal width=%i (<>2).', size(CALIBRATION_TABLE_INDEX_zv, 2))
@@ -783,7 +784,7 @@ classdef proc_sub
                 % NOTE: Technically, this should only happen for L1 input.
                 
                 % Create "empty" CALIBRATION_TABLE_INDEX_zv.
-                bicas.log('warning', 'Creating NaN-valued CALIBRATION_TABLE_INDEX due to zVar not being present in input CDF.')
+                L.log('warning', 'Creating NaN-valued CALIBRATION_TABLE_INDEX due to zVar not being present in input CDF.')
                 CALIBRATION_TABLE_INDEX_zv = zeros(PreDc.nRecords, 2) * NaN;
             end
 
@@ -823,7 +824,7 @@ classdef proc_sub
                 % PROPOSAL: Make into "proper" table.
                 %   NOTE: Can not use EJ_library.utils.assist_print_table since it requires the entire table to pre-exist.
                 %   PROPOSAL: Print after all iterations.
-                bicas.logf('info', ['Records %7i-%7i : %s -- %s ', ...
+                L.logf('info', ['Records %7i-%7i : %s -- %s ', ...
                     'MUX_SET=%i; DIFF_GAIN=%i; dlrUsing12=%i; freqHz=%5g; iCalibL=%i; iCalibH=%i; CALIBRATION_TABLE_INDEX=[%i, %i]'], ...
                     iFirst, iLast, ...
                     bicas.proc_utils.tt2000_to_UTC_str(PreDc.Zv.Epoch(iFirst)), ...
@@ -917,12 +918,12 @@ classdef proc_sub
         %
         % Wrapper around bicas.proc_sub.handle_struct_name_change to be used locally.
         %
-        function handle_zv_name_change(fnChangeList, inSciDsi, SETTINGS, varargin)
+        function handle_zv_name_change(fnChangeList, inSciDsi, SETTINGS, L, varargin)
             msgFunc = @(oldFieldname, newFieldname) (sprintf(...
                 'Input dataset DATASET_ID=%s uses an alternative but illegal(?) zVariable name "%s" instead of "%s".', ...
                 inSciDsi, oldFieldname, newFieldname));
             
-            bicas.handle_struct_name_change(fnChangeList, SETTINGS, msgFunc, varargin{:})
+            bicas.handle_struct_name_change(fnChangeList, SETTINGS, L, msgFunc, varargin{:})
         end
 
 

@@ -88,7 +88,7 @@ function write_CDF_dataobj(filePath, ...
 %
 % IMPLEMENTATION NOTES
 % ====================
-% -- To keep the function as generic as possible, it does not contain any log messages (bicas.log).
+% -- To keep the function as generic as possible, it does not contain any log messages (bicas.logger).
 % -- The function does not accept a whole dataobj object since:
 % (1) instances of dataobj are likely NOT meant to be modified after creation. Empirically, it is possible to modify
 % them in practice though. Therefore the function only accepts the parts of a dataobj that it really needs, which still

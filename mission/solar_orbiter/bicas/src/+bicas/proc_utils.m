@@ -893,7 +893,7 @@ classdef proc_utils
         % =========
         % Zvs : Struct with ~zVariables.
         %       NOTE: Uses field name to determine whether field is Epoch-like or not.
-        function log_zVars(Zvs)
+        function log_zVars(Zvs, L)
             % PROBLEM: Can not manually specify which variables are Epoch-like.
             % PROBLEM: Can not manually specify variable name strings.
             %   Ex: process_HK_to_HK_on_SCI_TIME: Print different versions of time for comparison. Want whitespace
@@ -944,12 +944,12 @@ classdef proc_utils
             tableColumnAdjustments = [{'left', 'left'}, repmat({'right'}, 1,3), {'left'}];
             [headerStrs, tableStrs, columnWidths] = EJ_library.utils.assist_print_table(headerStrs, tableStrs,  tableColumnAdjustments);
 
-            bicas.log(LOG_LEVEL, strjoin(headerStrs, ' '))
-            bicas.log(LOG_LEVEL, repmat('=', 1, sum(columnWidths) + numel(headerStrs) - 1))
+            L.log(LOG_LEVEL, strjoin(headerStrs, ' '))
+            L.log(LOG_LEVEL, repmat('=', 1, sum(columnWidths) + numel(headerStrs) - 1))
             for iRow = 1:numel(ColumnStrs)
-                bicas.log(LOG_LEVEL, strjoin(tableStrs(iRow, :), ' '))
+                L.log(LOG_LEVEL, strjoin(tableStrs(iRow, :), ' '))
             end
-            bicas.logf(LOG_LEVEL, [...
+            L.logf(LOG_LEVEL, [...
                 '    #NaN = Number of NaN\n', ...
                 '    #Uniq = Number of unique values incl. NaN which counts as equal to itself.\n', ...
                 '    Mm = min-max\n', ...

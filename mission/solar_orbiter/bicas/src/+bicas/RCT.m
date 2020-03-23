@@ -54,7 +54,7 @@ classdef RCT
         % =========
         % rctId : String constants representing RCT to be read.
         %
-        function RctCalibData = find_RCT_by_SETTINGS_regexp(calibrationDir, rctId, SETTINGS)
+        function RctCalibData = find_RCT_by_SETTINGS_regexp(calibrationDir, rctId, SETTINGS, L)
 
             %============================
             % Create regexp for filename
@@ -75,7 +75,7 @@ classdef RCT
                 rctId, 'BICAS:calib:Assertion:IllegalArgument', sprintf('Illegal rctId="%s"', rctId));
             filenameRegexp = SETTINGS.get_fv(sprintf('PROCESSING.RCT_REGEXP.%s', analyzerSettingsSegm));
             
-            RctCalibData = bicas.RCT.find_RCT_regexp(calibrationDir, filenameRegexp);
+            RctCalibData = bicas.RCT.find_RCT_regexp(calibrationDir, filenameRegexp, L);
         end
 
 
@@ -89,7 +89,7 @@ classdef RCT
         % Useful to have this as separate functionality so that the chosen RCT to use can be explicitly overridden via
         % e.g. settings.
         %
-        function path = find_RCT_regexp(calibrationDir, filenameRegexp)
+        function path = find_RCT_regexp(calibrationDir, filenameRegexp, L)
 
             %=================================================
             % Find candidate files and select the correct one
@@ -122,7 +122,7 @@ classdef RCT
                 for i = 1:numel(filenameList)
                     msg = [msg, sprintf('    %s\n', filenameList{i})];
                 end
-                bicas.log('debug', msg)
+                obj.L.log('debug', msg)
             end
             
             % IMPLEMENTATION NOTE: Not logging which calibration file is selected, since this function is not supposed

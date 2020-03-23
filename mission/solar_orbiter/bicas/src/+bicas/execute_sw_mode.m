@@ -25,7 +25,7 @@
 %   might be wrong. Should ideally be run on the exact input datasets (~EIn PDs) used to produce a specific output
 %   dataset.
 %
-function execute_sw_mode(SwModeInfo, InputFilePathMap, OutputFilePathMap, masterCdfDir, calibrationDir, SETTINGS)
+function execute_sw_mode(SwModeInfo, InputFilePathMap, OutputFilePathMap, masterCdfDir, calibrationDir, SETTINGS, L)
 %
 % QUESTION: How verify dataset ID and dataset version against constants?
 %    NOTE: Need to read CDF first.
@@ -61,7 +61,7 @@ function execute_sw_mode(SwModeInfo, InputFilePathMap, OutputFilePathMap, master
 
 GlobalAttributesCellArray = {};   % Use cell array since CDF global attributes may in principle contain different sets of attributes (field names).
 
-Cal = bicas.calib(calibrationDir, SETTINGS);
+Cal = bicas.calib(calibrationDir, SETTINGS, L);
 
 
 
@@ -87,9 +87,9 @@ for i = 1:length(SwModeInfo.inputsList)
     %=======================
     % Read dataset CDF file
     %=======================
-    [Zv, GlobalAttributes]             = read_dataset_CDF(inputFilePath, SETTINGS);
+    [Zv, GlobalAttributes]             = read_dataset_CDF(inputFilePath, SETTINGS, L);
     InputDatasetsMap(prodFuncInputKey) = struct('Zv', Zv, 'Ga', GlobalAttributes);
-    
+
     
     
     %===========================================
@@ -105,6 +105,7 @@ for i = 1:length(SwModeInfo.inputsList)
             inputFilePath)
     end
     bicas.utils.assert_strings_equal(...
+        L, ...
         SETTINGS.get_fv('INPUT_CDF_ASSERTIONS.STRICT_DATASET_ID'), ...
         {GlobalAttributes.Dataset_ID{1}, SwModeInfo.inputsList(i).datasetId}, ...
         sprintf('The input CDF file''s stated DATASET_ID does not match the value expected for the S/W mode.\n    File: %s\n    ', inputFilePath))
@@ -116,7 +117,7 @@ end
 
 
 
-globalAttributesSubset = derive_output_dataset_GlobalAttributes(GlobalAttributesCellArray, SETTINGS);
+globalAttributesSubset = derive_output_dataset_GlobalAttributes(GlobalAttributesCellArray, SETTINGS, L);
 
 
 
@@ -145,7 +146,8 @@ for iOutputCdf = 1:length(SwModeInfo.outputsList)
         masterCdfDir, ...
         bicas.get_master_CDF_filename(OutputInfo.datasetId, OutputInfo.skeletonVersion));
     write_dataset_CDF ( ...
-        OutputDatasetsMap(OutputInfo.prodFuncOutputKey), globalAttributesSubset, outputFilePath, masterCdfPath, OutputInfo.datasetId, SETTINGS );
+        OutputDatasetsMap(OutputInfo.prodFuncOutputKey), globalAttributesSubset, outputFilePath, masterCdfPath, ...
+        OutputInfo.datasetId, SETTINGS, L );
 end
 
 
@@ -158,7 +160,7 @@ end   % execute_sw_mode
 
 
 
-function GlobalAttributesSubset = derive_output_dataset_GlobalAttributes(GlobalAttributesCellArray, SETTINGS)
+function GlobalAttributesSubset = derive_output_dataset_GlobalAttributes(GlobalAttributesCellArray, SETTINGS, L)
 % Function for global attributes for an output dataset from the global attributes of multiple input datasets (if there
 % are several).
 %
@@ -188,8 +190,8 @@ for i = 1:length(GlobalAttributesCellArray)
 end
 
 % NOTE: Test_id values can legitimately differ. E.g. "eeabc1edba9d76b08870510f87a0be6193c39051" and "eeabc1e".
-bicas.utils.assert_strings_equal(0,                       pgaProviderList, 'The input CDF files'' GlobalAttribute "Provider" values differ.')
-%bicas.utils.assert_strings_equal(ASSERT_MATCHING_TEST_ID, pgaTestIdList,   'The input CDF files'' GlobalAttribute "Test_id" values differ.')
+bicas.utils.assert_strings_equal(L, 0,                       pgaProviderList, 'The input CDF files'' GlobalAttribute "Provider" values differ.')
+%bicas.utils.assert_strings_equal(L, ASSERT_MATCHING_TEST_ID, pgaTestIdList,   'The input CDF files'' GlobalAttribute "Test_id" values differ.')
 
 % IMPLEMENTATION NOTE: Uses shortened "Test id" value in case it is a long one, e.g. "eeabc1edba9d76b08870510f87a0be6193c39051". Uncertain
 % how "legal" that is but it seems to be at least what people use in the filenames.
@@ -206,7 +208,7 @@ end
 
 
 
-function [Zvs, GlobalAttributes] = read_dataset_CDF(filePath, SETTINGS)
+function [Zvs, GlobalAttributes] = read_dataset_CDF(filePath, SETTINGS, L)
 % Read elementary input process data from a CDF file. Copies all zVariables into fields of a regular structure.
 %
 %
@@ -228,7 +230,7 @@ function [Zvs, GlobalAttributes] = read_dataset_CDF(filePath, SETTINGS)
 %===========
 % Read file
 %===========
-bicas.logf('info', 'Reading CDF file: "%s"', filePath)
+L.logf('info', 'Reading CDF file: "%s"', filePath)
 DataObj = dataobj(filePath);                 % do=dataobj, i.e. irfu-matlab's dataobj!!!
 
 
@@ -236,7 +238,7 @@ DataObj = dataobj(filePath);                 % do=dataobj, i.e. irfu-matlab's da
 %=========================================================================
 % Copy zVariables (only the data) into analogous fields in smaller struct
 %=========================================================================
-bicas.log('info', 'Converting dataobj (CDF data structure) to PDV.')
+L.log('info', 'Converting dataobj (CDF data structure) to PDV.')
 Zvs               = struct();
 ZvsLog            = struct();   % zVariables for logging.
 zVariableNameList = fieldnames(DataObj.data);
@@ -260,8 +262,8 @@ for iZv = 1:length(zVariableNameList)
         end
         zvValue = bicas.utils.replace_value(zvValue, padValue,  NaN);
     else
-        % Disable?! Only print warning if finds fill value which is not replaced?
-        %bicas.logf('warning', 'Can not handle replace fill/pad values for zVariable "%s" when reading "%s".', zVariableName, filePath))
+        % Disable?! Only print warning if actually finds fill value which is not replaced?
+        %L.logf('warning', 'Can not handle replace fill/pad values for zVariable "%s" when reading "%s".', zVariableName, filePath))
     end
     
     Zvs.(zvName) = zvValue;
@@ -270,7 +272,7 @@ end
 
 
 % Log data read from CDF file
-bicas.proc_utils.log_zVars(ZvsLog)
+bicas.proc_utils.log_zVars(ZvsLog, L)
 
 
 
@@ -291,7 +293,7 @@ bicas.proc_utils.log_zVars(ZvsLog)
 msgFunc = @(oldFn, newFn) (sprintf(...
     'Global attribute in input dataset\n    "%s"\nuses illegal alternative "%s" instead of "%s".\n', ...
     filePath, oldFn, newFn));
-bicas.handle_struct_name_change(fnChangeList, SETTINGS, msgFunc, 'Dataset_ID', 'INPUT_CDF.USING_GA_NAME_VARIANT_POLICY')
+bicas.handle_struct_name_change(fnChangeList, SETTINGS, L, msgFunc, 'Dataset_ID', 'INPUT_CDF.USING_GA_NAME_VARIANT_POLICY')
 
 
 
@@ -317,7 +319,7 @@ if ~issorted(Zvs.Epoch, 'strictascend')
             error('BICAS:execute_sw_mode:DatasetFormat', message)
             
         case 'WARNING_SORT'
-            bicas.logf('warning', message)
+            L.logf('warning', message)
             
             % Sort (data) zVariables according to Epoch.
             [~, iSort] = sort(Zvs.Epoch);
@@ -332,14 +334,14 @@ if ~issorted(Zvs.Epoch, 'strictascend')
             end
             
         otherwise
-            bicas.logf('Setting has illegal value %s="%s"', settingName, settingValue)
+            L.logf('Setting has illegal value %s="%s"', settingName, settingValue)
     end
 end
 
 
 
-bicas.logf('info', 'File''s Global attribute: Dataset_ID       = "%s"', GlobalAttributes.Dataset_ID{1})
-bicas.logf('info', 'File''s Global attribute: Skeleton_version = "%s"', GlobalAttributes.Skeleton_version{1})
+L.logf('info', 'File''s Global attribute: Dataset_ID       = "%s"', GlobalAttributes.Dataset_ID{1})
+L.logf('info', 'File''s Global attribute: Skeleton_version = "%s"', GlobalAttributes.Skeleton_version{1})
 
 end
 
@@ -377,7 +379,7 @@ end
 
 
 function write_dataset_CDF(...
-    ZvsSubset, GlobalAttributesSubset, outputFile, masterCdfPath, datasetId, SETTINGS)
+    ZvsSubset, GlobalAttributesSubset, outputFile, masterCdfPath, datasetId, SETTINGS, L)
 %
 % Function that writes one ___DATASET___ CDF file.
 %
@@ -399,7 +401,7 @@ function write_dataset_CDF(...
 %======================
 % Read master CDF file
 %======================
-bicas.logf('info', 'Reading master CDF file: "%s"', masterCdfPath)
+L.logf('info', 'Reading master CDF file: "%s"', masterCdfPath)
 DataObj = dataobj(masterCdfPath);
 ZvsLog  = struct();   % zVars for logging.
 
@@ -408,7 +410,7 @@ ZvsLog  = struct();   % zVars for logging.
 %=============================================================================================
 % NOTE: Only sets a SUBSET of the zVariables in master CDF.
 pdFieldNameList = fieldnames(ZvsSubset);
-bicas.log('info', 'Converting PDV to dataobj (CDF data structure)')
+L.log('info', 'Converting PDV to dataobj (CDF data structure)')
 for iPdFieldName = 1:length(pdFieldNameList)
     zvName = pdFieldNameList{iPdFieldName};
     
@@ -440,7 +442,7 @@ end
 
 
 % Log data to be written to CDF file.
-bicas.proc_utils.log_zVars(ZvsLog)
+bicas.proc_utils.log_zVars(ZvsLog, L)
 
 
 
@@ -484,7 +486,7 @@ for fn = fieldnames(DataObj.data)'
         isNumericZVar = isnumeric(cast(0.000, matlabClass));
 
         if isNumericZVar && SETTINGS.get_fv('OUTPUT_CDF.EMPTY_NUMERIC_ZV_SET_TO_FILL')
-            bicas.log('warning', logMsg)
+            L.log('warning', logMsg)
 
 %             % ASSERTION: Require numeric type.
 %             if ~isnumeric(cast(0.000, matlabClass))
@@ -498,7 +500,7 @@ for fn = fieldnames(DataObj.data)'
             % NOTE: Assumes that
             % (1) there is a PD fields/zVariable Epoch, and
             % (2) this zVariable should have as many records as Epoch.
-            bicas.logf('warning', 'Setting numeric master/output CDF zVariable "%s" to presumed correct size using fill values due to setting.', zvName)
+            L.logf('warning', 'Setting numeric master/output CDF zVariable "%s" to presumed correct size using fill values due to setting.', zvName)
             nEpochRecords = size(ZvsSubset.Epoch, 1);
             [fillValue, ~] = get_fill_pad_values(DataObj, zvName);
             zVariableSize = [nEpochRecords, DataObj.data.(fn{1}).dim];
@@ -508,7 +510,7 @@ for fn = fieldnames(DataObj.data)'
             DataObj.data.(zvName).data = zvValue;
 
         elseif ~isNumericZVar && SETTINGS.get_fv('OUTPUT_CDF.EMPTY_NONNUMERIC_ZV_IGNORE')
-            bicas.logf('warning', ...
+            L.logf('warning', ...
                 'Ignoring empty non-numeric master CDF zVariable "%s" due to setting OUTPUT_CDF.EMPTY_NONNUMERIC_ZV_IGNORE.', ...
                 zvName)
 
@@ -533,7 +535,7 @@ end
 
 % Check if file writing is deliberately disabled.
 if settingWriteFileDisabled
-    bicas.logf('warning', 'Writing output CDF file is disabled via setting OUTPUT_CDF.WRITE_FILE_DISABLED.')
+    L.logf('warning', 'Writing output CDF file is disabled via setting OUTPUT_CDF.WRITE_FILE_DISABLED.')
     return
 end
 
@@ -547,7 +549,7 @@ if exist(outputFile, 'file')    % Checks for file and directory.
                 outputFile)
             
         case 'OVERWRITE'
-            bicas.logf('warning', ...
+            L.logf('warning', ...
                 'Intended output dataset file path "%s"\nmatches a pre-existing file. Setting OUTPUT_CDF.OVERWRITE_POLICY is set to permit overwriting.\n', ...
                 outputFile)
             
@@ -559,7 +561,7 @@ end
 %===========================================
 % Write to CDF file using write_CDF_dataobj
 %===========================================
-bicas.logf('info', 'Writing dataset CDF file: %s', outputFile)
+L.logf('info', 'Writing dataset CDF file: %s', outputFile)
 bicas.utils.write_CDF_dataobj( ...
     outputFile, ...
     DataObj.GlobalAttributes, ...

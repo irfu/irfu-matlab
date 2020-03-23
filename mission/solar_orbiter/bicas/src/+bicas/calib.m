@@ -200,6 +200,7 @@ classdef calib < handle
         
         % Needed so that it can be submitted it to bicas.RCT.read_log_RCT_by_SETTINGS_regexp.
         SETTINGS
+        L
     end
     
     
@@ -223,12 +224,14 @@ classdef calib < handle
         % (1) read_non_BIAS_RCTs_by_regexp, OR
         % (2) read_non_BIAS_RCT_by_CALIBRATION_TABLE to fully initialize the object.
         %
-        function obj = calib(calibrationDir, SETTINGS)
+        function obj = calib(calibrationDir, SETTINGS, L)
             % TODO-DECISION: Appropriate to use SETTINGS this way? Submit calibration data directly?
             
             % IMPLEMENTATION NOTE: Must assign obj.SETTINGS before calling methods that rely on it having been set.
             
             obj.SETTINGS         = SETTINGS;
+            obj.L                = L;
+            
             %obj.pipelineId       = pipelineId;
             obj.enableDetrending = SETTINGS.get_fv('PROCESSING.CALIBRATION.TF_DETRENDING_ENABLED');
             obj.calibrationDir   = calibrationDir;
@@ -270,17 +273,17 @@ classdef calib < handle
                 dcDiffZ   = obj.Bias.ItfSet.DcDiffAvpiv{iEpochL}.eval(DC_FREQ_HQ);
                 
                 % Log bias current calibration
-                bicas.logf('debug', '(%i) BIAS current offsets (%s) [A]',         iEpochL, ...
+                L.logf('debug', '(%i) BIAS current offsets (%s) [A]',         iEpochL, ...
                     strjoin(EJ_library.utils.sprintf_many('% 10e', obj.Bias.Current.offsetsAmpere(iEpochL, :)), ', '))
-                bicas.logf('debug', '(%i) BIAS current gain    (%s) [A/TM unit]', iEpochL, ...
+                L.logf('debug', '(%i) BIAS current gain    (%s) [A/TM unit]', iEpochL, ...
                     strjoin(EJ_library.utils.sprintf_many('% 10e', obj.Bias.Current.gainsApt(iEpochL, :)),      ', '))
                 
                 % Log transfer functions (frequency domain), selected frequencies.
-                bicas.calib.log_ITF_Z(sprintf('(%i) BIAS DC single',          iEpochL), 'AVolt/IVolt', DC_FREQ_HQ,       @(omegaRps) (obj.Bias.ItfSet.DcSingleAvpiv{iEpochL}.eval(omegaRps)))
-                bicas.calib.log_ITF_Z(sprintf('(%i) BIAS DC diff',            iEpochL), 'AVolt/IVolt', DC_FREQ_HQ,       @(omegaRps) (obj.Bias.ItfSet.DcDiffAvpiv{iEpochL}.eval(omegaRps)))
+                obj.log_ITF_Z(sprintf('(%i) BIAS DC single',          iEpochL), 'AVolt/IVolt', DC_FREQ_HQ,       @(omegaRps) (obj.Bias.ItfSet.DcSingleAvpiv{iEpochL}.eval(omegaRps)))
+                obj.log_ITF_Z(sprintf('(%i) BIAS DC diff',            iEpochL), 'AVolt/IVolt', DC_FREQ_HQ,       @(omegaRps) (obj.Bias.ItfSet.DcDiffAvpiv{iEpochL}.eval(omegaRps)))
                 
-                bicas.calib.log_ITF_Z(sprintf('(%i) BIAS AC diff, low  gain', iEpochL), 'AVolt/IVolt', AC_DIFF_FREQS_HZ, @(omegaRps) (obj.Bias.ItfSet.AcLowGainAvpiv{iEpochL}.eval(omegaRps)))
-                bicas.calib.log_ITF_Z(sprintf('(%i) BIAS AC diff, high gain', iEpochL), 'AVolt/IVolt', AC_DIFF_FREQS_HZ, @(omegaRps) (obj.Bias.ItfSet.AcHighGainAvpiv{iEpochL}.eval(omegaRps)))
+                obj.log_ITF_Z(sprintf('(%i) BIAS AC diff, low  gain', iEpochL), 'AVolt/IVolt', AC_DIFF_FREQS_HZ, @(omegaRps) (obj.Bias.ItfSet.AcLowGainAvpiv{iEpochL}.eval(omegaRps)))
+                obj.log_ITF_Z(sprintf('(%i) BIAS AC diff, high gain', iEpochL), 'AVolt/IVolt', AC_DIFF_FREQS_HZ, @(omegaRps) (obj.Bias.ItfSet.AcHighGainAvpiv{iEpochL}.eval(omegaRps)))
             end
             
         end
@@ -389,7 +392,7 @@ classdef calib < handle
                     for iBlts = 1:nBltsMax
                         TabulatedItfIvpt = obj.LfrItfIvptTable{iLfrRct}{iLsf}{iBlts};                        
                         ItfIvpt          = @(omegaRps) (bicas.calib.eval_tabulated_ITF(TabulatedItfIvpt, omegaRps));
-                        bicas.calib.log_ITF_Z(sprintf('LFR RCT %i, F%i, BLTS/BIAS_%i', iLfrRct, iLsf-1, iBlts), 'IVolt/TM unit', FREQ_HZ, ItfIvpt)
+                        obj.log_ITF_Z(sprintf('LFR RCT %i, F%i, BLTS/BIAS_%i', iLfrRct, iLsf-1, iBlts), 'IVolt/TM unit', FREQ_HZ, ItfIvpt)
                     end
                 end
             end
@@ -404,7 +407,7 @@ classdef calib < handle
                 for iBlts = 1:3
                     TabulatedItfIvpt = obj.TdsRswfItfIvptList{iTdsRswfRct}{iBlts};                    
                     ItfIvpt          = @(omegaRps) (bicas.calib.eval_tabulated_ITF(TabulatedItfIvpt, omegaRps));
-                    bicas.calib.log_ITF_Z(sprintf('TDS RSWF RCT %i, BLTS/BIAS_%i', iTdsRswfRct, iBlts), 'IVolt/TM unit', FREQ_HZ, ItfIvpt)
+                    obj.log_ITF_Z(sprintf('TDS RSWF RCT %i, BLTS/BIAS_%i', iTdsRswfRct, iBlts), 'IVolt/TM unit', FREQ_HZ, ItfIvpt)
                 end
             end
         end
@@ -746,15 +749,15 @@ classdef calib < handle
         % NOTE: To be compared with read_log_RCT_by_SETTINGS_regexp.
         % NOTE: Does not need to be an instance method. Is so only to put it next to read_log_RCT_by_SETTINGS_regexp.
         function RctCalibData = read_log_RCT_by_filename(obj, filename, rctId)
-            RctCalibData = bicas.calib.read_log_modify_RCT(fullfile(obj.calibrationDir, filename), rctId);
+            RctCalibData = obj.read_log_modify_RCT(fullfile(obj.calibrationDir, filename), rctId);
         end
 
 
 
         % NOTE: To be compared with read_log_RCT_by_filename.
         function RctCalibData = read_log_RCT_by_SETTINGS_regexp(obj, rctId)
-            filePath     = bicas.RCT.find_RCT_by_SETTINGS_regexp(obj.calibrationDir, rctId, obj.SETTINGS);
-            RctCalibData = bicas.calib.read_log_modify_RCT(filePath, rctId);
+            filePath     = bicas.RCT.find_RCT_by_SETTINGS_regexp(obj.calibrationDir, rctId, obj.SETTINGS, obj.L);
+            RctCalibData = obj.read_log_modify_RCT(filePath, rctId);
         end
 
 
@@ -927,6 +930,64 @@ classdef calib < handle
 
 
 
+        % NOTE: Requires obj.L to be initialized.
+        %
+        % ARGUMENTS
+        % =========
+        % freqHzArray : Array of frequencies for which the ITF value should be logged.
+        % TfFuncPtr   : Function pointer. Z(omegaRps).
+        %
+        function log_ITF_Z(obj, itfName, itfUnit, freqHzArray, itfFuncPtr)
+            
+            zArray = itfFuncPtr(freqHzArray);
+            prefixStr = sprintf('Inverse TF, %s,', itfName);    % NOTE: Includes final comma.
+            for i=1:numel(freqHzArray)
+                freqHz = freqHzArray(i);
+                Z      = zArray(i);
+                
+                inverseZValueStr = sprintf('1/%8.5f', 1/abs(Z));
+                
+                obj.L.logf('debug', '%-41s %4i Hz: abs(Z)=%8.5f=%12s [%s], phase(Z)=%5.1f [deg]', ...
+                    prefixStr, freqHz, abs(Z), inverseZValueStr, itfUnit, rad2deg(phase(Z)))
+                
+                % Do not print prefix more than once.
+                prefixStr = '';
+            end
+        end
+        
+
+
+        % Read any single RCT file, and log it. Effectively wraps the different RCT-reading functions.
+        % 
+        % IMPLEMENTATION NOTES
+        % ====================
+        % This method exists to
+        % (1) run shared code that should be run when reading any RCT (logging, modifying data),
+        % (2) separate logging from the RCT-reading code, so that one can read RCTs without BICAS.
+        %
+        %
+        % ARGUMENTS
+        % =========
+        % rctId : String constants representing pipeline and RCT to be read.
+        %
+        function RctCalibData = read_log_modify_RCT(obj, filePath, rctId)
+            % PROPOSAL: Incorporate modify_LFR_data, modify_TDS_RSWF_data
+            
+            obj.L.logf('info', 'Reading %-4s RCT: "%s"', rctId, filePath)
+
+            switch(rctId)
+                case 'BIAS'     ; Rcd =                                  bicas.RCT.read_BIAS_RCT(    filePath);
+                case 'LFR'      ; Rcd = bicas.calib.modify_LFR_data(     bicas.RCT.read_LFR_RCT(     filePath));
+                case 'TDS-CWF'  ; Rcd =                                  bicas.RCT.read_TDS_CWF_RCT( filePath);
+                case 'TDS-RSWF' ; Rcd = bicas.calib.modify_TDS_RSWF_data(bicas.RCT.read_TDS_RSWF_RCT(filePath));
+                otherwise
+                    error('BICAS:calib:Assertion:IllegalArgument', 'Illegal rctId="%s"', rctId);
+            end
+            RctCalibData = Rcd;
+        end
+
+
+
     end    % methods(Access=private)
 
     %###################################################################################################################
@@ -992,62 +1053,6 @@ classdef calib < handle
 
 
     methods(Static, Access=private)
-
-
-
-        % ARGUMENTS
-        % =========
-        % freqHzArray : Array of frequencies for which the ITF value should be logged.
-        % TfFuncPtr   : Function pointer. Z(omegaRps).
-        %
-        function log_ITF_Z(itfName, itfUnit, freqHzArray, itfFuncPtr)
-            
-            zArray = itfFuncPtr(freqHzArray);
-            prefixStr = sprintf('Inverse TF, %s,', itfName);    % NOTE: Includes final comma.
-            for i=1:numel(freqHzArray)
-                freqHz = freqHzArray(i);
-                Z      = zArray(i);
-                
-                inverseZValueStr = sprintf('1/%8.5f', 1/abs(Z));
-                
-                bicas.logf('debug', '%-41s %4i Hz: abs(Z)=%8.5f=%12s [%s], phase(Z)=%5.1f [deg]', ...
-                    prefixStr, freqHz, abs(Z), inverseZValueStr, itfUnit, rad2deg(phase(Z)))
-                
-                % Do not print prefix more than once.
-                prefixStr = '';
-            end
-        end
-        
-
-
-        % Read any single RCT file, and log it. Effectively wraps the different RCT-reading functions.
-        % 
-        % IMPLEMENTATION NOTES
-        % ====================
-        % This method exists to
-        % (1) run shared code that should be run when reading any RCT (logging, modifying data),
-        % (2) separate logging from the RCT-reading code, so that one can read RCTs without BICAS.
-        %
-        %
-        % ARGUMENTS
-        % =========
-        % rctId : String constants representing pipeline and RCT to be read.
-        %
-        function RctCalibData = read_log_modify_RCT(filePath, rctId)
-            % PROPOSAL: Incorporate modify_LFR_data, modify_TDS_RSWF_data
-            
-            bicas.logf('info', 'Reading %-4s RCT: "%s"', rctId, filePath)
-
-            switch(rctId)
-                case 'BIAS'     ; Rcd =                                  bicas.RCT.read_BIAS_RCT(    filePath);
-                case 'LFR'      ; Rcd = bicas.calib.modify_LFR_data(     bicas.RCT.read_LFR_RCT(     filePath));
-                case 'TDS-CWF'  ; Rcd =                                  bicas.RCT.read_TDS_CWF_RCT( filePath);
-                case 'TDS-RSWF' ; Rcd = bicas.calib.modify_TDS_RSWF_data(bicas.RCT.read_TDS_RSWF_RCT(filePath));
-                otherwise
-                    error('BICAS:calib:Assertion:IllegalArgument', 'Illegal rctId="%s"', rctId);
-            end
-            RctCalibData = Rcd;
-        end
 
 
 

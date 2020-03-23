@@ -20,7 +20,7 @@
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
 % First created 2018-01-24
 %
-function settingsVsMap = interpret_config_file(configFileRowList)
+function settingsVsMap = interpret_config_file(configFileRowList, L)
 
 SETTINGS_KEY_REGEXP          = '[a-zA-Z0-9._-]+';
 SETTINGS_VALUE_STRING_REGEXP = '[^"]*';
@@ -55,7 +55,7 @@ for iRow = 1:numel(configFileRowList)
             %error('BICAS:interpret_config_file:Assertion:CannotInterpretConfigFile', 'The same settings key "%s" is assigned twice.', key)
             
             % NOTE: Log message is annoying when running automatic testing code.
-            bicas.logf('warning', 'Settings key "%s" is assigned a second (or more) time in the config file.', key)
+            L.logf('warning', 'Settings key "%s" is assigned a second (or more) time in the config file.', key)
         end
         settingsVsMap(key) = valueStr;
     end

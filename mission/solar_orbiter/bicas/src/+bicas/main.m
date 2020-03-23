@@ -81,12 +81,13 @@ function errorCode = main( varargin )
     clear -global CONSTANTS SETTINGS    % Clearing obsoleted variable CONSTANTS for safety.
     
     C = bicas.error_safe_constants();
+    L = bicas.logger('bash wrapper', false);
     
     
     
     try
         errorCode = C.EMIDP_2_INFO('NoError').errorCode;
-        main_without_error_handling(varargin);
+        main_without_error_handling(varargin, L);
         
     catch Exception1
         %================================================================
@@ -98,7 +99,7 @@ function errorCode = main( varargin )
             msg = [msg, recursive_exception_msg(Exception1, C)];
             
             msg = [msg, sprintf('Exiting MATLAB application with error code %i.\n', errorCode)];
-            bicas.log('error', msg)
+            L.log('error', msg)
             return
             
         catch Exception2    % Deliberately use different variable name to distinguish the exception from the previous one.
@@ -107,7 +108,7 @@ function errorCode = main( varargin )
             %========================================================
             
             % NOTE: Only use very, very error-safe code here.
-            %       Does not use bicas.log() or similar.
+            %       Does not use bicas.logger or similar.
             fprintf(2, 'Error in the MATLAB code''s error handling.\n');   % Print to stderr.
             fprintf(2, 'exception2.identifier = "%s"\n', Exception2.identifier);          % Print to stderr.
             fprintf(2, 'exception2.message    = "%s"\n', Exception2.message);             % Print to stderr.
@@ -134,8 +135,8 @@ function msg = recursive_exception_msg(Exception, C)
     
     CAUSES_RECURSIVE_INDENTATION_LENGTH = 8;
 
-    % IMPLEMENTATION NOTE: The error handling collects one long string with log/error messages for one bicas.log
-    % call, instead of making multiple bicas.log calls. This avoids having stdout and stderr messages mixed
+    % IMPLEMENTATION NOTE: The error handling collects one long string with log/error messages for one bicas.logger.log
+    % call, instead of making multiple bicas.logger.log calls. This avoids having stdout and stderr messages mixed
     % (alternating rows with stdout and stderr) in the MATLAB GUI, making it easier to read.
     msg = '';
     msg = [msg, sprintf('Exception.identifier = "%s"\n', Exception.identifier)];
@@ -191,7 +192,7 @@ end
 
 
 % BICAS's de facto main function, without error handling.
-function main_without_error_handling(cliArgumentsList)
+function main_without_error_handling(cliArgumentsList, L)
 
 
 
@@ -210,14 +211,14 @@ if ~ismember(matlabVersionString, C.PERMITTED_MATLAB_VERSIONS)
         'Using bad MATLAB version. Found version "%s". BICAS requires any of the following MATLAB versions: %s.\n', ...
         matlabVersionString, strjoin(C.PERMITTED_MATLAB_VERSIONS, ', '))
 end
-bicas.logf('info', 'Using MATLAB, version %s.\n\n', matlabVersionString);
+L.logf('info', 'Using MATLAB, version %s.\n\n', matlabVersionString);
 
 
 
 % Log that BICAS (the MATLAB code) has started running.
 % RATIONALE: This is useful when one manually looks through the log file and tries to identify the beginning of a
 % particular run. The BICAS log is always amended to and may therefore contain log messages from multiple runs.
-bicas.logf('info', [...
+L.logf('info', [...
     '###########################################\n', ...
     '###########################################\n', ...
     '#### BICAS'' MATLAB CODE STARTS RUNNING ####\n', ...
@@ -228,7 +229,7 @@ bicas.logf('info', [...
 
 % IMPLEMENTATION NOTE: Runs before irf(...) commands. Added after a problem of calling irf('check_os') which indirectly
 % calls system('hostname') at ROC:roc2-dev. Could be
-bicas.logf('debug', 'OS environment variable PATH = "%s"', getenv('PATH'));
+L.logf('debug', 'OS environment variable PATH = "%s"', getenv('PATH'));
 
 
 
@@ -262,10 +263,10 @@ bicasRootPath         = EJ_library.utils.get_abs_path(fullfile(matlabSrcPath, '.
 %=======================================
 % IMPLEMENTATION NOTE: Want this as early as possible, before interpreting arguments. Should therefore not merge this
 % with printing settings. This might help debug why settings were not set.
-bicas.logf('info', 'BICAS software root path:  bicasRootPath = "%s"', bicasRootPath)
-bicas.logf('info', 'Current working directory: pwd           = "%s"', pwd);   % Useful for debugging the use of relative directory arguments.
-bicas.logf('info', '\nCOMMAND-LINE INTERFACE (CLI) ARGUMENTS TO BICAS\n')
-bicas.logf('info',   '===============================================')
+L.logf('info', 'BICAS software root path:  bicasRootPath = "%s"', bicasRootPath)
+L.logf('info', 'Current working directory: pwd           = "%s"', pwd);   % Useful for debugging the use of relative directory arguments.
+L.logf('info', '\nCOMMAND-LINE INTERFACE (CLI) ARGUMENTS TO BICAS\n')
+L.logf('info',   '===============================================')
 cliArgumentsQuotedList = {};
 for i = 1:length(cliArgumentsList)
     % UI ASSERTION
@@ -274,17 +275,17 @@ for i = 1:length(cliArgumentsList)
         error('BICAS:main', 'Argument %i is not a string.', i)
     end
     
-    bicas.logf('info', '    CLI argument %2i: "%s"', i, cliArgumentsList{i})
+    L.logf('info', '    CLI argument %2i: "%s"', i, cliArgumentsList{i})
     cliArgumentsQuotedList{i} = ['''', cliArgumentsList{i}, ''''];
 end
 cliArgStrWhSpaceSep = strjoin(cliArgumentsQuotedList, ' ');
 cliArgStrCommaSep   = strjoin(cliArgumentsQuotedList, ', ');
 % IMPLEMENTATION NOTE: Printing the entire sequence of arguments, quoted with apostophe, is useful for copy-pasting to
 % both MATLAB command prompt and bash.
-bicas.logf('info', '    CLI arguments for copy-pasting:\n')
-bicas.logf('info', '        Single-quoted, whitespace-separated: %s\n\n', cliArgStrWhSpaceSep)
-bicas.logf('info', '        Single-quoted, comma-separated:      %s\n\n', cliArgStrCommaSep)
-bicas.logf('info', '\n\n')
+L.logf('info', '    CLI arguments for copy-pasting:\n')
+L.logf('info', '        Single-quoted, whitespace-separated: %s\n\n', cliArgStrWhSpaceSep)
+L.logf('info', '        Single-quoted, comma-separated:      %s\n\n', cliArgStrCommaSep)
+L.logf('info', '\n\n')
 
 
 
@@ -311,10 +312,10 @@ if ~isempty(CliData.configFile)
 else
     configFile = fullfile(bicasRootPath, C.DEFAULT_CONFIG_FILE_RELATIVE_PATH);
 end
-bicas.logf('info', 'configFile = "%s"', configFile)
+L.logf('info', 'configFile = "%s"', configFile)
 rowList                 = EJ_library.utils.read_text_file(configFile, '(\r\n|\r|\n)');
-ConfigFileSettingsVsMap = bicas.interpret_config_file(rowList);
-bicas.log('info', 'Overriding subset of in-memory settings using config file.')
+ConfigFileSettingsVsMap = bicas.interpret_config_file(rowList, L);
+L.log('info', 'Overriding subset of in-memory settings using config file.')
 SETTINGS = overwrite_settings_from_strings(SETTINGS, ConfigFileSettingsVsMap, 'configuration file');    % Modify SETTINGS
 
 
@@ -322,7 +323,7 @@ SETTINGS = overwrite_settings_from_strings(SETTINGS, ConfigFileSettingsVsMap, 'c
 %=========================================================
 % Modify settings according to (inofficial) CLI arguments
 %=========================================================
-bicas.log('info', 'Overriding subset of in-memory settings using (optional, inofficial) CLI arguments, if any.')
+L.log('info', 'Overriding subset of in-memory settings using (optional, inofficial) CLI arguments, if any.')
 SETTINGS = overwrite_settings_from_strings(SETTINGS, CliData.ModifiedSettingsMap, 'CLI arguments');    % Modify SETTINGS
 SETTINGS.make_read_only();
 % CASE: SETTINGS has now been finalized and is read-only (by assertion) after this.
@@ -343,11 +344,11 @@ EJ_library.assert.castring_regexp(SETTINGS.get_fv('SWD.release.version'), '(\d+\
 
 
 
-bicas.log('info', bicas.sprint_SETTINGS(SETTINGS))    % Prints/log the contents of SETTINGS.
+L.log('info', bicas.sprint_SETTINGS(SETTINGS))    % Prints/log the contents of SETTINGS.
 
 
 
-SwModeDefs = bicas.swmode_defs(SETTINGS);
+SwModeDefs = bicas.swmode_defs(SETTINGS, L);
 
 
 
@@ -408,19 +409,19 @@ switch(CliData.functionalityMode)
         % Set pipelineId, calibrationDir
         %================================
         % NOTE: Reading environment variables first here, where they are needed.
-        calibrationDir = read_env_variable(SETTINGS, 'ROC_RCS_CAL_PATH',    'ENV_VAR_OVERRIDE.ROC_RCS_CAL_PATH');
-        %pipelineId     = read_env_variable(SETTINGS, 'ROC_PIP_NAME',        'ENV_VAR_OVERRIDE.ROC_PIP_NAME');   % RGTS or RODP
-        masterCdfDir   = read_env_variable(SETTINGS, 'ROC_RCS_MASTER_PATH', 'ENV_VAR_OVERRIDE.ROC_RCS_MASTER_PATH');
-        bicas.logf('info', 'calibrationDir = "%s"', calibrationDir)
-        %bicas.logf('info', 'pipelineId     = "%s"', pipelineId)
-        bicas.logf('info', 'masterCdfDir   = "%s"', masterCdfDir)
+        calibrationDir = read_env_variable(SETTINGS, L, 'ROC_RCS_CAL_PATH',    'ENV_VAR_OVERRIDE.ROC_RCS_CAL_PATH');
+        %pipelineId     = read_env_variable(SETTINGS, L, 'ROC_PIP_NAME',        'ENV_VAR_OVERRIDE.ROC_PIP_NAME');   % RGTS or RODP
+        masterCdfDir   = read_env_variable(SETTINGS, L, 'ROC_RCS_MASTER_PATH', 'ENV_VAR_OVERRIDE.ROC_RCS_MASTER_PATH');
+        L.logf('info', 'calibrationDir = "%s"', calibrationDir)
+        %L.logf('info', 'pipelineId     = "%s"', pipelineId)
+        L.logf('info', 'masterCdfDir   = "%s"', masterCdfDir)
 
 
 
         %==================
         % EXECUTE S/W MODE
         %==================
-        bicas.execute_sw_mode( SwModeInfo, InputFilesMap, OutputFilesMap, masterCdfDir, calibrationDir, SETTINGS )
+        bicas.execute_sw_mode( SwModeInfo, InputFilesMap, OutputFilesMap, masterCdfDir, calibrationDir, SETTINGS, L )
 
     otherwise
         error('BICAS:main:Assertion', 'Illegal value functionalityMode="%s"', functionalityMode)
@@ -429,7 +430,7 @@ end    % if ... else ... / switch
 
 
 executionWallTimeSeconds = toc(startTimeTicSeconds);
-bicas.logf('info', 'Time used for execution (wall time): %g [s]', executionWallTimeSeconds);    % Always log (-->critical)?
+L.logf('info', 'Time used for execution (wall time): %g [s]', executionWallTimeSeconds);    % Always log (-->critical)?
 end
 
 
@@ -550,13 +551,13 @@ end
 
 
 % Read environment variable, but allow the value to be overriden by a settings variable.
-function v = read_env_variable(SETTINGS, envVarName, settingsOverrideName)
+function v = read_env_variable(SETTINGS, L, envVarName, settingsOverrideName)
 settingsOverrideValue = SETTINGS.get_fv(settingsOverrideName);
 
 if isempty(settingsOverrideValue)
     v = getenv(envVarName);
 else
-    bicas.logf('info', 'Environment variable "%s" overridden by setting\n    %s = "%s"\n', envVarName, settingsOverrideName, settingsOverrideValue)
+    L.logf('info', 'Environment variable "%s" overridden by setting\n    %s = "%s"\n', envVarName, settingsOverrideName, settingsOverrideValue)
     v = settingsOverrideValue;
 end
 
