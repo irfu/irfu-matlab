@@ -160,15 +160,17 @@ S.define_setting('OUTPUT_CDF.OVERWRITE_POLICY',                'OVERWRITE');    
 % Value that is used to set the output dataset GlobalAttribute "Calibration_version". String value.
 S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.Calibration_version', ...
     '1.0; Voltages: Using combined BIAS and LFR/TDS transfer functions (freq. dependent), BIAS offsets. Currents: No data.');
+
 % What to do with zVariables which are still empty after copying data into the master CDF.
 % This indicates that something is wrong, either in the master CDF or in the processing.
-S.define_setting('OUTPUT_CDF.EMPTY_NUMERIC_ZV_SET_TO_FILL', 1);
+S.define_setting('OUTPUT_CDF.EMPTY_NUMERIC_ZV_POLICY',    'WARNING');   % ERROR, WARNING, USE_FILLVAL
 % Ex: Non-numeric ACQUISITION_TIME_UNITS in (master?) SOLO_L2_RPW-LFR-SBM1-CWF-E_V05.cdf is empty
-S.define_setting('OUTPUT_CDF.EMPTY_NONNUMERIC_ZV_IGNORE',   1);
+% Ex: VDC_LABEL etc can be empty due to ROC bug updating skeletons.
+S.define_setting('OUTPUT_CDF.EMPTY_NONNUMERIC_ZV_POLICY', 'WARNING');   % ERROR, WARNING
 
-% ACQUSITION_TIME_UNITS being empty in the master CDF requires value 0/false.
+% ACQUSITION_TIME_UNITS being empty in the master CDF requires value 0/false. Abolish?
 S.define_setting('OUTPUT_CDF.write_CDF_dataobj.strictEmptyZvSize',  0)
-% ACQUSITION_TIME_UNITS being empty in the master CDF requires value 0/false.
+% ACQUSITION_TIME_UNITS being empty in the master CDF requires value 0/false. Abolish?
 S.define_setting('OUTPUT_CDF.write_CDF_dataobj.strictEmptyZvClass', 0)
 
 

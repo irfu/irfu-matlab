@@ -482,40 +482,55 @@ for fn = fieldnames(DataObj.data)'
             'processing data. This should only happen for incomplete processing.'], ...
             zvName);
         
-        matlabClass  = bicas.utils.convert_CDF_type_to_MATLAB_class(DataObj.data.(zvName).type, 'Permit MATLAB classes');
+        matlabClass   = bicas.utils.convert_CDF_type_to_MATLAB_class(DataObj.data.(zvName).type, 'Permit MATLAB classes');
         isNumericZVar = isnumeric(cast(0.000, matlabClass));
 
-        if isNumericZVar && SETTINGS.get_fv('OUTPUT_CDF.EMPTY_NUMERIC_ZV_SET_TO_FILL')
-            L.log('warning', logMsg)
+        if isNumericZVar
+            % CASE: Numeric zVar
+            settingName  = 'OUTPUT_CDF.EMPTY_NUMERIC_ZV_POLICY';
+            settingValue = SETTINGS.get_fv(settingName);
+            switch(settingValue)
+                case 'ERROR'
+                    error('BICAS:execute_sw_mode:SWModeProcessing', logMsg)
+                    
+                case 'WARNING'
+                    L.log('warning', logMsg)
+                    
+                case 'USE_FILLVAL'
+                    %========================================================
+                    % Create correctly-sized zVariable data with fill values
+                    %========================================================
+                    % NOTE: Assumes that
+                    % (1) there is a PD fields/zVariable Epoch, and
+                    % (2) this zVariable should have as many records as Epoch.
+                    L.logf('warning', 'Setting numeric master/output CDF zVariable "%s" to presumed correct size using fill values due to setting.', zvName)
+                    nEpochRecords = size(ZvsSubset.Epoch, 1);
+                    [fillValue, ~] = get_fill_pad_values(DataObj, zvName);
+                    zVariableSize = [nEpochRecords, DataObj.data.(fn{1}).dim];
+                    zvValue = cast(zeros(zVariableSize), matlabClass);
+                    zvValue = bicas.utils.replace_value(zvValue, 0, fillValue);
+                    
+                    DataObj.data.(zvName).data = zvValue;
 
-%             % ASSERTION: Require numeric type.
-%             if ~isnumeric(cast(0.000, matlabClass))
-%                 error('BICAS:sw_execute_sw_mode:SWModeProcessing', ...
-%                     'zVariable "%s" is non-numeric. Can not set it to correctly-sized data with fill values (not implemented).', zVariableName)
-%             end
-            
-            %========================================================
-            % Create correctly-sized zVariable data with fill values
-            %========================================================
-            % NOTE: Assumes that
-            % (1) there is a PD fields/zVariable Epoch, and
-            % (2) this zVariable should have as many records as Epoch.
-            L.logf('warning', 'Setting numeric master/output CDF zVariable "%s" to presumed correct size using fill values due to setting.', zvName)
-            nEpochRecords = size(ZvsSubset.Epoch, 1);
-            [fillValue, ~] = get_fill_pad_values(DataObj, zvName);
-            zVariableSize = [nEpochRecords, DataObj.data.(fn{1}).dim];
-            zvValue = cast(zeros(zVariableSize), matlabClass);
-            zvValue = bicas.utils.replace_value(zvValue, 0, fillValue);
-            
-            DataObj.data.(zvName).data = zvValue;
-
-        elseif ~isNumericZVar && SETTINGS.get_fv('OUTPUT_CDF.EMPTY_NONNUMERIC_ZV_IGNORE')
-            L.logf('warning', ...
-                'Ignoring empty non-numeric master CDF zVariable "%s" due to setting OUTPUT_CDF.EMPTY_NONNUMERIC_ZV_IGNORE.', ...
-                zvName)
-
+                otherwise
+                    error('Illegal settings value: "%s" = "%s"', settingName, settingValue)
+            end
         else
-            error('BICAS:execute_sw_mode:SWModeProcessing', logMsg)
+            % CASE: Non-numeric zVar
+            settingName  = 'OUTPUT_CDF.EMPTY_NONNUMERIC_ZV_POLICY';
+            settingValue = SETTINGS.get_fv(settingName);            
+            switch(settingValue)
+                case 'WARNING'
+                    L.logf('warning', ...
+                        'Ignoring empty non-numeric master CDF zVariable "%s" due to setting "%s" = "%s".', ...
+                        zvName, settingName, settingValue)
+                case 'ERROR'
+                    L.logf('error', ...
+                        'Error for empty non-numeric master CDF zVariable "%s" due to setting "%s" = "%s".', ...
+                        zvName, settingName, settingValue)
+                otherwise
+                    error('Illegal settings value: "%s" = "%s"', settingName, settingValue)
+            end
         end
     end
 end
