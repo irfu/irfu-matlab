@@ -310,10 +310,7 @@ if ~issorted(Zvs.Epoch, 'strictascend')
     
     message = sprintf('Input dataset "%s"\n    contains an Epoch zVariable which values do not monotonically increment.\n', filePath);
     
-    
-    
-    settingName  = 'INPUT_CDF.NON-INCREMENTING_ZV_EPOCH_POLICY';
-    settingValue = SETTINGS.get_fv(settingName);
+    [settingValue, settingKey] = SETTINGS.get_fv('INPUT_CDF.NON-INCREMENTING_ZV_EPOCH_POLICY');
     switch(settingValue)
         case 'ERROR'
             error('BICAS:execute_sw_mode:DatasetFormat', message)
@@ -334,7 +331,7 @@ if ~issorted(Zvs.Epoch, 'strictascend')
             end
             
         otherwise
-            L.logf('Setting has illegal value %s="%s"', settingName, settingValue)
+            L.logf('Setting has illegal value %s="%s"', settingKey, settingValue)
     end
 end
 
@@ -487,8 +484,7 @@ for fn = fieldnames(DataObj.data)'
 
         if isNumericZVar
             % CASE: Numeric zVar
-            settingName  = 'OUTPUT_CDF.EMPTY_NUMERIC_ZV_POLICY';
-            settingValue = SETTINGS.get_fv(settingName);
+            [settingValue, settingKey] = SETTINGS.get_fv('OUTPUT_CDF.EMPTY_NUMERIC_ZV_POLICY');
             switch(settingValue)
                 case 'ERROR'
                     error('BICAS:execute_sw_mode:SWModeProcessing', logMsg)
@@ -503,7 +499,11 @@ for fn = fieldnames(DataObj.data)'
                     % NOTE: Assumes that
                     % (1) there is a PD fields/zVariable Epoch, and
                     % (2) this zVariable should have as many records as Epoch.
-                    L.logf('warning', 'Setting numeric master/output CDF zVariable "%s" to presumed correct size using fill values due to setting.', zvName)
+                    L.logf('warning', ...
+                        ['Setting numeric master/output CDF zVariable "%s" to presumed correct size using fill', ...
+                        ' values due to setting "%s" = "%s".'], ...
+                        zvName, settingKey, settingValue)
+                    
                     nEpochRecords = size(ZvsSubset.Epoch, 1);
                     [fillValue, ~] = get_fill_pad_values(DataObj, zvName);
                     zVariableSize = [nEpochRecords, DataObj.data.(fn{1}).dim];
@@ -513,23 +513,22 @@ for fn = fieldnames(DataObj.data)'
                     DataObj.data.(zvName).data = zvValue;
 
                 otherwise
-                    error('Illegal settings value: "%s" = "%s"', settingName, settingValue)
+                    error('Illegal settings value: "%s" = "%s"', settingKey, settingValue)
             end
         else
             % CASE: Non-numeric zVar
-            settingName  = 'OUTPUT_CDF.EMPTY_NONNUMERIC_ZV_POLICY';
-            settingValue = SETTINGS.get_fv(settingName);            
+            [settingValue, settingKey] = SETTINGS.get_fv('OUTPUT_CDF.EMPTY_NONNUMERIC_ZV_POLICY');            
             switch(settingValue)
                 case 'WARNING'
                     L.logf('warning', ...
                         'Ignoring empty non-numeric master CDF zVariable "%s" due to setting "%s" = "%s".', ...
-                        zvName, settingName, settingValue)
+                        zvName, settingKey, settingValue)
                 case 'ERROR'
                     L.logf('error', ...
                         'Error for empty non-numeric master CDF zVariable "%s" due to setting "%s" = "%s".', ...
-                        zvName, settingName, settingValue)
+                        zvName, settingKey, settingValue)
                 otherwise
-                    error('Illegal settings value: "%s" = "%s"', settingName, settingValue)
+                    error('Illegal settings value: "%s" = "%s"', settingKey, settingValue)
             end
         end
     end

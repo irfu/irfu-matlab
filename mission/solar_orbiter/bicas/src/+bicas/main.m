@@ -563,21 +563,23 @@ end
 
 
 % Read environment variable, but allow the value to be overriden by a settings variable.
-function v = read_env_variable(SETTINGS, L, envVarName, settingsOverrideName)
-settingsOverrideValue = SETTINGS.get_fv(settingsOverrideName);
+function v = read_env_variable(SETTINGS, L, envVarName, overrideSettingKey)
+settingsOverrideValue = SETTINGS.get_fv(overrideSettingKey);
 
 if isempty(settingsOverrideValue)
     v = getenv(envVarName);
 else
-    L.logf('info', 'Environment variable "%s" overridden by setting\n    %s = "%s"\n', envVarName, settingsOverrideName, settingsOverrideValue)
+    L.logf('info', 'Environment variable "%s" overridden by setting\n    %s = "%s"\n', ...
+        envVarName, overrideSettingKey, settingsOverrideValue)
     v = settingsOverrideValue;
 end
 
 % UI ASSERTION
 if isempty(v)
     error('BICAS:main:Assertion', ...
-        'Can not set internal variable corresponding to environment variable "%s" from either (1) the environment variable, or (2) settings key value %s="%s".', ...
-        envVarName, settingsOverrideName, settingsOverrideValue)
+        ['Can not set internal variable corresponding to environment variable "%s" from either', ...
+        ' (1) the environment variable, or (2) settings key value %s="%s".'], ...
+        envVarName, overrideSettingKey, settingsOverrideValue)
 end
 end
 

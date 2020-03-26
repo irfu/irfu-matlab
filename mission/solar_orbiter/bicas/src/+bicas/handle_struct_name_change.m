@@ -22,13 +22,13 @@ function handle_struct_name_change(fnChangeList, SETTINGS, L, msgFunc, varargin)
     %             fieldname. Can thus handle e.g. both zVar names and global attributes.
     
     while numel(varargin) >= 2    % Iterate over pairs of varargin components.
-        newFn       = varargin{1};
-        settingsKey = varargin{2};
-        varargin    = varargin(3:end);
+        newFn      = varargin{1};
+        settingKey = varargin{2};
+        varargin   = varargin(3:end);
         
         [~, i] = ismember(newFn, {fnChangeList(:).newFieldname});   % NOTE: i==0 <==> no match.
         if i > 0
-            settingZvNameChangePolicy = SETTINGS.get_fv(settingsKey);
+            settingZvNameChangePolicy = SETTINGS.get_fv(settingKey);
             msg = msgFunc(fnChangeList(i).oldFieldname, fnChangeList(i).newFieldname);
             assert(isempty(fnChangeList(i).ignoredCandidateFieldnames), ...
                 'Function not designed for handling non-empty .ignoredCandidateFieldnames.')
@@ -43,7 +43,7 @@ function handle_struct_name_change(fnChangeList, SETTINGS, L, msgFunc, varargin)
                     error('BICAS:Assertion', msg)
                 otherwise
                     error('BICAS:proc_sub:Assertion', 'Illegal setting for %s="%s"', ...
-                        settingsKey, settingZvNameChangePolicy)
+                        settingKey, settingZvNameChangePolicy)
             end
         end
     end
