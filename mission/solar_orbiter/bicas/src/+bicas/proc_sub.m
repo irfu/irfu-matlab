@@ -552,12 +552,12 @@ classdef proc_sub
                     assert(size(OutSciZv.IBIAS2, 2) == 1)
                     assert(size(OutSciZv.IBIAS3, 2) == 1)
                     
-                    OutSciZv.V(:,1)   = SciPostDc.Zv.DemuxerOutput.dcV1;
-                    OutSciZv.V(:,2)   = SciPostDc.Zv.DemuxerOutput.dcV2;
-                    OutSciZv.V(:,3)   = SciPostDc.Zv.DemuxerOutput.dcV3;
-                    OutSciZv.E(:,1)   = SciPostDc.Zv.DemuxerOutput.dcV12;
-                    OutSciZv.E(:,2)   = SciPostDc.Zv.DemuxerOutput.dcV13;
-                    OutSciZv.E(:,3)   = SciPostDc.Zv.DemuxerOutput.dcV23;
+                    OutSciZv.VDC(:,1)   = SciPostDc.Zv.DemuxerOutput.dcV1;
+                    OutSciZv.VDC(:,2)   = SciPostDc.Zv.DemuxerOutput.dcV2;
+                    OutSciZv.VDC(:,3)   = SciPostDc.Zv.DemuxerOutput.dcV3;
+                    OutSciZv.EDC(:,1)   = SciPostDc.Zv.DemuxerOutput.dcV12;
+                    OutSciZv.EDC(:,2)   = SciPostDc.Zv.DemuxerOutput.dcV13;
+                    OutSciZv.EDC(:,3)   = SciPostDc.Zv.DemuxerOutput.dcV23;
                     OutSciZv.EAC(:,1) = SciPostDc.Zv.DemuxerOutput.acV12;
                     OutSciZv.EAC(:,2) = SciPostDc.Zv.DemuxerOutput.acV13;
                     OutSciZv.EAC(:,3) = SciPostDc.Zv.DemuxerOutput.acV23;
@@ -568,12 +568,12 @@ classdef proc_sub
                     % ASSERTION
                     assert(nSamplesPerRecord == 2048, 'BICAS:proc_sub:Assertion:IllegalArgument', 'Number of samples per CDF record is not 2048, as expected. Bad Input CDF?')
                     
-                    OutSciZv.V(:,:,1)   = SciPostDc.Zv.DemuxerOutput.dcV1;
-                    OutSciZv.V(:,:,2)   = SciPostDc.Zv.DemuxerOutput.dcV2;
-                    OutSciZv.V(:,:,3)   = SciPostDc.Zv.DemuxerOutput.dcV3;
-                    OutSciZv.E(:,:,1)   = SciPostDc.Zv.DemuxerOutput.dcV12;
-                    OutSciZv.E(:,:,2)   = SciPostDc.Zv.DemuxerOutput.dcV13;
-                    OutSciZv.E(:,:,3)   = SciPostDc.Zv.DemuxerOutput.dcV23;
+                    OutSciZv.VDC(:,:,1)   = SciPostDc.Zv.DemuxerOutput.dcV1;
+                    OutSciZv.VDC(:,:,2)   = SciPostDc.Zv.DemuxerOutput.dcV2;
+                    OutSciZv.VDC(:,:,3)   = SciPostDc.Zv.DemuxerOutput.dcV3;
+                    OutSciZv.EDC(:,:,1)   = SciPostDc.Zv.DemuxerOutput.dcV12;
+                    OutSciZv.EDC(:,:,2)   = SciPostDc.Zv.DemuxerOutput.dcV13;
+                    OutSciZv.EDC(:,:,3)   = SciPostDc.Zv.DemuxerOutput.dcV23;
                     OutSciZv.EAC(:,:,1) = SciPostDc.Zv.DemuxerOutput.acV12;
                     OutSciZv.EAC(:,:,2) = SciPostDc.Zv.DemuxerOutput.acV13;
                     OutSciZv.EAC(:,:,3) = SciPostDc.Zv.DemuxerOutput.acV23;
@@ -589,7 +589,7 @@ classdef proc_sub
             bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(OutSciZv);
             % NOTE: Not really necessary since the list of zVars will be checked against the master CDF?
             EJ_library.assert.struct(OutSciZv, {...
-                'IBIAS1', 'IBIAS2', 'IBIAS3', 'V', 'E', 'EAC', 'Epoch', 'QUALITY_BITMASK', 'QUALITY_FLAG', ...
+                'IBIAS1', 'IBIAS2', 'IBIAS3', 'VDC', 'EDC', 'EAC', 'Epoch', 'QUALITY_BITMASK', 'QUALITY_FLAG', ...
                 'DELTA_PLUS_MINUS', 'SYNCHRO_FLAG', 'SAMPLING_RATE'}, {})
         end   % process_PostDC_to_LFR
 
@@ -621,24 +621,24 @@ classdef proc_sub
                 
                 %case {'V05_SOLO_L2_RPW-TDS-LFM-CWF-E'}
                 case {'SOLO_L2_RPW-TDS-LFM-CWF-E'}
-                    OutSciZv.V(:,1)     = SciPostDc.Zv.DemuxerOutput.dcV1;
-                    OutSciZv.V(:,2)     = SciPostDc.Zv.DemuxerOutput.dcV2;
-                    OutSciZv.V(:,3)     = SciPostDc.Zv.DemuxerOutput.dcV3;
-                    OutSciZv.E(:,1)     = SciPostDc.Zv.DemuxerOutput.dcV12;
-                    OutSciZv.E(:,2)     = SciPostDc.Zv.DemuxerOutput.dcV13;
-                    OutSciZv.E(:,3)     = SciPostDc.Zv.DemuxerOutput.dcV23;
+                    OutSciZv.VDC(:,1)     = SciPostDc.Zv.DemuxerOutput.dcV1;
+                    OutSciZv.VDC(:,2)     = SciPostDc.Zv.DemuxerOutput.dcV2;
+                    OutSciZv.VDC(:,3)     = SciPostDc.Zv.DemuxerOutput.dcV3;
+                    OutSciZv.EDC(:,1)     = SciPostDc.Zv.DemuxerOutput.dcV12;
+                    OutSciZv.EDC(:,2)     = SciPostDc.Zv.DemuxerOutput.dcV13;
+                    OutSciZv.EDC(:,3)     = SciPostDc.Zv.DemuxerOutput.dcV23;
                     OutSciZv.EAC(:,1)   = SciPostDc.Zv.DemuxerOutput.acV12;
                     OutSciZv.EAC(:,2)   = SciPostDc.Zv.DemuxerOutput.acV13;
                     OutSciZv.EAC(:,3)   = SciPostDc.Zv.DemuxerOutput.acV23;
                     
                 %case {'V05_SOLO_L2_RPW-TDS-LFM-RSWF-E'}
                 case {'SOLO_L2_RPW-TDS-LFM-RSWF-E'}
-                    OutSciZv.V(:,:,1)   = SciPostDc.Zv.DemuxerOutput.dcV1;
-                    OutSciZv.V(:,:,2)   = SciPostDc.Zv.DemuxerOutput.dcV2;
-                    OutSciZv.V(:,:,3)   = SciPostDc.Zv.DemuxerOutput.dcV3;
-                    OutSciZv.E(:,:,1)   = SciPostDc.Zv.DemuxerOutput.dcV12;
-                    OutSciZv.E(:,:,2)   = SciPostDc.Zv.DemuxerOutput.dcV13;
-                    OutSciZv.E(:,:,3)   = SciPostDc.Zv.DemuxerOutput.dcV23;
+                    OutSciZv.VDC(:,:,1)   = SciPostDc.Zv.DemuxerOutput.dcV1;
+                    OutSciZv.VDC(:,:,2)   = SciPostDc.Zv.DemuxerOutput.dcV2;
+                    OutSciZv.VDC(:,:,3)   = SciPostDc.Zv.DemuxerOutput.dcV3;
+                    OutSciZv.EDC(:,:,1)   = SciPostDc.Zv.DemuxerOutput.dcV12;
+                    OutSciZv.EDC(:,:,2)   = SciPostDc.Zv.DemuxerOutput.dcV13;
+                    OutSciZv.EDC(:,:,3)   = SciPostDc.Zv.DemuxerOutput.dcV23;
                     OutSciZv.EAC(:,:,1) = SciPostDc.Zv.DemuxerOutput.acV12;
                     OutSciZv.EAC(:,:,2) = SciPostDc.Zv.DemuxerOutput.acV13;
                     OutSciZv.EAC(:,:,3) = SciPostDc.Zv.DemuxerOutput.acV23;
@@ -654,7 +654,7 @@ classdef proc_sub
             bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(OutSciZv);
             % NOTE: Not really necessary since the list of zVars will be checked against the master CDF?
             EJ_library.assert.struct(OutSciZv, {...
-                'IBIAS1', 'IBIAS2', 'IBIAS3', 'V', 'E', 'EAC', 'Epoch', 'QUALITY_BITMASK', 'QUALITY_FLAG', ...
+                'IBIAS1', 'IBIAS2', 'IBIAS3', 'VDC', 'EDC', 'EAC', 'Epoch', 'QUALITY_BITMASK', 'QUALITY_FLAG', ...
                 'DELTA_PLUS_MINUS', 'SYNCHRO_FLAG', 'SAMPLING_RATE'}, {})
         end
 
