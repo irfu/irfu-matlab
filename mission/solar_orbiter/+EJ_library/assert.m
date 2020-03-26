@@ -42,7 +42,7 @@
 % Initially created 2018-07-11 by Erik P G Johansson.
 %
 classdef assert
-    %
+%
 % TODO-DECISION: Use assertions on (assertion function) arguments internally?
 % PROPOSAL: Add argument for name of argument so that can print better error messages.
 % PROPOSAL: Optional error message (string) as last argument to ~every method.
@@ -57,7 +57,10 @@ classdef assert
 % PROPOSAL: Create class with collection of standardized non-trivial "condition functions", used by this "assert" class.
 %           Use an analogous naming scheme.
 %   PRO: Can use functions instead of assertions to design custom-made error responses, warnings.
-%   CON: Not clear what the conditions should be, and ifthere should be some assertions(). Input checks or the nominal condition
+%   PRO: Useful for creating more compact custom-made assertions.
+%       Ex: assert(isscalar(padValue) || is_castring(padValue))
+%   CON: Not clear what the conditions should be, and if they should some assertions themselves. Input checks or the
+%        nominal condition
 %       Ex: castring_set: Should the return value be whether the input argument is
 %           A cell array of unique strings.
 %           A cell array of unique strings (assertion: cell array)
@@ -87,6 +90,15 @@ classdef assert
 %   Ex: Size for some set of indices.
 %       Ex: Range of first index (CDF Zvar records).
 %           Ex: Can treat cell arrays specially: Check the components of cell array instead.
+%
+% PROPOSAL: Functions for asserting line breaks.
+%   TODO-DECISION: Which set of functions.
+%       PROPOSAL: Assert ending LF (assert not ending CR+LF).
+%       PROPOSAL: Assert all linebreaks are LF (no CR+LF).
+%       PROPOSAL: Assert all linebreaks are LF (no CR+LF). Require ending linebreak.
+%
+% PROPOSAL: Assert string sets equal
+%   Ex: write_CDF_dataobj
 
 
 
@@ -111,9 +123,17 @@ classdef assert
         
         
         
-        % Assert that ENTIRE string matches a regexp or any in a cell array of regular expressions.
-        % NOTE: If regex is an empty cell array, then assertion fails.
+        % Assert that ENTIRE string matches one of potentially many regexps.
+        %
         % NOTE: Will permit empty strings to match a regular expression.
+        %
+        %
+        % ARGUMENTS
+        % =========
+        % s      : String
+        % regexp : (1) String. Regular expressions.
+        %          (2) Cell array of strings. List of regular expressions.
+        %              NOTE: Must be non-empty array.
         function castring_regexp(s, regexp)
             if ~any(EJ_library.utils.regexpf(s, regexp))
                 error(EJ_library.assert.ERROR_MSG_ID, 'String "%s" (in its entirety) does not match any of the specified regular expressions.', s)
@@ -129,10 +149,20 @@ classdef assert
             if ~iscell(s)
                 error(EJ_library.assert.ERROR_MSG_ID, 'Expected cell array of unique strings, but is not cell array.')
                 
-            % IMPLEMENTATION NOTE: For cell arrays, "unique" requires the components to be strings. Therefor does not
-            % check (again), since probably slow.
+            % IMPLEMENTATION NOTE: For cell arrays, "unique" requires the components to be strings. Therefore does not
+            % check (again), since it is probably slow.
             elseif numel(unique(s)) ~= numel(s)
                 error(EJ_library.assert.ERROR_MSG_ID, 'Expected cell array of unique strings, but not all strings are unique.')
+            end
+        end
+        
+        
+        
+        function castring_sets_equal(set1, set2)
+            % NOTE/BUG: Does not require sets to have internally unique strings.
+            
+            if ~isempty(setxor(set1, set2))
+                error(EJ_library.assert.ERROR_MSG_ID, 'The two string sets are not equivalent.')
             end
         end
         
@@ -154,12 +184,10 @@ classdef assert
         
         
         % NOTE: Can also be used for checking supersets.
+        % NOTE: Both string sets and numeric sets
         function subset(strSubset, strSet)
-            % PROPOSAL: Name without "string", since does not check for strings.
-            %   PROPOSAL: Change name?
             
-            % NOTE: all({}) == all([]) == true
-            if ~all(ismember(strSubset, strSet))
+            if ~EJ_library.utils.subset(strSubset, strSet)
                 error(EJ_library.assert.ERROR_MSG_ID, 'Expected subset is not a subset.')
             end
         end

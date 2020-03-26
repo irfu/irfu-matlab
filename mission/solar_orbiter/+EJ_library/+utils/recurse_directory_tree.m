@@ -82,6 +82,7 @@
 % NOTE: Function might be used with Lapdog. Should therefore be compatible with MATLAB R2009a.   % How? Why?
 %
 % 
+%
 % DESIGN RATIONALE / IMPLEMENTATION NOTE
 % ======================================
 % The purpose of this function is partly to make it easy to implement many other generic functions.
@@ -103,8 +104,9 @@
 %     distinguish calls to FileFunc and DirFunc). Therefore, argStruct has as many identical field names as possible.
 %
 %
+%
 % HANDLING OF SPECIAL CASES -- NEEDS TO BE CONFIRMED
-% =========================
+% ==================================================
 % Should work for:
 %    (1) rootDirPath = "/" (Linux).
 %    (2) rootDirPath = Path without the name for the final subdirectory, e.g. ".", "/qwe/asd/.", "/qwe/asd/.."

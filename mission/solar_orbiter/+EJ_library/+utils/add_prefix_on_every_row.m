@@ -7,8 +7,10 @@
 % ARGUMENTS
 % ========= 
 % str    : Potentially multi-row string to be printed.
-%           NOTE: If one-row   string: Argument may optionally end with line feed.
-%                 If multi-row string: Every row must end with line feed, including the last one.
+%          NOTE: If one-row   string: Argument may optionally end with line feed.
+%                If multi-row string: Every row must end with line feed, including the last row.
+%          NOTE: Not entirely unproblematic. Feeding unknown text string from an exception requires one to manually add a
+%                line feed for this to work.
 % prefix : One-row string without line feed.
 %
 %
@@ -30,7 +32,8 @@ LINE_FEED = char(10);
 
 
 
-% Convenience functionality: Add trailing line feed for strings without line feed.
+% Convenience functionality: Add trailing line feed for strings without line feed (which have to be one-row strings).
+% Multi-row strings must already have an ending linebreak.
 if isempty(strfind(str, LINE_FEED))
     str = [str, LINE_FEED];
 end
@@ -43,11 +46,10 @@ end
 % If the input string is not required to end with line feed, it is ambiguous whether an ending line feed (1) represents
 % the end of the last row, or (2) precedes a last empty row consisting of zero characters (and itself not ending with a
 % line feed).
-%       NOTE: Not entirely unproblematic. Feeding unknown text string from an exception requires one to manually add a
-%       line feed for this to work (main try-catch).
 if length(str) < 1 || ~strcmp(str(end), LINE_FEED)
-    error('BICAS:add_prefix_on_every_row:Assertion:IllegalArgument', 'Not a legal string for printing. String must end with line feed.')
+    error('add_prefix_on_every_row:Assertion:IllegalArgument', 'Not a legal string for printing. String must end with line feed.')
 end
+
 
 
 % NOTE: Ignores the last character (line feed) when searching for line feed.

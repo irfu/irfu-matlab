@@ -275,16 +275,18 @@ for i = 1:length(cliArgumentsList)
         error('BICAS:main', 'Argument %i is not a string.', i)
     end
     
-    L.logf('info', '    CLI argument %2i: "%s"', i, cliArgumentsList{i})
+    L.logf('info', 'CLI argument %2i: "%s"', i, cliArgumentsList{i})
     cliArgumentsQuotedList{i} = ['''', cliArgumentsList{i}, ''''];
 end
 cliArgStrWhSpaceSep = strjoin(cliArgumentsQuotedList, ' ');
 cliArgStrCommaSep   = strjoin(cliArgumentsQuotedList, ', ');
 % IMPLEMENTATION NOTE: Printing the entire sequence of arguments, quoted with apostophe, is useful for copy-pasting to
 % both MATLAB command prompt and bash.
-L.logf('info', '    CLI arguments for copy-pasting:\n')
-L.logf('info', '        Single-quoted, whitespace-separated: %s\n\n', cliArgStrWhSpaceSep)
-L.logf('info', '        Single-quoted, comma-separated:      %s\n\n', cliArgStrCommaSep)
+L.logf('info', '\n')
+L.logf('info', 'CLI arguments for copy-pasting\n')
+L.logf('info', '------------------------------\n')
+L.logf('info', 'Single-quoted, whitespace-separated: %s\n\n', cliArgStrWhSpaceSep)
+L.logf('info', 'Single-quoted, comma-separated:      %s\n\n', cliArgStrCommaSep)
 L.logf('info', '\n\n')
 
 

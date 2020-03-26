@@ -35,13 +35,16 @@
 % MATLAB does not appear to have any similar functionality.
 % "glob" in the function name is misleading since it really uses regular expressions.
 %
+%
 % Author: Erik P G Johansson
 % First created 2017-04-06
 %
 function objectInfoList = glob_files_dirs(rootDirPath, regexPatternList, varargin)
 %
 % PROPOSAL: Argument for choosing types of objects: files, directories, files & directories.
-% PROPOSAL: Pass on varargin options to recurse_directory_tree.
+%   PROPOSAL: Implement as setting
+%       NOTE: Settings are passed on to EJ_library.utils.recurse_directory_tree. Problem?
+%
 % PROPOSAL: Change function name to not use "glob".
 %   PRO: "glob" is deceiving when uses regex.
 %       CON: Wikipedia hints that it is OK, that "globbing" refers to matching files (and paths):
@@ -51,7 +54,9 @@ function objectInfoList = glob_files_dirs(rootDirPath, regexPatternList, varargi
 %   PROPOSAL: Something with "path". 
 % PROPOSAL: Not follow naming convention from dir().
 %
-% PROPOSAL: Option for not returning directories.
+% PROPOSAL: Option for specifying regexp for entire (relative) path, including slash.
+%   TODO-NI: Path details become important. Paths ending/not ending with slash; current directory, parent directory.
+%   PROPOSAL: If regexPatternList is a string (not cell array of strings).
 
 
 % ASSERTION

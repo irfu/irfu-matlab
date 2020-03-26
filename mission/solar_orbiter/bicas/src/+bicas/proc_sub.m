@@ -531,8 +531,9 @@ classdef proc_sub
             OutSciZv.IBIAS3           = SciPostDc.Zv.IBIAS3;
             OutSciZv.SYNCHRO_FLAG     = SciPostDc.Zv.SYNCHRO_FLAG;
             OutSciZv.SAMPLING_RATE    = SciPostDc.Zv.freqHz;
-                    
-                    
+
+            
+            
             % NOTE: The two cases are different in the indexes they use for OutSciZv.
 %             switch(outputDvid)
 %                 case  {'V05_SOLO_L2_RPW-LFR-SURV-CWF-E' ...

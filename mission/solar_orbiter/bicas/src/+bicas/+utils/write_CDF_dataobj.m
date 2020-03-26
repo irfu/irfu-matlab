@@ -35,7 +35,7 @@ function write_CDF_dataobj(filePath, ...
 %                               {iZVar,  2} = Size of record. Row vector, at least length 2.
 %                               {iZVar,  3} = NOT USED. dataobj: Uknown meaning. Scalar number.
 %                               {iZVar,  4} = String representing data type (tt2000, single, char etc)
-%                               {iZVar,  5} = NOT USED. dataobj: "Record variance", etring representing on which
+%                               {iZVar,  5} = NOT USED. dataobj: "Record variance", string representing on which
 %                                             dimensions the zVariable changes. T=True, F=False.
 %                               {iZVar,  6} = NOT USED. dataobj: Uknown meaning. String = 'Full' (always?)
 %                               {iZVar,  7} = NOT USED. dataobj: Uknown meaning. String = 'None' (always?)
@@ -189,14 +189,16 @@ zVarNameAllList1 = dataobj_Variables(:, 1);   % Previously called for only non-c
 zVarNameAllList2 = fieldnames(dataobj_data);
 
 % ASSERTION: zVariable names are all unique.
-if length(unique(zVarNameAllList1)) ~= length(zVarNameAllList1)
-    % IMPLEMENTATION NOTE: Could be useful for test code which may generate zVar names automatically.
-    error('BICAS:write_CDF_dataobj:Assertion', 'Not all zVariable names are unique.')
-end
+EJ_library.assert.castring_set(zVarNameAllList1)
+% if length(unique(zVarNameAllList1)) ~= length(zVarNameAllList1)
+%     % IMPLEMENTATION NOTE: Could be useful for test code which may generate zVar names automatically.
+%     error('BICAS:write_CDF_dataobj:Assertion', 'Not all zVariable names are unique.')
+% end
 % ASSERTION: Arguments contain two consistent lists of zVariables.
-if ~isempty(setxor(zVarNameAllList1, zVarNameAllList2))
-    error('BICAS:write_CDF_dataobj:Assertion', 'Arguments contain two inconsistent lists of available zVariable names.')
-end
+EJ_library.assert.castring_sets_equal(zVarNameAllList1, zVarNameAllList2)
+% if ~isempty(setxor(zVarNameAllList1, zVarNameAllList2))
+%     error('BICAS:write_CDF_dataobj:Assertion', 'Arguments contain two inconsistent lists of available zVariable names.')
+% end
 
 zVarNameAllList = zVarNameAllList1;
 clear zVarNameAllList1 zVarNameAllList2
@@ -282,7 +284,7 @@ for i=1:length(dataobj_Variables(:,1))
     %
     % BUG: Does not seem to work on SCALEMIN/-MAX specifically despite identical treatment, for unknown reason.
     %===========================================================================================================
-    for iVarAttrOfVarType = 1:length(ZVAR_ATTRIBUTES_OF_ZVAR_DATA_TYPE)         % van = variable attribute name
+    for iVarAttrOfVarType = 1:length(ZVAR_ATTRIBUTES_OF_ZVAR_DATA_TYPE)
         varAttrName = ZVAR_ATTRIBUTES_OF_ZVAR_DATA_TYPE{iVarAttrOfVarType};
         if ~isfield(dataobj_VariableAttributes, varAttrName)
             continue
@@ -291,7 +293,7 @@ for i=1:length(dataobj_Variables(:,1))
         % IMPLEMENTATION NOTE: Can NOT assume that every CDF variable is represented among the cell arrays in
         %                      dataobj_VariableAttributes.(...).
         % Example: EM2_CAL_BIAS_SWEEP_LFR_CONF1_1M_2016-04-15_Run1__e1d0a9a__CNES/ROC-SGSE_L2R_RPW-LFR-SURV-CWF_e1d0a9a_CNE_V01.cdf
-        doVarAttrField = dataobj_VariableAttributes.(varAttrName);   % do = dataobj. This variable attribute (e.g. VALIDMIN) for alla zVariables (where present). Nx2 array.
+        doVarAttrField = dataobj_VariableAttributes.(varAttrName);   % DO = dataobj. This variable attribute (e.g. VALIDMIN) for alla zVariables (where present). Nx2 array.
         iAttrZVar = find(strcmp(doVarAttrField(:,1), zVarName));
         if isempty(iAttrZVar)
             % CASE: The current zVariable does not have this attribute (varAttrName).
@@ -568,7 +570,7 @@ if ischar(zVarValue)
     [zVarValue, isRecordBound] = prepare_char_zVarData(zVarValue);
 
 
-    
+
 elseif isnumeric(zVarValue)
     
     % ASSERTION: Check zVar size.
@@ -668,7 +670,7 @@ end
 function sizeVec = normalize_size_vec(sizeVec)
 % IMPLEMENTATION NOTE: sizeVec = [] ==> find returns [] (not a number) ==> 1:[], but that gives the same result as
 % 1:0 so the code works anyway.
-sizeVec = sizeVec(1:find(sizeVec~=1, 1, 'last'));    % "Normalize" size vector.
+sizeVec = sizeVec(1:find(sizeVec ~= 1, 1, 'last'));    % "Normalize" size vector.
 end
 
 

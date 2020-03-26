@@ -60,7 +60,10 @@ function CliData = interpret_CLI_args(cliArgumentList)
 
 
 %==================================================================================
-% Configure permitted RCS ICD CLI options COMMON for all BICAS functionality modes
+% Configure 
+% (1) permitted RCS ICD CLI options COMMON for all BICAS functionality modes
+% (2) RCS ICD CLI options for special input parameters
+% (2) inofficial options
 % NOTE: Exclude the argument for functionality mode itself.
 %==================================================================================
 SW_MODE_REGEXP = '[^-][^-].*';
