@@ -15,7 +15,7 @@ classdef proc_utils
 %============================================================================================================
 % PROPOSAL: Split up in separate files?!
 % PROPOSAL: Move some functions to "utils".
-%   Ex: log_array, log_struct_array, log_tt2000_array (uses bicas.proc_utils_assert_Epoch)
+%   Ex: log_array, log_struct_array, log_tt2000_array (uses bicas.proc_utils_assert_zv_Epoch)
 %
 % PROPOSAL: Write test code for ACQUISITION_TIME_to_tt2000 and its inversion.
 %
@@ -31,9 +31,9 @@ classdef proc_utils
 %
 % PROPOSAL: Split up SPR functions.
 %   convert_N_to_1_SPR_redistribute     -- Keep
-%   convert_N_to_1_SPR_repeat           -- repeat_in_record    + convert_N_to_1_SPR_redistribute
 %   convert_N_to_1_SPR_Epoch            -- increment_in_record + convert_N_to_1_SPR_redistribute
 %   convert_N_to_1_SPR_ACQUISITION_TIME -- Keep
+%   convert_1_to_1_SPR_by_repeating     -- convert_1_to_N_SPR_by_repeating + convert_N_to_1_SPR_redistribute
 
 
 
@@ -44,7 +44,7 @@ classdef proc_utils
             bicas.proc_utils.assert_cell_array_comps_have_same_N_rows(c1)
             
             for i = 1:numel(c1)
-                c2{i} = c1{i}(iFirst:iLast, :, :);
+                c2{i} = c1{i}(iFirst:iLast, :, :,:,:,:);
             end
         end
 
@@ -153,7 +153,7 @@ classdef proc_utils
         %       NOTE: ACQUSITION_TIME can not be negative since it is uint32.
         
             % ASSERTIONS
-            bicas.proc_utils.assert_Epoch(tt2000)
+            bicas.proc_utils.assert_zv_Epoch(tt2000)
 
             % NOTE: Important to type cast to double because of multiplication
             atSeconds = double(int64(tt2000) - spdfcomputett2000(ACQUISITION_TIME_EPOCH_UTC)) * 1e-9;    % at = ACQUISITION_TIME
@@ -412,11 +412,11 @@ classdef proc_utils
         %
         % ARGUMENT
         % ========
-        % v     : (iRecord, iSnapshotSample, iChannel)
+        % zv1     : (iRecord, iSnapshotSample, iChannel)
         %
         % RETURN VALUE
         % ============
-        % v     : (iRecord, iChannel)
+        % zv2     : (iRecord, iChannel). Same number of components, nRecords2 = nRecords1*nSpr1
 
             EJ_library.assert.size(zv1, [NaN, NaN, NaN])
             
@@ -428,16 +428,29 @@ classdef proc_utils
 
 
 
-        function newData = convert_N_to_1_SPR_repeat(oldData, nRepeatsPerOldRecord)
-        % (1) Convert zVariable-like variable from 1 value/record to N values/record (same number of records) by repeating within record.
+        function zv2 = convert_1_to_1_SPR_by_repeating(zv1, nRepeatsPerRecord1)
+        % Two steps:
+        % (1) Convert zVariable-like variable from 1 value/record to N values/record (same number of records) by
+        %     repeating within record.
         % (2) Convert zVariable-like variable from N values/record to 1 value/record by redistributing values.
             
             % ASSERTIONS
-            assert(iscolumn(oldData),              'BICAS:proc_utils:Assertion:IllegalArgument', 'oldData is not a column vector')
-            assert(isscalar(nRepeatsPerOldRecord), 'BICAS:proc_utils:Assertion:IllegalArgument', 'nSamplesPerOldRecord is not a scalar')
+            assert(iscolumn(zv1),                'BICAS:proc_utils:Assertion:IllegalArgument', 'zv1 is not a column vector')
+            assert(isscalar(nRepeatsPerRecord1), 'BICAS:proc_utils:Assertion:IllegalArgument', 'nRepeatsPerRecord1 is not a scalar')
             
-            newData = repmat(oldData, [1,nRepeatsPerOldRecord]);
-            newData = bicas.proc_utils.convert_N_to_1_SPR_redistribute(newData);
+            zv2 = bicas.proc_utils.convert_1_to_N_SPR_by_repeating(zv1, nRepeatsPerRecord1);
+            zv2 = bicas.proc_utils.convert_N_to_1_SPR_redistribute(zv2);
+        end
+        
+        
+        
+        function zv2 = convert_1_to_N_SPR_by_repeating(zv1, nRepeatsPerRecord1)
+            % NOTE: Maybe somewhat unnecessary function.
+            
+            assert(iscolumn(zv1),                'BICAS:proc_utils:Assertion:IllegalArgument', 'zv1 is not a column vector')
+            assert(isscalar(nRepeatsPerRecord1), 'BICAS:proc_utils:Assertion:IllegalArgument', 'nRepeatsPerRecord1 is not a scalar')
+            
+            zv2 = repmat(zv1, [1,nRepeatsPerRecord1]);
         end
 
         
@@ -465,7 +478,7 @@ classdef proc_utils
         % PROPOSAL: Replace by some simpler(?) algorithm that uses column/matrix multiplication.
             
             % ASSERTIONS
-            bicas.proc_utils.assert_Epoch(oldTt2000)
+            bicas.proc_utils.assert_zv_Epoch(oldTt2000)
             if numel(nSpr) ~= 1
                 error('BICAS:proc_utils:Assertion:IllegalArgument', 'nSpr not scalar.')
             elseif size(freqHzWithinRecords, 1) ~= size(oldTt2000, 1)
@@ -666,21 +679,46 @@ classdef proc_utils
         end
 
 
-
-        function newData = nearest_interpolate_float_records(oldData, oldTt2000, newTt2000)
-        % Interpolate ~zVariable to other points in time using nearest neighbour interpolation.
-        % Values outside the interval covered by the old time series will be set to NaN.
-        %
-        % This is intended for interpolating HK values to SCI record times.
-        %
-        % IMPLEMENTATION NOTE: interp1 does seem to require oldData to be float. Using NaN as a "fill value" for the
-        % return value imples that it too has to be a float.
+        
+        function y2 = nearest_interpolate_float_records(zvTt2000_1, y1, zvTt2000_2, method)
+            % Interpolate ~zVariable to other points in time using nearest neighbour interpolation.
+            % Values outside the interval covered by the old time series will be set to NaN.
+            %
+            % This is intended for interpolating HK and current values to SCI record times.
+            %
+            % IMPLEMENTATION NOTE: interp1 does seem to require y1 to be float. Using NaN as a "fill value" for the
+            % return value imples that it too has to be a float.
             
-            bicas.proc_utils.assert_Epoch(oldTt2000)
-            bicas.proc_utils.assert_Epoch(newTt2000)
-            newData = interp1(double(oldTt2000), oldData, double(newTt2000), 'nearest', NaN);
-        end
+            % PROPOSAL: Assertion for whether interpolating is possible.
+            %   NOTE: Depends on method of interpolation / purpose.
+            %       Ex: Currents. Currents can always be extrapolated forward in time, but not backward.
+            %   PROPOSAL: method='previous' ==> check min
+            
+            switch(method)
+                case 'nearest'
+                    assert(...
+                        bicas.proc_utils.is_range_subset(zvTt2000_2, zvTt2000_1), ...
+                        'BICAS:proc_utils:nearest_interpolate_float_records:Assertion:IllegalArgument', ...
+                        'Can not interpolate data since the time range of zvTt2000_2 is not a subset of zvTt2000_1.')
 
+                case 'previous'
+                    % IMPLEMENTATION NOTE: Used for currents which can be extrapolate forward, but not backward.
+                    assert(min(zvTt2000_1) <= min(zvTt2000_2), ...
+                        'BICAS:proc_utils:nearest_interpolate_float_records:Assertion:IllegalArgument', ...
+                        'Can not interpolate data since the time range of zvTt2000_2 does not begin after zvTt2000_1 begins.')
+
+                otherwise
+                    error(...
+                        'BICAS:proc_utils:nearest_interpolate_float_records:Assertion:IllegalArgument', ...
+                        'Illegal argument method="%s".', ...
+                        method)
+            end
+            
+            bicas.proc_utils.assert_zv_Epoch(zvTt2000_1)
+            bicas.proc_utils.assert_zv_Epoch(zvTt2000_2)
+            y2 = interp1(double(zvTt2000_1), y1, double(zvTt2000_2), method, NaN);
+        end
+        
 
 
         function utcStr = tt2000_to_UTC_str(tt2000)
@@ -691,7 +729,7 @@ classdef proc_utils
         
         % PROPOSAL: Move to EJ_library.
             
-            bicas.proc_utils.assert_Epoch(tt2000)
+            bicas.proc_utils.assert_zv_Epoch(tt2000)
             
             %  spdfbreakdowntt2000 converts the CDF TT2000 time, nanoseconds since
             %               2000-01-01 12:00:00 to UTC date/time.
@@ -702,80 +740,6 @@ classdef proc_utils
             %     and nanosecond.
             v = spdfbreakdowntt2000(tt2000);
             utcStr = sprintf('%04i-%02i-%02iT%02i:%02i:%02i.%03i%03i%03i', v(1), v(2), v(3), v(4), v(5), v(6), v(7), v(8), v(9));
-        end
-        
-        
-        
-        % NOTE: Does not recognize HK datasets.
-        % NOTE: Only classifies input datasets. (Is there a good reason for this?)
-        % NOTE: Function deliberately ignores Skeleton_version.
-        % IMPLEMENTATION NOTE: Still recognizes old ROC-SGSE datasets since they may be found in global attribute
-        % DATASET_ID in old test files.
-        %
-        function C = classify_DATASET_ID(datasetId)
-            % PROPOSAL: Use regexp instead.
-            %   PRO: Can more easily handle old ROC-SGSE datasets.
-            %
-            % PROPOSAL: Implement assertsion on DATASET_ID via this function.
-            %   Ex: bicas.assert_DATASET_ID
-            %   Ex: bicas.swmde_defs.assert_DATASET_ID
-            %   CON: Requires strict matching.
-            %   PRO: Does not spread out the knowledge of DATASET_IDs.
-            %   PROPOSAL: Flag for obsoleted DATASET_IDs that may be found in input datasets. Caller decides how to
-            %       respond.
-            % NEED?!: Some way of determining whether an obsoleted and current DATASET_ID are equivalent.
-            
-            EJ_library.assert.castring(datasetId)
-            
-            C.isLfrSbm1 = 0;
-            C.isLfrSbm2 = 0;
-            C.isLfrSwf  = 0;
-            C.isTdsCwf  = 0;
-            C.isTdsRswf = 0;
-            C.isL1      = 0;
-            C.isL1R     = 0;
-            
-            % Shorten function name. MF = Matching Function
-            mf = @(regexpPatternList) (any(EJ_library.utils.regexpf(datasetId, regexpPatternList)));
-            
-            if     mf({'(ROC-SGSE|SOLO)_L1R_RPW-LFR-SBM1-CWF-E', ...
-                                   'SOLO_L1_RPW-LFR-SBM1-CWF'})
-                C.isLfrSbm1  = 1;
-            elseif mf({'(ROC-SGSE|SOLO)_L1R_RPW-LFR-SBM2-CWF-E', ...
-                                   'SOLO_L1_RPW-LFR-SBM2-CWF'})
-                C.isLfrSbm2  = 1;
-            elseif mf({'(ROC-SGSE|SOLO)_L1R_RPW-LFR-SURV-CWF-E', ...
-                                   'SOLO_L1_RPW-LFR-SURV-CWF'})
-                % Do nothing
-            elseif mf({'(ROC-SGSE|SOLO)_L1R_RPW-LFR-SURV-SWF-E', ...
-                        '(ROC-SGSE|SOLO)_L1_RPW-LFR-SURV-SWF'})
-                C.isLfrSwf  = 1;
-            elseif mf({'(ROC-SGSE|SOLO)_L1R_RPW-TDS-LFM-CWF-E', ...
-                                   'SOLO_L1_RPW-TDS-LFM-CWF'})
-                C.isTdsCwf  = 1;
-            elseif mf({'(ROC-SGSE|SOLO)_L1R_RPW-TDS-LFM-RSWF-E', ...
-                                   'SOLO_L1_RPW-TDS-LFM-RSWF'})
-                C.isTdsRswf = 1;
-            else
-                error('BICAS:proc_utils:Assertion:IllegalArgument', 'Illegal DATASET_ID. datasetId="%s"', datasetId)
-            end
-            
-            if     mf({'(ROC-SGSE|SOLO)_L1_RPW-.*'})
-                C.isL1      = 1;
-            elseif mf({'(ROC-SGSE|SOLO)_L1R_RPW-.*'})
-                C.isL1R     = 1;
-            else
-                error('BICAS:proc_utils:Assertion:IllegalArgument', 'Illegal DATASET_ID. datasetId="%s"', datasetId)
-            end
-            
-            EJ_library.assert.struct(C, {...
-                'isLfrSbm1', ...
-                'isLfrSbm2', ...
-                'isLfrSwf', ...
-                'isTdsCwf', ...
-                'isTdsRswf', ...
-                'isL1', ...
-                'isL1R'}, {})
         end
         
         
@@ -853,7 +817,7 @@ classdef proc_utils
 
                 case 'Epoch'
                     % ASSERTIONS
-                    bicas.proc_utils.assert_Epoch(varValue)
+                    bicas.proc_utils.assert_zv_Epoch(varValue)
                     
                     nNanStr          = '-';
                     percentageNanStr = '- ';   % NOTE: Extra whitespace.
@@ -959,9 +923,9 @@ classdef proc_utils
 
 
         % Assert that variable is an "zVar Epoch-like" variable.
-        function assert_Epoch(Epoch)
-        % PROPOSAL: Change name: assert_Epoch_zvar
-        % PROPOSAL: Separate functions: assert_Epoch_zvar, assert_Epoch.
+        function assert_zv_Epoch(Epoch)
+        % PROPOSAL: Change name: assert_zv_Epoch_zvar
+        % PROPOSAL: Separate functions: assert_zv_Epoch_zvar, assert_zv_Epoch.
         
             if ~iscolumn(Epoch)
                 error('BICAS:proc_utils:Assertion:IllegalArgument', 'Argument is not a column vector')   % Right ID?                
@@ -1045,13 +1009,15 @@ classdef proc_utils
         
         
         
-        % If one regards numeric values as defining a range (min to max), return whether is v1 a subset of v2 (not
-        % necessarily proper subset, i.e. equality counts as subset).
-        function isSubset = is_range_subset(v1, v2)
-            EJ_library.assert.vector(v1)
-            EJ_library.assert.vector(v2)
+        % If one regards numeric values as defining a range (min to max), return whether is v1 a subset of v2. Not
+        % necessarily proper subset, i.e. equality counts as subset.
+        %
+        % This is useful if x1 is used to interpolate values y1 from another series (x2,y2).
+        function isSubset = is_range_subset(x1, x2)
+            EJ_library.assert.vector(x1)
+            EJ_library.assert.vector(x2)
             
-            isSubset = (min(v2) <= min(v1)) && (max(v1) <= max(v2));   % NOTE: Equality counts as a subset.
+            isSubset = (min(x2) <= min(x1)) && (max(x1) <= max(x2));   % NOTE: Equality counts as a subset.
         end
         
         

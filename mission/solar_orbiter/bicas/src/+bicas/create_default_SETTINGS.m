@@ -100,17 +100,20 @@ S.define_setting('SW_MODES.L1_LFR_TDS_ENABLED', 0);
 % integer indicating a revision (e.g., bug correction).
 % """"""""
 %###########################################################################################################
+IRF_LONG_NAME = 'Swedish Institute of Space Physics (IRF)';
 S.define_setting('SWD.identification.project',     'ROC');
 S.define_setting('SWD.identification.name',        'BIAS Calibration Software (BICAS)');
 S.define_setting('SWD.identification.identifier',  'BICAS');
 S.define_setting('SWD.identification.description', ...
-    'Calibration software meant to (1) calibrate electric field L2 data from electric L1R LFR and TDS (LFM) data, and (2) calibrate bias currents.');
+    ['Calibration software meant to', ...
+    ' (1) calibrate electric field L2 data from electric L1R LFR and TDS (LFM) data, and', ...
+    ' (2) calibrate bias currents.']);
 S.define_setting('SWD.identification.icd_version', '1.2');   % Technically wrong. In reality iss1rev2, draft 2019-07-11.
 S.define_setting('SWD.release.version',            '1.0.0');
 S.define_setting('SWD.release.date',               '2020-01-20');
 S.define_setting('SWD.release.author',             'Erik P G Johansson, BIAS team, IRF');
 S.define_setting('SWD.release.contact',            'erjo@irfu.se');
-S.define_setting('SWD.release.institute',          'Swedish Institute of Space Physics (IRF)');   % Full name or abbreviation?
+S.define_setting('SWD.release.institute',          IRF_LONG_NAME);   % Full name or abbreviation?
 %S.define_setting('SWD.release.modification',       'Various updates and refactoring; close to complete support for LFR & TDS datasets (but untested); Removed ROC-SGSE_* dataset support.');
 S.define_setting('SWD.release.modification',       'Almost-complete support for LFR & TDS datasets (voltages) with transfer functions (partially tested).');
 S.define_setting('SWD.release.source',             'https://github.com/irfu/irfu-matlab/commits/SOdevel');    % Appropriate branch? "master" instead?
@@ -127,7 +130,27 @@ S.define_setting('INPUT_CDF.LFR.HAVING_SYNCHRO_FLAG_AND_TIME_SYNCHRO_FLAG_WORKAR
 S.define_setting('INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY',     'WARNING')    % PERMIT, WARNING, ERROR
 
 S.define_setting('INPUT_CDF.USING_GA_NAME_VARIANT_POLICY',     'WARNING')    % PERMIT, WARNING, ERROR
+
+% NOTE: This modification applies BEFORE PROCESSING.USE_ZV_ACQUISITION_TIME.HK and therefore always applies to zVar
+% Epoch.
 S.define_setting('INPUT_CDF.NON-INCREMENTING_ZV_EPOCH_POLICY', 'ERROR')      % ERROR, WARNING_SORT
+
+% Whether to replace pad values with NaN internally.
+% NOTE: SOLO_L1_RPW-BIA-CURRENT_V06.skt uses pad value=zero (BUG). Therefore useful.
+S.define_setting('INPUT_CDF.REPLACE_PAD_VALUE_DISABLED',       1)            % 0/false, 1/true.
+
+% List of zVar names for which alternate fill value should be used when the zVars are loaded and interpreted.
+%S.define_setting('INPUT_CDF.OVERRIDE_FILL_VALUE.ZV_NAMES',     {'IBIAS_1', 'IBIAS_2', 'IBIAS_3'})
+S.define_setting('INPUT_CDF.OVERRIDE_FILL_VALUE.ZV_NAMES',     {})
+% Alternate fill value to use.
+S.define_setting('INPUT_CDF.OVERRIDE_FILL_VALUE.FILL_VALUE',   single(-1e31))
+
+
+% For testing, while lacking proper bias current datasets to test with.
+S.define_setting('INPUT_CDF.CURRENT.PREPEND_TEST_DATA',        0)
+% For testing, when HK and SCI time are completely different and do not overlap (though HK time still has to cover a
+% larger interval than SCI). Adds/subtracts HK time so that the first HK timestamp equals the first SCI timestamp.
+S.define_setting('INPUT_CDF.HK.MOVE_TIME_TO_SCI',              0)
 
 
 
@@ -192,7 +215,16 @@ S.define_setting('ENV_VAR_OVERRIDE.ROC_RCS_MASTER_PATH', '');   % ROC_RCS_MASTER
 % Year-month-day-hour-minute-second-millisecond-mikrosecond(0-999)-nanoseconds(0-999)
 % PROPOSAL: Store the value returned by spdfcomputett2000(ACQUISITION_TIME_EPOCH_UTC) instead?
 S.define_setting('PROCESSING.ACQUISITION_TIME_EPOCH_UTC',                       [2000,01,01, 12,00,00, 000,000,000]);
-S.define_setting('PROCESSING.USE_ZV_AQUISITION_TIME_FOR_HK_TIME_INTERPOLATION', 0);
+
+% Whether to use ACQUISITION_TIME instead of Epoch for HK. 
+% NOTE: This change happens AFTER INPUT_CDF.NON-INCREMENTING_ZV_EPOCH_POLICY.
+% NOTE: Setting created so that HK can use ACQUISITION_TIME for interpolating its data to SCI time. Not trivial (but
+% doable) to generalize to SCI data (voltages) since the naming implies using this for all data use, not just the HK-SCI
+% interpolation. Such generalization should ideally be made when reading the dataset, but then code which treats
+% datasets as generic, has to dentify which dataset is SCI. Should not be worth the effort.
+S.define_setting('PROCESSING.USE_ZV_ACQUISITION_TIME.HK',    0)
+
+S.define_setting('PROCESSING.SCI_HK.TIME_NONOVERLAP_POLICY', 'ERROR')    % WARNING, ERROR
 
 
 
@@ -284,7 +316,7 @@ S.define_setting('PROCESSING.LFR.F0_F1_F2_F3_HZ',    [24576, 4096, 256, 16]);   
 
 
 % Quick ~BUGFIX for bad values in zv SAMPLING_RATE in L1R TDS-LFM-RSWF datasets. Remove?
-S.define_setting('PROCESSING.L1R.TDS.RSWF_L1R_ZV_SAMPLING_RATE_DATASET_BUGFIX_ENABLED', 0)
+S.define_setting('PROCESSING.L1R.TDS.RSWF_ZV_SAMPLING_RATE_DATASET_BUGFIX_ENABLED', 0)
 
 % ~BUGFIX for bug in L1/L1R TDS-LFM RSWF datasets.
 % TDS has bugfixed. /2019-12-19
@@ -358,13 +390,13 @@ S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.DISABLE',              0);
 S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.BIAS.DISABLE_OFFSETS', 0);
 % Whether to use transfer functions or scalar multiplication for calibration of signals between antennas and
 % BIAS-LFR/TDS interface. It does not affect the LFR/TDS transfer functions.
-S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.BIAS.TF',             'FULL');    % SCALAR, FULL
+S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.BIAS.TF',              'FULL');    % SCALAR, FULL
 % Whether to use de-trending before applying transfer functions.
-S.define_setting('PROCESSING.CALIBRATION.TF_DETRENDING_ENABLED', 1)
+S.define_setting('PROCESSING.CALIBRATION.TF_DETRENDING_ENABLED',        1)
 % Whether to disable LFR/TDS transfer functions (but still potentially use the BIAS transfer functions).
 % This effectively means that TM voltage corresponds to interface volt.
 % NOTE: This useful for separately using bicas.calib for analyzing BIAS standalone calibration tables (BSACT).
-S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.LFR_TDS.TF_DISABLED', 0);
+S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.LFR_TDS.TF_DISABLED',  0);
 
 
 

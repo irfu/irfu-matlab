@@ -74,19 +74,39 @@ function errorCode = main( varargin )
     %   CON: Too many rows.
     
     
-    % Clear any previous instance of global variables
-    % -----------------------------------------------
-    % This is useful to avoid mistakenly using a previously initialized version of SETTINGS when the
-    % initialization has failed and when developing in MATLAB. Must be done as early as possible in the execution.
-    clear -global CONSTANTS SETTINGS    % Clearing obsoleted variable CONSTANTS for safety.
-    
-    C = bicas.error_safe_constants();
-    L = bicas.logger('bash wrapper', true);   % NOTE: Permitting logging to file in case using inofficial option.
-    
-    
-    
     try
-        errorCode = C.EMIDP_2_INFO('NoError').errorCode;
+        % Clear any previous instance of global variables
+        % -----------------------------------------------
+        % This is useful to avoid mistakenly using a previously initialized version of SETTINGS when the
+        % initialization has failed and when developing in MATLAB. Must be done as early as possible in the execution.
+        clear -global CONSTANTS SETTINGS    % Clearing obsoleted variable CONSTANTS for safety.
+        
+        C = bicas.error_safe_constants();
+        L = bicas.logger('bash wrapper', true);   % NOTE: Permitting logging to file in case using inofficial option.
+        
+        
+        
+        %===================================================================================================================
+        % Initialize irfu-matlab "library"
+        % --------------------------------
+        % Among other things: Sets up paths to within irfu-matlab (excluding .git/).
+        %
+        % NOTE: Prints to stdout. Can not deactivate this behaviour!
+        % NOTE: Should not call irf('check') which looks for updates to irfu-matlab (can not distinguish between updates to
+        %       BICAS or the rest of irfu-matlab).
+        %
+        % IMPLEMENTATION NOTE: bicas.logger.ICD_log_msg uses EJ_library.utils.add_prefix_on_every_row.
+        % ==> Must initialize paths for EJ_library BEFORE using bicas.logger.log/logf.
+        %===================================================================================================================
+        irf('check_path');
+        irf('check_os');              % Maybe not strictly needed.
+        irf('matlab');
+        irf('cdf_leapsecondstable');
+        irf('version')                % Print e.g. "irfu-matlab version: 2017-02-21,  v1.12.6".
+
+    
+    
+        errorCode = C.EMIDP_2_INFO('NoError').errorCode;    % Default error code (i.e. no error).
         main_without_error_handling(varargin, L);
         
     catch Exception1
@@ -96,10 +116,12 @@ function errorCode = main( varargin )
         try
             msg = sprintf('Main function caught an exception. Starting error handling.\n');
         
-            msg = [msg, recursive_exception_msg(Exception1, C)];
+            [msgRecursive, errorCode] = recursive_exception_msg(Exception1, C);
+            msg = [msg, msgRecursive];
             
             msg = [msg, sprintf('Exiting MATLAB application with error code %i.\n', errorCode)];
             L.log('error', msg)
+
             return
             
         catch Exception2    % Deliberately use different variable name to distinguish the exception from the previous one.
@@ -109,9 +131,9 @@ function errorCode = main( varargin )
             
             % NOTE: Only use very, very error-safe code here.
             %       Does not use bicas.logger or similar.
-            fprintf(2, 'Error in the MATLAB code''s error handling.\n');   % Print to stderr.
-            fprintf(2, 'exception2.identifier = "%s"\n', Exception2.identifier);          % Print to stderr.
-            fprintf(2, 'exception2.message    = "%s"\n', Exception2.message);             % Print to stderr.
+            fprintf(2, 'Error in the MATLAB code''s error handling.\n');            % Print to stderr.
+            fprintf(2, 'exception2.identifier = "%s"\n', Exception2.identifier);    % Print to stderr.
+            fprintf(2, 'exception2.message    = "%s"\n', Exception2.message);       % Print to stderr.
             
             % NOTE: The RCS ICD 00037, iss1/rev2, draft 2019-07-11, Section 3.4.3 specifies
             %   error code 0 : No error
@@ -131,7 +153,7 @@ end    % main
 
 % Create logging/error message for a given exception, and which is recursive in Exception.cause.
 %
-function msg = recursive_exception_msg(Exception, C)
+function [msg, errorCode] = recursive_exception_msg(Exception, C)
     
     CAUSES_RECURSIVE_INDENTATION_LENGTH = 8;
 
@@ -160,7 +182,7 @@ function msg = recursive_exception_msg(Exception, C)
         msg  = [msg, sprintf('    %-23s : %s\n', emidp, C.EMIDP_2_INFO(emidp).description)];
     end
     % NOTE: Choice - Uses the last part of the message ID for determining error code to return.
-    %errorCode = C.EMIDP_2_INFO(emidpList{end}).errorCode;
+    errorCode = C.EMIDP_2_INFO(emidpList{end}).errorCode;
     
     %======================
     % Print the call stack
@@ -230,22 +252,6 @@ L.logf('info', [...
 % IMPLEMENTATION NOTE: Runs before irf(...) commands. Added after a problem of calling irf('check_os') which indirectly
 % calls system('hostname') at ROC:roc2-dev. Could be
 L.logf('debug', 'OS environment variable PATH = "%s"', getenv('PATH'));
-
-
-
-%===================================================================================================================
-% Initialize irfu-matlab "library"
-%
-% Among other things: Sets up paths to within irfu-matlab (excluding .git/).
-% NOTE: Prints to stdout. Can not deactivate this behaviour!
-% NOTE: Should not call irf('check') which looks for updates to irfu-matlab (can not distinguish between updates to
-%       BICAS or the rest of irfu-matlab).
-%===================================================================================================================
-irf('check_path');
-irf('check_os');              % Maybe not strictly needed.
-irf('matlab');
-irf('cdf_leapsecondstable');
-irf('version')                % Print e.g. "irfu-matlab version: 2017-02-21,  v1.12.6".
 
 
 

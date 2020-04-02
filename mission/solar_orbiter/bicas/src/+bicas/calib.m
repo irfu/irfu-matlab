@@ -30,20 +30,7 @@
 % DEFINITIONS, NAMING CONVENTIONS
 % ===============================
 % Offset = Value (constant) that is ADDED to (not subtracted from) a measured value during the calibration process.
-% TM     = Telemetry units (in LFR/TDS ADC), or telecommand (TC) units. Using this instead of the term "count".
-% IVolt  = Interface Volt = Calibrated to volt at the interface between BIAS and LFR/TDS.
-% AVolt  = Antenna Volt   = Calibrated to volt at the antennas, i.e. the final calibrated (measured) value, including
-%          for reconstructed signals (e.g. diffs calculated from singles). May also refer to offsets and values without
-%          offsets.
-% Ampere = (Always) ampere bias current
-% TPIV   = TM/interface volt
-% IVPT   = Interface volt/TM
-% APT    = Ampere/TM
-% AVPIV  = Antenna volt per interface volt
-% IVPAV  = Interface volt per antenna volt
-% Deg    = Degrees (angle). 1 revolution=360 degrees=2*pi radians.
-% RPS    = Radians/second
-% Sec    = Seconds
+% CA     = Cell Array
 % --
 % LSF  = LFR Sampling Frequency (F0...F3)
 %        NOTE: When used as an array index, 1=F0, ..., 4=F3.
@@ -52,10 +39,28 @@
 % ITF  = Inverse Transfer Function = TF that describes physical output-to-input (not the reverse)
 % CTI  = CALIBRATION_TABLE_INDEX (zVar)
 % RCTS = RCT CALIBRATION_TABLE (glob.attr)+CALIBRATION_TABLE_INDEX (zVar). S = plural
-% --
-% CA = Cell Array
 %
-% BLTS = BIAS-LFR/TDS Signals
+%
+% UNITS / TYPES OF QUANTITIES
+% ---------------------------
+% TM      = Telemetry units (in LFR/TDS ADC), or telecommand (TC) units. Using this instead of the term "count".
+% IVolt   = Interface Volt = Calibrated volt at the interface between BIAS and LFR/TDS.
+% AVolt   = Antenna Volt   = Calibrated volt at the antennas, i.e. the final calibrated (measured) value, including
+%           for reconstructed signals (e.g. diffs calculated from singles). May also refer to offsets and values without
+%           offsets.
+% AAmpere = Antenna ampere      = Calibrated ampere at the antenna.
+% SAmpere = Set current ampere. Exactly proportional to bias current in TM.
+% TPIV    = TM/interface volt
+% IVPT    = Interface volt/TM
+% AAPT    = Antenna ampere/TM
+% AVPIV   = Antenna volt/interface volt
+% IVPAV   = Interface volt/antenna volt
+% Deg     = Degrees (angle). 1 revolution=360 degrees=2*pi radians.
+% RPS     = Radians/second
+% Sec     = Seconds
+% 
+%
+% BLTS = BIAS-LFR/TDS SIGNAL
 % ---------------------------
 % Signals somewhere between the LFR/TDS ADCs and the non-antenna side of the BIAS demuxer
 % including the BIAS transfer functions. Like BIAS_i, i=1..5, but includes various stages of calibration/non-calibration,
@@ -243,7 +248,7 @@ classdef calib < handle
             obj.BiasGain.gammaIvpav.lowGain    = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.GAMMA_IVPAV.LOW_GAIN');
             
             obj.HkBiasCurrent.offsetTm         = SETTINGS.get_fv('PROCESSING.CALIBRATION.CURRENT.HK.OFFSET_TM');
-            obj.HkBiasCurrent.gainApt          = SETTINGS.get_fv('PROCESSING.CALIBRATION.CURRENT.HK.GAIN_APT');
+            obj.HkBiasCurrent.gainAapt          = SETTINGS.get_fv('PROCESSING.CALIBRATION.CURRENT.HK.GAIN_APT');
             
             obj.lfrLsfOffsetsTm                = SETTINGS.get_fv('PROCESSING.CALIBRATION.VOLTAGE.LFR.LSF_OFFSETS_TM');
 
@@ -274,9 +279,9 @@ classdef calib < handle
                 
                 % Log bias current calibration
                 L.logf('debug', '(%i) BIAS current offsets (%s) [A]',         iEpochL, ...
-                    strjoin(EJ_library.utils.sprintf_many('% 10e', obj.Bias.Current.offsetsAmpere(iEpochL, :)), ', '))
+                    strjoin(EJ_library.utils.sprintf_many('% 10e', obj.Bias.Current.offsetsAAmpere(iEpochL, :)), ', '))
                 L.logf('debug', '(%i) BIAS current gain    (%s) [A/TM unit]', iEpochL, ...
-                    strjoin(EJ_library.utils.sprintf_many('% 10e', obj.Bias.Current.gainsApt(iEpochL, :)),      ', '))
+                    strjoin(EJ_library.utils.sprintf_many('% 10e', obj.Bias.Current.gainsAapt(iEpochL, :)),      ', '))
                 
                 % Log transfer functions (frequency domain), selected frequencies.
                 obj.log_ITF_Z(sprintf('(%i) BIAS DC single',          iEpochL), 'AVolt/IVolt', DC_FREQ_HQ,       @(omegaRps) (obj.Bias.ItfSet.DcSingleAvpiv{iEpochL}.eval(omegaRps)))
@@ -418,7 +423,7 @@ classdef calib < handle
         %
         % NOTE: This is the normal way of obtaining bias current in physical units (as opposed to HK bias current).
         %
-        function biasCurrentAmpere = calibrate_TC_bias_TM_to_bias_current(obj, biasCurrentTm, iAntenna, iCalibTimeL)
+        function biasCurrentAAmpere = calibrate_TC_bias_TM_to_bias_current(obj, biasCurrentTm, iAntenna, iCalibTimeL)
             
             % ASSERTION
             assert(isa(biasCurrentTm, 'int16'))
@@ -426,11 +431,11 @@ classdef calib < handle
             %==============================
             % Obtain calibration constants
             %==============================
-            offsetAmpere = obj.Bias.Current.offsetsAmpere(iCalibTimeL, iAntenna);
-            gainApt      = obj.Bias.Current.gainsApt(     iCalibTimeL, iAntenna);
+            offsetAAmpere = obj.Bias.Current.offsetsAAmpere(iCalibTimeL, iAntenna);
+            gainAapt      = obj.Bias.Current.gainsAapt(     iCalibTimeL, iAntenna);
 
             % CALIBRATE
-            biasCurrentAmpere = offsetAmpere + gainApt .* double(biasCurrentTm);    % LINEAR FUNCTION
+            biasCurrentAAmpere = offsetAAmpere + gainAapt .* double(biasCurrentTm);    % LINEAR FUNCTION
         end
 
 
@@ -453,7 +458,7 @@ classdef calib < handle
         % "Telemetry". (Not to be confused with the corresponding telecommands.). The conversion functions are identical
         % for all three probes.
         %
-        function biasCurrentAmpere = calibrate_HK_bias_TM_to_bias_current(obj, biasCurrentTm, iAntenna)
+        function biasCurrentAAmpere = calibrate_HK_bias_TM_to_bias_current(obj, biasCurrentTm, iAntenna)
             
             % ASSERTION: zVar HK_BIA_BIAS1/2/3's class in BIAS HK.
             % Not strictly required, but the variable has to be some integer.
@@ -468,7 +473,7 @@ classdef calib < handle
             %     TM-to-calibrated values.
             %===================================================================================================
             biasCurrentTm     = bitxor(biasCurrentTm, hex2dec('8000'));                       % FLIP BIT
-            biasCurrentAmpere = obj.HkBiasCurrent.gainApt(iAntenna) * ...
+            biasCurrentAAmpere = obj.HkBiasCurrent.gainAapt(iAntenna) * ...
                 (biasCurrentTm + obj.HkBiasCurrent.offsetTm(iAntenna));  % LINEAR FUNCTION
         end
         
@@ -1005,18 +1010,21 @@ classdef calib < handle
         % changes in the middle of CWF), and which Epoch values should be used to determine calibration time (e.g. first
         % Epoch value for a snapshot determines entire snapshot).
         %
+        % NOTE: Method is public so that automatic test code can call get_calibration_time.
+        %
+        %
         % ARGUMENTS AND RETURN VALUES
         % ===========================
         % Epoch          : Column vector with Epoch values.
         % CalibEpochList : List of monotonically increasing timestamps ("Epoch format").
         %                  In practice intended to be Bias.epochL or Bias.epochH.
-        % iCalibList     : Array. iCalibList(i) = calibration time index for Epoch(i).
+        % iCalib         : Array. iCalibList(i) = calibration time index for Epoch(i).
         %
         function [iCalib] = get_calibration_time(Epoch, CalibEpochList)
             
             % ASSERTIONS
-            bicas.proc_utils.assert_Epoch(Epoch)
-            bicas.proc_utils.assert_Epoch(CalibEpochList)
+            bicas.proc_utils.assert_zv_Epoch(Epoch)
+            bicas.proc_utils.assert_zv_Epoch(CalibEpochList)
             % IMPLEMENTATION NOTE: Does not work if CalibEpochList is empty, since discretize behaves differently for
             % scalar second argument.
             assert(~isempty(CalibEpochList))
@@ -1027,7 +1035,9 @@ classdef calib < handle
             % this problem. If one does not add infinities and uses a scalar edge list, then one has to treat those
             % cases manually.
             iCalib = discretize(Epoch, [CalibEpochList; Inf], 'IncludedEdge', 'left');
-            assert(all(~isnan(iCalib(:))), 'Can not derive which calibration data to use for all specified timestamps.')
+            assert(all(~isnan(iCalib(:))), ...
+                'BICAS:calib:SWModeProcessing', ...
+                'Can not derive which calibration data to use for all specified timestamps.')
         end
 
 
@@ -1045,10 +1055,22 @@ classdef calib < handle
 %             
 %             error('BICAS:calib:OperationNotImplemented', 'Function not implemented Yet.')
 %         end
+        
+        
+        
+        % Convert "set current" to TC.
+        %
+        function biasCurrentTm = calibrate_set_current_to_bias_current(currentSAmpere)
+            assert(all(abs(currentSAmpere(:)) <= 60e-6), ...
+            'BICAS:calib:Assertion:IllegalArgument', ...
+                'Argument currentSAmpere contains illegally large value(s).')
+            
+            biasCurrentTm = int16(currentSAmpere * 32768/60e-6);
+        end
 
 
 
-    end    % methods(Static)
+    end    % methods(Static, Access=public)
 
 
 

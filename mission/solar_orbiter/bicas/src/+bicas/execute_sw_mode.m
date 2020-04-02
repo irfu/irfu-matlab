@@ -226,12 +226,15 @@ function [Zvs, GlobalAttributes] = read_dataset_CDF(filePath, SETTINGS, L)
 % NOTE: HK TIME_SYNCHRO_FLAG can be empty.
 
 
+disableReplacePadValue        = SETTINGS.get_fv('INPUT_CDF.REPLACE_PAD_VALUE_DISABLED');
+[ofvZvList,  ovfZvSettingKey] = SETTINGS.get_fv('INPUT_CDF.OVERRIDE_FILL_VALUE.ZV_NAMES');
+[ofvFillVal, ovfFvSettingKey] = SETTINGS.get_fv('INPUT_CDF.OVERRIDE_FILL_VALUE.FILL_VALUE');
 
 %===========
 % Read file
 %===========
 L.logf('info', 'Reading CDF file: "%s"', filePath)
-DataObj = dataobj(filePath);                 % do=dataobj, i.e. irfu-matlab's dataobj!!!
+DataObj = dataobj(filePath);
 
 
 
@@ -258,9 +261,19 @@ for iZv = 1:length(zVariableNameList)
         [fillValue, padValue] = get_fill_pad_values(DataObj, zvName);
         if ~isempty(fillValue)
             % CASE: There is a fill value.
+            
+            if any(ismember(zvName, ofvZvList))
+                L.logf('warning', ...
+                    'Overriding input CDF fill value with %d due to settings "%s" and "%s".', ...
+                    ofvFillVal, ovfZvSettingKey, ovfFvSettingKey)
+                fillValue = ofvFillVal;
+            end
+            
             zvValue = bicas.utils.replace_value(zvValue, fillValue, NaN);
         end
-        zvValue = bicas.utils.replace_value(zvValue, padValue,  NaN);
+        if ~disableReplacePadValue
+            zvValue = bicas.utils.replace_value(zvValue, padValue,  NaN);
+        end
     else
         % Disable?! Only print warning if actually finds fill value which is not replaced?
         %L.logf('warning', 'Can not handle replace fill/pad values for zVariable "%s" when reading "%s".', zVariableName, filePath))
@@ -288,7 +301,7 @@ bicas.proc_utils.log_zVars(ZvsLog, L)
 % https://gitlab.obspm.fr/ROC/RCS/BICAS/issues/7#note_11016
 % states that the correct string is "Dataset_ID".
 %=================================================================================
-[GlobalAttributes, fnChangeList] = bicas.utils.normalize_struct_fieldnames(DataObj.GlobalAttributes, ...
+[GlobalAttributes, fnChangeList] = EJ_library.utils.normalize_struct_fieldnames(DataObj.GlobalAttributes, ...
     {{{'DATASET_ID', 'Dataset_ID'}, 'Dataset_ID'}}, 'Assert one matching candidate');
 msgFunc = @(oldFn, newFn) (sprintf(...
     'Global attribute in input dataset\n    "%s"\nuses illegal alternative "%s" instead of "%s".\n', ...
@@ -424,6 +437,8 @@ for iPdFieldName = 1:length(pdFieldNameList)
     % Prepare PDV zVariable value:
     % (1) Replace NaN-->fill value
     % (2) Convert to the right MATLAB class
+    %
+    % NOTE: If pad values have been replaced with NaN (when reading CDF), then 
     %=======================================
     if isfloat(zvValue)
         [fillValue, ~] = get_fill_pad_values(DataObj, zvName);
@@ -462,7 +477,7 @@ DataObj.GlobalAttributes.Provider            = GlobalAttributesSubset.Provider; 
 %DataObj.GlobalAttributes.SPECTRAL_RANGE_MAX
 %DataObj.GlobalAttributes.TIME_MIN
 %DataObj.GlobalAttributes.TIME_MAX
-%DataObj.GlobalAttribute CAVEATS ?!! ROC DFMD hints that value should not be set dynamically. (See meaning of non-italic black text for global attribute name in table.)
+%DataObj.GlobalAttribute.CAVEATS ?!! ROC DFMD hints that value should not be set dynamically. (See meaning of non-italic black text for global attribute name in table.)
 
 
 
@@ -524,11 +539,10 @@ for fn = fieldnames(DataObj.data)'
                         'Ignoring empty non-numeric master CDF zVariable "%s" due to setting "%s" = "%s".', ...
                         zvName, settingKey, settingValue)
                 case 'ERROR'
-                    L.logf('error', ...
-                        'Error for empty non-numeric master CDF zVariable "%s" due to setting "%s" = "%s".', ...
+                    error('BICAS:execute_sw_mode:DatasetFormat', 'Error for empty non-numeric master CDF zVariable "%s" due to setting "%s" = "%s".', ...
                         zvName, settingKey, settingValue)
                 otherwise
-                    error('Illegal settings value: "%s" = "%s"', settingKey, settingValue)
+                    error('BICAS:execute_sw_mode:ConfigurationBug', 'Illegal settings value: "%s" = "%s"', settingKey, settingValue)
             end
         end
     end
@@ -576,7 +590,7 @@ end
 % Write to CDF file using write_CDF_dataobj
 %===========================================
 L.logf('info', 'Writing dataset CDF file: %s', outputFile)
-bicas.utils.write_CDF_dataobj( ...
+EJ_library.utils.write_CDF_dataobj( ...
     outputFile, ...
     DataObj.GlobalAttributes, ...
     DataObj.data, ...

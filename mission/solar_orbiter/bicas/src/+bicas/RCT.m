@@ -151,13 +151,13 @@ classdef RCT
             try
                 % NOTE: Assumes 1 CDF record or many (time-dependent values).
                 % ==> Must handle that dataobj assigns differently for these two cases.
-                epochL                   = bicas.RCT.norm_do_zv(Do.data.Epoch_L);
-                epochH                   = bicas.RCT.norm_do_zv(Do.data.Epoch_H);
-                biasCurrentOffsetsAmpere = bicas.RCT.norm_do_zv(Do.data.BIAS_CURRENT_OFFSET);      % DEPEND_0 = Epoch_L
-                biasCurrentGainsApt      = bicas.RCT.norm_do_zv(Do.data.BIAS_CURRENT_GAIN);        % DEPEND_0 = Epoch_L
-                dcSingleOffsetsAVolt     = bicas.RCT.norm_do_zv(Do.data.V_OFFSET);                 % DEPEND_0 = Epoch_H
-                dcDiffOffsetsAVolt       = bicas.RCT.norm_do_zv(Do.data.E_OFFSET);                 % DEPEND_0 = Epoch_H
-                ftfCoeffs                = bicas.RCT.norm_do_zv(Do.data.TRANSFER_FUNCTION_COEFFS); % DEPEND_0 = Epoch_L
+                epochL                    = bicas.RCT.norm_do_zv(Do.data.Epoch_L);
+                epochH                    = bicas.RCT.norm_do_zv(Do.data.Epoch_H);
+                biasCurrentOffsetsAAmpere = bicas.RCT.norm_do_zv(Do.data.BIAS_CURRENT_OFFSET);      % DEPEND_0 = Epoch_L
+                biasCurrentGainsAapt      = bicas.RCT.norm_do_zv(Do.data.BIAS_CURRENT_GAIN);        % DEPEND_0 = Epoch_L
+                dcSingleOffsetsAVolt      = bicas.RCT.norm_do_zv(Do.data.V_OFFSET);                 % DEPEND_0 = Epoch_H
+                dcDiffOffsetsAVolt        = bicas.RCT.norm_do_zv(Do.data.E_OFFSET);                 % DEPEND_0 = Epoch_H
+                ftfCoeffs                 = bicas.RCT.norm_do_zv(Do.data.TRANSFER_FUNCTION_COEFFS); % DEPEND_0 = Epoch_L
 
                 nEpochL = size(epochL, 1);
                 nEpochH = size(epochH, 1);
@@ -187,12 +187,12 @@ classdef RCT
                 Bias.epochL = epochL;
                 Bias.epochH = epochH;
 
-                Bias.Current.offsetsAmpere   = biasCurrentOffsetsAmpere;
-                Bias.Current.gainsApt        = biasCurrentGainsApt;
-                Bias.dcSingleOffsetsAVolt    = dcSingleOffsetsAVolt;
-                Bias.DcDiffOffsets.E12AVolt  = dcDiffOffsetsAVolt(:, 1);
-                Bias.DcDiffOffsets.E13AVolt  = dcDiffOffsetsAVolt(:, 2);
-                Bias.DcDiffOffsets.E23AVolt  = dcDiffOffsetsAVolt(:, 3);
+                Bias.Current.offsetsAAmpere = biasCurrentOffsetsAAmpere;
+                Bias.Current.gainsAapt      = biasCurrentGainsAapt;
+                Bias.dcSingleOffsetsAVolt   = dcSingleOffsetsAVolt;
+                Bias.DcDiffOffsets.E12AVolt = dcDiffOffsetsAVolt(:, 1);
+                Bias.DcDiffOffsets.E13AVolt = dcDiffOffsetsAVolt(:, 2);
+                Bias.DcDiffOffsets.E23AVolt = dcDiffOffsetsAVolt(:, 3);
 
                 % NOTE: Using name "ItfSet" only to avoid "Itfs" (plural). (List, Table would be wrong? Use "ItfTable"?)
                 Bias.ItfSet.DcSingleAvpiv = bicas.RCT.create_ITF_sequence(...
@@ -227,17 +227,17 @@ classdef RCT
                 %==========================================================================
                 % ASSERTIONS: All variables NOT based on tfCoeffs/TRANSFER_FUNCTION_COEFFS
                 %==========================================================================
-                bicas.proc_utils.assert_Epoch(Bias.epochL)
-                bicas.proc_utils.assert_Epoch(Bias.epochH)
+                bicas.proc_utils.assert_zv_Epoch(Bias.epochL)
+                bicas.proc_utils.assert_zv_Epoch(Bias.epochH)
                 validateattributes(Bias.epochL, {'numeric'}, {'increasing'})
                 validateattributes(Bias.epochH, {'numeric'}, {'increasing'})
 
-                assert(ndims(Bias.Current.offsetsAmpere)    == 2)
-                assert(size( Bias.Current.offsetsAmpere, 1) == nEpochL)
-                assert(size( Bias.Current.offsetsAmpere, 2) == 3)
-                assert(ndims(Bias.Current.gainsApt)         == 2)
-                assert(size( Bias.Current.gainsApt, 1)      == nEpochL)
-                assert(size( Bias.Current.gainsApt, 2)      == 3)
+                assert(ndims(Bias.Current.offsetsAAmpere)    == 2)
+                assert(size( Bias.Current.offsetsAAmpere, 1) == nEpochL)
+                assert(size( Bias.Current.offsetsAAmpere, 2) == 3)
+                assert(ndims(Bias.Current.gainsAapt)         == 2)
+                assert(size( Bias.Current.gainsAapt, 1)      == nEpochL)
+                assert(size( Bias.Current.gainsAapt, 2)      == 3)
                 assert(ndims(Bias.dcSingleOffsetsAVolt)      == 2)
                 assert(size( Bias.dcSingleOffsetsAVolt, 1)   == nEpochH)
                 assert(size( Bias.dcSingleOffsetsAVolt, 2)   == 3)
@@ -276,10 +276,10 @@ classdef RCT
                 freqTableHz{3}  = shiftdim(Do.data.Freqs_F2.data);
                 freqTableHz{4}  = shiftdim(Do.data.Freqs_F3.data);
 
-                amplTableTpiv{1}  = shiftdim(Do.data.TF_BIAS_12345_amplitude_F0.data);
-                amplTableTpiv{2}  = shiftdim(Do.data.TF_BIAS_12345_amplitude_F1.data);
-                amplTableTpiv{3}  = shiftdim(Do.data.TF_BIAS_12345_amplitude_F2.data);
-                amplTableTpiv{4}  = shiftdim(Do.data.TF_BIAS_123_amplitude_F3.data);
+                amplTableTpiv{1} = shiftdim(Do.data.TF_BIAS_12345_amplitude_F0.data);
+                amplTableTpiv{2} = shiftdim(Do.data.TF_BIAS_12345_amplitude_F1.data);
+                amplTableTpiv{3} = shiftdim(Do.data.TF_BIAS_12345_amplitude_F2.data);
+                amplTableTpiv{4} = shiftdim(Do.data.TF_BIAS_123_amplitude_F3.data);
 
                 phaseTableDeg{1} = shiftdim(Do.data.TF_BIAS_12345_phase_F0.data);
                 phaseTableDeg{2} = shiftdim(Do.data.TF_BIAS_12345_phase_F1.data);

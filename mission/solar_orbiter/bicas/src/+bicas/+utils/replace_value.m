@@ -5,23 +5,28 @@
 %
 % NOTE: Handles NaN as any other value.
 %
+% IMPLEMENTATION NOTE: Can not use changem since:
+% (1) it does not handle replacement NaN-->x (needed when writing CDF files). The reverse works though.
+% (2) it does not check (assert) if the old or new values fit into the data (given the data type).
+%
+%
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
 % First created 2016-10-05
 %
 function x = replace_value(x, oldValue, newValue)
-% QUESTION: Is it appropriate to use assert that x must be able to have the value of oldValue (not newValue)?
-%     replace(x, NaN, newValue) could be OK for integer x since it does not do anything.
-
-% ASSERTION
-if ~isfloat(x) && (isnan(oldValue) || isnan(newValue))
-    error('BICAS:replace_value:Assertion:IllegalArgument', 'Using NaN for non-float data.')
-end
-
-if isnan(oldValue)
-    i = isnan(x);
-else
-    i = (x==oldValue);
-end
-x(i) = newValue;
-
+    % TODO-DECISION: Is it appropriate to use assert that x must be able to have the value of oldValue (not newValue)?
+    %     replace(x, NaN, newValue) could be OK for integer x since it does not do anything.
+    
+    % ASSERTION
+    if ~isfloat(x) && (isnan(oldValue) || isnan(newValue))
+        error('BICAS:replace_value:Assertion:IllegalArgument', 'Using NaN for non-float data.')
+    end
+    
+    if isnan(oldValue)
+        i = isnan(x);
+    else
+        i = (x==oldValue);
+    end
+    x(i) = newValue;
+    
 end

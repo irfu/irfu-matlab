@@ -157,6 +157,7 @@ classdef swmode_defs
                 'outputSkeletonVersion', {'08',  '08'});
             
             
+            CUR_INPUT_DEF = obj.def_input_dataset('in_cur', 'SOLO_L1_RPW-BIA-CURRENT', 'CUR_cdf');
             
             SwModeList = EJ_library.utils.empty_struct([0,1], ...
                 'prodFunc', 'cliOption', 'swdPurpose', 'inputsList', 'outputsList');
@@ -192,7 +193,7 @@ classdef swmode_defs
                             SETTINGS, L), ...
                         strmod('LFR-<SBMx/SURV>-<C/SWF>-E<SWM suffix>'), ...
                         strmod('Generate <SBMx/SURV> <C/SWF> electric field L2 data (potential difference) from LFR <InLvl> data.<SWM purpose amendm>'), ...
-                        [SCI_INPUT_DEF, HK_INPUT_DEF], [SCI_OUTPUT_DEF]);
+                        [SCI_INPUT_DEF, CUR_INPUT_DEF, HK_INPUT_DEF], [SCI_OUTPUT_DEF]);
                 end
 
                 %==============================================
@@ -223,7 +224,7 @@ classdef swmode_defs
                             SETTINGS, L), ...
                         strmod('TDS-LFM-<C/RSWF>-E<SWM suffix>'), ...
                         strmod('Generate <C/RSWF> electric field L2 data (potential difference) from TDS LF mode <InLvl> data.<SWM purpose amendm>'), ...
-                        [SCI_INPUT_DEF, HK_INPUT_DEF], [SCI_OUTPUT_DEF]);
+                        [SCI_INPUT_DEF, CUR_INPUT_DEF, HK_INPUT_DEF], [SCI_OUTPUT_DEF]);
                 end
             end    % for iInputLevel = 1:numel(inputDatasetLevelList)
             

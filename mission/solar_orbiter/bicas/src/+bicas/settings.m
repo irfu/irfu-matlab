@@ -5,7 +5,12 @@
 %
 % CONCEPT
 % =======
-% Data/settings are stored as a set of key-value pairs. Keys are strings and values can be strings or numbers.
+% Data/settings are stored as a set of key-value pairs.
+%   Keys : String
+%   Value : One of below:
+%       (1) strings
+%       (2) numbers (1D vector)
+%       (3) cell array of strings (1D vector)
 % --
 % A settings object progress through three phases, in order, and stays ROC_PIP_NAME/write-protected in the last phase:
 % (1) From creation: New keys can be defined and set to their initial values.
@@ -22,6 +27,10 @@
 % ====
 % Class stores all overriden values, not just the latest ones. This has not been taken advantage of yet, but is
 % intended for better logging the sources of settings and how they override each other. /2020-01-23
+%
+%
+% ~BUG POTENTIAL: Support for 1D cell arrays may not be completely implemented.
+%   ~BUG: Does not currently support setting 0x0 vectors (requires e.g. 0x1). Inconvenient.
 % 
 %
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
@@ -120,10 +129,24 @@ classdef settings < handle
             if obj.DataMap.isKey(key)
                 error('BICAS:settings:Assertion:ConfigurationBug', 'Trying to define pre-existing settings key.')
             end
-            assert(ischar(defaultValue) || isnumeric(defaultValue))
+            
+            % ASSERTIONS
+            if ischar(defaultValue)
+                % Do nothing
+            elseif isnumeric(defaultValue) || iscell(defaultValue)
+                EJ_library.assert.vector(defaultValue)
+            else
+                error('BICAS:settings:Assertion:IllegalArgument', 'Argument defaultValue is illegal.')
+            end
             
             
-            obj.DataMap(key) = struct('value', defaultValue, 'valueSource', 'default');
+            
+            % NOTE: Needs to be able to handle cell-valued values.
+            Setting = struct(...
+                'value',       {defaultValue}, ...
+                'valueSource', {'default'});
+            assert(isscalar(Setting))
+            obj.DataMap(key) = Setting;
         end
 
 

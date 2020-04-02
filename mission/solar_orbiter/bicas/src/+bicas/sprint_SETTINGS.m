@@ -27,11 +27,13 @@ function str = sprint_SETTINGS(SETTINGS)
 %
 
 % IMPLEMENTATION NOTE: Only prints "Settings" as a header (not "constants") to indicate/hint that it is only the content
-% of the "SETTINGS" variables, and not of constants.m.
-str =       sprintf('\nSETTINGS\n');
-str = [str, sprintf(  '========\n')];
+% of the "SETTINGS" variables, and not of error_safe_constants.m.
+str = sprintf([...
+    '\n', ...
+    'SETTINGS\n', ...
+    '========\n']);
 
-keyList = sort(SETTINGS.get_keys());   % Values seem sorted from the method, but sort again just to be sure.
+keyList      = sort(SETTINGS.get_keys());   % Values seem sorted from the method, but sort again just to be sure.
 lengthMaxKey = max(cellfun(@length, keyList));
 
 
@@ -51,10 +53,23 @@ for iKey = 1:length(keyList)
         
         if ischar(value)
             strValue = ['"', value, '"'];
+            
         elseif isnumeric(value)
-            strValue = sprintf('%d ', value);    % Extra whitespace important for printing arrays. Works for all dimensionalities (are made into "string row vector").
+            EJ_library.assert.vector(value)
+            if isscalar(value)
+                strValue = sprintf('%d', value);
+            else
+                strArray = EJ_library.utils.sprintf_many('%d', value);
+                strValue = sprintf('[%s]', strjoin(strArray, ', '));
+            end
+            
+        elseif iscell(value)
+            EJ_library.assert.vector(value)
+            strValue = sprintf('{"%s"}', strjoin(value, '", "'));
+            
         else
-            error('BICAS:sprintf_settings:Assertion', 'SETTINGS value (overriden or not) for key="%s" has illegal MATLAB class. Is neither char nor numeric.', 'key')
+            error('BICAS:sprintf_settings:Assertion', ...
+                'SETTINGS value (overriden or not) for key="%s" has illegal MATLAB class. It is neither char nor numeric.', key)
         end
         strValueList{iVs} = strValue;
         clear strValue value

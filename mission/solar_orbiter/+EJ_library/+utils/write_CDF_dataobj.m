@@ -8,9 +8,7 @@ function write_CDF_dataobj(filePath, ...
 % to a CDF file. Originally based on write_cdf.m/write_cdf_spdfcdfread.m.
 %
 %
-% IMPORTANT NOTE: This function replaces "write_CDF_spdfcdfread.m".
-%
-% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2016-07-12 (as write_cdf.m/write_cdf_spdfcdfread.m), 2016-10-20 (as write_cdf_dataobj.m)
 %
 %
@@ -131,8 +129,6 @@ function write_CDF_dataobj(filePath, ...
 
 
 %=======================================================================================================================
-% "BUG": ROC requires cdf files to use md5 checksums, but this code does not.
-%
 % PROPOSAL: Implement using NASA SPDFs Java code instead?!! Should be possible to easily call Java code from inside MATLAB.
 %   PRO?: Java interface might be more easy to work with and have fewer quirks & limitations.
 %

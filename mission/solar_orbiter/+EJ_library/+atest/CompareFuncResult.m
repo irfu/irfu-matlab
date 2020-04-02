@@ -86,8 +86,8 @@ classdef CompareFuncResult
             
             % MATLAB R2016a: "isequalwithequalnans is not recommended. Use ISEQUALN instead."
             DEFAULT_SETTINGS = struct('equalsFunc', @isequalwithequalnans);
-            Settings        = EJ_library.utils.interpret_settings_args(DEFAULT_SETTINGS, varargin);
-            obj.equalsFunc  = Settings.equalsFunc;
+            Settings         = EJ_library.utils.interpret_settings_args(DEFAULT_SETTINGS, varargin);
+            obj.equalsFunc   = Settings.equalsFunc;
         end
 
 

@@ -1,6 +1,6 @@
 function normalize_struct_fieldnames___ATEST
     
-    NewTest = @(inputs, expOutputsException) (EJ_library.atest.CompareFuncResult(@bicas.utils.normalize_struct_fieldnames, ...
+    NewTest = @(inputs, expOutputsException) (EJ_library.atest.CompareFuncResult(@EJ_library.utils.normalize_struct_fieldnames, ...
         inputs, expOutputsException));
     ECA = cell(1,0);
     tl = {};
