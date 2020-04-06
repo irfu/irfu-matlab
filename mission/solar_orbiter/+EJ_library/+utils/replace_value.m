@@ -10,7 +10,7 @@
 % (2) it does not check (assert) if the old or new values fit into the data (given the data type).
 %
 %
-% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2016-10-05
 %
 function x = replace_value(x, oldValue, newValue)

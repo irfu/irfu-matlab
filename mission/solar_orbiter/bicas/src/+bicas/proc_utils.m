@@ -601,6 +601,8 @@ classdef proc_utils
         % freqHz           : Frequency column vector in s^-1. Can not handle freqHz=NaN since the output is an integer.
         % nSpr             : Number of samples/record.
         % DELTA_PLUS_MINUS : Analogous to BIAS zVariable. CDF_INT8=int64. NOTE: Unit ns.
+        
+            ZV_DELTA_PLUS_MINUS_DATA_TYPE = 'CDF_INT8';
             
             if ~iscolumn(freqHz) || ~isfloat(freqHz) || any(isnan(freqHz))
                 error('BICAS:proc_utils:Assertion:IllegalArgument', '"freqHz" is not a column vector of non-NaN floats.')
@@ -613,7 +615,8 @@ classdef proc_utils
             for i = 1:length(freqHz)
                 DELTA_PLUS_MINUS(i, :) = 1./freqHz(i) * 1e9 * 0.5;      % Seems to work for more than 2D.
             end
-            DELTA_PLUS_MINUS = cast(DELTA_PLUS_MINUS, bicas.utils.convert_CDF_type_to_MATLAB_class('CDF_INT8',  'Only CDF data types'));
+            DELTA_PLUS_MINUS = cast(DELTA_PLUS_MINUS, EJ_library.utils.convert_CDF_type_to_MATLAB_class(...
+                ZV_DELTA_PLUS_MINUS_DATA_TYPE, 'Only CDF data types'));
         end
         
         
@@ -666,7 +669,7 @@ classdef proc_utils
 %             % Unique time for every sample in every record.
 %             SAMP_DTIME = iSampleMatrix .* periodNsMatrix;
 %             
-%             SAMP_DTIME = cast(SAMP_DTIME, bicas.utils.convert_CDF_type_to_MATLAB_class('CDF_UINT4',  'Only CDF data types'));
+%             SAMP_DTIME = cast(SAMP_DTIME, EJ_library.utils.convert_CDF_type_to_MATLAB_class('CDF_UINT4',  'Only CDF data types'));
 %         end
         
         
@@ -721,25 +724,12 @@ classdef proc_utils
         
 
 
-        function utcStr = tt2000_to_UTC_str(tt2000)
+        function utcStr = tt2000_to_UTC_str(zvTt2000)
         % Convert tt2000 value to UTC string with nanoseconds.
-        %
-        % Example: 2016-04-16T02:26:14.196334848
-        % NOTE: This is the inverse to spdfparsett2000.
-        
-        % PROPOSAL: Move to EJ_library.
             
-            bicas.proc_utils.assert_zv_Epoch(tt2000)
+            bicas.proc_utils.assert_zv_Epoch(zvTt2000)
             
-            %  spdfbreakdowntt2000 converts the CDF TT2000 time, nanoseconds since
-            %               2000-01-01 12:00:00 to UTC date/time.
-            %
-            %     OUT = spdfbreakdowntt2000(tt2000) returns the UTC date/time from CDF TT2000
-            %     time. OUT is an array with each row having nine (9) numerical values
-            %     for year, month, day, hour, minute, second, millisecond, microsecond
-            %     and nanosecond.
-            v = spdfbreakdowntt2000(tt2000);
-            utcStr = sprintf('%04i-%02i-%02iT%02i:%02i:%02i.%03i%03i%03i', v(1), v(2), v(3), v(4), v(5), v(6), v(7), v(8), v(9));
+            utcStr = EJ_library.utils.CDF_tt2000_to_UTC_str(zvTt2000);
         end
         
         
@@ -877,7 +867,8 @@ classdef proc_utils
                 zvName  = fnList{iFn};
                 zvValue = Zvs.(zvName);
                 
-                if iscolumn(zvValue) && isa(zvValue, 'int64') && any(EJ_library.utils.regexpf(zvName, {'Epoch.*', '.*Epoch'}))
+                if iscolumn(zvValue) && isa(zvValue, 'int64') ...
+                        && any(EJ_library.utils.regexpf(zvName, {'Epoch.*', '.*Epoch', '.*tt2000.*'}))
                     % CASE: Epoch-like variable.
                     
                     ColumnStrs(end+1) = bicas.proc_utils.log_array(zvName, zvValue, 'Epoch');

@@ -56,6 +56,10 @@ function execute_sw_mode(SwModeInfo, InputFilePathMap, OutputFilePathMap, master
 %
 % PROPOSAL: Print variable statistics also for zVariables which are created with fill values.
 %   NOTE: These do not use NaN, but fill values.
+%
+% PROPOSAL: read_dataset_CDF, write_dataset_CDF as separate function files.
+%
+% PROPOSAL: Abolish get_fill_pad_values and using EJ_library.utils.get_zvs_metadata_struct instead.
 
 
 
@@ -269,10 +273,10 @@ for iZv = 1:length(zVariableNameList)
                 fillValue = ofvFillVal;
             end
             
-            zvValue = bicas.utils.replace_value(zvValue, fillValue, NaN);
+            zvValue = EJ_library.utils.replace_value(zvValue, fillValue, NaN);
         end
         if ~disableReplacePadValue
-            zvValue = bicas.utils.replace_value(zvValue, padValue,  NaN);
+            zvValue = EJ_library.utils.replace_value(zvValue, padValue,  NaN);
         end
     else
         % Disable?! Only print warning if actually finds fill value which is not replaced?
@@ -433,20 +437,21 @@ for iPdFieldName = 1:length(pdFieldNameList)
     zvValue = ZvsSubset.(zvName);
     ZvsLog.(zvName) = zvValue;
     
-    %=======================================
+    %================================================================================================================
     % Prepare PDV zVariable value:
     % (1) Replace NaN-->fill value
     % (2) Convert to the right MATLAB class
     %
-    % NOTE: If pad values have been replaced with NaN (when reading CDF), then 
-    %=======================================
+    % NOTE: If both fill values and pad values have been replaced with NaN (when reading CDF), then the code can not
+    % distinguish between fill values and pad values.
+    %================================================================================================================
     if isfloat(zvValue)
         [fillValue, ~] = get_fill_pad_values(DataObj, zvName);
-        zvValue        = bicas.utils.replace_value(zvValue, NaN, fillValue);
+        zvValue        = EJ_library.utils.replace_value(zvValue, NaN, fillValue);
     end
-    matlabClass = bicas.utils.convert_CDF_type_to_MATLAB_class(DataObj.data.(zvName).type, 'Permit MATLAB classes');
+    matlabClass = EJ_library.utils.convert_CDF_type_to_MATLAB_class(DataObj.data.(zvName).type, 'Permit MATLAB classes');
     zvValue     = cast(zvValue, matlabClass);
-    
+
     % Set zVariable.
     DataObj.data.(zvName).data = zvValue;
 end
@@ -494,7 +499,7 @@ for fn = fieldnames(DataObj.data)'
             'processing data. This should only happen for incomplete processing.'], ...
             zvName);
         
-        matlabClass   = bicas.utils.convert_CDF_type_to_MATLAB_class(DataObj.data.(zvName).type, 'Permit MATLAB classes');
+        matlabClass   = EJ_library.utils.convert_CDF_type_to_MATLAB_class(DataObj.data.(zvName).type, 'Permit MATLAB classes');
         isNumericZVar = isnumeric(cast(0.000, matlabClass));
 
         if isNumericZVar
@@ -523,7 +528,7 @@ for fn = fieldnames(DataObj.data)'
                     [fillValue, ~] = get_fill_pad_values(DataObj, zvName);
                     zVariableSize = [nEpochRecords, DataObj.data.(fn{1}).dim];
                     zvValue = cast(zeros(zVariableSize), matlabClass);
-                    zvValue = bicas.utils.replace_value(zvValue, 0, fillValue);
+                    zvValue = EJ_library.utils.replace_value(zvValue, 0, fillValue);
                     
                     DataObj.data.(zvName).data = zvValue;
 
@@ -589,6 +594,17 @@ end
 %===========================================
 % Write to CDF file using write_CDF_dataobj
 %===========================================
+
+[strictNumericZvSizePerRecord, settingName] = SETTINGS.get_fv('OUTPUT_CDF.write_CDF_dataobj.strictNumericZvSizePerRecord');
+if strictNumericZvSizePerRecord
+    logger.logf('warning', [...
+        '=========================================================================================================', ...
+        'Permitting master CDF zVariable size per record to differ from the output CDF zVariable size per record.\n'
+        'This is due to setting %s = "%s"\n', ...
+        '========================================================================================================='], ...
+        strictNumericZvSizePerRecord, settingName);
+end
+
 L.logf('info', 'Writing dataset CDF file: %s', outputFile)
 EJ_library.utils.write_CDF_dataobj( ...
     outputFile, ...
@@ -596,9 +612,10 @@ EJ_library.utils.write_CDF_dataobj( ...
     DataObj.data, ...
     DataObj.VariableAttributes, ...
     DataObj.Variables, ...
-    'calculateMd5Checksum', true, ...
-    'strictEmptyZvSize',  SETTINGS.get_fv('OUTPUT_CDF.write_CDF_dataobj.strictEmptyZvSize'), ...
-    'strictEmptyZvClass', SETTINGS.get_fv('OUTPUT_CDF.write_CDF_dataobj.strictEmptyZvClass'))
+    'calculateMd5Checksum',              true, ...
+    'strictEmptyZvClass',                SETTINGS.get_fv('OUTPUT_CDF.write_CDF_dataobj.strictEmptyZvClass'), ...
+    'strictEmptyNumericZvSizePerRecord', SETTINGS.get_fv('OUTPUT_CDF.write_CDF_dataobj.strictEmptyNumericZvSizePerRecord'), ...
+    'strictNumericZvSizePerRecord',      strictNumericZvSizePerRecord)
 
 end
 

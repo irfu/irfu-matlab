@@ -122,7 +122,7 @@ classdef RCT
                 for i = 1:numel(filenameList)
                     msg = [msg, sprintf('    %s\n', filenameList{i})];
                 end
-                obj.L.log('debug', msg)
+                L.log('debug', msg)
             end
             
             % IMPLEMENTATION NOTE: Not logging which calibration file is selected, since this function is not supposed

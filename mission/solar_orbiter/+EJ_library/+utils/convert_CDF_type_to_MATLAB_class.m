@@ -4,11 +4,16 @@ function matlabClass = convert_CDF_type_to_MATLAB_class(cdfDataType, policy)
 % (type). Useful for correctly type casting or type checking data before writing to a CDF.
 %
 %
-% ARGUMENTS AND RETURN VALUES
-% ===========================
+% ARGUMENTS
+% =========
 % cdfDataType : String representing a data type. See "policy".
-% policy      : String: 'Only CDF data types'   : cdfDataType is interpreted as a CDF data type
+% policy      : String: 'Only CDF data types'   : cdfDataType is interpreted as a CDF data type.
 %                       'Permit MATLAB classes' : cdfDataType is interpreted as a CDF data type OR a MATLAB class.
+%                           NOTE: This is useful since Dataobj.data.(zVarName).type sometimes contains the data type as
+%                           a MATLAB class.
+%
+% RETURN VALUE
+% ============
 % matlabClass : MATLAB class corresponding to cdfDataType.
 %
 %
@@ -20,9 +25,9 @@ function matlabClass = convert_CDF_type_to_MATLAB_class(cdfDataType, policy)
 %    2) "epoch", "epoch16" are not MATLAB types and are not included (yet).
 %
 %
-% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2016-07-xx
-%
+
 
 
 %=================================================================================================================
@@ -64,6 +69,6 @@ for i = 1:size(DATA, 1)
         return
     end
 end
-error('BICAS:convert_CDF_type_to_MATLAB_class:Assertion:IllegalArgument', 'Does not recognize CDF variable type "%s".', cdfDataType)
+error('convert_CDF_type_to_MATLAB_class:Assertion:IllegalArgument', 'Does not recognize CDF variable type "%s".', cdfDataType)
 
 end

@@ -141,7 +141,7 @@ S.define_setting('INPUT_CDF.REPLACE_PAD_VALUE_DISABLED',       1)            % 0
 
 % List of zVar names for which alternate fill value should be used when the zVars are loaded and interpreted.
 %S.define_setting('INPUT_CDF.OVERRIDE_FILL_VALUE.ZV_NAMES',     {'IBIAS_1', 'IBIAS_2', 'IBIAS_3'})
-S.define_setting('INPUT_CDF.OVERRIDE_FILL_VALUE.ZV_NAMES',     {})
+S.define_setting('INPUT_CDF.OVERRIDE_FILL_VALUE.ZV_NAMES',     cell(0,1))
 % Alternate fill value to use.
 S.define_setting('INPUT_CDF.OVERRIDE_FILL_VALUE.FILL_VALUE',   single(-1e31))
 
@@ -191,10 +191,17 @@ S.define_setting('OUTPUT_CDF.EMPTY_NUMERIC_ZV_POLICY',    'WARNING');   % ERROR,
 % Ex: VDC_LABEL etc can be empty due to ROC bug updating skeletons.
 S.define_setting('OUTPUT_CDF.EMPTY_NONNUMERIC_ZV_POLICY', 'WARNING');   % ERROR, WARNING
 
-% ACQUSITION_TIME_UNITS being empty in the master CDF requires value 0/false. Abolish?
-S.define_setting('OUTPUT_CDF.write_CDF_dataobj.strictEmptyZvSize',  0)
-% ACQUSITION_TIME_UNITS being empty in the master CDF requires value 0/false. Abolish?
-S.define_setting('OUTPUT_CDF.write_CDF_dataobj.strictEmptyZvClass', 0)
+
+
+% NOTE: ACQUSITION_TIME_UNITS being empty in the master CDF requires value 0/false. Abolish?
+S.define_setting('OUTPUT_CDF.write_CDF_dataobj.strictEmptyZvClass',                 0)
+% Whether the size per record of an empty (0 records) output DF zVar has to be in agreement with the master CDF's size
+% per record.
+% NOTE: ACQUSITION_TIME_UNITS being empty in the master CDF requires value 0/false. Abolish?
+S.define_setting('OUTPUT_CDF.write_CDF_dataobj.strictEmptyNumericZvSizePerRecord',  0)
+% Whether the size per record of an output CDF zVar has to be in agreement with the master CDF's size per record.
+% This is useful if the master CDF has not been updated in this regard only.
+S.define_setting('OUTPUT_CDF.write_CDF_dataobj.strictNumericZvSizePerRecord',       0)
 
 
 

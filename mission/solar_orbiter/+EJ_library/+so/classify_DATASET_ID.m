@@ -36,15 +36,18 @@ function C = classify_DATASET_ID(datasetId)
     C.isLfrSurvSwf = 0;
     C.isTdsCwf     = 0;
     C.isTdsRswf    = 0;
+    % One flag per exact DATASET_ID.
+    C.isCurrent    = 0;
+    C.isBiasHk     = 0;
     % One flag per level.
     C.isL1         = 0;
     C.isL1R        = 0;
     C.isL2         = 0;
-    
-    
-    
-    % IMPLEMENTATION NOTE: Important to put L1R before L1. Otherwise, L1 will be matched to L1R. ==> Fail to match R to
-    % "_".
+
+
+
+    % IMPLEMENTATION NOTE: Important to put L1R before L1. Otherwise, L1 will be matched to the beginning of L1R. ==>
+    % Fail to match "R" (in L1R) to "_".
     [subStrList, remainingStr, perfectMatch] = EJ_library.utils.regexp_str_parts(...
         datasetId, ...
         {'(SOLO|ROC-SGSE)', '_', '(HK|L1R|L1|L2)', '_', 'RPW-[A-Z12-]*'}, ...
@@ -64,28 +67,37 @@ function C = classify_DATASET_ID(datasetId)
         case 'L1'  ; C.isL1  = 1;
         case 'L1R' ; C.isL1R = 1;
         case 'L2'  ; C.isL2  = 1;
+        case 'HK'  %; C.isHk  = 1;
         otherwise
             error('BICAS:proc_utils:Assertion:IllegalArgument', 'Can not handle DATASET_ID. datasetId="%s"', datasetId)
     end
     
-    if (C.isL1R | C.isL2)
-        assert(strcmp(suffix(end-1:end), '-E'))
-        suffix2 = suffix(1:end-2);
-    else
-        suffix2 = suffix;
-    end
     
-    switch(suffix2)
-        case 'RPW-LFR-SBM1-CWF' ; C.isLfrSbm1    = 1;
-        case 'RPW-LFR-SBM2-CWF' ; C.isLfrSbm2    = 1;
-        case 'RPW-LFR-SURV-CWF' ; C.isLfrSurvCwf = 1;
-        case 'RPW-LFR-SURV-SWF' ; C.isLfrSurvSwf = 1;
-        case 'RPW-TDS-LFM-CWF'  ; C.isTdsCwf     = 1;
-        case 'RPW-TDS-LFM-RSWF' ; C.isTdsRswf    = 1;
-        otherwise
-            error('BICAS:proc_utils:Assertion:IllegalArgument', 'Can not handle DATASET_ID. datasetId="%s"', datasetId)
-    end
     
+    if     strcmp(datasetId, 'SOLO_L1_RPW-BIA-CURRENT')
+        C.isCurrent = 1;
+    elseif strcmp(datasetId, 'SOLO_HK_RPW-BIA')
+        C.isBiasHk  = 1;
+    else        
+        if (C.isL1R | C.isL2)
+            assert(strcmp(suffix(end-1:end), '-E'))
+            suffixETruncated = suffix(1:end-2);
+        else
+            suffixETruncated = suffix;
+        end
+        
+        switch(suffixETruncated)
+            case 'RPW-LFR-SBM1-CWF' ; C.isLfrSbm1    = 1;
+            case 'RPW-LFR-SBM2-CWF' ; C.isLfrSbm2    = 1;
+            case 'RPW-LFR-SURV-CWF' ; C.isLfrSurvCwf = 1;
+            case 'RPW-LFR-SURV-SWF' ; C.isLfrSurvSwf = 1;
+            case 'RPW-TDS-LFM-CWF'  ; C.isTdsCwf     = 1;
+            case 'RPW-TDS-LFM-RSWF' ; C.isTdsRswf    = 1;
+            otherwise
+                error('BICAS:proc_utils:Assertion:IllegalArgument', 'Can not handle DATASET_ID. datasetId="%s"', datasetId)
+        end
+    end
+
     %================================================
     % Set flags that can be derived from other flags
     %================================================
@@ -104,6 +116,8 @@ function C = classify_DATASET_ID(datasetId)
         'isLfrSurvSwf', ...
         'isTdsCwf', ...
         'isTdsRswf', ...
+        'isCurrent', ...
+        'isBiasHk', ...
         'isL1', ...
         'isL1R', ...
         'isL2', ...
