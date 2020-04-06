@@ -57,6 +57,13 @@ function SETTINGS = create_default_SETTINGS()
 %           PROCESSING.CALIBRATION.CURRENT.SOURCE = TC, HK : Which data to use.
 %
 % PROPOSAL: Merge INPUT_CDF.* and INPUT_CDF_ASSERTIONS.* .
+%
+% PROPOSAL: Abolish INPUT_CDF.HK.MOVE_TIME_TO_SCI.
+% PROPOSAL: Abolish INPUT_CDF.CURRENT.PREPEND_TEST_DATA.
+% PROPOSAL: Naming convention for settings keys for testing ONLY:
+%
+% PROPOSAL: Some kind of automatic warning for not using default setting.
+%   CON: Log already contains this.
 
 S = bicas.settings();
 

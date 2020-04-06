@@ -1,4 +1,4 @@
-% Collections of minor utility functions (in the form of static methods) used for data processing.
+% Collection of minor utility functions (in the form of static methods) used for data processing.
 %
 % proc_utils = processing utilities
 %
@@ -10,8 +10,8 @@
 %
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
 % First created 2016-10-10
+%
 classdef proc_utils
-
 %============================================================================================================
 % PROPOSAL: Split up in separate files?!
 % PROPOSAL: Move some functions to "utils".
@@ -40,6 +40,8 @@ classdef proc_utils
     methods(Static, Access=public)
 
         function c2 = select_row_range_from_cell_comps(c1, iFirst, iLast)
+        % For every cell in a cell array, select an index range in the first dimension for every cell array component.
+            
             % ASSERTIONS
             bicas.proc_utils.assert_cell_array_comps_have_same_N_rows(c1)
             
@@ -48,12 +50,12 @@ classdef proc_utils
             end
         end
 
-        
+
 
         function S = add_rows_to_struct_fields(S, SAmendment)
         % Generic utility function.
-        % Add values to every struct field by adding components after their highest row index (let them grow in
-        % the row index).
+        % Add values to every struct field by adding components after their highest row index (let them grow in the row
+        % index).
  
 
             bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(S);
@@ -77,6 +79,8 @@ classdef proc_utils
         % =========
         % iLsf   : The LSF index, i.e. 1=LFR freq. F0, and so on.
         % freqHz : Frequency in Hz.
+        
+        % PROPOSAL: Somehow avoid having an argument for lsfArrayHz. Have it as a constant somehow.
 
             % ASSERTION
             uniqueValues = unique(iLsf);
@@ -409,6 +413,7 @@ classdef proc_utils
 
         function zv2 = convert_N_to_1_SPR_redistribute(zv1)
         % Convert zVariable-like variable from N samples/record to 1 sample/record (from a matrix to a column vector).
+        % Increases number of records.
         %
         % ARGUMENT
         % ========

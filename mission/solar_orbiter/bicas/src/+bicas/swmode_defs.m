@@ -29,7 +29,9 @@
 % -- changing input dataset levels: L1 (inofficial support), L1R (official support).
 % It implements support for L1 input datasets via separate S/W modes.
 % 
-% RATIONALE:
+%
+% RATIONALE
+% =========
 % -- Should decrease the amount of overlapping hardcoded information to e.g. reduce risk of mistakes, reduce manual
 %    work when verifying updates.
 % -- Having one big, somewhat redundant data structure should make the interface to the rest of BICAS relatively

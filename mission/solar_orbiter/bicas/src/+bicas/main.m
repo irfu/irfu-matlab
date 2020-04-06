@@ -31,7 +31,7 @@
 %
 % RETURN VALUE
 % ============
-% errorCode = The error code that is to be passed on to the OS/shell.
+% errorCode : The error code that is to be passed on to the OS/shell.
 %
 %
 % NOTES
@@ -202,7 +202,10 @@ function [msg, errorCode] = recursive_exception_msg(Exception, C)
     for iCause = 1:numel(Exception.cause)
         msg = [msg, sprintf('Logging Exception.cause{%i}:\n', iCause)];
         
+        %================
         % RECURSIVE CALL
+        %================
+        % NOTE: Does not capture return value errorCode.
         recursiveMsg = recursive_exception_msg(Exception.cause{iCause}, C);
         
         recursiveMsg = EJ_library.utils.indent_str(recursiveMsg, CAUSES_RECURSIVE_INDENTATION_LENGTH);

@@ -16,7 +16,7 @@ function [freqRps, z] = convert_TF_human2math(freqHz, gainEnergyDb, phaseShiftDe
 % z             : Complex TF amplitudes (DFT component multiplication factors).
 %
 %
-% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2017-12-12
 
 

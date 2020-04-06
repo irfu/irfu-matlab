@@ -56,30 +56,32 @@ classdef assert
 %
 % PROPOSAL: Create class with collection of standardized non-trivial "condition functions", used by this "assert" class.
 %           Use an analogous naming scheme.
-%   PRO: Can use functions instead of assertions to design custom-made error responses, warnings.
+%   PRO: Can use assertion methods for raising customized exceptions (not just assertion exceptions), e.g. for UI
+%        errors.
 %   PRO: Useful for creating more compact custom-made assertions.
 %       Ex: assert(isscalar(padValue) || is_castring(padValue))
-%   CON: Not clear what the conditions should be, and if they should some assertions themselves. Input checks or the
-%        nominal condition
+%       Ex: assert(<castring> || <struct>)
+%       Ex: Checking settings values.
+%           Ex: assert(ischar(defaultValue) || isnumeric(defaultValue) || is_castring_set(defaultValue))
+%   PRO: Can use assertion methods for checking state/conditions (without raising errors).
+%       Ex: if <castring> elseif <castring_set> else ... end
+%   CON: Not clear what the conditions should be, and if they should some assertions themselves. Input checks or assume
+%       the nominal condition
 %       Ex: castring_set: Should the return value be whether the input argument is
 %           A cell array of unique strings.
 %           A cell array of unique strings (assertion: cell array)
-%           A cell array of unique strings (assertion: cell array of strings)
+%           A cell array of unique strings (assertion: cell array of strings) ???
 %   PROPOSAL: Name "cond".
 %   Ex: vector, struct
 %   Ex: Because of comments?: dir_exists, file_exists
 %   Ex: castring?
-%   
-% PROPOSAL: Have methods return a true/false value for assertion result. If a value is returned, then raise no assertion error.
-%   PRO: Can be used with regular assert statements. (Not entirely sure why this would be useful.)
-%       PRO: MATLAB's assert can be used for raising exception with customized error message.
-%   PRO: Can use assertion methods for checking state/conditions (without raising errors).
-%       Ex: if <castring> elseif <castring_set> else ... end
-%   PRO: Can use assertion methods for raising customized exceptions (not just assertion exceptions), e.g. for UI
-%        errors.
-%   PRO: Can combine multiple assertion conditions into one assertion.
-%       Ex: assert(<castring> || <struct>)
-%   CON: "assert" is a bad name for such a class.
+%   --
+%   PROPOSAL: Have methods return a true/false value for assertion result. If a value is returned, then raise no assertion error.
+%       PRO: Can be used with regular assert statements.
+%           PRO: MATLAB's assert can be used for raising exception with customized error message.
+%       CON: "assert" is a bad name for such a class.
+
+
 %
 % PROPOSAL: Static variable for error message identifier.
 %   PRO: Can set differently in BICAS.

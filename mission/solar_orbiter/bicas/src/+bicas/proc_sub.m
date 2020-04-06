@@ -344,7 +344,6 @@ classdef proc_sub
 
             PreDc = [];
             PreDc.Zv.Epoch                  = InSci.Zv.Epoch;
-            %PreDc.Zv.ACQUISITION_TIME       = InSci.Zv.ACQUISITION_TIME;
             PreDc.Zv.DELTA_PLUS_MINUS       = bicas.proc_utils.derive_DELTA_PLUS_MINUS(zvFreqHz, nCdfSamplesPerRecord);            
             PreDc.Zv.freqHz                 = zvFreqHz;
             PreDc.Zv.nValidSamplesPerRecord = ones(nRecords, 1) * nCdfSamplesPerRecord;
@@ -745,7 +744,6 @@ classdef proc_sub
         % PROPOSAL: Move the setting of IBIASx (bias current) somewhere else?
         %   PRO: Unrelated to demultiplexing.
         %   CON: Related to calibration.
-        % PROPOSAL: Change name. Will not calibrate measured samples here, only currents, maybe.
 
             % ASSERTION
             bicas.proc_sub.assert_PreDC(PreDc);
@@ -1009,9 +1007,11 @@ classdef proc_sub
 
 
         
-        % inSciDsi : Input SCI DATASET_ID whch contains the zVariable.
-        %
         % Wrapper around bicas.proc_sub.handle_struct_name_change to be used locally.
+        %
+        % ARGUMENTS
+        % =========
+        % inSciDsi : Input SCI DATASET_ID which contains the zVariable.
         %
         function handle_zv_name_change(fnChangeList, inSciDsi, SETTINGS, L, varargin)
             msgFunc = @(oldFieldname, newFieldname) (sprintf(...

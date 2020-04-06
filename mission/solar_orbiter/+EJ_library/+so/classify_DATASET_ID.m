@@ -3,9 +3,8 @@
 % Returns easy-to-use flags to make it easy to implement different handling for different DATASET_IDs.
 %
 %
-% NOTE: Does not recognize HK datasets.
-% NOTE: Only classifies BICAS voltage input & output datasets. (Is there a good reason for this?)
-% NOTE: Function deliberately ignores Skeleton_version.
+% NOTE: Only classifies BICAS' input & output datasets. Assertion for other.
+% NOTE: Function deliberately ignores Skeleton/data version if part of the string.
 % IMPLEMENTATION NOTE: Still recognizes old ROC-SGSE datasets since they may be found in global attribute
 % DATASET_ID in old test files.
 %
@@ -59,7 +58,7 @@ function C = classify_DATASET_ID(datasetId)
         error('Can not interpret datasetId="%s". The substring "%s" can not be interpreted', datasetId, remainingStr)
     end
     
-    %prefix = subStrList{1};   % Currently not being used, but could be.
+    %prefix = subStrList{1};   % Currently not being used, but could potentially be.
     level  = subStrList{3};
     suffix = subStrList{5};
     

@@ -98,13 +98,21 @@ classdef CompareFuncResult
                 % (1) returns values (none, not none, variable number), and (2) exception, non-exception.
                 if isempty(obj.expOutput) || ~isempty(obj.expExceptionName)
                     % CASE: Expecting (1) no output, or (2) exception.
+                    
+                    %===========
+                    % Call test
+                    %===========
                     obj.func(obj.input{:});
                     actOutput = {};   % Could be incorrect, but only for the case of expected exception, and actual non-exception
                 else
                     actOutput = cell(size(obj.expOutput));
+                    %=============================================================================
+                    % Call test
+                    % ---------
                     % IMPLEMENTATION NOTE: Important with
                     % (1) square brackets around return result (error for zero return values)
                     % (2) variable which captures return values is pre-defined with correct size.
+                    %=============================================================================
                     [actOutput{:}] = obj.func(obj.input{:});
                 end
                 actException = [];

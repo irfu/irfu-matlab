@@ -999,9 +999,7 @@ classdef calib < handle
 
     
     
-    %methods(Static, Access=private)
     methods(Static, Access=public)
-        % NOTE: Public so that automatic test code can call get_calibration_time.
 
 
         

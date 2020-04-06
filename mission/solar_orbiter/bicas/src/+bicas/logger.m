@@ -44,6 +44,10 @@ classdef logger < handle
 %   No logging.
 %   Log to file, but specify it after instantiation.
 %   Log to stdout.
+%
+% PROPOSAL: Inofficial logLevel='WARNING' which is translated into a regular warning but somehow emphasized in the logs.
+%   PROPOSAL: Message is framed with "=".
+%   PROPOSAL: All text is uppercase.
 
 
 
@@ -148,6 +152,8 @@ classdef logger < handle
         % ARGUMENTS
         % =========
         % logLevel : String constant.
+        %            NOTE: Value 'error' WILL NOT THROW ERROR. This is so that error handling code can log using this
+        %            alternative. To THROW an error, use function error(...) or throw an exception directly.
         % msgStr   : Potentially multi-row string to be printed. NOTE: Multi-row strings must end with line feed.
         %
         %

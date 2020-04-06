@@ -17,8 +17,8 @@
 % It consists of a 1x1 struct where each field contains the content of one column. That is thus not a replacement for
 % the struct returned by this function.
 % --
-% NOTE: zVariable names and zVariable attribute names do not have to be legal MATLAB struct fieldnames and may
-% contain e.g. blanks. See "CDF USer's Guide".
+% NOTE: The CDF file format permits zVariable names and zVariable attribute names that are not legal MATLAB struct
+% fieldnames and may contain e.g. blanks. See "CDF USer's Guide".
 % From the spdfcdfinfo help page:
 % """"NOTE: Attribute names which spdfcdfinfo uses for field names in
 %     "GlobalAttributes" and "VariableAttributes" may not match the names
@@ -32,7 +32,7 @@
 %     become 'Variable_Attribute_013'.""""
 % * If a zVariable           has a name that can not be used as a struct fieldname, then this function will not work (assertion).
 % * If a zVariable attribute has a name that can not be used as a struct fieldname, then a modified fieldname will be
-%   used, since zVariable attribute names in "VariableAttributes" are always modified that way.
+%   used, since zVariable attribute names in "VariableAttributes" are always modified that way by the "spdfcdfinfio".
 %
 %
 % ARGUMENTS
@@ -49,22 +49,50 @@
 % ============
 % S : Recursive struct in three levels. Has fields
 %       .(zvName)
-%           .Attributes.(zvAttributeName)   : The content of "VariableAttributes".
-%           .Other.(metadataField)          : The content of "Variables".
+%           .Attributes              : Struct. The reformatted content of "VariableAttributes".
+%               .(zvAttributeName)
+%           .Other                   : Struct. The reformatted content of "Variables".
+%               .(metadataField)
 %
 %
 % Author: Erik P G Johansson
 % First created 2020-03-25
 %
-function [S] = get_zvs_metadata_struct(Variables, VariableAttributes)
+function S = get_zvs_metadata_struct(Variables, VariableAttributes)
     %
     % NOTE: Returned struct can be naturally generalized to incorporate content if entire CDF file (add global
     % attributes, zVariable data, and some other metadata from spdfcdfinfo(?)).
+    %
+    % NOTE: S = spdfcdfinfo also returns some other data, but that does not seem to contain any data from inside the CDF
+    % (except "Subfiles"?).
+    % >> S
+    %
+    %   struct with fields:
+    %
+    %               Filename: 'solo_L1_rpw-bia-current_20200116T164936-20200116T191610_V01_sample2020-01-29.cdf'
+    %            FileModDate: '26-mar-2020 17:09:45'
+    %               FileSize: 83375
+    %                 Format: 'CDF'
+    %          FormatVersion: '3.7.1'
+    %           FileSettings: [1×1 struct]
+    %               Subfiles: {}
+    %              Variables: {5×12 cell}
+    %       GlobalAttributes: [1×1 struct]
+    %     VariableAttributes: [1×1 struct]
+    %             LibVersion: '3.7.1'
+    %           PatchVersion: '3.7.1.0'
     % 
     % TODO: Make execute_sw_mode (fill & pad values), validate_BIAS_master_CDFs use function.
     %
     % PROPOSAL: Make capable of handling all zVariable names.
-    
+    % PROPOSAL: Include "CDF" in filename, unless part of package "cdf".
+    % PROPOSAL: Create function for reverse conversion.
+    %   PRO: Useful for writing to file.
+    % PROPOSAL: Assertions for agreement between "Variables" and "VariablesAttributes".
+    %   Attributes & "Other": VALIDMIN, VALIDMAX, FILLVAL
+    % PROPOSAL: Other name for Struct field "Other".
+    %   PROPOSAL: "Metadata"    
+
     % ASSERTIONS: Guard against confusing the two arguments.
     assert(iscell(Variables), 'Argument "Variables" is not a cell array.')
     assert(isstruct(VariableAttributes))

@@ -40,15 +40,19 @@ classdef settings < handle
 % BOGIQ: 
 % ------
 % PROPOSAL: Add extra information for every setting (key-value pair).
-%   Ex: Human-readable description!
-%   Ex: MATLAB class (data type)
-%   Ex: Default value (so can display it if overridden)
-%   Ex: Flag for origin of current value: default, config file, CLI argument.
-%   Ex: Flag for write-protection (always use default value).
+%   PROPOSAL: Human-readable description!
+%   PROPOSAL: MATLAB class (data type)
+%   PROPOSAL: Default value (so can display it if overridden)
+%   PROPOSAL: Flag for write-protection (always use default value).
 %       NOTE: Some settings (one?) make no sense to modify: config file path, STDOUT_PREFIX.
-%   Ex: Flag for values which have not been set but must later be set.
-%       Ex: MATLAB_COMMAND
+%   PROPOSAL: Flag for values which have not been set but must later be set.
+%       PROPOSAL: MATLAB_COMMAND
 %           CON: Is not really needed by BICAS.
+%   PROPOSAL: Legal alternatives.
+%       PROPOSAL: String constants.
+%       PROPOSAL: Value type (MATLAB class)
+%           Ex: Logical
+%           CON: Not necessary since initial/default value specifies it.
 %   --
 %   NOTE: This information should only be given once in the code, and be hard-coded.
 %

@@ -188,7 +188,7 @@ function destFilename = get_dest_RCT_filename()
     % IMPLEMENTATION NOTE: The official filenaming convention is not followed here!! Not sure how to comply with it either (which
     % receiver should the BIAS RCT specify?).
     
-    destFilename = sprintf(    'SOLO_CAL_RPW_BIAS_V%s.cdf', datestr(clock, 'yyyymmddHHMM'));
+    destFilename = sprintf('SOLO_CAL_RPW_BIAS_V%s.cdf', datestr(clock, 'yyyymmddHHMM'));
 end
 
 

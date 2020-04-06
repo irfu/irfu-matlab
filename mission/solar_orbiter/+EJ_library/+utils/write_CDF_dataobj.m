@@ -78,7 +78,7 @@ function write_CDF_dataobj(filePath, ...
 %
 % IMPLEMENTATION NOTES
 % ====================
-% -- To keep the function as generic as possible, it does not contain any log messages (bicas.logger).
+% -- To keep the function as generic as possible, it does not contain any log messages.
 % -- The function does not accept a whole dataobj object since:
 % (1) instances of dataobj are likely NOT meant to be modified after creation. Empirically, it is possible to modify
 % them in practice though. Therefore the function only accepts the parts of a dataobj that it really needs, which still
@@ -204,7 +204,7 @@ zVarNameAndValueList    = {};   % List consisting of alternating zVar names and 
 zVarNameAndDataTypeList = {};   % List consisting of alternating zVar names and corresponding data types  (needed for spdfcdfwrite).
 zVarNameAndPadValueList = {};   % List consisting of alternating zVar names and corresponding pad values  (needed for spdfcdfwrite).
 
-for i=1:length(dataobj_Variables(:,1))
+for i = 1:length(dataobj_Variables(:,1))
     
     %===============================================================================================================
     % Extract zVariable data from arguments
