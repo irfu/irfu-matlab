@@ -101,7 +101,7 @@ function hAxes = plot_LFR_SWF(filePath, timeIntervUtc)
     V1F2    = bicas.proc_utils.convert_N_to_1_SPR_redistribute(V1( bF2, :));
     E12F2   = bicas.proc_utils.convert_N_to_1_SPR_redistribute(E12(bF2, :));
     E23F2   = bicas.proc_utils.convert_N_to_1_SPR_redistribute(E23(bF2, :));
-    
+
     
     
     TsV1F0  = irf.ts_scalar(EpochF0, V1F0);
@@ -122,7 +122,7 @@ function hAxes = plot_LFR_SWF(filePath, timeIntervUtc)
 
     
     
-    h = [];
+    hAxesArray = [];
 %     h(end+1) = plot_spectrum( 'V1 F0 spectrogram', TsV1F0,  F0Hz, 'F0', 'V1');
 %     h(end+1) = plot_spectrum('E12 F0 spectrogram', TsE12F0, F0Hz, 'F0', 'V12');
 %     h(end+1) = plot_spectrum('E23 F0 spectrogram', TsE23F0, F0Hz, 'F0', 'V13');
@@ -136,13 +136,26 @@ function hAxes = plot_LFR_SWF(filePath, timeIntervUtc)
 %     h(end+1) = plot_spectrum('E23 F2 spectrogram', TsE23F2, F2Hz, 'F2', 'V13');
     
     SIGNALS_LEGEND = {'V1','V12','V23'};
-    h(end+1) = plot_time_series('V1,E12,E23 F0 time series', TsF0, 'F0', SIGNALS_LEGEND);
-    h(end+1) = plot_time_series('V1,E12,E23 F1 time series', TsF1, 'F1', SIGNALS_LEGEND);
-    h(end+1) = plot_time_series('V1,E12,E23 F2 time series', TsF2, 'F2', SIGNALS_LEGEND);
+    hAxesArray(end+1) = plot_time_series('V1,E12,E23 F0 time series', TsF0, 'F0', SIGNALS_LEGEND);
+    hAxesArray(end+1) = plot_time_series('V1,E12,E23 F1 time series', TsF1, 'F1', SIGNALS_LEGEND);
+    hAxesArray(end+1) = plot_time_series('V1,E12,E23 F2 time series', TsF2, 'F2', SIGNALS_LEGEND);
 
-    irf_plot_axis_align(h)                     % For aligning MATLAB axes (taking color legends into account).
-    irf_zoom(h, 'x', irf.tint(TsV1F2.time))    % For aligning the content of the MATLAB axes.
-    title(h(1), 'LFR SWF')
+    so.ql.set_std_title('LFR SWF L2', filePath, hAxesArray(1))
+    
+    irf_plot_axis_align(hAxesArray)                     % For aligning MATLAB axes (taking color legends into account).
+    irf_zoom(hAxesArray, 'x', irf.tint(TsV1F2.time))    % For aligning the content of the MATLAB axes.
+end
+
+
+
+% tlLegend : Top-left (TL) legend. String
+% trLegend : Top-right (TR) legend. Cell array of strings, one per scalar time series.
+function h = plot_time_series(panelTag, Ts, tlLegend, trLegend)
+    h = irf_panel(panelTag);
+    irf_plot(h, Ts)
+    ylabel(h, '[V]')
+    irf_legend(h, {tlLegend}, [0.02 0.98], 'color', 'k')
+    irf_legend(h, trLegend, [0.98 0.98])
 end
 
 
@@ -168,16 +181,4 @@ function h = plot_spectrum(panelTag, Ts, samplingFreqHz, tlLegend, trLegend)
 
     irf_legend(h, {tlLegend}, [0.02 0.98], 'color', 'k')
     irf_legend(h, trLegend ,  [0.98 0.98])
-end
-
-
-
-% tlLegend : Top-left (TL) legend. String
-% trLegend : Top-right (TR) legend. Cell array of strings, one per scalar time series.
-function h = plot_time_series(panelTag, Ts, tlLegend, trLegend)
-    h = irf_panel(panelTag);
-    irf_plot(h, Ts)
-    ylabel(h, '[V]')
-    irf_legend(h, {tlLegend}, [0.02 0.98], 'color', 'k')
-    irf_legend(h, trLegend, [0.98 0.98])
 end

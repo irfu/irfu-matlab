@@ -11,7 +11,7 @@
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
 % First created 2020-01-28.
 %
-function [hAxes] = plot_LFR_CWF(filePath)
+function [hAxesArray] = plot_LFR_CWF(filePath)
     % SOLO_L2_RPW-LFR-SBM1-CWF-E_V05.cdf zVariables:
     %
     % Variable Information (0 rVariable, 17 zVariables)
@@ -54,33 +54,43 @@ function [hAxes] = plot_LFR_CWF(filePath)
     D = dataobj(filePath);
     
     Epoch = D.data.Epoch.data;
-    V1    = D.data.V.data(:,1);
-    E12   = D.data.E.data(:,1);
-    E13   = D.data.E.data(:,2);
+    V1_DC    = D.data.V.data(:,1);
+    V12_DC   = D.data.E.data(:,1);
+    %E13   = D.data.E.data(:,2);
+    V23_DC   = D.data.E.data(:,3);
+    V12_AC   = D.data.EAC.data(:,1);
+    V23_AC   = D.data.EAC.data(:,3);
     
-    V1  = changem(V1,  NaN, FILL_VALUE);
-    E12 = changem(E12, NaN, FILL_VALUE);
-    E13 = changem(E13, NaN, FILL_VALUE);
+    V1_DC  = changem(V1_DC,  NaN, FILL_VALUE);
+    V12_DC = changem(V12_DC, NaN, FILL_VALUE);
+    V23_DC = changem(V23_DC, NaN, FILL_VALUE);
+    V12_AC = changem(V12_AC, NaN, FILL_VALUE);
+    V23_AC = changem(V23_AC, NaN, FILL_VALUE);
     
-    %hAxes = irf_plot(6,'newfigure');
-    hAxes = irf_plot(3,'newfigure');
+    irf_plot(5,'newfigure');
     
-    TsV1  = irf.ts_scalar(Epoch, V1);
-    TsE12 = irf.ts_scalar(Epoch, E12);
-    TsE13 = irf.ts_scalar(Epoch, E13);
+    TsV1_DC  = irf.ts_scalar(Epoch, V1_DC);
+    TsV12_DC = irf.ts_scalar(Epoch, V12_DC);
+    TsV23_DC = irf.ts_scalar(Epoch, V23_DC);
+    TsV12_AC = irf.ts_scalar(Epoch, V12_AC);
+    TsV23_AC = irf.ts_scalar(Epoch, V23_AC);
     
-    h = [];
-    %h(end+1) = plot_spectrum('E12 spectrogram', TsE12, 'V12');
-    %h(end+1) = plot_spectrum('E13 spectrogram', TsE13, 'V13');
+    hAxesArray = [];
     %h(end+1) = plot_spectrum( 'V1 spectrogram', TsV1,   'V1');
+    %h(end+1) = plot_spectrum('E12 spectrogram', TsE12, 'V12');
+    %h(end+1) = plot_spectrum('E23 spectrogram', TsE23, 'V23');
     
-    h(end+1) = plot_time_series('E12 time series', TsE12, 'V12 [V]');
-    h(end+1) = plot_time_series('E13 time series', TsE13, 'V13 [V]');
-    h(end+1) = plot_time_series( 'V1 time series', TsV1,   'V1 [V]');
+    hAxesArray(end+1) = plot_time_series( 'V1 DC time series', TsV1_DC,   'V1_DC [V]');
+    hAxesArray(end+1) = plot_time_series('V12 DC time series', TsV12_DC, 'V12_DC [V]');
+    hAxesArray(end+1) = plot_time_series('V23 DC time series', TsV23_DC, 'V23_DC [V]');
+    hAxesArray(end+1) = plot_time_series('V12 AC time series', TsV12_AC, 'V12_AC [V]');
+    hAxesArray(end+1) = plot_time_series('V23 AC time series', TsV23_AC, 'V23_AC [V]');
+
+    so.ql.set_std_title('LFR CWF L2', filePath, hAxesArray(1))
     
-    irf_plot_axis_align(h)                   % For aligning MATLAB axes (taking color legends into account).
-    irf_zoom(h, 'x', irf.tint(TsV1.time))    % For aligning the content of the MATLAB axes.
-    title(h(1), 'LFR CWF')
+    irf_plot_axis_align(hAxesArray)                     % For aligning MATLAB axes (taking color legends into account).
+    irf_zoom(hAxesArray, 'x', irf.tint(TsV1_DC.time))    % For aligning the content of the MATLAB axes.
+    %title(hAxesArray(1), 'LFR CWF')
 end
 
 
@@ -115,8 +125,8 @@ end
 % panelTag      : 
 % Ts            : irfumatlab TSeries
 % yLabelNonUnit : y label with unit.
-function h = plot_time_series(panelTag, Ts, yLabel)
-    h = irf_panel(panelTag);
-    irf_plot(h, Ts)
-    ylabel(h, yLabel)
+function hAxes = plot_time_series(panelTag, Ts, yLabel)
+    hAxes = irf_panel(panelTag);
+    irf_plot(hAxes, Ts)
+    ylabel(hAxes, yLabel)
 end
