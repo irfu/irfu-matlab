@@ -101,12 +101,31 @@ classdef mms_local_file_db < mms_file_db
             if isempty(listing), continue, end
             arrayfun(@(x) add2list(x.name), listing)
           end
-         else
+        elseif (ismember(upper(C{3}), {'PREDEPH'}) && ~isempty(tint) && ...
+            tint.stop.ttns - tint.start.ttns<=int64(86400000000000))
+          % Tint is set and less than one day.
+          t_start = irf_time(tint.start.ttns, 'ttns>doy');
+          t_start_d = str2double(sprintf('%04i%03i', t_start));
+          t_stop_d = str2double(sprintf('%04i%03i', irf_time(tint.stop.ttns, 'ttns>doy')));
+          % Look for file starting the previous year as well as some
+          % predeph cover very long time periods.
+          YYYY = [t_start(1)-1, t_start(1)];
+          for ii=1:length(YYYY)
+            listing = dir([fileDir, filesep, filePref, ...
+              sprintf('%04i', YYYY(ii)), '*.V*']);
+            if isempty(listing), continue, end
+            % Now look for file names which could be interesting (starting
+            % at the latest on our end date and ending on or after our start date
+            listing = listing(arrayfun(@(x) (str2double(x.name(14:20)) <= t_stop_d && str2double(x.name(22:28)) >= t_start_d), listing));
+            if isempty(listing), continue, end
+            arrayfun(@(x) add2list(x.name), listing)
+          end
+        else
           irf.log('warning','THIS MAY TAKE SOME TIME')
           listing = dir([fileDir filesep filePref '*.V*']);
           if isempty(listing), return, end
           arrayfun(@(x) add2list(x.name), listing)
-         end
+        end
  
         function add2list(name)
           [~,fName,fExt] = fileparts(name);
