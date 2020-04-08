@@ -43,7 +43,7 @@ function hAxes = plot_LFR_SWF(filePath, timeIntervUtc)
     % TODO: Correct sampling frequency for irf_powerfft.
     % TODO: Legend connecting line color to V1, E12, V13.
     
-    warning('Incomplete quicklook code')
+    %warning('Incomplete quicklook code')
     
     FILL_VALUE = single(-1e31);
     N_SAMPLES_PER_SNAPSHOT = 2048;    % Number of Samples Per (LFR) Snapshot (SPS).
@@ -140,7 +140,7 @@ function hAxes = plot_LFR_SWF(filePath, timeIntervUtc)
     hAxesArray(end+1) = plot_time_series('V1,E12,E23 F1 time series', TsF1, 'F1', SIGNALS_LEGEND);
     hAxesArray(end+1) = plot_time_series('V1,E12,E23 F2 time series', TsF2, 'F2', SIGNALS_LEGEND);
 
-    so.ql.set_std_title('LFR SWF L2', filePath, hAxesArray(1))
+    solo.ql.set_std_title('LFR SWF L2', filePath, hAxesArray(1))
     
     irf_plot_axis_align(hAxesArray)                     % For aligning MATLAB axes (taking color legends into account).
     irf_zoom(hAxesArray, 'x', irf.tint(TsV1F2.time))    % For aligning the content of the MATLAB axes.

@@ -47,7 +47,7 @@ function [hAxesArray] = plot_LFR_CWF(filePath)
     % TODO: Correct sampling frequency for irf_powerfft.
     % BUG: X axes differ between spectra and time series (irfu-matlab bug?).
     
-    warning('Incomplete quicklook code')
+    %warning('Incomplete quicklook code')
     
     FILL_VALUE = single(-1e31);
     
@@ -86,7 +86,7 @@ function [hAxesArray] = plot_LFR_CWF(filePath)
     hAxesArray(end+1) = plot_time_series('V12 AC time series', TsV12_AC, 'V12_AC [V]');
     hAxesArray(end+1) = plot_time_series('V23 AC time series', TsV23_AC, 'V23_AC [V]');
 
-    so.ql.set_std_title('LFR CWF L2', filePath, hAxesArray(1))
+    solo.ql.set_std_title('LFR CWF L2', filePath, hAxesArray(1))
     
     irf_plot_axis_align(hAxesArray)                     % For aligning MATLAB axes (taking color legends into account).
     irf_zoom(hAxesArray, 'x', irf.tint(TsV1_DC.time))    % For aligning the content of the MATLAB axes.
