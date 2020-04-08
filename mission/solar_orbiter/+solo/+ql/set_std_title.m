@@ -13,5 +13,5 @@ function set_std_title(plotTypeStr, filePath, hTopAxes)
     filename = [basename, suffix];
     
     labelTimestamp = datestr(clock, 'yyyy-mm-dd HH:MM:SS');
-    title(hTopAxes, {plotTypeStr, so.ql.escape_str(sprintf('Plot time: %s, %s', labelTimestamp, filename))})
+    title(hTopAxes, {plotTypeStr, solo.ql.escape_str(sprintf('Plot time: %s, %s', labelTimestamp, filename))})
 end
