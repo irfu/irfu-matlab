@@ -3,7 +3,7 @@ function Distpart = get_hiresdistributions(varargin)
 % the standard resolution of FPI. 
 % Written by D. B. Graham
 %
-% Distpart = mms.get_partialdistributions(Dist,4);
+% Distpart = mms.get_hiresdistributions(Dist,4);
 %
 % Input:
 %   Dist - Burst mode distribution function. Must be in PDist format and

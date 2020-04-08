@@ -2,7 +2,7 @@ function moments = hiresmoments(Distpart,SCpot)
 % PARTIALMOMENTS Compute moments from partial distribution function
 % Written by D. B. Graham
 % 
-% moments = mms.partialmoments(Distpart,SCpot)
+% moments = mms.hiresmoments(Distpart,SCpot)
 %
 % Input:
 %   Distpart - partial particle distribution. Must be PDist format. 
