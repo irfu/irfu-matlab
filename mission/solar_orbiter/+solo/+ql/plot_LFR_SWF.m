@@ -3,16 +3,18 @@
 %
 % NOTE: Uses bicas.proc_utils.* code.
 %
-%
 % INCOMPLETE
 %
-% timeIntervUtc : Optional. 
+%
+% ARGUMENTS
+% =========
+% timeIntervUtc : Optional. Cell array, length 2. {1},{2} = UTC string, begin & end.
 %
 %
-% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-01-28.
 %
-function hAxes = plot_LFR_SWF(filePath, timeIntervUtc)
+function hAxesArray = plot_LFR_SWF(filePath, timeIntervUtc)
     % SOLO_L2_RPW-LFR-SURV-SWF-E_V05.cdf zVariables:
     %
     % Variable Information (0 rVariable, 18 zVariables)
@@ -35,15 +37,35 @@ function hAxes = plot_LFR_SWF(filePath, timeIntervUtc)
     % DELTA_PLUS_MINUS      CDF_INT8/1        1:[2048]        T/T
     % F_SAMPLE              CDF_REAL4/1       0:[]    T/
     % SYNCHRO_FLAG          CDF_UINT1/1       0:[]    T/
-    
+
+    % POLICY: BOGIQ for all quicklook plot code: See plot_LFR_CWF.
+    %
     % BUG: Snapshot spectrograms consist of very narrow stripes.
     % BUG: Snapshot spectrogram for F2 misses some snapshots.
     % TODO/BUG: Functioning ~color map
     % TODO: DC/AC: Detection, label.
     % TODO: Correct sampling frequency for irf_powerfft.
-    % TODO: Legend connecting line color to V1, E12, V13.
+    % TODO: Legend connecting line color to V1, V12, V13.
+    % TODO: Read fill values from file.
+    %
+    % PROPOSAL: Document "proper speed test" since spectrograms are slow.
+    %   PROPOSAL: Separate file for this.
+    %   PROPOSAL: Vary nSamplesPerSpectrum.
+    %
+    % TODO-DECISION: How submit data to spectrum_panel?
+    %   NEED: Should also work for TDS's varying-length snapshots?
+    %   NOTE: Might be necessary to also split up CWF to speed up spectrograms eventually.
+    %   TODO-DECISION: Should caller split up data into snapshots?
+    %   PROPOSAL: Submit one big TSeries and have the function split up the data based on gaps.
+    %   PROPOSAL: Submit one TSeries per snapshot.
+    %       PRO: Works for TDS snapshots.
+    %       PRO: Splits up the 
+    %   PROPOSAL: Submit ~zVar with one snapshot per row.
+    %       CON: Does not work per snapshot.
+    %   PROPOSAL: Always let the caller split up the time series in segments, snapshots or otherwise.
+    %
+    % TODO: Add AC spectrograms+AC time series.
     
-    %warning('Incomplete quicklook code')
     
     FILL_VALUE = single(-1e31);
     N_SAMPLES_PER_SNAPSHOT = 2048;    % Number of Samples Per (LFR) Snapshot (SPS).
@@ -56,23 +78,26 @@ function hAxes = plot_LFR_SWF(filePath, timeIntervUtc)
         assert(iscell(timeIntervUtc))
         DATAOBJ_TIME_INTERVAL_ARGS = {'tint', [iso2epoch(timeIntervUtc{1}), iso2epoch(timeIntervUtc{2})]};
     end
+    
+    
 
     D = dataobj(filePath, DATAOBJ_TIME_INTERVAL_ARGS{:});
     Epoch = D.data.Epoch.data;
-    fprintf('nRecords = %i\n', numel(Epoch));
+    %fprintf('nRecords = %i\n', numel(Epoch));
 
-    %hAxes = irf_plot(3*3 + 3,'newfigure');
-    hAxes = irf_plot(0*3 + 3,'newfigure');
-
-    
-    V1  = D.data.V.data(:,:,1);
-    E12 = D.data.E.data(:,:,1);
-    E23 = D.data.E.data(:,:,3);
+    VDC1  = D.data.V.data(:,:,1);
+    VDC12 = D.data.E.data(:,:,1);
+    VDC23 = D.data.E.data(:,:,3);
+    VAC12 = D.data.EAC.data(:,:,1);
+    VAC23 = D.data.EAC.data(:,:,3);
     F_SAMPLE = D.data.F_SAMPLE.data;
     
-    V1  = changem(V1,  NaN, FILL_VALUE);
-    E12 = changem(E12, NaN, FILL_VALUE);
-    E23 = changem(E23, NaN, FILL_VALUE);
+    VDC1  = changem(VDC1,  NaN, FILL_VALUE);
+    VDC12 = changem(VDC12, NaN, FILL_VALUE);
+    VDC23 = changem(VDC23, NaN, FILL_VALUE);
+    VAC12 = changem(VAC12, NaN, FILL_VALUE);
+    VAC23 = changem(VAC23, NaN, FILL_VALUE);
+
     
     % LFR sampling frequencies (F0-F3 is LFR's terminology).
     F0Hz = 24576;
@@ -81,104 +106,266 @@ function hAxes = plot_LFR_SWF(filePath, timeIntervUtc)
     %F3Hz =    16;
     % LFR SWF only uses F0-F2.
 
-    % B = Boolean/Logical.
+    % B = Boolean/Logical (true/false for every index value).
     bF0 = (F_SAMPLE == F0Hz);
     bF1 = (F_SAMPLE == F1Hz);
     bF2 = (F_SAMPLE == F2Hz);
     
+    % DEBUG
+%     utc1 = erikpgjohansson.utils.CDF_tt2000_to_UTC_str(Epoch(1));
+%     utc2 = erikpgjohansson.utils.CDF_tt2000_to_UTC_str(Epoch(end));
+%     fprintf('%s -- %s\n', utc1, utc2);
+    
+    
     % NOTE: Using bicas.* code.
-    EpochF0 = bicas.proc_utils.convert_N_to_1_SPR_Epoch(Epoch(bF0), N_SAMPLES_PER_SNAPSHOT, F_SAMPLE(bF0));
-    V1F0    = bicas.proc_utils.convert_N_to_1_SPR_redistribute(V1( bF0, :));
-    E12F0   = bicas.proc_utils.convert_N_to_1_SPR_redistribute(E12(bF0, :));
-    E23F0   = bicas.proc_utils.convert_N_to_1_SPR_redistribute(E23(bF0, :));
+    EpochF0  = bicas.proc_utils.convert_N_to_1_SPR_Epoch(Epoch(bF0), N_SAMPLES_PER_SNAPSHOT, F_SAMPLE(bF0));
+    Vdc1F0  = bicas.proc_utils.convert_N_to_1_SPR_redistribute(VDC1( bF0, :));
+    Vdc12F0 = bicas.proc_utils.convert_N_to_1_SPR_redistribute(VDC12(bF0, :));
+    Vdc23F0 = bicas.proc_utils.convert_N_to_1_SPR_redistribute(VDC23(bF0, :));
+    Vac12F0 = bicas.proc_utils.convert_N_to_1_SPR_redistribute(VAC12(bF0, :));
+    Vac23F0 = bicas.proc_utils.convert_N_to_1_SPR_redistribute(VAC23(bF0, :));
     
     EpochF1 = bicas.proc_utils.convert_N_to_1_SPR_Epoch(Epoch(bF1), N_SAMPLES_PER_SNAPSHOT, F_SAMPLE(bF1));
-    V1F1    = bicas.proc_utils.convert_N_to_1_SPR_redistribute(V1( bF1, :));
-    E12F1   = bicas.proc_utils.convert_N_to_1_SPR_redistribute(E12(bF1, :));
-    E23F1   = bicas.proc_utils.convert_N_to_1_SPR_redistribute(E23(bF1, :));
+    Vdc1F1  = bicas.proc_utils.convert_N_to_1_SPR_redistribute(VDC1( bF1, :));
+    Vdc12F1 = bicas.proc_utils.convert_N_to_1_SPR_redistribute(VDC12(bF1, :));
+    Vdc23F1 = bicas.proc_utils.convert_N_to_1_SPR_redistribute(VDC23(bF1, :));
     
     EpochF2 = bicas.proc_utils.convert_N_to_1_SPR_Epoch(Epoch(bF2), N_SAMPLES_PER_SNAPSHOT, F_SAMPLE(bF2));
-    V1F2    = bicas.proc_utils.convert_N_to_1_SPR_redistribute(V1( bF2, :));
-    E12F2   = bicas.proc_utils.convert_N_to_1_SPR_redistribute(E12(bF2, :));
-    E23F2   = bicas.proc_utils.convert_N_to_1_SPR_redistribute(E23(bF2, :));
+    Vdc1F2  = bicas.proc_utils.convert_N_to_1_SPR_redistribute(VDC1( bF2, :));
+    Vdc12F2 = bicas.proc_utils.convert_N_to_1_SPR_redistribute(VDC12(bF2, :));
+    Vdc23F2 = bicas.proc_utils.convert_N_to_1_SPR_redistribute(VDC23(bF2, :));
 
     
     
-    TsV1F0  = irf.ts_scalar(EpochF0, V1F0);
-    TsE12F0 = irf.ts_scalar(EpochF0, E12F0);
-    TsE23F0 = irf.ts_scalar(EpochF0, E23F0);
+    % Create cell arrays of TSeries for each snapshot (on each channel).
+    TsVdc1F0_array  = snapshot_per_record_2_TSeries(Epoch(bF0), VDC1( bF0, :), F0Hz);
+    TsVdc12F0_array = snapshot_per_record_2_TSeries(Epoch(bF0), VDC12(bF0, :), F0Hz);
+    TsVdc23F0_array = snapshot_per_record_2_TSeries(Epoch(bF0), VDC23(bF0, :), F0Hz);
+    TsVac12F0_array = snapshot_per_record_2_TSeries(Epoch(bF0), VAC12(bF0, :), F0Hz);
+    TsVac23F0_array = snapshot_per_record_2_TSeries(Epoch(bF0), VAC23(bF0, :), F0Hz);
     
-    TsV1F1  = irf.ts_scalar(EpochF1, V1F1);
-    TsE12F1 = irf.ts_scalar(EpochF1, E12F1);
-    TsE23F1 = irf.ts_scalar(EpochF1, E23F1);
+    TsVdc1F1_array  = snapshot_per_record_2_TSeries(Epoch(bF1), VDC1( bF1, :), F1Hz);
+    TsVdc12F1_array = snapshot_per_record_2_TSeries(Epoch(bF1), VDC12(bF1, :), F1Hz);
+    TsVdc23F1_array = snapshot_per_record_2_TSeries(Epoch(bF1), VDC23(bF1, :), F1Hz);
+    TsVac12F1_array = snapshot_per_record_2_TSeries(Epoch(bF1), VAC12(bF1, :), F1Hz);
+    TsVac23F1_array = snapshot_per_record_2_TSeries(Epoch(bF1), VAC23(bF1, :), F1Hz);
+    
+    TsVdc1F2_array  = snapshot_per_record_2_TSeries(Epoch(bF2), VDC1( bF2, :), F2Hz);
+    TsVdc12F2_array = snapshot_per_record_2_TSeries(Epoch(bF2), VDC12(bF2, :), F2Hz);
+    TsVdc23F2_array = snapshot_per_record_2_TSeries(Epoch(bF2), VDC23(bF2, :), F2Hz);
+    TsVac12F2_array = snapshot_per_record_2_TSeries(Epoch(bF2), VAC12(bF2, :), F2Hz);
+    TsVac23F2_array = snapshot_per_record_2_TSeries(Epoch(bF2), VAC23(bF2, :), F2Hz);
+    
+    % Create TSeries representing 3 scalar time series each.
+    TsVdcF0 = irf.ts_scalar(EpochF0, [Vdc1F0, Vdc12F0, Vdc23F0]);
+    TsVdcF1 = irf.ts_scalar(EpochF1, [Vdc1F1, Vdc12F1, Vdc23F1]);
+    TsVdcF2 = irf.ts_scalar(EpochF2, [Vdc1F2, Vdc12F2, Vdc23F2]);
 
-    TsV1F2  = irf.ts_scalar(EpochF2, V1F2);
-    TsE12F2 = irf.ts_scalar(EpochF2, E12F2);
-    TsE23F2 = irf.ts_scalar(EpochF2, E23F2);
-    
-    TsF0 = irf.ts_scalar(EpochF0, [V1F0, E12F0, E23F0]);
-    TsF1 = irf.ts_scalar(EpochF1, [V1F1, E12F1, E23F1]);
-    TsF2 = irf.ts_scalar(EpochF2, [V1F2, E12F2, E23F2]);
 
-    
+    % TsV12F0_DC
+    % TsVDC12F0
+    % TsVdc12F0
+
+    irf_plot(5+3+3 +3, 'newfigure');
+    %irf_plot(3 + 3,'newfigure');
     
     hAxesArray = [];
-%     h(end+1) = plot_spectrum( 'V1 F0 spectrogram', TsV1F0,  F0Hz, 'F0', 'V1');
-%     h(end+1) = plot_spectrum('E12 F0 spectrogram', TsE12F0, F0Hz, 'F0', 'V12');
-%     h(end+1) = plot_spectrum('E23 F0 spectrogram', TsE23F0, F0Hz, 'F0', 'V13');
-%     
-%     h(end+1) = plot_spectrum( 'V1 F1 spectrogram', TsV1F1,  F1Hz, 'F1', 'V1');
-%     h(end+1) = plot_spectrum('E12 F1 spectrogram', TsE12F1, F1Hz, 'F1', 'V12');
-%     h(end+1) = plot_spectrum('E23 F1 spectrogram', TsE23F1, F1Hz, 'F1', 'V13');
-%     
-%     h(end+1) = plot_spectrum( 'V1 F2 spectrogram', TsV1F2,  F2Hz, 'F2', 'V1');
-%     h(end+1) = plot_spectrum('E12 F2 spectrogram', TsE12F2, F2Hz, 'F2', 'V12');
-%     h(end+1) = plot_spectrum('E23 F2 spectrogram', TsE23F2, F2Hz, 'F2', 'V13');
+    hAxesArray(end+1) = spectrum_panel( 'V1 DC F0 spectrogram', TsVdc1F0_array,  F0Hz, 'F0', 'V1\_DC');
+    hAxesArray(end+1) = spectrum_panel('V12 DC F0 spectrogram', TsVdc12F0_array, F0Hz, 'F0', 'V12\_DC');
+    hAxesArray(end+1) = spectrum_panel('V23 DC F0 spectrogram', TsVdc23F0_array, F0Hz, 'F0', 'V13\_DC');
+    hAxesArray(end+1) = spectrum_panel('V12 AC F0 spectrogram', TsVac12F0_array, F0Hz, 'F0', 'V12\_AC');
+    hAxesArray(end+1) = spectrum_panel('V23 AC F0 spectrogram', TsVac23F0_array, F0Hz, 'F0', 'V13\_AC');
     
-    SIGNALS_LEGEND = {'V1','V12','V23'};
-    hAxesArray(end+1) = plot_time_series('V1,E12,E23 F0 time series', TsF0, 'F0', SIGNALS_LEGEND);
-    hAxesArray(end+1) = plot_time_series('V1,E12,E23 F1 time series', TsF1, 'F1', SIGNALS_LEGEND);
-    hAxesArray(end+1) = plot_time_series('V1,E12,E23 F2 time series', TsF2, 'F2', SIGNALS_LEGEND);
+    hAxesArray(end+1) = spectrum_panel( 'V1 F1 spectrogram', TsVdc1F1_array,  F1Hz, 'F1', 'V1\_DC');
+    hAxesArray(end+1) = spectrum_panel('V12 F1 spectrogram', TsVdc12F1_array, F1Hz, 'F1', 'V12\_DC');
+    hAxesArray(end+1) = spectrum_panel('V23 F1 spectrogram', TsVdc23F1_array, F1Hz, 'F1', 'V13\_DC');
+    
+    hAxesArray(end+1) = spectrum_panel( 'V1 F2 spectrogram', TsVdc1F2_array,  F2Hz, 'F2', 'V1\_DC');
+    hAxesArray(end+1) = spectrum_panel('V12 F2 spectrogram', TsVdc12F2_array, F2Hz, 'F2', 'V12\_DC');
+    hAxesArray(end+1) = spectrum_panel('V23 F2 spectrogram', TsVdc23F2_array, F2Hz, 'F2', 'V13\_DC');
+
+    SIGNALS_LEGEND = EJ_library.graph.escape_str({'V1_DC','V12_DC','V23_DC'});
+    hAxesArray(end+1) = time_series_panel('V1,V12,V23 F0 time series', TsVdcF0, 'F0', SIGNALS_LEGEND);
+    hAxesArray(end+1) = time_series_panel('V1,V12,V23 F1 time series', TsVdcF1, 'F1', SIGNALS_LEGEND);
+    hAxesArray(end+1) = time_series_panel('V1,V12,V23 F2 time series', TsVdcF2, 'F2', SIGNALS_LEGEND);
+    
+%     hAxesArray = [];
+%     nPanels = numel(panelCreationList);
+%     for i = 1:nPanels
+%         hAxesArray(end+1) = panelCreationList;
+%     end
 
     solo.ql.set_std_title('LFR SWF L2', filePath, hAxesArray(1))
     
-    irf_plot_axis_align(hAxesArray)                     % For aligning MATLAB axes (taking color legends into account).
-    irf_zoom(hAxesArray, 'x', irf.tint(TsV1F2.time))    % For aligning the content of the MATLAB axes.
+    irf_plot_axis_align(hAxesArray)                        % For aligning MATLAB axes (taking color legends into account).
+    irf_zoom(hAxesArray, 'x', irf.tint(TsVdcF0.time))    % For aligning the content of the MATLAB axes.    
 end
 
 
 
-% tlLegend : Top-left (TL) legend. String
+% ARGUMENTS
+% =========
+% TsCa     : Cell array of TSeries. All TSeries separately describe different time segments of one single scalar time series.
+% tlLegend : Top-left  (TL) legend string.
+% trLegend : Top-right (TR) legend string.
+function h = spectrum_panel(panelTag, TsCa, samplingFreqHz, tlLegend, trLegend)
+    % NOTE: Two-rows labels causes trouble for the time series ylabels.
+    % IMPLEMENTATION NOTE: Implemented to be able to handle TDS snapshots that vary in length (in theory; untested).
+    
+    % Fraction of the (minimum) time distance between snapshots (centers) that will be used for displaying the spectra.
+    % =1 : Spectras are adjacent between snapshot (for minimum snapshot distance).
+    SNAPSHOT_WIDTH_FRACTION = 0.8;
+    
+    % NOTE: More samples per spectrum is faster.
+    %N_SAMPLES_PER_LFR_SNAPSHOT = 2048;    % Number of Samples Per (LFR) Snapshot (SPS).
+    %N_SAMPLES_PER_SPECTRUM = N_SAMPLES_PER_LFR_SNAPSHOT / 4;   % TEST
+    N_SAMPLES_PER_SPECTRUM = 128;    % YK request 2020-02-26.
+
+    
+    %TsCa = snapshot_per_record_2_TSeries(zvEpoch, zvData, samplingFreqHz);
+    
+    
+    t = tic;
+    nSamplesTotal = 0;
+
+    h = irf_panel(panelTag);
+    
+    
+    %====================
+    % Calculate spectras
+    %====================
+    SpecrecCa = {};
+    snapshotCenterSecArray = [];
+    for i = 1:numel(TsCa)    
+        Ts = TsCa{i};
+        
+        nSamples      = numel(Ts.time.epoch);
+%         fprintf('nSamples = %g\n', nSamples)
+        nSamplesTotal = nSamplesTotal + nSamples;
+        
+        Specrec = irf_powerfft(Ts, N_SAMPLES_PER_SPECTRUM, samplingFreqHz);        
+        SpecrecCa{end+1} = Specrec;        
+        
+        % IMPLEMENTATION NOTE: Later needs the snapshot centers in the same time system as Specrec.t. Therefore using
+        % Specrec.t to derive snapshot centers.
+        snapshotCenterSecArray(end+1) = mean(Specrec.t);
+    end
+    snapshotPeriodSec = min(diff(snapshotCenterSecArray));
+    
+    %==================================================================================================================
+    % Set the display locations of individual spectras (override defaults). Separately stretch out the collection of
+    % spectras that stems from every snapshot.
+    %==================================================================================================================
+    for i = 1:numel(TsCa)
+        nSpectra = numel(SpecrecCa{i}.t);
+        
+        % Make spectra for snapshot stretch out in time to be almost adjacent 
+        relativeArraySec = ([0:(nSpectra-1)]' + 0.5 - nSpectra/2) * snapshotPeriodSec/nSpectra * SNAPSHOT_WIDTH_FRACTION;
+        SpecrecCa{i}.t  = snapshotCenterSecArray(i) + relativeArraySec;
+        SpecrecCa{i}.dt = ones(nSpectra, 1) * snapshotPeriodSec/nSpectra * 0.5;
+    end
+    
+    Specrec = merge_specrec(SpecrecCa);
+    
+    Specrec.p_label = {'[V^2/Hz]'};    % Replaces colorbarlabel
+    %Specrec.dt      = nSamples / samplingFreqHz * 0.4 * 1e3;    % TEST
+    
+    irf_spectrogram(h, Specrec);   % Replaces irf_plot
+    
+    set(h, 'yscale','log')
+
+    irf_legend(h, {tlLegend}, [0.02 0.98], 'color', 'k')
+    irf_legend(h, trLegend ,  [0.98 0.98])
+
+    tSec = toc(t);
+    fprintf('tSec/nSamples = %g [s/sample]\n', tSec/nSamplesTotal)
+end
+
+
+
+% Convert zVar-like data for snapshots to cell array of TSeries.
+%
+% ARGUMENTS
+% =========
+% zvEpoch : Nx1 array.
+% zvData  : NxM array.
+% TsCa    : 1D cell array of TSeries.
+%           IMPLEMENTATION NOTE: Can not(?) be struct array since MATLAB confuses indexing a TSeries array (with
+%           brackets) with some special TSeries functionality for calling it with brackets (calling TSeries' method
+%           "subsref").
+%
+function TsCa = snapshot_per_record_2_TSeries(zvEpoch, zvData, samplingFreqHz)
+    % IMPLEMENTATION NOTE: Function is written to some day be easily extended to be used for use with TDS's
+    % length-varying snapshots.
+    %
+    % NOTE: No special treatment of snapshots with only NaN.
+    
+    assert(isscalar(samplingFreqHz))
+    EJ_library.assert.size(zvData, [NaN, NaN])
+    assert(size(zvEpoch, 1) == size(zvData, 1))   % Same number of records
+    bicas.proc_utils.assert_Epoch(zvEpoch)
+    
+    nRecords = size(zvData, 1);
+    nSps     = size(zvData, 2);
+    assert(nSps >= 2)
+    
+    epochRelArray = int64([0:(nSps-1)] * 1/samplingFreqHz * 1e9);    % Relative timestamps inside CDF record/snapshot.
+    
+    TsCa = {};
+    for i = 1:nRecords
+        epochRecord = zvEpoch(i) + epochRelArray;
+        TsCa{i}  = irf.ts_scalar(epochRecord, zvData(i, :));
+    end
+    
+end
+
+
+
+% ARGUMENTS
+% =========
+% tlLegend : Top-left  (TL) legend. String.
 % trLegend : Top-right (TR) legend. Cell array of strings, one per scalar time series.
-function h = plot_time_series(panelTag, Ts, tlLegend, trLegend)
+function h = time_series_panel(panelTag, Ts, tlLegend, trLegend)
     h = irf_panel(panelTag);
     irf_plot(h, Ts)
     ylabel(h, '[V]')
     irf_legend(h, {tlLegend}, [0.02 0.98], 'color', 'k')
-    irf_legend(h, trLegend, [0.98 0.98])
+    irf_legend(h, trLegend,   [0.98 0.98])
 end
 
 
 
-function h = plot_spectrum(panelTag, Ts, samplingFreqHz, tlLegend, trLegend)
+% Merge multiple instances of "specrec" structs as returned by irf_powerfft
+% NOTE: Optionally added fields must be added after merging.
+%
+% ARGUMENTS AND RETURN VALUE
+% ==========================
+% SpecrecCa : Cell array of "specrec". Unsure if irf_powerfft supports more cases
+%             than can be handled here.
+%             NOTE: Includes dt (array of scalars).
+%             NOTE: Assumes that all use the same frequencies.
+%             IMPLEMENTATION NOTE: Uses cell array instead of struct array to be able to handle (and ignore) specrec =
+%             [] as can be returned by irf_powerfft.
+% Specrec   : Struct array that irf_spectrogram can use.
+%
+function Specrec = merge_specrec(SpecrecCa)
+    % PROPOSAL: Assertion for frequencies.
     
-    % NOTE: More samples per FFT/spectrum seems faster!!! Unclear why.
-    % NOTE: F2 plot fails for N_SAMPLES_PER_SPECTRUM = N_SAMPLES_PER_LFR_SNAPSHOT/1. Unclear why.
-    %N_SAMPLES_PER_LFR_SNAPSHOT = 2048;    % Number of Samples Per (LFR) Snapshot (SPS).
-    %N_SAMPLES_PER_SPECTRUM = N_SAMPLES_PER_SNAPSHOT / 4;
-    N_SAMPLES_PER_SPECTRUM = 128;    % YK request 2020-02-26.
-
-    h = irf_panel(panelTag);
-    specrec = irf_powerfft(Ts, N_SAMPLES_PER_SPECTRUM, samplingFreqHz);
-    specrec.p_label = {'[V^2/Hz]'};    % Replaces colorbarlabel
-    %irf_plot(h, specrec, 'colorbarlabel', {'',''}, 'fitcolorbarlabel');
-    irf_spectrogram(h, specrec);   % Replaces irf_plot    
-    set(h, 'yscale','log')
-
-    % Two rows of label causes trouble for the time series ylabels.
-    %ylabel(h, {yLabelNonUnit;'f [Hz]'})   % NOTE: Adding frequency unit on separate row.
-    %ylabel(h, {yLabelNonUnit})   % NOTE: Adding frequency unit on separate row.
-
-    irf_legend(h, {tlLegend}, [0.02 0.98], 'color', 'k')
-    irf_legend(h, trLegend ,  [0.98 0.98])
+    Specrec.f = [];
+    Specrec.p = {[]};
+    Specrec.t = [];
+    Specrec.dt = [];
+    
+    for i = 1:numel(SpecrecCa)
+        
+        S = SpecrecCa{i};
+        if ~isempty(S)
+            EJ_library.assert.struct(S, {'f', 'p', 't', 'dt'}, {});
+            
+            Specrec.f    = S.f;
+            Specrec.p{1} = [Specrec.p{1}; S.p{1}];
+            Specrec.t    = [Specrec.t;    S.t(:)];
+            Specrec.dt   = [Specrec.dt;   S.dt(:)];
+        end
+    end
 end
