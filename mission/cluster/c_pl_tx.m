@@ -11,7 +11,7 @@ function out=c_pl_tx(varargin)
 % C_PL_TX(X) where X is structure plots fields X.C1, X.C2, X.C3, X.C4
 %
 %   column - gives which column to plot. All columns will be plotted
-%            in separate panels if set to empty string or ommited.
+%            in separate panels if set to empty string or omited.
 %   linestyle - string or cell (size 4) in format accepted by plot.
 %            Usefull to set line style and marker (but not color).
 %   dt1 dt2 dt3 dt4 - timeshifts array

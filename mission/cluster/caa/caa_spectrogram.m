@@ -9,8 +9,8 @@ function hout = caa_spectrogram(h,t,Pxx,F,dt,dF)
 %              specrec.t  - time vector
 %              specrec.f - frequency vector 
 %              specrec.p - spectral density matrix (size(t)xsize(f))
-%              specrec.dt - vector of dt interval for every t point (can be ommitted)
-%              specrec.df - vector of dF interval for every frequency f point (can be ommitted)
+%              specrec.dt - vector of dt interval for every t point (can be omitted)
+%              specrec.df - vector of dF interval for every frequency f point (can be omitted)
 %                           df can be structure with two vectors df.plus and df.minus 
 %         specrec.f_label - label of f axis
 %         specrec.p_label - label of colorbar

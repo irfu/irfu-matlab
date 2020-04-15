@@ -4,7 +4,7 @@ function c_export_ps(st,varargin)
 % function c_export_ps(st,[sc_list],[option,value])
 % Input:
 %	st - isdat epoch, defines filename YYYYMMDD_HHMM
-%	if st is ommited, we try to guess it from usergdata of figure 1
+%	if st is omited, we try to guess it from usergdata of figure 1
 %	sc_list - list of sc [optional], default 1:4
 %	option [optional]:
 %	sp  - storage path

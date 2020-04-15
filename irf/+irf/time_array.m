@@ -32,7 +32,7 @@ elseif (isa(tStart,'double') || isa(tStart,'int64')) && ...
     ((nargin==2 && isscalar(tStart)) || isvector(tStart))
   %
 else
-  errStr = 'Unrecoglized input';
+  errStr = 'Unrecognized input';
   irf.log('critical', errStr), error(errStr)
 end
 

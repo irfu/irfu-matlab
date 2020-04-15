@@ -9,11 +9,11 @@ function hout = irf_pl_matrix(x,y,F,dx,dy,Flab,xlab,ylab)
 %              specrec.x  - x vector
 %              specrec.y - y vector
 %              specrec.F - matrix to plot (size(x)xsize(y))
-%              specrec.dx - vector of dt interval for every t point, can be single number if the same for all (can be ommitted)
-%              specrec.dy - vector of dF interval for every frequency f point, can be single number if the same for all (can be ommitted)
-%              specrec.Flabel - label of matrix to be plotted (can be ommitted)
-%              specrec.xlabel - label of xaxis to be plotted (can be ommitted)
-%              specrec.ylabel - label of yaxis to be plotted (can be ommitted)
+%              specrec.dx - vector of dt interval for every t point, can be single number if the same for all (can be omitted)
+%              specrec.dy - vector of dF interval for every frequency f point, can be single number if the same for all (can be omitted)
+%              specrec.Flabel - label of matrix to be plotted (can be omitted)
+%              specrec.xlabel - label of xaxis to be plotted (can be omitted)
+%              specrec.ylabel - label of yaxis to be plotted (can be omitted)
 %
 %
 % See also CAA_SPECTROGRAM
