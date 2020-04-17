@@ -2,12 +2,11 @@
 % Quicklook for the content of one BIAS LFR SWF dataset (CDF file), i.e. DATASET_ID = SOLO_L2_RPW-LFR-SURV-SWF-E
 %
 %
-% NOTE: Only capable (default) of only showing either DC diffs or AC diffs. Hardcoded setting for permitting both.
+% NOTE: Only capable (default) of only showing either DC diffs or AC diffs. There are hardcoded settings for permitting
+% or forcing both.
 % NOTE: Uses bicas.proc_utils.* code.
-%
 % NOTE: Does not yet support spectrogram overlap.
-%
-% INCOMPLETE
+% NOTE: Time series panels interpolate between snapshots.
 %
 %
 % ARGUMENTS
@@ -61,16 +60,26 @@ function hAxesArray = plot_LFR_SWF(filePath, timeIntervUtc)
     %       CON: Does not work per snapshot.
     %   PROPOSAL: Always let the caller split up the time series in segments, snapshots or otherwise.
     %
+    % PROPOSAL: Argument for time interval should use some more irfu-matlab-way of specifying a time interval.
+    % PROPOSAL: Some clear way of distinguishing AC & DC visually?
+    %
     % TODO?: Remove interpolation between time series snapshots?
     % TODO: 50% overlap PSD
     
-    PERMIT_SIMULTANEOUS_DC_AC_DIFFS = 0;   % YK 2020-04-16: Officially only either DC or AC diffs.
+    % YK 2020-04-16: Officially only either DC or AC diffs.
+    ALWAYS_SIMULTANEOUS_DC_AC_DIFFS_PLOTS = 0;   % DEFAULT 0. Useful for debugging (runs through all code).
+    PERMIT_SIMULTANEOUS_DC_AC_DIFFS       = 0;   % DEFAULT 0.
+    ENABLE_SPECTROGRAMS                   = 1;   % DEFAULT 1.
     
-    % LFR sampling frequencies (F0-F3 is LFR's terminology).
+    % Info associated with LFR sampling rates (F0-F3 is LFR's terminology).
     % NOTE: LFR SWF only uses F0-F2 (not F3).
-    F0Hz = 24576;
-    F1Hz =  4096;
-    F2Hz =   256;
+    % RATIONALE: Useful to be able to submit (to a function) all info associated with one sampling rate at once.
+    F0.str    = 'F0';
+    F1.str    = 'F1';
+    F2.str    = 'F2';
+    F0.freqHz = 24576;
+    F1.freqHz =  4096;
+    F2.freqHz =   256;
 
     
     
@@ -87,164 +96,118 @@ function hAxesArray = plot_LFR_SWF(filePath, timeIntervUtc)
 
     D = dataobj(filePath, DATAOBJ_TIME_INTERVAL_ARGS{:});
     
-    Epoch    = D.data.Epoch.data;
+    epoch    = D.data.Epoch.data;
     F_SAMPLE = D.data.F_SAMPLE.data;
-    VDC1     = get_CDF_zv_data(D, 'V',   1);
-    VDC12    = get_CDF_zv_data(D, 'E',   1);
-    VDC23    = get_CDF_zv_data(D, 'E',   3);
-    VAC12    = get_CDF_zv_data(D, 'EAC', 1);
-    VAC23    = get_CDF_zv_data(D, 'EAC', 3);
-    
-    hasDcDiffData = any(~isnan(VDC12(:))) || any(~isnan(VDC23(:)));
-    hasAcDiffData = any(~isnan(VAC12(:))) || any(~isnan(VAC23(:)));
-    if hasDcDiffData && hasAcDiffData
-        error('Dataset (CDF file) contains both DC diff and AC diff data. Can not handle this case.')
-    elseif ~hasDcDiffData && ~hasAcDiffData && ~PERMIT_SIMULTANEOUS_DC_AC_DIFFS
-        error('Dataset (CDF file) contains neither DC diff nor AC diff data. Can not handle this case.')
-    end
-    displayDcDiffData = hasDcDiffData;
-    displayAcDiffData = hasAcDiffData;
-    
-    
+    vDc1     = get_CDF_zv_data(D, 'V',   1);
+    vDc12    = get_CDF_zv_data(D, 'E',   1);
+    vDc23    = get_CDF_zv_data(D, 'E',   3);
+    vAc12    = get_CDF_zv_data(D, 'EAC', 1);
+    vAc23    = get_CDF_zv_data(D, 'EAC', 3);
     
     % B = Boolean/Logical (true/false for every index value).
-    bF0 = (F_SAMPLE == F0Hz);
-    bF1 = (F_SAMPLE == F1Hz);
-    bF2 = (F_SAMPLE == F2Hz);
+    F0.bRecords = (F_SAMPLE == F0.freqHz);
+    F1.bRecords = (F_SAMPLE == F1.freqHz);
+    F2.bRecords = (F_SAMPLE == F2.freqHz);
+    assert(all(F0.bRecords | F1.bRecords | F2.bRecords))
+    
+    
+    
+    %=================================================================
+    % Determine whether DC diffs, AC diffs, or both should be plotted
+    %=================================================================
+    hasDcDiffs = any(~isnan(vDc12(:))) || any(~isnan(vDc23(:)));
+    hasAcDiffs = any(~isnan(vAc12(:))) || any(~isnan(vAc23(:)));
+    if ALWAYS_SIMULTANEOUS_DC_AC_DIFFS_PLOTS
+        displayDcDiffs = 1;
+        displayAcDiffs = 1;
+    else
+        % ASSERTIONS
+        if      hasDcDiffs && hasAcDiffs && ~PERMIT_SIMULTANEOUS_DC_AC_DIFFS
+            error('Dataset (CDF file) contains both DC diff and AC diff data. Can not handle this case.')
+        elseif ~hasDcDiffs && ~hasAcDiffs
+            error('Dataset (CDF file) contains neither DC diff nor AC diff data. Can not handle this case.')
+        end
+        
+        displayDcDiffs = hasDcDiffs;
+        displayAcDiffs = hasAcDiffs;
+    end
+    
 
-
-
-%     nSps = size(VDC1, 2);   % SPS = Samples Per Snapshot
-%     
-%     % NOTE: Using bicas.* code.
-%     EpochF0  = bicas.proc_utils.convert_N_to_1_SPR_Epoch(Epoch(bF0), nSps, F_SAMPLE(bF0));
-%     %VDC1(:,end) = NaN;   % TEST
-%     Vdc1F0  = bicas.proc_utils.convert_N_to_1_SPR_redistribute(VDC1( bF0, :));
-%     Vdc12F0 = bicas.proc_utils.convert_N_to_1_SPR_redistribute(VDC12(bF0, :));
-%     Vdc23F0 = bicas.proc_utils.convert_N_to_1_SPR_redistribute(VDC23(bF0, :));
-%     Vac12F0 = bicas.proc_utils.convert_N_to_1_SPR_redistribute(VAC12(bF0, :));
-%     Vac23F0 = bicas.proc_utils.convert_N_to_1_SPR_redistribute(VAC23(bF0, :));
-%     
-%     EpochF1 = bicas.proc_utils.convert_N_to_1_SPR_Epoch(Epoch(bF1), nSps, F_SAMPLE(bF1));
-%     Vdc1F1  = bicas.proc_utils.convert_N_to_1_SPR_redistribute(VDC1( bF1, :));
-%     Vdc12F1 = bicas.proc_utils.convert_N_to_1_SPR_redistribute(VDC12(bF1, :));
-%     Vdc23F1 = bicas.proc_utils.convert_N_to_1_SPR_redistribute(VDC23(bF1, :));
-%     Vac12F1 = bicas.proc_utils.convert_N_to_1_SPR_redistribute(VAC12(bF1, :));
-%     Vac23F1 = bicas.proc_utils.convert_N_to_1_SPR_redistribute(VAC23(bF1, :));
-%     
-%     EpochF2 = bicas.proc_utils.convert_N_to_1_SPR_Epoch(Epoch(bF2), nSps, F_SAMPLE(bF2));
-%     Vdc1F2  = bicas.proc_utils.convert_N_to_1_SPR_redistribute(VDC1( bF2, :));
-%     Vdc12F2 = bicas.proc_utils.convert_N_to_1_SPR_redistribute(VDC12(bF2, :));
-%     Vdc23F2 = bicas.proc_utils.convert_N_to_1_SPR_redistribute(VDC23(bF2, :));
-%     Vac12F2 = bicas.proc_utils.convert_N_to_1_SPR_redistribute(VAC12(bF2, :));
-%     Vac23F2 = bicas.proc_utils.convert_N_to_1_SPR_redistribute(VAC23(bF2, :));
-% 
-    % Create TSeries representing 3 scalar time series each.
-%     TsVdcF0 = irf.ts_scalar(EpochF0, [Vdc1F0, Vdc12F0, Vdc23F0]);
-%     TsVdcF1 = irf.ts_scalar(EpochF1, [Vdc1F1, Vdc12F1, Vdc23F1]);
-%     TsVdcF2 = irf.ts_scalar(EpochF2, [Vdc1F2, Vdc12F2, Vdc23F2]);
-    % Create TSeries representing 3 scalar time series each.
-%     TsVdcacF0 = irf.ts_scalar(EpochF0, [Vdc1F0, Vac12F0, Vac23F0]);
-%     TsVdcacF1 = irf.ts_scalar(EpochF1, [Vdc1F1, Vac12F1, Vac23F1]);
-%     TsVdcacF2 = irf.ts_scalar(EpochF2, [Vdc1F2, Vac12F2, Vac23F2]);
-%     % Create TSeries representing 2 scalar time series each.
-%     TsVacF0 = irf.ts_scalar(EpochF0, [        Vac12F0, Vac23F0]);
-%     TsVacF1 = irf.ts_scalar(EpochF1, [        Vac12F1, Vac23F1]);
-%     TsVacF2 = irf.ts_scalar(EpochF2, [        Vac12F2, Vac23F2]);
-
-
-
+    
     pcfcList = {};    % PCFC = Panel Creation Function Call
-    %=================
-    % F0 spectrograms
-    %=================
-    pcfcList{end+1}     = @() (spectrum_panel( 'V1 DC F0 spectrogram', Epoch(bF0), VDC1( bF0, :), F0Hz, 'F0', 'V1\_DC'));
-    if displayDcDiffData
-        pcfcList{end+1} = @() (spectrum_panel('V12 DC F0 spectrogram', Epoch(bF0), VDC12(bF0, :), F0Hz, 'F0', 'V12\_DC'));
-        pcfcList{end+1} = @() (spectrum_panel('V23 DC F0 spectrogram', Epoch(bF0), VDC23(bF0, :), F0Hz, 'F0', 'V13\_DC'));
+    if ENABLE_SPECTROGRAMS
+        %=================
+        % F0 spectrograms
+        %=================
+        pcfcList{end+1}     = @() (spectrogram_panel2( 'V1 DC', epoch, vDc1, F0, 'V1\_DC'));
+        if displayDcDiffs
+            pcfcList{end+1} = @() (spectrogram_panel2('V12 DC', epoch, vDc12, F0, 'V12\_DC'));
+            pcfcList{end+1} = @() (spectrogram_panel2('V23 DC', epoch, vDc23, F0, 'V13\_DC'));
+        end
+        if displayAcDiffs
+            pcfcList{end+1} = @() (spectrogram_panel2('V12 AC', epoch, vAc12, F0, 'V12\_AC'));
+            pcfcList{end+1} = @() (spectrogram_panel2('V23 AC', epoch, vAc23, F0, 'V23\_AC'));
+        end
+        %=================
+        % F1 spectrograms
+        %=================
+        pcfcList{end+1} =     @() (spectrogram_panel2( 'V1 DC', epoch, vDc1,  F1, 'V1\_DC'));
+        if displayDcDiffs
+            pcfcList{end+1} = @() (spectrogram_panel2('V12 DC', epoch, vDc12, F1, 'V12\_DC'));
+            pcfcList{end+1} = @() (spectrogram_panel2('V23 DC', epoch, vDc23, F1, 'V23\_DC'));
+        end
+        if displayAcDiffs
+            pcfcList{end+1} = @() (spectrogram_panel2('V12 AC', epoch, vAc12, F1, 'V12\_AC'));
+            pcfcList{end+1} = @() (spectrogram_panel2('V23 AC', epoch, vAc23, F1, 'V23\_AC'));
+        end
+        %=================
+        % F2 spectrograms
+        %=================
+        pcfcList{end+1}     = @() (spectrogram_panel2( 'V1 DC', epoch, vDc1,  F2, 'V1\_DC'));
+        if displayDcDiffs
+            pcfcList{end+1} = @() (spectrogram_panel2('V12 DC', epoch, vDc12, F2, 'V12\_DC'));
+            pcfcList{end+1} = @() (spectrogram_panel2('V23 DC', epoch, vDc23, F2, 'V23\_DC'));
+        end
+        if displayAcDiffs
+            pcfcList{end+1} = @() (spectrogram_panel2('V12 AC', epoch, vAc12, F2, 'V12\_AC'));
+            pcfcList{end+1} = @() (spectrogram_panel2('V23 AC', epoch, vAc23, F2, 'V23\_AC'));
+        end
     end
-    if displayAcDiffData
-        pcfcList{end+1} = @() (spectrum_panel('V12 AC F0 spectrogram', Epoch(bF0), VAC12(bF0, :), F0Hz, 'F0', 'V12\_AC'));
-        pcfcList{end+1} = @() (spectrum_panel('V23 AC F0 spectrogram', Epoch(bF0), VAC23(bF0, :), F0Hz, 'F0', 'V23\_AC'));
-    end
-    if 1   % DEBUG
-    %=================
-    % F1 spectrograms
-    %=================
-    pcfcList{end+1} =     @() (spectrum_panel( 'V1 DC F1 spectrogram', Epoch(bF1), VDC1( bF1, :), F1Hz, 'F1', 'V1\_DC'));
-    if displayDcDiffData
-        pcfcList{end+1} = @() (spectrum_panel('V12 DC F1 spectrogram', Epoch(bF1), VDC12(bF1, :), F1Hz, 'F1', 'V12\_DC'));
-        pcfcList{end+1} = @() (spectrum_panel('V23 DC F1 spectrogram', Epoch(bF1), VDC23(bF1, :), F1Hz, 'F1', 'V23\_DC'));
-    end
-    if displayAcDiffData
-        pcfcList{end+1} = @() (spectrum_panel('V12 AC F1 spectrogram', Epoch(bF1), VAC12(bF1, :), F1Hz, 'F1', 'V12\_AC'));
-        pcfcList{end+1} = @() (spectrum_panel('V23 AC F1 spectrogram', Epoch(bF1), VAC23(bF1, :), F1Hz, 'F1', 'V23\_AC'));
-    end
-    %=================
-    % F2 spectrograms
-    %=================
-    pcfcList{end+1}     = @() (spectrum_panel( 'V1 DC F2 spectrogram', Epoch(bF2), VDC1( bF2, :), F2Hz, 'F2', 'V1\_DC'));
-    if displayDcDiffData
-        pcfcList{end+1} = @() (spectrum_panel('V12 DC F2 spectrogram', Epoch(bF2), VDC12(bF2, :), F2Hz, 'F2', 'V12\_DC'));
-        pcfcList{end+1} = @() (spectrum_panel('V23 DC F2 spectrogram', Epoch(bF2), VDC23(bF2, :), F2Hz, 'F2', 'V23\_DC'));
-    end
-    if displayAcDiffData
-        pcfcList{end+1} = @() (spectrum_panel('V12 AC F2 spectrogram', Epoch(bF2), VAC12(bF2, :), F2Hz, 'F2', 'V12\_AC'));
-        pcfcList{end+1} = @() (spectrum_panel('V23 AC F2 spectrogram', Epoch(bF2), VAC23(bF2, :), F2Hz, 'F2', 'V23\_AC'));
-    end
-    end    % DEBUG
-    %===================
+    %==========================================================================================
     % F0-F2 time series 
-    % IMPLEMENTATION NOTE: Panel tags have to be unique, or otherwise they will be reused.
-    %===================
-    if displayDcDiffData
+    % IMPLEMENTATION NOTE: Panel tags have to be unique, or otherwise the axes will be reused.
+    %==========================================================================================
+    if displayDcDiffs
 
         % DC single + DC diffs
         SIGNALS_LEGEND_DC = EJ_library.graph.escape_str({'V1_DC','V12_DC','V23_DC'});
-        tempFuncPtr = @(bFx, freqStr, samplingFreqHz) (@() (time_series_panel2(...
-            sprintf('V1,V12,V23 DC %s time series', freqStr), ...
-            Epoch(bFx), {VDC1(bFx, :), VDC12(bFx, :), VDC23(bFx, :)}, ...
-            samplingFreqHz, freqStr, SIGNALS_LEGEND_DC)));% 
-        pcfcList{end+1} = tempFuncPtr(bF0, 'F0', F0Hz);
-        pcfcList{end+1} = tempFuncPtr(bF1, 'F1', F1Hz);
-        pcfcList{end+1} = tempFuncPtr(bF2, 'F2', F2Hz);
-%         pcfcList{end+1} = @() (time_series_panel2('V1,V12,V23 DC F0 time series', EpochF0, {VDC1(bF0, :),VDC12(bF0, :),VDC23(bF0, :)}, 'F0', SIGNALS_LEGEND_DC));
-%         pcfcList{end+1} = @() (time_series_panel2('V1,V12,V23 DC F1 time series', EpochF1, {VDC1(bF1, :),VDC12(bF1, :),VDC23(bF1, :)}, 'F1', SIGNALS_LEGEND_DC));
-%         pcfcList{end+1} = @() (time_series_panel2('V1,V12,V23 DC F2 time series', EpochF2, {VDC1(bF2, :),VDC12(bF2, :),VDC23(bF2, :)}, 'F2', SIGNALS_LEGEND_DC));
+        tempFuncPtr = @(Fx) (@() (time_series_panel2('V1,V12,V23 DC', epoch, {vDc1, vDc12, vDc23}, Fx, SIGNALS_LEGEND_DC)));
+        
+        pcfcList{end+1} = tempFuncPtr(F0);
+        pcfcList{end+1} = tempFuncPtr(F1);
+        pcfcList{end+1} = tempFuncPtr(F2);
 
     end    
-    if ~displayDcDiffData && displayAcDiffData
+    if ~displayDcDiffs && displayAcDiffs
 
         % DC single + AC diffs
         SIGNALS_LEGEND_DC_AC = EJ_library.graph.escape_str({'V1_DC','V12_AC','V23_AC'});
-        tempFuncPtr = @(bFx, freqStr, samplingFreqHz) (@() (time_series_panel2(...
-            sprintf('V1,V12,V23 DC/AC %s time series', freqStr), ...
-            Epoch(bFx), {VDC1(bFx, :), VAC12(bFx, :), VAC23(bFx, :)}, ...
-            samplingFreqHz, freqStr, SIGNALS_LEGEND_DC_AC)));
+        tempFuncPtr = @(Fx) (@() (time_series_panel2('V1,V12,V23 DC/AC', epoch, {vDc1, vAc12, vAc23}, Fx, SIGNALS_LEGEND_DC_AC)));
 
-        pcfcList{end+1} = tempFuncPtr(bF0, 'F0', F0Hz);
-        pcfcList{end+1} = tempFuncPtr(bF1, 'F1', F1Hz);
-        pcfcList{end+1} = tempFuncPtr(bF2, 'F2', F2Hz);
-%         pcfcList{end+1} = @() (time_series_panel('V1,V12,V23 DC/AC F0 time series', TsVdcacF0, 'F0', SIGNALS_LEGEND_DC_AC));
-%         pcfcList{end+1} = @() (time_series_panel('V1,V12,V23 DC/AC F1 time series', TsVdcacF1, 'F1', SIGNALS_LEGEND_DC_AC));
-%         pcfcList{end+1} = @() (time_series_panel('V1,V12,V23 DC/AC F2 time series', TsVdcacF2, 'F2', SIGNALS_LEGEND_DC_AC));
+        pcfcList{end+1} = tempFuncPtr(F0);
+        pcfcList{end+1} = tempFuncPtr(F1);
+        pcfcList{end+1} = tempFuncPtr(F2);
 
     end    
-    if displayDcDiffData && displayAcDiffData
+    if displayDcDiffs && displayAcDiffs
 
         % AC diffs
         SIGNALS_LEGEND_AC = EJ_library.graph.escape_str({'V12_AC','V23_AC'});
-        tempFuncPtr = @(bFx, freqStr, samplingFreqHz) (@() (time_series_panel2(...
-            sprintf('V12,V23 AC %s time series', freqStr), ...
-            Epoch(bFx), {VAC12(bFx, :), VAC23(bFx, :)}, ...
-            samplingFreqHz, freqStr, SIGNALS_LEGEND_AC)));
+        tempFuncPtr = @(Fx) (@() (time_series_panel2('V12,V23 AC', epoch, {vAc12, vAc23}, Fx, SIGNALS_LEGEND_AC)));
 
-        pcfcList{end+1} = tempFuncPtr(bF0, 'F0', F0Hz);
-        pcfcList{end+1} = tempFuncPtr(bF1, 'F1', F1Hz);
-        pcfcList{end+1} = tempFuncPtr(bF2, 'F2', F2Hz);
-%         pcfcList{end+1} = @() (time_series_panel2('V12,V23 AC F0 time series', TsVacF0, 'F0', SIGNALS_LEGEND_AC));
-%         pcfcList{end+1} = @() (time_series_panel2('V12,V23 AC F1 time series', TsVacF1, 'F1', SIGNALS_LEGEND_AC));
-%         pcfcList{end+1} = @() (time_series_panel2('V12,V23 AC F2 time series', TsVacF2, 'F2', SIGNALS_LEGEND_AC));
+        pcfcList{end+1} = tempFuncPtr(F0);
+        pcfcList{end+1} = tempFuncPtr(F1);
+        pcfcList{end+1} = tempFuncPtr(F2);
 
     end
 
@@ -261,18 +224,23 @@ function hAxesArray = plot_LFR_SWF(filePath, timeIntervUtc)
     solo.ql.set_std_title('LFR SWF L2', filePath, hAxesArray(1))
 
     irf_plot_axis_align(hAxesArray)                      % For aligning MATLAB axes (taking color legends into account).
-    %irf_zoom(hAxesArray, 'x', irf.tint(TsVdcF0.time))    % For aligning the content of the MATLAB axes.    
-    irf_zoom(hAxesArray, 'x', irf.tint(Epoch(1), Epoch(end)))    % For aligning the content of the MATLAB axes.    
+    irf_zoom(hAxesArray, 'x', irf.tint(epoch(1), epoch(end)))    % For aligning the content of the MATLAB axes.    
 end
 
 
 
-function data = get_CDF_zv_data(D, zvName, i3)
-    fillValue = getfillval(D, zvName);
-    data = D.data.(zvName).data(:, :, i3);
-    data = changem(data, NaN, fillValue);
+% Convenient wrapper around spectrum_panel.
+% Converts from zVar-like variables to what is actually used for plotting.
+function h = spectrogram_panel2(panelTagSignalsStr, zvEpoch, zvData, SamplingRateInfo, trLegend)
+    h = spectrogram_panel(...
+        sprintf('%s %s spectrogram', panelTagSignalsStr, SamplingRateInfo.str), ...
+        zvEpoch(SamplingRateInfo.bRecords, :), ...
+        zvData(SamplingRateInfo.bRecords, :), ...
+        SamplingRateInfo.freqHz, ...
+        SamplingRateInfo.str, ...
+        trLegend);
 end
-
+    
 
 
 % ARGUMENTS
@@ -282,14 +250,12 @@ end
 % tlLegend : Top-left  (TL) legend string.
 % trLegend : Top-right (TR) legend string.
 %
-function h = spectrum_panel(panelTag, zvEpoch, zvData, samplingFreqHz, tlLegend, trLegend)
+function h = spectrogram_panel(panelTag, zvEpoch, zvData, samplingFreqHz, tlLegend, trLegend)
     % NOTE: Multiple-row labels causes trouble for the time series ylabels.
-    % IMPLEMENTATION NOTE: Implemented to be able to handle TDS snapshots that vary in length (in theory; untested).
-
-
+    % IMPLEMENTATION NOTE: Implemented to potentially be modified to handle TDS snapshots that vary in length.
 
     % Fraction of the (minimum) time distance between snapshots (centers) that will be used for displaying the spectra.
-    % =1 : Spectras are adjacent between snapshot (for minimum snapshot distance).
+    % Value 1 : Spectras are adjacent between snapshot (for minimum snapshot distance).
     SNAPSHOT_WIDTH_FRACTION  = 0.85;
     SPECTRUM_OVERLAP_PERCENT = 0;  % Percent, not fraction. 50 does not work yet.
     %SPECTRUM_OVERLAP_PERCENT = 50;
@@ -360,20 +326,28 @@ end
 
 
 
-% Wrapper for converting data.
-function h = time_series_panel2(panelTag, zvEpoch, zvDataList, samplingFreqHz, tlLegend, trLegend)
+% Convenient wrapper around time_series_panel.
+% Converts from zVar-like variables (N samples/record; all records) to what is actually used for plotting.
+function h = time_series_panel2(panelTagSignalsStr, zvEpoch, zvDataList, SamplingRateInfo, trLegend)
     
-    % Convert from N samples/record --> 1 samples/record (row).
-    nSps    = size(zvDataList{1}, 2);   % SPS = Samples Per Snapshot
-    zvEpoch = bicas.proc_utils.convert_N_to_1_SPR_Epoch(zvEpoch, nSps, ones(size(zvEpoch))*samplingFreqHz);
+    nSps     = size(zvDataList{1}, 2);   % SPS = Samples Per Snapshot
+    
+    zvEpoch  = zvEpoch(SamplingRateInfo.bRecords);
+    nRecords = size(zvEpoch, 1);   % NOTE: After selecting records.
+    zvEpoch  = bicas.proc_utils.convert_N_to_1_SPR_Epoch(zvEpoch, nSps, ones(nRecords, 1)*SamplingRateInfo.freqHz);
+    
     for i = 1:numel(zvDataList)
-        zvDataList{i} = bicas.proc_utils.convert_N_to_1_SPR_redistribute(zvDataList{i});
+        zvData = zvDataList{i}(SamplingRateInfo.bRecords, :);
+        zvDataList{i} = bicas.proc_utils.convert_N_to_1_SPR_redistribute(zvData);
     end
     
     % NOTE: Effectively serves as an assertion on zv sizes.
     Ts = irf.ts_scalar(zvEpoch, [zvDataList{:}]);
     
-    h = time_series_panel(panelTag, Ts, tlLegend, trLegend);
+    % PLOT
+    h = time_series_panel(...
+        sprintf('%s %s time series', panelTagSignalsStr, SamplingRateInfo.str), ...
+        Ts, SamplingRateInfo.str, trLegend);
 end
 
 
@@ -465,4 +439,12 @@ function Specrec = merge_specrec(SpecrecCa)
             Specrec.dt   = [Specrec.dt;   S.dt(:)];
         end
     end
+end
+
+
+
+function data = get_CDF_zv_data(D, zvName, i3)
+    fillValue = getfillval(D, zvName);
+    data = D.data.(zvName).data(:, :, i3);
+    data = changem(data, NaN, fillValue);
 end
