@@ -65,7 +65,11 @@ if(usingTSeries)
   % CASE: "data" is TSeries.
   nSpectras      = fix(((data.time.stop-data.time.start)*samplFreqHz+1) * (1+overlap*.01) / nFft);
   nComp          = size(data.data, 2);    % Number of components of data.
-  tIntervalStart = data.time.start;
+  tIntervalStart = EpochTT(data.time.start - EpochTT(0.5/samplFreqHz));
+  % NOTE: Have the time interval used for a given spectrum begin "0.5 samples"
+  % before the first sample, and end "0.5 samples" after the last sample so that
+  % the spectrum time interval is proportional to the number of samples
+  % (assuming the nominal sampling frequency).
 else
   % CASE: "data" is NOT TSeries.
   ii = find(~isnan(data(:,1)));
@@ -77,7 +81,7 @@ else
   % Number of intervals must be computed from time
   nSpectras      = fix(((data(ii(end),1)-ts)*samplFreqHz+1) * (1+overlap*.01)/nFft);
   nComp          = size(data,2) - 1;    % Number of components of data. First column is time.
-  tIntervalStart = ts;
+  tIntervalStart = ts - 0.5/samplFreqHz;
 end
 
 % Check if there is enough data
@@ -88,7 +92,7 @@ if( nSpectras<1 )
   return
 end
 
-intervalLengthSec = (nFft-1)/samplFreqHz;    % Length of time interval used for spectrum.
+intervalLengthSec = nFft/samplFreqHz;    % Length of time interval used for spectrum.
 
 % if nFft/2==fix(nFft/2), nf = nFft/2;
 % else, nf = (nFft+1)/2;
@@ -191,7 +195,7 @@ end
 
       % Construct "outData" vector/matrix with NaN, except where there is actual data.
       % ind = Indices into final vector that can be filled with actual samples.
-      ind = round((inData.time.epochUnix - tIntervalStart2.epochUnix) * samplFreqHz + 1);   
+      ind = round((inData.time.epochUnix - tIntervalStart2.epochUnix) * samplFreqHz + 0.5);
       outData         = NaN(nOutData, nComp2);
       outData(ind, :) = inData.data;
     else
@@ -201,7 +205,7 @@ end
       end
 
       nComp2          = size(inData,2) - 1;       % Exclude time column
-      ind             = round((inData(:,1)-tIntervalStart2)*samplFreqHz + 1);
+      ind             = round((inData(:,1)-tIntervalStart2)*samplFreqHz + 0.5);
       outData         = NaN(nOutData, nComp2);
       outData(ind, :) = inData(:, 2:end);         % Exclude time column
     end
