@@ -103,15 +103,15 @@ end
 switch lower(flag)
 	case 'vector>tt'
 		% Convert a [YYYY MM DD hh mm ss ms micros ns] to TT2000 in double s
-		% the last columns can be ommitted, default values MM=1,DD=1,other=0
+		% the last columns can be omitted, default values MM=1,DD=1,other=0
 		tOutput = double(irf_time(tInput,'vector>ttns')/1e9);
 	case 'vector>ttns'
 		% Convert a [YYYY MM DD hh mm ss ms micros ns] to TT2000 in int64 ns
-		% the last columns can be ommitted, default values MM=1,DD=1,other=0
+		% the last columns can be omitted, default values MM=1,DD=1,other=0
 		nCol = size(tInput,2);
 		if nCol > 9
 			error('irf_time:vector>tt:badInputs',...
-				'input should be column vector [YYYY MM DD hh mm ss ms micros ns], last columns can be ommitted.')
+				'input should be column vector [YYYY MM DD hh mm ss ms micros ns], last columns can be omitted.')
 		elseif nCol < 9
 			defValues = [2000 1 1 0 0 0 0 0 0];
 			tInput = [tInput repmat(defValues(nCol+1:9),size(tInput,1),1)];

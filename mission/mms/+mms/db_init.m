@@ -78,5 +78,5 @@ switch key
     MMS_DB.cache.cacheSizeMax = val;
     datastore('mms_db',key,val)
   otherwise
-    error('Unrecoglized KEY')
+    error('Unrecognized KEY')
 end
