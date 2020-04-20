@@ -14,6 +14,7 @@ Coding style
 1. According to [Matlab Style Guidelines](https://www.datatool.com/prod02.htm "MATLAB Programming Style Guidelines")
 2. Help follows matlab style, see [irf_template.m](https://github.com/irfu/irfu-matlab/blob/master/irf/irf_template.m)
 3. Matlab code files checked for possible problems, using [checkcode](https://www.mathworks.com/help/matlab/ref/checkcode.html)
+4. For new code written, use only two spaces as indentation.
 
 Git
 ---
