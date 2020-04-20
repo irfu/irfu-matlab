@@ -195,7 +195,8 @@ end
 
       % Construct "outData" vector/matrix with NaN, except where there is actual data.
       % ind = Indices into final vector that can be filled with actual samples.
-      ind = round((inData.time.epochUnix - tIntervalStart2.epochUnix) * samplFreqHz + 0.5);
+      % NOTE: Using .tts instead of .epochUnix, since it is considerably faster.
+      ind = round((inData.time.tts - tIntervalStart2.tts) * samplFreqHz + 0.5);
       outData         = NaN(nOutData, nComp2);
       outData(ind, :) = inData.data;
     else
