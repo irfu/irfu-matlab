@@ -148,7 +148,8 @@ if is_version_geq(tmpDist.GlobalAttributes.Data_version{:}, '3.1.0')
     stepTable = get_variable(tmpDataObj,['mms' fileInfo.mmsId '_' fileInfo.detector '_steptable_parity_' fileInfo.tmMode]);
     stepTable = stepTable.data;
   end
-  
+  usec_offsets = get_variable(tmpDataObj,['mms' fileInfo.mmsId '_' fileInfo.detector '_usec_offsets']);
+
   % energy table can start at energy1
   energy0 = energy(find(stepTable==0,1,'first'),:);
   energy1 = energy(find(stepTable==1,1,'first'),:); if isempty(energy1), energy1 = energy0; end
@@ -179,6 +180,11 @@ if is_version_geq(tmpDist.GlobalAttributes.Data_version{:}, '3.1.0')
   end
   if isfield(energy_data, 'DELTA_PLUS_VAR')
   PD.ancillary.delta_energy_plus = energy_plus;
+  end
+  if isempty(usec_offsets)
+    PD.ancillary.usec_offsets = [];
+  else
+    PD.ancillary.usec_offsets = usec_offsets.data;
   end
 else
   if strcmp(fileInfo.tmMode,'fast') % fast

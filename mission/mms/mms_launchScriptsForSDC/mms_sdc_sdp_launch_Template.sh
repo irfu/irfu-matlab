@@ -77,20 +77,20 @@ if [ ! -x $MATLAB_EXE ] ; then
 fi
 
 # Verify awk and cdfdump exists as commands in this environment.
-command -v awk >/dev/null 2>&1 && awkExist=true || { awkExist=false; }
-if [ -x $CDF_BASE/bin/cdfdump ]; then cdfdumpExist=true; else cdfdumpExist=false; fi
+if [ "$(command -v awk 2>/dev/null)" ]; then awkExist="true"; else awkExist="false"; fi
+if [ -x "$CDF_BASE/bin/cdfdump" ]; then cdfdumpExist="true"; else cdfdumpExist="false"; fi
 
 # If awk & cdfdump exist, try to identify L1b dce file and check number of records written. If zero records in "Epoch" variable, return exit code 196.
-if [ "$awkExist"==true ] && [ "$cdfdumpExist"==true ]; then
+if [ "$awkExist" == "true" ] && [ "$cdfdumpExist" == "true" ]; then
    for var in "$@"
     do
-      if [ -f $var ]; then # its a single file, not one of the combined files separated by ":".
+      if [ -f "$var" ]; then # its a single file, not one of the combined files separated by ":".
          if [[ $var =~ mms[1-4]_edp_(fast|slow|brst|comm)_l1b_dce[0-9]{0,3}_20[0-9]{6,12}_v[0-9]+.[0-9]+.[0-9]+.cdf ]]; then
             # File matches the MMS L1b dce file naming convention.
             # Dump one record of variable "Epoch" in the file along with some metadata
             # awk for line with "Written records  12345/12345(max)" and print only the
             # number (before the "/" sign).
-            nrec=`$CDF_BASE/bin/cdfdump -dump data -recordrange "1,1" -vars "Epoch" $var | awk -F"[ /]+" '/Written/ {print $3}'`
+            nrec=$("$CDF_BASE/bin/cdfdump" -dump data -recordrange "1,1" -vars "Epoch" "$var" | awk -F"[ /]+" '/Written/ {print $3}')
             if [ "$nrec" == 0 ]; then
                exit 196
             fi
@@ -123,6 +123,7 @@ done
 # exit with 197 if error reading DEFATT files (incorrect times of start/stop-> Epoch error).
 # exit with 198 if error reading cdf file (mostly related to ASPOC files),
 
+# shellcheck disable=SC2086
 $MATLAB_EXE $MATLAB_FLAGS -r\
   "\
   try;\

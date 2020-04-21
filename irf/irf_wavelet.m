@@ -7,7 +7,7 @@ function specrec=irf_wavelet(varargin)
 %
 % specrec=IRF_WAVELET(data,parameter1,parameter1_value,...)
 %   input parameters to the routine can be
-%       'Fs' - sampling rate, if not specified calculated from time series, if no time series assumed 1S/s
+%       'fs' - sampling rate, if not specified calculated from time series, if no time series assumed 1S/s
 %       'f'  - vector [fmin fmax], calculate spectra between frequencies fmin and fmax
 %       'nf' - number of frequency bins
 %       'wavelet_width' - width of Morlet wavelet, default 5.36. (same as 'w')
@@ -93,7 +93,7 @@ while flag_have_options
             if numel(args)>1 && isnumeric(args{2})
                 cutedge = args{2};
             end
-        case 'Fs'
+        case 'fs'
             if numel(args)>1 && isnumeric(args{2})
                 Fs = args{2};
             else

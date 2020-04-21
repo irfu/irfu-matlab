@@ -63,7 +63,7 @@ else % guessing for Non-CAA data
         repres = {'x','y'};
       elseif data.dim(1)==3
         repres = {'x','y','z'};
-      else, tensorOrder = 0; % TENSOR_ORDER=0 can be ommitted in CAA files 
+      else, tensorOrder = 0; % TENSOR_ORDER=0 can be omitted in CAA files 
       end
     case 2 % tensor
     otherwise

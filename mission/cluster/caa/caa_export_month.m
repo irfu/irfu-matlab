@@ -14,7 +14,7 @@ function caa_export_month(year,month,startday,stopday,sats,varargin)
   if nargin < 5, sats=1:4; end
   if nargin < 4, stopday=eomday(year,month); end
   if nargin < 3, startday=1; end
-  if stopday==0, stopday=eomday(year,month); end 
+  if stopday==0, stopday=eomday(year,month); end
   P_L23_only = 0;
   for i=1:length(varargin)
 	switch(varargin{i})
@@ -124,6 +124,8 @@ function caa_export_month(year,month,startday,stopday,sats,varargin)
 	  case 2017
 		  exceptions={{3 'DER'} {3 'SFIT'} {3 'E' 1} {3 'E' 2} {3 'E' 3} {1 'P1'} {1 'P4'} {2 'P1'} {2 'P3'} {3 'P1'} {3 'P2'} {3 'P3'} {3 'P4'} {4 'P4'} {1 'P12'} {2 'P12'} {3 'P12'} {3 'P32'} {3 'P34'} {4 'P32'} {4 'P34'}};
 	  case 2018
+		  exceptions={{3 'DER'} {3 'SFIT'} {3 'E' 1} {3 'E' 2} {3 'E' 3} {1 'P1'} {1 'P4'} {2 'P1'} {2 'P3'} {3 'P1'} {3 'P2'} {3 'P3'} {3 'P4'} {4 'P4'} {1 'P12'} {2 'P12'} {3 'P12'} {3 'P32'} {3 'P34'} {4 'P32'} {4 'P34'}};
+	  case 2019
 		  exceptions={{3 'DER'} {3 'SFIT'} {3 'E' 1} {3 'E' 2} {3 'E' 3} {1 'P1'} {1 'P4'} {2 'P1'} {2 'P3'} {3 'P1'} {3 'P2'} {3 'P3'} {3 'P4'} {4 'P4'} {1 'P12'} {2 'P12'} {3 'P12'} {3 'P32'} {3 'P34'} {4 'P32'} {4 'P34'}};
 	  otherwise
 		  error('Year out of range.')

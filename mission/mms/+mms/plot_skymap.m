@@ -1,9 +1,10 @@
-function [ax,hcb] = plot_skymap(varargin)
+function [ax,hcb,C] = plot_skymap(varargin)
 % MMS.PLOT_SKYMAP Plots skymap.
 %
 %  [ax,hcb] = MMS.PLOT_SKYMAP(PDist,'Opt1',OptVal1,...);
 %     ax - handle to axes
 %     hcb - handle to colorbar
+%     C - skymap data
 %  MMS.PLOT_SKYMAP(AX,...); - plot in axes AX.
 %
 %  Options:
@@ -19,7 +20,11 @@ function [ax,hcb] = plot_skymap(varargin)
 %    'log' - plot log10 scale
 %    'energytable' - energytable from v1 data
 %    'phi' - phi data froom V1 data, vary from time to time, ax.XLim = [-10 370]; 
-%    'phib' & 'polarb' [no theta] - solid angle boundary, only for 'flat'; 
+%    'phib' & 'polarb' [no theta] - solid angle boundary, only for 'flat';
+%    'normal' - plot 3D circle with normal; 2020-03-24, wy
+%    'avg_reduce_integral' - 'avg': distribution function average; [default]
+%                          - 'reduce': f * delta V;
+%                          - 'integral' f * Velocity Volumn; 2020-03-24;
 
 [ax,args,nargs] = axescheck(varargin{:});
 
@@ -29,9 +34,11 @@ if isempty(dist); irf.log('warning','Empty input.'); return; end
 plotLog = 0; 
 fString = ['(' dist.units ')'];
 plotSphere = 1;
+plot3DCircle = 0;               % keyword for 'normal';
 plotb = 0;
 flag_energy = 0;
 have_vectors = 0;
+avg_reduce_integral = 'avg';
 vectorlabelcolor = [1 1 1];
 tId = 1:dist.length;
 eId = 1:32;
@@ -87,6 +94,13 @@ while have_options
       plotSphere = 0;
     case 'sphere'
       plotSphere = 1;
+    case 'normal'       % normal vector;
+      l = 2;
+      normal = args{2};
+      plot3DCircle = 1;
+    case 'avg_reduce_integral'
+        l = 2;
+        avg_reduce_integral = args{2};
     case {'log'}
       if plotLog ~= 1
         plotLog = 1;
@@ -110,8 +124,61 @@ X = -r*sin(THETA).*cos(PHI); % '-' because the data shows which direction the pa
 Y = -r*sin(THETA).*sin(PHI);
 Z = -r*cos(THETA);
 % dist.data has dimensions nT x nE x nAz x nPol
-C = squeeze(mean(mean(dist.data(tId,eId,:,:),2,'omitnan'),1,'omitnan'))';
-
+Units = irf_units;
+dist_size = size(dist.data);
+switch(avg_reduce_integral)
+    case 'avg'
+        C = squeeze(mean(mean(dist.data(tId,eId,:,:),2,'omitnan'),1,'omitnan'))';
+    case 'reduce'
+        dist_tmp = dist.data(tId,eId,:,:);
+        delta_energy_minus = dist.ancillary.delta_energy_minus(tId, :);
+        delta_energy_plus = dist.ancillary.delta_energy_plus(tId, :);
+        tmp = dist.energy;        
+        energy_plus = tmp(tId, :) + delta_energy_plus;
+        energy_minus = tmp(tId, :) - delta_energy_minus;        
+        if strcmp(dist.species, 'electrons')
+            vv_plus = sqrt(energy_plus * Units.e * 2/ Units.me);
+            vv_minus = sqrt(energy_minus * Units.e * 2/ Units.me);
+            delta_vv = vv_plus - vv_minus;
+        elseif strcmp(dist.species, 'ions')
+            vv_plus = sqrt(energy_plus * Units.e * 2/ Units.mp);
+            vv_minus = sqrt(energy_minus * Units.e * 2/ Units.mp);
+            delta_vv = vv_plus - vv_minus;
+        end
+        delta_vv = repmat(delta_vv, 1, 1, dist_size(3), dist_size(4));
+        delta_vv = delta_vv(:, eId, :, :);
+        C = dist_tmp .* delta_vv * 1e12;            % [s^2/m^5]
+        C = squeeze(mean(sum(C, 2, 'omitnan'),1,'omitnan'))';
+        fString = '(s^2/m^5)';
+    case 'integral'
+        dist_tmp = dist.data(tId,eId,:,:);
+        delta_energy_minus = dist.ancillary.delta_energy_minus(tId, :);
+        delta_energy_plus = dist.ancillary.delta_energy_plus(tId, :);
+        tmp = dist.energy;
+        energy_plus = tmp(tId, :) + delta_energy_plus;
+        energy_minus = tmp(tId, :) - delta_energy_minus;        
+        if strcmp(dist.species, 'electrons')
+            vv_plus = sqrt(energy_plus * Units.e * 2/ Units.me);
+            vv_minus = sqrt(energy_minus * Units.e * 2/ Units.me);
+            delta_vv = vv_plus - vv_minus;
+            vv2 = dist.ancillary.energy1 * 2 * Units.e / Units.me;      % bug here: assume energy0 = energy1
+        elseif strcmp(dist.species, 'ions')
+            vv_plus = sqrt(energy_plus * Units.e * 2/ Units.mp);
+            vv_minus = sqrt(energy_minus * Units.e * 2/ Units.mp);
+            delta_vv = vv_plus - vv_minus;
+            vv2 = dist.ancillary.energy1 * 2 * Units.e / Units.mp;            
+        end
+        delta_vv = repmat(delta_vv, 1, 1, dist_size(3), dist_size(4));
+        delta_vv = delta_vv(:, eId, :, :);
+        vv2 = repmat(vv2, length(tId), 1, dist_size(3), dist_size(4));
+        sintheta = sind(dist.depend{3});
+        sintheta = repmat(sintheta, length(tId), 1, dist_size(2), dist_size(3));
+        sintheta = permute(sintheta,[1 3 4 2]);
+        C = dist_tmp .* delta_vv .* vv2(:, eId, :, :) .* sintheta(:, eId, :, :) * 11.25/180 * pi * 11.25/180 * pi * 1e6;
+        C = squeeze(mean(sum(C, 2, 'omitnan'), 1, 'omitnan'))';
+        fString = '(cm^{-3})';        
+end
+    
 % Plot skymap
 if isempty(ax), fig = figure; ax = axes; end
 if plotLog, C = log10(C); end % units are whatever the input units were
@@ -138,7 +205,7 @@ else % plot flat map
 end
 hcb = colorbar('peer',ax);
 hcb.YLabel.String = fString;
-titleString = {[irf_time(tint(1).utc,'utc>utc_yyyy-mm-ddTHH:MM:SS.mmm') ' + ' num2str(tint.stop-tint.start) ' s'],['Energy = ' num2str(energyTable(eId),'%.0f') ,' eV']};
+titleString = {[irf_time(tint(1).utc,'utc>utc_yyyy-mm-ddTHH:MM:SS.mmm') ' + ' num2str(tint.stop-tint.start) ' s'],['Energy = ' num2str(energyTable(eId),' %.0f') ,' eV']};
 ax.Title.String = titleString;   
 
 % Plot vectors
@@ -153,7 +220,15 @@ while have_vectors
     quiver3(ax,-scale*vecHat(1),-scale*vecHat(2),-scale*vecHat(3),vecHat(1),vecHat(2),vecHat(3),2*scale,'linewidth',2)
     scale = 1.7;
     axes(ax)
-    text(double(scale*vecHat(1)),double(scale*vecHat(2)),double(scale*vecHat(3)),vecTxt,'fontsize',14)    
+    text(double(scale*vecHat(1)),double(scale*vecHat(2)),double(scale*vecHat(3)),vecTxt,'fontsize',14)
+    if plot3DCircle                             
+        theta_circle=0:0.01:2*pi;
+        center = [0, 0, 0];
+        radius = 1;
+        v = null(normal);
+        points = repmat(center',1,size(theta_circle,2))+radius*(v(:,1)*cos(theta_circle)+v(:,2)*sin(theta_circle));
+        plot3(ax, points(1,:), points(2,:), points(3,:), 'r-');    
+    end
   else % plot flat skymap
     vecHat = vectors{1,1}/norm(vectors{1,1});
     vecTxt = vectors{1,2};

@@ -1,4 +1,4 @@
-function off = mms_sdp_get_offset(scId, procId, time, TMmode)
+function off = mms_sdp_get_offset(scId, procId, time, TMmode, Vpsp)
 % Return offsets etc. to be applied in MMS processing (currently only 
 % QL dce2d, L2Pre dce2d or Scpot.
 %
@@ -18,12 +18,15 @@ function off = mms_sdp_get_offset(scId, procId, time, TMmode)
 % preceeding the start of time. (Start of data interval processing). If no
 % files are found a static value is used.
 %
+% NOTE: if processing Slow L2pre than also include the otherwise optional
+%      "Vpsp" - a TSeries of "probe2scpot" for corresponding interval.
+%
 % NOTE: Keep in mind the signs used here and when applying the offsets and
 % scale factors.
 %
 % See also: MMS_SDP_DMGR
 
-narginchk(3,4);
+narginchk(3,5);
 global MMS_CONST ENVIR
 if isempty(MMS_CONST), MMS_CONST = mms_constants(); end
 if ~exist('TMmode','var'), TMmode=[]; end
@@ -44,6 +47,9 @@ switch procId
 end
 
 try
+  if procId == MMS_CONST.SDCProc.l2pre && TMmode == MMS_CONST.TmMode.slow
+    useVpspdependentoff
+  else
   calPath = [ENVIR.CAL_PATH_ROOT, filesep 'mms', num2str(scId), filesep, ...
     'edp', filesep, 'sdp', filesep, calStr];
   calFiles = [calPath, filesep, 'mms', num2str(scId), ...
@@ -185,6 +191,7 @@ try
   else
     off = useStaticOffset;
   end
+  end
 catch ME
   irf.log('warning', ME.message);
   off = useStaticOffset;
@@ -244,5 +251,69 @@ end
         irf.log('critical', 'Process does not yet have offsets. SETTING ALL TO ZERO');
     end
   end % useStaticOffset
+
+  function useVpspdependentoff
+    timeTS = EpochTT(time);
+    Tint = irf.tint(timeTS);
+    epoch1min = ceil(Tint.start.epochUnix/60)*60:20:fix(Tint.stop.epochUnix/60)*60;
+    Epoch20s = EpochUnix(epoch1min); % Define 20 baseline
+    if ~exist('Vpsp','var') || isempty(Vpsp) || ~isa(Vpsp, 'TSeries')
+      errStr='NO SCPOT TSeries loaded/given as argument. Fall back to static offset!';
+      irf.log('critical', errStr);
+      error(errStr);
+    end
+    Vpsp20s = Vpsp.resample(Epoch20s);
+    switch lower(scId)
+    case 1
+      V0 = -0.2; % Define constants, IF changed remember to update the date in "off.calFile" below
+      a = 0.9;
+      b = 2.5;
+      c = 0.5;
+      d = 3.0;
+      e = 1.2;
+    case 2
+      V0 = -0.3; 
+      a = 1.7;
+      b = 3.7;
+      c = 0.5;
+      d = 2.5;
+      e = 1.2;
+    case 3
+      V0 = -0.25;
+      a = 1.9;
+      b = 5.3;
+      c = 1.7;
+      d = 4.2;
+      e = 1.5;
+    case 4
+      V0 = -0.35;
+      a = 2.2;
+      b = 15;
+      c = 5;
+      d = 0.12;
+      e = 1.0;
+    otherwise
+      errStr = 'Unexpected scId';
+      irf.log('critical',errStr); error(errStr);
+    end  
+    
+    f = a - b/abs(V0 - c) + d/abs(V0 + e)^4;
+    
+    dEx = zeros(size(Epoch20s));
+    dEy = zeros(size(Epoch20s));
+    idx1 = Vpsp20s.data <= V0;
+    idx2 = Vpsp20s.data > V0;
+    
+    dEx(idx1) = a-b./abs(Vpsp20s.data(idx1) - c);
+    dEx(idx2) = f-d./abs(Vpsp20s.data(idx2) + e).^4;
+    
+    dE = irf.ts_vec_xy(Epoch20s,[dEx dEy]);
+    dEslow = dE.resample(timeTS);
+    
+    off.ex = dEslow.data(:,1);
+    off.ey = dEslow.data(:,2);
+    off.calFile = 'SCPOT dependent with 20200302 static coef.'; % Date, YYYYMMDD, of when coef. above was last changed
+  end 
+    
 
 end

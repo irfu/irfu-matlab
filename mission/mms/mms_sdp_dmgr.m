@@ -23,9 +23,11 @@ classdef mms_sdp_dmgr < handle
     hk_10e = [];      % src HK_10E file
     l2a = [];         % src L2A file
     l2pre = [];       % src L2Pre file
+    orb_radius = [];  % comp sc orbital radius
     phase = [];       % comp phase
     probe2sc_pot = [];% comp probe to sc potential
     sc_pot = [];      % comp sc potential
+    scpotFile = [];   % Stored sc potential file (loaded from previous processing)
     spinfits = [];    % comp spinfits
     sw_wake = [];     % comp solar wind wake
     timelineXML = []; % List of timeline files used to bitmask maneuvers.
@@ -135,7 +137,7 @@ classdef mms_sdp_dmgr < handle
 
       if( ~isempty(DATAC.(param)) )
         % Error, Warning or Notice for replacing the data variable?
-        if(~any(strcmp(param,{'hk_101', 'hk_105', 'hk_10e', 'defatt', 'aspoc', 'l2pre'})))
+        if(~any(strcmp(param,{'hk_101', 'hk_105', 'hk_10e', 'defatt', 'aspoc', 'l2pre', 'defeph', 'scpotFile'})))
           % Only multiple HK/Defatt/aspoc files are allowed for now..
           errStr = ['replacing existing variable (' param ') with new data'];
           irf.log('critical', errStr);
@@ -205,7 +207,16 @@ classdef mms_sdp_dmgr < handle
           corr_swwake()
 
         case('dfg')
-          % DFG - Dual fluxgate magn. B-field.
+          % DFG - Dual fluxgate magn. B-field. Or if the DFG file was
+          % missing corresponding AFG file is used as fallback
+          if contains(dataObj.GlobalAttributes.Logical_file_id, 'dfg')
+            instr = 'dfg';
+          elseif contains(dataObj.GlobalAttributes.Logical_file_id, 'afg')
+            instr = 'afg';
+          else
+            irf.log('warning', 'Unexpected DFG dataObj file. Trying default instrument name "dfg".');
+            instr = 'dfg';
+          end
           if(strcmp('v',dataObj.GlobalAttributes.Data_version{1}(1)))
             dfgVerStr = dataObj.GlobalAttributes.Data_version{1}(2:end);
           else
@@ -214,10 +225,10 @@ classdef mms_sdp_dmgr < handle
           if( is_version_geq(dfgVerStr,'4.0.0') )
             % Version 4.0.z or later, new variable names conforming to
             % recommended MMS standard.
-            vPfx = sprintf('mms%d_dfg_b_dmpa_srvy_l2pre',DATAC.scId);
+            vPfx = sprintf('mms%d_%s_b_dmpa_srvy_l2pre',DATAC.scId, instr);
           else
             % Old versions
-            vPfx = sprintf('mms%d_dfg_srvy_l2pre_dmpa',DATAC.scId);
+            vPfx = sprintf('mms%d_%s_srvy_l2pre_dmpa',DATAC.scId, instr);
           end
           if( strfind(dataObj.GlobalAttributes.Logical_file_id{1}, 'brst') )
             % Brst segments, change variable names accordingly
@@ -417,10 +428,34 @@ classdef mms_sdp_dmgr < handle
           end
 
         case('defeph')
-          % DEFEPH, contains Def Ephemeris (Struct with 'time', 'Pos_X', 'Pos_Y'
-          % and 'Pos_Z')
-          DATAC.(param) = dataObj;
-          check_monoton_timeincrease(DATAC.(param).time);
+          % DEFEPH, contains Def Ephemeris (Struct with 'time', 'r' and 'v')
+          % It is unknown (2020/02/24) if duplicated timestamps can occur
+          % in DefEph (similar to DefAtt). If nay are found, they could
+          % cause problem when interpolating data so use the same approach
+          % as for DefAtt. I.e. Use the last data point and disregard the
+          % first duplicate.
+          idxBad = diff(dataObj.time)==0; % First duplicate index
+          fs = fields(dataObj);
+          for idxFs=1:length(fs), dataObj.(fs{idxFs})(idxBad) = []; end
+          if isempty(DATAC.(param))
+            % First DefEph file
+            DATAC.(param) = dataObj;
+            check_monoton_timeincrease(DATAC.(param).time);
+          else
+            % Second defeph file
+            % Combine each field of the structs and run sort & unique on
+            % the time
+            combined = [DATAC.(param).time; dataObj.time];
+            [~, srt] = sort(combined);
+            [DATAC.(param).time, usrt] = unique(combined(srt));
+            for idxFs=1:length(fs)
+              if(~strcmp(fs{idxFs}, 'time'))
+                combined = [DATAC.(param).(fs{idxFs}); dataObj.(fs{idxFs})];
+                DATAC.(param).(fs{idxFs}) = combined(srt(usrt), :);
+              end
+            end
+            check_monoton_timeincrease(DATAC.(param).time); % Verify combined defeph
+          end
 
         case('l2a')
           % L2A, contain dce data, spinfits, etc. for L2Pre processing or
@@ -517,6 +552,21 @@ classdef mms_sdp_dmgr < handle
             DATAC.(param).spinEpoch = combine(DATAC.(param).spinEpoch, spinResidueTs);
           else
             DATAC.(param).spinEpoch = spinResidueTs;
+          end
+
+        case('scpotFile')
+          % L2pre slow mode processing is depenent on scpot, simply store
+          % it here as a TSeries object under "DATAC.scpotFile" for
+          % recalling later
+          varPre = ['mms', num2str(DATAC.scId), '_edp_psp_'];
+          typePos = strfind(dataObj.GlobalAttributes.Data_type{1},'_');
+          varSuf = dataObj.GlobalAttributes.Data_type{1}(1:typePos(2)-1);
+          if isempty(DATAC.(param))
+            DATAC.(param) = get_ts(dataObj, [varPre, varSuf]);
+          else
+            % Multiple files, simply combine and sort based on time.
+            p2spTS = get_ts(dataObj, [varPre, varSuf]);
+            DATAC.(param) = combine(DATAC.(param), p2spTS);
           end
           
         case('aspoc')
@@ -1141,18 +1191,39 @@ classdef mms_sdp_dmgr < handle
         end
 
         factor = MMS_CONST.NominalAmpCorr; NOM_DIST = 120.0;
+        if DATAC.tmMode == DATAC.CONST.TmMode.slow
+          %% FIXME
+          orbradius = DATAC.orb_radius;
+          % Set gain to 1 for orbit radius less than 5 RE
+          idx_innerMSP = orbradius <= MMS_CONST.InnerMSPradius;
+          if any(idx_innerMSP)
+            % Factor needs an array for inner magnetosphere periods
+            %factorMSP = MMS_CONST.InnerMSPAmpCorr;
+            tempgainarray = ones(size(DATAC.dce.time));
+            % factor.e56 = factor.e56; % Unchanged 1 to 1
+            factor.e12 = tempgainarray;
+            factor.e12(~idx_innerMSP) = MMS_CONST.NominalAmpCorr.e12;
+            factor.e34 = tempgainarray;
+            factor.e34(~idx_innerMSP) = MMS_CONST.NominalAmpCorr.e34;
+            logStr = sprintf(['Applying nominal amplitude correction factor ', ...
+              '1.0 for %i datapoints in inner MSp and 1.25 for %i datapoints', ...
+              'outside of inner MSp.'], sum(idx_innerMSP), sum(~idx_innerMSP));
+            irf.log('notice', logStr);
+            % This needs to be written better
+          end    
+        end
         for iSen = 1:numel(sensors)
           senE = sensors{iSen};
           nSenA = str2double(senE(2)); nSenB = str2double(senE(3));
           logStr = sprintf(['Applying nominal amplitude correction factor, '...
-            '%.2f, to %s'], factor.(senE), senE);
+            '%.2f, to %s'], factor.(senE)(1), senE);
           irf.log('notice',logStr);
           if(strcmp(senE,'e56'))
             distF = 1; % Boom length rescaling for ADP. I.e. only nominal amplitude correction.
           else
             distF = NOM_DIST./(senDist(:,nSenA) + senDist(:,nSenB));
           end
-          DATAC.dce.(senE).data = DATAC.dce.(senE).data .* distF * factor.(senE);
+          DATAC.dce.(senE).data = DATAC.dce.(senE).data .* distF .* factor.(senE);
         end
 
         function l = sensor_dist(len)
@@ -1562,6 +1633,36 @@ classdef mms_sdp_dmgr < handle
         'bitmask',bitmask);
       res = DATAC.dce_xyz_dsl;
     end
+    
+    function res = get.orb_radius(DATAC)
+      if ~isempty(DATAC.orb_radius), res = DATAC.orb_radius; return, end
+      % Compute spacecraft's orbital radius for each measurement timestamp
+      Dce = DATAC.dce;
+      if isempty(Dce)
+        Dce = DATAC.l2a;
+        if isempty(Dce)
+          errStr='Bad DCE input, cannot proceed.';
+          irf.log('critical',errStr); error(errStr);
+        else
+          DceTime = Dce.dce.time;
+        end
+      else
+        DceTime = Dce.time;
+      end
+      % Defeph contains 'time' and position 'r' (in cart. coord)
+      Defeph = DATAC.defeph;
+      if(~isempty(Defeph))
+        % Defeph found use it
+        [~, ~, radius] = cart2sph(Defeph.r(:,1), Defeph.r(:,2), Defeph.r(:,3)); 
+        DATAC.orb_radius = interp1(double(Defeph.time-DceTime(1)), ...
+          radius, ...
+          double(DceTime-DceTime(1)), 'linear'); %% FIXME or spline or something...
+        res = DATAC.orb_radius;
+      else
+        errStr='No DefEph loaded, can not compute radius. Fallback to no radius';
+        irf.log('critical', errStr);
+      end
+    end
 
     function res = get.delta_off(DATAC)
       if ~isempty(DATAC.delta_off), res = DATAC.delta_off; return, end
@@ -1824,10 +1925,15 @@ classdef mms_sdp_dmgr < handle
           DeltaOff = irf.ts_vec_xy(DATAC.l2a.spinfits.time, [real(DATAC.l2a.delta_off), imag(DATAC.l2a.delta_off)]);
           DeltaOffR = DeltaOff.resample(EpochTT(DATAC.l2a.dce.time));
           dE = mms_sdp_despin(Etmp.e12, Etmp.e34, DATAC.l2a.phase.data, DeltaOffR.data(:,1) + DeltaOffR.data(:,2)*1j);
-          offs = mms_sdp_get_offset(DATAC.scId, DATAC.procId, DATAC.l2a.dce.time, DATAC.tmMode);
+          if DATAC.tmMode == MMS_CONST.TmMode.slow && ~isempty(DATAC.scpotFile)
+            offs = mms_sdp_get_offset(DATAC.scId, DATAC.procId, DATAC.l2a.dce.time, DATAC.tmMode, DATAC.scpotFile);
+          else
+            offs = mms_sdp_get_offset(DATAC.scId, DATAC.procId, DATAC.l2a.dce.time, DATAC.tmMode);
+          end
           DATAC.calFile = offs.calFile; % Store name of cal file used.
           dE(:,1) = dE(:,1) - offs.ex; % Remove sunward
           dE(:,2) = dE(:,2) - offs.ey; % and duskward offsets
+          DATAC.l2a.dsl_offset = [offs.ex, offs.ey]; % Store removed offset, to be written in L2Pre file
           % Compute DCE Z from E.B = 0, if >10 deg and if abs(B_z)> 1 nT.
           B_tmp = DATAC.dfg.B_dmpa;
           B_tmp.data((abs(B_tmp.z.data) <= 1), :) = NaN;
@@ -1879,6 +1985,7 @@ classdef mms_sdp_dmgr < handle
           DATAC.calFile = offs.calFile; % Store name of cal file used.
           dE(:,1) = dE(:,1) - offs.ex; % Remove sunward
           dE(:,2) = dE(:,2) - offs.ey; % and duskward offsets
+          DATAC.l2a.dsl_offset = [offs.ex, offs.ey]; % Store removed offset, to be written in L2Pre file
           % Compute DCE Z from E.B = 0, if >10 deg and if abs(B_z)> 1 nT.
           B_tmp = DATAC.dfg.B_dmpa;
           B_tmp.data((abs(B_tmp.z.data) <= 1), :) = NaN;
