@@ -8,9 +8,10 @@ function m = nanmean(x,dim,minDataFrac)
 %
 %   IRF.NANMEAN(X,DIM) takes the mean along dimension DIM of X.
 %
-%   IRF.NANMEAN(X,DIM,MINDATAFRAC) specifies how large at least should be the fraction 
-% 	of data with respect to NaN. If fraction is less, then the resulting value is NaN.
-%	MINDATAFRAC=0, any number of NaNs is allowed. MINDATAFRAC=1, no NaNs are allowed. 
+%   IRF.NANMEAN(X,DIM,MINDATAFRAC) specifies the minimum fraction of data (within each
+%   1D sequence) that is allowed to be NaN. If the fraction is smaller, then
+%   the resulting value is NaN.
+%	  MINDATAFRAC=0, any number of NaNs is allowed. MINDATAFRAC=1, no NaN is allowed. 
 %
 %   See also MEAN
 %
@@ -23,17 +24,19 @@ if nargin == 2, minDataFrac = 0; end
 nans = isnan(x);
 x(nans) = 0;
 
-if nargin == 1 % let sum deal with figuring out which dimension to use
-    % Count up non-NaNs.
-    n = sum(~nans);
-	n(n==0) = NaN; % prevent divideByZero warnings
-	% Sum up non-NaNs, and divide by the number of non-NaNs.
-	m = sum(x) ./ n;
-else
-    % Count up non-NaNs.
-    n = sum(~nans,dim);
-    n(n==0) = NaN; % prevent divideByZero warnings
-    % Sum up non-NaNs, and divide by the number of non-NaNs.
-    m = sum(x,dim) ./ n;
-    m(n<size(x,dim)*minDataFrac) = NaN;
+if nargin == 1
+  % Let "sum" deal with figuring out which dimension to use
+  
+  n = sum(~nans);   % Count non-NaNs.
+  n(n==0) = NaN;    % Prevent divideByZero warnings
+  
+  % Sum up non-NaNs, and divide by the number of non-NaNs.
+  m = sum(x) ./ n;
+else   % nargin == 2 or 3
+  n = sum(~nans,dim);  % Count non-NaNs.
+  n(n==0) = NaN;       % Prevent divideByZero warnings
+  
+  % Sum up non-NaNs, and divide by the number of non-NaNs.
+  m = sum(x,dim) ./ n;
+  m(n < size(x,dim)*minDataFrac) = NaN;
 end

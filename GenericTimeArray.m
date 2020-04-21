@@ -7,12 +7,12 @@ classdef (Abstract) GenericTimeArray
 %     isempty()
 %     length()
 %     size()
-%     start() first point of the time array
-%     stop() last point of the time array
-%     tlim() Returns index and records within specified time interval
+%     start()     First point of the time array
+%     stop()      Last point of the time array
+%     tlim()      Returns index and records within specified time interval
 %     epochUnix()
-%     tts()
-%     ttns()
+%     tts()       Number of seconds
+%     ttns()      Number of nanoseconds
 % 
 %     Static:
 %     pad_utc()

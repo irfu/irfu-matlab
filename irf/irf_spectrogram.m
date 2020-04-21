@@ -6,18 +6,25 @@ function [hout,hcb] = irf_spectrogram(varargin)
 % [h, hcb] = irf_spectrogram(h,t,Pxx,[f],[dt],[df])
 %
 % Input:
-%          h - axis handle
+%          h   - axis handle
 %          hcb - colorbar handle
 %    specrec - structure including spectra
 %              specrec.t  - time vector
-%              specrec.f - frequency vector (can be also matrix the size specrec.p)
-%              specrec.p - spectral density matrix (size(t)xsize(f))
-%              specrec.dt - vector of dt interval for every t point (can be ommitted)
-%              specrec.df - vector of dF interval for every frequency f point (can be ommitted)
+%              specrec.f  - frequency vector (can be also matrix the size specrec.p)
+%              specrec.p  - spectral density matrix (size(t)xsize(f))
+%              specrec.dt - Description of the width of each separate spectrum in the plots. (Can be omitted)
+%                           Specified in seconds. Multiple allowed forms:
+%                           (1) Numeric value(s). Half-width of each spectrum.
+%                               (a) scalar, or
+%                               (b) 1D vector, one value for every spectrum.
+%                           (2) Struct with fields .plus & .minus. Width before and after timestamp. The fields can be
+%                               (a) scalar, or
+%                               (b) 1D vector, one value for every spectrum.
+%              specrec.df - vector of dF interval for every frequency f point (can be omitted)
 %                           df can be structure with two vectors df.plus and df.minus
 %                           (can be also matrix the size of specrec.p)
-%              specrec.f_label - label of f axis
-%              specrec.p_label - label of colorbar
+%              specrec.f_label   - label of f axis
+%              specrec.p_label   - label of colorbar
 %              specrec.plot_type - 'lin' or 'log'
 %    options - 'lin' - plot spectrogram values in linear scale
 %              'log' - (default) plot spectrogram values in log10 scale
@@ -34,14 +41,14 @@ function [hout,hcb] = irf_spectrogram(varargin)
 % ----------------------------------------------------------------------------
 
 [h,args,nargs] = axescheck(varargin{:});
- if isempty(h)
+if isempty(h)
   fig = get(groot,'CurrentFigure'); h = get(fig,'Children');
 end
 
 %% Defaults
 flagLog = true;            % want log10(data) dy default
-f_multiplier=1;         % default value using Hz units when units not specified, can be overwritten later if kHz makes labels more reasonable
-fitColorbarLabel = true;% fit font size of colorbar label to fit into axes size
+f_multiplier = 1;          % default value using Hz units when units not specified, can be overwritten later if kHz makes labels more reasonable
+fitColorbarLabel = true;   % fit font size of colorbar label to fit into axes size
 showColorbar = true;
 
 %% Check input
@@ -223,16 +230,16 @@ for comp=1:min(length(h),ncomp)
 	pp=ppnew;
 	if ~isempty(specrec.dt) % if time steps are given
 		if isstruct(specrec.dt) % dt.plus and dt.minus should be specified
-			dtplus=double(specrec.dt.plus(:)); % if dt vector make it column vector
-			dtminus=double(specrec.dt.minus(:)); % if dt vector make it column vector
+			dtplus  = double(specrec.dt.plus(:));     % if dt vector, make it column vector
+			dtminus = double(specrec.dt.minus(:));    % if dt vector, make it column vector
 		else
-			dtplus=double(specrec.dt(:)); % if dt vector make it column vector
-			dtminus=dtplus;
+			dtplus  = double(specrec.dt(:));          % if dt vector, make it column vector
+			dtminus = dtplus;
 		end
 		ttnew=zeros(numel(tt),1); 
 		jj=1:length(tt);
-		ttnew(jj*2-1)=tt-dtminus;
-		ttnew(jj*2)=tt+dtplus;
+		ttnew(jj*2-1) = tt-dtminus;
+		ttnew(jj*2)   = tt+dtplus;
 		tt=ttnew;
     else
   		ttnew=[tt;tt];

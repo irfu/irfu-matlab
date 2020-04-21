@@ -1,10 +1,10 @@
 classdef EpochTT < GenericTimeArray
-  %EpochTT Class representing TT epoch (CDF TT2000), nanoseconds since 2000.
-  %
-	% EpochTT(t) - initialize class, where t can be:
-  %             - vector of seconds (double)
-	%             - vector of integer number (int64) of nanoseconds as TT2000
-	%             - UTC string array
+%EpochTT Class representing TT epoch (CDF TT2000), nanoseconds since 2000.
+%
+% EpochTT(t) - initialize class, where t can be:
+%             - vector of number (double) of seconds since TT2000 epoch
+%             - vector of integer number (int64) of nanoseconds as TT2000
+%             - UTC string array
 	
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):
