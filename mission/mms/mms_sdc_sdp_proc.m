@@ -22,6 +22,7 @@ HK_105_File = ''; % HK with sweep status etc.
 HK_10E_File = ''; % HK with bias guard settings etc.
 ASPOC_File = '';
 DFG_File = ''; % B-field, L2Pre
+AFG_File = ''; % B-Field, L2pre fallback (if no DFG present)
 DCV_File = '';
 DCE_File = '';
 L2A_File = ''; % L2A file, contain offsets from fast/slow to be used by brst and for L2Pre process.
@@ -239,11 +240,26 @@ switch procId
     % L2A_File (fast), HK105_File, HK10E_File, HK101_File, DEFATT, ASPOC, 
     % and the corresponding DFG L2Pre file(-s).
     
-    % DFG is required for both Fast/Slow L2a->L2Pre and Brst L1b->L2Pre. 
+    % DFG is required for both Fast/Slow L2a->L2Pre and Brst L1b->L2Pre,
+    % Mark, in e-mail dated 2020/04/18, noted that MMS2 DFG was powered off
+    % for a period this week, as a result no data is available from DFG but
+    % AFG is available. Use AFG if DFG is missing!
     if isempty(DFG_File)
-      errStr = ['missing required input for ' procName ': DFG_File'];
-      irf.log('critical',errStr)
-      error('Matlab:MMS_SDC_SDP_PROC:Input', errStr)
+      % IF no DFG is found, try fallback to AFG_File
+      errStr = ['No DFG file found for ' procName ', trying AFG file.'];
+      irf.log('warning', errStr)
+      if isempty(AFG_File)
+        errStr = ['missing required input for ' procName ': DFG_File & AFG_File'];
+        irf.log('critical',errStr)
+        error('Matlab:MMS_SDC_SDP_PROC:Input', errStr)
+      else
+        fileSplit = strsplit(AFG_File,':');
+        for iFile=1:size(fileSplit,2)
+          irf.log('notice',[procName ' proc using: ' fileSplit{iFile}]);
+          src_fileData = load_file(fileSplit{iFile}, 'dfg');
+          update_header(src_fileData) % Update header with file info.
+        end
+      end
     else
       fileSplit = strsplit(DFG_File,':');
       for iFile=1:size(fileSplit,2)
@@ -646,6 +662,13 @@ filename_output = mms_sdp_cdfwrite(HdrInfo, Dmgr);
         end
         DFG_File = varargin{j};
         irf.log('notice',['DFG input file: ',DFG_File]);
+      elseif regexpi(fileIn, '_afg_') % AFG - B-field (fallback for times with missing DFG
+        if ~isempty(AFG_File)
+          errStr = ['Multiple AFG files in input (',AFG_File,' and ',varargin{j},')'];
+          irf.log('critical', errStr); error(errStr);
+        end
+        AFG_File = varargin{j};
+        irf.log('notice',['AFG input file: ',AFG_File]);
       elseif regexpi(fileIn, '_DEFEPH_') % DEFEPH
         if ~isempty(DEFEPH_File)
           errStr = ['Multiple DEFEPH files in input (',DEFEPH_File,' and ',varargin{j},')'];

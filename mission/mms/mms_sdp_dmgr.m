@@ -207,7 +207,16 @@ classdef mms_sdp_dmgr < handle
           corr_swwake()
 
         case('dfg')
-          % DFG - Dual fluxgate magn. B-field.
+          % DFG - Dual fluxgate magn. B-field. Or if the DFG file was
+          % missing corresponding AFG file is used as fallback
+          if contains(dataObj.GlobalAttributes.Logical_file_id, 'dfg')
+            instr = 'dfg';
+          elseif contains(dataObj.GlobalAttributes.Logical_file_id, 'afg')
+            instr = 'afg';
+          else
+            irf.log('warning', 'Unexpected DFG dataObj file. Trying default instrument name "dfg".');
+            instr = 'dfg';
+          end
           if(strcmp('v',dataObj.GlobalAttributes.Data_version{1}(1)))
             dfgVerStr = dataObj.GlobalAttributes.Data_version{1}(2:end);
           else
@@ -216,10 +225,10 @@ classdef mms_sdp_dmgr < handle
           if( is_version_geq(dfgVerStr,'4.0.0') )
             % Version 4.0.z or later, new variable names conforming to
             % recommended MMS standard.
-            vPfx = sprintf('mms%d_dfg_b_dmpa_srvy_l2pre',DATAC.scId);
+            vPfx = sprintf('mms%d_%s_b_dmpa_srvy_l2pre',DATAC.scId, instr);
           else
             % Old versions
-            vPfx = sprintf('mms%d_dfg_srvy_l2pre_dmpa',DATAC.scId);
+            vPfx = sprintf('mms%d_%s_srvy_l2pre_dmpa',DATAC.scId, instr);
           end
           if( strfind(dataObj.GlobalAttributes.Logical_file_id{1}, 'brst') )
             % Brst segments, change variable names accordingly
