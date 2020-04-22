@@ -262,16 +262,15 @@ function create_RCT_file(rctMasterCdfFile, destPath, rctL, rctH)
     
     DataObj = dataobj(rctMasterCdfFile);
     
-    
     DataObj.data.Epoch_L.data = rctL.Epoch_L;
     DataObj.data.Epoch_H.data = rctH.Epoch_H;
     
     DataObj.data.BIAS_CURRENT_OFFSET.data      = rctL.BIAS_CURRENT_OFFSET;         % Epoch_L
     DataObj.data.BIAS_CURRENT_GAIN.data        = rctL.BIAS_CURRENT_GAIN;           % Epoch_L
     DataObj.data.TRANSFER_FUNCTION_COEFFS.data = rctL.TRANSFER_FUNCTION_COEFFS;    % Epoch_L
-    DataObj.data.E_OFFSET.data                 = rctH.E_OFFSET;   % Epoch_H
-    DataObj.data.V_OFFSET.data                 = rctH.V_OFFSET;   % Epoch_H
-    
+    DataObj.data.E_OFFSET.data                 = rctH.E_OFFSET;                    % Epoch_H
+    DataObj.data.V_OFFSET.data                 = rctH.V_OFFSET;                    % Epoch_H
+
     EJ_library.utils.write_CDF_dataobj(...
         destPath, ...
         DataObj.GlobalAttributes, ...

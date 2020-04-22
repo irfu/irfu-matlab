@@ -184,7 +184,7 @@ yDft1 = fft(y1);
 %i = (tfOmegaLookups >= pi/dt);    % Indicies for which omega_k should be replaced by omega_(k-N).
 %tfOmegaLookups(i) = abs(tfOmegaLookups(i)  - 2*pi/dt);
 kOmegaLookup   = [1:ceil(N/2), (ceil(N/2)+1-N):0 ];   % Modified k values used to calculate omega_k for every X_k.
-tfOmegaLookups = 2*pi * (kOmegaLookup - 1) / (N*dt);
+tfOmegaLookups = 2*pi * (kOmegaLookup - 1) / double(N*dt);
 
 
 

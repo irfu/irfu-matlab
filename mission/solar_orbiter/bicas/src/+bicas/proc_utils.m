@@ -489,6 +489,7 @@ classdef proc_utils
             elseif size(freqHzWithinRecords, 1) ~= size(oldTt2000, 1)
                 error('BICAS:proc_utils:Assertion:IllegalArgument', 'freqWithinRecords and oldTt2000 do not have the same number of rows.')
             end
+            assert(iscolumn(freqHzWithinRecords))
             
             nRecords = numel(oldTt2000);
             
@@ -688,7 +689,7 @@ classdef proc_utils
 
 
         
-        function y2 = nearest_interpolate_float_records(zvTt2000_1, y1, zvTt2000_2, method)
+        function y2 = interpolate_float_records(zvTt2000_1, y1, zvTt2000_2, method)
             % Interpolate ~zVariable to other points in time using nearest neighbour interpolation.
             % Values outside the interval covered by the old time series will be set to NaN.
             %
@@ -712,12 +713,12 @@ classdef proc_utils
                 case 'previous'
                     % IMPLEMENTATION NOTE: Used for currents which can be extrapolate forward, but not backward.
                     assert(min(zvTt2000_1) <= min(zvTt2000_2), ...
-                        'BICAS:proc_utils:nearest_interpolate_float_records:Assertion:IllegalArgument', ...
+                        'BICAS:proc_utils:interpolate_float_records:Assertion:IllegalArgument', ...
                         'Can not interpolate data since the time range of zvTt2000_2 does not begin after zvTt2000_1 begins.')
 
                 otherwise
                     error(...
-                        'BICAS:proc_utils:nearest_interpolate_float_records:Assertion:IllegalArgument', ...
+                        'BICAS:proc_utils:interpolate_float_records:Assertion:IllegalArgument', ...
                         'Illegal argument method="%s".', ...
                         method)
             end

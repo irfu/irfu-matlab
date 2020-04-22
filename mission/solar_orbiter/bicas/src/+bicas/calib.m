@@ -86,12 +86,24 @@
 % LFR/TDS. Unit: LFR/TDS calibrated volt. Mostly replaced by BLTS+specified unit in the code.
 %
 %
+% REMINDER: CALIBRATION_TABLE, CALIBRATION_TABLE_INDEX
+% ====================================================
+% CALIBRATION_TABLE       : Global attribute
+%   "Filename of the calibration table(s)."
+%   "There must as many as entries than the number of calibration table files associated to the L1R file."
+% CALIBRATION_TABLE_INDEX : zVariable
+%   "Index of the calibration table(s) value required to generate L2 data files."
+%   "Each CDF record must contain 2 elements: the first element must gives the index of the associated CALIBRATION_TABLE
+%   entry (i.e., 0 for the first entry, 1 for the second, etc.). The second element must refer to the index of the value
+%   to be used inside the calibration table file."
+%
+% Source: ROC-PRO-DAT-NTT-00006-LES_Iss01_Rev02\(ROC_Data_Products\).Draft2020-04-06.pdf
+%
+%
 % Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
 % First created 2017-02-15
 %
 classdef calib < handle
-
-
 
 % BOGIQ:
 % ------
@@ -166,6 +178,8 @@ classdef calib < handle
 %   to make it more clear that they are needed for initialization.
 %   PROPOSAL: "init_*"
 %   PROPOSAL: "complete_init_*"
+%
+% PROPOSAL: Use struct arguments to reduce number of arguments to calibration functions.
 
 
 
@@ -542,12 +556,14 @@ classdef calib < handle
             assert((1 <= iBlts) && (iBlts <= 5))
             assert(isa(BltsSrc, 'bicas.BLTS_src_dest'))
             assert((1 <= iLsf)  && (iLsf  <= 4), 'Illegal argument iLsf=%g.', iLsf)
+            assert(cti1>=1)
+            assert(cti2>=0)
             
             
             
             if obj.use_CALIBRATION_TABLE_INDEX2
                 % ASSERTION: Remove?!!!
-                assert(iLsf == cti2+1, 'BICAS:calib:Assertion', 'cti2+1=%i != iLsf=%i (before overwriting)', cti2+1, iLsf)
+                assert(iLsf == cti2+1, 'BICAS:calib:Assertion', 'cti2+1=%i != iLsf=%i (before overwriting iLsf)', cti2+1, iLsf)
                 
                 iLsf = cti2 + 1;
             else
@@ -787,68 +803,6 @@ classdef calib < handle
             assert(isscalar(iCalibTimeL))
             assert(isscalar(iCalibTimeH))
 
-
-
-%             if obj.fullVoltageCalibEnabled
-%                 
-%                 switch(BltsSrc.category)
-%                     case 'DC single'
-%                         BiasItfAvpiv = TF_list_2_func(obj.Bias.ItfSet.DcSingleAvpiv);    % NOTE: List of ITFs for different times.
-%                         offsetAVolt  = obj.Bias.dcSingleOffsetsAVolt(iCalibTimeH, BltsSrc.antennas);
-% 
-%                     case 'DC diff'
-%                         BiasItfAvpiv = TF_list_2_func(obj.Bias.ItfSet.DcDiffAvpiv);
-%                         if     isequal(BltsSrc.antennas(:)', [1,2]);   offsetAVolt = obj.Bias.DcDiffOffsets.E12AVolt(iCalibTimeH);
-%                         elseif isequal(BltsSrc.antennas(:)', [2,3]);   offsetAVolt = obj.Bias.DcDiffOffsets.E23AVolt(iCalibTimeH);
-%                         elseif isequal(BltsSrc.antennas(:)', [1,3]);   offsetAVolt = obj.Bias.DcDiffOffsets.E13AVolt(iCalibTimeH);
-%                         else
-%                             error('BICAS:calib:Assertion:IllegalArgument', 'Illegal BltsSrc.');
-%                         end
-% 
-%                     case 'AC diff'
-%                         if     biasHighGain == 0;   BiasItfAvpiv = TF_list_2_func(obj.Bias.ItfSet.AcLowGainAvpiv);    offsetAVolt = 0;
-%                         elseif biasHighGain == 1;   BiasItfAvpiv = TF_list_2_func(obj.Bias.ItfSet.AcHighGainAvpiv);   offsetAVolt = 0;
-%                         elseif isnan(biasHighGain); BiasItfAvpiv = bicas.calib.NAN_TF;                                offsetAVolt = NaN;
-%                         else
-%                             error('BICAS:calib:Assertion:IllegalArgument', 'Illegal argument biasHighGain=%g.', biasHighGain)
-%                         end
-% 
-%                     otherwise
-%                         error('BICAS:calib:Assertion:IllegalArgument', ...
-%                             'Illegal argument BltsSrc.category=%s. Can not obtain calibration data for this type of signal.', ...
-%                             BltsSrc.category)
-%                 end
-% 
-%             elseif obj.scalarVoltageCalibEnabled
-% 
-%                 % kIvpav = Multiplication factor "k" that represents/replaces the inverted transfer function.
-%                 switch(BltsSrc.category)
-%                     case 'DC single'
-%                         kIvpav      = 1 / obj.BiasGain.alphaIvpav;
-%                         offsetAVolt = 0;
-%                         
-%                     case 'DC diff'
-%                         kIvpav      = 1 / obj.BiasGain.betaIvpav;
-%                         offsetAVolt = 0;
-%                         
-%                     case 'AC diff'
-%                         
-%                         % NOTE: Can set offsetAVolt <> 0.
-%                         if     biasHighGain == 0;   kIvpav = 1 / obj.BiasGain.gammaIvpav.lowGain;    offsetAVolt = 0;
-%                         elseif biasHighGain == 1;   kIvpav = 1 / obj.BiasGain.gammaIvpav.highGain;   offsetAVolt = 0;
-%                         elseif isnan(biasHighGain); kIvpav = NaN;                                      offsetAVolt = NaN;
-%                         else
-%                             error('BICAS:calib:Assertion:IllegalArgument', 'Illegal argument biasHighGain=%g.', biasHighGain)
-%                         end
-%                         
-%                     otherwise
-%                         error('BICAS:calib:Assertion:IllegalArgument', ...
-%                             'Illegal argument BltsSrc.category=%s. Can not obtain calibration data for this type of signal.', ...
-%                             BltsSrc.category)
-%                 end
-%                 
-%                 BiasItfAvpiv = @(omegaRps) (ones(size(omegaRps)) * kIvpav);
-%             end
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % kIvpav = Multiplication factor "k" that represents/replaces the (forward) transfer function.
             switch(BltsSrc.category)
@@ -923,8 +877,10 @@ classdef calib < handle
         % calibrating.
         % 
         function lfrItfIvpt = get_LFR_ITF(obj, cti1, iBlts, iLsf)
+            assert(cti1 >= 1)
             assert(ismember(iBlts, [1:5]))
             assert(ismember(iLsf,  [1:4]))
+            assert(logical(obj.hasLoadedNonBiasData))
             
             if (iLsf == 4) && ismember(iBlts, [4,5])
                 lfrItfIvpt = bicas.calib.NAN_TF;
