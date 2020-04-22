@@ -705,8 +705,8 @@ classdef proc_utils
             switch(method)
                 case 'nearest'
                     assert(...
-                        bicas.proc_utils.is_range_subset(zvTt2000_2, zvTt2000_1), ...
-                        'BICAS:proc_utils:nearest_interpolate_float_records:Assertion:IllegalArgument', ...
+                        EJ_library.utils.is_range_subset(zvTt2000_2, zvTt2000_1), ...
+                        'BICAS:proc_utils:interpolate_float_records:Assertion:IllegalArgument', ...
                         'Can not interpolate data since the time range of zvTt2000_2 is not a subset of zvTt2000_1.')
 
                 case 'previous'
@@ -1002,33 +1002,9 @@ classdef proc_utils
             nRowsArray = cellfun(@(v) (size(v,1)), c, 'UniformOutput', true);
             EJ_library.assert.all_equal( nRowsArray )
         end
-        
-        
-        
-        % If one regards numeric values as defining a range (min to max), return whether is v1 a subset of v2. Not
-        % necessarily proper subset, i.e. equality counts as subset.
-        %
-        % This is useful if x1 is used to interpolate values y1 from another series (x2,y2).
-        function isSubset = is_range_subset(x1, x2)
-            EJ_library.assert.vector(x1)
-            EJ_library.assert.vector(x2)
-            
-            isSubset = (min(x2) <= min(x1)) && (max(x1) <= max(x2));   % NOTE: Equality counts as a subset.
-        end
-        
-        
-        
-        % If one regards numeric values as defining a range (min to max), return whether v1 and v2 overlap (have a
-        % non-empty intersection).
-        function doOverlap = ranges_overlap(v1, v2)
-            EJ_library.assert.vector(v1)
-            EJ_library.assert.vector(v2)
-            
-            doOverlap = (min(v2) <= max(v1)) && (min(v1) <= max(v2));
-        end
-        
-        
-        
+
+
+
     end   % Static
     
     

@@ -136,10 +136,10 @@ classdef proc_sub
 
 
             % WARNINGS / ERRORS
-            if ~bicas.proc_utils.is_range_subset(InSci.Zv.Epoch,  hkEpoch)
+            if ~EJ_library.utils.is_range_subset(InSci.Zv.Epoch,  hkEpoch)
                 L.log('warning', 'SCI time range is not a subset of HK time range according to zVar Epoch.')
             end
-            if ~bicas.proc_utils.ranges_overlap(InSci.Zv.Epoch, hkEpoch)
+            if ~EJ_library.utils.ranges_intersect(InSci.Zv.Epoch, hkEpoch)
                 [settingValue, settingKey] = SETTINGS.get_fv('PROCESSING.SCI_HK.TIME_NONOVERLAP_POLICY');
                 switch(settingValue)
                     case 'WARNING'
