@@ -495,18 +495,25 @@ classdef calib < handle
         
         % Calibrate all voltages. Function will choose the more specific algorithm internally.
         function samplesCaAVolt = calibrate_voltage_all(obj, ...
-                dtSec, samplesCaTm, isLfr, isTdsCwf, iBlts, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH, iLsf, CALIBRATION_TABLE_INDEX)
+                dtSec, samplesCaTm, isLfr, isTdsCwf, CalSettings, CALIBRATION_TABLE_INDEX)
+%                dtSec, samplesCaTm, isLfr, isTdsCwf, iBlts, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH, iLsf, CALIBRATION_TABLE_INDEX)
             
-            assert(all(size(CALIBRATION_TABLE_INDEX) == [1,2]))            
+            % ASSERTIONS
+            %EJ_library.assert.struct(CalSettings, {'iBlts', 'BltsSrc', 'biasHighGain', 'iCalibTimeL', 'iCalibTimeH', 'iLsf'}, {})   % Too slow?
+            assert(all(size(CALIBRATION_TABLE_INDEX) == [1,2]))
+            
+            
+
+            % Set cti1, cti2.
             if obj.use_CALIBRATION_TABLE_rcts
                 cti1 = CALIBRATION_TABLE_INDEX(1,1) + 1;    % NOTE: Increment by one since MATLAB indices begin at one, whereas the zVar values begin at zero.
             else
                 cti1 = 1;
             end
             cti2 = CALIBRATION_TABLE_INDEX(1,2);    % NOTE: Not incrementing by one, since meaning can vary between LFR, TDS-CWF, TDS-RSWF.
-            
-            
 
+            
+            
             if obj.allVoltageCalibDisabled
                 
                 samplesCaAVolt = cell(size(samplesCaTm));
@@ -520,17 +527,20 @@ classdef calib < handle
                     %===========
                     % CASE: LFR
                     %===========
-                    samplesCaAVolt = obj.calibrate_LFR_full(dtSec, samplesCaTm, iBlts, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH, iLsf, cti1, cti2);
+                    %samplesCaAVolt = obj.calibrate_LFR_full(dtSec, samplesCaTm, iBlts, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH, iLsf, cti1, cti2);
+                    samplesCaAVolt = obj.calibrate_LFR_full(dtSec, samplesCaTm, CalSettings, cti1, cti2);
                 else
                     %===========
                     % CASE: TDS
                     %===========
                     if isTdsCwf
                         % CASE: TDS CWF
-                        samplesCaAVolt = obj.calibrate_TDS_CWF_full(dtSec, samplesCaTm, iBlts, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH, cti1, cti2);
+                        %samplesCaAVolt = obj.calibrate_TDS_CWF_full(dtSec, samplesCaTm, iBlts, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH, cti1, cti2);
+                        samplesCaAVolt = obj.calibrate_TDS_CWF_full(dtSec, samplesCaTm, CalSettings, cti1, cti2);
                     else
                         % CASE: TDS RSWF
-                        samplesCaAVolt = obj.calibrate_TDS_RSWF_full(dtSec, samplesCaTm, iBlts, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH, cti1, cti2);
+                        %samplesCaAVolt = obj.calibrate_TDS_RSWF_full(dtSec, samplesCaTm, iBlts, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH, cti1, cti2);
+                        samplesCaAVolt = obj.calibrate_TDS_RSWF_full(dtSec, samplesCaTm, CalSettings, cti1, cti2);
                     end
                 end
                 
@@ -543,10 +553,21 @@ classdef calib < handle
         % =========
         % samplesTm    : 1D cell array of numeric 1D arrays.
         % samplesAVolt : 1D cell array of numeric 1D arrays.
-        % iBlts        : 1..5.
-        % BltsSrc      : bicas.BLTS_src_dest describing where the signal comes from.
+        % CalSettings  : Struct that groups together arguments
+        %   .iBlts     : 1..5.
+        %   .BltsSrc   : bicas.BLTS_src_dest describing where the signal comes from.
+        %   ...
         %
-        function samplesCaAVolt = calibrate_LFR_full(obj, dtSec, samplesCaTm, iBlts, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH, iLsf, cti1, cti2)
+        %function samplesCaAVolt = calibrate_LFR_full(obj, dtSec, samplesCaTm, iBlts, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH, iLsf, cti1, cti2)
+        function samplesCaAVolt = calibrate_LFR_full(obj, dtSec, samplesCaTm, CalSettings, cti1, cti2)
+            
+            %EJ_library.assert.struct(CalSettings, {'iBlts', 'BltsSrc', 'biasHighGain', 'iCalibTimeL', 'iCalibTimeH', 'iLsf'}, {})   % Too slow?
+            iBlts        = CalSettings.iBlts;
+            BltsSrc      = CalSettings.BltsSrc;
+            biasHighGain = CalSettings.biasHighGain;
+            iCalibTimeL  = CalSettings.iCalibTimeL;
+            iCalibTimeH  = CalSettings.iCalibTimeH;
+            iLsf         = CalSettings.iLsf;
             
             % ASSERTIONS
             assert(iscell(samplesCaTm))
@@ -615,8 +636,16 @@ classdef calib < handle
         % =========
         % See calibrate_LFR_full.
         %
-        function samplesCaAVolt = calibrate_TDS_CWF_full(obj, dtSec, samplesCaTm, iBlts, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH, cti1, cti2)
+        %function samplesCaAVolt = calibrate_TDS_CWF_full(obj, dtSec, samplesCaTm, iBlts, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH, cti1, cti2)
+        function samplesCaAVolt = calibrate_TDS_CWF_full(obj, dtSec, samplesCaTm, CalSettings, cti1, cti2)
 
+            %EJ_library.assert.struct(CalSettings, {'iBlts', 'BltsSrc', 'biasHighGain', 'iCalibTimeL', 'iCalibTimeH'}, {'iLsf'})   % Too slow?
+            iBlts        = CalSettings.iBlts;
+            BltsSrc      = CalSettings.BltsSrc;
+            biasHighGain = CalSettings.biasHighGain;
+            iCalibTimeL  = CalSettings.iCalibTimeL;
+            iCalibTimeH  = CalSettings.iCalibTimeH;
+            
             % ASSERTIONS
             EJ_library.assert.vector(dtSec)
             assert(iscell(samplesCaTm))
@@ -682,7 +711,15 @@ classdef calib < handle
         % =========
         % See calibrate_LFR_full.
         %
-        function samplesCaAVolt = calibrate_TDS_RSWF_full(obj, dtSec, samplesCaTm, iBlts, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH, cti1, cti2)
+        %function samplesCaAVolt = calibrate_TDS_RSWF_full(obj, dtSec, samplesCaTm, iBlts, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH, cti1, cti2)
+        function samplesCaAVolt = calibrate_TDS_RSWF_full(obj, dtSec, samplesCaTm, CalSettings, cti1, cti2)
+            
+            %EJ_library.assert.struct(CalSettings, {'iBlts', 'BltsSrc', 'biasHighGain', 'iCalibTimeL', 'iCalibTimeH'}, {'iLsf'})   % Too slow?
+            iBlts        = CalSettings.iBlts;
+            BltsSrc      = CalSettings.BltsSrc;
+            biasHighGain = CalSettings.biasHighGain;
+            iCalibTimeL  = CalSettings.iCalibTimeL;
+            iCalibTimeH  = CalSettings.iCalibTimeH;
             
             % ASSERTIONS
             EJ_library.assert.vector(dtSec)

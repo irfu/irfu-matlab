@@ -981,9 +981,18 @@ classdef proc_sub
                         % CALIBRATE
                         %%%%%%%%%%%%
                         %%%%%%%%%%%%
+                        CalSettings = struct();
+                        CalSettings.iBlts        = iBlts;
+                        CalSettings.BltsSrc      = BltsSrcAsrArray(iBlts);
+                        CalSettings.biasHighGain = biasHighGain;
+                        CalSettings.iCalibTimeL  = iCalibL_ss;
+                        CalSettings.iCalibTimeH  = iCalibH_ss;
+                        CalSettings.iLsf         = iLsf_ss;
                         ssSamplesCaAVolt = Cal.calibrate_voltage_all(ssDtSec, ssSamplesCaTm, ...
-                            PreDc.isLfr, PreDc.isTdsCwf, iBlts, ...
-                            BltsSrcAsrArray(iBlts), biasHighGain, iCalibL_ss, iCalibH_ss, iLsf_ss, CALIBRATION_TABLE_INDEX_ss);
+                            PreDc.isLfr, PreDc.isTdsCwf, CalSettings, CALIBRATION_TABLE_INDEX_ss);
+%                         ssSamplesCaAVolt = Cal.calibrate_voltage_all(ssDtSec, ssSamplesCaTm, ...
+%                             PreDc.isLfr, PreDc.isTdsCwf, iBlts, ...
+%                             BltsSrcAsrArray(iBlts), biasHighGain, iCalibL_ss, iCalibH_ss, iLsf_ss, CALIBRATION_TABLE_INDEX_ss);
                         
                         if PreDc.hasSnapshotFormat
                             [ssSamplesAVolt{iBlts}, ~] = bicas.proc_utils.convert_cell_array_of_vectors_to_matrix(...
