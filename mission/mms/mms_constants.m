@@ -46,6 +46,13 @@ MMS_CONST.NominalAmpCorr.e12 = 1.25;
 MMS_CONST.NominalAmpCorr.e34 = 1.25;
 MMS_CONST.NominalAmpCorr.e56 = 1.0;
 
+% Inner Magnetosphere Amplitude Correction factor multiplied to DCE data.
+MMS_CONST.InnerMSPAmpCorr.e12 = 1.0;
+MMS_CONST.InnerMSPAmpCorr.e34 = 1.0;
+MMS_CONST.InnerMSPAmpCorr.e56 = 1.0;
+
+MMS_CONST.InnerMSPradius = 5*6.3712e+03; % 5 R_E in km. 
+
 % Telemetry mode
 MMS_CONST.TmModes = {'slow','fast','brst', 'comm'};
 MMS_CONST.TmMode.slow = 1; % Number must corrspond to position in the list
@@ -102,8 +109,8 @@ MMS_CONST.Error = -Inf; % Indicates error in computation
 MMS_CONST.Version = struct(...
   MMS_CONST.SDCProcs{MMS_CONST.SDCProc.ql},    struct('X', 1, 'Y', 9), ...
   MMS_CONST.SDCProcs{MMS_CONST.SDCProc.scpot}, struct('X', 2, 'Y', 7), ...
-  MMS_CONST.SDCProcs{MMS_CONST.SDCProc.l2pre}, struct('X', 1, 'Y', 2), ...
-  MMS_CONST.SDCProcs{MMS_CONST.SDCProc.l2a},   struct('X', 2, 'Y', 5), ...
+  MMS_CONST.SDCProcs{MMS_CONST.SDCProc.l2pre}, struct('X', 2, 'Y', 0), ...
+  MMS_CONST.SDCProcs{MMS_CONST.SDCProc.l2a},   struct('X', 3, 'Y', 0), ...
   MMS_CONST.SDCProcs{MMS_CONST.SDCProc.l1ace}, struct('X', 0, 'Y', 0), ...
   MMS_CONST.SDCProcs{MMS_CONST.SDCProc.l2ace}, struct('X', 0, 'Y', 0));
 % Version Notes Y, for us. Not written to CDF files.
@@ -120,4 +127,5 @@ MMS_CONST.Version.MODS = {'V.0. Initial release.'};
 MMS_CONST.Version.MODS = [MMS_CONST.Version.MODS; {'V.1. QL (v1.0.z), SCPOT (v1.0.z), L2A (v0.1.z) now uses ASPOC srvy l2 and DEFATT, if these are available. Brst QL uses intermediate L2A file from Fast mode for delta offsets. Bitmask changed to uint16 and Quality to uint8.'}];
 MMS_CONST.Version.MODS = [MMS_CONST.Version.MODS; {'V.2. SCPOT (v2.0.z), L2A (v1.0.z) now uses variable names in accordance with new recommended standard for FIELDS, All products change shortening factor to 1.25 on SDP, offsets applied indicated by GlobalAttribute Calibration_file.'}];
 MMS_CONST.Version.MODS = [MMS_CONST.Version.MODS; {'V.2. L2a (v2.0.z), QL (v1.6.z) now try to remove solar wind wake which previously left a clear sinusodial signal in the data.'}];
+MMS_CONST.Version.MODS = [MMS_CONST.Version.MODS; {'V.3. L2a (v3.0.z) Slow Mode probe Gain set to 1.0 when orbital radius less than 5 RE (1.25 otherwise), L2pre (v2.0.z) DSL offsets removed from field is now included in the file as the Slow mode is dependent on scpot product (Fast/Brst is simply based on offset in Calibration_file).'}];
 end

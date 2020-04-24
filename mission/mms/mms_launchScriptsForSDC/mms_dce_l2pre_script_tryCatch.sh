@@ -9,19 +9,21 @@
 # Updated: 2020/01/09, change Matlab version on SDC to R2019a.
 #
 # Usage: place script in the same folder as has irfu-matlab as a subfolder, then run
-#  "./script.sh <mmsX_dce_filename> <mmsX_dfg_l2pre_filename>", with the following
+#  "./script.sh <mmsX_dce_filename> <mmsX_dfg_l2pre_filename> <mmsX_edp_slow_l2_scpot_filename>", with the following
 #  input arguments: (order is irrelevant).
 #
 #    <mmsX_edp_*_l2a_filename.cdf> = Filename of DC E l2a data to be processed for 'L2pre'. Including path and extension.
 #    <mmsX_dfg_*_l2pre_filename.cdf> = Filename of DFG srvy L2pre covering the same interval as the "dce" file,
 #                                      for Fast/Slow dce l2a this means the dfg srvy l2pre file of same day.
+#                                      Note IF no DFG file is available it can be substituted for AFG (Srvy L2pre) of the same day.
+#    <mmsX_edp_slow_l2_scpot_filename.cdf> = Filename of corresponding L2 scpot Slow mode file created previously, include ONLY when processing SLOW MODE data. (optional, if not included script will go looking for it).
 #
 # OR if processing BRST segments directly from L1b:
 #
 #    <mmsX_***_dce_filename.cdf> = Filename of DC E Brst L1b data to be processed for L2Pre. Including path and extension.
 #    <mmsX_***_105_filename.cdf> = Filename of HK 105 data to be processed for L2Pre. Including path and extention.
 #    <mmsX_***_10e_filename.cdf> = Filename of HK 10E data (with guard settings) to be processed for L2Pre. Including path and extention.
-#    <mmsX_dfg_brst_l2pre_filename.cdf> = Filename of corresponding DFG Brst L2Pre segments covering the same time interval as the DCE Brst L1b file. Including path and extention.
+#    <mmsX_dfg_brst_l2pre_filename.cdf> = Filename of corresponding DFG Brst L2Pre segments covering the same time interval as the DCE Brst L1b file. Including path and extention. Note IF no DFG file is available it can be substituted for AFG (Brst L2pre semgments covering the same time interval, but it can NOT be mixed AFG & DFG).
 #    <mmsX_aspoc_l2_srvy_***_filename.cdf> = Filename of ASPOC L2 srvy data (with aspoc status) to be processed for L2Pre. Including path and extention. (optional, if not included script will go looking for it).
 #    <mmsX_DEFATT_***> = Filename of DEFATT data (with phase) to be processed for L2Pre. Including path and extention. (optional, if not included script will go looking for it)
 #    <mmsX_***_101_filename.cdf> = Filename of HK 101 data (with sunpulse) to be processed for L2Pre. Including path and extention. (if no DEFATT exist, this will be used otherwise not required)
@@ -74,7 +76,7 @@ if [ ${#} -lt 2 ] || [ ${#} -gt 8 ] ; then
 fi
 
 # test that Matlab binary (startup script) is executable
-if [ ! -x $MATLAB_EXE ] ; then 
+if [ ! -x "$MATLAB_EXE" ] ; then 
 	echo "ERROR: Matlab [$MATLAB_EXE] not found/not executable"
 	exit 166  # SDC-defined error code for "incorrect usage"
 fi
@@ -86,6 +88,7 @@ fi
 # exit with 197 if error reading DEFATT files (incorrect times of start/stop-> Epoch error).
 # exit with 198 if error reading cdf file (mostly related to ASPOC files),
 
+# shellcheck disable=SC2086
 $MATLAB_EXE $MATLAB_FLAGS -r\
   "\
   try;\

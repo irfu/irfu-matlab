@@ -113,7 +113,11 @@ end
 %% Initiate initiate various things
 
 % complete RH system
-yphat = cross(zphat,xphat);
+xphat = xphat./sqrt(sum(xphat.^2));
+yphat = cross(zphat,xphat); % zphat define as default [0 0 1] or read in as optional input above
+yphat = yphat./sqrt(sum(yphat.^2));
+zphat = cross(xphat,yphat); % z = cross(x,cross(z,x)) % enforce z to be orthogonal to x
+zphat = zphat./sqrt(sum(zphat.^2));
 
 % diffs of instrument bins
 % velocity
@@ -181,12 +185,16 @@ switch lower(base)
         
 
         
-    case 'cart'
-        if std(diff(vg)) > 1 % limit good?
-            error('vg must be monotonically increasing for cartesian case'); 
-        end
-        
-        dVg = vg(2)-vg(1);
+    case 'cart'      
+      % for cartesian grid, the velocity bins must all be equal
+      % a linearly spaced grid can have small roundoff differences in step
+      % with std, there could potentially be some outlier? i dont know
+      meandiff = mean(diff(vg));
+      errtol = 1e-2; % 1%
+      if not(all((diff(vg)/meandiff-1)<errtol))
+        error('For a cartesian grid (default), all velocity bins diff(vg) must be equal.'); 
+      end        
+      dVg = vg(2)-vg(1);
 end
 
 % 3D matrices for instrumental bin centers

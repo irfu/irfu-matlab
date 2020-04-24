@@ -6,7 +6,9 @@ function dobj = dataobj(varargin)
 %    wildcards ('*').
 %
 % DATAOBJ(FILENAME,'tint',tint)
-%       tint         - limit dataobj to time interval
+%       tint = [t1, t2]        - Limit dataobj to time interval.
+%                                ISDAT epoch, i.e. the number of seconds since 1-Jan-1970.
+%                                See epoch2iso.
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):

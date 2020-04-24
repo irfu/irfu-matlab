@@ -202,7 +202,7 @@ classdef TimeTable
 				out=char(out);
 				if size(out,1)>nHeaderLines+10
 					disp(out(1:nHeaderLines+3,:));
-					disp(['.... ' num2str(size(out,1)-nHeaderLines-5) ' lines ommitted.....']);
+					disp(['.... ' num2str(size(out,1)-nHeaderLines-5) ' lines omitted.....']);
 					disp(out(end-2:end,:));
 				else
 					disp(out);

@@ -15,7 +15,7 @@ function out=irf_template(varargin)
 %
 %-----------------------------------------
 %- This is a template function that shows how the help should be formatted
-%- When writing the code please follow guidelines in http://www.datatool.com/prod02.htm
+%- When writing the code please follow guidelines in https://www.datatool.com/prod02.htm
 %- Remove all lines from this help starting with '%-' in your code
 %-----------------------------------------
 

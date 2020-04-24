@@ -3,6 +3,7 @@ function [outspecrec,outPxx,outF] = irf_powerfft(data,nfft,sfreq,overlap,smoothW
 %
 % [t,power,f] = irf_powerfft(data,nfft,sfreq,[overlap])
 % [specrec] = irf_powerfft(data,nfft,sfreq,[overlap])
+%   sfreq is the sampling frequency
 %	SPECREC is a structure:
 %		SPECREC.T - time
 %		SPECREC.P - spectrum
@@ -93,7 +94,7 @@ end
 
 if smoothWidth
   if (smoothWidth > 2/sfreq), smoothSpectrum(); 
-  else, irf.log('warn','smoting not done - smoothWidth too small')
+  else, irf.log('warn','smoothing not done - smoothWidth too small')
   end
 end
 
@@ -108,31 +109,31 @@ else
   error('irf_powerfft: unknown number of output parameters');
 end
 
-% Help function to clear datagaps
-% We throw away intervals with less than 90% of data
-function out = order_data(in, ndata, sfreq, ts)
-  if(tseries)
-    if isempty(in.data), out = []; return, end
-    ncomp2 = size(in.data, 2);
-    ind = round((in.time.epochUnix-ts.epochUnix)*sfreq+1);
-    out = NaN(ndata, ncomp2);
-    out(ind, :) = in.data;
-  else
-    if isempty(in), out = []; return, end
-    ncomp2 = size(in,2) - 1; % Drop time column
-    ind = round((in(:,1)-ts)*sfreq+1);
-    out = NaN(ndata, ncomp2);
-    out(ind, :) = in(:, 2:end); % Drop time column
-  end
-  indNaN = isnan(out);
-  if( any(indNaN) )
-    % if data has less than 90% return NaN, else replace with mean (excl. NaN).
-    m = irf.nanmean(out, 1, 0.9);
-    for col=1:ncomp2
-      if(any(indNaN(:,col))), out(indNaN(:,col),col) = m(col); end
+  % Help function to clear datagaps
+  % We throw away intervals with less than 90% of data
+  function out = order_data(in, ndata, sfreq, ts)
+    if(tseries)
+      if isempty(in.data), out = []; return, end
+      ncomp2 = size(in.data, 2);
+      ind = round((in.time.epochUnix-ts.epochUnix)*sfreq+1);
+      out = NaN(ndata, ncomp2);
+      out(ind, :) = in.data;
+    else
+      if isempty(in), out = []; return, end
+      ncomp2 = size(in,2) - 1; % Drop time column
+      ind = round((in(:,1)-ts)*sfreq+1);
+      out = NaN(ndata, ncomp2);
+      out(ind, :) = in(:, 2:end); % Drop time column
+    end
+    indNaN = isnan(out);
+    if( any(indNaN) )
+      % if data has less than 90% return NaN, else replace with mean (excl. NaN).
+      m = irf.nanmean(out, 1, 0.9);
+      for col=1:ncomp2
+        if(any(indNaN(:,col))), out(indNaN(:,col),col) = m(col); end
+      end
     end
   end
-end
 
   function smoothSpectrum
     %Basic smoothing procedure, borrowed from mms_fft() 
