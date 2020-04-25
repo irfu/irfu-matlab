@@ -137,7 +137,7 @@ classdef assert
         %          (2) Cell array of strings. List of regular expressions.
         %              NOTE: Must be non-empty array.
         function castring_regexp(s, regexp)
-            if ~any(EJ_library.utils.regexpf(s, regexp))
+            if ~any(EJ_library.str.regexpf(s, regexp))
                 error(EJ_library.assert.ERROR_MSG_ID, 'String "%s" (in its entirety) does not match any of the specified regular expressions.', s)
             end
         end

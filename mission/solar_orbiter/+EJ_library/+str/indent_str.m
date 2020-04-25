@@ -1,6 +1,6 @@
 %
-% Indent multirow string using EJ_library.utils.add_prefix_on_every_row.
-% See EJ_library.utils.add_prefix_on_every_row for details.
+% Indent multirow string using EJ_library.str.add_prefix_on_every_row.
+% See EJ_library.str.add_prefix_on_every_row for details.
 %
 % NOTE: Uses linefeed as linebreak.
 %
@@ -12,5 +12,5 @@ function s = indent_str(s, nWhitespace)
     
     % NOTE: "repmat" accepts negative sizes.
     indentationStr = repmat(' ', 1, nWhitespace);
-    s = EJ_library.utils.add_prefix_on_every_row(s, indentationStr);
+    s = EJ_library.str.add_prefix_on_every_row(s, indentationStr);
 end

@@ -293,9 +293,9 @@ classdef calib < handle
                 
                 % Log bias current calibration
                 L.logf('debug', '(%i) BIAS current offsets (%s) [A]',         iEpochL, ...
-                    strjoin(EJ_library.utils.sprintf_many('% 10e', obj.Bias.Current.offsetsAAmpere(iEpochL, :)), ', '))
+                    strjoin(EJ_library.str.sprintf_many('% 10e', obj.Bias.Current.offsetsAAmpere(iEpochL, :)), ', '))
                 L.logf('debug', '(%i) BIAS current gain    (%s) [A/TM unit]', iEpochL, ...
-                    strjoin(EJ_library.utils.sprintf_many('% 10e', obj.Bias.Current.gainsAapt(iEpochL, :)),      ', '))
+                    strjoin(EJ_library.str.sprintf_many('% 10e', obj.Bias.Current.gainsAapt(iEpochL, :)),      ', '))
                 
                 % Log transfer functions (frequency domain), selected frequencies.
                 obj.log_ITF_Z(sprintf('(%i) BIAS DC single',          iEpochL), 'AVolt/IVolt', DC_FREQ_HQ,       @(omegaRps) (obj.Bias.ItfSet.DcSingleAvpiv{iEpochL}.eval(omegaRps)))

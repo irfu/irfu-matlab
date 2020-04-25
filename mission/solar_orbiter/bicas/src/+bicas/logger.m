@@ -167,7 +167,7 @@ classdef logger < handle
             % RCS ICD compliant string.
             rcsIcdLogMsg            = obj.ICD_log_msg(logLevel, msg);            
             % String that is intended to be read by BICAS bash wrapper as stdout.
-            bashWrapperRecipientStr = EJ_library.utils.add_prefix_on_every_row(rcsIcdLogMsg, obj.LOG_PREFIX);
+            bashWrapperRecipientStr = EJ_library.str.add_prefix_on_every_row(rcsIcdLogMsg, obj.LOG_PREFIX);
 
             %=================
             % Print to stdout
@@ -207,7 +207,7 @@ classdef logger < handle
                 % IMPLEMENTATION NOTE: Necessary for stderr messages to end up on separate lines. Not doing so produces
                 % some output rows (at least inside the MATLAB GUI) with mixed stderr and std out content which is hard
                 % to read.
-                % NOTE: EJ_library.utils.add_prefix_on_every_row already does this for the log messages.
+                % NOTE: EJ_library.str.add_prefix_on_every_row already does this for the log messages.
                 stderrStr = msg;
                 if stderrStr(end) ~= obj.LINE_FEED
                     stderrStr = [stderrStr, obj.LINE_FEED];
@@ -289,7 +289,7 @@ classdef logger < handle
             rcsIcdRowTimestamp = datestr(clock, 'yyyy-mm-ddTHH:MM:SS');
             rcsIcdRowPrefix    = sprintf('%s -- %s -- ', rcsIcdRowTimestamp, logLevelStr);
             
-            rcsIcdLogMsg = EJ_library.utils.add_prefix_on_every_row(logMsg, rcsIcdRowPrefix);
+            rcsIcdLogMsg = EJ_library.str.add_prefix_on_every_row(logMsg, rcsIcdRowPrefix);
         end
 
 

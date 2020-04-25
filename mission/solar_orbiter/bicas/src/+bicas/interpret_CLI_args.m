@@ -143,7 +143,7 @@ switch CliData.functionalityMode
         % ASSERTION
         % NOTE: Somewhat of a hack, since can not read out from using bicas.utils.parse_CLI_options where
         % the SW_mode option is located among the arguments. The code knows it should be somewhere.
-        %if ~EJ_library.utils.regexpf(swModeArg, SW_MODE_REGEXP)
+        %if ~EJ_library.str.regexpf(swModeArg, SW_MODE_REGEXP)
         if numel(OptionValues) ~= 1
             % Somewhat misleading error message. Hard to be accurate without too much effort or by explaining the
             % argument-parsing algorithm to the user.

@@ -874,7 +874,7 @@ classdef proc_utils
                 zvValue = Zvs.(zvName);
                 
                 if iscolumn(zvValue) && isa(zvValue, 'int64') ...
-                        && any(EJ_library.utils.regexpf(zvName, {'Epoch.*', '.*Epoch', '.*tt2000.*'}))
+                        && any(EJ_library.str.regexpf(zvName, {'Epoch.*', '.*Epoch', '.*tt2000.*'}))
                     % CASE: Epoch-like variable.
                     
                     ColumnStrs(end+1) = bicas.proc_utils.log_array(zvName, zvValue, 'Epoch');

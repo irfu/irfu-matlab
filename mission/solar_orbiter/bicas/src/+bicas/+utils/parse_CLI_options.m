@@ -154,7 +154,7 @@ function [OptionValuesMap, iCliArgLastValue] = try_interpret_option(cliArguments
     % Search for a matching CLI option string
     %=========================================
     % NOTE: More convenient to work with arrays than maps here.
-    iRegexpMatches  = find(EJ_library.utils.regexpf(cliArgument, {OptionsConfigArray.optionHeaderRegexp}));
+    iRegexpMatches  = find(EJ_library.str.regexpf(cliArgument, {OptionsConfigArray.optionHeaderRegexp}));
 
     % IP = Interpretation Priority
     ipArray = [OptionsConfigArray(iRegexpMatches).interprPriority];    % Array over regexp matches.

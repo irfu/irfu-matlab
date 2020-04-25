@@ -81,7 +81,7 @@ function [subStrList, remainingStr, perfectMatch] = regexp_str_parts(str, regexp
     %       PROPOSAL: [subStrList, perfectMatch, remainingStr]
     %           PRO: Does not need to store remainingStr, even if only wants perfectMatch.
     %
-    % PROPOSAL: Implement using EJ_library.utils.read_token.
+    % PROPOSAL: Implement using EJ_library.str.read_token.
     %
     % NOTE: Could almost(?) use function to implement equivalent functionality of regular expressions with
     % (positive) lookbehind+lookahead (other function).

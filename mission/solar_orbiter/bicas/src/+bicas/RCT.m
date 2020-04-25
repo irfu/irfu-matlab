@@ -97,7 +97,7 @@ classdef RCT
             dirObjectList = dir(calibrationDir);
             dirObjectList([dirObjectList.isdir]) = [];    % Eliminate directories.
             filenameList = {dirObjectList.name};
-            filenameList(~EJ_library.utils.regexpf(filenameList, filenameRegexp)) = [];    % Eliminate non-matching filenames.
+            filenameList(~EJ_library.str.regexpf(filenameList, filenameRegexp)) = [];    % Eliminate non-matching filenames.
             
             % ASSERTION / WARNING
             if numel(filenameList) == 0

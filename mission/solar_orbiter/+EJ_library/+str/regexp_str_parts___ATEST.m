@@ -13,7 +13,7 @@ function regexp_str_parts___ATEST()
 
     ES = char(zeros(1,0));    % Emty string, size 1x0.
 
-    new_test   = @(inputs, outputs)        (EJ_library.atest.CompareFuncResult(@EJ_library.utils.regexp_str_parts, inputs, outputs));
+    new_test   = @(inputs, outputs)        (EJ_library.atest.CompareFuncResult(@EJ_library.str.regexp_str_parts, inputs, outputs));
     new_test_A = @(arg1, arg2, outputs) (new_test({arg1, arg2, 'assert match'    }, outputs));   % A = Assert match
     new_test_P = @(arg1, arg2, outputs) (new_test({arg1, arg2, 'permit non-match'}, outputs));   % P = Permit non-match
     

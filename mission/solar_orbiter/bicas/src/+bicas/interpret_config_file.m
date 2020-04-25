@@ -42,7 +42,7 @@ for iRow = 1:numel(configFileRowList)
     else
         % CASE: Row is a SETTINGS key assignment.
         REGEXP_LIST = {SETTINGS_KEY_REGEXP, ' *= *', '"', SETTINGS_VALUE_STRING_REGEXP, '" *', '(#.*)?'};
-        [subStrList, remainingStr] = EJ_library.utils.regexp_str_parts(row, REGEXP_LIST, 'permit non-match');
+        [subStrList, remainingStr] = EJ_library.str.regexp_str_parts(row, REGEXP_LIST, 'permit non-match');
         
         % ASSERTION
         if (numel(subStrList) ~= numel(REGEXP_LIST)) || ~isempty(remainingStr)

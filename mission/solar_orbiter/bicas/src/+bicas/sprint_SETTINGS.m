@@ -59,7 +59,7 @@ for iKey = 1:length(keyList)
             if isscalar(value)
                 strValue = sprintf('%d', value);
             else
-                strArray = EJ_library.utils.sprintf_many('%d', value);
+                strArray = EJ_library.str.sprintf_many('%d', value);
                 strValue = sprintf('[%s]', strjoin(strArray, ', '));
             end
             

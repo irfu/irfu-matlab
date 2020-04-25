@@ -95,7 +95,7 @@ function errorCode = main( varargin )
         % NOTE: Should not call irf('check') which looks for updates to irfu-matlab (can not distinguish between updates to
         %       BICAS or the rest of irfu-matlab).
         %
-        % IMPLEMENTATION NOTE: bicas.logger.ICD_log_msg uses EJ_library.utils.add_prefix_on_every_row.
+        % IMPLEMENTATION NOTE: bicas.logger.ICD_log_msg uses EJ_library.str.add_prefix_on_every_row.
         % ==> Must initialize paths for EJ_library BEFORE using bicas.logger.log/logf.
         %===================================================================================================================
         irf('check_path');
@@ -208,7 +208,7 @@ function [msg, errorCode] = recursive_exception_msg(Exception, C)
         % NOTE: Does not capture return value errorCode.
         recursiveMsg = recursive_exception_msg(Exception.cause{iCause}, C);
         
-        recursiveMsg = EJ_library.utils.indent_str(recursiveMsg, CAUSES_RECURSIVE_INDENTATION_LENGTH);
+        recursiveMsg = EJ_library.str.indent_str(recursiveMsg, CAUSES_RECURSIVE_INDENTATION_LENGTH);
         msg = [msg, recursiveMsg];
     end
     
