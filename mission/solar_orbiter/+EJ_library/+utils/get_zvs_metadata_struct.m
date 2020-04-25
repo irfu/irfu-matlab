@@ -92,6 +92,56 @@ function S = get_zvs_metadata_struct(Variables, VariableAttributes)
     %   Attributes & "Other": VALIDMIN, VALIDMAX, FILLVAL
     % PROPOSAL: Other name for Struct field "Other".
     %   PROPOSAL: "Metadata"    
+    %
+    % PROPOSAL: Better function name.
+    %   PROPOSAL: get_zvs_metadata (no "struct").
+    %       CON: Does not imply better data structure that default.
+    %       CON: Does not imply conversion from one format to another.
+    %   PROPOSAL: reformat_zvs_metadata
+    %   PROPOSAL: convert_zvs_metadata
+    %
+    % PROPOSAL: Convert into function for reading entire CDF.
+    %   PROPOSAL: Add field S.(zVarName).value    or .data .
+    %   PROPOSAL: Support (option) for converting fill value and pad value to NaN.
+    %       NOTE: Fill value give in two different places which might differ (for tt2000).
+    %       PROBLEM/TODO-NI: How does fill value work for strings/chars?
+    %       PROBLEM: Can not be done for non-floats. ==> Must convert data type.
+    %           Ex: Epoch
+    %           Ex: IBIAS_1
+    %           PROBLEM: How specify when to convert?
+    %               PROPOSAL: Convert all (numeric) zVars to double.
+    %                   ~CON: Epoch?
+    %               PROPOSAL: Specify list of zVar names.
+    %               PROPOSAL: Use class (for entire CDF content). Use method(s) for reading. Can supply options
+    %                   (1) raw (with correct type/class)
+    %                   (2) double with fill value, pad value replaced with NaN.
+    %                   PRO: Can implement more support over time (assert when supports).
+    %
+    % PROPOSAL: Class for the content of a CDF file:
+    %   (1) content of a loaded CDF file
+    %   (2) content of a CDF file to be created
+    %   (3) partly correct content of CDF file to be created (not necessarily corrupt/inconsistent data, just different from any
+    %   pre-existing or future CDF file)
+    %   PRO: Easy to load, modify, and write CDF file.
+    %   PRO: zVar attributes on easy-to use format.
+    %   PRO: Can implement assertions on content directly when setting, loading.
+    %       Ex: DEPENDS_0=Epoch ==> Must have same nRecords.
+    %       Ex: zVar attributes that should point to other zVars actually do.
+    %   PRO: Can enforce that empty zVar values have the correct size (except char?)
+    %   --
+    %   PROPOSAL: Methods for adding/removing zVars
+    %   PROPOSAL: Methods for reading/writing zVar value
+    %       (1) raw content: exact CDF type/MATLAB class disregarding/ignoring pad & fill value
+    %       (2) converted content: replace NaN for fill value (pad value?), convert double-->CDf type
+    %           Check feasability: min-max, Inf, NaN.
+    %   TODO-DECISION: How reference zvars? (since not struct of structs)
+    %       PROPOSAL: zVarName as method argument
+    %           CON: Less convenient than structs.
+    %               PROPOSAL: Method for returning simples struct of fields with zVar values.
+    %   --
+    %   TODO-NI: How easy is it to read a CDF file NOT using dataobj?!!
+
+
 
     % ASSERTIONS: Guard against confusing the two arguments.
     assert(iscell(Variables), 'Argument "Variables" is not a cell array.')
@@ -107,7 +157,8 @@ function S = get_zvs_metadata_struct(Variables, VariableAttributes)
     %==================
     % Read "Variables"
     %==================
-    vTable = Variables;    % Change variable name.
+    % Change variable name, since original name is deceiving and comes from spdfcdfinfo's a naming convention.
+    vTable = Variables;
     for iZv = 1:size(vTable, 1)
         % NOTE: The meaning of "Variables" columns can be found on the help page for "spdfcdfinfo".
         zvName         = vTable{iZv,  1};

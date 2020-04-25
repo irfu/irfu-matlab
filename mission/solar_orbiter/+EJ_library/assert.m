@@ -144,7 +144,7 @@ classdef assert
         
         
         
-        % Cell matrix of UNIQUE strings.
+        % Argument is a cell matrix of UNIQUE strings.
         function castring_set(s)
             % NOTE: Misleading name, since does not check for strings.
             
@@ -437,16 +437,19 @@ classdef assert
         %     Does not work on:
         %     - cell array of numbers
         %     NOTE: Empty matrices are accepted.
-        % 
+        %
         function all_equal(v)
-           nUniques = numel(unique(v(:)));    % NOTE: Make 1D vector.
-           nTotal   = numel(v);
-           
-           if (nUniques ~= 1) && (nTotal >= 1)
-               error(EJ_library.assert.ERROR_MSG_ID, ...
-                   'Expected vector of identical values, but found %i unique values out of a total of %i values.', ...
-                   nUniques, nTotal)
-           end
+            % TODO-DECISION: How handle NaN?
+            %   PROPOSAL: Count NaN as equal to itself.
+            
+            nUniques = numel(unique(v(:)));    % NOTE: Make 1D vector.
+            nTotal   = numel(v);
+            
+            if (nUniques ~= 1) && (nTotal >= 1)
+                error(EJ_library.assert.ERROR_MSG_ID, ...
+                    'Expected vector of identical values, but found %i unique values out of a total of %i values.', ...
+                    nUniques, nTotal)
+            end
         end
         
     end    % methods

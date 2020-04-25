@@ -149,7 +149,7 @@ elseif (numel(a) ~= 1) || (numel(b) ~= 1)
         % This check is not necessary, but should speed up.
         if (isnumeric(a) && isnumeric(b)) || (ischar(a) && ischar(b))
              if ~equals_samesize_numeric_char_arrays(a, b, Settings)
-                 diffMsg = 'Numeric/char arrays differ.'
+                 diffMsg = 'Numeric/char arrays differ.';
              else
                  result = 1;
              end

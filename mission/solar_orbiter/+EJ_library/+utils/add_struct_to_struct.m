@@ -13,18 +13,16 @@
 %
 % ARGUMENTS
 % =========
-% MANDATORY:
-%   A                          : Scalar struct. The fields of "B" will be added to this struct.
-%   B                          : Scalar struct.
-% OPTIONAL:
-%   Settings : Struct. 
-%       .noStructs
-%       .aIsStruct
-%       .bIsStruct
-%       .abAreStructs : 
-%           Above fields are string constants. Represent how to react for different cases of duplicate fields, depending
-%           on which of the two fields are structs themselves. Each field in this argument is a string with one of the
-%           following values:
+%   A       : Scalar struct. The fields of "B" will be added to this struct.
+%   B       : Scalar struct.
+% varargin  : As interpreted by EJ_library.utils.interpret_settings_args.
+%       noStructs,
+%       aIsStruct,
+%       bIsStruct,
+%       abAreStructs : 
+%           Above settings are string constants. They represent how to react for different cases of duplicate fields,
+%           depending on which of the two fields are structs themselves. Each field in this argument is a string with
+%           one of the following values:
 %              "Overwrite"  : The field in "A" is overwritten by the field in "B".
 %              "Do nothing" :
 %              "Recurse"    : Only valid if both fields are structs. Apply the function on the two fields.

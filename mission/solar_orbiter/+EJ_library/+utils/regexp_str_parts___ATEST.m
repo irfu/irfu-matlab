@@ -23,22 +23,36 @@ function regexp_str_parts___ATEST()
 
     tl{end+1} = new_test_A('',     {''},       {{''}',    ES, true});
 
-    % Match
+    % Exact match
+    % -----------
+    % Non-empty regexp
     tl{end+1} = new_test_A('abc', {'a', 'b', 'c'}, {{'a' 'b' 'c'}', ES, true});
     tl{end+1} = new_test_P('abc', {'a', 'b', 'c'}, {{'a' 'b' 'c'}', ES, true});
+    % Include empty regexp.
+    tl{end+1} = new_test_A('abc', {'a', 'b', '', 'c'}, {{'a' 'b' '' 'c'}', ES, true});
+    tl{end+1} = new_test_P('abc', {'a', 'b', '', 'c'}, {{'a' 'b' '' 'c'}', ES, true});
     
-    % Non-match
+    % Matching, until running out of string
+    % -------------------------------------
     tl{end+1} = new_test_A('ab', {'a', 'b', 'c'}, 'MException');
     tl{end+1} = new_test_P('ab', {'a', 'b', 'c'}, {{'a', 'b'}', ES, false});
     
-    tl{end+1} = new_test_A('ac', {'a', 'b', 'c'}, 'MException');
-    tl{end+1} = new_test_A('a',  {'a', 'b', 'c'}, 'MException');
-    tl{end+1} = new_test_A('ac', {'a', 'b'     }, 'MException');
-    
-    
+    % First regexp matches, but second does not
+    % -----------------------------------------
+    % Non-empty remaining string.
+    tl{end+1} = new_test_A('ac', {'a', 'b', 'c'}, 'MException');          
+    tl{end+1} = new_test_P('ac', {'a', 'b', 'c'}, {{'a'}, 'c', false});
+    tl{end+1} = new_test_A('ac', {'a', 'b'     }, 'MException');       
+    tl{end+1} = new_test_P('ac', {'a', 'b'     }, {{'a'}, 'c', false});
+    % Running out of string
+    tl{end+1} = new_test_A('a',  {'a', 'b', 'c'}, 'MException');   
+    tl{end+1} = new_test_P('a',  {'a', 'b', 'c'}, {{'a'}, ES,  false});
+
+
+
     tl{end+1} = new_test_A('word',  {'[a-z]+'}, {{'word'}', ES, true});
     tl{end+1} = new_test_A('key = value', KEY_QUOTED_VALUE_REGEXP_LIST, 'MException');
-    
+
     tl{end+1} = new_test_A('key=value',                     KEY_ANY_VALUE_REGEXP_LIST,            {{'key',                '=',         'value'            }', ES, true});
     tl{end+1} = new_test_A('key = "value"',                 KEY_QUOTED_VALUE_REGEXP_LIST,         {{'key',               ' = ',   '"', 'value', '"', ''   }', ES, true});
     tl{end+1} = new_test_A('key=   "value"   ',             KEY_QUOTED_VALUE_REGEXP_LIST,         {{'key',                '=   ', '"', 'value', '"', '   '}', ES, true});

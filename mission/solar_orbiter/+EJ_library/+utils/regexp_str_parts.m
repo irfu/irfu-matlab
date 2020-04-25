@@ -3,10 +3,15 @@
 %
 % The primary purpose of this function is to make it easy to parse a string syntax.
 %
+%
 % ALGORITHM
 % =========
 % The algorithm will try to match the beginning of str to the first regexp, then continue to match the remainder of the
-% string for each successive regexp.
+% string for each successive regexp. Perfect match means matching the entire string exactly.
+% --
+% NOTE: The matching can fail in two ways:
+% (a) Algorithm runs out of string before running out of regular expressions.
+% (b) Algorithm runs out of regular expressions before running out of string.
 % --
 % NOTE: A regexp that does match an empty string (e.g. 'a*'), may return an empty substring. This is natural in this
 % application, but is maybe not default regexp behaviour.
@@ -14,8 +19,6 @@
 % NOTE: The algorithm does not work for "all" applications. Ex: Matching with restrictive regexp (one or several) at the
 % end of string while simultaneously having regexp that permits ~arbitrary string in the beginning/middle. Arbitrary
 % string will match until the end (maximal munch), preventing matching the ending regular expressions.
-% --
-% NOTE: Assertion on matching all of string, i.e. exception if can not match entire string.
 %
 %
 % ARGUMENTS
@@ -24,14 +27,14 @@
 % regexpList     : Cell array of strings, each one containing a regexp. "^" at the beginning of a regexp will be ignored.
 %                  NOTE: The sequence of regexes must match every single character in str.
 % nonMatchPolicy : String constant determining what happens in the event of a non-perfect match (including no match).
-%                  'assert match' or 'permit non-match'
+%                  'assert match' or 'permit non-match'. This refers to both kinds of failure (above).
 %
 %
 % RETURN VALUE
 % ============
 % subStrList     : Cell array of strings, each being a match for the corresponding string in regexpList.
 % remainingStr   : The remainder of argument str that was not matched.
-% perfectMatch   : Logical.
+% perfectMatch   : Logical. Whether matched all regular expression to entire string.
 %
 %
 % Author: Erik P G Johansson, IRF Uppsala, Sweden
@@ -54,7 +57,7 @@ function [subStrList, remainingStr, perfectMatch] = regexp_str_parts(str, regexp
     %                   NOTE: Not exact solution, but probably works practically for most applications.
     %                   CON: Better done manually or by another function that uses this function. This is outside of
     %                        this function's natural scope.
-    %   PROPOSAL: Three functions
+    %   PROPOSAL: Two functions
     %       [subStrList, remainingStr] = regexp_str_parts(str, regexpList, searchDirection, nonMatchPolicy)
     %           Only search either forward or backward (argument).
     %       [subStrList, remainingStr] = regexp_str_parts2(str, regexpList, searchPriorities, nonMatchPolicy)
@@ -67,7 +70,7 @@ function [subStrList, remainingStr, perfectMatch] = regexp_str_parts(str, regexp
     %   PROPOSAL: Have policy argument determine whether exception or special return value.
     %       PROPOSAL: 'assert match', 'permit no match'/'no assert match'
     %           NOTE: Easy for caller to assert: assert(~isempty(subStrList)).
-    %   PROPOSAL: Permit returning partial results and letting the caller where it failed.
+    %   PROPOSAL: Permit returning partial results and letting the caller know where it failed.
     %
     % PROPOSAL: Somehow specify whether to ignore case or not, for every regexp separately(!).
     %
@@ -78,8 +81,7 @@ function [subStrList, remainingStr, perfectMatch] = regexp_str_parts(str, regexp
     %       PROPOSAL: [subStrList, perfectMatch, remainingStr]
     %           PRO: Does not need to store remainingStr, even if only wants perfectMatch.
     %
-    % PROPOSAL: Implement using EJ_library.utils.read_req_token.
-    %   CON: Can not use backwards.
+    % PROPOSAL: Implement using EJ_library.utils.read_token.
     %
     % NOTE: Could almost(?) use function to implement equivalent functionality of regular expressions with
     % (positive) lookbehind+lookahead (other function).
@@ -109,10 +111,10 @@ function [subStrList, remainingStr, perfectMatch] = regexp_str_parts(str, regexp
     
     
     
-    %===========
-    % ALGORITHM
-    %===========
-    subStrList = cell(0, 1);
+    %====================
+    % MATCHING ALGORITHM
+    %====================
+    subStrList   = cell(0, 1);
     remainingStr = str;
     for i = 1:numel(regexpList)
         % IMPLEMENTATION NOTE: Option "emptystring" is important. Can otherwise not distinguish between (1) no match, or
@@ -122,23 +124,29 @@ function [subStrList, remainingStr, perfectMatch] = regexp_str_parts(str, regexp
         if isempty(subStr)
             % NOTE: isempty() refers to cell array, not string. subStr should be cell array if match, even empty string match.
             
+            % CASE: Failed to match regexp. NOTE: This includes the case of "running out of string".
+            
             if assertMatch
                 % ASSERTION
-                error('regexp_str_parts:Assertion', 'Could not match regular expression "%s" to the beginning of the remainder of the string, "%s".', regexpList{i}, remainingStr)
+                error('regexp_str_parts:Assertion', ...
+                    'Could not match regular expression "%s" to the beginning of the remainder of the string, "%s".', ...
+                    regexpList{i}, remainingStr)
             else
                 % NOTE: subStrList partially completed.
                 perfectMatch = false;
                 return
             end
         end
+        % CASE: Successful match (has already left loop if not)
         subStr = subStr{1};
         
-        remainingStr = remainingStr(numel(subStr)+1:end);
+        remainingStr    = remainingStr(numel(subStr)+1:end);
         subStrList{i,1} = subStr;   % Add to list of matches.
     end
-    
-    
-    
+    % CASE: Matched all regexps (but not necessarily against entire string).
+
+
+
     %=======================================
     % Check if algorithm matched everything
     %=======================================

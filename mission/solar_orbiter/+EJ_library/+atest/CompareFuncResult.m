@@ -1,7 +1,11 @@
 % Class which defines a type of automatic test:
 % An arbitrary function produces the specified expected return result (deterministic).
+%
 % NOTE: The exact function comparing expected with actual return result can be specified, and thus the comparison can be
 % relaxed.
+%
+% NOTE: Default comparison function is "isequaln". This is not ideal since it does not care about matlab class, e.g.
+% isequal(0, false) == isequal('A', 65) == true.
 %
 %
 % TERMINOLOGY, ABBREVIATIONS
@@ -64,8 +68,8 @@ classdef CompareFuncResult
         %                       (1) cell array of expected return values, or
         %                       (2) character string naming the expected Exception class.
         %                      NOTE: The default exception class is "MException".
-        % varargin           : Settings as interpreted by EJ_library.utils.interpret_settings_args
-        %                       equalsFunc : Function handle areEqual = equalsFunc(a,b)
+        % varargin           : Settings as interpreted by EJ_library.utils.interpret_settings_args.
+        %                       'equalsFunc' : Function handle areEqual = equalsFunc(a,b)
         %                           a, b : Expected and actual function output as cell arrays.
         function obj = CompareFuncResult(func, input, expOutputOrExcName, varargin)
             % ASSERTION
@@ -77,7 +81,7 @@ classdef CompareFuncResult
                 obj.expOutput        = expOutputOrExcName;
                 obj.expExceptionName = [];
             elseif ischar(expOutputOrExcName)
-                obj.expOutput         =[];
+                obj.expOutput        = [];
                 obj.expExceptionName = expOutputOrExcName;
             else
                 % ASSERTION
@@ -85,7 +89,7 @@ classdef CompareFuncResult
             end
             
             % MATLAB R2016a: "isequalwithequalnans is not recommended. Use ISEQUALN instead."
-            DEFAULT_SETTINGS = struct('equalsFunc', @isequalwithequalnans);
+            DEFAULT_SETTINGS = struct('equalsFunc', @isequaln);
             Settings         = EJ_library.utils.interpret_settings_args(DEFAULT_SETTINGS, varargin);
             obj.equalsFunc   = Settings.equalsFunc;
         end
@@ -158,8 +162,8 @@ classdef CompareFuncResult
                         end
                         TestData.Result.diff.location = diffLoc;
                         TestData.Result.diff.message  = diffMsg;
-                        TestData.resultDescrText = 'Actual function result differs from expected function result.';
-                        TestData.success         = false;
+                        TestData.resultDescrText      = 'Actual function result differs from expected function result.';
+                        TestData.success              = false;
                     end
                 else
                     % CASE: Expected exception.

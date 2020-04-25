@@ -27,7 +27,8 @@
 % (2) SettingsArg1
 % (3) DefaultSettings
 % where field values are taken from the first top-most struct with that field, i.e. a higher one has precedence over a
-% lower one, e.g. (1) has precedence over (2). Therefore, the structs do not need to, but are allowed to, contain the same fields.
+% lower one, e.g. (1) has precedence over (2). Therefore, the structs do not need to, but are allowed to, contain the
+% same fields.
 %
 %
 % LIMITATIONS
@@ -57,7 +58,7 @@
 %
 % Initially created 2018-07-18 by Erik P G Johansson.
 %
-function [Settings] = interpret_settings_args(DefaultSettings, argList)
+function Settings = interpret_settings_args(DefaultSettings, argList)
     % PROPOSAL: Assert SettingsArg1 and SettingsArgListPairs fields to always exist in DefaultSettings.
     %   CON: Makes it impossible to have default values for some settings/fields, but not for others.
     %   PROPOSAL: Option/flag for this behaviour.
@@ -93,9 +94,12 @@ function [Settings] = interpret_settings_args(DefaultSettings, argList)
     %       PROPOSAL: Convert struct to containers.Map internally.
     %
     % PROPOSAL: Policy argument (first) for whether or not to only permit settings/fields already in DefaultSettings.
-    %   CON: If wants to permit, then still undetermined (not asserted) I which extra settings should be permitted?
+    %   CON: If wants to permit, then still undetermined (not asserted) which extra settings should be permitted?
     %       PROPOSAL: Cell array of settings that are allowed to be added. No extra settings. ==> Empty cell array.
     %   PRO: Prevents caller from forgetting this option.
+    %
+    % PROBLEM: Mixing interface (key strings) with implementation (variable/field names). Can not change fieldname
+    %          without changing interface.
     
     %====================================================
     % Assign SettingsArg1: Uses first argument if struct

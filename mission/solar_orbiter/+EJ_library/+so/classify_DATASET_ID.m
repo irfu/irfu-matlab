@@ -22,6 +22,7 @@ function C = classify_DATASET_ID(datasetId)
     % NEED?!: Some way of determining whether an obsoleted and current DATASET_ID are equivalent.
     %
     % PROPOSAL: Generalize to work for all DATASET_IDs (BICAS-related and not). Put outside BICAS.
+    % PROPOSAL: Return whether SOLO or ROC-SGSE prefix.
     
     
     
