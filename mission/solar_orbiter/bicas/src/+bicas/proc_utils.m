@@ -690,38 +690,35 @@ classdef proc_utils
 
         
         function y2 = interpolate_float_records(zvTt2000_1, y1, zvTt2000_2, method)
-            % Interpolate ~zVariable to other points in time using nearest neighbour interpolation.
-            % Values outside the interval covered by the old time series will be set to NaN.
+            % Interpolate ~zVariable to other points in time.
+            % Values which can not be interpolated will be set to NaN.
+            % This is intended for interpolating HK and CURRENT to SCI record times.
             %
-            % This is intended for interpolating HK and current values to SCI record times.
+            % IMPLEMENTATION NOTE: There is (deliberately) no assertion to check for NaN, neither in input nor output.
+            % The caller is supposed to check and, depending on settings etc decide whether to interpolate anyway.
             %
             % IMPLEMENTATION NOTE: interp1 does seem to require y1 to be float. Using NaN as a "fill value" for the
-            % return value imples that it too has to be a float.
+            % return value implies that it too has to be a float.
             
-            % PROPOSAL: Assertion for whether interpolating is possible.
-            %   NOTE: Depends on method of interpolation / purpose.
-            %       Ex: Currents. Currents can always be extrapolated forward in time, but not backward.
-            %   PROPOSAL: method='previous' ==> check min
-            
-            switch(method)
-                case 'nearest'
-                    assert(...
-                        EJ_library.utils.is_range_subset(zvTt2000_2, zvTt2000_1), ...
-                        'BICAS:proc_utils:interpolate_float_records:Assertion:IllegalArgument', ...
-                        'Can not interpolate data since the time range of zvTt2000_2 is not a subset of zvTt2000_1.')
-
-                case 'previous'
-                    % IMPLEMENTATION NOTE: Used for currents which can be extrapolate forward, but not backward.
-                    assert(min(zvTt2000_1) <= min(zvTt2000_2), ...
-                        'BICAS:proc_utils:interpolate_float_records:Assertion:IllegalArgument', ...
-                        'Can not interpolate data since the time range of zvTt2000_2 does not begin after zvTt2000_1 begins.')
-
-                otherwise
-                    error(...
-                        'BICAS:proc_utils:interpolate_float_records:Assertion:IllegalArgument', ...
-                        'Illegal argument method="%s".', ...
-                        method)
-            end
+%             switch(method)
+%                 case 'nearest'
+% %                     assert(...
+% %                         EJ_library.utils.is_range_subset(zvTt2000_2, zvTt2000_1), ...
+% %                         'BICAS:proc_utils:interpolate_float_records:Assertion:IllegalArgument', ...
+% %                         'Can not interpolate data since the time range of zvTt2000_2 is not a subset of zvTt2000_1.')
+% 
+%                 case 'previous'
+%                     % IMPLEMENTATION NOTE: Used for currents which can be extrapolate forward, but not backward.
+% %                     assert(min(zvTt2000_1) <= min(zvTt2000_2), ...
+% %                         'BICAS:proc_utils:interpolate_float_records:Assertion:IllegalArgument', ...
+% %                         'Can not interpolate data since the time range of zvTt2000_2 does not begin after zvTt2000_1 begins.')
+% 
+%                 otherwise
+%                     error(...
+%                         'BICAS:proc_utils:interpolate_float_records:Assertion:IllegalArgument', ...
+%                         'Illegal argument method="%s".', ...
+%                         method)
+%             end
             
             bicas.proc_utils.assert_zv_Epoch(zvTt2000_1)
             bicas.proc_utils.assert_zv_Epoch(zvTt2000_2)

@@ -140,7 +140,10 @@ S.define_setting('INPUT_CDF.USING_GA_NAME_VARIANT_POLICY',     'WARNING')    % P
 
 % NOTE: This modification applies BEFORE PROCESSING.USE_ZV_ACQUISITION_TIME.HK and therefore always applies to zVar
 % Epoch.
-S.define_setting('INPUT_CDF.NON-INCREMENTING_ZV_EPOCH_POLICY', 'ERROR')      % ERROR, WARNING_SORT
+% NOTE: Only check for increasing, not monotonically.
+S.define_setting('INPUT_CDF.NON-INCREMENTING_ZV_EPOCH_POLICY', 'ERROR')      % ERROR, WARNING, SORT
+
+S.define_setting('INPUT_CDF.CUR.NON-MONOTONICALLY-INCREMENTING_ZV_EPOCH_POLICY', 'ERROR')    % ERROR, REMOVE_DUPLICATES
 
 % Whether to replace pad values with NaN internally.
 % NOTE: SOLO_L1_RPW-BIA-CURRENT_V06.skt uses pad value=zero (BUG). Therefore useful.
@@ -238,8 +241,9 @@ S.define_setting('PROCESSING.ACQUISITION_TIME_EPOCH_UTC',                       
 % datasets as generic, has to dentify which dataset is SCI. Should not be worth the effort.
 S.define_setting('PROCESSING.USE_ZV_ACQUISITION_TIME.HK',    0)
 
-S.define_setting('PROCESSING.SCI_HK.TIME_NONOVERLAP_POLICY', 'ERROR')    % WARNING, ERROR
-
+S.define_setting('PROCESSING.HK_SCI_TIME_NONOVERLAP_POLICY',       'ERROR')    % WARNING, ERROR
+S.define_setting('PROCESSING.HK_TIME_NOT_SUPERSET_OF_SCI_POLICY',  'ERROR')    % WARNING, ERROR
+S.define_setting('PROCESSING.CUR_TIME_NOT_SUPERSET_OF_SCI_POLICY', 'ERROR')    % WARNING, ERROR
 
 
 %=======================================================================================================================
@@ -336,7 +340,7 @@ S.define_setting('PROCESSING.L1R.TDS.RSWF_ZV_SAMPLING_RATE_DATASET_BUGFIX_ENABLE
 % TDS has bugfixed. /2019-12-19
 % NOTE: "SAMPS_PER_CH" is the name of a zVariable.
 % PROPOSAL: Rename.
-S.define_setting('PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_POLICY', 'ERROR')   % ERROR, ROUND, PERMIT
+S.define_setting('PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_POLICY', 'ERROR')   % ERROR, WARNING, ROUND
 
 % CALIBRATION_TABLE_INDEX2 = Second value in zVar CALIBRATION_TABLE_INDEX (in every record), that contains an index to
 % calibration data inside a given RCT.

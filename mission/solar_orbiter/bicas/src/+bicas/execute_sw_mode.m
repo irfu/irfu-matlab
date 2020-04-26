@@ -322,33 +322,32 @@ bicas.handle_struct_name_change(fnChangeList, SETTINGS, L, msgFunc, 'Dataset_ID'
 % solo_L1_rpw-lfr-surv-swf-cdag_20200212_V01.cdf   (1458 identical consecutive pairs of values)
 % solo_HK_rpw-bia_20200212_V01.cdf                 (decrements once)
 %===============================================================================================
-% IMPLEMENTATION NOTE: Must explicitly check for identical consecutive values. Not the default.
-if ~issorted(Zvs.Epoch, 'strictascend')
+% IMPLEMENTATION NOTE: SOLO_L1_RPW-BIA-CURRENT have increasing Epoch, but not always MONOTONICALLY increasing Epoch.
+if ~issorted(Zvs.Epoch)   % Check for increasing values, but NOT monotonically increasing.
     
-    message = sprintf('Input dataset "%s"\n    contains an Epoch zVariable which values do not monotonically increment.\n', filePath);
+    anomalyDescrMsg = sprintf('Input dataset "%s"\n    contains an Epoch zVariable which values do not monotonically increment.\n', filePath);
     
     [settingValue, settingKey] = SETTINGS.get_fv('INPUT_CDF.NON-INCREMENTING_ZV_EPOCH_POLICY');
     switch(settingValue)
-        case 'ERROR'
-            error('BICAS:execute_sw_mode:DatasetFormat', message)
-            
-        case 'WARNING_SORT'
-            L.logf('warning', message)
+        case 'SORT'
+            bicas.default_anomaly_handling(L, settingValue, settingKey, 'other', ...
+                anomalyDescrMsg, 'BICAS:execute_sw_mode:DatasetFormat')
             
             % Sort (data) zVariables according to Epoch.
             [~, iSort] = sort(Zvs.Epoch);
             Zvs = select_ZVS_indices(Zvs, iSort);
             
-            % NOTE: Sorting Epoch does not remove identical values. Must therefore check again.
-            if ~issorted(Zvs.Epoch, 'strictascend')
-                error('BICAS:execute_sw_mode:DatasetFormat', ...
-                    ['zVariable Epoch in input dataset "%s"\n does not increase non-monotonically even after sorting.', ...
-                    ' It must contain multiple identical values (or the sorting algorithm does not work).'], ...
-                    filePath)
-            end
+%             % NOTE: Sorting Epoch does not remove identical values. Must therefore check again.
+%             if ~issorted(Zvs.Epoch, 'strictascend')
+%                 error('BICAS:execute_sw_mode:DatasetFormat', ...
+%                     ['zVariable Epoch in input dataset "%s"\n does not increase non-monotonically even after sorting.', ...
+%                     ' It must contain multiple identical values (or the sorting algorithm does not work).'], ...
+%                     filePath)
+%             end
             
         otherwise
-            L.logf('Setting has illegal value %s="%s"', settingKey, settingValue)
+            bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+W-illegal', ...
+                anomalyDescrMsg, 'BICAS:execute_sw_mode:DatasetFormat')
     end
 end
 

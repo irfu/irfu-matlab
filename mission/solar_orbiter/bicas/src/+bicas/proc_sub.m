@@ -135,22 +135,34 @@ classdef proc_sub
 
 
 
+            %===================
             % WARNINGS / ERRORS
-            if ~EJ_library.utils.is_range_subset(InSci.Zv.Epoch,  hkEpoch)
-                L.log('warning', 'SCI time range is not a subset of HK time range according to zVar Epoch.')
+            %===================
+            if ~EJ_library.utils.is_range_subset(InSci.Zv.Epoch, hkEpoch)
+                hk1RelativeSec = 1e-9 * (min(hkEpoch) - min(InSci.Zv.Epoch));
+                hk2RelativeSec = 1e-9 * (max(hkEpoch) - max(InSci.Zv.Epoch));
+                
+                anomalyDescrMsg = sprintf(...
+                    ['HK time range is not a superset of SCI time range.', ...
+                    ' Can not reliably interpolate HK data for all of SCI.', ...
+                    ' HK begins %g s BEFORE SCI begins. HK ends %g s AFTER SCI ends.'], ...
+                    -hk1RelativeSec, ...
+                    hk2RelativeSec);
+                
+                [settingValue, settingKey] = SETTINGS.get_fv('PROCESSING.HK_TIME_NOT_SUPERSET_OF_SCI_POLICY');
+                bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+W+illegal', ...
+                    anomalyDescrMsg, 'BICAS:proc_sub:DatasetFormat:SWModeProcessing')
             end
             if ~EJ_library.utils.ranges_intersect(InSci.Zv.Epoch, hkEpoch)
-                [settingValue, settingKey] = SETTINGS.get_fv('PROCESSING.SCI_HK.TIME_NONOVERLAP_POLICY');
-                switch(settingValue)
-                    case 'WARNING'
-                        L.log(settingValue, 'SCI and HK time ranges do not overlap in time.')
-                    case 'ERROR'
-                        error('BICAS:proc_sub:DatasetFormat:SWModeProcessing', 'SCI and HK time ranges do not overlap in time.')
-                    otherwise
-                        error('BICAS:Assertion:ConfigurationBug', 'Illegal setting value %s="%s".', settingKey, string(settingValue))
-                end
+                %error('BICAS:proc_sub:DatasetFormat:SWModeProcessing', 'SCI and HK time ranges do not overlap in time.')
+                
+                % NOTE: "WARNING" (rather than error) only makes sense if it is possible to later meaningfully permit
+                % non-intersection.
+                [settingValue, settingKey] = SETTINGS.get_fv('PROCESSING.HK_SCI_TIME_NONOVERLAP_POLICY');
+                bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+W+illegal', ...
+                    'SCI and HK time ranges do not overlap in time.', 'BICAS:proc_sub:DatasetFormat:SWModeProcessing')
             end
-
+            
 
 
             %=========================================================================================================
@@ -227,35 +239,85 @@ classdef proc_sub
             end
             
             if min(sciEpoch) < min(InCur.Zv.Epoch)
+                curRelativeSec    = 1e-9 * (min(InCur.Zv.Epoch) - min(sciEpoch));
                 sciEpochUtcStr    = EJ_library.utils.CDF_tt2000_to_UTC_str(min(sciEpoch));
                 curEpochMinUtcStr = EJ_library.utils.CDF_tt2000_to_UTC_str(min(InCur.Zv.Epoch));
-                error('BICAS:proc_sub:SWModeProcessing:SWModeProcessing', ...
-                    ['Bias current data begins (%s) after voltage data begins (%s).', ....
+                
+                [settingValue, settingKey] = SETTINGS.get_fv('PROCESSING.CUR_TIME_NOT_SUPERSET_OF_SCI_POLICY');
+                
+                anomalyDescrMsg = sprintf(...
+                    ['Bias current data begins %g s (%s) AFTER voltage data begins (%s).', ....
                     ' Can therefore not interpolate currents to voltage timestamps.'], ...
-                    curEpochMinUtcStr, sciEpochUtcStr)
+                    curRelativeSec, curEpochMinUtcStr, sciEpochUtcStr);
+                
+                bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+W+illegal', ...
+                    anomalyDescrMsg, 'BICAS:proc_sub:SWModeProcessing')
+
             end
             
+            % NOTE: bicas.proc_sub.interpolate_current checks Epoch.
             currentMicroSAmpere = [];
-            currentMicroSAmpere(:,1) = bicas.proc_sub.interpolate_current(InCur.Zv.Epoch, InCur.Zv.IBIAS_1, sciEpoch);
-            currentMicroSAmpere(:,2) = bicas.proc_sub.interpolate_current(InCur.Zv.Epoch, InCur.Zv.IBIAS_2, sciEpoch);
-            currentMicroSAmpere(:,3) = bicas.proc_sub.interpolate_current(InCur.Zv.Epoch, InCur.Zv.IBIAS_3, sciEpoch);
+            currentMicroSAmpere(:,1) = bicas.proc_sub.interpolate_current(InCur.Zv.Epoch, InCur.Zv.IBIAS_1, sciEpoch, L, SETTINGS);
+            currentMicroSAmpere(:,2) = bicas.proc_sub.interpolate_current(InCur.Zv.Epoch, InCur.Zv.IBIAS_2, sciEpoch, L, SETTINGS);
+            currentMicroSAmpere(:,3) = bicas.proc_sub.interpolate_current(InCur.Zv.Epoch, InCur.Zv.IBIAS_3, sciEpoch, L, SETTINGS);
         end
         
         
         
         % Utility function
-        function sciZv_IBIASx = interpolate_current(curZv_Epoch, curZv_IBIAS_x, sciZv_Epoch)
+        function sciZv_IBIASx = interpolate_current(curZv_Epoch, curZv_IBIAS_x, sciZv_Epoch, L, SETTINGS)
+            % PROPOSAL: Make into separate library function. Useful for plotting etc.
+            %   NOTE: Setting must become argument.
+            
+            % Remove indices of CURRENTS (not Epoch) which are NOT NaN, i.e. which do not represent this antenna.
+            bKeep = ~isnan(curZv_IBIAS_x);
+            curZv_Epoch   = curZv_Epoch(bKeep);
+            curZv_IBIAS_x = curZv_IBIAS_x(bKeep);
+            
+            %======================================================================================================
+            % Handle non-monotonically increasing Epoch
+            % -----------------------------------------
+            % NOTE: This handling is driven by
+            % (1) wanting to check input data
+            % (2) interp1 does not permit having identical x values/timestamps, not even with identical y values.
+            %======================================================================================================
+            if ~issorted(curZv_Epoch, 'strictascend')   % If NOT monotonically increasing.
+                
+                [settingValue, settingKey] = SETTINGS.get_fv('INPUT_CDF.CUR.NON-MONOTONICALLY-INCREMENTING_ZV_EPOCH_POLICY');
+                anomalyDescriptionMsg = 'Bias currents contain multiple identical timestamps on the same antenna.';
+                
+                switch(settingValue)
+                    case 'REMOVE_DUPLICATES'
+                        bicas.default_anomaly_handling(L, settingValue, settingKey, 'other', ...
+                            anomalyDescriptionMsg)
+                        L.log('warning', ...
+                            ['Removing bias currents with identical timestamps on the same antenna,', ...
+                            ' asumming (asserting) that the bias currents are identical too.'])
+                        
+                        bIdent = diff(curZv_Epoch) == 0;
+                        
+                        % ASSERTION.
+                        assert(all(curZv_IBIAS_x(bIdent) == curZv_IBIAS_x(bIdent+1)), ...
+                            'BICAS:proc_sub:SWModeProcessing:DatasetFormat', ...
+                            'Bias currents contain non-equal current values on equal timestamps on the same antenna.');
+                        
+                        curZv_Epoch   = curZv_Epoch(~bIdent);
+                        curZv_IBIAS_x = curZv_IBIAS_x(~bIdent);
+                        
+                    otherwise
+                        bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+illegal', ...
+                            anomalyDescriptionMsg, 'BICAS:proc_sub:SWModeProcessing:DatasetFormat')
+                end
+                
+            end
+            
+            
+            
             % IMPLEMENTATION NOTE: Bias currents are set VERY RARELY. Must therefore use interpolation method
             % 'previous'.
-            
-            % PROPOSAL: Make into separate library function
-            
-            % Find indices of CURRENTS (not Epoch) which are NOT NaN.
-            jIs = ~isnan(curZv_IBIAS_x);
-            
             sciZv_IBIASx = bicas.proc_utils.interpolate_float_records(...
-                curZv_Epoch(jIs), ...
-                curZv_IBIAS_x(jIs), ...
+                curZv_Epoch, ...
+                curZv_IBIAS_x, ...
                 sciZv_Epoch, ...
                 'previous');
         end
@@ -496,26 +558,28 @@ classdef proc_sub
                 SAMPS_PER_CH_rounded(SAMPS_PER_CH_rounded > SAMPS_PER_CH_MAX_VALID) = SAMPS_PER_CH_MAX_VALID;
                 if any(SAMPS_PER_CH_rounded ~= SAMPS_PER_CH_zv)
                     SAMPS_PER_CH_badValues = unique(SAMPS_PER_CH_zv(SAMPS_PER_CH_rounded ~= SAMPS_PER_CH_zv));
-                    badValuesDisplayStr = strjoin(arrayfun(@(n) sprintf('%i', n), SAMPS_PER_CH_badValues, 'uni', false), ', ');                    
-                    logErrorMsg = sprintf('TDS LFM RSWF zVar SAMPS_PER_CH contains unexpected value(s), not 2^n: %s', badValuesDisplayStr);
                     
-                    actionSettingValue = SETTINGS.get_fv('PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_POLICY');
-                    switch(actionSettingValue)
-                        case 'ERROR'
-                            error('BICAS:proc_sub:Assertion:DatasetFormat', logErrorMsg)
-                            
-                        case 'PERMIT'
-                            L.logf('warning', [logErrorMsg, 'Permitting due to setting PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_POLICY.'])
-                            % Do nothing
-                            
+                    badValuesDisplayStr = strjoin(arrayfun(...
+                        @(n) sprintf('%i', n), SAMPS_PER_CH_badValues, 'uni', false), ', ');
+                    anomalyDescrMsg = sprintf(...
+                        'TDS LFM RSWF zVar SAMPS_PER_CH contains unexpected value(s), not 2^n: %s', ...
+                        badValuesDisplayStr);
+                    
+                    [settingValue, settingKey] = SETTINGS.get_fv('PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_POLICY');
+                    switch(settingValue)
                         case 'ROUND'
-                            L.logf('warning', logErrorMsg)
-                            L.log('warning', 'Replacing TDS RSWF zVar SAMPS_PER_CH values with values, rounded to valid values due to setting PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_POLICY.')
+                            bicas.default_anomaly_handling(L, settingValue, settingKey, 'other', ...
+                                anomalyDescrMsg, 'BICAS:proc_sub:Assertion:DatasetFormat')
+                            L.log('warning', ...
+                                ['Replacing TDS RSWF zVar SAMPS_PER_CH values with values, rounded to valid', ...
+                                ' values due to setting PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_POLICY.'])
+                            
                             SAMPS_PER_CH_zv = SAMPS_PER_CH_rounded;
                             
                         otherwise
-                            error('BICAS:proc_sub:Assertion:ConfigurationBug', ...
-                                'Illegal value PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_POLICY=%s', actionSettingValue)
+                            bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+W+illegal', ...
+                                anomalyDescrMsg, 'BICAS:proc_sub:Assertion:DatasetFormat')
+
                     end
                 end
                 
