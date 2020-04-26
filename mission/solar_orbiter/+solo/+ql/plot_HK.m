@@ -169,7 +169,7 @@ function plot_HK(filePath)
     yPanelArray2 = cumsum([heightPanelArray2(2:end); yPanelArray1(end)], 'reverse');
     
     %config = [repmat(-1, 1, numel(ZVAR_SCALAR_LIST)+3), repmat(BIT_PANEL_HEIGHT, 1, numel(ZVAR_BIT_FLAG_LIST))]
-    %[heightPanelArray2] = erikpgjohansson.utils.autoscale(sum(heightPanelArray1), config);
+    %[heightPanelArray2] = EJ_library.utils.autoscale(sum(heightPanelArray1), config);
     
     for i = 1:numel(hAxesArray)
         position = positionCa{i};
@@ -186,7 +186,7 @@ function plot_HK(filePath)
     irf_zoom(hAxesArray, 'x', irf.tint(Epoch))    % For aligning the content of the MATLAB axes.
     
     set(hAxesArray(1:end-1), 'XLabel', [])        % Remove duplicate x labels. Empirically: Must come after irf_zoom.
-    %erikpgjohansson.graph.set_shared_dynamic_XYZAxes(hAxesArray, 'X', 'No init')    % Test
+    %EJ_library.graph.set_shared_dynamic_XYZAxes(hAxesArray, 'X', 'No init')    % Test
 end
 
 

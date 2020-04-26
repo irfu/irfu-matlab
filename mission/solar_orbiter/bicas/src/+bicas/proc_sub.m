@@ -93,7 +93,9 @@ classdef proc_sub
             ACQUISITION_TIME_EPOCH_UTC = SETTINGS.get_fv('PROCESSING.ACQUISITION_TIME_EPOCH_UTC');
             USE_ZV_ACQUISITION_TIME_HK = SETTINGS.get_fv('PROCESSING.USE_ZV_ACQUISITION_TIME.HK');
             if USE_ZV_ACQUISITION_TIME_HK
-                hkEpoch = bicas.proc_utils.ACQUISITION_TIME_to_tt2000(  InHk.Zv.ACQUISITION_TIME, ACQUISITION_TIME_EPOCH_UTC);
+                hkEpoch = bicas.proc_utils.ACQUISITION_TIME_to_tt2000(...
+                    InHk.Zv.ACQUISITION_TIME, ...
+                    ACQUISITION_TIME_EPOCH_UTC);
                 L.logf('warning', 'Using HK zVar ACQUISITION_TIME instead of Epoch.')
                 
                 % NOTE: ACQUISITION_TIME in test file

@@ -100,7 +100,7 @@
 % Source: ROC-PRO-DAT-NTT-00006-LES_Iss01_Rev02\(ROC_Data_Products\).Draft2020-04-06.pdf
 %
 %
-% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2017-02-15
 %
 classdef calib < handle
@@ -658,7 +658,8 @@ classdef calib < handle
             if obj.use_CALIBRATION_TABLE_INDEX2
                 %??? = cti2
                 %assert(, 'BICAS:calib:Assertion', 'cti2+1=%i != iLsf=%i (before overwriting)', cti2+1, iLsf)
-                error('BICAS:calib:Assertion:IllegalCodeConfiguration:OperationNotImplemented', 'TDS-CWF calibration using CALIBRATION_TABLE_INDEX2 has not been implemented yet.')
+                error('BICAS:calib:Assertion:IllegalCodeConfiguration:OperationNotImplemented', ...
+                    'TDS-CWF calibration using CALIBRATION_TABLE_INDEX2 has not been implemented yet.')
             end
             
             samplesCaAVolt = cell(size(samplesCaTm));   % Initialize empty output variable.

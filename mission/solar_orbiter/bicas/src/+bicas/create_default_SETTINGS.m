@@ -164,6 +164,15 @@ S.define_setting('INPUT_CDF.HK.MOVE_TIME_TO_SCI',              0)
 
 
 
+%####################
+% ENV_VAR_OVERRIDE.*
+%####################
+% Variables, if non-empty, are used to override the corresponding environment variables.
+S.define_setting('ENV_VAR_OVERRIDE.ROC_RCS_CAL_PATH',    '');   % ROC_RCS_CAL_PATH    defined in RCS ICD. Path to dir. with calibration files.
+S.define_setting('ENV_VAR_OVERRIDE.ROC_RCS_MASTER_PATH', '');   % ROC_RCS_MASTER_PATH defined in RCS ICD. Path to dir. with master CDF files.
+
+
+
 %########################
 % INPUT_CDF_ASSERTIONS.*
 %########################
@@ -194,6 +203,18 @@ S.define_setting('OUTPUT_CDF.OVERWRITE_POLICY',                'OVERWRITE');    
 S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.Calibration_version', ...
     '1.0; Voltages: Using combined BIAS and LFR/TDS transfer functions (freq. dependent), BIAS offsets. Currents: No data.');
 
+% S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.CAL_ENTITY_NAME.BIAS',        'BIAS team')
+% S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.CAL_ENTITY_NAME.LFR',         'LFR team')
+% S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.CAL_ENTITY_NAME.TDS',         'TDS team')
+% S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.CAL_ENTITY_AFFILIATION.BIAS', IRF_LONG_NAME)
+% S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.CAL_ENTITY_AFFILIATION.LFR',  'Laboratoire de Physique des Plasmas (LPP)')      % Should be checked.
+% S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.CAL_ENTITY_AFFILIATION.TDS',  'Institute of Atmospheric Physics AS CR (IAP)')   % Should be checked.
+% S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.CAL_EQUIPMENT.BIAS', 'BIAS')   % Abolish?
+% S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.CAL_EQUIPMENT.LFR',  'LFR')    % Abolish?
+% S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.CAL_EQUIPMENT.TDS',  'TDS')    % Abolish?
+
+
+
 % What to do with zVariables which are still empty after copying data into the master CDF.
 % This indicates that something is wrong, either in the master CDF or in the processing.
 S.define_setting('OUTPUT_CDF.EMPTY_NUMERIC_ZV_POLICY',    'WARNING');   % ERROR, WARNING, USE_FILLVAL
@@ -212,15 +233,6 @@ S.define_setting('OUTPUT_CDF.write_CDF_dataobj.strictEmptyNumericZvSizePerRecord
 % Whether the size per record of an output CDF zVar has to be in agreement with the master CDF's size per record.
 % This is useful if the master CDF has not been updated in this regard only.
 S.define_setting('OUTPUT_CDF.write_CDF_dataobj.strictNumericZvSizePerRecord',       0)
-
-
-
-%####################
-% ENV_VAR_OVERRIDE.*
-%####################
-% Variables, if non-empty, are used to override the corresponding environment variables.
-S.define_setting('ENV_VAR_OVERRIDE.ROC_RCS_CAL_PATH',    '');   % ROC_RCS_CAL_PATH    defined in RCS ICD. Path to dir. with calibration files.
-S.define_setting('ENV_VAR_OVERRIDE.ROC_RCS_MASTER_PATH', '');   % ROC_RCS_MASTER_PATH defined in RCS ICD. Path to dir. with master CDF files.
 
 
 
@@ -244,6 +256,15 @@ S.define_setting('PROCESSING.USE_ZV_ACQUISITION_TIME.HK',    0)
 S.define_setting('PROCESSING.HK_SCI_TIME_NONOVERLAP_POLICY',       'ERROR')    % WARNING, ERROR
 S.define_setting('PROCESSING.HK_TIME_NOT_SUPERSET_OF_SCI_POLICY',  'ERROR')    % WARNING, ERROR
 S.define_setting('PROCESSING.CUR_TIME_NOT_SUPERSET_OF_SCI_POLICY', 'ERROR')    % WARNING, ERROR
+
+% Quick ~BUGFIX for bad values in zv SAMPLING_RATE in L1R TDS-LFM-RSWF datasets. Remove?
+S.define_setting('PROCESSING.L1R.TDS.RSWF_ZV_SAMPLING_RATE_DATASET_BUGFIX_ENABLED', 0)
+
+% ~BUGFIX for bug in L1/L1R TDS-LFM RSWF datasets.
+% TDS has bugfixed. /2019-12-19
+% PROPOSAL: Rename.
+S.define_setting('PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_POLICY', 'ERROR')   % ERROR, WARNING, ROUND
+
 
 
 %=======================================================================================================================
@@ -332,15 +353,6 @@ S.define_setting('PROCESSING.RCT_REGEXP.TDS-LFM-RSWF', ['SOLO_CAL_RCT-TDS-LFM-RS
 S.define_setting('PROCESSING.LFR.F0_F1_F2_F3_HZ',    [24576, 4096, 256, 16]);   % 24576 = 6 * 4096
 
 
-
-% Quick ~BUGFIX for bad values in zv SAMPLING_RATE in L1R TDS-LFM-RSWF datasets. Remove?
-S.define_setting('PROCESSING.L1R.TDS.RSWF_ZV_SAMPLING_RATE_DATASET_BUGFIX_ENABLED', 0)
-
-% ~BUGFIX for bug in L1/L1R TDS-LFM RSWF datasets.
-% TDS has bugfixed. /2019-12-19
-% NOTE: "SAMPS_PER_CH" is the name of a zVariable.
-% PROPOSAL: Rename.
-S.define_setting('PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_POLICY', 'ERROR')   % ERROR, WARNING, ROUND
 
 % CALIBRATION_TABLE_INDEX2 = Second value in zVar CALIBRATION_TABLE_INDEX (in every record), that contains an index to
 % calibration data inside a given RCT.

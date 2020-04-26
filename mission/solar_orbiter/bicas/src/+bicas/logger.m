@@ -80,8 +80,8 @@ classdef logger < handle
         %                   'human-readable' : Log to stdout as is most convenient for a human reader.
         %                   'bash wrapper'   : Log to stdout as required by BICAS bash wrapper script.
         % logFileEnabled : Logical/numerical. Whether to write to log file.
-        %                  NOTE: Log messages are stored in a buffer until the log file is specified later, using
-        %                  special method.
+        %                  NOTE: Log messages are stored in a buffer until the log file is specified later, using the
+        %                  designated method.
         %
         function obj = logger(stdoutOption, logFileEnabled)
             % PROPOSAL: Separate arguments for stdout and log file behaviour
@@ -121,7 +121,7 @@ classdef logger < handle
         % 
         % RATIONALE: NOT USING CONSTRUCTOR
         % ================================
-        % It is useful to be able to specify log file after that some logging has been done.
+        % It is useful to be able to specify log file AFTER that some logging has been done.
         % 
         function obj = set_log_file(obj, logFile)
             assert(obj.logFileEnabled,     'Trying to specify log file without having enabled log file in constructor.')

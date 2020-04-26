@@ -72,6 +72,12 @@ function errorCode = main( varargin )
     %
     % PROPOSAL: Print MATLAB path (return value from path()).
     %   CON: Too many rows.
+    %
+    % PROPOSAL: Option for overriding settings via CLI argument in MATLAB using a containers.Map value.
+    %   PROBLEM: Not obvious which order of precedence makes sense. Complicated to use order among settings arguments.
+    %       PROPOSAL: Applies setting BEFORE CLI settings args.
+    %       PROPOSAL: Applies setting AFTER CLI settings args.
+    %       
     
     
     try
@@ -244,11 +250,11 @@ L.logf('info', 'Using MATLAB, version %s.\n\n', matlabVersionString);
 % RATIONALE: This is useful when one manually looks through the log file and tries to identify the beginning of a
 % particular run. The BICAS log is always amended to and may therefore contain log messages from multiple runs.
 L.logf('info', [...
-    '###########################################\n', ...
-    '###########################################\n', ...
+    '############################################\n', ...
+    '############################################\n', ...
     '#### BICAS'' MATLAB CODE STARTS RUNNING ####\n', ...
-    '###########################################\n', ...
-    '###########################################\n'])
+    '############################################\n', ...
+    '############################################\n'])
 
 
 
@@ -346,6 +352,9 @@ SETTINGS = overwrite_settings_from_strings(SETTINGS, ConfigFileSettingsVsMap, 'c
 %=========================================================
 L.log('info', 'Overriding subset of in-memory settings using (optional, inofficial) CLI arguments, if any.')
 SETTINGS = overwrite_settings_from_strings(SETTINGS, CliData.ModifiedSettingsMap, 'CLI arguments');    % Modify SETTINGS
+
+
+
 SETTINGS.make_read_only();
 % CASE: SETTINGS has now been finalized and is read-only (by assertion) after this.
 
