@@ -577,15 +577,17 @@ classdef calib < handle
             assert((1 <= iBlts) && (iBlts <= 5))
             assert(isa(BltsSrc, 'bicas.BLTS_src_dest'))
             assert((1 <= iLsf)  && (iLsf  <= 4), 'Illegal argument iLsf=%g.', iLsf)
-            assert(cti1>=1)
-            assert(cti2>=0)
+            assert(cti1 >= 1, 'Illegal cti1=%g', cti1)
+            % No assertion on cti2 unless used.
             
             
             
             if obj.use_CALIBRATION_TABLE_INDEX2
-                % ASSERTION: Remove?!!!
+                % ASSERTIONS
+                assert(cti2 >= 0, 'Illegal cti2=%g', cti2)
                 assert(iLsf == cti2+1, 'BICAS:calib:Assertion', 'cti2+1=%i != iLsf=%i (before overwriting iLsf)', cti2+1, iLsf)
                 
+                % NOTE: Only place cti2 is used.
                 iLsf = cti2 + 1;
             else
                 cti1 = 1;
