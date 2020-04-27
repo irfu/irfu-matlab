@@ -379,21 +379,20 @@ S.define_setting('PROCESSING.L1R.ZV_CALIBRATION_TABLE_INDEX_ILLEGAL_SIZE_REPLACE
 %S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.LFR.LSF_OFFSETS_TM', [-638, -610, 0, 0])
 S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.LFR.LSF_OFFSETS_TM', [0, 0, 0, 0])
 
-%=================================================================================
+%=============================================================================================================
 % Calibration constants for the "scalar" calibration mode
 % -------------------------------------------------------
 % Unit: IVPAV = Interface volt per antenna volt.
 % 
 % Calibration constants that are used instead of the corresponding BIAS transfer functions.
 % NOTE: These values do not influence the nominal, "full" calibration. They are entirely separate.
-% NOTE: The sign should preferably be consistent with the BIAS transfer functions, i.e. negative values as of
-% 2019-12-20.
-% NOTE: There are no equivalent (alternative) scalar values to replace the 
-%=================================================================================
-S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.ALPHA_IVPAV',           -1/17);
-S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.BETA_IVPAV',               -1);
-S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.GAMMA_IVPAV.HIGH_GAIN',  -100);
-S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.GAMMA_IVPAV.LOW_GAIN',     -5);
+% NOTE: The sign should preferably be consistent with the BIAS transfer functions, i.e. positive values as of
+% 2020-04-27.
+%=============================================================================================================
+S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.ALPHA_IVPAV',           1/17);
+S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.BETA_IVPAV',               1);
+S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.GAMMA_IVPAV.HIGH_GAIN',  100);
+S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.GAMMA_IVPAV.LOW_GAIN',     5);
 
 %=======================================================================================================================
 % Constants for using HK bias currents for deriving/calibrating the bias currents
