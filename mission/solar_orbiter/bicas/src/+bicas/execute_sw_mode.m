@@ -314,6 +314,18 @@ bicas.handle_struct_name_change(fnChangeList, SETTINGS, L, msgFunc, 'Dataset_ID'
 
 
 
+%=================
+% Checks on Epoch
+%=================
+if ~isfield(Zvs, 'Epoch')
+    error('BICAS:execute_sw_mode:DatasetFormat', 'Input dataset "%s" has no zVariable Epoch.', filePath)
+end
+if isempty(Zvs.Epoch)
+    error('BICAS:execute_sw_mode:DatasetFormat', 'Input dataset "%s" contains an empty zVariable Epoch.', filePath)
+end
+
+
+
 %===============================================================================================
 % Check for non-monotonically increasing Epoch values
 % ---------------------------------------------------
@@ -408,6 +420,20 @@ function write_dataset_CDF(...
 %   Function needs the dataset ID for it anyway.
 %   Function should check the master file anyway: Assert existence, GlobalAttributes (dataset ID, SkeletonVersion, ...)
 %=======================================================================================================================
+
+
+%=================
+% Checks on Epoch
+%=================
+if ~isfield(ZvsSubset, 'Epoch')
+    error('BICAS:execute_sw_mode', 'Data for output dataset "%s" has no zVariable Epoch.', outputFile)
+end
+if isempty(ZvsSubset.Epoch)
+    error('BICAS:execute_sw_mode', 'Data for output dataset "%s" contains an empty zVariable Epoch.', outputFile)
+end
+if ~issorted(ZvsSubset.Epoch, 'strictascend')
+    error('BICAS:execute_sw_mode', 'Data for output dataset "%s" contains a zVariable Epoch that does not increase monotonically.', outputFile)
+end
 
 
 
