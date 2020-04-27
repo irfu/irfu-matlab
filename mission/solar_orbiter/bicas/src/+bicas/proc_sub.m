@@ -140,6 +140,9 @@ classdef proc_sub
             %===================
             % WARNINGS / ERRORS
             %===================
+            if ~issorted(hkEpoch, 'strictascend')
+                error('HK timestamps do not increase monotonically (USE_ZV_ACQUISITION_TIME_HK=%g).', USE_ZV_ACQUISITION_TIME_HK)
+            end
             if ~EJ_library.utils.is_range_subset(InSci.Zv.Epoch, hkEpoch)
                 hk1RelativeSec = 1e-9 * (min(hkEpoch) - min(InSci.Zv.Epoch));
                 hk2RelativeSec = 1e-9 * (max(hkEpoch) - max(InSci.Zv.Epoch));
@@ -257,7 +260,19 @@ classdef proc_sub
 
             end
             
-            % NOTE: bicas.proc_sub.interpolate_current checks Epoch.
+            
+            % CDF ASSERTION: Epoch increases (not monotonically)
+            % --------------------------------------------------
+            % NOTE: bicas.proc_sub.interpolate_current checks (and handles) that Epoch increases monotonically, but only
+            % for each antenna separately (which does not capture all cases).
+            % Ex: Timestamps, iAntenna = mod(iRecord,3): 1,2,3,5,4,6
+            %       ==> Monotonically increasing sequences for each antenna separately, but not even increasing when
+            %           combined.
+            if ~issorted(InCur.Zv.Epoch)
+                error('CURRENT timestamps do not increase (all antennas combined).')
+            end
+            
+            % NOTE: bicas.proc_sub.interpolate_current checks that Epoch increases monotonically.
             currentMicroSAmpere = [];
             currentMicroSAmpere(:,1) = bicas.proc_sub.interpolate_current(InCur.Zv.Epoch, InCur.Zv.IBIAS_1, sciEpoch, L, SETTINGS);
             currentMicroSAmpere(:,2) = bicas.proc_sub.interpolate_current(InCur.Zv.Epoch, InCur.Zv.IBIAS_2, sciEpoch, L, SETTINGS);
@@ -277,6 +292,7 @@ classdef proc_sub
             curZv_IBIAS_x = curZv_IBIAS_x(bKeep);
             
             %======================================================================================================
+            % CDF ASSERTION
             % Handle non-monotonically increasing Epoch
             % -----------------------------------------
             % NOTE: This handling is driven by
@@ -343,8 +359,18 @@ classdef proc_sub
 
             nRecords = size(InSci.Zv.Epoch, 1);            
             C = EJ_library.so.classify_DATASET_ID(inSciDsi);
-           
-            %===========================================================================
+            
+            
+            
+            % CDF ASSERTION
+            if ~issorted(InSci.Zv.Epoch, 'strictascend')
+                error('Voltage timestamps do not increase (all antennas combined).')
+            end
+            
+            %=================
+            % Normalize zVars
+            %=================
+            %---------------------------------------------------------------------------
             % Workaround: Normalize LFR data to handle variations that should not exist
             %===========================================================================
             % Handle that SYNCHRO_FLAG (empty) and TIME_SYNCHRO_FLAG (non-empty) may both be present.
@@ -495,6 +521,14 @@ classdef proc_sub
 
             C = EJ_library.so.classify_DATASET_ID(inSciDsi);
 
+            % CDF ASSERTION
+            if ~issorted(InSci.Zv.Epoch, 'strictascend')
+                error('Voltage timestamps do not increase (all antennas combined).')
+            end
+            
+            %===============================================================================================
+            % Normalize zVar names
+            % --------------------
             % Both zVars TIME_SYNCHRO_FLAG, SYNCHRO_FLAG found in input datasets (2020-01-05). Unknown why.
             % "DEFINITION BUG" in definition of datasets/skeleton?
             % 2020-01-21: Based on skeletons (.skt; L1R, L2), SYNCHRO_FLAG seems to be the correct one.
@@ -509,6 +543,11 @@ classdef proc_sub
             nRecords             = size(InSci.Zv.Epoch, 1);
             nCdfSamplesPerRecord = size(InSci.Zv.WAVEFORM_DATA, 3);    % Number of samples in the zVariable, not necessarily actual data.
 
+            % CDF ASSERTION
+            if ~issorted(InSci.Zv.Epoch, 'strictascend')
+                error('Voltage timestamps do not increase (all antennas combined).')
+            end            
+            
             freqHz = double(InSci.Zv.SAMPLING_RATE);
             [settingValue, settingKey] = SETTINGS.get_fv('PROCESSING.L1R.TDS.RSWF_ZV_SAMPLING_RATE_DATASET_BUGFIX_ENABLED');
             if C.isL1R && C.isTdsRswf && settingValue
