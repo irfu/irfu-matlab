@@ -346,7 +346,7 @@ if ~issorted(Zvs.Epoch)   % Check for increasing values, but NOT monotonically i
 %             end
             
         otherwise
-            bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+W-illegal', ...
+            bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+W+illegal', ...
                 anomalyDescrMsg, 'BICAS:execute_sw_mode:DatasetFormat')
     end
 end
@@ -492,9 +492,11 @@ for fn = fieldnames(DataObj.data)'
     zvName = fn{1};
     
     if isempty(DataObj.data.(zvName).data)
-        % CASE: zVariable has zero records, indicating that should have been set using PDV field.
+        %===========================================================================================
+        % CASE: zVariable has zero records, indicating that it should have been set using PDV field
+        %===========================================================================================
         
-        logMsg = sprintf(['Master CDF contains zVariable "%s" which has not been set (i.e. it has zero records) after adding ', ...
+        anomalyDescrMsg = sprintf(['Master CDF contains zVariable "%s" which has not been set (i.e. it has zero records) after adding ', ...
             'processing data. This should only happen for incomplete processing.'], ...
             zvName);
         
@@ -502,15 +504,11 @@ for fn = fieldnames(DataObj.data)'
         isNumericZVar = isnumeric(cast(0.000, matlabClass));
 
         if isNumericZVar
+            %====================
             % CASE: Numeric zVar
+            %====================
             [settingValue, settingKey] = SETTINGS.get_fv('OUTPUT_CDF.EMPTY_NUMERIC_ZV_POLICY');
             switch(settingValue)
-                case 'ERROR'
-                    error('BICAS:execute_sw_mode:SWModeProcessing', logMsg)
-                    
-                case 'WARNING'
-                    L.log('warning', logMsg)
-                    
                 case 'USE_FILLVAL'
                     %========================================================
                     % Create correctly-sized zVariable data with fill values
@@ -525,34 +523,28 @@ for fn = fieldnames(DataObj.data)'
                     
                     nEpochRecords = size(ZvsSubset.Epoch, 1);
                     [fillValue, ~] = get_fill_pad_values(DataObj, zvName);
-                    zVariableSize = [nEpochRecords, DataObj.data.(fn{1}).dim];
-                    zvValue = cast(zeros(zVariableSize), matlabClass);
+                    zvSize  = [nEpochRecords, DataObj.data.(fn{1}).dim];
+                    zvValue = cast(zeros(zvSize), matlabClass);
                     zvValue = EJ_library.utils.replace_value(zvValue, 0, fillValue);
                     
                     DataObj.data.(zvName).data = zvValue;
 
                 otherwise
-                    error('Illegal settings value: "%s" = "%s"', settingKey, settingValue)
+                    bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+W+illegal', anomalyDescrMsg, ...
+                        'BICAS:execute_sw_mode:SWModeProcessing:DatasetFormat')
             end
+            
         else
+            %========================
             % CASE: Non-numeric zVar
-            [settingValue, settingKey] = SETTINGS.get_fv('OUTPUT_CDF.EMPTY_NONNUMERIC_ZV_POLICY');            
-            switch(settingValue)
-                case 'WARNING'
-                    L.logf('warning', ...
-                        'Ignoring empty non-numeric master CDF zVariable "%s" due to setting "%s" = "%s".', ...
-                        zvName, settingKey, settingValue)
-                case 'ERROR'
-                    error('BICAS:execute_sw_mode:DatasetFormat', 'Error for empty non-numeric master CDF zVariable "%s" due to setting "%s" = "%s".', ...
-                        zvName, settingKey, settingValue)
-                otherwise
-                    error('BICAS:execute_sw_mode:ConfigurationBug', 'Illegal settings value: "%s" = "%s"', settingKey, settingValue)
-            end
+            %========================
+            [settingValue, settingKey] = SETTINGS.get_fv('OUTPUT_CDF.EMPTY_NONNUMERIC_ZV_POLICY');
+            bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+W+illegal', anomalyDescrMsg, ...
+                'BICAS:execute_sw_mode:SWModeProcessing:DatasetFormat')
         end
     end
 end
 
-settingOverwritePolicy   = SETTINGS.get_fv('OUTPUT_CDF.OVERWRITE_POLICY');
 settingWriteFileDisabled = SETTINGS.get_fv('OUTPUT_CDF.WRITE_FILE_DISABLED');
 
 
@@ -573,21 +565,12 @@ end
 
 % Behaviour w.r.t. output file path collision with pre-existing file.
 if exist(outputFile, 'file')    % Checks for file and directory.
-    switch(settingOverwritePolicy)
-        case 'ERROR'
-            % UI ASSERTION
-            error('BICAS:execute_sw_mode:SWModeProcessing', ...
-                'Intended output dataset file path "%s" matches a pre-existing file. Setting OUTPUT_CDF.OVERWRITE_POLICY is set to prohibit overwriting.', ...
-                outputFile)
-            
-        case 'OVERWRITE'
-            L.logf('warning', ...
-                'Intended output dataset file path "%s"\nmatches a pre-existing file. Setting OUTPUT_CDF.OVERWRITE_POLICY is set to permit overwriting.\n', ...
-                outputFile)
-            
-        otherwise
-            error('BICAS:execute_sw_mode:ConfigurationBug', 'Illegal setting value OUTPUT_CDF.OVERWRITE_POLICY="%s".', settingOverwritePolicy)
-    end
+    [settingValue, settingKey] = SETTINGS.get_fv('OUTPUT_CDF.PREEXISTING_OUTPUT_FILE_POLICY');
+    
+    anomalyDescrMsg = sprintf('Intended output dataset file path "%s" matches a pre-existing file.', outputFile);
+    bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+W+illegal', ...
+        anomalyDescrMsg, 'BICAS:execute_sw_mode')
+    
 end
 
 %===========================================

@@ -28,23 +28,13 @@ function handle_struct_name_change(fnChangeList, SETTINGS, L, msgFunc, varargin)
         
         [~, i] = ismember(newFn, {fnChangeList(:).newFieldname});   % NOTE: i==0 <==> no match.
         if i > 0
-            settingZvNameChangePolicy = SETTINGS.get_fv(settingKey);
-            msg = msgFunc(fnChangeList(i).oldFieldname, fnChangeList(i).newFieldname);
+            [settingValue, settingKey] = SETTINGS.get_fv(settingKey);
+            anomalyDescrMsg = anomalyDescrMsgFunc(fnChangeList(i).oldFieldname, fnChangeList(i).newFieldname);
+            
             assert(isempty(fnChangeList(i).ignoredCandidateFieldnames), ...
                 'Function not designed for handling non-empty .ignoredCandidateFieldnames.')
             
-            switch(settingZvNameChangePolicy)
-                case 'PERMIT'
-                    % Do nothing
-                case 'WARNING'
-                    L.log('warning', msg)
-                    warning(msg)
-                case 'ERROR'
-                    error('BICAS:Assertion', msg)
-                otherwise
-                    error('BICAS:proc_sub:Assertion', 'Illegal setting for %s="%s"', ...
-                        settingKey, settingZvNameChangePolicy)
-            end
+            bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+W+illegal', anomalyDescrMsg, 'BICAS:Assertion')
         end
     end
     

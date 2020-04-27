@@ -134,9 +134,9 @@ S.define_setting('SWD.environment.executable',     'roc/bicas');   % Relative pa
 S.define_setting('INPUT_CDF.LFR.HAVING_SYNCHRO_FLAG_AND_TIME_SYNCHRO_FLAG_WORKAROUND', 1)
 
 % NOTE: See INPUT_CDF.LFR.HAVING_SYNCHRO_FLAG_AND_TIME_SYNCHRO_FLAG_WORKAROUND
-S.define_setting('INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY',     'WARNING')    % PERMIT, WARNING, ERROR
+S.define_setting('INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY',     'WARNING')    % WARNING, ERROR
 
-S.define_setting('INPUT_CDF.USING_GA_NAME_VARIANT_POLICY',     'WARNING')    % PERMIT, WARNING, ERROR
+S.define_setting('INPUT_CDF.USING_GA_NAME_VARIANT_POLICY',     'WARNING')    % WARNING, ERROR
 
 % NOTE: This modification applies BEFORE PROCESSING.USE_ZV_ACQUISITION_TIME.HK and therefore always applies to zVar
 % Epoch.
@@ -194,7 +194,7 @@ S.define_setting('INPUT_CDF_ASSERTIONS.STRICT_DATASET_ID', 0);
 S.define_setting('OUTPUT_CDF.WRITE_FILE_DISABLED',             0)
 % What BICAS should do when there is a pre-existing file on a output dataset file path.
 % NOTE: Not known if the RCS ICD says anything about what should be the default, or what ROC thinks it should be.
-S.define_setting('OUTPUT_CDF.OVERWRITE_POLICY',                'OVERWRITE');    % ERROR, OVERWRITE.
+S.define_setting('OUTPUT_CDF.PREEXISTING_OUTPUT_FILE_POLICY',                'WARNING');    % ERROR, WARNING.
 
 
 

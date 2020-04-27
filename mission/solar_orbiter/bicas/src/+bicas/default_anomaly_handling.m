@@ -81,6 +81,7 @@ function default_anomaly_handling(L, settingValue, settingKey, casesHandled, ano
         case 'WARNING'
             if handleWarning
                 L.log('warning', anomalyDescriptionMsg)
+                L.log('warning', 'Ignoring anomaly (at least in this part of the code).')
                 L.log('warning', setting2Msg)
             else
                 handle_illegal_settingValue()

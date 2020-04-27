@@ -1091,11 +1091,11 @@ classdef proc_sub
         % inSciDsi : Input SCI DATASET_ID which contains the zVariable.
         %
         function handle_zv_name_change(fnChangeList, inSciDsi, SETTINGS, L, varargin)
-            msgFunc = @(oldFieldname, newFieldname) (sprintf(...
+            anomalyDescrMsgFunc = @(oldFieldname, newFieldname) (sprintf(...
                 'Input dataset DATASET_ID=%s uses an alternative but illegal(?) zVariable name "%s" instead of "%s".', ...
                 inSciDsi, oldFieldname, newFieldname));
             
-            bicas.handle_struct_name_change(fnChangeList, SETTINGS, L, msgFunc, varargin{:})
+            bicas.handle_struct_name_change(fnChangeList, SETTINGS, L, anomalyDescrMsgFunc, varargin{:})
         end
 
 
