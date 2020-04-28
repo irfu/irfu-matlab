@@ -1,6 +1,6 @@
-% Find time intervals when Cluster and THEMIS are satisfying MAARBLE 
-% requirements. The general datasets will include all the data for 
-% 3 RE< R <10 RE 
+% Find time intervals when Cluster and THEMIS are satisfying MAARBLE
+% requirements. The general datasets will include all the data for
+% 3 RE< R <10 RE
 % magnetic latitudes limited to 60 deg (to avoid the auroral zone).
 
 % This software was developed as part of the MAARBLE (Monitoring,
@@ -31,9 +31,9 @@ c_eval('clear R?;');
 
 %load /data/caa/CAA/matMlat
 disp('Finding when Cluster satisfies MAARBLE conditions');
-tStep=median(diff(RRE1(:,1))); %#ok<NASGU> % time step 
-minR=3; %#ok<NASGU> % minimum distance from Earth 
-maxR=10; %#ok<NASGU>  % minimum distance from Earth 
+tStep=median(diff(RRE1(:,1))); %#ok<NASGU> % time step
+minR=3; %#ok<NASGU> % minimum distance from Earth
+maxR=10; %#ok<NASGU>  % minimum distance from Earth
 maxMlat=60; % maximum magnetic latitude
 
 % maarble definition
@@ -49,9 +49,9 @@ c_eval(['tt_C?_in_' ttLabel '.Header={''' ttTitle '''};']);
 c_eval(['tt_C?_in_' ttLabel '.TimeInterval=[RRE?(indstart?,1)-tStep/2 RRE?(indend?,1)+tStep/2];'])
 c_eval(['disp(''Created time table: tt_C?_in_' ttLabel ''');']);
 c_eval(['tt_C?_in_' ttLabel '=remove(tt_C?_in_' ttLabel ',find(diff(tt_C?_in_' ttLabel '.TimeInterval,1,2)<10*60));']);
-y=irf_ask('Shall I save the time tables to IRF yes/no? [%]','y','no');  
+y=irf_ask('Shall I save the time tables to IRF yes/no? [%]','y','no');
 if strcmp(y,'yes')
-	c_eval(['irf.tt(tt_C?_in_' ttLabel ',''write_IRF'',''C?_in_' ttLabel ''');'])
+  c_eval(['irf.tt(tt_C?_in_' ttLabel ',''write_IRF'',''C?_in_' ttLabel ''');'])
 end
 
 %% THEMIS
@@ -69,8 +69,8 @@ c_eval('RRE?=irf_tappl(Rth?(:,[1 5]),''*Units.km/Units.RE'');','abcde');
 
 disp('Finding when THEMIS satisfies MAARBLE conditions');
 tStep=median(diff(RREa(:,1))); % time step
-minR=3;  % minimum distance from Earth 
-maxR=10;  % minimum distance from Earth 
+minR=3;  % minimum distance from Earth
+maxR=10;  % minimum distance from Earth
 
 % maarble definition
 ttLabel='MAARBLE';
@@ -85,7 +85,7 @@ c_eval(['tt_th?_in_' ttLabel '.Header={''' ttTitle '''};'],'abcde');
 c_eval(['tt_th?_in_' ttLabel '.TimeInterval=[RRE?(indstart?,1)-tStep/2 RRE?(indend?,1)+tStep/2];'],'abcde')
 c_eval(['disp(''Created time table: tt_th?_in_' ttLabel ''');'],'abcde');
 c_eval(['tt_th?_in_' ttLabel '=remove(tt_th?_in_' ttLabel ',find(diff(tt_th?_in_' ttLabel '.TimeInterval,1,2)<10*60));'],'abcde');
-y=irf_ask('Shall I save the time tables to IRF yes/no? [%]','y','no');  
+y=irf_ask('Shall I save the time tables to IRF yes/no? [%]','y','no');
 if strcmp(y,'yes')
-	c_eval(['irf.tt(tt_th?_in_' ttLabel ',''write_IRF'',''th?_in_' ttLabel ''');'],'abcde')
+  c_eval(['irf.tt(tt_th?_in_' ttLabel ',''write_IRF'',''th?_in_' ttLabel ''');'],'abcde')
 end

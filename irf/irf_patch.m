@@ -16,7 +16,7 @@ function hp_out = irf_patch(varargin)
 %     hp = irf_patch({tsScalar2,tsScalar1}); hold on;
 %     hl = irf_plot(tsScalar0); hold off;
 %
-%   % Example 2:     
+%   % Example 2:
 %     divider = 0.1;
 %     hp = irf_patch({tsScalar0,divider});
 %
@@ -36,7 +36,7 @@ function hp_out = irf_patch(varargin)
 %     hp = irf_patch({tsScalar1,tsScalar3},'smaller'); hold on;
 %     hl = irf_plot(tsScalar1); hl.Color = [0 0 0];
 %     hl = irf_plot(tsScalar3); hl.Color = [0 0 0]; hold off;
-%     
+%
 %   Example 6:
 %     irf_patch(tsScalarMat);
 %     labels = arrayfun(@(x,y) {[num2str(x) ' > n > ' num2str(y)]}, edgesRand(1:1:end-1),edgesRand(2:1:end));
@@ -82,9 +82,9 @@ if iscell(args{1})
       patch2.data(indT,:) = patch1.data(indT,:);
     case 'smaller'
       indT = find(patch1.data>patch2.data);
-      patch2.data(indT) = patch1.data(indT,:);      
+      patch2.data(indT) = patch1.data(indT,:);
   end
-  %dtStart = 
+  %dtStart =
   tPatch1 = patch1.time-patch1.time.start;
   tPatch2 = patch2.time-patch2.time.start;
   
@@ -97,23 +97,23 @@ if iscell(args{1})
   for iComp = 1:size(patch1.data,2)
     xPatch = [tPatch1; NaN; tPatch2(end:-1:1)];
     yPatch = [patch1.data(:,iComp); NaN; patch2.data(end:-1:1,iComp)];
-
+    
     isNan = isnan(yPatch);
     xPatch(isNan) = [];
     yPatch(isNan) = [];
-  
+    
     hp = patch(xPatch,yPatch,'k','Parent', ax);
     hp.FaceAlpha = 0.2;
     hp.EdgeColor = hl(iComp).Color;
     hp.FaceColor = hl(iComp).Color;
     hp_out(iComp) = hp;
   end
-
+  
 elseif isa(args{1},'TSeries')
   tsData = args{1};
   tmpData = tsData.data;
   tsData = irf.ts_scalar(tsData.time,[zeros(tsData.length,1) tmpData]); % add zero level
-  nDim2 = size(tsData.data,2);  
+  nDim2 = size(tsData.data,2);
   cmap = colormap('jet'); cmap = flipdim(cmap(fix(linspace(1,64,nDim2-1)),:),1);
   tPatch = tsData.time-tsData.time.start;
   
@@ -124,15 +124,15 @@ elseif isa(args{1},'TSeries')
   aa = irf_plot(ax,irf.ts_scalar(tsData.time,maxData*1.1),'w'); aa.Visible = 'off';
   aa = irf_plot(ax,irf.ts_scalar(tsData.time,maxData*0),'w');  aa.Visible = 'off';
   % plot patches
-  for iP = 1:nDim2-1      
+  for iP = 1:nDim2-1
     xPatch = [tPatch; NaN; tPatch(end:-1:1)];
     yPatch = [tsData.data(:,iP); NaN; tsData.data(end:-1:1,iP+1)];
-
+    
     
     isNan = isnan(yPatch);
     xPatch(isNan) = [];
     yPatch(isNan) = [];
-
+    
     hp = patch(xPatch,yPatch,'k','Parent', ax);
     hp.FaceAlpha = 0.9;
     hp.EdgeColor = 'none';

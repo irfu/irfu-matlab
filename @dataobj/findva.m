@@ -18,19 +18,19 @@ res = '';
 
 nvars = size(dobj.vars,1);
 if nvars>0
-	for v=1:nvars
-		if strcmpi(dobj.vars{v,1},var_s) || strcmpi(dobj.vars{v,2},var_s)
-			if isfield( dobj.VariableAttributes ,field)
-				for vv=1:size( dobj.VariableAttributes.(field) ,1)
-					if strcmp( dobj.VariableAttributes.(field){vv,1} , dobj.vars{v,2})
-						res = dobj.VariableAttributes.(field){vv,2};
-						return
-					end
-				end
-			end
-			return
-		end
-	end
+  for v=1:nvars
+    if strcmpi(dobj.vars{v,1},var_s) || strcmpi(dobj.vars{v,2},var_s)
+      if isfield( dobj.VariableAttributes ,field)
+        for vv=1:size( dobj.VariableAttributes.(field) ,1)
+          if strcmp( dobj.VariableAttributes.(field){vv,1} , dobj.vars{v,2})
+            res = dobj.VariableAttributes.(field){vv,2};
+            return
+          end
+        end
+      end
+      return
+    end
+  end
 end
 
 error(['No such variable : ' var_s])

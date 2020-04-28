@@ -32,8 +32,8 @@ xBS=R0:-0.1:-50;
 yBS=sqrt(0.04*(xBS-R0).^2-45.3*(xBS-R0)); % original F/G model adds rstandoff^2=645
 
 switch lower(boundary)
-    case 'bs'; x=xBS; y=yBS;
-    case 'mp'; x=xMP; y=yMP;
+  case 'bs'; x=xBS; y=yBS;
+  case 'mp'; x=xMP; y=yMP;
 end
 
 x = [x x];

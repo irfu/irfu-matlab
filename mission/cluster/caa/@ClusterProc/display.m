@@ -6,5 +6,5 @@ function display(O)
 % Copyright 2004 Yuri Khotyaintsev
 
 stg = sprintf(...
-'ClusterProc:\nsp-> %s', O.sp);
+  'ClusterProc:\nsp-> %s', O.sp);
 disp(stg)

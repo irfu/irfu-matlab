@@ -1,6 +1,6 @@
 function [h]=buchert_2007_fig2(tint,Vmp,L,Nsign,flagEdotB)
 % function [h]=buchert_2007_fig2(tint,Vmp,L,Nsign,flagEdotB);
-% 
+%
 % based on p1052.m
 %
 % Magnetic field in LMN
@@ -9,15 +9,15 @@ function [h]=buchert_2007_fig2(tint,Vmp,L,Nsign,flagEdotB)
 % satellite potential
 % current from single s/c method
 %
-% Vmp - magnetopause velocity, N=norm(Vmp) 
-% L - L vector 
+% Vmp - magnetopause velocity, N=norm(Vmp)
+% L - L vector
 % Nsign - 1 if N in the direction of Vmp, -1 if N in the direction opposite to Vmp (e.g., N shall always point from MSph to Msh)
 % flagEdotB - 1 if use E.B=o assumption for the 3rd component
 %
 % Usage: buchert_2007_fig2
 % complicated untested alternative: [blnm]=buchert_2007_fig2(toepoch([2002 03 30 13 11 42])+[0 8],31.4* [ -0.94 -0.21 -0.25],[0 0 1],-1,0);
 
-persistent Vmp_str L_str tint_str ib ic 
+persistent Vmp_str L_str tint_str ib ic
 
 c_load('B?');
 c_load('diB?');
@@ -27,21 +27,21 @@ c_load('P?');
 c_load('NVps?');
 %load mP P1 P2 P3 P4 NVps1 NVps2 NVps3 NVps4;
 
-if nargin <1 
+if nargin <1
   help buchert_2007_fig2;
   tint_str=irf_ask('Time interval [%]>','tint_str','toepoch([2002 03 04 09 48 34])+[0 6]');
   tint=eval(tint_str);
 end
 if nargin <2
-   Vmp_str=irf_ask('Magnetopause velocty Vmp (N=Nsign*norm(Vmp)) [%]>','Vmp_str','-90.3 -38.7 13.9');
-   Vmp=eval(['[' Vmp_str ']']);
+  Vmp_str=irf_ask('Magnetopause velocty Vmp (N=Nsign*norm(Vmp)) [%]>','Vmp_str','-90.3 -38.7 13.9');
+  Vmp=eval(['[' Vmp_str ']']);
 end
 if nargin <3
-   L_str=irf_ask('Input L vector, (M=NxL,L=MxN) [%]>','L_str','0.13 0.06 0.99');
-   L=eval(['[' L_str ']']);
+  L_str=irf_ask('Input L vector, (M=NxL,L=MxN) [%]>','L_str','0.13 0.06 0.99');
+  L=eval(['[' L_str ']']);
 end
 if nargin <4
-   Nsign=irf_ask('Input Nsign [%]>','Nsign',1);
+  Nsign=irf_ask('Input Nsign [%]>','Nsign',1);
 end
 
 N=Nsign*Vmp;
@@ -58,7 +58,7 @@ c_eval('diB?=irf_tlim(diB?,tint_data);');
 c_eval('dvE?=irf_tlim(diE?p1234,tint_data);');
 c_eval('NVps?=irf_tlim(NVps?,tint_data);');
 
-if flag_EdotB==1 
+if flag_EdotB==1
   c_eval('[dvE?,d?]=irf_edb(dvE?,diB?,10);');
 end
 
@@ -66,14 +66,14 @@ end
 % offs=0.5*[1 1 1 1];coef=1.5* [1 1 1 1];
 %c_eval('dvE?(:,2)=dvE?(:,2)+offs(?);dvE?(:,2:end)=dvE?(:,2:end)*coef(?);');
 
-c_eval('dEvxb?=irf_tappl(irf_cross(irf_resamp(diB?,dvE?),c_gse2dsc([dvE?(1,1) Vmp],?,2)),''*1e-3*(-1)'');'); 
-c_eval('dvE?=irf_add(1,dvE?,1,dEvxb?);'); 
+c_eval('dEvxb?=irf_tappl(irf_cross(irf_resamp(diB?,dvE?),c_gse2dsc([dvE?(1,1) Vmp],?,2)),''*1e-3*(-1)'');');
+c_eval('dvE?=irf_add(1,dvE?,1,dEvxb?);');
 
 c_eval('dNsp?=c_gse2dsc([B?(1,1) N],?,2);dNsp?(1,4)=0;dNsp?=irf_norm(dNsp?);dMsp?=irf_cross([dNsp?(1,1) 0 0 -1],dNsp?);');  % the direction in spin plane closest to the magnetopause normal
 c_eval('dN?=c_gse2dsc([B?(1,1) N],?,2);dN?=irf_norm(dN?);');
-c_eval('dM?=c_gse2dsc([B?(1,1) M],?,2);dM?=irf_norm(dM?);'); 
+c_eval('dM?=c_gse2dsc([B?(1,1) M],?,2);dM?=irf_norm(dM?);');
 c_eval('dEn?=irf_dot(dvE?,dNsp?);dEm?=irf_dot(dvE?,dMsp?);');  % the direction in spin plane closest to the magnetopause normal
-if flag_EdotB==1 
+if flag_EdotB==1
   c_eval('dEn?=irf_dot(dvE?,dN?);dEm?=irf_dot(dvE?,dM?);');
 end
 
@@ -98,27 +98,27 @@ c_eval('egradn3d=irf_vec_x_scal(irf_tappl(irf_norm(vn),''*(-1)''),egradn);',ic);
 
 figure;
 h=irf_plot({Blnm1,Blnm1,Blnm2,Blnm3});
-  
+
 axes(h(1));cla
-  ht=irf_pl_info([mfilename '  ' datestr(now) ...
-    ' Vmp=' num2str(irf_abs(Vmp,1)) ' [' num2str(Vmp(1:3),' %6.2f') ']km/s,' ...
-    ' dt=[' num2str(dt,' %6.2f') ']s,' ...
-    ' L=[' num2str(L,' %6.2f') '], N=[' num2str(N,' %6.2f') '].'],gca,[0,1 ]); 
-  leg_coord=[.2,.6];font_size=13;cluster_labels={'C1 ','C2 ','C3 ','C4 '};cluster_colors='krgb';
+ht=irf_pl_info([mfilename '  ' datestr(now) ...
+  ' Vmp=' num2str(irf_abs(Vmp,1)) ' [' num2str(Vmp(1:3),' %6.2f') ']km/s,' ...
+  ' dt=[' num2str(dt,' %6.2f') ']s,' ...
+  ' L=[' num2str(L,' %6.2f') '], N=[' num2str(N,' %6.2f') '].'],gca,[0,1 ]);
+leg_coord=[.2,.6];font_size=13;cluster_labels={'C1 ','C2 ','C3 ','C4 '};cluster_colors='krgb';
 
-  axes(h(2));
-  c_eval('irf_plot(Blnm?(:,[1 5])); ylabel(''B [nT] sc?''); ',ic);
+axes(h(2));
+c_eval('irf_plot(Blnm?(:,[1 5])); ylabel(''B [nT] sc?''); ',ic);
 
-  axes(h(3));
-  if strcmp(ib,'y')
-     c_eval('irf_plot({dEn?,dejbn?,egradn,egradn_burst},''comp''); ylabel(''E,jxB/ne,\nabla p/ne [mV/m] sc?'');',ic);
-  else
-    c_eval('irf_plot({dEn?,dejbn?,egradn},''comp''); ylabel(''E,jxB/ne,\nabla p/ne [mV/m] sc?'');',ic);
-  end
-  irf_zoom([-12 7],'y')
-  
-  axes(h(4));
-    c_eval('irf_plot([irf_tappl(jz?,''*1e6'') irf_abs(j?,1).*1e6]);ylabel(''|j|,jz [\mu A/m2] sc?'');',ic);
+axes(h(3));
+if strcmp(ib,'y')
+  c_eval('irf_plot({dEn?,dejbn?,egradn,egradn_burst},''comp''); ylabel(''E,jxB/ne,\nabla p/ne [mV/m] sc?'');',ic);
+else
+  c_eval('irf_plot({dEn?,dejbn?,egradn},''comp''); ylabel(''E,jxB/ne,\nabla p/ne [mV/m] sc?'');',ic);
+end
+irf_zoom([-12 7],'y')
+
+axes(h(4));
+c_eval('irf_plot([irf_tappl(jz?,''*1e6'') irf_abs(j?,1).*1e6]);ylabel(''|j|,jz [\mu A/m2] sc?'');',ic);
 
 axis(h,'tight');
 irf_zoom(tint,'x',h);

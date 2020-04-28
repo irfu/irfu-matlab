@@ -18,7 +18,7 @@ function Nulls=c_4_null(R1,R2,R3,R4,B1,B2,B3,B4,varargin)
 %
 %     ['strong',currentLim] - returns nulls corresponding with a current
 %     larger than currentLim. Default option is all located nulls are returned.
-%                 
+%
 %     ['threshold',thresholdValue] - returned are only nulls satisfying
 %                 |divB/max(all eigenvalues of gradB)| < thresholdValue.
 %                 thresholdValue is given in units of percentage.If
@@ -76,8 +76,8 @@ function Nulls=c_4_null(R1,R2,R3,R4,B1,B2,B3,B4,varargin)
 %
 %   c_4_null(R1,R2,R3,R4,B1,B2,B3,B4,'threshold',thresholdValue) - Tries to
 %   locate nulls and returns the output for all nulls found where the
-%   threshold is set to thresholdValue. thresholdValue needs to be given in %. 
-%   boxLimValue is no box. 
+%   threshold is set to thresholdValue. thresholdValue needs to be given in %.
+%   boxLimValue is no box.
 %
 %   c_4_null(R1,R2,R3,R4,B1,B2,B3,B4,'boxLim',boxLimValue) - Tries to
 %   locate nulls and returns the output for all nulls found where the
@@ -104,104 +104,104 @@ idR = {R1,R2,R3,R4};
 idB = {B1,B2,B3,B4};
 
 if isa(B1,'TSeries') || isa(R1,'TSeries')
-    for i=1:4
-        if isa(idR{i},'TSeries')
-            idR{i} = [idR{i}.time.epochUnix double(idR{i}.data)];
-            
-        end
-        if isa(idB{i},'TSeries')
-            idB{i} =  [idB{i}.time.epochUnix double(idB{i}.data)];
-        end
+  for i=1:4
+    if isa(idR{i},'TSeries')
+      idR{i} = [idR{i}.time.epochUnix double(idR{i}.data)];
+      
     end
+    if isa(idB{i},'TSeries')
+      idB{i} =  [idB{i}.time.epochUnix double(idB{i}.data)];
+    end
+  end
 end
 
 %% Check variables
 
 nCol=size(idB{1,1},2);
 if nCol<4
-    error('You need the time vector for each input [t x y z] in either Tseries or in vector format')
+  error('You need the time vector for each input [t x y z] in either Tseries or in vector format')
 end
 if nargin == 0
-    help c_4_null;
-    return;
+  help c_4_null;
+  return;
 elseif nargin < 8
-    error('Too few input values. See usage: help c_4_null')
+  error('Too few input values. See usage: help c_4_null')
 elseif nargin > 14
-    error('Too many input values. See usage: help c_4_null')
+  error('Too many input values. See usage: help c_4_null')
 end
 if isempty(varargin)
-    % Gives Default values
-    toSaveSpecial=false;
-    threshold = 40;
-    noBox=true;
-    %Check if first variable is one of the argument strings otherwise give
-    %error.
+  % Gives Default values
+  toSaveSpecial=false;
+  threshold = 40;
+  noBox=true;
+  %Check if first variable is one of the argument strings otherwise give
+  %error.
 elseif ~strcmp(varargin{1},'strong') && ~strcmp(varargin{1},'threshold') && ~strcmp(varargin{1},'boxLim')
-    error('Unapproved arguments given. See usage: help c_4_null')
+  error('Unapproved arguments given. See usage: help c_4_null')
 else
-    % Gives Default values that can be changed
-    toSaveSpecial=false;
-    threshold = 40;
-    noBox=true;
- % Check values given in varargin 
- % All arguments need to include a string+value so if the amount of vargin
- % isn't even then give error
-    if length(varargin)==1
-        error('Unapproved combination of arguments. See usage: help c_4_null')
-        
-    elseif length(varargin)==3
-        error('Unapproved combination of arguments. See usage: help c_4_null')
-    elseif length(varargin)==5
-        error('Unapproved combination of arguments. See usage: help c_4_null')
-    else
- % Time to check the combination of elements and change the default values for the given ones.       
-        for i=1:length(varargin)
-            if i+1>length(varargin)
-                break;
-            else
-                %Case 'strong'
-                if strcmp(varargin(i),'strong')
-                    if isnumeric(cell2mat(varargin(i+1)))
-                        currentLim=cell2mat(varargin(i+1));
-                        toSaveSpecial=true;
-                    else
-                        error('Unapproved combination of arguments. See usage: help c_4_null')
-                    end
-                    %Case 'threshold'
-                elseif strcmp(varargin(i),'threshold')
-                    
-                    if isnumeric(cell2mat(varargin(i+1)))
-                        threshold=cell2mat(varargin(i+1));
-                    else
-                        error('Unapproved combination of arguments. See usage: help c_4_null')
-                    end
-                    %Case 'boxLim'
-                elseif strcmp(varargin(i),'boxLim')
-                    
-                    if isnumeric(cell2mat(varargin(i+1)))
-                        noBox=false;
-                        boxLim=cell2mat(varargin(i+1));
-                    else
-                        error('Unapproved combination of arguments. See usage: help c_4_null')
-                    end
-                    % If two strings are after each other give error
-                elseif iscellstr(varargin(i)) && iscellstr(varargin(i+1))
-                    error('Unapproved combination of arguments. See usage: help c_4_null')
-                    % If to numeric values are after each other give error
-                elseif isnumeric(cell2mat(varargin(i)))
-                    if isnumeric(cell2mat(varargin(i+1)))
-                        error('Unapproved combination of arguments. See usage: help c_4_null')
-                    else
-                        continue;
-                    end
-                    % If strings are other than 'threshold', boxLim', and
-                    % 'strong' give error.
-                else
-                    error('Unapproved arguments. See usage: help c_4_null')
-                end
-            end
+  % Gives Default values that can be changed
+  toSaveSpecial=false;
+  threshold = 40;
+  noBox=true;
+  % Check values given in varargin
+  % All arguments need to include a string+value so if the amount of vargin
+  % isn't even then give error
+  if length(varargin)==1
+    error('Unapproved combination of arguments. See usage: help c_4_null')
+    
+  elseif length(varargin)==3
+    error('Unapproved combination of arguments. See usage: help c_4_null')
+  elseif length(varargin)==5
+    error('Unapproved combination of arguments. See usage: help c_4_null')
+  else
+    % Time to check the combination of elements and change the default values for the given ones.
+    for i=1:length(varargin)
+      if i+1>length(varargin)
+        break;
+      else
+        %Case 'strong'
+        if strcmp(varargin(i),'strong')
+          if isnumeric(cell2mat(varargin(i+1)))
+            currentLim=cell2mat(varargin(i+1));
+            toSaveSpecial=true;
+          else
+            error('Unapproved combination of arguments. See usage: help c_4_null')
+          end
+          %Case 'threshold'
+        elseif strcmp(varargin(i),'threshold')
+          
+          if isnumeric(cell2mat(varargin(i+1)))
+            threshold=cell2mat(varargin(i+1));
+          else
+            error('Unapproved combination of arguments. See usage: help c_4_null')
+          end
+          %Case 'boxLim'
+        elseif strcmp(varargin(i),'boxLim')
+          
+          if isnumeric(cell2mat(varargin(i+1)))
+            noBox=false;
+            boxLim=cell2mat(varargin(i+1));
+          else
+            error('Unapproved combination of arguments. See usage: help c_4_null')
+          end
+          % If two strings are after each other give error
+        elseif iscellstr(varargin(i)) && iscellstr(varargin(i+1))
+          error('Unapproved combination of arguments. See usage: help c_4_null')
+          % If to numeric values are after each other give error
+        elseif isnumeric(cell2mat(varargin(i)))
+          if isnumeric(cell2mat(varargin(i+1)))
+            error('Unapproved combination of arguments. See usage: help c_4_null')
+          else
+            continue;
+          end
+          % If strings are other than 'threshold', boxLim', and
+          % 'strong' give error.
+        else
+          error('Unapproved arguments. See usage: help c_4_null')
         end
+      end
     end
+  end
 end
 
 
@@ -223,17 +223,17 @@ gradB = c_4_grad(idR{1,1},idR{1,2},idR{1,3},idR{1,4},idB{1,1},idB{1,2},idB{1,3},
 % remove points with NaN magnetic field data
 badPoints = any(isnan(gradB(:,2:end)),2);
 if any(badPoints)
-    t(badPoints)       = [];
-    nPoints            = numel(t);
-    gradB(badPoints,:) = [];
-    idR{1,1}(badPoints,:)=[];
-    idR{1,2}(badPoints,:)=[];
-    idR{1,3}(badPoints,:)=[];
-    idR{1,4}(badPoints,:)=[];
-    idB{1,1}(badPoints,:)=[];
-    idB{1,2}(badPoints,:)=[];
-    idB{1,3}(badPoints,:)=[];
-    idB{1,4}(badPoints,:)=[];
+  t(badPoints)       = [];
+  nPoints            = numel(t);
+  gradB(badPoints,:) = [];
+  idR{1,1}(badPoints,:)=[];
+  idR{1,2}(badPoints,:)=[];
+  idR{1,3}(badPoints,:)=[];
+  idR{1,4}(badPoints,:)=[];
+  idB{1,1}(badPoints,:)=[];
+  idB{1,2}(badPoints,:)=[];
+  idB{1,3}(badPoints,:)=[];
+  idB{1,4}(badPoints,:)=[];
 end
 divB  = c_4_grad(idR{1,1},idR{1,2},idR{1,3},idR{1,4},idB{1,1},idB{1,2},idB{1,3},idB{1,4},'div');
 curlB = c_4_grad(idR{1,1},idR{1,2},idR{1,3},idR{1,4},idB{1,1},idB{1,2},idB{1,3},idB{1,4},'curl');
@@ -254,9 +254,9 @@ Bmean=0.25.*(idB{1,1}+idB{1,2}+idB{1,3}+idB{1,4});
 % 1) calculate the distance on null from the center of the four satellites
 
 for i=1:nPoints
-    deltaBnull = reshape(gradB(i,:),3,3)';
-    % distance from tetrahedron center to null
-    dR(i,:) = Bmean(i,:)/deltaBnull;
+  deltaBnull = reshape(gradB(i,:),3,3)';
+  % distance from tetrahedron center to null
+  dR(i,:) = Bmean(i,:)/deltaBnull;
 end
 
 R = Rmean - dR; %position of null
@@ -264,11 +264,11 @@ R = Rmean - dR; %position of null
 
 % 2) Determinant of gradB
 detB = abs(B41v(:,1).*B42v(:,2).*B43v(:,3)...
-    + B41v(:,2).*B42v(:,3).*B43v(:,1)...
-    + B41v(:,3).*B42v(:,1).*B43v(:,2)...
-    - B41v(:,3).*B42v(:,2).*B43v(:,1)...
-    - B41v(:,2).*B42v(:,1).*B43v(:,3)...
-    - B41v(:,1).*B42v(:,3).*B43v(:,2));
+  + B41v(:,2).*B42v(:,3).*B43v(:,1)...
+  + B41v(:,3).*B42v(:,1).*B43v(:,2)...
+  - B41v(:,3).*B42v(:,2).*B43v(:,1)...
+  - B41v(:,2).*B42v(:,1).*B43v(:,3)...
+  - B41v(:,1).*B42v(:,3).*B43v(:,2));
 
 % 3) estimate deltaB_AB
 l1vec=cross(B42v,B43v,2);
@@ -290,28 +290,28 @@ dB_AB(:,1)=1./(max(([l1 l2 l3 l4]),[],2));
 %less or equal to 40%) break out their corresponding time and dR value
 %(the minimum distance from all s/c to the null)
 if noBox
-    disp('Sorting based on the null located anywhere');
-    okNulls    = true(length(R(:,1)));
+  disp('Sorting based on the null located anywhere');
+  okNulls    = true(length(R(:,1)));
 elseif boxLim==0
-    % Calculate the minimum and maximum values for all s/c's in each direction
-% to see the distance among s/c's
-disp('Sorting based on the null inside the size given by s/c tetrahedron');
-minX = min(([idR{1,1}(:,1) idR{1,2}(:,1) idR{1,3}(:,1) idR{1,4}(:,1)]),[],2);
-maxX = max(([idR{1,1}(:,1) idR{1,2}(:,1) idR{1,3}(:,1) idR{1,4}(:,1)]),[],2);
-minY = min(([idR{1,1}(:,2) idR{1,2}(:,2) idR{1,3}(:,2) idR{1,4}(:,2)]),[],2);
-maxY = max(([idR{1,1}(:,2) idR{1,2}(:,2) idR{1,3}(:,2) idR{1,4}(:,2)]),[],2);
-minZ = min(([idR{1,1}(:,3) idR{1,2}(:,3) idR{1,3}(:,3) idR{1,4}(:,3)]),[],2);
-maxZ = max(([idR{1,1}(:,3) idR{1,2}(:,3) idR{1,3}(:,3) idR{1,4}(:,3)]),[],2);
-    sortNullDx = R(:,1) >= minX & R(:,1) <= maxX;
-    sortNullDy = R(:,2) >= minY & R(:,2) <= maxY;
-    sortNullDz = R(:,3) >= minZ & R(:,3) <= maxZ;
-    okNulls    = sortNullDx & sortNullDy & sortNullDz;
+  % Calculate the minimum and maximum values for all s/c's in each direction
+  % to see the distance among s/c's
+  disp('Sorting based on the null inside the size given by s/c tetrahedron');
+  minX = min(([idR{1,1}(:,1) idR{1,2}(:,1) idR{1,3}(:,1) idR{1,4}(:,1)]),[],2);
+  maxX = max(([idR{1,1}(:,1) idR{1,2}(:,1) idR{1,3}(:,1) idR{1,4}(:,1)]),[],2);
+  minY = min(([idR{1,1}(:,2) idR{1,2}(:,2) idR{1,3}(:,2) idR{1,4}(:,2)]),[],2);
+  maxY = max(([idR{1,1}(:,2) idR{1,2}(:,2) idR{1,3}(:,2) idR{1,4}(:,2)]),[],2);
+  minZ = min(([idR{1,1}(:,3) idR{1,2}(:,3) idR{1,3}(:,3) idR{1,4}(:,3)]),[],2);
+  maxZ = max(([idR{1,1}(:,3) idR{1,2}(:,3) idR{1,3}(:,3) idR{1,4}(:,3)]),[],2);
+  sortNullDx = R(:,1) >= minX & R(:,1) <= maxX;
+  sortNullDy = R(:,2) >= minY & R(:,2) <= maxY;
+  sortNullDz = R(:,3) >= minZ & R(:,3) <= maxZ;
+  okNulls    = sortNullDx & sortNullDy & sortNullDz;
 else
-    disp(['Sorting based on the null located inside the box ', num2str(-1*boxLim,3), ' and ',num2str(boxLim,3), ' in each direction']);
-    sortNullDx = dR(:,1) >= -1*boxLim & dR(:,1) <= boxLim;
-    sortNullDy = dR(:,2) >= -1*boxLim & dR(:,2) <= boxLim;
-    sortNullDz = dR(:,3) >= -1*boxLim & dR(:,3) <= boxLim;
-    okNulls    = sortNullDx & sortNullDy & sortNullDz;
+  disp(['Sorting based on the null located inside the box ', num2str(-1*boxLim,3), ' and ',num2str(boxLim,3), ' in each direction']);
+  sortNullDx = dR(:,1) >= -1*boxLim & dR(:,1) <= boxLim;
+  sortNullDy = dR(:,2) >= -1*boxLim & dR(:,2) <= boxLim;
+  sortNullDz = dR(:,3) >= -1*boxLim & dR(:,3) <= boxLim;
+  okNulls    = sortNullDx & sortNullDy & sortNullDz;
 end
 
 %Removes nulls not within spacecraft box
@@ -334,10 +334,10 @@ eigVectors  = zeros(nPoints,9);
 eigValErr   = t*NaN;
 
 for i=1:nPoints
-    deltaB_null      = reshape(gradB(i,:),3,3);
-    [V,D]            = eig(deltaB_null,'vector');
-    eigVectors(i,:)  = V(:)';
-    eigValues(i,:)   = D';
+  deltaB_null      = reshape(gradB(i,:),3,3);
+  [V,D]            = eig(deltaB_null,'vector');
+  eigVectors(i,:)  = V(:)';
+  eigValues(i,:)   = D';
 end
 
 %% Identify points where error larger than threshold
@@ -345,7 +345,7 @@ eigValErr(:,2)          = abs(divB./max(abs(eigValues),[],2)) * 100;
 badPoints=false(length(eigValErr(:,1)),1);
 if threshold == 100
 else
-    badPoints               = (eigValErr(:,2) > threshold);
+  badPoints               = (eigValErr(:,2) > threshold);
 end
 t(badPoints)       = [];
 gradB(badPoints,:) = [];
@@ -425,66 +425,66 @@ Nulls.R  = R;
 Nulls.dR = dR;
 Nulls.t  = t;
 if sum(Nulls.t)==0
-    disp('No Nulls found')
+  disp('No Nulls found')
 else
-    disp('Nulls found')
-    if toSaveSpecial
-        strongcurrent=(irf_abs(Nulls.j,1)>currentLim);
-        if sum(strongcurrent)==0
-            disp('No Nulls with strong currents found')
-            Nulls.eigenValues=[];
-            Nulls.eigenVectors=[];
-            Nulls.eigenvectorCorrespondingToSpine=[];
-            Nulls.error=[];
-            Nulls.poincareindex=[];
-            Nulls.dB_AB=[];
-            Nulls.Is.A=[];
-            Nulls.Is.As=[];
-            Nulls.Is.B=[];
-            Nulls.Is.Bs=[];
-            Nulls.Is.X=[];
-            Nulls.Is.O=[];
-            Nulls.Is.unknown=[];
-            Nulls.gradB=[];
-            Nulls.j=[];
-            Nulls.R=[];
-            Nulls.dR=[];
-            Nulls.t=[];
-        else
-            Nulls.eigenValues=Nulls.eigenValues(strongcurrent,:);
-            Nulls.eigenVectors=Nulls.eigenVectors(strongcurrent,:);
-            Nulls.eigenvectorCorrespondingToSpine=Nulls.eigenvectorCorrespondingToSpine(strongcurrent,:);
-            Nulls.error=Nulls.error(strongcurrent,:);
-            Nulls.poincareindex=Nulls.poincareindex(strongcurrent,:);
-            Nulls.dB_AB=Nulls.dB_AB(strongcurrent,:);
-            Nulls.Is.A=Nulls.Is.A(strongcurrent,:);
-            Nulls.Is.As=Nulls.Is.As(strongcurrent,:);
-            Nulls.Is.B=Nulls.Is.B(strongcurrent,:);
-            Nulls.Is.Bs=Nulls.Is.Bs(strongcurrent,:);
-            Nulls.Is.X=Nulls.Is.X(strongcurrent,:);
-            Nulls.Is.O=Nulls.Is.O(strongcurrent,:);
-            Nulls.Is.unknown=Nulls.Is.unknown(strongcurrent,:);
-            Nulls.gradB=Nulls.gradB(strongcurrent,:);
-            Nulls.j=Nulls.j(strongcurrent,:);
-            Nulls.R=Nulls.R(strongcurrent,:);
-            Nulls.dR=Nulls.dR(strongcurrent,:);
-            Nulls.t=Nulls.t(strongcurrent,:);
-        end
+  disp('Nulls found')
+  if toSaveSpecial
+    strongcurrent=(irf_abs(Nulls.j,1)>currentLim);
+    if sum(strongcurrent)==0
+      disp('No Nulls with strong currents found')
+      Nulls.eigenValues=[];
+      Nulls.eigenVectors=[];
+      Nulls.eigenvectorCorrespondingToSpine=[];
+      Nulls.error=[];
+      Nulls.poincareindex=[];
+      Nulls.dB_AB=[];
+      Nulls.Is.A=[];
+      Nulls.Is.As=[];
+      Nulls.Is.B=[];
+      Nulls.Is.Bs=[];
+      Nulls.Is.X=[];
+      Nulls.Is.O=[];
+      Nulls.Is.unknown=[];
+      Nulls.gradB=[];
+      Nulls.j=[];
+      Nulls.R=[];
+      Nulls.dR=[];
+      Nulls.t=[];
+    else
+      Nulls.eigenValues=Nulls.eigenValues(strongcurrent,:);
+      Nulls.eigenVectors=Nulls.eigenVectors(strongcurrent,:);
+      Nulls.eigenvectorCorrespondingToSpine=Nulls.eigenvectorCorrespondingToSpine(strongcurrent,:);
+      Nulls.error=Nulls.error(strongcurrent,:);
+      Nulls.poincareindex=Nulls.poincareindex(strongcurrent,:);
+      Nulls.dB_AB=Nulls.dB_AB(strongcurrent,:);
+      Nulls.Is.A=Nulls.Is.A(strongcurrent,:);
+      Nulls.Is.As=Nulls.Is.As(strongcurrent,:);
+      Nulls.Is.B=Nulls.Is.B(strongcurrent,:);
+      Nulls.Is.Bs=Nulls.Is.Bs(strongcurrent,:);
+      Nulls.Is.X=Nulls.Is.X(strongcurrent,:);
+      Nulls.Is.O=Nulls.Is.O(strongcurrent,:);
+      Nulls.Is.unknown=Nulls.Is.unknown(strongcurrent,:);
+      Nulls.gradB=Nulls.gradB(strongcurrent,:);
+      Nulls.j=Nulls.j(strongcurrent,:);
+      Nulls.R=Nulls.R(strongcurrent,:);
+      Nulls.dR=Nulls.dR(strongcurrent,:);
+      Nulls.t=Nulls.t(strongcurrent,:);
     end
+  end
 end
 end
 
-    
-                   
-        
-            
-              
-              
-              
-          
-              
-              
-              
-              
-              
-          
+
+
+
+
+
+
+
+
+
+
+
+
+
+

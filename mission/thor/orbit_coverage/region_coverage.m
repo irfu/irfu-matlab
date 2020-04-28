@@ -1,5 +1,5 @@
-% Gives the time spent in regions of interest. 
-%% get_orbit.m 
+% Gives the time spent in regions of interest.
+%% get_orbit.m
 % Get orbit coordinates.
 get_orbit
 orb.t = t;
@@ -7,24 +7,24 @@ orb.dt = t(2)-t(1);
 orb.r = sqrt(x.^2+y.^2); % in RE
 orb.theta = atan2d(y,x); % degrees
 % Plot
-% hp = polar(orb.theta*pi/180,orb.r); hp.Color = [0.2 0.2 0.2];    
+% hp = polar(orb.theta*pi/180,orb.r); hp.Color = [0.2 0.2 0.2];
 
 Units = irf_units;
 
 %% Solar wind dynamic pressure and 'alpha'
-% Get solar wind dynamic pressure and paramter alpha to calculate 
+% Get solar wind dynamic pressure and paramter alpha to calculate
 % magnetopause shape. We find the values that correspond to the chosen
 % magnetopause standoff distance.
 
 % Load from omni data.
 tint = [irf_time([2013 01 01 01 01 00]) irf_time([2013 12 31 23 59 00])];
-disp(['Loading omni data: ' irf_time(tint(1),'epoch>utc_yyyy-mm-ddTHH:MM:SS') ' to ' irf_time(tint(2),'epoch>utc_yyyy-mm-ddTHH:MM:SS')])    
-omni_data = irf_get_data_omni(tint,'n,V,Bz','omni_hour');        
+disp(['Loading omni data: ' irf_time(tint(1),'epoch>utc_yyyy-mm-ddTHH:MM:SS') ' to ' irf_time(tint(2),'epoch>utc_yyyy-mm-ddTHH:MM:SS')])
+omni_data = irf_get_data_omni(tint,'n,V,Bz','omni_hour');
 
 %% Look at data
 t = omni_data(:,1);
 n = omni_data(:,2); % cc
-v = omni_data(:,3); v(v>1500) = NaN;% km/s 
+v = omni_data(:,3); v(v>1500) = NaN;% km/s
 Bz = omni_data(:,4); % nT
 
 RE = Units.R_Earth; % m
@@ -36,7 +36,7 @@ m = 0.98*mp+0.02*2*mp; % 98 percent hydrogen, 2 percent helium
 Dp = n.*1e6*m.*(v*1e3).^2*1e9; % Dynamic pressure, nPa
 
 % Daily averages
-nDays = ceil(diff(tint)/60/60/24);      
+nDays = ceil(diff(tint)/60/60/24);
 av_t = nanmean(reshape([t; nan(24-mod(size(t,1),24),1)],24,nDays),1)';
 av_n = nanmean(reshape([n; nan(24-mod(size(n,1),24),1)],24,nDays),1)';
 av_v = nanmean(reshape([v; nan(24-mod(size(v,1),24),1)],24,nDays),1)';
@@ -54,21 +54,21 @@ rzero=(10.22+1.29*tanh(0.184*(av_Bz+8.14))).*av_Dp.^(-1/6.6); % magnetopause sta
 alpha=(0.58-0.007*av_Bz).*(1+0.024*log(av_Dp));
 
 if 0 % plot data
-    %% 
-    h = irf_plot({[av_t,av_Bz],[av_t,av_n],[av_t,av_v],[av_t,av_Dp],[av_t,rzero],[av_t,alpha]});
-    h(1).Title.String = 'Solar wind parameters, daily averages';
-    h(1).YLabel.String = 'B_z [nT]';
-    h(2).YLabel.String = 'n [cc]';        
-    h(3).YLabel.String = 'v [km/s]';
-    h(4).YLabel.String = 'D_p [nPa]';
-    h(5).YLabel.String = 'R_0 [R_E]';
-    h(6).YLabel.String = 'alpha';
-    %%
-    h = scatter3(av_Dp,av_Bz,rzero,rzero,rzero);
-    hc = colorbar;
-    h.Parent.XLabel.String = 'D_p [nPa]';
-    h.Parent.YLabel.String = 'B_z [nT]';
-    h.Parent.ZLabel.String = 'R [R_E]';
+  %%
+  h = irf_plot({[av_t,av_Bz],[av_t,av_n],[av_t,av_v],[av_t,av_Dp],[av_t,rzero],[av_t,alpha]});
+  h(1).Title.String = 'Solar wind parameters, daily averages';
+  h(1).YLabel.String = 'B_z [nT]';
+  h(2).YLabel.String = 'n [cc]';
+  h(3).YLabel.String = 'v [km/s]';
+  h(4).YLabel.String = 'D_p [nPa]';
+  h(5).YLabel.String = 'R_0 [R_E]';
+  h(6).YLabel.String = 'alpha';
+  %%
+  h = scatter3(av_Dp,av_Bz,rzero,rzero,rzero);
+  hc = colorbar;
+  h.Parent.XLabel.String = 'D_p [nPa]';
+  h.Parent.YLabel.String = 'B_z [nT]';
+  h.Parent.ZLabel.String = 'R [R_E]';
 end
 
 %% Define all R(theta) that is needed
@@ -107,7 +107,7 @@ y = sqrt(0.04*(x-R0).^2-45.3*(x-R0)); % original F/G model adds rstandoff^2=645
 r = sqrt(x.^2+y.^2);
 theta = atan2d(y,x)*pi/180;
 R_outerBS = [r(end:-1:2) r]; % outer radius
-Th_outerBS = [-theta(end:-1:2) theta]; 
+Th_outerBS = [-theta(end:-1:2) theta];
 
 % Forshock inner boundary
 R0 = 20;
@@ -117,7 +117,7 @@ y = sqrt(0.04*(x-R0).^2-45.3*(x-R0)); % original F/G model adds rstandoff^2=645
 r = sqrt(x.^2+y.^2);
 theta = atan2d(y,x)*pi/180;
 R_innerFS = [r(end:-1:2) r];
-Th_innerFS = [-theta(end:-1:2) theta]; 
+Th_innerFS = [-theta(end:-1:2) theta];
 
 % Foreshock outer boundary
 R0_outerFS = 26;
@@ -137,22 +137,22 @@ R_innerSW = ones(1,nTh)*30;
 R_outerSW = ones(1,nTh)*70;
 
 if 0 % plot the boundaries
-    %%    
-    hp = polar(orb.theta*pi/180,orb.r);
-    hp.Color = [0.2 0.2 0.2];
-    hold on
-    polar(Th*pi/180, R_innerMS);
-    polar(Th*pi/180, R_outerMS);
-    polar(Th*pi/180, R_innerBS);
-    polar(Th*pi/180, R_outerBS);
-    polar(Th*pi/180, R_innerFS);
-    polar(Th*pi/180, R_outerFS);    
-    polar(Th*pi/180, R_innerSW);    
-    polar(Th*pi/180, R_outerSW);
-    hold off
-    legend('Orbit','Inner Magnetosheath','Outer Magnetosheath','Inner Bowshock','Outer Bowshock','Inner Foreshock','Outer Foreshock','Solar wind','Outer limit of solar wind')
+  %%
+  hp = polar(orb.theta*pi/180,orb.r);
+  hp.Color = [0.2 0.2 0.2];
+  hold on
+  polar(Th*pi/180, R_innerMS);
+  polar(Th*pi/180, R_outerMS);
+  polar(Th*pi/180, R_innerBS);
+  polar(Th*pi/180, R_outerBS);
+  polar(Th*pi/180, R_innerFS);
+  polar(Th*pi/180, R_outerFS);
+  polar(Th*pi/180, R_innerSW);
+  polar(Th*pi/180, R_outerSW);
+  hold off
+  legend('Orbit','Inner Magnetosheath','Outer Magnetosheath','Inner Bowshock','Outer Bowshock','Inner Foreshock','Outer Foreshock','Solar wind','Outer limit of solar wind')
 end
- 
+
 % Display values for R
 thshow = cTh:5:nTh;
 disp(' ')
@@ -193,26 +193,26 @@ regions = {Magnetosheath,Bowshock,Foreshock,Solarwind};
 %% Do binning
 nRegion = numel(regions);
 for iRegion = 1:nRegion
-    disp(['------ ' regions{iRegion}.region])
-    disp(['Theta = 0: R1 = ' num2str(regions{iRegion}.R1(round(0.5*numel(regions{iRegion}.Th)))) '  R2 = ' num2str(regions{iRegion}.R2(round(0.5*numel(regions{iRegion}.Th))))])
-    edgesTh = regions{iRegion}.Th';
-    edgesR = [regions{iRegion}.R1' regions{iRegion}.R2'];
-    centerTh = edgesTh(1:end-1)+0.5*(edgesTh(2)-edgesTh(1));
-    centerR = [spline(edgesTh,edgesR(:,1),centerTh) spline(edgesTh,edgesR(:,2),centerTh)];
-    nBinsTh = numel(centerTh);
-    NT=0;
-    % How much time is spent in each bin
-    for kk = 1:nBinsTh                
-        [nt,edges,mid,loc] = histcn([orb.r(:) orb.theta(:)],centerR(kk,:),edgesTh([kk kk+1],:));
-        nts(kk) = nt;
-        NT = NT+nt;    
-    end
-dt = diff(t(1:2)); % how much time one orbit-tick is
-TT = NT*orb.dt;
-ndays = sum(sum(TT))/60/60/24;
-disp(['T = ' num2str(ndays*24) ' hours = ' num2str(ndays) ' days = ' num2str(ndays/365) ' years'])
-eval(['time_spent.' regions{iRegion}.region '_days = ndays;'])
-regions{iRegion}.DaysSpent = ndays;
+  disp(['------ ' regions{iRegion}.region])
+  disp(['Theta = 0: R1 = ' num2str(regions{iRegion}.R1(round(0.5*numel(regions{iRegion}.Th)))) '  R2 = ' num2str(regions{iRegion}.R2(round(0.5*numel(regions{iRegion}.Th))))])
+  edgesTh = regions{iRegion}.Th';
+  edgesR = [regions{iRegion}.R1' regions{iRegion}.R2'];
+  centerTh = edgesTh(1:end-1)+0.5*(edgesTh(2)-edgesTh(1));
+  centerR = [spline(edgesTh,edgesR(:,1),centerTh) spline(edgesTh,edgesR(:,2),centerTh)];
+  nBinsTh = numel(centerTh);
+  NT=0;
+  % How much time is spent in each bin
+  for kk = 1:nBinsTh
+    [nt,edges,mid,loc] = histcn([orb.r(:) orb.theta(:)],centerR(kk,:),edgesTh([kk kk+1],:));
+    nts(kk) = nt;
+    NT = NT+nt;
+  end
+  dt = diff(t(1:2)); % how much time one orbit-tick is
+  TT = NT*orb.dt;
+  ndays = sum(sum(TT))/60/60/24;
+  disp(['T = ' num2str(ndays*24) ' hours = ' num2str(ndays) ' days = ' num2str(ndays/365) ' years'])
+  eval(['time_spent.' regions{iRegion}.region '_days = ndays;'])
+  regions{iRegion}.DaysSpent = ndays;
 end
 
 time_spent
@@ -220,28 +220,28 @@ time_spent
 %% Plot the boxes
 % Plot orbit
 if 1
-    [plotx,ploty] = pol2cart(orb.theta*pi/180,orb.r);
-    hp = plot(plotx,ploty);
-    hca = gca;
-    hca.XLabel.String = 'x [Re]';
-    hca.YLabel.String = 'y [Re]';
-    hca.FontSize = 15;
+  [plotx,ploty] = pol2cart(orb.theta*pi/180,orb.r);
+  hp = plot(plotx,ploty);
+  hca = gca;
+  hca.XLabel.String = 'x [Re]';
+  hca.YLabel.String = 'y [Re]';
+  hca.FontSize = 15;
 else
-    hp = polar(orb.theta*pi/180,orb.r); 
-    hca = gca; 
+  hp = polar(orb.theta*pi/180,orb.r);
+  hca = gca;
 end
 hold(hca,'on');
 hp.Color = [0.2 0.2 0.2];
- 
+
 % Plot boxes
 for iRegion=1:nRegion
-    boxTh = [regions{iRegion}.Th regions{iRegion}.Th(end:-1:1) regions{iRegion}.Th(1)];
-    boxR =  [regions{iRegion}.R1 regions{iRegion}.R2(end:-1:1) regions{iRegion}.R1(1)];
-    hp = polar(boxTh*pi/180,boxR);
-    hp.Color = regions{iRegion}.Color;
-    hp.LineWidth = 2;
-    %legs{iRegion} = regions{iRegion}.region;
-    legs{iRegion} = [regions{iRegion}.region ' (' num2str(regions{iRegion}.DaysSpent,'%.1f') ' days)'];
+  boxTh = [regions{iRegion}.Th regions{iRegion}.Th(end:-1:1) regions{iRegion}.Th(1)];
+  boxR =  [regions{iRegion}.R1 regions{iRegion}.R2(end:-1:1) regions{iRegion}.R1(1)];
+  hp = polar(boxTh*pi/180,boxR);
+  hp.Color = regions{iRegion}.Color;
+  hp.LineWidth = 2;
+  %legs{iRegion} = regions{iRegion}.region;
+  legs{iRegion} = [regions{iRegion}.region ' (' num2str(regions{iRegion}.DaysSpent,'%.1f') ' days)'];
 end
 
 axis equal
@@ -250,8 +250,8 @@ hca.YLim = 30*[-1 1];
 legend({'Orbit',legs{:}},'location','northeast')
 hold(hca,'off');
 if 1
-view([180 -90])
-legend({'Orbit',legs{:}},'location','northwest')
-%hca.YAxisLocation = 'right';
+  view([180 -90])
+  legend({'Orbit',legs{:}},'location','northwest')
+  %hca.YAxisLocation = 'right';
 end
 

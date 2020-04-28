@@ -7,6 +7,7 @@
 % NOTE: Uses bicas.proc_utils.* code.
 % NOTE: Does not yet support spectrogram overlap.
 % NOTE: Time series panels interpolate between snapshots.
+% NOTE: Color scale is log, therefore negative values (probably).
 %
 %
 % ARGUMENTS
@@ -110,7 +111,7 @@ function hAxesArray = plot_LFR_SWF(filePath, timeIntervUtc)
     F2.bRecords = (F_SAMPLE == F2.freqHz);
     assert(all(F0.bRecords | F1.bRecords | F2.bRecords))
     
-    
+
     
     %=================================================================
     % Determine whether DC diffs, AC diffs, or both should be plotted
@@ -139,7 +140,7 @@ function hAxesArray = plot_LFR_SWF(filePath, timeIntervUtc)
         %=================
         % F0 spectrograms
         %=================
-        pcfcList{end+1}     = @() (spectrogram_panel2( 'V1 DC', epoch, vDc1, F0, 'V1\_DC'));
+        pcfcList{end+1}     = @() (spectrogram_panel2( 'V1 DC', epoch, vDc1,  F0, 'V1\_DC'));
         if displayDcDiffs
             pcfcList{end+1} = @() (spectrogram_panel2('V12 DC', epoch, vDc12, F0, 'V12\_DC'));
             pcfcList{end+1} = @() (spectrogram_panel2('V23 DC', epoch, vDc23, F0, 'V13\_DC'));
@@ -178,8 +179,9 @@ function hAxesArray = plot_LFR_SWF(filePath, timeIntervUtc)
     % IMPLEMENTATION NOTE: Panel tags have to be unique, or otherwise the axes will be reused.
     %==========================================================================================
     if displayDcDiffs
-
+        %======================
         % DC single + DC diffs
+        %======================
         SIGNALS_LEGEND_DC = EJ_library.graph.escape_str({'V1_DC','V12_DC','V23_DC'});
         tempFuncPtr = @(Fx) (@() (time_series_panel2('V1,V12,V23 DC', epoch, {vDc1, vDc12, vDc23}, Fx, SIGNALS_LEGEND_DC)));
         
@@ -187,10 +189,11 @@ function hAxesArray = plot_LFR_SWF(filePath, timeIntervUtc)
         pcfcList{end+1} = tempFuncPtr(F1);
         pcfcList{end+1} = tempFuncPtr(F2);
 
-    end    
+    end
     if ~displayDcDiffs && displayAcDiffs
-
+        %======================
         % DC single + AC diffs
+        %======================
         SIGNALS_LEGEND_DC_AC = EJ_library.graph.escape_str({'V1_DC','V12_AC','V23_AC'});
         tempFuncPtr = @(Fx) (@() (time_series_panel2('V1,V12,V23 DC/AC', epoch, {vDc1, vAc12, vAc23}, Fx, SIGNALS_LEGEND_DC_AC)));
 
@@ -200,8 +203,9 @@ function hAxesArray = plot_LFR_SWF(filePath, timeIntervUtc)
 
     end    
     if displayDcDiffs && displayAcDiffs
-
-        % AC diffs
+        %======================
+        % AC diffs (no single)
+        %======================
         SIGNALS_LEGEND_AC = EJ_library.graph.escape_str({'V12_AC','V23_AC'});
         tempFuncPtr = @(Fx) (@() (time_series_panel2('V12,V23 AC', epoch, {vAc12, vAc23}, Fx, SIGNALS_LEGEND_AC)));
 
@@ -240,7 +244,7 @@ function h = spectrogram_panel2(panelTagSignalsStr, zvEpoch, zvData, SamplingRat
         SamplingRateInfo.str, ...
         trLegend);
 end
-    
+
 
 
 % ARGUMENTS
@@ -256,19 +260,17 @@ function h = spectrogram_panel(panelTag, zvEpoch, zvData, samplingFreqHz, tlLege
 
     % Fraction of the (minimum) time distance between snapshots (centers) that will be used for displaying the spectra.
     % Value 1 : Spectras are adjacent between snapshot (for minimum snapshot distance).
-    SNAPSHOT_WIDTH_FRACTION  = 0.85;
-    SPECTRUM_OVERLAP_PERCENT = 0;  % Percent, not fraction. 50 does not work yet.
-    %SPECTRUM_OVERLAP_PERCENT = 50;
+    SNAPSHOT_WIDTH_FRACTION  = 0.90;
+    %SPECTRUM_OVERLAP_PERCENT = 0;    % Percent, not fraction.
+    SPECTRUM_OVERLAP_PERCENT = 50;    % Percent, not fraction.
     
-    % NOTE: More samples per spectrum is faster.
-    %N_SAMPLES_PER_SPECTRUM = 2048 / 4;   % TEST
+    % NOTE: More samples per spectrum is faster (sic!).
+    %N_SAMPLES_PER_SPECTRUM = 2048 / 2;   % TEST
     N_SAMPLES_PER_SPECTRUM = 128;    % YK request 2020-02-26.
+    
 
     
     TsCa  = snapshot_per_record_2_TSeries(zvEpoch, zvData, samplingFreqHz);
-
-%     t = tic;
-%     nSamplesTotal = 0;
 
     h = irf_panel(panelTag);    
     
@@ -280,12 +282,7 @@ function h = spectrogram_panel(panelTag, zvEpoch, zvData, samplingFreqHz, tlLege
     for i = 1:numel(TsCa)    
         Ts = TsCa{i};
         
-%         nSamples      = numel(Ts.time.epoch);
-%         fprintf('nSamples = %g\n', nSamples)
-%         nSamplesTotal = nSamplesTotal + nSamples;
-        
-        Specrec = irf_powerfft(Ts, N_SAMPLES_PER_SPECTRUM, samplingFreqHz, SPECTRUM_OVERLAP_PERCENT);
-        SpecrecCa{end+1} = Specrec;
+        SpecrecCa{end+1} = irf_powerfft(Ts, N_SAMPLES_PER_SPECTRUM, samplingFreqHz, SPECTRUM_OVERLAP_PERCENT);
         
         % IMPLEMENTATION NOTE: Later needs the snapshot centers in the same time system as Specrec.t (epoch Unix).
         ssCenterEpochUnixArray(end+1) = (Ts.time.start.epochUnix + Ts.time.stop.epochUnix)/2;
@@ -320,8 +317,6 @@ function h = spectrogram_panel(panelTag, zvEpoch, zvData, samplingFreqHz, tlLege
     irf_legend(h, tlLegend, [0.02 0.98], 'color', 'k')
     irf_legend(h, trLegend, [0.98 0.98])
 
-%     tSec = toc(t);
-%     fprintf('tSec/nSamples = %g [s/sample]\n', tSec/nSamplesTotal)
 end
 
 
@@ -404,25 +399,25 @@ end
 
 
 
-% Merge multiple instances of "specrec" structs as returned by irf_powerfft 
+% Merge multiple instances of "specrec" structs as returned by irf_powerfft.
 % NOTE: Optionally added fields must be added after merging.
 %
 % ARGUMENTS AND RETURN VALUE
 % ==========================
 % SpecrecCa : Cell array of "specrec" as returned by irf_powerfft, but with .dt (column array) added to it.
 %             Unsure if irf_powerfft can return more cases than can be handled here.
-%             NOTE: Includes dt (column array of scalars).
+%             NOTE: Requires dt (column array of scalars).
 %             NOTE: Assumes that all specrec use the same frequencies.
-%             IMPLEMENTATION NOTE: Uses cell array instead of struct array to be able to handle (and ignore) specrec =
-%             [] which can be returned by irf_powerfft.
+%             IMPLEMENTATION NOTE: Uses cell array instead of struct array to be able to handle (and ignore) the case
+%             specrec = [] which can be returned by irf_powerfft.
 % Specrec   : Struct array that can be used by irf_spectrogram.
 %
 function Specrec = merge_specrec(SpecrecCa)
     % PROPOSAL: Assertion for frequencies.
     
-    Specrec.f = [];
-    Specrec.p = {[]};
-    Specrec.t = [];
+    Specrec.f  = [];
+    Specrec.p  = {[]};   % NOTE: Must 1x1 cell array. The array INSIDE the cell array is added to.
+    Specrec.t  = [];
     Specrec.dt = [];
     
     for i = 1:numel(SpecrecCa)
@@ -433,10 +428,10 @@ function Specrec = merge_specrec(SpecrecCa)
             assert(iscolumn(S.dt))
             assert(numel(S.dt) == numel(S.t), 'Badly formatted SpecrecCa{%i}.', i)
             
-            Specrec.f    = S.f;
-            Specrec.p{1} = [Specrec.p{1}; S.p{1}];
-            Specrec.t    = [Specrec.t;    S.t(:)];
-            Specrec.dt   = [Specrec.dt;   S.dt(:)];
+            Specrec.f    = S.f;                       % NOTE: Not adding to array, but setting it in its entirety.
+            Specrec.p{1} = [Specrec.p{1}; S.p{1}];    % NOTE: Add to array inside cell array.
+            Specrec.t    = [Specrec.t;    S.t(:)];    % NOTE: Has to be column vector.
+            Specrec.dt   = [Specrec.dt;   S.dt(:)];   % NOTE: Has to be column vector.
         end
     end
 end

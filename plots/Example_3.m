@@ -1,11 +1,11 @@
 %%%%%%%%%%%%%%%%%%%%%%%
-% go to new/empty directory 
+% go to new/empty directory
 % >cd new_directory
 % here using temporary directory
 tempdir_name=tempname;
 mkdir(tempdir_name);
 cd(tempdir_name);
-disp(['Moving to temporary directory: ' tempdir_name]); 
+disp(['Moving to temporary directory: ' tempdir_name]);
 
 %%%%%%%%%%%%%%%%%%%%%%%
 % specify time interval
@@ -14,15 +14,15 @@ tint=[irf_time([2006 9 27 17 17 0]) irf_time([2006 9 27 17 24 0])]; % time inter
 %%%%%%%%%%%%%%%%%%%%%%%%
 % download data from CAA (needed only once!!!!!)
 if 1 % put to 0 if data already downloaded !!!!
-    caa_download(tint,'C1_CP_FGM_5VPS');
-	caa_download(tint,'CL_SP_AUX');
-    download_status=caa_download; % repeat until all data are downloaded
-    if download_status==0 % some data are still in queue
-      disp('___________!!!!_____________')
-      disp('Some data where put in queue!')
-      disp('To see when they are ready and to download execute "caa_download".');
-      return
-    end
+  caa_download(tint,'C1_CP_FGM_5VPS');
+  caa_download(tint,'CL_SP_AUX');
+  download_status=caa_download; % repeat until all data are downloaded
+  if download_status==0 % some data are still in queue
+    disp('___________!!!!_____________')
+    disp('Some data where put in queue!')
+    disp('To see when they are ready and to download execute "caa_download".');
+    return
+  end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%
@@ -68,7 +68,7 @@ R=irf_get_data('sc_r_xyz_gse__CL_SP_AUX','caa','mat');
 dR1=irf_get_data('sc_dr1_xyz_gse__CL_SP_AUX','caa','mat');
 R1=irf_add(1,R,1,dR1);
 irf_units % to get RE value
-R1RE=irf_tappl(R1,'/Units.RE*Units.km'); % 
+R1RE=irf_tappl(R1,'/Units.RE*Units.km'); %
 xx=get(gcf,'userdata');tst=xx.t_start_epoch;
 xlab={'X (RE)','Y (RE)','Z (RE)'};
 irf_timeaxis(h(1),tst,R1RE,xlab);

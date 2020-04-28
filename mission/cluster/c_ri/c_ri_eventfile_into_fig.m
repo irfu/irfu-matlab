@@ -11,7 +11,7 @@ function h = c_ri_eventfile_into_fig(time_interval,path_events,panels,flags,dt)
 %       - 'print' print results to ps-file
 %       - 'base' execute in MATLAB base workspace (access to all your variables)
 %       - can be combined, ex. flags={'print','base'}
-% 
+%
 %Output:
 %  h - handle to figures
 flag_print=0;flag_base=0;flag_jpg=0;
@@ -20,9 +20,9 @@ if nargin<4,flags='';end
 if nargin<5,dt=[0 0 0 0];end
 
 if ischar(flags)
-   eval(['flag_' flags '=1;']);
+  eval(['flag_' flags '=1;']);
 elseif iscell(flags)
-   for j=1:length(flags), eval(['flag_' flags{j} '=1;']);end
+  for j=1:length(flags), eval(['flag_' flags{j} '=1;']);end
 end
 
 n_panels=size(panels,2);  if debug, disp(['Figure with ' num2str(n_panels) ' panels.']);end

@@ -10,7 +10,7 @@ function ok=check_if_using_nasa_cdf
 %
 % It is encouraged to use NASA spdfcdfread as it gives faster reading
 % times and it directly works with EPOCH16 and TT2000 type of variables.
-% 
+%
 % NASA cdf patch is located under 'irfu-matlab/contrib/nasa_cdf_patch'
 % The NASA cdf patch web page:
 % https://cdf.gsfc.nasa.gov/html/matlab_cdf_patch.html

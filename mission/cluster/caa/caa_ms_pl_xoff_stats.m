@@ -19,36 +19,36 @@ leg = {};
 
 clf
 for i=1:length(yy)
-	st = toepoch([yy(i) 1 1 0 0 0]);
-	et = toepoch([yy(i)+1 1 1 0 0 0]);
-	x = irf_tlim(xoff,st,et);
-	if isempty(x)
-		irf_log('proc',sprintf('no offsets for %d',yy(i)))
-		continue
-	end
-	x = x(:,2);
-	
-	pdf = zeros(size(d));
-	
-	for j=1:length(d)
-		pdf(j) = length(find( x>=d(j) & x<d(j)+STEP ));
-	end
-	
-	pdf = pdf/abs(sum(x));
-	
-	im = find( pdf==max(pdf), 1, 'last');
-	ii = im-3:im+3; ii(ii<=0) = [];
-	cf = fit(d(ii)'+STEP/2,(pdf(ii))','gauss1');
-	cf = coeffvalues(cf);
-	
-	[xx,ii] = sort([d+STEP/2 cf(2)]);
-	pdf = [pdf cf(1)]; %#ok<AGROW>
-	pdf = pdf(ii);
-	
-	plot(xx,pdf,[c(i) '-o'])
-	hold on
-	text(cf(2),cf(1),sprintf('. %.2f mV/m',cf(2)))
-	leg = [leg {sprintf('%d %.2f mV/m',yy(i),cf(2))}]; %#ok<AGROW>
+  st = toepoch([yy(i) 1 1 0 0 0]);
+  et = toepoch([yy(i)+1 1 1 0 0 0]);
+  x = irf_tlim(xoff,st,et);
+  if isempty(x)
+    irf_log('proc',sprintf('no offsets for %d',yy(i)))
+    continue
+  end
+  x = x(:,2);
+  
+  pdf = zeros(size(d));
+  
+  for j=1:length(d)
+    pdf(j) = length(find( x>=d(j) & x<d(j)+STEP ));
+  end
+  
+  pdf = pdf/abs(sum(x));
+  
+  im = find( pdf==max(pdf), 1, 'last');
+  ii = im-3:im+3; ii(ii<=0) = [];
+  cf = fit(d(ii)'+STEP/2,(pdf(ii))','gauss1');
+  cf = coeffvalues(cf);
+  
+  [xx,ii] = sort([d+STEP/2 cf(2)]);
+  pdf = [pdf cf(1)]; %#ok<AGROW>
+  pdf = pdf(ii);
+  
+  plot(xx,pdf,[c(i) '-o'])
+  hold on
+  text(cf(2),cf(1),sprintf('. %.2f mV/m',cf(2)))
+  leg = [leg {sprintf('%d %.2f mV/m',yy(i),cf(2))}]; %#ok<AGROW>
 end
 legend(leg)
 hold off

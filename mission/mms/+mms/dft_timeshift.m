@@ -2,7 +2,7 @@ function shifted_signal = dft_timeshift(sig, tau, Freq)
 % shifted_signal = dft_timeshift(sig, tau, [Freq])
 %
 % Shifts the input signal "sig" by "tau" seconds using discrete fourier
-% transform (DFT). Particularly useful when calculating the frequency-wavenumber 
+% transform (DFT). Particularly useful when calculating the frequency-wavenumber
 % spectrum of the mms' spin-plane or axial probes. See: mms.fk_powerspectrum.
 %
 % Input:    sig - TSeries or array to be shifted (Note: Only tensor order 1)

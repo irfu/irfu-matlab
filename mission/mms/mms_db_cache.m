@@ -110,8 +110,8 @@ classdef mms_db_cache<handle
       for i=1:length(idx)
         if obj.timeout==0, fprintf('''%s''\n', obj.names{idx(i)})
         else
-        fprintf('''%s'' (expires in %d sec)\n', obj.names{idx(i)},...
-          ceil(obj.timeout - dt(i)*86400))
+          fprintf('''%s'' (expires in %d sec)\n', obj.names{idx(i)},...
+            ceil(obj.timeout - dt(i)*86400))
         end
       end
     end

@@ -2,11 +2,11 @@ function h=c_pl_sc_pos_mf(t,R1,R2,R3,R4,Vref,Bref) %#ok<INUSL>
 %C_PL_SC_POS_MF   Plot spacecraft position in mean field coordinates
 %
 % that are defined usign spacecraft position and magnetic field.
-% Z along magnetic field, Y axis is ZxR, X=YxZ where R is the 
+% Z along magnetic field, Y axis is ZxR, X=YxZ where R is the
 % position of spacecraft (s/c3)
 %
 % h=c_pl_sc_pos_mfinates(t,R1,R2,R3,R4,Vref,Bref);
-% h=c_pl_sc_pos_mfinates(t);   
+% h=c_pl_sc_pos_mfinates(t);
 % reads position, velocity and B field from mat files (use s/c 3 as reference)
 %
 % h    - handle to subplots
@@ -50,9 +50,9 @@ for ipl=1:npl
   c_eval('x?=dr_MF?;');
   xl='outward [km] MF';yl='east [km] MF';zl='along B [km] MF';
   plot3(x1(2),x1(3),x1(4),'ks', ...
-       x2(2),x2(3),x2(4),'rd', ...
-        x3(2),x3(3),x3(4),'go', ...
-        x4(2),x4(3),x4(4),'mv')
+    x2(2),x2(3),x2(4),'rd', ...
+    x3(2),x3(3),x3(4),'go', ...
+    x4(2),x4(3),x4(4),'mv')
   xlabel(xl);ylabel(yl);zlabel(zl);
   c_eval('view(view?);',ipl);
   axis equal;grid on;

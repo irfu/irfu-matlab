@@ -1,7 +1,7 @@
 function [tt, xx, yy] = orbit(r_per,r_ap,Ttot,varargin)
 % ORBIT  Calculates Kepler orbit as a function of time.
 %   Orbit starts at perihelion at t = 0.
-%   
+%
 %   Example
 %   [t,x,y] = orbit(r_per,r_ap,Ttot,method,'dt',dt);
 %       Output:
@@ -13,7 +13,7 @@ function [tt, xx, yy] = orbit(r_per,r_ap,Ttot,varargin)
 %           r_ap - apogee, RE
 %           Ttot - total time to calculate the orbit for. If Ttot is larger
 %                  than the period of the orbit, the orbit is only
-%                  duplicated. It is assumed the orbit is fixed wrt the 
+%                  duplicated. It is assumed the orbit is fixed wrt the
 %                  star system, so a precession frequency (?) is added
 %                  that displaces the orbit slightly.
 %           method - 'E' - constant increase in eccentric anomaly, dt is
@@ -29,16 +29,16 @@ function [tt, xx, yy] = orbit(r_per,r_ap,Ttot,varargin)
 method = 'E'; % default
 Units = irf_units;
 while ~isempty(varargin)
-    if strcmp(varargin{1},'dt')        
-        dt = varargin{2};
-        varargin(1:2)=[];
-    elseif strcmp(varargin{1},'t')
-        method = 't';        
-        varargin(1)=[];
-    elseif strcmp(varargin{1},'E')
-        method = 'E';        
-        varargin(1)=[];
-    end
+  if strcmp(varargin{1},'dt')
+    dt = varargin{2};
+    varargin(1:2)=[];
+  elseif strcmp(varargin{1},'t')
+    method = 't';
+    varargin(1)=[];
+  elseif strcmp(varargin{1},'E')
+    method = 'E';
+    varargin(1)=[];
+  end
 end
 
 % Physical parameters
@@ -60,47 +60,47 @@ disp(['Orbit period: ' num2str(T/60/60,'%.2f') ' hours'])
 disp(['Eccentricity: ' num2str(e,'%.2f')])
 
 switch lower(method)
-    case 'e' % constant eccentric anomaly step
-        E=0:.01:2*pi; % eccentric anomaly
-        %f = 2*atan(sqrt((1+e)/(1-e))*tan(E/2));
-        %f(f<0)=f(f<0)+2*pi;
-        %f = 2*atan2(sqrt(1+e)*sin(E/2),sqrt(1-e)*cos(E/2));
-        f = 2*atan(sqrt((1+e)/(1-e))*tan(E/2)); % true anomaly (angle from x,y=0)
-        b = a*sqrt(1-e^2); % semi-minor axis?
-        t = a*sqrt(a/mu)*(E-e*sin(E)); % time       
-        x = a*(cos(E)-e);
-        y = b*sin(E);
-        r = sqrt(x.^2+y.^2);
-    otherwise % constant timestep
-        if ~exist('dt','var')
-            dt = 120; % s, 120s=2min
-        end
-        if Ttot<T; t = 0:dt:Ttot;   
-        else, t = 0:dt:T;
-        end
-        nt = numel(t);
-        tau = 0; % time of perihelion passage
-        M = n*(t-tau); % mean anomaly;
-        funEM = @(E,M) E-e*sin(E)-M;
-        E = fsolve(@(E) funEM(E,M),M);
-        r = a*(1-e*cos(E)); % radial distance from Earth
-        f = 2*atan(sqrt((1+e)/(1-e))*tan(E/2)); % true anomaly (angle from x,y=0)
-        %f = 2*atan2(sqrt(1+e)*sin(E/2),sqrt(1-e)*cos(E/2));
-end        
-                      
-if Ttot<T 
-    rr = r;
-    ff = f;
-    tt = t;
-else % copy orbit
-    nT = ceil(Ttot/T);
-    rr = repmat(r,1,nT);
-    ff = repmat(f,1,nT);
-    tt = [];
-    for kk=1:nT
-        tt = [tt t+(kk-1)*T];        
+  case 'e' % constant eccentric anomaly step
+    E=0:.01:2*pi; % eccentric anomaly
+    %f = 2*atan(sqrt((1+e)/(1-e))*tan(E/2));
+    %f(f<0)=f(f<0)+2*pi;
+    %f = 2*atan2(sqrt(1+e)*sin(E/2),sqrt(1-e)*cos(E/2));
+    f = 2*atan(sqrt((1+e)/(1-e))*tan(E/2)); % true anomaly (angle from x,y=0)
+    b = a*sqrt(1-e^2); % semi-minor axis?
+    t = a*sqrt(a/mu)*(E-e*sin(E)); % time
+    x = a*(cos(E)-e);
+    y = b*sin(E);
+    r = sqrt(x.^2+y.^2);
+  otherwise % constant timestep
+    if ~exist('dt','var')
+      dt = 120; % s, 120s=2min
     end
-    %tt = linspace(0,nT*T,nT*nt);
+    if Ttot<T; t = 0:dt:Ttot;
+    else, t = 0:dt:T;
+    end
+    nt = numel(t);
+    tau = 0; % time of perihelion passage
+    M = n*(t-tau); % mean anomaly;
+    funEM = @(E,M) E-e*sin(E)-M;
+    E = fsolve(@(E) funEM(E,M),M);
+    r = a*(1-e*cos(E)); % radial distance from Earth
+    f = 2*atan(sqrt((1+e)/(1-e))*tan(E/2)); % true anomaly (angle from x,y=0)
+    %f = 2*atan2(sqrt(1+e)*sin(E/2),sqrt(1-e)*cos(E/2));
+end
+
+if Ttot<T
+  rr = r;
+  ff = f;
+  tt = t;
+else % copy orbit
+  nT = ceil(Ttot/T);
+  rr = repmat(r,1,nT);
+  ff = repmat(f,1,nT);
+  tt = [];
+  for kk=1:nT
+    tt = [tt t+(kk-1)*T];
+  end
+  %tt = linspace(0,nT*T,nT*nt);
 end
 
 % add precession of orbit as Earth goes around Sun
@@ -117,9 +117,9 @@ tt(tt>Ttot)=[];
 
 % interpolate to constant dt
 if exist('dt','var')
-    tinterp = 1:dt:tt(end);
-    xx = interp1(tt,xx,tinterp);
-    yy = interp1(tt,yy,tinterp);
-    tt = tinterp;
-    
+  tinterp = 1:dt:tt(end);
+  xx = interp1(tt,xx,tinterp);
+  yy = interp1(tt,yy,tinterp);
+  tt = tinterp;
+  
 end

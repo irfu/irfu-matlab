@@ -15,11 +15,11 @@ function within = c_ri_timestr_within_intervall(time_str,s_t,e_t)
 % Finds if the to intervalls intersects each other
 %
 %Using:
-% 
+%
 %Work method:
 %
 %Error:
-% 
+%
 %Discription of variables:
 %
 %Written by Robert Isaksson in the summer of -03
@@ -39,7 +39,7 @@ f_t = toepoch([v_ymd(1:3) v_fhms(4:6)]);
 t_t = toepoch([v_ymd(1:3) v_thms(4:6)]);
 
 if st_e <= t_t && f_t <= et_e
-within = 1;
+  within = 1;
 else
-within = 0;
+  within = 0;
 end

@@ -30,25 +30,25 @@ dm = length(dt(1,:));
 time = zeros(ndata,1);
 
 if strcmp(info.Variables{5,1},'BGSEc') %IMF K2 data
-	data = zeros(ndata,3);
-	for i = 1:ndata
-		time(i) = todatenum(dt{i,1});
-		data(i,:) = dt{i,5}';
-	end
+  data = zeros(ndata,3);
+  for i = 1:ndata
+    time(i) = todatenum(dt{i,1});
+    data(i,:) = dt{i,5}';
+  end
 elseif strcmp(info.Variables{6,1},'BGSM') %IMF H2 data
-	data = zeros(ndata,3);
-	for i = 1:ndata
-		time(i) = todatenum(dt{i,1});
-		data(i,:) = dt{i,6}';
-	end
+  data = zeros(ndata,3);
+  for i = 1:ndata
+    time(i) = todatenum(dt{i,1});
+    data(i,:) = dt{i,6}';
+  end
 elseif strcmp(info.Variables{6,1},'Np') && strcmp(info.Variables{7,1},'Vp')
-%SW data
-	data = zeros(ndata,1);
-	for i = 1:ndata
-		time(i) = todatenum(dt{i,1});
-		%convert to SW pressure in nPa
-		data(i,:) = 1.6726e-6*double(dt{i,6})*double(dt{i,7})^2; 
-	end
+  %SW data
+  data = zeros(ndata,1);
+  for i = 1:ndata
+    time(i) = todatenum(dt{i,1});
+    %convert to SW pressure in nPa
+    data(i,:) = 1.6726e-6*double(dt{i,6})*double(dt{i,7})^2;
+  end
 else
-	error('CDF file format not recognized.')
+  error('CDF file format not recognized.')
 end

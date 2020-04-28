@@ -47,16 +47,16 @@ end
 
 % time integral of Poynting flux along ambient magnetic field
 if flag_intSz
- ssz=Sz;
- ssz(isnan(Sz))=0; % set to zero points where Sz=NaN
- intSz=ssz;
- intSz(:,2)=cumsum(ssz(:,2))/Fs;
+  ssz=Sz;
+  ssz(isnan(Sz))=0; % set to zero points where Sz=NaN
+  intSz=ssz;
+  intSz(:,2)=cumsum(ssz(:,2))/Fs;
 end
 
 if flag_intS% time integral of all Poynting flux components
- ss=S;
- ss(isnan(S))=0; % set to zero points where Sz=NaN
- intS=ss;
- intS(:,2:end)=cumsum(ss(:,2:end))/Fs;
- Sz=intS;
+  ss=S;
+  ss(isnan(S))=0; % set to zero points where Sz=NaN
+  intS=ss;
+  intS(:,2:end)=cumsum(ss(:,2:end))/Fs;
+  Sz=intS;
 end

@@ -1,12 +1,12 @@
 % Examples of Partial moments calculations using mms.psd_moments.
 
-%% Example 1. Compute moments of ions with positive and negative V_x individually 
+%% Example 1. Compute moments of ions with positive and negative V_x individually
 
 % Load ion skymap data...
 
 x = zeros(length(dist.time),32,16);
 for ii = 1:length(dist.time)
-	x(ii,:,:) = -cosd(phi.data(ii,:)')*sind(theta.data);
+  x(ii,:,:) = -cosd(phi.data(ii,:)')*sind(theta.data);
 end
 x = repmat(x,1,1,1,32);
 x = squeeze(permute(x,[1 4 2 3]));
@@ -31,9 +31,9 @@ y = zeros(length(dist.time),32,16);
 z = zeros(length(dist.time),32,16);
 
 for ii = 1:length(dist.time)
-	x(ii,:,:) = -cosd(phi.data(ii,:)')*sind(theta.data);
-	y(ii,:,:) = -sind(phi.data(ii,:)')*sind(theta.data);
-	z(ii,:,:) = -ones(32,1)*cosd(theta.data);
+  x(ii,:,:) = -cosd(phi.data(ii,:)')*sind(theta.data);
+  y(ii,:,:) = -sind(phi.data(ii,:)')*sind(theta.data);
+  z(ii,:,:) = -ones(32,1)*cosd(theta.data);
 end
 x = repmat(x,1,1,1,32);
 x = squeeze(permute(x,[1 4 2 3]));

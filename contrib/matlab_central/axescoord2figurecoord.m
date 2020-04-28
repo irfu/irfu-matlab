@@ -3,7 +3,7 @@ function [xfigure, yfigure]=axescoord2figurecoord(varargin)
 % figure units coordinate to the figure for annotation location
 % [xfigure, yfigure]=axescoord2figurecoord(xaxes,yaxes)
 % [xfigure, yfigure]=axescoord2figurecoord(xaxes,yaxes,handle_axes)
-% 
+%
 % Ex.
 %       % Create some data
 % 		t = 0:.1:4*pi;
@@ -57,13 +57,13 @@ function [xfigure, yfigure]=axescoord2figurecoord(varargin)
 narginchk(2,3);
 
 if nargin==2
-    xaxes=varargin{1};
-    yaxes=varargin{2};
-    h_axes = get(gcf,'CurrentAxes');
+  xaxes=varargin{1};
+  yaxes=varargin{2};
+  h_axes = get(gcf,'CurrentAxes');
 else
-    xaxes=varargin{1};
-    yaxes=varargin{2};
-    h_axes = varargin{3};
+  xaxes=varargin{1};
+  yaxes=varargin{2};
+  h_axes = varargin{3};
 end
 
 % get axes properties
@@ -96,48 +96,48 @@ asc=get(h_axes,'Position');
 rasc=asc(4)/asc(3);
 rpb=pbar(2)/pbar(1);
 if rasc<rpb
-    xwb=axesoffsets(3)/rpb*rasc;
-    xab=axesoffsets(1)+axesoffsets(3)/2-xwb/2;
-    yab=axesoffsets(2);
-    ywb=axesoffsets(4);
+  xwb=axesoffsets(3)/rpb*rasc;
+  xab=axesoffsets(1)+axesoffsets(3)/2-xwb/2;
+  yab=axesoffsets(2);
+  ywb=axesoffsets(4);
 elseif rasc==rpb
-    xab=axesoffsets(1);
-    yab=axesoffsets(2);
-    xwb=axesoffsets(3);
-    ywb=axesoffsets(4);
+  xab=axesoffsets(1);
+  yab=axesoffsets(2);
+  xwb=axesoffsets(3);
+  ywb=axesoffsets(4);
 else
-    ywb=axesoffsets(4)*rpb/rasc;
-    yab=axesoffsets(2)+axesoffsets(4)/2-ywb/2;
-    xab=axesoffsets(1);
-    xwb=axesoffsets(3);
+  ywb=axesoffsets(4)*rpb/rasc;
+  yab=axesoffsets(2)+axesoffsets(4)/2-ywb/2;
+  xab=axesoffsets(1);
+  xwb=axesoffsets(3);
 end
 
 if strcmp(darm,'auto') && strcmp(pbarm,'auto')
-    xab=axesoffsets(1);
-    yab=axesoffsets(2);
-    xwb=axesoffsets(3);
-    ywb=axesoffsets(4);
+  xab=axesoffsets(1);
+  yab=axesoffsets(2);
+  xwb=axesoffsets(3);
+  ywb=axesoffsets(4);
 end
 
 % compute coordinate taking in account for axes directions
 if strcmp(xd , 'normal')==1
-    xfigure = xab+xwb*(xaxes-x_axislimits(1))/x_axislength;
+  xfigure = xab+xwb*(xaxes-x_axislimits(1))/x_axislength;
 else
-    xfigure = xab+xwb*(x_axislimits(2)-xaxes)/x_axislength;
+  xfigure = xab+xwb*(x_axislimits(2)-xaxes)/x_axislength;
 end
 if strcmp(funit,'normalized')
-    xfigure(find(xfigure>1))=1;
-    xfigure(find(xfigure<0))=0;
+  xfigure(find(xfigure>1))=1;
+  xfigure(find(xfigure<0))=0;
 end
 
 
 if strcmp(yd , 'normal')==1
-    yfigure = yab+ywb*(yaxes-y_axislimits(1))/y_axislength;
+  yfigure = yab+ywb*(yaxes-y_axislimits(1))/y_axislength;
 else
-    yfigure = yab+ywb*(y_axislimits(2)-yaxes)/y_axislength;
+  yfigure = yab+ywb*(y_axislimits(2)-yaxes)/y_axislength;
 end
 if strcmp(funit,'normalized')
-    yfigure(find(yfigure>1))=1;
-    yfigure(find(yfigure<0))=0;
+  yfigure(find(yfigure>1))=1;
+  yfigure(find(yfigure<0))=0;
 end
 set(h_axes,'Units',aunit); % put axes units back to original state

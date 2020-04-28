@@ -1,4 +1,4 @@
-function view_and_filter_angles() 
+function view_and_filter_angles()
 %
 %view_and_filter_angles()
 %
@@ -9,7 +9,7 @@ function view_and_filter_angles()
 %Descrition of the function:
 % Loads a file with variable "angles" and "ampl". Filters the angle with min_ampl to get
 % the max angle. Then plots the max angles.
-% 
+%
 %
 %Using:
 % fromepoch
@@ -17,12 +17,12 @@ function view_and_filter_angles()
 % time2row
 % find_max_angles
 % plot_max_angles
-% class_angle_as_event 
+% class_angle_as_event
 %
 %Work method:
 %
 %Error:
-% 
+%
 %Discription of variables:
 %
 %Written by Robert Isaksson in the summer of -03
@@ -48,16 +48,16 @@ end_time = input('to [yyyy mm dd hh mm ss.mss] (0 -from beginning): ');
 
 %sets the start time in epochs, start_time goes from UT to epoch
 if start_time == 0 || toepoch(start_time) < toepoch(angles(1,1))
-start_time = angles(1,1);
+  start_time = angles(1,1);
 else
-start_time = toepoch(start_time);
+  start_time = toepoch(start_time);
 end
 
 %sets the end time in epochs, end_time goes from UT to epoch
 if end_time == 0 || toepoch(end_time) > toepoch(angles(a_max,1))
-end_time = angles(a_max,1);
+  end_time = angles(a_max,1);
 else
-end_time = toepoch(start_time);
+  end_time = toepoch(start_time);
 end
 
 s_row = time2row(start_time, angles,1);
@@ -81,10 +81,10 @@ hold off
 
 save_or_not = input('Do you want to save the results?(y/n) ','s')
 if save_or_not == 'y'
-[a ,b] = size(fn);
-tf = sprintf('/share/robert/events/E%s',fn(2:b));
-disp(['save to: ' tf])
-save(tf,'max_angles','time_of_events');
+  [a ,b] = size(fn);
+  tf = sprintf('/share/robert/events/E%s',fn(2:b));
+  disp(['save to: ' tf])
+  save(tf,'max_angles','time_of_events');
 end
 
 
