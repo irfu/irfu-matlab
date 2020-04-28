@@ -37,10 +37,10 @@ for j=1:int-1
   ind_s=ind_c-j;
   ind_e=ind_c+j;
   if ind_e > n_elem
-     ind_e=n_elem;
+    ind_e=n_elem;
   end
   if ind_s < 1
-     ind_s=1;
+    ind_s=1;
   end
   [out,l,v]=irf_minvar(b(ind_s:ind_e,:));
   if (v(coord,1)<0), v=-v; end % change sign so that min var always has  positive x
@@ -59,5 +59,5 @@ for j=1:int-1
   b_mean=mean(b(ind_s:ind_e,:));
   b_n(j,2)=irf_dot(b_mean,v3_mv_nest(j,:),1);
   b_n(j,1)=M;
-b_n(j,3)=sqrt(l(3)/(double(M)-1)+(phi_32(j)*(irf_dot(b_mean,v(2,:),1)))^2+(phi_31(j)*(irf_dot(b_mean,v(1,:),1)))^2);
+  b_n(j,3)=sqrt(l(3)/(double(M)-1)+(phi_32(j)*(irf_dot(b_mean,v(2,:),1)))^2+(phi_31(j)*(irf_dot(b_mean,v(1,:),1)))^2);
 end

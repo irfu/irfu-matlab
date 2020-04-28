@@ -11,11 +11,13 @@ function m = nanmean(x,dim,minDataFrac)
 %   IRF.NANMEAN(X,DIM,MINDATAFRAC) specifies the minimum fraction of data (within each
 %   1D sequence) that is allowed to be NaN. If the fraction is smaller, then
 %   the resulting value is NaN.
-%	  MINDATAFRAC=0, any number of NaNs is allowed. MINDATAFRAC=1, no NaN is allowed. 
+%	  MINDATAFRAC=0 : Any number of NaNs is allowed.
+%     MINDATAFRAC=1 : No NaNs are allowed. 
 %
 %   See also MEAN
 %
-%	NANMEAN (without MINDATAFRAC argument) is also part of the Signal Processing Toolbox since Matlab R2013a.
+%	NANMEAN (without MINDATAFRAC argument) is also part of
+%   the Signal Processing Toolbox since Matlab R2013a.
 
 
 if nargin == 2, minDataFrac = 0; end

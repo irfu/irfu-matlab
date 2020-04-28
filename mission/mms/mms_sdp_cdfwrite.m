@@ -2,8 +2,8 @@ function [ outFileName ] = mms_sdp_cdfwrite( HeaderInfo, Dmgr )
 % MMS_SDP_CDFWRITE writes the data to the corresponding CDF file.
 %
 %	filename_output = MMS_SDP_CDFWRITE( HeaderInfo, Dmgr)
-%   will write an MMS CDF file containing the data stored to a temporary 
-%   output folder defined by ENVIR.DROPBOX_ROOT. HeaderInfo contains start 
+%   will write an MMS CDF file containing the data stored to a temporary
+%   output folder defined by ENVIR.DROPBOX_ROOT. HeaderInfo contains start
 %   time as well as information about source files ("Parents"). Dmgr is a
 %   handle for data read into mms_sdp_dmgr.
 %
@@ -32,8 +32,8 @@ COMPRESS_LEVEL = 'gzip.6'; % Default compression level to be used for variables.
 
 procId = Dmgr.procId;
 if procId==MMS_CONST.Error
-    errStr = 'mms_sdp_dmgr not properly initialized';
-    irf.log('critical',errStr), error(errStr)
+  errStr = 'mms_sdp_dmgr not properly initialized';
+  irf.log('critical',errStr), error(errStr)
 end
 procName = MMS_CONST.SDCProcs{procId};
 scId = Dmgr.scId;
@@ -82,13 +82,13 @@ switch procId
     dataDesc = sprintf(...
       'MMS %i dual probe %s (%s), two dimensional electric field.',...
       scId,procName,tmModeStr);
-
+    
     dce_xyz_dsl = Dmgr.dce_xyz_dsl;
     if mms_is_error(dce_xyz_dsl)
       errStr='Cannot output ''dce_xyz_dsl''';
       irf.log('critical', errStr); error('MATLAB:MMS_SDP_CDFWRITE:OUT', errStr);
     end
-
+    
     epochTT = dce_xyz_dsl.time;
     % Ensure dce is in correct class
     dsl = mms_sdp_typecast('dce', dce_xyz_dsl.data);
@@ -106,7 +106,7 @@ switch procId
     name.quality = [datasetPrefix '_dce_quality'];
     name.dplus   = [datasetPrefix '_deltap']; % Delta Plus (time interval)
     name.repres1 = [datasetPrefix '_representation1'];
-
+    
     label = ['Ex DSL'; 'Ey DSL'; 'Ez DSL'];
     outVars = {name.epoch, epochTT, name.label, label, name.dsl, dsl, ...
       name.bitmask, bitmask, name.quality, quality, ...
@@ -125,7 +125,7 @@ switch procId
     compressVars = {name.label, COMPRESS_LEVEL, name.dsl, COMPRESS_LEVEL, ...
       name.bitmask, COMPRESS_LEVEL, name.quality, COMPRESS_LEVEL, ...
       name.dplus, COMPRESS_LEVEL, name.repres1, COMPRESS_LEVEL};
-
+    
     %% Update VariableAttributes
     VATTRIB.CATDESC = {name.epoch, 'Time tags, in TT2000'; ...
       name.label,   'Label'; ...
@@ -192,7 +192,7 @@ switch procId
       name.dplus,   'support_data';...
       name.repres1, 'metadata'};
     VATTRIB.MONOTON = {name.epoch, 'INCREASE'};
-
+    
   case MMS_CONST.SDCProc.l2a
     % L2A (same as old L2pre)
     varNameSuffix = [tmModeStr, '_l2a'];
@@ -200,7 +200,7 @@ switch procId
     dataDesc = sprintf(...
       'MMS %i dual probe %s (%s), two dimensional electric field. L2A file',...
       scId,procName,tmModeStr);
-
+    
     % Verify output data exist. L2A outputs: DCE [e12, e34, e56], phase,
     % Spinfit [e12, e34] {sdev A B C}, bitmask of DCE [e12, e34, e56] and a
     % quality. (and corresponding epoch and labels).
@@ -235,9 +235,9 @@ switch procId
       irf.log('critical', errStr); error('MATLAB:MMS_SDP_CDFWRITE:OUT', errStr);
     end
     sdpPair = fields(spinfit.sfit); % Defailt e12 & e34
-% NEW CMDModel, writing here to be used by Brst segments. As of 2016/09/22
-% it is nominally only produced for MMS4 for time after probe 4 failed. Ie.
-% if it does not exist, do not fail and do not try to write it to file.
+    % NEW CMDModel, writing here to be used by Brst segments. As of 2016/09/22
+    % it is nominally only produced for MMS4 for time after probe 4 failed. Ie.
+    % if it does not exist, do not fail and do not try to write it to file.
     cmdmodel = Dmgr.CMDModel;
     if mms_is_error(cmdmodel) || isempty(cmdmodel)
       no_CMD = true;
@@ -256,7 +256,7 @@ switch procId
     dcedata = mms_sdp_typecast('dce',[dce.e12.data, dce.e34.data, -dce.e56.data]);
     adcdata = mms_sdp_typecast('adc_offset',[adc_off.(sdpPair{1}), adc_off.(sdpPair{2})]);
     phasedata = mms_sdp_typecast('phase',phase.data);
-% FIXME: Should not use irf.nanmean when writing all delta offset records.    
+    % FIXME: Should not use irf.nanmean when writing all delta offset records.
     deltadata = mms_sdp_typecast('delta_offset', irf.nanmean([real(delta_off), imag(delta_off)]));
     sw_wake = mms_sdp_typecast('dce', sw_wake);
     radius = mms_sdp_typecast('dce', radius);
@@ -265,7 +265,7 @@ switch procId
     quality = mms_sdp_typecast('quality',mms_sdp_bitmask2quality('e',bitmask(:,1)));
     dplus   = mms_sdp_typecast('deltaplus', 10^9/(2*Dmgr.samplerate)); % in nanoseconds, half the time interval.
     dplus2  = mms_sdp_typecast('deltaplus', double(MMS_CONST.Limit.SPINFIT_INTERV)/2); % in nanoseconds, half the time interval.
-
+    
     name.epoch   = [datasetPrefix '_epoch_' varNameSuffix];
     name.dce     = [datasetPrefix '_dce_' varNameSuffix];
     name.phase   = [datasetPrefix '_phase_' varNameSuffix];
@@ -302,7 +302,7 @@ switch procId
     % RecordBound, ie individual cdf records for each row.
     recBound = {name.epoch, name.dce, name.phase, name.bitmask, ...
       name.quality, name.adc, name.sfitsEpoch, name.swwake, name.radius};
-% FIXME: When all delta_offset values inclunde also delta in recBound
+    % FIXME: When all delta_offset values inclunde also delta in recBound
     % recBound = {name.epoch, name.dce, name.phase, name.bitmask, ...
     %  name.quality, name.adc, name.sfitsEpoch, name.delta};
     %Variable Datatypes
@@ -367,7 +367,7 @@ switch procId
       name.adc,     name.epoch; ...
       name.swwake,  name.epoch; ...
       name.radius,  name.epoch};
-% FIXME: When all delta_offset values inclunde also delta in recBound
+    % FIXME: When all delta_offset values inclunde also delta in recBound
     % VATTRIB.DEPEND_0 = {name.dce, name.epoch; ...
     %  name.phase,   name.epoch; ...
     %  name.bitmask, name.epoch;...
@@ -477,10 +477,10 @@ switch procId
       name.sfitsEpoch, spdfcomputett2000([2100,01,01,0,0,0,0,0,0]);...
       name.delta,      EFIELD_MAX; ...
       name.swwake,     EFIELD_MAX; ...
-      name.radius,     mms_sdp_typecast('dce', 637120); ... % approx 100*R_Earth in km 
+      name.radius,     mms_sdp_typecast('dce', 637120); ... % approx 100*R_Earth in km
       name.dplus,      mms_sdp_typecast('deltaplus',62500000); ... % int64(10^9/(2*8)), lowest comm
       name.dplus2,     mms_sdp_typecast('deltaplus',1000000000000)}; ... % 100 spins at nominal spinrate..
-    VATTRIB.VAR_TYPE = {name.epoch, 'support_data'; ...
+      VATTRIB.VAR_TYPE = {name.epoch, 'support_data'; ...
       name.label,      'metadata'; ...
       name.label2,     'metadata';...
       name.label3,     'metadata';...
@@ -500,7 +500,7 @@ switch procId
       name.repres2,    'metadata'};
     VATTRIB.MONOTON = {name.epoch, 'INCREASE';...
       name.sfitsEpoch, 'INCREASE'};
-
+    
     switch (size(spinfit.sfit.(sdpPair{1}),2))
       case 3
         % [A], B & C, 15 char each.
@@ -520,7 +520,7 @@ switch procId
         error('MATLAB:MMS_SDP_CDFWRITE:OUT', errStr);
     end
     outVars = [outVars {name.label2, label2}];
-
+    
     for iPair=1:numel(sdpPair)
       name.sfits.(sdpPair{iPair}) = [datasetPrefix,'_espin_', strrep(sdpPair{iPair},'e','p'),'_', varNameSuffix];
       name.sfitSdev = [datasetPrefix '_sdevfit_', strrep(sdpPair{iPair},'e','p'),'_', varNameSuffix]; % Spinfit SDEV.
@@ -614,15 +614,15 @@ switch procId
       VATTRIB.VALIDMAX = [VATTRIB.VALIDMAX; {name.cmdmodel, EFIELD_MAX}];
       VATTRIB.VAR_TYPE = [VATTRIB.VAR_TYPE; {name.cmdmodel, 'support_data'}];
     end
-
+    
   case MMS_CONST.SDCProc.l2pre
     % L2Pre (new output: ADP separate, and 2d DCE from E12, E34 and 3rd
     % componenet from E*B = 0.)
     varNameSuffix = [tmModeStr, '_l2pre'];
     dataType = [tmModeStr '_' procName '_' DCE_FILE];
     dataDesc = sprintf(...
-    'MMS %i dual probe %s (%s), two dimensional electric field.',...
-    scId,procName,tmModeStr);
+      'MMS %i dual probe %s (%s), two dimensional electric field.',...
+      scId,procName,tmModeStr);
     
     l2pre = Dmgr.l2a;
     if mms_is_error(l2pre)
@@ -639,7 +639,7 @@ switch procId
     sw_wake = mms_sdp_typecast('dce', l2pre.sw_wake_despun);
     spinEpoch = mms_sdp_typecast('dce',l2pre.spinEpoch.data);
     dsl_off = mms_sdp_typecast('dce', l2pre.dsl_offset);
- % FIXME: Should not use irf.nanmean when writing all delta offset records.
+    % FIXME: Should not use irf.nanmean when writing all delta offset records.
     % When all records are written, also include the epoch of spinsfits (or
     % write the delta_offsets computed from resampling to dce datas epoch.
     deltadata = mms_sdp_typecast('delta_offset',irf.nanmean([real(l2pre.delta_off), imag(l2pre.delta_off)]));
@@ -679,7 +679,7 @@ switch procId
       name.dplus, dplus, name.repres1, repres1, ...
       name.repres2, repres2, name.dsl_off, dsl_off};
     % RecordBound, ie individual cdf records for each row.
-% FIXME: When all delta_offset values inclunde also delta in recBound
+    % FIXME: When all delta_offset values inclunde also delta in recBound
     recBound = {name.epoch, name.dsl, name.phase, name.bitmask, ...
       name.quality, name.adp, name.adc, name.swwake, name.spinEpo, name.dsl_off};
     %Variable Datatypes
@@ -709,7 +709,7 @@ switch procId
       name.swwake, COMPRESS_LEVEL, name.spinEpo, COMPRESS_LEVEL, ...
       name.dplus, COMPRESS_LEVEL, name.repres1, COMPRESS_LEVEL, ...
       name.repres2, COMPRESS_LEVEL, name.dsl_off, COMPRESS_LEVEL};
-
+    
     %% Update VariableAttributes
     VATTRIB.CATDESC = {name.epoch, 'Time tags, in TT2000'; ...
       name.label,   'Label'; ...
@@ -736,8 +736,8 @@ switch procId
       name.dsl_off, 'DSL'};
     VATTRIB.DELTA_PLUS_VAR = {name.epoch, name.dplus};
     VATTRIB.DELTA_MINUS_VAR = {name.epoch, name.dplus};
-% FIXME: When all delta_offset values inclunde also delta in DEPEND_O, with
-% reference to its epoch.
+    % FIXME: When all delta_offset values inclunde also delta in DEPEND_O, with
+    % reference to its epoch.
     VATTRIB.DEPEND_0 = {name.dsl,     name.epoch; ...
       name.adp,     name.epoch;...
       name.phase,   name.epoch;...
@@ -881,8 +881,8 @@ switch procId
       name.repres1, 'metadata'; ...
       name.repres2, 'metadata'};
     VATTRIB.MONOTON = {name.epoch, 'INCREASE'};
-
-
+    
+    
   case MMS_CONST.SDCProc.scpot
     % ScPot - get data
     varNameSuffix = [tmModeStr, '_l2'];
@@ -890,7 +890,7 @@ switch procId
     dataDesc = sprintf(...
       'MMS %i dual probe %s (%s), Spacecraft potential',...
       scId,procName,tmModeStr);
-
+    
     dcv = Dmgr.dcv;
     if mms_is_error(dcv)
       errStr='Cannot output ''dcv''';
@@ -916,7 +916,7 @@ switch procId
     bitmask = mms_sdp_typecast('bitmask',sc_pot.bitmask);
     quality = mms_sdp_typecast('quality',mms_sdp_bitmask2quality('e',sc_pot.bitmask));
     dplus   = mms_sdp_typecast('deltaplus', (10^9/(2*Dmgr.samplerate))); % in nanoseconds, half the time interval.
-
+    
     name.epoch   = [datasetPrefix '_epoch_' varNameSuffix]; % Timestamp in TT2000
     name.scpot   = [datasetPrefix '_scpot_' varNameSuffix]; % Estimated Spacecraft potential
     name.psp     = [datasetPrefix '_psp_' varNameSuffix]; % Probe to spacecraft potential, averaged
@@ -936,11 +936,11 @@ switch procId
       name.bitmask, bitmask,...
       name.quality, quality, ...
       name.dplus, dplus};
-
+    
     % RecordBound, ie individual cdf records for each row.
     recBound = {name.epoch, name.scpot, name.psp, name.psp_p, ...
       name.bitmask, name.quality};
-
+    
     % Variable Datatypes
     varDatatype = {name.epoch, getfield(mms_sdp_typecast('epoch'),'cdf'), ...
       name.label,   getfield(mms_sdp_typecast('label'),  'cdf'), ...
@@ -950,13 +950,13 @@ switch procId
       name.bitmask, getfield(mms_sdp_typecast('bitmask'),'cdf'), ...
       name.quality, getfield(mms_sdp_typecast('quality'),'cdf'), ...
       name.dplus,   getfield(mms_sdp_typecast('deltaplus'),'cdf')};
-
+    
     % Compression
     compressVars = {name.label, COMPRESS_LEVEL, name.scpot, COMPRESS_LEVEL, ...
       name.psp, COMPRESS_LEVEL, name.psp_p, COMPRESS_LEVEL, ...
       name.bitmask, COMPRESS_LEVEL, name.quality, COMPRESS_LEVEL, ...
       name.dplus, COMPRESS_LEVEL};
-
+    
     %% Update VariableAttributes
     VATTRIB.CATDESC = {name.epoch, 'Time tags, in TT2000'; ...
       name.label,   'Label'; ...
@@ -1046,7 +1046,7 @@ switch procId
       name.quality, 'support_data'; ...
       name.dplus,   'support_data'};
     VATTRIB.MONOTON = {name.epoch, 'INCREASE'};
-
+    
   otherwise
     errStr = 'unrecognized procId';
     irf.log('critical', errStr); error(errStr)
@@ -1144,12 +1144,12 @@ cd(oldDir);
   end
 
   function write_file
-   % write file with arguments obtained above, also include md5 checksum.
-   spdfcdfwrite(outFileName, outVars, 'Vardatatypes', varDatatype, ...
-     'GlobalAttributes', GATTRIB, 'VariableAttributes', VATTRIB, ...
-     'RecordBound', recBound, 'VarCompress', compressVars, ...
-     'Checksum', 'md5');
-   irf.log('notice',['File written to DROPBOX_ROOT/',outFileName,'.cdf']);
+    % write file with arguments obtained above, also include md5 checksum.
+    spdfcdfwrite(outFileName, outVars, 'Vardatatypes', varDatatype, ...
+      'GlobalAttributes', GATTRIB, 'VariableAttributes', VATTRIB, ...
+      'RecordBound', recBound, 'VarCompress', compressVars, ...
+      'Checksum', 'md5');
+    irf.log('notice',['File written to DROPBOX_ROOT/',outFileName,'.cdf']);
   end
 
   function GATTRIB = getGlobalAttributes
@@ -1178,13 +1178,13 @@ cd(oldDir);
       'LASP - Laboratory for Atmospheric and Space Physics. ',...
       'KTH - Kungliga Tekniska Hogskolan (Swedish Royal Institute of Technology). ']; ...
       'For detailed timing information, such as needed for cross spectral analysis, please consult the EDP Data Products Guide.' };  % FIXME This attribute is an SPDF standard global attribute, which is a text description of the
-      %experiment whose data is included in the CDF. A reference to a journal article(s) or to a
-      %World Wide Web page describing the experiment is essential, and constitutes the
-      %minimum requirement. A written description of the data set is also desirable. This
-      %attribute can have as many entries as necessary to contain the desired information.
-      %Typically, this attribute is about a paragraph in length and is not shown on CDAWeb.
-      % Note: Matlab & spdcdfwrite to cdf files result in issues with ASCII
-      % for the charachter "??", therefor replace ?? with o.
+    %experiment whose data is included in the CDF. A reference to a journal article(s) or to a
+    %World Wide Web page describing the experiment is essential, and constitutes the
+    %minimum requirement. A written description of the data set is also desirable. This
+    %attribute can have as many entries as necessary to contain the desired information.
+    %Typically, this attribute is about a paragraph in length and is not shown on CDAWeb.
+    % Note: Matlab & spdcdfwrite to cdf files result in issues with ASCII
+    % for the charachter "??", therefor replace ?? with o.
     GATTRIB.HTTP_LINK = {'https://mms.gsfc.nasa.gov/'; 'http://mms.space.swri.edu/'}; % FIXME should point to data
     GATTRIB.LINK_TEXT = {'Magnetospheric Multiscale (MMS) mission home page'; 'SMART package home page'}; % FIXME as well
     GATTRIB.LINK_TITLE = {'At NASA GSFC'; 'At SWRI'}; % FIXME as well
@@ -1201,7 +1201,7 @@ cd(oldDir);
       GATTRIB.Generated_by = {['Y.Khotyaintsev and T.Nilsson, IRFU, using IRFU Matlab', irf('version')]};
     end
     % Global Attributes OPTIONAL:
-%    GATTRIB.Parents = cell(0,1); % Req if number of source cdf >= 2.
+    %    GATTRIB.Parents = cell(0,1); % Req if number of source cdf >= 2.
     GATTRIB.Skeleton_version = {'v0.0.7'};
     GATTRIB.Rules_of_use = cell(0,1);
     GATTRIB.Time_resolution = cell(0,1);

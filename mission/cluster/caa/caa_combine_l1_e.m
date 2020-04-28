@@ -1,9 +1,9 @@
 function out = caa_combine_l1_e(cl_id)
 %CAA_COMBINE_L1_E  combined data from diff measureemnts into one file
-% 
+%
 %  OUT = CAA_COMBINE_L1_E(CL_ID)
 %
-%  output: The last column contains flagP23 
+%  output: The last column contains flagP23
 
 out = [];
 
@@ -14,7 +14,7 @@ nOk = 0;
 if ~nOk, irf_log('dsrc','no data'), return, end
 vars = {p12,p32,p34};
 
-time = []; 
+time = [];
 for v=vars
   vv = v{:};
   if ~isempty(vv), time = [time; vv(:,1)]; end %#ok<AGROW>
@@ -29,7 +29,7 @@ if nOk > 0
     if isempty(vv), continue, end
     [~,idxTmp,~] = intersect(time,vv(:,1));
     idx{iv} = idxTmp;
-  end 
+  end
 end
 %%
 out = NaN(length(time),3);

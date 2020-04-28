@@ -10,15 +10,15 @@ function out = irf_4_v(r1,r2,r3,r4,x)
 %   See also: IRF_4_V_GUI
 
 
-% If the value is more than c, it is considered to be time. 
+% If the value is more than c, it is considered to be time.
 % If EpochTT object then also time
 if isa(x,'GenericTimeArray')
-    flag='v_from_t';
-    x = x.epochUnix;
+  flag='v_from_t';
+  x = x.epochUnix;
 elseif x(2) > 299792.458
-    flag='v_from_t';
+  flag='v_from_t';
 else
-    flag='dt_from_v';
+  flag='dt_from_v';
 end
 
 % check for TSeris input
@@ -29,31 +29,31 @@ if isa(r4,'TSeries'), r4 = [r4.time.epochUnix double(r4.data)]; end
 
 
 switch flag
-    case 'v_from_t'
-        % Time input, velocity output
-        t = x;
-        
-        dR = get_vol_ten(r1,r2,r3,r4,t);
-        dt = [t(2),t(3),t(4)]-t(1);
-        m = dR\dt'; % "1/v vector"
-        
-        V = m/norm(m)^2;
-        out = V';
-        
-    case 'dt_from_v'
-        % Time and velocity input, time output
-        tc = x(1); % Center time
-        v = x(2:4); % Input velocity
-        
-        m = v/norm(v)^2; % "1/v vector"
-        if size(m,2) == 3
-            m = m';
-        end
-        
-        dR = get_vol_ten(r1,r2,r3,r4,tc);
-        
-        dt = dR*m;
-        out = [0,dt'];        
+  case 'v_from_t'
+    % Time input, velocity output
+    t = x;
+    
+    dR = get_vol_ten(r1,r2,r3,r4,t);
+    dt = [t(2),t(3),t(4)]-t(1);
+    m = dR\dt'; % "1/v vector"
+    
+    V = m/norm(m)^2;
+    out = V';
+    
+  case 'dt_from_v'
+    % Time and velocity input, time output
+    tc = x(1); % Center time
+    v = x(2:4); % Input velocity
+    
+    m = v/norm(v)^2; % "1/v vector"
+    if size(m,2) == 3
+      m = m';
+    end
+    
+    dR = get_vol_ten(r1,r2,r3,r4,tc);
+    
+    dt = dR*m;
+    out = [0,dt'];
 end
 end
 
@@ -62,7 +62,7 @@ function dR = get_vol_ten(r1,r2,r3,r4,t)
 % vector or scalar.
 
 if length(t) == 1
-    t = [t,t,t,t];
+  t = [t,t,t,t];
 end
 
 % Interpolate position

@@ -38,11 +38,11 @@ h3 = num2str( fix( str2double(st_hh)/3 )*3 );
 if length(h3) == 1, h3 = [ '0' h3 ]; end
 
 sp = [ '/data/caa/l1/' YY '/' YY MM DD '_' h3 '00/C' num2str(cl_id) '/' ...
-	YY MM DD '_' st_hh st_mm ];
+  YY MM DD '_' st_hh st_mm ];
 
 st = iso2epoch([ YY '-' MM '-' DD 'T' st_hh ':' st_mm ':' st_ss 'Z' ]);
 et = iso2epoch([ YY '-' MM '-' DD 'T' et_hh ':' et_mm ':' et_ss 'Z' ]);
 if str2double(et_hh)==0 && str2double(et_mm)==0 && str2double(et_ss)==0
-	et = et + 86400;
+  et = et + 86400;
 end
 dt = et - st;

@@ -32,8 +32,8 @@ if size(result,1) <= 1
 end
 columns = size(result,2);
 [data_start_time, data_time_span] = irf_stdt(result(1,1), result(end,1));
-                      
-% For nonzero MASK_TYPE only some of the bitmask values 
+
+% For nonzero MASK_TYPE only some of the bitmask values
 % and modified quality factors are used.
 iburst=0;
 sc_potential = 0; % Default 0. No sc potential processing (P).
@@ -48,36 +48,36 @@ end
 
 qindex=sc_potential+1;                 % Index# in quality factors.
 if nargin < 6
-   quality_column = columns;           % Default quality flag to the last column in 'data'.
-   if nargin < 5
-      bitmask_column = columns - 1;    % Default bitmask to the second last column in 'data'.
-   end
+  quality_column = columns;           % Default quality flag to the last column in 'data'.
+  if nargin < 5
+    bitmask_column = columns - 1;    % Default bitmask to the second last column in 'data'.
+  end
 end
 % Set quality to zero on P level 3 NaN values
 if sc_potential && data_level == 3
-    ix = isnan(result(:,2));
-    result(ix,quality_column) = 0;
+  ix = isnan(result(:,2));
+  result(ix,quality_column) = 0;
 end
 
 if ( (bitmask_column <= 0 || bitmask_column > columns) ||...
     (quality_column <= 0 || quality_column > columns) )
-   error('Wrong column index(es) given.')
+  error('Wrong column index(es) given.')
 end
 
 if ( data_level <= 0 || data_level > 3 )
-   error('Incorrect level of data.')
+  error('Incorrect level of data.')
 end
 
 if isempty(intersect(spacecraft_id,1:4))
-   error('Wrong spacecraft ID given.')
+  error('Wrong spacecraft ID given.')
 end
 
 if ~isa(probe, 'char') || isempty(probe)
-   error('PROBE must be a string')
+  error('PROBE must be a string')
 end
 
 if ~regexp(probe, '^([1-4]|12|32|34|1234|3234)$')
-   error('Wrong probe combination.')
+  error('Wrong probe combination.')
 end
 probe_list = [];
 probe_pair_list = [];
@@ -200,7 +200,7 @@ if mask_type~=4
     end
     clear ok problem_intervals msg
   end
-
+  
   % Mark bad bias and high bias saturation from NS_OPS
   ns_ops = c_ctl('get', spacecraft_id, 'ns_ops');
   if isempty(ns_ops)
@@ -445,5 +445,5 @@ for probe_id = probe_pair_list
   end
 end
 clear ok problem_intervals msg
-  
+
 end % FUNCTION

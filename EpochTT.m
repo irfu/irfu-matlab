@@ -33,13 +33,13 @@ classdef EpochTT < GenericTimeArray
           error('irf:EpochUnix:EpochUnix:badInputs',...
             'UTC string input (char) must be in the form yyyy-mm-ddThh:mm:ss.mmmuuunnnZ')
         end
-				obj.epoch = GenericTimeArray.utc2ttns(inp);
-			elseif isa(inp,'GenericTimeArray')
-				if isa(inp,'EpochTT')
-					obj = inp;
-				else
-					obj = EpochTT(inp.ttns);
-				end
+        obj.epoch = GenericTimeArray.utc2ttns(inp);
+      elseif isa(inp,'GenericTimeArray')
+        if isa(inp,'EpochTT')
+          obj = inp;
+        else
+          obj = EpochTT(inp.ttns);
+        end
       else
         error('irf:EpochUnix:EpochUnix:badInputs',...
           'Expected inputs: int64 (nanoseconds since 2000), double (seconds since 1970) or char (yyyy-mm-ddThh:mm:ss.mmmuuunnnZ)')
@@ -68,22 +68,22 @@ classdef EpochTT < GenericTimeArray
       end
     end
   end
-	
-	methods (Static)
-		function output = from_ttns(input,index) % for consistency with other GenericTimeArray routines
-			if nargin == 1
-				output = input;
-			else
-				output = input(index);
-			end
-		end
-		function output = to_ttns(input,index)
-			if nargin == 1
-				output = input;
-			else
-				output = input(index);
-			end
-		end
-	end
-	
+  
+  methods (Static)
+    function output = from_ttns(input,index) % for consistency with other GenericTimeArray routines
+      if nargin == 1
+        output = input;
+      else
+        output = input(index);
+      end
+    end
+    function output = to_ttns(input,index)
+      if nargin == 1
+        output = input;
+      else
+        output = input(index);
+      end
+    end
+  end
+  
 end

@@ -75,13 +75,13 @@ TOPT  = {};
 
 % Number of inputs:
 assert(nargout<=1, 'CVARGAS:cblabel:tooManyOutputs',...
-    'At most 1 output is allowed.')
+  'At most 1 output is allowed.')
 
 % Looks for H: Version 2.2
 if ~isempty(varargin) && ~isempty(varargin{1}) && ...
-        all(reshape(ishandle(varargin{1}),[],1))
-    H = varargin{1};
-    varargin(1) = [];
+    all(reshape(ishandle(varargin{1}),[],1))
+  H = varargin{1};
+  varargin(1) = [];
 end
 
 % Looks for CBH:
@@ -90,28 +90,28 @@ Ncbh = length(CBH);
 
 % Looks for LABEL:
 if ~isempty(varargin) && (ischar(varargin{1}) || iscellstr(varargin{1}))
-    LABEL = varargin{1};
-    varargin(1) = [];
+  LABEL = varargin{1};
+  varargin(1) = [];
 end
 
 % Forces cell of strings:
 if ischar(LABEL)
-    % Same label to all the colorbars:
-    LABEL = repmat({LABEL},Ncbh,1);
+  % Same label to all the colorbars:
+  LABEL = repmat({LABEL},Ncbh,1);
 elseif iscellstr(LABEL) && (length(LABEL)==Ncbh)
-    % Continue...
+  % Continue...
 else
-    error('CVARGAS:cblabel:incorrectInputLabel',...
-        ['LABEL must be a string or cell of strings of equal size as ' ...
-        'the color bar handles: %d.'],Ncbh)
+  error('CVARGAS:cblabel:incorrectInputLabel',...
+    ['LABEL must be a string or cell of strings of equal size as ' ...
+    'the color bar handles: %d.'],Ncbh)
 end
 
 % OPTIONAL arguments:
 if ~isempty(varargin)
-    TOPT = varargin;
+  TOPT = varargin;
 end
 if length(TOPT)==1
-    TOPT = repmat({TOPT},size(CBH));
+  TOPT = repmat({TOPT},size(CBH));
 end
 
 % -------------------------------------------------------------------------
@@ -121,32 +121,32 @@ end
 % Applies to each colorbar:
 CBLH = NaN(1,Ncbh);
 for icb = 1:Ncbh
-    
-    % Colorbar handle
-    cbh = double(CBH(icb));
-    
-    % Searches for label location:
-    try
-        % Normal colorbar:
-        location = get(cbh,'Location');
-    catch
-        % Frozen colorbar:
-        location = getappdata(cbh,appName);
-        location = location.cbLocation;
-    end
-    switch location(1)
-        case 'E', XYstr  = 'Y';
-        case 'W', XYstr  = 'Y';
-        case 'N', XYstr  = 'X';
-        case 'S', XYstr  = 'X';
-    end
-    
-    % Gets label handle:
-    CBLH(icb) = get(cbh,[XYstr 'Label']);
-    
-    % Updates label:
-    set(CBLH(icb),'String',LABEL{icb},TOPT{:});
-    
+  
+  % Colorbar handle
+  cbh = double(CBH(icb));
+  
+  % Searches for label location:
+  try
+    % Normal colorbar:
+    location = get(cbh,'Location');
+  catch
+    % Frozen colorbar:
+    location = getappdata(cbh,appName);
+    location = location.cbLocation;
+  end
+  switch location(1)
+    case 'E', XYstr  = 'Y';
+    case 'W', XYstr  = 'Y';
+    case 'N', XYstr  = 'X';
+    case 'S', XYstr  = 'X';
+  end
+  
+  % Gets label handle:
+  CBLH(icb) = get(cbh,[XYstr 'Label']);
+  
+  % Updates label:
+  set(CBLH(icb),'String',LABEL{icb},TOPT{:});
+  
 end
 
 % OUTPUTS CHECK-OUT
@@ -154,9 +154,9 @@ end
 
 % Sets output:
 if ~nargout
-    clear CBLH
+  clear CBLH
 else
-    CBLH(~ishandle(CBLH)) = [];
+  CBLH(~ishandle(CBLH)) = [];
 end
 
 end

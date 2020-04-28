@@ -21,7 +21,7 @@ function tokens = tokenize(str, delimiter)
 narginchk(1,2)
 
 if nargin < 2
-	delimiter = ' ';
+  delimiter = ' ';
 end
 
 ind = strfind(str,delimiter); % find all start indexes of delimeter

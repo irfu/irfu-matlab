@@ -18,9 +18,9 @@ nans = isnan(x);
 x(nans) = 0;
 
 if nargin == 1 % let sum deal with figuring out which dimension to use
-    % Count up non-NaNs.
-    y = sum(x);
+  % Count up non-NaNs.
+  y = sum(x);
 else
-    % Count up non-NaNs.
-    y = sum(x,dim);
+  % Count up non-NaNs.
+  y = sum(x,dim);
 end

@@ -12,7 +12,7 @@ function [maneuvers, timelineXML, eclipse] = mms_maneuvers( Tint, scIdStr )
 %
 %   Input:
 %     Tint    = Time interval to look for manuevers, output from irf.tint().
-%     scIdstr = string of which spacecraft to be extracted, values '1', 
+%     scIdstr = string of which spacecraft to be extracted, values '1',
 %               '2', '3' or '4'. Or a combination such as '1234'.
 %   Output:
 %     manuevers    = struct containing
@@ -58,7 +58,7 @@ end
 % List timeline files (can cover up to over 100 days...) The following is a
 % quick fix, should be integrated into mms db list_files.
 % /data/mms/ancillary/mms/timeline/mms_timeline_yyyyDOY_yyyyDOY_vXX.xml
-dataRootPath = getenv('DATA_PATH_ROOT'); 
+dataRootPath = getenv('DATA_PATH_ROOT');
 if(isempty(dataRootPath) || ~exist(dataRootPath,'dir'))
   dataRootPath='/data/mms'; % Fallback for IRFU location of data
 end

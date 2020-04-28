@@ -6,7 +6,7 @@ function res = ts2mat(Ts)
 res = [];
 if isempty(Ts), return, end
 
-if ~isa(Ts,'TSeries') 
+if ~isa(Ts,'TSeries')
   error('TS must be TSeries object')
 elseif Ts.tensorOrder>1
   error('TS must be scalar or vector')

@@ -35,7 +35,7 @@ if(nargin==2 && bashRun)
 end
 
 
-% HK_10E are daily files so start time is set to midnight of DayOfInterest 
+% HK_10E are daily files so start time is set to midnight of DayOfInterest
 % and stop time midnight the next day.
 tStart = [DayOfInterest,'T00:00:00.000000000Z'];
 tStop  = [DayOfInterest,'T23:59:60.000000000Z'];
@@ -154,7 +154,7 @@ end
 % Source for conversion factors is "ADP/SDP BEB Command Interface", v1.7,
 % 2012/02/02.
   function iBias = dac2iBias(dac)
-   iBias = (double(dac)-32768)*25.28*10^-3; % nA
+    iBias = (double(dac)-32768)*25.28*10^-3; % nA
   end
 
   function vBias = og2vBias(og)

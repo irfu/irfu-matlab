@@ -7,12 +7,12 @@ function val = get(cdb,prop_name)
 % Copyright 2004 Yuri Khotyaintsev
 
 switch prop_name
-case 'db'
-	val = cdb.db;
-case 'dp'
-	val = cdb.dp;
-case 'sp'
-	val = cdb.sp;
-otherwise
-	error([prop_name,' Is not a valid ClusterDB property'])
+  case 'db'
+    val = cdb.db;
+  case 'dp'
+    val = cdb.dp;
+  case 'sp'
+    val = cdb.sp;
+  otherwise
+    error([prop_name,' Is not a valid ClusterDB property'])
 end

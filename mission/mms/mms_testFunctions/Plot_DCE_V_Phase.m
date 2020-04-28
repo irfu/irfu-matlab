@@ -1,7 +1,7 @@
 % PLOT_DCE_V_PHASE reads and plots inital MMS data raw from source files.
 %
 %   This function was created in order to plot DCE, DCV and DEFATT Z-Phase
-% from MMS in-flight data. It uses irfu-matlab and excerts from the MMS 
+% from MMS in-flight data. It uses irfu-matlab and excerts from the MMS
 % processing code, but not the MMS processing code itself as currently our
 % data sources have issues with timestamps. (duplicated timestamps in
 % DEFATT and going back and forth in time in DCE/DCV).
@@ -13,7 +13,7 @@
 %
 % Output (optional):
 %    ZPhase,  Z-Phase from DefAtt file, [time (in epoch), ZPhase]
-%    E1234,   Electric field from DCE file, [time (in epoch), E12, E34] 
+%    E1234,   Electric field from DCE file, [time (in epoch), E12, E34]
 %    V1234,   Potential of each probe from DCV file, [time (in epoch), V1, V2, V3, V4]
 %    dcePlot, handle for the DCE plot
 %    dcvPlot, handle for the DCV plot
@@ -57,11 +57,11 @@ numHeaders = str2double(numHeaders);
 
 fileID = fopen(defattFile,'r');
 tmpData = textscan( fileID, formatSpec,...
-'delimiter', ' ', 'MultipleDelimsAsOne', 1, 'HeaderLines', numHeaders );
+  'delimiter', ' ', 'MultipleDelimsAsOne', 1, 'HeaderLines', numHeaders );
 fclose(fileID);
 % Compute time
 TTtime = [irf_time([tmpData{1,1}, tmpData{1,2}],'doy>utc_yyyy-mm-dd'), ...
-cell2mat(tmpData{1,3})];
+  cell2mat(tmpData{1,3})];
 
 % Store value to irf_plot [epoch, ZPhase]
 ZPHASE = [irf_time(TTtime,'utc>epoch'), double(tmpData{1,4})];
@@ -121,19 +121,19 @@ legend(dcvPlot(2), 'Z-Phase (0 deg when sun is along BCS-X axis)');
 
 
 %% Verify input file
-function checkFile(inFile)
-  narginchk(1,1);
-  if(exist(inFile,'file'))
-    [~, scIDtmp, ~] = fileparts(inFile);
-    scIDtmp = scIDtmp(4);
-    if( ~isempty(scID) && ~strcmp(scID,scIDtmp) )
-      error('Different SC');
+  function checkFile(inFile)
+    narginchk(1,1);
+    if(exist(inFile,'file'))
+      [~, scIDtmp, ~] = fileparts(inFile);
+      scIDtmp = scIDtmp(4);
+      if( ~isempty(scID) && ~strcmp(scID,scIDtmp) )
+        error('Different SC');
+      else
+        scID = scIDtmp;
+      end
     else
-      scID = scIDtmp;
+      error('File not found');
     end
-  else
-    error('File not found');
   end
-end
 
 end

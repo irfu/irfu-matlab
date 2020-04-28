@@ -27,7 +27,7 @@ dt = ISDAT.Epoch(dt_interval);
 %dt = ISDAT.Epoch(2.0);
 
 dataReq = ISDAT.DbDataRequest(dataSrc,st,dt);
-                        
+
 sciData = isdatDbSession.getSciData(dataReq);
 %disp(sprintf('totNrSamples : %d',sciData.totNrSamples))
 
@@ -36,10 +36,10 @@ isdatConnection.close()
 %% Prepare data
 res = []; t = [];
 for seg = 1:sciData.segments
-    data = reshape(sciData.data(seg,:),...
-        length(sciData.data(seg,:))/sciData.samples(seg),...
-        sciData.samples(seg))';
-    res = [res; double(data)];
-    time = ISDAT.Epoch.toDoubleArray(sciData.time(seg));
-    t = [t; time];
+  data = reshape(sciData.data(seg,:),...
+    length(sciData.data(seg,:))/sciData.samples(seg),...
+    sciData.samples(seg))';
+  res = [res; double(data)];
+  time = ISDAT.Epoch.toDoubleArray(sciData.time(seg));
+  t = [t; time];
 end

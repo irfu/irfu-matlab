@@ -1,7 +1,7 @@
 function Plot_dcecomm_daily(DayOfInterest, bashRun)
 % Plot_dcedcv_new is a short function used to plot a full day of all DCE
 % and DCV data RAW from our source cdf files. It uses the latest cdf file
-% version downloaded from SDC and comine data for an entire day into one 
+% version downloaded from SDC and comine data for an entire day into one
 % TSeries. The plot created contains all four sc for quick comparsions.
 %
 %   Usage: Plot_dcedcv_new('2015-05-20', false);
@@ -119,7 +119,7 @@ if(bashRun)
     % Entire day:
     % savefig(fig.(iData{ii}), [outPath, DayOfInterest, '_', iData{ii}, '_000000_235959'], 'compact'); %R2013b or later
     print(fig.(iData{ii}), '-dpng', [outFolder, filesep, filePrefix, '000000_235959']);
-  
+    
     % Interval 00:01:00 to 00:11:00 UTC
     tint = irf.tint([DayOfInterest,'T00:01:00Z'], [DayOfInterest,'T00:11:00Z']);
     irf_zoom(h.(iData{ii}), 'x', tint);

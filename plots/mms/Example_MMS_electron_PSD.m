@@ -1,5 +1,5 @@
-% Script to plot electron PSD around pitch angles 0, 90, and 180 deg 
-% and PSD versus pitch angle L1b brst data 
+% Script to plot electron PSD around pitch angles 0, 90, and 180 deg
+% and PSD versus pitch angle L1b brst data
 %
 % Written by D. B. Graham
 
@@ -20,7 +20,7 @@ SCpot = SCpot.resample(ePDist);
 %% Produce a single PAD at a selected time
 
 tint = irf_time('2015-10-30T05:15:45.740000Z','utc>epochTT');
-[paddist,thetapad,energypad,tintpad] = mms.get_pitchangledist(ePDist,Bxyz,tint,'angles',13); 
+[paddist,thetapad,energypad,tintpad] = mms.get_pitchangledist(ePDist,Bxyz,tint,'angles',13);
 [~,idx] = min(abs(SCpot.time-tint));
 energypad = energypad-SCpot.data(idx);
 
@@ -28,12 +28,12 @@ energypad = energypad-SCpot.data(idx);
 
 fn=figure;
 set(fn,'Position',[10 10 600 250])
-    h(1)=axes('position',[0.08 0.12 0.4 0.82]); 
-    h(2)=axes('position',[0.58 0.12 0.4 0.82]); 
-    ud=get(fn,'userdata');
-    ud.subplot_handles=h;
-    set(fn,'userdata',ud);
-    set(fn,'defaultLineLineWidth',2); 
+h(1)=axes('position',[0.08 0.12 0.4 0.82]);
+h(2)=axes('position',[0.58 0.12 0.4 0.82]);
+ud=get(fn,'userdata');
+ud.subplot_handles=h;
+set(fn,'userdata',ud);
+set(fn,'defaultLineLineWidth',2);
 
 ymin = 10^-4;
 ymax = ceil(max(max(log10(paddist))));
@@ -47,13 +47,13 @@ axis(h(1),[5 3e4 yrange])
 set(h(1),'xtick',[1e0 1e1 1e2 1e3 1e4 1e5])
 irf_legend(h(1),{'0 deg'},[0.91 0.92],'color','k')
 irf_legend(h(1),{'90 deg'},[0.91 0.84],'color','r')
-irf_legend(h(1),{'180 deg'},[0.91 0.76],'color','b')    
+irf_legend(h(1),{'180 deg'},[0.91 0.76],'color','b')
 
 jetcolor = colormap('jet');
 lll = length(jetcolor(:,1));
 vcolors = floor(lll/length(energypad));
 vcolors = (1:length(energypad))*vcolors;
-    
+
 c_eval('plot(h(2),thetapad,squeeze(paddist(?,:)),''color'',jetcolor(vcolors(?),:));',1);
 hold(h(2),'on');
 c_eval('plot(h(2),thetapad,squeeze(paddist(?,:)),''color'',jetcolor(vcolors(?),:));', 2:32);

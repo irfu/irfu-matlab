@@ -2,7 +2,7 @@ function res = is_version_geq(newVersionString,oldVersionString)
 %IS_VERSION_GEQ  Is version greater of equal
 %
 % res = IS_VERSION_GEQ(newVersionString,oldVersionString)
-% compares version in format X.Y.Z (or an arbitrary number of elements 
+% compares version in format X.Y.Z (or an arbitrary number of elements
 % each separated by a single ".").
 %
 % res is true if newVersionString is larger of equal than oldVersionString. With
