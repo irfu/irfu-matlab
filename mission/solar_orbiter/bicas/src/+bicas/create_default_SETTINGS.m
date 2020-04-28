@@ -255,12 +255,13 @@ S.define_setting('OUTPUT_CDF.write_CDF_dataobj.strictNumericZvSizePerRecord',   
 % datasets as generic, has to dentify which dataset is SCI. Should not be worth the effort.
 S.define_setting('PROCESSING.HK.USE_ZV_ACQUISITION_TIME',    0)
 
-S.define_setting('PROCESSING.HK.SCI_TIME_NONOVERLAP_POLICY',       'ERROR')    % WARNING, ERROR
-S.define_setting('PROCESSING.HK.TIME_NOT_SUPERSET_OF_SCI_POLICY',  'ERROR')    % WARNING, ERROR
-S.define_setting('PROCESSING.CUR.TIME_NOT_SUPERSET_OF_SCI_POLICY', 'ERROR')    % WARNING, ERROR
+S.define_setting('PROCESSING.HK.SCI_TIME_NONOVERLAP_POLICY',       'ERROR')      % WARNING, ERROR
+% NOTE: "WARNING": Will lead to using nearest interpolation.
+S.define_setting('PROCESSING.HK.TIME_NOT_SUPERSET_OF_SCI_POLICY',  'WARNING')    % WARNING, ERROR
+S.define_setting('PROCESSING.CUR.TIME_NOT_SUPERSET_OF_SCI_POLICY', 'WARNING')    % WARNING, ERROR
 
 % Quick ~BUGFIX for bad values in zv SAMPLING_RATE in L1R TDS-LFM-RSWF datasets. Abolish?
-S.define_setting('PROCESSING.L1R.TDS.RSWF_ZV_SAMPLING_RATE_255_POLICY', 'CORRECT')   % WARNING, ERROR, CORRECT
+S.define_setting('PROCESSING.L1R.TDS.RSWF_ZV_SAMPLING_RATE_255_POLICY', 'ERROR')   % WARNING, ERROR, CORRECT
 
 % ~BUGFIX for bug in L1/L1R TDS-LFM RSWF datasets.
 % TDS has bugfixed. /2019-12-19
