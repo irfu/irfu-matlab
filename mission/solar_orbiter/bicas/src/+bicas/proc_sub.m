@@ -288,32 +288,26 @@ classdef proc_sub
             
             % NOTE: bicas.proc_sub.interpolate_current checks that Epoch increases monotonically.
             currentMicroSAmpere = [];
-            currentMicroSAmpere(:,1) = bicas.proc_sub.interpolate_current(InCur.Zv.Epoch, InCur.Zv.IBIAS_1, sciEpoch, L, SETTINGS);
-            currentMicroSAmpere(:,2) = bicas.proc_sub.interpolate_current(InCur.Zv.Epoch, InCur.Zv.IBIAS_2, sciEpoch, L, SETTINGS);
-            currentMicroSAmpere(:,3) = bicas.proc_sub.interpolate_current(InCur.Zv.Epoch, InCur.Zv.IBIAS_3, sciEpoch, L, SETTINGS);
+            currentMicroSAmpere(:,1) = bicas.proc_sub.zv_TC_to_current(InCur.Zv.Epoch, InCur.Zv.IBIAS_1, sciEpoch, L, SETTINGS);
+            currentMicroSAmpere(:,2) = bicas.proc_sub.zv_TC_to_current(InCur.Zv.Epoch, InCur.Zv.IBIAS_2, sciEpoch, L, SETTINGS);
+            currentMicroSAmpere(:,3) = bicas.proc_sub.zv_TC_to_current(InCur.Zv.Epoch, InCur.Zv.IBIAS_3, sciEpoch, L, SETTINGS);
         end
+
         
         
-        
-        % Utility function
-        function sciZv_IBIASx = interpolate_current(curZv_Epoch, curZv_IBIAS_x, sciZv_Epoch, L, SETTINGS)
-            % PROPOSAL: Make into separate library function. Useful for plotting etc.
-            %   NOTE: Setting must become argument.
+        % Wrapper around EJ_library.so.zv_TC_to_current for anomaly handling.
+        function sciZv_IBIASx = zv_TC_to_current(curZv_Epoch, curZv_IBIAS_x, sciZv_Epoch, L, SETTINGS)
             
-            % Remove indices of CURRENTS (not Epoch) which are NOT NaN, i.e. which do not represent this antenna.
-            bKeep = ~isnan(curZv_IBIAS_x);
-            curZv_Epoch   = curZv_Epoch(bKeep);
-            curZv_IBIAS_x = curZv_IBIAS_x(bKeep);
+            [sciZv_IBIASx, duplicateAnomaly] = EJ_library.so.zv_TC_to_current(...
+                curZv_Epoch, ...
+                curZv_IBIAS_x, ...
+                sciZv_Epoch);
             
-            %======================================================================================================
-            % CDF ASSERTION
-            % Handle non-monotonically increasing Epoch
-            % -----------------------------------------
-            % NOTE: This handling is driven by
-            % (1) wanting to check input data
-            % (2) interp1 does not permit having identical x values/timestamps, not even with identical y values.
-            %======================================================================================================
-            if ~issorted(curZv_Epoch, 'strictascend')   % If NOT monotonically increasing.
+            if duplicateAnomaly
+                %======================================================================================================
+                % CDF ASSERTION
+                % Handle non-monotonically increasing Epoch
+                %======================================================================================================
                 
                 [settingValue, settingKey] = SETTINGS.get_fv('INPUT_CDF.CUR.NON-MONOTONICALLY-INCREMENTING_ZV_EPOCH_POLICY');
                 anomalyDescriptionMsg = 'Bias currents contain multiple identical timestamps on the same antenna.';
@@ -323,36 +317,14 @@ classdef proc_sub
                         bicas.default_anomaly_handling(L, settingValue, settingKey, 'other', ...
                             anomalyDescriptionMsg)
                         L.log('warning', ...
-                            ['Removing bias currents with identical timestamps on the same antenna,', ...
-                            ' asumming (asserting) that the bias currents are identical too.'])
-                        
-                        bIdent = diff(curZv_Epoch) == 0;
-                        
-                        % ASSERTION.
-                        assert(all(curZv_IBIAS_x(bIdent) == curZv_IBIAS_x(bIdent+1)), ...
-                            'BICAS:proc_sub:SWModeProcessing:DatasetFormat', ...
-                            'Bias currents contain non-equal current values on equal timestamps on the same antenna.');
-                        
-                        curZv_Epoch   = curZv_Epoch(~bIdent);
-                        curZv_IBIAS_x = curZv_IBIAS_x(~bIdent);
-                        
+                            'Removed identical bias current settings with identical timestamps on the same antenna,')
+
                     otherwise
                         bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+illegal', ...
                             anomalyDescriptionMsg, 'BICAS:proc_sub:SWModeProcessing:DatasetFormat')
-                end
-                
+                end                
             end
-            
-            
-            
-            % IMPLEMENTATION NOTE: Bias currents are set VERY RARELY. Must therefore use interpolation method
-            % 'previous'.
-            sciZv_IBIASx = bicas.proc_utils.interpolate_float_records(...
-                curZv_Epoch, ...
-                curZv_IBIAS_x, ...
-                sciZv_Epoch, ...
-                'previous');
-        end
+        end    % TC_to_current
         
         
         
