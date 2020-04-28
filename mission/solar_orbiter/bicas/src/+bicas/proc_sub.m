@@ -89,9 +89,12 @@ classdef proc_sub
             % Select whether HK should use
             %   (1) Epoch, or
             %   (2) ACQUISITION_TIME (not always available).
+            % ----------------------------------------------
+            % IMPLEMENTATION NOTE: Historically, there have been datasets where Epoch is contains errors, but
+            % ACQUISITION_TIME seems OK. This should be phased out eventually.
             %=========================================================================================================
-            ACQUISITION_TIME_EPOCH_UTC = SETTINGS.get_fv('PROCESSING.ACQUISITION_TIME_EPOCH_UTC');
-            USE_ZV_ACQUISITION_TIME_HK = SETTINGS.get_fv('PROCESSING.USE_ZV_ACQUISITION_TIME.HK');
+            ACQUISITION_TIME_EPOCH_UTC = SETTINGS.get_fv('INPUT_CDF.ACQUISITION_TIME_EPOCH_UTC');
+            USE_ZV_ACQUISITION_TIME_HK = SETTINGS.get_fv('PROCESSING.HK.USE_ZV_ACQUISITION_TIME');
             if USE_ZV_ACQUISITION_TIME_HK
                 hkEpoch = bicas.proc_utils.ACQUISITION_TIME_to_tt2000(...
                     InHk.Zv.ACQUISITION_TIME, ...
@@ -154,7 +157,7 @@ classdef proc_sub
                     -hk1RelativeSec, ...
                     hk2RelativeSec);
                 
-                [settingValue, settingKey] = SETTINGS.get_fv('PROCESSING.HK_TIME_NOT_SUPERSET_OF_SCI_POLICY');
+                [settingValue, settingKey] = SETTINGS.get_fv('PROCESSING.HK.TIME_NOT_SUPERSET_OF_SCI_POLICY');
                 bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+W+illegal', ...
                     anomalyDescrMsg, 'BICAS:proc_sub:DatasetFormat:SWModeProcessing')
             end
@@ -163,7 +166,7 @@ classdef proc_sub
                 
                 % NOTE: "WARNING" (rather than error) only makes sense if it is possible to later meaningfully permit
                 % non-intersection.
-                [settingValue, settingKey] = SETTINGS.get_fv('PROCESSING.HK_SCI_TIME_NONOVERLAP_POLICY');
+                [settingValue, settingKey] = SETTINGS.get_fv('PROCESSING.HK.SCI_TIME_NONOVERLAP_POLICY');
                 bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+W+illegal', ...
                     'SCI and HK time ranges do not overlap in time.', 'BICAS:proc_sub:DatasetFormat:SWModeProcessing')
             end
@@ -208,7 +211,7 @@ classdef proc_sub
             % ASSERTIONS
             EJ_library.assert.struct(InCur, {'Zv', 'Ga'}, {})
             
-            if SETTINGS.get_fv('INPUT_CDF.CURRENT.PREPEND_TEST_DATA')
+            if SETTINGS.get_fv('INPUT_CDF.CUR.PREPEND_TEST_DATA')
                 L.log('warning', '==========================================================')
                 L.log('warning', 'WARNING: PREPENDING MADE-UP TEST DATA TO BIAS CURRENT DATA')
                 L.log('warning', '==========================================================')
@@ -243,12 +246,13 @@ classdef proc_sub
                     size(InCur.Zv.IBIAS_3, 1)])
             end
             
+            
             if min(sciEpoch) < min(InCur.Zv.Epoch)
                 curRelativeSec    = 1e-9 * (min(InCur.Zv.Epoch) - min(sciEpoch));
                 sciEpochUtcStr    = EJ_library.utils.CDF_tt2000_to_UTC_str(min(sciEpoch));
                 curEpochMinUtcStr = EJ_library.utils.CDF_tt2000_to_UTC_str(min(InCur.Zv.Epoch));
                 
-                [settingValue, settingKey] = SETTINGS.get_fv('PROCESSING.CUR_TIME_NOT_SUPERSET_OF_SCI_POLICY');
+                [settingValue, settingKey] = SETTINGS.get_fv('PROCESSING.CUR.TIME_NOT_SUPERSET_OF_SCI_POLICY');
                 
                 anomalyDescrMsg = sprintf(...
                     ['Bias current data begins %g s (%s) BEFORE voltage data begins (%s).', ....
@@ -372,10 +376,11 @@ classdef proc_sub
             %=================
             %---------------------------------------------------------------------------
             % Workaround: Normalize LFR data to handle variations that should not exist
-            %===========================================================================
-            % Handle that SYNCHRO_FLAG (empty) and TIME_SYNCHRO_FLAG (non-empty) may both be present.
-            % Ex: LFR___TESTDATA_RGTS_LFR_CALBUT_V0.7.0/ROC-SGSE_L1R_RPW-LFR-SBM1-CWF-E_4129f0b_CNE_V02.cdf   2019-11-29
-            if SETTINGS.get_fv('INPUT_CDF.LFR.HAVING_SYNCHRO_FLAG_AND_TIME_SYNCHRO_FLAG_WORKAROUND') ...
+            %---------------------------------------------------------------------------
+            % Handle that SYNCHRO_FLAG (empty) and TIME_SYNCHRO_FLAG (non-empty) may BOTH be present.
+            % "DEFINITION BUG" in definition of datasets/skeleton?
+            % Ex: LFR___TESTDATA_RGTS_LFR_CALBUT_V0.7.0/ROC-SGSE_L1R_RPW-LFR-SBM1-CWF-E_4129f0b_CNE_V02.cdf /2020-03-17
+            if SETTINGS.get_fv('INPUT_CDF.LFR.BOTH_SYNCHRO_FLAG_AND_TIME_SYNCHRO_FLAG_WORKAROUND_ENABLED') ...
                     && isfield(InSci.Zv, 'SYNCHRO_FLAG') && isempty(InSci.Zv.SYNCHRO_FLAG)
                 InSci.Zv = rmfield(InSci.Zv, 'SYNCHRO_FLAG');
             end
@@ -549,17 +554,30 @@ classdef proc_sub
             end            
             
             freqHz = double(InSci.Zv.SAMPLING_RATE);
-            [settingValue, settingKey] = SETTINGS.get_fv('PROCESSING.L1R.TDS.RSWF_ZV_SAMPLING_RATE_DATASET_BUGFIX_ENABLED');
-            if C.isL1R && C.isTdsRswf && settingValue
-                % IMPLEMENTATION NOTE: Has observed test file
-                % TESTDATA_RGTS_TDS_CALBA_V0.8.5C: solo_L1R_rpw-tds-lfm-rswf-e_20190523T080316-20190523T134337_V02_les-7ae6b5e.cdf
-                % to have SAMPLING_RATE == 255, which is likely a BUG in the dataset. /Erik P G Johansson 2019-12-03
-                % Bug in TDS RCS.  /David Pisa 2019-12-03
-                % Setting it to what is probably the correct value.
-                freqHz(freqHz == 255) = 32768;
-                L.logf('warning', ...
-                    ['Correcting presumed bug in TDS L1R LFM-RSWF dataset due to setting', ...
-                    ' %s = %s. Modifying the frequency 255-->32768.', settingKey, string(settingValue)])
+            
+            if any(freqHz == 255)
+                [settingValue, settingKey] = SETTINGS.get_fv('PROCESSING.L1R.TDS.RSWF_ZV_SAMPLING_RATE_255_POLICY');
+                anomalyDescrMsg = 'Finds illegal stated sampling frequency 255 in TDS L1/L1R LFM-RSWF dataset.';
+                
+                if C.isTdsRswf
+                    switch(settingValue)
+                        case 'CORRECT'
+                            % IMPLEMENTATION NOTE: Has observed test file
+                            % TESTDATA_RGTS_TDS_CALBA_V0.8.5C: solo_L1R_rpw-tds-lfm-rswf-e_20190523T080316-20190523T134337_V02_les-7ae6b5e.cdf
+                            % to have SAMPLING_RATE == 255, which is likely a BUG in the dataset. /Erik P G Johansson 2019-12-03
+                            % Bug in TDS RCS.  /David Pisa 2019-12-03
+                            % Setting it to what is probably the correct value.
+                            freqHz(freqHz == 255) = 32768;
+                            L.logf('warning', ...
+                                'Using workaround to modify instances of sampling frequency 255-->32768.')
+                            bicas.default_anomaly_handling(L, settingValue, settingKey, 'other', anomalyDescrMsg)
+                            
+                        otherwise
+                            bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+W+illegal', anomalyDescrMsg, 'BICAS:DatasetFormat')
+                    end
+                else
+                    error(anomalyDescrMsg)
+                end
             end
             
             PreDc = [];

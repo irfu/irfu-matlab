@@ -101,20 +101,23 @@ for i = 1:length(SwModeInfo.inputsList)
     %===========================================
     % NOTE: Can not use bicas.proc_utils.assert_struct_num_fields_have_same_N_rows(Zv) since not all zVariables have same number of
     % records. Ex: Metadata such as ACQUISITION_TIME_UNITS.
-    if isfield(GlobalAttributes, 'Dataset_ID')
-        datasetId = GlobalAttributes.Dataset_ID{1};
-    else
+    if ~isfield(GlobalAttributes, 'Dataset_ID')
         error('BICAS:execute_sw_mode:Assertion:DatasetFormat', ...
             'Input dataset does not contain (any accepted variation of) the global attribute Dataset_ID.\n    File: "%s"', ...
             inputFilePath)
     end
-    bicas.utils.assert_strings_equal(...
-        L, ...
-        SETTINGS.get_fv('INPUT_CDF_ASSERTIONS.STRICT_DATASET_ID'), ...
-        {GlobalAttributes.Dataset_ID{1}, SwModeInfo.inputsList(i).datasetId}, ...
-        sprintf('The input CDF file''s stated DATASET_ID does not match the value expected for the S/W mode.\n    File: %s\n    ', inputFilePath))
-
-
+    cdfDatasetId = GlobalAttributes.Dataset_ID{1};
+    
+    if ~strcmp(cdfDatasetId, SwModeInfo.inputsList(i).datasetId)
+        [settingValue, settingKey] = SETTINGS.get_fv('INPUT_CDF.GA_DATASET_ID_MISMATCH_POLICY');
+        anomalyDescrMsg = sprintf(...
+            ['The input CDF dataset''s stated DATASET_ID does not match value expected from the S/W mode.\n', ...
+            '    File: %s\n', ...
+            '    Global attribute GlobalAttributes.Dataset_ID{1} : "%s"\n', ...
+            '    Expected value:                                 : "%s"\n'], ...
+            inputFilePath, cdfDatasetId, SwModeInfo.inputsList(i).datasetId);
+        bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+W+illegal', anomalyDescrMsg, 'BICAS:DatasetFormat')
+    end
 
     GlobalAttributesCellArray{end+1} = GlobalAttributes;
 end
@@ -177,7 +180,7 @@ function GlobalAttributesSubset = derive_output_dataset_GlobalAttributes(GlobalA
 %                          have the exact names of CDF global attributes.
 %
 
-%ASSERT_MATCHING_TEST_ID = SETTINGS.get_fv('INPUT_CDF_ASSERTIONS.MATCHING_TEST_ID');
+%ASSERT_MATCHING_TEST_ID = SETTINGS.get_fv('INPUT_CDF.GA_TEST_IDS_MISMATCH_POLICY');
 
 GlobalAttributesSubset.Parents        = {};            % Array in which to collect value for this file's GlobalAttributes (array-sized GlobalAttribute).
 GlobalAttributesSubset.Parent_version = {};
@@ -327,8 +330,8 @@ end
 
 
 %===============================================================================================
-% Check for non-monotonically increasing Epoch values
-% ---------------------------------------------------
+% Check for increasing Epoch values
+% ---------------------------------
 % Examples:
 % solo_L1_rpw-lfr-surv-cwf-cdag_20200212_V01.cdf   (decrements 504 times)
 % solo_L1_rpw-lfr-surv-swf-cdag_20200212_V01.cdf   (1458 identical consecutive pairs of values)
@@ -336,14 +339,14 @@ end
 %===============================================================================================
 % IMPLEMENTATION NOTE: SOLO_L1_RPW-BIA-CURRENT have increasing Epoch, but not always MONOTONICALLY increasing Epoch.
 if ~issorted(Zvs.Epoch)   % Check for increasing values, but NOT monotonically increasing.
-    
-    anomalyDescrMsg = sprintf('Input dataset "%s"\n    contains an Epoch zVariable which values do not monotonically increment.\n', filePath);
+
+    anomalyDescrMsg = sprintf('Input dataset "%s"\ncontains an Epoch zVariable which values do not monotonically increment.\n', filePath);
     
     [settingValue, settingKey] = SETTINGS.get_fv('INPUT_CDF.NON-INCREMENTING_ZV_EPOCH_POLICY');
     switch(settingValue)
         case 'SORT'
             bicas.default_anomaly_handling(L, settingValue, settingKey, 'other', ...
-                anomalyDescrMsg, 'BICAS:execute_sw_mode:DatasetFormat')
+                anomalyDescrMsg)
             
             % Sort (data) zVariables according to Epoch.
             [~, iSort] = sort(Zvs.Epoch);

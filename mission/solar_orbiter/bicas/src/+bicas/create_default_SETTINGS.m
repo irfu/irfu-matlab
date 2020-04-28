@@ -130,18 +130,41 @@ S.define_setting('SWD.environment.executable',     'roc/bicas');   % Relative pa
 
 
 
-% NOTE: Requires INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY = non-error.
-S.define_setting('INPUT_CDF.LFR.HAVING_SYNCHRO_FLAG_AND_TIME_SYNCHRO_FLAG_WORKAROUND', 1)
+%####################
+% ENV_VAR_OVERRIDE.*
+%####################
+% Variables, if non-empty, are used to override the corresponding environment variables.
+S.define_setting('ENV_VAR_OVERRIDE.ROC_RCS_CAL_PATH',    '');   % ROC_RCS_CAL_PATH    defined in RCS ICD. Path to dir. with calibration files.
+S.define_setting('ENV_VAR_OVERRIDE.ROC_RCS_MASTER_PATH', '');   % ROC_RCS_MASTER_PATH defined in RCS ICD. Path to dir. with master CDF files.
 
-% NOTE: See INPUT_CDF.LFR.HAVING_SYNCHRO_FLAG_AND_TIME_SYNCHRO_FLAG_WORKAROUND
+
+
+%######################################################
+% INPUT_CDF.*
+%######################################################
+
+% The epoch for ACQUISITION_TIME.
+% The time in UTC at which ACQUISITION_TIME is [0,0].
+% Year-month-day-hour-minute-second-millisecond-mikrosecond(0-999)-nanoseconds(0-999)
+% PROPOSAL: Store the value returned by spdfcomputett2000(ACQUISITION_TIME_EPOCH_UTC) instead?
+S.define_setting('INPUT_CDF.ACQUISITION_TIME_EPOCH_UTC',                       [2000,01,01, 12,00,00, 000,000,000]);
+
+% NOTE: Requires INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY = non-error.
+S.define_setting('INPUT_CDF.LFR.BOTH_SYNCHRO_FLAG_AND_TIME_SYNCHRO_FLAG_WORKAROUND_ENABLED', 1)
+% NOTE: See INPUT_CDF.LFR.BOTH_SYNCHRO_FLAG_AND_TIME_SYNCHRO_FLAG_WORKAROUND_ENABLED
 S.define_setting('INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY',     'WARNING')    % WARNING, ERROR
 
 S.define_setting('INPUT_CDF.USING_GA_NAME_VARIANT_POLICY',     'WARNING')    % WARNING, ERROR
 
-% NOTE: This modification applies BEFORE PROCESSING.USE_ZV_ACQUISITION_TIME.HK and therefore always applies to zVar
+% Require input CDF Global Attribute "DATASET_ID" to match the expected value.
+S.define_setting('INPUT_CDF.GA_DATASET_ID_MISMATCH_POLICY',    'WARNING')    % ERROR, WARNING
+% Require Test_id to be identical for all input CDF datasets.
+%S.define_setting('INPUT_CDF.GA_TEST_IDS_MISMATCH_POLICY',  0);
+
+% NOTE: This modification applies BEFORE PROCESSING.HK.USE_ZV_ACQUISITION_TIME and therefore always applies to zVar
 % Epoch.
 % NOTE: Only check for increasing, not monotonically.
-S.define_setting('INPUT_CDF.NON-INCREMENTING_ZV_EPOCH_POLICY', 'ERROR')      % ERROR, WARNING, SORT
+S.define_setting('INPUT_CDF.NON-INCREMENTING_ZV_EPOCH_POLICY',                   'ERROR')      % ERROR, WARNING, SORT
 
 S.define_setting('INPUT_CDF.CUR.NON-MONOTONICALLY-INCREMENTING_ZV_EPOCH_POLICY', 'ERROR')    % ERROR, REMOVE_DUPLICATES
 
@@ -157,35 +180,18 @@ S.define_setting('INPUT_CDF.OVERRIDE_FILL_VALUE.FILL_VALUE',   single(-1e31))
 
 
 % For testing, while lacking proper bias current datasets to test with.
-S.define_setting('INPUT_CDF.CURRENT.PREPEND_TEST_DATA',        0)
+S.define_setting('INPUT_CDF.CUR.PREPEND_TEST_DATA',        0)
 % For testing, when HK and SCI time are completely different and do not overlap (though HK time still has to cover a
 % larger interval than SCI). Adds/subtracts HK time so that the first HK timestamp equals the first SCI timestamp.
 S.define_setting('INPUT_CDF.HK.MOVE_TIME_TO_SCI',              0)
 
 
 
-%####################
-% ENV_VAR_OVERRIDE.*
-%####################
-% Variables, if non-empty, are used to override the corresponding environment variables.
-S.define_setting('ENV_VAR_OVERRIDE.ROC_RCS_CAL_PATH',    '');   % ROC_RCS_CAL_PATH    defined in RCS ICD. Path to dir. with calibration files.
-S.define_setting('ENV_VAR_OVERRIDE.ROC_RCS_MASTER_PATH', '');   % ROC_RCS_MASTER_PATH defined in RCS ICD. Path to dir. with master CDF files.
-
-
-
-%########################
-% INPUT_CDF_ASSERTIONS.*
-%########################
-% Require input CDF Global Attribute "DATASET_ID" to match the expected value.
-S.define_setting('INPUT_CDF_ASSERTIONS.STRICT_DATASET_ID', 0);
-% Require Test_id to be identical for all input CDF datasets.
-%S.define_setting('INPUT_CDF_ASSERTIONS.MATCHING_TEST_ID',  0);
-
-
-
-%##############
+%############################################
 % OUTPUT_CDF.*
-%##############
+% ------------
+% Settings that apply to ALL output datasets
+%############################################
 % Set CDF GlobalAttribute "Test_id". ROC DFMD says that Test_id should really be set by ROC.
 %S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.SET_TEST_ID',   1);
 % Set CDF GlobalAttribute "Data_version". ROC DFMD says it should be updated in a way which can not be automatized?!!! Set here for now.
@@ -239,26 +245,20 @@ S.define_setting('OUTPUT_CDF.write_CDF_dataobj.strictNumericZvSizePerRecord',   
 %##############
 % PROCESSING.*
 %##############
-% The epoch for ACQUISITION_TIME.
-% The time in UTC at which ACQUISITION_TIME is [0,0].
-% Year-month-day-hour-minute-second-millisecond-mikrosecond(0-999)-nanoseconds(0-999)
-% PROPOSAL: Store the value returned by spdfcomputett2000(ACQUISITION_TIME_EPOCH_UTC) instead?
-S.define_setting('PROCESSING.ACQUISITION_TIME_EPOCH_UTC',                       [2000,01,01, 12,00,00, 000,000,000]);
-
 % Whether to use ACQUISITION_TIME instead of Epoch for HK. 
 % NOTE: This change happens AFTER INPUT_CDF.NON-INCREMENTING_ZV_EPOCH_POLICY.
 % NOTE: Setting created so that HK can use ACQUISITION_TIME for interpolating its data to SCI time. Not trivial (but
 % doable) to generalize to SCI data (voltages) since the naming implies using this for all data use, not just the HK-SCI
 % interpolation. Such generalization should ideally be made when reading the dataset, but then code which treats
 % datasets as generic, has to dentify which dataset is SCI. Should not be worth the effort.
-S.define_setting('PROCESSING.USE_ZV_ACQUISITION_TIME.HK',    0)
+S.define_setting('PROCESSING.HK.USE_ZV_ACQUISITION_TIME',    0)
 
-S.define_setting('PROCESSING.HK_SCI_TIME_NONOVERLAP_POLICY',       'ERROR')    % WARNING, ERROR
-S.define_setting('PROCESSING.HK_TIME_NOT_SUPERSET_OF_SCI_POLICY',  'ERROR')    % WARNING, ERROR
-S.define_setting('PROCESSING.CUR_TIME_NOT_SUPERSET_OF_SCI_POLICY', 'ERROR')    % WARNING, ERROR
+S.define_setting('PROCESSING.HK.SCI_TIME_NONOVERLAP_POLICY',       'ERROR')    % WARNING, ERROR
+S.define_setting('PROCESSING.HK.TIME_NOT_SUPERSET_OF_SCI_POLICY',  'ERROR')    % WARNING, ERROR
+S.define_setting('PROCESSING.CUR.TIME_NOT_SUPERSET_OF_SCI_POLICY', 'ERROR')    % WARNING, ERROR
 
-% Quick ~BUGFIX for bad values in zv SAMPLING_RATE in L1R TDS-LFM-RSWF datasets. Remove?
-S.define_setting('PROCESSING.L1R.TDS.RSWF_ZV_SAMPLING_RATE_DATASET_BUGFIX_ENABLED', 0)
+% Quick ~BUGFIX for bad values in zv SAMPLING_RATE in L1R TDS-LFM-RSWF datasets. Abolish?
+S.define_setting('PROCESSING.L1R.TDS.RSWF_ZV_SAMPLING_RATE_255_POLICY', 'CORRECT')   % WARNING, ERROR, CORRECT
 
 % ~BUGFIX for bug in L1/L1R TDS-LFM RSWF datasets.
 % TDS has bugfixed. /2019-12-19
