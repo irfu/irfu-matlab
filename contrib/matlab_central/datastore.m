@@ -86,31 +86,31 @@ persistent data filename
 
 % get filename
 if isempty(filename)
-
-	% report
-	disp('loading datastore...');
-	
-	% find path
-	if ispc
-		path = getenv('APPDATA');
-	elseif isunix
-		path = '~';
-	else
-		error('please let me know how to find a suitable path on your system!');
-	end
-	
-	% Get computer name
-	hostName = getComputerName;
-	% get filename
-	filename = [path, '/.matlab_datastore_', hostName];
-	
-	% load
-	if exist(filename, 'file')
-		load(filename, '-mat');
-	else
-		data = struct();
-	end
-	
+  
+  % report
+  disp('loading datastore...');
+  
+  % find path
+  if ispc
+    path = getenv('APPDATA');
+  elseif isunix
+    path = '~';
+  else
+    error('please let me know how to find a suitable path on your system!');
+  end
+  
+  % Get computer name
+  hostName = getComputerName;
+  % get filename
+  filename = [path, '/.matlab_datastore_', hostName];
+  
+  % load
+  if exist(filename, 'file')
+    load(filename, '-mat');
+  else
+    data = struct();
+  end
+  
 end
 
 
@@ -118,45 +118,45 @@ end
 %% HANDLE OPERATIONS
 
 if nargin >= 1 && ischar(app) && ~isempty(app) && app(1) == '@'
-
-	% shift args
-	op = app;
-	if nargin >= 2
-		app = key;
-	end
-	if nargin >= 3
-		key = value;
-	end
-	
-	% switch on operation
-	switch op
-		
-		case '@delete'
-			switch nargin
-				case 2
-					if isfield(data, app)
-						data = rmfield(data, app);
-						save(filename, 'data');
-					end
-				case 3
-					if isfield(data, app)
-						if isfield(data.(app), key)
-							data.(app) = rmfield(data.(app), key);
-							save(filename, 'data');
-						end
-					end
-				otherwise
-					error('bad argument count for @delete');
-			end
-			
-		otherwise
-			error(['unrecognised operation "' op '"']);
-			
-	end
-	
-	% ok
-	return
-	
+  
+  % shift args
+  op = app;
+  if nargin >= 2
+    app = key;
+  end
+  if nargin >= 3
+    key = value;
+  end
+  
+  % switch on operation
+  switch op
+    
+    case '@delete'
+      switch nargin
+        case 2
+          if isfield(data, app)
+            data = rmfield(data, app);
+            save(filename, 'data');
+          end
+        case 3
+          if isfield(data, app)
+            if isfield(data.(app), key)
+              data.(app) = rmfield(data.(app), key);
+              save(filename, 'data');
+            end
+          end
+        otherwise
+          error('bad argument count for @delete');
+      end
+      
+    otherwise
+      error(['unrecognised operation "' op '"']);
+      
+  end
+  
+  % ok
+  return
+  
 end
 
 
@@ -164,33 +164,33 @@ end
 %% HANDLE SUMMARY
 
 if nargout == 0 && nargin == 0
-	
-	% space
-	disp(' ')
-	
-	% for each app
-	apps = fieldnames(data);
-	for a = 1:length(apps)
-		
-		% extract
-		app = apps{a};
-		appdata = data.(app);
-		
-		% display
-		disp(['app "' app '":'])
-		disp(appdata)
-		
-	end
-	
-	% no apps case
-	if isempty(apps)
-		disp('No data stored.');
-		disp(' ');
-	end
-	
-	% ok
-	return
-	
+  
+  % space
+  disp(' ')
+  
+  % for each app
+  apps = fieldnames(data);
+  for a = 1:length(apps)
+    
+    % extract
+    app = apps{a};
+    appdata = data.(app);
+    
+    % display
+    disp(['app "' app '":'])
+    disp(appdata)
+    
+  end
+  
+  % no apps case
+  if isempty(apps)
+    disp('No data stored.');
+    disp(' ');
+  end
+  
+  % ok
+  return
+  
 end
 
 
@@ -198,31 +198,31 @@ end
 %% HANDLE READ
 
 if nargout == 1 && nargin <= 2
-	
-	% get data
-	out = data;
-	
-	% pare by app
-	if nargin >= 1
-		if isfield(data, app)
-			out = data.(app);
-		else
-			out = struct();
-		end
-	end
-	
-	% pare by key
-	if nargin >= 2
-		if isfield(out, key)
-			out = out.(key);
-		else
-			out = [];
-		end
-	end
-	
-	% ok
-	return
-	
+  
+  % get data
+  out = data;
+  
+  % pare by app
+  if nargin >= 1
+    if isfield(data, app)
+      out = data.(app);
+    else
+      out = struct();
+    end
+  end
+  
+  % pare by key
+  if nargin >= 2
+    if isfield(out, key)
+      out = out.(key);
+    else
+      out = [];
+    end
+  end
+  
+  % ok
+  return
+  
 end
 
 
@@ -230,16 +230,16 @@ end
 %% HANDLE WRITE
 
 if nargout == 0 && nargin == 3
-
-	% write data
-	data.(app).(key) = value;
-	
-	% save data
-	save(filename, 'data');
-	
-	% ok
-	return
-	
+  
+  % write data
+  data.(app).(key) = value;
+  
+  % save data
+  save(filename, 'data');
+  
+  % ok
+  return
+  
 end
 
 

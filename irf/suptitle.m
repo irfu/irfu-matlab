@@ -29,25 +29,25 @@ figunits = get(gcf,'units');
 % Get the (approximate) difference between full height (plot + title
 % + xlabel) and bounding rectangle.
 
-        if (~strcmp(figunits,'pixels'))
-                set(gcf,'units','pixels');
-                pos = get(gcf,'position');
-                set(gcf,'units',figunits);
-        else
-                pos = get(gcf,'position');
-        end
-        ff = (fs-4)*1.27*5/pos(4)*fudge;
+if (~strcmp(figunits,'pixels'))
+  set(gcf,'units','pixels');
+  pos = get(gcf,'position');
+  set(gcf,'units',figunits);
+else
+  pos = get(gcf,'position');
+end
+ff = (fs-4)*1.27*5/pos(4)*fudge;
 
-        % The 5 here reflects about 3 characters of height below
-        % an axis and 2 above. 1.27 is pixels per point.
+% The 5 here reflects about 3 characters of height below
+% an axis and 2 above. 1.27 is pixels per point.
 
 % Determine the bounding rectange for all the plots
 
-% h = findobj('Type','axes');   
+% h = findobj('Type','axes');
 
 % findobj is a 4.2 thing.. if you don't have 4.2 comment out
 % the next line and uncomment the following block.
-        
+
 h = findobj(gcf,'Type','axes');  % Change suggested by Stacy J. Hills
 
 % If you don't have 4.2, use this code instead
@@ -59,7 +59,7 @@ h = findobj(gcf,'Type','axes');  % Change suggested by Stacy J. Hills
 %  end
 %end
 
-        
+
 
 
 max_y=0;
@@ -67,34 +67,34 @@ min_y=1;
 
 oldtitle =0;
 for i=1:length(h)
-        if (~strcmp(get(h(i),'Tag'),'suptitle'))
-                pos=get(h(i),'pos');
-                if (pos(2) < min_y), min_y=pos(2)-ff/5*3;end
-                if (pos(4)+pos(2) > max_y), max_y=pos(4)+pos(2)+ff/5*2;end
-        else
-                oldtitle = h(i);
-        end
+  if (~strcmp(get(h(i),'Tag'),'suptitle'))
+    pos=get(h(i),'pos');
+    if (pos(2) < min_y), min_y=pos(2)-ff/5*3;end
+    if (pos(4)+pos(2) > max_y), max_y=pos(4)+pos(2)+ff/5*2;end
+  else
+    oldtitle = h(i);
+  end
 end
 
 if max_y > plotregion
-        scale = (plotregion-min_y)/(max_y-min_y);
-        for i=1:length(h)
-                pos = get(h(i),'position');
-                pos(2) = (pos(2)-min_y)*scale+min_y;
-                pos(4) = pos(4)*scale-(1-scale)*ff/5*3;
-                set(h(i),'position',pos);
-        end
+  scale = (plotregion-min_y)/(max_y-min_y);
+  for i=1:length(h)
+    pos = get(h(i),'position');
+    pos(2) = (pos(2)-min_y)*scale+min_y;
+    pos(4) = pos(4)*scale-(1-scale)*ff/5*3;
+    set(h(i),'position',pos);
+  end
 end
 
 np = get(gcf,'nextplot');
 set(gcf,'nextplot','add');
 if (oldtitle)
-        delete(oldtitle);
+  delete(oldtitle);
 end
 ha=axes('pos',[0 1 1 1],'visible','off','Tag','suptitle');
 ht=text(.5,titleypos-1,str);set(ht,'horizontalalignment','center','fontsize',fs);
 set(gcf,'nextplot',np);
 axes(haold);
 if nargout
-        hout=ht;
+  hout=ht;
 end

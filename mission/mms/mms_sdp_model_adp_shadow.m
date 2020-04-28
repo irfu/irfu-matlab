@@ -8,8 +8,8 @@ function modelOut = mms_sdp_model_adp_shadow(dce,phase,signals)
 %
 %  Input : DCE     - structure with fields time, e12, e34,
 %                    or time, v1, v2, v3 and v4.
-%          PHASE   - phase corresponding to DCE time. 
-%          SIGNALS - cell array with list of signals to proceess, 
+%          PHASE   - phase corresponding to DCE time.
+%          SIGNALS - cell array with list of signals to proceess,
 %                    e.g {'e12', 'e34'} or {'e12', 'p123'} or
 %                    {'v1','v2','v3','v4'}
 
@@ -25,10 +25,10 @@ N_SPINS_MEDIAN = 31; % number of spins for moving median
 DETR_DPHA = 2; % window for detrending (+/- from the center) in deg
 SHA_DPHA = .9; % window for shadow model (+/- from the center) in deg
 SHA_OFF = 0.1; % offset shadow position (empirical) in deg
-    
+
 phaUnw = unwrap(phase.data*pi/180)*180/pi;
 fxPha = ((phaUnw(1)-rem(phaUnw(1),360)):1/STEPS_PER_DEG:...
-      (phaUnw(end)-rem(phaUnw(end),360)+360))';
+  (phaUnw(end)-rem(phaUnw(end),360)+360))';
 fxPha(end) = [];
 epoch0 = dce.time(1); epochTmp = double(dce.time-epoch0);
 tFxPha = interp1(phaUnw,epochTmp,fxPha);
@@ -54,7 +54,7 @@ for iSig = 1:length(signals)
     model(iModel,:) = movmedian(eResM(iModel,:),N_SPINS_MEDIAN,2,'omitnan');
   end
   model = reshape(model,numel(model),1);
-  idxOK = ~isnan(tFxPha); 
+  idxOK = ~isnan(tFxPha);
   modelOut.(sig) = interp1(tFxPha(idxOK),model(idxOK),epochTmp,'linear','extrap');
 end
 
@@ -86,6 +86,6 @@ end
         errS = 'unrecognized SIG';
         irf.log('critical',errS), error(errS)
     end
-    expShadow = mod(180*expShadow/pi, 360) +SHA_OFF; 
+    expShadow = mod(180*expShadow/pi, 360) +SHA_OFF;
   end %getExpShadow()
 end

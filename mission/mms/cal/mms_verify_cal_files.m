@@ -26,7 +26,7 @@ for calId = 1:length(calTypes)
           %        /
           %      ./
           %_____/
-          % 
+          %
           %      | <-- Times given by first column, but the value does not come
           %      into full effect until after the margin of the last column.
           %      But it starts to come into effect before the margin of the
@@ -52,8 +52,8 @@ for calId = 1:length(calTypes)
             warning(['First (max 5) rows with problmes were: ' sprintf('%i, ', 1+ind(1:min(5, length(ind))))]);
             calOk = false;
           end
-
-
+          
+          
         else
           % OLD format of Calibration files
           fID = fopen([calPath, filesep, list.name]);
@@ -72,7 +72,7 @@ for calId = 1:length(calTypes)
         offTime = EpochTT(cell2mat(C{1}));
         % Offset start time (based on ROI).
         time1 = offTime.ttns;
-
+        
         %% Verify Time is monotone increasing
         [ind, ~] = find(diff(time1)<=0);
         if any(ind)
@@ -95,7 +95,7 @@ for calId = 1:length(calTypes)
             calOk = false;
           end
         end
-
+        
         %% Verify no NaN values in the offsets
         if(~strcmp(calStr, 'regions'))
           dataOff = [C{2}, C{3}];
@@ -129,7 +129,7 @@ for calId = 1:length(calTypes)
             calOk = false;
           end
         end
-
+        
       else
         warning('Failed to locate %s calibration file for scId: %i', calStr, scId);
         calOk = false;

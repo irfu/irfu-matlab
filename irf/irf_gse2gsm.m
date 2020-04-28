@@ -12,13 +12,13 @@ function [y]=irf_gse2gsm(x,flag_gse2gsm)
 
 if nargin==0, help irf_gse2gsm;return;end
 conv='gse>gsm';
-if nargin==2 && flag_gse2gsm==-1 
-	conv='gsm>gse';
+if nargin==2 && flag_gse2gsm==-1
+  conv='gsm>gse';
 end
-if isempty(x) 
-	irf_log('fcal','empty input variable'); 
-	y=x; 
-	return; 
+if isempty(x)
+  irf_log('fcal','empty input variable');
+  y=x;
+  return;
 end % if empty input, empty output
 
 y=irf.geocentric_coordinate_transformation(x,conv);

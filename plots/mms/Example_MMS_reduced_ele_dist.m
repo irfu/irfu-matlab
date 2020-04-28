@@ -1,5 +1,5 @@
 % A routine to compute and plot reduced electron distributions from FPI
-% 
+%
 % Compare with: Wilder, F. D., et al. (2016), GRL, 43, 5909?5917,
 % doi:10.1002/2016GL069473.
 %
@@ -22,7 +22,7 @@ ic = 4;
 clim = 10.^[-4.5,-0.5]; % s m^-4
 
 % define velocity grid
-vg = linspace(-45e3,45e3,100); % km/s  
+vg = linspace(-45e3,45e3,100); % km/s
 
 % Number of Monte Carlo iterations per bin. Decrease to improve
 % performance, increase to improve plot.
@@ -49,7 +49,7 @@ ePDist.data(:,1:2,:,:) = 0;
 %% Reduce distribution
 tic
 % reduced distribution along B
-f1D = ePDist.reduce('1D',B,'vg',vg,'nMC',nMC,'scpot',scPot); 
+f1D = ePDist.reduce('1D',B,'vg',vg,'nMC',nMC,'scpot',scPot);
 toc
 
 %% Plot reduced distribution as a time series
@@ -81,7 +81,7 @@ it2 = interp1(ePDist.time.epochUnix,1:length(ePDist),t2.epochUnix,'nearest');
 
 % matlab colors
 col = [0    0.4470    0.7410;...
-    0.8500    0.3250    0.0980];
+  0.8500    0.3250    0.0980];
 
 % initiate figure
 hca = irf_plot(1,'newfigure');

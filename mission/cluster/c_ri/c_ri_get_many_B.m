@@ -7,7 +7,7 @@ function c_ri_get_many_B(passing_MP,path_output)
 %
 %Output:
 % Saved to file:
-% All B-files 
+% All B-files
 %
 %Descrition of the function:
 % Load all available B-data for every M
@@ -15,15 +15,15 @@ function c_ri_get_many_B(passing_MP,path_output)
 %Using:
 % datestring
 % create timetable
-% get_B 
+% get_B
 %
 %Work method:
 % Creates two timetables, containing the downloadperiods for data
-% in burstmode and normalmode. Then the data is downloaded and 
-% saved to file. 
+% in burstmode and normalmode. Then the data is downloaded and
+% saved to file.
 %
 %Error:
-% 
+%
 %Discription of variables:
 %
 %Written by Robert Isaksson in the summer of -03

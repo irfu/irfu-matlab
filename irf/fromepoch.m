@@ -1,9 +1,9 @@
 function full_time = fromepoch(second)
 %FROMEPOCH - Convert seconds since 1970 to [YYYY MM DD hh mm dd] format
 %
-% timevec = fromepoch(epochsec) 
-%   Converts the time epochsec, which is given as seconds since 
-%   the epoch 1 Jan 1970, to a numerical vector in the form 
+% timevec = fromepoch(epochsec)
+%   Converts the time epochsec, which is given as seconds since
+%   the epoch 1 Jan 1970, to a numerical vector in the form
 %   timevec=[year mon day hour min sec].
 %   The seconds since epoch time format is the time specification
 %   used by the ISDAT system. To convert into Matlabs standard time

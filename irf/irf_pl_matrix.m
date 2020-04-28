@@ -23,25 +23,25 @@ function hout = irf_pl_matrix(x,y,F,dx,dy,Flab,xlab,ylab)
 narginchk(1,6)
 
 if nargin==1
-    specrec = x; x = [];
-    if ~isfield(specrec,'dx'), specrec.dx=[];end
-    if ~isfield(specrec,'dy'), specrec.dy=[];end
+  specrec = x; x = [];
+  if ~isfield(specrec,'dx'), specrec.dx=[];end
+  if ~isfield(specrec,'dy'), specrec.dy=[];end
 elseif nargin==2 % not defined
-    help irf_pl_matrix;return
+  help irf_pl_matrix;return
 elseif nargin>=3 % caa_spectrogram(x,y,F,..)
-    if nargin<4, dx=x(2)-x(1);     end % dx not defined
-    if nargin<5, dy=y(2)-y(1);     end % dy not defined
-    if nargin<6, Flab='';     end % not defined
-    if nargin<7, xlab='';     end % not defined
-    if nargin<8, ylab='';     end % not defined
-    specrec.x = double(x);
-    specrec.y = double(y);
-    specrec.F = double(F);
-    specrec.dx = double(dx);
-    specrec.dy = double(dy);
-    specrec.Flabel = Flab;
-    specrec.xlabel = xlab;
-    specrec.ylabel = ylab;
+  if nargin<4, dx=x(2)-x(1);     end % dx not defined
+  if nargin<5, dy=y(2)-y(1);     end % dy not defined
+  if nargin<6, Flab='';     end % not defined
+  if nargin<7, xlab='';     end % not defined
+  if nargin<8, ylab='';     end % not defined
+  specrec.x = double(x);
+  specrec.y = double(y);
+  specrec.F = double(F);
+  specrec.dx = double(dx);
+  specrec.dy = double(dy);
+  specrec.Flabel = Flab;
+  specrec.xlabel = xlab;
+  specrec.ylabel = ylab;
 end
 
 
@@ -58,8 +58,8 @@ pcolor(xx,yy,log10(FF))
 %load caa/cmap.mat
 %colormap(cmap)
 shading('flat')
-    %	colorbar('vert')
-    %	set(gca,'TickDir','out','YScale','log')
+%	colorbar('vert')
+%	set(gca,'TickDir','out','YScale','log')
 set(gca,'TickDir','out')
 xlabel(specrec.xlabel)
 ylabel(specrec.ylabel)

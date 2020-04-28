@@ -79,7 +79,7 @@ for i_event=1:size(events,1)
   time_interval=[start_time_epoch end_time_epoch];
   Dt        =end_time_epoch-start_time_epoch;
   if debug, disp([num2str(i_event) '.event, ' R_datestring(start_time) ', dt=' num2str(Dt) 's.']);end
-% sc_mode estimate fast solution
+  % sc_mode estimate fast solution
   sc_mode=[];
   for i_a=1:size(A_list,1)
     a_file=A_list(i_a).name;
@@ -89,59 +89,59 @@ for i_event=1:size(events,1)
   end
   if isempty(sc_mode), disp('do not know which mode satellites are running, assuming normal!');sc_mode='n';end
   if debug, disp(['sc_mode=' sc_mode]);end
-
+  
   for i_data=1:length(data_list)
     switch data_list{i_data}
-    case 'EPH' % get ephemeris R,V,A,ILAT,MLT, + (not implemented but necessary) satellite axis orientation
-      file_prefix='F';
-      file_name=[path_Out file_prefix deblank(R_datestring(start_time)) '_T' deblank(R_datestring(end_time)) '.mat'];
-      for ic=sc_list
-        if debug, disp(['Loading ephemeris s/c' num2str(ic)]);end
-        [tlt,lt] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic), 'ephemeris', 'lt', ' ', ' ', ' ');
-        [tmlt,mlt] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic), 'ephemeris', 'mlt', ' ', ' ', ' ');
-        [tL,Lshell] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic), 'ephemeris', 'l_shell', ' ', ' ', ' ');
-        [tilat,ilat] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic), 'ephemeris', 'inv_lat', ' ', ' ', ' ');if debug,disp('LT,MLT,L shell,ILAT...ready!');end
-        [tr,r] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic), 'ephemeris', 'position', ' ', ' ', ' ');
-        [tv,v] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic), 'ephemeris', 'velocity', ' ', ' ', ' ');
-        [tA,A] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic), 'ephemeris', 'phase', ' ', ' ', ' ');if debug,disp('Position R, velocity V, Phase A ...ready!');end
-        eval(av_ssub('A?=[double(tA) double(A)];',ic));
-        eval(av_ssub('LT?=[double(tlt) double(lt)];MLT?=[double(tmlt) double(mlt)];L?=[double(tL) double(Lshell)];ILAT?=[double(tilat) double(ilat)];R?=[double(tr) double(r)''];V?=[double(tv) double(v)''];',ic));clear tlt tmlt tL tilat lt mlt Lshell ilat tr r tv v;
-        if exist(file_name,'file'), flag_append='-append';else, flag_append='';end
-        stric=num2str(ic);
-        save(file_name,['A' stric],['L' stric],['LT' stric],['MLT' stric],['ILAT' stric],['R' stric],['V' stric],flag_append);
+      case 'EPH' % get ephemeris R,V,A,ILAT,MLT, + (not implemented but necessary) satellite axis orientation
+        file_prefix='F';
+        file_name=[path_Out file_prefix deblank(R_datestring(start_time)) '_T' deblank(R_datestring(end_time)) '.mat'];
+        for ic=sc_list
+          if debug, disp(['Loading ephemeris s/c' num2str(ic)]);end
+          [tlt,lt] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic), 'ephemeris', 'lt', ' ', ' ', ' ');
+          [tmlt,mlt] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic), 'ephemeris', 'mlt', ' ', ' ', ' ');
+          [tL,Lshell] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic), 'ephemeris', 'l_shell', ' ', ' ', ' ');
+          [tilat,ilat] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic), 'ephemeris', 'inv_lat', ' ', ' ', ' ');if debug,disp('LT,MLT,L shell,ILAT...ready!');end
+          [tr,r] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic), 'ephemeris', 'position', ' ', ' ', ' ');
+          [tv,v] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic), 'ephemeris', 'velocity', ' ', ' ', ' ');
+          [tA,A] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic), 'ephemeris', 'phase', ' ', ' ', ' ');if debug,disp('Position R, velocity V, Phase A ...ready!');end
+          eval(av_ssub('A?=[double(tA) double(A)];',ic));
+          eval(av_ssub('LT?=[double(tlt) double(lt)];MLT?=[double(tmlt) double(mlt)];L?=[double(tL) double(Lshell)];ILAT?=[double(tilat) double(ilat)];R?=[double(tr) double(r)''];V?=[double(tv) double(v)''];',ic));clear tlt tmlt tL tilat lt mlt Lshell ilat tr r tv v;
+          if exist(file_name,'file'), flag_append='-append';else, flag_append='';end
+          stric=num2str(ic);
+          save(file_name,['A' stric],['L' stric],['LT' stric],['MLT' stric],['ILAT' stric],['R' stric],['V' stric],flag_append);
           if debug, disp(['saving ephemeris for sc' num2str(ic)]);end
-      end
-
-    case 'FGM'
-      file_prefix='F';
-      file_name=[path_Out file_prefix deblank(R_datestring(start_time)) '_T' deblank(R_datestring(end_time)) '.mat'];
-      [B1,B2,B3,B4]=c_get_bfgm(time_interval);
-      for ic=sc_list,eval(av_ssub('dB?=c_gse2dsc(B?,?);',ic)),end
-      if exist(file_name,'file'), flag_append='-append';else, flag_append='';end
-      save(file_name,'B1','B2','B3','B4','dB1','dB2','dB3','dB4',flag_append);
-          if debug, disp('saving B1 B2 B3 B4');end
-
-    case 'EFW_P'
-      file_prefix='F';
-      file_name=[path_Out file_prefix deblank(R_datestring(start_time)) '_T' deblank(R_datestring(end_time)) '.mat'];
-      EFW_P=c_isdat_get_EFW(time_interval,[],[],sc_mode,1:4,db,'P');
-      P1=EFW_P{1};P2=EFW_P{2};P3=EFW_P{3};P4=EFW_P{4};
-      if exist(file_name,'file'), flag_append='-append';else, flag_append='';end
-      save(file_name,'P1','P2','P3','P4',flag_append);        if debug, disp(['saving ' flag_append ' P1,P2,P3,P4 ->' file_name]);end
-
-    case 'EFW_E'
-      file_prefix='F';
-      file_name=[path_Out file_prefix deblank(R_datestring(start_time)) '_T' deblank(R_datestring(end_time)) '.mat'];
-      deg=20; % the minimum elevation of B with respect to the spin plane when E.B=0 is used for spin axis E
-      for ic=sc_list
-        eval(av_ssub('wE?=c_isdat_get_EFW(time_interval,[],[],sc_mode,?,db,''wE'');',ic));
-        eval(av_ssub('dE?=c_despin(wE?,?,''efw'');',ic)),
-        eval(av_ssub('deg=20;[dE?,d?]=av_ed(dE?,dB?,deg);E?=c_gse2dsc(dE?,[dE?(1,1) ?],-1);indzero=find(abs(d?)<deg);E?(indzero,4)=0;',ic));
-        eval(av_ssub('ExB?=av_e_vxb(E?,B?,-1);',ic));
+        end
+        
+      case 'FGM'
+        file_prefix='F';
+        file_name=[path_Out file_prefix deblank(R_datestring(start_time)) '_T' deblank(R_datestring(end_time)) '.mat'];
+        [B1,B2,B3,B4]=c_get_bfgm(time_interval);
+        for ic=sc_list,eval(av_ssub('dB?=c_gse2dsc(B?,?);',ic)),end
         if exist(file_name,'file'), flag_append='-append';else, flag_append='';end
-        eval(av_ssub('save(file_name,''wE?'',''dE?'',''d?'',''E?'',''ExB?'',flag_append);',ic));
+        save(file_name,'B1','B2','B3','B4','dB1','dB2','dB3','dB4',flag_append);
+        if debug, disp('saving B1 B2 B3 B4');end
+        
+      case 'EFW_P'
+        file_prefix='F';
+        file_name=[path_Out file_prefix deblank(R_datestring(start_time)) '_T' deblank(R_datestring(end_time)) '.mat'];
+        EFW_P=c_isdat_get_EFW(time_interval,[],[],sc_mode,1:4,db,'P');
+        P1=EFW_P{1};P2=EFW_P{2};P3=EFW_P{3};P4=EFW_P{4};
+        if exist(file_name,'file'), flag_append='-append';else, flag_append='';end
+        save(file_name,'P1','P2','P3','P4',flag_append);        if debug, disp(['saving ' flag_append ' P1,P2,P3,P4 ->' file_name]);end
+        
+      case 'EFW_E'
+        file_prefix='F';
+        file_name=[path_Out file_prefix deblank(R_datestring(start_time)) '_T' deblank(R_datestring(end_time)) '.mat'];
+        deg=20; % the minimum elevation of B with respect to the spin plane when E.B=0 is used for spin axis E
+        for ic=sc_list
+          eval(av_ssub('wE?=c_isdat_get_EFW(time_interval,[],[],sc_mode,?,db,''wE'');',ic));
+          eval(av_ssub('dE?=c_despin(wE?,?,''efw'');',ic)),
+          eval(av_ssub('deg=20;[dE?,d?]=av_ed(dE?,dB?,deg);E?=c_gse2dsc(dE?,[dE?(1,1) ?],-1);indzero=find(abs(d?)<deg);E?(indzero,4)=0;',ic));
+          eval(av_ssub('ExB?=av_e_vxb(E?,B?,-1);',ic));
+          if exist(file_name,'file'), flag_append='-append';else, flag_append='';end
+          eval(av_ssub('save(file_name,''wE?'',''dE?'',''d?'',''E?'',''ExB?'',flag_append);',ic));
           if debug, disp(['saving wE dE d E ExB for sc' num2str(ic)]);end
-      end
+        end
     end
   end
 end

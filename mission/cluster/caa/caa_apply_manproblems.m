@@ -23,36 +23,36 @@ old_pwd=pwd;
 touched=[];
 
 for cl_id=cli
-	d=[c_ctl('get', 5, 'data_path') '/caa-control'];
-	f_name = [d '/manual_problems_c' num2str(cl_id) '.dat'];
-	if ~exist(f_name,'file')
-		irf_log('load',['file ' f_name ' not found']);
-		cd(old_pwd), return
-	end
-	fid = fopen(f_name);
-	C = textscan(fid, '%s %n %1[+-] %s','commentStyle', '%');
-	fclose(fid);
-	
-	for i=1:length(C{1})
-		st_mp=iso2epoch(C{1}{i});
-		dt_mp=C{2}(i);
-		if (st_mp<et && st_mp>st)
-			dirs=caa_get_subdirs(epoch2iso(st_mp), dt_mp, cl_id);
-			for j=1:length(dirs)
-				cd(dirs{j});
-				touched=[touched '|' dirs{j}]; %#ok<AGROW>
-				c_get_batch(0,0,'sc_list',cl_id,'sp',pwd,'varsproc',varsproc,'check_caa_sh_interval',1,'nosrc')
-			end
-		end
-	end
+  d=[c_ctl('get', 5, 'data_path') '/caa-control'];
+  f_name = [d '/manual_problems_c' num2str(cl_id) '.dat'];
+  if ~exist(f_name,'file')
+    irf_log('load',['file ' f_name ' not found']);
+    cd(old_pwd), return
+  end
+  fid = fopen(f_name);
+  C = textscan(fid, '%s %n %1[+-] %s','commentStyle', '%');
+  fclose(fid);
+  
+  for i=1:length(C{1})
+    st_mp=iso2epoch(C{1}{i});
+    dt_mp=C{2}(i);
+    if (st_mp<et && st_mp>st)
+      dirs=caa_get_subdirs(epoch2iso(st_mp), dt_mp, cl_id);
+      for j=1:length(dirs)
+        cd(dirs{j});
+        touched=[touched '|' dirs{j}]; %#ok<AGROW>
+        c_get_batch(0,0,'sc_list',cl_id,'sp',pwd,'varsproc',varsproc,'check_caa_sh_interval',1,'nosrc')
+      end
+    end
+  end
 end
 
 if ~isempty(redo_sp_dir) && ~isempty(touched)
-	touched=tokenize(touched,'|');
-	for i=1:length(touched), touched{i}=touched{i}(1:strfind(touched{i},'/C')-1); end
-	touched=unique(touched);
-	cd(redo_sp_dir);
-	for i=1:length(touched),caa_pl_summary_l1(-1,-1,touched{i},'savepdf'); end
+  touched=tokenize(touched,'|');
+  for i=1:length(touched), touched{i}=touched{i}(1:strfind(touched{i},'/C')-1); end
+  touched=unique(touched);
+  cd(redo_sp_dir);
+  for i=1:length(touched),caa_pl_summary_l1(-1,-1,touched{i},'savepdf'); end
 end
 
 cd(old_pwd);

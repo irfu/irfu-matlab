@@ -11,7 +11,7 @@ bsnx2001 = irf_get_data_omni(tint,'bsnx','omni_min');
 
 %% Calculate standoff distances
 mp = 1.6726e-27; % proton mass
-m = 0.98*mp+0.02*2*mp; % assume solar wind composition is 98 percent hydrogen, 2 percent helium 
+m = 0.98*mp+0.02*2*mp; % assume solar wind composition is 98 percent hydrogen, 2 percent helium
 
 bsnx2001(isnan(bsnx2001(:,2)),:) = [];
 bsnx2009(isnan(bsnx2009(:,2)),:) = [];
@@ -53,29 +53,29 @@ plotLims = 1; % plot reference distances
 
 hca = subplot(1,1,1); hold(hca,'on');
 hpBS = plot(hca,linspace(0,100,size(bsnx2001,1)),sort(bsnx2001(:,2)),...
-                linspace(0,100,size(bsnx2009,1)),sort(bsnx2009(:,2)),...
-                linspace(0,100,size(bsnx2013,1)),sort(bsnx2013(:,2)));
+  linspace(0,100,size(bsnx2009,1)),sort(bsnx2009(:,2)),...
+  linspace(0,100,size(bsnx2013,1)),sort(bsnx2013(:,2)));
 hpMP = plot(hca,linspace(0,100,size(rzero2001,1)),sort(rzero2001),...
-                linspace(0,100,size(rzero2009,1)),sort(rzero2009),...
-                linspace(0,100,size(rzero2013,1)),sort(rzero2013));
+  linspace(0,100,size(rzero2009,1)),sort(rzero2009),...
+  linspace(0,100,size(rzero2013,1)),sort(rzero2013));
 
 if plotLims % plot reference distances
-    hpLim = plot(hca,[0 100],15*[1 1],'k',...
-                     [0 100],13*[1 1],'k',...
-                     [0 100],12*[1 1],'k');
-    text(4,14,'Bowshock region','verticalalignment','middle','fontsize',14)         
-    text(43,12.5,'Magnetosheath region','verticalalignment','middle','fontsize',14)
+  hpLim = plot(hca,[0 100],15*[1 1],'k',...
+    [0 100],13*[1 1],'k',...
+    [0 100],12*[1 1],'k');
+  text(4,14,'Bowshock region','verticalalignment','middle','fontsize',14)
+  text(43,12.5,'Magnetosheath region','verticalalignment','middle','fontsize',14)
 end
 for kk = 1:3 % change linestyle and color to match with BS-color for the same year
-    hpMP(kk).Color = hpBS(kk).Color;
-    hpMP(kk).LineStyle = '--';
+  hpMP(kk).Color = hpBS(kk).Color;
+  hpMP(kk).LineStyle = '--';
 end
 hold(hca,'off');
 
 hl = legend(hca,'Bowshock 2001 (OMNI BSNX)','Bowshock 2009 (OMNI BSNX)','Bowshock 2013 (OMNI BSNX)','Magnetopause 2001 ','Magnetopause 2009','Magnetopause 2013','location','northwest');
 
 xlabel('Percentile')
-ylabel({'Standoff distance [RE]'}) 
+ylabel({'Standoff distance [RE]'})
 grid on
 hca.Box = 'on';
 set(gca,'ylim',[7 19])

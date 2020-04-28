@@ -1,7 +1,7 @@
 function [z]=irf_dot(x,y,flag_output)
 %IRF_DOT   Calculate dot product between vectors in 3D space
 %
-% [z]=IRF_DOT(x,y,flag) calculate dot product of  vectors x and y 
+% [z]=IRF_DOT(x,y,flag) calculate dot product of  vectors x and y
 %    having 3 components
 %
 % x,y,z  are column vectors  [time],x,y,z,[r]
@@ -49,7 +49,7 @@ end
 % if flag=1 only abs(y) should be returned
 if exist('flag_output','var')
   if (flag_output == 1) && size(z,2)>1
-    z=z(:,end);  
+    z=z(:,end);
   end
 end
 

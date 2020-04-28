@@ -19,7 +19,7 @@ cl_s=''; th_s = '';
 chk_input()
 if ~isempty(th_s) % load THEMIS positions 1min resolution
   Rth = load('/data/caalocal/THEMIS/mRth',['Rth' lower(th_s)]);
-end 
+end
 
 Out = struct('time',[],'fPeak',[],'psdBpeak',[],'ellipticity',[],'thetaK',[],...
   'gseR',[],'mlt',[],'mLat',[],...
@@ -27,97 +27,97 @@ Out = struct('time',[],'fPeak',[],'psdBpeak',[],'ellipticity',[],'thetaK',[],...
 
 oldPwd = pwd;
 for ievent=1:numel(TT)
-    fprintf('Event #%d (out of %d) : %s\n',ievent,numel(TT),...
-      irf_disp_iso_range(TT.TimeInterval(ievent,:),1));
-    lowerFreqBound = str2double(TT.Description{ievent}{1});
-    upperFreqBound = str2double(TT.Description{ievent}{2});
-    flagSkipPC12 = false; flagSkipPC35 = false; 
-    if upperFreqBound<=0.1, flagSkipPC12 = true; end
-    if lowerFreqBound>=0.1, flagSkipPC35 = true; end
-    
-    tint = TT.TimeInterval(ievent,:);
-    tintDl = tint + 300*[-1 1]; %5 minutes are included in the timetable on either side of the EMIC wave
-    if isempty(th_s) % Cluster
-      gseR = local.c_read(['R' cl_s],tintDl);
-      if isempty(gseR) || size(gseR,1)<=3
-        gseR = c_caa_var_get(['sc_r_xyz_gse__C' cl_s '_CP_AUX_POSGSE_1M'],...
-          'mat','tint',tintDl);
-      end
-      if size(gseR,1)<=3, continue, end
-    else % THEMIS
-      gseR = irf_tlim(Rth.(['Rth' lower(th_s)]),tintDl);
+  fprintf('Event #%d (out of %d) : %s\n',ievent,numel(TT),...
+    irf_disp_iso_range(TT.TimeInterval(ievent,:),1));
+  lowerFreqBound = str2double(TT.Description{ievent}{1});
+  upperFreqBound = str2double(TT.Description{ievent}{2});
+  flagSkipPC12 = false; flagSkipPC35 = false;
+  if upperFreqBound<=0.1, flagSkipPC12 = true; end
+  if lowerFreqBound>=0.1, flagSkipPC35 = true; end
+  
+  tint = TT.TimeInterval(ievent,:);
+  tintDl = tint + 300*[-1 1]; %5 minutes are included in the timetable on either side of the EMIC wave
+  if isempty(th_s) % Cluster
+    gseR = local.c_read(['R' cl_s],tintDl);
+    if isempty(gseR) || size(gseR,1)<=3
+      gseR = c_caa_var_get(['sc_r_xyz_gse__C' cl_s '_CP_AUX_POSGSE_1M'],...
+        'mat','tint',tintDl);
     end
-    
-    if flagSkipPC35, ebspPC35 = []; else, ebspPC35 = get_ebsp('PC35'); end
-    if flagSkipPC12, ebspPC12 = []; else, ebspPC12 = get_ebsp('PC12'); end
-    
-    if isempty(ebspPC35) && isempty(ebspPC12)
-      irf.log('warning','No data')
-      continue
+    if size(gseR,1)<=3, continue, end
+  else % THEMIS
+    gseR = irf_tlim(Rth.(['Rth' lower(th_s)]),tintDl);
+  end
+  
+  if flagSkipPC35, ebspPC35 = []; else, ebspPC35 = get_ebsp('PC35'); end
+  if flagSkipPC12, ebspPC12 = []; else, ebspPC12 = get_ebsp('PC12'); end
+  
+  if isempty(ebspPC35) && isempty(ebspPC12)
+    irf.log('warning','No data')
+    continue
+  end
+  
+  %% Combine PC12  &  PC35
+  % Frequency limits
+  if flagSkipPC35, freq = tocolumn(ebspPC12.f.data);
+  elseif flagSkipPC12, freq = tocolumn(ebspPC35.f.data);
+  else
+    freq = [tocolumn(ebspPC35.f.data); tocolumn(ebspPC12.f.data)];
+  end
+  loweridx = find(abs(freq-lowerFreqBound)<.001);
+  upperidx = find(abs(freq-upperFreqBound)<.001);
+  idxFreq = loweridx:upperidx;
+  
+  if flagSkipPC35
+    tint1min = [floor(tint(1)/60) ceil(tint(2)/60)]*60;
+    outTime = ((tint1min(1)):60:(tint1min(end)))';
+  else
+    [outTime, idxPC35] = irf_tlim(ebspPC35.t.data,tint);
+    BBssPC35 = double(ebspPC35.bb_xxyyzzss.data(idxPC35,:,4));
+    ellPC35  = double(ebspPC35.ellipticity.data(idxPC35,:));
+    ktPC35   = double(ebspPC35.k_tp.data(idxPC35,:,1));
+  end
+  if flagSkipPC12, BBss = BBssPC35; ell = ellPC35; thK = ktPC35;
+  else
+    [inTime, idxPC12] = irf_tlim(ebspPC12.t.data, tint + 30*[-1 1]); % 30 sec on each side for PC12 for propoper averaging
+    if isempty(idxPC12), error('No PC12 data'), end
+    BBssPC12 = double(ebspPC12.bb_xxyyzzss.data(idxPC12,:,4));
+    BBssPC12av = AverageData(BBssPC12,inTime,outTime);
+    ellPC12 = double(ebspPC12.ellipticity.data(idxPC12,:));
+    ellPC12av = AverageData(ellPC12,inTime,outTime);
+    ktPC12 = double(ebspPC12.k_tp.data(idxPC12,:,1));
+    ktPC12av = AverageData(ktPC12,inTime,outTime);
+    if flagSkipPC35, BBss = BBssPC12av; ell = ellPC12av; thK = ktPC12av;
+    else % combined PC12 & PC35
+      BBss = [BBssPC35, BBssPC12av];
+      ell = [ellPC35, ellPC12av];
+      thK = [ktPC35, ktPC12av];
     end
-    
-    %% Combine PC12  &  PC35
-    % Frequency limits
-    if flagSkipPC35, freq = tocolumn(ebspPC12.f.data);
-    elseif flagSkipPC12, freq = tocolumn(ebspPC35.f.data);
-    else
-      freq = [tocolumn(ebspPC35.f.data); tocolumn(ebspPC12.f.data)];
-    end
-    loweridx = find(abs(freq-lowerFreqBound)<.001);
-    upperidx = find(abs(freq-upperFreqBound)<.001);
-    idxFreq = loweridx:upperidx;
-    
-    if flagSkipPC35
-      tint1min = [floor(tint(1)/60) ceil(tint(2)/60)]*60;
-      outTime = ((tint1min(1)):60:(tint1min(end)))';
-    else 
-      [outTime, idxPC35] = irf_tlim(ebspPC35.t.data,tint);
-      BBssPC35 = double(ebspPC35.bb_xxyyzzss.data(idxPC35,:,4));
-      ellPC35  = double(ebspPC35.ellipticity.data(idxPC35,:));
-      ktPC35   = double(ebspPC35.k_tp.data(idxPC35,:,1));
-    end
-    if flagSkipPC12, BBss = BBssPC35; ell = ellPC35; thK = ktPC35;
-    else
-      [inTime, idxPC12] = irf_tlim(ebspPC12.t.data, tint + 30*[-1 1]); % 30 sec on each side for PC12 for propoper averaging
-      if isempty(idxPC12), error('No PC12 data'), end
-      BBssPC12 = double(ebspPC12.bb_xxyyzzss.data(idxPC12,:,4));
-      BBssPC12av = AverageData(BBssPC12,inTime,outTime);
-      ellPC12 = double(ebspPC12.ellipticity.data(idxPC12,:));
-      ellPC12av = AverageData(ellPC12,inTime,outTime);
-      ktPC12 = double(ebspPC12.k_tp.data(idxPC12,:,1));
-      ktPC12av = AverageData(ktPC12,inTime,outTime);
-      if flagSkipPC35, BBss = BBssPC12av; ell = ellPC12av; thK = ktPC12av;
-      else % combined PC12 & PC35
-        BBss = [BBssPC35, BBssPC12av];
-        ell = [ellPC35, ellPC12av]; 
-        thK = [ktPC35, ktPC12av];
-      end
-    end
-    BBss=BBss(:,idxFreq);
-    [psdBpeak,idxPeakTmp]=max(BBss,[],2);
-    fPeak = double(freq(idxFreq(1)-1+idxPeakTmp));
-    idxPeak = ((1:size(BBss,1))'-1)*size(BBss,2)+idxPeakTmp;
-    ell = ell(:,idxFreq)'; % transpose to get the idx right
-    ellPeak = ell(idxPeak);
-    thK=thK(:,idxFreq)'; % transpose to get the idx right
-    thKpeak=thK(idxPeak);
-    
-    % Mag coordinates
-    gseR = irf_resamp(gseR,outTime);
-    smR = irf.geocentric_coordinate_transformation(gseR,'gse>sm');
-    [azimuth,elevation,~] = cart2sph(smR(:,2),smR(:,3),smR(:,4));
-    mLat = elevation*180/pi;
-    mlt = mod(azimuth*180/pi+180,360)/360*24;
-    
-    % Save output
-    Out.time = [Out.time; outTime];
-    Out.fPeak = [Out.fPeak; fPeak];
-    Out.psdBpeak = [Out.psdBpeak; psdBpeak];
-    Out.ellipticity = [Out.ellipticity; ellPeak];
-    Out.thetaK = [Out.thetaK; thKpeak];
-    Out.gseR = [Out.gseR; gseR];
-    Out.mlt = [Out.mlt; mlt];
-    Out.mLat = [Out.mLat; mLat];
+  end
+  BBss=BBss(:,idxFreq);
+  [psdBpeak,idxPeakTmp]=max(BBss,[],2);
+  fPeak = double(freq(idxFreq(1)-1+idxPeakTmp));
+  idxPeak = ((1:size(BBss,1))'-1)*size(BBss,2)+idxPeakTmp;
+  ell = ell(:,idxFreq)'; % transpose to get the idx right
+  ellPeak = ell(idxPeak);
+  thK=thK(:,idxFreq)'; % transpose to get the idx right
+  thKpeak=thK(idxPeak);
+  
+  % Mag coordinates
+  gseR = irf_resamp(gseR,outTime);
+  smR = irf.geocentric_coordinate_transformation(gseR,'gse>sm');
+  [azimuth,elevation,~] = cart2sph(smR(:,2),smR(:,3),smR(:,4));
+  mLat = elevation*180/pi;
+  mlt = mod(azimuth*180/pi+180,360)/360*24;
+  
+  % Save output
+  Out.time = [Out.time; outTime];
+  Out.fPeak = [Out.fPeak; fPeak];
+  Out.psdBpeak = [Out.psdBpeak; psdBpeak];
+  Out.ellipticity = [Out.ellipticity; ellPeak];
+  Out.thetaK = [Out.thetaK; thKpeak];
+  Out.gseR = [Out.gseR; gseR];
+  Out.mlt = [Out.mlt; mlt];
+  Out.mLat = [Out.mLat; mLat];
 end
 cd (oldPwd)
 
@@ -164,7 +164,7 @@ cd (oldPwd)
     
     iSep=strfind(fname,'__');
     productName = fname(1:iSep-1);
-
+    
     for iField = 1:length(fields)
       fieldName = fields{iField}{1}; varName = fields{iField}{2};
       tmpVar = get_variable(dobj,[varName '__' productName]);
@@ -216,7 +216,7 @@ cd (oldPwd)
         if tenddate > epoch2date(tintDl(1)), m=i; end
         i=i+1;
       end
-      if m, fn = d(m).name; 
+      if m, fn = d(m).name;
       else, irf.log('warning', ['no files found for ' range]);
       end
     end
@@ -240,13 +240,13 @@ x = [x(1)-fliplr(padTime)'; x; x(end)+padTime'];
 
 out = zeros(ndataOut,size(data,2));
 if flagSerial % Serial execution
-    for i=1:length(y)
-        out(i,:) = FastNanMean(data,x>=y(i)-dt2 & x<y(i)+dt2);
-    end
+  for i=1:length(y)
+    out(i,:) = FastNanMean(data,x>=y(i)-dt2 & x<y(i)+dt2);
+  end
 else % Parallel execution
-    parfor i=1:length(y)
-        out(i,:) = FastNanMean(data,x>=y(i)-dt2 & x<y(i)+dt2);
-    end
+  parfor i=1:length(y)
+    out(i,:) = FastNanMean(data,x>=y(i)-dt2 & x<y(i)+dt2);
+  end
 end
 end
 function m = FastNanMean(x,idx)

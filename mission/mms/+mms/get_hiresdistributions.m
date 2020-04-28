@@ -1,6 +1,6 @@
 function Distpart = get_hiresdistributions(varargin)
 % GET_PARTIALDISTRIBUTIONS Obtains particle distributions at 2 or 4 times
-% the standard resolution of FPI. 
+% the standard resolution of FPI.
 % Written by D. B. Graham
 %
 % Distpart = mms.get_hiresdistributions(Dist,4);
@@ -10,9 +10,9 @@ function Distpart = get_hiresdistributions(varargin)
 %   include usec_offsets in ancillary data.
 %   pf - Optional parameter. Determines how many distributions are
 %   constructed out of the original distributions. Must be 2 or 4. If not included 4 is
-%   assumed. 
+%   assumed.
 %
-% Output: 
+% Output:
 %   Distpart - Higher temporal resolution distribution function. Parts of
 %   distribution not measured are given by NaN. Same energy and angular
 %   format as the original distribution.
@@ -22,9 +22,9 @@ function Distpart = get_hiresdistributions(varargin)
 pf = 4;
 
 if (nargin < 1)
-    nargin
-    help get_partialdistributions;
-    return;
+  nargin
+  help get_partialdistributions;
+  return;
 end
 
 Dist = varargin{1};
@@ -33,7 +33,7 @@ if isa(Dist,'PDist')
   if isempty('Dist.ancillary.usec_offsets')
     Distpart = NaN;
     help get_partialdistributions;
-  return;
+    return;
   end
 else
   irf.log('critical','Distribution is not PDist format');

@@ -53,51 +53,51 @@ end
 % Shift times to center of deltat- and deltat+ for l2 particle
 % distributions and moments
 if ~isempty(regexp(v.name,'^mms[1-4]_d[ei]s_','once')) || ~isempty(regexp(v.name,'^mms[1-4]_hpca_','once'))
-	if isfield(v.DEPEND_0,'DELTA_MINUS_VAR') && isfield(v.DEPEND_0,'DELTA_PLUS_VAR')
-        if isfield(v.DEPEND_0.DELTA_MINUS_VAR,'data') && isfield(v.DEPEND_0.DELTA_PLUS_VAR,'data')
-            irf.log('warning','Times shifted to center of dt-+. dt-+ are recalculated');
-            flag_MINUS = 1e3;       flag_PLUS = 1e3;
-            if isfield(v.DEPEND_0.DELTA_MINUS_VAR, 'UNITS') && isfield(v.DEPEND_0.DELTA_PLUS_VAR, 'UNITS')
-                if strcmp(v.DEPEND_0.DELTA_MINUS_VAR.UNITS, 's')
-                    flag_MINUS = 1e3;           % s --> ms
-                elseif strcmp(v.DEPEND_0.DELTA_MINUS_VAR.UNITS, 'ms')
-                    flag_MINUS = 1;
-                else
-                    irf.log('warning','Epoch_minus_var units are not clear, assume s');
-                    flag_MINUS = 1e3;       
-                end
-                if strcmp(v.DEPEND_0.DELTA_PLUS_VAR.UNITS, 's')
-                    flag_PLUS = 1e3;           % s --> ms
-                elseif strcmp(v.DEPEND_0.DELTA_PLUS_VAR.UNITS, 'ms')
-                    flag_PLUS = 1;
-                else
-                    irf.log('warning','Epoch_plus_var units are not clear, assume s');
-                    flag_PLUS = 1e3;
-                end
-            else
-                irf.log('warning','Epoch_plus_var/Epoch_minus_var units are not clear, assume s');
-            end                
-            toffset = (int64(v.DEPEND_0.DELTA_PLUS_VAR.data)-int64(v.DEPEND_0.DELTA_MINUS_VAR.data))*1e6/2;
-            tdiff = (int64(v.DEPEND_0.DELTA_PLUS_VAR.data)+int64(v.DEPEND_0.DELTA_MINUS_VAR.data))*1e6/2;
-            %toffset = int64((v.DEPEND_0.DELTA_PLUS_VAR.data*flag_PLUS-v.DEPEND_0.DELTA_MINUS_VAR.data*flag_MINUS)*1e6/2);
-            %tdiff = int64((v.DEPEND_0.DELTA_PLUS_VAR.data*flag_PLUS+v.DEPEND_0.DELTA_MINUS_VAR.data*flag_MINUS)*1e6/2);   
-            % Upper 2 lines give wrong results in my MAC (wyli, Matlab 2017b, 20190602.)
-            % If you want to change this part, please let me (wyli.space@gmail.com) know.
-            tdiff_data = median(diff(v.DEPEND_0.data)) / 2;                   % ns
-            if ~(tdiff_data == mean(tdiff))
-                str1 = num2str(mean(v.DEPEND_0.DELTA_PLUS_VAR.data)*flag_PLUS);
-                str2 = num2str(mean(v.DEPEND_0.DELTA_MINUS_VAR.data)*flag_MINUS);
-                str0 = num2str(double(tdiff_data * 2) * 1e-6);
-                str_warning = ['Epoch_plus_var (' str1 ') and Epoch_minus_var (' str2 ') donot match data sampling time (' str0 '), assume tdiff_data; '];
-                irf.log('warning', str_warning);
-                tdiff = tdiff_data;
-                toffset = tdiff_data;
-            end
-            v.DEPEND_0.DELTA_MINUS_VAR.data = tdiff;
-            v.DEPEND_0.DELTA_PLUS_VAR.data = tdiff;
-            v.DEPEND_0.data = v.DEPEND_0.data+toffset;
+  if isfield(v.DEPEND_0,'DELTA_MINUS_VAR') && isfield(v.DEPEND_0,'DELTA_PLUS_VAR')
+    if isfield(v.DEPEND_0.DELTA_MINUS_VAR,'data') && isfield(v.DEPEND_0.DELTA_PLUS_VAR,'data')
+      irf.log('warning','Times shifted to center of dt-+. dt-+ are recalculated');
+      flag_MINUS = 1e3;       flag_PLUS = 1e3;
+      if isfield(v.DEPEND_0.DELTA_MINUS_VAR, 'UNITS') && isfield(v.DEPEND_0.DELTA_PLUS_VAR, 'UNITS')
+        if strcmp(v.DEPEND_0.DELTA_MINUS_VAR.UNITS, 's')
+          flag_MINUS = 1e3;           % s --> ms
+        elseif strcmp(v.DEPEND_0.DELTA_MINUS_VAR.UNITS, 'ms')
+          flag_MINUS = 1;
+        else
+          irf.log('warning','Epoch_minus_var units are not clear, assume s');
+          flag_MINUS = 1e3;
         end
-	end
+        if strcmp(v.DEPEND_0.DELTA_PLUS_VAR.UNITS, 's')
+          flag_PLUS = 1e3;           % s --> ms
+        elseif strcmp(v.DEPEND_0.DELTA_PLUS_VAR.UNITS, 'ms')
+          flag_PLUS = 1;
+        else
+          irf.log('warning','Epoch_plus_var units are not clear, assume s');
+          flag_PLUS = 1e3;
+        end
+      else
+        irf.log('warning','Epoch_plus_var/Epoch_minus_var units are not clear, assume s');
+      end
+      toffset = (int64(v.DEPEND_0.DELTA_PLUS_VAR.data)-int64(v.DEPEND_0.DELTA_MINUS_VAR.data))*1e6/2;
+      tdiff = (int64(v.DEPEND_0.DELTA_PLUS_VAR.data)+int64(v.DEPEND_0.DELTA_MINUS_VAR.data))*1e6/2;
+      %toffset = int64((v.DEPEND_0.DELTA_PLUS_VAR.data*flag_PLUS-v.DEPEND_0.DELTA_MINUS_VAR.data*flag_MINUS)*1e6/2);
+      %tdiff = int64((v.DEPEND_0.DELTA_PLUS_VAR.data*flag_PLUS+v.DEPEND_0.DELTA_MINUS_VAR.data*flag_MINUS)*1e6/2);
+      % Upper 2 lines give wrong results in my MAC (wyli, Matlab 2017b, 20190602.)
+      % If you want to change this part, please let me (wyli.space@gmail.com) know.
+      tdiff_data = median(diff(v.DEPEND_0.data)) / 2;                   % ns
+      if ~(tdiff_data == mean(tdiff))
+        str1 = num2str(mean(v.DEPEND_0.DELTA_PLUS_VAR.data)*flag_PLUS);
+        str2 = num2str(mean(v.DEPEND_0.DELTA_MINUS_VAR.data)*flag_MINUS);
+        str0 = num2str(double(tdiff_data * 2) * 1e-6);
+        str_warning = ['Epoch_plus_var (' str1 ') and Epoch_minus_var (' str2 ') donot match data sampling time (' str0 '), assume tdiff_data; '];
+        irf.log('warning', str_warning);
+        tdiff = tdiff_data;
+        toffset = tdiff_data;
+      end
+      v.DEPEND_0.DELTA_MINUS_VAR.data = tdiff;
+      v.DEPEND_0.DELTA_PLUS_VAR.data = tdiff;
+      v.DEPEND_0.data = v.DEPEND_0.data+toffset;
+    end
+  end
 end
 
 if isempty(varType)

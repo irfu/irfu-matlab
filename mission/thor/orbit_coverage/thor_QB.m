@@ -20,28 +20,28 @@ doParShock = true;
 if nargin>3 && strcmp(varargin{1},'perp')
   doParShock = false;
 end
-  
+
 if isa(R,'TSeries')
   Time = R.time;
-  R0 = R.data; 
+  R0 = R.data;
   if strcmp(R.units,'km') || R0(1,1) > 50
     R0 = R0/units.RE*1e3; % km->RE
-  end  
-else 
+  end
+else
   R0 = R;
 end
 if isa(rTHOR,'TSeries')
   Time = rTHOR.time;
-%  xTHOR = rTHOR.x.data; %% NOT USED
+  %  xTHOR = rTHOR.x.data; %% NOT USED
   yTHOR = rTHOR.y.data;
   zTHOR = rTHOR.z.data;
   if strcmp(rTHOR.units,'km') || rTHOR.data(end,1) > 100
-%    xTHOR = xTHOR/units.RE*1e3; % km->RE %% NOT USED
+    %    xTHOR = xTHOR/units.RE*1e3; % km->RE %% NOT USED
     yTHOR = yTHOR/units.RE*1e3; % km->RE
     zTHOR = zTHOR/units.RE*1e3; % km->RE
   end
 else
-%  xTHOR = rTHOR(:,1);  %% NOT USED
+  %  xTHOR = rTHOR(:,1);  %% NOT USED
   yTHOR = rTHOR(:,2);
   zTHOR = rTHOR(:,3);
 end
@@ -82,12 +82,12 @@ newZ = newR.*sind(thetaTHOR);
 % and third one is a shift in the azimuthal direction.
 x1 = newX; y1 = newY; z1 = newZ; r1 = newR;
 
-x2 = x1 - 0.0001; r2 = fr(x2,R0); 
-y2 = r2.*cosd(thetaTHOR); 
+x2 = x1 - 0.0001; r2 = fr(x2,R0);
+y2 = r2.*cosd(thetaTHOR);
 z2 = r2.*sind(thetaTHOR);
 
 theta3 = thetaTHOR - 0.001; x3=x1;
-y3 = r1.*cosd(theta3); 
+y3 = r1.*cosd(theta3);
 z3 = r1.*sind(theta3);
 
 y1(yTHOR<0) = -abs(y1(yTHOR<0));
@@ -117,7 +117,7 @@ normdir = irf.ts_vec_xyz(Time,[nvec(:,1),nvec(:,2),nvec(:,3)]);
 dotprod = nvec(:,1).*Bx + nvec(:,2).*By + nvec(:,3).*Bz;
 theta = acosd(dotprod);
 
-tsTheta      = irf.ts_scalar(Time,theta); 
+tsTheta      = irf.ts_scalar(Time,theta);
 tsTheta.name = 'Magnetic field normal angle';
 
 if doParShock
@@ -127,7 +127,7 @@ else
 end
 
 if isa(rTHOR,'TSeries') || isa(R,'TSeries')
-  QB = irf.ts_scalar(Time,QB); 
+  QB = irf.ts_scalar(Time,QB);
   if doParShock
     QB.name = 'QB par';
   else
@@ -140,5 +140,5 @@ if nargout == 1
 elseif nargout == 2
   varargout = {QB,tsTheta};
 elseif nargout == 3
-  varargout = {QB,tsTheta,normdir};  
+  varargout = {QB,tsTheta,normdir};
 end

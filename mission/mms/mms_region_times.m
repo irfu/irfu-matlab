@@ -5,7 +5,7 @@ function out = mms_region_times(varargin)
 %     Tint - Time interval over which regions are identified, TSeries or
 %     string.
 %
-% Options: 
+% Options:
 %     SWVx - set solar wind speed threshold
 %     SWB - set maximum B for solar wind threshold
 %     SWn - set density maximum density threshold or range (ne)
@@ -20,15 +20,15 @@ function out = mms_region_times(varargin)
 %     region (flag values: 0 - Magnetosheath, 1 - Solar wind, 2 - other, usually magnetosphere)
 %
 % Notes: function uses 4 spacecraft average
-% 
+%
 % Example:
 %     roiList = mms_sci_roi();
 %     outTS = mms_region_times(roiList(14,:),'plot',1,'table',1,'SWTe',30)
 
 % Check the input
 if nargin == 0
-    help irf_region_intervals;
-    return;
+  help irf_region_intervals;
+  return;
 end
 
 % Flags
@@ -50,13 +50,13 @@ end
 
 args=varargin(2:end);
 if numel(args)>0
-	haveoptions=1;
+  haveoptions=1;
 else
-	haveoptions=0;
+  haveoptions=0;
 end
 
 while haveoptions
-	l = 2;
+  l = 2;
   switch(lower(args{1}))
     case lower('SWVx')
       if numel(args)>1 && isnumeric(args{2})
@@ -69,7 +69,7 @@ while haveoptions
     case lower('SWn')
       if numel(args)>1 && isnumeric(args{2})
         if numel(args{2})== 2
-        	SWn = sort(args{2});
+          SWn = sort(args{2});
         elseif numel(args{2})== 1
           SWn = args{2};
         else
@@ -79,15 +79,15 @@ while haveoptions
     case lower('SWTi')
       if numel(args)>1 && isnumeric(args{2})
         SWTi = args{2};
-      end 
+      end
     case lower('SWTe')
       if numel(args)>1 && isnumeric(args{2})
         SWTe = args{2};
-      end 
+      end
     case lower('MSPn')
       if numel(args)>1 && isnumeric(args{2})
         MSPn = args{2};
-      end 
+      end
     case 'plot'
       if numel(args)>1 && isnumeric(args{2})
         if args{2} > 0
@@ -104,27 +104,27 @@ while haveoptions
       irf.log('warning',['Unknown flag:' args{1}])
       l=1;
       break
-  end  
-	args = args(l+1:end);
-	if isempty(args), haveoptions=0; end
+  end
+  args = args(l+1:end);
+  if isempty(args), haveoptions=0; end
 end
 
 ic = 1:4;
 c_eval('B? = mms.get_data(''B_dmpa_srvy'',Tint,?);',ic);
 if isempty(B1)
-    c_eval('B? = mms.get_data(''B_dmpa_dfg_srvy_l2pre'',Tint,?);',ic)
+  c_eval('B? = mms.get_data(''B_dmpa_dfg_srvy_l2pre'',Tint,?);',ic)
 end
 if isempty(B1)
-    c_eval('B? = mms.get_data(''B_dmpa_dfg_srvy_ql'',Tint,?);',ic)
+  c_eval('B? = mms.get_data(''B_dmpa_dfg_srvy_ql'',Tint,?);',ic)
 end
 c_eval('Vifpi? = mms.get_data(''Vi_dbcs_fpi_fast_l2'',Tint,?);',ic)
 if isempty(Vifpi1)
-	c_eval('Nifpi? = mms.get_data(''Ni_fpi_ql'',Tint,?);',ic)
+  c_eval('Nifpi? = mms.get_data(''Ni_fpi_ql'',Tint,?);',ic)
   c_eval('Vifpi? = mms.get_data(''Vi_dbcs_fpi_ql'',Tint,?);',ic)
   c_eval('Tifpi? = mms.get_data(''Ti_dbcs_fpi_ql'',Tint,?);',ic)
   c_eval('Nefpi? = mms.get_data(''Ne_fpi_ql'',Tint,?);',ic)
   c_eval('Vefpi? = mms.get_data(''Ve_dbcs_fpi_ql'',Tint,?);',ic)
-	c_eval('Tefpi? = mms.get_data(''Te_dbcs_fpi_ql'',Tint,?);',ic)
+  c_eval('Tefpi? = mms.get_data(''Te_dbcs_fpi_ql'',Tint,?);',ic)
 else
   c_eval('Nifpi? = mms.get_data(''Ni_fpi_fast_l2'',Tint,?);',ic)
   c_eval('Tifpi? = mms.get_data(''Ti_dbcs_fpi_fast_l2'',Tint,?);',ic)
@@ -175,9 +175,9 @@ Tefpi = irf.ts_scalar(EpochS,(Tefpi1.data+Tefpi2.data+Tefpi3.data+Tefpi4.data)./
 
 % Find solar wind and magnetosheath change times
 if length(SWn) < 2
-    idxSW1 = Nifpi.data < SWn(1);
-else    
-    idxSW1 = Nifpi.data>SWn(1) & Nifpi.data < SWn(2);
+  idxSW1 = Nifpi.data < SWn(1);
+else
+  idxSW1 = Nifpi.data>SWn(1) & Nifpi.data < SWn(2);
 end
 idxSW2 = Vifpi.x.data < SWVx;
 idxSW3 = B.abs.data < SWB;
@@ -192,21 +192,21 @@ idxchange = diff(idxSW);
 idxcpos = find(abs(idxchange) > 0.5);
 numpntthres = 20;
 while min(diff(idxcpos)) < numpntthres
-    [numpoints,rmpoint] = min(diff(idxcpos));
-    startidx = idxcpos(rmpoint);
-    idxSWf(startidx:startidx+numpoints) = idxSWf(startidx-1);
-    idxcpos(rmpoint)= [];
-    idxcpos(rmpoint)= [];
+  [numpoints,rmpoint] = min(diff(idxcpos));
+  startidx = idxcpos(rmpoint);
+  idxSWf(startidx:startidx+numpoints) = idxSWf(startidx-1);
+  idxcpos(rmpoint)= [];
+  idxcpos(rmpoint)= [];
 end
 if ~isempty(idxcpos)
   if idxcpos(1) < numpntthres
-      idxSWf(1:idxcpos(1)) = idxSWf(idxcpos(1)+1);
-      idxcpos(1) = [];
+    idxSWf(1:idxcpos(1)) = idxSWf(idxcpos(1)+1);
+    idxcpos(1) = [];
   end
   %if ~isempty(idxcpos)
   if length(idxSWf)-idxcpos(end) < numpntthres
-      idxSWf(idxcpos(end):end) = idxSWf(idxcpos(end));
-      idxcpos(end) = [];
+    idxSWf(idxcpos(end):end) = idxSWf(idxcpos(end));
+    idxcpos(end) = [];
   end
   %end
 end
@@ -216,22 +216,22 @@ idxMS = ~idxSWf & Nifpi.data < MSPn;
 idxchangeMSP = diff(idxMS);
 idxcposMSP = find(abs(idxchangeMSP) > 0.5);
 while min(diff(idxcposMSP)) < numpntthres
-    [numpoints,rmpoint] = min(diff(idxcposMSP));
-    startidx = idxcposMSP(rmpoint);
-    idxMS(startidx:startidx+numpoints) = idxMS(startidx-1);
-    idxcposMSP(rmpoint)= [];
-    idxcposMSP(rmpoint)= [];
+  [numpoints,rmpoint] = min(diff(idxcposMSP));
+  startidx = idxcposMSP(rmpoint);
+  idxMS(startidx:startidx+numpoints) = idxMS(startidx-1);
+  idxcposMSP(rmpoint)= [];
+  idxcposMSP(rmpoint)= [];
 end
 if ~isempty(idxcposMSP)
   if idxcposMSP(1) < numpntthres
-      idxMS(1:idxcposMSP(1)) = idxMS(idxcposMSP(1)+1);
-      idxcposMSP(1) = [];
+    idxMS(1:idxcposMSP(1)) = idxMS(idxcposMSP(1)+1);
+    idxcposMSP(1) = [];
   end
   if ~isempty(idxcposMSP)
-  if length(idxMS)-idxcposMSP(end) < numpntthres
+    if length(idxMS)-idxcposMSP(end) < numpntthres
       idxMS(idxcposMSP(end):end) = idxMS(idxcposMSP(end));
       idxcposMSP(end) = [];
-  end
+    end
   end
 end
 
@@ -248,86 +248,86 @@ else
   idxx = idxfinal.data(true);
   out = irf.ts_scalar(times,idxx);
 end
-  
+
 if plotfig
-h=irf_plot(8,'newfigure');
-%h=irf_figure(540+ic,8);
-xSize=750; ySize=750;
-set(gcf,'Position',[10 10 xSize ySize]);
-
-xwidth = 0.86;
-ywidth = 0.115;
-set(h(1),'position',[0.10 0.99-ywidth xwidth ywidth]);
-set(h(2),'position',[0.10 0.99-2*ywidth xwidth ywidth]);
-set(h(3),'position',[0.10 0.99-3*ywidth xwidth ywidth]);
-set(h(4),'position',[0.10 0.99-4*ywidth xwidth ywidth]);
-set(h(5),'position',[0.10 0.99-5*ywidth xwidth ywidth]);
-set(h(6),'position',[0.10 0.99-6*ywidth xwidth ywidth]);
-set(h(7),'position',[0.10 0.99-7*ywidth xwidth ywidth]);
-set(h(8),'position',[0.10 0.99-8*ywidth xwidth ywidth]);
-
-Ball = irf.ts_scalar(B.time,[B.data B.abs.data]);
-h(1)=irf_panel('B');
-irf_plot(h(1),Ball);
-ylabel(h(1),'B (nT)','Interpreter','tex');
-irf_legend(h(1),{'B_{x}','B_{y}','B_{z}','|B|'},[0.1 0.12])
-irf_legend(h(1),'(a)',[0.99 0.98],'color','k','fontsize',12)
-    
-h(2)=irf_panel('V');
-irf_plot(h(2),Vifpi);
-ylabel(h(2),'V_{i} (km s^{-1})','Interpreter','tex');
-irf_legend(h(2),{'V_{x}','V_{y}','V_{z}'},[0.1 0.12])
-irf_legend(h(2),'(b)',[0.99 0.98],'color','k','fontsize',12)
-
-h(3)=irf_panel('N');
-irf_plot(h(3),Nifpi);
-hold(h(3),'on')
-irf_plot(h(3),Nefpi,'b');
-hold(h(3),'off')
-ylabel(h(3),'n (cm^{-3})','Interpreter','tex');
-irf_legend(h(3),{'n_i','n_e'},[0.1 0.12])
-irf_legend(h(3),'(c)',[0.99 0.98],'color','k','fontsize',12)
-
-h(4)=irf_panel('Ti');
-irf_plot(h(4),Tifpi);
-ylabel(h(4),'T_{i} (eV)','Interpreter','tex');
-irf_legend(h(4),'(d)',[0.99 0.98],'color','k','fontsize',12)
-
-h(5)=irf_panel('Te');
-irf_plot(h(5),Tefpi);
-ylabel(h(5),'T_{e} (eV)','Interpreter','tex');
-irf_legend(h(5),'(e)',[0.99 0.98],'color','k','fontsize',12)
-
-h(6)=irf_panel('Ex');
-irf_plot(h(6),Ex);
-ylabel(h(6),'E_x (mV m^{-1})','Interpreter','tex');
-irf_legend(h(6),'(f)',[0.99 0.98],'color','k','fontsize',12)
-
-h(7)=irf_panel('SWF1');
-irf_plot(h(7),idxSWint);
-irf_zoom(h(7),'y',[0 5.5]);
-ylabel(h(7),'SW flag1','Interpreter','tex');
-irf_legend(h(7),'(g)',[0.99 0.98],'color','k','fontsize',12)
-
-%h(7)=irf_panel('SWF2');
-%irf_plot(h(7),idxSWf);
-%irf_zoom(h(7),'y',[0 1.2]);
-%ylabel(h(7),'SW flag2','Interpreter','tex');
-%irf_legend(h(7),'(g)',[0.99 0.98],'color','k','fontsize',12)
-
-h(8)=irf_panel('idxfinal');
-irf_plot(h(8),idxfinal);
-hold(h(8),'on')
-irf_plot(h(8),out,'ro');
-hold(h(8),'off')
-irf_zoom(h(8),'y',[0 2.2]);
-ylabel(h(8),'Flag','Interpreter','tex');
-irf_legend(h(8),'(h)',[0.99 0.98],'color','k','fontsize',12)
-irf_legend(h(8),'0 - other, 1 - SW, 2 - MSH',[0.5 0.1],'color','k','fontsize',12)
-
-irf_plot_axis_align(h(1:8));
-irf_zoom(h(1:8),'x',Tint);
-set(h(1:8),'fontsize',12);
+  h=irf_plot(8,'newfigure');
+  %h=irf_figure(540+ic,8);
+  xSize=750; ySize=750;
+  set(gcf,'Position',[10 10 xSize ySize]);
+  
+  xwidth = 0.86;
+  ywidth = 0.115;
+  set(h(1),'position',[0.10 0.99-ywidth xwidth ywidth]);
+  set(h(2),'position',[0.10 0.99-2*ywidth xwidth ywidth]);
+  set(h(3),'position',[0.10 0.99-3*ywidth xwidth ywidth]);
+  set(h(4),'position',[0.10 0.99-4*ywidth xwidth ywidth]);
+  set(h(5),'position',[0.10 0.99-5*ywidth xwidth ywidth]);
+  set(h(6),'position',[0.10 0.99-6*ywidth xwidth ywidth]);
+  set(h(7),'position',[0.10 0.99-7*ywidth xwidth ywidth]);
+  set(h(8),'position',[0.10 0.99-8*ywidth xwidth ywidth]);
+  
+  Ball = irf.ts_scalar(B.time,[B.data B.abs.data]);
+  h(1)=irf_panel('B');
+  irf_plot(h(1),Ball);
+  ylabel(h(1),'B (nT)','Interpreter','tex');
+  irf_legend(h(1),{'B_{x}','B_{y}','B_{z}','|B|'},[0.1 0.12])
+  irf_legend(h(1),'(a)',[0.99 0.98],'color','k','fontsize',12)
+  
+  h(2)=irf_panel('V');
+  irf_plot(h(2),Vifpi);
+  ylabel(h(2),'V_{i} (km s^{-1})','Interpreter','tex');
+  irf_legend(h(2),{'V_{x}','V_{y}','V_{z}'},[0.1 0.12])
+  irf_legend(h(2),'(b)',[0.99 0.98],'color','k','fontsize',12)
+  
+  h(3)=irf_panel('N');
+  irf_plot(h(3),Nifpi);
+  hold(h(3),'on')
+  irf_plot(h(3),Nefpi,'b');
+  hold(h(3),'off')
+  ylabel(h(3),'n (cm^{-3})','Interpreter','tex');
+  irf_legend(h(3),{'n_i','n_e'},[0.1 0.12])
+  irf_legend(h(3),'(c)',[0.99 0.98],'color','k','fontsize',12)
+  
+  h(4)=irf_panel('Ti');
+  irf_plot(h(4),Tifpi);
+  ylabel(h(4),'T_{i} (eV)','Interpreter','tex');
+  irf_legend(h(4),'(d)',[0.99 0.98],'color','k','fontsize',12)
+  
+  h(5)=irf_panel('Te');
+  irf_plot(h(5),Tefpi);
+  ylabel(h(5),'T_{e} (eV)','Interpreter','tex');
+  irf_legend(h(5),'(e)',[0.99 0.98],'color','k','fontsize',12)
+  
+  h(6)=irf_panel('Ex');
+  irf_plot(h(6),Ex);
+  ylabel(h(6),'E_x (mV m^{-1})','Interpreter','tex');
+  irf_legend(h(6),'(f)',[0.99 0.98],'color','k','fontsize',12)
+  
+  h(7)=irf_panel('SWF1');
+  irf_plot(h(7),idxSWint);
+  irf_zoom(h(7),'y',[0 5.5]);
+  ylabel(h(7),'SW flag1','Interpreter','tex');
+  irf_legend(h(7),'(g)',[0.99 0.98],'color','k','fontsize',12)
+  
+  %h(7)=irf_panel('SWF2');
+  %irf_plot(h(7),idxSWf);
+  %irf_zoom(h(7),'y',[0 1.2]);
+  %ylabel(h(7),'SW flag2','Interpreter','tex');
+  %irf_legend(h(7),'(g)',[0.99 0.98],'color','k','fontsize',12)
+  
+  h(8)=irf_panel('idxfinal');
+  irf_plot(h(8),idxfinal);
+  hold(h(8),'on')
+  irf_plot(h(8),out,'ro');
+  hold(h(8),'off')
+  irf_zoom(h(8),'y',[0 2.2]);
+  ylabel(h(8),'Flag','Interpreter','tex');
+  irf_legend(h(8),'(h)',[0.99 0.98],'color','k','fontsize',12)
+  irf_legend(h(8),'0 - other, 1 - SW, 2 - MSH',[0.5 0.1],'color','k','fontsize',12)
+  
+  irf_plot_axis_align(h(1:8));
+  irf_zoom(h(1:8),'x',Tint);
+  set(h(1:8),'fontsize',12);
 end
 
 if savetable

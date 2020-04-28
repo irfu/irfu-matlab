@@ -17,7 +17,7 @@ function [out] = mms_sdp_typecast(dataName, data)
 %  .fillval - ISTP standard fillvalue for corresponding class (used when writing cdf)
 %
 % DataName: "epoch", "bitmask", "quality", "dce", "adc_offset", "scpot",
-%  "phase", "delta_offset", "spinfits", "tensor_order", "deltaplus", 
+%  "phase", "delta_offset", "spinfits", "tensor_order", "deltaplus",
 %  "deltaminus" and "label".
 %
 % See also: MMS_SDP_CDFWRITE

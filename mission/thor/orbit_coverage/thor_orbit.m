@@ -5,7 +5,7 @@ function out = thor_orbit(orbitFile,dt)
 %
 % R = THOR_ORBIT(orbitFile,dt)
 %
-% Orbit is read from SPICE directory specified by 
+% Orbit is read from SPICE directory specified by
 % datastore('spice','dir',fullSPICEDirectoryPath)
 % The code assumes that under SPICE is directory is subdirectory THOR with
 % containing the orbit files.
@@ -16,24 +16,24 @@ function out = thor_orbit(orbitFile,dt)
 
 %% Check input
 if nargin == 0 && nargout == 0
-	help thor_read_orbit_spis;
-	return;
+  help thor_read_orbit_spis;
+  return;
 elseif nargin == 0 && nargout > 0
-	orbitFile = 'new1a.bsp';
+  orbitFile = 'new1a.bsp';
 end
 if nargin <= 1
-	dt = 10*60;
+  dt = 10*60;
 end
 
 %% Define defaults
 out = datastore('spice');
 if isfield(out,'dir')
-	spiceDirectory = datastore('spice','dir');
+  spiceDirectory = datastore('spice','dir');
 else
-	disp('SPICE directory underfined!');
-	disp('Please define, for example:');
-	disp('  > datastore(''spice'',''dir'',''/Users/andris/calc/SPICE'');');
-	return;
+  disp('SPICE directory underfined!');
+  disp('Please define, for example:');
+  disp('  > datastore(''spice'',''dir'',''/Users/andris/calc/SPICE'');');
+  return;
 end
 orbitFileFullPath  = [spiceDirectory '/THOR/' orbitFile];
 idTHOR = cspice_spkobj(orbitFileFullPath,100); % get the THOR id number used by ESOC (-666 in alt1a.bsp and -999 in new1a.bsp
@@ -47,7 +47,7 @@ cspice_furnsh([spiceDirectory '/generic_kernels/spk/planets/de421.bsp']); % plan
 cspice_furnsh([spiceDirectory '/generic_kernels/lsk/naif0011.tls']);      % leap seconds
 cspice_furnsh([spiceDirectory '/metakernel_frames.txt']); % defines GSE,..
 cspice_furnsh(orbitFileFullPath);
-	
+
 %% Calculate interval
 %ids = cspice_spkobj(orbitFileFullPath,1000);
 cover=cspice_spkcov(orbitFileFullPath,idTHOR,1000);

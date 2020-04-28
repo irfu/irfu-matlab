@@ -13,12 +13,12 @@ function res = get(dobj,var_s)
 narginchk(2,2)
 
 if ~ischar(var_s), error('VAR_S must be a string'), end
-		
+
 switch var_s
-	case {'va','VariableAttributes'}
-		res = dobj.VariableAttributes;
-	case {'ga','GlobalAttributes'}
-		res = dobj.GlobalAttributes;
-	otherwise
-		res = getv(dobj,var_s);
+  case {'va','VariableAttributes'}
+    res = dobj.VariableAttributes;
+  case {'ga','GlobalAttributes'}
+    res = dobj.GlobalAttributes;
+  otherwise
+    res = getv(dobj,var_s);
 end

@@ -1,26 +1,26 @@
-function angle_table = four_vector_angles(vector_table) 
+function angle_table = four_vector_angles(vector_table)
 %
 %Input:
-% A table containing four, non-zero, vectors. They must all have the same 
-% length. Each row is a vector.  
+% A table containing four, non-zero, vectors. They must all have the same
+% length. Each row is a vector.
 %
 %Output:
 % A table containing all the six angles in this order:
 % |v_1 to v_2 |v_1 to v_3 |v_1 to v_4 |v_2 to v_3 |v_2 to v_4 |v_3 to v_4 |
 % The output is in absolut angle in the range 0-180 degrees
-% 
+%
 %Descrition of the function:
 % Calculates all the six angles between all the four vectors.
 %
 %Using: vector_angles
-% 
+%
 %Work method:
 % Six functioncall to vector_angles.
 %
 %Error:
 % If one of the vector i a zero-vector then all the angles compared with
 % that vector will be zero.
-% 
+%
 %Discription of variables:
 % vector_table is an array containg four vectors. Each row contains a vector.
 % i is a loop index

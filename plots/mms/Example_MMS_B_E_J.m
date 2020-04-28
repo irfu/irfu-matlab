@@ -1,11 +1,11 @@
 % Plots of B, J, E, JxB electric field, and J.E. Calculates J using
-% Curlometer method. 
+% Curlometer method.
 % Written by D. B. Graham
 
 Tint = irf.tint('2016-06-07T01:53:44.00Z/2016-06-07T19:30:34.00Z');
 
 %%
-ic = 1:4; 
+ic = 1:4;
 
 c_eval('Bxyz?=mms.db_get_ts(''mms?_dfg_srvy_ql'',''mms?_dfg_srvy_dmpa'',Tint);');
 c_eval('Bxyz? = Bxyz?.resample(Bxyz1);',2:4);
@@ -81,7 +81,7 @@ irf_legend(hca,{'E_{x}','E_{y}','E_{z}'},[0.88 0.10])
 irf_legend(hca,'(b)',[0.99 0.98],'color','k')
 
 hca = irf_panel('jxB');
-jxB.data = jxB.data./[ni.data ni.data ni.data]; 
+jxB.data = jxB.data./[ni.data ni.data ni.data];
 jxB.data = jxB.data/1.6e-19/1000; %Convert to (mV/m)
 jxB.data(abs(jxB.data) > 100) = NaN; % Remove some questionable fields
 irf_plot(hca,jxB);

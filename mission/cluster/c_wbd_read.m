@@ -39,7 +39,7 @@ irf_log('dsrc',m)
 
 fid=fopen(tmp_file);
 if fid==-1, error(['cannot read temporary file ' tmp_file]), end
-	
+
 data = fread(fid,[2 inf],'float32');
 fclose(fid);
 unix(['rm ' tmp_file]);

@@ -31,7 +31,7 @@ intrvlStopS=intrvlStartS+intrvldur;
 
 %Discard all times which are outside of the requested interval
 indBeforeStart=find(cntStartS < intrvlStartS);
-if ~isempty(indBeforeStart) 
+if ~isempty(indBeforeStart)
   if cntStopS(indBeforeStart(end)) > intrvlStartS
     cntStartS(indBeforeStart(end))=intrvlStartS;
     indBeforeStart(end)=[];
@@ -40,7 +40,7 @@ if ~isempty(indBeforeStart)
   cntStopS (indBeforeStart)=[];
 end
 indAfterStop=find(cntStopS > intrvlStopS);
-if ~isempty(indAfterStop) 
+if ~isempty(indAfterStop)
   if cntStartS(indAfterStop(1)) < intrvlStopS
     cntStopS(indAfterStop(1))=intrvlStopS;
     indAfterStop(1)=[];
@@ -57,7 +57,7 @@ for segInd=1:length(cntStartS)
   partIntrvlDur = [partIntrvlDur; partLen*ones(length(partSeg),1)];
   partIntrvlDur(end)=mod(cntDurS(segInd),partLen);
   if partIntrvlDur(end)==0.0
-     partIntrvlDur(end)=[];
+    partIntrvlDur(end)=[];
   end
 end
 partIntrvlStart=fromepoch(partIntrvlStartS');

@@ -1,7 +1,7 @@
 function tsQnew = thor_q_sort(tsQ,dT)
 % THOR_Q_SORT assign the maximum Q from tsQ for all points in each time step dT
 % tsQnew = THOR_Q_SORT(tsQ,dT)
-%		tsQ     - Timeseries with new quality factors where in 
+%		tsQ     - Timeseries with new quality factors where in
 %		dT      - time step bins used for taking max(Q), tsQ.time.start:dT:tsQ.time.stop;
 %   tsQnew  - output Timeseries
 
@@ -14,7 +14,7 @@ indBin     = floor((tsQ.time-tsQ.time.start)/dT)+1;
 % find Q values for each point in new time series
 Q = tsQ.data;
 for j = 1:numel(Q)
-	QNewValues(indBin(j)) = max( QNewValues(indBin(j)) , Q(j) );
+  QNewValues(indBin(j)) = max( QNewValues(indBin(j)) , Q(j) );
 end
 
 % assign new Q values

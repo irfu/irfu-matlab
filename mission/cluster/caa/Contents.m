@@ -14,7 +14,7 @@
 %   caa_control_mp        - plot predicted MP location
 %   caa_sh_plan           - identify magnetosheath/sw intervals
 %
-% Offsets 
+% Offsets
 %   caa_corof_adc         - correct the ADC offset in data by removing average
 %   caa_corof_delta       - correct delta offsets
 %   caa_deltaoff_batch    - invert previously applied delta offsets

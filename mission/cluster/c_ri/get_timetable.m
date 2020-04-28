@@ -29,20 +29,20 @@ fp = fopen(p_f);
 timetable = 0;
 
 while feof(fp) == 0
-	line = fgetl(fp);
-	if isempty(line)
-		disp('empty line')
-		continue
-	end
-	switch line(1)
-		case 'B'
-			s_time = line2time(line);
-		case 'E'
-			e_time = line2time(line);
-			timetable = addTime2Table(timetable,from,to,s_time,e_time);
-		otherwise
-			%disp('FGM get_timetable: bogus line')
-	end
+  line = fgetl(fp);
+  if isempty(line)
+    disp('empty line')
+    continue
+  end
+  switch line(1)
+    case 'B'
+      s_time = line2time(line);
+    case 'E'
+      e_time = line2time(line);
+      timetable = addTime2Table(timetable,from,to,s_time,e_time);
+    otherwise
+      %disp('FGM get_timetable: bogus line')
+  end
 end
 fclose(fp);
 
@@ -71,9 +71,9 @@ time = toepoch(time_UT);
 function timetable = addTime2Table(timetable,from,to,s_time, e_time)
 
 if to >= s_time && e_time >= from
-	s_t = max([from s_time]);
-	e_t = min([to e_time]);
-	t = [s_t e_t];
-	timetable = add_A2M(timetable,t);
+  s_t = max([from s_time]);
+  e_t = min([to e_time]);
+  t = [s_t e_t];
+  timetable = add_A2M(timetable,t);
 end
 

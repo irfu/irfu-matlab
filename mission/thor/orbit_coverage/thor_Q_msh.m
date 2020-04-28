@@ -10,7 +10,7 @@ function varargout = thor_Q_msh(rTHOR)
 units = irf_units;
 
 Time = rTHOR.time;
-xTHOR = rTHOR.x.data; 
+xTHOR = rTHOR.x.data;
 yTHOR = rTHOR.y.data;
 zTHOR = rTHOR.z.data;
 if strcmp(rTHOR.units,'km') || rTHOR.data(end,1) > 100
@@ -21,14 +21,14 @@ end
 
 % THOR in spherical coordinates
 thetaTHOR = atan2d(sqrt(zTHOR.^2+yTHOR.^2),xTHOR);
-tsTheta      = irf.ts_scalar(Time,abs(thetaTHOR)); 
+tsTheta      = irf.ts_scalar(Time,abs(thetaTHOR));
 tsTheta.name = 'Angle from bowshock nose';
 tsTheta.units = 'deg';
 
 % Quality factor, midnight is Q = 0; terminators are 0.7071
 thetaQ = abs(thetaTHOR); thetaQ(thetaQ>90) = 90;
 Q = cosd(thetaQ*0.5).^2;
-tsQ = irf.ts_scalar(Time,Q); 
+tsQ = irf.ts_scalar(Time,Q);
 tsQ.name = 'Q msh';
 
 

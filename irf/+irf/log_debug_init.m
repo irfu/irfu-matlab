@@ -3,7 +3,7 @@ function f = log_debug_init(logLevel)
 %
 % debug_log = irf.log_debug_init(flag);
 %   returns function handle 'debug_log'
-%   
+%
 %   If flag==false (default) - debugging disabled
 %   If flag==true  - debugging enabled
 %
@@ -27,7 +27,7 @@ function f = log_debug_init(logLevel)
 if nargin == 0
   logLevel = false;
 elseif nargin > 1
-    error('incorrect number of input parameters')
+  error('incorrect number of input parameters')
 end
 
 if logLevel

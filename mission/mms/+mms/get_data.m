@@ -71,7 +71,7 @@ function res = get_data(varStr, Tint, mmsId)
 %     'Pe_gse_fpi_sitl' (alias:'Pe_gse_fpi_ql'),...
 %     'Pe_gse_fpi_brst_l1b', 'Pe_gse_fpi_fast_l1b',...
 %     'Pe_gse_fpi_brst_l2', 'partPe_gse_fpi_brst_l2', ...
-%     'Enfluxe_fpi_fast_ql', 'Energye_fpi_fast_ql', ... 
+%     'Enfluxe_fpi_fast_ql', 'Energye_fpi_fast_ql', ...
 %     Skymaps:
 %     'PDe_fpi_brst_l2', 'PDe_fpi_fast_l2'.
 %  FGM:
@@ -284,18 +284,18 @@ switch varStr
       
       % LAST RESORT: Load position of MAG files
       if vC=='R'
-      % Load from L2pre B
-      res = mms.db_get_ts(...
-        ['mms' mmsIdS '_dfg_srvy_l2pre'],['mms' mmsIdS '_pos_' cS],Tint);
-      if ~isempty(res), return, end
-      % Load from L2 B
-      res = mms.db_get_ts(...
-        ['mms' mmsIdS '_fgm_srvy_l2'],['mms' mmsIdS '_fgm_r_' cS '_srvy_l2'],Tint);
-      if ~isempty(res), return, end
-      % Load from QL B
-      res = mms.db_get_ts(...
-        ['mms' mmsIdS '_dfg_srvy_ql'],['mms' mmsIdS '_ql_pos_' cS],Tint);
-      return
+        % Load from L2pre B
+        res = mms.db_get_ts(...
+          ['mms' mmsIdS '_dfg_srvy_l2pre'],['mms' mmsIdS '_pos_' cS],Tint);
+        if ~isempty(res), return, end
+        % Load from L2 B
+        res = mms.db_get_ts(...
+          ['mms' mmsIdS '_fgm_srvy_l2'],['mms' mmsIdS '_fgm_r_' cS '_srvy_l2'],Tint);
+        if ~isempty(res), return, end
+        % Load from QL B
+        res = mms.db_get_ts(...
+          ['mms' mmsIdS '_dfg_srvy_ql'],['mms' mmsIdS '_ql_pos_' cS],Tint);
+        return
       end
     end
     
@@ -308,8 +308,8 @@ switch varStr
     for mmsId=1:4
       mmsIdS = num2str(mmsId);
       
-        dTmp = mms.db_get_ts(['mms' mmsIdS '_mec_srvy_l2_epht89d'],...
-          ['mms' mmsIdS '_mec_' lower(vC) '_' cS],Tint);
+      dTmp = mms.db_get_ts(['mms' mmsIdS '_mec_srvy_l2_epht89d'],...
+        ['mms' mmsIdS '_mec_' lower(vC) '_' cS],Tint);
       
       if isempty(dTmp) &&  vC=='V', continue, end
       
@@ -333,8 +333,8 @@ switch varStr
       dTmp = comb_ts(dTmp);
       dTmp.data = double(dTmp.data);
       dTmpR = dTmp.resample(res.time,'spline');
-      res.([cS vC mmsIdS]) = dTmpR.data; 
-    end 
+      res.([cS vC mmsIdS]) = dTmpR.data;
+    end
     return
   case 'tetra_quality'
     % Begin looking for Def. quality
@@ -374,7 +374,7 @@ switch Vr.inst
       case 'l2'
         vn = ['mms' mmsIdS '_' Vr.inst '_b_' Vr.cs '_' Vr.tmmode '_' Vr.lev];
         res = mms.db_get_ts(dsetName, vn, Tint);
-      case 'l2pre' 
+      case 'l2pre'
         vn = ['mms' mmsIdS '_' Vr.inst '_b_' Vr.cs '_' Vr.tmmode '_' Vr.lev];
         res = mms.db_get_ts(dsetName, vn, Tint);
         % XXX: once there will be no v3x files, this entry can be combined
@@ -400,7 +400,7 @@ switch Vr.inst
         res = res(~ind);
       end
     end
-  case 'edi'  
+  case 'edi'
     switch Vr.param
       case 'E'
         pref = ['mms' mmsIdS '_edi_' lower(Vr.param) '_' Vr.cs '_' Vr.tmmode '_' Vr.lev];
@@ -419,11 +419,11 @@ switch Vr.inst
             pitchangle = pitchangles(ipitchangle);
             node = nodes(inode);
             pref = ['mms' mmsIdS '_' Vr.inst '_flux' num2str(inode)  '_' num2str(pitchangle) '_' Vr.tmmode '_' Vr.lev];
-            flux{ipitchangle,inode} = get_ts('scalar');            
+            flux{ipitchangle,inode} = get_ts('scalar');
           end
         end
         if isempty(flux{1,1})
-          res = [];          
+          res = [];
           return
         end
         paddistarr = [flux{1,1}.data flux{1,2}.data flux{1,3}.data flux{1,4}.data flux{2,4}.data flux{2,3}.data flux{2,2}.data flux{2,1}.data];
@@ -431,7 +431,7 @@ switch Vr.inst
         pitchangle_edges_edi = [0 1 2 3 4 12 13 14 15 16]*d_angle;
         pitchangle_centers_edi = [0.5 1.5 2.5 3.5 12.5 13.5 14.5 15.5]*d_angle;
         E_edi = 500;
-        dE_edi = E_edi*0.1*0.5; % width is 10% of center energy 
+        dE_edi = E_edi*0.1*0.5; % width is 10% of center energy
         E_edges = E_edi + dE_edi*[-1 1];
         res = PDist(flux{1}.time,reshape(paddistarr,[size(paddistarr,1),1,size(paddistarr,2)]),'pitchangle',E_edi*ones(flux{1}.length,1),pitchangle_centers_edi);
         res.units = flux{1}.units;
@@ -448,16 +448,16 @@ switch Vr.inst
         res.ancillary.esteptable = ones(flux{1}.length,1);
         res.ancillary.delta_energy_minus = dE_edi;
         res.ancillary.delta_energy_plus = dE_edi;
-        res.ancillary.pitchangle_edges = pitchangle_edges_edi;  
+        res.ancillary.pitchangle_edges = pitchangle_edges_edi;
         res.ancillary.delta_pitchangle_minus = d_angle*ones(1,8)*0.5;
         res.ancillary.delta_pitchangle_plus = d_angle*ones(1,8)*0.5;
       case 'Flux-amb-pm'
-    end    
+    end
   case 'fpi'
     switch Vr.param(end)
       case 'i', sensor = 'dis';
       case 'e', sensor = 'des';
-      otherwise 
+      otherwise
         error('invalid specie')
     end
     
@@ -466,15 +466,15 @@ switch Vr.inst
         if strcmp(Vr.param(1:2),'PD')
           dsetName = [dsetName '_' sensor '-dist'];
         else
-            if length(Vr.param)>4
-                if strcmp(Vr.param(1:4), 'part')
-                    dsetName = [dsetName '_' sensor '-partmoms'];
-                else
-                    dsetName = [dsetName '_' sensor '-moms'];
-                end
+          if length(Vr.param)>4
+            if strcmp(Vr.param(1:4), 'part')
+              dsetName = [dsetName '_' sensor '-partmoms'];
             else
-                    dsetName = [dsetName '_' sensor '-moms'];
+              dsetName = [dsetName '_' sensor '-moms'];
             end
+          else
+            dsetName = [dsetName '_' sensor '-moms'];
+          end
         end
       case 'ql'
         dsetName = [dsetName '_' sensor];
@@ -486,14 +486,14 @@ switch Vr.inst
       case {'PDe','PDi', 'PDERRe', 'PDERRi'}
         switch Vr.lev
           case {'l2'}
-            pref = ['mms' mmsIdS '_' sensor];        
+            pref = ['mms' mmsIdS '_' sensor];
           otherwise, error('should not be here')
-        end        
+        end
         res = get_ts('skymap');
       case {'Ni','Ne'}
         switch Vr.lev
           case {'l2','l2pre'}
-           % pref = ['mms' mmsIdS '_' sensor '_numberdensity_dbcs_' Vr.tmmode];
+            % pref = ['mms' mmsIdS '_' sensor '_numberdensity_dbcs_' Vr.tmmode];
             % V3.1 FPI
             pref = ['mms' mmsIdS '_' sensor '_numberdensity_' Vr.tmmode];
             pref_err = ['mms' mmsIdS '_' sensor '_numberdensity_err_' Vr.tmmode];
@@ -513,21 +513,21 @@ switch Vr.inst
             pref = ['mms' mmsIdS '_' sensor '_numberdensity_part_' Vr.tmmode];
           otherwise, error('should not be here')
         end
-        res = mms.db_get_ts(dsetName,pref,Tint);  % + on 20190909, wyli  
+        res = mms.db_get_ts(dsetName,pref,Tint);  % + on 20190909, wyli
       case {'Enfluxi', 'Enfluxe'}
         switch Vr.lev
-            case 'ql'
-            pref = ['mms' mmsIdS '_' sensor '_energyspectr_omni_fast']; 
-            otherwise, error('should not be here')
+          case 'ql'
+            pref = ['mms' mmsIdS '_' sensor '_energyspectr_omni_fast'];
+          otherwise, error('should not be here')
         end
-        res = mms.db_get_ts(dsetName,pref,Tint);    
+        res = mms.db_get_ts(dsetName,pref,Tint);
       case {'Energyi', 'Energye'}
         switch Vr.lev
-            case 'ql'
-            pref = ['mms' mmsIdS '_' sensor '_energy_fast']; 
-            otherwise, error('should not be here')
+          case 'ql'
+            pref = ['mms' mmsIdS '_' sensor '_energy_fast'];
+          otherwise, error('should not be here')
         end
-        res = mms.db_get_ts(dsetName,pref,Tint);            
+        res = mms.db_get_ts(dsetName,pref,Tint);
       case {'Tsi','Tse'}
         getQ = 'trace';
         switch Vr.lev
@@ -544,7 +544,7 @@ switch Vr.inst
         end
         res = get_ts(getQ);
       case {'Tparai','Tparae', 'Tperpi','Tperpe'}
-          tmpFAC = Vr.param(2:5);
+        tmpFAC = Vr.param(2:5);
         switch Vr.lev
           case {'l2'}
             pref = ['mms' mmsIdS '_' sensor '_temp' tmpFAC '_' Vr.tmmode];
@@ -552,12 +552,12 @@ switch Vr.inst
         end
         res = get_ts('scalar');
       case {'partTparai','partTparae', 'partTperpi','partTperpe'} % + on 20190909
-          tmpFAC = Vr.param(6:9);
+        tmpFAC = Vr.param(6:9);
         switch Vr.lev
           case {'l2'}
             pref = ['mms' mmsIdS '_' sensor '_temp' tmpFAC '_part_' Vr.tmmode];
             res = mms.db_get_ts(dsetName, pref,Tint);
-            if ~isempty(res), return, end            
+            if ~isempty(res), return, end
           otherwise, error('should not be here')
         end
       case {'Ti', 'Te', 'Pi', 'Pe'}
@@ -583,7 +583,7 @@ switch Vr.inst
           case {'l2','l2pre'}
             pref = ['mms' mmsIdS '_' sensor '_' lower(momType)];
             suf = ['_' Vr.cs '_' Vr.tmmode];
-            compS = struct('xx','xx','xy','xy','xz','xz','yy','yy','yz','yz','zz','zz'); 
+            compS = struct('xx','xx','xy','xy','xz','xz','yy','yy','yz','yz','zz','zz');
           case {'l1b','ql'}
             pref = ['mms' mmsIdS '_' sensor '_' momType];
           case 'sitl'
@@ -601,7 +601,7 @@ switch Vr.inst
         pref = ['mms' mmsIdS '_' sensor '_'];
         suf = ['_part_' Vr.cs '_' Vr.tmmode];
         res = mms.db_get_ts(dsetName,[pref momType suf],Tint);
-        if ~isempty(res), return, end  
+        if ~isempty(res), return, end
         res = get_ts('tensor2');
       case {'Vi','Ve'}
         pref = ['mms' mmsIdS '_' sensor '_bulk'];
@@ -635,12 +635,12 @@ switch Vr.inst
             res = mms.db_get_ts(dsetName,[pref 'v' suf],Tint);
             if ~isempty(res), return, end
           otherwise, error('Only l2 partmoms avaiable now.')
-        end        
+        end
       otherwise, error('should not be here')
-    end    
+    end
   case 'hpca'
     dsetName = ['mms' mmsIdS '_hpca_' Vr.tmmode '_' Vr.lev '_moments'];
-    param = Vr.param(1); ion = Vr.param(2:end); 
+    param = Vr.param(1); ion = Vr.param(2:end);
     if ion(1)=='s', param = [param ion(1)]; ion = ion(2:end); end % Ts
     switch ion
       case {'hplus','heplus','heplusplus','oplus'}
@@ -672,8 +672,8 @@ switch Vr.inst
   case 'scm'
     switch Vr.lev
       case 'l2'
-        otherwise
-          error('not implemented yet')
+      otherwise
+        error('not implemented yet')
     end
     dset = 'scb';
     param = 'acb';
@@ -681,7 +681,7 @@ switch Vr.inst
     dsetName = ['mms' mmsIdS '_scm_' Vr.tmmode '_' Vr.lev '_' dset];
     res = mms.db_get_ts(dsetName, pref, Tint);
     res = comb_ts(res);
-  case 'edp' 
+  case 'edp'
     switch Vr.lev
       case 'sitl'
         switch Vr.param
@@ -709,19 +709,19 @@ switch Vr.inst
           case {'Es12','Es34'}, param = ['espin_p' Vr.param(3:4)];
           case 'Adcoff', param = 'adc_offset';
           case {'Sdev12','Sdev34'}, param = ['sdevfit_p' Vr.param(5:6)];
-          case 'E', param = 'dce'; 
+          case 'E', param = 'dce';
         end
         pref = ['mms' mmsIdS '_edp_' param '_' Vr.tmmode '_' Vr.lev];
       otherwise
         switch Vr.param
           case 'E', dset = 'dce'; param = ['dce_' Vr.cs];
           case 'Epar', dset = 'dce'; param = 'dce_par_epar';
-          case 'E2d', dset = 'dce2d'; param = ['dce_' Vr.cs]; 
+          case 'E2d', dset = 'dce2d'; param = ['dce_' Vr.cs];
           case 'V', dset = 'scpot'; param = 'scpot';
-          case 'Vpsp', dset = 'scpot'; param = 'psp'; 
+          case 'Vpsp', dset = 'scpot'; param = 'psp';
           case 'V6', dset = 'scpot';  param = 'dcv';
           otherwise, error('unrecognized param')
-        end   
+        end
         pref = ['mms' mmsIdS '_edp_' param '_' Vr.tmmode '_' Vr.lev];
     end
     dsetName = ['mms' mmsIdS '_edp_' Vr.tmmode '_' Vr.lev '_' dset];
@@ -774,7 +774,7 @@ end
         res.siConversion = rX.siConversion;
       case 'trace'
         if isempty(compS), compS.xx = 'XX'; compS.yy = 'YY'; compS.zz = 'ZZ'; end
-        rX = mms.db_get_ts(dsetName, [pref compS.xx suf],Tint); 
+        rX = mms.db_get_ts(dsetName, [pref compS.xx suf],Tint);
         if isempty(rX)
           irf.log('warning',...
             ['No data for ' dsetName '(' [pref compS.xx suf] ')'])
@@ -790,7 +790,7 @@ end
         res.siConversion = rX.siConversion;
       case 'ts'
         if isempty(compS), compS.par = 'Para'; compS.perp = 'Perp'; end
-        rX = mms.db_get_ts(dsetName, [pref compS.par suf],Tint); 
+        rX = mms.db_get_ts(dsetName, [pref compS.par suf],Tint);
         if isempty(rX)
           irf.log('warning',...
             ['No data for ' dsetName '(' [pref compS.par suf] ')'])
@@ -804,8 +804,8 @@ end
         res.units = rX.units;
         res.siConversion = rX.siConversion;
       case 'tensor2'
-        if isempty(compS) 
-          compS = struct('xx','XX','xy','XY','xz','XZ','yy','YY','yz','YZ','zz','ZZ'); 
+        if isempty(compS)
+          compS = struct('xx','XX','xy','XY','xz','XZ','yy','YY','yz','YZ','zz','ZZ');
         end
         rXX = mms.db_get_ts(dsetName,[pref compS.xx suf],Tint);
         if isempty(rXX),irf.log('warning',...
@@ -818,7 +818,7 @@ end
         rYY = mms.db_get_ts(dsetName,[pref compS.yy suf],Tint);rYY = comb_ts(rYY);
         rYZ = mms.db_get_ts(dsetName,[pref compS.yz suf],Tint);rYZ = comb_ts(rYZ);
         rZZ = mms.db_get_ts(dsetName,[pref compS.zz suf],Tint);rZZ = comb_ts(rZZ);
-    
+        
         rData = nan(rXX.length,3,3);
         rData(:,1,1) = rXX.data;
         rData(:,1,2) = rXY.data;
@@ -838,25 +838,25 @@ end
       case 'skymap'
         switch Vr.tmmode
           case 'brst'
-            if (length(Vr.param) == 3)  
-                dist = mms.db_get_variable(dsetName,[pref '_dist_' Vr.tmmode],Tint);
+            if (length(Vr.param) == 3)
+              dist = mms.db_get_variable(dsetName,[pref '_dist_' Vr.tmmode],Tint);
             elseif (length(Vr.param) == 6 && strcmp(Vr.param(3:5), 'ERR'))
-                dist = mms.db_get_variable(dsetName,[pref '_disterr_' Vr.tmmode],Tint);
+              dist = mms.db_get_variable(dsetName,[pref '_disterr_' Vr.tmmode],Tint);
             end
             theta = dist.DEPEND_2.data;
             dist = mms.variable2ts(dist);
             dist = dist.tlim(Tint);
-            energy_data = mms.db_get_variable(dsetName,[pref '_energy_' Vr.tmmode],Tint);   
-            % energy delta_minus/plus 
+            energy_data = mms.db_get_variable(dsetName,[pref '_energy_' Vr.tmmode],Tint);
+            % energy delta_minus/plus
             % no 'DELTA_MINUS_VAR' or 'DELTA_PLUS_VAR' when loading
             % 'PDi_fpi_brst_l2' from mms.get_data; please let wenya know if
             % you change the following if ... else ... end section.
             % 2018-04-19.
             if (isfield(energy_data, 'DELTA_MINUS_VAR') && isfield(energy_data, 'DELTA_PLUS_VAR'))
-                energy_minus = squeeze(energy_data.DELTA_MINUS_VAR.data);
-                energy_plus = squeeze(energy_data.DELTA_PLUS_VAR.data);
+              energy_minus = squeeze(energy_data.DELTA_MINUS_VAR.data);
+              energy_plus = squeeze(energy_data.DELTA_PLUS_VAR.data);
             else
-                irf.log('warning','DELTA_MINUS_VAR/DELTA_PLUS_VAR is not loaded.')                
+              irf.log('warning','DELTA_MINUS_VAR/DELTA_PLUS_VAR is not loaded.')
             end
             energy0 = mms.db_get_variable(dsetName,[pref '_energy0_' Vr.tmmode],Tint);
             energy1 = mms.db_get_variable(dsetName,[pref '_energy1_' Vr.tmmode],Tint);
@@ -878,26 +878,26 @@ end
             end
             res = irf.ts_skymap(dist.time,dist.data,[],phi.data,theta,'energy0',energy0,'energy1',energy1,'esteptable',stepTable.data);
             if (exist('energy_minus','var') && exist('energy_plus','var'))
-                res.ancillary.delta_energy_minus = energy_minus;
-                res.ancillary.delta_energy_plus = energy_plus;
+              res.ancillary.delta_energy_minus = energy_minus;
+              res.ancillary.delta_energy_plus = energy_plus;
             end
           case 'fast'
             %dist = mms.db_get_variable(dsetName,[pref '_dist_' Vr.tmmode],Tint);
-            if (length(Vr.param) == 3)  
-                dist = mms.db_get_variable(dsetName,[pref '_dist_' Vr.tmmode],Tint);
+            if (length(Vr.param) == 3)
+              dist = mms.db_get_variable(dsetName,[pref '_dist_' Vr.tmmode],Tint);
             elseif (length(Vr.param) == 6 && strcmp(Vr.param(3:5), 'ERR'))
-                dist = mms.db_get_variable(dsetName,[pref '_disterr_' Vr.tmmode],Tint);
-            end            
+              dist = mms.db_get_variable(dsetName,[pref '_disterr_' Vr.tmmode],Tint);
+            end
             phi = dist.DEPEND_1.data;
             theta = dist.DEPEND_2.data;
             dist = mms.variable2ts(dist);
-            dist = dist.tlim(Tint);            
-            energy = mms.db_get_ts(dsetName,[pref '_energy_' Vr.tmmode],Tint);            
+            dist = dist.tlim(Tint);
+            energy = mms.db_get_ts(dsetName,[pref '_energy_' Vr.tmmode],Tint);
             energy = energy.tlim(Tint);
             res = irf.ts_skymap(dist.time, dist.data, energy.data, phi, theta);
         end
         res.units = 's^3/cm^6';
-        if strcmp(sensor(2),'e')          
+        if strcmp(sensor(2),'e')
           res.species = 'electrons';
         elseif strcmp(sensor(2),'i')
           res.species = 'ions';
@@ -926,27 +926,27 @@ nTk = length(tk);
 if nTk <3 || nTk > 5, error('invalig STRING format'), end
 
 phcaParamsScal = {'Nhplus','Nheplus','Nheplusplus','Noplus',...
-  'Tshplus','Tsheplus','Tsheplusplus','Tsoplus','Phase','Adcoff'}; 
+  'Tshplus','Tsheplus','Tsheplusplus','Tsoplus','Phase','Adcoff'};
 phcaParamsTens = {'Vhplus','Vheplus','Vheplusplus','Voplus',...
   'Phplus','Pheplus','Pheplusplus','Poplus',...
   'Thplus','Theplus','Theplusplus','Toplus'};
 
-  
+
 param = tk{1};
 switch param
   case {'Ni', 'partNi', 'Ne', 'partNe', 'Nhplus', 'Tsi', 'Tperpi', 'Tparai', 'partTperpi', 'partTparai', ...
-          'Tse', 'Tperpe', 'Tparae', 'partTperpe', 'partTparae', 'PDe', 'PDi', 'PDERRe', 'PDERRi', 'V', 'V6', 'Vpsp', ...
+      'Tse', 'Tperpe', 'Tparae', 'partTperpe', 'partTparae', 'PDe', 'PDi', 'PDERRe', 'PDERRi', 'V', 'V6', 'Vpsp', ...
       'Enfluxi', 'Enfluxe', 'Energyi', 'Energye', 'Epar', 'Sdev12', 'Sdev34','Flux-amb-pm2'}
     tensorOrder = 0;
   case {'Vi', 'partVi', 'Ve', 'partVe', 'B', 'E','E2d','Es12','Es34'}
     tensorOrder = 1;
   case {'Pi', 'partPi', 'Pe', 'partPe', 'Ti', 'partTi', 'Te', 'partTe'}
-    tensorOrder = 2;  
+    tensorOrder = 2;
   case phcaParamsScal
     tensorOrder = 0;
   case phcaParamsTens
     tensorOrder = 1;
-  otherwise 
+  otherwise
     error('invalid PARAM')
 end
 

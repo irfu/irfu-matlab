@@ -128,137 +128,137 @@ end
 % tbeg = dticv*ceil(limit(1)/dticv);
 
 if ischar(dticv) % dticv = 'year','3years','month'
-    tstart=irf_time(limit(1),'epoch>vector');
-    tend=irf_time(limit(2),'epoch>vector');
-    switch dticv
-        case '3years' % mtics is number of month
-            tictv=zeros((tend(1)-tstart(1)),1);
-            ticstr=cell(size(tictv));
-            i=1;
-            for iy=tstart(1)+1:3:tend(1)
-                ticstr{i}=num2str(iy); % yyyy
-                for iyy=0:2
-                    tictv(i)=irf_time([iy+iyy 1 1 0 0 0]);
-                    i=i+1;
-                end
-            end
-        case 'year' % mtics is number of month
-            tictvtemp=zeros((tend(1)+2-tstart(1))*mtics+1,1);
-            ticstrtemp=cell(size(tictvtemp));
-            i=1;
-            for iy=tstart(1):tend(1)+1
-                ticstrtemp{i}=num2str(iy); % yyyy
-                for im=1:12/mtics:12
-                    tictvtemp(i)=irf_time([iy im 1 0 0 0]);
-                    i=i+1;
-                end
-            end
-            [tictv,ii]=irf_tlim(tictvtemp,limit);
-            ticstr=ticstrtemp(ii);
-        case '3months'
-            tictvtemp=zeros((tend(1)+1-tstart(1))*12*3,1);
-            ticstrtemp=cell(size(tictvtemp));
-            i=1;
-            for iy=tstart(1):tend(1)+1
-                for im=1:3:12
-                ticstrtemp{i}=[num2str(iy) '-' num2str(im,'%02d')]; % yyyy
-                    tictvtemp(i:i+2)=[irf_time([iy im 1 0 0 0]); ...
-                        irf_time([iy im+1 1 0 0 0]);...
-                        irf_time([iy im+2 1 0 0 0])];
-                    i=i+3;
-                end
-            end
-            [tictv,ii]=irf_tlim(tictvtemp,limit);
-            ticstr=ticstrtemp(ii);
-        case 'month'
-            tictvtemp=zeros((tend(1)+1-tstart(1))*12*3,1);
-            ticstrtemp=cell(size(tictvtemp));
-            i=1;
-            for iy=tstart(1):tend(1)+1
-                for im=1:12
-                ticstrtemp{i}=[num2str(iy) '-' num2str(im,'%02d')]; % yyyy
-                    tictvtemp(i:i+2)=[irf_time([iy im 1 0 0 0]); ...
-                        irf_time([iy im 11 0 0 0]);...
-                        irf_time([iy im 21 0 0 0])];
-                    i=i+3;
-                end
-            end
-            [tictv,ii]=irf_tlim(tictvtemp,limit);
-            ticstr=ticstrtemp(ii);
-    end
+  tstart=irf_time(limit(1),'epoch>vector');
+  tend=irf_time(limit(2),'epoch>vector');
+  switch dticv
+    case '3years' % mtics is number of month
+      tictv=zeros((tend(1)-tstart(1)),1);
+      ticstr=cell(size(tictv));
+      i=1;
+      for iy=tstart(1)+1:3:tend(1)
+        ticstr{i}=num2str(iy); % yyyy
+        for iyy=0:2
+          tictv(i)=irf_time([iy+iyy 1 1 0 0 0]);
+          i=i+1;
+        end
+      end
+    case 'year' % mtics is number of month
+      tictvtemp=zeros((tend(1)+2-tstart(1))*mtics+1,1);
+      ticstrtemp=cell(size(tictvtemp));
+      i=1;
+      for iy=tstart(1):tend(1)+1
+        ticstrtemp{i}=num2str(iy); % yyyy
+        for im=1:12/mtics:12
+          tictvtemp(i)=irf_time([iy im 1 0 0 0]);
+          i=i+1;
+        end
+      end
+      [tictv,ii]=irf_tlim(tictvtemp,limit);
+      ticstr=ticstrtemp(ii);
+    case '3months'
+      tictvtemp=zeros((tend(1)+1-tstart(1))*12*3,1);
+      ticstrtemp=cell(size(tictvtemp));
+      i=1;
+      for iy=tstart(1):tend(1)+1
+        for im=1:3:12
+          ticstrtemp{i}=[num2str(iy) '-' num2str(im,'%02d')]; % yyyy
+          tictvtemp(i:i+2)=[irf_time([iy im 1 0 0 0]); ...
+            irf_time([iy im+1 1 0 0 0]);...
+            irf_time([iy im+2 1 0 0 0])];
+          i=i+3;
+        end
+      end
+      [tictv,ii]=irf_tlim(tictvtemp,limit);
+      ticstr=ticstrtemp(ii);
+    case 'month'
+      tictvtemp=zeros((tend(1)+1-tstart(1))*12*3,1);
+      ticstrtemp=cell(size(tictvtemp));
+      i=1;
+      for iy=tstart(1):tend(1)+1
+        for im=1:12
+          ticstrtemp{i}=[num2str(iy) '-' num2str(im,'%02d')]; % yyyy
+          tictvtemp(i:i+2)=[irf_time([iy im 1 0 0 0]); ...
+            irf_time([iy im 11 0 0 0]);...
+            irf_time([iy im 21 0 0 0])];
+          i=i+3;
+        end
+      end
+      [tictv,ii]=irf_tlim(tictvtemp,limit);
+      ticstr=ticstrtemp(ii);
+  end
 else              % dticv in seconds
-    % calculate the time value of the first minor tick
-    dmort = dticv/mtics;
-    tbeg = dmort*ceil(limit(1)/dmort);
-    
-    % calculate the number of ticks
-    ttic = tbeg;
-    ntics = 0;
-    while ttic<=limit(2)
-        %  ttic = ttic+dticv;
-        ttic = ttic+dmort;
-        ntics = ntics+1;
-        if ntics>100
-            warning, 'too many ticks in timeaxis';
-            break;
-        end
+  % calculate the time value of the first minor tick
+  dmort = dticv/mtics;
+  tbeg = dmort*ceil(limit(1)/dmort);
+  
+  % calculate the number of ticks
+  ttic = tbeg;
+  ntics = 0;
+  while ttic<=limit(2)
+    %  ttic = ttic+dticv;
+    ttic = ttic+dmort;
+    ntics = ntics+1;
+    if ntics>100
+      warning, 'too many ticks in timeaxis';
+      break;
     end
-    
-    % generate array with the time values of the major ticks
-    % tictv = tbeg + dticv.*[0:ntics-1];
-    % generate array with the time values of the ticks
-    tictv = tbeg + dmort*(0:ntics-1);
-    
-    % generate the time strings for the labels,
-    ticstr = cell(1, ntics);
-    ticval = mod(tictv, 86400);
-    % use the long format hh:mm:ss, if more than one label within one second,
-    %     else use hh:mm
-    %n = find(tictv-floor(tictv)<2e-7);
-    n=1:ntics;
-    hour = floor(ticval(n)/3600);
-    minute = floor(mod(ticval(n), 3600)/60);
-    if dticv>=3600*24
-        hhmmss = 'datestr(datenum(fromepoch(tictv(j))),29)'; % 'yyyy-mm-dd'
-    elseif dticv>=60
-        format = '%02d:%02d';
-        hhmmss = [hour; minute];
-    elseif dticv<.001
-        format = '%02d:%02d:%07.4f';
-        hhmmss = [hour; minute; mod(ticval(n), 60)];
-    elseif dticv<.01
-        format = '%02d:%02d:%06.3f';
-        hhmmss = [hour; minute; mod(ticval(n), 60)];
-    elseif dticv<.1
-        format = '%02d:%02d:%05.2f';
-        hhmmss = [hour; minute; mod(ticval(n), 60)];
-    elseif dticv<1
-        format = '%02d:%02d:%04.1f';
-        hhmmss = [hour; minute; mod(ticval(n), 60)];
-    else
-        format = '%02d:%02d:%02.0f';
-        hhmmss = [hour; minute; mod(ticval(n), 60)];
+  end
+  
+  % generate array with the time values of the major ticks
+  % tictv = tbeg + dticv.*[0:ntics-1];
+  % generate array with the time values of the ticks
+  tictv = tbeg + dmort*(0:ntics-1);
+  
+  % generate the time strings for the labels,
+  ticstr = cell(1, ntics);
+  ticval = mod(tictv, 86400);
+  % use the long format hh:mm:ss, if more than one label within one second,
+  %     else use hh:mm
+  %n = find(tictv-floor(tictv)<2e-7);
+  n=1:ntics;
+  hour = floor(ticval(n)/3600);
+  minute = floor(mod(ticval(n), 3600)/60);
+  if dticv>=3600*24
+    hhmmss = 'datestr(datenum(fromepoch(tictv(j))),29)'; % 'yyyy-mm-dd'
+  elseif dticv>=60
+    format = '%02d:%02d';
+    hhmmss = [hour; minute];
+  elseif dticv<.001
+    format = '%02d:%02d:%07.4f';
+    hhmmss = [hour; minute; mod(ticval(n), 60)];
+  elseif dticv<.01
+    format = '%02d:%02d:%06.3f';
+    hhmmss = [hour; minute; mod(ticval(n), 60)];
+  elseif dticv<.1
+    format = '%02d:%02d:%05.2f';
+    hhmmss = [hour; minute; mod(ticval(n), 60)];
+  elseif dticv<1
+    format = '%02d:%02d:%04.1f';
+    hhmmss = [hour; minute; mod(ticval(n), 60)];
+  else
+    format = '%02d:%02d:%02.0f';
+    hhmmss = [hour; minute; mod(ticval(n), 60)];
+  end
+  
+  ind_labels=find(abs(mod(tictv,dticv))<1e-6); % NOTE does not work for tick distance below a few microseconds
+  for j=n,ticstr{j} = ' ';end
+  if dticv>=3600*24
+    for j=ind_labels, ticstr{j} = eval(hhmmss);end
+  else
+    for j=ind_labels, ticstr{j} = sprintf(format, hhmmss(:,j));end
+  end
+  
+  if dticv>=.1
+    ind_ms_labels=find(abs(mod(tictv(ind_labels),1))>1e-6);
+    if length(ind_ms_labels) < length(ind_labels)
+      for j=ind_labels(ind_ms_labels), ticstr{j} = sprintf('.%01.0f', mod(tictv(j),1)*10);end
     end
-    
-    ind_labels=find(abs(mod(tictv,dticv))<1e-6); % NOTE does not work for tick distance below a few microseconds
-    for j=n,ticstr{j} = ' ';end
-    if dticv>=3600*24
-        for j=ind_labels, ticstr{j} = eval(hhmmss);end
-    else
-        for j=ind_labels, ticstr{j} = sprintf(format, hhmmss(:,j));end
+  elseif dticv>=.01
+    ind_ms_labels=find(abs(mod(tictv(ind_labels),.1))>1e-6);
+    if length(ind_ms_labels) < length(ind_labels)
+      for j=ind_labels(ind_ms_labels), ticstr{j} = sprintf('.%02.0f', mod(tictv(j),1)*100);end
     end
-    
-    if dticv>=.1
-        ind_ms_labels=find(abs(mod(tictv(ind_labels),1))>1e-6);
-        if length(ind_ms_labels) < length(ind_labels)
-            for j=ind_labels(ind_ms_labels), ticstr{j} = sprintf('.%01.0f', mod(tictv(j),1)*10);end
-        end
-    elseif dticv>=.01
-        ind_ms_labels=find(abs(mod(tictv(ind_labels),.1))>1e-6);
-        if length(ind_ms_labels) < length(ind_labels)
-            for j=ind_labels(ind_ms_labels), ticstr{j} = sprintf('.%02.0f', mod(tictv(j),1)*100);end
-        end
-    end
+  end
 end
 res{1} = tictv;
 res{2} = ticstr;

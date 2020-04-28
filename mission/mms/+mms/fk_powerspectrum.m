@@ -52,8 +52,8 @@ function [fkpower,freq,wavenumber] = fk_powerspectrum(varargin)
 use_56=(varargin{1}==5);
 
 if ((numel(varargin) < 5 && ~use_56)||(numel(varargin) < 4))
-    help mms.fk_powerspectrum;
-    return;
+  help mms.fk_powerspectrum;
+  return;
 end
 
 probe = varargin{1};
@@ -62,10 +62,10 @@ SCpot = varargin{3};
 Bxyz = varargin{4};
 
 if ~use_56
-    zphase = varargin{5};
-    args=varargin(6:end);
+  zphase = varargin{5};
+  args=varargin(6:end);
 else
-    args=varargin(5:end);
+  args=varargin(5:end);
 end
 
 cav = 128;
@@ -76,50 +76,50 @@ uselinear = 0;
 
 
 if numel(args)>0
-    flag_have_options=1;
-    irf.log('notice','have options');
+  flag_have_options=1;
+  irf.log('notice','have options');
 else
-    flag_have_options=0;
+  flag_have_options=0;
 end
 
 while flag_have_options
-    l = 2;
-    switch(lower(args{1}))
-        case 'cav'
-            if numel(args)>1 && isnumeric(args{2})
-                cav = args{2};
-            end
-        case 'numk'
-            if numel(args)>1 && isnumeric(args{2})
-                numk = floor(args{2});
-            end
-        case 'numf'
-            if numel(args)>1 && isnumeric(args{2})
-                numf = floor(args{2});
-            end
-        case 'linear'
-            if numel(args)>1 && isnumeric(args{2})
-                df = args{2}; %#ok<NASGU>
-                uselinear = 1;
-                irf.log('notice','Using linearly spaced frequencies');
-            end
-        case 'field'
-            if numel(args)>1 && isnumeric(args{2})
-                if args{2}
-                    fieldflag = 1;
-                    irf.log('notice','Using reconstructed electric field for computation.')
-                else
-                    fieldflag = 0;
-                    irf.log('notice','Using probe potentials for computation.')
-                end
-            end
-        otherwise
-            irf.log('warning',['Unknown flag: ' args{1}]);
-            l=1;
-            break;
-    end
-    args = args(l+1:end);
-    if isempty(args), flag_have_options=0; end
+  l = 2;
+  switch(lower(args{1}))
+    case 'cav'
+      if numel(args)>1 && isnumeric(args{2})
+        cav = args{2};
+      end
+    case 'numk'
+      if numel(args)>1 && isnumeric(args{2})
+        numk = floor(args{2});
+      end
+    case 'numf'
+      if numel(args)>1 && isnumeric(args{2})
+        numf = floor(args{2});
+      end
+    case 'linear'
+      if numel(args)>1 && isnumeric(args{2})
+        df = args{2}; %#ok<NASGU>
+        uselinear = 1;
+        irf.log('notice','Using linearly spaced frequencies');
+      end
+    case 'field'
+      if numel(args)>1 && isnumeric(args{2})
+        if args{2}
+          fieldflag = 1;
+          irf.log('notice','Using reconstructed electric field for computation.')
+        else
+          fieldflag = 0;
+          irf.log('notice','Using probe potentials for computation.')
+        end
+      end
+    otherwise
+      irf.log('warning',['Unknown flag: ' args{1}]);
+      l=1;
+      break;
+  end
+  args = args(l+1:end);
+  if isempty(args), flag_have_options=0; end
 end
 
 
@@ -136,18 +136,18 @@ E56.time = E56.time + 34.332e-6;
 
 test_resamp=1;
 if test_resamp
-    V3 = mms.dft_timeshift(V3,-7.629e-6);
-    V5 = mms.dft_timeshift(V5,-15.259e-6);
-    E12 = mms.dft_timeshift(E12,-26.703e-6);
-    E34 = mms.dft_timeshift(E34,-30.518e-6);
-    E56 = mms.dft_timeshift(E56,-34.332e-6);
+  V3 = mms.dft_timeshift(V3,-7.629e-6);
+  V5 = mms.dft_timeshift(V5,-15.259e-6);
+  E12 = mms.dft_timeshift(E12,-26.703e-6);
+  E34 = mms.dft_timeshift(E34,-30.518e-6);
+  E56 = mms.dft_timeshift(E56,-34.332e-6);
 else
-    V3 = V3.resample(V1.time); %#ok<UNRCH>
-    V5 = V5.resample(V1.time);
-    E12 = E12.resample(V1.time); %These resamples need to be changed.
-    E34 = E34.resample(V1.time);
-    E56 = E56.resample(V1.time);
-    
+  V3 = V3.resample(V1.time); %#ok<UNRCH>
+  V5 = V5.resample(V1.time);
+  E12 = E12.resample(V1.time); %These resamples need to be changed.
+  E34 = E34.resample(V1.time);
+  E56 = E56.resample(V1.time);
+  
 end
 
 V2 = V1 - E12 * 0.120;
@@ -163,27 +163,27 @@ SCpot = SCpot.tlim(ts2l);
 Bxyz = Bxyz.tlim(ts2l);
 
 if ~use_56 %Unnecessary if probes 5 & 6 are used.
-    
-    zphase = zphase.tlim(ts2l);
-    
-    norepeat = ones(length(zphase.time),1);
-    nph = length(zphase.data);
-    for ii=2:nph
-        if(zphase.time(ii) > zphase.time(ii-1))
-            if(zphase.data(ii) < zphase.data(ii-1))
-                zphase.data(ii:end) = zphase.data(ii:end)+double(360.0);
-            end
-        else
-            norepeat(ii) = 0;
-        end
+  
+  zphase = zphase.tlim(ts2l);
+  
+  norepeat = ones(length(zphase.time),1);
+  nph = length(zphase.data);
+  for ii=2:nph
+    if(zphase.time(ii) > zphase.time(ii-1))
+      if(zphase.data(ii) < zphase.data(ii-1))
+        zphase.data(ii:end) = zphase.data(ii:end)+double(360.0);
+      end
+    else
+      norepeat(ii) = 0;
     end
-    
-    zphasetime = zphase.time(norepeat == 1);
-    zphasedata = zphase.data(norepeat == 1);
-    
-    zphase = TSeries(zphasetime,zphasedata,'to',1);
-    
-    zphase = zphase.resample(SCpot);
+  end
+  
+  zphasetime = zphase.time(norepeat == 1);
+  zphasedata = zphase.data(norepeat == 1);
+  
+  zphase = TSeries(zphasetime,zphasedata,'to',1);
+  
+  zphase = zphase.resample(SCpot);
 end
 Bxyz = Bxyz.resample(SCpot);
 
@@ -193,8 +193,8 @@ SCV12 = (SCpot.data(:,1)+SCpot.data(:,2))/2;
 SCV34 = (SCpot.data(:,3)+SCpot.data(:,4))/2;
 
 if ~fieldflag
-    SCV12 = zeros(size(SCV12));
-    SCV34 = zeros(size(SCV34));
+  SCV12 = zeros(size(SCV12));
+  SCV34 = zeros(size(SCV34));
 end
 
 E1 = (SCpot.data(:,1)-SCV34)*1e3/60; %#ok<NASGU>
@@ -207,18 +207,18 @@ E6 = ((SCV34+SCV12)/2-SCpot.data(:,6))*1e3/14.6; %#ok<NASGU> %Added
 c_eval('E? = TSeries(time,E?,''to'',1);',1:6); %Generalized
 
 if ~use_56 %Added third dimension to work with 5-6, does not affect 12,34.
-    %Get spacecraft phase
-    phase_p1=zphase.data/180*pi + pi/6; %#ok<NASGU>
-    phase_p3=zphase.data/180*pi + 2*pi/3; %#ok<NASGU>
-    phase_p2=zphase.data/180*pi + 7*pi/6; %#ok<NASGU>
-    phase_p4=zphase.data/180*pi + 5*pi/3; %#ok<NASGU>
-    c_eval('rp?=[60*cos(phase_p?) 60*sin(phase_p?), zeros(length(phase_p?),1)];', 1:4);
-    probe_nr = [1 3];
+  %Get spacecraft phase
+  phase_p1=zphase.data/180*pi + pi/6; %#ok<NASGU>
+  phase_p3=zphase.data/180*pi + 2*pi/3; %#ok<NASGU>
+  phase_p2=zphase.data/180*pi + 7*pi/6; %#ok<NASGU>
+  phase_p4=zphase.data/180*pi + 5*pi/3; %#ok<NASGU>
+  c_eval('rp?=[60*cos(phase_p?) 60*sin(phase_p?), zeros(length(phase_p?),1)];', 1:4);
+  probe_nr = [1 3];
 else
-    probe_nr = 5;
-    phase_p5=ones(length(Bxyz.data(:,1)),1); %#ok<NASGU>
-    phase_p6=-1*ones(length(Bxyz.data(:,1)),1); %#ok<NASGU>
-    c_eval('rp?=[zeros(length(Bxyz.data(:,1)),1) zeros(length(Bxyz.data(:,1)),1) phase_p?*14.6];', 5:6);
+  probe_nr = 5;
+  phase_p5=ones(length(Bxyz.data(:,1)),1); %#ok<NASGU>
+  phase_p6=-1*ones(length(Bxyz.data(:,1)),1); %#ok<NASGU>
+  c_eval('rp?=[zeros(length(Bxyz.data(:,1)),1) zeros(length(Bxyz.data(:,1)),1) phase_p?*14.6];', 5:6);
 end
 
 c_eval('thetap?b = (rp?(:,1).*Bxyz.data(:,1)+rp?(:,2).*Bxyz.data(:,2)+rp?(:,3).*Bxyz.data(:,3))./(sqrt(rp?(:,1).^2+rp?(:,2).^2+rp?(:,3).^2).*Bxyz.abs.data);',probe_nr);
@@ -226,7 +226,7 @@ idx = tlim(SCpot.time,ts2);
 
 % If odd, remove last data point (as is done in irf_wavelet)
 if mod(length(idx),2)
-    idx(end)=[];
+  idx(end)=[];
 end
 
 c_eval('thetatest = irf.nanmean(thetap?b(idx));',probe);
@@ -248,7 +248,7 @@ else
   else
     c_eval('W1c = irf_wavelet(E?,''returnpower'',0,''cutedge'',0,''linear'',df);',probe);
     c_eval('W2c = irf_wavelet(E?,''returnpower'',0,''cutedge'',0,''linear'',df);',probe+1);
-  end  
+  end
   numf = length(W1c.f); %#ok<NODEF>
 end
 
@@ -268,17 +268,17 @@ avtimes = times(posav);
 Bs = Bxyz.resample(avtimes);
 c_eval('thetap?b = thetap?b.resample(avtimes);',probe_nr);
 if ~use_56
-    c_eval('rcos = 60.0*thetap?b.data;',probe);
+  c_eval('rcos = 60.0*thetap?b.data;',probe);
 else
-    c_eval('rcos = 14.6*thetap?b.data;',probe); %Added for 5-6.
+  c_eval('rcos = 14.6*thetap?b.data;',probe); %Added for 5-6.
 end
 
 c34x = zeros(N+1,numf);
 Powerav = zeros(N+1,numf);
 
 for m = 1:N+1
-    c34x(m,:) = irf.nanmean(W1c.p{1,1}([posav(m)-cav/2+1:posav(m)+cav/2],:).*conj(W2c.p{1,1}([posav(m)-cav/2+1:posav(m)+cav/2],:)));
-    Powerav(m,:) = irf.nansum(fkPower([posav(m)-cav/2+1:posav(m)+cav/2],:));
+  c34x(m,:) = irf.nanmean(W1c.p{1,1}([posav(m)-cav/2+1:posav(m)+cav/2],:).*conj(W2c.p{1,1}([posav(m)-cav/2+1:posav(m)+cav/2],:)));
+  Powerav(m,:) = irf.nansum(fkPower([posav(m)-cav/2+1:posav(m)+cav/2],:));
 end
 
 cross34x = W1c;
@@ -292,7 +292,7 @@ th = (atan2(tempi,tempr));
 kval = zeros(N+1,numf);
 
 for q = 1:numf
-    kval(:,q) = th(:,q)./rcos;
+  kval(:,q) = th(:,q)./rcos;
 end
 
 disprel = zeros(numk,numf);
@@ -302,12 +302,12 @@ dk = (maxk - mink)/numk;
 kvec = mink + [0:1:numk-1]*dk;
 
 if 1
-    for m = 1:N+1
-        for q = 1:numf
-            knumber = floor((kval(m,q)-mink)/dk)+1;
-            disprel(knumber,q) = disprel(knumber,q) + Powerav(m,q);
-        end
+  for m = 1:N+1
+    for q = 1:numf
+      knumber = floor((kval(m,q)-mink)/dk)+1;
+      disprel(knumber,q) = disprel(knumber,q) + Powerav(m,q);
     end
+  end
 end
 
 disprel(disprel == 0) = NaN;

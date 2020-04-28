@@ -1,8 +1,8 @@
 % Perform polarization analysis on burst mode electric and magnetic fields.
 % Plots spectrograms, ellipticity, wave-normal angle, planarity, degree of
 % polarization (DOP), phase speed, and normalized Poynting flux along B.
-% Time selections should not be too long (less than 20 seconds), 
-% otherwise the analysis will be very slow. 
+% Time selections should not be too long (less than 20 seconds),
+% otherwise the analysis will be very slow.
 % Written by D. B. Graham.
 
 ic = 3; % Spacecraft number
@@ -61,7 +61,7 @@ vphperp(removepts) = NaN;
 
 %% Plot
 
-h=irf_plot(8,'newfigure'); 
+h=irf_plot(8,'newfigure');
 %h=irf_figure(540+ic,8);
 xSize=750; ySize=800;
 set(gcf,'Position',[10 10 xSize ySize]);
@@ -184,7 +184,7 @@ set(h(6),'yscale','log');
 set(h(6),'ytick',[1e1 1e2 1e3]);
 caxis(h(6),[0, 1])
 ylabel(h(6),'f (Hz)','fontsize',12);
-  
+
 h(7)=irf_panel('vph');
 specrec=struct('t',time);
 specrec.f=frequency;

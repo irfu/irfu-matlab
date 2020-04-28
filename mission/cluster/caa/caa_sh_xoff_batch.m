@@ -26,15 +26,15 @@ end
 MP = [];
 [st,dt] = irf_stdt(st,dt); tt1 = fromepoch(st); tt2 = fromepoch(st+dt);
 for yy=tt1(1):tt2(1)
-	v_s = sprintf('MPauseY%d',yy);
-	if ~exist(v_s,'var'), error(['Cannot load ' v_s]), end
-	if isempty(MP), eval([ 'MP=' v_s ';'])
-	else
-		eval([ 'MP_tmp=' v_s ';'])
-		% Check if years overlap
-		if MP(end,2) == MP_tmp(1,2), MP_tmp(1,:) = []; end
-		MP = [MP; MP_tmp]; clear MP_tmp %#ok<AGROW>
-	end
+  v_s = sprintf('MPauseY%d',yy);
+  if ~exist(v_s,'var'), error(['Cannot load ' v_s]), end
+  if isempty(MP), eval([ 'MP=' v_s ';'])
+  else
+    eval([ 'MP_tmp=' v_s ';'])
+    % Check if years overlap
+    if MP(end,2) == MP_tmp(1,2), MP_tmp(1,:) = []; end
+    MP = [MP; MP_tmp]; clear MP_tmp %#ok<AGROW>
+  end
 end
 clear tt1 tt2
 MP = MP( MP(:,2)>st & MP(:,1)<st+dt ,:);
@@ -45,11 +45,11 @@ dAmp = zeros(nint,4);
 weight = zeros(nint,1);
 dt_int = MP(:,2) - MP(:,1);
 for ii=1:nint
-	figure(77), clf
-	[dE(ii,:), dAmp(ii,:), weight(ii)] = ...
-		caa_sh_xoff(MP(ii,1),dt_int(ii),flag_amp);
-	orient tall
-	print( 77, '-dpdf', [irf_fname(MP(ii,1)) '_XOFF'])
+  figure(77), clf
+  [dE(ii,:), dAmp(ii,:), weight(ii)] = ...
+    caa_sh_xoff(MP(ii,1),dt_int(ii),flag_amp);
+  orient tall
+  print( 77, '-dpdf', [irf_fname(MP(ii,1)) '_XOFF'])
 end
 
 dE_out = [MP(:,1) dE];

@@ -16,11 +16,11 @@ switch scId
     Blen(5).time=get_tt([2015 04 04 07 58 51]); Blen(5).len=[ 17 17 17 17 ];
     Blen(6).time=get_tt([2015 04 09 14 09 50]); Blen(6).len=[ 17 17 22 22 ];
     Blen(7).time=get_tt([2015 04 13 01 11 13]); Blen(7).len=[ 22 22 22 22 ];
-    Blen(8).time=get_tt([2015 04 13 14 22 32]); Blen(8).len=[ 22 22 41 41 ];   
-    Blen(9).time=get_tt([2015 04 20 23 21 06]); Blen(9).len=[ 22 22 57 57 ];   
-    Blen(10).time=get_tt([2015 04 22 22 55 59]); Blen(10).len=[ 31.3 31.3 57 57 ];   
-    Blen(11).time=get_tt([2015 04 22 23 17 22]); Blen(11).len=[ 41 41 57 57 ];   
-    Blen(12).time=get_tt([2015 04 24 05 14 08]); Blen(12).len=[ 57 57 57 57 ];   
+    Blen(8).time=get_tt([2015 04 13 14 22 32]); Blen(8).len=[ 22 22 41 41 ];
+    Blen(9).time=get_tt([2015 04 20 23 21 06]); Blen(9).len=[ 22 22 57 57 ];
+    Blen(10).time=get_tt([2015 04 22 22 55 59]); Blen(10).len=[ 31.3 31.3 57 57 ];
+    Blen(11).time=get_tt([2015 04 22 23 17 22]); Blen(11).len=[ 41 41 57 57 ];
+    Blen(12).time=get_tt([2015 04 24 05 14 08]); Blen(12).len=[ 57 57 57 57 ];
   case 2
     Blen(1).time=get_tt([2015 03 13 00 00 00]); Blen(1).len=[ 00 00 00 00 ];
     Blen(2).time=get_tt([2015 04 06 10 49 15]); Blen(2).len=[ 00 00 03 03 ];
@@ -77,7 +77,7 @@ elseif isvector(t), Blen = Blen(find_idx_range(t));
 else
   errStr = 'T(one point) or TINT (2 points) is expected';
   irf.log('critical',errStr), error(errStr)
-end 
+end
   function idx = find_idx(t)
     idx = arrayfun(@(x) x.time.epoch<=t,Blen);
     if ~any(idx)

@@ -28,19 +28,19 @@ function varargout = caa_gui_list(varargin)
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
-                   'gui_Singleton',  gui_Singleton, ...
-                   'gui_OpeningFcn', @caa_gui_list_OpeningFcn, ...
-                   'gui_OutputFcn',  @caa_gui_list_OutputFcn, ...
-                   'gui_LayoutFcn',  [] , ...
-                   'gui_Callback',   []);
+  'gui_Singleton',  gui_Singleton, ...
+  'gui_OpeningFcn', @caa_gui_list_OpeningFcn, ...
+  'gui_OutputFcn',  @caa_gui_list_OutputFcn, ...
+  'gui_LayoutFcn',  [] , ...
+  'gui_Callback',   []);
 if nargin && ischar(varargin{1})
-    gui_State.gui_Callback = str2func(varargin{1});
+  gui_State.gui_Callback = str2func(varargin{1});
 end
 
 if nargout
-    [varargout{1:nargout}] = gui_mainfcn(gui_State, varargin{:});
+  [varargout{1:nargout}] = gui_mainfcn(gui_State, varargin{:});
 else
-    gui_mainfcn(gui_State, varargin{:});
+  gui_mainfcn(gui_State, varargin{:});
 end
 % End initialization code - DO NOT EDIT
 
@@ -70,7 +70,7 @@ guidata(hObject, handles);
 
 
 % --- Outputs from this function are returned to the command line.
-function varargout = caa_gui_list_OutputFcn(hObject, eventdata, handles) 
+function varargout = caa_gui_list_OutputFcn(hObject, eventdata, handles)
 % varargout  cell array for returning output args (see VARARGOUT);
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -102,7 +102,7 @@ function listbox1_CreateFcn(hObject, eventdata, handles)
 % Hint: listbox controls usually have a white background on Windows.
 %       See ISPC and COMPUTER.
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
+  set(hObject,'BackgroundColor','white');
 end
 
 
@@ -114,20 +114,20 @@ function edit1_Callback(hObject, eventdata, handles)
 filter=regexpi(get(handles.edit1,'string'),'\w*','match'); % cell array with filter values
 handles.list_index_match_filter=[];
 if isempty(filter)
-	handles.list_index_match_filter=1:numel(handles.list);
+  handles.list_index_match_filter=1:numel(handles.list);
 else
-	for i=1:numel(handles.list)
-		ok=1;
-		a=regexpi(handles.list{i},filter);
-		for j=1:numel(a)
-			ok=ok*(~isempty(a{j}));
-		end
-		if ok, handles.list_index_match_filter(end+1)=i; end
-	end
+  for i=1:numel(handles.list)
+    ok=1;
+    a=regexpi(handles.list{i},filter);
+    for j=1:numel(a)
+      ok=ok*(~isempty(a{j}));
+    end
+    if ok, handles.list_index_match_filter(end+1)=i; end
+  end
 end
 if isempty(handles.list_index_match_filter)
-	disp('WARNING! Filter did not match anything!');
-	handles.list_index_match_filter=1:numel(handles.list);
+  disp('WARNING! Filter did not match anything!');
+  handles.list_index_match_filter=1:numel(handles.list);
 end
 set(handles.listbox1,'listboxtop',1);
 set(handles.listbox1,'string',handles.list(handles.list_index_match_filter));
@@ -151,7 +151,7 @@ function edit1_CreateFcn(hObject, eventdata, handles)
 % Hint: edit controls usually have a white background on Windows.
 %       See ISPC and COMPUTER.
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
+  set(hObject,'BackgroundColor','white');
 end
 
 
@@ -177,7 +177,7 @@ function listbox2_CreateFcn(hObject, eventdata, handles)
 % Hint: listbox controls usually have a white background on Windows.
 %       See ISPC and COMPUTER.
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
+  set(hObject,'BackgroundColor','white');
 end
 
 
@@ -200,7 +200,7 @@ function edit2_CreateFcn(hObject, eventdata, handles)
 % Hint: edit controls usually have a white background on Windows.
 %       See ISPC and COMPUTER.
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
+  set(hObject,'BackgroundColor','white');
 end
 
 function txt=edit2_output(handles)
@@ -210,8 +210,8 @@ ii=handles.list_index_match_filter(i);
 txt={};
 txt{1}=handles.list{ii};
 for j=1:size(handles.values,2)
-	txt{end+1}='';
-	txt{end+1}=handles.values{ii,j};
+  txt{end+1}='';
+  txt{end+1}=handles.values{ii,j};
 end
 
 

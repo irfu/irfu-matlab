@@ -1,12 +1,12 @@
-% Example of dispersion relation properties using the four MMS spacecraft. 
+% Example of dispersion relation properties using the four MMS spacecraft.
 % Default example is of whistler waves.
 %
 % Notes: Should only be used when the half wavelength of the wave is larger
-% than the spacecraft separations, otherwise spatial aliasing will occur. 
+% than the spacecraft separations, otherwise spatial aliasing will occur.
 
 %% Load data
 ic = 1:4;
-Tint = irf.tint('2015-10-16T13:05:24.000Z/2015-10-16T13:05:50.000Z'); 
+Tint = irf.tint('2015-10-16T13:05:24.000Z/2015-10-16T13:05:50.000Z');
 % Take longer time than used for the dispersion relation, so edge effects are not included
 c_eval('Bxyz?=mms.get_data(''B_gse_brst_l2'',Tint,?);',ic);
 c_eval('Bscm?=mms.get_data(''B_gse_scm_brst_l2'',Tint,?);',ic);
@@ -17,7 +17,7 @@ c_eval('Rxyz? = irf.ts_vec_xyz(R.time,R.gseR?);',ic);
 c_eval('Bscmfac? = irf_convert_fac(Bscm?, Bxyz?, [1, 0, 0]);',ic);
 
 %% Compute dispersion relation
-Tints = irf.tint('2015-10-16T13:05:26.500Z/2015-10-16T13:05:27.000Z'); 
+Tints = irf.tint('2015-10-16T13:05:26.500Z/2015-10-16T13:05:27.000Z');
 
 [xvecs,yvecs,Power] = mms.fk_powerspec4SC('Bscmfac?.x','Rxyz?','Bxyz?',Tints,'linear',10,'numk',500,'cav',4,'wwidth',2);
 
@@ -39,10 +39,10 @@ h(8)=axes('position',[0.785 0.09 xwidth ywidth]);
 ud=get(fn,'userdata');
 ud.subplot_handles=h;
 set(fn,'userdata',ud);
-set(fn,'defaultLineLineWidth',2); 
+set(fn,'defaultLineLineWidth',2);
 set(fn,'defaultAxesFontSize',14)
-    
-pcolor(h(1),xvecs.kmag,yvecs.fkmag*1e-3,log10(Power.Powerkmagf)); 
+
+pcolor(h(1),xvecs.kmag,yvecs.fkmag*1e-3,log10(Power.Powerkmagf));
 shading(h(1),'flat');
 xlabel(h(1),'|k| (m^{-1})');
 ylabel(h(1),'f (kHz)');

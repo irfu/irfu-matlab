@@ -20,10 +20,10 @@ function [wakeModelOut, n_corrected, wakedesc] = mms_sdp_swwake_new(e, pair, pha
 % Wakes are identified by max derivative. First we find a narrow proxy
 % wake, correct for it and find a proxy DC field (ground tone). Then we
 % subtract the ground tone from the original data and find a final fit for
-% the wake. The procedure is performed on five spins, with the resulting 
+% the wake. The procedure is performed on five spins, with the resulting
 % fit being applied to the spin in the middle.
 %
-% This program was written in order to improve quality of the sdp data in 
+% This program was written in order to improve quality of the sdp data in
 % the solar wind.
 %
 % Based on code for Cluster EFW but re-written for MMS SDP.
@@ -102,7 +102,7 @@ if ~isempty(swFlag)
   epoch0 = timeIn(1); epochFixedPhaTmp = double(epochFixedPha-epoch0);
   epochTmp = double(timeIn-epoch0);
   swFlag = interp1(epochTmp,double(swFlag),epochFixedPhaTmp,'linear');
-  swFlag = logical(swFlag>0); 
+  swFlag = logical(swFlag>0);
 end
 
 wakeModel = zeros(size(dataFixedPha));
@@ -123,7 +123,7 @@ for idx = idx0
   d5spins = reshape(dataFixedPha(idx:(idx+NPOINTS*NWSPINS-1)),NPOINTS,NWSPINS);
   %xxx = fft(d5spins); xxx(5:end-1) = 0;
   %d5spinsAC = d5spins -ifft(xxx, 'symmetric');
-
+  
   idxSpin = (idx:idx+NPOINTS-1) + NPOINTS*2;
   idx1=1:(NPOINTS/2); idx2=(NPOINTS/2+1):NPOINTS;
   idxSpin1 = idxSpin(1) -1 + idx1;
@@ -141,7 +141,7 @@ for idx = idx0
       (sum(Ki([1 2 4 5])./Wi([1 2 4 5]))/(1-Ki(3)));
   end
   av12 = sum(d5spins .* repmat(Ni, NPOINTS, 1), 2);
-
+  
   [wakeProxy,ind1,ind2] = getProxyWake();
   if isempty(wakeProxy), continue, end
   
@@ -150,7 +150,7 @@ for idx = idx0
   if isempty(wake1) && isempty(wake2), continue, end
   wakeDescIdx1(1) = wakeDescIdx1(1)-expPhase; % probe phase of max wake
   wakedesc(find(idx==idx0,1,'first'), 2:4) = wakeDescIdx1;
-
+  
   wake = wakeModel(idxSpin);
   wExprap = imag(wake); wake = real(wake);
   if ~isempty(wake1)
@@ -159,8 +159,8 @@ for idx = idx0
     end
     wExprap(idx1) = 0;
   end
-  if ~isempty(wake2) 
-    wake = wake + wake2; 
+  if ~isempty(wake2)
+    wake = wake + wake2;
     wExprap(idx2) = 0;
   end
   wakeModel(idxSpin) = wake + 1i*wExprap;
@@ -185,11 +185,11 @@ for idx = idx0
   %  wakeModel(idx2minus) =  real(wake(idx1))*1i;
   %end
   
-  % If no wake1, but ok wake2 from the current and prev spin, copy 
+  % If no wake1, but ok wake2 from the current and prev spin, copy
   % extrapolated (imaginary) wake1 to next spin
   if ~isempty(wake2) && isempty(wake1) && ...
       any(abs(real(wakeModel(idxSpin2 -NPOINTS)))>WAMP_THRESHOLD) % prev wake2 was good
-  	wakeModel(idxSpin1 +NPOINTS) = wakeModel(idxSpin1);
+    wakeModel(idxSpin1 +NPOINTS) = wakeModel(idxSpin1);
   end
   
   plotNow()
@@ -202,9 +202,9 @@ for idx = idx0
   
   % Fist spins of the segment
   if idx2deg(idx)<360
-     wakeModel(idxSpin-NPOINTS) = wake;
-     wakeModel(idxSpin-NPOINTS*2) = wake;
-     n_corrected = n_corrected + 4;
+    wakeModel(idxSpin-NPOINTS) = wake;
+    wakeModel(idxSpin-NPOINTS*2) = wake;
+    n_corrected = n_corrected + 4;
   end
   % Last spins of the segment
   if length(wakeModel)-idx<NPOINTS*(NWSPINS+.5)-1
@@ -224,7 +224,7 @@ end
 wakeModelOut = interp1(epochFixedPhaTmp,wakeModel,epochTmp,'spline');
 
 irf.log('notice', ['Corrected ', num2str(n_corrected), ' out of ', ...
-	num2str(length(idx0)), ' spins.']);
+  num2str(length(idx0)), ' spins.']);
 return
 % End MAIN
 
@@ -347,7 +347,7 @@ return
 
   function [wake1,wake2,wakedesc1,d12,d12Plot] = getFinalWake()
     % Find final wake shape
-   
+    
     % Correct for the proxy wake
     av12_corr = av12 - wakeProxy;
     
@@ -367,7 +367,7 @@ return
     i1 = mod( (ind1-wake_width:ind1+wake_width) -1, NPOINTS) +1;
     i2 = mod( (ind2-wake_width:ind2+wake_width) -1, NPOINTS) +1;
     
-    if fixedPha(idx) == 0, w1 = 'min'; w2 = 'max';  
+    if fixedPha(idx) == 0, w1 = 'min'; w2 = 'max';
     elseif fixedPha(idx) == 180, w1 = 'max';  w2 = 'min';
     end
     
@@ -494,65 +494,65 @@ return
 end
 
 function av = w_ave(x, np, NPOINTS)
-  % Weighted average
-  narginchk(3, 3);
-  av = zeros(size(x));
-  if np==7
-    m = [.07; 0.15; 0.18; 0.2; 0.18; 0.15; 0.07];
-    idx = -3:1:3;
-  else
-    m = [0.1; 0.25; 0.3; 0.25; 0.1];
-    idx = -2:1:2;
+% Weighted average
+narginchk(3, 3);
+av = zeros(size(x));
+if np==7
+  m = [.07; 0.15; 0.18; 0.2; 0.18; 0.15; 0.07];
+  idx = -3:1:3;
+else
+  m = [0.1; 0.25; 0.3; 0.25; 0.1];
+  idx = -2:1:2;
+end
+MIDX = max(idx);
+for j=1:length(x)
+  ii = j + (idx);
+  if j<=MIDX
+    ii(ii<1) = ii(ii<1) + NPOINTS;
   end
-  MIDX = max(idx);
-  for j=1:length(x)
-    ii = j + (idx);
-    if j<=MIDX
-      ii(ii<1) = ii(ii<1) + NPOINTS;
-    end
-    if j>length(x)-MIDX
-      ii(ii>NPOINTS) = ii(ii>NPOINTS) - NPOINTS;
-    end
-    av(j) = sum(x(ii).*m);
+  if j>length(x)-MIDX
+    ii(ii>NPOINTS) = ii(ii>NPOINTS) - NPOINTS;
   end
+  av(j) = sum(x(ii).*m);
+end
 end
 
 function res = isGoodShape(s,FACTOR_SW)
-  % check for shape of the wake fit
-  RATIO = 0.4; % (Cluster was 0.3)
+% check for shape of the wake fit
+RATIO = 0.4; % (Cluster was 0.3)
 % ThoNi: one testrun with 20170508 mms1 fast got a spike in frequency in
 % the interval 0.3->0.4 compared with intervals 0.4->0.5, 0.5->0.6 etc.
 % Therefor try increasing the permitted Ratio to 0.4 compared with 0.3
 % which was used for Cluster.
-  res = true;
-  if max(s)~=max(abs(s))
-    s = -s;
-  end
-  maxmax = max(s); % global maxima
-  d1 = diff(s);
-  imax = find( (d1(1:end-1).*d1(2:end))<0 ) + 1;
-  if length(imax)==1
-    if s(imax)==maxmax
-      return
-    else
-      % Signal has a minumum
-      irf.log('debug', 'Signal has a minumum instead of a maximum.');
-      res = false;
-      return
-    end
-  elseif isempty(imax)
-    % Signal is monotonic
-    irf.log('debug', 'Signal is monotonic.');
+res = true;
+if max(s)~=max(abs(s))
+  s = -s;
+end
+maxmax = max(s); % global maxima
+d1 = diff(s);
+imax = find( (d1(1:end-1).*d1(2:end))<0 ) + 1;
+if length(imax)==1
+  if s(imax)==maxmax
+    return
+  else
+    % Signal has a minumum
+    irf.log('debug', 'Signal has a minumum instead of a maximum.');
     res = false;
     return
   end
-  maxima = abs(s(imax));
-  smax = max( maxima(maxima < maxmax) ); % Second maxima
-  if smax>maxmax*RATIO*FACTOR_SW
-    res = false;
-    irf.log('debug', ...
-      sprintf('BAD FIT: second max is %0.2f of the main max', smax/maxmax) );
-  end
+elseif isempty(imax)
+  % Signal is monotonic
+  irf.log('debug', 'Signal is monotonic.');
+  res = false;
+  return
+end
+maxima = abs(s(imax));
+smax = max( maxima(maxima < maxmax) ); % Second maxima
+if smax>maxmax*RATIO*FACTOR_SW
+  res = false;
+  irf.log('debug', ...
+    sprintf('BAD FIT: second max is %0.2f of the main max', smax/maxmax) );
+end
 
 
 end
