@@ -1192,8 +1192,8 @@ classdef mms_sdp_dmgr < handle
 
         factor = MMS_CONST.NominalAmpCorr; NOM_DIST = 120.0;
         if DATAC.tmMode == DATAC.CONST.TmMode.slow
-          %% FIXME
           orbradius = DATAC.orb_radius;
+          if ~any(isnan(orbradius))
           % Set gain to 1 for orbit radius less than 5 RE
           idx_innerMSP = orbradius <= MMS_CONST.InnerMSPradius;
           if any(idx_innerMSP)
@@ -1210,7 +1210,11 @@ classdef mms_sdp_dmgr < handle
               'outside of inner MSp.'], sum(idx_innerMSP), sum(~idx_innerMSP));
             irf.log('notice', logStr);
             % This needs to be written better
-          end    
+          end
+          else
+            % orbradius contains MMS_CONST.Error fall back no old rad
+            % gain...
+          end
         end
         for iSen = 1:numel(sensors)
           senE = sensors{iSen};
@@ -1659,6 +1663,7 @@ classdef mms_sdp_dmgr < handle
           double(DceTime-DceTime(1)), 'linear'); %% FIXME or spline or something...
         res = DATAC.orb_radius;
       else
+        res = NaN(1, length(DceTime));
         errStr='No DefEph loaded, can not compute radius. Fallback to no radius';
         irf.log('critical', errStr);
       end
