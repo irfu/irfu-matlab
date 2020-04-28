@@ -1,6 +1,6 @@
-function row = time2row(time,M,start_r) 
+function row = time2row(time,M,start_r)
 %
-% row = time2row(time,M,start_r) 
+% row = time2row(time,M,start_r)
 %
 %Input:
 % time - in epoch
@@ -14,11 +14,11 @@ function row = time2row(time,M,start_r)
 % Matches the input time to a row
 %
 %Using:
-% 
+%
 %Work method:
 %
 %Error:
-% 
+%
 %Discription of variables:
 %
 %Written by Robert Isaksson in the summer of -03

@@ -12,10 +12,10 @@ function [timetable_b, timetable_n] = create_timetable(from,to,cl_id)
 %         NOTE: from and to must be within the same day
 %
 % Output:
-%     timetable - [from | to | mode] , where mode (b/n): burst or normal       
+%     timetable - [from | to | mode] , where mode (b/n): burst or normal
 %
 % See also CREATE_FILE, GET_TIMETABLE
-% 
+%
 % $Id$
 
 %Written by Robert Isaksson in the summer of -03

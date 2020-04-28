@@ -1,5 +1,5 @@
 function out = irf_pl_ebsp(ebsp,params)
-%IRF_PL_EBSP  visualize EBSP 
+%IRF_PL_EBSP  visualize EBSP
 %
 %  H = IRF_PL_EBSP(EBSP,PARAMS)
 %
@@ -11,7 +11,7 @@ function out = irf_pl_ebsp(ebsp,params)
 %  where
 %    PARAM     - one of the fields of EBSP
 %    COMP      - component(s) of param, empty=plot all components
-%    LIM_ARRAY - array of LIM_STRUCT used to limit the output. 
+%    LIM_ARRAY - array of LIM_STRUCT used to limit the output.
 %
 %  LIM_ARRAY has the following fields:
 %    LIM_ARRAY.param - one of the fields of EBSP
@@ -76,7 +76,7 @@ IGNORE_FIELDS = {'t','f','flagFac','fullB','B0','r'};
 fieldsPlottable = setxor(fieldsEBSP,IGNORE_FIELDS);
 plotFields = ''; plotComps = ''; limFields = ''; nPanels = 0;
 GetPlotParams();
-    
+
 h = irf_plot(nPanels);
 hcbList = zeros(nPanels,1); cmapPoyList = zeros(nPanels,1);
 yTickList = cell(nPanels,1); idxPanel = 0;
@@ -105,9 +105,9 @@ for idxField = 1:length(plotFields)
     lim = limFields{idxField};
     [paramStr,compStr] = GetCompStrings();
     if isempty(compStr), panelStr = paramStr;
-    else, panelStr = [paramStr '_' compStr]; 
+    else, panelStr = [paramStr '_' compStr];
     end
-    hca = irf_panel(panelStr); 
+    hca = irf_panel(panelStr);
     if ~isempty(ebsp.(field))
       if isstruct(ebsp.(field))
         sr.p = LimitValues(ebsp.(field).data(:,:,comp));
@@ -128,7 +128,7 @@ for idxField = 1:length(plotFields)
       SetCaxis()
       yTickList(idxPanel) = {get(hcb,'YTick')};
     else
-      hcb = -1; 
+      hcb = -1;
       yTickList(idxPanel) = {''};
     end
     set(hca,'YScale',yScale)
@@ -157,7 +157,7 @@ if nargout, out = h; end % Return here
   function [f,c] = GetCompStrings
     a = tokenize(field,'_');
     f = a{1}; c = '';
-    if length(a) ==1, return, end 
+    if length(a) ==1, return, end
     r = a{2};
     if length(unique(r)) == length(r), c = r(comp);
     else, c = r((comp-1)*2+(1:2));
@@ -275,8 +275,8 @@ if nargout, out = h; end % Return here
   end
   function PlotCyclotronFrequency
     if isempty(ebsp.fullB) && isempty(ebsp.B0), return, end
-    if ~isempty(ebsp.fullB), B = ebsp.fullB; 
-    else, B = ebsp.B0; 
+    if ~isempty(ebsp.fullB), B = ebsp.fullB;
+    else, B = ebsp.B0;
     end
     if isstruct(B), B = double(B.data); end
     if size(B,2) == 1
@@ -289,7 +289,7 @@ if nargout, out = h; end % Return here
     %     F_ce, F_ce/2, F_ce/10   F_cH+,      F_cHe+,        F_cO+
     fc = [fc fc(:,2)/2 fc(:,2)/10 fc(:,2)*mep fc(:,2)*mep/4 fc(:,2)*mep/16];
     hold(hca,'on'), hp = irf_plot(hca,fc); hold(hca,'off')
-    set(hp,'Color',[1 1 1],'LineWidth',2), 
+    set(hp,'Color',[1 1 1],'LineWidth',2),
     set(hp(2),'LineStyle','--'), set(hp(3),'LineStyle','-.')
     set(hp(5),'LineStyle','--'), set(hp(6),'LineStyle','-.')
   end
@@ -319,21 +319,21 @@ if nargout, out = h; end % Return here
         else
           caxis(hca,[0 90]), set(hcb,'YTick',[0 45 90],'TickDir','out')
         end
-        flagCmapPoy = 1; 
+        flagCmapPoy = 1;
       case 'p'
         if ~strfind(paramStr,'k') %#ok<STRIFCND>
           caxis(hca,[-180 180]), set(hcb,'YTick',[-180 0 180],'TickDir','out')
         else
           caxis(hca,[-180 180]), set(hcb,'YTick',[-180 -90 0 90 180],'TickDir','out')
         end
-        flagCmapPoy = 1; 
+        flagCmapPoy = 1;
       otherwise
         % do nothing
     end
   end
   function SetColorMap
     cmapPoy = irf_colormap('poynting'); cmapSpace = irf_colormap('space');
-    matlabVer = version; matlabVer = num2str(matlabVer(1)); 
+    matlabVer = version; matlabVer = num2str(matlabVer(1));
     for iPanel = 1:nPanels
       if matlabVer>=9
         if cmapPoyList(iPanel), colormap(h(iPanel),cmapPoy)
@@ -361,6 +361,6 @@ if nargout, out = h; end % Return here
     end % old matlab
   end
 end
-    
+
 
 

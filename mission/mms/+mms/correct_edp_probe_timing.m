@@ -8,7 +8,7 @@ function Vcorrected = correct_edp_probe_timing(Vorg)
 %                 "mms#_edp_dcv_brst_l2" containing individual probe
 %                 potentials.
 %  Output:
-%    Vcorrected - TSeries where the channel delay for each probe have been 
+%    Vcorrected - TSeries where the channel delay for each probe have been
 %                 accounted and corrected for.
 %
 % Note this function is only useful for Burst mode data. For the other
@@ -28,8 +28,8 @@ DEBUG = false;
 
 % Reconstruct E12, E34, E56 as computed in MMS processing
 timeOrig = Vorg.time;
-E12 = TSeries(timeOrig, ( Vorg.data(:,1) - Vorg.data(:,2) )/0.120); 
-E34 = TSeries(timeOrig, ( Vorg.data(:,3) - Vorg.data(:,4) )/0.120); 
+E12 = TSeries(timeOrig, ( Vorg.data(:,1) - Vorg.data(:,2) )/0.120);
+E34 = TSeries(timeOrig, ( Vorg.data(:,3) - Vorg.data(:,4) )/0.120);
 E56 = TSeries(timeOrig, ( Vorg.data(:,5) - Vorg.data(:,6) )/0.0292);
 % Correct the time tags to create individual time series
 V1 = TSeries(timeOrig, Vorg.data(:,1));

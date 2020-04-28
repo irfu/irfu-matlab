@@ -1,6 +1,6 @@
 function res = is_version_larger(newVersionString,oldVersionString)
 % res = is_version_larger(newVersionString,oldVersionString)
-% compares version in format X.Y.Z (or an arbitrary number of elements 
+% compares version in format X.Y.Z (or an arbitrary number of elements
 % each separated by a single ".").
 %
 % res is true if newVersionString is larger than oldVersionString. With

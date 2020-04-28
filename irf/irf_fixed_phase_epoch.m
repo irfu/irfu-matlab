@@ -24,7 +24,7 @@ if nargin<2, pha0 = 0; end
 if nargin<3, phaStep = 1; end
 if nargin<4, phaOffs=phaStep/2;
 else
-  if phaOffs>phaStep  
+  if phaOffs>phaStep
     errS = 'offset>step'; irf.log('critical',errS), error(errS);
   end
 end
@@ -32,7 +32,7 @@ if isa(Phase,'TSeries'), flagTS = true; else, flagTS = false; end
 
 if flagTS
   phaData = double(Phase.data);
-  epoch0 = Phase.time(1); 
+  epoch0 = Phase.time(1);
   epochTmp = Phase.time.epochUnix - epoch0.epochUnix;
 else
   epoch0 = Phase(1,1); epochTmp = Phase(:,1) - epoch0;

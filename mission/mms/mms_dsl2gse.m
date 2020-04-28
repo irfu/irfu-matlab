@@ -25,8 +25,8 @@ function TsOut = mms_dsl2gse(TsIn, defatt, direction)
 
 if nargin<3, direction = 1; end
 if abs(direction)~=1
-  direction = 1; 
-  irf.log('warning','using GSE->DSL') 
+  direction = 1;
+  irf.log('warning','using GSE->DSL')
 end
 
 defatt = mms_removerepeatpnts(defatt);
@@ -52,7 +52,7 @@ else
   errS = 'unrecognized DEFATT/SAX input';
   irf.log('critical',errS), error(errS)
 end
-	
+
 Rx = spin_axis(:,1); Ry = spin_axis(:,2); Rz = spin_axis(:,3);
 a = 1./sqrt(Ry.^2+Rz.^2);
 M = zeros(length(a),3,3);
@@ -64,11 +64,11 @@ TsOut = TsIn.transform('xyz');
 inp = TsOut.data;
 
 if direction == -1
-	out = mult_mat(M,inp);
+  out = mult_mat(M,inp);
 elseif direction==1
-	out = mult_mat(transpose_mat(M),inp);
+  out = mult_mat(transpose_mat(M),inp);
 else
-	disp('No coordinate transformation done!')
+  disp('No coordinate transformation done!')
 end
 
 TsOut.data = out;
@@ -78,13 +78,13 @@ end
 function out=transpose_mat(inp)
 out = inp;
 if numel(size(inp))==2 || (size(inp,2)~=size(inp,3))
-	error('not impemented');
+  error('not impemented');
 end
 for ii=1:size(inp,2)
-	for jj=ii+1:size(inp,2)
-		out(:,ii,jj) = inp(:,jj,ii);
-		out(:,jj,ii) = inp(:,ii,jj);
-	end
+  for jj=ii+1:size(inp,2)
+    out(:,ii,jj) = inp(:,jj,ii);
+    out(:,jj,ii) = inp(:,ii,jj);
+  end
 end
 end
 

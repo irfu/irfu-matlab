@@ -4,19 +4,19 @@ function a = c_ri_events_into_pictures(path_eve, file_events, per, p_up, path_Bp
 % path_eve, file_events - path and name of file to be loaded
 %                    this file should contain:
 %                    [time in epoch | angle | amplitude | amplitude | mode]
-% per -the length of the filter if two events are within per, then they are classed as one event 
+% per -the length of the filter if two events are within per, then they are classed as one event
 % p_up -path to output
-% 
+%
 %Output:
 %
 %Descrition of the function:
 %
 %Using:
-% 
+%
 %Work method:
 %
 %Error:
-% 
+%
 %Discription of variables:
 %
 %Written by Robert Isaksson in the summer of -03
@@ -27,7 +27,7 @@ load(p_and_f)
 
 nr_events = length(time_of_events(:,1));
 
-%builds the data points into events 
+%builds the data points into events
 dt_ev = diff(time_of_events(:,1));
 
 [i_end,c] = size(dt_ev);
@@ -38,7 +38,7 @@ dt_ev = diff(time_of_events(:,1));
 f_events = time_of_events(1,:);
 f_count = 1;
 for i = 1:i_end
-
+  
   %new event
   if dt_ev(i) > per
     f_count = f_count +1;
@@ -84,7 +84,7 @@ unix(unix_command);
 for g =1:f_count
   t = f_events(g,1);
   s_t = fromepoch(t);
-  e_t = fromepoch(t); 
+  e_t = fromepoch(t);
   
   fp = fopen(ls_out, 'r');
   
@@ -101,7 +101,7 @@ for g =1:f_count
       if isempty(variable)
         dist_t = 0;
       end
-      if dist_t(1,1) ~= 0 
+      if dist_t(1,1) ~= 0
         t_dMP = time2row(t,dist_t);
         dMP(g) = dist_t(t_dMP,2);
       else
@@ -129,7 +129,7 @@ unix(unix_command);
 for g =1:f_count
   t = f_events(g,1);
   s_t = fromepoch(t);
-  e_t = fromepoch(t); 
+  e_t = fromepoch(t);
   
   fp = fopen(ls_out, 'r');
   
@@ -158,7 +158,7 @@ for g =1:f_count
       B4_eve = c_ri_fill_datagaps(B4_eve);
       
       [angles, ampl] = c_ri_angles_and_ampl(B1_eve,B2_eve,B3_eve,B4_eve);
-
+      
       
       fg = figure;
       %plots B1
@@ -265,7 +265,7 @@ for g =1:f_count
       text(1,0,['distance to MP: ' distan_str ' RE']);
       text(1,-1.5, ['burst or normal, (b/n) ' mode]);
       
-      %right side 
+      %right side
       text(2.5,3,['angles: ' int2str(angles(r,2:7)) ' degrees']);
       text(2.5,4.5,['|B|: ' int2str(ampl(r,:)) ' nT']);
       text(2.5,1.5,['minimum |B|: ' int2str(min_ampl) ' nT']);

@@ -23,33 +23,33 @@ function [k1,k2,k3,k4]=c_4_k(r1,r2,r3,r4)
 %% Prepare input
 isOutputStructure = false;
 if nargin==0
-	help c_4_k;return;
+  help c_4_k;return;
 elseif nargin == 1
-	R=r1;
-	if isstruct(R) && all(isfield(R,{'C1','C2','C3','C4'}))
-		isOutputStructure = true;
-	else
-		errStr = 'wrong syntax';
-		irf.log('critica',errStr);
-		error(errStr);
-	end
+  R=r1;
+  if isstruct(R) && all(isfield(R,{'C1','C2','C3','C4'}))
+    isOutputStructure = true;
+  else
+    errStr = 'wrong syntax';
+    irf.log('critica',errStr);
+    error(errStr);
+  end
 elseif nargin == 4
-	R.C1 = r1;R.C2 = r2;R.C3 = r3;R.C4 = r4;
+  R.C1 = r1;R.C2 = r2;R.C3 = r3;R.C4 = r4;
 else
-	errStr = 'wrong syntax';
-	irf.log('critica',errStr);
-	error(errStr);
+  errStr = 'wrong syntax';
+  irf.log('critica',errStr);
+  error(errStr);
 end
 
 if size(R.C1,2)>3
-	isTimeSpecified=true;
-	tVec = R.C1(:,1);
-	R.C1(:,1) = [];
-	R.C2(:,1) = [];
-	R.C3(:,1) = [];
-	R.C4(:,1) = [];
+  isTimeSpecified=true;
+  tVec = R.C1(:,1);
+  R.C1(:,1) = [];
+  R.C2(:,1) = [];
+  R.C3(:,1) = [];
+  R.C4(:,1) = [];
 else
-	isTimeSpecified=false;
+  isTimeSpecified=false;
 end  % check if first column of r1..r4 is time
 
 %% Computation
@@ -58,38 +58,38 @@ k.C2 = k.C1; k.C2 = k.C1; k.C4 = k.C1;
 
 id = {'C1','C2','C3','C4','C1','C2','C3'};
 for j=1:4
-	cc        = cross(R.(id{2+j})-R.(id{1+j}),...
-		              R.(id{3+j})-R.(id{1+j}),2);
-	dr12      = R.(id{j})-R.(id{1+j});
-	denom     = dot(dr12,cc,2);
-	k.(id{j}) = [cc(:,1)./denom cc(:,2)./denom cc(:,3)./denom];
+  cc        = cross(R.(id{2+j})-R.(id{1+j}),...
+    R.(id{3+j})-R.(id{1+j}),2);
+  dr12      = R.(id{j})-R.(id{1+j});
+  denom     = dot(dr12,cc,2);
+  k.(id{j}) = [cc(:,1)./denom cc(:,2)./denom cc(:,3)./denom];
 end
 
 %% Output
 if isTimeSpecified
-	for j=1:4
-		k.(id{j}) = [tVec k.(id{j})];
-	end
+  for j=1:4
+    k.(id{j}) = [tVec k.(id{j})];
+  end
 end
 
 if isOutputStructure
-	k1 = k;
+  k1 = k;
 elseif nargout == 1 % output is one big matrix
-	K=zeros([4 size(k.C1)]);
-	for j=1:4
-		K(j,:,:)=k.(id{j});
-	end
-	k1=K;
+  K=zeros([4 size(k.C1)]);
+  for j=1:4
+    K(j,:,:)=k.(id{j});
+  end
+  k1=K;
 elseif nargout==4
-	k1=k.C1;k2=k.C2;k3=k.C3;k4=k.C4;
+  k1=k.C1;k2=k.C2;k3=k.C3;k4=k.C4;
 elseif nargout==0
-	if size(r1,1)>1; disp('Reciprocal vectors for the first data point');end
-	for j=1:4
-		strk=['k' num2str(j) '=' num2str(norm(k.(id{j})(1,:)),3)...
-			' [ ' num2str(k.(id{j})(1,:)/norm(k.(id{j}(1,:))),...
-			' %5.2f') '] '];
-		disp(strk);
-	end
+  if size(r1,1)>1; disp('Reciprocal vectors for the first data point');end
+  for j=1:4
+    strk=['k' num2str(j) '=' num2str(norm(k.(id{j})(1,:)),3)...
+      ' [ ' num2str(k.(id{j})(1,:)/norm(k.(id{j}(1,:))),...
+      ' %5.2f') '] '];
+    disp(strk);
+  end
 else
-	disp('Check number of output arguments. See usage: help c_4_k');
+  disp('Check number of output arguments. See usage: help c_4_k');
 end

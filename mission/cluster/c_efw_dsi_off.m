@@ -1,5 +1,5 @@
 function [Ddsi,Damp] = c_efw_dsi_off(t,cl_id,Ps)
-%C_EFW_DSI_OFF  get EFW offsets 
+%C_EFW_DSI_OFF  get EFW offsets
 %
 % [Ddsi,Damp] = c_efw_dsi_off(t,[cl_id,Ps])
 %
@@ -87,26 +87,26 @@ elseif t>=toepoch([2001 02 02 15 00 0]), Ddsi = [ .55      .77 .44  .1  ];
 elseif t>=toepoch([2001 02 02 00 00 0]), Ddsi = [ .48      .77 .44 1.11 ]; % Special puck/guard ?
 elseif t>=toepoch([2001 02 01 00 00 0]), Ddsi = [ .55      .8  .4   .1  ];
 else
-	Ddsi = [ 0 0 0 0];
+  Ddsi = [ 0 0 0 0];
 end
 
-if nargin == 1, return, end 
+if nargin == 1, return, end
 
 DdsiSW = Ddsi;
 Ddsi = Ddsi(cl_id);
 Damp = Damp(cl_id);
 
-if nargin == 2 || isempty(Ps), return, end 
+if nargin == 2 || isempty(Ps), return, end
 
 flagAlwaysMagnetosphere = 0;
 if isnumeric(Ps)
-ndata = ceil((Ps(end,1) - Ps(1,1))/TAV);
-ta = Ps(1,1) + (1:ndata)*TAV - TAV/2; ta = ta';
-Psr = irf_resamp( Ps( ~isnan(Ps(:,2)) ,:), ta, 'window',TAV);
-if isempty(Psr), return, end
-
-ii = find(Psr(:,2) < SC_POT_LIM);
-if isempty(ii), return, end
+  ndata = ceil((Ps(end,1) - Ps(1,1))/TAV);
+  ta = Ps(1,1) + (1:ndata)*TAV - TAV/2; ta = ta';
+  Psr = irf_resamp( Ps( ~isnan(Ps(:,2)) ,:), ta, 'window',TAV);
+  if isempty(Psr), return, end
+  
+  ii = find(Psr(:,2) < SC_POT_LIM);
+  if isempty(ii), return, end
 elseif ischar(Ps)
   if strcmpi(Ps, 'magnetosphere')
     flagAlwaysMagnetosphere = 1;
@@ -148,7 +148,7 @@ elseif t>=toepoch([2002 01 01 00 0 0]), Ddsi = [ 1.33  1.98 1.66  2.00 ];
 elseif t>=toepoch([2001 06 01 00 0 0]), Ddsi = [ 1.26  1.74 1.54  1.06 ];
 elseif t>=toepoch([2001 02 01 00 0 0]), Ddsi = [ 1.21  1.92 1.25  1.02 ];
 else
-	Ddsi = DdsiSW;
+  Ddsi = DdsiSW;
 end
 
 % SC pot is all the time below SC_POT_LIM

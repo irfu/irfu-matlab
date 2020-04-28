@@ -10,7 +10,7 @@ function c=c_rapid_l3dd_spin(varargin)
 %6. E_channel=1;             channel 1 is 40.7 keV; channel 2 is 68.1 keV
 %
 %---------------------------------------
-%Example: 
+%Example:
 %c_rapid_l3dd_spin('2007-10-01T07:16:00Z', C2_CP_RAP_L3DD, C2_CP_FGM_SPIN, C2_CP_RAP_EFLOW_GSE, 2, 1);
 %---------------------------------------
 
@@ -73,67 +73,67 @@ Teve_sta=iso2epoch(Teve_sta);
 ind_flux=find(Time_lab>Teve_sta);
 i_flux=ind_flux(1);
 
- 
+
 minval=zeros(1,nrow*ncol); maxval=zeros(1,nrow*ncol);
 
 for i_subplot=1:(nrow*ncol)
-    h(i_subplot)=irf_subplot(nrow,ncol,-i_subplot);
-    
-    T_eve=Time_lab(i_flux);
-    Flux=Flux_l3dd(i_flux,E_channel,:,:);
-    Flux=double(squeeze(Flux));
-    Flux=transpose(log10(Flux));
-    Flux(Flux==-Inf)=NaN; 
-    
-    minval(i_subplot)=min(Flux(:));
-    maxval(i_subplot)=max(Flux(:));
-    
-    specFlux=pcolor(Flux);
-    set(specFlux,'EdgeColor','none');
-    hold on;
-    
-    %---rotation matrix from SC to GSE
-    Rot=Rot_sc2gse;
-    %---from GSE to SC
-    Rot=transpose(Rot);
-
-    ind_fgm=find(Tfgm>T_eve);
-    i_fgm=ind_fgm(1);
-    B_vec=B_gse(i_fgm,:,:,:);
-    Bgse=B_vec(2:4);
-
-    Bsc(1)=Rot(1,1)*Bgse(1)+Rot(1,2)*Bgse(2)+Rot(1,3)*Bgse(3);
-    Bsc(2)=Rot(2,1)*Bgse(1)+Rot(2,2)*Bgse(2)+Rot(2,3)*Bgse(3);
-    Bsc(3)=Rot(3,1)*Bgse(1)+Rot(3,2)*Bgse(2)+Rot(3,3)*Bgse(3);
-
-    pit_ang=zeros(length(Yaxis),length(Xaxis));
-    for ix=1:length(Xaxis)
-      for iy=1:length(Yaxis)
-          AZ=Xaxis(ix)*(pi/180);
-          Pol=Yaxis(iy)*(pi/180);
-          [xfsc, yfsc, zfsc]=sph2cart(AZ-pi,Pol-(pi/2),1.0);
-          v1=[xfsc yfsc zfsc];
-          v2=Bsc;
-        pit_ang(iy,ix)=acosd(dot(v1,v2)/(norm(v1)*norm(v2)));
-      end
+  h(i_subplot)=irf_subplot(nrow,ncol,-i_subplot);
+  
+  T_eve=Time_lab(i_flux);
+  Flux=Flux_l3dd(i_flux,E_channel,:,:);
+  Flux=double(squeeze(Flux));
+  Flux=transpose(log10(Flux));
+  Flux(Flux==-Inf)=NaN;
+  
+  minval(i_subplot)=min(Flux(:));
+  maxval(i_subplot)=max(Flux(:));
+  
+  specFlux=pcolor(Flux);
+  set(specFlux,'EdgeColor','none');
+  hold on;
+  
+  %---rotation matrix from SC to GSE
+  Rot=Rot_sc2gse;
+  %---from GSE to SC
+  Rot=transpose(Rot);
+  
+  ind_fgm=find(Tfgm>T_eve);
+  i_fgm=ind_fgm(1);
+  B_vec=B_gse(i_fgm,:,:,:);
+  Bgse=B_vec(2:4);
+  
+  Bsc(1)=Rot(1,1)*Bgse(1)+Rot(1,2)*Bgse(2)+Rot(1,3)*Bgse(3);
+  Bsc(2)=Rot(2,1)*Bgse(1)+Rot(2,2)*Bgse(2)+Rot(2,3)*Bgse(3);
+  Bsc(3)=Rot(3,1)*Bgse(1)+Rot(3,2)*Bgse(2)+Rot(3,3)*Bgse(3);
+  
+  pit_ang=zeros(length(Yaxis),length(Xaxis));
+  for ix=1:length(Xaxis)
+    for iy=1:length(Yaxis)
+      AZ=Xaxis(ix)*(pi/180);
+      Pol=Yaxis(iy)*(pi/180);
+      [xfsc, yfsc, zfsc]=sph2cart(AZ-pi,Pol-(pi/2),1.0);
+      v1=[xfsc yfsc zfsc];
+      v2=Bsc;
+      pit_ang(iy,ix)=acosd(dot(v1,v2)/(norm(v1)*norm(v2)));
     end
-    
-    [C, PAcontour]=contour(pit_ang,[7 20 60 90 120 160 173]); 
-    clabel(C, PAcontour, [7 60 90 120 173], 'Rotation',0);
-    hold off;
-    
-    set(gca,'yscale','lin'); 
-    set(gca,'xtick', 1:2:16, 'ytick', 1:8);
-    set(gca,'YDir','reverse');
-    ylabel(gca,'Polar ang');
-    Time=epoch2iso(T_eve); tlab=Time(12:23);
-    text(4.0,8.6, [tlab ' UT']);%title(epoch2iso(T_eve));
-
-
-    i_flux=i_flux+1;
+  end
+  
+  [C, PAcontour]=contour(pit_ang,[7 20 60 90 120 160 173]);
+  clabel(C, PAcontour, [7 60 90 120 173], 'Rotation',0);
+  hold off;
+  
+  set(gca,'yscale','lin');
+  set(gca,'xtick', 1:2:16, 'ytick', 1:8);
+  set(gca,'YDir','reverse');
+  ylabel(gca,'Polar ang');
+  Time=epoch2iso(T_eve); tlab=Time(12:23);
+  text(4.0,8.6, [tlab ' UT']);%title(epoch2iso(T_eve));
+  
+  
+  i_flux=i_flux+1;
 end
 
-hcol=colorbar('peer',h(2),'North', 'XDir','reverse', 'TickDir','out', 'XAxisLocation','top'); 
+hcol=colorbar('peer',h(2),'North', 'XDir','reverse', 'TickDir','out', 'XAxisLocation','top');
 colormap(jet);
 lhp=get(h(1),'Position'); rhp=get(h(ncol),'Position');
 left=lhp(1); low=lhp(2)+lhp(4)+0.01;
@@ -141,7 +141,7 @@ width=rhp(1)+rhp(3)-lhp(1); height=0.04;
 set(hcol,'Position',[left low width height]);
 
 for i_subplot=1:(nrow*ncol)
-    caxis(h(i_subplot),[min(minval) max(maxval)]);
+  caxis(h(i_subplot),[min(minval) max(maxval)]);
 end
 
 

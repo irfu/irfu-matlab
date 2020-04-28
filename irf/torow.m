@@ -1,6 +1,6 @@
 function col = torow(vector)
 % TOROW - outputs a row vector whatever the format of
-%   the input vector. Returns zero if input is rank higher 
+%   the input vector. Returns zero if input is rank higher
 %   than 1 (matrices etc), or input if input is empty or
 %   scalar.
 %
@@ -21,4 +21,4 @@ else
   else                                 % input is matrix or higher rank
     col = 0;
   end
-end  
+end

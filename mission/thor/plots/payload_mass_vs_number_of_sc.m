@@ -4,7 +4,7 @@ payloadLim = [1.5 500]; % kg
 
 nScMax   = 12;
 xLim = [0.8 nScMax/0.8];
-yLim = payloadLim; 
+yLim = payloadLim;
 
 Cluster = struct('nSc',4,'mPayload',71,'name','Cluster');
 CrossScaleI = struct('nSc',10,'mPayload',40,'name','Cross-Scale I');
@@ -55,15 +55,15 @@ h=axes('position',[0.1 0.15 0.6 0.7]); % [x y dx dy]
 
 % y axis
 set(h,'ylim',payloadLim,...
-	'yscale','log',...
-	'ytick',[3 6 12 25 50 100 200 ],...
-	'yminortick','off',...
-	'ygrid','on','yminorgrid','off');
+  'yscale','log',...
+  'ytick',[3 6 12 25 50 100 200 ],...
+  'yminortick','off',...
+  'ygrid','on','yminorgrid','off');
 ylabel(h,'payload mass [kg]');
 % x-axis
 set(h,'xlim',xLim,...
-	'xscale','log',...
-	'xtick',[1 2 3 4 5 7 10 12]);
+  'xscale','log',...
+  'xtick',[1 2 3 4 5 7 10 12]);
 xlabel(h,'Number of spacecraft');
 hold(h,'on');
 
@@ -85,33 +85,33 @@ plot_m4(M4BigMum)
 %legend_m4(M4BigMum)
 
 irf_legend(h,[datestr(now,31) '  ' mfilename],[0.99 1.01],...
-	'fontsize',6,'interpreter','none','color',[0.9 0.9 0.9])
+  'fontsize',6,'interpreter','none','color',[0.9 0.9 0.9])
 %% Functions nested
-	function plot_spacecraft(Sc,varargin)
-		plot(h,Sc.nSc,Sc.mPayload,'.',ScProps{:});
-		text(Sc.nSc*1.05,Sc.mPayload*1.1,...
-			Sc.name,'parent',h,ScTextProps{:},varargin{:});
-	end
-	function plot_m4(Sc,varargin)
-		plot(h,Sc.nSc,Sc.mPayload,'.',M4Props{:});
-		text(Sc.nSc*1.05,Sc.mPayload*1.1,...
-			Sc.name,'parent',h,M4TextProps{:},varargin{:});
-	end
-	function legend_m4(varargin)
-		textStruct = cell(1,nargin);
-		for j=1:nargin
-			Sc = varargin{j};
-			textStruct{j} = [Sc.name ' - ' Sc.nameLong];
-		end
-		text(xLim(2),yLim(1),textStruct,...
-			'verticalalignment','bottom');
-	end
-	function plot_class(Class)
-		m = mean(Class.mLim);
-		line([1 xLim(2)],[m m/xLim(2)],ClassLine{:});
-		line([1 1],Class.mLim,'parent',h,ClassLine{:});
-		text(0.95,mean(Class.mLim),Class.name,...
-			'horizontalalignment','right','fontsize',20,'fontweight','bold');
-	end
+  function plot_spacecraft(Sc,varargin)
+    plot(h,Sc.nSc,Sc.mPayload,'.',ScProps{:});
+    text(Sc.nSc*1.05,Sc.mPayload*1.1,...
+      Sc.name,'parent',h,ScTextProps{:},varargin{:});
+  end
+  function plot_m4(Sc,varargin)
+    plot(h,Sc.nSc,Sc.mPayload,'.',M4Props{:});
+    text(Sc.nSc*1.05,Sc.mPayload*1.1,...
+      Sc.name,'parent',h,M4TextProps{:},varargin{:});
+  end
+  function legend_m4(varargin)
+    textStruct = cell(1,nargin);
+    for j=1:nargin
+      Sc = varargin{j};
+      textStruct{j} = [Sc.name ' - ' Sc.nameLong];
+    end
+    text(xLim(2),yLim(1),textStruct,...
+      'verticalalignment','bottom');
+  end
+  function plot_class(Class)
+    m = mean(Class.mLim);
+    line([1 xLim(2)],[m m/xLim(2)],ClassLine{:});
+    line([1 1],Class.mLim,'parent',h,ClassLine{:});
+    text(0.95,mean(Class.mLim),Class.name,...
+      'horizontalalignment','right','fontsize',20,'fontweight','bold');
+  end
 end
 

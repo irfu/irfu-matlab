@@ -1,4 +1,4 @@
-% Script to compute MSH DSL offsets for all existing ROI 
+% Script to compute MSH DSL offsets for all existing ROI
 %
 % See also mms_sdp_comp_msh_dsl_off
 
@@ -6,7 +6,7 @@
 roiList = mms_sci_roi();
 clear shDslOffDb
 shDslOffDb(size(roiList,1)) = struct('c1',[],'c2',[],'c3',[],'c4',[],'tint',[]);
-iLast = []; % XXX: change to the one you like to start from 
+iLast = []; % XXX: change to the one you like to start from
 
 %% Run the process
 if isempty(iLast), iLast = size(roiList,1); end

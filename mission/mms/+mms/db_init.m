@@ -2,7 +2,7 @@ function db_init(key, val)
 %MMS.DB_INIT  initialize MMS file database
 %
 %  MMS.DB_INIT(key,value)
-%  
+%
 %  Example:
 %    mms.db_init('local_file_db','/data/mms')
 %    mms.db_init('local_file_db','/Users/yuri/Data/mms')
@@ -55,7 +55,7 @@ if nargin==0
 end
 
 if nargin ~=2, error('need a pair KEY,VALUE'), end
-  
+
 switch key
   case 'local_file_db'
     localFileDb = mms_local_file_db(val);

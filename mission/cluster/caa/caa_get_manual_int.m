@@ -29,12 +29,12 @@ problem_start_time = man_int(:, 1);
 problem_end_time = problem_start_time + man_int(:, 2);
 
 row_index = (problem_start_time >= data_start_time & problem_start_time < data_end_time) | ...
-            (problem_end_time > data_start_time & problem_end_time <= data_end_time) | ...
-            (problem_start_time <= data_start_time & problem_end_time >= data_end_time);
-            
+  (problem_end_time > data_start_time & problem_end_time <= data_end_time) | ...
+  (problem_start_time <= data_start_time & problem_end_time >= data_end_time);
+
 intervals = [man_int(row_index, 1),  man_int(row_index, 1)+man_int(row_index, 2)];
 qualities = man_int(row_index, 3:4);
 
 if nargout < 2
-   intervals = [intervals, qualities];
+  intervals = [intervals, qualities];
 end

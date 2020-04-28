@@ -21,16 +21,16 @@ function [t_mp_out,t_mp_in] = caa_find_mp(start_time, dt, cl_id, Rin,sc_source)
 % ----------------------------------------------------------------------------
 
 if dt>toepoch([1996 01 01 00 00 00])
-	% et is given
-	if dt< start_time, error('STOP_TIME must be larger then START_TIME)'), end
-	dt = dt - start_time;
+  % et is given
+  if dt< start_time, error('STOP_TIME must be larger then START_TIME)'), end
+  dt = dt - start_time;
 end
 if nargin < 5, sc_source='omni2'; end
 if nargin < 4, Rin = []; end
 if ~strcmp(sc_source,'omni2') && ~strcmp(sc_source,'ace')
-	error('Solar wind data source improperly specified. Should be ace or omni2.')
+  error('Solar wind data source improperly specified. Should be ace or omni2.')
 end
-	
+
 t_mp_out = []; t_mp_in = [];
 
 R_E = 6378;
@@ -41,31 +41,31 @@ ACE_N_DEF = 6;			% Default solar wind density
 ACE_BZ_DEF = 0;			% Default IMF Bz
 
 irf_log('proc',['orbit : ' epoch2iso(start_time,1) ' -- ' ...
-		epoch2iso(start_time+dt,1)])
+  epoch2iso(start_time+dt,1)])
 
 if isempty(Rin)
-	data = getData(ClusterDB, start_time, dt, cl_id, 'r', 'nosave');
-	if isempty(data), error('cannot fetch position'), end
-	R = data{2};
-	clear data
+  data = getData(ClusterDB, start_time, dt, cl_id, 'r', 'nosave');
+  if isempty(data), error('cannot fetch position'), end
+  R = data{2};
+  clear data
 else
-	R = irf_tlim(Rin, start_time + [0 dt]);
-	if isempty(R), irf_log('proc','empty position'), return, end
+  R = irf_tlim(Rin, start_time + [0 dt]);
+  if isempty(R), irf_log('proc','empty position'), return, end
 end
-	
+
 R = R(R(:,1)>0,:); % we probably cross the MP only for positive X
 R = R(irf_abs(R,1)>7*R_E,:); % we probably cross the MP only R > 7 R_E
 
 if isempty(R)
-	irf_log('proc','tail season')
-	return
+  irf_log('proc','tail season')
+  return
 end
 
 start_time = R(1,1);
 dt = R(end,1) -R(1,1);
 
 irf_log('proc',['X>0, R>7R_E: ' epoch2iso(start_time,1) ' -- ' ...
-		epoch2iso(start_time+dt,1)])
+  epoch2iso(start_time+dt,1)])
 
 % Fetch ACE data
 if ismac,  ISTP_PATH = '/Volumes/istp';
@@ -82,84 +82,84 @@ st = toepoch([st_a(1:4) fix(st_a(5)/30)*30 00]);
 dt = ceil((start_time +dt -st)/1800)*1800;
 
 irf_log('proc',['subint: ' epoch2iso(start_time,1) ' -- ' ...
-		epoch2iso(start_time+dt,1)])
+  epoch2iso(start_time+dt,1)])
 
 %v_ttt = []; b_ttt = []; n_ttt = [];
 r_prev = [];
 for t=st:1800:st+dt
-	irf_log('proc',['time: ' epoch2iso(t,1)])
-	
-	% ACE time shift
-	if strcmp(sc_source,'ace')
-		if isempty(ace_V), dt_ace = ACE_DT_DEF;
-		else
-			v_tmp = linear_solve(ace_V, t, ACE_DT_DEF);
-			%irf_log('proc',['ace_v_tmp: ' num2str(round(v_tmp)) ' km/s'])
-			if isnan(v_tmp)
-				dt_ace = ACE_DT_DEF;
-				irf_log('proc',['ace_v_tmp: NaN at ' epoch2iso(t,1)])
-			else, dt_ace = ACE_X_POS/v_tmp;
-			end
-		end
-		%irf_log('proc',['ace_dt   : ' num2str(round(dt_ace/60)) ' min'])
-	else
-		dt_ace = 0;
-	end
-	
-	if isempty(ace_V), vx_tmp = ACE_VX_DEF;
-	else
-		vx_tmp = linear_solve(ace_V, t, dt_ace);
-		if isnan(vx_tmp)
-			irf_log('proc',['ace_vx: NaN at ' epoch2iso(t,1)])
-			vx_tmp = ACE_VX_DEF;
-		end
-	end
-	%irf_log('proc',['ace_vx_tmp: ' num2str(vx_tmp,'%.2f') ' km/s'])
-	%v_ttt = [v_ttt; t-dt_ace vx_tmp];
-	
-	if isempty(ace_N), n_tmp = ACE_N_DEF;
-	else
-		n_tmp = linear_solve(ace_N, t, dt_ace);
-		if isnan(n_tmp)
-			irf_log('proc',['ace_n : NaN at ' epoch2iso(t,1)])
-			n_tmp = ACE_N_DEF;
-		end
-	end
-	%irf_log('proc',['ace_nn_tmp: ' num2str(n_tmp,'%.2f') ' cc'])
-	%n_ttt = [n_ttt; t-dt_ace n_tmp];
-	
-	if isempty(ace_B), bz_tmp = ACE_BZ_DEF;
-	else
-		bz_tmp = linear_solve(ace_B(:,[1 4]), t, dt_ace);
-		if isnan(bz_tmp)
-			irf_log('proc',['ace_bz: NaN at ' epoch2iso(t,1)])
-			bz_tmp = ACE_BZ_DEF;
-		end
-	end
-	%irf_log('proc',['ace_vx_tmp: ' num2str(bz_tmp,'%.2f') ' nT'])
-	%b_ttt = [b_ttt; t-dt_ace bz_tmp];
-	
-	r_tmp = linear_solve(R, t, 0);
-	if isnan(r_tmp)
-		irf_log('proc',['R : NaN at ' epoch2iso(t,1)])
-		continue
-	end
-			
-	r_gsm = irf_gse2gsm([t r_tmp]);
-	r_gsm(2:4) = r_gsm(2:4)/R_E;
-	r_mp = r_shue_mp(r_gsm, bz_tmp, nv2press(n_tmp,vx_tmp^2)); 
-	%irf_log('proc',['r: ' num2str(r_gsm(2:4),'%.2f %.2f %.2f') ...
-	%		' mp:' num2str(r_mp,'%.2f') ' Re'])
-			
-	if isempty(t_mp_out) && ~isempty(r_prev) && (r_prev>0) && (r_mp<0)
-		t_mp_out = t -1800;
-		irf_log('proc',['FOUND OUTBOUND : ' epoch2iso(t_mp_out,1)])
-	end
-	if ~isempty(r_prev) && (r_prev<0) && (r_mp>0)
-		t_mp_in = t;
-		irf_log('proc',['FOUND INBOUND  : ' epoch2iso(t_mp_in,1)])
-	end
-	r_prev = r_mp;
+  irf_log('proc',['time: ' epoch2iso(t,1)])
+  
+  % ACE time shift
+  if strcmp(sc_source,'ace')
+    if isempty(ace_V), dt_ace = ACE_DT_DEF;
+    else
+      v_tmp = linear_solve(ace_V, t, ACE_DT_DEF);
+      %irf_log('proc',['ace_v_tmp: ' num2str(round(v_tmp)) ' km/s'])
+      if isnan(v_tmp)
+        dt_ace = ACE_DT_DEF;
+        irf_log('proc',['ace_v_tmp: NaN at ' epoch2iso(t,1)])
+      else, dt_ace = ACE_X_POS/v_tmp;
+      end
+    end
+    %irf_log('proc',['ace_dt   : ' num2str(round(dt_ace/60)) ' min'])
+  else
+    dt_ace = 0;
+  end
+  
+  if isempty(ace_V), vx_tmp = ACE_VX_DEF;
+  else
+    vx_tmp = linear_solve(ace_V, t, dt_ace);
+    if isnan(vx_tmp)
+      irf_log('proc',['ace_vx: NaN at ' epoch2iso(t,1)])
+      vx_tmp = ACE_VX_DEF;
+    end
+  end
+  %irf_log('proc',['ace_vx_tmp: ' num2str(vx_tmp,'%.2f') ' km/s'])
+  %v_ttt = [v_ttt; t-dt_ace vx_tmp];
+  
+  if isempty(ace_N), n_tmp = ACE_N_DEF;
+  else
+    n_tmp = linear_solve(ace_N, t, dt_ace);
+    if isnan(n_tmp)
+      irf_log('proc',['ace_n : NaN at ' epoch2iso(t,1)])
+      n_tmp = ACE_N_DEF;
+    end
+  end
+  %irf_log('proc',['ace_nn_tmp: ' num2str(n_tmp,'%.2f') ' cc'])
+  %n_ttt = [n_ttt; t-dt_ace n_tmp];
+  
+  if isempty(ace_B), bz_tmp = ACE_BZ_DEF;
+  else
+    bz_tmp = linear_solve(ace_B(:,[1 4]), t, dt_ace);
+    if isnan(bz_tmp)
+      irf_log('proc',['ace_bz: NaN at ' epoch2iso(t,1)])
+      bz_tmp = ACE_BZ_DEF;
+    end
+  end
+  %irf_log('proc',['ace_vx_tmp: ' num2str(bz_tmp,'%.2f') ' nT'])
+  %b_ttt = [b_ttt; t-dt_ace bz_tmp];
+  
+  r_tmp = linear_solve(R, t, 0);
+  if isnan(r_tmp)
+    irf_log('proc',['R : NaN at ' epoch2iso(t,1)])
+    continue
+  end
+  
+  r_gsm = irf_gse2gsm([t r_tmp]);
+  r_gsm(2:4) = r_gsm(2:4)/R_E;
+  r_mp = r_shue_mp(r_gsm, bz_tmp, nv2press(n_tmp,vx_tmp^2));
+  %irf_log('proc',['r: ' num2str(r_gsm(2:4),'%.2f %.2f %.2f') ...
+  %		' mp:' num2str(r_mp,'%.2f') ' Re'])
+  
+  if isempty(t_mp_out) && ~isempty(r_prev) && (r_prev>0) && (r_mp<0)
+    t_mp_out = t -1800;
+    irf_log('proc',['FOUND OUTBOUND : ' epoch2iso(t_mp_out,1)])
+  end
+  if ~isempty(r_prev) && (r_prev<0) && (r_mp>0)
+    t_mp_in = t;
+    irf_log('proc',['FOUND INBOUND  : ' epoch2iso(t_mp_in,1)])
+  end
+  r_prev = r_mp;
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -173,19 +173,19 @@ t = t -delta_t;
 p1 = f( (f(:,1) > t -3600) & (f(:,1) <= t), : ); % data has 1 hour resolutuion
 p2 = f( (f(:,1) < t +3600) & (f(:,1) > t), : );
 if isempty(p1) && isempty(p2)
-	% We have a data gap
-	y = NaN;
-	return
+  % We have a data gap
+  y = NaN;
+  return
 end
 if ~isempty(p1), p1 = p1(1,:); end
 if ~isempty(p2)
-	p2 = p2(end,:);
-	if isempty(p1), y = p2(:,2:end);
-	else
-		a_tmp = (p1(:,2:end) -p2(:,2:end))/(p1(:,1) -p2(:,1));
-		y = a_tmp*t + 0.5*(p1(:,2:end) +p2(:,2:end) ...
-				-a_tmp*(p1(:,1) +p2(:,1)));
-	end
+  p2 = p2(end,:);
+  if isempty(p1), y = p2(:,2:end);
+  else
+    a_tmp = (p1(:,2:end) -p2(:,2:end))/(p1(:,1) -p2(:,1));
+    y = a_tmp*t + 0.5*(p1(:,2:end) +p2(:,2:end) ...
+      -a_tmp*(p1(:,1) +p2(:,1)));
+  end
 else, y = p1(:,2:end);
 end
 return

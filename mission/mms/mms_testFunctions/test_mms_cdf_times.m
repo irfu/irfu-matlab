@@ -16,38 +16,38 @@ end
 end
 
 function eachCDF(file)
-  if(~exist(file,'file')), error('FILE NOT FOUND'); end
-  [~, name, ext] = fileparts(file);
-  if(~strcmpi(ext,'.cdf')), error('File Not CDF'); end
-  scId = name(4);
-  disp(['Verify file: ', name, ext]);
-  dataObj = dataobj(file);
+if(~exist(file,'file')), error('FILE NOT FOUND'); end
+[~, name, ext] = fileparts(file);
+if(~strcmpi(ext,'.cdf')), error('File Not CDF'); end
+scId = name(4);
+disp(['Verify file: ', name, ext]);
+dataObj = dataobj(file);
 
-  if( isfield(dataObj.data,['mms',scId,'_edp_dce_epoch']) )
-    time = dataObj.data.(['mms',scId,'_edp_dce_epoch']).data;
-  elseif(isfield(dataObj.data,['mms',scId,'_edp_scpot_epoch']) )
-    time = dataObj.data.(['mms',scId,'_edp_scpot_epoch']).data;
-  else
-    error('Unknown file, what is time?');
-  end
+if( isfield(dataObj.data,['mms',scId,'_edp_dce_epoch']) )
+  time = dataObj.data.(['mms',scId,'_edp_dce_epoch']).data;
+elseif(isfield(dataObj.data,['mms',scId,'_edp_scpot_epoch']) )
+  time = dataObj.data.(['mms',scId,'_edp_scpot_epoch']).data;
+else
+  error('Unknown file, what is time?');
+end
 
-  monotone_time(time)
-  disp_start_stop(time)
+monotone_time(time)
+disp_start_stop(time)
 end
 
 
 % Check time is increasing for each separate cdf file
 function monotone_time(time)
-  if(any(diff(time)<=0))
-    error('Non increasing time in cdf file');
-  else
-    disp('Time (of cdf file) is monoton increasing, all(diff(time)>0)');
-  end
+if(any(diff(time)<=0))
+  error('Non increasing time in cdf file');
+else
+  disp('Time (of cdf file) is monoton increasing, all(diff(time)>0)');
+end
 end
 
 % Start and stop times of the cdf file
 function disp_start_stop(time)
-  tint = irf.tint([time(1), time(end)]);
-  % Display the times
-  tint %#ok<NOPRT>
+tint = irf.tint([time(1), time(end)]);
+% Display the times
+tint %#ok<NOPRT>
 end

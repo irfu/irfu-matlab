@@ -11,16 +11,16 @@ isemp = false; % default
 % check nrec of time variable
 numRecords = dobj.Variables{1,3};
 if isempty(numRecords) || (numRecords == 0)
-	isemp = true;
-	return;
+  isemp = true;
+  return;
 end
 
 numTimeData =  numel(dobj.data.(variable_mat_name(dobj.Variables{1,1})).data);
 if isempty(numTimeData) || (numTimeData == 0)
-	isemp = true;
-	irf_log('dsrc',['WARNING!!!! Number of records is ' num2str(numRecords) ...
-		' but there is no data!']);
-	disp(dobj);
-	return;
+  isemp = true;
+  irf_log('dsrc',['WARNING!!!! Number of records is ' num2str(numRecords) ...
+    ' but there is no data!']);
+  disp(dobj);
+  return;
 end
 

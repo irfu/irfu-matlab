@@ -6,12 +6,12 @@ function out=caa_msp(varargin)
 
 %% check inputs
 writeToFile = false;
-if nargin >= 3 
-	tint = varargin{1};
-	cl_id = varargin{2};
-	filterString = varargin{3};
+if nargin >= 3
+  tint = varargin{1};
+  cl_id = varargin{2};
+  filterString = varargin{3};
 else
-	return;
+  return;
 end
 if nargin == 4 % filename specified
   writeToFile = true;
@@ -19,10 +19,10 @@ if nargin == 4 % filename specified
 end
 %% check filter
 if strfind(filterString,'PSE:') %#ok<STRIFCND>
-	dataObj = ['C' num2str(cl_id) '_JP_PSE'];
-	regionFilter = filterString(strfind(filterString,':')+1 : end);
-else 
-	return
+  dataObj = ['C' num2str(cl_id) '_JP_PSE'];
+  regionFilter = filterString(strfind(filterString,':')+1 : end);
+else
+  return
 end
 
 %% Read data
@@ -55,8 +55,8 @@ outPut(fid,['  Data object: ' dataObj]);
 outPut(fid,['Region filter: ' regionFilter]);
 outPut(fid,'#################################')
 for j=1:numel(indRegion)
-	outPut(fid,[num2str(orbitNumber(indRegion(j),2)) ' ' tIso(indRegion(j),1:16) ' ' ...
-		eventCode(indRegion(j),:) ' ' eventSubCode(indRegion(j),:)]);
+  outPut(fid,[num2str(orbitNumber(indRegion(j),2)) ' ' tIso(indRegion(j),1:16) ' ' ...
+    eventCode(indRegion(j),:) ' ' eventSubCode(indRegion(j),:)]);
 end
 outPut(fid,'#################################')
 if writeToFile

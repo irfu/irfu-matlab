@@ -1,22 +1,22 @@
 % A routine to compute various parameters used to identify electron
-% diffusion regions for the four MMS spacecraft. 
+% diffusion regions for the four MMS spacecraft.
 % Written by D. B. Graham
 %
 % Quantities calculated so far are:
-% (1) sqrt(Q) - Based on Swisdak, GRL ,2016. Values around 0.1 indicate 
+% (1) sqrt(Q) - Based on Swisdak, GRL ,2016. Values around 0.1 indicate
 % electron agyrotropies. Computed based on the off-diagonal
-% terms in the pressure tensor for Pe_perp1 = Pe_perp2. 
+% terms in the pressure tensor for Pe_perp1 = Pe_perp2.
 % (1a) Dng - Based on Aunia et al., 2013; Computed based on the off-diagonal
 % terms in the pressure tensor for Pe_perp1 = Pe_perp2. Similar to sqrt(Q)
-% but with different normalization. Calculated but not plotted. 
+% but with different normalization. Calculated but not plotted.
 % (2) AG^(1/3) - Based on Che et al., POP, 2018. Constructed from determinant of
-% field-aligned rotation of the electron pressure tensor (Pe_perp1 = Pe_perp2). 
-% (3) A phi_e/2 = abs(Perp1-Perp2)/(Perp1+Perp2). 
-% This is a measure of electron agyrotropy. Values of 
-% O(1) are expected for EDRs. We transform the pressure tensor into 
+% field-aligned rotation of the electron pressure tensor (Pe_perp1 = Pe_perp2).
+% (3) A phi_e/2 = abs(Perp1-Perp2)/(Perp1+Perp2).
+% This is a measure of electron agyrotropy. Values of
+% O(1) are expected for EDRs. We transform the pressure tensor into
 % field-aligned coordinates such that the difference in Pe_perp1 and Pe_perp2
-% is maximal. This corresponds to P23 being zero. (Note that this definition 
-% of agyrotropy neglects the off-diagonal pressure terms P12 and P13, 
+% is maximal. This corresponds to P23 being zero. (Note that this definition
+% of agyrotropy neglects the off-diagonal pressure terms P12 and P13,
 % therefore it doesn't capture all agyrotropies.)
 % (4) A n_e = T_parallel/T_perp. Values much larger than 1 are expected.
 % Large T_parallel/T_perp are a feature of the ion diffusion region. For MP
@@ -24,21 +24,21 @@
 % Scudder says A n_e ~ 7 at IDR-EDR boundary, but this is extremely large
 % for MP reconnection.
 % (5) Mperp e - electron Mach number: bulk velocity divided by the electron
-% thermal speed perpendicular to B. Values of O(1) are expected in EDRs (Scudder et al., 2012, 2015). 
+% thermal speed perpendicular to B. Values of O(1) are expected in EDRs (Scudder et al., 2012, 2015).
 % (6) J.E' - J.E > 0 is expected in the electron diffusion region,
 % corresponding to dissipation of field energy. J is calculated on each
-% spacecraft using the particle moments (Zenitani et al., PRL, 2011). 
+% spacecraft using the particle moments (Zenitani et al., PRL, 2011).
 % (7) epsilon_e - Energy gain per cyclotron period. Values of O(1) are
-% expected in EDRs (Scudder et al., 2012, 2015). 
+% expected in EDRs (Scudder et al., 2012, 2015).
 % (8) delta_e - Relative strength of the electric and magnetic force in the
 % bulk electron rest frame. N. B. Very sensitive to electron moments and
-% electric field. Check version of these quantities (Scudder et al., 2012, 2015). 
+% electric field. Check version of these quantities (Scudder et al., 2012, 2015).
 %
 % Notes: kappa_e (not yet included) is taken to be the largest value of
-% epsilon_e and delta_e at any given point. 
-% Requires electron distributions with version number v2.0.0 or higher. 
+% epsilon_e and delta_e at any given point.
+% Requires electron distributions with version number v2.0.0 or higher.
 % Calculations of agyrotropy measures (1)--(3) become unreliable at low
-% densities n_e <~ 2 cm^-3, when the raw particle counts are low. 
+% densities n_e <~ 2 cm^-3, when the raw particle counts are low.
 % Agyrotropies are removed for n_e < 1 cm^-3
 
 %% Time interval selection
@@ -52,11 +52,11 @@ c_eval('Bxyz?=mms.get_data(''B_dmpa_fgm_srvy_l2'',Tint,?);',ic);
 c_eval('E? =mms.get_data(''E_dsl_edp_brst_l2'',Tint, ?);',ic);
 
 for ii=1:4
-   c_eval('ne?=mms.get_data(''Ne_fpi_brst_l2'',Tint,?);',ii);
-   c_eval('Uevec? = mms.get_data(''Ve_dbcs_fpi_brst_l2'',Tint,?);',ii);
-   c_eval('Te? = mms.get_data(''Te_dbcs_fpi_brst_l2'',Tint,?);',ii);
-   c_eval('Pe? = mms.get_data(''Pe_dbcs_fpi_brst_l2'',Tint,?);',ii);
-   c_eval('Uivec? = mms.get_data(''Vi_dbcs_fpi_brst_l2'',Tint,?);',ii);
+  c_eval('ne?=mms.get_data(''Ne_fpi_brst_l2'',Tint,?);',ii);
+  c_eval('Uevec? = mms.get_data(''Ve_dbcs_fpi_brst_l2'',Tint,?);',ii);
+  c_eval('Te? = mms.get_data(''Te_dbcs_fpi_brst_l2'',Tint,?);',ii);
+  c_eval('Pe? = mms.get_data(''Pe_dbcs_fpi_brst_l2'',Tint,?);',ii);
+  c_eval('Uivec? = mms.get_data(''Vi_dbcs_fpi_brst_l2'',Tint,?);',ii);
 end
 
 c_eval('E? = E?.resample(ne?);',ic);
@@ -114,7 +114,7 @@ c_eval('AGcr?.data = AGcr?.data.*rmpnts?;',ic);
 c_eval('Temprat? = Pepp?.xx/(Pepp?.yy);',ic);
 
 % Compute electron Mach number
-Units = irf_units; 
+Units = irf_units;
 qe = Units.e;
 me = Units.me;
 c_eval('Ue? = Uevec?.abs.data;',ic);

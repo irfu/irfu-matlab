@@ -10,7 +10,7 @@ global MMS_CONST, if isempty(MMS_CONST), MMS_CONST = mms_constants(); end
 if time(1) > EpochTT('2015-06-18T00:00:00.000000Z').epoch
   SPIN_RATE_MAX = MMS_CONST.Spinrate.max;
 elseif time(1) > EpochTT('2015-01-01T00:00:00.000000Z').epoch
-  SPIN_RATE_MAX = MMS_CONST.Spinrate.max_comm; 
+  SPIN_RATE_MAX = MMS_CONST.Spinrate.max_comm;
 else, SPIN_RATE_MAX = MMS_CONST.Spinrate.max_deploy;
 end
 SPIN_RATE_NOMINAL = 3.1; % rpm
@@ -22,16 +22,16 @@ flagSpinRateStable = 1; spinRate = SPIN_RATE_NOMINAL;
 %% Prepare
 verify_input();
 
-t0 = defatt.time(1); 
+t0 = defatt.time(1);
 targetTime = double(time-t0)*1e-9; tStart = targetTime(1);
 tDefatt = double(defatt.time-t0)*1e-9; phaseDefatt = defatt.zphase;
 
 phaseOut = zeros(size(targetTime))*NaN;
 iOut = ( tDefatt<targetTime(1)-DT_MAX | tDefatt>targetTime(end)+DT_MAX );
-tDefatt(iOut) = []; phaseDefatt(iOut) = []; 
+tDefatt(iOut) = []; phaseDefatt(iOut) = [];
 
 %% Main loop
-spinRateLast = []; iLastOkPoint = []; fitCoef = []; tStep = TSTEP_MAX; 
+spinRateLast = []; iLastOkPoint = []; fitCoef = []; tStep = TSTEP_MAX;
 while tStart<=targetTime(end)
   tStop = tStart + tStep;
   iPhaTmp = tDefatt>=tStart-tStep/2 & tDefatt<tStart+tStep*3/2;
@@ -54,7 +54,7 @@ while tStart<=targetTime(end)
     if tStep > DT_MAX, tStep = tStep/2; continue % Reduce the time step
     else
       interp_phase()
-    end  
+    end
   else % All good
     polyfit_phase()
   end
@@ -73,8 +73,8 @@ res = TSeries(EpochTT(time),phaseOut);
     diffangle = mod(phaTmp - polyval(fitCoef,tPhaTmp),360);
     diffangle = abs(diffangle);
     diffangle = min([diffangle';360-diffangle']);
-    if median(diffangle)>ERR_PHA_MAX, flagSpinRateStable = 0; 
-      %fprintf('Median diff: %.4f \n',median(diffangle)), 
+    if median(diffangle)>ERR_PHA_MAX, flagSpinRateStable = 0;
+      %fprintf('Median diff: %.4f \n',median(diffangle)),
     end
     spinRate  = 60/fitCoef(1);
   end
@@ -101,7 +101,7 @@ res = TSeries(EpochTT(time),phaseOut);
         length(defatt.time) ~= length(defatt.zphase)
       errStr = 'DEFATT is not in expected format';
       irf.log('critical',errStr), error(errStr)
-    end  
+    end
     if time(1)>defatt.time(end) || time(end)<defatt.time(1)
       errStr = 'DEFATT and TIME do not overlap';
       irf.log('critical',errStr), error(errStr)

@@ -1,4 +1,4 @@
-function vph = estimate_phase_speed(varargin) 
+function vph = estimate_phase_speed(varargin)
 %
 % Simple function to estimate the phase speed from the frequency wave
 % number power spectrum. Fits f = v k/2 pi to the power spectrum.
@@ -20,8 +20,8 @@ function vph = estimate_phase_speed(varargin)
 %         data.
 
 if (numel(varargin) < 3)
-    help mms.estimate_phase_speed;
-    return;
+  help mms.estimate_phase_speed;
+  return;
 end
 
 fkpower = varargin{1};
@@ -29,12 +29,12 @@ freq = varargin{2};
 wavenumber = varargin{3};
 
 if (numel(varargin)==3)
-    fmin = 100;
-else 
-    fmin = varargin{4};
+  fmin = 100;
+else
+  fmin = varargin{4};
 end
 
-% Remove spurious points; specifically at large k. 
+% Remove spurious points; specifically at large k.
 kmax = 2.0*max(wavenumber)/3.0;
 powertemp = fkpower;
 rmk = find(abs(wavenumber) > kmax);
@@ -51,9 +51,9 @@ maxk = wavenumbers(maxpos);
 
 vphguess = maxf/maxk;
 if (vphguess > 0.0)
-    powertemp(:,wavenumber < 0.0) = 0;
+  powertemp(:,wavenumber < 0.0) = 0;
 else
-    powertemp(:,wavenumber > 0.0) = 0;
+  powertemp(:,wavenumber > 0.0) = 0;
 end
 
 vphrange = [vphguess/3 vphguess*3];
@@ -70,12 +70,12 @@ kpowers2 = [];
 elnum = 1;
 
 for ii = 1:length(ppowers)
-    if (abs(fpowers(ii)/kpowers(ii)) > abs(vphrange(1)) && abs(fpowers(ii)/kpowers(ii)) < abs(vphrange(2)))
-        ppowers2(elnum) = ppowers(ii);
-        fpowers2(elnum) = fpowers(ii);
-        kpowers2(elnum) = kpowers(ii);
-        elnum = elnum+1;
-    end
+  if (abs(fpowers(ii)/kpowers(ii)) > abs(vphrange(1)) && abs(fpowers(ii)/kpowers(ii)) < abs(vphrange(2)))
+    ppowers2(elnum) = ppowers(ii);
+    fpowers2(elnum) = fpowers(ii);
+    kpowers2(elnum) = kpowers(ii);
+    elnum = elnum+1;
+  end
 end
 
 weights = 1+log10(ppowers2/max(ppowers2));

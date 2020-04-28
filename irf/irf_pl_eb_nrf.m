@@ -43,55 +43,55 @@ if nargin == 4,  sc_list=1;die1=e;dib1=b; end %#ok<NASGU>
 if nargin == 5,  eval(irf_ssub('die?=irf_tlim(e,tint);dib?=irf_tlim(b,tint);',sc_list));  end
 
 for ic=sc_list % which satellite
-c_eval('vn=c_gse2dsc(vngse,[tint(1) ic],2);b=dib?;e=die?;',ic);
-bpol=av_car2pol(b);b_angle=[bpol(:,1) bpol(:,3)];
-be=irf_resamp(b,e);
-% make assumption that E.B=0
-[eb,deg]=irf_edb(e,be,5);
-% estimate E in boundary system Ev=E+(v x B)
-evxb=irf_tappl(irf_cross(be,vn),'*1e-3*(-1)');
-ebv=irf_add(1,eb,1,evxb);
-ev=irf_add(1,e,1,evxb);
-
-ev_lmn=irf_eb_nrf(ev,be,vn,flag);
-eb_lmn=irf_eb_nrf(eb,be,vn,flag);
-ebv_lmn=irf_eb_nrf(ebv,be,vn,flag);
-evxb_lmn=irf_eb_nrf(evxb,be,vn,flag);
-b_lmn=irf_eb_nrf(b,be,vn,flag);
-enml=ebv_lmn;
-
-figure(ic);clf
-npl=7;ipl=1;
-h(ic,ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1;
-if exist('mP.mat','file'), eval(irf_ssub('load mP P?;p=irf_tlim(P?,tint);',ic));irf_plot(p);end
-title(['sc ' num2str(ic) ' vn_{GSE}=' num2str(irf_abs(vngse,1),3) ' [' num2str(irf_norm(vngse(1,2:4)),2) '] km/s. ' title_lmn]);
-ylabel('Vps [V]');
-irf_pl_info(['c\_e\_mp() ' datestr(now)]); % add information to the plot
-
-irf_zoom([-35 -2],'y');
-
-h(ic,ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1;
-irf_plot(b_lmn);grid on;hold on;
-ylabel('B [nT] LMN');
-
-h(ic,ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1;
-irf_plot(eb);grid on;irf_zoom([-15 15],'y'); ylabel('E [mV/m] DSI');
-
-h(ic,ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1;
-irf_plot(evxb_lmn);irf_zoom([-10 10],'y');grid on; ylabel('Vn x B [mV/m]');
-
-h(ic,ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1;
-irf_plot(ev_lmn);grid on; irf_zoom([-15 15],'y');ylabel('E+vxB [mV/m]');
-%legend('E_l','E_m','E_n');
-
-h(ic,ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1;
-irf_plot(ebv_lmn);grid on; irf_zoom([-15 15],'y');ylabel('E_{E.B=0}+vxB [mV/m]');
-%legend('E_l','E_m','E_n');
-
-h(ic,ipl)=irf_subplot(npl,1,ipl);ipl=ipl+1;
-irf_plot(b_angle);grid on;irf_zoom([-90 90],'y');title('B elevation angle. +-5 deg limits marked.');ylabel('[degrees]');
-ll=line(b_angle([1 end end 1],1),[5 5 -5 -5],'Color',[.8 .8 .8]);
-
+  c_eval('vn=c_gse2dsc(vngse,[tint(1) ic],2);b=dib?;e=die?;',ic);
+  bpol=av_car2pol(b);b_angle=[bpol(:,1) bpol(:,3)];
+  be=irf_resamp(b,e);
+  % make assumption that E.B=0
+  [eb,deg]=irf_edb(e,be,5);
+  % estimate E in boundary system Ev=E+(v x B)
+  evxb=irf_tappl(irf_cross(be,vn),'*1e-3*(-1)');
+  ebv=irf_add(1,eb,1,evxb);
+  ev=irf_add(1,e,1,evxb);
+  
+  ev_lmn=irf_eb_nrf(ev,be,vn,flag);
+  eb_lmn=irf_eb_nrf(eb,be,vn,flag);
+  ebv_lmn=irf_eb_nrf(ebv,be,vn,flag);
+  evxb_lmn=irf_eb_nrf(evxb,be,vn,flag);
+  b_lmn=irf_eb_nrf(b,be,vn,flag);
+  enml=ebv_lmn;
+  
+  figure(ic);clf
+  npl=7;ipl=1;
+  h(ic,ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1;
+  if exist('mP.mat','file'), eval(irf_ssub('load mP P?;p=irf_tlim(P?,tint);',ic));irf_plot(p);end
+  title(['sc ' num2str(ic) ' vn_{GSE}=' num2str(irf_abs(vngse,1),3) ' [' num2str(irf_norm(vngse(1,2:4)),2) '] km/s. ' title_lmn]);
+  ylabel('Vps [V]');
+  irf_pl_info(['c\_e\_mp() ' datestr(now)]); % add information to the plot
+  
+  irf_zoom([-35 -2],'y');
+  
+  h(ic,ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1;
+  irf_plot(b_lmn);grid on;hold on;
+  ylabel('B [nT] LMN');
+  
+  h(ic,ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1;
+  irf_plot(eb);grid on;irf_zoom([-15 15],'y'); ylabel('E [mV/m] DSI');
+  
+  h(ic,ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1;
+  irf_plot(evxb_lmn);irf_zoom([-10 10],'y');grid on; ylabel('Vn x B [mV/m]');
+  
+  h(ic,ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1;
+  irf_plot(ev_lmn);grid on; irf_zoom([-15 15],'y');ylabel('E+vxB [mV/m]');
+  %legend('E_l','E_m','E_n');
+  
+  h(ic,ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1;
+  irf_plot(ebv_lmn);grid on; irf_zoom([-15 15],'y');ylabel('E_{E.B=0}+vxB [mV/m]');
+  %legend('E_l','E_m','E_n');
+  
+  h(ic,ipl)=irf_subplot(npl,1,ipl);ipl=ipl+1;
+  irf_plot(b_angle);grid on;irf_zoom([-90 90],'y');title('B elevation angle. +-5 deg limits marked.');ylabel('[degrees]');
+  ll=line(b_angle([1 end end 1],1),[5 5 -5 -5],'Color',[.8 .8 .8]);
+  
 end
 
 irf_zoom(tint,'x',h(sc_list,:));
@@ -99,11 +99,11 @@ irf_zoom([-25 -2],'y',h(sc_list,1)); % V_sc
 irf_zoom([-30 30],'y',h(sc_list,2)); % B field
 irf_zoom([-10 10],'y',h(sc_list,3:6)); % measured E field
 for ic=sc_list
-irf_timeaxis(h(ic,:));
-legend(h(ic,2),'B_L','B_M','B_N')
-legend(h(ic,3),'Ex','Ey')
-legend(h(ic,4),'E_L','E_M','E_N');
-legend(h(ic,5),'E_L','E_M','E_N');
-legend(h(ic,6),'E_L','E_M','E_N');
+  irf_timeaxis(h(ic,:));
+  legend(h(ic,2),'B_L','B_M','B_N')
+  legend(h(ic,3),'Ex','Ey')
+  legend(h(ic,4),'E_L','E_M','E_N');
+  legend(h(ic,5),'E_L','E_M','E_N');
+  legend(h(ic,6),'E_L','E_M','E_N');
 end
 

@@ -7,8 +7,8 @@ function val = get(O,prop_name)
 % Copyright 2004 Yuri Khotyaintsev
 
 switch prop_name
-case 'sp'
-	val = O.sp;
-otherwise
-	error([prop_name,' Is not a valid ClusterProc property'])
+  case 'sp'
+    val = O.sp;
+  otherwise
+    error([prop_name,' Is not a valid ClusterProc property'])
 end

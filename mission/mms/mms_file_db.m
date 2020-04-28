@@ -2,12 +2,12 @@ classdef (Abstract) mms_file_db
   %MMS_FILE_DB  Interface class for MMS file databses
   
   properties (SetAccess = immutable)
-    id 
+    id
   end
   
   properties
     cache
-		index
+    index
   end
   
   methods

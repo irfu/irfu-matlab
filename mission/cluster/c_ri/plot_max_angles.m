@@ -1,4 +1,4 @@
-function fp = plot_max_angles(max_angles) 
+function fp = plot_max_angles(max_angles)
 %
 %Input:
 % max_angles -[time|angle] the time in epochs
@@ -8,11 +8,11 @@ function fp = plot_max_angles(max_angles)
 %Descrition of the function:
 %
 %Using:
-% 
+%
 %Work method:
 %
 %Error:
-% 
+%
 %Discription of variables:
 %
 %Written by Robert Isaksson in the summer of -03

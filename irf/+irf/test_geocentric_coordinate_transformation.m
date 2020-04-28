@@ -4,7 +4,7 @@ classdef test_geocentric_coordinate_transformation < matlab.unittest.TestCase
     % Change rand(2,1) to rand(X,1) where X is the number of vectors to run
     % tests on for each permutation of coordinate systems.
     % Default 2 means each possible permutation is run twice.
-    % Use random dates a maximum of 365*50 days, ie 50 years, before today.  
+    % Use random dates a maximum of 365*50 days, ie 50 years, before today.
     t = struct('time', irf_time(now - 365*50*rand(2, 1), 'datenum>tt'));
   end
   properties (TestParameter)

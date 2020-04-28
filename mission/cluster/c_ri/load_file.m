@@ -14,11 +14,11 @@ function B = load_file(f_path,name)
 %Using:
 % timestr2epoch
 % hhmmss2epoch
-% 
+%
 %Work method:
 %
 %Error:
-% 
+%
 %Discription of variables:
 %
 %Written by Robert Isaksson in the summer of -03
@@ -26,7 +26,7 @@ function B = load_file(f_path,name)
 %--------------------- the beginning --------------------------
 
 B =[-1 0 0 0];
-S=0; 
+S=0;
 
 p_and_f = sprintf('%s%s',f_path,name);
 disp(['loading: ' name])
@@ -37,9 +37,9 @@ fclose(fp);
 
 [r_s, c_s] = size(S);
 if r_s == 15
-temp_B = S([1 3 5 7 9 11 13 14 15],:)';
-B = [toepoch(temp_B(:,1:6)) temp_B(:,7:9)]; 
-%[time, Bx, By, Bz] = textread(p_and_f,'%s %f %f %f');
-%time_of_load = toc;
-%disp(['loading took ' int2str(time_of_load) ' seconds'])
+  temp_B = S([1 3 5 7 9 11 13 14 15],:)';
+  B = [toepoch(temp_B(:,1:6)) temp_B(:,7:9)];
+  %[time, Bx, By, Bz] = textread(p_and_f,'%s %f %f %f');
+  %time_of_load = toc;
+  %disp(['loading took ' int2str(time_of_load) ' seconds'])
 end

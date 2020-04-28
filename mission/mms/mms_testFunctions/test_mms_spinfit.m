@@ -29,7 +29,7 @@ classdef test_mms_spinfit < matlab.unittest.TestCase
       
       % Check with despin
       dE = mms_sdp_despin(e12-adcOff_12,e34-adcOff_34,phaseComputed.data); %#ok<NASGU>
-
+      
       if(DEBUG)
         % Plot
         irf_plot([EpochTT(timeEpochTT200Req).epochUnix e12 e34]); %#ok<UNRCH>
@@ -39,8 +39,8 @@ classdef test_mms_spinfit < matlab.unittest.TestCase
       
       % Compute spinfit for E12
       [~,sfit,~,~,~] = ...
-                c_efw_spinfit_mx(3,10,3,...
-                double(timeEpochTT200Req-t0)'*1e-9,e12',phaseRad12');
+        c_efw_spinfit_mx(3,10,3,...
+        double(timeEpochTT200Req-t0)'*1e-9,e12',phaseRad12');
       sfit(sfit==-1.5900e+09)=NaN; sfit = sfit'; sfit(isnan(sfit(:,1)),:)=[];
       
       %Test 12
@@ -50,8 +50,8 @@ classdef test_mms_spinfit < matlab.unittest.TestCase
       
       % Compute spinfit for E34
       [~,sfit,~,~,~] = ...
-                c_efw_spinfit_mx(3,10,3,...
-                double(timeEpochTT200Req-t0)'*1e-9,e34',phaseRad34');
+        c_efw_spinfit_mx(3,10,3,...
+        double(timeEpochTT200Req-t0)'*1e-9,e34',phaseRad34');
       sfit(sfit==-1.5900e+09)=NaN; sfit = sfit'; sfit(isnan(sfit(:,1)),:)=[];
       
       %Test 34

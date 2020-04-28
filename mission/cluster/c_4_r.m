@@ -3,13 +3,13 @@ function [volTensor,R_Center,dR1,dR2,dR3,dR4,L,E,P]=c_4_r(r1,r2,r3,r4,flag)
 %
 % volTensor=c_4_r(r1,r2,r3,r4) returns the volumetric tensor.
 %	r1..r4 are row vectors with the satellite positions,
-%	if more than 3 columns assumes that first is time and 
+%	if more than 3 columns assumes that first is time and
 %	for x,y,z components uses columns 2,3,4
 %
 % volTensor=c_4_r(r1,r2,r3,r4,-1) returns the inverse of volumetric tensor.
 %
 % [volTensor,R_Center,dR1,dR2,dR3,dR4,L,E,P]=c_4_r(..)
-%	Returns also the coordinates of barycenter and the satellite relative 
+%	Returns also the coordinates of barycenter and the satellite relative
 %	position with respect to that. In addition the are returned
 %	L - characgeristic size
 %	E - elongation
@@ -54,9 +54,9 @@ dR4 = R4-R_Center;
 n = size(R1,1);
 j = repmat(1:3, [3, 1]);
 S_sum = repmat(dR1', 3, 1) .* dR1(:,j).' + ...
- repmat(dR2', 3, 1) .* dR2(:,j).' + ...
- repmat(dR3', 3, 1) .* dR3(:,j).' + ...
- repmat(dR4', 3, 1) .* dR4(:,j).';
+  repmat(dR2', 3, 1) .* dR2(:,j).' + ...
+  repmat(dR3', 3, 1) .* dR3(:,j).' + ...
+  repmat(dR4', 3, 1) .* dR4(:,j).';
 volTensor = reshape(S_sum/4, [3 3 n]); % 1e6 to get into SI units km->m
 
 % TODO vectorize (if possible)

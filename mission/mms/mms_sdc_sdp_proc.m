@@ -89,7 +89,7 @@ switch procId
         update_header(src_fileData); % Update header with file info.
       end
     end
-
+    
     %% PHASE and ASPOC information, somewhat special case.
     % Begin by loading the DCE file in order to get time interval of
     % interest, then if no DEFATT was sent go looking for it. If no DEFATT
@@ -168,7 +168,7 @@ switch procId
         update_header(src_fileData) % Update header with file info.
       end
     end
-
+    
     %% Second type of special case, brst QL or L2A (use L2A from previously processed Fast).
     if(regexpi(DCE_File,'_brst_') )
       if( procId==MMS_CONST.SDCProc.ql || procId==MMS_CONST.SDCProc.l2a)
@@ -223,21 +223,21 @@ switch procId
         end
       end % DEFEPH special case
     end % If running L2a processing (check for DefEph).
-
+    
     % Go on with the DCE file.
     Dmgr.set_param('dce',dce_obj);
-
+    
     if ~isempty(DCV_File)
       % Separate DCV file (during commissioning)
       irf.log('notice', [procName ' proc using: ' DCV_File]);
       src_fileData = load_file(DCV_File,'dcv');
       update_header(src_fileData) % Update header with file info.
     end
- 
+    
   case {MMS_CONST.SDCProc.l2pre}
     % L2Pre process with L2A Fast/Slow file and DFG L2Pre as input. Or if
     % processing Brst segments then inputs are/should be DCE_File (brst),
-    % L2A_File (fast), HK105_File, HK10E_File, HK101_File, DEFATT, ASPOC, 
+    % L2A_File (fast), HK105_File, HK10E_File, HK101_File, DEFATT, ASPOC,
     % and the corresponding DFG L2Pre file(-s).
     
     % DFG is required for both Fast/Slow L2a->L2Pre and Brst L1b->L2Pre,
@@ -268,7 +268,7 @@ switch procId
         update_header(src_fileData) % Update header with file info.
       end
     end % DFG
-
+    
     if(~isempty(DCE_File))
       % L1b brst -> L2Pre
       if(~isempty(HK_10E_File))
@@ -452,7 +452,7 @@ switch procId
   otherwise
     errStr = 'unrecognized procId';
     irf.log('critical', errStr); error(errStr)
-
+    
 end
 
 % Write the output
@@ -486,7 +486,7 @@ filename_output = mms_sdp_cdfwrite(HdrInfo, Dmgr);
     end
     procName = upper(procName);
     irf.log('notice', ['Starting process: ', procName]);
-
+    
     %% Identify each input argument
     for j=1:nargin-1
       if isempty(varargin{j}), continue, end
@@ -497,7 +497,7 @@ filename_output = mms_sdp_cdfwrite(HdrInfo, Dmgr);
           varargin{j}, j);
         irf.log('critical', errStr); error(errStr);
       end
-  
+      
       if j==1
         % Setup environment.
         HdrInfo.scIdStr = fileIn(4);
@@ -512,20 +512,20 @@ filename_output = mms_sdp_cdfwrite(HdrInfo, Dmgr);
           'previous s/c ',varargin{j-1},'. Aborting with error.']);
         error(errStr);
       end
-
+      
       if regexpi(fileIn,'_dce')
         if( (procId == MMS_CONST.SDCProc.l2pre || procId == MMS_CONST.SDCProc.ql) ...
             && ~isempty(regexpi(fileIn,'_l2(a|pre)_')) && any(cell2mat(regexp(varargin(:),'_brst_'))) )
           % L2A or L2Pre file (from fast mode) for "QL Brst" or "L2A Brst" process.
         else
-% Alternative to multiple regexpi() in commissioning data.
-%           expr = ['mms(?<SCid>\d{0,1})_edp_(?<tmModeStr>(', ...
-%              strjoin(MMS_CONST.TmModes, '|'),'))', ...
-%              '_(?<dataLevel>(l1b|l2a|l2pre))', ...
-%              '_dc[ev](?<commRate>\d{0,3})', ...
-%              '_(?<dateTime>\d{8,14})', ...
-%              '_v(?<verX>\d{1,}).(?<verY>\d{1,}).(?<verZ>\d{1,})'];
-%           dceStr = regexpi(fileIn, expr, 'names');
+          % Alternative to multiple regexpi() in commissioning data.
+          %           expr = ['mms(?<SCid>\d{0,1})_edp_(?<tmModeStr>(', ...
+          %              strjoin(MMS_CONST.TmModes, '|'),'))', ...
+          %              '_(?<dataLevel>(l1b|l2a|l2pre))', ...
+          %              '_dc[ev](?<commRate>\d{0,3})', ...
+          %              '_(?<dateTime>\d{8,14})', ...
+          %              '_v(?<verX>\d{1,}).(?<verY>\d{1,}).(?<verZ>\d{1,})'];
+          %           dceStr = regexpi(fileIn, expr, 'names');
           % This argument is the dce file, (l1b raw, l2a/pre dce2d or similar)
           % Use this file to get TMmode directly from filename, and if comm.
           % data also sample rate. And also initialize the Dmgr.
@@ -593,7 +593,7 @@ filename_output = mms_sdp_cdfwrite(HdrInfo, Dmgr);
           end
         end
       end
-
+      
       if regexpi(fileIn, '_101_') % 101, mmsX_fields_hk_l1b_101_20150410_v0.0.1.cdf
         if ~isempty(HK_101_File)
           errStr = ['Multiple HK_101 files in input (',HK_101_File,' and ',varargin{j},')'];

@@ -1,15 +1,15 @@
 % Plots E and B time series and of burst mode electric field in GSE
 % coordinates and field-aligned coordinates. Plots spectrograms of parallel
-% and perpendicular electric fields and fluctuating magnetic field. 
+% and perpendicular electric fields and fluctuating magnetic field.
 % Written by D. B. Graham.
 
 ic = 1; % Spacecraft number
 
 Tint = irf.tint('2015-10-30T05:15:20.00Z/2015-10-30T05:16:20.00Z');
-%Tint = irf.tint('2017-01-27T12:05:00.000Z/2017-01-27T12:06:00.000Z');    
+%Tint = irf.tint('2017-01-27T12:05:00.000Z/2017-01-27T12:06:00.000Z');
 
 
-%% Load Data 
+%% Load Data
 c_eval('Bxyz=mms.get_data(''B_gse_brst_l2'',Tint,?);',ic);
 c_eval('Exyz=mms.get_data(''E_gse_edp_brst_l2'',Tint,?);',ic);
 c_eval('Bscm=mms.get_data(''B_gse_scm_brst_l2'',Tint,?);',ic);
@@ -30,7 +30,7 @@ Exyzfaclf = Exyzfac.filt(0,fmin,dfE,5);
 Bscmfachf = Bscmfac.filt(fmin,0,dfB,5);
 
 %% Wavelet transforms
-nf = 100; 
+nf = 100;
 Ewavelet = irf_wavelet(Exyzfac,'nf',nf,'f',[fmin fmax]);
 Bwavelet = irf_wavelet(Bscm,'nf',nf,'f',[fmin fmax]);
 
@@ -42,9 +42,9 @@ Ewaveletx = zeros(length(idx),nf);
 Ewavelety = zeros(length(idx),nf);
 Ewaveletz = zeros(length(idx),nf);
 for ii = 1:length(idx)
-        Ewaveletx(ii,:) = squeeze(irf.nanmean(Ewavelet.p{1,1}(idx(ii)-nc/2+1:idx(ii)+nc/2-1,:),1));
-        Ewavelety(ii,:) = squeeze(irf.nanmean(Ewavelet.p{1,2}(idx(ii)-nc/2+1:idx(ii)+nc/2-1,:),1));
-        Ewaveletz(ii,:) = squeeze(irf.nanmean(Ewavelet.p{1,3}(idx(ii)-nc/2+1:idx(ii)+nc/2-1,:),1));
+  Ewaveletx(ii,:) = squeeze(irf.nanmean(Ewavelet.p{1,1}(idx(ii)-nc/2+1:idx(ii)+nc/2-1,:),1));
+  Ewavelety(ii,:) = squeeze(irf.nanmean(Ewavelet.p{1,2}(idx(ii)-nc/2+1:idx(ii)+nc/2-1,:),1));
+  Ewaveletz(ii,:) = squeeze(irf.nanmean(Ewavelet.p{1,3}(idx(ii)-nc/2+1:idx(ii)+nc/2-1,:),1));
 end
 specperpE=struct('t',Ewavelettimes);
 specperpE.f=Ewavelet.f;
@@ -65,9 +65,9 @@ Bwaveletx = zeros(length(idx),nf);
 Bwavelety = zeros(length(idx),nf);
 Bwaveletz = zeros(length(idx),nf);
 for ii = 1:length(idx)
-        Bwaveletx(ii,:) = squeeze(irf.nanmean(Bwavelet.p{1,1}(idx(ii)-nc/2+1:idx(ii)+nc/2-1,:),1));
-        Bwavelety(ii,:) = squeeze(irf.nanmean(Bwavelet.p{1,2}(idx(ii)-nc/2+1:idx(ii)+nc/2-1,:),1));
-        Bwaveletz(ii,:) = squeeze(irf.nanmean(Bwavelet.p{1,3}(idx(ii)-nc/2+1:idx(ii)+nc/2-1,:),1));
+  Bwaveletx(ii,:) = squeeze(irf.nanmean(Bwavelet.p{1,1}(idx(ii)-nc/2+1:idx(ii)+nc/2-1,:),1));
+  Bwavelety(ii,:) = squeeze(irf.nanmean(Bwavelet.p{1,2}(idx(ii)-nc/2+1:idx(ii)+nc/2-1,:),1));
+  Bwaveletz(ii,:) = squeeze(irf.nanmean(Bwavelet.p{1,3}(idx(ii)-nc/2+1:idx(ii)+nc/2-1,:),1));
 end
 specB=struct('t',Bwavelettimes);
 specB.f=Bwavelet.f;
