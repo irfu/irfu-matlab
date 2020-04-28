@@ -9,8 +9,9 @@
 %
 % NAMING CONVENTIONS
 % ==================
-% ZV : zVariable
-% GA : Global Attribute (in CDF file)
+% ZV  : zVariable
+% GA  : Global Attribute (in CDF file)
+% CUR : CURRENT (type of data, dataset)
 %
 %
 % NOTES ON SETTINGS KEY NAMING CONVENTION
@@ -41,29 +42,30 @@ function SETTINGS = create_default_SETTINGS()
 %   PROPOSAL: workaround
 %   PROPOSAL: behaviour
 %   PROPOSAL: action
-%   PROPOSAL: "anomaly"-something
-%
-% PROPOSAL: OUTPUT_CDF.OVERWRITE_POLICY = REQUIRED: Require overwriting pre-existing file (sic!).
-%   PRO: (Maybe) useful as assertion for bulk processing.
-%
-% PROPOSAL: Merge OUTPUT_CDF.OVERWRITE_POLICY and WRITE_FILE_DISABLED
-%   CON: WRITE_FILE_DISABLED is something one is more likely to flip back and forth between (i.e. comment/uncomment in
-%   bicas.conf). More dangerous to flip back and forth between two non-default alternatives, e.g. WRITE DISABLED and
-%   FORBID_OVERWRITE.
-%       CON-PROPOSAL: Permit bicas.conf to contain same setting twice, and having a later one overwrite and earlier one.
-%   PROPOSAL: Name OUTPUT_CDF.WRITE_POLICY = DISABLED, PERMIT_OVERWRITE, FORBID_OVERWRITE
+%   PROPOSAL: ~anomaly
 %
 % PROPOSAL: PROCESSING.CALIBRATION.CURRENT.HK.DISABLE      : Whether to calibrate HK current or use HK TM. Not which data to use (HK or TC).
 %           PROCESSING.CALIBRATION.CURRENT.SOURCE = TC, HK : Which data to use.
 %
-% PROPOSAL: Merge INPUT_CDF.* and INPUT_CDF_ASSERTIONS.* .
-%
 % PROPOSAL: Abolish INPUT_CDF.HK.MOVE_TIME_TO_SCI.
-% PROPOSAL: Abolish INPUT_CDF.CURRENT.PREPEND_TEST_DATA.
+% PROPOSAL: Abolish INPUT_CDF.CUR.PREPEND_TEST_DATA.
 % PROPOSAL: Naming convention for settings keys for testing ONLY:
 %
 % PROPOSAL: Some kind of automatic warning for not using default setting.
 %   CON: Log already contains this.
+%       CON: No it does not since e.g. a log file can set a setting to the same value as the default.
+%
+% PROPOSAL: Setting keys should used cased version of zVars and glob.attrs..
+%   Ex: Epoch, (GA) Test_id, (GA) Dataset_ID.
+%
+% PROPOSAL: Setting keys should always be on the form ENABLE, never DISABLE.
+%   PRO: More consistent.
+%   CON: Less clear what is a deviation from the default.
+%
+% PROPOSAL: INPUT_CDF.* : Settings that apply to ALL input datasets.
+% PROPOSAL: Only INPUT_CDF.ALL.* apply to all input datasets.
+
+
 
 S = bicas.settings();
 

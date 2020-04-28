@@ -425,6 +425,7 @@ function write_dataset_CDF(...
 %=======================================================================================================================
 
 
+
 %=================
 % Checks on Epoch
 %=================
@@ -595,11 +596,11 @@ end
 % Behaviour w.r.t. output file path collision with pre-existing file.
 if exist(outputFile, 'file')    % Checks for file and directory.
     [settingValue, settingKey] = SETTINGS.get_fv('OUTPUT_CDF.PREEXISTING_OUTPUT_FILE_POLICY');
-    
+
     anomalyDescrMsg = sprintf('Intended output dataset file path "%s" matches a pre-existing file.', outputFile);
     bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+W+illegal', ...
         anomalyDescrMsg, 'BICAS:execute_sw_mode')
-    
+
 end
 
 %===========================================
@@ -674,4 +675,3 @@ padValue   = do.Variables{iZVariable, 9};
 % Comments in "spdfcdfinfo.m" should indirectly imply that column 9 is pad values since the structure/array
 % commented on should be identical.
 end
-

@@ -132,9 +132,9 @@ classdef proc_sub
 
 
             if SETTINGS.get_fv('INPUT_CDF.HK.MOVE_TIME_TO_SCI')
-                L.log('warning', '========================================================')
-                L.log('warning', 'Moving/adjusting HK time to begin at the same timestamp.')
-                L.log('warning', '========================================================')
+                L.log('warning', '===================================================================')
+                L.log('warning', 'Moving/adjusting HK time to begin at the same timestamp as voltage.')
+                L.log('warning', '===================================================================')
                 hkEpoch = hkEpoch - hkEpoch(1) + InSci.Zv.Epoch(1); 
             end
 
@@ -384,19 +384,18 @@ classdef proc_sub
                     && isfield(InSci.Zv, 'SYNCHRO_FLAG') && isempty(InSci.Zv.SYNCHRO_FLAG)
                 InSci.Zv = rmfield(InSci.Zv, 'SYNCHRO_FLAG');
             end
-            % Both zVars TIME_SYNCHRO_FLAG, SYNCHRO_FLAG found in input datasets. Unknown why.
-            % "DEFINITION BUG" in definition of datasets/skeleton?
-            % Ex: LFR___TESTDATA_RGTS_LFR_CALBUT_V0.7.0/ROC-SGSE_L1R_RPW-LFR-SBM1-CWF-E_4129f0b_CNE_V02.cdf /2020-03-17
-            
+            %------------------------
+            % "Normal" normalization
+            %------------------------
             % 2020-01-21: Based on skeletons (.skt; L1R, L2), SYNCHRO_FLAG seems to be the correct one.
             [InSci.Zv, fnChangeList] = EJ_library.utils.normalize_struct_fieldnames(InSci.Zv, ...
                 {{{'TIME_SYNCHRO_FLAG', 'SYNCHRO_FLAG'}, 'SYNCHRO_FLAG'}}, 'Assert one matching candidate');
 
             bicas.proc_sub.handle_zv_name_change(...
                 fnChangeList, inSciDsi, SETTINGS, L, 'SYNCHRO_FLAG', 'INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY')
-            
-            
-            
+
+
+
             V = InSci.Zv.V;
             E = permute(InSci.Zv.E, [1,3,2]);
             % Switch last two indices of E.
@@ -537,6 +536,7 @@ classdef proc_sub
             % Both zVars TIME_SYNCHRO_FLAG, SYNCHRO_FLAG found in input datasets (2020-01-05). Unknown why.
             % "DEFINITION BUG" in definition of datasets/skeleton?
             % 2020-01-21: Based on skeletons (.skt; L1R, L2), SYNCHRO_FLAG seems to be the correct one.
+            %===============================================================================================
             [InSci.Zv, fnChangeList] = EJ_library.utils.normalize_struct_fieldnames(InSci.Zv, ...
                 {{{'TIME_SYNCHRO_FLAG', 'SYNCHRO_FLAG'}, 'SYNCHRO_FLAG'}}, 'Assert one matching candidate');
             
@@ -583,7 +583,6 @@ classdef proc_sub
             PreDc = [];
             
             PreDc.Zv.Epoch            = InSci.Zv.Epoch;
-            %PreDc.Zv.ACQUISITION_TIME = InSci.Zv.ACQUISITION_TIME;
             PreDc.Zv.DELTA_PLUS_MINUS = bicas.proc_utils.derive_DELTA_PLUS_MINUS(freqHz, nCdfSamplesPerRecord);
             PreDc.Zv.freqHz           = freqHz;
             PreDc.Zv.QUALITY_FLAG     = InSci.Zv.QUALITY_FLAG;

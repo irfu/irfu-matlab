@@ -123,9 +123,9 @@ function create_RCT(rctMasterCdfFile, destDir)
     %   * [b, a] = invfreqs(Data.z, Data.freqRps, N_ZEROS, N_POLES, weights, N_ITERATIONS);
     % NOTE: Unclear how to re-create the fit for AC high gain, but it should be similar but using file
     %   20160621_FS0_EG_Test_Flight_Harness_Preamps/4-5_TRANSFER_FUNCTION/SO_BIAS_AC_VOLTAGE_ID03*.txt
-    % NOTE: All above TFs except AC diff high-gain, invert the sign at 0 Hz. This sign change appears to be wrong.
-    % The source files (four) all have ~sign inversion at 10 Hz (the lowest tabulated frequency); -141-142 degrees phase
-    % for both AC TFs.
+    % NOTE: All ABOVE TFs (from quoted e-mail) except AC diff high-gain, invert the sign at 0 Hz. This sign change
+    % appears to be wrong. The source files (four) all have ~sign inversion at 10 Hz (the lowest tabulated frequency);
+    % -141-142 degrees phase for both AC TFs.
     %===================================================================================================================
     RctZvL = add_RCT_zvars_L(RctZvL, int64(0), [2.60316e-09, -4.74234e-08, -4.78828e-08]', [1.98008e-09, 1.97997e-09, 1.98021e-09]', ...
         create_tfc_zvar_record(...
