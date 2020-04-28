@@ -439,9 +439,6 @@ classdef calib < handle
         %
         function biasCurrentAAmpere = calibrate_TC_bias_TM_to_bias_current(obj, biasCurrentTm, iAntenna, iCalibTimeL)
             
-            % ASSERTION
-            assert(isa(biasCurrentTm, 'int16'))
-            
             %==============================
             % Obtain calibration constants
             %==============================
@@ -1064,7 +1061,7 @@ classdef calib < handle
                     currentSAmpere(iMax))
             end
             
-            biasCurrentTm = int16(currentSAmpere * 32768/60e-6);
+            biasCurrentTm = currentSAmpere * 32768/60e-6;
         end
 
 
