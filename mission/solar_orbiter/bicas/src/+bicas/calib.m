@@ -38,6 +38,8 @@
 % FTF  = Forward Transfer Function = TF that describes physical input-to-output (not the reverse)
 % ITF  = Inverse Transfer Function = TF that describes physical output-to-input (not the reverse)
 % CTI  = CALIBRATION_TABLE_INDEX (zVar)
+% CTI1 = First  value in record of zVar CALIBRATION_TABLE_INDEX.
+% CTI2 = Second value in record of zVar CALIBRATION_TABLE_INDEX.
 % RCTS = RCT CALIBRATION_TABLE (glob.attr)+CALIBRATION_TABLE_INDEX (zVar). S = plural
 %
 %
@@ -488,31 +490,32 @@ classdef calib < handle
             % ==> Need to flip bit representing sign to have one interval 0...0xFFFF with monotonic function
             %     TM-to-calibrated values.
             %===================================================================================================
-            biasCurrentTm     = bitxor(biasCurrentTm, hex2dec('8000'));                       % FLIP BIT
+            biasCurrentTm     = bitxor(biasCurrentTm, hex2dec('8000'));    % FLIP BIT
             biasCurrentAAmpere = obj.HkBiasCurrent.gainAapt(iAntenna) * ...
-                (biasCurrentTm + obj.HkBiasCurrent.offsetTm(iAntenna));  % LINEAR FUNCTION
+                (biasCurrentTm + obj.HkBiasCurrent.offsetTm(iAntenna));    % LINEAR FUNCTION
         end
         
         
         
         % Calibrate all voltages. Function will choose the more specific algorithm internally.
         function samplesCaAVolt = calibrate_voltage_all(obj, ...
-                dtSec, samplesCaTm, isLfr, isTdsCwf, CalSettings, CALIBRATION_TABLE_INDEX)
+                dtSec, samplesCaTm, isLfr, isTdsCwf, CalSettings, zv_CALIBRATION_TABLE_INDEX)
 %                dtSec, samplesCaTm, isLfr, isTdsCwf, iBlts, BltsSrc, biasHighGain, iCalibTimeL, iCalibTimeH, iLsf, CALIBRATION_TABLE_INDEX)
             
             % ASSERTIONS
             %EJ_library.assert.struct(CalSettings, {'iBlts', 'BltsSrc', 'biasHighGain', 'iCalibTimeL', 'iCalibTimeH', 'iLsf'}, {})   % Too slow?
-            assert(all(size(CALIBRATION_TABLE_INDEX) == [1,2]))
+            assert(all(size(zv_CALIBRATION_TABLE_INDEX) == [1,2]))
             
             
 
             % Set cti1, cti2.
             if obj.use_CALIBRATION_TABLE_rcts
-                cti1 = CALIBRATION_TABLE_INDEX(1,1) + 1;    % NOTE: Increment by one since MATLAB indices begin at one, whereas the zVar values begin at zero.
+                cti1 = zv_CALIBRATION_TABLE_INDEX(1,1);
             else
-                cti1 = 1;
+                cti1 = 0;
             end
-            cti2 = CALIBRATION_TABLE_INDEX(1,2);    % NOTE: Not incrementing by one, since meaning can vary between LFR, TDS-CWF, TDS-RSWF.
+            % NOTE: NOT incrementing by one, since the variable's meaning can vary between LFR, TDS-CWF, TDS-RSWF.
+            cti2 = zv_CALIBRATION_TABLE_INDEX(1,2);
 
             
             
@@ -579,8 +582,8 @@ classdef calib < handle
             assert((1 <= iBlts) && (iBlts <= 5))
             assert(isa(BltsSrc, 'bicas.BLTS_src_dest'))
             assert((1 <= iLsf)  && (iLsf  <= 4), 'Illegal argument iLsf=%g.', iLsf)
-            assert(cti1 >= 1, 'Illegal cti1=%g', cti1)
-            % No assertion on cti2 unless used.
+            assert(cti1 >= 0, 'Illegal cti1=%g', cti1)
+            % No assertion on cti2 unless used (determined later).
             
             
             
@@ -654,6 +657,7 @@ classdef calib < handle
             assert(numel(samplesCaTm) == numel(dtSec))
             assert((1 <= iBlts) && (iBlts <= 5))
             assert(isa(BltsSrc, 'bicas.BLTS_src_dest'))
+            assert(cti1 >= 0)
             
             if obj.use_CALIBRATION_TABLE_INDEX2
                 %??? = cti2
@@ -681,7 +685,7 @@ classdef calib < handle
                     if obj.lfrTdsTfDisabled
                         tdsFactorIvpt = 1;
                     else
-                        tdsFactorIvpt = obj.tdsCwfFactorsIvpt{cti1}(iBlts);
+                        tdsFactorIvpt = obj.tdsCwfFactorsIvpt{cti1+1}(iBlts);
                     end
                     tempSamplesIVolt = tdsFactorIvpt * samplesCaTm{i};    % MULTIPLICATION
                    
@@ -730,6 +734,7 @@ classdef calib < handle
             assert(numel(samplesCaTm) == numel(dtSec))
             assert((1 <= iBlts) && (iBlts <= 5))
             assert(isa(BltsSrc, 'bicas.BLTS_src_dest'))
+            assert(cti1 >= 0)
             
             if obj.use_CALIBRATION_TABLE_INDEX2
                 %??? = cti2
@@ -751,7 +756,7 @@ classdef calib < handle
                 if obj.lfrTdsTfDisabled
                     tdsItfIvpt = @(omegaRps) (ones(omegaRps));
                 else
-                    tdsItfIvpt = @(omegaRps) (bicas.calib.eval_tabulated_ITF(obj.TdsRswfItfIvptList{cti1}{iBlts}, omegaRps));
+                    tdsItfIvpt = @(omegaRps) (bicas.calib.eval_tabulated_ITF(obj.TdsRswfItfIvptList{cti1+1}{iBlts}, omegaRps));
                 end
 
                 itf = @(omegaRps) (...
@@ -917,7 +922,7 @@ classdef calib < handle
         % calibrating.
         % 
         function lfrItfIvpt = get_LFR_ITF(obj, cti1, iBlts, iLsf)
-            assert(cti1 >= 1)
+            assert(cti1 >= 0)
             assert(ismember(iBlts, [1:5]))
             assert(ismember(iLsf,  [1:4]))
             assert(logical(obj.hasLoadedNonBiasData))
@@ -925,7 +930,7 @@ classdef calib < handle
             if (iLsf == 4) && ismember(iBlts, [4,5])
                 lfrItfIvpt = bicas.calib.NAN_TF;
             else
-                lfrItfIvpt = @(omegaRps) (bicas.calib.eval_tabulated_ITF(obj.LfrItfIvptTable{cti1}{iLsf}{iBlts}, omegaRps));
+                lfrItfIvpt = @(omegaRps) (bicas.calib.eval_tabulated_ITF(obj.LfrItfIvptTable{cti1+1}{iLsf}{iBlts}, omegaRps));
             end
         end
 
