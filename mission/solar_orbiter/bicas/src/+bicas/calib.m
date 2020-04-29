@@ -586,8 +586,6 @@ classdef calib < handle
                 
                 % NOTE: Only place cti2 is used.
                 iLsf = cti2 + 1;
-            else
-                cti1 = 1;
             end
 
 
