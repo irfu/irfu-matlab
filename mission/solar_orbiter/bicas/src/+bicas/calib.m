@@ -401,20 +401,25 @@ classdef calib < handle
             
             FREQ_HZ = 0;
             for iLfrRct = 1:numel(obj.LfrItfIvptTable)
-                for iLsf = 1:4
-                    if iLsf ~= 4
-                        nBltsMax = 5;
-                    else
-                        nBltsMax = 3;
-                    end
-                    
-                    for iBlts = 1:nBltsMax
-                        TabulatedItfIvpt = obj.LfrItfIvptTable{iLfrRct}{iLsf}{iBlts};                        
-                        ItfIvpt          = @(omegaRps) (bicas.calib.eval_tabulated_ITF(TabulatedItfIvpt, omegaRps));
-                        obj.log_ITF_Z(sprintf('LFR RCT %i, F%i, BLTS/BIAS_%i', iLfrRct, iLsf-1, iBlts), 'IVolt/TM unit', FREQ_HZ, ItfIvpt)
-                    end
-                end
-            end
+                if ~isempty(obj.LfrItfIvptTable{iLfrRct})
+                    % CASE: This index corresponds to an actually loaded RCT (some are intentionally empty).
+                    for iLsf = 1:4
+                        if iLsf ~= 4
+                            nBltsMax = 5;
+                        else
+                            nBltsMax = 3;
+                        end
+                        
+                        for iBlts = 1:nBltsMax
+                            TabulatedItfIvpt = obj.LfrItfIvptTable{iLfrRct}{iLsf}{iBlts};
+                            ItfIvpt          = @(omegaRps) (bicas.calib.eval_tabulated_ITF(TabulatedItfIvpt, omegaRps));
+                            obj.log_ITF_Z(...
+                                sprintf('LFR RCT %i, F%i, BLTS/BIAS_%i', iLfrRct, iLsf-1, iBlts), ...
+                                'IVolt/TM unit', FREQ_HZ, ItfIvpt)
+                        end
+                    end    % for
+                end    % if
+            end    % for
         end
         
         
