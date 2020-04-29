@@ -66,7 +66,68 @@ function default_anomaly_handling(L, settingValue, settingKey, casesHandled, ano
     %   PROPOSAL: Supply multi-row message. Always log it. Convert to single-row message (remove linefeed) for
     %   Exception.message.
     %   PROPOSAL: Use multi-row messages for both log file ans Exception.message. User should use grep -Ax.
-
+    %
+    % PROPOSAL: Prefix Anomaly printouts so they are easy to grep
+    %   PROPOSAL: "ANOMALY: <anomalyDescriptionMsg>"
+    %
+    % PROBLEM: How handle mitigation using library functions?
+    %   Library functions should not include application-specific warning/error messages, log messages, or setting values.
+    %   PROBLEM: How handle library functions with multiple mitigations in sequence?
+    %
+    % PROPOSAL: Model for mitigation using with library functions and mutually exclusive forms of mitigation
+    %   switch(settingValue)
+    %       case 'MITIGATION_1'
+    %           [y2, didMitigation1] = do_something(..., 'use mitigation 1');
+    %           if didMitigation1
+    %               bicas.default_anomaly_handling(...'other'...)
+    %               L.log('Did mitigation 1.')
+    %           end
+    %       case 'MITIGATION_2'
+    %           [y2, didMitigation2] = do_something(..., 'use mitigation 2');
+    %           if didMitigation2
+    %               bicas.default_anomaly_handling(...'other'...)
+    %               L.log('Did mitigation 2.')
+    %           end
+    %       otherwise
+    %           [y2, detectedAnomaly] = do_something(..., 'no mitigation');
+    %           if detectedAnomaly
+    %               bicas.default_anomaly_handling(...'E+W+illegal'...)
+    %           end
+    %   end
+    %   PROPOSAL: Set casesHandled, mitigation description in respective case statement and then log mitigation
+    %       description and call bicas.default_anomaly_handling once.
+    %       CON: Still has to distinguish mitigations and non-mitigations
+    %   PROPOSAL: Include logging mitigation message in default_anomaly_handling.
+    %
+    % PROPOSAL: Model for mitigation using with library functions and mutually exclusive forms of mitigation
+    %   switch(settingValue)
+    %       case 'MITIGATION_1'
+    %           [y2, detectedAnomaly] = do_something(..., 'use mitigation 1');
+    %           % detectedAnomaly also covers whether mitigation 1 was done.
+    %           mitigationDescrMsg = 'Mitigation 1 description.';
+    %           casesHandled       = 'other';
+    %
+    %       case 'MITIGATION_2'
+    %           [y2, detectedAnomaly] = do_something(..., 'use mitigation 2');
+    %           % detectedAnomaly also covers whether mitigation 2 was done.
+    %           mitigationDescrMsg = 'Mitigation 2 description.';
+    %           casesHandled       = 'other';
+    %
+    %       otherwise
+    %           [y2, detectedAnomaly] = do_something(..., 'no mitigation');
+    %           casesHandled       = 'E+W+illegal';
+    %   end
+    %   if detectedAnomaly
+    %       bicas.default_anomaly_handling(..., casesHandled, ...)
+    %       L.log(mitigationDescrMsg)
+    %   end
+    %
+    % PROPOSAL: Model for mitigation using with library functions and mutually exclusive forms of mitigation
+    %   Have library function accept function handle for anomaly handling. Returns corrected data when mitigation is
+    %   done.
+    %   CON: Mitigation can be very specific, addressing specific and relatively transient bugs.
+    
+            
     % NOTE: Do
     assert(ischar(settingKey),   'Argument settingKey is not a string.')
     
@@ -76,11 +137,17 @@ function default_anomaly_handling(L, settingValue, settingKey, casesHandled, ano
         settingKey, settingValue);   % 2 rows.
     
     
+    PREFIX   = 'ANOMALY: ';
+    N_INDENT = 4;
+    ILLEGAL_SETTING_MSG = 'The setting value is illegal. Can therefore not handle the error/anomaly.';
+    
+    anomalyDescriptionMsg = EJ_library.str.indent_str(anomalyDescriptionMsg, numel(PREFIX));
+    anomalyDescriptionMsg(1:numel(PREFIX)) = PREFIX;
 
     switch(casesHandled)
         case 'other'
             L.log('warning', anomalyDescriptionMsg)
-            L.log('warning', setting2RowMsg)
+            logi( 'warning', setting2RowMsg)
             return    % NOTE: RETURN
             
         case 'E+illegal'
@@ -98,14 +165,14 @@ function default_anomaly_handling(L, settingValue, settingKey, casesHandled, ano
     switch(settingValue)
         case 'ERROR'
             L.log('error', anomalyDescriptionMsg)
-            L.log('error', setting2RowMsg)
+            logi( 'error', setting2RowMsg)
             error(errorId, '%s %s', anomalyDescriptionMsg, setting1RowMsg)
             
         case 'WARNING'
             if handleWarning
                 L.log('warning', anomalyDescriptionMsg)
-                L.log('warning', 'Ignoring anomaly (at least in this part of the code).')
-                L.log('warning', setting2RowMsg)
+                logi( 'warning', 'Ignoring this anomaly (at least in this part of the code).')
+                logi( 'warning', setting2RowMsg)
             else
                 handle_illegal_settingValue()
             end
@@ -116,13 +183,15 @@ function default_anomaly_handling(L, settingValue, settingKey, casesHandled, ano
     
     %=================================================================================================================
     function handle_illegal_settingValue()
-        ILLEGAL_SETTING_MSG = 'The setting value is illegal. Can therefore not handle the error/anomaly.';
-        
         L.log('error', anomalyDescriptionMsg)
-        L.log('error', setting2RowMsg)
-        L.log('error', ILLEGAL_SETTING_MSG)
+        logi( 'error', setting2RowMsg)
+        logi( 'error', ILLEGAL_SETTING_MSG)
         error('BICAS:default_anomaly_handling:ConfigurationBug', ...
             '%s %s %s', anomalyDescriptionMsg, setting1RowMsg, ILLEGAL_SETTING_MSG)
         % NOTE: Function defines its own ID.
+    end
+    %=================================================================================================================
+    function logi(logLevel, str)
+        L.log(logLevel, EJ_library.str.indent_str(str, N_INDENT))
     end
 end
