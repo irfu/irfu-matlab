@@ -64,6 +64,15 @@ function SETTINGS = create_default_SETTINGS()
 %
 % PROPOSAL: INPUT_CDF.* : Settings that apply to ALL input datasets.
 % PROPOSAL: Only INPUT_CDF.ALL.* apply to all input datasets.
+%
+% PROBLEM: Setting values "ERROR", "WARNING" are identical to the ICD-specified log row prefixes.
+%   ==> Problems with grepping log files.
+%   NOTE: Want setting value convention to be consistent with other settings values.
+%       Ex: CORRECT, SORT, FULL, SCALAR, ROUND
+%   PROPOSAL: Keep as is and grep log files using surrounding characters.
+%       Ex: " ERROR "
+%   PROPOSAL: Use lower case "error", "warning"
+%   PROPOSAL: Use shortenings: "ERR", "WARN", "E", "W"
 
 
 

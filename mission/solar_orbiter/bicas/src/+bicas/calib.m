@@ -192,7 +192,7 @@ classdef calib < handle
         HkBiasCurrent
         
         % Cell arrays. {iRct}, iRct=CALIBRATION_TABLE_INDEX(i,1), if CALIBRATION_TABLE_INDEX is used. Otherwise always
-        % {1}.
+        % scalar cell array.
         LfrItfIvptTable    = {};
         tdsCwfFactorsIvpt  = {};
         TdsRswfItfIvptList = {};
@@ -365,13 +365,16 @@ classdef calib < handle
             assert(size(zv_CALIBRATION_TABLE_INDEX, 2) == 2, 'BICAS:calib:Assertion:IllegalArgument', 'zv_CALIBRATION_TABLE_INDEX does not have two columns.')
             assert(isscalar(use_CALIBRATION_TABLE_INDEX2))
 
-            %==========================================================================
-            % Read RCTs, but only those needed according to zv_CALIBRATION_TABLE_INDEX
-            %==========================================================================
+            %==================================================================================================
+            % Read RCTs, but only those actually NEEDED according to zv_CALIBRATION_TABLE_INDEX
+            % ---------------------------------------------------------------------------------
+            % NOTE: This is important since not all RCTs in glob.attr. CALIBRATION_TABLE can be read by BICAS!
+            %==================================================================================================
             iUniqueList = unique(zv_CALIBRATION_TABLE_INDEX(:,1));
-            rctDataList = cell(numel(ga_CALIBRATION_TABLE), 1);   % List/cell array of data from multiple RCTs (potentially, but practically probably not).
+            % List/cell array of data from multiple RCTs (potentially, but practically probably not).
+            rctDataList = cell(numel(ga_CALIBRATION_TABLE), 1);
             for i = 1:numel(iUniqueList)
-                j = iUniqueList(i) + 1;   % NOTE: Cell array index is one greater that the stored value.
+                j              = iUniqueList(i) + 1;   % NOTE: Cell array index is one greater that the stored value.
                 rctDataList{j} = obj.read_log_RCT_by_filename(ga_CALIBRATION_TABLE{j}, rctId);
             end
             
@@ -433,7 +436,9 @@ classdef calib < handle
                 for iBlts = 1:3
                     TabulatedItfIvpt = obj.TdsRswfItfIvptList{iTdsRswfRct}{iBlts};                    
                     ItfIvpt          = @(omegaRps) (bicas.calib.eval_tabulated_ITF(TabulatedItfIvpt, omegaRps));
-                    obj.log_ITF_Z(sprintf('TDS RSWF RCT %i, BLTS/BIAS_%i', iTdsRswfRct, iBlts), 'IVolt/TM unit', FREQ_HZ, ItfIvpt)
+                    obj.log_ITF_Z(...
+                        sprintf('TDS RSWF RCT %i, BLTS/BIAS_%i', iTdsRswfRct, iBlts), ...
+                        'IVolt/TM unit', FREQ_HZ, ItfIvpt)
                 end
             end
         end
@@ -587,9 +592,12 @@ classdef calib < handle
             
             
             
+            %============================================
+            % Only place to potentially make use of cti2
+            %============================================
             if obj.use_CALIBRATION_TABLE_INDEX2
                 % ASSERTIONS
-                assert(cti2 >= 0, 'Illegal cti2=%g', cti2)
+                assert(cti2 >= 0,      'BICAS:calib:Assertion', 'Illegal cti2=%g (=zVar CALIBRATION_TABLE_INDEX(iRecord, 2))', cti2)
                 assert(iLsf == cti2+1, 'BICAS:calib:Assertion', 'cti2+1=%i != iLsf=%i (before overwriting iLsf)', cti2+1, iLsf)
                 
                 % NOTE: Only place cti2 is used.
@@ -637,6 +645,7 @@ classdef calib < handle
 
 
 
+        %
         % ARGUMENTS
         % =========
         % See calibrate_LFR_full.
@@ -660,8 +669,10 @@ classdef calib < handle
             assert(cti1 >= 0)
             
             if obj.use_CALIBRATION_TABLE_INDEX2
-                %??? = cti2
-                %assert(, 'BICAS:calib:Assertion', 'cti2+1=%i != iLsf=%i (before overwriting)', cti2+1, iLsf)
+                % NOTE: solo_L1R_rpw-tds-lfm-cwf-e-cdag_20200225_V01.cdf: CALIBRATION_TABLE_INDEX(i,2) = FILLVAL
+                % Does not seem to be used by TDS-CWF datasets. This function does not use it.
+                
+                % TODO? ASSERTION: cti2 = ???
                 error('BICAS:calib:Assertion:IllegalCodeConfiguration:OperationNotImplemented', ...
                     'TDS-CWF calibration using CALIBRATION_TABLE_INDEX2 has not been implemented yet.')
             end
@@ -737,8 +748,9 @@ classdef calib < handle
             assert(cti1 >= 0)
             
             if obj.use_CALIBRATION_TABLE_INDEX2
-                %??? = cti2
-                error('BICAS:calib:Assertion:IllegalCodeConfiguration:OperationNotImplemented', 'TDS-RSWF calibration using CALIBRATION_TABLE_INDEX2 has not been implemented yet.')
+                % TODO? ASSERTION: cti2 = ???
+                error('BICAS:calib:Assertion:IllegalCodeConfiguration:OperationNotImplemented', ...
+                    'TDS-RSWF calibration using CALIBRATION_TABLE_INDEX2 has not been implemented yet.')
             end
             
             %==============================
@@ -1060,9 +1072,12 @@ classdef calib < handle
         % Convert "set current" to TC.
         %
         function biasCurrentTm = calibrate_set_current_to_bias_current(currentSAmpere)
+            MAX_ABS_SET_CURRENT_SAMPERE = 60e-6;
+            
             % ASSERTION
+            % NOTE: max(...) ignores NaN, unless that is the only value, which then becomes the max value.
             [maxAbsSAmpere, iMax] = max(abs(currentSAmpere(:)));
-            if ~(isnan(maxAbsSAmpere) || (maxAbsSAmpere <= 60e-6))
+            if ~(isnan(maxAbsSAmpere) || (maxAbsSAmpere <= MAX_ABS_SET_CURRENT_SAMPERE))
                 
                 error('BICAS:calib:Assertion:IllegalArgument', ...
                     'Argument currentSAmpere (unit: set current/ampere) contains illegally large value(s). Largest value is %g.', ...

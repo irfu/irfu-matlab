@@ -1,9 +1,6 @@
 % Class that collects "processing functions" as public static methods.
 %
 % This class is not meant to be instantiated.
-% 
-% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
-% First created 2017-02-10, with source code from data_manager_old.m.
 %
 %
 % CODE CONVENTIONS
@@ -28,6 +25,10 @@
 % - PostDC = Post-Demuxing-Calibration Data
 %       Like PreDC but with additional fields. Tries to capture a superset of the information that goes into any
 %       dataset produced by BICAS, and the exact set of variables that goes into the output datasets.
+% 
+%
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
+% First created 2017-02-10, with source code from data_manager_old.m.
 %
 classdef proc_sub
 %#######################################################################################################################
@@ -153,9 +154,9 @@ classdef proc_sub
                 anomalyDescrMsg = sprintf(...
                     ['HK time range is not a superset of SCI time range.', ...
                     ' Can not reliably interpolate HK data for all of SCI.', ...
-                    ' HK begins %g s BEFORE SCI begins. HK ends %g s AFTER SCI ends.'], ...
-                    -hk1RelativeSec, ...
-                    hk2RelativeSec);
+                    ' HK begins %g s AFTER SCI begins. HK ends %g s BEFORE SCI ends.'], ...
+                    hk1RelativeSec, ...
+                    -hk2RelativeSec);
                 
                 [settingValue, settingKey] = SETTINGS.get_fv('PROCESSING.HK.TIME_NOT_SUPERSET_OF_SCI_POLICY');
                 bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+W+illegal', ...
@@ -221,6 +222,8 @@ classdef proc_sub
             % ASSERTIONS
             EJ_library.assert.struct(InCur, {'Zv', 'Ga'}, {})
             
+            
+            
             if SETTINGS.get_fv('INPUT_CDF.CUR.PREPEND_TEST_DATA')
                 L.log('warning', '==========================================================')
                 L.log('warning', 'WARNING: PREPENDING MADE-UP TEST DATA TO BIAS CURRENT DATA')
@@ -257,7 +260,9 @@ classdef proc_sub
             end
             
             
-            if min(sciEpoch) < min(InCur.Zv.Epoch)
+            
+            % CDF ASSERTION: CURRENT data begins before SCI data (i.e. there is enough CURRENT data).
+            if ~(min(InCur.Zv.Epoch) <= min(sciEpoch))
                 curRelativeSec    = 1e-9 * (min(InCur.Zv.Epoch) - min(sciEpoch));
                 sciEpochUtcStr    = EJ_library.utils.CDF_tt2000_to_UTC_str(min(sciEpoch));
                 curEpochMinUtcStr = EJ_library.utils.CDF_tt2000_to_UTC_str(min(InCur.Zv.Epoch));
@@ -265,15 +270,14 @@ classdef proc_sub
                 [settingValue, settingKey] = SETTINGS.get_fv('PROCESSING.CUR.TIME_NOT_SUPERSET_OF_SCI_POLICY');
                 
                 anomalyDescrMsg = sprintf(...
-                    ['Bias current data begins %g s (%s) BEFORE voltage data begins (%s).', ....
-                    ' Can therefore not reliably determine currents for all voltage timestamps.'], ...
-                    -curRelativeSec, curEpochMinUtcStr, sciEpochUtcStr);
+                    ['Bias current data begins %g s (%s) AFTER voltage data begins (%s).', ....
+                    ' Can therefore not determine currents for all voltage timestamps.'], ...
+                    curRelativeSec, curEpochMinUtcStr, sciEpochUtcStr);
                 
                 bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+W+illegal', ...
                     anomalyDescrMsg, 'BICAS:proc_sub:SWModeProcessing')
 
             end
-            
             
             % CDF ASSERTION: Epoch increases (not monotonically)
             % --------------------------------------------------
@@ -308,7 +312,7 @@ classdef proc_sub
                 % CDF ASSERTION
                 % Handle non-monotonically increasing Epoch
                 %======================================================================================================
-                
+
                 [settingValue, settingKey] = SETTINGS.get_fv('INPUT_CDF.CUR.NON-MONOTONICALLY-INCREMENTING_ZV_EPOCH_POLICY');
                 anomalyDescriptionMsg = 'Bias currents contain multiple identical timestamps on the same antenna.';
                 
@@ -317,7 +321,7 @@ classdef proc_sub
                         bicas.default_anomaly_handling(L, settingValue, settingKey, 'other', ...
                             anomalyDescriptionMsg)
                         L.log('warning', ...
-                            'Removed identical bias current settings with identical timestamps on the same antenna,')
+                            'Removed identical bias current settings with identical timestamps on the same antenna.')
 
                     otherwise
                         bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+illegal', ...
@@ -414,7 +418,7 @@ classdef proc_sub
             zvFreqHz = bicas.proc_utils.get_LFR_frequency( iLsfZv, SETTINGS.get_fv('PROCESSING.LFR.F0_F1_F2_F3_HZ') );
 
             % Obtain the relevant values (one per record) from zVariables R0, R1, R2, and the virtual "R3".
-            zvRx = bicas.proc_utils.get_LFR_Rx( ...
+            zvRx = bicas.proc_utils.get_LFR_Rx(...
                 InSci.Zv.R0, ...
                 InSci.Zv.R1, ...
                 InSci.Zv.R2, ...
@@ -874,12 +878,11 @@ classdef proc_sub
             iEdgeList      = bicas.proc_utils.find_constant_sequences(iCalibLZv);
             [iFirstList, iLastList] = bicas.proc_utils.index_edges_2_first_last(iEdgeList);
             for iSubseq = 1:length(iFirstList)
-                iFirst = iFirstList(iSubseq);
-                iLast  = iLastList (iSubseq);
-                i      = iFirst:iLast;
+                iRecords = iFirstList(iSubseq) : iLastList (iSubseq);
                 
                 for iAnt = 1:3
-                    currentAAmpere(i, iAnt) = Cal.calibrate_TC_bias_TM_to_bias_current(currentTm(i, iAnt), iAnt, iCalibLZv(i));
+                    currentAAmpere(iRecords, iAnt) = Cal.calibrate_TC_bias_TM_to_bias_current(...
+                        currentTm(iRecords, iAnt), iAnt, iCalibLZv(iRecords));
                 end
             end
             
@@ -966,6 +969,7 @@ classdef proc_sub
                 % ASSERTION
                 % NOTE: Checks both LFR & TDS CDF files.
                 % NOTE: Has observed breaking assertion in LFR test files "LFR___LFR_suggested_2019-01-17".
+                % PROPOSAL: Abolish somehow.
                 
                 CALIBRATION_TABLE_INDEX_zv = PreDc.Zv.CALIBRATION_TABLE_INDEX;
                 hasLegalCtiSize = size(CALIBRATION_TABLE_INDEX_zv, 2) == 2;

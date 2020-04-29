@@ -404,7 +404,8 @@ classdef RCT
                 end
 
             catch Exc1
-                Exc2 = MException('BICAS:calib:FailedToReadInterpretRCT', 'Error when interpreting calibration file (TDS team''s LFM RSWF RCT for BIAS/BICAS) "%s"', filePath);
+                Exc2 = MException('BICAS:calib:FailedToReadInterpretRCT', ...
+                    'Error when interpreting calibration file (TDS team''s LFM RSWF RCT for BIAS/BICAS) "%s"', filePath);
                 Exc2 = Exc2.addCause(Exc1);
                 throw(Exc2);
             end
