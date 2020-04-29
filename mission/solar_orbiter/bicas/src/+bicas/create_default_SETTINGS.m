@@ -368,12 +368,14 @@ S.define_setting('PROCESSING.LFR.F0_F1_F2_F3_HZ',    [24576, 4096, 256, 16]);   
 
 % CALIBRATION_TABLE_INDEX2 = Second value in zVar CALIBRATION_TABLE_INDEX (in every record), that contains an index to
 % calibration data inside a given RCT.
-S.define_setting('PROCESSING.L1R.LFR.USE_GA_CALIBRATION_TABLE_RCTS',               0)    % =1 : Implemented, but not yet usable due to LFR L1R datasets bug.
-S.define_setting('PROCESSING.L1R.LFR.USE_ZV_CALIBRATION_TABLE_INDEX2',             0)    % =1 : Implemented, but not yet usable due to LFR L1R datasets bug.
+S.define_setting('PROCESSING.L1R.LFR.USE_GA_CALIBRATION_TABLE_RCTS',               1)
+S.define_setting('PROCESSING.L1R.LFR.USE_ZV_CALIBRATION_TABLE_INDEX2',             1)
 S.define_setting('PROCESSING.L1R.TDS.CWF.USE_GA_CALIBRATION_TABLE_RCTS',           1)
-S.define_setting('PROCESSING.L1R.TDS.CWF.USE_ZV_CALIBRATION_TABLE_INDEX2',         0)    % 1 : Not implemented, since not yet tested bugfix in TDS datasets.
+% Value=1 not implemented, since it is unclear what it is useful for, if anything.
+S.define_setting('PROCESSING.L1R.TDS.CWF.USE_ZV_CALIBRATION_TABLE_INDEX2',         0)    
 S.define_setting('PROCESSING.L1R.TDS.RSWF.USE_GA_CALIBRATION_TABLE_RCTS',          1)
-S.define_setting('PROCESSING.L1R.TDS.RSWF.USE_ZV_CALIBRATION_TABLE_INDEX2',        0)    % 1 : Not implemented, since not yet tested bugfix in TDS datasets.
+% Value=1 not implemented, since it is unclear what it is useful for, if anything.
+S.define_setting('PROCESSING.L1R.TDS.RSWF.USE_ZV_CALIBRATION_TABLE_INDEX2',        0)    
 S.define_setting('PROCESSING.L1R.ZV_CALIBRATION_TABLE_INDEX_ILLEGAL_SIZE_REPLACE', 0)
 
 
