@@ -125,15 +125,16 @@ S.define_setting('SWD.identification.identifier',  'BICAS');
 S.define_setting('SWD.identification.description', ...
     ['Calibration software meant to', ...
     ' (1) calibrate electric field L2 data from electric L1R LFR and TDS (LFM) data, and', ...
-    ' (2) calibrate bias currents.']);
+    ' (2) calibrate bias currents from L1 data.']);
 S.define_setting('SWD.identification.icd_version', '1.2');   % Technically wrong. In reality iss1rev2, draft 2019-07-11.
-S.define_setting('SWD.release.version',            '1.0.0');
-S.define_setting('SWD.release.date',               '2020-01-20');
+S.define_setting('SWD.release.version',            '2.0.0');
+S.define_setting('SWD.release.date',               '2020-04-29T19:48:00Z');
 S.define_setting('SWD.release.author',             'Erik P G Johansson, BIAS team, IRF');
 S.define_setting('SWD.release.contact',            'erjo@irfu.se');
 S.define_setting('SWD.release.institute',          IRF_LONG_NAME);   % Full name or abbreviation?
 %S.define_setting('SWD.release.modification',       'Various updates and refactoring; close to complete support for LFR & TDS datasets (but untested); Removed ROC-SGSE_* dataset support.');
-S.define_setting('SWD.release.modification',       'Almost-complete support for LFR & TDS datasets (voltages) with transfer functions (partially tested).');
+%S.define_setting('SWD.release.modification',       'Almost-complete support for LFR & TDS datasets (voltages) with transfer functions (partially tested).');
+S.define_setting('SWD.release.modification',       'Added support for L1 input bias current datasets; supports updated L1R input datasets, and updated L2 master CDFs (V08).');
 S.define_setting('SWD.release.source',             'https://github.com/irfu/irfu-matlab/commits/SOdevel');    % Appropriate branch? "master" instead?
 %
 S.define_setting('SWD.environment.executable',     'roc/bicas');   % Relative path to BICAS executable. See RCS ICD.

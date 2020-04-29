@@ -364,7 +364,8 @@ SETTINGS.make_read_only();
 % ASSERTIONS: SETTINGS
 %======================
 EJ_library.assert.castring_regexp(SETTINGS.get_fv('SWD.release.version'), '[0-9]+\.[0-9]+\.[0-9]+')
-EJ_library.assert.castring_regexp(SETTINGS.get_fv('SWD.release.date'),    '20[1-3][0-9]-[01][0-9]-[0-3][0-9]')
+%EJ_library.assert.castring_regexp(SETTINGS.get_fv('SWD.release.date'),    '20[1-3][0-9]-[01][0-9]-[0-3][0-9]')
+EJ_library.assert.castring_regexp(SETTINGS.get_fv('SWD.release.date'),    '20[1-3][0-9]-[01][0-9]-[0-3][0-9]T[0-2][0-9]:[0-5][0-9]:[0-6][0-9]Z')
 % Validate S/W release version
 % ----------------------------
 % RCS ICD 00037, iss1rev2, Section 5.3 S/W descriptor file validation scheme implies this regex.
