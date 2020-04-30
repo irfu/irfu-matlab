@@ -965,8 +965,30 @@ classdef calib < handle
                 
                 inverseZValueStr = sprintf('1/%8.5f', 1/abs(Z));
                 
+                %======================================================================================================
+                % NOTE 2020-04-30: Execution at ROC fails due to not finding function "phase" for unknown reason.
+                % --------------------------------------------------------------------------------------
+                % Exception.identifier = "MATLAB:UndefinedFunction"
+                % Exception.message    = "Undefined function 'phase' for input arguments of type 'double'."
+                % Matching MATLAB error message identifier parts (error types derived from Exception1.identifier):
+                %     UntranslatableErrorMsgId : Error occurred, but code can not translate the error's MATLAB message identifier into any of BICAS's internal standard error codes.
+                % MATLAB call stack:
+                %     row  969, calib.m,                    calib.log_ITF_Z
+                %     row  303, calib.m,                    calib.calib
+                %     row   68, execute_sw_mode.m,          execute_sw_mode
+                %     row  455, main.m,                     main_without_error_handling
+                %     row  116, main.m,                     main
+                % --------------------------------------------------------------------------------------
+                % See also
+                % https://se.mathworks.com/matlabcentral/answers/408657-which-toolbox-is-phase-in
+                % """"phase() as a routine by itself is part of the System Identification Toolbox, in the "obsolete" category.
+                % phase() is also a method of the newer iddata() class from the System Identification Toolbox.
+                % But what you probably want is angle() followed by unwrap(), which is part of basic MATLAB.""""
+                %
+                % Therefore using "angle" instead of "phase".
+                %======================================================================================================
                 obj.L.logf('debug', '%-41s %4i Hz: abs(Z)=%8.5f=%12s [%s], phase(Z)=%5.1f [deg]', ...
-                    prefixStr, freqHz, abs(Z), inverseZValueStr, itfUnit, rad2deg(phase(Z)))
+                    prefixStr, freqHz, abs(Z), inverseZValueStr, itfUnit, rad2deg(angle(Z)))
                 
                 % Do not print prefix more than once.
                 prefixStr = '';
