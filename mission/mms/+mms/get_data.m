@@ -525,7 +525,14 @@ switch Vr.inst
           otherwise, error('should not be here')
         end
         res = mms.db_get_ts(dsetName,pref,Tint);
-      case {'partEi', 'partEe'}
+      case {'Energyi', 'Energye'}
+        switch Vr.lev
+          case 'ql'         % only for l2 data
+            pref = ['mms' mmsIdS '_' sensor '_energy_fast'];
+          otherwise, error('should not be here')
+        end
+        res = mms.db_get_ts(dsetName,pref,Tint);
+      case {'partEi', 'partEe'}     % part-moms energy data
         switch Vr.lev
           case 'l2'         % only for l2 data
             pref = ['mms' mmsIdS '_' sensor '_energy_' Vr.tmmode];
