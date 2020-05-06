@@ -1,4 +1,4 @@
-function [nr_1, nr_2] = ind2nr(ind) 
+function [nr_1, nr_2] = ind2nr(ind)
 %
 %Input:
 % ind -index of the position of and angle
@@ -11,11 +11,11 @@ function [nr_1, nr_2] = ind2nr(ind)
 % position in time_and_angles
 %
 %Using:
-% 
+%
 %Work method:
 %
 %Error:
-% 
+%
 %Discription of variables:
 %
 %Written by Robert Isaksson in the summer of -03
@@ -23,32 +23,32 @@ function [nr_1, nr_2] = ind2nr(ind)
 %--------------------- the beginning --------------------------
 
 if ind == 1
-nr_1 = 1;
-nr_2 = 2;
+  nr_1 = 1;
+  nr_2 = 2;
 end
 
 if ind == 2
-nr_1 = 1;
-nr_2 = 3;
+  nr_1 = 1;
+  nr_2 = 3;
 end
 
 if ind == 3
-nr_1 = 1;
-nr_2 = 4;
+  nr_1 = 1;
+  nr_2 = 4;
 end
 
 if ind == 4
-nr_1 = 2;
-nr_2 = 3;
+  nr_1 = 2;
+  nr_2 = 3;
 end
 
 if ind == 5
-nr_1 = 2;
-nr_2 = 4;
+  nr_1 = 2;
+  nr_2 = 4;
 end
 
 if ind == 6
-nr_1 = 3;
-nr_2 = 4;
+  nr_1 = 3;
+  nr_2 = 4;
 end
 

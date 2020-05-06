@@ -2,7 +2,7 @@ function [maneuvers, fileInterval, eclipse] = mms_read_timeline(xmlFile, scIdstr
 % MMS_READ_TIMELINE get maneuver and eclipse information from mms timeline
 % xml files.
 %	[maneuvers, fileInfo, eclipse] = MMS_READ_TIMELINE(xmlFile, scIdstr)
-% reads the FDOA xmlFile and extract maneuvers and optionally eclipses for 
+% reads the FDOA xmlFile and extract maneuvers and optionally eclipses for
 % the selected scIdstr.
 %
 %   Note: This function uses XPath directly to extract the interested
@@ -14,7 +14,7 @@ function [maneuvers, fileInterval, eclipse] = mms_read_timeline(xmlFile, scIdstr
 %
 %   Input:
 %     xmlFile = xml file to be read
-%     scIdstr = string of which spacecraft to be extracted, values '1', 
+%     scIdstr = string of which spacecraft to be extracted, values '1',
 %               '2', '3' or '4'. Or a combination such as '1234'.
 %   Output:
 %     manuevers    = struct containing
@@ -127,13 +127,13 @@ end
 end
 
 function ttns = convertTime(timeStr)
-  % Convert time from format "YYYY-DOY/hh:mm:ss" (or similar) to ttns.
-  doy5 = sscanf(timeStr,'%4d-%3d%c%2d:%2d:%2f');
-  sec = floor(doy5(6));
-  msec = floor((doy5(6)-sec)*10^3);
-  usec = floor(((doy5(6) - sec)*10^3 - msec)*10^3);
-  nsec = floor((((doy5(6) - sec)*10^3 - msec)*10^3 - usec) * 10^3);
-  % YYYY, DOY, hh, mm, ss, msec, usec, nsec
-  doy8 = [doy5(1), doy5(2), doy5(4), doy5(5), sec, msec, usec, nsec];
-  ttns = irf_time(doy8, 'doy8>ttns');
+% Convert time from format "YYYY-DOY/hh:mm:ss" (or similar) to ttns.
+doy5 = sscanf(timeStr,'%4d-%3d%c%2d:%2d:%2f');
+sec = floor(doy5(6));
+msec = floor((doy5(6)-sec)*10^3);
+usec = floor(((doy5(6) - sec)*10^3 - msec)*10^3);
+nsec = floor((((doy5(6) - sec)*10^3 - msec)*10^3 - usec) * 10^3);
+% YYYY, DOY, hh, mm, ss, msec, usec, nsec
+doy8 = [doy5(1), doy5(2), doy5(4), doy5(5), sec, msec, usec, nsec];
+ttns = irf_time(doy8, 'doy8>ttns');
 end

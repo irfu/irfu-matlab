@@ -4,7 +4,7 @@ function [start,dur]=isGetContentLite(db,proj,mem,inst,sig,sen,chan,param)
 %   [START,DUR]=isGetContentLite(DB,PROJ,MEM,INST,SIG,SEN,CHAN,PARAM)
 %   This ISDAT function returns an array of intervals for which data
 %   files exist for the specificied dataset on database server. DB is
-%   an open database connection handle, typically opened by 
+%   an open database connection handle, typically opened by
 %   Mat_DbOpen(). The stings PROJ, MEM, INST, SIG, SEN, CHAN, PARAM
 %   specify the dataset. The arrays START and DUR are the start time
 %   and duration of the intervals for which data may exist. The start
@@ -32,4 +32,4 @@ periods=periods(:,sortIndex);
 
 nsINs=1e9;
 start=fromepoch(periods(1,:)+periods(2,:)/nsINs);
-dur=(periods(3,:)+periods(4,:)/nsINs)'; 
+dur=(periods(3,:)+periods(4,:)/nsINs)';

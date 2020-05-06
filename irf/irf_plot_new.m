@@ -1,8 +1,8 @@
 function [hax,hl]=irf_plot_new(varargin)
 % [hax,hl]=irf_plot_new(varargin)
 
-%% Check input 
-[ax,args,nargs] = irf.axescheck(varargin{:}); 
+%% Check input
+[ax,args,nargs] = irf.axescheck(varargin{:});
 x=args{1}; args=args(2:end); original_args=args;
 if isempty(x), eS='nothing to plot'; irf.log('critical','eS'),error(eS),end
 
@@ -52,7 +52,7 @@ return % return from main function
     tag=get(hca,'tag'); ud=get(hca,'userdata'); % keep tag/userdata during plotting
     
     %if length(x)==2 && strcmp(get_units(x{1}),get_units(x{2}))
-    flagHold = ishold(hca); 
+    flagHold = ishold(hca);
     if flagHold, flagHolding = true; else, flagHolding = false; end
     for iVar = 1:length(x)
       h = plot(hca, x{iVar}.time.epochUnix-ts-dt, x{iVar}.data, marker, args{:});

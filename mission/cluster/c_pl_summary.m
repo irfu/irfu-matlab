@@ -24,7 +24,7 @@ function c_pl_summary(varargin)
 %   % same as above, but without reprocessing
 %
 %   c_pl_summary('noproc','sc_list',[2 4],'fullb')
-%   % make plots for SC 2 and 4 without reprocessing. 
+%   % make plots for SC 2 and 4 without reprocessing.
 %   % 'fullb' is passed to summaryPlot
 %
 %   sc_list = 2:4;
@@ -55,50 +55,50 @@ do_proc = 1;
 sp = '.';
 sc_list = 1:4;
 ang_limit = 15;
-	
+
 if nargin>0, have_options = 1; args = varargin;
 else, have_options = 0; args = '';
 end
 
 while have_options
-	l = 2;
-	if ~isempty(args)
-		switch(args{1})
-			case 'sp'
-				if ischar(args{2}), sp = args{2};
-				else, irf_log('fcal','wrongArgType : sp must be string')
-				end
-			case 'sc_list'
-				if isnumeric(args{2}), sc_list = args{2};
-				else, irf_log('fcal','wrongArgType : sc_list must be numeric')
-				end
-			case 'ang_limit'
-				if isnumeric(args{2}), ang_limit = args{2};
-				else, irf_log('fcal','wrongArgType : ang_limit must be numeric')
-				end
-			case 'noproc'
-				do_proc = 0; l=1;
-			otherwise
-				break
-		end
-		if length(args) >= l
-			args = args(l+1:end);
-			if isempty(args), break, end
-		else, break
-		end
-	end
+  l = 2;
+  if ~isempty(args)
+    switch(args{1})
+      case 'sp'
+        if ischar(args{2}), sp = args{2};
+        else, irf_log('fcal','wrongArgType : sp must be string')
+        end
+      case 'sc_list'
+        if isnumeric(args{2}), sc_list = args{2};
+        else, irf_log('fcal','wrongArgType : sc_list must be numeric')
+        end
+      case 'ang_limit'
+        if isnumeric(args{2}), ang_limit = args{2};
+        else, irf_log('fcal','wrongArgType : ang_limit must be numeric')
+        end
+      case 'noproc'
+        do_proc = 0; l=1;
+      otherwise
+        break
+    end
+    if length(args) >= l
+      args = args(l+1:end);
+      if isempty(args), break, end
+    else, break
+    end
+  end
 end
 
 cp=ClusterProc(sp);
 
 for cl_id=sc_list
-	if do_proc
-		getData(cp,cl_id,'edbs','ang_blank','ang_limit',ang_limit);
-		getData(cp,cl_id,'edb','ang_blank','ang_limit',ang_limit);
-		getData(cp,cl_id,'vedbs');
-	end
-
-	figure(cl_id), clf, orient tall
-	splot_options = [{cp} {cl_id} args];
-	summaryPlot(splot_options{:})
+  if do_proc
+    getData(cp,cl_id,'edbs','ang_blank','ang_limit',ang_limit);
+    getData(cp,cl_id,'edb','ang_blank','ang_limit',ang_limit);
+    getData(cp,cl_id,'vedbs');
+  end
+  
+  figure(cl_id), clf, orient tall
+  splot_options = [{cp} {cl_id} args];
+  summaryPlot(splot_options{:})
 end

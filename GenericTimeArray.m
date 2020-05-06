@@ -1,5 +1,5 @@
 classdef (Abstract) GenericTimeArray
-%GenericTimeArray Generic (Abstract) class describing a time array
+%GenericTimeArray  Generic (Abstract) class describing a time array
 %
 %  Methods:
 %     disp()
@@ -7,12 +7,12 @@ classdef (Abstract) GenericTimeArray
 %     isempty()
 %     length()
 %     size()
-%     start() first point of the time array
-%     stop() last point of the time array
-%     tlim() Returns index and records within specified time interval
+%     start()     First point of the time array
+%     stop()      Last point of the time array
+%     tlim()      Returns index and records within specified time interval
 %     epochUnix()
-%     tts()
-%     ttns()
+%     tts()       Number of seconds
+%     ttns()      Number of nanoseconds
 % 
 %     Static:
 %     pad_utc()
@@ -26,10 +26,10 @@ classdef (Abstract) GenericTimeArray
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
   
-  properties 
+  properties
     epoch
   end
-    
+  
   methods
     function disp(obj)
       %DISP display object
@@ -66,18 +66,18 @@ classdef (Abstract) GenericTimeArray
       %SIZE size of the record's array.
       res = size(obj.epoch);
     end
-
+    
     function res = minus(obj, obj1)
       %MINUS  time difference in seconds
-			% T2 - T1 returns time difference between T2 and T1 in seconds
-			%         T1 or T2 can be also of length 1
+      % T2 - T1 returns time difference between T2 and T1 in seconds
+      %         T1 or T2 can be also of length 1
       if ~isa(obj1,'GenericTimeArray')
         error('irf:GenericTimeArray:minus:badInputs',...
-            'inpus must be subclasses of GenericTimeArray')
+          'inpus must be subclasses of GenericTimeArray')
       end
       if length(obj1) ~= 1 && length(obj) ~= 1 && length(obj) ~= length(obj1)
         error('irf:GenericTimeArray:minus:badInputs',...
-            'inpus have different length')
+          'inpus have different length')
       end
       res = obj.tts - obj1.tts;
     end
@@ -86,10 +86,10 @@ classdef (Abstract) GenericTimeArray
       %LE  less than of equal to
       if ~isa(obj1,'GenericTimeArray')
         error('irf:GenericTimeArray:le:badInputs',...
-            'inpus must be subclasses of GenericTimeArray')
+          'inpus must be subclasses of GenericTimeArray')
       elseif length(obj1)~=1
         error('irf:GenericTimeArray:le:badInputs',...
-            'second argument must have length 1')
+          'second argument must have length 1')
       end
       objTmp = convert_epoch(obj1,class(obj));
       res = obj.epoch <= objTmp.epoch;
@@ -99,10 +99,10 @@ classdef (Abstract) GenericTimeArray
       %GE  greater than of equal to
       if ~isa(obj1,'GenericTimeArray')
         error('irf:GenericTimeArray:ge:badInputs',...
-            'inpus must be subclasses of GenericTimeArray')
+          'inpus must be subclasses of GenericTimeArray')
       elseif length(obj1)~=1
         error('irf:GenericTimeArray:ge:badInputs',...
-            'second argument must have length 1')
+          'second argument must have length 1')
       end
       objTmp = convert_epoch(obj1,class(obj));
       res = obj.epoch >= objTmp.epoch;
@@ -112,10 +112,10 @@ classdef (Abstract) GenericTimeArray
       %LT  less than
       if ~isa(obj1,'GenericTimeArray')
         error('irf:GenericTimeArray:le:badInputs',...
-            'inpus must be subclasses of GenericTimeArray')
+          'inpus must be subclasses of GenericTimeArray')
       elseif length(obj1)~=1
         error('irf:GenericTimeArray:le:badInputs',...
-            'second argument must have length 1')
+          'second argument must have length 1')
       end
       objTmp = convert_epoch(obj1,class(obj));
       res = obj.epoch < objTmp.epoch;
@@ -125,41 +125,41 @@ classdef (Abstract) GenericTimeArray
       %GT  greater than
       if ~isa(obj1,'GenericTimeArray')
         error('irf:GenericTimeArray:gt:badInputs',...
-            'inpus must be subclasses of GenericTimeArray')
+          'inpus must be subclasses of GenericTimeArray')
       elseif length(obj1)~=1
         error('irf:GenericTimeArray:gt:badInputs',...
-            'second argument must have length 1')
+          'second argument must have length 1')
       end
       objTmp = convert_epoch(obj1,class(obj));
-			res = obj.epoch > objTmp.epoch;
+      res = obj.epoch > objTmp.epoch;
     end
     
     function res = eq(obj,obj1)
       %EQ  equal to
       if ~isa(obj1,'GenericTimeArray')
         error('irf:GenericTimeArray:gt:badInputs',...
-            'inpus must be subclasses of GenericTimeArray')
+          'inpus must be subclasses of GenericTimeArray')
       end
       len = obj.length(); len1 = obj1.length();
       if len==0 && len1==0, res = true; return
       elseif len==0 || len1==0, res = false; return
       end
-			
-			objTmp = convert_epoch(obj1,class(obj));
-			if len1==1
-				res = obj.epoch == objTmp.epoch;
+      
+      objTmp = convert_epoch(obj1,class(obj));
+      if len1==1
+        res = obj.epoch == objTmp.epoch;
       elseif len1==len
-				res = obj.epoch == objTmp.epoch;
+        res = obj.epoch == objTmp.epoch;
       else
         res = false;
-			end
+      end
     end
     
     function res = ne(obj,obj1)
       %NE  not equal to
       if ~isa(obj1,'GenericTimeArray')
         error('irf:GenericTimeArray:gt:badInputs',...
-            'inpus must be subclasses of GenericTimeArray')
+          'inpus must be subclasses of GenericTimeArray')
       end
       res = ~(obj.eq(obj1));
     end
@@ -178,7 +178,7 @@ classdef (Abstract) GenericTimeArray
       %START  first point of the time array
       if isempty(obj)
         error('irf:GenericTimeArray:tlim:badInputs',...
-            'empty input')
+          'empty input')
       end
       S.type = '()'; S.subs={1};
       res = subsref(obj,S);
@@ -197,7 +197,7 @@ classdef (Abstract) GenericTimeArray
     function [res,varargout] = sort(obj)
       %SORT   sorts time array in ascending order
       %  T2 = T1.sort;
-      %  [T2, I] = T1.sort; 
+      %  [T2, I] = T1.sort;
       %     I - index matrix
       %     T2 = T1(I);
       
@@ -205,12 +205,12 @@ classdef (Abstract) GenericTimeArray
         error('irf:GenericTimeArray:sort:badInputs',...
           'empty input')
       end
-      nout = max(nargout,1) - 1;      
+      nout = max(nargout,1) - 1;
       
       [sorted_obj,sorted_ind] = sort(obj.ttns);
       res = feval(class(obj),sorted_obj);
       
-      if nout == 0 
+      if nout == 0
         varargout = {};
       elseif nout == 1
         varargout = {sorted_ind};
@@ -229,12 +229,12 @@ classdef (Abstract) GenericTimeArray
       obj_ttns = int64([]);
       for iobj = 1:nobj % an obj can be a single EpochTT or a list
         nsubobj = numel(objs{iobj});
-        for isubobj = 1:nsubobj          
+        for isubobj = 1:nsubobj
           tmp_obj = objs{iobj};
           obj_ttns = [obj_ttns; tmp_obj.ttns]; %#ok<AGROW>
         end
       end
-      res = EpochTT(obj_ttns);   
+      res = EpochTT(obj_ttns);
     end
     
     function res = vertcat(varargin)
@@ -243,22 +243,22 @@ classdef (Abstract) GenericTimeArray
     
     function [varargout] = subsref(obj,idx)
       %SUBSREF handle indexing
-			switch idx(1).type
-				% Use the built-in subsref for dot notation
-				case '.'
-					[varargout{1:nargout}] = builtin('subsref',obj,idx);
-				case '()'
-					tmpEpoch = builtin('subsref',obj.epoch,idx(1));
-					out = feval(class(obj),tmpEpoch);
-					if numel(idx) > 1
-						out = builtin('subsref',out,idx(2:end));
-					end
-					[varargout{1:nargout}] = out;
-					% No support for indexing using '{}'
-				case '{}'
-					error('irf:GenericTimeArray:subsref',...
-						'Not a supported subscripted reference')
-			end
+      switch idx(1).type
+        % Use the built-in subsref for dot notation
+        case '.'
+          [varargout{1:nargout}] = builtin('subsref',obj,idx);
+        case '()'
+          tmpEpoch = builtin('subsref',obj.epoch,idx(1));
+          out = feval(class(obj),tmpEpoch);
+          if numel(idx) > 1
+            out = builtin('subsref',out,idx(2:end));
+          end
+          [varargout{1:nargout}] = out;
+          % No support for indexing using '{}'
+        case '{}'
+          error('irf:GenericTimeArray:subsref',...
+            'Not a supported subscripted reference')
+      end
     end
     
     function [idxLim,res] = tlim(obj,inp,mode)
@@ -266,13 +266,13 @@ classdef (Abstract) GenericTimeArray
       %
       % [IDX,Y] = tlim(X,LIM,[MODE])
       %
-      % Where MODE can be: 
+      % Where MODE can be:
       %        'and', 0 (default)
       %        'xor', 1
       %
       %	IDX contains indexes of rows that were returned
       %
-      % Y is part of the X that is within interval 
+      % Y is part of the X that is within interval
       % LIM.START <= X(:,1) < LIM.STOP for "AND" mode
       %
       % Y is part of X outside the interval for "XOR" mode:
@@ -280,7 +280,7 @@ classdef (Abstract) GenericTimeArray
       
       if isempty(inp)
         error('irf:GenericTimeArray:tlim:badInputs',...
-            'empty limiting array')
+          'empty limiting array')
       end
       if nargin<3, mode = 0; end
       if ischar(mode)
@@ -309,44 +309,44 @@ classdef (Abstract) GenericTimeArray
       end
     end
     
-		function res = convert_epoch(obj,className)
-			if isa(obj,className) 
-				res = obj;
-			else
-				res = feval(className,obj.ttns);
-			end
-		end
-		
-		function res = epochUnix(obj)
+    function res = convert_epoch(obj,className)
+      if isa(obj,className)
+        res = obj;
+      else
+        res = feval(className,obj.ttns);
+      end
+    end
+    
+    function res = epochUnix(obj)
       if isempty(obj), res = [];
       else, res = EpochUnix.from_ttns(obj.ttns);
       end
-		end
-		function s = utc(obj,varargin)
-			% s = utc(obj,format)
-			s = GenericTimeArray.ttns2utc(obj.ttns,varargin{:});
-		end
-		function s = toUtc(obj,varargin)
-			s = obj.utc(varargin{:});
-		end
-
+    end
+    function s = utc(obj,varargin)
+      % s = utc(obj,format)
+      s = GenericTimeArray.ttns2utc(obj.ttns,varargin{:});
+    end
+    function s = toUtc(obj,varargin)
+      s = obj.utc(varargin{:});
+    end
+    
     % Abstract time operation methods
     to_ttns(epoch,index)   % static function to convert epoch to ttns
     from_ttns(obj,index)   % static function to convert ttns to epoch
     
-		function s = ttns(obj,varargin)
-			% s = ttns(obj,[index]) return index points
-			s = obj.to_ttns(obj.epoch,varargin{:});
-		end
-		function s = tts(obj,varargin)
-			% s = tts(obj,[index]) return index points
-			s = double(obj.ttns(varargin{:}))/1e9;
+    function s = ttns(obj,varargin)
+      % s = ttns(obj,[index]) return index points
+      s = obj.to_ttns(obj.epoch,varargin{:});
+    end
+    function s = tts(obj,varargin)
+      % s = tts(obj,[index]) return index points
+      s = double(obj.ttns(varargin{:}))/1e9;
     end
   end
   
   methods (Abstract)
     plus(obj,arg)
-		colon(obj,varargin)
+    colon(obj,varargin)
   end
   
   methods (Access = private)
@@ -372,7 +372,7 @@ classdef (Abstract) GenericTimeArray
       
       MAX_NUM_IDX = 29;
       res = false;
-     
+      
       if isempty(utc), return, end
       if ~ismatrix(utc), return, end
       
@@ -414,7 +414,7 @@ classdef (Abstract) GenericTimeArray
       if all(all(utc(:,end)=='Z')), lUtc = lUtc - 1; flagAddZ = false; end
       if lUtc == MAX_NUM_IDX && ~flagAddZ, return, end
       if lUtc == idxDotIDX_DOT-1
-        res(:,idxDotIDX_DOT) = '.'; lUtc = lUtc + 1; 
+        res(:,idxDotIDX_DOT) = '.'; lUtc = lUtc + 1;
       end
       if lUtc < MAX_NUM_IDX, res(:,(lUtc+1):MAX_NUM_IDX) = '0'; end % Pad with zeros
       res(:,MAX_NUM_IDX+1) = 'Z';
@@ -433,54 +433,54 @@ classdef (Abstract) GenericTimeArray
       res = GenericTimeArray.pad_utc(utc);
     end
     function ttns = utc2ttns(utc,index)
-      % Convert UTC to TT nanoseconds 
-			if nargin == 2
-				utc = utc(index,:);
-			end
-			ttns = spdfparsett2000(GenericTimeArray.validate_and_pad_utc(utc));
-			if ttns==int64(-9223372036854775805)
-				error('GenericTimeArray:utc2ttns',...
-					'UTC string input (char) must be in the form yyyy-mm-ddThh:mm:ss.mmmuuunnnZ')
-			end
-		end
-		function utc = ttns2utc(ttns,format)
+      % Convert UTC to TT nanoseconds
+      if nargin == 2
+        utc = utc(index,:);
+      end
+      ttns = spdfparsett2000(GenericTimeArray.validate_and_pad_utc(utc));
+      if ttns==int64(-9223372036854775805)
+        error('GenericTimeArray:utc2ttns',...
+          'UTC string input (char) must be in the form yyyy-mm-ddThh:mm:ss.mmmuuunnnZ')
+      end
+    end
+    function utc = ttns2utc(ttns,format)
       % Convert TT nanoseconds to UTC
       if nargin<2 || isempty(format), format = 2; end
-			utc =  char(spdfencodett2000(int64(ttns)));
-			if isnumeric(format)
-				switch format
-					case 0, utc = utc(:,1:26);
-					case 1, utc = utc(:,1:23);
-					case 2
-					otherwise
-						error('irf:EpochUnix:toUtc:badInputs',...
-							'wrong format value')
-				end
-				utc(:,end+1)='Z';
-			elseif ischar(format)
-				fmt = format;
-				iyyyy = strfind(fmt,'yyyy');
-				imm   = strfind(fmt,'mm');
-				idd   = strfind(fmt,'dd');
-				iHH   = strfind(fmt,'HH');
-				iMM   = strfind(fmt,'MM');
-				iSS   = strfind(fmt,'SS');
-				immm  = strfind(fmt,'mmm');
-				iuuu  = strfind(fmt,'uuu');
-				innn  = strfind(fmt,'nnn');
-				tVec9 = irf_time(ttns,'ttns>vector9');
-				utc = repmat(fmt,size(ttns,1),1);
-				if iyyyy, utc(:,iyyyy:iyyyy+3)= num2str(tVec9(:,1),'%04u'); end
-				if imm,   utc(:,imm:imm+1)    = num2str(tVec9(:,2),'%02u'); end
-				if idd,   utc(:,idd:idd+1)    = num2str(tVec9(:,3),'%02u'); end
-				if iHH,   utc(:,iHH:iHH+1)    = num2str(tVec9(:,4),'%02u'); end
-				if iMM,   utc(:,iMM:iMM+1)    = num2str(tVec9(:,5),'%02u'); end
-				if iSS,   utc(:,iSS:iSS+1)    = num2str(tVec9(:,6),'%02u'); end
-				if immm,  utc(:,immm:immm+2)  = num2str(tVec9(:,7),'%03u'); end
-				if iuuu,  utc(:,iuuu:iuuu+2)  = num2str(tVec9(:,8),'%03u'); end
-				if innn,  utc(:,innn:innn+2)  = num2str(tVec9(:,9),'%03u'); end
-			end
-		end
+      utc =  char(spdfencodett2000(int64(ttns)));
+      if isnumeric(format)
+        switch format
+          case 0, utc = utc(:,1:26);
+          case 1, utc = utc(:,1:23);
+          case 2
+          otherwise
+            error('irf:EpochUnix:toUtc:badInputs',...
+              'wrong format value')
+        end
+        utc(:,end+1)='Z';
+      elseif ischar(format)
+        fmt = format;
+        iyyyy = strfind(fmt,'yyyy');
+        imm   = strfind(fmt,'mm');
+        idd   = strfind(fmt,'dd');
+        iHH   = strfind(fmt,'HH');
+        iMM   = strfind(fmt,'MM');
+        iSS   = strfind(fmt,'SS');
+        immm  = strfind(fmt,'mmm');
+        iuuu  = strfind(fmt,'uuu');
+        innn  = strfind(fmt,'nnn');
+        tVec9 = irf_time(ttns,'ttns>vector9');
+        utc = repmat(fmt,size(ttns,1),1);
+        if iyyyy, utc(:,iyyyy:iyyyy+3)= num2str(tVec9(:,1),'%04u'); end
+        if imm,   utc(:,imm:imm+1)    = num2str(tVec9(:,2),'%02u'); end
+        if idd,   utc(:,idd:idd+1)    = num2str(tVec9(:,3),'%02u'); end
+        if iHH,   utc(:,iHH:iHH+1)    = num2str(tVec9(:,4),'%02u'); end
+        if iMM,   utc(:,iMM:iMM+1)    = num2str(tVec9(:,5),'%02u'); end
+        if iSS,   utc(:,iSS:iSS+1)    = num2str(tVec9(:,6),'%02u'); end
+        if immm,  utc(:,immm:immm+2)  = num2str(tVec9(:,7),'%03u'); end
+        if iuuu,  utc(:,iuuu:iuuu+2)  = num2str(tVec9(:,8),'%03u'); end
+        if innn,  utc(:,innn:innn+2)  = num2str(tVec9(:,9),'%03u'); end
+      end
+    end
     function res = leap_seconds()
       % Try to read CDFLeapSeconds.txt (from NASA_cdf_patch). If not found
       % revert to hard coded values.
@@ -541,7 +541,7 @@ classdef (Abstract) GenericTimeArray
           2012   7    1   35.0            0.0  0.0
           2015   7    1   36.0            0.0  0.0
           2017   1    1   37.0            0.0  0.0
-        ];
+          ];
       end
     end
   end

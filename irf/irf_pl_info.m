@@ -11,7 +11,7 @@ function outhandle=irf_pl_info(string,inhandle,position)
 % if inhandle is 0 use the whole figure area as coordinates
 %
 % Example:
-%   ht=irf_pl_info(['c_pl_sc_orient() ' datestr(now)],gca,[0,1 ]); 
+%   ht=irf_pl_info(['c_pl_sc_orient() ' datestr(now)],gca,[0,1 ]);
 %   set(ht,'interpreter','none','FontSize', 10);
 %
 % $Id$
@@ -23,15 +23,15 @@ disp('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!');
 if nargin == 1, inhandle=gca;position=[.02 1];end
 if nargin == 2, position=[.02 1];end
 if inhandle ==0 % add to the whole figure if inhandle = 0
-    h00 = gca;
-    h1 = axes('Units','normalized', 'Position',[0 0 1 1], 'Visible','off', ...
-        'Tag','BackgroundAxes', 'HitTest','off');
-    outhandle = text('Units','normalized','FontSize',6,'HorizontalAlignment','left', ...
-        'Position',[0.01 0.97], 'String', string, 'Tag','CreatedText');
-    axes(h00)
+  h00 = gca;
+  h1 = axes('Units','normalized', 'Position',[0 0 1 1], 'Visible','off', ...
+    'Tag','BackgroundAxes', 'HitTest','off');
+  outhandle = text('Units','normalized','FontSize',6,'HorizontalAlignment','left', ...
+    'Position',[0.01 0.97], 'String', string, 'Tag','CreatedText');
+  axes(h00)
 else% add to the given or current axis
-    axes(inhandle);
-    outhandle=text(0,0,string);
-    set(outhandle,'Units','normalized','Position',position, ...
-        'HorizontalAlignment', 'left','VerticalAlignment', 'bottom','FontSize', 5);
+  axes(inhandle);
+  outhandle=text(0,0,string);
+  set(outhandle,'Units','normalized','Position',position, ...
+    'HorizontalAlignment', 'left','VerticalAlignment', 'bottom','FontSize', 5);
 end

@@ -5,7 +5,7 @@ function [pdistr,phir,energyr] = psd_rebin(pdist,phi,energy0,energy1,stepTable)
 %
 %  Functions takes the burst mode distribution sampled in two energy tables
 %  and converts to a single energy table with 64 energy channels. Time
-%  resolution is halved and phi angles are averaged over adjacent times. 
+%  resolution is halved and phi angles are averaged over adjacent times.
 %
 %  Input:
 %       pdist - particle distribution in TSeries format
@@ -26,10 +26,10 @@ function [pdistr,phir,energyr] = psd_rebin(pdist,phi,energy0,energy1,stepTable)
 
 tic;
 if isstruct(energy0)
-	energy0 = energy0.data;
+  energy0 = energy0.data;
 end
 if isstruct(energy1)
-	energy1 = energy1.data;
+  energy1 = energy1.data;
 end
 
 stepTable = stepTable.data;
@@ -49,30 +49,30 @@ phis = circshift(phi.data,1,2);
 phis(:,1) = phis(:,1)-360;
 
 for ii=1:2:length(pdist.time)-1
-    if phi.data(ii,1) > phi.data(ii+1,1)
-        phir(newelnum,:) = (phi.data(ii,:)+phis(ii+1,:))/2;
-        pdisttemp = circshift(squeeze(pdist.data(ii+1,:,:,:)),1,2);
-        
-        if stepTable(ii)
-            pdistr(newelnum, 2:2:64,:,:) = pdist.data(ii,:,:,:);
-            pdistr(newelnum, 1:2:63,:,:) = pdisttemp;
-        else
-            pdistr(newelnum, 1:2:63,:,:) = pdist.data(ii,:,:,:);
-            pdistr(newelnum, 2:2:64,:,:) = pdisttemp;        
-        end        
+  if phi.data(ii,1) > phi.data(ii+1,1)
+    phir(newelnum,:) = (phi.data(ii,:)+phis(ii+1,:))/2;
+    pdisttemp = circshift(squeeze(pdist.data(ii+1,:,:,:)),1,2);
+    
+    if stepTable(ii)
+      pdistr(newelnum, 2:2:64,:,:) = pdist.data(ii,:,:,:);
+      pdistr(newelnum, 1:2:63,:,:) = pdisttemp;
     else
-        phir(newelnum,:) = (phi.data(ii,:)+phi.data(ii+1,:))/2;
-    
-        if stepTable(ii)
-            pdistr(newelnum,2:2:64,:,:) = pdist.data(ii,:,:,:);
-            pdistr(newelnum,1:2:63,:,:) = pdist.data(ii+1,:,:,:);
-        else
-            pdistr(newelnum,1:2:63,:,:) = pdist.data(ii,:,:,:);
-            pdistr(newelnum,2:2:64,:,:) = pdist.data(ii+1,:,:,:);        
-        end
+      pdistr(newelnum, 1:2:63,:,:) = pdist.data(ii,:,:,:);
+      pdistr(newelnum, 2:2:64,:,:) = pdisttemp;
     end
+  else
+    phir(newelnum,:) = (phi.data(ii,:)+phi.data(ii+1,:))/2;
     
-    newelnum = newelnum+1;
+    if stepTable(ii)
+      pdistr(newelnum,2:2:64,:,:) = pdist.data(ii,:,:,:);
+      pdistr(newelnum,1:2:63,:,:) = pdist.data(ii+1,:,:,:);
+    else
+      pdistr(newelnum,1:2:63,:,:) = pdist.data(ii,:,:,:);
+      pdistr(newelnum,2:2:64,:,:) = pdist.data(ii+1,:,:,:);
+    end
+  end
+  
+  newelnum = newelnum+1;
 end
 
 phir = TSeries(newtimes,phir);

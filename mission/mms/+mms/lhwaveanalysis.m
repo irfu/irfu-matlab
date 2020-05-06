@@ -16,8 +16,8 @@ function [phiEB,vbest,dirbest,thetas,corrs] = lhwaveanalysis(varargin)
 %       bandpassed between the frequencies.
 %       'blpass' - set maximum frequency for low-pass filter of background
 %       magnetic field (FGM)
-%       'plot' - set to 1 to plot figure. 
-% 
+%       'plot' - set to 1 to plot figure.
+%
 % Example:
 %   Tintl = irf.tint('2015-12-14T01:17:39.00Z/2015-12-14T01:17:43.00Z');
 %   Bxyz=mms.db_get_ts('mms2_fgm_brst_l2','mms2_fgm_b_gse_brst_l2',Tintl);
@@ -32,8 +32,8 @@ function [phiEB,vbest,dirbest,thetas,corrs] = lhwaveanalysis(varargin)
 
 % Check input
 if (nargin < 5)
-    help lhwaveanalysis;
-    return;
+  help lhwaveanalysis;
+  return;
 end
 
 tints = varargin{1};
@@ -46,9 +46,9 @@ ic = Bscm.name(4);
 
 args=varargin(6:end);
 if numel(args)>0
-    options=1;
+  options=1;
 else
-    options=0;
+  options=0;
 end
 
 % Default bandpasses
@@ -59,38 +59,38 @@ plotfigure = 0;
 frange = 0;
 
 while options
-    l = 2;
-    switch(lower(args{1}))
-        case 'lhfilt'
-            if numel(args)>1 && isnumeric(args{2})
-                if length(args{2}) == 1
-                    minfreq = args{2};
-                elseif length(args{2}) == 2
-                    minfreq = args{2}(1);
-                    maxfreq = args{2}(2);
-                    frange = 1;
-                else
-                    irf_log('proc','lfbandpass not recognized.');
-                    return;
-                end
-            end
-         case 'blpass'
-            if numel(args)>1 && isnumeric(args{2})
-                lowpassBxyz = args{2};
-            end
-      	case 'plot'
-            if numel(args)>1 && isnumeric(args{2})
-                if args{2}
-                    plotfigure = 1;
-                end
-            end
-        otherwise
-            irf_log('fcal',['Unknown flag: ' args{1}])
-            l=1;
-            break
-    end
-    args = args(l+1:end);
-    if isempty(args), options=0; end
+  l = 2;
+  switch(lower(args{1}))
+    case 'lhfilt'
+      if numel(args)>1 && isnumeric(args{2})
+        if length(args{2}) == 1
+          minfreq = args{2};
+        elseif length(args{2}) == 2
+          minfreq = args{2}(1);
+          maxfreq = args{2}(2);
+          frange = 1;
+        else
+          irf_log('proc','lfbandpass not recognized.');
+          return;
+        end
+      end
+    case 'blpass'
+      if numel(args)>1 && isnumeric(args{2})
+        lowpassBxyz = args{2};
+      end
+    case 'plot'
+      if numel(args)>1 && isnumeric(args{2})
+        if args{2}
+          plotfigure = 1;
+        end
+      end
+    otherwise
+      irf_log('fcal',['Unknown flag: ' args{1}])
+      l=1;
+      break
+  end
+  args = args(l+1:end);
+  if isempty(args), options=0; end
 end
 
 % Bandpass filter data
@@ -135,12 +135,12 @@ thetas = 0:1:360;
 corrs = zeros(1,length(thetas));
 
 for ii = 1:length(thetas)
-    Etemp = cosd(thetas(ii))*Efac.data(:,1)+sind(thetas(ii))*Efac.data(:,2);
-    Etemp = TSeries(Exyz.time,Etemp);
-    phitemp = irf_integrate(Etemp);
-    phitemp = phitemp.tlim(tints);
-    phitemp.data = phitemp.data-mean(phitemp.data);
-    corrs(ii) = xcorr(phiBs.data,phitemp.data,0,'coeff');
+  Etemp = cosd(thetas(ii))*Efac.data(:,1)+sind(thetas(ii))*Efac.data(:,2);
+  Etemp = TSeries(Exyz.time,Etemp);
+  phitemp = irf_integrate(Etemp);
+  phitemp = phitemp.tlim(tints);
+  phitemp.data = phitemp.data-mean(phitemp.data);
+  corrs(ii) = xcorr(phiBs.data,phitemp.data,0,'coeff');
 end
 
 [~,corrpos] = max(corrs);
@@ -158,8 +158,8 @@ vphvec = 1e1:1e0:5e2; % Maximum velocity may need to be increased in rare cases
 corrv = zeros(1,length(vphvec));
 
 for ii=1:length(vphvec)
-    phiEtemp = phibest.data*vphvec(ii);
-    corrv(ii)=sum(abs(phiEtemp-phiBs.data).^2);
+  phiEtemp = phibest.data*vphvec(ii);
+  corrv(ii)=sum(abs(phiEtemp-phiBs.data).^2);
 end
 
 [~,corrvpos] = min(corrv);
@@ -173,51 +173,51 @@ phiEmax = max(abs(phiEB.data(:,1)));
 phiBmax = max(abs(phiEB.data(:,2)));
 
 if plotfigure
-fn=figure;
-set(fn,'Position',[10 10 600 600])
-    h(1)=axes('position',[0.1 0.58 0.8 0.4]); 
-    h(2)=axes('position',[0.1 0.07 0.8 0.4]);
-    ud=get(fn,'userdata');
-    ud.subplot_handles=h;
-    set(fn,'userdata',ud);
-    set(fn,'defaultLineLineWidth',2); 
-    
-h(1)=irf_panel('phi');
-irf_plot(h(1),phiEB);
-ylabel(h(1),'\phi (V)','Interpreter','tex','fontsize',14);
-irf_legend(h(1),{'\phi_{E}','\phi_{B}'},[0.1 0.12],'fontsize',14)
-if frange
+  fn=figure;
+  set(fn,'Position',[10 10 600 600])
+  h(1)=axes('position',[0.1 0.58 0.8 0.4]);
+  h(2)=axes('position',[0.1 0.07 0.8 0.4]);
+  ud=get(fn,'userdata');
+  ud.subplot_handles=h;
+  set(fn,'userdata',ud);
+  set(fn,'defaultLineLineWidth',2);
+  
+  h(1)=irf_panel('phi');
+  irf_plot(h(1),phiEB);
+  ylabel(h(1),'\phi (V)','Interpreter','tex','fontsize',14);
+  irf_legend(h(1),{'\phi_{E}','\phi_{B}'},[0.1 0.12],'fontsize',14)
+  if frange
     freqlab = [num2str(minfreq) ' Hz < f < ' num2str(maxfreq) ' Hz'];
-else
+  else
     freqlab = ['f > ' num2str(minfreq) ' Hz'];
-end
-vlab = ['v = ' num2str(vbest) ' km s^{-1}'];
-xdir = num2str(dirbestround(1));
-ydir = num2str(dirbestround(2));
-zdir = num2str(dirbestround(3));
-dirlab = ['dir: [' xdir ',' ydir ',' zdir ']'];
-irf_legend(h(1),'(a)',[0.99 0.98],'color','k','fontsize',14)
-c_eval('irf_legend(h(1),''MMS ?'',[0.01 0.98],''color'',''k'',''fontsize'',14)',ic);
-irf_legend(h(1),freqlab,[0.95 0.2],'color','k','fontsize',14)
-irf_legend(h(1),vlab,[0.95 0.13],'color','k','fontsize',14)
-irf_legend(h(1),dirlab,[0.95 0.06],'color','k','fontsize',14)
-irf_legend(h(1),['|\phi_E|_{max} = ' num2str(round(phiEmax,1))],[0.90 0.98],'color','k','fontsize',14)
-irf_legend(h(1),['|\phi_B|_{max} = ' num2str(round(phiBmax,1))],[0.90 0.90],'color','k','fontsize',14)
-irf_zoom(h(1),'x',tints);
-
-plot(h(2),thetas,corrs);
-[maxcorr,ind] = max(corrs);
-hold(h(2),'on')
-plot(h(2),thetas(ind),maxcorr,'ro');
-hold(h(2),'off')
-xlabel(h(2),'\theta (deg)','Interpreter','tex','fontsize',14);
-ylabel(h(2),'C_{\phi}','Interpreter','tex','fontsize',14);
-axis(h(2),[0 360 -1 1]);
-irf_legend(h(2),['C_{\phi max} = ' num2str(round(maxcorr,2))],[0.95 0.06],'color','k','fontsize',14)
-irf_legend(h(2),'(b)',[0.99 0.98],'color','k','fontsize',14)
-
-set(h(1:2),'fontsize',14);
-set(gcf,'color','w');
+  end
+  vlab = ['v = ' num2str(vbest) ' km s^{-1}'];
+  xdir = num2str(dirbestround(1));
+  ydir = num2str(dirbestround(2));
+  zdir = num2str(dirbestround(3));
+  dirlab = ['dir: [' xdir ',' ydir ',' zdir ']'];
+  irf_legend(h(1),'(a)',[0.99 0.98],'color','k','fontsize',14)
+  c_eval('irf_legend(h(1),''MMS ?'',[0.01 0.98],''color'',''k'',''fontsize'',14)',ic);
+  irf_legend(h(1),freqlab,[0.95 0.2],'color','k','fontsize',14)
+  irf_legend(h(1),vlab,[0.95 0.13],'color','k','fontsize',14)
+  irf_legend(h(1),dirlab,[0.95 0.06],'color','k','fontsize',14)
+  irf_legend(h(1),['|\phi_E|_{max} = ' num2str(round(phiEmax,1))],[0.90 0.98],'color','k','fontsize',14)
+  irf_legend(h(1),['|\phi_B|_{max} = ' num2str(round(phiBmax,1))],[0.90 0.90],'color','k','fontsize',14)
+  irf_zoom(h(1),'x',tints);
+  
+  plot(h(2),thetas,corrs);
+  [maxcorr,ind] = max(corrs);
+  hold(h(2),'on')
+  plot(h(2),thetas(ind),maxcorr,'ro');
+  hold(h(2),'off')
+  xlabel(h(2),'\theta (deg)','Interpreter','tex','fontsize',14);
+  ylabel(h(2),'C_{\phi}','Interpreter','tex','fontsize',14);
+  axis(h(2),[0 360 -1 1]);
+  irf_legend(h(2),['C_{\phi max} = ' num2str(round(maxcorr,2))],[0.95 0.06],'color','k','fontsize',14)
+  irf_legend(h(2),'(b)',[0.99 0.98],'color','k','fontsize',14)
+  
+  set(h(1:2),'fontsize',14);
+  set(gcf,'color','w');
 end
 
 end

@@ -4,8 +4,8 @@
 %   depend - skymap: energy, phi, theta
 %            pitchangles: energy, pitchangles
 %            omni - energies
-%   ancillary - additional help data, can be energy0, energy0, energysteptable   
-% 
+%   ancillary - additional help data, can be energy0, energy0, energysteptable
+%
 % SUGGESTIONS WELCOME ! :)
 
 %% Load PDist using mms.make_pdist
@@ -75,35 +75,35 @@ if 0
 end
 if 0
   hca = irf_panel('e pitchangles'); %#ok<UNRCH>
-  irf_spectrogram(hca,ePDistN.pitchangles(dmpaBN,18).specrec('pa')); 
-  hca.YTick = [0 45 90 135];  
+  irf_spectrogram(hca,ePDistN.pitchangles(dmpaBN,18).specrec('pa'));
+  hca.YTick = [0 45 90 135];
 end
 if 0
   elim = [10 200]; %#ok<UNRCH>
   hca = irf_panel('e pitchangles low');
-  irf_spectrogram(hca,ePDistN.elim(elim).pitchangles(dmpaBN,18).specrec('pa')); 
-  hca.YTick = [0 45 90 135];  
+  irf_spectrogram(hca,ePDistN.elim(elim).pitchangles(dmpaBN,18).specrec('pa'));
+  hca.YTick = [0 45 90 135];
   irf_legend(hca,{[num2str(elim(1),'%.0f') '<E_e<' num2str(elim(2),'%.0f') ' eV']},[0.98 0.90],'fontsize',12,'color',[0 0 0]);
 end
 if 1
   elim = [20 200];
   hca = irf_panel('e pitchangles 64 energy channels');
-  irf_spectrogram(hca,ePDistN.e64.elim(elim).pitchangles(dmpaBN,18).specrec('pa')); 
-  hca.YTick = [0 45 90 135];  
+  irf_spectrogram(hca,ePDistN.e64.elim(elim).pitchangles(dmpaBN,18).specrec('pa'));
+  hca.YTick = [0 45 90 135];
   irf_legend(hca,{[num2str(elim(1),'%.0f') '<E_e<' num2str(elim(2),'%.0f') ' eV']},[0.98 0.90],'fontsize',12,'color',[0 0 0]);
 end
 if 1
   elim = [200 2000];
   hca = irf_panel('e pitchangles mid');
-  irf_spectrogram(hca,ePDistN.e64.elim(elim).pitchangles(dmpaBN,18).specrec('pa')); 
+  irf_spectrogram(hca,ePDistN.e64.elim(elim).pitchangles(dmpaBN,18).specrec('pa'));
   hca.YTick = [0 45 90 135];
   irf_legend(hca,{[num2str(elim(1),'%.0f') '<E_e<' num2str(elim(2),'%.0f') ' eV']},[0.98 0.90],'fontsize',12,'color',[0 0 0]);
 end
 if 0
   elim = [400 20000]; %#ok<UNRCH>
   hca = irf_panel('e pitchangles high');
-  irf_spectrogram(hca,ePDistN.elim(elim).pitchangles(dmpaBN,18).specrec('pa')); 
-  hca.YTick = [0 45 90 135];  
+  irf_spectrogram(hca,ePDistN.elim(elim).pitchangles(dmpaBN,18).specrec('pa'));
+  hca.YTick = [0 45 90 135];
   irf_legend(hca,{[num2str(elim(1),'%.0f') '<E_e<' num2str(elim(2),'%.0f') ' eV']},[0.98 0.90],'fontsize',12,'color',[0 0 0]);
 end
 if 1
@@ -138,9 +138,9 @@ irf_plot_axis_align
 ic = 3;
 t0 = irf_time('2015-12-02T01:14:54.320Z','utc>epochtt');
 c_eval('tInd = find(abs(ePDist?.time-t0)==min(abs(ePDist?.time-t0)));', ic);
-c_eval('B0 = dmpaB?.resample(ePDist?.time).data;',ic); 
-c_eval('E0 = dslE?.resample(ePDist?.time).data;',ic); 
-c_eval('scpot = scPot?.resample(ePDist?.time);',ic); 
+c_eval('B0 = dmpaB?.resample(ePDist?.time).data;',ic);
+c_eval('E0 = dslE?.resample(ePDist?.time).data;',ic);
+c_eval('scpot = scPot?.resample(ePDist?.time);',ic);
 c_eval('ePitchN = ePDist?.pitchangles(dmpaB?,[17]);',ic)
 c_eval('ePDistN = ePDist?;',ic)
 hatB0 = double(irf_norm(B0));

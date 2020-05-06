@@ -9,12 +9,12 @@ function [Blnm1,h]=pl_cluster_ejxb(tint,Vmp,L,Nsign,flag_EdotB,sc_list)
 %
 % Vmp - magnetopause velocity, N=norm(Vmp)
 % L - L vector
-% Nsign - 1 if N in the direction of Vmp, -1 if N in the direction 
+% Nsign - 1 if N in the direction of Vmp, -1 if N in the direction
 %         opposite to Vmp (e.g., N shall always point from MSph to Msh)
 % flagEdotB - 1 if use E.B=o assumption for the 3rd component
 % sc_list - vector with spacecraf for which to do the plot
 %
-% Usage: 
+% Usage:
 %   [blnm] = pl_cluster_ejxb(toepoch([2002 03 30 13 11 42])+[0 8],...
 %          31.4* [ -0.94 -0.21 -0.25],[0 0 1],-1,0);
 %
@@ -39,7 +39,7 @@ if nargin <4
   Nsign=irf_ask('Input Nsign [%]>','Nsign',1);
 end
 if nargin <5
-    flag_EdotB=1; % assume E.B=0 to calculate spin axis E component
+  flag_EdotB=1; % assume E.B=0 to calculate spin axis E component
 end
 if nargin <6
   sc_list_str=irf_ask('Which satellites to analyze [%]>','sc_list_str','1:4');
@@ -109,7 +109,7 @@ c_eval('Blnm?=irf_newxyz(B?,L,N,M);',sc_list);
 % 	end
 % 	c_eval('ii=find(n?(:,1)>tx & n?(:,1)<tx+.6);n?(ii,:)=[];',ax)
 % end
-  
+
 c_eval('dtn?=n?;dtn?(1,2)=0;dtn?(2:end,1)=0.5*(dtn?(2:end,1)+dtn?(1:end-1,1));',sc_list);
 c_eval('dtn?(2:end,2)=(n?(2:end,2)-n?(1:end-1,2))./(n?(2:end,1)-n?(1:end-1,1));',sc_list);
 c_eval('vn?=irf_resamp([0 v],dtn?);',sc_list);
@@ -121,7 +121,7 @@ c_eval('egradn?=[dtn?(:,1) Nsign*Te1./irf_abs(vn?,1)./n?(:,2).*dtn?(:,2)];',sc_l
 %c_eval('egradn3d?=irf_vec_x_scal(irf_tappl(irf_norm(vn?),''*(-1)''),egradn?);');
 
 sc_list_pl=irf_ask('For which s/c plot single s/c plots ?[%]>','sc_list_pl',[]);
-% 
+%
 % icb=irf_ask('For which s/c to include internal burst ?[%]>','icb',[]);
 % for j=1:length(icb),
 %   sc_id=icb(j);
@@ -211,7 +211,7 @@ irf_timeaxis(h);
 
 % irf_pl_mark([toepoch([2004 01 04 12 47 10]) + [-.15 .4]],h);
 % irf_pl_mark([toepoch([2004 01 04 12 47 8.4]) + [-.05 .05]],h);
-% 
+%
 %ht=irf_pl_number_subplots(h);
 
 %%  Figure single s/c %%%%%%%%%%%%%%
@@ -220,25 +220,25 @@ irf_timeaxis(h);
 for ic=sc_list
   figure;
   h=irf_plot({bb,bb,bb,bb});
-
+  
   axes(h(1));
   %if find(ic==icb), % plot also burst data
   %  c_eval('irf_plot({dEn?,dejbn?,egradn?,egradn_burst?},''comp''); ylabel(''E,jxB/ne,\nabla p/ne\newline [mV/m] sc?'');',ic);
   %else
-    c_eval('irf_plot({dEn?,dejbn?,egradn?},''comp''); ylabel(''E,jxB/ne,\nabla p/ne \newline[mV/m] sc?'');',ic);
+  c_eval('irf_plot({dEn?,dejbn?,egradn?},''comp''); ylabel(''E,jxB/ne,\nabla p/ne \newline[mV/m] sc?'');',ic);
   %end
   %c_eval('irf_plot(Blnm?(:,[1 5])); ylabel(''B [nT] sc?''); ',ic);
   leg_coord=[.1,.6];font_size=13;figure_labels={'E ', 'jxB/ne','-\nabla p/ne'};line_colors='bgr';
   for iq=1:3
-      ht=irf_pl_info(figure_labels{iq},gca,leg_coord);set(ht,'color',line_colors(iq),'Fontsize',font_size,'FontWeight','demi');
-      ext=get(ht,'extent'); leg_coord=leg_coord+[ext(3)*1.1 0];
+    ht=irf_pl_info(figure_labels{iq},gca,leg_coord);set(ht,'color',line_colors(iq),'Fontsize',font_size,'FontWeight','demi');
+    ext=get(ht,'extent'); leg_coord=leg_coord+[ext(3)*1.1 0];
   end
   ht=irf_pl_info([mfilename '  ' datestr(now) ...
     ' Vmp=[' num2str(Vmp(1:3),' %6.2f') ']km/s,' ...
     ' dt=[' num2str(dt,' %6.2f') ']s,' ...
     ' L=[' num2str(L,' %6.2f') '], N=[' num2str(N,' %6.2f') '].'],gca,[0,1 ]);
   leg_coord=[.2,.6];font_size=13;cluster_labels={'C1 ','C2 ','C3 ','C4 '};cluster_colors='krgb';
-
+  
   axes(h(2));
   c_eval('irf_plot(n?(:,[1 2]));',ic);
   if find(ic==icb) % plot also burst data
@@ -246,111 +246,111 @@ for ic=sc_list
   end
   c_eval('ylabel(''N_{Vps} [cc] sc?'');',ic);
   set(h(2),'YScale','log')
-
+  
   axes(h(3));
   c_eval('irf_plot(Blnm?(:,[1 5])); ylabel(''B [nT] sc?''); ',ic);
-
+  
   axes(h(4));
   c_eval('irf_plot(irf_tappl([jz? jperp?(:,2)],''*1e6''));ylabel(''j_{||},jperp [\mu A/m^2] sc?'');',ic);
   leg_coord=[.1,.6];font_size=13;figure_labels={'j_{||}', 'j_{perp}'};line_colors='bg';
   for iPlot=1:2
-      ht=irf_pl_info(figure_labels{iPlot},gca,leg_coord);set(ht,'color',line_colors(iPlot),'Fontsize',font_size,'FontWeight','demi');
-      ext=get(ht,'extent'); leg_coord=leg_coord+[ext(3)*1.1 0];
+    ht=irf_pl_info(figure_labels{iPlot},gca,leg_coord);set(ht,'color',line_colors(iPlot),'Fontsize',font_size,'FontWeight','demi');
+    ext=get(ht,'extent'); leg_coord=leg_coord+[ext(3)*1.1 0];
   end
-
+  
   axis(h,'tight');
   irf_zoom(tint,'x',h);
   irf_timeaxis(h);
-
+  
   %ht=irf_pl_number_subplots(h)
-
+  
 end
-%%  Figure 3 
+%%  Figure 3
 %%%%%%%%%%%%%% Separate s/c %%%%%%%%%%%%%%%%%
 
 
 if 1 % 1 if plot, 0 if skip the figure
-    figure;
-    h=irf_plot({bb,bb,bb,bb,bb,bb});
-
-    axes(h(1));
-    %c_pl_tx('n?',2,dt);
-    cluster_colors='krgb';
-    c_eval('irf_plot(n?,''dt'',dt(?),''LineStyle'',cluster_colors(?));hold on;',sc_list)
+  figure;
+  h=irf_plot({bb,bb,bb,bb,bb,bb});
+  
+  axes(h(1));
+  %c_pl_tx('n?',2,dt);
+  cluster_colors='krgb';
+  c_eval('irf_plot(n?,''dt'',dt(?),''LineStyle'',cluster_colors(?));hold on;',sc_list)
+  hold off
+  ylabel('N_{Vps} [cc]');
+  set(h(1),'YScale','log')
+  set(h(1),'YLim',[.3 19])
+  ht=irf_pl_info([mfilename '  ' datestr(now) ...
+    ' Vmp=[' num2str(Vmp(1:3),' %6.2f') ']km/s,' ...
+    ' dt=[' num2str(dt,' %6.2f') ']s,' ...
+    ' L=[' num2str(L,' %6.2f') '], N=[' num2str(N,' %6.2f') '].'],gca,[0,1 ]);
+  leg_coord=[.1,.6];font_size=13;cluster_labels={'C1 ','C2 ','C3 ','C4 '};
+  for ic=sc_list
+    ht=irf_pl_info(cluster_labels{ic},gca,leg_coord);set(ht,'color',cluster_colors(ic),'Fontsize',font_size,'FontWeight','demi');
+    ext=get(ht,'extent'); leg_coord=leg_coord+[ext(3)*1.2 0];
+  end
+  
+  axes(h(2))
+  c_eval('jz? = irf_tappl(jz?,''*1e6'');',sc_list)
+  c_pl_tx('jz?',2,dt,'sc_list',sc_list);
+  ylabel('j_{||}[\mu A/m^2]');
+  leg_coord=[.1,.6];font_size=13;cluster_labels={'C1 ','C2 ','C3 ','C4 '};cluster_colors='krgb';
+  for ic=sc_list
+    ht=irf_pl_info(cluster_labels{ic},gca,leg_coord);set(ht,'color',cluster_colors(ic),'Fontsize',font_size,'FontWeight','demi');
+    ext=get(ht,'extent'); leg_coord=leg_coord+[ext(3)*1.2 0];
+  end
+  set(h(2),'YTick',[-.4 -.2 0 .2 .4])
+  
+  for ax=sc_list
+    axes(h(ax+2));
+    %         tmax = toepoch([2004 1 4 12 47 9.6]);
+    %         c_eval('ii=find(egradn?(:,1)>tmax+dt(?));egradn?(ii,:)=[];',sc_list)
+    %        c_eval('ii=find(igradn?(:,1)>tmax+dt(?));igradn?(ii,:)=[];',sc_list)
+    %         tmax = toepoch([2004 1 4 12 47 9.8]);
+    %         c_eval('ii=find(egradn1?(:,1)<tmax+dt(?));egradn1?(ii,:)=[];',sc_list)
+    %         c_eval('ii=find(igradn1?(:,1)<tmax+dt(?));igradn1?(ii,:)=[];',sc_list)
+    c_eval(['irf_plot(dEn?,''dt'',dt(?),''LineStyle'',''b'');hold on;'...
+      'irf_plot(dejbn?,''dt'',dt(?),''LineStyle'',''g'');hold on;'...
+      'irf_plot(egradn?,''dt'',dt(?),''LineStyle'',''r'');'...
+      'ylabel(''[mV/m] C?'');'],ax);
+    %             'irf_plot(egradn1?,''dt'',dt(?),''LineStyle'',''r'');'...
+    %             'irf_plot([egradn?(end,:); egradn1?(1,:)],''dt'',dt(?),''LineStyle'',''r--'');'...
+    %             'irf_plot(igradn?,''dt'',dt(?),''LineStyle'',''k'');'...
+    %             'irf_plot(igradn1?,''dt'',dt(?),''LineStyle'',''k'');'...
+    %             'irf_plot([igradn?(end,:); igradn1?(1,:)],''dt'',dt(?),''LineStyle'',''k--'');'...
     hold off
-    ylabel('N_{Vps} [cc]');
-    set(h(1),'YScale','log')
-    set(h(1),'YLim',[.3 19])
-    ht=irf_pl_info([mfilename '  ' datestr(now) ...
-        ' Vmp=[' num2str(Vmp(1:3),' %6.2f') ']km/s,' ...
-        ' dt=[' num2str(dt,' %6.2f') ']s,' ...
-        ' L=[' num2str(L,' %6.2f') '], N=[' num2str(N,' %6.2f') '].'],gca,[0,1 ]);
-    leg_coord=[.1,.6];font_size=13;cluster_labels={'C1 ','C2 ','C3 ','C4 '};
-    for ic=sc_list
-        ht=irf_pl_info(cluster_labels{ic},gca,leg_coord);set(ht,'color',cluster_colors(ic),'Fontsize',font_size,'FontWeight','demi');
-        ext=get(ht,'extent'); leg_coord=leg_coord+[ext(3)*1.2 0];
+    set(gca,'YLim',[-19 19])
+    
+    %         leg_coord=[.1,.6];font_size=13;cluster_labels={'E ', 'uxB ','jxB/ne','-\nabla p/ne'};cluster_colors='bkgr';
+    leg_coord=[.1,.6];font_size=13;cluster_labels={'E ', 'jxB/ne','-\nabla p/ne'};cluster_colors='bgr';
+    for ic=1:3
+      ht=irf_pl_info(cluster_labels{ic},gca,leg_coord);set(ht,'color',cluster_colors(ic),'Fontsize',font_size,'FontWeight','demi');
+      ext=get(ht,'extent'); leg_coord=leg_coord+[ext(3)*1.2 0];
     end
-
-    axes(h(2))
-    c_eval('jz? = irf_tappl(jz?,''*1e6'');',sc_list)
-    c_pl_tx('jz?',2,dt,'sc_list',sc_list);
-    ylabel('j_{||}[\mu A/m^2]');
-    leg_coord=[.1,.6];font_size=13;cluster_labels={'C1 ','C2 ','C3 ','C4 '};cluster_colors='krgb';
-    for ic=sc_list
-        ht=irf_pl_info(cluster_labels{ic},gca,leg_coord);set(ht,'color',cluster_colors(ic),'Fontsize',font_size,'FontWeight','demi');
-        ext=get(ht,'extent'); leg_coord=leg_coord+[ext(3)*1.2 0];
-    end
-    set(h(2),'YTick',[-.4 -.2 0 .2 .4])
-
-    for ax=sc_list
-        axes(h(ax+2));
-%         tmax = toepoch([2004 1 4 12 47 9.6]);
-%         c_eval('ii=find(egradn?(:,1)>tmax+dt(?));egradn?(ii,:)=[];',sc_list)
-%        c_eval('ii=find(igradn?(:,1)>tmax+dt(?));igradn?(ii,:)=[];',sc_list)
-%         tmax = toepoch([2004 1 4 12 47 9.8]);
-%         c_eval('ii=find(egradn1?(:,1)<tmax+dt(?));egradn1?(ii,:)=[];',sc_list)
-%         c_eval('ii=find(igradn1?(:,1)<tmax+dt(?));igradn1?(ii,:)=[];',sc_list)
-        c_eval(['irf_plot(dEn?,''dt'',dt(?),''LineStyle'',''b'');hold on;'...
-            'irf_plot(dejbn?,''dt'',dt(?),''LineStyle'',''g'');hold on;'...
-            'irf_plot(egradn?,''dt'',dt(?),''LineStyle'',''r'');'...
-            'ylabel(''[mV/m] C?'');'],ax);
-%             'irf_plot(egradn1?,''dt'',dt(?),''LineStyle'',''r'');'...
-%             'irf_plot([egradn?(end,:); egradn1?(1,:)],''dt'',dt(?),''LineStyle'',''r--'');'...
-%             'irf_plot(igradn?,''dt'',dt(?),''LineStyle'',''k'');'...
-%             'irf_plot(igradn1?,''dt'',dt(?),''LineStyle'',''k'');'...
-%             'irf_plot([igradn?(end,:); igradn1?(1,:)],''dt'',dt(?),''LineStyle'',''k--'');'...
-        hold off
-        set(gca,'YLim',[-19 19])
-
-%         leg_coord=[.1,.6];font_size=13;cluster_labels={'E ', 'uxB ','jxB/ne','-\nabla p/ne'};cluster_colors='bkgr';
-        leg_coord=[.1,.6];font_size=13;cluster_labels={'E ', 'jxB/ne','-\nabla p/ne'};cluster_colors='bgr';
-        for ic=1:3
-            ht=irf_pl_info(cluster_labels{ic},gca,leg_coord);set(ht,'color',cluster_colors(ic),'Fontsize',font_size,'FontWeight','demi');
-            ext=get(ht,'extent'); leg_coord=leg_coord+[ext(3)*1.2 0];
-        end
-    end
-
-    %axis(h,'tight');
-    irf_zoom(tint,'x',h);
-%     irf_zoom(toepoch([2004 01 04 12 47 07]) + [.5 4],'x',h)
-    irf_timeaxis(h);
-
-    % % lw=1;k=-5:0;
-    % % for j=1:2
-    % %   hh=get(h(j),'children');
-    % %   set(hh(end+[k k]),'linewidth',lw);
-    % %
-    % % end
-    % lw=1;k=-7:0;
-    % for j=3:6
-    %   hh=get(h(j),'children');
-    %   set(hh(end+[k k]),'linewidth',lw);
-    %   set(gca,'YLim',[-39 64])
-    % end
-    %
-    % irf_pl_mark([toepoch([2004 01 04 12 47 10]) + [-.12 .4]],h);
-    % irf_pl_mark([toepoch([2004 01 04 12 47 8.4]) + [-.05 .05]],h);
-    ht=irf_pl_number_subplots(h)
-    %irf_zoom(toepoch([2004 01 04 12 47 10]) + [-2.5 1.2],'x',h);
+  end
+  
+  %axis(h,'tight');
+  irf_zoom(tint,'x',h);
+  %     irf_zoom(toepoch([2004 01 04 12 47 07]) + [.5 4],'x',h)
+  irf_timeaxis(h);
+  
+  % % lw=1;k=-5:0;
+  % % for j=1:2
+  % %   hh=get(h(j),'children');
+  % %   set(hh(end+[k k]),'linewidth',lw);
+  % %
+  % % end
+  % lw=1;k=-7:0;
+  % for j=3:6
+  %   hh=get(h(j),'children');
+  %   set(hh(end+[k k]),'linewidth',lw);
+  %   set(gca,'YLim',[-39 64])
+  % end
+  %
+  % irf_pl_mark([toepoch([2004 01 04 12 47 10]) + [-.12 .4]],h);
+  % irf_pl_mark([toepoch([2004 01 04 12 47 8.4]) + [-.05 .05]],h);
+  ht=irf_pl_number_subplots(h)
+  %irf_zoom(toepoch([2004 01 04 12 47 10]) + [-2.5 1.2],'x',h);
 end
 %

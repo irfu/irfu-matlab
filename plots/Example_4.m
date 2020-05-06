@@ -1,11 +1,11 @@
 %%%%%%%%%%%%%%%%%%%%%%%
-% go to new/empty directory 
+% go to new/empty directory
 % >cd new_directory
 % here using temporary directory
 tempdir_name=tempname;
 mkdir(tempdir_name);
 cd(tempdir_name);
-disp(['Moving to temporary directory: ' tempdir_name]); 
+disp(['Moving to temporary directory: ' tempdir_name]);
 
 %%%%%%%%%%%%%%%%%%%%%%%
 % specify time interval
@@ -14,19 +14,19 @@ tint=irf_time([2001 2 26 5 18 0]) + [0 60];
 %%%%%%%%%%%%%%%%%%%%%%%%
 % download data from CAA (needed only once!!!!!)
 if 1 % put to 0 if data already downloaded !!!!
-    caa_download(tint,'C1_CP_FGM_FULL_ISR2')
-    caa_download(tint,'C1_CP_WHI_NATURAL')
-    caa_download(tint,'C1_CP_EFW_L2_E','nowildcard')
-    caa_download(tint,'C1_CP_STA_CWF_HBR_ISR2')
-    caa_download(tint,'C1_CP_CIS_HIA_HS_1D_PEF')
-    caa_download(tint,'C1_CP_PEA_PITCH_SPIN_DEFlux')
-    download_status=caa_download; % repeat until all data are downloaded
-    if download_status==0 % some data are still in queue
-      disp('___________!!!!_____________')
-      disp('Some data where put in queue!')
-      disp('To see when they are ready and to download execute "caa_download".');
-      return
-    end
+  caa_download(tint,'C1_CP_FGM_FULL_ISR2')
+  caa_download(tint,'C1_CP_WHI_NATURAL')
+  caa_download(tint,'C1_CP_EFW_L2_E','nowildcard')
+  caa_download(tint,'C1_CP_STA_CWF_HBR_ISR2')
+  caa_download(tint,'C1_CP_CIS_HIA_HS_1D_PEF')
+  caa_download(tint,'C1_CP_PEA_PITCH_SPIN_DEFlux')
+  download_status=caa_download; % repeat until all data are downloaded
+  if download_status==0 % some data are still in queue
+    disp('___________!!!!_____________')
+    disp('Some data where put in queue!')
+    disp('To see when they are ready and to download execute "caa_download".');
+    return
+  end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%
@@ -56,7 +56,7 @@ irf_legend(hca,{'C1'},[0.02 0.95],'color','k')
 
 % %%%%%%%%%%%%%%%%%%%%%%%
 % % new panel
- hca=irf_panel('STAFF B x');
+hca=irf_panel('STAFF B x');
 % % read data
 Bstaff=irf_get_data('B_vec_xyz_Instrument__C1_CP_STA_CWF_HBR_ISR2','caa','mat');
 fmin=1;

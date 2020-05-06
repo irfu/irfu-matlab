@@ -3,7 +3,7 @@ classdef mms_local_file_db < mms_file_db
   %   Class handling a database of local MMS files
   
   properties (SetAccess = immutable)
-    dbRoot 
+    dbRoot
   end
   
   methods
@@ -23,8 +23,8 @@ classdef mms_local_file_db < mms_file_db
         errStr = ['DB rootPath (',rootPath,') does not exist. Not mounted?'];
         irf.log('critical',errStr), error(errStr)
       end
-		end
-
+    end
+    
     %% LIST FILES
     function fileList = list_files(obj,filePrefix,tint)
       % fileList = list_files(obj, filePrefix, [tint]);
@@ -126,7 +126,7 @@ classdef mms_local_file_db < mms_file_db
           if isempty(listing), return, end
           arrayfun(@(x) add2list(x.name), listing)
         end
- 
+        
         function add2list(name)
           [~,fName,fExt] = fileparts(name);
           ver = str2double(fExt(3:4));
@@ -168,7 +168,7 @@ classdef mms_local_file_db < mms_file_db
               catch ME
                 try
                   % Try for a second method. This is sligthly less accurate
-                  % but should be more stable if "out" contains any 
+                  % but should be more stable if "out" contains any
                   % erroneous characters. This is limited to DOY strings in
                   % the format of "YYYY-DOY*hh:mm:ss.mmm" where * is any
                   % char.
@@ -218,7 +218,7 @@ classdef mms_local_file_db < mms_file_db
             end
           end
         end
-
+        
         function p = get_prefix()
           p = [obj.dbRoot, filesep, strjoin(C, filesep)];
         end
@@ -308,7 +308,7 @@ classdef mms_local_file_db < mms_file_db
         % Check time limits of the file
         if isempty(Entry) || ~isempty(tint) && ...
             (Entry.start>tint.stop || Entry.stop<tint.start)
-            return
+          return
         end
         if isempty(fileList), fileList = Entry; return, end
         fName = [fnd.scId '_' fnd.instrumentId '_' fnd.tmMode '_' ...
@@ -344,7 +344,7 @@ classdef mms_local_file_db < mms_file_db
           end
           isCdfEpochTT2000VariableArray=cellfun(@(x) strcmpi(x,'tt2000'), info.Variables(:,4));
           if ~any(isCdfEpochTT2000VariableArray)
-            errS = ['no TT2000 vars in:' entry.path filesep entry.name]; 
+            errS = ['no TT2000 vars in:' entry.path filesep entry.name];
             irf.log('critical',errS), error(errS)
           end
           iVar = find(isCdfEpochTT2000VariableArray,1);
@@ -390,8 +390,8 @@ classdef mms_local_file_db < mms_file_db
     
     %% FILE_HAS_VAR
     function res = file_has_var(obj,fileName,varName)
-			% checks if fileName includes variable name varName
-			% res = true/false
+      % checks if fileName includes variable name varName
+      % res = true/false
       narginchk(3,3)
       res = false; if isempty(varName) || isempty(fileName), return, end
       
@@ -419,7 +419,7 @@ classdef mms_local_file_db < mms_file_db
         ANC_VARS.defq = {'quality', 'scale'};
         ANC_VARS.predq = {'quality', 'scale'};
         if ~isempty(intersect(varName,...
-            ANC_VARS.(mms_local_file_db.get_anc_type(fileName)))) 
+            ANC_VARS.(mms_local_file_db.get_anc_type(fileName))))
           res = true;
         end
         return

@@ -4,7 +4,7 @@
 % include the Dbdef_h.m file and Isdef_h.m ( definition of DbMAX_DIMS and others)
 % Warning: these structures fit the ISDAT 1.6 release.
 % PG 96/04/26
- 
+
 
 Dbdef_h
 Isdef_h
@@ -22,7 +22,7 @@ data_spec_channel	= 6;
 data_spec_parameter	= 7;
 
 DbDataSpecIndex=[data_spec_project data_spec_member data_spec_instrument...
- data_spec_sensor data_spec_signal data_spec_channel data_spec_parameter];
+  data_spec_sensor data_spec_signal data_spec_channel data_spec_parameter];
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -37,7 +37,7 @@ spec_name_channel	= max(spec_name_signal)		+ 1:DbSPEC_NAME_DIM;
 spec_name_parameter	= max(spec_name_channel)	+ 1:DbSPEC_NAME_DIM;
 
 DbSpecNameIndex = [spec_name_project spec_name_member spec_name_instrument...
- spec_name_sensor spec_name_signal spec_name_channel spec_name_parameter];
+  spec_name_sensor spec_name_signal spec_name_channel spec_name_parameter];
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -84,9 +84,9 @@ data_info_quantityString = max (data_info_unitString	)	+ 1:32;
 data_info_conversion	 = max (data_info_quantityString)	+ 1:80;
 
 DbDataInfoIndex = [ data_info_units data_info_quantity data_info_scaleType ...
-		    data_info_scaleMin data_info_scaleMax data_info_samplingFreq ...
-		    data_info_filterFreq data_info_unitString ...
-		    data_info_quantityString data_info_conversion ];
+  data_info_scaleMin data_info_scaleMax data_info_samplingFreq ...
+  data_info_filterFreq data_info_unitString ...
+  data_info_quantityString data_info_conversion ];
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -99,7 +99,7 @@ coordinate_location	= max(coordinate_rot)		+ DbDataRD1Index;
 coordinate_direction	= max(coordinate_location)	+ DbDataRD1Index;
 
 DbCoordinateIndex =[ coordinate_reference coordinate_system coordinate_rot	...
-			coordinate_location coordinate_direction ];
+  coordinate_location coordinate_direction ];
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -116,8 +116,8 @@ data_request_pack	= max(data_request_gapFill)	+ 1;
 data_request_dataVersion= max(data_request_pack)	+ 1;
 
 DbDataRequestIndex = [ data_request_start data_request_interval data_request_spec ...
-data_request_units data_request_reduction data_request_samples data_request_gapFill ...
-data_request_pack data_request_dataVersion ];
+  data_request_units data_request_reduction data_request_samples data_request_gapFill ...
+  data_request_pack data_request_dataVersion ];
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -130,7 +130,7 @@ query_desc_time		= max(query_desc_level)		+ IsTimeIndex;
 query_desc_spec		= max(query_desc_time)		+ DbDataSpecIndex;
 
 DbQueryDescIndex = [ query_desc_mode query_desc_category query_desc_level	...
-			query_desc_time query_desc_spec ];
+  query_desc_time query_desc_spec ];
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -148,8 +148,8 @@ query_data_category	= max(query_data_dimension)	+ 1;
 query_data_mapType	= max(query_data_category)	+ 1;
 
 DbQueryDataIndex = [ query_data_value query_data_groupId query_data_event query_data_name ...
-query_data_rank	query_data_complete query_data_dataType query_data_dimension ...
-query_data_category query_data_mapType ];
+  query_data_rank	query_data_complete query_data_dataType query_data_dimension ...
+  query_data_category query_data_mapType ];
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -173,7 +173,7 @@ overview_desc_dataVersion	= max(overview_desc_event)		+ 1;
 overview_desc_sections		= max(overview_desc_dataVersion)	+ 1;
 
 DbOverviewDescIndex = [ overview_desc_start overview_desc_interval overview_desc_spec ...
-		overview_desc_event overview_desc_dataVersion overview_desc_sections ];
+  overview_desc_event overview_desc_dataVersion overview_desc_sections ];
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

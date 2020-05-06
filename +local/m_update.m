@@ -226,7 +226,7 @@ cd(oldPwd);
   function inputArg = verify_input(tmpVarargin)
     % Process input arguments
     p = inputParser;
-    p.CaseSensitive = false; % match regardless of case. 
+    p.CaseSensitive = false; % match regardless of case.
     % Default values
     default.scId = {'1','2','3','4'}; % All four MMS spacecrafts
     default.dataSet = {'afg', 'asp1', 'asp2', 'aspoc', 'dfg', 'dsp', ...

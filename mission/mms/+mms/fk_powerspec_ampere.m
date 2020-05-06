@@ -3,19 +3,19 @@ function [xvariable,yvariable,powerxy] = fk_powerspec_ampere(varargin)
 % [fkpower,freq,wavenumber] = mms.fk_powerspec_ampere(J,B,Bback,Tints,options)
 %
 % Function to calculate the frequency-wave number power spectrum using
-% Amperes law on a single spacecraft (based on method from Bellan, JGR, 2016). 
+% Amperes law on a single spacecraft (based on method from Bellan, JGR, 2016).
 % Written by D. B. Graham.
 %
 % Input: (All data must be in TSeries format)
 %       J -         Fluctuating Current density (in nA m^{-2})
 %       B -         Fluctuating Magnetic field (in nT)
 %       Bback -     Background magnetic field (in nT)
-%       Tints -     Time interval over which the power spectrum is calculated. 
+%       Tints -     Time interval over which the power spectrum is calculated.
 %                   To avoid boundary effects use a longer time interval
-%                   for J and B. 
+%                   for J and B.
 %
 % Options:
-%       numk -      Set number of wave numbers used in spectrogram. 
+%       numk -      Set number of wave numbers used in spectrogram.
 %       linear -    Linearly spaced frequencies. Set number to df (default is logarithmic spacing).
 %       numf -      Set number of frequencies used in spectrogram.
 %       wwidth -    Multiplier for Morlet wavelet width. Default is 1.
@@ -33,11 +33,11 @@ function [xvariable,yvariable,powerxy] = fk_powerspec_ampere(varargin)
 %
 %
 %
-% Example: 
+% Example:
 %   [xvecs,yvecs,Power] = mms.fk_powerspec_ampere(J,B,Bback,Tint,'linear',0.2,'numk',300,'wwidth',2,'frange',[5 10],'plotEpower',E);
 %
 % Example to plot:
-%   pcolor(xvecs.kmag,yvecs.fkmag,log10(Power.Powerkmagf)); 
+%   pcolor(xvecs.kmag,yvecs.fkmag,log10(Power.Powerkmagf));
 %   shading('flat');
 %   xlabel('|k| (m^{-1})');
 %   ylabel('f (Hz)');
@@ -45,11 +45,11 @@ function [xvariable,yvariable,powerxy] = fk_powerspec_ampere(varargin)
 
 
 if (nargin < 4)
-	help mms.fk_powerspec_ampere;
-	powerxy = NaN;
-	xvariable = NaN;
-	yvariable = NaN;
-	return;
+  help mms.fk_powerspec_ampere;
+  powerxy = NaN;
+  xvariable = NaN;
+  yvariable = NaN;
+  return;
 end
 
 J = varargin{1};
@@ -70,15 +70,15 @@ frange = 0;
 
 args=varargin(5:end);
 if numel(args)>0
-	haveoptions=1;
+  haveoptions=1;
   irf.log('notice','Options were passed.');
 else
-	haveoptions=0;
+  haveoptions=0;
 end
 
 while haveoptions
-	l = 2;
-	switch(lower(args{1}))
+  l = 2;
+  switch(lower(args{1}))
     case 'numk'
       if numel(args)>1 && isnumeric(args{2})
         numk = floor(args{2});
@@ -89,7 +89,7 @@ while haveoptions
       end
     case 'linear'
       if numel(args)>1 && isnumeric(args{2})
-        df = args{2}; 
+        df = args{2};
         uselinear = 1;
         irf.log('notice','Using linearly spaced frequencies');
       end
@@ -103,38 +103,38 @@ while haveoptions
         E = E.resample(J);
         plotEpower = 1;
       end
-    case 'frange' 
-       if numel(args)>1 && isnumeric(args{2})
-        frange = args{2};      
+    case 'frange'
+      if numel(args)>1 && isnumeric(args{2})
+        frange = args{2};
       end
     otherwise
       irf.log('warning',['Unknown flag: ' args{1}]);
       l=1;
       break;
   end
-    args = args(l+1:end);
-	if isempty(args), haveoptions=0; end
+  args = args(l+1:end);
+  if isempty(args), haveoptions=0; end
 end
 
 idx = tlim(B.time,Tint);
 
 % If odd, remove last data point (as is done in irf_wavelet)
 if mod(length(idx),2)
-    idx(end)=[];
+  idx(end)=[];
 end
 
 if ~uselinear
-	WB = irf_wavelet(B,'returnpower',0,'cutedge',0,'nf',numf,'wavelet_width',5.36*wwidth);
+  WB = irf_wavelet(B,'returnpower',0,'cutedge',0,'nf',numf,'wavelet_width',5.36*wwidth);
   WJ = irf_wavelet(J,'returnpower',0,'cutedge',0,'nf',numf,'wavelet_width',5.36*wwidth);
   if plotEpower
     WE = irf_wavelet(E,'returnpower',0,'cutedge',0,'nf',numf,'wavelet_width',5.36*wwidth);
-  end   
+  end
 else
   WB = irf_wavelet(B,'returnpower',0,'cutedge',0,'linear',df,'wavelet_width',5.36*wwidth);
   WJ = irf_wavelet(J,'returnpower',0,'cutedge',0,'linear',df,'wavelet_width',5.36*wwidth);
   if plotEpower
     WE = irf_wavelet(E,'returnpower',0,'cutedge',0,'linear',df,'wavelet_width',5.36*wwidth);
-  end 
+  end
 end
 numf = length(WB.f);
 
@@ -152,19 +152,19 @@ fkPower = WBx.*conj(WBx)+WBy.*conj(WBy)+WBz.*conj(WBz);
 if plotEpower
   fkPowerE = WE.p{1,1}(idx,:).*conj(WE.p{1,1}(idx,:))+WE.p{1,2}(idx,:).*conj(WE.p{1,2}(idx,:))+WE.p{1,3}(idx,:).*conj(WE.p{1,3}(idx,:));
 end
- 
-Bback = Bback.resample(times); 
+
+Bback = Bback.resample(times);
 
 Units = irf_units;
 mu0 = Units.mu0;
 
 % Negative sign needed for consistency with four spacecraft timing.
-% Compared with FFT method, there a no negative frequencies used here. 
+% Compared with FFT method, there a no negative frequencies used here.
 kx = -1i*mu0*(WJy.*conj(WBz) - WJz.*conj(WBy))./fkPower;
 ky = -1i*mu0*(WJz.*conj(WBx) - WJx.*conj(WBz))./fkPower;
 kz = -1i*mu0*(WJx.*conj(WBy) - WJy.*conj(WBx))./fkPower;
 
-% Wave vectors are generally complex. Here only the real part is taken. 
+% Wave vectors are generally complex. Here only the real part is taken.
 kx = real(kx);
 ky = real(ky);
 kz = real(kz);
@@ -197,7 +197,7 @@ end
 irf.log('notice','Computing power versus kmag,f')
 powerkmagf = zeros(numf,numk);
 for mm = 1:L
-	for nn = 1:numf
+  for nn = 1:numf
     knumber = floor((kmag(mm,nn))/dkmag)+1;
     powerkmagf(nn,knumber) = powerkmagf(nn,knumber) + Powerp(mm,nn);
   end
@@ -205,7 +205,7 @@ end
 
 powerkmagf(powerkmagf == 0) = NaN;
 %powerkmagf = powerkmagf/(N+1); % Normalization. This should correspond to FFT PSD when summed over k.
-powerkmagf = powerkmagf/max(max(powerkmagf)); % Normalization to Max value for plotting. 
+powerkmagf = powerkmagf/max(max(powerkmagf)); % Normalization to Max value for plotting.
 
 xvec1 = kmagvec;
 yvec1 = WJ.f;
@@ -220,7 +220,7 @@ end
 irf.log('notice','Computing power versus kperp,kpar')
 powerkperpkpar = zeros(numk,numk);
 for mm = 1:L
-	for nn = idxf
+  for nn = idxf
     kparnumber = floor((kpar(mm,nn)-kmin)/dk)+1;
     kperpnumber = floor((kperp(mm,nn))/dkmag)+1;
     powerkperpkpar(kparnumber,kperpnumber) = powerkperpkpar(kparnumber,kperpnumber) + Powerp(mm,nn);
@@ -236,7 +236,7 @@ yvec2 = kvec;
 irf.log('notice','Computing power versus kx,ky')
 powerkxky = zeros(numk,numk);
 for mm = 1:L
-	for nn = idxf
+  for nn = idxf
     kxnumber = floor((kx(mm,nn)-kmin)/dk)+1;
     kynumber = floor((ky(mm,nn)-kmin)/dk)+1;
     powerkxky(kynumber,kxnumber) = powerkxky(kynumber,kxnumber) + Powerp(mm,nn);
@@ -252,7 +252,7 @@ yvec3 = kvec;
 irf.log('notice','Computing power versus kx,ky')
 powerkxkz = zeros(numk,numk);
 for mm = 1:L
-	for nn = idxf
+  for nn = idxf
     kxnumber = floor((kx(mm,nn)-kmin)/dk)+1;
     kznumber = floor((kz(mm,nn)-kmin)/dk)+1;
     powerkxkz(kznumber,kxnumber) = powerkxkz(kznumber,kxnumber) + Powerp(mm,nn);
@@ -268,7 +268,7 @@ yvec4 = kvec;
 irf.log('notice','Computing power versus ky,kz')
 powerkykz = zeros(numk,numk);
 for mm = 1:L
-	for nn = idxf
+  for nn = idxf
     kynumber = floor((ky(mm,nn)-kmin)/dk)+1;
     kznumber = floor((kz(mm,nn)-kmin)/dk)+1;
     powerkykz(kznumber,kynumber) = powerkykz(kznumber,kynumber) + Powerp(mm,nn);
@@ -284,7 +284,7 @@ yvec5 = kvec;
 irf.log('notice','Computing power versus kx,f')
 powerkxf = zeros(numf,numk);
 for mm = 1:L
-	for nn = 1:numf
+  for nn = 1:numf
     kxnumber = floor((kx(mm,nn)-kmin)/dk)+1;
     powerkxf(nn,kxnumber) = powerkxf(nn,kxnumber) + Powerp(mm,nn);
   end
@@ -299,7 +299,7 @@ yvec6 = WJ.f;
 irf.log('notice','Computing power versus ky,f')
 powerkyf = zeros(numf,numk);
 for mm = 1:L
-	for nn = 1:numf
+  for nn = 1:numf
     kynumber = floor((ky(mm,nn)-kmin)/dk)+1;
     powerkyf(nn,kynumber) = powerkyf(nn,kynumber) + Powerp(mm,nn);
   end
@@ -314,7 +314,7 @@ yvec7 = WJ.f;
 irf.log('notice','Computing power versus kz,f')
 powerkzf = zeros(numf,numk);
 for mm = 1:L
-	for nn = 1:numf
+  for nn = 1:numf
     kznumber = floor((kz(mm,nn)-kmin)/dk)+1;
     powerkzf(nn,kznumber) = powerkzf(nn,kznumber) + Powerp(mm,nn);
   end

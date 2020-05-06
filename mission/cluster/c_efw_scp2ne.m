@@ -6,7 +6,7 @@ function n=c_efw_scp2ne(Vps,flag,coef)
 %   Function that calculates the plasma density (Ne) for given EFW
 %   probes to spacecraft potential values Vps.
 %   Unfortnately we decided to take the easy simple linear fit.
-%   
+%
 %   Ne =  c_efw_scp2ne( Vps);
 %   Vps = c_efw_scp2ne( Ne, -1 );
 %
@@ -29,27 +29,27 @@ function n=c_efw_scp2ne(Vps,flag,coef)
 % Harri Laakso WHISPER data comparison.
 % 2002.06.13
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  Vps_ref  = [  2  3  5 8  10  15   25   35];
-  Ne_ref   = [100 36 10 4 2.5 1.3 0.45 0.17];
+Vps_ref  = [  2  3  5 8  10  15   25   35];
+Ne_ref   = [100 36 10 4 2.5 1.3 0.45 0.17];
 
 n           = Vps;
 colind      = min(2,size(Vps,2)):size(Vps,2);
 
 switch nargin
-    case 1
-        % Vps -> Ne
-        flag=1;coef=1;
-    case 2
-        coef=1;
+  case 1
+    % Vps -> Ne
+    flag=1;coef=1;
+  case 2
+    coef=1;
 end
 
-if flag==-1 
-    % Ne -> Vps
-    warning off
-    n(:,colind) = interp1( log10(Ne_ref), Vps_ref, log10(Vps(:,colind)/coef), 'linear', 'extrap' );
-    warning on
+if flag==-1
+  % Ne -> Vps
+  warning off
+  n(:,colind) = interp1( log10(Ne_ref), Vps_ref, log10(Vps(:,colind)/coef), 'linear', 'extrap' );
+  warning on
 else    % Vps -> Ne
-    n(:,colind) = 10.^interp1( Vps_ref, log10(Ne_ref), abs(real(Vps(:,colind))), 'linear', 'extrap' )*coef;
+  n(:,colind) = 10.^interp1( Vps_ref, log10(Ne_ref), abs(real(Vps(:,colind))), 'linear', 'extrap' )*coef;
   
 end
 

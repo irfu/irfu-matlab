@@ -14,13 +14,12 @@ res = [];
 
 [probePair,flag_lx] = caa_sfit_probe(cl_id);
 if flag_lx
-    vs = sprintf('diELXs%dp%d',cl_id,probePair/10);
+  vs = sprintf('diELXs%dp%d',cl_id,probePair/10);
 else
-    vs = sprintf('diEs%dp%d',cl_id,probePair);
+  vs = sprintf('diEs%dp%d',cl_id,probePair);
 end
-    
+
 [ok,diEs,msg] = c_load(vs);
 if ~ok || isempty(vs), return, end
 
 res = struct('diEs',diEs,'probePair',probePair,'flagLX',flag_lx);
-    

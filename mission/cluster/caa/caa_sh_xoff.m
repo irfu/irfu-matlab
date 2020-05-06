@@ -63,7 +63,7 @@ for cli=1:4
   end
   cd(old_pwd)
 end
-		
+
 
 % Try loading C1 CIS-HIA from CAA
 diVCEh1 = [];
@@ -73,14 +73,14 @@ if ~isempty(diVCh1)
   diB1 = caa_stream_var(diVCh1(1,1)-3,diVCh1(end,1)-diVCh1(1,1)+6,...
     'C1_CP_FGM_5VPS_ISR2','B_vec_xyz_isr2');
   if ~isempty(diB1), diVCEh1 = irf_e_vxb(diVCh1,diB1); end
-%else %diVCEh1 = caa_get(st,dt,1,'diVCEh?'); end %try from disk
+  %else %diVCEh1 = caa_get(st,dt,1,'diVCEh?'); end %try from disk
 end
 
 if ~isempty(diVCEh1)
-    diVCEh1(isnan(diVCEh1(:,2)),:)=[];
-    CE1=irf_resamp(diVCEh1,t);
+  diVCEh1(isnan(diVCEh1(:,2)),:)=[];
+  CE1=irf_resamp(diVCEh1,t);
 else
-    CE1 = [];
+  CE1 = [];
 end
 
 % Try loading C3 CIS-HIA from CAA
@@ -116,8 +116,8 @@ CODIF_FILLV = 200; % remove E values above this
 CODIF_N_THRESH = 2; % ion density below CODIF_N_THRESH cc is magnetosphere
 if ~isempty(diVCEh4)
   if size(NCp4,1)==size(diVCEh4,1)
-    diVCEh4(NCp4(:,2)<CODIF_N_THRESH,:) = NaN; 
-  end   
+    diVCEh4(NCp4(:,2)<CODIF_N_THRESH,:) = NaN;
+  end
   diVCEh4(isnan(diVCEh4(:,2)),:)=[];
   diVCEh4(abs(diVCEh4(:,2))>CODIF_FILLV,:) = [];
   CE4=irf_resamp(diVCEh4,t);
@@ -337,7 +337,7 @@ dAmp = [dAmp1 dAmp2 dAmp3 dAmp4];
       if ~ok, irf_log('load',msg), end
       clear ok msg
       nsops_errlist = [];
-          
+      
       if probe_numeric<50, probepair_list=probe_numeric;
       else, probepair_list=[12 32 34];end
       for probepair=probepair_list
@@ -481,7 +481,7 @@ end
 end
 
 function res = find_damp(Ey,CEy)
-% find amlitude correction factor by searching for 
+% find amlitude correction factor by searching for
 % minimum( std( ECISy -dAMP*Ey ) )
 
 damp = 1:0.025:1.4;

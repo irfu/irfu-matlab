@@ -34,21 +34,21 @@ isEqualNeighbour = (binR(1:end-1) == binR(2:end));
 binR1 = binR;
 binR1(isEqualNeighbour)=[];
 disp([num2str(sum(isEqualNeighbour)) ' equal neigbours removed' ...
-	' out of ' num2str(numel(binR)) ' points.']);
+  ' out of ' num2str(numel(binR)) ' points.']);
 
 %% remove points passed by shock
 binR2=binR1;
 indPassedByShock = find(sign(binR1(3:end)-binR1(2:end-1)) == ...
-	sign(binR1(2:end-1)-binR1(1:end-2)))+1;
+  sign(binR1(2:end-1)-binR1(1:end-2)))+1;
 binR2(indPassedByShock)=[];
 disp([num2str(numel(indPassedByShock)) ' points passed by shock removed' ...
-	' out of ' num2str(numel(binR1)) ' points.']);
+  ' out of ' num2str(numel(binR1)) ' points.']);
 
 %% count crossings
 nCrossings = zeros(1,size(edges,2)-1);
 for ii = 2:numel(binR2)
-	indShocksCrossed = binR2(ii-1)+1 : binR2(ii);
-	nCrossings(indShocksCrossed) = nCrossings(indShocksCrossed) + 1;
+  indShocksCrossed = binR2(ii-1)+1 : binR2(ii);
+  nCrossings(indShocksCrossed) = nCrossings(indShocksCrossed) + 1;
 end
 
 %% statistics of shock crossings [#/day]
@@ -59,7 +59,7 @@ distanceRE = (edges(2:end)+edges(1:end-1))/2;
 % probability matrix, first column distance, second column #/day
 % probabilityCrossings = [distanceRE' nCrossings' / totalTimeDays];
 
-%% statistics of shock distance 
+%% statistics of shock distance
 countsR=histcounts(R,edges);
 
 
@@ -75,14 +75,14 @@ grid on;
 xlabel('Distance [R_E]');
 ylabel('Probability of shock crossing [#/day]');
 
-%% add the probability of shock didstance 
+%% add the probability of shock didstance
 
 hold(hb.Parent,'on');
 hb2=bar(hb.Parent,distanceRE,countsR/100,1,'facealpha',0.5,'facecolor','green');
 xax = get(hb.Parent,'xlim');
 yax = get(hb.Parent,'ylim');
 ht=text(xax(1)*1.01,yax(1)*1.01,'Probability of BS distance',...
-	'color','green','rotation',90);
+  'color','green','rotation',90);
 
 %% mark bow shock box requirement
 
@@ -102,7 +102,7 @@ bbbm = irf_get_data(tint,'Bx,By,Bz,Ms','omni_min');
 %% clean up data
 om=bbbm;
 for i=2:size(om,2)
-	om(isnan(om(:,i)),:)=[];
+  om(isnan(om(:,i)),:)=[];
 end
 Bx = om(:,2);
 By = om(:,3);

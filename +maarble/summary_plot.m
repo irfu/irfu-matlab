@@ -100,11 +100,11 @@ if regexp(productName,'^C[1-4]_CP')==1
   ebsp.r = local.c_read(['R' productName(2)],ebsp.t.data([1 end]));
 elseif regexp(productName,'^CC_CP_AUX_MAARBLE_TH[A-E]_[U,V]LF')==1
   if isempty(Rth)
-    Rth = load(sprintf('%s%smRth.mat',dataDir,filesep), '-mat'); 
+    Rth = load(sprintf('%s%smRth.mat',dataDir,filesep), '-mat');
   end
   ebsp.r =Rth.(['Rth' lower(productName(21))]);
 elseif regexp(productName,'^CC_CP_AUX_MAARBLE_G1[1-2]_ULF')==1
-  try 
+  try
     dd=dataobj([dataPath '/../../FACMATR/CDF/CC_CP_AUX_MAARBLE_G1' fname(21) '_ULF_FACMATR__' fname(33:47) '*.cdf']);
     ebsp.r = getmat(dd,['sc_pos_xyz_GSE__CC_CP_AUX_MAARBLE_G1' fname(21) '_ULF_FACMATR']);
   catch

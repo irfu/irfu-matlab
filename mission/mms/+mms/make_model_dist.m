@@ -6,7 +6,7 @@ function modelPDist = make_model_dist(PDist,Bxyz,SCpot,n,V,T)
 % modelPDist = mms.make_model_dist(PDist,Bxyz,SCpot,ne,Ve,Te)
 %
 %   Input:
-%       PDist - particle distribution (skymap). Must be in PDist format. 
+%       PDist - particle distribution (skymap). Must be in PDist format.
 %       Bxyz - Background magnetic field (TSeries)
 %       SCpot - Spacecraft potential (TSeries)
 %       ne - number density (TSeries)
@@ -24,9 +24,9 @@ function modelPDist = make_model_dist(PDist,Bxyz,SCpot,n,V,T)
 tic;
 % Check that PDist and moments have the same times
 if abs(median(diff(PDist.time-n.time))) > 0
-    modelPDist = NaN;
-    irf.log('critical','PDist and moments have different times.')
-    return;
+  modelPDist = NaN;
+  irf.log('critical','PDist and moments have different times.')
+  return;
 end
 
 % Convert to SI units
@@ -53,16 +53,16 @@ qe = Units.e;
 
 % Check whether particles are electrons or ions
 if (PDist.species(1) == 'e')
-    pmass = Units.me;
-    irf.log('notice','Particles are electrons');
+  pmass = Units.me;
+  irf.log('notice','Particles are electrons');
 elseif (PDist.species(1) == 'i')
-    pmass = Units.mp;
-    SCpot.data = -SCpot.data;
-    irf.log('notice','Particles are Ions');
+  pmass = Units.mp;
+  SCpot.data = -SCpot.data;
+  irf.log('notice','Particles are Ions');
 else
-    modelPDist = NaN;
-    irf.log('critical','Could not identify the particle type');
-    return;
+  modelPDist = NaN;
+  irf.log('critical','Could not identify the particle type');
+  return;
 end
 
 % Convert moments to SI units
@@ -87,9 +87,9 @@ z = zeros(length(PDist.time),lengthphi,lengththeta);
 r = zeros(length(PDist.time),lengthenergy);
 
 for ii = 1:length(PDist.time)
-	x(ii,:,:) = -cosd(PDist.depend{1,2}(ii,:)')*sind(PDist.depend{1,3});
-	y(ii,:,:) = -sind(PDist.depend{1,2}(ii,:)')*sind(PDist.depend{1,3});
-	z(ii,:,:) = -ones(lengthphi,1)*cosd(PDist.depend{1,3});
+  x(ii,:,:) = -cosd(PDist.depend{1,2}(ii,:)')*sind(PDist.depend{1,3});
+  y(ii,:,:) = -sind(PDist.depend{1,2}(ii,:)')*sind(PDist.depend{1,3});
+  z(ii,:,:) = -ones(lengthphi,1)*cosd(PDist.depend{1,3});
   r(ii,:) = real(sqrt(2*(energyarr(ii,:)-SCpot.data(ii))*qe/pmass));
 end
 r(r == 0) = 0.0;
@@ -106,9 +106,9 @@ yp = zeros(length(PDist.time),lengthphi,lengththeta);
 zp = zeros(length(PDist.time),lengthphi,lengththeta);
 
 for ii = 1:length(PDist.time)
-    xp(ii,:,:) = x(ii,:,:)*Rx(ii,1)+y(ii,:,:)*Rx(ii,2)+z(ii,:,:)*Rx(ii,3);
-    yp(ii,:,:) = x(ii,:,:)*Ry(ii,1)+y(ii,:,:)*Ry(ii,2)+z(ii,:,:)*Ry(ii,3);
-    zp(ii,:,:) = x(ii,:,:)*Rz(ii,1)+y(ii,:,:)*Rz(ii,2)+z(ii,:,:)*Rz(ii,3);
+  xp(ii,:,:) = x(ii,:,:)*Rx(ii,1)+y(ii,:,:)*Rx(ii,2)+z(ii,:,:)*Rx(ii,3);
+  yp(ii,:,:) = x(ii,:,:)*Ry(ii,1)+y(ii,:,:)*Ry(ii,2)+z(ii,:,:)*Ry(ii,3);
+  zp(ii,:,:) = x(ii,:,:)*Rz(ii,1)+y(ii,:,:)*Rz(ii,2)+z(ii,:,:)*Rz(ii,3);
 end
 
 % Make 4D position matrix
@@ -141,11 +141,11 @@ rmat = repmat(r,1,1,lengthphi,lengththeta);
 % Construct biMaxwellian distribution function
 bimaxdist = zeros(size(rmat));
 for ii = 1:length(PDist.time)
-    coeff = n.data(ii)*Trat.data(ii)/(sqrt(pi^3)*vthpar.data(ii)^3);
-    bimaxtemp = coeff*exp(-(xp(ii,:,:,:).*rmat(ii,:,:,:)-Vpmag.data(ii)).^2./(vthpar.data(ii).^2).*Trat.data(ii));
-    bimaxtemp = bimaxtemp.*exp(-(yp(ii,:,:,:).*rmat(ii,:,:,:)).^2./(vthpar.data(ii).^2).*Trat.data(ii));
-    bimaxtemp = bimaxtemp.*exp(-(zp(ii,:,:,:).*rmat(ii,:,:,:)-Vpar.data(ii)).^2./(vthpar.data(ii).^2));
-    bimaxdist(ii,:,:,:) = bimaxtemp;
+  coeff = n.data(ii)*Trat.data(ii)/(sqrt(pi^3)*vthpar.data(ii)^3);
+  bimaxtemp = coeff*exp(-(xp(ii,:,:,:).*rmat(ii,:,:,:)-Vpmag.data(ii)).^2./(vthpar.data(ii).^2).*Trat.data(ii));
+  bimaxtemp = bimaxtemp.*exp(-(yp(ii,:,:,:).*rmat(ii,:,:,:)).^2./(vthpar.data(ii).^2).*Trat.data(ii));
+  bimaxtemp = bimaxtemp.*exp(-(zp(ii,:,:,:).*rmat(ii,:,:,:)-Vpar.data(ii)).^2./(vthpar.data(ii).^2));
+  bimaxdist(ii,:,:,:) = bimaxtemp;
 end
 
 % Make modelPDist file for output

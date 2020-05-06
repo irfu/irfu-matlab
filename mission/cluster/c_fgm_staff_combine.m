@@ -1,21 +1,21 @@
 function [bout]=c_fgm_staff_combine(bFgm,bStaff,varargin)
 % C_FGM_STAFF_COMBINE  combine FGM and STAFF data series
 %
-% b = C_FGM_STAFF_COMBINE(bFgm,bStaff,[OPTIONS]) 
+% b = C_FGM_STAFF_COMBINE(bFgm,bStaff,[OPTIONS])
 %    Combines FGM and STAFF time series. Combination is done using
-%    FIR filters with 127 points (normal mode) or 1023 points (burst mode). 
+%    FIR filters with 127 points (normal mode) or 1023 points (burst mode).
 %    The returned time series have a timeline of bStaff.
 %
-% b = C_FGM_STAFF_COMBINE(bFgm,bStaff,'fCut',FCUT) 
+% b = C_FGM_STAFF_COMBINE(bFgm,bStaff,'fCut',FCUT)
 %    Set merging frequency to FCUT (default 1.3 Hz)
 %
-% b = C_FGM_STAFF_COMBINE(bFgm,bStaff,'cl_id',CL_ID) 
+% b = C_FGM_STAFF_COMBINE(bFgm,bStaff,'cl_id',CL_ID)
 %    Specify Cluster CS number (used for sampling frequency calculation)
 %
-% b = C_FGM_STAFF_COMBINE(bFgm,bStaff,'plot') 
-%    Plot the spectra of FGM, STAFF and merged time series. 
-%    This is useful to verify the merging. In cases the STAFF spectra have 
-%    lower amplitude than the FGM spectra at the FCUT frequency of 1.3Hz, 
+% b = C_FGM_STAFF_COMBINE(bFgm,bStaff,'plot')
+%    Plot the spectra of FGM, STAFF and merged time series.
+%    This is useful to verify the merging. In cases the STAFF spectra have
+%    lower amplitude than the FGM spectra at the FCUT frequency of 1.3Hz,
 %    one should use a lower FCUT where the two spcetra agree.
 
 %% check input
@@ -66,16 +66,16 @@ if isempty(cl_id), fsStaff = c_efw_fsample(bStaff,'hx');
 else, fsStaff = c_efw_fsample(bStaff,'hx',cl_id);
 end
 if fsStaff < 400 % STAFF in normal mode, not implemented
-    N = 127;  % FIR filter order (have to be odd number!!!)
-    irf.log('notice',sprintf('STAFF data in normal mode [%.2f Hz]',fsStaff));
+  N = 127;  % FIR filter order (have to be odd number!!!)
+  irf.log('notice',sprintf('STAFF data in normal mode [%.2f Hz]',fsStaff));
 else
-    N = 1023;  % FIR filter order (have to be odd number!!!)
-    irf.log('notice',sprintf('STAFF data in burst mode [%.2f Hz]',fsStaff)); 
+  N = 1023;  % FIR filter order (have to be odd number!!!)
+  irf.log('notice',sprintf('STAFF data in burst mode [%.2f Hz]',fsStaff));
 end
 
 if 1/mean(diff(bFgm(1:min(end,100),1))) < 60 % FGM in normal mode
-    disp('FGM data in normal mode!');
-    %Fs_fgm = 22; % Sampling Frequency
+  disp('FGM data in normal mode!');
+  %Fs_fgm = 22; % Sampling Frequency
 else
   if fsStaff == 25
     errS = 'FGM sample rate is higher than STAFF''!';
@@ -96,45 +96,45 @@ b_fgm_res = irf_resamp(bFgm, bStaff);
 
 b_fgm_filt=b_fgm_res;
 for j=2:4
-    b_fgm_filt(:,j) = filtfilt(LoP, 1.0, b_fgm_res(:,j));
+  b_fgm_filt(:,j) = filtfilt(LoP, 1.0, b_fgm_res(:,j));
 end
 b_staff_filt=bStaff;
 for j=2:4
-    b_staff_filt(:,j) = bStaff(:,j) - filtfilt(LoP, 1.0, bStaff(:,j));
+  b_staff_filt(:,j) = bStaff(:,j) - filtfilt(LoP, 1.0, bStaff(:,j));
 end
 
 %merge the two vectors
 b=[b_fgm_res(:,1) b_fgm_filt(:,2:end) + b_staff_filt(:,2:end)];
 
 if size(b,2)>4 % the 5th column should be |B|
-    b(:,5)=irf_abs(b,1);
+  b(:,5)=irf_abs(b,1);
 end
 
 
 %% plot PSD
 if flag_plot
-    wd=2^14; % window size
-    h=spectrum.welch('Hann',wd,75);
-    
-    compS = 'xyz';
-    figure(13), hpl = gobjects(3);
-    for k=2:4
-        hpl(k-1)=subplot(3,1,k-1);
-        psdestFGM = psd(h,b_fgm_res(:,k),'Fs',fsStaff);
-        plot(psdestFGM.Frequencies, psdestFGM.Data,'k');
-        set(gca, 'XScale', 'log','YScale', 'log');
-        ylabel(['PSD(B' compS(k-1) ') [nT^2/Hz]']); xlabel('Frequency [Hz]'); 
-        if k==2, title(sprintf('fCut = %.2f Hz',fCut)), end
-        hold on
-        psdestSTA = psd(h,bStaff(:,k),'Fs',fsStaff);
-        plot(psdestSTA.Frequencies, psdestSTA.Data,'g');
-        psdestMER = psd(h,b(:,k),'Fs',fsStaff);
-        plot(psdestMER.Frequencies, psdestMER.Data,'r:');
-        legend(hpl(k-1),'FGM','STAFF','MERGED')
-        ylim = get(gca,'YLim');
-        plot([fCut fCut],ylim,'b-.')
-        hold off        
-    end
+  wd=2^14; % window size
+  h=spectrum.welch('Hann',wd,75);
+  
+  compS = 'xyz';
+  figure(13), hpl = gobjects(3);
+  for k=2:4
+    hpl(k-1)=subplot(3,1,k-1);
+    psdestFGM = psd(h,b_fgm_res(:,k),'Fs',fsStaff);
+    plot(psdestFGM.Frequencies, psdestFGM.Data,'k');
+    set(gca, 'XScale', 'log','YScale', 'log');
+    ylabel(['PSD(B' compS(k-1) ') [nT^2/Hz]']); xlabel('Frequency [Hz]');
+    if k==2, title(sprintf('fCut = %.2f Hz',fCut)), end
+    hold on
+    psdestSTA = psd(h,bStaff(:,k),'Fs',fsStaff);
+    plot(psdestSTA.Frequencies, psdestSTA.Data,'g');
+    psdestMER = psd(h,b(:,k),'Fs',fsStaff);
+    plot(psdestMER.Frequencies, psdestMER.Data,'r:');
+    legend(hpl(k-1),'FGM','STAFF','MERGED')
+    ylim = get(gca,'YLim');
+    plot([fCut fCut],ylim,'b-.')
+    hold off
+  end
 end
 
 

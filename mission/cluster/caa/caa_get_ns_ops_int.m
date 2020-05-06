@@ -16,7 +16,7 @@ function ints_out = caa_get_ns_ops_int(st,dt,ns_ops,ids)
 
 if isempty(ns_ops), error('Empty NS_OPS'), end
 
-% Remove records which cover permanent problems (as loss of 
+% Remove records which cover permanent problems (as loss of
 % probes, filters, etc.) as these must be programmed separately
 ns_ops(ns_ops(:,2)==-1,:) = [];
 
@@ -29,30 +29,30 @@ if isempty(ns_ops), return, end
 
 % Problem covers the whole interval
 if ~isempty( find( ns_ops(:,1)<=st & ns_ops(:,1)+ns_ops(:,2)>=st+dt ,1) )
-	ints_out = [st st+dt];
-	return
+  ints_out = [st st+dt];
+  return
 end
 
 % Problems starts inside the interval and ends after the interval
 while 1
-	ii = find( ns_ops(:,1)<st+dt & ns_ops(:,1)>st & ns_ops(:,1)+ns_ops(:,2)>=st+dt);
-	if isempty(ii), break, end
-	
-	ints_out = [ints_out; ns_ops(ii(1),1) st+dt];
-	
-	% clear already processed records
-	ns_ops(ii(1),:) = [];
+  ii = find( ns_ops(:,1)<st+dt & ns_ops(:,1)>st & ns_ops(:,1)+ns_ops(:,2)>=st+dt);
+  if isempty(ii), break, end
+  
+  ints_out = [ints_out; ns_ops(ii(1),1) st+dt];
+  
+  % clear already processed records
+  ns_ops(ii(1),:) = [];
 end
 
 % Problems starts before the interval and ends inside the interval
 while 1
-	ii = find( ns_ops(:,1)<=st & ns_ops(:,1)+ns_ops(:,2)>st & ns_ops(:,1)+ns_ops(:,2)<=st+dt);
-	if isempty(ii), break, end
-	
-	ints_out = [ints_out; st ns_ops(ii(1),1)+ns_ops(ii(1),2)];
-	
-	% clear already processed records
-	ns_ops(ii(1),:) = [];
+  ii = find( ns_ops(:,1)<=st & ns_ops(:,1)+ns_ops(:,2)>st & ns_ops(:,1)+ns_ops(:,2)<=st+dt);
+  if isempty(ii), break, end
+  
+  ints_out = [ints_out; st ns_ops(ii(1),1)+ns_ops(ii(1),2)];
+  
+  % clear already processed records
+  ns_ops(ii(1),:) = [];
 end
 
 % Problem is inside the interval

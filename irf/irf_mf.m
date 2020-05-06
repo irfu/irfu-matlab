@@ -14,9 +14,9 @@ else
   t=1:size(x,1)';
 end
 for ii=iref:nc
- [p,~] = polyfit(t,x(:,ii),pol_order);
- xm(:,ii)=polyval(p,t);
- xw(:,ii)=x(:,ii)-xm(:,ii);
+  [p,~] = polyfit(t,x(:,ii),pol_order);
+  xm(:,ii)=polyval(p,t);
+  xw(:,ii)=x(:,ii)-xm(:,ii);
 end
 
 end

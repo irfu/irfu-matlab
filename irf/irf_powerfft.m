@@ -7,7 +7,7 @@ function [outSpecrecOrT,outPxx,outF] = irf_powerfft(data,nFft,samplFreqHz,overla
 %
 % (no return value)    irf_powerfft(data,nFft,samplFreqHz,[overlap])
 %       Uses results to call irf_spectrogram.
-%   
+%
 %   data        - Either (1) a vector (first column is time; other columns are
 %                 data), or (2) a TSeries object.
 %   nFft        - Length of time covered by every spectrum, when the samples
@@ -15,7 +15,7 @@ function [outSpecrecOrT,outPxx,outF] = irf_powerfft(data,nFft,samplFreqHz,overla
 %                 of samples (real or reconstructed) used for every spectrum.
 %   samplFreqHz - The sampling frequency [samples/s].
 %   overlap     - Overlap between spectras in percent (0..99).
-%   smoothWidth - 
+%   smoothWidth -
 %	Specrec     - Structure with below fields:
 %		.t - Column array. Time of each individual spectrum [seconds].
 %            If using TSeries, then epoch unix.
@@ -50,11 +50,11 @@ if nargin<4
   overlap     = 0;
   smoothWidth = 0;
 elseif nargin<5
-  smoothWidth = 0; 
+  smoothWidth = 0;
 end
 
 if overlap<0 || overlap>=100
-    error('Illegal OVERLAP. Must be in the range 0..100-.')
+  error('Illegal OVERLAP. Must be in the range 0..100-.')
 end
 
 
@@ -121,7 +121,7 @@ for jj = 1:nSpectras
     Specrec.t(jj) = tIntervalStart.epochUnix + intervalLengthSec*0.5;    % Time interval midpoint. Very slow.
     
     TintTT = irf.tint(tIntervalStart, intervalLengthSec);    % Spectrum time interval (start+stop). Very slow?
-    dataIntervalRaw     = tlim(data, TintTT);      % Select data points within spectrum time interval.   
+    dataIntervalRaw     = tlim(data, TintTT);      % Select data points within spectrum time interval.
     dataIntervalPreproc = preprocess_data(...      % "Preprocessed" data, suitable for doing FFT on.
       dataIntervalRaw, ...
       nFft, samplFreqHz, tIntervalStart);
@@ -131,10 +131,10 @@ for jj = 1:nSpectras
       irf_tlim(data, tIntervalStart, tIntervalStart+intervalLengthSec), ...
       nFft, samplFreqHz, tIntervalStart);
   end
-
+  
   for iComp = 1:nComp
     if( ~isempty(dataIntervalPreproc) && all(~isnan(dataIntervalPreproc(:,iComp))) )
-        
+      
       %==============
       % FFT + window
       %==============
@@ -146,7 +146,7 @@ for jj = 1:nSpectras
       Specrec.p{iComp}(jj,:) = NaN;
     end
   end
-
+  
   % Derive next start time (GenericTimeArray adds "double" as seconds)
   tIntervalStart = tIntervalStart + (1-overlap*.01)*intervalLengthSec;
 end
@@ -154,7 +154,7 @@ end
 
 
 if smoothWidth
-  if (smoothWidth > 2/samplFreqHz), smoothSpectrum(); 
+  if (smoothWidth > 2/samplFreqHz), smoothSpectrum();
   else, irf.log('warn','smoothing not done - smoothWidth too small')
   end
 end
@@ -172,19 +172,19 @@ end
 
 
 
-  % Help function to handle datagaps. Given a vector/TSeries of samples to base
-  % a spectrum on (possibly lacking samples, jumps in timestamps), construct a
-  % "complete" 1D vector that can be used for FFT. Throws away time intervals
-  % with less than some percentage (90%) of data.
-  % 
-  % inData   : Data (samples) to construct final vector from. Must only contain
-  %            samples for the final spectrum. May contain jumps in timestamps
-  %            (if TSeries).
-  % nOutData : Size of final vector.
-  % ts       : Start time of final vector.
-  % outData  : Vector of size nOutData x N. Each dimension 1 index corresponds
-  %            to constant time increments.
-  %
+% Help function to handle datagaps. Given a vector/TSeries of samples to base
+% a spectrum on (possibly lacking samples, jumps in timestamps), construct a
+% "complete" 1D vector that can be used for FFT. Throws away time intervals
+% with less than some percentage (90%) of data.
+%
+% inData   : Data (samples) to construct final vector from. Must only contain
+%            samples for the final spectrum. May contain jumps in timestamps
+%            (if TSeries).
+% nOutData : Size of final vector.
+% ts       : Start time of final vector.
+% outData  : Vector of size nOutData x N. Each dimension 1 index corresponds
+%            to constant time increments.
+%
   function outData = preprocess_data(inData, nOutData, samplFreqHz, tIntervalStart2)
     if(usingTSeries)
       if isempty(inData.data)
@@ -192,7 +192,7 @@ end
         return
       end
       nComp2 = size(inData.data, 2);
-
+      
       % Construct "outData" vector/matrix with NaN, except where there is actual data.
       % ind = Indices into final vector that can be filled with actual samples.
       % NOTE: Using .tts instead of .epochUnix, since it is considerably faster.
@@ -201,16 +201,16 @@ end
       outData(ind, :) = inData.data;
     else
       if isempty(inData)
-          outData = [];
-          return
+        outData = [];
+        return
       end
-
+      
       nComp2          = size(inData,2) - 1;       % Exclude time column
       ind             = round((inData(:,1)-tIntervalStart2)*samplFreqHz + 0.5);
       outData         = NaN(nOutData, nComp2);
       outData(ind, :) = inData(:, 2:end);         % Exclude time column
     end
-
+    
     % If data has less than minimum allowed fraction of NaN, then set all
     % components to NaN. Otherwise replace NaN with mean (mean calculated by
     % excl. NaN).
@@ -226,8 +226,8 @@ end
     
   end
 
-  
-  
+
+
   function smoothSpectrum
     % Basic smoothing procedure, borrowed from mms_fft().
     % Smoothes the spectras, not the input data.
@@ -249,7 +249,7 @@ end
         powers(:,ij) = mean(Specrec.p{iComp2}(:,idx(ij)-nc/2+1:idx(ij)+nc/2-1),2);
       end
       Specrec.p{iComp2} = powers;
-    end 
+    end
   end
 
 

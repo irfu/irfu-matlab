@@ -1,5 +1,5 @@
 % Loads the THOR orbit and calculates the time spent in each of the three
-% regions: (1) inside bowshock, (2) outside bowshock but inside foreshock, 
+% regions: (1) inside bowshock, (2) outside bowshock but inside foreshock,
 % (3) solar wind, outside bowshock and foreshock.
 
 %% Load THOR orbit
@@ -13,10 +13,10 @@ if orbitKernels
     newTime = rTHOR.time.start:120:rTHOR.time.stop; % 2 min intervals
     tmpR = rTHOR.resample(newTime);
     rTHOR = tmpR;
-  end   
+  end
 else
   get_orbit
-  rTHOR = irf.ts_vec_xyz(irf_time(t,'epoch>epochtt'),[x y x*0])  
+  rTHOR = irf.ts_vec_xyz(irf_time(t,'epoch>epochtt'),[x y x*0])
 end
 
 %% Bow shock model
@@ -95,7 +95,7 @@ nSW = sum(~isnan(SW.data(:,1))); tSW = nSW*dt;
 
 % Checking total time spent
 % need to take away one dt due to endpoints
-tDiff = tTotal - ((tSW+tFS+tBS)-dt); 
+tDiff = tTotal - ((tSW+tFS+tBS)-dt);
 
 %% Plot orbit in the different regions
 h = subplot(1,1,1);
@@ -109,7 +109,7 @@ bs = surf(h,X,Y,Z);
 bs.FaceColor = [1 1 1];[1, .84, 0];
 bs.DisplayName = 'Magentosheat Inner Boundary';
 bs.FaceAlpha = 0.5;
-  
+
 axis(h,'square')
 axis(h,'equal')
 
@@ -119,7 +119,7 @@ h_tp.MarkerSize = 10;
 h_tp.MarkerFaceColor = [0 0 0];
 
 % Plot part of the orbit that is within the magnetopause
-h_sw = plot3(h,SW.data(:,1)/(units.RE*1e-3),SW.data(:,2)/(units.RE*1e-3),SW.data(:,3)/(units.RE*1e-3)); 
+h_sw = plot3(h,SW.data(:,1)/(units.RE*1e-3),SW.data(:,2)/(units.RE*1e-3),SW.data(:,3)/(units.RE*1e-3));
 h_fs = plot3(h,FS.data(:,1)/(units.RE*1e-3),FS.data(:,2)/(units.RE*1e-3),FS.data(:,3)/(units.RE*1e-3));
 h_bs = plot3(h,BS.data(:,1)/(units.RE*1e-3),BS.data(:,2)/(units.RE*1e-3),BS.data(:,3)/(units.RE*1e-3));
 
@@ -134,20 +134,20 @@ ylabel(h,'Y_{GSE}')
 zlabel(h,'Z_{GSE}')
 
 legend([h_sw h_fs h_bs],{['Solar wind: ' num2str(tSW/60/60/24,'%.1f') ' days'],...
-                         ['Foreschock: ' num2str(tFS/60/60/24,'%.1f') ' days'],...
-                         ['Inside bowshock: ' num2str(tBS/60/60/24,'%.1f') ' days']},...
-                         'location','northeastoutside')
+  ['Foreschock: ' num2str(tFS/60/60/24,'%.1f') ' days'],...
+  ['Inside bowshock: ' num2str(tBS/60/60/24,'%.1f') ' days']},...
+  'location','northeastoutside')
 
 
 %% Plot the different regions individually
 h = subplot(2,2,1);
 h_sw = plot3(h,SW.data(:,1)/(units.RE*1e-3),SW.data(:,2)/(units.RE*1e-3),SW.data(:,3)/(units.RE*1e-3),...
-               FS.data(:,1)/(units.RE*1e-3),FS.data(:,2)/(units.RE*1e-3),FS.data(:,3)/(units.RE*1e-3),...
-               BS.data(:,1)/(units.RE*1e-3),BS.data(:,2)/(units.RE*1e-3),BS.data(:,3)/(units.RE*1e-3)); 
+  FS.data(:,1)/(units.RE*1e-3),FS.data(:,2)/(units.RE*1e-3),FS.data(:,3)/(units.RE*1e-3),...
+  BS.data(:,1)/(units.RE*1e-3),BS.data(:,2)/(units.RE*1e-3),BS.data(:,3)/(units.RE*1e-3));
 view([0 0 1])
 title(h,'Spacecraft trajectory')
 h = subplot(2,2,2);
-h_sw = plot3(h,SW.data(:,1)/(units.RE*1e-3),SW.data(:,2)/(units.RE*1e-3),SW.data(:,3)/(units.RE*1e-3)); 
+h_sw = plot3(h,SW.data(:,1)/(units.RE*1e-3),SW.data(:,2)/(units.RE*1e-3),SW.data(:,3)/(units.RE*1e-3));
 view([0 0 1])
 title(h,'Spacecraft trajectory: Solar wind')
 h = subplot(2,2,3);

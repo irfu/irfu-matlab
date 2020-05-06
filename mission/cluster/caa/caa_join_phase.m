@@ -22,16 +22,16 @@ irf_log('proc',['interval: ' epoch2iso(st,1) ' -- ' epoch2iso(st+dt,1) ])
 [AtwoOK,Atwo_old] = c_load('Atwo?',cl_id);
 
 if isnumeric(gap)
-    if AtwoOK, old_end = Atwo_old(end,1);
-    else, old_end = st;
-    end
-    st_refetch = old_end + gap;
+  if AtwoOK, old_end = Atwo_old(end,1);
+  else, old_end = st;
+  end
+  st_refetch = old_end + gap;
 elseif ischar(gap), st_refetch = iso2epoch(gap);
 else, error('invalid input')
 end
 
 if st_refetch < st || st_refetch > st+dt
-    error([epoch2iso(st_refetch,1) ' is outside the interval'])
+  error([epoch2iso(st_refetch,1) ' is outside the interval'])
 end
 
 irf_log('proc',['refetching phase from: ' epoch2iso(st_refetch,1) ])

@@ -16,20 +16,20 @@ function O = ClusterProc(varargin)
 % Copyright 2004 Yuri Khotyaintsev
 
 switch nargin
-case 0
-% if no input arguments, create a default object
-	O.sp = '.';  
-	O = class(O,'ClusterProc');
-case 1
-% if single argument of class ClusterProc, return it
-	if (isa(varargin{1},'ClusterProc'))
-		O = varargin{1};
-	elseif ischar(varargin{1})
-		O.sp = varargin{1};
-		O = class(O,'ClusterProc');
-	else
-		error('Wrong argument type')
-	end 
-otherwise
-	error('Wrong number of input arguments')
+  case 0
+    % if no input arguments, create a default object
+    O.sp = '.';
+    O = class(O,'ClusterProc');
+  case 1
+    % if single argument of class ClusterProc, return it
+    if (isa(varargin{1},'ClusterProc'))
+      O = varargin{1};
+    elseif ischar(varargin{1})
+      O.sp = varargin{1};
+      O = class(O,'ClusterProc');
+    else
+      error('Wrong argument type')
+    end
+  otherwise
+    error('Wrong number of input arguments')
 end
