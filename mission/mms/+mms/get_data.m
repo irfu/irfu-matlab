@@ -100,7 +100,8 @@ function res = get_data(varStr, Tint, mmsId)
 %     'Vhplus_gsm_hpca_srvy_l2', 'Vheplus_gsm_hpca_srvy_l2', 'Vheplusplus_gsm_hpca_srvy_l2', 'Voplus_gsm_hpca_srvy_l2',...
 %     'Phplus_gsm_hpca_srvy_l2', 'Pheplus_gsm_hpca_srvy_l2', 'Pheplusplus_gsm_hpca_srvy_l2', 'Poplus_gsm_hpca_srvy_l2',...
 %     'Thplus_gsm_hpca_srvy_l2', 'Theplus_gsm_hpca_srvy_l2', 'Theplusplus_gsm_hpca_srvy_l2', 'Toplus_gsm_hpca_srvy_l2',...
-%     'Nhplus_hpca_sitl'.
+%     'Nhplus_hpca_sitl',
+%     'Omnifluxoplus_hpca_brst_l2','Omnifluxhplus_hpca_brst_l2','Omnifluxheplus_hpca_brst_l2','Omnifluxheplusplus_hpca_brst_l2'
 %  EDI:
 %     'Flux-amb-pm2_edi_brst_l2'
 %  ASPOC:
@@ -216,7 +217,7 @@ vars = {'R_gse','R_gsm','V_gse','V_gsm',...
   'PDERRe_fpi_brst_l2','PDERRi_fpi_brst_l2',...
   'PDe_fpi_fast_l2','PDi_fpi_fast_l2',...
   'PDERRe_fpi_fast_l2','PDERRi_fpi_fast_l2',...
-  'Flux-amb-pm2_edi_brst_l2',...
+  'Flux-amb-pm2_edi_brst_l2','Flux-err-amb-pm2_edi_brst_l2',...
   'E_dsl_edi_fast_l2','E_dsl_edi_srvy_l2',...
   'Nhplus_hpca_srvy_l2','Nheplus_hpca_srvy_l2','Nheplusplus_hpca_srvy_l2','Noplus_hpca_srvy_l2',...
   'Tshplus_hpca_srvy_l2','Tsheplus_hpca_srvy_l2','Tsheplusplus_hpca_srvy_l2','Tsoplus_hpca_srvy_l2',...
@@ -258,7 +259,16 @@ vars = {'R_gse','R_gsm','V_gse','V_gsm',...
   'Vhplus_gsm_hpca_srvy_sitl','Vheplus_gsm_hpca_srvy_sitl','Vheplusplus_gsm_hpca_srvy_sitl','Voplus_gsm_hpca_srvy_sitl',...
   'Phplus_gsm_hpca_srvy_sitl','Pheplus_gsm_hpca_srvy_sitl','Pheplusplus_gsm_hpca_srvy_sitl','Poplus_gsm_hpca_srvy_sitl',...
   'Thplus_gsm_hpca_srvy_sitl','Theplus_gsm_hpca_srvy_sitl','Theplusplus_gsm_hpca_srvy_sitl','Toplus_gsm_hpca_srvy_sitl',...
-  'Nhplus_hpca_sitl','aspoc_status'}; % XXX THESE MUST BE THE SAME VARS AS BELOW
+  'Nhplus_hpca_sitl','aspoc_status',...
+  'Omnifluxoplus_hpca_brst_l2','Omnifluxhplus_hpca_brst_l2','Omnifluxheplus_hpca_brst_l2','Omnifluxheplusplus_hpca_brst_l2',...
+  ...'Omnifluxion_epd_feeps_brst_l2'...
+  }; % XXX THESE MUST BE THE SAME VARS AS BELOW
+
+if strcmp(varStr,'vars') % collect all vars, for testing
+  res = vars;
+  return
+end
+
 if isempty(intersect(varStr,vars))
   errS = ['variable not recognized: ' varStr];
   irf.log('critical',errS);
@@ -400,14 +410,19 @@ switch Vr.inst
         res = res(~ind);
       end
     end
-  case 'edi'  
+  case 'edi'
     switch Vr.param
       case 'E'
         pref = ['mms' mmsIdS '_edi_' lower(Vr.param) '_' Vr.cs '_' Vr.tmmode '_' Vr.lev];
         dset = 'efield';
         dsetName = ['mms' mmsIdS '_edi_' Vr.tmmode '_' Vr.lev '_' dset];
         res = mms.db_get_ts(dsetName,pref,Tint);
-      case 'Flux-amb-pm2'
+      case {'Flux-amb-pm2','Flux-err-amb-pm2'}
+        err_pref = [];
+        if strcmp(Vr.param,'Flux-err-amb-pm2')
+          err_pref = '_delta';
+          Vr.param = 'Flux-amb-pm2';
+        end        
         % for amb-pm2, node 1 is closest to 0/180
         edi_tk = tokenize(Vr.param,'-');
         dsetName = [dsetName '_' edi_tk{2} '-' edi_tk{3}];
@@ -418,7 +433,7 @@ switch Vr.inst
           for inode = 1:numel(nodes)
             pitchangle = pitchangles(ipitchangle);
             node = nodes(inode);
-            pref = ['mms' mmsIdS '_' Vr.inst '_flux' num2str(inode)  '_' num2str(pitchangle) '_' Vr.tmmode '_' Vr.lev];
+            pref = ['mms' mmsIdS '_' Vr.inst '_flux' num2str(inode)  '_' num2str(pitchangle) err_pref '_' Vr.tmmode '_' Vr.lev];
             flux{ipitchangle,inode} = get_ts('scalar');            
           end
         end
@@ -639,19 +654,33 @@ switch Vr.inst
       otherwise, error('should not be here')
     end    
   case 'hpca'
-    dsetName = ['mms' mmsIdS '_hpca_' Vr.tmmode '_' Vr.lev '_moments'];
-    param = Vr.param(1); ion = Vr.param(2:end); 
-    if ion(1)=='s', param = [param ion(1)]; ion = ion(2:end); end % Ts
+    % Some restructuring to include spectrograms
+    % This could also be done in splitVs.
+    all_ions = {'hplus','heplus','heplusplus','oplus'};
+    ion_index = cellfun(@(s) ~isempty(strfind(Vr.param, s)), all_ions);
+    ion = all_ions{find(ion_index)};    
+    param = extractBefore(Vr.param,ion); 
+    
+    switch param
+      case {'N','V','Ts','P','T'}
+        dsetName = ['mms' mmsIdS '_hpca_' Vr.tmmode '_' Vr.lev '_moments'];
+      case {'Omniflux'}
+        dsetName = ['mms' mmsIdS '_hpca_' Vr.tmmode '_' Vr.lev '_ion'];
+    end
+    %param = Vr.param(1); ion = Vr.param(2:end); 
+    %if ion(1)=='s', param = [param ion(1)]; ion = ion(2:end); end % Ts
     switch ion
       case {'hplus','heplus','heplusplus','oplus'}
       otherwise, error('unrecognized ion')
     end
+    doPDist = 0; doOmni = 0;
     switch param
       case 'N', v = 'number_density';
       case 'V', v = 'ion_bulk_velocity';
       case 'Ts', v = 'scalar_temperature';
       case 'P', v = 'ion_pressure';
       case 'T', v = 'temperature_tensor';
+      case 'Omniflux', v = 'flux'; doPDist = 1; doOmni = 1;
       otherwise, error('unrecognized param')
     end
     pref = ['mms' mmsIdS '_hpca_' ion '_' v];
@@ -662,12 +691,27 @@ switch Vr.inst
         otherwise, error('invalid CS')
       end
     end
-    res = mms.db_get_ts(dsetName,pref,Tint);
+    
+    if doPDist
+      res = get_ts('skymap');      
+    else
+      res = mms.db_get_ts(dsetName,pref,Tint);
+    end
+    
     % XXX this needs to be investigated with HPCA
     if ~isempty(res)
       irf.log('warning','setting zeros to NaN for HPCA')
       res.data(res.data==0) = NaN;
-      if (Vr.to>0), res.coordinateSystem =  Vr.cs; end
+      if (Vr.to>1)
+        new_res = TSeries(res.time,res.data,'TensorOrder',Vr.to,'TensorBasis','xyz',...
+           'repres',{'x','y','z'});
+        new_res.coordinateSystem =  Vr.cs;    
+        new_res.name = res.name;
+        new_res.siConversion = res.siConversion;
+        new_res.userData = res.userData;
+        new_res.units = res.units;
+        res = new_res;        
+      end
     end
   case 'scm'
     switch Vr.lev
@@ -726,6 +770,16 @@ switch Vr.inst
     end
     dsetName = ['mms' mmsIdS '_edp_' Vr.tmmode '_' Vr.lev '_' dset];
     res = mms.db_get_ts(dsetName,pref,Tint);
+  case 'epd_feeps'
+    all_species = {'ion','electron'};
+    species_index = cellfun(@(s) ~isempty(strfind(Vr.param, s)), all_species);
+    species = all_species{find(species_index)};    
+    param = extractBefore(Vr.param,species); 
+    
+    % the files only has feeps, e.g.: mms1_feeps_brst_l2_ion_20170804093413_v6.1.2.cdf
+    % but the variables have epd_feeps, e.g.: mms1_epd_feeps_brst_l2_ion_top_intensity_sensorid_6
+    dsetName = ['mms' mmsIdS '_' extractAfter(Vr.inst,'_') '_' Vr.tmmode '_' Vr.lev '_' species];
+    res = get_ts('feeps_omni');
   otherwise
     error('not implemented yet')
 end
@@ -745,7 +799,6 @@ end
         res.name = [varStr '_' mmsIdS];
         res.units = rX.units;
         res.siConversion = rX.siConversion;
-        
         rX_err = mms.db_get_ts(dsetName,pref_err,Tint);% error
         if isempty(rX_err)
           irf.log('warning',...
@@ -836,8 +889,8 @@ end
         res.siConversion = rXX.siConversion;
         res.coordinateSystem = Vr.cs;
       case 'skymap'
-        switch Vr.tmmode
-          case 'brst'
+        switch [Vr.inst Vr.tmmode]
+          case 'fpibrst'
             if (length(Vr.param) == 3)  
                 dist = mms.db_get_variable(dsetName,[pref '_dist_' Vr.tmmode],Tint);
             elseif (length(Vr.param) == 6 && strcmp(Vr.param(3:5), 'ERR'))
@@ -847,14 +900,32 @@ end
             dist = mms.variable2ts(dist);
             dist = dist.tlim(Tint);
             energy_data = mms.db_get_variable(dsetName,[pref '_energy_' Vr.tmmode],Tint);   
+            energy_delta_data = mms.db_get_variable(dsetName,[pref '_energy_delta_' Vr.tmmode],Tint); 
+               
             % energy delta_minus/plus 
             % no 'DELTA_MINUS_VAR' or 'DELTA_PLUS_VAR' when loading
             % 'PDi_fpi_brst_l2' from mms.get_data; please let wenya know if
             % you change the following if ... else ... end section.
             % 2018-04-19.
-            if (isfield(energy_data, 'DELTA_MINUS_VAR') && isfield(energy_data, 'DELTA_PLUS_VAR'))
-                energy_minus = squeeze(energy_data.DELTA_MINUS_VAR.data);
-                energy_plus = squeeze(energy_data.DELTA_PLUS_VAR.data);
+            % CN: Problem with loading the delta +- from energy_data arises 
+            % if Tint spans more than one burst file. mms.db_get_variable 
+            % only loads one of them. See
+            % size(energy_data.DELTA_MINUS_VAR.data)
+            % size(energy_data.data)
+            % Workaround is done by defaulating to variable 
+            % 'energy_delta_data' for both plus and minus (energy is 
+            % centered). If 'energy_delta_data' is empty, go back to 
+            % previous DELTA_MINUS_VAR and DELTA_PLUS_VAR as before, still 
+            % not good though. Problem should probably be addressed at a
+            % lower level inside mms.db_get_variable.
+            if not(isempty(energy_delta_data))
+              denergy = mms.variable2ts(energy_delta_data); % delta_energy_plus == delta_energy_minus
+              denergy = denergy.tlim(Tint); 
+              energy_minus = denergy.data;
+              energy_plus = denergy.data;
+            elseif (isfield(energy_data, 'DELTA_MINUS_VAR') && isfield(energy_data, 'DELTA_PLUS_VAR'))              
+              energy_minus = squeeze(energy_data.DELTA_MINUS_VAR.data);
+              energy_plus = squeeze(energy_data.DELTA_PLUS_VAR.data);              
             else
                 irf.log('warning','DELTA_MINUS_VAR/DELTA_PLUS_VAR is not loaded.')                
             end
@@ -881,7 +952,7 @@ end
                 res.ancillary.delta_energy_minus = energy_minus;
                 res.ancillary.delta_energy_plus = energy_plus;
             end
-          case 'fast'
+          case 'fpifast'
             %dist = mms.db_get_variable(dsetName,[pref '_dist_' Vr.tmmode],Tint);
             if (length(Vr.param) == 3)  
                 dist = mms.db_get_variable(dsetName,[pref '_dist_' Vr.tmmode],Tint);
@@ -895,16 +966,102 @@ end
             energy = mms.db_get_ts(dsetName,[pref '_energy_' Vr.tmmode],Tint);            
             energy = energy.tlim(Tint);
             res = irf.ts_skymap(dist.time, dist.data, energy.data, phi, theta);
+          case 'hpcabrst' % not implemented
+            dist = mms.db_get_variable(dsetName,[pref],Tint);
+            dist_ts = mms.variable2ts(dist);
+            omni_data = squeeze(irf.nanmean(dist_ts.data,2));
+            dist = PDist(dist_ts.time,omni_data,'omni',dist.DEPEND_2.data);
+            res = dist;
+            res.siConversion = dist_ts.siConversion;
+            res.units = dist_ts.units;
+            res.species = ion;
+            % 
+            % obj.depend{1} = args{1}; args(1) = []; obj.representation{1} = {'energy'};
         end
-        res.units = 's^3/cm^6';
-        if strcmp(sensor(2),'e')          
-          res.species = 'electrons';
-        elseif strcmp(sensor(2),'i')
-          res.species = 'ions';
+        switch [Vr.inst Vr.tmmode]
+          case {'fpibrst','fpifast'}
+            res.units = 's^3/cm^6';
+            if strcmp(sensor(2),'e')          
+              res.species = 'electrons';
+            elseif strcmp(sensor(2),'i')
+              res.species = 'ions';
+            end            
+            res.siConversion = '1e12';
+          case {'hpcabrst'}
         end
-        res.name = dsetName;
-        res.siConversion = '1e12';
-        res.userData = dist.userData;
+          res.name = dsetName;
+          res.userData = dist.userData;
+      case 'feeps_omni'
+        % FROM SPEDAS: Added by DLT on 31 Jan 2017: set unique energy and gain correction factors per spacecraft
+        eEcorr = [14.0, -1.0, -3.0, -3.0]; % energy correction
+        iEcorr = [0.0, 0.0, 0.0, 0.0]; % energy correction
+        eGfact = [1.0, 1.0, 1.0, 1.0]; % gain factor
+        iGfact = [0.84, 1.0, 1.0, 1.0]; % gain factor
+        switch species
+          case 'ion', sensors = 6:8;
+            Ecorr = iEcorr;
+            Gfact = iGfact;
+          case 'electron'
+            Ecorr = eEcorr;
+            Gfact = eGfact;
+            switch mode
+              case 'brst', sensors = [1:5, 9:12];
+              case 'fast', sensors = [3:5, 11:12];
+              otherwise, error('invalid mode')
+            end
+          otherwise, error('invalid specie')
+        end
+        
+        dsetPref= ['mms' mmsIdS '_' Vr.inst '_' Vr.tmmode '_' Vr.lev '_' species];
+        
+        eLow = mms.db_get_variable(dsetName, [species '_energy_lower_bound'],Tint);
+        eUp = mms.db_get_variable(dsetName, [species '_energy_upper_bound'],Tint);
+        energies = (eLow.data + eUp.data)/2. + eval([species(1) 'Ecorr(mmsId)']); % eV
+
+        nSensors = length(sensors);
+        for iSen = 1:nSensors
+          sen = sensors(iSen); suf = sprintf('intensity_sensorid_%d',sen);
+          %sen = sensors(iSen); suf = sprintf('count_rate_sensorid_%d',sen);
+          sufMask = sprintf('sector_mask_sensorid_%d',sen);
+          top = mms.db_get_ts(dsetName,[dsetPref '_top_' suf],Tint);
+          mask = mms.db_get_ts(dsetName,[dsetPref '_top_' sufMask],Tint);
+%           if all(size((mask.data))==size((top.data)))
+%             top.data(logical(mask.data)) = NaN;
+%           else
+%             top.data(logical(repmat(mask.data,1,length(energies)))) = NaN; % obsolete?
+%           end
+          bot = mms.db_get_ts(dsetName,[dsetPref '_bottom_' suf],Tint);
+          mask = mms.db_get_ts(dsetName,[dsetPref '_bottom_' sufMask],Tint);
+%           if all(size((mask.data))==size((bot.data)))
+%             bot.data(logical(mask.data)) = NaN;
+%           else
+%             bot.data(logical(repmat(mask.data,1,length(energies)))) = NaN;
+%           end
+          %c_eval([species(1) 'Tit?=top;'  species(1) 'Bit?=bot;'],sen) %
+          %The usage of eval leads to error: Attempt to add "iTit6" to a static workspace.
+          Tit{iSen} = top;
+          Bit{iSen} = bot;
+        end
+        % omni
+        %eval(['dTmp=' specie(1) 'Tit' num2str(sensors(1)) ';'])
+        dataTmp = Tit{1};
+        omniD = NaN( [size(dataTmp.data) nSensors*2]);
+        for iSen = 1:nSensors
+          omniD(:,:,iSen) = Tit{iSen}.data;
+          omniD(:,:,nSensors+iSen) = Bit{iSen}.data;
+          %c_eval(['omniD(:,:,iSen) = ' specie(1) 'Tit?.data;'...
+          %  'omniD(:,:,nSensors+iSen) = ' specie(1) 'Bit?.data;'],sensors(iSen))
+        end
+        omnidata = dataTmp;
+        omnidata.data = mean(double(omniD),3,'omitnan')*Gfact(mmsId);
+        %eval([specie(1) 'Omni = dTmp; ' specie(1) 'Omni.data =' ...
+        %  'mean(double(omniD),3,''omitnan'')*' specie(1) 'Gfact(ic);'])
+                
+        dist = PDist(omnidata.time,omnidata.data,'omni',energies*1e3); % energies keV -> eV
+        res = dist;
+        res.siConversion = Tit{1}.siConversion;
+        res.units = Tit{1}.units;
+        res.species = species;                    
       otherwise
         error('data type not implemented')
     end
@@ -925,27 +1082,31 @@ tk = tokenize(varStr,'_');
 nTk = length(tk);
 if nTk <3 || nTk > 5, error('invalig STRING format'), end
 
-phcaParamsScal = {'Nhplus','Nheplus','Nheplusplus','Noplus',...
+hpcaParamsScal = {'Nhplus','Nheplus','Nheplusplus','Noplus',...
   'Tshplus','Tsheplus','Tsheplusplus','Tsoplus','Phase','Adcoff'}; 
-phcaParamsTens = {'Vhplus','Vheplus','Vheplusplus','Voplus',...
-  'Phplus','Pheplus','Pheplusplus','Poplus',...
+hpcaParamSpec = {'Omnifluxoplus','Omnifluxhplus','Omnifluxheplus','Omnifluxheplusplus'};
+hpcaParamsTens1 = {'Vhplus','Vheplus','Vheplusplus','Voplus'};
+hpcaParamsTens2 = {'Phplus','Pheplus','Pheplusplus','Poplus',...
   'Thplus','Theplus','Theplusplus','Toplus'};
+feepsParamsScal = {'Omnifluxion','Omnifluxelectron'};
 
   
 param = tk{1};
 switch param
   case {'Ni', 'partNi', 'Ne', 'partNe', 'Nhplus', 'Tsi', 'Tperpi', 'Tparai', 'partTperpi', 'partTparai', ...
           'Tse', 'Tperpe', 'Tparae', 'partTperpe', 'partTparae', 'PDe', 'PDi', 'PDERRe', 'PDERRi', 'V', 'V6', 'Vpsp', ...
-      'Enfluxi', 'Enfluxe', 'Energyi', 'Energye', 'Epar', 'Sdev12', 'Sdev34','Flux-amb-pm2'}
+      'Enfluxi', 'Enfluxe', 'Energyi', 'Energye', 'Epar', 'Sdev12', 'Sdev34','Flux-amb-pm2','Flux-err-amb-pm2'}
     tensorOrder = 0;
   case {'Vi', 'partVi', 'Ve', 'partVe', 'B', 'E','E2d','Es12','Es34'}
     tensorOrder = 1;
   case {'Pi', 'partPi', 'Pe', 'partPe', 'Ti', 'partTi', 'Te', 'partTe'}
     tensorOrder = 2;  
-  case phcaParamsScal
+  case {hpcaParamsScal{:},hpcaParamSpec{:},feepsParamsScal{:}}
     tensorOrder = 0;
-  case phcaParamsTens
+  case hpcaParamsTens1
     tensorOrder = 1;
+  case hpcaParamsTens2
+    tensorOrder = 2;
   otherwise 
     error('invalid PARAM')
 end
@@ -963,6 +1124,8 @@ end
 instrument = tk{idx+1}; idx = idx + 1;
 switch instrument
   case {'fpi','edp','edi','hpca','fgm','dfg','afg','scm','fsm'}
+  case {'epd'}
+    instrument = [instrument '_' tk{idx+1}]; idx = idx + 1;    
   otherwise
     switch param
       case 'B', instrument = 'fgm'; idx = idx - 1;
