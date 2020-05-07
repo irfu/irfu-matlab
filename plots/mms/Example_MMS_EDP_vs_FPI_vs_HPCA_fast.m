@@ -44,7 +44,7 @@ else
 end
 
 %% E plot
-h = irf_figure(2387456,4);
+h = irf_figure(2388456,4);
 set(gcf,'defaultAxesColorOrder',[0 0 0;0 0 1;1 0 0;0 0.7 0;0 1 1 ;1 0 1; 1 1 0])
 set(gcf,'defaultAxesFontSize',12)
 
