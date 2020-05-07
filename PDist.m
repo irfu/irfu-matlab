@@ -55,6 +55,10 @@ classdef PDist < TSeries
       
       % collect required data, depend
       switch obj.type_
+        case {'moms-tens0'} % eg. density or scalar temperature partial moments
+          obj.depend{1} = args{1}; args(1) = []; obj.representation{1} = {'energy'};
+        case {'moms-tens1'} % eg. velocitypartial moments
+        case {'moms-tens2'} % eg. pressure or temperature partial moments
         case {'skymap'} % construct skymap distribution
           obj.depend{1} = args{1}; args(1) = []; obj.representation{1} = {'energy'};
           obj.depend{2} = args{1}; args(1) = []; obj.representation{2} = {'phi'};
@@ -2314,12 +2318,16 @@ classdef PDist < TSeries
               spec.p = squeeze(double(nanmean(obj.data(:,:,iPA),3)));
             case 'omni'
               spec.p = double(obj.data);
+            case 'moms-tens0'
+              spec.p = double(obj.data);
             otherwise
               error('Spectype ''%s'' not yet implemented for distribution type ''%s''.',spectype,obj.type);
           end
           spec.t = obj.time.epochUnix;
           spec.f = single(obj.depend{1});
-          spec.f_label = {['E_' obj.species(1) ' (eV)']};
+          if not(isempty(obj.species))
+            spec.f_label = {['E_' obj.species(1) ' (eV)']};
+          end
         case {'pitchangle','pa'}
           if ~isempty(varargin) % assume next argument is the pitchangle level/levels we want to average over
             iE = varargin{1};
