@@ -317,7 +317,7 @@ classdef swmode_defs
             
             bicas.assert_DATASET_ID(datasetId)
             
-            % ASSERTION: Pipeline
+            % ASSERTION: Only using SOLO_* DATASET_IDs.
             assert(strcmp('SOLO_', datasetId(1:5)))
         end
 

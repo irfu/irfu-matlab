@@ -50,6 +50,10 @@ function SETTINGS = create_default_SETTINGS()
 % PROPOSAL: Abolish INPUT_CDF.HK.MOVE_TIME_TO_SCI.
 % PROPOSAL: Abolish INPUT_CDF.CUR.PREPEND_TEST_DATA.
 % PROPOSAL: Naming convention for settings keys for testing ONLY:
+% PROPOSAL: Abolish
+%           PROCESSING.L1R.TDS.CWF.USE_ZV_CALIBRATION_TABLE_INDEX2
+%           PROCESSING.L1R.TDS.RSWF.USE_ZV_CALIBRATION_TABLE_INDEX2
+%           TDS CWF/RSWF CALIBRATION_TABLE_INDEX2 should never be used. /David Pisa 2020-04-30.
 %
 % PROPOSAL: Some kind of automatic warning for not using default setting.
 %   CON: Log already contains this.
@@ -73,7 +77,9 @@ function SETTINGS = create_default_SETTINGS()
 %       Ex: " ERROR "
 %   PROPOSAL: Use lower case "error", "warning"
 %   PROPOSAL: Use shortenings: "ERR", "WARN", "E", "W"
-
+%
+% PROPOSAL: Other solution for PROCESSING.LFR.F0_F1_F2_F3_HZ.
+%   PRO: Constants needed also outside of BICAS.
 
 
 S = bicas.settings();
@@ -352,7 +358,7 @@ S.define_setting('PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_POLICY', 'ERROR') 
 % NOTE: Only the last filename in a sorted list of matching filenames will actually be used.
 %=======================================================================================================================
 CDF_SUFFIX_REGEXP = '\.(cdf|CDF)';
-S.define_setting('PROCESSING.RCT_REGEXP.BIAS',         ['SOLO_CAL_RPW_BIAS_V20[0-9]{10}',          CDF_SUFFIX_REGEXP]);      % Wrong filenaming convention?!!
+S.define_setting('PROCESSING.RCT_REGEXP.BIAS',         ['SOLO_CAL_RPW_BIAS_V20[0-9]{10}',          CDF_SUFFIX_REGEXP]);    % Wrong filenaming convention?!!
 S.define_setting('PROCESSING.RCT_REGEXP.LFR',          ['SOLO_CAL_RCT-LFR-BIAS_V20[0-9]{12}',      CDF_SUFFIX_REGEXP]);
 S.define_setting('PROCESSING.RCT_REGEXP.TDS-LFM-CWF',  ['SOLO_CAL_RCT-TDS-LFM-CWF-E_V20[0-9]{6}',  CDF_SUFFIX_REGEXP]);
 S.define_setting('PROCESSING.RCT_REGEXP.TDS-LFM-RSWF', ['SOLO_CAL_RCT-TDS-LFM-RSWF-E_V20[0-9]{6}', CDF_SUFFIX_REGEXP]);
@@ -373,7 +379,7 @@ S.define_setting('PROCESSING.L1R.LFR.USE_GA_CALIBRATION_TABLE_RCTS',            
 S.define_setting('PROCESSING.L1R.LFR.USE_ZV_CALIBRATION_TABLE_INDEX2',             1)
 S.define_setting('PROCESSING.L1R.TDS.CWF.USE_GA_CALIBRATION_TABLE_RCTS',           1)
 % Value=1 not implemented, since it is unclear what it is useful for, if anything.
-S.define_setting('PROCESSING.L1R.TDS.CWF.USE_ZV_CALIBRATION_TABLE_INDEX2',         0)    
+S.define_setting('PROCESSING.L1R.TDS.CWF.USE_ZV_CALIBRATION_TABLE_INDEX2',         0)
 S.define_setting('PROCESSING.L1R.TDS.RSWF.USE_GA_CALIBRATION_TABLE_RCTS',          1)
 % Value=1 not implemented, since it is unclear what it is useful for, if anything.
 S.define_setting('PROCESSING.L1R.TDS.RSWF.USE_ZV_CALIBRATION_TABLE_INDEX2',        0)    
@@ -403,6 +409,7 @@ S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.LFR.LSF_OFFSETS_TM', [0, 0, 0, 
 % NOTE: These values do not influence the nominal, "full" calibration. They are entirely separate.
 % NOTE: The sign should preferably be consistent with the BIAS transfer functions, i.e. positive values as of
 % 2020-04-27.
+% NOTE: There are no equivalent (alternative) scalar values to replace the LFR & TDS transfer functions.
 %=============================================================================================================
 S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.ALPHA_IVPAV',           1/17);
 S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.BETA_IVPAV',               1);
