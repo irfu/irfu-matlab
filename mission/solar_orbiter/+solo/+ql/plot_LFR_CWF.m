@@ -50,6 +50,9 @@ function hAxesArray = plot_LFR_CWF(filePath)
     % TODO-NI: Spectrum overlap 50% also for CWF?
     % TODO: Correct sampling frequency needed for irf_powerfft.
     % TODO: Use zVar SAMPLING_RATE (when introduced) for spectrums.
+    % PROPOSAL: Settings arguments to disable/enable hidden functionality
+    %   Ex: SWF: Permit/force DC+AC diffs
+    %   Ex: Disable spectrograms.
     
     %PERMIT_SIMULTANEOUS_DC_AC_DIFFS = 0;
 

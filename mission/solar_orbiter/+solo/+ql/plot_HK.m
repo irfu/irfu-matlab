@@ -184,7 +184,7 @@ function plot_HK(filePath)
     
     irf_plot_axis_align(hAxesArray)               % For aligning MATLAB axes OuterPosition (taking color legends into account).
     irf_zoom(hAxesArray, 'x', irf.tint(Epoch))    % For aligning the content of the MATLAB axes.
-    
+
     set(hAxesArray(1:end-1), 'XLabel', [])        % Remove duplicate x labels. Empirically: Must come after irf_zoom.
     %EJ_library.graph.set_shared_dynamic_XYZAxes(hAxesArray, 'X', 'No init')    % Test
 end

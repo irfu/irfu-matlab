@@ -68,8 +68,9 @@ function hAxesArray = plot_LFR_SWF(filePath, timeIntervUtc)
     % TODO: 50% overlap PSD
     
     % YK 2020-04-16: Officially only either DC or AC diffs.
+    % NOTE: solo_L2_rpw-lfr-surv-cwf-e-cdag_20200228_V01.cdf contains both DC & AC diffs.
     ALWAYS_SIMULTANEOUS_DC_AC_DIFFS_PLOTS = 0;   % DEFAULT 0. Useful for debugging (runs through all code).
-    PERMIT_SIMULTANEOUS_DC_AC_DIFFS       = 0;   % DEFAULT 0.
+    PERMIT_SIMULTANEOUS_DC_AC_DIFFS       = 1;   % DEFAULT 0.
     ENABLE_SPECTROGRAMS                   = 1;   % DEFAULT 1.
     
     % Info associated with LFR sampling rates (F0-F3 is LFR's terminology).
