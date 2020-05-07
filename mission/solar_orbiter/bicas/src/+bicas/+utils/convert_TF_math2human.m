@@ -1,5 +1,7 @@
 function [freqHz, gainEnergyDb, phaseShiftDeg] = convert_TF_math2human(freqRps, z)
-% Effectively convert TF on "mathematically pure" z(omega) format, to the corresponding "human-readable" quantitities.
+%
+% Effectively convert tabulated transfer function (TF) on "mathematically pure" z(omega) format, to the conventional
+% corresponding "human-readable" quantitities.
 %
 %
 % ARGUMENTS AND RETURN VALUES
@@ -14,12 +16,13 @@ function [freqHz, gainEnergyDb, phaseShiftDeg] = convert_TF_math2human(freqRps, 
 % z             : Complex TF amplitudes (DFT component multiplication factors).
 % 
 %
-% IMPLEMENTATION NOTE: 
+% IMPLEMENTATION NOTE
+% ===================
 % Only plotting and code for human analysis should need to prevent phaseShiftDeg from wrapping, or add n*360 degrees 
 % and then in a custom-made way. Therefore this code does not, and should not, do that.
 %
 %
-% Author: Erik P G Johansson, IRF-U, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2017-12-12
 
 freqHz        = freqRps / (2*pi);

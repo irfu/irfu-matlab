@@ -45,25 +45,25 @@ if(minPoints>=10) % FIXME, This limit may need updating..
     idx(ind1(ind2(ii)):ind1(ind2(ii))+lengthSeg(ind2(ii))-1) = true;
   end
 else
-   % This algorithm is quick when looking for small minPoints but becomes
-   % rather slow as minPoints increases.
-   % Loop through and ensure diff(sig)==0 for at least minPoints, then build
-   % up the index again. This will be slow when minPoints is large, and
-   % quick when minPoints is small, regardless of number of segments found.
-   % Break down
-   for ii=1:minPoints-1
-     if(ii==1)
-       ind1 = diff(sig)==0;
-     else
-       ind1 = diff(ind1)==0 & ind1(1:end-1);
-     end
-   end
-   % Build up
-   ind2 = [ind1; false] | [ind1(1); ind1];
-   for ii=1:minPoints-2
-     ind2 = [ind2; false] | [ind2(1); ind2];
-   end
-   idx = ind2;
+  % This algorithm is quick when looking for small minPoints but becomes
+  % rather slow as minPoints increases.
+  % Loop through and ensure diff(sig)==0 for at least minPoints, then build
+  % up the index again. This will be slow when minPoints is large, and
+  % quick when minPoints is small, regardless of number of segments found.
+  % Break down
+  for ii=1:minPoints-1
+    if(ii==1)
+      ind1 = diff(sig)==0;
+    else
+      ind1 = diff(ind1)==0 & ind1(1:end-1);
+    end
+  end
+  % Build up
+  ind2 = [ind1; false] | [ind1(1); ind1];
+  for ii=1:minPoints-2
+    ind2 = [ind2; false] | [ind2(1); ind2];
+  end
+  idx = ind2;
 end
 
 end

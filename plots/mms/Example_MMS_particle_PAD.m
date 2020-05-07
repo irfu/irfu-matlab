@@ -1,5 +1,5 @@
-% Calculate and plot electron and ion pitch angle distributions from L1b particle 
-% brst data. 
+% Calculate and plot electron and ion pitch angle distributions from L1b particle
+% brst data.
 % Written by D. B. Graham.
 
 ic = 3; % Spacecraft number
@@ -25,15 +25,15 @@ c_eval('Bgse=mms.db_get_ts(''mms?_fgm_srvy_l2'',''mms?_fgm_b_gse_srvy_l2'',Tint)
 c_eval('SCpot=mms.db_get_ts(''mms?_edp_brst_l2_scpot'',''mms?_edp_scpot_brst_l2'',Tint);',ic);
 
 %% Compute parallel and perpendicular electron and ion temperatures
-Tipp = mms.rotate_tensor(Ti,'fac',Bxyz,'pp'); 
+Tipp = mms.rotate_tensor(Ti,'fac',Bxyz,'pp');
 Tiparperp = TSeries(Ti.time,[Tipp.xx.data Tipp.yy.data]);
 
-Tepp = mms.rotate_tensor(Te,'fac',Bxyz,'pp'); 
+Tepp = mms.rotate_tensor(Te,'fac',Bxyz,'pp');
 Teparperp = TSeries(Te.time,[Tepp.xx.data Tepp.yy.data]);
 
 %% Compute pitch-angle distributions and particle energy fluxes
 % electron and ion omnidirection differential energy flux
-ePDistomni = ePDist.omni.deflux; 
+ePDistomni = ePDist.omni.deflux;
 iPDistomni = iPDist.omni.deflux;
 
 % electron and ion omnidirection differential energy flux

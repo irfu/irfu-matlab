@@ -26,8 +26,8 @@ if isempty(Vhplus_dbcs_hpca)
   Vhplus_dbcs_hpca = mms.get_data('Vhplus_dbcs_hpca_srvy_l1b',Tint,mmsId);
 end
 
-% correct Ez in E2d 
-% XXX: this should be undone later 
+% correct Ez in E2d
+% XXX: this should be undone later
 E2d_dsl_edp_l2pre = irf_edb(E2d_dsl_edp_l2pre,B_dmpa_fgm_srvy_l2,10,'Eperp+NaN');
 
 % Comp VxB
@@ -115,19 +115,19 @@ irf_print_fig(['mms' num2str(mmsId) '_VExB_EDP_' edpMode '_vs_FPI_' fpiMode '_vs
 
 %%
 if 0
-f = irf_figure(2387458,3);
-set(gcf,'defaultAxesColorOrder',[1 0 0;0 0 0;0 0 1;0 0.7 0;0 1 1 ;1 0 1; 1 1 0])
-set(gcf,'defaultAxesFontSize',12)
-h = irf_plot({EVexB,E2d_dsl_edp_l2pre,E_dsl_edp_l2,EVixB,EVphlusxB},'comp');
-title(h(1),sprintf('MMS%d',mmsId))
-legend(h(1),'V_{e}xB','E L2pre','E l2','V_{i}xB','V_{H+}xB','Location','NorthEastOutside')
-legend(h(2),'V_{e}xB','E L2pre','E l2','V_{i}xB','V_{H+}xB','Location','NorthEastOutside')
-legend(h(3),'V_{e}xB','E L2pre','E l2','V_{i}xB','V_{H+}xB','Location','NorthEastOutside')
-ylabel(h(1),'E_x DSL [mV/m]')
-ylabel(h(2),'E_y DSL [mV/m]')
-ylabel(h(3),'E_z DSL [mV/m]')
-irf_zoom(h,'x',Tint)
-irf_plot_ylabels_align(h)
-
-irf_print_fig(['mms' num2str(mmsId) '_E_EDP_vs_FPI_vs_HPCA_fast_' irf_fname(Tint,2)],'png')
+  f = irf_figure(2387458,3);
+  set(gcf,'defaultAxesColorOrder',[1 0 0;0 0 0;0 0 1;0 0.7 0;0 1 1 ;1 0 1; 1 1 0])
+  set(gcf,'defaultAxesFontSize',12)
+  h = irf_plot({EVexB,E2d_dsl_edp_l2pre,E_dsl_edp_l2,EVixB,EVphlusxB},'comp');
+  title(h(1),sprintf('MMS%d',mmsId))
+  legend(h(1),'V_{e}xB','E L2pre','E l2','V_{i}xB','V_{H+}xB','Location','NorthEastOutside')
+  legend(h(2),'V_{e}xB','E L2pre','E l2','V_{i}xB','V_{H+}xB','Location','NorthEastOutside')
+  legend(h(3),'V_{e}xB','E L2pre','E l2','V_{i}xB','V_{H+}xB','Location','NorthEastOutside')
+  ylabel(h(1),'E_x DSL [mV/m]')
+  ylabel(h(2),'E_y DSL [mV/m]')
+  ylabel(h(3),'E_z DSL [mV/m]')
+  irf_zoom(h,'x',Tint)
+  irf_plot_ylabels_align(h)
+  
+  irf_print_fig(['mms' num2str(mmsId) '_E_EDP_vs_FPI_vs_HPCA_fast_' irf_fname(Tint,2)],'png')
 end

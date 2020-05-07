@@ -8,8 +8,8 @@ function [ModelOut,Model360] = mms_sdp_model_spin_residual(Dce,Dcv,Phase,signals
 %
 %  Input : DCE     - structure with fields time, e12, e34
 %          DCV     - structure with fields time, v1, v2, v3, v4
-%          PHASE   - phase corresponding to DCE time. 
-%          SIGNALS - cell array with list of signals to proceess, 
+%          PHASE   - phase corresponding to DCE time.
+%          SIGNALS - cell array with list of signals to proceess,
 %                    e.g {'e12', 'e34'} or {'v1', 'v3'}
 
 % ----------------------------------------------------------------------------
@@ -54,7 +54,7 @@ t3.us  = floor((t2-t3.sec*10^9-t3.ms*10^6)/10^3);
 t3.ns  = floor(t2-t3.sec*10^9-t3.ms*10^6-t3.us*10^3);
 % Compute what TT2000 time that corresponds to, using spdfcomputeTT2000.
 t0 = spdfcomputett2000([t1(1) t1(2) t1(3) t1(4) t1(5) t3.sec t3.ms t3.us t3.ns]);
-      
+
 phaRad = unwrap(Phase.data*pi/180);
 
 STEPS_PER_DEG = 1; phaShift=STEPS_PER_DEG/2;
@@ -67,12 +67,12 @@ timeTmp = interp1(phaDegUnw,epochTmp,phaFixed);
 phaFixed(isnan(timeTmp)) = []; timeTmp(isnan(timeTmp)) = [];
 phaFixedWrp = mod(phaFixed,360);
 
-  
+
 for signal = signals
   sig = signal{:};
   if isempty(intersect(signal,{'e12','e34','v1','v2','v3','v4'}))
     errS = ['invalid signal: ' sig]; irf.log('critical',errS), error(errS)
-  end 
+  end
   
   phaseRadTmp = phaRad;
   if( (Dcv.time(1)<=t0) && (t0<=Dcv.time(end)))
@@ -116,5 +116,5 @@ for signal = signals
   ModelOut.(sig) = interp1([-phaShift; pha360; 360+phaShift],...
     [Model360.(sig)(end); Model360.(sig); Model360.(sig)(1)]',Phase.data);
 end
-  
+
 end

@@ -7,7 +7,7 @@ function [elmn,h]=irf_pl_ebv_nrf(vngse,tint,e,b,sc_list)
 % [elmn,h]=irf_pl_ebv_nrf(vngse,tint);
 % [elmn,h]=irf_pl_ebv_nrf(vngse,tint,sc_list);
 %
-% plots electric field  and convection velocities in 
+% plots electric field  and convection velocities in
 % the magnetopause reference frame
 % returns handles to plots and electric field
 %
@@ -46,7 +46,7 @@ if nargin == 4,  sc_list=1;de1=e;db1=b; end
 if nargin == 5,  eval(irf_ssub('de?=irf_tlim(e,tint);db?=irf_tlim(b,tint);',sc_list));  end
 
 for ic=sc_list % which satellite
-
+  
   %%%%%%%%%%%%%%%%%%%%% Convert to MP boundary reference frame %%%%%%%%%%%%
   eval(irf_ssub('vn=c_gse2dsc(vngse,[tint(1) ic]);b=db?;e=de?;',ic));
   if q_flag == 2, flag=c_gse2dsc(L_dir,[tint(1) ic]);end
@@ -59,7 +59,7 @@ for ic=sc_list % which satellite
   ebv=irf_add(1,eb,1,evxb);
   ev=irf_add(1,e,1,evxb);
   veb=irf_e_vxb(ebv,be,-1);
-
+  
   %%%%%%%%%%%%%%%%%%%%%%%%   Convert to LMN %%%%%%%%%%%%%%%%%%%%%%%%
   [ev_lmn,L,M,N]=irf_eb_nrf(ev,be,vn,flag);
   eb_lmn=irf_eb_nrf(eb,be,vn,flag);
@@ -68,7 +68,7 @@ for ic=sc_list % which satellite
   elmn=ebv_lmn;
   b_lmn=irf_eb_nrf(be,be,vn,flag);
   v_lmn=irf_eb_nrf(veb,be,vn,flag);
-
+  
   %%%%%%%%%%%%%%%%  Get the directions of L,M,N in GSE coordinates %%%%%%%%%%%%%%%%
   L=c_gse2dsc(L,[tint(1) ic],-1);
   M=c_gse2dsc(M,[tint(1) ic],-1);
@@ -76,17 +76,17 @@ for ic=sc_list % which satellite
   if size(L,1)>1
     L_str=['L is timevarying, L_1=[' num2str(L(1,2:4),'%7.2f') ']'];
   else
-    L_str=['L=[' num2str(L(1,2:4),'%7.2f') ']'];  
+    L_str=['L=[' num2str(L(1,2:4),'%7.2f') ']'];
   end
   if size(M,1)>1
-    M_str=['M is timevarying, M_1=[' num2str(M(1,2:4),'%7.2f') ']'];  
+    M_str=['M is timevarying, M_1=[' num2str(M(1,2:4),'%7.2f') ']'];
   else
-    M_str=['M=[' num2str(M(1,2:4),'%7.2f') ']'];  
+    M_str=['M=[' num2str(M(1,2:4),'%7.2f') ']'];
   end
   if size(N,1)>1
-    N_str=['N is timevarying, N_1=[' num2str(N(1,2:4),'%7.2f') ']'];  
+    N_str=['N is timevarying, N_1=[' num2str(N(1,2:4),'%7.2f') ']'];
   else
-    N_str=['N=[' num2str(N(1,2:4),'%7.2f') ']'];  
+    N_str=['N=[' num2str(N(1,2:4),'%7.2f') ']'];
   end
   
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -96,7 +96,7 @@ for ic=sc_list % which satellite
   figure(ic);clf
   npl=7;ipl=1;
   h(ic,ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1;
-  if exist('mP.mat','file') 
+  if exist('mP.mat','file')
     eval(irf_ssub('load mP P? NVps?;p=irf_tlim(P?,tint);n=irf_tlim(NVps?,tint);',ic));
     irf_plot(n);
     ylabel('n_{sc} [cm^{-3}]');

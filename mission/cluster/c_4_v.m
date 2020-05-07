@@ -9,9 +9,9 @@ function V=c_4_v(r1,r2,r3,r4,t)
 %
 %  v=C_4_V(r1,r2,r3,r4,t)
 %
-%  r1..r4 are column vectors where first column is time and the next three 
+%  r1..r4 are column vectors where first column is time and the next three
 %         columns are satellite positions
-%  t      is vector [t1 t2 t3 t4] where t1..t4 are times when satellite 
+%  t      is vector [t1 t2 t3 t4] where t1..t4 are times when satellite
 %         cross the discontinuity
 %
 %  if more than 4 columns only the first 4 are used

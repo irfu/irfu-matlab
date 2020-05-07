@@ -13,7 +13,7 @@ function res = plot(dobj,varargin)
 %   'COMP_DIM1'  - form subplots from that component
 %					similar 'SUM_DIM2','SUM_DIM3','SUM_DIM2PITCH',....
 %   'nolabels'   - only plot data, do not add any labels or text
-%   'NoColorbar' - do not plot colorbar 
+%   'NoColorbar' - do not plot colorbar
 %   'ColorbarLabel' - specify colorbar label
 %   'FitColorbarLabel' - fit the text of colorbar label to colobar height
 %   'FillSpectrogramGaps' - fill data gaps with previous value (makes spectrograms look nice on screen)
@@ -46,14 +46,14 @@ args=args(2:end);
 LCOMP = 3;
 
 if isempty(dobj.data)
-	irf_log('fcal','Dataobject empty, nothing to plot');
-	return
+  irf_log('fcal','Dataobject empty, nothing to plot');
+  return
 end
 if ischar(var_s)             % input is the name of variable
-    data = getv(dobj,var_s);
+  data = getv(dobj,var_s);
 else                         % input is variable itself
-    data=var_s;
-    var_s=data.name;
+  data=var_s;
+  var_s=data.name;
 end
 
 if isempty(data), error('VAR_S not found'), end
@@ -90,7 +90,7 @@ flag_fill_spectrogram_gaps=0;
 line_color=''; % default line color; can be changed with flags, e.g. clustercolors
 flag_use_cluster_colors=0;
 flag_log = 1;
-flagPitchAngleAverage = false; % default averages are simple means, pitch angle average 
+flagPitchAngleAverage = false; % default averages are simple means, pitch angle average
 %			has to take into account the size of spherical angle for each pitch angle
 
 arg_pos = 0;
@@ -142,7 +142,7 @@ while ~isempty(args)
       case 'fillspectrogramgaps'
         flag_fill_spectrogram_gaps=1;
       case 'lin'
-        flag_log = 0; % for spectrograms    
+        flag_log = 0; % for spectrograms
       case 'sum_dim1'
         sum_dim = 1;
       case 'sum_dim2'
@@ -218,15 +218,15 @@ elseif dim == 1
     plot_data = {double(data.data)};
     if dim == 1
       if isfield(data,'TENSOR_ORDER')
-		  if isnumeric(data.TENSOR_ORDER)
-			  tensorOrder = data.TENSOR_ORDER;
-		  elseif ischar(data.TENSOR_ORDER)
-			  tensorOrder = str2double(data.TENSOR_ORDER); % TODO TENSOR_ORDER should be defined numeric
-		  else
-			  irf.log('critical','data.TENSOR_ORDER of unknown type!');
-			  error('dataobj/plot: data.TENSOR_ORDER of unknown type!');
-		  end
-        if data.dim(tensorOrder+1) > 1 
+        if isnumeric(data.TENSOR_ORDER)
+          tensorOrder = data.TENSOR_ORDER;
+        elseif ischar(data.TENSOR_ORDER)
+          tensorOrder = str2double(data.TENSOR_ORDER); % TODO TENSOR_ORDER should be defined numeric
+        else
+          irf.log('critical','data.TENSOR_ORDER of unknown type!');
+          error('dataobj/plot: data.TENSOR_ORDER of unknown type!');
+        end
+        if data.dim(tensorOrder+1) > 1
           flag_spectrogram = 1;
           ydim = 1;
         else
@@ -243,14 +243,14 @@ elseif dim == 1
   
 elseif dim == 2
   if sum_dim > 0
-	  if flagPitchAngleAverage
-		  irf.log('notice','Using pitch angle average!');
-		  pitchAngles=getfield(get(dobj,dep.DEPEND_X{sum_dim}),'data');
-		  data.data = irf.pitch_angle_average(double(data.data),...
-			  pitchAngles,[],[],sum_dim+1);
-	  else 
-		  data.data = irf.nanmean(double(data.data),sum_dim+1);
-	  end
+    if flagPitchAngleAverage
+      irf.log('notice','Using pitch angle average!');
+      pitchAngles=getfield(get(dobj,dep.DEPEND_X{sum_dim}),'data');
+      data.data = irf.pitch_angle_average(double(data.data),...
+        pitchAngles,[],[],sum_dim+1);
+    else
+      data.data = irf.nanmean(double(data.data),sum_dim+1);
+    end
     if sum_dim == 1, comp_dim = 2;
     else, comp_dim = 1;
     end
@@ -368,13 +368,13 @@ if flag_lineplot
     text_s = [text_s ...
       dobj.GlobalAttributes.INSTRUMENT_NAME{1} ' > '];
   elseif isfield(dobj.GlobalAttributes,'Data_type')
-     text_s = [text_s ...
+    text_s = [text_s ...
       dobj.GlobalAttributes.Data_type{1} ' > '];
-  end 
+  end
   text_s = [text_s fieldnam];
   if ~isempty(cs), text_s = [text_s ' [' shorten_cs(cs) ']']; end
-  if flag_labels_is_on 
-      add_text(ax,text_s);
+  if flag_labels_is_on
+    add_text(ax,text_s);
   end
   
 elseif flag_spectrogram
@@ -426,15 +426,15 @@ elseif flag_spectrogram
     end
   end
   if flag_fill_spectrogram_gaps==1 && isfield(dep,'dt') % fill gaps, disregard delta_plus and delta_minus for each data point
-      dep=rmfield(dep,'dt');
+    dep=rmfield(dep,'dt');
   end
   if sum_dim > 0
     irf.log('notice',sprintf('Summing over dimension %d (%s)\n', ...
       sum_dim, dep_x{sum_dim}.lab));
   end
-  if flag_log, plot_type='log'; else, plot_type='lin'; end 
+  if flag_log, plot_type='log'; else, plot_type='lin'; end
   specrec = struct('t',timeLine,'f',dep_x{1}.data,'f_unit',...
-      dep_x{1}.units,'p',[],'df',dep_x{1}.df,'plot_type',plot_type);
+    dep_x{1}.units,'p',[],'df',dep_x{1}.df,'plot_type',plot_type);
   if isfield(dep,'dt')
     specrec.dt=dep.dt;
   end
@@ -464,9 +464,9 @@ elseif flag_spectrogram
     text_s = [text_s ...
       dobj.GlobalAttributes.INSTRUMENT_NAME{1} ' > '];
   elseif isfield(dobj.GlobalAttributes,'Data_type')
-     text_s = [text_s ...
+    text_s = [text_s ...
       dobj.GlobalAttributes.Data_type{1} ' > '];
-  end 
+  end
   text_s = [text_s fieldnam];
   if ~isempty(cs), text_s = [text_s ' [' shorten_cs(cs) ']']; end
   
@@ -523,43 +523,43 @@ elseif flag_spectrogram
   end
   % Add colorbar
   if flag_colorbar_is_on
-      i=fix(ncomp/2)+1;
-      if isa(h(i),'handle'), hcb = colorbar(h(i)); % HG2
-      else, hcb = colorbar('peer',h(i));
+    i=fix(ncomp/2)+1;
+    if isa(h(i),'handle'), hcb = colorbar(h(i)); % HG2
+    else, hcb = colorbar('peer',h(i));
+    end
+    posCb = get(hcb,'Position');
+    posAx = get(ax(i),'Position');
+    dy = posAx(3);
+    if ncomp>1
+      set(hcb,'Position',...
+        [posCb(1) posCb(2)-posCb(4)*(ncomp-fix(ncomp/2)-1) ...
+        posCb(3) posCb(4)*ncomp]);
+    else
+      set(hcb,'TickDir','out','Position',...
+        [posCb(1) posCb(2)+posCb(4)*0.05 posCb(3)*.75 posCb(4)*0.9])
+    end
+    set(ax(i),'Position',posAx)
+    if flag_labels_is_on || flag_colorbar_label_is_manually_specified
+      if ~flag_colorbar_label_is_manually_specified
+        colorbar_label=[lablaxis ' [' units ']' ];
+        if flag_log, colorbar_label = ['Log ' colorbar_label]; end
       end
-      posCb = get(hcb,'Position');
-      posAx = get(ax(i),'Position');
-      dy = posAx(3);
-	  if ncomp>1
-		  set(hcb,'Position',...
-			  [posCb(1) posCb(2)-posCb(4)*(ncomp-fix(ncomp/2)-1) ...
-			  posCb(3) posCb(4)*ncomp]);
-	  else
-		  set(hcb,'TickDir','out','Position',...
-			  [posCb(1) posCb(2)+posCb(4)*0.05 posCb(3)*.75 posCb(4)*0.9])
-	  end
-	  set(ax(i),'Position',posAx)
-	  if flag_labels_is_on || flag_colorbar_label_is_manually_specified
-		  if ~flag_colorbar_label_is_manually_specified
-			  colorbar_label=[lablaxis ' [' units ']' ];
-			  if flag_log, colorbar_label = ['Log ' colorbar_label]; end
-		  end
-		  set(hcb,'YTickLabel','0.0'); % the distance to colorlabel defined by width of 0.0 (stupid workaround to nonfunctioning automatic distance)
-		  ylabel(hcb,colorbar_label);
-		  if flag_colorbar_label_fit_to_colorbar_height_is_on
-			  irf_colorbar_fit_label_height(hcb);
-		  end
-		  set(hcb,'yticklabelmode','auto');
-	  else
-		  ylabel(hcb,'');
-	  end
-      % Resize all panels after addition of the colorbar
-      if ~isempty(dy)
-          for i=1:ncomp
-              tt = get(ax(i),'Position');
-              set(ax(i),'Position',[tt(1) tt(2) dy tt(4)])
-          end
+      set(hcb,'YTickLabel','0.0'); % the distance to colorlabel defined by width of 0.0 (stupid workaround to nonfunctioning automatic distance)
+      ylabel(hcb,colorbar_label);
+      if flag_colorbar_label_fit_to_colorbar_height_is_on
+        irf_colorbar_fit_label_height(hcb);
       end
+      set(hcb,'yticklabelmode','auto');
+    else
+      ylabel(hcb,'');
+    end
+    % Resize all panels after addition of the colorbar
+    if ~isempty(dy)
+      for i=1:ncomp
+        tt = get(ax(i),'Position');
+        set(ax(i),'Position',[tt(1) tt(2) dy tt(4)])
+      end
+    end
   end
   set(ax(1:ncomp-1),'XTickLabel',[]);
   for i=1:1:ncomp-1, xlabel(ax(i),'');end

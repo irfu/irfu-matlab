@@ -1,17 +1,36 @@
-function [outspecrec,outPxx,outF] = irf_powerfft(data,nfft,sfreq,overlap,smoothWidth)
+function [outSpecrecOrT,outPxx,outF] = irf_powerfft(data,nFft,samplFreqHz,overlap,smoothWidth)
 %IRF_POWERFFT  compute power spectrum
 %
-% [t,power,f] = irf_powerfft(data,nfft,sfreq,[overlap])
-% [specrec] = irf_powerfft(data,nfft,sfreq,[overlap])
-%	SPECREC is a structure:
-%		SPECREC.T - time
-%		SPECREC.P - spectrum
-%		SPECREC.F - frequency
+% [Specrec]          = irf_powerfft(data,nFft,samplFreqHz,[overlap,smoothWidth])
+% [t,power,f]        = irf_powerfft(data,nFft,samplFreqHz,[overlap,smoothWidth])
+%       Return the same results as either one struct, or as separate values.
 %
-% Input data may be either a vector (with first column as time) or a
-% TSeries object.
-% Please note: Output is still the same, [specrec] struct or [t, power, f]
-% with time being of type "double" in epoch unix.
+% (no return value)    irf_powerfft(data,nFft,samplFreqHz,[overlap])
+%       Uses results to call irf_spectrogram.
+%
+%   data        - Either (1) a vector (first column is time; other columns are
+%                 data), or (2) a TSeries object.
+%   nFft        - Length of time covered by every spectrum, when the samples
+%                 are sampled at frequency samplFreqHz. This is also the number
+%                 of samples (real or reconstructed) used for every spectrum.
+%   samplFreqHz - The sampling frequency [samples/s].
+%   overlap     - Overlap between spectras in percent (0..99).
+%   smoothWidth -
+%	Specrec     - Structure with below fields:
+%		.t - Column array. Time of each individual spectrum [seconds].
+%            If using TSeries, then epoch unix.
+%            If not using TSeries, then same as data time.
+%		.p - Spectrum values. NaN if too little underlying data for
+%            the particular spectrum.
+%		.f - Frequencies [Hz] for spectrum. One array for all spectras.
+%       The structure can be passed to IRF_SPECTROGRAM with/without
+%       modifications.
+%
+% Note: Input data does not have to be sampled at samplFreqHz, and sampling
+% frequency may vary. Missing samples, needed for FFT, are reconstructed by
+% using the mean value is used, assuming not too many samples are missing. If
+% the actual sampling rate is higher than samplFreqHz, then samples may be
+% dropped.
 %
 % See also FFT, IRF_SPECTROGRAM
 
@@ -22,139 +41,217 @@ function [outspecrec,outPxx,outF] = irf_powerfft(data,nfft,sfreq,overlap,smoothW
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
 
+MIN_FRACTION_NAN = 0.9;
+
+
+
 narginchk(3,5);
-if nargin<4, overlap = 0; smoothWidth = 0;
-elseif nargin<5, smoothWidth = 0; 
+if nargin<4
+  overlap     = 0;
+  smoothWidth = 0;
+elseif nargin<5
+  smoothWidth = 0;
 end
 
-if overlap<0 || overlap>100, error('OVERLAP must be in a range 0..99'), end
+if overlap<0 || overlap>=100
+  error('Illegal OVERLAP. Must be in the range 0..100-.')
+end
 
-if(isa(data,'TSeries')), tseries = true; else, tseries = false; end
 
-if(tseries)
-  % New Time series approach
-  nint = fix(((data.time.stop-data.time.start)*sfreq+1)*(1+overlap*.01)/nfft);
-  ncomp = size(data.data, 2);
-  tcur = data.time.start;
+
+usingTSeries = isa(data,'TSeries');
+
+if(usingTSeries)
+  % CASE: "data" is TSeries.
+  nSpectras      = fix(((data.time.stop-data.time.start)*samplFreqHz+1) * (1+overlap*.01) / nFft);
+  nComp          = size(data.data, 2);    % Number of components of data.
+  tIntervalStart = EpochTT(data.time.start - EpochTT(0.5/samplFreqHz));
+  % NOTE: Have the time interval used for a given spectrum begin "0.5 samples"
+  % before the first sample, and end "0.5 samples" after the last sample so that
+  % the spectrum time interval is proportional to the number of samples
+  % (assuming the nominal sampling frequency).
 else
+  % CASE: "data" is NOT TSeries.
   ii = find(~isnan(data(:,1)));
-  if isempty(ii), error('time is NaN');
-  else, ts = data(ii(1),1);
+  if isempty(ii)
+    error('All timestamps are NaN.');
   end
+  ts = data(ii(1),1);
+  
   % Number of intervals must be computed from time
-  nint = fix(((data(ii(end),1)-ts)*sfreq+1)*(1+overlap*.01)/nfft);
-  ncomp = size(data,2) - 1; % first column is time
-  tcur = ts;
+  nSpectras      = fix(((data(ii(end),1)-ts)*samplFreqHz+1) * (1+overlap*.01)/nFft);
+  nComp          = size(data,2) - 1;    % Number of components of data. First column is time.
+  tIntervalStart = ts - 0.5/samplFreqHz;
 end
 
 % Check if there is enough data
-if( nint<1 )
-  outF = [];
-  outPxx = [];
-  outspecrec = [];
+if( nSpectras<1 )
+  outF          = [];
+  outPxx        = [];
+  outSpecrecOrT = [];
   return
 end
 
-if nfft/2==fix(nfft/2), nf = nfft/2;
-else, nf = (nfft+1)/2;
+intervalLengthSec = nFft/samplFreqHz;    % Length of time interval used for spectrum.
+
+% if nFft/2==fix(nFft/2), nf = nFft/2;
+% else, nf = (nFft+1)/2;
+% end
+nf = ceil(nFft/2);
+
+Specrec.f = samplFreqHz*((1:nf) -1)'/nFft;
+for iComp=1:nComp
+  Specrec.p(iComp) = {zeros(nSpectras,nf)};
 end
+Specrec.t = zeros(nSpectras,1);
 
-specrec.f = sfreq*((1:nf) -1)'/nfft;
-for jj=1:ncomp, specrec.p(jj) = {zeros(nint,nf)}; end
-specrec.t = zeros(nint,1);
+w     = hanning(nFft);
+wnorm = sum(w.^2)/nFft;	      % Normalization factor from windowing
+nnorm = 2.0/nFft/samplFreqHz/wnorm;
 
-w = hanning(nfft);
-wnorm = sum(w.^2)/nfft;	% normalization factor from windowing
-nnorm = 2.0/nfft/sfreq/wnorm;
 
-for jj=1:nint
-  if(tseries)
-    % Possibly FIXME (specrec.t to GenericTime once irf_spectrogram can handle TSeries)
-    specrec.t(jj) = tcur.epochUnix + (nfft-1)/sfreq*.5;
-    X = order_data(tlim(data, irf.tint(tcur, (nfft-1)/sfreq)), ...
-      nfft, sfreq, tcur);
+
+%==================================
+% Iterate over individual spectras
+%==================================
+for jj = 1:nSpectras
+  
+  if(usingTSeries)
+    % Possibly FIXME (Specrec.t to GenericTime once irf_spectrogram can handle TSeries)
+    Specrec.t(jj) = tIntervalStart.epochUnix + intervalLengthSec*0.5;    % Time interval midpoint. Very slow.
+    
+    TintTT = irf.tint(tIntervalStart, intervalLengthSec);    % Spectrum time interval (start+stop). Very slow?
+    dataIntervalRaw     = tlim(data, TintTT);      % Select data points within spectrum time interval.
+    dataIntervalPreproc = preprocess_data(...      % "Preprocessed" data, suitable for doing FFT on.
+      dataIntervalRaw, ...
+      nFft, samplFreqHz, tIntervalStart);
   else
-    specrec.t(jj) = tcur + (nfft-1)/sfreq*.5;
-    X = order_data(irf_tlim(data, tcur, tcur+(nfft-1)/sfreq), ...
-      nfft, sfreq, tcur);
+    Specrec.t(jj) = tIntervalStart + intervalLengthSec*0.5;
+    dataIntervalPreproc = preprocess_data(...
+      irf_tlim(data, tIntervalStart, tIntervalStart+intervalLengthSec), ...
+      nFft, samplFreqHz, tIntervalStart);
   end
-  for comp=1:ncomp
-    if( ~isempty(X) && any(~isnan(X(:,comp))) )
-      ff = fft(detrend(X(:,comp)) .* w, nfft);
+  
+  for iComp = 1:nComp
+    if( ~isempty(dataIntervalPreproc) && all(~isnan(dataIntervalPreproc(:,iComp))) )
+      
+      %==============
+      % FFT + window
+      %==============
+      ff = fft(detrend(dataIntervalPreproc(:,iComp)) .* w, nFft);
       pf = ff .*conj(ff) * nnorm;
-      specrec.p{comp}(jj,:) = pf(1:nf);
+      
+      Specrec.p{iComp}(jj,:) = pf(1:nf);
     else
-      specrec.p{comp}(jj,:) = NaN;
+      Specrec.p{iComp}(jj,:) = NaN;
     end
   end
-  % Next time interval (GenericTimeArray adds "double" as seconds)
-  tcur = tcur + (1-overlap*.01)*(nfft-1)/sfreq;
+  
+  % Derive next start time (GenericTimeArray adds "double" as seconds)
+  tIntervalStart = tIntervalStart + (1-overlap*.01)*intervalLengthSec;
 end
 
+
+
 if smoothWidth
-  if (smoothWidth > 2/sfreq), smoothSpectrum(); 
-  else, irf.log('warn','smoting not done - smoothWidth too small')
+  if (smoothWidth > 2/samplFreqHz), smoothSpectrum();
+  else, irf.log('warn','smoothing not done - smoothWidth too small')
   end
 end
 
-if nargout==1, outspecrec = specrec;
+if nargout==1, outSpecrecOrT = Specrec;
 elseif nargout==3
-  outspecrec = specrec.t;
-  outPxx = specrec.p;
-  outF = specrec.f;
+  outSpecrecOrT = Specrec.t;
+  outPxx        = Specrec.p;
+  outF          = Specrec.f;
 elseif nargout==0
-  irf_spectrogram(specrec)
+  irf_spectrogram(Specrec)
 else
   error('irf_powerfft: unknown number of output parameters');
 end
 
-% Help function to clear datagaps
-% We throw away intervals with less than 90% of data
-function out = order_data(in, ndata, sfreq, ts)
-  if(tseries)
-    if isempty(in.data), out = []; return, end
-    ncomp2 = size(in.data, 2);
-    ind = round((in.time.epochUnix-ts.epochUnix)*sfreq+1);
-    out = NaN(ndata, ncomp2);
-    out(ind, :) = in.data;
-  else
-    if isempty(in), out = []; return, end
-    ncomp2 = size(in,2) - 1; % Drop time column
-    ind = round((in(:,1)-ts)*sfreq+1);
-    out = NaN(ndata, ncomp2);
-    out(ind, :) = in(:, 2:end); % Drop time column
-  end
-  indNaN = isnan(out);
-  if( any(indNaN) )
-    % if data has less than 90% return NaN, else replace with mean (excl. NaN).
-    m = irf.nanmean(out, 1, 0.9);
-    for col=1:ncomp2
-      if(any(indNaN(:,col))), out(indNaN(:,col),col) = m(col); end
+
+
+% Help function to handle datagaps. Given a vector/TSeries of samples to base
+% a spectrum on (possibly lacking samples, jumps in timestamps), construct a
+% "complete" 1D vector that can be used for FFT. Throws away time intervals
+% with less than some percentage (90%) of data.
+%
+% inData   : Data (samples) to construct final vector from. Must only contain
+%            samples for the final spectrum. May contain jumps in timestamps
+%            (if TSeries).
+% nOutData : Size of final vector.
+% ts       : Start time of final vector.
+% outData  : Vector of size nOutData x N. Each dimension 1 index corresponds
+%            to constant time increments.
+%
+  function outData = preprocess_data(inData, nOutData, samplFreqHz, tIntervalStart2)
+    if(usingTSeries)
+      if isempty(inData.data)
+        outData = [];
+        return
+      end
+      nComp2 = size(inData.data, 2);
+      
+      % Construct "outData" vector/matrix with NaN, except where there is actual data.
+      % ind = Indices into final vector that can be filled with actual samples.
+      % NOTE: Using .tts instead of .epochUnix, since it is considerably faster.
+      ind = round((inData.time.tts - tIntervalStart2.tts) * samplFreqHz + 0.5);
+      outData         = NaN(nOutData, nComp2);
+      outData(ind, :) = inData.data;
+    else
+      if isempty(inData)
+        outData = [];
+        return
+      end
+      
+      nComp2          = size(inData,2) - 1;       % Exclude time column
+      ind             = round((inData(:,1)-tIntervalStart2)*samplFreqHz + 0.5);
+      outData         = NaN(nOutData, nComp2);
+      outData(ind, :) = inData(:, 2:end);         % Exclude time column
     end
+    
+    % If data has less than minimum allowed fraction of NaN, then set all
+    % components to NaN. Otherwise replace NaN with mean (mean calculated by
+    % excl. NaN).
+    indNaN = isnan(outData);
+    if( any(indNaN) )
+      m = irf.nanmean(outData, 1, MIN_FRACTION_NAN);
+      for col = 1:nComp2
+        if(any(indNaN(:,col)))
+          outData(indNaN(:,col),col) = m(col);
+        end
+      end
+    end
+    
   end
-end
+
+
 
   function smoothSpectrum
-    %Basic smoothing procedure, borrowed from mms_fft() 
+    % Basic smoothing procedure, borrowed from mms_fft().
+    % Smoothes the spectras, not the input data.
     
-    nc = floor(smoothWidth*sfreq);
-    %make sure nc is even
+    nc = floor(smoothWidth*samplFreqHz);
+    % Make sure nc is even.
     if (mod(nc,2) == 1), nc = nc-1; end
     
     idx = nc/2:nc:nf-nc/2; nFreq = length(idx);
     freqs = zeros(nFreq,1);
     for ij = 1:nFreq
-      freqs(ij) = mean(specrec.f(idx(ij)-nc/2+1:idx(ij)+nc/2-1));
+      freqs(ij) = mean(Specrec.f(idx(ij)-nc/2+1:idx(ij)+nc/2-1));
     end
-    specrec.f = freqs;
+    Specrec.f = freqs;
     
-    powers = zeros(nint,nFreq);
-    for iComp=1:ncomp
+    powers = zeros(nSpectras,nFreq);
+    for iComp2=1:nComp
       for ij = 1:nFreq
-        powers(:,ij) = mean(specrec.p{iComp}(:,idx(ij)-nc/2+1:idx(ij)+nc/2-1),2);
+        powers(:,ij) = mean(Specrec.p{iComp2}(:,idx(ij)-nc/2+1:idx(ij)+nc/2-1),2);
       end
-      specrec.p{iComp} = powers;
-    end 
+      Specrec.p{iComp2} = powers;
+    end
   end
 
-end
+
+
+end    % irf_powerfft

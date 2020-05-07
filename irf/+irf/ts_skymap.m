@@ -20,7 +20,7 @@ if isempty(energy) % must check that energy0, energy1 and esteptable is given
         case {'energy0'}; energy0_ok = 1; energy0 = args{1}; args(1) = [];
         case {'energy1'}; energy1_ok = 1; energy1 = args{1}; args(1) = [];
         case {'esteptable'}; esteptable_ok = 1; esteptable = args{1}; args(1) = [];
-      end     
+      end
     end
   end
   if ~(energy0_ok && energy1_ok && esteptable_ok); error('Energy input required'); end

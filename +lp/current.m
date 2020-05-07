@@ -10,9 +10,9 @@ function J=current(Probe,vectorU,rSunAU,factorUV,Plasma)
 %
 % Input:
 %  Probe      - describes probe properties (structure or LP.LPROBE object)
-%   Probe.Area.sunlit - total sunlit area [m^2] 
+%   Probe.Area.sunlit - total sunlit area [m^2]
 %   Probe.Area.sphere - area of the sphere
-%   Probe.Area.wire   - area of the wire 
+%   Probe.Area.wire   - area of the wire
 %   Probe.surface     - 'themis','cassini' (one of flags in lp.photocurrent)
 %   Probe.areaSunlit  - use this if Area.sunlit not defined
 %   Probe.areaTotal   - use this if Area.sphere and Area.wire are not
@@ -30,55 +30,55 @@ function J=current(Probe,vectorU,rSunAU,factorUV,Plasma)
 % See also: LP.PHOTOCURRENT, LP.THERMAL_CURRENT
 
 if isempty(Plasma) % calculate only photocurrent
-    nPlasmaSpecies=0;
+  nPlasmaSpecies=0;
 else
-    nPlasmaSpecies=numel(Plasma.qe);
-    J.plasma=cell(nPlasmaSpecies,1);
-%    plasma.TK=plasma.T*Units.e/Units.kB;
+  nPlasmaSpecies=numel(Plasma.qe);
+  J.plasma=cell(nPlasmaSpecies,1);
+  %    plasma.TK=plasma.T*Units.e/Units.kB;
 end
 
 if isprop(Probe,'Area')
-	areaSunlit = Probe.Area.sunlit;
+  areaSunlit = Probe.Area.sunlit;
 else
-	areaSunlit = Probe.areaSunlit;
+  areaSunlit = Probe.areaSunlit;
 end
 
 if factorUV == 0
-	J.photo = zeros(size(vectorU));
+  J.photo = zeros(size(vectorU));
 else
-	J.photo = -lp.photocurrent(areaSunlit, vectorU, rSunAU,Probe.surfacePhotoemission);
-	J.photo = J.photo .* factorUV;
+  J.photo = -lp.photocurrent(areaSunlit, vectorU, rSunAU,Probe.surfacePhotoemission);
+  J.photo = J.photo .* factorUV;
 end
 
 J.total=J.photo; % initialize
 for ii=1:nPlasmaSpecies
-	% density n
-	q=Plasma.qe(ii);
-	if numel(Plasma.n)<nPlasmaSpecies && ii > numel(Plasma.n)
-		n=Plasma.n(end);
-	else
-		n=Plasma.n(ii);
-	end
-	% temperature T
-	if numel(Plasma.T)<nPlasmaSpecies && ii > numel(Plasma.T)
-		T=Plasma.T(end);
-	else
-		T=Plasma.T(ii);
-	end
-	% mass m
-	if numel(Plasma.m)<nPlasmaSpecies && ii > numel(Plasma.m)
-		m=Plasma.m(end);
-	else
-		m=Plasma.m(ii);
-	end
-	% velocity with respect to media
-	if numel(Plasma.v)<nPlasmaSpecies && ii > numel(Plasma.v)
-		v=Plasma.v(end);
-	else
-		v=Plasma.v(ii);
-	end
-	J.plasma{ii}=thermal_current(Probe,n,T,m,v,q,vectorU);
-	J.total=J.total+J.plasma{ii};
+  % density n
+  q=Plasma.qe(ii);
+  if numel(Plasma.n)<nPlasmaSpecies && ii > numel(Plasma.n)
+    n=Plasma.n(end);
+  else
+    n=Plasma.n(ii);
+  end
+  % temperature T
+  if numel(Plasma.T)<nPlasmaSpecies && ii > numel(Plasma.T)
+    T=Plasma.T(end);
+  else
+    T=Plasma.T(ii);
+  end
+  % mass m
+  if numel(Plasma.m)<nPlasmaSpecies && ii > numel(Plasma.m)
+    m=Plasma.m(end);
+  else
+    m=Plasma.m(ii);
+  end
+  % velocity with respect to media
+  if numel(Plasma.v)<nPlasmaSpecies && ii > numel(Plasma.v)
+    v=Plasma.v(end);
+  else
+    v=Plasma.v(ii);
+  end
+  J.plasma{ii}=thermal_current(Probe,n,T,m,v,q,vectorU);
+  J.total=J.total+J.plasma{ii};
 end
 end
 
@@ -121,16 +121,16 @@ if n==0,    return;end
 % important if V > 0.1 * V_th.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if vsc < 0.1 * sqrt(Units.e*T/m)
-	
-	% Ratio of potential to thermal energy.
-	X = vectorU/T;
-	
-	% Total current to/from body.
-	fluxIp = n*Units.e*sqrt( T*Units.e/(2.0*pi*m) );
-	
+  
+  % Ratio of potential to thermal energy.
+  X = vectorU/T;
+  
+  % Total current to/from body.
+  fluxIp = n*Units.e*sqrt( T*Units.e/(2.0*pi*m) );
+  
 else
-	X = ( Units.e / (m*vsc^2/2 + Units.e*T) ) .* vectorU;
-	fluxIp = n*Units.e*sqrt( vsc^2/16 + T*Units.e/(2.0*pi*m) );
+  X = ( Units.e / (m*vsc^2/2 + Units.e*T) ) .* vectorU;
+  fluxIp = n*Units.e*sqrt( vsc^2/16 + T*Units.e/(2.0*pi*m) );
 end
 
 
@@ -140,19 +140,19 @@ indNegativeU = find( vectorU < 0 );
 % Spherical body case.
 %%%%%%%%%%%%%%%%%%%%%%
 if isprop(Lprobe,'Area')
-	A = Lprobe.Area.sphere;
+  A = Lprobe.Area.sphere;
 else
-	A = Lprobe.areaTotal;
+  A = Lprobe.areaTotal;
 end
 
 Ip = A*fluxIp;
 
 if q > 0
-	jThermalSphere(indPositiveU) = Ip .* exp(-X(indPositiveU));
-	jThermalSphere(indNegativeU) = Ip .* (1-X(indNegativeU));
+  jThermalSphere(indPositiveU) = Ip .* exp(-X(indPositiveU));
+  jThermalSphere(indNegativeU) = Ip .* (1-X(indNegativeU));
 elseif q < 0
-	jThermalSphere(indPositiveU) = Ip .* (1+X(indPositiveU));
-	jThermalSphere(indNegativeU) = Ip .* exp(X(indNegativeU));
+  jThermalSphere(indPositiveU) = Ip .* (1+X(indPositiveU));
+  jThermalSphere(indNegativeU) = Ip .* exp(X(indNegativeU));
 end
 
 
@@ -160,27 +160,27 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%
 
 if isprop(Lprobe,'Area')
-	A = Lprobe.Area.wire;
-	Ip = A*fluxIp;
-	
-	sq         = zeros(size(vectorU));
-	%     erfv       = zeros( U_pts, 1 );
-	
-	sq(indNegativeU) = sqrt( abs(-X(indNegativeU)) );
-	sq(indPositiveU) = sqrt( abs(+X(indPositiveU)) );
-	erfv = erf( sq );
-	
-	if q > 0
-		jThermalWire(indPositiveU) = Ip .* exp(-X(indPositiveU));
-		jThermalWire(indNegativeU) = Ip .* ( (2/sqrt(pi)) .* sq(indNegativeU) ...
-			+ exp(-X(indNegativeU)) .* (1.0 - erfv(indNegativeU)) );
-	elseif q < 0
-		jThermalWire(indNegativeU) = Ip .* exp(X(indNegativeU));
-		jThermalWire(indPositiveU) = Ip .* ( (2.0/sqrt(pi)) .* sq(indPositiveU) ...
-			+ exp(+X(indPositiveU)) .* (1.0 - erfv(indPositiveU)) );
-	end
+  A = Lprobe.Area.wire;
+  Ip = A*fluxIp;
+  
+  sq         = zeros(size(vectorU));
+  %     erfv       = zeros( U_pts, 1 );
+  
+  sq(indNegativeU) = sqrt( abs(-X(indNegativeU)) );
+  sq(indPositiveU) = sqrt( abs(+X(indPositiveU)) );
+  erfv = erf( sq );
+  
+  if q > 0
+    jThermalWire(indPositiveU) = Ip .* exp(-X(indPositiveU));
+    jThermalWire(indNegativeU) = Ip .* ( (2/sqrt(pi)) .* sq(indNegativeU) ...
+      + exp(-X(indNegativeU)) .* (1.0 - erfv(indNegativeU)) );
+  elseif q < 0
+    jThermalWire(indNegativeU) = Ip .* exp(X(indNegativeU));
+    jThermalWire(indPositiveU) = Ip .* ( (2.0/sqrt(pi)) .* sq(indPositiveU) ...
+      + exp(+X(indPositiveU)) .* (1.0 - erfv(indPositiveU)) );
+  end
 else
-	jThermalWire=0;
+  jThermalWire=0;
 end
 
 jThermal = jThermalSphere + jThermalWire;

@@ -76,18 +76,18 @@ mmsColors=[0 0 0; 1 0 0 ; 0 0.5 0 ; 0 0 1];
 h = irf_figure(8);
 
 if 1
-hca = irf_panel('B'); set(hca,'ColorOrder',mmsColors)
-irf_pl_tx(hca,'abs(B?)',1)
-ylabel(hca,'|B| [nT]')
-irf_legend(hca,{'mms1','mms2','mms3','mms4'},[0.98, 0.1],'color','cluster');
-
-hca = irf_panel('Bx'); set(hca,'ColorOrder',mmsColors)
-irf_pl_tx(hca,'B?',1)
-ylabel(hca,'Bx [nT]')
-
-hca = irf_panel('By'); set(hca,'ColorOrder',mmsColors)
-irf_pl_tx(hca,'B?',2)
-ylabel(hca,'By [nT]')
+  hca = irf_panel('B'); set(hca,'ColorOrder',mmsColors)
+  irf_pl_tx(hca,'abs(B?)',1)
+  ylabel(hca,'|B| [nT]')
+  irf_legend(hca,{'mms1','mms2','mms3','mms4'},[0.98, 0.1],'color','cluster');
+  
+  hca = irf_panel('Bx'); set(hca,'ColorOrder',mmsColors)
+  irf_pl_tx(hca,'B?',1)
+  ylabel(hca,'Bx [nT]')
+  
+  hca = irf_panel('By'); set(hca,'ColorOrder',mmsColors)
+  irf_pl_tx(hca,'B?',2)
+  ylabel(hca,'By [nT]')
 end
 
 hca = irf_panel('Bz'); set(hca,'ColorOrder',mmsColors)
@@ -103,15 +103,15 @@ irf_pl_tx(hca,'E?',2)
 ylabel(hca,'Ey [mV/m]')
 
 if 1
-hca = irf_panel('Ez'); set(hca,'ColorOrder',mmsColors)
-irf_pl_tx(hca,'E?',3)
-ylabel(hca,'Ez [mV/m]')
+  hca = irf_panel('Ez'); set(hca,'ColorOrder',mmsColors)
+  irf_pl_tx(hca,'E?',3)
+  ylabel(hca,'Ez [mV/m]')
 end
 
 if 1
-hca = irf_panel('ScPot'); set(hca,'ColorOrder',mmsColors)
-irf_pl_tx(hca,'P?')
-ylabel(hca,'ScPot [V]')
+  hca = irf_panel('ScPot'); set(hca,'ColorOrder',mmsColors)
+  irf_pl_tx(hca,'P?')
+  ylabel(hca,'ScPot [V]')
 end
 
 
@@ -159,9 +159,9 @@ irf_pl_tx(hca,'VExB?',3)
 ylabel(hca,'Vz [km/s]')
 
 if 1
-hca = irf_panel('ScPot'); set(hca,'ColorOrder',mmsColors)
-irf_pl_tx(hca,'P?')
-ylabel(hca,'-ScPot [V]')
+  hca = irf_panel('ScPot'); set(hca,'ColorOrder',mmsColors)
+  irf_pl_tx(hca,'P?')
+  ylabel(hca,'-ScPot [V]')
 end
 
 irf_zoom(h,'x',Tint)

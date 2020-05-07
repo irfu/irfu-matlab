@@ -17,18 +17,18 @@ end
 
 % check if autoY field exists, if not put it to 1
 if ~isfield(ud_fig,'autoY')
-    ud_fig.autoY=1;set(ud.figure,'userdata',ud_fig);
+  ud_fig.autoY=1;set(ud.figure,'userdata',ud_fig);
 end
 
-    
+
 if isfield(ud_fig,'subplot_handles') % check the handles to subplots
   SUBPLOT_HANDLES=ud_fig.subplot_handles;
 else
-  SUBPLOT_HANDLES=get(ud.figure,'Children'); 
+  SUBPLOT_HANDLES=get(ud.figure,'Children');
   % Do not assume that subplots are the only children of figure
   ii = [];
   for j=1:length(SUBPLOT_HANDLES)
-  	if ~isgraphics(SUBPLOT_HANDLES( j ),'axes'), ii = [ii j]; end
+    if ~isgraphics(SUBPLOT_HANDLES( j ),'axes'), ii = [ii j]; end
   end
   if ~isempty(ii), SUBPLOT_HANDLES(ii) = []; clear ii, end
 end
@@ -74,7 +74,7 @@ switch fromto
       tlim(1)=tlim(2);
       step=0;
     else
-        step=diff(tlim);
+      step=diff(tlim);
     end
     update_fromto(ud,tlim);
   case 'step'
@@ -100,7 +100,7 @@ switch fromto
     %xd=get(hc(1),'XData');minx=min(xd);maxx=max(xd);clear xd;
     %if length(hc)>1, for ii=2:length(hc), xd=get(hc(1),'XData');minx=min([minx xd]);maxx=max([maxx xd]);clear xd;end;end
     minx=[];maxx=[];
-    for ii=1:length(hc) 
+    for ii=1:length(hc)
       if isgraphics(hc( ii ),'axes') || isgraphics(hc( ii ),'line')
         minx=[minx min(get(hc(ii),'xdata'))];
         maxx=[maxx max(get(hc(ii),'xdata'))];

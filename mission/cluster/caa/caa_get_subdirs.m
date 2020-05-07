@@ -10,14 +10,14 @@ function dir_list = caa_get_subdirs(iso_t, dt, cl_id)
 narginchk(3,3);
 
 if ~isnumeric(cl_id) || cl_id < 1 || cl_id > 4
-   error('Wrong Cluster id. Valid values are: [1-4]')
+  error('Wrong Cluster id. Valid values are: [1-4]')
 end
 
 SPLIT_INT = 3; % 3 hour subintervals
 if ismac
-    BASE_DIR = '/Volumes/caa/l1';
+  BASE_DIR = '/Volumes/caa/l1';
 else
-    BASE_DIR = '/data/caa/l1';
+  BASE_DIR = '/data/caa/l1';
 end
 
 [st,dt] = irf_stdt(iso_t,dt);
@@ -32,23 +32,23 @@ old_pwd = pwd;
 dir_list = {};
 good_dir = {};
 for t=t0:SPLIT_INT*3600:t1
-	y = fromepoch(t);
-	main_int = [BASE_DIR '/' num2str(y(1)) '/' irf_fname(t) '/C' num2str(cl_id)];
-	if ~exist(main_int,'dir'), continue, end
-	
-	cd(main_int)
-	d = dir('*_*');
-	if isempty(d), continue, end
-%	good_dir = {};
-	for j=1:length(d)
-		if ~d(j).isdir, continue, end
-		if caa_is_valid_dirname(d(j).name), good_dir{end+1} = [main_int '/' d(j).name]; end
-	end
-%	if isempty(good_dir), continue, end
+  y = fromepoch(t);
+  main_int = [BASE_DIR '/' num2str(y(1)) '/' irf_fname(t) '/C' num2str(cl_id)];
+  if ~exist(main_int,'dir'), continue, end
+  
+  cd(main_int)
+  d = dir('*_*');
+  if isempty(d), continue, end
+  %	good_dir = {};
+  for j=1:length(d)
+    if ~d(j).isdir, continue, end
+    if caa_is_valid_dirname(d(j).name), good_dir{end+1} = [main_int '/' d(j).name]; end
+  end
+  %	if isempty(good_dir), continue, end
 end
 cd(old_pwd)
 dir_list = sort(good_dir);
-	
+
 %	for j=1:length(good_dir)
 %		subdir = [main_int '/' good_dir{j}];
 %		cd(subdir)
@@ -80,7 +80,7 @@ dir_list = sort(good_dir);
 %if isempty(c), error(['Found no valid subdirs for: ' main_int]), end
 %for j = 1:length(c)
 %   if ~c(j).isdir, continue, end
-%   
+%
 %   d = dir([c(j).name '/*_*']);
 %	if isempty(d), continue, end
 %

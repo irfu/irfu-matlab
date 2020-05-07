@@ -1,13 +1,14 @@
 %
-% Singleton class that stores (after having "built" tit) an unmodifiable data structure that represents which and how
+% Singleton class that stores (after having "built" it) an unmodifiable data structure that represents which and how
 % s/w modes are CURRENTLY VISIBLE to the user. What that data structure contains thus depends on
 % -- current pipeline: RODP, ROC-SGSE
-% -- whether support for old L2R input datasets is enabled or not.
+% -- whether support for L1 input datasets is enabled or not.
 %
 % Data here
 % -- is intended to (1) add metadata to the production functions for
-%       (a) the user interface, and
-%       (b) the s/w descriptor
+%       (a) the caller interface
+%       (b) potentially future help text
+%       (c) the s/w descriptor
 % -- contains variables to make it possible to match information for input and output datasets here, with that of
 %    bicas.proc' production functions.
 %
@@ -24,18 +25,19 @@
 % -- mistakenly confused arguments with each other.
 % Assertions are located at the place where "values are placed in their final location".
 % 
-% NOTE: To implement backward compatibility with L2R input datasets, the code must be able to handle
-% -- changing input dataset levels: L1R (new), L2R (old).
-% -- DATASET_ID with (new) and without (old) a trailing "-E".
-% It implements L2R input datasets via separate S/W modes.
+% NOTE: To implement compatibility with L1 input datasets, the code must be able to handle
+% -- changing input dataset levels: L1 (inofficial support), L1R (official support).
+% It implements support for L1 input datasets via separate S/W modes.
 % 
-% RATIONALE:
+%
+% RATIONALE
+% =========
 % -- Should decrease the amount of overlapping hardcoded information to e.g. reduce risk of mistakes, reduce manual
 %    work when verifying updates.
 % -- Having one big, somewhat redundant data structure should make the interface to the rest of BICAS relatively
-%    future-proof, in the face of future updates
-% -- Useful for expected future bias current datasets
-% -- Possible need for backward compatibility
+%    future-proof, in the face of future updates.
+% -- Useful for expected future bias current datasets.
+% -- Possible need for backward compatibility.
 %
 %
 % DEFINITIONS
@@ -48,7 +50,7 @@
 %
 classdef swmode_defs
     % PROPOSAL: New class name implying that it only contains S/W modes VISIBLE to the user, that it DEFINES what is
-    % visible.
+    % visible for a given BICAS run.
     %
     % PROPOSAL: Pick SWD name/descriptions from master CDFs.
     % PROPOSAL: Obtain output dataset level from production function metadata?!!
@@ -58,7 +60,7 @@ classdef swmode_defs
     %       PRO: Needed for deriving master-CDF filename.
     %   PRO: Needed for verifying conformance with production function.
     %
-    % PROPOSAL: Always produce all possible s/w modes (both pipelines, incl. L2R), then filter out the undesired ones
+    % PROPOSAL: Always produce all possible s/w modes (both pipelines, incl. L1), then filter out the undesired ones
     % using internal metadata for every S/W mode.
     %
     % PROPOSAL: Use PF = prodFunc, production function
@@ -95,13 +97,12 @@ classdef swmode_defs
         %
         % ARGUMENTS
         % =========
-        % enableRocsgseL2rInput : true/false, 1/0. Whether to enable (make visible) support for ROC-SGSE.
         %
         % IMPLEMENTATION NOTE: The constructor used to be written so that it was easy to disable S/W modes with L2R
         % input datasets (for backward compatibility). That functionality has now been now removed, although the
         % implementation has not been entirely updated to take advantage of this (not simplified of this).
         % 
-        function obj = swmode_defs(SETTINGS)
+        function obj = swmode_defs(SETTINGS, L)
             % PROPOSAL: Re-implement (top-level) hard-coded constants by setting multiple redundant 1D(?) vectors that covers every case.
             %   Then set various cases by assigning constants to many elements using MATLAB syntax.
             %   One index representing: Combination of DATASET_ID+Skeleton_Version (both pipelines, LFR+TDS, HK+SCI), every element contains data for
@@ -115,9 +116,6 @@ classdef swmode_defs
             %   TODO-DECISION: Above describes input & output (?) data sets. How relates to s/w modes?
             %   
             % PROPOSAL: Merge LFR and TDS loops.
-
-            lfrOutputSkeletonVersion  = {'05', '05', '05', '05'};
-            tdsOutputSkeletonVersion  = {'05', '05'};
 
             inputDatasetLevelList     = {'L1R'};
             inputDashEList            = {'-E'};
@@ -135,8 +133,8 @@ classdef swmode_defs
             % Define function which interprets (replaces) specific substrings.            
             % "strmod" = string modify, "g"=global
             strmodg = @(s, iInputLevel) bicas.utils.strrepmany(s, ...
-                '<InLvl>',      inputDatasetLevelList{iInputLevel}, ...
-                '<I-E>',        inputDashEList{iInputLevel}, ...
+                '<InLvl>',              inputDatasetLevelList{iInputLevel}, ...
+                '<I-E>',                inputDashEList{iInputLevel}, ...
                 '<SWM suffix>',         swmSuffixList{iInputLevel}, ...
                 '<SWM purpose amendm>', swmPurposeAmendmList{iInputLevel});
             
@@ -144,20 +142,27 @@ classdef swmode_defs
             HK_INPUT_DEF = obj.def_input_dataset(...
                 'in_hk', 'SOLO_HK_RPW-BIA', 'HK_cdf');
 
-
-
+            
+            
             LFR_SW_MODE_DATA = struct(...
                 'SBMx_SURV',       {'SBM1', 'SBM2', 'SURV', 'SURV'}, ...
                 'CWF_SWF',         {'CWF',  'CWF',  'CWF',  'SWF'}, ...
-                'modeStr',         {'selective burst mode 1', 'selective burst mode 2', 'survey mode', 'survey mode'}, ...
-                'outputSkeletonVersion', lfrOutputSkeletonVersion);
+                'modeStr',         {...
+                'selective burst mode 1', ...
+                'selective burst mode 2', ...
+                'survey mode', ...
+                'survey mode' ...
+                }, ...
+                'outputSkeletonVersion', {'08', '08', '08', '08'});
             TDS_SW_MODE_DATA = struct(...
-                'CWF_RSWF',        {'CWF', 'RSWF'}, ...
-                'outputSkeletonVersion', tdsOutputSkeletonVersion);
+                'CWF_RSWF',              {'CWF', 'RSWF'}, ...
+                'outputSkeletonVersion', {'08',  '08'});
             
             
+            CUR_INPUT_DEF = obj.def_input_dataset('in_cur', 'SOLO_L1_RPW-BIA-CURRENT', 'CUR_cdf');
             
-            SwModeList = struct('prodFunc', {}, 'cliOption', {}, 'swdPurpose', {}, 'inputsList', {}, 'outputsList', {});
+            SwModeList = EJ_library.utils.empty_struct([0,1], ...
+                'prodFunc', 'cliOption', 'swdPurpose', 'inputsList', 'outputsList');
             for iInputLevel = 1:numel(inputDatasetLevelList)
                 
                 %==============================================
@@ -187,10 +192,10 @@ classdef swmode_defs
                             SCI_INPUT_DEF.datasetId, ...
                             SCI_OUTPUT_DEF.datasetId, ...
                             SCI_OUTPUT_DEF.skeletonVersion, ...
-                            SETTINGS), ...
+                            SETTINGS, L), ...
                         strmod('LFR-<SBMx/SURV>-<C/SWF>-E<SWM suffix>'), ...
                         strmod('Generate <SBMx/SURV> <C/SWF> electric field L2 data (potential difference) from LFR <InLvl> data.<SWM purpose amendm>'), ...
-                        [SCI_INPUT_DEF, HK_INPUT_DEF], [SCI_OUTPUT_DEF]);
+                        [SCI_INPUT_DEF, CUR_INPUT_DEF, HK_INPUT_DEF], [SCI_OUTPUT_DEF]);
                 end
 
                 %==============================================
@@ -218,10 +223,10 @@ classdef swmode_defs
                             SCI_INPUT_DEF.datasetId, ...
                             SCI_OUTPUT_DEF.datasetId, ...
                             SCI_OUTPUT_DEF.skeletonVersion, ...
-                            SETTINGS), ...
+                            SETTINGS, L), ...
                         strmod('TDS-LFM-<C/RSWF>-E<SWM suffix>'), ...
                         strmod('Generate <C/RSWF> electric field L2 data (potential difference) from TDS LF mode <InLvl> data.<SWM purpose amendm>'), ...
-                        [SCI_INPUT_DEF, HK_INPUT_DEF], [SCI_OUTPUT_DEF]);
+                        [SCI_INPUT_DEF, CUR_INPUT_DEF, HK_INPUT_DEF], [SCI_OUTPUT_DEF]);
                 end
             end    % for iInputLevel = 1:numel(inputDatasetLevelList)
             
@@ -229,14 +234,14 @@ classdef swmode_defs
             
             obj.List = SwModeList;
             
-            EJ_library.utils.assert.castring_set({obj.List(:).cliOption})
+            EJ_library.assert.castring_set({obj.List(:).cliOption})
         end    % Constructor
 
 
 
         function swModeInfo = get_sw_mode_info(obj, swModeCliOption)
             i = find(strcmp(swModeCliOption, {obj.List(:).cliOption}));
-            EJ_library.utils.assert.scalar(i)
+            EJ_library.assert.scalar(i)
             swModeInfo = obj.List(i);
         end
         
@@ -257,18 +262,18 @@ classdef swmode_defs
             
             
             % ASSERTIONS
-            EJ_library.utils.assert.castring_set( {...
+            EJ_library.assert.castring_set( {...
                 Def.inputsList(:).cliOptionHeaderBody, ...
                 Def.outputsList(:).cliOptionHeaderBody })   % Important. Check uniqueness of SIP options.
-            EJ_library.utils.assert.castring_set( {...
+            EJ_library.assert.castring_set( {...
                 Def.inputsList(:).prodFuncInputKey })   % Maybe not really necessary.
-            EJ_library.utils.assert.castring_set( {...
+            EJ_library.assert.castring_set( {...
                 Def.outputsList(:).prodFuncOutputKey })   % Maybe not really necessary.
             
             bicas.swmode_defs.assert_SW_mode_CLI_option(Def.cliOption)
             bicas.swmode_defs.assert_text(              Def.swdPurpose)
             
-            EJ_library.utils.assert.castring_set({...
+            EJ_library.assert.castring_set({...
                 Def.inputsList(:).cliOptionHeaderBody, ...
                 Def.outputsList(:).cliOptionHeaderBody})
         end
@@ -312,7 +317,7 @@ classdef swmode_defs
             
             bicas.assert_DATASET_ID(datasetId)
             
-            % ASSERTION: Pipeline
+            % ASSERTION: Only using SOLO_* DATASET_IDs.
             assert(strcmp('SOLO_', datasetId(1:5)))
         end
 
@@ -324,17 +329,17 @@ classdef swmode_defs
 
         % Assert that string contains human-readable text.
         function assert_text(str)
-            EJ_library.utils.assert.castring_regexp(str, '.* .*')
-            EJ_library.utils.assert.castring_regexp(str, '[^<>]*')
+            EJ_library.assert.castring_regexp(str, '.* .*')
+            EJ_library.assert.castring_regexp(str, '[^<>]*')
         end
         
         function assert_SW_mode_CLI_option(swModeCliOption)
-            EJ_library.utils.assert.castring_regexp(swModeCliOption, bicas.swmode_defs.SW_MODE_CLI_PARAMETER_REGEX)
+            EJ_library.assert.castring_regexp(swModeCliOption, bicas.swmode_defs.SW_MODE_CLI_PARAMETER_REGEX)
         end
 
         % NOTE: Really refers to "option body".
         function assert_SIP_CLI_option(sipCliOptionBody)
-            EJ_library.utils.assert.castring_regexp(sipCliOptionBody, bicas.swmode_defs.SIP_CLI_OPTION_BODY_REGEX)
+            EJ_library.assert.castring_regexp(sipCliOptionBody, bicas.swmode_defs.SIP_CLI_OPTION_BODY_REGEX)
         end
         
     end    % methods(Static, Access=private)

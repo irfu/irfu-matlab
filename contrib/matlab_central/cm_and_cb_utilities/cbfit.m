@@ -96,42 +96,42 @@ H      = get(get(0,'CurrentFigure'),'CurrentAxes');
 
 % Checks inputs/outputs number:
 assert(nargin<=4, 'CVARGAS:cbfit:tooManyInputs',...
-    'At most 4 inputs are allowed.')
+  'At most 4 inputs are allowed.')
 assert(nargout<=1, 'CVARGAS:cbfit:tooManyOutputs',...
-    'At most 1 output is allowed.')
+  'At most 1 output is allowed.')
 
 % Reads FORCE:
 if ~isempty(varargin) && ~isempty(varargin{end}) && ...
-        ischar(varargin{end})
-    if numel(varargin{end})==size(varargin{end},2)
-        switch lower(varargin{end})
-            case {'force','forc','for','fo','f'}
-                FORCE = true;
-        end
+    ischar(varargin{end})
+  if numel(varargin{end})==size(varargin{end},2)
+    switch lower(varargin{end})
+      case {'force','forc','for','fo','f'}
+        FORCE = true;
     end
-    varargin(end) = [];
+  end
+  varargin(end) = [];
 end
 
 % Reads NBANDS and CENTER:
 if ~isempty(varargin) && isnumeric(varargin{end})
-    if (length(varargin)>1) && isnumeric(varargin{end-1})
-        CENTER = varargin{end};
-        varargin(end) = [];
-    end
-    if numel(varargin{end})==1
-        NBANDS = varargin{end};
-        LBANDS = [];
-    else
-        LBANDS = reshape(varargin{end},[],1);
-        NBANDS = [];
-    end
+  if (length(varargin)>1) && isnumeric(varargin{end-1})
+    CENTER = varargin{end};
     varargin(end) = [];
+  end
+  if numel(varargin{end})==1
+    NBANDS = varargin{end};
+    LBANDS = [];
+  else
+    LBANDS = reshape(varargin{end},[],1);
+    NBANDS = [];
+  end
+  varargin(end) = [];
 end
 
 % Reads H:
 if (length(varargin)==1) && ~isempty(varargin{1}) && ...
-        all(reshape(ishandle(varargin{1}),[],1))
-    H = varargin{1};
+    all(reshape(ishandle(varargin{1}),[],1))
+  H = varargin{1};
 end
 
 % Gets colorbar handles or creates them:
@@ -143,101 +143,101 @@ Ncbh = length(CBH);
 % -------------------------------------------------------------------------
 
 for icb = 1:Ncbh
-    % Generates a preliminary colorbar:
-    
-    % Colorbar handle:
-    cbh = double(CBH(icb));
-    
-    % Gets limits and orientation:
-    XYstr = 'Y';
+  % Generates a preliminary colorbar:
+  
+  % Colorbar handle:
+  cbh = double(CBH(icb));
+  
+  % Gets limits and orientation:
+  XYstr = 'Y';
+  ticks = get(cbh,[XYstr 'Tick']);
+  if isempty(ticks)
+    XYstr = 'X';
     ticks = get(cbh,[XYstr 'Tick']);
-    if isempty(ticks)
-        XYstr = 'X';
-        ticks = get(cbh,[XYstr 'Tick']);
-    end
-    XYLim = get(cbh,[XYstr 'Lim']);
-    tempp = ticks;
-    % Gets peer axes
-    peer = cbhandle(cbh,'peer');
+  end
+  XYLim = get(cbh,[XYstr 'Lim']);
+  tempp = ticks;
+  % Gets peer axes
+  peer = cbhandle(cbh,'peer');
+  
+  % Gets width and ref:
+  if ~isempty(NBANDS)
     
-    % Gets width and ref:
-    if ~isempty(NBANDS)
-        
-        % Force positive integers:
-        NBANDS = round(abs(NBANDS));
-        
-        % Ignores ticks outside the limits:
-        if XYLim(1)>ticks(1)
-            ticks(1) = [];
-        end
-        if XYLim(2)<ticks(end)
-            ticks(end) = [];
-        end
-        
-        % Get the ticks step and colorband:
-        tstep  = ticks(2)-ticks(1);
-        WIDTH  = tstep/NBANDS;
-        LBANDS = ticks;
-        % LBANDS = [fliplr(ticks(1)-WIDTH:-WIDTH:XYLim(1)) ...
-        %     ticks(1):WIDTH:XYLim(2)];
-        
-        % Sets color limits
-        if strcmp(get(peer,'CLimMode'),'auto')
-            caxis(XYLim);
-        end
-        
-        % Forces old colorbar limits:
-        set(cbh,[XYstr 'Lim'],XYLim) % ,[XYstr 'Tick'],ticks)
-        
-    else % ~isempty(LBANDS)
-            
-        % Nonlinear colorbar:
-        ticks = LBANDS;
-        WIDTH = ticks;
-        
-        % Scales to CLIM:
-        if strcmp(get(peer,'CLimMode'),'manual')
-            ticks = ticks-ticks(1);
-            ticks = ticks/ticks(end);
-            ticks = ticks*diff(XYLim) + XYLim(1);
-        end
-        XYLim = [ticks(1) ticks(end)];
-        caxis(peer,XYLim)
-        CBIH = get(cbh,'Children');
-        
-        % Change ticks:
-        set(CBIH,[XYstr 'Data'],ticks)
-        
-        % Sets limits:
-        set(cbh,[XYstr 'Lim'],XYLim)
-        
+    % Force positive integers:
+    NBANDS = round(abs(NBANDS));
+    
+    % Ignores ticks outside the limits:
+    if XYLim(1)>ticks(1)
+      ticks(1) = [];
     end
-        
-    % Get reference mark
-    if ~isempty(CENTER)
-        REF    = CENTER;
-        CENTER = true;
-    else
-        REF    = ticks(1);
-        CENTER = false;
+    if XYLim(2)<ticks(end)
+      ticks(end) = [];
     end
-        
-    % Fits the colormap and limits:
-    fig  = get(peer,'Parent');
-    CMAP = colormap(fig);
-    cmfit(CMAP,XYLim,WIDTH,REF,CENTER);
-            
-    % Sets ticks:
-    if FORCE
-        set(cbh,[XYstr 'Tick'],LBANDS)
+    
+    % Get the ticks step and colorband:
+    tstep  = ticks(2)-ticks(1);
+    WIDTH  = tstep/NBANDS;
+    LBANDS = ticks;
+    % LBANDS = [fliplr(ticks(1)-WIDTH:-WIDTH:XYLim(1)) ...
+    %     ticks(1):WIDTH:XYLim(2)];
+    
+    % Sets color limits
+    if strcmp(get(peer,'CLimMode'),'auto')
+      caxis(XYLim);
     end
+    
+    % Forces old colorbar limits:
+    set(cbh,[XYstr 'Lim'],XYLim) % ,[XYstr 'Tick'],ticks)
+    
+  else % ~isempty(LBANDS)
+    
+    % Nonlinear colorbar:
+    ticks = LBANDS;
+    WIDTH = ticks;
+    
+    % Scales to CLIM:
+    if strcmp(get(peer,'CLimMode'),'manual')
+      ticks = ticks-ticks(1);
+      ticks = ticks/ticks(end);
+      ticks = ticks*diff(XYLim) + XYLim(1);
+    end
+    XYLim = [ticks(1) ticks(end)];
+    caxis(peer,XYLim)
+    CBIH = get(cbh,'Children');
+    
+    % Change ticks:
+    set(CBIH,[XYstr 'Data'],ticks)
+    
+    % Sets limits:
+    set(cbh,[XYstr 'Lim'],XYLim)
+    
+  end
+  
+  % Get reference mark
+  if ~isempty(CENTER)
+    REF    = CENTER;
+    CENTER = true;
+  else
+    REF    = ticks(1);
+    CENTER = false;
+  end
+  
+  % Fits the colormap and limits:
+  fig  = get(peer,'Parent');
+  CMAP = colormap(fig);
+  cmfit(CMAP,XYLim,WIDTH,REF,CENTER);
+  
+  % Sets ticks:
+  if FORCE
+    set(cbh,[XYstr 'Tick'],LBANDS)
+  end
 end
 
 % OUTPUTS CHECK-OUT
 % -------------------------------------------------------------------------
 
 if ~nargout
-    clear CBH
+  clear CBH
 end
 
 

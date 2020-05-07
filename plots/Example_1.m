@@ -1,11 +1,11 @@
 %%%%%%%%%%%%%%%%%%%%%%%
-% go to new/empty directory 
+% go to new/empty directory
 % >cd new_directory
 % here using temporary directory
 tempdir_name=tempname;
 mkdir(tempdir_name);
 cd(tempdir_name);
-disp(['Moving to temporary directory: ' tempdir_name]); 
+disp(['Moving to temporary directory: ' tempdir_name]);
 
 %%%%%%%%%%%%%%%%%%%%%%%
 % specify time interval
@@ -14,11 +14,11 @@ tint=irf.tint('2006-09-27T17:17:00Z/2006-09-27T17:24:00Z'); % time interval
 %%%%%%%%%%%%%%%%%%%%%%%%
 % download data from CAA (needed only once!!!!!)
 if 1 % put to 0 if data already downloaded !!!!
-    caa_download(tint,'C1_CP_FGM_5VPS')
-    caa_download(tint,'C1_CP_CIS-HIA_ONBOARD_MOMENTS')
-    caa_download(tint,'C1_CP_CIS_HIA_HS_1D_PEF')
-    caa_download(tint,'C1_CP_RAP_ESPCT6')
-    caa_download(tint,'C1_CP_PEA_PITCH_SPIN_DEFlux')
+  caa_download(tint,'C1_CP_FGM_5VPS')
+  caa_download(tint,'C1_CP_CIS-HIA_ONBOARD_MOMENTS')
+  caa_download(tint,'C1_CP_CIS_HIA_HS_1D_PEF')
+  caa_download(tint,'C1_CP_RAP_ESPCT6')
+  caa_download(tint,'C1_CP_PEA_PITCH_SPIN_DEFlux')
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%
@@ -84,7 +84,7 @@ ylabel(hca,'E [eV]');
 %%%%%%%%%%%%%%%%%%%%%%%%
 % changes to all figure
 irf_plot_axis_align         % align the width of all panels
-irf_zoom(h,'x',tint);       % zoom all panels to the same time interval 
+irf_zoom(h,'x',tint);       % zoom all panels to the same time interval
 irf_pl_number_subplots(h);  % add a), b), c) to panels
 irf_timeaxis(h);            % add timeaxis ticksmarks and labels
 irf_legend(h(1),'Example 1',[1.0 1.001],'fontsize',8,'color',[0.5 0.5 0.5]);
@@ -99,7 +99,7 @@ end
 text_tmarks={'A','B','C','D','E'};
 ypos=get(h(1),'ylim');ypos(1)=[];
 for j=1:length(tmarks)
-    irf_legend(h(1),text_tmarks{j},[tmarks(j) ypos],'horizontalalignment','center');
+  irf_legend(h(1),text_tmarks{j},[tmarks(j) ypos],'horizontalalignment','center');
 end
 % add interval mark
 tmarks=irf_time([2006 9 27 17 25 0])+[0 5*60];
@@ -108,7 +108,7 @@ irf_pl_mark(h(2),tmarks)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%
-% To print the figure 
+% To print the figure
 %
 % matlab> set(gcf,'paperpositionmode','auto') % to get the same on paper as on screen
 % to get bitmap file

@@ -4,19 +4,19 @@ function TaTT = time_array(tStart,dtArray)
 % TaTT = irf.time_array(tStart,dtArray)
 % TaTT = irf.time_array(tArray)
 %
-% Input: 
+% Input:
 %   tStart is reference time given as either GenericTimeArray, UTC, or TT in
 %     seconds (double) or nanoseconds (int64)
 %   dtArray is an array of time values measured since tStart. dtArray can be
-%     specified in seconds (double) or nanoseconds (int64). 
+%     specified in seconds (double) or nanoseconds (int64).
 %   tArray is time array given either as GenericTimeArray, UTC or TT in
 %     seconds (doubel or nanoseconds (int64)
-% Output: 
+% Output:
 %  TaTT time array as EpochTT
 %
 % Example:
 %  TT = irf.time_array('2015-09-26T20:00:00',[0 10 20])
-% 
+%
 
 narginchk(1,2)
 
@@ -32,7 +32,7 @@ elseif (isa(tStart,'double') || isa(tStart,'int64')) && ...
     ((nargin==2 && isscalar(tStart)) || isvector(tStart))
   %
 else
-  errStr = 'Unrecoglized input';
+  errStr = 'Unrecognized input';
   irf.log('critical', errStr), error(errStr)
 end
 
@@ -49,4 +49,3 @@ if isa(dtArray,'int64')
 elseif isa(dtArray,'double')
   TaTT = EpochTT(Epoch0.epoch + int64(dtArray*1e9));
 end
-  

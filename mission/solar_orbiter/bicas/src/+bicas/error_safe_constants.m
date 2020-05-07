@@ -40,6 +40,8 @@
 function C = error_safe_constants
 % PROPOSAL: Change name. Something not just "error safe". "All" constants that can not be modified as in SETTINGS.
 %   PROPOSAL: ~constants.
+% PROPOSAL: Category for bad input datasets (both science and HK).
+%   PRO: Has similar for RCTs.
 
 
 % NOTE: The RCS ICD 00037, iss1/rev2, draft 2019-07-11, Section 3.4.3 specifies
@@ -56,11 +58,11 @@ MAP('OperationNotImplemented')      = info_struct(1, 'Execution has reached a po
 MAP('Assertion')                    = info_struct(1, 'Detected an internal state that should never be possible in a bug-free code that receives correct inputs.');
 MAP('IllegalArgument')              = info_struct(1, 'An argument to an internal function had an illegal value.');
 MAP('SWModeProcessing')             = info_struct(1, 'Error in s/w mode processing (processing datasets).');
-MAP('DatasetFormat')                = info_struct(1, 'Error when interpreting (official CDF) datasets, including master CDF files.');
+MAP('DatasetFormat')                = info_struct(1, 'Error when interpreting (official CDF) input datasets, including master CDF files.');
 MAP('IllegalCodeConfiguration')     = info_struct(1, 'Bad hard-coded configuration (or possibly configurable setting but should not be), e.g. constants, S/W descriptor. This should ideally indicate a pure code bug, i.e. it is not triggered by certain user-controlled input.');
 MAP('CannotInterpretConfigFile')    = info_struct(1, 'Can not interpret the content of the configuration file. This implies a problem with the syntax.');
 MAP('ConfigurationBug')             = info_struct(1, 'Trying to configure BICAS in an illegal way.');
-MAP('FailedToReadInterpretRCT')     = info_struct(1, 'Can not interpret the content of the calibration file (RCT) file.');
+MAP('FailedToReadInterpretRCT')     = info_struct(1, 'Can not interpret the content of the calibration file (RCT) file, e.g. because the RCT contains invalid calibration values.');
 MAP('CannotFindRegexMatchingRCT')   = info_struct(1, 'Can not find any matching calibration file to read. No file matches regular expression.');
 C.EMIDP_2_INFO = MAP;
 

@@ -12,11 +12,11 @@ function epoch_time = hhmmss2epoch(t_start, t)
 %Descrition of the function:
 %
 %Using:
-% 
+%
 %Work method:
 %
 %Error:
-% 
+%
 %Discription of variables:
 %
 %Written by Robert Isaksson in the summer of -03
@@ -38,7 +38,7 @@ hr(1,1)
 mm = hr_mm_ss(:,4:5);
 mm(1,:)
 mm = str2num(mm);
-mm(1,1) 
+mm(1,1)
 ss = hr_mm_ss(:,7:8);
 ss(1,:)
 ss = str2num(ss);

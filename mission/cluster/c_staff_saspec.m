@@ -13,11 +13,11 @@ function h=c_staff_saspec(time,dat)
 
 
 if nargin==0 || nargin==1
-	help c_staff_saspec;return;
+  help c_staff_saspec;return;
 end
 
 if nargin>2
-	error('Too many arguments');help c_staff_saspec;return;
+  error('Too many arguments');help c_staff_saspec;return;
 end
 
 
@@ -43,24 +43,24 @@ end
 %		temp=dat(:,:,I);
 %		tdata=[temp(:,1);temp(:,2)];
 %		dataEx(:,I)=tdata(odd);
-%		dataEy(:,I)=tdata(even);		
+%		dataEy(:,I)=tdata(even);
 %	end
 %	dat=dataEx+dataEy;
-%else 
+%else
 %	error('unknown format of data matrix')
 %end
-	
+
 [k,l,m]=size(dat);
 if k==3
-	dat=dat(1,:,:)+dat(2,:,:)+dat(3,:,:);
+  dat=dat(1,:,:)+dat(2,:,:)+dat(3,:,:);
 elseif k==2
-	dat=dat(1,:,:)+dat(2,:,:);
+  dat=dat(1,:,:)+dat(2,:,:);
 else
-	error('unknown format of data matrix')
+  error('unknown format of data matrix')
 end
 
 dat=squeeze(dat);
-	
+
 
 %Construct frequency axis, the values are from a iscmd query
 freq=[8.77    11.05   13.92   17.54   22.1    27.84   35.08   44.19   55.68   70.15   88.39   111.36  140.31  176.78  222.72  280.62  353.55  445.45  561.23  707.11  890.9   1122.46    1414.21 1781.8  2244.92 2828.43 3563.59];
@@ -83,11 +83,11 @@ else, hh=get(c_bar,'ylabel');
 end
 
 if k==3
-	set(hh,'string','(pT)^2/Hz');
+  set(hh,'string','(pT)^2/Hz');
 elseif k==2
-	set(hh,'string','(mV/m)^2/Hz');
+  set(hh,'string','(mV/m)^2/Hz');
 else
-	set(hh,'string','(X)^2/Hz');
+  set(hh,'string','(X)^2/Hz');
 end
 
 

@@ -7,8 +7,8 @@ function out = irf_spin_epoch(varargin)
 %  looking at many spins.
 %
 %  Input : DATA    - tseries of data (vector, scalar)
-%          PHASE   - phase corresponding to DATA time. 
-%          
+%          PHASE   - phase corresponding to DATA time.
+%
 %  Options:
 %          FCUT    - frequency for high-pass filter
 %          NSPINS  - number of spins used to construct spin epoch (default is 31)
@@ -26,9 +26,9 @@ fCut = []; % Default, no high-pass filter
 SAMPLEFREQ = []; % Default
 
 if (nargin < 2)
-    nargin
-    help irf_spin_epoch;
-    return;
+  nargin
+  help irf_spin_epoch;
+  return;
 end
 
 data=varargin{1};
@@ -36,14 +36,14 @@ phase=varargin{2};
 args=varargin(3:end);
 
 if numel(args)>0
-    flag_have_options=1;
+  flag_have_options=1;
 else
-    flag_have_options=0;
+  flag_have_options=0;
 end
 
 while flag_have_options
-	l = 2;
-	switch(lower(args{1}))
+  l = 2;
+  switch(lower(args{1}))
     case 'fcut'
       if numel(args)>1 && isnumeric(args{2})
         fCut = args{2};
@@ -63,11 +63,11 @@ while flag_have_options
       irf.log('warning',['Unknown flag: ' args{1}]);
       l=1;
       break
-	end
-    args = args(l+1:end);
-    if isempty(args) 
-      flag_have_options=0; 
-    end
+  end
+  args = args(l+1:end);
+  if isempty(args)
+    flag_have_options=0;
+  end
 end
 
 
@@ -81,13 +81,13 @@ for iGap=1:length(idxGap)
   phaUnw(idxGap(iGap)+1:end) = phaUnw(idxGap(iGap)+1:end) + 360;
 end
 fxPha = ((phaUnw(1)-rem(phaUnw(1),360)):1/STEPS_PER_DEG:...
-      (phaUnw(end)-rem(phaUnw(end),360)+360))';
+  (phaUnw(end)-rem(phaUnw(end),360)+360))';
 fxPha(end) = [];
 epoch0 = data.time(1); epochTmp = double(data.time-epoch0);
 tFxPha = interp1(phaUnw,epochTmp,fxPha);
 nSpins = length(fxPha)/360/STEPS_PER_DEG;
 
-out = data; 
+out = data;
 if ~isempty(fCut), out = out.filt(fCut,0,SAMPLEFREQ,5); end
 eRes = interp1(epochTmp,double(out.data),tFxPha);
 idxOK = ~isnan(tFxPha); nComps = size(eRes,2);

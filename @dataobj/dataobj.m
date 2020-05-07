@@ -6,7 +6,9 @@ function dobj = dataobj(varargin)
 %    wildcards ('*').
 %
 % DATAOBJ(FILENAME,'tint',tint)
-%       tint         - limit dataobj to time interval
+%       tint = [t1, t2]        - Limit dataobj to time interval.
+%                                ISDAT epoch, i.e. the number of seconds since 1-Jan-1970.
+%                                See epoch2iso.
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):
@@ -89,7 +91,7 @@ switch action
       if usingNasaPatchCdf
         timeVariable = [];
         [data,info] = spdfcdfread(cdf_file,'CombineRecords',true,'KeepEpochAsIs',true);
-
+        
         % Convert epoch/epoch16/tt2000 to ISDAT epoch
         isCdfEpochVariableArray=cellfun(@(x) strcmpi(x,'epoch'), info.Variables(:,4));
         if any(isCdfEpochVariableArray)
@@ -162,9 +164,9 @@ switch action
             end
           end
         end
-
+        
         fix_order_of_array_dimensions;
-
+        
         if ~shouldReadAllData
           nVariables = size(info.Variables,1);
           records = cell(nVariables,1); recsTmp = {};
@@ -261,12 +263,12 @@ switch action
       dobj.VariableAttributes = info.VariableAttributes;
       dobj.GlobalAttributes	= info.GlobalAttributes;
       dobj.Variables			= info.Variables;
-
+      
       % check if there is time data
       if ~(any(strcmpi(info.Variables(:,4),'epoch')==1) || ...
           any(strcmpi(info.Variables(:,4),'epoch16')==1) || ...
-          any(strcmpi(info.Variables(:,4),'tt2000')==1))        
-        irf.log('warning','No time in CDF file.');      
+          any(strcmpi(info.Variables(:,4),'tt2000')==1))
+        irf.log('warning','No time in CDF file.');
       end
       nVariables = size(info.Variables,1);
       dobj.vars = cell(nVariables,2);
@@ -357,8 +359,8 @@ end % Main function
   end
 
   function fix_order_of_array_dimensions
-%     oldPermute=true;
-%     if oldPermute
+    %     oldPermute=true;
+    %     if oldPermute
     for iDimension=3:4   %#ok<UNRCH>
       indDatasets=find(cellfun(@(x) numel(size(x)),data(:))==iDimension); % find iDimension datasets
       for iDataset=1:numel(indDatasets)
@@ -369,37 +371,37 @@ end % Main function
         end
       end
     end
-%     else
-%       % NEW METHOD; TO BE TESTED
-%       for iDimension=3:4   %#ok<UNRCH>
-%         % Check if dimensions match expected (ignoring Depend_0) and that
-%         % it is not a single vector (which could be "Nx1").
-%         indDatasets = find(cellfun(@(x) all(x(:) > 1) && numel(x)==iDimension-1, info.Variables(:,2)));
-%         for iDataset=1:numel(indDatasets)
-%           if iDimension==3
-%             % permutate it to N x m x n, where N corrsponds to record (ie Depend_0).
-%             data{indDatasets(iDataset)} = permute(data{indDatasets(iDataset)}, [3 1 2]);
-%           elseif iDimension==4
-%             % Check if it should be simple cyclic permutation (MMS), data 
-%             % was read into "recSize x nRec". Also possibly a matrix of 
-%             % size "recSize" if it only contained one single record.
-%             % Or if the data should be more complexly permuted (Cluster),
-%             % ie where the recSize does not match the data.
-%             recSize = info.Variables{indDatasets(iDataset), 2}; % Expected record size, (m x n x p)
-%             nRec = info.Variables{indDatasets(iDataset), 3}; % Numer of records, (N)
-%             dataSize = size(data{indDatasets(iDataset)}); % Size of data, as it was read
-%             if isequal([recSize, nRec], dataSize) || (nRec==1 && isequal(recSize, dataSize) )
-%               % Simple cyclic permutation to get N x m x n x p
-%               data{indDatasets(iDataset)} = permute(data{indDatasets(iDataset)}, [4 1 2 3]);
-%             else
-%               % Re-order Cluster data, from (n x p x m x N) to (N x m x n x p).
-%               data{indDatasets(iDataset)} = permute(data{indDatasets(iDataset)}, [4 3 1 2]);
-%             end
-%           end
-%         end
-%       end
-%       % END OF NEW METHOD
-%     end
+    %     else
+    %       % NEW METHOD; TO BE TESTED
+    %       for iDimension=3:4   %#ok<UNRCH>
+    %         % Check if dimensions match expected (ignoring Depend_0) and that
+    %         % it is not a single vector (which could be "Nx1").
+    %         indDatasets = find(cellfun(@(x) all(x(:) > 1) && numel(x)==iDimension-1, info.Variables(:,2)));
+    %         for iDataset=1:numel(indDatasets)
+    %           if iDimension==3
+    %             % permutate it to N x m x n, where N corrsponds to record (ie Depend_0).
+    %             data{indDatasets(iDataset)} = permute(data{indDatasets(iDataset)}, [3 1 2]);
+    %           elseif iDimension==4
+    %             % Check if it should be simple cyclic permutation (MMS), data
+    %             % was read into "recSize x nRec". Also possibly a matrix of
+    %             % size "recSize" if it only contained one single record.
+    %             % Or if the data should be more complexly permuted (Cluster),
+    %             % ie where the recSize does not match the data.
+    %             recSize = info.Variables{indDatasets(iDataset), 2}; % Expected record size, (m x n x p)
+    %             nRec = info.Variables{indDatasets(iDataset), 3}; % Numer of records, (N)
+    %             dataSize = size(data{indDatasets(iDataset)}); % Size of data, as it was read
+    %             if isequal([recSize, nRec], dataSize) || (nRec==1 && isequal(recSize, dataSize) )
+    %               % Simple cyclic permutation to get N x m x n x p
+    %               data{indDatasets(iDataset)} = permute(data{indDatasets(iDataset)}, [4 1 2 3]);
+    %             else
+    %               % Re-order Cluster data, from (n x p x m x N) to (N x m x n x p).
+    %               data{indDatasets(iDataset)} = permute(data{indDatasets(iDataset)}, [4 3 1 2]);
+    %             end
+    %           end
+    %         end
+    %       end
+    %       % END OF NEW METHOD
+    %     end
   end
 
   function update_variable_attributes_time % nested function

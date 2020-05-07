@@ -5,16 +5,16 @@ function c=irf_plot(varargin)
 %   X is one of:
 %      - TSeries object
 %      - matrix of data (1st column time in isdat epoch, other columns data)
-%      - cell array data, each of cells containing a matrix of data 
+%      - cell array data, each of cells containing a matrix of data
 %      - string defining variable (can be CAA variable)
 %      - number (initialize figure with so many subplots)
 %
 % H=IRF_PLOT(..) return handle to axes of plots into C
-% 
+%
 % IRF_PLOT(H,X,..) plot into axes handle H
 %
 % IRF_PLOT(X,arguments) arguments can be:
-%     all arguments allowed by PLOT command 
+%     all arguments allowed by PLOT command
 %     'subplot' - plot all x values in separate subplots
 %     'comp'    - plot vector component in separate subplots
 %     ['dt', [dt1, dt2, dt3, dt4]] - specify time shifts, new time = old time - dt
@@ -23,17 +23,17 @@ function c=irf_plot(varargin)
 %     given as last argument, 'linestyle' keyword is not necessary in this
 %     case. LineStyle can be given as cell array to specify style for different variables/subplots.
 %
-% To improve zooming of high time resolution data IRF_PLOT will sometimes 
-% set t_start_epoch within the 'userdata' field of the figure and 
+% To improve zooming of high time resolution data IRF_PLOT will sometimes
+% set t_start_epoch within the 'userdata' field of the figure and
 % internally use it as origo but in most cases you should not care about this.
 %
 % IRF_PLOT(CAA_variable,..) can have all arguments as DATAOBJ/PLOT
 %
 % H=IRF_PLOT(number)	reset current figure to 'number' subplots
-%						keep figure properties, return handle vector to subplots 
-% IRF_PLOT(number,'reset') reset current figure 
+%						keep figure properties, return handle vector to subplots
+% IRF_PLOT(number,'reset') reset current figure
 %						but update default properties except figure size
-% IRF_PLOT(number,'newfigure') initialize new figure with 'number' of subplots 
+% IRF_PLOT(number,'newfigure') initialize new figure with 'number' of subplots
 %
 % Examples:
 %   irf_plot(B1) - plot variable B1 (all components), assuming that the first column is time
@@ -61,7 +61,7 @@ function c=irf_plot(varargin)
 % isdat epoch we choose reference time the first point of first variable
 % (in practices it does not matter).
 
-%% Check input 
+%% Check input
 [ax,args,nargs] = axescheck(varargin{:});
 x=args{1};
 if isempty(x), irf.log('warning','nothing to plot'), return, end
@@ -93,102 +93,102 @@ check_input_options()
 
 %% Plot separate subplots for all x components
 if (strcmp(plot_type,'subplot') || strcmp(plot_type,'comp') ) && ...
-    (isnumeric(x) || isa(x,'TSeries')), flag_subplot = 1; 
+    (isnumeric(x) || isa(x,'TSeries')), flag_subplot = 1;
 end
 if ischar(x) % Try to get variable labels etc.
-    var_nam = tokenize(x); % White space separates variables
-    jj = 1;var_names=cell(1,4*length(var_nam));
-    for ii=1:length(var_nam) % construct varibale names var_names
-        if regexp(var_nam{ii},'?')
-            c_eval(['var_names{jj}=''' var_nam{ii} ''';jj=jj+1;']);
-        else
-            var_names{jj} = var_nam{ii}; jj=jj+1;
-        end
+  var_nam = tokenize(x); % White space separates variables
+  jj = 1;var_names=cell(1,4*length(var_nam));
+  for ii=1:length(var_nam) % construct varibale names var_names
+    if regexp(var_nam{ii},'?')
+      c_eval(['var_names{jj}=''' var_nam{ii} ''';jj=jj+1;']);
+    else
+      var_names{jj} = var_nam{ii}; jj=jj+1;
     end
-    var_names(jj:end)=[];
-    x = cell(1,length(var_names)); % preallocate expected number of variables
-    caa_varname=x;                 % preallocate caa variable names
-    var_desc=x;                    % preallocate non-caa variable description
-    ix = 1;
-    for ii=1:length(var_names) % get variables
-      if evalin('caller',['exist(''' var_names{ii} ''')']) % Try to get variable from calling workspace
-        x{ix} = evalin('caller',var_names{ii});
-      elseif strfind(var_names{ii},'__') % CAA variable
-        caa_varname{ix}=var_names{ii};
-        if flag_plot_all_data
-          [~,caa_dataobject{ix},x{ix}]=evalin('caller',...
-            ['c_caa_var_get(''' var_names{ii} ''')']);
-        else
-          [~,caa_dataobject{ix},x{ix}]=...
-            c_caa_var_get(var_names{ii},'tint',tint);
-        end
+  end
+  var_names(jj:end)=[];
+  x = cell(1,length(var_names)); % preallocate expected number of variables
+  caa_varname=x;                 % preallocate caa variable names
+  var_desc=x;                    % preallocate non-caa variable description
+  ix = 1;
+  for ii=1:length(var_names) % get variables
+    if evalin('caller',['exist(''' var_names{ii} ''')']) % Try to get variable from calling workspace
+      x{ix} = evalin('caller',var_names{ii});
+    elseif strfind(var_names{ii},'__') % CAA variable
+      caa_varname{ix}=var_names{ii};
+      if flag_plot_all_data
+        [~,caa_dataobject{ix},x{ix}]=evalin('caller',...
+          ['c_caa_var_get(''' var_names{ii} ''')']);
       else
-        flag_ok=c_load(var_names{ii});
-        if flag_ok
-          eval(['x{ix}=' var_names{ii} ';']);
-        else
-          irf.log('warning',...
-            ['skipping, do not know where to get variable >'...
-            var_names{ii}]);
-        end
+        [~,caa_dataobject{ix},x{ix}]=...
+          c_caa_var_get(var_names{ii},'tint',tint);
       end
-      if ~isempty(x{ix}) % has succeeded to get new variable
-        var_desc{ix} = c_desc(var_names{ii});
-        ix = ix +1;
+    else
+      flag_ok=c_load(var_names{ii});
+      if flag_ok
+        eval(['x{ix}=' var_names{ii} ';']);
+      else
+        irf.log('warning',...
+          ['skipping, do not know where to get variable >'...
+          var_names{ii}]);
       end
     end
-    x(ix:end)=[]; % remove unused variables
-    caa_varname(ix:end)=[];
-    var_desc(ix:end)=[];
+    if ~isempty(x{ix}) % has succeeded to get new variable
+      var_desc{ix} = c_desc(var_names{ii});
+      ix = ix +1;
+    end
+  end
+  x(ix:end)=[]; % remove unused variables
+  caa_varname(ix:end)=[];
+  var_desc(ix:end)=[];
 end
 
 if iscell(x) % Plot several variables
-    
-    % No ylabels are given
-    % But no way to now the name of variables
-    if size(var_desc,2)<size(x,2), var_desc = cell(1,length(x)); end
-    
-    if dt==0, dt(1:size(x,2)) = double(0); end
-    
-    switch plot_type
-        case ''
-            flag_subplot = 2;
-            if length(x)==1, x = x{1}; flag_subplot = 0; end
-        case 'comp'
-            flag_subplot = 3;
-        case 'subplot'
-            flag_subplot = 2;
-    end
+  
+  % No ylabels are given
+  % But no way to now the name of variables
+  if size(var_desc,2)<size(x,2), var_desc = cell(1,length(x)); end
+  
+  if dt==0, dt(1:size(x,2)) = double(0); end
+  
+  switch plot_type
+    case ''
+      flag_subplot = 2;
+      if length(x)==1, x = x{1}; flag_subplot = 0; end
+    case 'comp'
+      flag_subplot = 3;
+    case 'subplot'
+      flag_subplot = 2;
+  end
 else
-    if isempty(inp_name) || isa(x,'TSeries')
-        var_desc{1} = {};
-    else    
-        try % try to obtain variable description
-            var_desc{1} = c_desc(inp_name);
-        catch %#ok<CTCH>
-            var_desc{1} = {};
-        end
+  if isempty(inp_name) || isa(x,'TSeries')
+    var_desc{1} = {};
+  else
+    try % try to obtain variable description
+      var_desc{1} = c_desc(inp_name);
+    catch %#ok<CTCH>
+      var_desc{1} = {};
     end
+  end
 end
 if ~isempty(caa_dataobject{1}) % plot CAA variable
-    if isempty(ax)
-        ax = plot(caa_dataobject{1},caa_varname{1},original_args{:});
-    else
-        ax = plot(caa_dataobject{1},ax,caa_varname{1},original_args{:});
-    end
-    if isstruct(x), firstTimeStamp=x.t(1);
-    elseif iscell(x), firstTimeStamp=x{1}(1,1);
-    else, firstTimeStamp=x(1,1);
-    end
-    c=ax; % axis to which apply irf_timeaxis
-    flag_subplot=-1; % dont make more plots
+  if isempty(ax)
+    ax = plot(caa_dataobject{1},caa_varname{1},original_args{:});
+  else
+    ax = plot(caa_dataobject{1},ax,caa_varname{1},original_args{:});
+  end
+  if isstruct(x), firstTimeStamp=x.t(1);
+  elseif iscell(x), firstTimeStamp=x{1}(1,1);
+  else, firstTimeStamp=x(1,1);
+  end
+  c=ax; % axis to which apply irf_timeaxis
+  flag_subplot=-1; % dont make more plots
 end
 
 if isempty(ax) % if empty axis use current axis GCA
-    if isempty(get(0,'CurrentFigure')) % there is no figure open
-        irf_plot(1);
-    end
-    ax=gca;
+  if isempty(get(0,'CurrentFigure')) % there is no figure open
+    irf_plot(1);
+  end
+  ax=gca;
 end
 
 %% One subplot only
@@ -235,7 +235,7 @@ if flag_subplot==0  % One subplot
   else
     return % empty matrix or does not know what to do
   end
-    
+  
 elseif flag_subplot==1 % Separate subplot for each component
   if isstruct(x), error('cannot plot spectra in COMP mode'), end
   if isa(x,'TSeries'), time = x.time.epochUnix; data = x.data(:,:);
@@ -247,7 +247,7 @@ elseif flag_subplot==1 % Separate subplot for each component
   for ipl=1:npl
     hca = c(ipl);
     tag=get(hca,'tag'); ud=get(hca,'userdata');     % save
-    plot(hca, time-ts-dt, data(:,ipl), get_marker(),args{:}); 
+    plot(hca, time-ts-dt, data(:,ipl), get_marker(),args{:});
     grid(hca,'on');
     set(hca,'tag',tag); set(hca,'userdata',ud); % restore
     zoom_in_if_necessary(hca);
@@ -256,159 +256,159 @@ elseif flag_subplot==1 % Separate subplot for each component
   firstTimeStamp = time(~isnan(time)); firstTimeStamp = firstTimeStamp(1);
   
 elseif flag_subplot==2 % Separate subplot for each variable
-    if isempty(x), return, end
-    
-    %   t_start_epoch is saved in figures user_data variable
-    if isa(x{1},'TSeries'), ts = t_start_epoch(x{1}.time.epochUnix);
-    elseif isstruct(x{1}), ts = t_start_epoch(x{1}.t);
-    else, ts = t_start_epoch(x{1}(:,1));
+  if isempty(x), return, end
+  
+  %   t_start_epoch is saved in figures user_data variable
+  if isa(x{1},'TSeries'), ts = t_start_epoch(x{1}.time.epochUnix);
+  elseif isstruct(x{1}), ts = t_start_epoch(x{1}.t);
+  else, ts = t_start_epoch(x{1}(:,1));
+  end
+  
+  t_st = []; t_end = [];
+  xlen = [];
+  
+  npl = size(x,2);
+  c=initialize_figure(npl);
+  for ipl=1:npl
+    y = x{ipl};
+    if isa(y,'TSeries')
+      time = y.time.epochUnix; data = y.data(:,:);
+    elseif isstruct(y), time = double(y.t); data = y(:,2:end);
+    else, time = double(y(:,1)); data = y(:,2:end);
     end
-    
-    t_st = []; t_end = [];
-    xlen = [];
-    
-    npl = size(x,2);
-    c=initialize_figure(npl);
-    for ipl=1:npl
-        y = x{ipl};
-        if isa(y,'TSeries')
-          time = y.time.epochUnix; data = y.data(:,:);
-        elseif isstruct(y), time = double(y.t); data = y(:,2:end);
-        else, time = double(y(:,1)); data = y(:,2:end);
-        end
-        if numel(time)==0
-            irf.log('critical',['Can not plot data ' num2str(ipl)]);
-            return;
-        end
-        t_tmp = time -double(ts) -double(dt(ipl));
-        firstTimeStamp = t_tmp(~isnan(t_tmp));
-        if isempty(t_st), t_st = firstTimeStamp(1);
-        else, if firstTimeStamp(1)<t_st, t_st = firstTimeStamp(1); end
-        end
-        if isempty(t_end), t_end = firstTimeStamp(end);
-        else, if firstTimeStamp(end)>t_end, t_end = firstTimeStamp(end); end
-        end
-        clear tt
-        
-        if isstruct(y)
-            irf_spectrogram(c(ipl),y.t-dt(ipl), y.p, y.f);
-            if flag_colorbar, hcbar = colorbar; end
-            if ~isempty(var_desc{ipl})
-                lab = cell(1,length(var_desc{ipl}.size));
-                for v = 1:length(var_desc{ipl}.size)
-                    lab{v} = [var_desc{ipl}.labels{v} '[' var_desc{ipl}.units{v} ...
-                        '] sc' var_desc{ipl}.cl_id];
-                end
-                ylabel(hcbar, lab);
-                disp(lab)
-            end
-            firstTimeStamp = y.t(~isnan(y.t),1);
-            % Save panel width to resize the rest of the panels accordingly
-            if isempty(xlen)
-                xlen = get(c(ipl),'Position');
-                xlen = xlen(3);
-            end
-        else
-            marker_cur = get_marker();
-            plot(c(ipl),t_tmp,data,marker_cur); 
-            grid(c(ipl),'on');
-            zoom_in_if_necessary(c(ipl));
-            
-            % Put YLimits so that no labels are at the end (disturbing in multipanel plots)
-            irf_zoom(c(ipl),'y');
-            
-            if isa(y,'TSeries')
-              set_ylabel(c(ipl),y); 
-            elseif ~isempty(var_desc) && ~isempty(var_desc{ipl})
-                for v = 1:length(var_desc{ipl}.size)
-                    lab{v} = [var_desc{ipl}.labels{v} '[' ...
-                        var_desc{ipl}.units{v} '] sc' var_desc{ipl}.cl_id];
-                end
-                ylabel(c(ipl),lab); clear lab
-            end
-            firstTimeStamp = time(~isnan(time),1);
-        end
+    if numel(time)==0
+      irf.log('critical',['Can not plot data ' num2str(ipl)]);
+      return;
     end
-    % Set common XLim
-    for ipl=1:npl
-        set(c(ipl),'XLim',[t_st t_end])
-        if ~isempty(xlen)
-            p = get(c(ipl),'Position');
-            set(c(ipl),'Position',[p(1) p(2) xlen p(4)])
+    t_tmp = time -double(ts) -double(dt(ipl));
+    firstTimeStamp = t_tmp(~isnan(t_tmp));
+    if isempty(t_st), t_st = firstTimeStamp(1);
+    else, if firstTimeStamp(1)<t_st, t_st = firstTimeStamp(1); end
+    end
+    if isempty(t_end), t_end = firstTimeStamp(end);
+    else, if firstTimeStamp(end)>t_end, t_end = firstTimeStamp(end); end
+    end
+    clear tt
+    
+    if isstruct(y)
+      irf_spectrogram(c(ipl),y.t-dt(ipl), y.p, y.f);
+      if flag_colorbar, hcbar = colorbar; end
+      if ~isempty(var_desc{ipl})
+        lab = cell(1,length(var_desc{ipl}.size));
+        for v = 1:length(var_desc{ipl}.size)
+          lab{v} = [var_desc{ipl}.labels{v} '[' var_desc{ipl}.units{v} ...
+            '] sc' var_desc{ipl}.cl_id];
         end
-    end
-    clear t_st t_end
-    
-    firstTimeStamp = firstTimeStamp(1);
-    
-elseif flag_subplot==3  % components of vectors in separate panels
-    if isstruct(x), error('cannot plot spectra in COMP mode'), end
-    idxEmpty = cellfun(@isempty, x); 
-    if all(idxEmpty)
-      irf.log('warning','all inputs are empty'), return
-    end
-    % t_start_epoch is saved in figures user_data variable 
-    idx = find(idxEmpty==0,1,'first');
-    if isa(x{idx},'TSeries')
-      ts = t_start_epoch(x{idx}.time.epochUnix);
-      npl = size(x{idx}.data(:,:),2);
-    elseif isstruct(x{idx})
-      ts = t_start_epoch(x{idx}.t); npl = size(x{idx}.data,2);
+        ylabel(hcbar, lab);
+        disp(lab)
+      end
+      firstTimeStamp = y.t(~isnan(y.t),1);
+      % Save panel width to resize the rest of the panels accordingly
+      if isempty(xlen)
+        xlen = get(c(ipl),'Position');
+        xlen = xlen(3);
+      end
     else
-      ts = t_start_epoch(x{idx}(:,1)); npl = size(x{idx},2) -1;
-    end
-    
-    if npl==1     % We make new figure with subplots only if more than 1 component to plot
-        c = ax;
-    else
-        c=initialize_figure(npl);
-    end
-    for ipl=1:npl
-        hca = c(ipl);
-        tag=get(hca,'tag'); ud=get(hca,'userdata'); % keep tag/userdata during plotting
+      marker_cur = get_marker();
+      plot(c(ipl),t_tmp,data,marker_cur);
+      grid(c(ipl),'on');
+      zoom_in_if_necessary(c(ipl));
       
-        line_colors=get(hca,'ColorOrder');
-        for jj=1:size(x,2)
-            use_color = 1;
-            if iscell(marker)
-                if length(marker)==size(x,2), marker_cur = marker{jj};  use_color = 0;
-                else, marker_cur = marker{1};
-                end
-            else, marker_cur = marker;
-            end
-            if isempty(x{jj}), data = [];
-            else
-              if isa(x{jj},'TSeries')
-                time = x{jj}.time.epochUnix; data = x{jj}.data(:,:);
-              else
-                time = x{jj}(:,1); data = x{jj}(:,2:end);
-              end
-            end
-            if size(data,2)>=ipl
-                if use_color
-                  if(jj>size(line_colors,1))
-                    irf.log('critical', ['Plot multiple lines (>', num2str(size(line_colors,1),'%i'), ...
-                      ') requires argument "LineStyle" to provide colour for each line.']);
-                    error('More lines to plot than the number of defined colours to use.');
-                  end
-                    plot(hca,(time-ts-dt(jj)), data(:,ipl),...
-                        'Color', line_colors(jj,:), 'LineStyle',marker_cur)
-                else
-                    plot(hca,(time-ts-dt(jj)), data(:,ipl),marker_cur)
-                end
-                hold(hca,'on');
-            end
+      % Put YLimits so that no labels are at the end (disturbing in multipanel plots)
+      irf_zoom(c(ipl),'y');
+      
+      if isa(y,'TSeries')
+        set_ylabel(c(ipl),y);
+      elseif ~isempty(var_desc) && ~isempty(var_desc{ipl})
+        for v = 1:length(var_desc{ipl}.size)
+          lab{v} = [var_desc{ipl}.labels{v} '[' ...
+            var_desc{ipl}.units{v} '] sc' var_desc{ipl}.cl_id];
         end
-        grid(hca,'on');
-        set(hca,'tag',tag); set(hca,'userdata',ud); % restore
-        set(hca,'ColorOrder',line_colors)
-        % Put YLimits so that no labels are at the end (disturbing in
-        % multipanel plots)
-        set(c(ipl),'YLim',...
-            mean(get(c(ipl),'YLim'))+diff(get(c(ipl),'YLim'))*[-.499999 .499999])
+        ylabel(c(ipl),lab); clear lab
+      end
+      firstTimeStamp = time(~isnan(time),1);
     end
-    firstTimeStamp = time(~isnan(time(:,1)),1);
-    firstTimeStamp = firstTimeStamp(1);
+  end
+  % Set common XLim
+  for ipl=1:npl
+    set(c(ipl),'XLim',[t_st t_end])
+    if ~isempty(xlen)
+      p = get(c(ipl),'Position');
+      set(c(ipl),'Position',[p(1) p(2) xlen p(4)])
+    end
+  end
+  clear t_st t_end
+  
+  firstTimeStamp = firstTimeStamp(1);
+  
+elseif flag_subplot==3  % components of vectors in separate panels
+  if isstruct(x), error('cannot plot spectra in COMP mode'), end
+  idxEmpty = cellfun(@isempty, x);
+  if all(idxEmpty)
+    irf.log('warning','all inputs are empty'), return
+  end
+  % t_start_epoch is saved in figures user_data variable
+  idx = find(idxEmpty==0,1,'first');
+  if isa(x{idx},'TSeries')
+    ts = t_start_epoch(x{idx}.time.epochUnix);
+    npl = size(x{idx}.data(:,:),2);
+  elseif isstruct(x{idx})
+    ts = t_start_epoch(x{idx}.t); npl = size(x{idx}.data,2);
+  else
+    ts = t_start_epoch(x{idx}(:,1)); npl = size(x{idx},2) -1;
+  end
+  
+  if npl==1     % We make new figure with subplots only if more than 1 component to plot
+    c = ax;
+  else
+    c=initialize_figure(npl);
+  end
+  for ipl=1:npl
+    hca = c(ipl);
+    tag=get(hca,'tag'); ud=get(hca,'userdata'); % keep tag/userdata during plotting
+    
+    line_colors=get(hca,'ColorOrder');
+    for jj=1:size(x,2)
+      use_color = 1;
+      if iscell(marker)
+        if length(marker)==size(x,2), marker_cur = marker{jj};  use_color = 0;
+        else, marker_cur = marker{1};
+        end
+      else, marker_cur = marker;
+      end
+      if isempty(x{jj}), data = [];
+      else
+        if isa(x{jj},'TSeries')
+          time = x{jj}.time.epochUnix; data = x{jj}.data(:,:);
+        else
+          time = x{jj}(:,1); data = x{jj}(:,2:end);
+        end
+      end
+      if size(data,2)>=ipl
+        if use_color
+          if(jj>size(line_colors,1))
+            irf.log('critical', ['Plot multiple lines (>', num2str(size(line_colors,1),'%i'), ...
+              ') requires argument "LineStyle" to provide colour for each line.']);
+            error('More lines to plot than the number of defined colours to use.');
+          end
+          plot(hca,(time-ts-dt(jj)), data(:,ipl),...
+            'Color', line_colors(jj,:), 'LineStyle',marker_cur)
+        else
+          plot(hca,(time-ts-dt(jj)), data(:,ipl),marker_cur)
+        end
+        hold(hca,'on');
+      end
+    end
+    grid(hca,'on');
+    set(hca,'tag',tag); set(hca,'userdata',ud); % restore
+    set(hca,'ColorOrder',line_colors)
+    % Put YLimits so that no labels are at the end (disturbing in
+    % multipanel plots)
+    set(c(ipl),'YLim',...
+      mean(get(c(ipl),'YLim'))+diff(get(c(ipl),'YLim'))*[-.499999 .499999])
+  end
+  firstTimeStamp = time(~isnan(time(:,1)),1);
+  firstTimeStamp = firstTimeStamp(1);
 end
 
 %% Add figure menu
@@ -418,7 +418,7 @@ irf_figmenu;
 user_data = get(gcf,'userdata');
 if (flag_subplot>0 && isfield(user_data,'subplot_handles') && isempty(user_data.subplot_handles)) || ...
     (flag_subplot>0 && ~isfield(user_data,'subplot_handles'))
-  user_data.subplot_handles = c; 
+  user_data.subplot_handles = c;
 end
 set(gcf,'userdata',user_data);
 
@@ -559,7 +559,7 @@ if nargout==0, clear c; end
   end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   function init_figure
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     if x>=1 && x<=30
       % check if there is 'newfigure' argument
       if numel(args)>=2 && ischar(args{2}) && strcmpi(args{2},'newfigure')
@@ -584,21 +584,21 @@ ii = find(~isnan(t));
 if ~isempty(ii), valid_time_stamp = t(ii(1)); else, valid_time_stamp = []; end
 
 if isfield(ud,'t_start_epoch')
-    t_st_e = double(ud.t_start_epoch);
+  t_st_e = double(ud.t_start_epoch);
 elseif ~isempty(valid_time_stamp)
-    if valid_time_stamp > 1e8
-        % Set start_epoch if time is in isdat epoch
-        % Warn about changing t_start_epoch
-        t_st_e = double(valid_time_stamp);
-        ud.t_start_epoch = t_st_e;
-        set(gcf,'userdata',ud);
-        irf.log('notice',['user_data.t_start_epoch is set to ' ...
-            epoch2iso(t_st_e,1)]);
-    else
-        t_st_e = double(0);
-    end
-else
+  if valid_time_stamp > 1e8
+    % Set start_epoch if time is in isdat epoch
+    % Warn about changing t_start_epoch
+    t_st_e = double(valid_time_stamp);
+    ud.t_start_epoch = t_st_e;
+    set(gcf,'userdata',ud);
+    irf.log('notice',['user_data.t_start_epoch is set to ' ...
+      epoch2iso(t_st_e,1)]);
+  else
     t_st_e = double(0);
+  end
+else
+  t_st_e = double(0);
 end
 
 end
@@ -608,58 +608,58 @@ function c=initialize_figure(number_of_subplots,flag)
 % flag = "newfigure" % [optional] if to open a new figure
 if nargin==1, flag='';end
 if isempty(get(0,'CurrentFigure')) % no current figures opened
-    flag='newfigure';
+  flag='newfigure';
 elseif isempty(get(gcf,'children')) && ~strcmpi(flag,'newfigure') && ~strcmpi(flag,'reset') % current figure is empty, display warning of new syntax (REMOVE THIS ELSE LOOP IN 2013)
-	disp('WARNING! use syntax irf_plot(number_of_subplots,''newfigure'') if you want new figure.')
+  disp('WARNING! use syntax irf_plot(number_of_subplots,''newfigure'') if you want new figure.')
 end
 if number_of_subplots>=1 && number_of_subplots<=30
-    number_of_subplots=floor(number_of_subplots);
-    c=gobjects(1,number_of_subplots);
-	if strcmpi(flag,'newfigure') % if to open new figure
-		hcf = figure;
-		xSize = 11;
-		ySize = 5+5*sqrt(number_of_subplots);
-		xLeft = (21-xSize)/2; yTop = (30-ySize)/2;
-		set(hcf,'PaperPosition',[xLeft yTop xSize ySize])
-		un=get(0,'units');
-		set(0,'units','pixels');
-		sz=get(0,'screensize');
-		xx=min(min(700,sz(3))/xSize,min(900,sz(4))/ySize); % figure at least 600 wide or 900 height but not outside screen
-		set(hcf,'Position',[10 10 xSize*xx ySize*xx])
-		set(0,'units',un);
-		clear xSize sLeft ySize yTop
-	else
-		hcf = gcf; 
-	end
-	if strcmpi(flag,'newfigure') || strcmpi(flag,'reset') 
-		set(hcf,'color','white'); % white background for figures (default is grey)
-        set(hcf,'renderer','zbuffer'); % opengl has problems on Mac (no log scale in spectrograms)
-        set(hcf,'PaperUnits','centimeters');
-        set(hcf,'defaultlinelinewidth',1.0);
-        set(hcf,'defaultAxesFontSize',14);
-        set(hcf,'defaultTextFontSize',14);
-        set(hcf,'defaultAxesFontUnits','pixels');
-        set(hcf,'defaultTextFontUnits','pixels');
-        set(hcf,'defaultAxesColorOrder',[0 0 0;0 0 1;1 0 0;0 0.5 0;0 1 1 ;1 0 1; 1 1 0])
-	end
-    clf;
-    all_axis_position=[0.17 0.1 0.9 0.95]; % xmin ymin xmax ymax
-    subplot_width=all_axis_position(3)-all_axis_position(1);
-    subplot_height=(all_axis_position(4)-all_axis_position(2))/number_of_subplots;
-    for j=1:number_of_subplots
-        c(j)=axes('position',[all_axis_position(1) ...
-            all_axis_position(4)-j*subplot_height ...
-            subplot_width subplot_height]); % [x y dx dy]
-%        c(j)=irf_subplot(number_of_subplots,1,-j);
-        cla(c(j));
-        set(c(j),'box','on');
-        set(c(j),'tag','');
-    end
-    user_data = get(gcf,'userdata');
-    user_data.subplot_handles = c;
-    user_data.current_panel=0;
-    set(hcf,'userdata',user_data);
-    figure(hcf); % bring figure to front
+  number_of_subplots=floor(number_of_subplots);
+  c=gobjects(1,number_of_subplots);
+  if strcmpi(flag,'newfigure') % if to open new figure
+    hcf = figure;
+    xSize = 11;
+    ySize = 5+5*sqrt(number_of_subplots);
+    xLeft = (21-xSize)/2; yTop = (30-ySize)/2;
+    set(hcf,'PaperPosition',[xLeft yTop xSize ySize])
+    un=get(0,'units');
+    set(0,'units','pixels');
+    sz=get(0,'screensize');
+    xx=min(min(700,sz(3))/xSize,min(900,sz(4))/ySize); % figure at least 600 wide or 900 height but not outside screen
+    set(hcf,'Position',[10 10 xSize*xx ySize*xx])
+    set(0,'units',un);
+    clear xSize sLeft ySize yTop
+  else
+    hcf = gcf;
+  end
+  if strcmpi(flag,'newfigure') || strcmpi(flag,'reset')
+    set(hcf,'color','white'); % white background for figures (default is grey)
+    set(hcf,'renderer','zbuffer'); % opengl has problems on Mac (no log scale in spectrograms)
+    set(hcf,'PaperUnits','centimeters');
+    set(hcf,'defaultlinelinewidth',1.0);
+    set(hcf,'defaultAxesFontSize',14);
+    set(hcf,'defaultTextFontSize',14);
+    set(hcf,'defaultAxesFontUnits','pixels');
+    set(hcf,'defaultTextFontUnits','pixels');
+    set(hcf,'defaultAxesColorOrder',[0 0 0;0 0 1;1 0 0;0 0.5 0;0 1 1 ;1 0 1; 1 1 0])
+  end
+  clf;
+  all_axis_position=[0.17 0.1 0.9 0.95]; % xmin ymin xmax ymax
+  subplot_width=all_axis_position(3)-all_axis_position(1);
+  subplot_height=(all_axis_position(4)-all_axis_position(2))/number_of_subplots;
+  for j=1:number_of_subplots
+    c(j)=axes('position',[all_axis_position(1) ...
+      all_axis_position(4)-j*subplot_height ...
+      subplot_width subplot_height]); % [x y dx dy]
+    %        c(j)=irf_subplot(number_of_subplots,1,-j);
+    cla(c(j));
+    set(c(j),'box','on');
+    set(c(j),'tag','');
+  end
+  user_data = get(gcf,'userdata');
+  user_data.subplot_handles = c;
+  user_data.current_panel=0;
+  set(hcf,'userdata',user_data);
+  figure(hcf); % bring figure to front
 end
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -667,10 +667,10 @@ function zoom_in_if_necessary(h)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ud=get(h,'userdata');
 if isfield(ud,'zoom_x')
-    irf.log('debug','zooming in the updated plot')
-    irf_zoom(h,'x',ud.zoom_x);
-    if ud.zoom_x(1) > 1e8 && ud.zoom_x(1) < 1e10 % isdat epoch
-        irf_timeaxis(h,'nolabel');
-    end
+  irf.log('debug','zooming in the updated plot')
+  irf_zoom(h,'x',ud.zoom_x);
+  if ud.zoom_x(1) > 1e8 && ud.zoom_x(1) < 1e10 % isdat epoch
+    irf_timeaxis(h,'nolabel');
+  end
 end
 end

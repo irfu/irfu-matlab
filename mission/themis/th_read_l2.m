@@ -62,9 +62,9 @@ while true
   if epochFileStart>=epochFileEnd, break, end
   timeVecStart = fromepoch(epochFileStart);
 end
-% Remove repeating points. 
+% Remove repeating points.
 % Example, THE bs&es 2007-07-07T04:11:30.000000Z -- 2007-07-07T08:39:30.000000Z
-if ~isempty(res), res(diff(res(:,1))==0,:) = []; end 
+if ~isempty(res), res(diff(res(:,1))==0,:) = []; end
 
   function res = read_var
     res = spdfcdfread(fileToRead,'CombineRecords',true,'Variable',varName);
@@ -88,7 +88,7 @@ if ~isempty(res), res(diff(res(:,1))==0,:) = []; end
     end % find_depend_time()
     
   end % read_var
-    
+
   function res = find_file_to_read
     res = '';
     fullPath = sprintf('%s%sth%s%s%s%s%s%s%02d',dataDir,filesep,...

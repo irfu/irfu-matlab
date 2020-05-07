@@ -89,11 +89,11 @@ function OptionValuesMap = parse_CLI_options(cliArgumentsList, OptionsConfigMap)
 
 % ASSERTIONS: Check argument types, sizes.
 assert(iscell(cliArgumentsList), 'cliArgumentsList is not a cell array.')
-EJ_library.utils.assert.vector(cliArgumentsList)
+EJ_library.assert.vector(cliArgumentsList)
 % if length(cliArgumentsList) ~= numel(cliArgumentsList)
 %     error('BICAS:parse_CLI_options:Assertion:IllegalArgument', 'Parameter is not a 1D cell array.')
 % end
-EJ_library.utils.assert.isa(OptionsConfigMap, 'containers.Map')
+EJ_library.assert.isa(OptionsConfigMap, 'containers.Map')
 
 
 
@@ -123,16 +123,19 @@ for iOption = 1:length(OptionsConfigArray)
     
     if strcmp(OptionConfig.occurrenceRequirement, '0-1')
         if numel(optionValues) > 1
-            error('BICAS:parse_CLI_options:CLISyntax', 'Found more than one occurrence of command-line option "%s".', OptionConfig.optionHeaderRegexp)
+            error('BICAS:parse_CLI_options:CLISyntax', ...
+                'Found more than one occurrence of command-line option "%s".', OptionConfig.optionHeaderRegexp)
         end
     elseif strcmp(OptionConfig.occurrenceRequirement, '1')
         if numel(optionValues) ~= 1
-            error('BICAS:parse_CLI_options:CLISyntax', 'Could not find required command-line option matching regular expression "%s".', OptionConfig.optionHeaderRegexp)
+            error('BICAS:parse_CLI_options:CLISyntax', ...
+                'Could not find required command-line option matching regular expression "%s".', OptionConfig.optionHeaderRegexp)
         end
     elseif strcmp(OptionConfig.occurrenceRequirement, '0-inf')
         ;   % Do nothing.
     else
-        error('BICAS:parse_CLI_options:Assertion', 'Can not interpret occurrenceRequirement="%s".', OptionConfig.occurrenceRequirement)
+        error('BICAS:parse_CLI_options:Assertion', ...
+            'Can not interpret occurrenceRequirement="%s".', OptionConfig.occurrenceRequirement)
     end
 end
 
@@ -151,7 +154,7 @@ function [OptionValuesMap, iCliArgLastValue] = try_interpret_option(cliArguments
     % Search for a matching CLI option string
     %=========================================
     % NOTE: More convenient to work with arrays than maps here.
-    iRegexpMatches  = find(EJ_library.utils.regexpf(cliArgument, {OptionsConfigArray.optionHeaderRegexp}));
+    iRegexpMatches  = find(EJ_library.str.regexpf(cliArgument, {OptionsConfigArray.optionHeaderRegexp}));
 
     % IP = Interpretation Priority
     ipArray = [OptionsConfigArray(iRegexpMatches).interprPriority];    % Array over regexp matches.
@@ -192,7 +195,10 @@ function [OptionValuesMap, iCliArgLastValue] = try_interpret_option(cliArguments
 
     % Extract option values associated with the option header.
     %optionValues{end+1} = cliArgumentsList(iCliArg:iCliArgLastValue);
-    optionValues(end+1) = struct('iOptionHeaderCliArgument', iCliArg, 'optionHeader', cliArgumentsList(iCliArg), 'optionValues', {cliArgumentsList(iCliArg+1:iCliArgLastValue)});
+    optionValues(end+1) = struct(...
+        'iOptionHeaderCliArgument', iCliArg, ...
+        'optionHeader',             cliArgumentsList(iCliArg), ...
+        'optionValues',             {cliArgumentsList(iCliArg+1:iCliArgLastValue)'});
     OptionValuesMap(optionId) = optionValues;
 end
 
@@ -218,7 +224,7 @@ function [OptionsConfigMapModifCopy, EmptyOptionValuesMap] = init_assert(Options
         ModifOptionConfig = OptionsConfigMap(optionId);
         
         % ASSERTION: OptionConfig is the right struct.
-        EJ_library.utils.assert.struct2(ModifOptionConfig, {'optionHeaderRegexp', 'occurrenceRequirement', 'nValues'}, {'interprPriority'})
+        EJ_library.assert.struct(ModifOptionConfig, {'optionHeaderRegexp', 'occurrenceRequirement', 'nValues'}, {'interprPriority'})
         
         % Use priority default value, if there is none.
         if ~isfield(ModifOptionConfig, 'interprPriority')
@@ -234,7 +240,7 @@ function [OptionsConfigMapModifCopy, EmptyOptionValuesMap] = init_assert(Options
         % Create empty return structure (default value) with the same keys (optionId values).
         % NOTE: Applies to both options with and without values!
         %EmptyOptionValuesMap(optionId) = {};
-        EmptyOptionValuesMap(optionId) = struct('iOptionHeaderCliArgument', {}, 'optionHeader', {}, 'optionValues', {});
+        EmptyOptionValuesMap(optionId) = EJ_library.utils.empty_struct([0,1], 'iOptionHeaderCliArgument', 'optionHeader', 'optionValues');
     end
     
 end

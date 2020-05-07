@@ -1,14 +1,14 @@
-% read all data 
-%c_get_batch(toepoch([2003 02 14 14 30 0]),5*60)     
-%c_get_batch(toepoch([2003 02 14 14 30 0]),5*60,'vars','pburst') 
+% read all data
+%c_get_batch(toepoch([2003 02 14 14 30 0]),5*60)
+%c_get_batch(toepoch([2003 02 14 14 30 0]),5*60,'vars','pburst')
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Plot with wave length, interferometry and particle flux coefficient
 %%%%%%%%%%%%%%% p23->p41,p42->p13 %%%%%%%%%%%%%%
 %
-% In interferometry correlate the maxima, mininma and steepest gradients of 
-% both signals. This means taking first and second time derivatives 
-% and checking for zero crossings. 
+% In interferometry correlate the maxima, mininma and steepest gradients of
+% both signals. This means taking first and second time derivatives
+% and checking for zero crossings.
 
 mode = 0; % correlating p23->p41
 dist=.062; % distance in km between p23 and p41
@@ -19,18 +19,18 @@ flag_corr_deriv = 1; % Use zero crossings for correlation
 
 ic=2; % sc number
 ic_str=['s/c ' num2str(ic)];
- 
-start_time = [2003 02 14 14  32 59.9]; 
+
+start_time = [2003 02 14 14  32 59.9];
 Dt=0.2;
 tint = toepoch(start_time) + [0 Dt];
 
-ff = [40 200];% frequency interval in which filter data 
+ff = [40 200];% frequency interval in which filter data
 fstr = ['filter [' num2str(ff(1)) ' ' num2str(ff(2)) '] Hz'];
 ff_ref = (ff(1)+ff(2))/2;
 disp(['Using f=' num2str(ff_ref) ' Hz to estimate phase velocities']);
 
 Fs = 9000; % sampling frequency in Hz
-kHz = '4'; % 4kHz filter for internal burst 
+kHz = '4'; % 4kHz filter for internal burst
 
 c_eval(['load mEFWburst P' kHz 'kHz?p1 P' kHz 'kHz?p2 P' kHz 'kHz?p3 P' kHz 'kHz?p4;'],ic)
 c_eval(['p1=P' kHz 'kHz?p1; p2=P' kHz 'kHz?p2; p3=P' kHz 'kHz?p3; p4=P' kHz 'kHz?p4;'],ic)
@@ -66,13 +66,13 @@ b=irf_abs(irf_tlim(diB2,tint));
 efn=irf_dot(ef,bn);
 efp=irf_dot(ef,bp);
 
-nfef=irf_vec_x_scal(ef,nf,1); % dE*dn 
+nfef=irf_vec_x_scal(ef,nf,1); % dE*dn
 nfef_bn=irf_dot(nfef,bn); % dE*dn component in bn direction
 nfef_bp=irf_dot(nfef,bp); % dE*dn component in bp direction
 
 
-	psignal={'p13','p42','p23','p41'};
-	psignal_f={'p13f','p42f','p23f','p41f'};
+psignal={'p13','p42','p23','p41'};
+psignal_f={'p13f','p42f','p23f','p41f'};
 
 legend_corr=[psignal{1} '->' psignal{2} ' ' psignal{3} '->' psignal{4}];
 legend_corr12=[psignal{1} '->' psignal{2}];
@@ -83,9 +83,9 @@ tref=toepoch(start_time);
 % Filter the data and Crop the data
 ff_str=['f_{filter}=[' num2str(ff(1),3) ' ' num2str(ff(2),3) '] Hz'];
 for j=1:4
-	eval([psignal_f{j} '=irf_filt(' psignal{j} ',ff(1),ff(2),[],5);'])
-	eval([psignal_f{j} '=irf_tlim(' psignal_f{j} ',tint);'])
-	eval([psignal{j} '=irf_tlim(' psignal{j} ',tint);'])
+  eval([psignal_f{j} '=irf_filt(' psignal{j} ',ff(1),ff(2),[],5);'])
+  eval([psignal_f{j} '=irf_tlim(' psignal_f{j} ',tint);'])
+  eval([psignal{j} '=irf_tlim(' psignal{j} ',tint);'])
 end
 
 [t23_d,t41_d,t23_dd,t41_dd]=irf_corr_deriv(p23f,p41f,flag_corr_deriv);
@@ -131,9 +131,9 @@ title_text=['s/c' num2str(ic) '  ' legend_corr ff_str '.'];
 
 %%%%%% subplot 2 %%%%%%
 axes(h(ipanel));ipanel=ipanel+1;
-irf_plot(efn,'k'); 
+irf_plot(efn,'k');
 hold on
-irf_plot(efp,'r'); 
+irf_plot(efp,'r');
 grid on;
 ylabel('E_{f} [mV/m]');
 irf_zoom([-149.999 149.999],'y');

@@ -6,17 +6,17 @@ function deltaOff=caa_splice_deltaoff(deltaOff_in,iso_t)
 deltaOff=deltaOff_in;
 
 for i=1:8
-    idx=find(deltaOff(:,1)>iso2epoch(iso_t), 1 );
-    n_pts=4;
-    t1=deltaOff(idx-2,1);
-    t2=deltaOff(idx+1,1);
-    dt=(t2-t1)/(n_pts+1);
-    t1=t1+dt;
-    t2=t2-dt;
-    splice=[(t1:dt:t2)' ...
-        [deltaOff(idx-2,2)*ones(1,n_pts/2) deltaOff(idx+1,2)*ones(1,n_pts/2)]' ...
-        [deltaOff(idx-2,3)*ones(1,n_pts/2) deltaOff(idx+1,3)*ones(1,n_pts/2)]'];
-    deltaOff=[deltaOff(1:idx-2,:)' splice' deltaOff(idx+1:end,:)']';
+  idx=find(deltaOff(:,1)>iso2epoch(iso_t), 1 );
+  n_pts=4;
+  t1=deltaOff(idx-2,1);
+  t2=deltaOff(idx+1,1);
+  dt=(t2-t1)/(n_pts+1);
+  t1=t1+dt;
+  t2=t2-dt;
+  splice=[(t1:dt:t2)' ...
+    [deltaOff(idx-2,2)*ones(1,n_pts/2) deltaOff(idx+1,2)*ones(1,n_pts/2)]' ...
+    [deltaOff(idx-2,3)*ones(1,n_pts/2) deltaOff(idx+1,3)*ones(1,n_pts/2)]'];
+  deltaOff=[deltaOff(1:idx-2,:)' splice' deltaOff(idx+1:end,:)']';
 end
 
 %plot

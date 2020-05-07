@@ -51,7 +51,7 @@ MMS_CONST.InnerMSPAmpCorr.e12 = 1.0;
 MMS_CONST.InnerMSPAmpCorr.e34 = 1.0;
 MMS_CONST.InnerMSPAmpCorr.e56 = 1.0;
 
-MMS_CONST.InnerMSPradius = 5*6.3712e+03; % 5 R_E in km. 
+MMS_CONST.InnerMSPradius = 5*6.3712e+03; % 5 R_E in km.
 
 % Telemetry mode
 MMS_CONST.TmModes = {'slow','fast','brst', 'comm'};

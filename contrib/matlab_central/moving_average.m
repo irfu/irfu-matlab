@@ -21,8 +21,8 @@ function [Y,Nsum] = moving_average(X,F,DIM)
 %     this way, the filter has zero phase.
 %
 %   Example:
-%      x = 2*pi*linspace(-1,1)'; 
-%      yn = cos(x) + 0.25 - 0.5*rand(size(x)); 
+%      x = 2*pi*linspace(-1,1)';
+%      yn = cos(x) + 0.25 - 0.5*rand(size(x));
 %      ys = moving_average(yn,4);
 %      plot(x,[yn ys]), legend('noisy','smooth',4), axis tight
 %
@@ -35,7 +35,7 @@ function [Y,Nsum] = moving_average(X,F,DIM)
 %   Written by
 %   M. in S. Carlos Adrian Vargas Aguilera
 %   Physical Oceanography PhD candidate
-%   CICESE 
+%   CICESE
 %   Mexico,  march 2008
 %
 %   nubeobscura@hotmail.com
@@ -52,17 +52,17 @@ function [Y,Nsum] = moving_average(X,F,DIM)
 % LICENSE
 % Copyright (c) 2016, Carlos Adrian Vargas Aguilera
 % All rights reserved.
-% 
+%
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions are
 % met:
-% 
+%
 % * Redistributions of source code must retain the above copyright
 % notice, this list of conditions and the following disclaimer.
 % * Redistributions in binary form must reproduce the above copyright
 % notice, this list of conditions and the following disclaimer in
 % the documentation and/or other materials provided with the distribution
-% 
+%
 % THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 % AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 % IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -78,54 +78,54 @@ function [Y,Nsum] = moving_average(X,F,DIM)
 
 %% Error checking:
 if ~nargin
- error('Moving_average:Inputs','There are no inputs.')
+  error('Moving_average:Inputs','There are no inputs.')
 elseif nargin<2 || isempty(F)
- F = 0;
+  F = 0;
 end
 if F==0
- Y = X;
- return
+  Y = X;
+  return
 end
 F = round(F);
 ndim = ndims(X);
 if (ndim ~= 2)
- error('Moving_average:Inputs','Input is not a vector or matrix.')
+  error('Moving_average:Inputs','Input is not a vector or matrix.')
 end
 [N,M] = size(X);
 if nargin<3 || isempty(DIM)
- DIM = 1;
- if N == 1
-  DIM = 2;
- end
+  DIM = 1;
+  if N == 1
+    DIM = 2;
+  end
 end
 if DIM == 2
- X = X.';
- [N,M] = size(X);
+  X = X.';
+  [N,M] = size(X);
 end
 if 2*F+1>N
- warning('Moving_average:Inputs',... % bug fixed 06 Mar 2008
-  'Window size must be less or equal as the number of elements.')
- Y = X;
- if DIM == 2
-  Y = Y.';
- end
- return
+  warning('Moving_average:Inputs',... % bug fixed 06 Mar 2008
+    'Window size must be less or equal as the number of elements.')
+  Y = X;
+  if DIM == 2
+    Y = Y.';
+  end
+  return
 end
 
 %% Window width
-Wwidth = 2*F + 1;  
+Wwidth = 2*F + 1;
 
 %% Smooth the edges but with the first and last element intact
 F2 = Wwidth - 2;
 Nsumedge = repmat((1:2:F2)',1,M);
 Y1 =        X(     1:F2,:);
 Y2 = flipud(X(N-F2+1:N ,:));
-Y1 = cumsum(Y1,1);     
+Y1 = cumsum(Y1,1);
 Y2 = cumsum(Y2,1);
-Y1 = Y1(1:2:F2,:)./Nsumedge;            
+Y1 = Y1(1:2:F2,:)./Nsumedge;
 Y2 = Y2(1:2:F2,:)./Nsumedge;
 
-%% Recursive moving average method 
+%% Recursive moving average method
 % With CUMSUM trick copied from RUNMEAN by Jos van der Geest (12 mar 2008)
 Y = [zeros(F+1,M); X; zeros(F,M)];
 Y = cumsum(Y,1);
@@ -136,25 +136,25 @@ Y = Y/Wwidth;
 Y(    1:F,:) =        Y1;
 Y(N-F+1:N,:) = flipud(Y2);
 
-%% Get the number of elements that were averaged for each element: 
+%% Get the number of elements that were averaged for each element:
 if nargout == 2
- Nsum = repmat(Wwidth,size(Y));
- Nsum(    1:F,:) = Nsumedge;
- Nsum(N-F+1:N,:) = flipud(Nsumedge);
- if DIM ==2
-  Nsum = Nsum.';
- end
+  Nsum = repmat(Wwidth,size(Y));
+  Nsum(    1:F,:) = Nsumedge;
+  Nsum(N-F+1:N,:) = flipud(Nsumedge);
+  if DIM ==2
+    Nsum = Nsum.';
+  end
 end
 
 %% Return the correct size:
 if DIM == 2
- Y = Y.';
-end 
+  Y = Y.';
+end
 
 %% % Recursive moving average code before Jos trick:
-% Y = X;          
-% Y(F+1,:) = sum(X(1:Wwidth,:),1);    
+% Y = X;
+% Y(F+1,:) = sum(X(1:Wwidth,:),1);
 % for n = F+2:N-F
-%  Y(n,:) = sum([Y(n-1,:); X(n+F,:); -X(n-F-1,:)],1); 
+%  Y(n,:) = sum([Y(n-1,:); X(n+F,:); -X(n-F-1,:)],1);
 % end
 % Y = Y/Wwidth;

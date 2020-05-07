@@ -1,6 +1,6 @@
 function out = dirwhos(file,varargin)
 %DIRWHOS List variable names in a dirsave dir
-% 
+%
 %  DIRWHOS(dirname) list variables in dirsave directory dirname
 %
 %  DIRWHOS(dirname,varname) list variable varname
@@ -13,12 +13,12 @@ if nargin == 1
   out = regexprep(setdiff(ls(file), {'.','..'}), '\.mat$', '');
   out=out{1};
 end
-if nargin == 2 
+if nargin == 2
   fileName = varargin{1};
   filePath =[file filesep fileName '.mat'];
   if exist(filePath,'file')
-	out = whos('-file',filePath,fileName);
+    out = whos('-file',filePath,fileName);
   else
-	out = [];
+    out = [];
   end
 end
