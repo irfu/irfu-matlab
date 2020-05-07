@@ -17,7 +17,7 @@ function epoch_time = hhmmss2epoch(t_start, t)
 %
 %Error:
 %
-%Discription of variables:
+%Description of variables:
 %
 %Written by Robert Isaksson in the summer of -03
 

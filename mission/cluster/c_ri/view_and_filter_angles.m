@@ -23,7 +23,7 @@ function view_and_filter_angles()
 %
 %Error:
 %
-%Discription of variables:
+%Description of variables:
 %
 %Written by Robert Isaksson in the summer of -03
 

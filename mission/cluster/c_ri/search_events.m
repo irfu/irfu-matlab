@@ -36,7 +36,7 @@ function [time_of_events, dist_t] = search_events(start_time, dt, dist_to_MP, p_
 %Error:
 % If no events are found, -1 is returned
 %
-%Discription of variables:
+%Description of variables:
 %
 %Written by Robert Isaksson in the summer of -03
 

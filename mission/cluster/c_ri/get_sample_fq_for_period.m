@@ -23,7 +23,7 @@ function s_fq = get_sample_fq_for_period(download_logg,B)
 %Error:
 % s_fq is -1 if the intervall is missing.
 %
-%Discription of variables:
+%Description of variables:
 %
 %Written by Robert Isaksson in the summer of -03
 

@@ -19,7 +19,7 @@ function a = c_ri_events_into_fig(time_interval,path_eve, file_events, per, p_up
 %
 %Error:
 %
-%Discription of variables:
+%Description of variables:
 %
 %Written by Robert Isaksson in the summer of -03
 global AV_DEBUG

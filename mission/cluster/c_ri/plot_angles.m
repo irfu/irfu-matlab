@@ -1,7 +1,7 @@
 function u = plot_angles(angle)
 %
 %Input:
-% One matrix containing the angle between the satelites magnetic vectors and the
+% One matrix containing the angle between the satellites magnetic vectors and the
 % time.
 % |time|1 to 2| 1 to 3|1 to 4|2 to 3|2 to 4|3 to 4|
 %
@@ -16,7 +16,7 @@ function u = plot_angles(angle)
 %
 %Error:
 %
-%Discription of variables:
+%Description of variables:
 %
 %Written by Robert Isaksson in the summer of -03
 

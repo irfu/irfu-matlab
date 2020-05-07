@@ -19,7 +19,7 @@ function M = add_A2M(M,A)
 % If M is zero, M becomes A.
 % If A is zerom, M is unchanged
 %
-%Discription of variables:
+%Description of variables:
 %
 %Written by Robert Isaksson in the summer of -03
 

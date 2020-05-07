@@ -25,7 +25,7 @@ function B = get_B_from_ISDAT(spacecraft,start_time, Dt)
 %
 %Error: [-1 0 0 0] is returned if no data was loaded
 %
-%Discription of variables:
+%Description of variables:
 %
 %Written by Robert Isaksson in the summer of -03
 

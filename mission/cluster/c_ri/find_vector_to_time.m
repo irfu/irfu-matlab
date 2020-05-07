@@ -21,7 +21,7 @@ function [B_vector, position] = find_vector_to_time(B, n, t, dt)
 % If there is no match in the time frame, a zero-vector is returned and n is
 % unchanged
 %
-%Discription of variables:
+%Description of variables:
 %
 %Written by Robert Isaksson in the summer of -03
 

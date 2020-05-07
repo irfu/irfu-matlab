@@ -12,7 +12,7 @@ function c_ri_run_calc_angles(s_t, e_t,resolution,path_input, path_output)
 %
 %Error:
 %
-%Discription of variables:
+%Description of variables:
 %
 %Written by Robert Isaksson in the summer of -03
 

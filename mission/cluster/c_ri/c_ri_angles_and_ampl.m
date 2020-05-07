@@ -19,9 +19,9 @@ function [angles, ampl] = c_ri_angles_and_ampl(B1,B2,B3,B4)
 % formula: acos( M*N/(|M|*|N|) )*180/pi
 %
 %Error:
-% NaN are put into the matrix where devided by ZERO ocurres.
+% NaN are put into the matrix where division by ZERO occurs.
 %
-%Discription of variables:
+%Description of variables:
 %
 %Written by Robert Isaksson in the summer of -03
 

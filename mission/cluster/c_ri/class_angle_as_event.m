@@ -21,7 +21,7 @@ function [time_of_events,angles_out,ampl_out] = class_angle_as_event(angles,ampl
 %Error:
 % if no events are found 0 is returned
 %
-%Discription of variables:
+%Description of variables:
 %
 %Written by Robert Isaksson in the summer of -03
 

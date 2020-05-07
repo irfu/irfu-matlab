@@ -21,7 +21,7 @@ function [B, download_logg] = download_B_4_cl(passing_MP, cl_nr, B_t_dt)
 %
 %Error:
 %
-%Discription of variables:
+%Description of variables:
 %
 %Written by Robert Isaksson in the summer of -03
 

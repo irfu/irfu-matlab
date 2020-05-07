@@ -19,7 +19,7 @@ function c_ri_load_B_for_preprocess(s_t, e_t, path_input, path_output)
 %
 %Error:
 %
-%Discription of variables:
+%Description of variables:
 %
 %Written by Robert Isaksson in the summer of -03
 

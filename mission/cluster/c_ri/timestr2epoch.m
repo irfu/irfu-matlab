@@ -18,7 +18,7 @@ function time = timestr2epoch(strline)
 %
 %Error:
 %
-%Discription of variables:
+%Description of variables:
 %
 %Written by Robert Isaksson in the summer of -03
 
