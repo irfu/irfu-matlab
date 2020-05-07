@@ -34,6 +34,11 @@ classdef BLTS_src_dest %< handle
     %   See bicas.calib BOGIQ.
     %   PRO: Reference to BLTS is confusing.
     %   PROPOSAL: Need acronym for all physical signal sources which is a superset of ASR/AS ID.
+    %
+    % PROPOSAL: Separate classes for (1) BLTS physical signal source, and (2) BLTS signal representation in dataset.
+    %   CON: (2) is subset of (1).
+    %   CON-PROPOSAL: Method for whether object represents a destination in dataset.
+    %       PRO: Useful for assertions.
 
 
 
@@ -59,12 +64,17 @@ classdef BLTS_src_dest %< handle
             assert(isnumeric(antennas))
             assert(all(ismember(antennas, [1,2,3])))    % NOTE: OK for empty "antennas".
             if isequal(size(antennas), [0,0])
+                % CASE: No antennas
                 % Do nothing
                 
             elseif isequal(size(antennas), [1,1])
+                % CASE: single
                 % Do nothing
                 
             elseif isequal(size(antennas), [1,2])
+                % CASE: diff
+                
+                % Implicitly checks that antennas are different.
                 assert(antennas(1) < antennas(2))
                 
             else
@@ -72,7 +82,7 @@ classdef BLTS_src_dest %< handle
             end
             
             % ASSERTION: category
-            EJ_library.utils.assert.castring(category)
+            EJ_library.assert.castring(category)
 
             % ASSERTIONS: category, antennas
             nAntennas = numel(antennas);
@@ -89,7 +99,7 @@ classdef BLTS_src_dest %< handle
                     assert(nAntennas == 0)
                 case 'Unknown'
                     assert(nAntennas == 0)
-                    % Represents that the soruce of the BLTS is unknown.
+                    % Represents that the source of the BLTS is unknown.
                 case 'Nowhere'
                     assert(nAntennas == 0)
                     % Represents that the BLTS should be routed to nowhere.
@@ -102,9 +112,9 @@ classdef BLTS_src_dest %< handle
             obj.antennas = antennas;
             obj.category = category;
         end
-        
-        
-        
+
+
+
     end    % methods(Access=public)
     
 end

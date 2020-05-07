@@ -26,8 +26,8 @@ function s = strrepmany(s, varargin)
             newSs = varargin{2};
             
             % ASSERTIONS
-            EJ_library.utils.assert.castring(oldSs)
-            EJ_library.utils.assert.castring(newSs)
+            EJ_library.assert.castring(oldSs)
+            EJ_library.assert.castring(newSs)
             
             varargin = varargin(3:end);
         elseif numel(varargin) == 0

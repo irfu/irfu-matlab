@@ -31,6 +31,8 @@ function apply_transfer_function___ATEST
 %   PROPOSAL: Use random input arrays.
 %
 % PROPOSAL: Test scaling X_0 and X_k, k>0 differently.
+%
+% PROPOSAL: Proper functions (with longer descriptive names) for creating functions, instead of function pointers.
 
 
 % EPSILON = 1e-6;
@@ -39,15 +41,20 @@ EPSILON = 1e-4;
 input  = {};
 output = {};
 
+% Function for creating time samples vector.
 tVec = @(N,dt) (0 : dt : ((N-1)*dt) )';
 
-% Delays function (in time domain), AND treats it as cyclic. delay>0 pushes it in t+ direction.
+% Function for creating a function (time domain) which is a delayed version of a specified function AND treats it as
+% cyclic. delay>0 pushes it in t+ direction.
+% f  : Function pointer
+% N  : Number of samples in time series.
+% dt : 
 delayedFunc = @(f,t,delay,N,dt) (f(mod(t-delay, N*dt)));
 
 % TF that delays function (in time domain), i.e. one time delay for all frequencies.
 delayTfZ    = @(omega, delay)   (exp(1i*omega*(-delay)));
 
-% TF for (alsmost) constant Z. Implements Z(omega=0)=z0 and Z(omega>0)=z1.
+% TF for (almost) constant Z. Implements Z(omega=0)=z0 and Z(omega>0)=z1.
 % NOTE: Must work for omega=vector.
 % NOTE: z0 should be real.
 constantTfZ = @(omega, z0, z1) ( (omega==0)*z0 + (omega~=0)*z1 );

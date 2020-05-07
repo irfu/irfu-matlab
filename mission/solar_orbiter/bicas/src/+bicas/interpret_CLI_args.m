@@ -8,7 +8,8 @@
 % CliData : struct with fields:
 %   .functionalityMode          : String constant
 %   .swModeArg                  : String constant
-%   .logFile                    : Empty if argument not given.
+%   .icdLogFile                 : Empty if argument not given.
+%   .matlabLogFile              : Empty if argument not given.
 %   .configFile                 : Empty if argument not given.
 %   .SpecInputParametersMap     : containers.Map with
 %                                   key   = CLI argument without prefix
@@ -59,7 +60,10 @@ function CliData = interpret_CLI_args(cliArgumentList)
 
 
 %==================================================================================
-% Configure permitted RCS ICD CLI options COMMON for all BICAS functionality modes
+% Configure 
+% (1) permitted RCS ICD CLI options COMMON for all BICAS functionality modes
+% (2) RCS ICD CLI options for special input parameters
+% (2) inofficial options
 % NOTE: Exclude the argument for functionality mode itself.
 %==================================================================================
 SW_MODE_REGEXP = '[^-][^-].*';
@@ -72,9 +76,10 @@ OPTIONS_CONFIG_MAP('help_FM')                   = struct('optionHeaderRegexp', '
 OPTIONS_CONFIG_MAP('SW_mode')                   = struct('optionHeaderRegexp', SW_MODE_REGEXP,     'occurrenceRequirement', '0-1',   'nValues', 0);
 
 % NOTE: "specific_input_parameters" refers to the official RCS ICD term.
-% NOTE: log_file is an option to permit but ignore since it is handled by the bash launcher script, not the MATLAB code.
+% NOTE: ICD_log_file is an option to permit but ignore since it is handled by the bash launcher script, not the MATLAB code.
 OPTIONS_CONFIG_MAP('specific_input_parameters') = struct('optionHeaderRegexp', '--(..*)',          'occurrenceRequirement', '0-inf', 'nValues', 1, 'interprPriority', -1);
-OPTIONS_CONFIG_MAP('log_file')                  = struct('optionHeaderRegexp', '--log',            'occurrenceRequirement', '0-1',   'nValues', 1);
+OPTIONS_CONFIG_MAP('ICD_log_file')              = struct('optionHeaderRegexp', '--log',            'occurrenceRequirement', '0-1',   'nValues', 1);
+OPTIONS_CONFIG_MAP('MATLAB_log_file')           = struct('optionHeaderRegexp', '--log-matlab',     'occurrenceRequirement', '0-1',   'nValues', 1);
 OPTIONS_CONFIG_MAP('config_file')               = struct('optionHeaderRegexp', '--config',         'occurrenceRequirement', '0-1',   'nValues', 1);
 
 % Inofficial arguments
@@ -138,7 +143,7 @@ switch CliData.functionalityMode
         % ASSERTION
         % NOTE: Somewhat of a hack, since can not read out from using bicas.utils.parse_CLI_options where
         % the SW_mode option is located among the arguments. The code knows it should be somewhere.
-        %if ~EJ_library.utils.regexpf(swModeArg, SW_MODE_REGEXP)
+        %if ~EJ_library.str.regexpf(swModeArg, SW_MODE_REGEXP)
         if numel(OptionValues) ~= 1
             % Somewhat misleading error message. Hard to be accurate without too much effort or by explaining the
             % argument-parsing algorithm to the user.
@@ -157,9 +162,14 @@ end
 
 
 
-temp = OptionValuesMap('log_file');
-if isempty(temp)   CliData.logFile = [];
-else               CliData.logFile = temp(end).optionValues{1};
+temp = OptionValuesMap('ICD_log_file');
+if isempty(temp)   CliData.icdLogFile = [];
+else               CliData.icdLogFile = temp(end).optionValues{1};
+end
+
+temp = OptionValuesMap('MATLAB_log_file');
+if isempty(temp)   CliData.matlabLogFile = [];
+else               CliData.matlabLogFile = temp(end).optionValues{1};
 end
 
 temp = OptionValuesMap('config_file');
@@ -167,7 +177,9 @@ if isempty(temp)   CliData.configFile = [];
 else               CliData.configFile = temp(end).optionValues{1};
 end
 
-EJ_library.utils.assert.struct2(CliData, {'functionalityMode', 'swModeArg', 'logFile', 'configFile', 'SpecInputParametersMap', 'ModifiedSettingsMap'}, {})
+EJ_library.assert.struct(CliData, ...
+    {'functionalityMode', 'swModeArg', 'icdLogFile', 'matlabLogFile', 'configFile', 'SpecInputParametersMap', ...
+    'ModifiedSettingsMap'}, {})
 
 end
 

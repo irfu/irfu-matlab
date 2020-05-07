@@ -120,7 +120,7 @@ elseif ~isscalar(dt)
 elseif ~(dt>0)
     error('BICAS:apply_transfer_function:Assertion:IllegalArgument', 'dt is not positive.')
 elseif ~isa(tf, 'function_handle')
-    % EJ_library.utils.assert.func does not seem to handle return values correctly.
+    % EJ_library.assert.func does not seem to handle return values correctly.
     error('BICAS:apply_transfer_function:Assertion:IllegalArgument', 'tf is not a function.')
 elseif ~isreal(tf(0))
     error('BICAS:apply_transfer_function:Assertion:IllegalArgument', 'tf(0) is not real.')    
@@ -130,7 +130,7 @@ end
 
 DEFAULT_SETTINGS.enableDetrending = 0;
 Settings = EJ_library.utils.interpret_settings_args(DEFAULT_SETTINGS, varargin);
-EJ_library.utils.assert.struct2(Settings, fieldnames(DEFAULT_SETTINGS), {})
+EJ_library.assert.struct(Settings, fieldnames(DEFAULT_SETTINGS), {})
 
 
 
@@ -184,7 +184,7 @@ yDft1 = fft(y1);
 %i = (tfOmegaLookups >= pi/dt);    % Indicies for which omega_k should be replaced by omega_(k-N).
 %tfOmegaLookups(i) = abs(tfOmegaLookups(i)  - 2*pi/dt);
 kOmegaLookup   = [1:ceil(N/2), (ceil(N/2)+1-N):0 ];   % Modified k values used to calculate omega_k for every X_k.
-tfOmegaLookups = 2*pi * (kOmegaLookup - 1) / (N*dt);
+tfOmegaLookups = 2*pi * (kOmegaLookup - 1) / double(N*dt);
 
 
 

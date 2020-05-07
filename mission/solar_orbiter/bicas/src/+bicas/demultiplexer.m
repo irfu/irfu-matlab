@@ -169,7 +169,7 @@ classdef demultiplexer
             assert(isscalar(demuxMode))
             assert(isscalar(dlrUsing12))
             assert(iscell(bltsSamplesAVolt))            
-            EJ_library.utils.assert.vector(bltsSamplesAVolt)
+            EJ_library.assert.vector(bltsSamplesAVolt)
             assert(numel(bltsSamplesAVolt)==5)
             assert(isnumeric(bltsSamplesAVolt{1}))   % Shuold ideally check for all indices, but one helps.
             
@@ -378,7 +378,7 @@ classdef demultiplexer
         % Assign ASR variables from all five BLTS, given specified routings.
         function AsrSamples = assign_ASR_samples_from_BLTS(AsrSamples, BltsSamples, RoutingArray)
             % ASSERTIONS
-            EJ_library.utils.assert.all_equal([numel(BltsSamples), numel(RoutingArray), 5])
+            EJ_library.assert.all_equal([numel(BltsSamples), numel(RoutingArray), 5])
             
             for iBlts = 1:5
                 if ~strcmp(RoutingArray(iBlts).dest.category, 'Nowhere')
